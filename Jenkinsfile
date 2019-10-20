@@ -103,8 +103,9 @@ stage('Deploy') {
            dir('_site') {
              checkout scm
              sshagent(['tvm-web']) {
+               sh "git fetch"
                sh "git checkout asf-site"
-               sh "git fetch && git reset --hard origin/asf-site"
+               sh "git reset --hard origin/asf-site"
              }
              sh "rm -rf *"
            }
@@ -114,7 +115,7 @@ stage('Deploy') {
            }
            sshagent(['tvm-web']) {
              dir('_site') {
-               sh "git push origin asf-site"
+                // sh "git push origin asf-site"
              }
            }
         }
