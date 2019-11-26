@@ -1,0 +1,283 @@
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>Compiling Machine Learning to WASM and WebGPU with Apache TVM</title>
+    
+    <meta name="author" content="">
+
+    <!-- Le HTML5 shim, for IE6-8 support of HTML elements -->
+    <!--[if lt IE 9]>
+      <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+
+    <!-- Le styles -->
+    <link href="/assets/themes/custom-twitter/css/1.4.0/bootstrap.css" rel="stylesheet">
+    <link href="/assets/themes/custom-twitter/css/style.css?body=1" rel="stylesheet" type="text/css" media="all">
+
+    <!-- Le fav and touch icons -->
+  <!-- Update these with your own images
+    <link rel="shortcut icon" href="images/logo/tvm-logo.png">
+  <link rel="shortcut icon" href="images/logo/tvm-logo.png">
+  -->
+  <link href="/images/logo/tvm-logo-square.png" rel="icon" type="image/png"/>
+  <!-- Global site tag (gtag.js) - Google Analytics -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=UA-75982049-2"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+
+    gtag('js', new Date());
+    gtag('config', 'UA-75982049-2');
+  </script>
+
+</head>
+
+  <body>
+    <div class="topbar">
+      <div class="fill">
+        <div class="container">
+          <h2 id="logo-wrap">
+            <a href="/" class="nav">
+              <img src="/images/logo/tvm-logo-small-black.png" width="100px">
+            </a>
+          </h2>
+          <ul class="nav" id="nav-bar">
+            
+            
+            
+
+
+
+  
+    
+      
+      
+    
+  
+    
+      
+      
+    
+  
+    
+      
+      
+    
+  
+    
+      
+      
+    
+  
+    
+      
+      
+    
+  
+    
+      
+      
+    
+  
+    
+      
+      	
+      	<li><a href="/community">Community</a></li>
+      	
+      
+      
+    
+  
+    
+      
+      	
+      	<li><a href="/download">Download</a></li>
+      	
+      
+      
+    
+  
+    
+      
+      	
+      	<li><a href="/about">About</a></li>
+      	
+      
+      
+    
+  
+    
+      
+      
+    
+  
+    
+      
+      	
+      	<li><a href="/vta">VTA</a></li>
+      	
+      
+      
+    
+  
+    
+      
+      
+      	
+      	<li><a href="/blog">Blog</a></li>
+      	
+      
+    
+  
+
+
+
+
+            <li> <a href="https://tvm.apache.org/docs">Docs</a></li>
+            <li> <a href="https://tvmconf.org">TVM Conference</a></li>
+            <li> <a href="https://github.com/apache/incubator-tvm/">Github</a></li>
+            <li> <a href="/asf">ASF</a></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+    
+<div class="container">
+<div class="content">
+  <div class="row">
+    <div class="span14">
+      <h1>Compiling Machine Learning to WASM and WebGPU with Apache TVM </h1>
+      <p class="post-meta">
+        <time datetime="2020-05-14T00:00:00-07:00" itemprop="datePublished">
+          May 14, 2020
+        </time>
+        
+        • <span itemprop="author" itemscope itemtype="http://schema.org/Person">
+          <span itemprop="name">Tianqi Chen and Jared Roesch, OctoML</span>
+        </span>
+        
+      </p>
+      <p class="post-meta">
+        </p>
+    </br>
+    <p><strong>TLDR</strong></p>
+
+<p>We introduced support for WASM and WebGPU to the Apache TVM deep learning compiler. Our experiments shows that  TVM’s WebGPU backend can get <strong>close to native</strong> <strong>GPU performance</strong> when deploying models to the web.</p>
+
+<p style="text-align: center"><img src="/images/webgpu/webgpu-mobilenet-perf.png" alt="image" width="55%" /><br /></p>
+
+<h2 id="introduction">Introduction</h2>
+
+<p>Computing is one of the pillars of modern machine learning applications. The introduction of the GPU to accelerate deep learning workloads has increased the rate of progress dramatically. Given the growing requirement to deploy machine learning everywhere, the browser becomes a natural place to deploy intelligent applications.</p>
+
+<p>While TensorFlow.js and ONNX.js are existing efforts to bring machine learning to the browser, there still exist non-trivial gaps in performance between the web versions and native ones. One of the many reasons is the lack of standard and performant access to the GPU on the web. WebGL lacks important features such as compute shaders and generic storage buffers that are necessary for high performance deep learning.</p>
+
+<p>WebGPU is the upcoming standard for next generation web graphics which has the possibility to dramatically change this situation. Like the latest generation graphics APIs such as Vulkan and Metal, WebGPU offers first-class compute shader support.</p>
+
+<p>To explore the potential of using WebGPU for machine learning deployment in the browser, we enhanced the deep learning compiler Apache(incubating) TVM to target WASM (for host code that computes the launching parameters and calls into the device launch) and WebGPU (for device execution). Our preliminary results are quite positive — for the first time, we can deploy machine learning applications on the web while still getting near native performance on the GPU.</p>
+
+<h2 id="machine-learning-compiler">Machine Learning Compiler</h2>
+
+<p style="text-align: center"><img src="/images/webgpu/ml-compiler-flow.png" alt="image" width="65%" /><br /></p>
+
+<p>One natural reaction when trying out WebGPU is to write shaders for primitive operators in deep neural networks (matrix multiplication and convolution) and then directly optimize their performance. This is the traditional workflow used  by existing frameworks such as TensorFlow.js.</p>
+
+<p>Instead, we apply a compilation based approach. TVM automatically ingests models from high-level frameworks such as TensorFlow, Keras, PyTorch, MXNet and ONNX and uses a machine learning driven approach to automatically generate low level code, in this case compute shaders in SPIR-V format. The generated code can then be packaged as a deployable module.</p>
+
+<p>One important advantage of the compilation based approach is the reuse of infrastructure. We are able to effortlessly (relative to <a href="https://arxiv.org/abs/1901.05350">other approaches</a>) target the web by reusing the infrastructure for optimizing GPU kernels for native platforms such as CUDA, Metal and OpenCL. If the mapping of the WebGPU API to native APIs is efficient we can expect similar performance with very little work. More importantly, the <a href="https://tvm.apache.org/2018/10/03/auto-opt-all">AutoTVM</a> infrastructure allows us to specialize the compute shaders for specific models, enabling the generation of the best compute shaders for our specific model of interest.</p>
+
+<h2 id="building-a-wasm-and-webgpu-compiler">Building a WASM and WebGPU Compiler</h2>
+
+<p>In order to build a compiler that can target WASM and WebGPU, we need the following elements:</p>
+
+<ul>
+  <li>A SPIR-V generator for compute shaders.</li>
+  <li>A WASM generator for the host program.</li>
+  <li>A runtime to load and execute the generated program.</li>
+</ul>
+
+<p>Luckily, TVM already has a SPIR-V target for Vulkan, and uses LLVM for host code generation. So we can just repurpose the two to generate the device and host programs.</p>
+
+<p>The main challenge is the runtime. We need a runtime to load the shader code, and to enable  the host code talk to communicate with the shader correctly. TVM has a minimum C++ based runtime. We build a minimum web runtime library and link it with the generated shader and host driving code, producing a single WASM file. However, this WASM module still contains two unknown dependencies:</p>
+
+<ul>
+  <li>The runtime needs to call into system library calls (malloc, stderr).</li>
+  <li>The wasm runtime needs to interact with the WebGPU driver (in javascript where the WebGPU API is the first-class citizen).</li>
+</ul>
+
+<p>WASI is a standard solution to solve the first problem. While there is not yet a mature WASI on the web, we can use emscripten to generate a WASI-like library (see discussion <a href="https://github.com/emscripten-core/emscripten/issues/11075">here</a>) to provide these system libraries.</p>
+
+<p>We solve the second problem by building a WebGPU runtime inside TVM’s JS runtime, and calling back to these functions from the WASM module when invoking GPU code. Using the <a href="https://tvm.apache.org/docs/dev/runtime.html#packedfunc">PackedFunc</a> mechanism in TVM’s runtime system, we can directly expose high-level runtime primitives by passing JavaScript closures to the WASM interface. This approach keeps most of the runtime code in JavaScript, we could bring more JS code into the WASM runtime as WASI and WASM support matures.</p>
+
+<p style="text-align: center"><img src="/images/webgpu/tvm-wasm-stack.png" alt="image" width="65%" /></p>
+
+<h2 id="performance">Performance</h2>
+
+<p style="text-align: center"><img src="/images/webgpu/webgpu-mobilenet-perf.png" alt="image" width="65%" /></p>
+
+<p>We ran a quick experiment comparing the execution of a full computational graph via TVM’s WebGPU backend and native targets that use native GPU runtimes (Metal and OpenCL). On the MobileNet model, we can find that the WebGPU can get close to matching the performance of Metal. Assuming Chrome WebGPU’s runtime targets Metal instead of OpenCL on the MacOS, we can safely assume there is little to no performance loss when targeting the GPU.</p>
+
+<p>This benchmark excludes the CPU to GPU data copy cost and only benchmarks the GPU execution. Currently the data copy from CPU to GPU can still take 25% of the execution time; however, these costs can further be amortized via approaches like double buffering in a continuous execution setting.</p>
+
+<p>Our reported end-to-end running time of mobilenet is by no means optimal, since we simply reused a tuned programs from GTX 1080 Ti, which is very different from the Intel graphics GPU. We expect further performance boost by using <a href="https://tvm.apache.org/2018/10/03/auto-opt-all">AutoTVM</a> on the target platform of interest.</p>
+
+<h2 id="looking-to-the-future">Looking to the Future</h2>
+
+<p>Our results suggest many interesting opportunities for machine learning on the web. Notably, WebGPU is an API that is still evolving and its implications could go beyond web applications. For example one could target native APIs of WebGPU as it matures and becomes standardized through WASI, enabling standalone WASM applications that make use of WebGPU.</p>
+
+<p>The TVM community is also actively working on a <a href="https://github.com/apache/incubator-tvm/tree/master/rust">Rust based runtime</a> that would enable much more robust WASM support and enable easier interaction with projects like <a href="https://github.com/gfx-rs/wgpu-rs">wgpu</a>, and the <a href="https://rustwasm.github.io/docs/book/">Rust WASM</a> ecosystem. As an open source project, we are looking for contributors who can bring in new ideas and help push the project in these exciting directions.</p>
+
+<p>The proposed approach provides effective machine learning support for most WASM’s application scenarios. The close to native performance could unlock better <a href="https://en.wikipedia.org/wiki/Federated_learning">federated learning</a> capabilities on the browser. The same compiled package should also be able to run on native WASM executors to provide sandbox for the applications.</p>
+
+<h2 id="show-me-the-code">Show me the Code</h2>
+
+<ul>
+  <li><a href="https://github.com/tqchen/tvm-webgpu-example">Example project for image classification</a></li>
+  <li><a href="https://github.com/apache/incubator-tvm/tree/master/web">Apache TVM on github</a></li>
+</ul>
+
+<h2 id="acknowledgement">Acknowledgement</h2>
+
+<p>We would like to thank the emscripten project for providing the WASM compilation infrastructures as well as the JS library support on the web. We would also like to thank the WebGPU community for various helpful discussions. Thanks to Fletcher Haynes for valuable feedbacks to the post.</p>
+
+    </div>
+  </div>
+</div>
+</div>
+
+
+    
+
+
+
+
+
+    <div class="container">
+
+      <footer class="small">
+        Apache TVM is an effort undergoing incubation at The Apache Software Foundation (ASF),
+        sponsored by the <i>Apache Incubator</i>. Incubation is required
+        of all newly accepted projects until a further review indicates that the infrastructure,
+        communications, and decision making process have stabilized in a manner consistent with other
+        successful ASF projects. While incubation status is not necessarily a reflection of the completeness
+        or stability of the code, it does indicate that the project has yet to be fully endorsed by the ASF.
+
+        Copyright © 2020 The Apache Software Foundation. Apache TVM, Apache,
+        the Apache feather, and the Apache TVM project logo are either trademarks or registered trademarks of the Apache Software Foundation.
+
+        See also other useful <a href="/asf" class="footer-link">ASF links</a>:
+        <a href="https://www.apache.org/" class="footer-link">Apache Homepage</a>,
+        <a href="https://www.apache.org/licenses/" class="footer-link">License</a>
+        <a href="https://www.apache.org/foundation/sponsorship.html" class="footer-link">Sponsorship</a>,
+        <a href="https://www.apache.org/security/" class="footer-link">Security</a>
+        <a href="https://www.apache.org/foundation/thanks.html" class="footer-link">Thanks</a>,
+        <a href="https://www.apache.org/events/current-event.html" class="footer-link">Current Event</a>
+
+      </footer>
+    </div>
+  </body>
+</html>
+
+

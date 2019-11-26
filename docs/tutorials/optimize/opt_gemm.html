@@ -1,0 +1,873 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>How to optimize GEMM on CPU &mdash; tvm 0.7.dev1 documentation</title>
+  
+
+  
+  
+    <link rel="shortcut icon" href="../../_static/tvm-logo-square.png"/>
+  
+  
+  
+
+  
+  <script type="text/javascript" src="../../_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+        <script src="../../_static/jquery.js"></script>
+        <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/doctools.js"></script>
+        <script src="../../_static/language_data.js"></script>
+        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/gallery.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/css/tvm_theme.css" type="text/css" />
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="How to optimize convolution using TensorCores" href="opt_conv_tensorcore.html" />
+    <link rel="prev" title="How to optimize convolution on GPU" href="opt_conv_cuda.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../index.html">
+          
+
+          
+            
+            <img src="../../_static/tvm-logo-small.png" class="logo" alt="Logo"/>
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.7.dev1
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../install/index.html">Installation</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../index.html">Tutorials</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../relay_quick_start.html">Quick Start Tutorial for Compiling Deep Learning Models</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../cross_compilation_and_rpc.html">Cross Compilation and RPC</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../tensor_expr_get_started.html">Get Started with Tensor Expression</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../index.html#compile-deep-learning-models">Compile Deep Learning Models</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../index.html#tensor-expression-and-schedules">Tensor Expression and Schedules</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="../index.html#optimize-tensor-operators">Optimize Tensor Operators</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="opt_conv_cuda.html">How to optimize convolution on GPU</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">How to optimize GEMM on CPU</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#preparation-and-baseline">Preparation and Baseline</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#blocking">Blocking</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#vectorization">Vectorization</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#loop-permutation">Loop Permutation</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#array-packing">Array Packing</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#write-cache-for-blocks">Write cache for blocks</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#parallel">Parallel</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#summary">Summary</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="opt_conv_tensorcore.html">How to optimize convolution using TensorCores</a></li>
+<li class="toctree-l3"><a class="reference internal" href="opt_matmul_auto_tensorcore.html">How to optimize matmul with Auto TensorCore CodeGen</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../index.html#auto-tuning">Auto tuning</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../index.html#developer-tutorials">Developer Tutorials</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../index.html#topi-tvm-operator-inventory">TOPI: TVM Operator Inventory</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../vta/index.html">VTA: Deep Learning Accelerator Stack</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../deploy/index.html">Deploy and Integration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../contribute/index.html">Contribute to TVM</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../faq.html">Frequently Asked Questions</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../langref/index.html">Language Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api/python/index.html">Python API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api/links.html">Links to API References</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../dev/index.html">Design and Developer Guide</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../frontend/tensorflow.html">TensorFlow Frontend</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../genindex.html">Index</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">tvm</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../index.html">Tutorials</a> &raquo;</li>
+        
+      <li>How to optimize GEMM on CPU</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../../_sources/tutorials/optimize/opt_gemm.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="sphx-glr-download-link-note admonition note">
+<p class="admonition-title">Note</p>
+<p>Click <a class="reference internal" href="#sphx-glr-download-tutorials-optimize-opt-gemm-py"><span class="std std-ref">here</span></a> to download the full example code</p>
+</div>
+<div class="sphx-glr-example-title section" id="how-to-optimize-gemm-on-cpu">
+<span id="opt-gemm"></span><span id="sphx-glr-tutorials-optimize-opt-gemm-py"></span><h1>How to optimize GEMM on CPU<a class="headerlink" href="#how-to-optimize-gemm-on-cpu" title="Permalink to this headline">¶</a></h1>
+<p><strong>Author</strong>: <a class="reference external" href="https://github.com/were">Jian Weng</a>,             <a class="reference external" href="https://github.com/yuruofeifei">Ruofei Yu</a></p>
+<p>(TL;DR) TVM provides abstract interfaces which allows users to depict an algorithm and the
+algorithm’s implementing organization (the so-called schedule) separately. Typically, writing
+algorithm in high-performance schedule breaks the algorithm’s readability and modularity. Also,
+trying various seemingly promising schedules is time-consuming. With the help of TVM, we can
+try these schedules efficiently to enhance the performance.</p>
+<p>In this tutorial, we will demonstrate how to use TVM to optimize square matrix multiplication
+and achieve 200 times faster than baseline by simply adding 18 extra lines of code.</p>
+<dl class="simple">
+<dt>There are two important optimizations on intense computation applications executed on CPU:</dt><dd><ol class="arabic simple">
+<li><p>Increase the cache hit rate of memory access. Both complex numerical computation and hot-spot
+memory access can be accelerated from high cache hit rate. This requires us to transform the
+origin memory access pattern to the pattern fits the cache policy.</p></li>
+<li><p>SIMD (Single instruction multi-data), or we call it vector processing unit. Every time, a
+small batch of data, rather than a single grid, will be processed. This requires us to
+transform the data access pattern in the loop body in uniform pattern so that the LLVM
+backend can lower it to SIMD.</p></li>
+</ol>
+</dd>
+</dl>
+<p>Actually, all the methodologies used in this tutorial is a subset of tricks mentioned in this
+<a class="reference external" href="https://github.com/flame/how-to-optimize-gemm">repo</a>. Some of them have been applied by TVM
+abstraction automatically, but some of them cannot be simply applied due to TVM constraints.</p>
+<p>All the experiment results mentioned below, are executed on 2015’s 15’ MacBook equipped with
+Intel i7-4770HQ CPU. The cache line size should be 64 bytes for all the x86 CPUs.</p>
+<div class="section" id="preparation-and-baseline">
+<h2>Preparation and Baseline<a class="headerlink" href="#preparation-and-baseline" title="Permalink to this headline">¶</a></h2>
+<p>In this tutorial, we will demo how to use TVM to optimize matrix multiplication.
+Before actually demonstrating, we first define these variables.
+Then we write a baseline implementation, the simplest way to write a matrix multiplication in TVM.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span class="kn">import</span> <span class="nn">tvm</span>
+<span class="kn">from</span> <span class="nn">tvm</span> <span class="k">import</span> <span class="n">te</span>
+<span class="kn">import</span> <span class="nn">numpy</span>
+<span class="kn">import</span> <span class="nn">timeit</span>
+
+<span class="c1"># The size of the matrix</span>
+<span class="c1"># (M, K) x (K, N)</span>
+<span class="c1"># You are free to try out different shapes, sometimes TVM optimization outperforms numpy with MKL.</span>
+<span class="n">M</span> <span class="o">=</span> <span class="mi">1024</span>
+<span class="n">K</span> <span class="o">=</span> <span class="mi">1024</span>
+<span class="n">N</span> <span class="o">=</span> <span class="mi">1024</span>
+
+<span class="c1"># The default tensor type in tvm</span>
+<span class="n">dtype</span> <span class="o">=</span> <span class="s2">&quot;float32&quot;</span>
+
+<span class="c1"># using Intel AVX2(Advanced Vector Extensions) ISA for SIMD</span>
+<span class="c1"># To get the best performance, please change the following line</span>
+<span class="c1"># to llvm -mcpu=core-avx2, or specific type of CPU you use</span>
+<span class="n">target</span> <span class="o">=</span> <span class="s1">&#39;llvm&#39;</span>
+<span class="n">ctx</span> <span class="o">=</span> <span class="n">tvm</span><span class="o">.</span><span class="n">context</span><span class="p">(</span><span class="n">target</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+
+<span class="c1"># Random generated tensor for testing</span>
+<span class="n">a</span> <span class="o">=</span> <a href="../../api/python/ndarray.html#tvm.nd.array" title="View documentation for tvm.nd.array"><span class="n">tvm</span><span class="o">.</span><span class="n">nd</span><span class="o">.</span><span class="n">array</span></a><span class="p">(</span><a href="https://numpy.org/doc/stable/reference/random/generated/numpy.random.rand.html#numpy.random.rand" title="View documentation for numpy.random.rand"><span class="n">numpy</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">rand</span></a><span class="p">(</span><span class="n">M</span><span class="p">,</span> <span class="n">K</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">dtype</span><span class="p">),</span> <span class="n">ctx</span><span class="p">)</span>
+<span class="n">b</span> <span class="o">=</span> <a href="../../api/python/ndarray.html#tvm.nd.array" title="View documentation for tvm.nd.array"><span class="n">tvm</span><span class="o">.</span><span class="n">nd</span><span class="o">.</span><span class="n">array</span></a><span class="p">(</span><a href="https://numpy.org/doc/stable/reference/random/generated/numpy.random.rand.html#numpy.random.rand" title="View documentation for numpy.random.rand"><span class="n">numpy</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">rand</span></a><span class="p">(</span><span class="n">K</span><span class="p">,</span> <span class="n">N</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">dtype</span><span class="p">),</span> <span class="n">ctx</span><span class="p">)</span>
+
+<span class="n">np_repeat</span> <span class="o">=</span> <span class="mi">100</span>
+<span class="n">np_runing_time</span> <span class="o">=</span> <span class="n">timeit</span><span class="o">.</span><span class="n">timeit</span><span class="p">(</span><span class="n">setup</span><span class="o">=</span><span class="s1">&#39;import numpy</span><span class="se">\n</span><span class="s1">&#39;</span>
+                                     <span class="s1">&#39;M = &#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">M</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span>
+                                     <span class="s1">&#39;K = &#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">K</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span>
+                                     <span class="s1">&#39;N = &#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">N</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span>
+                                     <span class="s1">&#39;dtype = &quot;float32&quot;</span><span class="se">\n</span><span class="s1">&#39;</span>
+                                     <span class="s1">&#39;a = numpy.random.rand(M, K).astype(dtype)</span><span class="se">\n</span><span class="s1">&#39;</span>
+                                     <span class="s1">&#39;b = numpy.random.rand(K, N).astype(dtype)</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">,</span>
+                               <span class="n">stmt</span><span class="o">=</span><span class="s1">&#39;answer = numpy.dot(a, b)&#39;</span><span class="p">,</span>
+                               <span class="n">number</span><span class="o">=</span><span class="n">np_repeat</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Numpy running time: </span><span class="si">%f</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">np_runing_time</span> <span class="o">/</span> <span class="n">np_repeat</span><span class="p">))</span>
+
+<span class="n">answer</span> <span class="o">=</span> <a href="https://numpy.org/doc/stable/reference/generated/numpy.dot.html#numpy.dot" title="View documentation for numpy.dot"><span class="n">numpy</span><span class="o">.</span><span class="n">dot</span></a><span class="p">(</span><span class="n">a</span><span class="o">.</span><span class="n">asnumpy</span><span class="p">(),</span> <span class="n">b</span><span class="o">.</span><span class="n">asnumpy</span><span class="p">())</span>
+
+<span class="c1"># Algorithm</span>
+<span class="n">k</span> <span class="o">=</span> <a href="../../api/python/te.html#tvm.te.reduce_axis" title="View documentation for tvm.te.reduce_axis"><span class="n">te</span><span class="o">.</span><span class="n">reduce_axis</span></a><span class="p">((</span><span class="mi">0</span><span class="p">,</span> <span class="n">K</span><span class="p">),</span> <span class="s1">&#39;k&#39;</span><span class="p">)</span>
+<span class="n">A</span> <span class="o">=</span> <a href="../../api/python/te.html#tvm.te.placeholder" title="View documentation for tvm.te.placeholder"><span class="n">te</span><span class="o">.</span><span class="n">placeholder</span></a><span class="p">((</span><span class="n">M</span><span class="p">,</span> <span class="n">K</span><span class="p">),</span> <span class="n">name</span><span class="o">=</span><span class="s1">&#39;A&#39;</span><span class="p">)</span>
+<span class="n">B</span> <span class="o">=</span> <a href="../../api/python/te.html#tvm.te.placeholder" title="View documentation for tvm.te.placeholder"><span class="n">te</span><span class="o">.</span><span class="n">placeholder</span></a><span class="p">((</span><span class="n">K</span><span class="p">,</span> <span class="n">N</span><span class="p">),</span> <span class="n">name</span><span class="o">=</span><span class="s1">&#39;B&#39;</span><span class="p">)</span>
+<span class="n">C</span> <span class="o">=</span> <a href="../../api/python/te.html#tvm.te.compute" title="View documentation for tvm.te.compute"><span class="n">te</span><span class="o">.</span><span class="n">compute</span></a><span class="p">(</span>
+           <span class="p">(</span><span class="n">M</span><span class="p">,</span> <span class="n">N</span><span class="p">),</span>
+           <span class="k">lambda</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">:</span> <a href="../../api/python/te.html#tvm.te.sum" title="View documentation for tvm.te.sum"><span class="n">te</span><span class="o">.</span><span class="n">sum</span></a><span class="p">(</span><span class="n">A</span><span class="p">[</span><span class="n">x</span><span class="p">,</span> <span class="n">k</span><span class="p">]</span> <span class="o">*</span> <span class="n">B</span><span class="p">[</span><span class="n">k</span><span class="p">,</span> <span class="n">y</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="n">k</span><span class="p">),</span>
+           <span class="n">name</span><span class="o">=</span><span class="s1">&#39;C&#39;</span><span class="p">)</span>
+
+<span class="c1"># Default schedule</span>
+<span class="n">s</span> <span class="o">=</span> <a href="../../api/python/te.html#tvm.te.create_schedule" title="View documentation for tvm.te.create_schedule"><span class="n">te</span><span class="o">.</span><span class="n">create_schedule</span></a><span class="p">(</span><span class="n">C</span><span class="o">.</span><span class="n">op</span><span class="p">)</span>
+<span class="n">func</span> <span class="o">=</span> <a href="../../api/python/driver.html#tvm.build" title="View documentation for tvm.build"><span class="n">tvm</span><span class="o">.</span><span class="n">build</span></a><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="p">[</span><span class="n">A</span><span class="p">,</span> <span class="n">B</span><span class="p">,</span> <span class="n">C</span><span class="p">],</span> <span class="n">target</span><span class="o">=</span><span class="n">target</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s1">&#39;mmult&#39;</span><span class="p">)</span>
+<span class="k">assert</span> <span class="n">func</span>
+
+<span class="n">c</span> <span class="o">=</span> <a href="../../api/python/ndarray.html#tvm.nd.array" title="View documentation for tvm.nd.array"><span class="n">tvm</span><span class="o">.</span><span class="n">nd</span><span class="o">.</span><span class="n">array</span></a><span class="p">(</span><a href="https://numpy.org/doc/stable/reference/generated/numpy.zeros.html#numpy.zeros" title="View documentation for numpy.zeros"><span class="n">numpy</span><span class="o">.</span><span class="n">zeros</span></a><span class="p">((</span><span class="n">M</span><span class="p">,</span> <span class="n">N</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">),</span> <span class="n">ctx</span><span class="p">)</span>
+<span class="n">func</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">c</span><span class="p">)</span>
+<span class="n">tvm</span><span class="o">.</span><span class="n">testing</span><span class="o">.</span><span class="n">assert_allclose</span><span class="p">(</span><span class="n">c</span><span class="o">.</span><span class="n">asnumpy</span><span class="p">(),</span> <span class="n">answer</span><span class="p">,</span> <span class="n">rtol</span><span class="o">=</span><span class="mi">1</span><span class="n">e</span><span class="o">-</span><span class="mi">5</span><span class="p">)</span>
+
+<span class="n">evaluator</span> <span class="o">=</span> <span class="n">func</span><span class="o">.</span><span class="n">time_evaluator</span><span class="p">(</span><span class="n">func</span><span class="o">.</span><span class="n">entry_name</span><span class="p">,</span> <span class="n">ctx</span><span class="p">,</span> <span class="n">number</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Baseline: </span><span class="si">%f</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">evaluator</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">c</span><span class="p">)</span><span class="o">.</span><span class="n">mean</span><span class="p">)</span>
+</pre></div>
+</div>
+<p class="sphx-glr-script-out">Out:</p>
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre>Numpy running time: 0.007487
+Baseline: 5.854661
+</pre></div>
+</div>
+<p>In TVM, we can always inspect lower level IR to debug or optimize our schedule.
+Here is the generated IR using our baseline schedule.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span class="nb">print</span><span class="p">(</span><a href="../../api/python/driver.html#tvm.lower" title="View documentation for tvm.lower"><span class="n">tvm</span><span class="o">.</span><span class="n">lower</span></a><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="p">[</span><span class="n">A</span><span class="p">,</span> <span class="n">B</span><span class="p">,</span> <span class="n">C</span><span class="p">],</span> <span class="n">simple_mode</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span>
+</pre></div>
+</div>
+<p class="sphx-glr-script-out">Out:</p>
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre>primfn(A_1: handle, B_1: handle, C_1: handle) -&gt; ()
+  attr = {&quot;tir.noalias&quot;: True, &quot;global_symbol&quot;: &quot;main&quot;}
+  buffers = {A: Buffer(A_2: handle, float32, [1024, 1024], []),
+             B: Buffer(B_2: handle, float32, [1024, 1024], []),
+             C: Buffer(C_2: handle, float32, [1024, 1024], [])}
+  buffer_map = {C_1: C, B_1: B, A_1: A} {
+  for (x: int32, 0, 1024) {
+    for (y: int32, 0, 1024) {
+      C_2[((x*1024) + y)] = 0f32
+      for (k: int32, 0, 1024) {
+        C_2[((x*1024) + y)] = ((float32*)C_2[((x*1024) + y)]) + ((float32*)A_2[((x*1024) + k)])*(float32*)B_2[((k*1024) + y)])))
+      }
+    }
+  }
+}
+
+// meta data omitted. you can use show_meta_data=True to include meta data
+</pre></div>
+</div>
+</div>
+<div class="section" id="blocking">
+<h2>Blocking<a class="headerlink" href="#blocking" title="Permalink to this headline">¶</a></h2>
+<p>A important trick to enhance the cache hit rate is blocking — data chunk will be computed
+block by block. The memory access inside the block is a small neighbourhood which is with high
+memory locality. In this tutorial, I picked up 32 as the blocking factor. So the block will
+fill 32 * 32 * sizeof(float) which is 4KB in the cache whose total size is 32KB (L1 data cache)</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span class="n">bn</span> <span class="o">=</span> <span class="mi">32</span>
+<span class="n">s</span> <span class="o">=</span> <a href="../../api/python/te.html#tvm.te.create_schedule" title="View documentation for tvm.te.create_schedule"><span class="n">te</span><span class="o">.</span><span class="n">create_schedule</span></a><span class="p">(</span><span class="n">C</span><span class="o">.</span><span class="n">op</span><span class="p">)</span>
+
+<span class="c1"># Blocking by loop tiling</span>
+<span class="n">xo</span><span class="p">,</span> <span class="n">yo</span><span class="p">,</span> <span class="n">xi</span><span class="p">,</span> <span class="n">yi</span> <span class="o">=</span> <span class="n">s</span><span class="p">[</span><span class="n">C</span><span class="p">]</span><span class="o">.</span><span class="n">tile</span><span class="p">(</span><span class="n">C</span><span class="o">.</span><span class="n">op</span><span class="o">.</span><span class="n">axis</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">C</span><span class="o">.</span><span class="n">op</span><span class="o">.</span><span class="n">axis</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">bn</span><span class="p">,</span> <span class="n">bn</span><span class="p">)</span>
+<span class="n">k</span><span class="p">,</span> <span class="o">=</span> <span class="n">s</span><span class="p">[</span><span class="n">C</span><span class="p">]</span><span class="o">.</span><span class="n">op</span><span class="o">.</span><span class="n">reduce_axis</span>
+<span class="n">ko</span><span class="p">,</span> <span class="n">ki</span> <span class="o">=</span> <span class="n">s</span><span class="p">[</span><span class="n">C</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">factor</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
+
+<span class="c1"># Hoist reduction domain outside the blocking loop</span>
+<span class="n">s</span><span class="p">[</span><span class="n">C</span><span class="p">]</span><span class="o">.</span><span class="n">reorder</span><span class="p">(</span><span class="n">xo</span><span class="p">,</span> <span class="n">yo</span><span class="p">,</span> <span class="n">ko</span><span class="p">,</span> <span class="n">ki</span><span class="p">,</span> <span class="n">xi</span><span class="p">,</span> <span class="n">yi</span><span class="p">)</span>
+
+<span class="n">func</span> <span class="o">=</span> <a href="../../api/python/driver.html#tvm.build" title="View documentation for tvm.build"><span class="n">tvm</span><span class="o">.</span><span class="n">build</span></a><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="p">[</span><span class="n">A</span><span class="p">,</span> <span class="n">B</span><span class="p">,</span> <span class="n">C</span><span class="p">],</span> <span class="n">target</span><span class="o">=</span><span class="n">target</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s1">&#39;mmult&#39;</span><span class="p">)</span>
+<span class="k">assert</span> <span class="n">func</span>
+
+<span class="n">c</span> <span class="o">=</span> <a href="../../api/python/ndarray.html#tvm.nd.array" title="View documentation for tvm.nd.array"><span class="n">tvm</span><span class="o">.</span><span class="n">nd</span><span class="o">.</span><span class="n">array</span></a><span class="p">(</span><a href="https://numpy.org/doc/stable/reference/generated/numpy.zeros.html#numpy.zeros" title="View documentation for numpy.zeros"><span class="n">numpy</span><span class="o">.</span><span class="n">zeros</span></a><span class="p">((</span><span class="n">M</span><span class="p">,</span> <span class="n">N</span><span class="p">),</span> <span class="n">dtype</span> <span class="o">=</span> <span class="n">dtype</span><span class="p">),</span> <span class="n">ctx</span><span class="p">)</span>
+<span class="n">func</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">c</span><span class="p">)</span>
+<span class="n">tvm</span><span class="o">.</span><span class="n">testing</span><span class="o">.</span><span class="n">assert_allclose</span><span class="p">(</span><span class="n">c</span><span class="o">.</span><span class="n">asnumpy</span><span class="p">(),</span> <span class="n">answer</span><span class="p">,</span> <span class="n">rtol</span><span class="o">=</span><span class="mi">1</span><span class="n">e</span><span class="o">-</span><span class="mi">5</span><span class="p">)</span>
+
+<span class="c1"># By simply tiling the loop 32x32, and hoisting ko, ki outside the blocking loops,</span>
+<span class="c1"># we can see big speedup compared with the baseline.</span>
+<span class="n">evaluator</span> <span class="o">=</span> <span class="n">func</span><span class="o">.</span><span class="n">time_evaluator</span><span class="p">(</span><span class="n">func</span><span class="o">.</span><span class="n">entry_name</span><span class="p">,</span> <span class="n">ctx</span><span class="p">,</span> <span class="n">number</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Opt1: </span><span class="si">%f</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">evaluator</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">c</span><span class="p">)</span><span class="o">.</span><span class="n">mean</span><span class="p">)</span>
+</pre></div>
+</div>
+<p class="sphx-glr-script-out">Out:</p>
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre>Opt1: 0.112672
+</pre></div>
+</div>
+<p>Here is the generated IR after blocking.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span class="nb">print</span><span class="p">(</span><a href="../../api/python/driver.html#tvm.lower" title="View documentation for tvm.lower"><span class="n">tvm</span><span class="o">.</span><span class="n">lower</span></a><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="p">[</span><span class="n">A</span><span class="p">,</span> <span class="n">B</span><span class="p">,</span> <span class="n">C</span><span class="p">],</span> <span class="n">simple_mode</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span>
+</pre></div>
+</div>
+<p class="sphx-glr-script-out">Out:</p>
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre>primfn(A_1: handle, B_1: handle, C_1: handle) -&gt; ()
+  attr = {&quot;tir.noalias&quot;: True, &quot;global_symbol&quot;: &quot;main&quot;}
+  buffers = {A: Buffer(A_2: handle, float32, [1024, 1024], []),
+             C: Buffer(C_2: handle, float32, [1024, 1024], []),
+             B: Buffer(B_2: handle, float32, [1024, 1024], [])}
+  buffer_map = {B_1: B, C_1: C, A_1: A} {
+  for (x.outer: int32, 0, 32) {
+    for (y.outer: int32, 0, 32) {
+      for (x.inner.init: int32, 0, 32) {
+        for (y.inner.init: int32, 0, 32) {
+          C_2[((((x.outer*32768) + (x.inner.init*1024)) + (y.outer*32)) + y.inner.init)] = 0f32
+        }
+      }
+      for (k.outer: int32, 0, 256) {
+        for (k.inner: int32, 0, 4) {
+          for (x.inner: int32, 0, 32) {
+            for (y.inner: int32, 0, 32) {
+              C_2[((((x.outer*32768) + (x.inner*1024)) + (y.outer*32)) + y.inner)] = ((float32*)C_2[((((x.outer*32768) + (x.inner*1024)) + (y.outer*32)) + y.inner)]) + ((float32*)A_2[((((x.outer*32768) + (x.inner*1024)) + (k.outer*4)) + k.inner)])*(float32*)B_2[((((k.outer*4096) + (k.inner*1024)) + (y.outer*32)) + y.inner)])))
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+// meta data omitted. you can use show_meta_data=True to include meta data
+</pre></div>
+</div>
+</div>
+<div class="section" id="vectorization">
+<h2>Vectorization<a class="headerlink" href="#vectorization" title="Permalink to this headline">¶</a></h2>
+<p>Another important trick is vectorization. When the memory access pattern is uniform,
+the compiler can detect this pattern and pass the continuous memory to vector processor. In TVM,
+we can use <cite>vectorize</cite> interface to hint the compiler this pattern, so that we can accelerate it vastly.</p>
+<p>In this tutorial, we chose to vectorize the inner loop row data since it is cache friendly.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span class="n">s</span> <span class="o">=</span> <a href="../../api/python/te.html#tvm.te.create_schedule" title="View documentation for tvm.te.create_schedule"><span class="n">te</span><span class="o">.</span><span class="n">create_schedule</span></a><span class="p">(</span><span class="n">C</span><span class="o">.</span><span class="n">op</span><span class="p">)</span>
+<span class="n">xo</span><span class="p">,</span> <span class="n">yo</span><span class="p">,</span> <span class="n">xi</span><span class="p">,</span> <span class="n">yi</span> <span class="o">=</span> <span class="n">s</span><span class="p">[</span><span class="n">C</span><span class="p">]</span><span class="o">.</span><span class="n">tile</span><span class="p">(</span><span class="n">C</span><span class="o">.</span><span class="n">op</span><span class="o">.</span><span class="n">axis</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">C</span><span class="o">.</span><span class="n">op</span><span class="o">.</span><span class="n">axis</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">bn</span><span class="p">,</span> <span class="n">bn</span><span class="p">)</span>
+<span class="n">k</span><span class="p">,</span> <span class="o">=</span> <span class="n">s</span><span class="p">[</span><span class="n">C</span><span class="p">]</span><span class="o">.</span><span class="n">op</span><span class="o">.</span><span class="n">reduce_axis</span>
+<span class="n">ko</span><span class="p">,</span> <span class="n">ki</span> <span class="o">=</span> <span class="n">s</span><span class="p">[</span><span class="n">C</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">factor</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
+
+<span class="n">s</span><span class="p">[</span><span class="n">C</span><span class="p">]</span><span class="o">.</span><span class="n">reorder</span><span class="p">(</span><span class="n">xo</span><span class="p">,</span> <span class="n">yo</span><span class="p">,</span> <span class="n">ko</span><span class="p">,</span> <span class="n">ki</span><span class="p">,</span> <span class="n">xi</span><span class="p">,</span> <span class="n">yi</span><span class="p">)</span>
+
+<span class="c1"># Vectorization</span>
+<span class="n">s</span><span class="p">[</span><span class="n">C</span><span class="p">]</span><span class="o">.</span><span class="n">vectorize</span><span class="p">(</span><span class="n">yi</span><span class="p">)</span>
+
+<span class="n">func</span> <span class="o">=</span> <a href="../../api/python/driver.html#tvm.build" title="View documentation for tvm.build"><span class="n">tvm</span><span class="o">.</span><span class="n">build</span></a><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="p">[</span><span class="n">A</span><span class="p">,</span> <span class="n">B</span><span class="p">,</span> <span class="n">C</span><span class="p">],</span> <span class="n">target</span><span class="o">=</span><span class="n">target</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s1">&#39;mmult&#39;</span><span class="p">)</span>
+<span class="k">assert</span> <span class="n">func</span>
+
+<span class="n">c</span> <span class="o">=</span> <a href="../../api/python/ndarray.html#tvm.nd.array" title="View documentation for tvm.nd.array"><span class="n">tvm</span><span class="o">.</span><span class="n">nd</span><span class="o">.</span><span class="n">array</span></a><span class="p">(</span><a href="https://numpy.org/doc/stable/reference/generated/numpy.zeros.html#numpy.zeros" title="View documentation for numpy.zeros"><span class="n">numpy</span><span class="o">.</span><span class="n">zeros</span></a><span class="p">((</span><span class="n">M</span><span class="p">,</span> <span class="n">N</span><span class="p">),</span> <span class="n">dtype</span> <span class="o">=</span> <span class="n">dtype</span><span class="p">),</span> <span class="n">ctx</span><span class="p">)</span>
+<span class="n">func</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">c</span><span class="p">)</span>
+<span class="n">tvm</span><span class="o">.</span><span class="n">testing</span><span class="o">.</span><span class="n">assert_allclose</span><span class="p">(</span><span class="n">c</span><span class="o">.</span><span class="n">asnumpy</span><span class="p">(),</span> <span class="n">answer</span><span class="p">,</span> <span class="n">rtol</span><span class="o">=</span><span class="mi">1</span><span class="n">e</span><span class="o">-</span><span class="mi">5</span><span class="p">)</span>
+
+<span class="n">evaluator</span> <span class="o">=</span> <span class="n">func</span><span class="o">.</span><span class="n">time_evaluator</span><span class="p">(</span><span class="n">func</span><span class="o">.</span><span class="n">entry_name</span><span class="p">,</span> <span class="n">ctx</span><span class="p">,</span> <span class="n">number</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Opt2: </span><span class="si">%f</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">evaluator</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">c</span><span class="p">)</span><span class="o">.</span><span class="n">mean</span><span class="p">)</span>
+</pre></div>
+</div>
+<p class="sphx-glr-script-out">Out:</p>
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre>Opt2: 0.125738
+</pre></div>
+</div>
+<p>Here is the generated IR after vectorization.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span class="nb">print</span><span class="p">(</span><a href="../../api/python/driver.html#tvm.lower" title="View documentation for tvm.lower"><span class="n">tvm</span><span class="o">.</span><span class="n">lower</span></a><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="p">[</span><span class="n">A</span><span class="p">,</span> <span class="n">B</span><span class="p">,</span> <span class="n">C</span><span class="p">],</span> <span class="n">simple_mode</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span>
+</pre></div>
+</div>
+<p class="sphx-glr-script-out">Out:</p>
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre>primfn(A_1: handle, B_1: handle, C_1: handle) -&gt; ()
+  attr = {&quot;tir.noalias&quot;: True, &quot;global_symbol&quot;: &quot;main&quot;}
+  buffers = {A: Buffer(A_2: handle, float32, [1024, 1024], []),
+             B: Buffer(B_2: handle, float32, [1024, 1024], []),
+             C: Buffer(C_2: handle, float32, [1024, 1024], [])}
+  buffer_map = {C_1: C, B_1: B, A_1: A} {
+  for (x.outer: int32, 0, 32) {
+    for (y.outer: int32, 0, 32) {
+      for (x.inner.init: int32, 0, 32) {
+        C_2[ramp((((x.outer*32768) + (x.inner.init*1024)) + (y.outer*32)), 1, 32)] = broadcast(0f32, 32)
+      }
+      for (k.outer: int32, 0, 256) {
+        for (k.inner: int32, 0, 4) {
+          for (x.inner: int32, 0, 32) {
+            C_2[ramp((((x.outer*32768) + (x.inner*1024)) + (y.outer*32)), 1, 32)] = ((float32x32*)C_2[ramp((((x.outer*32768) + (x.inner*1024)) + (y.outer*32)), 1, 32)]) + (broadcast((float32*)A_2[((((x.outer*32768) + (x.inner*1024)) + (k.outer*4)) + k.inner)]), 32)*(float32x32*)B_2[ramp((((k.outer*4096) + (k.inner*1024)) + (y.outer*32)), 1, 32)])))
+          }
+        }
+      }
+    }
+  }
+}
+
+// meta data omitted. you can use show_meta_data=True to include meta data
+</pre></div>
+</div>
+</div>
+<div class="section" id="loop-permutation">
+<h2>Loop Permutation<a class="headerlink" href="#loop-permutation" title="Permalink to this headline">¶</a></h2>
+<p>If we look at the above IR, we can see the inner loop row data is vectorized and
+B is transformed into PackedB. The traversal of PackedB is sequential now.
+So we will look at the access pattern of A. In current schedule, A is accessed column by column
+which is not cache friendly. If we change the nested loop order of ki and inner axes xi,
+the access pattern for A matrix is more cache friendly.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span class="n">s</span> <span class="o">=</span> <a href="../../api/python/te.html#tvm.te.create_schedule" title="View documentation for tvm.te.create_schedule"><span class="n">te</span><span class="o">.</span><span class="n">create_schedule</span></a><span class="p">(</span><span class="n">C</span><span class="o">.</span><span class="n">op</span><span class="p">)</span>
+<span class="n">xo</span><span class="p">,</span> <span class="n">yo</span><span class="p">,</span> <span class="n">xi</span><span class="p">,</span> <span class="n">yi</span> <span class="o">=</span> <span class="n">s</span><span class="p">[</span><span class="n">C</span><span class="p">]</span><span class="o">.</span><span class="n">tile</span><span class="p">(</span><span class="n">C</span><span class="o">.</span><span class="n">op</span><span class="o">.</span><span class="n">axis</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">C</span><span class="o">.</span><span class="n">op</span><span class="o">.</span><span class="n">axis</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">bn</span><span class="p">,</span> <span class="n">bn</span><span class="p">)</span>
+<span class="n">k</span><span class="p">,</span> <span class="o">=</span> <span class="n">s</span><span class="p">[</span><span class="n">C</span><span class="p">]</span><span class="o">.</span><span class="n">op</span><span class="o">.</span><span class="n">reduce_axis</span>
+<span class="n">ko</span><span class="p">,</span> <span class="n">ki</span> <span class="o">=</span> <span class="n">s</span><span class="p">[</span><span class="n">C</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">factor</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
+
+<span class="c1"># re-ordering</span>
+<span class="n">s</span><span class="p">[</span><span class="n">C</span><span class="p">]</span><span class="o">.</span><span class="n">reorder</span><span class="p">(</span><span class="n">xo</span><span class="p">,</span> <span class="n">yo</span><span class="p">,</span> <span class="n">ko</span><span class="p">,</span> <span class="n">xi</span><span class="p">,</span> <span class="n">ki</span><span class="p">,</span> <span class="n">yi</span><span class="p">)</span>
+<span class="n">s</span><span class="p">[</span><span class="n">C</span><span class="p">]</span><span class="o">.</span><span class="n">vectorize</span><span class="p">(</span><span class="n">yi</span><span class="p">)</span>
+
+<span class="n">func</span> <span class="o">=</span> <a href="../../api/python/driver.html#tvm.build" title="View documentation for tvm.build"><span class="n">tvm</span><span class="o">.</span><span class="n">build</span></a><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="p">[</span><span class="n">A</span><span class="p">,</span> <span class="n">B</span><span class="p">,</span> <span class="n">C</span><span class="p">],</span> <span class="n">target</span><span class="o">=</span><span class="n">target</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s1">&#39;mmult&#39;</span><span class="p">)</span>
+<span class="k">assert</span> <span class="n">func</span>
+
+<span class="n">c</span> <span class="o">=</span> <a href="../../api/python/ndarray.html#tvm.nd.array" title="View documentation for tvm.nd.array"><span class="n">tvm</span><span class="o">.</span><span class="n">nd</span><span class="o">.</span><span class="n">array</span></a><span class="p">(</span><a href="https://numpy.org/doc/stable/reference/generated/numpy.zeros.html#numpy.zeros" title="View documentation for numpy.zeros"><span class="n">numpy</span><span class="o">.</span><span class="n">zeros</span></a><span class="p">((</span><span class="n">M</span><span class="p">,</span> <span class="n">N</span><span class="p">),</span> <span class="n">dtype</span> <span class="o">=</span> <span class="n">dtype</span><span class="p">),</span> <span class="n">ctx</span><span class="p">)</span>
+<span class="n">func</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">c</span><span class="p">)</span>
+<span class="n">tvm</span><span class="o">.</span><span class="n">testing</span><span class="o">.</span><span class="n">assert_allclose</span><span class="p">(</span><span class="n">c</span><span class="o">.</span><span class="n">asnumpy</span><span class="p">(),</span> <span class="n">answer</span><span class="p">,</span> <span class="n">rtol</span><span class="o">=</span><span class="mi">1</span><span class="n">e</span><span class="o">-</span><span class="mi">5</span><span class="p">)</span>
+
+<span class="n">evaluator</span> <span class="o">=</span> <span class="n">func</span><span class="o">.</span><span class="n">time_evaluator</span><span class="p">(</span><span class="n">func</span><span class="o">.</span><span class="n">entry_name</span><span class="p">,</span> <span class="n">ctx</span><span class="p">,</span> <span class="n">number</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Opt3: </span><span class="si">%f</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">evaluator</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">c</span><span class="p">)</span><span class="o">.</span><span class="n">mean</span><span class="p">)</span>
+</pre></div>
+</div>
+<p class="sphx-glr-script-out">Out:</p>
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre>Opt3: 0.059627
+</pre></div>
+</div>
+<p>Here is the generated IR after loop permutation.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span class="nb">print</span><span class="p">(</span><a href="../../api/python/driver.html#tvm.lower" title="View documentation for tvm.lower"><span class="n">tvm</span><span class="o">.</span><span class="n">lower</span></a><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="p">[</span><span class="n">A</span><span class="p">,</span> <span class="n">B</span><span class="p">,</span> <span class="n">C</span><span class="p">],</span> <span class="n">simple_mode</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span>
+</pre></div>
+</div>
+<p class="sphx-glr-script-out">Out:</p>
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre>primfn(A_1: handle, B_1: handle, C_1: handle) -&gt; ()
+  attr = {&quot;tir.noalias&quot;: True, &quot;global_symbol&quot;: &quot;main&quot;}
+  buffers = {B: Buffer(B_2: handle, float32, [1024, 1024], []),
+             A: Buffer(A_2: handle, float32, [1024, 1024], []),
+             C: Buffer(C_2: handle, float32, [1024, 1024], [])}
+  buffer_map = {C_1: C, B_1: B, A_1: A} {
+  for (x.outer: int32, 0, 32) {
+    for (y.outer: int32, 0, 32) {
+      for (x.inner.init: int32, 0, 32) {
+        C_2[ramp((((x.outer*32768) + (x.inner.init*1024)) + (y.outer*32)), 1, 32)] = broadcast(0f32, 32)
+      }
+      for (k.outer: int32, 0, 256) {
+        for (x.inner: int32, 0, 32) {
+          for (k.inner: int32, 0, 4) {
+            C_2[ramp((((x.outer*32768) + (x.inner*1024)) + (y.outer*32)), 1, 32)] = ((float32x32*)C_2[ramp((((x.outer*32768) + (x.inner*1024)) + (y.outer*32)), 1, 32)]) + (broadcast((float32*)A_2[((((x.outer*32768) + (x.inner*1024)) + (k.outer*4)) + k.inner)]), 32)*(float32x32*)B_2[ramp((((k.outer*4096) + (k.inner*1024)) + (y.outer*32)), 1, 32)])))
+          }
+        }
+      }
+    }
+  }
+}
+
+// meta data omitted. you can use show_meta_data=True to include meta data
+</pre></div>
+</div>
+</div>
+<div class="section" id="array-packing">
+<h2>Array Packing<a class="headerlink" href="#array-packing" title="Permalink to this headline">¶</a></h2>
+<p>Another important trick is array packing. This trick is to reorder the storage dimension of the
+array to convert the continuous access pattern on certain dimension to a sequential pattern after
+flattening.</p>
+<img alt="https://github.com/dmlc/web-data/raw/master/tvm/tutorial/array-packing.png" class="align-center" src="https://github.com/dmlc/web-data/raw/master/tvm/tutorial/array-packing.png" />
+<p>Just as it is shown in the figure above, after blocking the computations, we can observe the array
+access pattern of B (after flattening), which is regular but discontinuous. We expect that after
+some transformation we can get continuous access pattern. We can reorder a [16][16] array to
+a [16/4][16][4] array, so that the access pattern of B will be sequential when grabing
+the corresponding value from the packed array.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span class="c1"># We have to re-write the algorithm slightly.</span>
+<span class="n">packedB</span> <span class="o">=</span> <a href="../../api/python/te.html#tvm.te.compute" title="View documentation for tvm.te.compute"><span class="n">te</span><span class="o">.</span><span class="n">compute</span></a><span class="p">((</span><span class="n">N</span> <span class="o">/</span> <span class="n">bn</span><span class="p">,</span> <span class="n">K</span><span class="p">,</span> <span class="n">bn</span><span class="p">),</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span><span class="p">:</span> <span class="n">B</span><span class="p">[</span><span class="n">y</span><span class="p">,</span> <span class="n">x</span> <span class="o">*</span> <span class="n">bn</span> <span class="o">+</span> <span class="n">z</span><span class="p">],</span> <span class="n">name</span><span class="o">=</span><span class="s1">&#39;packedB&#39;</span><span class="p">)</span>
+<span class="n">C</span> <span class="o">=</span> <a href="../../api/python/te.html#tvm.te.compute" title="View documentation for tvm.te.compute"><span class="n">te</span><span class="o">.</span><span class="n">compute</span></a><span class="p">((</span><span class="n">M</span><span class="p">,</span> <span class="n">N</span><span class="p">),</span>
+                <span class="k">lambda</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">:</span> <a href="../../api/python/te.html#tvm.te.sum" title="View documentation for tvm.te.sum"><span class="n">te</span><span class="o">.</span><span class="n">sum</span></a><span class="p">(</span><span class="n">A</span><span class="p">[</span><span class="n">x</span><span class="p">,</span> <span class="n">k</span><span class="p">]</span> <span class="o">*</span> <span class="n">packedB</span><span class="p">[</span><span class="n">y</span> <span class="o">//</span> <span class="n">bn</span><span class="p">,</span> <span class="n">k</span><span class="p">,</span> <a href="../../api/python/tir.html#tvm.tir.indexmod" title="View documentation for tvm.tir.indexmod"><span class="n">tvm</span><span class="o">.</span><span class="n">tir</span><span class="o">.</span><span class="n">indexmod</span></a><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">bn</span><span class="p">)],</span> <span class="n">axis</span><span class="o">=</span><span class="n">k</span><span class="p">),</span>
+                <span class="n">name</span> <span class="o">=</span> <span class="s1">&#39;C&#39;</span><span class="p">)</span>
+
+<span class="n">s</span> <span class="o">=</span> <a href="../../api/python/te.html#tvm.te.create_schedule" title="View documentation for tvm.te.create_schedule"><span class="n">te</span><span class="o">.</span><span class="n">create_schedule</span></a><span class="p">(</span><span class="n">C</span><span class="o">.</span><span class="n">op</span><span class="p">)</span>
+
+<span class="n">xo</span><span class="p">,</span> <span class="n">yo</span><span class="p">,</span> <span class="n">xi</span><span class="p">,</span> <span class="n">yi</span> <span class="o">=</span> <span class="n">s</span><span class="p">[</span><span class="n">C</span><span class="p">]</span><span class="o">.</span><span class="n">tile</span><span class="p">(</span><span class="n">C</span><span class="o">.</span><span class="n">op</span><span class="o">.</span><span class="n">axis</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">C</span><span class="o">.</span><span class="n">op</span><span class="o">.</span><span class="n">axis</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">bn</span><span class="p">,</span> <span class="n">bn</span><span class="p">)</span>
+<span class="n">k</span><span class="p">,</span> <span class="o">=</span> <span class="n">s</span><span class="p">[</span><span class="n">C</span><span class="p">]</span><span class="o">.</span><span class="n">op</span><span class="o">.</span><span class="n">reduce_axis</span>
+<span class="n">ko</span><span class="p">,</span> <span class="n">ki</span> <span class="o">=</span> <span class="n">s</span><span class="p">[</span><span class="n">C</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">factor</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
+
+<span class="n">s</span><span class="p">[</span><span class="n">C</span><span class="p">]</span><span class="o">.</span><span class="n">reorder</span><span class="p">(</span><span class="n">xo</span><span class="p">,</span> <span class="n">yo</span><span class="p">,</span> <span class="n">ko</span><span class="p">,</span> <span class="n">xi</span><span class="p">,</span> <span class="n">ki</span><span class="p">,</span> <span class="n">yi</span><span class="p">)</span>
+<span class="n">s</span><span class="p">[</span><span class="n">C</span><span class="p">]</span><span class="o">.</span><span class="n">vectorize</span><span class="p">(</span><span class="n">yi</span><span class="p">)</span>
+
+<span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span> <span class="o">=</span> <span class="n">s</span><span class="p">[</span><span class="n">packedB</span><span class="p">]</span><span class="o">.</span><span class="n">op</span><span class="o">.</span><span class="n">axis</span>
+<span class="n">s</span><span class="p">[</span><span class="n">packedB</span><span class="p">]</span><span class="o">.</span><span class="n">vectorize</span><span class="p">(</span><span class="n">z</span><span class="p">)</span>
+<span class="n">s</span><span class="p">[</span><span class="n">packedB</span><span class="p">]</span><span class="o">.</span><span class="n">parallel</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+
+<span class="n">func</span> <span class="o">=</span> <a href="../../api/python/driver.html#tvm.build" title="View documentation for tvm.build"><span class="n">tvm</span><span class="o">.</span><span class="n">build</span></a><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="p">[</span><span class="n">A</span><span class="p">,</span> <span class="n">B</span><span class="p">,</span> <span class="n">C</span><span class="p">],</span> <span class="n">target</span><span class="o">=</span><span class="n">target</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s1">&#39;mmult&#39;</span><span class="p">)</span>
+<span class="k">assert</span> <span class="n">func</span>
+
+<span class="n">c</span> <span class="o">=</span> <a href="../../api/python/ndarray.html#tvm.nd.array" title="View documentation for tvm.nd.array"><span class="n">tvm</span><span class="o">.</span><span class="n">nd</span><span class="o">.</span><span class="n">array</span></a><span class="p">(</span><a href="https://numpy.org/doc/stable/reference/generated/numpy.zeros.html#numpy.zeros" title="View documentation for numpy.zeros"><span class="n">numpy</span><span class="o">.</span><span class="n">zeros</span></a><span class="p">((</span><span class="n">M</span><span class="p">,</span> <span class="n">N</span><span class="p">),</span> <span class="n">dtype</span> <span class="o">=</span> <span class="n">dtype</span><span class="p">),</span> <span class="n">ctx</span><span class="p">)</span>
+<span class="n">func</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">c</span><span class="p">)</span>
+<span class="n">tvm</span><span class="o">.</span><span class="n">testing</span><span class="o">.</span><span class="n">assert_allclose</span><span class="p">(</span><span class="n">c</span><span class="o">.</span><span class="n">asnumpy</span><span class="p">(),</span> <span class="n">answer</span><span class="p">,</span> <span class="n">rtol</span><span class="o">=</span><span class="mi">1</span><span class="n">e</span><span class="o">-</span><span class="mi">5</span><span class="p">)</span>
+
+<span class="n">evaluator</span> <span class="o">=</span> <span class="n">func</span><span class="o">.</span><span class="n">time_evaluator</span><span class="p">(</span><span class="n">func</span><span class="o">.</span><span class="n">entry_name</span><span class="p">,</span> <span class="n">ctx</span><span class="p">,</span> <span class="n">number</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Opt4: </span><span class="si">%f</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">evaluator</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">c</span><span class="p">)</span><span class="o">.</span><span class="n">mean</span><span class="p">)</span>
+</pre></div>
+</div>
+<p class="sphx-glr-script-out">Out:</p>
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre>Opt4: 0.060532
+</pre></div>
+</div>
+<p>Here is the generated IR after array packing.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span class="nb">print</span><span class="p">(</span><a href="../../api/python/driver.html#tvm.lower" title="View documentation for tvm.lower"><span class="n">tvm</span><span class="o">.</span><span class="n">lower</span></a><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="p">[</span><span class="n">A</span><span class="p">,</span> <span class="n">B</span><span class="p">,</span> <span class="n">C</span><span class="p">],</span> <span class="n">simple_mode</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span>
+</pre></div>
+</div>
+<p class="sphx-glr-script-out">Out:</p>
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre>primfn(A_1: handle, B_1: handle, C_1: handle) -&gt; ()
+  attr = {&quot;tir.noalias&quot;: True, &quot;global_symbol&quot;: &quot;main&quot;}
+  buffers = {A: Buffer(A_2: handle, float32, [1024, 1024], []),
+             B: Buffer(B_2: handle, float32, [1024, 1024], []),
+             C: Buffer(C_2: handle, float32, [1024, 1024], [])}
+  buffer_map = {C_1: C, B_1: B, A_1: A} {
+  attr [packedB: handle] &quot;storage_scope&quot; = &quot;global&quot;;
+  allocate(packedB, float32x32, [32768]) {
+    for (x: int32, 0, 32) &quot;parallel&quot; {
+      for (y: int32, 0, 1024) {
+        packedB[ramp(((x*32768) + (y*32)), 1, 32)] = (float32x32*)B_2[ramp(((y*1024) + (x*32)), 1, 32)])
+      }
+    }
+    for (x.outer: int32, 0, 32) {
+      for (y.outer: int32, 0, 32) {
+        for (x.inner.init: int32, 0, 32) {
+          C_2[ramp((((x.outer*32768) + (x.inner.init*1024)) + (y.outer*32)), 1, 32)] = broadcast(0f32, 32)
+        }
+        for (k.outer: int32, 0, 256) {
+          for (x.inner: int32, 0, 32) {
+            for (k.inner: int32, 0, 4) {
+              C_2[ramp((((x.outer*32768) + (x.inner*1024)) + (y.outer*32)), 1, 32)] = ((float32x32*)C_2[ramp((((x.outer*32768) + (x.inner*1024)) + (y.outer*32)), 1, 32)]) + (broadcast((float32*)A_2[((((x.outer*32768) + (x.inner*1024)) + (k.outer*4)) + k.inner)]), 32)*(float32x32*)packedB[ramp((((y.outer*32768) + (k.outer*128)) + (k.inner*32)), 1, 32)])))
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+// meta data omitted. you can use show_meta_data=True to include meta data
+</pre></div>
+</div>
+</div>
+<div class="section" id="write-cache-for-blocks">
+<h2>Write cache for blocks<a class="headerlink" href="#write-cache-for-blocks" title="Permalink to this headline">¶</a></h2>
+<p>After blocking, the program will write result to C block by block, the access pattern
+is not sequential. So we can use a sequential cache array to hold the block results and
+write to C when all the block results are ready.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span class="n">s</span> <span class="o">=</span> <a href="../../api/python/te.html#tvm.te.create_schedule" title="View documentation for tvm.te.create_schedule"><span class="n">te</span><span class="o">.</span><span class="n">create_schedule</span></a><span class="p">(</span><span class="n">C</span><span class="o">.</span><span class="n">op</span><span class="p">)</span>
+
+<span class="c1"># Allocate write cache</span>
+<span class="n">CC</span> <span class="o">=</span> <span class="n">s</span><span class="o">.</span><span class="n">cache_write</span><span class="p">(</span><span class="n">C</span><span class="p">,</span> <span class="s1">&#39;global&#39;</span><span class="p">)</span>
+
+<span class="n">xo</span><span class="p">,</span> <span class="n">yo</span><span class="p">,</span> <span class="n">xi</span><span class="p">,</span> <span class="n">yi</span> <span class="o">=</span> <span class="n">s</span><span class="p">[</span><span class="n">C</span><span class="p">]</span><span class="o">.</span><span class="n">tile</span><span class="p">(</span><span class="n">C</span><span class="o">.</span><span class="n">op</span><span class="o">.</span><span class="n">axis</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">C</span><span class="o">.</span><span class="n">op</span><span class="o">.</span><span class="n">axis</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">bn</span><span class="p">,</span> <span class="n">bn</span><span class="p">)</span>
+
+<span class="c1"># Write cache is computed at yo</span>
+<span class="n">s</span><span class="p">[</span><span class="n">CC</span><span class="p">]</span><span class="o">.</span><span class="n">compute_at</span><span class="p">(</span><span class="n">s</span><span class="p">[</span><span class="n">C</span><span class="p">],</span> <span class="n">yo</span><span class="p">)</span>
+
+<span class="c1"># New inner axes</span>
+<span class="n">xc</span><span class="p">,</span> <span class="n">yc</span> <span class="o">=</span> <span class="n">s</span><span class="p">[</span><span class="n">CC</span><span class="p">]</span><span class="o">.</span><span class="n">op</span><span class="o">.</span><span class="n">axis</span>
+
+<span class="n">k</span><span class="p">,</span> <span class="o">=</span> <span class="n">s</span><span class="p">[</span><span class="n">CC</span><span class="p">]</span><span class="o">.</span><span class="n">op</span><span class="o">.</span><span class="n">reduce_axis</span>
+<span class="n">ko</span><span class="p">,</span> <span class="n">ki</span> <span class="o">=</span> <span class="n">s</span><span class="p">[</span><span class="n">CC</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">factor</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
+<span class="n">s</span><span class="p">[</span><span class="n">CC</span><span class="p">]</span><span class="o">.</span><span class="n">reorder</span><span class="p">(</span><span class="n">ko</span><span class="p">,</span> <span class="n">xc</span><span class="p">,</span> <span class="n">ki</span><span class="p">,</span> <span class="n">yc</span><span class="p">)</span>
+<span class="n">s</span><span class="p">[</span><span class="n">CC</span><span class="p">]</span><span class="o">.</span><span class="n">unroll</span><span class="p">(</span><span class="n">ki</span><span class="p">)</span>
+<span class="n">s</span><span class="p">[</span><span class="n">CC</span><span class="p">]</span><span class="o">.</span><span class="n">vectorize</span><span class="p">(</span><span class="n">yc</span><span class="p">)</span>
+
+<span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span> <span class="o">=</span> <span class="n">s</span><span class="p">[</span><span class="n">packedB</span><span class="p">]</span><span class="o">.</span><span class="n">op</span><span class="o">.</span><span class="n">axis</span>
+<span class="n">s</span><span class="p">[</span><span class="n">packedB</span><span class="p">]</span><span class="o">.</span><span class="n">vectorize</span><span class="p">(</span><span class="n">z</span><span class="p">)</span>
+<span class="n">s</span><span class="p">[</span><span class="n">packedB</span><span class="p">]</span><span class="o">.</span><span class="n">parallel</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+
+<span class="n">func</span> <span class="o">=</span> <a href="../../api/python/driver.html#tvm.build" title="View documentation for tvm.build"><span class="n">tvm</span><span class="o">.</span><span class="n">build</span></a><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="p">[</span><span class="n">A</span><span class="p">,</span> <span class="n">B</span><span class="p">,</span> <span class="n">C</span><span class="p">],</span> <span class="n">target</span><span class="o">=</span><span class="n">target</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s1">&#39;mmult&#39;</span><span class="p">)</span>
+<span class="k">assert</span> <span class="n">func</span>
+
+<span class="n">c</span> <span class="o">=</span> <a href="../../api/python/ndarray.html#tvm.nd.array" title="View documentation for tvm.nd.array"><span class="n">tvm</span><span class="o">.</span><span class="n">nd</span><span class="o">.</span><span class="n">array</span></a><span class="p">(</span><a href="https://numpy.org/doc/stable/reference/generated/numpy.zeros.html#numpy.zeros" title="View documentation for numpy.zeros"><span class="n">numpy</span><span class="o">.</span><span class="n">zeros</span></a><span class="p">((</span><span class="n">M</span><span class="p">,</span> <span class="n">N</span><span class="p">),</span> <span class="n">dtype</span> <span class="o">=</span> <span class="n">dtype</span><span class="p">),</span> <span class="n">ctx</span><span class="p">)</span>
+<span class="n">func</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">c</span><span class="p">)</span>
+<span class="n">tvm</span><span class="o">.</span><span class="n">testing</span><span class="o">.</span><span class="n">assert_allclose</span><span class="p">(</span><span class="n">c</span><span class="o">.</span><span class="n">asnumpy</span><span class="p">(),</span> <span class="n">answer</span><span class="p">,</span> <span class="n">rtol</span><span class="o">=</span><span class="mi">1</span><span class="n">e</span><span class="o">-</span><span class="mi">5</span><span class="p">)</span>
+
+<span class="n">evaluator</span> <span class="o">=</span> <span class="n">func</span><span class="o">.</span><span class="n">time_evaluator</span><span class="p">(</span><span class="n">func</span><span class="o">.</span><span class="n">entry_name</span><span class="p">,</span> <span class="n">ctx</span><span class="p">,</span> <span class="n">number</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Opt5: </span><span class="si">%f</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">evaluator</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">c</span><span class="p">)</span><span class="o">.</span><span class="n">mean</span><span class="p">)</span>
+</pre></div>
+</div>
+<p class="sphx-glr-script-out">Out:</p>
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre>Opt5: 0.061617
+</pre></div>
+</div>
+<p>Here is the generated IR after blocking.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span class="nb">print</span><span class="p">(</span><a href="../../api/python/driver.html#tvm.lower" title="View documentation for tvm.lower"><span class="n">tvm</span><span class="o">.</span><span class="n">lower</span></a><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="p">[</span><span class="n">A</span><span class="p">,</span> <span class="n">B</span><span class="p">,</span> <span class="n">C</span><span class="p">],</span> <span class="n">simple_mode</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span>
+</pre></div>
+</div>
+<p class="sphx-glr-script-out">Out:</p>
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre>primfn(A_1: handle, B_1: handle, C_1: handle) -&gt; ()
+  attr = {&quot;tir.noalias&quot;: True, &quot;global_symbol&quot;: &quot;main&quot;}
+  buffers = {A: Buffer(A_2: handle, float32, [1024, 1024], []),
+             B: Buffer(B_2: handle, float32, [1024, 1024], []),
+             C: Buffer(C_2: handle, float32, [1024, 1024], [])}
+  buffer_map = {C_1: C, B_1: B, A_1: A} {
+  attr [packedB: handle] &quot;storage_scope&quot; = &quot;global&quot;;
+  allocate(packedB, float32x32, [32768]);
+  attr [C.global: handle] &quot;storage_scope&quot; = &quot;global&quot;;
+  allocate(C.global, float32, [1024]) {
+    for (x: int32, 0, 32) &quot;parallel&quot; {
+      for (y: int32, 0, 1024) {
+        packedB[ramp(((x*32768) + (y*32)), 1, 32)] = (float32x32*)B_2[ramp(((y*1024) + (x*32)), 1, 32)])
+      }
+    }
+    for (x.outer: int32, 0, 32) {
+      for (y.outer: int32, 0, 32) {
+        for (x.c.init: int32, 0, 32) {
+          C.global[ramp((x.c.init*32), 1, 32)] = broadcast(0f32, 32)
+        }
+        for (k.outer: int32, 0, 256) {
+          for (x.c: int32, 0, 32) {
+            C.global[ramp((x.c*32), 1, 32)] = ((float32x32*)C.global[ramp((x.c*32), 1, 32)]) + (broadcast((float32*)A_2[(((x.outer*32768) + (x.c*1024)) + (k.outer*4))]), 32)*(float32x32*)packedB[ramp(((y.outer*32768) + (k.outer*128)), 1, 32)])))
+            C.global[ramp((x.c*32), 1, 32)] = ((float32x32*)C.global[ramp((x.c*32), 1, 32)]) + (broadcast((float32*)A_2[((((x.outer*32768) + (x.c*1024)) + (k.outer*4)) + 1)]), 32)*(float32x32*)packedB[ramp((((y.outer*32768) + (k.outer*128)) + 32), 1, 32)])))
+            C.global[ramp((x.c*32), 1, 32)] = ((float32x32*)C.global[ramp((x.c*32), 1, 32)]) + (broadcast((float32*)A_2[((((x.outer*32768) + (x.c*1024)) + (k.outer*4)) + 2)]), 32)*(float32x32*)packedB[ramp((((y.outer*32768) + (k.outer*128)) + 64), 1, 32)])))
+            C.global[ramp((x.c*32), 1, 32)] = ((float32x32*)C.global[ramp((x.c*32), 1, 32)]) + (broadcast((float32*)A_2[((((x.outer*32768) + (x.c*1024)) + (k.outer*4)) + 3)]), 32)*(float32x32*)packedB[ramp((((y.outer*32768) + (k.outer*128)) + 96), 1, 32)])))
+          }
+        }
+        for (x.inner: int32, 0, 32) {
+          for (y.inner: int32, 0, 32) {
+            C_2[((((x.outer*32768) + (x.inner*1024)) + (y.outer*32)) + y.inner)] = (float32*)C.global[((x.inner*32) + y.inner)])
+          }
+        }
+      }
+    }
+  }
+}
+
+// meta data omitted. you can use show_meta_data=True to include meta data
+</pre></div>
+</div>
+</div>
+<div class="section" id="parallel">
+<h2>Parallel<a class="headerlink" href="#parallel" title="Permalink to this headline">¶</a></h2>
+<p>Futhermore, we can also utilize multi-core processors to do the thread-level parallelization.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span class="n">s</span> <span class="o">=</span> <a href="../../api/python/te.html#tvm.te.create_schedule" title="View documentation for tvm.te.create_schedule"><span class="n">te</span><span class="o">.</span><span class="n">create_schedule</span></a><span class="p">(</span><span class="n">C</span><span class="o">.</span><span class="n">op</span><span class="p">)</span>
+
+<span class="n">CC</span> <span class="o">=</span> <span class="n">s</span><span class="o">.</span><span class="n">cache_write</span><span class="p">(</span><span class="n">C</span><span class="p">,</span> <span class="s1">&#39;global&#39;</span><span class="p">)</span>
+
+<span class="n">xo</span><span class="p">,</span> <span class="n">yo</span><span class="p">,</span> <span class="n">xi</span><span class="p">,</span> <span class="n">yi</span> <span class="o">=</span> <span class="n">s</span><span class="p">[</span><span class="n">C</span><span class="p">]</span><span class="o">.</span><span class="n">tile</span><span class="p">(</span><span class="n">C</span><span class="o">.</span><span class="n">op</span><span class="o">.</span><span class="n">axis</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">C</span><span class="o">.</span><span class="n">op</span><span class="o">.</span><span class="n">axis</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">bn</span><span class="p">,</span> <span class="n">bn</span><span class="p">)</span>
+
+<span class="n">s</span><span class="p">[</span><span class="n">CC</span><span class="p">]</span><span class="o">.</span><span class="n">compute_at</span><span class="p">(</span><span class="n">s</span><span class="p">[</span><span class="n">C</span><span class="p">],</span> <span class="n">yo</span><span class="p">)</span>
+
+<span class="n">xc</span><span class="p">,</span> <span class="n">yc</span> <span class="o">=</span> <span class="n">s</span><span class="p">[</span><span class="n">CC</span><span class="p">]</span><span class="o">.</span><span class="n">op</span><span class="o">.</span><span class="n">axis</span>
+
+<span class="n">k</span><span class="p">,</span> <span class="o">=</span> <span class="n">s</span><span class="p">[</span><span class="n">CC</span><span class="p">]</span><span class="o">.</span><span class="n">op</span><span class="o">.</span><span class="n">reduce_axis</span>
+<span class="n">ko</span><span class="p">,</span> <span class="n">ki</span> <span class="o">=</span> <span class="n">s</span><span class="p">[</span><span class="n">CC</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">k</span><span class="p">,</span> <span class="n">factor</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
+<span class="n">s</span><span class="p">[</span><span class="n">CC</span><span class="p">]</span><span class="o">.</span><span class="n">reorder</span><span class="p">(</span><span class="n">ko</span><span class="p">,</span> <span class="n">xc</span><span class="p">,</span> <span class="n">ki</span><span class="p">,</span> <span class="n">yc</span><span class="p">)</span>
+<span class="n">s</span><span class="p">[</span><span class="n">CC</span><span class="p">]</span><span class="o">.</span><span class="n">unroll</span><span class="p">(</span><span class="n">ki</span><span class="p">)</span>
+<span class="n">s</span><span class="p">[</span><span class="n">CC</span><span class="p">]</span><span class="o">.</span><span class="n">vectorize</span><span class="p">(</span><span class="n">yc</span><span class="p">)</span>
+
+<span class="c1"># parallel</span>
+<span class="n">s</span><span class="p">[</span><span class="n">C</span><span class="p">]</span><span class="o">.</span><span class="n">parallel</span><span class="p">(</span><span class="n">xo</span><span class="p">)</span>
+
+<span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span> <span class="o">=</span> <span class="n">s</span><span class="p">[</span><span class="n">packedB</span><span class="p">]</span><span class="o">.</span><span class="n">op</span><span class="o">.</span><span class="n">axis</span>
+<span class="n">s</span><span class="p">[</span><span class="n">packedB</span><span class="p">]</span><span class="o">.</span><span class="n">vectorize</span><span class="p">(</span><span class="n">z</span><span class="p">)</span>
+<span class="n">s</span><span class="p">[</span><span class="n">packedB</span><span class="p">]</span><span class="o">.</span><span class="n">parallel</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+
+<span class="n">func</span> <span class="o">=</span> <a href="../../api/python/driver.html#tvm.build" title="View documentation for tvm.build"><span class="n">tvm</span><span class="o">.</span><span class="n">build</span></a><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="p">[</span><span class="n">A</span><span class="p">,</span> <span class="n">B</span><span class="p">,</span> <span class="n">C</span><span class="p">],</span> <span class="n">target</span><span class="o">=</span><span class="n">target</span><span class="p">,</span> <span class="n">name</span> <span class="o">=</span> <span class="s1">&#39;mmult&#39;</span><span class="p">)</span>
+<span class="k">assert</span> <span class="n">func</span>
+
+<span class="n">c</span> <span class="o">=</span> <a href="../../api/python/ndarray.html#tvm.nd.array" title="View documentation for tvm.nd.array"><span class="n">tvm</span><span class="o">.</span><span class="n">nd</span><span class="o">.</span><span class="n">array</span></a><span class="p">(</span><a href="https://numpy.org/doc/stable/reference/generated/numpy.zeros.html#numpy.zeros" title="View documentation for numpy.zeros"><span class="n">numpy</span><span class="o">.</span><span class="n">zeros</span></a><span class="p">((</span><span class="n">M</span><span class="p">,</span> <span class="n">N</span><span class="p">),</span> <span class="n">dtype</span> <span class="o">=</span> <span class="n">dtype</span><span class="p">),</span> <span class="n">ctx</span><span class="p">)</span>
+<span class="n">func</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">c</span><span class="p">)</span>
+<span class="n">tvm</span><span class="o">.</span><span class="n">testing</span><span class="o">.</span><span class="n">assert_allclose</span><span class="p">(</span><span class="n">c</span><span class="o">.</span><span class="n">asnumpy</span><span class="p">(),</span> <span class="n">answer</span><span class="p">,</span> <span class="n">rtol</span><span class="o">=</span><span class="mi">1</span><span class="n">e</span><span class="o">-</span><span class="mi">5</span><span class="p">)</span>
+
+<span class="n">evaluator</span> <span class="o">=</span> <span class="n">func</span><span class="o">.</span><span class="n">time_evaluator</span><span class="p">(</span><span class="n">func</span><span class="o">.</span><span class="n">entry_name</span><span class="p">,</span> <span class="n">ctx</span><span class="p">,</span> <span class="n">number</span><span class="o">=</span><span class="mi">50</span><span class="p">)</span>
+<span class="n">opt6_time</span> <span class="o">=</span> <span class="n">evaluator</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">c</span><span class="p">)</span><span class="o">.</span><span class="n">mean</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Opt6: </span><span class="si">%f</span><span class="s1">&#39;</span> <span class="o">%</span> <span class="n">opt6_time</span><span class="p">)</span>
+</pre></div>
+</div>
+<p class="sphx-glr-script-out">Out:</p>
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre>Opt6: 0.014839
+</pre></div>
+</div>
+<p>Here is the generated IR after parallelization.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span class="nb">print</span><span class="p">(</span><a href="../../api/python/driver.html#tvm.lower" title="View documentation for tvm.lower"><span class="n">tvm</span><span class="o">.</span><span class="n">lower</span></a><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="p">[</span><span class="n">A</span><span class="p">,</span> <span class="n">B</span><span class="p">,</span> <span class="n">C</span><span class="p">],</span> <span class="n">simple_mode</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span>
+</pre></div>
+</div>
+<p class="sphx-glr-script-out">Out:</p>
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre>primfn(A_1: handle, B_1: handle, C_1: handle) -&gt; ()
+  attr = {&quot;tir.noalias&quot;: True, &quot;global_symbol&quot;: &quot;main&quot;}
+  buffers = {B: Buffer(B_2: handle, float32, [1024, 1024], []),
+             A: Buffer(A_2: handle, float32, [1024, 1024], []),
+             C: Buffer(C_2: handle, float32, [1024, 1024], [])}
+  buffer_map = {C_1: C, B_1: B, A_1: A} {
+  attr [packedB: handle] &quot;storage_scope&quot; = &quot;global&quot;;
+  allocate(packedB, float32x32, [32768]) {
+    for (x: int32, 0, 32) &quot;parallel&quot; {
+      for (y: int32, 0, 1024) {
+        packedB[ramp(((x*32768) + (y*32)), 1, 32)] = (float32x32*)B_2[ramp(((y*1024) + (x*32)), 1, 32)])
+      }
+    }
+    for (x.outer: int32, 0, 32) &quot;parallel&quot; {
+      attr [C.global: handle] &quot;storage_scope&quot; = &quot;global&quot;;
+      allocate(C.global, float32, [1024]);
+      for (y.outer: int32, 0, 32) {
+        for (x.c.init: int32, 0, 32) {
+          C.global[ramp((x.c.init*32), 1, 32)] = broadcast(0f32, 32)
+        }
+        for (k.outer: int32, 0, 256) {
+          for (x.c: int32, 0, 32) {
+            C.global[ramp((x.c*32), 1, 32)] = ((float32x32*)C.global[ramp((x.c*32), 1, 32)]) + (broadcast((float32*)A_2[(((x.outer*32768) + (x.c*1024)) + (k.outer*4))]), 32)*(float32x32*)packedB[ramp(((y.outer*32768) + (k.outer*128)), 1, 32)])))
+            C.global[ramp((x.c*32), 1, 32)] = ((float32x32*)C.global[ramp((x.c*32), 1, 32)]) + (broadcast((float32*)A_2[((((x.outer*32768) + (x.c*1024)) + (k.outer*4)) + 1)]), 32)*(float32x32*)packedB[ramp((((y.outer*32768) + (k.outer*128)) + 32), 1, 32)])))
+            C.global[ramp((x.c*32), 1, 32)] = ((float32x32*)C.global[ramp((x.c*32), 1, 32)]) + (broadcast((float32*)A_2[((((x.outer*32768) + (x.c*1024)) + (k.outer*4)) + 2)]), 32)*(float32x32*)packedB[ramp((((y.outer*32768) + (k.outer*128)) + 64), 1, 32)])))
+            C.global[ramp((x.c*32), 1, 32)] = ((float32x32*)C.global[ramp((x.c*32), 1, 32)]) + (broadcast((float32*)A_2[((((x.outer*32768) + (x.c*1024)) + (k.outer*4)) + 3)]), 32)*(float32x32*)packedB[ramp((((y.outer*32768) + (k.outer*128)) + 96), 1, 32)])))
+          }
+        }
+        for (x.inner: int32, 0, 32) {
+          for (y.inner: int32, 0, 32) {
+            C_2[((((x.outer*32768) + (x.inner*1024)) + (y.outer*32)) + y.inner)] = (float32*)C.global[((x.inner*32) + y.inner)])
+          }
+        }
+      }
+    }
+  }
+}
+
+// meta data omitted. you can use show_meta_data=True to include meta data
+</pre></div>
+</div>
+</div>
+<div class="section" id="summary">
+<h2>Summary<a class="headerlink" href="#summary" title="Permalink to this headline">¶</a></h2>
+<p>After applying the above simple optimizations with only 18 lines of code,
+our generated code can achieve 60% of the <cite>numpy</cite> performance with MKL.
+Note that the outputs on the web page reflect the running times on a non-exclusive
+Docker container, thereby they are <em>unreliable</em>. It is highly encouraged to run the
+tutorial by yourself to observe the performance gain acheived by TVM.</p>
+<div class="sphx-glr-footer class sphx-glr-footer-example docutils container" id="sphx-glr-download-tutorials-optimize-opt-gemm-py">
+<div class="sphx-glr-download docutils container">
+<p><a class="reference download internal" download="" href="../../_downloads/836dc3852acf09662e9eb37c4c5e1e1b/opt_gemm.py"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">opt_gemm.py</span></code></a></p>
+</div>
+<div class="sphx-glr-download docutils container">
+<p><a class="reference download internal" download="" href="../../_downloads/440add54bfa6dfb4fa9ed5037187aa4c/opt_gemm.ipynb"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Jupyter</span> <span class="pre">notebook:</span> <span class="pre">opt_gemm.ipynb</span></code></a></p>
+</div>
+</div>
+<p class="sphx-glr-signature"><a class="reference external" href="https://sphinx-gallery.github.io">Gallery generated by Sphinx-Gallery</a></p>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="opt_conv_tensorcore.html" class="btn btn-neutral float-right" title="How to optimize convolution using TensorCores" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="opt_conv_cuda.html" class="btn btn-neutral float-left" title="How to optimize convolution on GPU" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2020, Apache Software Foundation
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+    <!-- Theme Analytics -->
+    <script>
+    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+    })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+    ga('create', 'UA-75982049-2', 'auto');
+    ga('send', 'pageview');
+    </script>
+
+    
+   
+
+</body>
+</html>

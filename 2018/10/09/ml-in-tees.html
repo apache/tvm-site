@@ -1,0 +1,312 @@
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>Efficient Privacy-Preserving ML Using TVM</title>
+    
+    <meta name="author" content="">
+
+    <!-- Le HTML5 shim, for IE6-8 support of HTML elements -->
+    <!--[if lt IE 9]>
+      <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+
+    <!-- Le styles -->
+    <link href="/assets/themes/custom-twitter/css/1.4.0/bootstrap.css" rel="stylesheet">
+    <link href="/assets/themes/custom-twitter/css/style.css?body=1" rel="stylesheet" type="text/css" media="all">
+
+    <!-- Le fav and touch icons -->
+  <!-- Update these with your own images
+    <link rel="shortcut icon" href="images/logo/tvm-logo.png">
+  <link rel="shortcut icon" href="images/logo/tvm-logo.png">
+  -->
+  <link href="/images/logo/tvm-logo-square.png" rel="icon" type="image/png"/>
+  <!-- Global site tag (gtag.js) - Google Analytics -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=UA-75982049-2"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+
+    gtag('js', new Date());
+    gtag('config', 'UA-75982049-2');
+  </script>
+
+</head>
+
+  <body>
+    <div class="topbar">
+      <div class="fill">
+        <div class="container">
+          <h2 id="logo-wrap">
+            <a href="/" class="nav">
+              <img src="/images/logo/tvm-logo-small-black.png" width="100px">
+            </a>
+          </h2>
+          <ul class="nav" id="nav-bar">
+            
+            
+            
+
+
+
+  
+    
+      
+      
+    
+  
+    
+      
+      
+    
+  
+    
+      
+      
+    
+  
+    
+      
+      
+    
+  
+    
+      
+      
+    
+  
+    
+      
+      
+    
+  
+    
+      
+      	
+      	<li><a href="/community">Community</a></li>
+      	
+      
+      
+    
+  
+    
+      
+      	
+      	<li><a href="/download">Download</a></li>
+      	
+      
+      
+    
+  
+    
+      
+      	
+      	<li><a href="/about">About</a></li>
+      	
+      
+      
+    
+  
+    
+      
+      
+    
+  
+    
+      
+      	
+      	<li><a href="/vta">VTA</a></li>
+      	
+      
+      
+    
+  
+    
+      
+      
+      	
+      	<li><a href="/blog">Blog</a></li>
+      	
+      
+    
+  
+
+
+
+
+            <li> <a href="https://tvm.apache.org/docs">Docs</a></li>
+            <li> <a href="https://tvmconf.org">TVM Conference</a></li>
+            <li> <a href="https://github.com/apache/incubator-tvm/">Github</a></li>
+            <li> <a href="/asf">ASF</a></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+    
+<div class="container">
+<div class="content">
+  <div class="row">
+    <div class="span14">
+      <h1>Efficient Privacy-Preserving ML Using TVM </h1>
+      <p class="post-meta">
+        <time datetime="2018-10-09T00:00:00-07:00" itemprop="datePublished">
+          Oct 9, 2018
+        </time>
+        
+        • <span itemprop="author" itemscope itemtype="http://schema.org/Person">
+          <span itemprop="name">Nick Hynes</span>
+        </span>
+        
+      </p>
+      <p class="post-meta">
+        </p>
+    </br>
+    <p>This post describes Myelin, a framework for privacy-preserving machine learning in trusted hardware enclaves, and how TVM makes Myelin fast.
+The key idea is that TVM, unlike other popular ML frameworks, compiles models into lightweight, optimized, and dependency-free libraries which can fit into resource constrained enclaves.</p>
+
+<p style="text-align: center"><img src="/images/sgx/tvmfits.png" alt="TVM fits in enclaves" style="width: 80vw; max-width: 600px" /></p>
+
+<p>Give creating a privacy-preserving ML model a try! Check out the <a href="https://github.com/dmlc/tvm/tree/master/apps/sgx">example code</a> available in the TVM repo.</p>
+
+<h1 id="motivation-privacy-preserving-ml">Motivation: Privacy-Preserving ML</h1>
+
+<p>Machine learning models benefit from large and diverse datasets.
+Unfortunately, using such datasets often requires trusting a centralized data aggregator or computation provider.
+For sensitive applications like healthcare and finance this is undesirable as it could compromise patient privacy or divulge trade secrets.
+Recent advances in secure and privacy-preserving computation, including <em>trusted execution environments</em> and <em>differential privacy</em>, offer a way for mutually distrusting parties to efficiently train a machine learning model without compromising the training data.
+We use TVM to make privacy-preserving ML framework fast.</p>
+
+<p style="text-align: center"><img src="/images/sgx/sgx.png" alt="Myelin workflow" style="width: 80vw; max-width: 600px" /></p>
+
+<h2 id="use-cases">Use Cases</h2>
+
+<ul>
+  <li><strong>private MLaaS</strong>: a cloud provider runs their architecture on your data. You get the model outputs, your data stays private, and the cloud provider knows that you can’t steal model.</li>
+  <li><strong>trustworthy ML competitions</strong>: you train a model on contest data. The contest organizer sends private test data to your model and gets verifiable report of accuracy. Your model stays safe until the organizer decides to purchase it. Other participants can‘t cheat by training on test data.</li>
+  <li><strong>training on shared private data</strong>: you (a researcher) want to train a model on several hospitals’ data. Directly sharing is too complicated. Instead, have a “trusted third party” train a privacy-preserving model.</li>
+  <li><a href="http://www.vldb.org/pvldb/vol11/p2086-hynes.pdf"><strong>ML on the Blockchain</strong></a></li>
+</ul>
+
+<h1 id="background">Background</h1>
+
+<p style="text-align: center"><img src="/images/sgx/dpnn.png" alt="sketch of DP deep learning in a TEE" style="width: 80vw; max-width: 400px" /></p>
+
+<h2 id="trusted-execution-environments">Trusted Execution Environments</h2>
+
+<p>A <a href="https://en.wikipedia.org/wiki/Trusted_Computing#Remote_attestation">trusted execution environment</a> (TEE) essentially allows a remote user to provably run code on another person’s machine without revealing the computation to the hardware provider.</p>
+
+<p>More technically, the TEE provides a secure <em>enclave</em> of isolated/encrypted memory and CPU registers; also a trusted source of randomness.
+The TEE can also send a signed attestation of the code that’s loaded so that the remote user can verify that the enclave has been correctly loaded.
+This process, known as remote attestation, can be used to establish a secure communication channel into the enclave .
+The remote user can then provision it with secrets like private keys, model parameters, and training data.</p>
+
+<p>Compared to pure crypto methods like <a href="https://en.wikipedia.org/wiki/Garbled_circuit">secure multi-parity computation (MPC)</a> and <a href="https://en.wikipedia.org/wiki/Homomorphic_encryption#Fully_homomorphic_encryption">fully-homomorphic encryption (FHE)</a>, TEEs are several orders of magnitude faster and support general-purpose computation (i.e. not just arithmetic operations).
+Perhaps the only drawbacks are the additional trust assumptions in the hardware root of trust (a key burned into the processor) and loaded software.</p>
+
+<p>Trust assumptions notwithstanding, TEE technology is becoming increasingly widespread and is playing a major role in practical privacy-preservation.
+In fact, general-purpose TEEs already exist in commodity hardware like <a href="https://software.intel.com/en-us/sgx">Intel SGX</a> and <a href="https://genode.org/documentation/articles/trustzone">ARM TrustZone</a>.
+Additionally, the fully-open source <a href="https://keystone-enclave.org">Keystone enclave</a> is on the way.</p>
+
+<h2 id="differential-privacy">Differential Privacy</h2>
+
+<p style="text-align: center"><img src="/images/sgx/dp.png" alt="DP as false positive/negative" style="width: 80vw; max-width: 500px" /></p>
+
+<p><a href="https://en.wikipedia.org/wiki/Differential_Privacy#Randomized_Response">Differential privacy (DP)</a> provides a formal guarantee that models trained on similar datasets are indistinguishable
+Informally, a user’s privacy is not compromised by choosing to contribute data to a model.</p>
+
+<p>In other words, given the output of an algorithm on two datasets which differ in only a single record, differential privacy upper bounds the probability that an adversary can determine which dataset.
+An algorithm may be made DP using a mechanism which adds noise to the algorithm’s output.
+The amount of noise is calibrated on how much the output depends on any particular inputs.
+If you’re familiar with hypothesis testing, if outcomes A and B each have probability 0.5, applying a DP mechanism is like convolving with a probability distribution: the privacy is in the false positive and false negative rates.
+Since deep learning models tend to generalize well, the amount of noise is often less than might be expected.</p>
+
+<p>Running a DP training algorithm in a TEE ensures that the DP mechanism is faithfully applied.</p>
+
+<h1 id="efficient-privacy-preserving-ml-using-tvm">Efficient Privacy-Preserving ML Using TVM</h1>
+
+<p>One of the primary challenges of working with a TEE is that the code running within does not have access to the untrusted OS.
+This means that the trusted software cannot  create threads or perform I.O
+Practically speaking, the result is that numerical libraries like OpenBLAS–much less frameworks like PyTorch and TensorFlow–cannot run directly in enclaves.</p>
+
+<p>TEEs actually have a similar programming model to resource-constrained hardware accelerators.
+This is exactly what TVM is made for!
+In the privacy workflow, a user first defines an entire training graph in the high-level graph specification language.
+TVM them compiles the model and outputs a static library containing optimized numerical kernels which can easily be loaded into a TEE.
+Since the kernels are automatically generated and have strict bounds checking, they expose a low surface area of attack.
+They are supported by a lightweight memory-safe Rust runtime which also may easily be reviewed for safety and correctness.</p>
+
+<p>Of course, safety is most useful when practically applicable.
+Fortunately, TVM modules in enclaves have comparable performance to native CPU-based training.
+By coordinating threads using the untrusted runtime, a single TVM enclave can fully utilize the resources of its host machine.
+Moreover, it’s not difficult to imagine a secure parameter server which orchestrates entire datacenters of enclave-enabled machines.</p>
+
+<p>TVM also provides opportunities for more subtle optimization of privacy-preserving algorithms.
+Indeed, its fine-grained scheduling features allow speedups when using differential privacy.
+For instance, the tightest DP bounds may be obtained from clipping the gradients of each training example and adding noise to each [1].
+In autograd frameworks, this requires forwarding the model for each example in the minibatch (though only one backward pass is needed) [2].
+Using TVM, however, per-example gradient clipping is straightforward: instead of scheduling each weight update as a single reduction over both batch and feature dimensions, the reduction is split into two.
+The reduction over features is followed by clipping and noising, and then the final result is finally summed over examples to obtain the weight update.
+Thus, TVM allows applying differential privacy without introducing overhead greater than what is required by the technique.
+Also, if one really wants to get really fancy, it’s possible to fuse the clipping and noising operations and apply them in-place to further trim down latency and memory usage.</p>
+
+<p>For benchmarks on realistic workloads, please refer to the tech report <a href="https://arxiv.org/abs/1807.06689"><em>Efficient Deep Learning on Multi-Source Private Data</em></a>.
+And, of course, feel free go give the framework a spin in the <a href="https://github.com/dmlc/tvm/tree/master/apps/sgx">TVM SGX example</a>.</p>
+
+<h1 id="conclusion">Conclusion</h1>
+
+<p>The next generation of learning systems will be ushered in by privacy.
+As TEE technology becomes better understood and more widely available, it makes sense to leverage it as a resource for privacy-preserving machine learning and analytics.
+TVM is well poised to facilitate development of this use case in both research and deployment.</p>
+
+<h1 id="bio--acknowledgement">Bio &amp; Acknowledgement</h1>
+
+<p><a href="https://github.com/nhynes">Nick</a> is a PhD student in Prof. Dawn Song’s lab at UC Berkeley.
+His research interest is in the general domain of ML on shared private data, but this is really just an excuse to mess with Rust, security monitors, hardware enclaves, and compilers like TVM.</p>
+
+<p>Thanks to Tianqi Chen for the code reviews!</p>
+
+<h1 id="references">References</h1>
+
+<p>[1] <a href="https://arxiv.org/abs/1607.00133">Deep Learning with Differential Privacy</a><br />
+[2] <a href="https://arxiv.org/pdf/1510.01799v2.pdf">Efficient Per-Example Gradient Computations</a></p>
+
+    </div>
+  </div>
+</div>
+</div>
+
+
+    
+
+
+
+
+
+    <div class="container">
+
+      <footer class="small">
+        Apache TVM is an effort undergoing incubation at The Apache Software Foundation (ASF),
+        sponsored by the <i>Apache Incubator</i>. Incubation is required
+        of all newly accepted projects until a further review indicates that the infrastructure,
+        communications, and decision making process have stabilized in a manner consistent with other
+        successful ASF projects. While incubation status is not necessarily a reflection of the completeness
+        or stability of the code, it does indicate that the project has yet to be fully endorsed by the ASF.
+
+        Copyright © 2020 The Apache Software Foundation. Apache TVM, Apache,
+        the Apache feather, and the Apache TVM project logo are either trademarks or registered trademarks of the Apache Software Foundation.
+
+        See also other useful <a href="/asf" class="footer-link">ASF links</a>:
+        <a href="https://www.apache.org/" class="footer-link">Apache Homepage</a>,
+        <a href="https://www.apache.org/licenses/" class="footer-link">License</a>
+        <a href="https://www.apache.org/foundation/sponsorship.html" class="footer-link">Sponsorship</a>,
+        <a href="https://www.apache.org/security/" class="footer-link">Security</a>
+        <a href="https://www.apache.org/foundation/thanks.html" class="footer-link">Thanks</a>,
+        <a href="https://www.apache.org/events/current-event.html" class="footer-link">Current Event</a>
+
+      </footer>
+    </div>
+  </body>
+</html>
+
+

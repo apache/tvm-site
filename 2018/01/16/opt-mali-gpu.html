@@ -1,0 +1,770 @@
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>Optimizing Mobile Deep Learning on ARM GPU with TVM</title>
+    
+    <meta name="author" content="">
+
+    <!-- Le HTML5 shim, for IE6-8 support of HTML elements -->
+    <!--[if lt IE 9]>
+      <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+
+    <!-- Le styles -->
+    <link href="/assets/themes/custom-twitter/css/1.4.0/bootstrap.css" rel="stylesheet">
+    <link href="/assets/themes/custom-twitter/css/style.css?body=1" rel="stylesheet" type="text/css" media="all">
+
+    <!-- Le fav and touch icons -->
+  <!-- Update these with your own images
+    <link rel="shortcut icon" href="images/logo/tvm-logo.png">
+  <link rel="shortcut icon" href="images/logo/tvm-logo.png">
+  -->
+  <link href="/images/logo/tvm-logo-square.png" rel="icon" type="image/png"/>
+  <!-- Global site tag (gtag.js) - Google Analytics -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=UA-75982049-2"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+
+    gtag('js', new Date());
+    gtag('config', 'UA-75982049-2');
+  </script>
+
+</head>
+
+  <body>
+    <div class="topbar">
+      <div class="fill">
+        <div class="container">
+          <h2 id="logo-wrap">
+            <a href="/" class="nav">
+              <img src="/images/logo/tvm-logo-small-black.png" width="100px">
+            </a>
+          </h2>
+          <ul class="nav" id="nav-bar">
+            
+            
+            
+
+
+
+  
+    
+      
+      
+    
+  
+    
+      
+      
+    
+  
+    
+      
+      
+    
+  
+    
+      
+      
+    
+  
+    
+      
+      
+    
+  
+    
+      
+      
+    
+  
+    
+      
+      	
+      	<li><a href="/community">Community</a></li>
+      	
+      
+      
+    
+  
+    
+      
+      	
+      	<li><a href="/download">Download</a></li>
+      	
+      
+      
+    
+  
+    
+      
+      	
+      	<li><a href="/about">About</a></li>
+      	
+      
+      
+    
+  
+    
+      
+      
+    
+  
+    
+      
+      	
+      	<li><a href="/vta">VTA</a></li>
+      	
+      
+      
+    
+  
+    
+      
+      
+      	
+      	<li><a href="/blog">Blog</a></li>
+      	
+      
+    
+  
+
+
+
+
+            <li> <a href="https://tvm.apache.org/docs">Docs</a></li>
+            <li> <a href="https://tvmconf.org">TVM Conference</a></li>
+            <li> <a href="https://github.com/apache/incubator-tvm/">Github</a></li>
+            <li> <a href="/asf">ASF</a></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+    
+<div class="container">
+<div class="content">
+  <div class="row">
+    <div class="span14">
+      <h1>Optimizing Mobile Deep Learning on ARM GPU with TVM </h1>
+      <p class="post-meta">
+        <time datetime="2018-01-16T00:00:00-08:00" itemprop="datePublished">
+          Jan 16, 2018
+        </time>
+        
+        • <span itemprop="author" itemscope itemtype="http://schema.org/Person">
+          <span itemprop="name">Lianmin Zheng</span>
+        </span>
+        
+      </p>
+      <p class="post-meta">
+        </p>
+    </br>
+    <p>With the great success of deep learning, the demand for
+deploying deep neural networks to mobile devices is growing rapidly.
+Similar to what we do in desktop platforms, utilizing GPU in mobile devices
+can benefit both inference speed and energy efficiency. However, most
+existing deep learning frameworks do not support mobile GPU very well.
+The difficulty lies at the difference between mobile GPU architecture and
+desktop GPU architecture. It means special effort is required for optimizing on
+mobile GPU. The non-trivial extra work eventually results in the poor support
+of mobile GPU in most deep learning frameworks.</p>
+
+<p>TVM addresses the difficulty of deploying for different hardwares by
+introducing an unified IR stack, with which the optimization for different
+hardwares can be done easily.  In this post, we show how we use
+<a href="http://tvmlang.org/2017/08/17/tvm-release-announcement.html">TVM</a>/<a href="http://tvmlang.org/2017/10/06/nnvm-compiler-announcement.html">NNVM</a> to
+generate efficient kernels for ARM Mali GPU and do end-to-end compilation.
+In our test on Mali-T860 MP4, compared with
+<a href="https://developer.arm.com/technologies/compute-library">Arm Compute Library</a>,
+our method is 1.4x faster on VGG-16 and 2.2x faster on MobileNet.
+Both graph-level and operator-level optimization contribute
+to this speed up.</p>
+
+<p style="text-align: center"><img src="/images/opt-mali/end2end.png" alt="image" width="95%" /></p>
+
+<center> Figure. Inference Speed of Different Backends on ImageNet</center>
+<p></p>
+
+<h1 id="mali-midgrad-gpu">Mali Midgrad GPU</h1>
+<p>We will use Firefly-RK3399 with Mali-T860 MP4 as our test environment,
+so we mainly focus on Mali T8xx below.</p>
+
+<h2 id="architecture">Architecture</h2>
+<p>Figure 1 is an overview of the Mali Architecture on T860 and T880.
+The GPUs are scalable up to 16 coherent shader cores. Inside each
+shader core, there are 2 or 3 arithmetic pipelines, 1 load/store pipeline
+and 1 texture pipeline (so-called TriPipe). The ALU in each arithmetic
+pipeline has four 128-bit vector units and one scalar units.</p>
+
+<p>We use OpenCL for GPU computing. When mapping to OpenCL model, each
+shader core executes one or several work groups. Each shader core supports
+up to 384 concurrently executing threads. Each work item in OpenCL
+typically maps to a single thread on a Mali GPU.
+The Mali GPUs use a VLIW (Very Long Instruction Word) architecture.
+Each instruction word contains multiple operations. The Mali GPUs
+also use SIMD, so that most arithmetic instructions operate on
+multiple data elements simultaneously. <sup>[1]</sup></p>
+
+<center> <img width="50%" src="/images/opt-mali/mali-arch.png" /> </center>
+<center> Figure 1. Mali T860 and T880 (source <sup>[2]</sup>) </center>
+
+<h2 id="difference-with-nvidias-gpus">Difference with NVIDIA’s GPUs</h2>
+<p>Here are some differences that we should concern when writing OpenCL
+code for Mali GPUs, compared with writing for NVIDIA’s GPUs.</p>
+<ul>
+  <li>Mali GPUs use an unified global memory. In NVIDIA’s GPUs, we usually
+copy data to shared memory, because NVIDIA’s GPUs have physically
+separate global memory, shared memory and register. In Mali, this copy
+does not improve performance and can be removed. Besides, Mali GPUs
+usually share the global memory with CPU, so there is no need for copying
+between CPU and GPU.</li>
+  <li>Mali Midgrad GPUs are based on SIMD (Single Instruction Multiple Data)
+and need explicit vectorization. In NVIDIA CUDA, parallelism is
+achieved by SIMT (Single Instruction Multiple Thread), which does
+not require explicit vectorization. But also notice that the newer
+Mali Bitfrost GPUs are based on quad-style vectorization and does not
+require explicit vectorization.</li>
+  <li>All threads in Mali GPUs have individual program counters. It means
+the <code class="highlighter-rouge">warp size</code> is 1, so that branch divergence is not a major problem.</li>
+</ul>
+
+<h1 id="optimization--convolution-as-example">Optimization : Convolution as Example</h1>
+<p>The convolution layer is the core of most deep neural networks and
+takes most of the computation time. So we take the convolution layer
+as example to demonstrate how common optimization techniques like
+packing, tiling, unrolling and vectorization are applied in TVM.</p>
+
+<h2 id="im2col-with-gemm">Im2Col with GEMM</h2>
+<p>A well-known algorithm for convolution layer is <a href="https://petewarden.com/2015/04/20/why-gemm-is-at-the-heart-of-deep-learning/">im2col</a>,
+which converts the little 3D input cubes to columns of a matrix and
+perform a GEMM. The advantage of this method is easy utilization of
+highly optimized BLAS library.  However, the memory redundancy
+(9x memory for 3x3 kernel) is awful.</p>
+
+<h2 id="spatial-packing">Spatial Packing</h2>
+<p>Instead, we adopt a method to calculate the convolution, and apply the
+optimization techniques step by step. A convolution layer in VGG-16
+is used as tuning case, whose configuration is listed below.
+We assume the batch size is 1 for inference.</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Input Shape</th>
+      <th>Output Shape</th>
+      <th>Kernel Size</th>
+      <th>Stride</th>
+      <th>Padding</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>56x56x256</td>
+      <td>56x56x256</td>
+      <td>3x3</td>
+      <td>(1, 1)</td>
+      <td>(1, 1)</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>As a baseline, we also list the performance of this layer in
+Arm Compute Library.</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Kernel</th>
+      <th>Cost (second)</th>
+      <th>GFLOPS</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>GEMM method in ARMComputeLib</td>
+      <td>0.1821</td>
+      <td>20.3111</td>
+    </tr>
+  </tbody>
+</table>
+
+<h3 id="declare-the-computation-tiling-and-packing">Declare the computation: tiling and packing</h3>
+<p>Tiling and packing are two methods intended for better memory access.
+Tiling separates the whole computation into small blocks for better
+datareuse.  Packing re-layouts the input matrices according to the
+tiling so that we can access the memory sequentially, which reduces
+cache miss rate.</p>
+
+<p>We do tiling on the width dimension of the input image and CO dimension
+of the filter matrix.  This is described by <code class="highlighter-rouge">tvm.compute</code>.</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># set tiling factor
+</span><span class="n">VH</span> <span class="o">=</span> <span class="mi">1</span>
+<span class="n">VW</span> <span class="o">=</span> <span class="n">VC</span> <span class="o">=</span> <span class="mi">4</span>
+
+<span class="c1"># get input shape
+</span> <span class="n">_</span><span class="p">,</span> <span class="n">CI</span><span class="p">,</span> <span class="n">IH</span><span class="p">,</span> <span class="n">IW</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">shape</span>
+<span class="n">CO</span><span class="p">,</span> <span class="n">CI</span><span class="p">,</span> <span class="n">KH</span><span class="p">,</span> <span class="n">KW</span> <span class="o">=</span> <span class="n">kernel</span><span class="o">.</span><span class="n">shape</span>
+<span class="n">TH</span> <span class="o">=</span> <span class="n">IH</span> <span class="o">+</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">H_PAD</span>
+<span class="n">TW</span> <span class="o">=</span> <span class="n">IW</span> <span class="o">+</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">W_PAD</span>
+
+<span class="c1"># calc output shape
+</span><span class="n">OH</span> <span class="o">=</span> <span class="p">(</span><span class="n">IH</span> <span class="o">+</span> <span class="mi">2</span><span class="o">*</span><span class="n">H_PAD</span> <span class="o">-</span> <span class="n">KH</span><span class="p">)</span> <span class="o">//</span> <span class="n">H_STR</span> <span class="o">+</span> <span class="mi">1</span>
+<span class="n">OW</span> <span class="o">=</span> <span class="p">(</span><span class="n">IW</span> <span class="o">+</span> <span class="mi">2</span><span class="o">*</span><span class="n">W_PAD</span> <span class="o">-</span> <span class="n">KW</span><span class="p">)</span> <span class="o">//</span> <span class="n">W_STR</span> <span class="o">+</span> <span class="mi">1</span>
+
+<span class="c1"># data shape after packing
+</span><span class="n">dvshape</span> <span class="o">=</span> <span class="p">(</span><span class="n">N</span><span class="p">,</span> <span class="n">TH</span> <span class="o">//</span> <span class="p">(</span><span class="n">VH</span><span class="o">*</span><span class="n">H_STRIDE</span><span class="p">),</span> <span class="n">TW</span> <span class="o">//</span> <span class="p">(</span><span class="n">VW</span><span class="o">*</span><span class="n">W_STRIDE</span><span class="p">),</span> <span class="n">CI</span><span class="p">,</span> <span class="n">VH</span><span class="o">*</span><span class="n">H_STRIDE</span><span class="o">+</span><span class="n">HCAT</span><span class="p">,</span> <span class="n">VW</span><span class="o">*</span><span class="n">W_STRIDE</span><span class="o">+</span><span class="n">WCAT</span><span class="p">)</span>
+
+<span class="c1"># kernel shape after packing
+</span><span class="n">kvshape</span> <span class="o">=</span> <span class="p">(</span><span class="n">CO</span> <span class="o">//</span> <span class="n">VC</span><span class="p">,</span> <span class="n">CI</span><span class="p">,</span> <span class="n">KH</span><span class="p">,</span> <span class="n">KW</span><span class="p">,</span> <span class="n">VC</span><span class="p">)</span>
+
+<span class="n">ovshape</span> <span class="o">=</span> <span class="p">(</span><span class="n">N</span><span class="p">,</span> <span class="n">CO</span> <span class="o">//</span> <span class="n">VC</span><span class="p">,</span> <span class="n">OH</span> <span class="o">//</span> <span class="n">VH</span><span class="p">,</span> <span class="n">OW</span> <span class="o">//</span> <span class="n">VW</span><span class="p">,</span> <span class="n">VH</span><span class="p">,</span> <span class="n">VW</span><span class="p">,</span> <span class="n">VC</span><span class="p">)</span>
+<span class="n">oshape</span> <span class="o">=</span> <span class="p">(</span><span class="n">N</span><span class="p">,</span> <span class="n">CO</span><span class="p">,</span> <span class="n">OH</span><span class="p">,</span> <span class="n">OW</span><span class="p">)</span>
+
+<span class="c1"># define packing
+</span><span class="n">data_vec</span> <span class="o">=</span> <span class="n">tvm</span><span class="o">.</span><span class="n">compute</span><span class="p">(</span><span class="n">dvshape</span><span class="p">,</span> <span class="k">lambda</span> <span class="n">n</span><span class="p">,</span> <span class="n">h</span><span class="p">,</span> <span class="n">w</span><span class="p">,</span> <span class="n">ci</span><span class="p">,</span> <span class="n">vh</span><span class="p">,</span> <span class="n">vw</span><span class="p">:</span>
+    <span class="n">data_pad</span><span class="p">[</span><span class="n">n</span><span class="p">][</span><span class="n">ci</span><span class="p">][</span><span class="n">h</span><span class="o">*</span><span class="n">VH</span><span class="o">*</span><span class="n">H_STRIDE</span><span class="o">+</span><span class="n">vh</span><span class="p">][</span><span class="n">w</span><span class="o">*</span><span class="n">VW</span><span class="o">*</span><span class="n">W_STRIDE</span><span class="o">+</span><span class="n">vw</span><span class="p">],</span> <span class="n">name</span><span class="o">=</span><span class="s">'data_vec'</span><span class="p">)</span>
+
+<span class="n">kernel_vec</span> <span class="o">=</span> <span class="n">tvm</span><span class="o">.</span><span class="n">compute</span><span class="p">(</span><span class="n">kvshape</span><span class="p">,</span> <span class="k">lambda</span> <span class="n">co</span><span class="p">,</span> <span class="n">ci</span><span class="p">,</span> <span class="n">kh</span><span class="p">,</span> <span class="n">kw</span><span class="p">,</span> <span class="n">vc</span><span class="p">:</span>
+    <span class="n">kernel</span><span class="p">[</span><span class="n">co</span><span class="o">*</span><span class="n">VC</span><span class="o">+</span><span class="n">vc</span><span class="p">][</span><span class="n">ci</span><span class="p">][</span><span class="n">kh</span><span class="p">][</span><span class="n">kw</span><span class="p">],</span> <span class="n">name</span><span class="o">=</span><span class="s">'kernel_vec'</span><span class="p">)</span>
+
+<span class="c1"># define convolution
+</span><span class="n">ci</span> <span class="o">=</span> <span class="n">tvm</span><span class="o">.</span><span class="n">reduce_axis</span><span class="p">((</span><span class="mi">0</span><span class="p">,</span> <span class="n">CI</span><span class="p">),</span> <span class="n">name</span><span class="o">=</span><span class="s">'ci'</span><span class="p">)</span>
+<span class="n">kh</span> <span class="o">=</span> <span class="n">tvm</span><span class="o">.</span><span class="n">reduce_axis</span><span class="p">((</span><span class="mi">0</span><span class="p">,</span> <span class="n">KH</span><span class="p">),</span> <span class="n">name</span><span class="o">=</span><span class="s">'kh'</span><span class="p">)</span>
+<span class="n">kw</span> <span class="o">=</span> <span class="n">tvm</span><span class="o">.</span><span class="n">reduce_axis</span><span class="p">((</span><span class="mi">0</span><span class="p">,</span> <span class="n">KW</span><span class="p">),</span> <span class="n">name</span><span class="o">=</span><span class="s">'kw'</span><span class="p">)</span>
+
+<span class="n">conv</span> <span class="o">=</span> <span class="n">tvm</span><span class="o">.</span><span class="n">compute</span><span class="p">(</span><span class="n">ovshape</span><span class="p">,</span> <span class="k">lambda</span> <span class="n">n</span><span class="p">,</span> <span class="n">co</span><span class="p">,</span> <span class="n">h</span><span class="p">,</span> <span class="n">w</span><span class="p">,</span> <span class="n">vh</span><span class="p">,</span> <span class="n">vw</span><span class="p">,</span> <span class="n">vc</span><span class="p">:</span>
+    <span class="n">tvm</span><span class="o">.</span><span class="nb">sum</span><span class="p">(</span><span class="n">data_vec</span><span class="p">[</span><span class="n">n</span><span class="p">,</span> <span class="n">h</span><span class="p">,</span> <span class="n">w</span><span class="p">,</span> <span class="n">ci</span><span class="p">,</span> <span class="n">vh</span><span class="o">*</span><span class="n">H_STRIDE</span><span class="o">+</span><span class="n">kh</span><span class="p">,</span> <span class="n">vw</span><span class="o">*</span><span class="n">W_STRIDE</span><span class="o">+</span><span class="n">kw</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">out_dtype</span><span class="p">)</span> <span class="o">*</span>
+            <span class="n">kernel_vec</span><span class="p">[</span><span class="n">co</span><span class="p">,</span> <span class="n">ci</span><span class="p">,</span> <span class="n">kh</span><span class="p">,</span> <span class="n">kw</span><span class="p">,</span> <span class="n">vc</span><span class="p">]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">out_dtype</span><span class="p">),</span>
+            <span class="n">axis</span><span class="o">=</span><span class="p">[</span><span class="n">ci</span><span class="p">,</span> <span class="n">kh</span><span class="p">,</span> <span class="n">kw</span><span class="p">]),</span> <span class="n">name</span><span class="o">=</span><span class="s">'conv'</span><span class="p">)</span>
+
+<span class="c1"># unpack to correct layout
+</span><span class="n">output</span> <span class="o">=</span> <span class="n">tvm</span><span class="o">.</span><span class="n">compute</span><span class="p">(</span><span class="n">oshape</span><span class="p">,</span> <span class="k">lambda</span> <span class="n">n</span><span class="p">,</span> <span class="n">co</span><span class="p">,</span> <span class="n">h</span><span class="p">,</span> <span class="n">w</span><span class="p">:</span>
+                     <span class="n">conv</span><span class="p">[</span><span class="n">n</span><span class="p">][</span><span class="n">co</span><span class="o">//</span><span class="n">VC</span><span class="p">][</span><span class="n">h</span><span class="o">/</span><span class="n">VH</span><span class="p">][</span><span class="n">w</span><span class="o">//</span><span class="n">VW</span><span class="p">][</span><span class="n">h</span><span class="o">%</span><span class="n">VH</span><span class="p">][</span><span class="n">w</span><span class="o">%</span><span class="n">VW</span><span class="p">][</span><span class="n">co</span><span class="o">%</span><span class="n">VC</span><span class="p">],</span>
+                     <span class="n">name</span><span class="o">=</span><span class="s">'output_unpack'</span><span class="p">,</span> <span class="n">tag</span><span class="o">=</span><span class="s">'direct_conv_output'</span><span class="p">)</span>
+</code></pre></div></div>
+
+<p>We can inspect the defined IR by</p>
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">print</span><span class="p">(</span><span class="n">tvm</span><span class="o">.</span><span class="n">lower</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="p">[</span><span class="n">data</span><span class="p">,</span> <span class="n">kernel</span><span class="p">,</span> <span class="n">output</span><span class="p">],</span> <span class="n">simple_mode</span><span class="o">=</span><span class="bp">True</span><span class="p">))</span>
+</code></pre></div></div>
+<p>I pick the convolution part here.</p>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>produce conv {
+  for (co, 0, 64) {
+    for (h, 0, 56) {
+      for (w, 0, 14) {
+        for (vw.init, 0, 4) {
+          for (vc.init, 0, 4) {
+            conv[((((((((co*56) + h)*14) + w)*4) + vw.init)*4) + vc.init)] = 0.000000f
+          }
+        }
+        for (ci, 0, 256) {
+          for (kh, 0, 3) {
+            for (kw, 0, 3) {
+              for (vw, 0, 4) {
+                for (vc, 0, 4) {
+                  conv[((((((((co*56) + h)*14) + w)*4) + vw)*4) + vc)] = (conv[((((((((co*56) + h)*14) + w)*4) + vw)*4) + vc)] + (data_vec[(((((((((h*14) + w)*256) + ci)*3) + kh)*6) + kw) + vw)]*kernel_vec[((((((((co*256) + ci)*3) + kh)*3) + kw)*4) + vc)]))
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+</code></pre></div></div>
+
+<h3 id="kernel-1-bind-thread">Kernel 1: bind thread</h3>
+<p>In TVM, we declare the computation at first and then <em>schedule</em> it.
+This mechanism decouples the algorithm and implementation detail. (This idea
+is from <a href="http://halide-lang.org/">Halide</a>).</p>
+
+<p>The following schedule simply binds axes to GPU threads, so that
+our code can run on Mali GPU.</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># helper function for binding thread
+</span><span class="k">def</span> <span class="nf">tile_and_bind3d</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="n">tensor</span><span class="p">,</span> <span class="n">z</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">x</span><span class="p">,</span> <span class="n">z_factor</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">y_factor</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">x_factor</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+    <span class="s">""" tile and bind 3d """</span>
+    <span class="n">y_factor</span> <span class="o">=</span> <span class="n">y_factor</span> <span class="ow">or</span> <span class="n">z_factor</span>
+    <span class="n">x_factor</span> <span class="o">=</span> <span class="n">x_factor</span> <span class="ow">or</span> <span class="n">y_factor</span>
+    <span class="n">zo</span><span class="p">,</span> <span class="n">zi</span> <span class="o">=</span> <span class="n">s</span><span class="p">[</span><span class="n">tensor</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">z</span><span class="p">,</span> <span class="n">z_factor</span><span class="p">)</span>
+    <span class="n">yo</span><span class="p">,</span> <span class="n">yi</span> <span class="o">=</span> <span class="n">s</span><span class="p">[</span><span class="n">tensor</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">y_factor</span><span class="p">)</span>
+    <span class="n">xo</span><span class="p">,</span> <span class="n">xi</span> <span class="o">=</span> <span class="n">s</span><span class="p">[</span><span class="n">tensor</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">x_factor</span><span class="p">)</span>
+    <span class="n">s</span><span class="p">[</span><span class="n">tensor</span><span class="p">]</span><span class="o">.</span><span class="n">bind</span><span class="p">(</span><span class="n">zo</span><span class="p">,</span> <span class="n">tvm</span><span class="o">.</span><span class="n">thread_axis</span><span class="p">(</span><span class="s">"blockIdx.z"</span><span class="p">))</span>
+    <span class="n">s</span><span class="p">[</span><span class="n">tensor</span><span class="p">]</span><span class="o">.</span><span class="n">bind</span><span class="p">(</span><span class="n">zi</span><span class="p">,</span> <span class="n">tvm</span><span class="o">.</span><span class="n">thread_axis</span><span class="p">(</span><span class="s">"threadIdx.z"</span><span class="p">))</span>
+    <span class="n">s</span><span class="p">[</span><span class="n">tensor</span><span class="p">]</span><span class="o">.</span><span class="n">bind</span><span class="p">(</span><span class="n">yo</span><span class="p">,</span> <span class="n">tvm</span><span class="o">.</span><span class="n">thread_axis</span><span class="p">(</span><span class="s">"blockIdx.y"</span><span class="p">))</span>
+    <span class="n">s</span><span class="p">[</span><span class="n">tensor</span><span class="p">]</span><span class="o">.</span><span class="n">bind</span><span class="p">(</span><span class="n">yi</span><span class="p">,</span> <span class="n">tvm</span><span class="o">.</span><span class="n">thread_axis</span><span class="p">(</span><span class="s">"threadIdx.y"</span><span class="p">))</span>
+    <span class="n">s</span><span class="p">[</span><span class="n">tensor</span><span class="p">]</span><span class="o">.</span><span class="n">bind</span><span class="p">(</span><span class="n">xo</span><span class="p">,</span> <span class="n">tvm</span><span class="o">.</span><span class="n">thread_axis</span><span class="p">(</span><span class="s">"blockIdx.x"</span><span class="p">))</span>
+    <span class="n">s</span><span class="p">[</span><span class="n">tensor</span><span class="p">]</span><span class="o">.</span><span class="n">bind</span><span class="p">(</span><span class="n">xi</span><span class="p">,</span> <span class="n">tvm</span><span class="o">.</span><span class="n">thread_axis</span><span class="p">(</span><span class="s">"threadIdx.x"</span><span class="p">))</span>
+
+<span class="c1"># set tunable parameter
+</span><span class="n">num_thread</span> <span class="o">=</span> <span class="mi">8</span>
+
+<span class="c1"># schedule data packing
+</span><span class="n">_</span><span class="p">,</span> <span class="n">h</span><span class="p">,</span> <span class="n">w</span><span class="p">,</span> <span class="n">ci</span><span class="p">,</span> <span class="n">vh</span><span class="p">,</span> <span class="n">vw</span> <span class="o">=</span> <span class="n">s</span><span class="p">[</span><span class="n">data_vec</span><span class="p">]</span><span class="o">.</span><span class="n">op</span><span class="o">.</span><span class="n">axis</span>
+<span class="n">tile_and_bind3d</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="n">data_vec</span><span class="p">,</span> <span class="n">h</span><span class="p">,</span> <span class="n">w</span><span class="p">,</span> <span class="n">ci</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+
+<span class="c1"># schedule kernel packing
+</span><span class="n">co</span><span class="p">,</span> <span class="n">ci</span><span class="p">,</span> <span class="n">kh</span><span class="p">,</span> <span class="n">kw</span><span class="p">,</span> <span class="n">vc</span> <span class="o">=</span> <span class="n">s</span><span class="p">[</span><span class="n">kernel_vec</span><span class="p">]</span><span class="o">.</span><span class="n">op</span><span class="o">.</span><span class="n">axis</span>
+<span class="n">tile_and_bind</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="n">kernel_vec</span><span class="p">,</span> <span class="n">co</span><span class="p">,</span> <span class="n">ci</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+
+<span class="c1"># schedule conv
+</span><span class="n">_</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="n">h</span><span class="p">,</span> <span class="n">w</span><span class="p">,</span> <span class="n">vh</span><span class="p">,</span> <span class="n">vw</span><span class="p">,</span> <span class="n">vc</span> <span class="o">=</span> <span class="n">s</span><span class="p">[</span><span class="n">conv</span><span class="p">]</span><span class="o">.</span><span class="n">op</span><span class="o">.</span><span class="n">axis</span>
+<span class="n">kc</span><span class="p">,</span> <span class="n">kh</span><span class="p">,</span> <span class="n">kw</span> <span class="o">=</span> <span class="n">s</span><span class="p">[</span><span class="n">conv</span><span class="p">]</span><span class="o">.</span><span class="n">op</span><span class="o">.</span><span class="n">reduce_axis</span>
+
+<span class="n">s</span><span class="p">[</span><span class="n">conv</span><span class="p">]</span><span class="o">.</span><span class="n">reorder</span><span class="p">(</span><span class="n">_</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="n">h</span><span class="p">,</span> <span class="n">w</span><span class="p">,</span> <span class="n">vh</span><span class="p">,</span> <span class="n">kc</span><span class="p">,</span> <span class="n">kh</span><span class="p">,</span> <span class="n">kw</span><span class="p">,</span> <span class="n">vw</span><span class="p">,</span> <span class="n">vc</span><span class="p">)</span>
+<span class="n">tile_and_bind3d</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="n">conv</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="n">h</span><span class="p">,</span> <span class="n">w</span><span class="p">,</span> <span class="n">num_thread</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+
+<span class="n">_</span><span class="p">,</span> <span class="n">co</span><span class="p">,</span> <span class="n">oh</span><span class="p">,</span> <span class="n">ow</span> <span class="o">=</span> <span class="n">s</span><span class="p">[</span><span class="n">output</span><span class="p">]</span><span class="o">.</span><span class="n">op</span><span class="o">.</span><span class="n">axis</span>
+<span class="n">tile_and_bind3d</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="n">output</span><span class="p">,</span> <span class="n">co</span><span class="p">,</span> <span class="n">oh</span><span class="p">,</span> <span class="n">ow</span><span class="p">,</span> <span class="n">num_thread</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+</code></pre></div></div>
+
+<p>With this schedule, our code can run now, but the performance is terrible.</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Kernel</th>
+      <th>Cost (second)</th>
+      <th>GFLOPS</th>
+      <th>speedup</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>GEMM method in ARMComputeLib</td>
+      <td>0.1821</td>
+      <td>20.3111</td>
+      <td>1x</td>
+    </tr>
+    <tr>
+      <td>Kernel 1: simple bind</td>
+      <td>5.6154</td>
+      <td>0.6588</td>
+      <td>0.03x</td>
+    </tr>
+  </tbody>
+</table>
+
+<h3 id="kernel-2-unrolling">Kernel 2: unrolling</h3>
+<p>Loop unrolling can reduce the instructions for loop control, reduce
+branch penalties and hide latency in reading memory.
+In TVM, this can be done easily by calling <code class="highlighter-rouge">s.unroll(axis)</code></p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># set tunable parameter
+</span><span class="n">num_thread</span> <span class="o">=</span> <span class="mi">8</span>
+
+<span class="c1"># schedule data packing
+</span><span class="n">_</span><span class="p">,</span> <span class="n">h</span><span class="p">,</span> <span class="n">w</span><span class="p">,</span> <span class="n">ci</span><span class="p">,</span> <span class="n">vh</span><span class="p">,</span> <span class="n">vw</span> <span class="o">=</span> <span class="n">s</span><span class="p">[</span><span class="n">data_vec</span><span class="p">]</span><span class="o">.</span><span class="n">op</span><span class="o">.</span><span class="n">axis</span>
+<span class="n">tile_and_bind3d</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="n">data_vec</span><span class="p">,</span> <span class="n">h</span><span class="p">,</span> <span class="n">w</span><span class="p">,</span> <span class="n">ci</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+
+<span class="s">"""!! ADD UNROLL HERE !!"""</span>
+<span class="n">s</span><span class="p">[</span><span class="n">data_vec</span><span class="p">]</span><span class="o">.</span><span class="n">unroll</span><span class="p">(</span><span class="n">vw</span><span class="p">)</span>
+
+<span class="c1"># schedule kernel packing
+</span><span class="n">co</span><span class="p">,</span> <span class="n">ci</span><span class="p">,</span> <span class="n">kh</span><span class="p">,</span> <span class="n">kw</span><span class="p">,</span> <span class="n">vc</span> <span class="o">=</span> <span class="n">s</span><span class="p">[</span><span class="n">kernel_vec</span><span class="p">]</span><span class="o">.</span><span class="n">op</span><span class="o">.</span><span class="n">axis</span>
+<span class="n">tile_and_bind</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="n">kernel_vec</span><span class="p">,</span> <span class="n">co</span><span class="p">,</span> <span class="n">ci</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+
+<span class="s">"""!! ADD UNROLL HERE !!"""</span>
+<span class="n">s</span><span class="p">[</span><span class="n">kernel_vec</span><span class="p">]</span><span class="o">.</span><span class="n">unroll</span><span class="p">(</span><span class="n">kh</span><span class="p">)</span>
+<span class="n">s</span><span class="p">[</span><span class="n">kernel_vec</span><span class="p">]</span><span class="o">.</span><span class="n">unroll</span><span class="p">(</span><span class="n">kw</span><span class="p">)</span>
+<span class="n">s</span><span class="p">[</span><span class="n">kernel_vec</span><span class="p">]</span><span class="o">.</span><span class="n">unroll</span><span class="p">(</span><span class="n">vc</span><span class="p">)</span>
+
+<span class="c1"># schedule conv
+</span><span class="n">_</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="n">h</span><span class="p">,</span> <span class="n">w</span><span class="p">,</span> <span class="n">vh</span><span class="p">,</span> <span class="n">vw</span><span class="p">,</span> <span class="n">vc</span> <span class="o">=</span> <span class="n">s</span><span class="p">[</span><span class="n">conv</span><span class="p">]</span><span class="o">.</span><span class="n">op</span><span class="o">.</span><span class="n">axis</span>
+<span class="n">kc</span><span class="p">,</span> <span class="n">kh</span><span class="p">,</span> <span class="n">kw</span> <span class="o">=</span> <span class="n">s</span><span class="p">[</span><span class="n">conv</span><span class="p">]</span><span class="o">.</span><span class="n">op</span><span class="o">.</span><span class="n">reduce_axis</span>
+
+<span class="n">s</span><span class="p">[</span><span class="n">conv</span><span class="p">]</span><span class="o">.</span><span class="n">reorder</span><span class="p">(</span><span class="n">_</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="n">h</span><span class="p">,</span> <span class="n">w</span><span class="p">,</span> <span class="n">vh</span><span class="p">,</span> <span class="n">kc</span><span class="p">,</span> <span class="n">kh</span><span class="p">,</span> <span class="n">kw</span><span class="p">,</span> <span class="n">vw</span><span class="p">,</span> <span class="n">vc</span><span class="p">)</span>
+<span class="n">tile_and_bind3d</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="n">conv</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="n">h</span><span class="p">,</span> <span class="n">w</span><span class="p">,</span> <span class="n">num_thread</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+
+<span class="s">"""!! ADD UNROLL HERE !!"""</span>
+<span class="n">s</span><span class="p">[</span><span class="n">conv</span><span class="p">]</span><span class="o">.</span><span class="n">unroll</span><span class="p">(</span><span class="n">kh</span><span class="p">)</span>
+<span class="n">s</span><span class="p">[</span><span class="n">conv</span><span class="p">]</span><span class="o">.</span><span class="n">unroll</span><span class="p">(</span><span class="n">kw</span><span class="p">)</span>
+<span class="n">s</span><span class="p">[</span><span class="n">conv</span><span class="p">]</span><span class="o">.</span><span class="n">unroll</span><span class="p">(</span><span class="n">vw</span><span class="p">)</span>
+<span class="n">s</span><span class="p">[</span><span class="n">conv</span><span class="p">]</span><span class="o">.</span><span class="n">unroll</span><span class="p">(</span><span class="n">vc</span><span class="p">)</span>
+
+<span class="n">_</span><span class="p">,</span> <span class="n">co</span><span class="p">,</span> <span class="n">oh</span><span class="p">,</span> <span class="n">ow</span> <span class="o">=</span> <span class="n">s</span><span class="p">[</span><span class="n">output</span><span class="p">]</span><span class="o">.</span><span class="n">op</span><span class="o">.</span><span class="n">axis</span>
+<span class="n">tile_and_bind3d</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="n">output</span><span class="p">,</span> <span class="n">co</span><span class="p">,</span> <span class="n">oh</span><span class="p">,</span> <span class="n">ow</span><span class="p">,</span> <span class="n">num_thread</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+</code></pre></div></div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Kernel</th>
+      <th>Cost (second)</th>
+      <th>GFLOPS</th>
+      <th>speedup</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>GEMM method in ARMComputeLib</td>
+      <td>0.1821</td>
+      <td>20.3111</td>
+      <td>1x</td>
+    </tr>
+    <tr>
+      <td>Kernel 1: simple bind</td>
+      <td>5.6154</td>
+      <td>0.6588</td>
+      <td>0.03x</td>
+    </tr>
+    <tr>
+      <td>Kernel 2: + unrolling</td>
+      <td>0.3707</td>
+      <td>9.9796</td>
+      <td>0.49x</td>
+    </tr>
+  </tbody>
+</table>
+
+<h3 id="kernel3-vectorization">Kernel3: vectorization</h3>
+<p>As mentioned before, we need to do vectorization explictly
+ in order to achieve the best performance on Mali GPU.</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># set tunable parameter
+</span><span class="n">num_thread</span> <span class="o">=</span> <span class="mi">8</span>
+
+<span class="c1"># schedule data packing
+</span><span class="n">_</span><span class="p">,</span> <span class="n">h</span><span class="p">,</span> <span class="n">w</span><span class="p">,</span> <span class="n">ci</span><span class="p">,</span> <span class="n">vh</span><span class="p">,</span> <span class="n">vw</span> <span class="o">=</span> <span class="n">s</span><span class="p">[</span><span class="n">data_vec</span><span class="p">]</span><span class="o">.</span><span class="n">op</span><span class="o">.</span><span class="n">axis</span>
+<span class="n">tile_and_bind3d</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="n">data_vec</span><span class="p">,</span> <span class="n">h</span><span class="p">,</span> <span class="n">w</span><span class="p">,</span> <span class="n">ci</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+
+<span class="c1"># unroll
+</span><span class="n">s</span><span class="p">[</span><span class="n">data_vec</span><span class="p">]</span><span class="o">.</span><span class="n">unroll</span><span class="p">(</span><span class="n">vw</span><span class="p">)</span>
+
+<span class="c1"># schedule kernel packing
+</span><span class="n">co</span><span class="p">,</span> <span class="n">ci</span><span class="p">,</span> <span class="n">kh</span><span class="p">,</span> <span class="n">kw</span><span class="p">,</span> <span class="n">vc</span> <span class="o">=</span> <span class="n">s</span><span class="p">[</span><span class="n">kernel_vec</span><span class="p">]</span><span class="o">.</span><span class="n">op</span><span class="o">.</span><span class="n">axis</span>
+<span class="n">tile_and_bind</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="n">kernel_vec</span><span class="p">,</span> <span class="n">co</span><span class="p">,</span> <span class="n">ci</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+
+<span class="c1"># unroll
+</span><span class="n">s</span><span class="p">[</span><span class="n">kernel_vec</span><span class="p">]</span><span class="o">.</span><span class="n">unroll</span><span class="p">(</span><span class="n">kh</span><span class="p">)</span>
+<span class="n">s</span><span class="p">[</span><span class="n">kernel_vec</span><span class="p">]</span><span class="o">.</span><span class="n">unroll</span><span class="p">(</span><span class="n">kw</span><span class="p">)</span>
+<span class="s">"""!! VECTORIZE HERE !!"""</span>
+<span class="n">s</span><span class="p">[</span><span class="n">kernel_vec</span><span class="p">]</span><span class="o">.</span><span class="n">vectorize</span><span class="p">(</span><span class="n">vc</span><span class="p">)</span>
+
+<span class="c1"># schedule conv
+</span><span class="n">_</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="n">h</span><span class="p">,</span> <span class="n">w</span><span class="p">,</span> <span class="n">vh</span><span class="p">,</span> <span class="n">vw</span><span class="p">,</span> <span class="n">vc</span> <span class="o">=</span> <span class="n">s</span><span class="p">[</span><span class="n">conv</span><span class="p">]</span><span class="o">.</span><span class="n">op</span><span class="o">.</span><span class="n">axis</span>
+<span class="n">kc</span><span class="p">,</span> <span class="n">kh</span><span class="p">,</span> <span class="n">kw</span> <span class="o">=</span> <span class="n">s</span><span class="p">[</span><span class="n">conv</span><span class="p">]</span><span class="o">.</span><span class="n">op</span><span class="o">.</span><span class="n">reduce_axis</span>
+
+<span class="n">s</span><span class="p">[</span><span class="n">conv</span><span class="p">]</span><span class="o">.</span><span class="n">reorder</span><span class="p">(</span><span class="n">_</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="n">h</span><span class="p">,</span> <span class="n">w</span><span class="p">,</span> <span class="n">vh</span><span class="p">,</span> <span class="n">kc</span><span class="p">,</span> <span class="n">kh</span><span class="p">,</span> <span class="n">kw</span><span class="p">,</span> <span class="n">vw</span><span class="p">,</span> <span class="n">vc</span><span class="p">)</span>
+<span class="n">tile_and_bind3d</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="n">conv</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="n">h</span><span class="p">,</span> <span class="n">w</span><span class="p">,</span> <span class="n">num_thread</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+
+<span class="c1"># unroll
+</span><span class="n">s</span><span class="p">[</span><span class="n">conv</span><span class="p">]</span><span class="o">.</span><span class="n">unroll</span><span class="p">(</span><span class="n">kh</span><span class="p">)</span>
+<span class="n">s</span><span class="p">[</span><span class="n">conv</span><span class="p">]</span><span class="o">.</span><span class="n">unroll</span><span class="p">(</span><span class="n">kw</span><span class="p">)</span>
+<span class="n">s</span><span class="p">[</span><span class="n">conv</span><span class="p">]</span><span class="o">.</span><span class="n">unroll</span><span class="p">(</span><span class="n">vw</span><span class="p">)</span>
+<span class="s">"""!! VECTORIZE HERE !!"""</span>
+<span class="n">s</span><span class="p">[</span><span class="n">conv</span><span class="p">]</span><span class="o">.</span><span class="n">vectorize</span><span class="p">(</span><span class="n">vc</span><span class="p">)</span>
+
+<span class="n">_</span><span class="p">,</span> <span class="n">co</span><span class="p">,</span> <span class="n">oh</span><span class="p">,</span> <span class="n">ow</span> <span class="o">=</span> <span class="n">s</span><span class="p">[</span><span class="n">output</span><span class="p">]</span><span class="o">.</span><span class="n">op</span><span class="o">.</span><span class="n">axis</span>
+<span class="n">tile_and_bind3d</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="n">output</span><span class="p">,</span> <span class="n">co</span><span class="p">,</span> <span class="n">oh</span><span class="p">,</span> <span class="n">ow</span><span class="p">,</span> <span class="n">num_thread</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+</code></pre></div></div>
+
+<table>
+  <thead>
+    <tr>
+      <th>Kernel</th>
+      <th>Cost (second)</th>
+      <th>GFLOPS</th>
+      <th>speedup</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>GEMM method in ARMComputeLib</td>
+      <td>0.1821</td>
+      <td>20.3111</td>
+      <td>1x</td>
+    </tr>
+    <tr>
+      <td>Kernel 1: simple bind</td>
+      <td>5.6154</td>
+      <td>0.6588</td>
+      <td>0.03x</td>
+    </tr>
+    <tr>
+      <td>Kernel 2: + unrolling</td>
+      <td>0.3707</td>
+      <td>9.9796</td>
+      <td>0.49x</td>
+    </tr>
+    <tr>
+      <td>Kernel 3: + vectorization</td>
+      <td>0.1304</td>
+      <td>28.3679</td>
+      <td>1.40x</td>
+    </tr>
+  </tbody>
+</table>
+
+<h3 id="how-to-set-the-tunable-parameter">How to set the tunable parameter</h3>
+<p>As for the tunable parameters above, some can be calculated.
+For the vectorized dimension <code class="highlighter-rouge">VC</code>, we should fill the 128-bit register,
+so it can be set as 128/32=4 for float32 and 128/16=8 for float16.</p>
+
+<p>But more often we cannot determine the optimal value, due to the
+complicated runtime. We use grid search in TVM. It can be
+done extremely effective since we write python code in TVM’s high-level
+IR rather than direct OpenCL code.</p>
+
+<h3 id="the-generated-opencl-code">The generated OpenCL code</h3>
+<p>We can view the generated OpenCL code by</p>
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">print</span><span class="p">(</span><span class="n">func</span><span class="o">.</span><span class="n">imported_modules</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">get_source</span><span class="p">())</span>
+</code></pre></div></div>
+<p>The OpenCL code is too long to be pasted here, and it is hard to read due
+to heavy unrolling. If interested, you can view it
+<a href="https://github.com/merrymercy/tvm-mali/blob/master/data/kernels.cl">here</a>.</p>
+
+<h1 id="end-to-end-benchmarking">End-to-End Benchmarking</h1>
+<p>In this section, we compare the comprehensive performance between
+different backends on some popular deep neural networks.
+Our test environment is</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Firefly-RK3399 4G
+CPU: dual-core Cortex-A72 + quad-core Cortex-A53
+GPU: Mali-T860MP4
+
+Arm Compute Library : v17.12
+MXNet: v1.0.1
+Openblas: v0.2.18
+</code></pre></div></div>
+
+<p>We use NNVM and TVM to do end-to-end compilation.</p>
+
+<h2 id="performance">Performance</h2>
+
+<p style="text-align: center"><img src="/images/opt-mali/end2end.png" alt="image" width="95%" /></p>
+
+<center> Figure 2. Inference Speed of Different Backends on ImageNet</center>
+<p></p>
+
+<p>As shown in Figure 2, we test the inference speed on ImageNet.
+On Firefly-RK3399, Mali GPU can be 2x ~ 4x faster than 6-core big.LITTLE CPU.
+Our end-to-end pipeline is 1.4x ~ 2.2x faster than Arm Compute Library.
+We try both GEMM and direct method of convolution layer in
+Arm Compute Library, GEMM method is always faster than direct method
+in these test cases, so we only plot the result of GEMM method.</p>
+
+<p>Some results, like resnet18 on Arm Compute Library, are missing in the Figure 2.
+It is because the graph runtime of Arm Compute Library does not support
+skip connection currently and has a poor neon implementation of
+depthwise convolution.  This also reflects the advantage of NNVM
+software stack.</p>
+
+<h2 id="half-precision-performance">Half-Precision Performance</h2>
+<p>Precision in deep neural networks is not very important, especially
+for the inference on mobile devices. Using low-precision arithmetic
+can make the inference much faster. We also test the half-precision
+floating number on Mali GPU.</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>model</th>
+      <th>backend</th>
+      <th>Time Cost per Image (second)</th>
+      <th>speed up to FP32</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>vgg16</td>
+      <td>ACM-mali</td>
+      <td>0.9694</td>
+      <td>1.69</td>
+    </tr>
+    <tr>
+      <td>vgg16</td>
+      <td>TVM-mali</td>
+      <td>0.6896</td>
+      <td><strong>1.87x</strong></td>
+    </tr>
+    <tr>
+      <td>MobileNet 1.0</td>
+      <td>TVM-mali</td>
+      <td>0.0479</td>
+      <td>1.60x</td>
+    </tr>
+    <tr>
+      <td>ResNet18</td>
+      <td>TVM-mali</td>
+      <td>0.1183</td>
+      <td>1.73x</td>
+    </tr>
+  </tbody>
+</table>
+
+<center> Table 1. Inference Speed of FP16 on ImageNet</center>
+<p></p>
+
+<p>In theory, FP16 can both double peak compute and halve memory consumption,
+so that doubling the speed. But it needs good input shape for
+longer vectorization and fine-tuning some parameters.</p>
+
+<h2 id="further-work-on-mobile-devices">Further Work on Mobile Devices</h2>
+<p>We should admit that there is still some room for improvement,
+mainly at the graph level, such as model compression and weight prelayout.
+Further improvement in NNVM will try to solve these problems.</p>
+
+<h1 id="show-me-the-code">Show me the code</h1>
+
+<ul>
+  <li><a href="https://github.com/merrymercy/tvm-mali">End-to-End benchmark</a></li>
+  <li><a href="https://github.com/dmlc/tvm/tree/master/topi/python/topi/mali">Convolution and Depthwise Convolution Schedule</a></li>
+</ul>
+
+<h1 id="bio--acknowledgement">Bio &amp; Acknowledgement</h1>
+<p><a href="https://lmzheng.net">Lianmin Zheng</a> is an undergraduate
+student at SJTU Apex lab.  He is interested in machine learning
+and building computer system.</p>
+
+<p>The author has many thanks to
+<a href="https://homes.cs.washington.edu/~tqchen/">Tianqi Chen</a> for his helpful
+advice and <a href="https://github.com/yzhliu">Yizhi Liu</a> for his earlier work.</p>
+
+<h1 id="reference">Reference</h1>
+<p>[1] <a href="https://developer.arm.com/docs/100614/0302">ARM Mali GPU OpenCL Developer Guide</a>
+[2] <a href="https://developer.arm.com/">ARM Developer</a></p>
+
+    </div>
+  </div>
+</div>
+</div>
+
+
+    
+
+
+
+
+
+    <div class="container">
+
+      <footer class="small">
+        Apache TVM is an effort undergoing incubation at The Apache Software Foundation (ASF),
+        sponsored by the <i>Apache Incubator</i>. Incubation is required
+        of all newly accepted projects until a further review indicates that the infrastructure,
+        communications, and decision making process have stabilized in a manner consistent with other
+        successful ASF projects. While incubation status is not necessarily a reflection of the completeness
+        or stability of the code, it does indicate that the project has yet to be fully endorsed by the ASF.
+
+        Copyright © 2020 The Apache Software Foundation. Apache TVM, Apache,
+        the Apache feather, and the Apache TVM project logo are either trademarks or registered trademarks of the Apache Software Foundation.
+
+        See also other useful <a href="/asf" class="footer-link">ASF links</a>:
+        <a href="https://www.apache.org/" class="footer-link">Apache Homepage</a>,
+        <a href="https://www.apache.org/licenses/" class="footer-link">License</a>
+        <a href="https://www.apache.org/foundation/sponsorship.html" class="footer-link">Sponsorship</a>,
+        <a href="https://www.apache.org/security/" class="footer-link">Security</a>
+        <a href="https://www.apache.org/foundation/thanks.html" class="footer-link">Thanks</a>,
+        <a href="https://www.apache.org/events/current-event.html" class="footer-link">Current Event</a>
+
+      </footer>
+    </div>
+  </body>
+</html>
+
+

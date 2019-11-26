@@ -1,0 +1,498 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Deploy the Pretrained Model on Raspberry Pi &mdash; tvm 0.7.dev1 documentation</title>
+  
+
+  
+  
+    <link rel="shortcut icon" href="../../_static/tvm-logo-square.png"/>
+  
+  
+  
+
+  
+  <script type="text/javascript" src="../../_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+        <script src="../../_static/jquery.js"></script>
+        <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/doctools.js"></script>
+        <script src="../../_static/language_data.js"></script>
+        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/gallery.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/css/tvm_theme.css" type="text/css" />
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="Compile PyTorch Models" href="from_pytorch.html" />
+    <link rel="prev" title="Compile MXNet Models" href="from_mxnet.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../index.html">
+          
+
+          
+            
+            <img src="../../_static/tvm-logo-small.png" class="logo" alt="Logo"/>
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.7.dev1
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../install/index.html">Installation</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../index.html">Tutorials</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../relay_quick_start.html">Quick Start Tutorial for Compiling Deep Learning Models</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../cross_compilation_and_rpc.html">Cross Compilation and RPC</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../tensor_expr_get_started.html">Get Started with Tensor Expression</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="../index.html#compile-deep-learning-models">Compile Deep Learning Models</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="from_onnx.html">Compile ONNX Models</a></li>
+<li class="toctree-l3"><a class="reference internal" href="deploy_ssd_gluoncv.html">Deploy Single Shot Multibox Detector(SSD) model</a></li>
+<li class="toctree-l3"><a class="reference internal" href="using_external_lib.html">Using External Libraries in Relay</a></li>
+<li class="toctree-l3"><a class="reference internal" href="from_coreml.html">Compile CoreML Models</a></li>
+<li class="toctree-l3"><a class="reference internal" href="from_keras.html">Compile Keras Models</a></li>
+<li class="toctree-l3"><a class="reference internal" href="deploy_quantized.html">Deploy a Quantized Model on Cuda</a></li>
+<li class="toctree-l3"><a class="reference internal" href="from_caffe2.html">Compile Caffe2 Models</a></li>
+<li class="toctree-l3"><a class="reference internal" href="from_mxnet.html">Compile MXNet Models</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">Deploy the Pretrained Model on Raspberry Pi</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#build-tvm-runtime-on-device">Build TVM Runtime on Device</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#set-up-rpc-server-on-device">Set Up RPC Server on Device</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#prepare-the-pre-trained-model">Prepare the Pre-trained Model</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#compile-the-graph">Compile The Graph</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#deploy-the-model-remotely-by-rpc">Deploy the Model Remotely by RPC</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="from_pytorch.html">Compile PyTorch Models</a></li>
+<li class="toctree-l3"><a class="reference internal" href="deploy_prequantized.html">Deploy a Framework-prequantized Model with TVM</a></li>
+<li class="toctree-l3"><a class="reference internal" href="from_tflite.html">Compile TFLite Models</a></li>
+<li class="toctree-l3"><a class="reference internal" href="deploy_prequantized_tflite.html">Deploy a Framework-prequantized Model with TVM - Part 3 (TFLite)</a></li>
+<li class="toctree-l3"><a class="reference internal" href="deploy_model_on_android.html">Deploy the Pretrained Model on Android</a></li>
+<li class="toctree-l3"><a class="reference internal" href="from_tensorflow.html">Compile Tensorflow Models</a></li>
+<li class="toctree-l3"><a class="reference internal" href="from_darknet.html">Compile YOLO-V2 and YOLO-V3 in DarkNet Models</a></li>
+<li class="toctree-l3"><a class="reference internal" href="build_gcn.html">Building a Graph Convolutional Network</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../index.html#tensor-expression-and-schedules">Tensor Expression and Schedules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../index.html#optimize-tensor-operators">Optimize Tensor Operators</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../index.html#auto-tuning">Auto tuning</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../index.html#developer-tutorials">Developer Tutorials</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../index.html#topi-tvm-operator-inventory">TOPI: TVM Operator Inventory</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../vta/index.html">VTA: Deep Learning Accelerator Stack</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../deploy/index.html">Deploy and Integration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../contribute/index.html">Contribute to TVM</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../faq.html">Frequently Asked Questions</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../langref/index.html">Language Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api/python/index.html">Python API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api/links.html">Links to API References</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../dev/index.html">Design and Developer Guide</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../frontend/tensorflow.html">TensorFlow Frontend</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../genindex.html">Index</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">tvm</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../index.html">Tutorials</a> &raquo;</li>
+        
+      <li>Deploy the Pretrained Model on Raspberry Pi</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../../_sources/tutorials/frontend/deploy_model_on_rasp.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="sphx-glr-download-link-note admonition note">
+<p class="admonition-title">Note</p>
+<p>Click <a class="reference internal" href="#sphx-glr-download-tutorials-frontend-deploy-model-on-rasp-py"><span class="std std-ref">here</span></a> to download the full example code</p>
+</div>
+<div class="sphx-glr-example-title section" id="deploy-the-pretrained-model-on-raspberry-pi">
+<span id="tutorial-deploy-model-on-rasp"></span><span id="sphx-glr-tutorials-frontend-deploy-model-on-rasp-py"></span><h1>Deploy the Pretrained Model on Raspberry Pi<a class="headerlink" href="#deploy-the-pretrained-model-on-raspberry-pi" title="Permalink to this headline">¶</a></h1>
+<p><strong>Author</strong>: <a class="reference external" href="https://ziheng.org/">Ziheng Jiang</a>,             <a class="reference external" href="https://makihiro.github.io/">Hiroyuki Makino</a></p>
+<p>This is an example of using Relay to compile a ResNet model and deploy
+it on Raspberry Pi.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span class="kn">import</span> <span class="nn">tvm</span>
+<span class="kn">from</span> <span class="nn">tvm</span> <span class="k">import</span> <span class="n">te</span>
+<span class="kn">import</span> <span class="nn">tvm.relay</span> <span class="k">as</span> <span class="nn">relay</span>
+<span class="kn">from</span> <span class="nn">tvm</span> <span class="k">import</span> <span class="n">rpc</span>
+<span class="kn">from</span> <span class="nn">tvm.contrib</span> <span class="k">import</span> <span class="n">util</span><span class="p">,</span> <span class="n">graph_runtime</span> <span class="k">as</span> <span class="n">runtime</span>
+<span class="kn">from</span> <span class="nn">tvm.contrib.download</span> <span class="k">import</span> <span class="n">download_testdata</span>
+</pre></div>
+</div>
+<div class="section" id="build-tvm-runtime-on-device">
+<span id="id1"></span><h2>Build TVM Runtime on Device<a class="headerlink" href="#build-tvm-runtime-on-device" title="Permalink to this headline">¶</a></h2>
+<p>The first step is to build the TVM runtime on the remote device.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>All instructions in both this section and next section should be
+executed on the target device, e.g. Raspberry Pi. And we assume it
+has Linux running.</p>
+</div>
+<p>Since we do compilation on local machine, the remote device is only used
+for running the generated code. We only need to build tvm runtime on
+the remote device.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre>git clone --recursive https://github.com/apache/incubator-tvm tvm
+<span class="nb">cd</span> tvm
+mkdir build
+cp cmake/config.cmake build
+<span class="nb">cd</span> build
+cmake ..
+make runtime -j4
+</pre></div>
+</div>
+<p>After building runtime successfully, we need to set environment varibles
+in <code class="code docutils literal notranslate"><span class="pre">~/.bashrc</span></code> file. We can edit <code class="code docutils literal notranslate"><span class="pre">~/.bashrc</span></code>
+using <code class="code docutils literal notranslate"><span class="pre">vi</span> <span class="pre">~/.bashrc</span></code> and add the line below (Assuming your TVM
+directory is in <code class="code docutils literal notranslate"><span class="pre">~/tvm</span></code>):</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span class="nb">export</span> <span class="nv">PYTHONPATH</span><span class="o">=</span>$PYTHONPATH:~/tvm/python
+</pre></div>
+</div>
+<p>To update the environment variables, execute <code class="code docutils literal notranslate"><span class="pre">source</span> <span class="pre">~/.bashrc</span></code>.</p>
+</div>
+<div class="section" id="set-up-rpc-server-on-device">
+<h2>Set Up RPC Server on Device<a class="headerlink" href="#set-up-rpc-server-on-device" title="Permalink to this headline">¶</a></h2>
+<p>To start an RPC server, run the following command on your remote device
+(Which is Raspberry Pi in our example).</p>
+<blockquote>
+<div><div class="highlight-bash notranslate"><div class="highlight"><pre>python -m tvm.exec.rpc_server --host 0.0.0.0 --port<span class="o">=</span>9090
+</pre></div>
+</div>
+</div></blockquote>
+<p>If you see the line below, it means the RPC server started
+successfully on your device.</p>
+<blockquote>
+<div><div class="highlight-bash notranslate"><div class="highlight"><pre>INFO:root:RPCServer: <span class="nb">bind</span> to 0.0.0.0:9090
+</pre></div>
+</div>
+</div></blockquote>
+</div>
+<div class="section" id="prepare-the-pre-trained-model">
+<h2>Prepare the Pre-trained Model<a class="headerlink" href="#prepare-the-pre-trained-model" title="Permalink to this headline">¶</a></h2>
+<p>Back to the host machine, which should have a full TVM installed (with LLVM).</p>
+<p>We will use pre-trained model from
+<a class="reference external" href="https://mxnet.incubator.apache.org/api/python/gluon/model_zoo.html">MXNet Gluon model zoo</a>.
+You can found more details about this part at tutorial <a class="reference internal" href="from_mxnet.html#tutorial-from-mxnet"><span class="std std-ref">Compile MXNet Models</span></a>.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">mxnet.gluon.model_zoo.vision</span> <span class="k">import</span> <span class="n">get_model</span>
+<span class="kn">from</span> <span class="nn">PIL</span> <span class="k">import</span> <span class="n">Image</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+
+<span class="c1"># one line to get the model</span>
+<span class="n">block</span> <span class="o">=</span> <span class="n">get_model</span><span class="p">(</span><span class="s1">&#39;resnet18_v1&#39;</span><span class="p">,</span> <span class="n">pretrained</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>In order to test our model, here we download an image of cat and
+transform its format.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span class="n">img_url</span> <span class="o">=</span> <span class="s1">&#39;https://github.com/dmlc/mxnet.js/blob/master/data/cat.png?raw=true&#39;</span>
+<span class="n">img_name</span> <span class="o">=</span> <span class="s1">&#39;cat.png&#39;</span>
+<span class="n">img_path</span> <span class="o">=</span> <span class="n">download_testdata</span><span class="p">(</span><span class="n">img_url</span><span class="p">,</span> <span class="n">img_name</span><span class="p">,</span> <span class="n">module</span><span class="o">=</span><span class="s1">&#39;data&#39;</span><span class="p">)</span>
+<span class="n">image</span> <span class="o">=</span> <span class="n">Image</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">img_path</span><span class="p">)</span><span class="o">.</span><span class="n">resize</span><span class="p">((</span><span class="mi">224</span><span class="p">,</span> <span class="mi">224</span><span class="p">))</span>
+
+<span class="k">def</span> <span class="nf">transform_image</span><span class="p">(</span><span class="n">image</span><span class="p">):</span>
+    <span class="n">image</span> <span class="o">=</span> <a href="https://numpy.org/doc/stable/reference/generated/numpy.array.html#numpy.array" title="View documentation for numpy.array"><span class="n">np</span><span class="o">.</span><span class="n">array</span></a><span class="p">(</span><span class="n">image</span><span class="p">)</span> <span class="o">-</span> <a href="https://numpy.org/doc/stable/reference/generated/numpy.array.html#numpy.array" title="View documentation for numpy.array"><span class="n">np</span><span class="o">.</span><span class="n">array</span></a><span class="p">([</span><span class="mf">123.</span><span class="p">,</span> <span class="mf">117.</span><span class="p">,</span> <span class="mf">104.</span><span class="p">])</span>
+    <span class="n">image</span> <span class="o">/=</span> <a href="https://numpy.org/doc/stable/reference/generated/numpy.array.html#numpy.array" title="View documentation for numpy.array"><span class="n">np</span><span class="o">.</span><span class="n">array</span></a><span class="p">([</span><span class="mf">58.395</span><span class="p">,</span> <span class="mf">57.12</span><span class="p">,</span> <span class="mf">57.375</span><span class="p">])</span>
+    <span class="n">image</span> <span class="o">=</span> <span class="n">image</span><span class="o">.</span><span class="n">transpose</span><span class="p">((</span><span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
+    <span class="n">image</span> <span class="o">=</span> <span class="n">image</span><span class="p">[</span><a href="https://numpy.org/doc/stable/reference/constants.html#numpy.newaxis" title="View documentation for numpy.newaxis"><span class="n">np</span><span class="o">.</span><span class="n">newaxis</span></a><span class="p">,</span> <span class="p">:]</span>
+    <span class="k">return</span> <span class="n">image</span>
+
+<span class="n">x</span> <span class="o">=</span> <span class="n">transform_image</span><span class="p">(</span><span class="n">image</span><span class="p">)</span>
+</pre></div>
+</div>
+<p class="sphx-glr-script-out">Out:</p>
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre>File /workspace/.tvm_test_data/data/cat.png exists, skip.
+</pre></div>
+</div>
+<p>synset is used to transform the label from number of ImageNet class to
+the word human can understand.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span class="n">synset_url</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="s1">&#39;https://gist.githubusercontent.com/zhreshold/&#39;</span><span class="p">,</span>
+                      <span class="s1">&#39;4d0b62f3d01426887599d4f7ede23ee5/raw/&#39;</span><span class="p">,</span>
+                      <span class="s1">&#39;596b27d23537e5a1b5751d2b0481ef172f58b539/&#39;</span><span class="p">,</span>
+                      <span class="s1">&#39;imagenet1000_clsid_to_human.txt&#39;</span><span class="p">])</span>
+<span class="n">synset_name</span> <span class="o">=</span> <span class="s1">&#39;imagenet1000_clsid_to_human.txt&#39;</span>
+<span class="n">synset_path</span> <span class="o">=</span> <span class="n">download_testdata</span><span class="p">(</span><span class="n">synset_url</span><span class="p">,</span> <span class="n">synset_name</span><span class="p">,</span> <span class="n">module</span><span class="o">=</span><span class="s1">&#39;data&#39;</span><span class="p">)</span>
+<span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">synset_path</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+    <span class="n">synset</span> <span class="o">=</span> <span class="nb">eval</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">read</span><span class="p">())</span>
+</pre></div>
+</div>
+<p class="sphx-glr-script-out">Out:</p>
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre>File /workspace/.tvm_test_data/data/imagenet1000_clsid_to_human.txt exists, skip.
+</pre></div>
+</div>
+<p>Now we would like to port the Gluon model to a portable computational graph.
+It’s as easy as several lines.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span class="c1"># We support MXNet static graph(symbol) and HybridBlock in mxnet.gluon</span>
+<span class="n">shape_dict</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;data&#39;</span><span class="p">:</span> <span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">}</span>
+<span class="n">mod</span><span class="p">,</span> <span class="n">params</span> <span class="o">=</span> <a href="../../api/python/relay/frontend.html#tvm.relay.frontend.from_mxnet" title="View documentation for tvm.relay.frontend.from_mxnet"><span class="n">relay</span><span class="o">.</span><span class="n">frontend</span><span class="o">.</span><span class="n">from_mxnet</span></a><span class="p">(</span><span class="n">block</span><span class="p">,</span> <span class="n">shape_dict</span><span class="p">)</span>
+<span class="c1"># we want a probability so add a softmax operator</span>
+<span class="n">func</span> <span class="o">=</span> <span class="n">mod</span><span class="p">[</span><span class="s2">&quot;main&quot;</span><span class="p">]</span>
+<span class="n">func</span> <span class="o">=</span> <a href="../../api/python/relay/index.html#tvm.relay.Function" title="View documentation for tvm.relay.Function"><span class="n">relay</span><span class="o">.</span><span class="n">Function</span></a><span class="p">(</span><span class="n">func</span><span class="o">.</span><span class="n">params</span><span class="p">,</span> <a href="../../api/python/relay/nn.html#tvm.relay.nn.softmax" title="View documentation for tvm.relay.nn.softmax"><span class="n">relay</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">softmax</span></a><span class="p">(</span><span class="n">func</span><span class="o">.</span><span class="n">body</span><span class="p">),</span> <span class="kc">None</span><span class="p">,</span> <span class="n">func</span><span class="o">.</span><span class="n">type_params</span><span class="p">,</span> <span class="n">func</span><span class="o">.</span><span class="n">attrs</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Here are some basic data workload configurations.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span class="n">batch_size</span> <span class="o">=</span> <span class="mi">1</span>
+<span class="n">num_classes</span> <span class="o">=</span> <span class="mi">1000</span>
+<span class="n">image_shape</span> <span class="o">=</span> <span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">224</span><span class="p">,</span> <span class="mi">224</span><span class="p">)</span>
+<span class="n">data_shape</span> <span class="o">=</span> <span class="p">(</span><span class="n">batch_size</span><span class="p">,)</span> <span class="o">+</span> <span class="n">image_shape</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="compile-the-graph">
+<h2>Compile The Graph<a class="headerlink" href="#compile-the-graph" title="Permalink to this headline">¶</a></h2>
+<p>To compile the graph, we call the <a class="reference internal" href="../../api/python/relay/index.html#tvm.relay.build" title="tvm.relay.build"><code class="xref any py py-func docutils literal notranslate"><span class="pre">relay.build</span></code></a> function
+with the graph configuration and parameters. However, You cannot to
+deploy a x86 program on a device with ARM instruction set. It means
+Relay also needs to know the compilation option of target device,
+apart from arguments <code class="code docutils literal notranslate"><span class="pre">net</span></code> and <code class="code docutils literal notranslate"><span class="pre">params</span></code> to specify the
+deep learning workload. Actually, the option matters, different option
+will lead to very different performance.</p>
+<p>If we run the example on our x86 server for demonstration, we can simply
+set it as <code class="code docutils literal notranslate"><span class="pre">llvm</span></code>. If running it on the Raspberry Pi, we need to
+specify its instruction set. Set <code class="code docutils literal notranslate"><span class="pre">local_demo</span></code> to False if you want
+to run this tutorial with a real device.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span class="n">local_demo</span> <span class="o">=</span> <span class="kc">True</span>
+
+<span class="k">if</span> <span class="n">local_demo</span><span class="p">:</span>
+    <span class="n">target</span> <span class="o">=</span> <a href="../../api/python/target.html#tvm.target.create" title="View documentation for tvm.target.create"><span class="n">tvm</span><span class="o">.</span><span class="n">target</span><span class="o">.</span><span class="n">create</span></a><span class="p">(</span><span class="s1">&#39;llvm&#39;</span><span class="p">)</span>
+<span class="k">else</span><span class="p">:</span>
+    <span class="n">target</span> <span class="o">=</span> <a href="../../api/python/target.html#tvm.target.arm_cpu" title="View documentation for tvm.target.arm_cpu"><span class="n">tvm</span><span class="o">.</span><span class="n">target</span><span class="o">.</span><span class="n">arm_cpu</span></a><span class="p">(</span><span class="s1">&#39;rasp3b&#39;</span><span class="p">)</span>
+    <span class="c1"># The above line is a simple form of</span>
+    <span class="c1"># target = tvm.target.create(&#39;llvm -device=arm_cpu -model=bcm2837 -target=armv7l-linux-gnueabihf -mattr=+neon&#39;)</span>
+
+<span class="k">with</span> <a href="../../api/python/relay/index.html#tvm.relay.build_config" title="View documentation for tvm.relay.build_config"><span class="n">relay</span><span class="o">.</span><span class="n">build_config</span></a><span class="p">(</span><span class="n">opt_level</span><span class="o">=</span><span class="mi">3</span><span class="p">):</span>
+    <span class="n">graph</span><span class="p">,</span> <span class="n">lib</span><span class="p">,</span> <span class="n">params</span> <span class="o">=</span> <a href="../../api/python/relay/index.html#tvm.relay.build" title="View documentation for tvm.relay.build"><span class="n">relay</span><span class="o">.</span><span class="n">build</span></a><span class="p">(</span><span class="n">func</span><span class="p">,</span> <span class="n">target</span><span class="p">,</span> <span class="n">params</span><span class="o">=</span><span class="n">params</span><span class="p">)</span>
+
+<span class="c1"># After `relay.build`, you will get three return values: graph,</span>
+<span class="c1"># library and the new parameter, since we do some optimization that will</span>
+<span class="c1"># change the parameters but keep the result of model as the same.</span>
+
+<span class="c1"># Save the library at local temporary directory.</span>
+<span class="n">tmp</span> <span class="o">=</span> <a href="../../api/python/contrib.html#tvm.contrib.util.tempdir" title="View documentation for tvm.contrib.util.tempdir"><span class="n">util</span><span class="o">.</span><span class="n">tempdir</span></a><span class="p">()</span>
+<span class="n">lib_fname</span> <span class="o">=</span> <span class="n">tmp</span><span class="o">.</span><span class="n">relpath</span><span class="p">(</span><span class="s1">&#39;net.tar&#39;</span><span class="p">)</span>
+<span class="n">lib</span><span class="o">.</span><span class="n">export_library</span><span class="p">(</span><span class="n">lib_fname</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="deploy-the-model-remotely-by-rpc">
+<h2>Deploy the Model Remotely by RPC<a class="headerlink" href="#deploy-the-model-remotely-by-rpc" title="Permalink to this headline">¶</a></h2>
+<p>With RPC, you can deploy the model remotely from your host machine
+to the remote device.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span class="c1"># obtain an RPC session from remote device.</span>
+<span class="k">if</span> <span class="n">local_demo</span><span class="p">:</span>
+    <span class="n">remote</span> <span class="o">=</span> <a href="../../api/python/rpc.html#tvm.rpc.LocalSession" title="View documentation for tvm.rpc.LocalSession"><span class="n">rpc</span><span class="o">.</span><span class="n">LocalSession</span></a><span class="p">()</span>
+<span class="k">else</span><span class="p">:</span>
+    <span class="c1"># The following is my environment, change this to the IP address of your target device</span>
+    <span class="n">host</span> <span class="o">=</span> <span class="s1">&#39;10.77.1.162&#39;</span>
+    <span class="n">port</span> <span class="o">=</span> <span class="mi">9090</span>
+    <span class="n">remote</span> <span class="o">=</span> <a href="../../api/python/rpc.html#tvm.rpc.connect" title="View documentation for tvm.rpc.connect"><span class="n">rpc</span><span class="o">.</span><span class="n">connect</span></a><span class="p">(</span><span class="n">host</span><span class="p">,</span> <span class="n">port</span><span class="p">)</span>
+
+<span class="c1"># upload the library to remote device and load it</span>
+<span class="n">remote</span><span class="o">.</span><span class="n">upload</span><span class="p">(</span><span class="n">lib_fname</span><span class="p">)</span>
+<span class="n">rlib</span> <span class="o">=</span> <span class="n">remote</span><span class="o">.</span><span class="n">load_module</span><span class="p">(</span><span class="s1">&#39;net.tar&#39;</span><span class="p">)</span>
+
+<span class="c1"># create the remote runtime module</span>
+<span class="n">ctx</span> <span class="o">=</span> <span class="n">remote</span><span class="o">.</span><span class="n">cpu</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+<span class="n">module</span> <span class="o">=</span> <a href="../../api/python/graph_runtime.html#tvm.contrib.graph_runtime.create" title="View documentation for tvm.contrib.graph_runtime.create"><span class="n">runtime</span><span class="o">.</span><span class="n">create</span></a><span class="p">(</span><span class="n">graph</span><span class="p">,</span> <span class="n">rlib</span><span class="p">,</span> <span class="n">ctx</span><span class="p">)</span>
+<span class="c1"># set parameter (upload params to the remote device. This may take a while)</span>
+<span class="n">module</span><span class="o">.</span><span class="n">set_input</span><span class="p">(</span><span class="o">**</span><span class="n">params</span><span class="p">)</span>
+<span class="c1"># set input data</span>
+<span class="n">module</span><span class="o">.</span><span class="n">set_input</span><span class="p">(</span><span class="s1">&#39;data&#39;</span><span class="p">,</span> <a href="../../api/python/ndarray.html#tvm.nd.array" title="View documentation for tvm.nd.array"><span class="n">tvm</span><span class="o">.</span><span class="n">nd</span><span class="o">.</span><span class="n">array</span></a><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s1">&#39;float32&#39;</span><span class="p">)))</span>
+<span class="c1"># run</span>
+<span class="n">module</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
+<span class="c1"># get output</span>
+<span class="n">out</span> <span class="o">=</span> <span class="n">module</span><span class="o">.</span><span class="n">get_output</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+<span class="c1"># get top1 result</span>
+<span class="n">top1</span> <span class="o">=</span> <a href="https://numpy.org/doc/stable/reference/generated/numpy.argmax.html#numpy.argmax" title="View documentation for numpy.argmax"><span class="n">np</span><span class="o">.</span><span class="n">argmax</span></a><span class="p">(</span><span class="n">out</span><span class="o">.</span><span class="n">asnumpy</span><span class="p">())</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;TVM prediction top-1: {}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">synset</span><span class="p">[</span><span class="n">top1</span><span class="p">]))</span>
+</pre></div>
+</div>
+<p class="sphx-glr-script-out">Out:</p>
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre>TVM prediction top-1: tiger cat
+</pre></div>
+</div>
+<div class="sphx-glr-footer class sphx-glr-footer-example docutils container" id="sphx-glr-download-tutorials-frontend-deploy-model-on-rasp-py">
+<div class="sphx-glr-download docutils container">
+<p><a class="reference download internal" download="" href="../../_downloads/83dedc6352b4016772e17480ef01345d/deploy_model_on_rasp.py"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">deploy_model_on_rasp.py</span></code></a></p>
+</div>
+<div class="sphx-glr-download docutils container">
+<p><a class="reference download internal" download="" href="../../_downloads/beb2188d497d67b66bcfbc2c254dccb7/deploy_model_on_rasp.ipynb"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Jupyter</span> <span class="pre">notebook:</span> <span class="pre">deploy_model_on_rasp.ipynb</span></code></a></p>
+</div>
+</div>
+<p class="sphx-glr-signature"><a class="reference external" href="https://sphinx-gallery.github.io">Gallery generated by Sphinx-Gallery</a></p>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="from_pytorch.html" class="btn btn-neutral float-right" title="Compile PyTorch Models" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="from_mxnet.html" class="btn btn-neutral float-left" title="Compile MXNet Models" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2020, Apache Software Foundation
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+    <!-- Theme Analytics -->
+    <script>
+    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+    })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+    ga('create', 'UA-75982049-2', 'auto');
+    ga('send', 'pageview');
+    </script>
+
+    
+   
+
+</body>
+</html>

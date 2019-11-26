@@ -1,0 +1,543 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Deploy a Framework-prequantized Model with TVM &mdash; tvm 0.7.dev1 documentation</title>
+  
+
+  
+  
+    <link rel="shortcut icon" href="../../_static/tvm-logo-square.png"/>
+  
+  
+  
+
+  
+  <script type="text/javascript" src="../../_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+        <script src="../../_static/jquery.js"></script>
+        <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/doctools.js"></script>
+        <script src="../../_static/language_data.js"></script>
+        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/gallery.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/css/tvm_theme.css" type="text/css" />
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="Compile TFLite Models" href="from_tflite.html" />
+    <link rel="prev" title="Compile PyTorch Models" href="from_pytorch.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../index.html">
+          
+
+          
+            
+            <img src="../../_static/tvm-logo-small.png" class="logo" alt="Logo"/>
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.7.dev1
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../install/index.html">Installation</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../index.html">Tutorials</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../relay_quick_start.html">Quick Start Tutorial for Compiling Deep Learning Models</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../cross_compilation_and_rpc.html">Cross Compilation and RPC</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../tensor_expr_get_started.html">Get Started with Tensor Expression</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="../index.html#compile-deep-learning-models">Compile Deep Learning Models</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="from_onnx.html">Compile ONNX Models</a></li>
+<li class="toctree-l3"><a class="reference internal" href="deploy_ssd_gluoncv.html">Deploy Single Shot Multibox Detector(SSD) model</a></li>
+<li class="toctree-l3"><a class="reference internal" href="using_external_lib.html">Using External Libraries in Relay</a></li>
+<li class="toctree-l3"><a class="reference internal" href="from_coreml.html">Compile CoreML Models</a></li>
+<li class="toctree-l3"><a class="reference internal" href="from_keras.html">Compile Keras Models</a></li>
+<li class="toctree-l3"><a class="reference internal" href="deploy_quantized.html">Deploy a Quantized Model on Cuda</a></li>
+<li class="toctree-l3"><a class="reference internal" href="from_caffe2.html">Compile Caffe2 Models</a></li>
+<li class="toctree-l3"><a class="reference internal" href="from_mxnet.html">Compile MXNet Models</a></li>
+<li class="toctree-l3"><a class="reference internal" href="deploy_model_on_rasp.html">Deploy the Pretrained Model on Raspberry Pi</a></li>
+<li class="toctree-l3"><a class="reference internal" href="from_pytorch.html">Compile PyTorch Models</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">Deploy a Framework-prequantized Model with TVM</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#deploy-a-quantized-pytorch-model">Deploy a quantized PyTorch Model</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#load-quantization-ready-pretrained-mobilenet-v2-model-from-torchvision">Load quantization-ready, pretrained Mobilenet v2 model from torchvision</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#quantize-trace-and-run-the-pytorch-mobilenet-v2-model">Quantize, trace and run the PyTorch Mobilenet v2 model</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#convert-quantized-mobilenet-v2-to-relay-qnn-using-the-pytorch-frontend">Convert quantized Mobilenet v2 to Relay-QNN using the PyTorch frontend</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#compile-and-run-the-relay-module">Compile and run the Relay module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#compare-the-output-labels">Compare the output labels</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#measure-performance">Measure performance</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#deploy-a-quantized-mxnet-model">Deploy a quantized MXNet Model</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#deploy-a-quantized-tflite-model">Deploy a quantized TFLite Model</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="from_tflite.html">Compile TFLite Models</a></li>
+<li class="toctree-l3"><a class="reference internal" href="deploy_prequantized_tflite.html">Deploy a Framework-prequantized Model with TVM - Part 3 (TFLite)</a></li>
+<li class="toctree-l3"><a class="reference internal" href="deploy_model_on_android.html">Deploy the Pretrained Model on Android</a></li>
+<li class="toctree-l3"><a class="reference internal" href="from_tensorflow.html">Compile Tensorflow Models</a></li>
+<li class="toctree-l3"><a class="reference internal" href="from_darknet.html">Compile YOLO-V2 and YOLO-V3 in DarkNet Models</a></li>
+<li class="toctree-l3"><a class="reference internal" href="build_gcn.html">Building a Graph Convolutional Network</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../index.html#tensor-expression-and-schedules">Tensor Expression and Schedules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../index.html#optimize-tensor-operators">Optimize Tensor Operators</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../index.html#auto-tuning">Auto tuning</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../index.html#developer-tutorials">Developer Tutorials</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../index.html#topi-tvm-operator-inventory">TOPI: TVM Operator Inventory</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../vta/index.html">VTA: Deep Learning Accelerator Stack</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../deploy/index.html">Deploy and Integration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../contribute/index.html">Contribute to TVM</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../faq.html">Frequently Asked Questions</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../langref/index.html">Language Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api/python/index.html">Python API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api/links.html">Links to API References</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../dev/index.html">Design and Developer Guide</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../frontend/tensorflow.html">TensorFlow Frontend</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../genindex.html">Index</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">tvm</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../index.html">Tutorials</a> &raquo;</li>
+        
+      <li>Deploy a Framework-prequantized Model with TVM</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../../_sources/tutorials/frontend/deploy_prequantized.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="sphx-glr-download-link-note admonition note">
+<p class="admonition-title">Note</p>
+<p>Click <a class="reference internal" href="#sphx-glr-download-tutorials-frontend-deploy-prequantized-py"><span class="std std-ref">here</span></a> to download the full example code</p>
+</div>
+<div class="sphx-glr-example-title section" id="deploy-a-framework-prequantized-model-with-tvm">
+<span id="sphx-glr-tutorials-frontend-deploy-prequantized-py"></span><h1>Deploy a Framework-prequantized Model with TVM<a class="headerlink" href="#deploy-a-framework-prequantized-model-with-tvm" title="Permalink to this headline">¶</a></h1>
+<p><strong>Author</strong>: <a class="reference external" href="https://github.com/masahi">Masahiro Masuda</a></p>
+<p>This is a tutorial on loading models quantized by deep learning frameworks into TVM.
+Pre-quantized model import is one of the quantization support we have in TVM. More details on
+the quantization story in TVM can be found
+<a class="reference external" href="https://discuss.tvm.ai/t/quantization-story/3920">here</a>.</p>
+<p>Here, we demonstrate how to load and run models quantized by PyTorch, MXNet, and TFLite.
+Once loaded, we can run compiled, quantized models on any hardware TVM supports.</p>
+<p>First, necessary imports</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">PIL</span> <span class="k">import</span> <span class="n">Image</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+
+<span class="kn">import</span> <span class="nn">torch</span>
+<span class="kn">from</span> <span class="nn">torchvision.models.quantization</span> <span class="k">import</span> <span class="n">mobilenet</span> <span class="k">as</span> <span class="n">qmobilenet</span>
+
+<span class="kn">import</span> <span class="nn">tvm</span>
+<span class="kn">from</span> <span class="nn">tvm</span> <span class="k">import</span> <span class="n">relay</span>
+<span class="kn">from</span> <span class="nn">tvm.contrib.download</span> <span class="k">import</span> <span class="n">download_testdata</span>
+</pre></div>
+</div>
+<p>Helper functions to run the demo</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span class="k">def</span> <span class="nf">get_transform</span><span class="p">():</span>
+    <span class="kn">import</span> <span class="nn">torchvision.transforms</span> <span class="k">as</span> <span class="nn">transforms</span>
+    <span class="n">normalize</span> <span class="o">=</span> <span class="n">transforms</span><span class="o">.</span><span class="n">Normalize</span><span class="p">(</span><span class="n">mean</span><span class="o">=</span><span class="p">[</span><span class="mf">0.485</span><span class="p">,</span> <span class="mf">0.456</span><span class="p">,</span> <span class="mf">0.406</span><span class="p">],</span>
+                                     <span class="n">std</span><span class="o">=</span><span class="p">[</span><span class="mf">0.229</span><span class="p">,</span> <span class="mf">0.224</span><span class="p">,</span> <span class="mf">0.225</span><span class="p">])</span>
+    <span class="k">return</span> <span class="n">transforms</span><span class="o">.</span><span class="n">Compose</span><span class="p">([</span>
+            <span class="n">transforms</span><span class="o">.</span><span class="n">Resize</span><span class="p">(</span><span class="mi">256</span><span class="p">),</span>
+            <span class="n">transforms</span><span class="o">.</span><span class="n">CenterCrop</span><span class="p">(</span><span class="mi">224</span><span class="p">),</span>
+            <span class="n">transforms</span><span class="o">.</span><span class="n">ToTensor</span><span class="p">(),</span>
+            <span class="n">normalize</span><span class="p">,</span>
+        <span class="p">])</span>
+
+
+<span class="k">def</span> <span class="nf">get_real_image</span><span class="p">(</span><span class="n">im_height</span><span class="p">,</span> <span class="n">im_width</span><span class="p">):</span>
+    <span class="n">img_url</span> <span class="o">=</span> <span class="s1">&#39;https://github.com/dmlc/mxnet.js/blob/master/data/cat.png?raw=true&#39;</span>
+    <span class="n">img_path</span> <span class="o">=</span> <span class="n">download_testdata</span><span class="p">(</span><span class="n">img_url</span><span class="p">,</span> <span class="s1">&#39;cat.png&#39;</span><span class="p">,</span> <span class="n">module</span><span class="o">=</span><span class="s1">&#39;data&#39;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">Image</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">img_path</span><span class="p">)</span><span class="o">.</span><span class="n">resize</span><span class="p">((</span><span class="n">im_height</span><span class="p">,</span> <span class="n">im_width</span><span class="p">))</span>
+
+
+<span class="k">def</span> <span class="nf">get_imagenet_input</span><span class="p">():</span>
+    <span class="n">im</span> <span class="o">=</span> <span class="n">get_real_image</span><span class="p">(</span><span class="mi">224</span><span class="p">,</span> <span class="mi">224</span><span class="p">)</span>
+    <span class="n">preprocess</span> <span class="o">=</span> <span class="n">get_transform</span><span class="p">()</span>
+    <span class="n">pt_tensor</span> <span class="o">=</span> <span class="n">preprocess</span><span class="p">(</span><span class="n">im</span><span class="p">)</span>
+    <span class="k">return</span> <a href="https://numpy.org/doc/stable/reference/generated/numpy.expand_dims.html#numpy.expand_dims" title="View documentation for numpy.expand_dims"><span class="n">np</span><span class="o">.</span><span class="n">expand_dims</span></a><span class="p">(</span><span class="n">pt_tensor</span><span class="o">.</span><span class="n">numpy</span><span class="p">(),</span> <span class="mi">0</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">get_synset</span><span class="p">():</span>
+    <span class="n">synset_url</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="s1">&#39;https://gist.githubusercontent.com/zhreshold/&#39;</span><span class="p">,</span>
+                          <span class="s1">&#39;4d0b62f3d01426887599d4f7ede23ee5/raw/&#39;</span><span class="p">,</span>
+                          <span class="s1">&#39;596b27d23537e5a1b5751d2b0481ef172f58b539/&#39;</span><span class="p">,</span>
+                          <span class="s1">&#39;imagenet1000_clsid_to_human.txt&#39;</span><span class="p">])</span>
+    <span class="n">synset_name</span> <span class="o">=</span> <span class="s1">&#39;imagenet1000_clsid_to_human.txt&#39;</span>
+    <span class="n">synset_path</span> <span class="o">=</span> <span class="n">download_testdata</span><span class="p">(</span><span class="n">synset_url</span><span class="p">,</span> <span class="n">synset_name</span><span class="p">,</span> <span class="n">module</span><span class="o">=</span><span class="s1">&#39;data&#39;</span><span class="p">)</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">synset_path</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+        <span class="k">return</span> <span class="nb">eval</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">read</span><span class="p">())</span>
+
+
+<span class="k">def</span> <span class="nf">run_tvm_model</span><span class="p">(</span><span class="n">mod</span><span class="p">,</span> <span class="n">params</span><span class="p">,</span> <span class="n">input_name</span><span class="p">,</span> <span class="n">inp</span><span class="p">,</span> <span class="n">target</span><span class="o">=</span><span class="s2">&quot;llvm&quot;</span><span class="p">):</span>
+    <span class="k">with</span> <a href="../../api/python/relay/index.html#tvm.relay.build_config" title="View documentation for tvm.relay.build_config"><span class="n">relay</span><span class="o">.</span><span class="n">build_config</span></a><span class="p">(</span><span class="n">opt_level</span><span class="o">=</span><span class="mi">3</span><span class="p">):</span>
+        <span class="n">json</span><span class="p">,</span> <span class="n">lib</span><span class="p">,</span> <span class="n">params</span> <span class="o">=</span> <a href="../../api/python/relay/index.html#tvm.relay.build" title="View documentation for tvm.relay.build"><span class="n">relay</span><span class="o">.</span><span class="n">build</span></a><span class="p">(</span><span class="n">mod</span><span class="p">,</span> <span class="n">target</span><span class="o">=</span><span class="n">target</span><span class="p">,</span> <span class="n">params</span><span class="o">=</span><span class="n">params</span><span class="p">)</span>
+
+    <span class="n">runtime</span> <span class="o">=</span> <a href="../../api/python/graph_runtime.html#tvm.contrib.graph_runtime.create" title="View documentation for tvm.contrib.graph_runtime.create"><span class="n">tvm</span><span class="o">.</span><span class="n">contrib</span><span class="o">.</span><span class="n">graph_runtime</span><span class="o">.</span><span class="n">create</span></a><span class="p">(</span><span class="n">json</span><span class="p">,</span> <span class="n">lib</span><span class="p">,</span> <span class="n">tvm</span><span class="o">.</span><span class="n">context</span><span class="p">(</span><span class="n">target</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>
+    <span class="n">runtime</span><span class="o">.</span><span class="n">set_input</span><span class="p">(</span><span class="o">**</span><span class="n">params</span><span class="p">)</span>
+
+    <span class="n">runtime</span><span class="o">.</span><span class="n">set_input</span><span class="p">(</span><span class="n">input_name</span><span class="p">,</span> <span class="n">inp</span><span class="p">)</span>
+    <span class="n">runtime</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">runtime</span><span class="o">.</span><span class="n">get_output</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">asnumpy</span><span class="p">(),</span> <span class="n">runtime</span>
+</pre></div>
+</div>
+<p>A mapping from label to class name, to verify that the outputs from models below
+are reasonable</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span class="n">synset</span> <span class="o">=</span> <span class="n">get_synset</span><span class="p">()</span>
+</pre></div>
+</div>
+<p class="sphx-glr-script-out">Out:</p>
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre>File /workspace/.tvm_test_data/data/imagenet1000_clsid_to_human.txt exists, skip.
+</pre></div>
+</div>
+<p>Everyone’s favorite cat image for demonstration</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span class="n">inp</span> <span class="o">=</span> <span class="n">get_imagenet_input</span><span class="p">()</span>
+</pre></div>
+</div>
+<p class="sphx-glr-script-out">Out:</p>
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre>File /workspace/.tvm_test_data/data/cat.png exists, skip.
+</pre></div>
+</div>
+<div class="section" id="deploy-a-quantized-pytorch-model">
+<h2>Deploy a quantized PyTorch Model<a class="headerlink" href="#deploy-a-quantized-pytorch-model" title="Permalink to this headline">¶</a></h2>
+<p>First, we demonstrate how to load deep learning models quantized by PyTorch,
+using our PyTorch frontend.</p>
+<p>Please refer to the PyTorch static quantization tutorial below to learn about
+their quantization workflow.
+<a class="reference external" href="https://pytorch.org/tutorials/advanced/static_quantization_tutorial.html">https://pytorch.org/tutorials/advanced/static_quantization_tutorial.html</a></p>
+<p>We use this function to quantize PyTorch models.
+In short, this function takes a floating point model and converts it to uint8.
+The model is per-channel quantized.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span class="k">def</span> <span class="nf">quantize_model</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">inp</span><span class="p">):</span>
+    <span class="n">model</span><span class="o">.</span><span class="n">fuse_model</span><span class="p">()</span>
+    <span class="n">model</span><span class="o">.</span><span class="n">qconfig</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">quantization</span><span class="o">.</span><span class="n">get_default_qconfig</span><span class="p">(</span><span class="s1">&#39;fbgemm&#39;</span><span class="p">)</span>
+    <span class="n">torch</span><span class="o">.</span><span class="n">quantization</span><span class="o">.</span><span class="n">prepare</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="c1"># Dummy calibration</span>
+    <span class="n">model</span><span class="p">(</span><span class="n">inp</span><span class="p">)</span>
+    <span class="n">torch</span><span class="o">.</span><span class="n">quantization</span><span class="o">.</span><span class="n">convert</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="load-quantization-ready-pretrained-mobilenet-v2-model-from-torchvision">
+<h2>Load quantization-ready, pretrained Mobilenet v2 model from torchvision<a class="headerlink" href="#load-quantization-ready-pretrained-mobilenet-v2-model-from-torchvision" title="Permalink to this headline">¶</a></h2>
+<p>We choose mobilenet v2 because this model was trained with quantization aware
+training. Other models require a full post training calibration.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span class="n">qmodel</span> <span class="o">=</span> <span class="n">qmobilenet</span><span class="o">.</span><span class="n">mobilenet_v2</span><span class="p">(</span><span class="n">pretrained</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="quantize-trace-and-run-the-pytorch-mobilenet-v2-model">
+<h2>Quantize, trace and run the PyTorch Mobilenet v2 model<a class="headerlink" href="#quantize-trace-and-run-the-pytorch-mobilenet-v2-model" title="Permalink to this headline">¶</a></h2>
+<p>The details are out of scope for this tutorial. Please refer to the tutorials
+on the PyTorch website to learn about quantization and jit.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span class="n">pt_inp</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">from_numpy</span><span class="p">(</span><span class="n">inp</span><span class="p">)</span>
+<span class="n">quantize_model</span><span class="p">(</span><span class="n">qmodel</span><span class="p">,</span> <span class="n">pt_inp</span><span class="p">)</span>
+<span class="n">script_module</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">jit</span><span class="o">.</span><span class="n">trace</span><span class="p">(</span><span class="n">qmodel</span><span class="p">,</span> <span class="n">pt_inp</span><span class="p">)</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span>
+
+<span class="k">with</span> <span class="n">torch</span><span class="o">.</span><span class="n">no_grad</span><span class="p">():</span>
+    <span class="n">pt_result</span> <span class="o">=</span> <span class="n">script_module</span><span class="p">(</span><span class="n">pt_inp</span><span class="p">)</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span>
+</pre></div>
+</div>
+<p class="sphx-glr-script-out">Out:</p>
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre>/usr/local/lib/python3.6/dist-packages/torch/quantization/observer.py:803: UserWarning: must run observer before calling calculate_qparams.                                    Returning default scale and zero point
+  Returning default scale and zero point &quot;
+</pre></div>
+</div>
+</div>
+<div class="section" id="convert-quantized-mobilenet-v2-to-relay-qnn-using-the-pytorch-frontend">
+<h2>Convert quantized Mobilenet v2 to Relay-QNN using the PyTorch frontend<a class="headerlink" href="#convert-quantized-mobilenet-v2-to-relay-qnn-using-the-pytorch-frontend" title="Permalink to this headline">¶</a></h2>
+<p>The PyTorch frontend has support for converting a quantized PyTorch model to
+an equivalent Relay module enriched with quantization-aware operators.
+We call this representation Relay QNN dialect.</p>
+<p>You can print the output from the frontend to see how quantized models are
+represented.</p>
+<p>You would see operators specific to quantization such as
+qnn.quantize, qnn.dequantize, qnn.requantize, and qnn.conv2d etc.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span class="n">input_name</span> <span class="o">=</span> <span class="s2">&quot;input&quot;</span>  <span class="c1"># the input name can be be arbitrary for PyTorch frontend.</span>
+<span class="n">input_shapes</span> <span class="o">=</span> <span class="p">[(</span><span class="n">input_name</span><span class="p">,</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">224</span><span class="p">,</span> <span class="mi">224</span><span class="p">))]</span>
+<span class="n">mod</span><span class="p">,</span> <span class="n">params</span> <span class="o">=</span> <a href="../../api/python/relay/frontend.html#tvm.relay.frontend.from_pytorch" title="View documentation for tvm.relay.frontend.from_pytorch"><span class="n">relay</span><span class="o">.</span><span class="n">frontend</span><span class="o">.</span><span class="n">from_pytorch</span></a><span class="p">(</span><span class="n">script_module</span><span class="p">,</span> <span class="n">input_shapes</span><span class="p">)</span>
+<span class="c1"># print(mod) # comment in to see the QNN IR dump</span>
+</pre></div>
+</div>
+<p class="sphx-glr-script-out">Out:</p>
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre>ANTLR runtime and generated code versions disagree: 4.8!=4.7.2
+ANTLR runtime and generated code versions disagree: 4.8!=4.7.2
+</pre></div>
+</div>
+</div>
+<div class="section" id="compile-and-run-the-relay-module">
+<h2>Compile and run the Relay module<a class="headerlink" href="#compile-and-run-the-relay-module" title="Permalink to this headline">¶</a></h2>
+<p>Once we obtained the quantized Relay module, the rest of the workflow
+is the same as running floating point models. Please refer to other
+tutorials for more details.</p>
+<p>Under the hood, quantization specific operators are lowered to a sequence of
+standard Relay operators before compilation.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span class="n">tvm_result</span><span class="p">,</span> <span class="n">rt_mod</span> <span class="o">=</span> <span class="n">run_tvm_model</span><span class="p">(</span><span class="n">mod</span><span class="p">,</span> <span class="n">params</span><span class="p">,</span> <span class="n">input_name</span><span class="p">,</span> <span class="n">inp</span><span class="p">,</span> <span class="n">target</span><span class="o">=</span><span class="s2">&quot;llvm&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="compare-the-output-labels">
+<h2>Compare the output labels<a class="headerlink" href="#compare-the-output-labels" title="Permalink to this headline">¶</a></h2>
+<p>We should see identical labels printed.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span class="n">pt_top3_labels</span> <span class="o">=</span> <a href="https://numpy.org/doc/stable/reference/generated/numpy.argsort.html#numpy.argsort" title="View documentation for numpy.argsort"><span class="n">np</span><span class="o">.</span><span class="n">argsort</span></a><span class="p">(</span><span class="n">pt_result</span><span class="p">[</span><span class="mi">0</span><span class="p">])[::</span><span class="o">-</span><span class="mi">1</span><span class="p">][:</span><span class="mi">3</span><span class="p">]</span>
+<span class="n">tvm_top3_labels</span> <span class="o">=</span> <a href="https://numpy.org/doc/stable/reference/generated/numpy.argsort.html#numpy.argsort" title="View documentation for numpy.argsort"><span class="n">np</span><span class="o">.</span><span class="n">argsort</span></a><span class="p">(</span><span class="n">tvm_result</span><span class="p">[</span><span class="mi">0</span><span class="p">])[::</span><span class="o">-</span><span class="mi">1</span><span class="p">][:</span><span class="mi">3</span><span class="p">]</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;PyTorch top3 labels:&quot;</span><span class="p">,</span> <span class="p">[</span><span class="n">synset</span><span class="p">[</span><span class="n">label</span><span class="p">]</span> <span class="k">for</span> <span class="n">label</span> <span class="ow">in</span> <span class="n">pt_top3_labels</span><span class="p">])</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;TVM top3 labels:&quot;</span><span class="p">,</span> <span class="p">[</span><span class="n">synset</span><span class="p">[</span><span class="n">label</span><span class="p">]</span> <span class="k">for</span> <span class="n">label</span> <span class="ow">in</span> <span class="n">tvm_top3_labels</span><span class="p">])</span>
+</pre></div>
+</div>
+<p class="sphx-glr-script-out">Out:</p>
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre>PyTorch top3 labels: [&#39;tiger cat&#39;, &#39;Egyptian cat&#39;, &#39;tabby, tabby cat&#39;]
+TVM top3 labels: [&#39;tiger cat&#39;, &#39;Egyptian cat&#39;, &#39;tabby, tabby cat&#39;]
+</pre></div>
+</div>
+<p>However, due to the difference in numerics, in general the raw floating point
+outputs are not expected to be identical. Here, we print how many floating point
+output values are identical out of 1000 outputs from mobilenet v2.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%d</span><span class="s2"> in 1000 raw floating outputs identical.&quot;</span> <span class="o">%</span> <a href="https://numpy.org/doc/stable/reference/generated/numpy.sum.html#numpy.sum" title="View documentation for numpy.sum"><span class="n">np</span><span class="o">.</span><span class="n">sum</span></a><span class="p">(</span><span class="n">tvm_result</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="n">pt_result</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span>
+</pre></div>
+</div>
+<p class="sphx-glr-script-out">Out:</p>
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre>188 in 1000 raw floating outputs identical.
+</pre></div>
+</div>
+</div>
+<div class="section" id="measure-performance">
+<h2>Measure performance<a class="headerlink" href="#measure-performance" title="Permalink to this headline">¶</a></h2>
+<p>Here we give an example of how to measure performance of TVM compiled models.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span class="n">n_repeat</span> <span class="o">=</span> <span class="mi">100</span>  <span class="c1"># should be bigger to make the measurement more accurate</span>
+<span class="n">ctx</span> <span class="o">=</span> <span class="n">tvm</span><span class="o">.</span><span class="n">cpu</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+<span class="n">ftimer</span> <span class="o">=</span> <span class="n">rt_mod</span><span class="o">.</span><span class="n">module</span><span class="o">.</span><span class="n">time_evaluator</span><span class="p">(</span><span class="s2">&quot;run&quot;</span><span class="p">,</span> <span class="n">ctx</span><span class="p">,</span> <span class="n">number</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+                                      <span class="n">repeat</span><span class="o">=</span><span class="n">n_repeat</span><span class="p">)</span>
+<span class="n">prof_res</span> <span class="o">=</span> <a href="https://numpy.org/doc/stable/reference/generated/numpy.array.html#numpy.array" title="View documentation for numpy.array"><span class="n">np</span><span class="o">.</span><span class="n">array</span></a><span class="p">(</span><span class="n">ftimer</span><span class="p">()</span><span class="o">.</span><span class="n">results</span><span class="p">)</span> <span class="o">*</span> <span class="mi">1</span><span class="n">e3</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Elapsed average ms:&quot;</span><span class="p">,</span> <a href="https://numpy.org/doc/stable/reference/generated/numpy.mean.html#numpy.mean" title="View documentation for numpy.mean"><span class="n">np</span><span class="o">.</span><span class="n">mean</span></a><span class="p">(</span><span class="n">prof_res</span><span class="p">))</span>
+</pre></div>
+</div>
+<p class="sphx-glr-script-out">Out:</p>
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre>Elapsed average ms: 10.2562221
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>We recommend this method for the following reasons:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>Measurements are done in C++, so there is no Python overhead</p></li>
+<li><p>It includes several warm up runs</p></li>
+<li><p>The same method can be used to profile on remote devices (android etc.).</p></li>
+</ul>
+</div></blockquote>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Unless the hardware has special support for fast 8 bit instructions, quantized models are
+not expected to be any faster than FP32 models. Without fast 8 bit instructions, TVM does
+quantized convolution in 16 bit, even if the model itself is 8 bit.</p>
+<p>For x86, the best performance can be achieved on CPUs with AVX512 instructions set.
+In this case, TVM utilizes the fastest available 8 bit instructions for the given target.
+This includes support for the VNNI 8 bit dot product instruction (CascadeLake or newer).</p>
+<p>Moreover, the following general tips for CPU performance equally applies:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>Set the environment variable TVM_NUM_THREADS to the number of physical cores</p></li>
+<li><p>Choose the best target for your hardware, such as “llvm -mcpu=skylake-avx512” or
+“llvm -mcpu=cascadelake” (more CPUs with AVX512 would come in the future)</p></li>
+</ul>
+</div></blockquote>
+</div>
+</div>
+<div class="section" id="deploy-a-quantized-mxnet-model">
+<h2>Deploy a quantized MXNet Model<a class="headerlink" href="#deploy-a-quantized-mxnet-model" title="Permalink to this headline">¶</a></h2>
+<p>TODO</p>
+</div>
+<div class="section" id="deploy-a-quantized-tflite-model">
+<h2>Deploy a quantized TFLite Model<a class="headerlink" href="#deploy-a-quantized-tflite-model" title="Permalink to this headline">¶</a></h2>
+<p>TODO</p>
+<div class="sphx-glr-footer class sphx-glr-footer-example docutils container" id="sphx-glr-download-tutorials-frontend-deploy-prequantized-py">
+<div class="sphx-glr-download docutils container">
+<p><a class="reference download internal" download="" href="../../_downloads/8a7f17665207908e373e8146da09443a/deploy_prequantized.py"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">deploy_prequantized.py</span></code></a></p>
+</div>
+<div class="sphx-glr-download docutils container">
+<p><a class="reference download internal" download="" href="../../_downloads/78da213eae381b8ff94cc356ee7c5423/deploy_prequantized.ipynb"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Jupyter</span> <span class="pre">notebook:</span> <span class="pre">deploy_prequantized.ipynb</span></code></a></p>
+</div>
+</div>
+<p class="sphx-glr-signature"><a class="reference external" href="https://sphinx-gallery.github.io">Gallery generated by Sphinx-Gallery</a></p>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="from_tflite.html" class="btn btn-neutral float-right" title="Compile TFLite Models" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="from_pytorch.html" class="btn btn-neutral float-left" title="Compile PyTorch Models" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2020, Apache Software Foundation
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+    <!-- Theme Analytics -->
+    <script>
+    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+    })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+    ga('create', 'UA-75982049-2', 'auto');
+    ga('send', 'pageview');
+    </script>
+
+    
+   
+
+</body>
+</html>

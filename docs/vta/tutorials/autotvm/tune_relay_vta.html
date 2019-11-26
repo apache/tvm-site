@@ -1,0 +1,842 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Auto-tuning a convolutional network on VTA &mdash; tvm 0.7.dev1 documentation</title>
+  
+
+  
+  
+    <link rel="shortcut icon" href="../../../_static/tvm-logo-square.png"/>
+  
+  
+  
+
+  
+  <script type="text/javascript" src="../../../_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../../" src="../../../_static/documentation_options.js"></script>
+        <script src="../../../_static/jquery.js"></script>
+        <script src="../../../_static/underscore.js"></script>
+        <script src="../../../_static/doctools.js"></script>
+        <script src="../../../_static/language_data.js"></script>
+        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    
+    <script type="text/javascript" src="../../../_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/gallery.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/css/tvm_theme.css" type="text/css" />
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+    <link rel="next" title="Deploy and Integration" href="../../../deploy/index.html" />
+    <link rel="prev" title="2D Convolution Optimization" href="../optimize/convolution_opt.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../../index.html">
+          
+
+          
+            
+            <img src="../../../_static/tvm-logo-small.png" class="logo" alt="Logo"/>
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.7.dev1
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../../install/index.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../tutorials/index.html">Tutorials</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../../index.html">VTA: Deep Learning Accelerator Stack</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../../install.html">VTA Installation Guide</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../dev/index.html">VTA Design and Developer Guide</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="../index.html">VTA Tutorials</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="../vta_get_started.html">Get Started with VTA</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../matrix_multiply.html">Simple Matrix Multiply</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../index.html#compile-deep-learning-models">Compile Deep Learning Models</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../index.html#optimize-tensor-operators">Optimize Tensor Operators</a></li>
+<li class="toctree-l3 current"><a class="reference internal" href="../index.html#auto-tuning">Auto tuning</a><ul class="current">
+<li class="toctree-l4 current"><a class="current reference internal" href="#">Auto-tuning a convolutional network on VTA</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../../index.html#literature">Literature</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../../deploy/index.html">Deploy and Integration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../contribute/index.html">Contribute to TVM</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../faq.html">Frequently Asked Questions</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../langref/index.html">Language Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api/python/index.html">Python API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../api/links.html">Links to API References</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../dev/index.html">Design and Developer Guide</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../frontend/tensorflow.html">TensorFlow Frontend</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../genindex.html">Index</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">tvm</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../../index.html">VTA: Deep Learning Accelerator Stack</a> &raquo;</li>
+        
+          <li><a href="../index.html">VTA Tutorials</a> &raquo;</li>
+        
+      <li>Auto-tuning a convolutional network on VTA</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../../../_sources/vta/tutorials/autotvm/tune_relay_vta.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="sphx-glr-download-link-note admonition note">
+<p class="admonition-title">Note</p>
+<p>Click <a class="reference internal" href="#sphx-glr-download-vta-tutorials-autotvm-tune-relay-vta-py"><span class="std std-ref">here</span></a> to download the full example code</p>
+</div>
+<div class="sphx-glr-example-title section" id="auto-tuning-a-convolutional-network-on-vta">
+<span id="sphx-glr-vta-tutorials-autotvm-tune-relay-vta-py"></span><h1>Auto-tuning a convolutional network on VTA<a class="headerlink" href="#auto-tuning-a-convolutional-network-on-vta" title="Permalink to this headline">¶</a></h1>
+<p><strong>Author</strong>: <a class="reference external" href="https://github.com/merrymercy">Lianmin Zheng</a>, <a class="reference external" href="https://homes.cs.washington.edu/~moreau/">Thierry Moreau</a></p>
+<p>Auto-tuning for a specific accelerator design is critical for getting the best
+performance for any given operator. This is a tutorial showcases how to tune a
+whole convolutional network on VTA.</p>
+<p>The operator implementation for VTA in TVM is written in template form.
+The template has many tunable knobs (tile factor, virtual threads, etc).
+We will tune all convolution operators in the neural network. After tuning,
+we produce a log file which stores the best schedule parameters for all tuned
+operators. When the TVM compiler compiles these operators, it will query this
+log file to get the best knob parameters.</p>
+<div class="section" id="install-dependencies">
+<h2>Install dependencies<a class="headerlink" href="#install-dependencies" title="Permalink to this headline">¶</a></h2>
+<p>To use the autotvm package in tvm, we need to install some extra dependencies.
+(change “3” to “2” if you use python2):</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre>pip3 install --user psutil xgboost tornado mxnet requests <span class="s2">&quot;Pillow&lt;7&quot;</span>
+</pre></div>
+</div>
+<p>To make TVM run faster during tuning, it is recommended to use cython
+as FFI of TVM. In the root directory of TVM, execute
+(change “3” to “2” if you use python2):</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre>pip3 install --user cython
+sudo make cython3
+</pre></div>
+</div>
+<p>Now return to python code. Import packages.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">from</span> <span class="nn">mxnet.gluon.model_zoo</span> <span class="k">import</span> <span class="n">vision</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">PIL</span> <span class="k">import</span> <span class="n">Image</span>
+
+<span class="kn">import</span> <span class="nn">topi</span>
+<span class="kn">import</span> <span class="nn">tvm</span>
+<span class="kn">from</span> <span class="nn">tvm</span> <span class="k">import</span> <span class="n">te</span>
+<span class="kn">from</span> <span class="nn">tvm</span> <span class="k">import</span> <span class="n">rpc</span><span class="p">,</span> <span class="n">autotvm</span><span class="p">,</span> <span class="n">relay</span>
+<span class="kn">from</span> <span class="nn">tvm.contrib</span> <span class="k">import</span> <span class="n">graph_runtime</span><span class="p">,</span> <span class="n">util</span><span class="p">,</span> <span class="n">download</span>
+<span class="kn">from</span> <span class="nn">tvm.autotvm.measure.measure_methods</span> <span class="k">import</span> <span class="n">request_remote</span>
+<span class="kn">from</span> <span class="nn">tvm.autotvm.tuner</span> <span class="k">import</span> <a href="../../../api/python/autotvm.html#tvm.autotvm.tuner.XGBTuner" title="View documentation for tvm.autotvm.tuner.XGBTuner"><span class="n">XGBTuner</span></a><span class="p">,</span> <a href="../../../api/python/autotvm.html#tvm.autotvm.tuner.GATuner" title="View documentation for tvm.autotvm.tuner.GATuner"><span class="n">GATuner</span></a><span class="p">,</span> <a href="../../../api/python/autotvm.html#tvm.autotvm.tuner.RandomTuner" title="View documentation for tvm.autotvm.tuner.RandomTuner"><span class="n">RandomTuner</span></a><span class="p">,</span> <a href="../../../api/python/autotvm.html#tvm.autotvm.tuner.GridSearchTuner" title="View documentation for tvm.autotvm.tuner.GridSearchTuner"><span class="n">GridSearchTuner</span></a>
+
+<span class="kn">import</span> <span class="nn">vta</span>
+<span class="kn">from</span> <span class="nn">vta.testing</span> <span class="k">import</span> <span class="n">simulator</span>
+<span class="kn">from</span> <span class="nn">vta.top</span> <span class="k">import</span> <span class="n">graph_pack</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="compile-network">
+<h2>Compile network<a class="headerlink" href="#compile-network" title="Permalink to this headline">¶</a></h2>
+<p>Perform vta-specific compilation with Relay from a Gluon model</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span class="k">def</span> <span class="nf">compile_network</span><span class="p">(</span><span class="n">env</span><span class="p">,</span> <span class="n">target</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">start_pack</span><span class="p">,</span> <span class="n">stop_pack</span><span class="p">):</span>
+
+    <span class="c1"># Populate the shape and data type dictionary</span>
+    <span class="n">dtype_dict</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;data&quot;</span><span class="p">:</span> <span class="s1">&#39;float32&#39;</span><span class="p">}</span>
+    <span class="n">shape_dict</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;data&quot;</span><span class="p">:</span> <span class="p">(</span><span class="n">env</span><span class="o">.</span><span class="n">BATCH</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">224</span><span class="p">,</span> <span class="mi">224</span><span class="p">)}</span>
+
+    <span class="c1"># Get off the shelf gluon model, and convert to relay</span>
+    <span class="n">gluon_model</span> <span class="o">=</span> <span class="n">vision</span><span class="o">.</span><span class="n">get_model</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">pretrained</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">mod</span><span class="p">,</span> <span class="n">params</span> <span class="o">=</span> <a href="../../../api/python/relay/frontend.html#tvm.relay.frontend.from_mxnet" title="View documentation for tvm.relay.frontend.from_mxnet"><span class="n">relay</span><span class="o">.</span><span class="n">frontend</span><span class="o">.</span><span class="n">from_mxnet</span></a><span class="p">(</span><span class="n">gluon_model</span><span class="p">,</span> <span class="n">shape_dict</span><span class="p">)</span>
+
+    <span class="c1"># Update shape and type dictionary</span>
+    <span class="n">shape_dict</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="n">k</span><span class="p">:</span> <span class="n">v</span><span class="o">.</span><span class="n">shape</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">params</span><span class="o">.</span><span class="n">items</span><span class="p">()})</span>
+    <span class="n">dtype_dict</span><span class="o">.</span><span class="n">update</span><span class="p">({</span><span class="n">k</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">v</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">params</span><span class="o">.</span><span class="n">items</span><span class="p">()})</span>
+
+    <span class="c1"># Perform quantization in Relay</span>
+    <span class="c1"># Note: We set opt_level to 3 in order to fold batch norm</span>
+    <span class="k">with</span> <a href="../../../api/python/relay/index.html#tvm.relay.build_config" title="View documentation for tvm.relay.build_config"><span class="n">relay</span><span class="o">.</span><span class="n">build_config</span></a><span class="p">(</span><span class="n">opt_level</span><span class="o">=</span><span class="mi">3</span><span class="p">):</span>
+        <span class="k">with</span> <span class="n">relay</span><span class="o">.</span><span class="n">quantize</span><span class="o">.</span><span class="n">qconfig</span><span class="p">(</span><span class="n">global_scale</span><span class="o">=</span><span class="mf">8.0</span><span class="p">,</span> <span class="n">skip_conv_layers</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">]):</span>
+            <span class="n">mod</span> <span class="o">=</span> <span class="n">relay</span><span class="o">.</span><span class="n">quantize</span><span class="o">.</span><span class="n">quantize</span><span class="p">(</span><span class="n">mod</span><span class="p">,</span> <span class="n">params</span><span class="o">=</span><span class="n">params</span><span class="p">)</span>
+
+    <span class="c1"># Perform graph packing and constant folding for VTA target</span>
+    <span class="k">if</span> <span class="n">target</span><span class="o">.</span><span class="n">device_name</span> <span class="o">==</span> <span class="s2">&quot;vta&quot;</span><span class="p">:</span>
+        <span class="k">assert</span> <span class="n">env</span><span class="o">.</span><span class="n">BLOCK_IN</span> <span class="o">==</span> <span class="n">env</span><span class="o">.</span><span class="n">BLOCK_OUT</span>
+        <span class="n">relay_prog</span> <span class="o">=</span> <span class="n">graph_pack</span><span class="p">(</span><span class="n">mod</span><span class="p">[</span><span class="s2">&quot;main&quot;</span><span class="p">],</span>
+                                <span class="n">env</span><span class="o">.</span><span class="n">BATCH</span><span class="p">,</span>
+                                <span class="n">env</span><span class="o">.</span><span class="n">BLOCK_OUT</span><span class="p">,</span>
+                                <span class="n">env</span><span class="o">.</span><span class="n">WGT_WIDTH</span><span class="p">,</span>
+                                <span class="n">start_name</span><span class="o">=</span><span class="n">start_pack</span><span class="p">,</span>
+                                <span class="n">stop_name</span><span class="o">=</span><span class="n">stop_pack</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">relay_prog</span><span class="p">,</span> <span class="n">params</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="start-rpc-tracker">
+<h2>Start RPC Tracker<a class="headerlink" href="#start-rpc-tracker" title="Permalink to this headline">¶</a></h2>
+<p>TVM uses an RPC session to communicate with Pynq boards.
+During tuning, the tuner will send the generated code to the board and
+measure the speed of code on the board.</p>
+<p>To scale up tuning, TVM uses an RPC Tracker to manage multiple devices.
+The RPC Tracker is a centralized master node. We can register all devices to
+the tracker. For example, if we have 10 Pynq boards, we can register all of them
+to the tracker, and run 10 measurements in parallel, accelerating the tuning process.</p>
+<p>To start an RPC tracker, run this command on the host machine. The tracker is
+required during the whole tuning process, so we need to open a new terminal for
+this command:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre>python -m tvm.exec.rpc_tracker --host<span class="o">=</span>0.0.0.0 --port<span class="o">=</span>9190
+</pre></div>
+</div>
+<p>The expected output is:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre>INFO:RPCTracker:bind to 0.0.0.0:9190
+</pre></div>
+</div>
+</div>
+<div class="section" id="register-devices-to-rpc-tracker">
+<h2>Register devices to RPC Tracker<a class="headerlink" href="#register-devices-to-rpc-tracker" title="Permalink to this headline">¶</a></h2>
+<p>Now we can register our devices to the tracker. The first step is to
+build the TVM runtime for the Pynq devices.</p>
+<p>Follow <a class="reference internal" href="../../index.html#vta-index"><span class="std std-ref">VTA: Deep Learning Accelerator Stack</span></a>
+to build the TVM runtime on the device. Then register the device to the tracker with:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre>python -m tvm.exec.rpc_server --tracker<span class="o">=[</span>HOST_IP<span class="o">]</span>:9190 --key<span class="o">=</span>pynq
+</pre></div>
+</div>
+<p>(replace <code class="code docutils literal notranslate"><span class="pre">[HOST_IP]</span></code> with the IP address of your host machine)</p>
+<p>After registering devices, we can confirm it by querying the rpc_tracker:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre>python -m tvm.exec.query_rpc_tracker --host<span class="o">=</span>0.0.0.0 --port<span class="o">=</span>9190
+</pre></div>
+</div>
+<p>For example, if we have 6 Pynq boards and 11 Raspberry Pi 3B,
+the output can be</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre>Queue Status
+----------------------------------
+key          total  free  pending
+----------------------------------
+pynq         <span class="m">6</span>      <span class="m">6</span>     0
+rpi3b        <span class="m">11</span>     <span class="m">11</span>    0
+----------------------------------
+</pre></div>
+</div>
+<p>You can register multiple devices to the tracker to accelerate tuning.</p>
+</div>
+<div class="section" id="set-tuning-options">
+<h2>Set Tuning Options<a class="headerlink" href="#set-tuning-options" title="Permalink to this headline">¶</a></h2>
+<p>Before tuning, we should apply some configurations.
+Here we use an Pynq-Z1 board as an example.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span class="c1"># Tracker host and port can be set by your environment</span>
+<span class="n">tracker_host</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;TVM_TRACKER_HOST&quot;</span><span class="p">,</span> <span class="s1">&#39;0.0.0.0&#39;</span><span class="p">)</span>
+<span class="n">tracker_port</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;TVM_TRACKER_PORT&quot;</span><span class="p">,</span> <span class="mi">9190</span><span class="p">))</span>
+
+<span class="c1"># Load VTA parameters from the 3rdparty/vta-hw/config/vta_config.json file</span>
+<span class="n">env</span> <span class="o">=</span> <span class="n">vta</span><span class="o">.</span><span class="n">get_env</span><span class="p">()</span>
+
+<span class="c1"># This target is used for cross compilation. You can query it by :code:`gcc -v` on your device.</span>
+<span class="c1"># Set ``device=arm_cpu`` to run inference on the CPU</span>
+<span class="c1"># or ``device=vta`` to run inference on the FPGA.</span>
+<span class="n">device</span> <span class="o">=</span> <span class="s2">&quot;vta&quot;</span>
+<span class="n">target</span> <span class="o">=</span> <span class="n">env</span><span class="o">.</span><span class="n">target</span> <span class="k">if</span> <span class="n">device</span> <span class="o">==</span> <span class="s2">&quot;vta&quot;</span> <span class="k">else</span> <span class="n">env</span><span class="o">.</span><span class="n">target_vta_cpu</span>
+
+<span class="c1"># Name of Gluon model to compile</span>
+<span class="c1"># The ``start_pack`` and ``stop_pack`` labels indicate where</span>
+<span class="c1"># to start and end the graph packing relay pass: in other words</span>
+<span class="c1"># where to start and finish offloading to VTA.</span>
+<span class="n">network</span> <span class="o">=</span> <span class="s2">&quot;resnet18_v1&quot;</span>
+<span class="n">start_pack</span> <span class="o">=</span> <span class="s2">&quot;nn.max_pool2d&quot;</span>
+<span class="n">stop_pack</span> <span class="o">=</span> <span class="s2">&quot;nn.global_avg_pool2d&quot;</span>
+
+<span class="c1"># Tuning option</span>
+<span class="n">log_file</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">%s</span><span class="s2">.</span><span class="si">%s</span><span class="s2">.log&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">device</span><span class="p">,</span> <span class="n">network</span><span class="p">)</span>
+<span class="n">tuning_option</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s1">&#39;log_filename&#39;</span><span class="p">:</span> <span class="n">log_file</span><span class="p">,</span>
+
+    <span class="s1">&#39;tuner&#39;</span><span class="p">:</span> <span class="s1">&#39;random&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;n_trial&#39;</span><span class="p">:</span> <span class="mi">1000</span><span class="p">,</span>
+    <span class="s1">&#39;early_stopping&#39;</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
+
+    <span class="s1">&#39;measure_option&#39;</span><span class="p">:</span> <span class="n">autotvm</span><span class="o">.</span><span class="n">measure_option</span><span class="p">(</span>
+        <span class="n">builder</span><span class="o">=</span><span class="n">autotvm</span><span class="o">.</span><span class="n">LocalBuilder</span><span class="p">(),</span>
+        <span class="n">runner</span><span class="o">=</span><span class="n">autotvm</span><span class="o">.</span><span class="n">RPCRunner</span><span class="p">(</span><span class="n">env</span><span class="o">.</span><span class="n">TARGET</span><span class="p">,</span>
+                                 <span class="n">host</span><span class="o">=</span><span class="n">tracker_host</span><span class="p">,</span>
+                                 <span class="n">port</span><span class="o">=</span><span class="n">tracker_port</span><span class="p">,</span>
+                                 <span class="n">number</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span>
+                                 <span class="n">timeout</span><span class="o">=</span><span class="mi">60</span><span class="p">,</span>
+                                 <span class="n">check_correctness</span><span class="o">=</span><span class="kc">True</span><span class="p">),</span>
+    <span class="p">),</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>How to set tuning options</p>
+<p>In general, the default values provided here work well.
+If you have enough time budget, you can set <code class="code docutils literal notranslate"><span class="pre">n_trial</span></code>, <code class="code docutils literal notranslate"><span class="pre">early_stopping</span></code>
+to larger values, makes the tuning run for longer.
+If your device is under-powered or your conv2d operators are large, consider
+setting a longer timeout.</p>
+</div>
+</div>
+<div class="section" id="begin-tuning">
+<h2>Begin Tuning<a class="headerlink" href="#begin-tuning" title="Permalink to this headline">¶</a></h2>
+<p>Now we can extract tuning tasks from the network and begin tuning.
+Here, we provide a simple utility function to tune a list of tasks.
+This function is just an initial implementation which tunes them in sequential order.
+We will introduce a more sophisticated tuning scheduler in the future.</p>
+<p>Given that the tuning will be done on Pynq FPGA boards, make sure that
+the <code class="docutils literal notranslate"><span class="pre">`TARGET</span></code> entry in the <code class="docutils literal notranslate"><span class="pre">vta_config.json</span></code> file is set to <code class="docutils literal notranslate"><span class="pre">pynq</span></code>.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span class="c1"># You can skip the implementation of this function for this tutorial.</span>
+<span class="k">def</span> <span class="nf">tune_tasks</span><span class="p">(</span><span class="n">tasks</span><span class="p">,</span>
+               <span class="n">measure_option</span><span class="p">,</span>
+               <span class="n">tuner</span><span class="o">=</span><span class="s1">&#39;xgb&#39;</span><span class="p">,</span>
+               <span class="n">n_trial</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span>
+               <span class="n">early_stopping</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+               <span class="n">log_filename</span><span class="o">=</span><span class="s1">&#39;tuning.log&#39;</span><span class="p">,</span>
+               <span class="n">use_transfer_learning</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+
+    <span class="c1"># create tmp log file</span>
+    <span class="n">tmp_log_file</span> <span class="o">=</span> <span class="n">log_filename</span> <span class="o">+</span> <span class="s2">&quot;.tmp&quot;</span>
+    <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">tmp_log_file</span><span class="p">):</span>
+        <span class="n">os</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">tmp_log_file</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">tsk</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="nb">reversed</span><span class="p">(</span><span class="n">tasks</span><span class="p">)):</span>
+        <span class="n">prefix</span> <span class="o">=</span> <span class="s2">&quot;[Task </span><span class="si">%2d</span><span class="s2">/</span><span class="si">%2d</span><span class="s2">] &quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">tasks</span><span class="p">))</span>
+
+        <span class="c1"># create tuner</span>
+        <span class="k">if</span> <span class="n">tuner</span> <span class="o">==</span> <span class="s1">&#39;xgb&#39;</span> <span class="ow">or</span> <span class="n">tuner</span> <span class="o">==</span> <span class="s1">&#39;xgb-rank&#39;</span><span class="p">:</span>
+            <span class="n">tuner_obj</span> <span class="o">=</span> <a href="../../../api/python/autotvm.html#tvm.autotvm.tuner.XGBTuner" title="View documentation for tvm.autotvm.tuner.XGBTuner"><span class="n">XGBTuner</span></a><span class="p">(</span><span class="n">tsk</span><span class="p">,</span> <span class="n">loss_type</span><span class="o">=</span><span class="s1">&#39;rank&#39;</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">tuner</span> <span class="o">==</span> <span class="s1">&#39;xgb_knob&#39;</span><span class="p">:</span>
+            <span class="n">tuner_obj</span> <span class="o">=</span> <a href="../../../api/python/autotvm.html#tvm.autotvm.tuner.XGBTuner" title="View documentation for tvm.autotvm.tuner.XGBTuner"><span class="n">XGBTuner</span></a><span class="p">(</span><span class="n">tsk</span><span class="p">,</span> <span class="n">loss_type</span><span class="o">=</span><span class="s1">&#39;rank&#39;</span><span class="p">,</span> <span class="n">feature_type</span><span class="o">=</span><span class="s1">&#39;knob&#39;</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">tuner</span> <span class="o">==</span> <span class="s1">&#39;ga&#39;</span><span class="p">:</span>
+            <span class="n">tuner_obj</span> <span class="o">=</span> <a href="../../../api/python/autotvm.html#tvm.autotvm.tuner.GATuner" title="View documentation for tvm.autotvm.tuner.GATuner"><span class="n">GATuner</span></a><span class="p">(</span><span class="n">tsk</span><span class="p">,</span> <span class="n">pop_size</span><span class="o">=</span><span class="mi">50</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">tuner</span> <span class="o">==</span> <span class="s1">&#39;random&#39;</span><span class="p">:</span>
+            <span class="n">tuner_obj</span> <span class="o">=</span> <a href="../../../api/python/autotvm.html#tvm.autotvm.tuner.RandomTuner" title="View documentation for tvm.autotvm.tuner.RandomTuner"><span class="n">RandomTuner</span></a><span class="p">(</span><span class="n">tsk</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">tuner</span> <span class="o">==</span> <span class="s1">&#39;gridsearch&#39;</span><span class="p">:</span>
+            <span class="n">tuner_obj</span> <span class="o">=</span> <a href="../../../api/python/autotvm.html#tvm.autotvm.tuner.GridSearchTuner" title="View documentation for tvm.autotvm.tuner.GridSearchTuner"><span class="n">GridSearchTuner</span></a><span class="p">(</span><span class="n">tsk</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Invalid tuner: &quot;</span> <span class="o">+</span> <span class="n">tuner</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">use_transfer_learning</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">tmp_log_file</span><span class="p">):</span>
+                <span class="n">tuner_obj</span><span class="o">.</span><span class="n">load_history</span><span class="p">(</span><a href="../../../api/python/autotvm.html#tvm.autotvm.record.load_from_file" title="View documentation for tvm.autotvm.record.load_from_file"><span class="n">autotvm</span><span class="o">.</span><span class="n">record</span><span class="o">.</span><span class="n">load_from_file</span></a><span class="p">(</span><span class="n">tmp_log_file</span><span class="p">))</span>
+
+        <span class="c1"># do tuning</span>
+        <span class="n">tsk_trial</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span><span class="n">n_trial</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">tsk</span><span class="o">.</span><span class="n">config_space</span><span class="p">))</span>
+        <span class="n">tuner_obj</span><span class="o">.</span><span class="n">tune</span><span class="p">(</span><span class="n">n_trial</span><span class="o">=</span><span class="n">tsk_trial</span><span class="p">,</span>
+                       <span class="n">early_stopping</span><span class="o">=</span><span class="n">early_stopping</span><span class="p">,</span>
+                       <span class="n">measure_option</span><span class="o">=</span><span class="n">measure_option</span><span class="p">,</span>
+                       <span class="n">callbacks</span><span class="o">=</span><span class="p">[</span>
+                           <span class="n">autotvm</span><span class="o">.</span><span class="n">callback</span><span class="o">.</span><span class="n">progress_bar</span><span class="p">(</span><span class="n">tsk_trial</span><span class="p">,</span> <span class="n">prefix</span><span class="o">=</span><span class="n">prefix</span><span class="p">),</span>
+                           <span class="n">autotvm</span><span class="o">.</span><span class="n">callback</span><span class="o">.</span><span class="n">log_to_file</span><span class="p">(</span><span class="n">tmp_log_file</span><span class="p">)</span>
+                       <span class="p">])</span>
+
+    <span class="c1"># pick best records to a cache file</span>
+    <a href="../../../api/python/autotvm.html#tvm.autotvm.record.pick_best" title="View documentation for tvm.autotvm.record.pick_best"><span class="n">autotvm</span><span class="o">.</span><span class="n">record</span><span class="o">.</span><span class="n">pick_best</span></a><span class="p">(</span><span class="n">tmp_log_file</span><span class="p">,</span> <span class="n">log_filename</span><span class="p">)</span>
+    <span class="n">os</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">tmp_log_file</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Register VTA-specific tuning tasks</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span class="k">def</span> <span class="nf">register_vta_tuning_tasks</span><span class="p">():</span>
+    <span class="kn">from</span> <span class="nn">tvm.autotvm.task</span> <span class="k">import</span> <span class="n">TaskExtractEnv</span>
+
+    <span class="nd">@tvm</span><span class="o">.</span><span class="n">te</span><span class="o">.</span><span class="n">tag_scope</span><span class="p">(</span><span class="n">tag</span><span class="o">=</span><span class="n">topi</span><span class="o">.</span><span class="n">tag</span><span class="o">.</span><span class="n">ELEMWISE</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">my_clip</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">a_min</span><span class="p">,</span> <span class="n">a_max</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Unlike topi&#39;s current clip, put min and max into two stages.&quot;&quot;&quot;</span>
+        <span class="n">const_min</span> <span class="o">=</span> <span class="n">tvm</span><span class="o">.</span><span class="n">tir</span><span class="o">.</span><span class="n">const</span><span class="p">(</span><span class="n">a_min</span><span class="p">,</span> <span class="n">x</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
+        <span class="n">const_max</span> <span class="o">=</span> <span class="n">tvm</span><span class="o">.</span><span class="n">tir</span><span class="o">.</span><span class="n">const</span><span class="p">(</span><span class="n">a_max</span><span class="p">,</span> <span class="n">x</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
+        <span class="n">x</span> <span class="o">=</span> <a href="../../../api/python/te.html#tvm.te.compute" title="View documentation for tvm.te.compute"><span class="n">te</span><span class="o">.</span><span class="n">compute</span></a><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="k">lambda</span> <span class="o">*</span><span class="n">i</span><span class="p">:</span> <a href="../../../api/python/te.html#tvm.te.min" title="View documentation for tvm.te.min"><span class="n">tvm</span><span class="o">.</span><span class="n">te</span><span class="o">.</span><span class="n">min</span></a><span class="p">(</span><span class="n">x</span><span class="p">(</span><span class="o">*</span><span class="n">i</span><span class="p">),</span> <span class="n">const_max</span><span class="p">),</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;clipA&quot;</span><span class="p">)</span>
+        <span class="n">x</span> <span class="o">=</span> <a href="../../../api/python/te.html#tvm.te.compute" title="View documentation for tvm.te.compute"><span class="n">te</span><span class="o">.</span><span class="n">compute</span></a><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="k">lambda</span> <span class="o">*</span><span class="n">i</span><span class="p">:</span> <a href="../../../api/python/te.html#tvm.te.max" title="View documentation for tvm.te.max"><span class="n">tvm</span><span class="o">.</span><span class="n">te</span><span class="o">.</span><span class="n">max</span></a><span class="p">(</span><span class="n">x</span><span class="p">(</span><span class="o">*</span><span class="n">i</span><span class="p">),</span> <span class="n">const_min</span><span class="p">),</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;clipB&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">x</span>
+
+    <span class="c1"># init autotvm env to register VTA operator</span>
+    <span class="n">TaskExtractEnv</span><span class="p">()</span>
+
+    <span class="nd">@autotvm</span><span class="o">.</span><span class="n">template</span><span class="p">(</span><span class="s2">&quot;conv2d_packed.vta&quot;</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">_topi_nn_conv2d</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="k">assert</span> <span class="ow">not</span> <span class="n">kwargs</span><span class="p">,</span> <span class="s2">&quot;Do not support kwargs in template function call&quot;</span>
+        <span class="n">A</span><span class="p">,</span> <span class="n">W</span> <span class="o">=</span> <span class="n">args</span><span class="p">[:</span><span class="mi">2</span><span class="p">]</span>
+
+        <span class="k">with</span> <span class="n">tvm</span><span class="o">.</span><span class="n">target</span><span class="o">.</span><span class="n">vta</span><span class="p">():</span>
+            <span class="n">res</span> <span class="o">=</span> <span class="n">vta</span><span class="o">.</span><span class="n">top</span><span class="o">.</span><span class="n">conv2d_packed</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+            <span class="n">res</span> <span class="o">=</span> <span class="n">topi</span><span class="o">.</span><span class="n">right_shift</span><span class="p">(</span><span class="n">res</span><span class="p">,</span> <span class="mi">8</span><span class="p">)</span>
+            <span class="n">res</span> <span class="o">=</span> <span class="n">my_clip</span><span class="p">(</span><span class="n">res</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">127</span><span class="p">)</span>
+            <span class="n">res</span> <span class="o">=</span> <span class="n">topi</span><span class="o">.</span><span class="n">cast</span><span class="p">(</span><span class="n">res</span><span class="p">,</span> <span class="s2">&quot;int8&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <a href="../../../api/python/target.html#tvm.target.Target.current" title="View documentation for tvm.target.Target.current"><span class="n">tvm</span><span class="o">.</span><span class="n">target</span><span class="o">.</span><span class="n">Target</span><span class="o">.</span><span class="n">current</span></a><span class="p">()</span><span class="o">.</span><span class="n">device_name</span> <span class="o">==</span> <span class="s1">&#39;vta&#39;</span><span class="p">:</span>
+            <span class="n">s</span> <span class="o">=</span> <span class="n">vta</span><span class="o">.</span><span class="n">top</span><span class="o">.</span><span class="n">schedule_conv2d_packed</span><span class="p">([</span><span class="n">res</span><span class="p">])</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">s</span> <span class="o">=</span> <a href="../../../api/python/te.html#tvm.te.create_schedule" title="View documentation for tvm.te.create_schedule"><span class="n">te</span><span class="o">.</span><span class="n">create_schedule</span></a><span class="p">([</span><span class="n">res</span><span class="o">.</span><span class="n">op</span><span class="p">])</span>
+        <span class="k">return</span> <span class="n">s</span><span class="p">,</span> <span class="p">[</span><span class="n">A</span><span class="p">,</span> <span class="n">W</span><span class="p">,</span> <span class="n">res</span><span class="p">]</span>
+</pre></div>
+</div>
+<p>Finally, we launch tuning jobs and evaluate the end-to-end performance.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span class="k">def</span> <span class="nf">tune_and_evaluate</span><span class="p">(</span><span class="n">tuning_opt</span><span class="p">):</span>
+
+    <span class="k">if</span> <span class="n">env</span><span class="o">.</span><span class="n">TARGET</span> <span class="o">!=</span> <span class="s2">&quot;sim&quot;</span><span class="p">:</span>
+        <span class="c1"># Get remote from fleet node</span>
+        <span class="n">remote</span> <span class="o">=</span> <span class="n">autotvm</span><span class="o">.</span><span class="n">measure</span><span class="o">.</span><span class="n">request_remote</span><span class="p">(</span><span class="n">env</span><span class="o">.</span><span class="n">TARGET</span><span class="p">,</span>
+                                                <span class="n">tracker_host</span><span class="p">,</span>
+                                                <span class="n">tracker_port</span><span class="p">,</span>
+                                                <span class="n">timeout</span><span class="o">=</span><span class="mi">10000</span><span class="p">)</span>
+        <span class="c1"># Reconfigure the JIT runtime and FPGA.</span>
+        <span class="n">vta</span><span class="o">.</span><span class="n">reconfig_runtime</span><span class="p">(</span><span class="n">remote</span><span class="p">)</span>
+        <span class="n">vta</span><span class="o">.</span><span class="n">program_fpga</span><span class="p">(</span><span class="n">remote</span><span class="p">,</span> <span class="n">bitstream</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="c1"># In simulation mode, host the RPC server locally.</span>
+        <span class="n">remote</span> <span class="o">=</span> <a href="../../../api/python/rpc.html#tvm.rpc.LocalSession" title="View documentation for tvm.rpc.LocalSession"><span class="n">rpc</span><span class="o">.</span><span class="n">LocalSession</span></a><span class="p">()</span>
+
+    <span class="c1"># Register VTA tuning tasks</span>
+    <span class="n">register_vta_tuning_tasks</span><span class="p">()</span>
+
+    <span class="c1"># Perform task extraction on Relay program</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Extract tasks...&quot;</span><span class="p">)</span>
+    <span class="n">relay_prog</span><span class="p">,</span> <span class="n">params</span> <span class="o">=</span> <span class="n">compile_network</span><span class="p">(</span><span class="n">env</span><span class="p">,</span> <span class="n">target</span><span class="p">,</span> <span class="n">network</span><span class="p">,</span> <span class="n">start_pack</span><span class="p">,</span> <span class="n">stop_pack</span><span class="p">)</span>
+    <span class="n">mod</span> <span class="o">=</span> <span class="n">tvm</span><span class="o">.</span><span class="n">IRModule</span><span class="o">.</span><span class="n">from_expr</span><span class="p">(</span><span class="n">relay_prog</span><span class="p">)</span>
+    <span class="n">tasks</span> <span class="o">=</span> <span class="n">autotvm</span><span class="o">.</span><span class="n">task</span><span class="o">.</span><span class="n">extract_from_program</span><span class="p">(</span><span class="n">mod</span><span class="p">,</span>
+                                              <span class="n">params</span><span class="o">=</span><span class="n">params</span><span class="p">,</span>
+                                              <span class="n">ops</span><span class="o">=</span><span class="p">(</span><span class="n">relay</span><span class="o">.</span><span class="n">op</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;nn.conv2d&quot;</span><span class="p">),),</span>
+                                              <span class="n">target</span><span class="o">=</span><span class="n">target</span><span class="p">,</span>
+                                              <span class="n">target_host</span><span class="o">=</span><span class="n">env</span><span class="o">.</span><span class="n">target_host</span><span class="p">)</span>
+
+    <span class="c1"># filter out non-packed conv2d task</span>
+    <span class="n">tasks</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">filter</span><span class="p">(</span><span class="k">lambda</span> <span class="n">t</span><span class="p">:</span> <span class="nb">len</span><span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">1</span><span class="p">])</span> <span class="o">&gt;</span> <span class="mi">4</span><span class="p">,</span> <span class="n">tasks</span><span class="p">))</span>
+
+    <span class="c1"># We should have extracted 10 convolution tasks</span>
+    <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">tasks</span><span class="p">)</span> <span class="o">==</span> <span class="mi">10</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Extracted {} conv2d tasks:&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">tasks</span><span class="p">)))</span>
+    <span class="k">for</span> <span class="n">tsk</span> <span class="ow">in</span> <span class="n">tasks</span><span class="p">:</span>
+        <span class="n">inp</span> <span class="o">=</span> <span class="n">tsk</span><span class="o">.</span><span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span>
+        <span class="n">wgt</span> <span class="o">=</span> <span class="n">tsk</span><span class="o">.</span><span class="n">args</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span>
+        <span class="n">batch</span> <span class="o">=</span> <span class="n">inp</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">inp</span><span class="p">[</span><span class="mi">4</span><span class="p">]</span>
+        <span class="n">in_filter</span> <span class="o">=</span> <span class="n">inp</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="n">inp</span><span class="p">[</span><span class="mi">5</span><span class="p">]</span>
+        <span class="n">out_filter</span> <span class="o">=</span> <span class="n">wgt</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">wgt</span><span class="p">[</span><span class="mi">4</span><span class="p">]</span>
+        <span class="n">height</span><span class="p">,</span> <span class="n">width</span> <span class="o">=</span> <span class="n">inp</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="n">inp</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span>
+        <span class="n">hkernel</span><span class="p">,</span> <span class="n">wkernel</span> <span class="o">=</span> <span class="n">wgt</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="n">wgt</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span>
+        <span class="n">hstride</span><span class="p">,</span> <span class="n">wstride</span> <span class="o">=</span> <span class="n">tsk</span><span class="o">.</span><span class="n">args</span><span class="p">[</span><span class="mi">2</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span> <span class="n">tsk</span><span class="o">.</span><span class="n">args</span><span class="p">[</span><span class="mi">2</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span>
+        <span class="n">hpad</span><span class="p">,</span> <span class="n">wpad</span> <span class="o">=</span> <span class="n">tsk</span><span class="o">.</span><span class="n">args</span><span class="p">[</span><span class="mi">3</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span> <span class="n">tsk</span><span class="o">.</span><span class="n">args</span><span class="p">[</span><span class="mi">3</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;({}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {})&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+            <span class="n">batch</span><span class="p">,</span> <span class="n">height</span><span class="p">,</span> <span class="n">width</span><span class="p">,</span> <span class="n">in_filter</span><span class="p">,</span> <span class="n">out_filter</span><span class="p">,</span> <span class="n">hkernel</span><span class="p">,</span> <span class="n">wkernel</span><span class="p">,</span>
+            <span class="n">hpad</span><span class="p">,</span> <span class="n">wpad</span><span class="p">,</span> <span class="n">hstride</span><span class="p">,</span> <span class="n">wstride</span><span class="p">))</span>
+
+    <span class="c1"># We do not run the tuning in our webpage server since it takes too long.</span>
+    <span class="c1"># Comment the following line to run it by yourself.</span>
+    <span class="k">return</span>
+
+    <span class="c1"># run tuning tasks</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Tuning...&quot;</span><span class="p">)</span>
+    <span class="n">tune_tasks</span><span class="p">(</span><span class="n">tasks</span><span class="p">,</span> <span class="o">**</span><span class="n">tuning_opt</span><span class="p">)</span>
+
+    <span class="c1"># compile kernels with history best records</span>
+    <span class="k">with</span> <span class="n">autotvm</span><span class="o">.</span><span class="n">tophub</span><span class="o">.</span><span class="n">context</span><span class="p">(</span><span class="n">target</span><span class="p">,</span> <span class="n">extra_files</span><span class="o">=</span><span class="p">[</span><span class="n">log_file</span><span class="p">]):</span>
+        <span class="c1"># Compile network</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Compile...&quot;</span><span class="p">)</span>
+        <span class="k">with</span> <a href="../../../api/python/relay/index.html#tvm.relay.build_config" title="View documentation for tvm.relay.build_config"><span class="n">relay</span><span class="o">.</span><span class="n">build_config</span></a><span class="p">(</span><span class="n">opt_level</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">disabled_pass</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;AlterOpLayout&quot;</span><span class="p">}):</span>
+            <span class="k">if</span> <span class="n">target</span><span class="o">.</span><span class="n">device_name</span> <span class="o">!=</span> <span class="s2">&quot;vta&quot;</span><span class="p">:</span>
+                <span class="n">graph</span><span class="p">,</span> <span class="n">lib</span><span class="p">,</span> <span class="n">params</span> <span class="o">=</span> <a href="../../../api/python/relay/index.html#tvm.relay.build" title="View documentation for tvm.relay.build"><span class="n">relay</span><span class="o">.</span><span class="n">build</span></a><span class="p">(</span><span class="n">relay_prog</span><span class="p">,</span>
+                                                 <span class="n">target</span><span class="o">=</span><span class="n">target</span><span class="p">,</span>
+                                                 <span class="n">params</span><span class="o">=</span><span class="n">params</span><span class="p">,</span>
+                                                 <span class="n">target_host</span><span class="o">=</span><span class="n">env</span><span class="o">.</span><span class="n">target_host</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">with</span> <span class="n">vta</span><span class="o">.</span><span class="n">build_config</span><span class="p">():</span>
+                    <span class="n">graph</span><span class="p">,</span> <span class="n">lib</span><span class="p">,</span> <span class="n">params</span> <span class="o">=</span> <a href="../../../api/python/relay/index.html#tvm.relay.build" title="View documentation for tvm.relay.build"><span class="n">relay</span><span class="o">.</span><span class="n">build</span></a><span class="p">(</span>
+                        <span class="n">relay_prog</span><span class="p">,</span>
+                        <span class="n">target</span><span class="o">=</span><span class="n">target</span><span class="p">,</span>
+                        <span class="n">params</span><span class="o">=</span><span class="n">params</span><span class="p">,</span>
+                        <span class="n">target_host</span><span class="o">=</span><span class="n">env</span><span class="o">.</span><span class="n">target_host</span><span class="p">)</span>
+
+        <span class="c1"># Export library</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Upload...&quot;</span><span class="p">)</span>
+        <span class="n">temp</span> <span class="o">=</span> <a href="../../../api/python/contrib.html#tvm.contrib.util.tempdir" title="View documentation for tvm.contrib.util.tempdir"><span class="n">util</span><span class="o">.</span><span class="n">tempdir</span></a><span class="p">()</span>
+        <span class="n">lib</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">temp</span><span class="o">.</span><span class="n">relpath</span><span class="p">(</span><span class="s2">&quot;graphlib.o&quot;</span><span class="p">))</span>
+        <span class="n">remote</span><span class="o">.</span><span class="n">upload</span><span class="p">(</span><span class="n">temp</span><span class="o">.</span><span class="n">relpath</span><span class="p">(</span><span class="s2">&quot;graphlib.o&quot;</span><span class="p">))</span>
+        <span class="n">lib</span> <span class="o">=</span> <span class="n">remote</span><span class="o">.</span><span class="n">load_module</span><span class="p">(</span><span class="s2">&quot;graphlib.o&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Generate the graph runtime</span>
+        <span class="n">ctx</span> <span class="o">=</span> <span class="n">remote</span><span class="o">.</span><span class="n">ext_dev</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span> <span class="k">if</span> <span class="n">device</span> <span class="o">==</span> <span class="s2">&quot;vta&quot;</span> <span class="k">else</span> <span class="n">remote</span><span class="o">.</span><span class="n">cpu</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+        <span class="n">m</span> <span class="o">=</span> <a href="../../../api/python/graph_runtime.html#tvm.contrib.graph_runtime.create" title="View documentation for tvm.contrib.graph_runtime.create"><span class="n">graph_runtime</span><span class="o">.</span><span class="n">create</span></a><span class="p">(</span><span class="n">graph</span><span class="p">,</span> <span class="n">lib</span><span class="p">,</span> <span class="n">ctx</span><span class="p">)</span>
+
+        <span class="c1"># upload parameters to device</span>
+        <span class="n">image</span> <span class="o">=</span> <a href="../../../api/python/ndarray.html#tvm.nd.array" title="View documentation for tvm.nd.array"><span class="n">tvm</span><span class="o">.</span><span class="n">nd</span><span class="o">.</span><span class="n">array</span></a><span class="p">(</span>
+            <span class="p">(</span><a href="https://numpy.org/doc/stable/reference/random/generated/numpy.random.uniform.html#numpy.random.uniform" title="View documentation for numpy.random.uniform"><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span></a><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">224</span><span class="p">,</span> <span class="mi">224</span><span class="p">)))</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s1">&#39;float32&#39;</span><span class="p">))</span>
+        <span class="n">m</span><span class="o">.</span><span class="n">set_input</span><span class="p">(</span><span class="o">**</span><span class="n">params</span><span class="p">)</span>
+        <span class="n">m</span><span class="o">.</span><span class="n">set_input</span><span class="p">(</span><span class="s1">&#39;data&#39;</span><span class="p">,</span> <span class="n">image</span><span class="p">)</span>
+
+        <span class="c1"># evaluate</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Evaluate inference time cost...&quot;</span><span class="p">)</span>
+        <span class="n">timer</span> <span class="o">=</span> <span class="n">m</span><span class="o">.</span><span class="n">module</span><span class="o">.</span><span class="n">time_evaluator</span><span class="p">(</span><span class="s2">&quot;run&quot;</span><span class="p">,</span> <span class="n">ctx</span><span class="p">,</span> <span class="n">number</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">repeat</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+        <span class="n">tcost</span> <span class="o">=</span> <span class="n">timer</span><span class="p">()</span>
+        <span class="n">prof_res</span> <span class="o">=</span> <a href="https://numpy.org/doc/stable/reference/generated/numpy.array.html#numpy.array" title="View documentation for numpy.array"><span class="n">np</span><span class="o">.</span><span class="n">array</span></a><span class="p">(</span><span class="n">tcost</span><span class="o">.</span><span class="n">results</span><span class="p">)</span> <span class="o">*</span> <span class="mi">1000</span>  <span class="c1"># convert to millisecond</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Mean inference time (std dev): </span><span class="si">%.2f</span><span class="s2"> ms (</span><span class="si">%.2f</span><span class="s2"> ms)&quot;</span> <span class="o">%</span>
+              <span class="p">(</span><a href="https://numpy.org/doc/stable/reference/generated/numpy.mean.html#numpy.mean" title="View documentation for numpy.mean"><span class="n">np</span><span class="o">.</span><span class="n">mean</span></a><span class="p">(</span><span class="n">prof_res</span><span class="p">),</span> <a href="https://numpy.org/doc/stable/reference/generated/numpy.std.html#numpy.std" title="View documentation for numpy.std"><span class="n">np</span><span class="o">.</span><span class="n">std</span></a><span class="p">(</span><span class="n">prof_res</span><span class="p">)))</span>
+
+
+<span class="c1"># Run the tuning and evaluate the results</span>
+<span class="n">tune_and_evaluate</span><span class="p">(</span><span class="n">tuning_option</span><span class="p">)</span>
+</pre></div>
+</div>
+<p class="sphx-glr-script-out">Out:</p>
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre>Extract tasks...
+
+...1%, 0.01 MB, 31 KB/s, 0 seconds passed
+...2%, 0.02 MB, 62 KB/s, 0 seconds passed
+...3%, 0.02 MB, 94 KB/s, 0 seconds passed
+...4%, 0.03 MB, 125 KB/s, 0 seconds passed
+...5%, 0.04 MB, 156 KB/s, 0 seconds passed
+...6%, 0.05 MB, 187 KB/s, 0 seconds passed
+...7%, 0.05 MB, 218 KB/s, 0 seconds passed
+...8%, 0.06 MB, 248 KB/s, 0 seconds passed
+...9%, 0.07 MB, 279 KB/s, 0 seconds passed
+...10%, 0.08 MB, 310 KB/s, 0 seconds passed
+...11%, 0.09 MB, 341 KB/s, 0 seconds passed
+...13%, 0.09 MB, 371 KB/s, 0 seconds passed
+...14%, 0.10 MB, 402 KB/s, 0 seconds passed
+...15%, 0.11 MB, 432 KB/s, 0 seconds passed
+...16%, 0.12 MB, 462 KB/s, 0 seconds passed
+...17%, 0.12 MB, 492 KB/s, 0 seconds passed
+...18%, 0.13 MB, 523 KB/s, 0 seconds passed
+...19%, 0.14 MB, 553 KB/s, 0 seconds passed
+...20%, 0.15 MB, 583 KB/s, 0 seconds passed
+...21%, 0.16 MB, 613 KB/s, 0 seconds passed
+...22%, 0.16 MB, 643 KB/s, 0 seconds passed
+...23%, 0.17 MB, 673 KB/s, 0 seconds passed
+...25%, 0.18 MB, 702 KB/s, 0 seconds passed
+...26%, 0.19 MB, 732 KB/s, 0 seconds passed
+...27%, 0.20 MB, 762 KB/s, 0 seconds passed
+...28%, 0.20 MB, 792 KB/s, 0 seconds passed
+...29%, 0.21 MB, 821 KB/s, 0 seconds passed
+...30%, 0.22 MB, 851 KB/s, 0 seconds passed
+...31%, 0.23 MB, 881 KB/s, 0 seconds passed
+...32%, 0.23 MB, 911 KB/s, 0 seconds passed
+...33%, 0.24 MB, 940 KB/s, 0 seconds passed
+...34%, 0.25 MB, 969 KB/s, 0 seconds passed
+...35%, 0.26 MB, 999 KB/s, 0 seconds passed
+...36%, 0.27 MB, 1028 KB/s, 0 seconds passed
+...38%, 0.27 MB, 1056 KB/s, 0 seconds passed
+...39%, 0.28 MB, 1086 KB/s, 0 seconds passed
+...40%, 0.29 MB, 1115 KB/s, 0 seconds passed
+...41%, 0.30 MB, 1144 KB/s, 0 seconds passed
+...42%, 0.30 MB, 1174 KB/s, 0 seconds passed
+...43%, 0.31 MB, 1202 KB/s, 0 seconds passed
+...44%, 0.32 MB, 1232 KB/s, 0 seconds passed
+...45%, 0.33 MB, 1260 KB/s, 0 seconds passed
+...46%, 0.34 MB, 1289 KB/s, 0 seconds passed
+...47%, 0.34 MB, 1319 KB/s, 0 seconds passed
+...48%, 0.35 MB, 1347 KB/s, 0 seconds passed
+...50%, 0.36 MB, 1377 KB/s, 0 seconds passed
+...51%, 0.37 MB, 1404 KB/s, 0 seconds passed
+...52%, 0.38 MB, 1433 KB/s, 0 seconds passed
+...53%, 0.38 MB, 1462 KB/s, 0 seconds passed
+...54%, 0.39 MB, 1491 KB/s, 0 seconds passed
+...55%, 0.40 MB, 1520 KB/s, 0 seconds passed
+...56%, 0.41 MB, 1550 KB/s, 0 seconds passed
+...57%, 0.41 MB, 1578 KB/s, 0 seconds passed
+...58%, 0.42 MB, 1607 KB/s, 0 seconds passed
+...59%, 0.43 MB, 1635 KB/s, 0 seconds passed
+...60%, 0.44 MB, 1663 KB/s, 0 seconds passed
+...62%, 0.45 MB, 1692 KB/s, 0 seconds passed
+...63%, 0.45 MB, 1719 KB/s, 0 seconds passed
+...64%, 0.46 MB, 1748 KB/s, 0 seconds passed
+...65%, 0.47 MB, 1776 KB/s, 0 seconds passed
+...66%, 0.48 MB, 1804 KB/s, 0 seconds passed
+...67%, 0.48 MB, 1832 KB/s, 0 seconds passed
+...68%, 0.49 MB, 1860 KB/s, 0 seconds passed
+...69%, 0.50 MB, 1888 KB/s, 0 seconds passed
+...70%, 0.51 MB, 1915 KB/s, 0 seconds passed
+...71%, 0.52 MB, 1943 KB/s, 0 seconds passed
+...72%, 0.52 MB, 1969 KB/s, 0 seconds passed
+...73%, 0.53 MB, 1997 KB/s, 0 seconds passed
+...75%, 0.54 MB, 2026 KB/s, 0 seconds passed
+...76%, 0.55 MB, 2054 KB/s, 0 seconds passed
+...77%, 0.55 MB, 2082 KB/s, 0 seconds passed
+...78%, 0.56 MB, 2110 KB/s, 0 seconds passed
+...79%, 0.57 MB, 2136 KB/s, 0 seconds passed
+...80%, 0.58 MB, 2164 KB/s, 0 seconds passed
+...81%, 0.59 MB, 2193 KB/s, 0 seconds passed
+...82%, 0.59 MB, 2221 KB/s, 0 seconds passed
+...83%, 0.60 MB, 2248 KB/s, 0 seconds passed
+...84%, 0.61 MB, 2277 KB/s, 0 seconds passed
+...85%, 0.62 MB, 2303 KB/s, 0 seconds passed
+...87%, 0.62 MB, 2332 KB/s, 0 seconds passed
+...88%, 0.63 MB, 2360 KB/s, 0 seconds passed
+...89%, 0.64 MB, 2388 KB/s, 0 seconds passed
+...90%, 0.65 MB, 2413 KB/s, 0 seconds passed
+...91%, 0.66 MB, 2441 KB/s, 0 seconds passed
+...92%, 0.66 MB, 2469 KB/s, 0 seconds passed
+...93%, 0.67 MB, 2498 KB/s, 0 seconds passed
+...94%, 0.68 MB, 2524 KB/s, 0 seconds passed
+...95%, 0.69 MB, 2552 KB/s, 0 seconds passed
+...96%, 0.70 MB, 2580 KB/s, 0 seconds passed
+...97%, 0.70 MB, 2608 KB/s, 0 seconds passed
+...99%, 0.71 MB, 2636 KB/s, 0 seconds passed
+...100%, 0.72 MB, 2662 KB/s, 0 seconds passed
+Exception in thread Thread-9:
+Traceback (most recent call last):
+  File &quot;/usr/lib/python3.6/threading.py&quot;, line 916, in _bootstrap_inner
+    self.run()
+  File &quot;/usr/lib/python3.6/threading.py&quot;, line 864, in run
+    self._target(*self._args, **self._kwargs)
+  File &quot;/workspace/docs/../python/tvm/autotvm/task/relay_integration.py&quot;, line 49, in _lower
+    grc.codegen(mod[&quot;main&quot;])
+  File &quot;/workspace/docs/../python/tvm/relay/backend/graph_runtime_codegen.py&quot;, line 88, in codegen
+    arr = self._get_param_by_name(key)
+  File &quot;tvm/_ffi/_cython/./packed_func.pxi&quot;, line 321, in tvm._ffi._cy3.core.PackedFuncBase.__call__
+  File &quot;tvm/_ffi/_cython/./packed_func.pxi&quot;, line 256, in tvm._ffi._cy3.core.FuncCall
+  File &quot;tvm/_ffi/_cython/./packed_func.pxi&quot;, line 245, in tvm._ffi._cy3.core.FuncCall3
+  File &quot;tvm/_ffi/_cython/./base.pxi&quot;, line 160, in tvm._ffi._cy3.core.CALL
+tvm._ffi.base.TVMError: Traceback (most recent call last):
+  [bt] (3) /workspace/build/libtvm.so(TVMFuncCall+0x61) [0x7ffa999ba6a1]
+  [bt] (2) /workspace/build/libtvm.so(std::_Function_handler&lt;void (tvm::runtime::TVMArgs, tvm::runtime::TVMRetValue*), tvm::relay::backend::GraphRuntimeCodegenModule::GetFunction(std::__cxx11::basic_string&lt;char, std::char_traits&lt;char&gt;, std::allocator&lt;char&gt; &gt; const&amp;, tvm::runtime::ObjectPtr&lt;tvm::runtime::Object&gt; const&amp;)::{lambda(tvm::runtime::TVMArgs, tvm::runtime::TVMRetValue*)#5}&gt;::_M_invoke(std::_Any_data const&amp;, tvm::runtime::TVMArgs&amp;&amp;, tvm::runtime::TVMRetValue*&amp;&amp;)+0x6f) [0x7ffa998331af]
+  [bt] (1) /workspace/build/libtvm.so(tvm::runtime::TVMArgValue::operator std::__cxx11::basic_string&lt;char, std::char_traits&lt;char&gt;, std::allocator&lt;char&gt; &gt;[abi:cxx11]() const+0x141) [0x7ffa98ff3121]
+  [bt] (0) /workspace/build/libtvm.so(dmlc::LogMessageFatal::~LogMessageFatal()+0x67) [0x7ffa98fe0f87]
+  File &quot;/workspace/include/tvm/runtime/packed_func.h&quot;, line 484
+TVMError: Check failed: type_code_ == kTVMStr (8 vs. 11) : expected str but get Object
+
+Extracted 10 conv2d tasks:
+(1, 14, 14, 256, 512, 1, 1, 0, 0, 2, 2)
+(1, 28, 28, 128, 256, 1, 1, 0, 0, 2, 2)
+(1, 56, 56, 64, 128, 1, 1, 0, 0, 2, 2)
+(1, 56, 56, 64, 64, 3, 3, 1, 1, 1, 1)
+(1, 28, 28, 128, 128, 3, 3, 1, 1, 1, 1)
+(1, 56, 56, 64, 128, 3, 3, 1, 1, 2, 2)
+(1, 14, 14, 256, 256, 3, 3, 1, 1, 1, 1)
+(1, 28, 28, 128, 256, 3, 3, 1, 1, 2, 2)
+(1, 7, 7, 512, 512, 3, 3, 1, 1, 1, 1)
+(1, 14, 14, 256, 512, 3, 3, 1, 1, 2, 2)
+</pre></div>
+</div>
+</div>
+<div class="section" id="sample-output">
+<h2>Sample Output<a class="headerlink" href="#sample-output" title="Permalink to this headline">¶</a></h2>
+<p>The tuning needs to compile many programs and extract feature from them.
+So a high performance CPU is recommended.
+One sample output is listed below.
+It takes about 2 hours on a 16T CPU, and 6 Pynq boards.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre>Extract tasks...
+<span class="o">[</span>Warning<span class="o">]</span> Invalid shape during AutoTVM task creation
+Extracted <span class="m">10</span> conv2d tasks:
+    Task<span class="o">(</span><span class="nv">func_name</span><span class="o">=</span>topi_nn_conv2d, <span class="nv">args</span><span class="o">=((</span><span class="s1">&#39;TENSOR&#39;</span>, <span class="o">(</span>1, 16, 14, 14, 1, 16<span class="o">)</span>, <span class="s1">&#39;int8&#39;</span><span class="o">)</span>, <span class="o">(</span><span class="s1">&#39;TENSOR&#39;</span>, <span class="o">(</span>32, 16, 1, 1, 16, 16<span class="o">)</span>, <span class="s1">&#39;int8&#39;</span><span class="o">)</span>, <span class="o">(</span>2, 2<span class="o">)</span>, <span class="o">(</span>0, 0<span class="o">)</span>, <span class="o">(</span>1, 1<span class="o">)</span>, <span class="s1">&#39;NCHW1n16c&#39;</span>, <span class="s1">&#39;int32&#39;</span><span class="o">)</span>, <span class="nv">kwargs</span><span class="o">={}</span>, <span class="nv">workload</span><span class="o">=(</span><span class="s1">&#39;conv2d&#39;</span>, <span class="o">(</span>1, 16, 14, 14, 1, 16, <span class="s1">&#39;int8&#39;</span><span class="o">)</span>, <span class="o">(</span>32, 16, 1, 1, 16, 16, <span class="s1">&#39;int8&#39;</span><span class="o">)</span>, <span class="o">(</span>2, 2<span class="o">)</span>, <span class="o">(</span>0, 0<span class="o">)</span>, <span class="o">(</span>1, 1<span class="o">)</span>, <span class="s1">&#39;NCHW1n16c&#39;</span>, <span class="s1">&#39;int32&#39;</span><span class="o">))</span>
+    Task<span class="o">(</span><span class="nv">func_name</span><span class="o">=</span>topi_nn_conv2d, <span class="nv">args</span><span class="o">=((</span><span class="s1">&#39;TENSOR&#39;</span>, <span class="o">(</span>1, 8, 28, 28, 1, 16<span class="o">)</span>, <span class="s1">&#39;int8&#39;</span><span class="o">)</span>, <span class="o">(</span><span class="s1">&#39;TENSOR&#39;</span>, <span class="o">(</span>16, 8, 1, 1, 16, 16<span class="o">)</span>, <span class="s1">&#39;int8&#39;</span><span class="o">)</span>, <span class="o">(</span>2, 2<span class="o">)</span>, <span class="o">(</span>0, 0<span class="o">)</span>, <span class="o">(</span>1, 1<span class="o">)</span>, <span class="s1">&#39;NCHW1n16c&#39;</span>, <span class="s1">&#39;int32&#39;</span><span class="o">)</span>, <span class="nv">kwargs</span><span class="o">={}</span>, <span class="nv">workload</span><span class="o">=(</span><span class="s1">&#39;conv2d&#39;</span>, <span class="o">(</span>1, 8, 28, 28, 1, 16, <span class="s1">&#39;int8&#39;</span><span class="o">)</span>, <span class="o">(</span>16, 8, 1, 1, 16, 16, <span class="s1">&#39;int8&#39;</span><span class="o">)</span>, <span class="o">(</span>2, 2<span class="o">)</span>, <span class="o">(</span>0, 0<span class="o">)</span>, <span class="o">(</span>1, 1<span class="o">)</span>, <span class="s1">&#39;NCHW1n16c&#39;</span>, <span class="s1">&#39;int32&#39;</span><span class="o">))</span>
+    Task<span class="o">(</span><span class="nv">func_name</span><span class="o">=</span>topi_nn_conv2d, <span class="nv">args</span><span class="o">=((</span><span class="s1">&#39;TENSOR&#39;</span>, <span class="o">(</span>1, 4, 56, 56, 1, 16<span class="o">)</span>, <span class="s1">&#39;int8&#39;</span><span class="o">)</span>, <span class="o">(</span><span class="s1">&#39;TENSOR&#39;</span>, <span class="o">(</span>8, 4, 1, 1, 16, 16<span class="o">)</span>, <span class="s1">&#39;int8&#39;</span><span class="o">)</span>, <span class="o">(</span>2, 2<span class="o">)</span>, <span class="o">(</span>0, 0<span class="o">)</span>, <span class="o">(</span>1, 1<span class="o">)</span>, <span class="s1">&#39;NCHW1n16c&#39;</span>, <span class="s1">&#39;int32&#39;</span><span class="o">)</span>, <span class="nv">kwargs</span><span class="o">={}</span>, <span class="nv">workload</span><span class="o">=(</span><span class="s1">&#39;conv2d&#39;</span>, <span class="o">(</span>1, 4, 56, 56, 1, 16, <span class="s1">&#39;int8&#39;</span><span class="o">)</span>, <span class="o">(</span>8, 4, 1, 1, 16, 16, <span class="s1">&#39;int8&#39;</span><span class="o">)</span>, <span class="o">(</span>2, 2<span class="o">)</span>, <span class="o">(</span>0, 0<span class="o">)</span>, <span class="o">(</span>1, 1<span class="o">)</span>, <span class="s1">&#39;NCHW1n16c&#39;</span>, <span class="s1">&#39;int32&#39;</span><span class="o">))</span>
+    Task<span class="o">(</span><span class="nv">func_name</span><span class="o">=</span>topi_nn_conv2d, <span class="nv">args</span><span class="o">=((</span><span class="s1">&#39;TENSOR&#39;</span>, <span class="o">(</span>1, 4, 56, 56, 1, 16<span class="o">)</span>, <span class="s1">&#39;int8&#39;</span><span class="o">)</span>, <span class="o">(</span><span class="s1">&#39;TENSOR&#39;</span>, <span class="o">(</span>4, 4, 3, 3, 16, 16<span class="o">)</span>, <span class="s1">&#39;int8&#39;</span><span class="o">)</span>, <span class="o">(</span>1, 1<span class="o">)</span>, <span class="o">(</span>1, 1<span class="o">)</span>, <span class="o">(</span>1, 1<span class="o">)</span>, <span class="s1">&#39;NCHW1n16c&#39;</span>, <span class="s1">&#39;int32&#39;</span><span class="o">)</span>, <span class="nv">kwargs</span><span class="o">={}</span>, <span class="nv">workload</span><span class="o">=(</span><span class="s1">&#39;conv2d&#39;</span>, <span class="o">(</span>1, 4, 56, 56, 1, 16, <span class="s1">&#39;int8&#39;</span><span class="o">)</span>, <span class="o">(</span>4, 4, 3, 3, 16, 16, <span class="s1">&#39;int8&#39;</span><span class="o">)</span>, <span class="o">(</span>1, 1<span class="o">)</span>, <span class="o">(</span>1, 1<span class="o">)</span>, <span class="o">(</span>1, 1<span class="o">)</span>, <span class="s1">&#39;NCHW1n16c&#39;</span>, <span class="s1">&#39;int32&#39;</span><span class="o">))</span>
+    Task<span class="o">(</span><span class="nv">func_name</span><span class="o">=</span>topi_nn_conv2d, <span class="nv">args</span><span class="o">=((</span><span class="s1">&#39;TENSOR&#39;</span>, <span class="o">(</span>1, 8, 28, 28, 1, 16<span class="o">)</span>, <span class="s1">&#39;int8&#39;</span><span class="o">)</span>, <span class="o">(</span><span class="s1">&#39;TENSOR&#39;</span>, <span class="o">(</span>8, 8, 3, 3, 16, 16<span class="o">)</span>, <span class="s1">&#39;int8&#39;</span><span class="o">)</span>, <span class="o">(</span>1, 1<span class="o">)</span>, <span class="o">(</span>1, 1<span class="o">)</span>, <span class="o">(</span>1, 1<span class="o">)</span>, <span class="s1">&#39;NCHW1n16c&#39;</span>, <span class="s1">&#39;int32&#39;</span><span class="o">)</span>, <span class="nv">kwargs</span><span class="o">={}</span>, <span class="nv">workload</span><span class="o">=(</span><span class="s1">&#39;conv2d&#39;</span>, <span class="o">(</span>1, 8, 28, 28, 1, 16, <span class="s1">&#39;int8&#39;</span><span class="o">)</span>, <span class="o">(</span>8, 8, 3, 3, 16, 16, <span class="s1">&#39;int8&#39;</span><span class="o">)</span>, <span class="o">(</span>1, 1<span class="o">)</span>, <span class="o">(</span>1, 1<span class="o">)</span>, <span class="o">(</span>1, 1<span class="o">)</span>, <span class="s1">&#39;NCHW1n16c&#39;</span>, <span class="s1">&#39;int32&#39;</span><span class="o">))</span>
+    Task<span class="o">(</span><span class="nv">func_name</span><span class="o">=</span>topi_nn_conv2d, <span class="nv">args</span><span class="o">=((</span><span class="s1">&#39;TENSOR&#39;</span>, <span class="o">(</span>1, 4, 56, 56, 1, 16<span class="o">)</span>, <span class="s1">&#39;int8&#39;</span><span class="o">)</span>, <span class="o">(</span><span class="s1">&#39;TENSOR&#39;</span>, <span class="o">(</span>8, 4, 3, 3, 16, 16<span class="o">)</span>, <span class="s1">&#39;int8&#39;</span><span class="o">)</span>, <span class="o">(</span>2, 2<span class="o">)</span>, <span class="o">(</span>1, 1<span class="o">)</span>, <span class="o">(</span>1, 1<span class="o">)</span>, <span class="s1">&#39;NCHW1n16c&#39;</span>, <span class="s1">&#39;int32&#39;</span><span class="o">)</span>, <span class="nv">kwargs</span><span class="o">={}</span>, <span class="nv">workload</span><span class="o">=(</span><span class="s1">&#39;conv2d&#39;</span>, <span class="o">(</span>1, 4, 56, 56, 1, 16, <span class="s1">&#39;int8&#39;</span><span class="o">)</span>, <span class="o">(</span>8, 4, 3, 3, 16, 16, <span class="s1">&#39;int8&#39;</span><span class="o">)</span>, <span class="o">(</span>2, 2<span class="o">)</span>, <span class="o">(</span>1, 1<span class="o">)</span>, <span class="o">(</span>1, 1<span class="o">)</span>, <span class="s1">&#39;NCHW1n16c&#39;</span>, <span class="s1">&#39;int32&#39;</span><span class="o">))</span>
+    Task<span class="o">(</span><span class="nv">func_name</span><span class="o">=</span>topi_nn_conv2d, <span class="nv">args</span><span class="o">=((</span><span class="s1">&#39;TENSOR&#39;</span>, <span class="o">(</span>1, 16, 14, 14, 1, 16<span class="o">)</span>, <span class="s1">&#39;int8&#39;</span><span class="o">)</span>, <span class="o">(</span><span class="s1">&#39;TENSOR&#39;</span>, <span class="o">(</span>16, 16, 3, 3, 16, 16<span class="o">)</span>, <span class="s1">&#39;int8&#39;</span><span class="o">)</span>, <span class="o">(</span>1, 1<span class="o">)</span>, <span class="o">(</span>1, 1<span class="o">)</span>, <span class="o">(</span>1, 1<span class="o">)</span>, <span class="s1">&#39;NCHW1n16c&#39;</span>, <span class="s1">&#39;int32&#39;</span><span class="o">)</span>, <span class="nv">kwargs</span><span class="o">={}</span>, <span class="nv">workload</span><span class="o">=(</span><span class="s1">&#39;conv2d&#39;</span>, <span class="o">(</span>1, 16, 14, 14, 1, 16, <span class="s1">&#39;int8&#39;</span><span class="o">)</span>, <span class="o">(</span>16, 16, 3, 3, 16, 16, <span class="s1">&#39;int8&#39;</span><span class="o">)</span>, <span class="o">(</span>1, 1<span class="o">)</span>, <span class="o">(</span>1, 1<span class="o">)</span>, <span class="o">(</span>1, 1<span class="o">)</span>, <span class="s1">&#39;NCHW1n16c&#39;</span>, <span class="s1">&#39;int32&#39;</span><span class="o">))</span>
+    Task<span class="o">(</span><span class="nv">func_name</span><span class="o">=</span>topi_nn_conv2d, <span class="nv">args</span><span class="o">=((</span><span class="s1">&#39;TENSOR&#39;</span>, <span class="o">(</span>1, 8, 28, 28, 1, 16<span class="o">)</span>, <span class="s1">&#39;int8&#39;</span><span class="o">)</span>, <span class="o">(</span><span class="s1">&#39;TENSOR&#39;</span>, <span class="o">(</span>16, 8, 3, 3, 16, 16<span class="o">)</span>, <span class="s1">&#39;int8&#39;</span><span class="o">)</span>, <span class="o">(</span>2, 2<span class="o">)</span>, <span class="o">(</span>1, 1<span class="o">)</span>, <span class="o">(</span>1, 1<span class="o">)</span>, <span class="s1">&#39;NCHW1n16c&#39;</span>, <span class="s1">&#39;int32&#39;</span><span class="o">)</span>, <span class="nv">kwargs</span><span class="o">={}</span>, <span class="nv">workload</span><span class="o">=(</span><span class="s1">&#39;conv2d&#39;</span>, <span class="o">(</span>1, 8, 28, 28, 1, 16, <span class="s1">&#39;int8&#39;</span><span class="o">)</span>, <span class="o">(</span>16, 8, 3, 3, 16, 16, <span class="s1">&#39;int8&#39;</span><span class="o">)</span>, <span class="o">(</span>2, 2<span class="o">)</span>, <span class="o">(</span>1, 1<span class="o">)</span>, <span class="o">(</span>1, 1<span class="o">)</span>, <span class="s1">&#39;NCHW1n16c&#39;</span>, <span class="s1">&#39;int32&#39;</span><span class="o">))</span>
+    Task<span class="o">(</span><span class="nv">func_name</span><span class="o">=</span>topi_nn_conv2d, <span class="nv">args</span><span class="o">=((</span><span class="s1">&#39;TENSOR&#39;</span>, <span class="o">(</span>1, 32, 7, 7, 1, 16<span class="o">)</span>, <span class="s1">&#39;int8&#39;</span><span class="o">)</span>, <span class="o">(</span><span class="s1">&#39;TENSOR&#39;</span>, <span class="o">(</span>32, 32, 3, 3, 16, 16<span class="o">)</span>, <span class="s1">&#39;int8&#39;</span><span class="o">)</span>, <span class="o">(</span>1, 1<span class="o">)</span>, <span class="o">(</span>1, 1<span class="o">)</span>, <span class="o">(</span>1, 1<span class="o">)</span>, <span class="s1">&#39;NCHW1n16c&#39;</span>, <span class="s1">&#39;int32&#39;</span><span class="o">)</span>, <span class="nv">kwargs</span><span class="o">={}</span>, <span class="nv">workload</span><span class="o">=(</span><span class="s1">&#39;conv2d&#39;</span>, <span class="o">(</span>1, 32, 7, 7, 1, 16, <span class="s1">&#39;int8&#39;</span><span class="o">)</span>, <span class="o">(</span>32, 32, 3, 3, 16, 16, <span class="s1">&#39;int8&#39;</span><span class="o">)</span>, <span class="o">(</span>1, 1<span class="o">)</span>, <span class="o">(</span>1, 1<span class="o">)</span>, <span class="o">(</span>1, 1<span class="o">)</span>, <span class="s1">&#39;NCHW1n16c&#39;</span>, <span class="s1">&#39;int32&#39;</span><span class="o">))</span>
+    Task<span class="o">(</span><span class="nv">func_name</span><span class="o">=</span>topi_nn_conv2d, <span class="nv">args</span><span class="o">=((</span><span class="s1">&#39;TENSOR&#39;</span>, <span class="o">(</span>1, 16, 14, 14, 1, 16<span class="o">)</span>, <span class="s1">&#39;int8&#39;</span><span class="o">)</span>, <span class="o">(</span><span class="s1">&#39;TENSOR&#39;</span>, <span class="o">(</span>32, 16, 3, 3, 16, 16<span class="o">)</span>, <span class="s1">&#39;int8&#39;</span><span class="o">)</span>, <span class="o">(</span>2, 2<span class="o">)</span>, <span class="o">(</span>1, 1<span class="o">)</span>, <span class="o">(</span>1, 1<span class="o">)</span>, <span class="s1">&#39;NCHW1n16c&#39;</span>, <span class="s1">&#39;int32&#39;</span><span class="o">)</span>, <span class="nv">kwargs</span><span class="o">={}</span>, <span class="nv">workload</span><span class="o">=(</span><span class="s1">&#39;conv2d&#39;</span>, <span class="o">(</span>1, 16, 14, 14, 1, 16, <span class="s1">&#39;int8&#39;</span><span class="o">)</span>, <span class="o">(</span>32, 16, 3, 3, 16, 16, <span class="s1">&#39;int8&#39;</span><span class="o">)</span>, <span class="o">(</span>2, 2<span class="o">)</span>, <span class="o">(</span>1, 1<span class="o">)</span>, <span class="o">(</span>1, 1<span class="o">)</span>, <span class="s1">&#39;NCHW1n16c&#39;</span>, <span class="s1">&#39;int32&#39;</span><span class="o">))</span>
+Tuning...
+<span class="o">[</span>Task  1/10<span class="o">]</span>  Current/Best:    0.72/  23.24 GFLOPS <span class="p">|</span> Progress: <span class="o">(</span>480/1000<span class="o">)</span> <span class="p">|</span> 640.31 s Done.
+<span class="o">[</span>Task  2/10<span class="o">]</span>  Current/Best:    0.00/  27.69 GFLOPS <span class="p">|</span> Progress: <span class="o">(</span>576/1000<span class="o">)</span> <span class="p">|</span> 810.09 s Done.
+<span class="o">[</span>Task  3/10<span class="o">]</span>  Current/Best:    0.00/  22.97 GFLOPS <span class="p">|</span> Progress: <span class="o">(</span>1000/1000<span class="o">)</span> <span class="p">|</span> 1125.37 s Done.
+<span class="o">[</span>Task  4/10<span class="o">]</span>  Current/Best:    0.00/  31.26 GFLOPS <span class="p">|</span> Progress: <span class="o">(</span>1000/1000<span class="o">)</span> <span class="p">|</span> 1025.52 s Done.
+<span class="o">[</span>Task  5/10<span class="o">]</span>  Current/Best:    0.00/  15.15 GFLOPS <span class="p">|</span> Progress: <span class="o">(</span>1000/1000<span class="o">)</span> <span class="p">|</span> 1236.58 s Done.
+<span class="o">[</span>Task  6/10<span class="o">]</span>  Current/Best:    0.00/  22.74 GFLOPS <span class="p">|</span> Progress: <span class="o">(</span>1000/1000<span class="o">)</span> <span class="p">|</span> 906.60 s Done.
+<span class="o">[</span>Task  7/10<span class="o">]</span>  Current/Best:    0.00/  15.27 GFLOPS <span class="p">|</span> Progress: <span class="o">(</span>1000/1000<span class="o">)</span> <span class="p">|</span> 1056.25 s Done.
+<span class="o">[</span>Task  8/10<span class="o">]</span>  Current/Best:    0.00/   2.18 GFLOPS <span class="p">|</span> Progress: <span class="o">(</span>1000/1000<span class="o">)</span> <span class="p">|</span> 2275.29 s Done.
+<span class="o">[</span>Task  9/10<span class="o">]</span>  Current/Best:    2.23/   3.99 GFLOPS <span class="p">|</span> Progress: <span class="o">(</span>1000/1000<span class="o">)</span> <span class="p">|</span> 2527.25 s Done.
+<span class="o">[</span>Task 10/10<span class="o">]</span>  Current/Best:    1.56/   6.32 GFLOPS <span class="p">|</span> Progress: <span class="o">(</span>480/1000<span class="o">)</span> <span class="p">|</span> 1304.84 s Done.
+Compile...
+Upload...
+Evaluate inference <span class="nb">time</span> cost...
+Mean inference <span class="nb">time</span> <span class="o">(</span>std dev<span class="o">)</span>: 621.79 ms <span class="o">(</span>0.14 ms<span class="o">)</span>
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><strong>Experiencing Difficulties?</strong></p>
+<p>The auto tuning module is error-prone. If you always see ” 0.00/ 0.00 GFLOPS”,
+then there must be something wrong.</p>
+<p>First, make sure you set the correct configuration of your device.
+Then, you can print debug information by adding these lines in the beginning
+of the script. It will print every measurement result, where you can find useful
+error messages.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span class="kn">import</span> <span class="nn">logging</span>
+<span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s1">&#39;autotvm&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="n">logging</span><span class="o">.</span><span class="n">DEBUG</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Finally, always feel free to ask our community for help on <a class="reference external" href="https://discuss.tvm.ai">https://discuss.tvm.ai</a></p>
+</div>
+<div class="sphx-glr-footer class sphx-glr-footer-example docutils container" id="sphx-glr-download-vta-tutorials-autotvm-tune-relay-vta-py">
+<div class="sphx-glr-download docutils container">
+<p><a class="reference download internal" download="" href="../../../_downloads/612f9e42b0247df5c8ab277534e2af65/tune_relay_vta.py"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">tune_relay_vta.py</span></code></a></p>
+</div>
+<div class="sphx-glr-download docutils container">
+<p><a class="reference download internal" download="" href="../../../_downloads/48bd751ebaae08fce134e559f86a25cc/tune_relay_vta.ipynb"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Jupyter</span> <span class="pre">notebook:</span> <span class="pre">tune_relay_vta.ipynb</span></code></a></p>
+</div>
+</div>
+<p class="sphx-glr-signature"><a class="reference external" href="https://sphinx-gallery.github.io">Gallery generated by Sphinx-Gallery</a></p>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="../../../deploy/index.html" class="btn btn-neutral float-right" title="Deploy and Integration" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="../optimize/convolution_opt.html" class="btn btn-neutral float-left" title="2D Convolution Optimization" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2020, Apache Software Foundation
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+    <!-- Theme Analytics -->
+    <script>
+    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+    })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+    ga('create', 'UA-75982049-2', 'auto');
+    ga('send', 'pageview');
+    </script>
+
+    
+   
+
+</body>
+</html>

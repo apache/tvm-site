@@ -1,0 +1,298 @@
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>Integrating TVM into PyTorch</title>
+    
+    <meta name="author" content="">
+
+    <!-- Le HTML5 shim, for IE6-8 support of HTML elements -->
+    <!--[if lt IE 9]>
+      <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+
+    <!-- Le styles -->
+    <link href="/assets/themes/custom-twitter/css/1.4.0/bootstrap.css" rel="stylesheet">
+    <link href="/assets/themes/custom-twitter/css/style.css?body=1" rel="stylesheet" type="text/css" media="all">
+
+    <!-- Le fav and touch icons -->
+  <!-- Update these with your own images
+    <link rel="shortcut icon" href="images/logo/tvm-logo.png">
+  <link rel="shortcut icon" href="images/logo/tvm-logo.png">
+  -->
+  <link href="/images/logo/tvm-logo-square.png" rel="icon" type="image/png"/>
+  <!-- Global site tag (gtag.js) - Google Analytics -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=UA-75982049-2"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+
+    gtag('js', new Date());
+    gtag('config', 'UA-75982049-2');
+  </script>
+
+</head>
+
+  <body>
+    <div class="topbar">
+      <div class="fill">
+        <div class="container">
+          <h2 id="logo-wrap">
+            <a href="/" class="nav">
+              <img src="/images/logo/tvm-logo-small-black.png" width="100px">
+            </a>
+          </h2>
+          <ul class="nav" id="nav-bar">
+            
+            
+            
+
+
+
+  
+    
+      
+      
+    
+  
+    
+      
+      
+    
+  
+    
+      
+      
+    
+  
+    
+      
+      
+    
+  
+    
+      
+      
+    
+  
+    
+      
+      
+    
+  
+    
+      
+      	
+      	<li><a href="/community">Community</a></li>
+      	
+      
+      
+    
+  
+    
+      
+      	
+      	<li><a href="/download">Download</a></li>
+      	
+      
+      
+    
+  
+    
+      
+      	
+      	<li><a href="/about">About</a></li>
+      	
+      
+      
+    
+  
+    
+      
+      
+    
+  
+    
+      
+      	
+      	<li><a href="/vta">VTA</a></li>
+      	
+      
+      
+    
+  
+    
+      
+      
+      	
+      	<li><a href="/blog">Blog</a></li>
+      	
+      
+    
+  
+
+
+
+
+            <li> <a href="https://tvm.apache.org/docs">Docs</a></li>
+            <li> <a href="https://tvmconf.org">TVM Conference</a></li>
+            <li> <a href="https://github.com/apache/incubator-tvm/">Github</a></li>
+            <li> <a href="/asf">ASF</a></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+    
+<div class="container">
+<div class="content">
+  <div class="row">
+    <div class="span14">
+      <h1>Integrating TVM into PyTorch </h1>
+      <p class="post-meta">
+        <time datetime="2019-05-30T00:00:00-07:00" itemprop="datePublished">
+          May 30, 2019
+        </time>
+        
+        • <span itemprop="author" itemscope itemtype="http://schema.org/Person">
+          <span itemprop="name">Bram Wasti</span>
+        </span>
+        
+      </p>
+      <p class="post-meta">
+        </p>
+    </br>
+    <p>As TVM continuously demonstrates improvements to the efficiency of deep learning execution,
+it has become clear that PyTorch stands to benefit from directly leveraging the compiler stack.
+A major tenet of PyTorch is providing seamless and robust integrations that don’t get in the user’s way.
+To that end, PyTorch now has an official TVM-based backend, <a href="https://github.com/pytorch/tvm">torch_tvm</a>.</p>
+
+<p>Usage is simple:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>import torch_tvm
+torch_tvm.enable()
+</code></pre></div></div>
+
+<p>That’s it!  PyTorch will then attempt to convert all operators it can to known Relay operators during its JIT compilation process.</p>
+
+<h3 id="background">Background</h3>
+
+<p>Unlike many other ML frameworks, PyTorch exposes an eager-execution programming interface.  This style of programming avoids graph-based meta-programming and focuses on the direct manipulation of n-dimensional arrays (tensors) in a Pythonic way.  As such, the framework was initially well suited for the experimentation and development of models, but not for automatic performance optimization or deployment.  To leverage optimizing compiler techniques, some large changes were recently introduced to PyTorch to solve this problem.</p>
+
+<p><img src="https://i.imgur.com/4XVHbJE.png" alt="TVM Integration" /></p>
+
+<p>PyTorch 1.0 introduced PyTorch IR, a PyTorch-specific intermediate representation for models similar to Relay.  PyTorch programs can be converted into the IR via model tracing, which records the execution of a model or TorchScript, a subset of Python.  The new TVM backend lowers PyTorch IR to Relay, and is able to transparently improve PyTorch performance with little user involvement.</p>
+
+<h3 id="integration-and-results">Integration and Results</h3>
+
+<p>To support Relay, two features were added to the PyTorch JIT: custom transformation passes and custom subgraph interpreters.</p>
+
+<p>When <code class="highlighter-rouge">torch_tvm</code> is enabled, subgraphs of PyTorch IR that can be converted to Relay <code class="highlighter-rouge">Expr</code>s will be marked as Relay-compatible.  Since PyTorch IR does not always contain shape information, none of the subgraphs can be compiled in a useful way before invocation.</p>
+
+<p>During user invocation, the PyTorch JIT runtime will determine input shape information and compile the previously marked subgraphs with the new Relay C++ <a href="https://github.com/pytorch/tvm/blob/master/torch_tvm/compiler.cpp#L226-L246">build system</a>.  The compilation is cached based on input shapes for subsequent runs.  More details can be found in the <a href="https://github.com/pytorch/tvm/blob/master/README.md">README</a>.</p>
+
+<p><code class="highlighter-rouge">torch_tvm</code> has a continuous benchmark system set up, which is monitoring the performance of ResNet18 on CPU.
+Out of the box TVM provides over two times the performance of the default PyTorch JIT backend for various ResNet models.
+Below is a graph that details the iterations per second achieved with 16 threads on an AWS c5n.4xlarge instance (larger is better):</p>
+
+<p style="text-align: center"><img src="https://i.imgur.com/KfJ7oas.png" alt="bench" width="90%" /></p>
+
+<p>These results are quite encouraging, and the project will continue to focus on improving CPU inference speed across more models.</p>
+
+<h3 id="future-work">Future work</h3>
+
+<p>Right now the PyTorch JIT does a lot of work to find pure functional subsets of its IR to feed to Relay.  This avoids the need to map aliasing and control flow information to Relay, but is not necessary.  Mapping more of the PyTorch IR to Relay may yield performance wins and is a goal of the project.  PyTorch IR is rapidly changing as it is being developed, so this must be done carefully.</p>
+
+<p>More work will be done to ensure the hand off between PyTorch and TVM code is efficient.  This includes unifying the threading model, allocators and reducing the overhead associated with copying inputs into TVM.</p>
+
+<h3 id="tutorial">Tutorial</h3>
+
+<p>If you have an already written PyTorch model, the easiest way to get started comes from using <code class="highlighter-rouge">torch.jit.trace</code> as follows</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>import torch_tvm
+from your_model import model, inputs
+
+torch_tvm.enable(opt_level=3)
+
+iters = 100
+warmup = 10
+
+# Ensure your model is in eval mode and also turn off gradients.
+with torch.no_grad():
+  # Use tuned parameters for better performance.
+  with autotvm.apply_history_best("test/autotvm_tuning.log"):
+    # This is where all the compilation happens.
+    trace_tvm = torch.jit.trace(model, inputs)
+    
+    # Warmup
+    for _ in range(warmup):
+      _ = trace_tvm(*inputs)
+
+    # Benchmark
+    start = time.time()
+    for _ in range(iters):
+      _ = trace_tvm(*inputs)
+    tvm_time = time.time() - start
+    
+    print("Took {}s to run {} iters".format(tvm_time, iters))
+</code></pre></div></div>
+
+<p>Much of this code comes from <a href="https://github.com/pytorch/tvm/blob/master/test/benchmarks.py">benchmarks.py</a>.  Note that tuned parameters for AVX2 LLVM compilation is in the <code class="highlighter-rouge">test/</code> folder of the repo.</p>
+
+<p>If you are more comfortable using Relay directly, it is possible to simply extract the expression directly from a
+PyTorch function either via (implicit) tracing or TorchScript:</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>def add(a, b, c):
+    return a + b + c
+
+# via tracing
+relay_graph = torch_tvm.to_relay(add, inputs)
+
+@torch.jit.script
+def mul(a, b, c):
+    return a * b * c
+
+# via script
+relay_graph = torch_tvm.to_relay(mul, inputs)
+</code></pre></div></div>
+
+
+    </div>
+  </div>
+</div>
+</div>
+
+
+    
+
+
+
+
+
+    <div class="container">
+
+      <footer class="small">
+        Apache TVM is an effort undergoing incubation at The Apache Software Foundation (ASF),
+        sponsored by the <i>Apache Incubator</i>. Incubation is required
+        of all newly accepted projects until a further review indicates that the infrastructure,
+        communications, and decision making process have stabilized in a manner consistent with other
+        successful ASF projects. While incubation status is not necessarily a reflection of the completeness
+        or stability of the code, it does indicate that the project has yet to be fully endorsed by the ASF.
+
+        Copyright © 2020 The Apache Software Foundation. Apache TVM, Apache,
+        the Apache feather, and the Apache TVM project logo are either trademarks or registered trademarks of the Apache Software Foundation.
+
+        See also other useful <a href="/asf" class="footer-link">ASF links</a>:
+        <a href="https://www.apache.org/" class="footer-link">Apache Homepage</a>,
+        <a href="https://www.apache.org/licenses/" class="footer-link">License</a>
+        <a href="https://www.apache.org/foundation/sponsorship.html" class="footer-link">Sponsorship</a>,
+        <a href="https://www.apache.org/security/" class="footer-link">Security</a>
+        <a href="https://www.apache.org/foundation/thanks.html" class="footer-link">Thanks</a>,
+        <a href="https://www.apache.org/events/current-event.html" class="footer-link">Current Event</a>
+
+      </footer>
+    </div>
+  </body>
+</html>
+
+

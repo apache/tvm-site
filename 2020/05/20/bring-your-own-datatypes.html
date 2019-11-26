@@ -1,0 +1,482 @@
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>Bring Your Own Datatypes: Enabling Custom Datatype Exploration in TVM</title>
+    
+    <meta name="author" content="">
+
+    <!-- Le HTML5 shim, for IE6-8 support of HTML elements -->
+    <!--[if lt IE 9]>
+      <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+
+    <!-- Le styles -->
+    <link href="/assets/themes/custom-twitter/css/1.4.0/bootstrap.css" rel="stylesheet">
+    <link href="/assets/themes/custom-twitter/css/style.css?body=1" rel="stylesheet" type="text/css" media="all">
+
+    <!-- Le fav and touch icons -->
+  <!-- Update these with your own images
+    <link rel="shortcut icon" href="images/logo/tvm-logo.png">
+  <link rel="shortcut icon" href="images/logo/tvm-logo.png">
+  -->
+  <link href="/images/logo/tvm-logo-square.png" rel="icon" type="image/png"/>
+  <!-- Global site tag (gtag.js) - Google Analytics -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=UA-75982049-2"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+
+    gtag('js', new Date());
+    gtag('config', 'UA-75982049-2');
+  </script>
+
+</head>
+
+  <body>
+    <div class="topbar">
+      <div class="fill">
+        <div class="container">
+          <h2 id="logo-wrap">
+            <a href="/" class="nav">
+              <img src="/images/logo/tvm-logo-small-black.png" width="100px">
+            </a>
+          </h2>
+          <ul class="nav" id="nav-bar">
+            
+            
+            
+
+
+
+  
+    
+      
+      
+    
+  
+    
+      
+      
+    
+  
+    
+      
+      
+    
+  
+    
+      
+      
+    
+  
+    
+      
+      
+    
+  
+    
+      
+      
+    
+  
+    
+      
+      	
+      	<li><a href="/community">Community</a></li>
+      	
+      
+      
+    
+  
+    
+      
+      	
+      	<li><a href="/download">Download</a></li>
+      	
+      
+      
+    
+  
+    
+      
+      	
+      	<li><a href="/about">About</a></li>
+      	
+      
+      
+    
+  
+    
+      
+      
+    
+  
+    
+      
+      	
+      	<li><a href="/vta">VTA</a></li>
+      	
+      
+      
+    
+  
+    
+      
+      
+      	
+      	<li><a href="/blog">Blog</a></li>
+      	
+      
+    
+  
+
+
+
+
+            <li> <a href="https://tvm.apache.org/docs">Docs</a></li>
+            <li> <a href="https://tvmconf.org">TVM Conference</a></li>
+            <li> <a href="https://github.com/apache/incubator-tvm/">Github</a></li>
+            <li> <a href="/asf">ASF</a></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+    
+<div class="container">
+<div class="content">
+  <div class="row">
+    <div class="span14">
+      <h1>Bring Your Own Datatypes: Enabling Custom Datatype Exploration in TVM </h1>
+      <p class="post-meta">
+        <time datetime="2020-05-20T00:00:00-07:00" itemprop="datePublished">
+          May 20, 2020
+        </time>
+        
+        • <span itemprop="author" itemscope itemtype="http://schema.org/Person">
+          <span itemprop="name">Gus Smith</span>
+        </span>
+        
+      </p>
+      <p class="post-meta">
+        </p>
+    </br>
+    <p>In this post, we describe the Bring Your Own Datatypes framework, which enables the use of custom datatypes within TVM.</p>
+
+<h2 id="introduction">Introduction</h2>
+
+<p>When designing accelerators, an important decision is how one will approximately represent real numbers in hardware.
+This problem has had a longstanding, industry-standard solution: the IEEE 754 floating-point standard.<sup id="fnref:ieee"><a href="#fn:ieee" class="footnote">1</a></sup>
+Yet,
+  when trying to squeeze
+  the most out of hardware
+  by building highly specialized designs,
+  does it make sense to use
+  general-purpose IEEE 754 floats?
+If we know the numerical requirements
+  of our workload,
+  could we build a smaller,
+  faster,
+  or more power efficient datatype?
+The answer is yes!
+Researchers have already begun experimenting with new datatypes in academic and industrial accelerator designs.
+For example, Google’s Tensor Processing Unit (the TPU) uses the <code class="highlighter-rouge">bfloat</code> type: a single-precision IEEE float which has been truncated to 16 bits.
+Due to the lax numerical requirements
+  of many deep learning workloads,
+  this truncation often has no effect
+  on model accuracy,
+  while instantly cutting the storage cost
+  in half.<sup id="fnref:jouppi2017datacenter"><a href="#fn:jouppi2017datacenter" class="footnote">2</a></sup><sup id="fnref:tensorflowbfloat"><a href="#fn:tensorflowbfloat" class="footnote">3</a></sup></p>
+
+<p>Before researchers begin building hardware for their datatype, however, they first need to determine how their datatype will behave numerically in the workloads they care about.
+This often involves first building a software-emulated version of their datatype
+  (e.g. <a href="http://www.jhauser.us/arithmetic/SoftFloat.html" target="_blank">Berkeley SoftFloat</a> or <a href="https://github.com/cjdelisle/libposit" target="_blank">libposit</a>),
+  and then hacking the datatype directly into workloads,
+  to see how the workload performs
+  using the datatype.
+Even better
+  is to integrate the datatype 
+  directly into compilers themselves,
+  so that many different workloads
+  can be compiled
+  to use the datatype.
+Both routes can be tedious, with the latter route often becoming unmanageable given the size and complexity of modern compilers.
+<a href="https://github.com/xman/tensorflow" target="_blank">One example taken from GitHub</a> shows someone hacking the <em>posit</em> datatype into TensorFlow.
+The result is 237 commits, adding nearly 6000 lines of code and touching over 200 files across the codebase—and that’s just to add one datatype!
+This amount of work is prohibitive for many researchers.</p>
+
+<p>To address these problems, we present the Bring Your Own Datatypes framework.
+The framework enables easy exploration of new datatypes in deep learning workloads by allowing users to plug their simulated datatype into TVM.
+Unlike the posits-in-Tensorflow example above, which enables a single new datatype in a compiler, the Bring Your Own Datatype framework enables a huge variety of user-defined types.</p>
+
+<h2 id="bring-your-own-datatypes">Bring Your Own Datatypes</h2>
+
+<p>The goal of the Bring Your Own Datatypes framework
+  is to enable users to run deep learning workloads
+  using custom datatypes.
+In the Bring Your Own Datatypes framework,
+  “datatype” means a scalar type:
+  <code class="highlighter-rouge">float32</code>
+  or <code class="highlighter-rouge">uint8</code>, for example.
+We do not handle more complicated data formats
+  such as <a href="https://en.wikipedia.org/wiki/Block_floating_point" target="_blank">block floating point</a>
+  or Intel’s <a href="https://arxiv.org/abs/1711.02213" target="_blank">Flexpoint</a>.
+Additionally,
+  we only claim to support
+  <em>software emulated</em> versions of these scalar datatypes;
+  we do not explicitly support compiling and running on custom datatype hardware.</p>
+
+<p>Each tensor in TVM
+  is assigned a type code,
+  which defines the datatype of the scalars
+  within the tensor.
+A number of these type codes
+  have hard-coded meanings in TVM,
+  mapping to common datatypes
+  such as <code class="highlighter-rouge">int</code> and <code class="highlighter-rouge">float</code>.
+However,
+  the vast majority of type codes
+  are unused.
+The Bring Your Own Datatypes framework
+  allows users to 
+  claim these unused type codes
+  and add their own new datatypes
+  at runtime.</p>
+
+<p>The framework is implemented as
+  a registry 
+  which sits alongside
+  TVM’s normal datatype facilities.
+There are two primary ways
+  in which the user interacts with
+  the datatype registry:
+  first, <strong>datatype registration,</strong>
+  and second, <strong>lowering function registration.</strong>
+These steps are akin to
+  <em>declaration</em> and <em>implementation</em> of the datatype,
+  respectively.</p>
+
+<h3 id="datatype-registration">Datatype Registration</h3>
+
+<p>To register the datatype,
+  the user assigns the datatype
+  a name and a type code,
+  where the type code comes from
+  the range of unused type codes
+  available to custom datatypes.</p>
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">tvm</span><span class="o">.</span><span class="n">datatype</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="s">'bfloat'</span><span class="p">,</span> <span class="mi">150</span><span class="p">)</span>
+</code></pre></div></div>
+<p>The above code registers
+  the <code class="highlighter-rouge">'bfloat'</code> datatype
+  with type code 150.
+This registration step
+  allows TVM to parse programs
+  which use the custom type:</p>
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">x</span> <span class="o">=</span> <span class="n">relay</span><span class="o">.</span><span class="n">var</span><span class="p">(</span><span class="s">'x'</span><span class="p">,</span> <span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="s">'float32'</span><span class="p">)</span>
+<span class="n">y</span> <span class="o">=</span> <span class="n">relay</span><span class="o">.</span><span class="n">var</span><span class="p">(</span><span class="s">'y'</span><span class="p">,</span> <span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="s">'float32'</span><span class="p">)</span>
+<span class="n">x_bfloat</span> <span class="o">=</span> <span class="n">relay</span><span class="o">.</span><span class="n">cast</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="s">'custom[bfloat]16'</span><span class="p">)</span>
+<span class="n">y_bfloat</span> <span class="o">=</span> <span class="n">relay</span><span class="o">.</span><span class="n">cast</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="s">'custom[bfloat]16'</span><span class="p">)</span>
+<span class="n">z_bfloat</span> <span class="o">=</span> <span class="n">x_bfloat</span> <span class="o">+</span> <span class="n">y_bfloat</span>
+<span class="n">z</span> <span class="o">=</span> <span class="n">relay</span><span class="o">.</span><span class="n">cast</span><span class="p">(</span><span class="n">z_bfloat</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="s">'float32'</span><span class="p">)</span>
+<span class="n">program</span> <span class="o">=</span> <span class="n">relay</span><span class="o">.</span><span class="n">Function</span><span class="p">([</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">],</span> <span class="n">z</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="n">program</span><span class="p">)</span>
+
+<span class="c1"># v0.0.4
+# fn (%x: Tensor[(3), float32], %y: Tensor[(3), float32]) {
+#   %0 = cast(%x, dtype="custom[bfloat]16");
+#   %1 = cast(%y, dtype="custom[bfloat]16");
+#   %2 = add(%0, %1);
+#   cast(%2, dtype="float32")
+# }
+</span></code></pre></div></div>
+<p>The program above
+  casts <code class="highlighter-rouge">float32</code> inputs <code class="highlighter-rouge">x</code> and <code class="highlighter-rouge">y</code>
+  into <code class="highlighter-rouge">bfloat</code>s,
+  adds them,
+  and casts the result back to <code class="highlighter-rouge">float32</code>.
+Once the <code class="highlighter-rouge">bfloat</code> type is registered,
+  TVM is able to parse the special <code class="highlighter-rouge">dtype</code> syntax
+  <code class="highlighter-rouge">custom[&lt;typename&gt;]</code>,
+  where <code class="highlighter-rouge">&lt;typename&gt;</code> is the name registered for the type.
+This syntax also supports the usual
+  <code class="highlighter-rouge">&lt;bits&gt;x&lt;lanes&gt;</code> format;
+  here, we use <code class="highlighter-rouge">16</code> to indicate that
+  each <code class="highlighter-rouge">bfloat</code> is 16 bits wide.
+(The number of lanes
+  defaults to 1.)</p>
+
+<h3 id="lowering-function-registration">Lowering Function Registration</h3>
+
+<p>Though TVM can parse the above program,
+  it cannot yet compile it,
+  as TVM does not yet understand 
+  how to compile operations 
+  over the <code class="highlighter-rouge">bfloat</code> type.
+To compile these programs,
+  we register <em>lowering functions</em> for the custom datatype,
+  which help TVM convert the operations
+  into something it can understand and compile.</p>
+
+<p>Generally, the user is not expected to 
+  lower operations
+  directly to LLVM or CUDA.
+Instead, most code using custom datatypes
+  can be lowered into code which <em>doesn’t</em> use custom datatypes,
+  with some simple tricks.
+We can then rely on native TVM
+  to understand and compile the code.</p>
+
+<p style="text-align: center"><img src="/images/bring-your-own-datatypes/lowering.png" alt="A lowering function lowering an add over `bfloat`s to a library call over `uint16_t`s" width="50%" /></p>
+<center>
+Figure 1: The expected result of a user's registered lowering function. A lowering function should convert a program using custom datatypes to a program which native TVM can understand and compile (in this case, a call to an external library, taking two <tt>uint16_t</tt>s).
+</center>
+<p></p>
+
+<p>Figure 1 shows a common pattern.
+Let’s assume we are
+  interested in exploring the <code class="highlighter-rouge">bfloat</code> type,
+  and have chosen to run some workloads
+  by plugging a <code class="highlighter-rouge">bfloat</code> emulation library (e.g. <a href="https://github.com/biovault/biovault_bfloat16" target="_blank">biovault_bfloat16</a>) into TVM
+  via the Bring Your Own Datatypes framework.
+Our workload is a simple program
+  which adds two <code class="highlighter-rouge">bfloat</code> inputs.
+Native TVM does not understand
+  how to implement <code class="highlighter-rouge">bfloat</code> addition—but it doesn’t need to,
+  as we have a library implementing our datatype!
+The library contains an implementation of <code class="highlighter-rouge">bfloat</code> addition,
+  alongside other operators such as multiplication and square root.
+To implement this <code class="highlighter-rouge">bfloat</code> addition,
+  we’d just like to call into our library.
+Thus, our Add node should become a Call node,
+  calling out to a function (call it <code class="highlighter-rouge">BFloat16Add</code>) in our library.
+To store the bits of the input <code class="highlighter-rouge">bfloat</code>s
+  inside a type that TVM understands,
+  we use 16-bit unsigned integers.
+The resulting program 
+  is one that TVM can understand and compile—it
+  is simply a call to an external library function,
+  taking two unsigned integers.</p>
+
+<p>To achieve the above lowering,
+  we register a lowering function
+  for <code class="highlighter-rouge">bfloat</code>:</p>
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">tvm</span><span class="o">.</span><span class="n">datatype</span><span class="o">.</span><span class="n">register_op</span><span class="p">(</span>
+    <span class="n">tvm</span><span class="o">.</span><span class="n">datatype</span><span class="o">.</span><span class="n">create_lower_func</span><span class="p">(</span><span class="s">'BFloat16Add'</span><span class="p">),</span>
+    <span class="s">'Add'</span><span class="p">,</span> <span class="s">'llvm'</span><span class="p">,</span> <span class="s">'bfloat'</span><span class="p">)</span>
+</code></pre></div></div>
+<p>The above code registers
+  a lowering function
+  for a specific operator (Add),
+  compilation target (LLVM),
+  and datatype (<code class="highlighter-rouge">bfloat</code>).
+The first argument
+  is the lowering function.
+This can be any function
+  taking a TVM IR node
+  and returning a new TVM IR node.
+In our case,
+  we use a helper function
+  provided by the Bring Your Own Datatypes framework.
+<code class="highlighter-rouge">tvm.datatype.create_lower_func('BFloat16Add')</code>
+  creates a lowering function
+  for the common pattern described above.
+The resulting function
+  converts the arguments of the given node
+  to <code class="highlighter-rouge">uint16_t</code>,
+  and then converts the node itself
+  into a call to the given function name
+  (in this case, <code class="highlighter-rouge">'BFloat16Add'</code>).</p>
+
+<p>To implement a custom datatype,
+  the user will need to register
+  a lowering function for every operator
+  in the workload they would like to run.
+For a network like ResNet,
+  this will be around 10 operators,
+  including things like, Add, Div, various Casts, and Max.
+In our tests,
+  registering a datatype
+  and all lowering functions
+  takes around 40 lines of Python.
+Once all needed operators
+  are registered,
+  custom datatype workloads
+  can be run
+  as easily as
+  any other TVM program!</p>
+
+<h1 id="wrapping-up">Wrapping Up</h1>
+
+<p>The Bring Your Own Datatypes framework
+  brings user-defined datatypes to TVM.
+We hope this will encourage datatype researchers
+  to use TVM in their research;
+  similarly,
+  we hope this will spark interest
+  in custom datatypes
+  within the deep learning community.
+The Bring Your Own Datatypes framework
+  partially exists in TVM at the moment,
+  and more will be merged in (including full documentation)
+  in the coming months.</p>
+
+<hr />
+
+<p><em>Gus Smith is a PhD student at the University of Washington working with Luis Ceze and Zachary Tatlock at the intersection of computer architecture and programming languages. His website is <a href="https://justg.us" target="_blank">justg.us</a>.</em></p>
+
+<h2 id="references">References</h2>
+
+<div class="footnotes">
+  <ol>
+    <li id="fn:ieee">
+      <p><a href="https://standards.ieee.org/standard/754-2019.html" target="_blank">754-2019 - IEEE Standard for Floating-Point Arithmetic</a> <a href="#fnref:ieee" class="reversefootnote">&#8617;</a></p>
+    </li>
+    <li id="fn:jouppi2017datacenter">
+      <p>Jouppi, Norman P., et al. “In-datacenter performance analysis of a tensor processing unit.” Proceedings of the 44th Annual International Symposium on Computer Architecture. 2017. <a href="#fnref:jouppi2017datacenter" class="reversefootnote">&#8617;</a></p>
+    </li>
+    <li id="fn:tensorflowbfloat">
+      <p><a href="https://cloud.google.com/tpu/docs/bfloat16" target="_blank">Using bfloat16 with TensorFlow models</a> <a href="#fnref:tensorflowbfloat" class="reversefootnote">&#8617;</a></p>
+    </li>
+  </ol>
+</div>
+
+    </div>
+  </div>
+</div>
+</div>
+
+
+    
+
+
+
+
+
+    <div class="container">
+
+      <footer class="small">
+        Apache TVM is an effort undergoing incubation at The Apache Software Foundation (ASF),
+        sponsored by the <i>Apache Incubator</i>. Incubation is required
+        of all newly accepted projects until a further review indicates that the infrastructure,
+        communications, and decision making process have stabilized in a manner consistent with other
+        successful ASF projects. While incubation status is not necessarily a reflection of the completeness
+        or stability of the code, it does indicate that the project has yet to be fully endorsed by the ASF.
+
+        Copyright © 2020 The Apache Software Foundation. Apache TVM, Apache,
+        the Apache feather, and the Apache TVM project logo are either trademarks or registered trademarks of the Apache Software Foundation.
+
+        See also other useful <a href="/asf" class="footer-link">ASF links</a>:
+        <a href="https://www.apache.org/" class="footer-link">Apache Homepage</a>,
+        <a href="https://www.apache.org/licenses/" class="footer-link">License</a>
+        <a href="https://www.apache.org/foundation/sponsorship.html" class="footer-link">Sponsorship</a>,
+        <a href="https://www.apache.org/security/" class="footer-link">Security</a>
+        <a href="https://www.apache.org/foundation/thanks.html" class="footer-link">Thanks</a>,
+        <a href="https://www.apache.org/events/current-event.html" class="footer-link">Current Event</a>
+
+      </footer>
+    </div>
+  </body>
+</html>
+
+

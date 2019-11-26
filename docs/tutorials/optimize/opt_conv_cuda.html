@@ -1,0 +1,483 @@
+
+
+<!DOCTYPE html>
+<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
+<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>How to optimize convolution on GPU &mdash; tvm 0.7.dev1 documentation</title>
+  
+
+  
+  
+    <link rel="shortcut icon" href="../../_static/tvm-logo-square.png"/>
+  
+  
+  
+
+  
+  <script type="text/javascript" src="../../_static/js/modernizr.min.js"></script>
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+        <script src="../../_static/jquery.js"></script>
+        <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/doctools.js"></script>
+        <script src="../../_static/language_data.js"></script>
+        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+
+    
+
+  
+  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/gallery.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/css/tvm_theme.css" type="text/css" />
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="How to optimize GEMM on CPU" href="opt_gemm.html" />
+    <link rel="prev" title="Use Tensorize to Leverage Hardware Intrinsics" href="../language/tensorize.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../index.html">
+          
+
+          
+            
+            <img src="../../_static/tvm-logo-small.png" class="logo" alt="Logo"/>
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.7.dev1
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../install/index.html">Installation</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../index.html">Tutorials</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../relay_quick_start.html">Quick Start Tutorial for Compiling Deep Learning Models</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../cross_compilation_and_rpc.html">Cross Compilation and RPC</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../tensor_expr_get_started.html">Get Started with Tensor Expression</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../index.html#compile-deep-learning-models">Compile Deep Learning Models</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../index.html#tensor-expression-and-schedules">Tensor Expression and Schedules</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="../index.html#optimize-tensor-operators">Optimize Tensor Operators</a><ul class="current">
+<li class="toctree-l3 current"><a class="current reference internal" href="#">How to optimize convolution on GPU</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#preparation-and-algorithm">Preparation and Algorithm</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#memory-hierarchy">Memory Hierarchy</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#blocking">Blocking</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#virtual-thread-split">Virtual Thread Split</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#cooperative-fetching">Cooperative Fetching</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#generate-cuda-kernel">Generate CUDA Kernel</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="opt_gemm.html">How to optimize GEMM on CPU</a></li>
+<li class="toctree-l3"><a class="reference internal" href="opt_conv_tensorcore.html">How to optimize convolution using TensorCores</a></li>
+<li class="toctree-l3"><a class="reference internal" href="opt_matmul_auto_tensorcore.html">How to optimize matmul with Auto TensorCore CodeGen</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../index.html#auto-tuning">Auto tuning</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../index.html#developer-tutorials">Developer Tutorials</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../index.html#topi-tvm-operator-inventory">TOPI: TVM Operator Inventory</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../../vta/index.html">VTA: Deep Learning Accelerator Stack</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../deploy/index.html">Deploy and Integration</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../contribute/index.html">Contribute to TVM</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../faq.html">Frequently Asked Questions</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../langref/index.html">Language Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api/python/index.html">Python API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api/links.html">Links to API References</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../dev/index.html">Design and Developer Guide</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../frontend/tensorflow.html">TensorFlow Frontend</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../genindex.html">Index</a></li>
+</ul>
+
+            
+          
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">tvm</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html">Docs</a> &raquo;</li>
+        
+          <li><a href="../index.html">Tutorials</a> &raquo;</li>
+        
+      <li>How to optimize convolution on GPU</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="../../_sources/tutorials/optimize/opt_conv_cuda.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="sphx-glr-download-link-note admonition note">
+<p class="admonition-title">Note</p>
+<p>Click <a class="reference internal" href="#sphx-glr-download-tutorials-optimize-opt-conv-cuda-py"><span class="std std-ref">here</span></a> to download the full example code</p>
+</div>
+<div class="sphx-glr-example-title section" id="how-to-optimize-convolution-on-gpu">
+<span id="opt-conv-gpu"></span><span id="sphx-glr-tutorials-optimize-opt-conv-cuda-py"></span><h1>How to optimize convolution on GPU<a class="headerlink" href="#how-to-optimize-convolution-on-gpu" title="Permalink to this headline">¶</a></h1>
+<p><strong>Author</strong>: <a class="reference external" href="https://homes.cs.washington.edu/~haichen/">Haichen Shen</a></p>
+<p>In this tutorial, we will demonstrate how to write a high performance
+convolution implementation in TVM. We use square size input tensors and filters
+as an example, and assume the input to convolution has a large batch. In this
+example, we use a different layout to store the data in order to achieve better
+data locality. The buffer layout is HWCN, which stands for height, width,
+channel, batch.</p>
+<div class="section" id="preparation-and-algorithm">
+<h2>Preparation and Algorithm<a class="headerlink" href="#preparation-and-algorithm" title="Permalink to this headline">¶</a></h2>
+<p>We use the fixed size for input tensors with 256 channels and 14 x 14
+dimensions. The batch size is 256. Convolution filters contain 512 filters
+of size 3 x 3.  We use stride size 1 and padding size 1 for the
+convolution. The following code defines the convolution algorithm in TVM.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">tvm</span>
+<span class="kn">from</span> <span class="nn">tvm</span> <span class="k">import</span> <span class="n">te</span>
+
+<span class="c1"># The sizes of inputs and filters</span>
+<span class="n">batch</span> <span class="o">=</span> <span class="mi">256</span>
+<span class="n">in_channel</span> <span class="o">=</span> <span class="mi">256</span>
+<span class="n">out_channel</span> <span class="o">=</span> <span class="mi">512</span>
+<span class="n">in_size</span> <span class="o">=</span> <span class="mi">14</span>
+<span class="n">kernel</span> <span class="o">=</span> <span class="mi">3</span>
+<span class="n">pad</span> <span class="o">=</span> <span class="mi">1</span>
+<span class="n">stride</span> <span class="o">=</span> <span class="mi">1</span>
+
+<span class="c1"># Algorithm</span>
+<span class="n">A</span> <span class="o">=</span> <a href="../../api/python/te.html#tvm.te.placeholder" title="View documentation for tvm.te.placeholder"><span class="n">te</span><span class="o">.</span><span class="n">placeholder</span></a><span class="p">((</span><span class="n">in_size</span><span class="p">,</span> <span class="n">in_size</span><span class="p">,</span> <span class="n">in_channel</span><span class="p">,</span> <span class="n">batch</span><span class="p">),</span> <span class="n">name</span><span class="o">=</span><span class="s1">&#39;A&#39;</span><span class="p">)</span>
+<span class="n">W</span> <span class="o">=</span> <a href="../../api/python/te.html#tvm.te.placeholder" title="View documentation for tvm.te.placeholder"><span class="n">te</span><span class="o">.</span><span class="n">placeholder</span></a><span class="p">((</span><span class="n">kernel</span><span class="p">,</span> <span class="n">kernel</span><span class="p">,</span> <span class="n">in_channel</span><span class="p">,</span> <span class="n">out_channel</span><span class="p">),</span> <span class="n">name</span><span class="o">=</span><span class="s1">&#39;W&#39;</span><span class="p">)</span>
+<span class="n">out_size</span> <span class="o">=</span> <span class="p">(</span><span class="n">in_size</span> <span class="o">-</span> <span class="n">kernel</span> <span class="o">+</span> <span class="mi">2</span><span class="o">*</span><span class="n">pad</span><span class="p">)</span> <span class="o">//</span> <span class="n">stride</span> <span class="o">+</span> <span class="mi">1</span>
+<span class="c1"># Pad input</span>
+<span class="n">Apad</span> <span class="o">=</span> <a href="../../api/python/te.html#tvm.te.compute" title="View documentation for tvm.te.compute"><span class="n">te</span><span class="o">.</span><span class="n">compute</span></a><span class="p">(</span>
+    <span class="p">(</span><span class="n">in_size</span> <span class="o">+</span> <span class="mi">2</span><span class="o">*</span><span class="n">pad</span><span class="p">,</span> <span class="n">in_size</span> <span class="o">+</span> <span class="mi">2</span><span class="o">*</span><span class="n">pad</span><span class="p">,</span> <span class="n">in_channel</span><span class="p">,</span> <span class="n">batch</span><span class="p">),</span>
+    <span class="k">lambda</span> <span class="n">yy</span><span class="p">,</span> <span class="n">xx</span><span class="p">,</span> <span class="n">cc</span><span class="p">,</span> <span class="n">nn</span><span class="p">:</span> <a href="../../api/python/tir.html#tvm.tir.if_then_else" title="View documentation for tvm.tir.if_then_else"><span class="n">tvm</span><span class="o">.</span><span class="n">tir</span><span class="o">.</span><span class="n">if_then_else</span></a><span class="p">(</span>
+        <a href="../../api/python/tir.html#tvm.tir.all" title="View documentation for tvm.tir.all"><span class="n">tvm</span><span class="o">.</span><span class="n">tir</span><span class="o">.</span><span class="n">all</span></a><span class="p">(</span><span class="n">yy</span> <span class="o">&gt;=</span> <span class="n">pad</span><span class="p">,</span> <span class="n">yy</span> <span class="o">-</span> <span class="n">pad</span> <span class="o">&lt;</span> <span class="n">in_size</span><span class="p">,</span>
+                <span class="n">xx</span> <span class="o">&gt;=</span> <span class="n">pad</span><span class="p">,</span> <span class="n">xx</span> <span class="o">-</span> <span class="n">pad</span> <span class="o">&lt;</span> <span class="n">in_size</span><span class="p">),</span>
+        <span class="n">A</span><span class="p">[</span><span class="n">yy</span> <span class="o">-</span> <span class="n">pad</span><span class="p">,</span> <span class="n">xx</span> <span class="o">-</span> <span class="n">pad</span><span class="p">,</span> <span class="n">cc</span><span class="p">,</span> <span class="n">nn</span><span class="p">],</span> <span class="n">tvm</span><span class="o">.</span><span class="n">tir</span><span class="o">.</span><span class="n">const</span><span class="p">(</span><span class="mf">0.</span><span class="p">,</span> <span class="s2">&quot;float32&quot;</span><span class="p">)),</span>
+    <span class="n">name</span><span class="o">=</span><span class="s1">&#39;Apad&#39;</span><span class="p">)</span>
+<span class="c1"># Create reduction variables</span>
+<span class="n">rc</span> <span class="o">=</span> <a href="../../api/python/te.html#tvm.te.reduce_axis" title="View documentation for tvm.te.reduce_axis"><span class="n">te</span><span class="o">.</span><span class="n">reduce_axis</span></a><span class="p">((</span><span class="mi">0</span><span class="p">,</span> <span class="n">in_channel</span><span class="p">),</span> <span class="n">name</span><span class="o">=</span><span class="s1">&#39;rc&#39;</span><span class="p">)</span>
+<span class="n">ry</span> <span class="o">=</span> <a href="../../api/python/te.html#tvm.te.reduce_axis" title="View documentation for tvm.te.reduce_axis"><span class="n">te</span><span class="o">.</span><span class="n">reduce_axis</span></a><span class="p">((</span><span class="mi">0</span><span class="p">,</span> <span class="n">kernel</span><span class="p">),</span> <span class="n">name</span><span class="o">=</span><span class="s1">&#39;ry&#39;</span><span class="p">)</span>
+<span class="n">rx</span> <span class="o">=</span> <a href="../../api/python/te.html#tvm.te.reduce_axis" title="View documentation for tvm.te.reduce_axis"><span class="n">te</span><span class="o">.</span><span class="n">reduce_axis</span></a><span class="p">((</span><span class="mi">0</span><span class="p">,</span> <span class="n">kernel</span><span class="p">),</span> <span class="n">name</span><span class="o">=</span><span class="s1">&#39;rx&#39;</span><span class="p">)</span>
+<span class="c1"># Compute the convolution</span>
+<span class="n">B</span> <span class="o">=</span> <a href="../../api/python/te.html#tvm.te.compute" title="View documentation for tvm.te.compute"><span class="n">te</span><span class="o">.</span><span class="n">compute</span></a><span class="p">(</span>
+    <span class="p">(</span><span class="n">out_size</span><span class="p">,</span> <span class="n">out_size</span><span class="p">,</span> <span class="n">out_channel</span><span class="p">,</span> <span class="n">batch</span><span class="p">),</span>
+    <span class="k">lambda</span> <span class="n">yy</span><span class="p">,</span> <span class="n">xx</span><span class="p">,</span> <span class="n">ff</span><span class="p">,</span> <span class="n">nn</span><span class="p">:</span> <a href="../../api/python/te.html#tvm.te.sum" title="View documentation for tvm.te.sum"><span class="n">te</span><span class="o">.</span><span class="n">sum</span></a><span class="p">(</span>
+        <span class="n">Apad</span><span class="p">[</span><span class="n">yy</span> <span class="o">*</span> <span class="n">stride</span> <span class="o">+</span> <span class="n">ry</span><span class="p">,</span> <span class="n">xx</span> <span class="o">*</span> <span class="n">stride</span> <span class="o">+</span> <span class="n">rx</span><span class="p">,</span> <span class="n">rc</span><span class="p">,</span> <span class="n">nn</span><span class="p">]</span> <span class="o">*</span> <span class="n">W</span><span class="p">[</span><span class="n">ry</span><span class="p">,</span> <span class="n">rx</span><span class="p">,</span> <span class="n">rc</span><span class="p">,</span> <span class="n">ff</span><span class="p">],</span>
+        <span class="n">axis</span><span class="o">=</span><span class="p">[</span><span class="n">ry</span><span class="p">,</span> <span class="n">rx</span><span class="p">,</span> <span class="n">rc</span><span class="p">]),</span>
+    <span class="n">name</span><span class="o">=</span><span class="s1">&#39;B&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="memory-hierarchy">
+<h2>Memory Hierarchy<a class="headerlink" href="#memory-hierarchy" title="Permalink to this headline">¶</a></h2>
+<p>We first specify the memory hierarchy for buffers. The figure below shows the
+GPU memory hierarchy. One important difference from CPU memory hierarchy is
+that GPU provides a cache buffer called shared memory, which is managed by
+programmers. Thus how to maximize the data reuse in the shared memory is
+critical to achieve high performance in GPU kernels.</p>
+<a class="reference internal image-reference" href="https://github.com/dmlc/web-data/raw/master/tvm/tutorial/gpu_memory_hierarchy.png"><img alt="https://github.com/dmlc/web-data/raw/master/tvm/tutorial/gpu_memory_hierarchy.png" class="align-center" src="https://github.com/dmlc/web-data/raw/master/tvm/tutorial/gpu_memory_hierarchy.png" style="width: 271px; height: 319px;" /></a>
+<p>In this example, we load both Apad and W into buffer AA and WW, which are
+stored in the shared memory. These bufferes will be later shared by all
+threads within the same thread block to compute the convolution. Each thread
+then loads its own part from shared buffer into their local registers, AL and
+WL. BL is a local cache of output B, which is also stored in the thread local
+registers.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span class="c1"># Designate the memory hierarchy</span>
+<span class="n">s</span> <span class="o">=</span> <a href="../../api/python/te.html#tvm.te.create_schedule" title="View documentation for tvm.te.create_schedule"><span class="n">te</span><span class="o">.</span><span class="n">create_schedule</span></a><span class="p">(</span><span class="n">B</span><span class="o">.</span><span class="n">op</span><span class="p">)</span>
+<span class="n">s</span><span class="p">[</span><span class="n">Apad</span><span class="p">]</span><span class="o">.</span><span class="n">compute_inline</span><span class="p">()</span> <span class="c1"># compute Apad inline</span>
+<span class="n">AA</span> <span class="o">=</span> <span class="n">s</span><span class="o">.</span><span class="n">cache_read</span><span class="p">(</span><span class="n">Apad</span><span class="p">,</span> <span class="s1">&#39;shared&#39;</span><span class="p">,</span> <span class="p">[</span><span class="n">B</span><span class="p">])</span>
+<span class="n">WW</span> <span class="o">=</span> <span class="n">s</span><span class="o">.</span><span class="n">cache_read</span><span class="p">(</span><span class="n">W</span><span class="p">,</span> <span class="s2">&quot;shared&quot;</span><span class="p">,</span> <span class="p">[</span><span class="n">B</span><span class="p">])</span>
+<span class="n">AL</span> <span class="o">=</span> <span class="n">s</span><span class="o">.</span><span class="n">cache_read</span><span class="p">(</span><span class="n">AA</span><span class="p">,</span> <span class="s2">&quot;local&quot;</span><span class="p">,</span> <span class="p">[</span><span class="n">B</span><span class="p">])</span>
+<span class="n">WL</span> <span class="o">=</span> <span class="n">s</span><span class="o">.</span><span class="n">cache_read</span><span class="p">(</span><span class="n">WW</span><span class="p">,</span> <span class="s2">&quot;local&quot;</span><span class="p">,</span> <span class="p">[</span><span class="n">B</span><span class="p">])</span>
+<span class="n">BL</span> <span class="o">=</span> <span class="n">s</span><span class="o">.</span><span class="n">cache_write</span><span class="p">(</span><span class="n">B</span><span class="p">,</span> <span class="s2">&quot;local&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="blocking">
+<h2>Blocking<a class="headerlink" href="#blocking" title="Permalink to this headline">¶</a></h2>
+<p>The following code splits the workload into thread blocks and individual
+threads. We follow the blocking scheme in the matrix multiply. As shown in the
+figure below, given a pixel coordinate (y, x), a thread block is responsible
+for computing a region of block_factor x block_factor (64 x 64) for output
+channels and batch. Due to the limit of shared memory space, we only load step
+x block_factor (8 x 64) data from Apad and B each time to buffers in the
+shared memory.</p>
+<a class="reference internal image-reference" href="https://github.com/dmlc/web-data/raw/master/tvm/tutorial/conv_gpu_blocking.png"><img alt="https://github.com/dmlc/web-data/raw/master/tvm/tutorial/conv_gpu_blocking.png" class="align-center" src="https://github.com/dmlc/web-data/raw/master/tvm/tutorial/conv_gpu_blocking.png" style="width: 317px; height: 308px;" /></a>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span class="c1"># tile consts</span>
+<span class="n">tile</span> <span class="o">=</span> <span class="mi">8</span>
+<span class="n">num_thread</span> <span class="o">=</span> <span class="mi">8</span>
+<span class="n">block_factor</span> <span class="o">=</span> <span class="n">tile</span> <span class="o">*</span> <span class="n">num_thread</span>
+<span class="n">step</span> <span class="o">=</span> <span class="mi">8</span>
+<span class="n">vthread</span> <span class="o">=</span> <span class="mi">2</span>
+
+<span class="c1"># Get the GPU thread indices</span>
+<span class="n">block_x</span> <span class="o">=</span> <a href="../../api/python/te.html#tvm.te.thread_axis" title="View documentation for tvm.te.thread_axis"><span class="n">te</span><span class="o">.</span><span class="n">thread_axis</span></a><span class="p">(</span><span class="s2">&quot;blockIdx.x&quot;</span><span class="p">)</span>
+<span class="n">block_y</span> <span class="o">=</span> <a href="../../api/python/te.html#tvm.te.thread_axis" title="View documentation for tvm.te.thread_axis"><span class="n">te</span><span class="o">.</span><span class="n">thread_axis</span></a><span class="p">(</span><span class="s2">&quot;blockIdx.y&quot;</span><span class="p">)</span>
+<span class="n">block_z</span> <span class="o">=</span> <a href="../../api/python/te.html#tvm.te.thread_axis" title="View documentation for tvm.te.thread_axis"><span class="n">te</span><span class="o">.</span><span class="n">thread_axis</span></a><span class="p">(</span><span class="s2">&quot;blockIdx.z&quot;</span><span class="p">)</span>
+<span class="n">thread_x</span> <span class="o">=</span> <a href="../../api/python/te.html#tvm.te.thread_axis" title="View documentation for tvm.te.thread_axis"><span class="n">te</span><span class="o">.</span><span class="n">thread_axis</span></a><span class="p">((</span><span class="mi">0</span><span class="p">,</span> <span class="n">num_thread</span><span class="p">),</span> <span class="s2">&quot;threadIdx.x&quot;</span><span class="p">)</span>
+<span class="n">thread_y</span> <span class="o">=</span> <a href="../../api/python/te.html#tvm.te.thread_axis" title="View documentation for tvm.te.thread_axis"><span class="n">te</span><span class="o">.</span><span class="n">thread_axis</span></a><span class="p">((</span><span class="mi">0</span><span class="p">,</span> <span class="n">num_thread</span><span class="p">),</span> <span class="s2">&quot;threadIdx.y&quot;</span><span class="p">)</span>
+<span class="n">thread_xz</span> <span class="o">=</span> <a href="../../api/python/te.html#tvm.te.thread_axis" title="View documentation for tvm.te.thread_axis"><span class="n">te</span><span class="o">.</span><span class="n">thread_axis</span></a><span class="p">((</span><span class="mi">0</span><span class="p">,</span> <span class="n">vthread</span><span class="p">),</span> <span class="s2">&quot;vthread&quot;</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;vx&quot;</span><span class="p">)</span>
+<span class="n">thread_yz</span> <span class="o">=</span> <a href="../../api/python/te.html#tvm.te.thread_axis" title="View documentation for tvm.te.thread_axis"><span class="n">te</span><span class="o">.</span><span class="n">thread_axis</span></a><span class="p">((</span><span class="mi">0</span><span class="p">,</span> <span class="n">vthread</span><span class="p">),</span> <span class="s2">&quot;vthread&quot;</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;vy&quot;</span><span class="p">)</span>
+
+<span class="c1"># Split the workloads</span>
+<span class="n">hi</span><span class="p">,</span> <span class="n">wi</span><span class="p">,</span> <span class="n">fi</span><span class="p">,</span> <span class="n">ni</span> <span class="o">=</span> <span class="n">s</span><span class="p">[</span><span class="n">B</span><span class="p">]</span><span class="o">.</span><span class="n">op</span><span class="o">.</span><span class="n">axis</span>
+<span class="n">bz</span> <span class="o">=</span> <span class="n">s</span><span class="p">[</span><span class="n">B</span><span class="p">]</span><span class="o">.</span><span class="n">fuse</span><span class="p">(</span><span class="n">hi</span><span class="p">,</span> <span class="n">wi</span><span class="p">)</span>
+<span class="n">by</span><span class="p">,</span> <span class="n">fi</span> <span class="o">=</span> <span class="n">s</span><span class="p">[</span><span class="n">B</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">fi</span><span class="p">,</span> <span class="n">factor</span><span class="o">=</span><span class="n">block_factor</span><span class="p">)</span>
+<span class="n">bx</span><span class="p">,</span> <span class="n">ni</span> <span class="o">=</span> <span class="n">s</span><span class="p">[</span><span class="n">B</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">ni</span><span class="p">,</span> <span class="n">factor</span><span class="o">=</span><span class="n">block_factor</span><span class="p">)</span>
+
+<span class="c1"># Bind the iteration variables to GPU thread indices</span>
+<span class="n">s</span><span class="p">[</span><span class="n">B</span><span class="p">]</span><span class="o">.</span><span class="n">bind</span><span class="p">(</span><span class="n">bz</span><span class="p">,</span> <span class="n">block_z</span><span class="p">)</span>
+<span class="n">s</span><span class="p">[</span><span class="n">B</span><span class="p">]</span><span class="o">.</span><span class="n">bind</span><span class="p">(</span><span class="n">by</span><span class="p">,</span> <span class="n">block_y</span><span class="p">)</span>
+<span class="n">s</span><span class="p">[</span><span class="n">B</span><span class="p">]</span><span class="o">.</span><span class="n">bind</span><span class="p">(</span><span class="n">bx</span><span class="p">,</span> <span class="n">block_x</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="virtual-thread-split">
+<h2>Virtual Thread Split<a class="headerlink" href="#virtual-thread-split" title="Permalink to this headline">¶</a></h2>
+<p>We further split the workload from a thread block to individual threads. To
+avoid <em>memory bank conflict</em>, we use virtual thread to split the area into 4
+parts, and then tile into 8x8 grids. Therefore, shown in the figure below,
+each thread computes 4 strided grids, where size of each grid is 4 x 4.</p>
+<a class="reference internal image-reference" href="https://github.com/dmlc/web-data/raw/master/tvm/tutorial/conv_gpu_vthread.png"><img alt="https://github.com/dmlc/web-data/raw/master/tvm/tutorial/conv_gpu_vthread.png" class="align-center" src="https://github.com/dmlc/web-data/raw/master/tvm/tutorial/conv_gpu_vthread.png" style="width: 268px; height: 188px;" /></a>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span class="n">tyz</span><span class="p">,</span> <span class="n">fi</span> <span class="o">=</span> <span class="n">s</span><span class="p">[</span><span class="n">B</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">fi</span><span class="p">,</span> <span class="n">nparts</span><span class="o">=</span><span class="n">vthread</span><span class="p">)</span>  <span class="c1"># virtual thread split</span>
+<span class="n">txz</span><span class="p">,</span> <span class="n">ni</span> <span class="o">=</span> <span class="n">s</span><span class="p">[</span><span class="n">B</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">ni</span><span class="p">,</span> <span class="n">nparts</span><span class="o">=</span><span class="n">vthread</span><span class="p">)</span>  <span class="c1"># virtual thread split</span>
+<span class="n">ty</span><span class="p">,</span> <span class="n">fi</span> <span class="o">=</span> <span class="n">s</span><span class="p">[</span><span class="n">B</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">fi</span><span class="p">,</span> <span class="n">nparts</span><span class="o">=</span><span class="n">num_thread</span><span class="p">)</span>
+<span class="n">tx</span><span class="p">,</span> <span class="n">ni</span> <span class="o">=</span> <span class="n">s</span><span class="p">[</span><span class="n">B</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">ni</span><span class="p">,</span> <span class="n">nparts</span><span class="o">=</span><span class="n">num_thread</span><span class="p">)</span>
+<span class="n">s</span><span class="p">[</span><span class="n">B</span><span class="p">]</span><span class="o">.</span><span class="n">reorder</span><span class="p">(</span><span class="n">bz</span><span class="p">,</span> <span class="n">by</span><span class="p">,</span> <span class="n">bx</span><span class="p">,</span> <span class="n">tyz</span><span class="p">,</span> <span class="n">txz</span><span class="p">,</span> <span class="n">ty</span><span class="p">,</span> <span class="n">tx</span><span class="p">,</span> <span class="n">fi</span><span class="p">,</span> <span class="n">ni</span><span class="p">)</span>
+
+<span class="n">s</span><span class="p">[</span><span class="n">B</span><span class="p">]</span><span class="o">.</span><span class="n">bind</span><span class="p">(</span><span class="n">tyz</span><span class="p">,</span> <span class="n">thread_yz</span><span class="p">)</span>
+<span class="n">s</span><span class="p">[</span><span class="n">B</span><span class="p">]</span><span class="o">.</span><span class="n">bind</span><span class="p">(</span><span class="n">txz</span><span class="p">,</span> <span class="n">thread_xz</span><span class="p">)</span>
+<span class="n">s</span><span class="p">[</span><span class="n">B</span><span class="p">]</span><span class="o">.</span><span class="n">bind</span><span class="p">(</span><span class="n">ty</span><span class="p">,</span> <span class="n">thread_y</span><span class="p">)</span>
+<span class="n">s</span><span class="p">[</span><span class="n">B</span><span class="p">]</span><span class="o">.</span><span class="n">bind</span><span class="p">(</span><span class="n">tx</span><span class="p">,</span> <span class="n">thread_x</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="cooperative-fetching">
+<h2>Cooperative Fetching<a class="headerlink" href="#cooperative-fetching" title="Permalink to this headline">¶</a></h2>
+<p>As mentioned before, each time step we need to transfer step x block_factor
+data from GPU global memory to shared memory. In order to reduce the memory
+transfer per thread, the following code lets threads in the same thread block
+coopertively fetch dependent data from global memory.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span class="c1"># Schedule BL local write</span>
+<span class="n">s</span><span class="p">[</span><span class="n">BL</span><span class="p">]</span><span class="o">.</span><span class="n">compute_at</span><span class="p">(</span><span class="n">s</span><span class="p">[</span><span class="n">B</span><span class="p">],</span> <span class="n">tx</span><span class="p">)</span>
+<span class="n">yi</span><span class="p">,</span> <span class="n">xi</span><span class="p">,</span> <span class="n">fi</span><span class="p">,</span> <span class="n">ni</span> <span class="o">=</span> <span class="n">s</span><span class="p">[</span><span class="n">BL</span><span class="p">]</span><span class="o">.</span><span class="n">op</span><span class="o">.</span><span class="n">axis</span>
+<span class="n">ry</span><span class="p">,</span> <span class="n">rx</span><span class="p">,</span> <span class="n">rc</span> <span class="o">=</span> <span class="n">s</span><span class="p">[</span><span class="n">BL</span><span class="p">]</span><span class="o">.</span><span class="n">op</span><span class="o">.</span><span class="n">reduce_axis</span>
+<span class="n">rco</span><span class="p">,</span> <span class="n">rci</span> <span class="o">=</span> <span class="n">s</span><span class="p">[</span><span class="n">BL</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">rc</span><span class="p">,</span> <span class="n">factor</span><span class="o">=</span><span class="n">step</span><span class="p">)</span>
+<span class="n">s</span><span class="p">[</span><span class="n">BL</span><span class="p">]</span><span class="o">.</span><span class="n">reorder</span><span class="p">(</span><span class="n">rco</span><span class="p">,</span> <span class="n">ry</span><span class="p">,</span> <span class="n">rx</span><span class="p">,</span> <span class="n">rci</span><span class="p">,</span> <span class="n">fi</span><span class="p">,</span> <span class="n">ni</span><span class="p">)</span>
+
+<span class="c1"># Attach computation to iteration variables</span>
+<span class="n">s</span><span class="p">[</span><span class="n">AA</span><span class="p">]</span><span class="o">.</span><span class="n">compute_at</span><span class="p">(</span><span class="n">s</span><span class="p">[</span><span class="n">BL</span><span class="p">],</span> <span class="n">rx</span><span class="p">)</span>
+<span class="n">s</span><span class="p">[</span><span class="n">WW</span><span class="p">]</span><span class="o">.</span><span class="n">compute_at</span><span class="p">(</span><span class="n">s</span><span class="p">[</span><span class="n">BL</span><span class="p">],</span> <span class="n">rx</span><span class="p">)</span>
+<span class="n">s</span><span class="p">[</span><span class="n">AL</span><span class="p">]</span><span class="o">.</span><span class="n">compute_at</span><span class="p">(</span><span class="n">s</span><span class="p">[</span><span class="n">BL</span><span class="p">],</span> <span class="n">rci</span><span class="p">)</span>
+<span class="n">s</span><span class="p">[</span><span class="n">WL</span><span class="p">]</span><span class="o">.</span><span class="n">compute_at</span><span class="p">(</span><span class="n">s</span><span class="p">[</span><span class="n">BL</span><span class="p">],</span> <span class="n">rci</span><span class="p">)</span>
+
+<span class="c1"># Schedule for A&#39;s shared memory load</span>
+<span class="n">yi</span><span class="p">,</span> <span class="n">xi</span><span class="p">,</span> <span class="n">ci</span><span class="p">,</span> <span class="n">ni</span> <span class="o">=</span> <span class="n">s</span><span class="p">[</span><span class="n">AA</span><span class="p">]</span><span class="o">.</span><span class="n">op</span><span class="o">.</span><span class="n">axis</span>
+<span class="n">ty</span><span class="p">,</span> <span class="n">ci</span> <span class="o">=</span> <span class="n">s</span><span class="p">[</span><span class="n">AA</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">ci</span><span class="p">,</span> <span class="n">nparts</span><span class="o">=</span><span class="n">num_thread</span><span class="p">)</span>
+<span class="n">tx</span><span class="p">,</span> <span class="n">ni</span> <span class="o">=</span> <span class="n">s</span><span class="p">[</span><span class="n">AA</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">ni</span><span class="p">,</span> <span class="n">nparts</span><span class="o">=</span><span class="n">num_thread</span><span class="p">)</span>
+<span class="n">_</span><span class="p">,</span> <span class="n">ni</span> <span class="o">=</span> <span class="n">s</span><span class="p">[</span><span class="n">AA</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">ni</span><span class="p">,</span> <span class="n">factor</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
+<span class="n">s</span><span class="p">[</span><span class="n">AA</span><span class="p">]</span><span class="o">.</span><span class="n">reorder</span><span class="p">(</span><span class="n">ty</span><span class="p">,</span> <span class="n">tx</span><span class="p">,</span> <span class="n">yi</span><span class="p">,</span> <span class="n">xi</span><span class="p">,</span> <span class="n">ci</span><span class="p">,</span> <span class="n">ni</span><span class="p">)</span>
+<span class="n">s</span><span class="p">[</span><span class="n">AA</span><span class="p">]</span><span class="o">.</span><span class="n">bind</span><span class="p">(</span><span class="n">ty</span><span class="p">,</span> <span class="n">thread_y</span><span class="p">)</span>
+<span class="n">s</span><span class="p">[</span><span class="n">AA</span><span class="p">]</span><span class="o">.</span><span class="n">bind</span><span class="p">(</span><span class="n">tx</span><span class="p">,</span> <span class="n">thread_x</span><span class="p">)</span>
+<span class="n">s</span><span class="p">[</span><span class="n">AA</span><span class="p">]</span><span class="o">.</span><span class="n">vectorize</span><span class="p">(</span><span class="n">ni</span><span class="p">)</span>  <span class="c1"># vectorize memory load</span>
+
+<span class="c1"># Schedule for W&#39;s shared memory load</span>
+<span class="n">yi</span><span class="p">,</span> <span class="n">xi</span><span class="p">,</span> <span class="n">ci</span><span class="p">,</span> <span class="n">fi</span> <span class="o">=</span> <span class="n">s</span><span class="p">[</span><span class="n">WW</span><span class="p">]</span><span class="o">.</span><span class="n">op</span><span class="o">.</span><span class="n">axis</span>
+<span class="n">ty</span><span class="p">,</span> <span class="n">ci</span> <span class="o">=</span> <span class="n">s</span><span class="p">[</span><span class="n">WW</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">ci</span><span class="p">,</span> <span class="n">nparts</span><span class="o">=</span><span class="n">num_thread</span><span class="p">)</span>
+<span class="n">tx</span><span class="p">,</span> <span class="n">fi</span> <span class="o">=</span> <span class="n">s</span><span class="p">[</span><span class="n">WW</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">fi</span><span class="p">,</span> <span class="n">nparts</span><span class="o">=</span><span class="n">num_thread</span><span class="p">)</span>
+<span class="n">_</span><span class="p">,</span> <span class="n">fi</span> <span class="o">=</span> <span class="n">s</span><span class="p">[</span><span class="n">WW</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">fi</span><span class="p">,</span> <span class="n">factor</span><span class="o">=</span><span class="mi">4</span><span class="p">)</span>
+<span class="n">s</span><span class="p">[</span><span class="n">WW</span><span class="p">]</span><span class="o">.</span><span class="n">reorder</span><span class="p">(</span><span class="n">ty</span><span class="p">,</span> <span class="n">tx</span><span class="p">,</span> <span class="n">yi</span><span class="p">,</span> <span class="n">xi</span><span class="p">,</span> <span class="n">ci</span><span class="p">,</span> <span class="n">fi</span><span class="p">)</span>
+<span class="n">s</span><span class="p">[</span><span class="n">WW</span><span class="p">]</span><span class="o">.</span><span class="n">bind</span><span class="p">(</span><span class="n">ty</span><span class="p">,</span> <span class="n">thread_y</span><span class="p">)</span>
+<span class="n">s</span><span class="p">[</span><span class="n">WW</span><span class="p">]</span><span class="o">.</span><span class="n">bind</span><span class="p">(</span><span class="n">tx</span><span class="p">,</span> <span class="n">thread_x</span><span class="p">)</span>
+<span class="n">s</span><span class="p">[</span><span class="n">WW</span><span class="p">]</span><span class="o">.</span><span class="n">vectorize</span><span class="p">(</span><span class="n">fi</span><span class="p">)</span>  <span class="c1"># vectorize memory load</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="generate-cuda-kernel">
+<h2>Generate CUDA Kernel<a class="headerlink" href="#generate-cuda-kernel" title="Permalink to this headline">¶</a></h2>
+<p>Finally we use TVM to generate and compile the CUDA kernel, and evaluate the
+latency of convolution.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span class="n">func</span> <span class="o">=</span> <a href="../../api/python/driver.html#tvm.build" title="View documentation for tvm.build"><span class="n">tvm</span><span class="o">.</span><span class="n">build</span></a><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="p">[</span><span class="n">A</span><span class="p">,</span> <span class="n">W</span><span class="p">,</span> <span class="n">B</span><span class="p">],</span> <span class="s1">&#39;cuda&#39;</span><span class="p">)</span>
+<span class="n">ctx</span> <span class="o">=</span> <span class="n">tvm</span><span class="o">.</span><span class="n">gpu</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+<span class="n">a_np</span> <span class="o">=</span> <a href="https://numpy.org/doc/stable/reference/random/generated/numpy.random.uniform.html#numpy.random.uniform" title="View documentation for numpy.random.uniform"><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span></a><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="p">(</span><span class="n">in_size</span><span class="p">,</span> <span class="n">in_size</span><span class="p">,</span> <span class="n">in_channel</span><span class="p">,</span> <span class="n">batch</span><span class="p">))</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">A</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
+<span class="n">w_np</span> <span class="o">=</span> <a href="https://numpy.org/doc/stable/reference/random/generated/numpy.random.uniform.html#numpy.random.uniform" title="View documentation for numpy.random.uniform"><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span></a><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="p">(</span><span class="n">kernel</span><span class="p">,</span> <span class="n">kernel</span><span class="p">,</span> <span class="n">in_channel</span><span class="p">,</span> <span class="n">out_channel</span><span class="p">))</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">W</span><span class="o">.</span><span class="n">dtype</span><span class="p">)</span>
+<span class="n">a</span> <span class="o">=</span> <a href="../../api/python/ndarray.html#tvm.nd.array" title="View documentation for tvm.nd.array"><span class="n">tvm</span><span class="o">.</span><span class="n">nd</span><span class="o">.</span><span class="n">array</span></a><span class="p">(</span><span class="n">a_np</span><span class="p">,</span> <span class="n">ctx</span><span class="p">)</span>
+<span class="n">w</span> <span class="o">=</span> <a href="../../api/python/ndarray.html#tvm.nd.array" title="View documentation for tvm.nd.array"><span class="n">tvm</span><span class="o">.</span><span class="n">nd</span><span class="o">.</span><span class="n">array</span></a><span class="p">(</span><span class="n">w_np</span><span class="p">,</span> <span class="n">ctx</span><span class="p">)</span>
+<span class="n">b</span> <span class="o">=</span> <a href="../../api/python/ndarray.html#tvm.nd.array" title="View documentation for tvm.nd.array"><span class="n">tvm</span><span class="o">.</span><span class="n">nd</span><span class="o">.</span><span class="n">array</span></a><span class="p">(</span><a href="https://numpy.org/doc/stable/reference/generated/numpy.zeros.html#numpy.zeros" title="View documentation for numpy.zeros"><span class="n">np</span><span class="o">.</span><span class="n">zeros</span></a><span class="p">((</span><span class="n">out_size</span><span class="p">,</span> <span class="n">out_size</span><span class="p">,</span> <span class="n">out_channel</span><span class="p">,</span> <span class="n">batch</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">B</span><span class="o">.</span><span class="n">dtype</span><span class="p">),</span> <span class="n">ctx</span><span class="p">)</span>
+<span class="n">func</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">w</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span>
+<span class="n">evaluator</span> <span class="o">=</span> <span class="n">func</span><span class="o">.</span><span class="n">time_evaluator</span><span class="p">(</span><span class="n">func</span><span class="o">.</span><span class="n">entry_name</span><span class="p">,</span> <span class="n">ctx</span><span class="p">,</span> <span class="n">number</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Convolution: </span><span class="si">%f</span><span class="s1"> ms&#39;</span> <span class="o">%</span> <span class="p">(</span><span class="n">evaluator</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">w</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span><span class="o">.</span><span class="n">mean</span> <span class="o">*</span> <span class="mi">1</span><span class="n">e3</span><span class="p">))</span>
+</pre></div>
+</div>
+<p class="sphx-glr-script-out">Out:</p>
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre>Convolution: 19.556336 ms
+</pre></div>
+</div>
+<div class="sphx-glr-footer class sphx-glr-footer-example docutils container" id="sphx-glr-download-tutorials-optimize-opt-conv-cuda-py">
+<div class="sphx-glr-download docutils container">
+<p><a class="reference download internal" download="" href="../../_downloads/b4d760859f6d9338f70bdb79ddfa3aa8/opt_conv_cuda.py"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">opt_conv_cuda.py</span></code></a></p>
+</div>
+<div class="sphx-glr-download docutils container">
+<p><a class="reference download internal" download="" href="../../_downloads/6748a8fb7e82692825b259c20af8372a/opt_conv_cuda.ipynb"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Jupyter</span> <span class="pre">notebook:</span> <span class="pre">opt_conv_cuda.ipynb</span></code></a></p>
+</div>
+</div>
+<p class="sphx-glr-signature"><a class="reference external" href="https://sphinx-gallery.github.io">Gallery generated by Sphinx-Gallery</a></p>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="opt_gemm.html" class="btn btn-neutral float-right" title="How to optimize GEMM on CPU" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="../language/tensorize.html" class="btn btn-neutral float-left" title="Use Tensorize to Leverage Hardware Intrinsics" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &copy; Copyright 2020, Apache Software Foundation
+
+    </p>
+  </div>
+  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+    <!-- Theme Analytics -->
+    <script>
+    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+    })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+    ga('create', 'UA-75982049-2', 'auto');
+    ga('send', 'pageview');
+    </script>
+
+    
+   
+
+</body>
+</html>

@@ -1,0 +1,590 @@
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>Automatic Kernel Optimization for Deep Learning on All Hardware Platforms</title>
+    
+    <meta name="author" content="">
+
+    <!-- Le HTML5 shim, for IE6-8 support of HTML elements -->
+    <!--[if lt IE 9]>
+      <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+
+    <!-- Le styles -->
+    <link href="/assets/themes/custom-twitter/css/1.4.0/bootstrap.css" rel="stylesheet">
+    <link href="/assets/themes/custom-twitter/css/style.css?body=1" rel="stylesheet" type="text/css" media="all">
+
+    <!-- Le fav and touch icons -->
+  <!-- Update these with your own images
+    <link rel="shortcut icon" href="images/logo/tvm-logo.png">
+  <link rel="shortcut icon" href="images/logo/tvm-logo.png">
+  -->
+  <link href="/images/logo/tvm-logo-square.png" rel="icon" type="image/png"/>
+  <!-- Global site tag (gtag.js) - Google Analytics -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=UA-75982049-2"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+
+    gtag('js', new Date());
+    gtag('config', 'UA-75982049-2');
+  </script>
+
+</head>
+
+  <body>
+    <div class="topbar">
+      <div class="fill">
+        <div class="container">
+          <h2 id="logo-wrap">
+            <a href="/" class="nav">
+              <img src="/images/logo/tvm-logo-small-black.png" width="100px">
+            </a>
+          </h2>
+          <ul class="nav" id="nav-bar">
+            
+            
+            
+
+
+
+  
+    
+      
+      
+    
+  
+    
+      
+      
+    
+  
+    
+      
+      
+    
+  
+    
+      
+      
+    
+  
+    
+      
+      
+    
+  
+    
+      
+      
+    
+  
+    
+      
+      	
+      	<li><a href="/community">Community</a></li>
+      	
+      
+      
+    
+  
+    
+      
+      	
+      	<li><a href="/download">Download</a></li>
+      	
+      
+      
+    
+  
+    
+      
+      	
+      	<li><a href="/about">About</a></li>
+      	
+      
+      
+    
+  
+    
+      
+      
+    
+  
+    
+      
+      	
+      	<li><a href="/vta">VTA</a></li>
+      	
+      
+      
+    
+  
+    
+      
+      
+      	
+      	<li><a href="/blog">Blog</a></li>
+      	
+      
+    
+  
+
+
+
+
+            <li> <a href="https://tvm.apache.org/docs">Docs</a></li>
+            <li> <a href="https://tvmconf.org">TVM Conference</a></li>
+            <li> <a href="https://github.com/apache/incubator-tvm/">Github</a></li>
+            <li> <a href="/asf">ASF</a></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+    
+<div class="container">
+<div class="content">
+  <div class="row">
+    <div class="span14">
+      <h1>Automatic Kernel Optimization for Deep Learning on All Hardware Platforms </h1>
+      <p class="post-meta">
+        <time datetime="2018-10-03T00:00:00-07:00" itemprop="datePublished">
+          Oct 3, 2018
+        </time>
+        
+        • <span itemprop="author" itemscope itemtype="http://schema.org/Person">
+          <span itemprop="name">Lianmin Zheng, Eddie Yan, Tianqi Chen</span>
+        </span>
+        
+      </p>
+      <p class="post-meta">
+        </p>
+    </br>
+    <p>Optimizing the performance of deep neural network on a diverse range of hardware platforms is still a hard
+problem for AI developers. In terms of system support, we are facing a many-to-many problem here:
+deploying trained models from multiple frontends (e.g. Tensorflow, ONNX, MXNet) to multiple
+hardware platforms (e.g. CPU, GPU, Accelerators). The most performance critical part of
+this problem is obtaining high performance kernel implementations for growing model
+architectures and hardware platforms.</p>
+
+<p>To address this challenge, TVM takes a full stack compiler approach.
+TVM combines code generation and automatic program optimization to generate kernels
+that are comparable to heavily hand-optimized libraries,
+obtaining state-of-the-art inference performance on hardware platforms including
+ARM CPUs, Intel CPUs, Mali GPUs, NVIIDA GPUs and AMD GPUs.</p>
+
+<p>In this blog post, we show the workflow of automatic kernel optimization in TVM compiler stack and 
+benchmark results on several hardware platforms.</p>
+
+<h1 id="system-overview">System Overview</h1>
+
+<p style="text-align: center"><img src="/images/autotune-all/overview.png" alt="image" width="35%" /></p>
+<center> Figure 1. System Overview </center>
+<p></p>
+
+<p>Kernel optimization in TVM is done in an iterative loop fashion.
+As shown in Figure 1, the automatic kernel optimization takes a neural network (typically in computational graph representation)
+from frontend frameworks as input, and generates kernels for all operators in this network.</p>
+
+<p>The inner loop uses a scalable RPC runtime, machine learning based tuners and a tensor compiler.
+In each round of the loop, the tuner picks a batch of promising candidate kernel implementations from a large search space,
+and profile them on real hardware. Then the tuner gets the profiling results. These profiling results are used as training 
+data to fit a prediction model. After fitting the prediction model, the tuner picks the next promising candidates according to the predictions,
+and the loop continues. This way, we search for fast kernels iteratively.</p>
+
+<p>The below figure compares traditional auto-tuning and AutoTVM. 
+The major difference is that AutoTVM is</p>
+<ul>
+  <li><strong>Scalable</strong> to heterogenous cluster of devices</li>
+  <li><strong>Learning</strong> to optimize tensor programs with a transferable machine learning cost model</li>
+</ul>
+
+<p>You can refer to our paper[1] for more details.</p>
+
+<p style="text-align: center"><img src="/images/autotune-all/autotvm.png" alt="image" width="50%" /></p>
+<center> Figure 2. Comparison of Traditional Auto-tuning and AutoTVM </center>
+<p></p>
+
+<h2 id="begin-tuning">Begin Tuning</h2>
+<p>For demonstration, we run our optimization for resnet-18 on RK3399, an ARM development board.
+The detailed instructions are omitted due to the space limit of a blog post.
+Links to tutorials for ARM CPU, Mali GPU, NVIDIA GPU, AMD GPU are all available at the end of this blog.</p>
+
+<p>First we get a pre-trained model from MXNet model zoo, and extract tuning tasks from it.</p>
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">from</span> <span class="nn">mxnet.gluon.model_zoo.vision</span> <span class="kn">import</span> <span class="n">get_model</span>
+
+<span class="n">block</span> <span class="o">=</span> <span class="n">get_model</span><span class="p">(</span><span class="s">'resnet18_v1'</span><span class="p">,</span> <span class="n">pretrained</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+<span class="n">net</span><span class="p">,</span> <span class="n">params</span> <span class="o">=</span> <span class="n">nnvm</span><span class="o">.</span><span class="n">frontend</span><span class="o">.</span><span class="n">from_mxnet</span><span class="p">(</span><span class="n">block</span><span class="p">)</span>
+
+<span class="n">tasks</span> <span class="o">=</span> <span class="n">autotvm</span><span class="o">.</span><span class="n">extract_from_graph</span><span class="p">(</span><span class="n">net</span><span class="p">)</span>
+<span class="n">tune_tasks</span><span class="p">(</span><span class="n">tasks</span><span class="p">,</span> <span class="o">**</span><span class="n">tuning_option</span><span class="p">)</span>
+</code></pre></div></div>
+<p>There are 12 different conv2d layers in resnet-18, so we launch 12 tuning tasks.
+For each of them, the tuner makes several hundreds of trials and picks the best one.
+After finishing all tuning tasks, we compile the whole network and generate a single deployable minimal library.
+One sample output is</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>Extract tasks...
+Tuning...
+[Task  1/12]  Current/Best:   22.37/  52.19 GFLOPS | Progress: (544/1000) | 406.59 s Done.
+[Task  2/12]  Current/Best:    6.51/  18.77 GFLOPS | Progress: (608/1000) | 325.05 s Done.
+[Task  3/12]  Current/Best:    4.67/  24.87 GFLOPS | Progress: (480/1000) | 372.31 s Done.
+[Task  4/12]  Current/Best:   11.35/  46.83 GFLOPS | Progress: (736/1000) | 602.39 s Done.
+[Task  5/12]  Current/Best:    1.01/  19.80 GFLOPS | Progress: (448/1000) | 262.16 s Done.
+[Task  6/12]  Current/Best:    2.47/  23.76 GFLOPS | Progress: (672/1000) | 563.85 s Done.
+[Task  7/12]  Current/Best:   14.57/  33.97 GFLOPS | Progress: (544/1000) | 465.15 s Done.
+[Task  8/12]  Current/Best:    1.13/  17.65 GFLOPS | Progress: (576/1000) | 365.08 s Done.
+[Task  9/12]  Current/Best:   14.45/  22.66 GFLOPS | Progress: (928/1000) | 724.25 s Done.
+[Task 10/12]  Current/Best:    3.22/  15.36 GFLOPS | Progress: (864/1000) | 564.27 s Done.
+[Task 11/12]  Current/Best:   11.03/  32.23 GFLOPS | Progress: (736/1000) | 635.15 s Done.
+[Task 12/12]  Current/Best:    8.00/  21.65 GFLOPS | Progress: (1000/1000) | 1111.81 s Done.
+Compile...
+Upload...
+Evaluate inference time cost...
+Mean inference time (std dev): 162.59 ms (0.06 ms)
+</code></pre></div></div>
+
+<p>The tuning is especially helpful and worth a try if your model has some strange shapes or
+your hardware is customized, as hand-optimized static libraries cannot consider all situations.</p>
+
+<h1 id="benchmark-results">Benchmark Results</h1>
+<p>We pre-tuned some popular networks on our device cluster and released the following benchmark.
+Instructions for reproduction are at the end of this blog.</p>
+
+<p>Comprehensively benchmarking TVM is easy since we have a unified runtime interface.
+However maintaining complete, up-to-date, and correct comparisons against all other platforms is not feasible
+without expert assistance from the developers of many other projects.
+So we put all our numbers in a table, and then provide an incomplete comparison with some other libraries.</p>
+
+<h2 id="comparison">Comparison</h2>
+<p>We validate the effectiveness of our automatic optimization stack by 
+comparing with heavily optimized traditional libraries on each platform.</p>
+
+<p>We tested popular image classification networks on ImageNet (3x224x224) dataset with batch size = 1 and data type = float32.
+The reported numbers are time costs per image in milliseconds.</p>
+
+<h3 id="arm-cpu">ARM CPU</h3>
+
+<p>We choose <a href="https://github.com/Tencent/ncnn">NCNN</a>, a widely used, hand-optimized kernel library as baseline.
+It makes extensive use of NEON assembly instructions. For example, the code base contains
+<a href="https://github.com/Tencent/ncnn/blob/master/src/layer/arm/convolution_3x3.h">13k lines of code</a> for only 3x3 convolution layers.
+We reference the benchmark numbers in their project repository.
+As shown in the figure below, TVM outperforms it for all networks on Rasbperry Pi 3B.</p>
+
+<p><img src="/images/autotune-all/arm.png" alt="image" width="90%" /></p>
+
+<h3 id="mali-gpu">Mali GPU</h3>
+
+<p><a href="https://github.com/ARM-software/ComputeLibrary">ARM Compute Library</a> is a vendor provided library that supports Mali GPU (OpenCL) well.
+According to the results, TVM provides stronger performance in ResNet and MobileNet due to advantages in convolutional layers.
+TVM lags behind a bit on vgg-16 because vgg-16 is an old and huge network and has several large dense layers.</p>
+
+<p><img src="/images/autotune-all/mali.png" alt="image" width="90%" /></p>
+
+<h3 id="nvidia-gpu">NVIDIA GPU</h3>
+
+<p>On NVIDIA GPU, <a href="https://developer.nvidia.com/cudnn">CuDNN</a> and <a href="https://developer.nvidia.com/tensorrt">TensorRT</a> are two vendor-provided libraries for training and inference respectively. Since we focus on inference,
+we run our benchmark in the unbatched setting. Another tensor compiler <a href="https://github.com/plaidml/plaidml">PlaidML</a> is also reported as baseline
+as there is a previous benchmark of it compared against a pre-AutoTVM version of TVM.
+We reference its benchmark results from <a href="https://github.com/plaidml/plaidbench">PlaidBench</a>.
+According to the results below, TVM achieves parity with TensorRT performance.</p>
+
+<p><img src="/images/autotune-all/nvidia.png" alt="image" width="90%" /></p>
+
+<h3 id="amd-gpu">AMD GPU</h3>
+
+<p>We also take a quick look at a AMD GPU. TVM supports OpenCL and <a href="https://rocm.github.io/">ROCm</a> backend. We found ROCm is better since
+it is more specialized for AMD GPUs.
+<a href="https://github.com/ROCmSoftwarePlatform/MIOpen">MIOpen</a> is a vendor provided
+kernel library. TVM’s graph runtime can call MIOpen’s kernel implementations directly, so we report
+the baseline performance by using this integration.</p>
+
+<p>We didn’t do any specific optimization for AMD GPU. All computation definition and schedule code for NVIDIA GPU is directly reused.
+As a result, TVM is a little bit slower then MIOpen in most cases.
+We believe there is still room for improvement.</p>
+
+<p><img src="/images/autotune-all/amd.png" alt="image" width="90%" /></p>
+
+<h2 id="all-our-results">All Our Results</h2>
+<p>We tested the following networks on ImageNet (3x224x224) dataset with batch size = 1 and data type = float32.
+The reported numbers are time costs per image in milliseconds.</p>
+
+<table>
+  <thead>
+    <tr>
+      <th> </th>
+      <th> </th>
+      <th> </th>
+      <th> </th>
+      <th> </th>
+      <th> </th>
+      <th> </th>
+      <th> </th>
+      <th> </th>
+      <th> </th>
+      <th> </th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td> </td>
+      <td><strong>densenet121</strong></td>
+      <td><strong>inception v3</strong></td>
+      <td><strong>mobilenet</strong></td>
+      <td><strong>mobilenet v2</strong></td>
+      <td><strong>resnet18</strong></td>
+      <td><strong>resnet50</strong></td>
+      <td><strong>squeezenet v1.0</strong></td>
+      <td><strong>squeezenet v1.1</strong></td>
+      <td><strong>vgg16</strong></td>
+      <td><strong>vgg19</strong></td>
+    </tr>
+    <tr>
+      <td><strong>ARM CPU</strong></td>
+      <td> </td>
+      <td> </td>
+      <td> </td>
+      <td> </td>
+      <td> </td>
+      <td> </td>
+      <td> </td>
+      <td> </td>
+      <td> </td>
+      <td> </td>
+    </tr>
+    <tr>
+      <td>Huawei P20 Pro</td>
+      <td>181.4</td>
+      <td>439.9</td>
+      <td>41.1</td>
+      <td>34.5</td>
+      <td>76.5</td>
+      <td>208.2</td>
+      <td>51.8</td>
+      <td>25.7</td>
+      <td>480.6</td>
+      <td>627.0</td>
+    </tr>
+    <tr>
+      <td>Google Pixel2</td>
+      <td>162.2</td>
+      <td>433.5</td>
+      <td>39.5</td>
+      <td>30.1</td>
+      <td>61.1</td>
+      <td>181.3</td>
+      <td>47.3</td>
+      <td>23.2</td>
+      <td>391.1</td>
+      <td>487.7</td>
+    </tr>
+    <tr>
+      <td>Firefly RK3399</td>
+      <td>335.9</td>
+      <td>1285.9</td>
+      <td>78.6</td>
+      <td>66.7</td>
+      <td>161.2</td>
+      <td>403.8</td>
+      <td>94.6</td>
+      <td>48.5</td>
+      <td>902.9</td>
+      <td>1090.1</td>
+    </tr>
+    <tr>
+      <td>Raspberry Pi 3B</td>
+      <td>609.5</td>
+      <td>2070.4</td>
+      <td>122.2</td>
+      <td>103.7</td>
+      <td>322.5</td>
+      <td>725.8</td>
+      <td>185.1</td>
+      <td>94.1</td>
+      <td>1759.6</td>
+      <td>2118.6</td>
+    </tr>
+    <tr>
+      <td>Xilinx PYNQ</td>
+      <td>2888.3</td>
+      <td>9709.1</td>
+      <td>723.5</td>
+      <td>514.3</td>
+      <td>1234.6</td>
+      <td>3580.5</td>
+      <td>909.9</td>
+      <td>477.3</td>
+      <td><sup>-(Note 1)</sup></td>
+      <td>-</td>
+    </tr>
+    <tr>
+      <td><strong>Mali GPU</strong></td>
+      <td> </td>
+      <td> </td>
+      <td> </td>
+      <td> </td>
+      <td> </td>
+      <td> </td>
+      <td> </td>
+      <td> </td>
+      <td> </td>
+      <td> </td>
+    </tr>
+    <tr>
+      <td>Mali-T860</td>
+      <td>410.9</td>
+      <td>783.1</td>
+      <td>75.4</td>
+      <td>70.8</td>
+      <td>128.6</td>
+      <td>352.9</td>
+      <td>106.2</td>
+      <td>58.0</td>
+      <td>679.5</td>
+      <td>805.3</td>
+    </tr>
+    <tr>
+      <td><strong>NVIDIA GPU</strong></td>
+      <td> </td>
+      <td> </td>
+      <td> </td>
+      <td> </td>
+      <td> </td>
+      <td> </td>
+      <td> </td>
+      <td> </td>
+      <td> </td>
+      <td> </td>
+    </tr>
+    <tr>
+      <td>GTX 1080 Ti</td>
+      <td>3.6</td>
+      <td>5.8</td>
+      <td>0.6</td>
+      <td>- <sup>(Note 2) </sup></td>
+      <td>-</td>
+      <td>2.7</td>
+      <td>-</td>
+      <td>-</td>
+      <td>4.0</td>
+      <td>4.6</td>
+    </tr>
+    <tr>
+      <td>GTX TITAN X</td>
+      <td>5.8</td>
+      <td>9.7</td>
+      <td>1.0</td>
+      <td>-</td>
+      <td>-</td>
+      <td>4.3</td>
+      <td>-</td>
+      <td>-</td>
+      <td>6.4</td>
+      <td>7.5</td>
+    </tr>
+    <tr>
+      <td><strong>AMD GPU</strong></td>
+      <td> </td>
+      <td> </td>
+      <td> </td>
+      <td> </td>
+      <td> </td>
+      <td> </td>
+      <td> </td>
+      <td> </td>
+      <td> </td>
+      <td> </td>
+    </tr>
+    <tr>
+      <td>AMD Vega FE</td>
+      <td>5.7</td>
+      <td>8.8</td>
+      <td>1.0</td>
+      <td>-</td>
+      <td>-</td>
+      <td>4.5</td>
+      <td>-</td>
+      <td>-</td>
+      <td>5.9</td>
+      <td>7.0</td>
+    </tr>
+    <tr>
+      <td> </td>
+      <td> </td>
+      <td> </td>
+      <td> </td>
+      <td> </td>
+      <td> </td>
+      <td> </td>
+      <td> </td>
+      <td> </td>
+      <td> </td>
+      <td> </td>
+    </tr>
+  </tbody>
+</table>
+
+<ul>
+  <li>Note 1: Out of memory on this board.</li>
+  <li>Note 2: We didn’t tune some small networks on GPU due to time constraints.
+When profiling data is not available, TVM can use fallback code generation. 
+But competitive performance is not guaranteed in this scenario.</li>
+</ul>
+
+<h1 id="conclusion">Conclusion</h1>
+<p>With an expressive code generator and an efficient search algorithm, we are able to
+generate kernels that are comparable to heavily hand-optimized ones.
+Since programmer time is expensive and machine time is getting cheaper,
+we believe automatic optimization with real hardware and data in the loop will be the standard workflow
+for inference deployment. TVM just provides such a solution.</p>
+
+<h2 id="links">Links</h2>
+<p>[1] benchmark: <a href="https://github.com/dmlc/tvm/tree/master/apps/benchmark">https://github.com/dmlc/tvm/tree/master/apps/benchmark</a><br />
+[2] Tutorial on tuning for ARM CPU: <a href="https://tvm.apache.org/docs//tutorials/autotvm/tune_nnvm_arm.html">https://tvm.apache.org/docs//tutorials/autotvm/tune_nnvm_arm.html</a><br />
+[3] Tutorial on tuning for Mobile GPU: <a href="https://tvm.apache.org/docs//tutorials/autotvm/tune_nnvm_mobile_gpu.html">https://tvm.apache.org/docs//tutorials/autotvm/tune_nnvm_mobile_gpu.html</a><br />
+[4] Tutorial on tuning for NVIDIA/AMD GPU: <a href="https://tvm.apache.org/docs//tutorials/autotvm/tune_nnvm_cuda.html">https://tvm.apache.org/docs//tutorials/autotvm/tune_nnvm_cuda.html</a><br />
+[5] Paper about AutoTVM: <a href="https://arxiv.org/abs/1805.08166">Learning to Optimize Tensor Program</a><br />
+[6] Paper about Intel CPU (by AWS contributors) :  <a href="https://arxiv.org/abs/1809.02697">Optimizing CNN Model Inference on CPUs</a></p>
+
+
+    </div>
+  </div>
+</div>
+</div>
+
+
+    
+
+
+
+
+
+    <div class="container">
+
+      <footer class="small">
+        Apache TVM is an effort undergoing incubation at The Apache Software Foundation (ASF),
+        sponsored by the <i>Apache Incubator</i>. Incubation is required
+        of all newly accepted projects until a further review indicates that the infrastructure,
+        communications, and decision making process have stabilized in a manner consistent with other
+        successful ASF projects. While incubation status is not necessarily a reflection of the completeness
+        or stability of the code, it does indicate that the project has yet to be fully endorsed by the ASF.
+
+        Copyright © 2020 The Apache Software Foundation. Apache TVM, Apache,
+        the Apache feather, and the Apache TVM project logo are either trademarks or registered trademarks of the Apache Software Foundation.
+
+        See also other useful <a href="/asf" class="footer-link">ASF links</a>:
+        <a href="https://www.apache.org/" class="footer-link">Apache Homepage</a>,
+        <a href="https://www.apache.org/licenses/" class="footer-link">License</a>
+        <a href="https://www.apache.org/foundation/sponsorship.html" class="footer-link">Sponsorship</a>,
+        <a href="https://www.apache.org/security/" class="footer-link">Security</a>
+        <a href="https://www.apache.org/foundation/thanks.html" class="footer-link">Thanks</a>,
+        <a href="https://www.apache.org/events/current-event.html" class="footer-link">Current Event</a>
+
+      </footer>
+    </div>
+  </body>
+</html>
+
+

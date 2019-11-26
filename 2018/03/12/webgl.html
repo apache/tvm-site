@@ -1,0 +1,312 @@
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>Compiling Deep Learning Models to WebGL with TVM</title>
+    
+    <meta name="author" content="">
+
+    <!-- Le HTML5 shim, for IE6-8 support of HTML elements -->
+    <!--[if lt IE 9]>
+      <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+
+    <!-- Le styles -->
+    <link href="/assets/themes/custom-twitter/css/1.4.0/bootstrap.css" rel="stylesheet">
+    <link href="/assets/themes/custom-twitter/css/style.css?body=1" rel="stylesheet" type="text/css" media="all">
+
+    <!-- Le fav and touch icons -->
+  <!-- Update these with your own images
+    <link rel="shortcut icon" href="images/logo/tvm-logo.png">
+  <link rel="shortcut icon" href="images/logo/tvm-logo.png">
+  -->
+  <link href="/images/logo/tvm-logo-square.png" rel="icon" type="image/png"/>
+  <!-- Global site tag (gtag.js) - Google Analytics -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=UA-75982049-2"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+
+    gtag('js', new Date());
+    gtag('config', 'UA-75982049-2');
+  </script>
+
+</head>
+
+  <body>
+    <div class="topbar">
+      <div class="fill">
+        <div class="container">
+          <h2 id="logo-wrap">
+            <a href="/" class="nav">
+              <img src="/images/logo/tvm-logo-small-black.png" width="100px">
+            </a>
+          </h2>
+          <ul class="nav" id="nav-bar">
+            
+            
+            
+
+
+
+  
+    
+      
+      
+    
+  
+    
+      
+      
+    
+  
+    
+      
+      
+    
+  
+    
+      
+      
+    
+  
+    
+      
+      
+    
+  
+    
+      
+      
+    
+  
+    
+      
+      	
+      	<li><a href="/community">Community</a></li>
+      	
+      
+      
+    
+  
+    
+      
+      	
+      	<li><a href="/download">Download</a></li>
+      	
+      
+      
+    
+  
+    
+      
+      	
+      	<li><a href="/about">About</a></li>
+      	
+      
+      
+    
+  
+    
+      
+      
+    
+  
+    
+      
+      	
+      	<li><a href="/vta">VTA</a></li>
+      	
+      
+      
+    
+  
+    
+      
+      
+      	
+      	<li><a href="/blog">Blog</a></li>
+      	
+      
+    
+  
+
+
+
+
+            <li> <a href="https://tvm.apache.org/docs">Docs</a></li>
+            <li> <a href="https://tvmconf.org">TVM Conference</a></li>
+            <li> <a href="https://github.com/apache/incubator-tvm/">Github</a></li>
+            <li> <a href="/asf">ASF</a></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+    
+<div class="container">
+<div class="content">
+  <div class="row">
+    <div class="span14">
+      <h1>Compiling Deep Learning Models to WebGL with TVM </h1>
+      <p class="post-meta">
+        <time datetime="2018-03-12T00:00:00-07:00" itemprop="datePublished">
+          Mar 12, 2018
+        </time>
+        
+        • <span itemprop="author" itemscope itemtype="http://schema.org/Person">
+          <span itemprop="name">Zhixun Tan</span>
+        </span>
+        
+      </p>
+      <p class="post-meta">
+        </p>
+    </br>
+    <p>Now TVM comes with a brand-new OpenGL/WebGL backend!
+This blog post explains what it is, and what you can achieve with it.</p>
+
+<h1 id="the-openglwebgl-backend">The OpenGL/WebGL Backend</h1>
+
+<p>TVM already targets a lot of backends covering a variety of platforms: CPU, GPU,
+mobile devices, etc… This time we are adding another backend: OpenGL/WebGL.</p>
+
+<p>OpenGL/WebGL enables us to leverage the GPU on an environment which does not
+have CUDA installed. It is, for the time being, the only way of using the GPU
+inside a browser.</p>
+
+<p>This new backend allows us to use OpenGL/WebGL in 3 different ways:</p>
+<ul>
+  <li><strong>Local OpenGL</strong>:
+We can compile a deep learning model into OpenGL and directly
+run it on the local machine, entirely using Python.</li>
+  <li><strong>WebGL with RPC</strong>:
+We can compile a deep learning model into WebGL and export
+it as a shared library via Emscripten, with JavaScript host code and WebGL device code. Then
+we can deploy that library through RPC onto a TVM JavaScript runtime system
+running inside a browser.</li>
+  <li><strong>WebGL with static library</strong>:
+We can compile a deep learning model into WebGL,
+link it with the TVM JavaScript runtime system and export the entire package.
+Then we can run the model in a web page on a browser, with no dependency.
+The detailed flow is described in figure 1.</li>
+</ul>
+
+<p>We rely on Emscripten and its fastcomp LLVM backend to generate the javascript backend.</p>
+
+<p style="text-align: center"><img src="/images/opengl/webgl-flow.png" alt="image" width="65%" /><br />
+Figure 1</p>
+
+<p>See <a href="https://github.com/dmlc/nnvm/blob/master/tutorials/from_mxnet_to_webgl.py">here</a>
+for examples of all three of them.</p>
+
+<h1 id="how-is-this-different-from-x">How is this Different from X?</h1>
+
+<p>Running a neural network on a browser isn’t an entirely new thing.
+Andrej Karpathy’s <a href="https://cs.stanford.edu/people/karpathy/convnetjs/">ConvNetJS</a>
+and Google’s <a href="https://deeplearnjs.org/">DeepLearning.JS</a> are examples of that.</p>
+
+<p>So what’s unique about TVM with WebGL? The big difference is that the op kernels
+in TVM are automatically compiled, not handwritten. As shown in Figure 2, TVM
+utilizes a unified AST to define kernels, and compiles it to code on different
+platforms.</p>
+
+<p style="text-align: center"><img src="/images/opengl/comparison.png" alt="" width="50%" /><br />
+Figure 2</p>
+
+<p>This means that:</p>
+<ul>
+  <li>To deploy your existing model to WebGL, you don’t need to write a lot of
+additional code. The NNVM/TVM model definition is the same for all targets, so
+you just need to compile it to a new target.</li>
+  <li>To add a new op kernel, you only need to define it in TVM once, instead of
+implementing it once for every target. You don’t need to know how to write
+GLSL code to add a new op kernel to WebGL!</li>
+</ul>
+
+<h1 id="benchmark">Benchmark</h1>
+
+<p>Here we perform a benchmark for a typical workload: image classification using
+resnet18.</p>
+
+<p>I’m using my <a href="https://www.asus.com/us/Laptops/N76VZ/">5-year-old laptop</a> which
+has an 8-core Intel® Core™ i7-3610QM, and a GTX650M.</p>
+
+<p>In this benchmark, we download a resnet18 model from the Gluon model zoo, and
+perform end-to-end classification on a cat image. We only measure the model
+execution time (without model/input/parameter loading), and each model is run
+100 times to get an average. The results are shown in figure 3.</p>
+
+<p style="text-align: center"><img src="/images/opengl/opengl-benchmark.png" alt="image" /><br />
+Figure 3</p>
+
+<p>The benchmark is run in 4 different settings:</p>
+<ul>
+  <li><strong>CPU (LLVM)</strong>: The model is compiled into LLVM IR and JIT’ed. Therefore, it is
+run entirely on the CPU.</li>
+  <li><strong>OpenCL</strong>: The model is compiled into OpenCL. There is still some glue code
+compiled to LLVM, which is responsible for setting up and launching OpenCL
+kernels. Then we run it on the local machine.</li>
+  <li><strong>OpenGL</strong>: Same as OpenCL, but compiled to OpenGL.</li>
+  <li><strong>WebGL</strong>: The glue code is compiled to LLVM, and transformed to JavaScript using
+Emscripten’s Fastcomp LLVM backend.
+The device code is compiled to WebGL. We execute the model in Firefox.</li>
+</ul>
+
+<p>From the result above we can observe that, the TVM OpenGL backend has a similar
+performance as OpenCL. More interestingly, the WebGL version inside the browser
+isn’t significantly slower than desktop OpenGL. Considering that the host code
+is JavaScript, this is quite surprising. This might be due to the fact that
+Emscripten generates <a href="http://asmjs.org/">asm.js</a> which enables dramatic
+optimizations in Firefox.</p>
+
+<p>This is a first step toward automatic compilation of deep learning models
+into web browser. We expect more performance improvements as we bring
+optimizations into the TVM stack.</p>
+
+<h2 id="show-me-the-code">Show me the Code</h2>
+<ul>
+  <li>Checkout <a href="https://github.com/dmlc/nnvm/blob/master/tutorials/from_mxnet_to_webgl.py">this complete code example</a>.</li>
+</ul>
+
+<h2 id="acknowledgement">Acknowledgement</h2>
+<p>We thank the developers of Emscripten for providing the fastcomp toolchain and the helps during the development.</p>
+
+    </div>
+  </div>
+</div>
+</div>
+
+
+    
+
+
+
+
+
+    <div class="container">
+
+      <footer class="small">
+        Apache TVM is an effort undergoing incubation at The Apache Software Foundation (ASF),
+        sponsored by the <i>Apache Incubator</i>. Incubation is required
+        of all newly accepted projects until a further review indicates that the infrastructure,
+        communications, and decision making process have stabilized in a manner consistent with other
+        successful ASF projects. While incubation status is not necessarily a reflection of the completeness
+        or stability of the code, it does indicate that the project has yet to be fully endorsed by the ASF.
+
+        Copyright © 2020 The Apache Software Foundation. Apache TVM, Apache,
+        the Apache feather, and the Apache TVM project logo are either trademarks or registered trademarks of the Apache Software Foundation.
+
+        See also other useful <a href="/asf" class="footer-link">ASF links</a>:
+        <a href="https://www.apache.org/" class="footer-link">Apache Homepage</a>,
+        <a href="https://www.apache.org/licenses/" class="footer-link">License</a>
+        <a href="https://www.apache.org/foundation/sponsorship.html" class="footer-link">Sponsorship</a>,
+        <a href="https://www.apache.org/security/" class="footer-link">Security</a>
+        <a href="https://www.apache.org/foundation/thanks.html" class="footer-link">Thanks</a>,
+        <a href="https://www.apache.org/events/current-event.html" class="footer-link">Current Event</a>
+
+      </footer>
+    </div>
+  </body>
+</html>
+
+

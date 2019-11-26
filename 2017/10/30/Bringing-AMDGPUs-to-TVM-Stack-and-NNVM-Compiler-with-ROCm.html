@@ -1,0 +1,418 @@
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>Bringing AMDGPUs to TVM Stack and NNVM Compiler with ROCm</title>
+    
+    <meta name="author" content="">
+
+    <!-- Le HTML5 shim, for IE6-8 support of HTML elements -->
+    <!--[if lt IE 9]>
+      <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+
+    <!-- Le styles -->
+    <link href="/assets/themes/custom-twitter/css/1.4.0/bootstrap.css" rel="stylesheet">
+    <link href="/assets/themes/custom-twitter/css/style.css?body=1" rel="stylesheet" type="text/css" media="all">
+
+    <!-- Le fav and touch icons -->
+  <!-- Update these with your own images
+    <link rel="shortcut icon" href="images/logo/tvm-logo.png">
+  <link rel="shortcut icon" href="images/logo/tvm-logo.png">
+  -->
+  <link href="/images/logo/tvm-logo-square.png" rel="icon" type="image/png"/>
+  <!-- Global site tag (gtag.js) - Google Analytics -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=UA-75982049-2"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+
+    gtag('js', new Date());
+    gtag('config', 'UA-75982049-2');
+  </script>
+
+</head>
+
+  <body>
+    <div class="topbar">
+      <div class="fill">
+        <div class="container">
+          <h2 id="logo-wrap">
+            <a href="/" class="nav">
+              <img src="/images/logo/tvm-logo-small-black.png" width="100px">
+            </a>
+          </h2>
+          <ul class="nav" id="nav-bar">
+            
+            
+            
+
+
+
+  
+    
+      
+      
+    
+  
+    
+      
+      
+    
+  
+    
+      
+      
+    
+  
+    
+      
+      
+    
+  
+    
+      
+      
+    
+  
+    
+      
+      
+    
+  
+    
+      
+      	
+      	<li><a href="/community">Community</a></li>
+      	
+      
+      
+    
+  
+    
+      
+      	
+      	<li><a href="/download">Download</a></li>
+      	
+      
+      
+    
+  
+    
+      
+      	
+      	<li><a href="/about">About</a></li>
+      	
+      
+      
+    
+  
+    
+      
+      
+    
+  
+    
+      
+      	
+      	<li><a href="/vta">VTA</a></li>
+      	
+      
+      
+    
+  
+    
+      
+      
+      	
+      	<li><a href="/blog">Blog</a></li>
+      	
+      
+    
+  
+
+
+
+
+            <li> <a href="https://tvm.apache.org/docs">Docs</a></li>
+            <li> <a href="https://tvmconf.org">TVM Conference</a></li>
+            <li> <a href="https://github.com/apache/incubator-tvm/">Github</a></li>
+            <li> <a href="/asf">ASF</a></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+    
+<div class="container">
+<div class="content">
+  <div class="row">
+    <div class="span14">
+      <h1>Bringing AMDGPUs to TVM Stack and NNVM Compiler with ROCm </h1>
+      <p class="post-meta">
+        <time datetime="2017-10-30T00:00:00-07:00" itemprop="datePublished">
+          Oct 30, 2017
+        </time>
+        
+      </p>
+      <p class="post-meta">
+        </p>
+    </br>
+    <p style="text-align: center">Aditya Atluri, Advanced Micro Devices, Inc.</p>
+<p style="text-align: center">Masahiro Masuda, Ziosoft, Inc.</p>
+
+<p>We are pleased to announce a new GPU backend for TVM stack - ROCm backend for AMD GPUs. If you are not familiar with TVM, you can refer to <a href="http://tvmlang.org/2017/08/17/tvm-release-announcement.html">the earlier announcement</a> first. In short, TVM stack is an end to end compilation stack to deploy deep learning workloads to all hardware backends. Today’s announcement focuses on the code generator support for AMD GPUs. Specifically, we developed a new GPU code generator for AMD GPUs. It compiles a high level computation description written in TVM frontend down to an optimized native GPU code. It achieves this using existing LLVM code generator in TVM and LLVM’s AMDGPU backend.  We have also built a ROCm runtime for TVM to support native deployment of compiled ROCm modules. Thanks to <a href="http://tvmlang.org/2017/10/06/nnvm-compiler-announcement.html">the NNVM compiler</a> support of TVM stack, we can now directly compile descriptions from deep learning frameworks and compile them to bare metal code that runs on AMD GPUs.</p>
+
+<p style="text-align: center"><img src="/images/rocm/tvm_rocm_overview.png" alt="image" width="90%" /></p>
+
+<p>TVM stack is developed by an open source community under Apache-2.0 License. ROCm backend support is done with the help from community. Aditya first implemented codegen and runtime. He was later joined by Masahiro. Masahiro’s full time job is not related to TVM or AMD GPUs. Nonetheless, TVM got him excited and he has been involved in fixing bugs, resolving all failing unittests, and adding math function support to codegen.</p>
+
+<h2 id="rocm-stack">ROCm stack</h2>
+
+<p>Radeon Open Compute is open-source initiative by AMD to leverage compute power of current and future generation GPUs. ROCm software stack is a great tool to express and run most commonly used GPU programming models and achieve peak performance. Not only ROCm is an open-source stack, it is an open stack, which means all the ISA and hardware features are well documented and programmable by developers. Developers can experiment with different programming models and try out multiple ways to achieve peak throughput and bandwidth for their algorithm.</p>
+
+<p>TVM leverages the open-source feature of ROCm stack by using LLVM AMDGPU backend code generator. TVM translates from its intermediate representation (IR) to LLVM intermediate representation. This is the place where ROCm stack open-source feature takes control. TVM’s LLVM AMDGPU CodeGen pass converts LLVM IR into GPU assembly and object code, which is later called to run the whole network or group of layers or single layer.</p>
+
+<p>On ROCm stack, there is no virtual ISA, you get what you ask for not less not more. Hence, one can schedule operations in a kernel at a granularity of a single instruction, without worrying about instruction reordering and other optimizations you do not ask for.</p>
+
+<h2 id="using-nnvm-compiler-with-rocm-backend">Using NNVM Compiler with ROCm backend</h2>
+
+<p>Thanks to TVM stack, we can directly compile models from popular deep learning frameworks such as MXNet and PyTorch into AMD GPU assembly using NNVM compiler, today. With ROCm backend, the generic workflow becomes as follows.</p>
+
+<p style="text-align: center"><img src="/images/rocm/rocm_workflow.png" alt="image" width="90%" /></p>
+
+<p>We have put together working examples of compiling models from MXNet and PyTorch with NNVM, and running them on AMD GPUs with ROCm backend. More frameworks are supported via the NNVM compiler stack. The repository is available <a href="https://github.com/ROCmSoftwarePlatform/nnvm-rocm">here</a>.</p>
+
+<p>The script <a href="https://github.com/ROCmSoftwarePlatform/nnvm-rocm/blob/master/mxnet_imagenet_inference.py">mxnet_imagenet_inference.py</a> demonstrates Imagenet inference on AMD GPUs with recently introduced MXNet-Gluon model. It does the following:</p>
+
+<ul>
+  <li>Loads Resnet 50 model from <a href="https://mxnet.incubator.apache.org/versions/master/api/python/gluon/model_zoo.html">the Gluon model zoo</a></li>
+  <li>Converts Gluon Resnet 50 model to NNVM graph format, using <code class="highlighter-rouge">nnvm.frontend.from_mxnet (...)</code></li>
+  <li>Compiles and executes the graph with ROCm backend</li>
+</ul>
+
+<p>The example comes with an image of the following cat.</p>
+
+<p style="text-align: center"><img src="/images/rocm/cat.png" alt="image" /></p>
+
+<p>Running our network, it predicts this image as “tigar cat”, among 1000 categories.</p>
+
+<figure class="highlight"><pre><code class="language-plain" data-lang="plain">$ python mxnet_imagenet_inference.py
+Testing model resnet50_v1
+x (1, 3, 224, 224)
+TVM prediction top-1: 282 tiger cat</code></pre></figure>
+
+<p>The script <a href="https://github.com/ROCmSoftwarePlatform/nnvm-rocm/blob/master/advanced_superres_onnx.py">advanced_superres_onnx.py</a> gives an example of loading a model trained with PyTorch. The model is stored in the <a href="https://onnx.ai/">ONNX</a> format. In this example, our network takes an low resolution image as input, and outputs a 4x high resolution image. We refer the details of a problem setup and the network architecture to <a href="https://arxiv.org/abs/1609.04802">the original paper</a>. The network has 37 convolutional layers, and thus it is far more complex than the simple 4 layer network in <a href="http://nnvm.tvmlang.org/tutorials/from_onnx.html#sphx-glr-tutorials-from-onnx-py">NNVM’s tutorial</a>. Using the ONNX export interface in the latest Pytorch package, we exported a trained model available <a href="https://github.com/twtygqyy/pytorch-SRResNet">here</a> to the ONNX format for use in this example. We thank the author of the repository for making his code and trained models publicly available.</p>
+
+<p>In order to use models in the ONNX format with NNVM, we first use <a href="https://github.com/onnx/onnx">the ONNX library</a> to load the ONNX model into the Protocol buffer object. We can then use <code class="highlighter-rouge">nnvm.frontend.from_onnx(...)</code> to obtain an equivalent NNVM graph. With a NNVM graph in hand, we can follow the generic workflow of compilation and graph execution outlined above.</p>
+
+<p style="text-align: center"><img src="/images/rocm/butterfly.png" alt="image" /></p>
+
+<p>The input to the network is a 64 x 64 image on the left, and it outputs a 256 x 256 image on the right. On the middle is a 256 x 256 image obtained simply by resizing the input image with bicubic interpolation. The network outputs an image of far better quality.</p>
+
+<p>The input images are taken from the original paper, and they are available <a href="https://twitter.app.box.com/s/lcue6vlrd01ljkdtdkhmfvk7vtjhetog">here</a>.</p>
+
+<h2 id="a-note-on-performance">A Note on performance</h2>
+
+<p>The current support on ROCm focuses on the functionality coverage. We have already seen promising performance results by simply adopting existing TVM schedules for CUDA backend. For example, you can try running <a href="https://github.com/dmlc/tvm/blob/master/topi/recipe/gemm/cuda_gemm_square.py">the gemm test script</a> in the TVM repository and see the result. For two types of cards we tested, the current gemm recipe for square matrix multiplication (not yet specifically optimized for AMD GPUs) already achieves 60% to 65% of peak performance.
+This is already a promising start, as it is very hard to optimize performance to get to peak and we
+did not yet apply AMD GPU specific optimizations.
+We are starting to look at performance optimization and we expect more improvement to come.</p>
+
+<h2 id="walkthrough-of-rocm-backend">Walkthrough of ROCm backend</h2>
+
+<p>In the following part of this article we focus on explaining how to use ROCm backend when working with TVM directly. All you need to do is to build your TVM function under the target “rocm” and create a runtime context for it. Here, we show an example of ROCm backend usage, following ‘Vector Add Example’ in TVM’s <a href="http://docs.tvmlang.org/tutorials/get_started.html#vector-add-example">getting started tutorial</a>.</p>
+
+<p>We start by setting up a compute operation and a schedule for the vector add kernel. This step is independent of a backend.</p>
+
+<figure class="highlight"><pre><code class="language-python" data-lang="python"><span class="kn">from</span> <span class="nn">__future__</span> <span class="kn">import</span> <span class="n">absolute_import</span><span class="p">,</span> <span class="n">print_function</span>
+<span class="kn">import</span> <span class="nn">tvm</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="n">np</span>
+
+<span class="n">n</span> <span class="o">=</span> <span class="n">tvm</span><span class="o">.</span><span class="n">var</span><span class="p">(</span><span class="s">"n"</span><span class="p">)</span>
+<span class="n">A</span> <span class="o">=</span> <span class="n">tvm</span><span class="o">.</span><span class="n">placeholder</span><span class="p">((</span><span class="n">n</span><span class="p">,),</span> <span class="n">name</span><span class="o">=</span><span class="s">'A'</span><span class="p">)</span>
+<span class="n">B</span> <span class="o">=</span> <span class="n">tvm</span><span class="o">.</span><span class="n">placeholder</span><span class="p">((</span><span class="n">n</span><span class="p">,),</span> <span class="n">name</span><span class="o">=</span><span class="s">'B'</span><span class="p">)</span>
+<span class="n">C</span> <span class="o">=</span> <span class="n">tvm</span><span class="o">.</span><span class="n">compute</span><span class="p">(</span><span class="n">A</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="k">lambda</span> <span class="n">i</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">+</span> <span class="n">B</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">name</span><span class="o">=</span><span class="s">"C"</span><span class="p">)</span>
+<span class="n">s</span> <span class="o">=</span> <span class="n">tvm</span><span class="o">.</span><span class="n">create_schedule</span><span class="p">(</span><span class="n">C</span><span class="o">.</span><span class="n">op</span><span class="p">)</span>
+<span class="n">bx</span><span class="p">,</span> <span class="n">tx</span> <span class="o">=</span> <span class="n">s</span><span class="p">[</span><span class="n">C</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">C</span><span class="o">.</span><span class="n">op</span><span class="o">.</span><span class="n">axis</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">factor</span><span class="o">=</span><span class="mi">64</span><span class="p">)</span>
+<span class="n">s</span><span class="p">[</span><span class="n">C</span><span class="p">]</span><span class="o">.</span><span class="n">bind</span><span class="p">(</span><span class="n">bx</span><span class="p">,</span> <span class="n">tvm</span><span class="o">.</span><span class="n">thread_axis</span><span class="p">(</span><span class="s">"blockIdx.x"</span><span class="p">))</span>
+<span class="n">s</span><span class="p">[</span><span class="n">C</span><span class="p">]</span><span class="o">.</span><span class="n">bind</span><span class="p">(</span><span class="n">tx</span><span class="p">,</span> <span class="n">tvm</span><span class="o">.</span><span class="n">thread_axis</span><span class="p">(</span><span class="s">"threadIdx.x"</span><span class="p">))</span></code></pre></figure>
+
+<p>Next, to use ROCm backend we build our kernel under “rocm” target. This will cause TVM to use our new code generator. We also need a runtime context for ROCm backend.</p>
+
+<figure class="highlight"><pre><code class="language-python" data-lang="python"><span class="n">target</span> <span class="o">=</span> <span class="s">"rocm"</span>
+<span class="n">fadd_rocm</span> <span class="o">=</span> <span class="n">tvm</span><span class="o">.</span><span class="n">build</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="p">[</span><span class="n">A</span><span class="p">,</span> <span class="n">B</span><span class="p">,</span> <span class="n">C</span><span class="p">],</span> <span class="n">target</span><span class="p">,</span> <span class="n">target_host</span><span class="o">=</span><span class="s">"llvm"</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s">"myadd"</span><span class="p">)</span>
+<span class="n">ctx</span> <span class="o">=</span> <span class="n">tvm</span><span class="o">.</span><span class="n">rocm</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span></code></pre></figure>
+
+<p>After building the kernel and setting up a runtime context, we can launch our vector add kernel.</p>
+
+<figure class="highlight"><pre><code class="language-python" data-lang="python"><span class="n">n</span> <span class="o">=</span> <span class="mi">1024</span>
+<span class="n">a</span> <span class="o">=</span> <span class="n">tvm</span><span class="o">.</span><span class="n">nd</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="n">n</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">A</span><span class="o">.</span><span class="n">dtype</span><span class="p">),</span> <span class="n">ctx</span><span class="p">)</span>
+<span class="n">b</span> <span class="o">=</span> <span class="n">tvm</span><span class="o">.</span><span class="n">nd</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="n">n</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">B</span><span class="o">.</span><span class="n">dtype</span><span class="p">),</span> <span class="n">ctx</span><span class="p">)</span>
+<span class="n">c</span> <span class="o">=</span> <span class="n">tvm</span><span class="o">.</span><span class="n">nd</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">n</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">C</span><span class="o">.</span><span class="n">dtype</span><span class="p">),</span> <span class="n">ctx</span><span class="p">)</span>
+
+<span class="n">fadd_rocm</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">c</span><span class="p">)</span>
+<span class="n">np</span><span class="o">.</span><span class="n">testing</span><span class="o">.</span><span class="n">assert_allclose</span><span class="p">(</span><span class="n">c</span><span class="o">.</span><span class="n">asnumpy</span><span class="p">(),</span> <span class="n">a</span><span class="o">.</span><span class="n">asnumpy</span><span class="p">()</span> <span class="o">+</span> <span class="n">b</span><span class="o">.</span><span class="n">asnumpy</span><span class="p">())</span></code></pre></figure>
+
+<p>We can view LLVM IR that TVM generates in the following way:</p>
+
+<figure class="highlight"><pre><code class="language-python" data-lang="python"><span class="n">dev_module</span> <span class="o">=</span> <span class="n">fadd_rocm</span><span class="o">.</span><span class="n">imported_modules</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+<span class="k">print</span><span class="p">(</span><span class="n">dev_module</span><span class="o">.</span><span class="n">get_source</span><span class="p">(</span><span class="s">"llvm"</span><span class="p">))</span></code></pre></figure>
+
+<p>You should see something like this:</p>
+
+<figure class="highlight"><pre><code class="language-llvm" data-lang="llvm"><span class="c1">; ModuleID = 'myadd__kernel0'</span>
+<span class="err">source_filename</span> <span class="p">=</span> <span class="s">"myadd__kernel0"</span>
+<span class="k">target</span> <span class="k">datalayout</span> <span class="p">=</span> <span class="s">"e-p:32:32-p1:64:64-p2:64:64-p3:32:32-p4:64:64-p5:32:32-i64:64-v16:16-v24:32-v32:32-v48:64-v96:128-v192:256-v256:256-v512:512-v1024:1024-v2048:2048-n32:64"</span>
+<span class="k">target</span> <span class="k">triple</span> <span class="p">=</span> <span class="s">"amdgcn-amd-amdhsa-hcc"</span>
+
+
+<span class="c1">; Function Attrs: nounwind</span>
+<span class="k">define</span> <span class="k">dllexport</span> <span class="err">amdgpu_kernel</span> <span class="kt">void</span> <span class="vg">@myadd__kernel0</span><span class="p">(</span><span class="kt">float</span> <span class="k">addrspace</span><span class="p">(</span><span class="m">1</span><span class="p">)*</span> <span class="k">noalias</span> <span class="k">nocapture</span><span class="p">,</span> <span class="kt">float</span> <span class="k">addrspace</span><span class="p">(</span><span class="m">1</span><span class="p">)*</span> <span class="k">noalias</span> <span class="k">nocapture</span> <span class="k">readonly</span><span class="p">,</span> <span class="kt">float</span> <span class="k">addrspace</span><span class="p">(</span><span class="m">1</span><span class="p">)*</span> <span class="k">noalias</span> <span class="k">nocapture</span> <span class="k">readonly</span><span class="p">,</span> <span class="kt">i32</span><span class="p">)</span> <span class="err">local_unnamed_addr</span> <span class="vg">#0</span> <span class="p">{</span>
+<span class="nl">entry:</span>
+  <span class="nv">%4</span> <span class="p">=</span> <span class="k">tail</span> <span class="k">call</span> <span class="kt">i32</span> <span class="vg">@llvm.amdgcn.workgroup.id.x</span><span class="p">()</span>
+  <span class="nv">%5</span> <span class="p">=</span> <span class="k">tail</span> <span class="k">call</span> <span class="kt">i32</span> <span class="vg">@llvm.amdgcn.workitem.id.x</span><span class="p">()</span>
+  <span class="nv">%6</span> <span class="p">=</span> <span class="k">add</span> <span class="k">nsw</span> <span class="kt">i32</span> <span class="nv">%3</span><span class="p">,</span> <span class="m">-127</span>
+  <span class="nv">%7</span> <span class="p">=</span> <span class="k">ashr</span> <span class="kt">i32</span> <span class="nv">%6</span><span class="p">,</span> <span class="m">6</span>
+  <span class="nv">%8</span> <span class="p">=</span> <span class="k">icmp</span> <span class="k">slt</span> <span class="kt">i32</span> <span class="nv">%4</span><span class="p">,</span> <span class="nv">%7</span>
+  <span class="k">br</span> <span class="kt">i1</span> <span class="nv">%8</span><span class="p">,</span> <span class="kt">label</span> <span class="nv">%if_then</span><span class="p">,</span> <span class="kt">label</span> <span class="nv">%if_else</span>
+
+
+<span class="nl">if_then:</span>                                          <span class="c1">; preds = %entry</span>
+  <span class="nv">%9</span> <span class="p">=</span> <span class="k">shl</span> <span class="k">nsw</span> <span class="kt">i32</span> <span class="nv">%4</span><span class="p">,</span> <span class="m">6</span>
+  <span class="k">br</span> <span class="kt">label</span> <span class="nv">%if_end.sink.split</span>
+
+
+<span class="nl">if_end.sink.split:</span>                                <span class="c1">; preds = %if_else, %if_then</span>
+  <span class="nv">%.pre-phi</span> <span class="p">=</span> <span class="k">phi</span> <span class="kt">i32</span> <span class="p">[</span> <span class="nv">%21</span><span class="p">,</span> <span class="nv">%if_else</span> <span class="p">],</span> <span class="p">[</span> <span class="nv">%9</span><span class="p">,</span> <span class="nv">%if_then</span> <span class="p">]</span>
+  <span class="nv">%10</span> <span class="p">=</span> <span class="k">add</span> <span class="k">nsw</span> <span class="kt">i32</span> <span class="nv">%.pre-phi</span><span class="p">,</span> <span class="nv">%5</span>
+  <span class="nv">%11</span> <span class="p">=</span> <span class="k">add</span> <span class="k">nsw</span> <span class="kt">i32</span> <span class="nv">%.pre-phi</span><span class="p">,</span> <span class="nv">%5</span>
+  <span class="nv">%12</span> <span class="p">=</span> <span class="k">sext</span> <span class="kt">i32</span> <span class="nv">%11</span> <span class="k">to</span> <span class="kt">i64</span>
+  <span class="nv">%13</span> <span class="p">=</span> <span class="k">getelementptr</span> <span class="k">inbounds</span> <span class="kt">float</span><span class="p">,</span> <span class="kt">float</span> <span class="k">addrspace</span><span class="p">(</span><span class="m">1</span><span class="p">)*</span> <span class="nv">%2</span><span class="p">,</span> <span class="kt">i64</span> <span class="nv">%12</span>
+  <span class="nv">%14</span> <span class="p">=</span> <span class="k">load</span> <span class="kt">float</span><span class="p">,</span> <span class="kt">float</span> <span class="k">addrspace</span><span class="p">(</span><span class="m">1</span><span class="p">)*</span> <span class="nv">%13</span><span class="p">,</span> <span class="k">align</span> <span class="m">4</span><span class="p">,</span> <span class="nv">!tbaa</span> <span class="nv">!2</span>
+  <span class="nv">%15</span> <span class="p">=</span> <span class="k">getelementptr</span> <span class="k">inbounds</span> <span class="kt">float</span><span class="p">,</span> <span class="kt">float</span> <span class="k">addrspace</span><span class="p">(</span><span class="m">1</span><span class="p">)*</span> <span class="nv">%1</span><span class="p">,</span> <span class="kt">i64</span> <span class="nv">%12</span>
+  <span class="nv">%16</span> <span class="p">=</span> <span class="k">load</span> <span class="kt">float</span><span class="p">,</span> <span class="kt">float</span> <span class="k">addrspace</span><span class="p">(</span><span class="m">1</span><span class="p">)*</span> <span class="nv">%15</span><span class="p">,</span> <span class="k">align</span> <span class="m">4</span><span class="p">,</span> <span class="nv">!tbaa</span> <span class="nv">!6</span>
+  <span class="nv">%17</span> <span class="p">=</span> <span class="k">fadd</span> <span class="kt">float</span> <span class="nv">%14</span><span class="p">,</span> <span class="nv">%16</span>
+  <span class="nv">%18</span> <span class="p">=</span> <span class="k">sext</span> <span class="kt">i32</span> <span class="nv">%10</span> <span class="k">to</span> <span class="kt">i64</span>
+  <span class="nv">%19</span> <span class="p">=</span> <span class="k">getelementptr</span> <span class="k">inbounds</span> <span class="kt">float</span><span class="p">,</span> <span class="kt">float</span> <span class="k">addrspace</span><span class="p">(</span><span class="m">1</span><span class="p">)*</span> <span class="nv">%0</span><span class="p">,</span> <span class="kt">i64</span> <span class="nv">%18</span>
+  <span class="k">store</span> <span class="kt">float</span> <span class="nv">%17</span><span class="p">,</span> <span class="kt">float</span> <span class="k">addrspace</span><span class="p">(</span><span class="m">1</span><span class="p">)*</span> <span class="nv">%19</span><span class="p">,</span> <span class="k">align</span> <span class="m">4</span><span class="p">,</span> <span class="nv">!tbaa</span> <span class="nv">!9</span>
+  <span class="k">br</span> <span class="kt">label</span> <span class="nv">%if_end</span>
+
+
+<span class="nl">if_end:</span>                                           <span class="c1">; preds = %if_end.sink.split, %if_else</span>
+  <span class="k">ret</span> <span class="kt">void</span>
+
+
+<span class="nl">if_else:</span>                                          <span class="c1">; preds = %entry</span>
+  <span class="nv">%20</span> <span class="p">=</span> <span class="k">sub</span> <span class="k">nsw</span> <span class="kt">i32</span> <span class="nv">%3</span><span class="p">,</span> <span class="nv">%5</span>
+  <span class="nv">%21</span> <span class="p">=</span> <span class="k">shl</span> <span class="k">nsw</span> <span class="kt">i32</span> <span class="nv">%4</span><span class="p">,</span> <span class="m">6</span>
+  <span class="nv">%22</span> <span class="p">=</span> <span class="k">icmp</span> <span class="k">slt</span> <span class="kt">i32</span> <span class="nv">%21</span><span class="p">,</span> <span class="nv">%20</span>
+  <span class="k">br</span> <span class="kt">i1</span> <span class="nv">%22</span><span class="p">,</span> <span class="kt">label</span> <span class="nv">%if_end.sink.split</span><span class="p">,</span> <span class="kt">label</span> <span class="nv">%if_end</span><span class="p">,</span> <span class="nv">!prof</span> <span class="nv">!12</span>
+<span class="p">}</span></code></pre></figure>
+
+<p>We can also view GPU assembly that ROCm backend generates. This is the real code that runs on your GPU.</p>
+
+<figure class="highlight"><pre><code class="language-python" data-lang="python"><span class="k">print</span><span class="p">(</span><span class="n">dev_module</span><span class="o">.</span><span class="n">get_source</span><span class="p">(</span><span class="s">"asm"</span><span class="p">))</span></code></pre></figure>
+
+<p>The assembly should look something like this, omitting unnecessary details:</p>
+
+<figure class="highlight"><pre><code class="language-plain" data-lang="plain">        s_load_dword s1, s[4:5], 0x18
+        v_mov_b32_e32 v2, -1
+        v_mov_b32_e32 v1, 0
+        s_waitcnt lgkmcnt(0)
+        s_add_i32 s0, s1, 0xffffff81
+        s_ashr_i32 s0, s0, 6
+        s_cmp_ge_i32 s6, s0
+        s_cbranch_scc0 BB0_2
+        v_sub_i32_e32 v1, vcc, s1, v0
+        s_lshl_b32 s0, s6, 6
+        v_cmp_lt_i32_e32 vcc, s0, v1
+        v_mov_b32_e32 v2, 0
+        v_cndmask_b32_e64 v1, 0, -1, vcc
+BB0_2:
+        v_cmp_ne_u32_e32 vcc, 0, v2
+        v_cndmask_b32_e64 v2, 0, 1, vcc
+        v_cmp_ne_u32_e32 vcc, 1, v2
+        s_and_b64 vcc, exec, vcc
+        s_cbranch_vccnz BB0_4
+        s_lshl_b32 s0, s6, 6
+        v_mov_b32_e32 v1, -1
+BB0_4:
+        v_cmp_ne_u32_e32 vcc, 0, v1
+        v_mov_b32_e32 v1, s0
+        s_and_saveexec_b64 s[0:1], vcc
+        s_xor_b64 s[0:1], exec, s[0:1]
+        s_cbranch_execz BB0_6
+BB0_5:
+        s_load_dwordx2 s[2:3], s[4:5], 0x0
+        s_load_dwordx2 s[6:7], s[4:5], 0x8
+        v_add_i32_e32 v0, vcc, v1, v0
+        s_load_dwordx2 s[4:5], s[4:5], 0x10
+        v_ashrrev_i32_e32 v1, 31, v0
+        v_lshlrev_b64 v[0:1], 2, v[0:1]
+        s_waitcnt lgkmcnt(0)
+        v_add_i32_e32 v2, vcc, s4, v0
+        v_mov_b32_e32 v3, s5
+        v_addc_u32_e32 v3, vcc, v3, v1, vcc
+        flat_load_dword v2, v[2:3]
+        v_add_i32_e32 v4, vcc, s6, v0
+        v_mov_b32_e32 v3, s7
+        v_addc_u32_e32 v5, vcc, v3, v1, vcc
+        flat_load_dword v4, v[4:5]
+        v_mov_b32_e32 v3, s3
+        v_add_i32_e32 v0, vcc, s2, v0
+        v_addc_u32_e32 v1, vcc, v3, v1, vcc
+        s_waitcnt vmcnt(0) lgkmcnt(0)
+        v_add_f32_e32 v2, v2, v4
+        flat_store_dword v[0:1], v2
+BB0_6:
+        s_or_b64 exec, exec, s[0:1]
+        s_endpgm</code></pre></figure>
+
+<p>Links</p>
+
+<ul>
+  <li>Github page of NNVM Compiler: <a href="https://github.com/dmlc/nnvm">https://github.com/dmlc/nnvm</a></li>
+  <li>Github page of TVM: <a href="https://github.com/dmlc/tvm">https://github.com/dmlc/tvm</a></li>
+  <li>Examples of ROCm backend with NNVM: <a href="https://github.com/ROCmSoftwarePlatform/nnvm-rocm">https://github.com/ROCmSoftwarePlatform/nnvm-rocm</a></li>
+</ul>
+
+    </div>
+  </div>
+</div>
+</div>
+
+
+    
+
+
+
+
+
+    <div class="container">
+
+      <footer class="small">
+        Apache TVM is an effort undergoing incubation at The Apache Software Foundation (ASF),
+        sponsored by the <i>Apache Incubator</i>. Incubation is required
+        of all newly accepted projects until a further review indicates that the infrastructure,
+        communications, and decision making process have stabilized in a manner consistent with other
+        successful ASF projects. While incubation status is not necessarily a reflection of the completeness
+        or stability of the code, it does indicate that the project has yet to be fully endorsed by the ASF.
+
+        Copyright © 2020 The Apache Software Foundation. Apache TVM, Apache,
+        the Apache feather, and the Apache TVM project logo are either trademarks or registered trademarks of the Apache Software Foundation.
+
+        See also other useful <a href="/asf" class="footer-link">ASF links</a>:
+        <a href="https://www.apache.org/" class="footer-link">Apache Homepage</a>,
+        <a href="https://www.apache.org/licenses/" class="footer-link">License</a>
+        <a href="https://www.apache.org/foundation/sponsorship.html" class="footer-link">Sponsorship</a>,
+        <a href="https://www.apache.org/security/" class="footer-link">Security</a>
+        <a href="https://www.apache.org/foundation/thanks.html" class="footer-link">Thanks</a>,
+        <a href="https://www.apache.org/events/current-event.html" class="footer-link">Current Event</a>
+
+      </footer>
+    </div>
+  </body>
+</html>
+
+

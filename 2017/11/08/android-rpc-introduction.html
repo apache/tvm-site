@@ -1,0 +1,424 @@
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>Remote Profile and Test Deep Learning Cross Compilation on Mobile Phones with TVM RPC</title>
+    
+    <meta name="author" content="">
+
+    <!-- Le HTML5 shim, for IE6-8 support of HTML elements -->
+    <!--[if lt IE 9]>
+      <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+
+    <!-- Le styles -->
+    <link href="/assets/themes/custom-twitter/css/1.4.0/bootstrap.css" rel="stylesheet">
+    <link href="/assets/themes/custom-twitter/css/style.css?body=1" rel="stylesheet" type="text/css" media="all">
+
+    <!-- Le fav and touch icons -->
+  <!-- Update these with your own images
+    <link rel="shortcut icon" href="images/logo/tvm-logo.png">
+  <link rel="shortcut icon" href="images/logo/tvm-logo.png">
+  -->
+  <link href="/images/logo/tvm-logo-square.png" rel="icon" type="image/png"/>
+  <!-- Global site tag (gtag.js) - Google Analytics -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=UA-75982049-2"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+
+    gtag('js', new Date());
+    gtag('config', 'UA-75982049-2');
+  </script>
+
+</head>
+
+  <body>
+    <div class="topbar">
+      <div class="fill">
+        <div class="container">
+          <h2 id="logo-wrap">
+            <a href="/" class="nav">
+              <img src="/images/logo/tvm-logo-small-black.png" width="100px">
+            </a>
+          </h2>
+          <ul class="nav" id="nav-bar">
+            
+            
+            
+
+
+
+  
+    
+      
+      
+    
+  
+    
+      
+      
+    
+  
+    
+      
+      
+    
+  
+    
+      
+      
+    
+  
+    
+      
+      
+    
+  
+    
+      
+      
+    
+  
+    
+      
+      	
+      	<li><a href="/community">Community</a></li>
+      	
+      
+      
+    
+  
+    
+      
+      	
+      	<li><a href="/download">Download</a></li>
+      	
+      
+      
+    
+  
+    
+      
+      	
+      	<li><a href="/about">About</a></li>
+      	
+      
+      
+    
+  
+    
+      
+      
+    
+  
+    
+      
+      	
+      	<li><a href="/vta">VTA</a></li>
+      	
+      
+      
+    
+  
+    
+      
+      
+      	
+      	<li><a href="/blog">Blog</a></li>
+      	
+      
+    
+  
+
+
+
+
+            <li> <a href="https://tvm.apache.org/docs">Docs</a></li>
+            <li> <a href="https://tvmconf.org">TVM Conference</a></li>
+            <li> <a href="https://github.com/apache/incubator-tvm/">Github</a></li>
+            <li> <a href="/asf">ASF</a></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+    
+<div class="container">
+<div class="content">
+  <div class="row">
+    <div class="span14">
+      <h1>Remote Profile and Test Deep Learning Cross Compilation on Mobile Phones with TVM RPC </h1>
+      <p class="post-meta">
+        <time datetime="2017-11-08T00:00:00-08:00" itemprop="datePublished">
+          Nov 8, 2017
+        </time>
+        
+        • <span itemprop="author" itemscope itemtype="http://schema.org/Person">
+          <span itemprop="name">Yizhi Liu</span>
+        </span>
+        
+      </p>
+      <p class="post-meta">
+        </p>
+    </br>
+    <p>TVM stack is an end to end compilation stack to deploy deep learning workloads to all hardware backends.
+Thanks to the NNVM compiler support of TVM stack, we can now directly compile descriptions from deep learning frameworks and compile them to bare metal code.
+An impressive feature OF tvm is its ability to deploy computation workloads on different platforms, such as GPUs and mobile phones (will support more hardward backends).</p>
+
+<p>However, when we want to test and profile cross compilation, it is hard to test different computation workloads on a heterogeneous device such as raspberry pi or a mobile phone.
+In order to optimize a computation task, one has to edit the code on the development PC, compile, deploy to the device, test, then modify the codes again to see whether it accelerates. The workflow looks like,</p>
+
+<p style="text-align: center"><img src="/images/android_rpc/flow1.png" alt="image" width="50%" /></p>
+
+<p>Is there any way to speed up this process?</p>
+
+<p>Today we introduce an approach to deploy and test TVM workloads on Android Phones. We develop a TVM runtime for Java and build an Android APP upon it. The Android APP takes shared library as input and runs compiled functions on the mobile phone. Thus our workflow simplifies to,</p>
+
+<p style="text-align: center"><img src="/images/android_rpc/flow2.png" alt="image" width="50%" /></p>
+
+<p>With the help of the TVM RPC, one can build TVM functions and NDArrays on a remote device. The ability to cross-compile to different platforms makes it easy to develop on one platform and test on another.</p>
+
+<p>The process is illustrated as following:</p>
+
+<p style="text-align: center"><img src="/images/android_rpc/arch.png" alt="image" width="70%" /></p>
+
+<h2 id="run-tvm-app-on-android-phone">Run TVM APP on Android Phone</h2>
+
+<p>You can find Android RPC APP in <a href="https://github.com/dmlc/tvm/tree/master/apps/android_rpc">apps/android_rpc</a>. Please follow the instruction to build for your Android device. Once the APK is built, sign it using <code class="highlighter-rouge">apps/android_rpc/dev_tools</code> and install it on the phone. The APP looks like:</p>
+
+<p style="text-align: center"><img src="/images/android_rpc/app.png" alt="image" width="25%" />
+<img src="/images/android_rpc/app_error.png" alt="image" width="25%" /></p>
+
+<p>Usually we cannot start a standalone server on mobile phone, instead we start an proxy server and use our app to connect.</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>python <span class="nt">-m</span> tvm.exec.rpc_proxy
+</code></pre></div></div>
+
+<h2 id="create-ndarray-on-the-phone">Create NDArray on the Phone</h2>
+
+<p>Now we can connect to the proxy server from the laptop:</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">from</span> <span class="nn">tvm.contrib</span> <span class="kn">import</span> <span class="n">rpc</span>
+<span class="n">remote</span> <span class="o">=</span> <span class="n">rpc</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="s">"0.0.0.0"</span><span class="p">,</span> <span class="mi">9090</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="s">"android"</span><span class="p">)</span>
+</code></pre></div></div>
+
+<p>This will give us a handler <code class="highlighter-rouge">remote</code> which we can use to communicate with the mobile phone. For instance, the following lines create a 1024x1024 matrix on phone’s GPU:</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">A</span> <span class="o">=</span> <span class="n">tvm</span><span class="o">.</span><span class="n">nd</span><span class="o">.</span><span class="n">array</span><span class="p">(</span>
+	<span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="p">(</span><span class="mi">1024</span><span class="p">,</span> <span class="mi">1024</span><span class="p">))</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">dtype</span><span class="p">),</span>
+	<span class="n">ctx</span> <span class="o">=</span> <span class="n">remote</span><span class="o">.</span><span class="n">cl</span><span class="p">(</span><span class="mi">0</span><span class="p">))</span>
+</code></pre></div></div>
+
+<p>When <code class="highlighter-rouge">A.asnumpy()</code> is called from the laptop, the matrix <code class="highlighter-rouge">A </code>will be copied to phone’s RAM and then transfer to the laptop through the proxy server. The TVM RPC interface is transparent to users.</p>
+
+<h2 id="gemm-matrix-multiplication-on-the-phone">GEMM (Matrix Multiplication) on the Phone</h2>
+
+<p>Now we are going to introduce how to test matrix multiplication on an Android phone. First let’s define the very simple GEMM schedule:</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">import</span> <span class="nn">tvm</span>
+<span class="k">def</span> <span class="nf">gemm</span><span class="p">(</span><span class="n">N</span><span class="p">,</span> <span class="n">bn</span><span class="p">):</span>
+    <span class="n">A</span> <span class="o">=</span> <span class="n">tvm</span><span class="o">.</span><span class="n">placeholder</span><span class="p">((</span><span class="n">N</span><span class="p">,</span> <span class="n">N</span><span class="p">),</span> <span class="n">name</span><span class="o">=</span><span class="s">'A'</span><span class="p">)</span>
+    <span class="n">B</span> <span class="o">=</span> <span class="n">tvm</span><span class="o">.</span><span class="n">placeholder</span><span class="p">((</span><span class="n">N</span><span class="p">,</span> <span class="n">N</span><span class="p">),</span> <span class="n">name</span><span class="o">=</span><span class="s">'B'</span><span class="p">)</span>
+    <span class="n">k</span> <span class="o">=</span> <span class="n">tvm</span><span class="o">.</span><span class="n">reduce_axis</span><span class="p">((</span><span class="mi">0</span><span class="p">,</span> <span class="n">N</span><span class="p">),</span> <span class="n">name</span><span class="o">=</span><span class="s">'k'</span><span class="p">)</span>
+
+    <span class="n">C</span> <span class="o">=</span> <span class="n">tvm</span><span class="o">.</span><span class="n">compute</span><span class="p">(</span>
+        <span class="p">(</span><span class="n">N</span><span class="p">,</span> <span class="n">N</span><span class="p">),</span>
+        <span class="k">lambda</span> <span class="n">ii</span><span class="p">,</span> <span class="n">jj</span><span class="p">:</span> <span class="n">tvm</span><span class="o">.</span><span class="nb">sum</span><span class="p">(</span><span class="n">A</span><span class="p">[</span><span class="n">ii</span><span class="p">,</span> <span class="n">k</span><span class="p">]</span> <span class="o">*</span> <span class="n">B</span><span class="p">[</span><span class="n">k</span><span class="p">,</span> <span class="n">jj</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="n">k</span><span class="p">),</span>
+        <span class="n">name</span><span class="o">=</span><span class="s">'C'</span><span class="p">)</span>
+
+    <span class="n">s</span> <span class="o">=</span> <span class="n">tvm</span><span class="o">.</span><span class="n">create_schedule</span><span class="p">(</span><span class="n">C</span><span class="o">.</span><span class="n">op</span><span class="p">)</span>
+
+    <span class="n">block_x</span> <span class="o">=</span> <span class="n">tvm</span><span class="o">.</span><span class="n">thread_axis</span><span class="p">(</span><span class="s">"blockIdx.x"</span><span class="p">)</span>
+    <span class="n">thread_x</span> <span class="o">=</span> <span class="n">tvm</span><span class="o">.</span><span class="n">thread_axis</span><span class="p">(</span><span class="s">"threadIdx.x"</span><span class="p">)</span>
+
+    <span class="n">bo</span><span class="p">,</span> <span class="n">bi</span> <span class="o">=</span> <span class="n">s</span><span class="p">[</span><span class="n">C</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">C</span><span class="o">.</span><span class="n">op</span><span class="o">.</span><span class="n">axis</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">factor</span><span class="o">=</span><span class="n">bn</span><span class="p">)</span>
+    <span class="n">to</span><span class="p">,</span> <span class="n">ti</span> <span class="o">=</span> <span class="n">s</span><span class="p">[</span><span class="n">C</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">C</span><span class="o">.</span><span class="n">op</span><span class="o">.</span><span class="n">axis</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">factor</span><span class="o">=</span><span class="n">bn</span><span class="p">)</span>
+    <span class="n">s</span><span class="p">[</span><span class="n">C</span><span class="p">]</span><span class="o">.</span><span class="n">bind</span><span class="p">(</span><span class="n">bi</span><span class="p">,</span> <span class="n">block_x</span><span class="p">)</span>
+    <span class="n">s</span><span class="p">[</span><span class="n">C</span><span class="p">]</span><span class="o">.</span><span class="n">bind</span><span class="p">(</span><span class="n">ti</span><span class="p">,</span> <span class="n">thread_x</span><span class="p">)</span>
+
+    <span class="k">print</span><span class="p">(</span><span class="n">tvm</span><span class="o">.</span><span class="n">lower</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="p">[</span><span class="n">A</span><span class="p">,</span> <span class="n">B</span><span class="p">,</span> <span class="n">C</span><span class="p">],</span> <span class="n">simple_mode</span><span class="o">=</span><span class="bp">True</span><span class="p">))</span>
+
+    <span class="k">return</span> <span class="n">tvm</span><span class="o">.</span><span class="n">build</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="p">[</span><span class="n">A</span><span class="p">,</span> <span class="n">B</span><span class="p">,</span> <span class="n">C</span><span class="p">],</span>
+    	<span class="s">"opencl"</span><span class="p">,</span>
+    	<span class="n">target_host</span><span class="o">=</span><span class="s">"llvm -target=arm64-linux-android"</span><span class="p">,</span>
+    	<span class="n">name</span><span class="o">=</span><span class="s">"gemm_gpu"</span><span class="p">)</span>
+</code></pre></div></div>
+
+<p>There’s nothing special except the last line. Here we set the target to ‘opencl’ since this is the computation language which our Mali GPU supports. Note that we set <code class="highlighter-rouge">target_host</code> to ‘<code class="highlighter-rouge">llvm -target=arm64-linux-android</code>’, it depends on what architecture your Android Phone is. We tested on Samsung Galaxy S6 Edge, which has a Mali-T760 GPU. Here is the CPU info for this phone,</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nv">$ </span>adb shell
+shell@zenltechn:/ <span class="nv">$ </span><span class="nb">cat</span> /proc/cpuinfo
+Processor	: AArch64 Processor rev 2 <span class="o">(</span>aarch64<span class="o">)</span>
+processor	: 0
+processor	: 1
+processor	: 2
+processor	: 3
+processor	: 4
+processor	: 5
+processor	: 6
+processor	: 7
+Features	: fp asimd aes pmull sha1 sha2 crc32
+CPU implementer	: 0x41
+CPU architecture: AArch64
+CPU variant	: 0x0
+CPU part	: 0xd03
+CPU revision	: 2
+
+Hardware	: SAMSUNG Exynos7420
+</code></pre></div></div>
+
+<p>Please refer to <a href="https://clang.llvm.org/docs/CrossCompilation.html#target-triple">target triple</a> to learn the compile options for LLVM.</p>
+
+<p>We use <code class="highlighter-rouge">tvm.contrib.ndk</code> to build the shared library for the Android system,</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">from</span> <span class="nn">tvm.contrib</span> <span class="kn">import</span> <span class="n">rpc</span><span class="p">,</span> <span class="n">util</span><span class="p">,</span> <span class="n">ndk</span>
+<span class="n">N</span> <span class="o">=</span> <span class="mi">1024</span>
+<span class="n">f</span> <span class="o">=</span> <span class="n">gemm</span><span class="p">(</span><span class="n">N</span><span class="p">,</span> <span class="n">bn</span> <span class="o">=</span> <span class="mi">256</span><span class="p">)</span>
+<span class="n">temp</span> <span class="o">=</span> <span class="n">util</span><span class="o">.</span><span class="n">tempdir</span><span class="p">()</span>
+<span class="n">path_dso</span> <span class="o">=</span> <span class="n">temp</span><span class="o">.</span><span class="n">relpath</span><span class="p">(</span><span class="s">"gemm_gpu.so"</span><span class="p">)</span>
+<span class="n">f</span><span class="o">.</span><span class="n">export_library</span><span class="p">(</span><span class="n">path_dso</span><span class="p">,</span> <span class="n">ndk</span><span class="o">.</span><span class="n">create_shared</span><span class="p">)</span>
+</code></pre></div></div>
+
+<p><code class="highlighter-rouge">ndk.create_shared</code> reads the environment variable <code class="highlighter-rouge">TVM_NDK_CC</code> to find the compiler &amp; linker for the Android device. We can easily use NDK to generate standalone toolchain for our device. For example, the following commands generate standalone compilers and linkers for ARM64 Android devices.</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nb">cd</span> /opt/android-ndk/build/tools/
+./make-standalone-toolchain.sh <span class="nt">--platform</span><span class="o">=</span>android-24 <span class="nt">--use-llvm</span> <span class="nt">--arch</span><span class="o">=</span>arm64 <span class="nt">--install-dir</span><span class="o">=</span>/opt/android-toolchain-arm64
+</code></pre></div></div>
+
+<p>If everything goes right, we’ve got a shared library ‘gemm_gpu.so’. Now let’s upload it to the mobile phone, make the phone load the module and get a remote handler,</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">remote</span> <span class="o">=</span> <span class="n">rpc</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="s">"0.0.0.0"</span><span class="p">,</span> <span class="mi">9090</span><span class="p">,</span> <span class="n">key</span><span class="o">=</span><span class="s">"android"</span><span class="p">)</span>
+
+<span class="n">remote</span><span class="o">.</span><span class="n">upload</span><span class="p">(</span><span class="n">path_dso</span><span class="p">)</span>
+<span class="n">f</span> <span class="o">=</span> <span class="n">remote</span><span class="o">.</span><span class="n">load_module</span><span class="p">(</span><span class="s">"gemm_gpu.so"</span><span class="p">)</span>
+</code></pre></div></div>
+
+<p>Create the remote arrays and print the running time,</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">ctx</span> <span class="o">=</span> <span class="n">remote</span><span class="o">.</span><span class="n">cl</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="n">np</span>
+<span class="n">a_np</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="p">(</span><span class="n">N</span><span class="p">,</span> <span class="n">N</span><span class="p">))</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s">"float32"</span><span class="p">)</span>
+<span class="n">b_np</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="p">(</span><span class="n">N</span><span class="p">,</span> <span class="n">N</span><span class="p">))</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s">"float32"</span><span class="p">)</span>
+
+<span class="n">a</span> <span class="o">=</span> <span class="n">tvm</span><span class="o">.</span><span class="n">nd</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">a_np</span><span class="p">,</span> <span class="n">ctx</span><span class="p">)</span>
+<span class="n">b</span> <span class="o">=</span> <span class="n">tvm</span><span class="o">.</span><span class="n">nd</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">b_np</span><span class="p">,</span> <span class="n">ctx</span><span class="p">)</span>
+<span class="n">c</span> <span class="o">=</span> <span class="n">tvm</span><span class="o">.</span><span class="n">nd</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">N</span><span class="p">,</span> <span class="n">N</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="s">"float32"</span><span class="p">),</span> <span class="n">ctx</span><span class="p">)</span>
+
+<span class="n">time_f</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">time_evaluator</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">entry_name</span><span class="p">,</span> <span class="n">ctx</span><span class="p">,</span> <span class="n">number</span><span class="o">=</span><span class="mi">5</span><span class="p">)</span>
+<span class="n">cost</span> <span class="o">=</span> <span class="n">time_f</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">c</span><span class="p">)</span><span class="o">.</span><span class="n">mean</span>
+<span class="k">print</span><span class="p">(</span><span class="s">'</span><span class="si">%</span><span class="s">g secs/op, </span><span class="si">%</span><span class="s">g GFLOPS'</span> <span class="o">%</span> <span class="p">(</span><span class="n">cost</span><span class="p">,</span> <span class="n">ngflops</span><span class="p">(</span><span class="n">N</span><span class="p">)</span> <span class="o">/</span> <span class="n">cost</span><span class="p">))</span>
+</code></pre></div></div>
+
+<p>Now we can verify the results on PC,</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">np</span><span class="o">.</span><span class="n">testing</span><span class="o">.</span><span class="n">assert_almost_equal</span><span class="p">(</span>
+	<span class="n">c</span><span class="o">.</span><span class="n">asnumpy</span><span class="p">(),</span>
+	<span class="n">a_np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">b_np</span><span class="p">),</span>
+	<span class="n">decimal</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+</code></pre></div></div>
+
+<p>In the case above, we develop and cross-compile to a binary file for our mobile phone. Through the proxy server, the binary is uploaded to the phone and run in its JVM. This approach makes it easy to develop and test different computation workloads on Android.</p>
+
+<h2 id="java-runtime-for-tvm">Java Runtime for TVM</h2>
+
+<p>The Android APP is built on top of the Java runtime, which provides minimum supports for TVM Function and NDArray. Here’s an example for registering function in tvm4j,</p>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nc">Function</span> <span class="n">func</span> <span class="o">=</span> <span class="nc">Function</span><span class="o">.</span><span class="na">convertFunc</span><span class="o">(</span><span class="k">new</span> <span class="nc">Function</span><span class="o">.</span><span class="na">Callback</span><span class="o">()</span> <span class="o">{</span>
+      <span class="nd">@Override</span> <span class="kd">public</span> <span class="nc">Object</span> <span class="nf">invoke</span><span class="o">(</span><span class="nc">TVMValue</span><span class="o">...</span> <span class="n">args</span><span class="o">)</span> <span class="o">{</span>
+        <span class="nc">StringBuilder</span> <span class="n">res</span> <span class="o">=</span> <span class="k">new</span> <span class="nc">StringBuilder</span><span class="o">();</span>
+        <span class="k">for</span> <span class="o">(</span><span class="nc">TVMValue</span> <span class="n">arg</span> <span class="o">:</span> <span class="n">args</span><span class="o">)</span> <span class="o">{</span>
+          <span class="n">res</span><span class="o">.</span><span class="na">append</span><span class="o">(</span><span class="n">arg</span><span class="o">.</span><span class="na">asString</span><span class="o">());</span>
+        <span class="o">}</span>
+        <span class="k">return</span> <span class="n">res</span><span class="o">.</span><span class="na">toString</span><span class="o">();</span>
+      <span class="o">}</span>
+    <span class="o">});</span>
+<span class="nc">TVMValue</span> <span class="n">res</span> <span class="o">=</span> <span class="n">func</span><span class="o">.</span><span class="na">pushArg</span><span class="o">(</span><span class="s">"Hello"</span><span class="o">).</span><span class="na">pushArg</span><span class="o">(</span><span class="s">" "</span><span class="o">).</span><span class="na">pushArg</span><span class="o">(</span><span class="s">"World!"</span><span class="o">).</span><span class="na">invoke</span><span class="o">();</span>
+<span class="n">assertEquals</span><span class="o">(</span><span class="s">"Hello World!"</span><span class="o">,</span> <span class="n">res</span><span class="o">.</span><span class="na">asString</span><span class="o">());</span>
+<span class="n">res</span><span class="o">.</span><span class="na">release</span><span class="o">();</span>
+<span class="n">func</span><span class="o">.</span><span class="na">release</span><span class="o">();</span>
+</code></pre></div></div>
+
+<p>As we have seen in the GEMM part, one can build shared library by Python and execute it by Java,</p>
+
+<div class="language-java highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">import</span> <span class="nn">ml.dmlc.tvm.Module</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">ml.dmlc.tvm.NDArray</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">ml.dmlc.tvm.TVMContext</span><span class="o">;</span>
+
+<span class="kn">import</span> <span class="nn">java.io.File</span><span class="o">;</span>
+<span class="kn">import</span> <span class="nn">java.util.Arrays</span><span class="o">;</span>
+
+<span class="kd">public</span> <span class="kd">class</span> <span class="nc">LoadAddFunc</span> <span class="o">{</span>
+  <span class="kd">public</span> <span class="kd">static</span> <span class="kt">void</span> <span class="nf">main</span><span class="o">(</span><span class="nc">String</span><span class="o">[]</span> <span class="n">args</span><span class="o">)</span> <span class="o">{</span>
+    <span class="nc">String</span> <span class="n">loadingDir</span> <span class="o">=</span> <span class="n">args</span><span class="o">[</span><span class="mi">0</span><span class="o">];</span>
+    <span class="nc">Module</span> <span class="n">fadd</span> <span class="o">=</span> <span class="nc">Module</span><span class="o">.</span><span class="na">load</span><span class="o">(</span><span class="n">loadingDir</span> <span class="o">+</span> <span class="nc">File</span><span class="o">.</span><span class="na">separator</span> <span class="o">+</span> <span class="s">"add_cpu.so"</span><span class="o">);</span>
+
+    <span class="nc">TVMContext</span> <span class="n">ctx</span> <span class="o">=</span> <span class="nc">TVMContext</span><span class="o">.</span><span class="na">cpu</span><span class="o">();</span>
+
+    <span class="kt">long</span><span class="o">[]</span> <span class="n">shape</span> <span class="o">=</span> <span class="k">new</span> <span class="kt">long</span><span class="o">[]{</span><span class="mi">2</span><span class="o">};</span>
+    <span class="nc">NDArray</span> <span class="n">arr</span> <span class="o">=</span> <span class="nc">NDArray</span><span class="o">.</span><span class="na">empty</span><span class="o">(</span><span class="n">shape</span><span class="o">,</span> <span class="n">ctx</span><span class="o">);</span>
+    <span class="n">arr</span><span class="o">.</span><span class="na">copyFrom</span><span class="o">(</span><span class="k">new</span> <span class="kt">float</span><span class="o">[]{</span><span class="mi">3</span><span class="n">f</span><span class="o">,</span> <span class="mi">4</span><span class="n">f</span><span class="o">});</span>
+    <span class="nc">NDArray</span> <span class="n">res</span> <span class="o">=</span> <span class="nc">NDArray</span><span class="o">.</span><span class="na">empty</span><span class="o">(</span><span class="n">shape</span><span class="o">,</span> <span class="n">ctx</span><span class="o">);</span>
+
+    <span class="n">fadd</span><span class="o">.</span><span class="na">entryFunc</span><span class="o">().</span><span class="na">pushArg</span><span class="o">(</span><span class="n">arr</span><span class="o">).</span><span class="na">pushArg</span><span class="o">(</span><span class="n">arr</span><span class="o">).</span><span class="na">pushArg</span><span class="o">(</span><span class="n">res</span><span class="o">).</span><span class="na">invoke</span><span class="o">();</span>
+    <span class="nc">System</span><span class="o">.</span><span class="na">out</span><span class="o">.</span><span class="na">println</span><span class="o">(</span><span class="nc">Arrays</span><span class="o">.</span><span class="na">toString</span><span class="o">(</span><span class="n">res</span><span class="o">.</span><span class="na">asFloatArray</span><span class="o">()));</span>
+
+    <span class="n">arr</span><span class="o">.</span><span class="na">release</span><span class="o">();</span>
+    <span class="n">res</span><span class="o">.</span><span class="na">release</span><span class="o">();</span>
+    <span class="n">fadd</span><span class="o">.</span><span class="na">release</span><span class="o">();</span>
+  <span class="o">}</span>
+<span class="o">}</span>
+</code></pre></div></div>
+
+<p>Once you have built TVM library following the <a href="http://docs.tvmlang.org/how_to/install.html">Installation Guide</a>, run</p>
+
+<div class="language-bash highlighter-rouge"><div class="highlight"><pre class="highlight"><code>make jvmpkg
+make jvminstall
+</code></pre></div></div>
+
+<p>This will compile, package and install tvm4j in your local maven repository. Please refer to <a href="https://github.com/dmlc/tvm/tree/master/jvm">tvm4j</a> for more information.</p>
+
+<h2 id="remote-profile-and-test-on-iphoneipad">Remote Profile and Test on iPhone/iPad</h2>
+
+<p>Besides the Android RPC application, we also provide an <a href="https://github.com/dmlc/tvm/tree/master/apps/ios_rpc">iOS RPC app</a>, through which we can easily profile and test TVM computation workloads on iPhone or iPad. It works almost the same as that on Android, while XCode and an iOS device are required.</p>
+
+    </div>
+  </div>
+</div>
+</div>
+
+
+    
+
+
+
+
+
+    <div class="container">
+
+      <footer class="small">
+        Apache TVM is an effort undergoing incubation at The Apache Software Foundation (ASF),
+        sponsored by the <i>Apache Incubator</i>. Incubation is required
+        of all newly accepted projects until a further review indicates that the infrastructure,
+        communications, and decision making process have stabilized in a manner consistent with other
+        successful ASF projects. While incubation status is not necessarily a reflection of the completeness
+        or stability of the code, it does indicate that the project has yet to be fully endorsed by the ASF.
+
+        Copyright © 2020 The Apache Software Foundation. Apache TVM, Apache,
+        the Apache feather, and the Apache TVM project logo are either trademarks or registered trademarks of the Apache Software Foundation.
+
+        See also other useful <a href="/asf" class="footer-link">ASF links</a>:
+        <a href="https://www.apache.org/" class="footer-link">Apache Homepage</a>,
+        <a href="https://www.apache.org/licenses/" class="footer-link">License</a>
+        <a href="https://www.apache.org/foundation/sponsorship.html" class="footer-link">Sponsorship</a>,
+        <a href="https://www.apache.org/security/" class="footer-link">Security</a>
+        <a href="https://www.apache.org/foundation/thanks.html" class="footer-link">Thanks</a>,
+        <a href="https://www.apache.org/events/current-event.html" class="footer-link">Current Event</a>
+
+      </footer>
+    </div>
+  </body>
+</html>
+
+
