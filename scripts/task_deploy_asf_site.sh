@@ -3,7 +3,7 @@
 set -e
 set -u
 echo "Start to generate and deploy site ..."
-jekyll b --safe
+jekyll b
 cp .gitignore .gitignore.bak
 git checkout asf-site
 # remove all existing files
