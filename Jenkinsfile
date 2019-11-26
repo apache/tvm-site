@@ -94,30 +94,3 @@ stage("Build") {
     }
   }
 }
-
-stage('Deploy') {
-    node('CPU') {
-      ws('workspace/tvm-web/deploy') {
-        if (env.BRANCH_NAME == "master") {
-           unpack_lib('website', 'website.tgz')
-           dir('_site') {
-             checkout scm
-             sshagent(['tvm-web']) {
-               sh "git checkout asf-site"
-               sh "git fetch && git reset --hard origin/asf-site"
-             }
-             sh "rm -rf *"
-           }
-           sh "tar xf website.tgz"
-           dir('_site') {
-             sh "git add --all && git commit -am 'nightly build'"
-           }
-           sshagent(['tvm-web']) {
-             dir('_site') {
-               sh "git push origin asf-site"
-             }
-           }
-        }
-      }
-    }
-}
