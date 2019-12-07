@@ -74,6 +74,7 @@ in alphabetical order.
   <img src="images/community/alicloud.png" height="35" />
   <img src="images/community/aws.png" height="35" />
   <img src="images/community/cornell.svg" height="35" />
+  <img src="images/community/fb.png" height="35" />
   <img src="images/community/huawei.png" height="35" />
   <img src="images/community/intel.png" height="40" />
   <img src="images/community/microsoft.png" height="30" />
