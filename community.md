@@ -80,6 +80,7 @@ in alphabetical order.
   <img src="images/community/huawei.png" height="35" />
   <img src="images/community/intel.png" height="40" />
   <img src="images/community/microsoft.png" height="30" />
+  <img src="images/community/nvidia.png" height="45" margin="0"  />
   <img src="images/community/oasislabs.png" height="30" />
   <img src="images/community/octoml.svg" height="35" />
   <img src="images/community/ucberkeley.png" height="30" />
