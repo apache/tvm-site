@@ -9,7 +9,7 @@ description: "VTA"
 
 # About VTA
 
-The Versatile Tensor Accelerator (VTA) is an extension of the TVM framework designed to advance deep learning and hardware innovation.
+The Versatile Tensor Accelerator (VTA) is an extension of the Apache(incubating) TVM framework designed to advance deep learning and hardware innovation.
 VTA is a programmable accelerator that exposes a RISC-like programming abstraction to describe compute and memory operations at the tensor level. We designed VTA to expose the most salient and common characteristics of mainstream deep learning accelerators, such as tensor operations, DMA load/stores, and explicit compute/memory arbitration.
 
 VTA is more than a standalone accelerator design: it’s an end-to-end solution that includes drivers, a JIT runtime, and an optimizing compiler stack based on TVM.
@@ -28,7 +28,9 @@ The VTA and TVM stack together constitute a blueprint for end-to-end, accelerato
 
 
 VTA is a component of TVM which was a research project at the [SAMPL group](https://sampl.cs.washington.edu/) of
-Paul G. Allen School of Computer Science & Engineering, University of Washington. The project is now driven by an open source community involving multiple industry and academic institutions.
-The project adopts [Apache-style merit based governace model](https://docs.tvm.ai/contribute/community.html).
+Paul G. Allen School of Computer Science & Engineering, University of Washington.
+TVM is now an effort undergoing incubation at The Apache Software Foundation (ASF),
+driven by an open source community involving multiple industry and academic institutions
+under the Apache way.
 
-Read more about VTA in our [TVM blog post](https://tvm.ai/2018/07/12/vta-release-announcement.html), or in the [VTA techreport](https://arxiv.org/abs/1807.04188).
+Read more about VTA in the [TVM blog post](https://tvm.ai/2018/07/12/vta-release-announcement.html), or in the [VTA techreport](https://arxiv.org/abs/1807.04188).
