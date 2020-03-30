@@ -2,7 +2,6 @@
 # Deploy the docs to the asf-site branch.
 set -e
 set -u
-set -o pipefail
 
 cleanup()
 {
@@ -21,7 +20,6 @@ fi
 
 cp .gitignore .gitignore.bak
 git checkout asf-site
-
 # remove all docs files
 git ls-files | grep -e ^docs | xargs  rm -f
 cp .gitignore.bak .gitignore
