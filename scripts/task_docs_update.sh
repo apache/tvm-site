@@ -19,7 +19,8 @@ if [ ! -f "$DOCS_TGZ" ]; then
 fi
 
 cp .gitignore .gitignore.bak
-git checkout asf-site
+git fetch
+git checkout -B asf-site origin/asf-site
 # remove all docs files
 git ls-files | grep -e ^docs | xargs  rm -f
 cp .gitignore.bak .gitignore
