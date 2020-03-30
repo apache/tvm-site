@@ -8,5 +8,7 @@
 
 ## Deployment
 
-We use the script [scripts/deploy_to_asf_site.sh](scripts/deploy_to_asf_site.sh)
+We use the script [scripts/task_deploy_asf_site.sh](scripts/task_deploy_asf_site.sh)
 to generate and deploy content to the asf-site branch.
+
+The documentations are copied and updated separately via [scripts/task_docs_update.sh](scripts/task_docs_update.sh)
