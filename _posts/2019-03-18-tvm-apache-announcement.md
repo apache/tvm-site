@@ -12,7 +12,7 @@ TVM is an open source deep learning compiler stack that closes the gap between t
 ![image](/images/main/tvm-stack.png){: width="70%"}
 {:center}
 
-TVM stack began as a research project at the [SAMPL group](https://sampl.cs.washington.edu/) of Paul G. Allen School of Computer Science & Engineering, University of Washington. The project uses the loop-level IR and several optimizations from the [Halide project](http://halide-lang.org/), in addition to [a full deep learning compiler stack](https://tvm.ai/about) to support machine learning workloads for diverse hardware backends.
+TVM stack began as a research project at the [SAMPL group](https://sampl.cs.washington.edu/) of Paul G. Allen School of Computer Science & Engineering, University of Washington. The project uses the loop-level IR and several optimizations from the [Halide project](http://halide-lang.org/), in addition to [a full deep learning compiler stack](https://tvm.apache.org/about) to support machine learning workloads for diverse hardware backends.
 
 Since its introduction, the project was driven by an open source community involving multiple industry and academic institutions. Currently, the TVM stack includes a high-level differentiable programming IR for high-level optimization, a machine learning driven program optimizer and VTA -- a fully open sourced deep learning accelerator. The community brings innovations from machine learning, compiler systems, programming languages, and computer architecture to build a full-stack open source deep learning compiler system. The project has been used in production in [several major companies](https://sampl.cs.washington.edu/tvmconf/#about-tvmconf).
 

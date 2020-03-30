@@ -18,7 +18,7 @@ By extending the TVM stack with a customizable, and open source deep learning ha
 This forms a truly end-to-end, from software-to-hardware open source stack for deep learning systems.
 
 {:center: style="text-align: center"}
-![image](http://raw.githubusercontent.com/uwsampl/web-data/master/vta/blogpost/vta_stack.png){: width="50%"}
+![image](https://raw.githubusercontent.com/uwsampl/web-data/master/vta/blogpost/vta_stack.png){: width="50%"}
 {:center}
 
 The VTA and TVM stack together constitute a blueprint for end-to-end, accelerator-centric deep learning system that can:
@@ -33,4 +33,4 @@ TVM is now an effort undergoing incubation at The Apache Software Foundation (AS
 driven by an open source community involving multiple industry and academic institutions
 under the Apache way.
 
-Read more about VTA in the [TVM blog post](https://tvm.ai/2018/07/12/vta-release-announcement.html), or in the [VTA techreport](https://arxiv.org/abs/1807.04188).
+Read more about VTA in the [TVM blog post](https://tvm.apache.org/2018/07/12/vta-release-announcement.html), or in the [VTA techreport](https://arxiv.org/abs/1807.04188).

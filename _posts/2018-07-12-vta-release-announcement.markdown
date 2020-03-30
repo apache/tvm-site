@@ -21,7 +21,7 @@ We are excited to announce the launch of the Versatile Tensor Accelerator (VTA, 
 VTA is more than a standalone accelerator design: it’s an end-to-end solution that includes drivers, a JIT runtime, and an optimizing compiler stack based on TVM. The current release includes a behavioral hardware simulator, as well as the infrastructure to deploy VTA on low-cost FPGA hardware for fast prototyping. By extending the TVM stack with a customizable, and open source deep learning hardware accelerator design, we are exposing a transparent end-to-end deep learning stack from the high-level deep learning framework, down to the actual hardware design and implementation. This forms a truly end-to-end, hardware-software open source stack for deep learning systems.
 
 {:center}
-![image](http://raw.githubusercontent.com/uwsaml/web-data/master/vta/blogpost/vta_stack.png){: width="50%"}
+![image](https://raw.githubusercontent.com/uwsaml/web-data/master/vta/blogpost/vta_stack.png){: width="50%"}
 {:center}
 
 The VTA and TVM stack together constitute a blueprint for end-to-end, accelerator-centric deep learning system that can:
@@ -76,7 +76,7 @@ The Vanilla Tensor Accelerator (VTA) is a generic deep learning accelerator buil
 The design is inspired by mainstream deep learning accelerators, of the likes of Google's TPU accelerator. The design adopts decoupled access-execute to hide memory access latency and maximize utilization of compute resources. To a broader extent, VTA can serve as a template deep learning accelerator design, exposing a clean tensor computation abstraction to the compiler stack.
 
 {:center}
-![image](http://raw.githubusercontent.com/uwsaml/web-data/master/vta/blogpost/vta_overview.png){: width="60%"}
+![image](https://raw.githubusercontent.com/uwsaml/web-data/master/vta/blogpost/vta_overview.png){: width="60%"}
 {:center}
 
 The figure above presents a high-level overview of the VTA hardware organization. VTA is composed of four modules that communicate between each other via FIFO queues and single-writer/single-reader SRAM memory blocks, to allow for task-level pipeline parallelism.
@@ -95,7 +95,7 @@ This simulator back-end is readily available for developers to experiment with.
 The second approach relies on an off-the-shelf and low-cost FPGA development board -- the [Pynq board](http://www.pynq.io/), which exposes a reconfigurable FPGA fabric and an ARM SoC.
 
 {:center}
-![image](http://raw.githubusercontent.com/uwsaml/web-data/master/vta/blogpost/vta_system.png){: width="70%"}
+![image](https://raw.githubusercontent.com/uwsaml/web-data/master/vta/blogpost/vta_system.png){: width="70%"}
 {:center}
 
 The VTA release offers a simple compilation and deployment flow of the VTA hardware design and TVM workloads on the Pynq platform, with the help of an RPC server interface.
@@ -120,7 +120,7 @@ A popular method used to assess the efficient use of hardware are roofline diagr
 In the left half, convolution layers are bandwidth limited, whereas on the right half, they are compute limited.
 
 {:center}
-![image](http://raw.githubusercontent.com/uwsaml/web-data/master/vta/blogpost/vta_roofline.png){: width="60%"}
+![image](https://raw.githubusercontent.com/uwsaml/web-data/master/vta/blogpost/vta_roofline.png){: width="60%"}
 {:center}
 
 The goal behind designing a hardware architecture, and a compiler stack is to bring each workload as close as possible to the roofline of the target hardware.
@@ -131,7 +131,7 @@ The result is an overall higher utilization of the available compute and memory 
 ### End to end ResNet-18 evaluation
 
 {:center}
-![image](http://raw.githubusercontent.com/uwsaml/web-data/master/vta/blogpost/vta_e2e.png){: width="60%"}
+![image](https://raw.githubusercontent.com/uwsaml/web-data/master/vta/blogpost/vta_e2e.png){: width="60%"}
 {:center}
 
 A benefit of having a complete compiler stack built for VTA is the ability to run end-to-end workloads. This is compelling in the context of hardware acceleration because we need to understand what performance bottlenecks, and Amdahl limitations stand in the way to obtaining faster performance.

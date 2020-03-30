@@ -17,7 +17,6 @@ if [ ! -f "$DOCS_TGZ" ]; then
     echo "$DOCS_TGZ does not exist!!"
     exit 255
 fi
-
 cp .gitignore .gitignore.bak
 git fetch
 git checkout -B asf-site origin/asf-site
