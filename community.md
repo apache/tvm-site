@@ -59,7 +59,7 @@ Please reach out are interested working in aspects that are not on the roadmap.
 As a community project, we welcome contributions!
 The package is developed and used by the community.
 
-<a href="https://docs.tvm.ai/contribute" class="link-btn">TVM Contributor Guideline</a>
+<a href="https://tvm.apache.org/docs//contribute" class="link-btn">TVM Contributor Guideline</a>
 
 <br>
 

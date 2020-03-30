@@ -190,9 +190,9 @@ for inference deployment. TVM just provides such a solution.
 
 ## Links
 [1] benchmark: [https://github.com/dmlc/tvm/tree/master/apps/benchmark](https://github.com/dmlc/tvm/tree/master/apps/benchmark)  
-[2] Tutorial on tuning for ARM CPU: [https://docs.tvm.ai/tutorials/autotvm/tune_nnvm_arm.html](https://docs.tvm.ai/tutorials/autotvm/tune_nnvm_arm.html)  
-[3] Tutorial on tuning for Mobile GPU: [https://docs.tvm.ai/tutorials/autotvm/tune_nnvm_mobile_gpu.html](https://docs.tvm.ai/tutorials/autotvm/tune_nnvm_mobile_gpu.html)  
-[4] Tutorial on tuning for NVIDIA/AMD GPU: [https://docs.tvm.ai/tutorials/autotvm/tune_nnvm_cuda.html](https://docs.tvm.ai/tutorials/autotvm/tune_nnvm_cuda.html)  
+[2] Tutorial on tuning for ARM CPU: [https://tvm.apache.org/docs//tutorials/autotvm/tune_nnvm_arm.html](https://tvm.apache.org/docs//tutorials/autotvm/tune_nnvm_arm.html)  
+[3] Tutorial on tuning for Mobile GPU: [https://tvm.apache.org/docs//tutorials/autotvm/tune_nnvm_mobile_gpu.html](https://tvm.apache.org/docs//tutorials/autotvm/tune_nnvm_mobile_gpu.html)  
+[4] Tutorial on tuning for NVIDIA/AMD GPU: [https://tvm.apache.org/docs//tutorials/autotvm/tune_nnvm_cuda.html](https://tvm.apache.org/docs//tutorials/autotvm/tune_nnvm_cuda.html)  
 [5] Paper about AutoTVM: [Learning to Optimize Tensor Program](https://arxiv.org/abs/1805.08166)  
 [6] Paper about Intel CPU (by AWS contributors) :  [Optimizing CNN Model Inference on CPUs](https://arxiv.org/abs/1809.02697)
 

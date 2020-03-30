@@ -95,7 +95,7 @@ schedule:
 For brevity, we do not cover TVM's large collection of scheduling primitives
 that we can use to optimize matrix multiplication. If you wish to make a custom
 GEMM operator run _fast_ on your hardware device, a detailed tutorial can be
-found [here](https://docs.tvm.ai/tutorials/optimize/opt_gemm.html).
+found [here](https://tvm.apache.org/docs//tutorials/optimize/opt_gemm.html).
 
 We then convert the TVM function into one that supports PyTorch tensors:
 ```python

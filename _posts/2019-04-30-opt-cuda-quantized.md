@@ -44,7 +44,7 @@ To illustrate, in 2d convolution we accumulate along the channel, the width, and
 This is a typical use case of `dp4a`.
 TVM uses tensorization to support calling external intrinsics.
 We do not need to modify the original computation declaration; we use the schedule primitive `tensorize` to replace the accumulation with `dp4a` tensor intrinsic.
-More details of tensorization can be found in the [tutorial](https://docs.tvm.ai/tutorials/language/tensorize.html).
+More details of tensorization can be found in the [tutorial](https://tvm.apache.org/docs//tutorials/language/tensorize.html).
 
 ## Data Layout Rearrangement
 One of the challenges in tensorization is that we may need to design special computation logic to adapt to the requirement of tensor intrinsics.
@@ -87,7 +87,7 @@ We also do some manual tiling such as splitting axes by 4 or 16 to facilitate ve
 In quantized 2d convolution, we design a search space that includes a set of tunable options, such as the tile size, the axes to fuse, configurations of loop unrolling and double buffering.
 The templates of quantized `conv2d` and `dense` on CUDA are registered under template key `int8`.
 During automatic tuning, we can create tuning tasks for these quantized operators by setting the `template_key` argument.
-Details of how to launch automatic optimization can be found in the [AutoTVM tutorial](https://docs.tvm.ai/tutorials/autotvm/tune_relay_cuda.html).
+Details of how to launch automatic optimization can be found in the [AutoTVM tutorial](https://tvm.apache.org/docs//tutorials/autotvm/tune_relay_cuda.html).
 
 # General Workflow
 
@@ -109,7 +109,7 @@ Next, we use the relay quantization API to convert it to a quantized model.
 net = relay.quantize.quantize(net, params=params)
 ```
 
-Then, we use AutoTVM to extract tuning tasks for the operators in the model and perform automatic optimization. The [AutoTVM tutorial](https://docs.tvm.ai/tutorials/autotvm/tune_relay_cuda.html) provides an example for this.
+Then, we use AutoTVM to extract tuning tasks for the operators in the model and perform automatic optimization. The [AutoTVM tutorial](https://tvm.apache.org/docs//tutorials/autotvm/tune_relay_cuda.html) provides an example for this.
 
 Finally, we build the model and run inference in the quantized mode.
 ```python
@@ -117,7 +117,7 @@ with relay.build_config(opt_level=3):
     graph, lib, params = relay.build(net, target)
 ```
 The result of `relay.build` is a deployable library.
-We can either run inference [on the GPU](https://docs.tvm.ai/tutorials/frontend/from_mxnet.html#execute-the-portable-graph-on-tvm) directly or deploy [on the remote devices](https://docs.tvm.ai/tutorials/frontend/deploy_model_on_rasp.html#deploy-the-model-remotely-by-rpc) via RPC.
+We can either run inference [on the GPU](https://tvm.apache.org/docs//tutorials/frontend/from_mxnet.html#execute-the-portable-graph-on-tvm) directly or deploy [on the remote devices](https://tvm.apache.org/docs//tutorials/frontend/deploy_model_on_rasp.html#deploy-the-model-remotely-by-rpc) via RPC.
 
 # Benchmark
 To verify the performance of the quantized operators in TVM, we benchmark the performance of several popular network models including VGG-19, ResNet-50 and Inception V3.

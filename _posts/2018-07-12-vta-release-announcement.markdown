@@ -149,5 +149,5 @@ VTA is a research project that came out of the SAML group, which is generously s
 
 ## Get Started!
 - TVM and VTA Github page can be found here: [https://github.com/dmlc/tvm](https://github.com/dmlc/tvm).
-- You can get started with easy to follow [tutorials on programming VTA with TVM](https://docs.tvm.ai/vta/tutorials/index.html).
+- You can get started with easy to follow [tutorials on programming VTA with TVM](https://tvm.apache.org/docs//vta/tutorials/index.html).
 - For more technical details on VTA, read our [VTA technical report](https://arxiv.org/abs/1807.04188) on ArXiv.
