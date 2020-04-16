@@ -1,12 +1,12 @@
-TODO Replace all \bfloat{}
-
-# Bring Your Own Datatypes: Enabling Custom Datatype Exploration in TVM
 ---
 layout: post
 title:  "Bring Your Own Datatypes: Enabling Custom Datatype Exploration in TVM"
 date:   2020-04-15
 author: Gus Smith
 ---
+- TODO Replace all \bfloat{}
+- TODO Update date in heading
+- TODO Update filename date
 
 In this post, we describe the Bring Your Own Datatypes framework, which enables the use of custom datatypes within TVM.
 
