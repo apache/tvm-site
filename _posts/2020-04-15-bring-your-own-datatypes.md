@@ -20,6 +20,7 @@ There are a number of reasons to believe we could build a better datatype: one w
 Researchers have already begun experimenting with new datatypes in academic and industrial accelerator designs.
 For example, Google's Tensor Processing Unit (the TPU) uses the \bfloat{} type: a single-precision IEEE float which has been truncated to 16 bits, instantly reducing storage cost by half while often losing no model accuracy [TODO cite num][jouppi2017datacenter].
 Before researchers begin building hardware for their datatype, however, they first need to determine how their datatype will behave numerically in the workloads they care about.
+[TODO could add a sentence or two here convincing people that software-emulated versions of datatypes DO exist]
 This often involves first building a software-emulated version of their datatype, and then hacking the datatype directly into workloads;
 even better is to integrate the datatype directly into compilers themselves.
 Both routes can be tedious, with the latter route often becoming unmanageable given the size and complexity of modern compilers.
