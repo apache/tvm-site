@@ -134,3 +134,5 @@ Specifically, this function creates a lowering function which, given a program n
 [ieee754]: TODO
 [jouppi2017datacenter]: TODO
 [posittensorflow]: TODO
+
+*Gus Smith is a PhD student at the University of Washington working at the intersection of computer architecture and programming languages. His personal website is [justg.us](https://justg.us).*
