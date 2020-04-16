@@ -41,14 +41,39 @@ We then show an example usage of the framework by conducting a preliminary study
 The goal of the Bring Your Own Datatypes framework
   is to enable users to run deep learning workloads
   using custom datatypes.
+In the Bring Your Own Datatypes framework,
+  "datatype" means a scalar type:
+  `float32`
+  or `uint8` for example.
+We do not handle more complicated "datatypes"
+  such as [block floating point](https://en.wikipedia.org/wiki/Block_floating_point)
+  or Intel's [Flexpoint](https://www.intel.com/content/www/us/en/artificial-intelligence/posts/flexpoint-numerical-innovation-underlying-intel-nervana-neural-network-processor.html).
+These can be seen as *tensor* datatypes,
+  rather than *scalar* datatypes,
+  and while our current implementation of the Bring Your Own Datatypes framework may support them,
+  we do not explicitly claim to support them.
+Additionally,
+  we only claim to support
+  *software emulated* versions of these scalar datatypes;
+  we do not explicitly support compiling and running on custom datatype hardware.
 
-**Scope of datatypes supported:**
-**What it doesn't support:**
-
-The primary benefit of TVM over other frameworks is that it already abstracts away datatypes in a ``clean'' way.
-That is, a few fundamental numeric types (\texttt{int}s and \texttt{float}s of various sizes) are defined in the framework, and are abstracted away in program representations.
-Every node in a TVM program has an attached \texttt{dtype}, which can be any of the above types.
-The framework is implemented as a registry of additional datatypes, which extends the possible \texttt{dtype}s recognized by TVM.
+Within TVM,
+  datatypes are already abstracted in a "clean" way.
+A few fundamental numeric types
+  (`int`s and `float`s of various sizes)
+  are defined within an `enum` in TVM.
+Every node in a TVM program 
+  has an attached `dtype`,
+  which can be any of the members of the datatype `enum`.
+This `enum` has
+  a large number of unused values,
+  representing undefined `dtype` values.
+The Bring Your Own Datatypes framework
+  is implemented as a registry
+  which allows users to register custom datatypes
+  by squatting on one of these unclaimed values
+  in the datatype `enum`.
+TODO stopped here.
 Importantly, very little compiler logic in TVM depends directly on the value of \texttt{dtype}, and so new datatypes can be incorporated with minimal modification to TVM itself.
 There are a few key places where TVM must be modified, though; this is what we describe now.
 
