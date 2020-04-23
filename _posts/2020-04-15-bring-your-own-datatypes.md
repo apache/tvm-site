@@ -44,43 +44,45 @@ The goal of the Bring Your Own Datatypes framework
 In the Bring Your Own Datatypes framework,
   "datatype" means a scalar type:
   `float32`
-  or `uint8` for example.
-We do not handle more complicated "datatypes"
+  or `uint8`, for example.
+We do not handle more complicated data formats
   such as [block floating point](https://en.wikipedia.org/wiki/Block_floating_point)
   or Intel's [Flexpoint](https://www.intel.com/content/www/us/en/artificial-intelligence/posts/flexpoint-numerical-innovation-underlying-intel-nervana-neural-network-processor.html).
-These can be seen as *tensor* datatypes,
-  rather than *scalar* datatypes,
-  and while our current implementation of the Bring Your Own Datatypes framework may support them,
-  we do not explicitly claim to support them.
 Additionally,
   we only claim to support
   *software emulated* versions of these scalar datatypes;
   we do not explicitly support compiling and running on custom datatype hardware.
 
-Within TVM,
-  datatypes are already abstracted in a "clean" way.
-A few fundamental numeric types
-  (`int`s and `float`s of various sizes)
-  are defined within an `enum` in TVM.
-Every node in a TVM program 
-  has an attached `dtype`,
-  which can be any of the members of the datatype `enum`.
-This `enum` has
-  a large number of unused values,
-  representing undefined `dtype` values.
-The Bring Your Own Datatypes framework
-  is implemented as a registry
-  which allows users to register custom datatypes
-  by squatting on one of these unclaimed values
-  in the datatype `enum`.
-TODO stopped here.
-Importantly, very little compiler logic in TVM depends directly on the value of \texttt{dtype}, and so new datatypes can be incorporated with minimal modification to TVM itself.
-There are a few key places where TVM must be modified, though; this is what we describe now.
 
-There are two primary ways in which the user interacts with the datatype registry.
-First is datatype registration, in which a user defines a new datatype by providing a name and a datatype ID.
-The datatype name allows TVM to parse programs which use the custom datatype; 
-the ID is an arbitrary unique number assigned to the type, used in TVM's internal representation.
+Each tensor in TVM
+  is assigned a type code,
+  which defines the datatype of the scalars
+  within the tensor.
+A number of these type codes
+  have hard-coded meanings in TVM,
+  mapping to common datatypes
+  such as `int` and `float`.
+However,
+  the vast majority of type codes
+  are unused.
+The Bring Your Own Datatypes framework
+  allows users to 
+  claim these unused type codes
+  and add their own new datatypes
+  at runtime.
+
+The framework is implemented as
+  a registry 
+  which sits alongside
+  TVM's normal datatype facilities.
+There are two primary ways
+  in which the user interacts with
+  the datatype registry.
+First is datatype registration,
+  in which a user defines
+  a new datatype
+  by providing a name and a datatype type code.
+TODO left off here.
 Everywhere where TVM interacts with the \texttt{dtype} of a program node, we must now handle the chance that the \texttt{dtype} is not one of the types hard-coded into TVM.
 We modify TVM to, in these cases, consult the datatype registry for the unrecognized datatype;
 if the datatype is found, then TVM can proceed as normal.
