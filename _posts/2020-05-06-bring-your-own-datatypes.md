@@ -237,6 +237,10 @@ We hope this will encourage datatype researchers
   we hope this will spark interest
   in custom datatypes
   within the deep learning community.
+The Bring Your Own Datatypes framework
+  partially exists in TVM at the moment,
+  and more will be merged in (including full documentation)
+  in the coming months.
 
   
 ---
