@@ -4,8 +4,6 @@ title:  "Bring Your Own Datatypes: Enabling Custom Datatype Exploration in TVM"
 date:   2020-05-06
 author: Gus Smith
 ---
-- TODO Update date in heading
-- TODO Update filename date
 
 In this post, we describe the Bring Your Own Datatypes framework, which enables the use of custom datatypes within TVM.
 
