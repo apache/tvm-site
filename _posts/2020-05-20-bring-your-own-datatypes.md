@@ -34,7 +34,7 @@ Due to the lax numerical requirements
 
 Before researchers begin building hardware for their datatype, however, they first need to determine how their datatype will behave numerically in the workloads they care about.
 This often involves first building a software-emulated version of their datatype
-  (e.g. [Berkeley SoftFloat](http://www.jhauser.us/arithmetic/SoftFloat.html) or [libposit](https://github.com/cjdelisle/libposit)),
+  (e.g. [Berkeley SoftFloat](http://www.jhauser.us/arithmetic/SoftFloat.html){:target='_blank'} or [libposit](https://github.com/cjdelisle/libposit){:target='_blank'}),
   and then hacking the datatype directly into workloads,
   to see how the workload performs
   using the datatype.
@@ -45,7 +45,7 @@ Even better
   can be compiled
   to use the datatype.
 Both routes can be tedious, with the latter route often becoming unmanageable given the size and complexity of modern compilers.
-[One example taken from GitHub](https://github.com/xman/tensorflow) shows someone hacking the *posit* datatype into TensorFlow.
+[One example taken from GitHub](https://github.com/xman/tensorflow){:target='_blank'} shows someone hacking the *posit* datatype into TensorFlow.
 The result is 237 commits, adding nearly 6000 lines of code and touching over 200 files across the codebase---and that's just to add one datatype!
 This amount of work is prohibitive for many researchers.
 
@@ -64,8 +64,8 @@ In the Bring Your Own Datatypes framework,
   `float32`
   or `uint8`, for example.
 We do not handle more complicated data formats
-  such as [block floating point](https://en.wikipedia.org/wiki/Block_floating_point)
-  or Intel's [Flexpoint](https://www.intel.com/content/www/us/en/artificial-intelligence/posts/flexpoint-numerical-innovation-underlying-intel-nervana-neural-network-processor.html).
+  such as [block floating point](https://en.wikipedia.org/wiki/Block_floating_point){:target='_blank'}
+  or Intel's [Flexpoint](https://arxiv.org/abs/1711.02213){:target='_blank'}.
 Additionally,
   we only claim to support
   *software emulated* versions of these scalar datatypes;
@@ -273,10 +273,10 @@ The Bring Your Own Datatypes framework
   
 ---
 
-*Gus Smith is a PhD student at the University of Washington working with Luis Ceze and Zachary Tatlock at the intersection of computer architecture and programming languages. His website is [justg.us](https://justg.us).*
+*Gus Smith is a PhD student at the University of Washington working with Luis Ceze and Zachary Tatlock at the intersection of computer architecture and programming languages. His website is [justg.us](https://justg.us){:target='_blank'}.*
 
 ## References
 
-[^ieee]: [754-2019 - IEEE Standard for Floating-Point Arithmetic](https://standards.ieee.org/standard/754-2019.html)
+[^ieee]: [754-2019 - IEEE Standard for Floating-Point Arithmetic](https://standards.ieee.org/standard/754-2019.html){:target='_blank'}
 [^jouppi2017datacenter]: Jouppi, Norman P., et al. "In-datacenter performance analysis of a tensor processing unit." Proceedings of the 44th Annual International Symposium on Computer Architecture. 2017.
-[^tensorflowbfloat]: [Using bfloat16 with TensorFlow models](https://cloud.google.com/tpu/docs/bfloat16)
+[^tensorflowbfloat]: [Using bfloat16 with TensorFlow models](https://cloud.google.com/tpu/docs/bfloat16){:target='_blank'}
