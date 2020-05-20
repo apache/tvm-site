@@ -11,26 +11,48 @@ In this post, we describe the Bring Your Own Datatypes framework, which enables 
 
 When designing accelerators, an important decision is how one will approximately represent real numbers in hardware.
 This problem has had a longstanding, industry-standard solution: the IEEE 754 floating-point standard.[^ieee]
-When trying to squeeze the most out of hardware, though, will we necessarily use IEEE 754 floats?
-There are a number of reasons to believe we could build a better datatype: one which is smaller, faster, or more power efficient, and overall more optimal for our workload and the constraints of our hardware design.
-
+Yet,
+  when trying to squeeze
+  the most out of hardware
+  by building highly specialized designs,
+  does it make sense to use
+  general-purpose IEEE 754 floats?
+If we know the numerical requirements
+  of our workload,
+  could we build a smaller,
+  faster,
+  or more power efficient datatype?
+The answer is yes!
 Researchers have already begun experimenting with new datatypes in academic and industrial accelerator designs.
-For example, Google's Tensor Processing Unit (the TPU) uses the `bfloat` type: a single-precision IEEE float which has been truncated to 16 bits, instantly reducing storage cost by half while often losing no model accuracy.[^jouppi2017datacenter]
+For example, Google's Tensor Processing Unit (the TPU) uses the `bfloat` type: a single-precision IEEE float which has been truncated to 16 bits.
+Due to the lax numerical requirements
+  of many deep learning workloads,
+  this truncation often has no effect
+  on model accuracy,
+  while instantly cutting the storage cost
+  in half.[^jouppi2017datacenter][^tensorflowbfloat]
+
 Before researchers begin building hardware for their datatype, however, they first need to determine how their datatype will behave numerically in the workloads they care about.
-This often involves first building a software-emulated version of their datatype, and then hacking the datatype directly into workloads;
-even better is to integrate the datatype directly into compilers themselves.
+This often involves first building a software-emulated version of their datatype
+  (e.g. [Berkeley SoftFloat](http://www.jhauser.us/arithmetic/SoftFloat.html) or [libposit](https://github.com/cjdelisle/libposit)),
+  and then hacking the datatype directly into workloads,
+  to see how the workload performs
+  using the datatype.
+Even better
+  is to integrate the datatype 
+  directly into compilers themselves,
+  so that many different workloads
+  can be compiled
+  to use the datatype.
 Both routes can be tedious, with the latter route often becoming unmanageable given the size and complexity of modern compilers.
-One example taken from GitHub shows someone hacking the *posit* datatype into TensorFlow.[^posittensorflow]
+[One example taken from GitHub](https://github.com/xman/tensorflow) shows someone hacking the *posit* datatype into TensorFlow.
 The result is 237 commits, adding nearly 6000 lines of code and touching over 200 files across the codebase---and that's just to add one datatype!
 This amount of work is prohibitive for many researchers.
 
 To address these problems, we present the Bring Your Own Datatypes framework.
 The framework enables easy exploration of new datatypes in deep learning workloads by allowing users to plug their simulated datatype into TVM.
 Unlike the posits-in-Tensorflow example above, which enables a single new datatype in a compiler, the Bring Your Own Datatype framework enables a huge variety of user-defined types.
-We also show how the framework can be used to conduct valuable datatype research and exploration.
 
-In the rest of this blog post, we first describe the design and implementation of the framework, and how it integrates with TVM.
-We then show an example usage of the framework by conducting a preliminary study of how changing datatypes affect pretrained models.
 
 ## Bring Your Own Datatypes
 
@@ -93,7 +115,7 @@ tvm.datatype.register('bfloat', 150)
 ```
 The above code registers
   the `'bfloat'` datatype
-  with type code 140.
+  with type code 150.
 This registration step
   allows TVM to parse programs
   which use the custom type:
@@ -156,7 +178,7 @@ We can then rely on native TVM
 ![A lowering function lowering an add over `bfloat`s to a library call over `uint16_t`s](/images/bring-your-own-datatypes/lowering.png){: width="50%"}
 {:center}
 <center>
-Figure 1: The expected result of a user's registered lowering function. A lowering function should convert a program in TVM's IR using custom datatypes (in this case `bfloat`) to a program in TVM's IR which native TVM can understand and compile (in this case, a call to an external library, taking two `uint16_t`s).
+Figure 1: The expected result of a user's registered lowering function. A lowering function should convert a program using custom datatypes to a program which native TVM can understand and compile (in this case, a call to an external library, taking two <tt>uint16_t</tt>s).
 </center> <p></p>
 
 Figure 1 shows a common pattern.
@@ -226,6 +248,12 @@ In our tests,
   registering a datatype
   and all lowering functions
   takes around 40 lines of Python.
+Once all needed operators
+  are registered,
+  custom datatype workloads
+  can be run
+  as easily as
+  any other TVM program!
 
 # Wrapping Up
   
@@ -245,10 +273,10 @@ The Bring Your Own Datatypes framework
   
 ---
 
-*Gus Smith is a PhD student at the University of Washington working at the intersection of computer architecture and programming languages. His personal website is [justg.us](https://justg.us).*
+*Gus Smith is a PhD student at the University of Washington working with Luis Ceze and Zachary Tatlock at the intersection of computer architecture and programming languages. His website is [justg.us](https://justg.us).*
 
 ## References
 
 [^ieee]: [754-2019 - IEEE Standard for Floating-Point Arithmetic](https://standards.ieee.org/standard/754-2019.html)
 [^jouppi2017datacenter]: Jouppi, Norman P., et al. "In-datacenter performance analysis of a tensor processing unit." Proceedings of the 44th Annual International Symposium on Computer Architecture. 2017.
-[^posittensorflow]: [xman/tensorflow](https://github.com/xman/tensorflow)
+[^tensorflowbfloat]: [Using bfloat16 with TensorFlow models](https://cloud.google.com/tpu/docs/bfloat16)
