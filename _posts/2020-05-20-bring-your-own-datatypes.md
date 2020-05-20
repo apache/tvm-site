@@ -1,7 +1,7 @@
 ---
 layout: post
 title:  "Bring Your Own Datatypes: Enabling Custom Datatype Exploration in TVM"
-date:   2020-05-06
+date:   2020-05-20
 author: Gus Smith
 ---
 
