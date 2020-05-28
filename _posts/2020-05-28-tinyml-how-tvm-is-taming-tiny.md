@@ -1,8 +1,8 @@
 ---
 layout: post
 title: "TinyML - How TVM is Taming Tiny"
-autor: "Logan Weber and Andrew Reusch, OctoML"
-date: 2020-05-27
+author: "Logan Weber and Andrew Reusch, OctoML"
+date: 2020-05-28
 ---
 {% include JB/setup %}
 
@@ -49,7 +49,7 @@ with micro.Session(device_config) as sess:
 Below are the performance results of MicroTVM, compared with [CMSIS-NN version 5.7.0](https://github.com/ARM-software/CMSIS_5/releases/tag/5.6.0) (commit `a65b7c9a`), a hand-optimized library of ML kernels.
 
 {:center: style="text-align: center"}
-![/images/microtvm/post-2020-05-27/cifar10-int-8-cnn.png](/images/microtvm/post-2020-05-27/cifar10-int-8-cnn.png){: width="60%" }<br/>
+![/images/microtvm/post-2020-05-28/cifar10-int-8-cnn.png](/images/microtvm/post-2020-05-28/cifar10-int-8-cnn.png){: width="60%" }<br/>
 {:center}
 
 As we can see, the out-of-the-box performance isn't great, but this is where [AutoTVM](https://dl.acm.org/doi/10.5555/3327144.3327258) comes to the rescue.  We can write a schedule template for our device, do a round of autotuning, then achieve significantly better results.  To plug in our autotuned results, we only need to replace this line:
@@ -68,7 +68,7 @@ with TARGET, autotvm.apply_history_best(TUNING_RESULTS_FILE):
 And our results now look like this:
 
 {:center: style="text-align: center"}
-![/images/microtvm/post-2020-05-27/autotuned-cifar10-int-8-cnn.png](/images/microtvm/post-2020-05-27/autotuned-cifar10-int-8-cnn.png){: width="60%" }<br/>
+![/images/microtvm/post-2020-05-28/autotuned-cifar10-int-8-cnn.png](/images/microtvm/post-2020-05-28/autotuned-cifar10-int-8-cnn.png){: width="60%" }<br/>
 {:center}
 
 We've improved our performance by ~2x, and we're now much closer to CMSIS-NN. Although the MicroTVM CIFAR10 implementation is competitive in with a similar TFLite/CMSIS-NN model, this work has just begun to take advantage of TVM's optimization features. There's room to optimize further by accelerating other operators such as dense/fully-connected and taking advantage of TVM's model-specific quantization and operator fusion capabilities. TVM with µTVM enables you to play with the best of them.  So how does it work?  What's going on behind the scenes?  Let's dive in now.
@@ -77,7 +77,7 @@ We've improved our performance by ~2x, and we're now much closer to CMSIS-NN. Al
 # Design
 
 {:center: style="text-align: center"}
-![/images/microtvm/post-2020-05-27/memory-layout.png](/images/microtvm/post-2020-05-27/memory-layout.png){: width="20%" }<br/>
+![/images/microtvm/post-2020-05-28/memory-layout.png](/images/microtvm/post-2020-05-28/memory-layout.png){: width="20%" }<br/>
 The µTVM Device Memory Layout in RAM
 {:center}
 
@@ -256,7 +256,7 @@ To evaluate (2), we explore optimizations for the Arm board that give the bigges
 As a point of comparison, we pulled a quantized CIFAR-10 CNN from [this tutorial by Arm](https://developer.arm.com/solutions/machine-learning-on-arm/developer-material/how-to-guides/image-recognition-on-arm-cortex-m-with-cmsis-nn/single-page).  In the tutorial, [CMSIS-NN](https://arm-software.github.io/CMSIS_5/NN/html/index.html) (a library of highly optimized kernels by Arm experts) is used as the operator library, making this CNN the perfect evaluation target, as we could now directly compare the results of µTVM with CMSIS-NN on the Arm board.
 
 {:center: style="text-align: center"}
-![/images/microtvm/post-2020-05-27/cifar10-graphical.png](/images/microtvm/post-2020-05-27/cifar10-graphical.png){: width="80%" }<br/>
+![/images/microtvm/post-2020-05-28/cifar10-graphical.png](/images/microtvm/post-2020-05-28/cifar10-graphical.png){: width="80%" }<br/>
 Diagram of CIFAR-10 CNN
 {:center}
 
@@ -270,7 +270,7 @@ In our experiments, we use TVM from HEAD (commit `9fa8341`), version 5.7.0 of CM
 With CMSIS-NN, the first convolution maps to their [RGB convolution implementation](https://github.com/ARM-software/CMSIS_5/blob/develop/CMSIS/NN/Source/ConvolutionFunctions/arm_convolve_HWC_q7_RGB.c) (specifically for usage in input layers) and the latter two map to their ["fast" convolution implementation](https://github.com/ARM-software/CMSIS_5/blob/develop/CMSIS/NN/Source/ConvolutionFunctions/arm_convolve_HWC_q7_fast.c).  We felt our performance was close enough for the RGB convolution after the earlier generic optimizations, but were left unsatisfied with our fast convolution results.  Luckily, Arm released a [paper](https://arxiv.org/abs/1801.06601) describing optimizations used in CMSIS-NN, and we found they are getting massive speedups from SIMD intrinsics.  In the paper, they present a matrix multiplication microkernel that uses SIMD intrinsics (figure below).  While we could add first-class support for the intrinsics in TVM's code generation facilities—and this is likely the best move in the long run—TVM offers [tensorization](https://docs.tvm.ai/tutorials/language/tensorize.html) as a "quick-and-dirty" solution to supporting SIMD.
 
 {:center: style="text-align: center"}
-![/images/microtvm/post-2020-05-27/simd-diagram.png](/images/microtvm/post-2020-05-27/simd-diagram.png){: width="80%" }<br/>
+![/images/microtvm/post-2020-05-28/simd-diagram.png](/images/microtvm/post-2020-05-28/simd-diagram.png){: width="80%" }<br/>
 Diagram from CMSIS-NN paper showing a 2x2 matrix multiplication microkernel
 {:center}
 
@@ -296,12 +296,12 @@ After exploring optimizations for convolution, we set out to measure their effec
 [https://github.com/areusch/microtvm-blogpost-eval](https://github.com/areusch/microtvm-blogpost-eval)
 
 {:center: style="text-align: center"}
-![/images/microtvm/post-2020-05-27/autotuned-cifar10-int-8-cnn.png](/images/microtvm/post-2020-05-27/autotuned-cifar10-int-8-cnn.png){: width="60%" }<br/>
+![/images/microtvm/post-2020-05-28/autotuned-cifar10-int-8-cnn.png](/images/microtvm/post-2020-05-28/autotuned-cifar10-int-8-cnn.png){: width="60%" }<br/>
 `int8`-quantized CIFAR-10 CNN comparison on an Arm STM32F746NG (re-posted from above)
 {:center}
 
 {:center: style="text-align: center"}
-![/images/microtvm/post-2020-05-27/autotuned-cifar10-int-8-cnn-x86.png](/images/microtvm/post-2020-05-27/autotuned-cifar10-int-8-cnn-x86.png){: width="60%" }<br/>
+![/images/microtvm/post-2020-05-28/autotuned-cifar10-int-8-cnn-x86.png](/images/microtvm/post-2020-05-28/autotuned-cifar10-int-8-cnn-x86.png){: width="60%" }<br/>
 `int8`-quantized CIFAR-10 CNN comparison on µTVM's emulated host device
 {:center}
 
