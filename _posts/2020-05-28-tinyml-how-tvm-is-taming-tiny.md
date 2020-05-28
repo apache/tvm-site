@@ -267,7 +267,7 @@ In our experiments, we use TVM from HEAD (commit `9fa8341`), version 5.7.0 of CM
 
 ### Arm-Specific Optimizations
 
-With CMSIS-NN, the first convolution maps to their [RGB convolution implementation](https://github.com/ARM-software/CMSIS_5/blob/develop/CMSIS/NN/Source/ConvolutionFunctions/arm_convolve_HWC_q7_RGB.c) (specifically for usage in input layers) and the latter two map to their ["fast" convolution implementation](https://github.com/ARM-software/CMSIS_5/blob/develop/CMSIS/NN/Source/ConvolutionFunctions/arm_convolve_HWC_q7_fast.c).  We felt our performance was close enough for the RGB convolution after the earlier generic optimizations, but were left unsatisfied with our fast convolution results.  Luckily, Arm released a [paper](https://arxiv.org/abs/1801.06601) describing optimizations used in CMSIS-NN, and we found they are getting massive speedups from SIMD intrinsics.  In the paper, they present a matrix multiplication microkernel that uses SIMD intrinsics (figure below).  While we could add first-class support for the intrinsics in TVM's code generation facilities—and this is likely the best move in the long run—TVM offers [tensorization](https://docs.tvm.ai/tutorials/language/tensorize.html) as a "quick-and-dirty" solution to supporting SIMD.
+With CMSIS-NN, the first convolution maps to their [RGB convolution implementation](https://github.com/ARM-software/CMSIS_5/blob/develop/CMSIS/NN/Source/ConvolutionFunctions/arm_convolve_HWC_q7_RGB.c) (specifically for usage in input layers) and the latter two map to their ["fast" convolution implementation](https://github.com/ARM-software/CMSIS_5/blob/develop/CMSIS/NN/Source/ConvolutionFunctions/arm_convolve_HWC_q7_fast.c).  We felt our performance was close enough for the RGB convolution after the earlier generic optimizations, but were left unsatisfied with our fast convolution results.  Luckily, Arm released a [paper](https://arxiv.org/abs/1801.06601) describing optimizations used in CMSIS-NN, and we found they are getting massive speedups from SIMD intrinsics.  In the paper, they present a matrix multiplication microkernel that uses SIMD intrinsics (figure below).  While we could add first-class support for the intrinsics in TVM's code generation facilities—and this is likely the best move in the long run—TVM offers [tensorization](https://tvm.apache.org/docs/tutorials/language/tensorize.html) as a "quick-and-dirty" solution to supporting SIMD.
 
 {:center: style="text-align: center"}
 ![/images/microtvm/post-2020-05-28/simd-diagram.png](/images/microtvm/post-2020-05-28/simd-diagram.png){: width="80%" }<br/>
@@ -285,7 +285,7 @@ There are certainly other optimizations we could pull from CMSIS-NN to close the
 - Batch expansion of `int8` weights into `int16`, to cut down on duplicate expansion for SIMD
 - Splitting convolution into 3x3 tiles to reduce padding checks
 
-But our goal in this blog post is to show the broad strokes of what can be done with µTVM.  Even so, it's not a competition, because CMSIS-NN (and any other hand-optimized library) can plug directly into TVM using the [Bring Your Own Codegen framework](https://docs.tvm.ai/dev/relay_bring_your_own_codegen.html).
+But our goal in this blog post is to show the broad strokes of what can be done with µTVM.  Even so, it's not a competition, because CMSIS-NN (and any other hand-optimized library) can plug directly into TVM using the [Bring Your Own Codegen framework](https://tvm.apache.org/docs/dev/relay_bring_your_own_codegen.html).
 
 ## End-To-End
 
@@ -321,7 +321,7 @@ While end-to-end benchmark results are already obtainable with the current runti
 
 # Conclusion
 
-MicroTVM for single-kernel optimization is ready **today** and is *the* choice for that use case.  As we now build out self-hosted deployment support we hope you're just as excited as we are to make µTVM *the* choice for model deployment as well. However, this isn't just a spectator sport - remember: this is all open source!  µTVM is still in its early days, so every individual can have a great deal of impact on its trajectory. Check out the [TVM contributor's guide](https://docs.tvm.ai/contribute/) if you're interested in building with us or jump straight into [the TVM forums](https://discuss.tvm.ai/) to discuss ideas first.
+MicroTVM for single-kernel optimization is ready **today** and is *the* choice for that use case.  As we now build out self-hosted deployment support we hope you're just as excited as we are to make µTVM *the* choice for model deployment as well. However, this isn't just a spectator sport - remember: this is all open source!  µTVM is still in its early days, so every individual can have a great deal of impact on its trajectory. Check out the [TVM contributor's guide](https://tvm.apache.org/docs/contribute/) if you're interested in building with us or jump straight into [the TVM forums](https://discuss.tvm.ai/) to discuss ideas first.
 
 ## Acknowledgements
 
