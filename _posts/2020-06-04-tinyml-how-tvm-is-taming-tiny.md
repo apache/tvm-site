@@ -2,7 +2,7 @@
 layout: post
 title: "TinyML - How TVM is Taming Tiny"
 author: "Logan Weber and Andrew Reusch, OctoML"
-date: 2020-05-28
+date: 2020-06-04
 ---
 {% include JB/setup %}
 
