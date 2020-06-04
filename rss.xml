@@ -5,10 +5,319 @@
         <description>TVM - </description>
         <link>https://tvm.apache.org</link>
         <atom:link href="https://tvm.apache.org" rel="self" type="application/rss+xml" />
-        <lastBuildDate>Wed, 20 May 2020 17:08:53 -0700</lastBuildDate>
-        <pubDate>Wed, 20 May 2020 17:08:53 -0700</pubDate>
+        <lastBuildDate>Thu, 04 Jun 2020 09:03:32 -0700</lastBuildDate>
+        <pubDate>Thu, 04 Jun 2020 09:03:32 -0700</pubDate>
         <ttl>60</ttl>
 
+
+        <item>
+                <title>TinyML - How TVM is Taming Tiny</title>
+                <description>
+&lt;p&gt;&lt;img src=&quot;/images/microtvm/logo.png&quot; alt=&quot;microTVM logo&quot; width=&quot;30%&quot; /&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;p&gt;The proliferation of low-cost, AI-powered consumer devices has led to widespread interest in “bare-metal” (low-power, often without an operating system) devices among ML researchers and practitioners.  While it is already possible for experts to run &lt;em&gt;some&lt;/em&gt; models on &lt;em&gt;some&lt;/em&gt; bare-metal devices, optimizing models for diverse sets of devices is challenging, often requiring manually optimized device-specific libraries.  And for those platforms without, say, Linux support, there exists no scalable solution for deploying models.  Because of this, in order to target new devices, developers must implement one-off custom software stacks for managing system resources and scheduling model execution.&lt;/p&gt;
+
+&lt;p&gt;The manual optimization of machine learning software is not unique to the domain of bare-metal devices.  In fact, this has been a common theme for developers working with other hardware backends (e.g., GPUs and FPGAs).  TVM has proven resilient to the onslaught of new hardware targets, but until now, it couldn’t grapple with the unique profile of microcontrollers.  To solve the problem in this domain, we’ve extended TVM to feature a microcontroller backend, called µTVM (footnote: pronounced “MicroTVM”).   µTVM facilitates host-driven execution of tensor programs on bare-metal devices and enables automatic optimization of these programs via AutoTVM, TVM’s built-in tensor program optimizer. In the figure below, a bird’s eye view of the µTVM + AutoTVM infrastructure is shown:&lt;/p&gt;
+
+&lt;p style=&quot;text-align: center&quot;&gt;&lt;img src=&quot;/images/microtvm/autotvm-infrastructure.png&quot; alt=&quot;/images/microtvm/autotvm-infrastructure.png&quot; width=&quot;80%&quot; /&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;h1 id=&quot;lets-see-it-in-action&quot;&gt;Let’s see it in action&lt;/h1&gt;
+
+&lt;p&gt;Before we talk about what TVM/MicroTVM is or how it works, let’s see a quick example of it in action.&lt;/p&gt;
+
+&lt;p style=&quot;text-align: center&quot;&gt;&lt;img src=&quot;/images/microtvm/hardware-connection-diagram.png&quot; alt=&quot;/images/microtvm/hardware-connection-diagram.png&quot; width=&quot;80%&quot; /&gt;&lt;br /&gt;
+A standard µTVM setup, where the host communicates with the device via JTAG.&lt;/p&gt;
+
+&lt;p&gt;Above, we have an &lt;a href=&quot;https://www.st.com/en/microcontrollers-microprocessors/stm32f746zg.html&quot;&gt;STM32F746ZG board&lt;/a&gt;, housing an ARM Cortex-M7 processor, an ideal part for AI on the edge given it’s strong performance in a low power envelope. We use its USB-JTAG port to connect it to our desktop machine.  On the desktop, we run OpenOCD to open a JTAG connection with the device; in turn, OpenOCD allows µTVM to control the M7 processor using a device-agnostic TCP socket.  With this setup in place, we can run a CIFAR-10 classifier using TVM code that looks like this (full script &lt;a href=&quot;https://github.com/areusch/microtvm-blogpost-eval/blob/master/python/micro_eval/bin/eval.py&quot;&gt;here&lt;/a&gt;):&lt;/p&gt;
+
+&lt;div class=&quot;language-python highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;n&quot;&gt;OPENOCD_SERVER_ADDR&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;'127.0.0.1'&lt;/span&gt;
+&lt;span class=&quot;n&quot;&gt;OPENOCD_SERVER_PORT&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;6666&lt;/span&gt;
+&lt;span class=&quot;n&quot;&gt;TARGET&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;tvm&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;target&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;create&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;'c -device=micro_dev'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+&lt;span class=&quot;n&quot;&gt;DEV_CONFIG&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;stm32f746xx&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;default_config&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;OPENOCD_SERVER_ADDR&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;OPENOCD_SERVER_PORT&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+
+&lt;span class=&quot;n&quot;&gt;module&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;params&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;get_cifar10_cnn&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt;
+&lt;span class=&quot;k&quot;&gt;with&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;micro&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Session&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;device_config&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;as&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;sess&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;
+	&lt;span class=&quot;n&quot;&gt;graph&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;c_module&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;params&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;relay&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;build&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;module&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;'main'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;],&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;target&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;TARGET&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;params&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;params&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+  &lt;span class=&quot;n&quot;&gt;micro_mod&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;micro&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;create_micro_mod&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;c_module&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;DEV_CONFIG&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+  &lt;span class=&quot;n&quot;&gt;graph_mod&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;graph_runtime&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;create&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;graph&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;micro_mod&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;ctx&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;tvm&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;micro_dev&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;))&lt;/span&gt;
+  &lt;span class=&quot;n&quot;&gt;graph_mod&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;run&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;data&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;data_np&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+  &lt;span class=&quot;n&quot;&gt;prediction&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;CIFAR10_CLASSES&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;np&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;argmax&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;graph_mod&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;get_output&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;asnumpy&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;())]&lt;/span&gt;
+  &lt;span class=&quot;k&quot;&gt;print&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;f&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;'prediction was {prediction}'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;Below are the performance results of MicroTVM, compared with &lt;a href=&quot;https://github.com/ARM-software/CMSIS_5/releases/tag/5.6.0&quot;&gt;CMSIS-NN version 5.7.0&lt;/a&gt; (commit &lt;code class=&quot;highlighter-rouge&quot;&gt;a65b7c9a&lt;/code&gt;), a hand-optimized library of ML kernels.&lt;/p&gt;
+
+&lt;p style=&quot;text-align: center&quot;&gt;&lt;img src=&quot;/images/microtvm/post-2020-05-28/cifar10-int-8-cnn.png&quot; alt=&quot;/images/microtvm/post-2020-05-28/cifar10-int-8-cnn.png&quot; width=&quot;60%&quot; /&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;p&gt;As we can see, the out-of-the-box performance isn’t great, but this is where &lt;a href=&quot;https://dl.acm.org/doi/10.5555/3327144.3327258&quot;&gt;AutoTVM&lt;/a&gt; comes to the rescue.  We can write a schedule template for our device, do a round of autotuning, then achieve significantly better results.  To plug in our autotuned results, we only need to replace this line:&lt;/p&gt;
+
+&lt;div class=&quot;language-python highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;n&quot;&gt;graph&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;c_module&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;params&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;relay&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;build&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;module&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;'main'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;],&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;target&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;TARGET&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;params&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;params&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;with these lines:&lt;/p&gt;
+
+&lt;div class=&quot;language-python highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;k&quot;&gt;with&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;TARGET&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;autotvm&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;apply_history_best&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;TUNING_RESULTS_FILE&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;):&lt;/span&gt;
+  &lt;span class=&quot;n&quot;&gt;graph&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;c_module&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;params&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;relay&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;build&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;module&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;'main'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;],&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;target&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;TARGET&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;params&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;params&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;And our results now look like this:&lt;/p&gt;
+
+&lt;p style=&quot;text-align: center&quot;&gt;&lt;img src=&quot;/images/microtvm/post-2020-05-28/autotuned-cifar10-int-8-cnn.png&quot; alt=&quot;/images/microtvm/post-2020-05-28/autotuned-cifar10-int-8-cnn.png&quot; width=&quot;60%&quot; /&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;p&gt;We’ve improved our performance by ~2x, and we’re now much closer to CMSIS-NN. Although the MicroTVM CIFAR10 implementation is competitive in with a similar TFLite/CMSIS-NN model, this work has just begun to take advantage of TVM’s optimization features. There’s room to optimize further by accelerating other operators such as dense/fully-connected and taking advantage of TVM’s model-specific quantization and operator fusion capabilities. TVM with µTVM enables you to play with the best of them.  So how does it work?  What’s going on behind the scenes?  Let’s dive in now.&lt;/p&gt;
+
+&lt;h1 id=&quot;design&quot;&gt;Design&lt;/h1&gt;
+
+&lt;p style=&quot;text-align: center&quot;&gt;&lt;img src=&quot;/images/microtvm/post-2020-05-28/memory-layout.png&quot; alt=&quot;/images/microtvm/post-2020-05-28/memory-layout.png&quot; width=&quot;20%&quot; /&gt;&lt;br /&gt;
+The µTVM Device Memory Layout in RAM&lt;/p&gt;
+
+&lt;p&gt;µTVM aims to support the lowest common denominator of devices by minimizing the set of requirements that must be satisfied.  In particular, users need only provide:&lt;/p&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;a C cross-compiler toolchain for their device&lt;/li&gt;
+  &lt;li&gt;a method for reading/writing to device memory and executing code on the device&lt;/li&gt;
+  &lt;li&gt;a specification containing the device’s memory layout and general architectural characteristics&lt;/li&gt;
+  &lt;li&gt;a code snippet that prepares the device for function execution&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;Most bare-metal devices have support for C and JTAG (a debugging protocol), so (1) and (2) usually come for free!  Furthermore, (3) and (4) are often very small asks.  Below are examples of (3) and (4) for STM32F746-series boards.&lt;/p&gt;
+
+&lt;div class=&quot;language-python highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;n&quot;&gt;device_config&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+    &lt;span class=&quot;s&quot;&gt;'device_id'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;'arm.stm32f746xx'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;        &lt;span class=&quot;c1&quot;&gt;# unique identifier for the device
+&lt;/span&gt;    &lt;span class=&quot;s&quot;&gt;'toolchain_prefix'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;'arm-none-eabi-'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;  &lt;span class=&quot;c1&quot;&gt;# prefix of each binary in the cross-compilation toolchain (e.g., arm-none-eabi-gcc)
+&lt;/span&gt;    &lt;span class=&quot;s&quot;&gt;'base_addr'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;mh&quot;&gt;0x20000000&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;               &lt;span class=&quot;c1&quot;&gt;# first address of RAM
+&lt;/span&gt;    &lt;span class=&quot;s&quot;&gt;'section_sizes'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;                     &lt;span class=&quot;c1&quot;&gt;# dictionary of desired section sizes in bytes
+&lt;/span&gt;         &lt;span class=&quot;s&quot;&gt;'text'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;18000&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
+         &lt;span class=&quot;s&quot;&gt;'rodata'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;100&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
+         &lt;span class=&quot;s&quot;&gt;'data'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;100&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;
+         &lt;span class=&quot;o&quot;&gt;...&lt;/span&gt;
+    &lt;span class=&quot;p&quot;&gt;},&lt;/span&gt;
+    &lt;span class=&quot;s&quot;&gt;'word_size'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;4&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;                        &lt;span class=&quot;c1&quot;&gt;# device word size
+&lt;/span&gt;    &lt;span class=&quot;s&quot;&gt;'thumb_mode'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;bp&quot;&gt;True&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;                    &lt;span class=&quot;c1&quot;&gt;# whether to use ARM's thumb ISA
+&lt;/span&gt;    &lt;span class=&quot;s&quot;&gt;'comms_method'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;'openocd'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;             &lt;span class=&quot;c1&quot;&gt;# method of communication with the device
+&lt;/span&gt;    &lt;span class=&quot;s&quot;&gt;'server_addr'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;'127.0.0.1'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;            &lt;span class=&quot;c1&quot;&gt;# OpenOCD server address (if 'comms_method' is 'openocd')
+&lt;/span&gt;    &lt;span class=&quot;s&quot;&gt;'server_port'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;6666&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt;                   &lt;span class=&quot;c1&quot;&gt;# OpenOCD server port (if 'comms_method' is 'openocd')
+&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;div class=&quot;language-cpp highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;syntax&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;unified&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;cpu&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;cortex&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;-&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;m7&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;fpu&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;softvfp&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;thumb&lt;/span&gt;
+
+&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;section&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;text&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;UTVMInit&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;type&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;UTVMInit&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;%&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;function&lt;/span&gt;
+&lt;span class=&quot;n&quot;&gt;UTVMInit&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;:&lt;/span&gt;
+  &lt;span class=&quot;cm&quot;&gt;/* enable fpu */&lt;/span&gt;
+  &lt;span class=&quot;n&quot;&gt;ldr&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;r0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;mh&quot;&gt;0xE000ED88&lt;/span&gt;
+  &lt;span class=&quot;n&quot;&gt;ldr&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;r1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;r0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt;
+  &lt;span class=&quot;n&quot;&gt;ldr&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;r2&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;mh&quot;&gt;0xF00000&lt;/span&gt;
+  &lt;span class=&quot;n&quot;&gt;orr&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;r1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;r2&lt;/span&gt;
+  &lt;span class=&quot;n&quot;&gt;str&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;r1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;r0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt;
+  &lt;span class=&quot;n&quot;&gt;dsb&lt;/span&gt;
+  &lt;span class=&quot;n&quot;&gt;isb&lt;/span&gt;
+  &lt;span class=&quot;cm&quot;&gt;/* set stack pointer */&lt;/span&gt;
+  &lt;span class=&quot;n&quot;&gt;ldr&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;sp&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;_utvm_stack_pointer_init&lt;/span&gt;
+  &lt;span class=&quot;n&quot;&gt;bl&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;UTVMMain&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;size&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;UTVMInit&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;-&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;UTVMInit&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;The µTVM infrastructure and device runtime have been built to only make use of these requirements, and we’re working to lessen these requirements by supporting common open source runtime platforms such as mBED OS to handle the compilation and linking processes.&lt;/p&gt;
+
+&lt;h2 id=&quot;device-sessions&quot;&gt;Device Sessions&lt;/h2&gt;
+
+&lt;p&gt;Given the networked nature of microcontroller interaction, we slightly deviate from standard TVM code by introducing the concept of &lt;code class=&quot;highlighter-rouge&quot;&gt;MicroSession&lt;/code&gt;.&lt;/p&gt;
+
+&lt;p&gt;Every piece of functionality in µTVM relies on having an open session with the target device.  If you’re familiar with TVM, you may have noticed a line of code that deviates from the norm in our first code snippet—-namely, this one:&lt;/p&gt;
+
+&lt;div class=&quot;language-python highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;o&quot;&gt;...&lt;/span&gt;
+&lt;span class=&quot;k&quot;&gt;with&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;micro&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Session&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;device_config&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;as&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;sess&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;
+	&lt;span class=&quot;o&quot;&gt;...&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;Every line inside this &lt;code class=&quot;highlighter-rouge&quot;&gt;with&lt;/code&gt; block can call functions in µTVM, with the context being the device specified by &lt;code class=&quot;highlighter-rouge&quot;&gt;device_config&lt;/code&gt;.  This line is doing a number of things under the hood, so let’s unpack it.&lt;/p&gt;
+
+&lt;p&gt;First, it initializes a connection with your device, using whichever communication method you specified (usually OpenOCD).  The µTVM device runtime is then cross-compiled, using whichever cross-compiler you specified.  Finally, space for the compiled binary is allocated by the host, and the binary is loaded onto the device using the opened connection.&lt;/p&gt;
+
+&lt;p&gt;With the runtime now situated on the device, we’ll naturally want some functions to run through it.&lt;/p&gt;
+
+&lt;h2 id=&quot;module-loading&quot;&gt;Module Loading&lt;/h2&gt;
+
+&lt;p&gt;One of the core abstractions in TVM is that of a module.  A module stores a set of related functions for a particular device/runtime target.  Given that microcontrollers don’t normally have operating systems, µTVM needs to do a lot of extra work to maintain this high-level abstraction.  To see what’s going on, we’ll trace through the process of creating and loading a µTVM-compatible module.&lt;/p&gt;
+
+&lt;p&gt;Suppose we have a &lt;code class=&quot;highlighter-rouge&quot;&gt;micro.Session&lt;/code&gt; open with our device and a TVM schedule that implements 2D convolution.  If we want to load it onto our microcontroller, we need it to emit C code.  To do so, we just need to set the &lt;code class=&quot;highlighter-rouge&quot;&gt;target&lt;/code&gt; in either &lt;code class=&quot;highlighter-rouge&quot;&gt;tvm.build&lt;/code&gt; or &lt;code class=&quot;highlighter-rouge&quot;&gt;relay.build&lt;/code&gt;.  Example:&lt;/p&gt;
+
+&lt;div class=&quot;language-python highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;n&quot;&gt;graph&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;c_module&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;params&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;relay&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;build&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;module&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;'main'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;],&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;target&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;'c -device=micro_dev'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;params&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;params&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;By setting the target like so, the build process runs through our C code generation backend.  However, the resulting C module still resides on the host machine.  In order to load it onto the device, we run it through one of the core functions in the µTVM infrastructure: &lt;code class=&quot;highlighter-rouge&quot;&gt;create_micro_mod&lt;/code&gt;.  Example:&lt;/p&gt;
+
+&lt;div class=&quot;language-python highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;n&quot;&gt;micro_mod&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;micro&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;create_micro_mod&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;c_module&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;DEV_CONFIG&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;The line above cross-compiles the C source within the module, allocates room for the resulting binary (so it can coexist with the runtime in device memory), then sends each section of the binary to its allocated slot on the device.  Once the module binary is snug in device memory, function pointers within the binary are patched to give the module access to helper functions in the device runtime (e.g., for allocating scratchpads).&lt;/p&gt;
+
+&lt;p&gt;Now, with our kernel loaded on the device, we can grab a remote handle to the convolution function like so:&lt;/p&gt;
+
+&lt;div class=&quot;language-python highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;n&quot;&gt;micro_func&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;micro_mod&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;'conv2d'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;h2 id=&quot;tensor-loading&quot;&gt;Tensor Loading&lt;/h2&gt;
+
+&lt;p&gt;If we want to call an operator, we first need some tensors as arguments:&lt;/p&gt;
+
+&lt;div class=&quot;language-python highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;n&quot;&gt;data_np&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;kernel_np&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;get_conv_inputs&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;()&lt;/span&gt;
+&lt;span class=&quot;n&quot;&gt;ctx&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;tvm&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;micro_dev&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+&lt;span class=&quot;n&quot;&gt;data&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;tvm&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;nd&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;array&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;data_np&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;ctx&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;ctx&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+&lt;span class=&quot;n&quot;&gt;kernel&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;tvm&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;nd&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;array&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;kernel_np&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;ctx&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;ctx&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;Based on its data type (e.g., &lt;code class=&quot;highlighter-rouge&quot;&gt;int8&lt;/code&gt;, &lt;code class=&quot;highlighter-rouge&quot;&gt;float32&lt;/code&gt;, etc.) and shape, each tensor’s size in bytes is calculated, and the host allocates a region of memory on the device’s heap.  The tensor’s data is then loaded into the allocated region.&lt;/p&gt;
+
+&lt;h2 id=&quot;function-calls&quot;&gt;Function Calls&lt;/h2&gt;
+
+&lt;p&gt;Operator execution is perhaps the trickiest part of this system.  To simplify its presentation, we’ll first cover strict execution (where operators are executed as soon as they’re called), then lazy execution (where operators are only executed once their results are needed)—-the latter is how the system actually works.&lt;/p&gt;
+
+&lt;h3 id=&quot;strict-execution&quot;&gt;Strict Execution&lt;/h3&gt;
+
+&lt;p&gt;When calling a function, both input and output tensors are passed as arguments, in what’s known as destination-passing style:&lt;/p&gt;
+
+&lt;div class=&quot;language-python highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;n&quot;&gt;conv2D&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;data&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;kernel&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;output&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;Given that these tensors are already allocated on the device, we only need to send &lt;em&gt;metadata&lt;/em&gt; to the device (device address, shape, and data type), so it knows which of its resident tensors to use.  The runtime representation of a function call includes this metadata, as well as the address of the function being called (shown below).  Before constructing this representation, the metadata needs to be serialized into the arguments section on the device that exists expressly for this purpose.&lt;/p&gt;
+
+&lt;div class=&quot;language-c highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;cm&quot;&gt;/*
+ * task struct for uTVM
+ */&lt;/span&gt;
+&lt;span class=&quot;k&quot;&gt;typedef&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;struct&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;{&lt;/span&gt;
+  &lt;span class=&quot;cm&quot;&gt;/* pointer to function to call for this task */&lt;/span&gt;
+  &lt;span class=&quot;kt&quot;&gt;int32_t&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;*&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;func&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)(&lt;/span&gt;&lt;span class=&quot;kt&quot;&gt;void&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;*&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;void&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;*&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;kt&quot;&gt;int32_t&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;);&lt;/span&gt;
+  &lt;span class=&quot;cm&quot;&gt;/* array of argument tensors */&lt;/span&gt;
+  &lt;span class=&quot;n&quot;&gt;TVMValue&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;*&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;arg_values&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+  &lt;span class=&quot;cm&quot;&gt;/* array of datatype codes for each argument */&lt;/span&gt;
+  &lt;span class=&quot;kt&quot;&gt;int&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;*&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;arg_type_codes&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+  &lt;span class=&quot;cm&quot;&gt;/* number of arguments */&lt;/span&gt;
+  &lt;span class=&quot;kt&quot;&gt;int32_t&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;num_args&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+&lt;span class=&quot;p&quot;&gt;}&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;UTVMTask&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;;&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;In the strict setting, there is a single global &lt;code class=&quot;highlighter-rouge&quot;&gt;UTVMTask&lt;/code&gt; instance that we, from the host side, write into.  Once we have written to the task, the runtime has everything it needs to execute the function, and we can begin execution at the runtime’s entry point.  The runtime will perform some lightweight initialization, run our operator, then return control to the host.&lt;/p&gt;
+
+&lt;h3 id=&quot;lazy-execution&quot;&gt;Lazy Execution&lt;/h3&gt;
+
+&lt;p&gt;In practice, executing operators as soon as the user requests to becomes prohibitively expensive, as communication overhead begins to dominate.  We can improve the throughput of our system by delaying evaluation until the user wants the results of the call.&lt;/p&gt;
+
+&lt;p&gt;From an implementation standpoint, instead of eagerly serializing argument metadata and &lt;code class=&quot;highlighter-rouge&quot;&gt;UTVMTask&lt;/code&gt; data, we now need to accumulate function call metadata on the host side, before flushing it to the device.  The device runtime also needs a few changes: (1) we must now have a global array of &lt;code class=&quot;highlighter-rouge&quot;&gt;UTVMTask&lt;/code&gt; and (2) we need to loop through and execute each task in order.&lt;/p&gt;
+
+&lt;h2 id=&quot;autotvm-with-microtvm&quot;&gt;AutoTVM with MicroTVM&lt;/h2&gt;
+
+&lt;p&gt;So far, the runtime we’ve described doesn’t seem very useful for &lt;em&gt;model deployment&lt;/em&gt;, since it relies so heavily on a host machine.  This is intentional, and the runtime has in fact been designed for a different goal: &lt;strong&gt;AutoTVM support&lt;/strong&gt;.&lt;/p&gt;
+
+&lt;p&gt;In general, AutoTVM proposes candidate kernels, runs them on the target backend with random inputs, then uses the timing results to improve its search process.  Given that AutoTVM only cares about single operator executions, we have designed the runtime to be operator-oriented, as opposed to being model-oriented.  In the case of µTVM though, communication with the device will usually dominate the execution time.  Lazy execution allows us to run the same operator many times without returning control to the host, so the communication cost is amortized over each run, and we can get a better idea of the performance profile.&lt;/p&gt;
+
+&lt;p&gt;Because AutoTVM requires rapid iteration on large numbers of candidate kernels, µTVM infrastructure only makes use of RAM currently.  However, for a self-hosted runtime, we will surely need to make use of both flash memory and RAM.&lt;/p&gt;
+
+&lt;h2 id=&quot;the-hosted-graph-runtime&quot;&gt;The Hosted Graph Runtime&lt;/h2&gt;
+
+&lt;p&gt;Although the hosted runtime was designed for AutoTVM, we can still run full models (as long as they don’t have any control flow).  This functionality comes for free just by using TVM’s graph runtime, but with a µTVM context.  In fact, the only reliance on the host with the graph runtime is for tensor allocation and operator scheduling (which is just a topological sort of the dependence graph).&lt;/p&gt;
+
+&lt;h1 id=&quot;evaluation&quot;&gt;Evaluation&lt;/h1&gt;
+
+&lt;p&gt;With this infrastructure in place, we sought to answer the following questions:&lt;/p&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;Is µTVM truly device-agnostic?&lt;/li&gt;
+  &lt;li&gt;How much effort is required to experiment with optimizations using µTVM?&lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;p&gt;To evaluate (1), we ran our experiments on two targets:&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;An &lt;a href=&quot;https://www.st.com/en/microcontrollers-microprocessors/stm32f746ng.html&quot;&gt;Arm STM32F746NG development board&lt;/a&gt;, featuring a Cortex-M7 processor&lt;/li&gt;
+  &lt;li&gt;The µTVM host emulated device, which creates a memory arena on the host machine that is interfaced with as if it is a bare-metal device.&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;To evaluate (2), we explore optimizations for the Arm board that give the biggest bang for your buck.&lt;/p&gt;
+
+&lt;p&gt;As a point of comparison, we pulled a quantized CIFAR-10 CNN from &lt;a href=&quot;https://developer.arm.com/solutions/machine-learning-on-arm/developer-material/how-to-guides/image-recognition-on-arm-cortex-m-with-cmsis-nn/single-page&quot;&gt;this tutorial by Arm&lt;/a&gt;.  In the tutorial, &lt;a href=&quot;https://arm-software.github.io/CMSIS_5/NN/html/index.html&quot;&gt;CMSIS-NN&lt;/a&gt; (a library of highly optimized kernels by Arm experts) is used as the operator library, making this CNN the perfect evaluation target, as we could now directly compare the results of µTVM with CMSIS-NN on the Arm board.&lt;/p&gt;
+
+&lt;p style=&quot;text-align: center&quot;&gt;&lt;img src=&quot;/images/microtvm/post-2020-05-28/cifar10-graphical.png&quot; alt=&quot;/images/microtvm/post-2020-05-28/cifar10-graphical.png&quot; width=&quot;80%&quot; /&gt;&lt;br /&gt;
+Diagram of CIFAR-10 CNN&lt;/p&gt;
+
+&lt;h2 id=&quot;methodology&quot;&gt;Methodology&lt;/h2&gt;
+
+&lt;p&gt;In our experiments, we use TVM from HEAD (commit &lt;code class=&quot;highlighter-rouge&quot;&gt;9fa8341&lt;/code&gt;), version 5.7.0 of CMSIS-NN (commit &lt;code class=&quot;highlighter-rouge&quot;&gt;a65b7c9a&lt;/code&gt;), version 1.16.0 of STM32CubeF7, and GCC from Arm’s GNU Tools for Arm Embedded Processors 9-2019-q4-major 9.2.1 toolchain (revision 277599).  The host machine used in our experiments runs Ubuntu Linux 18.04.4 LTS and sports an AMD Ryzen Threadripper 2990WX 32-Core Processor with 62GB of RAM.  All evaluation scripts for this blogpost are contained in &lt;a href=&quot;https://github.com/areusch/microtvm-blogpost-eval&quot;&gt;this repo&lt;/a&gt;.&lt;/p&gt;
+
+&lt;h3 id=&quot;arm-specific-optimizations&quot;&gt;Arm-Specific Optimizations&lt;/h3&gt;
+
+&lt;p&gt;With CMSIS-NN, the first convolution maps to their &lt;a href=&quot;https://github.com/ARM-software/CMSIS_5/blob/develop/CMSIS/NN/Source/ConvolutionFunctions/arm_convolve_HWC_q7_RGB.c&quot;&gt;RGB convolution implementation&lt;/a&gt; (specifically for usage in input layers) and the latter two map to their &lt;a href=&quot;https://github.com/ARM-software/CMSIS_5/blob/develop/CMSIS/NN/Source/ConvolutionFunctions/arm_convolve_HWC_q7_fast.c&quot;&gt;“fast” convolution implementation&lt;/a&gt;.  We felt our performance was close enough for the RGB convolution after the earlier generic optimizations, but were left unsatisfied with our fast convolution results.  Luckily, Arm released a &lt;a href=&quot;https://arxiv.org/abs/1801.06601&quot;&gt;paper&lt;/a&gt; describing optimizations used in CMSIS-NN, and we found they are getting massive speedups from SIMD intrinsics.  In the paper, they present a matrix multiplication microkernel that uses SIMD intrinsics (figure below).  While we could add first-class support for the intrinsics in TVM’s code generation facilities—and this is likely the best move in the long run—TVM offers &lt;a href=&quot;https://tvm.apache.org/docs/tutorials/language/tensorize.html&quot;&gt;tensorization&lt;/a&gt; as a “quick-and-dirty” solution to supporting SIMD.&lt;/p&gt;
+
+&lt;p style=&quot;text-align: center&quot;&gt;&lt;img src=&quot;/images/microtvm/post-2020-05-28/simd-diagram.png&quot; alt=&quot;/images/microtvm/post-2020-05-28/simd-diagram.png&quot; width=&quot;80%&quot; /&gt;&lt;br /&gt;
+Diagram from CMSIS-NN paper showing a 2x2 matrix multiplication microkernel&lt;/p&gt;
+
+&lt;p&gt;Tensorization works by defining a microkernel that can be inserted into the innermost loop of a TVM operator.  Using this mechanism, adding SIMD support for the Arm board was as simple as defining a microkernel in C (found &lt;a href=&quot;https://github.com/apache/incubator-tvm/blob/8d7249688771bb6806595931586d95648036f383/topi/python/topi/arm_cpu/cortex_m7/micro_kernel/gemm.py&quot;&gt;here&lt;/a&gt;) that mirrored the implementation in their paper.  We defined a schedule that used this microkernel (found &lt;a href=&quot;https://github.com/apache/incubator-tvm/blob/8d7249688771bb6806595931586d95648036f383/topi/python/topi/arm_cpu/cortex_m7/conv2d/direct_simd.py&quot;&gt;here&lt;/a&gt;), autotuned it, then got the “µTVM SIMD tuned” results.&lt;/p&gt;
+
+&lt;p&gt;While we were able to use the SIMD microkernel for direct convolution, CMSIS-NN uses what they call “partial im2col” as their implementation strategy, which offers a tradeoff between performance and memory usage.  Instead of manifesting the entire im2col matrix at once, partial im2col generates only a few columns at a time.  Then, with each batch, they can send the matrix to their SIMD matmul function.&lt;/p&gt;
+
+&lt;p&gt;Our hypothesis was that, among other optimizations, we could find the optimal batch size via autotuning.  In practice, we found partial im2col to be significantly slower than our direct convolution implementation, so we don’t include it in the rest of our results.&lt;/p&gt;
+
+&lt;p&gt;There are certainly other optimizations we could pull from CMSIS-NN to close the gap even further:&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;Batch expansion of &lt;code class=&quot;highlighter-rouge&quot;&gt;int8&lt;/code&gt; weights into &lt;code class=&quot;highlighter-rouge&quot;&gt;int16&lt;/code&gt;, to cut down on duplicate expansion for SIMD&lt;/li&gt;
+  &lt;li&gt;Splitting convolution into 3x3 tiles to reduce padding checks&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;But our goal in this blog post is to show the broad strokes of what can be done with µTVM.  Even so, it’s not a competition, because CMSIS-NN (and any other hand-optimized library) can plug directly into TVM using the &lt;a href=&quot;https://tvm.apache.org/docs/dev/relay_bring_your_own_codegen.html&quot;&gt;Bring Your Own Codegen framework&lt;/a&gt;.&lt;/p&gt;
+
+&lt;h2 id=&quot;end-to-end&quot;&gt;End-To-End&lt;/h2&gt;
+
+&lt;h3 id=&quot;cifar-10&quot;&gt;CIFAR-10&lt;/h3&gt;
+
+&lt;p&gt;After exploring optimizations for convolution, we set out to measure their effects on end-to-end performance.  For the Arm board, we collected untuned results, results that were tuned &lt;strong&gt;without&lt;/strong&gt; any use of SIMD, results that were tuned &lt;strong&gt;with&lt;/strong&gt; SIMD, and results using CMSIS-NN.  For the emulated host device, we only collected untuned results and generic tuned results.&lt;/p&gt;
+
+&lt;p&gt;&lt;a href=&quot;https://github.com/areusch/microtvm-blogpost-eval&quot;&gt;https://github.com/areusch/microtvm-blogpost-eval&lt;/a&gt;&lt;/p&gt;
+
+&lt;p style=&quot;text-align: center&quot;&gt;&lt;img src=&quot;/images/microtvm/post-2020-05-28/autotuned-cifar10-int-8-cnn.png&quot; alt=&quot;/images/microtvm/post-2020-05-28/autotuned-cifar10-int-8-cnn.png&quot; width=&quot;60%&quot; /&gt;&lt;br /&gt;
+&lt;code class=&quot;highlighter-rouge&quot;&gt;int8&lt;/code&gt;-quantized CIFAR-10 CNN comparison on an Arm STM32F746NG (re-posted from above)&lt;/p&gt;
+
+&lt;p style=&quot;text-align: center&quot;&gt;&lt;img src=&quot;/images/microtvm/post-2020-05-28/autotuned-cifar10-int-8-cnn-x86.png&quot; alt=&quot;/images/microtvm/post-2020-05-28/autotuned-cifar10-int-8-cnn-x86.png&quot; width=&quot;60%&quot; /&gt;&lt;br /&gt;
+&lt;code class=&quot;highlighter-rouge&quot;&gt;int8&lt;/code&gt;-quantized CIFAR-10 CNN comparison on µTVM’s emulated host device&lt;/p&gt;
+
+&lt;p&gt;On the Arm STM32-series board, we were able to improve performance by ~2x compared to the initial untuned operators, and we achieved results much closer to CMSIS-NN.  Additionally, we were able to significantly improve performance on the host emulated device.  Though the x86 &lt;strong&gt;&lt;em&gt;numbers&lt;/em&gt;&lt;/strong&gt; don’t mean much, they show we can use the same infrastructure (µTVM) to optimize performance on vastly different architectures.&lt;/p&gt;
+
+&lt;p&gt;Stay tuned in the future for more end-to-end benchmarks as we scale this approach out more broadly.&lt;/p&gt;
+
+&lt;h1 id=&quot;self-hosted-runtime-the-final-frontier&quot;&gt;Self-Hosted Runtime: The Final Frontier&lt;/h1&gt;
+
+&lt;p style=&quot;text-align: center&quot;&gt;&lt;img src=&quot;/images/microtvm/self-hosted-runtime.png&quot; alt=&quot;/images/microtvm/self-hosted-runtime.png&quot; width=&quot;80%&quot; /&gt;&lt;br /&gt;&lt;/p&gt;
+
+&lt;p&gt;The envisioned µTVM optimization and deployment pipeline&lt;/p&gt;
+
+&lt;p&gt;While end-to-end benchmark results are already obtainable with the current runtime as we demonstrated above, deployment of these models in a standalone capacity is currently still on our roadmap. The gap being that the AutoTVM-oriented runtime currently relies on the host to allocate tensors and to schedule function execution. However, to be useful at the edge, we need a pipeline through µTVM that generates a &lt;strong&gt;single&lt;/strong&gt; binary to be run on a bare-metal device. Users will then be able to easily integrate fast ML into their applications by including this binary in their edge application. Each stage of this pipeline is already in place, and now it’s just a matter of gluing it all together, so expect updates from us soon on this front.&lt;/p&gt;
+
+&lt;h1 id=&quot;conclusion&quot;&gt;Conclusion&lt;/h1&gt;
+
+&lt;p&gt;MicroTVM for single-kernel optimization is ready &lt;strong&gt;today&lt;/strong&gt; and is &lt;em&gt;the&lt;/em&gt; choice for that use case.  As we now build out self-hosted deployment support we hope you’re just as excited as we are to make µTVM &lt;em&gt;the&lt;/em&gt; choice for model deployment as well. However, this isn’t just a spectator sport - remember: this is all open source!  µTVM is still in its early days, so every individual can have a great deal of impact on its trajectory. Check out the &lt;a href=&quot;https://tvm.apache.org/docs/contribute/&quot;&gt;TVM contributor’s guide&lt;/a&gt; if you’re interested in building with us or jump straight into &lt;a href=&quot;https://discuss.tvm.ai/&quot;&gt;the TVM forums&lt;/a&gt; to discuss ideas first.&lt;/p&gt;
+
+&lt;h2 id=&quot;acknowledgements&quot;&gt;Acknowledgements&lt;/h2&gt;
+
+&lt;p&gt;None of this work would have been possible, if not for the following people:&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;&lt;a href=&quot;https://tqchen.com/&quot;&gt;Tianqi Chen&lt;/a&gt;, for guiding the design and for being a fantastic mentor.&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;https://homes.cs.washington.edu/~patelp1/&quot;&gt;Pratyush Patel&lt;/a&gt;, for collaborating on early prototypes of MicroTVM.&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;https://octoml.ai/&quot;&gt;OctoML&lt;/a&gt;, for facilitating the internships where I have been able to go full steam on this project.&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;https://homes.cs.washington.edu/~moreau/&quot;&gt;Thierry Moreau&lt;/a&gt;, for mentoring me during my time at OctoML.&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;https://homes.cs.washington.edu/~vegaluis/&quot;&gt;Luis Vega&lt;/a&gt;, for teaching me the fundamentals of interacting with microcontrollers.&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;https://www.linkedin.com/in/themadrasi/?originalSubdomain=uk&quot;&gt;Ramana Radhakrishnan&lt;/a&gt;, for supplying the Arm hardware used in our experiments and for providing guidance on its usage.&lt;/li&gt;
+&lt;/ul&gt;
+</description>
+                <link>https://tvm.apache.org/2020/06/04/tinyml-how-tvm-is-taming-tiny</link>
+                <guid>https://tvm.apache.org/2020/06/04/tinyml-how-tvm-is-taming-tiny</guid>
+                <pubDate>Thu, 04 Jun 2020 00:00:00 -0700</pubDate>
+        </item>
 
         <item>
                 <title>Bring Your Own Datatypes: Enabling Custom Datatype Exploration in TVM</title>
