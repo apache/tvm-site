@@ -84,7 +84,7 @@ in alphabetical order.
   <img src="images/community/nvidia.png" height="45" margin="0"  />
   <img src="images/community/oasislabs.png" height="30" />
   <img src="images/community/octoml.svg" height="35" />
-  <img src="images/community/qualcommic.png" height="45" margin="0" />
+  <img src="images/community/qualcommic.png" height="50" margin="0" />
   <img src="images/community/ucberkeley.png" height="30" />
   <img src="images/community/ucla.png" height="35" />
   <img src="images/community/uwcse.png" height="30" />
