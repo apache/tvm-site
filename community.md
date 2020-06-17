@@ -15,23 +15,6 @@ Welcome to the TVM community. Here are several ways that you can stay involved.
 
 <br>
 
-## Discuss Forum
-
-We use discuss forum for general discussions and usage trouble shooting.
-We welcome all topics related TVM stack.
-
-<a href="https://discuss.tvm.ai" class="link-btn">Discuss Forum</a>
-
-<br>
-
-
-## Github Issues
-We use the Github issue tracker for developer RFCs and roadmap discussion.
-
-<a href="https://github.com/dmlc/tvm/issues/" class="link-btn">Github Issue Tracker</a>
-
-<br>
-
 ## Mail Lists
 
 As per Apache tradition, everything happens in the community(also) happens in the mail-list.
@@ -41,17 +24,32 @@ Here are the relavant mail-lists:
 - [discuss-archive@apache.tvm.org](https://lists.apache.org/list.html?discuss-archive@tvm.apache.org) archive of discuss forum.
 
 To subscribe, send an email to dev-subscribe@apache.tvm.org.
-All discuss forum activity under development tag and github issues with RFC COMMUNITY tags
-are automatically forwarded to dev@
+All discuss forum thread and github issues with RFC COMMUNITY tags are automatically forwarded to dev@
+<br>
+
+## Discuss Forum
+
+We use discuss forum for general discussions and usage trouble shooting.
+We welcome all topics related TVM stack.
+
+<a href="https://discuss.tvm.ai" class="link-btn">Discuss Forum</a>
 
 <br>
+
+## Github Issues
+We use the Github issue tracker for developer RFCs and roadmap discussion.
+
+<a href="https://github.com/apache/incubator-tvm/issues/" class="link-btn">Github Issue Tracker</a>
+
+<br>
+
 
 ## Roadmap
 
 We are release our public roadmaps on github.
 Please reach out are interested working in aspects that are not on the roadmap.
 
-<a href="https://github.com/dmlc/tvm/projects/1" class="link-btn">Public Roadmap</a>
+<a href="https://github.com/apache/incubator-tvm/projects/1" class="link-btn">Public Roadmap</a>
 
 <br>
 
@@ -59,7 +57,7 @@ Please reach out are interested working in aspects that are not on the roadmap.
 As a community project, we welcome contributions!
 The package is developed and used by the community.
 
-<a href="https://tvm.apache.org/docs//contribute" class="link-btn">TVM Contributor Guideline</a>
+<a href="https://tvm.apache.org/docs/contribute" class="link-btn">TVM Contributor Guideline</a>
 
 <br>
 
