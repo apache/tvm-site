@@ -1,8 +1,6 @@
 var searchData=
 [
-  ['f',['f',['../structtvm_1_1tir_1_1TensorKey.html#a9d56077c3df0c3e5f17c1c68b443c731',1,'tvm::tir::TensorKey']]],
   ['factor',['factor',['../classtvm_1_1te_1_1SplitNode.html#a60369ff01e34008f1b3215d7f215b972',1,'tvm::te::SplitNode']]],
-  ['fallback_5fdevice',['fallback_device',['../classtvm_1_1transform_1_1PassContextNode.html#a0b98ed8aa5bbb660801a9608759a00a9',1,'tvm::transform::PassContextNode']]],
   ['false_5fbranch',['false_branch',['../classtvm_1_1relay_1_1IfNode.html#ae6a504717890d97b574b93dba29e2641',1,'tvm::relay::IfNode']]],
   ['false_5foffset',['false_offset',['../structtvm_1_1runtime_1_1vm_1_1Instruction.html#a20f3b29da9e03f2fa6977743c30a02de',1,'tvm::runtime::vm::Instruction']]],
   ['false_5fvalue',['false_value',['../classtvm_1_1tir_1_1SelectNode.html#ac1b3f0f013b6a41a483c6d81397a6dac',1,'tvm::tir::SelectNode']]],
@@ -21,7 +19,7 @@ var searchData=
   ['free_5fvars',['free_vars',['../classtvm_1_1runtime_1_1vm_1_1VMClosureObj.html#ab16d6772f7b61f37b47ee7aa30aaa4cd',1,'tvm::runtime::vm::VMClosureObj::free_vars()'],['../structtvm_1_1runtime_1_1vm_1_1Instruction.html#a720b762553a301b526d66042afcd5ca3',1,'tvm::runtime::vm::Instruction::free_vars()']]],
   ['from',['from',['../structtvm_1_1runtime_1_1vm_1_1Instruction.html#a50da0d506e9a2bffeaf75c702cf2cc33',1,'tvm::runtime::vm::Instruction']]],
   ['fschedule',['fschedule',['../classtvm_1_1relay_1_1OpImplementationNode.html#a53fd916957cb15e070d736d12d8ced62',1,'tvm::relay::OpImplementationNode']]],
-  ['func',['func',['../classtvm_1_1EnvFuncNode.html#a83cd0f272d6f3551630480229b18ff05',1,'tvm::EnvFuncNode::func()'],['../classtvm_1_1TypeCallNode.html#ad411852baaa607438122219b714773ea',1,'tvm::TypeCallNode::func()'],['../classtvm_1_1TypeRelationNode.html#a2f243e89c5f192eb8c006313fa0c7c5a',1,'tvm::TypeRelationNode::func()'],['../classtvm_1_1relay_1_1InterpreterClosureObj.html#a698f143669d058321f53cb31a08982cd',1,'tvm::relay::InterpreterClosureObj::func()'],['../classtvm_1_1tir_1_1CallNode.html#afbdbda11e2bc1c47c3bcbaed9a9983e4',1,'tvm::tir::CallNode::func()'],['../classtvm_1_1tir_1_1ProvideNode.html#ae733ea7142d3c2823a60bdb3bd9b8f3c',1,'tvm::tir::ProvideNode::func()'],['../classtvm_1_1tir_1_1RealizeNode.html#ac74657f89ed01d27c42a123aa9c4e1d0',1,'tvm::tir::RealizeNode::func()']]],
+  ['func',['func',['../classtvm_1_1EnvFuncNode.html#a83cd0f272d6f3551630480229b18ff05',1,'tvm::EnvFuncNode::func()'],['../classtvm_1_1TypeCallNode.html#ad411852baaa607438122219b714773ea',1,'tvm::TypeCallNode::func()'],['../classtvm_1_1TypeRelationNode.html#a2f243e89c5f192eb8c006313fa0c7c5a',1,'tvm::TypeRelationNode::func()'],['../classtvm_1_1relay_1_1InterpreterClosureObj.html#a698f143669d058321f53cb31a08982cd',1,'tvm::relay::InterpreterClosureObj::func()']]],
   ['func_5f',['func_',['../classtvm_1_1runtime_1_1Registry.html#a911416a22858355e0b95ec493db67218',1,'tvm::runtime::Registry']]],
   ['func_5findex',['func_index',['../classtvm_1_1runtime_1_1vm_1_1VMClosureObj.html#af252588d00a4e0b7086edcea4cdfae6f',1,'tvm::runtime::vm::VMClosureObj::func_index()'],['../structtvm_1_1runtime_1_1vm_1_1Instruction.html#aa60b1a70648dbba4e7ec35a56a29a02d',1,'tvm::runtime::vm::Instruction::func_index()'],['../structtvm_1_1runtime_1_1vm_1_1VMFrame.html#a96a641c01ca63e6b146ef321319ec1f4',1,'tvm::runtime::vm::VMFrame::func_index()']]],
   ['func_5findex_5f',['func_index_',['../classtvm_1_1runtime_1_1vm_1_1VirtualMachine.html#af9d51023b5d6451dac20d1a146ce5d38',1,'tvm::runtime::vm::VirtualMachine']]],

@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['ret',['Ret',['../namespacetvm_1_1runtime_1_1vm.html#a8d8d95ce8d629c7213f2f595917870ecaa4228a09dd66155de8e93a39245768bd',1,'tvm::runtime::vm']]]
+  ['serial',['Serial',['../namespacetvm_1_1tir.html#ae35cce8e3f1e8d7366dc0d9b15536736a5255d3daaa0a6276b844d61401e6f493',1,'tvm::tir']]]
 ];

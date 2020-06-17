@@ -1,4 +1,8 @@
 var searchData=
 [
-  ['halide',['Halide',['../classtvm_1_1tir_1_1CallNode.html#a13e1f0f48f488fd085ca2684738fa97aa57993161c871dc15a052154594845514',1,'tvm::tir::CallNode']]]
+  ['if',['If',['../namespacetvm_1_1runtime_1_1vm.html#a8d8d95ce8d629c7213f2f595917870eca786887572f6ef1c20f2d8177cb2f1639',1,'tvm::runtime::vm']]],
+  ['intrinsic',['Intrinsic',['../classtvm_1_1tir_1_1CallNode.html#a13e1f0f48f488fd085ca2684738fa97aa53257cce64e712a51504dc56287f9bce',1,'tvm::tir::CallNode']]],
+  ['invoke',['Invoke',['../namespacetvm_1_1runtime_1_1vm.html#a8d8d95ce8d629c7213f2f595917870ecab9376e9e3c4d48f5e35a3f355ae1f74a',1,'tvm::runtime::vm']]],
+  ['invokeclosure',['InvokeClosure',['../namespacetvm_1_1runtime_1_1vm.html#a8d8d95ce8d629c7213f2f595917870eca46990b57941483ce17bb07e3af6da59c',1,'tvm::runtime::vm']]],
+  ['invokepacked',['InvokePacked',['../namespacetvm_1_1runtime_1_1vm.html#a8d8d95ce8d629c7213f2f595917870eca97ad0208b167666da31720813abe1174',1,'tvm::runtime::vm']]]
 ];

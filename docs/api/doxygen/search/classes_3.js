@@ -1,6 +1,10 @@
 var searchData=
 [
+  ['dataproducer',['DataProducer',['../classtvm_1_1tir_1_1DataProducer.html',1,'tvm::tir']]],
+  ['dataproducernode',['DataProducerNode',['../classtvm_1_1tir_1_1DataProducerNode.html',1,'tvm::tir']]],
   ['datatype',['DataType',['../classtvm_1_1runtime_1_1DataType.html',1,'tvm::runtime']]],
+  ['datatypepattern',['DataTypePattern',['../classtvm_1_1relay_1_1DataTypePattern.html',1,'tvm::relay']]],
+  ['datatypepatternnode',['DataTypePatternNode',['../classtvm_1_1relay_1_1DataTypePatternNode.html',1,'tvm::relay']]],
   ['debugattrs',['DebugAttrs',['../structtvm_1_1relay_1_1DebugAttrs.html',1,'tvm::relay']]],
   ['deformableconv2dattrs',['DeformableConv2DAttrs',['../structtvm_1_1relay_1_1DeformableConv2DAttrs.html',1,'tvm::relay']]],
   ['denseattrs',['DenseAttrs',['../structtvm_1_1relay_1_1DenseAttrs.html',1,'tvm::relay']]],
@@ -18,6 +22,7 @@ var searchData=
   ['dictattrsnode',['DictAttrsNode',['../classtvm_1_1DictAttrsNode.html',1,'tvm']]],
   ['dilateattrs',['DilateAttrs',['../structtvm_1_1relay_1_1DilateAttrs.html',1,'tvm::relay']]],
   ['dilation2dattrs',['Dilation2DAttrs',['../structtvm_1_1relay_1_1Dilation2DAttrs.html',1,'tvm::relay']]],
+  ['div',['Div',['../classtvm_1_1tir_1_1Div.html',1,'tvm::tir']]],
   ['divnode',['DivNode',['../classtvm_1_1tir_1_1DivNode.html',1,'tvm::tir']]],
   ['dominatorpattern',['DominatorPattern',['../classtvm_1_1relay_1_1DominatorPattern.html',1,'tvm::relay']]],
   ['dominatorpatternnode',['DominatorPatternNode',['../classtvm_1_1relay_1_1DominatorPatternNode.html',1,'tvm::relay']]],

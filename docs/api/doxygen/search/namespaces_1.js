@@ -1,32 +1,4 @@
 var searchData=
 [
-  ['arith',['arith',['../namespacetvm_1_1arith.html',1,'tvm']]],
-  ['attr',['attr',['../namespacetvm_1_1attr.html',1,'tvm']]],
-  ['attr',['attr',['../namespacetvm_1_1relay_1_1attr.html',1,'tvm::relay']]],
-  ['attr',['attr',['../namespacetvm_1_1tir_1_1attr.html',1,'tvm::tir']]],
-  ['codegen',['codegen',['../namespacetvm_1_1codegen.html',1,'tvm']]],
-  ['contrib',['contrib',['../namespacetopi_1_1contrib.html',1,'topi']]],
-  ['cuda',['cuda',['../namespacetopi_1_1cuda.html',1,'topi']]],
-  ['detail',['detail',['../namespacetvm_1_1detail.html',1,'tvm']]],
-  ['generic',['generic',['../namespacetopi_1_1generic.html',1,'topi']]],
-  ['intrinsic',['intrinsic',['../namespacetvm_1_1tir_1_1intrinsic.html',1,'tvm::tir']]],
-  ['nn',['nn',['../namespacetopi_1_1nn.html',1,'topi']]],
-  ['qnn',['qnn',['../namespacetvm_1_1relay_1_1qnn.html',1,'tvm::relay']]],
-  ['relay',['relay',['../namespacetvm_1_1relay.html',1,'tvm']]],
-  ['rocm',['rocm',['../namespacetopi_1_1rocm.html',1,'topi']]],
-  ['runtime',['runtime',['../namespacetvm_1_1runtime.html',1,'tvm']]],
-  ['symbol',['symbol',['../namespacetvm_1_1runtime_1_1symbol.html',1,'tvm::runtime']]],
-  ['target',['target',['../namespacetvm_1_1target.html',1,'tvm']]],
-  ['te',['te',['../namespacetvm_1_1te.html',1,'tvm']]],
-  ['threading',['threading',['../namespacetvm_1_1runtime_1_1threading.html',1,'tvm::runtime']]],
-  ['tir',['tir',['../namespacetvm_1_1tir.html',1,'tvm']]],
-  ['topi',['topi',['../namespacetopi.html',1,'']]],
-  ['transform',['transform',['../namespacetvm_1_1relay_1_1transform.html',1,'tvm::relay']]],
-  ['transform',['transform',['../namespacetvm_1_1transform.html',1,'tvm']]],
-  ['transform',['transform',['../namespacetvm_1_1tir_1_1transform.html',1,'tvm::tir']]],
-  ['transform',['transform',['../namespacetvm_1_1relay_1_1qnn_1_1transform.html',1,'tvm::relay::qnn']]],
-  ['tvm',['tvm',['../namespacetvm.html',1,'']]],
-  ['vision',['vision',['../namespacetopi_1_1vision.html',1,'topi']]],
-  ['vm',['vm',['../namespacetvm_1_1runtime_1_1vm.html',1,'tvm::runtime']]],
-  ['x86',['x86',['../namespacetopi_1_1x86.html',1,'topi']]]
+  ['llvm',['llvm',['../namespacellvm.html',1,'']]]
 ];

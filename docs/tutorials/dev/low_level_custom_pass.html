@@ -246,9 +246,9 @@ our customized lowering pass to manipulate the IR directly instead of using sche
 <div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre>primfn(a_1: handle, b_1: handle, c_1: handle) -&gt; ()
   attr = {&quot;tir.noalias&quot;: True, &quot;global_symbol&quot;: &quot;main&quot;}
   buffers = {a: Buffer(a_2: handle, float32, [128], []),
-             c: Buffer(c_2: handle, float32, [128], []),
-             b: Buffer(b_2: handle, float32, [128], [])}
-  buffer_map = {b_1: b, c_1: c, a_1: a} {
+             b: Buffer(b_2: handle, float32, [128], []),
+             c: Buffer(c_2: handle, float32, [128], [])}
+  buffer_map = {c_1: c, b_1: b, a_1: a} {
   for (i: int32, 0, 128) {
     c_2[i] = ((float32*)a_2[i]) + (float32*)b_2[i]))
   }
@@ -277,7 +277,7 @@ refreshed every recursion but the array values will be preserved.</p>
 </div>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span class="n">loops</span> <span class="o">=</span> <span class="p">[]</span>
 <span class="k">def</span> <span class="nf">find_width8</span><span class="p">(</span><span class="n">op</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot; Find all the &#39;For&#39; nodes whose extent can be divided by 8. &quot;&quot;&quot;</span>
+    <span class="sd">&quot;&quot;&quot; Find all the &#39;tir.For&#39; nodes whose extent can be divided by 8. &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">op</span><span class="p">,</span> <a href="../../api/python/tir.html#tvm.tir.For" title="View documentation for tvm.tir.For"><span class="n">tvm</span><span class="o">.</span><span class="n">tir</span><span class="o">.</span><span class="n">For</span></a><span class="p">):</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">op</span><span class="o">.</span><span class="n">extent</span><span class="p">,</span> <a href="../../api/python/tir.html#tvm.tir.IntImm" title="View documentation for tvm.tir.IntImm"><span class="n">tvm</span><span class="o">.</span><span class="n">tir</span><span class="o">.</span><span class="n">IntImm</span></a><span class="p">):</span>
             <span class="k">if</span> <span class="n">op</span><span class="o">.</span><span class="n">extent</span><span class="o">.</span><span class="n">value</span> <span class="o">%</span> <span class="mi">8</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
@@ -321,7 +321,7 @@ function will be skipped.</p>
     <span class="c1"># The last list arugment indicates what kinds of nodes will be transformed.</span>
     <span class="c1"># Thus, in this case only `For` nodes will call `vectorize8`</span>
     <span class="k">return</span> <span class="n">f</span><span class="o">.</span><span class="n">with_body</span><span class="p">(</span>
-        <a href="../../api/python/tir.html#tvm.tir.stmt_functor.ir_transform" title="View documentation for tvm.tir.stmt_functor.ir_transform"><span class="n">tvm</span><span class="o">.</span><span class="n">tir</span><span class="o">.</span><span class="n">stmt_functor</span><span class="o">.</span><span class="n">ir_transform</span></a><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">body</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="n">vectorize8</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;For&#39;</span><span class="p">]))</span>
+        <a href="../../api/python/tir.html#tvm.tir.stmt_functor.ir_transform" title="View documentation for tvm.tir.stmt_functor.ir_transform"><span class="n">tvm</span><span class="o">.</span><span class="n">tir</span><span class="o">.</span><span class="n">stmt_functor</span><span class="o">.</span><span class="n">ir_transform</span></a><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">body</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="n">vectorize8</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;tir.For&#39;</span><span class="p">]))</span>
 </pre></div>
 </div>
 </div>
@@ -330,9 +330,8 @@ function will be skipped.</p>
 <h2>Glue to Lowering<a class="headerlink" href="#glue-to-lowering" title="Permalink to this headline">¶</a></h2>
 <p>So far, we are done with writing this IR transformation pass. What we need to do next is to glue
 this pass to TVM’s lower pass.</p>
-<p>In TVM, there is a property called <code class="docutils literal notranslate"><span class="pre">BuildConfig</span></code>. You can use this property to customize your
-own lowering options. In this case, we inject the pass written above into the TVM standard lowering
-pass by feeding <strong>a list of tuple</strong> as argument to <code class="docutils literal notranslate"><span class="pre">add_lower_pass</span></code>. “Tuple” indicates different
+<p>In this case, we inject the pass written above into the TVM standard lowering
+pass by feeding <strong>a list of tuple</strong> as argument to <code class="docutils literal notranslate"><span class="pre">tir.add_lower_pass</span></code>. “Tuple” indicates different
 phases of lowering. In TVM, there are four phases of lowering and user-customized ones will be
 called after each phase is done.</p>
 <div class="admonition note">
@@ -348,7 +347,7 @@ called after each phase is done.</p>
 </dl>
 </div>
 <p>Thus, a good place to put this transformation pass is just after Phase 1.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span class="k">with</span> <a href="../../api/python/target.html#tvm.target.build_config" title="View documentation for tvm.target.build_config"><span class="n">tvm</span><span class="o">.</span><span class="n">target</span><span class="o">.</span><span class="n">build_config</span></a><span class="p">(</span><span class="n">add_lower_pass</span><span class="o">=</span><span class="p">[(</span><span class="mi">1</span><span class="p">,</span> <span class="n">vectorize</span><span class="p">)])</span> <span class="k">as</span> <span class="n">cfg</span><span class="p">:</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span class="k">with</span> <a href="../../api/python/ir.html#tvm.transform.PassContext" title="View documentation for tvm.transform.PassContext"><span class="n">tvm</span><span class="o">.</span><span class="n">transform</span><span class="o">.</span><span class="n">PassContext</span></a><span class="p">(</span><span class="n">config</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;tir.add_lower_pass&quot;</span><span class="p">:</span> <span class="p">[(</span><span class="mi">1</span><span class="p">,</span> <span class="n">vectorize</span><span class="p">)]}):</span>
     <span class="nb">print</span><span class="p">(</span><a href="../../api/python/driver.html#tvm.lower" title="View documentation for tvm.lower"><span class="n">tvm</span><span class="o">.</span><span class="n">lower</span></a><span class="p">(</span><span class="n">sch</span><span class="p">,</span> <span class="p">[</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">c</span><span class="p">]))</span>
 </pre></div>
 </div>
@@ -374,7 +373,7 @@ called after each phase is done.</p>
 - Use <code class="docutils literal notranslate"><span class="pre">tvm.tir.stmt_functor.post_order_visit</span></code> to gather information on each IR nodes.
 - Use <code class="docutils literal notranslate"><span class="pre">tvm.tir.stmt_functor.ir_transform</span></code> to transform IR nodes.
 - Wrap up two above to write an IR-transformation function.
-- Use <code class="docutils literal notranslate"><span class="pre">tvm.target.build_config</span></code> to put this function to TVM lowering pass</p>
+- Use <code class="docutils literal notranslate"><span class="pre">tvm.transform.PassContext</span></code> to put this function to TVM lowering pass</p>
 <div class="sphx-glr-footer class sphx-glr-footer-example docutils container" id="sphx-glr-download-tutorials-dev-low-level-custom-pass-py">
 <div class="sphx-glr-download docutils container">
 <p><a class="reference download internal" download="" href="../../_downloads/9cf0213876be0a9cc4aaa52a1ebd9586/low_level_custom_pass.py"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">low_level_custom_pass.py</span></code></a></p>

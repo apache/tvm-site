@@ -3,10 +3,12 @@ var searchData=
   ['objallocatorbase',['ObjAllocatorBase',['../classtvm_1_1runtime_1_1ObjAllocatorBase.html',1,'tvm::runtime']]],
   ['objallocatorbase_3c_20simpleobjallocator_20_3e',['ObjAllocatorBase&lt; SimpleObjAllocator &gt;',['../classtvm_1_1runtime_1_1ObjAllocatorBase.html',1,'tvm::runtime']]],
   ['object',['Object',['../classtvm_1_1runtime_1_1Object.html',1,'tvm::runtime']]],
-  ['objectequal',['ObjectEqual',['../structtvm_1_1runtime_1_1ObjectEqual.html',1,'tvm::runtime']]],
-  ['objecthash',['ObjectHash',['../structtvm_1_1runtime_1_1ObjectHash.html',1,'tvm::runtime']]],
+  ['objectequal',['ObjectEqual',['../structtvm_1_1ObjectEqual.html',1,'tvm']]],
+  ['objecthash',['ObjectHash',['../structtvm_1_1ObjectHash.html',1,'tvm']]],
   ['objectptr',['ObjectPtr',['../classtvm_1_1runtime_1_1ObjectPtr.html',1,'tvm::runtime']]],
   ['objectptr_3c_20tvm_3a_3aruntime_3a_3aobject_20_3e',['ObjectPtr&lt; tvm::runtime::Object &gt;',['../classtvm_1_1runtime_1_1ObjectPtr.html',1,'tvm::runtime']]],
+  ['objectptrequal',['ObjectPtrEqual',['../structtvm_1_1runtime_1_1ObjectPtrEqual.html',1,'tvm::runtime']]],
+  ['objectptrhash',['ObjectPtrHash',['../structtvm_1_1runtime_1_1ObjectPtrHash.html',1,'tvm::runtime']]],
   ['objectref',['ObjectRef',['../classtvm_1_1runtime_1_1ObjectRef.html',1,'tvm::runtime']]],
   ['objecttypechecker',['ObjectTypeChecker',['../structtvm_1_1runtime_1_1ObjectTypeChecker.html',1,'tvm::runtime']]],
   ['objecttypechecker_3c_20array_3c_20t_20_3e_20_3e',['ObjectTypeChecker&lt; Array&lt; T &gt; &gt;',['../structtvm_1_1runtime_1_1ObjectTypeChecker_3_01Array_3_01T_01_4_01_4.html',1,'tvm::runtime']]],
@@ -26,5 +28,6 @@ var searchData=
   ['opstrategy',['OpStrategy',['../classtvm_1_1relay_1_1OpStrategy.html',1,'tvm::relay']]],
   ['opstrategynode',['OpStrategyNode',['../classtvm_1_1relay_1_1OpStrategyNode.html',1,'tvm::relay']]],
   ['optional',['Optional',['../classtvm_1_1runtime_1_1Optional.html',1,'tvm::runtime']]],
+  ['or',['Or',['../classtvm_1_1tir_1_1Or.html',1,'tvm::tir']]],
   ['ornode',['OrNode',['../classtvm_1_1tir_1_1OrNode.html',1,'tvm::tir']]]
 ];

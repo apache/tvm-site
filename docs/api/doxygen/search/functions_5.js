@@ -11,6 +11,7 @@ var searchData=
   ['env_5fthreads',['env_threads',['../classtvm_1_1te_1_1Stage.html#aba3eb6be98bdb18da51a31bbf4af4617',1,'tvm::te::Stage']]],
   ['envfunc',['EnvFunc',['../classtvm_1_1EnvFunc.html#aae6100a3a2f84f79fa8314c24fd516bc',1,'tvm::EnvFunc::EnvFunc()'],['../classtvm_1_1EnvFunc.html#a1c210b670d3f990b6b8383a4abb7e6d6',1,'tvm::EnvFunc::EnvFunc(ObjectPtr&lt; Object &gt; n)']]],
   ['envfuncnode',['EnvFuncNode',['../classtvm_1_1EnvFuncNode.html#a808b81ced7b01c4955b4994a89bc71a4',1,'tvm::EnvFuncNode']]],
+  ['eq',['EQ',['../classtvm_1_1tir_1_1EQ.html#a71d83572d6cd8908d14359db375f8837',1,'tvm::tir::EQ']]],
   ['equal',['equal',['../namespacetopi.html#ae10e1fb8c765a9ae15c12f45199375b3',1,'topi::equal(const tvm::PrimExpr &amp;a, const tvm::PrimExpr &amp;b)'],['../namespacetopi.html#a74898d56b1d5ef2c07812764242d6271',1,'topi::equal(const tvm::te::Tensor &amp;A, const tvm::te::Tensor &amp;B, std::string name=&quot;T_&quot;&quot;equal&quot;, std::string tag=kBroadcast)'],['../namespacetopi.html#afde3cae32ad2ca96b5bd0b32d9706280',1,'topi::equal(const tvm::te::Tensor &amp;A, const tvm::PrimExpr &amp;B, std::string name=&quot;T_&quot;&quot;equal&quot;, std::string tag=kElementWise)'],['../namespacetopi.html#ae2d6d5ecbff7ee50dfa45a81e3b691c4',1,'topi::equal(const tvm::PrimExpr &amp;A, const tvm::te::Tensor &amp;B, std::string name=&quot;T_&quot;&quot;equal&quot;, std::string tag=kElementWise)']]],
   ['equals',['Equals',['../classtvm_1_1tir_1_1Layout.html#a2edd48a0abe23330747e815e9598b62e',1,'tvm::tir::Layout']]],
   ['erase',['erase',['../classtvm_1_1runtime_1_1Array.html#a0fd88d16147aad4ed810846ce53d21c9',1,'tvm::runtime::Array::erase(iterator position)'],['../classtvm_1_1runtime_1_1Array.html#a69e661cb034323ccb707cd73ee3624e4',1,'tvm::runtime::Array::erase(iterator first, iterator last)']]],
@@ -20,6 +21,7 @@ var searchData=
   ['etaexpand',['EtaExpand',['../namespacetvm_1_1relay_1_1transform.html#a6e515696ecc9ff4222af99fef361de4e',1,'tvm::relay::transform']]],
   ['evalset',['EvalSet',['../namespacetvm_1_1arith.html#a73160d1f944121ad2ef22205dd496fdc',1,'tvm::arith::EvalSet(PrimExpr e, const Map&lt; IterVar, IntSet &gt; &amp;dom_map)'],['../namespacetvm_1_1arith.html#a9d0d0f69e5f98e935d2bd4058d74bcfa',1,'tvm::arith::EvalSet(PrimExpr e, const std::unordered_map&lt; const tir::VarNode *, IntSet &gt; &amp;dom_map)'],['../namespacetvm_1_1arith.html#a74234ce6f7733b3d8055d781cc782df7',1,'tvm::arith::EvalSet(Range r, const Map&lt; IterVar, IntSet &gt; &amp;dom_map)'],['../namespacetvm_1_1arith.html#aa30b03ba03ff9cad2cad7320194dfcbe',1,'tvm::arith::EvalSet(IntSet s, const std::unordered_map&lt; const VarNode *, IntSet &gt; &amp;dom_map)'],['../namespacetvm_1_1arith.html#a4bf945fe43afafbedffad6d5633efad7',1,'tvm::arith::EvalSet(Range r, const std::unordered_map&lt; const VarNode *, IntSet &gt; &amp;dom_map)']]],
   ['evalsetforeachsubexpr',['EvalSetForEachSubExpr',['../namespacetvm_1_1arith.html#a8a112f07411c5e1237b0c045ff276ac6',1,'tvm::arith']]],
+  ['evaluate',['Evaluate',['../classtvm_1_1tir_1_1Evaluate.html#a92de578def8ba80d93bc6a8494e28032',1,'tvm::tir::Evaluate::Evaluate(PrimExpr value)'],['../classtvm_1_1tir_1_1Evaluate.html#a05a07649ef65818d50e092c336cc22d4',1,'tvm::tir::Evaluate::Evaluate(int value)']]],
   ['everything',['everything',['../classtvm_1_1arith_1_1IntSet.html#aaeffa7a1eb404803a88c5be3ca705090',1,'tvm::arith::IntSet']]],
   ['exp',['exp',['../namespacetvm.html#aa21f5c2f67c944561ae4a260a2ed14d2',1,'tvm::exp()'],['../namespacetopi.html#a6c81e9f70678673736d57a3951eb5a27',1,'topi::exp()']]],
   ['exp10',['exp10',['../namespacetvm.html#ac760569fe43a52f3f8997461b2ef438a',1,'tvm']]],
@@ -29,5 +31,7 @@ var searchData=
   ['exprpattern',['ExprPattern',['../classtvm_1_1relay_1_1ExprPattern.html#a7a67b6d0ef6de34e597875f280086bef',1,'tvm::relay::ExprPattern']]],
   ['exprusevar',['ExprUseVar',['../namespacetvm_1_1tir.html#a095d1c3c1ce2dc66285ec1a1e4fbacec',1,'tvm::tir::ExprUseVar(const PrimExpr &amp;expr, std::function&lt; bool(const VarNode *)&gt; vset_contains)'],['../namespacetvm_1_1tir.html#a56573569b84c79678a7046a9500dbf73',1,'tvm::tir::ExprUseVar(const PrimExpr &amp;expr, const Var &amp;var)']]],
   ['ext_5fdev',['ext_dev',['../namespacetvm_1_1target.html#a1fece6d42e0638ab5cd4b6c364c47984',1,'tvm::target']]],
-  ['externopnode',['ExternOpNode',['../classtvm_1_1te_1_1ExternOpNode.html#aa2781af3e0414490286d62ed05722e7c',1,'tvm::te::ExternOpNode']]]
+  ['externop',['ExternOp',['../classtvm_1_1te_1_1ExternOp.html#ab851798912152054fdb230f7176fda8a',1,'tvm::te::ExternOp']]],
+  ['externopnode',['ExternOpNode',['../classtvm_1_1te_1_1ExternOpNode.html#aa2781af3e0414490286d62ed05722e7c',1,'tvm::te::ExternOpNode']]],
+  ['extractelement',['ExtractElement',['../classtvm_1_1tir_1_1Shuffle.html#a3c45ee072c88086ec1c7495235ccbe91',1,'tvm::tir::Shuffle']]]
 ];

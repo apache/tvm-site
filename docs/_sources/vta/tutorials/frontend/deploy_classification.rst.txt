@@ -192,7 +192,7 @@ The compilation steps are:
         if target.device_name == "vta":
             # Perform quantization in Relay
             # Note: We set opt_level to 3 in order to fold batch norm
-            with relay.build_config(opt_level=3):
+            with tvm.transform.PassContext(opt_level=3):
                 with relay.quantize.qconfig(global_scale=8.0,
                                             skip_conv_layers=[0]):
                     mod = relay.quantize.quantize(mod, params=params)
@@ -209,16 +209,16 @@ The compilation steps are:
             relay_prog = mod["main"]
 
         # Compile Relay program with AlterOpLayout disabled
-        with relay.build_config(opt_level=3, disabled_pass={"AlterOpLayout"}):
-            if target.device_name != "vta":
+        if target.device_name != "vta":
+            with tvm.transform.PassContext(opt_level=3, disabled_pass={"AlterOpLayout"}):
                 graph, lib, params = relay.build(
                     relay_prog, target=target,
                     params=params, target_host=env.target_host)
-            else:
-                with vta.build_config():
-                    graph, lib, params = relay.build(
-                        relay_prog, target=target,
-                        params=params, target_host=env.target_host)
+        else:
+            with vta.build_config(opt_level=3, disabled_pass={"AlterOpLayout"}):
+                graph, lib, params = relay.build(
+                    relay_prog, target=target,
+                    params=params, target_host=env.target_host)
 
         # Measure Relay build time
         build_time = time.time() - build_start
@@ -243,8 +243,8 @@ The compilation steps are:
 
  .. code-block:: none
 
-    ...12%, 0.01 MB, 43 KB/s, 0 seconds passed    ...25%, 0.02 MB, 86 KB/s, 0 seconds passed    ...38%, 0.02 MB, 129 KB/s, 0 seconds passed    ...51%, 0.03 MB, 172 KB/s, 0 seconds passed    ...64%, 0.04 MB, 215 KB/s, 0 seconds passed    ...77%, 0.05 MB, 257 KB/s, 0 seconds passed    ...90%, 0.05 MB, 299 KB/s, 0 seconds passed    ...100%, 0.06 MB, 341 KB/s, 0 seconds passed
-    resnet18_v1 inference graph built in 3.88s!
+    ...12%, 0.01 MB, 36 KB/s, 0 seconds passed    ...25%, 0.02 MB, 72 KB/s, 0 seconds passed    ...38%, 0.02 MB, 109 KB/s, 0 seconds passed    ...51%, 0.03 MB, 145 KB/s, 0 seconds passed    ...64%, 0.04 MB, 181 KB/s, 0 seconds passed    ...77%, 0.05 MB, 217 KB/s, 0 seconds passed    ...90%, 0.05 MB, 253 KB/s, 0 seconds passed    ...100%, 0.06 MB, 288 KB/s, 0 seconds passed
+    resnet18_v1 inference graph built in 4.19s!
 
 
 

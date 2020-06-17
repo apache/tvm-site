@@ -71,8 +71,8 @@ The following lines describe the computation :code:`A * B^T` in TVM.
 
     primfn(A_1: handle, B_1: handle, C_1: handle) -> ()
       attr = {"tir.noalias": True, "global_symbol": "main"}
-      buffers = {A: Buffer(A_2: handle, float32, [1024, 64], []),
-                 B: Buffer(B_2: handle, float32, [512, 64], []),
+      buffers = {B: Buffer(B_2: handle, float32, [512, 64], []),
+                 A: Buffer(A_2: handle, float32, [1024, 64], []),
                  C: Buffer(C_2: handle, float32, [1024, 512], [])}
       buffer_map = {C_1: C, B_1: B, A_1: A} {
       for (i: int32, 0, 1024) {
@@ -120,8 +120,8 @@ Thus we break down the matmul loops to make the innermost loops a (16x64) GEMV.
 
     primfn(A_1: handle, B_1: handle, C_1: handle) -> ()
       attr = {"tir.noalias": True, "global_symbol": "main"}
-      buffers = {B: Buffer(B_2: handle, float32, [512, 64], []),
-                 A: Buffer(A_2: handle, float32, [1024, 64], []),
+      buffers = {A: Buffer(A_2: handle, float32, [1024, 64], []),
+                 B: Buffer(B_2: handle, float32, [512, 64], []),
                  C: Buffer(C_2: handle, float32, [1024, 512], [])}
       buffer_map = {C_1: C, B_1: B, A_1: A} {
       for (i: int32, 0, 1024) {
@@ -187,8 +187,7 @@ which is done in :code:`intrin_func` below.
                                     bb.access_ptr("r"),
                                     m, l, bb.strides[0]))
             return ib.get()
-        with tvm.target.build_config(offset_factor=1):
-            return te.decl_tensor_intrin(c.op, intrin_func, binds={a: Ab, b: Bb, c: Cb})
+        return te.decl_tensor_intrin(c.op, intrin_func, binds={a: Ab, b: Bb, c: Cb})
 
 
 
@@ -243,7 +242,7 @@ such placeholder can be put to let TVM automatically bind the inferred value for
       buffer_map = {C_1: C, B_1: B, A_1: A} {
       for (i: int32, 0, 1024) {
         for (j.outer: int32, 0, 32) {
-          @gemv_update(@tvm_access_ptr(@type_annotation(, dtype=float32, type="pure_intrin", index=0), C_2, ((i*512) + (j.outer*16)), 16, 2, dtype=handle, type="intrin", index=0), @tvm_access_ptr(@type_annotation(, dtype=float32, type="pure_intrin", index=0), A_2, (i*64), 64, 1, dtype=handle, type="intrin", index=0), @tvm_access_ptr(@type_annotation(, dtype=float32, type="pure_intrin", index=0), B_2, (j.outer*1024), 1024, 1, dtype=handle, type="intrin", index=0), 16, 64, 64, dtype=int32, type="extern", index=0)
+          @gemv_update(@tvm_access_ptr(@type_annotation(, dtype=float32, type="pure_intrin"), C_2, ((i*512) + (j.outer*16)), 16, 2, dtype=handle, type="intrin"), @tvm_access_ptr(@type_annotation(, dtype=float32, type="pure_intrin"), A_2, (i*64), 64, 1, dtype=handle, type="intrin"), @tvm_access_ptr(@type_annotation(, dtype=float32, type="pure_intrin"), B_2, (j.outer*1024), 1024, 1, dtype=handle, type="intrin"), 16, 64, 64, dtype=int32, type="extern")
         }
       }
     }
@@ -307,12 +306,12 @@ The importing needs to happen before the tensorized GEMV being executed.
 
     primfn(A_1: handle, B_1: handle, C_1: handle) -> ()
       attr = {"tir.noalias": True, "global_symbol": "main"}
-      buffers = {B: Buffer(B_2: handle, float32, [512, 64], []),
-                 A: Buffer(A_2: handle, float32, [1024, 64], []),
+      buffers = {A: Buffer(A_2: handle, float32, [1024, 64], []),
+                 B: Buffer(B_2: handle, float32, [512, 64], []),
                  C: Buffer(C_2: handle, float32, [1024, 512], [])}
       buffer_map = {C_1: C, B_1: B, A_1: A} {
-      attr [IterVar(i: int32, (nullptr), "DataPar", "")] "pragma_import_llvm" = "; ModuleID = '/tmp/tmpxbed81_y/input0.cc'
-    source_filename = "/tmp/tmpxbed81_y/input0.cc"
+      attr [IterVar(i: int32, (nullptr), "DataPar", "")] "pragma_import_llvm" = "; ModuleID = '/tmp/tmpcw7zd4dq/input0.cc'
+    source_filename = "/tmp/tmpcw7zd4dq/input0.cc"
     target datalayout = "e-m:e-i64:64-f80:128-n8:16:32:64-S128"
     target triple = "x86_64-pc-linux-gnu"
 
@@ -405,7 +404,7 @@ The importing needs to happen before the tensorized GEMV being executed.
     ";
       for (i, 0, 1024) {
         for (j.outer: int32, 0, 32) {
-          @gemv_update(@tvm_access_ptr(@type_annotation(, dtype=float32, type="pure_intrin", index=0), C_2, ((i*512) + (j.outer*16)), 16, 2, dtype=handle, type="intrin", index=0), @tvm_access_ptr(@type_annotation(, dtype=float32, type="pure_intrin", index=0), A_2, (i*64), 64, 1, dtype=handle, type="intrin", index=0), @tvm_access_ptr(@type_annotation(, dtype=float32, type="pure_intrin", index=0), B_2, (j.outer*1024), 1024, 1, dtype=handle, type="intrin", index=0), 16, 64, 64, dtype=int32, type="extern", index=0)
+          @gemv_update(@tvm_access_ptr(@type_annotation(, dtype=float32, type="pure_intrin"), C_2, ((i*512) + (j.outer*16)), 16, 2, dtype=handle, type="intrin"), @tvm_access_ptr(@type_annotation(, dtype=float32, type="pure_intrin"), A_2, (i*64), 64, 1, dtype=handle, type="intrin"), @tvm_access_ptr(@type_annotation(, dtype=float32, type="pure_intrin"), B_2, (j.outer*1024), 1024, 1, dtype=handle, type="intrin"), 16, 64, 64, dtype=int32, type="extern")
         }
       }
     }
@@ -529,8 +528,7 @@ which defines the "update" computing strategy.
             def _reduce_update():
                 return _body()
             return _body(), _reduce_reset(), _reduce_update()
-        with tvm.target.build_config(offset_factor=1):
-            return te.decl_tensor_intrin(c.op, intrin_func, binds={a: Ab, b: Bb, c: Cb})
+        return te.decl_tensor_intrin(c.op, intrin_func, binds={a: Ab, b: Bb, c: Cb})
 
 
 

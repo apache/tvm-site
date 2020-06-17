@@ -108,8 +108,9 @@
 <li class="toctree-l3"><a class="reference internal" href="relay_adt.html">Algebraic Data Types in Relay</a></li>
 <li class="toctree-l3"><a class="reference internal" href="relay_op.html">Relay Core Tensor Operators</a></li>
 <li class="toctree-l3 current"><a class="current reference internal" href="#">Pattern Matching in Relay</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#examples">Examples</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#design">Design</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#pattern-examples">Pattern Examples</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#pattern-language-design">Pattern Language Design</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#applications">Applications</a></li>
 </ul>
 </li>
 </ul>
@@ -200,17 +201,31 @@
 <p>Many of these passes today require a lots of boring boilerplate code in order to implement as well as requiring users to think in terms of visitors and AST matching. Many of these transformations can easily be described in terms of graph rewrites. In order to build a rewriter or other advanced machinery we first need a language of patterns to describe what we can match.</p>
 <p>Such a language is not just useful for building a rewriter but also providing extension points for existing passes. For example the fusion pass could be parameterized by a set of fusion patterns which describes the capability of your hardware, and the quantization pass could take a set of patterns which describe which operators can be quantized on a given platform.</p>
 <p>In the backend world, we could use the same machinery to build a higher level API using bring your own code generation. This API takes set of patterns describing your hardware capabilities and an external compiler, providing a relatively smooth heterogeneous experience out of the box.</p>
-<div class="section" id="examples">
-<h2>Examples<a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h2>
-<p>There are quite a few properties that are worth matching of operators below we examine how to match tree properties, and expand on some use cases that are not fully explored in the prototype. The first example is a simple case where we want to match one operator with a single input OR another operator with a single input, see the below diagram for a graphical representation and corresponding code:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span class="k">def</span> <span class="nf">test_match_op_or</span><span class="p">():</span>
+<div class="section" id="pattern-examples">
+<h2>Pattern Examples<a class="headerlink" href="#pattern-examples" title="Permalink to this headline">¶</a></h2>
+<p>There are quite a few properties of operators that are worth matching. Below we examine how to match tree properties, and expand on some use cases that are not fully explored in the prototype. This section
+demonstrates how to write patterns. It is recommended to check <a class="reference external" href="https://github.com/apache/incubator-tvm/blob/master/tests/python/relay/test_dataflow_pattern.py">tests/python/relay/test_dataflow_pattern.py</a>
+for more use cases.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>If you cannot find the corresponding pattern node to match the Relay node you want,
+you are welcome to raise an issue or submit a PR to add it.</p>
+</div>
+<div class="section" id="matching-one-of-two-ops">
+<h3>Matching One of Two Ops<a class="headerlink" href="#matching-one-of-two-ops" title="Permalink to this headline">¶</a></h3>
+<p>The first example is a simple case where we want to match one operator with a single input OR
+another operator with a single input:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span class="k">def</span> <span class="nf">test_match_op_or</span><span class="p">():</span>
     <span class="n">is_add_or_sub</span> <span class="o">=</span> <span class="n">is_op</span><span class="p">(</span><span class="s1">&#39;add&#39;</span><span class="p">)</span> <span class="o">|</span> <span class="n">is_op</span><span class="p">(</span><span class="s1">&#39;subtract&#39;</span><span class="p">)</span>
     <span class="k">assert</span> <span class="n">is_add_or_sub</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">relay</span><span class="o">.</span><span class="n">op</span><span class="o">.</span><span class="n">op</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;add&quot;</span><span class="p">))</span>
     <span class="k">assert</span> <span class="n">is_add_or_sub</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">relay</span><span class="o">.</span><span class="n">op</span><span class="o">.</span><span class="n">op</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;subtract&quot;</span><span class="p">))</span>
 </pre></div>
 </div>
+</div>
+<div class="section" id="matching-an-op-with-attributes">
+<h3>Matching an Op with Attributes<a class="headerlink" href="#matching-an-op-with-attributes" title="Permalink to this headline">¶</a></h3>
 <p>The next example is a dense operation with any operator that is marked element-wise:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span class="k">def</span> <span class="nf">test_no_match_attr</span><span class="p">():</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span class="k">def</span> <span class="nf">test_no_match_attr</span><span class="p">():</span>
     <span class="n">op</span> <span class="o">=</span> <span class="n">is_op</span><span class="p">(</span><span class="s1">&#39;nn.dense&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">has_attr</span><span class="p">({</span><span class="s2">&quot;TOpPattern&quot;</span><span class="p">:</span> <span class="n">K_ELEMWISE</span><span class="p">})</span>
     <span class="n">op_pat</span> <span class="o">=</span> <span class="n">op</span><span class="p">(</span><span class="n">wildcard</span><span class="p">(),</span> <span class="n">wildcard</span><span class="p">())</span>
     <span class="n">x</span> <span class="o">=</span> <span class="n">relay</span><span class="o">.</span><span class="n">var</span><span class="p">(</span><span class="s1">&#39;x&#39;</span><span class="p">)</span>
@@ -218,10 +233,115 @@
     <span class="k">assert</span> <span class="ow">not</span> <span class="n">op_pat</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">relay</span><span class="o">.</span><span class="n">op</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">dense</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">))</span>
 </pre></div>
 </div>
+<p>Here is another example to match an op with a specific attribute:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span class="k">def</span> <span class="nf">test_match_data_layout</span><span class="p">():</span>
+    <span class="n">is_conv2d</span> <span class="o">=</span> <span class="n">is_op</span><span class="p">(</span><span class="s1">&#39;nn.conv2d&#39;</span><span class="p">)(</span><span class="n">wildcard</span><span class="p">(),</span> <span class="n">wildcard</span><span class="p">())</span><span class="o">.</span><span class="n">has_attr</span><span class="p">({</span><span class="s2">&quot;data_layout&quot;</span><span class="p">:</span> <span class="s2">&quot;NHWC&quot;</span><span class="p">})</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="n">relay</span><span class="o">.</span><span class="n">var</span><span class="p">(</span><span class="s1">&#39;x&#39;</span><span class="p">)</span>
+    <span class="n">y</span> <span class="o">=</span> <span class="n">relay</span><span class="o">.</span><span class="n">var</span><span class="p">(</span><span class="s1">&#39;y&#39;</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="ow">not</span> <span class="n">is_conv2d</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">relay</span><span class="o">.</span><span class="n">op</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">conv2d</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">))</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="matching-an-optional-op">
+<h3>Matching an Optional Op<a class="headerlink" href="#matching-an-optional-op" title="Permalink to this headline">¶</a></h3>
+<p>The next example is matching a pattern with one optional operator. In this pattern,
+we can match the graph of conv2d+bias_add+relu or the graph of conv2d+bias_add.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span class="k">def</span> <span class="nf">test_match_optional</span><span class="p">():</span>
+    <span class="n">conv_node</span> <span class="o">=</span> <span class="n">is_op</span><span class="p">(</span><span class="s1">&#39;nn.conv2d&#39;</span><span class="p">)(</span><span class="n">wildcard</span><span class="p">(),</span> <span class="n">wildcard</span><span class="p">())</span>
+    <span class="n">bias_node</span> <span class="o">=</span> <span class="n">is_op</span><span class="p">(</span><span class="s1">&#39;nn.bias_add&#39;</span><span class="p">)(</span><span class="n">conv_node</span><span class="p">,</span> <span class="n">wildcard</span><span class="p">())</span>
+    <span class="n">pat</span> <span class="o">=</span> <span class="n">bias_node</span><span class="o">.</span><span class="n">optional</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">is_op</span><span class="p">(</span><span class="s1">&#39;nn.relu&#39;</span><span class="p">)(</span><span class="n">x</span><span class="p">))</span>
+
+    <span class="n">x</span> <span class="o">=</span> <span class="n">relay</span><span class="o">.</span><span class="n">var</span><span class="p">(</span><span class="s1">&#39;x&#39;</span><span class="p">)</span>
+    <span class="n">y</span> <span class="o">=</span> <span class="n">relay</span><span class="o">.</span><span class="n">var</span><span class="p">(</span><span class="s1">&#39;y&#39;</span><span class="p">)</span>
+    <span class="n">z</span> <span class="o">=</span> <span class="n">relay</span><span class="o">.</span><span class="n">var</span><span class="p">(</span><span class="s1">&#39;z&#39;</span><span class="p">)</span>
+    <span class="n">conv2d</span> <span class="o">=</span> <span class="n">relay</span><span class="o">.</span><span class="n">op</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">conv2d</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+    <span class="n">bias</span> <span class="o">=</span> <span class="n">relay</span><span class="o">.</span><span class="n">op</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">bias_add</span><span class="p">(</span><span class="n">conv2d</span><span class="p">,</span> <span class="n">z</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">pat</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">bias</span><span class="p">)</span>
+    <span class="n">relu</span> <span class="o">=</span> <span class="n">relay</span><span class="o">.</span><span class="n">op</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">relu</span><span class="p">(</span><span class="n">bias</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">pat</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">relu</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="matching-non-call-nodes">
+<h3>Matching Non-Call Nodes<a class="headerlink" href="#matching-non-call-nodes" title="Permalink to this headline">¶</a></h3>
+<p>Sometimes we may also want to match a pattern that includes Tuple or TupleGetItem nodes.
+Since there are not call nodes, we need to use specific pattern nodes to match them:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span class="k">def</span> <span class="nf">test_match_tuple</span><span class="p">():</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="n">relay</span><span class="o">.</span><span class="n">var</span><span class="p">(</span><span class="s1">&#39;x&#39;</span><span class="p">)</span>
+    <span class="n">y</span> <span class="o">=</span> <span class="n">relay</span><span class="o">.</span><span class="n">var</span><span class="p">(</span><span class="s1">&#39;y&#39;</span><span class="p">)</span>
+    <span class="n">z</span> <span class="o">=</span> <span class="n">relay</span><span class="o">.</span><span class="n">var</span><span class="p">(</span><span class="s1">&#39;z&#39;</span><span class="p">)</span>
+    <span class="n">tuple_pattern</span> <span class="o">=</span> <span class="n">is_tuple</span><span class="p">((</span><span class="n">wildcard</span><span class="p">(),</span> <span class="n">wildcard</span><span class="p">(),</span> <span class="n">wildcard</span><span class="p">()))</span>
+    <span class="k">assert</span> <span class="n">tuple_pattern</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">relay</span><span class="o">.</span><span class="n">expr</span><span class="o">.</span><span class="n">Tuple</span><span class="p">((</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">,</span><span class="n">z</span><span class="p">)))</span>
+</pre></div>
+</div>
+<p>The next example is matching a pattern of batch_norm -&gt; get(0) -&gt; relu:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span class="k">def</span> <span class="nf">test_match_tuple_get_item</span><span class="p">():</span>
+    <span class="n">bn_node</span> <span class="o">=</span> <span class="n">is_op</span><span class="p">(</span><span class="s1">&#39;nn.batch_norm&#39;</span><span class="p">)(</span><span class="n">wildcard</span><span class="p">(),</span> <span class="n">wildcard</span><span class="p">(),</span> <span class="n">wildcard</span><span class="p">(),</span> <span class="n">wildcard</span><span class="p">(),</span> <span class="n">wildcard</span><span class="p">())</span>
+    <span class="n">tuple_get_item_node</span> <span class="o">=</span> <span class="n">is_tuple_get_item</span><span class="p">(</span><span class="n">bn_node</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+    <span class="n">pat</span> <span class="o">=</span> <span class="n">is_op</span><span class="p">(</span><span class="s1">&#39;nn.relu&#39;</span><span class="p">)(</span><span class="n">tuple_get_item_node</span><span class="p">)</span>
+
+    <span class="n">x</span> <span class="o">=</span> <span class="n">relay</span><span class="o">.</span><span class="n">var</span><span class="p">(</span><span class="s1">&#39;x&#39;</span><span class="p">,</span> <span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">8</span><span class="p">))</span>
+    <span class="n">gamma</span> <span class="o">=</span> <span class="n">relay</span><span class="o">.</span><span class="n">var</span><span class="p">(</span><span class="s2">&quot;gamma&quot;</span><span class="p">,</span> <span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="mi">8</span><span class="p">,))</span>
+    <span class="n">beta</span> <span class="o">=</span> <span class="n">relay</span><span class="o">.</span><span class="n">var</span><span class="p">(</span><span class="s2">&quot;beta&quot;</span><span class="p">,</span> <span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="mi">8</span><span class="p">,))</span>
+    <span class="n">moving_mean</span> <span class="o">=</span> <span class="n">relay</span><span class="o">.</span><span class="n">var</span><span class="p">(</span><span class="s2">&quot;moving_mean&quot;</span><span class="p">,</span> <span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="mi">8</span><span class="p">,))</span>
+    <span class="n">moving_var</span> <span class="o">=</span> <span class="n">relay</span><span class="o">.</span><span class="n">var</span><span class="p">(</span><span class="s2">&quot;moving_var&quot;</span><span class="p">,</span> <span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="mi">8</span><span class="p">,))</span>
+    <span class="n">bn_node</span> <span class="o">=</span> <span class="n">relay</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">batch_norm</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">gamma</span><span class="p">,</span> <span class="n">beta</span><span class="p">,</span> <span class="n">moving_mean</span><span class="p">,</span> <span class="n">moving_var</span><span class="p">)</span>
+    <span class="n">tuple_get_item_node</span> <span class="o">=</span> <span class="n">bn_node</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">out</span> <span class="o">=</span> <span class="n">relay</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">relu</span><span class="p">(</span><span class="n">tuple_get_item_node</span><span class="p">)</span>
+    <span class="n">pat</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">out</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The next example is matching a constant node regarding its values. This is useful to check
+if a specific parameter in a subgraph has been bound or not.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span class="k">def</span> <span class="nf">test_match_constant</span><span class="p">():</span>
+    <span class="n">conv2d</span> <span class="o">=</span> <span class="n">is_op</span><span class="p">(</span><span class="s1">&#39;nn.conv2d&#39;</span><span class="p">)(</span><span class="n">wildcard</span><span class="p">(),</span> <span class="n">is_constant</span><span class="p">())</span>
+    <span class="n">pattern</span> <span class="o">=</span> <span class="n">is_op</span><span class="p">(</span><span class="s1">&#39;nn.bias_add&#39;</span><span class="p">)(</span><span class="n">conv2d</span><span class="p">,</span> <span class="n">wildcard</span><span class="p">())</span>
+
+    <span class="n">x</span> <span class="o">=</span> <span class="n">relay</span><span class="o">.</span><span class="n">var</span><span class="p">(</span><span class="s1">&#39;x&#39;</span><span class="p">,</span> <span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">224</span><span class="p">,</span> <span class="mi">224</span><span class="p">))</span>
+    <span class="n">w</span> <span class="o">=</span> <span class="n">relay</span><span class="o">.</span><span class="n">var</span><span class="p">(</span><span class="s1">&#39;w&#39;</span><span class="p">,</span> <span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span>
+    <span class="n">b</span> <span class="o">=</span> <span class="n">relay</span><span class="o">.</span><span class="n">var</span><span class="p">(</span><span class="s1">&#39;b&#39;</span><span class="p">,</span> <span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="p">))</span>
+    <span class="n">conv2d</span> <span class="o">=</span> <span class="n">relay</span><span class="o">.</span><span class="n">op</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">conv2d</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">w</span><span class="p">)</span>
+    <span class="n">out</span> <span class="o">=</span> <span class="n">relay</span><span class="o">.</span><span class="n">op</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">bias_add</span><span class="p">(</span><span class="n">conv2d</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span>
+    <span class="n">func</span> <span class="o">=</span> <span class="n">relay</span><span class="o">.</span><span class="n">Function</span><span class="p">([</span><span class="n">x</span><span class="p">,</span> <span class="n">w</span><span class="p">,</span> <span class="n">b</span><span class="p">],</span> <span class="n">out</span><span class="p">)</span>
+    <span class="n">mod</span> <span class="o">=</span> <span class="n">tvm</span><span class="o">.</span><span class="n">IRModule</span><span class="o">.</span><span class="n">from_expr</span><span class="p">(</span><span class="n">func</span><span class="p">)</span>
+
+    <span class="c1"># Two inputs of the conv2d in the graph are VarNode by default, so no match.</span>
+    <span class="k">assert</span> <span class="ow">not</span> <span class="n">pattern</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">mod</span><span class="p">[</span><span class="s1">&#39;main&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">body</span><span class="p">)</span>
+
+    <span class="c1"># The second input (weight) has been bind with constant values so it is now a constant node.</span>
+    <span class="n">mod</span><span class="p">[</span><span class="s2">&quot;main&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">bind_params_by_name</span><span class="p">(</span><span class="n">mod</span><span class="p">[</span><span class="s2">&quot;main&quot;</span><span class="p">],</span>
+                                    <span class="p">{</span><span class="s1">&#39;w&#39;</span><span class="p">:</span> <span class="n">tvm</span><span class="o">.</span><span class="n">nd</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">)))})</span>
+    <span class="k">assert</span> <span class="n">pattern</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">mod</span><span class="p">[</span><span class="s1">&#39;main&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">body</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>On the other hand, if you need to match the constant with a specific value, you can directly
+use <code class="docutils literal notranslate"><span class="pre">is_expr</span></code>. This could be useful for algebraic simplify.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span class="k">def</span> <span class="nf">test_match_plus_zero</span><span class="p">():</span>
+    <span class="n">zero</span> <span class="o">=</span> <span class="p">(</span><span class="n">is_expr</span><span class="p">(</span><span class="n">relay</span><span class="o">.</span><span class="n">const</span><span class="p">(</span><span class="mi">0</span><span class="p">))</span> <span class="o">|</span> <span class="n">is_expr</span><span class="p">(</span><span class="n">relay</span><span class="o">.</span><span class="n">const</span><span class="p">(</span><span class="mf">0.0</span><span class="p">)))</span>
+    <span class="n">pattern</span> <span class="o">=</span> <span class="n">wildcard</span><span class="p">()</span> <span class="o">+</span> <span class="n">zero</span>
+
+    <span class="n">x</span> <span class="o">=</span> <span class="n">relay</span><span class="o">.</span><span class="n">Var</span><span class="p">(</span><span class="s1">&#39;x&#39;</span><span class="p">)</span>
+    <span class="n">y</span> <span class="o">=</span> <span class="n">x</span> <span class="o">+</span> <span class="n">relay</span><span class="o">.</span><span class="n">const</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">pattern</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">y</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The next example is matching function nodes with a specific attribute:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span class="k">def</span> <span class="nf">test_match_function</span><span class="p">():</span>
+    <span class="n">pattern</span> <span class="o">=</span> <span class="n">wildcard</span><span class="p">()</span><span class="o">.</span><span class="n">has_attr</span><span class="p">({</span><span class="s2">&quot;Composite&quot;</span><span class="p">:</span> <span class="s2">&quot;add&quot;</span><span class="p">})</span>
+
+    <span class="n">x</span> <span class="o">=</span> <span class="n">relay</span><span class="o">.</span><span class="n">var</span><span class="p">(</span><span class="s1">&#39;x&#39;</span><span class="p">)</span>
+    <span class="n">y</span> <span class="o">=</span> <span class="n">relay</span><span class="o">.</span><span class="n">var</span><span class="p">(</span><span class="s1">&#39;y&#39;</span><span class="p">)</span>
+    <span class="n">f</span> <span class="o">=</span> <span class="n">relay</span><span class="o">.</span><span class="n">Function</span><span class="p">([</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">],</span> <span class="n">x</span> <span class="o">+</span> <span class="n">y</span><span class="p">)</span><span class="o">.</span><span class="n">with_attr</span><span class="p">(</span><span class="s2">&quot;Composite&quot;</span><span class="p">,</span> <span class="s2">&quot;add&quot;</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">pattern</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="matching-diamonds-and-post-dominator-graphs">
+<h3>Matching Diamonds and Post-Dominator Graphs<a class="headerlink" href="#matching-diamonds-and-post-dominator-graphs" title="Permalink to this headline">¶</a></h3>
 <p>The next example is matching a diamond with two inputs at the top of the diamond:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span class="k">def</span> <span class="nf">test_match_diamond</span><span class="p">():</span>
     <span class="c1"># Pattern</span>
-    <span class="n">is_conv2d</span> <span class="o">=</span> <span class="n">is_op</span><span class="p">(</span><span class="s1">&#39;nn.conv2d&#39;</span><span class="p">)(</span><span class="n">is_input</span><span class="p">(),</span> <span class="n">is_input</span><span class="p">())</span>
+    <span class="n">is_conv2d</span> <span class="o">=</span> <span class="n">is_op</span><span class="p">(</span><span class="s1">&#39;nn.conv2d&#39;</span><span class="p">)(</span><span class="n">is_var</span><span class="p">(),</span> <span class="n">is_var</span><span class="p">())</span>
     <span class="n">path1</span> <span class="o">=</span> <span class="n">is_op</span><span class="p">(</span><span class="s1">&#39;nn.relu&#39;</span><span class="p">)(</span><span class="n">is_conv2d</span><span class="p">)</span>
     <span class="n">path2</span> <span class="o">=</span> <span class="n">is_op</span><span class="p">(</span><span class="s1">&#39;nn.leaky_relu&#39;</span><span class="p">)(</span><span class="n">is_conv2d</span><span class="p">)</span>
     <span class="n">diamond</span> <span class="o">=</span> <span class="n">is_op</span><span class="p">(</span><span class="s1">&#39;add&#39;</span><span class="p">)(</span><span class="n">path1</span><span class="p">,</span> <span class="n">path2</span><span class="p">)</span>
@@ -238,10 +358,10 @@
     <span class="k">assert</span> <span class="n">diamond</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">out</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>The final example  is matching diamonds with a post-dominator relationship. We embed dominator analysis as type of matching in the pattern language in order to allow for pattern matching with unknown topology. This is important because we want to be able to use the language to describe fuse patterns, like elementwise operations followed by a conv2d:</p>
+<p>The final example is matching diamonds with a post-dominator relationship. We embed dominator analysis as type of matching in the pattern language in order to allow for pattern matching with unknown topology. This is important because we want to be able to use the language to describe fuse patterns, like elementwise operations followed by a conv2d:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span class="k">def</span> <span class="nf">test_match_dom_diamond</span><span class="p">():</span>
     <span class="c1"># Pattern</span>
-    <span class="n">is_conv2d</span> <span class="o">=</span> <span class="n">is_op</span><span class="p">(</span><span class="s1">&#39;nn.conv2d&#39;</span><span class="p">)(</span><span class="n">is_input</span><span class="p">(),</span> <span class="n">is_input</span><span class="p">())</span>
+    <span class="n">is_conv2d</span> <span class="o">=</span> <span class="n">is_op</span><span class="p">(</span><span class="s1">&#39;nn.conv2d&#39;</span><span class="p">)(</span><span class="n">is_var</span><span class="p">(),</span> <span class="n">is_var</span><span class="p">())</span>
     <span class="n">reduction</span> <span class="o">=</span> <span class="n">is_op</span><span class="p">(</span><span class="s1">&#39;add&#39;</span><span class="p">)(</span><span class="n">wildcard</span><span class="p">(),</span> <span class="n">wildcard</span><span class="p">())</span>
     <span class="n">diamond</span> <span class="o">=</span> <span class="n">dominates</span><span class="p">(</span><span class="n">is_conv2d</span><span class="p">,</span> <span class="n">is_elemwise</span><span class="p">,</span> <span class="n">reduction</span><span class="p">)</span>
 
@@ -258,8 +378,9 @@
 </pre></div>
 </div>
 </div>
-<div class="section" id="design">
-<h2>Design<a class="headerlink" href="#design" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="pattern-language-design">
+<h2>Pattern Language Design<a class="headerlink" href="#pattern-language-design" title="Permalink to this headline">¶</a></h2>
 <p>The pattern language proposed is designed to be a mirror of Relay’s IR with additional support for common scenarios. The goal of the pattern language is to provide a regular-expression like capability for matching data-flow graphs and doing rewriting.</p>
 <p>The high level design is to introduce a language of patterns for now we propose the language as:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre>Pattern ::= expr
@@ -267,7 +388,12 @@
         | pattern(pattern1, ... patternN)
         | has_type(pattern, type)
         | has_attr(pattern, attrs)
-        | is_input(name)
+        | is_var(name)
+        | is_constant()
+        | is_expr(expr)
+        | is_op(op_name)
+        | is_tuple()
+        | is_tuple_get_item()
         | pattern1 `|` pattern2
         | dominates(parent_pattern, path_pattern, child_pattern)
 </pre></div>
@@ -289,9 +415,9 @@
 <h3>Attribute Pattern<a class="headerlink" href="#attribute-pattern" title="Permalink to this headline">¶</a></h3>
 <p>Check that the operator matched by the pattern has an attribute with a particular value.</p>
 </div>
-<div class="section" id="input">
-<h3>Input<a class="headerlink" href="#input" title="Permalink to this headline">¶</a></h3>
-<p>Check that the expression is an input, i.e has no parents and is a variable.</p>
+<div class="section" id="variable-pattern">
+<h3>Variable Pattern<a class="headerlink" href="#variable-pattern" title="Permalink to this headline">¶</a></h3>
+<p>Check that the expression is a relay Variable, and optional provide a name to match to the Variable name.</p>
 </div>
 <div class="section" id="alternate">
 <h3>Alternate<a class="headerlink" href="#alternate" title="Permalink to this headline">¶</a></h3>
@@ -300,6 +426,116 @@
 <div class="section" id="domination">
 <h3>Domination<a class="headerlink" href="#domination" title="Permalink to this headline">¶</a></h3>
 <p>Match child pattern, find a match for the parent pattern, insuring that the child ultimately dominates the parrent (i.e., no nodes outside the pattern use outputs of the parent), and that ever node betwen the child and the pattern matches the path pattern.</p>
+</div>
+</div>
+<div class="section" id="applications">
+<h2>Applications<a class="headerlink" href="#applications" title="Permalink to this headline">¶</a></h2>
+<p>The pattern language provides not only the pattern matching but also pattern processing.
+Here we introduce two pattern processing approaches and provide some examples.</p>
+<div class="section" id="pattern-rewriting">
+<h3>Pattern Rewriting<a class="headerlink" href="#pattern-rewriting" title="Permalink to this headline">¶</a></h3>
+<p>If you would like to replace the matched pattern with another subgraph, you can leverage
+the <code class="docutils literal notranslate"><span class="pre">rewrite</span></code> transformation. Here is an example of rewriting a series of arithmetic operators
+with a single batch_norm op:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span class="k">class</span> <span class="nc">BatchnormCallback</span><span class="p">(</span><span class="n">DFPatternCallback</span><span class="p">):</span>
+    <span class="c1"># A callback class to rewrite the matched pattern to a batch_norm op.</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">x</span> <span class="o">=</span> <span class="n">wildcard</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">var</span> <span class="o">=</span> <span class="n">wildcard</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mean</span> <span class="o">=</span> <span class="n">wildcard</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">beta</span> <span class="o">=</span> <span class="n">wildcard</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">gamma</span> <span class="o">=</span> <span class="n">wildcard</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">eps</span> <span class="o">=</span> <span class="n">wildcard</span><span class="p">()</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">pattern</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">gamma</span> <span class="o">*</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">x</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">mean</span><span class="p">)</span><span class="o">/</span><span class="n">is_op</span><span class="p">(</span><span class="s2">&quot;sqrt&quot;</span><span class="p">)(</span><span class="bp">self</span><span class="o">.</span><span class="n">var</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">eps</span><span class="p">)</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">beta</span>
+
+    <span class="k">def</span> <span class="nf">callback</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pre</span><span class="p">,</span> <span class="n">post</span><span class="p">,</span> <span class="n">node_map</span><span class="p">):</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">node_map</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">x</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">var</span> <span class="o">=</span> <span class="n">node_map</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">var</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">mean</span> <span class="o">=</span> <span class="n">node_map</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">mean</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">beta</span> <span class="o">=</span> <span class="n">node_map</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">beta</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">gamma</span> <span class="o">=</span> <span class="n">node_map</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">gamma</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">eps</span> <span class="o">=</span> <span class="n">node_map</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">eps</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">relay</span><span class="o">.</span><span class="n">op</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">batch_norm</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">gamma</span><span class="p">,</span> <span class="n">beta</span><span class="p">,</span> <span class="n">mean</span><span class="p">,</span> <span class="n">var</span><span class="p">,</span> <span class="n">epsilon</span> <span class="o">=</span> <span class="n">eps</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">asnumpy</span><span class="p">()</span><span class="o">.</span><span class="n">item</span><span class="p">())[</span><span class="mi">0</span><span class="p">]</span>
+
+    <span class="c1"># A graph of arithmetic operators that are functional equivalent to batch_norm.</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="n">relay</span><span class="o">.</span><span class="n">var</span><span class="p">(</span><span class="s1">&#39;x&#39;</span><span class="p">)</span>
+    <span class="n">var</span> <span class="o">=</span> <span class="n">relay</span><span class="o">.</span><span class="n">var</span><span class="p">(</span><span class="s1">&#39;var&#39;</span><span class="p">)</span>
+    <span class="n">mean</span> <span class="o">=</span> <span class="n">relay</span><span class="o">.</span><span class="n">var</span><span class="p">(</span><span class="s1">&#39;mean&#39;</span><span class="p">)</span>
+    <span class="n">beta</span> <span class="o">=</span> <span class="n">relay</span><span class="o">.</span><span class="n">var</span><span class="p">(</span><span class="s1">&#39;beta&#39;</span><span class="p">)</span>
+    <span class="n">gamma</span> <span class="o">=</span> <span class="n">relay</span><span class="o">.</span><span class="n">var</span><span class="p">(</span><span class="s1">&#39;gamma&#39;</span><span class="p">)</span>
+    <span class="n">BN</span> <span class="o">=</span> <span class="n">gamma</span> <span class="o">*</span> <span class="p">(</span><span class="n">x</span> <span class="o">-</span> <span class="n">mean</span><span class="p">)</span><span class="o">/</span><span class="n">relay</span><span class="o">.</span><span class="n">op</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">var</span> <span class="o">+</span> <span class="n">relay</span><span class="o">.</span><span class="n">const</span><span class="p">(</span><span class="mf">1e-5</span><span class="p">))</span> <span class="o">+</span> <span class="n">beta</span>
+
+    <span class="kn">from</span> <span class="nn">tvm.relay.dataflow_pattern</span> <span class="kn">import</span> <span class="n">rewrite</span>
+    <span class="n">out</span> <span class="o">=</span> <span class="n">rewrite</span><span class="p">(</span><span class="n">BatchnormCallback</span><span class="p">(),</span> <span class="n">BN</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">tvm</span><span class="o">.</span><span class="n">ir</span><span class="o">.</span><span class="n">structural_equal</span><span class="p">(</span><span class="n">out</span><span class="p">,</span> <span class="n">relay</span><span class="o">.</span><span class="n">op</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">batch_norm</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">gamma</span><span class="p">,</span> <span class="n">beta</span><span class="p">,</span> <span class="n">mean</span><span class="p">,</span> <span class="n">var</span><span class="p">,</span> <span class="n">epsilon</span> <span class="o">=</span> <span class="mf">1e-5</span><span class="p">)[</span><span class="mi">0</span><span class="p">])</span>
+</pre></div>
+</div>
+<p>The function <code class="docutils literal notranslate"><span class="pre">def</span> <span class="pre">callback(self,</span> <span class="pre">pre,</span> <span class="pre">post,</span> <span class="pre">node_map)</span></code> will be invoked when the rewriter matches
+<code class="docutils literal notranslate"><span class="pre">self.pattern</span></code>. <code class="docutils literal notranslate"><span class="pre">node_map</span></code> is a dictionary mapping from pattern nodes to matched nodes in the graph.</p>
+</div>
+<div class="section" id="pattern-partitioning">
+<h3>Pattern Partitioning<a class="headerlink" href="#pattern-partitioning" title="Permalink to this headline">¶</a></h3>
+<p>If you would like to perform a more complex processing for matched subgraphs and you are not
+satisfied with <code class="docutils literal notranslate"><span class="pre">rewrite</span></code>, you may consider partitioning the matched subgraphs to a separate
+Relay function and perform other processes to the function. Here we use <code class="docutils literal notranslate"><span class="pre">pattern.partition</span></code>
+to create a new Relay function for each matched subgraph. The functionality is similar to
+the op fusion pass in TVM:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span class="c1"># A pattern matching conv2d+relu.</span>
+<span class="n">pattern</span> <span class="o">=</span> <span class="n">is_op</span><span class="p">(</span><span class="s2">&quot;nn.relu&quot;</span><span class="p">)(</span><span class="n">is_op</span><span class="p">(</span><span class="s2">&quot;nn.conv2d&quot;</span><span class="p">)(</span><span class="n">wildcard</span><span class="p">(),</span> <span class="n">wildcard</span><span class="p">()))</span>
+
+<span class="c1"># A graph.</span>
+<span class="n">x</span> <span class="o">=</span> <span class="n">relay</span><span class="o">.</span><span class="n">var</span><span class="p">(</span><span class="s1">&#39;input&#39;</span><span class="p">)</span>
+<span class="n">w</span> <span class="o">=</span> <span class="n">relay</span><span class="o">.</span><span class="n">var</span><span class="p">(</span><span class="s1">&#39;weight&#39;</span><span class="p">)</span>
+<span class="n">conv2d</span> <span class="o">=</span> <span class="n">relay</span><span class="o">.</span><span class="n">op</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">conv2d</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">w</span><span class="p">)</span>
+<span class="n">relu</span> <span class="o">=</span> <span class="n">relay</span><span class="o">.</span><span class="n">op</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">relu</span><span class="p">(</span><span class="n">conv2d</span><span class="p">)</span>
+<span class="k">print</span><span class="p">(</span><span class="s1">&#39;relu&#39;</span><span class="p">)</span>
+<span class="c1"># free_var %x: Tensor[(1, 3, 224, 224), float32]</span>
+<span class="c1"># free_var %w: Tensor[(3, 3, 3, 3), float32]</span>
+<span class="c1"># %0 = nn.conv2d(%x, %w, padding=[0, 0, 0, 0]) /* ty=Tensor[(1, 3, 222, 222), float32] */;</span>
+<span class="c1"># free_var %b: Tensor[(3), float32]</span>
+<span class="c1"># nn.bias_add(%0, %b) /* ty=Tensor[(1, 3, 222, 222), float32] */</span>
+
+<span class="c1"># After partition.</span>
+<span class="k">print</span><span class="p">(</span><span class="n">pattern</span><span class="o">.</span><span class="n">partition</span><span class="p">(</span><span class="n">relu</span><span class="p">))</span>
+<span class="c1"># free_var %x: Tensor[(1, 3, 224, 224), float32]</span>
+<span class="c1"># free_var %w: Tensor[(3, 3, 3, 3), float32]</span>
+<span class="c1"># free_var %b: Tensor[(3), float32]</span>
+<span class="c1"># %1 = fn (%FunctionVar_0_0, %FunctionVar_0_1,</span>
+<span class="c1">#          %FunctionVar_0_2, PartitionedFromPattern=&quot;nn.conv2d_nn.bias_add_&quot;) {</span>
+<span class="c1">#   %0 = nn.conv2d(%FunctionVar_0_0, %FunctionVar_0_1, padding=[0, 0, 0, 0]);</span>
+<span class="c1">#   nn.bias_add(%0, %FunctionVar_0_2)</span>
+<span class="c1"># };</span>
+<span class="c1"># %1(%x, %w, %b)</span>
+</pre></div>
+</div>
+<p>Note that you can also specify the attributes for the created functions:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span class="k">print</span><span class="p">(</span><span class="n">pattern</span><span class="o">.</span><span class="n">partition</span><span class="p">(</span><span class="n">relu</span><span class="p">,</span> <span class="p">{</span><span class="s1">&#39;Composite&#39;</span><span class="p">:</span> <span class="s1">&#39;one_layer&#39;</span><span class="p">}))</span>
+<span class="c1"># free_var %x: Tensor[(1, 3, 224, 224), float32]</span>
+<span class="c1"># free_var %w: Tensor[(3, 3, 3, 3), float32]</span>
+<span class="c1"># free_var %b: Tensor[(3), float32]</span>
+<span class="c1"># %1 = fn (%FunctionVar_0_0, %FunctionVar_0_1,</span>
+<span class="c1">#          %FunctionVar_0_2, Composite=&quot;one_layer&quot;,</span>
+<span class="c1">#                            PartitionedFromPattern=&quot;nn.conv2d_nn.bias_add_&quot;) {</span>
+<span class="c1">#   %0 = nn.conv2d(%FunctionVar_0_0, %FunctionVar_0_1, padding=[0, 0, 0, 0]);</span>
+<span class="c1">#   nn.bias_add(%0, %FunctionVar_0_2)</span>
+<span class="c1"># };</span>
+<span class="c1"># %1(%x, %w, %b)</span>
+</pre></div>
+</div>
+<p>If you need a customized checking function that cannot be specified using pattern language,
+you can specify <code class="docutils literal notranslate"><span class="pre">check</span></code> function when partitioning. The following example demonstrates a
+case that checks input data layout of a subgraph:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span class="k">def</span> <span class="nf">check</span><span class="p">(</span><span class="n">pre</span><span class="p">):</span>
+    <span class="n">conv</span> <span class="o">=</span> <span class="n">pre</span><span class="o">.</span><span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="k">return</span> <span class="p">(</span><span class="n">conv</span><span class="o">.</span><span class="n">attrs</span><span class="o">.</span><span class="n">data_layout</span> <span class="o">==</span> <span class="s2">&quot;NCHW&quot;</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">bool</span><span class="p">(</span><span class="n">conv</span><span class="o">.</span><span class="n">checked_type</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="mi">1</span><span class="p">)</span>
+
+<span class="n">pattern</span><span class="o">.</span><span class="n">partition</span><span class="p">(</span><span class="n">relu</span><span class="p">,</span> <span class="n">check</span><span class="o">=</span><span class="n">check</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>In this example, we check if the first argument of the matched subgraph (i.e., <code class="docutils literal notranslate"><span class="pre">pre.args[0]</span></code>)
+has data layout “NCHW” and if its batch size is 1. This feature is useful if the conditions
+of matching a pattern cannot be verified by analyzing the pattern itself.</p>
 </div>
 </div>
 </div>

@@ -18,6 +18,7 @@
 Deploy a Framework-prequantized Model with TVM - Part 3 (TFLite)
 ================================================================
 **Author**: `Siju Samuel <https://github.com/siju-samuel>`_
+
 Welcome to part 3 of the Deploy Framework-Prequantized Model with TVM tutorial.
 In this part, we will start with a Quantized TFLite graph and then compile and execute it via TVM.
 
@@ -197,7 +198,7 @@ mod, params = relay.frontend.from_tflite(tflite_model,
 # Lets now the compile the Relay module. We use the "llvm" target here. Please replace it with the
 # target platform that you are interested in.
 target = 'llvm'
-with relay.build_config(opt_level=3):
+with tvm.transform.PassContext(opt_level=3):
     graph, lib, params = relay.build_module.build(mod, target=target,
                                                   params=params)
 

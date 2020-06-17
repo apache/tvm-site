@@ -1,4 +1,5 @@
 var searchData=
 [
-  ['xgcd',['xgcd',['../namespacetvm_1_1arith.html#af7bf53fab2c6a476fbbe881be27e53c0',1,'tvm::arith']]]
+  ['yield',['Yield',['../namespacetvm_1_1runtime_1_1threading.html#ac026961af34f1d6c26d8f1abbc580439',1,'tvm::runtime::threading']]],
+  ['yoloreorgattrs',['YoloReorgAttrs',['../structtvm_1_1relay_1_1YoloReorgAttrs.html',1,'tvm::relay']]]
 ];

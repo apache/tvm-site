@@ -247,8 +247,8 @@ The following lines describe the computation <code class="code docutils literal 
 <p class="sphx-glr-script-out">Out:</p>
 <div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre>primfn(A_1: handle, B_1: handle, C_1: handle) -&gt; ()
   attr = {&quot;tir.noalias&quot;: True, &quot;global_symbol&quot;: &quot;main&quot;}
-  buffers = {A: Buffer(A_2: handle, float32, [1024, 64], []),
-             B: Buffer(B_2: handle, float32, [512, 64], []),
+  buffers = {B: Buffer(B_2: handle, float32, [512, 64], []),
+             A: Buffer(A_2: handle, float32, [1024, 64], []),
              C: Buffer(C_2: handle, float32, [1024, 512], [])}
   buffer_map = {C_1: C, B_1: B, A_1: A} {
   for (i: int32, 0, 1024) {
@@ -283,8 +283,8 @@ Thus we break down the matmul loops to make the innermost loops a (16x64) GEMV.<
 <p class="sphx-glr-script-out">Out:</p>
 <div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre>primfn(A_1: handle, B_1: handle, C_1: handle) -&gt; ()
   attr = {&quot;tir.noalias&quot;: True, &quot;global_symbol&quot;: &quot;main&quot;}
-  buffers = {B: Buffer(B_2: handle, float32, [512, 64], []),
-             A: Buffer(A_2: handle, float32, [1024, 64], []),
+  buffers = {A: Buffer(A_2: handle, float32, [1024, 64], []),
+             B: Buffer(B_2: handle, float32, [512, 64], []),
              C: Buffer(C_2: handle, float32, [1024, 512], [])}
   buffer_map = {C_1: C, B_1: B, A_1: A} {
   for (i: int32, 0, 1024) {
@@ -344,8 +344,7 @@ which is done in <code class="code docutils literal notranslate"><span class="pr
                                 <span class="n">bb</span><span class="o">.</span><span class="n">access_ptr</span><span class="p">(</span><span class="s2">&quot;r&quot;</span><span class="p">),</span>
                                 <span class="n">m</span><span class="p">,</span> <span class="n">l</span><span class="p">,</span> <span class="n">bb</span><span class="o">.</span><span class="n">strides</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span>
         <span class="k">return</span> <span class="n">ib</span><span class="o">.</span><span class="n">get</span><span class="p">()</span>
-    <span class="k">with</span> <a href="../../api/python/target.html#tvm.target.build_config" title="View documentation for tvm.target.build_config"><span class="n">tvm</span><span class="o">.</span><span class="n">target</span><span class="o">.</span><span class="n">build_config</span></a><span class="p">(</span><span class="n">offset_factor</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
-        <span class="k">return</span> <a href="../../api/python/te.html#tvm.te.decl_tensor_intrin" title="View documentation for tvm.te.decl_tensor_intrin"><span class="n">te</span><span class="o">.</span><span class="n">decl_tensor_intrin</span></a><span class="p">(</span><span class="n">c</span><span class="o">.</span><span class="n">op</span><span class="p">,</span> <span class="n">intrin_func</span><span class="p">,</span> <span class="n">binds</span><span class="o">=</span><span class="p">{</span><span class="n">a</span><span class="p">:</span> <span class="n">Ab</span><span class="p">,</span> <span class="n">b</span><span class="p">:</span> <span class="n">Bb</span><span class="p">,</span> <span class="n">c</span><span class="p">:</span> <span class="n">Cb</span><span class="p">})</span>
+    <span class="k">return</span> <a href="../../api/python/te.html#tvm.te.decl_tensor_intrin" title="View documentation for tvm.te.decl_tensor_intrin"><span class="n">te</span><span class="o">.</span><span class="n">decl_tensor_intrin</span></a><span class="p">(</span><span class="n">c</span><span class="o">.</span><span class="n">op</span><span class="p">,</span> <span class="n">intrin_func</span><span class="p">,</span> <span class="n">binds</span><span class="o">=</span><span class="p">{</span><span class="n">a</span><span class="p">:</span> <span class="n">Ab</span><span class="p">,</span> <span class="n">b</span><span class="p">:</span> <span class="n">Bb</span><span class="p">,</span> <span class="n">c</span><span class="p">:</span> <span class="n">Cb</span><span class="p">})</span>
 </pre></div>
 </div>
 <p>Here <code class="code docutils literal notranslate"><span class="pre">te.decl_tensor_intrin</span></code> declares how to execute the computation <code class="code docutils literal notranslate"><span class="pre">c.op</span></code>.
@@ -380,7 +379,7 @@ such placeholder can be put to let TVM automatically bind the inferred value for
   buffer_map = {C_1: C, B_1: B, A_1: A} {
   for (i: int32, 0, 1024) {
     for (j.outer: int32, 0, 32) {
-      @gemv_update(@tvm_access_ptr(@type_annotation(, dtype=float32, type=&quot;pure_intrin&quot;, index=0), C_2, ((i*512) + (j.outer*16)), 16, 2, dtype=handle, type=&quot;intrin&quot;, index=0), @tvm_access_ptr(@type_annotation(, dtype=float32, type=&quot;pure_intrin&quot;, index=0), A_2, (i*64), 64, 1, dtype=handle, type=&quot;intrin&quot;, index=0), @tvm_access_ptr(@type_annotation(, dtype=float32, type=&quot;pure_intrin&quot;, index=0), B_2, (j.outer*1024), 1024, 1, dtype=handle, type=&quot;intrin&quot;, index=0), 16, 64, 64, dtype=int32, type=&quot;extern&quot;, index=0)
+      @gemv_update(@tvm_access_ptr(@type_annotation(, dtype=float32, type=&quot;pure_intrin&quot;), C_2, ((i*512) + (j.outer*16)), 16, 2, dtype=handle, type=&quot;intrin&quot;), @tvm_access_ptr(@type_annotation(, dtype=float32, type=&quot;pure_intrin&quot;), A_2, (i*64), 64, 1, dtype=handle, type=&quot;intrin&quot;), @tvm_access_ptr(@type_annotation(, dtype=float32, type=&quot;pure_intrin&quot;), B_2, (j.outer*1024), 1024, 1, dtype=handle, type=&quot;intrin&quot;), 16, 64, 64, dtype=int32, type=&quot;extern&quot;)
     }
   }
 }
@@ -420,12 +419,12 @@ The importing needs to happen before the tensorized GEMV being executed.</p>
 <p class="sphx-glr-script-out">Out:</p>
 <div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre>primfn(A_1: handle, B_1: handle, C_1: handle) -&gt; ()
   attr = {&quot;tir.noalias&quot;: True, &quot;global_symbol&quot;: &quot;main&quot;}
-  buffers = {B: Buffer(B_2: handle, float32, [512, 64], []),
-             A: Buffer(A_2: handle, float32, [1024, 64], []),
+  buffers = {A: Buffer(A_2: handle, float32, [1024, 64], []),
+             B: Buffer(B_2: handle, float32, [512, 64], []),
              C: Buffer(C_2: handle, float32, [1024, 512], [])}
   buffer_map = {C_1: C, B_1: B, A_1: A} {
-  attr [IterVar(i: int32, (nullptr), &quot;DataPar&quot;, &quot;&quot;)] &quot;pragma_import_llvm&quot; = &quot;; ModuleID = &#39;/tmp/tmpxbed81_y/input0.cc&#39;
-source_filename = &quot;/tmp/tmpxbed81_y/input0.cc&quot;
+  attr [IterVar(i: int32, (nullptr), &quot;DataPar&quot;, &quot;&quot;)] &quot;pragma_import_llvm&quot; = &quot;; ModuleID = &#39;/tmp/tmpcw7zd4dq/input0.cc&#39;
+source_filename = &quot;/tmp/tmpcw7zd4dq/input0.cc&quot;
 target datalayout = &quot;e-m:e-i64:64-f80:128-n8:16:32:64-S128&quot;
 target triple = &quot;x86_64-pc-linux-gnu&quot;
 
@@ -518,7 +517,7 @@ attributes #0 = { noinline nounwind optnone uwtable &quot;correctly-rounded-divi
 &quot;;
   for (i, 0, 1024) {
     for (j.outer: int32, 0, 32) {
-      @gemv_update(@tvm_access_ptr(@type_annotation(, dtype=float32, type=&quot;pure_intrin&quot;, index=0), C_2, ((i*512) + (j.outer*16)), 16, 2, dtype=handle, type=&quot;intrin&quot;, index=0), @tvm_access_ptr(@type_annotation(, dtype=float32, type=&quot;pure_intrin&quot;, index=0), A_2, (i*64), 64, 1, dtype=handle, type=&quot;intrin&quot;, index=0), @tvm_access_ptr(@type_annotation(, dtype=float32, type=&quot;pure_intrin&quot;, index=0), B_2, (j.outer*1024), 1024, 1, dtype=handle, type=&quot;intrin&quot;, index=0), 16, 64, 64, dtype=int32, type=&quot;extern&quot;, index=0)
+      @gemv_update(@tvm_access_ptr(@type_annotation(, dtype=float32, type=&quot;pure_intrin&quot;), C_2, ((i*512) + (j.outer*16)), 16, 2, dtype=handle, type=&quot;intrin&quot;), @tvm_access_ptr(@type_annotation(, dtype=float32, type=&quot;pure_intrin&quot;), A_2, (i*64), 64, 1, dtype=handle, type=&quot;intrin&quot;), @tvm_access_ptr(@type_annotation(, dtype=float32, type=&quot;pure_intrin&quot;), B_2, (j.outer*1024), 1024, 1, dtype=handle, type=&quot;intrin&quot;), 16, 64, 64, dtype=int32, type=&quot;extern&quot;)
     }
   }
 }
@@ -616,8 +615,7 @@ which defines the “update” computing strategy.</p>
         <span class="k">def</span> <span class="nf">_reduce_update</span><span class="p">():</span>
             <span class="k">return</span> <span class="n">_body</span><span class="p">()</span>
         <span class="k">return</span> <span class="n">_body</span><span class="p">(),</span> <span class="n">_reduce_reset</span><span class="p">(),</span> <span class="n">_reduce_update</span><span class="p">()</span>
-    <span class="k">with</span> <a href="../../api/python/target.html#tvm.target.build_config" title="View documentation for tvm.target.build_config"><span class="n">tvm</span><span class="o">.</span><span class="n">target</span><span class="o">.</span><span class="n">build_config</span></a><span class="p">(</span><span class="n">offset_factor</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
-        <span class="k">return</span> <a href="../../api/python/te.html#tvm.te.decl_tensor_intrin" title="View documentation for tvm.te.decl_tensor_intrin"><span class="n">te</span><span class="o">.</span><span class="n">decl_tensor_intrin</span></a><span class="p">(</span><span class="n">c</span><span class="o">.</span><span class="n">op</span><span class="p">,</span> <span class="n">intrin_func</span><span class="p">,</span> <span class="n">binds</span><span class="o">=</span><span class="p">{</span><span class="n">a</span><span class="p">:</span> <span class="n">Ab</span><span class="p">,</span> <span class="n">b</span><span class="p">:</span> <span class="n">Bb</span><span class="p">,</span> <span class="n">c</span><span class="p">:</span> <span class="n">Cb</span><span class="p">})</span>
+    <span class="k">return</span> <a href="../../api/python/te.html#tvm.te.decl_tensor_intrin" title="View documentation for tvm.te.decl_tensor_intrin"><span class="n">te</span><span class="o">.</span><span class="n">decl_tensor_intrin</span></a><span class="p">(</span><span class="n">c</span><span class="o">.</span><span class="n">op</span><span class="p">,</span> <span class="n">intrin_func</span><span class="p">,</span> <span class="n">binds</span><span class="o">=</span><span class="p">{</span><span class="n">a</span><span class="p">:</span> <span class="n">Ab</span><span class="p">,</span> <span class="n">b</span><span class="p">:</span> <span class="n">Bb</span><span class="p">,</span> <span class="n">c</span><span class="p">:</span> <span class="n">Cb</span><span class="p">})</span>
 </pre></div>
 </div>
 <p>Note that <code class="code docutils literal notranslate"><span class="pre">intrin_func</span></code> now returns a triplet:

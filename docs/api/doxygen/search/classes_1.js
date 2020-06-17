@@ -28,6 +28,7 @@ var searchData=
   ['binaryopnode_3c_20subnode_20_3e',['BinaryOpNode&lt; SubNode &gt;',['../classtvm_1_1tir_1_1BinaryOpNode.html',1,'tvm::tir']]],
   ['bitpackattrs',['BitPackAttrs',['../structtvm_1_1relay_1_1BitPackAttrs.html',1,'tvm::relay']]],
   ['bool',['Bool',['../classtvm_1_1Bool.html',1,'tvm']]],
+  ['broadcast',['Broadcast',['../classtvm_1_1tir_1_1Broadcast.html',1,'tvm::tir']]],
   ['broadcastnode',['BroadcastNode',['../classtvm_1_1tir_1_1BroadcastNode.html',1,'tvm::tir']]],
   ['buffer',['Buffer',['../classtvm_1_1tir_1_1Buffer.html',1,'tvm::tir']]],
   ['bufferload',['BufferLoad',['../classtvm_1_1tir_1_1BufferLoad.html',1,'tvm::tir']]],
@@ -36,7 +37,5 @@ var searchData=
   ['bufferrealize',['BufferRealize',['../classtvm_1_1tir_1_1BufferRealize.html',1,'tvm::tir']]],
   ['bufferrealizenode',['BufferRealizeNode',['../classtvm_1_1tir_1_1BufferRealizeNode.html',1,'tvm::tir']]],
   ['bufferstore',['BufferStore',['../classtvm_1_1tir_1_1BufferStore.html',1,'tvm::tir']]],
-  ['bufferstorenode',['BufferStoreNode',['../classtvm_1_1tir_1_1BufferStoreNode.html',1,'tvm::tir']]],
-  ['buildconfig',['BuildConfig',['../classtvm_1_1BuildConfig.html',1,'tvm']]],
-  ['buildconfignode',['BuildConfigNode',['../classtvm_1_1BuildConfigNode.html',1,'tvm']]]
+  ['bufferstorenode',['BufferStoreNode',['../classtvm_1_1tir_1_1BufferStoreNode.html',1,'tvm::tir']]]
 ];

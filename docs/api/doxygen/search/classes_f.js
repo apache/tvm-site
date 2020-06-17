@@ -1,12 +1,14 @@
 var searchData=
 [
+  ['ramp',['Ramp',['../classtvm_1_1tir_1_1Ramp.html',1,'tvm::tir']]],
   ['rampnode',['RampNode',['../classtvm_1_1tir_1_1RampNode.html',1,'tvm::tir']]],
   ['range',['Range',['../classtvm_1_1Range.html',1,'tvm']]],
   ['rangenode',['RangeNode',['../classtvm_1_1RangeNode.html',1,'tvm']]],
-  ['realizenode',['RealizeNode',['../classtvm_1_1tir_1_1RealizeNode.html',1,'tvm::tir']]],
+  ['rebase',['Rebase',['../classtvm_1_1te_1_1Rebase.html',1,'tvm::te']]],
   ['rebasenode',['RebaseNode',['../classtvm_1_1te_1_1RebaseNode.html',1,'tvm::te']]],
   ['recclosure',['RecClosure',['../classtvm_1_1relay_1_1RecClosure.html',1,'tvm::relay']]],
   ['recclosureobj',['RecClosureObj',['../classtvm_1_1relay_1_1RecClosureObj.html',1,'tvm::relay']]],
+  ['reduce',['Reduce',['../classtvm_1_1tir_1_1Reduce.html',1,'tvm::tir']]],
   ['reduceattrs',['ReduceAttrs',['../structtvm_1_1relay_1_1ReduceAttrs.html',1,'tvm::relay']]],
   ['reducenode',['ReduceNode',['../classtvm_1_1tir_1_1ReduceNode.html',1,'tvm::tir']]],
   ['refcreate',['RefCreate',['../classtvm_1_1relay_1_1RefCreate.html',1,'tvm::relay']]],
@@ -19,8 +21,8 @@ var searchData=
   ['refvalueobj',['RefValueObj',['../structtvm_1_1relay_1_1RefValueObj.html',1,'tvm::relay']]],
   ['refwrite',['RefWrite',['../classtvm_1_1relay_1_1RefWrite.html',1,'tvm::relay']]],
   ['refwritenode',['RefWriteNode',['../classtvm_1_1relay_1_1RefWriteNode.html',1,'tvm::relay']]],
-  ['registry',['Registry',['../classtvm_1_1ReflectionVTable_1_1Registry.html',1,'tvm::ReflectionVTable']]],
   ['registry',['Registry',['../classtvm_1_1runtime_1_1Registry.html',1,'tvm::runtime']]],
+  ['registry',['Registry',['../classtvm_1_1ReflectionVTable_1_1Registry.html',1,'tvm::ReflectionVTable']]],
   ['relayexpr',['RelayExpr',['../classtvm_1_1RelayExpr.html',1,'tvm']]],
   ['relayexprnode',['RelayExprNode',['../classtvm_1_1RelayExprNode.html',1,'tvm']]],
   ['relaynode',['RelayNode',['../classtvm_1_1relay_1_1RelayNode.html',1,'tvm::relay']]],
@@ -34,6 +36,7 @@ var searchData=
   ['resizeattrs',['ResizeAttrs',['../structtvm_1_1relay_1_1ResizeAttrs.html',1,'tvm::relay']]],
   ['reverseattrs',['ReverseAttrs',['../structtvm_1_1relay_1_1ReverseAttrs.html',1,'tvm::relay']]],
   ['reverseiteradapter',['ReverseIterAdapter',['../classtvm_1_1runtime_1_1ReverseIterAdapter.html',1,'tvm::runtime']]],
+  ['reversesequenceattrs',['ReverseSequenceAttrs',['../structtvm_1_1relay_1_1ReverseSequenceAttrs.html',1,'tvm::relay']]],
   ['rewritesimplifier',['RewriteSimplifier',['../classtvm_1_1arith_1_1RewriteSimplifier.html',1,'tvm::arith']]],
   ['roialignattrs',['ROIAlignAttrs',['../structtvm_1_1relay_1_1ROIAlignAttrs.html',1,'tvm::relay']]],
   ['roipoolattrs',['ROIPoolAttrs',['../structtvm_1_1relay_1_1ROIPoolAttrs.html',1,'tvm::relay']]]

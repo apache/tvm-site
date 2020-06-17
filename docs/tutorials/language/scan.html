@@ -273,13 +273,13 @@ To split on the time iteration, user can schedule on scan_op.scan_axis instead.<
   buffer_map = {scan_1: scan, X_1: X} {
   attr [IterVar(blockIdx.x: int32, (nullptr), &quot;ThreadIndex&quot;, &quot;blockIdx.x&quot;)] &quot;thread_extent&quot; = floordiv((n + 255), 256);
   attr [IterVar(threadIdx.x: int32, (nullptr), &quot;ThreadIndex&quot;, &quot;threadIdx.x&quot;)] &quot;thread_extent&quot; = 256;
-  if @likely((((blockIdx.x*256) + threadIdx.x) &lt; n), dtype=bool, type=&quot;pure_intrin&quot;, index=0) {
+  if @likely((((blockIdx.x*256) + threadIdx.x) &lt; n), dtype=bool, type=&quot;pure_intrin&quot;) {
     scan_2[(((blockIdx.x*256) + threadIdx.x)*stride_3)] = (float32*)X_2[(((blockIdx.x*256) + threadIdx.x)*stride_1)])
   }
   for (scan.idx: int32, 0, (m - 1)) {
     attr [IterVar(blockIdx.x, (nullptr), &quot;ThreadIndex&quot;, &quot;blockIdx.x&quot;)] &quot;thread_extent&quot; = floordiv((n + 255), 256);
     attr [IterVar(threadIdx.x, (nullptr), &quot;ThreadIndex&quot;, &quot;threadIdx.x&quot;)] &quot;thread_extent&quot; = 256;
-    if @likely((((blockIdx.x*256) + threadIdx.x) &lt; n), dtype=bool, type=&quot;pure_intrin&quot;, index=0) {
+    if @likely((((blockIdx.x*256) + threadIdx.x) &lt; n), dtype=bool, type=&quot;pure_intrin&quot;) {
       scan_2[(((scan.idx + 1)*stride_2) + (((blockIdx.x*256) + threadIdx.x)*stride_3))] = ((float32*)scan_2[((scan.idx*stride_2) + (((blockIdx.x*256) + threadIdx.x)*stride_3))]) + (float32*)X_2[(((scan.idx + 1)*stride) + (((blockIdx.x*256) + threadIdx.x)*stride_1))]))
     }
   }
@@ -345,12 +345,12 @@ the body of scan to be compute_at locations outside the scan loop.</p>
     for (scan.idx: int32, 0, (m - 1)) {
       for (i.outer: int32, 0, floordiv((n + 31), 32)) {
         for (i_1: int32, 0, 32) {
-          if @likely((((i.outer*32) + i_1) &lt; n), dtype=bool, type=&quot;pure_intrin&quot;, index=0) {
+          if @likely((((i.outer*32) + i_1) &lt; n), dtype=bool, type=&quot;pure_intrin&quot;) {
             s1[i_1] = ((float32*)scan_2[((scan.idx*stride_2) + (((i.outer*32) + i_1)*stride_3))])*2f32)
           }
         }
         for (i.inner: int32, 0, 32) {
-          if @likely((((i.outer*32) + i.inner) &lt; n), dtype=bool, type=&quot;pure_intrin&quot;, index=0) {
+          if @likely((((i.outer*32) + i.inner) &lt; n), dtype=bool, type=&quot;pure_intrin&quot;) {
             scan_2[(((scan.idx + 1)*stride_2) + (((i.outer*32) + i.inner)*stride_3))] = ((float32*)s1[i.inner]) + (float32*)X_2[(((scan.idx + 1)*stride) + (((i.outer*32) + i.inner)*stride_1))]))
           }
         }
@@ -389,21 +389,21 @@ The following example demonstrates how we can build recurrence with two states.<
 <div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre>primfn(X_1: handle, scan.v0_1: handle, scan.v1_1: handle) -&gt; ()
   attr = {&quot;tir.noalias&quot;: True, &quot;global_symbol&quot;: &quot;main&quot;}
   buffers = {X: Buffer(X_2: handle, float32, [m: int32, n: int32], [stride: int32, stride_1: int32], type=&quot;auto&quot;),
-             scan.v1: Buffer(scan.v1_2: handle, float32, [m, l: int32], [stride_2: int32, stride_3: int32], type=&quot;auto&quot;),
-             scan.v0: Buffer(scan.v0_2: handle, float32, [m, n], [stride_4: int32, stride_5: int32], type=&quot;auto&quot;)}
-  buffer_map = {scan.v0_1: scan.v0, scan.v1_1: scan.v1, X_1: X} {
+             scan.v0: Buffer(scan.v0_2: handle, float32, [m, n], [stride_2: int32, stride_3: int32], type=&quot;auto&quot;),
+             scan.v1: Buffer(scan.v1_2: handle, float32, [m, l: int32], [stride_4: int32, stride_5: int32], type=&quot;auto&quot;)}
+  buffer_map = {scan.v1_1: scan.v1, scan.v0_1: scan.v0, X_1: X} {
   for (i: int32, 0, n) {
-    scan.v0_2[(i*stride_5)] = (float32*)X_2[(i*stride_1)])
+    scan.v0_2[(i*stride_3)] = (float32*)X_2[(i*stride_1)])
   }
   for (i_1: int32, 0, l) {
-    scan.v1_2[(i_1*stride_3)] = 0f32
+    scan.v1_2[(i_1*stride_5)] = 0f32
   }
   for (scan.idx: int32, 0, (m - 1)) {
     for (i_2: int32, 0, n) {
-      scan.v0_2[(((scan.idx + 1)*stride_4) + (i_2*stride_5))] = ((float32*)scan.v0_2[((scan.idx*stride_4) + (i_2*stride_5))]) + (float32*)X_2[(((scan.idx + 1)*stride) + (i_2*stride_1))]))
+      scan.v0_2[(((scan.idx + 1)*stride_2) + (i_2*stride_3))] = ((float32*)scan.v0_2[((scan.idx*stride_2) + (i_2*stride_3))]) + (float32*)X_2[(((scan.idx + 1)*stride) + (i_2*stride_1))]))
     }
     for (i_3: int32, 0, l) {
-      scan.v1_2[(((scan.idx + 1)*stride_2) + (i_3*stride_3))] = ((float32*)scan.v1_2[((scan.idx*stride_2) + (i_3*stride_3))]) + (float32*)scan.v0_2[(scan.idx*stride_4)]))
+      scan.v1_2[(((scan.idx + 1)*stride_4) + (i_3*stride_5))] = ((float32*)scan.v1_2[((scan.idx*stride_4) + (i_3*stride_5))]) + (float32*)scan.v0_2[(scan.idx*stride_2)]))
     }
   }
 }

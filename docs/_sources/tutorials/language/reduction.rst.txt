@@ -140,13 +140,13 @@ axis by different factors. The result is a nested reduction.
       buffer_map = {B_1: B, A_1: A} {
       for (i.outer: int32, 0, floordiv((n + 31), 32)) {
         for (i.inner: int32, 0, 32) {
-          if @likely((((i.outer*32) + i.inner) < n), dtype=bool, type="pure_intrin", index=0) {
+          if @likely((((i.outer*32) + i.inner) < n), dtype=bool, type="pure_intrin") {
             B_2[(((i.outer*32) + i.inner)*stride_2)] = 0f32
           }
           for (k.outer: int32, 0, floordiv((m + 15), 16)) {
             for (k.inner: int32, 0, 16) {
-              if @likely((((i.outer*32) + i.inner) < n), dtype=bool, type="pure_intrin", index=0) {
-                if @likely((((k.outer*16) + k.inner) < m), dtype=bool, type="pure_intrin", index=0) {
+              if @likely((((i.outer*32) + i.inner) < n), dtype=bool, type="pure_intrin") {
+                if @likely((((k.outer*16) + k.inner) < m), dtype=bool, type="pure_intrin") {
                   B_2[(((i.outer*32) + i.inner)*stride_2)] = ((float32*)B_2[(((i.outer*32) + i.inner)*stride_2)]) + (float32*)A_2[((((i.outer*32) + i.inner)*stride) + (((k.outer*16) + k.inner)*stride_1))]))
                 }
               }
@@ -186,13 +186,13 @@ If we are building a GPU kernel, we can bind the rows of B to GPU threads.
       buffer_map = {B_1: B, A_1: A} {
       attr [IterVar(blockIdx.x: int32, (nullptr), "ThreadIndex", "blockIdx.x")] "thread_extent" = floordiv((n + 31), 32);
       attr [IterVar(threadIdx.x: int32, (nullptr), "ThreadIndex", "threadIdx.x")] "thread_extent" = 32 {
-        if @likely((((blockIdx.x*32) + threadIdx.x) < n), dtype=bool, type="pure_intrin", index=0) {
+        if @likely((((blockIdx.x*32) + threadIdx.x) < n), dtype=bool, type="pure_intrin") {
           B_2[(((blockIdx.x*32) + threadIdx.x)*stride_2)] = 0f32
         }
         for (k.outer: int32, 0, floordiv((m + 15), 16)) {
           for (k.inner: int32, 0, 16) {
-            if @likely((((blockIdx.x*32) + threadIdx.x) < n), dtype=bool, type="pure_intrin", index=0) {
-              if @likely((((k.outer*16) + k.inner) < m), dtype=bool, type="pure_intrin", index=0) {
+            if @likely((((blockIdx.x*32) + threadIdx.x) < n), dtype=bool, type="pure_intrin") {
+              if @likely((((k.outer*16) + k.inner) < m), dtype=bool, type="pure_intrin") {
                 B_2[(((blockIdx.x*32) + threadIdx.x)*stride_2)] = ((float32*)B_2[(((blockIdx.x*32) + threadIdx.x)*stride_2)]) + (float32*)A_2[((((blockIdx.x*32) + threadIdx.x)*stride) + (((k.outer*16) + k.inner)*stride_1))]))
               }
             }
@@ -246,7 +246,7 @@ result B.rf. The factored dimension becomes the first dimension of B.rf.
           for (i: int32, 0, n) {
             B.rf[((k.inner*n) + i)] = 0f32
             for (k.outer: int32, 0, floordiv((m + 15), 16)) {
-              if @likely((((k.outer*16) + k.inner) < m), dtype=bool, type="pure_intrin", index=0) {
+              if @likely((((k.outer*16) + k.inner) < m), dtype=bool, type="pure_intrin") {
                 B.rf[((k.inner*n) + i)] = ((float32*)B.rf[((k.inner*n) + i)]) + (float32*)A_2[((i*stride) + (((k.outer*16) + k.inner)*stride_1))]))
               }
             }
@@ -284,7 +284,7 @@ the first axis of reduced result of B.f
 
  .. code-block:: none
 
-    [reduce(combiner=comm_reducer(result=[(x + y)], lhs=[x], rhs=[y], identity_element=[0f]), source=[B.rf(k.inner.v, ax0)], axis=[iter_var(k.inner.v, range(min=0, ext=16))], where=(bool)1, value_index=0)]
+    [reduce(combiner=comm_reducer(result=[(x + y)], lhs=[x], rhs=[y], identity_element=[0f]), source=[B.rf[k.inner.v, ax0]], axis=[iter_var(k.inner.v, range(min=0, ext=16))], where=(bool)1, value_index=0)]
 
 
 

@@ -9,7 +9,7 @@ var searchData=
   ['test',['test',['../structtvm_1_1runtime_1_1vm_1_1Instruction.html#adebc0e955069bdaa543df3a908351532',1,'tvm::runtime::vm::Instruction']]],
   ['then_5fcase',['then_case',['../classtvm_1_1tir_1_1IfThenElseNode.html#ae7245cad13c62b608897f8c7ba70b6f6',1,'tvm::tir::IfThenElseNode']]],
   ['thread_5fextent',['thread_extent',['../namespacetvm_1_1tir_1_1attr.html#a399eed804ecc482a607f0f65f07b78dd',1,'tvm::tir::attr']]],
-  ['thread_5ftag',['thread_tag',['../classtvm_1_1tir_1_1IterVarNode.html#a5557fabe09e48331422c89385cf45966',1,'tvm::tir::IterVarNode']]],
+  ['thread_5ftag',['thread_tag',['../classtvm_1_1tir_1_1IterVarNode.html#a2addeb80da895ace5d42423cc959f862',1,'tvm::tir::IterVarNode']]],
   ['thread_5fwarp_5fsize',['thread_warp_size',['../classtvm_1_1TargetNode.html#a4a6adb62a05cc26bd922998ab0b6dfce',1,'tvm::TargetNode']]],
   ['threshold',['threshold',['../structtvm_1_1relay_1_1MultiBoxTransformLocAttrs.html#aad37e7285068b8ea93b27caaad5409d2',1,'tvm::relay::MultiBoxTransformLocAttrs::threshold()'],['../structtvm_1_1relay_1_1ProposalAttrs.html#ae8473a10238c2e4f21875b7e40cbdc10',1,'tvm::relay::ProposalAttrs::threshold()']]],
   ['tile_5fsize',['tile_size',['../structtvm_1_1relay_1_1ConvWinogradWeightTransformAttrs.html#a53c9fee4031f509f6cd8bf148843690f',1,'tvm::relay::ConvWinogradWeightTransformAttrs::tile_size()'],['../structtvm_1_1relay_1_1Conv2DWinogradAttrs.html#a3d89aa2ad84ad78f147b5bf068f89f62',1,'tvm::relay::Conv2DWinogradAttrs::tile_size()'],['../structtvm_1_1relay_1_1Conv3DWinogradAttrs.html#a67f940d2505ef19f2d8b4fd4cb1fd6d7',1,'tvm::relay::Conv3DWinogradAttrs::tile_size()']]],
@@ -65,7 +65,7 @@ var searchData=
   ['type_5fconstraints',['type_constraints',['../classtvm_1_1FuncTypeNode.html#a6dd6e8ed07019caa87943ec47d065499',1,'tvm::FuncTypeNode']]],
   ['type_5fdefinitions',['type_definitions',['../classtvm_1_1IRModuleNode.html#a547dbf39f1ecf5324153e10f7ca724c3',1,'tvm::IRModuleNode']]],
   ['type_5findex_5f',['type_index_',['../classtvm_1_1runtime_1_1Object.html#a4bfc2586cb55f2af47728187b3256255',1,'tvm::runtime::Object']]],
-  ['type_5finfo',['type_info',['../classtvm_1_1AttrFieldInfoNode.html#a625467e8153ee8657ae080693baa374c',1,'tvm::AttrFieldInfoNode']]],
+  ['type_5finfo',['type_info',['../classtvm_1_1AttrFieldInfoNode.html#aa0e740cddb317c3a74a12302ab531b9b',1,'tvm::AttrFieldInfoNode']]],
   ['type_5fkey_5f',['type_key_',['../structtvm_1_1detail_1_1AttrInitEntry.html#a573a25648ca0d3d8fe28f6c7614248bf',1,'tvm::detail::AttrInitEntry']]],
   ['type_5fparams',['type_params',['../classtvm_1_1FuncTypeNode.html#acc1bb373c5851f6cec016a874f304d05',1,'tvm::FuncTypeNode::type_params()'],['../classtvm_1_1relay_1_1FunctionNode.html#a558ecb3ab57111b1a0f347764054d5e1',1,'tvm::relay::FunctionNode::type_params()']]],
   ['type_5fvars',['type_vars',['../classtvm_1_1TypeDataNode.html#a350a23efc88be1def5b93d27ac6fa88b',1,'tvm::TypeDataNode']]]
