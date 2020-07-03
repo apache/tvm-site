@@ -93,14 +93,14 @@ Before doing anything, let us print out the IR code of default schedule.
  .. code-block:: none
 
     primfn(A_1: handle, B_1: handle) -> ()
-      attr = {"tir.noalias": True, "global_symbol": "main"}
-      buffers = {A: Buffer(A_2: handle, float32, [n: int32, m: int32], [stride: int32, stride_1: int32], type="auto"),
-                 B: Buffer(B_2: handle, float32, [n], [stride_2: int32], type="auto")}
-      buffer_map = {B_1: B, A_1: A} {
+      attr = {"global_symbol": "main", "tir.noalias": True}
+      buffers = {B: Buffer(B_2: handle, float32, [n: int32], [stride: int32], type="auto"),
+                 A: Buffer(A_2: handle, float32, [n, m: int32], [stride_1: int32, stride_2: int32], type="auto")}
+      buffer_map = {A_1: A, B_1: B} {
       for (i: int32, 0, n) {
-        B_2[(i*stride_2)] = 0f32
+        B_2[(i*stride)] = 0f32
         for (k: int32, 0, m) {
-          B_2[(i*stride_2)] = ((float32*)B_2[(i*stride_2)]) + (float32*)A_2[((i*stride) + (k*stride_1))]))
+          B_2[(i*stride)] = ((float32*)B_2[(i*stride)] + (float32*)A_2[((i*stride_1) + (k*stride_2))])
         }
       }
     }
@@ -134,20 +134,20 @@ axis by different factors. The result is a nested reduction.
  .. code-block:: none
 
     primfn(A_1: handle, B_1: handle) -> ()
-      attr = {"tir.noalias": True, "global_symbol": "main"}
-      buffers = {A: Buffer(A_2: handle, float32, [n: int32, m: int32], [stride: int32, stride_1: int32], type="auto"),
-                 B: Buffer(B_2: handle, float32, [n], [stride_2: int32], type="auto")}
-      buffer_map = {B_1: B, A_1: A} {
+      attr = {"global_symbol": "main", "tir.noalias": True}
+      buffers = {B: Buffer(B_2: handle, float32, [n: int32], [stride: int32], type="auto"),
+                 A: Buffer(A_2: handle, float32, [n, m: int32], [stride_1: int32, stride_2: int32], type="auto")}
+      buffer_map = {A_1: A, B_1: B} {
       for (i.outer: int32, 0, floordiv((n + 31), 32)) {
         for (i.inner: int32, 0, 32) {
-          if @likely((((i.outer*32) + i.inner) < n), dtype=bool, type="pure_intrin") {
-            B_2[(((i.outer*32) + i.inner)*stride_2)] = 0f32
+          if @tir.likely((((i.outer*32) + i.inner) < n), dtype=bool) {
+            B_2[(((i.outer*32) + i.inner)*stride)] = 0f32
           }
           for (k.outer: int32, 0, floordiv((m + 15), 16)) {
             for (k.inner: int32, 0, 16) {
-              if @likely((((i.outer*32) + i.inner) < n), dtype=bool, type="pure_intrin") {
-                if @likely((((k.outer*16) + k.inner) < m), dtype=bool, type="pure_intrin") {
-                  B_2[(((i.outer*32) + i.inner)*stride_2)] = ((float32*)B_2[(((i.outer*32) + i.inner)*stride_2)]) + (float32*)A_2[((((i.outer*32) + i.inner)*stride) + (((k.outer*16) + k.inner)*stride_1))]))
+              if @tir.likely((((i.outer*32) + i.inner) < n), dtype=bool) {
+                if @tir.likely((((k.outer*16) + k.inner) < m), dtype=bool) {
+                  B_2[(((i.outer*32) + i.inner)*stride)] = ((float32*)B_2[(((i.outer*32) + i.inner)*stride)] + (float32*)A_2[((((i.outer*32) + i.inner)*stride_1) + (((k.outer*16) + k.inner)*stride_2))])
                 }
               }
             }
@@ -180,20 +180,20 @@ If we are building a GPU kernel, we can bind the rows of B to GPU threads.
  .. code-block:: none
 
     primfn(A_1: handle, B_1: handle) -> ()
-      attr = {"tir.noalias": True, "global_symbol": "main"}
-      buffers = {A: Buffer(A_2: handle, float32, [n: int32, m: int32], [stride: int32, stride_1: int32], type="auto"),
-                 B: Buffer(B_2: handle, float32, [n], [stride_2: int32], type="auto")}
-      buffer_map = {B_1: B, A_1: A} {
+      attr = {"global_symbol": "main", "tir.noalias": True}
+      buffers = {B: Buffer(B_2: handle, float32, [n: int32], [stride: int32], type="auto"),
+                 A: Buffer(A_2: handle, float32, [n, m: int32], [stride_1: int32, stride_2: int32], type="auto")}
+      buffer_map = {A_1: A, B_1: B} {
       attr [IterVar(blockIdx.x: int32, (nullptr), "ThreadIndex", "blockIdx.x")] "thread_extent" = floordiv((n + 31), 32);
       attr [IterVar(threadIdx.x: int32, (nullptr), "ThreadIndex", "threadIdx.x")] "thread_extent" = 32 {
-        if @likely((((blockIdx.x*32) + threadIdx.x) < n), dtype=bool, type="pure_intrin") {
-          B_2[(((blockIdx.x*32) + threadIdx.x)*stride_2)] = 0f32
+        if @tir.likely((((blockIdx.x*32) + threadIdx.x) < n), dtype=bool) {
+          B_2[(((blockIdx.x*32) + threadIdx.x)*stride)] = 0f32
         }
         for (k.outer: int32, 0, floordiv((m + 15), 16)) {
           for (k.inner: int32, 0, 16) {
-            if @likely((((blockIdx.x*32) + threadIdx.x) < n), dtype=bool, type="pure_intrin") {
-              if @likely((((k.outer*16) + k.inner) < m), dtype=bool, type="pure_intrin") {
-                B_2[(((blockIdx.x*32) + threadIdx.x)*stride_2)] = ((float32*)B_2[(((blockIdx.x*32) + threadIdx.x)*stride_2)]) + (float32*)A_2[((((blockIdx.x*32) + threadIdx.x)*stride) + (((k.outer*16) + k.inner)*stride_1))]))
+            if @tir.likely((((blockIdx.x*32) + threadIdx.x) < n), dtype=bool) {
+              if @tir.likely((((k.outer*16) + k.inner) < m), dtype=bool) {
+                B_2[(((blockIdx.x*32) + threadIdx.x)*stride)] = ((float32*)B_2[(((blockIdx.x*32) + threadIdx.x)*stride)] + (float32*)A_2[((((blockIdx.x*32) + threadIdx.x)*stride_1) + (((k.outer*16) + k.inner)*stride_2))])
               }
             }
           }
@@ -236,26 +236,26 @@ result B.rf. The factored dimension becomes the first dimension of B.rf.
  .. code-block:: none
 
     primfn(A_1: handle, B_1: handle) -> ()
-      attr = {"tir.noalias": True, "global_symbol": "main"}
-      buffers = {A: Buffer(A_2: handle, float32, [n: int32, m: int32], [stride: int32, stride_1: int32], type="auto"),
-                 B: Buffer(B_2: handle, float32, [n], [stride_2: int32], type="auto")}
-      buffer_map = {B_1: B, A_1: A} {
+      attr = {"global_symbol": "main", "tir.noalias": True}
+      buffers = {B: Buffer(B_2: handle, float32, [n: int32], [stride: int32], type="auto"),
+                 A: Buffer(A_2: handle, float32, [n, m: int32], [stride_1: int32, stride_2: int32], type="auto")}
+      buffer_map = {A_1: A, B_1: B} {
       attr [B.rf: handle] "storage_scope" = "global";
       allocate(B.rf, float32, [(n*16)]) {
         for (k.inner: int32, 0, 16) {
           for (i: int32, 0, n) {
             B.rf[((k.inner*n) + i)] = 0f32
             for (k.outer: int32, 0, floordiv((m + 15), 16)) {
-              if @likely((((k.outer*16) + k.inner) < m), dtype=bool, type="pure_intrin") {
-                B.rf[((k.inner*n) + i)] = ((float32*)B.rf[((k.inner*n) + i)]) + (float32*)A_2[((i*stride) + (((k.outer*16) + k.inner)*stride_1))]))
+              if @tir.likely((((k.outer*16) + k.inner) < m), dtype=bool) {
+                B.rf[((k.inner*n) + i)] = ((float32*)B.rf[((k.inner*n) + i)] + (float32*)A_2[((i*stride_1) + (((k.outer*16) + k.inner)*stride_2))])
               }
             }
           }
         }
         for (ax0: int32, 0, n) {
-          B_2[(ax0*stride_2)] = 0f32
+          B_2[(ax0*stride)] = 0f32
           for (k.inner.v: int32, 0, 16) {
-            B_2[(ax0*stride_2)] = ((float32*)B_2[(ax0*stride_2)]) + (float32*)B.rf[((k.inner.v*n) + ax0)]))
+            B_2[(ax0*stride)] = ((float32*)B_2[(ax0*stride)] + (float32*)B.rf[((k.inner.v*n) + ax0)])
           }
         }
       }
@@ -411,17 +411,17 @@ Here is an example for 2D convolution with filter size = [3, 3] and strides = [1
  .. code-block:: none
 
     primfn(Input_1: handle, Filter_1: handle, Output_1: handle) -> ()
-      attr = {"tir.noalias": True, "global_symbol": "main"}
+      attr = {"global_symbol": "main", "tir.noalias": True}
       buffers = {Output: Buffer(Output_2: handle, float32, [(n: int32 - 2), (n - 2)], []),
-                 Input: Buffer(Input_2: handle, float32, [n, n], [stride: int32, stride_1: int32], type="auto"),
-                 Filter: Buffer(Filter_2: handle, float32, [3, 3], [])}
-      buffer_map = {Filter_1: Filter, Output_1: Output, Input_1: Input} {
+                 Filter: Buffer(Filter_2: handle, float32, [3, 3], []),
+                 Input: Buffer(Input_2: handle, float32, [n, n], [stride: int32, stride_1: int32], type="auto")}
+      buffer_map = {Input_1: Input, Filter_1: Filter, Output_1: Output} {
       for (i: int32, 0, (n - 2)) {
         for (j: int32, 0, (n - 2)) {
           Output_2[((i*(n - 2)) + j)] = 0f32
           for (di: int32, 0, 3) {
             for (dj: int32, 0, 3) {
-              Output_2[((i*(n - 2)) + j)] = ((float32*)Output_2[((i*(n - 2)) + j)]) + ((float32*)Input_2[(((i + di)*stride) + ((j + dj)*stride_1))])*(float32*)Filter_2[((di*3) + dj)])))
+              Output_2[((i*(n - 2)) + j)] = ((float32*)Output_2[((i*(n - 2)) + j)] + ((float32*)Input_2[(((i + di)*stride) + ((j + dj)*stride_1))]*(float32*)Filter_2[((di*3) + dj)]))
             }
           }
         }

@@ -1,6 +1,5 @@
 var searchData=
 [
-  ['call_5ftype',['call_type',['../classtvm_1_1tir_1_1CallNode.html#aa0fadf83d2540a578ffbc6a673a94fb5',1,'tvm::tir::CallNode']]],
   ['caller_5freturn_5fregister',['caller_return_register',['../structtvm_1_1runtime_1_1vm_1_1VMFrame.html#a2f6c425a89ee6872ead9bc71ab87fdd1',1,'tvm::runtime::vm::VMFrame']]],
   ['canonical_5fsimplify',['canonical_simplify',['../classtvm_1_1arith_1_1Analyzer.html#a6cdf29adeceaa20b8c3dd7c26b92cd00',1,'tvm::arith::Analyzer']]],
   ['ceil_5fmode',['ceil_mode',['../structtvm_1_1relay_1_1MaxPool2DAttrs.html#a40f8ca285721a1a69b37ab630d601632',1,'tvm::relay::MaxPool2DAttrs::ceil_mode()'],['../structtvm_1_1relay_1_1AvgPool2DAttrs.html#a843fa213a45d524b669f11b7a0438eb7',1,'tvm::relay::AvgPool2DAttrs::ceil_mode()'],['../structtvm_1_1relay_1_1MaxPool1DAttrs.html#a8fec642661f694c685cf85f1b85b1155',1,'tvm::relay::MaxPool1DAttrs::ceil_mode()'],['../structtvm_1_1relay_1_1AvgPool1DAttrs.html#ac9c3f2c26da975c9d78bc33955163281',1,'tvm::relay::AvgPool1DAttrs::ceil_mode()'],['../structtvm_1_1relay_1_1MaxPool3DAttrs.html#a6a5bb2bda2cb0b5654987cd08d74c64a',1,'tvm::relay::MaxPool3DAttrs::ceil_mode()'],['../structtvm_1_1relay_1_1AvgPool3DAttrs.html#a74189cc04dbb6c2d82e2c2d68d94ecb5',1,'tvm::relay::AvgPool3DAttrs::ceil_mode()']]],

@@ -1,5 +1,4 @@
 var searchData=
 [
-  ['op',['Op',['../namespacetvm_1_1relay.html#a6c46d15e80f1a9916b8e9c264a185c98',1,'tvm::relay']]],
-  ['opnode',['OpNode',['../namespacetvm_1_1relay.html#ac9d4f2cf78a48659817a88d890e1d142',1,'tvm::relay']]]
+  ['mapped_5ftype',['mapped_type',['../classtvm_1_1MapNode.html#a172a3009f9bedfde0e0a8c3e88aa2c34',1,'tvm::MapNode::mapped_type()'],['../classtvm_1_1Map.html#a212b331200619149e612ce92f3fef1f8',1,'tvm::Map::mapped_type()']]]
 ];

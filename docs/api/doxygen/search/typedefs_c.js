@@ -1,9 +1,12 @@
 var searchData=
 [
-  ['sequential',['Sequential',['../namespacetvm_1_1relay_1_1transform.html#a3ae923037d22b4640b450c06e6c1e33e',1,'tvm::relay::transform']]],
-  ['shape',['Shape',['../namespacetvm_1_1relay.html#a4d64348ae2b75977e167109fb4af4409',1,'tvm::relay']]],
-  ['sourcename',['SourceName',['../namespacetvm_1_1relay.html#a14eacafcb803b0757e48654bb1bac655',1,'tvm::relay']]],
-  ['span',['Span',['../namespacetvm_1_1relay.html#af40ca6124bc2e88f2323eeb79d326cc0',1,'tvm::relay']]],
-  ['spannode',['SpanNode',['../namespacetvm_1_1relay.html#a7d0fa6578e97d0d64b08865f94f04827',1,'tvm::relay']]],
-  ['storagetype',['StorageType',['../classtvm_1_1runtime_1_1SimpleObjAllocator_1_1Handler.html#ada6a65394767c674dbbfb5937ef51bd6',1,'tvm::runtime::SimpleObjAllocator::Handler::StorageType()'],['../classtvm_1_1runtime_1_1SimpleObjAllocator_1_1ArrayHandler.html#a67e86db3290b1d3bd4aca7e7a2faf187',1,'tvm::runtime::SimpleObjAllocator::ArrayHandler::StorageType()']]]
+  ['refcountertype',['RefCounterType',['../classtvm_1_1runtime_1_1Object.html#a55549a6c23987890246248682560a03d',1,'tvm::runtime::Object']]],
+  ['reference',['reference',['../classtvm_1_1MapNode_1_1iterator.html#ab4c8e2a875998396500992c2de657a71',1,'tvm::MapNode::iterator::reference()'],['../classtvm_1_1Map_1_1iterator.html#a7992d079bd1c9a5bb5c01689b0f779b6',1,'tvm::Map::iterator::reference()'],['../classtvm_1_1runtime_1_1IterAdapter.html#a5fe6cfc0f51ecc13f40796d626cdbfd5',1,'tvm::runtime::IterAdapter::reference()'],['../classtvm_1_1runtime_1_1ReverseIterAdapter.html#a0e19189278a3986380ce021cac7ceded',1,'tvm::runtime::ReverseIterAdapter::reference()']]],
+  ['region',['Region',['../namespacetvm_1_1tir.html#a8277e2a3d81a80a4776705673df51e0a',1,'tvm::tir']]],
+  ['regname',['RegName',['../namespacetvm_1_1runtime_1_1vm.html#a3bbbf700719e9dc3dda2bc25210c18ae',1,'tvm::runtime::vm']]],
+  ['relayreftype',['RelayRefType',['../namespacetvm_1_1relay.html#a13fd39dbc2a639262858e9b72e8fb37f',1,'tvm::relay']]],
+  ['relayreftypenode',['RelayRefTypeNode',['../namespacetvm_1_1relay.html#ae665239bd9119c8afb037d47781bf237',1,'tvm::relay']]],
+  ['result_5ftype',['result_type',['../classtvm_1_1TypeFunctor_3_01R_07const_01Type_01_6n_00_01Args_8_8_8_08_4.html#a24d4a3522ee6c4cdeed80dcdcc1424ad',1,'tvm::TypeFunctor&lt; R(const Type &amp;n, Args...)&gt;::result_type()'],['../classtvm_1_1NodeFunctor_3_01R_07const_01ObjectRef_01_6n_00_01Args_8_8_8_08_4.html#ac7f687cb7dda02407b578a6683fa708a',1,'tvm::NodeFunctor&lt; R(const ObjectRef &amp;n, Args...)&gt;::result_type()'],['../classtvm_1_1relay_1_1ExprFunctor_3_01R_07const_01Expr_01_6n_00_01Args_8_8_8_08_4.html#a4558886f7f179396ee11b5fe91927793',1,'tvm::relay::ExprFunctor&lt; R(const Expr &amp;n, Args...)&gt;::result_type()'],['../classtvm_1_1relay_1_1PatternFunctor_3_01R_07const_01Pattern_01_6n_00_01Args_8_8_8_08_4.html#ad3446527dc668d6e1b3e753378d4e4d6',1,'tvm::relay::PatternFunctor&lt; R(const Pattern &amp;n, Args...)&gt;::result_type()'],['../classtvm_1_1tir_1_1ExprFunctor_3_01R_07const_01PrimExpr_01_6n_00_01Args_8_8_8_08_4.html#aa334dfc7ba5e0e7b434da07bed12dde4',1,'tvm::tir::ExprFunctor&lt; R(const PrimExpr &amp;n, Args...)&gt;::result_type()'],['../classtvm_1_1tir_1_1StmtFunctor_3_01R_07const_01Stmt_01_6n_00_01Args_8_8_8args_08_4.html#ab5c892a2e36985e58d69f7b2ca2e0260',1,'tvm::tir::StmtFunctor&lt; R(const Stmt &amp;n, Args...args)&gt;::result_type()']]],
+  ['resulttype',['ResultType',['../structtvm_1_1runtime_1_1Array_1_1ValueConverter.html#a0db77cfd8032391d76dffc88eae8e09b',1,'tvm::runtime::Array::ValueConverter']]],
+  ['reverse_5fiterator',['reverse_iterator',['../classtvm_1_1runtime_1_1Array.html#a4886f1509998e380f032896a5afb27b9',1,'tvm::runtime::Array']]]
 ];

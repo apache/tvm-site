@@ -52,6 +52,7 @@ var searchData=
   ['conv3dattrs',['Conv3DAttrs',['../structtvm_1_1relay_1_1Conv3DAttrs.html',1,'tvm::relay']]],
   ['conv3dtransposeattrs',['Conv3DTransposeAttrs',['../structtvm_1_1relay_1_1Conv3DTransposeAttrs.html',1,'tvm::relay']]],
   ['conv3dwinogradattrs',['Conv3DWinogradAttrs',['../structtvm_1_1relay_1_1Conv3DWinogradAttrs.html',1,'tvm::relay']]],
+  ['convgemmweighttransformattrs',['ConvGemmWeightTransformAttrs',['../structtvm_1_1relay_1_1ConvGemmWeightTransformAttrs.html',1,'tvm::relay']]],
   ['convwinogradweighttransformattrs',['ConvWinogradWeightTransformAttrs',['../structtvm_1_1relay_1_1ConvWinogradWeightTransformAttrs.html',1,'tvm::relay']]],
   ['correlationattrs',['CorrelationAttrs',['../structtvm_1_1relay_1_1CorrelationAttrs.html',1,'tvm::relay']]],
   ['cropandresizeattrs',['CropAndResizeAttrs',['../structtvm_1_1relay_1_1CropAndResizeAttrs.html',1,'tvm::relay']]]

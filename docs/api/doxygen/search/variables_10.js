@@ -14,7 +14,6 @@ var searchData=
   ['regions',['regions',['../classtvm_1_1te_1_1TensorIntrinCallNode.html#a4c934a6d85bf27b3263ad0d79fb17144',1,'tvm::te::TensorIntrinCallNode']]],
   ['register_5ffile',['register_file',['../structtvm_1_1runtime_1_1vm_1_1VMFrame.html#a583dcf6c0ed3f3d2916679382c7a0775',1,'tvm::runtime::vm::VMFrame']]],
   ['register_5ffile_5fsize',['register_file_size',['../structtvm_1_1runtime_1_1vm_1_1VMFunction.html#a5b910095e5c2826cf57793afb4f2078a',1,'tvm::runtime::vm::VMFunction']]],
-  ['reinterpret',['reinterpret',['../classtvm_1_1tir_1_1CallNode.html#afd029e12c4b28b7d6fea4a8bf27c6e50',1,'tvm::tir::CallNode']]],
   ['relations',['relations',['../classtvm_1_1arith_1_1IntConstraintsNode.html#a078c29fba655311710227460312e78b5',1,'tvm::arith::IntConstraintsNode::relations()'],['../classtvm_1_1te_1_1StageNode.html#ad1c0f8dc1f0f406a2abcd05fdad8fad5',1,'tvm::te::StageNode::relations()']]],
   ['repeats',['repeats',['../structtvm_1_1relay_1_1RepeatAttrs.html#ade3005a90c1ff77a1f583c4a7ba898e0',1,'tvm::relay::RepeatAttrs']]],
   ['reps',['reps',['../structtvm_1_1relay_1_1TileAttrs.html#acac0351f86c23beb264227981424022e',1,'tvm::relay::TileAttrs']]],

@@ -262,6 +262,32 @@ we can match the graph of conv2d+bias_add+relu or the graph of conv2d+bias_add.<
 </pre></div>
 </div>
 </div>
+<div class="section" id="matching-types">
+<h3>Matching Types<a class="headerlink" href="#matching-types" title="Permalink to this headline">¶</a></h3>
+<p>In addition to matching ops with attributes, we can also make a pattern to match their types, in interms of the shape and data type. Here are some examples:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span class="k">def</span> <span class="nf">test_match_type</span><span class="p">():</span>
+    <span class="c1"># Match any op with float32</span>
+    <span class="n">pat1</span> <span class="o">=</span> <span class="n">has_dtype</span><span class="p">(</span><span class="s1">&#39;float32&#39;</span><span class="p">)</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="n">relay</span><span class="o">.</span><span class="n">var</span><span class="p">(</span><span class="s1">&#39;x&#39;</span><span class="p">,</span> <span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="s1">&#39;float32&#39;</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">pat1</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+
+    <span class="c1"># Match any op with shape (10, 10)</span>
+    <span class="n">pat2</span> <span class="o">=</span> <span class="n">has_shape</span><span class="p">((</span><span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">))</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="n">relay</span><span class="o">.</span><span class="n">var</span><span class="p">(</span><span class="s1">&#39;x&#39;</span><span class="p">,</span> <span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">10</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="s1">&#39;float32&#39;</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">pat2</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+
+    <span class="c1"># Match conv2d+relu with a certain shape</span>
+    <span class="n">conv2d</span> <span class="o">=</span> <span class="n">is_op</span><span class="p">(</span><span class="s1">&#39;nn.conv2d&#39;</span><span class="p">)(</span><span class="n">wildcard</span><span class="p">(),</span> <span class="n">wildcard</span><span class="p">())</span>
+    <span class="n">pat3</span> <span class="o">=</span> <span class="n">is_op</span><span class="p">(</span><span class="s1">&#39;nn.relu&#39;</span><span class="p">)(</span><span class="n">conv2d</span><span class="p">)</span><span class="o">.</span><span class="n">has_shape</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="mi">32</span><span class="p">,</span> <span class="mi">28</span><span class="p">,</span> <span class="mi">28</span><span class="p">))</span>
+
+    <span class="n">x</span> <span class="o">=</span> <span class="n">relay</span><span class="o">.</span><span class="n">var</span><span class="p">(</span><span class="s1">&#39;x&#39;</span><span class="p">,</span> <span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">28</span><span class="p">,</span> <span class="mi">28</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="s1">&#39;float32&#39;</span><span class="p">)</span>
+    <span class="n">w</span> <span class="o">=</span> <span class="n">relay</span><span class="o">.</span><span class="n">var</span><span class="p">(</span><span class="s1">&#39;w&#39;</span><span class="p">,</span> <span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="mi">32</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="s1">&#39;float32&#39;</span><span class="p">)</span>
+    <span class="n">conv2d</span> <span class="o">=</span> <span class="n">relay</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">conv2d</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">w</span><span class="p">,</span> <span class="n">strides</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="n">padding</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
+    <span class="n">relu</span> <span class="o">=</span> <span class="n">relay</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">relu</span><span class="p">(</span><span class="n">conv2d</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">pat3</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">relu</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
 <div class="section" id="matching-non-call-nodes">
 <h3>Matching Non-Call Nodes<a class="headerlink" href="#matching-non-call-nodes" title="Permalink to this headline">¶</a></h3>
 <p>Sometimes we may also want to match a pattern that includes Tuple or TupleGetItem nodes.
@@ -274,7 +300,7 @@ Since there are not call nodes, we need to use specific pattern nodes to match t
     <span class="k">assert</span> <span class="n">tuple_pattern</span><span class="o">.</span><span class="n">match</span><span class="p">(</span><span class="n">relay</span><span class="o">.</span><span class="n">expr</span><span class="o">.</span><span class="n">Tuple</span><span class="p">((</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">,</span><span class="n">z</span><span class="p">)))</span>
 </pre></div>
 </div>
-<p>The next example is matching a pattern of batch_norm -&gt; get(0) -&gt; relu:</p>
+<p>The next example is matching a pattern of batch_norm -&gt; get(0) -&gt; relu. Note that you can also use <cite>is_tuple_get_item(bn_node)</cite> to match a <cite>TupleGetItem</cite> node with any index.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span class="k">def</span> <span class="nf">test_match_tuple_get_item</span><span class="p">():</span>
     <span class="n">bn_node</span> <span class="o">=</span> <span class="n">is_op</span><span class="p">(</span><span class="s1">&#39;nn.batch_norm&#39;</span><span class="p">)(</span><span class="n">wildcard</span><span class="p">(),</span> <span class="n">wildcard</span><span class="p">(),</span> <span class="n">wildcard</span><span class="p">(),</span> <span class="n">wildcard</span><span class="p">(),</span> <span class="n">wildcard</span><span class="p">())</span>
     <span class="n">tuple_get_item_node</span> <span class="o">=</span> <span class="n">is_tuple_get_item</span><span class="p">(</span><span class="n">bn_node</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
@@ -386,14 +412,16 @@ use <code class="docutils literal notranslate"><span class="pre">is_expr</span><
 <div class="highlight-default notranslate"><div class="highlight"><pre>Pattern ::= expr
         | *
         | pattern(pattern1, ... patternN)
-        | has_type(pattern, type)
-        | has_attr(pattern, attrs)
+        | has_type(type)
+        | has_dtype(type)
+        | has_shape(shape)
+        | has_attr(attrs)
         | is_var(name)
         | is_constant()
         | is_expr(expr)
         | is_op(op_name)
         | is_tuple()
-        | is_tuple_get_item()
+        | is_tuple_get_item(pattern, index = None)
         | pattern1 `|` pattern2
         | dominates(parent_pattern, path_pattern, child_pattern)
 </pre></div>
@@ -410,6 +438,14 @@ use <code class="docutils literal notranslate"><span class="pre">is_expr</span><
 <div class="section" id="type-pattern">
 <h3>Type Pattern<a class="headerlink" href="#type-pattern" title="Permalink to this headline">¶</a></h3>
 <p>Check that the expression matched by the nested pattern has a particular type.</p>
+</div>
+<div class="section" id="dtype-pattern">
+<h3>DType Pattern<a class="headerlink" href="#dtype-pattern" title="Permalink to this headline">¶</a></h3>
+<p>Check that the expression matched by the nested pattern has a particular data type.</p>
+</div>
+<div class="section" id="shape-pattern">
+<h3>Shape Pattern<a class="headerlink" href="#shape-pattern" title="Permalink to this headline">¶</a></h3>
+<p>Check that the expression matched by the nested pattern has a particular output shape.</p>
 </div>
 <div class="section" id="attribute-pattern">
 <h3>Attribute Pattern<a class="headerlink" href="#attribute-pattern" title="Permalink to this headline">¶</a></h3>

@@ -125,6 +125,7 @@
 <li class="toctree-l2"><a class="reference internal" href="../index.html#auto-tuning">Auto tuning</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../index.html#developer-tutorials">Developer Tutorials</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../index.html#topi-tvm-operator-inventory">TOPI: TVM Operator Inventory</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../index.html#micro-tvm">Micro TVM</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../../vta/index.html">VTA: Deep Learning Accelerator Stack</a></li>
@@ -256,14 +257,14 @@ schedule computes tensor in a serial manner in a row-major order.</p>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
 <div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre>primfn(A_1: handle, B_1: handle, C_1: handle) -&gt; ()
-  attr = {&quot;tir.noalias&quot;: True, &quot;global_symbol&quot;: &quot;main&quot;}
-  buffers = {A: Buffer(A_2: handle, float32, [m: int32, n: int32], [stride: int32, stride_1: int32], type=&quot;auto&quot;),
+  attr = {&quot;global_symbol&quot;: &quot;main&quot;, &quot;tir.noalias&quot;: True}
+  buffers = {C: Buffer(C_2: handle, float32, [m: int32, n: int32], [stride: int32, stride_1: int32], type=&quot;auto&quot;),
              B: Buffer(B_2: handle, float32, [m, n], [stride_2: int32, stride_3: int32], type=&quot;auto&quot;),
-             C: Buffer(C_2: handle, float32, [m, n], [stride_4: int32, stride_5: int32], type=&quot;auto&quot;)}
-  buffer_map = {C_1: C, B_1: B, A_1: A} {
+             A: Buffer(A_2: handle, float32, [m, n], [stride_4: int32, stride_5: int32], type=&quot;auto&quot;)}
+  buffer_map = {A_1: A, B_1: B, C_1: C} {
   for (i: int32, 0, m) {
     for (j: int32, 0, n) {
-      C_2[((i*stride_4) + (j*stride_5))] = ((float32*)A_2[((i*stride) + (j*stride_1))])*(float32*)B_2[((i*stride_2) + (j*stride_3))]))
+      C_2[((i*stride) + (j*stride_1))] = ((float32*)A_2[((i*stride_4) + (j*stride_5))]*(float32*)B_2[((i*stride_2) + (j*stride_3))])
     }
   }
 }
@@ -288,14 +289,14 @@ methods to schedule every stage.</p>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
 <div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre>primfn(A_1: handle, B_1: handle) -&gt; ()
-  attr = {&quot;tir.noalias&quot;: True, &quot;global_symbol&quot;: &quot;main&quot;}
-  buffers = {A: Buffer(A_2: handle, float32, [m: int32], [stride: int32], type=&quot;auto&quot;),
-             B: Buffer(B_2: handle, float32, [m], [stride_1: int32], type=&quot;auto&quot;)}
-  buffer_map = {B_1: B, A_1: A} {
+  attr = {&quot;global_symbol&quot;: &quot;main&quot;, &quot;tir.noalias&quot;: True}
+  buffers = {B: Buffer(B_2: handle, float32, [m: int32], [stride: int32], type=&quot;auto&quot;),
+             A: Buffer(A_2: handle, float32, [m], [stride_1: int32], type=&quot;auto&quot;)}
+  buffer_map = {A_1: A, B_1: B} {
   for (i.outer: int32, 0, floordiv((m + 31), 32)) {
     for (i.inner: int32, 0, 32) {
-      if @likely((((i.outer*32) + i.inner) &lt; m), dtype=bool, type=&quot;pure_intrin&quot;) {
-        B_2[(((i.outer*32) + i.inner)*stride_1)] = ((float32*)A_2[(((i.outer*32) + i.inner)*stride)])*2f32)
+      if @tir.likely((((i.outer*32) + i.inner) &lt; m), dtype=bool) {
+        B_2[(((i.outer*32) + i.inner)*stride)] = ((float32*)A_2[(((i.outer*32) + i.inner)*stride_1)]*2f32)
       }
     }
   }
@@ -316,14 +317,14 @@ contrary with <code class="code docutils literal notranslate"><span class="pre">
 </div>
 <p class="sphx-glr-script-out">Out:</p>
 <div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre>primfn(A_1: handle, B_1: handle) -&gt; ()
-  attr = {&quot;tir.noalias&quot;: True, &quot;global_symbol&quot;: &quot;main&quot;}
-  buffers = {A: Buffer(A_2: handle, float32, [m: int32], [stride: int32], type=&quot;auto&quot;),
-             B: Buffer(B_2: handle, float32, [m], [stride_1: int32], type=&quot;auto&quot;)}
-  buffer_map = {B_1: B, A_1: A} {
+  attr = {&quot;global_symbol&quot;: &quot;main&quot;, &quot;tir.noalias&quot;: True}
+  buffers = {B: Buffer(B_2: handle, float32, [m: int32], [stride: int32], type=&quot;auto&quot;),
+             A: Buffer(A_2: handle, float32, [m], [stride_1: int32], type=&quot;auto&quot;)}
+  buffer_map = {A_1: A, B_1: B} {
   for (i.outer: int32, 0, 32) {
     for (i.inner: int32, 0, floordiv((m + 31), 32)) {
-      if @likely(((i.inner + (i.outer*floordiv((m + 31), 32))) &lt; m), dtype=bool, type=&quot;pure_intrin&quot;) {
-        B_2[((i.inner + (i.outer*floordiv((m + 31), 32)))*stride_1)] = (float32*)A_2[((i.inner + (i.outer*floordiv((m + 31), 32)))*stride)])
+      if @tir.likely(((i.inner + (i.outer*floordiv((m + 31), 32))) &lt; m), dtype=bool) {
+        B_2[((i.inner + (i.outer*floordiv((m + 31), 32)))*stride)] = (float32*)A_2[((i.inner + (i.outer*floordiv((m + 31), 32)))*stride_1)]
       }
     }
   }
@@ -347,17 +348,17 @@ axises.</p>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
 <div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre>primfn(A_1: handle, B_1: handle) -&gt; ()
-  attr = {&quot;tir.noalias&quot;: True, &quot;global_symbol&quot;: &quot;main&quot;}
-  buffers = {A: Buffer(A_2: handle, float32, [m: int32, n: int32], [stride: int32, stride_1: int32], type=&quot;auto&quot;),
-             B: Buffer(B_2: handle, float32, [m, n], [stride_2: int32, stride_3: int32], type=&quot;auto&quot;)}
-  buffer_map = {B_1: B, A_1: A} {
+  attr = {&quot;global_symbol&quot;: &quot;main&quot;, &quot;tir.noalias&quot;: True}
+  buffers = {B: Buffer(B_2: handle, float32, [m: int32, n: int32], [stride: int32, stride_1: int32], type=&quot;auto&quot;),
+             A: Buffer(A_2: handle, float32, [m, n], [stride_2: int32, stride_3: int32], type=&quot;auto&quot;)}
+  buffer_map = {A_1: A, B_1: B} {
   for (i.outer: int32, 0, floordiv((m + 9), 10)) {
     for (j.outer: int32, 0, floordiv((n + 4), 5)) {
       for (i.inner: int32, 0, 10) {
         for (j.inner: int32, 0, 5) {
-          if @likely((((i.outer*10) + i.inner) &lt; m), dtype=bool, type=&quot;pure_intrin&quot;) {
-            if @likely((((j.outer*5) + j.inner) &lt; n), dtype=bool, type=&quot;pure_intrin&quot;) {
-              B_2[((((i.outer*10) + i.inner)*stride_2) + (((j.outer*5) + j.inner)*stride_3))] = (float32*)A_2[((((i.outer*10) + i.inner)*stride) + (((j.outer*5) + j.inner)*stride_1))])
+          if @tir.likely((((i.outer*10) + i.inner) &lt; m), dtype=bool) {
+            if @tir.likely((((j.outer*5) + j.inner) &lt; n), dtype=bool) {
+              B_2[((((i.outer*10) + i.inner)*stride) + (((j.outer*5) + j.inner)*stride_1))] = (float32*)A_2[((((i.outer*10) + i.inner)*stride_2) + (((j.outer*5) + j.inner)*stride_3))]
             }
           }
         }
@@ -386,16 +387,16 @@ axises.</p>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
 <div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre>primfn(A_1: handle, B_1: handle) -&gt; ()
-  attr = {&quot;tir.noalias&quot;: True, &quot;global_symbol&quot;: &quot;main&quot;}
-  buffers = {A: Buffer(A_2: handle, float32, [m: int32, n: int32], [stride: int32, stride_1: int32], type=&quot;auto&quot;),
-             B: Buffer(B_2: handle, float32, [m, n], [stride_2: int32, stride_3: int32], type=&quot;auto&quot;)}
-  buffer_map = {B_1: B, A_1: A} {
+  attr = {&quot;global_symbol&quot;: &quot;main&quot;, &quot;tir.noalias&quot;: True}
+  buffers = {B: Buffer(B_2: handle, float32, [m: int32, n: int32], [stride: int32, stride_1: int32], type=&quot;auto&quot;),
+             A: Buffer(A_2: handle, float32, [m, n], [stride_2: int32, stride_3: int32], type=&quot;auto&quot;)}
+  buffer_map = {A_1: A, B_1: B} {
   for (i.outer: int32, 0, floordiv((m + 9), 10)) {
     for (j.outer: int32, 0, floordiv((n + 4), 5)) {
       for (i.inner.j.inner.fused: int32, 0, 50) {
-        if @likely((((i.outer*10) + floordiv(i.inner.j.inner.fused, 5)) &lt; m), dtype=bool, type=&quot;pure_intrin&quot;) {
-          if @likely((((j.outer*5) + floormod(i.inner.j.inner.fused, 5)) &lt; n), dtype=bool, type=&quot;pure_intrin&quot;) {
-            B_2[((((i.outer*10) + floordiv(i.inner.j.inner.fused, 5))*stride_2) + (((j.outer*5) + floormod(i.inner.j.inner.fused, 5))*stride_3))] = (float32*)A_2[((((i.outer*10) + floordiv(i.inner.j.inner.fused, 5))*stride) + (((j.outer*5) + floormod(i.inner.j.inner.fused, 5))*stride_1))])
+        if @tir.likely((((i.outer*10) + floordiv(i.inner.j.inner.fused, 5)) &lt; m), dtype=bool) {
+          if @tir.likely((((j.outer*5) + floormod(i.inner.j.inner.fused, 5)) &lt; n), dtype=bool) {
+            B_2[((((i.outer*10) + floordiv(i.inner.j.inner.fused, 5))*stride) + (((j.outer*5) + floormod(i.inner.j.inner.fused, 5))*stride_1))] = (float32*)A_2[((((i.outer*10) + floordiv(i.inner.j.inner.fused, 5))*stride_2) + (((j.outer*5) + floormod(i.inner.j.inner.fused, 5))*stride_3))]
           }
         }
       }
@@ -423,17 +424,17 @@ axises.</p>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
 <div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre>primfn(A_1: handle, B_1: handle) -&gt; ()
-  attr = {&quot;tir.noalias&quot;: True, &quot;global_symbol&quot;: &quot;main&quot;}
-  buffers = {A: Buffer(A_2: handle, float32, [m: int32, n: int32], [stride: int32, stride_1: int32], type=&quot;auto&quot;),
-             B: Buffer(B_2: handle, float32, [m, n], [stride_2: int32, stride_3: int32], type=&quot;auto&quot;)}
-  buffer_map = {B_1: B, A_1: A} {
+  attr = {&quot;global_symbol&quot;: &quot;main&quot;, &quot;tir.noalias&quot;: True}
+  buffers = {B: Buffer(B_2: handle, float32, [m: int32, n: int32], [stride: int32, stride_1: int32], type=&quot;auto&quot;),
+             A: Buffer(A_2: handle, float32, [m, n], [stride_2: int32, stride_3: int32], type=&quot;auto&quot;)}
+  buffer_map = {A_1: A, B_1: B} {
   for (i.inner: int32, 0, 10) {
     for (j.outer: int32, 0, floordiv((n + 4), 5)) {
       for (i.outer: int32, 0, floordiv((m + 9), 10)) {
         for (j.inner: int32, 0, 5) {
-          if @likely((((i.outer*10) + i.inner) &lt; m), dtype=bool, type=&quot;pure_intrin&quot;) {
-            if @likely((((j.outer*5) + j.inner) &lt; n), dtype=bool, type=&quot;pure_intrin&quot;) {
-              B_2[((((i.outer*10) + i.inner)*stride_2) + (((j.outer*5) + j.inner)*stride_3))] = (float32*)A_2[((((i.outer*10) + i.inner)*stride) + (((j.outer*5) + j.inner)*stride_1))])
+          if @tir.likely((((i.outer*10) + i.inner) &lt; m), dtype=bool) {
+            if @tir.likely((((j.outer*5) + j.inner) &lt; n), dtype=bool) {
+              B_2[((((i.outer*10) + i.inner)*stride) + (((j.outer*5) + j.inner)*stride_1))] = (float32*)A_2[((((i.outer*10) + i.inner)*stride_2) + (((j.outer*5) + j.inner)*stride_3))]
             }
           }
         }
@@ -462,14 +463,14 @@ in gpu programming.</p>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
 <div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre>primfn(A_1: handle, B_1: handle) -&gt; ()
-  attr = {&quot;tir.noalias&quot;: True, &quot;global_symbol&quot;: &quot;main&quot;}
-  buffers = {A: Buffer(A_2: handle, float32, [n: int32], [stride: int32], type=&quot;auto&quot;),
-             B: Buffer(B_2: handle, float32, [n], [stride_1: int32], type=&quot;auto&quot;)}
-  buffer_map = {B_1: B, A_1: A} {
+  attr = {&quot;global_symbol&quot;: &quot;main&quot;, &quot;tir.noalias&quot;: True}
+  buffers = {B: Buffer(B_2: handle, float32, [n: int32], [stride: int32], type=&quot;auto&quot;),
+             A: Buffer(A_2: handle, float32, [n], [stride_1: int32], type=&quot;auto&quot;)}
+  buffer_map = {A_1: A, B_1: B} {
   attr [IterVar(blockIdx.x: int32, (nullptr), &quot;ThreadIndex&quot;, &quot;blockIdx.x&quot;)] &quot;thread_extent&quot; = floordiv((n + 63), 64);
   attr [IterVar(threadIdx.x: int32, (nullptr), &quot;ThreadIndex&quot;, &quot;threadIdx.x&quot;)] &quot;thread_extent&quot; = 64;
-  if @likely((((blockIdx.x*64) + threadIdx.x) &lt; n), dtype=bool, type=&quot;pure_intrin&quot;) {
-    B_2[(((blockIdx.x*64) + threadIdx.x)*stride_1)] = ((float32*)A_2[(((blockIdx.x*64) + threadIdx.x)*stride)])*2f32)
+  if @tir.likely((((blockIdx.x*64) + threadIdx.x) &lt; n), dtype=bool) {
+    B_2[(((blockIdx.x*64) + threadIdx.x)*stride)] = ((float32*)A_2[(((blockIdx.x*64) + threadIdx.x)*stride_1)]*2f32)
   }
 }
 
@@ -491,16 +492,16 @@ tensors at the root separately by default.</p>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
 <div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre>primfn(A_1: handle, B_1: handle, C_1: handle) -&gt; ()
-  attr = {&quot;tir.noalias&quot;: True, &quot;global_symbol&quot;: &quot;main&quot;}
-  buffers = {A: Buffer(A_2: handle, float32, [m: int32], [stride: int32], type=&quot;auto&quot;),
-             C: Buffer(C_2: handle, float32, [m], [stride_1: int32], type=&quot;auto&quot;),
-             B: Buffer(B_2: handle, float32, [m], [stride_2: int32], type=&quot;auto&quot;)}
-  buffer_map = {B_1: B, C_1: C, A_1: A} {
+  attr = {&quot;global_symbol&quot;: &quot;main&quot;, &quot;tir.noalias&quot;: True}
+  buffers = {C: Buffer(C_2: handle, float32, [m: int32], [stride: int32], type=&quot;auto&quot;),
+             B: Buffer(B_2: handle, float32, [m], [stride_1: int32], type=&quot;auto&quot;),
+             A: Buffer(A_2: handle, float32, [m], [stride_2: int32], type=&quot;auto&quot;)}
+  buffer_map = {A_1: A, B_1: B, C_1: C} {
   for (i: int32, 0, m) {
-    B_2[(i*stride_2)] = ((float32*)A_2[(i*stride)]) + 1f32)
+    B_2[(i*stride_1)] = ((float32*)A_2[(i*stride_2)] + 1f32)
   }
   for (i_1: int32, 0, m) {
-    C_2[(i_1*stride_1)] = ((float32*)B_2[(i_1*stride_2)])*2f32)
+    C_2[(i_1*stride)] = ((float32*)B_2[(i_1*stride_1)]*2f32)
   }
 }
 
@@ -520,14 +521,14 @@ of computation of <cite>C</cite>.</p>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
 <div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre>primfn(A_1: handle, B_1: handle, C_1: handle) -&gt; ()
-  attr = {&quot;tir.noalias&quot;: True, &quot;global_symbol&quot;: &quot;main&quot;}
-  buffers = {A: Buffer(A_2: handle, float32, [m: int32], [stride: int32], type=&quot;auto&quot;),
+  attr = {&quot;global_symbol&quot;: &quot;main&quot;, &quot;tir.noalias&quot;: True}
+  buffers = {C: Buffer(C_2: handle, float32, [m: int32], [stride: int32], type=&quot;auto&quot;),
              B: Buffer(B_2: handle, float32, [m], [stride_1: int32], type=&quot;auto&quot;),
-             C: Buffer(C_2: handle, float32, [m], [stride_2: int32], type=&quot;auto&quot;)}
-  buffer_map = {C_1: C, B_1: B, A_1: A} {
+             A: Buffer(A_2: handle, float32, [m], [stride_2: int32], type=&quot;auto&quot;)}
+  buffer_map = {A_1: A, B_1: B, C_1: C} {
   for (i: int32, 0, m) {
-    B_2[(i*stride_1)] = ((float32*)A_2[(i*stride)]) + 1f32)
-    C_2[(i*stride_2)] = ((float32*)B_2[(i*stride_1)])*2f32)
+    B_2[(i*stride_1)] = ((float32*)A_2[(i*stride_2)] + 1f32)
+    C_2[(i*stride)] = ((float32*)B_2[(i*stride_1)]*2f32)
   }
 }
 
@@ -551,13 +552,13 @@ tensor is required.</p>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
 <div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre>primfn(A_1: handle, B_1: handle, C_1: handle) -&gt; ()
-  attr = {&quot;tir.noalias&quot;: True, &quot;global_symbol&quot;: &quot;main&quot;}
+  attr = {&quot;global_symbol&quot;: &quot;main&quot;, &quot;tir.noalias&quot;: True}
   buffers = {B: Buffer(B_2: handle, float32, [m: int32], [stride: int32], type=&quot;auto&quot;),
-             A: Buffer(A_2: handle, float32, [m], [stride_1: int32], type=&quot;auto&quot;),
-             C: Buffer(C_2: handle, float32, [m], [stride_2: int32], type=&quot;auto&quot;)}
-  buffer_map = {C_1: C, B_1: B, A_1: A} {
+             C: Buffer(C_2: handle, float32, [m], [stride_1: int32], type=&quot;auto&quot;),
+             A: Buffer(A_2: handle, float32, [m], [stride_2: int32], type=&quot;auto&quot;)}
+  buffer_map = {A_1: A, B_1: B, C_1: C} {
   for (i: int32, 0, m) {
-    C_2[(i*stride_2)] = (((float32*)A_2[(i*stride_1)]) + 1f32)*2f32)
+    C_2[(i*stride_1)] = (((float32*)A_2[(i*stride_2)] + 1f32)*2f32)
   }
 }
 
@@ -580,16 +581,16 @@ tensor is required.</p>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
 <div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre>primfn(A_1: handle, B_1: handle, C_1: handle) -&gt; ()
-  attr = {&quot;tir.noalias&quot;: True, &quot;global_symbol&quot;: &quot;main&quot;}
-  buffers = {A: Buffer(A_2: handle, float32, [m: int32], [stride: int32], type=&quot;auto&quot;),
+  attr = {&quot;global_symbol&quot;: &quot;main&quot;, &quot;tir.noalias&quot;: True}
+  buffers = {C: Buffer(C_2: handle, float32, [m: int32], [stride: int32], type=&quot;auto&quot;),
              B: Buffer(B_2: handle, float32, [m], [stride_1: int32], type=&quot;auto&quot;),
-             C: Buffer(C_2: handle, float32, [m], [stride_2: int32], type=&quot;auto&quot;)}
-  buffer_map = {C_1: C, B_1: B, A_1: A} {
+             A: Buffer(A_2: handle, float32, [m], [stride_2: int32], type=&quot;auto&quot;)}
+  buffer_map = {A_1: A, B_1: B, C_1: C} {
   for (i: int32, 0, m) {
-    B_2[(i*stride_1)] = ((float32*)A_2[(i*stride)]) + 1f32)
+    B_2[(i*stride_1)] = ((float32*)A_2[(i*stride_2)] + 1f32)
   }
   for (i_1: int32, 0, m) {
-    C_2[(i_1*stride_2)] = ((float32*)B_2[(i_1*stride_1)])*2f32)
+    C_2[(i_1*stride)] = ((float32*)B_2[(i_1*stride_1)]*2f32)
   }
 }
 

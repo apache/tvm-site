@@ -201,11 +201,11 @@ Those include:
  .. code-block:: none
 
     primfn(data_1: handle, weight_1: handle, res_1: handle) -> ()
-      attr = {"tir.noalias": True, "global_symbol": "main"}
-      buffers = {data: Buffer(data_2: handle, int8, [1, 64, 1, 16], []),
+      attr = {"global_symbol": "main", "tir.noalias": True}
+      buffers = {res: Buffer(res_2: handle, int8, [1, 64, 1, 16], []),
                  weight: Buffer(weight_2: handle, int8, [64, 64, 16, 16], []),
-                 res: Buffer(res_2: handle, int8, [1, 64, 1, 16], [])}
-      buffer_map = {res_1: res, weight_1: weight, data_1: data} {
+                 data: Buffer(data_2: handle, int8, [1, 64, 1, 16], [])}
+      buffer_map = {data_1: data, weight_1: weight, res_1: res} {
       attr [data_buf: handle] "storage_scope" = "global";
       allocate(data_buf, int8, [1024]);
       attr [weight_buf: handle] "storage_scope" = "global";
@@ -214,14 +214,14 @@ Those include:
       allocate(res_gem, int32, [1024]) {
         for (i1: int32, 0, 64) {
           for (i3: int32, 0, 16) {
-            data_buf[((i1*16) + i3)] = (int8*)data_2[((i1*16) + i3)])
+            data_buf[((i1*16) + i3)] = (int8*)data_2[((i1*16) + i3)]
           }
         }
         for (i0: int32, 0, 64) {
           for (i1_1: int32, 0, 64) {
             for (i2: int32, 0, 16) {
               for (i3_1: int32, 0, 16) {
-                weight_buf[((((i0*16384) + (i1_1*256)) + (i2*16)) + i3_1)] = (int8*)weight_2[((((i0*16384) + (i1_1*256)) + (i2*16)) + i3_1)])
+                weight_buf[((((i0*16384) + (i1_1*256)) + (i2*16)) + i3_1)] = (int8*)weight_2[((((i0*16384) + (i1_1*256)) + (i2*16)) + i3_1)]
               }
             }
           }
@@ -231,29 +231,29 @@ Those include:
             res_gem[((co*16) + ci)] = 0
             for (ic: int32, 0, 64) {
               for (ic_tns: int32, 0, 16) {
-                res_gem[((co*16) + ci)] = ((int32*)res_gem[((co*16) + ci)]) + (cast(int32, (int8*)data_buf[((ic*16) + ic_tns)]))*cast(int32, (int8*)weight_buf[((((co*16384) + (ic*256)) + (ci*16)) + ic_tns)]))))
+                res_gem[((co*16) + ci)] = ((int32*)res_gem[((co*16) + ci)] + (cast(int32, (int8*)data_buf[((ic*16) + ic_tns)])*cast(int32, (int8*)weight_buf[((((co*16384) + (ic*256)) + (ci*16)) + ic_tns)])))
               }
             }
           }
         }
         for (i1_2: int32, 0, 64) {
           for (i3_2: int32, 0, 16) {
-            res_gem[((i1_2*16) + i3_2)] = @shift_right((int32*)res_gem[((i1_2*16) + i3_2)]), 8, dtype=int32, type="pure_intrin")
+            res_gem[((i1_2*16) + i3_2)] = @tir.shift_right((int32*)res_gem[((i1_2*16) + i3_2)], 8, dtype=int32)
           }
         }
         for (i1_3: int32, 0, 64) {
           for (i3_3: int32, 0, 16) {
-            res_gem[((i1_3*16) + i3_3)] = max((int32*)res_gem[((i1_3*16) + i3_3)]), 0)
+            res_gem[((i1_3*16) + i3_3)] = max((int32*)res_gem[((i1_3*16) + i3_3)], 0)
           }
         }
         for (i1_4: int32, 0, 64) {
           for (i3_4: int32, 0, 16) {
-            res_gem[((i1_4*16) + i3_4)] = min((int32*)res_gem[((i1_4*16) + i3_4)]), 127)
+            res_gem[((i1_4*16) + i3_4)] = min((int32*)res_gem[((i1_4*16) + i3_4)], 127)
           }
         }
         for (i1_5: int32, 0, 64) {
           for (i3_5: int32, 0, 16) {
-            res_2[((i1_5*16) + i3_5)] = cast(int8, (int32*)res_gem[((i1_5*16) + i3_5)]))
+            res_2[((i1_5*16) + i3_5)] = cast(int8, (int32*)res_gem[((i1_5*16) + i3_5)])
           }
         }
       }
@@ -363,11 +363,11 @@ below:
  .. code-block:: none
 
     primfn(data_1: handle, weight_1: handle, res_1: handle) -> ()
-      attr = {"tir.noalias": True, "global_symbol": "main"}
-      buffers = {data: Buffer(data_2: handle, int8, [1, 64, 1, 16], []),
-                 weight: Buffer(weight_2: handle, int8, [64, 64, 16, 16], []),
-                 res: Buffer(res_2: handle, int8, [1, 64, 1, 16], [])}
-      buffer_map = {res_1: res, weight_1: weight, data_1: data} {
+      attr = {"global_symbol": "main", "tir.noalias": True}
+      buffers = {weight: Buffer(weight_2: handle, int8, [64, 64, 16, 16], []),
+                 res: Buffer(res_2: handle, int8, [1, 64, 1, 16], []),
+                 data: Buffer(data_2: handle, int8, [1, 64, 1, 16], [])}
+      buffer_map = {data_1: data, weight_1: weight, res_1: res} {
       attr [data_buf: handle] "storage_scope" = "global";
       allocate(data_buf, int8, [1024]);
       attr [weight_buf: handle] "storage_scope" = "global";
@@ -376,14 +376,14 @@ below:
       allocate(res_gem, int32, [256]) {
         for (i1: int32, 0, 64) {
           for (i3: int32, 0, 16) {
-            data_buf[((i1*16) + i3)] = (int8*)data_2[((i1*16) + i3)])
+            data_buf[((i1*16) + i3)] = (int8*)data_2[((i1*16) + i3)]
           }
         }
         for (i0: int32, 0, 64) {
           for (i1_1: int32, 0, 64) {
             for (i2: int32, 0, 16) {
               for (i3_1: int32, 0, 16) {
-                weight_buf[((((i0*16384) + (i1_1*256)) + (i2*16)) + i3_1)] = (int8*)weight_2[((((i0*16384) + (i1_1*256)) + (i2*16)) + i3_1)])
+                weight_buf[((((i0*16384) + (i1_1*256)) + (i2*16)) + i3_1)] = (int8*)weight_2[((((i0*16384) + (i1_1*256)) + (i2*16)) + i3_1)]
               }
             }
           }
@@ -399,7 +399,7 @@ below:
               for (ic.inner: int32, 0, 16) {
                 for (ci: int32, 0, 16) {
                   for (ic_tns: int32, 0, 16) {
-                    res_gem[((co*16) + ci)] = ((int32*)res_gem[((co*16) + ci)]) + (cast(int32, (int8*)data_buf[(((ic.outer*256) + (ic.inner*16)) + ic_tns)]))*cast(int32, (int8*)weight_buf[((((((i1.outer*262144) + (co*16384)) + (ic.outer*4096)) + (ic.inner*256)) + (ci*16)) + ic_tns)]))))
+                    res_gem[((co*16) + ci)] = ((int32*)res_gem[((co*16) + ci)] + (cast(int32, (int8*)data_buf[(((ic.outer*256) + (ic.inner*16)) + ic_tns)])*cast(int32, (int8*)weight_buf[((((((i1.outer*262144) + (co*16384)) + (ic.outer*4096)) + (ic.inner*256)) + (ci*16)) + ic_tns)])))
                   }
                 }
               }
@@ -407,22 +407,22 @@ below:
           }
           for (i1_2: int32, 0, 16) {
             for (i3_2: int32, 0, 16) {
-              res_gem[((i1_2*16) + i3_2)] = @shift_right((int32*)res_gem[((i1_2*16) + i3_2)]), 8, dtype=int32, type="pure_intrin")
+              res_gem[((i1_2*16) + i3_2)] = @tir.shift_right((int32*)res_gem[((i1_2*16) + i3_2)], 8, dtype=int32)
             }
           }
           for (i1_3: int32, 0, 16) {
             for (i3_3: int32, 0, 16) {
-              res_gem[((i1_3*16) + i3_3)] = max((int32*)res_gem[((i1_3*16) + i3_3)]), 0)
+              res_gem[((i1_3*16) + i3_3)] = max((int32*)res_gem[((i1_3*16) + i3_3)], 0)
             }
           }
           for (i1_4: int32, 0, 16) {
             for (i3_4: int32, 0, 16) {
-              res_gem[((i1_4*16) + i3_4)] = min((int32*)res_gem[((i1_4*16) + i3_4)]), 127)
+              res_gem[((i1_4*16) + i3_4)] = min((int32*)res_gem[((i1_4*16) + i3_4)], 127)
             }
           }
           for (i1.inner: int32, 0, 16) {
             for (i3_5: int32, 0, 16) {
-              res_2[(((i1.outer*256) + (i1.inner*16)) + i3_5)] = cast(int8, (int32*)res_gem[((i1.inner*16) + i3_5)]))
+              res_2[(((i1.outer*256) + (i1.inner*16)) + i3_5)] = cast(int8, (int32*)res_gem[((i1.inner*16) + i3_5)])
             }
           }
         }
@@ -506,73 +506,73 @@ and mapping the shift, and clipping computation to the vector ALU.
  .. code-block:: none
 
     primfn(data_1: handle, weight_1: handle, res_1: handle) -> ()
-      attr = {"tir.noalias": True, "global_symbol": "main"}
-      buffers = {data: Buffer(data_2: handle, int8, [1, 64, 1, 16], []),
+      attr = {"global_symbol": "main", "tir.noalias": True}
+      buffers = {res: Buffer(res_2: handle, int8, [1, 64, 1, 16], []),
                  weight: Buffer(weight_2: handle, int8, [64, 64, 16, 16], []),
-                 res: Buffer(res_2: handle, int8, [1, 64, 1, 16], [])}
-      buffer_map = {res_1: res, weight_1: weight, data_1: data} {
+                 data: Buffer(data_2: handle, int8, [1, 64, 1, 16], [])}
+      buffer_map = {data_1: data, weight_1: weight, res_1: res} {
       attr [res_gem: handle] "storage_scope" = "local.acc_buffer";
       attr [data_buf: handle] "storage_scope" = "local.inp_buffer";
       attr [weight_buf: handle] "storage_scope" = "local.wgt_buffer" {
-        @vta.coproc_dep_push(3, 2, dtype=int32, type="intrin")
+        @tir.vta.coproc_dep_push(3, 2, dtype=int32)
         for (i1.outer: int32, 0, 4) {
           attr [IterVar(vta: int32, (nullptr), "ThreadIndex", "vta")] "coproc_scope" = 2 {
-            @vta.coproc_dep_pop(3, 2, dtype=int32, type="intrin")
+            @tir.vta.coproc_dep_pop(3, 2, dtype=int32)
             attr [IterVar(vta, (nullptr), "ThreadIndex", "vta")] "coproc_uop_scope" = "VTAPushGEMMOp" {
-              @VTAUopLoopBegin(16, 1, 0, 0, dtype=int32, type="extern")
-              @VTAUopPush(0, 1, 0, 0, 0, 0, 0, 0, dtype=int32, type="extern")
-              @VTAUopLoopEnd(, dtype=int32, type="extern")
+              @tir.call_extern("VTAUopLoopBegin", 16, 1, 0, 0, dtype=int32)
+              @tir.vta.uop_push(0, 1, 0, 0, 0, 0, 0, 0, dtype=int32)
+              @tir.call_extern("VTAUopLoopEnd", dtype=int32)
             }
-            @vta.coproc_dep_push(2, 1, dtype=int32, type="intrin")
+            @tir.vta.coproc_dep_push(2, 1, dtype=int32)
           }
           for (ic.outer: int32, 0, 4) {
             attr [IterVar(vta, (nullptr), "ThreadIndex", "vta")] "coproc_scope" = 1 {
-              @vta.coproc_dep_pop(2, 1, dtype=int32, type="intrin")
-              @VTALoadBuffer2D(@tvm_thread_context(@VTATLSCommandHandle(, dtype=handle, type="extern"), dtype=handle, type="intrin"), data_2, (ic.outer*16), 16, 1, 16, 0, 0, 0, 0, 0, 2, dtype=int32, type="extern")
-              @VTALoadBuffer2D(@tvm_thread_context(@VTATLSCommandHandle(, dtype=handle, type="extern"), dtype=handle, type="intrin"), weight_2, ((i1.outer*1024) + (ic.outer*16)), 16, 16, 64, 0, 0, 0, 0, 0, 1, dtype=int32, type="extern")
-              @vta.coproc_dep_push(1, 2, dtype=int32, type="intrin")
+              @tir.vta.coproc_dep_pop(2, 1, dtype=int32)
+              @tir.call_extern("VTALoadBuffer2D", @tir.tvm_thread_context(@tir.vta.command_handle(, dtype=handle), dtype=handle), data_2, (ic.outer*16), 16, 1, 16, 0, 0, 0, 0, 0, 2, dtype=int32)
+              @tir.call_extern("VTALoadBuffer2D", @tir.tvm_thread_context(@tir.vta.command_handle(, dtype=handle), dtype=handle), weight_2, ((i1.outer*1024) + (ic.outer*16)), 16, 16, 64, 0, 0, 0, 0, 0, 1, dtype=int32)
+              @tir.vta.coproc_dep_push(1, 2, dtype=int32)
             }
             attr [IterVar(vta, (nullptr), "ThreadIndex", "vta")] "coproc_scope" = 2 {
-              @vta.coproc_dep_pop(1, 2, dtype=int32, type="intrin")
+              @tir.vta.coproc_dep_pop(1, 2, dtype=int32)
               attr [IterVar(vta, (nullptr), "ThreadIndex", "vta")] "coproc_uop_scope" = "VTAPushGEMMOp" {
-                @VTAUopLoopBegin(16, 1, 0, 16, dtype=int32, type="extern")
-                @VTAUopLoopBegin(16, 0, 1, 1, dtype=int32, type="extern")
-                @VTAUopPush(0, 0, 0, 0, 0, 0, 0, 0, dtype=int32, type="extern")
-                @VTAUopLoopEnd(, dtype=int32, type="extern")
-                @VTAUopLoopEnd(, dtype=int32, type="extern")
+                @tir.call_extern("VTAUopLoopBegin", 16, 1, 0, 16, dtype=int32)
+                @tir.call_extern("VTAUopLoopBegin", 16, 0, 1, 1, dtype=int32)
+                @tir.vta.uop_push(0, 0, 0, 0, 0, 0, 0, 0, dtype=int32)
+                @tir.call_extern("VTAUopLoopEnd", dtype=int32)
+                @tir.call_extern("VTAUopLoopEnd", dtype=int32)
               }
-              @vta.coproc_dep_push(2, 1, dtype=int32, type="intrin")
+              @tir.vta.coproc_dep_push(2, 1, dtype=int32)
             }
           }
-          @vta.coproc_dep_pop(2, 1, dtype=int32, type="intrin")
+          @tir.vta.coproc_dep_pop(2, 1, dtype=int32)
           attr [IterVar(vta, (nullptr), "ThreadIndex", "vta")] "coproc_scope" = 2 {
             attr [IterVar(vta, (nullptr), "ThreadIndex", "vta")] "coproc_uop_scope" = "VTAPushALUOp" {
-              @VTAUopLoopBegin(16, 1, 1, 0, dtype=int32, type="extern")
-              @VTAUopPush(1, 0, 0, 0, 0, 3, 1, 8, dtype=int32, type="extern")
-              @VTAUopLoopEnd(, dtype=int32, type="extern")
+              @tir.call_extern("VTAUopLoopBegin", 16, 1, 1, 0, dtype=int32)
+              @tir.vta.uop_push(1, 0, 0, 0, 0, 3, 1, 8, dtype=int32)
+              @tir.call_extern("VTAUopLoopEnd", dtype=int32)
             }
             attr [IterVar(vta, (nullptr), "ThreadIndex", "vta")] "coproc_uop_scope" = "VTAPushALUOp" {
-              @VTAUopLoopBegin(16, 1, 1, 0, dtype=int32, type="extern")
-              @VTAUopPush(1, 0, 0, 0, 0, 1, 1, 0, dtype=int32, type="extern")
-              @VTAUopLoopEnd(, dtype=int32, type="extern")
+              @tir.call_extern("VTAUopLoopBegin", 16, 1, 1, 0, dtype=int32)
+              @tir.vta.uop_push(1, 0, 0, 0, 0, 1, 1, 0, dtype=int32)
+              @tir.call_extern("VTAUopLoopEnd", dtype=int32)
             }
             attr [IterVar(vta, (nullptr), "ThreadIndex", "vta")] "coproc_uop_scope" = "VTAPushALUOp" {
-              @VTAUopLoopBegin(16, 1, 1, 0, dtype=int32, type="extern")
-              @VTAUopPush(1, 0, 0, 0, 0, 0, 1, 127, dtype=int32, type="extern")
-              @VTAUopLoopEnd(, dtype=int32, type="extern")
+              @tir.call_extern("VTAUopLoopBegin", 16, 1, 1, 0, dtype=int32)
+              @tir.vta.uop_push(1, 0, 0, 0, 0, 0, 1, 127, dtype=int32)
+              @tir.call_extern("VTAUopLoopEnd", dtype=int32)
             }
-            @vta.coproc_dep_push(2, 3, dtype=int32, type="intrin")
+            @tir.vta.coproc_dep_push(2, 3, dtype=int32)
           }
           attr [IterVar(vta, (nullptr), "ThreadIndex", "vta")] "coproc_scope" = 3 {
-            @vta.coproc_dep_pop(2, 3, dtype=int32, type="intrin")
+            @tir.vta.coproc_dep_pop(2, 3, dtype=int32)
             for (i1.inner: int32, 0, 16) {
-              @VTAStoreBuffer2D(@tvm_thread_context(@VTATLSCommandHandle(, dtype=handle, type="extern"), dtype=handle, type="intrin"), i1.inner, 4, res_2, ((i1.outer*16) + i1.inner), 1, 1, 1, dtype=int32, type="extern")
+              @tir.call_extern("VTAStoreBuffer2D", @tir.tvm_thread_context(@tir.vta.command_handle(, dtype=handle), dtype=handle), i1.inner, 4, res_2, ((i1.outer*16) + i1.inner), 1, 1, 1, dtype=int32)
             }
-            @vta.coproc_dep_push(3, 2, dtype=int32, type="intrin")
+            @tir.vta.coproc_dep_push(3, 2, dtype=int32)
           }
         }
-        @vta.coproc_sync(, dtype=int32, type="intrin")
-        @vta.coproc_dep_pop(3, 2, dtype=int32, type="intrin")
+        @tir.vta.coproc_sync(, dtype=int32)
+        @tir.vta.coproc_dep_pop(3, 2, dtype=int32)
       }
     }
 

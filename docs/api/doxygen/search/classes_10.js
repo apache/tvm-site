@@ -32,6 +32,7 @@ var searchData=
   ['sizevarnode',['SizeVarNode',['../classtvm_1_1tir_1_1SizeVarNode.html',1,'tvm::tir']]],
   ['slice',['Slice',['../classtvm_1_1te_1_1Tensor_1_1Slice.html',1,'tvm::te::Tensor']]],
   ['slicelikeattrs',['SliceLikeAttrs',['../structtvm_1_1relay_1_1SliceLikeAttrs.html',1,'tvm::relay']]],
+  ['smallmapnode',['SmallMapNode',['../classtvm_1_1SmallMapNode.html',1,'tvm']]],
   ['softmaxattrs',['SoftmaxAttrs',['../structtvm_1_1relay_1_1SoftmaxAttrs.html',1,'tvm::relay']]],
   ['sourcename',['SourceName',['../classtvm_1_1SourceName.html',1,'tvm']]],
   ['sourcenamenode',['SourceNameNode',['../classtvm_1_1SourceNameNode.html',1,'tvm']]],

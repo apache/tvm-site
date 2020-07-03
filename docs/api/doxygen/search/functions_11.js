@@ -1,7 +1,7 @@
 var searchData=
 [
   ['ramp',['Ramp',['../classtvm_1_1tir_1_1Ramp.html#a6432818d5f801e3adbb8d587b75b7ff5',1,'tvm::tir::Ramp']]],
-  ['range',['Range',['../classtvm_1_1Range.html#abc08435178fe9ac6ab83db6c9025757c',1,'tvm::Range::Range()'],['../classtvm_1_1arith_1_1IntSet.html#afad6e9a1b54e9aa2b35c56cc9ebef168',1,'tvm::arith::IntSet::range()']]],
+  ['range',['Range',['../classtvm_1_1Range.html#abc08435178fe9ac6ab83db6c9025757c',1,'tvm::Range']]],
   ['rangenode',['RangeNode',['../classtvm_1_1RangeNode.html#ab845f7ed4ed85e360b730df3450d1aab',1,'tvm::RangeNode::RangeNode()'],['../classtvm_1_1RangeNode.html#a6ee2e11a496cc52627354fd90f00e2a0',1,'tvm::RangeNode::RangeNode(PrimExpr min, PrimExpr extent)']]],
   ['rasp',['rasp',['../namespacetvm_1_1target.html#a020e427a235a2cc54c1c997a5567e595',1,'tvm::target']]],
   ['rbegin',['rbegin',['../classtvm_1_1runtime_1_1Array.html#a9bfb77a5eb579f7e1a0ddf4b4863414b',1,'tvm::runtime::Array']]],
@@ -22,9 +22,9 @@ var searchData=
   ['register_5ffunc',['register_func',['../classtvm_1_1GenericFunc.html#a2a5ef71cd38881b0ef73efa8f0b5fdc8',1,'tvm::GenericFunc']]],
   ['registerconfigoption',['RegisterConfigOption',['../classtvm_1_1transform_1_1PassContext.html#a6f1d1040cc97320414b4690203f87919',1,'tvm::transform::PassContext']]],
   ['registergenericfunc',['RegisterGenericFunc',['../classtvm_1_1GenericFunc.html#a909acecbf2f34f847a34e587a4570dce',1,'tvm::GenericFunc']]],
-  ['registerorget',['RegisterOrGet',['../classtvm_1_1OpRegEntry.html#a39a4d3e7f905eb4e29ca464bcedb05bd',1,'tvm::OpRegEntry']]],
+  ['registerorget',['RegisterOrGet',['../classtvm_1_1OpRegEntry.html#a39a4d3e7f905eb4e29ca464bcedb05bd',1,'tvm::OpRegEntry::RegisterOrGet()'],['../classtvm_1_1TargetIdRegEntry.html#a8a4d00fcbacbd9377ce1d006b87f0677',1,'tvm::TargetIdRegEntry::RegisterOrGet()']]],
   ['registry',['Registry',['../classtvm_1_1ReflectionVTable_1_1Registry.html#ac8f4637640aa9dffed745303a4cfa827',1,'tvm::ReflectionVTable::Registry']]],
-  ['reinterpret',['reinterpret',['../namespacetvm.html#a2acd72f0adb3d9ae5eede7497b32c139',1,'tvm::reinterpret()'],['../namespacetopi.html#aef42f5cbf417ab34e319ff5a3ff7120f',1,'topi::reinterpret()']]],
+  ['reinterpret',['reinterpret',['../namespacetvm_1_1tir_1_1builtin.html#a7b555bc5cca2f5e7b26c1037bc0001ce',1,'tvm::tir::builtin::reinterpret()'],['../namespacetvm.html#a2acd72f0adb3d9ae5eede7497b32c139',1,'tvm::reinterpret()'],['../namespacetopi.html#aef42f5cbf417ab34e319ff5a3ff7120f',1,'topi::reinterpret()']]],
   ['relayreftype',['RelayRefType',['../classtvm_1_1RelayRefType.html#a91476d6d6cccf59283b4e024d1e8a663',1,'tvm::RelayRefType']]],
   ['relayreftypenode',['RelayRefTypeNode',['../classtvm_1_1RelayRefTypeNode.html#a23840592da71d366e7f7dbaaf42d906d',1,'tvm::RelayRefTypeNode']]],
   ['relu',['relu',['../namespacetopi.html#a10d042035b5084fc91bff8ae4f1b0d86',1,'topi']]],

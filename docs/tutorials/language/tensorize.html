@@ -121,6 +121,7 @@
 <li class="toctree-l2"><a class="reference internal" href="../index.html#auto-tuning">Auto tuning</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../index.html#developer-tutorials">Developer Tutorials</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../index.html#topi-tvm-operator-inventory">TOPI: TVM Operator Inventory</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../index.html#micro-tvm">Micro TVM</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../../vta/index.html">VTA: Deep Learning Accelerator Stack</a></li>
@@ -246,16 +247,16 @@ The following lines describe the computation <code class="code docutils literal 
 </div>
 <p class="sphx-glr-script-out">Out:</p>
 <div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre>primfn(A_1: handle, B_1: handle, C_1: handle) -&gt; ()
-  attr = {&quot;tir.noalias&quot;: True, &quot;global_symbol&quot;: &quot;main&quot;}
-  buffers = {B: Buffer(B_2: handle, float32, [512, 64], []),
-             A: Buffer(A_2: handle, float32, [1024, 64], []),
-             C: Buffer(C_2: handle, float32, [1024, 512], [])}
-  buffer_map = {C_1: C, B_1: B, A_1: A} {
+  attr = {&quot;global_symbol&quot;: &quot;main&quot;, &quot;tir.noalias&quot;: True}
+  buffers = {C: Buffer(C_2: handle, float32, [1024, 512], []),
+             B: Buffer(B_2: handle, float32, [512, 64], []),
+             A: Buffer(A_2: handle, float32, [1024, 64], [])}
+  buffer_map = {A_1: A, B_1: B, C_1: C} {
   for (i: int32, 0, 1024) {
     for (j: int32, 0, 512) {
       C_2[((i*512) + j)] = 0f32
       for (k: int32, 0, 64) {
-        C_2[((i*512) + j)] = ((float32*)C_2[((i*512) + j)]) + ((float32*)A_2[((i*64) + k)])*(float32*)B_2[((j*64) + k)])))
+        C_2[((i*512) + j)] = ((float32*)C_2[((i*512) + j)] + ((float32*)A_2[((i*64) + k)]*(float32*)B_2[((j*64) + k)]))
       }
     }
   }
@@ -282,17 +283,17 @@ Thus we break down the matmul loops to make the innermost loops a (16x64) GEMV.<
 </div>
 <p class="sphx-glr-script-out">Out:</p>
 <div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre>primfn(A_1: handle, B_1: handle, C_1: handle) -&gt; ()
-  attr = {&quot;tir.noalias&quot;: True, &quot;global_symbol&quot;: &quot;main&quot;}
-  buffers = {A: Buffer(A_2: handle, float32, [1024, 64], []),
+  attr = {&quot;global_symbol&quot;: &quot;main&quot;, &quot;tir.noalias&quot;: True}
+  buffers = {C: Buffer(C_2: handle, float32, [1024, 512], []),
              B: Buffer(B_2: handle, float32, [512, 64], []),
-             C: Buffer(C_2: handle, float32, [1024, 512], [])}
-  buffer_map = {C_1: C, B_1: B, A_1: A} {
+             A: Buffer(A_2: handle, float32, [1024, 64], [])}
+  buffer_map = {A_1: A, B_1: B, C_1: C} {
   for (i: int32, 0, 1024) {
     for (j.outer: int32, 0, 32) {
       for (j.inner: int32, 0, 16) {
         C_2[(((i*512) + (j.outer*16)) + j.inner)] = 0f32
         for (k: int32, 0, 64) {
-          C_2[(((i*512) + (j.outer*16)) + j.inner)] = ((float32*)C_2[(((i*512) + (j.outer*16)) + j.inner)]) + ((float32*)A_2[((i*64) + k)])*(float32*)B_2[(((j.outer*1024) + (j.inner*64)) + k)])))
+          C_2[(((i*512) + (j.outer*16)) + j.inner)] = ((float32*)C_2[(((i*512) + (j.outer*16)) + j.inner)] + ((float32*)A_2[((i*64) + k)]*(float32*)B_2[(((j.outer*1024) + (j.inner*64)) + k)]))
         }
       }
     }
@@ -372,14 +373,14 @@ such placeholder can be put to let TVM automatically bind the inferred value for
 </div>
 <p class="sphx-glr-script-out">Out:</p>
 <div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre>primfn(A_1: handle, B_1: handle, C_1: handle) -&gt; ()
-  attr = {&quot;tir.noalias&quot;: True, &quot;global_symbol&quot;: &quot;main&quot;}
-  buffers = {A: Buffer(A_2: handle, float32, [1024, 64], []),
+  attr = {&quot;global_symbol&quot;: &quot;main&quot;, &quot;tir.noalias&quot;: True}
+  buffers = {C: Buffer(C_2: handle, float32, [1024, 512], []),
              B: Buffer(B_2: handle, float32, [512, 64], []),
-             C: Buffer(C_2: handle, float32, [1024, 512], [])}
-  buffer_map = {C_1: C, B_1: B, A_1: A} {
+             A: Buffer(A_2: handle, float32, [1024, 64], [])}
+  buffer_map = {A_1: A, B_1: B, C_1: C} {
   for (i: int32, 0, 1024) {
     for (j.outer: int32, 0, 32) {
-      @gemv_update(@tvm_access_ptr(@type_annotation(, dtype=float32, type=&quot;pure_intrin&quot;), C_2, ((i*512) + (j.outer*16)), 16, 2, dtype=handle, type=&quot;intrin&quot;), @tvm_access_ptr(@type_annotation(, dtype=float32, type=&quot;pure_intrin&quot;), A_2, (i*64), 64, 1, dtype=handle, type=&quot;intrin&quot;), @tvm_access_ptr(@type_annotation(, dtype=float32, type=&quot;pure_intrin&quot;), B_2, (j.outer*1024), 1024, 1, dtype=handle, type=&quot;intrin&quot;), 16, 64, 64, dtype=int32, type=&quot;extern&quot;)
+      @tir.call_extern(&quot;gemv_update&quot;, @tir.tvm_access_ptr(@tir.type_annotation(, dtype=float32), C_2, ((i*512) + (j.outer*16)), 16, 2, dtype=handle), @tir.tvm_access_ptr(@tir.type_annotation(, dtype=float32), A_2, (i*64), 64, 1, dtype=handle), @tir.tvm_access_ptr(@tir.type_annotation(, dtype=float32), B_2, (j.outer*1024), 1024, 1, dtype=handle), 16, 64, 64, dtype=int32)
     }
   }
 }
@@ -418,13 +419,13 @@ The importing needs to happen before the tensorized GEMV being executed.</p>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
 <div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre>primfn(A_1: handle, B_1: handle, C_1: handle) -&gt; ()
-  attr = {&quot;tir.noalias&quot;: True, &quot;global_symbol&quot;: &quot;main&quot;}
-  buffers = {A: Buffer(A_2: handle, float32, [1024, 64], []),
+  attr = {&quot;global_symbol&quot;: &quot;main&quot;, &quot;tir.noalias&quot;: True}
+  buffers = {C: Buffer(C_2: handle, float32, [1024, 512], []),
              B: Buffer(B_2: handle, float32, [512, 64], []),
-             C: Buffer(C_2: handle, float32, [1024, 512], [])}
-  buffer_map = {C_1: C, B_1: B, A_1: A} {
-  attr [IterVar(i: int32, (nullptr), &quot;DataPar&quot;, &quot;&quot;)] &quot;pragma_import_llvm&quot; = &quot;; ModuleID = &#39;/tmp/tmpcw7zd4dq/input0.cc&#39;
-source_filename = &quot;/tmp/tmpcw7zd4dq/input0.cc&quot;
+             A: Buffer(A_2: handle, float32, [1024, 64], [])}
+  buffer_map = {A_1: A, B_1: B, C_1: C} {
+  attr [IterVar(i: int32, (nullptr), &quot;DataPar&quot;, &quot;&quot;)] &quot;pragma_import_llvm&quot; = &quot;; ModuleID = &#39;/tmp/tmpmel936f0/input0.cc&#39;
+source_filename = &quot;/tmp/tmpmel936f0/input0.cc&quot;
 target datalayout = &quot;e-m:e-i64:64-f80:128-n8:16:32:64-S128&quot;
 target triple = &quot;x86_64-pc-linux-gnu&quot;
 
@@ -517,7 +518,7 @@ attributes #0 = { noinline nounwind optnone uwtable &quot;correctly-rounded-divi
 &quot;;
   for (i, 0, 1024) {
     for (j.outer: int32, 0, 32) {
-      @gemv_update(@tvm_access_ptr(@type_annotation(, dtype=float32, type=&quot;pure_intrin&quot;), C_2, ((i*512) + (j.outer*16)), 16, 2, dtype=handle, type=&quot;intrin&quot;), @tvm_access_ptr(@type_annotation(, dtype=float32, type=&quot;pure_intrin&quot;), A_2, (i*64), 64, 1, dtype=handle, type=&quot;intrin&quot;), @tvm_access_ptr(@type_annotation(, dtype=float32, type=&quot;pure_intrin&quot;), B_2, (j.outer*1024), 1024, 1, dtype=handle, type=&quot;intrin&quot;), 16, 64, 64, dtype=int32, type=&quot;extern&quot;)
+      @tir.call_extern(&quot;gemv_update&quot;, @tir.tvm_access_ptr(@tir.type_annotation(, dtype=float32), C_2, ((i*512) + (j.outer*16)), 16, 2, dtype=handle), @tir.tvm_access_ptr(@tir.type_annotation(, dtype=float32), A_2, (i*64), 64, 1, dtype=handle), @tir.tvm_access_ptr(@tir.type_annotation(, dtype=float32), B_2, (j.outer*1024), 1024, 1, dtype=handle), 16, 64, 64, dtype=int32)
     }
   }
 }

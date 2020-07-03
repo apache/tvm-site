@@ -11,8 +11,6 @@ var searchData=
   ['floormodnode',['FloorModNode',['../classtvm_1_1tir_1_1FloorModNode.html',1,'tvm::tir']]],
   ['for',['For',['../classtvm_1_1tir_1_1For.html',1,'tvm::tir']]],
   ['fornode',['ForNode',['../classtvm_1_1tir_1_1ForNode.html',1,'tvm::tir']]],
-  ['free',['Free',['../classtvm_1_1tir_1_1Free.html',1,'tvm::tir']]],
-  ['freenode',['FreeNode',['../classtvm_1_1tir_1_1FreeNode.html',1,'tvm::tir']]],
   ['fromstd',['FromStd',['../classtvm_1_1runtime_1_1StringObj_1_1FromStd.html',1,'tvm::runtime::StringObj']]],
   ['function',['Function',['../classtvm_1_1relay_1_1Function.html',1,'tvm::relay']]],
   ['functionnode',['FunctionNode',['../classtvm_1_1relay_1_1FunctionNode.html',1,'tvm::relay']]],

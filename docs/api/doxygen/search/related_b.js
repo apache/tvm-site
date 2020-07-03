@@ -1,6 +1,10 @@
 var searchData=
 [
-  ['objectequal',['ObjectEqual',['../classtvm_1_1runtime_1_1String.html#ad09766253cebcd8fce1d5315a9190bc5',1,'tvm::runtime::String']]],
+  ['objectequal',['ObjectEqual',['../classtvm_1_1runtime_1_1String.html#ac0e10a4b0b377bd0783ee2b8feba4d2f',1,'tvm::runtime::String']]],
+  ['target',['Target',['../classtvm_1_1TargetNode.html#aaec4eb5c2964764409c3ecc82bb90f57',1,'tvm::TargetNode::Target()'],['../classtvm_1_1TargetIdNode.html#aaec4eb5c2964764409c3ecc82bb90f57',1,'tvm::TargetIdNode::Target()'],['../classtvm_1_1TargetId.html#aaec4eb5c2964764409c3ecc82bb90f57',1,'tvm::TargetId::Target()']]],
+  ['targetid',['TargetId',['../classtvm_1_1TargetIdNode.html#a55df0ea036a739549b850ef868a7e1e7',1,'tvm::TargetIdNode::TargetId()'],['../classtvm_1_1TargetIdRegEntry.html#a55df0ea036a739549b850ef868a7e1e7',1,'tvm::TargetIdRegEntry::TargetId()']]],
+  ['targetidregentry',['TargetIdRegEntry',['../classtvm_1_1TargetIdNode.html#a8c87f8c16dd388d8774d189ada51e86f',1,'tvm::TargetIdNode::TargetIdRegEntry()'],['../classtvm_1_1TargetId.html#a8c87f8c16dd388d8774d189ada51e86f',1,'tvm::TargetId::TargetIdRegEntry()']]],
+  ['targetvalidateschema',['TargetValidateSchema',['../classtvm_1_1TargetIdNode.html#a342d381f69da21b03762bfc84b566a7a',1,'tvm::TargetIdNode']]],
   ['tvmargssetter',['TVMArgsSetter',['../classtvm_1_1runtime_1_1NDArray.html#a35ae555d4becf356b16aeacd353d41ee',1,'tvm::runtime::NDArray::TVMArgsSetter()'],['../classtvm_1_1runtime_1_1ObjectPtr.html#a35ae555d4becf356b16aeacd353d41ee',1,'tvm::runtime::ObjectPtr::TVMArgsSetter()'],['../classtvm_1_1runtime_1_1ObjectRef.html#a35ae555d4becf356b16aeacd353d41ee',1,'tvm::runtime::ObjectRef::TVMArgsSetter()'],['../classtvm_1_1runtime_1_1TVMPODValue__.html#a35ae555d4becf356b16aeacd353d41ee',1,'tvm::runtime::TVMPODValue_::TVMArgsSetter()']]],
   ['tvmargvalue',['TVMArgValue',['../classtvm_1_1runtime_1_1ObjectPtr.html#a7e8b2c6a4fde079ee813c425d2eb6b24',1,'tvm::runtime::ObjectPtr']]],
   ['tvmmovableargvalue_5f',['TVMMovableArgValue_',['../classtvm_1_1runtime_1_1ObjectPtr.html#acd985550cba6cf8509122cbd996c1557',1,'tvm::runtime::ObjectPtr']]],
