@@ -189,7 +189,7 @@ One paricular challenge we observed, is that batch matmul is a major performance
 
 <p>Batch matmul computation can be described more concretely as follows:</p>
 
-<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>void BatchedGemm(input A, input B, output C, M, N, K, batch_dimension) {
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>void BatchedGemm(input A, input B, output C, M, N, K, batch_dimension) {
   for (int i = 0; i &lt; batch_dimension; ++i)  {
     DoGemm(A[i],B[i],C[i],M,K,N)
   }
@@ -258,7 +258,7 @@ One paricular challenge we observed, is that batch matmul is a major performance
 
 <p>In TVM, a general batch matmul computation can be declared as:</p>
 
-<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code># computation representation
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code># computation representation
 A = tvm.placeholder((batch, M, K), name='A')
 B = tvm.placeholder((batch, K, N), name='B')
 k = tvm.reduce_axis((0, K), 'k')
@@ -273,7 +273,7 @@ C = tvm.compute((batch, M, N),
 
 <h3 id="tuning-parameters-of-blockthread-numbers">Tuning parameters of block/thread numbers</h3>
 
-<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>  # thread indices
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>  # thread indices
   block_y = tvm.thread_axis("blockIdx.y")
   block_x = tvm.thread_axis("blockIdx.x")
   thread_y = tvm.thread_axis((0, num_thread_y), "threadIdx.y")
@@ -298,9 +298,9 @@ C = tvm.compute((batch, M, N),
   s[C].bind(vty, thread_yz)
   s[C].bind(vtx, thread_xz)
 </code></pre></div></div>
-<p>We fuse the outer dimensions of the batch matmul, i.e. the BB and FF of the op’s dimension, normally known as “batch” dimension in batch matmul computation. Then we split the outer and the inner dimensions by a factor of (<code class="highlighter-rouge">number_thread * vthread</code>).</p>
+<p>We fuse the outer dimensions of the batch matmul, i.e. the BB and FF of the op’s dimension, normally known as “batch” dimension in batch matmul computation. Then we split the outer and the inner dimensions by a factor of (<code class="language-plaintext highlighter-rouge">number_thread * vthread</code>).</p>
 
-<p>Strided pattern is not needed in batch matmul, thus the virtual thread number (<code class="highlighter-rouge">vthread_y</code> and <code class="highlighter-rouge">vthread_x</code>) are both set to 1.</p>
+<p>Strided pattern is not needed in batch matmul, thus the virtual thread number (<code class="language-plaintext highlighter-rouge">vthread_y</code> and <code class="language-plaintext highlighter-rouge">vthread_x</code>) are both set to 1.</p>
 
 <h4 id="finding-the-best-combination-of-number_thread">Finding the best combination of number_thread</h4>
 
@@ -349,7 +349,7 @@ C = tvm.compute((batch, M, N),
   </tbody>
 </table>
 
-<p>As learned from <a href="http://tvmlang.org/2017/08/22/Optimize-Deep-Learning-GPU-Operators-with-TVM-A-Depthwise-Convolution-Example.html">past experience</a>, the method to find the best combination of <code class="highlighter-rouge">num_thread_y</code> and <code class="highlighter-rouge">num_thread_x</code> is through brute-force search. After a brute-force search, the best combination for current shape can be found, which in current computation is <code class="highlighter-rouge">num_thread_y</code> = 8 and <code class="highlighter-rouge">num_thread_x</code> = 32.</p>
+<p>As learned from <a href="http://tvmlang.org/2017/08/22/Optimize-Deep-Learning-GPU-Operators-with-TVM-A-Depthwise-Convolution-Example.html">past experience</a>, the method to find the best combination of <code class="language-plaintext highlighter-rouge">num_thread_y</code> and <code class="language-plaintext highlighter-rouge">num_thread_x</code> is through brute-force search. After a brute-force search, the best combination for current shape can be found, which in current computation is <code class="language-plaintext highlighter-rouge">num_thread_y</code> = 8 and <code class="language-plaintext highlighter-rouge">num_thread_x</code> = 32.</p>
 
 <h2 id="fuse-batch-matmul-with-other-operations">Fuse batch matmul with other operations</h2>
 
@@ -359,7 +359,7 @@ C = tvm.compute((batch, M, N),
 
 <p>Batch matmul and broadcast add fusion computation can be declared as follows:</p>
 
-<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code># computation representation
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code># computation representation
 A = tvm.placeholder((batch_size, features, M, K), name='A')
 # the shape of B is (N, K) other than (K, N) is because B is transposed is this fusion pattern
 B = tvm.placeholder((batch_size, features, N, K), name='B')
@@ -374,7 +374,7 @@ D = topi.broadcast_add(C, ENTER)
 
 <p>Batch matmul and transpose fusion computation can be declared as:</p>
 
-<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code># computation representation
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code># computation representation
 A = tvm.placeholder((batch_size, features, M, K), name='A')
 B = tvm.placeholder((batch_size, features, K, N), name='B')
 k = tvm.reduce_axis((0, K), 'k')
@@ -388,10 +388,10 @@ C = tvm.compute(
 <p>The shape of [batch=64, heads=8, M=1, N=17, K=128] is chosen to elaborate the performance of the generated code. 17 is chosen as the sequence length since it is the average input length in our production scenarios.</p>
 
 <ul>
-  <li>tf-r1.4 <code class="highlighter-rouge">BatchMatmul</code>: 513.9 us</li>
-  <li>tf-r1.4 <code class="highlighter-rouge">BatchMatmul</code> + <code class="highlighter-rouge">Transpose</code> (separate): 541.9 us</li>
-  <li>TVM <code class="highlighter-rouge">BatchMatmul</code>: 37.62 us</li>
-  <li>TVM <code class="highlighter-rouge">BatchMatmul</code> + <code class="highlighter-rouge">Transpose</code> (fused): 38.39 us</li>
+  <li>tf-r1.4 <code class="language-plaintext highlighter-rouge">BatchMatmul</code>: 513.9 us</li>
+  <li>tf-r1.4 <code class="language-plaintext highlighter-rouge">BatchMatmul</code> + <code class="language-plaintext highlighter-rouge">Transpose</code> (separate): 541.9 us</li>
+  <li>TVM <code class="language-plaintext highlighter-rouge">BatchMatmul</code>: 37.62 us</li>
+  <li>TVM <code class="language-plaintext highlighter-rouge">BatchMatmul</code> + <code class="language-plaintext highlighter-rouge">Transpose</code> (fused): 38.39 us</li>
 </ul>
 
 <p>The kernel fusion optimization brings a further <b><em>1.7X</em></b> speed-up.</p>

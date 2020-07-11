@@ -165,7 +165,7 @@
     <p>Deep learning has been successfully applied to a variety of tasks.
 On real-time scenarios such as inference on autonomous vehicles, the inference speed of the model is critical.
 Network quantization is an effective approach to accelerating deep learning models.
-In quantized models, both data and model parameters are represented with low precision data types such as <code class="highlighter-rouge">int8</code> and <code class="highlighter-rouge">float16</code>.
+In quantized models, both data and model parameters are represented with low precision data types such as <code class="language-plaintext highlighter-rouge">int8</code> and <code class="language-plaintext highlighter-rouge">float16</code>.
 The lowered data bandwidth reduces the inference time and memory/storage requirements, as well as the power consumption.
 Meanwhile, under proper quantization schemes, we can minimize the accuracy drops of the quantized models.
 Therefore, quantized models are of particular interests of researchers and developers as it makes large models suitable to deploy on diverse devices, such as GPU, CPU and mobile devices.</p>
@@ -187,38 +187,38 @@ In emerging models such as ResNeXt and Deformable ConvNets, the automatic optimi
 
 <h1 id="expressing-quantized-cuda-kernels-in-tvm">Expressing Quantized CUDA Kernels in TVM</h1>
 <h2 id="leveraging-tensor-intrinsics-via-tensorization">Leveraging Tensor Intrinsics via Tensorization</h2>
-<p>Many platforms provide architecture-specific instructions for special computation patterns, for example, the SIMD instructions on x86, and the <code class="highlighter-rouge">dp4a</code> and <code class="highlighter-rouge">hfma</code> instructions on CUDA.
+<p>Many platforms provide architecture-specific instructions for special computation patterns, for example, the SIMD instructions on x86, and the <code class="language-plaintext highlighter-rouge">dp4a</code> and <code class="language-plaintext highlighter-rouge">hfma</code> instructions on CUDA.
 These intrinsic instructions are highly optimized for specific devices.
 By leveraging hardware intrinsics, we can achieve a significant performance boost for quantized operators.</p>
 
 <p>Currently, <a href="https://devblogs.nvidia.com/mixed-precision-programming-cuda-8/">dp4a</a> has been extensively used in TVM int8 operators on CUDA.
-<code class="highlighter-rouge">dp4a</code> is a CUDA intrinsic on Compute Capability 6.1 devices.
+<code class="language-plaintext highlighter-rouge">dp4a</code> is a CUDA intrinsic on Compute Capability 6.1 devices.
 It is a mixed-precision instruction that provides the efficient computation of the dot product between two 4-element 8-bit integer vectors and accumulates the result in 32-bit format.
-Using <code class="highlighter-rouge">dp4a</code>, we can implement a dot product between 8-bit integer vectors with number of elements evenly divisible by four.
+Using <code class="language-plaintext highlighter-rouge">dp4a</code>, we can implement a dot product between 8-bit integer vectors with number of elements evenly divisible by four.
 With an efficient dot product operator, we can implement high-level operators such as 2d convolution and dense layers as these operators are commonly backed by dot products.</p>
 
 <p>To illustrate, in 2d convolution we accumulate along the channel, the width, and the height axis of the kernel.
-This is a typical use case of <code class="highlighter-rouge">dp4a</code>.
+This is a typical use case of <code class="language-plaintext highlighter-rouge">dp4a</code>.
 TVM uses tensorization to support calling external intrinsics.
-We do not need to modify the original computation declaration; we use the schedule primitive <code class="highlighter-rouge">tensorize</code> to replace the accumulation with <code class="highlighter-rouge">dp4a</code> tensor intrinsic.
+We do not need to modify the original computation declaration; we use the schedule primitive <code class="language-plaintext highlighter-rouge">tensorize</code> to replace the accumulation with <code class="language-plaintext highlighter-rouge">dp4a</code> tensor intrinsic.
 More details of tensorization can be found in the <a href="https://tvm.apache.org/docs//tutorials/language/tensorize.html">tutorial</a>.</p>
 
 <h2 id="data-layout-rearrangement">Data Layout Rearrangement</h2>
 <p>One of the challenges in tensorization is that we may need to design special computation logic to adapt to the requirement of tensor intrinsics.
-Although it is natural to accumulate along the inner axis of the tensor in the dense operator, <code class="highlighter-rouge">conv2d</code> can be more challenging.
-In <code class="highlighter-rouge">conv2d</code> we expect to take a slice in the channel dimension as the input of <code class="highlighter-rouge">dp4a</code> because the number of channels is typically multiple of 4 (otherwise we fall back to original <code class="highlighter-rouge">conv2d</code> in NCHW layout).
+Although it is natural to accumulate along the inner axis of the tensor in the dense operator, <code class="language-plaintext highlighter-rouge">conv2d</code> can be more challenging.
+In <code class="language-plaintext highlighter-rouge">conv2d</code> we expect to take a slice in the channel dimension as the input of <code class="language-plaintext highlighter-rouge">dp4a</code> because the number of channels is typically multiple of 4 (otherwise we fall back to original <code class="language-plaintext highlighter-rouge">conv2d</code> in NCHW layout).
 Meanwhile, to achieve memory locality, we would like to reduce along the innermost axis first.
 Taking these factors into account, we use a custom data layout to address this challenge.</p>
 
-<p>In CUDA int8 2d convolution, we empirically choose <code class="highlighter-rouge">NCHW4c</code> as data layout and <code class="highlighter-rouge">OIHW4o4i</code> as weight layout.
-The templates can also be easily generalized to <code class="highlighter-rouge">NCHW[x]c</code> and <code class="highlighter-rouge">OIHW[x]o[x]i</code>, where x is an arbitrary positive integer divisible by four.
+<p>In CUDA int8 2d convolution, we empirically choose <code class="language-plaintext highlighter-rouge">NCHW4c</code> as data layout and <code class="language-plaintext highlighter-rouge">OIHW4o4i</code> as weight layout.
+The templates can also be easily generalized to <code class="language-plaintext highlighter-rouge">NCHW[x]c</code> and <code class="language-plaintext highlighter-rouge">OIHW[x]o[x]i</code>, where x is an arbitrary positive integer divisible by four.
 In the data layout we choose, slices of channels are in the packed innermost dimension.
 Likewise, we pack slices in both the input and output channel dimensions of the weight so that the output has a consistent data layout with the input, which prevents redundant layout transformations between layers.</p>
 
 <p>We show the computation of one element of the output of the 2d convolution in Figure 2.
 The element in each position of the super dimension (the outer dimension of the blocked layout which contains packed elements) NCHW and OIHW is the packed input and kernel, respectively.
 Each column of the packed kernel comes from a different filter.
-We calculate the dot product between the packed input and each row in the packed kernel using <code class="highlighter-rouge">dp4a</code>, and accumulate the result to the output tensor.</p>
+We calculate the dot product between the packed input and each row in the packed kernel using <code class="language-plaintext highlighter-rouge">dp4a</code>, and accumulate the result to the output tensor.</p>
 
 <p style="text-align: center"><img src="/images/cuda-quantized/conv2d.png" alt="image" width="60%" /></p>
 <div>
@@ -229,7 +229,7 @@ Figure 2. 2D convolution with data layout in NCHW4c and weight layout in OIHW4o4
 </div>
 <p></p>
 
-<p>After we have specified the layout of convolution layers, other operators such as <code class="highlighter-rouge">add</code> and activations can automatically adapt to the chosen layout during the <a href="https://github.com/dmlc/tvm/blob/master/src/relay/pass/alter_op_layout.cc">AlterOpLayout</a> pass in Relay.
+<p>After we have specified the layout of convolution layers, other operators such as <code class="language-plaintext highlighter-rouge">add</code> and activations can automatically adapt to the chosen layout during the <a href="https://github.com/dmlc/tvm/blob/master/src/relay/pass/alter_op_layout.cc">AlterOpLayout</a> pass in Relay.
 The layout transformation of the weight can be precomputed offline. Therefore, we can run the whole model in the same layout without extra overhead.</p>
 
 <h2 id="designing-search-space-for-automatic-optimization">Designing Search Space for Automatic Optimization</h2>
@@ -241,8 +241,8 @@ For example, as caching data in the shared memory is a common practice in CUDA p
 We also do some manual tiling such as splitting axes by 4 or 16 to facilitate vectorized memory access.</p>
 
 <p>In quantized 2d convolution, we design a search space that includes a set of tunable options, such as the tile size, the axes to fuse, configurations of loop unrolling and double buffering.
-The templates of quantized <code class="highlighter-rouge">conv2d</code> and <code class="highlighter-rouge">dense</code> on CUDA are registered under template key <code class="highlighter-rouge">int8</code>.
-During automatic tuning, we can create tuning tasks for these quantized operators by setting the <code class="highlighter-rouge">template_key</code> argument.
+The templates of quantized <code class="language-plaintext highlighter-rouge">conv2d</code> and <code class="language-plaintext highlighter-rouge">dense</code> on CUDA are registered under template key <code class="language-plaintext highlighter-rouge">int8</code>.
+During automatic tuning, we can create tuning tasks for these quantized operators by setting the <code class="language-plaintext highlighter-rouge">template_key</code> argument.
 Details of how to launch automatic optimization can be found in the <a href="https://tvm.apache.org/docs//tutorials/autotvm/tune_relay_cuda.html">AutoTVM tutorial</a>.</p>
 
 <h1 id="general-workflow">General Workflow</h1>
@@ -253,22 +253,22 @@ Details of how to launch automatic optimization can be found in the <a href="htt
 
 <p>TVM provides an easy workflow to quantize trained models from other frameworks, automatically optimize operators (with AutoTVM), and deploy to different devices.</p>
 
-<p>First, we use the Relay frontend to import existing models. Here we use an MXNet model with <code class="highlighter-rouge">(1, 3, 224, 224)</code> input shape as an example.</p>
-<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">sym</span><span class="p">,</span> <span class="n">arg_params</span><span class="p">,</span> <span class="n">aux_params</span> <span class="o">=</span> <span class="n">mxnet</span><span class="o">.</span><span class="n">model</span><span class="o">.</span><span class="n">load_checkpoint</span><span class="p">(</span><span class="n">model_path</span><span class="p">,</span> <span class="n">epoch</span><span class="p">)</span>
-<span class="n">net</span><span class="p">,</span> <span class="n">params</span> <span class="o">=</span> <span class="n">relay</span><span class="o">.</span><span class="n">from_mxnet</span><span class="p">(</span><span class="n">sym</span><span class="p">,</span> <span class="n">shape</span><span class="o">=</span><span class="p">{</span><span class="s">'data'</span><span class="p">:</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">224</span><span class="p">,</span> <span class="mi">224</span><span class="p">)},</span> <span class="n">arg_params</span><span class="o">=</span><span class="n">arg_params</span><span class="p">,</span> <span class="n">aux_params</span><span class="o">=</span><span class="n">aux_params</span><span class="p">)</span>
+<p>First, we use the Relay frontend to import existing models. Here we use an MXNet model with <code class="language-plaintext highlighter-rouge">(1, 3, 224, 224)</code> input shape as an example.</p>
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">sym</span><span class="p">,</span> <span class="n">arg_params</span><span class="p">,</span> <span class="n">aux_params</span> <span class="o">=</span> <span class="n">mxnet</span><span class="p">.</span><span class="n">model</span><span class="p">.</span><span class="n">load_checkpoint</span><span class="p">(</span><span class="n">model_path</span><span class="p">,</span> <span class="n">epoch</span><span class="p">)</span>
+<span class="n">net</span><span class="p">,</span> <span class="n">params</span> <span class="o">=</span> <span class="n">relay</span><span class="p">.</span><span class="n">from_mxnet</span><span class="p">(</span><span class="n">sym</span><span class="p">,</span> <span class="n">shape</span><span class="o">=</span><span class="p">{</span><span class="s">'data'</span><span class="p">:</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">224</span><span class="p">,</span> <span class="mi">224</span><span class="p">)},</span> <span class="n">arg_params</span><span class="o">=</span><span class="n">arg_params</span><span class="p">,</span> <span class="n">aux_params</span><span class="o">=</span><span class="n">aux_params</span><span class="p">)</span>
 </code></pre></div></div>
 
 <p>Next, we use the relay quantization API to convert it to a quantized model.</p>
-<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">net</span> <span class="o">=</span> <span class="n">relay</span><span class="o">.</span><span class="n">quantize</span><span class="o">.</span><span class="n">quantize</span><span class="p">(</span><span class="n">net</span><span class="p">,</span> <span class="n">params</span><span class="o">=</span><span class="n">params</span><span class="p">)</span>
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">net</span> <span class="o">=</span> <span class="n">relay</span><span class="p">.</span><span class="n">quantize</span><span class="p">.</span><span class="n">quantize</span><span class="p">(</span><span class="n">net</span><span class="p">,</span> <span class="n">params</span><span class="o">=</span><span class="n">params</span><span class="p">)</span>
 </code></pre></div></div>
 
 <p>Then, we use AutoTVM to extract tuning tasks for the operators in the model and perform automatic optimization. The <a href="https://tvm.apache.org/docs//tutorials/autotvm/tune_relay_cuda.html">AutoTVM tutorial</a> provides an example for this.</p>
 
 <p>Finally, we build the model and run inference in the quantized mode.</p>
-<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">with</span> <span class="n">relay</span><span class="o">.</span><span class="n">build_config</span><span class="p">(</span><span class="n">opt_level</span><span class="o">=</span><span class="mi">3</span><span class="p">):</span>
-    <span class="n">graph</span><span class="p">,</span> <span class="n">lib</span><span class="p">,</span> <span class="n">params</span> <span class="o">=</span> <span class="n">relay</span><span class="o">.</span><span class="n">build</span><span class="p">(</span><span class="n">net</span><span class="p">,</span> <span class="n">target</span><span class="p">)</span>
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">with</span> <span class="n">relay</span><span class="p">.</span><span class="n">build_config</span><span class="p">(</span><span class="n">opt_level</span><span class="o">=</span><span class="mi">3</span><span class="p">):</span>
+    <span class="n">graph</span><span class="p">,</span> <span class="n">lib</span><span class="p">,</span> <span class="n">params</span> <span class="o">=</span> <span class="n">relay</span><span class="p">.</span><span class="n">build</span><span class="p">(</span><span class="n">net</span><span class="p">,</span> <span class="n">target</span><span class="p">)</span>
 </code></pre></div></div>
-<p>The result of <code class="highlighter-rouge">relay.build</code> is a deployable library.
+<p>The result of <code class="language-plaintext highlighter-rouge">relay.build</code> is a deployable library.
 We can either run inference <a href="https://tvm.apache.org/docs//tutorials/frontend/from_mxnet.html#execute-the-portable-graph-on-tvm">on the GPU</a> directly or deploy <a href="https://tvm.apache.org/docs//tutorials/frontend/deploy_model_on_rasp.html#deploy-the-model-remotely-by-rpc">on the remote devices</a> via RPC.</p>
 
 <h1 id="benchmark">Benchmark</h1>
