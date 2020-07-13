@@ -6,7 +6,7 @@ title: "How to Bring Your Own Codegen to TVM"
 
 author: "Zhi Chen and Cody Yu, Amazon Web Services, Inc"
 
-date: 2020-07-13
+date: 2020-07-15
 
 ---
 To free data scientists from worrying about the performance when developing a new model, hardware backend providers (e.g., Intel, NVIDIA, ARM, etc) either provide kernel libraries such as cuBLAS or cuDNN with many commonly used deep learning kernels, or provide frameworks such as DNNL or TensorRT with a graph engine to let users describe their models in a certain way to achieve high performance. In addition, emerging deep learning accelerators also have their own compilers, kernel libraries, or runtime frameworks.
@@ -17,13 +17,13 @@ To share the programming interface with widely used deep learning frameworks, ma
 
 In this post, we demonstrate how you, as a hardware backend provider, can easily leverage the Bring Your Own Codegen (BYOC) framework to integrate the kernel library/compiler/framework of your hardware device to TVM. The most important advantage of leveraging BYOC framework is that ***all related source files of your devices are self-contained, so the codegen/runtime of your devices are pluggable to the TVM code base.*** It means that 1) the TVM code base with your codegen would be upstream compatible, and 2) TVM users can choose to enable the codegen/runtime based on their needs.
 
-In the rest of this post, we first illustrate a scenario that you may need TVM with BYOC, follow by an overview of the BYOC compilation and runtime flows. Then, we step-by-step illustrate how to integrate a vendor library or an execution engine to TVM with BYOC with Intel DNNL (a.k.a. MKL-DNN, OneDNN) as a running example.
+In the rest of this post, we first illustrate a scenario that you may need TVM with BYOC, followed by an overview of the BYOC compilation and runtime flows. Then, we step-by-step illustrate how to integrate a vendor library or an execution engine to TVM with BYOC by using Intel DNNL (a.k.a. MKL-DNN, OneDNN) as a running example.
 
 ## Bring an ASIC Accelerator to TVM
 
 Let's first make a scenario to illustrate why you want to bring your accelerator to TVM and what features you can expect from the BYOC framework. If you are not sure whether your case is suitable for BYOC, you are welcome to raise a discussion at [discuss.tvm.ai](https://discuss.tvm.ai).
 
-Imagining that you just made an edge device platform with an ARM CPU and a fantastic accelerator that has achieved an amazing performance for common image classification models. In other words, your accelerator does well on Conv2D, ReLU, GEMM, and other widely used CNN operators.
+Imagining that you just made an edge device platform with an ARM CPU and a fantastic accelerator that has achieved amazing performance for common image classification models. In other words, your accelerator does well on Conv2D, ReLU, GEMM, and other widely used CNN operators.
 
 Unfortunately, object detection models are getting more and more popular as well, and your customers need to run both image classification and object detection models on your platform. Although your accelerator is capable of executing almost all operators in object detection models, one operator (e.g., non-maximum suppression, NMS) is missing.
 
@@ -34,7 +34,7 @@ Since TVM has multiple codegens for different backends, it is easy for the open 
 Your ASIC accelerator must have its own compilation flow. Usually, it could be one of the following cases:
 
 **Generate a graph representation and feed it to a graph engine**:
-You may have your own a graph engine that is capable of executing a graph (or a neural network model) on your accelerator. For example, both Intel DNNL and NVIDIA TensorRT use an engine to run a whole graph or a model, so that they are able to 1) reduce memory transaction between operators and 2) optimize graph execution with operator fusion.
+You may have your own graph engine that is capable of executing a graph (or a neural network model) on your accelerator. For example, both Intel DNNL and NVIDIA TensorRT use an engine to run a whole graph or a model, so that they are able to 1) reduce memory transaction between operators and 2) optimize graph execution with operator fusion.
 
 In order to achieve the above two optimizations, you may need to process the graph during the compilation time. For example, Conv2D and bias addition are two separate operators in TVM, but they may be one operator (Conv2D with bias addition capability) on your accelerator. In this case, you may want to optimize the graph by replacing the `conv2d - add` graph pattern to a `your_conv2d_with_bias` node.
 
@@ -47,7 +47,7 @@ If your compilation flow falls into this case, then we recommend reading all the
 
 ## How BYOC Works
 
-We then briefly explain how BYOC framework work. For more detail explanations of underlying framework components and their implementations, please refer to the [developer document]([https://tvm.apache.org/docs/dev/relay_bring_your_own_codegen.html](https://tvm.apache.org/docs/dev/relay_bring_your_own_codegen.html)). In short, given a Relay graph in Figure 1, BYOC framework does the following steps:
+We then briefly explain how BYOC framework works. For more detail explanations of underlying framework components and their implementations, please refer to the [developer document]([https://tvm.apache.org/docs/dev/relay_bring_your_own_codegen.html](https://tvm.apache.org/docs/dev/relay_bring_your_own_codegen.html)). In short, given a Relay graph in Figure 1, BYOC framework does the following steps:
 
 {:center: style="text-align: center"}
 ![The original Relay graph](/images/bring-your-own-codegen/original_graph.png){: width="50%"}
@@ -69,7 +69,7 @@ Figure 2: The Graph with Annotations.
 ### 2. Graph Transformation
 The second step is to transform and optimize the graph based on the annotations. Specifically, BYOC performs the following transformations.
 
-**2.1: Merge compiler region**: As can be seen in Figure 2, we now have many "regions" in the graph that can be offloaded to your accelerator, but some of them can actually be merged to reduce the data transfer and kernel launching overhead. Accordingly, step 2.1 performs greedy algorithm to merge those regions as many as possible while guaranteeing the functional correctness. The result is depicted in Figure 3.
+**2.1: Merge compiler region**: As can be seen in Figure 2, we now have many "regions" in the graph that can be offloaded to your accelerator, but some of them can actually be merged to reduce the data transfer and kernel launching overhead. Accordingly, step 2.1 uses a greedy algorithm to merge as many of those regions as possible while guaranteeing the functional correctness. The result is depicted in Figure 3.
 
 {:center: style="text-align: center"}
 ![After Merging Compiler Regions](/images/bring-your-own-codegen/after_merging_regions.png){: width="50%"}
@@ -90,16 +90,16 @@ Figure 4: After Graph Partitioning.
 ### 3. Code Generation
 Now we know which part of the Relay graph should be offloaded. In this step, we sequentially send every Relay function with `Compiler=your_accelerator` to your codegen. Your codegen should compile the Relay function to the form that matches your own compilation flow. It can be either C source code or any text formats.
 
-Finally, all compiled functions will be serialized along with other non-offloaded Relay functions to a single `.so` file by the TVM `export_library` Python API. In other words, user will get only one `.so` file after running this flow.
+Finally, all compiled functions will be serialized along with other non-offloaded Relay functions to a single `.so` file by the TVM `export_library` Python API. In other words, the user will get only one `.so` file after running this flow.
 
 ### 4. Runtime
 You may also need to implement a runtime to initialize your graph engine (if applicable) and execute the compiled functions. During the inference, TVM runtime (i.e., graph runtime or VM) will leverage your runtime to invoke the offloaded functions when the TVM runtime encounters the corresponding function call in Figure 4. Your runtime is responsible for launching the compiled function with the given input tensor arrays and filling in the results to the output tensor arrays.
 
-In the rest of this post, we use DNNL as an example to demonstrate how to achieve the above workflow using BYOC framework. Please note that all referred code and line number in this post are based on the TVM repository's master branch commit [8a0249c](https://github.com/apache/incubator-tvm/tree/8a0249cd4d12a2eb1a4e7a692a9265bc63fec5c8).
+In the rest of this post, we use DNNL as an example to demonstrate how to achieve the above workflow using the BYOC framework. Please note that all referred code and line number in this post are based on the TVM repository's master branch commit [8a0249c](https://github.com/apache/incubator-tvm/tree/8a0249cd4d12a2eb1a4e7a692a9265bc63fec5c8).
 
 ## Bring DNNL to TVM: Annotation Rules
 
-The BYOC framework provides two approaches for you to describe the supported operators and patterns. You can use both of them simultaneously. In this section, we use DNNL as an example to show how to make use of them. The complete implementation is available [here](https://github.com/apache/incubator-tvm/blob/8a0249cd4d12a2eb1a4e7a692a9265bc63fec5c8/python/tvm/relay/op/contrib/dnnl.py). Note that we put the annotation rules for your codegens under `python/tvm/relay/op/contrib/your_codegen_name.py`.
+The BYOC framework provides two approaches for you to describe the supported operators and patterns. You can use both of them simultaneously. In this section, we use DNNL as an example to show how to make use of them. The complete implementation is available [here](https://github.com/apache/incubator-tvm/blob/8a0249cd4d12a2eb1a4e7a692a9265bc63fec5c8/python/tvm/relay/op/contrib/dnnl.py). Note that we put the annotation rules for your codegen under `python/tvm/relay/op/contrib/your_codegen_name.py`.
 
 ### Rules for single operators
 You can intuitively specify which Relay operators are supported by your accelerator with the BYOC API. For example, we use the following code snippet to build a rule saying that our DNNL codegen supports Conv2D:
@@ -178,7 +178,7 @@ def pattern_table():
 
 In the DNNL example, we implemented two patterns with different names so that we can easily recognize them in the codegen. Note that the patterns are implemented in the Relay pattern language. You can follow [this tutorial](https://tvm.apache.org/docs/langref/relay_pattern.html) to learn how to write your own patterns.
 
-With the pattern table, we can them use a Relay pass to perform the transformation from
+With the pattern table, we can then use a Relay pass to perform the transformation from
 
 ```
 %1 = nn.conv2d(%data, %weight, ...)
