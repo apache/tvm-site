@@ -111,12 +111,12 @@ Let us take a closer look at what's going on in BERT.
 Like many deep learning models, BERT comes with a bit some prologue (vocabulary embeddings) and epilogue (pooling) and the bulk is organized into similar-looking blocks, here we have 12 `BertLayer` modules.
 The `attention_mask` is jsut to prevent BERT from looking at the answer when dealing with the question.
 
-![Bert Model](/images/bert-pytorch/bert_model.svg)
+![Bert Model](/images/bert-pytorch/bert_model.svg){: width="100%" }
 
 So let us zoom in and look at a BertLayer in detail, since that ultimately is what we need make fast.
 As we see in the net diagram, the main part of the `BertLayer` module is a submodule `BertSelfAttention`.
 
-![BertLayer](/images/bert-pytorch/bert_layer.svg)
+![BertLayer](/images/bert-pytorch/bert_layer.svg){: width="100%" }
 
 Now the `BertSelfAttention` captures the famed self-attention mechanism that is the hallmark of transformer models. (I cannot recommend Sascha Rush's [Annotated Transformer](http://nlp.seas.harvard.edu/2018/04/03/attention.html) enough as a detailed walkthrough.)
 
@@ -165,7 +165,7 @@ def visualize(expr, collapse_small=True, node_attr_dict = {}):
         if isinstance(c.data, tvm.runtime.ndarray.NDArray):
             return numpy.prod(c.data.shape) < 10
         return True
-            
+
     # Sort by node ID
     for node, node_id in sorted(node_dict.items(), key=lambda x: x[1]):
         if isinstance(node, tvm.relay.Function):
@@ -192,7 +192,7 @@ def visualize(expr, collapse_small=True, node_attr_dict = {}):
             for field in node.fields:
                 dot.edge(str(node_dict[field]), str(node_id))
         elif isinstance(node, tvm.relay.Constant):
-            
+
             if not is_small_const(node): # small consts are shown in ops
                 dot.node(str(node_id), 'Constant({}, {})'.format(node.data.shape, node.data.dtype),
                         **node_attr_dict.get(node, {}))
@@ -251,14 +251,14 @@ Let's run that on our main function. For some reason (well, to be fully general,
 visualize(mod['main'])
 ```
 
-![svg](/images/bert-pytorch/bert-tvm_49_0.svg)
+![svg](/images/bert-pytorch/bert-tvm_49_0.svg){: width="100%" }
 
 
 In addition to our named inputs, we see a number of unnamed (numbered) variables. These are the neural network parameters.
 
 Let us compile our model.
 
-Just like the full model, we can run and time our submodule after checking that it computes the same quantities. 
+Just like the full model, we can run and time our submodule after checking that it computes the same quantities.
 
 100 runs take 20.2ms. The back of the envelope calculation here is that with `BertLayer` in PyTorch we are spending about 0.2ms in this layer, so about 2.4ms on 12 layers - a not the majority but a sizeable part of the 6-7ms overall runtime. Let's compare to TVM. (A good rule is to never optimize without measuring.)
 
@@ -266,13 +266,13 @@ Similarly, TVM clocks in at 18.2ms for 100 runs. So here we are again roughly on
 
 One thing we see from the picture is that the input is reshaped three times. There is a TVM optimization pass call Common Subexpression Elimination (CSE) that combines the three reshapes.
 (A while ago, this did not succeed because it had distinct shape arguments, but this was since solved by the TVM developers in the dynamic to static conversion pass.)
-Also, the model parameters that are reshaped and transposed. Can we get rid of that, too? 
-Yes. And for that we would first _bind_ the parameters, i.e. put them into the model. Then the parameters have become constants instead of input nodes. 
+Also, the model parameters that are reshaped and transposed. Can we get rid of that, too?
+Yes. And for that we would first _bind_ the parameters, i.e. put them into the model. Then the parameters have become constants instead of input nodes.
 With the `Foldconstant` pass, we can propagate the constants through the `transpose`s and `reshape`s to move them closer to the matmuls.
 
 After these three (which TVM will do when we compile a relay model), our model looks like this:
 
-![svg](/images/bert-pytorch/bert-tvm_72_0.svg)
+![svg](/images/bert-pytorch/bert-tvm_72_0.svg){: width="100%" }
 
 And now comes an interesting trick. It is more efficient to merge the three batch matmuls with the same input into a single `batch_matmul`. We implemented a pass doing this in [TVM PR 5791](https://github.com/apache/incubator-tvm/pull/5791). So let's call it and also have another constant-folding pass.
 
@@ -283,7 +283,7 @@ new_mod = tvm.relay.transform.FoldConstant()(new_mod)
 visualize(new_mod["main"])
 ```
 
-![svg](/images/bert-pytorch/bert-tvm_74_0.svg)
+![svg](/images/bert-pytorch/bert-tvm_74_0.svg){: width="100%" }
 
 Awesome. After checking that we still get the same result.
 We can time again: 25.2 ms for 100 runs. It's a bit slow again because we need to tune for the new shapes.
@@ -346,7 +346,7 @@ Again, we get our relay model with running a traced `BertLayer` from the transfo
 One thing we'll do in between is to move from a modular interface in PyTorch - with named parameters - to a functional
 interface (which is what TVM can do for us). The first thing we want to do for that is arrange for the function arguments to be in an order that we can work with - i.e. first the direct inputs to the module and then the parameters in the same order that PyTorch uses them. After this operation, our `BertLayer ` in TVM looks like this:
 
-![svg](/images/bert-pytorch/pytorch-tvm-training_20_0.svg)
+![svg](/images/bert-pytorch/pytorch-tvm-training_20_0.svg){: width="100%" }
 
 As in the BERT inference, we want to run some optimization passes.
 
@@ -361,7 +361,7 @@ As hinted at above, TVM's gradient taking assumes that it is the last element in
 
 With these modificaitons applied, our model looks like this:
 
-![svg](/images/bert-pytorch/pytorch-tvm-training_25_0.svg)
+![svg](/images/bert-pytorch/pytorch-tvm-training_25_0.svg){: width="100%" }
 
 Finally we can take the grad. As we get a lot of `let` nodes, we bring it to normal form using the `ToGraphNormalForm` pass.
 TVM's gradient-taking returns a function that has the same parameters as the original function (in our case amended with the `grad_out` and dropout) and then returns a tuple of the original return and a tuple containing gradients for all inputs.
@@ -370,9 +370,9 @@ Then we run our simplification passes.
 
 So this is the graph we have now for forward and backward:
 
-![svg](/images/bert-pytorch/pytorch-tvm-training_31_0.svg)
+![svg](/images/bert-pytorch/pytorch-tvm-training_31_0.svg){: width="100%" }
 
-But in PyTorch, we first compute the forward and then the backwards, so we have to take out the saw and 
+But in PyTorch, we first compute the forward and then the backwards, so we have to take out the saw and
 split our graph. One of the difficult problems is what to do with things computed for both forward and backward. It is a hard problem, related to the MinCut problem.
 
 Our extremal options could be:
@@ -385,7 +385,7 @@ We use a coloring here. First we color all nodes of the forward computation in r
 
 A bit of (PyTorch) terminology: When we have a function *Layer : x ↦ y* followed by some *Loss: y ↦ l ∈ ℝ*, the backward is *BackwardOfLayer : grad`_`out ↦ grad`_`in* with *grad`_`out = dl/dy* and *grad`_`in = dl/dx`.
 
-![svg](/images/bert-pytorch/pytorch-tvm-training_34_0.svg)
+![svg](/images/bert-pytorch/pytorch-tvm-training_34_0.svg){: width="100%" }
 
 In order to split the function as described above, we collect the blue nodes as to capture - but constants will
 just be duplicated and inputs (`Var` nodes) need to be treated separately.
@@ -393,7 +393,7 @@ Now we can split out the backward, replacing all the blue nodes with variables.
 
 Next we take the forward and amend it to also return the required intermediates. The forward then looks like this:
 
-![svg](/images/bert-pytorch/pytorch-tvm-training_40_0.svg)
+![svg](/images/bert-pytorch/pytorch-tvm-training_40_0.svg){: width="100%" }
 
 TVM cannot return nested tuples, so we flatten the output in the function. Again we differentiate between tensor-valued functions and tuple valued ones (i.e. those returning potentially multiple tensors).
 
@@ -420,7 +420,7 @@ torch.manual_seed(12345)
 drop_c = {}
 for k in dropout_info.keys(): # we don't know the order
     p, typ = dropout_info[k]
-    drop_c[k] = torch.nn.functional.dropout(torch.ones([int(i) for i in typ.shape], 
+    drop_c[k] = torch.nn.functional.dropout(torch.ones([int(i) for i in typ.shape],
                                               dtype=getattr(torch, typ.dtype), device="cuda"), p=p)*(1-p)
 
 drop_tvm = {n: tensor_to_tvm(t) for n, t in drop_c.items()}
@@ -493,7 +493,7 @@ gives us a list of numbers in the 1e-5ish range.
 But we wanted to get something running in PyTorch, right?
 
 Keeping with how PyTorch works, we first define an `autograd.Function` that the things we just did manually:
- 
+
 In the `forward`:
 
 - Generate the dropout random values,
