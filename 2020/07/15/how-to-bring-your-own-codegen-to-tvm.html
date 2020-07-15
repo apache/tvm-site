@@ -1,0 +1,675 @@
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>How to Bring Your Own Codegen to TVM</title>
+    
+    <meta name="author" content="">
+
+    <!-- Le HTML5 shim, for IE6-8 support of HTML elements -->
+    <!--[if lt IE 9]>
+      <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+
+    <!-- Le styles -->
+    <link href="/assets/themes/custom-twitter/css/1.4.0/bootstrap.css" rel="stylesheet">
+    <link href="/assets/themes/custom-twitter/css/style.css?body=1" rel="stylesheet" type="text/css" media="all">
+
+    <!-- Le fav and touch icons -->
+  <!-- Update these with your own images
+    <link rel="shortcut icon" href="images/logo/tvm-logo.png">
+  <link rel="shortcut icon" href="images/logo/tvm-logo.png">
+  -->
+  <link href="/images/logo/tvm-logo-square.png" rel="icon" type="image/png"/>
+  <!-- Global site tag (gtag.js) - Google Analytics -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=UA-75982049-2"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+
+    gtag('js', new Date());
+    gtag('config', 'UA-75982049-2');
+  </script>
+
+</head>
+
+  <body>
+    <div class="topbar">
+      <div class="fill">
+        <div class="container">
+          <h2 id="logo-wrap">
+            <a href="/" class="nav">
+              <img src="/images/logo/tvm-logo-small-black.png" width="100px">
+            </a>
+          </h2>
+          <ul class="nav" id="nav-bar">
+            
+            
+            
+
+
+
+  
+    
+      
+      
+    
+  
+    
+      
+      
+    
+  
+    
+      
+      
+    
+  
+    
+      
+      
+    
+  
+    
+      
+      
+    
+  
+    
+      
+      
+    
+  
+    
+      
+      	
+      	<li><a href="/community">Community</a></li>
+      	
+      
+      
+    
+  
+    
+      
+      	
+      	<li><a href="/download">Download</a></li>
+      	
+      
+      
+    
+  
+    
+      
+      	
+      	<li><a href="/about">About</a></li>
+      	
+      
+      
+    
+  
+    
+      
+      
+    
+  
+    
+      
+      	
+      	<li><a href="/vta">VTA</a></li>
+      	
+      
+      
+    
+  
+    
+      
+      
+      	
+      	<li><a href="/blog">Blog</a></li>
+      	
+      
+    
+  
+
+
+
+
+            <li> <a href="https://tvm.apache.org/docs">Docs</a></li>
+            <li> <a href="https://tvmconf.org">TVM Conference</a></li>
+            <li> <a href="https://github.com/apache/incubator-tvm/">Github</a></li>
+            <li> <a href="/asf">ASF</a></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+    
+<div class="container">
+<div class="content">
+  <div class="row">
+    <div class="span14">
+      <h1>How to Bring Your Own Codegen to TVM </h1>
+      <p class="post-meta">
+        <time datetime="2020-07-15T00:00:00-07:00" itemprop="datePublished">
+          Jul 15, 2020
+        </time>
+        
+        • <span itemprop="author" itemscope itemtype="http://schema.org/Person">
+          <span itemprop="name">Zhi Chen and Cody Yu, Amazon Web Services, Inc</span>
+        </span>
+        
+      </p>
+      <p class="post-meta">
+        </p>
+    </br>
+    <p>To free data scientists from worrying about the performance when developing a new model, hardware backend providers (e.g., Intel, NVIDIA, ARM, etc) either provide kernel libraries such as cuBLAS or cuDNN with many commonly used deep learning kernels, or provide frameworks such as DNNL or TensorRT with a graph engine to let users describe their models in a certain way to achieve high performance. In addition, emerging deep learning accelerators also have their own compilers, kernel libraries, or runtime frameworks.</p>
+
+<p>However, users have to learn a new programming interface when they attempt to work on a new kernel library or a device. As a result, the demand for a unified programming interface becomes more and more important to let all users and hardware backend providers stand on the same page.</p>
+
+<p>To share the programming interface with widely used deep learning frameworks, many hardware device providers have attempted to integrate their devices backend to TensorFlow. However, since TensorFlow does not provide an official backend interface for new backends, you have to hack the TensorFlow for registration, which involves many source file changes and makes the future maintenance difficult.</p>
+
+<p>In this post, we demonstrate how you, as a hardware backend provider, can easily leverage the Bring Your Own Codegen (BYOC) framework to integrate the kernel library/compiler/framework of your hardware device to TVM. The most important advantage of leveraging BYOC framework is that <strong><em>all related source files of your devices are self-contained, so the codegen/runtime of your devices are pluggable to the TVM code base.</em></strong> It means that 1) the TVM code base with your codegen would be upstream compatible, and 2) TVM users can choose to enable the codegen/runtime based on their needs.</p>
+
+<p>In the rest of this post, we first illustrate a scenario that you may need TVM with BYOC, followed by an overview of the BYOC compilation and runtime flows. Then, we step-by-step illustrate how to integrate a vendor library or an execution engine to TVM with BYOC by using Intel DNNL (a.k.a. MKL-DNN, OneDNN) as a running example.</p>
+
+<h2 id="bring-an-asic-accelerator-to-tvm">Bring an ASIC Accelerator to TVM</h2>
+
+<p>Let’s first make a scenario to illustrate why you want to bring your accelerator to TVM and what features you can expect from the BYOC framework. If you are not sure whether your case is suitable for BYOC, you are welcome to raise a discussion at <a href="https://discuss.tvm.ai">discuss.tvm.ai</a>.</p>
+
+<p>Imagining that you just made an edge device platform with an ARM CPU and a fantastic accelerator that has achieved amazing performance for common image classification models. In other words, your accelerator does well on Conv2D, ReLU, GEMM, and other widely used CNN operators.</p>
+
+<p>Unfortunately, object detection models are getting more and more popular as well, and your customers need to run both image classification and object detection models on your platform. Although your accelerator is capable of executing almost all operators in object detection models, one operator (e.g., non-maximum suppression, NMS) is missing.</p>
+
+<h3 id="let-tvm-execute-unsupported-operators">Let TVM execute unsupported operators</h3>
+<p>Since TVM has multiple codegens for different backends, it is easy for the open source community to implement new operators on CPU or GPU in a short time. Ideally, if you integrate the compilation flow of your accelerator to TVM with BYOC, TVM will perform Relay graph partitioning to offload a part of the graph to your accelerator while keeping others on TVM. As a result, you can claim that your platform is capable of running all models without worrying about new operators.</p>
+
+<h3 id="customize-graph-level-optimization">Customize graph-level optimization</h3>
+<p>Your ASIC accelerator must have its own compilation flow. Usually, it could be one of the following cases:</p>
+
+<p><strong>Generate a graph representation and feed it to a graph engine</strong>:
+You may have your own graph engine that is capable of executing a graph (or a neural network model) on your accelerator. For example, both Intel DNNL and NVIDIA TensorRT use an engine to run a whole graph or a model, so that they are able to 1) reduce memory transaction between operators and 2) optimize graph execution with operator fusion.</p>
+
+<p>In order to achieve the above two optimizations, you may need to process the graph during the compilation time. For example, Conv2D and bias addition are two separate operators in TVM, but they may be one operator (Conv2D with bias addition capability) on your accelerator. In this case, you may want to optimize the graph by replacing the <code class="highlighter-rouge">conv2d - add</code> graph pattern to a <code class="highlighter-rouge">your_conv2d_with_bias</code> node.</p>
+
+<p>If your compilation flow falls into this case, then we recommend reading all the rest sections in this post but skipping <a href="#bring-dnnl-to-tvm-c-source-codegen">Bring DNNL to TVM: C Source Codegen</a>.</p>
+
+<p><strong>Generate assembly code and compile it to an executable binary</strong>:
+If you do not have an end-to-end execution framework for your platform like the previous case, you may have a compiler to compile a program in assembly code of your ISA. In order to feed the assembly code to your compiler, you will need a codegen to generate and optimize the assembly code from a Relay graph.</p>
+
+<p>If your compilation flow falls into this case, then we recommend reading all the rest sections in this post but skipping <a href="#bring-dnnl-to-tvm-json-codegenruntime">Bring DNNL to TVM: JSON Codegen/Runtime</a>.</p>
+
+<h2 id="how-byoc-works">How BYOC Works</h2>
+
+<p>We then briefly explain how BYOC framework works. For more detail explanations of underlying framework components and their implementations, please refer to the <a href="[https://tvm.apache.org/docs/dev/relay_bring_your_own_codegen.html](https://tvm.apache.org/docs/dev/relay_bring_your_own_codegen.html)">developer document</a>. In short, given a Relay graph in Figure 1, BYOC framework does the following steps:</p>
+
+<p style="text-align: center"><img src="/images/bring-your-own-codegen/original_graph.png" alt="The original Relay graph" width="50%" /></p>
+<center>
+Figure 1: The Original Relay Graph.
+</center>
+<p></p>
+
+<h3 id="1-graph-annotation">1. Graph Annotation</h3>
+<p>Taking a user-provided Relay graph, our first step is to annotate the nodes that potentially can be offloaded to your accelerator in the graph. You will need to follow <a href="#bring-dnnl-to-tvm-annotation-rules">Bring DNNL to TVM: Annotation Rules</a> to implement a whitelist of supported operators, or a graph pattern list of customized composite operators. An example annotation result is shown in Figure 2.</p>
+
+<p style="text-align: center"><img src="/images/bring-your-own-codegen/after_annotation.png" alt="The Graph with Annotations" width="50%" /></p>
+<center>
+Figure 2: The Graph with Annotations.
+</center>
+<p></p>
+
+<h3 id="2-graph-transformation">2. Graph Transformation</h3>
+<p>The second step is to transform and optimize the graph based on the annotations. Specifically, BYOC performs the following transformations.</p>
+
+<p><strong>2.1: Merge compiler region</strong>: As can be seen in Figure 2, we now have many “regions” in the graph that can be offloaded to your accelerator, but some of them can actually be merged to reduce the data transfer and kernel launching overhead. Accordingly, step 2.1 uses a greedy algorithm to merge as many of those regions as possible while guaranteeing the functional correctness. The result is depicted in Figure 3.</p>
+
+<p style="text-align: center"><img src="/images/bring-your-own-codegen/after_merging_regions.png" alt="After Merging Compiler Regions" width="50%" /></p>
+<center>
+Figure 3: After Merging Compiler Regions.
+</center>
+<p></p>
+
+<p><strong>2.2: Partition Graph</strong>: For each region from the previous step, we create a Relay function with an attribute <code class="highlighter-rouge">Compiler</code> to indicate that this Relay function should be entirely offloaded to your accelerator, as shown in Figure 4.</p>
+
+<p style="text-align: center"><img src="/images/bring-your-own-codegen/after_partitioning.png" alt="After Graph Partitioning" width="50%" /></p>
+<center>
+Figure 4: After Graph Partitioning.
+</center>
+<p></p>
+
+<h3 id="3-code-generation">3. Code Generation</h3>
+<p>Now we know which part of the Relay graph should be offloaded. In this step, we sequentially send every Relay function with <code class="highlighter-rouge">Compiler=your_accelerator</code> to your codegen. Your codegen should compile the Relay function to the form that matches your own compilation flow. It can be either C source code or any text formats.</p>
+
+<p>Finally, all compiled functions will be serialized along with other non-offloaded Relay functions to a single <code class="highlighter-rouge">.so</code> file by the TVM <code class="highlighter-rouge">export_library</code> Python API. In other words, the user will get only one <code class="highlighter-rouge">.so</code> file after running this flow.</p>
+
+<h3 id="4-runtime">4. Runtime</h3>
+<p>You may also need to implement a runtime to initialize your graph engine (if applicable) and execute the compiled functions. During the inference, TVM runtime (i.e., graph runtime or VM) will leverage your runtime to invoke the offloaded functions when the TVM runtime encounters the corresponding function call in Figure 4. Your runtime is responsible for launching the compiled function with the given input tensor arrays and filling in the results to the output tensor arrays.</p>
+
+<p>In the rest of this post, we use DNNL as an example to demonstrate how to achieve the above workflow using the BYOC framework. Please note that all referred code and line number in this post are based on the TVM repository’s master branch commit <a href="https://github.com/apache/incubator-tvm/tree/8a0249cd4d12a2eb1a4e7a692a9265bc63fec5c8">8a0249c</a>.</p>
+
+<h2 id="bring-dnnl-to-tvm-annotation-rules">Bring DNNL to TVM: Annotation Rules</h2>
+
+<p>The BYOC framework provides two approaches for you to describe the supported operators and patterns. You can use both of them simultaneously. In this section, we use DNNL as an example to show how to make use of them. The complete implementation is available <a href="https://github.com/apache/incubator-tvm/blob/8a0249cd4d12a2eb1a4e7a692a9265bc63fec5c8/python/tvm/relay/op/contrib/dnnl.py">here</a>. Note that we put the annotation rules for your codegen under <code class="highlighter-rouge">python/tvm/relay/op/contrib/your_codegen_name.py</code>.</p>
+
+<h3 id="rules-for-single-operators">Rules for single operators</h3>
+<p>You can intuitively specify which Relay operators are supported by your accelerator with the BYOC API. For example, we use the following code snippet to build a rule saying that our DNNL codegen supports Conv2D:</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="o">@</span><span class="n">tvm</span><span class="o">.</span><span class="n">ir</span><span class="o">.</span><span class="n">register_op_attr</span><span class="p">(</span><span class="s">"nn.conv2d"</span><span class="p">,</span> <span class="s">"target.dnnl"</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">_dnnl_conv2d_wrapper</span><span class="p">(</span><span class="n">attrs</span><span class="p">,</span> <span class="n">args</span><span class="p">):</span>
+  <span class="k">return</span> <span class="bp">True</span>
+</code></pre></div></div>
+<p>This registers a new attribute <code class="highlighter-rouge">target.dnnl</code> to Relay <code class="highlighter-rouge">nn.conv2d</code> operator.  By this way, the BYOC annotation could invoke <code class="highlighter-rouge">target.dnnl()</code> for every operator in the graph to check if it is supported in DNNL codegen.</p>
+
+<p>On the other hand, it might be tedious to write the above code snippet for every single operator. For the DNNL implementation, we implemented a helper function, <code class="highlighter-rouge">_register_external_op_helper</code>, to make our life easier:</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">_register_external_op_helper</span><span class="p">(</span><span class="n">op_name</span><span class="p">,</span> <span class="n">supported</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
+    <span class="o">@</span><span class="n">tvm</span><span class="o">.</span><span class="n">ir</span><span class="o">.</span><span class="n">register_op_attr</span><span class="p">(</span><span class="n">op_name</span><span class="p">,</span> <span class="s">"target.dnnl"</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">_func_wrapper</span><span class="p">(</span><span class="n">attrs</span><span class="p">,</span> <span class="n">args</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">supported</span>
+    <span class="k">return</span> <span class="n">_func_wrapper</span>
+
+<span class="n">_register_external_op_helper</span><span class="p">(</span><span class="s">"nn.batch_norm"</span><span class="p">)</span>
+<span class="n">_register_external_op_helper</span><span class="p">(</span><span class="s">"nn.conv2d"</span><span class="p">)</span>
+<span class="n">_register_external_op_helper</span><span class="p">(</span><span class="s">"nn.dense"</span><span class="p">)</span>
+<span class="n">_register_external_op_helper</span><span class="p">(</span><span class="s">"nn.relu"</span><span class="p">)</span>
+<span class="n">_register_external_op_helper</span><span class="p">(</span><span class="s">"add"</span><span class="p">)</span>
+<span class="n">_register_external_op_helper</span><span class="p">(</span><span class="s">"subtract"</span><span class="p">)</span>
+<span class="n">_register_external_op_helper</span><span class="p">(</span><span class="s">"multiply"</span><span class="p">)</span>
+</code></pre></div></div>
+<p>In the above example, we specify a list of operators that can be supported by DNNL codegen.</p>
+
+<h3 id="rules-for-graph-patterns">Rules for graph patterns</h3>
+<p>Your accelerator or compiler may have optimized some patterns (e.g., Conv2D + add + ReLU) to be a single instruction or an API. In this case, you can specify a mapping from a graph pattern to your instruction/API. For the case of the DNNL, its Conv2D API already includes bias addition and it allows the next ReLU to be attached, so we can call DNNL as the following code snippet (the complete implementation can be found <a href="[https://github.com/apache/incubator-tvm/blob/master/src/runtime/contrib/dnnl/dnnl_json_runtime.cc#L151](https://github.com/apache/incubator-tvm/blob/master/src/runtime/contrib/dnnl/dnnl_json_runtime.cc#L151)">here</a>):</p>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">DNNLConv2d</span><span class="p">(</span><span class="k">const</span> <span class="n">bool</span> <span class="n">has_bias</span> <span class="o">=</span> <span class="nb">false</span><span class="p">,</span> <span class="k">const</span> <span class="n">bool</span> <span class="n">has_relu</span> <span class="o">=</span> <span class="nb">false</span><span class="p">)</span> <span class="p">{</span>
+  <span class="c1">// ... skip ...</span>
+  <span class="k">auto</span> <span class="n">conv_desc</span> <span class="o">=</span> <span class="n">dnnl</span><span class="o">::</span><span class="n">convolution_forward</span><span class="o">::</span><span class="n">desc</span><span class="p">(</span>
+    <span class="n">dnnl</span><span class="o">::</span><span class="n">prop_kind</span><span class="o">::</span><span class="n">forward_inference</span><span class="p">,</span>
+    <span class="n">dnnl</span><span class="o">::</span><span class="n">algorithm</span><span class="o">::</span><span class="n">convolution_direct</span><span class="p">,</span>
+    <span class="n">conv_src_md</span><span class="p">,</span> <span class="n">conv_weights_md</span><span class="p">,</span> <span class="n">conv_bias_md</span><span class="p">,</span> <span class="n">conv_dst_md</span><span class="p">,</span>
+    <span class="n">strides_dims</span><span class="p">,</span> <span class="n">padding_dims_l</span><span class="p">,</span> <span class="n">padding_dims_r</span><span class="p">);</span>
+
+  <span class="c1">// Attach ReLU</span>
+  <span class="n">dnnl</span><span class="o">::</span><span class="n">primitive_attr</span> <span class="n">attr</span><span class="p">;</span>
+  <span class="k">if</span> <span class="p">(</span><span class="n">has_relu</span><span class="p">)</span> <span class="p">{</span>
+    <span class="n">dnnl</span><span class="o">::</span><span class="n">post_ops</span> <span class="n">ops</span><span class="p">;</span>
+    <span class="n">ops</span><span class="p">.</span><span class="n">append_eltwise</span><span class="p">(</span><span class="mi">1</span><span class="p">.</span><span class="n">f</span><span class="p">,</span> <span class="n">dnnl</span><span class="o">::</span><span class="n">algorithm</span><span class="o">::</span><span class="n">eltwise_relu</span><span class="p">,</span> <span class="mi">0</span><span class="p">.</span><span class="n">f</span><span class="p">,</span> <span class="mi">0</span><span class="p">.</span><span class="n">f</span><span class="p">);</span>
+    <span class="n">attr</span><span class="p">.</span><span class="n">set_post_ops</span><span class="p">(</span><span class="n">ops</span><span class="p">);</span>
+  <span class="p">}</span>
+
+  <span class="k">auto</span> <span class="n">conv2d_prim_desc</span> <span class="o">=</span> <span class="n">dnnl</span><span class="o">::</span><span class="n">convolution_forward</span><span class="o">::</span><span class="n">primitive_desc</span><span class="p">(</span>
+    <span class="n">conv_desc</span><span class="p">,</span> <span class="n">attr</span><span class="p">,</span> <span class="n">engine_</span><span class="p">);</span>
+  <span class="c1">// ... skip ...</span>
+</code></pre></div></div>
+<p>In this case, except for a single <code class="highlighter-rouge">conv2d</code>, we would like to map the graph pattern <code class="highlighter-rouge">conv2d+relu</code> to <code class="highlighter-rouge">DNNLConv2d(false, true)</code>, and map <code class="highlighter-rouge">conv2d+add+relu</code> to <code class="highlighter-rouge">DNNLConv2d(true, true)</code>. We can achieve it with the following code snippet:</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">make_pattern</span><span class="p">(</span><span class="n">with_bias</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
+  <span class="n">data</span> <span class="o">=</span> <span class="n">wildcard</span><span class="p">()</span>
+  <span class="n">weight</span> <span class="o">=</span> <span class="n">wildcard</span><span class="p">()</span>
+  <span class="n">bias</span> <span class="o">=</span> <span class="n">wildcard</span><span class="p">()</span>
+  <span class="n">conv</span> <span class="o">=</span> <span class="n">is_op</span><span class="p">(</span><span class="s">'nn.conv2d'</span><span class="p">)(</span><span class="n">data</span><span class="p">,</span> <span class="n">weight</span><span class="p">)</span>
+  <span class="k">if</span> <span class="n">with_bias</span><span class="p">:</span>
+    <span class="n">conv_out</span> <span class="o">=</span> <span class="n">is_op</span><span class="p">(</span><span class="s">'add'</span><span class="p">)(</span><span class="n">conv</span><span class="p">,</span> <span class="n">bias</span><span class="p">)</span>
+  <span class="k">else</span><span class="p">:</span>
+    <span class="n">conv_out</span> <span class="o">=</span> <span class="n">conv</span>
+  <span class="k">return</span> <span class="n">is_op</span><span class="p">(</span><span class="s">'nn.relu'</span><span class="p">)(</span><span class="n">conv_out</span><span class="p">)</span>
+
+<span class="o">@</span><span class="n">register_pattern_table</span><span class="p">(</span><span class="s">"dnnl"</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">pattern_table</span><span class="p">():</span>
+  <span class="n">conv2d_bias_relu_pat</span> <span class="o">=</span> <span class="p">(</span><span class="s">"dnnl.conv2d_bias_relu"</span><span class="p">,</span> <span class="n">make_pattern</span><span class="p">(</span><span class="n">with_bias</span><span class="o">=</span><span class="bp">True</span><span class="p">))</span>
+  <span class="n">conv2d_relu_pat</span> <span class="o">=</span> <span class="p">(</span><span class="s">"dnnl.conv2d_relu"</span><span class="p">,</span> <span class="n">make_pattern</span><span class="p">(</span><span class="n">with_bias</span><span class="o">=</span><span class="bp">False</span><span class="p">))</span>
+  <span class="n">dnnl_patterns</span> <span class="o">=</span> <span class="p">[</span><span class="n">conv2d_bias_relu_pat</span><span class="p">,</span> <span class="n">conv2d_relu_pat</span><span class="p">]</span>
+  <span class="k">return</span> <span class="n">dnnl_patterns</span>
+</code></pre></div></div>
+
+<p>In the DNNL example, we implemented two patterns with different names so that we can easily recognize them in the codegen. Note that the patterns are implemented in the Relay pattern language. You can follow <a href="https://tvm.apache.org/docs/langref/relay_pattern.html">this tutorial</a> to learn how to write your own patterns.</p>
+
+<p>With the pattern table, we can then use a Relay pass to perform the transformation from</p>
+
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>%1 = nn.conv2d(%data, %weight, ...)
+%2 = add(%1, %bias)
+%3 = nn.relu(%2)
+</code></pre></div></div>
+<p>to</p>
+<div class="highlighter-rouge"><div class="highlight"><pre class="highlight"><code>%1 = fn(%input1, %input2, %input3,
+        Composite="dnnl.conv2d_bias_relu",
+        PartitionedFromPattern="nn.conv2d_add_nn.relu_") {
+  %1 = nn.conv2d(%input1, %input2, ...)
+  %2 = add(%1, %input3)
+  nn.relu(%2)
+}
+%2 = %1(%data, %weight, %bias)
+</code></pre></div></div>
+<p>Thus, the DNNL codegen can get the pattern name <code class="highlighter-rouge">conv2d_bias_relu</code> and map <code class="highlighter-rouge">%1</code> to <code class="highlighter-rouge">DNNLConv2d(true, true)</code>.</p>
+
+<p>As you may have noticed that we also have an attribute called “PartitionedFromPattern” in the composite function. This could be helpful if your pattern contains <code class="highlighter-rouge">wildcard</code> operators. For example we may have a pattern table <code class="highlighter-rouge">("conv2d_with_something", conv2d -&gt; *)</code>:</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">make_pattern</span><span class="p">(</span><span class="n">with_bias</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
+  <span class="n">data</span> <span class="o">=</span> <span class="n">wildcard</span><span class="p">()</span>
+  <span class="n">weight</span> <span class="o">=</span> <span class="n">wildcard</span><span class="p">()</span>
+  <span class="n">conv</span> <span class="o">=</span> <span class="n">is_op</span><span class="p">(</span><span class="s">'nn.conv2d'</span><span class="p">)(</span><span class="n">data</span><span class="p">,</span> <span class="n">weight</span><span class="p">)</span>
+  <span class="k">return</span> <span class="n">wildcard</span><span class="p">()(</span><span class="n">conv</span><span class="p">)</span>
+</code></pre></div></div>
+<p>In this case, you will get a composite function with <code class="highlighter-rouge">Composite=conv2d_with_something</code>, but you have no idea about what graph it actually matched. That’s where PartitionedFromPattern comes into play. You can know that if the matched graph is <code class="highlighter-rouge">conv2d -&gt; add</code> or <code class="highlighter-rouge">conv2d -&gt; relu</code> by looking at <code class="highlighter-rouge">PartitionedFromPattern</code> to see if it is <code class="highlighter-rouge">nn.conv2d_add_</code> or <code class="highlighter-rouge">nn.conv2d_nn.relu_</code>.</p>
+
+<h2 id="bring-dnnl-to-tvm-relay-graph-transformation">Bring DNNL to TVM: Relay Graph Transformation</h2>
+<p>With the annotation rules from the previous step, we can now apply a list of BYOC Relay passes to transform the Relay graph from Figure 1 to Figure 4:</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">mod</span> <span class="o">=</span> <span class="n">create_relay_module_from_model</span><span class="p">()</span> <span class="c1"># Output: Figure 1
+</span><span class="n">mod</span> <span class="o">=</span> <span class="n">transform</span><span class="o">.</span><span class="n">MergeComposite</span><span class="p">(</span><span class="n">pattern_table</span><span class="p">)(</span><span class="n">mod</span><span class="p">)</span>
+<span class="n">mod</span> <span class="o">=</span> <span class="n">transform</span><span class="o">.</span><span class="n">AnnotateTarget</span><span class="p">([</span><span class="s">"dnnl"</span><span class="p">])(</span><span class="n">mod</span><span class="p">)</span> <span class="c1"># Output: Figure 2
+</span><span class="n">mod</span> <span class="o">=</span> <span class="n">transform</span><span class="o">.</span><span class="n">MergeCompilerRegions</span><span class="p">()(</span><span class="n">mod</span><span class="p">)</span> <span class="c1"># Output: Figure 3
+</span><span class="n">mod</span> <span class="o">=</span> <span class="n">transform</span><span class="o">.</span><span class="n">PartitionGraph</span><span class="p">()(</span><span class="n">mod</span><span class="p">)</span> <span class="c1"># Output: Figure 4
+</span></code></pre></div></div>
+<p>As can be seen, each Relay pass can be mapped to a step we have introduced in <a href="#how-byoc-works">How BYOC Works</a>.</p>
+
+<h2 id="bring-dnnl-to-tvm-json-codegenruntime">Bring DNNL to TVM: JSON Codegen/Runtime</h2>
+<p>Now let’s implement the DNNL codegen that serializes a Relay graph to a JSON representation, and then implement the DNNL JSON runtime to deserialize and execute the graph. <em>Note that if you attempt to implement a codegen to generate C-compatible programs, you may want to directly proceed to the next section.</em></p>
+
+<p>To enable DNNL JSON codegen/runtime in TVM to work on this example, please make sure DNNL is available on your machine, and build the TVM with <code class="highlighter-rouge">set(USE_DNNL_CODEGEN ON)</code> in <code class="highlighter-rouge">config.cmake</code>.</p>
+
+<p>The DNNL codegen is implemented in <a href="https://github.com/apache/incubator-tvm/blob/8a0249cd4d12a2eb1a4e7a692a9265bc63fec5c8/src/relay/backend/contrib/dnnl/codegen.cc"><code class="highlighter-rouge">src/relay/backend/contrib/dnnl/codegen.cc</code></a>. Since we implemented DNNL codegen in both forms in this file for illustration purpose, you could focus on the part covered by <code class="highlighter-rouge">USE_JSON_RUNTIME</code> macro when tracing the code.</p>
+
+<p>We first register the codegen with TVM registration API (<a href="https://github.com/apache/incubator-tvm/blob/8a0249cd4d12a2eb1a4e7a692a9265bc63fec5c8/src/relay/backend/contrib/dnnl/codegen.cc#L510">L510</a>). This registration makes TVM compile engine dispatch the Relay function with <code class="highlighter-rouge">Compiler=&lt;your codegen&gt;</code>  to <code class="highlighter-rouge">relay.ext.&lt;your codegen&gt;</code>. Then we implement the entry function of the DNNL compiler (<a href="https://github.com/apache/incubator-tvm/blob/8a0249cd4d12a2eb1a4e7a692a9265bc63fec5c8/src/relay/backend/contrib/dnnl/codegen.cc#L490">L490</a>). Please read the comments embedded in the code snippet for details:</p>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">runtime</span><span class="o">::</span><span class="n">Module</span> <span class="nf">DNNLCompiler</span><span class="p">(</span><span class="k">const</span> <span class="n">ObjectRef</span><span class="o">&amp;</span> <span class="n">ref</span><span class="p">)</span> <span class="p">{</span>
+  <span class="c1">// "ref" should be the paritioned Relay function with kCompiler=dnnl.</span>
+  <span class="n">CHECK</span><span class="p">(</span><span class="n">ref</span><span class="o">-&gt;</span><span class="n">IsInstance</span><span class="o">&lt;</span><span class="n">FunctionNode</span><span class="o">&gt;</span><span class="p">());</span>
+  <span class="k">auto</span> <span class="n">func</span> <span class="o">=</span> <span class="n">Downcast</span><span class="o">&lt;</span><span class="n">Function</span><span class="o">&gt;</span><span class="p">(</span><span class="n">ref</span><span class="p">);</span>
+
+  <span class="c1">// Get the function name as the symbol to match in runtime.</span>
+  <span class="k">auto</span> <span class="n">func_name</span> <span class="o">=</span> <span class="n">GetExtSymbol</span><span class="p">(</span><span class="n">func</span><span class="p">);</span>
+
+  <span class="c1">// Serialize the function to a JSON string (introduce later).</span>
+  <span class="n">DNNLJSONSerializer</span> <span class="n">serializer</span><span class="p">(</span><span class="n">func_name</span><span class="p">,</span> <span class="n">func</span><span class="p">);</span>
+  <span class="n">serializer</span><span class="p">.</span><span class="n">serialize</span><span class="p">();</span>
+  <span class="n">std</span><span class="o">::</span><span class="n">string</span> <span class="n">graph_json</span> <span class="o">=</span> <span class="n">serializer</span><span class="p">.</span><span class="n">GetJSON</span><span class="p">();</span>
+
+  <span class="c1">// The constant tensor names that have been bound to the module.</span>
+  <span class="c1">// All constant tensors will be serialzied along with the JSON graph</span>
+  <span class="c1">// when export_library is invoked.</span>
+  <span class="k">auto</span> <span class="n">params</span> <span class="o">=</span> <span class="n">serializer</span><span class="p">.</span><span class="n">GetParams</span><span class="p">();</span>
+
+  <span class="c1">// The function to create DNNL JSON runtime (introduce later).</span>
+  <span class="k">const</span> <span class="k">auto</span><span class="o">*</span> <span class="n">pf</span> <span class="o">=</span> <span class="n">runtime</span><span class="o">::</span><span class="n">Registry</span><span class="o">::</span><span class="n">Get</span><span class="p">(</span><span class="s">"runtime.DNNLJSONRuntimeCreate"</span><span class="p">);</span>
+  <span class="n">CHECK</span><span class="p">(</span><span class="n">pf</span> <span class="o">!=</span> <span class="n">nullptr</span><span class="p">)</span> <span class="o">&lt;&lt;</span> <span class="s">"Cannot find JSON runtime module to create"</span><span class="p">;</span>
+
+  <span class="c1">// Create a DNNL runtime module that can run the serialized function.</span>
+  <span class="k">auto</span> <span class="n">mod</span> <span class="o">=</span> <span class="p">(</span><span class="o">*</span><span class="n">pf</span><span class="p">)(</span><span class="n">func_name</span><span class="p">,</span> <span class="n">graph_json</span><span class="p">,</span> <span class="n">params</span><span class="p">);</span>
+  <span class="k">return</span> <span class="n">mod</span><span class="p">;</span>
+<span class="p">}</span>
+<span class="n">TVM_REGISTER_GLOBAL</span><span class="p">(</span><span class="s">"relay.ext.dnnl"</span><span class="p">).</span><span class="n">set_body_typed</span><span class="p">(</span><span class="n">DNNLCompiler</span><span class="p">);</span>
+</code></pre></div></div>
+
+<p>Note that <strong><em>each runtime module is only responsible for one Relay function, meaning that you may have several DNNL runtime modules in a single <code class="highlighter-rouge">.so</code> file.</em></strong></p>
+
+<h3 id="dnnl-json-serialization">DNNL JSON Serialization</h3>
+<p>Next, we implement DNNL JSON serializer (<a href="https://github.com/apache/incubator-tvm/blob/8a0249cd4d12a2eb1a4e7a692a9265bc63fec5c8/src/relay/backend/contrib/dnnl/codegen.cc#L429">L429</a>). We derived it from the BYOC JSON codegen (<a href="https://github.com/apache/incubator-tvm/blob/8a0249cd4d12a2eb1a4e7a692a9265bc63fec5c8/src/relay/backend/contrib/codegen_json/codegen_json.h">src/relay/backend/contrib/codegen_json/codegen_json.h</a>). The special process in DNNL JSON serializer attempts to serialize a composite function call to a JSON node that can be interpreted by DNNL JSON runtime. Assuming we have a composite function which matches the pattern <code class="highlighter-rouge">dnnl.conv2d_relu</code>, then the BYOC JSON codegen will generate the following JSON node:</p>
+
+<div class="language-json highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">{</span><span class="w">
+  </span><span class="err">op:</span><span class="w"> </span><span class="s2">"kernel"</span><span class="p">,</span><span class="w">
+  </span><span class="err">name:</span><span class="w"> </span><span class="s2">"dnnl.conv2d_relu"</span><span class="p">,</span><span class="w">
+  </span><span class="err">inputs:</span><span class="w"> </span><span class="p">[[</span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">],</span><span class="w"> </span><span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">]],</span><span class="w">
+  </span><span class="err">attrs:</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="err">PartitionedFromPattern:</span><span class="w"> </span><span class="p">[</span><span class="s2">"nn.conv2d_nn.relu_"</span><span class="p">],</span><span class="w">
+    </span><span class="err">shape:</span><span class="w"> </span><span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mi">32</span><span class="p">,</span><span class="w"> </span><span class="mi">14</span><span class="p">,</span><span class="w"> </span><span class="mi">14</span><span class="p">]</span><span class="w">
+  </span><span class="p">}</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div></div>
+<p>The problem is that we still need the Conv2D attributes such as padding and strides in runtime, but the BYOC JSON serializer only attaches the attributes of the composite function instead of the body operators. On the other hand, the customized DNNL JSON serializer attaches the attributes of the first and only Conv2D in the composite function to generate the following JSON node:</p>
+
+<div class="language-json highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">{</span><span class="w">
+  </span><span class="err">op:</span><span class="w"> </span><span class="s2">"kernel"</span><span class="p">,</span><span class="w">
+  </span><span class="err">name:</span><span class="w"> </span><span class="s2">"dnnl.conv2d_relu"</span><span class="p">,</span><span class="w">
+  </span><span class="err">inputs:</span><span class="w"> </span><span class="p">[[</span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">],</span><span class="w"> </span><span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">]],</span><span class="w">
+  </span><span class="err">attrs:</span><span class="w"> </span><span class="p">{</span><span class="w">
+    </span><span class="err">shape:</span><span class="w"> </span><span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mi">32</span><span class="p">,</span><span class="w"> </span><span class="mi">14</span><span class="p">,</span><span class="w"> </span><span class="mi">14</span><span class="p">],</span><span class="w">
+    </span><span class="err">data_layout:</span><span class="w"> </span><span class="p">[</span><span class="s2">"NCHW"</span><span class="p">],</span><span class="w">
+    </span><span class="err">kernel_layout:</span><span class="w"> </span><span class="p">[</span><span class="s2">"OIHW"</span><span class="p">],</span><span class="w">
+    </span><span class="err">strides:</span><span class="w"> </span><span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">],</span><span class="w">
+    </span><span class="err">padding:</span><span class="w"> </span><span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">]</span><span class="w">
+  </span><span class="p">}</span><span class="w">
+</span><span class="p">}</span><span class="w">
+</span></code></pre></div></div>
+
+<p>As can be seen from the DNNL JSON serializer, you can customize the serializer to generate any forms in JSON you like as long as your JSON runtime could interpret them.</p>
+
+<h3 id="dnnl-json-runtime">DNNL JSON Runtime</h3>
+
+<p>We then implement a DNNL JSON runtime to interpret and execute the serialized JSON graph. We put it under <a href="https://github.com/apache/incubator-tvm/blob/8a0249cd4d12a2eb1a4e7a692a9265bc63fec5c8/src/runtime/contrib/dnnl/dnnl_json_runtime.cc"><code class="highlighter-rouge">src/runtime/contrib/dnnl/dnnl_json_runtime.cc</code></a>.</p>
+
+<p>Again, we first register two APIs to create the runtime so that we can use them anywhere. The <code class="highlighter-rouge">runtime.DNNLJSONRuntimeCreate</code> is used in the previous part after serialization, and <code class="highlighter-rouge">runtime.module.loadbinary_dnnl_json</code> could be used when loading the <code class="highlighter-rouge">.so</code> back.</p>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">// Create a DNNL JSON runtime to interpret and execute the given JSON graph.</span>
+<span class="n">runtime</span><span class="o">::</span><span class="n">Module</span> <span class="nf">DNNLJSONRuntimeCreate</span><span class="p">(</span><span class="n">String</span> <span class="n">symbol_name</span><span class="p">,</span> <span class="n">String</span> <span class="n">graph_json</span><span class="p">,</span>
+                                      <span class="k">const</span> <span class="n">Array</span><span class="o">&lt;</span><span class="n">String</span><span class="o">&gt;&amp;</span> <span class="n">const_names</span><span class="p">)</span> <span class="p">{</span>
+  <span class="k">auto</span> <span class="n">n</span> <span class="o">=</span> <span class="n">make_object</span><span class="o">&lt;</span><span class="n">DNNLJSONRuntime</span><span class="o">&gt;</span><span class="p">(</span><span class="n">symbol_name</span><span class="p">,</span> <span class="n">graph_json</span><span class="p">,</span> <span class="n">const_names</span><span class="p">);</span>
+  <span class="k">return</span> <span class="n">runtime</span><span class="o">::</span><span class="n">Module</span><span class="p">(</span><span class="n">n</span><span class="p">);</span>
+<span class="p">}</span>
+<span class="n">TVM_REGISTER_GLOBAL</span><span class="p">(</span><span class="s">"runtime.DNNLJSONRuntimeCreate"</span><span class="p">)</span>
+    <span class="p">.</span><span class="n">set_body_typed</span><span class="p">(</span><span class="n">DNNLJSONRuntimeCreate</span><span class="p">);</span>
+
+<span class="n">TVM_REGISTER_GLOBAL</span><span class="p">(</span><span class="s">"runtime.module.loadbinary_dnnl_json"</span><span class="p">)</span>
+    <span class="p">.</span><span class="n">set_body_typed</span><span class="p">(</span><span class="n">JSONRuntimeBase</span><span class="o">::</span><span class="n">LoadFromBinary</span><span class="o">&lt;</span><span class="n">DNNLJSONRuntime</span><span class="o">&gt;</span><span class="p">);</span>
+</code></pre></div></div>
+
+<p>Now we explain DNNL JSON runtime implementation. The basic class structure is:</p>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">class</span> <span class="n">DNNLJSONRuntime</span> <span class="o">:</span> <span class="n">public</span> <span class="n">JSONRuntimeBase</span> <span class="p">{</span>
+  <span class="k">const</span>  <span class="kt">char</span><span class="o">*</span> <span class="n">type_key</span><span class="p">()</span> <span class="k">const</span> <span class="p">{</span> <span class="k">return</span>  <span class="s">"dnnl_json"</span><span class="p">;</span> <span class="p">}</span> 
+  <span class="kt">void</span> <span class="n">Init</span><span class="p">(</span><span class="k">const</span> <span class="n">Array</span><span class="o">&lt;</span><span class="n">NDArray</span><span class="o">&gt;&amp;</span> <span class="n">consts</span><span class="p">)</span> <span class="n">override</span> <span class="p">{</span>
+    <span class="c1">// Initialize the DNNL graph engine.</span>
+    <span class="n">BuildEngine</span><span class="p">();</span>
+    
+    <span class="c1">// Setup constants entries for weights.</span>
+    <span class="n">CHECK_EQ</span><span class="p">(</span><span class="n">consts</span><span class="p">.</span><span class="n">size</span><span class="p">(),</span> <span class="n">const_idx_</span><span class="p">.</span><span class="n">size</span><span class="p">())</span>
+      <span class="o">&lt;&lt;</span> <span class="s">"The number of input constants must match the number of required."</span><span class="p">;</span>
+    <span class="n">SetupConstants</span><span class="p">(</span><span class="n">consts</span><span class="p">);</span>
+  <span class="p">}</span>
+
+  <span class="kt">void</span> <span class="n">Run</span><span class="p">()</span> <span class="n">override</span> <span class="p">{</span>
+   <span class="c1">// 1. Fill in the input buffers.</span>
+   <span class="c1">// 2. Invoke the engine through intepreting the stream.</span>
+   <span class="c1">// 3. Read and fill output buffers.</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>The <code class="highlighter-rouge">Init</code> function is in charge of building the DNNL engine by interpreting the JSON graph string (see <a href="https://github.com/apache/incubator-tvm/blob/8a0249cd4d12a2eb1a4e7a692a9265bc63fec5c8/src/runtime/contrib/dnnl/dnnl_json_runtime.cc#L93">L93</a> for <code class="highlighter-rouge">BuildEngine</code>), and filling the constant weights to the corresponding data entry buffers (the <code class="highlighter-rouge">SetupConstant</code> is implemented in the JSON runtime base class so you only need to invoke it in <code class="highlighter-rouge">Init</code>). Note that this function will be called only once even we run multiple times of inferences.</p>
+
+<p>Next, the <code class="highlighter-rouge">Run</code> function (<a href="https://github.com/apache/incubator-tvm/blob/8a0249cd4d12a2eb1a4e7a692a9265bc63fec5c8/src/runtime/contrib/dnnl/dnnl_json_runtime.cc#L64">L64</a>) first writes the input tensors, which may come from user inputs or constant weights, to the corresponding DNNL memory buffers we initialized when building the DNNL engine. Then launch the DNNL engine to execute the JSON graph. Finally, it writes the DNNL output memory buffers back to the corresponding output tensors.</p>
+
+<p>Since the rest implementation in DNNL JSON runtime are too DNNL specific to be dived into details in this post, we will stop here. We would like to emphasize that while the DNNL JSON runtime is a good reference to start with, your JSON runtime could be fully customized to fit your requirements.</p>
+
+<h2 id="bring-dnnl-to-tvm-c-source-codegen">Bring DNNL to TVM: C Source Codegen</h2>
+<p>Now let’s implement the DNNL codegen that generates C source code which invokes DNNL APIs to execute the Relay graph.<em>Note that if you attempt to implement a codegen to generate other graph representation like in JSON format, you may want to read <a href="#bring-dnnl-to-tvm-json-codegenruntime">Bring DNNL to TVM: JSON Codegen/Runtime</a> and skip this section.</em></p>
+
+<p>To enable DNNL C source codegen in TVM to work on this example, please make sure DNNL is available on your machine, and build the TVM with <code class="highlighter-rouge">set(USE_DNNL_CODEGEN C_SRC)</code> in <code class="highlighter-rouge">config.cmake</code>.</p>
+
+<p>The DNNL codegen is implemented in <a href="https://github.com/apache/incubator-tvm/blob/8a0249cd4d12a2eb1a4e7a692a9265bc63fec5c8/src/relay/backend/contrib/dnnl/codegen.cc"><code class="highlighter-rouge">src/relay/backend/contrib/dnnl/codegen.cc</code></a>. Since we implemented DNNL codegen in both forms in this file for illustration purpose, you could focus on the part <strong>NOT</strong> covered by <code class="highlighter-rouge">USE_JSON_RUNTIME</code> macro when tracing the code.</p>
+
+<p>We first register the codegen with TVM registration API (<a href="https://github.com/apache/incubator-tvm/blob/8a0249cd4d12a2eb1a4e7a692a9265bc63fec5c8/src/relay/backend/contrib/dnnl/codegen.cc#L510">L510</a>). This registration makes TVM compile engine dispatch the Relay function with <code class="highlighter-rouge">Compiler=&lt;your codegen&gt;</code>  to <code class="highlighter-rouge">relay.ext.&lt;your codegen&gt;</code>. Then we implement the entry function of the DNNL compiler (<a href="https://github.com/apache/incubator-tvm/blob/8a0249cd4d12a2eb1a4e7a692a9265bc63fec5c8/src/relay/backend/contrib/dnnl/codegen.cc#L490">L490</a>):</p>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">runtime</span><span class="o">::</span><span class="n">Module</span> <span class="nf">DNNLCompiler</span><span class="p">(</span><span class="k">const</span> <span class="n">ObjectRef</span><span class="o">&amp;</span> <span class="n">ref</span><span class="p">)</span> <span class="p">{</span>
+  <span class="n">DNNLModuleCodegen</span> <span class="n">dnnl</span><span class="p">;</span>
+  <span class="k">return</span> <span class="n">dnnl</span><span class="p">.</span><span class="n">CreateCSourceModule</span><span class="p">(</span><span class="n">ref</span><span class="p">);</span>
+<span class="p">}</span>
+<span class="n">TVM_REGISTER_GLOBAL</span><span class="p">(</span><span class="s">"relay.ext.dnnl"</span><span class="p">).</span><span class="n">set_body_typed</span><span class="p">(</span><span class="n">DNNLCompiler</span><span class="p">);</span>
+</code></pre></div></div>
+
+<p>Note that <strong><em>each runtime module is only responsible for one Relay function, meaning that you may have several DNNL runtime modules in a single <code class="highlighter-rouge">.so</code> file.</em></strong></p>
+
+<p>Then, we derive <code class="highlighter-rouge">CSourceModuleCodegenBase</code> to implement  <code class="highlighter-rouge">DNNLModuleCodegen</code> in <a href="https://github.com/apache/incubator-tvm/blob/8a0249cd4d12a2eb1a4e7a692a9265bc63fec5c8/src/relay/backend/contrib/dnnl/codegen.cc#L362">L362</a>. While <code class="highlighter-rouge">CSourceModuleCodegenBase</code> is in charge of other module level processes such as serialization, we only need to implement the DNNL code generation in the <code class="highlighter-rouge">CreateCSourceModule</code> function (<a href="https://github.com/apache/incubator-tvm/blob/8a0249cd4d12a2eb1a4e7a692a9265bc63fec5c8/src/relay/backend/contrib/dnnl/codegen.cc#L389">L389</a>):</p>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">runtime</span><span class="o">::</span><span class="n">Module</span> <span class="n">CreateCSourceModule</span><span class="p">(</span><span class="k">const</span> <span class="n">ObjectRef</span><span class="o">&amp;</span> <span class="n">ref</span><span class="p">)</span> <span class="n">override</span> <span class="p">{</span>
+    <span class="c1">// Include headers</span>
+    <span class="c1">// ...skip...</span>
+    <span class="n">code_stream_</span> <span class="o">&lt;&lt;</span> <span class="s">"#include &lt;dnnl/dnnl_kernel.h&gt;</span><span class="se">\n</span><span class="s">"</span><span class="p">;</span>
+    <span class="c1">// ...skip...</span>
+
+    <span class="c1">// "ref" should be the paritioned Relay function with kCompiler=dnnl.</span>
+    <span class="n">CHECK</span><span class="p">(</span><span class="n">ref</span><span class="o">-&gt;</span><span class="n">IsInstance</span><span class="o">&lt;</span><span class="n">FunctionNode</span><span class="o">&gt;</span><span class="p">());</span>
+    <span class="k">auto</span> <span class="n">res</span> <span class="o">=</span> <span class="n">GenDNNLFunc</span><span class="p">(</span><span class="n">Downcast</span><span class="o">&lt;</span><span class="n">Function</span><span class="o">&gt;</span><span class="p">(</span><span class="n">ref</span><span class="p">));</span>
+
+    <span class="c1">// "code" is the generated C code with DNNL APIs.</span>
+    <span class="n">std</span><span class="o">::</span><span class="n">string</span> <span class="n">code</span> <span class="o">=</span> <span class="n">code_stream_</span><span class="p">.</span><span class="n">str</span><span class="p">();</span>
+
+    <span class="c1">// "res" is a tuple of constant weights (symbols, values).</span>
+    <span class="c1">// All constant tensors will be serialzied along with the generated C code</span>
+    <span class="c1">// when export_library is invoked.</span>
+    <span class="n">String</span> <span class="n">sym</span> <span class="o">=</span> <span class="n">std</span><span class="o">::</span><span class="n">get</span><span class="o">&lt;</span><span class="mi">0</span><span class="o">&gt;</span><span class="p">(</span><span class="n">res</span><span class="p">);</span>
+    <span class="n">Array</span><span class="o">&lt;</span><span class="n">String</span><span class="o">&gt;</span> <span class="n">variables</span> <span class="o">=</span> <span class="n">std</span><span class="o">::</span><span class="n">get</span><span class="o">&lt;</span><span class="mi">1</span><span class="o">&gt;</span><span class="p">(</span><span class="n">res</span><span class="p">);</span>
+
+    <span class="c1">// Create a CSource module with all above artifacts.</span>
+    <span class="k">const</span> <span class="k">auto</span><span class="o">*</span> <span class="n">pf</span> <span class="o">=</span> <span class="n">runtime</span><span class="o">::</span><span class="n">Registry</span><span class="o">::</span><span class="n">Get</span><span class="p">(</span><span class="s">"runtime.CSourceModuleCreate"</span><span class="p">);</span>
+    <span class="n">CHECK</span><span class="p">(</span><span class="n">pf</span> <span class="o">!=</span> <span class="n">nullptr</span><span class="p">)</span> <span class="o">&lt;&lt;</span> <span class="s">"Cannot find csource module to create the external runtime module"</span><span class="p">;</span>
+    <span class="k">return</span> <span class="p">(</span><span class="o">*</span><span class="n">pf</span><span class="p">)(</span><span class="n">code</span><span class="p">,</span> <span class="s">"c"</span><span class="p">,</span> <span class="n">sym</span><span class="p">,</span> <span class="n">variables</span><span class="p">);</span>
+  <span class="p">}</span>
+</code></pre></div></div>
+
+<p>Next, we implement <code class="highlighter-rouge">GenDNNLFunc</code> (<a href="https://github.com/apache/incubator-tvm/blob/8a0249cd4d12a2eb1a4e7a692a9265bc63fec5c8/src/relay/backend/contrib/dnnl/codegen.cc#L365">L365</a>) to generate the compilable C code with DNNL APIs as follows. Please see the embedded comments for the explanations of TVM C source runtime module compatible function interfaces.</p>
+
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1">// The example Relay graph: conv2d -&gt; add -&gt; relu.</span>
+<span class="cp">#include &lt;cstdint&gt;
+#include &lt;cstdlib&gt;
+#include &lt;cstring&gt;
+#include &lt;vector&gt;
+#include &lt;tvm/runtime/c_runtime_api.h&gt;
+#include &lt;tvm/runtime/container.h&gt;
+#include &lt;tvm/runtime/packed_func.h&gt;
+#include &lt;dlpack/dlpack.h&gt;
+#include &lt;dnnl/dnnl_kernel.h&gt;
+</span><span class="n">using</span> <span class="n">namespace</span> <span class="n">tvm</span><span class="o">::</span><span class="n">runtime</span><span class="p">;</span>
+<span class="n">using</span> <span class="n">namespace</span> <span class="n">tvm</span><span class="o">::</span><span class="n">runtime</span><span class="o">::</span><span class="n">contrib</span><span class="p">;</span>
+
+<span class="c1">// Execute the conv2d-&gt;add-&gt;relu graph with DNNL.</span>
+<span class="k">extern</span> <span class="s">"C"</span> <span class="kt">void</span> <span class="nf">dnnl_0_</span><span class="p">(</span><span class="kt">float</span><span class="o">*</span> <span class="n">dnnl_0_i0</span><span class="p">,</span> <span class="kt">float</span><span class="o">*</span> <span class="n">dnnl_0_i1</span><span class="p">,</span>
+                        <span class="kt">float</span><span class="o">*</span> <span class="n">dnnl_0_i2</span><span class="p">,</span> <span class="kt">float</span><span class="o">*</span> <span class="n">out0</span><span class="p">)</span> <span class="p">{</span>
+  <span class="c1">// Allocate intermediate buffers.</span>
+  <span class="kt">float</span><span class="o">*</span> <span class="n">buf_0</span> <span class="o">=</span> <span class="p">(</span><span class="kt">float</span><span class="o">*</span><span class="p">)</span><span class="n">std</span><span class="o">::</span><span class="n">malloc</span><span class="p">(</span><span class="mi">4</span> <span class="o">*</span> <span class="mi">4608</span><span class="p">);</span>
+  <span class="kt">float</span><span class="o">*</span> <span class="n">buf_1</span> <span class="o">=</span> <span class="p">(</span><span class="kt">float</span><span class="o">*</span><span class="p">)</span><span class="n">std</span><span class="o">::</span><span class="n">malloc</span><span class="p">(</span><span class="mi">4</span> <span class="o">*</span> <span class="mi">4608</span><span class="p">);</span>
+  <span class="kt">float</span><span class="o">*</span> <span class="n">buf_2</span> <span class="o">=</span> <span class="p">(</span><span class="kt">float</span><span class="o">*</span><span class="p">)</span><span class="n">std</span><span class="o">::</span><span class="n">malloc</span><span class="p">(</span><span class="mi">4</span> <span class="o">*</span> <span class="mi">4608</span><span class="p">);</span>
+
+  <span class="c1">// Pre-implemented op-based DNNL functions.</span>
+  <span class="n">dnnl_conv2d</span><span class="p">(</span><span class="n">dnnl_0_i0</span><span class="p">,</span> <span class="n">dnnl_0_i1</span><span class="p">,</span> <span class="n">buf_0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">32</span><span class="p">,</span> <span class="mi">14</span><span class="p">,</span> <span class="mi">14</span><span class="p">,</span> <span class="mi">32</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">);</span>
+  <span class="n">dnnl_add</span><span class="p">(</span><span class="n">buf_0</span><span class="p">,</span> <span class="n">dnnl_0_i2</span><span class="p">,</span> <span class="n">buf_1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">32</span><span class="p">,</span> <span class="mi">12</span><span class="p">,</span> <span class="mi">12</span><span class="p">);</span>
+  <span class="n">dnnl_relu</span><span class="p">(</span><span class="n">buf_1</span><span class="p">,</span> <span class="n">buf_2</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">32</span><span class="p">,</span> <span class="mi">12</span><span class="p">,</span> <span class="mi">12</span><span class="p">);</span>
+
+  <span class="c1">// Copy the final output to the corresponding buffer.</span>
+  <span class="n">std</span><span class="o">::</span><span class="n">memcpy</span><span class="p">(</span><span class="n">out0</span><span class="p">,</span> <span class="n">buf_2</span><span class="p">,</span> <span class="mi">4</span> <span class="o">*</span> <span class="mi">4608</span><span class="p">);</span>
+  <span class="n">std</span><span class="o">::</span><span class="n">free</span><span class="p">(</span><span class="n">buf_0</span><span class="p">);</span>
+  <span class="n">std</span><span class="o">::</span><span class="n">free</span><span class="p">(</span><span class="n">buf_1</span><span class="p">);</span>
+  <span class="n">std</span><span class="o">::</span><span class="n">free</span><span class="p">(</span><span class="n">buf_2</span><span class="p">);</span>
+<span class="p">}</span>
+
+<span class="c1">// The wrapper function with all arguments in DLTensor type.</span>
+<span class="k">extern</span> <span class="s">"C"</span> <span class="kt">int</span> <span class="nf">dnnl_0_wrapper_</span><span class="p">(</span><span class="n">DLTensor</span><span class="o">*</span> <span class="n">arg0</span><span class="p">,</span>
+        <span class="n">DLTensor</span><span class="o">*</span> <span class="n">arg1</span><span class="p">,</span>
+        <span class="n">DLTensor</span><span class="o">*</span> <span class="n">arg2</span><span class="p">,</span>
+        <span class="n">DLTensor</span><span class="o">*</span> <span class="n">out0</span><span class="p">)</span> <span class="p">{</span>
+
+  <span class="c1">// Cast all DLTensor to primitive type buffers and invoke the above</span>
+  <span class="c1">// execution function.</span>
+  <span class="n">dnnl_0_</span><span class="p">(</span><span class="n">static_cast</span><span class="o">&lt;</span><span class="kt">float</span><span class="o">*&gt;</span><span class="p">(</span><span class="n">arg0</span><span class="o">-&gt;</span><span class="n">data</span><span class="p">),</span>
+  <span class="n">static_cast</span><span class="o">&lt;</span><span class="kt">float</span><span class="o">*&gt;</span><span class="p">(</span><span class="n">arg1</span><span class="o">-&gt;</span><span class="n">data</span><span class="p">),</span>
+  <span class="n">static_cast</span><span class="o">&lt;</span><span class="kt">float</span><span class="o">*&gt;</span><span class="p">(</span><span class="n">arg2</span><span class="o">-&gt;</span><span class="n">data</span><span class="p">),</span>
+  <span class="n">static_cast</span><span class="o">&lt;</span><span class="kt">float</span><span class="o">*&gt;</span><span class="p">(</span><span class="n">out0</span><span class="o">-&gt;</span><span class="n">data</span><span class="p">));</span>
+  <span class="k">return</span> <span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="c1">// The TVM macro to generate TVM runtime compatible function "dnnl_0"</span>
+<span class="c1">// from our generated "dnnl_0_wrapper_".</span>
+<span class="n">TVM_DLL_EXPORT_TYPED_FUNC</span><span class="p">(</span><span class="n">dnnl_0</span><span class="p">,</span> <span class="n">dnnl_0_wrapper_</span><span class="p">);</span>
+</code></pre></div></div>
+
+<p>Note that the pre-implemented op-based DNNL functions are in <a href="https://github.com/apache/incubator-tvm/blob/8a0249cd4d12a2eb1a4e7a692a9265bc63fec5c8/src/runtime/contrib/dnnl/dnnl.cc">src/runtime/contrib/dnnl/dnnl.cc</a>.</p>
+
+<p>Since the rest implementation in <a href="https://github.com/apache/incubator-tvm/blob/8a0249cd4d12a2eb1a4e7a692a9265bc63fec5c8/src/relay/backend/contrib/dnnl/codegen.cc"><code class="highlighter-rouge">src/relay/backend/contrib/dnnl/codegen.cc</code></a> are too DNNL specific to be dived into details in this post, we will stop here. The main idea is implementing a Relay graph visitor (<a href="https://github.com/apache/incubator-tvm/blob/8a0249cd4d12a2eb1a4e7a692a9265bc63fec5c8/src/relay/backend/contrib/dnnl/codegen.cc#L138">L138</a>) to visit the given Relay function and generate the above C code. As long as your codegen is able to generate the TVM runtime compatible C code, you can fully customize the codegen to fit your requirements.</p>
+
+<h3 id="c-source-compilation">C Source Compilation</h3>
+<p>As you may have noticed, the output of <code class="highlighter-rouge">DNNLCompiler</code> is a module with the generated C code in text format, which has not been compiled by <code class="highlighter-rouge">gcc</code> to be executable binary. In fact, the generated C code will be compiled when users call <code class="highlighter-rouge">export_libray(mod)</code>, like the following code snippet:</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">update_lib</span><span class="p">(</span><span class="n">lib</span><span class="p">):</span>
+    <span class="c1"># Include the path of src/runtime/contrib/dnnl/dnnl.cc
+</span>    <span class="n">test_dir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">realpath</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">expanduser</span><span class="p">(</span><span class="n">__file__</span><span class="p">)))</span>
+    <span class="n">source_dir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">test_dir</span><span class="p">,</span> <span class="s">".."</span><span class="p">,</span> <span class="s">".."</span><span class="p">,</span> <span class="s">".."</span><span class="p">)</span>
+    <span class="n">contrib_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">source_dir</span><span class="p">,</span> <span class="s">"src"</span><span class="p">,</span> <span class="s">"runtime"</span><span class="p">,</span> <span class="s">"contrib"</span><span class="p">)</span>
+
+    <span class="c1"># Setup the gcc flag to compile DNNL code.
+</span>    <span class="n">kwargs</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="n">kwargs</span><span class="p">[</span><span class="s">"options"</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="s">"-O2"</span><span class="p">,</span> <span class="s">"-std=c++14"</span><span class="p">,</span> <span class="s">"-I"</span> <span class="o">+</span> <span class="n">contrib_path</span><span class="p">]</span>
+    <span class="n">tmp_path</span> <span class="o">=</span> <span class="n">util</span><span class="o">.</span><span class="n">tempdir</span><span class="p">()</span>
+    <span class="n">lib_name</span> <span class="o">=</span> <span class="s">'lib.so'</span>
+    <span class="n">lib_path</span> <span class="o">=</span> <span class="n">tmp_path</span><span class="o">.</span><span class="n">relpath</span><span class="p">(</span><span class="n">lib_name</span><span class="p">)</span>
+
+    <span class="c1"># The generated C code with DNNL APIs is compiled to a binary lib.so.
+</span>    <span class="n">lib</span><span class="o">.</span><span class="n">export_library</span><span class="p">(</span><span class="n">lib_path</span><span class="p">,</span> <span class="n">fcompile</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+    <span class="c1"># Load the lib.so back to a runtime module.
+</span>    <span class="n">lib</span> <span class="o">=</span> <span class="n">runtime</span><span class="o">.</span><span class="n">load_module</span><span class="p">(</span><span class="n">lib_path</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">lib</span>
+
+<span class="k">with</span> <span class="n">tvm</span><span class="o">.</span><span class="n">transform</span><span class="o">.</span><span class="n">PassContext</span><span class="p">(</span><span class="n">opt_level</span><span class="o">=</span><span class="mi">3</span><span class="p">):</span>
+    <span class="n">json</span><span class="p">,</span> <span class="n">lib</span><span class="p">,</span> <span class="n">param</span> <span class="o">=</span> <span class="n">relay</span><span class="o">.</span><span class="n">build</span><span class="p">(</span><span class="n">mod</span><span class="p">,</span> <span class="n">target</span><span class="o">=</span><span class="n">target</span><span class="p">,</span> <span class="n">params</span><span class="o">=</span><span class="n">params</span><span class="p">)</span>
+<span class="n">lib</span> <span class="o">=</span> <span class="n">update_lib</span><span class="p">(</span><span class="n">lib</span><span class="p">)</span>
+<span class="n">rt_mod</span> <span class="o">=</span> <span class="n">tvm</span><span class="o">.</span><span class="n">contrib</span><span class="o">.</span><span class="n">graph_runtime</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">json</span><span class="p">,</span> <span class="n">lib</span><span class="p">,</span> <span class="n">ctx</span><span class="p">)</span>
+</code></pre></div></div>
+
+<h2 id="bring-dnnl-to-tvm-build-tvm-with-dnnl-codegenruntime">Bring DNNL to TVM: Build TVM with DNNL Codegen/Runtime</h2>
+<p>Finally, we create <a href="https://github.com/apache/incubator-tvm/blob/8a0249cd4d12a2eb1a4e7a692a9265bc63fec5c8/cmake/modules/contrib/DNNL.cmake">cmake/modules/contrib/DNNL.cmake</a> to include the DNNL codegen when building TVM. For demonstration purpose our DNNL codegen has two implementations in the same cmake file. You can only focus on one of them based on your need.</p>
+
+<p>With the cmake file ready, now users can specify <code class="highlighter-rouge">set(USE_DNNL_CODEGEN ON)</code> in their <code class="highlighter-rouge">build/config.cmake</code> to enable the DNNL codegen.</p>
+
+<hr />
+<ul>
+  <li>
+    <p><a href="https://github.com/zhiics">Zhi Chen</a> is a TVM PMC member as well as a senior engineer at SageMaker Neo, Amazon AI, AWS.</p>
+  </li>
+  <li>
+    <p><a href="https://comaniac.github.io">Cody Yu</a> is a TVM reviewer as well as an applied scientist at Amazon AI, AWS.</p>
+  </li>
+</ul>
+
+<h2 id="acknowledgment">Acknowledgment</h2>
+
+<p>We would like to thank our colleague Animesh Jain for valuable discussions in the framework design; Tianqi Chen and Jared Roesch from OctoML for system design discussions and prototyping; Masahiro Masuda from the TVM community to help code review and improve the DNNL integration. We would also like to thank Ramana Radhakrishnan, Matthew Barrett, Manupa Karunaratne, and Luke Hutton from ARM, U.K. for contributing several helpful ideas, related Relay passes, and the Arm Compute Library (ACL) integration with BYOC.</p>
+
+
+    </div>
+  </div>
+</div>
+</div>
+
+
+    
+
+
+
+
+
+    <div class="container">
+
+      <footer class="small">
+        Apache TVM is an effort undergoing incubation at The Apache Software Foundation (ASF),
+        sponsored by the <i>Apache Incubator</i>. Incubation is required
+        of all newly accepted projects until a further review indicates that the infrastructure,
+        communications, and decision making process have stabilized in a manner consistent with other
+        successful ASF projects. While incubation status is not necessarily a reflection of the completeness
+        or stability of the code, it does indicate that the project has yet to be fully endorsed by the ASF.
+
+        Copyright © 2020 The Apache Software Foundation. Apache TVM, Apache,
+        the Apache feather, and the Apache TVM project logo are either trademarks or registered trademarks of the Apache Software Foundation.
+
+        See also other useful <a href="/asf" class="footer-link">ASF links</a>:
+        <a href="https://www.apache.org/" class="footer-link">Apache Homepage</a>,
+        <a href="https://www.apache.org/licenses/" class="footer-link">License</a>
+        <a href="https://www.apache.org/foundation/sponsorship.html" class="footer-link">Sponsorship</a>,
+        <a href="https://www.apache.org/security/" class="footer-link">Security</a>
+        <a href="https://www.apache.org/foundation/thanks.html" class="footer-link">Thanks</a>,
+        <a href="https://www.apache.org/events/current-event.html" class="footer-link">Current Event</a>
+
+      </footer>
+    </div>
+  </body>
+</html>
+
+
