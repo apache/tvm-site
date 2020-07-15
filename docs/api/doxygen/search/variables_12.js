@@ -3,6 +3,7 @@ var searchData=
   ['tag',['tag',['../classtvm_1_1ConstructorNode.html#a396a76459b3a46eefdfcd952c69c5ee4',1,'tvm::ConstructorNode::tag()'],['../structtvm_1_1relay_1_1ConstructorValueObj.html#a4367c76ceee867b91ddd790931a1a362',1,'tvm::relay::ConstructorValueObj::tag()'],['../classtvm_1_1runtime_1_1ADTObj.html#a8c1835b988e836dd451a343bac7e402d',1,'tvm::runtime::ADTObj::tag()'],['../classtvm_1_1TargetNode.html#a3046260cd16b7b134fa99705b41d2aee',1,'tvm::TargetNode::tag()'],['../classtvm_1_1te_1_1OperationNode.html#ae6ac4336e7dc2df84f128fc97a6cdb9b',1,'tvm::te::OperationNode::tag()']]],
   ['target',['target',['../structtvm_1_1runtime_1_1vm_1_1Instruction.html#a46879dbe84105fb621a6167f8d73b223',1,'tvm::runtime::vm::Instruction']]],
   ['target_5fshape',['target_shape',['../structtvm_1_1relay_1_1AffineGridAttrs.html#a3e8a722c28015e4fa002da324fc6d5b3',1,'tvm::relay::AffineGridAttrs']]],
+  ['tcodes',['tcodes',['../structTVMArgs.html#a029da77fa4c55b57f3953291072c7bda',1,'TVMArgs']]],
   ['tensor',['tensor',['../structtvm_1_1runtime_1_1vm_1_1Instruction.html#a22de469ea5521ba12e14f1e8181bae56',1,'tvm::runtime::vm::Instruction']]],
   ['tensor_5fintrin',['tensor_intrin',['../classtvm_1_1te_1_1IterVarAttrNode.html#a6a0d96bbebfd716f851b2ad01738cb3f',1,'tvm::te::IterVarAttrNode']]],
   ['tensors',['tensors',['../classtvm_1_1te_1_1TensorIntrinCallNode.html#a92b543750ea55b9cfd6852139e2ddbd6',1,'tvm::te::TensorIntrinCallNode']]],
@@ -34,10 +35,8 @@ var searchData=
   ['type_5fcodes',['type_codes',['../classtvm_1_1runtime_1_1TVMArgs.html#abdb0f929087b14eb28d75c7a047cef9e',1,'tvm::runtime::TVMArgs']]],
   ['type_5fconstraints',['type_constraints',['../classtvm_1_1FuncTypeNode.html#a6dd6e8ed07019caa87943ec47d065499',1,'tvm::FuncTypeNode']]],
   ['type_5fdefinitions',['type_definitions',['../classtvm_1_1IRModuleNode.html#a547dbf39f1ecf5324153e10f7ca724c3',1,'tvm::IRModuleNode']]],
-  ['type_5findex',['type_index',['../structtvm_1_1TargetIdNode_1_1ValueTypeInfo.html#a4f041126d61c01e8bd4495e921acef14',1,'tvm::TargetIdNode::ValueTypeInfo']]],
   ['type_5findex_5f',['type_index_',['../classtvm_1_1runtime_1_1Object.html#a4bfc2586cb55f2af47728187b3256255',1,'tvm::runtime::Object']]],
   ['type_5finfo',['type_info',['../classtvm_1_1AttrFieldInfoNode.html#aa0e740cddb317c3a74a12302ab531b9b',1,'tvm::AttrFieldInfoNode']]],
-  ['type_5fkey',['type_key',['../structtvm_1_1TargetIdNode_1_1ValueTypeInfo.html#af7fa6afd686bbed07f8051e975ee8f1a',1,'tvm::TargetIdNode::ValueTypeInfo']]],
   ['type_5fkey_5f',['type_key_',['../structtvm_1_1detail_1_1AttrInitEntry.html#a573a25648ca0d3d8fe28f6c7614248bf',1,'tvm::detail::AttrInitEntry']]],
   ['type_5fparams',['type_params',['../classtvm_1_1FuncTypeNode.html#acc1bb373c5851f6cec016a874f304d05',1,'tvm::FuncTypeNode::type_params()'],['../classtvm_1_1relay_1_1FunctionNode.html#a558ecb3ab57111b1a0f347764054d5e1',1,'tvm::relay::FunctionNode::type_params()']]],
   ['type_5fvars',['type_vars',['../classtvm_1_1TypeDataNode.html#a350a23efc88be1def5b93d27ac6fa88b',1,'tvm::TypeDataNode']]]

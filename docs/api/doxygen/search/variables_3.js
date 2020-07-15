@@ -1,5 +1,6 @@
 var searchData=
 [
+  ['call',['Call',['../structTVMPackedFunc.html#a8d30f9231108fec5e01b06f1c49d0681',1,'TVMPackedFunc']]],
   ['caller_5freturn_5fregister',['caller_return_register',['../structtvm_1_1runtime_1_1vm_1_1VMFrame.html#a2f6c425a89ee6872ead9bc71ab87fdd1',1,'tvm::runtime::vm::VMFrame']]],
   ['canonical_5fsimplify',['canonical_simplify',['../classtvm_1_1arith_1_1Analyzer.html#a6cdf29adeceaa20b8c3dd7c26b92cd00',1,'tvm::arith::Analyzer']]],
   ['ceil_5fmode',['ceil_mode',['../structtvm_1_1relay_1_1MaxPool2DAttrs.html#a40f8ca285721a1a69b37ab630d601632',1,'tvm::relay::MaxPool2DAttrs::ceil_mode()'],['../structtvm_1_1relay_1_1AvgPool2DAttrs.html#a843fa213a45d524b669f11b7a0438eb7',1,'tvm::relay::AvgPool2DAttrs::ceil_mode()'],['../structtvm_1_1relay_1_1MaxPool1DAttrs.html#a8fec642661f694c685cf85f1b85b1155',1,'tvm::relay::MaxPool1DAttrs::ceil_mode()'],['../structtvm_1_1relay_1_1AvgPool1DAttrs.html#ac9c3f2c26da975c9d78bc33955163281',1,'tvm::relay::AvgPool1DAttrs::ceil_mode()'],['../structtvm_1_1relay_1_1MaxPool3DAttrs.html#a6a5bb2bda2cb0b5654987cd08d74c64a',1,'tvm::relay::MaxPool3DAttrs::ceil_mode()'],['../structtvm_1_1relay_1_1AvgPool3DAttrs.html#a74189cc04dbb6c2d82e2c2d68d94ecb5',1,'tvm::relay::AvgPool3DAttrs::ceil_mode()']]],
@@ -19,8 +20,9 @@ var searchData=
   ['closure_5fargs',['closure_args',['../structtvm_1_1runtime_1_1vm_1_1Instruction.html#aee9011e3fab2ace2ae167db9a4394ee8',1,'tvm::runtime::vm::Instruction']]],
   ['code',['code',['../structtvm_1_1runtime_1_1vm_1_1VMFrame.html#a6b1467a43cd8cb5123b08bbb4b39f428',1,'tvm::runtime::vm::VMFrame']]],
   ['code_5f',['code_',['../classtvm_1_1runtime_1_1vm_1_1VirtualMachine.html#ab220bfa34c9abb2935c3b622d9bc03b2',1,'tvm::runtime::vm::VirtualMachine']]],
+  ['coef',['coef',['../classtvm_1_1arith_1_1IntGroupBoundsNode.html#a2e632f8c44c4a6f071ad9d54107313f4',1,'tvm::arith::IntGroupBoundsNode']]],
   ['coeff',['coeff',['../classtvm_1_1arith_1_1ModularSetNode.html#a0531d08d8529454c726a9a20a2002ee6',1,'tvm::arith::ModularSetNode']]],
-  ['col_5foffset',['col_offset',['../classtvm_1_1SpanNode.html#a78d2dc28f35d2625b95697de63a16264',1,'tvm::SpanNode']]],
+  ['column',['column',['../classtvm_1_1SpanNode.html#a51f1f2feef5505e4686c1906b84a4bb1',1,'tvm::SpanNode']]],
   ['combiner',['combiner',['../classtvm_1_1tir_1_1ReduceNode.html#a5dcdd28aac37f4313ad18065bf824e11',1,'tvm::tir::ReduceNode']]],
   ['compiler',['compiler',['../structtvm_1_1relay_1_1CompilerAttrs.html#ae7f7c901a3dbe3b2a2150f8d197a3494',1,'tvm::relay::CompilerAttrs']]],
   ['complete',['complete',['../classtvm_1_1relay_1_1MatchNode.html#a17c6c8bd3fccfa7f86ace014db7fd694',1,'tvm::relay::MatchNode']]],

@@ -40,8 +40,8 @@
   <link rel="stylesheet" href="../../_static/css/tvm_theme.css" type="text/css" />
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
-    <link rel="next" title="Compile PyTorch Models" href="from_pytorch.html" />
-    <link rel="prev" title="Compile MXNet Models" href="from_mxnet.html" /> 
+    <link rel="next" title="Deploy a Framework-prequantized Model with TVM" href="deploy_prequantized.html" />
+    <link rel="prev" title="Compile PyTorch Models" href="from_pytorch.html" /> 
 </head>
 
 <body class="wy-body-for-nav">
@@ -107,6 +107,7 @@
 <li class="toctree-l3"><a class="reference internal" href="deploy_quantized.html">Deploy a Quantized Model on Cuda</a></li>
 <li class="toctree-l3"><a class="reference internal" href="from_caffe2.html">Compile Caffe2 Models</a></li>
 <li class="toctree-l3"><a class="reference internal" href="from_mxnet.html">Compile MXNet Models</a></li>
+<li class="toctree-l3"><a class="reference internal" href="from_pytorch.html">Compile PyTorch Models</a></li>
 <li class="toctree-l3 current"><a class="current reference internal" href="#">Deploy the Pretrained Model on Raspberry Pi</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#build-tvm-runtime-on-device">Build TVM Runtime on Device</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#set-up-rpc-server-on-device">Set Up RPC Server on Device</a></li>
@@ -115,7 +116,6 @@
 <li class="toctree-l4"><a class="reference internal" href="#deploy-the-model-remotely-by-rpc">Deploy the Model Remotely by RPC</a></li>
 </ul>
 </li>
-<li class="toctree-l3"><a class="reference internal" href="from_pytorch.html">Compile PyTorch Models</a></li>
 <li class="toctree-l3"><a class="reference internal" href="deploy_prequantized.html">Deploy a Framework-prequantized Model with TVM</a></li>
 <li class="toctree-l3"><a class="reference internal" href="from_tflite.html">Compile TFLite Models</a></li>
 <li class="toctree-l3"><a class="reference internal" href="deploy_prequantized_tflite.html">Deploy a Framework-prequantized Model with TVM - Part 3 (TFLite)</a></li>
@@ -371,10 +371,10 @@ to run this tutorial with a real device.</p>
 <span class="k">else</span><span class="p">:</span>
     <span class="n">target</span> <span class="o">=</span> <a href="../../api/python/target.html#tvm.target.arm_cpu" title="View documentation for tvm.target.arm_cpu"><span class="n">tvm</span><span class="o">.</span><span class="n">target</span><span class="o">.</span><span class="n">arm_cpu</span></a><span class="p">(</span><span class="s1">&#39;rasp3b&#39;</span><span class="p">)</span>
     <span class="c1"># The above line is a simple form of</span>
-    <span class="c1"># target = tvm.target.create(&#39;llvm -device=arm_cpu -model=bcm2837 -target=armv7l-linux-gnueabihf -mattr=+neon&#39;)</span>
+    <span class="c1"># target = tvm.target.create(&#39;llvm -device=arm_cpu -model=bcm2837 -mtriple=armv7l-linux-gnueabihf -mattr=+neon&#39;)</span>
 
 <span class="k">with</span> <a href="../../api/python/ir.html#tvm.transform.PassContext" title="View documentation for tvm.transform.PassContext"><span class="n">tvm</span><span class="o">.</span><span class="n">transform</span><span class="o">.</span><span class="n">PassContext</span></a><span class="p">(</span><span class="n">opt_level</span><span class="o">=</span><span class="mi">3</span><span class="p">):</span>
-    <span class="n">graph</span><span class="p">,</span> <span class="n">lib</span><span class="p">,</span> <span class="n">params</span> <span class="o">=</span> <a href="../../api/python/relay/index.html#tvm.relay.build" title="View documentation for tvm.relay.build"><span class="n">relay</span><span class="o">.</span><span class="n">build</span></a><span class="p">(</span><span class="n">func</span><span class="p">,</span> <span class="n">target</span><span class="p">,</span> <span class="n">params</span><span class="o">=</span><span class="n">params</span><span class="p">)</span>
+    <span class="n">lib</span> <span class="o">=</span> <a href="../../api/python/relay/index.html#tvm.relay.build" title="View documentation for tvm.relay.build"><span class="n">relay</span><span class="o">.</span><span class="n">build</span></a><span class="p">(</span><span class="n">func</span><span class="p">,</span> <span class="n">target</span><span class="p">,</span> <span class="n">params</span><span class="o">=</span><span class="n">params</span><span class="p">)</span>
 
 <span class="c1"># After `relay.build`, you will get three return values: graph,</span>
 <span class="c1"># library and the new parameter, since we do some optimization that will</span>
@@ -406,9 +406,7 @@ to the remote device.</p>
 
 <span class="c1"># create the remote runtime module</span>
 <span class="n">ctx</span> <span class="o">=</span> <span class="n">remote</span><span class="o">.</span><span class="n">cpu</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
-<span class="n">module</span> <span class="o">=</span> <a href="../../api/python/graph_runtime.html#tvm.contrib.graph_runtime.create" title="View documentation for tvm.contrib.graph_runtime.create"><span class="n">runtime</span><span class="o">.</span><span class="n">create</span></a><span class="p">(</span><span class="n">graph</span><span class="p">,</span> <span class="n">rlib</span><span class="p">,</span> <span class="n">ctx</span><span class="p">)</span>
-<span class="c1"># set parameter (upload params to the remote device. This may take a while)</span>
-<span class="n">module</span><span class="o">.</span><span class="n">set_input</span><span class="p">(</span><span class="o">**</span><span class="n">params</span><span class="p">)</span>
+<span class="n">module</span> <span class="o">=</span> <a href="../../api/python/graph_runtime.html#tvm.contrib.graph_runtime.GraphModule" title="View documentation for tvm.contrib.graph_runtime.GraphModule"><span class="n">runtime</span><span class="o">.</span><span class="n">GraphModule</span></a><span class="p">(</span><span class="n">rlib</span><span class="p">[</span><span class="s1">&#39;default&#39;</span><span class="p">](</span><span class="n">ctx</span><span class="p">))</span>
 <span class="c1"># set input data</span>
 <span class="n">module</span><span class="o">.</span><span class="n">set_input</span><span class="p">(</span><span class="s1">&#39;data&#39;</span><span class="p">,</span> <a href="../../api/python/ndarray.html#tvm.nd.array" title="View documentation for tvm.nd.array"><span class="n">tvm</span><span class="o">.</span><span class="n">nd</span><span class="o">.</span><span class="n">array</span></a><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s1">&#39;float32&#39;</span><span class="p">)))</span>
 <span class="c1"># run</span>
@@ -444,10 +442,10 @@ to the remote device.</p>
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="from_pytorch.html" class="btn btn-neutral float-right" title="Compile PyTorch Models" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+        <a href="deploy_prequantized.html" class="btn btn-neutral float-right" title="Deploy a Framework-prequantized Model with TVM" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
-        <a href="from_mxnet.html" class="btn btn-neutral float-left" title="Compile MXNet Models" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+        <a href="from_pytorch.html" class="btn btn-neutral float-left" title="Compile PyTorch Models" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
       
     </div>
   

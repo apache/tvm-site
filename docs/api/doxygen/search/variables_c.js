@@ -4,6 +4,7 @@ var searchData=
   ['map_5f',['map_',['../classtvm_1_1AttrRegistryMap.html#a09551a76dd955d6d497a4ba80c43ba25',1,'tvm::AttrRegistryMap']]],
   ['mask_5fvalue',['mask_value',['../structtvm_1_1relay_1_1SequenceMaskAttrs.html#a89976b047aa6fa83747077ed0260a5aa',1,'tvm::relay::SequenceMaskAttrs']]],
   ['max_5fdisplacement',['max_displacement',['../structtvm_1_1relay_1_1CorrelationAttrs.html#ad1d16e2ba537736c8baee2553e1e32bf',1,'tvm::relay::CorrelationAttrs']]],
+  ['max_5ffunctions',['max_functions',['../structTVMMutableFuncRegistry.html#a41745f8e0f73f8e4fb2074f5b154b49c',1,'TVMMutableFuncRegistry']]],
   ['max_5fnum_5fbits',['max_num_bits',['../classtvm_1_1MemoryInfoNode.html#ae0b6f9572f77177a08a8a522d1ec2aa4',1,'tvm::MemoryInfoNode']]],
   ['max_5foutput_5fsize',['max_output_size',['../structtvm_1_1relay_1_1NonMaximumSuppressionAttrs.html#ae82e608687548d085a67285ca9146d2c',1,'tvm::relay::NonMaximumSuppressionAttrs']]],
   ['max_5fsimd_5fbits',['max_simd_bits',['../classtvm_1_1MemoryInfoNode.html#aededa36e61d4f423bd363519d8d17809',1,'tvm::MemoryInfoNode']]],

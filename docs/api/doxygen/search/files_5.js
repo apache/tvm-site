@@ -2,6 +2,7 @@ var searchData=
 [
   ['feature_2eh',['feature.h',['../feature_8h.html',1,'']]],
   ['flatten_2eh',['flatten.h',['../flatten_8h.html',1,'']]],
+  ['func_5fregistry_2eh',['func_registry.h',['../func__registry_8h.html',1,'']]],
   ['function_2eh',['function.h',['../ir_2function_8h.html',1,'']]],
   ['function_2eh',['function.h',['../relay_2function_8h.html',1,'']]],
   ['function_2eh',['function.h',['../tir_2function_8h.html',1,'']]],

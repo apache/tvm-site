@@ -107,8 +107,8 @@
 <li class="toctree-l3"><a class="reference internal" href="deploy_quantized.html">Deploy a Quantized Model on Cuda</a></li>
 <li class="toctree-l3"><a class="reference internal" href="from_caffe2.html">Compile Caffe2 Models</a></li>
 <li class="toctree-l3"><a class="reference internal" href="from_mxnet.html">Compile MXNet Models</a></li>
-<li class="toctree-l3"><a class="reference internal" href="deploy_model_on_rasp.html">Deploy the Pretrained Model on Raspberry Pi</a></li>
 <li class="toctree-l3"><a class="reference internal" href="from_pytorch.html">Compile PyTorch Models</a></li>
+<li class="toctree-l3"><a class="reference internal" href="deploy_model_on_rasp.html">Deploy the Pretrained Model on Raspberry Pi</a></li>
 <li class="toctree-l3"><a class="reference internal" href="deploy_prequantized.html">Deploy a Framework-prequantized Model with TVM</a></li>
 <li class="toctree-l3"><a class="reference internal" href="from_tflite.html">Compile TFLite Models</a></li>
 <li class="toctree-l3 current"><a class="current reference internal" href="#">Deploy a Framework-prequantized Model with TVM - Part 3 (TFLite)</a><ul>
@@ -361,10 +361,9 @@ pip install <span class="nv">tflite</span><span class="o">==</span>2.1.0
 </pre></div>
 </div>
 <p>Lets run TVM compiled pre-quantized model inference and get the TVM prediction.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span class="k">def</span> <span class="nf">run_tvm</span><span class="p">(</span><span class="n">graph</span><span class="p">,</span> <span class="n">lib</span><span class="p">,</span> <span class="n">params</span><span class="p">):</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span class="k">def</span> <span class="nf">run_tvm</span><span class="p">(</span><span class="n">lib</span><span class="p">):</span>
     <span class="kn">from</span> <span class="nn">tvm.contrib</span> <span class="k">import</span> <span class="n">graph_runtime</span>
-    <span class="n">rt_mod</span> <span class="o">=</span> <a href="../../api/python/graph_runtime.html#tvm.contrib.graph_runtime.create" title="View documentation for tvm.contrib.graph_runtime.create"><span class="n">graph_runtime</span><span class="o">.</span><span class="n">create</span></a><span class="p">(</span><span class="n">graph</span><span class="p">,</span> <span class="n">lib</span><span class="p">,</span> <span class="n">ctx</span><span class="o">=</span><span class="n">tvm</span><span class="o">.</span><span class="n">cpu</span><span class="p">(</span><span class="mi">0</span><span class="p">))</span>
-    <span class="n">rt_mod</span><span class="o">.</span><span class="n">set_input</span><span class="p">(</span><span class="o">**</span><span class="n">params</span><span class="p">)</span>
+    <span class="n">rt_mod</span> <span class="o">=</span> <a href="../../api/python/graph_runtime.html#tvm.contrib.graph_runtime.GraphModule" title="View documentation for tvm.contrib.graph_runtime.GraphModule"><span class="n">graph_runtime</span><span class="o">.</span><span class="n">GraphModule</span></a><span class="p">(</span><span class="n">lib</span><span class="p">[</span><span class="s1">&#39;default&#39;</span><span class="p">](</span><span class="n">tvm</span><span class="o">.</span><span class="n">cpu</span><span class="p">(</span><span class="mi">0</span><span class="p">)))</span>
     <span class="n">rt_mod</span><span class="o">.</span><span class="n">set_input</span><span class="p">(</span><span class="s1">&#39;input&#39;</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
     <span class="n">rt_mod</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
     <span class="n">tvm_res</span> <span class="o">=</span> <span class="n">rt_mod</span><span class="o">.</span><span class="n">get_output</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">asnumpy</span><span class="p">()</span>
@@ -400,12 +399,11 @@ will see many QNN operators, like, Requantize, Quantize and QNN Conv2D.</p>
 target platform that you are interested in.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span class="n">target</span> <span class="o">=</span> <span class="s1">&#39;llvm&#39;</span>
 <span class="k">with</span> <a href="../../api/python/ir.html#tvm.transform.PassContext" title="View documentation for tvm.transform.PassContext"><span class="n">tvm</span><span class="o">.</span><span class="n">transform</span><span class="o">.</span><span class="n">PassContext</span></a><span class="p">(</span><span class="n">opt_level</span><span class="o">=</span><span class="mi">3</span><span class="p">):</span>
-    <span class="n">graph</span><span class="p">,</span> <span class="n">lib</span><span class="p">,</span> <span class="n">params</span> <span class="o">=</span> <a href="../../api/python/relay/index.html#tvm.relay.build" title="View documentation for tvm.relay.build_module.build"><span class="n">relay</span><span class="o">.</span><span class="n">build_module</span><span class="o">.</span><span class="n">build</span></a><span class="p">(</span><span class="n">mod</span><span class="p">,</span> <span class="n">target</span><span class="o">=</span><span class="n">target</span><span class="p">,</span>
-                                                  <span class="n">params</span><span class="o">=</span><span class="n">params</span><span class="p">)</span>
+    <span class="n">lib</span> <span class="o">=</span> <a href="../../api/python/relay/index.html#tvm.relay.build" title="View documentation for tvm.relay.build_module.build"><span class="n">relay</span><span class="o">.</span><span class="n">build_module</span><span class="o">.</span><span class="n">build</span></a><span class="p">(</span><span class="n">mod</span><span class="p">,</span> <span class="n">target</span><span class="o">=</span><span class="n">target</span><span class="p">,</span> <span class="n">params</span><span class="o">=</span><span class="n">params</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>Finally, lets call inference on the TVM compiled module.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span class="n">tvm_pred</span><span class="p">,</span> <span class="n">rt_mod</span> <span class="o">=</span> <span class="n">run_tvm</span><span class="p">(</span><span class="n">graph</span><span class="p">,</span> <span class="n">lib</span><span class="p">,</span> <span class="n">params</span><span class="p">)</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span class="n">tvm_pred</span><span class="p">,</span> <span class="n">rt_mod</span> <span class="o">=</span> <span class="n">run_tvm</span><span class="p">(</span><span class="n">lib</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -435,7 +433,7 @@ TFLite Top-5 labels: [387 102 386 341 880]
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre>Elapsed average ms: 33.84403376999999
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre>Elapsed average ms: 35.17905105
 </pre></div>
 </div>
 <div class="admonition note">
@@ -462,7 +460,7 @@ device and follow <a class="reference external" href="https://tvm.apache.org/doc
 </ul>
 </div></blockquote>
 </div>
-<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 2 minutes  4.482 seconds)</p>
+<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 2 minutes  6.650 seconds)</p>
 <div class="sphx-glr-footer class sphx-glr-footer-example docutils container" id="sphx-glr-download-tutorials-frontend-deploy-prequantized-tflite-py">
 <div class="sphx-glr-download docutils container">
 <p><a class="reference download internal" download="" href="../../_downloads/5c443f88ea44ce77c5ccade429af6e74/deploy_prequantized_tflite.py"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">deploy_prequantized_tflite.py</span></code></a></p>

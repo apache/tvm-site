@@ -107,8 +107,8 @@
 <li class="toctree-l3"><a class="reference internal" href="deploy_quantized.html">Deploy a Quantized Model on Cuda</a></li>
 <li class="toctree-l3"><a class="reference internal" href="from_caffe2.html">Compile Caffe2 Models</a></li>
 <li class="toctree-l3"><a class="reference internal" href="from_mxnet.html">Compile MXNet Models</a></li>
-<li class="toctree-l3"><a class="reference internal" href="deploy_model_on_rasp.html">Deploy the Pretrained Model on Raspberry Pi</a></li>
 <li class="toctree-l3"><a class="reference internal" href="from_pytorch.html">Compile PyTorch Models</a></li>
+<li class="toctree-l3"><a class="reference internal" href="deploy_model_on_rasp.html">Deploy the Pretrained Model on Raspberry Pi</a></li>
 <li class="toctree-l3"><a class="reference internal" href="deploy_prequantized.html">Deploy a Framework-prequantized Model with TVM</a></li>
 <li class="toctree-l3"><a class="reference internal" href="from_tflite.html">Compile TFLite Models</a></li>
 <li class="toctree-l3"><a class="reference internal" href="deploy_prequantized_tflite.html">Deploy a Framework-prequantized Model with TVM - Part 3 (TFLite)</a></li>
@@ -431,7 +431,7 @@ to run this tutorial with a real device.</p>
 <span class="c1"># Change target configuration.</span>
 <span class="c1"># Run `adb shell cat /proc/cpuinfo` to find the arch.</span>
 <span class="n">arch</span> <span class="o">=</span> <span class="s1">&#39;arm64&#39;</span>
-<span class="n">target</span> <span class="o">=</span> <span class="s1">&#39;llvm -target=</span><span class="si">%s</span><span class="s1">-linux-android&#39;</span> <span class="o">%</span> <span class="n">arch</span>
+<span class="n">target</span> <span class="o">=</span> <span class="s1">&#39;llvm -mtriple=</span><span class="si">%s</span><span class="s1">-linux-android&#39;</span> <span class="o">%</span> <span class="n">arch</span>
 <span class="n">target_host</span> <span class="o">=</span> <span class="kc">None</span>
 
 <span class="k">if</span> <span class="n">local_demo</span><span class="p">:</span>
@@ -449,8 +449,8 @@ to run this tutorial with a real device.</p>
 <span class="n">mod</span><span class="p">,</span> <span class="n">params</span> <span class="o">=</span> <a href="../../api/python/relay/frontend.html#tvm.relay.frontend.from_keras" title="View documentation for tvm.relay.frontend.from_keras"><span class="n">relay</span><span class="o">.</span><span class="n">frontend</span><span class="o">.</span><span class="n">from_keras</span></a><span class="p">(</span><span class="n">keras_mobilenet_v2</span><span class="p">,</span> <span class="n">shape_dict</span><span class="p">)</span>
 
 <span class="k">with</span> <a href="../../api/python/ir.html#tvm.transform.PassContext" title="View documentation for tvm.transform.PassContext"><span class="n">tvm</span><span class="o">.</span><span class="n">transform</span><span class="o">.</span><span class="n">PassContext</span></a><span class="p">(</span><span class="n">opt_level</span><span class="o">=</span><span class="mi">3</span><span class="p">):</span>
-    <span class="n">graph</span><span class="p">,</span> <span class="n">lib</span><span class="p">,</span> <span class="n">params</span> <span class="o">=</span> <a href="../../api/python/relay/index.html#tvm.relay.build" title="View documentation for tvm.relay.build"><span class="n">relay</span><span class="o">.</span><span class="n">build</span></a><span class="p">(</span><span class="n">mod</span><span class="p">,</span> <span class="n">target</span><span class="o">=</span><span class="n">target</span><span class="p">,</span>
-                                     <span class="n">target_host</span><span class="o">=</span><span class="n">target_host</span><span class="p">,</span> <span class="n">params</span><span class="o">=</span><span class="n">params</span><span class="p">)</span>
+    <span class="n">lib</span> <span class="o">=</span> <a href="../../api/python/relay/index.html#tvm.relay.build" title="View documentation for tvm.relay.build"><span class="n">relay</span><span class="o">.</span><span class="n">build</span></a><span class="p">(</span><span class="n">mod</span><span class="p">,</span> <span class="n">target</span><span class="o">=</span><span class="n">target</span><span class="p">,</span>
+                      <span class="n">target_host</span><span class="o">=</span><span class="n">target_host</span><span class="p">,</span> <span class="n">params</span><span class="o">=</span><span class="n">params</span><span class="p">)</span>
 
 <span class="c1"># After `relay.build`, you will get three return values: graph,</span>
 <span class="c1"># library and the new parameter, since we do some optimization that will</span>
@@ -494,15 +494,13 @@ to the remote android device.</p>
 <span class="n">rlib</span> <span class="o">=</span> <span class="n">remote</span><span class="o">.</span><span class="n">load_module</span><span class="p">(</span><span class="s1">&#39;net.so&#39;</span><span class="p">)</span>
 
 <span class="c1"># create the remote runtime module</span>
-<span class="n">module</span> <span class="o">=</span> <a href="../../api/python/graph_runtime.html#tvm.contrib.graph_runtime.create" title="View documentation for tvm.contrib.graph_runtime.create"><span class="n">runtime</span><span class="o">.</span><span class="n">create</span></a><span class="p">(</span><span class="n">graph</span><span class="p">,</span> <span class="n">rlib</span><span class="p">,</span> <span class="n">ctx</span><span class="p">)</span>
+<span class="n">module</span> <span class="o">=</span> <a href="../../api/python/graph_runtime.html#tvm.contrib.graph_runtime.GraphModule" title="View documentation for tvm.contrib.graph_runtime.GraphModule"><span class="n">runtime</span><span class="o">.</span><span class="n">GraphModule</span></a><span class="p">(</span><span class="n">rlib</span><span class="p">[</span><span class="s1">&#39;default&#39;</span><span class="p">](</span><span class="n">ctx</span><span class="p">))</span>
 </pre></div>
 </div>
 </div>
 <div class="section" id="execute-on-tvm">
 <h2>Execute on TVM<a class="headerlink" href="#execute-on-tvm" title="Permalink to this headline">¶</a></h2>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span class="c1"># set parameter (upload params to the remote device. This may take a while)</span>
-<span class="n">module</span><span class="o">.</span><span class="n">set_input</span><span class="p">(</span><span class="o">**</span><span class="n">params</span><span class="p">)</span>
-<span class="c1"># set input data</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span class="c1"># set input data</span>
 <span class="n">module</span><span class="o">.</span><span class="n">set_input</span><span class="p">(</span><span class="n">input_name</span><span class="p">,</span> <a href="../../api/python/ndarray.html#tvm.nd.array" title="View documentation for tvm.nd.array"><span class="n">tvm</span><span class="o">.</span><span class="n">nd</span><span class="o">.</span><span class="n">array</span></a><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">dtype</span><span class="p">)))</span>
 <span class="c1"># run</span>
 <span class="n">module</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
@@ -523,7 +521,7 @@ to the remote android device.</p>
 <p class="sphx-glr-script-out">Out:</p>
 <div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre>TVM prediction top-1: tiger cat
 Evaluate inference time cost...
-Mean inference time (std dev): 4.31 ms (0.46 ms)
+Mean inference time (std dev): 5.22 ms (0.02 ms)
 </pre></div>
 </div>
 </div>

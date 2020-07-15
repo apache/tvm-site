@@ -41,7 +41,7 @@
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
     <link rel="next" title="Compile TFLite Models" href="from_tflite.html" />
-    <link rel="prev" title="Compile PyTorch Models" href="from_pytorch.html" /> 
+    <link rel="prev" title="Deploy the Pretrained Model on Raspberry Pi" href="deploy_model_on_rasp.html" /> 
 </head>
 
 <body class="wy-body-for-nav">
@@ -107,8 +107,8 @@
 <li class="toctree-l3"><a class="reference internal" href="deploy_quantized.html">Deploy a Quantized Model on Cuda</a></li>
 <li class="toctree-l3"><a class="reference internal" href="from_caffe2.html">Compile Caffe2 Models</a></li>
 <li class="toctree-l3"><a class="reference internal" href="from_mxnet.html">Compile MXNet Models</a></li>
-<li class="toctree-l3"><a class="reference internal" href="deploy_model_on_rasp.html">Deploy the Pretrained Model on Raspberry Pi</a></li>
 <li class="toctree-l3"><a class="reference internal" href="from_pytorch.html">Compile PyTorch Models</a></li>
+<li class="toctree-l3"><a class="reference internal" href="deploy_model_on_rasp.html">Deploy the Pretrained Model on Raspberry Pi</a></li>
 <li class="toctree-l3 current"><a class="current reference internal" href="#">Deploy a Framework-prequantized Model with TVM</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#deploy-a-quantized-pytorch-model">Deploy a quantized PyTorch Model</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#load-quantization-ready-pretrained-mobilenet-v2-model-from-torchvision">Load quantization-ready, pretrained Mobilenet v2 model from torchvision</a></li>
@@ -287,10 +287,9 @@ Once loaded, we can run compiled, quantized models on any hardware TVM supports.
 
 <span class="k">def</span> <span class="nf">run_tvm_model</span><span class="p">(</span><span class="n">mod</span><span class="p">,</span> <span class="n">params</span><span class="p">,</span> <span class="n">input_name</span><span class="p">,</span> <span class="n">inp</span><span class="p">,</span> <span class="n">target</span><span class="o">=</span><span class="s2">&quot;llvm&quot;</span><span class="p">):</span>
     <span class="k">with</span> <a href="../../api/python/ir.html#tvm.transform.PassContext" title="View documentation for tvm.transform.PassContext"><span class="n">tvm</span><span class="o">.</span><span class="n">transform</span><span class="o">.</span><span class="n">PassContext</span></a><span class="p">(</span><span class="n">opt_level</span><span class="o">=</span><span class="mi">3</span><span class="p">):</span>
-        <span class="n">json</span><span class="p">,</span> <span class="n">lib</span><span class="p">,</span> <span class="n">params</span> <span class="o">=</span> <a href="../../api/python/relay/index.html#tvm.relay.build" title="View documentation for tvm.relay.build"><span class="n">relay</span><span class="o">.</span><span class="n">build</span></a><span class="p">(</span><span class="n">mod</span><span class="p">,</span> <span class="n">target</span><span class="o">=</span><span class="n">target</span><span class="p">,</span> <span class="n">params</span><span class="o">=</span><span class="n">params</span><span class="p">)</span>
+        <span class="n">lib</span> <span class="o">=</span> <a href="../../api/python/relay/index.html#tvm.relay.build" title="View documentation for tvm.relay.build"><span class="n">relay</span><span class="o">.</span><span class="n">build</span></a><span class="p">(</span><span class="n">mod</span><span class="p">,</span> <span class="n">target</span><span class="o">=</span><span class="n">target</span><span class="p">,</span> <span class="n">params</span><span class="o">=</span><span class="n">params</span><span class="p">)</span>
 
-    <span class="n">runtime</span> <span class="o">=</span> <a href="../../api/python/graph_runtime.html#tvm.contrib.graph_runtime.create" title="View documentation for tvm.contrib.graph_runtime.create"><span class="n">tvm</span><span class="o">.</span><span class="n">contrib</span><span class="o">.</span><span class="n">graph_runtime</span><span class="o">.</span><span class="n">create</span></a><span class="p">(</span><span class="n">json</span><span class="p">,</span> <span class="n">lib</span><span class="p">,</span> <span class="n">tvm</span><span class="o">.</span><span class="n">context</span><span class="p">(</span><span class="n">target</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>
-    <span class="n">runtime</span><span class="o">.</span><span class="n">set_input</span><span class="p">(</span><span class="o">**</span><span class="n">params</span><span class="p">)</span>
+    <span class="n">runtime</span> <span class="o">=</span> <a href="../../api/python/graph_runtime.html#tvm.contrib.graph_runtime.GraphModule" title="View documentation for tvm.contrib.graph_runtime.GraphModule"><span class="n">tvm</span><span class="o">.</span><span class="n">contrib</span><span class="o">.</span><span class="n">graph_runtime</span><span class="o">.</span><span class="n">GraphModule</span></a><span class="p">(</span><span class="n">lib</span><span class="p">[</span><span class="s1">&#39;default&#39;</span><span class="p">](</span><span class="n">tvm</span><span class="o">.</span><span class="n">context</span><span class="p">(</span><span class="n">target</span><span class="p">,</span> <span class="mi">0</span><span class="p">)))</span>
 
     <span class="n">runtime</span><span class="o">.</span><span class="n">set_input</span><span class="p">(</span><span class="n">input_name</span><span class="p">,</span> <span class="n">inp</span><span class="p">)</span>
     <span class="n">runtime</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
@@ -430,7 +429,7 @@ output values are identical out of 1000 outputs from mobilenet v2.</p>
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre>Elapsed average ms: 13.114505149999998
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre>Elapsed average ms: 19.127417110000003
 </pre></div>
 </div>
 <div class="admonition note">
@@ -492,7 +491,7 @@ This includes support for the VNNI 8 bit dot product instruction (CascadeLake or
         <a href="from_tflite.html" class="btn btn-neutral float-right" title="Compile TFLite Models" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
-        <a href="from_pytorch.html" class="btn btn-neutral float-left" title="Compile PyTorch Models" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+        <a href="deploy_model_on_rasp.html" class="btn btn-neutral float-left" title="Deploy the Pretrained Model on Raspberry Pi" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
       
     </div>
   

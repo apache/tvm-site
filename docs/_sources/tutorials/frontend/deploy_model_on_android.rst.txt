@@ -297,7 +297,7 @@ to run this tutorial with a real device.
     # Change target configuration.
     # Run `adb shell cat /proc/cpuinfo` to find the arch.
     arch = 'arm64'
-    target = 'llvm -target=%s-linux-android' % arch
+    target = 'llvm -mtriple=%s-linux-android' % arch
     target_host = None
 
     if local_demo:
@@ -315,8 +315,8 @@ to run this tutorial with a real device.
     mod, params = relay.frontend.from_keras(keras_mobilenet_v2, shape_dict)
 
     with tvm.transform.PassContext(opt_level=3):
-        graph, lib, params = relay.build(mod, target=target,
-                                         target_host=target_host, params=params)
+        lib = relay.build(mod, target=target,
+                          target_host=target_host, params=params)
 
     # After `relay.build`, you will get three return values: graph,
     # library and the new parameter, since we do some optimization that will
@@ -369,7 +369,7 @@ to the remote android device.
     rlib = remote.load_module('net.so')
 
     # create the remote runtime module
-    module = runtime.create(graph, rlib, ctx)
+    module = runtime.GraphModule(rlib['default'](ctx))
 
 
 
@@ -384,8 +384,6 @@ Execute on TVM
 .. code-block:: default
 
 
-    # set parameter (upload params to the remote device. This may take a while)
-    module.set_input(**params)
     # set input data
     module.set_input(input_name, tvm.nd.array(x.astype(dtype)))
     # run
@@ -415,7 +413,7 @@ Execute on TVM
 
     TVM prediction top-1: tiger cat
     Evaluate inference time cost...
-    Mean inference time (std dev): 4.31 ms (0.46 ms)
+    Mean inference time (std dev): 5.22 ms (0.02 ms)
 
 
 

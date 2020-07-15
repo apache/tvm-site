@@ -84,13 +84,11 @@ By setting the logging level to DEBUG, the result of Relay graph compilation wil
     logging.basicConfig(level=logging.DEBUG) # to dump TVM IR after fusion
 
     target = "cuda"
-    graph, lib, params = relay.build_module.build(
-        net, target, params=params)
+    lib = relay.build_module.build(net, target, params=params)
 
     ctx = tvm.context(target, 0)
     data = np.random.uniform(-1, 1, size=data_shape).astype("float32")
-    module = runtime.create(graph, lib, ctx)
-    module.set_input(**params)
+    module = runtime.GraphModule(lib['default'](ctx))
     module.set_input("data", data)
     module.run()
     out_shape = (batch_size, out_channels, 224, 224)
@@ -113,7 +111,7 @@ By setting the logging level to DEBUG, the result of Relay graph compilation wil
     INFO:compile_engine:Use implementation injective.cpu for op multiply
     INFO:compile_engine:Use implementation injective.cpu for op negative
     INFO:compile_engine:Use implementation injective.cpu for op add
-    WARNING:autotvm:Cannot find config for target=cuda, workload=('conv2d_nchw.cuda', ('TENSOR', (1, 3, 224, 224), 'float32'), ('TENSOR', (16, 3, 3, 3), 'float32'), (1, 1), (1, 1, 1, 1), (1, 1), 'float32'). A fallback configuration is used, which may bring great performance regression.
+    WARNING:autotvm:Cannot find config for target=cuda -keys=cuda,gpu -max_num_threads=1024 -thread_warp_size=32, workload=('conv2d_nchw.cuda', ('TENSOR', (1, 3, 224, 224), 'float32'), ('TENSOR', (16, 3, 3, 3), 'float32'), (1, 1), (1, 1, 1, 1), (1, 1), 'float32'). A fallback configuration is used, which may bring great performance regression.
     INFO:compile_engine:Use implementation conv2d_nchw.cuda for op nn.conv2d
     INFO:compile_engine:Use implementation injective.cuda for op multiply
     INFO:compile_engine:Use implementation injective.cuda for op add
@@ -534,13 +532,11 @@ To do that, all we need to do is to append the option " -libs=cudnn" to the targ
 
     net, params = testing.create_workload(simple_net)
     target = "cuda -libs=cudnn" # use cudnn for convolution
-    graph, lib, params = relay.build_module.build(
-            net, target, params=params)
+    lib = relay.build_module.build(net, target, params=params)
 
     ctx = tvm.context(target, 0)
     data = np.random.uniform(-1, 1, size=data_shape).astype("float32")
-    module = runtime.create(graph, lib, ctx)
-    module.set_input(**params)
+    module = runtime.GraphModule(lib['default'](ctx))
     module.set_input("data", data)
     module.run()
     out_shape = (batch_size, out_channels, 224, 224)

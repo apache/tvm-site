@@ -43,5 +43,6 @@ var searchData=
   ['downcast',['Downcast',['../namespacetvm_1_1runtime.html#a756a222aed384e208f32d35d3412c918',1,'tvm::runtime']]],
   ['downcastnocheck',['DowncastNoCheck',['../classtvm_1_1runtime_1_1ObjectRef.html#acd04bb22a6861e9952c344ee8547411f',1,'tvm::runtime::ObjectRef']]],
   ['dtype',['dtype',['../classtvm_1_1PrimExpr.html#a1098008618699c33adfbd19e582f9ffd',1,'tvm::PrimExpr']]],
-  ['dump',['Dump',['../namespacetvm.html#a410120ad997c7470798b98a1c48ee3e6',1,'tvm::Dump(const runtime::ObjectRef &amp;node)'],['../namespacetvm.html#a4909861f9bc606426c65c65da4da3734',1,'tvm::Dump(const runtime::Object *node)']]]
+  ['dump',['Dump',['../namespacetvm.html#a410120ad997c7470798b98a1c48ee3e6',1,'tvm::Dump(const runtime::ObjectRef &amp;node)'],['../namespacetvm.html#a4909861f9bc606426c65c65da4da3734',1,'tvm::Dump(const runtime::Object *node)']]],
+  ['dyn_5ftile',['dyn_tile',['../namespacetopi.html#a24ab442d17b90069c29121a3f057b1f7',1,'topi']]]
 ];

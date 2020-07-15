@@ -40,7 +40,7 @@
   <link rel="stylesheet" href="../../_static/css/tvm_theme.css" type="text/css" />
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
-    <link rel="next" title="Deploy the Pretrained Model on Raspberry Pi" href="deploy_model_on_rasp.html" />
+    <link rel="next" title="Compile PyTorch Models" href="from_pytorch.html" />
     <link rel="prev" title="Compile Caffe2 Models" href="from_caffe2.html" /> 
 </head>
 
@@ -113,8 +113,8 @@
 <li class="toctree-l4"><a class="reference internal" href="#use-mxnet-symbol-with-pretrained-weights">Use MXNet symbol with pretrained weights</a></li>
 </ul>
 </li>
-<li class="toctree-l3"><a class="reference internal" href="deploy_model_on_rasp.html">Deploy the Pretrained Model on Raspberry Pi</a></li>
 <li class="toctree-l3"><a class="reference internal" href="from_pytorch.html">Compile PyTorch Models</a></li>
+<li class="toctree-l3"><a class="reference internal" href="deploy_model_on_rasp.html">Deploy the Pretrained Model on Raspberry Pi</a></li>
 <li class="toctree-l3"><a class="reference internal" href="deploy_prequantized.html">Deploy a Framework-prequantized Model with TVM</a></li>
 <li class="toctree-l3"><a class="reference internal" href="from_tflite.html">Compile TFLite Models</a></li>
 <li class="toctree-l3"><a class="reference internal" href="deploy_prequantized_tflite.html">Deploy a Framework-prequantized Model with TVM - Part 3 (TFLite)</a></li>
@@ -296,7 +296,7 @@ We support MXNet static graph(symbol) and HybridBlock in mxnet.gluon</p>
 <p>now compile the graph</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span class="n">target</span> <span class="o">=</span> <span class="s1">&#39;cuda&#39;</span>
 <span class="k">with</span> <a href="../../api/python/ir.html#tvm.transform.PassContext" title="View documentation for tvm.transform.PassContext"><span class="n">tvm</span><span class="o">.</span><span class="n">transform</span><span class="o">.</span><span class="n">PassContext</span></a><span class="p">(</span><span class="n">opt_level</span><span class="o">=</span><span class="mi">3</span><span class="p">):</span>
-    <span class="n">graph</span><span class="p">,</span> <span class="n">lib</span><span class="p">,</span> <span class="n">params</span> <span class="o">=</span> <a href="../../api/python/relay/index.html#tvm.relay.build" title="View documentation for tvm.relay.build"><span class="n">relay</span><span class="o">.</span><span class="n">build</span></a><span class="p">(</span><span class="n">func</span><span class="p">,</span> <span class="n">target</span><span class="p">,</span> <span class="n">params</span><span class="o">=</span><span class="n">params</span><span class="p">)</span>
+    <span class="n">lib</span> <span class="o">=</span> <a href="../../api/python/relay/index.html#tvm.relay.build" title="View documentation for tvm.relay.build"><span class="n">relay</span><span class="o">.</span><span class="n">build</span></a><span class="p">(</span><span class="n">func</span><span class="p">,</span> <span class="n">target</span><span class="p">,</span> <span class="n">params</span><span class="o">=</span><span class="n">params</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -306,10 +306,9 @@ We support MXNet static graph(symbol) and HybridBlock in mxnet.gluon</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">tvm.contrib</span> <span class="k">import</span> <span class="n">graph_runtime</span>
 <span class="n">ctx</span> <span class="o">=</span> <span class="n">tvm</span><span class="o">.</span><span class="n">gpu</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
 <span class="n">dtype</span> <span class="o">=</span> <span class="s1">&#39;float32&#39;</span>
-<span class="n">m</span> <span class="o">=</span> <a href="../../api/python/graph_runtime.html#tvm.contrib.graph_runtime.create" title="View documentation for tvm.contrib.graph_runtime.create"><span class="n">graph_runtime</span><span class="o">.</span><span class="n">create</span></a><span class="p">(</span><span class="n">graph</span><span class="p">,</span> <span class="n">lib</span><span class="p">,</span> <span class="n">ctx</span><span class="p">)</span>
+<span class="n">m</span> <span class="o">=</span> <a href="../../api/python/graph_runtime.html#tvm.contrib.graph_runtime.GraphModule" title="View documentation for tvm.contrib.graph_runtime.GraphModule"><span class="n">graph_runtime</span><span class="o">.</span><span class="n">GraphModule</span></a><span class="p">(</span><span class="n">lib</span><span class="p">[</span><span class="s1">&#39;default&#39;</span><span class="p">](</span><span class="n">ctx</span><span class="p">))</span>
 <span class="c1"># set inputs</span>
 <span class="n">m</span><span class="o">.</span><span class="n">set_input</span><span class="p">(</span><span class="s1">&#39;data&#39;</span><span class="p">,</span> <a href="../../api/python/ndarray.html#tvm.nd.array" title="View documentation for tvm.nd.array"><span class="n">tvm</span><span class="o">.</span><span class="n">nd</span><span class="o">.</span><span class="n">array</span></a><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">dtype</span><span class="p">)))</span>
-<span class="n">m</span><span class="o">.</span><span class="n">set_input</span><span class="p">(</span><span class="o">**</span><span class="n">params</span><span class="p">)</span>
 <span class="c1"># execute</span>
 <span class="n">m</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
 <span class="c1"># get outputs</span>
@@ -369,7 +368,7 @@ separately, here we show how to use these weights with existing API</p>
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="deploy_model_on_rasp.html" class="btn btn-neutral float-right" title="Deploy the Pretrained Model on Raspberry Pi" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+        <a href="from_pytorch.html" class="btn btn-neutral float-right" title="Compile PyTorch Models" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
         <a href="from_caffe2.html" class="btn btn-neutral float-left" title="Compile Caffe2 Models" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
