@@ -138,7 +138,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../links.html">Links to API References</a></li>
 </ul>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="../../../dev/index.html">Design and Developer Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../dev/index.html">Design and Architecture</a></li>
 </ul>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../../frontend/tensorflow.html">TensorFlow Frontend</a></li>
@@ -239,7 +239,7 @@
 <tr class="row-even"><td><p><a class="reference internal" href="#tvm.relay.dataflow_pattern.DFPattern" title="tvm.relay.dataflow_pattern.DFPattern"><code class="xref py py-obj docutils literal notranslate"><span class="pre">DFPattern</span></code></a></p></td>
 <td><p>Base class of all Patterns.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#tvm.relay.dataflow_pattern.DFPatternCallback" title="tvm.relay.dataflow_pattern.DFPatternCallback"><code class="xref py py-obj docutils literal notranslate"><span class="pre">DFPatternCallback</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#tvm.relay.dataflow_pattern.DFPatternCallback" title="tvm.relay.dataflow_pattern.DFPatternCallback"><code class="xref py py-obj docutils literal notranslate"><span class="pre">DFPatternCallback</span></code></a>([require_type])</p></td>
 <td><p>A Callback for Pattern Rewriting.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#tvm.relay.dataflow_pattern.DataTypePattern" title="tvm.relay.dataflow_pattern.DataTypePattern"><code class="xref py py-obj docutils literal notranslate"><span class="pre">DataTypePattern</span></code></a>(pattern, dtype)</p></td>
@@ -335,7 +335,7 @@
 <tr class="row-even"><td><p><a class="reference internal" href="#tvm.relay.dataflow_pattern.register_df_node" title="tvm.relay.dataflow_pattern.register_df_node"><code class="xref py py-obj docutils literal notranslate"><span class="pre">register_df_node</span></code></a>([type_key])</p></td>
 <td><p>Register a Relay node type.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#tvm.relay.dataflow_pattern.rewrite" title="tvm.relay.dataflow_pattern.rewrite"><code class="xref py py-obj docutils literal notranslate"><span class="pre">rewrite</span></code></a>(callbacks, expr)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#tvm.relay.dataflow_pattern.rewrite" title="tvm.relay.dataflow_pattern.rewrite"><code class="xref py py-obj docutils literal notranslate"><span class="pre">rewrite</span></code></a>(callbacks, expr, mod)</p></td>
 <td><p>Rewrite expression with the given callbacks.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#tvm.relay.dataflow_pattern.wildcard" title="tvm.relay.dataflow_pattern.wildcard"><code class="xref py py-obj docutils literal notranslate"><span class="pre">wildcard</span></code></a>()</p></td>
@@ -1034,12 +1034,17 @@ for all nodes in the path and the parent.</p></li>
 
 <dl class="py class">
 <dt id="tvm.relay.dataflow_pattern.DFPatternCallback">
-<em class="property">class </em><code class="sig-prename descclassname">tvm.relay.dataflow_pattern.</code><code class="sig-name descname">DFPatternCallback</code><a class="headerlink" href="#tvm.relay.dataflow_pattern.DFPatternCallback" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">tvm.relay.dataflow_pattern.</code><code class="sig-name descname">DFPatternCallback</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">require_type</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="headerlink" href="#tvm.relay.dataflow_pattern.DFPatternCallback" title="Permalink to this definition">¶</a></dt>
 <dd><p>A Callback for Pattern Rewriting.</p>
 <p>When rewrite is called on this DFPatternCallback, the backend will find matches for the
 pattern, call the callback function, and replace the matched expression with whatever
 the callback returns.</p>
 <p>Users are expect to inherit from this class and provide a “self.pattern” to match</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>require_type</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.8)"><em>bool</em></a>) – Whether InferType is required to be run before the callback.</p>
+</dd>
+</dl>
 <p><strong>Methods</strong></p>
 <table class="longtable docutils align-default">
 <colgroup>
@@ -1097,13 +1102,14 @@ the callback returns.</p>
 
 <dl class="py function">
 <dt id="tvm.relay.dataflow_pattern.rewrite">
-<code class="sig-prename descclassname">tvm.relay.dataflow_pattern.</code><code class="sig-name descname">rewrite</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">callbacks</span></em>, <em class="sig-param"><span class="n">expr</span><span class="p">:</span> <span class="n">tvm.ir.expr.RelayExpr</span></em><span class="sig-paren">)</span> &#x2192; tvm.ir.expr.RelayExpr<a class="headerlink" href="#tvm.relay.dataflow_pattern.rewrite" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">tvm.relay.dataflow_pattern.</code><code class="sig-name descname">rewrite</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">callbacks</span></em>, <em class="sig-param"><span class="n">expr</span><span class="p">:</span> <span class="n">tvm.ir.expr.RelayExpr</span></em>, <em class="sig-param"><span class="n">mod</span><span class="p">:</span> <span class="n">Optional<span class="p">[</span>tvm.ir.module.IRModule<span class="p">]</span></span> <span class="o">=</span> <span class="default_value">None</span></em><span class="sig-paren">)</span> &#x2192; tvm.ir.expr.RelayExpr<a class="headerlink" href="#tvm.relay.dataflow_pattern.rewrite" title="Permalink to this definition">¶</a></dt>
 <dd><p>Rewrite expression with the given callbacks.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>callbacks</strong> (<a class="reference internal" href="#tvm.relay.dataflow_pattern.DFPatternCallback" title="tvm.relay.dataflow_pattern.DFPatternCallback"><em>tvm.relay.dataflow_pattern.DFPatternCallback</em></a>) – The input callback or list of callbacks.</p></li>
 <li><p><strong>expr</strong> (<em>tvm.relay.Expr</em>) – The expression to rewrite.</p></li>
+<li><p><strong>mod</strong> (<em>Optional</em><em>[</em><a class="reference internal" href="../ir.html#tvm.ir.IRModule" title="tvm.ir.IRModule"><em>tvm.ir.IRModule</em></a><em>]</em>) – The module that associates with the expression.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>

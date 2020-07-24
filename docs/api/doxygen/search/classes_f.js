@@ -32,6 +32,7 @@ var searchData=
   ['reprprinter',['ReprPrinter',['../classtvm_1_1ReprPrinter.html',1,'tvm']]],
   ['requantizeattrs',['RequantizeAttrs',['../structtvm_1_1relay_1_1qnn_1_1RequantizeAttrs.html',1,'tvm::relay::qnn']]],
   ['reshapeattrs',['ReshapeAttrs',['../structtvm_1_1relay_1_1ReshapeAttrs.html',1,'tvm::relay']]],
+  ['reshapetensorattrs',['ReshapeTensorAttrs',['../structtvm_1_1relay_1_1ReshapeTensorAttrs.html',1,'tvm::relay']]],
   ['resize3dattrs',['Resize3dAttrs',['../structtvm_1_1relay_1_1Resize3dAttrs.html',1,'tvm::relay']]],
   ['resizeattrs',['ResizeAttrs',['../structtvm_1_1relay_1_1ResizeAttrs.html',1,'tvm::relay']]],
   ['reverseattrs',['ReverseAttrs',['../structtvm_1_1relay_1_1ReverseAttrs.html',1,'tvm::relay']]],

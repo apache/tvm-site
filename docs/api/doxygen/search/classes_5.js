@@ -2,6 +2,7 @@ var searchData=
 [
   ['featureset',['FeatureSet',['../classtvm_1_1relay_1_1FeatureSet.html',1,'tvm::relay']]],
   ['fifobufferattrs',['FIFOBufferAttrs',['../structtvm_1_1relay_1_1FIFOBufferAttrs.html',1,'tvm::relay']]],
+  ['fixedpointmultiplyattrs',['FixedPointMultiplyAttrs',['../structtvm_1_1relay_1_1FixedPointMultiplyAttrs.html',1,'tvm::relay']]],
   ['flattener',['Flattener',['../classtvm_1_1tir_1_1SeqStmt_1_1Flattener.html',1,'tvm::tir::SeqStmt']]],
   ['floatimm',['FloatImm',['../classtvm_1_1FloatImm.html',1,'tvm']]],
   ['floatimmnode',['FloatImmNode',['../classtvm_1_1FloatImmNode.html',1,'tvm']]],

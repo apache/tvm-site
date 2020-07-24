@@ -48,7 +48,7 @@ var searchData=
   ['infertype',['InferType',['../namespacetvm_1_1relay_1_1transform.html#a1a4fe2161bf32a60bc2e57debab083ee',1,'tvm::relay::transform::InferType()'],['../namespacetvm_1_1relay.html#a18141658f627685d55704609111f57be',1,'tvm::relay::InferType()']]],
   ['infinity',['infinity',['../namespacetvm.html#a9bf1977e7bc6f0424f4e87d77d0008ed',1,'tvm']]],
   ['info',['Info',['../classtvm_1_1transform_1_1PassNode.html#ab602b215ed172c9f09cf0fa2862858af',1,'tvm::transform::PassNode']]],
-  ['init',['init',['../classtvm_1_1te_1_1ScanOpNode.html#a729243cd385db2e3f74c3a92a44db935',1,'tvm::te::ScanOpNode::init()'],['../classtvm_1_1runtime_1_1vm_1_1VirtualMachine.html#ade6ed373d6af91fe813f6f98f9e59244',1,'tvm::runtime::vm::VirtualMachine::Init()']]],
+  ['init',['Init',['../classtvm_1_1runtime_1_1vm_1_1VirtualMachine.html#ade6ed373d6af91fe813f6f98f9e59244',1,'tvm::runtime::vm::VirtualMachine::Init()'],['../classtvm_1_1te_1_1ScanOpNode.html#a729243cd385db2e3f74c3a92a44db935',1,'tvm::te::ScanOpNode::init()']]],
   ['initbypackedargs',['InitByPackedArgs',['../classtvm_1_1BaseAttrsNode.html#a375ef57a9dcf85e7961f91699927e50b',1,'tvm::BaseAttrsNode::InitByPackedArgs()'],['../classtvm_1_1DictAttrsNode.html#a06f561f072ccdd91c5c791b26331cc2f',1,'tvm::DictAttrsNode::InitByPackedArgs()'],['../classtvm_1_1AttrsNode.html#acfba199ef906818f35432d2e5532559a',1,'tvm::AttrsNode::InitByPackedArgs()']]],
   ['initbyseq',['InitBySeq',['../classtvm_1_1BaseAttrsNode.html#aef9e5266d16e163ccc7b1b16c1ea3269',1,'tvm::BaseAttrsNode']]],
   ['initcache',['InitCache',['../classtvm_1_1te_1_1ScheduleNode.html#a2c2472f9cbb1d42bec661149fe801179',1,'tvm::te::ScheduleNode']]],

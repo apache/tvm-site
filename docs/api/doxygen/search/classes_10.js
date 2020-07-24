@@ -2,6 +2,7 @@ var searchData=
 [
   ['scanop',['ScanOp',['../classtvm_1_1te_1_1ScanOp.html',1,'tvm::te']]],
   ['scanopnode',['ScanOpNode',['../classtvm_1_1te_1_1ScanOpNode.html',1,'tvm::te']]],
+  ['scatteraddattrs',['ScatterAddAttrs',['../structtvm_1_1relay_1_1ScatterAddAttrs.html',1,'tvm::relay']]],
   ['scatterattrs',['ScatterAttrs',['../structtvm_1_1relay_1_1ScatterAttrs.html',1,'tvm::relay']]],
   ['schedule',['Schedule',['../classtvm_1_1te_1_1Schedule.html',1,'tvm::te']]],
   ['schedulenode',['ScheduleNode',['../classtvm_1_1te_1_1ScheduleNode.html',1,'tvm::te']]],

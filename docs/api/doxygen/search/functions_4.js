@@ -27,7 +27,7 @@ var searchData=
   ['detectfeature',['DetectFeature',['../namespacetvm_1_1relay.html#a62b651084b386991221bc32c020cbef5',1,'tvm::relay::DetectFeature(const RelayExpr &amp;expr)'],['../namespacetvm_1_1relay.html#a81978c82e1130854e575ccabc152ad70',1,'tvm::relay::DetectFeature(const IRModule &amp;mod)'],['../namespacetvm_1_1relay.html#a191d5425083368521d49cc49cef65aba',1,'tvm::relay::DetectFeature(const Expr &amp;expr, const IRModule &amp;mod)']]],
   ['detectlinearequation',['DetectLinearEquation',['../namespacetvm_1_1arith.html#a87a12ee0854469b04329a961ef261559',1,'tvm::arith']]],
   ['devicename',['DeviceName',['../namespacetvm_1_1runtime.html#a9109e4efe269213052ed6a94853c0c00',1,'tvm::runtime']]],
-  ['dfpatterncallback',['DFPatternCallback',['../classtvm_1_1relay_1_1DFPatternCallback.html#a943d6ff184978aa640101f00377d8b66',1,'tvm::relay::DFPatternCallback']]],
+  ['dfpatterncallback',['DFPatternCallback',['../classtvm_1_1relay_1_1DFPatternCallback.html#a820597c8dc9ec76160d3283e71cf57ba',1,'tvm::relay::DFPatternCallback']]],
   ['dictattrs',['DictAttrs',['../classtvm_1_1DictAttrs.html#a3999d7e2b942c8f9993f6d51cb8f3ded',1,'tvm::DictAttrs']]],
   ['dilate',['dilate',['../namespacetopi_1_1nn.html#a6ac795264be73287d92fcd7be8943ddc',1,'topi::nn']]],
   ['dispatchvisitexpr',['DispatchVisitExpr',['../classtvm_1_1relay_1_1MixedModeMutator.html#abf42e17fa95968153e0cff75c6280918',1,'tvm::relay::MixedModeMutator']]],

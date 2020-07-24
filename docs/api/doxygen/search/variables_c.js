@@ -15,5 +15,6 @@ var searchData=
   ['min',['min',['../classtvm_1_1RangeNode.html#a43d2fb12bb61cf05936a1972d0158b49',1,'tvm::RangeNode::min()'],['../classtvm_1_1tir_1_1ForNode.html#a1d1aa2006328bd84e4911f6d43ceca5c',1,'tvm::tir::ForNode::min()']]],
   ['min_5fvalue',['min_value',['../classtvm_1_1arith_1_1ConstIntBoundNode.html#a0761897bf16ab73b848bf360e9b195a3',1,'tvm::arith::ConstIntBoundNode']]],
   ['mode',['mode',['../structtvm_1_1relay_1_1MirrorPadAttrs.html#af5381d72f1d9c9abcb9d2e522966ad86',1,'tvm::relay::MirrorPadAttrs::mode()'],['../structtvm_1_1relay_1_1SubPixelAttrs.html#a6f0822aa1ad7672a18ab73c64e83fa99',1,'tvm::relay::SubPixelAttrs::mode()'],['../structtvm_1_1relay_1_1TakeAttrs.html#ac7fd604371e248cce170a05be605bd43',1,'tvm::relay::TakeAttrs::mode()']]],
-  ['modular_5fset',['modular_set',['../classtvm_1_1arith_1_1Analyzer.html#acac92a9522deabe289fea99efbd9eaec',1,'tvm::arith::Analyzer']]]
+  ['modular_5fset',['modular_set',['../classtvm_1_1arith_1_1Analyzer.html#acac92a9522deabe289fea99efbd9eaec',1,'tvm::arith::Analyzer']]],
+  ['multiplier',['multiplier',['../structtvm_1_1relay_1_1FixedPointMultiplyAttrs.html#a317374d804a576b50d9a51e4a8ee3ff2',1,'tvm::relay::FixedPointMultiplyAttrs']]]
 ];

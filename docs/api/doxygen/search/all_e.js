@@ -19,7 +19,7 @@ var searchData=
   ['negative',['negative',['../namespacetopi.html#a9953d63728137b5bba2ef2832963e411',1,'topi']]],
   ['nenode',['NENode',['../classtvm_1_1tir_1_1NENode.html',1,'tvm::tir']]],
   ['new',['New',['../classtvm_1_1runtime_1_1SimpleObjAllocator_1_1Handler.html#af605b9c8534aa0731632f8dd9d32327d',1,'tvm::runtime::SimpleObjAllocator::Handler::New()'],['../classtvm_1_1runtime_1_1SimpleObjAllocator_1_1ArrayHandler.html#a025fadf9131cce88df531f00c8180d39',1,'tvm::runtime::SimpleObjAllocator::ArrayHandler::New()']]],
-  ['newshape',['newshape',['../structtvm_1_1relay_1_1ReshapeAttrs.html#a9bca32c3acff2ed8fd6bc63a50f82051',1,'tvm::relay::ReshapeAttrs']]],
+  ['newshape',['newshape',['../structtvm_1_1relay_1_1ReshapeAttrs.html#a9bca32c3acff2ed8fd6bc63a50f82051',1,'tvm::relay::ReshapeAttrs::newshape()'],['../structtvm_1_1relay_1_1ReshapeTensorAttrs.html#aaacd1ab5124b54316a9e1f3ef5a5ec3c',1,'tvm::relay::ReshapeTensorAttrs::newshape()'],['../structtvm_1_1runtime_1_1vm_1_1Instruction.html#a5602ccf14b6bd90e33a38c6ab82b0b57',1,'tvm::runtime::vm::Instruction::newshape()']]],
   ['nextafter',['nextafter',['../namespacetvm.html#a1088e0c7839baa4c57c80217dd2742ef',1,'tvm']]],
   ['nn_2eh',['nn.h',['../include_2tvm_2relay_2attrs_2nn_8h.html',1,'']]],
   ['nn_2eh',['nn.h',['../topi_2include_2topi_2nn_8h.html',1,'']]],
