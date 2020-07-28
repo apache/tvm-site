@@ -29,6 +29,8 @@ var searchData=
   ['loadfromfile',['LoadFromFile',['../classtvm_1_1runtime_1_1Module.html#a1927112ff253c1a6150238257cc9d5dd',1,'tvm::runtime::Module']]],
   ['loadjson',['LoadJSON',['../namespacetvm.html#afa0a9bdf3997ef4fad45b19fb1a655cd',1,'tvm']]],
   ['loadscalarint',['LoadScalarInt',['../classtvm_1_1runtime_1_1vm_1_1VirtualMachine.html#abdf279a2c543ee6f4be60b2a00d9b495',1,'tvm::runtime::vm::VirtualMachine']]],
+  ['localbuilder',['LocalBuilder',['../classtvm_1_1auto__scheduler_1_1LocalBuilder.html#aedf9319cffd9a630258ed66dcbea3739',1,'tvm::auto_scheduler::LocalBuilder']]],
+  ['localrunner',['LocalRunner',['../classtvm_1_1auto__scheduler_1_1LocalRunner.html#a0eecaf50200a22da173950371113287d',1,'tvm::auto_scheduler::LocalRunner']]],
   ['log',['log',['../namespacetvm.html#aed9236feb2ab21523cb2dcb0257fe8da',1,'tvm::log()'],['../namespacetopi.html#ac2472cb0d5b8deb69bde85866e712863',1,'topi::log()']]],
   ['log10',['log10',['../namespacetvm.html#a04657a6242778fd95b77df057385e398',1,'tvm::log10()'],['../namespacetopi.html#aab1db7c13eac487f2f88101b81da3640',1,'topi::log10()']]],
   ['log2',['log2',['../namespacetvm.html#aae5edd83ffa099868f2d58a9def0b2b4',1,'tvm::log2()'],['../namespacetopi.html#ab5a0b357c858fa872b1282d36b9cdcf7',1,'topi::log2()']]],

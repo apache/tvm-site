@@ -24,6 +24,8 @@ var searchData=
   ['tileattrs',['TileAttrs',['../structtvm_1_1relay_1_1TileAttrs.html',1,'tvm::relay']]],
   ['topkattrs',['TopKAttrs',['../structtvm_1_1relay_1_1TopKAttrs.html',1,'tvm::relay']]],
   ['transposeattrs',['TransposeAttrs',['../structtvm_1_1relay_1_1TransposeAttrs.html',1,'tvm::relay']]],
+  ['tuningoptions',['TuningOptions',['../classtvm_1_1auto__scheduler_1_1TuningOptions.html',1,'tvm::auto_scheduler']]],
+  ['tuningoptionsnode',['TuningOptionsNode',['../classtvm_1_1auto__scheduler_1_1TuningOptionsNode.html',1,'tvm::auto_scheduler']]],
   ['tuple',['Tuple',['../classtvm_1_1relay_1_1Tuple.html',1,'tvm::relay']]],
   ['tuplegetitem',['TupleGetItem',['../classtvm_1_1relay_1_1TupleGetItem.html',1,'tvm::relay']]],
   ['tuplegetitemnode',['TupleGetItemNode',['../classtvm_1_1relay_1_1TupleGetItemNode.html',1,'tvm::relay']]],

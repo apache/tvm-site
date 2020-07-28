@@ -8,6 +8,10 @@ var searchData=
   ['rebasenode',['RebaseNode',['../classtvm_1_1te_1_1RebaseNode.html',1,'tvm::te']]],
   ['recclosure',['RecClosure',['../classtvm_1_1relay_1_1RecClosure.html',1,'tvm::relay']]],
   ['recclosureobj',['RecClosureObj',['../classtvm_1_1relay_1_1RecClosureObj.html',1,'tvm::relay']]],
+  ['recordreader',['RecordReader',['../classtvm_1_1auto__scheduler_1_1RecordReader.html',1,'tvm::auto_scheduler']]],
+  ['recordreadernode',['RecordReaderNode',['../classtvm_1_1auto__scheduler_1_1RecordReaderNode.html',1,'tvm::auto_scheduler']]],
+  ['recordtofile',['RecordToFile',['../classtvm_1_1auto__scheduler_1_1RecordToFile.html',1,'tvm::auto_scheduler']]],
+  ['recordtofilenode',['RecordToFileNode',['../classtvm_1_1auto__scheduler_1_1RecordToFileNode.html',1,'tvm::auto_scheduler']]],
   ['reduce',['Reduce',['../classtvm_1_1tir_1_1Reduce.html',1,'tvm::tir']]],
   ['reduceattrs',['ReduceAttrs',['../structtvm_1_1relay_1_1ReduceAttrs.html',1,'tvm::relay']]],
   ['reducenode',['ReduceNode',['../classtvm_1_1tir_1_1ReduceNode.html',1,'tvm::tir']]],
@@ -28,6 +32,8 @@ var searchData=
   ['relaynode',['RelayNode',['../classtvm_1_1relay_1_1RelayNode.html',1,'tvm::relay']]],
   ['relayreftype',['RelayRefType',['../classtvm_1_1RelayRefType.html',1,'tvm']]],
   ['relayreftypenode',['RelayRefTypeNode',['../classtvm_1_1RelayRefTypeNode.html',1,'tvm']]],
+  ['reorderstep',['ReorderStep',['../classtvm_1_1auto__scheduler_1_1ReorderStep.html',1,'tvm::auto_scheduler']]],
+  ['reorderstepnode',['ReorderStepNode',['../classtvm_1_1auto__scheduler_1_1ReorderStepNode.html',1,'tvm::auto_scheduler']]],
   ['repeatattrs',['RepeatAttrs',['../structtvm_1_1relay_1_1RepeatAttrs.html',1,'tvm::relay']]],
   ['reprprinter',['ReprPrinter',['../classtvm_1_1ReprPrinter.html',1,'tvm']]],
   ['requantizeattrs',['RequantizeAttrs',['../structtvm_1_1relay_1_1qnn_1_1RequantizeAttrs.html',1,'tvm::relay::qnn']]],
@@ -40,5 +46,7 @@ var searchData=
   ['reversesequenceattrs',['ReverseSequenceAttrs',['../structtvm_1_1relay_1_1ReverseSequenceAttrs.html',1,'tvm::relay']]],
   ['rewritesimplifier',['RewriteSimplifier',['../classtvm_1_1arith_1_1RewriteSimplifier.html',1,'tvm::arith']]],
   ['roialignattrs',['ROIAlignAttrs',['../structtvm_1_1relay_1_1ROIAlignAttrs.html',1,'tvm::relay']]],
-  ['roipoolattrs',['ROIPoolAttrs',['../structtvm_1_1relay_1_1ROIPoolAttrs.html',1,'tvm::relay']]]
+  ['roipoolattrs',['ROIPoolAttrs',['../structtvm_1_1relay_1_1ROIPoolAttrs.html',1,'tvm::relay']]],
+  ['rpcrunner',['RPCRunner',['../classtvm_1_1auto__scheduler_1_1RPCRunner.html',1,'tvm::auto_scheduler']]],
+  ['rpcrunnernode',['RPCRunnerNode',['../classtvm_1_1auto__scheduler_1_1RPCRunnerNode.html',1,'tvm::auto_scheduler']]]
 ];

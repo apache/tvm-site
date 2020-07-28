@@ -1,6 +1,6 @@
 var searchData=
 [
-  ['data',['data',['../classtvm_1_1relay_1_1MatchNode.html#a2bbd42a0a2bdbdf35662f8866c6a5f97',1,'tvm::relay::MatchNode::data()'],['../classtvm_1_1relay_1_1ConstantNode.html#ae13d0996e9324caf76cc1fa8d7aa00f9',1,'tvm::relay::ConstantNode::data()'],['../structTVMByteArray.html#ab124e3227a75e0e4d55452f675f4fde1',1,'TVMByteArray::data()'],['../classtvm_1_1runtime_1_1StringObj.html#a4ab9dd883ceed3efccf663acfbcd152f',1,'tvm::runtime::StringObj::data()'],['../structtvm_1_1te_1_1TensorDom.html#a9f2a41beaf5db1710238e4753ef17b85',1,'tvm::te::TensorDom::data()'],['../classtvm_1_1tir_1_1BufferNode.html#a2d6bbcf9ccfa6e449fb024fa1bff4e3b',1,'tvm::tir::BufferNode::data()'],['../classtvm_1_1runtime_1_1String.html#a7bf6b73710e93d238712be0c9d4143b0',1,'tvm::runtime::String::data()']]],
+  ['data',['data',['../classtvm_1_1relay_1_1MatchNode.html#a2bbd42a0a2bdbdf35662f8866c6a5f97',1,'tvm::relay::MatchNode::data()'],['../classtvm_1_1relay_1_1ConstantNode.html#ae13d0996e9324caf76cc1fa8d7aa00f9',1,'tvm::relay::ConstantNode::data()'],['../structTVMByteArray.html#ab124e3227a75e0e4d55452f675f4fde1',1,'TVMByteArray::data()'],['../classtvm_1_1runtime_1_1StringObj.html#a4ab9dd883ceed3efccf663acfbcd152f',1,'tvm::runtime::StringObj::data()'],['../structtvm_1_1runtime_1_1vm_1_1Buffer.html#a99624b7e535aba1bf5131a5afc08c1c4',1,'tvm::runtime::vm::Buffer::data()'],['../structtvm_1_1te_1_1TensorDom.html#a9f2a41beaf5db1710238e4753ef17b85',1,'tvm::te::TensorDom::data()'],['../classtvm_1_1tir_1_1BufferNode.html#a2d6bbcf9ccfa6e449fb024fa1bff4e3b',1,'tvm::tir::BufferNode::data()'],['../classtvm_1_1runtime_1_1String.html#a7bf6b73710e93d238712be0c9d4143b0',1,'tvm::runtime::String::data()']]],
   ['data_5f',['data_',['../classtvm_1_1DenseMapNode.html#ae768eb5d63cd7fbf9239ba5555f393e4',1,'tvm::DenseMapNode::data_()'],['../classtvm_1_1runtime_1_1ObjectRef.html#ac261cdb80487fb29ac42b28678f8cbef',1,'tvm::runtime::ObjectRef::data_()']]],
   ['data_5falignment',['data_alignment',['../classtvm_1_1tir_1_1BufferNode.html#aac30fc17abe8bde34272a854ba74b16a',1,'tvm::tir::BufferNode']]],
   ['data_5fbits',['data_bits',['../structtvm_1_1relay_1_1BinaryDenseAttrs.html#a080c3768bc73266ef675953ea98c8ae8',1,'tvm::relay::BinaryDenseAttrs']]],
@@ -30,6 +30,7 @@ var searchData=
   ['default_2eh',['default.h',['../x86_2default_8h.html',1,'']]],
   ['default_2eh',['default.h',['../generic_2default_8h.html',1,'']]],
   ['default_5fkeys',['default_keys',['../classtvm_1_1TargetIdNode.html#ab8664bbf90bbd54a6859f24d3f2eb96c',1,'tvm::TargetIdNode']]],
+  ['default_5fmax_5fcontinous_5ferror',['DEFAULT_MAX_CONTINOUS_ERROR',['../classtvm_1_1auto__scheduler_1_1ProgramMeasurerNode.html#aead1c9e89c69246e2125993a384b2c80',1,'tvm::auto_scheduler::ProgramMeasurerNode']]],
   ['default_5fschedule',['default_schedule',['../namespacetopi_1_1generic.html#a4104e80bb70b7b695cfe31f755ea2a96',1,'topi::generic::default_schedule()'],['../namespacetopi_1_1x86.html#a3a708f59316d41d321b8076ad6ad8b29',1,'topi::x86::default_schedule()']]],
   ['default_5fschedule_5fauto_5finline',['default_schedule_auto_inline',['../namespacetopi_1_1generic.html#a4664eb2b899201d0b1c15fbdd63eb4ee',1,'topi::generic::default_schedule_auto_inline()'],['../namespacetopi_1_1x86.html#a699f4d04e5bb822785205e0d0f91063a',1,'topi::x86::default_schedule_auto_inline()']]],
   ['defaultindextype',['DefaultIndexType',['../classtvm_1_1tir_1_1BufferNode.html#a807f590bb261c7da322ee27f4037d20e',1,'tvm::tir::BufferNode']]],
@@ -41,8 +42,9 @@ var searchData=
   ['defined',['defined',['../classtvm_1_1runtime_1_1ObjectRef.html#a79d0ae0a887ed5cbfa67de7d43f0ef3a',1,'tvm::runtime::ObjectRef']]],
   ['deformable_5fgroups',['deformable_groups',['../structtvm_1_1relay_1_1DeformableConv2DAttrs.html#a4fba285602385ee96a4a64fb5ed29af5',1,'tvm::relay::DeformableConv2DAttrs']]],
   ['deformableconv2dattrs',['DeformableConv2DAttrs',['../structtvm_1_1relay_1_1DeformableConv2DAttrs.html',1,'tvm::relay']]],
-  ['deleter',['Deleter',['../classtvm_1_1runtime_1_1SimpleObjAllocator_1_1Handler.html#ad2425c09e13c317ab96e728ee6cd4065',1,'tvm::runtime::SimpleObjAllocator::Handler::Deleter()'],['../classtvm_1_1runtime_1_1SimpleObjAllocator_1_1ArrayHandler.html#af4771f19c83f265a9cdafd4362e49f56',1,'tvm::runtime::SimpleObjAllocator::ArrayHandler::Deleter()']]],
+  ['deleter',['Deleter',['../classtvm_1_1runtime_1_1SimpleObjAllocator_1_1Handler.html#ad2425c09e13c317ab96e728ee6cd4065',1,'tvm::runtime::SimpleObjAllocator::Handler::Deleter()'],['../classtvm_1_1runtime_1_1SimpleObjAllocator_1_1ArrayHandler.html#af4771f19c83f265a9cdafd4362e49f56',1,'tvm::runtime::SimpleObjAllocator::ArrayHandler::Deleter()'],['../classtvm_1_1runtime_1_1vm_1_1StorageObj.html#aeff7038047b64e80d1e640368f6696b5',1,'tvm::runtime::vm::StorageObj::Deleter()']]],
   ['deleter_5f',['deleter_',['../classtvm_1_1runtime_1_1Object.html#af4407d2b59132e803ff791482dbe0145',1,'tvm::runtime::Object']]],
+  ['deletestage',['DeleteStage',['../classtvm_1_1auto__scheduler_1_1AttachMap.html#a7af553d4d27ce6dff65c823768c02c1b',1,'tvm::auto_scheduler::AttachMap']]],
   ['dense',['dense',['../namespacetopi_1_1nn.html#abe55c065905a614f105da095a7f036ea',1,'topi::nn']]],
   ['dense_2eh',['dense.h',['../cuda_2dense_8h.html',1,'']]],
   ['dense_2eh',['dense.h',['../nn_2dense_8h.html',1,'']]],

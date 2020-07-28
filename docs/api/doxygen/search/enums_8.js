@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['signtype',['SignType',['../namespacetvm_1_1arith.html#aca8806e355ad3dd5f1df9c1eca9aac9d',1,'tvm::arith']]]
+  ['pooltype',['PoolType',['../namespacetopi_1_1nn.html#ac531cfce9c3a031fa25cfb6ed1f9b95b',1,'topi::nn']]]
 ];

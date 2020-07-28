@@ -1,5 +1,6 @@
 var searchData=
 [
+  ['_7eallocator',['~Allocator',['../classtvm_1_1runtime_1_1vm_1_1Allocator.html#ae2fc1bf80126a986a2e5e88b3474bc06',1,'tvm::runtime::vm::Allocator']]],
   ['_7eattrinitentry',['~AttrInitEntry',['../structtvm_1_1detail_1_1AttrInitEntry.html#a7f0c496115e88acf39d413875b44cd28',1,'tvm::detail::AttrInitEntry']]],
   ['_7eattrtriggernondefaultentry',['~AttrTriggerNonDefaultEntry',['../structtvm_1_1detail_1_1AttrTriggerNonDefaultEntry.html#ae3ca1012c8502b2d3132cc81530c6c0e',1,'tvm::detail::AttrTriggerNonDefaultEntry']]],
   ['_7ebaseattrsnode',['~BaseAttrsNode',['../classtvm_1_1BaseAttrsNode.html#a225581a40231b2de219da30fced428a2',1,'tvm::BaseAttrsNode']]],
@@ -17,8 +18,10 @@ var searchData=
   ['_7eoperationnode',['~OperationNode',['../classtvm_1_1te_1_1OperationNode.html#a05e68847fa6c773c6896eea216ea78e0',1,'tvm::te::OperationNode']]],
   ['_7epassnode',['~PassNode',['../classtvm_1_1transform_1_1PassNode.html#ad8fd84de45a9445aacea6273ae2eb7f6',1,'tvm::transform::PassNode']]],
   ['_7epatternfunctor',['~PatternFunctor',['../classtvm_1_1relay_1_1PatternFunctor_3_01R_07const_01Pattern_01_6n_00_01Args_8_8_8_08_4.html#a4c56c067b4d7406fc5267fca717833a8',1,'tvm::relay::PatternFunctor&lt; R(const Pattern &amp;n, Args...)&gt;']]],
+  ['_7erecordreadernode',['~RecordReaderNode',['../classtvm_1_1auto__scheduler_1_1RecordReaderNode.html#ac7d0fa931985e8f60c579a00e698e2e1',1,'tvm::auto_scheduler::RecordReaderNode']]],
   ['_7esmallmapnode',['~SmallMapNode',['../classtvm_1_1SmallMapNode.html#a0033cc4ab2be93a32d0f4f674fefedc1',1,'tvm::SmallMapNode']]],
   ['_7estmtfunctor',['~StmtFunctor',['../classtvm_1_1tir_1_1StmtFunctor_3_01R_07const_01Stmt_01_6n_00_01Args_8_8_8args_08_4.html#ada86a6f45feefbd47308a5cc5119067e',1,'tvm::tir::StmtFunctor&lt; R(const Stmt &amp;n, Args...args)&gt;']]],
+  ['_7estorageobj',['~StorageObj',['../classtvm_1_1runtime_1_1vm_1_1StorageObj.html#ad22645601101ba56d02a704d1926f302',1,'tvm::runtime::vm::StorageObj']]],
   ['_7etempexprnode',['~TempExprNode',['../classtvm_1_1relay_1_1TempExprNode.html#a63fb3788b46327cc15f1cf80bad126ad',1,'tvm::relay::TempExprNode']]],
   ['_7ethreadgroup',['~ThreadGroup',['../classtvm_1_1runtime_1_1threading_1_1ThreadGroup.html#aa4342f9c75798111f6354a7806c93254',1,'tvm::runtime::threading::ThreadGroup']]],
   ['_7etvmretvalue',['~TVMRetValue',['../classtvm_1_1runtime_1_1TVMRetValue.html#a0eeb2af3fa21cebfdc2bcf04b2fbb1f6',1,'tvm::runtime::TVMRetValue']]],

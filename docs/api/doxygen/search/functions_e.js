@@ -10,6 +10,7 @@ var searchData=
   ['ne',['NE',['../classtvm_1_1tir_1_1NE.html#acde9084c92613d3fd3196857c524b94c',1,'tvm::tir::NE']]],
   ['nearbyint',['nearbyint',['../namespacetvm.html#a8472b5c842e840063564d4280428ce23',1,'tvm']]],
   ['needsetdevicecontext',['NeedSetDeviceContext',['../classtvm_1_1runtime_1_1DeviceAPI.html#ab35f07aacd4717465f8912aeded7001c',1,'tvm::runtime::DeviceAPI']]],
+  ['needsmultileveltiling',['NeedsMultiLevelTiling',['../classtvm_1_1auto__scheduler_1_1AccessAnalyzer.html#ab107b9add4985219f62a781ceac20ca0',1,'tvm::auto_scheduler::AccessAnalyzer']]],
   ['negative',['negative',['../namespacetopi.html#a9953d63728137b5bba2ef2832963e411',1,'topi']]],
   ['new',['New',['../classtvm_1_1runtime_1_1SimpleObjAllocator_1_1Handler.html#af605b9c8534aa0731632f8dd9d32327d',1,'tvm::runtime::SimpleObjAllocator::Handler::New()'],['../classtvm_1_1runtime_1_1SimpleObjAllocator_1_1ArrayHandler.html#a025fadf9131cce88df531f00c8180d39',1,'tvm::runtime::SimpleObjAllocator::ArrayHandler::New()']]],
   ['nextafter',['nextafter',['../namespacetvm.html#a1088e0c7839baa4c57c80217dd2742ef',1,'tvm']]],

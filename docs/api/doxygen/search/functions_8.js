@@ -1,6 +1,7 @@
 var searchData=
 [
   ['handle',['Handle',['../classtvm_1_1runtime_1_1DataType.html#aebad9f7235dd20af649fb5c2113797b8',1,'tvm::runtime::DataType']]],
+  ['hardwareparams',['HardwareParams',['../classtvm_1_1auto__scheduler_1_1HardwareParams.html#ac09ff200d1968b485d26c9ae4b643958',1,'tvm::auto_scheduler::HardwareParams']]],
   ['hasattrmap',['HasAttrMap',['../classtvm_1_1Op.html#aa6e0dd3175a9ac2687ec92c1c064fa2c',1,'tvm::Op']]],
   ['hashbytes',['HashBytes',['../classtvm_1_1runtime_1_1String.html#a0ea0aa1d24073721ee7bf9bd5d23c53a',1,'tvm::runtime::String']]],
   ['hasnonzeroattr',['HasNonzeroAttr',['../classtvm_1_1BaseFuncNode.html#a11694119d77e8d04a9fffd5e9a8b0766',1,'tvm::BaseFuncNode']]],
