@@ -29,6 +29,7 @@ var searchData=
   ['pragma_5fkeys',['pragma_keys',['../classtvm_1_1te_1_1IterVarAttrNode.html#a0bcbe78c8ad2fec77112b3156bfe0d81',1,'tvm::te::IterVarAttrNode']]],
   ['pragma_5fscope_5fprefix',['pragma_scope_prefix',['../namespacetvm_1_1tir_1_1attr.html#af08d3d2b645a914f1a64d81e45f3b86a',1,'tvm::tir::attr']]],
   ['pragma_5ftensor_5fcore',['pragma_tensor_core',['../namespacetvm_1_1tir_1_1attr.html#a96774004fd5b6411f6c37b8923b71834',1,'tvm::tir::attr']]],
+  ['pragma_5ftype',['pragma_type',['../classtvm_1_1auto__scheduler_1_1PragmaStepNode.html#aaa89c2151eeaff9de0ac7a9e9daeae69',1,'tvm::auto_scheduler::PragmaStepNode']]],
   ['pragma_5fvalues',['pragma_values',['../classtvm_1_1te_1_1IterVarAttrNode.html#aea7a6bc44a7ddca46c76c666eba37b7f',1,'tvm::te::IterVarAttrNode']]],
   ['pre_5fsearch_5fcallbacks',['pre_search_callbacks',['../classtvm_1_1auto__scheduler_1_1TuningOptionsNode.html#a9c722aa913bb8a2187cf0d40ae7bfb04',1,'tvm::auto_scheduler::TuningOptionsNode']]],
   ['predicate',['predicate',['../classtvm_1_1tir_1_1LoadNode.html#af27e6b2dc6293dffaa93e992085be458',1,'tvm::tir::LoadNode::predicate()'],['../classtvm_1_1tir_1_1StoreNode.html#a1f4b2a87017d5c8ff41f79701d91f99a',1,'tvm::tir::StoreNode::predicate()']]],

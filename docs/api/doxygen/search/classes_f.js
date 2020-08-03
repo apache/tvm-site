@@ -45,6 +45,8 @@ var searchData=
   ['reverseiteradapter',['ReverseIterAdapter',['../classtvm_1_1runtime_1_1ReverseIterAdapter.html',1,'tvm::runtime']]],
   ['reversesequenceattrs',['ReverseSequenceAttrs',['../structtvm_1_1relay_1_1ReverseSequenceAttrs.html',1,'tvm::relay']]],
   ['rewritesimplifier',['RewriteSimplifier',['../classtvm_1_1arith_1_1RewriteSimplifier.html',1,'tvm::arith']]],
+  ['rfactorstep',['RfactorStep',['../classtvm_1_1auto__scheduler_1_1RfactorStep.html',1,'tvm::auto_scheduler']]],
+  ['rfactorstepnode',['RfactorStepNode',['../classtvm_1_1auto__scheduler_1_1RfactorStepNode.html',1,'tvm::auto_scheduler']]],
   ['roialignattrs',['ROIAlignAttrs',['../structtvm_1_1relay_1_1ROIAlignAttrs.html',1,'tvm::relay']]],
   ['roipoolattrs',['ROIPoolAttrs',['../structtvm_1_1relay_1_1ROIPoolAttrs.html',1,'tvm::relay']]],
   ['rpcrunner',['RPCRunner',['../classtvm_1_1auto__scheduler_1_1RPCRunner.html',1,'tvm::auto_scheduler']]],

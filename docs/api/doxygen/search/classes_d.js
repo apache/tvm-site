@@ -34,6 +34,8 @@ var searchData=
   ['placeholderopnode',['PlaceholderOpNode',['../classtvm_1_1te_1_1PlaceholderOpNode.html',1,'tvm::te']]],
   ['pointertype',['PointerType',['../classtvm_1_1PointerType.html',1,'tvm']]],
   ['pointertypenode',['PointerTypeNode',['../classtvm_1_1PointerTypeNode.html',1,'tvm']]],
+  ['pragmastep',['PragmaStep',['../classtvm_1_1auto__scheduler_1_1PragmaStep.html',1,'tvm::auto_scheduler']]],
+  ['pragmastepnode',['PragmaStepNode',['../classtvm_1_1auto__scheduler_1_1PragmaStepNode.html',1,'tvm::auto_scheduler']]],
   ['prefetch',['Prefetch',['../classtvm_1_1tir_1_1Prefetch.html',1,'tvm::tir']]],
   ['prefetchnode',['PrefetchNode',['../classtvm_1_1tir_1_1PrefetchNode.html',1,'tvm::tir']]],
   ['preluattrs',['PReluAttrs',['../structtvm_1_1relay_1_1PReluAttrs.html',1,'tvm::relay']]],

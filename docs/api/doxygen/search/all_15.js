@@ -10,7 +10,7 @@ var searchData=
   ['unit_5fbits',['unit_bits',['../classtvm_1_1MemoryInfoNode.html#aa935f1ee9d8d2f06633ca4b3c44f7725',1,'tvm::MemoryInfoNode']]],
   ['units',['units',['../structtvm_1_1relay_1_1BinaryDenseAttrs.html#a5373b2f2aac19653ae21aec74c69cdb0',1,'tvm::relay::BinaryDenseAttrs::units()'],['../structtvm_1_1relay_1_1DenseAttrs.html#a497487f7ccced8c7492a5ed03f78fa8f',1,'tvm::relay::DenseAttrs::units()']]],
   ['unmatchedcases',['UnmatchedCases',['../namespacetvm_1_1relay.html#aa3a8cace40f8056fd6412f39c3eaa605',1,'tvm::relay']]],
-  ['unravel_5findex',['unravel_index',['../namespacetopi.html#a9a7b635c754829e85c9595771218f1f6',1,'topi']]],
+  ['unravel_5findex',['unravel_index',['../namespacetvm_1_1topi.html#a8811a02532bbe3047986bf1a8449ac0e',1,'tvm::topi']]],
   ['unroll',['unroll',['../classtvm_1_1auto__scheduler_1_1State.html#aa68a9d2e226bae38a36e4be4af1d1ae4',1,'tvm::auto_scheduler::State::unroll()'],['../classtvm_1_1te_1_1Stage.html#af83ad8672660403504f472228b044b33',1,'tvm::te::Stage::unroll()']]],
   ['unrolled',['Unrolled',['../namespacetvm_1_1tir.html#ae35cce8e3f1e8d7366dc0d9b15536736ae53597647de81f4cc9e098fc119ba0ac',1,'tvm::tir']]],
   ['unrollloop',['UnrollLoop',['../namespacetvm_1_1tir_1_1transform.html#ab2f279e91071fa96a1edb24fa004ea6a',1,'tvm::tir::transform']]],
