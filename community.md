@@ -20,10 +20,10 @@ Welcome to the TVM community. Here are several ways that you can stay involved.
 As per Apache tradition, everything happens in the community(also) happens in the mail-list.
 Here are the relavant mail-lists:
 
-- [dev@apache.tvm.org](https://lists.apache.org/list.html?dev@tvm.apache.org) development related activities
-- [discuss-archive@apache.tvm.org](https://lists.apache.org/list.html?discuss-archive@tvm.apache.org) archive of discuss forum.
+- [dev@tvm.apache.org](https://lists.apache.org/list.html?dev@tvm.apache.org) development related activities
+- [discuss-archive@tvm.apache.org](https://lists.apache.org/list.html?discuss-archive@tvm.apache.org) archive of discuss forum.
 
-To subscribe, send an email to dev-subscribe@apache.tvm.org.
+To subscribe, send an email to dev-subscribe@tvm.apache.org.
 All discuss forum thread and github issues with RFC COMMUNITY tags are automatically forwarded to dev@
 <br>
 
