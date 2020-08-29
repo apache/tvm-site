@@ -73,6 +73,7 @@ in alphabetical order.
   <img src="images/community/amd.png" height="30" />
   <img src="images/community/arm.png" height="30" />
   <img src="images/community/aws.png" height="35" />
+  <img src="images/community/cmuscs.png" height="35" />
   <img src="images/community/cornell.svg" height="35" />
   <img src="images/community/edgecortix.png" height="35" />
   <img src="images/community/fb.png" height="35" />
