@@ -7,7 +7,7 @@ description: "TVM"
 ---
 {% include JB/setup %}
 
-# About Apache (incubating) TVM
+# About Apache TVM (incubating)
 
 **The vision of the Apache TVM Project is to host a diverse community of experts and practitioners
 in machine learning, compilers, and systems architecture to build an accessible, extensible, and
