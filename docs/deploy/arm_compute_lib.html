@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Relay Arm|reg| Compute Library Integration &mdash; tvm 0.7.dev1 documentation</title>
+  <title>Relay Arm ® Compute Library Integration &mdash; tvm 0.7.dev1 documentation</title>
   
 
   
@@ -101,8 +101,9 @@
 <li class="toctree-l2"><a class="reference internal" href="android.html">Deploy to Android</a></li>
 <li class="toctree-l2"><a class="reference internal" href="integrate.html">Integrate TVM into Your Project</a></li>
 <li class="toctree-l2"><a class="reference internal" href="hls.html">HLS Backend Example</a></li>
-<li class="toctree-l2 current"><a class="current reference internal" href="#">Relay Arm|reg| Compute Library Integration</a><ul>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Relay Arm <sup>®</sup> Compute Library Integration</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#introduction">Introduction</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#installing-arm-compute-library">Installing Arm Compute Library</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#building-with-acl-support">Building with ACL support</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#usage">Usage</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#more-examples">More examples</a></li>
@@ -189,7 +190,7 @@
         
           <li><a href="index.html">Deploy and Integration</a> &raquo;</li>
         
-      <li>Relay Arm|reg| Compute Library Integration</li>
+      <li>Relay Arm <sup>®</sup> Compute Library Integration</li>
     
     
       <li class="wy-breadcrumbs-aside">
@@ -208,14 +209,41 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <div class="section" id="relay-arm-reg-compute-library-integration">
-<h1>Relay Arm|reg| Compute Library Integration<a class="headerlink" href="#relay-arm-reg-compute-library-integration" title="Permalink to this headline">¶</a></h1>
+  <div class="section" id="relay-arm-compute-library-integration">
+<h1>Relay Arm <sup>®</sup> Compute Library Integration<a class="headerlink" href="#relay-arm-compute-library-integration" title="Permalink to this headline">¶</a></h1>
+<p><strong>Author</strong>: <a class="reference external" href="https://github.com/lhutton1">Luke Hutton</a></p>
 <div class="section" id="introduction">
 <h2>Introduction<a class="headerlink" href="#introduction" title="Permalink to this headline">¶</a></h2>
 <p>Arm Compute Library (ACL) is an open source project that provides accelerated kernels for Arm CPU’s
 and GPU’s. Currently the integration offloads operators to ACL to use hand-crafted assembler
 routines in the library. By offloading select operators from a relay graph to ACL we can achieve
 a performance boost on such devices.</p>
+</div>
+<div class="section" id="installing-arm-compute-library">
+<h2>Installing Arm Compute Library<a class="headerlink" href="#installing-arm-compute-library" title="Permalink to this headline">¶</a></h2>
+<p>Before installing Arm Compute Library, it is important to know what architecture to build for. One way
+to determine this is to use <cite>lscpu</cite> and look for the “Model name” of the CPU. You can then use this to
+determine the architecture by looking online.</p>
+<p>We recommend two different ways to build and install ACL:</p>
+<ul>
+<li><p>Use the script located at <cite>docker/install/ubuntu_install_arm_compute_library.sh</cite>. You can use this
+script for building ACL from source natively or for cross-compiling the library on an x86 machine.
+You may need to change the architecture of the device you wish to compile for by altering the
+<cite>target_arch</cite> variable. Binaries will be built from source and installed to the location denoted by
+<cite>install_path</cite>.</p></li>
+<li><p>Alternatively, you can download and use pre-built binaries from:
+<a class="reference external" href="https://github.com/ARM-software/ComputeLibrary/releases">https://github.com/ARM-software/ComputeLibrary/releases</a>. When using this package, you will need to
+select the binaries for the architecture you require and make sure they are visible to cmake. This
+can be done like so:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span class="nb">cd</span> &lt;acl-prebuilt-package&gt;/lib
+mv ./linux-&lt;architecture-to-build-for&gt;-neon/* .
+</pre></div>
+</div>
+</li>
+</ul>
+<p>In both cases you will need to set USE_ARM_COMPUTE_LIB_GRAPH_RUNTIME to the path where the ACL package
+is located. Cmake will look in /path-to-acl/ along with /path-to-acl/lib and /path-to-acl/build for the
+required binaries. See the section below for more information on how to use these configuration options.</p>
 </div>
 <div class="section" id="building-with-acl-support">
 <h2>Building with ACL support<a class="headerlink" href="#building-with-acl-support" title="Permalink to this headline">¶</a></h2>
@@ -231,6 +259,16 @@ compute the ACL offloaded functions.</p></li>
 to compile an ACL module on an x86 machine and then run the module on a remote Arm device via RPC, you will
 need to use USE_ARM_COMPUTE_LIB=ON on the x86 machine and USE_ARM_COMPUTE_LIB_GRAPH_RUNTIME=ON on the remote
 AArch64 device.</p>
+<p>By default both options are set to OFF. Using USE_ARM_COMPUTE_LIB_GRAPH_RUNTIME=ON will mean that ACL
+binaries are searched for by cmake in the default locations
+(see <a class="reference external" href="https://cmake.org/cmake/help/v3.4/command/find_library.html">https://cmake.org/cmake/help/v3.4/command/find_library.html</a>). In addition to this,
+/path-to-tvm-project/acl/ will also be searched. It is likely that you will need to set your own path to
+locate ACL. This can be done by specifying a path in the place of ON.</p>
+<p>These flags should be set in your config.cmake file. For example:</p>
+<div class="highlight-cmake notranslate"><div class="highlight"><pre><span class="nb">set</span><span class="p">(</span><span class="s">USE_ARM_COMPUTE_LIB</span> <span class="s">ON</span><span class="p">)</span>
+<span class="nb">set</span><span class="p">(</span><span class="s">USE_ARM_COMPUTE_LIB_GRAPH_RUNTIME</span> <span class="s">/path/to/acl</span><span class="p">)</span>
+</pre></div>
+</div>
 </div>
 <div class="section" id="usage">
 <h2>Usage<a class="headerlink" href="#usage" title="Permalink to this headline">¶</a></h2>
@@ -259,11 +297,10 @@ max_pool2d operator).</p>
 </pre></div>
 </div>
 <p>Annotate and partition the graph for ACL.</p>
-<p>..code:: python</p>
-<blockquote>
-<div><p>from tvm.relay.op.contrib.arm_compute_lib import partition_for_arm_compute_lib
-module = partition_for_arm_compute_lib(module)</p>
-</div></blockquote>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">tvm.relay.op.contrib.arm_compute_lib</span> <span class="kn">import</span> <span class="n">partition_for_arm_compute_lib</span>
+<span class="n">module</span> <span class="o">=</span> <span class="n">partition_for_arm_compute_lib</span><span class="p">(</span><span class="n">module</span><span class="p">)</span>
+</pre></div>
+</div>
 <p>Build the Relay graph.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span class="n">target</span> <span class="o">=</span> <span class="s2">&quot;llvm -mtriple=aarch64-linux-gnu -mattr=+neon&quot;</span>
 <span class="k">with</span> <span class="n">tvm</span><span class="o">.</span><span class="n">transform</span><span class="o">.</span><span class="n">PassContext</span><span class="p">(</span><span class="n">opt_level</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">disabled_pass</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;AlterOpLayout&quot;</span><span class="p">]):</span>
@@ -278,7 +315,7 @@ module = partition_for_arm_compute_lib(module)</p>
 </div>
 <p>Run Inference. This must be on an Arm device. If compiling on x86 device and running on AArch64,
 consider using the RPC mechanism. Tutorials for using the RPC mechanism:
-<a class="reference external" href="https://tvm.apache.org/docs/tutorials/cross_compilation_and_rpc.html#sphx-glr-tutorials-cross-compilation-and-rpc-py">https://tvm.apache.org/docs/tutorials/cross_compilation_and_rpc.html#sphx-glr-tutorials-cross-compilation-and-rpc-py</a></p>
+<a class="reference external" href="https://tvm.apache.org/docs/tutorials/get_started/cross_compilation_and_rpc.html">https://tvm.apache.org/docs/tutorials/get_started/cross_compilation_and_rpc.html</a></p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span class="n">ctx</span> <span class="o">=</span> <span class="n">tvm</span><span class="o">.</span><span class="n">cpu</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
 <span class="n">loaded_lib</span> <span class="o">=</span> <span class="n">tvm</span><span class="o">.</span><span class="n">runtime</span><span class="o">.</span><span class="n">load_module</span><span class="p">(</span><span class="s1">&#39;lib_acl.so&#39;</span><span class="p">)</span>
 <span class="n">gen_module</span> <span class="o">=</span> <span class="n">tvm</span><span class="o">.</span><span class="n">contrib</span><span class="o">.</span><span class="n">graph_runtime</span><span class="o">.</span><span class="n">GraphModule</span><span class="p">(</span><span class="n">loaded_lib</span><span class="p">[</span><span class="s1">&#39;default&#39;</span><span class="p">](</span><span class="n">ctx</span><span class="p">))</span>
@@ -294,14 +331,34 @@ consider using the RPC mechanism. Tutorials for using the RPC mechanism:
 <p>The example above only shows a basic example of how ACL can be used for offloading a single
 Maxpool2D. If you would like to see more examples for each implemented operator and for
 networks refer to the tests: <cite>tests/python/contrib/test_arm_compute_lib</cite>. Here you can modify
-<cite>infrastructure.py</cite> to use the remote device you have setup.</p>
+<cite>test_config.json</cite> to configure how a remote device is created in <cite>infrastructure.py</cite> and,
+as a result, how runtime tests will be run.</p>
+<p>An example configuration for <cite>test_config.json</cite>:</p>
+<ul class="simple">
+<li><p>connection_type - The type of RPC connection. Options: local, tracker, remote.</p></li>
+<li><p>host - The host device to connect to.</p></li>
+<li><p>port - The port to use when connecting.</p></li>
+<li><p>target - The target to use for compilation.</p></li>
+<li><p>device_key - The device key when connecting via a tracker.</p></li>
+<li><p>cross_compile - Path to cross compiler when connecting from a non-arm platform e.g. aarch64-linux-gnu-g++.</p></li>
+</ul>
+<div class="highlight-json notranslate"><div class="highlight"><pre><span class="p">{</span>
+  <span class="nt">&quot;connection_type&quot;</span><span class="p">:</span> <span class="s2">&quot;local&quot;</span><span class="p">,</span>
+  <span class="nt">&quot;host&quot;</span><span class="p">:</span> <span class="s2">&quot;localhost&quot;</span><span class="p">,</span>
+  <span class="nt">&quot;port&quot;</span><span class="p">:</span> <span class="mi">9090</span><span class="p">,</span>
+  <span class="nt">&quot;target&quot;</span><span class="p">:</span> <span class="s2">&quot;llvm -mtriple=aarch64-linux-gnu -mattr=+neon&quot;</span><span class="p">,</span>
+  <span class="nt">&quot;device_key&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
+  <span class="nt">&quot;cross_compile&quot;</span><span class="p">:</span> <span class="s2">&quot;&quot;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
 </div>
 <div class="section" id="operator-support">
 <h2>Operator support<a class="headerlink" href="#operator-support" title="Permalink to this headline">¶</a></h2>
 <table class="docutils align-default">
 <colgroup>
-<col style="width: 16%" />
-<col style="width: 84%" />
+<col style="width: 23%" />
+<col style="width: 77%" />
 </colgroup>
 <thead>
 <tr class="row-odd"><th class="head"><p>Relay Node</p></th>
@@ -326,8 +383,54 @@ Composite: nn.pad?, nn.conv2d, nn.bias_add?, nn.relu?</p>
 <p>(only groups = 1 supported)</p>
 </td>
 </tr>
-<tr class="row-even"><td><p>nn.maxpool2d</p></td>
+<tr class="row-even"><td><p>nn.dense</p></td>
+<td><dl class="simple">
+<dt>fp32:</dt><dd><p>Simple: nn.dense
+Composite: nn.dense, nn.bias_add?</p>
+</dd>
+</dl>
+</td>
+</tr>
+<tr class="row-odd"><td><p>qnn.dense</p></td>
+<td><dl class="simple">
+<dt>uint8:</dt><dd><p>Composite: qnn.dense, nn.bias_add?, qnn.requantize</p>
+</dd>
+</dl>
+</td>
+</tr>
+<tr class="row-even"><td><p>nn.max_pool2d</p></td>
 <td><p>fp32, uint8</p></td>
+</tr>
+<tr class="row-odd"><td><p>nn.global_max_pool2d</p></td>
+<td><p>fp32, uint8</p></td>
+</tr>
+<tr class="row-even"><td><p>nn.avg_pool2d</p></td>
+<td><dl class="simple">
+<dt>fp32:</dt><dd><p>Simple: nn.avg_pool2d</p>
+</dd>
+<dt>uint8:</dt><dd><p>Composite: cast(int32), nn.avg_pool2d, cast(uint8)</p>
+</dd>
+</dl>
+</td>
+</tr>
+<tr class="row-odd"><td><p>nn.global_avg_pool2d</p></td>
+<td><dl class="simple">
+<dt>fp32:</dt><dd><p>Simple: nn.global_avg_pool2d</p>
+</dd>
+<dt>uint8:</dt><dd><p>Composite: cast(int32), nn.avg_pool2d, cast(uint8)</p>
+</dd>
+</dl>
+</td>
+</tr>
+<tr class="row-even"><td><p>power(of 2) +
+nn.avg_pool2d +
+sqrt</p></td>
+<td><p>A special case for L2 pooling.</p>
+<dl class="simple">
+<dt>fp32:</dt><dd><p>Composite: power(of 2), nn.avg_pool2d, sqrt</p>
+</dd>
+</dl>
+</td>
 </tr>
 <tr class="row-odd"><td><p>reshape</p></td>
 <td><p>fp32, uint8</p></td>
@@ -346,16 +449,17 @@ the series of operators that make up a composite operator.</p>
 <p>Adding a new operator requires changes to a series of places. This section will give a hint on
 what needs to be changed and where, it will not however dive into the complexities for an
 individual operator. This is left to the developer.</p>
-<p>There are a series of files we need to make changes to:
-* <cite>python/relay/op/contrib/arm_compute_lib.py</cite> In this file we define the operators we wish to offload using the
-<cite>op.register</cite> decorator. This will mean the annotation pass recognizes this operator as ACL
-offloadable.
-* <cite>src/relay/backend/contrib/arm_compute_lib/codegen.cc</cite> Implement <cite>Create[OpName]JSONNode</cite> method. This is where we
-declare how the operator should be represented by JSON. This will be used to create the ACL module.
-* <cite>src/runtime/contrib/arm_compute_lib/acl_kernel.h</cite> Implement <cite>Create[OpName]Layer</cite> method. This is where we
+<p>There are a series of files we need to make changes to:</p>
+<ul class="simple">
+<li><p><cite>python/relay/op/contrib/arm_compute_lib.py</cite> In this file we define the operators we wish to offload using the
+<cite>op.register</cite> decorator. This will mean the annotation pass recognizes this operator as ACL offloadable.</p></li>
+<li><p><cite>src/relay/backend/contrib/arm_compute_lib/codegen.cc</cite> Implement <cite>Create[OpName]JSONNode</cite> method. This is where we
+declare how the operator should be represented by JSON. This will be used to create the ACL module.</p></li>
+<li><p><cite>src/runtime/contrib/arm_compute_lib/acl_runtime.cc</cite> Implement <cite>Create[OpName]Layer</cite> method. This is where we
 define how the JSON representation can be used to create an ACL function. We simply define how to
-translate from the JSON representation to ACL API.
-* <cite>tests/python/contrib/test_arm_compute_lib</cite> Add unit tests for the given operator.</p>
+translate from the JSON representation to ACL API.</p></li>
+<li><p><cite>tests/python/contrib/test_arm_compute_lib</cite> Add unit tests for the given operator.</p></li>
+</ul>
 </div>
 </div>
 

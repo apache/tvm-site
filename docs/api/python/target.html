@@ -228,7 +228,7 @@
   <div class="section" id="module-tvm.target">
 <span id="tvm-target"></span><h1>tvm.target<a class="headerlink" href="#module-tvm.target" title="Permalink to this headline">¶</a></h1>
 <p>Target description and codgen module.</p>
-<p>TVM’s target string is in fomat <code class="docutils literal notranslate"><span class="pre">&lt;target_id&gt;</span> <span class="pre">[-option=value]...</span></code>.</p>
+<p>TVM’s target string is in fomat <code class="docutils literal notranslate"><span class="pre">&lt;target_kind&gt;</span> <span class="pre">[-option=value]...</span></code>.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p>The list of options include:</p>
@@ -299,7 +299,7 @@ We can also use other specific function in this module to create specific target
 <tr class="row-even"><td><p><a class="reference internal" href="#tvm.target.bifrost" title="tvm.target.bifrost"><code class="xref py py-obj docutils literal notranslate"><span class="pre">bifrost</span></code></a>([model, options])</p></td>
 <td><p>Return an ARM Mali GPU target (Bifrost architecture).</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#tvm.target.create" title="tvm.target.create"><code class="xref py py-obj docutils literal notranslate"><span class="pre">create</span></code></a>(target_str)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#tvm.target.create" title="tvm.target.create"><code class="xref py py-obj docutils literal notranslate"><span class="pre">create</span></code></a>(target)</p></td>
 <td><p>Get a target given target string.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#tvm.target.cuda" title="tvm.target.cuda"><code class="xref py py-obj docutils literal notranslate"><span class="pre">cuda</span></code></a>([model, options])</p></td>
@@ -311,7 +311,7 @@ We can also use other specific function in this module to create specific target
 <tr class="row-even"><td><p><a class="reference internal" href="#tvm.target.get_native_generic_func" title="tvm.target.get_native_generic_func"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_native_generic_func</span></code></a>(name)</p></td>
 <td><p>Get a generic function from the global registry.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#tvm.target.hexagon" title="tvm.target.hexagon"><code class="xref py py-obj docutils literal notranslate"><span class="pre">hexagon</span></code></a>([cpu_ver, sim_args, hvx])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#tvm.target.hexagon" title="tvm.target.hexagon"><code class="xref py py-obj docutils literal notranslate"><span class="pre">hexagon</span></code></a>([cpu_ver, sim_args, llvm_args, hvx])</p></td>
 <td><p>Returns a Hexagon target.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#tvm.target.intel_graphics" title="tvm.target.intel_graphics"><code class="xref py py-obj docutils literal notranslate"><span class="pre">intel_graphics</span></code></a>([model, options])</p></td>
@@ -416,11 +416,43 @@ We can also use other specific function in this module to create specific target
 
 <dl class="py function">
 <dt id="tvm.target.create">
-<code class="sig-prename descclassname">tvm.target.</code><code class="sig-name descname">create</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">target_str</span></em><span class="sig-paren">)</span><a class="headerlink" href="#tvm.target.create" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">tvm.target.</code><code class="sig-name descname">create</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">target</span></em><span class="sig-paren">)</span><a class="headerlink" href="#tvm.target.create" title="Permalink to this definition">¶</a></dt>
 <dd><p>Get a target given target string.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>target_str</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a>) – The target string.</p>
+<dd class="field-odd"><p><strong>target</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.8)"><em>dict</em></a>) – <p>Can be one of a literal target string, a json string describing
+a configuration, or a dictionary of configuration options.
+When using a dictionary or json string to configure target, the
+possible values are:</p>
+<dl class="simple">
+<dt>kind<span class="classifier">str (required)</span></dt><dd><p>Which codegen path to use, for example ‘llvm’ or ‘cuda’.</p>
+</dd>
+<dt>keys<span class="classifier">List of str (optional)</span></dt><dd><p>A set of strategies that can be dispatched to. When using
+“kind=opencl” for example, one could set keys to [“mali”, “opencl”, “gpu”].</p>
+</dd>
+<dt>device<span class="classifier">str (optional)</span></dt><dd><p>A single key that corresponds to the actual device being run on.
+This will be effectively appended to the keys.</p>
+</dd>
+<dt>libs<span class="classifier">List of str (optional)</span></dt><dd><p>The set of external libraries to use. For example [‘cblas’, ‘mkl’].</p>
+</dd>
+<dt>system-lib<span class="classifier">bool (optional)</span></dt><dd><p>If True, build a module that contains self registered functions.
+Useful for environments where dynamic loading like dlopen is banned.</p>
+</dd>
+<dt>mcpu<span class="classifier">str (optional)</span></dt><dd><p>The specific cpu being run on. Serves only as an annotation.</p>
+</dd>
+<dt>model<span class="classifier">str (optional)</span></dt><dd><p>An annotation indicating what model a workload came from.</p>
+</dd>
+<dt>runtime<span class="classifier">str (optional)</span></dt><dd><p>An annotation indicating which runtime to use with a workload.</p>
+</dd>
+<dt>mtriple<span class="classifier">str (optional)</span></dt><dd><p>The llvm triplet describing the target, for example “arm64-linux-android”.</p>
+</dd>
+<dt>mattr<span class="classifier">List of str (optional)</span></dt><dd><p>The llvm features to compile with, for example [“+avx512f”, “+mmx”].</p>
+</dd>
+<dt>mfloat-abi<span class="classifier">str (optional)</span></dt><dd><p>An llvm setting that is one of ‘hard’ or ‘soft’ indicating whether to use
+hardware or software floating-point operations.</p>
+</dd>
+</dl>
+</p>
 </dd>
 <dt class="field-even">Returns</dt>
 <dd class="field-even"><p><strong>target</strong> – The target object</p>
@@ -530,7 +562,7 @@ This function will also download pre-tuned op parameters when there is none.</p>
 
 <dl class="py function">
 <dt id="tvm.target.hexagon">
-<code class="sig-prename descclassname">tvm.target.</code><code class="sig-name descname">hexagon</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">cpu_ver</span><span class="o">=</span><span class="default_value">'v66'</span></em>, <em class="sig-param"><span class="n">sim_args</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">hvx</span><span class="o">=</span><span class="default_value">128</span></em><span class="sig-paren">)</span><a class="headerlink" href="#tvm.target.hexagon" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">tvm.target.</code><code class="sig-name descname">hexagon</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">cpu_ver</span><span class="o">=</span><span class="default_value">'v66'</span></em>, <em class="sig-param"><span class="n">sim_args</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">llvm_args</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">hvx</span><span class="o">=</span><span class="default_value">128</span></em><span class="sig-paren">)</span><a class="headerlink" href="#tvm.target.hexagon" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns a Hexagon target.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -541,6 +573,7 @@ will be valid, LLVM will throw an error.</p></li>
 Otherwise, separate versions are used for codegen and sim. Not
 all allowed cpu strings will be valid, simulator will throw an
 error if invalid. Does not affect codegen.</p></li>
+<li><p><strong>llvm_args</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a><em> or </em><em>list of str</em>) – User defined compiler arguments.</p></li>
 <li><p><strong>hvx</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – Size of hvx register. Value of 0 indicates disabled hvx.</p></li>
 </ul>
 </dd>

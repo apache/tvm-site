@@ -8,6 +8,7 @@ var searchData=
   ['map_3c_20tvm_3a_3aruntime_3a_3astring_2c_20objectref_20_3e',['Map&lt; tvm::runtime::String, ObjectRef &gt;',['../classtvm_1_1Map.html',1,'tvm']]],
   ['map_3c_20tvm_3a_3aruntime_3a_3astring_2c_20tvm_3a_3aglobaltypevar_20_3e',['Map&lt; tvm::runtime::String, tvm::GlobalTypeVar &gt;',['../classtvm_1_1Map.html',1,'tvm']]],
   ['map_3c_20tvm_3a_3aruntime_3a_3astring_2c_20tvm_3a_3aglobalvar_20_3e',['Map&lt; tvm::runtime::String, tvm::GlobalVar &gt;',['../classtvm_1_1Map.html',1,'tvm']]],
+  ['map_3c_20tvm_3a_3asourcename_2c_20tvm_3a_3atvm_3a_3aruntime_3a_3astring_20_3e',['Map&lt; tvm::SourceName, tvm::tvm::runtime::String &gt;',['../classtvm_1_1Map.html',1,'tvm']]],
   ['map_3c_20tvm_3a_3ate_3a_3aoperation_2c_20tvm_3a_3ate_3a_3astage_20_3e',['Map&lt; tvm::te::Operation, tvm::te::Stage &gt;',['../classtvm_1_1Map.html',1,'tvm']]],
   ['map_3c_20tvm_3a_3atir_3a_3aitervar_2c_20tvm_3a_3ate_3a_3aitervarattr_20_3e',['Map&lt; tvm::tir::IterVar, tvm::te::IterVarAttr &gt;',['../classtvm_1_1Map.html',1,'tvm']]],
   ['map_3c_20var_2c_20tvm_3a_3aprimexpr_20_3e',['Map&lt; Var, tvm::PrimExpr &gt;',['../classtvm_1_1Map.html',1,'tvm']]],

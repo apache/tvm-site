@@ -4,6 +4,7 @@ var searchData=
   ['valuetypeinfomaker',['ValueTypeInfoMaker',['../structtvm_1_1detail_1_1ValueTypeInfoMaker.html',1,'tvm::detail']]],
   ['var',['Var',['../classtvm_1_1tir_1_1Var.html',1,'tvm::tir']]],
   ['var',['Var',['../classtvm_1_1relay_1_1Var.html',1,'tvm::relay']]],
+  ['varianceattrs',['VarianceAttrs',['../structtvm_1_1relay_1_1VarianceAttrs.html',1,'tvm::relay']]],
   ['varnode',['VarNode',['../classtvm_1_1tir_1_1VarNode.html',1,'tvm::tir']]],
   ['varnode',['VarNode',['../classtvm_1_1relay_1_1VarNode.html',1,'tvm::relay']]],
   ['varpattern',['VarPattern',['../classtvm_1_1relay_1_1VarPattern.html',1,'tvm::relay']]],

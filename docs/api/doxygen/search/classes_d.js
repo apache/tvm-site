@@ -38,6 +38,8 @@ var searchData=
   ['pragmastepnode',['PragmaStepNode',['../classtvm_1_1auto__scheduler_1_1PragmaStepNode.html',1,'tvm::auto_scheduler']]],
   ['prefetch',['Prefetch',['../classtvm_1_1tir_1_1Prefetch.html',1,'tvm::tir']]],
   ['prefetchnode',['PrefetchNode',['../classtvm_1_1tir_1_1PrefetchNode.html',1,'tvm::tir']]],
+  ['preloadmeasuredstates',['PreloadMeasuredStates',['../classtvm_1_1auto__scheduler_1_1PreloadMeasuredStates.html',1,'tvm::auto_scheduler']]],
+  ['preloadmeasuredstatesnode',['PreloadMeasuredStatesNode',['../classtvm_1_1auto__scheduler_1_1PreloadMeasuredStatesNode.html',1,'tvm::auto_scheduler']]],
   ['preluattrs',['PReluAttrs',['../structtvm_1_1relay_1_1PReluAttrs.html',1,'tvm::relay']]],
   ['primexpr',['PrimExpr',['../classtvm_1_1PrimExpr.html',1,'tvm']]],
   ['primexprnode',['PrimExprNode',['../classtvm_1_1PrimExprNode.html',1,'tvm']]],
@@ -57,5 +59,7 @@ var searchData=
   ['programmeasurernode',['ProgramMeasurerNode',['../classtvm_1_1auto__scheduler_1_1ProgramMeasurerNode.html',1,'tvm::auto_scheduler']]],
   ['programrunner',['ProgramRunner',['../classtvm_1_1auto__scheduler_1_1ProgramRunner.html',1,'tvm::auto_scheduler']]],
   ['programrunnernode',['ProgramRunnerNode',['../classtvm_1_1auto__scheduler_1_1ProgramRunnerNode.html',1,'tvm::auto_scheduler']]],
-  ['proposalattrs',['ProposalAttrs',['../structtvm_1_1relay_1_1ProposalAttrs.html',1,'tvm::relay']]]
+  ['proposalattrs',['ProposalAttrs',['../structtvm_1_1relay_1_1ProposalAttrs.html',1,'tvm::relay']]],
+  ['pythonbasedmodel',['PythonBasedModel',['../classtvm_1_1auto__scheduler_1_1PythonBasedModel.html',1,'tvm::auto_scheduler']]],
+  ['pythonbasedmodelnode',['PythonBasedModelNode',['../classtvm_1_1auto__scheduler_1_1PythonBasedModelNode.html',1,'tvm::auto_scheduler']]]
 ];

@@ -29,6 +29,7 @@ var searchData=
   ['exp2',['exp2',['../namespacetvm.html#a21e3a5d7327cf37c6a682525665a0a28',1,'tvm']]],
   ['expand_5fdims',['expand_dims',['../namespacetvm_1_1topi.html#a7ddbd03d0d29a05618a1ef42f717ec9f',1,'tvm::topi']]],
   ['expandprimal',['ExpandPrimal',['../classtvm_1_1tir_1_1Layout.html#a88c306ea4682d28b85032277fa29df63',1,'tvm::tir::Layout']]],
+  ['export',['Export',['../classtvm_1_1TargetNode.html#ad46056809a56a18a43303033f4353616',1,'tvm::TargetNode']]],
   ['exprpattern',['ExprPattern',['../classtvm_1_1relay_1_1ExprPattern.html#a7a67b6d0ef6de34e597875f280086bef',1,'tvm::relay::ExprPattern']]],
   ['exprusevar',['ExprUseVar',['../namespacetvm_1_1tir.html#a095d1c3c1ce2dc66285ec1a1e4fbacec',1,'tvm::tir::ExprUseVar(const PrimExpr &amp;expr, std::function&lt; bool(const VarNode *)&gt; vset_contains)'],['../namespacetvm_1_1tir.html#a56573569b84c79678a7046a9500dbf73',1,'tvm::tir::ExprUseVar(const PrimExpr &amp;expr, const Var &amp;var)']]],
   ['ext_5fdev',['ext_dev',['../namespacetvm_1_1target.html#a1fece6d42e0638ab5cd4b6c364c47984',1,'tvm::target']]],

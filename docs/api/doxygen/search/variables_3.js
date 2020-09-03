@@ -55,6 +55,5 @@ var searchData=
   ['ct',['ct',['../classtvm_1_1auto__scheduler_1_1ProgramMeasurerNode.html#aae1a473d3d612cd302bc1ba7bb4fa147',1,'tvm::auto_scheduler::ProgramMeasurerNode']]],
   ['ctx',['ctx',['../structtvm_1_1runtime_1_1vm_1_1Buffer.html#ab6c427afefb8fc7afddeef6ead2ba4e4',1,'tvm::runtime::vm::Buffer']]],
   ['ctxs_5f',['ctxs_',['../classtvm_1_1runtime_1_1vm_1_1VirtualMachine.html#ae52ecf76ef854f8288ca2baa8f9d01ed',1,'tvm::runtime::vm::VirtualMachine']]],
-  ['cur_5ftask',['cur_task',['../classtvm_1_1auto__scheduler_1_1SearchPolicyNode.html#a02fef7e15313c7ca4a995418e15adf03',1,'tvm::auto_scheduler::SearchPolicyNode']]],
   ['current_5fcompute_5fdag',['current_compute_dag',['../classtvm_1_1auto__scheduler_1_1StateNode.html#a84416c45e06875f255e3c7b092f17404',1,'tvm::auto_scheduler::StateNode']]]
 ];

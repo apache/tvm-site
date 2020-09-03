@@ -2,8 +2,8 @@ var searchData=
 [
   ['tags_2eh',['tags.h',['../tags_8h.html',1,'']]],
   ['target_2eh',['target.h',['../target_8h.html',1,'']]],
-  ['target_5fid_2eh',['target_id.h',['../target__id_8h.html',1,'']]],
   ['target_5finfo_2eh',['target_info.h',['../target__info_8h.html',1,'']]],
+  ['target_5fkind_2eh',['target_kind.h',['../target__kind_8h.html',1,'']]],
   ['tensor_2eh',['tensor.h',['../tensor_8h.html',1,'']]],
   ['tensor_5fintrin_2eh',['tensor_intrin.h',['../tensor__intrin_8h.html',1,'']]],
   ['tensor_5ftype_2eh',['tensor_type.h',['../tensor__type_8h.html',1,'']]],

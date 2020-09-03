@@ -2,6 +2,8 @@ var searchData=
 [
   ['ramp',['Ramp',['../classtvm_1_1tir_1_1Ramp.html',1,'tvm::tir']]],
   ['rampnode',['RampNode',['../classtvm_1_1tir_1_1RampNode.html',1,'tvm::tir']]],
+  ['randommodel',['RandomModel',['../classtvm_1_1auto__scheduler_1_1RandomModel.html',1,'tvm::auto_scheduler']]],
+  ['randommodelnode',['RandomModelNode',['../classtvm_1_1auto__scheduler_1_1RandomModelNode.html',1,'tvm::auto_scheduler']]],
   ['range',['Range',['../classtvm_1_1Range.html',1,'tvm']]],
   ['rangenode',['RangeNode',['../classtvm_1_1RangeNode.html',1,'tvm']]],
   ['rebase',['Rebase',['../classtvm_1_1te_1_1Rebase.html',1,'tvm::te']]],

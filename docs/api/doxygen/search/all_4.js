@@ -29,7 +29,7 @@ var searchData=
   ['dedup',['DeDup',['../namespacetvm_1_1relay.html#a1ecbcbe35c7abd82b9eabf94f6b797d2',1,'tvm::relay']]],
   ['default_2eh',['default.h',['../x86_2default_8h.html',1,'']]],
   ['default_2eh',['default.h',['../generic_2default_8h.html',1,'']]],
-  ['default_5fkeys',['default_keys',['../classtvm_1_1TargetIdNode.html#ab8664bbf90bbd54a6859f24d3f2eb96c',1,'tvm::TargetIdNode']]],
+  ['default_5fkeys',['default_keys',['../classtvm_1_1TargetKindNode.html#aa62e049ba158730d9ab88e4c0b173de9',1,'tvm::TargetKindNode']]],
   ['default_5fmax_5fcontinous_5ferror',['DEFAULT_MAX_CONTINOUS_ERROR',['../classtvm_1_1auto__scheduler_1_1ProgramMeasurerNode.html#aead1c9e89c69246e2125993a384b2c80',1,'tvm::auto_scheduler::ProgramMeasurerNode']]],
   ['default_5fschedule',['default_schedule',['../namespacetvm_1_1topi_1_1generic.html#ae10c7793be021c3da437aeb2f79d8d2e',1,'tvm::topi::generic::default_schedule()'],['../namespacetvm_1_1topi_1_1x86.html#a8df4b07cd29b24d5c1323df91892fad4',1,'tvm::topi::x86::default_schedule()']]],
   ['default_5fschedule_5fauto_5finline',['default_schedule_auto_inline',['../namespacetvm_1_1topi_1_1generic.html#a1b7888cf36fa1da754ec65303a2dbbfb',1,'tvm::topi::generic::default_schedule_auto_inline()'],['../namespacetvm_1_1topi_1_1x86.html#af70d13cc92e434e9bce17cf76f4ef4f8',1,'tvm::topi::x86::default_schedule_auto_inline()']]],
@@ -72,7 +72,7 @@ var searchData=
   ['device_5fid',['device_id',['../structtvm_1_1relay_1_1AllocStorageAttrs.html#a07bf4b56cefecf64238064e160cf846e',1,'tvm::relay::AllocStorageAttrs']]],
   ['device_5findex',['device_index',['../structTVMGraphRuntimeGraphAttr.html#a18730b01ddbe6ccce66fe99139a905b2',1,'TVMGraphRuntimeGraphAttr']]],
   ['device_5fscope',['device_scope',['../namespacetvm_1_1tir_1_1attr.html#a36db026f638ad3d951c302796ddcae24',1,'tvm::tir::attr']]],
-  ['device_5ftype',['device_type',['../structtvm_1_1relay_1_1OnDeviceAttrs.html#a908c8763c9636c10c66a0ef1fea05da0',1,'tvm::relay::OnDeviceAttrs::device_type()'],['../structtvm_1_1relay_1_1AllocStorageAttrs.html#adbe49c2e85acea291a7a2ba46044eb0e',1,'tvm::relay::AllocStorageAttrs::device_type()'],['../classtvm_1_1TargetIdNode.html#a15a2875b9d8a8abecbc61b0346a138d2',1,'tvm::TargetIdNode::device_type()']]],
+  ['device_5ftype',['device_type',['../structtvm_1_1relay_1_1OnDeviceAttrs.html#a908c8763c9636c10c66a0ef1fea05da0',1,'tvm::relay::OnDeviceAttrs::device_type()'],['../structtvm_1_1relay_1_1AllocStorageAttrs.html#adbe49c2e85acea291a7a2ba46044eb0e',1,'tvm::relay::AllocStorageAttrs::device_type()'],['../classtvm_1_1TargetKindNode.html#a18459286d8d501892992a4209ad08652',1,'tvm::TargetKindNode::device_type()']]],
   ['deviceapi',['DeviceAPI',['../classtvm_1_1runtime_1_1DeviceAPI.html',1,'tvm::runtime']]],
   ['deviceapi',['DeviceAPI',['../namespacetvm_1_1tir.html#aed067b57db2923a07913239b2165e019',1,'tvm::tir']]],
   ['deviceattrkind',['DeviceAttrKind',['../namespacetvm_1_1runtime.html#a46fef1ca0ccc05473e9bb0a8c6b66619',1,'tvm::runtime']]],
@@ -108,6 +108,7 @@ var searchData=
   ['div',['Div',['../classtvm_1_1tir_1_1Div.html',1,'tvm::tir']]],
   ['divambiguityerror',['DivAmbiguityError',['../namespacetvm.html#a31e7a3e4a160a1d048e3ba741966f1a8',1,'tvm']]],
   ['divide',['divide',['../namespacetvm_1_1topi.html#a582bc98a3956894e8e90a3a3da929568',1,'tvm::topi::divide(const tvm::PrimExpr &amp;a, const tvm::PrimExpr &amp;b)'],['../namespacetvm_1_1topi.html#ae7f847307a3be15427c5d6d34881bae6',1,'tvm::topi::divide(const tvm::te::Tensor &amp;A, const tvm::te::Tensor &amp;B, std::string name=&quot;T_&quot;&quot;divide&quot;, std::string tag=kBroadcast)'],['../namespacetvm_1_1topi.html#a783b4c085016cb8521f1a2190ca030cb',1,'tvm::topi::divide(const tvm::te::Tensor &amp;A, const tvm::PrimExpr &amp;B, std::string name=&quot;T_&quot;&quot;divide&quot;, std::string tag=kElementWise)'],['../namespacetvm_1_1topi.html#a88dd69dc89e5a9882c4f813c36b0a8e1',1,'tvm::topi::divide(const tvm::PrimExpr &amp;A, const tvm::te::Tensor &amp;B, std::string name=&quot;T_&quot;&quot;divide&quot;, std::string tag=kElementWise)']]],
+  ['divmode',['DivMode',['../namespacetvm_1_1arith.html#ac6a38da661cd3681eb85abe1cd810422',1,'tvm::arith']]],
   ['divnode',['DivNode',['../classtvm_1_1tir_1_1DivNode.html',1,'tvm::tir']]],
   ['dl_5ftensor',['dl_tensor',['../classtvm_1_1runtime_1_1NDArray_1_1ContainerBase.html#a1063a9d01075d5b7b0e8fa31d4d72e0b',1,'tvm::runtime::NDArray::ContainerBase']]],
   ['dldatatype2string',['DLDataType2String',['../namespacetvm_1_1runtime.html#ac360f2d9815036ab1b4d84d9cfb46b4f',1,'tvm::runtime']]],
@@ -118,8 +119,8 @@ var searchData=
   ['docommreduce',['DoCommReduce',['../namespacetvm_1_1topi.html#ac6915f9182df309507befb791160507b',1,'tvm::topi']]],
   ['dom',['dom',['../classtvm_1_1tir_1_1IterVarNode.html#acd6ca5f580e556a2d022e47900f9fe71',1,'tvm::tir::IterVarNode']]],
   ['domaintouched',['DomainTouched',['../namespacetvm_1_1arith.html#a7641fa29ca6d8941f2696aacccf23998',1,'tvm::arith']]],
-  ['dominatorpattern',['DominatorPattern',['../classtvm_1_1relay_1_1DominatorPattern.html',1,'tvm::relay']]],
   ['dominatorpattern',['DominatorPattern',['../classtvm_1_1relay_1_1DominatorPattern.html#a93adeab95ffcd91ce587b1624f4dedc1',1,'tvm::relay::DominatorPattern']]],
+  ['dominatorpattern',['DominatorPattern',['../classtvm_1_1relay_1_1DominatorPattern.html',1,'tvm::relay']]],
   ['dominatorpatternnode',['DominatorPatternNode',['../classtvm_1_1relay_1_1DominatorPatternNode.html',1,'tvm::relay']]],
   ['double_5fbuffer',['double_buffer',['../classtvm_1_1te_1_1StageNode.html#af5cb8c43f82eac4021fd06ab7c475f82',1,'tvm::te::StageNode::double_buffer()'],['../classtvm_1_1te_1_1Stage.html#a0cdea4d4b25b730c44d86e6c57505000',1,'tvm::te::Stage::double_buffer()']]],
   ['double_5fbuffer_5fscope',['double_buffer_scope',['../namespacetvm_1_1tir_1_1attr.html#a9231fc0afe37a8d46a90a1c5fdf522bb',1,'tvm::tir::attr']]],
@@ -137,5 +138,5 @@ var searchData=
   ['dump',['Dump',['../namespacetvm.html#a410120ad997c7470798b98a1c48ee3e6',1,'tvm::Dump(const runtime::ObjectRef &amp;node)'],['../namespacetvm.html#a4909861f9bc606426c65c65da4da3734',1,'tvm::Dump(const runtime::Object *node)']]],
   ['dyn_5ftile',['dyn_tile',['../namespacetvm_1_1topi.html#a5efc5887d91eb272e31c10f4e014a034',1,'tvm::topi']]],
   ['serializer',['serializer',['../namespacedmlc_1_1serializer.html',1,'dmlc']]],
-  ['valuetypeinfomaker',['ValueTypeInfoMaker',['../classtvm_1_1TargetIdNode.html#a9ce830f20c377093d7812ffc2eb5c628',1,'tvm::TargetIdNode']]]
+  ['valuetypeinfomaker',['ValueTypeInfoMaker',['../classtvm_1_1TargetKindNode.html#a9ce830f20c377093d7812ffc2eb5c628',1,'tvm::TargetKindNode']]]
 ];
