@@ -105,7 +105,8 @@
 <li class="toctree-l1"><a class="reference internal" href="../tutorials/index.html#compile-deep-learning-models">Compile Deep Learning Models</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../tutorials/index.html#tensor-expression-and-schedules">Tensor Expression and Schedules</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../tutorials/index.html#optimize-tensor-operators">Optimize Tensor Operators</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../tutorials/index.html#auto-tuning">Auto tuning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tutorials/index.html#autotvm-template-based-auto-tuning">AutoTVM : Template-based Auto Tuning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tutorials/index.html#autoscheduler-template-free-auto-scheduling">AutoScheduler : Template-free Auto Scheduling</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../tutorials/index.html#developer-tutorials">Developer Tutorials</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../tutorials/index.html#topi-tvm-operator-inventory">TOPI: TVM Operator Inventory</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../tutorials/index.html#micro-tvm">Micro TVM</a></li>
@@ -307,8 +308,8 @@ In terms of hardware components you’ll need:</p>
 <p>Setup your Pynq board based on the <a class="reference external" href="http://pynq.readthedocs.io/en/latest/getting_started.html">Pynq board getting started tutorial</a>.</p>
 <p>You should follow the instructions up to and including the <em>Turning On the PYNQ-Z1</em> step (no need to pursue the tutorial beyond this point).</p>
 <ul class="simple">
-<li><p>Make sure that you’ve downloaded the latest Pynq image, <a class="reference external" href="http://www.pynq.io/board.html">PYNQ-Z1 v2.4</a> (released February 22rd 2019), and have imaged your SD card with it (we recommend the free <a class="reference external" href="https://etcher.io/">Etcher</a> program).</p></li>
-<li><p>For this test setup, follow the <a class="reference external" href="http://pynq.readthedocs.io/en/latest/getting_started.html#connect-to-a-computer">“Connect to a Computer”</a> Ethernet setup instructions. To be able to talk to the board, make sure to <a class="reference external" href="http://pynq.readthedocs.io/en/latest/appendix.html#assign-your-computer-a-static-ip">assign your computer a static IP address</a></p></li>
+<li><p>Make sure that you’ve downloaded the latest Pynq image, <a class="reference external" href="http://www.pynq.io/board.html">PYNQ-Z1 v2.5</a>, and have imaged your SD card with it (we recommend the free <a class="reference external" href="https://etcher.io/">Etcher</a> program).</p></li>
+<li><p>For this test setup, follow the <a class="reference external" href="https://pynq.readthedocs.io/en/latest/getting_started/pynq_z1_setup.html">“Connect to a Computer”</a> Ethernet setup instructions. To be able to talk to the board, make sure to <a class="reference external" href="https://pynq.readthedocs.io/en/latest/appendix.html#assign-your-computer-a-static-ip">assign your computer a static IP address</a></p></li>
 </ul>
 <p>Once the board is powered on and connected to your development machine, try connecting to it to make sure you’ve properly set up your Pynq board:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span class="c1"># To connect to the Pynq board use the &lt;username, password&gt; combo: &lt;xilinx, xilinx&gt;</span>
@@ -342,6 +343,8 @@ cp 3rdparty/vta-hw/config/pynq_sample.json 3rdparty/vta-hw/config/vta_config.jso
 <span class="nb">cd</span> build
 cmake ..
 make runtime vta -j2
+<span class="c1"># FIXME (tmoreau89): remove this step by fixing the cmake build</span>
+make clean<span class="p">;</span> make runtime vta -j2
 <span class="c1"># Build VTA RPC server (takes 1 min)</span>
 <span class="nb">cd</span> ..
 sudo ./apps/vta_rpc/start_rpc_server.sh <span class="c1"># pw is &#39;xilinx&#39;</span>
@@ -461,30 +464,30 @@ Specifically, to compile application executables for the system, you need to dow
 <p>If you’re interested in generating the Xilinx FPGA bitstream on your own instead of using the pre-built VTA bitstreams, follow the instructions below.</p>
 <div class="section" id="xilinx-toolchain-installation">
 <h3>Xilinx Toolchain Installation<a class="headerlink" href="#xilinx-toolchain-installation" title="Permalink to this headline">¶</a></h3>
-<p>We recommend using Vivado 2018.3 since our scripts have been tested to work on this version of the Xilinx toolchains.
+<p>We recommend using Vivado 2020.1 since our scripts have been tested to work on this version of the Xilinx toolchains.
 Our guide is written for Linux (Ubuntu) installation.</p>
-<p>You’ll need to install Xilinx’ FPGA compilation toolchain, <a class="reference external" href="https://www.xilinx.com/products/design-tools/vivado.html">Vivado HL WebPACK 2018.3</a>, which a license-free version of the Vivado HLx toolchain.</p>
+<p>You’ll need to install Xilinx’ FPGA compilation toolchain, <a class="reference external" href="https://www.xilinx.com/products/design-tools/vivado.html">Vivado HL WebPACK 2020.1</a>, which a license-free version of the Vivado HLx toolchain.</p>
 <div class="section" id="obtaining-and-launching-the-vivado-gui-installer">
 <h4>Obtaining and Launching the Vivado GUI Installer<a class="headerlink" href="#obtaining-and-launching-the-vivado-gui-installer" title="Permalink to this headline">¶</a></h4>
 <ol class="arabic simple">
-<li><p>Go to the <a class="reference external" href="https://www.xilinx.com/support/download/index.html/content/xilinx/en/downloadNav/vivado-design-tools/2018-3.html">download webpage</a>, and download the Linux Self Extracting Web Installer for Vivado HLx 2018.3: WebPACK and Editions.</p></li>
+<li><p>Go to the <a class="reference external" href="https://www.xilinx.com/support/download/index.html/content/xilinx/en/downloadNav/vivado-design-tools/2020-1.html">download webpage</a>, and download the Linux Self Extracting Web Installer for Vivado HLx 2020.1: WebPACK and Editions.</p></li>
 <li><p>You’ll have to sign in with a Xilinx account. This requires a Xilinx account creation that will take 2 minutes.</p></li>
-<li><p>Complete the Name and Address Verification by clicking “Next”, and you will get the opportunity to download a binary file, called <code class="docutils literal notranslate"><span class="pre">Xilinx_Vivado_SDK_Web_2018.3_1207_2324_Lin64.bin</span></code>.</p></li>
+<li><p>Complete the Name and Address Verification by clicking “Next”, and you will get the opportunity to download a binary file, called <code class="docutils literal notranslate"><span class="pre">Xilinx_Unified_2020.1_0602_1208_Lin64.bin</span></code>.</p></li>
 <li><p>Now that the file is downloaded, go to your <code class="docutils literal notranslate"><span class="pre">Downloads</span></code> directory, and change the file permissions so it can be executed:</p></li>
 </ol>
-<div class="highlight-bash notranslate"><div class="highlight"><pre>chmod u+x Xilinx_Vivado_SDK_Web_2018.3_1207_2324_Lin64.bin
+<div class="highlight-bash notranslate"><div class="highlight"><pre>chmod u+x Xilinx_Unified_2020.1_0602_1208_Lin64.bin
 </pre></div>
 </div>
 <ol class="arabic simple" start="5">
 <li><p>Now you can execute the binary:</p></li>
 </ol>
-<div class="highlight-bash notranslate"><div class="highlight"><pre>./Xilinx_Vivado_SDK_Web_2018.3_1207_2324_Lin64.bin
+<div class="highlight-bash notranslate"><div class="highlight"><pre>./Xilinx_Unified_2020.1_0602_1208_Lin64.bin
 </pre></div>
 </div>
 </div>
 <div class="section" id="xilinx-vivado-gui-installer-steps">
 <h4>Xilinx Vivado GUI Installer Steps<a class="headerlink" href="#xilinx-vivado-gui-installer-steps" title="Permalink to this headline">¶</a></h4>
-<p>At this point you’ve launched the Vivado 2018.3 Installer GUI program.</p>
+<p>At this point you’ve launched the Vivado 2020.1 Installer GUI program.</p>
 <ol class="arabic simple">
 <li><p>Click “Next” on the “Welcome” screen.</p></li>
 <li><p>On the “Select Install Type” screen, enter your Xilinx user credentials under the “User Authentication” box and select the “Download and Install Now” option before clicking “Next”.</p></li>
@@ -506,8 +509,8 @@ Our guide is written for Linux (Ubuntu) installation.</p>
 <div class="section" id="environment-setup">
 <h4>Environment Setup<a class="headerlink" href="#environment-setup" title="Permalink to this headline">¶</a></h4>
 <p>The last step is to update your <code class="docutils literal notranslate"><span class="pre">~/.bashrc</span></code> with the following lines. This will include all of the Xilinx binary paths so you can launch compilation scripts from the command line.</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span class="c1"># Xilinx Vivado 2018.3 environment</span>
-<span class="nb">export</span> <span class="nv">XILINX_VIVADO</span><span class="o">=</span><span class="si">${</span><span class="nv">XILINX_PATH</span><span class="si">}</span>/Vivado/2018.3
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span class="c1"># Xilinx Vivado 2020.1 environment</span>
+<span class="nb">export</span> <span class="nv">XILINX_VIVADO</span><span class="o">=</span><span class="si">${</span><span class="nv">XILINX_PATH</span><span class="si">}</span>/Vivado/2020.1
 <span class="nb">export</span> <span class="nv">PATH</span><span class="o">=</span><span class="si">${</span><span class="nv">XILINX_VIVADO</span><span class="si">}</span>/bin:<span class="si">${</span><span class="nv">PATH</span><span class="si">}</span>
 </pre></div>
 </div>

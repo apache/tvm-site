@@ -108,6 +108,7 @@
 <li class="toctree-l2"><a class="reference internal" href="using_external_lib.html">Using External Libraries in Relay</a></li>
 <li class="toctree-l2"><a class="reference internal" href="from_coreml.html">Compile CoreML Models</a></li>
 <li class="toctree-l2"><a class="reference internal" href="from_keras.html">Compile Keras Models</a></li>
+<li class="toctree-l2"><a class="reference internal" href="deploy_object_detection_pytorch.html">Compile PyTorch Object Detection Models</a></li>
 <li class="toctree-l2"><a class="reference internal" href="deploy_quantized.html">Deploy a Quantized Model on Cuda</a></li>
 <li class="toctree-l2"><a class="reference internal" href="from_caffe2.html">Compile Caffe2 Models</a></li>
 <li class="toctree-l2"><a class="reference internal" href="from_mxnet.html">Compile MXNet Models</a></li>
@@ -132,7 +133,8 @@
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../index.html#tensor-expression-and-schedules">Tensor Expression and Schedules</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../index.html#optimize-tensor-operators">Optimize Tensor Operators</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../index.html#auto-tuning">Auto tuning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../index.html#autotvm-template-based-auto-tuning">AutoTVM : Template-based Auto Tuning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../index.html#autoscheduler-template-free-auto-scheduling">AutoScheduler : Template-free Auto Scheduling</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../index.html#developer-tutorials">Developer Tutorials</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../index.html#topi-tvm-operator-inventory">TOPI: TVM Operator Inventory</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../index.html#micro-tvm">Micro TVM</a></li>
@@ -295,22 +297,24 @@ You can found more details about this part at tutorial <a class="reference inter
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 
 <span class="c1"># one line to get the model</span>
-<span class="n">block</span> <span class="o">=</span> <span class="n">get_model</span><span class="p">(</span><span class="s1">&#39;resnet18_v1&#39;</span><span class="p">,</span> <span class="n">pretrained</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">block</span> <span class="o">=</span> <span class="n">get_model</span><span class="p">(</span><span class="s2">&quot;resnet18_v1&quot;</span><span class="p">,</span> <span class="n">pretrained</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>In order to test our model, here we download an image of cat and
 transform its format.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span class="n">img_url</span> <span class="o">=</span> <span class="s1">&#39;https://github.com/dmlc/mxnet.js/blob/master/data/cat.png?raw=true&#39;</span>
-<span class="n">img_name</span> <span class="o">=</span> <span class="s1">&#39;cat.png&#39;</span>
-<span class="n">img_path</span> <span class="o">=</span> <span class="n">download_testdata</span><span class="p">(</span><span class="n">img_url</span><span class="p">,</span> <span class="n">img_name</span><span class="p">,</span> <span class="n">module</span><span class="o">=</span><span class="s1">&#39;data&#39;</span><span class="p">)</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span class="n">img_url</span> <span class="o">=</span> <span class="s2">&quot;https://github.com/dmlc/mxnet.js/blob/master/data/cat.png?raw=true&quot;</span>
+<span class="n">img_name</span> <span class="o">=</span> <span class="s2">&quot;cat.png&quot;</span>
+<span class="n">img_path</span> <span class="o">=</span> <span class="n">download_testdata</span><span class="p">(</span><span class="n">img_url</span><span class="p">,</span> <span class="n">img_name</span><span class="p">,</span> <span class="n">module</span><span class="o">=</span><span class="s2">&quot;data&quot;</span><span class="p">)</span>
 <span class="n">image</span> <span class="o">=</span> <span class="n">Image</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">img_path</span><span class="p">)</span><span class="o">.</span><span class="n">resize</span><span class="p">((</span><span class="mi">224</span><span class="p">,</span> <span class="mi">224</span><span class="p">))</span>
 
+
 <span class="k">def</span> <span class="nf">transform_image</span><span class="p">(</span><span class="n">image</span><span class="p">):</span>
-    <span class="n">image</span> <span class="o">=</span> <a href="https://numpy.org/doc/stable/reference/generated/numpy.array.html#numpy.array" title="View documentation for numpy.array"><span class="n">np</span><span class="o">.</span><span class="n">array</span></a><span class="p">(</span><span class="n">image</span><span class="p">)</span> <span class="o">-</span> <a href="https://numpy.org/doc/stable/reference/generated/numpy.array.html#numpy.array" title="View documentation for numpy.array"><span class="n">np</span><span class="o">.</span><span class="n">array</span></a><span class="p">([</span><span class="mf">123.</span><span class="p">,</span> <span class="mf">117.</span><span class="p">,</span> <span class="mf">104.</span><span class="p">])</span>
+    <span class="n">image</span> <span class="o">=</span> <a href="https://numpy.org/doc/stable/reference/generated/numpy.array.html#numpy.array" title="View documentation for numpy.array"><span class="n">np</span><span class="o">.</span><span class="n">array</span></a><span class="p">(</span><span class="n">image</span><span class="p">)</span> <span class="o">-</span> <a href="https://numpy.org/doc/stable/reference/generated/numpy.array.html#numpy.array" title="View documentation for numpy.array"><span class="n">np</span><span class="o">.</span><span class="n">array</span></a><span class="p">([</span><span class="mf">123.0</span><span class="p">,</span> <span class="mf">117.0</span><span class="p">,</span> <span class="mf">104.0</span><span class="p">])</span>
     <span class="n">image</span> <span class="o">/=</span> <a href="https://numpy.org/doc/stable/reference/generated/numpy.array.html#numpy.array" title="View documentation for numpy.array"><span class="n">np</span><span class="o">.</span><span class="n">array</span></a><span class="p">([</span><span class="mf">58.395</span><span class="p">,</span> <span class="mf">57.12</span><span class="p">,</span> <span class="mf">57.375</span><span class="p">])</span>
     <span class="n">image</span> <span class="o">=</span> <span class="n">image</span><span class="o">.</span><span class="n">transpose</span><span class="p">((</span><span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
     <span class="n">image</span> <span class="o">=</span> <span class="n">image</span><span class="p">[</span><a href="https://numpy.org/doc/stable/reference/constants.html#numpy.newaxis" title="View documentation for numpy.newaxis"><span class="n">np</span><span class="o">.</span><span class="n">newaxis</span></a><span class="p">,</span> <span class="p">:]</span>
     <span class="k">return</span> <span class="n">image</span>
+
 
 <span class="n">x</span> <span class="o">=</span> <span class="n">transform_image</span><span class="p">(</span><span class="n">image</span><span class="p">)</span>
 </pre></div>
@@ -321,12 +325,16 @@ transform its format.</p>
 </div>
 <p>synset is used to transform the label from number of ImageNet class to
 the word human can understand.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span class="n">synset_url</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="s1">&#39;https://gist.githubusercontent.com/zhreshold/&#39;</span><span class="p">,</span>
-                      <span class="s1">&#39;4d0b62f3d01426887599d4f7ede23ee5/raw/&#39;</span><span class="p">,</span>
-                      <span class="s1">&#39;596b27d23537e5a1b5751d2b0481ef172f58b539/&#39;</span><span class="p">,</span>
-                      <span class="s1">&#39;imagenet1000_clsid_to_human.txt&#39;</span><span class="p">])</span>
-<span class="n">synset_name</span> <span class="o">=</span> <span class="s1">&#39;imagenet1000_clsid_to_human.txt&#39;</span>
-<span class="n">synset_path</span> <span class="o">=</span> <span class="n">download_testdata</span><span class="p">(</span><span class="n">synset_url</span><span class="p">,</span> <span class="n">synset_name</span><span class="p">,</span> <span class="n">module</span><span class="o">=</span><span class="s1">&#39;data&#39;</span><span class="p">)</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span class="n">synset_url</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+    <span class="p">[</span>
+        <span class="s2">&quot;https://gist.githubusercontent.com/zhreshold/&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;4d0b62f3d01426887599d4f7ede23ee5/raw/&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;596b27d23537e5a1b5751d2b0481ef172f58b539/&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;imagenet1000_clsid_to_human.txt&quot;</span><span class="p">,</span>
+    <span class="p">]</span>
+<span class="p">)</span>
+<span class="n">synset_name</span> <span class="o">=</span> <span class="s2">&quot;imagenet1000_clsid_to_human.txt&quot;</span>
+<span class="n">synset_path</span> <span class="o">=</span> <span class="n">download_testdata</span><span class="p">(</span><span class="n">synset_url</span><span class="p">,</span> <span class="n">synset_name</span><span class="p">,</span> <span class="n">module</span><span class="o">=</span><span class="s2">&quot;data&quot;</span><span class="p">)</span>
 <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">synset_path</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
     <span class="n">synset</span> <span class="o">=</span> <span class="nb">eval</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">read</span><span class="p">())</span>
 </pre></div>
@@ -338,7 +346,7 @@ the word human can understand.</p>
 <p>Now we would like to port the Gluon model to a portable computational graph.
 It’s as easy as several lines.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span class="c1"># We support MXNet static graph(symbol) and HybridBlock in mxnet.gluon</span>
-<span class="n">shape_dict</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;data&#39;</span><span class="p">:</span> <span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">}</span>
+<span class="n">shape_dict</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;data&quot;</span><span class="p">:</span> <span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">}</span>
 <span class="n">mod</span><span class="p">,</span> <span class="n">params</span> <span class="o">=</span> <a href="../../api/python/relay/frontend.html#tvm.relay.frontend.from_mxnet" title="View documentation for tvm.relay.frontend.from_mxnet"><span class="n">relay</span><span class="o">.</span><span class="n">frontend</span><span class="o">.</span><span class="n">from_mxnet</span></a><span class="p">(</span><span class="n">block</span><span class="p">,</span> <span class="n">shape_dict</span><span class="p">)</span>
 <span class="c1"># we want a probability so add a softmax operator</span>
 <span class="n">func</span> <span class="o">=</span> <span class="n">mod</span><span class="p">[</span><span class="s2">&quot;main&quot;</span><span class="p">]</span>
@@ -369,11 +377,11 @@ to run this tutorial with a real device.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span class="n">local_demo</span> <span class="o">=</span> <span class="kc">True</span>
 
 <span class="k">if</span> <span class="n">local_demo</span><span class="p">:</span>
-    <span class="n">target</span> <span class="o">=</span> <a href="../../api/python/target.html#tvm.target.create" title="View documentation for tvm.target.create"><span class="n">tvm</span><span class="o">.</span><span class="n">target</span><span class="o">.</span><span class="n">create</span></a><span class="p">(</span><span class="s1">&#39;llvm&#39;</span><span class="p">)</span>
+    <span class="n">target</span> <span class="o">=</span> <a href="../../api/python/target.html#tvm.target.Target" title="View documentation for tvm.target.Target"><span class="n">tvm</span><span class="o">.</span><span class="n">target</span><span class="o">.</span><span class="n">Target</span></a><span class="p">(</span><span class="s2">&quot;llvm&quot;</span><span class="p">)</span>
 <span class="k">else</span><span class="p">:</span>
-    <span class="n">target</span> <span class="o">=</span> <a href="../../api/python/target.html#tvm.target.arm_cpu" title="View documentation for tvm.target.arm_cpu"><span class="n">tvm</span><span class="o">.</span><span class="n">target</span><span class="o">.</span><span class="n">arm_cpu</span></a><span class="p">(</span><span class="s1">&#39;rasp3b&#39;</span><span class="p">)</span>
+    <span class="n">target</span> <span class="o">=</span> <a href="../../api/python/target.html#tvm.target.arm_cpu" title="View documentation for tvm.target.arm_cpu"><span class="n">tvm</span><span class="o">.</span><span class="n">target</span><span class="o">.</span><span class="n">arm_cpu</span></a><span class="p">(</span><span class="s2">&quot;rasp3b&quot;</span><span class="p">)</span>
     <span class="c1"># The above line is a simple form of</span>
-    <span class="c1"># target = tvm.target.create(&#39;llvm -device=arm_cpu -model=bcm2837 -mtriple=armv7l-linux-gnueabihf -mattr=+neon&#39;)</span>
+    <span class="c1"># target = tvm.target.Target(&#39;llvm -device=arm_cpu -model=bcm2837 -mtriple=armv7l-linux-gnueabihf -mattr=+neon&#39;)</span>
 
 <span class="k">with</span> <a href="../../api/python/ir.html#tvm.transform.PassContext" title="View documentation for tvm.transform.PassContext"><span class="n">tvm</span><span class="o">.</span><span class="n">transform</span><span class="o">.</span><span class="n">PassContext</span></a><span class="p">(</span><span class="n">opt_level</span><span class="o">=</span><span class="mi">3</span><span class="p">):</span>
     <span class="n">lib</span> <span class="o">=</span> <a href="../../api/python/relay/index.html#tvm.relay.build" title="View documentation for tvm.relay.build"><span class="n">relay</span><span class="o">.</span><span class="n">build</span></a><span class="p">(</span><span class="n">func</span><span class="p">,</span> <span class="n">target</span><span class="p">,</span> <span class="n">params</span><span class="o">=</span><span class="n">params</span><span class="p">)</span>
@@ -384,7 +392,7 @@ to run this tutorial with a real device.</p>
 
 <span class="c1"># Save the library at local temporary directory.</span>
 <span class="n">tmp</span> <span class="o">=</span> <a href="../../api/python/contrib.html#tvm.contrib.util.tempdir" title="View documentation for tvm.contrib.util.tempdir"><span class="n">util</span><span class="o">.</span><span class="n">tempdir</span></a><span class="p">()</span>
-<span class="n">lib_fname</span> <span class="o">=</span> <span class="n">tmp</span><span class="o">.</span><span class="n">relpath</span><span class="p">(</span><span class="s1">&#39;net.tar&#39;</span><span class="p">)</span>
+<span class="n">lib_fname</span> <span class="o">=</span> <span class="n">tmp</span><span class="o">.</span><span class="n">relpath</span><span class="p">(</span><span class="s2">&quot;net.tar&quot;</span><span class="p">)</span>
 <span class="n">lib</span><span class="o">.</span><span class="n">export_library</span><span class="p">(</span><span class="n">lib_fname</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -398,26 +406,26 @@ to the remote device.</p>
     <span class="n">remote</span> <span class="o">=</span> <a href="../../api/python/rpc.html#tvm.rpc.LocalSession" title="View documentation for tvm.rpc.LocalSession"><span class="n">rpc</span><span class="o">.</span><span class="n">LocalSession</span></a><span class="p">()</span>
 <span class="k">else</span><span class="p">:</span>
     <span class="c1"># The following is my environment, change this to the IP address of your target device</span>
-    <span class="n">host</span> <span class="o">=</span> <span class="s1">&#39;10.77.1.162&#39;</span>
+    <span class="n">host</span> <span class="o">=</span> <span class="s2">&quot;10.77.1.162&quot;</span>
     <span class="n">port</span> <span class="o">=</span> <span class="mi">9090</span>
     <span class="n">remote</span> <span class="o">=</span> <a href="../../api/python/rpc.html#tvm.rpc.connect" title="View documentation for tvm.rpc.connect"><span class="n">rpc</span><span class="o">.</span><span class="n">connect</span></a><span class="p">(</span><span class="n">host</span><span class="p">,</span> <span class="n">port</span><span class="p">)</span>
 
 <span class="c1"># upload the library to remote device and load it</span>
 <span class="n">remote</span><span class="o">.</span><span class="n">upload</span><span class="p">(</span><span class="n">lib_fname</span><span class="p">)</span>
-<span class="n">rlib</span> <span class="o">=</span> <span class="n">remote</span><span class="o">.</span><span class="n">load_module</span><span class="p">(</span><span class="s1">&#39;net.tar&#39;</span><span class="p">)</span>
+<span class="n">rlib</span> <span class="o">=</span> <span class="n">remote</span><span class="o">.</span><span class="n">load_module</span><span class="p">(</span><span class="s2">&quot;net.tar&quot;</span><span class="p">)</span>
 
 <span class="c1"># create the remote runtime module</span>
 <span class="n">ctx</span> <span class="o">=</span> <span class="n">remote</span><span class="o">.</span><span class="n">cpu</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
-<span class="n">module</span> <span class="o">=</span> <a href="../../api/python/graph_runtime.html#tvm.contrib.graph_runtime.GraphModule" title="View documentation for tvm.contrib.graph_runtime.GraphModule"><span class="n">runtime</span><span class="o">.</span><span class="n">GraphModule</span></a><span class="p">(</span><span class="n">rlib</span><span class="p">[</span><span class="s1">&#39;default&#39;</span><span class="p">](</span><span class="n">ctx</span><span class="p">))</span>
+<span class="n">module</span> <span class="o">=</span> <a href="../../api/python/graph_runtime.html#tvm.contrib.graph_runtime.GraphModule" title="View documentation for tvm.contrib.graph_runtime.GraphModule"><span class="n">runtime</span><span class="o">.</span><span class="n">GraphModule</span></a><span class="p">(</span><span class="n">rlib</span><span class="p">[</span><span class="s2">&quot;default&quot;</span><span class="p">](</span><span class="n">ctx</span><span class="p">))</span>
 <span class="c1"># set input data</span>
-<span class="n">module</span><span class="o">.</span><span class="n">set_input</span><span class="p">(</span><span class="s1">&#39;data&#39;</span><span class="p">,</span> <a href="../../api/python/ndarray.html#tvm.nd.array" title="View documentation for tvm.nd.array"><span class="n">tvm</span><span class="o">.</span><span class="n">nd</span><span class="o">.</span><span class="n">array</span></a><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s1">&#39;float32&#39;</span><span class="p">)))</span>
+<span class="n">module</span><span class="o">.</span><span class="n">set_input</span><span class="p">(</span><span class="s2">&quot;data&quot;</span><span class="p">,</span> <a href="../../api/python/ndarray.html#tvm.nd.array" title="View documentation for tvm.nd.array"><span class="n">tvm</span><span class="o">.</span><span class="n">nd</span><span class="o">.</span><span class="n">array</span></a><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s2">&quot;float32&quot;</span><span class="p">)))</span>
 <span class="c1"># run</span>
 <span class="n">module</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
 <span class="c1"># get output</span>
 <span class="n">out</span> <span class="o">=</span> <span class="n">module</span><span class="o">.</span><span class="n">get_output</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
 <span class="c1"># get top1 result</span>
 <span class="n">top1</span> <span class="o">=</span> <a href="https://numpy.org/doc/stable/reference/generated/numpy.argmax.html#numpy.argmax" title="View documentation for numpy.argmax"><span class="n">np</span><span class="o">.</span><span class="n">argmax</span></a><span class="p">(</span><span class="n">out</span><span class="o">.</span><span class="n">asnumpy</span><span class="p">())</span>
-<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;TVM prediction top-1: {}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">synset</span><span class="p">[</span><span class="n">top1</span><span class="p">]))</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;TVM prediction top-1: {}&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">synset</span><span class="p">[</span><span class="n">top1</span><span class="p">]))</span>
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>

@@ -27,6 +27,7 @@ var searchData=
   ['detectclipbound',['DetectClipBound',['../namespacetvm_1_1arith.html#a739616342876c2633b87ed16c649bc91',1,'tvm::arith']]],
   ['detectfeature',['DetectFeature',['../namespacetvm_1_1relay.html#a62b651084b386991221bc32c020cbef5',1,'tvm::relay::DetectFeature(const RelayExpr &amp;expr)'],['../namespacetvm_1_1relay.html#a81978c82e1130854e575ccabc152ad70',1,'tvm::relay::DetectFeature(const IRModule &amp;mod)'],['../namespacetvm_1_1relay.html#a191d5425083368521d49cc49cef65aba',1,'tvm::relay::DetectFeature(const Expr &amp;expr, const IRModule &amp;mod)']]],
   ['detectlinearequation',['DetectLinearEquation',['../namespacetvm_1_1arith.html#a87a12ee0854469b04329a961ef261559',1,'tvm::arith']]],
+  ['devicecopy',['DeviceCopy',['../structtvm_1_1runtime_1_1vm_1_1Instruction.html#a1fcbbcac293f2dcecc8c99eb944a254b',1,'tvm::runtime::vm::Instruction']]],
   ['devicename',['DeviceName',['../namespacetvm_1_1runtime.html#a9109e4efe269213052ed6a94853c0c00',1,'tvm::runtime']]],
   ['dfpatterncallback',['DFPatternCallback',['../classtvm_1_1relay_1_1DFPatternCallback.html#a820597c8dc9ec76160d3283e71cf57ba',1,'tvm::relay::DFPatternCallback']]],
   ['dictattrs',['DictAttrs',['../classtvm_1_1DictAttrs.html#a3999d7e2b942c8f9993f6d51cb8f3ded',1,'tvm::DictAttrs']]],

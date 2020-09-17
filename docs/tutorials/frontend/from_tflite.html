@@ -108,6 +108,7 @@
 <li class="toctree-l2"><a class="reference internal" href="using_external_lib.html">Using External Libraries in Relay</a></li>
 <li class="toctree-l2"><a class="reference internal" href="from_coreml.html">Compile CoreML Models</a></li>
 <li class="toctree-l2"><a class="reference internal" href="from_keras.html">Compile Keras Models</a></li>
+<li class="toctree-l2"><a class="reference internal" href="deploy_object_detection_pytorch.html">Compile PyTorch Object Detection Models</a></li>
 <li class="toctree-l2"><a class="reference internal" href="deploy_quantized.html">Deploy a Quantized Model on Cuda</a></li>
 <li class="toctree-l2"><a class="reference internal" href="from_caffe2.html">Compile Caffe2 Models</a></li>
 <li class="toctree-l2"><a class="reference internal" href="from_mxnet.html">Compile MXNet Models</a></li>
@@ -133,7 +134,8 @@
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../index.html#tensor-expression-and-schedules">Tensor Expression and Schedules</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../index.html#optimize-tensor-operators">Optimize Tensor Operators</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../index.html#auto-tuning">Auto tuning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../index.html#autotvm-template-based-auto-tuning">AutoTVM : Template-based Auto Tuning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../index.html#autoscheduler-template-free-auto-scheduling">AutoScheduler : Template-free Auto Scheduling</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../index.html#developer-tutorials">Developer Tutorials</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../index.html#topi-tvm-operator-inventory">TOPI: TVM Operator Inventory</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../index.html#micro-tvm">Micro TVM</a></li>
@@ -256,15 +258,17 @@ flatc --python schema.fbs
 <h2>Utils for downloading and extracting zip files<a class="headerlink" href="#utils-for-downloading-and-extracting-zip-files" title="Permalink to this headline">¶</a></h2>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span class="kn">import</span> <span class="nn">os</span>
 
+
 <span class="k">def</span> <span class="nf">extract</span><span class="p">(</span><span class="n">path</span><span class="p">):</span>
     <span class="kn">import</span> <span class="nn">tarfile</span>
+
     <span class="k">if</span> <span class="n">path</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot;tgz&quot;</span><span class="p">)</span> <span class="ow">or</span> <span class="n">path</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot;gz&quot;</span><span class="p">):</span>
         <span class="n">dir_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
         <span class="n">tar</span> <span class="o">=</span> <span class="n">tarfile</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
         <span class="n">tar</span><span class="o">.</span><span class="n">extractall</span><span class="p">(</span><span class="n">path</span><span class="o">=</span><span class="n">dir_path</span><span class="p">)</span>
         <span class="n">tar</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
     <span class="k">else</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s1">&#39;Could not decompress the file: &#39;</span> <span class="o">+</span> <span class="n">path</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;Could not decompress the file: &quot;</span> <span class="o">+</span> <span class="n">path</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -276,7 +280,7 @@ flatc --python schema.fbs
 <span class="n">model_url</span> <span class="o">=</span> <span class="s2">&quot;http://download.tensorflow.org/models/mobilenet_v1_2018_08_02/mobilenet_v1_1.0_224.tgz&quot;</span>
 
 <span class="c1"># Download model tar file and extract it to get mobilenet_v1_1.0_224.tflite</span>
-<span class="n">model_path</span> <span class="o">=</span> <span class="n">download_testdata</span><span class="p">(</span><span class="n">model_url</span><span class="p">,</span> <span class="s2">&quot;mobilenet_v1_1.0_224.tgz&quot;</span><span class="p">,</span> <span class="n">module</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;tf&#39;</span><span class="p">,</span> <span class="s1">&#39;official&#39;</span><span class="p">])</span>
+<span class="n">model_path</span> <span class="o">=</span> <span class="n">download_testdata</span><span class="p">(</span><span class="n">model_url</span><span class="p">,</span> <span class="s2">&quot;mobilenet_v1_1.0_224.tgz&quot;</span><span class="p">,</span> <span class="n">module</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;tf&quot;</span><span class="p">,</span> <span class="s2">&quot;official&quot;</span><span class="p">])</span>
 <span class="n">model_dir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">model_path</span><span class="p">)</span>
 <span class="n">extract</span><span class="p">(</span><span class="n">model_path</span><span class="p">)</span>
 
@@ -287,9 +291,11 @@ flatc --python schema.fbs
 <span class="c1"># Get TFLite model from buffer</span>
 <span class="k">try</span><span class="p">:</span>
     <span class="kn">import</span> <span class="nn">tflite</span>
+
     <span class="n">tflite_model</span> <span class="o">=</span> <span class="n">tflite</span><span class="o">.</span><span class="n">Model</span><span class="o">.</span><span class="n">GetRootAsModel</span><span class="p">(</span><span class="n">tflite_model_buf</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
 <span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span>
     <span class="kn">import</span> <span class="nn">tflite.Model</span>
+
     <span class="n">tflite_model</span> <span class="o">=</span> <span class="n">tflite</span><span class="o">.</span><span class="n">Model</span><span class="o">.</span><span class="n">Model</span><span class="o">.</span><span class="n">GetRootAsModel</span><span class="p">(</span><span class="n">tflite_model_buf</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -305,8 +311,8 @@ flatc --python schema.fbs
 <span class="kn">from</span> <span class="nn">matplotlib</span> <span class="k">import</span> <span class="n">pyplot</span> <span class="k">as</span> <span class="n">plt</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 
-<span class="n">image_url</span> <span class="o">=</span> <span class="s1">&#39;https://github.com/dmlc/mxnet.js/blob/master/data/cat.png?raw=true&#39;</span>
-<span class="n">image_path</span> <span class="o">=</span> <span class="n">download_testdata</span><span class="p">(</span><span class="n">image_url</span><span class="p">,</span> <span class="s1">&#39;cat.png&#39;</span><span class="p">,</span> <span class="n">module</span><span class="o">=</span><span class="s1">&#39;data&#39;</span><span class="p">)</span>
+<span class="n">image_url</span> <span class="o">=</span> <span class="s2">&quot;https://github.com/dmlc/mxnet.js/blob/master/data/cat.png?raw=true&quot;</span>
+<span class="n">image_path</span> <span class="o">=</span> <span class="n">download_testdata</span><span class="p">(</span><span class="n">image_url</span><span class="p">,</span> <span class="s2">&quot;cat.png&quot;</span><span class="p">,</span> <span class="n">module</span><span class="o">=</span><span class="s2">&quot;data&quot;</span><span class="p">)</span>
 <span class="n">resized_image</span> <span class="o">=</span> <span class="n">Image</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">image_path</span><span class="p">)</span><span class="o">.</span><span class="n">resize</span><span class="p">((</span><span class="mi">224</span><span class="p">,</span> <span class="mi">224</span><span class="p">))</span>
 <a href="https://matplotlib.org/api/_as_gen/matplotlib.pyplot.imshow.rst.html#matplotlib.pyplot.imshow" title="View documentation for matplotlib.pyplot.imshow"><span class="n">plt</span><span class="o">.</span><span class="n">imshow</span></a><span class="p">(</span><span class="n">resized_image</span><span class="p">)</span>
 <a href="https://matplotlib.org/api/_as_gen/matplotlib.pyplot.show.rst.html#matplotlib.pyplot.show" title="View documentation for matplotlib.pyplot.show"><span class="n">plt</span><span class="o">.</span><span class="n">show</span></a><span class="p">()</span>
@@ -320,7 +326,7 @@ flatc --python schema.fbs
 <span class="n">image_data</span><span class="p">[:,</span> <span class="p">:,</span> <span class="p">:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mf">2.0</span> <span class="o">/</span> <span class="mf">255.0</span> <span class="o">*</span> <span class="n">image_data</span><span class="p">[:,</span> <span class="p">:,</span> <span class="p">:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="mi">1</span>
 <span class="n">image_data</span><span class="p">[:,</span> <span class="p">:,</span> <span class="p">:,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="mf">2.0</span> <span class="o">/</span> <span class="mf">255.0</span> <span class="o">*</span> <span class="n">image_data</span><span class="p">[:,</span> <span class="p">:,</span> <span class="p">:,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="mi">1</span>
 <span class="n">image_data</span><span class="p">[:,</span> <span class="p">:,</span> <span class="p">:,</span> <span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="mf">2.0</span> <span class="o">/</span> <span class="mf">255.0</span> <span class="o">*</span> <span class="n">image_data</span><span class="p">[:,</span> <span class="p">:,</span> <span class="p">:,</span> <span class="mi">2</span><span class="p">]</span> <span class="o">-</span> <span class="mi">1</span>
-<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;input&#39;</span><span class="p">,</span> <span class="n">image_data</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;input&quot;</span><span class="p">,</span> <span class="n">image_data</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
 </pre></div>
 </div>
 <img alt="../../_images/sphx_glr_from_tflite_001.png" class="sphx-glr-single-img" src="../../_images/sphx_glr_from_tflite_001.png" />
@@ -339,9 +345,10 @@ input (1, 224, 224, 3)
 
 <span class="c1"># Parse TFLite model and convert it to a Relay module</span>
 <span class="kn">from</span> <span class="nn">tvm</span> <span class="k">import</span> <span class="n">relay</span><span class="p">,</span> <span class="n">transform</span>
-<span class="n">mod</span><span class="p">,</span> <span class="n">params</span> <span class="o">=</span> <a href="../../api/python/relay/frontend.html#tvm.relay.frontend.from_tflite" title="View documentation for tvm.relay.frontend.from_tflite"><span class="n">relay</span><span class="o">.</span><span class="n">frontend</span><span class="o">.</span><span class="n">from_tflite</span></a><span class="p">(</span><span class="n">tflite_model</span><span class="p">,</span>
-                                         <span class="n">shape_dict</span><span class="o">=</span><span class="p">{</span><span class="n">input_tensor</span><span class="p">:</span> <span class="n">input_shape</span><span class="p">},</span>
-                                         <span class="n">dtype_dict</span><span class="o">=</span><span class="p">{</span><span class="n">input_tensor</span><span class="p">:</span> <span class="n">input_dtype</span><span class="p">})</span>
+
+<span class="n">mod</span><span class="p">,</span> <span class="n">params</span> <span class="o">=</span> <a href="../../api/python/relay/frontend.html#tvm.relay.frontend.from_tflite" title="View documentation for tvm.relay.frontend.from_tflite"><span class="n">relay</span><span class="o">.</span><span class="n">frontend</span><span class="o">.</span><span class="n">from_tflite</span></a><span class="p">(</span>
+    <span class="n">tflite_model</span><span class="p">,</span> <span class="n">shape_dict</span><span class="o">=</span><span class="p">{</span><span class="n">input_tensor</span><span class="p">:</span> <span class="n">input_shape</span><span class="p">},</span> <span class="n">dtype_dict</span><span class="o">=</span><span class="p">{</span><span class="n">input_tensor</span><span class="p">:</span> <span class="n">input_dtype</span><span class="p">}</span>
+<span class="p">)</span>
 
 <span class="c1"># Build the module against to x86 CPU</span>
 <span class="n">target</span> <span class="o">=</span> <span class="s2">&quot;llvm&quot;</span>
@@ -357,7 +364,7 @@ input (1, 224, 224, 3)
 <span class="kn">from</span> <span class="nn">tvm.contrib</span> <span class="k">import</span> <span class="n">graph_runtime</span> <span class="k">as</span> <span class="n">runtime</span>
 
 <span class="c1"># Create a runtime executor module</span>
-<span class="n">module</span> <span class="o">=</span> <a href="../../api/python/graph_runtime.html#tvm.contrib.graph_runtime.GraphModule" title="View documentation for tvm.contrib.graph_runtime.GraphModule"><span class="n">runtime</span><span class="o">.</span><span class="n">GraphModule</span></a><span class="p">(</span><span class="n">lib</span><span class="p">[</span><span class="s1">&#39;default&#39;</span><span class="p">](</span><span class="n">tvm</span><span class="o">.</span><span class="n">cpu</span><span class="p">()))</span>
+<span class="n">module</span> <span class="o">=</span> <a href="../../api/python/graph_runtime.html#tvm.contrib.graph_runtime.GraphModule" title="View documentation for tvm.contrib.graph_runtime.GraphModule"><span class="n">runtime</span><span class="o">.</span><span class="n">GraphModule</span></a><span class="p">(</span><span class="n">lib</span><span class="p">[</span><span class="s2">&quot;default&quot;</span><span class="p">](</span><span class="n">tvm</span><span class="o">.</span><span class="n">cpu</span><span class="p">()))</span>
 
 <span class="c1"># Feed input data</span>
 <span class="n">module</span><span class="o">.</span><span class="n">set_input</span><span class="p">(</span><span class="n">input_tensor</span><span class="p">,</span> <a href="../../api/python/ndarray.html#tvm.nd.array" title="View documentation for tvm.nd.array"><span class="n">tvm</span><span class="o">.</span><span class="n">nd</span><span class="o">.</span><span class="n">array</span></a><span class="p">(</span><span class="n">image_data</span><span class="p">))</span>
@@ -373,12 +380,16 @@ input (1, 224, 224, 3)
 <div class="section" id="display-results">
 <h2>Display results<a class="headerlink" href="#display-results" title="Permalink to this headline">¶</a></h2>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span class="c1"># Load label file</span>
-<span class="n">label_file_url</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="s1">&#39;https://raw.githubusercontent.com/&#39;</span><span class="p">,</span>
-                          <span class="s1">&#39;tensorflow/tensorflow/master/tensorflow/lite/java/demo/&#39;</span><span class="p">,</span>
-                          <span class="s1">&#39;app/src/main/assets/&#39;</span><span class="p">,</span>
-                          <span class="s1">&#39;labels_mobilenet_quant_v1_224.txt&#39;</span><span class="p">])</span>
+<span class="n">label_file_url</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+    <span class="p">[</span>
+        <span class="s2">&quot;https://raw.githubusercontent.com/&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;tensorflow/tensorflow/master/tensorflow/lite/java/demo/&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;app/src/main/assets/&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;labels_mobilenet_quant_v1_224.txt&quot;</span><span class="p">,</span>
+    <span class="p">]</span>
+<span class="p">)</span>
 <span class="n">label_file</span> <span class="o">=</span> <span class="s2">&quot;labels_mobilenet_quant_v1_224.txt&quot;</span>
-<span class="n">label_path</span> <span class="o">=</span> <span class="n">download_testdata</span><span class="p">(</span><span class="n">label_file_url</span><span class="p">,</span> <span class="n">label_file</span><span class="p">,</span> <span class="n">module</span><span class="o">=</span><span class="s1">&#39;data&#39;</span><span class="p">)</span>
+<span class="n">label_path</span> <span class="o">=</span> <span class="n">download_testdata</span><span class="p">(</span><span class="n">label_file_url</span><span class="p">,</span> <span class="n">label_file</span><span class="p">,</span> <span class="n">module</span><span class="o">=</span><span class="s2">&quot;data&quot;</span><span class="p">)</span>
 
 <span class="c1"># List of 1001 classes</span>
 <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">label_path</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>

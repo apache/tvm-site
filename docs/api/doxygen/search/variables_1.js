@@ -14,7 +14,7 @@ var searchData=
   ['alloc_5ftensor',['alloc_tensor',['../structtvm_1_1runtime_1_1vm_1_1Instruction.html#ad93d457f8af7065ea0a27526fe0d0948',1,'tvm::runtime::vm::Instruction']]],
   ['alloc_5ftensor_5freg',['alloc_tensor_reg',['../structtvm_1_1runtime_1_1vm_1_1Instruction.html#a9c2db93bf0602b1a6d17928e52821bf8',1,'tvm::runtime::vm::Instruction']]],
   ['allocation_5fsize',['allocation_size',['../structtvm_1_1runtime_1_1vm_1_1Instruction.html#a4f907889caa7c348a3a2dea88e89b827',1,'tvm::runtime::vm::Instruction']]],
-  ['allocators_5f',['allocators_',['../classtvm_1_1runtime_1_1vm_1_1VirtualMachine.html#adb777b773e82687bab1a1fb96c9d4312',1,'tvm::runtime::vm::VirtualMachine']]],
+  ['allocators_5f',['allocators_',['../classtvm_1_1runtime_1_1vm_1_1VirtualMachine.html#a0ef00d527a1c03221030c5fec2ad519d',1,'tvm::runtime::vm::VirtualMachine']]],
   ['allow_5fcopy_5fon_5fwrite_5f',['allow_copy_on_write_',['../classtvm_1_1tir_1_1StmtMutator.html#a620e6041832441d25ee4f4d65921231f',1,'tvm::tir::StmtMutator']]],
   ['alpha',['alpha',['../structtvm_1_1relay_1_1LeakyReluAttrs.html#a78576f4cbcc1139b98c4fc00b99d0e07',1,'tvm::relay::LeakyReluAttrs::alpha()'],['../structtvm_1_1relay_1_1LRNAttrs.html#a76f869f2e2c27773e73744ac05bd3d1e',1,'tvm::relay::LRNAttrs::alpha()']]],
   ['always_5funroll_5finner',['always_unroll_inner',['../structtvm_1_1auto__scheduler_1_1SearchPolicyKey.html#a71838ac1b909b52ffcf083a98ff4eddc',1,'tvm::auto_scheduler::SearchPolicyKey']]],

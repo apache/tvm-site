@@ -41,7 +41,7 @@
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
     <link rel="next" title="Compile Caffe2 Models" href="from_caffe2.html" />
-    <link rel="prev" title="Compile Keras Models" href="from_keras.html" /> 
+    <link rel="prev" title="Compile PyTorch Object Detection Models" href="deploy_object_detection_pytorch.html" /> 
 </head>
 
 <body class="wy-body-for-nav">
@@ -108,6 +108,7 @@
 <li class="toctree-l2"><a class="reference internal" href="using_external_lib.html">Using External Libraries in Relay</a></li>
 <li class="toctree-l2"><a class="reference internal" href="from_coreml.html">Compile CoreML Models</a></li>
 <li class="toctree-l2"><a class="reference internal" href="from_keras.html">Compile Keras Models</a></li>
+<li class="toctree-l2"><a class="reference internal" href="deploy_object_detection_pytorch.html">Compile PyTorch Object Detection Models</a></li>
 <li class="toctree-l2 current"><a class="current reference internal" href="#">Deploy a Quantized Model on Cuda</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#prepare-the-dataset">Prepare the Dataset</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#import-the-model">Import the model</a></li>
@@ -131,7 +132,8 @@
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../index.html#tensor-expression-and-schedules">Tensor Expression and Schedules</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../index.html#optimize-tensor-operators">Optimize Tensor Operators</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../index.html#auto-tuning">Auto tuning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../index.html#autotvm-template-based-auto-tuning">AutoTVM : Template-based Auto Tuning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../index.html#autoscheduler-template-free-auto-scheduling">AutoScheduler : Template-free Auto Scheduling</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../index.html#developer-tutorials">Developer Tutorials</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../index.html#topi-tvm-operator-inventory">TOPI: TVM Operator Inventory</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../index.html#micro-tvm">Micro TVM</a></li>
@@ -243,7 +245,7 @@ Relay, quantize the Relay model and then perform the inference.</p>
 
 <span class="n">batch_size</span> <span class="o">=</span> <span class="mi">1</span>
 <span class="n">model_name</span> <span class="o">=</span> <span class="s2">&quot;resnet18_v1&quot;</span>
-<span class="n">target</span> <span class="o">=</span> <span class="s1">&#39;cuda&#39;</span>
+<span class="n">target</span> <span class="o">=</span> <span class="s2">&quot;cuda&quot;</span>
 <span class="n">ctx</span> <span class="o">=</span> <span class="n">tvm</span><span class="o">.</span><span class="n">context</span><span class="p">(</span><span class="n">target</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -252,8 +254,10 @@ Relay, quantize the Relay model and then perform the inference.</p>
 <p>We will demonstrate how to prepare the calibration dataset for quantization.
 We first download the validation set of ImageNet and pre-process the dataset.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span class="n">calibration_rec</span> <span class="o">=</span> <span class="n">download_testdata</span><span class="p">(</span>
-    <span class="s1">&#39;http://data.mxnet.io.s3-website-us-west-1.amazonaws.com/data/val_256_q90.rec&#39;</span><span class="p">,</span>
-    <span class="s1">&#39;val_256_q90.rec&#39;</span><span class="p">)</span>
+    <span class="s2">&quot;http://data.mxnet.io.s3-website-us-west-1.amazonaws.com/data/val_256_q90.rec&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;val_256_q90.rec&quot;</span><span class="p">,</span>
+<span class="p">)</span>
+
 
 <span class="k">def</span> <span class="nf">get_val_data</span><span class="p">(</span><span class="n">num_workers</span><span class="o">=</span><span class="mi">4</span><span class="p">):</span>
     <span class="n">mean_rgb</span> <span class="o">=</span> <span class="p">[</span><span class="mf">123.68</span><span class="p">,</span> <span class="mf">116.779</span><span class="p">,</span> <span class="mf">103.939</span><span class="p">]</span>
@@ -262,7 +266,7 @@ We first download the validation set of ImageNet and pre-process the dataset.</p
     <span class="k">def</span> <span class="nf">batch_fn</span><span class="p">(</span><span class="n">batch</span><span class="p">):</span>
         <span class="k">return</span> <span class="n">batch</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">asnumpy</span><span class="p">(),</span> <span class="n">batch</span><span class="o">.</span><span class="n">label</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">asnumpy</span><span class="p">()</span>
 
-    <span class="n">img_size</span> <span class="o">=</span> <span class="mi">299</span> <span class="k">if</span> <span class="n">model_name</span> <span class="o">==</span> <span class="s1">&#39;inceptionv3&#39;</span> <span class="k">else</span> <span class="mi">224</span>
+    <span class="n">img_size</span> <span class="o">=</span> <span class="mi">299</span> <span class="k">if</span> <span class="n">model_name</span> <span class="o">==</span> <span class="s2">&quot;inceptionv3&quot;</span> <span class="k">else</span> <span class="mi">224</span>
     <span class="n">val_data</span> <span class="o">=</span> <span class="n">mx</span><span class="o">.</span><span class="n">io</span><span class="o">.</span><span class="n">ImageRecordIter</span><span class="p">(</span>
         <span class="n">path_imgrec</span><span class="o">=</span><span class="n">calibration_rec</span><span class="p">,</span>
         <span class="n">preprocess_threads</span><span class="o">=</span><span class="n">num_workers</span><span class="p">,</span>
@@ -289,6 +293,7 @@ calibration dataset as a generator object in Python. In this tutorial, we
 only use a few samples for calibration.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span class="n">calibration_samples</span> <span class="o">=</span> <span class="mi">10</span>
 
+
 <span class="k">def</span> <span class="nf">calibrate_dataset</span><span class="p">():</span>
     <span class="n">val_data</span><span class="p">,</span> <span class="n">batch_fn</span> <span class="o">=</span> <span class="n">get_val_data</span><span class="p">()</span>
     <span class="n">val_data</span><span class="o">.</span><span class="n">reset</span><span class="p">()</span>
@@ -296,7 +301,7 @@ only use a few samples for calibration.</p>
         <span class="k">if</span> <span class="n">i</span> <span class="o">*</span> <span class="n">batch_size</span> <span class="o">&gt;=</span> <span class="n">calibration_samples</span><span class="p">:</span>
             <span class="k">break</span>
         <span class="n">data</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">batch_fn</span><span class="p">(</span><span class="n">batch</span><span class="p">)</span>
-        <span class="k">yield</span> <span class="p">{</span><span class="s1">&#39;data&#39;</span><span class="p">:</span> <span class="n">data</span><span class="p">}</span>
+        <span class="k">yield</span> <span class="p">{</span><span class="s2">&quot;data&quot;</span><span class="p">:</span> <span class="n">data</span><span class="p">}</span>
 </pre></div>
 </div>
 </div>
@@ -305,7 +310,7 @@ only use a few samples for calibration.</p>
 <p>We use the Relay MxNet frontend to import a model from the Gluon model zoo.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span class="k">def</span> <span class="nf">get_model</span><span class="p">():</span>
     <span class="n">gluon_model</span> <span class="o">=</span> <span class="n">gluon</span><span class="o">.</span><span class="n">model_zoo</span><span class="o">.</span><span class="n">vision</span><span class="o">.</span><span class="n">get_model</span><span class="p">(</span><span class="n">model_name</span><span class="p">,</span> <span class="n">pretrained</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-    <span class="n">img_size</span> <span class="o">=</span> <span class="mi">299</span> <span class="k">if</span> <span class="n">model_name</span> <span class="o">==</span> <span class="s1">&#39;inceptionv3&#39;</span> <span class="k">else</span> <span class="mi">224</span>
+    <span class="n">img_size</span> <span class="o">=</span> <span class="mi">299</span> <span class="k">if</span> <span class="n">model_name</span> <span class="o">==</span> <span class="s2">&quot;inceptionv3&quot;</span> <span class="k">else</span> <span class="mi">224</span>
     <span class="n">data_shape</span> <span class="o">=</span> <span class="p">(</span><span class="n">batch_size</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="n">img_size</span><span class="p">,</span> <span class="n">img_size</span><span class="p">)</span>
     <span class="n">mod</span><span class="p">,</span> <span class="n">params</span> <span class="o">=</span> <a href="../../api/python/relay/frontend.html#tvm.relay.frontend.from_mxnet" title="View documentation for tvm.relay.frontend.from_mxnet"><span class="n">relay</span><span class="o">.</span><span class="n">frontend</span><span class="o">.</span><span class="n">from_mxnet</span></a><span class="p">(</span><span class="n">gluon_model</span><span class="p">,</span> <span class="p">{</span><span class="s2">&quot;data&quot;</span><span class="p">:</span> <span class="n">data_shape</span><span class="p">})</span>
     <span class="k">return</span> <span class="n">mod</span><span class="p">,</span> <span class="n">params</span>
@@ -333,10 +338,10 @@ Alternatively, we can also use pre-defined global scales. This saves the time
 for calibration. But the accuracy might be impacted.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span class="k">def</span> <span class="nf">quantize</span><span class="p">(</span><span class="n">mod</span><span class="p">,</span> <span class="n">params</span><span class="p">,</span> <span class="n">data_aware</span><span class="p">):</span>
     <span class="k">if</span> <span class="n">data_aware</span><span class="p">:</span>
-        <span class="k">with</span> <span class="n">relay</span><span class="o">.</span><span class="n">quantize</span><span class="o">.</span><span class="n">qconfig</span><span class="p">(</span><span class="n">calibrate_mode</span><span class="o">=</span><span class="s1">&#39;kl_divergence&#39;</span><span class="p">,</span> <span class="n">weight_scale</span><span class="o">=</span><span class="s1">&#39;max&#39;</span><span class="p">):</span>
+        <span class="k">with</span> <span class="n">relay</span><span class="o">.</span><span class="n">quantize</span><span class="o">.</span><span class="n">qconfig</span><span class="p">(</span><span class="n">calibrate_mode</span><span class="o">=</span><span class="s2">&quot;kl_divergence&quot;</span><span class="p">,</span> <span class="n">weight_scale</span><span class="o">=</span><span class="s2">&quot;max&quot;</span><span class="p">):</span>
             <span class="n">mod</span> <span class="o">=</span> <span class="n">relay</span><span class="o">.</span><span class="n">quantize</span><span class="o">.</span><span class="n">quantize</span><span class="p">(</span><span class="n">mod</span><span class="p">,</span> <span class="n">params</span><span class="p">,</span> <span class="n">dataset</span><span class="o">=</span><span class="n">calibrate_dataset</span><span class="p">())</span>
     <span class="k">else</span><span class="p">:</span>
-        <span class="k">with</span> <span class="n">relay</span><span class="o">.</span><span class="n">quantize</span><span class="o">.</span><span class="n">qconfig</span><span class="p">(</span><span class="n">calibrate_mode</span><span class="o">=</span><span class="s1">&#39;global_scale&#39;</span><span class="p">,</span> <span class="n">global_scale</span><span class="o">=</span><span class="mf">8.0</span><span class="p">):</span>
+        <span class="k">with</span> <span class="n">relay</span><span class="o">.</span><span class="n">quantize</span><span class="o">.</span><span class="n">qconfig</span><span class="p">(</span><span class="n">calibrate_mode</span><span class="o">=</span><span class="s2">&quot;global_scale&quot;</span><span class="p">,</span> <span class="n">global_scale</span><span class="o">=</span><span class="mf">8.0</span><span class="p">):</span>
             <span class="n">mod</span> <span class="o">=</span> <span class="n">relay</span><span class="o">.</span><span class="n">quantize</span><span class="o">.</span><span class="n">quantize</span><span class="p">(</span><span class="n">mod</span><span class="p">,</span> <span class="n">params</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">mod</span>
 </pre></div>
@@ -346,7 +351,7 @@ for calibration. But the accuracy might be impacted.</p>
 <h2>Run Inference<a class="headerlink" href="#run-inference" title="Permalink to this headline">¶</a></h2>
 <p>We create a Relay VM to build and execute the model.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span class="k">def</span> <span class="nf">run_inference</span><span class="p">(</span><span class="n">mod</span><span class="p">):</span>
-    <span class="n">executor</span> <span class="o">=</span> <a href="../../api/python/relay/index.html#tvm.relay.create_executor" title="View documentation for tvm.relay.create_executor"><span class="n">relay</span><span class="o">.</span><span class="n">create_executor</span></a><span class="p">(</span><span class="s1">&#39;vm&#39;</span><span class="p">,</span> <span class="n">mod</span><span class="p">,</span> <span class="n">ctx</span><span class="p">,</span> <span class="n">target</span><span class="p">)</span>
+    <span class="n">executor</span> <span class="o">=</span> <a href="../../api/python/relay/index.html#tvm.relay.create_executor" title="View documentation for tvm.relay.create_executor"><span class="n">relay</span><span class="o">.</span><span class="n">create_executor</span></a><span class="p">(</span><span class="s2">&quot;vm&quot;</span><span class="p">,</span> <span class="n">mod</span><span class="p">,</span> <span class="n">ctx</span><span class="p">,</span> <span class="n">target</span><span class="p">)</span>
     <span class="n">val_data</span><span class="p">,</span> <span class="n">batch_fn</span> <span class="o">=</span> <span class="n">get_val_data</span><span class="p">()</span>
     <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">batch</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">val_data</span><span class="p">):</span>
         <span class="n">data</span><span class="p">,</span> <span class="n">label</span> <span class="o">=</span> <span class="n">batch_fn</span><span class="p">(</span><span class="n">batch</span><span class="p">)</span>
@@ -354,12 +359,14 @@ for calibration. But the accuracy might be impacted.</p>
         <span class="k">if</span> <span class="n">i</span> <span class="o">&gt;</span> <span class="mi">10</span><span class="p">:</span>  <span class="c1"># only run inference on a few samples in this tutorial</span>
             <span class="k">break</span>
 
+
 <span class="k">def</span> <span class="nf">main</span><span class="p">():</span>
     <span class="n">mod</span><span class="p">,</span> <span class="n">params</span> <span class="o">=</span> <span class="n">get_model</span><span class="p">()</span>
     <span class="n">mod</span> <span class="o">=</span> <span class="n">quantize</span><span class="p">(</span><span class="n">mod</span><span class="p">,</span> <span class="n">params</span><span class="p">,</span> <span class="n">data_aware</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
     <span class="n">run_inference</span><span class="p">(</span><span class="n">mod</span><span class="p">)</span>
 
-<span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
+
+<span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
     <span class="n">main</span><span class="p">()</span>
 </pre></div>
 </div>
@@ -386,7 +393,7 @@ for calibration. But the accuracy might be impacted.</p>
         <a href="from_caffe2.html" class="btn btn-neutral float-right" title="Compile Caffe2 Models" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
-        <a href="from_keras.html" class="btn btn-neutral float-left" title="Compile Keras Models" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+        <a href="deploy_object_detection_pytorch.html" class="btn btn-neutral float-left" title="Compile PyTorch Object Detection Models" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
       
     </div>
   

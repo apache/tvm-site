@@ -40,7 +40,7 @@
   <link rel="stylesheet" href="../../_static/css/tvm_theme.css" type="text/css" />
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
-    <link rel="next" title="Deploy a Quantized Model on Cuda" href="deploy_quantized.html" />
+    <link rel="next" title="Compile PyTorch Object Detection Models" href="deploy_object_detection_pytorch.html" />
     <link rel="prev" title="Compile CoreML Models" href="from_coreml.html" /> 
 </head>
 
@@ -115,6 +115,7 @@
 <li class="toctree-l3"><a class="reference internal" href="#look-up-synset-name">Look up synset name</a></li>
 </ul>
 </li>
+<li class="toctree-l2"><a class="reference internal" href="deploy_object_detection_pytorch.html">Compile PyTorch Object Detection Models</a></li>
 <li class="toctree-l2"><a class="reference internal" href="deploy_quantized.html">Deploy a Quantized Model on Cuda</a></li>
 <li class="toctree-l2"><a class="reference internal" href="from_caffe2.html">Compile Caffe2 Models</a></li>
 <li class="toctree-l2"><a class="reference internal" href="from_mxnet.html">Compile MXNet Models</a></li>
@@ -132,7 +133,8 @@
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../index.html#tensor-expression-and-schedules">Tensor Expression and Schedules</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../index.html#optimize-tensor-operators">Optimize Tensor Operators</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../index.html#auto-tuning">Auto tuning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../index.html#autotvm-template-based-auto-tuning">AutoTVM : Template-based Auto Tuning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../index.html#autoscheduler-template-free-auto-scheduling">AutoScheduler : Template-free Auto Scheduling</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../index.html#developer-tutorials">Developer Tutorials</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../index.html#topi-tvm-operator-inventory">TOPI: TVM Operator Inventory</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../index.html#micro-tvm">Micro TVM</a></li>
@@ -248,12 +250,17 @@ pip install -U tensorflow --user
 <div class="section" id="load-pretrained-keras-model">
 <h2>Load pretrained keras model<a class="headerlink" href="#load-pretrained-keras-model" title="Permalink to this headline">¶</a></h2>
 <p>We load a pretrained resnet-50 classification model provided by keras.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span class="n">weights_url</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="s1">&#39;https://github.com/fchollet/deep-learning-models/releases/&#39;</span><span class="p">,</span>
-                       <span class="s1">&#39;download/v0.2/resnet50_weights_tf_dim_ordering_tf_kernels.h5&#39;</span><span class="p">])</span>
-<span class="n">weights_file</span> <span class="o">=</span> <span class="s1">&#39;resnet50_weights.h5&#39;</span>
-<span class="n">weights_path</span> <span class="o">=</span> <span class="n">download_testdata</span><span class="p">(</span><span class="n">weights_url</span><span class="p">,</span> <span class="n">weights_file</span><span class="p">,</span> <span class="n">module</span><span class="o">=</span><span class="s1">&#39;keras&#39;</span><span class="p">)</span>
-<span class="n">keras_resnet50</span> <span class="o">=</span> <span class="n">keras</span><span class="o">.</span><span class="n">applications</span><span class="o">.</span><span class="n">resnet50</span><span class="o">.</span><span class="n">ResNet50</span><span class="p">(</span><span class="n">include_top</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">weights</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-                                                      <span class="n">input_shape</span><span class="o">=</span><span class="p">(</span><span class="mi">224</span><span class="p">,</span> <span class="mi">224</span><span class="p">,</span> <span class="mi">3</span><span class="p">),</span> <span class="n">classes</span><span class="o">=</span><span class="mi">1000</span><span class="p">)</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span class="n">weights_url</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+    <span class="p">[</span>
+        <span class="s2">&quot;https://github.com/fchollet/deep-learning-models/releases/&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;download/v0.2/resnet50_weights_tf_dim_ordering_tf_kernels.h5&quot;</span><span class="p">,</span>
+    <span class="p">]</span>
+<span class="p">)</span>
+<span class="n">weights_file</span> <span class="o">=</span> <span class="s2">&quot;resnet50_weights.h5&quot;</span>
+<span class="n">weights_path</span> <span class="o">=</span> <span class="n">download_testdata</span><span class="p">(</span><span class="n">weights_url</span><span class="p">,</span> <span class="n">weights_file</span><span class="p">,</span> <span class="n">module</span><span class="o">=</span><span class="s2">&quot;keras&quot;</span><span class="p">)</span>
+<span class="n">keras_resnet50</span> <span class="o">=</span> <span class="n">keras</span><span class="o">.</span><span class="n">applications</span><span class="o">.</span><span class="n">resnet50</span><span class="o">.</span><span class="n">ResNet50</span><span class="p">(</span>
+    <span class="n">include_top</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">weights</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">input_shape</span><span class="o">=</span><span class="p">(</span><span class="mi">224</span><span class="p">,</span> <span class="mi">224</span><span class="p">,</span> <span class="mi">3</span><span class="p">),</span> <span class="n">classes</span><span class="o">=</span><span class="mi">1000</span>
+<span class="p">)</span>
 <span class="n">keras_resnet50</span><span class="o">.</span><span class="n">load_weights</span><span class="p">(</span><span class="n">weights_path</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -268,15 +275,16 @@ pip install -U tensorflow --user
 <div class="highlight-default notranslate"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">PIL</span> <span class="k">import</span> <span class="n">Image</span>
 <span class="kn">from</span> <span class="nn">matplotlib</span> <span class="k">import</span> <span class="n">pyplot</span> <span class="k">as</span> <span class="n">plt</span>
 <span class="kn">from</span> <span class="nn">keras.applications.resnet50</span> <span class="k">import</span> <span class="n">preprocess_input</span>
-<span class="n">img_url</span> <span class="o">=</span> <span class="s1">&#39;https://github.com/dmlc/mxnet.js/blob/master/data/cat.png?raw=true&#39;</span>
-<span class="n">img_path</span> <span class="o">=</span> <span class="n">download_testdata</span><span class="p">(</span><span class="n">img_url</span><span class="p">,</span> <span class="s1">&#39;cat.png&#39;</span><span class="p">,</span> <span class="n">module</span><span class="o">=</span><span class="s1">&#39;data&#39;</span><span class="p">)</span>
+
+<span class="n">img_url</span> <span class="o">=</span> <span class="s2">&quot;https://github.com/dmlc/mxnet.js/blob/master/data/cat.png?raw=true&quot;</span>
+<span class="n">img_path</span> <span class="o">=</span> <span class="n">download_testdata</span><span class="p">(</span><span class="n">img_url</span><span class="p">,</span> <span class="s2">&quot;cat.png&quot;</span><span class="p">,</span> <span class="n">module</span><span class="o">=</span><span class="s2">&quot;data&quot;</span><span class="p">)</span>
 <span class="n">img</span> <span class="o">=</span> <span class="n">Image</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">img_path</span><span class="p">)</span><span class="o">.</span><span class="n">resize</span><span class="p">((</span><span class="mi">224</span><span class="p">,</span> <span class="mi">224</span><span class="p">))</span>
 <a href="https://matplotlib.org/api/_as_gen/matplotlib.pyplot.imshow.rst.html#matplotlib.pyplot.imshow" title="View documentation for matplotlib.pyplot.imshow"><span class="n">plt</span><span class="o">.</span><span class="n">imshow</span></a><span class="p">(</span><span class="n">img</span><span class="p">)</span>
 <a href="https://matplotlib.org/api/_as_gen/matplotlib.pyplot.show.rst.html#matplotlib.pyplot.show" title="View documentation for matplotlib.pyplot.show"><span class="n">plt</span><span class="o">.</span><span class="n">show</span></a><span class="p">()</span>
 <span class="c1"># input preprocess</span>
-<span class="n">data</span> <span class="o">=</span> <a href="https://numpy.org/doc/stable/reference/generated/numpy.array.html#numpy.array" title="View documentation for numpy.array"><span class="n">np</span><span class="o">.</span><span class="n">array</span></a><span class="p">(</span><span class="n">img</span><span class="p">)[</span><a href="https://numpy.org/doc/stable/reference/constants.html#numpy.newaxis" title="View documentation for numpy.newaxis"><span class="n">np</span><span class="o">.</span><span class="n">newaxis</span></a><span class="p">,</span> <span class="p">:]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s1">&#39;float32&#39;</span><span class="p">)</span>
+<span class="n">data</span> <span class="o">=</span> <a href="https://numpy.org/doc/stable/reference/generated/numpy.array.html#numpy.array" title="View documentation for numpy.array"><span class="n">np</span><span class="o">.</span><span class="n">array</span></a><span class="p">(</span><span class="n">img</span><span class="p">)[</span><a href="https://numpy.org/doc/stable/reference/constants.html#numpy.newaxis" title="View documentation for numpy.newaxis"><span class="n">np</span><span class="o">.</span><span class="n">newaxis</span></a><span class="p">,</span> <span class="p">:]</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s2">&quot;float32&quot;</span><span class="p">)</span>
 <span class="n">data</span> <span class="o">=</span> <span class="n">preprocess_input</span><span class="p">(</span><span class="n">data</span><span class="p">)</span><span class="o">.</span><span class="n">transpose</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">])</span>
-<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;input_1&#39;</span><span class="p">,</span> <span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;input_1&quot;</span><span class="p">,</span> <span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
 </pre></div>
 </div>
 <img alt="../../_images/sphx_glr_from_keras_001.png" class="sphx-glr-single-img" src="../../_images/sphx_glr_from_keras_001.png" />
@@ -289,19 +297,19 @@ input_1 (1, 3, 224, 224)
 <div class="section" id="compile-the-model-with-relay">
 <h2>Compile the model with Relay<a class="headerlink" href="#compile-the-model-with-relay" title="Permalink to this headline">¶</a></h2>
 <p>convert the keras model(NHWC layout) to Relay format(NCHW layout).</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span class="n">shape_dict</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;input_1&#39;</span><span class="p">:</span> <span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">}</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span class="n">shape_dict</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;input_1&quot;</span><span class="p">:</span> <span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">}</span>
 <span class="n">mod</span><span class="p">,</span> <span class="n">params</span> <span class="o">=</span> <a href="../../api/python/relay/frontend.html#tvm.relay.frontend.from_keras" title="View documentation for tvm.relay.frontend.from_keras"><span class="n">relay</span><span class="o">.</span><span class="n">frontend</span><span class="o">.</span><span class="n">from_keras</span></a><span class="p">(</span><span class="n">keras_resnet50</span><span class="p">,</span> <span class="n">shape_dict</span><span class="p">)</span>
 <span class="c1"># compile the model</span>
-<span class="n">target</span> <span class="o">=</span> <span class="s1">&#39;cuda&#39;</span>
+<span class="n">target</span> <span class="o">=</span> <span class="s2">&quot;cuda&quot;</span>
 <span class="n">ctx</span> <span class="o">=</span> <span class="n">tvm</span><span class="o">.</span><span class="n">gpu</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
 <span class="k">with</span> <a href="../../api/python/ir.html#tvm.transform.PassContext" title="View documentation for tvm.transform.PassContext"><span class="n">tvm</span><span class="o">.</span><span class="n">transform</span><span class="o">.</span><span class="n">PassContext</span></a><span class="p">(</span><span class="n">opt_level</span><span class="o">=</span><span class="mi">3</span><span class="p">):</span>
-    <span class="n">executor</span> <span class="o">=</span> <a href="../../api/python/relay/index.html#tvm.relay.create_executor" title="View documentation for tvm.relay.build_module.create_executor"><span class="n">relay</span><span class="o">.</span><span class="n">build_module</span><span class="o">.</span><span class="n">create_executor</span></a><span class="p">(</span><span class="s1">&#39;graph&#39;</span><span class="p">,</span> <span class="n">mod</span><span class="p">,</span> <span class="n">ctx</span><span class="p">,</span> <span class="n">target</span><span class="p">)</span>
+    <span class="n">executor</span> <span class="o">=</span> <a href="../../api/python/relay/index.html#tvm.relay.create_executor" title="View documentation for tvm.relay.build_module.create_executor"><span class="n">relay</span><span class="o">.</span><span class="n">build_module</span><span class="o">.</span><span class="n">create_executor</span></a><span class="p">(</span><span class="s2">&quot;graph&quot;</span><span class="p">,</span> <span class="n">mod</span><span class="p">,</span> <span class="n">ctx</span><span class="p">,</span> <span class="n">target</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
 <div class="section" id="execute-on-tvm">
 <h2>Execute on TVM<a class="headerlink" href="#execute-on-tvm" title="Permalink to this headline">¶</a></h2>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span class="n">dtype</span> <span class="o">=</span> <span class="s1">&#39;float32&#39;</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span class="n">dtype</span> <span class="o">=</span> <span class="s2">&quot;float32&quot;</span>
 <span class="n">tvm_out</span> <span class="o">=</span> <span class="n">executor</span><span class="o">.</span><span class="n">evaluate</span><span class="p">()(</span><a href="../../api/python/ndarray.html#tvm.nd.array" title="View documentation for tvm.nd.array"><span class="n">tvm</span><span class="o">.</span><span class="n">nd</span><span class="o">.</span><span class="n">array</span></a><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">dtype</span><span class="p">)),</span> <span class="o">**</span><span class="n">params</span><span class="p">)</span>
 <span class="n">top1_tvm</span> <span class="o">=</span> <a href="https://numpy.org/doc/stable/reference/generated/numpy.argmax.html#numpy.argmax" title="View documentation for numpy.argmax"><span class="n">np</span><span class="o">.</span><span class="n">argmax</span></a><span class="p">(</span><span class="n">tvm_out</span><span class="o">.</span><span class="n">asnumpy</span><span class="p">()[</span><span class="mi">0</span><span class="p">])</span>
 </pre></div>
@@ -310,19 +318,23 @@ input_1 (1, 3, 224, 224)
 <div class="section" id="look-up-synset-name">
 <h2>Look up synset name<a class="headerlink" href="#look-up-synset-name" title="Permalink to this headline">¶</a></h2>
 <p>Look up prediction top 1 index in 1000 class synset.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span class="n">synset_url</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="s1">&#39;https://gist.githubusercontent.com/zhreshold/&#39;</span><span class="p">,</span>
-                      <span class="s1">&#39;4d0b62f3d01426887599d4f7ede23ee5/raw/&#39;</span><span class="p">,</span>
-                      <span class="s1">&#39;596b27d23537e5a1b5751d2b0481ef172f58b539/&#39;</span><span class="p">,</span>
-                      <span class="s1">&#39;imagenet1000_clsid_to_human.txt&#39;</span><span class="p">])</span>
-<span class="n">synset_name</span> <span class="o">=</span> <span class="s1">&#39;imagenet1000_clsid_to_human.txt&#39;</span>
-<span class="n">synset_path</span> <span class="o">=</span> <span class="n">download_testdata</span><span class="p">(</span><span class="n">synset_url</span><span class="p">,</span> <span class="n">synset_name</span><span class="p">,</span> <span class="n">module</span><span class="o">=</span><span class="s1">&#39;data&#39;</span><span class="p">)</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span class="n">synset_url</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+    <span class="p">[</span>
+        <span class="s2">&quot;https://gist.githubusercontent.com/zhreshold/&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;4d0b62f3d01426887599d4f7ede23ee5/raw/&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;596b27d23537e5a1b5751d2b0481ef172f58b539/&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;imagenet1000_clsid_to_human.txt&quot;</span><span class="p">,</span>
+    <span class="p">]</span>
+<span class="p">)</span>
+<span class="n">synset_name</span> <span class="o">=</span> <span class="s2">&quot;imagenet1000_clsid_to_human.txt&quot;</span>
+<span class="n">synset_path</span> <span class="o">=</span> <span class="n">download_testdata</span><span class="p">(</span><span class="n">synset_url</span><span class="p">,</span> <span class="n">synset_name</span><span class="p">,</span> <span class="n">module</span><span class="o">=</span><span class="s2">&quot;data&quot;</span><span class="p">)</span>
 <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">synset_path</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
     <span class="n">synset</span> <span class="o">=</span> <span class="nb">eval</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">read</span><span class="p">())</span>
-<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Relay top-1 id: {}, class name: {}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">top1_tvm</span><span class="p">,</span> <span class="n">synset</span><span class="p">[</span><span class="n">top1_tvm</span><span class="p">]))</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Relay top-1 id: {}, class name: {}&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">top1_tvm</span><span class="p">,</span> <span class="n">synset</span><span class="p">[</span><span class="n">top1_tvm</span><span class="p">]))</span>
 <span class="c1"># confirm correctness with keras output</span>
 <span class="n">keras_out</span> <span class="o">=</span> <span class="n">keras_resnet50</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">transpose</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">1</span><span class="p">]))</span>
 <span class="n">top1_keras</span> <span class="o">=</span> <a href="https://numpy.org/doc/stable/reference/generated/numpy.argmax.html#numpy.argmax" title="View documentation for numpy.argmax"><span class="n">np</span><span class="o">.</span><span class="n">argmax</span></a><span class="p">(</span><span class="n">keras_out</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Keras top-1 id: {}, class name: {}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">top1_keras</span><span class="p">,</span> <span class="n">synset</span><span class="p">[</span><span class="n">top1_keras</span><span class="p">]))</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Keras top-1 id: {}, class name: {}&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">top1_keras</span><span class="p">,</span> <span class="n">synset</span><span class="p">[</span><span class="n">top1_keras</span><span class="p">]))</span>
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
@@ -351,7 +363,7 @@ Keras top-1 id: 285, class name: Egyptian cat
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="deploy_quantized.html" class="btn btn-neutral float-right" title="Deploy a Quantized Model on Cuda" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+        <a href="deploy_object_detection_pytorch.html" class="btn btn-neutral float-right" title="Compile PyTorch Object Detection Models" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
         <a href="from_coreml.html" class="btn btn-neutral float-left" title="Compile CoreML Models" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>

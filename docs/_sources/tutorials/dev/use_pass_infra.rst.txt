@@ -55,11 +55,12 @@ Similarly, users can write a tir primitive function and apply the tir passes.
 .. code-block:: default
 
 
+
     def example():
         shape = (1, 64, 54, 54)
         c_data = np.empty(shape).astype("float32")
         c = relay.const(c_data)
-        weight = relay.var('weight', shape=(64, 64, 3, 3))
+        weight = relay.var("weight", shape=(64, 64, 3, 3))
         x = relay.var("x", relay.TensorType((1, 64, 56, 56), "float32"))
         conv = relay.nn.conv2d(x, weight)
         y = relay.add(c, c)
@@ -76,6 +77,7 @@ Similarly, users can write a tir primitive function and apply the tir passes.
 
 
 
+
 Let us register layout alteration for a conv2d op so that we can apply the
 layout alteration pass on the example. How alter layout pass works is out
 the scope of this tutorial.
@@ -84,12 +86,14 @@ the scope of this tutorial.
 .. code-block:: default
 
 
+
     @relay.op.register_alter_op_layout("nn.conv2d", level=101)
     def alter_conv2d(attrs, inputs, tinfos, out_type):
         data, weight = inputs
         new_attrs = dict(attrs)
-        new_attrs['data_layout'] = 'NCHW16c'
+        new_attrs["data_layout"] = "NCHW16c"
         return relay.nn.conv2d(data, weight, **new_attrs)
+
 
 
 
@@ -140,9 +144,9 @@ Manually Apply Optimization Passes
 
     def @main(%x: Tensor[(1, 64, 56, 56), float32], %weight: Tensor[(64, 64, 3, 3), float32]) -> Tensor[(1, 64, 54, 54), float32] {
       %0 = nn.conv2d(%x, %weight, padding=[0, 0, 0, 0]) /* ty=Tensor[(1, 64, 54, 54), float32] */;
-      %1 = add(%0, meta[relay.Constant][0] /* ty=Tensor[(1, 64, 54, 54), float32] */ /* ty=Tensor[(1, 64, 54, 54), float32] */) /* ty=Tensor[(1, 64, 54, 54), float32] */;
-      %2 = add(%1, meta[relay.Constant][1] /* ty=Tensor[(1, 64, 54, 54), float32] */ /* ty=Tensor[(1, 64, 54, 54), float32] */) /* ty=Tensor[(1, 64, 54, 54), float32] */;
-      %3 = add(%1, meta[relay.Constant][1] /* ty=Tensor[(1, 64, 54, 54), float32] */ /* ty=Tensor[(1, 64, 54, 54), float32] */) /* ty=Tensor[(1, 64, 54, 54), float32] */;
+      %1 = add(%0, meta[relay.Constant][0] /* ty=Tensor[(1, 64, 54, 54), float32] */) /* ty=Tensor[(1, 64, 54, 54), float32] */;
+      %2 = add(%1, meta[relay.Constant][1] /* ty=Tensor[(1, 64, 54, 54), float32] */) /* ty=Tensor[(1, 64, 54, 54), float32] */;
+      %3 = add(%1, meta[relay.Constant][1] /* ty=Tensor[(1, 64, 54, 54), float32] */) /* ty=Tensor[(1, 64, 54, 54), float32] */;
       add(%2, %3) /* ty=Tensor[(1, 64, 54, 54), float32] */
     }
 
@@ -171,8 +175,8 @@ eliminate the common expressions that used by `z` and `z1`.
 
     def @main(%x: Tensor[(1, 64, 56, 56), float32], %weight: Tensor[(64, 64, 3, 3), float32]) -> Tensor[(1, 64, 54, 54), float32] {
       %0 = nn.conv2d(%x, %weight, padding=[0, 0, 0, 0]) /* ty=Tensor[(1, 64, 54, 54), float32] */;
-      %1 = add(%0, meta[relay.Constant][0] /* ty=Tensor[(1, 64, 54, 54), float32] */ /* ty=Tensor[(1, 64, 54, 54), float32] */) /* ty=Tensor[(1, 64, 54, 54), float32] */;
-      %2 = add(%1, meta[relay.Constant][1] /* ty=Tensor[(1, 64, 54, 54), float32] */ /* ty=Tensor[(1, 64, 54, 54), float32] */) /* ty=Tensor[(1, 64, 54, 54), float32] */;
+      %1 = add(%0, meta[relay.Constant][0] /* ty=Tensor[(1, 64, 54, 54), float32] */) /* ty=Tensor[(1, 64, 54, 54), float32] */;
+      %2 = add(%1, meta[relay.Constant][1] /* ty=Tensor[(1, 64, 54, 54), float32] */) /* ty=Tensor[(1, 64, 54, 54), float32] */;
       add(%2, %2) /* ty=Tensor[(1, 64, 54, 54), float32] */
     }
 
@@ -211,11 +215,11 @@ opt level 0 will not allow operators to be fused together. Users can pass the
       %2 = fn (%p01: Tensor[(1, 64, 54, 54), float32], %p11: Tensor[(1, 64, 54, 54), float32], Primitive=1) -> Tensor[(1, 64, 54, 54), float32] {
         add(%p01, %p11) /* ty=Tensor[(1, 64, 54, 54), float32] */
       };
-      %3 = %2(%1, meta[relay.Constant][0] /* ty=Tensor[(1, 64, 54, 54), float32] */ /* ty=Tensor[(1, 64, 54, 54), float32] */) /* ty=Tensor[(1, 64, 54, 54), float32] */;
+      %3 = %2(%1, meta[relay.Constant][0] /* ty=Tensor[(1, 64, 54, 54), float32] */) /* ty=Tensor[(1, 64, 54, 54), float32] */;
       %4 = fn (%p02: Tensor[(1, 64, 54, 54), float32], %p12: Tensor[(1, 64, 54, 54), float32], Primitive=1) -> Tensor[(1, 64, 54, 54), float32] {
         add(%p02, %p12) /* ty=Tensor[(1, 64, 54, 54), float32] */
       };
-      %5 = %4(%3, meta[relay.Constant][1] /* ty=Tensor[(1, 64, 54, 54), float32] */ /* ty=Tensor[(1, 64, 54, 54), float32] */) /* ty=Tensor[(1, 64, 54, 54), float32] */;
+      %5 = %4(%3, meta[relay.Constant][1] /* ty=Tensor[(1, 64, 54, 54), float32] */) /* ty=Tensor[(1, 64, 54, 54), float32] */;
       %6 = fn (%p03: Tensor[(1, 64, 54, 54), float32], Primitive=1) -> Tensor[(1, 64, 54, 54), float32] {
         add(%p03, %p03) /* ty=Tensor[(1, 64, 54, 54), float32] */
       };
@@ -254,9 +258,13 @@ pass.
     f = example()
     mod = tvm.IRModule.from_expr(f)
     # Glob the interested passes.
-    seq = tvm.transform.Sequential([relay.transform.FoldConstant(),
-                                      relay.transform.EliminateCommonSubexpr(),
-                                      relay.transform.FuseOps(fuse_opt_level=2)])
+    seq = tvm.transform.Sequential(
+        [
+            relay.transform.FoldConstant(),
+            relay.transform.EliminateCommonSubexpr(),
+            relay.transform.FuseOps(fuse_opt_level=2),
+        ]
+    )
     mod1 = seq(mod)
     print(mod1)
 
@@ -278,7 +286,7 @@ pass.
         %3 = add(%1, %p3) /* ty=Tensor[(1, 64, 54, 54), float32] */;
         add(%2, %3) /* ty=Tensor[(1, 64, 54, 54), float32] */
       };
-      %4(%x, %weight, meta[relay.Constant][0] /* ty=Tensor[(1, 64, 54, 54), float32] */ /* ty=Tensor[(1, 64, 54, 54), float32] */, meta[relay.Constant][1] /* ty=Tensor[(1, 64, 54, 54), float32] */ /* ty=Tensor[(1, 64, 54, 54), float32] */) /* ty=Tensor[(1, 64, 54, 54), float32] */
+      %4(%x, %weight, meta[relay.Constant][0] /* ty=Tensor[(1, 64, 54, 54), float32] */, meta[relay.Constant][1] /* ty=Tensor[(1, 64, 54, 54), float32] */) /* ty=Tensor[(1, 64, 54, 54), float32] */
     }
 
 
@@ -318,7 +326,7 @@ for users to customize the optimization level that they want to execute.
         %2 = add(%1, %p3) /* ty=Tensor[(1, 64, 54, 54), float32] */;
         add(%2, %2) /* ty=Tensor[(1, 64, 54, 54), float32] */
       };
-      %3(%x, %weight, meta[relay.Constant][0] /* ty=Tensor[(1, 64, 54, 54), float32] */ /* ty=Tensor[(1, 64, 54, 54), float32] */, meta[relay.Constant][1] /* ty=Tensor[(1, 64, 54, 54), float32] */ /* ty=Tensor[(1, 64, 54, 54), float32] */) /* ty=Tensor[(1, 64, 54, 54), float32] */
+      %3(%x, %weight, meta[relay.Constant][0] /* ty=Tensor[(1, 64, 54, 54), float32] */, meta[relay.Constant][1] /* ty=Tensor[(1, 64, 54, 54), float32] */) /* ty=Tensor[(1, 64, 54, 54), float32] */
     }
 
 
@@ -359,7 +367,7 @@ identical addition operations.
         %3 = add(%1, %p3) /* ty=Tensor[(1, 64, 54, 54), float32] */;
         add(%2, %3) /* ty=Tensor[(1, 64, 54, 54), float32] */
       };
-      %4(%x, %weight, meta[relay.Constant][0] /* ty=Tensor[(1, 64, 54, 54), float32] */ /* ty=Tensor[(1, 64, 54, 54), float32] */, meta[relay.Constant][1] /* ty=Tensor[(1, 64, 54, 54), float32] */ /* ty=Tensor[(1, 64, 54, 54), float32] */) /* ty=Tensor[(1, 64, 54, 54), float32] */
+      %4(%x, %weight, meta[relay.Constant][0] /* ty=Tensor[(1, 64, 54, 54), float32] */, meta[relay.Constant][1] /* ty=Tensor[(1, 64, 54, 54), float32] */) /* ty=Tensor[(1, 64, 54, 54), float32] */
     }
 
 
@@ -380,7 +388,7 @@ alteration pass falls in such category.
 
     seq1 = tvm.transform.Sequential([relay.transform.AlterOpLayout()])
     with tvm.transform.PassContext(opt_level=3):
-        with tvm.target.create("llvm"):
+        with tvm.target.Target("llvm"):
             mod5 = seq1(mod)
     print(mod5)
 
@@ -401,18 +409,18 @@ alteration pass falls in such category.
         %2 = add(%1, %p3) /* ty=Tensor[(1, 64, 54, 54), float32] */;
         add(%2, %2) /* ty=Tensor[(1, 64, 54, 54), float32] */
       };
-      %3(%x, %weight, meta[relay.Constant][0] /* ty=Tensor[(1, 64, 54, 54), float32] */ /* ty=Tensor[(1, 64, 54, 54), float32] */, meta[relay.Constant][1] /* ty=Tensor[(1, 64, 54, 54), float32] */ /* ty=Tensor[(1, 64, 54, 54), float32] */) /* ty=Tensor[(1, 64, 54, 54), float32] */
+      %3(%x, %weight, meta[relay.Constant][0] /* ty=Tensor[(1, 64, 54, 54), float32] */, meta[relay.Constant][1] /* ty=Tensor[(1, 64, 54, 54), float32] */) /* ty=Tensor[(1, 64, 54, 54), float32] */
     }
 
 
     def @main(%x: Tensor[(1, 64, 56, 56), float32], %weight: Tensor[(64, 64, 3, 3), float32]) -> Tensor[(1, 64, 54, 54), float32] {
       %0 = layout_transform(%x, src_layout="NCHW", dst_layout="NCHW16c") /* ty=Tensor[(1, 4, 56, 56, 16), float32] */;
       %1 = nn.conv2d(%0, %weight, padding=[0, 0, 0, 0], data_layout="NCHW16c") /* ty=Tensor[(1, 4, 54, 54, 16), float32] */;
-      %2 = add(meta[relay.Constant][0] /* ty=Tensor[(1, 64, 54, 54), float32] */ /* ty=Tensor[(1, 64, 54, 54), float32] */, meta[relay.Constant][0] /* ty=Tensor[(1, 64, 54, 54), float32] */ /* ty=Tensor[(1, 64, 54, 54), float32] */) /* ty=Tensor[(1, 64, 54, 54), float32] */;
+      %2 = add(meta[relay.Constant][0] /* ty=Tensor[(1, 64, 54, 54), float32] */, meta[relay.Constant][0] /* ty=Tensor[(1, 64, 54, 54), float32] */) /* ty=Tensor[(1, 64, 54, 54), float32] */;
       %3 = multiply(%2, 2f /* ty=float32 */) /* ty=Tensor[(1, 64, 54, 54), float32] */;
       %4 = layout_transform(%3, src_layout="NCHW", dst_layout="NCHW16c") /* ty=Tensor[(1, 4, 54, 54, 16), float32] */;
       %5 = add(%1, %4) /* ty=Tensor[(1, 4, 54, 54, 16), float32] */;
-      %6 = layout_transform(meta[relay.Constant][0] /* ty=Tensor[(1, 64, 54, 54), float32] */ /* ty=Tensor[(1, 64, 54, 54), float32] */, src_layout="NCHW", dst_layout="NCHW16c") /* ty=Tensor[(1, 4, 54, 54, 16), float32] */;
+      %6 = layout_transform(meta[relay.Constant][0] /* ty=Tensor[(1, 64, 54, 54), float32] */, src_layout="NCHW", dst_layout="NCHW16c") /* ty=Tensor[(1, 4, 54, 54, 16), float32] */;
       %7 = add(%5, %6) /* ty=Tensor[(1, 4, 54, 54, 16), float32] */;
       %8 = add(%5, %6) /* ty=Tensor[(1, 4, 54, 54, 16), float32] */;
       %9 = add(%7, %8) /* ty=Tensor[(1, 4, 54, 54, 16), float32] */;
@@ -438,6 +446,7 @@ customized pass.
 .. code-block:: default
 
 
+
     @relay.transform.function_pass(opt_level=1)
     class CustomPipeline:
         """Simple test function to replace one argument to another."""
@@ -452,7 +461,9 @@ customized pass.
             class ReplaceConstant(tvm.relay.ExprMutator):
                 def visit_constant(self, c):
                     return relay.multiply(obj.multiplier, c)
+
             return ReplaceConstant().visit(func)
+
 
     f = example()
     mod = tvm.IRModule.from_expr(f)
@@ -473,7 +484,7 @@ customized pass.
 
     def @main(%x: Tensor[(1, 64, 56, 56), float32], %weight: Tensor[(64, 64, 3, 3), float32]) -> Tensor[(1, 64, 54, 54), float32] {
       %0 = nn.conv2d(%x, %weight, padding=[0, 0, 0, 0]) /* ty=Tensor[(1, 64, 54, 54), float32] */;
-      %1 = multiply(3f /* ty=float32 */, meta[relay.Constant][0] /* ty=Tensor[(1, 64, 54, 54), float32] */ /* ty=Tensor[(1, 64, 54, 54), float32] */) /* ty=Tensor[(1, 64, 54, 54), float32] */;
+      %1 = multiply(3f /* ty=float32 */, meta[relay.Constant][0] /* ty=Tensor[(1, 64, 54, 54), float32] */) /* ty=Tensor[(1, 64, 54, 54), float32] */;
       %2 = add(%1, %1) /* ty=Tensor[(1, 64, 54, 54), float32] */;
       %3 = multiply(3f /* ty=float32 */, 2f /* ty=float32 */) /* ty=float32 */;
       %4 = multiply(%2, %3) /* ty=Tensor[(1, 64, 54, 54), float32] */;
@@ -500,16 +511,20 @@ could be like the following to enable IR dumping for ``FoldConstant`` optimizati
 
     f = example()
     mod = tvm.IRModule.from_expr(f)
-    seq = tvm.transform.Sequential([relay.transform.FoldConstant(),
-                                    tvm.transform.PrintIR(),
-                                    relay.transform.EliminateCommonSubexpr(),
-                                    relay.transform.FuseOps(),
-                                    relay.transform.AlterOpLayout()])
+    seq = tvm.transform.Sequential(
+        [
+            relay.transform.FoldConstant(),
+            tvm.transform.PrintIR(),
+            relay.transform.EliminateCommonSubexpr(),
+            relay.transform.FuseOps(),
+            relay.transform.AlterOpLayout(),
+        ]
+    )
 
     # By inserting the ``PrintIR`` pass after ``FoldConstant``, the pass infra will
     # dump out the module IR when ``FoldConstant`` is done. Users can plug in this
     # pass after any pass they want to debug for viewing the optimization effect.
-    # 
+    #
     # There is a more flexible debugging mechanism also exposed by the build configuration
     # object. One can pass a tracing function which can be used to execute arbitrary code
     # before and/or after each pass. A tracing function will receive a :py::class:`tvm.IRModule`,
@@ -517,14 +532,16 @@ could be like the following to enable IR dumping for ``FoldConstant`` optimizati
     # and a boolean indicating whether you are executing before, or after a pass.
     # An example is below.
 
+
     def print_ir(mod, info, is_before):
         """Print the name of the pass, the IR, only before passes execute."""
         if is_before:
             print("Running pass: {}", info)
             print(mod)
 
+
     with tvm.transform.PassContext(opt_level=3, trace=print_ir):
-        with tvm.target.create("llvm"):
+        with tvm.target.Target("llvm"):
             # Perform the optimizations.
             mod = seq(mod)
     print(mod)
@@ -546,11 +563,11 @@ could be like the following to enable IR dumping for ``FoldConstant`` optimizati
 
     def @main(%x: Tensor[(1, 64, 56, 56), float32], %weight: Tensor[(64, 64, 3, 3), float32]) -> Tensor[(1, 64, 54, 54), float32] {
       %0 = nn.conv2d(%x, %weight, padding=[0, 0, 0, 0]) /* ty=Tensor[(1, 64, 54, 54), float32] */;
-      %1 = add(meta[relay.Constant][0] /* ty=Tensor[(1, 64, 54, 54), float32] */ /* ty=Tensor[(1, 64, 54, 54), float32] */, meta[relay.Constant][0] /* ty=Tensor[(1, 64, 54, 54), float32] */ /* ty=Tensor[(1, 64, 54, 54), float32] */) /* ty=Tensor[(1, 64, 54, 54), float32] */;
+      %1 = add(meta[relay.Constant][0] /* ty=Tensor[(1, 64, 54, 54), float32] */, meta[relay.Constant][0] /* ty=Tensor[(1, 64, 54, 54), float32] */) /* ty=Tensor[(1, 64, 54, 54), float32] */;
       %2 = multiply(%1, 2f /* ty=float32 */) /* ty=Tensor[(1, 64, 54, 54), float32] */;
       %3 = add(%0, %2) /* ty=Tensor[(1, 64, 54, 54), float32] */;
-      %4 = add(%3, meta[relay.Constant][0] /* ty=Tensor[(1, 64, 54, 54), float32] */ /* ty=Tensor[(1, 64, 54, 54), float32] */) /* ty=Tensor[(1, 64, 54, 54), float32] */;
-      %5 = add(%3, meta[relay.Constant][0] /* ty=Tensor[(1, 64, 54, 54), float32] */ /* ty=Tensor[(1, 64, 54, 54), float32] */) /* ty=Tensor[(1, 64, 54, 54), float32] */;
+      %4 = add(%3, meta[relay.Constant][0] /* ty=Tensor[(1, 64, 54, 54), float32] */) /* ty=Tensor[(1, 64, 54, 54), float32] */;
+      %5 = add(%3, meta[relay.Constant][0] /* ty=Tensor[(1, 64, 54, 54), float32] */) /* ty=Tensor[(1, 64, 54, 54), float32] */;
       add(%4, %5) /* ty=Tensor[(1, 64, 54, 54), float32] */
     }
 
@@ -559,7 +576,7 @@ could be like the following to enable IR dumping for ``FoldConstant`` optimizati
     ]
 
     def @main() -> Tensor[(1, 64, 54, 54), float32] {
-      add(meta[relay.Constant][0] /* ty=Tensor[(1, 64, 54, 54), float32] */ /* ty=Tensor[(1, 64, 54, 54), float32] */, meta[relay.Constant][0] /* ty=Tensor[(1, 64, 54, 54), float32] */ /* ty=Tensor[(1, 64, 54, 54), float32] */) /* ty=Tensor[(1, 64, 54, 54), float32] */
+      add(meta[relay.Constant][0] /* ty=Tensor[(1, 64, 54, 54), float32] */, meta[relay.Constant][0] /* ty=Tensor[(1, 64, 54, 54), float32] */) /* ty=Tensor[(1, 64, 54, 54), float32] */
     }
 
 
@@ -567,7 +584,7 @@ could be like the following to enable IR dumping for ``FoldConstant`` optimizati
     InferType, ]
 
     def @main() -> Tensor[(1, 64, 54, 54), float32] {
-      add(meta[relay.Constant][0] /* ty=Tensor[(1, 64, 54, 54), float32] */ /* ty=Tensor[(1, 64, 54, 54), float32] */, meta[relay.Constant][0] /* ty=Tensor[(1, 64, 54, 54), float32] */ /* ty=Tensor[(1, 64, 54, 54), float32] */) /* ty=Tensor[(1, 64, 54, 54), float32] */
+      add(meta[relay.Constant][0] /* ty=Tensor[(1, 64, 54, 54), float32] */, meta[relay.Constant][0] /* ty=Tensor[(1, 64, 54, 54), float32] */) /* ty=Tensor[(1, 64, 54, 54), float32] */
     }
 
 
@@ -578,7 +595,7 @@ could be like the following to enable IR dumping for ``FoldConstant`` optimizati
       %0 = fn (%p0: Tensor[(1, 64, 54, 54), float32], Primitive=1) -> Tensor[(1, 64, 54, 54), float32] {
         add(%p0, %p0) /* ty=Tensor[(1, 64, 54, 54), float32] */
       };
-      %0(meta[relay.Constant][0] /* ty=Tensor[(1, 64, 54, 54), float32] */ /* ty=Tensor[(1, 64, 54, 54), float32] */) /* ty=Tensor[(1, 64, 54, 54), float32] */
+      %0(meta[relay.Constant][0] /* ty=Tensor[(1, 64, 54, 54), float32] */) /* ty=Tensor[(1, 64, 54, 54), float32] */
     }
 
 
@@ -586,7 +603,7 @@ could be like the following to enable IR dumping for ``FoldConstant`` optimizati
     ]
 
     def @main() -> Tensor[(1, 64, 54, 54), float32] {
-      let %x: Tensor[(1, 64, 54, 54), float32] = meta[relay.Constant][0] /* ty=Tensor[(1, 64, 54, 54), float32] */ /* ty=Tensor[(1, 64, 54, 54), float32] */;
+      let %x: Tensor[(1, 64, 54, 54), float32] = meta[relay.Constant][0] /* ty=Tensor[(1, 64, 54, 54), float32] */;
       let %x1: fn (Tensor[(1, 64, 54, 54), float32]) -> Tensor[(1, 64, 54, 54), float32] = fn (%p0: Tensor[(1, 64, 54, 54), float32], Primitive=1) -> Tensor[(1, 64, 54, 54), float32] {
         add(%p0, %p0) /* ty=Tensor[(1, 64, 54, 54), float32] */
       };
@@ -599,7 +616,7 @@ could be like the following to enable IR dumping for ``FoldConstant`` optimizati
     ]
 
     def @main() -> Tensor[(1, 64, 54, 54), float32] {
-      multiply(meta[relay.Constant][0] /* ty=Tensor[(1, 64, 54, 54), float32] */ /* ty=Tensor[(1, 64, 54, 54), float32] */, 2f /* ty=float32 */) /* ty=Tensor[(1, 64, 54, 54), float32] */
+      multiply(meta[relay.Constant][0] /* ty=Tensor[(1, 64, 54, 54), float32] */, 2f /* ty=float32 */) /* ty=Tensor[(1, 64, 54, 54), float32] */
     }
 
 
@@ -607,7 +624,7 @@ could be like the following to enable IR dumping for ``FoldConstant`` optimizati
     InferType, ]
 
     def @main() -> Tensor[(1, 64, 54, 54), float32] {
-      multiply(meta[relay.Constant][0] /* ty=Tensor[(1, 64, 54, 54), float32] */ /* ty=Tensor[(1, 64, 54, 54), float32] */, 2f /* ty=float32 */) /* ty=Tensor[(1, 64, 54, 54), float32] */
+      multiply(meta[relay.Constant][0] /* ty=Tensor[(1, 64, 54, 54), float32] */, 2f /* ty=float32 */) /* ty=Tensor[(1, 64, 54, 54), float32] */
     }
 
 
@@ -618,7 +635,7 @@ could be like the following to enable IR dumping for ``FoldConstant`` optimizati
       %0 = fn (%p0: Tensor[(1, 64, 54, 54), float32], %p1: float32, Primitive=1) -> Tensor[(1, 64, 54, 54), float32] {
         multiply(%p0, %p1) /* ty=Tensor[(1, 64, 54, 54), float32] */
       };
-      %0(meta[relay.Constant][0] /* ty=Tensor[(1, 64, 54, 54), float32] */ /* ty=Tensor[(1, 64, 54, 54), float32] */, 2f /* ty=float32 */) /* ty=Tensor[(1, 64, 54, 54), float32] */
+      %0(meta[relay.Constant][0] /* ty=Tensor[(1, 64, 54, 54), float32] */, 2f /* ty=float32 */) /* ty=Tensor[(1, 64, 54, 54), float32] */
     }
 
 
@@ -626,7 +643,7 @@ could be like the following to enable IR dumping for ``FoldConstant`` optimizati
     ]
 
     def @main() -> Tensor[(1, 64, 54, 54), float32] {
-      let %x: Tensor[(1, 64, 54, 54), float32] = meta[relay.Constant][0] /* ty=Tensor[(1, 64, 54, 54), float32] */ /* ty=Tensor[(1, 64, 54, 54), float32] */;
+      let %x: Tensor[(1, 64, 54, 54), float32] = meta[relay.Constant][0] /* ty=Tensor[(1, 64, 54, 54), float32] */;
       let %x1: float32 = 2f /* ty=float32 */;
       let %x2: fn (Tensor[(1, 64, 54, 54), float32], float32) -> Tensor[(1, 64, 54, 54), float32] = fn (%p0: Tensor[(1, 64, 54, 54), float32], %p1: float32, Primitive=1) -> Tensor[(1, 64, 54, 54), float32] {
         multiply(%p0, %p1) /* ty=Tensor[(1, 64, 54, 54), float32] */
@@ -641,9 +658,9 @@ could be like the following to enable IR dumping for ``FoldConstant`` optimizati
 
     def @main(%x: Tensor[(1, 64, 56, 56), float32], %weight: Tensor[(64, 64, 3, 3), float32]) -> Tensor[(1, 64, 54, 54), float32] {
       %0 = nn.conv2d(%x, %weight, padding=[0, 0, 0, 0]) /* ty=Tensor[(1, 64, 54, 54), float32] */;
-      %1 = add(%0, meta[relay.Constant][0] /* ty=Tensor[(1, 64, 54, 54), float32] */ /* ty=Tensor[(1, 64, 54, 54), float32] */) /* ty=Tensor[(1, 64, 54, 54), float32] */;
-      %2 = add(%1, meta[relay.Constant][1] /* ty=Tensor[(1, 64, 54, 54), float32] */ /* ty=Tensor[(1, 64, 54, 54), float32] */) /* ty=Tensor[(1, 64, 54, 54), float32] */;
-      %3 = add(%1, meta[relay.Constant][1] /* ty=Tensor[(1, 64, 54, 54), float32] */ /* ty=Tensor[(1, 64, 54, 54), float32] */) /* ty=Tensor[(1, 64, 54, 54), float32] */;
+      %1 = add(%0, meta[relay.Constant][0] /* ty=Tensor[(1, 64, 54, 54), float32] */) /* ty=Tensor[(1, 64, 54, 54), float32] */;
+      %2 = add(%1, meta[relay.Constant][1] /* ty=Tensor[(1, 64, 54, 54), float32] */) /* ty=Tensor[(1, 64, 54, 54), float32] */;
+      %3 = add(%1, meta[relay.Constant][1] /* ty=Tensor[(1, 64, 54, 54), float32] */) /* ty=Tensor[(1, 64, 54, 54), float32] */;
       add(%2, %3) /* ty=Tensor[(1, 64, 54, 54), float32] */
     }
 
@@ -653,9 +670,9 @@ could be like the following to enable IR dumping for ``FoldConstant`` optimizati
 
     def @main(%x: Tensor[(1, 64, 56, 56), float32], %weight: Tensor[(64, 64, 3, 3), float32]) -> Tensor[(1, 64, 54, 54), float32] {
       %0 = nn.conv2d(%x, %weight, padding=[0, 0, 0, 0]) /* ty=Tensor[(1, 64, 54, 54), float32] */;
-      %1 = add(%0, meta[relay.Constant][0] /* ty=Tensor[(1, 64, 54, 54), float32] */ /* ty=Tensor[(1, 64, 54, 54), float32] */) /* ty=Tensor[(1, 64, 54, 54), float32] */;
-      %2 = add(%1, meta[relay.Constant][1] /* ty=Tensor[(1, 64, 54, 54), float32] */ /* ty=Tensor[(1, 64, 54, 54), float32] */) /* ty=Tensor[(1, 64, 54, 54), float32] */;
-      %3 = add(%1, meta[relay.Constant][1] /* ty=Tensor[(1, 64, 54, 54), float32] */ /* ty=Tensor[(1, 64, 54, 54), float32] */) /* ty=Tensor[(1, 64, 54, 54), float32] */;
+      %1 = add(%0, meta[relay.Constant][0] /* ty=Tensor[(1, 64, 54, 54), float32] */) /* ty=Tensor[(1, 64, 54, 54), float32] */;
+      %2 = add(%1, meta[relay.Constant][1] /* ty=Tensor[(1, 64, 54, 54), float32] */) /* ty=Tensor[(1, 64, 54, 54), float32] */;
+      %3 = add(%1, meta[relay.Constant][1] /* ty=Tensor[(1, 64, 54, 54), float32] */) /* ty=Tensor[(1, 64, 54, 54), float32] */;
       add(%2, %3) /* ty=Tensor[(1, 64, 54, 54), float32] */
     }
 
@@ -665,9 +682,9 @@ could be like the following to enable IR dumping for ``FoldConstant`` optimizati
 
     def @main(%x: Tensor[(1, 64, 56, 56), float32], %weight: Tensor[(64, 64, 3, 3), float32]) -> Tensor[(1, 64, 54, 54), float32] {
       %0 = nn.conv2d(%x, %weight, padding=[0, 0, 0, 0]) /* ty=Tensor[(1, 64, 54, 54), float32] */;
-      %1 = add(%0, meta[relay.Constant][0] /* ty=Tensor[(1, 64, 54, 54), float32] */ /* ty=Tensor[(1, 64, 54, 54), float32] */) /* ty=Tensor[(1, 64, 54, 54), float32] */;
-      %2 = add(%1, meta[relay.Constant][1] /* ty=Tensor[(1, 64, 54, 54), float32] */ /* ty=Tensor[(1, 64, 54, 54), float32] */) /* ty=Tensor[(1, 64, 54, 54), float32] */;
-      %3 = add(%1, meta[relay.Constant][1] /* ty=Tensor[(1, 64, 54, 54), float32] */ /* ty=Tensor[(1, 64, 54, 54), float32] */) /* ty=Tensor[(1, 64, 54, 54), float32] */;
+      %1 = add(%0, meta[relay.Constant][0] /* ty=Tensor[(1, 64, 54, 54), float32] */) /* ty=Tensor[(1, 64, 54, 54), float32] */;
+      %2 = add(%1, meta[relay.Constant][1] /* ty=Tensor[(1, 64, 54, 54), float32] */) /* ty=Tensor[(1, 64, 54, 54), float32] */;
+      %3 = add(%1, meta[relay.Constant][1] /* ty=Tensor[(1, 64, 54, 54), float32] */) /* ty=Tensor[(1, 64, 54, 54), float32] */;
       add(%2, %3) /* ty=Tensor[(1, 64, 54, 54), float32] */
     }
 
@@ -677,8 +694,8 @@ could be like the following to enable IR dumping for ``FoldConstant`` optimizati
 
     def @main(%x: Tensor[(1, 64, 56, 56), float32], %weight: Tensor[(64, 64, 3, 3), float32]) -> Tensor[(1, 64, 54, 54), float32] {
       %0 = nn.conv2d(%x, %weight, padding=[0, 0, 0, 0]) /* ty=Tensor[(1, 64, 54, 54), float32] */;
-      %1 = add(%0, meta[relay.Constant][0] /* ty=Tensor[(1, 64, 54, 54), float32] */ /* ty=Tensor[(1, 64, 54, 54), float32] */) /* ty=Tensor[(1, 64, 54, 54), float32] */;
-      %2 = add(%1, meta[relay.Constant][1] /* ty=Tensor[(1, 64, 54, 54), float32] */ /* ty=Tensor[(1, 64, 54, 54), float32] */) /* ty=Tensor[(1, 64, 54, 54), float32] */;
+      %1 = add(%0, meta[relay.Constant][0] /* ty=Tensor[(1, 64, 54, 54), float32] */) /* ty=Tensor[(1, 64, 54, 54), float32] */;
+      %2 = add(%1, meta[relay.Constant][1] /* ty=Tensor[(1, 64, 54, 54), float32] */) /* ty=Tensor[(1, 64, 54, 54), float32] */;
       add(%2, %2) /* ty=Tensor[(1, 64, 54, 54), float32] */
     }
 
@@ -688,8 +705,8 @@ could be like the following to enable IR dumping for ``FoldConstant`` optimizati
 
     def @main(%x: Tensor[(1, 64, 56, 56), float32], %weight: Tensor[(64, 64, 3, 3), float32]) -> Tensor[(1, 64, 54, 54), float32] {
       %0 = nn.conv2d(%x, %weight, padding=[0, 0, 0, 0]) /* ty=Tensor[(1, 64, 54, 54), float32] */;
-      %1 = add(%0, meta[relay.Constant][0] /* ty=Tensor[(1, 64, 54, 54), float32] */ /* ty=Tensor[(1, 64, 54, 54), float32] */) /* ty=Tensor[(1, 64, 54, 54), float32] */;
-      %2 = add(%1, meta[relay.Constant][1] /* ty=Tensor[(1, 64, 54, 54), float32] */ /* ty=Tensor[(1, 64, 54, 54), float32] */) /* ty=Tensor[(1, 64, 54, 54), float32] */;
+      %1 = add(%0, meta[relay.Constant][0] /* ty=Tensor[(1, 64, 54, 54), float32] */) /* ty=Tensor[(1, 64, 54, 54), float32] */;
+      %2 = add(%1, meta[relay.Constant][1] /* ty=Tensor[(1, 64, 54, 54), float32] */) /* ty=Tensor[(1, 64, 54, 54), float32] */;
       add(%2, %2) /* ty=Tensor[(1, 64, 54, 54), float32] */
     }
 
@@ -704,7 +721,7 @@ could be like the following to enable IR dumping for ``FoldConstant`` optimizati
         %2 = add(%1, %p3) /* ty=Tensor[(1, 64, 54, 54), float32] */;
         add(%2, %2) /* ty=Tensor[(1, 64, 54, 54), float32] */
       };
-      %3(%x, %weight, meta[relay.Constant][0] /* ty=Tensor[(1, 64, 54, 54), float32] */ /* ty=Tensor[(1, 64, 54, 54), float32] */, meta[relay.Constant][1] /* ty=Tensor[(1, 64, 54, 54), float32] */ /* ty=Tensor[(1, 64, 54, 54), float32] */) /* ty=Tensor[(1, 64, 54, 54), float32] */
+      %3(%x, %weight, meta[relay.Constant][0] /* ty=Tensor[(1, 64, 54, 54), float32] */, meta[relay.Constant][1] /* ty=Tensor[(1, 64, 54, 54), float32] */) /* ty=Tensor[(1, 64, 54, 54), float32] */
     }
 
 
@@ -718,7 +735,7 @@ could be like the following to enable IR dumping for ``FoldConstant`` optimizati
         %2 = add(%1, %p3) /* ty=Tensor[(1, 64, 54, 54), float32] */;
         add(%2, %2) /* ty=Tensor[(1, 64, 54, 54), float32] */
       };
-      %3(%x, %weight, meta[relay.Constant][0] /* ty=Tensor[(1, 64, 54, 54), float32] */ /* ty=Tensor[(1, 64, 54, 54), float32] */, meta[relay.Constant][1] /* ty=Tensor[(1, 64, 54, 54), float32] */ /* ty=Tensor[(1, 64, 54, 54), float32] */) /* ty=Tensor[(1, 64, 54, 54), float32] */
+      %3(%x, %weight, meta[relay.Constant][0] /* ty=Tensor[(1, 64, 54, 54), float32] */, meta[relay.Constant][1] /* ty=Tensor[(1, 64, 54, 54), float32] */) /* ty=Tensor[(1, 64, 54, 54), float32] */
     }
 
 
@@ -733,7 +750,7 @@ could be like the following to enable IR dumping for ``FoldConstant`` optimizati
         %6 = add(%5, %5) /* ty=Tensor[(1, 4, 54, 54, 16), float32] */;
         layout_transform(%6, src_layout="NCHW16c", dst_layout="NCHW") /* ty=Tensor[(1, 64, 54, 54), float32] */
       };
-      %7(%x, %weight, meta[relay.Constant][0] /* ty=Tensor[(1, 64, 54, 54), float32] */ /* ty=Tensor[(1, 64, 54, 54), float32] */, meta[relay.Constant][1] /* ty=Tensor[(1, 64, 54, 54), float32] */ /* ty=Tensor[(1, 64, 54, 54), float32] */) /* ty=Tensor[(1, 64, 54, 54), float32] */
+      %7(%x, %weight, meta[relay.Constant][0] /* ty=Tensor[(1, 64, 54, 54), float32] */, meta[relay.Constant][1] /* ty=Tensor[(1, 64, 54, 54), float32] */) /* ty=Tensor[(1, 64, 54, 54), float32] */
     }
 
 

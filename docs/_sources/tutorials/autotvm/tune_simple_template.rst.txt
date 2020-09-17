@@ -74,11 +74,11 @@ To begin with, here is how we implement a blocked matrix multiplication in TVM.
 
     # Matmul V0: Constant tiling factor
     def matmul_v0(N, L, M, dtype):
-        A = te.placeholder((N, L), name='A', dtype=dtype)
-        B = te.placeholder((L, M), name='B', dtype=dtype)
+        A = te.placeholder((N, L), name="A", dtype=dtype)
+        B = te.placeholder((L, M), name="B", dtype=dtype)
 
-        k = te.reduce_axis((0, L), name='k')
-        C = te.compute((N, M), lambda i, j: te.sum(A[i, k] * B[k, j], axis=k), name='C')
+        k = te.reduce_axis((0, L), name="k")
+        C = te.compute((N, M), lambda i, j: te.sum(A[i, k] * B[k, j], axis=k), name="C")
         s = te.create_schedule(C.op)
 
         # schedule
@@ -91,6 +91,7 @@ To begin with, here is how we implement a blocked matrix multiplication in TVM.
         s[C].reorder(yo, xo, k, yi, xi)
 
         return s, [A, B, C]
+
 
 
 
@@ -117,11 +118,11 @@ In autotvm, we can define a tunable parameter, or a "knob" for such kind of valu
     # Matmul V1: List candidate values
     @autotvm.template("tutorial/matmul_v1")  # 1. use a decorator
     def matmul_v1(N, L, M, dtype):
-        A = te.placeholder((N, L), name='A', dtype=dtype)
-        B = te.placeholder((L, M), name='B', dtype=dtype)
+        A = te.placeholder((N, L), name="A", dtype=dtype)
+        B = te.placeholder((L, M), name="B", dtype=dtype)
 
-        k = te.reduce_axis((0, L), name='k')
-        C = te.compute((N, M), lambda i, j: te.sum(A[i, k] * B[k, j], axis=k), name='C')
+        k = te.reduce_axis((0, L), name="k")
+        C = te.compute((N, M), lambda i, j: te.sum(A[i, k] * B[k, j], axis=k), name="C")
         s = te.create_schedule(C.op)
 
         # schedule
@@ -136,12 +137,13 @@ In autotvm, we can define a tunable parameter, or a "knob" for such kind of valu
         cfg.define_knob("tile_x", [1, 2, 4, 8, 16])
 
         # 4. schedule according to config
-        yo, yi = s[C].split(y, cfg['tile_y'].val)
-        xo, xi = s[C].split(x, cfg['tile_x'].val)
+        yo, yi = s[C].split(y, cfg["tile_y"].val)
+        xo, xi = s[C].split(x, cfg["tile_x"].val)
 
         s[C].reorder(yo, xo, k, yi, xi)
 
         return s, [A, B, C]
+
 
 
 
@@ -203,13 +205,14 @@ back to use low level API.
 .. code-block:: default
 
 
+
     @autotvm.template("tutorial/matmul")
     def matmul(N, L, M, dtype):
-        A = te.placeholder((N, L), name='A', dtype=dtype)
-        B = te.placeholder((L, M), name='B', dtype=dtype)
+        A = te.placeholder((N, L), name="A", dtype=dtype)
+        B = te.placeholder((L, M), name="B", dtype=dtype)
 
-        k = te.reduce_axis((0, L), name='k')
-        C = te.compute((N, M), lambda i, j: te.sum(A[i, k] * B[k, j], axis=k), name='C')
+        k = te.reduce_axis((0, L), name="k")
+        C = te.compute((N, M), lambda i, j: te.sum(A[i, k] * B[k, j], axis=k), name="C")
         s = te.create_schedule(C.op)
 
         # schedule
@@ -229,6 +232,7 @@ back to use low level API.
         s[C].reorder(yo, xo, k, yi, xi)
 
         return s, [A, B, C]
+
 
 
 
@@ -300,7 +304,7 @@ is 10x10=100
 .. code-block:: default
 
     N, L, M = 512, 512, 512
-    task = autotvm.task.create("tutorial/matmul", args=(N, L, M, 'float32'), target='llvm')
+    task = autotvm.task.create("tutorial/matmul", args=(N, L, M, "float32"), target="llvm")
     print(task.config_space)
 
 
@@ -333,22 +337,22 @@ used to get the best config later.
 
 
     # logging config (for printing tuning log to the screen)
-    logging.getLogger('autotvm').setLevel(logging.DEBUG)
-    logging.getLogger('autotvm').addHandler(logging.StreamHandler(sys.stdout))
+    logging.getLogger("autotvm").setLevel(logging.DEBUG)
+    logging.getLogger("autotvm").addHandler(logging.StreamHandler(sys.stdout))
 
     # There are two steps for measuring a config: build and run.
     # By default, we use all CPU cores to compile program. Then measure them sequentially.
     # We measure 5 times and take average to reduce variance.
-    measure_option = autotvm.measure_option(
-        builder='local',
-        runner=autotvm.LocalRunner(number=5))
+    measure_option = autotvm.measure_option(builder="local", runner=autotvm.LocalRunner(number=5))
 
     # Begin tuning with RandomTuner, log records to file `matmul.log`
     # You can use alternatives like XGBTuner.
     tuner = autotvm.tuner.RandomTuner(task)
-    tuner.tune(n_trial=10,
-               measure_option=measure_option,
-               callbacks=[autotvm.callback.log_to_file('matmul.log')])
+    tuner.tune(
+        n_trial=10,
+        measure_option=measure_option,
+        callbacks=[autotvm.callback.log_to_file("matmul.log")],
+    )
 
 
 
@@ -361,16 +365,16 @@ used to get the best config later.
  .. code-block:: none
 
     Get devices for measurement successfully!
-    No: 1   GFLOPS: 6.72/6.72       result: MeasureResult(costs=(0.0399487232,), error_no=0, all_cost=0.9529943466186523, timestamp=1599097874.9568658)     [('tile_y', [-1, 8]), ('tile_x', [-1, 8])],None,33
-    No: 2   GFLOPS: 2.20/6.72       result: MeasureResult(costs=(0.1221858156,), error_no=0, all_cost=2.2919247150421143, timestamp=1599097877.3494487)     [('tile_y', [-1, 8]), ('tile_x', [-1, 2])],None,13
-    No: 3   GFLOPS: 7.14/7.14       result: MeasureResult(costs=(0.037595030200000004,), error_no=0, all_cost=1.4327435493469238, timestamp=1599097878.3681812)     [('tile_y', [-1, 16]), ('tile_x', [-1, 128])],None,74
-    No: 4   GFLOPS: 4.28/7.14       result: MeasureResult(costs=(0.062721577,), error_no=0, all_cost=1.4620404243469238, timestamp=1599097879.794526)       [('tile_y', [-1, 16]), ('tile_x', [-1, 32])],None,54
-    No: 5   GFLOPS: 6.10/7.14       result: MeasureResult(costs=(0.0440382272,), error_no=0, all_cost=1.0699217319488525, timestamp=1599097880.9146302)     [('tile_y', [-1, 128]), ('tile_x', [-1, 8])],None,37
-    No: 6   GFLOPS: 6.17/7.14       result: MeasureResult(costs=(0.0435387002,), error_no=0, all_cost=1.103325605392456, timestamp=1599097882.0777445)      [('tile_y', [-1, 64]), ('tile_x', [-1, 8])],None,36
-    No: 7   GFLOPS: 25.21/25.21     result: MeasureResult(costs=(0.010645947999999999,), error_no=0, all_cost=0.6406195163726807, timestamp=1599097882.6758382)     [('tile_y', [-1, 1]), ('tile_x', [-1, 128])],None,70
-    No: 8   GFLOPS: 20.94/25.21     result: MeasureResult(costs=(0.0128166258,), error_no=0, all_cost=0.5873754024505615, timestamp=1599097883.2995389)     [('tile_y', [-1, 4]), ('tile_x', [-1, 512])],None,92
-    No: 9   GFLOPS: 0.71/25.21      result: MeasureResult(costs=(0.3807563502,), error_no=0, all_cost=6.390629291534424, timestamp=1599097889.7905786)      [('tile_y', [-1, 512]), ('tile_x', [-1, 2])],None,19
-    No: 10  GFLOPS: 0.00/25.21      result: MeasureResult(costs=(RuntimeError('Traceback (most recent call last):\n  [bt] (5) /workspace/build/libtvm.so(TVMFuncCall+0x61) [0x7fc651973821]\n  [bt] (4) /workspace/build/libtvm.so(+0x119ab32) [0x7fc6519a8b32]\n  [bt] (3) /workspace/build/libtvm.so(tvm::runtime::RPCWrappedFunc::operator()(tvm::runtime::TVMArgs, tvm::runtime::TVMRetValue*) const+0x26b) [0x7fc6519aa12b]\n  [bt] (2) /workspace/build/libtvm.so(tvm::runtime::RPCClientSession::CallFunc(void*, TVMValue const*, int const*, int, std::function<void (tvm::runtime::TVMArgs)> const&)+0x57) [0x7fc6519a03d7]\n  [bt] (1) /workspace/build/libtvm.so(tvm::runtime::RPCEndpoint::CallFunc(void*, TVMValue const*, int const*, int, std::function<void (tvm::runtime::TVMArgs)>)+0x370) [0x7fc6519977f0]\n  [bt] (0) /workspace/build/libtvm.so(dmlc::LogMessageFatal::~LogMessageFatal()+0x61) [0x7fc650d2bc31]\n  File "/workspace/src/runtime/rpc/rpc_endpoint.cc", line 799\nTVMError: Check failed: code == RPCCode: :kReturn: code=1',),), error_no=4, all_cost=10.296247959136963, timestamp=1599097900.2304642)        [('tile_y', [-1, 512]), ('tile_x', [-1, 1])],None,9
+    No: 1   GFLOPS: 4.94/4.94       result: MeasureResult(costs=(0.054287080200000004,), error_no=0, all_cost=1.3448398113250732, timestamp=1600369872.023853)      [('tile_y', [-1, 8]), ('tile_x', [-1, 32])],None,53
+    No: 2   GFLOPS: 18.68/18.68     result: MeasureResult(costs=(0.01436866,), error_no=0, all_cost=0.94826340675354, timestamp=1600369872.776203)  [('tile_y', [-1, 128]), ('tile_x', [-1, 256])],None,87
+    No: 3   GFLOPS: 21.91/21.91     result: MeasureResult(costs=(0.0122501188,), error_no=0, all_cost=0.693589448928833, timestamp=1600369873.4960864)      [('tile_y', [-1, 8]), ('tile_x', [-1, 512])],None,93
+    No: 4   GFLOPS: 22.07/22.07     result: MeasureResult(costs=(0.0121623444,), error_no=0, all_cost=0.8166868686676025, timestamp=1600369874.2200832)     [('tile_y', [-1, 128]), ('tile_x', [-1, 512])],None,97
+    No: 5   GFLOPS: 3.95/22.07      result: MeasureResult(costs=(0.0679034736,), error_no=0, all_cost=1.523956537246704, timestamp=1600369875.830494)       [('tile_y', [-1, 256]), ('tile_x', [-1, 4])],None,28
+    No: 6   GFLOPS: 5.93/22.07      result: MeasureResult(costs=(0.0452421748,), error_no=0, all_cost=1.3571109771728516, timestamp=1600369877.0881255)     [('tile_y', [-1, 4]), ('tile_x', [-1, 32])],None,52
+    No: 7   GFLOPS: 22.35/22.35     result: MeasureResult(costs=(0.0120131094,), error_no=0, all_cost=0.6379480361938477, timestamp=1600369877.8042662)     [('tile_y', [-1, 2]), ('tile_x', [-1, 512])],None,91
+    No: 8   GFLOPS: 21.40/22.35     result: MeasureResult(costs=(0.0125418218,), error_no=0, all_cost=0.6462545394897461, timestamp=1600369878.5241864)     [('tile_y', [-1, 2]), ('tile_x', [-1, 256])],None,81
+    No: 9   GFLOPS: 0.87/22.35      result: MeasureResult(costs=(0.3082237446,), error_no=0, all_cost=5.3459532260894775, timestamp=1600369883.9792707)     [('tile_y', [-1, 128]), ('tile_x', [-1, 2])],None,17
+    No: 10  GFLOPS: 1.48/22.35      result: MeasureResult(costs=(0.18157079739999998,), error_no=0, all_cost=3.2799508571624756, timestamp=1600369887.4129384)      [('tile_y', [-1, 1]), ('tile_x', [-1, 2])],None,10
 
 
 
@@ -385,9 +389,9 @@ with the same argument.
 
 
     # apply history best from log file
-    with autotvm.apply_history_best('matmul.log'):
-        with tvm.target.create("llvm"):
-            s, arg_bufs = matmul(N, L, M, 'float32')
+    with autotvm.apply_history_best("matmul.log"):
+        with tvm.target.Target("llvm"):
+            s, arg_bufs = matmul(N, L, M, "float32")
             func = tvm.build(s, arg_bufs)
 
     # check correctness

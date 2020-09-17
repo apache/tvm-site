@@ -15,13 +15,12 @@ var searchData=
   ['hasnonzeroattr',['HasNonzeroAttr',['../classtvm_1_1BaseFuncNode.html#a11694119d77e8d04a9fffd5e9a8b0766',1,'tvm::BaseFuncNode']]],
   ['head_5faddress',['head_address',['../classtvm_1_1MemoryInfoNode.html#af2e6ca44c6258c7c743482ae6f7c7deb',1,'tvm::MemoryInfoNode']]],
   ['header',['header',['../classtvm_1_1TypeDataNode.html#a2fe297fe22375fbc180deb003d142ab9',1,'tvm::TypeDataNode']]],
-  ['hexagon',['hexagon',['../namespacetvm_1_1target.html#a6f9144366ab21c174be1ffaccd8aeda4',1,'tvm::target']]],
   ['hit_5fcount_5f',['hit_count_',['../classtvm_1_1detail_1_1AttrInitVisitor.html#a40694e8ade57b3e5167ec74404188f9e',1,'tvm::detail::AttrInitVisitor']]],
   ['hoistifthenelse',['HoistIfThenElse',['../namespacetvm_1_1tir_1_1transform.html#acd2b8fdd84785388630e2d52a6e3cc54',1,'tvm::tir::transform']]],
   ['host',['host',['../classtvm_1_1auto__scheduler_1_1RPCRunnerNode.html#a2202fad592241807a3e14e39bb8b2532',1,'tvm::auto_scheduler::RPCRunnerNode']]],
   ['hybridop',['HybridOp',['../classtvm_1_1te_1_1HybridOp.html#aec098921853139c0fe6dcddc8e7da99e',1,'tvm::te::HybridOp']]],
   ['hybridop',['HybridOp',['../classtvm_1_1te_1_1HybridOp.html',1,'tvm::te']]],
-  ['hybridopnode',['HybridOpNode',['../classtvm_1_1te_1_1HybridOpNode.html',1,'tvm::te']]],
   ['hybridopnode',['HybridOpNode',['../classtvm_1_1te_1_1HybridOpNode.html#a27ebcb81f18ef107b2853efcfb035ad8',1,'tvm::te::HybridOpNode']]],
+  ['hybridopnode',['HybridOpNode',['../classtvm_1_1te_1_1HybridOpNode.html',1,'tvm::te']]],
   ['hypot',['hypot',['../namespacetvm.html#a2b99c7295d92bb6acb62276af5bf9dff',1,'tvm']]]
 ];

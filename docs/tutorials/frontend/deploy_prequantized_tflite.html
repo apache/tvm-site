@@ -108,6 +108,7 @@
 <li class="toctree-l2"><a class="reference internal" href="using_external_lib.html">Using External Libraries in Relay</a></li>
 <li class="toctree-l2"><a class="reference internal" href="from_coreml.html">Compile CoreML Models</a></li>
 <li class="toctree-l2"><a class="reference internal" href="from_keras.html">Compile Keras Models</a></li>
+<li class="toctree-l2"><a class="reference internal" href="deploy_object_detection_pytorch.html">Compile PyTorch Object Detection Models</a></li>
 <li class="toctree-l2"><a class="reference internal" href="deploy_quantized.html">Deploy a Quantized Model on Cuda</a></li>
 <li class="toctree-l2"><a class="reference internal" href="from_caffe2.html">Compile Caffe2 Models</a></li>
 <li class="toctree-l2"><a class="reference internal" href="from_mxnet.html">Compile MXNet Models</a></li>
@@ -137,7 +138,8 @@
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../index.html#tensor-expression-and-schedules">Tensor Expression and Schedules</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../index.html#optimize-tensor-operators">Optimize Tensor Operators</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../index.html#auto-tuning">Auto tuning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../index.html#autotvm-template-based-auto-tuning">AutoTVM : Template-based Auto Tuning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../index.html#autoscheduler-template-free-auto-scheduling">AutoScheduler : Template-free Auto Scheduling</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../index.html#developer-tutorials">Developer Tutorials</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../index.html#topi-tvm-operator-inventory">TOPI: TVM Operator Inventory</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../index.html#micro-tvm">Micro TVM</a></li>
@@ -261,12 +263,15 @@ pip install <span class="nv">tflite</span><span class="o">==</span>2.1.0
 <div class="highlight-default notranslate"><div class="highlight"><pre><span class="c1"># Download mobilenet V2 TFLite model provided by Google</span>
 <span class="kn">from</span> <span class="nn">tvm.contrib.download</span> <span class="k">import</span> <span class="n">download_testdata</span>
 
-<span class="n">model_url</span> <span class="o">=</span> <span class="s2">&quot;https://storage.googleapis.com/download.tensorflow.org/models/&quot;</span> \
-             <span class="s2">&quot;tflite_11_05_08/mobilenet_v2_1.0_224_quant.tgz&quot;</span>
+<span class="n">model_url</span> <span class="o">=</span> <span class="p">(</span>
+    <span class="s2">&quot;https://storage.googleapis.com/download.tensorflow.org/models/&quot;</span>
+    <span class="s2">&quot;tflite_11_05_08/mobilenet_v2_1.0_224_quant.tgz&quot;</span>
+<span class="p">)</span>
 
 <span class="c1"># Download model tar file and extract it to get mobilenet_v2_1.0_224.tflite</span>
-<span class="n">model_path</span> <span class="o">=</span> <span class="n">download_testdata</span><span class="p">(</span><span class="n">model_url</span><span class="p">,</span> <span class="s2">&quot;mobilenet_v2_1.0_224_quant.tgz&quot;</span><span class="p">,</span>
-                               <span class="n">module</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;tf&#39;</span><span class="p">,</span> <span class="s1">&#39;official&#39;</span><span class="p">])</span>
+<span class="n">model_path</span> <span class="o">=</span> <span class="n">download_testdata</span><span class="p">(</span>
+    <span class="n">model_url</span><span class="p">,</span> <span class="s2">&quot;mobilenet_v2_1.0_224_quant.tgz&quot;</span><span class="p">,</span> <span class="n">module</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;tf&quot;</span><span class="p">,</span> <span class="s2">&quot;official&quot;</span><span class="p">]</span>
+<span class="p">)</span>
 <span class="n">model_dir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">model_path</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -279,13 +284,15 @@ pip install <span class="nv">tflite</span><span class="o">==</span>2.1.0
 <h2>Utils for downloading and extracting zip files<a class="headerlink" href="#utils-for-downloading-and-extracting-zip-files" title="Permalink to this headline">¶</a></h2>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span class="k">def</span> <span class="nf">extract</span><span class="p">(</span><span class="n">path</span><span class="p">):</span>
     <span class="kn">import</span> <span class="nn">tarfile</span>
+
     <span class="k">if</span> <span class="n">path</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot;tgz&quot;</span><span class="p">)</span> <span class="ow">or</span> <span class="n">path</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot;gz&quot;</span><span class="p">):</span>
         <span class="n">dir_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
         <span class="n">tar</span> <span class="o">=</span> <span class="n">tarfile</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
         <span class="n">tar</span><span class="o">.</span><span class="n">extractall</span><span class="p">(</span><span class="n">path</span><span class="o">=</span><span class="n">dir_path</span><span class="p">)</span>
         <span class="n">tar</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
     <span class="k">else</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s1">&#39;Could not decompress the file: &#39;</span> <span class="o">+</span> <span class="n">path</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;Could not decompress the file: &quot;</span> <span class="o">+</span> <span class="n">path</span><span class="p">)</span>
+
 
 <span class="n">extract</span><span class="p">(</span><span class="n">model_path</span><span class="p">)</span>
 </pre></div>
@@ -298,14 +305,16 @@ pip install <span class="nv">tflite</span><span class="o">==</span>2.1.0
 <h2>Get a real image for e2e testing<a class="headerlink" href="#get-a-real-image-for-e2e-testing" title="Permalink to this headline">¶</a></h2>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span class="k">def</span> <span class="nf">get_real_image</span><span class="p">(</span><span class="n">im_height</span><span class="p">,</span> <span class="n">im_width</span><span class="p">):</span>
     <span class="kn">from</span> <span class="nn">PIL</span> <span class="k">import</span> <span class="n">Image</span>
-    <span class="n">repo_base</span> <span class="o">=</span> <span class="s1">&#39;https://github.com/dmlc/web-data/raw/master/tensorflow/models/InceptionV1/&#39;</span>
-    <span class="n">img_name</span> <span class="o">=</span> <span class="s1">&#39;elephant-299.jpg&#39;</span>
+
+    <span class="n">repo_base</span> <span class="o">=</span> <span class="s2">&quot;https://github.com/dmlc/web-data/raw/master/tensorflow/models/InceptionV1/&quot;</span>
+    <span class="n">img_name</span> <span class="o">=</span> <span class="s2">&quot;elephant-299.jpg&quot;</span>
     <span class="n">image_url</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">repo_base</span><span class="p">,</span> <span class="n">img_name</span><span class="p">)</span>
-    <span class="n">img_path</span> <span class="o">=</span> <span class="n">download_testdata</span><span class="p">(</span><span class="n">image_url</span><span class="p">,</span> <span class="n">img_name</span><span class="p">,</span> <span class="n">module</span><span class="o">=</span><span class="s1">&#39;data&#39;</span><span class="p">)</span>
+    <span class="n">img_path</span> <span class="o">=</span> <span class="n">download_testdata</span><span class="p">(</span><span class="n">image_url</span><span class="p">,</span> <span class="n">img_name</span><span class="p">,</span> <span class="n">module</span><span class="o">=</span><span class="s2">&quot;data&quot;</span><span class="p">)</span>
     <span class="n">image</span> <span class="o">=</span> <span class="n">Image</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">img_path</span><span class="p">)</span><span class="o">.</span><span class="n">resize</span><span class="p">((</span><span class="n">im_height</span><span class="p">,</span> <span class="n">im_width</span><span class="p">))</span>
-    <span class="n">x</span> <span class="o">=</span> <a href="https://numpy.org/doc/stable/reference/generated/numpy.array.html#numpy.array" title="View documentation for numpy.array"><span class="n">np</span><span class="o">.</span><span class="n">array</span></a><span class="p">(</span><span class="n">image</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s1">&#39;uint8&#39;</span><span class="p">)</span>
+    <span class="n">x</span> <span class="o">=</span> <a href="https://numpy.org/doc/stable/reference/generated/numpy.array.html#numpy.array" title="View documentation for numpy.array"><span class="n">np</span><span class="o">.</span><span class="n">array</span></a><span class="p">(</span><span class="n">image</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s2">&quot;uint8&quot;</span><span class="p">)</span>
     <span class="n">data</span> <span class="o">=</span> <a href="https://numpy.org/doc/stable/reference/generated/numpy.reshape.html#numpy.reshape" title="View documentation for numpy.reshape"><span class="n">np</span><span class="o">.</span><span class="n">reshape</span></a><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">im_height</span><span class="p">,</span> <span class="n">im_width</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span>
     <span class="k">return</span> <span class="n">data</span>
+
 
 <span class="n">data</span> <span class="o">=</span> <span class="n">get_real_image</span><span class="p">(</span><span class="mi">224</span><span class="p">,</span> <span class="mi">224</span><span class="p">)</span>
 </pre></div>
@@ -324,9 +333,11 @@ pip install <span class="nv">tflite</span><span class="o">==</span>2.1.0
 <span class="c1"># Get TFLite model from buffer</span>
 <span class="k">try</span><span class="p">:</span>
     <span class="kn">import</span> <span class="nn">tflite</span>
+
     <span class="n">tflite_model</span> <span class="o">=</span> <span class="n">tflite</span><span class="o">.</span><span class="n">Model</span><span class="o">.</span><span class="n">GetRootAsModel</span><span class="p">(</span><span class="n">tflite_model_buf</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
 <span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span>
     <span class="kn">import</span> <span class="nn">tflite.Model</span>
+
     <span class="n">tflite_model</span> <span class="o">=</span> <span class="n">tflite</span><span class="o">.</span><span class="n">Model</span><span class="o">.</span><span class="n">Model</span><span class="o">.</span><span class="n">GetRootAsModel</span><span class="p">(</span><span class="n">tflite_model_buf</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -349,7 +360,7 @@ pip install <span class="nv">tflite</span><span class="o">==</span>2.1.0
     <span class="c1"># set input</span>
     <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">input_data</span><span class="p">)</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">input_details</span><span class="p">)</span>
     <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">input_details</span><span class="p">)):</span>
-        <span class="n">interpreter</span><span class="o">.</span><span class="n">set_tensor</span><span class="p">(</span><span class="n">input_details</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="s1">&#39;index&#39;</span><span class="p">],</span> <span class="n">input_data</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+        <span class="n">interpreter</span><span class="o">.</span><span class="n">set_tensor</span><span class="p">(</span><span class="n">input_details</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="s2">&quot;index&quot;</span><span class="p">],</span> <span class="n">input_data</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
 
     <span class="c1"># Run</span>
     <span class="n">interpreter</span><span class="o">.</span><span class="n">invoke</span><span class="p">()</span>
@@ -357,7 +368,7 @@ pip install <span class="nv">tflite</span><span class="o">==</span>2.1.0
     <span class="c1"># get output</span>
     <span class="n">tflite_output</span> <span class="o">=</span> <span class="nb">list</span><span class="p">()</span>
     <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">output_details</span><span class="p">)):</span>
-        <span class="n">tflite_output</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">interpreter</span><span class="o">.</span><span class="n">get_tensor</span><span class="p">(</span><span class="n">output_details</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="s1">&#39;index&#39;</span><span class="p">]))</span>
+        <span class="n">tflite_output</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">interpreter</span><span class="o">.</span><span class="n">get_tensor</span><span class="p">(</span><span class="n">output_details</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="s2">&quot;index&quot;</span><span class="p">]))</span>
 
     <span class="k">return</span> <span class="n">tflite_output</span>
 </pre></div>
@@ -365,8 +376,9 @@ pip install <span class="nv">tflite</span><span class="o">==</span>2.1.0
 <p>Lets run TVM compiled pre-quantized model inference and get the TVM prediction.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span class="k">def</span> <span class="nf">run_tvm</span><span class="p">(</span><span class="n">lib</span><span class="p">):</span>
     <span class="kn">from</span> <span class="nn">tvm.contrib</span> <span class="k">import</span> <span class="n">graph_runtime</span>
-    <span class="n">rt_mod</span> <span class="o">=</span> <a href="../../api/python/graph_runtime.html#tvm.contrib.graph_runtime.GraphModule" title="View documentation for tvm.contrib.graph_runtime.GraphModule"><span class="n">graph_runtime</span><span class="o">.</span><span class="n">GraphModule</span></a><span class="p">(</span><span class="n">lib</span><span class="p">[</span><span class="s1">&#39;default&#39;</span><span class="p">](</span><span class="n">tvm</span><span class="o">.</span><span class="n">cpu</span><span class="p">(</span><span class="mi">0</span><span class="p">)))</span>
-    <span class="n">rt_mod</span><span class="o">.</span><span class="n">set_input</span><span class="p">(</span><span class="s1">&#39;input&#39;</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
+
+    <span class="n">rt_mod</span> <span class="o">=</span> <a href="../../api/python/graph_runtime.html#tvm.contrib.graph_runtime.GraphModule" title="View documentation for tvm.contrib.graph_runtime.GraphModule"><span class="n">graph_runtime</span><span class="o">.</span><span class="n">GraphModule</span></a><span class="p">(</span><span class="n">lib</span><span class="p">[</span><span class="s2">&quot;default&quot;</span><span class="p">](</span><span class="n">tvm</span><span class="o">.</span><span class="n">cpu</span><span class="p">(</span><span class="mi">0</span><span class="p">)))</span>
+    <span class="n">rt_mod</span><span class="o">.</span><span class="n">set_input</span><span class="p">(</span><span class="s2">&quot;input&quot;</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
     <span class="n">rt_mod</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
     <span class="n">tvm_res</span> <span class="o">=</span> <span class="n">rt_mod</span><span class="o">.</span><span class="n">get_output</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">asnumpy</span><span class="p">()</span>
     <span class="n">tvm_pred</span> <span class="o">=</span> <a href="https://numpy.org/doc/stable/reference/generated/numpy.squeeze.html#numpy.squeeze" title="View documentation for numpy.squeeze"><span class="n">np</span><span class="o">.</span><span class="n">squeeze</span></a><span class="p">(</span><span class="n">tvm_res</span><span class="p">)</span><span class="o">.</span><span class="n">argsort</span><span class="p">()[</span><span class="o">-</span><span class="mi">5</span><span class="p">:][::</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
@@ -388,18 +400,16 @@ pip install <span class="nv">tflite</span><span class="o">==</span>2.1.0
 frontend parser call for a pre-quantized model is exactly same as frontend parser call for a FP32
 model. We encourage you to remove the comment from print(mod) and inspect the Relay module. You
 will see many QNN operators, like, Requantize, Quantize and QNN Conv2D.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span class="n">dtype_dict</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;input&#39;</span><span class="p">:</span> <span class="n">data</span><span class="o">.</span><span class="n">dtype</span><span class="o">.</span><span class="n">name</span><span class="p">}</span>
-<span class="n">shape_dict</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;input&#39;</span><span class="p">:</span> <span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">}</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span class="n">dtype_dict</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;input&quot;</span><span class="p">:</span> <span class="n">data</span><span class="o">.</span><span class="n">dtype</span><span class="o">.</span><span class="n">name</span><span class="p">}</span>
+<span class="n">shape_dict</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;input&quot;</span><span class="p">:</span> <span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">}</span>
 
-<span class="n">mod</span><span class="p">,</span> <span class="n">params</span> <span class="o">=</span> <a href="../../api/python/relay/frontend.html#tvm.relay.frontend.from_tflite" title="View documentation for tvm.relay.frontend.from_tflite"><span class="n">relay</span><span class="o">.</span><span class="n">frontend</span><span class="o">.</span><span class="n">from_tflite</span></a><span class="p">(</span><span class="n">tflite_model</span><span class="p">,</span>
-                                         <span class="n">shape_dict</span><span class="o">=</span><span class="n">shape_dict</span><span class="p">,</span>
-                                         <span class="n">dtype_dict</span><span class="o">=</span><span class="n">dtype_dict</span><span class="p">)</span>
+<span class="n">mod</span><span class="p">,</span> <span class="n">params</span> <span class="o">=</span> <a href="../../api/python/relay/frontend.html#tvm.relay.frontend.from_tflite" title="View documentation for tvm.relay.frontend.from_tflite"><span class="n">relay</span><span class="o">.</span><span class="n">frontend</span><span class="o">.</span><span class="n">from_tflite</span></a><span class="p">(</span><span class="n">tflite_model</span><span class="p">,</span> <span class="n">shape_dict</span><span class="o">=</span><span class="n">shape_dict</span><span class="p">,</span> <span class="n">dtype_dict</span><span class="o">=</span><span class="n">dtype_dict</span><span class="p">)</span>
 <span class="c1"># print(mod)</span>
 </pre></div>
 </div>
 <p>Lets now the compile the Relay module. We use the “llvm” target here. Please replace it with the
 target platform that you are interested in.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span class="n">target</span> <span class="o">=</span> <span class="s1">&#39;llvm&#39;</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span class="n">target</span> <span class="o">=</span> <span class="s2">&quot;llvm&quot;</span>
 <span class="k">with</span> <a href="../../api/python/ir.html#tvm.transform.PassContext" title="View documentation for tvm.transform.PassContext"><span class="n">tvm</span><span class="o">.</span><span class="n">transform</span><span class="o">.</span><span class="n">PassContext</span></a><span class="p">(</span><span class="n">opt_level</span><span class="o">=</span><span class="mi">3</span><span class="p">):</span>
     <span class="n">lib</span> <span class="o">=</span> <a href="../../api/python/relay/index.html#tvm.relay.build" title="View documentation for tvm.relay.build_module.build"><span class="n">relay</span><span class="o">.</span><span class="n">build_module</span><span class="o">.</span><span class="n">build</span></a><span class="p">(</span><span class="n">mod</span><span class="p">,</span> <span class="n">target</span><span class="o">=</span><span class="n">target</span><span class="p">,</span> <span class="n">params</span><span class="o">=</span><span class="n">params</span><span class="p">)</span>
 </pre></div>
@@ -435,7 +445,7 @@ TFLite Top-5 labels: [387 102 386 341 880]
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre>Elapsed average ms: 46.384218929999996
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre>Elapsed average ms: 29.642873179999995
 </pre></div>
 </div>
 <div class="admonition note">
@@ -462,7 +472,7 @@ device and follow <a class="reference external" href="https://tvm.apache.org/doc
 </ul>
 </div></blockquote>
 </div>
-<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 2 minutes  10.602 seconds)</p>
+<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 1 minutes  58.574 seconds)</p>
 <div class="sphx-glr-footer class sphx-glr-footer-example docutils container" id="sphx-glr-download-tutorials-frontend-deploy-prequantized-tflite-py">
 <div class="sphx-glr-download docutils container">
 <p><a class="reference download internal" download="" href="../../_downloads/5c443f88ea44ce77c5ccade429af6e74/deploy_prequantized_tflite.py"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">deploy_prequantized_tflite.py</span></code></a></p>

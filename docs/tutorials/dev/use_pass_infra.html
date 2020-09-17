@@ -105,7 +105,8 @@
 <li class="toctree-l1"><a class="reference internal" href="../index.html#compile-deep-learning-models">Compile Deep Learning Models</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../index.html#tensor-expression-and-schedules">Tensor Expression and Schedules</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../index.html#optimize-tensor-operators">Optimize Tensor Operators</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../index.html#auto-tuning">Auto tuning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../index.html#autotvm-template-based-auto-tuning">AutoTVM : Template-based Auto Tuning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../index.html#autoscheduler-template-free-auto-scheduling">AutoScheduler : Template-free Auto Scheduling</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="../index.html#developer-tutorials">Developer Tutorials</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="low_level_custom_pass.html">Writing a Customized Pass</a></li>
 <li class="toctree-l2 current"><a class="current reference internal" href="#">How to Use TVM Pass Infra</a><ul>
@@ -244,7 +245,7 @@ Similarly, users can write a tir primitive function and apply the tir passes.</p
     <span class="n">shape</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">64</span><span class="p">,</span> <span class="mi">54</span><span class="p">,</span> <span class="mi">54</span><span class="p">)</span>
     <span class="n">c_data</span> <span class="o">=</span> <a href="https://numpy.org/doc/stable/reference/generated/numpy.empty.html#numpy.empty" title="View documentation for numpy.empty"><span class="n">np</span><span class="o">.</span><span class="n">empty</span></a><span class="p">(</span><span class="n">shape</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s2">&quot;float32&quot;</span><span class="p">)</span>
     <span class="n">c</span> <span class="o">=</span> <a href="../../api/python/relay/index.html#tvm.relay.const" title="View documentation for tvm.relay.const"><span class="n">relay</span><span class="o">.</span><span class="n">const</span></a><span class="p">(</span><span class="n">c_data</span><span class="p">)</span>
-    <span class="n">weight</span> <span class="o">=</span> <a href="../../api/python/relay/index.html#tvm.relay.var" title="View documentation for tvm.relay.var"><span class="n">relay</span><span class="o">.</span><span class="n">var</span></a><span class="p">(</span><span class="s1">&#39;weight&#39;</span><span class="p">,</span> <span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="mi">64</span><span class="p">,</span> <span class="mi">64</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span>
+    <span class="n">weight</span> <span class="o">=</span> <a href="../../api/python/relay/index.html#tvm.relay.var" title="View documentation for tvm.relay.var"><span class="n">relay</span><span class="o">.</span><span class="n">var</span></a><span class="p">(</span><span class="s2">&quot;weight&quot;</span><span class="p">,</span> <span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="mi">64</span><span class="p">,</span> <span class="mi">64</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span>
     <span class="n">x</span> <span class="o">=</span> <a href="../../api/python/relay/index.html#tvm.relay.var" title="View documentation for tvm.relay.var"><span class="n">relay</span><span class="o">.</span><span class="n">var</span></a><span class="p">(</span><span class="s2">&quot;x&quot;</span><span class="p">,</span> <span class="n">relay</span><span class="o">.</span><span class="n">TensorType</span><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <span class="mi">64</span><span class="p">,</span> <span class="mi">56</span><span class="p">,</span> <span class="mi">56</span><span class="p">),</span> <span class="s2">&quot;float32&quot;</span><span class="p">))</span>
     <span class="n">conv</span> <span class="o">=</span> <a href="../../api/python/relay/nn.html#tvm.relay.nn.conv2d" title="View documentation for tvm.relay.nn.conv2d"><span class="n">relay</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">conv2d</span></a><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">weight</span><span class="p">)</span>
     <span class="n">y</span> <span class="o">=</span> <a href="../../api/python/relay/index.html#tvm.relay.add" title="View documentation for tvm.relay.add"><span class="n">relay</span><span class="o">.</span><span class="n">add</span></a><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="n">c</span><span class="p">)</span>
@@ -263,7 +264,7 @@ the scope of this tutorial.</p>
 <span class="k">def</span> <span class="nf">alter_conv2d</span><span class="p">(</span><span class="n">attrs</span><span class="p">,</span> <span class="n">inputs</span><span class="p">,</span> <span class="n">tinfos</span><span class="p">,</span> <span class="n">out_type</span><span class="p">):</span>
     <span class="n">data</span><span class="p">,</span> <span class="n">weight</span> <span class="o">=</span> <span class="n">inputs</span>
     <span class="n">new_attrs</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">attrs</span><span class="p">)</span>
-    <span class="n">new_attrs</span><span class="p">[</span><span class="s1">&#39;data_layout&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;NCHW16c&#39;</span>
+    <span class="n">new_attrs</span><span class="p">[</span><span class="s2">&quot;data_layout&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;NCHW16c&quot;</span>
     <span class="k">return</span> <a href="../../api/python/relay/nn.html#tvm.relay.nn.conv2d" title="View documentation for tvm.relay.nn.conv2d"><span class="n">relay</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">conv2d</span></a><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">weight</span><span class="p">,</span> <span class="o">**</span><span class="n">new_attrs</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -296,9 +297,9 @@ examples for each of them.</p>
 <p class="sphx-glr-script-out">Out:</p>
 <div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre>def @main(%x: Tensor[(1, 64, 56, 56), float32], %weight: Tensor[(64, 64, 3, 3), float32]) -&gt; Tensor[(1, 64, 54, 54), float32] {
   %0 = nn.conv2d(%x, %weight, padding=[0, 0, 0, 0]) /* ty=Tensor[(1, 64, 54, 54), float32] */;
-  %1 = add(%0, meta[relay.Constant][0] /* ty=Tensor[(1, 64, 54, 54), float32] */ /* ty=Tensor[(1, 64, 54, 54), float32] */) /* ty=Tensor[(1, 64, 54, 54), float32] */;
-  %2 = add(%1, meta[relay.Constant][1] /* ty=Tensor[(1, 64, 54, 54), float32] */ /* ty=Tensor[(1, 64, 54, 54), float32] */) /* ty=Tensor[(1, 64, 54, 54), float32] */;
-  %3 = add(%1, meta[relay.Constant][1] /* ty=Tensor[(1, 64, 54, 54), float32] */ /* ty=Tensor[(1, 64, 54, 54), float32] */) /* ty=Tensor[(1, 64, 54, 54), float32] */;
+  %1 = add(%0, meta[relay.Constant][0] /* ty=Tensor[(1, 64, 54, 54), float32] */) /* ty=Tensor[(1, 64, 54, 54), float32] */;
+  %2 = add(%1, meta[relay.Constant][1] /* ty=Tensor[(1, 64, 54, 54), float32] */) /* ty=Tensor[(1, 64, 54, 54), float32] */;
+  %3 = add(%1, meta[relay.Constant][1] /* ty=Tensor[(1, 64, 54, 54), float32] */) /* ty=Tensor[(1, 64, 54, 54), float32] */;
   add(%2, %3) /* ty=Tensor[(1, 64, 54, 54), float32] */
 }
 </pre></div>
@@ -312,8 +313,8 @@ eliminate the common expressions that used by <cite>z</cite> and <cite>z1</cite>
 <p class="sphx-glr-script-out">Out:</p>
 <div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre>def @main(%x: Tensor[(1, 64, 56, 56), float32], %weight: Tensor[(64, 64, 3, 3), float32]) -&gt; Tensor[(1, 64, 54, 54), float32] {
   %0 = nn.conv2d(%x, %weight, padding=[0, 0, 0, 0]) /* ty=Tensor[(1, 64, 54, 54), float32] */;
-  %1 = add(%0, meta[relay.Constant][0] /* ty=Tensor[(1, 64, 54, 54), float32] */ /* ty=Tensor[(1, 64, 54, 54), float32] */) /* ty=Tensor[(1, 64, 54, 54), float32] */;
-  %2 = add(%1, meta[relay.Constant][1] /* ty=Tensor[(1, 64, 54, 54), float32] */ /* ty=Tensor[(1, 64, 54, 54), float32] */) /* ty=Tensor[(1, 64, 54, 54), float32] */;
+  %1 = add(%0, meta[relay.Constant][0] /* ty=Tensor[(1, 64, 54, 54), float32] */) /* ty=Tensor[(1, 64, 54, 54), float32] */;
+  %2 = add(%1, meta[relay.Constant][1] /* ty=Tensor[(1, 64, 54, 54), float32] */) /* ty=Tensor[(1, 64, 54, 54), float32] */;
   add(%2, %2) /* ty=Tensor[(1, 64, 54, 54), float32] */
 }
 </pre></div>
@@ -337,11 +338,11 @@ opt level 0 will not allow operators to be fused together. Users can pass the
   %2 = fn (%p01: Tensor[(1, 64, 54, 54), float32], %p11: Tensor[(1, 64, 54, 54), float32], Primitive=1) -&gt; Tensor[(1, 64, 54, 54), float32] {
     add(%p01, %p11) /* ty=Tensor[(1, 64, 54, 54), float32] */
   };
-  %3 = %2(%1, meta[relay.Constant][0] /* ty=Tensor[(1, 64, 54, 54), float32] */ /* ty=Tensor[(1, 64, 54, 54), float32] */) /* ty=Tensor[(1, 64, 54, 54), float32] */;
+  %3 = %2(%1, meta[relay.Constant][0] /* ty=Tensor[(1, 64, 54, 54), float32] */) /* ty=Tensor[(1, 64, 54, 54), float32] */;
   %4 = fn (%p02: Tensor[(1, 64, 54, 54), float32], %p12: Tensor[(1, 64, 54, 54), float32], Primitive=1) -&gt; Tensor[(1, 64, 54, 54), float32] {
     add(%p02, %p12) /* ty=Tensor[(1, 64, 54, 54), float32] */
   };
-  %5 = %4(%3, meta[relay.Constant][1] /* ty=Tensor[(1, 64, 54, 54), float32] */ /* ty=Tensor[(1, 64, 54, 54), float32] */) /* ty=Tensor[(1, 64, 54, 54), float32] */;
+  %5 = %4(%3, meta[relay.Constant][1] /* ty=Tensor[(1, 64, 54, 54), float32] */) /* ty=Tensor[(1, 64, 54, 54), float32] */;
   %6 = fn (%p03: Tensor[(1, 64, 54, 54), float32], Primitive=1) -&gt; Tensor[(1, 64, 54, 54), float32] {
     add(%p03, %p03) /* ty=Tensor[(1, 64, 54, 54), float32] */
   };
@@ -372,9 +373,13 @@ pass.</p>
 <span class="n">f</span> <span class="o">=</span> <span class="n">example</span><span class="p">()</span>
 <span class="n">mod</span> <span class="o">=</span> <span class="n">tvm</span><span class="o">.</span><span class="n">IRModule</span><span class="o">.</span><span class="n">from_expr</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
 <span class="c1"># Glob the interested passes.</span>
-<span class="n">seq</span> <span class="o">=</span> <a href="../../api/python/ir.html#tvm.transform.Sequential" title="View documentation for tvm.transform.Sequential"><span class="n">tvm</span><span class="o">.</span><span class="n">transform</span><span class="o">.</span><span class="n">Sequential</span></a><span class="p">([</span><a href="../../api/python/relay/transform.html#tvm.relay.transform.FoldConstant" title="View documentation for tvm.relay.transform.FoldConstant"><span class="n">relay</span><span class="o">.</span><span class="n">transform</span><span class="o">.</span><span class="n">FoldConstant</span></a><span class="p">(),</span>
-                                  <a href="../../api/python/relay/transform.html#tvm.relay.transform.EliminateCommonSubexpr" title="View documentation for tvm.relay.transform.EliminateCommonSubexpr"><span class="n">relay</span><span class="o">.</span><span class="n">transform</span><span class="o">.</span><span class="n">EliminateCommonSubexpr</span></a><span class="p">(),</span>
-                                  <a href="../../api/python/relay/transform.html#tvm.relay.transform.FuseOps" title="View documentation for tvm.relay.transform.FuseOps"><span class="n">relay</span><span class="o">.</span><span class="n">transform</span><span class="o">.</span><span class="n">FuseOps</span></a><span class="p">(</span><span class="n">fuse_opt_level</span><span class="o">=</span><span class="mi">2</span><span class="p">)])</span>
+<span class="n">seq</span> <span class="o">=</span> <a href="../../api/python/ir.html#tvm.transform.Sequential" title="View documentation for tvm.transform.Sequential"><span class="n">tvm</span><span class="o">.</span><span class="n">transform</span><span class="o">.</span><span class="n">Sequential</span></a><span class="p">(</span>
+    <span class="p">[</span>
+        <a href="../../api/python/relay/transform.html#tvm.relay.transform.FoldConstant" title="View documentation for tvm.relay.transform.FoldConstant"><span class="n">relay</span><span class="o">.</span><span class="n">transform</span><span class="o">.</span><span class="n">FoldConstant</span></a><span class="p">(),</span>
+        <a href="../../api/python/relay/transform.html#tvm.relay.transform.EliminateCommonSubexpr" title="View documentation for tvm.relay.transform.EliminateCommonSubexpr"><span class="n">relay</span><span class="o">.</span><span class="n">transform</span><span class="o">.</span><span class="n">EliminateCommonSubexpr</span></a><span class="p">(),</span>
+        <a href="../../api/python/relay/transform.html#tvm.relay.transform.FuseOps" title="View documentation for tvm.relay.transform.FuseOps"><span class="n">relay</span><span class="o">.</span><span class="n">transform</span><span class="o">.</span><span class="n">FuseOps</span></a><span class="p">(</span><span class="n">fuse_opt_level</span><span class="o">=</span><span class="mi">2</span><span class="p">),</span>
+    <span class="p">]</span>
+<span class="p">)</span>
 <span class="n">mod1</span> <span class="o">=</span> <span class="n">seq</span><span class="p">(</span><span class="n">mod</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="n">mod1</span><span class="p">)</span>
 </pre></div>
@@ -388,7 +393,7 @@ pass.</p>
     %3 = add(%1, %p3) /* ty=Tensor[(1, 64, 54, 54), float32] */;
     add(%2, %3) /* ty=Tensor[(1, 64, 54, 54), float32] */
   };
-  %4(%x, %weight, meta[relay.Constant][0] /* ty=Tensor[(1, 64, 54, 54), float32] */ /* ty=Tensor[(1, 64, 54, 54), float32] */, meta[relay.Constant][1] /* ty=Tensor[(1, 64, 54, 54), float32] */ /* ty=Tensor[(1, 64, 54, 54), float32] */) /* ty=Tensor[(1, 64, 54, 54), float32] */
+  %4(%x, %weight, meta[relay.Constant][0] /* ty=Tensor[(1, 64, 54, 54), float32] */, meta[relay.Constant][1] /* ty=Tensor[(1, 64, 54, 54), float32] */) /* ty=Tensor[(1, 64, 54, 54), float32] */
 }
 </pre></div>
 </div>
@@ -412,7 +417,7 @@ for users to customize the optimization level that they want to execute.</p>
     %2 = add(%1, %p3) /* ty=Tensor[(1, 64, 54, 54), float32] */;
     add(%2, %2) /* ty=Tensor[(1, 64, 54, 54), float32] */
   };
-  %3(%x, %weight, meta[relay.Constant][0] /* ty=Tensor[(1, 64, 54, 54), float32] */ /* ty=Tensor[(1, 64, 54, 54), float32] */, meta[relay.Constant][1] /* ty=Tensor[(1, 64, 54, 54), float32] */ /* ty=Tensor[(1, 64, 54, 54), float32] */) /* ty=Tensor[(1, 64, 54, 54), float32] */
+  %3(%x, %weight, meta[relay.Constant][0] /* ty=Tensor[(1, 64, 54, 54), float32] */, meta[relay.Constant][1] /* ty=Tensor[(1, 64, 54, 54), float32] */) /* ty=Tensor[(1, 64, 54, 54), float32] */
 }
 </pre></div>
 </div>
@@ -436,7 +441,7 @@ identical addition operations.</p>
     %3 = add(%1, %p3) /* ty=Tensor[(1, 64, 54, 54), float32] */;
     add(%2, %3) /* ty=Tensor[(1, 64, 54, 54), float32] */
   };
-  %4(%x, %weight, meta[relay.Constant][0] /* ty=Tensor[(1, 64, 54, 54), float32] */ /* ty=Tensor[(1, 64, 54, 54), float32] */, meta[relay.Constant][1] /* ty=Tensor[(1, 64, 54, 54), float32] */ /* ty=Tensor[(1, 64, 54, 54), float32] */) /* ty=Tensor[(1, 64, 54, 54), float32] */
+  %4(%x, %weight, meta[relay.Constant][0] /* ty=Tensor[(1, 64, 54, 54), float32] */, meta[relay.Constant][1] /* ty=Tensor[(1, 64, 54, 54), float32] */) /* ty=Tensor[(1, 64, 54, 54), float32] */
 }
 </pre></div>
 </div>
@@ -449,7 +454,7 @@ alteration pass falls in such category.</p>
 
 <span class="n">seq1</span> <span class="o">=</span> <a href="../../api/python/ir.html#tvm.transform.Sequential" title="View documentation for tvm.transform.Sequential"><span class="n">tvm</span><span class="o">.</span><span class="n">transform</span><span class="o">.</span><span class="n">Sequential</span></a><span class="p">([</span><a href="../../api/python/relay/transform.html#tvm.relay.transform.AlterOpLayout" title="View documentation for tvm.relay.transform.AlterOpLayout"><span class="n">relay</span><span class="o">.</span><span class="n">transform</span><span class="o">.</span><span class="n">AlterOpLayout</span></a><span class="p">()])</span>
 <span class="k">with</span> <a href="../../api/python/ir.html#tvm.transform.PassContext" title="View documentation for tvm.transform.PassContext"><span class="n">tvm</span><span class="o">.</span><span class="n">transform</span><span class="o">.</span><span class="n">PassContext</span></a><span class="p">(</span><span class="n">opt_level</span><span class="o">=</span><span class="mi">3</span><span class="p">):</span>
-    <span class="k">with</span> <a href="../../api/python/target.html#tvm.target.create" title="View documentation for tvm.target.create"><span class="n">tvm</span><span class="o">.</span><span class="n">target</span><span class="o">.</span><span class="n">create</span></a><span class="p">(</span><span class="s2">&quot;llvm&quot;</span><span class="p">):</span>
+    <span class="k">with</span> <a href="../../api/python/target.html#tvm.target.Target" title="View documentation for tvm.target.Target"><span class="n">tvm</span><span class="o">.</span><span class="n">target</span><span class="o">.</span><span class="n">Target</span></a><span class="p">(</span><span class="s2">&quot;llvm&quot;</span><span class="p">):</span>
         <span class="n">mod5</span> <span class="o">=</span> <span class="n">seq1</span><span class="p">(</span><span class="n">mod</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="n">mod5</span><span class="p">)</span>
 </pre></div>
@@ -462,18 +467,18 @@ alteration pass falls in such category.</p>
     %2 = add(%1, %p3) /* ty=Tensor[(1, 64, 54, 54), float32] */;
     add(%2, %2) /* ty=Tensor[(1, 64, 54, 54), float32] */
   };
-  %3(%x, %weight, meta[relay.Constant][0] /* ty=Tensor[(1, 64, 54, 54), float32] */ /* ty=Tensor[(1, 64, 54, 54), float32] */, meta[relay.Constant][1] /* ty=Tensor[(1, 64, 54, 54), float32] */ /* ty=Tensor[(1, 64, 54, 54), float32] */) /* ty=Tensor[(1, 64, 54, 54), float32] */
+  %3(%x, %weight, meta[relay.Constant][0] /* ty=Tensor[(1, 64, 54, 54), float32] */, meta[relay.Constant][1] /* ty=Tensor[(1, 64, 54, 54), float32] */) /* ty=Tensor[(1, 64, 54, 54), float32] */
 }
 
 
 def @main(%x: Tensor[(1, 64, 56, 56), float32], %weight: Tensor[(64, 64, 3, 3), float32]) -&gt; Tensor[(1, 64, 54, 54), float32] {
   %0 = layout_transform(%x, src_layout=&quot;NCHW&quot;, dst_layout=&quot;NCHW16c&quot;) /* ty=Tensor[(1, 4, 56, 56, 16), float32] */;
   %1 = nn.conv2d(%0, %weight, padding=[0, 0, 0, 0], data_layout=&quot;NCHW16c&quot;) /* ty=Tensor[(1, 4, 54, 54, 16), float32] */;
-  %2 = add(meta[relay.Constant][0] /* ty=Tensor[(1, 64, 54, 54), float32] */ /* ty=Tensor[(1, 64, 54, 54), float32] */, meta[relay.Constant][0] /* ty=Tensor[(1, 64, 54, 54), float32] */ /* ty=Tensor[(1, 64, 54, 54), float32] */) /* ty=Tensor[(1, 64, 54, 54), float32] */;
+  %2 = add(meta[relay.Constant][0] /* ty=Tensor[(1, 64, 54, 54), float32] */, meta[relay.Constant][0] /* ty=Tensor[(1, 64, 54, 54), float32] */) /* ty=Tensor[(1, 64, 54, 54), float32] */;
   %3 = multiply(%2, 2f /* ty=float32 */) /* ty=Tensor[(1, 64, 54, 54), float32] */;
   %4 = layout_transform(%3, src_layout=&quot;NCHW&quot;, dst_layout=&quot;NCHW16c&quot;) /* ty=Tensor[(1, 4, 54, 54, 16), float32] */;
   %5 = add(%1, %4) /* ty=Tensor[(1, 4, 54, 54, 16), float32] */;
-  %6 = layout_transform(meta[relay.Constant][0] /* ty=Tensor[(1, 64, 54, 54), float32] */ /* ty=Tensor[(1, 64, 54, 54), float32] */, src_layout=&quot;NCHW&quot;, dst_layout=&quot;NCHW16c&quot;) /* ty=Tensor[(1, 4, 54, 54, 16), float32] */;
+  %6 = layout_transform(meta[relay.Constant][0] /* ty=Tensor[(1, 64, 54, 54), float32] */, src_layout=&quot;NCHW&quot;, dst_layout=&quot;NCHW16c&quot;) /* ty=Tensor[(1, 4, 54, 54, 16), float32] */;
   %7 = add(%5, %6) /* ty=Tensor[(1, 4, 54, 54, 16), float32] */;
   %8 = add(%5, %6) /* ty=Tensor[(1, 4, 54, 54, 16), float32] */;
   %9 = add(%7, %8) /* ty=Tensor[(1, 4, 54, 54, 16), float32] */;
@@ -507,7 +512,9 @@ customized pass.</p>
         <span class="k">class</span> <span class="nc">ReplaceConstant</span><span class="p">(</span><a href="../../api/python/relay/index.html#tvm.relay.ExprMutator" title="View documentation for tvm.relay.ExprMutator"><span class="n">tvm</span><span class="o">.</span><span class="n">relay</span><span class="o">.</span><span class="n">ExprMutator</span></a><span class="p">):</span>
             <span class="k">def</span> <span class="nf">visit_constant</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">c</span><span class="p">):</span>
                 <span class="k">return</span> <a href="../../api/python/relay/index.html#tvm.relay.multiply" title="View documentation for tvm.relay.multiply"><span class="n">relay</span><span class="o">.</span><span class="n">multiply</span></a><span class="p">(</span><span class="n">obj</span><span class="o">.</span><span class="n">multiplier</span><span class="p">,</span> <span class="n">c</span><span class="p">)</span>
+
         <span class="k">return</span> <span class="n">ReplaceConstant</span><span class="p">()</span><span class="o">.</span><span class="n">visit</span><span class="p">(</span><span class="n">func</span><span class="p">)</span>
+
 
 <span class="n">f</span> <span class="o">=</span> <span class="n">example</span><span class="p">()</span>
 <span class="n">mod</span> <span class="o">=</span> <span class="n">tvm</span><span class="o">.</span><span class="n">IRModule</span><span class="o">.</span><span class="n">from_expr</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
@@ -520,7 +527,7 @@ customized pass.</p>
 <p class="sphx-glr-script-out">Out:</p>
 <div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre>def @main(%x: Tensor[(1, 64, 56, 56), float32], %weight: Tensor[(64, 64, 3, 3), float32]) -&gt; Tensor[(1, 64, 54, 54), float32] {
   %0 = nn.conv2d(%x, %weight, padding=[0, 0, 0, 0]) /* ty=Tensor[(1, 64, 54, 54), float32] */;
-  %1 = multiply(3f /* ty=float32 */, meta[relay.Constant][0] /* ty=Tensor[(1, 64, 54, 54), float32] */ /* ty=Tensor[(1, 64, 54, 54), float32] */) /* ty=Tensor[(1, 64, 54, 54), float32] */;
+  %1 = multiply(3f /* ty=float32 */, meta[relay.Constant][0] /* ty=Tensor[(1, 64, 54, 54), float32] */) /* ty=Tensor[(1, 64, 54, 54), float32] */;
   %2 = add(%1, %1) /* ty=Tensor[(1, 64, 54, 54), float32] */;
   %3 = multiply(3f /* ty=float32 */, 2f /* ty=float32 */) /* ty=float32 */;
   %4 = multiply(%2, %3) /* ty=Tensor[(1, 64, 54, 54), float32] */;
@@ -540,11 +547,15 @@ whole module. A slightly modified version of the sequential pass example
 could be like the following to enable IR dumping for <code class="docutils literal notranslate"><span class="pre">FoldConstant</span></code> optimization.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span class="n">f</span> <span class="o">=</span> <span class="n">example</span><span class="p">()</span>
 <span class="n">mod</span> <span class="o">=</span> <span class="n">tvm</span><span class="o">.</span><span class="n">IRModule</span><span class="o">.</span><span class="n">from_expr</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
-<span class="n">seq</span> <span class="o">=</span> <a href="../../api/python/ir.html#tvm.transform.Sequential" title="View documentation for tvm.transform.Sequential"><span class="n">tvm</span><span class="o">.</span><span class="n">transform</span><span class="o">.</span><span class="n">Sequential</span></a><span class="p">([</span><a href="../../api/python/relay/transform.html#tvm.relay.transform.FoldConstant" title="View documentation for tvm.relay.transform.FoldConstant"><span class="n">relay</span><span class="o">.</span><span class="n">transform</span><span class="o">.</span><span class="n">FoldConstant</span></a><span class="p">(),</span>
-                                <a href="../../api/python/ir.html#tvm.transform.PrintIR" title="View documentation for tvm.transform.PrintIR"><span class="n">tvm</span><span class="o">.</span><span class="n">transform</span><span class="o">.</span><span class="n">PrintIR</span></a><span class="p">(),</span>
-                                <a href="../../api/python/relay/transform.html#tvm.relay.transform.EliminateCommonSubexpr" title="View documentation for tvm.relay.transform.EliminateCommonSubexpr"><span class="n">relay</span><span class="o">.</span><span class="n">transform</span><span class="o">.</span><span class="n">EliminateCommonSubexpr</span></a><span class="p">(),</span>
-                                <a href="../../api/python/relay/transform.html#tvm.relay.transform.FuseOps" title="View documentation for tvm.relay.transform.FuseOps"><span class="n">relay</span><span class="o">.</span><span class="n">transform</span><span class="o">.</span><span class="n">FuseOps</span></a><span class="p">(),</span>
-                                <a href="../../api/python/relay/transform.html#tvm.relay.transform.AlterOpLayout" title="View documentation for tvm.relay.transform.AlterOpLayout"><span class="n">relay</span><span class="o">.</span><span class="n">transform</span><span class="o">.</span><span class="n">AlterOpLayout</span></a><span class="p">()])</span>
+<span class="n">seq</span> <span class="o">=</span> <a href="../../api/python/ir.html#tvm.transform.Sequential" title="View documentation for tvm.transform.Sequential"><span class="n">tvm</span><span class="o">.</span><span class="n">transform</span><span class="o">.</span><span class="n">Sequential</span></a><span class="p">(</span>
+    <span class="p">[</span>
+        <a href="../../api/python/relay/transform.html#tvm.relay.transform.FoldConstant" title="View documentation for tvm.relay.transform.FoldConstant"><span class="n">relay</span><span class="o">.</span><span class="n">transform</span><span class="o">.</span><span class="n">FoldConstant</span></a><span class="p">(),</span>
+        <a href="../../api/python/ir.html#tvm.transform.PrintIR" title="View documentation for tvm.transform.PrintIR"><span class="n">tvm</span><span class="o">.</span><span class="n">transform</span><span class="o">.</span><span class="n">PrintIR</span></a><span class="p">(),</span>
+        <a href="../../api/python/relay/transform.html#tvm.relay.transform.EliminateCommonSubexpr" title="View documentation for tvm.relay.transform.EliminateCommonSubexpr"><span class="n">relay</span><span class="o">.</span><span class="n">transform</span><span class="o">.</span><span class="n">EliminateCommonSubexpr</span></a><span class="p">(),</span>
+        <a href="../../api/python/relay/transform.html#tvm.relay.transform.FuseOps" title="View documentation for tvm.relay.transform.FuseOps"><span class="n">relay</span><span class="o">.</span><span class="n">transform</span><span class="o">.</span><span class="n">FuseOps</span></a><span class="p">(),</span>
+        <a href="../../api/python/relay/transform.html#tvm.relay.transform.AlterOpLayout" title="View documentation for tvm.relay.transform.AlterOpLayout"><span class="n">relay</span><span class="o">.</span><span class="n">transform</span><span class="o">.</span><span class="n">AlterOpLayout</span></a><span class="p">(),</span>
+    <span class="p">]</span>
+<span class="p">)</span>
 
 <span class="c1"># By inserting the ``PrintIR`` pass after ``FoldConstant``, the pass infra will</span>
 <span class="c1"># dump out the module IR when ``FoldConstant`` is done. Users can plug in this</span>
@@ -557,14 +568,16 @@ could be like the following to enable IR dumping for <code class="docutils liter
 <span class="c1"># and a boolean indicating whether you are executing before, or after a pass.</span>
 <span class="c1"># An example is below.</span>
 
+
 <span class="k">def</span> <span class="nf">print_ir</span><span class="p">(</span><span class="n">mod</span><span class="p">,</span> <span class="n">info</span><span class="p">,</span> <span class="n">is_before</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Print the name of the pass, the IR, only before passes execute.&quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="n">is_before</span><span class="p">:</span>
         <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Running pass: {}&quot;</span><span class="p">,</span> <span class="n">info</span><span class="p">)</span>
         <span class="nb">print</span><span class="p">(</span><span class="n">mod</span><span class="p">)</span>
 
+
 <span class="k">with</span> <a href="../../api/python/ir.html#tvm.transform.PassContext" title="View documentation for tvm.transform.PassContext"><span class="n">tvm</span><span class="o">.</span><span class="n">transform</span><span class="o">.</span><span class="n">PassContext</span></a><span class="p">(</span><span class="n">opt_level</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">trace</span><span class="o">=</span><span class="n">print_ir</span><span class="p">):</span>
-    <span class="k">with</span> <a href="../../api/python/target.html#tvm.target.create" title="View documentation for tvm.target.create"><span class="n">tvm</span><span class="o">.</span><span class="n">target</span><span class="o">.</span><span class="n">create</span></a><span class="p">(</span><span class="s2">&quot;llvm&quot;</span><span class="p">):</span>
+    <span class="k">with</span> <a href="../../api/python/target.html#tvm.target.Target" title="View documentation for tvm.target.Target"><span class="n">tvm</span><span class="o">.</span><span class="n">target</span><span class="o">.</span><span class="n">Target</span></a><span class="p">(</span><span class="s2">&quot;llvm&quot;</span><span class="p">):</span>
         <span class="c1"># Perform the optimizations.</span>
         <span class="n">mod</span> <span class="o">=</span> <span class="n">seq</span><span class="p">(</span><span class="n">mod</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="n">mod</span><span class="p">)</span>
@@ -578,11 +591,11 @@ could be like the following to enable IR dumping for <code class="docutils liter
 
 def @main(%x: Tensor[(1, 64, 56, 56), float32], %weight: Tensor[(64, 64, 3, 3), float32]) -&gt; Tensor[(1, 64, 54, 54), float32] {
   %0 = nn.conv2d(%x, %weight, padding=[0, 0, 0, 0]) /* ty=Tensor[(1, 64, 54, 54), float32] */;
-  %1 = add(meta[relay.Constant][0] /* ty=Tensor[(1, 64, 54, 54), float32] */ /* ty=Tensor[(1, 64, 54, 54), float32] */, meta[relay.Constant][0] /* ty=Tensor[(1, 64, 54, 54), float32] */ /* ty=Tensor[(1, 64, 54, 54), float32] */) /* ty=Tensor[(1, 64, 54, 54), float32] */;
+  %1 = add(meta[relay.Constant][0] /* ty=Tensor[(1, 64, 54, 54), float32] */, meta[relay.Constant][0] /* ty=Tensor[(1, 64, 54, 54), float32] */) /* ty=Tensor[(1, 64, 54, 54), float32] */;
   %2 = multiply(%1, 2f /* ty=float32 */) /* ty=Tensor[(1, 64, 54, 54), float32] */;
   %3 = add(%0, %2) /* ty=Tensor[(1, 64, 54, 54), float32] */;
-  %4 = add(%3, meta[relay.Constant][0] /* ty=Tensor[(1, 64, 54, 54), float32] */ /* ty=Tensor[(1, 64, 54, 54), float32] */) /* ty=Tensor[(1, 64, 54, 54), float32] */;
-  %5 = add(%3, meta[relay.Constant][0] /* ty=Tensor[(1, 64, 54, 54), float32] */ /* ty=Tensor[(1, 64, 54, 54), float32] */) /* ty=Tensor[(1, 64, 54, 54), float32] */;
+  %4 = add(%3, meta[relay.Constant][0] /* ty=Tensor[(1, 64, 54, 54), float32] */) /* ty=Tensor[(1, 64, 54, 54), float32] */;
+  %5 = add(%3, meta[relay.Constant][0] /* ty=Tensor[(1, 64, 54, 54), float32] */) /* ty=Tensor[(1, 64, 54, 54), float32] */;
   add(%4, %5) /* ty=Tensor[(1, 64, 54, 54), float32] */
 }
 
@@ -591,7 +604,7 @@ Running pass: {} The meta data of the pass: pass name: InferTypeopt_level: 0requ
 ]
 
 def @main() -&gt; Tensor[(1, 64, 54, 54), float32] {
-  add(meta[relay.Constant][0] /* ty=Tensor[(1, 64, 54, 54), float32] */ /* ty=Tensor[(1, 64, 54, 54), float32] */, meta[relay.Constant][0] /* ty=Tensor[(1, 64, 54, 54), float32] */ /* ty=Tensor[(1, 64, 54, 54), float32] */) /* ty=Tensor[(1, 64, 54, 54), float32] */
+  add(meta[relay.Constant][0] /* ty=Tensor[(1, 64, 54, 54), float32] */, meta[relay.Constant][0] /* ty=Tensor[(1, 64, 54, 54), float32] */) /* ty=Tensor[(1, 64, 54, 54), float32] */
 }
 
 
@@ -599,7 +612,7 @@ Running pass: {} The meta data of the pass: pass name: FuseOpsopt_level: 1requir
 InferType, ]
 
 def @main() -&gt; Tensor[(1, 64, 54, 54), float32] {
-  add(meta[relay.Constant][0] /* ty=Tensor[(1, 64, 54, 54), float32] */ /* ty=Tensor[(1, 64, 54, 54), float32] */, meta[relay.Constant][0] /* ty=Tensor[(1, 64, 54, 54), float32] */ /* ty=Tensor[(1, 64, 54, 54), float32] */) /* ty=Tensor[(1, 64, 54, 54), float32] */
+  add(meta[relay.Constant][0] /* ty=Tensor[(1, 64, 54, 54), float32] */, meta[relay.Constant][0] /* ty=Tensor[(1, 64, 54, 54), float32] */) /* ty=Tensor[(1, 64, 54, 54), float32] */
 }
 
 
@@ -610,7 +623,7 @@ def @main() -&gt; Tensor[(1, 64, 54, 54), float32] {
   %0 = fn (%p0: Tensor[(1, 64, 54, 54), float32], Primitive=1) -&gt; Tensor[(1, 64, 54, 54), float32] {
     add(%p0, %p0) /* ty=Tensor[(1, 64, 54, 54), float32] */
   };
-  %0(meta[relay.Constant][0] /* ty=Tensor[(1, 64, 54, 54), float32] */ /* ty=Tensor[(1, 64, 54, 54), float32] */) /* ty=Tensor[(1, 64, 54, 54), float32] */
+  %0(meta[relay.Constant][0] /* ty=Tensor[(1, 64, 54, 54), float32] */) /* ty=Tensor[(1, 64, 54, 54), float32] */
 }
 
 
@@ -618,7 +631,7 @@ Running pass: {} The meta data of the pass: pass name: InferTypeopt_level: 0requ
 ]
 
 def @main() -&gt; Tensor[(1, 64, 54, 54), float32] {
-  let %x: Tensor[(1, 64, 54, 54), float32] = meta[relay.Constant][0] /* ty=Tensor[(1, 64, 54, 54), float32] */ /* ty=Tensor[(1, 64, 54, 54), float32] */;
+  let %x: Tensor[(1, 64, 54, 54), float32] = meta[relay.Constant][0] /* ty=Tensor[(1, 64, 54, 54), float32] */;
   let %x1: fn (Tensor[(1, 64, 54, 54), float32]) -&gt; Tensor[(1, 64, 54, 54), float32] = fn (%p0: Tensor[(1, 64, 54, 54), float32], Primitive=1) -&gt; Tensor[(1, 64, 54, 54), float32] {
     add(%p0, %p0) /* ty=Tensor[(1, 64, 54, 54), float32] */
   };
@@ -631,7 +644,7 @@ Running pass: {} The meta data of the pass: pass name: InferTypeopt_level: 0requ
 ]
 
 def @main() -&gt; Tensor[(1, 64, 54, 54), float32] {
-  multiply(meta[relay.Constant][0] /* ty=Tensor[(1, 64, 54, 54), float32] */ /* ty=Tensor[(1, 64, 54, 54), float32] */, 2f /* ty=float32 */) /* ty=Tensor[(1, 64, 54, 54), float32] */
+  multiply(meta[relay.Constant][0] /* ty=Tensor[(1, 64, 54, 54), float32] */, 2f /* ty=float32 */) /* ty=Tensor[(1, 64, 54, 54), float32] */
 }
 
 
@@ -639,7 +652,7 @@ Running pass: {} The meta data of the pass: pass name: FuseOpsopt_level: 1requir
 InferType, ]
 
 def @main() -&gt; Tensor[(1, 64, 54, 54), float32] {
-  multiply(meta[relay.Constant][0] /* ty=Tensor[(1, 64, 54, 54), float32] */ /* ty=Tensor[(1, 64, 54, 54), float32] */, 2f /* ty=float32 */) /* ty=Tensor[(1, 64, 54, 54), float32] */
+  multiply(meta[relay.Constant][0] /* ty=Tensor[(1, 64, 54, 54), float32] */, 2f /* ty=float32 */) /* ty=Tensor[(1, 64, 54, 54), float32] */
 }
 
 
@@ -650,7 +663,7 @@ def @main() -&gt; Tensor[(1, 64, 54, 54), float32] {
   %0 = fn (%p0: Tensor[(1, 64, 54, 54), float32], %p1: float32, Primitive=1) -&gt; Tensor[(1, 64, 54, 54), float32] {
     multiply(%p0, %p1) /* ty=Tensor[(1, 64, 54, 54), float32] */
   };
-  %0(meta[relay.Constant][0] /* ty=Tensor[(1, 64, 54, 54), float32] */ /* ty=Tensor[(1, 64, 54, 54), float32] */, 2f /* ty=float32 */) /* ty=Tensor[(1, 64, 54, 54), float32] */
+  %0(meta[relay.Constant][0] /* ty=Tensor[(1, 64, 54, 54), float32] */, 2f /* ty=float32 */) /* ty=Tensor[(1, 64, 54, 54), float32] */
 }
 
 
@@ -658,7 +671,7 @@ Running pass: {} The meta data of the pass: pass name: InferTypeopt_level: 0requ
 ]
 
 def @main() -&gt; Tensor[(1, 64, 54, 54), float32] {
-  let %x: Tensor[(1, 64, 54, 54), float32] = meta[relay.Constant][0] /* ty=Tensor[(1, 64, 54, 54), float32] */ /* ty=Tensor[(1, 64, 54, 54), float32] */;
+  let %x: Tensor[(1, 64, 54, 54), float32] = meta[relay.Constant][0] /* ty=Tensor[(1, 64, 54, 54), float32] */;
   let %x1: float32 = 2f /* ty=float32 */;
   let %x2: fn (Tensor[(1, 64, 54, 54), float32], float32) -&gt; Tensor[(1, 64, 54, 54), float32] = fn (%p0: Tensor[(1, 64, 54, 54), float32], %p1: float32, Primitive=1) -&gt; Tensor[(1, 64, 54, 54), float32] {
     multiply(%p0, %p1) /* ty=Tensor[(1, 64, 54, 54), float32] */
@@ -673,9 +686,9 @@ Running pass: {} The meta data of the pass: pass name: PrintIRopt_level: 0requir
 
 def @main(%x: Tensor[(1, 64, 56, 56), float32], %weight: Tensor[(64, 64, 3, 3), float32]) -&gt; Tensor[(1, 64, 54, 54), float32] {
   %0 = nn.conv2d(%x, %weight, padding=[0, 0, 0, 0]) /* ty=Tensor[(1, 64, 54, 54), float32] */;
-  %1 = add(%0, meta[relay.Constant][0] /* ty=Tensor[(1, 64, 54, 54), float32] */ /* ty=Tensor[(1, 64, 54, 54), float32] */) /* ty=Tensor[(1, 64, 54, 54), float32] */;
-  %2 = add(%1, meta[relay.Constant][1] /* ty=Tensor[(1, 64, 54, 54), float32] */ /* ty=Tensor[(1, 64, 54, 54), float32] */) /* ty=Tensor[(1, 64, 54, 54), float32] */;
-  %3 = add(%1, meta[relay.Constant][1] /* ty=Tensor[(1, 64, 54, 54), float32] */ /* ty=Tensor[(1, 64, 54, 54), float32] */) /* ty=Tensor[(1, 64, 54, 54), float32] */;
+  %1 = add(%0, meta[relay.Constant][0] /* ty=Tensor[(1, 64, 54, 54), float32] */) /* ty=Tensor[(1, 64, 54, 54), float32] */;
+  %2 = add(%1, meta[relay.Constant][1] /* ty=Tensor[(1, 64, 54, 54), float32] */) /* ty=Tensor[(1, 64, 54, 54), float32] */;
+  %3 = add(%1, meta[relay.Constant][1] /* ty=Tensor[(1, 64, 54, 54), float32] */) /* ty=Tensor[(1, 64, 54, 54), float32] */;
   add(%2, %3) /* ty=Tensor[(1, 64, 54, 54), float32] */
 }
 
@@ -685,9 +698,9 @@ Running pass: {} The meta data of the pass: pass name: InferTypeopt_level: 0requ
 
 def @main(%x: Tensor[(1, 64, 56, 56), float32], %weight: Tensor[(64, 64, 3, 3), float32]) -&gt; Tensor[(1, 64, 54, 54), float32] {
   %0 = nn.conv2d(%x, %weight, padding=[0, 0, 0, 0]) /* ty=Tensor[(1, 64, 54, 54), float32] */;
-  %1 = add(%0, meta[relay.Constant][0] /* ty=Tensor[(1, 64, 54, 54), float32] */ /* ty=Tensor[(1, 64, 54, 54), float32] */) /* ty=Tensor[(1, 64, 54, 54), float32] */;
-  %2 = add(%1, meta[relay.Constant][1] /* ty=Tensor[(1, 64, 54, 54), float32] */ /* ty=Tensor[(1, 64, 54, 54), float32] */) /* ty=Tensor[(1, 64, 54, 54), float32] */;
-  %3 = add(%1, meta[relay.Constant][1] /* ty=Tensor[(1, 64, 54, 54), float32] */ /* ty=Tensor[(1, 64, 54, 54), float32] */) /* ty=Tensor[(1, 64, 54, 54), float32] */;
+  %1 = add(%0, meta[relay.Constant][0] /* ty=Tensor[(1, 64, 54, 54), float32] */) /* ty=Tensor[(1, 64, 54, 54), float32] */;
+  %2 = add(%1, meta[relay.Constant][1] /* ty=Tensor[(1, 64, 54, 54), float32] */) /* ty=Tensor[(1, 64, 54, 54), float32] */;
+  %3 = add(%1, meta[relay.Constant][1] /* ty=Tensor[(1, 64, 54, 54), float32] */) /* ty=Tensor[(1, 64, 54, 54), float32] */;
   add(%2, %3) /* ty=Tensor[(1, 64, 54, 54), float32] */
 }
 
@@ -697,9 +710,9 @@ InferType, ]
 
 def @main(%x: Tensor[(1, 64, 56, 56), float32], %weight: Tensor[(64, 64, 3, 3), float32]) -&gt; Tensor[(1, 64, 54, 54), float32] {
   %0 = nn.conv2d(%x, %weight, padding=[0, 0, 0, 0]) /* ty=Tensor[(1, 64, 54, 54), float32] */;
-  %1 = add(%0, meta[relay.Constant][0] /* ty=Tensor[(1, 64, 54, 54), float32] */ /* ty=Tensor[(1, 64, 54, 54), float32] */) /* ty=Tensor[(1, 64, 54, 54), float32] */;
-  %2 = add(%1, meta[relay.Constant][1] /* ty=Tensor[(1, 64, 54, 54), float32] */ /* ty=Tensor[(1, 64, 54, 54), float32] */) /* ty=Tensor[(1, 64, 54, 54), float32] */;
-  %3 = add(%1, meta[relay.Constant][1] /* ty=Tensor[(1, 64, 54, 54), float32] */ /* ty=Tensor[(1, 64, 54, 54), float32] */) /* ty=Tensor[(1, 64, 54, 54), float32] */;
+  %1 = add(%0, meta[relay.Constant][0] /* ty=Tensor[(1, 64, 54, 54), float32] */) /* ty=Tensor[(1, 64, 54, 54), float32] */;
+  %2 = add(%1, meta[relay.Constant][1] /* ty=Tensor[(1, 64, 54, 54), float32] */) /* ty=Tensor[(1, 64, 54, 54), float32] */;
+  %3 = add(%1, meta[relay.Constant][1] /* ty=Tensor[(1, 64, 54, 54), float32] */) /* ty=Tensor[(1, 64, 54, 54), float32] */;
   add(%2, %3) /* ty=Tensor[(1, 64, 54, 54), float32] */
 }
 
@@ -709,8 +722,8 @@ Running pass: {} The meta data of the pass: pass name: InferTypeopt_level: 0requ
 
 def @main(%x: Tensor[(1, 64, 56, 56), float32], %weight: Tensor[(64, 64, 3, 3), float32]) -&gt; Tensor[(1, 64, 54, 54), float32] {
   %0 = nn.conv2d(%x, %weight, padding=[0, 0, 0, 0]) /* ty=Tensor[(1, 64, 54, 54), float32] */;
-  %1 = add(%0, meta[relay.Constant][0] /* ty=Tensor[(1, 64, 54, 54), float32] */ /* ty=Tensor[(1, 64, 54, 54), float32] */) /* ty=Tensor[(1, 64, 54, 54), float32] */;
-  %2 = add(%1, meta[relay.Constant][1] /* ty=Tensor[(1, 64, 54, 54), float32] */ /* ty=Tensor[(1, 64, 54, 54), float32] */) /* ty=Tensor[(1, 64, 54, 54), float32] */;
+  %1 = add(%0, meta[relay.Constant][0] /* ty=Tensor[(1, 64, 54, 54), float32] */) /* ty=Tensor[(1, 64, 54, 54), float32] */;
+  %2 = add(%1, meta[relay.Constant][1] /* ty=Tensor[(1, 64, 54, 54), float32] */) /* ty=Tensor[(1, 64, 54, 54), float32] */;
   add(%2, %2) /* ty=Tensor[(1, 64, 54, 54), float32] */
 }
 
@@ -720,8 +733,8 @@ InferType, ]
 
 def @main(%x: Tensor[(1, 64, 56, 56), float32], %weight: Tensor[(64, 64, 3, 3), float32]) -&gt; Tensor[(1, 64, 54, 54), float32] {
   %0 = nn.conv2d(%x, %weight, padding=[0, 0, 0, 0]) /* ty=Tensor[(1, 64, 54, 54), float32] */;
-  %1 = add(%0, meta[relay.Constant][0] /* ty=Tensor[(1, 64, 54, 54), float32] */ /* ty=Tensor[(1, 64, 54, 54), float32] */) /* ty=Tensor[(1, 64, 54, 54), float32] */;
-  %2 = add(%1, meta[relay.Constant][1] /* ty=Tensor[(1, 64, 54, 54), float32] */ /* ty=Tensor[(1, 64, 54, 54), float32] */) /* ty=Tensor[(1, 64, 54, 54), float32] */;
+  %1 = add(%0, meta[relay.Constant][0] /* ty=Tensor[(1, 64, 54, 54), float32] */) /* ty=Tensor[(1, 64, 54, 54), float32] */;
+  %2 = add(%1, meta[relay.Constant][1] /* ty=Tensor[(1, 64, 54, 54), float32] */) /* ty=Tensor[(1, 64, 54, 54), float32] */;
   add(%2, %2) /* ty=Tensor[(1, 64, 54, 54), float32] */
 }
 
@@ -736,7 +749,7 @@ def @main(%x: Tensor[(1, 64, 56, 56), float32], %weight: Tensor[(64, 64, 3, 3), 
     %2 = add(%1, %p3) /* ty=Tensor[(1, 64, 54, 54), float32] */;
     add(%2, %2) /* ty=Tensor[(1, 64, 54, 54), float32] */
   };
-  %3(%x, %weight, meta[relay.Constant][0] /* ty=Tensor[(1, 64, 54, 54), float32] */ /* ty=Tensor[(1, 64, 54, 54), float32] */, meta[relay.Constant][1] /* ty=Tensor[(1, 64, 54, 54), float32] */ /* ty=Tensor[(1, 64, 54, 54), float32] */) /* ty=Tensor[(1, 64, 54, 54), float32] */
+  %3(%x, %weight, meta[relay.Constant][0] /* ty=Tensor[(1, 64, 54, 54), float32] */, meta[relay.Constant][1] /* ty=Tensor[(1, 64, 54, 54), float32] */) /* ty=Tensor[(1, 64, 54, 54), float32] */
 }
 
 
@@ -750,7 +763,7 @@ def @main(%x: Tensor[(1, 64, 56, 56), float32], %weight: Tensor[(64, 64, 3, 3), 
     %2 = add(%1, %p3) /* ty=Tensor[(1, 64, 54, 54), float32] */;
     add(%2, %2) /* ty=Tensor[(1, 64, 54, 54), float32] */
   };
-  %3(%x, %weight, meta[relay.Constant][0] /* ty=Tensor[(1, 64, 54, 54), float32] */ /* ty=Tensor[(1, 64, 54, 54), float32] */, meta[relay.Constant][1] /* ty=Tensor[(1, 64, 54, 54), float32] */ /* ty=Tensor[(1, 64, 54, 54), float32] */) /* ty=Tensor[(1, 64, 54, 54), float32] */
+  %3(%x, %weight, meta[relay.Constant][0] /* ty=Tensor[(1, 64, 54, 54), float32] */, meta[relay.Constant][1] /* ty=Tensor[(1, 64, 54, 54), float32] */) /* ty=Tensor[(1, 64, 54, 54), float32] */
 }
 
 
@@ -765,7 +778,7 @@ def @main(%x: Tensor[(1, 64, 56, 56), float32], %weight: Tensor[(64, 64, 3, 3), 
     %6 = add(%5, %5) /* ty=Tensor[(1, 4, 54, 54, 16), float32] */;
     layout_transform(%6, src_layout=&quot;NCHW16c&quot;, dst_layout=&quot;NCHW&quot;) /* ty=Tensor[(1, 64, 54, 54), float32] */
   };
-  %7(%x, %weight, meta[relay.Constant][0] /* ty=Tensor[(1, 64, 54, 54), float32] */ /* ty=Tensor[(1, 64, 54, 54), float32] */, meta[relay.Constant][1] /* ty=Tensor[(1, 64, 54, 54), float32] */ /* ty=Tensor[(1, 64, 54, 54), float32] */) /* ty=Tensor[(1, 64, 54, 54), float32] */
+  %7(%x, %weight, meta[relay.Constant][0] /* ty=Tensor[(1, 64, 54, 54), float32] */, meta[relay.Constant][1] /* ty=Tensor[(1, 64, 54, 54), float32] */) /* ty=Tensor[(1, 64, 54, 54), float32] */
 }
 
 

@@ -82,7 +82,7 @@ Perform vta-specific compilation with Relay from a Gluon model
     def compile_network(env, target, model, start_pack, stop_pack):
 
         # Populate the shape and data type dictionary
-        dtype_dict = {"data": 'float32'}
+        dtype_dict = {"data": "float32"}
         shape_dict = {"data": (env.BATCH, 3, 224, 224)}
 
         # Get off the shelf gluon model, and convert to relay
@@ -102,12 +102,14 @@ Perform vta-specific compilation with Relay from a Gluon model
         # Perform graph packing and constant folding for VTA target
         if target.device_name == "vta":
             assert env.BLOCK_IN == env.BLOCK_OUT
-            relay_prog = graph_pack(mod["main"],
-                                    env.BATCH,
-                                    env.BLOCK_OUT,
-                                    env.WGT_WIDTH,
-                                    start_name=start_pack,
-                                    stop_name=stop_pack)
+            relay_prog = graph_pack(
+                mod["main"],
+                env.BATCH,
+                env.BLOCK_OUT,
+                env.WGT_WIDTH,
+                start_name=start_pack,
+                stop_name=stop_pack,
+            )
 
         return relay_prog, params
 
@@ -188,7 +190,7 @@ Here we use an Pynq-Z1 board as an example.
 
 
     # Tracker host and port can be set by your environment
-    tracker_host = os.environ.get("TVM_TRACKER_HOST", '0.0.0.0')
+    tracker_host = os.environ.get("TVM_TRACKER_HOST", "0.0.0.0")
     tracker_port = int(os.environ.get("TVM_TRACKER_PORT", 9190))
 
     # Load VTA parameters from the 3rdparty/vta-hw/config/vta_config.json file
@@ -211,20 +213,20 @@ Here we use an Pynq-Z1 board as an example.
     # Tuning option
     log_file = "%s.%s.log" % (device, network)
     tuning_option = {
-        'log_filename': log_file,
-
-        'tuner': 'random',
-        'n_trial': 1000,
-        'early_stopping': None,
-
-        'measure_option': autotvm.measure_option(
+        "log_filename": log_file,
+        "tuner": "random",
+        "n_trial": 1000,
+        "early_stopping": None,
+        "measure_option": autotvm.measure_option(
             builder=autotvm.LocalBuilder(),
-            runner=autotvm.RPCRunner(env.TARGET,
-                                     host=tracker_host,
-                                     port=tracker_port,
-                                     number=5,
-                                     timeout=60,
-                                     check_correctness=True),
+            runner=autotvm.RPCRunner(
+                env.TARGET,
+                host=tracker_host,
+                port=tracker_port,
+                number=5,
+                timeout=60,
+                check_correctness=True,
+            ),
         ),
     }
 
@@ -259,13 +261,15 @@ the ```TARGET`` entry in the ``vta_config.json`` file is set to ``pynq``.
 
 
     # You can skip the implementation of this function for this tutorial.
-    def tune_tasks(tasks,
-                   measure_option,
-                   tuner='xgb',
-                   n_trial=1000,
-                   early_stopping=None,
-                   log_filename='tuning.log',
-                   use_transfer_learning=True):
+    def tune_tasks(
+        tasks,
+        measure_option,
+        tuner="xgb",
+        n_trial=1000,
+        early_stopping=None,
+        log_filename="tuning.log",
+        use_transfer_learning=True,
+    ):
 
         # create tmp log file
         tmp_log_file = log_filename + ".tmp"
@@ -276,15 +280,15 @@ the ```TARGET`` entry in the ``vta_config.json`` file is set to ``pynq``.
             prefix = "[Task %2d/%2d] " % (i + 1, len(tasks))
 
             # create tuner
-            if tuner == 'xgb' or tuner == 'xgb-rank':
-                tuner_obj = XGBTuner(tsk, loss_type='rank')
-            elif tuner == 'xgb_knob':
-                tuner_obj = XGBTuner(tsk, loss_type='rank', feature_type='knob')
-            elif tuner == 'ga':
+            if tuner == "xgb" or tuner == "xgb-rank":
+                tuner_obj = XGBTuner(tsk, loss_type="rank")
+            elif tuner == "xgb_knob":
+                tuner_obj = XGBTuner(tsk, loss_type="rank", feature_type="knob")
+            elif tuner == "ga":
                 tuner_obj = GATuner(tsk, pop_size=50)
-            elif tuner == 'random':
+            elif tuner == "random":
                 tuner_obj = RandomTuner(tsk)
-            elif tuner == 'gridsearch':
+            elif tuner == "gridsearch":
                 tuner_obj = GridSearchTuner(tsk)
             else:
                 raise ValueError("Invalid tuner: " + tuner)
@@ -295,13 +299,15 @@ the ```TARGET`` entry in the ``vta_config.json`` file is set to ``pynq``.
 
             # do tuning
             tsk_trial = min(n_trial, len(tsk.config_space))
-            tuner_obj.tune(n_trial=tsk_trial,
-                           early_stopping=early_stopping,
-                           measure_option=measure_option,
-                           callbacks=[
-                               autotvm.callback.progress_bar(tsk_trial, prefix=prefix),
-                               autotvm.callback.log_to_file(tmp_log_file)
-                           ])
+            tuner_obj.tune(
+                n_trial=tsk_trial,
+                early_stopping=early_stopping,
+                measure_option=measure_option,
+                callbacks=[
+                    autotvm.callback.progress_bar(tsk_trial, prefix=prefix),
+                    autotvm.callback.log_to_file(tmp_log_file),
+                ],
+            )
 
         # pick best records to a cache file
         autotvm.record.pick_best(tmp_log_file, log_filename)
@@ -347,7 +353,7 @@ Register VTA-specific tuning tasks
                 res = my_clip(res, 0, 127)
                 res = topi.cast(res, "int8")
 
-            if tvm.target.Target.current().device_name == 'vta':
+            if tvm.target.Target.current().device_name == "vta":
                 s = vta.top.schedule_conv2d_packed([res])
             else:
                 s = te.create_schedule([res.op])
@@ -371,10 +377,9 @@ Finally, we launch tuning jobs and evaluate the end-to-end performance.
 
         if env.TARGET != "sim":
             # Get remote from fleet node
-            remote = autotvm.measure.request_remote(env.TARGET,
-                                                    tracker_host,
-                                                    tracker_port,
-                                                    timeout=10000)
+            remote = autotvm.measure.request_remote(
+                env.TARGET, tracker_host, tracker_port, timeout=10000
+            )
             # Reconfigure the JIT runtime and FPGA.
             vta.reconfig_runtime(remote)
             vta.program_fpga(remote, bitstream=None)
@@ -389,11 +394,13 @@ Finally, we launch tuning jobs and evaluate the end-to-end performance.
         print("Extract tasks...")
         relay_prog, params = compile_network(env, target, network, start_pack, stop_pack)
         mod = tvm.IRModule.from_expr(relay_prog)
-        tasks = autotvm.task.extract_from_program(mod,
-                                                  params=params,
-                                                  ops=(relay.op.get("nn.conv2d"),),
-                                                  target=target,
-                                                  target_host=env.target_host)
+        tasks = autotvm.task.extract_from_program(
+            mod,
+            params=params,
+            ops=(relay.op.get("nn.conv2d"),),
+            target=target,
+            target_host=env.target_host,
+        )
 
         # filter out non-packed conv2d task
         tasks = list(filter(lambda t: len(t.args[0][1]) > 4, tasks))
@@ -411,9 +418,21 @@ Finally, we launch tuning jobs and evaluate the end-to-end performance.
             hkernel, wkernel = wgt[2], wgt[3]
             hstride, wstride = tsk.args[2][0], tsk.args[2][1]
             hpad, wpad = tsk.args[3][0], tsk.args[3][1]
-            print("({}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {})".format(
-                batch, height, width, in_filter, out_filter, hkernel, wkernel,
-                hpad, wpad, hstride, wstride))
+            print(
+                "({}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {})".format(
+                    batch,
+                    height,
+                    width,
+                    in_filter,
+                    out_filter,
+                    hkernel,
+                    wkernel,
+                    hpad,
+                    wpad,
+                    hstride,
+                    wstride,
+                )
+            )
 
         # We do not run the tuning in our webpage server since it takes too long.
         # Comment the following line to run it by yourself.
@@ -429,17 +448,14 @@ Finally, we launch tuning jobs and evaluate the end-to-end performance.
             print("Compile...")
             if target.device_name != "vta":
                 with tvm.transform.PassContext(opt_level=3, disabled_pass={"AlterOpLayout"}):
-                    graph, lib, params = relay.build(relay_prog,
-                                                    target=target,
-                                                    params=params,
-                                                    target_host=env.target_host)
+                    lib = relay.build(
+                        relay_prog, target=target, params=params, target_host=env.target_host
+                    )
             else:
                 with vta.build_config(opt_level=3, disabled_pass={"AlterOpLayout"}):
-                    graph, lib, params = relay.build(
-                        relay_prog,
-                        target=target,
-                        params=params,
-                        target_host=env.target_host)
+                    lib = relay.build(
+                        relay_prog, target=target, params=params, target_host=env.target_host
+                    )
 
             # Export library
             print("Upload...")
@@ -450,21 +466,21 @@ Finally, we launch tuning jobs and evaluate the end-to-end performance.
 
             # Generate the graph runtime
             ctx = remote.ext_dev(0) if device == "vta" else remote.cpu(0)
-            m = graph_runtime.create(graph, lib, ctx)
+            m = graph_runtime.GraphModule(lib["default"](ctx))
 
             # upload parameters to device
-            image = tvm.nd.array(
-                (np.random.uniform(size=(1, 3, 224, 224))).astype('float32'))
-            m.set_input(**params)
-            m.set_input('data', image)
+            image = tvm.nd.array((np.random.uniform(size=(1, 3, 224, 224))).astype("float32"))
+            m.set_input("data", image)
 
             # evaluate
             print("Evaluate inference time cost...")
             timer = m.module.time_evaluator("run", ctx, number=1, repeat=10)
             tcost = timer()
             prof_res = np.array(tcost.results) * 1000  # convert to millisecond
-            print("Mean inference time (std dev): %.2f ms (%.2f ms)" %
-                  (np.mean(prof_res), np.std(prof_res)))
+            print(
+                "Mean inference time (std dev): %.2f ms (%.2f ms)"
+                % (np.mean(prof_res), np.std(prof_res))
+            )
 
 
     # Run the tuning and evaluate the results
@@ -481,7 +497,7 @@ Finally, we launch tuning jobs and evaluate the end-to-end performance.
  .. code-block:: none
 
     Extract tasks...
-    ...1%, 0.01 MB, 312 KB/s, 0 seconds passed    ...2%, 0.02 MB, 578 KB/s, 0 seconds passed    ...3%, 0.02 MB, 844 KB/s, 0 seconds passed    ...4%, 0.03 MB, 1076 KB/s, 0 seconds passed    ...5%, 0.04 MB, 1326 KB/s, 0 seconds passed    ...6%, 0.05 MB, 1560 KB/s, 0 seconds passed    ...7%, 0.05 MB, 1774 KB/s, 0 seconds passed    ...8%, 0.06 MB, 2002 KB/s, 0 seconds passed    ...9%, 0.07 MB, 2193 KB/s, 0 seconds passed    ...10%, 0.08 MB, 2406 KB/s, 0 seconds passed    ...11%, 0.09 MB, 2633 KB/s, 0 seconds passed    ...13%, 0.09 MB, 2792 KB/s, 0 seconds passed    ...14%, 0.10 MB, 2975 KB/s, 0 seconds passed    ...15%, 0.11 MB, 3187 KB/s, 0 seconds passed    ...16%, 0.12 MB, 3377 KB/s, 0 seconds passed    ...17%, 0.12 MB, 3565 KB/s, 0 seconds passed    ...18%, 0.13 MB, 3768 KB/s, 0 seconds passed    ...19%, 0.14 MB, 3901 KB/s, 0 seconds passed    ...20%, 0.15 MB, 4099 KB/s, 0 seconds passed    ...21%, 0.16 MB, 4296 KB/s, 0 seconds passed    ...22%, 0.16 MB, 4436 KB/s, 0 seconds passed    ...23%, 0.17 MB, 4622 KB/s, 0 seconds passed    ...25%, 0.18 MB, 4807 KB/s, 0 seconds passed    ...26%, 0.19 MB, 4951 KB/s, 0 seconds passed    ...27%, 0.20 MB, 5138 KB/s, 0 seconds passed    ...28%, 0.20 MB, 5302 KB/s, 0 seconds passed    ...29%, 0.21 MB, 5448 KB/s, 0 seconds passed    ...30%, 0.22 MB, 5617 KB/s, 0 seconds passed    ...31%, 0.23 MB, 5768 KB/s, 0 seconds passed    ...32%, 0.23 MB, 5931 KB/s, 0 seconds passed    ...33%, 0.24 MB, 6053 KB/s, 0 seconds passed    ...34%, 0.25 MB, 6213 KB/s, 0 seconds passed    ...35%, 0.26 MB, 6353 KB/s, 0 seconds passed    ...36%, 0.27 MB, 6526 KB/s, 0 seconds passed    ...38%, 0.27 MB, 6698 KB/s, 0 seconds passed    ...39%, 0.28 MB, 6831 KB/s, 0 seconds passed    ...40%, 0.29 MB, 6928 KB/s, 0 seconds passed    ...41%, 0.30 MB, 7095 KB/s, 0 seconds passed    ...42%, 0.30 MB, 7218 KB/s, 0 seconds passed    ...43%, 0.31 MB, 7364 KB/s, 0 seconds passed    ...44%, 0.32 MB, 7487 KB/s, 0 seconds passed    ...45%, 0.33 MB, 7648 KB/s, 0 seconds passed    ...46%, 0.34 MB, 7806 KB/s, 0 seconds passed    ...47%, 0.34 MB, 7925 KB/s, 0 seconds passed    ...48%, 0.35 MB, 8083 KB/s, 0 seconds passed    ...50%, 0.36 MB, 8217 KB/s, 0 seconds passed    ...51%, 0.37 MB, 8357 KB/s, 0 seconds passed    ...52%, 0.38 MB, 8369 KB/s, 0 seconds passed    ...53%, 0.38 MB, 8460 KB/s, 0 seconds passed    ...54%, 0.39 MB, 8609 KB/s, 0 seconds passed    ...55%, 0.40 MB, 8758 KB/s, 0 seconds passed    ...56%, 0.41 MB, 8769 KB/s, 0 seconds passed    ...57%, 0.41 MB, 8795 KB/s, 0 seconds passed    ...58%, 0.42 MB, 8938 KB/s, 0 seconds passed    ...59%, 0.43 MB, 9078 KB/s, 0 seconds passed    ...60%, 0.44 MB, 9041 KB/s, 0 seconds passed    ...62%, 0.45 MB, 9178 KB/s, 0 seconds passed    ...63%, 0.45 MB, 9150 KB/s, 0 seconds passed    ...64%, 0.46 MB, 9292 KB/s, 0 seconds passed    ...65%, 0.47 MB, 9357 KB/s, 0 seconds passed    ...66%, 0.48 MB, 9497 KB/s, 0 seconds passed    ...67%, 0.48 MB, 9562 KB/s, 0 seconds passed    ...68%, 0.49 MB, 9701 KB/s, 0 seconds passed    ...69%, 0.50 MB, 9800 KB/s, 0 seconds passed    ...70%, 0.51 MB, 9937 KB/s, 0 seconds passed    ...71%, 0.52 MB, 10030 KB/s, 0 seconds passed    ...72%, 0.52 MB, 10166 KB/s, 0 seconds passed    ...73%, 0.53 MB, 10182 KB/s, 0 seconds passed    ...75%, 0.54 MB, 10316 KB/s, 0 seconds passed    ...76%, 0.55 MB, 10294 KB/s, 0 seconds passed    ...77%, 0.55 MB, 10424 KB/s, 0 seconds passed    ...78%, 0.56 MB, 10550 KB/s, 0 seconds passed    ...79%, 0.57 MB, 10679 KB/s, 0 seconds passed    ...80%, 0.58 MB, 10727 KB/s, 0 seconds passed    ...81%, 0.59 MB, 10856 KB/s, 0 seconds passed    ...82%, 0.59 MB, 10879 KB/s, 0 seconds passed    ...83%, 0.60 MB, 11005 KB/s, 0 seconds passed    ...84%, 0.61 MB, 11129 KB/s, 0 seconds passed    ...85%, 0.62 MB, 11255 KB/s, 0 seconds passed    ...87%, 0.62 MB, 11335 KB/s, 0 seconds passed    ...88%, 0.63 MB, 11459 KB/s, 0 seconds passed    ...89%, 0.64 MB, 11541 KB/s, 0 seconds passed    ...90%, 0.65 MB, 11664 KB/s, 0 seconds passed    ...91%, 0.66 MB, 11783 KB/s, 0 seconds passed    ...92%, 0.66 MB, 11883 KB/s, 0 seconds passed    ...93%, 0.67 MB, 12005 KB/s, 0 seconds passed    ...94%, 0.68 MB, 12082 KB/s, 0 seconds passed    ...95%, 0.69 MB, 12201 KB/s, 0 seconds passed    ...96%, 0.70 MB, 12276 KB/s, 0 seconds passed    ...97%, 0.70 MB, 12395 KB/s, 0 seconds passed    ...99%, 0.71 MB, 12509 KB/s, 0 seconds passed    ...100%, 0.72 MB, 12590 KB/s, 0 seconds passed
+    ...1%, 0.01 MB, 39 KB/s, 0 seconds passed    ...2%, 0.02 MB, 79 KB/s, 0 seconds passed    ...3%, 0.02 MB, 119 KB/s, 0 seconds passed    ...4%, 0.03 MB, 158 KB/s, 0 seconds passed    ...5%, 0.04 MB, 198 KB/s, 0 seconds passed    ...6%, 0.05 MB, 237 KB/s, 0 seconds passed    ...7%, 0.05 MB, 276 KB/s, 0 seconds passed    ...8%, 0.06 MB, 316 KB/s, 0 seconds passed    ...9%, 0.07 MB, 355 KB/s, 0 seconds passed    ...10%, 0.08 MB, 393 KB/s, 0 seconds passed    ...11%, 0.09 MB, 431 KB/s, 0 seconds passed    ...13%, 0.09 MB, 469 KB/s, 0 seconds passed    ...14%, 0.10 MB, 507 KB/s, 0 seconds passed    ...15%, 0.11 MB, 545 KB/s, 0 seconds passed    ...16%, 0.12 MB, 583 KB/s, 0 seconds passed    ...17%, 0.12 MB, 620 KB/s, 0 seconds passed    ...18%, 0.13 MB, 657 KB/s, 0 seconds passed    ...19%, 0.14 MB, 695 KB/s, 0 seconds passed    ...20%, 0.15 MB, 732 KB/s, 0 seconds passed    ...21%, 0.16 MB, 770 KB/s, 0 seconds passed    ...22%, 0.16 MB, 807 KB/s, 0 seconds passed    ...23%, 0.17 MB, 844 KB/s, 0 seconds passed    ...25%, 0.18 MB, 881 KB/s, 0 seconds passed    ...26%, 0.19 MB, 918 KB/s, 0 seconds passed    ...27%, 0.20 MB, 955 KB/s, 0 seconds passed    ...28%, 0.20 MB, 991 KB/s, 0 seconds passed    ...29%, 0.21 MB, 1028 KB/s, 0 seconds passed    ...30%, 0.22 MB, 1064 KB/s, 0 seconds passed    ...31%, 0.23 MB, 1101 KB/s, 0 seconds passed    ...32%, 0.23 MB, 1138 KB/s, 0 seconds passed    ...33%, 0.24 MB, 1175 KB/s, 0 seconds passed    ...34%, 0.25 MB, 1211 KB/s, 0 seconds passed    ...35%, 0.26 MB, 1248 KB/s, 0 seconds passed    ...36%, 0.27 MB, 1284 KB/s, 0 seconds passed    ...38%, 0.27 MB, 1321 KB/s, 0 seconds passed    ...39%, 0.28 MB, 1356 KB/s, 0 seconds passed    ...40%, 0.29 MB, 1393 KB/s, 0 seconds passed    ...41%, 0.30 MB, 1429 KB/s, 0 seconds passed    ...42%, 0.30 MB, 1465 KB/s, 0 seconds passed    ...43%, 0.31 MB, 1502 KB/s, 0 seconds passed    ...44%, 0.32 MB, 1536 KB/s, 0 seconds passed    ...45%, 0.33 MB, 1573 KB/s, 0 seconds passed    ...46%, 0.34 MB, 1608 KB/s, 0 seconds passed    ...47%, 0.34 MB, 1645 KB/s, 0 seconds passed    ...48%, 0.35 MB, 1681 KB/s, 0 seconds passed    ...50%, 0.36 MB, 1717 KB/s, 0 seconds passed    ...51%, 0.37 MB, 1753 KB/s, 0 seconds passed    ...52%, 0.38 MB, 1789 KB/s, 0 seconds passed    ...53%, 0.38 MB, 1824 KB/s, 0 seconds passed    ...54%, 0.39 MB, 1861 KB/s, 0 seconds passed    ...55%, 0.40 MB, 1895 KB/s, 0 seconds passed    ...56%, 0.41 MB, 1931 KB/s, 0 seconds passed    ...57%, 0.41 MB, 1967 KB/s, 0 seconds passed    ...58%, 0.42 MB, 2001 KB/s, 0 seconds passed    ...59%, 0.43 MB, 2037 KB/s, 0 seconds passed    ...60%, 0.44 MB, 2071 KB/s, 0 seconds passed    ...62%, 0.45 MB, 2105 KB/s, 0 seconds passed    ...63%, 0.45 MB, 2141 KB/s, 0 seconds passed    ...64%, 0.46 MB, 2176 KB/s, 0 seconds passed    ...65%, 0.47 MB, 2211 KB/s, 0 seconds passed    ...66%, 0.48 MB, 2247 KB/s, 0 seconds passed    ...67%, 0.48 MB, 2282 KB/s, 0 seconds passed    ...68%, 0.49 MB, 2317 KB/s, 0 seconds passed    ...69%, 0.50 MB, 2352 KB/s, 0 seconds passed    ...70%, 0.51 MB, 2388 KB/s, 0 seconds passed    ...71%, 0.52 MB, 2423 KB/s, 0 seconds passed    ...72%, 0.52 MB, 2457 KB/s, 0 seconds passed    ...73%, 0.53 MB, 2492 KB/s, 0 seconds passed    ...75%, 0.54 MB, 2527 KB/s, 0 seconds passed    ...76%, 0.55 MB, 2561 KB/s, 0 seconds passed    ...77%, 0.55 MB, 2596 KB/s, 0 seconds passed    ...78%, 0.56 MB, 2630 KB/s, 0 seconds passed    ...79%, 0.57 MB, 2664 KB/s, 0 seconds passed    ...80%, 0.58 MB, 2699 KB/s, 0 seconds passed    ...81%, 0.59 MB, 2734 KB/s, 0 seconds passed    ...82%, 0.59 MB, 2768 KB/s, 0 seconds passed    ...83%, 0.60 MB, 2803 KB/s, 0 seconds passed    ...84%, 0.61 MB, 2838 KB/s, 0 seconds passed    ...85%, 0.62 MB, 2873 KB/s, 0 seconds passed    ...87%, 0.62 MB, 2905 KB/s, 0 seconds passed    ...88%, 0.63 MB, 2939 KB/s, 0 seconds passed    ...89%, 0.64 MB, 2974 KB/s, 0 seconds passed    ...90%, 0.65 MB, 3008 KB/s, 0 seconds passed    ...91%, 0.66 MB, 3043 KB/s, 0 seconds passed    ...92%, 0.66 MB, 3077 KB/s, 0 seconds passed    ...93%, 0.67 MB, 3111 KB/s, 0 seconds passed    ...94%, 0.68 MB, 3145 KB/s, 0 seconds passed    ...95%, 0.69 MB, 3178 KB/s, 0 seconds passed    ...96%, 0.70 MB, 3212 KB/s, 0 seconds passed    ...97%, 0.70 MB, 3246 KB/s, 0 seconds passed    ...99%, 0.71 MB, 3281 KB/s, 0 seconds passed    ...100%, 0.72 MB, 3313 KB/s, 0 seconds passed
     Extracted 10 conv2d tasks:
     (1, 14, 14, 256, 512, 1, 1, 0, 0, 2, 2)
     (1, 28, 28, 128, 256, 1, 1, 0, 0, 2, 2)

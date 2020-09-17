@@ -111,6 +111,7 @@
 <li class="toctree-l2"><a class="reference internal" href="using_external_lib.html">Using External Libraries in Relay</a></li>
 <li class="toctree-l2"><a class="reference internal" href="from_coreml.html">Compile CoreML Models</a></li>
 <li class="toctree-l2"><a class="reference internal" href="from_keras.html">Compile Keras Models</a></li>
+<li class="toctree-l2"><a class="reference internal" href="deploy_object_detection_pytorch.html">Compile PyTorch Object Detection Models</a></li>
 <li class="toctree-l2"><a class="reference internal" href="deploy_quantized.html">Deploy a Quantized Model on Cuda</a></li>
 <li class="toctree-l2"><a class="reference internal" href="from_caffe2.html">Compile Caffe2 Models</a></li>
 <li class="toctree-l2"><a class="reference internal" href="from_mxnet.html">Compile MXNet Models</a></li>
@@ -128,7 +129,8 @@
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../index.html#tensor-expression-and-schedules">Tensor Expression and Schedules</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../index.html#optimize-tensor-operators">Optimize Tensor Operators</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../index.html#auto-tuning">Auto tuning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../index.html#autotvm-template-based-auto-tuning">AutoTVM : Template-based Auto Tuning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../index.html#autoscheduler-template-free-auto-scheduling">AutoScheduler : Template-free Auto Scheduling</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../index.html#developer-tutorials">Developer Tutorials</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../index.html#topi-tvm-operator-inventory">TOPI: TVM Operator Inventory</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../index.html#micro-tvm">Micro TVM</a></li>
@@ -257,13 +259,12 @@ OPENCL-based GPUs, change target argument to
 to your device.</p>
 </div>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span class="n">supported_model</span> <span class="o">=</span> <span class="p">[</span>
-    <span class="s1">&#39;ssd_512_resnet50_v1_voc&#39;</span><span class="p">,</span>
-    <span class="s1">&#39;ssd_512_resnet50_v1_coco&#39;</span><span class="p">,</span>
-    <span class="s1">&#39;ssd_512_resnet101_v2_voc&#39;</span><span class="p">,</span>
-    <span class="s1">&#39;ssd_512_mobilenet1.0_voc&#39;</span><span class="p">,</span>
-    <span class="s1">&#39;ssd_512_mobilenet1.0_coco&#39;</span><span class="p">,</span>
-    <span class="s1">&#39;ssd_300_vgg16_atrous_voc&#39;</span>
-    <span class="s1">&#39;ssd_512_vgg16_atrous_coco&#39;</span><span class="p">,</span>
+    <span class="s2">&quot;ssd_512_resnet50_v1_voc&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;ssd_512_resnet50_v1_coco&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;ssd_512_resnet101_v2_voc&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;ssd_512_mobilenet1.0_voc&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;ssd_512_mobilenet1.0_coco&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;ssd_300_vgg16_atrous_voc&quot;</span> <span class="s2">&quot;ssd_512_vgg16_atrous_coco&quot;</span><span class="p">,</span>
 <span class="p">]</span>
 
 <span class="n">model_name</span> <span class="o">=</span> <span class="n">supported_model</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
@@ -271,9 +272,11 @@ to your device.</p>
 </pre></div>
 </div>
 <p>Download and pre-process demo image</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span class="n">im_fname</span> <span class="o">=</span> <span class="n">download_testdata</span><span class="p">(</span><span class="s1">&#39;https://github.com/dmlc/web-data/blob/master/&#39;</span> <span class="o">+</span>
-                             <span class="s1">&#39;gluoncv/detection/street_small.jpg?raw=true&#39;</span><span class="p">,</span>
-                             <span class="s1">&#39;street_small.jpg&#39;</span><span class="p">,</span> <span class="n">module</span><span class="o">=</span><span class="s1">&#39;data&#39;</span><span class="p">)</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span class="n">im_fname</span> <span class="o">=</span> <span class="n">download_testdata</span><span class="p">(</span>
+    <span class="s2">&quot;https://github.com/dmlc/web-data/blob/master/&quot;</span> <span class="o">+</span> <span class="s2">&quot;gluoncv/detection/street_small.jpg?raw=true&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;street_small.jpg&quot;</span><span class="p">,</span>
+    <span class="n">module</span><span class="o">=</span><span class="s2">&quot;data&quot;</span><span class="p">,</span>
+<span class="p">)</span>
 <span class="n">x</span><span class="p">,</span> <span class="n">img</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">transforms</span><span class="o">.</span><span class="n">presets</span><span class="o">.</span><span class="n">ssd</span><span class="o">.</span><span class="n">load_test</span><span class="p">(</span><span class="n">im_fname</span><span class="p">,</span> <span class="n">short</span><span class="o">=</span><span class="mi">512</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -283,6 +286,7 @@ to your device.</p>
 </div>
 <p>Convert and compile model for CPU.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span class="n">block</span> <span class="o">=</span> <span class="n">model_zoo</span><span class="o">.</span><span class="n">get_model</span><span class="p">(</span><span class="n">model_name</span><span class="p">,</span> <span class="n">pretrained</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
 
 <span class="k">def</span> <span class="nf">build</span><span class="p">(</span><span class="n">target</span><span class="p">):</span>
     <span class="n">mod</span><span class="p">,</span> <span class="n">params</span> <span class="o">=</span> <a href="../../api/python/relay/frontend.html#tvm.relay.frontend.from_mxnet" title="View documentation for tvm.relay.frontend.from_mxnet"><span class="n">relay</span><span class="o">.</span><span class="n">frontend</span><span class="o">.</span><span class="n">from_mxnet</span></a><span class="p">(</span><span class="n">block</span><span class="p">,</span> <span class="p">{</span><span class="s2">&quot;data&quot;</span><span class="p">:</span> <span class="n">dshape</span><span class="p">})</span>
@@ -300,14 +304,15 @@ to your device.</p>
 <p>Create TVM runtime and do inference</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span class="k">def</span> <span class="nf">run</span><span class="p">(</span><span class="n">lib</span><span class="p">,</span> <span class="n">ctx</span><span class="p">):</span>
     <span class="c1"># Build TVM runtime</span>
-    <span class="n">m</span> <span class="o">=</span> <a href="../../api/python/graph_runtime.html#tvm.contrib.graph_runtime.GraphModule" title="View documentation for tvm.contrib.graph_runtime.GraphModule"><span class="n">graph_runtime</span><span class="o">.</span><span class="n">GraphModule</span></a><span class="p">(</span><span class="n">lib</span><span class="p">[</span><span class="s1">&#39;default&#39;</span><span class="p">](</span><span class="n">ctx</span><span class="p">))</span>
+    <span class="n">m</span> <span class="o">=</span> <a href="../../api/python/graph_runtime.html#tvm.contrib.graph_runtime.GraphModule" title="View documentation for tvm.contrib.graph_runtime.GraphModule"><span class="n">graph_runtime</span><span class="o">.</span><span class="n">GraphModule</span></a><span class="p">(</span><span class="n">lib</span><span class="p">[</span><span class="s2">&quot;default&quot;</span><span class="p">](</span><span class="n">ctx</span><span class="p">))</span>
     <span class="n">tvm_input</span> <span class="o">=</span> <a href="../../api/python/ndarray.html#tvm.nd.array" title="View documentation for tvm.nd.array"><span class="n">tvm</span><span class="o">.</span><span class="n">nd</span><span class="o">.</span><span class="n">array</span></a><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">asnumpy</span><span class="p">(),</span> <span class="n">ctx</span><span class="o">=</span><span class="n">ctx</span><span class="p">)</span>
-    <span class="n">m</span><span class="o">.</span><span class="n">set_input</span><span class="p">(</span><span class="s1">&#39;data&#39;</span><span class="p">,</span> <span class="n">tvm_input</span><span class="p">)</span>
+    <span class="n">m</span><span class="o">.</span><span class="n">set_input</span><span class="p">(</span><span class="s2">&quot;data&quot;</span><span class="p">,</span> <span class="n">tvm_input</span><span class="p">)</span>
     <span class="c1"># execute</span>
     <span class="n">m</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
     <span class="c1"># get outputs</span>
     <span class="n">class_IDs</span><span class="p">,</span> <span class="n">scores</span><span class="p">,</span> <span class="n">bounding_boxs</span> <span class="o">=</span> <span class="n">m</span><span class="o">.</span><span class="n">get_output</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span> <span class="n">m</span><span class="o">.</span><span class="n">get_output</span><span class="p">(</span><span class="mi">1</span><span class="p">),</span> <span class="n">m</span><span class="o">.</span><span class="n">get_output</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">class_IDs</span><span class="p">,</span> <span class="n">scores</span><span class="p">,</span> <span class="n">bounding_boxs</span>
+
 
 <span class="k">for</span> <span class="n">target</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;llvm&quot;</span><span class="p">,</span> <span class="s2">&quot;cuda&quot;</span><span class="p">]:</span>
     <span class="n">ctx</span> <span class="o">=</span> <span class="n">tvm</span><span class="o">.</span><span class="n">context</span><span class="p">(</span><span class="n">target</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
@@ -437,13 +442,18 @@ Cannot find config for target=cuda -keys=cuda,gpu -max_num_threads=1024 -thread_
 </pre></div>
 </div>
 <p>Display result</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span class="n">ax</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">viz</span><span class="o">.</span><span class="n">plot_bbox</span><span class="p">(</span><span class="n">img</span><span class="p">,</span> <span class="n">bounding_boxs</span><span class="o">.</span><span class="n">asnumpy</span><span class="p">()[</span><span class="mi">0</span><span class="p">],</span> <span class="n">scores</span><span class="o">.</span><span class="n">asnumpy</span><span class="p">()[</span><span class="mi">0</span><span class="p">],</span>
-                         <span class="n">class_IDs</span><span class="o">.</span><span class="n">asnumpy</span><span class="p">()[</span><span class="mi">0</span><span class="p">],</span> <span class="n">class_names</span><span class="o">=</span><span class="n">block</span><span class="o">.</span><span class="n">classes</span><span class="p">)</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span class="n">ax</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">viz</span><span class="o">.</span><span class="n">plot_bbox</span><span class="p">(</span>
+    <span class="n">img</span><span class="p">,</span>
+    <span class="n">bounding_boxs</span><span class="o">.</span><span class="n">asnumpy</span><span class="p">()[</span><span class="mi">0</span><span class="p">],</span>
+    <span class="n">scores</span><span class="o">.</span><span class="n">asnumpy</span><span class="p">()[</span><span class="mi">0</span><span class="p">],</span>
+    <span class="n">class_IDs</span><span class="o">.</span><span class="n">asnumpy</span><span class="p">()[</span><span class="mi">0</span><span class="p">],</span>
+    <span class="n">class_names</span><span class="o">=</span><span class="n">block</span><span class="o">.</span><span class="n">classes</span><span class="p">,</span>
+<span class="p">)</span>
 <a href="https://matplotlib.org/api/_as_gen/matplotlib.pyplot.show.rst.html#matplotlib.pyplot.show" title="View documentation for matplotlib.pyplot.show"><span class="n">plt</span><span class="o">.</span><span class="n">show</span></a><span class="p">()</span>
 </pre></div>
 </div>
 <img alt="../../_images/sphx_glr_deploy_ssd_gluoncv_001.png" class="sphx-glr-single-img" src="../../_images/sphx_glr_deploy_ssd_gluoncv_001.png" />
-<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 1 minutes  23.470 seconds)</p>
+<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 1 minutes  12.893 seconds)</p>
 <div class="sphx-glr-footer class sphx-glr-footer-example docutils container" id="sphx-glr-download-tutorials-frontend-deploy-ssd-gluoncv-py">
 <div class="sphx-glr-download docutils container">
 <p><a class="reference download internal" download="" href="../../_downloads/ca08de6c440df207921d807474d26f06/deploy_ssd_gluoncv.py"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">deploy_ssd_gluoncv.py</span></code></a></p>

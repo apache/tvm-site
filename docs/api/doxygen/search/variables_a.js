@@ -11,6 +11,7 @@ var searchData=
   ['kcomposite',['kComposite',['../namespacetvm_1_1relay_1_1attr.html#a04f8f1b117293d37651f8c81135802a2',1,'tvm::relay::attr']]],
   ['kconv2dhwcn',['kConv2dHWCN',['../namespacetvm_1_1topi.html#a8c924d6d8fc010283ca60928c23101f1',1,'tvm::topi']]],
   ['kconv2dnchw',['kConv2dNCHW',['../namespacetvm_1_1topi.html#a2fd97432407bc468930e459a9826ce95',1,'tvm::topi']]],
+  ['kcrc',['kCrc',['../classtvm_1_1runtime_1_1micro__rpc_1_1PacketFieldSizeBytes.html#a0451ac7e42968a63b89b59987d6e2242',1,'tvm::runtime::micro_rpc::PacketFieldSizeBytes']]],
   ['kdepthwiseconv2dbackinputnhwc',['kDepthwiseConv2dBackInputNHWC',['../namespacetvm_1_1topi.html#aad71825e552f8805698db11912c017b6',1,'tvm::topi']]],
   ['kdepthwiseconv2dbackweightnhwc',['kDepthwiseConv2dBackWeightNHWC',['../namespacetvm_1_1topi.html#a969830c2a564f886efdd2ab7555028f8',1,'tvm::topi']]],
   ['kdepthwiseconv2dnchw',['kDepthwiseConv2dNCHW',['../namespacetvm_1_1topi.html#a67461e3d47ef738a69d2c69824411123',1,'tvm::topi']]],
@@ -29,6 +30,7 @@ var searchData=
   ['kind',['kind',['../classtvm_1_1TypeVarNode.html#afc08e151afef3c4644ba8d2cd796106a',1,'tvm::TypeVarNode::kind()'],['../classtvm_1_1GlobalTypeVarNode.html#a335e232894a68cc1e0ecb766bf4053c7',1,'tvm::GlobalTypeVarNode::kind()'],['../classtvm_1_1IncompleteTypeNode.html#ab5f37175c1fd0dbbbedc2edaa23d33dc',1,'tvm::IncompleteTypeNode::kind()'],['../classtvm_1_1TargetNode.html#ac19a4ee0f0ec7ea607ec746bc4551b71',1,'tvm::TargetNode::kind()']]],
   ['kinjective',['kInjective',['../namespacetvm_1_1topi.html#a29e22aa45900dad3b6f9f705bb1dc688',1,'tvm::topi']]],
   ['kinline',['kInline',['../namespacetvm_1_1relay_1_1attr.html#ad294262b6b1ca1b7bf3924a139f17562',1,'tvm::relay::attr']]],
+  ['kinvalidnonce',['kInvalidNonce',['../classtvm_1_1runtime_1_1micro__rpc_1_1Session.html#afc446d6776b086bf75ca68777d11022f',1,'tvm::runtime::micro_rpc::Session']]],
   ['kisentryfunc',['kIsEntryFunc',['../namespacetvm_1_1tir_1_1attr.html#a489d0cebd2820025bc3d6c5a9011cdd4',1,'tvm::tir::attr']]],
   ['kmatmul',['kMatMul',['../namespacetvm_1_1topi.html#aa9f70e7392653f38da6ff53f5f554f98',1,'tvm::topi']]],
   ['kmaxstackalloca',['kMaxStackAlloca',['../namespacetvm_1_1runtime.html#a2f6f769f6dbbbb24929b7c9f91a48c90',1,'tvm::runtime']]],
@@ -37,6 +39,7 @@ var searchData=
   ['knoalias',['kNoAlias',['../namespacetvm_1_1tir_1_1attr.html#ac74386674da85bc4b4dd1ee28a97ff63',1,'tvm::tir::attr']]],
   ['kparams',['kParams',['../namespacetvm_1_1relay_1_1attr.html#a3cd72e0efb5bcba623c8af8cf0f5314d',1,'tvm::relay::attr']]],
   ['kpartitionedfrompattern',['kPartitionedFromPattern',['../namespacetvm_1_1relay_1_1attr.html#afe7f6dd3b19c62aced68364ae2414aae',1,'tvm::relay::attr']]],
+  ['kpayloadlength',['kPayloadLength',['../classtvm_1_1runtime_1_1micro__rpc_1_1PacketFieldSizeBytes.html#a69c71abb0d8cd0b7ede781082ee0391b',1,'tvm::runtime::micro_rpc::PacketFieldSizeBytes']]],
   ['kposinf',['kPosInf',['../classtvm_1_1arith_1_1ConstIntBoundNode.html#a035f9270597638a44a55dd2552f4ad20',1,'tvm::arith::ConstIntBoundNode::kPosInf()'],['../classtvm_1_1arith_1_1ConstIntBound.html#af55f0ada0b9e784197723b125f464f0f',1,'tvm::arith::ConstIntBound::kPosInf()']]],
   ['kprimitive',['kPrimitive',['../namespacetvm_1_1relay_1_1attr.html#ac3c86a7b4b9e64aed0da4b8294278484',1,'tvm::relay::attr']]],
   ['krpcsessmask',['kRPCSessMask',['../namespacetvm_1_1runtime.html#a48cbe06e6c95ca6fabc20dd1cbacc2c9',1,'tvm::runtime']]],
@@ -44,5 +47,6 @@ var searchData=
   ['kskipoptimization',['kSkipOptimization',['../namespacetvm_1_1relay_1_1attr.html#aed3671df7e12d228b8070806d07f7c62',1,'tvm::relay::attr']]],
   ['ktarget',['kTarget',['../namespacetvm_1_1attr.html#a580ae92d00e34f0a8f0d40395b8d972c',1,'tvm::attr']]],
   ['ktempallocaalignment',['kTempAllocaAlignment',['../namespacetvm_1_1runtime.html#a8f5819cabea098a1818cf7cda40fdb1f',1,'tvm::runtime']]],
-  ['ktvmndarraymagic',['kTVMNDArrayMagic',['../namespacetvm_1_1runtime.html#acf4599f17bfe79ae1fe8afc1af053b43',1,'tvm::runtime']]]
+  ['ktvmndarraymagic',['kTVMNDArrayMagic',['../namespacetvm_1_1runtime.html#acf4599f17bfe79ae1fe8afc1af053b43',1,'tvm::runtime']]],
+  ['kversion',['kVersion',['../classtvm_1_1runtime_1_1micro__rpc_1_1Session.html#aba29fe6e0aa5946f495a1f7b8482a0e9',1,'tvm::runtime::micro_rpc::Session']]]
 ];

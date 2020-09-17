@@ -105,7 +105,8 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../tutorials/index.html#compile-deep-learning-models">Compile Deep Learning Models</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../tutorials/index.html#tensor-expression-and-schedules">Tensor Expression and Schedules</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../tutorials/index.html#optimize-tensor-operators">Optimize Tensor Operators</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../tutorials/index.html#auto-tuning">Auto tuning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../tutorials/index.html#autotvm-template-based-auto-tuning">AutoTVM : Template-based Auto Tuning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../tutorials/index.html#autoscheduler-template-free-auto-scheduling">AutoScheduler : Template-free Auto Scheduling</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../tutorials/index.html#developer-tutorials">Developer Tutorials</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../tutorials/index.html#topi-tvm-operator-inventory">TOPI: TVM Operator Inventory</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../tutorials/index.html#micro-tvm">Micro TVM</a></li>
@@ -307,7 +308,9 @@ Otherwise, if target is ‘sim’, execute locally.</p>
     <span class="k">if</span> <span class="ow">not</span> <span class="n">tracker_host</span> <span class="ow">or</span> <span class="ow">not</span> <span class="n">tracker_port</span><span class="p">:</span>
         <span class="n">remote</span> <span class="o">=</span> <a href="../../../api/python/rpc.html#tvm.rpc.connect" title="View documentation for tvm.rpc.connect"><span class="n">rpc</span><span class="o">.</span><span class="n">connect</span></a><span class="p">(</span><span class="n">device_host</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="n">device_port</span><span class="p">))</span>
     <span class="k">else</span><span class="p">:</span>
-        <span class="n">remote</span> <span class="o">=</span> <span class="n">autotvm</span><span class="o">.</span><span class="n">measure</span><span class="o">.</span><span class="n">request_remote</span><span class="p">(</span><span class="n">env</span><span class="o">.</span><span class="n">TARGET</span><span class="p">,</span> <span class="n">tracker_host</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="n">tracker_port</span><span class="p">),</span> <span class="n">timeout</span><span class="o">=</span><span class="mi">10000</span><span class="p">)</span>
+        <span class="n">remote</span> <span class="o">=</span> <span class="n">autotvm</span><span class="o">.</span><span class="n">measure</span><span class="o">.</span><span class="n">request_remote</span><span class="p">(</span>
+            <span class="n">env</span><span class="o">.</span><span class="n">TARGET</span><span class="p">,</span> <span class="n">tracker_host</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="n">tracker_port</span><span class="p">),</span> <span class="n">timeout</span><span class="o">=</span><span class="mi">10000</span>
+        <span class="p">)</span>
 
     <span class="c1"># Reconfigure the JIT runtime and FPGA.</span>
     <span class="c1"># You can program the FPGA with your own custom bitstream</span>
@@ -345,7 +348,7 @@ and dense layer which will both be executed in fp32 on the CPU.</p></li>
 <span class="k">with</span> <span class="n">autotvm</span><span class="o">.</span><span class="n">tophub</span><span class="o">.</span><span class="n">context</span><span class="p">(</span><span class="n">target</span><span class="p">):</span>
 
     <span class="c1"># Populate the shape and data type dictionary for ImageNet classifier input</span>
-    <span class="n">dtype_dict</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;data&quot;</span><span class="p">:</span> <span class="s1">&#39;float32&#39;</span><span class="p">}</span>
+    <span class="n">dtype_dict</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;data&quot;</span><span class="p">:</span> <span class="s2">&quot;float32&quot;</span><span class="p">}</span>
     <span class="n">shape_dict</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;data&quot;</span><span class="p">:</span> <span class="p">(</span><span class="n">env</span><span class="o">.</span><span class="n">BATCH</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">224</span><span class="p">,</span> <span class="mi">224</span><span class="p">)}</span>
 
     <span class="c1"># Get off the shelf gluon model, and convert to relay</span>
@@ -365,8 +368,7 @@ and dense layer which will both be executed in fp32 on the CPU.</p></li>
         <span class="c1"># Perform quantization in Relay</span>
         <span class="c1"># Note: We set opt_level to 3 in order to fold batch norm</span>
         <span class="k">with</span> <a href="../../../api/python/ir.html#tvm.transform.PassContext" title="View documentation for tvm.transform.PassContext"><span class="n">tvm</span><span class="o">.</span><span class="n">transform</span><span class="o">.</span><span class="n">PassContext</span></a><span class="p">(</span><span class="n">opt_level</span><span class="o">=</span><span class="mi">3</span><span class="p">):</span>
-            <span class="k">with</span> <span class="n">relay</span><span class="o">.</span><span class="n">quantize</span><span class="o">.</span><span class="n">qconfig</span><span class="p">(</span><span class="n">global_scale</span><span class="o">=</span><span class="mf">8.0</span><span class="p">,</span>
-                                        <span class="n">skip_conv_layers</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">]):</span>
+            <span class="k">with</span> <span class="n">relay</span><span class="o">.</span><span class="n">quantize</span><span class="o">.</span><span class="n">qconfig</span><span class="p">(</span><span class="n">global_scale</span><span class="o">=</span><span class="mf">8.0</span><span class="p">,</span> <span class="n">skip_conv_layers</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">]):</span>
                 <span class="n">mod</span> <span class="o">=</span> <span class="n">relay</span><span class="o">.</span><span class="n">quantize</span><span class="o">.</span><span class="n">quantize</span><span class="p">(</span><span class="n">mod</span><span class="p">,</span> <span class="n">params</span><span class="o">=</span><span class="n">params</span><span class="p">)</span>
             <span class="c1"># Perform graph packing and constant folding for VTA target</span>
             <span class="k">assert</span> <span class="n">env</span><span class="o">.</span><span class="n">BLOCK_IN</span> <span class="o">==</span> <span class="n">env</span><span class="o">.</span><span class="n">BLOCK_OUT</span>
@@ -376,7 +378,8 @@ and dense layer which will both be executed in fp32 on the CPU.</p></li>
                 <span class="n">env</span><span class="o">.</span><span class="n">BLOCK_OUT</span><span class="p">,</span>
                 <span class="n">env</span><span class="o">.</span><span class="n">WGT_WIDTH</span><span class="p">,</span>
                 <span class="n">start_name</span><span class="o">=</span><span class="n">pack_dict</span><span class="p">[</span><span class="n">model</span><span class="p">][</span><span class="mi">0</span><span class="p">],</span>
-                <span class="n">stop_name</span><span class="o">=</span><span class="n">pack_dict</span><span class="p">[</span><span class="n">model</span><span class="p">][</span><span class="mi">1</span><span class="p">])</span>
+                <span class="n">stop_name</span><span class="o">=</span><span class="n">pack_dict</span><span class="p">[</span><span class="n">model</span><span class="p">][</span><span class="mi">1</span><span class="p">],</span>
+            <span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="n">relay_prog</span> <span class="o">=</span> <span class="n">mod</span><span class="p">[</span><span class="s2">&quot;main&quot;</span><span class="p">]</span>
 
@@ -384,13 +387,11 @@ and dense layer which will both be executed in fp32 on the CPU.</p></li>
     <span class="k">if</span> <span class="n">target</span><span class="o">.</span><span class="n">device_name</span> <span class="o">!=</span> <span class="s2">&quot;vta&quot;</span><span class="p">:</span>
         <span class="k">with</span> <a href="../../../api/python/ir.html#tvm.transform.PassContext" title="View documentation for tvm.transform.PassContext"><span class="n">tvm</span><span class="o">.</span><span class="n">transform</span><span class="o">.</span><span class="n">PassContext</span></a><span class="p">(</span><span class="n">opt_level</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">disabled_pass</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;AlterOpLayout&quot;</span><span class="p">}):</span>
             <span class="n">graph</span><span class="p">,</span> <span class="n">lib</span><span class="p">,</span> <span class="n">params</span> <span class="o">=</span> <a href="../../../api/python/relay/index.html#tvm.relay.build" title="View documentation for tvm.relay.build"><span class="n">relay</span><span class="o">.</span><span class="n">build</span></a><span class="p">(</span>
-                <span class="n">relay_prog</span><span class="p">,</span> <span class="n">target</span><span class="o">=</span><span class="n">target</span><span class="p">,</span>
-                <span class="n">params</span><span class="o">=</span><span class="n">params</span><span class="p">,</span> <span class="n">target_host</span><span class="o">=</span><span class="n">env</span><span class="o">.</span><span class="n">target_host</span><span class="p">)</span>
+                <span class="n">relay_prog</span><span class="p">,</span> <span class="n">target</span><span class="o">=</span><span class="n">target</span><span class="p">,</span> <span class="n">params</span><span class="o">=</span><span class="n">params</span><span class="p">,</span> <span class="n">target_host</span><span class="o">=</span><span class="n">env</span><span class="o">.</span><span class="n">target_host</span>
+            <span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="k">with</span> <span class="n">vta</span><span class="o">.</span><span class="n">build_config</span><span class="p">(</span><span class="n">opt_level</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">disabled_pass</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;AlterOpLayout&quot;</span><span class="p">}):</span>
-            <span class="n">graph</span><span class="p">,</span> <span class="n">lib</span><span class="p">,</span> <span class="n">params</span> <span class="o">=</span> <a href="../../../api/python/relay/index.html#tvm.relay.build" title="View documentation for tvm.relay.build"><span class="n">relay</span><span class="o">.</span><span class="n">build</span></a><span class="p">(</span>
-                <span class="n">relay_prog</span><span class="p">,</span> <span class="n">target</span><span class="o">=</span><span class="n">target</span><span class="p">,</span>
-                <span class="n">params</span><span class="o">=</span><span class="n">params</span><span class="p">,</span> <span class="n">target_host</span><span class="o">=</span><span class="n">env</span><span class="o">.</span><span class="n">target_host</span><span class="p">)</span>
+            <span class="n">lib</span> <span class="o">=</span> <a href="../../../api/python/relay/index.html#tvm.relay.build" title="View documentation for tvm.relay.build"><span class="n">relay</span><span class="o">.</span><span class="n">build</span></a><span class="p">(</span><span class="n">relay_prog</span><span class="p">,</span> <span class="n">target</span><span class="o">=</span><span class="n">target</span><span class="p">,</span> <span class="n">params</span><span class="o">=</span><span class="n">params</span><span class="p">,</span> <span class="n">target_host</span><span class="o">=</span><span class="n">env</span><span class="o">.</span><span class="n">target_host</span><span class="p">)</span>
 
     <span class="c1"># Measure Relay build time</span>
     <span class="n">build_time</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span> <span class="o">-</span> <span class="n">build_start</span>
@@ -398,24 +399,24 @@ and dense layer which will both be executed in fp32 on the CPU.</p></li>
 
     <span class="c1"># Send the inference library over to the remote RPC server</span>
     <span class="n">temp</span> <span class="o">=</span> <a href="../../../api/python/contrib.html#tvm.contrib.util.tempdir" title="View documentation for tvm.contrib.util.tempdir"><span class="n">util</span><span class="o">.</span><span class="n">tempdir</span></a><span class="p">()</span>
-    <span class="n">lib</span><span class="o">.</span><span class="n">save</span><span class="p">(</span><span class="n">temp</span><span class="o">.</span><span class="n">relpath</span><span class="p">(</span><span class="s2">&quot;graphlib.o&quot;</span><span class="p">))</span>
-    <span class="n">remote</span><span class="o">.</span><span class="n">upload</span><span class="p">(</span><span class="n">temp</span><span class="o">.</span><span class="n">relpath</span><span class="p">(</span><span class="s2">&quot;graphlib.o&quot;</span><span class="p">))</span>
-    <span class="n">lib</span> <span class="o">=</span> <span class="n">remote</span><span class="o">.</span><span class="n">load_module</span><span class="p">(</span><span class="s2">&quot;graphlib.o&quot;</span><span class="p">)</span>
+    <span class="n">lib</span><span class="o">.</span><span class="n">export_library</span><span class="p">(</span><span class="n">temp</span><span class="o">.</span><span class="n">relpath</span><span class="p">(</span><span class="s2">&quot;graphlib.tar&quot;</span><span class="p">))</span>
+    <span class="n">remote</span><span class="o">.</span><span class="n">upload</span><span class="p">(</span><span class="n">temp</span><span class="o">.</span><span class="n">relpath</span><span class="p">(</span><span class="s2">&quot;graphlib.tar&quot;</span><span class="p">))</span>
+    <span class="n">lib</span> <span class="o">=</span> <span class="n">remote</span><span class="o">.</span><span class="n">load_module</span><span class="p">(</span><span class="s2">&quot;graphlib.tar&quot;</span><span class="p">)</span>
 
     <span class="c1"># Graph runtime</span>
-    <span class="n">m</span> <span class="o">=</span> <a href="../../../api/python/graph_runtime.html#tvm.contrib.graph_runtime.create" title="View documentation for tvm.contrib.graph_runtime.create"><span class="n">graph_runtime</span><span class="o">.</span><span class="n">create</span></a><span class="p">(</span><span class="n">graph</span><span class="p">,</span> <span class="n">lib</span><span class="p">,</span> <span class="n">ctx</span><span class="p">)</span>
+    <span class="n">m</span> <span class="o">=</span> <a href="../../../api/python/graph_runtime.html#tvm.contrib.graph_runtime.GraphModule" title="View documentation for tvm.contrib.graph_runtime.GraphModule"><span class="n">graph_runtime</span><span class="o">.</span><span class="n">GraphModule</span></a><span class="p">(</span><span class="n">lib</span><span class="p">[</span><span class="s2">&quot;default&quot;</span><span class="p">](</span><span class="n">ctx</span><span class="p">))</span>
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre>...12%, 0.01 MB, 41 KB/s, 0 seconds passed
-...25%, 0.02 MB, 83 KB/s, 0 seconds passed
-...38%, 0.02 MB, 124 KB/s, 0 seconds passed
-...51%, 0.03 MB, 165 KB/s, 0 seconds passed
-...64%, 0.04 MB, 206 KB/s, 0 seconds passed
-...77%, 0.05 MB, 247 KB/s, 0 seconds passed
-...89%, 0.05 MB, 287 KB/s, 0 seconds passed
-...100%, 0.06 MB, 327 KB/s, 0 seconds passed
-resnet18_v1 inference graph built in 7.56s!
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre>...12%, 0.01 MB, 42 KB/s, 0 seconds passed
+...25%, 0.02 MB, 85 KB/s, 0 seconds passed
+...38%, 0.02 MB, 127 KB/s, 0 seconds passed
+...51%, 0.03 MB, 170 KB/s, 0 seconds passed
+...64%, 0.04 MB, 212 KB/s, 0 seconds passed
+...77%, 0.05 MB, 254 KB/s, 0 seconds passed
+...89%, 0.05 MB, 296 KB/s, 0 seconds passed
+...100%, 0.06 MB, 338 KB/s, 0 seconds passed
+resnet18_v1 inference graph built in 6.33s!
 </pre></div>
 </div>
 </div>
@@ -431,28 +432,27 @@ and an input test image.</p>
 <span class="n">synset</span> <span class="o">=</span> <span class="nb">eval</span><span class="p">(</span><span class="nb">open</span><span class="p">(</span><span class="n">categ_fn</span><span class="p">)</span><span class="o">.</span><span class="n">read</span><span class="p">())</span>
 
 <span class="c1"># Download test image</span>
-<span class="n">image_url</span> <span class="o">=</span> <span class="s1">&#39;https://homes.cs.washington.edu/~moreau/media/vta/cat.jpg&#39;</span>
-<span class="n">image_fn</span> <span class="o">=</span> <span class="s1">&#39;cat.png&#39;</span>
+<span class="n">image_url</span> <span class="o">=</span> <span class="s2">&quot;https://homes.cs.washington.edu/~moreau/media/vta/cat.jpg&quot;</span>
+<span class="n">image_fn</span> <span class="o">=</span> <span class="s2">&quot;cat.png&quot;</span>
 <span class="n">download</span><span class="o">.</span><span class="n">download</span><span class="p">(</span><span class="n">image_url</span><span class="p">,</span> <span class="n">image_fn</span><span class="p">)</span>
 
 <span class="c1"># Prepare test image for inference</span>
 <span class="n">image</span> <span class="o">=</span> <span class="n">Image</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">image_fn</span><span class="p">)</span><span class="o">.</span><span class="n">resize</span><span class="p">((</span><span class="mi">224</span><span class="p">,</span> <span class="mi">224</span><span class="p">))</span>
 <a href="https://matplotlib.org/api/_as_gen/matplotlib.pyplot.imshow.rst.html#matplotlib.pyplot.imshow" title="View documentation for matplotlib.pyplot.imshow"><span class="n">plt</span><span class="o">.</span><span class="n">imshow</span></a><span class="p">(</span><span class="n">image</span><span class="p">)</span>
 <a href="https://matplotlib.org/api/_as_gen/matplotlib.pyplot.show.rst.html#matplotlib.pyplot.show" title="View documentation for matplotlib.pyplot.show"><span class="n">plt</span><span class="o">.</span><span class="n">show</span></a><span class="p">()</span>
-<span class="n">image</span> <span class="o">=</span> <a href="https://numpy.org/doc/stable/reference/generated/numpy.array.html#numpy.array" title="View documentation for numpy.array"><span class="n">np</span><span class="o">.</span><span class="n">array</span></a><span class="p">(</span><span class="n">image</span><span class="p">)</span> <span class="o">-</span> <a href="https://numpy.org/doc/stable/reference/generated/numpy.array.html#numpy.array" title="View documentation for numpy.array"><span class="n">np</span><span class="o">.</span><span class="n">array</span></a><span class="p">([</span><span class="mf">123.</span><span class="p">,</span> <span class="mf">117.</span><span class="p">,</span> <span class="mf">104.</span><span class="p">])</span>
+<span class="n">image</span> <span class="o">=</span> <a href="https://numpy.org/doc/stable/reference/generated/numpy.array.html#numpy.array" title="View documentation for numpy.array"><span class="n">np</span><span class="o">.</span><span class="n">array</span></a><span class="p">(</span><span class="n">image</span><span class="p">)</span> <span class="o">-</span> <a href="https://numpy.org/doc/stable/reference/generated/numpy.array.html#numpy.array" title="View documentation for numpy.array"><span class="n">np</span><span class="o">.</span><span class="n">array</span></a><span class="p">([</span><span class="mf">123.0</span><span class="p">,</span> <span class="mf">117.0</span><span class="p">,</span> <span class="mf">104.0</span><span class="p">])</span>
 <span class="n">image</span> <span class="o">/=</span> <a href="https://numpy.org/doc/stable/reference/generated/numpy.array.html#numpy.array" title="View documentation for numpy.array"><span class="n">np</span><span class="o">.</span><span class="n">array</span></a><span class="p">([</span><span class="mf">58.395</span><span class="p">,</span> <span class="mf">57.12</span><span class="p">,</span> <span class="mf">57.375</span><span class="p">])</span>
 <span class="n">image</span> <span class="o">=</span> <span class="n">image</span><span class="o">.</span><span class="n">transpose</span><span class="p">((</span><span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
 <span class="n">image</span> <span class="o">=</span> <span class="n">image</span><span class="p">[</span><a href="https://numpy.org/doc/stable/reference/constants.html#numpy.newaxis" title="View documentation for numpy.newaxis"><span class="n">np</span><span class="o">.</span><span class="n">newaxis</span></a><span class="p">,</span> <span class="p">:]</span>
 <span class="n">image</span> <span class="o">=</span> <a href="https://numpy.org/doc/stable/reference/generated/numpy.repeat.html#numpy.repeat" title="View documentation for numpy.repeat"><span class="n">np</span><span class="o">.</span><span class="n">repeat</span></a><span class="p">(</span><span class="n">image</span><span class="p">,</span> <span class="n">env</span><span class="o">.</span><span class="n">BATCH</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
 
 <span class="c1"># Set the network parameters and inputs</span>
-<span class="n">m</span><span class="o">.</span><span class="n">set_input</span><span class="p">(</span><span class="o">**</span><span class="n">params</span><span class="p">)</span>
-<span class="n">m</span><span class="o">.</span><span class="n">set_input</span><span class="p">(</span><span class="s1">&#39;data&#39;</span><span class="p">,</span> <span class="n">image</span><span class="p">)</span>
+<span class="n">m</span><span class="o">.</span><span class="n">set_input</span><span class="p">(</span><span class="s2">&quot;data&quot;</span><span class="p">,</span> <span class="n">image</span><span class="p">)</span>
 
 <span class="c1"># Perform inference and gather execution statistics</span>
 <span class="c1"># More on: :py:method:`tvm.runtime.Module.time_evaluator`</span>
-<span class="n">num</span> <span class="o">=</span> <span class="mi">4</span> <span class="c1"># number of times we run module for a single measurement</span>
-<span class="n">rep</span> <span class="o">=</span> <span class="mi">3</span> <span class="c1"># number of measurements (we derive std dev from this)</span>
+<span class="n">num</span> <span class="o">=</span> <span class="mi">4</span>  <span class="c1"># number of times we run module for a single measurement</span>
+<span class="n">rep</span> <span class="o">=</span> <span class="mi">3</span>  <span class="c1"># number of measurements (we derive std dev from this)</span>
 <span class="n">timer</span> <span class="o">=</span> <span class="n">m</span><span class="o">.</span><span class="n">module</span><span class="o">.</span><span class="n">time_evaluator</span><span class="p">(</span><span class="s2">&quot;run&quot;</span><span class="p">,</span> <span class="n">ctx</span><span class="p">,</span> <span class="n">number</span><span class="o">=</span><span class="n">num</span><span class="p">,</span> <span class="n">repeat</span><span class="o">=</span><span class="n">rep</span><span class="p">)</span>
 
 <span class="k">if</span> <span class="n">env</span><span class="o">.</span><span class="n">TARGET</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;sim&quot;</span><span class="p">,</span> <span class="s2">&quot;tsim&quot;</span><span class="p">]:</span>
@@ -470,7 +470,7 @@ and an input test image.</p>
     <span class="n">std</span> <span class="o">=</span> <a href="https://numpy.org/doc/stable/reference/generated/numpy.std.html#numpy.std" title="View documentation for numpy.std"><span class="n">np</span><span class="o">.</span><span class="n">std</span></a><span class="p">(</span><span class="n">tcost</span><span class="o">.</span><span class="n">results</span><span class="p">)</span> <span class="o">*</span> <span class="mi">1000</span>
     <span class="n">mean</span> <span class="o">=</span> <span class="n">tcost</span><span class="o">.</span><span class="n">mean</span> <span class="o">*</span> <span class="mi">1000</span>
     <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Performed inference in </span><span class="si">%.2f</span><span class="s2">ms (std = </span><span class="si">%.2f</span><span class="s2">) for </span><span class="si">%d</span><span class="s2"> samples&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">mean</span><span class="p">,</span> <span class="n">std</span><span class="p">,</span> <span class="n">env</span><span class="o">.</span><span class="n">BATCH</span><span class="p">))</span>
-    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Average per sample inference time: </span><span class="si">%.2f</span><span class="s2">ms&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">mean</span><span class="o">/</span><span class="n">env</span><span class="o">.</span><span class="n">BATCH</span><span class="p">))</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Average per sample inference time: </span><span class="si">%.2f</span><span class="s2">ms&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">mean</span> <span class="o">/</span> <span class="n">env</span><span class="o">.</span><span class="n">BATCH</span><span class="p">))</span>
 
 <span class="c1"># Get classification results</span>
 <span class="n">tvm_output</span> <span class="o">=</span> <span class="n">m</span><span class="o">.</span><span class="n">get_output</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <a href="../../../api/python/ndarray.html#tvm.nd.empty" title="View documentation for tvm.nd.empty"><span class="n">tvm</span><span class="o">.</span><span class="n">nd</span><span class="o">.</span><span class="n">empty</span></a><span class="p">((</span><span class="n">env</span><span class="o">.</span><span class="n">BATCH</span><span class="p">,</span> <span class="mi">1000</span><span class="p">),</span> <span class="s2">&quot;float32&quot;</span><span class="p">,</span> <span class="n">remote</span><span class="o">.</span><span class="n">cpu</span><span class="p">(</span><span class="mi">0</span><span class="p">)))</span>
@@ -492,7 +492,7 @@ and an input test image.</p>
     <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">top_categories</span><span class="p">[</span><span class="o">-</span><span class="mi">5</span><span class="p">:]:</span>
         <span class="k">if</span> <span class="s2">&quot;cat&quot;</span> <span class="ow">in</span> <span class="n">synset</span><span class="p">[</span><span class="n">k</span><span class="p">]:</span>
             <span class="n">cat_detected</span> <span class="o">=</span> <span class="kc">True</span>
-    <span class="k">assert</span><span class="p">(</span><span class="n">cat_detected</span><span class="p">)</span>
+    <span class="k">assert</span> <span class="n">cat_detected</span>
 </pre></div>
 </div>
 <img alt="../../../_images/sphx_glr_deploy_classification_001.png" class="sphx-glr-single-img" src="../../../_images/sphx_glr_deploy_classification_001.png" />

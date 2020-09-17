@@ -28,5 +28,6 @@ var searchData=
   ['_7etypefunctor',['~TypeFunctor',['../classtvm_1_1TypeFunctor_3_01R_07const_01Type_01_6n_00_01Args_8_8_8_08_4.html#a0a74cb61bb79cae0115553ed9a0ebc3e',1,'tvm::TypeFunctor&lt; R(const Type &amp;n, Args...)&gt;']]],
   ['_7etypereporternode',['~TypeReporterNode',['../classtvm_1_1TypeReporterNode.html#a27933fa9205a2e6f46ae82b6dbe98e50',1,'tvm::TypeReporterNode']]],
   ['_7evirtualmachine',['~VirtualMachine',['../classtvm_1_1runtime_1_1vm_1_1VirtualMachine.html#a62dead74c40c1a6ac03aec56918d98c7',1,'tvm::runtime::vm::VirtualMachine']]],
-  ['_7ewith',['~With',['../classtvm_1_1With.html#adc3aab8dafb5d3afebc82733e3893a4f',1,'tvm::With']]]
+  ['_7ewith',['~With',['../classtvm_1_1With.html#adc3aab8dafb5d3afebc82733e3893a4f',1,'tvm::With']]],
+  ['_7ewritestream',['~WriteStream',['../classtvm_1_1runtime_1_1micro__rpc_1_1WriteStream.html#ae02cbf0726f7f8b0f6c4172c351539bc',1,'tvm::runtime::micro_rpc::WriteStream']]]
 ];

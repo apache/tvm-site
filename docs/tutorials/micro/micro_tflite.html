@@ -105,7 +105,8 @@
 <li class="toctree-l1"><a class="reference internal" href="../index.html#compile-deep-learning-models">Compile Deep Learning Models</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../index.html#tensor-expression-and-schedules">Tensor Expression and Schedules</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../index.html#optimize-tensor-operators">Optimize Tensor Operators</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../index.html#auto-tuning">Auto tuning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../index.html#autotvm-template-based-auto-tuning">AutoTVM : Template-based Auto Tuning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../index.html#autoscheduler-template-free-auto-scheduling">AutoScheduler : Template-free Auto Scheduling</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../index.html#developer-tutorials">Developer Tutorials</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../index.html#topi-tvm-operator-inventory">TOPI: TVM Operator Inventory</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="../index.html#micro-tvm">Micro TVM</a><ul class="current">
@@ -290,9 +291,9 @@ model with Relay.</p>
 <span class="c1"># Load the pretrained TFLite model from a file in your current</span>
 <span class="c1"># directory into a buffer</span>
 
-<span class="n">model_url</span> <span class="o">=</span> <span class="s1">&#39;https://people.linaro.org/~tom.gall/sine_model.tflite&#39;</span>
-<span class="n">model_file</span> <span class="o">=</span> <span class="s1">&#39;sine_model.tflite&#39;</span>
-<span class="n">model_path</span> <span class="o">=</span> <span class="n">download_testdata</span><span class="p">(</span><span class="n">model_url</span><span class="p">,</span> <span class="n">model_file</span><span class="p">,</span> <span class="n">module</span><span class="o">=</span><span class="s1">&#39;data&#39;</span><span class="p">)</span>
+<span class="n">model_url</span> <span class="o">=</span> <span class="s2">&quot;https://people.linaro.org/~tom.gall/sine_model.tflite&quot;</span>
+<span class="n">model_file</span> <span class="o">=</span> <span class="s2">&quot;sine_model.tflite&quot;</span>
+<span class="n">model_path</span> <span class="o">=</span> <span class="n">download_testdata</span><span class="p">(</span><span class="n">model_url</span><span class="p">,</span> <span class="n">model_file</span><span class="p">,</span> <span class="n">module</span><span class="o">=</span><span class="s2">&quot;data&quot;</span><span class="p">)</span>
 
 <span class="n">tflite_model_buf</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">model_path</span><span class="p">,</span> <span class="s2">&quot;rb&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">read</span><span class="p">()</span>
 </pre></div>
@@ -304,15 +305,17 @@ model with Relay.</p>
 <p>Using the buffer, transform into a tflite model python object</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span class="k">try</span><span class="p">:</span>
     <span class="kn">import</span> <span class="nn">tflite</span>
+
     <span class="n">tflite_model</span> <span class="o">=</span> <span class="n">tflite</span><span class="o">.</span><span class="n">Model</span><span class="o">.</span><span class="n">GetRootAsModel</span><span class="p">(</span><span class="n">tflite_model_buf</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
 <span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span>
     <span class="kn">import</span> <span class="nn">tflite.Model</span>
+
     <span class="n">tflite_model</span> <span class="o">=</span> <span class="n">tflite</span><span class="o">.</span><span class="n">Model</span><span class="o">.</span><span class="n">Model</span><span class="o">.</span><span class="n">GetRootAsModel</span><span class="p">(</span><span class="n">tflite_model_buf</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>Print out the version of the model</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span class="n">version</span> <span class="o">=</span> <span class="n">tflite_model</span><span class="o">.</span><span class="n">Version</span><span class="p">()</span>
-<span class="nb">print</span> <span class="p">(</span><span class="s2">&quot;Model Version: &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">version</span><span class="p">))</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Model Version: &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">version</span><span class="p">))</span>
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
@@ -330,59 +333,77 @@ See : How do I inspect a .tflite file? <a class="reference external" href="https
 <span class="n">input_shape</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span><span class="p">,)</span>
 <span class="n">input_dtype</span> <span class="o">=</span> <span class="s2">&quot;float32&quot;</span>
 
-<span class="n">mod</span><span class="p">,</span> <span class="n">params</span> <span class="o">=</span> <a href="../../api/python/relay/frontend.html#tvm.relay.frontend.from_tflite" title="View documentation for tvm.relay.frontend.from_tflite"><span class="n">relay</span><span class="o">.</span><span class="n">frontend</span><span class="o">.</span><span class="n">from_tflite</span></a><span class="p">(</span><span class="n">tflite_model</span><span class="p">,</span>
-                                         <span class="n">shape_dict</span><span class="o">=</span><span class="p">{</span><span class="n">input_tensor</span><span class="p">:</span> <span class="n">input_shape</span><span class="p">},</span>
-                                         <span class="n">dtype_dict</span><span class="o">=</span><span class="p">{</span><span class="n">input_tensor</span><span class="p">:</span> <span class="n">input_dtype</span><span class="p">})</span>
-
-<span class="c1"># %%</span>
-<span class="c1"># Running on device</span>
-<span class="c1"># ----------------------------------------------</span>
-<span class="c1">#</span>
-<span class="c1"># Setup the device config which is what will be used to communicate</span>
-<span class="c1"># with the microcontroller (a STM32F746 Discovery board)</span>
-<span class="n">TARGET</span> <span class="o">=</span> <span class="s1">&#39;c --system-lib  --runtime=c&#39;</span>
-<span class="n">dev_config</span> <span class="o">=</span> <span class="n">micro</span><span class="o">.</span><span class="n">device</span><span class="o">.</span><span class="n">arm</span><span class="o">.</span><span class="n">stm32f746xx</span><span class="o">.</span><span class="n">generate_config</span><span class="p">(</span><span class="s2">&quot;127.0.0.1&quot;</span><span class="p">,</span> <span class="mi">6666</span><span class="p">)</span>
-</pre></div>
-</div>
-<p>Next with the dev_config, we establish a micro session and create
-a context</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span class="k">with</span> <span class="n">micro</span><span class="o">.</span><span class="n">Session</span><span class="p">(</span><span class="n">dev_config</span><span class="p">)</span> <span class="k">as</span> <span class="n">sess</span><span class="p">:</span>
-    <span class="n">ctx</span> <span class="o">=</span> <span class="n">tvm</span><span class="o">.</span><span class="n">micro_dev</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+<span class="n">mod</span><span class="p">,</span> <span class="n">params</span> <span class="o">=</span> <a href="../../api/python/relay/frontend.html#tvm.relay.frontend.from_tflite" title="View documentation for tvm.relay.frontend.from_tflite"><span class="n">relay</span><span class="o">.</span><span class="n">frontend</span><span class="o">.</span><span class="n">from_tflite</span></a><span class="p">(</span>
+    <span class="n">tflite_model</span><span class="p">,</span> <span class="n">shape_dict</span><span class="o">=</span><span class="p">{</span><span class="n">input_tensor</span><span class="p">:</span> <span class="n">input_shape</span><span class="p">},</span> <span class="n">dtype_dict</span><span class="o">=</span><span class="p">{</span><span class="n">input_tensor</span><span class="p">:</span> <span class="n">input_dtype</span><span class="p">}</span>
+<span class="p">)</span>
 </pre></div>
 </div>
 <p>Now we create a build config for relay. turning off two options
 and then calling relay.build which will result in a C source
 file.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span class="k">with</span> <span class="n">tvm</span><span class="o">.</span><span class="n">transform</span><span class="o">.</span><span class="n">PassContext</span><span class="p">(</span><span class="n">opt_level</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">config</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;tir.disable_vectorize&#39;</span><span class="p">:</span> <span class="bp">True</span><span class="p">},</span><span class="n">disabled_pass</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;FuseOps&#39;</span><span class="p">]):</span>
-    <span class="n">graph</span><span class="p">,</span> <span class="n">c_mod</span><span class="p">,</span> <span class="n">params</span> <span class="o">=</span> <span class="n">relay</span><span class="o">.</span><span class="n">build</span><span class="p">(</span><span class="n">mod</span><span class="p">,</span> <span class="n">target</span><span class="o">=</span><span class="n">TARGET</span><span class="p">,</span> <span class="n">params</span><span class="o">=</span><span class="n">params</span><span class="p">)</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre>
 </pre></div>
 </div>
-<p>With the c_mod that is the handle to our C source code, we create a
-micro module, followed by a compiled object which behind the scenes
-is linked to the microTVM runtime for running on the target board</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span class="n">micro_mod</span> <span class="o">=</span> <span class="n">micro</span><span class="o">.</span><span class="n">create_micro_mod</span><span class="p">(</span><span class="n">c_mod</span><span class="p">,</span> <span class="n">dev_config</span><span class="p">)</span>
-<span class="n">mod</span> <span class="o">=</span> <span class="n">graph_runtime</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">graph</span><span class="p">,</span> <span class="n">micro_mod</span><span class="p">,</span> <span class="n">ctx</span><span class="p">)</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span class="n">TARGET</span> <span class="o">=</span> <span class="n">tvm</span><span class="o">.</span><span class="n">target</span><span class="o">.</span><span class="n">target</span><span class="o">.</span><span class="n">micro</span><span class="p">(</span><span class="s2">&quot;host&quot;</span><span class="p">)</span>
+
+<span class="k">with</span> <a href="../../api/python/ir.html#tvm.transform.PassContext" title="View documentation for tvm.transform.PassContext"><span class="n">tvm</span><span class="o">.</span><span class="n">transform</span><span class="o">.</span><span class="n">PassContext</span></a><span class="p">(</span>
+    <span class="n">opt_level</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">config</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;tir.disable_vectorize&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">},</span> <span class="n">disabled_pass</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;FuseOps&quot;</span><span class="p">]</span>
+<span class="p">):</span>
+    <span class="n">graph</span><span class="p">,</span> <span class="n">c_mod</span><span class="p">,</span> <span class="n">c_params</span> <span class="o">=</span> <a href="../../api/python/relay/index.html#tvm.relay.build" title="View documentation for tvm.relay.build"><span class="n">relay</span><span class="o">.</span><span class="n">build</span></a><span class="p">(</span><span class="n">mod</span><span class="p">,</span> <span class="n">target</span><span class="o">=</span><span class="n">TARGET</span><span class="p">,</span> <span class="n">params</span><span class="o">=</span><span class="n">params</span><span class="p">)</span>
+
+
+<span class="c1"># %%</span>
+<span class="c1"># Running on simulated device</span>
+<span class="c1"># ----------------------------------------------</span>
+<span class="c1">#</span>
+<span class="c1"># First, compile a static microTVM runtime for the targeted device. In this case, the host simulated</span>
+<span class="c1"># device is used.</span>
+<span class="n">workspace</span> <span class="o">=</span> <a href="../../api/python/micro.html#tvm.micro.Workspace" title="View documentation for tvm.micro.Workspace"><span class="n">tvm</span><span class="o">.</span><span class="n">micro</span><span class="o">.</span><span class="n">Workspace</span></a><span class="p">()</span>
+
+<span class="n">compiler</span> <span class="o">=</span> <a href="../../api/python/micro.html#tvm.micro.DefaultCompiler" title="View documentation for tvm.micro.DefaultCompiler"><span class="n">tvm</span><span class="o">.</span><span class="n">micro</span><span class="o">.</span><span class="n">DefaultCompiler</span></a><span class="p">(</span><span class="n">target</span><span class="o">=</span><span class="n">TARGET</span><span class="p">)</span>
+<span class="n">opts</span> <span class="o">=</span> <a href="../../api/python/micro.html#tvm.micro.default_options" title="View documentation for tvm.micro.default_options"><span class="n">tvm</span><span class="o">.</span><span class="n">micro</span><span class="o">.</span><span class="n">default_options</span></a><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">tvm</span><span class="o">.</span><span class="n">micro</span><span class="o">.</span><span class="n">CRT_ROOT_DIR</span><span class="p">,</span> <span class="s2">&quot;host&quot;</span><span class="p">))</span>
+
+<span class="n">micro_binary</span> <span class="o">=</span> <a href="../../api/python/micro.html#tvm.micro.build_static_runtime" title="View documentation for tvm.micro.build_static_runtime"><span class="n">tvm</span><span class="o">.</span><span class="n">micro</span><span class="o">.</span><span class="n">build_static_runtime</span></a><span class="p">(</span>
+    <span class="c1"># the x86 compiler *expects* you to give the exact same dictionary for both</span>
+    <span class="c1"># lib_opts and bin_opts. so the library compiler is mutating lib_opts and</span>
+    <span class="c1"># the binary compiler is expecting those mutations to be in bin_opts.</span>
+    <span class="c1"># TODO(weberlo) fix this very bizarre behavior</span>
+    <span class="n">workspace</span><span class="p">,</span>
+    <span class="n">compiler</span><span class="p">,</span>
+    <span class="n">c_mod</span><span class="p">,</span>
+    <span class="n">lib_opts</span><span class="o">=</span><span class="n">opts</span><span class="p">[</span><span class="s2">&quot;bin_opts&quot;</span><span class="p">],</span>
+    <span class="n">bin_opts</span><span class="o">=</span><span class="n">opts</span><span class="p">[</span><span class="s2">&quot;bin_opts&quot;</span><span class="p">],</span>
+<span class="p">)</span>
 </pre></div>
 </div>
-<p>Pass the weights to get ready to perform inference</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span class="n">mod</span><span class="o">.</span><span class="n">set_input</span><span class="p">(</span><span class="o">**</span><span class="n">params</span><span class="p">)</span>
+<p>Next, establish a session with the simulated device and run the
+computation. The <cite>with session</cite> line would typically flash an attached
+microcontroller, but in this tutorial, it simply launches a subprocess
+to stand in for an attached microcontroller.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre>
 </pre></div>
 </div>
-<p>The model consumes a single float32 value and returns a predicted
-sine value.
-To pass the input value we construct a tvm.nd.array object
-with a single contrived number as input. For this model values of
-0 to 2Pi are acceptable.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span class="n">mod</span><span class="o">.</span><span class="n">set_input</span><span class="p">(</span><span class="n">input_tensor</span><span class="p">,</span> <span class="n">tvm</span><span class="o">.</span><span class="n">nd</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">0.5</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="s2">&quot;float32&quot;</span><span class="p">)))</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span class="n">flasher</span> <span class="o">=</span> <span class="n">compiler</span><span class="o">.</span><span class="n">flasher</span><span class="p">()</span>
+<span class="k">with</span> <a href="../../api/python/micro.html#tvm.micro.Session" title="View documentation for tvm.micro.Session"><span class="n">tvm</span><span class="o">.</span><span class="n">micro</span><span class="o">.</span><span class="n">Session</span></a><span class="p">(</span><span class="n">binary</span><span class="o">=</span><span class="n">micro_binary</span><span class="p">,</span> <span class="n">flasher</span><span class="o">=</span><span class="n">flasher</span><span class="p">)</span> <span class="k">as</span> <span class="n">session</span><span class="p">:</span>
+    <span class="n">graph_mod</span> <span class="o">=</span> <a href="../../api/python/micro.html#tvm.micro.create_local_graph_runtime" title="View documentation for tvm.micro.create_local_graph_runtime"><span class="n">tvm</span><span class="o">.</span><span class="n">micro</span><span class="o">.</span><span class="n">create_local_graph_runtime</span></a><span class="p">(</span>
+        <span class="n">graph</span><span class="p">,</span> <span class="n">session</span><span class="o">.</span><span class="n">get_system_lib</span><span class="p">(),</span> <span class="n">session</span><span class="o">.</span><span class="n">context</span>
+    <span class="p">)</span>
+
+    <span class="c1"># Set the model parameters using the lowered parameters produced by `relay.build`.</span>
+    <span class="n">graph_mod</span><span class="o">.</span><span class="n">set_input</span><span class="p">(</span><span class="o">**</span><span class="n">c_params</span><span class="p">)</span>
+
+    <span class="c1"># The model consumes a single float32 value and returns a predicted sine value.  To pass the</span>
+    <span class="c1"># input value we construct a tvm.nd.array object with a single contrived number as input. For</span>
+    <span class="c1"># this model values of 0 to 2Pi are acceptable.</span>
+    <span class="n">graph_mod</span><span class="o">.</span><span class="n">set_input</span><span class="p">(</span><span class="n">input_tensor</span><span class="p">,</span> <a href="../../api/python/ndarray.html#tvm.nd.array" title="View documentation for tvm.nd.array"><span class="n">tvm</span><span class="o">.</span><span class="n">nd</span><span class="o">.</span><span class="n">array</span></a><span class="p">(</span><a href="https://numpy.org/doc/stable/reference/generated/numpy.array.html#numpy.array" title="View documentation for numpy.array"><span class="n">np</span><span class="o">.</span><span class="n">array</span></a><span class="p">([</span><span class="mf">0.5</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="s2">&quot;float32&quot;</span><span class="p">)))</span>
+    <span class="n">graph_mod</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
+
+    <span class="n">tvm_output</span> <span class="o">=</span> <span class="n">graph_mod</span><span class="o">.</span><span class="n">get_output</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">asnumpy</span><span class="p">()</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;result is: &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">tvm_output</span><span class="p">))</span>
 </pre></div>
 </div>
-<p>Run the model on device</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span class="n">mod</span><span class="o">.</span><span class="n">run</span><span class="p">()</span>
-</pre></div>
-</div>
-<p>Get output from the run and print</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span class="n">tvm_output</span> <span class="o">=</span> <span class="n">mod</span><span class="o">.</span><span class="n">get_output</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">asnumpy</span><span class="p">()</span>
-<span class="k">print</span><span class="p">(</span><span class="s2">&quot;result is: &quot;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">tvm_output</span><span class="p">))</span>
+<p class="sphx-glr-script-out">Out:</p>
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre>result is: [[0.4443792]]
 </pre></div>
 </div>
 <div class="sphx-glr-footer class sphx-glr-footer-example docutils container" id="sphx-glr-download-tutorials-micro-micro-tflite-py">

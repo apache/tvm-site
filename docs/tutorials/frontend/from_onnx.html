@@ -115,6 +115,7 @@
 <li class="toctree-l2"><a class="reference internal" href="using_external_lib.html">Using External Libraries in Relay</a></li>
 <li class="toctree-l2"><a class="reference internal" href="from_coreml.html">Compile CoreML Models</a></li>
 <li class="toctree-l2"><a class="reference internal" href="from_keras.html">Compile Keras Models</a></li>
+<li class="toctree-l2"><a class="reference internal" href="deploy_object_detection_pytorch.html">Compile PyTorch Object Detection Models</a></li>
 <li class="toctree-l2"><a class="reference internal" href="deploy_quantized.html">Deploy a Quantized Model on Cuda</a></li>
 <li class="toctree-l2"><a class="reference internal" href="from_caffe2.html">Compile Caffe2 Models</a></li>
 <li class="toctree-l2"><a class="reference internal" href="from_mxnet.html">Compile MXNet Models</a></li>
@@ -132,7 +133,8 @@
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../index.html#tensor-expression-and-schedules">Tensor Expression and Schedules</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../index.html#optimize-tensor-operators">Optimize Tensor Operators</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../index.html#auto-tuning">Auto tuning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../index.html#autotvm-template-based-auto-tuning">AutoTVM : Template-based Auto Tuning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../index.html#autoscheduler-template-free-auto-scheduling">AutoScheduler : Template-free Auto Scheduling</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../index.html#developer-tutorials">Developer Tutorials</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../index.html#topi-tvm-operator-inventory">TOPI: TVM Operator Inventory</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../index.html#micro-tvm">Micro TVM</a></li>
@@ -248,11 +250,15 @@
 <p>The example super resolution model used here is exactly the same model in onnx tutorial
 <a class="reference external" href="http://pytorch.org/tutorials/advanced/super_resolution_with_caffe2.html">http://pytorch.org/tutorials/advanced/super_resolution_with_caffe2.html</a>
 we skip the pytorch model construction part, and download the saved onnx model</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span class="n">model_url</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="s1">&#39;https://gist.github.com/zhreshold/&#39;</span><span class="p">,</span>
-                     <span class="s1">&#39;bcda4716699ac97ea44f791c24310193/raw/&#39;</span><span class="p">,</span>
-                     <span class="s1">&#39;93672b029103648953c4e5ad3ac3aadf346a4cdc/&#39;</span><span class="p">,</span>
-                     <span class="s1">&#39;super_resolution_0.2.onnx&#39;</span><span class="p">])</span>
-<span class="n">model_path</span> <span class="o">=</span> <span class="n">download_testdata</span><span class="p">(</span><span class="n">model_url</span><span class="p">,</span> <span class="s1">&#39;super_resolution.onnx&#39;</span><span class="p">,</span> <span class="n">module</span><span class="o">=</span><span class="s1">&#39;onnx&#39;</span><span class="p">)</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span class="n">model_url</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+    <span class="p">[</span>
+        <span class="s2">&quot;https://gist.github.com/zhreshold/&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;bcda4716699ac97ea44f791c24310193/raw/&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;93672b029103648953c4e5ad3ac3aadf346a4cdc/&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;super_resolution_0.2.onnx&quot;</span><span class="p">,</span>
+    <span class="p">]</span>
+<span class="p">)</span>
+<span class="n">model_path</span> <span class="o">=</span> <span class="n">download_testdata</span><span class="p">(</span><span class="n">model_url</span><span class="p">,</span> <span class="s2">&quot;super_resolution.onnx&quot;</span><span class="p">,</span> <span class="n">module</span><span class="o">=</span><span class="s2">&quot;onnx&quot;</span><span class="p">)</span>
 <span class="c1"># now you have super_resolution.onnx on disk</span>
 <span class="n">onnx_model</span> <span class="o">=</span> <span class="n">onnx</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">model_path</span><span class="p">)</span>
 </pre></div>
@@ -266,8 +272,9 @@ we skip the pytorch model construction part, and download the saved onnx model</
 <h2>Load a test image<a class="headerlink" href="#load-a-test-image" title="Permalink to this headline">¶</a></h2>
 <p>A single cat dominates the examples!</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">PIL</span> <span class="k">import</span> <span class="n">Image</span>
-<span class="n">img_url</span> <span class="o">=</span> <span class="s1">&#39;https://github.com/dmlc/mxnet.js/blob/master/data/cat.png?raw=true&#39;</span>
-<span class="n">img_path</span> <span class="o">=</span> <span class="n">download_testdata</span><span class="p">(</span><span class="n">img_url</span><span class="p">,</span> <span class="s1">&#39;cat.png&#39;</span><span class="p">,</span> <span class="n">module</span><span class="o">=</span><span class="s1">&#39;data&#39;</span><span class="p">)</span>
+
+<span class="n">img_url</span> <span class="o">=</span> <span class="s2">&quot;https://github.com/dmlc/mxnet.js/blob/master/data/cat.png?raw=true&quot;</span>
+<span class="n">img_path</span> <span class="o">=</span> <span class="n">download_testdata</span><span class="p">(</span><span class="n">img_url</span><span class="p">,</span> <span class="s2">&quot;cat.png&quot;</span><span class="p">,</span> <span class="n">module</span><span class="o">=</span><span class="s2">&quot;data&quot;</span><span class="p">)</span>
 <span class="n">img</span> <span class="o">=</span> <span class="n">Image</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">img_path</span><span class="p">)</span><span class="o">.</span><span class="n">resize</span><span class="p">((</span><span class="mi">224</span><span class="p">,</span> <span class="mi">224</span><span class="p">))</span>
 <span class="n">img_ycbcr</span> <span class="o">=</span> <span class="n">img</span><span class="o">.</span><span class="n">convert</span><span class="p">(</span><span class="s2">&quot;YCbCr&quot;</span><span class="p">)</span>  <span class="c1"># convert to YCbCr</span>
 <span class="n">img_y</span><span class="p">,</span> <span class="n">img_cb</span><span class="p">,</span> <span class="n">img_cr</span> <span class="o">=</span> <span class="n">img_ycbcr</span><span class="o">.</span><span class="n">split</span><span class="p">()</span>
@@ -281,18 +288,18 @@ we skip the pytorch model construction part, and download the saved onnx model</
 </div>
 <div class="section" id="compile-the-model-with-relay">
 <h2>Compile the model with relay<a class="headerlink" href="#compile-the-model-with-relay" title="Permalink to this headline">¶</a></h2>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span class="n">target</span> <span class="o">=</span> <span class="s1">&#39;llvm&#39;</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span class="n">target</span> <span class="o">=</span> <span class="s2">&quot;llvm&quot;</span>
 
-<span class="n">input_name</span> <span class="o">=</span> <span class="s1">&#39;1&#39;</span>
+<span class="n">input_name</span> <span class="o">=</span> <span class="s2">&quot;1&quot;</span>
 <span class="n">shape_dict</span> <span class="o">=</span> <span class="p">{</span><span class="n">input_name</span><span class="p">:</span> <span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">}</span>
 <span class="n">mod</span><span class="p">,</span> <span class="n">params</span> <span class="o">=</span> <a href="../../api/python/relay/frontend.html#tvm.relay.frontend.from_onnx" title="View documentation for tvm.relay.frontend.from_onnx"><span class="n">relay</span><span class="o">.</span><span class="n">frontend</span><span class="o">.</span><span class="n">from_onnx</span></a><span class="p">(</span><span class="n">onnx_model</span><span class="p">,</span> <span class="n">shape_dict</span><span class="p">)</span>
 
 <span class="k">with</span> <a href="../../api/python/ir.html#tvm.transform.PassContext" title="View documentation for tvm.transform.PassContext"><span class="n">tvm</span><span class="o">.</span><span class="n">transform</span><span class="o">.</span><span class="n">PassContext</span></a><span class="p">(</span><span class="n">opt_level</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
-    <span class="n">intrp</span> <span class="o">=</span> <a href="../../api/python/relay/index.html#tvm.relay.create_executor" title="View documentation for tvm.relay.build_module.create_executor"><span class="n">relay</span><span class="o">.</span><span class="n">build_module</span><span class="o">.</span><span class="n">create_executor</span></a><span class="p">(</span><span class="s1">&#39;graph&#39;</span><span class="p">,</span> <span class="n">mod</span><span class="p">,</span> <span class="n">tvm</span><span class="o">.</span><span class="n">cpu</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span> <span class="n">target</span><span class="p">)</span>
+    <span class="n">intrp</span> <span class="o">=</span> <a href="../../api/python/relay/index.html#tvm.relay.create_executor" title="View documentation for tvm.relay.build_module.create_executor"><span class="n">relay</span><span class="o">.</span><span class="n">build_module</span><span class="o">.</span><span class="n">create_executor</span></a><span class="p">(</span><span class="s2">&quot;graph&quot;</span><span class="p">,</span> <span class="n">mod</span><span class="p">,</span> <span class="n">tvm</span><span class="o">.</span><span class="n">cpu</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span> <span class="n">target</span><span class="p">)</span>
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre>/workspace/docs/../python/tvm/relay/frontend/onnx.py:2420: UserWarning: Mismatched attribute type in &#39; : kernel_shape&#39;
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre>/workspace/docs/../python/tvm/relay/frontend/onnx.py:2434: UserWarning: Mismatched attribute type in &#39; : kernel_shape&#39;
 
 ==&gt; Context: Bad node spec: input: &quot;1&quot; input: &quot;2&quot; output: &quot;11&quot; op_type: &quot;Conv&quot; attribute { name: &quot;kernel_shape&quot; ints: 5 ints: 5 } attribute { name: &quot;strides&quot; ints: 1 ints: 1 } attribute { name: &quot;pads&quot; ints: 2 ints: 2 ints: 2 ints: 2 } attribute { name: &quot;dilations&quot; ints: 1 ints: 1 } attribute { name: &quot;group&quot; i: 1 }
   warnings.warn(str(e))
@@ -301,14 +308,14 @@ we skip the pytorch model construction part, and download the saved onnx model</
 </div>
 <div class="section" id="execute-on-tvm">
 <h2>Execute on TVM<a class="headerlink" href="#execute-on-tvm" title="Permalink to this headline">¶</a></h2>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span class="n">dtype</span> <span class="o">=</span> <span class="s1">&#39;float32&#39;</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span class="n">dtype</span> <span class="o">=</span> <span class="s2">&quot;float32&quot;</span>
 <span class="n">tvm_output</span> <span class="o">=</span> <span class="n">intrp</span><span class="o">.</span><span class="n">evaluate</span><span class="p">()(</span><a href="../../api/python/ndarray.html#tvm.nd.array" title="View documentation for tvm.nd.array"><span class="n">tvm</span><span class="o">.</span><span class="n">nd</span><span class="o">.</span><span class="n">array</span></a><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">dtype</span><span class="p">)),</span> <span class="o">**</span><span class="n">params</span><span class="p">)</span><span class="o">.</span><span class="n">asnumpy</span><span class="p">()</span>
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre>...47%, 0.01 MB, 654 KB/s, 0 seconds passed
-...94%, 0.02 MB, 1246 KB/s, 0 seconds passed
-...100%, 0.02 MB, 1828 KB/s, 0 seconds passed
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre>...47%, 0.01 MB, 37 KB/s, 0 seconds passed
+...94%, 0.02 MB, 74 KB/s, 0 seconds passed
+...100%, 0.02 MB, 111 KB/s, 0 seconds passed
 Cannot find config for target=llvm -keys=cpu, workload=(&#39;conv2d_NCHWc.x86&#39;, (&#39;TENSOR&#39;, (1, 32, 224, 224), &#39;float32&#39;), (&#39;TENSOR&#39;, (9, 32, 3, 3), &#39;float32&#39;), (1, 1), (1, 1, 1, 1), (1, 1), &#39;NCHW&#39;, &#39;NCHW&#39;, &#39;float32&#39;). A fallback configuration is used, which may bring great performance regression.
 Cannot find config for target=llvm -keys=cpu, workload=(&#39;conv2d_NCHWc.x86&#39;, (&#39;TENSOR&#39;, (1, 64, 224, 224), &#39;float32&#39;), (&#39;TENSOR&#39;, (32, 64, 3, 3), &#39;float32&#39;), (1, 1), (1, 1, 1, 1), (1, 1), &#39;NCHW&#39;, &#39;NCHW&#39;, &#39;float32&#39;). A fallback configuration is used, which may bring great performance regression.
 Cannot find config for target=llvm -keys=cpu, workload=(&#39;conv2d_NCHWc.x86&#39;, (&#39;TENSOR&#39;, (1, 1, 224, 224), &#39;float32&#39;), (&#39;TENSOR&#39;, (64, 1, 5, 5), &#39;float32&#39;), (1, 1), (2, 2, 2, 2), (1, 1), &#39;NCHW&#39;, &#39;NCHW&#39;, &#39;float32&#39;). A fallback configuration is used, which may bring great performance regression.
@@ -319,11 +326,12 @@ Cannot find config for target=llvm -keys=cpu, workload=(&#39;conv2d_NCHWc.x86&#3
 <h2>Display results<a class="headerlink" href="#display-results" title="Permalink to this headline">¶</a></h2>
 <p>We put input and output image neck to neck</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">matplotlib</span> <span class="k">import</span> <span class="n">pyplot</span> <span class="k">as</span> <span class="n">plt</span>
-<span class="n">out_y</span> <span class="o">=</span> <span class="n">Image</span><span class="o">.</span><span class="n">fromarray</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">uint8</span><span class="p">((</span><span class="n">tvm_output</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">])</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">255</span><span class="p">)),</span> <span class="n">mode</span><span class="o">=</span><span class="s1">&#39;L&#39;</span><span class="p">)</span>
+
+<span class="n">out_y</span> <span class="o">=</span> <span class="n">Image</span><span class="o">.</span><span class="n">fromarray</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">uint8</span><span class="p">((</span><span class="n">tvm_output</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">])</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">255</span><span class="p">)),</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;L&quot;</span><span class="p">)</span>
 <span class="n">out_cb</span> <span class="o">=</span> <span class="n">img_cb</span><span class="o">.</span><span class="n">resize</span><span class="p">(</span><span class="n">out_y</span><span class="o">.</span><span class="n">size</span><span class="p">,</span> <span class="n">Image</span><span class="o">.</span><span class="n">BICUBIC</span><span class="p">)</span>
 <span class="n">out_cr</span> <span class="o">=</span> <span class="n">img_cr</span><span class="o">.</span><span class="n">resize</span><span class="p">(</span><span class="n">out_y</span><span class="o">.</span><span class="n">size</span><span class="p">,</span> <span class="n">Image</span><span class="o">.</span><span class="n">BICUBIC</span><span class="p">)</span>
-<span class="n">result</span> <span class="o">=</span> <span class="n">Image</span><span class="o">.</span><span class="n">merge</span><span class="p">(</span><span class="s1">&#39;YCbCr&#39;</span><span class="p">,</span> <span class="p">[</span><span class="n">out_y</span><span class="p">,</span> <span class="n">out_cb</span><span class="p">,</span> <span class="n">out_cr</span><span class="p">])</span><span class="o">.</span><span class="n">convert</span><span class="p">(</span><span class="s1">&#39;RGB&#39;</span><span class="p">)</span>
-<span class="n">canvas</span> <span class="o">=</span> <a href="https://numpy.org/doc/stable/reference/generated/numpy.full.html#numpy.full" title="View documentation for numpy.full"><span class="n">np</span><span class="o">.</span><span class="n">full</span></a><span class="p">((</span><span class="mi">672</span><span class="p">,</span> <span class="mi">672</span><span class="o">*</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">),</span> <span class="mi">255</span><span class="p">)</span>
+<span class="n">result</span> <span class="o">=</span> <span class="n">Image</span><span class="o">.</span><span class="n">merge</span><span class="p">(</span><span class="s2">&quot;YCbCr&quot;</span><span class="p">,</span> <span class="p">[</span><span class="n">out_y</span><span class="p">,</span> <span class="n">out_cb</span><span class="p">,</span> <span class="n">out_cr</span><span class="p">])</span><span class="o">.</span><span class="n">convert</span><span class="p">(</span><span class="s2">&quot;RGB&quot;</span><span class="p">)</span>
+<span class="n">canvas</span> <span class="o">=</span> <a href="https://numpy.org/doc/stable/reference/generated/numpy.full.html#numpy.full" title="View documentation for numpy.full"><span class="n">np</span><span class="o">.</span><span class="n">full</span></a><span class="p">((</span><span class="mi">672</span><span class="p">,</span> <span class="mi">672</span> <span class="o">*</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">),</span> <span class="mi">255</span><span class="p">)</span>
 <span class="n">canvas</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">224</span><span class="p">,</span> <span class="mi">0</span><span class="p">:</span><span class="mi">224</span><span class="p">,</span> <span class="p">:]</span> <span class="o">=</span> <a href="https://numpy.org/doc/stable/reference/generated/numpy.asarray.html#numpy.asarray" title="View documentation for numpy.asarray"><span class="n">np</span><span class="o">.</span><span class="n">asarray</span></a><span class="p">(</span><span class="n">img</span><span class="p">)</span>
 <span class="n">canvas</span><span class="p">[:,</span> <span class="mi">672</span><span class="p">:,</span> <span class="p">:]</span> <span class="o">=</span> <a href="https://numpy.org/doc/stable/reference/generated/numpy.asarray.html#numpy.asarray" title="View documentation for numpy.asarray"><span class="n">np</span><span class="o">.</span><span class="n">asarray</span></a><span class="p">(</span><span class="n">result</span><span class="p">)</span>
 <a href="https://matplotlib.org/api/_as_gen/matplotlib.pyplot.imshow.rst.html#matplotlib.pyplot.imshow" title="View documentation for matplotlib.pyplot.imshow"><span class="n">plt</span><span class="o">.</span><span class="n">imshow</span></a><span class="p">(</span><span class="n">canvas</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">uint8</span><span class="p">))</span>

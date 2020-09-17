@@ -108,6 +108,7 @@
 <li class="toctree-l2"><a class="reference internal" href="using_external_lib.html">Using External Libraries in Relay</a></li>
 <li class="toctree-l2"><a class="reference internal" href="from_coreml.html">Compile CoreML Models</a></li>
 <li class="toctree-l2"><a class="reference internal" href="from_keras.html">Compile Keras Models</a></li>
+<li class="toctree-l2"><a class="reference internal" href="deploy_object_detection_pytorch.html">Compile PyTorch Object Detection Models</a></li>
 <li class="toctree-l2"><a class="reference internal" href="deploy_quantized.html">Deploy a Quantized Model on Cuda</a></li>
 <li class="toctree-l2"><a class="reference internal" href="from_caffe2.html">Compile Caffe2 Models</a></li>
 <li class="toctree-l2"><a class="reference internal" href="from_mxnet.html">Compile MXNet Models</a></li>
@@ -135,7 +136,8 @@
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../index.html#tensor-expression-and-schedules">Tensor Expression and Schedules</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../index.html#optimize-tensor-operators">Optimize Tensor Operators</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../index.html#auto-tuning">Auto tuning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../index.html#autotvm-template-based-auto-tuning">AutoTVM : Template-based Auto Tuning</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../index.html#autoscheduler-template-free-auto-scheduling">AutoScheduler : Template-free Auto Scheduling</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../index.html#developer-tutorials">Developer Tutorials</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../index.html#topi-tvm-operator-inventory">TOPI: TVM Operator Inventory</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../index.html#micro-tvm">Micro TVM</a></li>
@@ -365,13 +367,18 @@ python3 tests/android_rpc_test.py
 <h2>Load pretrained keras model<a class="headerlink" href="#load-pretrained-keras-model" title="Permalink to this headline">¶</a></h2>
 <p>We load a pretrained MobileNetV2(alpha=0.5) classification model provided by keras.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span class="n">keras</span><span class="o">.</span><span class="n">backend</span><span class="o">.</span><span class="n">clear_session</span><span class="p">()</span>  <span class="c1"># Destroys the current TF graph and creates a new one.</span>
-<span class="n">weights_url</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="s1">&#39;https://github.com/JonathanCMitchell/&#39;</span><span class="p">,</span>
-                       <span class="s1">&#39;mobilenet_v2_keras/releases/download/v1.1/&#39;</span><span class="p">,</span>
-                       <span class="s1">&#39;mobilenet_v2_weights_tf_dim_ordering_tf_kernels_0.5_224.h5&#39;</span><span class="p">])</span>
-<span class="n">weights_file</span> <span class="o">=</span> <span class="s1">&#39;mobilenet_v2_weights.h5&#39;</span>
-<span class="n">weights_path</span> <span class="o">=</span> <span class="n">download_testdata</span><span class="p">(</span><span class="n">weights_url</span><span class="p">,</span> <span class="n">weights_file</span><span class="p">,</span> <span class="n">module</span><span class="o">=</span><span class="s1">&#39;keras&#39;</span><span class="p">)</span>
-<span class="n">keras_mobilenet_v2</span> <span class="o">=</span> <span class="n">MobileNetV2</span><span class="p">(</span><span class="n">alpha</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">include_top</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">weights</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-                                <span class="n">input_shape</span><span class="o">=</span><span class="p">(</span><span class="mi">224</span><span class="p">,</span> <span class="mi">224</span><span class="p">,</span> <span class="mi">3</span><span class="p">),</span> <span class="n">classes</span><span class="o">=</span><span class="mi">1000</span><span class="p">)</span>
+<span class="n">weights_url</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+    <span class="p">[</span>
+        <span class="s2">&quot;https://github.com/JonathanCMitchell/&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;mobilenet_v2_keras/releases/download/v1.1/&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;mobilenet_v2_weights_tf_dim_ordering_tf_kernels_0.5_224.h5&quot;</span><span class="p">,</span>
+    <span class="p">]</span>
+<span class="p">)</span>
+<span class="n">weights_file</span> <span class="o">=</span> <span class="s2">&quot;mobilenet_v2_weights.h5&quot;</span>
+<span class="n">weights_path</span> <span class="o">=</span> <span class="n">download_testdata</span><span class="p">(</span><span class="n">weights_url</span><span class="p">,</span> <span class="n">weights_file</span><span class="p">,</span> <span class="n">module</span><span class="o">=</span><span class="s2">&quot;keras&quot;</span><span class="p">)</span>
+<span class="n">keras_mobilenet_v2</span> <span class="o">=</span> <span class="n">MobileNetV2</span><span class="p">(</span>
+    <span class="n">alpha</span><span class="o">=</span><span class="mf">0.5</span><span class="p">,</span> <span class="n">include_top</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">weights</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">input_shape</span><span class="o">=</span><span class="p">(</span><span class="mi">224</span><span class="p">,</span> <span class="mi">224</span><span class="p">,</span> <span class="mi">3</span><span class="p">),</span> <span class="n">classes</span><span class="o">=</span><span class="mi">1000</span>
+<span class="p">)</span>
 <span class="n">keras_mobilenet_v2</span><span class="o">.</span><span class="n">load_weights</span><span class="p">(</span><span class="n">weights_path</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -381,18 +388,20 @@ python3 tests/android_rpc_test.py
 </div>
 <p>In order to test our model, here we download an image of cat and
 transform its format.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span class="n">img_url</span> <span class="o">=</span> <span class="s1">&#39;https://github.com/dmlc/mxnet.js/blob/master/data/cat.png?raw=true&#39;</span>
-<span class="n">img_name</span> <span class="o">=</span> <span class="s1">&#39;cat.png&#39;</span>
-<span class="n">img_path</span> <span class="o">=</span> <span class="n">download_testdata</span><span class="p">(</span><span class="n">img_url</span><span class="p">,</span> <span class="n">img_name</span><span class="p">,</span> <span class="n">module</span><span class="o">=</span><span class="s1">&#39;data&#39;</span><span class="p">)</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span class="n">img_url</span> <span class="o">=</span> <span class="s2">&quot;https://github.com/dmlc/mxnet.js/blob/master/data/cat.png?raw=true&quot;</span>
+<span class="n">img_name</span> <span class="o">=</span> <span class="s2">&quot;cat.png&quot;</span>
+<span class="n">img_path</span> <span class="o">=</span> <span class="n">download_testdata</span><span class="p">(</span><span class="n">img_url</span><span class="p">,</span> <span class="n">img_name</span><span class="p">,</span> <span class="n">module</span><span class="o">=</span><span class="s2">&quot;data&quot;</span><span class="p">)</span>
 <span class="n">image</span> <span class="o">=</span> <span class="n">Image</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">img_path</span><span class="p">)</span><span class="o">.</span><span class="n">resize</span><span class="p">((</span><span class="mi">224</span><span class="p">,</span> <span class="mi">224</span><span class="p">))</span>
-<span class="n">dtype</span> <span class="o">=</span> <span class="s1">&#39;float32&#39;</span>
+<span class="n">dtype</span> <span class="o">=</span> <span class="s2">&quot;float32&quot;</span>
+
 
 <span class="k">def</span> <span class="nf">transform_image</span><span class="p">(</span><span class="n">image</span><span class="p">):</span>
-    <span class="n">image</span> <span class="o">=</span> <a href="https://numpy.org/doc/stable/reference/generated/numpy.array.html#numpy.array" title="View documentation for numpy.array"><span class="n">np</span><span class="o">.</span><span class="n">array</span></a><span class="p">(</span><span class="n">image</span><span class="p">)</span> <span class="o">-</span> <a href="https://numpy.org/doc/stable/reference/generated/numpy.array.html#numpy.array" title="View documentation for numpy.array"><span class="n">np</span><span class="o">.</span><span class="n">array</span></a><span class="p">([</span><span class="mf">123.</span><span class="p">,</span> <span class="mf">117.</span><span class="p">,</span> <span class="mf">104.</span><span class="p">])</span>
+    <span class="n">image</span> <span class="o">=</span> <a href="https://numpy.org/doc/stable/reference/generated/numpy.array.html#numpy.array" title="View documentation for numpy.array"><span class="n">np</span><span class="o">.</span><span class="n">array</span></a><span class="p">(</span><span class="n">image</span><span class="p">)</span> <span class="o">-</span> <a href="https://numpy.org/doc/stable/reference/generated/numpy.array.html#numpy.array" title="View documentation for numpy.array"><span class="n">np</span><span class="o">.</span><span class="n">array</span></a><span class="p">([</span><span class="mf">123.0</span><span class="p">,</span> <span class="mf">117.0</span><span class="p">,</span> <span class="mf">104.0</span><span class="p">])</span>
     <span class="n">image</span> <span class="o">/=</span> <a href="https://numpy.org/doc/stable/reference/generated/numpy.array.html#numpy.array" title="View documentation for numpy.array"><span class="n">np</span><span class="o">.</span><span class="n">array</span></a><span class="p">([</span><span class="mf">58.395</span><span class="p">,</span> <span class="mf">57.12</span><span class="p">,</span> <span class="mf">57.375</span><span class="p">])</span>
     <span class="n">image</span> <span class="o">=</span> <span class="n">image</span><span class="o">.</span><span class="n">transpose</span><span class="p">((</span><span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
     <span class="n">image</span> <span class="o">=</span> <span class="n">image</span><span class="p">[</span><a href="https://numpy.org/doc/stable/reference/constants.html#numpy.newaxis" title="View documentation for numpy.newaxis"><span class="n">np</span><span class="o">.</span><span class="n">newaxis</span></a><span class="p">,</span> <span class="p">:]</span>
     <span class="k">return</span> <span class="n">image</span>
+
 
 <span class="n">x</span> <span class="o">=</span> <span class="n">transform_image</span><span class="p">(</span><span class="n">image</span><span class="p">)</span>
 </pre></div>
@@ -403,12 +412,16 @@ transform its format.</p>
 </div>
 <p>synset is used to transform the label from number of ImageNet class to
 the word human can understand.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span class="n">synset_url</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="s1">&#39;https://gist.githubusercontent.com/zhreshold/&#39;</span><span class="p">,</span>
-                      <span class="s1">&#39;4d0b62f3d01426887599d4f7ede23ee5/raw/&#39;</span><span class="p">,</span>
-                      <span class="s1">&#39;596b27d23537e5a1b5751d2b0481ef172f58b539/&#39;</span><span class="p">,</span>
-                      <span class="s1">&#39;imagenet1000_clsid_to_human.txt&#39;</span><span class="p">])</span>
-<span class="n">synset_name</span> <span class="o">=</span> <span class="s1">&#39;imagenet1000_clsid_to_human.txt&#39;</span>
-<span class="n">synset_path</span> <span class="o">=</span> <span class="n">download_testdata</span><span class="p">(</span><span class="n">synset_url</span><span class="p">,</span> <span class="n">synset_name</span><span class="p">,</span> <span class="n">module</span><span class="o">=</span><span class="s1">&#39;data&#39;</span><span class="p">)</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span class="n">synset_url</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+    <span class="p">[</span>
+        <span class="s2">&quot;https://gist.githubusercontent.com/zhreshold/&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;4d0b62f3d01426887599d4f7ede23ee5/raw/&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;596b27d23537e5a1b5751d2b0481ef172f58b539/&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;imagenet1000_clsid_to_human.txt&quot;</span><span class="p">,</span>
+    <span class="p">]</span>
+<span class="p">)</span>
+<span class="n">synset_name</span> <span class="o">=</span> <span class="s2">&quot;imagenet1000_clsid_to_human.txt&quot;</span>
+<span class="n">synset_path</span> <span class="o">=</span> <span class="n">download_testdata</span><span class="p">(</span><span class="n">synset_url</span><span class="p">,</span> <span class="n">synset_name</span><span class="p">,</span> <span class="n">module</span><span class="o">=</span><span class="s2">&quot;data&quot;</span><span class="p">)</span>
 <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">synset_path</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
     <span class="n">synset</span> <span class="o">=</span> <span class="nb">eval</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">read</span><span class="p">())</span>
 </pre></div>
@@ -428,31 +441,30 @@ to run this tutorial with a real device.</p>
 
 <span class="c1"># by default on CPU target will execute.</span>
 <span class="c1"># select &#39;cpu&#39;, &#39;opencl&#39; and &#39;vulkan&#39;</span>
-<span class="n">test_target</span> <span class="o">=</span> <span class="s1">&#39;cpu&#39;</span>
+<span class="n">test_target</span> <span class="o">=</span> <span class="s2">&quot;cpu&quot;</span>
 
 <span class="c1"># Change target configuration.</span>
 <span class="c1"># Run `adb shell cat /proc/cpuinfo` to find the arch.</span>
-<span class="n">arch</span> <span class="o">=</span> <span class="s1">&#39;arm64&#39;</span>
-<span class="n">target</span> <span class="o">=</span> <span class="s1">&#39;llvm -mtriple=</span><span class="si">%s</span><span class="s1">-linux-android&#39;</span> <span class="o">%</span> <span class="n">arch</span>
+<span class="n">arch</span> <span class="o">=</span> <span class="s2">&quot;arm64&quot;</span>
+<span class="n">target</span> <span class="o">=</span> <span class="s2">&quot;llvm -mtriple=</span><span class="si">%s</span><span class="s2">-linux-android&quot;</span> <span class="o">%</span> <span class="n">arch</span>
 <span class="n">target_host</span> <span class="o">=</span> <span class="kc">None</span>
 
 <span class="k">if</span> <span class="n">local_demo</span><span class="p">:</span>
     <span class="n">target_host</span> <span class="o">=</span> <span class="kc">None</span>
-    <span class="n">target</span> <span class="o">=</span> <span class="s1">&#39;llvm&#39;</span>
-<span class="k">elif</span> <span class="n">test_target</span> <span class="o">==</span> <span class="s1">&#39;opencl&#39;</span><span class="p">:</span>
+    <span class="n">target</span> <span class="o">=</span> <span class="s2">&quot;llvm&quot;</span>
+<span class="k">elif</span> <span class="n">test_target</span> <span class="o">==</span> <span class="s2">&quot;opencl&quot;</span><span class="p">:</span>
     <span class="n">target_host</span> <span class="o">=</span> <span class="n">target</span>
-    <span class="n">target</span> <span class="o">=</span> <span class="s1">&#39;opencl&#39;</span>
-<span class="k">elif</span> <span class="n">test_target</span> <span class="o">==</span> <span class="s1">&#39;vulkan&#39;</span><span class="p">:</span>
+    <span class="n">target</span> <span class="o">=</span> <span class="s2">&quot;opencl&quot;</span>
+<span class="k">elif</span> <span class="n">test_target</span> <span class="o">==</span> <span class="s2">&quot;vulkan&quot;</span><span class="p">:</span>
     <span class="n">target_host</span> <span class="o">=</span> <span class="n">target</span>
-    <span class="n">target</span> <span class="o">=</span> <span class="s1">&#39;vulkan&#39;</span>
+    <span class="n">target</span> <span class="o">=</span> <span class="s2">&quot;vulkan&quot;</span>
 
-<span class="n">input_name</span> <span class="o">=</span> <span class="s1">&#39;input_1&#39;</span>
+<span class="n">input_name</span> <span class="o">=</span> <span class="s2">&quot;input_1&quot;</span>
 <span class="n">shape_dict</span> <span class="o">=</span> <span class="p">{</span><span class="n">input_name</span><span class="p">:</span> <span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">}</span>
 <span class="n">mod</span><span class="p">,</span> <span class="n">params</span> <span class="o">=</span> <a href="../../api/python/relay/frontend.html#tvm.relay.frontend.from_keras" title="View documentation for tvm.relay.frontend.from_keras"><span class="n">relay</span><span class="o">.</span><span class="n">frontend</span><span class="o">.</span><span class="n">from_keras</span></a><span class="p">(</span><span class="n">keras_mobilenet_v2</span><span class="p">,</span> <span class="n">shape_dict</span><span class="p">)</span>
 
 <span class="k">with</span> <a href="../../api/python/ir.html#tvm.transform.PassContext" title="View documentation for tvm.transform.PassContext"><span class="n">tvm</span><span class="o">.</span><span class="n">transform</span><span class="o">.</span><span class="n">PassContext</span></a><span class="p">(</span><span class="n">opt_level</span><span class="o">=</span><span class="mi">3</span><span class="p">):</span>
-    <span class="n">lib</span> <span class="o">=</span> <a href="../../api/python/relay/index.html#tvm.relay.build" title="View documentation for tvm.relay.build"><span class="n">relay</span><span class="o">.</span><span class="n">build</span></a><span class="p">(</span><span class="n">mod</span><span class="p">,</span> <span class="n">target</span><span class="o">=</span><span class="n">target</span><span class="p">,</span>
-                      <span class="n">target_host</span><span class="o">=</span><span class="n">target_host</span><span class="p">,</span> <span class="n">params</span><span class="o">=</span><span class="n">params</span><span class="p">)</span>
+    <span class="n">lib</span> <span class="o">=</span> <a href="../../api/python/relay/index.html#tvm.relay.build" title="View documentation for tvm.relay.build"><span class="n">relay</span><span class="o">.</span><span class="n">build</span></a><span class="p">(</span><span class="n">mod</span><span class="p">,</span> <span class="n">target</span><span class="o">=</span><span class="n">target</span><span class="p">,</span> <span class="n">target_host</span><span class="o">=</span><span class="n">target_host</span><span class="p">,</span> <span class="n">params</span><span class="o">=</span><span class="n">params</span><span class="p">)</span>
 
 <span class="c1"># After `relay.build`, you will get three return values: graph,</span>
 <span class="c1"># library and the new parameter, since we do some optimization that will</span>
@@ -460,7 +472,7 @@ to run this tutorial with a real device.</p>
 
 <span class="c1"># Save the library at local temporary directory.</span>
 <span class="n">tmp</span> <span class="o">=</span> <a href="../../api/python/contrib.html#tvm.contrib.util.tempdir" title="View documentation for tvm.contrib.util.tempdir"><span class="n">util</span><span class="o">.</span><span class="n">tempdir</span></a><span class="p">()</span>
-<span class="n">lib_fname</span> <span class="o">=</span> <span class="n">tmp</span><span class="o">.</span><span class="n">relpath</span><span class="p">(</span><span class="s1">&#39;net.so&#39;</span><span class="p">)</span>
+<span class="n">lib_fname</span> <span class="o">=</span> <span class="n">tmp</span><span class="o">.</span><span class="n">relpath</span><span class="p">(</span><span class="s2">&quot;net.so&quot;</span><span class="p">)</span>
 <span class="n">fcompile</span> <span class="o">=</span> <a href="../../api/python/contrib.html#tvm.contrib.ndk.create_shared" title="View documentation for tvm.contrib.ndk.create_shared"><span class="n">ndk</span><span class="o">.</span><span class="n">create_shared</span></a> <span class="k">if</span> <span class="ow">not</span> <span class="n">local_demo</span> <span class="k">else</span> <span class="kc">None</span>
 <span class="n">lib</span><span class="o">.</span><span class="n">export_library</span><span class="p">(</span><span class="n">lib_fname</span><span class="p">,</span> <span class="n">fcompile</span><span class="p">)</span>
 </pre></div>
@@ -470,33 +482,32 @@ to run this tutorial with a real device.</p>
 <h2>Deploy the Model Remotely by RPC<a class="headerlink" href="#deploy-the-model-remotely-by-rpc" title="Permalink to this headline">¶</a></h2>
 <p>With RPC, you can deploy the model remotely from your host machine
 to the remote android device.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span class="n">tracker_host</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;TVM_TRACKER_HOST&#39;</span><span class="p">,</span> <span class="s1">&#39;0.0.0.0&#39;</span><span class="p">)</span>
-<span class="n">tracker_port</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;TVM_TRACKER_PORT&#39;</span><span class="p">,</span> <span class="mi">9190</span><span class="p">))</span>
-<span class="n">key</span> <span class="o">=</span> <span class="s1">&#39;android&#39;</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span class="n">tracker_host</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;TVM_TRACKER_HOST&quot;</span><span class="p">,</span> <span class="s2">&quot;0.0.0.0&quot;</span><span class="p">)</span>
+<span class="n">tracker_port</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;TVM_TRACKER_PORT&quot;</span><span class="p">,</span> <span class="mi">9190</span><span class="p">))</span>
+<span class="n">key</span> <span class="o">=</span> <span class="s2">&quot;android&quot;</span>
 
 <span class="k">if</span> <span class="n">local_demo</span><span class="p">:</span>
     <span class="n">remote</span> <span class="o">=</span> <a href="../../api/python/rpc.html#tvm.rpc.LocalSession" title="View documentation for tvm.rpc.LocalSession"><span class="n">rpc</span><span class="o">.</span><span class="n">LocalSession</span></a><span class="p">()</span>
 <span class="k">else</span><span class="p">:</span>
     <span class="n">tracker</span> <span class="o">=</span> <a href="../../api/python/rpc.html#tvm.rpc.connect_tracker" title="View documentation for tvm.rpc.connect_tracker"><span class="n">rpc</span><span class="o">.</span><span class="n">connect_tracker</span></a><span class="p">(</span><span class="n">tracker_host</span><span class="p">,</span> <span class="n">tracker_port</span><span class="p">)</span>
     <span class="c1"># When running a heavy model, we should increase the `session_timeout`</span>
-    <span class="n">remote</span> <span class="o">=</span> <span class="n">tracker</span><span class="o">.</span><span class="n">request</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">priority</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
-                             <span class="n">session_timeout</span><span class="o">=</span><span class="mi">60</span><span class="p">)</span>
+    <span class="n">remote</span> <span class="o">=</span> <span class="n">tracker</span><span class="o">.</span><span class="n">request</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">priority</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">session_timeout</span><span class="o">=</span><span class="mi">60</span><span class="p">)</span>
 
 <span class="k">if</span> <span class="n">local_demo</span><span class="p">:</span>
     <span class="n">ctx</span> <span class="o">=</span> <span class="n">remote</span><span class="o">.</span><span class="n">cpu</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
-<span class="k">elif</span> <span class="n">test_target</span> <span class="o">==</span> <span class="s1">&#39;opencl&#39;</span><span class="p">:</span>
+<span class="k">elif</span> <span class="n">test_target</span> <span class="o">==</span> <span class="s2">&quot;opencl&quot;</span><span class="p">:</span>
     <span class="n">ctx</span> <span class="o">=</span> <span class="n">remote</span><span class="o">.</span><span class="n">cl</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
-<span class="k">elif</span> <span class="n">test_target</span> <span class="o">==</span> <span class="s1">&#39;vulkan&#39;</span><span class="p">:</span>
+<span class="k">elif</span> <span class="n">test_target</span> <span class="o">==</span> <span class="s2">&quot;vulkan&quot;</span><span class="p">:</span>
     <span class="n">ctx</span> <span class="o">=</span> <span class="n">remote</span><span class="o">.</span><span class="n">vulkan</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
 <span class="k">else</span><span class="p">:</span>
     <span class="n">ctx</span> <span class="o">=</span> <span class="n">remote</span><span class="o">.</span><span class="n">cpu</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
 
 <span class="c1"># upload the library to remote device and load it</span>
 <span class="n">remote</span><span class="o">.</span><span class="n">upload</span><span class="p">(</span><span class="n">lib_fname</span><span class="p">)</span>
-<span class="n">rlib</span> <span class="o">=</span> <span class="n">remote</span><span class="o">.</span><span class="n">load_module</span><span class="p">(</span><span class="s1">&#39;net.so&#39;</span><span class="p">)</span>
+<span class="n">rlib</span> <span class="o">=</span> <span class="n">remote</span><span class="o">.</span><span class="n">load_module</span><span class="p">(</span><span class="s2">&quot;net.so&quot;</span><span class="p">)</span>
 
 <span class="c1"># create the remote runtime module</span>
-<span class="n">module</span> <span class="o">=</span> <a href="../../api/python/graph_runtime.html#tvm.contrib.graph_runtime.GraphModule" title="View documentation for tvm.contrib.graph_runtime.GraphModule"><span class="n">runtime</span><span class="o">.</span><span class="n">GraphModule</span></a><span class="p">(</span><span class="n">rlib</span><span class="p">[</span><span class="s1">&#39;default&#39;</span><span class="p">](</span><span class="n">ctx</span><span class="p">))</span>
+<span class="n">module</span> <span class="o">=</span> <a href="../../api/python/graph_runtime.html#tvm.contrib.graph_runtime.GraphModule" title="View documentation for tvm.contrib.graph_runtime.GraphModule"><span class="n">runtime</span><span class="o">.</span><span class="n">GraphModule</span></a><span class="p">(</span><span class="n">rlib</span><span class="p">[</span><span class="s2">&quot;default&quot;</span><span class="p">](</span><span class="n">ctx</span><span class="p">))</span>
 </pre></div>
 </div>
 </div>
@@ -511,19 +522,18 @@ to the remote android device.</p>
 
 <span class="c1"># get top1 result</span>
 <span class="n">top1</span> <span class="o">=</span> <a href="https://numpy.org/doc/stable/reference/generated/numpy.argmax.html#numpy.argmax" title="View documentation for numpy.argmax"><span class="n">np</span><span class="o">.</span><span class="n">argmax</span></a><span class="p">(</span><span class="n">out</span><span class="o">.</span><span class="n">asnumpy</span><span class="p">())</span>
-<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;TVM prediction top-1: {}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">synset</span><span class="p">[</span><span class="n">top1</span><span class="p">]))</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;TVM prediction top-1: {}&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">synset</span><span class="p">[</span><span class="n">top1</span><span class="p">]))</span>
 
-<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Evaluate inference time cost...&#39;</span><span class="p">)</span>
-<span class="n">ftimer</span> <span class="o">=</span> <span class="n">module</span><span class="o">.</span><span class="n">module</span><span class="o">.</span><span class="n">time_evaluator</span><span class="p">(</span><span class="s1">&#39;run&#39;</span><span class="p">,</span> <span class="n">ctx</span><span class="p">,</span> <span class="n">number</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">repeat</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Evaluate inference time cost...&quot;</span><span class="p">)</span>
+<span class="n">ftimer</span> <span class="o">=</span> <span class="n">module</span><span class="o">.</span><span class="n">module</span><span class="o">.</span><span class="n">time_evaluator</span><span class="p">(</span><span class="s2">&quot;run&quot;</span><span class="p">,</span> <span class="n">ctx</span><span class="p">,</span> <span class="n">number</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">repeat</span><span class="o">=</span><span class="mi">10</span><span class="p">)</span>
 <span class="n">prof_res</span> <span class="o">=</span> <a href="https://numpy.org/doc/stable/reference/generated/numpy.array.html#numpy.array" title="View documentation for numpy.array"><span class="n">np</span><span class="o">.</span><span class="n">array</span></a><span class="p">(</span><span class="n">ftimer</span><span class="p">()</span><span class="o">.</span><span class="n">results</span><span class="p">)</span> <span class="o">*</span> <span class="mi">1000</span>  <span class="c1"># convert to millisecond</span>
-<span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Mean inference time (std dev): </span><span class="si">%.2f</span><span class="s1"> ms (</span><span class="si">%.2f</span><span class="s1"> ms)&#39;</span> <span class="o">%</span> <span class="p">(</span><a href="https://numpy.org/doc/stable/reference/generated/numpy.mean.html#numpy.mean" title="View documentation for numpy.mean"><span class="n">np</span><span class="o">.</span><span class="n">mean</span></a><span class="p">(</span><span class="n">prof_res</span><span class="p">),</span>
-                                                            <a href="https://numpy.org/doc/stable/reference/generated/numpy.std.html#numpy.std" title="View documentation for numpy.std"><span class="n">np</span><span class="o">.</span><span class="n">std</span></a><span class="p">(</span><span class="n">prof_res</span><span class="p">)))</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Mean inference time (std dev): </span><span class="si">%.2f</span><span class="s2"> ms (</span><span class="si">%.2f</span><span class="s2"> ms)&quot;</span> <span class="o">%</span> <span class="p">(</span><a href="https://numpy.org/doc/stable/reference/generated/numpy.mean.html#numpy.mean" title="View documentation for numpy.mean"><span class="n">np</span><span class="o">.</span><span class="n">mean</span></a><span class="p">(</span><span class="n">prof_res</span><span class="p">),</span> <a href="https://numpy.org/doc/stable/reference/generated/numpy.std.html#numpy.std" title="View documentation for numpy.std"><span class="n">np</span><span class="o">.</span><span class="n">std</span></a><span class="p">(</span><span class="n">prof_res</span><span class="p">)))</span>
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
 <div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre>TVM prediction top-1: tiger cat
 Evaluate inference time cost...
-Mean inference time (std dev): 17.66 ms (0.04 ms)
+Mean inference time (std dev): 10.27 ms (0.03 ms)
 </pre></div>
 </div>
 </div>
