@@ -40,7 +40,7 @@
   <link rel="stylesheet" href="../../_static/css/tvm_theme.css" type="text/css" />
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
-    <link rel="next" title="Writing a Customized Pass" href="../dev/low_level_custom_pass.html" />
+    <link rel="next" title="Auto-scheduling a convolution layer for GPU" href="tune_conv2d_layer_cuda.html" />
     <link rel="prev" title="Auto-tuning a convolutional network for Mobile GPU" href="../autotvm/tune_relay_mobile_gpu.html" /> 
 </head>
 
@@ -111,10 +111,11 @@
 <li class="toctree-l3"><a class="reference internal" href="#define-the-computation">Define the computation</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#create-the-search-task">Create the search task</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#run-the-search">Run the search</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#check-correctness">Check correctness</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#check-correctness-and-evaluate-performance">Check correctness and evaluate performance</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#using-the-record-file">Using the record file</a></li>
 </ul>
 </li>
+<li class="toctree-l2"><a class="reference internal" href="tune_conv2d_layer_cuda.html">Auto-scheduling a convolution layer for GPU</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../index.html#developer-tutorials">Developer Tutorials</a></li>
@@ -225,7 +226,7 @@ search space and find a good schedule in the space.</p>
 </div>
 <div class="section" id="define-the-computation">
 <h2>Define the computation<a class="headerlink" href="#define-the-computation" title="Permalink to this headline">¶</a></h2>
-<p>To begin with, we define the computation of a matmul with bias add.
+<p>To begin with, let us define the computation of a matmul with bias add.
 The function should return the list of input/output tensors.
 From these tensors, the auto-scheduler can get the whole computational graph.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span class="nd">@auto_scheduler</span><span class="o">.</span><span class="n">register_workload</span>
@@ -244,7 +245,10 @@ From these tensors, the auto-scheduler can get the whole computational graph.</p
 </div>
 <div class="section" id="create-the-search-task">
 <h2>Create the search task<a class="headerlink" href="#create-the-search-task" title="Permalink to this headline">¶</a></h2>
-<p>We then create a search task with N=L=M=128 and dtype=”float32”</p>
+<p>We then create a search task with N=L=M=128 and dtype=”float32”
+If your machine supports avx instructions, you can
+- replace “llvm” below with “llvm -mcpu=core-avx2” to enable AVX2
+- replace “llvm” below with “llvm -mcpu=skylake-avx512” to enable AVX-512</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span class="n">target</span> <span class="o">=</span> <a href="../../api/python/target.html#tvm.target.Target" title="View documentation for tvm.target.Target"><span class="n">tvm</span><span class="o">.</span><span class="n">target</span><span class="o">.</span><span class="n">Target</span></a><span class="p">(</span><span class="s2">&quot;llvm&quot;</span><span class="p">)</span>
 <span class="n">task</span> <span class="o">=</span> <span class="n">auto_scheduler</span><span class="o">.</span><span class="n">create_task</span><span class="p">(</span><span class="n">matmul_add</span><span class="p">,</span> <span class="p">(</span><span class="mi">128</span><span class="p">,</span> <span class="mi">128</span><span class="p">,</span> <span class="mi">128</span><span class="p">,</span> <span class="s2">&quot;float32&quot;</span><span class="p">),</span> <span class="n">target</span><span class="p">)</span>
 
@@ -268,7 +272,7 @@ good value for the search to converge. You can do more trials according to your 
 <li><p>In addition, we use <cite>RecordToFile</cite> to dump measurement records into a file <cite>matmul.json</cite>.
 The measurement records can be used to query the history best, resume the search,
 and do more analyses later.</p></li>
-<li><p>see <a class="reference internal" href="../../api/python/auto_scheduler.html#tvm.auto_scheduler.auto_schedule.TuningOptions" title="tvm.auto_scheduler.auto_schedule.TuningOptions"><code class="xref any py py-class docutils literal notranslate"><span class="pre">auto_schedule.TuningOptions</span></code></a>: for more parameters</p></li>
+<li><p>see <a class="reference internal" href="../../api/python/auto_scheduler.html#tvm.auto_scheduler.auto_schedule.TuningOptions" title="tvm.auto_scheduler.auto_schedule.TuningOptions"><code class="xref any py py-class docutils literal notranslate"><span class="pre">auto_scheduler.auto_schedule.TuningOptions</span></code></a>: for more parameters</p></li>
 </ul>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span class="n">tune_option</span> <span class="o">=</span> <span class="n">auto_scheduler</span><span class="o">.</span><span class="n">TuningOptions</span><span class="p">(</span>
     <span class="n">num_measure_trials</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">measure_callbacks</span><span class="o">=</span><span class="p">[</span><span class="n">auto_scheduler</span><span class="o">.</span><span class="n">RecordToFile</span><span class="p">(</span><span class="s2">&quot;matmul.json&quot;</span><span class="p">)]</span>
@@ -285,63 +289,72 @@ After some measurement trials, it will return the best schedule it found.</p>
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre>*T*T*T*T*T*T*T*T
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre>*T*T*T*T*T*T*T*T*T*T
 </pre></div>
 </div>
 <p>We can lower the schedule to see the IR after auto-scheduling.
 The auto-scheduler correctly performs optimizations including multi-level tiling,
-parallelization, vectorization, unrolling and fusion.</p>
+parallelization, vectorization, unrolling and operator fusion.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span class="nb">print</span><span class="p">(</span><a href="../../api/python/driver.html#tvm.lower" title="View documentation for tvm.lower"><span class="n">tvm</span><span class="o">.</span><span class="n">lower</span></a><span class="p">(</span><span class="n">sch</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">simple_mode</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span>
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
 <div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre>primfn(A_1: handle, B_1: handle, C_1: handle, out_1: handle) -&gt; ()
   attr = {&quot;global_symbol&quot;: &quot;main&quot;, &quot;tir.noalias&quot;: True}
-  buffers = {C: Buffer(C_2: Pointer(float32), float32, [128, 128], []),
-             out: Buffer(out_2: Pointer(float32), float32, [128, 128], []),
+  buffers = {out: Buffer(out_2: Pointer(float32), float32, [128, 128], []),
              B: Buffer(B_2: Pointer(float32), float32, [128, 128], []),
+             C: Buffer(C_2: Pointer(float32), float32, [128, 128], []),
              A: Buffer(A_2: Pointer(float32), float32, [128, 128], [])}
   buffer_map = {A_1: A, B_1: B, C_1: C, out_1: out} {
   attr [matmul: Pointer(float32)] &quot;storage_scope&quot; = &quot;global&quot;;
-  allocate(matmul, float32, [2048]);
-  for (j.outer: int32, 0, 8) {
-    for (i.outer.outer.inner: int32, 0, 64) {
-      for (j.outer.outer.inner: int32, 0, 2) {
-        matmul[ramp(((i.outer.outer.inner*32) + (j.outer.outer.inner*8)), 1, 8)] = broadcast(0f32, 8)
-        matmul[ramp((((i.outer.outer.inner*32) + (j.outer.outer.inner*8)) + 16), 1, 8)] = broadcast(0f32, 8)
-        for (k.outer: int32, 0, 32) {
-          matmul[ramp(((i.outer.outer.inner*32) + (j.outer.outer.inner*8)), 1, 8)] = ((float32x8*)matmul[ramp(((i.outer.outer.inner*32) + (j.outer.outer.inner*8)), 1, 8)] + (broadcast((float32*)A_2[((i.outer.outer.inner*256) + (k.outer*4))], 8)*(float32x8*)B_2[ramp((((k.outer*512) + (j.outer*16)) + (j.outer.outer.inner*8)), 1, 8)]))
-          matmul[ramp((((i.outer.outer.inner*32) + (j.outer.outer.inner*8)) + 16), 1, 8)] = ((float32x8*)matmul[ramp((((i.outer.outer.inner*32) + (j.outer.outer.inner*8)) + 16), 1, 8)] + (broadcast((float32*)A_2[(((i.outer.outer.inner*256) + (k.outer*4)) + 128)], 8)*(float32x8*)B_2[ramp((((k.outer*512) + (j.outer*16)) + (j.outer.outer.inner*8)), 1, 8)]))
-          matmul[ramp(((i.outer.outer.inner*32) + (j.outer.outer.inner*8)), 1, 8)] = ((float32x8*)matmul[ramp(((i.outer.outer.inner*32) + (j.outer.outer.inner*8)), 1, 8)] + (broadcast((float32*)A_2[(((i.outer.outer.inner*256) + (k.outer*4)) + 1)], 8)*(float32x8*)B_2[ramp(((((k.outer*512) + (j.outer*16)) + (j.outer.outer.inner*8)) + 128), 1, 8)]))
-          matmul[ramp((((i.outer.outer.inner*32) + (j.outer.outer.inner*8)) + 16), 1, 8)] = ((float32x8*)matmul[ramp((((i.outer.outer.inner*32) + (j.outer.outer.inner*8)) + 16), 1, 8)] + (broadcast((float32*)A_2[(((i.outer.outer.inner*256) + (k.outer*4)) + 129)], 8)*(float32x8*)B_2[ramp(((((k.outer*512) + (j.outer*16)) + (j.outer.outer.inner*8)) + 128), 1, 8)]))
-          matmul[ramp(((i.outer.outer.inner*32) + (j.outer.outer.inner*8)), 1, 8)] = ((float32x8*)matmul[ramp(((i.outer.outer.inner*32) + (j.outer.outer.inner*8)), 1, 8)] + (broadcast((float32*)A_2[(((i.outer.outer.inner*256) + (k.outer*4)) + 2)], 8)*(float32x8*)B_2[ramp(((((k.outer*512) + (j.outer*16)) + (j.outer.outer.inner*8)) + 256), 1, 8)]))
-          matmul[ramp((((i.outer.outer.inner*32) + (j.outer.outer.inner*8)) + 16), 1, 8)] = ((float32x8*)matmul[ramp((((i.outer.outer.inner*32) + (j.outer.outer.inner*8)) + 16), 1, 8)] + (broadcast((float32*)A_2[(((i.outer.outer.inner*256) + (k.outer*4)) + 130)], 8)*(float32x8*)B_2[ramp(((((k.outer*512) + (j.outer*16)) + (j.outer.outer.inner*8)) + 256), 1, 8)]))
-          matmul[ramp(((i.outer.outer.inner*32) + (j.outer.outer.inner*8)), 1, 8)] = ((float32x8*)matmul[ramp(((i.outer.outer.inner*32) + (j.outer.outer.inner*8)), 1, 8)] + (broadcast((float32*)A_2[(((i.outer.outer.inner*256) + (k.outer*4)) + 3)], 8)*(float32x8*)B_2[ramp(((((k.outer*512) + (j.outer*16)) + (j.outer.outer.inner*8)) + 384), 1, 8)]))
-          matmul[ramp((((i.outer.outer.inner*32) + (j.outer.outer.inner*8)) + 16), 1, 8)] = ((float32x8*)matmul[ramp((((i.outer.outer.inner*32) + (j.outer.outer.inner*8)) + 16), 1, 8)] + (broadcast((float32*)A_2[(((i.outer.outer.inner*256) + (k.outer*4)) + 131)], 8)*(float32x8*)B_2[ramp(((((k.outer*512) + (j.outer*16)) + (j.outer.outer.inner*8)) + 384), 1, 8)]))
+  allocate(matmul, float32, [16384]) {
+    for (i: int32, 0, 128) {
+      for (j: int32, 0, 128) {
+        matmul[((i*128) + j)] = 0f32
+        for (k: int32, 0, 128) {
+          matmul[((i*128) + j)] = ((float32*)matmul[((i*128) + j)] + ((float32*)A_2[((i*128) + k)]*(float32*)B_2[((k*128) + j)]))
         }
       }
     }
-    for (i.inner: int32, 0, 128) {
-      out_2[ramp(((i.inner*128) + (j.outer*16)), 1, 16)] = ((float32x16*)matmul[ramp((i.inner*16), 1, 16)] + (float32x16*)C_2[ramp(((i.inner*128) + (j.outer*16)), 1, 16)])
+    for (i_1: int32, 0, 128) {
+      for (j_1: int32, 0, 128) {
+        out_2[((i_1*128) + j_1)] = ((float32*)matmul[((i_1*128) + j_1)] + (float32*)C_2[((i_1*128) + j_1)])
+      }
     }
   }
 }
 </pre></div>
 </div>
 </div>
-<div class="section" id="check-correctness">
-<h2>Check correctness<a class="headerlink" href="#check-correctness" title="Permalink to this headline">¶</a></h2>
-<p>We build the binary and check its correctness</p>
+<div class="section" id="check-correctness-and-evaluate-performance">
+<h2>Check correctness and evaluate performance<a class="headerlink" href="#check-correctness-and-evaluate-performance" title="Permalink to this headline">¶</a></h2>
+<p>We build the binary and check its correctness and performance.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span class="n">func</span> <span class="o">=</span> <a href="../../api/python/driver.html#tvm.build" title="View documentation for tvm.build"><span class="n">tvm</span><span class="o">.</span><span class="n">build</span></a><span class="p">(</span><span class="n">sch</span><span class="p">,</span> <span class="n">args</span><span class="p">)</span>
 <span class="n">a_np</span> <span class="o">=</span> <a href="https://numpy.org/doc/stable/reference/random/generated/numpy.random.uniform.html#numpy.random.uniform" title="View documentation for numpy.random.uniform"><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span></a><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="p">(</span><span class="mi">128</span><span class="p">,</span> <span class="mi">128</span><span class="p">))</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
 <span class="n">b_np</span> <span class="o">=</span> <a href="https://numpy.org/doc/stable/reference/random/generated/numpy.random.uniform.html#numpy.random.uniform" title="View documentation for numpy.random.uniform"><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span></a><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="p">(</span><span class="mi">128</span><span class="p">,</span> <span class="mi">128</span><span class="p">))</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
 <span class="n">c_np</span> <span class="o">=</span> <a href="https://numpy.org/doc/stable/reference/random/generated/numpy.random.uniform.html#numpy.random.uniform" title="View documentation for numpy.random.uniform"><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span></a><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="p">(</span><span class="mi">128</span><span class="p">,</span> <span class="mi">128</span><span class="p">))</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
-<span class="n">d_np</span> <span class="o">=</span> <span class="n">a_np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">b_np</span><span class="p">)</span> <span class="o">+</span> <span class="n">c_np</span>
+<span class="n">out_np</span> <span class="o">=</span> <span class="n">a_np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">b_np</span><span class="p">)</span> <span class="o">+</span> <span class="n">c_np</span>
 
-<span class="n">d_tvm</span> <span class="o">=</span> <a href="../../api/python/ndarray.html#tvm.nd.empty" title="View documentation for tvm.nd.empty"><span class="n">tvm</span><span class="o">.</span><span class="n">nd</span><span class="o">.</span><span class="n">empty</span></a><span class="p">(</span><span class="n">d_np</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
-<span class="n">func</span><span class="p">(</span><a href="../../api/python/ndarray.html#tvm.nd.array" title="View documentation for tvm.nd.array"><span class="n">tvm</span><span class="o">.</span><span class="n">nd</span><span class="o">.</span><span class="n">array</span></a><span class="p">(</span><span class="n">a_np</span><span class="p">),</span> <a href="../../api/python/ndarray.html#tvm.nd.array" title="View documentation for tvm.nd.array"><span class="n">tvm</span><span class="o">.</span><span class="n">nd</span><span class="o">.</span><span class="n">array</span></a><span class="p">(</span><span class="n">b_np</span><span class="p">),</span> <a href="../../api/python/ndarray.html#tvm.nd.array" title="View documentation for tvm.nd.array"><span class="n">tvm</span><span class="o">.</span><span class="n">nd</span><span class="o">.</span><span class="n">array</span></a><span class="p">(</span><span class="n">c_np</span><span class="p">),</span> <span class="n">d_tvm</span><span class="p">)</span>
+<span class="n">ctx</span> <span class="o">=</span> <span class="n">tvm</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span>
+<span class="n">a_tvm</span> <span class="o">=</span> <a href="../../api/python/ndarray.html#tvm.nd.array" title="View documentation for tvm.nd.array"><span class="n">tvm</span><span class="o">.</span><span class="n">nd</span><span class="o">.</span><span class="n">array</span></a><span class="p">(</span><span class="n">a_np</span><span class="p">,</span> <span class="n">ctx</span><span class="o">=</span><span class="n">ctx</span><span class="p">)</span>
+<span class="n">b_tvm</span> <span class="o">=</span> <a href="../../api/python/ndarray.html#tvm.nd.array" title="View documentation for tvm.nd.array"><span class="n">tvm</span><span class="o">.</span><span class="n">nd</span><span class="o">.</span><span class="n">array</span></a><span class="p">(</span><span class="n">b_np</span><span class="p">,</span> <span class="n">ctx</span><span class="o">=</span><span class="n">ctx</span><span class="p">)</span>
+<span class="n">c_tvm</span> <span class="o">=</span> <a href="../../api/python/ndarray.html#tvm.nd.array" title="View documentation for tvm.nd.array"><span class="n">tvm</span><span class="o">.</span><span class="n">nd</span><span class="o">.</span><span class="n">array</span></a><span class="p">(</span><span class="n">c_np</span><span class="p">,</span> <span class="n">ctx</span><span class="o">=</span><span class="n">ctx</span><span class="p">)</span>
+<span class="n">out_tvm</span> <span class="o">=</span> <a href="../../api/python/ndarray.html#tvm.nd.empty" title="View documentation for tvm.nd.empty"><span class="n">tvm</span><span class="o">.</span><span class="n">nd</span><span class="o">.</span><span class="n">empty</span></a><span class="p">(</span><span class="n">out_np</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">ctx</span><span class="o">=</span><span class="n">ctx</span><span class="p">)</span>
+<span class="n">func</span><span class="p">(</span><span class="n">a_tvm</span><span class="p">,</span> <span class="n">b_tvm</span><span class="p">,</span> <span class="n">c_tvm</span><span class="p">,</span> <span class="n">out_tvm</span><span class="p">)</span>
 
-<span class="n">tvm</span><span class="o">.</span><span class="n">testing</span><span class="o">.</span><span class="n">assert_allclose</span><span class="p">(</span><span class="n">d_np</span><span class="p">,</span> <span class="n">d_tvm</span><span class="o">.</span><span class="n">asnumpy</span><span class="p">(),</span> <span class="n">rtol</span><span class="o">=</span><span class="mi">1</span><span class="n">e</span><span class="o">-</span><span class="mi">3</span><span class="p">)</span>
+<span class="c1"># Check results</span>
+<span class="n">tvm</span><span class="o">.</span><span class="n">testing</span><span class="o">.</span><span class="n">assert_allclose</span><span class="p">(</span><span class="n">out_np</span><span class="p">,</span> <span class="n">out_tvm</span><span class="o">.</span><span class="n">asnumpy</span><span class="p">(),</span> <span class="n">rtol</span><span class="o">=</span><span class="mi">1</span><span class="n">e</span><span class="o">-</span><span class="mi">3</span><span class="p">)</span>
+
+<span class="c1"># Evaluate execution time.</span>
+<span class="n">evaluator</span> <span class="o">=</span> <span class="n">func</span><span class="o">.</span><span class="n">time_evaluator</span><span class="p">(</span><span class="n">func</span><span class="o">.</span><span class="n">entry_name</span><span class="p">,</span> <span class="n">ctx</span><span class="p">,</span> <span class="n">min_repeat_ms</span><span class="o">=</span><span class="mi">500</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span>
+    <span class="s2">&quot;Execution time of this operator: </span><span class="si">%.3f</span><span class="s2"> ms&quot;</span>
+    <span class="o">%</span> <span class="p">(</span><a href="https://numpy.org/doc/stable/reference/generated/numpy.median.html#numpy.median" title="View documentation for numpy.median"><span class="n">np</span><span class="o">.</span><span class="n">median</span></a><span class="p">(</span><span class="n">evaluator</span><span class="p">(</span><span class="n">a_tvm</span><span class="p">,</span> <span class="n">b_tvm</span><span class="p">,</span> <span class="n">c_tvm</span><span class="p">,</span> <span class="n">out_tvm</span><span class="p">)</span><span class="o">.</span><span class="n">results</span><span class="p">)</span> <span class="o">*</span> <span class="mi">1000</span><span class="p">)</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<p class="sphx-glr-script-out">Out:</p>
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre>Execution time of this operator: 2.217 ms
 </pre></div>
 </div>
 </div>
@@ -357,6 +370,7 @@ print the equivalent python schedule API, and build the binary again.</p>
 
 <span class="c1"># Print equivalent python schedule API. This can be used for debugging and</span>
 <span class="c1"># learning the behavior of the auto-scheduler.</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Equivalent python schedule:&quot;</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="n">task</span><span class="o">.</span><span class="n">compute_dag</span><span class="o">.</span><span class="n">print_python_code_from_state</span><span class="p">(</span><span class="n">inp</span><span class="o">.</span><span class="n">state</span><span class="p">))</span>
 
 <span class="c1"># Rebuild the binary. This shows how you can apply the best schedule from a</span>
@@ -366,25 +380,29 @@ print the equivalent python schedule API, and build the binary again.</p>
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre>i, j, k = tuple(matmul.op.axis) + tuple(matmul.op.reduce_axis)
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre>Equivalent python schedule:
+i, j, k = tuple(matmul.op.axis) + tuple(matmul.op.reduce_axis)
 i, j = tuple(out.op.axis) + tuple(out.op.reduce_axis)
 i_o_i, i_i = s[matmul].split(i, factor=1)
-i_o_o_i, i_o_i = s[matmul].split(i_o_i, factor=32)
-i_o_o_o, i_o_o_i = s[matmul].split(i_o_o_i, factor=4)
-j_o_i, j_i = s[matmul].split(j, factor=8)
+i_o_o_i, i_o_i = s[matmul].split(i_o_i, factor=16)
+i_o_o_o, i_o_o_i = s[matmul].split(i_o_o_i, factor=8)
+j_o_i, j_i = s[matmul].split(j, factor=4)
 j_o_o_i, j_o_i = s[matmul].split(j_o_i, factor=4)
-j_o_o_o, j_o_o_i = s[matmul].split(j_o_o_i, factor=4)
-k_o, k_i = s[matmul].split(k, factor=2)
+j_o_o_o, j_o_o_i = s[matmul].split(j_o_o_i, factor=8)
+k_o, k_i = s[matmul].split(k, factor=8)
 s[matmul].reorder(i_o_o_o, j_o_o_o, i_o_o_i, j_o_o_i, k_o, i_o_i, j_o_i, k_i, i_i, j_i)
-i_o, i_i = s[out].split(i, factor=128)
-j_o, j_i = s[out].split(j, factor=128)
-s[out].reorder(i_o, j_o, i_i, j_i)
-s[matmul].compute_at(s[out], j_o)
-i_o = s[out].fuse(i_o)
-s[out].parallel(i_o)
-s[matmul].pragma(i_o_o_o, &quot;auto_unroll_max_step&quot;, 0)
+i_o_i, i_i = s[out].split(i, factor=16)
+i_o_o, i_o_i = s[out].split(i_o_i, factor=8)
+j_o_i, j_i = s[out].split(j, factor=16)
+j_o_o, j_o_i = s[out].split(j_o_i, factor=8)
+s[out].reorder(i_o_o, j_o_o, i_o_i, j_o_i, i_i, j_i)
+s[matmul].compute_at(s[out], j_o_i)
+i_o_o_j_o_o_fused = s[out].fuse(i_o_o, j_o_o)
+s[out].parallel(i_o_o_j_o_o_fused)
+s[matmul].pragma(i_o_o_o, &quot;auto_unroll_max_step&quot;, 64)
 s[matmul].pragma(i_o_o_o, &quot;unroll_explicit&quot;, True)
 s[matmul].vectorize(j_i)
+s[out].vectorize(j_i)
 </pre></div>
 </div>
 <p>A more complicated example is to resume the search.
@@ -410,17 +428,20 @@ In the example below we resume the status and do more 5 trials.</p>
 <p class="admonition-title">Note</p>
 <p>We cannot run the line above because of the conflict between
 python’s multiprocessing and tvm’s thread pool.
-After running a tvm generated binary (L112), the python’s multiprocessing
-library will hang forever.
-You have to make sure that you don’t run any tvm generated binaries before
-calling ansor’s search. To run the L156 above, you should comment out L112-114.</p>
+After running a tvm generated binary the python’s multiprocessing library
+will hang forever. You have to make sure that you don’t run any tvm
+generated binaries before calling auot-scheduler’s search.
+To run the function above, you should comment out all code in
+“Check correctness and evaluate performance” section.</p>
 <p>You should be careful about this problem in your applications.
 There are other workarounds for this problem.
 For example, you can start a new thread/process (with the builtin python library
 threading or multiprocessing) and run the tvm binaries in the new thread/process.
-This provides an isolation and avoids the conflict in the main thread/process.</p>
+This provides an isolation and avoids the conflict in the main thread/process.
+You can also use <a class="reference internal" href="../../api/python/auto_scheduler.html#tvm.auto_scheduler.measure.LocalRPCMeasureContext" title="tvm.auto_scheduler.measure.LocalRPCMeasureContext"><code class="xref any py py-class docutils literal notranslate"><span class="pre">auto_scheduler.measure.LocalRPCMeasureContext</span></code></a> for auto-scheduler,
+as shown in the GPU tutorial (<a class="reference internal" href="tune_conv2d_layer_cuda.html#auto-scheduler-conv-gpu"><span class="std std-ref">Auto-scheduling a convolution layer for GPU</span></a>).</p>
 </div>
-<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 1 minutes  31.257 seconds)</p>
+<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 1 minutes  56.117 seconds)</p>
 <div class="sphx-glr-footer class sphx-glr-footer-example docutils container" id="sphx-glr-download-tutorials-auto-scheduler-tune-matmul-x86-py">
 <div class="sphx-glr-download docutils container">
 <p><a class="reference download internal" download="" href="../../_downloads/91b0339c8f3cc2594cee580dc450149a/tune_matmul_x86.py"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">tune_matmul_x86.py</span></code></a></p>
@@ -441,7 +462,7 @@ This provides an isolation and avoids the conflict in the main thread/process.</
   
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="../dev/low_level_custom_pass.html" class="btn btn-neutral float-right" title="Writing a Customized Pass" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+        <a href="tune_conv2d_layer_cuda.html" class="btn btn-neutral float-right" title="Auto-scheduling a convolution layer for GPU" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
         <a href="../autotvm/tune_relay_mobile_gpu.html" class="btn btn-neutral float-left" title="Auto-tuning a convolutional network for Mobile GPU" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>

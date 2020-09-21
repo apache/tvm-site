@@ -71,7 +71,7 @@ var searchData=
   ['measure_5frecord_2eh',['measure_record.h',['../measure__record_8h.html',1,'']]],
   ['measurecallback',['MeasureCallback',['../classtvm_1_1auto__scheduler_1_1MeasureCallback.html',1,'tvm::auto_scheduler']]],
   ['measurecallbacknode',['MeasureCallbackNode',['../classtvm_1_1auto__scheduler_1_1MeasureCallbackNode.html',1,'tvm::auto_scheduler']]],
-  ['measured_5fstates_5fset_5f',['measured_states_set_',['../classtvm_1_1auto__scheduler_1_1SearchPolicyNode.html#acd9874846a09fdbd21ba9feb5e6f1fcc',1,'tvm::auto_scheduler::SearchPolicyNode']]],
+  ['measured_5fstates_5fset_5f',['measured_states_set_',['../classtvm_1_1auto__scheduler_1_1SearchPolicyNode.html#aab73283e1afd57f212c57340eacf0eef',1,'tvm::auto_scheduler::SearchPolicyNode']]],
   ['measured_5fstates_5fthroughputs_5f',['measured_states_throughputs_',['../classtvm_1_1auto__scheduler_1_1SearchPolicyNode.html#a5d1b9cf934cfee1f4161f45ff2f12f4f',1,'tvm::auto_scheduler::SearchPolicyNode']]],
   ['measured_5fstates_5fvector_5f',['measured_states_vector_',['../classtvm_1_1auto__scheduler_1_1SearchPolicyNode.html#aab68b70a8b21b353746921487c1cb29b',1,'tvm::auto_scheduler::SearchPolicyNode']]],
   ['measureerrorno',['MeasureErrorNO',['../namespacetvm_1_1auto__scheduler.html#acd2b9ff22c8ef2f009aef57f80926b9a',1,'tvm::auto_scheduler']]],

@@ -36,7 +36,7 @@ We use matrix multiplication as an example in this tutorial.
 
 Define the computation
 ^^^^^^^^^^^^^^^^^^^^^^
-To begin with, we define the computation of a matmul with bias add.
+To begin with, let us define the computation of a matmul with bias add.
 The function should return the list of input/output tensors.
 From these tensors, the auto-scheduler can get the whole computational graph.
 
@@ -67,6 +67,9 @@ From these tensors, the auto-scheduler can get the whole computational graph.
 Create the search task
 ^^^^^^^^^^^^^^^^^^^^^^
 We then create a search task with N=L=M=128 and dtype="float32"
+If your machine supports avx instructions, you can
+- replace "llvm" below with "llvm -mcpu=core-avx2" to enable AVX2
+- replace "llvm" below with "llvm -mcpu=skylake-avx512" to enable AVX-512
 
 
 .. code-block:: default
@@ -105,7 +108,7 @@ Next, we set parameters for the auto-scheduler.
 * In addition, we use `RecordToFile` to dump measurement records into a file `matmul.json`.
   The measurement records can be used to query the history best, resume the search,
   and do more analyses later.
-* see :any:`auto_schedule.TuningOptions`: for more parameters
+* see :any:`auto_scheduler.auto_schedule.TuningOptions`: for more parameters
 
 
 .. code-block:: default
@@ -143,13 +146,13 @@ After some measurement trials, it will return the best schedule it found.
 
  .. code-block:: none
 
-    *T*T*T*T*T*T*T*T
+    *T*T*T*T*T*T*T*T*T*T
 
 
 
 We can lower the schedule to see the IR after auto-scheduling.
 The auto-scheduler correctly performs optimizations including multi-level tiling,
-parallelization, vectorization, unrolling and fusion.
+parallelization, vectorization, unrolling and operator fusion.
 
 
 .. code-block:: default
@@ -169,32 +172,25 @@ parallelization, vectorization, unrolling and fusion.
 
     primfn(A_1: handle, B_1: handle, C_1: handle, out_1: handle) -> ()
       attr = {"global_symbol": "main", "tir.noalias": True}
-      buffers = {C: Buffer(C_2: Pointer(float32), float32, [128, 128], []),
-                 out: Buffer(out_2: Pointer(float32), float32, [128, 128], []),
+      buffers = {out: Buffer(out_2: Pointer(float32), float32, [128, 128], []),
                  B: Buffer(B_2: Pointer(float32), float32, [128, 128], []),
+                 C: Buffer(C_2: Pointer(float32), float32, [128, 128], []),
                  A: Buffer(A_2: Pointer(float32), float32, [128, 128], [])}
       buffer_map = {A_1: A, B_1: B, C_1: C, out_1: out} {
       attr [matmul: Pointer(float32)] "storage_scope" = "global";
-      allocate(matmul, float32, [2048]);
-      for (j.outer: int32, 0, 8) {
-        for (i.outer.outer.inner: int32, 0, 64) {
-          for (j.outer.outer.inner: int32, 0, 2) {
-            matmul[ramp(((i.outer.outer.inner*32) + (j.outer.outer.inner*8)), 1, 8)] = broadcast(0f32, 8)
-            matmul[ramp((((i.outer.outer.inner*32) + (j.outer.outer.inner*8)) + 16), 1, 8)] = broadcast(0f32, 8)
-            for (k.outer: int32, 0, 32) {
-              matmul[ramp(((i.outer.outer.inner*32) + (j.outer.outer.inner*8)), 1, 8)] = ((float32x8*)matmul[ramp(((i.outer.outer.inner*32) + (j.outer.outer.inner*8)), 1, 8)] + (broadcast((float32*)A_2[((i.outer.outer.inner*256) + (k.outer*4))], 8)*(float32x8*)B_2[ramp((((k.outer*512) + (j.outer*16)) + (j.outer.outer.inner*8)), 1, 8)]))
-              matmul[ramp((((i.outer.outer.inner*32) + (j.outer.outer.inner*8)) + 16), 1, 8)] = ((float32x8*)matmul[ramp((((i.outer.outer.inner*32) + (j.outer.outer.inner*8)) + 16), 1, 8)] + (broadcast((float32*)A_2[(((i.outer.outer.inner*256) + (k.outer*4)) + 128)], 8)*(float32x8*)B_2[ramp((((k.outer*512) + (j.outer*16)) + (j.outer.outer.inner*8)), 1, 8)]))
-              matmul[ramp(((i.outer.outer.inner*32) + (j.outer.outer.inner*8)), 1, 8)] = ((float32x8*)matmul[ramp(((i.outer.outer.inner*32) + (j.outer.outer.inner*8)), 1, 8)] + (broadcast((float32*)A_2[(((i.outer.outer.inner*256) + (k.outer*4)) + 1)], 8)*(float32x8*)B_2[ramp(((((k.outer*512) + (j.outer*16)) + (j.outer.outer.inner*8)) + 128), 1, 8)]))
-              matmul[ramp((((i.outer.outer.inner*32) + (j.outer.outer.inner*8)) + 16), 1, 8)] = ((float32x8*)matmul[ramp((((i.outer.outer.inner*32) + (j.outer.outer.inner*8)) + 16), 1, 8)] + (broadcast((float32*)A_2[(((i.outer.outer.inner*256) + (k.outer*4)) + 129)], 8)*(float32x8*)B_2[ramp(((((k.outer*512) + (j.outer*16)) + (j.outer.outer.inner*8)) + 128), 1, 8)]))
-              matmul[ramp(((i.outer.outer.inner*32) + (j.outer.outer.inner*8)), 1, 8)] = ((float32x8*)matmul[ramp(((i.outer.outer.inner*32) + (j.outer.outer.inner*8)), 1, 8)] + (broadcast((float32*)A_2[(((i.outer.outer.inner*256) + (k.outer*4)) + 2)], 8)*(float32x8*)B_2[ramp(((((k.outer*512) + (j.outer*16)) + (j.outer.outer.inner*8)) + 256), 1, 8)]))
-              matmul[ramp((((i.outer.outer.inner*32) + (j.outer.outer.inner*8)) + 16), 1, 8)] = ((float32x8*)matmul[ramp((((i.outer.outer.inner*32) + (j.outer.outer.inner*8)) + 16), 1, 8)] + (broadcast((float32*)A_2[(((i.outer.outer.inner*256) + (k.outer*4)) + 130)], 8)*(float32x8*)B_2[ramp(((((k.outer*512) + (j.outer*16)) + (j.outer.outer.inner*8)) + 256), 1, 8)]))
-              matmul[ramp(((i.outer.outer.inner*32) + (j.outer.outer.inner*8)), 1, 8)] = ((float32x8*)matmul[ramp(((i.outer.outer.inner*32) + (j.outer.outer.inner*8)), 1, 8)] + (broadcast((float32*)A_2[(((i.outer.outer.inner*256) + (k.outer*4)) + 3)], 8)*(float32x8*)B_2[ramp(((((k.outer*512) + (j.outer*16)) + (j.outer.outer.inner*8)) + 384), 1, 8)]))
-              matmul[ramp((((i.outer.outer.inner*32) + (j.outer.outer.inner*8)) + 16), 1, 8)] = ((float32x8*)matmul[ramp((((i.outer.outer.inner*32) + (j.outer.outer.inner*8)) + 16), 1, 8)] + (broadcast((float32*)A_2[(((i.outer.outer.inner*256) + (k.outer*4)) + 131)], 8)*(float32x8*)B_2[ramp(((((k.outer*512) + (j.outer*16)) + (j.outer.outer.inner*8)) + 384), 1, 8)]))
+      allocate(matmul, float32, [16384]) {
+        for (i: int32, 0, 128) {
+          for (j: int32, 0, 128) {
+            matmul[((i*128) + j)] = 0f32
+            for (k: int32, 0, 128) {
+              matmul[((i*128) + j)] = ((float32*)matmul[((i*128) + j)] + ((float32*)A_2[((i*128) + k)]*(float32*)B_2[((k*128) + j)]))
             }
           }
         }
-        for (i.inner: int32, 0, 128) {
-          out_2[ramp(((i.inner*128) + (j.outer*16)), 1, 16)] = ((float32x16*)matmul[ramp((i.inner*16), 1, 16)] + (float32x16*)C_2[ramp(((i.inner*128) + (j.outer*16)), 1, 16)])
+        for (i_1: int32, 0, 128) {
+          for (j_1: int32, 0, 128) {
+            out_2[((i_1*128) + j_1)] = ((float32*)matmul[((i_1*128) + j_1)] + (float32*)C_2[((i_1*128) + j_1)])
+          }
         }
       }
     }
@@ -203,9 +199,9 @@ parallelization, vectorization, unrolling and fusion.
 
 
 
-Check correctness
-^^^^^^^^^^^^^^^^^
-We build the binary and check its correctness
+Check correctness and evaluate performance
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+We build the binary and check its correctness and performance.
 
 
 .. code-block:: default
@@ -215,16 +211,37 @@ We build the binary and check its correctness
     a_np = np.random.uniform(size=(128, 128)).astype(np.float32)
     b_np = np.random.uniform(size=(128, 128)).astype(np.float32)
     c_np = np.random.uniform(size=(128, 128)).astype(np.float32)
-    d_np = a_np.dot(b_np) + c_np
+    out_np = a_np.dot(b_np) + c_np
 
-    d_tvm = tvm.nd.empty(d_np.shape)
-    func(tvm.nd.array(a_np), tvm.nd.array(b_np), tvm.nd.array(c_np), d_tvm)
+    ctx = tvm.cpu()
+    a_tvm = tvm.nd.array(a_np, ctx=ctx)
+    b_tvm = tvm.nd.array(b_np, ctx=ctx)
+    c_tvm = tvm.nd.array(c_np, ctx=ctx)
+    out_tvm = tvm.nd.empty(out_np.shape, ctx=ctx)
+    func(a_tvm, b_tvm, c_tvm, out_tvm)
 
-    tvm.testing.assert_allclose(d_np, d_tvm.asnumpy(), rtol=1e-3)
+    # Check results
+    tvm.testing.assert_allclose(out_np, out_tvm.asnumpy(), rtol=1e-3)
+
+    # Evaluate execution time.
+    evaluator = func.time_evaluator(func.entry_name, ctx, min_repeat_ms=500)
+    print(
+        "Execution time of this operator: %.3f ms"
+        % (np.median(evaluator(a_tvm, b_tvm, c_tvm, out_tvm).results) * 1000)
+    )
 
 
 
 
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    Execution time of this operator: 2.217 ms
 
 
 
@@ -246,6 +263,7 @@ print the equivalent python schedule API, and build the binary again.
 
     # Print equivalent python schedule API. This can be used for debugging and
     # learning the behavior of the auto-scheduler.
+    print("Equivalent python schedule:")
     print(task.compute_dag.print_python_code_from_state(inp.state))
 
     # Rebuild the binary. This shows how you can apply the best schedule from a
@@ -263,25 +281,29 @@ print the equivalent python schedule API, and build the binary again.
 
  .. code-block:: none
 
+    Equivalent python schedule:
     i, j, k = tuple(matmul.op.axis) + tuple(matmul.op.reduce_axis)
     i, j = tuple(out.op.axis) + tuple(out.op.reduce_axis)
     i_o_i, i_i = s[matmul].split(i, factor=1)
-    i_o_o_i, i_o_i = s[matmul].split(i_o_i, factor=32)
-    i_o_o_o, i_o_o_i = s[matmul].split(i_o_o_i, factor=4)
-    j_o_i, j_i = s[matmul].split(j, factor=8)
+    i_o_o_i, i_o_i = s[matmul].split(i_o_i, factor=16)
+    i_o_o_o, i_o_o_i = s[matmul].split(i_o_o_i, factor=8)
+    j_o_i, j_i = s[matmul].split(j, factor=4)
     j_o_o_i, j_o_i = s[matmul].split(j_o_i, factor=4)
-    j_o_o_o, j_o_o_i = s[matmul].split(j_o_o_i, factor=4)
-    k_o, k_i = s[matmul].split(k, factor=2)
+    j_o_o_o, j_o_o_i = s[matmul].split(j_o_o_i, factor=8)
+    k_o, k_i = s[matmul].split(k, factor=8)
     s[matmul].reorder(i_o_o_o, j_o_o_o, i_o_o_i, j_o_o_i, k_o, i_o_i, j_o_i, k_i, i_i, j_i)
-    i_o, i_i = s[out].split(i, factor=128)
-    j_o, j_i = s[out].split(j, factor=128)
-    s[out].reorder(i_o, j_o, i_i, j_i)
-    s[matmul].compute_at(s[out], j_o)
-    i_o = s[out].fuse(i_o)
-    s[out].parallel(i_o)
-    s[matmul].pragma(i_o_o_o, "auto_unroll_max_step", 0)
+    i_o_i, i_i = s[out].split(i, factor=16)
+    i_o_o, i_o_i = s[out].split(i_o_i, factor=8)
+    j_o_i, j_i = s[out].split(j, factor=16)
+    j_o_o, j_o_i = s[out].split(j_o_i, factor=8)
+    s[out].reorder(i_o_o, j_o_o, i_o_i, j_o_i, i_i, j_i)
+    s[matmul].compute_at(s[out], j_o_i)
+    i_o_o_j_o_o_fused = s[out].fuse(i_o_o, j_o_o)
+    s[out].parallel(i_o_o_j_o_o_fused)
+    s[matmul].pragma(i_o_o_o, "auto_unroll_max_step", 64)
     s[matmul].pragma(i_o_o_o, "unroll_explicit", True)
     s[matmul].vectorize(j_i)
+    s[out].vectorize(j_i)
 
 
 
@@ -319,21 +341,24 @@ In the example below we resume the status and do more 5 trials.
 .. note::
   We cannot run the line above because of the conflict between
   python's multiprocessing and tvm's thread pool.
-  After running a tvm generated binary (L112), the python's multiprocessing
-  library will hang forever.
-  You have to make sure that you don't run any tvm generated binaries before
-  calling ansor's search. To run the L156 above, you should comment out L112-114.
+  After running a tvm generated binary the python's multiprocessing library
+  will hang forever. You have to make sure that you don't run any tvm
+  generated binaries before calling auot-scheduler's search.
+  To run the function above, you should comment out all code in
+  "Check correctness and evaluate performance" section.
 
   You should be careful about this problem in your applications.
   There are other workarounds for this problem.
   For example, you can start a new thread/process (with the builtin python library
   threading or multiprocessing) and run the tvm binaries in the new thread/process.
   This provides an isolation and avoids the conflict in the main thread/process.
+  You can also use :any:`auto_scheduler.measure.LocalRPCMeasureContext` for auto-scheduler,
+  as shown in the GPU tutorial (:ref:`auto-scheduler-conv-gpu`).
 
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** ( 1 minutes  31.257 seconds)
+   **Total running time of the script:** ( 1 minutes  56.117 seconds)
 
 
 .. _sphx_glr_download_tutorials_auto_scheduler_tune_matmul_x86.py:

@@ -141,6 +141,8 @@
 <li class="toctree-l2"><a class="reference internal" href="autotvm.html">tvm.autotvm</a></li>
 <li class="toctree-l2 current"><a class="current reference internal" href="#">tvm.auto_scheduler</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#module-tvm.auto_scheduler.auto_schedule">tvm.auto_scheduler.auto_schedule</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#tvm-auto-scheduler-workload-registry">tvm.auto_scheduler.workload_registry</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#module-tvm.auto_scheduler.measure">tvm.auto_scheduler.measure</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="rpc.html">tvm.rpc</a></li>
@@ -312,7 +314,7 @@ Can be the a function or the function name.</p></li>
 
 <dl class="py function">
 <dt id="tvm.auto_scheduler.auto_schedule.auto_schedule">
-<code class="sig-prename descclassname">tvm.auto_scheduler.auto_schedule.</code><code class="sig-name descname">auto_schedule</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">task</span></em>, <em class="sig-param"><span class="n">search_policy</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">tuning_options</span><span class="o">=</span><span class="default_value">auto_scheduler.TuningOptions(42393728)</span></em><span class="sig-paren">)</span><a class="headerlink" href="#tvm.auto_scheduler.auto_schedule.auto_schedule" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">tvm.auto_scheduler.auto_schedule.</code><code class="sig-name descname">auto_schedule</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">task</span></em>, <em class="sig-param"><span class="n">search_policy</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">tuning_options</span><span class="o">=</span><span class="default_value">auto_scheduler.TuningOptions(17864240)</span></em><span class="sig-paren">)</span><a class="headerlink" href="#tvm.auto_scheduler.auto_schedule.auto_schedule" title="Permalink to this definition">¶</a></dt>
 <dd><p>Run auto scheduling search for a task</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -327,6 +329,175 @@ Can be the a function or the function name.</p></li>
 </dd>
 <dt class="field-odd">Return type</dt>
 <dd class="field-odd"><p>A <cite>te.schedule</cite> and the a list of <cite>te.Tensor</cite> to be used in <cite>tvm.lower</cite> or <cite>tvm.build</cite>.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="section" id="tvm-auto-scheduler-workload-registry">
+<h2>tvm.auto_scheduler.workload_registry<a class="headerlink" href="#tvm-auto-scheduler-workload-registry" title="Permalink to this headline">¶</a></h2>
+<dl class="py function">
+<dt id="tvm.auto_scheduler.workload_registry.register_workload">
+<code class="sig-prename descclassname">tvm.auto_scheduler.workload_registry.</code><code class="sig-name descname">register_workload</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">func_name</span></em>, <em class="sig-param"><span class="n">f</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">override</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="headerlink" href="#tvm.auto_scheduler.workload_registry.register_workload" title="Permalink to this definition">¶</a></dt>
+<dd><p>Register a function that generates a certain workload.</p>
+<p>The input function should take hashable and jsonable arguments
+(int, float, tuple of int, tvm.tensor.Tensor, …) and return a list of tvm.tensor.Tensor.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>func_name</strong> (<em>Union</em><em>[</em><a class="reference internal" href="relay/index.html#tvm.relay.Function" title="tvm.relay.Function"><em>Function</em></a><em>, </em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a><em>]</em>) – The generation function that returns the compute declaration Tensors or its function name.</p></li>
+<li><p><strong>f</strong> (<em>Optional</em><em>[</em><a class="reference internal" href="relay/index.html#tvm.relay.Function" title="tvm.relay.Function"><em>Function</em></a><em>]</em>) – The generation function to be registered.</p></li>
+<li><p><strong>override</strong> (<em>boolean = False</em>) – Whether override existing entry.</p></li>
+</ul>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span class="nd">@auto_scheduler.register_workload</span>
+<span class="k">def</span> <span class="nf">matmul</span><span class="p">(</span><span class="n">N</span><span class="p">,</span> <span class="n">M</span><span class="p">,</span> <span class="n">K</span><span class="p">):</span>
+    <span class="n">A</span> <span class="o">=</span> <span class="n">te</span><span class="o">.</span><span class="n">placeholder</span><span class="p">((</span><span class="n">N</span><span class="p">,</span> <span class="n">K</span><span class="p">),</span> <span class="n">name</span><span class="o">=</span><span class="s1">&#39;A&#39;</span><span class="p">)</span>
+    <span class="n">B</span> <span class="o">=</span> <span class="n">te</span><span class="o">.</span><span class="n">placeholder</span><span class="p">((</span><span class="n">K</span><span class="p">,</span> <span class="n">M</span><span class="p">),</span> <span class="n">name</span><span class="o">=</span><span class="s1">&#39;B&#39;</span><span class="p">)</span>
+    <span class="n">k</span> <span class="o">=</span> <span class="n">te</span><span class="o">.</span><span class="n">reduce_axis</span><span class="p">((</span><span class="mi">0</span><span class="p">,</span> <span class="n">K</span><span class="p">),</span> <span class="n">name</span><span class="o">=</span><span class="s1">&#39;k&#39;</span><span class="p">)</span>
+    <span class="n">C</span> <span class="o">=</span> <span class="n">te</span><span class="o">.</span><span class="n">compute</span><span class="p">((</span><span class="n">N</span><span class="p">,</span> <span class="n">M</span><span class="p">),</span> <span class="k">lambda</span> <span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">:</span> <span class="n">tvm</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">A</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="n">k</span><span class="p">]</span> <span class="o">*</span> <span class="n">B</span><span class="p">[</span><span class="n">k</span><span class="p">][</span><span class="n">j</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="p">[</span><span class="n">k</span><span class="p">]),</span> <span class="n">name</span><span class="o">=</span><span class="s1">&#39;C&#39;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="p">[</span><span class="n">A</span><span class="p">,</span> <span class="n">B</span><span class="p">,</span> <span class="n">C</span><span class="p">]</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</div>
+<div class="section" id="module-tvm.auto_scheduler.measure">
+<span id="tvm-auto-scheduler-measure"></span><h2>tvm.auto_scheduler.measure<a class="headerlink" href="#module-tvm.auto_scheduler.measure" title="Permalink to this headline">¶</a></h2>
+<p>Distributed measurement infrastructure to measure the runtime costs of tensor programs.</p>
+<p>These functions are responsible for building the tvm module, uploading it to
+remote devices, recording the running time costs, and checking the correctness of the output.</p>
+<p>We separate the measurement into two steps: build and run.
+A builder builds the executable binary files and a runner runs the binary files to
+get the measurement results. The flow of data structures is</p>
+<blockquote>
+<div><p>.                <cite>ProgramBuilder</cite>                 <cite>ProgramRunner</cite>
+<cite>MeasureInput</cite> —————–&gt; <cite>BuildResult</cite> —————-&gt; <cite>MeasureResult</cite></p>
+</div></blockquote>
+<p>We implement these in python to utilize python’s multiprocessing and error handling.</p>
+<dl class="py class">
+<dt id="tvm.auto_scheduler.measure.LocalRPCMeasureContext">
+<em class="property">class </em><code class="sig-prename descclassname">tvm.auto_scheduler.measure.</code><code class="sig-name descname">LocalRPCMeasureContext</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">priority</span><span class="o">=</span><span class="default_value">1</span></em>, <em class="sig-param"><span class="n">n_parallel</span><span class="o">=</span><span class="default_value">1</span></em>, <em class="sig-param"><span class="n">timeout</span><span class="o">=</span><span class="default_value">10</span></em>, <em class="sig-param"><span class="n">number</span><span class="o">=</span><span class="default_value">3</span></em>, <em class="sig-param"><span class="n">repeat</span><span class="o">=</span><span class="default_value">1</span></em>, <em class="sig-param"><span class="n">min_repeat_ms</span><span class="o">=</span><span class="default_value">0</span></em>, <em class="sig-param"><span class="n">cooldown_interval</span><span class="o">=</span><span class="default_value">0.0</span></em>, <em class="sig-param"><span class="n">enable_cpu_cache_flush</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="headerlink" href="#tvm.auto_scheduler.measure.LocalRPCMeasureContext" title="Permalink to this definition">¶</a></dt>
+<dd><p>A context wrapper for running RPCRunner locally.
+This will launch a local RPC Tracker and local RPC Server.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>priority</strong> (<em>int = 1</em>) – The priority of this run request, larger is more prior.</p></li>
+<li><p><strong>n_parallel</strong> (<em>int = 1</em>) – The number of tasks run in parallel.</p></li>
+<li><p><strong>timeout</strong> (<em>int = 10</em>) – The timeout limit (in second) for each run.
+This is used in a wrapper of the multiprocessing.Process.join().</p></li>
+<li><p><strong>number</strong> (<em>int = 3</em>) – The number of times to run the generated code for taking average.
+We call these runs as one <cite>repeat</cite> of measurement.</p></li>
+<li><p><strong>repeat</strong> (<em>int = 1</em>) – The number of times to repeat the measurement.
+In total, the generated code will be run (1 + number x repeat) times,
+where the first “1” is warm up and will be discarded.
+The returned result contains <cite>repeat</cite> costs,
+each of which is an average of <cite>number</cite> costs.</p></li>
+<li><p><strong>min_repeat_ms</strong> (<em>int = 0</em>) – The minimum duration of one <cite>repeat</cite> in milliseconds.
+By default, one <cite>repeat</cite> contains <cite>number</cite> runs. If this parameter is set,
+the parameters <cite>number</cite> will be dynamically adjusted to meet the
+minimum duration requirement of one <cite>repeat</cite>.
+i.e., When the run time of one <cite>repeat</cite> falls below this time, the <cite>number</cite> parameter
+will be automatically increased.</p></li>
+<li><p><strong>cooldown_interval</strong> (<em>float = 0.0</em>) – The cool down interval between two measurements.</p></li>
+<li><p><strong>enable_cpu_cache_flush</strong> (<em>bool = False</em>) – Whether to flush cache on CPU between repeated measurements.
+Flushing cache can make the measured latency of one operator closer to
+its actual latency during end-to-end inference.
+To make this option effective, the argument <cite>number</cite> should also be set to 1.
+This is only has effect on CPU task.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt id="tvm.auto_scheduler.measure.LocalRunner">
+<em class="property">class </em><code class="sig-prename descclassname">tvm.auto_scheduler.measure.</code><code class="sig-name descname">LocalRunner</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">timeout</span><span class="o">=</span><span class="default_value">10</span></em>, <em class="sig-param"><span class="n">number</span><span class="o">=</span><span class="default_value">3</span></em>, <em class="sig-param"><span class="n">repeat</span><span class="o">=</span><span class="default_value">1</span></em>, <em class="sig-param"><span class="n">min_repeat_ms</span><span class="o">=</span><span class="default_value">100</span></em>, <em class="sig-param"><span class="n">cooldown_interval</span><span class="o">=</span><span class="default_value">0.0</span></em>, <em class="sig-param"><span class="n">enable_cpu_cache_flush</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="headerlink" href="#tvm.auto_scheduler.measure.LocalRunner" title="Permalink to this definition">¶</a></dt>
+<dd><p>LocalRunner that uses local CPU/GPU to measures the time cost of programs.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>timeout</strong> (<em>int = 10</em>) – The timeout limit (in second) for each run.
+This is used in a wrapper of the multiprocessing.Process.join().</p></li>
+<li><p><strong>number</strong> (<em>int = 3</em>) – The number of times to run the generated code for taking average.
+We call these runs as one <cite>repeat</cite> of measurement.</p></li>
+<li><p><strong>repeat</strong> (<em>int = 1</em>) – The number of times to repeat the measurement.
+In total, the generated code will be run (1 + number x repeat) times,
+where the first “1” is warm up and will be discarded.
+The returned result contains <cite>repeat</cite> costs,
+each of which is an average of <cite>number</cite> costs.</p></li>
+<li><p><strong>min_repeat_ms</strong> (<em>int = 100</em>) – The minimum duration of one <cite>repeat</cite> in milliseconds.
+By default, one <cite>repeat</cite> contains <cite>number</cite> runs. If this parameter is set,
+the parameters <cite>number</cite> will be dynamically adjusted to meet the
+minimum duration requirement of one <cite>repeat</cite>.
+i.e., When the run time of one <cite>repeat</cite> falls below this time, the <cite>number</cite> parameter
+will be automatically increased.</p></li>
+<li><p><strong>cooldown_interval</strong> (<em>float = 0.0</em>) – The cool down interval between two measurements.</p></li>
+<li><p><strong>enable_cpu_cache_flush</strong> (<em>bool = False</em>) – Whether to flush cache on CPU between repeated measurements.
+Flushing cache can make the measured latency of one operator closer to
+its actual latency during end-to-end inference.
+To make this option effective, the argument <cite>number</cite> should also be set to 1.
+This is only has effect on CPU task.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt id="tvm.auto_scheduler.measure.LocalBuilder">
+<em class="property">class </em><code class="sig-prename descclassname">tvm.auto_scheduler.measure.</code><code class="sig-name descname">LocalBuilder</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">timeout</span><span class="o">=</span><span class="default_value">15</span></em>, <em class="sig-param"><span class="n">n_parallel</span><span class="o">=</span><span class="default_value">8</span></em>, <em class="sig-param"><span class="n">build_func</span><span class="o">=</span><span class="default_value">'default'</span></em><span class="sig-paren">)</span><a class="headerlink" href="#tvm.auto_scheduler.measure.LocalBuilder" title="Permalink to this definition">¶</a></dt>
+<dd><p>LocalBuilder use local CPU cores to build programs in parallel.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>timeout</strong> (<em>int = 15</em>) – The timeout limit (in second) for each build thread.
+This is used in a wrapper of the multiprocessing.Process.join().</p></li>
+<li><p><strong>n_parallel</strong> (<em>int = multiprocessing.cpu_count</em><em>(</em><em>)</em>) – Number of threads used to build in parallel.</p></li>
+<li><p><strong>build_func</strong> (<em>str = 'default'</em>) – The name of registered build function.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt id="tvm.auto_scheduler.measure.RPCRunner">
+<em class="property">class </em><code class="sig-prename descclassname">tvm.auto_scheduler.measure.</code><code class="sig-name descname">RPCRunner</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">key</span></em>, <em class="sig-param"><span class="n">host</span></em>, <em class="sig-param"><span class="n">port</span></em>, <em class="sig-param"><span class="n">priority</span><span class="o">=</span><span class="default_value">1</span></em>, <em class="sig-param"><span class="n">n_parallel</span><span class="o">=</span><span class="default_value">1</span></em>, <em class="sig-param"><span class="n">timeout</span><span class="o">=</span><span class="default_value">10</span></em>, <em class="sig-param"><span class="n">number</span><span class="o">=</span><span class="default_value">3</span></em>, <em class="sig-param"><span class="n">repeat</span><span class="o">=</span><span class="default_value">1</span></em>, <em class="sig-param"><span class="n">min_repeat_ms</span><span class="o">=</span><span class="default_value">100</span></em>, <em class="sig-param"><span class="n">cooldown_interval</span><span class="o">=</span><span class="default_value">0.0</span></em>, <em class="sig-param"><span class="n">enable_cpu_cache_flush</span><span class="o">=</span><span class="default_value">False</span></em><span class="sig-paren">)</span><a class="headerlink" href="#tvm.auto_scheduler.measure.RPCRunner" title="Permalink to this definition">¶</a></dt>
+<dd><p>RPCRunner that uses RPC call to measures the time cost of programs on remote devices.
+Or sometime we may need to use RPC even in local running to insulate the thread environment.
+(e.g. running CUDA programs)</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>key</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a>) – The key of the device registered in the RPC tracker.</p></li>
+<li><p><strong>host</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.8)"><em>str</em></a>) – The host address of the RPC Tracker.</p></li>
+<li><p><strong>port</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.8)"><em>int</em></a>) – The port of RPC Tracker.</p></li>
+<li><p><strong>priority</strong> (<em>int = 1</em>) – The priority of this run request, larger is more prior.</p></li>
+<li><p><strong>n_parallel</strong> (<em>int = 1</em>) – The number of tasks run in parallel.</p></li>
+<li><p><strong>timeout</strong> (<em>int = 10</em>) – The timeout limit (in second) for each run.
+This is used in a wrapper of the multiprocessing.Process.join().</p></li>
+<li><p><strong>number</strong> (<em>int = 3</em>) – The number of times to run the generated code for taking average.
+We call these runs as one <cite>repeat</cite> of measurement.</p></li>
+<li><p><strong>repeat</strong> (<em>int = 1</em>) – The number of times to repeat the measurement.
+In total, the generated code will be run (1 + number x repeat) times,
+where the first “1” is warm up and will be discarded.
+The returned result contains <cite>repeat</cite> costs,
+each of which is an average of <cite>number</cite> costs.</p></li>
+<li><p><strong>min_repeat_ms</strong> (<em>int = 100</em>) – The minimum duration of one <cite>repeat</cite> in milliseconds.
+By default, one <cite>repeat</cite> contains <cite>number</cite> runs. If this parameter is set,
+the parameters <cite>number</cite> will be dynamically adjusted to meet the
+minimum duration requirement of one <cite>repeat</cite>.
+i.e., When the run time of one <cite>repeat</cite> falls below this time, the <cite>number</cite> parameter
+will be automatically increased.</p></li>
+<li><p><strong>cooldown_interval</strong> (<em>float = 0.0</em>) – The cool down interval between two measurements.</p></li>
+<li><p><strong>enable_cpu_cache_flush</strong> (<em>bool = False</em>) – Whether to flush cache on CPU between repeated measurements.
+Flushing cache can make the measured latency of one operator closer to
+its actual latency during end-to-end inference.
+To make this option effective, the argument <cite>number</cite> should also be set to 1.
+This is only has effect on CPU task.</p></li>
+</ul>
 </dd>
 </dl>
 </dd></dl>
