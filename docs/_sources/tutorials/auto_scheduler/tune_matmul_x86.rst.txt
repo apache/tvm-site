@@ -68,15 +68,16 @@ Create the search task
 ^^^^^^^^^^^^^^^^^^^^^^
 We then create a search task with N=L=M=128 and dtype="float32"
 If your machine supports avx instructions, you can
-- replace "llvm" below with "llvm -mcpu=core-avx2" to enable AVX2
-- replace "llvm" below with "llvm -mcpu=skylake-avx512" to enable AVX-512
+
+  - replace "llvm" below with "llvm -mcpu=core-avx2" to enable AVX2
+  - replace "llvm" below with "llvm -mcpu=skylake-avx512" to enable AVX-512
 
 
 .. code-block:: default
 
 
     target = tvm.target.Target("llvm")
-    task = auto_scheduler.create_task(matmul_add, (128, 128, 128, "float32"), target)
+    task = tvm.auto_scheduler.create_task(matmul_add, (128, 128, 128, "float32"), target)
 
     # Inspect the computational graph
     print(task.compute_dag)
@@ -102,13 +103,13 @@ If your machine supports avx instructions, you can
 
 Next, we set parameters for the auto-scheduler.
 
-* `num_measure_trials` is the number of measurement trials we can use during the search.
+* :code:`num_measure_trials` is the number of measurement trials we can use during the search.
   We only make 10 trials in this tutorial for a fast demonstration. In practice, 1000 is a
   good value for the search to converge. You can do more trials according to your time budget.
-* In addition, we use `RecordToFile` to dump measurement records into a file `matmul.json`.
+* In addition, we use :code:`RecordToFile` to dump measurement records into a file `matmul.json`.
   The measurement records can be used to query the history best, resume the search,
   and do more analyses later.
-* see :any:`auto_scheduler.auto_schedule.TuningOptions`: for more parameters
+* see :any:`auto_scheduler.TuningOptions` for more parameters
 
 
 .. code-block:: default
@@ -146,7 +147,7 @@ After some measurement trials, it will return the best schedule it found.
 
  .. code-block:: none
 
-    *T*T*T*T*T*T*T*T*T*T
+    *T*T*T*T*T*T*T*T*T
 
 
 
@@ -173,23 +174,345 @@ parallelization, vectorization, unrolling and operator fusion.
     primfn(A_1: handle, B_1: handle, C_1: handle, out_1: handle) -> ()
       attr = {"global_symbol": "main", "tir.noalias": True}
       buffers = {out: Buffer(out_2: Pointer(float32), float32, [128, 128], []),
-                 B: Buffer(B_2: Pointer(float32), float32, [128, 128], []),
                  C: Buffer(C_2: Pointer(float32), float32, [128, 128], []),
+                 B: Buffer(B_2: Pointer(float32), float32, [128, 128], []),
                  A: Buffer(A_2: Pointer(float32), float32, [128, 128], [])}
       buffer_map = {A_1: A, B_1: B, C_1: C, out_1: out} {
       attr [matmul: Pointer(float32)] "storage_scope" = "global";
       allocate(matmul, float32, [16384]) {
-        for (i: int32, 0, 128) {
-          for (j: int32, 0, 128) {
-            matmul[((i*128) + j)] = 0f32
-            for (k: int32, 0, 128) {
-              matmul[((i*128) + j)] = ((float32*)matmul[((i*128) + j)] + ((float32*)A_2[((i*128) + k)]*(float32*)B_2[((k*128) + j)]))
+        for (i.outer.outer.inner: int32, 0, 8) {
+          for (j.outer.outer.inner: int32, 0, 4) {
+            matmul[ramp(((i.outer.outer.inner*2048) + (j.outer.outer.inner*32)), 1, 2)] = broadcast(0f32, 2)
+            matmul[ramp((((i.outer.outer.inner*2048) + (j.outer.outer.inner*32)) + 128), 1, 2)] = broadcast(0f32, 2)
+            matmul[ramp((((i.outer.outer.inner*2048) + (j.outer.outer.inner*32)) + 256), 1, 2)] = broadcast(0f32, 2)
+            matmul[ramp((((i.outer.outer.inner*2048) + (j.outer.outer.inner*32)) + 384), 1, 2)] = broadcast(0f32, 2)
+            matmul[ramp((((i.outer.outer.inner*2048) + (j.outer.outer.inner*32)) + 512), 1, 2)] = broadcast(0f32, 2)
+            matmul[ramp((((i.outer.outer.inner*2048) + (j.outer.outer.inner*32)) + 640), 1, 2)] = broadcast(0f32, 2)
+            matmul[ramp((((i.outer.outer.inner*2048) + (j.outer.outer.inner*32)) + 768), 1, 2)] = broadcast(0f32, 2)
+            matmul[ramp((((i.outer.outer.inner*2048) + (j.outer.outer.inner*32)) + 896), 1, 2)] = broadcast(0f32, 2)
+            matmul[ramp((((i.outer.outer.inner*2048) + (j.outer.outer.inner*32)) + 2), 1, 2)] = broadcast(0f32, 2)
+            matmul[ramp((((i.outer.outer.inner*2048) + (j.outer.outer.inner*32)) + 130), 1, 2)] = broadcast(0f32, 2)
+            matmul[ramp((((i.outer.outer.inner*2048) + (j.outer.outer.inner*32)) + 258), 1, 2)] = broadcast(0f32, 2)
+            matmul[ramp((((i.outer.outer.inner*2048) + (j.outer.outer.inner*32)) + 386), 1, 2)] = broadcast(0f32, 2)
+            matmul[ramp((((i.outer.outer.inner*2048) + (j.outer.outer.inner*32)) + 514), 1, 2)] = broadcast(0f32, 2)
+            matmul[ramp((((i.outer.outer.inner*2048) + (j.outer.outer.inner*32)) + 642), 1, 2)] = broadcast(0f32, 2)
+            matmul[ramp((((i.outer.outer.inner*2048) + (j.outer.outer.inner*32)) + 770), 1, 2)] = broadcast(0f32, 2)
+            matmul[ramp((((i.outer.outer.inner*2048) + (j.outer.outer.inner*32)) + 898), 1, 2)] = broadcast(0f32, 2)
+            matmul[ramp((((i.outer.outer.inner*2048) + (j.outer.outer.inner*32)) + 4), 1, 2)] = broadcast(0f32, 2)
+            matmul[ramp((((i.outer.outer.inner*2048) + (j.outer.outer.inner*32)) + 132), 1, 2)] = broadcast(0f32, 2)
+            matmul[ramp((((i.outer.outer.inner*2048) + (j.outer.outer.inner*32)) + 260), 1, 2)] = broadcast(0f32, 2)
+            matmul[ramp((((i.outer.outer.inner*2048) + (j.outer.outer.inner*32)) + 388), 1, 2)] = broadcast(0f32, 2)
+            matmul[ramp((((i.outer.outer.inner*2048) + (j.outer.outer.inner*32)) + 516), 1, 2)] = broadcast(0f32, 2)
+            matmul[ramp((((i.outer.outer.inner*2048) + (j.outer.outer.inner*32)) + 644), 1, 2)] = broadcast(0f32, 2)
+            matmul[ramp((((i.outer.outer.inner*2048) + (j.outer.outer.inner*32)) + 772), 1, 2)] = broadcast(0f32, 2)
+            matmul[ramp((((i.outer.outer.inner*2048) + (j.outer.outer.inner*32)) + 900), 1, 2)] = broadcast(0f32, 2)
+            matmul[ramp((((i.outer.outer.inner*2048) + (j.outer.outer.inner*32)) + 6), 1, 2)] = broadcast(0f32, 2)
+            matmul[ramp((((i.outer.outer.inner*2048) + (j.outer.outer.inner*32)) + 134), 1, 2)] = broadcast(0f32, 2)
+            matmul[ramp((((i.outer.outer.inner*2048) + (j.outer.outer.inner*32)) + 262), 1, 2)] = broadcast(0f32, 2)
+            matmul[ramp((((i.outer.outer.inner*2048) + (j.outer.outer.inner*32)) + 390), 1, 2)] = broadcast(0f32, 2)
+            matmul[ramp((((i.outer.outer.inner*2048) + (j.outer.outer.inner*32)) + 518), 1, 2)] = broadcast(0f32, 2)
+            matmul[ramp((((i.outer.outer.inner*2048) + (j.outer.outer.inner*32)) + 646), 1, 2)] = broadcast(0f32, 2)
+            matmul[ramp((((i.outer.outer.inner*2048) + (j.outer.outer.inner*32)) + 774), 1, 2)] = broadcast(0f32, 2)
+            matmul[ramp((((i.outer.outer.inner*2048) + (j.outer.outer.inner*32)) + 902), 1, 2)] = broadcast(0f32, 2)
+            matmul[ramp((((i.outer.outer.inner*2048) + (j.outer.outer.inner*32)) + 8), 1, 2)] = broadcast(0f32, 2)
+            matmul[ramp((((i.outer.outer.inner*2048) + (j.outer.outer.inner*32)) + 136), 1, 2)] = broadcast(0f32, 2)
+            matmul[ramp((((i.outer.outer.inner*2048) + (j.outer.outer.inner*32)) + 264), 1, 2)] = broadcast(0f32, 2)
+            matmul[ramp((((i.outer.outer.inner*2048) + (j.outer.outer.inner*32)) + 392), 1, 2)] = broadcast(0f32, 2)
+            matmul[ramp((((i.outer.outer.inner*2048) + (j.outer.outer.inner*32)) + 520), 1, 2)] = broadcast(0f32, 2)
+            matmul[ramp((((i.outer.outer.inner*2048) + (j.outer.outer.inner*32)) + 648), 1, 2)] = broadcast(0f32, 2)
+            matmul[ramp((((i.outer.outer.inner*2048) + (j.outer.outer.inner*32)) + 776), 1, 2)] = broadcast(0f32, 2)
+            matmul[ramp((((i.outer.outer.inner*2048) + (j.outer.outer.inner*32)) + 904), 1, 2)] = broadcast(0f32, 2)
+            matmul[ramp((((i.outer.outer.inner*2048) + (j.outer.outer.inner*32)) + 10), 1, 2)] = broadcast(0f32, 2)
+            matmul[ramp((((i.outer.outer.inner*2048) + (j.outer.outer.inner*32)) + 138), 1, 2)] = broadcast(0f32, 2)
+            matmul[ramp((((i.outer.outer.inner*2048) + (j.outer.outer.inner*32)) + 266), 1, 2)] = broadcast(0f32, 2)
+            matmul[ramp((((i.outer.outer.inner*2048) + (j.outer.outer.inner*32)) + 394), 1, 2)] = broadcast(0f32, 2)
+            matmul[ramp((((i.outer.outer.inner*2048) + (j.outer.outer.inner*32)) + 522), 1, 2)] = broadcast(0f32, 2)
+            matmul[ramp((((i.outer.outer.inner*2048) + (j.outer.outer.inner*32)) + 650), 1, 2)] = broadcast(0f32, 2)
+            matmul[ramp((((i.outer.outer.inner*2048) + (j.outer.outer.inner*32)) + 778), 1, 2)] = broadcast(0f32, 2)
+            matmul[ramp((((i.outer.outer.inner*2048) + (j.outer.outer.inner*32)) + 906), 1, 2)] = broadcast(0f32, 2)
+            matmul[ramp((((i.outer.outer.inner*2048) + (j.outer.outer.inner*32)) + 12), 1, 2)] = broadcast(0f32, 2)
+            matmul[ramp((((i.outer.outer.inner*2048) + (j.outer.outer.inner*32)) + 140), 1, 2)] = broadcast(0f32, 2)
+            matmul[ramp((((i.outer.outer.inner*2048) + (j.outer.outer.inner*32)) + 268), 1, 2)] = broadcast(0f32, 2)
+            matmul[ramp((((i.outer.outer.inner*2048) + (j.outer.outer.inner*32)) + 396), 1, 2)] = broadcast(0f32, 2)
+            matmul[ramp((((i.outer.outer.inner*2048) + (j.outer.outer.inner*32)) + 524), 1, 2)] = broadcast(0f32, 2)
+            matmul[ramp((((i.outer.outer.inner*2048) + (j.outer.outer.inner*32)) + 652), 1, 2)] = broadcast(0f32, 2)
+            matmul[ramp((((i.outer.outer.inner*2048) + (j.outer.outer.inner*32)) + 780), 1, 2)] = broadcast(0f32, 2)
+            matmul[ramp((((i.outer.outer.inner*2048) + (j.outer.outer.inner*32)) + 908), 1, 2)] = broadcast(0f32, 2)
+            matmul[ramp((((i.outer.outer.inner*2048) + (j.outer.outer.inner*32)) + 14), 1, 2)] = broadcast(0f32, 2)
+            matmul[ramp((((i.outer.outer.inner*2048) + (j.outer.outer.inner*32)) + 142), 1, 2)] = broadcast(0f32, 2)
+            matmul[ramp((((i.outer.outer.inner*2048) + (j.outer.outer.inner*32)) + 270), 1, 2)] = broadcast(0f32, 2)
+            matmul[ramp((((i.outer.outer.inner*2048) + (j.outer.outer.inner*32)) + 398), 1, 2)] = broadcast(0f32, 2)
+            matmul[ramp((((i.outer.outer.inner*2048) + (j.outer.outer.inner*32)) + 526), 1, 2)] = broadcast(0f32, 2)
+            matmul[ramp((((i.outer.outer.inner*2048) + (j.outer.outer.inner*32)) + 654), 1, 2)] = broadcast(0f32, 2)
+            matmul[ramp((((i.outer.outer.inner*2048) + (j.outer.outer.inner*32)) + 782), 1, 2)] = broadcast(0f32, 2)
+            matmul[ramp((((i.outer.outer.inner*2048) + (j.outer.outer.inner*32)) + 910), 1, 2)] = broadcast(0f32, 2)
+            matmul[ramp((((i.outer.outer.inner*2048) + (j.outer.outer.inner*32)) + 16), 1, 2)] = broadcast(0f32, 2)
+            matmul[ramp((((i.outer.outer.inner*2048) + (j.outer.outer.inner*32)) + 144), 1, 2)] = broadcast(0f32, 2)
+            matmul[ramp((((i.outer.outer.inner*2048) + (j.outer.outer.inner*32)) + 272), 1, 2)] = broadcast(0f32, 2)
+            matmul[ramp((((i.outer.outer.inner*2048) + (j.outer.outer.inner*32)) + 400), 1, 2)] = broadcast(0f32, 2)
+            matmul[ramp((((i.outer.outer.inner*2048) + (j.outer.outer.inner*32)) + 528), 1, 2)] = broadcast(0f32, 2)
+            matmul[ramp((((i.outer.outer.inner*2048) + (j.outer.outer.inner*32)) + 656), 1, 2)] = broadcast(0f32, 2)
+            matmul[ramp((((i.outer.outer.inner*2048) + (j.outer.outer.inner*32)) + 784), 1, 2)] = broadcast(0f32, 2)
+            matmul[ramp((((i.outer.outer.inner*2048) + (j.outer.outer.inner*32)) + 912), 1, 2)] = broadcast(0f32, 2)
+            matmul[ramp((((i.outer.outer.inner*2048) + (j.outer.outer.inner*32)) + 18), 1, 2)] = broadcast(0f32, 2)
+            matmul[ramp((((i.outer.outer.inner*2048) + (j.outer.outer.inner*32)) + 146), 1, 2)] = broadcast(0f32, 2)
+            matmul[ramp((((i.outer.outer.inner*2048) + (j.outer.outer.inner*32)) + 274), 1, 2)] = broadcast(0f32, 2)
+            matmul[ramp((((i.outer.outer.inner*2048) + (j.outer.outer.inner*32)) + 402), 1, 2)] = broadcast(0f32, 2)
+            matmul[ramp((((i.outer.outer.inner*2048) + (j.outer.outer.inner*32)) + 530), 1, 2)] = broadcast(0f32, 2)
+            matmul[ramp((((i.outer.outer.inner*2048) + (j.outer.outer.inner*32)) + 658), 1, 2)] = broadcast(0f32, 2)
+            matmul[ramp((((i.outer.outer.inner*2048) + (j.outer.outer.inner*32)) + 786), 1, 2)] = broadcast(0f32, 2)
+            matmul[ramp((((i.outer.outer.inner*2048) + (j.outer.outer.inner*32)) + 914), 1, 2)] = broadcast(0f32, 2)
+            matmul[ramp((((i.outer.outer.inner*2048) + (j.outer.outer.inner*32)) + 20), 1, 2)] = broadcast(0f32, 2)
+            matmul[ramp((((i.outer.outer.inner*2048) + (j.outer.outer.inner*32)) + 148), 1, 2)] = broadcast(0f32, 2)
+            matmul[ramp((((i.outer.outer.inner*2048) + (j.outer.outer.inner*32)) + 276), 1, 2)] = broadcast(0f32, 2)
+            matmul[ramp((((i.outer.outer.inner*2048) + (j.outer.outer.inner*32)) + 404), 1, 2)] = broadcast(0f32, 2)
+            matmul[ramp((((i.outer.outer.inner*2048) + (j.outer.outer.inner*32)) + 532), 1, 2)] = broadcast(0f32, 2)
+            matmul[ramp((((i.outer.outer.inner*2048) + (j.outer.outer.inner*32)) + 660), 1, 2)] = broadcast(0f32, 2)
+            matmul[ramp((((i.outer.outer.inner*2048) + (j.outer.outer.inner*32)) + 788), 1, 2)] = broadcast(0f32, 2)
+            matmul[ramp((((i.outer.outer.inner*2048) + (j.outer.outer.inner*32)) + 916), 1, 2)] = broadcast(0f32, 2)
+            matmul[ramp((((i.outer.outer.inner*2048) + (j.outer.outer.inner*32)) + 22), 1, 2)] = broadcast(0f32, 2)
+            matmul[ramp((((i.outer.outer.inner*2048) + (j.outer.outer.inner*32)) + 150), 1, 2)] = broadcast(0f32, 2)
+            matmul[ramp((((i.outer.outer.inner*2048) + (j.outer.outer.inner*32)) + 278), 1, 2)] = broadcast(0f32, 2)
+            matmul[ramp((((i.outer.outer.inner*2048) + (j.outer.outer.inner*32)) + 406), 1, 2)] = broadcast(0f32, 2)
+            matmul[ramp((((i.outer.outer.inner*2048) + (j.outer.outer.inner*32)) + 534), 1, 2)] = broadcast(0f32, 2)
+            matmul[ramp((((i.outer.outer.inner*2048) + (j.outer.outer.inner*32)) + 662), 1, 2)] = broadcast(0f32, 2)
+            matmul[ramp((((i.outer.outer.inner*2048) + (j.outer.outer.inner*32)) + 790), 1, 2)] = broadcast(0f32, 2)
+            matmul[ramp((((i.outer.outer.inner*2048) + (j.outer.outer.inner*32)) + 918), 1, 2)] = broadcast(0f32, 2)
+            matmul[ramp((((i.outer.outer.inner*2048) + (j.outer.outer.inner*32)) + 24), 1, 2)] = broadcast(0f32, 2)
+            matmul[ramp((((i.outer.outer.inner*2048) + (j.outer.outer.inner*32)) + 152), 1, 2)] = broadcast(0f32, 2)
+            matmul[ramp((((i.outer.outer.inner*2048) + (j.outer.outer.inner*32)) + 280), 1, 2)] = broadcast(0f32, 2)
+            matmul[ramp((((i.outer.outer.inner*2048) + (j.outer.outer.inner*32)) + 408), 1, 2)] = broadcast(0f32, 2)
+            matmul[ramp((((i.outer.outer.inner*2048) + (j.outer.outer.inner*32)) + 536), 1, 2)] = broadcast(0f32, 2)
+            matmul[ramp((((i.outer.outer.inner*2048) + (j.outer.outer.inner*32)) + 664), 1, 2)] = broadcast(0f32, 2)
+            matmul[ramp((((i.outer.outer.inner*2048) + (j.outer.outer.inner*32)) + 792), 1, 2)] = broadcast(0f32, 2)
+            matmul[ramp((((i.outer.outer.inner*2048) + (j.outer.outer.inner*32)) + 920), 1, 2)] = broadcast(0f32, 2)
+            matmul[ramp((((i.outer.outer.inner*2048) + (j.outer.outer.inner*32)) + 26), 1, 2)] = broadcast(0f32, 2)
+            matmul[ramp((((i.outer.outer.inner*2048) + (j.outer.outer.inner*32)) + 154), 1, 2)] = broadcast(0f32, 2)
+            matmul[ramp((((i.outer.outer.inner*2048) + (j.outer.outer.inner*32)) + 282), 1, 2)] = broadcast(0f32, 2)
+            matmul[ramp((((i.outer.outer.inner*2048) + (j.outer.outer.inner*32)) + 410), 1, 2)] = broadcast(0f32, 2)
+            matmul[ramp((((i.outer.outer.inner*2048) + (j.outer.outer.inner*32)) + 538), 1, 2)] = broadcast(0f32, 2)
+            matmul[ramp((((i.outer.outer.inner*2048) + (j.outer.outer.inner*32)) + 666), 1, 2)] = broadcast(0f32, 2)
+            matmul[ramp((((i.outer.outer.inner*2048) + (j.outer.outer.inner*32)) + 794), 1, 2)] = broadcast(0f32, 2)
+            matmul[ramp((((i.outer.outer.inner*2048) + (j.outer.outer.inner*32)) + 922), 1, 2)] = broadcast(0f32, 2)
+            matmul[ramp((((i.outer.outer.inner*2048) + (j.outer.outer.inner*32)) + 28), 1, 2)] = broadcast(0f32, 2)
+            matmul[ramp((((i.outer.outer.inner*2048) + (j.outer.outer.inner*32)) + 156), 1, 2)] = broadcast(0f32, 2)
+            matmul[ramp((((i.outer.outer.inner*2048) + (j.outer.outer.inner*32)) + 284), 1, 2)] = broadcast(0f32, 2)
+            matmul[ramp((((i.outer.outer.inner*2048) + (j.outer.outer.inner*32)) + 412), 1, 2)] = broadcast(0f32, 2)
+            matmul[ramp((((i.outer.outer.inner*2048) + (j.outer.outer.inner*32)) + 540), 1, 2)] = broadcast(0f32, 2)
+            matmul[ramp((((i.outer.outer.inner*2048) + (j.outer.outer.inner*32)) + 668), 1, 2)] = broadcast(0f32, 2)
+            matmul[ramp((((i.outer.outer.inner*2048) + (j.outer.outer.inner*32)) + 796), 1, 2)] = broadcast(0f32, 2)
+            matmul[ramp((((i.outer.outer.inner*2048) + (j.outer.outer.inner*32)) + 924), 1, 2)] = broadcast(0f32, 2)
+            matmul[ramp((((i.outer.outer.inner*2048) + (j.outer.outer.inner*32)) + 30), 1, 2)] = broadcast(0f32, 2)
+            matmul[ramp((((i.outer.outer.inner*2048) + (j.outer.outer.inner*32)) + 158), 1, 2)] = broadcast(0f32, 2)
+            matmul[ramp((((i.outer.outer.inner*2048) + (j.outer.outer.inner*32)) + 286), 1, 2)] = broadcast(0f32, 2)
+            matmul[ramp((((i.outer.outer.inner*2048) + (j.outer.outer.inner*32)) + 414), 1, 2)] = broadcast(0f32, 2)
+            matmul[ramp((((i.outer.outer.inner*2048) + (j.outer.outer.inner*32)) + 542), 1, 2)] = broadcast(0f32, 2)
+            matmul[ramp((((i.outer.outer.inner*2048) + (j.outer.outer.inner*32)) + 670), 1, 2)] = broadcast(0f32, 2)
+            matmul[ramp((((i.outer.outer.inner*2048) + (j.outer.outer.inner*32)) + 798), 1, 2)] = broadcast(0f32, 2)
+            matmul[ramp((((i.outer.outer.inner*2048) + (j.outer.outer.inner*32)) + 926), 1, 2)] = broadcast(0f32, 2)
+            matmul[ramp((((i.outer.outer.inner*2048) + (j.outer.outer.inner*32)) + 1024), 1, 2)] = broadcast(0f32, 2)
+            matmul[ramp((((i.outer.outer.inner*2048) + (j.outer.outer.inner*32)) + 1152), 1, 2)] = broadcast(0f32, 2)
+            matmul[ramp((((i.outer.outer.inner*2048) + (j.outer.outer.inner*32)) + 1280), 1, 2)] = broadcast(0f32, 2)
+            matmul[ramp((((i.outer.outer.inner*2048) + (j.outer.outer.inner*32)) + 1408), 1, 2)] = broadcast(0f32, 2)
+            matmul[ramp((((i.outer.outer.inner*2048) + (j.outer.outer.inner*32)) + 1536), 1, 2)] = broadcast(0f32, 2)
+            matmul[ramp((((i.outer.outer.inner*2048) + (j.outer.outer.inner*32)) + 1664), 1, 2)] = broadcast(0f32, 2)
+            matmul[ramp((((i.outer.outer.inner*2048) + (j.outer.outer.inner*32)) + 1792), 1, 2)] = broadcast(0f32, 2)
+            matmul[ramp((((i.outer.outer.inner*2048) + (j.outer.outer.inner*32)) + 1920), 1, 2)] = broadcast(0f32, 2)
+            matmul[ramp((((i.outer.outer.inner*2048) + (j.outer.outer.inner*32)) + 1026), 1, 2)] = broadcast(0f32, 2)
+            matmul[ramp((((i.outer.outer.inner*2048) + (j.outer.outer.inner*32)) + 1154), 1, 2)] = broadcast(0f32, 2)
+            matmul[ramp((((i.outer.outer.inner*2048) + (j.outer.outer.inner*32)) + 1282), 1, 2)] = broadcast(0f32, 2)
+            matmul[ramp((((i.outer.outer.inner*2048) + (j.outer.outer.inner*32)) + 1410), 1, 2)] = broadcast(0f32, 2)
+            matmul[ramp((((i.outer.outer.inner*2048) + (j.outer.outer.inner*32)) + 1538), 1, 2)] = broadcast(0f32, 2)
+            matmul[ramp((((i.outer.outer.inner*2048) + (j.outer.outer.inner*32)) + 1666), 1, 2)] = broadcast(0f32, 2)
+            matmul[ramp((((i.outer.outer.inner*2048) + (j.outer.outer.inner*32)) + 1794), 1, 2)] = broadcast(0f32, 2)
+            matmul[ramp((((i.outer.outer.inner*2048) + (j.outer.outer.inner*32)) + 1922), 1, 2)] = broadcast(0f32, 2)
+            matmul[ramp((((i.outer.outer.inner*2048) + (j.outer.outer.inner*32)) + 1028), 1, 2)] = broadcast(0f32, 2)
+            matmul[ramp((((i.outer.outer.inner*2048) + (j.outer.outer.inner*32)) + 1156), 1, 2)] = broadcast(0f32, 2)
+            matmul[ramp((((i.outer.outer.inner*2048) + (j.outer.outer.inner*32)) + 1284), 1, 2)] = broadcast(0f32, 2)
+            matmul[ramp((((i.outer.outer.inner*2048) + (j.outer.outer.inner*32)) + 1412), 1, 2)] = broadcast(0f32, 2)
+            matmul[ramp((((i.outer.outer.inner*2048) + (j.outer.outer.inner*32)) + 1540), 1, 2)] = broadcast(0f32, 2)
+            matmul[ramp((((i.outer.outer.inner*2048) + (j.outer.outer.inner*32)) + 1668), 1, 2)] = broadcast(0f32, 2)
+            matmul[ramp((((i.outer.outer.inner*2048) + (j.outer.outer.inner*32)) + 1796), 1, 2)] = broadcast(0f32, 2)
+            matmul[ramp((((i.outer.outer.inner*2048) + (j.outer.outer.inner*32)) + 1924), 1, 2)] = broadcast(0f32, 2)
+            matmul[ramp((((i.outer.outer.inner*2048) + (j.outer.outer.inner*32)) + 1030), 1, 2)] = broadcast(0f32, 2)
+            matmul[ramp((((i.outer.outer.inner*2048) + (j.outer.outer.inner*32)) + 1158), 1, 2)] = broadcast(0f32, 2)
+            matmul[ramp((((i.outer.outer.inner*2048) + (j.outer.outer.inner*32)) + 1286), 1, 2)] = broadcast(0f32, 2)
+            matmul[ramp((((i.outer.outer.inner*2048) + (j.outer.outer.inner*32)) + 1414), 1, 2)] = broadcast(0f32, 2)
+            matmul[ramp((((i.outer.outer.inner*2048) + (j.outer.outer.inner*32)) + 1542), 1, 2)] = broadcast(0f32, 2)
+            matmul[ramp((((i.outer.outer.inner*2048) + (j.outer.outer.inner*32)) + 1670), 1, 2)] = broadcast(0f32, 2)
+            matmul[ramp((((i.outer.outer.inner*2048) + (j.outer.outer.inner*32)) + 1798), 1, 2)] = broadcast(0f32, 2)
+            matmul[ramp((((i.outer.outer.inner*2048) + (j.outer.outer.inner*32)) + 1926), 1, 2)] = broadcast(0f32, 2)
+            matmul[ramp((((i.outer.outer.inner*2048) + (j.outer.outer.inner*32)) + 1032), 1, 2)] = broadcast(0f32, 2)
+            matmul[ramp((((i.outer.outer.inner*2048) + (j.outer.outer.inner*32)) + 1160), 1, 2)] = broadcast(0f32, 2)
+            matmul[ramp((((i.outer.outer.inner*2048) + (j.outer.outer.inner*32)) + 1288), 1, 2)] = broadcast(0f32, 2)
+            matmul[ramp((((i.outer.outer.inner*2048) + (j.outer.outer.inner*32)) + 1416), 1, 2)] = broadcast(0f32, 2)
+            matmul[ramp((((i.outer.outer.inner*2048) + (j.outer.outer.inner*32)) + 1544), 1, 2)] = broadcast(0f32, 2)
+            matmul[ramp((((i.outer.outer.inner*2048) + (j.outer.outer.inner*32)) + 1672), 1, 2)] = broadcast(0f32, 2)
+            matmul[ramp((((i.outer.outer.inner*2048) + (j.outer.outer.inner*32)) + 1800), 1, 2)] = broadcast(0f32, 2)
+            matmul[ramp((((i.outer.outer.inner*2048) + (j.outer.outer.inner*32)) + 1928), 1, 2)] = broadcast(0f32, 2)
+            matmul[ramp((((i.outer.outer.inner*2048) + (j.outer.outer.inner*32)) + 1034), 1, 2)] = broadcast(0f32, 2)
+            matmul[ramp((((i.outer.outer.inner*2048) + (j.outer.outer.inner*32)) + 1162), 1, 2)] = broadcast(0f32, 2)
+            matmul[ramp((((i.outer.outer.inner*2048) + (j.outer.outer.inner*32)) + 1290), 1, 2)] = broadcast(0f32, 2)
+            matmul[ramp((((i.outer.outer.inner*2048) + (j.outer.outer.inner*32)) + 1418), 1, 2)] = broadcast(0f32, 2)
+            matmul[ramp((((i.outer.outer.inner*2048) + (j.outer.outer.inner*32)) + 1546), 1, 2)] = broadcast(0f32, 2)
+            matmul[ramp((((i.outer.outer.inner*2048) + (j.outer.outer.inner*32)) + 1674), 1, 2)] = broadcast(0f32, 2)
+            matmul[ramp((((i.outer.outer.inner*2048) + (j.outer.outer.inner*32)) + 1802), 1, 2)] = broadcast(0f32, 2)
+            matmul[ramp((((i.outer.outer.inner*2048) + (j.outer.outer.inner*32)) + 1930), 1, 2)] = broadcast(0f32, 2)
+            matmul[ramp((((i.outer.outer.inner*2048) + (j.outer.outer.inner*32)) + 1036), 1, 2)] = broadcast(0f32, 2)
+            matmul[ramp((((i.outer.outer.inner*2048) + (j.outer.outer.inner*32)) + 1164), 1, 2)] = broadcast(0f32, 2)
+            matmul[ramp((((i.outer.outer.inner*2048) + (j.outer.outer.inner*32)) + 1292), 1, 2)] = broadcast(0f32, 2)
+            matmul[ramp((((i.outer.outer.inner*2048) + (j.outer.outer.inner*32)) + 1420), 1, 2)] = broadcast(0f32, 2)
+            matmul[ramp((((i.outer.outer.inner*2048) + (j.outer.outer.inner*32)) + 1548), 1, 2)] = broadcast(0f32, 2)
+            matmul[ramp((((i.outer.outer.inner*2048) + (j.outer.outer.inner*32)) + 1676), 1, 2)] = broadcast(0f32, 2)
+            matmul[ramp((((i.outer.outer.inner*2048) + (j.outer.outer.inner*32)) + 1804), 1, 2)] = broadcast(0f32, 2)
+            matmul[ramp((((i.outer.outer.inner*2048) + (j.outer.outer.inner*32)) + 1932), 1, 2)] = broadcast(0f32, 2)
+            matmul[ramp((((i.outer.outer.inner*2048) + (j.outer.outer.inner*32)) + 1038), 1, 2)] = broadcast(0f32, 2)
+            matmul[ramp((((i.outer.outer.inner*2048) + (j.outer.outer.inner*32)) + 1166), 1, 2)] = broadcast(0f32, 2)
+            matmul[ramp((((i.outer.outer.inner*2048) + (j.outer.outer.inner*32)) + 1294), 1, 2)] = broadcast(0f32, 2)
+            matmul[ramp((((i.outer.outer.inner*2048) + (j.outer.outer.inner*32)) + 1422), 1, 2)] = broadcast(0f32, 2)
+            matmul[ramp((((i.outer.outer.inner*2048) + (j.outer.outer.inner*32)) + 1550), 1, 2)] = broadcast(0f32, 2)
+            matmul[ramp((((i.outer.outer.inner*2048) + (j.outer.outer.inner*32)) + 1678), 1, 2)] = broadcast(0f32, 2)
+            matmul[ramp((((i.outer.outer.inner*2048) + (j.outer.outer.inner*32)) + 1806), 1, 2)] = broadcast(0f32, 2)
+            matmul[ramp((((i.outer.outer.inner*2048) + (j.outer.outer.inner*32)) + 1934), 1, 2)] = broadcast(0f32, 2)
+            matmul[ramp((((i.outer.outer.inner*2048) + (j.outer.outer.inner*32)) + 1040), 1, 2)] = broadcast(0f32, 2)
+            matmul[ramp((((i.outer.outer.inner*2048) + (j.outer.outer.inner*32)) + 1168), 1, 2)] = broadcast(0f32, 2)
+            matmul[ramp((((i.outer.outer.inner*2048) + (j.outer.outer.inner*32)) + 1296), 1, 2)] = broadcast(0f32, 2)
+            matmul[ramp((((i.outer.outer.inner*2048) + (j.outer.outer.inner*32)) + 1424), 1, 2)] = broadcast(0f32, 2)
+            matmul[ramp((((i.outer.outer.inner*2048) + (j.outer.outer.inner*32)) + 1552), 1, 2)] = broadcast(0f32, 2)
+            matmul[ramp((((i.outer.outer.inner*2048) + (j.outer.outer.inner*32)) + 1680), 1, 2)] = broadcast(0f32, 2)
+            matmul[ramp((((i.outer.outer.inner*2048) + (j.outer.outer.inner*32)) + 1808), 1, 2)] = broadcast(0f32, 2)
+            matmul[ramp((((i.outer.outer.inner*2048) + (j.outer.outer.inner*32)) + 1936), 1, 2)] = broadcast(0f32, 2)
+            matmul[ramp((((i.outer.outer.inner*2048) + (j.outer.outer.inner*32)) + 1042), 1, 2)] = broadcast(0f32, 2)
+            matmul[ramp((((i.outer.outer.inner*2048) + (j.outer.outer.inner*32)) + 1170), 1, 2)] = broadcast(0f32, 2)
+            matmul[ramp((((i.outer.outer.inner*2048) + (j.outer.outer.inner*32)) + 1298), 1, 2)] = broadcast(0f32, 2)
+            matmul[ramp((((i.outer.outer.inner*2048) + (j.outer.outer.inner*32)) + 1426), 1, 2)] = broadcast(0f32, 2)
+            matmul[ramp((((i.outer.outer.inner*2048) + (j.outer.outer.inner*32)) + 1554), 1, 2)] = broadcast(0f32, 2)
+            matmul[ramp((((i.outer.outer.inner*2048) + (j.outer.outer.inner*32)) + 1682), 1, 2)] = broadcast(0f32, 2)
+            matmul[ramp((((i.outer.outer.inner*2048) + (j.outer.outer.inner*32)) + 1810), 1, 2)] = broadcast(0f32, 2)
+            matmul[ramp((((i.outer.outer.inner*2048) + (j.outer.outer.inner*32)) + 1938), 1, 2)] = broadcast(0f32, 2)
+            matmul[ramp((((i.outer.outer.inner*2048) + (j.outer.outer.inner*32)) + 1044), 1, 2)] = broadcast(0f32, 2)
+            matmul[ramp((((i.outer.outer.inner*2048) + (j.outer.outer.inner*32)) + 1172), 1, 2)] = broadcast(0f32, 2)
+            matmul[ramp((((i.outer.outer.inner*2048) + (j.outer.outer.inner*32)) + 1300), 1, 2)] = broadcast(0f32, 2)
+            matmul[ramp((((i.outer.outer.inner*2048) + (j.outer.outer.inner*32)) + 1428), 1, 2)] = broadcast(0f32, 2)
+            matmul[ramp((((i.outer.outer.inner*2048) + (j.outer.outer.inner*32)) + 1556), 1, 2)] = broadcast(0f32, 2)
+            matmul[ramp((((i.outer.outer.inner*2048) + (j.outer.outer.inner*32)) + 1684), 1, 2)] = broadcast(0f32, 2)
+            matmul[ramp((((i.outer.outer.inner*2048) + (j.outer.outer.inner*32)) + 1812), 1, 2)] = broadcast(0f32, 2)
+            matmul[ramp((((i.outer.outer.inner*2048) + (j.outer.outer.inner*32)) + 1940), 1, 2)] = broadcast(0f32, 2)
+            matmul[ramp((((i.outer.outer.inner*2048) + (j.outer.outer.inner*32)) + 1046), 1, 2)] = broadcast(0f32, 2)
+            matmul[ramp((((i.outer.outer.inner*2048) + (j.outer.outer.inner*32)) + 1174), 1, 2)] = broadcast(0f32, 2)
+            matmul[ramp((((i.outer.outer.inner*2048) + (j.outer.outer.inner*32)) + 1302), 1, 2)] = broadcast(0f32, 2)
+            matmul[ramp((((i.outer.outer.inner*2048) + (j.outer.outer.inner*32)) + 1430), 1, 2)] = broadcast(0f32, 2)
+            matmul[ramp((((i.outer.outer.inner*2048) + (j.outer.outer.inner*32)) + 1558), 1, 2)] = broadcast(0f32, 2)
+            matmul[ramp((((i.outer.outer.inner*2048) + (j.outer.outer.inner*32)) + 1686), 1, 2)] = broadcast(0f32, 2)
+            matmul[ramp((((i.outer.outer.inner*2048) + (j.outer.outer.inner*32)) + 1814), 1, 2)] = broadcast(0f32, 2)
+            matmul[ramp((((i.outer.outer.inner*2048) + (j.outer.outer.inner*32)) + 1942), 1, 2)] = broadcast(0f32, 2)
+            matmul[ramp((((i.outer.outer.inner*2048) + (j.outer.outer.inner*32)) + 1048), 1, 2)] = broadcast(0f32, 2)
+            matmul[ramp((((i.outer.outer.inner*2048) + (j.outer.outer.inner*32)) + 1176), 1, 2)] = broadcast(0f32, 2)
+            matmul[ramp((((i.outer.outer.inner*2048) + (j.outer.outer.inner*32)) + 1304), 1, 2)] = broadcast(0f32, 2)
+            matmul[ramp((((i.outer.outer.inner*2048) + (j.outer.outer.inner*32)) + 1432), 1, 2)] = broadcast(0f32, 2)
+            matmul[ramp((((i.outer.outer.inner*2048) + (j.outer.outer.inner*32)) + 1560), 1, 2)] = broadcast(0f32, 2)
+            matmul[ramp((((i.outer.outer.inner*2048) + (j.outer.outer.inner*32)) + 1688), 1, 2)] = broadcast(0f32, 2)
+            matmul[ramp((((i.outer.outer.inner*2048) + (j.outer.outer.inner*32)) + 1816), 1, 2)] = broadcast(0f32, 2)
+            matmul[ramp((((i.outer.outer.inner*2048) + (j.outer.outer.inner*32)) + 1944), 1, 2)] = broadcast(0f32, 2)
+            matmul[ramp((((i.outer.outer.inner*2048) + (j.outer.outer.inner*32)) + 1050), 1, 2)] = broadcast(0f32, 2)
+            matmul[ramp((((i.outer.outer.inner*2048) + (j.outer.outer.inner*32)) + 1178), 1, 2)] = broadcast(0f32, 2)
+            matmul[ramp((((i.outer.outer.inner*2048) + (j.outer.outer.inner*32)) + 1306), 1, 2)] = broadcast(0f32, 2)
+            matmul[ramp((((i.outer.outer.inner*2048) + (j.outer.outer.inner*32)) + 1434), 1, 2)] = broadcast(0f32, 2)
+            matmul[ramp((((i.outer.outer.inner*2048) + (j.outer.outer.inner*32)) + 1562), 1, 2)] = broadcast(0f32, 2)
+            matmul[ramp((((i.outer.outer.inner*2048) + (j.outer.outer.inner*32)) + 1690), 1, 2)] = broadcast(0f32, 2)
+            matmul[ramp((((i.outer.outer.inner*2048) + (j.outer.outer.inner*32)) + 1818), 1, 2)] = broadcast(0f32, 2)
+            matmul[ramp((((i.outer.outer.inner*2048) + (j.outer.outer.inner*32)) + 1946), 1, 2)] = broadcast(0f32, 2)
+            matmul[ramp((((i.outer.outer.inner*2048) + (j.outer.outer.inner*32)) + 1052), 1, 2)] = broadcast(0f32, 2)
+            matmul[ramp((((i.outer.outer.inner*2048) + (j.outer.outer.inner*32)) + 1180), 1, 2)] = broadcast(0f32, 2)
+            matmul[ramp((((i.outer.outer.inner*2048) + (j.outer.outer.inner*32)) + 1308), 1, 2)] = broadcast(0f32, 2)
+            matmul[ramp((((i.outer.outer.inner*2048) + (j.outer.outer.inner*32)) + 1436), 1, 2)] = broadcast(0f32, 2)
+            matmul[ramp((((i.outer.outer.inner*2048) + (j.outer.outer.inner*32)) + 1564), 1, 2)] = broadcast(0f32, 2)
+            matmul[ramp((((i.outer.outer.inner*2048) + (j.outer.outer.inner*32)) + 1692), 1, 2)] = broadcast(0f32, 2)
+            matmul[ramp((((i.outer.outer.inner*2048) + (j.outer.outer.inner*32)) + 1820), 1, 2)] = broadcast(0f32, 2)
+            matmul[ramp((((i.outer.outer.inner*2048) + (j.outer.outer.inner*32)) + 1948), 1, 2)] = broadcast(0f32, 2)
+            matmul[ramp((((i.outer.outer.inner*2048) + (j.outer.outer.inner*32)) + 1054), 1, 2)] = broadcast(0f32, 2)
+            matmul[ramp((((i.outer.outer.inner*2048) + (j.outer.outer.inner*32)) + 1182), 1, 2)] = broadcast(0f32, 2)
+            matmul[ramp((((i.outer.outer.inner*2048) + (j.outer.outer.inner*32)) + 1310), 1, 2)] = broadcast(0f32, 2)
+            matmul[ramp((((i.outer.outer.inner*2048) + (j.outer.outer.inner*32)) + 1438), 1, 2)] = broadcast(0f32, 2)
+            matmul[ramp((((i.outer.outer.inner*2048) + (j.outer.outer.inner*32)) + 1566), 1, 2)] = broadcast(0f32, 2)
+            matmul[ramp((((i.outer.outer.inner*2048) + (j.outer.outer.inner*32)) + 1694), 1, 2)] = broadcast(0f32, 2)
+            matmul[ramp((((i.outer.outer.inner*2048) + (j.outer.outer.inner*32)) + 1822), 1, 2)] = broadcast(0f32, 2)
+            matmul[ramp((((i.outer.outer.inner*2048) + (j.outer.outer.inner*32)) + 1950), 1, 2)] = broadcast(0f32, 2)
+            for (k.outer: int32, 0, 16) {
+              for (i.outer.inner: int32, 0, 2) {
+                for (j.outer.inner: int32, 0, 16) {
+                  matmul[ramp(((((i.outer.outer.inner*2048) + (i.outer.inner*1024)) + (j.outer.outer.inner*32)) + (j.outer.inner*2)), 1, 2)] = ((float32x2*)matmul[ramp(((((i.outer.outer.inner*2048) + (i.outer.inner*1024)) + (j.outer.outer.inner*32)) + (j.outer.inner*2)), 1, 2)] + (broadcast((float32*)A_2[(((i.outer.outer.inner*2048) + (i.outer.inner*1024)) + (k.outer*8))], 2)*(float32x2*)B_2[ramp((((k.outer*1024) + (j.outer.outer.inner*32)) + (j.outer.inner*2)), 1, 2)]))
+                  matmul[ramp((((((i.outer.outer.inner*2048) + (i.outer.inner*1024)) + (j.outer.outer.inner*32)) + (j.outer.inner*2)) + 128), 1, 2)] = ((float32x2*)matmul[ramp((((((i.outer.outer.inner*2048) + (i.outer.inner*1024)) + (j.outer.outer.inner*32)) + (j.outer.inner*2)) + 128), 1, 2)] + (broadcast((float32*)A_2[((((i.outer.outer.inner*2048) + (i.outer.inner*1024)) + (k.outer*8)) + 128)], 2)*(float32x2*)B_2[ramp((((k.outer*1024) + (j.outer.outer.inner*32)) + (j.outer.inner*2)), 1, 2)]))
+                  matmul[ramp((((((i.outer.outer.inner*2048) + (i.outer.inner*1024)) + (j.outer.outer.inner*32)) + (j.outer.inner*2)) + 256), 1, 2)] = ((float32x2*)matmul[ramp((((((i.outer.outer.inner*2048) + (i.outer.inner*1024)) + (j.outer.outer.inner*32)) + (j.outer.inner*2)) + 256), 1, 2)] + (broadcast((float32*)A_2[((((i.outer.outer.inner*2048) + (i.outer.inner*1024)) + (k.outer*8)) + 256)], 2)*(float32x2*)B_2[ramp((((k.outer*1024) + (j.outer.outer.inner*32)) + (j.outer.inner*2)), 1, 2)]))
+                  matmul[ramp((((((i.outer.outer.inner*2048) + (i.outer.inner*1024)) + (j.outer.outer.inner*32)) + (j.outer.inner*2)) + 384), 1, 2)] = ((float32x2*)matmul[ramp((((((i.outer.outer.inner*2048) + (i.outer.inner*1024)) + (j.outer.outer.inner*32)) + (j.outer.inner*2)) + 384), 1, 2)] + (broadcast((float32*)A_2[((((i.outer.outer.inner*2048) + (i.outer.inner*1024)) + (k.outer*8)) + 384)], 2)*(float32x2*)B_2[ramp((((k.outer*1024) + (j.outer.outer.inner*32)) + (j.outer.inner*2)), 1, 2)]))
+                  matmul[ramp((((((i.outer.outer.inner*2048) + (i.outer.inner*1024)) + (j.outer.outer.inner*32)) + (j.outer.inner*2)) + 512), 1, 2)] = ((float32x2*)matmul[ramp((((((i.outer.outer.inner*2048) + (i.outer.inner*1024)) + (j.outer.outer.inner*32)) + (j.outer.inner*2)) + 512), 1, 2)] + (broadcast((float32*)A_2[((((i.outer.outer.inner*2048) + (i.outer.inner*1024)) + (k.outer*8)) + 512)], 2)*(float32x2*)B_2[ramp((((k.outer*1024) + (j.outer.outer.inner*32)) + (j.outer.inner*2)), 1, 2)]))
+                  matmul[ramp((((((i.outer.outer.inner*2048) + (i.outer.inner*1024)) + (j.outer.outer.inner*32)) + (j.outer.inner*2)) + 640), 1, 2)] = ((float32x2*)matmul[ramp((((((i.outer.outer.inner*2048) + (i.outer.inner*1024)) + (j.outer.outer.inner*32)) + (j.outer.inner*2)) + 640), 1, 2)] + (broadcast((float32*)A_2[((((i.outer.outer.inner*2048) + (i.outer.inner*1024)) + (k.outer*8)) + 640)], 2)*(float32x2*)B_2[ramp((((k.outer*1024) + (j.outer.outer.inner*32)) + (j.outer.inner*2)), 1, 2)]))
+                  matmul[ramp((((((i.outer.outer.inner*2048) + (i.outer.inner*1024)) + (j.outer.outer.inner*32)) + (j.outer.inner*2)) + 768), 1, 2)] = ((float32x2*)matmul[ramp((((((i.outer.outer.inner*2048) + (i.outer.inner*1024)) + (j.outer.outer.inner*32)) + (j.outer.inner*2)) + 768), 1, 2)] + (broadcast((float32*)A_2[((((i.outer.outer.inner*2048) + (i.outer.inner*1024)) + (k.outer*8)) + 768)], 2)*(float32x2*)B_2[ramp((((k.outer*1024) + (j.outer.outer.inner*32)) + (j.outer.inner*2)), 1, 2)]))
+                  matmul[ramp((((((i.outer.outer.inner*2048) + (i.outer.inner*1024)) + (j.outer.outer.inner*32)) + (j.outer.inner*2)) + 896), 1, 2)] = ((float32x2*)matmul[ramp((((((i.outer.outer.inner*2048) + (i.outer.inner*1024)) + (j.outer.outer.inner*32)) + (j.outer.inner*2)) + 896), 1, 2)] + (broadcast((float32*)A_2[((((i.outer.outer.inner*2048) + (i.outer.inner*1024)) + (k.outer*8)) + 896)], 2)*(float32x2*)B_2[ramp((((k.outer*1024) + (j.outer.outer.inner*32)) + (j.outer.inner*2)), 1, 2)]))
+                  matmul[ramp(((((i.outer.outer.inner*2048) + (i.outer.inner*1024)) + (j.outer.outer.inner*32)) + (j.outer.inner*2)), 1, 2)] = ((float32x2*)matmul[ramp(((((i.outer.outer.inner*2048) + (i.outer.inner*1024)) + (j.outer.outer.inner*32)) + (j.outer.inner*2)), 1, 2)] + (broadcast((float32*)A_2[((((i.outer.outer.inner*2048) + (i.outer.inner*1024)) + (k.outer*8)) + 1)], 2)*(float32x2*)B_2[ramp(((((k.outer*1024) + (j.outer.outer.inner*32)) + (j.outer.inner*2)) + 128), 1, 2)]))
+                  matmul[ramp((((((i.outer.outer.inner*2048) + (i.outer.inner*1024)) + (j.outer.outer.inner*32)) + (j.outer.inner*2)) + 128), 1, 2)] = ((float32x2*)matmul[ramp((((((i.outer.outer.inner*2048) + (i.outer.inner*1024)) + (j.outer.outer.inner*32)) + (j.outer.inner*2)) + 128), 1, 2)] + (broadcast((float32*)A_2[((((i.outer.outer.inner*2048) + (i.outer.inner*1024)) + (k.outer*8)) + 129)], 2)*(float32x2*)B_2[ramp(((((k.outer*1024) + (j.outer.outer.inner*32)) + (j.outer.inner*2)) + 128), 1, 2)]))
+                  matmul[ramp((((((i.outer.outer.inner*2048) + (i.outer.inner*1024)) + (j.outer.outer.inner*32)) + (j.outer.inner*2)) + 256), 1, 2)] = ((float32x2*)matmul[ramp((((((i.outer.outer.inner*2048) + (i.outer.inner*1024)) + (j.outer.outer.inner*32)) + (j.outer.inner*2)) + 256), 1, 2)] + (broadcast((float32*)A_2[((((i.outer.outer.inner*2048) + (i.outer.inner*1024)) + (k.outer*8)) + 257)], 2)*(float32x2*)B_2[ramp(((((k.outer*1024) + (j.outer.outer.inner*32)) + (j.outer.inner*2)) + 128), 1, 2)]))
+                  matmul[ramp((((((i.outer.outer.inner*2048) + (i.outer.inner*1024)) + (j.outer.outer.inner*32)) + (j.outer.inner*2)) + 384), 1, 2)] = ((float32x2*)matmul[ramp((((((i.outer.outer.inner*2048) + (i.outer.inner*1024)) + (j.outer.outer.inner*32)) + (j.outer.inner*2)) + 384), 1, 2)] + (broadcast((float32*)A_2[((((i.outer.outer.inner*2048) + (i.outer.inner*1024)) + (k.outer*8)) + 385)], 2)*(float32x2*)B_2[ramp(((((k.outer*1024) + (j.outer.outer.inner*32)) + (j.outer.inner*2)) + 128), 1, 2)]))
+                  matmul[ramp((((((i.outer.outer.inner*2048) + (i.outer.inner*1024)) + (j.outer.outer.inner*32)) + (j.outer.inner*2)) + 512), 1, 2)] = ((float32x2*)matmul[ramp((((((i.outer.outer.inner*2048) + (i.outer.inner*1024)) + (j.outer.outer.inner*32)) + (j.outer.inner*2)) + 512), 1, 2)] + (broadcast((float32*)A_2[((((i.outer.outer.inner*2048) + (i.outer.inner*1024)) + (k.outer*8)) + 513)], 2)*(float32x2*)B_2[ramp(((((k.outer*1024) + (j.outer.outer.inner*32)) + (j.outer.inner*2)) + 128), 1, 2)]))
+                  matmul[ramp((((((i.outer.outer.inner*2048) + (i.outer.inner*1024)) + (j.outer.outer.inner*32)) + (j.outer.inner*2)) + 640), 1, 2)] = ((float32x2*)matmul[ramp((((((i.outer.outer.inner*2048) + (i.outer.inner*1024)) + (j.outer.outer.inner*32)) + (j.outer.inner*2)) + 640), 1, 2)] + (broadcast((float32*)A_2[((((i.outer.outer.inner*2048) + (i.outer.inner*1024)) + (k.outer*8)) + 641)], 2)*(float32x2*)B_2[ramp(((((k.outer*1024) + (j.outer.outer.inner*32)) + (j.outer.inner*2)) + 128), 1, 2)]))
+                  matmul[ramp((((((i.outer.outer.inner*2048) + (i.outer.inner*1024)) + (j.outer.outer.inner*32)) + (j.outer.inner*2)) + 768), 1, 2)] = ((float32x2*)matmul[ramp((((((i.outer.outer.inner*2048) + (i.outer.inner*1024)) + (j.outer.outer.inner*32)) + (j.outer.inner*2)) + 768), 1, 2)] + (broadcast((float32*)A_2[((((i.outer.outer.inner*2048) + (i.outer.inner*1024)) + (k.outer*8)) + 769)], 2)*(float32x2*)B_2[ramp(((((k.outer*1024) + (j.outer.outer.inner*32)) + (j.outer.inner*2)) + 128), 1, 2)]))
+                  matmul[ramp((((((i.outer.outer.inner*2048) + (i.outer.inner*1024)) + (j.outer.outer.inner*32)) + (j.outer.inner*2)) + 896), 1, 2)] = ((float32x2*)matmul[ramp((((((i.outer.outer.inner*2048) + (i.outer.inner*1024)) + (j.outer.outer.inner*32)) + (j.outer.inner*2)) + 896), 1, 2)] + (broadcast((float32*)A_2[((((i.outer.outer.inner*2048) + (i.outer.inner*1024)) + (k.outer*8)) + 897)], 2)*(float32x2*)B_2[ramp(((((k.outer*1024) + (j.outer.outer.inner*32)) + (j.outer.inner*2)) + 128), 1, 2)]))
+                  matmul[ramp(((((i.outer.outer.inner*2048) + (i.outer.inner*1024)) + (j.outer.outer.inner*32)) + (j.outer.inner*2)), 1, 2)] = ((float32x2*)matmul[ramp(((((i.outer.outer.inner*2048) + (i.outer.inner*1024)) + (j.outer.outer.inner*32)) + (j.outer.inner*2)), 1, 2)] + (broadcast((float32*)A_2[((((i.outer.outer.inner*2048) + (i.outer.inner*1024)) + (k.outer*8)) + 2)], 2)*(float32x2*)B_2[ramp(((((k.outer*1024) + (j.outer.outer.inner*32)) + (j.outer.inner*2)) + 256), 1, 2)]))
+                  matmul[ramp((((((i.outer.outer.inner*2048) + (i.outer.inner*1024)) + (j.outer.outer.inner*32)) + (j.outer.inner*2)) + 128), 1, 2)] = ((float32x2*)matmul[ramp((((((i.outer.outer.inner*2048) + (i.outer.inner*1024)) + (j.outer.outer.inner*32)) + (j.outer.inner*2)) + 128), 1, 2)] + (broadcast((float32*)A_2[((((i.outer.outer.inner*2048) + (i.outer.inner*1024)) + (k.outer*8)) + 130)], 2)*(float32x2*)B_2[ramp(((((k.outer*1024) + (j.outer.outer.inner*32)) + (j.outer.inner*2)) + 256), 1, 2)]))
+                  matmul[ramp((((((i.outer.outer.inner*2048) + (i.outer.inner*1024)) + (j.outer.outer.inner*32)) + (j.outer.inner*2)) + 256), 1, 2)] = ((float32x2*)matmul[ramp((((((i.outer.outer.inner*2048) + (i.outer.inner*1024)) + (j.outer.outer.inner*32)) + (j.outer.inner*2)) + 256), 1, 2)] + (broadcast((float32*)A_2[((((i.outer.outer.inner*2048) + (i.outer.inner*1024)) + (k.outer*8)) + 258)], 2)*(float32x2*)B_2[ramp(((((k.outer*1024) + (j.outer.outer.inner*32)) + (j.outer.inner*2)) + 256), 1, 2)]))
+                  matmul[ramp((((((i.outer.outer.inner*2048) + (i.outer.inner*1024)) + (j.outer.outer.inner*32)) + (j.outer.inner*2)) + 384), 1, 2)] = ((float32x2*)matmul[ramp((((((i.outer.outer.inner*2048) + (i.outer.inner*1024)) + (j.outer.outer.inner*32)) + (j.outer.inner*2)) + 384), 1, 2)] + (broadcast((float32*)A_2[((((i.outer.outer.inner*2048) + (i.outer.inner*1024)) + (k.outer*8)) + 386)], 2)*(float32x2*)B_2[ramp(((((k.outer*1024) + (j.outer.outer.inner*32)) + (j.outer.inner*2)) + 256), 1, 2)]))
+                  matmul[ramp((((((i.outer.outer.inner*2048) + (i.outer.inner*1024)) + (j.outer.outer.inner*32)) + (j.outer.inner*2)) + 512), 1, 2)] = ((float32x2*)matmul[ramp((((((i.outer.outer.inner*2048) + (i.outer.inner*1024)) + (j.outer.outer.inner*32)) + (j.outer.inner*2)) + 512), 1, 2)] + (broadcast((float32*)A_2[((((i.outer.outer.inner*2048) + (i.outer.inner*1024)) + (k.outer*8)) + 514)], 2)*(float32x2*)B_2[ramp(((((k.outer*1024) + (j.outer.outer.inner*32)) + (j.outer.inner*2)) + 256), 1, 2)]))
+                  matmul[ramp((((((i.outer.outer.inner*2048) + (i.outer.inner*1024)) + (j.outer.outer.inner*32)) + (j.outer.inner*2)) + 640), 1, 2)] = ((float32x2*)matmul[ramp((((((i.outer.outer.inner*2048) + (i.outer.inner*1024)) + (j.outer.outer.inner*32)) + (j.outer.inner*2)) + 640), 1, 2)] + (broadcast((float32*)A_2[((((i.outer.outer.inner*2048) + (i.outer.inner*1024)) + (k.outer*8)) + 642)], 2)*(float32x2*)B_2[ramp(((((k.outer*1024) + (j.outer.outer.inner*32)) + (j.outer.inner*2)) + 256), 1, 2)]))
+                  matmul[ramp((((((i.outer.outer.inner*2048) + (i.outer.inner*1024)) + (j.outer.outer.inner*32)) + (j.outer.inner*2)) + 768), 1, 2)] = ((float32x2*)matmul[ramp((((((i.outer.outer.inner*2048) + (i.outer.inner*1024)) + (j.outer.outer.inner*32)) + (j.outer.inner*2)) + 768), 1, 2)] + (broadcast((float32*)A_2[((((i.outer.outer.inner*2048) + (i.outer.inner*1024)) + (k.outer*8)) + 770)], 2)*(float32x2*)B_2[ramp(((((k.outer*1024) + (j.outer.outer.inner*32)) + (j.outer.inner*2)) + 256), 1, 2)]))
+                  matmul[ramp((((((i.outer.outer.inner*2048) + (i.outer.inner*1024)) + (j.outer.outer.inner*32)) + (j.outer.inner*2)) + 896), 1, 2)] = ((float32x2*)matmul[ramp((((((i.outer.outer.inner*2048) + (i.outer.inner*1024)) + (j.outer.outer.inner*32)) + (j.outer.inner*2)) + 896), 1, 2)] + (broadcast((float32*)A_2[((((i.outer.outer.inner*2048) + (i.outer.inner*1024)) + (k.outer*8)) + 898)], 2)*(float32x2*)B_2[ramp(((((k.outer*1024) + (j.outer.outer.inner*32)) + (j.outer.inner*2)) + 256), 1, 2)]))
+                  matmul[ramp(((((i.outer.outer.inner*2048) + (i.outer.inner*1024)) + (j.outer.outer.inner*32)) + (j.outer.inner*2)), 1, 2)] = ((float32x2*)matmul[ramp(((((i.outer.outer.inner*2048) + (i.outer.inner*1024)) + (j.outer.outer.inner*32)) + (j.outer.inner*2)), 1, 2)] + (broadcast((float32*)A_2[((((i.outer.outer.inner*2048) + (i.outer.inner*1024)) + (k.outer*8)) + 3)], 2)*(float32x2*)B_2[ramp(((((k.outer*1024) + (j.outer.outer.inner*32)) + (j.outer.inner*2)) + 384), 1, 2)]))
+                  matmul[ramp((((((i.outer.outer.inner*2048) + (i.outer.inner*1024)) + (j.outer.outer.inner*32)) + (j.outer.inner*2)) + 128), 1, 2)] = ((float32x2*)matmul[ramp((((((i.outer.outer.inner*2048) + (i.outer.inner*1024)) + (j.outer.outer.inner*32)) + (j.outer.inner*2)) + 128), 1, 2)] + (broadcast((float32*)A_2[((((i.outer.outer.inner*2048) + (i.outer.inner*1024)) + (k.outer*8)) + 131)], 2)*(float32x2*)B_2[ramp(((((k.outer*1024) + (j.outer.outer.inner*32)) + (j.outer.inner*2)) + 384), 1, 2)]))
+                  matmul[ramp((((((i.outer.outer.inner*2048) + (i.outer.inner*1024)) + (j.outer.outer.inner*32)) + (j.outer.inner*2)) + 256), 1, 2)] = ((float32x2*)matmul[ramp((((((i.outer.outer.inner*2048) + (i.outer.inner*1024)) + (j.outer.outer.inner*32)) + (j.outer.inner*2)) + 256), 1, 2)] + (broadcast((float32*)A_2[((((i.outer.outer.inner*2048) + (i.outer.inner*1024)) + (k.outer*8)) + 259)], 2)*(float32x2*)B_2[ramp(((((k.outer*1024) + (j.outer.outer.inner*32)) + (j.outer.inner*2)) + 384), 1, 2)]))
+                  matmul[ramp((((((i.outer.outer.inner*2048) + (i.outer.inner*1024)) + (j.outer.outer.inner*32)) + (j.outer.inner*2)) + 384), 1, 2)] = ((float32x2*)matmul[ramp((((((i.outer.outer.inner*2048) + (i.outer.inner*1024)) + (j.outer.outer.inner*32)) + (j.outer.inner*2)) + 384), 1, 2)] + (broadcast((float32*)A_2[((((i.outer.outer.inner*2048) + (i.outer.inner*1024)) + (k.outer*8)) + 387)], 2)*(float32x2*)B_2[ramp(((((k.outer*1024) + (j.outer.outer.inner*32)) + (j.outer.inner*2)) + 384), 1, 2)]))
+                  matmul[ramp((((((i.outer.outer.inner*2048) + (i.outer.inner*1024)) + (j.outer.outer.inner*32)) + (j.outer.inner*2)) + 512), 1, 2)] = ((float32x2*)matmul[ramp((((((i.outer.outer.inner*2048) + (i.outer.inner*1024)) + (j.outer.outer.inner*32)) + (j.outer.inner*2)) + 512), 1, 2)] + (broadcast((float32*)A_2[((((i.outer.outer.inner*2048) + (i.outer.inner*1024)) + (k.outer*8)) + 515)], 2)*(float32x2*)B_2[ramp(((((k.outer*1024) + (j.outer.outer.inner*32)) + (j.outer.inner*2)) + 384), 1, 2)]))
+                  matmul[ramp((((((i.outer.outer.inner*2048) + (i.outer.inner*1024)) + (j.outer.outer.inner*32)) + (j.outer.inner*2)) + 640), 1, 2)] = ((float32x2*)matmul[ramp((((((i.outer.outer.inner*2048) + (i.outer.inner*1024)) + (j.outer.outer.inner*32)) + (j.outer.inner*2)) + 640), 1, 2)] + (broadcast((float32*)A_2[((((i.outer.outer.inner*2048) + (i.outer.inner*1024)) + (k.outer*8)) + 643)], 2)*(float32x2*)B_2[ramp(((((k.outer*1024) + (j.outer.outer.inner*32)) + (j.outer.inner*2)) + 384), 1, 2)]))
+                  matmul[ramp((((((i.outer.outer.inner*2048) + (i.outer.inner*1024)) + (j.outer.outer.inner*32)) + (j.outer.inner*2)) + 768), 1, 2)] = ((float32x2*)matmul[ramp((((((i.outer.outer.inner*2048) + (i.outer.inner*1024)) + (j.outer.outer.inner*32)) + (j.outer.inner*2)) + 768), 1, 2)] + (broadcast((float32*)A_2[((((i.outer.outer.inner*2048) + (i.outer.inner*1024)) + (k.outer*8)) + 771)], 2)*(float32x2*)B_2[ramp(((((k.outer*1024) + (j.outer.outer.inner*32)) + (j.outer.inner*2)) + 384), 1, 2)]))
+                  matmul[ramp((((((i.outer.outer.inner*2048) + (i.outer.inner*1024)) + (j.outer.outer.inner*32)) + (j.outer.inner*2)) + 896), 1, 2)] = ((float32x2*)matmul[ramp((((((i.outer.outer.inner*2048) + (i.outer.inner*1024)) + (j.outer.outer.inner*32)) + (j.outer.inner*2)) + 896), 1, 2)] + (broadcast((float32*)A_2[((((i.outer.outer.inner*2048) + (i.outer.inner*1024)) + (k.outer*8)) + 899)], 2)*(float32x2*)B_2[ramp(((((k.outer*1024) + (j.outer.outer.inner*32)) + (j.outer.inner*2)) + 384), 1, 2)]))
+                  matmul[ramp(((((i.outer.outer.inner*2048) + (i.outer.inner*1024)) + (j.outer.outer.inner*32)) + (j.outer.inner*2)), 1, 2)] = ((float32x2*)matmul[ramp(((((i.outer.outer.inner*2048) + (i.outer.inner*1024)) + (j.outer.outer.inner*32)) + (j.outer.inner*2)), 1, 2)] + (broadcast((float32*)A_2[((((i.outer.outer.inner*2048) + (i.outer.inner*1024)) + (k.outer*8)) + 4)], 2)*(float32x2*)B_2[ramp(((((k.outer*1024) + (j.outer.outer.inner*32)) + (j.outer.inner*2)) + 512), 1, 2)]))
+                  matmul[ramp((((((i.outer.outer.inner*2048) + (i.outer.inner*1024)) + (j.outer.outer.inner*32)) + (j.outer.inner*2)) + 128), 1, 2)] = ((float32x2*)matmul[ramp((((((i.outer.outer.inner*2048) + (i.outer.inner*1024)) + (j.outer.outer.inner*32)) + (j.outer.inner*2)) + 128), 1, 2)] + (broadcast((float32*)A_2[((((i.outer.outer.inner*2048) + (i.outer.inner*1024)) + (k.outer*8)) + 132)], 2)*(float32x2*)B_2[ramp(((((k.outer*1024) + (j.outer.outer.inner*32)) + (j.outer.inner*2)) + 512), 1, 2)]))
+                  matmul[ramp((((((i.outer.outer.inner*2048) + (i.outer.inner*1024)) + (j.outer.outer.inner*32)) + (j.outer.inner*2)) + 256), 1, 2)] = ((float32x2*)matmul[ramp((((((i.outer.outer.inner*2048) + (i.outer.inner*1024)) + (j.outer.outer.inner*32)) + (j.outer.inner*2)) + 256), 1, 2)] + (broadcast((float32*)A_2[((((i.outer.outer.inner*2048) + (i.outer.inner*1024)) + (k.outer*8)) + 260)], 2)*(float32x2*)B_2[ramp(((((k.outer*1024) + (j.outer.outer.inner*32)) + (j.outer.inner*2)) + 512), 1, 2)]))
+                  matmul[ramp((((((i.outer.outer.inner*2048) + (i.outer.inner*1024)) + (j.outer.outer.inner*32)) + (j.outer.inner*2)) + 384), 1, 2)] = ((float32x2*)matmul[ramp((((((i.outer.outer.inner*2048) + (i.outer.inner*1024)) + (j.outer.outer.inner*32)) + (j.outer.inner*2)) + 384), 1, 2)] + (broadcast((float32*)A_2[((((i.outer.outer.inner*2048) + (i.outer.inner*1024)) + (k.outer*8)) + 388)], 2)*(float32x2*)B_2[ramp(((((k.outer*1024) + (j.outer.outer.inner*32)) + (j.outer.inner*2)) + 512), 1, 2)]))
+                  matmul[ramp((((((i.outer.outer.inner*2048) + (i.outer.inner*1024)) + (j.outer.outer.inner*32)) + (j.outer.inner*2)) + 512), 1, 2)] = ((float32x2*)matmul[ramp((((((i.outer.outer.inner*2048) + (i.outer.inner*1024)) + (j.outer.outer.inner*32)) + (j.outer.inner*2)) + 512), 1, 2)] + (broadcast((float32*)A_2[((((i.outer.outer.inner*2048) + (i.outer.inner*1024)) + (k.outer*8)) + 516)], 2)*(float32x2*)B_2[ramp(((((k.outer*1024) + (j.outer.outer.inner*32)) + (j.outer.inner*2)) + 512), 1, 2)]))
+                  matmul[ramp((((((i.outer.outer.inner*2048) + (i.outer.inner*1024)) + (j.outer.outer.inner*32)) + (j.outer.inner*2)) + 640), 1, 2)] = ((float32x2*)matmul[ramp((((((i.outer.outer.inner*2048) + (i.outer.inner*1024)) + (j.outer.outer.inner*32)) + (j.outer.inner*2)) + 640), 1, 2)] + (broadcast((float32*)A_2[((((i.outer.outer.inner*2048) + (i.outer.inner*1024)) + (k.outer*8)) + 644)], 2)*(float32x2*)B_2[ramp(((((k.outer*1024) + (j.outer.outer.inner*32)) + (j.outer.inner*2)) + 512), 1, 2)]))
+                  matmul[ramp((((((i.outer.outer.inner*2048) + (i.outer.inner*1024)) + (j.outer.outer.inner*32)) + (j.outer.inner*2)) + 768), 1, 2)] = ((float32x2*)matmul[ramp((((((i.outer.outer.inner*2048) + (i.outer.inner*1024)) + (j.outer.outer.inner*32)) + (j.outer.inner*2)) + 768), 1, 2)] + (broadcast((float32*)A_2[((((i.outer.outer.inner*2048) + (i.outer.inner*1024)) + (k.outer*8)) + 772)], 2)*(float32x2*)B_2[ramp(((((k.outer*1024) + (j.outer.outer.inner*32)) + (j.outer.inner*2)) + 512), 1, 2)]))
+                  matmul[ramp((((((i.outer.outer.inner*2048) + (i.outer.inner*1024)) + (j.outer.outer.inner*32)) + (j.outer.inner*2)) + 896), 1, 2)] = ((float32x2*)matmul[ramp((((((i.outer.outer.inner*2048) + (i.outer.inner*1024)) + (j.outer.outer.inner*32)) + (j.outer.inner*2)) + 896), 1, 2)] + (broadcast((float32*)A_2[((((i.outer.outer.inner*2048) + (i.outer.inner*1024)) + (k.outer*8)) + 900)], 2)*(float32x2*)B_2[ramp(((((k.outer*1024) + (j.outer.outer.inner*32)) + (j.outer.inner*2)) + 512), 1, 2)]))
+                  matmul[ramp(((((i.outer.outer.inner*2048) + (i.outer.inner*1024)) + (j.outer.outer.inner*32)) + (j.outer.inner*2)), 1, 2)] = ((float32x2*)matmul[ramp(((((i.outer.outer.inner*2048) + (i.outer.inner*1024)) + (j.outer.outer.inner*32)) + (j.outer.inner*2)), 1, 2)] + (broadcast((float32*)A_2[((((i.outer.outer.inner*2048) + (i.outer.inner*1024)) + (k.outer*8)) + 5)], 2)*(float32x2*)B_2[ramp(((((k.outer*1024) + (j.outer.outer.inner*32)) + (j.outer.inner*2)) + 640), 1, 2)]))
+                  matmul[ramp((((((i.outer.outer.inner*2048) + (i.outer.inner*1024)) + (j.outer.outer.inner*32)) + (j.outer.inner*2)) + 128), 1, 2)] = ((float32x2*)matmul[ramp((((((i.outer.outer.inner*2048) + (i.outer.inner*1024)) + (j.outer.outer.inner*32)) + (j.outer.inner*2)) + 128), 1, 2)] + (broadcast((float32*)A_2[((((i.outer.outer.inner*2048) + (i.outer.inner*1024)) + (k.outer*8)) + 133)], 2)*(float32x2*)B_2[ramp(((((k.outer*1024) + (j.outer.outer.inner*32)) + (j.outer.inner*2)) + 640), 1, 2)]))
+                  matmul[ramp((((((i.outer.outer.inner*2048) + (i.outer.inner*1024)) + (j.outer.outer.inner*32)) + (j.outer.inner*2)) + 256), 1, 2)] = ((float32x2*)matmul[ramp((((((i.outer.outer.inner*2048) + (i.outer.inner*1024)) + (j.outer.outer.inner*32)) + (j.outer.inner*2)) + 256), 1, 2)] + (broadcast((float32*)A_2[((((i.outer.outer.inner*2048) + (i.outer.inner*1024)) + (k.outer*8)) + 261)], 2)*(float32x2*)B_2[ramp(((((k.outer*1024) + (j.outer.outer.inner*32)) + (j.outer.inner*2)) + 640), 1, 2)]))
+                  matmul[ramp((((((i.outer.outer.inner*2048) + (i.outer.inner*1024)) + (j.outer.outer.inner*32)) + (j.outer.inner*2)) + 384), 1, 2)] = ((float32x2*)matmul[ramp((((((i.outer.outer.inner*2048) + (i.outer.inner*1024)) + (j.outer.outer.inner*32)) + (j.outer.inner*2)) + 384), 1, 2)] + (broadcast((float32*)A_2[((((i.outer.outer.inner*2048) + (i.outer.inner*1024)) + (k.outer*8)) + 389)], 2)*(float32x2*)B_2[ramp(((((k.outer*1024) + (j.outer.outer.inner*32)) + (j.outer.inner*2)) + 640), 1, 2)]))
+                  matmul[ramp((((((i.outer.outer.inner*2048) + (i.outer.inner*1024)) + (j.outer.outer.inner*32)) + (j.outer.inner*2)) + 512), 1, 2)] = ((float32x2*)matmul[ramp((((((i.outer.outer.inner*2048) + (i.outer.inner*1024)) + (j.outer.outer.inner*32)) + (j.outer.inner*2)) + 512), 1, 2)] + (broadcast((float32*)A_2[((((i.outer.outer.inner*2048) + (i.outer.inner*1024)) + (k.outer*8)) + 517)], 2)*(float32x2*)B_2[ramp(((((k.outer*1024) + (j.outer.outer.inner*32)) + (j.outer.inner*2)) + 640), 1, 2)]))
+                  matmul[ramp((((((i.outer.outer.inner*2048) + (i.outer.inner*1024)) + (j.outer.outer.inner*32)) + (j.outer.inner*2)) + 640), 1, 2)] = ((float32x2*)matmul[ramp((((((i.outer.outer.inner*2048) + (i.outer.inner*1024)) + (j.outer.outer.inner*32)) + (j.outer.inner*2)) + 640), 1, 2)] + (broadcast((float32*)A_2[((((i.outer.outer.inner*2048) + (i.outer.inner*1024)) + (k.outer*8)) + 645)], 2)*(float32x2*)B_2[ramp(((((k.outer*1024) + (j.outer.outer.inner*32)) + (j.outer.inner*2)) + 640), 1, 2)]))
+                  matmul[ramp((((((i.outer.outer.inner*2048) + (i.outer.inner*1024)) + (j.outer.outer.inner*32)) + (j.outer.inner*2)) + 768), 1, 2)] = ((float32x2*)matmul[ramp((((((i.outer.outer.inner*2048) + (i.outer.inner*1024)) + (j.outer.outer.inner*32)) + (j.outer.inner*2)) + 768), 1, 2)] + (broadcast((float32*)A_2[((((i.outer.outer.inner*2048) + (i.outer.inner*1024)) + (k.outer*8)) + 773)], 2)*(float32x2*)B_2[ramp(((((k.outer*1024) + (j.outer.outer.inner*32)) + (j.outer.inner*2)) + 640), 1, 2)]))
+                  matmul[ramp((((((i.outer.outer.inner*2048) + (i.outer.inner*1024)) + (j.outer.outer.inner*32)) + (j.outer.inner*2)) + 896), 1, 2)] = ((float32x2*)matmul[ramp((((((i.outer.outer.inner*2048) + (i.outer.inner*1024)) + (j.outer.outer.inner*32)) + (j.outer.inner*2)) + 896), 1, 2)] + (broadcast((float32*)A_2[((((i.outer.outer.inner*2048) + (i.outer.inner*1024)) + (k.outer*8)) + 901)], 2)*(float32x2*)B_2[ramp(((((k.outer*1024) + (j.outer.outer.inner*32)) + (j.outer.inner*2)) + 640), 1, 2)]))
+                  matmul[ramp(((((i.outer.outer.inner*2048) + (i.outer.inner*1024)) + (j.outer.outer.inner*32)) + (j.outer.inner*2)), 1, 2)] = ((float32x2*)matmul[ramp(((((i.outer.outer.inner*2048) + (i.outer.inner*1024)) + (j.outer.outer.inner*32)) + (j.outer.inner*2)), 1, 2)] + (broadcast((float32*)A_2[((((i.outer.outer.inner*2048) + (i.outer.inner*1024)) + (k.outer*8)) + 6)], 2)*(float32x2*)B_2[ramp(((((k.outer*1024) + (j.outer.outer.inner*32)) + (j.outer.inner*2)) + 768), 1, 2)]))
+                  matmul[ramp((((((i.outer.outer.inner*2048) + (i.outer.inner*1024)) + (j.outer.outer.inner*32)) + (j.outer.inner*2)) + 128), 1, 2)] = ((float32x2*)matmul[ramp((((((i.outer.outer.inner*2048) + (i.outer.inner*1024)) + (j.outer.outer.inner*32)) + (j.outer.inner*2)) + 128), 1, 2)] + (broadcast((float32*)A_2[((((i.outer.outer.inner*2048) + (i.outer.inner*1024)) + (k.outer*8)) + 134)], 2)*(float32x2*)B_2[ramp(((((k.outer*1024) + (j.outer.outer.inner*32)) + (j.outer.inner*2)) + 768), 1, 2)]))
+                  matmul[ramp((((((i.outer.outer.inner*2048) + (i.outer.inner*1024)) + (j.outer.outer.inner*32)) + (j.outer.inner*2)) + 256), 1, 2)] = ((float32x2*)matmul[ramp((((((i.outer.outer.inner*2048) + (i.outer.inner*1024)) + (j.outer.outer.inner*32)) + (j.outer.inner*2)) + 256), 1, 2)] + (broadcast((float32*)A_2[((((i.outer.outer.inner*2048) + (i.outer.inner*1024)) + (k.outer*8)) + 262)], 2)*(float32x2*)B_2[ramp(((((k.outer*1024) + (j.outer.outer.inner*32)) + (j.outer.inner*2)) + 768), 1, 2)]))
+                  matmul[ramp((((((i.outer.outer.inner*2048) + (i.outer.inner*1024)) + (j.outer.outer.inner*32)) + (j.outer.inner*2)) + 384), 1, 2)] = ((float32x2*)matmul[ramp((((((i.outer.outer.inner*2048) + (i.outer.inner*1024)) + (j.outer.outer.inner*32)) + (j.outer.inner*2)) + 384), 1, 2)] + (broadcast((float32*)A_2[((((i.outer.outer.inner*2048) + (i.outer.inner*1024)) + (k.outer*8)) + 390)], 2)*(float32x2*)B_2[ramp(((((k.outer*1024) + (j.outer.outer.inner*32)) + (j.outer.inner*2)) + 768), 1, 2)]))
+                  matmul[ramp((((((i.outer.outer.inner*2048) + (i.outer.inner*1024)) + (j.outer.outer.inner*32)) + (j.outer.inner*2)) + 512), 1, 2)] = ((float32x2*)matmul[ramp((((((i.outer.outer.inner*2048) + (i.outer.inner*1024)) + (j.outer.outer.inner*32)) + (j.outer.inner*2)) + 512), 1, 2)] + (broadcast((float32*)A_2[((((i.outer.outer.inner*2048) + (i.outer.inner*1024)) + (k.outer*8)) + 518)], 2)*(float32x2*)B_2[ramp(((((k.outer*1024) + (j.outer.outer.inner*32)) + (j.outer.inner*2)) + 768), 1, 2)]))
+                  matmul[ramp((((((i.outer.outer.inner*2048) + (i.outer.inner*1024)) + (j.outer.outer.inner*32)) + (j.outer.inner*2)) + 640), 1, 2)] = ((float32x2*)matmul[ramp((((((i.outer.outer.inner*2048) + (i.outer.inner*1024)) + (j.outer.outer.inner*32)) + (j.outer.inner*2)) + 640), 1, 2)] + (broadcast((float32*)A_2[((((i.outer.outer.inner*2048) + (i.outer.inner*1024)) + (k.outer*8)) + 646)], 2)*(float32x2*)B_2[ramp(((((k.outer*1024) + (j.outer.outer.inner*32)) + (j.outer.inner*2)) + 768), 1, 2)]))
+                  matmul[ramp((((((i.outer.outer.inner*2048) + (i.outer.inner*1024)) + (j.outer.outer.inner*32)) + (j.outer.inner*2)) + 768), 1, 2)] = ((float32x2*)matmul[ramp((((((i.outer.outer.inner*2048) + (i.outer.inner*1024)) + (j.outer.outer.inner*32)) + (j.outer.inner*2)) + 768), 1, 2)] + (broadcast((float32*)A_2[((((i.outer.outer.inner*2048) + (i.outer.inner*1024)) + (k.outer*8)) + 774)], 2)*(float32x2*)B_2[ramp(((((k.outer*1024) + (j.outer.outer.inner*32)) + (j.outer.inner*2)) + 768), 1, 2)]))
+                  matmul[ramp((((((i.outer.outer.inner*2048) + (i.outer.inner*1024)) + (j.outer.outer.inner*32)) + (j.outer.inner*2)) + 896), 1, 2)] = ((float32x2*)matmul[ramp((((((i.outer.outer.inner*2048) + (i.outer.inner*1024)) + (j.outer.outer.inner*32)) + (j.outer.inner*2)) + 896), 1, 2)] + (broadcast((float32*)A_2[((((i.outer.outer.inner*2048) + (i.outer.inner*1024)) + (k.outer*8)) + 902)], 2)*(float32x2*)B_2[ramp(((((k.outer*1024) + (j.outer.outer.inner*32)) + (j.outer.inner*2)) + 768), 1, 2)]))
+                  matmul[ramp(((((i.outer.outer.inner*2048) + (i.outer.inner*1024)) + (j.outer.outer.inner*32)) + (j.outer.inner*2)), 1, 2)] = ((float32x2*)matmul[ramp(((((i.outer.outer.inner*2048) + (i.outer.inner*1024)) + (j.outer.outer.inner*32)) + (j.outer.inner*2)), 1, 2)] + (broadcast((float32*)A_2[((((i.outer.outer.inner*2048) + (i.outer.inner*1024)) + (k.outer*8)) + 7)], 2)*(float32x2*)B_2[ramp(((((k.outer*1024) + (j.outer.outer.inner*32)) + (j.outer.inner*2)) + 896), 1, 2)]))
+                  matmul[ramp((((((i.outer.outer.inner*2048) + (i.outer.inner*1024)) + (j.outer.outer.inner*32)) + (j.outer.inner*2)) + 128), 1, 2)] = ((float32x2*)matmul[ramp((((((i.outer.outer.inner*2048) + (i.outer.inner*1024)) + (j.outer.outer.inner*32)) + (j.outer.inner*2)) + 128), 1, 2)] + (broadcast((float32*)A_2[((((i.outer.outer.inner*2048) + (i.outer.inner*1024)) + (k.outer*8)) + 135)], 2)*(float32x2*)B_2[ramp(((((k.outer*1024) + (j.outer.outer.inner*32)) + (j.outer.inner*2)) + 896), 1, 2)]))
+                  matmul[ramp((((((i.outer.outer.inner*2048) + (i.outer.inner*1024)) + (j.outer.outer.inner*32)) + (j.outer.inner*2)) + 256), 1, 2)] = ((float32x2*)matmul[ramp((((((i.outer.outer.inner*2048) + (i.outer.inner*1024)) + (j.outer.outer.inner*32)) + (j.outer.inner*2)) + 256), 1, 2)] + (broadcast((float32*)A_2[((((i.outer.outer.inner*2048) + (i.outer.inner*1024)) + (k.outer*8)) + 263)], 2)*(float32x2*)B_2[ramp(((((k.outer*1024) + (j.outer.outer.inner*32)) + (j.outer.inner*2)) + 896), 1, 2)]))
+                  matmul[ramp((((((i.outer.outer.inner*2048) + (i.outer.inner*1024)) + (j.outer.outer.inner*32)) + (j.outer.inner*2)) + 384), 1, 2)] = ((float32x2*)matmul[ramp((((((i.outer.outer.inner*2048) + (i.outer.inner*1024)) + (j.outer.outer.inner*32)) + (j.outer.inner*2)) + 384), 1, 2)] + (broadcast((float32*)A_2[((((i.outer.outer.inner*2048) + (i.outer.inner*1024)) + (k.outer*8)) + 391)], 2)*(float32x2*)B_2[ramp(((((k.outer*1024) + (j.outer.outer.inner*32)) + (j.outer.inner*2)) + 896), 1, 2)]))
+                  matmul[ramp((((((i.outer.outer.inner*2048) + (i.outer.inner*1024)) + (j.outer.outer.inner*32)) + (j.outer.inner*2)) + 512), 1, 2)] = ((float32x2*)matmul[ramp((((((i.outer.outer.inner*2048) + (i.outer.inner*1024)) + (j.outer.outer.inner*32)) + (j.outer.inner*2)) + 512), 1, 2)] + (broadcast((float32*)A_2[((((i.outer.outer.inner*2048) + (i.outer.inner*1024)) + (k.outer*8)) + 519)], 2)*(float32x2*)B_2[ramp(((((k.outer*1024) + (j.outer.outer.inner*32)) + (j.outer.inner*2)) + 896), 1, 2)]))
+                  matmul[ramp((((((i.outer.outer.inner*2048) + (i.outer.inner*1024)) + (j.outer.outer.inner*32)) + (j.outer.inner*2)) + 640), 1, 2)] = ((float32x2*)matmul[ramp((((((i.outer.outer.inner*2048) + (i.outer.inner*1024)) + (j.outer.outer.inner*32)) + (j.outer.inner*2)) + 640), 1, 2)] + (broadcast((float32*)A_2[((((i.outer.outer.inner*2048) + (i.outer.inner*1024)) + (k.outer*8)) + 647)], 2)*(float32x2*)B_2[ramp(((((k.outer*1024) + (j.outer.outer.inner*32)) + (j.outer.inner*2)) + 896), 1, 2)]))
+                  matmul[ramp((((((i.outer.outer.inner*2048) + (i.outer.inner*1024)) + (j.outer.outer.inner*32)) + (j.outer.inner*2)) + 768), 1, 2)] = ((float32x2*)matmul[ramp((((((i.outer.outer.inner*2048) + (i.outer.inner*1024)) + (j.outer.outer.inner*32)) + (j.outer.inner*2)) + 768), 1, 2)] + (broadcast((float32*)A_2[((((i.outer.outer.inner*2048) + (i.outer.inner*1024)) + (k.outer*8)) + 775)], 2)*(float32x2*)B_2[ramp(((((k.outer*1024) + (j.outer.outer.inner*32)) + (j.outer.inner*2)) + 896), 1, 2)]))
+                  matmul[ramp((((((i.outer.outer.inner*2048) + (i.outer.inner*1024)) + (j.outer.outer.inner*32)) + (j.outer.inner*2)) + 896), 1, 2)] = ((float32x2*)matmul[ramp((((((i.outer.outer.inner*2048) + (i.outer.inner*1024)) + (j.outer.outer.inner*32)) + (j.outer.inner*2)) + 896), 1, 2)] + (broadcast((float32*)A_2[((((i.outer.outer.inner*2048) + (i.outer.inner*1024)) + (k.outer*8)) + 903)], 2)*(float32x2*)B_2[ramp(((((k.outer*1024) + (j.outer.outer.inner*32)) + (j.outer.inner*2)) + 896), 1, 2)]))
+                }
+              }
             }
           }
         }
-        for (i_1: int32, 0, 128) {
-          for (j_1: int32, 0, 128) {
-            out_2[((i_1*128) + j_1)] = ((float32*)matmul[((i_1*128) + j_1)] + (float32*)C_2[((i_1*128) + j_1)])
+        for (i.inner: int32, 0, 128) {
+          for (j.inner: int32, 0, 128) {
+            out_2[((i.inner*128) + j.inner)] = ((float32*)matmul[((i.inner*128) + j.inner)] + (float32*)C_2[((i.inner*128) + j.inner)])
           }
         }
       }
@@ -241,7 +564,7 @@ We build the binary and check its correctness and performance.
 
  .. code-block:: none
 
-    Execution time of this operator: 2.217 ms
+    Execution time of this operator: 0.371 ms
 
 
 
@@ -352,13 +675,13 @@ In the example below we resume the status and do more 5 trials.
   For example, you can start a new thread/process (with the builtin python library
   threading or multiprocessing) and run the tvm binaries in the new thread/process.
   This provides an isolation and avoids the conflict in the main thread/process.
-  You can also use :any:`auto_scheduler.measure.LocalRPCMeasureContext` for auto-scheduler,
+  You can also use :any:`auto_scheduler.LocalRPCMeasureContext` for auto-scheduler,
   as shown in the GPU tutorial (:ref:`auto-scheduler-conv-gpu`).
 
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** ( 1 minutes  56.117 seconds)
+   **Total running time of the script:** ( 1 minutes  46.419 seconds)
 
 
 .. _sphx_glr_download_tutorials_auto_scheduler_tune_matmul_x86.py:
