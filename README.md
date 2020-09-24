@@ -1,5 +1,10 @@
 # TVM Project Homepage
 
+## Prereq
+
+- Install the jekyll and bundler gems `gem install bundler jekyll`
+
+
 ## Serve Locally
 
 ```bash
