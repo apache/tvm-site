@@ -38,7 +38,7 @@ and the performance- or efficiency-oriented hardware backends. TVM provides the 
 * {:.key-block}
 ![Run Everywhere](/assets/images/run.svg "run")
 ### Run Everywhere
-    CPUs,  GPUs, browsers, microcontrollers, FPGAs.
+    CPUs, GPUs, browsers, microcontrollers, FPGAs and more.
 
     {:.mt-0.mt-lg-3}
     Automatically generate and optimize tensor operators on more backends.
@@ -54,7 +54,7 @@ and the performance- or efficiency-oriented hardware backends. TVM provides the 
 * {:.key-block}
 ![Ease of Use](/assets/images/use.svg "Ease of Use")
 ### Ease of Use
-Compilation of deep learning models in Keras, MXNet, PyTorch, Tensorflow, CoreML, DarkNet. Start using TVM with Python today, build out production stacks using C++, Rust, or Java the next day.
+Compilation of deep learning models in Keras, MXNet, PyTorch, Tensorflow, CoreML, DarkNet and more. Start using TVM with Python today, build out production stacks using C++, Rust, or Java the next day.
 </div>
 
 </section>
