@@ -12,8 +12,10 @@ layout: index
     ![responsiveAbout](/assets/images/about-responsive-image.svg "responsiveAbout"){:.responsiveImg}
 * {:.aboutDetailsCol}
 #### About Apache TVM
-Apache TVM is an open deep learning compiler stack for CPUs, GPUs, and specialized accelerators. It aims to close the gap between the productivity-focused deep learning frameworks,
-and the performance- or efficiency-oriented hardware backends. TVM provides the following main features:
+The vision of the Apache TVM Project is to host a diverse community of experts and practitioners
+in machine learning, compilers, and systems architecture to build an accessible, extensible, and
+automated open-source framework that optimizes current and emerging machine learning models for
+any hardware platform. TVM provides the following main features:
 
     * Compilation of deep learning models into minimum deployable modules.
     * Infrastructure to automatic generate and optimize models on more backend with better performance.
