@@ -1,11 +1,8 @@
 ---
-layout: home
+layout: index
 ---
 
 {::options parse_block_html="true" /}
-
-
-<a name="about"></a>
 
 <section class="aboutSec">
 <div class="container">
