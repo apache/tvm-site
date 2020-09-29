@@ -232,6 +232,18 @@
 <p>Frontends for constructing Relay programs.</p>
 <p>Contains the model importers currently defined
 for Relay.</p>
+<p><strong>Classes</strong></p>
+<table class="longtable docutils align-default">
+<colgroup>
+<col style="width: 10%" />
+<col style="width: 90%" />
+</colgroup>
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#tvm.relay.frontend.ChangeDatatype" title="tvm.relay.frontend.ChangeDatatype"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ChangeDatatype</span></code></a>(src, dst)</p></td>
+<td><p>Mutator for changing the datatype of Relay programs.</p></td>
+</tr>
+</tbody>
+</table>
 <p><strong>Functions</strong></p>
 <table class="longtable docutils align-default">
 <colgroup>
@@ -260,7 +272,7 @@ for Relay.</p>
 <tr class="row-odd"><td><p><a class="reference internal" href="#tvm.relay.frontend.from_onnx" title="tvm.relay.frontend.from_onnx"><code class="xref py py-obj docutils literal notranslate"><span class="pre">from_onnx</span></code></a>(model[, shape, dtype, opset])</p></td>
 <td><p>Convert a ONNX model into an equivalent Relay Function.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#tvm.relay.frontend.from_pytorch" title="tvm.relay.frontend.from_pytorch"><code class="xref py py-obj docutils literal notranslate"><span class="pre">from_pytorch</span></code></a>(script_module, input_shapes[, …])</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#tvm.relay.frontend.from_pytorch" title="tvm.relay.frontend.from_pytorch"><code class="xref py py-obj docutils literal notranslate"><span class="pre">from_pytorch</span></code></a>(script_module, input_infos[, …])</p></td>
 <td><p>Load PyTorch model in the form of a scripted PyTorch model and convert into relay.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#tvm.relay.frontend.from_tensorflow" title="tvm.relay.frontend.from_tensorflow"><code class="xref py py-obj docutils literal notranslate"><span class="pre">from_tensorflow</span></code></a>(graph[, layout, shape, outputs])</p></td>
@@ -472,7 +484,7 @@ The companion parameters will be handled automatically.</p>
 
 <dl class="py function">
 <dt id="tvm.relay.frontend.from_pytorch">
-<code class="sig-prename descclassname">tvm.relay.frontend.</code><code class="sig-name descname">from_pytorch</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">script_module</span></em>, <em class="sig-param"><span class="n">input_shapes</span></em>, <em class="sig-param"><span class="n">custom_convert_map</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">default_dtype</span><span class="o">=</span><span class="default_value">'float32'</span></em><span class="sig-paren">)</span><a class="headerlink" href="#tvm.relay.frontend.from_pytorch" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">tvm.relay.frontend.</code><code class="sig-name descname">from_pytorch</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">script_module</span></em>, <em class="sig-param"><span class="n">input_infos</span></em>, <em class="sig-param"><span class="n">custom_convert_map</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">default_dtype</span><span class="o">=</span><span class="default_value">'float32'</span></em><span class="sig-paren">)</span><a class="headerlink" href="#tvm.relay.frontend.from_pytorch" title="Permalink to this definition">¶</a></dt>
 <dd><p>Load PyTorch model in the form of a scripted PyTorch model and convert into relay.
 The companion parameters will be handled automatically.</p>
 <dl class="field-list simple">
@@ -480,9 +492,17 @@ The companion parameters will be handled automatically.</p>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>script_module</strong> (<em>TopLevelTracedModule object</em>) – TorchScripted PyTorch graph
 Note: We currently only support traces (ie: torch.jit.trace(model, input))</p></li>
-<li><p><strong>input_shapes</strong> (<em>List of tuples of input name and input dimensions</em>) – Graph level input shape list
+<li><p><strong>input_infos</strong> (<em>List of tuples of</em><em> (</em><em>input name</em><em>, </em><em>input shape</em><em>)</em>) – <p>or (input name, (input shape, input types))
+Graph level input shape and type list
 The same input names need to be used for deployment, so choose easy to
-remember names (such as: input0, input1)</p></li>
+remember names (such as: input0, input1)
+e.g.</p>
+<blockquote>
+<div><p>[(‘input0’, (1, 2)), (‘input1’, (3, 4))]
+or
+[(‘input0’, ((1, 2), ‘int’)), (‘input1’, ((3, 4), ‘float’))]</p>
+</div></blockquote>
+</p></li>
 <li><p><strong>custom_convert_map</strong> (<em>Dictionary of str to Relay op</em>) – A custom op conversion map in the same format as _convert_map above</p></li>
 </ul>
 </dd>
@@ -515,6 +535,43 @@ remember names (such as: input0, input1)</p></li>
 <li><p><strong>params</strong> (<em>dict of str to tvm.NDArray</em>) – The parameter dict to be used by relay</p></li>
 </ul>
 </p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt id="tvm.relay.frontend.ChangeDatatype">
+<em class="property">class </em><code class="sig-prename descclassname">tvm.relay.frontend.</code><code class="sig-name descname">ChangeDatatype</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">src</span></em>, <em class="sig-param"><span class="n">dst</span></em><span class="sig-paren">)</span><a class="headerlink" href="#tvm.relay.frontend.ChangeDatatype" title="Permalink to this definition">¶</a></dt>
+<dd><p>Mutator for changing the datatype of Relay programs.</p>
+<p>This pass should be useful for users of the Bring Your Own Datatypes
+framework.
+TODO(&#64;gussmith23 &#64;hypercubestart) Add link to documentation when it exists</p>
+<p>Example:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">tvm.relay.testing.inception_v3</span> <span class="kn">import</span> <span class="n">get_workload</span>
+<span class="n">mod</span><span class="p">,</span> <span class="n">params</span> <span class="o">=</span> <span class="n">get_workload</span><span class="p">()</span>
+
+<span class="k">def</span> <span class="nf">change_dtype</span><span class="p">(</span><span class="n">mod</span><span class="p">,</span> <span class="n">params</span><span class="p">,</span> <span class="n">src</span><span class="p">,</span> <span class="n">dst</span><span class="p">):</span>
+    <span class="n">mod</span> <span class="o">=</span> <span class="n">ChangeDatatype</span><span class="p">(</span><span class="n">src</span><span class="p">,</span> <span class="n">dst</span><span class="p">)(</span><span class="n">mod</span><span class="p">)</span>
+    <span class="n">params</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">((</span><span class="n">p</span><span class="p">,</span> <span class="n">tvm</span><span class="o">.</span><span class="n">nd</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">params</span><span class="p">[</span><span class="n">p</span><span class="p">]</span><span class="o">.</span><span class="n">asnumpy</span><span class="p">()</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">dst</span><span class="p">)))</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">params</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">mod</span><span class="p">,</span> <span class="n">params</span>
+
+<span class="n">mod</span><span class="p">,</span> <span class="n">params</span> <span class="o">=</span> <span class="n">change_dtype</span><span class="p">(</span><span class="n">mod</span><span class="p">,</span> <span class="n">params</span><span class="p">,</span> <span class="s2">&quot;float32&quot;</span><span class="p">,</span> <span class="s2">&quot;custom[posites2]32&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>src</strong> (<a class="reference internal" href="../runtime.html#tvm.runtime.String" title="tvm.runtime.String"><em>String</em></a>) – The source datatype name, e.g. “float” or “posites2” (but not “float32”
+or “custom[posites2]32”).</p></li>
+<li><p><strong>dst</strong> (<a class="reference internal" href="../runtime.html#tvm.runtime.String" title="tvm.runtime.String"><em>String</em></a>) – The destination datatype name, in the same format.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>mod</strong> – Module where all nodes of dtype <cite>src</cite> have been changed to have dtype
+<cite>dst</cite>.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>tvm.IRModule</p>
 </dd>
 </dl>
 </dd></dl>

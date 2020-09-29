@@ -109,6 +109,7 @@ var searchData=
   ['attrsnode_3c_20layouttransformattrs_20_3e',['AttrsNode&lt; LayoutTransformAttrs &gt;',['../classtvm_1_1AttrsNode.html',1,'tvm']]],
   ['attrsnode_3c_20leakyreluattrs_20_3e',['AttrsNode&lt; LeakyReluAttrs &gt;',['../classtvm_1_1AttrsNode.html',1,'tvm']]],
   ['attrsnode_3c_20lrnattrs_20_3e',['AttrsNode&lt; LRNAttrs &gt;',['../classtvm_1_1AttrsNode.html',1,'tvm']]],
+  ['attrsnode_3c_20matrixsetdiagattrs_20_3e',['AttrsNode&lt; MatrixSetDiagAttrs &gt;',['../classtvm_1_1AttrsNode.html',1,'tvm']]],
   ['attrsnode_3c_20maxpool1dattrs_20_3e',['AttrsNode&lt; MaxPool1DAttrs &gt;',['../classtvm_1_1AttrsNode.html',1,'tvm']]],
   ['attrsnode_3c_20maxpool2dattrs_20_3e',['AttrsNode&lt; MaxPool2DAttrs &gt;',['../classtvm_1_1AttrsNode.html',1,'tvm']]],
   ['attrsnode_3c_20maxpool3dattrs_20_3e',['AttrsNode&lt; MaxPool3DAttrs &gt;',['../classtvm_1_1AttrsNode.html',1,'tvm']]],

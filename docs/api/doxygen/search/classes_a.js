@@ -16,6 +16,7 @@ var searchData=
   ['mapnode',['MapNode',['../classtvm_1_1MapNode.html',1,'tvm']]],
   ['match',['Match',['../classtvm_1_1relay_1_1Match.html',1,'tvm::relay']]],
   ['matchnode',['MatchNode',['../classtvm_1_1relay_1_1MatchNode.html',1,'tvm::relay']]],
+  ['matrixsetdiagattrs',['MatrixSetDiagAttrs',['../structtvm_1_1relay_1_1MatrixSetDiagAttrs.html',1,'tvm::relay']]],
   ['max',['Max',['../classtvm_1_1tir_1_1Max.html',1,'tvm::tir']]],
   ['maxnode',['MaxNode',['../classtvm_1_1tir_1_1MaxNode.html',1,'tvm::tir']]],
   ['maxpool1dattrs',['MaxPool1DAttrs',['../structtvm_1_1relay_1_1MaxPool1DAttrs.html',1,'tvm::relay']]],

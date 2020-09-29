@@ -1,6 +1,8 @@
 var searchData=
 [
   ['k',['k',['../structtvm_1_1relay_1_1TopKAttrs.html#a5f602cd29db662fad78e59159c371c3e',1,'tvm::relay::TopKAttrs']]],
+  ['k1',['k1',['../structtvm_1_1relay_1_1MatrixSetDiagAttrs.html#a8ebfd7b6ec520741643adb6742ffdfd5',1,'tvm::relay::MatrixSetDiagAttrs']]],
+  ['k2',['k2',['../structtvm_1_1relay_1_1MatrixSetDiagAttrs.html#a181f59c653c46220afdd98605b6d6e34',1,'tvm::relay::MatrixSetDiagAttrs']]],
   ['kallocalignment',['kAllocAlignment',['../namespacetvm_1_1runtime.html#ac8a77303649fb143634796b3dc50a286',1,'tvm::runtime']]],
   ['kbroadcast',['kBroadcast',['../namespacetvm_1_1topi.html#a13aaf23f0ab77f1ed4a7d4b7816bf210',1,'tvm::topi']]],
   ['kcallingconv',['kCallingConv',['../namespacetvm_1_1attr.html#a24f18111e9d98d9ce0229edc0a42e2be',1,'tvm::attr']]],
