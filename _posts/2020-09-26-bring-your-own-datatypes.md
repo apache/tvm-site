@@ -1,8 +1,8 @@
 ---
 layout: post
 title:  "Bring Your Own Datatypes: Enabling Custom Datatype Exploration in TVM"
-date:   2020-05-20
-author: Gus Smith
+date:   2020-09-26
+author: Gus Smith, Andrew Liu
 ---
 
 In this post, we describe the Bring Your Own Datatypes framework, which enables the use of custom datatypes within TVM.
@@ -61,8 +61,8 @@ The goal of the Bring Your Own Datatypes framework
   using custom datatypes.
 In the Bring Your Own Datatypes framework,
   "datatype" means a scalar type:
-  `float32`
-  or `uint8`, for example.
+  `float`
+  or `uint`, for example.
 We do not handle more complicated data formats
   such as [block floating point](https://en.wikipedia.org/wiki/Block_floating_point){:target='_blank'}
   or Intel's [Flexpoint](https://arxiv.org/abs/1711.02213){:target='_blank'}.
@@ -101,6 +101,8 @@ There are two primary ways
 These steps are akin to
   *declaration* and *implementation* of the datatype,
   respectively.
+
+Please note that all referred code in this post are based on TVM repository’s master branch commit [4cad71d](https://github.com/apache/incubator-tvm/tree/4cad71d19fda6d8f7b750c791284c6dfdddf1f07){:target='_blank'}. We will use an example `posit` datatype which can be found under `src/target/datatype/posit/posit-wrapper.cc` and can be compiled in TVM with the `USE_BYODT_POSIT` flag.[^posit]
   
 ### Datatype Registration
 
@@ -111,10 +113,10 @@ To register the datatype,
   the range of unused type codes
   available to custom datatypes.
 ```python
-tvm.datatype.register('bfloat', 150)
+tvm.target.datatype.register('posit', 150)
 ```
 The above code registers
-  the `'bfloat'` datatype
+  the `'posit'` datatype
   with type code 150.
 This registration step
   allows TVM to parse programs
@@ -122,34 +124,34 @@ This registration step
 ```python
 x = relay.var('x', shape=(3, ), dtype='float32')
 y = relay.var('y', shape=(3, ), dtype='float32')
-x_bfloat = relay.cast(x, dtype='custom[bfloat]16')
-y_bfloat = relay.cast(y, dtype='custom[bfloat]16')
-z_bfloat = x_bfloat + y_bfloat
-z = relay.cast(z_bfloat, dtype='float32')
+x_posit = relay.cast(x, dtype='custom[posit]16')
+y_posit = relay.cast(y, dtype='custom[posit]16')
+z_posit = x_posit + y_posit
+z = relay.cast(z_posit, dtype='float32')
 program = relay.Function([x, y], z)
 print(program)
 
 # v0.0.4
 # fn (%x: Tensor[(3), float32], %y: Tensor[(3), float32]) {
-#   %0 = cast(%x, dtype="custom[bfloat]16");
-#   %1 = cast(%y, dtype="custom[bfloat]16");
+#   %0 = cast(%x, dtype="custom[posit]16");
+#   %1 = cast(%y, dtype="custom[posit]16");
 #   %2 = add(%0, %1);
 #   cast(%2, dtype="float32")
 # }
 ```
 The program above
   casts `float32` inputs `x` and `y`
-  into `bfloat`s,
+  into `posit`s,
   adds them,
   and casts the result back to `float32`.
-Once the `bfloat` type is registered,
+Once the `posit` type is registered,
   TVM is able to parse the special `dtype` syntax
   `custom[<typename>]`,
   where `<typename>` is the name registered for the type.
 This syntax also supports the usual
   `<bits>x<lanes>` format;
   here, we use `16` to indicate that
-  each `bfloat` is 16 bits wide.
+  each `posit` is 16 bits wide.
 (The number of lanes
   defaults to 1.)
   
@@ -159,7 +161,7 @@ Though TVM can parse the above program,
   it cannot yet compile it,
   as TVM does not yet understand 
   how to compile operations 
-  over the `bfloat` type.
+  over the `posit` type.
 To compile these programs,
   we register *lowering functions* for the custom datatype,
   which help TVM convert the operations
@@ -175,7 +177,7 @@ We can then rely on native TVM
   to understand and compile the code.
 
 {:center: style="text-align: center"}
-![A lowering function lowering an add over `bfloat`s to a library call over `uint16_t`s](/images/bring-your-own-datatypes/lowering.png){: width="50%"}
+![A lowering function lowering an add over `posit`s to a library call over `uint16_t`s](/images/bring-your-own-datatypes/lowering.png){: width="50%"}
 {:center}
 <center>
 Figure 1: The expected result of a user's registered lowering function. A lowering function should convert a program using custom datatypes to a program which native TVM can understand and compile (in this case, a call to an external library, taking two <tt>uint16_t</tt>s).
@@ -183,22 +185,22 @@ Figure 1: The expected result of a user's registered lowering function. A loweri
 
 Figure 1 shows a common pattern.
 Let's assume we are
-  interested in exploring the `bfloat` type,
+  interested in exploring the `posit` type,
   and have chosen to run some workloads
-  by plugging a `bfloat` emulation library (e.g. [biovault_bfloat16](https://github.com/biovault/biovault_bfloat16){:target="_blank"}) into TVM
+  by plugging a `posit` emulation library (e.g. [Stillwater Universal](https://github.com/stillwater-sc/universal){:target="_blank"}) into TVM
   via the Bring Your Own Datatypes framework.
 Our workload is a simple program
-  which adds two `bfloat` inputs.
+  which adds two `posit` inputs.
 Native TVM does not understand
-  how to implement `bfloat` addition---but it doesn't need to,
+  how to implement `posit` addition---but it doesn't need to,
   as we have a library implementing our datatype!
-The library contains an implementation of `bfloat` addition,
+The library contains an implementation of `posit` addition,
   alongside other operators such as multiplication and square root.
-To implement this `bfloat` addition,
+To implement this `posit` addition,
   we'd just like to call into our library.
 Thus, our Add node should become a Call node,
-  calling out to a function (call it `BFloat16Add`) in our library.
-To store the bits of the input `bfloat`s
+  calling out to a function (call it `Posit16es2Add`) in our library.
+To store the bits of the input `posit`s
   inside a type that TVM understands,
   we use 16-bit unsigned integers.
 The resulting program 
@@ -208,17 +210,17 @@ The resulting program
   
 To achieve the above lowering,
   we register a lowering function
-  for `bfloat`:
+  for `posit`:
 ```python
-tvm.datatype.register_op(
-    tvm.datatype.create_lower_func('BFloat16Add'),
-    'Add', 'llvm', 'bfloat')
+tvm.target.datatype.register_op(
+    tvm.target.datatype.create_lower_func({16: 'Posit16es2Add'}),
+    'Add', 'llvm', 'posit')
 ```
 The above code registers
   a lowering function
   for a specific operator (Add),
   compilation target (LLVM),
-  and datatype (`bfloat`).
+  datatype (`posit`), and bit length (16).
 The first argument
   is the lowering function.
 This can be any function
@@ -227,7 +229,7 @@ This can be any function
 In our case,
   we use a helper function
   provided by the Bring Your Own Datatypes framework.
-`tvm.datatype.create_lower_func('BFloat16Add')`
+`tvm.target.datatype.create_lower_func({16:'Posit16es2Add'})`
   creates a lowering function
   for the common pattern described above.
 The resulting function
@@ -235,7 +237,7 @@ The resulting function
   to `uint16_t`,
   and then converts the node itself
   into a call to the given function name
-  (in this case, `'BFloat16Add'`).
+  (in this case, `'Posit16es2Add'`) for `posit`s of bit length 16.
 
 To implement a custom datatype,
   the user will need to register
@@ -265,18 +267,19 @@ We hope this will encourage datatype researchers
   we hope this will spark interest
   in custom datatypes
   within the deep learning community.
-The Bring Your Own Datatypes framework
-  partially exists in TVM at the moment,
-  and more will be merged in (including full documentation)
-  in the coming months.
+For more documentation about the Bring Your Own Datatypes framework
+  please visit the developer tutorial [Bring Your Own Datatypes to TVM](https://tvm.apache.org/docs/tutorials/dev/bring_your_own_datatypes.html#sphx-glr-tutorials-dev-bring-your-own-datatypes-py){:target='_blank'}.
 
   
 ---
 
 *Gus Smith is a PhD student at the University of Washington working with Luis Ceze and Zachary Tatlock at the intersection of computer architecture and programming languages. His website is [justg.us](https://justg.us){:target='_blank'}.*
 
+*[Andrew Liu](https://github.com/hypercubestart){:target='_blank'} is an undergraduate student at the University of Washington and a member of UW CSE SAMPL/PLSE lab.*
+
 ## References
 
 [^ieee]: [754-2019 - IEEE Standard for Floating-Point Arithmetic](https://standards.ieee.org/standard/754-2019.html){:target='_blank'}
 [^jouppi2017datacenter]: Jouppi, Norman P., et al. "In-datacenter performance analysis of a tensor processing unit." Proceedings of the 44th Annual International Symposium on Computer Architecture. 2017.
 [^tensorflowbfloat]: [Using bfloat16 with TensorFlow models](https://cloud.google.com/tpu/docs/bfloat16){:target='_blank'}
+[^posit]: [Beating Floating Point at its Own Game: Posit Arithmetic](https://posithub.org/docs/BeatingFloatingPoint.pdf){:target='_blank'}
