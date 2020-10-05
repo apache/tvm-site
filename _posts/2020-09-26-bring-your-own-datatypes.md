@@ -237,7 +237,9 @@ The resulting function
   to `uint16_t`,
   and then converts the node itself
   into a call to the given function name
-  (in this case, `'Posit16es2Add'`) for `posit`s of bit length 16.
+  (in this case, `'Posit16es2Add'` for `posit`s of bit length 16).
+  We pass a dictionary to `create_lower_func` so that TVM can dispatch
+  to the appropriate function name based on the bit length of the datatype.
 
 To implement a custom datatype,
   the user will need to register
@@ -268,14 +270,14 @@ We hope this will encourage datatype researchers
   in custom datatypes
   within the deep learning community.
 For more documentation about the Bring Your Own Datatypes framework
-  please visit the developer tutorial [Bring Your Own Datatypes to TVM](https://tvm.apache.org/docs/tutorials/dev/bring_your_own_datatypes.html#sphx-glr-tutorials-dev-bring-your-own-datatypes-py){:target='_blank'}.
+  please visit the [Bring Your Own Datatypes to TVM](https://tvm.apache.org/docs/tutorials/dev/bring_your_own_datatypes.html#sphx-glr-tutorials-dev-bring-your-own-datatypes-py){:target='_blank'} developer tutorial.
 
   
 ---
 
 *Gus Smith is a PhD student at the University of Washington working with Luis Ceze and Zachary Tatlock at the intersection of computer architecture and programming languages. His website is [justg.us](https://justg.us){:target='_blank'}.*
 
-*[Andrew Liu](https://github.com/hypercubestart){:target='_blank'} is an undergraduate student at the University of Washington and a member of UW CSE SAMPL/PLSE lab.*
+*[Andrew Liu](https://github.com/hypercubestart){:target='_blank'} is an undergraduate student at the University of Washington and a member of UW CSE [SAMPL](https://sampl.cs.washington.edu/){:target='_blank'} and [PLSE](https://uwplse.org/){:target='_blank'} labs.*
 
 ## References
 
