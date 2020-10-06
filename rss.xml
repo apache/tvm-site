@@ -5,10 +5,303 @@
         <description>TVM - </description>
         <link>https://tvm.apache.org</link>
         <atom:link href="https://tvm.apache.org" rel="self" type="application/rss+xml" />
-        <lastBuildDate>Fri, 02 Oct 2020 14:10:00 -0400</lastBuildDate>
-        <pubDate>Fri, 02 Oct 2020 14:10:00 -0400</pubDate>
+        <lastBuildDate>Tue, 06 Oct 2020 08:53:26 -0400</lastBuildDate>
+        <pubDate>Tue, 06 Oct 2020 08:53:26 -0400</pubDate>
         <ttl>60</ttl>
 
+
+        <item>
+                <title>Bring Your Own Datatypes: Enabling Custom Datatype Exploration in TVM</title>
+                <description>&lt;p&gt;In this post, we describe the Bring Your Own Datatypes framework, which enables the use of custom datatypes within TVM.&lt;/p&gt;
+
+&lt;h2 id=&quot;introduction&quot;&gt;Introduction&lt;/h2&gt;
+
+&lt;p&gt;When designing accelerators, an important decision is how one will approximately represent real numbers in hardware.
+This problem has had a longstanding, industry-standard solution: the IEEE 754 floating-point standard.&lt;sup id=&quot;fnref:ieee&quot; role=&quot;doc-noteref&quot;&gt;&lt;a href=&quot;#fn:ieee&quot; class=&quot;footnote&quot;&gt;1&lt;/a&gt;&lt;/sup&gt;
+Yet,
+  when trying to squeeze
+  the most out of hardware
+  by building highly specialized designs,
+  does it make sense to use
+  general-purpose IEEE 754 floats?
+If we know the numerical requirements
+  of our workload,
+  could we build a smaller,
+  faster,
+  or more power efficient datatype?
+The answer is yes!
+Researchers have already begun experimenting with new datatypes in academic and industrial accelerator designs.
+For example, Google’s Tensor Processing Unit (the TPU) uses the &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;bfloat&lt;/code&gt; type: a single-precision IEEE float which has been truncated to 16 bits.
+Due to the lax numerical requirements
+  of many deep learning workloads,
+  this truncation often has no effect
+  on model accuracy,
+  while instantly cutting the storage cost
+  in half.&lt;sup id=&quot;fnref:jouppi2017datacenter&quot; role=&quot;doc-noteref&quot;&gt;&lt;a href=&quot;#fn:jouppi2017datacenter&quot; class=&quot;footnote&quot;&gt;2&lt;/a&gt;&lt;/sup&gt;&lt;sup id=&quot;fnref:tensorflowbfloat&quot; role=&quot;doc-noteref&quot;&gt;&lt;a href=&quot;#fn:tensorflowbfloat&quot; class=&quot;footnote&quot;&gt;3&lt;/a&gt;&lt;/sup&gt;&lt;/p&gt;
+
+&lt;p&gt;Before researchers begin building hardware for their datatype, however, they first need to determine how their datatype will behave numerically in the workloads they care about.
+This often involves first building a software-emulated version of their datatype
+  (e.g. &lt;a href=&quot;http://www.jhauser.us/arithmetic/SoftFloat.html&quot; target=&quot;_blank&quot;&gt;Berkeley SoftFloat&lt;/a&gt; or &lt;a href=&quot;https://github.com/cjdelisle/libposit&quot; target=&quot;_blank&quot;&gt;libposit&lt;/a&gt;),
+  and then hacking the datatype directly into workloads,
+  to see how the workload performs
+  using the datatype.
+Even better
+  is to integrate the datatype 
+  directly into compilers themselves,
+  so that many different workloads
+  can be compiled
+  to use the datatype.
+Both routes can be tedious, with the latter route often becoming unmanageable given the size and complexity of modern compilers.
+&lt;a href=&quot;https://github.com/xman/tensorflow&quot; target=&quot;_blank&quot;&gt;One example taken from GitHub&lt;/a&gt; shows someone hacking the &lt;em&gt;posit&lt;/em&gt; datatype into TensorFlow.
+The result is 237 commits, adding nearly 6000 lines of code and touching over 200 files across the codebase—and that’s just to add one datatype!
+This amount of work is prohibitive for many researchers.&lt;/p&gt;
+
+&lt;p&gt;To address these problems, we present the Bring Your Own Datatypes framework.
+The framework enables easy exploration of new datatypes in deep learning workloads by allowing users to plug their simulated datatype into TVM.
+Unlike the posits-in-Tensorflow example above, which enables a single new datatype in a compiler, the Bring Your Own Datatype framework enables a huge variety of user-defined types.&lt;/p&gt;
+
+&lt;h2 id=&quot;bring-your-own-datatypes&quot;&gt;Bring Your Own Datatypes&lt;/h2&gt;
+
+&lt;p&gt;The goal of the Bring Your Own Datatypes framework
+  is to enable users to run deep learning workloads
+  using custom datatypes.
+In the Bring Your Own Datatypes framework,
+  “datatype” means a scalar type:
+  &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;float&lt;/code&gt;
+  or &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;uint&lt;/code&gt;, for example.
+We do not handle more complicated data formats
+  such as &lt;a href=&quot;https://en.wikipedia.org/wiki/Block_floating_point&quot; target=&quot;_blank&quot;&gt;block floating point&lt;/a&gt;
+  or Intel’s &lt;a href=&quot;https://arxiv.org/abs/1711.02213&quot; target=&quot;_blank&quot;&gt;Flexpoint&lt;/a&gt;.
+Additionally,
+  we only claim to support
+  &lt;em&gt;software emulated&lt;/em&gt; versions of these scalar datatypes;
+  we do not explicitly support compiling and running on custom datatype hardware.&lt;/p&gt;
+
+&lt;p&gt;Each tensor in TVM
+  is assigned a type code,
+  which defines the datatype of the scalars
+  within the tensor.
+A number of these type codes
+  have hard-coded meanings in TVM,
+  mapping to common datatypes
+  such as &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;int&lt;/code&gt; and &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;float&lt;/code&gt;.
+However,
+  the vast majority of type codes
+  are unused.
+The Bring Your Own Datatypes framework
+  allows users to 
+  claim these unused type codes
+  and add their own new datatypes
+  at runtime.&lt;/p&gt;
+
+&lt;p&gt;The framework is implemented as
+  a registry 
+  which sits alongside
+  TVM’s normal datatype facilities.
+There are two primary ways
+  in which the user interacts with
+  the datatype registry:
+  first, &lt;strong&gt;datatype registration,&lt;/strong&gt;
+  and second, &lt;strong&gt;lowering function registration.&lt;/strong&gt;
+These steps are akin to
+  &lt;em&gt;declaration&lt;/em&gt; and &lt;em&gt;implementation&lt;/em&gt; of the datatype,
+  respectively.&lt;/p&gt;
+
+&lt;p&gt;Please note that all referred code in this post are based on TVM repository’s master branch commit &lt;a href=&quot;https://github.com/apache/incubator-tvm/tree/4cad71d19fda6d8f7b750c791284c6dfdddf1f07&quot; target=&quot;_blank&quot;&gt;4cad71d&lt;/a&gt;. We will use an example &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;posit&lt;/code&gt; datatype which can be found under &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;src/target/datatype/posit/posit-wrapper.cc&lt;/code&gt; and can be compiled in TVM with the &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;USE_BYODT_POSIT&lt;/code&gt; flag.&lt;sup id=&quot;fnref:posit&quot; role=&quot;doc-noteref&quot;&gt;&lt;a href=&quot;#fn:posit&quot; class=&quot;footnote&quot;&gt;4&lt;/a&gt;&lt;/sup&gt;&lt;/p&gt;
+
+&lt;h3 id=&quot;datatype-registration&quot;&gt;Datatype Registration&lt;/h3&gt;
+
+&lt;p&gt;To register the datatype,
+  the user assigns the datatype
+  a name and a type code,
+  where the type code comes from
+  the range of unused type codes
+  available to custom datatypes.&lt;/p&gt;
+&lt;div class=&quot;language-python highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;n&quot;&gt;tvm&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;target&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;datatype&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;register&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;'posit'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;150&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;p&gt;The above code registers
+  the &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;'posit'&lt;/code&gt; datatype
+  with type code 150.
+This registration step
+  allows TVM to parse programs
+  which use the custom type:&lt;/p&gt;
+&lt;div class=&quot;language-python highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;n&quot;&gt;x&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;relay&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;var&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;'x'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;shape&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;3&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;),&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;dtype&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;'float32'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+&lt;span class=&quot;n&quot;&gt;y&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;relay&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;var&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;'y'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;shape&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;3&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;),&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;dtype&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;'float32'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+&lt;span class=&quot;n&quot;&gt;x_posit&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;relay&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;cast&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;x&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;dtype&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;'custom[posit]16'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+&lt;span class=&quot;n&quot;&gt;y_posit&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;relay&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;cast&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;y&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;dtype&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;'custom[posit]16'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+&lt;span class=&quot;n&quot;&gt;z_posit&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;x_posit&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;+&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;y_posit&lt;/span&gt;
+&lt;span class=&quot;n&quot;&gt;z&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;relay&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;cast&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;z_posit&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;dtype&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;'float32'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+&lt;span class=&quot;n&quot;&gt;program&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;relay&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Function&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;([&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;x&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;y&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;],&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;z&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+&lt;span class=&quot;k&quot;&gt;print&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;program&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+
+&lt;span class=&quot;c1&quot;&gt;# v0.0.4
+# fn (%x: Tensor[(3), float32], %y: Tensor[(3), float32]) {
+#   %0 = cast(%x, dtype=&quot;custom[posit]16&quot;);
+#   %1 = cast(%y, dtype=&quot;custom[posit]16&quot;);
+#   %2 = add(%0, %1);
+#   cast(%2, dtype=&quot;float32&quot;)
+# }
+&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;p&gt;The program above
+  casts &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;float32&lt;/code&gt; inputs &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;x&lt;/code&gt; and &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;y&lt;/code&gt;
+  into &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;posit&lt;/code&gt;s,
+  adds them,
+  and casts the result back to &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;float32&lt;/code&gt;.
+Once the &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;posit&lt;/code&gt; type is registered,
+  TVM is able to parse the special &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;dtype&lt;/code&gt; syntax
+  &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;custom[&amp;lt;typename&amp;gt;]&lt;/code&gt;,
+  where &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;&amp;lt;typename&amp;gt;&lt;/code&gt; is the name registered for the type.
+This syntax also supports the usual
+  &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;&amp;lt;bits&amp;gt;x&amp;lt;lanes&amp;gt;&lt;/code&gt; format;
+  here, we use &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;16&lt;/code&gt; to indicate that
+  each &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;posit&lt;/code&gt; is 16 bits wide.
+(The number of lanes
+  defaults to 1.)&lt;/p&gt;
+
+&lt;h3 id=&quot;lowering-function-registration&quot;&gt;Lowering Function Registration&lt;/h3&gt;
+
+&lt;p&gt;Though TVM can parse the above program,
+  it cannot yet compile it,
+  as TVM does not yet understand 
+  how to compile operations 
+  over the &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;posit&lt;/code&gt; type.
+To compile these programs,
+  we register &lt;em&gt;lowering functions&lt;/em&gt; for the custom datatype,
+  which help TVM convert the operations
+  into something it can understand and compile.&lt;/p&gt;
+
+&lt;p&gt;Generally, the user is not expected to 
+  lower operations
+  directly to LLVM or CUDA.
+Instead, most code using custom datatypes
+  can be lowered into code which &lt;em&gt;doesn’t&lt;/em&gt; use custom datatypes,
+  with some simple tricks.
+We can then rely on native TVM
+  to understand and compile the code.&lt;/p&gt;
+
+&lt;p style=&quot;text-align: center&quot;&gt;&lt;img src=&quot;/images/bring-your-own-datatypes/lowering.png&quot; alt=&quot;A lowering function lowering an add over `posit`s to a library call over `uint16_t`s&quot; width=&quot;50%&quot; /&gt;&lt;/p&gt;
+&lt;center&gt;
+Figure 1: The expected result of a user's registered lowering function. A lowering function should convert a program using custom datatypes to a program which native TVM can understand and compile (in this case, a call to an external library, taking two &lt;tt&gt;uint16_t&lt;/tt&gt;s).
+&lt;/center&gt;
+&lt;p&gt;&lt;/p&gt;
+
+&lt;p&gt;Figure 1 shows a common pattern.
+Let’s assume we are
+  interested in exploring the &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;posit&lt;/code&gt; type,
+  and have chosen to run some workloads
+  by plugging a &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;posit&lt;/code&gt; emulation library (e.g. &lt;a href=&quot;https://github.com/stillwater-sc/universal&quot; target=&quot;_blank&quot;&gt;Stillwater Universal&lt;/a&gt;) into TVM
+  via the Bring Your Own Datatypes framework.
+Our workload is a simple program
+  which adds two &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;posit&lt;/code&gt; inputs.
+Native TVM does not understand
+  how to implement &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;posit&lt;/code&gt; addition—but it doesn’t need to,
+  as we have a library implementing our datatype!
+The library contains an implementation of &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;posit&lt;/code&gt; addition,
+  alongside other operators such as multiplication and square root.
+To implement this &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;posit&lt;/code&gt; addition,
+  we’d just like to call into our library.
+Thus, our Add node should become a Call node,
+  calling out to a function (call it &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;Posit16es2Add&lt;/code&gt;) in our library.
+To store the bits of the input &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;posit&lt;/code&gt;s
+  inside a type that TVM understands,
+  we use 16-bit unsigned integers.
+The resulting program 
+  is one that TVM can understand and compile—it
+  is simply a call to an external library function,
+  taking two unsigned integers.&lt;/p&gt;
+
+&lt;p&gt;To achieve the above lowering,
+  we register a lowering function
+  for &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;posit&lt;/code&gt;:&lt;/p&gt;
+&lt;div class=&quot;language-python highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;n&quot;&gt;tvm&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;target&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;datatype&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;register_op&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;
+    &lt;span class=&quot;n&quot;&gt;tvm&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;target&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;datatype&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;create_lower_func&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;({&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;16&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;'Posit16es2Add'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;}),&lt;/span&gt;
+    &lt;span class=&quot;s&quot;&gt;'Add'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;'llvm'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;'posit'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+&lt;p&gt;The above code registers
+  a lowering function
+  for a specific operator (Add),
+  compilation target (LLVM),
+  datatype (&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;posit&lt;/code&gt;), and bit length (16).
+The first argument
+  is the lowering function.
+This can be any function
+  taking a TVM IR node
+  and returning a new TVM IR node.
+In our case,
+  we use a helper function
+  provided by the Bring Your Own Datatypes framework.
+&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;tvm.target.datatype.create_lower_func({16:'Posit16es2Add'})&lt;/code&gt;
+  creates a lowering function
+  for the common pattern described above.
+The resulting function
+  converts the arguments of the given node
+  to &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;uint16_t&lt;/code&gt;,
+  and then converts the node itself
+  into a call to the given function name
+  (in this case, &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;'Posit16es2Add'&lt;/code&gt; for &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;posit&lt;/code&gt;s of bit length 16).
+  We pass a dictionary to &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;create_lower_func&lt;/code&gt; so that TVM can dispatch
+  to the appropriate function name based on the bit length of the datatype.&lt;/p&gt;
+
+&lt;p&gt;To implement a custom datatype,
+  the user will need to register
+  a lowering function for every operator
+  in the workload they would like to run.
+For a network like ResNet,
+  this will be around 10 operators,
+  including things like, Add, Div, various Casts, and Max.
+In our tests,
+  registering a datatype
+  and all lowering functions
+  takes around 40 lines of Python.
+Once all needed operators
+  are registered,
+  custom datatype workloads
+  can be run
+  as easily as
+  any other TVM program!&lt;/p&gt;
+
+&lt;h1 id=&quot;wrapping-up&quot;&gt;Wrapping Up&lt;/h1&gt;
+
+&lt;p&gt;The Bring Your Own Datatypes framework
+  brings user-defined datatypes to TVM.
+We hope this will encourage datatype researchers
+  to use TVM in their research;
+  similarly,
+  we hope this will spark interest
+  in custom datatypes
+  within the deep learning community.
+For more documentation about the Bring Your Own Datatypes framework
+  please visit the &lt;a href=&quot;https://tvm.apache.org/docs/tutorials/dev/bring_your_own_datatypes.html#sphx-glr-tutorials-dev-bring-your-own-datatypes-py&quot; target=&quot;_blank&quot;&gt;Bring Your Own Datatypes to TVM&lt;/a&gt; developer tutorial.&lt;/p&gt;
+
+&lt;hr /&gt;
+
+&lt;p&gt;&lt;em&gt;Gus Smith is a PhD student at the University of Washington working with Luis Ceze and Zachary Tatlock at the intersection of computer architecture and programming languages. His website is &lt;a href=&quot;https://justg.us&quot; target=&quot;_blank&quot;&gt;justg.us&lt;/a&gt;.&lt;/em&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;em&gt;&lt;a href=&quot;https://github.com/hypercubestart&quot; target=&quot;_blank&quot;&gt;Andrew Liu&lt;/a&gt; is an undergraduate student at the University of Washington and a member of UW CSE &lt;a href=&quot;https://sampl.cs.washington.edu/&quot; target=&quot;_blank&quot;&gt;SAMPL&lt;/a&gt; and &lt;a href=&quot;https://uwplse.org/&quot; target=&quot;_blank&quot;&gt;PLSE&lt;/a&gt; labs.&lt;/em&gt;&lt;/p&gt;
+
+&lt;h2 id=&quot;references&quot;&gt;References&lt;/h2&gt;
+
+&lt;div class=&quot;footnotes&quot; role=&quot;doc-endnotes&quot;&gt;
+  &lt;ol&gt;
+    &lt;li id=&quot;fn:ieee&quot; role=&quot;doc-endnote&quot;&gt;
+      &lt;p&gt;&lt;a href=&quot;https://standards.ieee.org/standard/754-2019.html&quot; target=&quot;_blank&quot;&gt;754-2019 - IEEE Standard for Floating-Point Arithmetic&lt;/a&gt; &lt;a href=&quot;#fnref:ieee&quot; class=&quot;reversefootnote&quot; role=&quot;doc-backlink&quot;&gt;&amp;#8617;&lt;/a&gt;&lt;/p&gt;
+    &lt;/li&gt;
+    &lt;li id=&quot;fn:jouppi2017datacenter&quot; role=&quot;doc-endnote&quot;&gt;
+      &lt;p&gt;Jouppi, Norman P., et al. “In-datacenter performance analysis of a tensor processing unit.” Proceedings of the 44th Annual International Symposium on Computer Architecture. 2017. &lt;a href=&quot;#fnref:jouppi2017datacenter&quot; class=&quot;reversefootnote&quot; role=&quot;doc-backlink&quot;&gt;&amp;#8617;&lt;/a&gt;&lt;/p&gt;
+    &lt;/li&gt;
+    &lt;li id=&quot;fn:tensorflowbfloat&quot; role=&quot;doc-endnote&quot;&gt;
+      &lt;p&gt;&lt;a href=&quot;https://cloud.google.com/tpu/docs/bfloat16&quot; target=&quot;_blank&quot;&gt;Using bfloat16 with TensorFlow models&lt;/a&gt; &lt;a href=&quot;#fnref:tensorflowbfloat&quot; class=&quot;reversefootnote&quot; role=&quot;doc-backlink&quot;&gt;&amp;#8617;&lt;/a&gt;&lt;/p&gt;
+    &lt;/li&gt;
+    &lt;li id=&quot;fn:posit&quot; role=&quot;doc-endnote&quot;&gt;
+      &lt;p&gt;&lt;a href=&quot;https://posithub.org/docs/BeatingFloatingPoint.pdf&quot; target=&quot;_blank&quot;&gt;Beating Floating Point at its Own Game: Posit Arithmetic&lt;/a&gt; &lt;a href=&quot;#fnref:posit&quot; class=&quot;reversefootnote&quot; role=&quot;doc-backlink&quot;&gt;&amp;#8617;&lt;/a&gt;&lt;/p&gt;
+    &lt;/li&gt;
+  &lt;/ol&gt;
+&lt;/div&gt;
+</description>
+                <link>https://tvm.apache.org/2020/09/26/bring-your-own-datatypes</link>
+                <guid>https://tvm.apache.org/2020/09/26/bring-your-own-datatypes</guid>
+                <pubDate>Sat, 26 Sep 2020 00:00:00 -0400</pubDate>
+        </item>
 
         <item>
                 <title>How to Bring Your Own Codegen to TVM</title>
@@ -1319,292 +1612,6 @@ Diagram from CMSIS-NN paper showing a 2x2 matrix multiplication microkernel&lt;/
                 <link>https://tvm.apache.org/2020/06/04/tinyml-how-tvm-is-taming-tiny</link>
                 <guid>https://tvm.apache.org/2020/06/04/tinyml-how-tvm-is-taming-tiny</guid>
                 <pubDate>Thu, 04 Jun 2020 00:00:00 -0400</pubDate>
-        </item>
-
-        <item>
-                <title>Bring Your Own Datatypes: Enabling Custom Datatype Exploration in TVM</title>
-                <description>&lt;p&gt;In this post, we describe the Bring Your Own Datatypes framework, which enables the use of custom datatypes within TVM.&lt;/p&gt;
-
-&lt;h2 id=&quot;introduction&quot;&gt;Introduction&lt;/h2&gt;
-
-&lt;p&gt;When designing accelerators, an important decision is how one will approximately represent real numbers in hardware.
-This problem has had a longstanding, industry-standard solution: the IEEE 754 floating-point standard.&lt;sup id=&quot;fnref:ieee&quot; role=&quot;doc-noteref&quot;&gt;&lt;a href=&quot;#fn:ieee&quot; class=&quot;footnote&quot;&gt;1&lt;/a&gt;&lt;/sup&gt;
-Yet,
-  when trying to squeeze
-  the most out of hardware
-  by building highly specialized designs,
-  does it make sense to use
-  general-purpose IEEE 754 floats?
-If we know the numerical requirements
-  of our workload,
-  could we build a smaller,
-  faster,
-  or more power efficient datatype?
-The answer is yes!
-Researchers have already begun experimenting with new datatypes in academic and industrial accelerator designs.
-For example, Google’s Tensor Processing Unit (the TPU) uses the &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;bfloat&lt;/code&gt; type: a single-precision IEEE float which has been truncated to 16 bits.
-Due to the lax numerical requirements
-  of many deep learning workloads,
-  this truncation often has no effect
-  on model accuracy,
-  while instantly cutting the storage cost
-  in half.&lt;sup id=&quot;fnref:jouppi2017datacenter&quot; role=&quot;doc-noteref&quot;&gt;&lt;a href=&quot;#fn:jouppi2017datacenter&quot; class=&quot;footnote&quot;&gt;2&lt;/a&gt;&lt;/sup&gt;&lt;sup id=&quot;fnref:tensorflowbfloat&quot; role=&quot;doc-noteref&quot;&gt;&lt;a href=&quot;#fn:tensorflowbfloat&quot; class=&quot;footnote&quot;&gt;3&lt;/a&gt;&lt;/sup&gt;&lt;/p&gt;
-
-&lt;p&gt;Before researchers begin building hardware for their datatype, however, they first need to determine how their datatype will behave numerically in the workloads they care about.
-This often involves first building a software-emulated version of their datatype
-  (e.g. &lt;a href=&quot;http://www.jhauser.us/arithmetic/SoftFloat.html&quot; target=&quot;_blank&quot;&gt;Berkeley SoftFloat&lt;/a&gt; or &lt;a href=&quot;https://github.com/cjdelisle/libposit&quot; target=&quot;_blank&quot;&gt;libposit&lt;/a&gt;),
-  and then hacking the datatype directly into workloads,
-  to see how the workload performs
-  using the datatype.
-Even better
-  is to integrate the datatype 
-  directly into compilers themselves,
-  so that many different workloads
-  can be compiled
-  to use the datatype.
-Both routes can be tedious, with the latter route often becoming unmanageable given the size and complexity of modern compilers.
-&lt;a href=&quot;https://github.com/xman/tensorflow&quot; target=&quot;_blank&quot;&gt;One example taken from GitHub&lt;/a&gt; shows someone hacking the &lt;em&gt;posit&lt;/em&gt; datatype into TensorFlow.
-The result is 237 commits, adding nearly 6000 lines of code and touching over 200 files across the codebase—and that’s just to add one datatype!
-This amount of work is prohibitive for many researchers.&lt;/p&gt;
-
-&lt;p&gt;To address these problems, we present the Bring Your Own Datatypes framework.
-The framework enables easy exploration of new datatypes in deep learning workloads by allowing users to plug their simulated datatype into TVM.
-Unlike the posits-in-Tensorflow example above, which enables a single new datatype in a compiler, the Bring Your Own Datatype framework enables a huge variety of user-defined types.&lt;/p&gt;
-
-&lt;h2 id=&quot;bring-your-own-datatypes&quot;&gt;Bring Your Own Datatypes&lt;/h2&gt;
-
-&lt;p&gt;The goal of the Bring Your Own Datatypes framework
-  is to enable users to run deep learning workloads
-  using custom datatypes.
-In the Bring Your Own Datatypes framework,
-  “datatype” means a scalar type:
-  &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;float32&lt;/code&gt;
-  or &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;uint8&lt;/code&gt;, for example.
-We do not handle more complicated data formats
-  such as &lt;a href=&quot;https://en.wikipedia.org/wiki/Block_floating_point&quot; target=&quot;_blank&quot;&gt;block floating point&lt;/a&gt;
-  or Intel’s &lt;a href=&quot;https://arxiv.org/abs/1711.02213&quot; target=&quot;_blank&quot;&gt;Flexpoint&lt;/a&gt;.
-Additionally,
-  we only claim to support
-  &lt;em&gt;software emulated&lt;/em&gt; versions of these scalar datatypes;
-  we do not explicitly support compiling and running on custom datatype hardware.&lt;/p&gt;
-
-&lt;p&gt;Each tensor in TVM
-  is assigned a type code,
-  which defines the datatype of the scalars
-  within the tensor.
-A number of these type codes
-  have hard-coded meanings in TVM,
-  mapping to common datatypes
-  such as &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;int&lt;/code&gt; and &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;float&lt;/code&gt;.
-However,
-  the vast majority of type codes
-  are unused.
-The Bring Your Own Datatypes framework
-  allows users to 
-  claim these unused type codes
-  and add their own new datatypes
-  at runtime.&lt;/p&gt;
-
-&lt;p&gt;The framework is implemented as
-  a registry 
-  which sits alongside
-  TVM’s normal datatype facilities.
-There are two primary ways
-  in which the user interacts with
-  the datatype registry:
-  first, &lt;strong&gt;datatype registration,&lt;/strong&gt;
-  and second, &lt;strong&gt;lowering function registration.&lt;/strong&gt;
-These steps are akin to
-  &lt;em&gt;declaration&lt;/em&gt; and &lt;em&gt;implementation&lt;/em&gt; of the datatype,
-  respectively.&lt;/p&gt;
-
-&lt;h3 id=&quot;datatype-registration&quot;&gt;Datatype Registration&lt;/h3&gt;
-
-&lt;p&gt;To register the datatype,
-  the user assigns the datatype
-  a name and a type code,
-  where the type code comes from
-  the range of unused type codes
-  available to custom datatypes.&lt;/p&gt;
-&lt;div class=&quot;language-python highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;n&quot;&gt;tvm&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;datatype&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;register&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;'bfloat'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;150&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-&lt;p&gt;The above code registers
-  the &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;'bfloat'&lt;/code&gt; datatype
-  with type code 150.
-This registration step
-  allows TVM to parse programs
-  which use the custom type:&lt;/p&gt;
-&lt;div class=&quot;language-python highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;n&quot;&gt;x&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;relay&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;var&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;'x'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;shape&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;3&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;),&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;dtype&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;'float32'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-&lt;span class=&quot;n&quot;&gt;y&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;relay&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;var&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;'y'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;shape&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;3&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;),&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;dtype&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;'float32'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-&lt;span class=&quot;n&quot;&gt;x_bfloat&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;relay&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;cast&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;x&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;dtype&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;'custom[bfloat]16'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-&lt;span class=&quot;n&quot;&gt;y_bfloat&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;relay&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;cast&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;y&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;dtype&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;'custom[bfloat]16'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-&lt;span class=&quot;n&quot;&gt;z_bfloat&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;x_bfloat&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;+&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;y_bfloat&lt;/span&gt;
-&lt;span class=&quot;n&quot;&gt;z&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;relay&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;cast&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;z_bfloat&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;dtype&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;'float32'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-&lt;span class=&quot;n&quot;&gt;program&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;relay&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Function&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;([&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;x&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;y&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;],&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;z&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-&lt;span class=&quot;k&quot;&gt;print&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;program&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-
-&lt;span class=&quot;c1&quot;&gt;# v0.0.4
-# fn (%x: Tensor[(3), float32], %y: Tensor[(3), float32]) {
-#   %0 = cast(%x, dtype=&quot;custom[bfloat]16&quot;);
-#   %1 = cast(%y, dtype=&quot;custom[bfloat]16&quot;);
-#   %2 = add(%0, %1);
-#   cast(%2, dtype=&quot;float32&quot;)
-# }
-&lt;/span&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-&lt;p&gt;The program above
-  casts &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;float32&lt;/code&gt; inputs &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;x&lt;/code&gt; and &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;y&lt;/code&gt;
-  into &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;bfloat&lt;/code&gt;s,
-  adds them,
-  and casts the result back to &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;float32&lt;/code&gt;.
-Once the &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;bfloat&lt;/code&gt; type is registered,
-  TVM is able to parse the special &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;dtype&lt;/code&gt; syntax
-  &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;custom[&amp;lt;typename&amp;gt;]&lt;/code&gt;,
-  where &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;&amp;lt;typename&amp;gt;&lt;/code&gt; is the name registered for the type.
-This syntax also supports the usual
-  &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;&amp;lt;bits&amp;gt;x&amp;lt;lanes&amp;gt;&lt;/code&gt; format;
-  here, we use &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;16&lt;/code&gt; to indicate that
-  each &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;bfloat&lt;/code&gt; is 16 bits wide.
-(The number of lanes
-  defaults to 1.)&lt;/p&gt;
-
-&lt;h3 id=&quot;lowering-function-registration&quot;&gt;Lowering Function Registration&lt;/h3&gt;
-
-&lt;p&gt;Though TVM can parse the above program,
-  it cannot yet compile it,
-  as TVM does not yet understand 
-  how to compile operations 
-  over the &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;bfloat&lt;/code&gt; type.
-To compile these programs,
-  we register &lt;em&gt;lowering functions&lt;/em&gt; for the custom datatype,
-  which help TVM convert the operations
-  into something it can understand and compile.&lt;/p&gt;
-
-&lt;p&gt;Generally, the user is not expected to 
-  lower operations
-  directly to LLVM or CUDA.
-Instead, most code using custom datatypes
-  can be lowered into code which &lt;em&gt;doesn’t&lt;/em&gt; use custom datatypes,
-  with some simple tricks.
-We can then rely on native TVM
-  to understand and compile the code.&lt;/p&gt;
-
-&lt;p style=&quot;text-align: center&quot;&gt;&lt;img src=&quot;/images/bring-your-own-datatypes/lowering.png&quot; alt=&quot;A lowering function lowering an add over `bfloat`s to a library call over `uint16_t`s&quot; width=&quot;50%&quot; /&gt;&lt;/p&gt;
-&lt;center&gt;
-Figure 1: The expected result of a user's registered lowering function. A lowering function should convert a program using custom datatypes to a program which native TVM can understand and compile (in this case, a call to an external library, taking two &lt;tt&gt;uint16_t&lt;/tt&gt;s).
-&lt;/center&gt;
-&lt;p&gt;&lt;/p&gt;
-
-&lt;p&gt;Figure 1 shows a common pattern.
-Let’s assume we are
-  interested in exploring the &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;bfloat&lt;/code&gt; type,
-  and have chosen to run some workloads
-  by plugging a &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;bfloat&lt;/code&gt; emulation library (e.g. &lt;a href=&quot;https://github.com/biovault/biovault_bfloat16&quot; target=&quot;_blank&quot;&gt;biovault_bfloat16&lt;/a&gt;) into TVM
-  via the Bring Your Own Datatypes framework.
-Our workload is a simple program
-  which adds two &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;bfloat&lt;/code&gt; inputs.
-Native TVM does not understand
-  how to implement &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;bfloat&lt;/code&gt; addition—but it doesn’t need to,
-  as we have a library implementing our datatype!
-The library contains an implementation of &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;bfloat&lt;/code&gt; addition,
-  alongside other operators such as multiplication and square root.
-To implement this &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;bfloat&lt;/code&gt; addition,
-  we’d just like to call into our library.
-Thus, our Add node should become a Call node,
-  calling out to a function (call it &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;BFloat16Add&lt;/code&gt;) in our library.
-To store the bits of the input &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;bfloat&lt;/code&gt;s
-  inside a type that TVM understands,
-  we use 16-bit unsigned integers.
-The resulting program 
-  is one that TVM can understand and compile—it
-  is simply a call to an external library function,
-  taking two unsigned integers.&lt;/p&gt;
-
-&lt;p&gt;To achieve the above lowering,
-  we register a lowering function
-  for &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;bfloat&lt;/code&gt;:&lt;/p&gt;
-&lt;div class=&quot;language-python highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;n&quot;&gt;tvm&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;datatype&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;register_op&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;
-    &lt;span class=&quot;n&quot;&gt;tvm&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;datatype&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;create_lower_func&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;'BFloat16Add'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;),&lt;/span&gt;
-    &lt;span class=&quot;s&quot;&gt;'Add'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;'llvm'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;s&quot;&gt;'bfloat'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-&lt;p&gt;The above code registers
-  a lowering function
-  for a specific operator (Add),
-  compilation target (LLVM),
-  and datatype (&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;bfloat&lt;/code&gt;).
-The first argument
-  is the lowering function.
-This can be any function
-  taking a TVM IR node
-  and returning a new TVM IR node.
-In our case,
-  we use a helper function
-  provided by the Bring Your Own Datatypes framework.
-&lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;tvm.datatype.create_lower_func('BFloat16Add')&lt;/code&gt;
-  creates a lowering function
-  for the common pattern described above.
-The resulting function
-  converts the arguments of the given node
-  to &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;uint16_t&lt;/code&gt;,
-  and then converts the node itself
-  into a call to the given function name
-  (in this case, &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;'BFloat16Add'&lt;/code&gt;).&lt;/p&gt;
-
-&lt;p&gt;To implement a custom datatype,
-  the user will need to register
-  a lowering function for every operator
-  in the workload they would like to run.
-For a network like ResNet,
-  this will be around 10 operators,
-  including things like, Add, Div, various Casts, and Max.
-In our tests,
-  registering a datatype
-  and all lowering functions
-  takes around 40 lines of Python.
-Once all needed operators
-  are registered,
-  custom datatype workloads
-  can be run
-  as easily as
-  any other TVM program!&lt;/p&gt;
-
-&lt;h1 id=&quot;wrapping-up&quot;&gt;Wrapping Up&lt;/h1&gt;
-
-&lt;p&gt;The Bring Your Own Datatypes framework
-  brings user-defined datatypes to TVM.
-We hope this will encourage datatype researchers
-  to use TVM in their research;
-  similarly,
-  we hope this will spark interest
-  in custom datatypes
-  within the deep learning community.
-The Bring Your Own Datatypes framework
-  partially exists in TVM at the moment,
-  and more will be merged in (including full documentation)
-  in the coming months.&lt;/p&gt;
-
-&lt;hr /&gt;
-
-&lt;p&gt;&lt;em&gt;Gus Smith is a PhD student at the University of Washington working with Luis Ceze and Zachary Tatlock at the intersection of computer architecture and programming languages. His website is &lt;a href=&quot;https://justg.us&quot; target=&quot;_blank&quot;&gt;justg.us&lt;/a&gt;.&lt;/em&gt;&lt;/p&gt;
-
-&lt;h2 id=&quot;references&quot;&gt;References&lt;/h2&gt;
-
-&lt;div class=&quot;footnotes&quot; role=&quot;doc-endnotes&quot;&gt;
-  &lt;ol&gt;
-    &lt;li id=&quot;fn:ieee&quot; role=&quot;doc-endnote&quot;&gt;
-      &lt;p&gt;&lt;a href=&quot;https://standards.ieee.org/standard/754-2019.html&quot; target=&quot;_blank&quot;&gt;754-2019 - IEEE Standard for Floating-Point Arithmetic&lt;/a&gt; &lt;a href=&quot;#fnref:ieee&quot; class=&quot;reversefootnote&quot; role=&quot;doc-backlink&quot;&gt;&amp;#8617;&lt;/a&gt;&lt;/p&gt;
-    &lt;/li&gt;
-    &lt;li id=&quot;fn:jouppi2017datacenter&quot; role=&quot;doc-endnote&quot;&gt;
-      &lt;p&gt;Jouppi, Norman P., et al. “In-datacenter performance analysis of a tensor processing unit.” Proceedings of the 44th Annual International Symposium on Computer Architecture. 2017. &lt;a href=&quot;#fnref:jouppi2017datacenter&quot; class=&quot;reversefootnote&quot; role=&quot;doc-backlink&quot;&gt;&amp;#8617;&lt;/a&gt;&lt;/p&gt;
-    &lt;/li&gt;
-    &lt;li id=&quot;fn:tensorflowbfloat&quot; role=&quot;doc-endnote&quot;&gt;
-      &lt;p&gt;&lt;a href=&quot;https://cloud.google.com/tpu/docs/bfloat16&quot; target=&quot;_blank&quot;&gt;Using bfloat16 with TensorFlow models&lt;/a&gt; &lt;a href=&quot;#fnref:tensorflowbfloat&quot; class=&quot;reversefootnote&quot; role=&quot;doc-backlink&quot;&gt;&amp;#8617;&lt;/a&gt;&lt;/p&gt;
-    &lt;/li&gt;
-  &lt;/ol&gt;
-&lt;/div&gt;
-</description>
-                <link>https://tvm.apache.org/2020/05/20/bring-your-own-datatypes</link>
-                <guid>https://tvm.apache.org/2020/05/20/bring-your-own-datatypes</guid>
-                <pubDate>Wed, 20 May 2020 00:00:00 -0400</pubDate>
         </item>
 
         <item>

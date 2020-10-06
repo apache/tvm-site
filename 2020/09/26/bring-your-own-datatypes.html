@@ -140,12 +140,12 @@
     <div class="span14">
       <h1>Bring Your Own Datatypes: Enabling Custom Datatype Exploration in TVM </h1>
       <p class="post-meta">
-        <time datetime="2020-05-20T00:00:00-04:00" itemprop="datePublished">
-          May 20, 2020
+        <time datetime="2020-09-26T00:00:00-04:00" itemprop="datePublished">
+          Sep 26, 2020
         </time>
         
         • <span itemprop="author" itemscope itemtype="http://schema.org/Person">
-          <span itemprop="name">Gus Smith</span>
+          <span itemprop="name">Gus Smith, Andrew Liu</span>
         </span>
         
       </p>
@@ -207,8 +207,8 @@ Unlike the posits-in-Tensorflow example above, which enables a single new dataty
   using custom datatypes.
 In the Bring Your Own Datatypes framework,
   “datatype” means a scalar type:
-  <code class="language-plaintext highlighter-rouge">float32</code>
-  or <code class="language-plaintext highlighter-rouge">uint8</code>, for example.
+  <code class="language-plaintext highlighter-rouge">float</code>
+  or <code class="language-plaintext highlighter-rouge">uint</code>, for example.
 We do not handle more complicated data formats
   such as <a href="https://en.wikipedia.org/wiki/Block_floating_point" target="_blank">block floating point</a>
   or Intel’s <a href="https://arxiv.org/abs/1711.02213" target="_blank">Flexpoint</a>.
@@ -247,6 +247,8 @@ These steps are akin to
   <em>declaration</em> and <em>implementation</em> of the datatype,
   respectively.</p>
 
+<p>Please note that all referred code in this post are based on TVM repository’s master branch commit <a href="https://github.com/apache/incubator-tvm/tree/4cad71d19fda6d8f7b750c791284c6dfdddf1f07" target="_blank">4cad71d</a>. We will use an example <code class="language-plaintext highlighter-rouge">posit</code> datatype which can be found under <code class="language-plaintext highlighter-rouge">src/target/datatype/posit/posit-wrapper.cc</code> and can be compiled in TVM with the <code class="language-plaintext highlighter-rouge">USE_BYODT_POSIT</code> flag.<sup id="fnref:posit" role="doc-noteref"><a href="#fn:posit" class="footnote">4</a></sup></p>
+
 <h3 id="datatype-registration">Datatype Registration</h3>
 
 <p>To register the datatype,
@@ -255,44 +257,44 @@ These steps are akin to
   where the type code comes from
   the range of unused type codes
   available to custom datatypes.</p>
-<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">tvm</span><span class="p">.</span><span class="n">datatype</span><span class="p">.</span><span class="n">register</span><span class="p">(</span><span class="s">'bfloat'</span><span class="p">,</span> <span class="mi">150</span><span class="p">)</span>
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">tvm</span><span class="p">.</span><span class="n">target</span><span class="p">.</span><span class="n">datatype</span><span class="p">.</span><span class="n">register</span><span class="p">(</span><span class="s">'posit'</span><span class="p">,</span> <span class="mi">150</span><span class="p">)</span>
 </code></pre></div></div>
 <p>The above code registers
-  the <code class="language-plaintext highlighter-rouge">'bfloat'</code> datatype
+  the <code class="language-plaintext highlighter-rouge">'posit'</code> datatype
   with type code 150.
 This registration step
   allows TVM to parse programs
   which use the custom type:</p>
 <div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">x</span> <span class="o">=</span> <span class="n">relay</span><span class="p">.</span><span class="n">var</span><span class="p">(</span><span class="s">'x'</span><span class="p">,</span> <span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="s">'float32'</span><span class="p">)</span>
 <span class="n">y</span> <span class="o">=</span> <span class="n">relay</span><span class="p">.</span><span class="n">var</span><span class="p">(</span><span class="s">'y'</span><span class="p">,</span> <span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="s">'float32'</span><span class="p">)</span>
-<span class="n">x_bfloat</span> <span class="o">=</span> <span class="n">relay</span><span class="p">.</span><span class="n">cast</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="s">'custom[bfloat]16'</span><span class="p">)</span>
-<span class="n">y_bfloat</span> <span class="o">=</span> <span class="n">relay</span><span class="p">.</span><span class="n">cast</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="s">'custom[bfloat]16'</span><span class="p">)</span>
-<span class="n">z_bfloat</span> <span class="o">=</span> <span class="n">x_bfloat</span> <span class="o">+</span> <span class="n">y_bfloat</span>
-<span class="n">z</span> <span class="o">=</span> <span class="n">relay</span><span class="p">.</span><span class="n">cast</span><span class="p">(</span><span class="n">z_bfloat</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="s">'float32'</span><span class="p">)</span>
+<span class="n">x_posit</span> <span class="o">=</span> <span class="n">relay</span><span class="p">.</span><span class="n">cast</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="s">'custom[posit]16'</span><span class="p">)</span>
+<span class="n">y_posit</span> <span class="o">=</span> <span class="n">relay</span><span class="p">.</span><span class="n">cast</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="s">'custom[posit]16'</span><span class="p">)</span>
+<span class="n">z_posit</span> <span class="o">=</span> <span class="n">x_posit</span> <span class="o">+</span> <span class="n">y_posit</span>
+<span class="n">z</span> <span class="o">=</span> <span class="n">relay</span><span class="p">.</span><span class="n">cast</span><span class="p">(</span><span class="n">z_posit</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="s">'float32'</span><span class="p">)</span>
 <span class="n">program</span> <span class="o">=</span> <span class="n">relay</span><span class="p">.</span><span class="n">Function</span><span class="p">([</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">],</span> <span class="n">z</span><span class="p">)</span>
 <span class="k">print</span><span class="p">(</span><span class="n">program</span><span class="p">)</span>
 
 <span class="c1"># v0.0.4
 # fn (%x: Tensor[(3), float32], %y: Tensor[(3), float32]) {
-#   %0 = cast(%x, dtype="custom[bfloat]16");
-#   %1 = cast(%y, dtype="custom[bfloat]16");
+#   %0 = cast(%x, dtype="custom[posit]16");
+#   %1 = cast(%y, dtype="custom[posit]16");
 #   %2 = add(%0, %1);
 #   cast(%2, dtype="float32")
 # }
 </span></code></pre></div></div>
 <p>The program above
   casts <code class="language-plaintext highlighter-rouge">float32</code> inputs <code class="language-plaintext highlighter-rouge">x</code> and <code class="language-plaintext highlighter-rouge">y</code>
-  into <code class="language-plaintext highlighter-rouge">bfloat</code>s,
+  into <code class="language-plaintext highlighter-rouge">posit</code>s,
   adds them,
   and casts the result back to <code class="language-plaintext highlighter-rouge">float32</code>.
-Once the <code class="language-plaintext highlighter-rouge">bfloat</code> type is registered,
+Once the <code class="language-plaintext highlighter-rouge">posit</code> type is registered,
   TVM is able to parse the special <code class="language-plaintext highlighter-rouge">dtype</code> syntax
   <code class="language-plaintext highlighter-rouge">custom[&lt;typename&gt;]</code>,
   where <code class="language-plaintext highlighter-rouge">&lt;typename&gt;</code> is the name registered for the type.
 This syntax also supports the usual
   <code class="language-plaintext highlighter-rouge">&lt;bits&gt;x&lt;lanes&gt;</code> format;
   here, we use <code class="language-plaintext highlighter-rouge">16</code> to indicate that
-  each <code class="language-plaintext highlighter-rouge">bfloat</code> is 16 bits wide.
+  each <code class="language-plaintext highlighter-rouge">posit</code> is 16 bits wide.
 (The number of lanes
   defaults to 1.)</p>
 
@@ -302,7 +304,7 @@ This syntax also supports the usual
   it cannot yet compile it,
   as TVM does not yet understand 
   how to compile operations 
-  over the <code class="language-plaintext highlighter-rouge">bfloat</code> type.
+  over the <code class="language-plaintext highlighter-rouge">posit</code> type.
 To compile these programs,
   we register <em>lowering functions</em> for the custom datatype,
   which help TVM convert the operations
@@ -317,7 +319,7 @@ Instead, most code using custom datatypes
 We can then rely on native TVM
   to understand and compile the code.</p>
 
-<p style="text-align: center"><img src="/images/bring-your-own-datatypes/lowering.png" alt="A lowering function lowering an add over `bfloat`s to a library call over `uint16_t`s" width="50%" /></p>
+<p style="text-align: center"><img src="/images/bring-your-own-datatypes/lowering.png" alt="A lowering function lowering an add over `posit`s to a library call over `uint16_t`s" width="50%" /></p>
 <center>
 Figure 1: The expected result of a user's registered lowering function. A lowering function should convert a program using custom datatypes to a program which native TVM can understand and compile (in this case, a call to an external library, taking two <tt>uint16_t</tt>s).
 </center>
@@ -325,22 +327,22 @@ Figure 1: The expected result of a user's registered lowering function. A loweri
 
 <p>Figure 1 shows a common pattern.
 Let’s assume we are
-  interested in exploring the <code class="language-plaintext highlighter-rouge">bfloat</code> type,
+  interested in exploring the <code class="language-plaintext highlighter-rouge">posit</code> type,
   and have chosen to run some workloads
-  by plugging a <code class="language-plaintext highlighter-rouge">bfloat</code> emulation library (e.g. <a href="https://github.com/biovault/biovault_bfloat16" target="_blank">biovault_bfloat16</a>) into TVM
+  by plugging a <code class="language-plaintext highlighter-rouge">posit</code> emulation library (e.g. <a href="https://github.com/stillwater-sc/universal" target="_blank">Stillwater Universal</a>) into TVM
   via the Bring Your Own Datatypes framework.
 Our workload is a simple program
-  which adds two <code class="language-plaintext highlighter-rouge">bfloat</code> inputs.
+  which adds two <code class="language-plaintext highlighter-rouge">posit</code> inputs.
 Native TVM does not understand
-  how to implement <code class="language-plaintext highlighter-rouge">bfloat</code> addition—but it doesn’t need to,
+  how to implement <code class="language-plaintext highlighter-rouge">posit</code> addition—but it doesn’t need to,
   as we have a library implementing our datatype!
-The library contains an implementation of <code class="language-plaintext highlighter-rouge">bfloat</code> addition,
+The library contains an implementation of <code class="language-plaintext highlighter-rouge">posit</code> addition,
   alongside other operators such as multiplication and square root.
-To implement this <code class="language-plaintext highlighter-rouge">bfloat</code> addition,
+To implement this <code class="language-plaintext highlighter-rouge">posit</code> addition,
   we’d just like to call into our library.
 Thus, our Add node should become a Call node,
-  calling out to a function (call it <code class="language-plaintext highlighter-rouge">BFloat16Add</code>) in our library.
-To store the bits of the input <code class="language-plaintext highlighter-rouge">bfloat</code>s
+  calling out to a function (call it <code class="language-plaintext highlighter-rouge">Posit16es2Add</code>) in our library.
+To store the bits of the input <code class="language-plaintext highlighter-rouge">posit</code>s
   inside a type that TVM understands,
   we use 16-bit unsigned integers.
 The resulting program 
@@ -350,16 +352,16 @@ The resulting program
 
 <p>To achieve the above lowering,
   we register a lowering function
-  for <code class="language-plaintext highlighter-rouge">bfloat</code>:</p>
-<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">tvm</span><span class="p">.</span><span class="n">datatype</span><span class="p">.</span><span class="n">register_op</span><span class="p">(</span>
-    <span class="n">tvm</span><span class="p">.</span><span class="n">datatype</span><span class="p">.</span><span class="n">create_lower_func</span><span class="p">(</span><span class="s">'BFloat16Add'</span><span class="p">),</span>
-    <span class="s">'Add'</span><span class="p">,</span> <span class="s">'llvm'</span><span class="p">,</span> <span class="s">'bfloat'</span><span class="p">)</span>
+  for <code class="language-plaintext highlighter-rouge">posit</code>:</p>
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">tvm</span><span class="p">.</span><span class="n">target</span><span class="p">.</span><span class="n">datatype</span><span class="p">.</span><span class="n">register_op</span><span class="p">(</span>
+    <span class="n">tvm</span><span class="p">.</span><span class="n">target</span><span class="p">.</span><span class="n">datatype</span><span class="p">.</span><span class="n">create_lower_func</span><span class="p">({</span><span class="mi">16</span><span class="p">:</span> <span class="s">'Posit16es2Add'</span><span class="p">}),</span>
+    <span class="s">'Add'</span><span class="p">,</span> <span class="s">'llvm'</span><span class="p">,</span> <span class="s">'posit'</span><span class="p">)</span>
 </code></pre></div></div>
 <p>The above code registers
   a lowering function
   for a specific operator (Add),
   compilation target (LLVM),
-  and datatype (<code class="language-plaintext highlighter-rouge">bfloat</code>).
+  datatype (<code class="language-plaintext highlighter-rouge">posit</code>), and bit length (16).
 The first argument
   is the lowering function.
 This can be any function
@@ -368,7 +370,7 @@ This can be any function
 In our case,
   we use a helper function
   provided by the Bring Your Own Datatypes framework.
-<code class="language-plaintext highlighter-rouge">tvm.datatype.create_lower_func('BFloat16Add')</code>
+<code class="language-plaintext highlighter-rouge">tvm.target.datatype.create_lower_func({16:'Posit16es2Add'})</code>
   creates a lowering function
   for the common pattern described above.
 The resulting function
@@ -376,7 +378,9 @@ The resulting function
   to <code class="language-plaintext highlighter-rouge">uint16_t</code>,
   and then converts the node itself
   into a call to the given function name
-  (in this case, <code class="language-plaintext highlighter-rouge">'BFloat16Add'</code>).</p>
+  (in this case, <code class="language-plaintext highlighter-rouge">'Posit16es2Add'</code> for <code class="language-plaintext highlighter-rouge">posit</code>s of bit length 16).
+  We pass a dictionary to <code class="language-plaintext highlighter-rouge">create_lower_func</code> so that TVM can dispatch
+  to the appropriate function name based on the bit length of the datatype.</p>
 
 <p>To implement a custom datatype,
   the user will need to register
@@ -406,14 +410,14 @@ We hope this will encourage datatype researchers
   we hope this will spark interest
   in custom datatypes
   within the deep learning community.
-The Bring Your Own Datatypes framework
-  partially exists in TVM at the moment,
-  and more will be merged in (including full documentation)
-  in the coming months.</p>
+For more documentation about the Bring Your Own Datatypes framework
+  please visit the <a href="https://tvm.apache.org/docs/tutorials/dev/bring_your_own_datatypes.html#sphx-glr-tutorials-dev-bring-your-own-datatypes-py" target="_blank">Bring Your Own Datatypes to TVM</a> developer tutorial.</p>
 
 <hr />
 
 <p><em>Gus Smith is a PhD student at the University of Washington working with Luis Ceze and Zachary Tatlock at the intersection of computer architecture and programming languages. His website is <a href="https://justg.us" target="_blank">justg.us</a>.</em></p>
+
+<p><em><a href="https://github.com/hypercubestart" target="_blank">Andrew Liu</a> is an undergraduate student at the University of Washington and a member of UW CSE <a href="https://sampl.cs.washington.edu/" target="_blank">SAMPL</a> and <a href="https://uwplse.org/" target="_blank">PLSE</a> labs.</em></p>
 
 <h2 id="references">References</h2>
 
@@ -427,6 +431,9 @@ The Bring Your Own Datatypes framework
     </li>
     <li id="fn:tensorflowbfloat" role="doc-endnote">
       <p><a href="https://cloud.google.com/tpu/docs/bfloat16" target="_blank">Using bfloat16 with TensorFlow models</a> <a href="#fnref:tensorflowbfloat" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
+    </li>
+    <li id="fn:posit" role="doc-endnote">
+      <p><a href="https://posithub.org/docs/BeatingFloatingPoint.pdf" target="_blank">Beating Floating Point at its Own Game: Posit Arithmetic</a> <a href="#fnref:posit" class="reversefootnote" role="doc-backlink">&#8617;</a></p>
     </li>
   </ol>
 </div>
