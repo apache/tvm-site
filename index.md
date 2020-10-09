@@ -59,29 +59,6 @@ Compilation of deep learning models in Keras, MXNet, PyTorch, Tensorflow, CoreML
 
 </section>
 
-<section class="organizationsSec">
-<div class="container">
-
-### Organizations using and contributing to TVM
-Apache TVM is actively being used and contributed to by developers from many organizations.
-This is a community maintained list of organizations using and contributing to tvm in alphabetical order.
-{% include contrib_orgs.html %}
-</div>
-</section>
-
-
-<a name="community"></a>
-
-<section class="communitySec">
-<div class="container">
-### Join the TVM Community
-Here are a few ways you can stay involved:
-{% include community.html %}
-</div>
-</section>
-
-
-
 
 <section class="docSec">
 <div class="container">
@@ -90,13 +67,15 @@ Here are a few ways you can stay involved:
 ### Docs
 [Written with care <br/> & love for you.](https://tvm.apache.org/docs/)
 
+
 * {:.doc-link-block}
-### Github
-[Github repo <br/> for development](https://github.com/apache/incubator-tvm)
+### Community
+[Join the TVM <br/> community](/community)
 
 * {:.doc-link-block}
 ### Blog
 [Read more about TVM <br/> and our thinking](/blog)
+
 
 </div>
 </section>
