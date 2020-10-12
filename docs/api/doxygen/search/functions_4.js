@@ -9,6 +9,7 @@ var searchData=
   ['decref',['DecRef',['../classtvm_1_1runtime_1_1Object.html#a70fb5361147634605d6595bb89381f03',1,'tvm::runtime::Object']]],
   ['deducebound',['DeduceBound',['../namespacetvm_1_1arith.html#af0860828b70ea8ff0d2f7c036c37afd5',1,'tvm::arith::DeduceBound(PrimExpr v, PrimExpr cond, const Map&lt; Var, IntSet &gt; &amp;hint_map, const Map&lt; Var, IntSet &gt; &amp;relax_map)'],['../namespacetvm_1_1arith.html#a3658d391f2333f405abdd54a9f174c9f',1,'tvm::arith::DeduceBound(PrimExpr v, PrimExpr cond, const std::unordered_map&lt; const VarNode *, IntSet &gt; &amp;hint_map, const std::unordered_map&lt; const VarNode *, IntSet &gt; &amp;relax_map)']]],
   ['dedup',['DeDup',['../namespacetvm_1_1relay.html#a1ecbcbe35c7abd82b9eabf94f6b797d2',1,'tvm::relay']]],
+  ['default',['Default',['../classtvm_1_1DiagnosticContext.html#ab0a08b05d11230b5108086cd5118f488',1,'tvm::DiagnosticContext']]],
   ['default_5fschedule',['default_schedule',['../namespacetvm_1_1topi_1_1generic.html#ae10c7793be021c3da437aeb2f79d8d2e',1,'tvm::topi::generic::default_schedule()'],['../namespacetvm_1_1topi_1_1x86.html#a8df4b07cd29b24d5c1323df91892fad4',1,'tvm::topi::x86::default_schedule()']]],
   ['default_5fschedule_5fauto_5finline',['default_schedule_auto_inline',['../namespacetvm_1_1topi_1_1generic.html#a1b7888cf36fa1da754ec65303a2dbbfb',1,'tvm::topi::generic::default_schedule_auto_inline()'],['../namespacetvm_1_1topi_1_1x86.html#af70d13cc92e434e9bce17cf76f4ef4f8',1,'tvm::topi::x86::default_schedule_auto_inline()']]],
   ['defaultindextype',['DefaultIndexType',['../classtvm_1_1tir_1_1BufferNode.html#a807f590bb261c7da322ee27f4037d20e',1,'tvm::tir::BufferNode']]],
@@ -30,6 +31,10 @@ var searchData=
   ['devicecopy',['DeviceCopy',['../structtvm_1_1runtime_1_1vm_1_1Instruction.html#a1fcbbcac293f2dcecc8c99eb944a254b',1,'tvm::runtime::vm::Instruction']]],
   ['devicename',['DeviceName',['../namespacetvm_1_1runtime.html#a9109e4efe269213052ed6a94853c0c00',1,'tvm::runtime']]],
   ['dfpatterncallback',['DFPatternCallback',['../classtvm_1_1relay_1_1DFPatternCallback.html#a820597c8dc9ec76160d3283e71cf57ba',1,'tvm::relay::DFPatternCallback']]],
+  ['diagnostic',['Diagnostic',['../classtvm_1_1Diagnostic.html#a3e841d675315f73ce32ffa5c81dd9c26',1,'tvm::Diagnostic']]],
+  ['diagnosticbuilder',['DiagnosticBuilder',['../classtvm_1_1DiagnosticBuilder.html#ab8cb7481e5112445af289832dc718e36',1,'tvm::DiagnosticBuilder::DiagnosticBuilder()'],['../classtvm_1_1DiagnosticBuilder.html#a3204dda7b9a0625027f3d7cba87558f7',1,'tvm::DiagnosticBuilder::DiagnosticBuilder(const DiagnosticBuilder &amp;builder)'],['../classtvm_1_1DiagnosticBuilder.html#a6e323e92313d91fe45970b3ee39b8e63',1,'tvm::DiagnosticBuilder::DiagnosticBuilder(DiagnosticLevel level, Span span)']]],
+  ['diagnosticcontext',['DiagnosticContext',['../classtvm_1_1DiagnosticContext.html#a95a504685fb72779a8b63abb3e2923ea',1,'tvm::DiagnosticContext']]],
+  ['diagnosticrenderer',['DiagnosticRenderer',['../classtvm_1_1DiagnosticRenderer.html#a118215b25d3747423a3fa6af989b32df',1,'tvm::DiagnosticRenderer::DiagnosticRenderer(TypedPackedFunc&lt; void(DiagnosticContext ctx)&gt; render)'],['../classtvm_1_1DiagnosticRenderer.html#aee223ebb9e5a875795e6536503e155ad',1,'tvm::DiagnosticRenderer::DiagnosticRenderer()']]],
   ['dictattrs',['DictAttrs',['../classtvm_1_1DictAttrs.html#a3999d7e2b942c8f9993f6d51cb8f3ded',1,'tvm::DictAttrs']]],
   ['dilate',['dilate',['../namespacetvm_1_1topi_1_1nn.html#af210f30ef7afb28cd369dacc8f05be68',1,'tvm::topi::nn']]],
   ['dispatchvisitexpr',['DispatchVisitExpr',['../classtvm_1_1relay_1_1MixedModeMutator.html#abf42e17fa95968153e0cff75c6280918',1,'tvm::relay::MixedModeMutator']]],
@@ -46,5 +51,6 @@ var searchData=
   ['downcastnocheck',['DowncastNoCheck',['../classtvm_1_1runtime_1_1ObjectRef.html#acd04bb22a6861e9952c344ee8547411f',1,'tvm::runtime::ObjectRef']]],
   ['dtype',['dtype',['../classtvm_1_1PrimExpr.html#a1098008618699c33adfbd19e582f9ffd',1,'tvm::PrimExpr']]],
   ['dump',['Dump',['../namespacetvm.html#a410120ad997c7470798b98a1c48ee3e6',1,'tvm::Dump(const runtime::ObjectRef &amp;node)'],['../namespacetvm.html#a4909861f9bc606426c65c65da4da3734',1,'tvm::Dump(const runtime::Object *node)']]],
-  ['dyn_5ftile',['dyn_tile',['../namespacetvm_1_1topi.html#a5efc5887d91eb272e31c10f4e014a034',1,'tvm::topi']]]
+  ['dyn_5ftile',['dyn_tile',['../namespacetvm_1_1topi.html#a5efc5887d91eb272e31c10f4e014a034',1,'tvm::topi']]],
+  ['dynamictostatic',['DynamicToStatic',['../namespacetvm_1_1relay_1_1transform.html#ab533a050ab0d54b41e543fb1fd369fb6',1,'tvm::relay::transform']]]
 ];

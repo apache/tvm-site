@@ -41,6 +41,7 @@ var searchData=
   ['not',['Not',['../classtvm_1_1tir_1_1Not.html',1,'tvm::tir']]],
   ['not',['Not',['../classtvm_1_1tir_1_1Not.html#ada865ced5d97b66dc1bee58b9cc28029',1,'tvm::tir::Not']]],
   ['not_5fequal',['not_equal',['../namespacetvm_1_1topi.html#a23bd66c06c282d7eea39108d503f95a8',1,'tvm::topi::not_equal(const tvm::PrimExpr &amp;a, const tvm::PrimExpr &amp;b)'],['../namespacetvm_1_1topi.html#a664e08f7629a1b1fe49dbb688cfa4b8c',1,'tvm::topi::not_equal(const tvm::te::Tensor &amp;A, const tvm::te::Tensor &amp;B, std::string name=&quot;T_&quot;&quot;not_equal&quot;, std::string tag=kBroadcast)'],['../namespacetvm_1_1topi.html#a19a0d105b4fb3dd7935d7d5d96acebab',1,'tvm::topi::not_equal(const tvm::te::Tensor &amp;A, const tvm::PrimExpr &amp;B, std::string name=&quot;T_&quot;&quot;not_equal&quot;, std::string tag=kElementWise)'],['../namespacetvm_1_1topi.html#ab9f1815688c196c4b550e003ef6660af',1,'tvm::topi::not_equal(const tvm::PrimExpr &amp;A, const tvm::te::Tensor &amp;B, std::string name=&quot;T_&quot;&quot;not_equal&quot;, std::string tag=kElementWise)']]],
+  ['note',['Note',['../classtvm_1_1Diagnostic.html#af54e1348482c65681cf015309ef57497',1,'tvm::Diagnostic']]],
   ['nothing',['Nothing',['../classtvm_1_1arith_1_1IntSet.html#a9c2f6e224e86669e9552b4d481ad65ea',1,'tvm::arith::IntSet']]],
   ['notnode',['NotNode',['../classtvm_1_1tir_1_1NotNode.html',1,'tvm::tir']]],
   ['nparts',['nparts',['../classtvm_1_1te_1_1SplitNode.html#a4e809bca962d95b7fab6a98f1617a05c',1,'tvm::te::SplitNode']]],

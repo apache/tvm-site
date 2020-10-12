@@ -70,6 +70,7 @@ var searchData=
   ['typedpackedfunc_3c_20r_28args_2e_2e_2e_29_3e',['TypedPackedFunc&lt; R(Args...)&gt;',['../classtvm_1_1runtime_1_1TypedPackedFunc_3_01R_07Args_8_8_8_08_4.html',1,'tvm::runtime']]],
   ['typedpackedfunc_3c_20te_3a_3aschedule_28const_20attrs_20_26attrs_2c_20const_20array_3c_20te_3a_3atensor_20_3e_20_26outs_2c_20const_20target_20_26target_29_3e',['TypedPackedFunc&lt; te::Schedule(const Attrs &amp;attrs, const Array&lt; te::Tensor &gt; &amp;outs, const Target &amp;target)&gt;',['../classtvm_1_1runtime_1_1TypedPackedFunc.html',1,'tvm::runtime']]],
   ['typedpackedfunc_3c_20void_28const_20irmodule_20_26ir_5fmodule_2c_20const_20passinfo_20_26ctx_2c_20bool_20is_5fbefore_29_3e',['TypedPackedFunc&lt; void(const IRModule &amp;ir_module, const PassInfo &amp;ctx, bool is_before)&gt;',['../classtvm_1_1runtime_1_1TypedPackedFunc.html',1,'tvm::runtime']]],
+  ['typedpackedfunc_3c_20void_28tvm_3a_3adiagnosticcontext_20ctx_29_3e',['TypedPackedFunc&lt; void(tvm::DiagnosticContext ctx)&gt;',['../classtvm_1_1runtime_1_1TypedPackedFunc.html',1,'tvm::runtime']]],
   ['typefunctor',['TypeFunctor',['../classtvm_1_1TypeFunctor.html',1,'tvm']]],
   ['typefunctor_3c_20r_28const_20type_20_26n_2c_20args_2e_2e_2e_29_3e',['TypeFunctor&lt; R(const Type &amp;n, Args...)&gt;',['../classtvm_1_1TypeFunctor_3_01R_07const_01Type_01_6n_00_01Args_8_8_8_08_4.html',1,'tvm']]],
   ['typefunctor_3c_20type_28const_20type_20_26n_29_3e',['TypeFunctor&lt; Type(const Type &amp;n)&gt;',['../classtvm_1_1TypeFunctor.html',1,'tvm']]],

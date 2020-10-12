@@ -147,7 +147,7 @@ After some measurement trials, it will return the best schedule it found.
 
  .. code-block:: none
 
-    *T*T*T*T*T*T*T*T
+    *T*T*T*T*T*T*T*T*T*T
 
 
 
@@ -171,44 +171,61 @@ parallelization, vectorization, unrolling and operator fusion.
 
  .. code-block:: none
 
+    #[version = "0.0.5"]
     primfn(A_1: handle, B_1: handle, C_1: handle, out_1: handle) -> ()
       attr = {"global_symbol": "main", "tir.noalias": True}
-      buffers = {C: Buffer(C_2: Pointer(float32), float32, [128, 128], []),
-                 out: Buffer(out_2: Pointer(float32), float32, [128, 128], []),
+      buffers = {out: Buffer(out_2: Pointer(float32), float32, [128, 128], []),
+                 C: Buffer(C_2: Pointer(float32), float32, [128, 128], []),
                  B: Buffer(B_2: Pointer(float32), float32, [128, 128], []),
                  A: Buffer(A_2: Pointer(float32), float32, [128, 128], [])}
       buffer_map = {A_1: A, B_1: B, C_1: C, out_1: out} {
       attr [matmul: Pointer(float32)] "storage_scope" = "global";
       allocate(matmul, float32, [16384]) {
-        for (i.outer.outer.inner: int32, 0, 64) {
-          for (j.outer.outer.inner: int32, 0, 4) {
-            matmul[ramp(((i.outer.outer.inner*256) + (j.outer.outer.inner*32)), 1, 8)] = broadcast(0f32, 8)
-            matmul[ramp((((i.outer.outer.inner*256) + (j.outer.outer.inner*32)) + 128), 1, 8)] = broadcast(0f32, 8)
-            matmul[ramp((((i.outer.outer.inner*256) + (j.outer.outer.inner*32)) + 8), 1, 8)] = broadcast(0f32, 8)
-            matmul[ramp((((i.outer.outer.inner*256) + (j.outer.outer.inner*32)) + 136), 1, 8)] = broadcast(0f32, 8)
-            matmul[ramp((((i.outer.outer.inner*256) + (j.outer.outer.inner*32)) + 16), 1, 8)] = broadcast(0f32, 8)
-            matmul[ramp((((i.outer.outer.inner*256) + (j.outer.outer.inner*32)) + 144), 1, 8)] = broadcast(0f32, 8)
-            matmul[ramp((((i.outer.outer.inner*256) + (j.outer.outer.inner*32)) + 24), 1, 8)] = broadcast(0f32, 8)
-            matmul[ramp((((i.outer.outer.inner*256) + (j.outer.outer.inner*32)) + 152), 1, 8)] = broadcast(0f32, 8)
-            for (k.outer: int32, 0, 8) {
-              for (j.outer.inner: int32, 0, 4) {
-                for (k.inner: int32, 0, 16) {
-                  matmul[ramp((((i.outer.outer.inner*256) + (j.outer.outer.inner*32)) + (j.outer.inner*8)), 1, 8)] = ((float32x8*)matmul[ramp((((i.outer.outer.inner*256) + (j.outer.outer.inner*32)) + (j.outer.inner*8)), 1, 8)] + (broadcast((float32*)A_2[(((i.outer.outer.inner*256) + (k.outer*16)) + k.inner)], 8)*(float32x8*)B_2[ramp(((((k.outer*2048) + (k.inner*128)) + (j.outer.outer.inner*32)) + (j.outer.inner*8)), 1, 8)]))
-                  matmul[ramp(((((i.outer.outer.inner*256) + (j.outer.outer.inner*32)) + (j.outer.inner*8)) + 128), 1, 8)] = ((float32x8*)matmul[ramp(((((i.outer.outer.inner*256) + (j.outer.outer.inner*32)) + (j.outer.inner*8)) + 128), 1, 8)] + (broadcast((float32*)A_2[((((i.outer.outer.inner*256) + (k.outer*16)) + k.inner) + 128)], 8)*(float32x8*)B_2[ramp(((((k.outer*2048) + (k.inner*128)) + (j.outer.outer.inner*32)) + (j.outer.inner*8)), 1, 8)]))
-                }
-              }
+        for (i: int32, 0, 128) {
+          for (j: int32, 0, 128) {
+            matmul[((i*128) + j)] = 0f32
+            for (k: int32, 0, 128) {
+              matmul[((i*128) + j)] = ((float32*)matmul[((i*128) + j)] + ((float32*)A_2[((i*128) + k)]*(float32*)B_2[((k*128) + j)]))
             }
           }
         }
-        for (i.inner: int32, 0, 128) {
-          for (j.inner: int32, 0, 128) {
-            out_2[((i.inner*128) + j.inner)] = ((float32*)matmul[((i.inner*128) + j.inner)] + (float32*)C_2[((i.inner*128) + j.inner)])
+        for (i_1: int32, 0, 128) {
+          for (j_1: int32, 0, 128) {
+            out_2[((i_1*128) + j_1)] = ((float32*)matmul[((i_1*128) + j_1)] + (float32*)C_2[((i_1*128) + j_1)])
           }
         }
       }
     }
 
-
+    #[metadata]
+    {
+      "root": 1, 
+      "nodes": [
+        {
+          "type_key": ""
+        }, 
+        {
+          "type_key": "Map", 
+          "keys": [
+            "IntImm"
+          ], 
+          "data": [2]
+        }, 
+        {
+          "type_key": "Array", 
+          "data": [3]
+        }, 
+        {
+          "type_key": "IntImm", 
+          "attrs": {
+            "dtype": "bool", 
+            "value": "1"
+          }
+        }
+      ], 
+      "b64ndarrays": [], 
+      "attrs": {"tvm_version": "0.8.dev0"}
+    }
 
 
 
@@ -254,7 +271,7 @@ We build the binary and check its correctness and performance.
 
  .. code-block:: none
 
-    Execution time of this operator: 0.130 ms
+    Execution time of this operator: 2.042 ms
 
 
 
@@ -297,21 +314,22 @@ print the equivalent python schedule API, and build the binary again.
     Equivalent python schedule:
     matmul_i, matmul_j, matmul_k = tuple(matmul.op.axis) + tuple(matmul.op.reduce_axis)
     out_i, out_j = tuple(out.op.axis) + tuple(out.op.reduce_axis)
-    matmul_i_o_i, matmul_i_i = s[matmul].split(matmul_i, factor=8)
-    matmul_i_o_o_i, matmul_i_o_i = s[matmul].split(matmul_i_o_i, factor=16)
-    matmul_i_o_o_o, matmul_i_o_o_i = s[matmul].split(matmul_i_o_o_i, factor=1)
-    matmul_j_o_i, matmul_j_i = s[matmul].split(matmul_j, factor=1)
-    matmul_j_o_o_i, matmul_j_o_i = s[matmul].split(matmul_j_o_i, factor=128)
+    matmul_i_o_i, matmul_i_i = s[matmul].split(matmul_i, factor=1)
+    matmul_i_o_o_i, matmul_i_o_i = s[matmul].split(matmul_i_o_i, factor=1)
+    matmul_i_o_o_o, matmul_i_o_o_i = s[matmul].split(matmul_i_o_o_i, factor=128)
+    matmul_j_o_i, matmul_j_i = s[matmul].split(matmul_j, factor=16)
+    matmul_j_o_o_i, matmul_j_o_i = s[matmul].split(matmul_j_o_i, factor=2)
     matmul_j_o_o_o, matmul_j_o_o_i = s[matmul].split(matmul_j_o_o_i, factor=1)
-    matmul_k_o, matmul_k_i = s[matmul].split(matmul_k, factor=4)
+    matmul_k_o, matmul_k_i = s[matmul].split(matmul_k, factor=8)
     s[matmul].reorder(matmul_i_o_o_o, matmul_j_o_o_o, matmul_i_o_o_i, matmul_j_o_o_i, matmul_k_o, matmul_i_o_i, matmul_j_o_i, matmul_k_i, matmul_i_i, matmul_j_i)
-    out_i_o, out_i_i = s[out].split(out_i, factor=128)
-    out_j_o, out_j_i = s[out].split(out_j, factor=128)
-    s[out].reorder(out_i_o, out_j_o, out_i_i, out_j_i)
-    s[matmul].compute_at(s[out], out_j_o)
-    out_i_o_j_o_fused = s[out].fuse(out_i_o, out_j_o)
-    s[out].parallel(out_i_o_j_o_fused)
-    s[matmul].pragma(matmul_i_o_o_o, "auto_unroll_max_step", 512)
+    out_i_o_i, out_i_i = s[out].split(out_i, factor=1)
+    out_i_o_o, out_i_o_i = s[out].split(out_i_o_i, factor=128)
+    out_j_o_i, out_j_i = s[out].split(out_j, factor=32)
+    out_j_o_o, out_j_o_i = s[out].split(out_j_o_i, factor=1)
+    s[out].reorder(out_i_o_o, out_j_o_o, out_i_o_i, out_j_o_i, out_i_i, out_j_i)
+    s[matmul].compute_at(s[out], out_j_o_i)
+    s[out].parallel(out_i_o_o)
+    s[matmul].pragma(matmul_i_o_o_o, "auto_unroll_max_step", 0)
     s[matmul].pragma(matmul_i_o_o_o, "unroll_explicit", True)
     s[matmul].vectorize(matmul_j_i)
 
@@ -368,7 +386,7 @@ In the example below we resume the status and do more 5 trials.
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** ( 1 minutes  35.283 seconds)
+   **Total running time of the script:** ( 1 minutes  52.380 seconds)
 
 
 .. _sphx_glr_download_tutorials_auto_scheduler_tune_matmul_x86.py:

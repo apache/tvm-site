@@ -35,7 +35,7 @@ var searchData=
   ['params_5fdevice_5ftype',['params_device_type',['../structtvm_1_1runtime_1_1vm_1_1VMFunction.html#a9b44300ed555a2465b18b826cab195fb',1,'tvm::runtime::vm::VMFunction']]],
   ['parent',['parent',['../classtvm_1_1relay_1_1DominatorPatternNode.html#ab4720ce40ecd4f89c7eb6ff469c40375',1,'tvm::relay::DominatorPatternNode::parent()'],['../classtvm_1_1te_1_1SplitNode.html#aff313d36c09c8d93ba34aa4a251d6a9f',1,'tvm::te::SplitNode::parent()'],['../classtvm_1_1te_1_1RebaseNode.html#a4fea0a62970e2831dd92c58aee14a1f4',1,'tvm::te::RebaseNode::parent()']]],
   ['parsecustomdatatype',['ParseCustomDatatype',['../namespacetvm_1_1runtime.html#ac6d167947285dff3c780bd5d01ace9b9',1,'tvm::runtime']]],
-  ['parsemodule',['ParseModule',['../namespacetvm_1_1parser.html#ad449c60a6ca2c591a0d0252c763288ba',1,'tvm::parser']]],
+  ['parsemodule',['ParseModule',['../namespacetvm_1_1parser.html#a69636d4bcd54c27c574afc506f0a0120',1,'tvm::parser']]],
   ['parser_2eh',['parser.h',['../parser_8h.html',1,'']]],
   ['partialeval',['PartialEval',['../namespacetvm_1_1relay_1_1transform.html#aa270d98da5518969e005c7e30d6eb6fe',1,'tvm::relay::transform']]],
   ['partialsolvedinequalities',['PartialSolvedInequalities',['../namespacetvm_1_1arith.html#adf7450490c4a53f62bab4463cdb5e9c8',1,'tvm::arith']]],

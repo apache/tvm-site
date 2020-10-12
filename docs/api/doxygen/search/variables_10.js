@@ -22,6 +22,7 @@ var searchData=
   ['register_5ffile_5fsize',['register_file_size',['../structtvm_1_1runtime_1_1vm_1_1VMFunction.html#a5b910095e5c2826cf57793afb4f2078a',1,'tvm::runtime::vm::VMFunction']]],
   ['registry',['registry',['../structTVMMutableFuncRegistry.html#acc1fcd6554c627c1bf3b3c00e1120e9b',1,'TVMMutableFuncRegistry::registry()'],['../structTVMModule.html#a6db21005b9e983207b341e65af4c4ab7',1,'TVMModule::registry()']]],
   ['relations',['relations',['../classtvm_1_1arith_1_1IntConstraintsNode.html#a078c29fba655311710227460312e78b5',1,'tvm::arith::IntConstraintsNode::relations()'],['../classtvm_1_1te_1_1StageNode.html#ad1c0f8dc1f0f406a2abcd05fdad8fad5',1,'tvm::te::StageNode::relations()']]],
+  ['renderer',['renderer',['../classtvm_1_1DiagnosticRendererNode.html#a8cb2c50460583e5eeee486cf044adfbe',1,'tvm::DiagnosticRendererNode::renderer()'],['../classtvm_1_1DiagnosticContextNode.html#aea5532b73702d459a53ee0c358607284',1,'tvm::DiagnosticContextNode::renderer()']]],
   ['repeat',['repeat',['../classtvm_1_1auto__scheduler_1_1ProgramRunnerNode.html#a8d5523fcffda00fccd916fbebb4be00a',1,'tvm::auto_scheduler::ProgramRunnerNode']]],
   ['repeats',['repeats',['../structtvm_1_1relay_1_1RepeatAttrs.html#ade3005a90c1ff77a1f583c4a7ba898e0',1,'tvm::relay::RepeatAttrs']]],
   ['reps',['reps',['../structtvm_1_1relay_1_1TileAttrs.html#acac0351f86c23beb264227981424022e',1,'tvm::relay::TileAttrs']]],

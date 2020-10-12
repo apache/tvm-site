@@ -1,6 +1,7 @@
 var searchData=
 [
-  ['wellformed',['WellFormed',['../namespacetvm_1_1relay.html#a59dde25d981d5b506115dd4dba7f67b7',1,'tvm::relay']]],
+  ['warning',['Warning',['../classtvm_1_1Diagnostic.html#a407ef56844eec306451c1ce2ca9f248c',1,'tvm::Diagnostic']]],
+  ['wellformed',['WellFormed',['../namespacetvm_1_1relay.html#a4e4cdd4e3db74bf68b315d5730890ca8',1,'tvm::relay']]],
   ['where',['where',['../namespacetvm_1_1topi.html#af011847b6e7f72f1bec25eee05c80590',1,'tvm::topi']]],
   ['with',['With',['../classtvm_1_1With.html#a6546ddcfe91125f25b794e6145b870ed',1,'tvm::With']]],
   ['with_5fbits',['with_bits',['../classtvm_1_1runtime_1_1DataType.html#a9cf48e54cda66f3351b331fcc6cca1dc',1,'tvm::runtime::DataType']]],

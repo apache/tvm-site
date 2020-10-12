@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>TVM Runtime System &mdash; tvm 0.7.0 documentation</title>
+  <title>TVM Runtime System &mdash; tvm 0.8.dev0 documentation</title>
   
 
   
@@ -68,7 +68,7 @@
             
             
               <div class="version">
-                0.7.0
+                0.8.dev0
               </div>
             
           
@@ -242,7 +242,7 @@ In this note, we explain the key elements of the TVM runtime.</p>
 We also want the runtime core to be minimal to deploy to embedded devices.</p>
 <div class="section" id="packedfunc">
 <span id="tvm-runtime-system-packed-func"></span><h2>PackedFunc<a class="headerlink" href="#packedfunc" title="Permalink to this headline">¶</a></h2>
-<p><a class="reference external" href="https://github.com/apache/incubator-tvm/blob/master/include/tvm/runtime/packed_func.h">PackedFunc</a> is a simple but elegant solution
+<p><a class="reference external" href="https://github.com/apache/incubator-tvm/blob/main/include/tvm/runtime/packed_func.h">PackedFunc</a> is a simple but elegant solution
 we find to solve the challenges listed. The following code block provides an example in C++</p>
 <div class="highlight-c notranslate"><div class="highlight"><pre><span class="cp">#include</span> <span class="cpf">&lt;tvm/runtime/packed_func.h&gt;</span><span class="cp"></span>
 
@@ -314,13 +314,13 @@ we can pass functions from python (as PackedFunc) to C++.</p>
 <span class="n">callhello</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>TVM provides a <a class="reference external" href="https://github.com/apache/incubator-tvm/blob/master/include/tvm/runtime/c_runtime_api.h">minimum C API</a>,
+<p>TVM provides a <a class="reference external" href="https://github.com/apache/incubator-tvm/blob/main/include/tvm/runtime/c_runtime_api.h">minimum C API</a>,
 which allows us to embed the PackedFunc into any languages. Besides python, so far we supported
-<a class="reference external" href="https://github.com/apache/incubator-tvm/tree/master/jvm">java</a> and <a class="reference external" href="https://github.com/apache/incubator-tvm/tree/master/web">javascript</a>.
+<a class="reference external" href="https://github.com/apache/incubator-tvm/tree/main/jvm">java</a> and <a class="reference external" href="https://github.com/apache/incubator-tvm/tree/main/web">javascript</a>.
 This philosophy of embedded API is very like Lua, except that we don’t have a new language but use C++.</p>
 <p>One fun fact about PackedFunc is that we use it for both compiler and deployment stack.</p>
 <ul class="simple">
-<li><p>All TVM’s compiler pass functions are exposed to frontend as PackedFunc, see <a class="reference external" href="https://github.com/apache/incubator-tvm/tree/master/src/api">here</a></p></li>
+<li><p>All TVM’s compiler pass functions are exposed to frontend as PackedFunc, see <a class="reference external" href="https://github.com/apache/incubator-tvm/tree/main/src/api">here</a></p></li>
 <li><p>The compiled module also returns the compiled function as PackedFunc</p></li>
 </ul>
 <p>To keep the runtime minimum, we isolated the IR Object support from the deployment runtime. The resulting runtime takes around 200K - 600K depending on how many runtime driver modules (e.g., CUDA) get included.</p>
@@ -335,7 +335,7 @@ We have to use the driver API to load the kernel, set up the argument in packed 
 We also need to patch up the driver API so that the exposed functions are threadsafe.
 So we often need to implement these driver glues in C++ and expose them to the user.
 We can certainly not do it for each type of functions, so again PackedFunc is our answer.</p>
-<p>TVM defines the compiled object as <a class="reference external" href="https://github.com/apache/incubator-tvm/blob/master/include/tvm/runtime/module.h">Module</a>.
+<p>TVM defines the compiled object as <a class="reference external" href="https://github.com/apache/incubator-tvm/blob/main/include/tvm/runtime/module.h">Module</a>.
 The user can get the compiled function from Module as PackedFunc.
 The generated compiled code can dynamically get function from Module in runtime. It caches the function handle in the first call and reuses in subsequent calls. We use this to link device code and callback into any PackedFunc(e.g., python) from generated code.</p>
 <p>The ModuleNode is an abstract class that can be implemented by each type of device.
@@ -361,7 +361,7 @@ However, we don’t want to change our API from time to time. Besides that, we a
 <li><p>be able to serialize any language object and IRs</p></li>
 <li><p>be able to explore, print, and manipulate the IR objects in front-end language to do quick prototyping.</p></li>
 </ul>
-<p>We introduced a base class, called <a class="reference external" href="https://github.com/apache/incubator-tvm/blob/master/include/tvm/runtime/object.h">Object</a> to solve this problem.
+<p>We introduced a base class, called <a class="reference external" href="https://github.com/apache/incubator-tvm/blob/main/include/tvm/runtime/object.h">Object</a> to solve this problem.
 All the language object in the compiler stack is a subclass of <code class="docutils literal notranslate"><span class="pre">Object</span></code>. Each object contains a string type_key that uniquely identifies
 the type of object. We choose string instead of int as type key so new <code class="docutils literal notranslate"><span class="pre">Object</span></code> class can be added in the decentralized fashion without
 adding the code back to the central repo. To ease the speed of dispatching, we allocate an integer type_index at runtime for each type_key.</p>
@@ -433,16 +433,16 @@ to do the heavy lifting job.</p>
 </div>
 <div class="section" id="implementation-details">
 <h2>Implementation Details<a class="headerlink" href="#implementation-details" title="Permalink to this headline">¶</a></h2>
-<p>Each argument in PackedFunc contains a union value <a class="reference external" href="https://github.com/apache/incubator-tvm/blob/master/include/tvm/runtime/c_runtime_api.h#L122">TVMValue</a>
+<p>Each argument in PackedFunc contains a union value <a class="reference external" href="https://github.com/apache/incubator-tvm/blob/main/include/tvm/runtime/c_runtime_api.h#L122">TVMValue</a>
 and a type code. This design allows the dynamically typed language to convert to the corresponding type directly, and statically typed language to
 do runtime type checking during conversion.</p>
 <p>The relevant files are</p>
 <ul class="simple">
-<li><p><a class="reference external" href="https://github.com/apache/incubator-tvm/blob/master/include/tvm/runtime/packed_func.h">packed_func.h</a> for C++ API</p></li>
-<li><p><a class="reference external" href="https://github.com/apache/incubator-tvm/blob/master/src/runtime/c_runtime_api.cc#L262">c_runtime_api.cc</a> for C API and how to provide callback.</p></li>
+<li><p><a class="reference external" href="https://github.com/apache/incubator-tvm/blob/main/include/tvm/runtime/packed_func.h">packed_func.h</a> for C++ API</p></li>
+<li><p><a class="reference external" href="https://github.com/apache/incubator-tvm/blob/main/src/runtime/c_runtime_api.cc#L262">c_runtime_api.cc</a> for C API and how to provide callback.</p></li>
 </ul>
 <p>To support extension types, we used a registry system to register type related information, like support of any
-in C++, see <a class="reference external" href="https://github.com/apache/incubator-tvm/tree/master/apps/extension">Extension types</a> for more details.</p>
+in C++, see <a class="reference external" href="https://github.com/apache/incubator-tvm/tree/main/apps/extension">Extension types</a> for more details.</p>
 </div>
 </div>
 

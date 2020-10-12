@@ -9,7 +9,7 @@ var searchData=
   ['parallel',['parallel',['../classtvm_1_1auto__scheduler_1_1State.html#a2376f0180bc5b5dd4b456f2a75d4a366',1,'tvm::auto_scheduler::State::parallel()'],['../classtvm_1_1te_1_1Stage.html#a60a6be10a1a96cb594c1399efabafef3',1,'tvm::te::Stage::parallel()']]],
   ['parallel_5ffor',['parallel_for',['../namespacetvm_1_1support.html#a8bf1225e8bb1db575578ca2d645fb23c',1,'tvm::support']]],
   ['parsecustomdatatype',['ParseCustomDatatype',['../namespacetvm_1_1runtime.html#ac6d167947285dff3c780bd5d01ace9b9',1,'tvm::runtime']]],
-  ['parsemodule',['ParseModule',['../namespacetvm_1_1parser.html#ad449c60a6ca2c591a0d0252c763288ba',1,'tvm::parser']]],
+  ['parsemodule',['ParseModule',['../namespacetvm_1_1parser.html#a69636d4bcd54c27c574afc506f0a0120',1,'tvm::parser']]],
   ['partialeval',['PartialEval',['../namespacetvm_1_1relay_1_1transform.html#aa270d98da5518969e005c7e30d6eb6fe',1,'tvm::relay::transform']]],
   ['partitiongraph',['PartitionGraph',['../namespacetvm_1_1relay_1_1transform.html#aac0bfdaf6d09b360602243c81abe05a1',1,'tvm::relay::transform']]],
   ['partitionpattern',['PartitionPattern',['../namespacetvm_1_1relay.html#a48108863604dc310eb3184b13b42a92a',1,'tvm::relay']]],

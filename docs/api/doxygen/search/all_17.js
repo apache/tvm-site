@@ -1,8 +1,9 @@
 var searchData=
 [
+  ['warning',['Warning',['../classtvm_1_1Diagnostic.html#a407ef56844eec306451c1ce2ca9f248c',1,'tvm::Diagnostic']]],
   ['warp_5fsize',['warp_size',['../classtvm_1_1auto__scheduler_1_1HardwareParamsNode.html#a8d96a297de313e00c00d2d26b3e1cc95',1,'tvm::auto_scheduler::HardwareParamsNode']]],
   ['weight_5fbits',['weight_bits',['../structtvm_1_1relay_1_1BinaryConv2DAttrs.html#a70aa926aba4fc774c15786358315141a',1,'tvm::relay::BinaryConv2DAttrs::weight_bits()'],['../structtvm_1_1relay_1_1BinaryDenseAttrs.html#a6647c2d9d1d3108c6f552ff4271f2625',1,'tvm::relay::BinaryDenseAttrs::weight_bits()']]],
-  ['wellformed',['WellFormed',['../namespacetvm_1_1relay.html#a59dde25d981d5b506115dd4dba7f67b7',1,'tvm::relay']]],
+  ['wellformed',['WellFormed',['../namespacetvm_1_1relay.html#a4e4cdd4e3db74bf68b315d5730890ca8',1,'tvm::relay']]],
   ['where',['where',['../namespacetvm_1_1topi.html#af011847b6e7f72f1bec25eee05c80590',1,'tvm::topi']]],
   ['wildcardpattern',['WildcardPattern',['../classtvm_1_1relay_1_1WildcardPattern.html',1,'tvm::relay']]],
   ['wildcardpatternnode',['WildcardPatternNode',['../classtvm_1_1relay_1_1WildcardPatternNode.html',1,'tvm::relay']]],

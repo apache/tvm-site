@@ -172,7 +172,7 @@ var searchData=
   ['functions',['functions',['../classtvm_1_1IRModuleNode.html#a88423026ad43fa60158bc9a647704d93',1,'tvm::IRModuleNode::functions()'],['../classtvm_1_1runtime_1_1vm_1_1Executable.html#af7d75150b6a98a7766a552d7e7e34a11',1,'tvm::runtime::vm::Executable::functions()']]],
   ['functor_2eh',['functor.h',['../functor_8h.html',1,'']]],
   ['functype',['FuncType',['../classtvm_1_1FuncType.html',1,'tvm']]],
-  ['functype',['FuncType',['../classtvm_1_1FuncType.html#ac463535a237db243457233a436836cf3',1,'tvm::FuncType::FuncType()'],['../namespacetvm_1_1relay.html#aa475de90506d48a1bb04ef6d1bd99bfb',1,'tvm::relay::FuncType()']]],
+  ['functype',['FuncType',['../classtvm_1_1FuncType.html#a91900b77ec8debd6e1b479a438eadbdd',1,'tvm::FuncType::FuncType()'],['../namespacetvm_1_1relay.html#aa475de90506d48a1bb04ef6d1bd99bfb',1,'tvm::relay::FuncType()']]],
   ['functypenode',['FuncTypeNode',['../classtvm_1_1FuncTypeNode.html',1,'tvm']]],
   ['functypenode',['FuncTypeNode',['../namespacetvm_1_1relay.html#ab551714015417af28d5ca2b47722997e',1,'tvm::relay']]],
   ['fuse',['Fuse',['../classtvm_1_1te_1_1Fuse.html#a10b77eec10eb7dbc536b0c8d65163f9c',1,'tvm::te::Fuse::Fuse()'],['../classtvm_1_1auto__scheduler_1_1State.html#a76198c368b38ad64eefa45a3147aa6ac',1,'tvm::auto_scheduler::State::fuse()'],['../classtvm_1_1te_1_1Stage.html#a5658065d9cbbee620bbd107d30c4ae72',1,'tvm::te::Stage::fuse(IterVar outer, IterVar inner, IterVar *p_target)'],['../classtvm_1_1te_1_1Stage.html#a07b721494aa3c0c79e8a8654c433708f',1,'tvm::te::Stage::fuse(const Array&lt; IterVar &gt; &amp;axes, IterVar *p_target)']]],

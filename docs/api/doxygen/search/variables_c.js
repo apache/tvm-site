@@ -19,7 +19,7 @@ var searchData=
   ['measured_5fstates_5fthroughputs_5f',['measured_states_throughputs_',['../classtvm_1_1auto__scheduler_1_1SearchPolicyNode.html#a5d1b9cf934cfee1f4161f45ff2f12f4f',1,'tvm::auto_scheduler::SearchPolicyNode']]],
   ['measured_5fstates_5fvector_5f',['measured_states_vector_',['../classtvm_1_1auto__scheduler_1_1SearchPolicyNode.html#aab68b70a8b21b353746921487c1cb29b',1,'tvm::auto_scheduler::SearchPolicyNode']]],
   ['memo_5f',['memo_',['../classtvm_1_1relay_1_1ExprMutator.html#a605c320fa66c769991738380bc8a69c8',1,'tvm::relay::ExprMutator']]],
-  ['message',['message',['../classtvm_1_1tir_1_1AssertStmtNode.html#a42ff732b4df33bddf74f9a92669cebb9',1,'tvm::tir::AssertStmtNode']]],
+  ['message',['message',['../classtvm_1_1DiagnosticNode.html#a6cb3da3e81e6d6dce39a046c18f55f04',1,'tvm::DiagnosticNode::message()'],['../classtvm_1_1tir_1_1AssertStmtNode.html#a42ff732b4df33bddf74f9a92669cebb9',1,'tvm::tir::AssertStmtNode::message()']]],
   ['message_5ftype',['message_type',['../structtvm_1_1runtime_1_1micro__rpc_1_1SessionHeader.html#a6361d74689ff447ee5b072255e9f3d64',1,'tvm::runtime::micro_rpc::SessionHeader']]],
   ['method',['method',['../structtvm_1_1relay_1_1ResizeAttrs.html#a45a5182646e979ac0d4f1f181005e7d6',1,'tvm::relay::ResizeAttrs::method()'],['../structtvm_1_1relay_1_1Resize3dAttrs.html#a136fc4c535b2f2103da081668ce0d088',1,'tvm::relay::Resize3dAttrs::method()'],['../structtvm_1_1relay_1_1CropAndResizeAttrs.html#a4234e6ea86f6a7715d33bcfcb9171640',1,'tvm::relay::CropAndResizeAttrs::method()'],['../structtvm_1_1relay_1_1GridSampleAttrs.html#a6781bffe4eb10d8cd1d7e92de9345487',1,'tvm::relay::GridSampleAttrs::method()'],['../structtvm_1_1relay_1_1UpSamplingAttrs.html#a56ebe2a638d70f6c607db1e21a016061',1,'tvm::relay::UpSamplingAttrs::method()'],['../structtvm_1_1relay_1_1UpSampling3DAttrs.html#a86334960861ecfd8dbd6cc61631b4647',1,'tvm::relay::UpSampling3DAttrs::method()']]],
   ['min',['min',['../classtvm_1_1RangeNode.html#a43d2fb12bb61cf05936a1972d0158b49',1,'tvm::RangeNode::min()'],['../classtvm_1_1tir_1_1ForNode.html#a1d1aa2006328bd84e4911f6d43ceca5c',1,'tvm::tir::ForNode::min()']]],
@@ -27,5 +27,6 @@ var searchData=
   ['min_5fvalue',['min_value',['../classtvm_1_1arith_1_1ConstIntBoundNode.html#a0761897bf16ab73b848bf360e9b195a3',1,'tvm::arith::ConstIntBoundNode']]],
   ['mode',['mode',['../structtvm_1_1relay_1_1MirrorPadAttrs.html#af5381d72f1d9c9abcb9d2e522966ad86',1,'tvm::relay::MirrorPadAttrs::mode()'],['../structtvm_1_1relay_1_1SubPixelAttrs.html#a6f0822aa1ad7672a18ab73c64e83fa99',1,'tvm::relay::SubPixelAttrs::mode()'],['../structtvm_1_1relay_1_1TakeAttrs.html#ac7fd604371e248cce170a05be605bd43',1,'tvm::relay::TakeAttrs::mode()']]],
   ['modular_5fset',['modular_set',['../classtvm_1_1arith_1_1Analyzer.html#acac92a9522deabe289fea99efbd9eaec',1,'tvm::arith::Analyzer']]],
+  ['module',['module',['../classtvm_1_1DiagnosticContextNode.html#adea7e38a6e47cbab7fb5639f208aa536',1,'tvm::DiagnosticContextNode']]],
   ['multiplier',['multiplier',['../structtvm_1_1relay_1_1FixedPointMultiplyAttrs.html#a317374d804a576b50d9a51e4a8ee3ff2',1,'tvm::relay::FixedPointMultiplyAttrs']]]
 ];

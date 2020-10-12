@@ -8,7 +8,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>2D Convolution Optimization &mdash; tvm 0.7.0 documentation</title>
+  <title>2D Convolution Optimization &mdash; tvm 0.8.dev0 documentation</title>
   
 
   
@@ -68,7 +68,7 @@
             
             
               <div class="version">
-                0.7.0
+                0.8.dev0
               </div>
             
           
@@ -286,7 +286,7 @@ architecture as our convolution workload parameters.</p>
 shifting and clipping to the output in order to mimic a fixed-point
 convolution followed by a rectified linear activation.
 We describe the TVM dataflow graph of the 2D convolution layer below:</p>
-<img alt="https://raw.githubusercontent.com/uwsaml/web-data/master/vta/tutorial/conv2d_dataflow.png" class="align-center" src="https://raw.githubusercontent.com/uwsaml/web-data/master/vta/tutorial/conv2d_dataflow.png" />
+<img alt="https://raw.githubusercontent.com/uwsaml/web-data/main/vta/tutorial/conv2d_dataflow.png" class="align-center" src="https://raw.githubusercontent.com/uwsaml/web-data/main/vta/tutorial/conv2d_dataflow.png" />
 <p>This computation is intentionally too large to fit onto VTA’s on-chip
 buffers all at once. Therefore in the scheduling phase we’ll
 rely on computation blocking strategies to break the computation down into
@@ -307,7 +307,7 @@ input feature map does not have to be re-packed in memory.</p>
 <p>We show the effect of VTA’s on the fly spatial padding when data is being
 loaded from DRAM into VTA’s SRAM, following a 2D strided and padded memory
 read.</p>
-<a class="reference internal image-reference" href="https://raw.githubusercontent.com/uwsaml/web-data/master/vta/tutorial/padding.png"><img alt="https://raw.githubusercontent.com/uwsaml/web-data/master/vta/tutorial/padding.png" class="align-center" src="https://raw.githubusercontent.com/uwsaml/web-data/master/vta/tutorial/padding.png" style="width: 480px;" /></a>
+<a class="reference internal image-reference" href="https://raw.githubusercontent.com/uwsaml/web-data/main/vta/tutorial/padding.png"><img alt="https://raw.githubusercontent.com/uwsaml/web-data/main/vta/tutorial/padding.png" class="align-center" src="https://raw.githubusercontent.com/uwsaml/web-data/main/vta/tutorial/padding.png" style="width: 480px;" /></a>
 </div>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">tvm</span> <span class="k">import</span> <span class="n">topi</span>
 
@@ -415,7 +415,8 @@ Those include:</p>
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre>primfn(data_1: handle, kernel_1: handle, res_1: handle) -&gt; ()
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre>#[version = &quot;0.0.5&quot;]
+primfn(data_1: handle, kernel_1: handle, res_1: handle) -&gt; ()
   attr = {&quot;global_symbol&quot;: &quot;main&quot;, &quot;tir.noalias&quot;: True}
   buffers = {res: Buffer(res_2: Pointer(int8), int8, [1, 16, 14, 14, 1, 16], []),
              kernel: Buffer(kernel_2: Pointer(int8), int8, [16, 16, 3, 3, 16, 16], []),
@@ -505,6 +506,36 @@ Those include:</p>
     }
   }
 }
+
+#[metadata]
+{
+  &quot;root&quot;: 1,
+  &quot;nodes&quot;: [
+    {
+      &quot;type_key&quot;: &quot;&quot;
+    },
+    {
+      &quot;type_key&quot;: &quot;Map&quot;,
+      &quot;keys&quot;: [
+        &quot;IntImm&quot;
+      ],
+      &quot;data&quot;: [2]
+    },
+    {
+      &quot;type_key&quot;: &quot;Array&quot;,
+      &quot;data&quot;: [3]
+    },
+    {
+      &quot;type_key&quot;: &quot;IntImm&quot;,
+      &quot;attrs&quot;: {
+        &quot;dtype&quot;: &quot;bool&quot;,
+        &quot;value&quot;: &quot;1&quot;
+      }
+    }
+  ],
+  &quot;b64ndarrays&quot;: [],
+  &quot;attrs&quot;: {&quot;tvm_version&quot;: &quot;0.8.dev0&quot;}
+}
 </pre></div>
 </div>
 <div class="section" id="blocking-the-computation">
@@ -568,7 +599,7 @@ memory access latency.</p>
 threads split along the output channel axis.
 We show how work is split when computing the 2D convolution in the figure
 below.</p>
-<a class="reference internal image-reference" href="https://raw.githubusercontent.com/uwsaml/web-data/master/vta/tutorial/virtual_threading.png"><img alt="https://raw.githubusercontent.com/uwsaml/web-data/master/vta/tutorial/virtual_threading.png" class="align-center" src="https://raw.githubusercontent.com/uwsaml/web-data/master/vta/tutorial/virtual_threading.png" style="width: 480px;" /></a>
+<a class="reference internal image-reference" href="https://raw.githubusercontent.com/uwsaml/web-data/main/vta/tutorial/virtual_threading.png"><img alt="https://raw.githubusercontent.com/uwsaml/web-data/main/vta/tutorial/virtual_threading.png" class="align-center" src="https://raw.githubusercontent.com/uwsaml/web-data/main/vta/tutorial/virtual_threading.png" style="width: 480px;" /></a>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span class="c1"># VTA only supports 2 virtual threads</span>
 <span class="n">v_threads</span> <span class="o">=</span> <span class="mi">2</span>
 
@@ -582,10 +613,11 @@ below.</p>
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre>primfn(data_1: handle, kernel_1: handle, res_1: handle) -&gt; ()
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre>#[version = &quot;0.0.5&quot;]
+primfn(data_1: handle, kernel_1: handle, res_1: handle) -&gt; ()
   attr = {&quot;global_symbol&quot;: &quot;main&quot;, &quot;tir.noalias&quot;: True}
-  buffers = {kernel: Buffer(kernel_2: Pointer(int8), int8, [16, 16, 3, 3, 16, 16], []),
-             res: Buffer(res_2: Pointer(int8), int8, [1, 16, 14, 14, 1, 16], []),
+  buffers = {res: Buffer(res_2: Pointer(int8), int8, [1, 16, 14, 14, 1, 16], []),
+             kernel: Buffer(kernel_2: Pointer(int8), int8, [16, 16, 3, 3, 16, 16], []),
              data: Buffer(data_2: Pointer(int8), int8, [1, 16, 14, 14, 1, 16], [])}
   buffer_map = {data_1: data, kernel_1: kernel, res_1: res} {
   attr [data_buf: Pointer(int8)] &quot;storage_scope&quot; = &quot;global&quot;;
@@ -688,6 +720,36 @@ below.</p>
     }
   }
 }
+
+#[metadata]
+{
+  &quot;root&quot;: 1,
+  &quot;nodes&quot;: [
+    {
+      &quot;type_key&quot;: &quot;&quot;
+    },
+    {
+      &quot;type_key&quot;: &quot;Map&quot;,
+      &quot;keys&quot;: [
+        &quot;IntImm&quot;
+      ],
+      &quot;data&quot;: [2]
+    },
+    {
+      &quot;type_key&quot;: &quot;Array&quot;,
+      &quot;data&quot;: [3]
+    },
+    {
+      &quot;type_key&quot;: &quot;IntImm&quot;,
+      &quot;attrs&quot;: {
+        &quot;dtype&quot;: &quot;bool&quot;,
+        &quot;value&quot;: &quot;1&quot;
+      }
+    }
+  ],
+  &quot;b64ndarrays&quot;: [],
+  &quot;attrs&quot;: {&quot;tvm_version&quot;: &quot;0.8.dev0&quot;}
+}
 </pre></div>
 </div>
 </div>
@@ -741,10 +803,11 @@ and mapping the shift, and clipping computation to the vector ALU.</p>
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre>primfn(data_1: handle, kernel_1: handle, res_1: handle) -&gt; ()
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre>#[version = &quot;0.0.5&quot;]
+primfn(data_1: handle, kernel_1: handle, res_1: handle) -&gt; ()
   attr = {&quot;global_symbol&quot;: &quot;main&quot;, &quot;tir.noalias&quot;: True}
-  buffers = {res: Buffer(res_2: Pointer(int8), int8, [1, 16, 14, 14, 1, 16], []),
-             kernel: Buffer(kernel_2: Pointer(int8), int8, [16, 16, 3, 3, 16, 16], []),
+  buffers = {kernel: Buffer(kernel_2: Pointer(int8), int8, [16, 16, 3, 3, 16, 16], []),
+             res: Buffer(res_2: Pointer(int8), int8, [1, 16, 14, 14, 1, 16], []),
              data: Buffer(data_2: Pointer(int8), int8, [1, 16, 14, 14, 1, 16], [])}
   buffer_map = {data_1: data, kernel_1: kernel, res_1: res} {
   attr [res_conv: Pointer(int32)] &quot;storage_scope&quot; = &quot;local.acc_buffer&quot;;
@@ -841,6 +904,36 @@ and mapping the shift, and clipping computation to the vector ALU.</p>
     @tir.vta.coproc_dep_pop(3, 2, dtype=int32)
     @tir.vta.coproc_sync(, dtype=int32)
   }
+}
+
+#[metadata]
+{
+  &quot;root&quot;: 1,
+  &quot;nodes&quot;: [
+    {
+      &quot;type_key&quot;: &quot;&quot;
+    },
+    {
+      &quot;type_key&quot;: &quot;Map&quot;,
+      &quot;keys&quot;: [
+        &quot;IntImm&quot;
+      ],
+      &quot;data&quot;: [2]
+    },
+    {
+      &quot;type_key&quot;: &quot;Array&quot;,
+      &quot;data&quot;: [3]
+    },
+    {
+      &quot;type_key&quot;: &quot;IntImm&quot;,
+      &quot;attrs&quot;: {
+        &quot;dtype&quot;: &quot;bool&quot;,
+        &quot;value&quot;: &quot;1&quot;
+      }
+    }
+  ],
+  &quot;b64ndarrays&quot;: [],
+  &quot;attrs&quot;: {&quot;tvm_version&quot;: &quot;0.8.dev0&quot;}
 }
 </pre></div>
 </div>

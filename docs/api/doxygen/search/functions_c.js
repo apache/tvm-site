@@ -3,7 +3,7 @@ var searchData=
   ['lanes',['lanes',['../classtvm_1_1runtime_1_1DataType.html#abc92c7ca9966808f024983c76e12cf4a',1,'tvm::runtime::DataType']]],
   ['large_5fuint_5fimm',['large_uint_imm',['../namespacetvm_1_1tir_1_1builtin.html#a322ae63444ed4e5fcf7247aa93f8bb7c',1,'tvm::tir::builtin']]],
   ['largeuintimm',['LargeUIntImm',['../namespacetvm.html#a1b6f1345a0ac2506132b15ec4cbf3599',1,'tvm']]],
-  ['layout',['Layout',['../classtvm_1_1tir_1_1Layout.html#ace4d6c608f7148bb2c6aefe33b4e4ab5',1,'tvm::tir::Layout::Layout(const Array&lt; tir::IterVar &gt; &amp;axes)'],['../classtvm_1_1tir_1_1Layout.html#a11a8465c3cc562e408a48a7f0fd324fd',1,'tvm::tir::Layout::Layout(const char *name)'],['../classtvm_1_1tir_1_1Layout.html#a7cece4c969caab17658f4e70fa6a69e5',1,'tvm::tir::Layout::Layout(const std::string &amp;name)']]],
+  ['layout',['Layout',['../classtvm_1_1tir_1_1Layout.html#ace4d6c608f7148bb2c6aefe33b4e4ab5',1,'tvm::tir::Layout::Layout(const Array&lt; tir::IterVar &gt; &amp;axes)'],['../classtvm_1_1tir_1_1Layout.html#ac899b7c62ee68d8b882a119ba6854f88',1,'tvm::tir::Layout::Layout(const tvm::String &amp;name)'],['../classtvm_1_1tir_1_1Layout.html#a11a8465c3cc562e408a48a7f0fd324fd',1,'tvm::tir::Layout::Layout(const char *name)'],['../classtvm_1_1tir_1_1Layout.html#a7cece4c969caab17658f4e70fa6a69e5',1,'tvm::tir::Layout::Layout(const std::string &amp;name)']]],
   ['layout_5ftransform',['layout_transform',['../namespacetvm_1_1topi.html#a8a41a08eee70607889b738946ed97873',1,'tvm::topi']]],
   ['lazygradientinit',['LazyGradientInit',['../namespacetvm_1_1relay_1_1transform.html#ab6e60251741cca1e811564b2f03a4a5d',1,'tvm::relay::transform']]],
   ['ldexp',['ldexp',['../namespacetvm.html#a90a9e2efafc1994a4cd84a26d74c75c3',1,'tvm']]],
