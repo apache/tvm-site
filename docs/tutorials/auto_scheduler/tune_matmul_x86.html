@@ -1,8 +1,7 @@
 
 
 <!DOCTYPE html>
-<!--[if IE 8]><html class="no-js lt-ie9" lang="en" > <![endif]-->
-<!--[if gt IE 8]><!--> <html class="no-js" lang="en" > <!--<![endif]-->
+<html class="writer-html5" lang="en" >
 <head>
   <meta charset="utf-8">
   
@@ -12,6 +11,12 @@
   
 
   
+  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/gallery.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/css/tvm_theme.css" type="text/css" />
+
+  
   
     <link rel="shortcut icon" href="../../_static/tvm-logo-square.png"/>
   
@@ -19,7 +24,9 @@
   
 
   
-  <script type="text/javascript" src="../../_static/js/modernizr.min.js"></script>
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
   
     
       <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
@@ -27,17 +34,11 @@
         <script src="../../_static/underscore.js"></script>
         <script src="../../_static/doctools.js"></script>
         <script src="../../_static/language_data.js"></script>
-        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
     
     <script type="text/javascript" src="../../_static/js/theme.js"></script>
 
     
-
-  
-  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
-  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
-  <link rel="stylesheet" href="../../_static/gallery.css" type="text/css" />
-  <link rel="stylesheet" href="../../_static/css/tvm_theme.css" type="text/css" />
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
     <link rel="next" title="Auto-scheduling a convolution layer for GPU" href="tune_conv2d_layer_cuda.html" />
@@ -85,6 +86,7 @@
           
         </div>
 
+        
         <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
           
             
@@ -144,6 +146,7 @@
             
           
         </div>
+        
       </div>
     </nav>
 
@@ -182,7 +185,7 @@
 
   <ul class="wy-breadcrumbs">
     
-      <li><a href="../../index.html">Docs</a> &raquo;</li>
+      <li><a href="../../index.html" class="icon icon-home"></a> &raquo;</li>
         
           <li><a href="../index.html">Get Started Tutorials</a> &raquo;</li>
         
@@ -214,10 +217,9 @@
 <p><strong>Author</strong>: <a class="reference external" href="https://github.com/merrymercy">Lianmin Zheng</a>,             <a class="reference external" href="https://github.com/jcf94/">Chengfan Jia</a></p>
 <p>Different from the existing <a class="reference internal" href="../index.html#tutorials-autotvm-sec"><span class="std std-ref">autotvm</span></a> which relies on
 manual templates to define the search space, the auto-scheduler does not require any templates.
-The auto-scheduler is template-free, so users only need to write the computation declaration without
-any schedule commands or templates.
-The auto-scheduler can automatically generate a large
-search space and find a good schedule in the space.</p>
+Users only need to write the computation declaration without any schedule commands or templates.
+The auto-scheduler can automatically generate a large search space and
+find a good schedule in the space.</p>
 <p>We use matrix multiplication as an example in this tutorial.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">import</span> <span class="nn">tvm</span>
@@ -389,7 +391,7 @@ primfn(A_1: handle, B_1: handle, C_1: handle, out_1: handle) -&gt; ()
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre>Execution time of this operator: 2.042 ms
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre>Execution time of this operator: 2.213 ms
 </pre></div>
 </div>
 </div>
@@ -419,21 +421,20 @@ print the equivalent python schedule API, and build the binary again.</p>
 matmul_i, matmul_j, matmul_k = tuple(matmul.op.axis) + tuple(matmul.op.reduce_axis)
 out_i, out_j = tuple(out.op.axis) + tuple(out.op.reduce_axis)
 matmul_i_o_i, matmul_i_i = s[matmul].split(matmul_i, factor=1)
-matmul_i_o_o_i, matmul_i_o_i = s[matmul].split(matmul_i_o_i, factor=1)
-matmul_i_o_o_o, matmul_i_o_o_i = s[matmul].split(matmul_i_o_o_i, factor=128)
+matmul_i_o_o_i, matmul_i_o_i = s[matmul].split(matmul_i_o_i, factor=128)
+matmul_i_o_o_o, matmul_i_o_o_i = s[matmul].split(matmul_i_o_o_i, factor=1)
 matmul_j_o_i, matmul_j_i = s[matmul].split(matmul_j, factor=16)
-matmul_j_o_o_i, matmul_j_o_i = s[matmul].split(matmul_j_o_i, factor=2)
-matmul_j_o_o_o, matmul_j_o_o_i = s[matmul].split(matmul_j_o_o_i, factor=1)
-matmul_k_o, matmul_k_i = s[matmul].split(matmul_k, factor=8)
+matmul_j_o_o_i, matmul_j_o_i = s[matmul].split(matmul_j_o_i, factor=1)
+matmul_j_o_o_o, matmul_j_o_o_i = s[matmul].split(matmul_j_o_o_i, factor=8)
+matmul_k_o, matmul_k_i = s[matmul].split(matmul_k, factor=16)
 s[matmul].reorder(matmul_i_o_o_o, matmul_j_o_o_o, matmul_i_o_o_i, matmul_j_o_o_i, matmul_k_o, matmul_i_o_i, matmul_j_o_i, matmul_k_i, matmul_i_i, matmul_j_i)
-out_i_o_i, out_i_i = s[out].split(out_i, factor=1)
-out_i_o_o, out_i_o_i = s[out].split(out_i_o_i, factor=128)
-out_j_o_i, out_j_i = s[out].split(out_j, factor=32)
-out_j_o_o, out_j_o_i = s[out].split(out_j_o_i, factor=1)
-s[out].reorder(out_i_o_o, out_j_o_o, out_i_o_i, out_j_o_i, out_i_i, out_j_i)
-s[matmul].compute_at(s[out], out_j_o_i)
-s[out].parallel(out_i_o_o)
-s[matmul].pragma(matmul_i_o_o_o, &quot;auto_unroll_max_step&quot;, 0)
+out_i_o, out_i_i = s[out].split(out_i, factor=128)
+out_j_o, out_j_i = s[out].split(out_j, factor=128)
+s[out].reorder(out_i_o, out_j_o, out_i_i, out_j_i)
+s[matmul].compute_at(s[out], out_j_o)
+out_i_o_j_o_fused = s[out].fuse(out_i_o, out_j_o)
+s[out].parallel(out_i_o_j_o_fused)
+s[matmul].pragma(matmul_i_o_o_o, &quot;auto_unroll_max_step&quot;, 64)
 s[matmul].pragma(matmul_i_o_o_o, &quot;unroll_explicit&quot;, True)
 s[matmul].vectorize(matmul_j_i)
 </pre></div>
@@ -474,7 +475,7 @@ This provides an isolation and avoids the conflict in the main thread/process.
 You can also use <a class="reference internal" href="../../api/python/auto_scheduler.html#tvm.auto_scheduler.LocalRPCMeasureContext" title="tvm.auto_scheduler.LocalRPCMeasureContext"><code class="xref any py py-class docutils literal notranslate"><span class="pre">auto_scheduler.LocalRPCMeasureContext</span></code></a> for auto-scheduler,
 as shown in the GPU tutorial (<a class="reference internal" href="tune_conv2d_layer_cuda.html#auto-scheduler-conv-gpu"><span class="std std-ref">Auto-scheduling a convolution layer for GPU</span></a>).</p>
 </div>
-<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 1 minutes  52.380 seconds)</p>
+<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 1 minutes  56.661 seconds)</p>
 <div class="sphx-glr-footer class sphx-glr-footer-example docutils container" id="sphx-glr-download-tutorials-auto-scheduler-tune-matmul-x86-py">
 <div class="sphx-glr-download docutils container">
 <p><a class="reference download internal" download="" href="../../_downloads/91b0339c8f3cc2594cee580dc450149a/tune_matmul_x86.py"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">tune_matmul_x86.py</span></code></a></p>
@@ -507,11 +508,19 @@ as shown in the GPU tutorial (<a class="reference internal" href="tune_conv2d_la
 
   <div role="contentinfo">
     <p>
+        
         &copy; Copyright 2020, Apache Software Foundation
 
     </p>
   </div>
-  Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a> provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+    
+    
+    
+    Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
 
 </footer>
 
@@ -522,7 +531,6 @@ as shown in the GPU tutorial (<a class="reference internal" href="tune_conv2d_la
 
   </div>
   
-
 
   <script type="text/javascript">
       jQuery(function () {

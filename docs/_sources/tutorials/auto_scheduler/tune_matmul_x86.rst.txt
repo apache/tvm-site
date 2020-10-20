@@ -13,10 +13,9 @@ Auto-scheduling matrix multiplication for CPU
 
 Different from the existing :ref:`autotvm <tutorials-autotvm-sec>` which relies on 
 manual templates to define the search space, the auto-scheduler does not require any templates.
-The auto-scheduler is template-free, so users only need to write the computation declaration without
-any schedule commands or templates.
-The auto-scheduler can automatically generate a large
-search space and find a good schedule in the space.
+Users only need to write the computation declaration without any schedule commands or templates.
+The auto-scheduler can automatically generate a large search space and
+find a good schedule in the space.
 
 We use matrix multiplication as an example in this tutorial.
 
@@ -271,7 +270,7 @@ We build the binary and check its correctness and performance.
 
  .. code-block:: none
 
-    Execution time of this operator: 2.042 ms
+    Execution time of this operator: 2.213 ms
 
 
 
@@ -315,21 +314,20 @@ print the equivalent python schedule API, and build the binary again.
     matmul_i, matmul_j, matmul_k = tuple(matmul.op.axis) + tuple(matmul.op.reduce_axis)
     out_i, out_j = tuple(out.op.axis) + tuple(out.op.reduce_axis)
     matmul_i_o_i, matmul_i_i = s[matmul].split(matmul_i, factor=1)
-    matmul_i_o_o_i, matmul_i_o_i = s[matmul].split(matmul_i_o_i, factor=1)
-    matmul_i_o_o_o, matmul_i_o_o_i = s[matmul].split(matmul_i_o_o_i, factor=128)
+    matmul_i_o_o_i, matmul_i_o_i = s[matmul].split(matmul_i_o_i, factor=128)
+    matmul_i_o_o_o, matmul_i_o_o_i = s[matmul].split(matmul_i_o_o_i, factor=1)
     matmul_j_o_i, matmul_j_i = s[matmul].split(matmul_j, factor=16)
-    matmul_j_o_o_i, matmul_j_o_i = s[matmul].split(matmul_j_o_i, factor=2)
-    matmul_j_o_o_o, matmul_j_o_o_i = s[matmul].split(matmul_j_o_o_i, factor=1)
-    matmul_k_o, matmul_k_i = s[matmul].split(matmul_k, factor=8)
+    matmul_j_o_o_i, matmul_j_o_i = s[matmul].split(matmul_j_o_i, factor=1)
+    matmul_j_o_o_o, matmul_j_o_o_i = s[matmul].split(matmul_j_o_o_i, factor=8)
+    matmul_k_o, matmul_k_i = s[matmul].split(matmul_k, factor=16)
     s[matmul].reorder(matmul_i_o_o_o, matmul_j_o_o_o, matmul_i_o_o_i, matmul_j_o_o_i, matmul_k_o, matmul_i_o_i, matmul_j_o_i, matmul_k_i, matmul_i_i, matmul_j_i)
-    out_i_o_i, out_i_i = s[out].split(out_i, factor=1)
-    out_i_o_o, out_i_o_i = s[out].split(out_i_o_i, factor=128)
-    out_j_o_i, out_j_i = s[out].split(out_j, factor=32)
-    out_j_o_o, out_j_o_i = s[out].split(out_j_o_i, factor=1)
-    s[out].reorder(out_i_o_o, out_j_o_o, out_i_o_i, out_j_o_i, out_i_i, out_j_i)
-    s[matmul].compute_at(s[out], out_j_o_i)
-    s[out].parallel(out_i_o_o)
-    s[matmul].pragma(matmul_i_o_o_o, "auto_unroll_max_step", 0)
+    out_i_o, out_i_i = s[out].split(out_i, factor=128)
+    out_j_o, out_j_i = s[out].split(out_j, factor=128)
+    s[out].reorder(out_i_o, out_j_o, out_i_i, out_j_i)
+    s[matmul].compute_at(s[out], out_j_o)
+    out_i_o_j_o_fused = s[out].fuse(out_i_o, out_j_o)
+    s[out].parallel(out_i_o_j_o_fused)
+    s[matmul].pragma(matmul_i_o_o_o, "auto_unroll_max_step", 64)
     s[matmul].pragma(matmul_i_o_o_o, "unroll_explicit", True)
     s[matmul].vectorize(matmul_j_i)
 
@@ -386,7 +384,7 @@ In the example below we resume the status and do more 5 trials.
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** ( 1 minutes  52.380 seconds)
+   **Total running time of the script:** ( 1 minutes  56.661 seconds)
 
 
 .. _sphx_glr_download_tutorials_auto_scheduler_tune_matmul_x86.py:

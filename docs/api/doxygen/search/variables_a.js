@@ -49,7 +49,6 @@ var searchData=
   ['kskipoptimization',['kSkipOptimization',['../namespacetvm_1_1relay_1_1attr.html#aed3671df7e12d228b8070806d07f7c62',1,'tvm::relay::attr']]],
   ['ktarget',['kTarget',['../namespacetvm_1_1attr.html#a580ae92d00e34f0a8f0d40395b8d972c',1,'tvm::attr']]],
   ['ktempallocaalignment',['kTempAllocaAlignment',['../namespacetvm_1_1runtime.html#a8f5819cabea098a1818cf7cda40fdb1f',1,'tvm::runtime']]],
-  ['ktvm_5finternal_5ferror_5fmessage',['kTVM_INTERNAL_ERROR_MESSAGE',['../namespacetvm.html#a62a8d159db63b59381f238c55a7d522c',1,'tvm']]],
   ['ktvmndarraymagic',['kTVMNDArrayMagic',['../namespacetvm_1_1runtime.html#acf4599f17bfe79ae1fe8afc1af053b43',1,'tvm::runtime']]],
   ['kversion',['kVersion',['../classtvm_1_1runtime_1_1micro__rpc_1_1Session.html#aba29fe6e0aa5946f495a1f7b8482a0e9',1,'tvm::runtime::micro_rpc::Session']]]
 ];

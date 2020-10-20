@@ -6,7 +6,7 @@ var searchData=
   ['backwardfoldscaleaxis',['BackwardFoldScaleAxis',['../namespacetvm_1_1relay_1_1transform.html#a3bde64d7774dcda7735f73a4e2ebecf7',1,'tvm::relay::transform']]],
   ['backwardindex',['BackwardIndex',['../classtvm_1_1tir_1_1BijectiveLayout.html#adc3e54d180453d66e64281c425c880e9',1,'tvm::tir::BijectiveLayout']]],
   ['backwardshape',['BackwardShape',['../classtvm_1_1tir_1_1BijectiveLayout.html#a7324c045c1d7293a9d137ab585acb3f2',1,'tvm::tir::BijectiveLayout']]],
-  ['base',['base',['../classtvm_1_1arith_1_1ModularSetNode.html#afe63e5586712774be5935e86121431ad',1,'tvm::arith::ModularSetNode::base()'],['../classtvm_1_1tir_1_1RampNode.html#aed87b929f940da5ded10afaa7a3a810c',1,'tvm::tir::RampNode::base()']]],
+  ['base',['base',['../classtvm_1_1arith_1_1ModularSetNode.html#afe63e5586712774be5935e86121431ad',1,'tvm::arith::ModularSetNode::base()'],['../classtvm_1_1arith_1_1IterSumExprNode.html#ab9516d8fa15d4691d2255e4d5371bdc6',1,'tvm::arith::IterSumExprNode::base()'],['../classtvm_1_1tir_1_1RampNode.html#aed87b929f940da5ded10afaa7a3a810c',1,'tvm::tir::RampNode::base()']]],
   ['base_2eh',['base.h',['../base_8h.html',1,'']]],
   ['baseattrsnode',['BaseAttrsNode',['../classtvm_1_1BaseAttrsNode.html',1,'tvm']]],
   ['basecomputeopnode',['BaseComputeOpNode',['../classtvm_1_1te_1_1BaseComputeOpNode.html',1,'tvm::te']]],

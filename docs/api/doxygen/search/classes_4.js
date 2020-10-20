@@ -25,8 +25,8 @@ var searchData=
   ['exprpattern',['ExprPattern',['../classtvm_1_1relay_1_1ExprPattern.html',1,'tvm::relay']]],
   ['exprpatternnode',['ExprPatternNode',['../classtvm_1_1relay_1_1ExprPatternNode.html',1,'tvm::relay']]],
   ['exprrewriter',['ExprRewriter',['../classtvm_1_1relay_1_1ExprRewriter.html',1,'tvm::relay']]],
-  ['exprvisitor',['ExprVisitor',['../classtvm_1_1relay_1_1ExprVisitor.html',1,'tvm::relay']]],
   ['exprvisitor',['ExprVisitor',['../classtvm_1_1tir_1_1ExprVisitor.html',1,'tvm::tir']]],
+  ['exprvisitor',['ExprVisitor',['../classtvm_1_1relay_1_1ExprVisitor.html',1,'tvm::relay']]],
   ['externop',['ExternOp',['../classtvm_1_1te_1_1ExternOp.html',1,'tvm::te']]],
   ['externopnode',['ExternOpNode',['../classtvm_1_1te_1_1ExternOpNode.html',1,'tvm::te']]]
 ];

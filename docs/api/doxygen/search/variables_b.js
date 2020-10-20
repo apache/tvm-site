@@ -14,5 +14,6 @@ var searchData=
   ['load_5fconsti',['load_consti',['../structtvm_1_1runtime_1_1vm_1_1Instruction.html#a35bf73ad3be6239d68b902eb8a46df35',1,'tvm::runtime::vm::Instruction']]],
   ['loop_5fscope',['loop_scope',['../namespacetvm_1_1tir_1_1attr.html#a9125ab905a93924ee79269aa808ed517',1,'tvm::tir::attr']]],
   ['loop_5fvar',['loop_var',['../classtvm_1_1tir_1_1ForNode.html#a7dbf66bdcf8ed397321517f0915a0946',1,'tvm::tir::ForNode']]],
-  ['lower',['lower',['../classtvm_1_1arith_1_1IntGroupBoundsNode.html#a7b5b1f7ca84cba2efd2415a6d9313a31',1,'tvm::arith::IntGroupBoundsNode']]]
+  ['lower',['lower',['../classtvm_1_1arith_1_1IntGroupBoundsNode.html#a7b5b1f7ca84cba2efd2415a6d9313a31',1,'tvm::arith::IntGroupBoundsNode']]],
+  ['lower_5ffactor',['lower_factor',['../classtvm_1_1arith_1_1IterSplitExprNode.html#a21dc15af4502a5106f831082463c0f40',1,'tvm::arith::IterSplitExprNode']]]
 ];
