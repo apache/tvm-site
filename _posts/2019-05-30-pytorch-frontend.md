@@ -33,7 +33,7 @@ To support Relay, two features were added to the PyTorch JIT: custom transformat
 
 When `torch_tvm` is enabled, subgraphs of PyTorch IR that can be converted to Relay `Expr`s will be marked as Relay-compatible.  Since PyTorch IR does not always contain shape information, none of the subgraphs can be compiled in a useful way before invocation.
 
-During user invocation, the PyTorch JIT runtime will determine input shape information and compile the previously marked subgraphs with the new Relay C++ [build system](https://github.com/pytorch/tvm/blob/master/torch_tvm/compiler.cpp#L226-L246).  The compilation is cached based on input shapes for subsequent runs.  More details can be found in the [README](https://github.com/pytorch/tvm/blob/master/README.md).
+During user invocation, the PyTorch JIT runtime will determine input shape information and compile the previously marked subgraphs with the new Relay C++ [build system](https://github.com/pytorch/tvm/blob/main/torch_tvm/compiler.cpp#L226-L246).  The compilation is cached based on input shapes for subsequent runs.  More details can be found in the [README](https://github.com/pytorch/tvm/blob/main/README.md).
 
 `torch_tvm` has a continuous benchmark system set up, which is monitoring the performance of ResNet18 on CPU.
 Out of the box TVM provides over two times the performance of the default PyTorch JIT backend for various ResNet models.
@@ -85,7 +85,7 @@ with torch.no_grad():
     print("Took {}s to run {} iters".format(tvm_time, iters))
 ```
 
-Much of this code comes from [benchmarks.py](https://github.com/pytorch/tvm/blob/master/test/benchmarks.py).  Note that tuned parameters for AVX2 LLVM compilation is in the `test/` folder of the repo.
+Much of this code comes from [benchmarks.py](https://github.com/pytorch/tvm/blob/main/test/benchmarks.py).  Note that tuned parameters for AVX2 LLVM compilation is in the `test/` folder of the repo.
 
 If you are more comfortable using Relay directly, it is possible to simply extract the expression directly from a
 PyTorch function either via (implicit) tracing or TorchScript:
