@@ -155,8 +155,8 @@ Note: x86 doesn’t support a vectorized popcount for this microarchitecture, so
 
 ## Show me the code
 
-- [TOPI bitserial convolution](https://github.com/dmlc/tvm/blob/master/topi/python/topi/nn/bitserial_conv2d.py)
-- [TOPI ARM cpu bitserial convolution](https://github.com/dmlc/tvm/blob/master/topi/python/topi/arm_cpu/bitserial_conv2d.py)
+- [TOPI bitserial convolution](https://github.com/apache/incubator-tvm/blob/main/topi/python/topi/nn/bitserial_conv2d.py)
+- [TOPI ARM cpu bitserial convolution](https://github.com/apache/incubator-tvm/blob/main/topi/python/topi/arm_cpu/bitserial_conv2d.py)
 
 
 ## References

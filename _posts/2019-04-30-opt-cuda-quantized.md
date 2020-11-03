@@ -73,7 +73,7 @@ Figure 2. 2D convolution with data layout in NCHW4c and weight layout in OIHW4o4
 <b>Right</b>: The output in NCHW4c layout. Inside the one element depicted, there are four packed elements in channel sub-dimension.
 </div><p></p>
 
-After we have specified the layout of convolution layers, other operators such as `add` and activations can automatically adapt to the chosen layout during the [AlterOpLayout](https://github.com/dmlc/tvm/blob/master/src/relay/pass/alter_op_layout.cc) pass in Relay.
+After we have specified the layout of convolution layers, other operators such as `add` and activations can automatically adapt to the chosen layout during the [AlterOpLayout](https://github.com/apache/incubator-tvm/blob/main/src/relay/pass/alter_op_layout.cc) pass in Relay.
 The layout transformation of the weight can be precomputed offline. Therefore, we can run the whole model in the same layout without extra overhead.
 
 ## Designing Search Space for Automatic Optimization
@@ -138,10 +138,10 @@ We show that automatic optimization in TVM makes it easy and flexible to support
 
 # Show Me the Code
 * [Benchmark](https://github.com/vinx13/tvm-cuda-int8-benchmark)
-* [CUDA int8 conv2d](https://github.com/dmlc/tvm/blob/master/topi/python/topi/cuda/conv2d_int8.py)
-* [CUDA int8 group conv2d](https://github.com/dmlc/tvm/blob/master/topi/python/topi/cuda/group_conv2d_nchw.py)
-* [CUDA int8 dense](https://github.com/dmlc/tvm/blob/master/topi/python/topi/cuda/dense.py)
-* [Tensor intrinsics declaration](https://github.com/dmlc/tvm/blob/master/topi/python/topi/cuda/tensor_intrin.py) 
+* [CUDA int8 conv2d](https://github.com/apache/incubator-tvm/blob/main/topi/python/topi/cuda/conv2d_int8.py)
+* [CUDA int8 group conv2d](https://github.com/apache/incubator-tvm/blob/main/topi/python/topi/cuda/group_conv2d_nchw.py)
+* [CUDA int8 dense](https://github.com/apache/incubator-tvm/blob/main/topi/python/topi/cuda/dense.py)
+* [Tensor intrinsics declaration](https://github.com/apache/incubator-tvm/blob/main/topi/python/topi/cuda/tensor_intrin.py) 
 
 # Bio & Acknowledgement
 [Wuwei Lin](https://wuwei.io/) is an undergraduate student at SJTU. He is currently an intern at TuSimple. The author has many thanks to [Tianqi Chen](https://homes.cs.washington.edu/~tqchen/) and [Eddie Yan](https://homes.cs.washington.edu/~eqy/) for their reviews.

@@ -82,7 +82,7 @@ The input images are taken from the original paper, and they are available [here
 ## A Note on performance
 
 
-The current support on ROCm focuses on the functionality coverage. We have already seen promising performance results by simply adopting existing TVM schedules for CUDA backend. For example, you can try running [the gemm test script](https://github.com/dmlc/tvm/blob/master/topi/recipe/gemm/cuda_gemm_square.py) in the TVM repository and see the result. For two types of cards we tested, the current gemm recipe for square matrix multiplication (not yet specifically optimized for AMD GPUs) already achieves 60% to 65% of peak performance.
+The current support on ROCm focuses on the functionality coverage. We have already seen promising performance results by simply adopting existing TVM schedules for CUDA backend. For example, you can try running [the gemm test script](https://github.com/apache/incubator-tvm/blob/main/topi/recipe/gemm/cuda_gemm_square.py) in the TVM repository and see the result. For two types of cards we tested, the current gemm recipe for square matrix multiplication (not yet specifically optimized for AMD GPUs) already achieves 60% to 65% of peak performance.
 This is already a promising start, as it is very hard to optimize performance to get to peak and we
 did not yet apply AMD GPU specific optimizations.
 We are starting to look at performance optimization and we expect more improvement to come.
