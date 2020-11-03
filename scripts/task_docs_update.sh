@@ -5,7 +5,7 @@ set -u
 
 cleanup()
 {
-    git checkout master
+    git checkout main
 }
 trap cleanup 0
 

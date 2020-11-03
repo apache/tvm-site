@@ -19,5 +19,5 @@ cp -rf _site/* .
 DATE=`date`
 git add --all && git commit -am "Build at ${DATE}"
 git push origin asf-site
-git checkout master
+git checkout main
 echo "Finish deployment at ${DATE}"
