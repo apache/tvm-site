@@ -1,10 +1,10 @@
 $(document).ready(function () {
   $('#menuBtn').click(function () {
-    $('#headMenu').addClass('opne');
+    $('#headMenu').addClass('open');
     $('body').addClass('scroll-hide');
   });
   $('#closeHeadMenu').click(function () {
-    $('#headMenu').removeClass('opne');
+    $('#headMenu').removeClass('open');
     $('body').removeClass('scroll-hide');
   });
   $('#openMailingModal').click(function () {
