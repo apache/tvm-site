@@ -1,0 +1,6 @@
+(function() {var implementors = {};
+implementors["tvm"] = [{"text":"impl Error for Error","synthetic":false,"types":[]}];
+implementors["tvm_graph_rt"] = [{"text":"impl Error for GraphFormatError","synthetic":false,"types":[]},{"text":"impl Error for FunctionNotFound","synthetic":false,"types":[]},{"text":"impl Error for InvalidPointer","synthetic":false,"types":[]},{"text":"impl Error for ArrayError","synthetic":false,"types":[]}];
+implementors["tvm_rt"] = [{"text":"impl Error for FunctionNotFoundError","synthetic":false,"types":[]},{"text":"impl Error for TypeMismatchError","synthetic":false,"types":[]},{"text":"impl Error for NDArrayError","synthetic":false,"types":[]},{"text":"impl Error for Error","synthetic":false,"types":[]}];
+implementors["tvm_sys"] = [{"text":"impl Error for UnsupportedDeviceError","synthetic":false,"types":[]},{"text":"impl Error for ParseDataTypeError","synthetic":false,"types":[]},{"text":"impl Error for ValueDowncastError","synthetic":false,"types":[]},{"text":"impl Error for FuncCallError","synthetic":false,"types":[]},{"text":"impl Error for UnsupportedDeviceError","synthetic":false,"types":[]}];
+if (window.register_implementors) {window.register_implementors(implementors);} else {window.pending_implementors = implementors;}})()

@@ -11,6 +11,7 @@ var searchData=
   ['layout_5ftransform',['layout_transform',['../namespacetvm_1_1topi.html#a8a41a08eee70607889b738946ed97873',1,'tvm::topi']]],
   ['layoutaxis',['LayoutAxis',['../classtvm_1_1tir_1_1LayoutAxis.html',1,'tvm::tir']]],
   ['layoutnode',['LayoutNode',['../classtvm_1_1tir_1_1LayoutNode.html',1,'tvm::tir']]],
+  ['layoutrewriteoption',['LayoutRewriteOption',['../namespacetvm_1_1auto__scheduler.html#a3e9480be0119338696abbe9c80193b9e',1,'tvm::auto_scheduler']]],
   ['layouttransformattrs',['LayoutTransformAttrs',['../structtvm_1_1relay_1_1LayoutTransformAttrs.html',1,'tvm::relay']]],
   ['lazygradientinit',['LazyGradientInit',['../namespacetvm_1_1relay_1_1transform.html#ab6e60251741cca1e811564b2f03a4a5d',1,'tvm::relay::transform']]],
   ['ldexp',['ldexp',['../namespacetvm.html#a90a9e2efafc1994a4cd84a26d74c75c3',1,'tvm']]],
@@ -90,7 +91,7 @@ var searchData=
   ['lowerwarpmemory',['LowerWarpMemory',['../namespacetvm_1_1tir_1_1transform.html#ad5a726d95328c4e85c0c717c52aff4f2',1,'tvm::tir::transform']]],
   ['lrn',['lrn',['../namespacetvm_1_1topi_1_1nn.html#ac3d8de9144f915a5dd27dcb70c0abdd4',1,'tvm::topi::nn']]],
   ['lrnattrs',['LRNAttrs',['../structtvm_1_1relay_1_1LRNAttrs.html',1,'tvm::relay']]],
-  ['lt',['LT',['../classtvm_1_1tir_1_1LT.html',1,'tvm::tir']]],
   ['lt',['LT',['../classtvm_1_1tir_1_1LT.html#ac99d38208394478aea486198872d421a',1,'tvm::tir::LT']]],
+  ['lt',['LT',['../classtvm_1_1tir_1_1LT.html',1,'tvm::tir']]],
   ['ltnode',['LTNode',['../classtvm_1_1tir_1_1LTNode.html',1,'tvm::tir']]]
 ];

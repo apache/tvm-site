@@ -1,0 +1,1 @@
+initSidebarItems({"enum":[["ArrayError",""],["GraphFormatError",""]],"struct":[["FunctionNotFound",""],["InvalidPointer",""]]});

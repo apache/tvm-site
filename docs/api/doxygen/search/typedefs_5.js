@@ -16,7 +16,7 @@ var searchData=
   ['fshapefunc',['FShapeFunc',['../namespacetvm_1_1relay.html#afeda9240bb23d0092992928c6d141729',1,'tvm::relay']]],
   ['fshashreduce',['FSHashReduce',['../classtvm_1_1ReflectionVTable.html#a08566817a33d96cd486a780afe88aad1',1,'tvm::ReflectionVTable']]],
   ['ftvmalteroplayout',['FTVMAlterOpLayout',['../namespacetvm_1_1relay.html#a37fc035745cb16c86912e1c4155460d6',1,'tvm::relay']]],
-  ['ftvmannotatetarget',['FTVMAnnotateTarget',['../namespacetvm_1_1relay.html#a124f09bceced7d4d212b73970efc5357',1,'tvm::relay']]],
+  ['ftvmannotatetarget',['FTVMAnnotateTarget',['../namespacetvm_1_1relay.html#a01c78601c3f13f31032b68ef27b528b1',1,'tvm::relay']]],
   ['ftvmcompute',['FTVMCompute',['../namespacetvm_1_1relay.html#af3f95ef6143dc33382f50734f85bfdf5',1,'tvm::relay']]],
   ['ftvmconvertoplayout',['FTVMConvertOpLayout',['../namespacetvm_1_1relay.html#a8104bb3261fbc781381333ddef526a3f',1,'tvm::relay']]],
   ['ftvmlegalize',['FTVMLegalize',['../namespacetvm_1_1relay.html#ac788c2310eb8aa5e2449dd8c9dfdf368',1,'tvm::relay']]],

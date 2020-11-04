@@ -19,9 +19,15 @@ find a good schedule in the space.
 
 We use matrix multiplication as an example in this tutorial.
 
+Note that this tutorial will not run on Windows or recent versions of macOS. To
+get it to run, you will need to wrap the body of this tutorial in a :code:`if
+__name__ == "__main__":` block.
+
 
 .. code-block:: default
 
+
+    import os
 
     import numpy as np
     import tvm
@@ -114,8 +120,9 @@ Next, we set parameters for the auto-scheduler.
 .. code-block:: default
 
 
+    log_file = "matmul.json"
     tune_option = auto_scheduler.TuningOptions(
-        num_measure_trials=10, measure_callbacks=[auto_scheduler.RecordToFile("matmul.json")]
+        num_measure_trials=10, measure_callbacks=[auto_scheduler.RecordToFile(log_file)]
     )
 
 
@@ -270,7 +277,7 @@ We build the binary and check its correctness and performance.
 
  .. code-block:: none
 
-    Execution time of this operator: 2.213 ms
+    Execution time of this operator: 2.010 ms
 
 
 
@@ -288,7 +295,7 @@ print the equivalent python schedule API, and build the binary again.
 
 
     # Load the measuremnt record for the best schedule
-    inp, res = auto_scheduler.load_best("matmul.json", task.workload_key)
+    inp, res = auto_scheduler.load_best(log_file, task.workload_key)
 
     # Print equivalent python schedule API. This can be used for debugging and
     # learning the behavior of the auto-scheduler.
@@ -313,21 +320,21 @@ print the equivalent python schedule API, and build the binary again.
     Equivalent python schedule:
     matmul_i, matmul_j, matmul_k = tuple(matmul.op.axis) + tuple(matmul.op.reduce_axis)
     out_i, out_j = tuple(out.op.axis) + tuple(out.op.reduce_axis)
-    matmul_i_o_i, matmul_i_i = s[matmul].split(matmul_i, factor=1)
-    matmul_i_o_o_i, matmul_i_o_i = s[matmul].split(matmul_i_o_i, factor=128)
-    matmul_i_o_o_o, matmul_i_o_o_i = s[matmul].split(matmul_i_o_o_i, factor=1)
-    matmul_j_o_i, matmul_j_i = s[matmul].split(matmul_j, factor=16)
-    matmul_j_o_o_i, matmul_j_o_i = s[matmul].split(matmul_j_o_i, factor=1)
-    matmul_j_o_o_o, matmul_j_o_o_i = s[matmul].split(matmul_j_o_o_i, factor=8)
-    matmul_k_o, matmul_k_i = s[matmul].split(matmul_k, factor=16)
+    matmul_i_o_i, matmul_i_i = s[matmul].split(matmul_i, factor=4)
+    matmul_i_o_o_i, matmul_i_o_i = s[matmul].split(matmul_i_o_i, factor=2)
+    matmul_i_o_o_o, matmul_i_o_o_i = s[matmul].split(matmul_i_o_o_i, factor=4)
+    matmul_j_o_i, matmul_j_i = s[matmul].split(matmul_j, factor=2)
+    matmul_j_o_o_i, matmul_j_o_i = s[matmul].split(matmul_j_o_i, factor=32)
+    matmul_j_o_o_o, matmul_j_o_o_i = s[matmul].split(matmul_j_o_o_i, factor=1)
+    matmul_k_o, matmul_k_i = s[matmul].split(matmul_k, factor=2)
     s[matmul].reorder(matmul_i_o_o_o, matmul_j_o_o_o, matmul_i_o_o_i, matmul_j_o_o_i, matmul_k_o, matmul_i_o_i, matmul_j_o_i, matmul_k_i, matmul_i_i, matmul_j_i)
-    out_i_o, out_i_i = s[out].split(out_i, factor=128)
-    out_j_o, out_j_i = s[out].split(out_j, factor=128)
+    out_i_o, out_i_i = s[out].split(out_i, factor=32)
+    out_j_o, out_j_i = s[out].split(out_j, factor=64)
     s[out].reorder(out_i_o, out_j_o, out_i_i, out_j_i)
     s[matmul].compute_at(s[out], out_j_o)
     out_i_o_j_o_fused = s[out].fuse(out_i_o, out_j_o)
     s[out].parallel(out_i_o_j_o_fused)
-    s[matmul].pragma(matmul_i_o_o_o, "auto_unroll_max_step", 64)
+    s[matmul].pragma(matmul_i_o_o_o, "auto_unroll_max_step", 0)
     s[matmul].pragma(matmul_i_o_o_o, "unroll_explicit", True)
     s[matmul].vectorize(matmul_j_i)
 
@@ -344,19 +351,21 @@ In the example below we resume the status and do more 5 trials.
 
 
 
-    def resume_search(task, log_file):
+    def resume_search(task, log_file_name):
         cost_model = auto_scheduler.XGBModel()
-        cost_model.update_from_file(log_file)
+        cost_model.update_from_file(log_file_name)
         search_policy = auto_scheduler.SketchPolicy(
-            task, cost_model, init_search_callbacks=[auto_scheduler.PreloadMeasuredStates(log_file)]
+            task,
+            cost_model,
+            init_search_callbacks=[auto_scheduler.PreloadMeasuredStates(log_file_name)],
         )
         tune_option = auto_scheduler.TuningOptions(
-            num_measure_trials=5, measure_callbacks=[auto_scheduler.RecordToFile(log_file)]
+            num_measure_trials=5, measure_callbacks=[auto_scheduler.RecordToFile(log_file_name)]
         )
         sch, args = auto_scheduler.auto_schedule(task, search_policy, tuning_options=tune_option)
 
 
-    # resume_search(task, "matmul.json")
+    # resume_search(task, log_file)
 
 
 
@@ -384,7 +393,7 @@ In the example below we resume the status and do more 5 trials.
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** ( 1 minutes  56.661 seconds)
+   **Total running time of the script:** ( 1 minutes  48.967 seconds)
 
 
 .. _sphx_glr_download_tutorials_auto_scheduler_tune_matmul_x86.py:

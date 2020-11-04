@@ -35,6 +35,7 @@ var searchData=
   ['nodefunctor_3c_20r_28const_20objectref_20_26n_2c_20args_2e_2e_2e_29_3e',['NodeFunctor&lt; R(const ObjectRef &amp;n, Args...)&gt;',['../classtvm_1_1NodeFunctor_3_01R_07const_01ObjectRef_01_6n_00_01Args_8_8_8_08_4.html',1,'tvm']]],
   ['none',['None',['../namespacetvm_1_1tir.html#aed067b57db2923a07913239b2165e019a6adf97f83acf6453d4a6a4b1070f3754',1,'tvm::tir']]],
   ['nonmaximumsuppressionattrs',['NonMaximumSuppressionAttrs',['../structtvm_1_1relay_1_1NonMaximumSuppressionAttrs.html',1,'tvm::relay']]],
+  ['norewrite',['NoRewrite',['../namespacetvm_1_1auto__scheduler.html#a3e9480be0119338696abbe9c80193b9eaa6dd7ceb983e075b3efc829b61add2ac',1,'tvm::auto_scheduler']]],
   ['normalization_2eh',['normalization.h',['../rocm_2normalization_8h.html',1,'']]],
   ['normalization_2eh',['normalization.h',['../cuda_2normalization_8h.html',1,'']]],
   ['normalize',['normalize',['../classtvm_1_1te_1_1Schedule.html#a3fcdec89d8dec36d7b2586b9b0414dfe',1,'tvm::te::Schedule']]],

@@ -1,0 +1,1 @@
+initSidebarItems({"struct":[["BatchNormAttrs",""],["BatchNormAttrsNode",""],["BiasAddAttrs",""],["BiasAddAttrsNode",""],["Conv2DAttrs",""],["Conv2DAttrsNode",""],["DenseAttrs",""],["DenseAttrsNode",""],["GlobalPool2DAttrs",""],["GlobalPool2DAttrsNode",""],["MaxPool2DAttrs",""],["MaxPool2DAttrsNode",""],["SoftmaxAttrs",""],["SoftmaxAttrsNode",""]]});

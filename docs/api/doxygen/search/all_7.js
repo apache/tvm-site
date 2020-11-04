@@ -78,7 +78,7 @@ var searchData=
   ['gettypekeyhash',['GetTypeKeyHash',['../classtvm_1_1runtime_1_1Object.html#ac9a7d8d3d562803c9cf91271c462b61d',1,'tvm::runtime::Object']]],
   ['getvalidcountsattrs',['GetValidCountsAttrs',['../structtvm_1_1relay_1_1GetValidCountsAttrs.html',1,'tvm::relay']]],
   ['getvectorbytes',['GetVectorBytes',['../namespacetvm_1_1runtime.html#ad01a53416152b68029d67190c3709d25',1,'tvm::runtime']]],
-  ['global',['Global',['../classtvm_1_1ReflectionVTable.html#acf555f668f940322ab7b3dea1a45bd95',1,'tvm::ReflectionVTable::Global()'],['../classtvm_1_1parser_1_1SourceMap.html#a0a3066ea64e4db1e9b6870b0f4076335',1,'tvm::parser::SourceMap::Global()'],['../classtvm_1_1runtime_1_1vm_1_1MemoryManager.html#a5718753d0065b717c3f37ed0d16c42b2',1,'tvm::runtime::vm::MemoryManager::Global()']]],
+  ['global',['Global',['../classtvm_1_1ReflectionVTable.html#acf555f668f940322ab7b3dea1a45bd95',1,'tvm::ReflectionVTable::Global()'],['../classtvm_1_1runtime_1_1vm_1_1MemoryManager.html#a5718753d0065b717c3f37ed0d16c42b2',1,'tvm::runtime::vm::MemoryManager::Global()']]],
   ['global_5fmap',['global_map',['../classtvm_1_1runtime_1_1vm_1_1Executable.html#a9a808f0c63ae0d65ad8d625e3a7cb749',1,'tvm::runtime::vm::Executable']]],
   ['global_5fpool',['global_pool',['../namespacetvm_1_1topi_1_1nn.html#af2bcf6bad18e028ce14ef854974629c0',1,'tvm::topi::nn']]],
   ['globalpool2dattrs',['GlobalPool2DAttrs',['../structtvm_1_1relay_1_1GlobalPool2DAttrs.html',1,'tvm::relay']]],
