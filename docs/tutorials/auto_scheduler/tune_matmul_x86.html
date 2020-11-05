@@ -58,10 +58,11 @@
     <div class="innercontainer">
       <div class="headerInner d-flex justify-content-between align-items-center">
           <div class="headerLogo">
-               <a href="../../index.html"><img src=https://tvm.apache.org/assets/images/logo.svg alt="logo"></a>
+               <a href="https://tvm.apache.org/"><img src=https://tvm.apache.org/assets/images/logo.svg alt="logo"></a>
           </div>
 
           <div id="headMenu" class="headerNav">
+            <button type="button" id="closeHeadMenu" class="navCloseBtn"><img src="../../_static/img/close-icon.svg" alt="Close"></button>
              <ul class="nav">
                 <li class="nav-item">
                    <a class="nav-link" href=https://tvm.apache.org/community>Community</a>
@@ -409,7 +410,7 @@ After some measurement trials, it will return the best schedule it found.</p>
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre>*T*T*T*T*T*T*T*T*T*T
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre>*T*T*T*T*T*T*T*T*T
 </pre></div>
 </div>
 <p>We can lower the schedule to see the IR after auto-scheduling.
@@ -423,23 +424,37 @@ parallelization, vectorization, unrolling and operator fusion.</p>
 primfn(A_1: handle, B_1: handle, C_1: handle, out_1: handle) -&gt; ()
   attr = {&quot;global_symbol&quot;: &quot;main&quot;, &quot;tir.noalias&quot;: True}
   buffers = {out: Buffer(out_2: Pointer(float32), float32, [128, 128], []),
-             C: Buffer(C_2: Pointer(float32), float32, [128, 128], []),
              B: Buffer(B_2: Pointer(float32), float32, [128, 128], []),
+             C: Buffer(C_2: Pointer(float32), float32, [128, 128], []),
              A: Buffer(A_2: Pointer(float32), float32, [128, 128], [])}
   buffer_map = {A_1: A, B_1: B, C_1: C, out_1: out} {
   attr [matmul: Pointer(float32)] &quot;storage_scope&quot; = &quot;global&quot;;
   allocate(matmul, float32, [16384]) {
-    for (i: int32, 0, 128) {
-      for (j: int32, 0, 128) {
-        matmul[((i*128) + j)] = 0f32
-        for (k: int32, 0, 128) {
-          matmul[((i*128) + j)] = ((float32*)matmul[((i*128) + j)] + ((float32*)A_2[((i*128) + k)]*(float32*)B_2[((k*128) + j)]))
+    for (i.outer.outer.inner: int32, 0, 2) {
+      for (j.outer.outer.inner: int32, 0, 2) {
+        for (j.outer.inner.init: int32, 0, 2) {
+          for (i.inner.init: int32, 0, 64) {
+            for (j.inner.init: int32, 0, 32) {
+              matmul[(((((i.outer.outer.inner*8192) + (i.inner.init*128)) + (j.outer.outer.inner*64)) + (j.outer.inner.init*32)) + j.inner.init)] = 0f32
+            }
+          }
+        }
+        for (k.outer: int32, 0, 4) {
+          for (j.outer.inner: int32, 0, 2) {
+            for (k.inner: int32, 0, 32) {
+              for (i.inner: int32, 0, 64) {
+                for (j.inner: int32, 0, 32) {
+                  matmul[(((((i.outer.outer.inner*8192) + (i.inner*128)) + (j.outer.outer.inner*64)) + (j.outer.inner*32)) + j.inner)] = ((float32*)matmul[(((((i.outer.outer.inner*8192) + (i.inner*128)) + (j.outer.outer.inner*64)) + (j.outer.inner*32)) + j.inner)] + ((float32*)A_2[((((i.outer.outer.inner*8192) + (i.inner*128)) + (k.outer*32)) + k.inner)]*(float32*)B_2[(((((k.outer*4096) + (k.inner*128)) + (j.outer.outer.inner*64)) + (j.outer.inner*32)) + j.inner)]))
+                }
+              }
+            }
+          }
         }
       }
     }
-    for (i_1: int32, 0, 128) {
-      for (j_1: int32, 0, 128) {
-        out_2[((i_1*128) + j_1)] = ((float32*)matmul[((i_1*128) + j_1)] + (float32*)C_2[((i_1*128) + j_1)])
+    for (i.inner_1: int32, 0, 128) {
+      for (j.inner_1: int32, 0, 128) {
+        out_2[((i.inner_1*128) + j.inner_1)] = ((float32*)matmul[((i.inner_1*128) + j.inner_1)] + (float32*)C_2[((i.inner_1*128) + j.inner_1)])
       }
     }
   }
@@ -505,7 +520,7 @@ primfn(A_1: handle, B_1: handle, C_1: handle, out_1: handle) -&gt; ()
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre>Execution time of this operator: 2.010 ms
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre>Execution time of this operator: 0.229 ms
 </pre></div>
 </div>
 </div>
@@ -591,7 +606,7 @@ This provides an isolation and avoids the conflict in the main thread/process.
 You can also use <a class="reference internal" href="../../api/python/auto_scheduler.html#tvm.auto_scheduler.LocalRPCMeasureContext" title="tvm.auto_scheduler.LocalRPCMeasureContext"><code class="xref any py py-class docutils literal notranslate"><span class="pre">auto_scheduler.LocalRPCMeasureContext</span></code></a> for auto-scheduler,
 as shown in the GPU tutorial (<a class="reference internal" href="tune_conv2d_layer_cuda.html#auto-scheduler-conv-gpu"><span class="std std-ref">Auto-scheduling a convolution layer for GPU</span></a>).</p>
 </div>
-<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 1 minutes  48.967 seconds)</p>
+<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 1 minutes  44.820 seconds)</p>
 <div class="sphx-glr-footer class sphx-glr-footer-example docutils container" id="sphx-glr-download-tutorials-auto-scheduler-tune-matmul-x86-py">
 <div class="sphx-glr-download docutils container">
 <p><a class="reference download internal" download="" href="../../_downloads/91b0339c8f3cc2594cee580dc450149a/tune_matmul_x86.py"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">tune_matmul_x86.py</span></code></a></p>
