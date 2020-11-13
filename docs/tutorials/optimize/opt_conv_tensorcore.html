@@ -45,7 +45,7 @@
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
     <link rel="next" title="How to optimize matmul with Auto TensorCore CodeGen" href="opt_matmul_auto_tensorcore.html" />
-    <link rel="prev" title="How to optimize GEMM on CPU" href="opt_gemm.html" /> 
+    <link rel="prev" title="How to optimize convolution on GPU" href="opt_conv_cuda.html" /> 
 </head>
 
 <body class="wy-body-for-nav">
@@ -206,8 +206,8 @@
 <li class="toctree-l1"><a class="reference internal" href="../index.html#compile-deep-learning-models">Compile Deep Learning Models</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../index.html#tensor-expression-and-schedules">Tensor Expression and Schedules</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="../index.html#optimize-tensor-operators">Optimize Tensor Operators</a><ul class="current">
-<li class="toctree-l2"><a class="reference internal" href="opt_conv_cuda.html">How to optimize convolution on GPU</a></li>
 <li class="toctree-l2"><a class="reference internal" href="opt_gemm.html">How to optimize GEMM on CPU</a></li>
+<li class="toctree-l2"><a class="reference internal" href="opt_conv_cuda.html">How to optimize convolution on GPU</a></li>
 <li class="toctree-l2 current"><a class="current reference internal" href="#">How to optimize convolution using TensorCores</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#tensorcore-introduction">TensorCore Introduction</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#preparation-and-algorithm">Preparation and Algorithm</a></li>
@@ -671,11 +671,10 @@ The only thing we should do is to make sure all threads in a warp can call Tenso
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre>#[version = &quot;0.0.5&quot;]
-primfn(A_1: handle, W_1: handle, Conv_1: handle) -&gt; ()
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre>primfn(A_1: handle, W_1: handle, Conv_1: handle) -&gt; ()
   attr = {&quot;global_symbol&quot;: &quot;main&quot;, &quot;tir.noalias&quot;: True}
-  buffers = {Conv: Buffer(Conv_2: Pointer(float32), float32, [16, 14, 14, 32, 16, 16], []),
-             W: Buffer(W_2: Pointer(float16), float16, [3, 3, 16, 32, 16, 16], []),
+  buffers = {W: Buffer(W_2: Pointer(float16), float16, [3, 3, 16, 32, 16, 16], []),
+             Conv: Buffer(Conv_2: Pointer(float32), float32, [16, 14, 14, 32, 16, 16], []),
              A: Buffer(A_2: Pointer(float16), float16, [16, 14, 14, 16, 16, 16], [])}
   buffer_map = {A_1: A, W_1: W, Conv_1: Conv} {
   attr [IterVar(blockIdx.z: int32, (nullptr), &quot;ThreadIndex&quot;, &quot;blockIdx.z&quot;)] &quot;thread_extent&quot; = 196;
@@ -760,36 +759,6 @@ primfn(A_1: handle, W_1: handle, Conv_1: handle) -&gt; ()
     }
   }
 }
-
-#[metadata]
-{
-  &quot;root&quot;: 1,
-  &quot;nodes&quot;: [
-    {
-      &quot;type_key&quot;: &quot;&quot;
-    },
-    {
-      &quot;type_key&quot;: &quot;Map&quot;,
-      &quot;keys&quot;: [
-        &quot;IntImm&quot;
-      ],
-      &quot;data&quot;: [2]
-    },
-    {
-      &quot;type_key&quot;: &quot;Array&quot;,
-      &quot;data&quot;: [3]
-    },
-    {
-      &quot;type_key&quot;: &quot;IntImm&quot;,
-      &quot;attrs&quot;: {
-        &quot;dtype&quot;: &quot;bool&quot;,
-        &quot;value&quot;: &quot;1&quot;
-      }
-    }
-  ],
-  &quot;b64ndarrays&quot;: [],
-  &quot;attrs&quot;: {&quot;tvm_version&quot;: &quot;0.8.dev0&quot;}
-}
 </pre></div>
 </div>
 </div>
@@ -805,8 +774,7 @@ by mapping the 2D convolution to tensor intrinsics</p>
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre>#[version = &quot;0.0.5&quot;]
-primfn(A_1: handle, W_1: handle, Conv_1: handle) -&gt; ()
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre>primfn(A_1: handle, W_1: handle, Conv_1: handle) -&gt; ()
   attr = {&quot;global_symbol&quot;: &quot;main&quot;, &quot;tir.noalias&quot;: True}
   buffers = {Conv: Buffer(Conv_2: Pointer(float32), float32, [16, 14, 14, 32, 16, 16], []),
              W: Buffer(W_2: Pointer(float16), float16, [3, 3, 16, 32, 16, 16], []),
@@ -872,36 +840,6 @@ primfn(A_1: handle, W_1: handle, Conv_1: handle) -&gt; ()
     }
   }
 }
-
-#[metadata]
-{
-  &quot;root&quot;: 1,
-  &quot;nodes&quot;: [
-    {
-      &quot;type_key&quot;: &quot;&quot;
-    },
-    {
-      &quot;type_key&quot;: &quot;Map&quot;,
-      &quot;keys&quot;: [
-        &quot;IntImm&quot;
-      ],
-      &quot;data&quot;: [2]
-    },
-    {
-      &quot;type_key&quot;: &quot;Array&quot;,
-      &quot;data&quot;: [3]
-    },
-    {
-      &quot;type_key&quot;: &quot;IntImm&quot;,
-      &quot;attrs&quot;: {
-        &quot;dtype&quot;: &quot;bool&quot;,
-        &quot;value&quot;: &quot;1&quot;
-      }
-    }
-  ],
-  &quot;b64ndarrays&quot;: [],
-  &quot;attrs&quot;: {&quot;tvm_version&quot;: &quot;0.8.dev0&quot;}
-}
 </pre></div>
 </div>
 </div>
@@ -924,7 +862,7 @@ be able to run on our build server</p>
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre>conv2d with tensor core: 13.449407 ms
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre>conv2d with tensor core: 10.774292 ms
 </pre></div>
 </div>
 </div>
@@ -957,7 +895,7 @@ call TensorCores on specific GPUs.</p>
         <a href="opt_matmul_auto_tensorcore.html" class="btn btn-neutral float-right" title="How to optimize matmul with Auto TensorCore CodeGen" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
-        <a href="opt_gemm.html" class="btn btn-neutral float-left" title="How to optimize GEMM on CPU" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+        <a href="opt_conv_cuda.html" class="btn btn-neutral float-left" title="How to optimize convolution on GPU" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
       
     </div>
 

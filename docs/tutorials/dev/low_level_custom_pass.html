@@ -45,7 +45,7 @@
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
     <link rel="next" title="How to Use TVM Pass Infra" href="use_pass_infra.html" />
-    <link rel="prev" title="Auto-scheduling a convolution layer for GPU" href="../auto_scheduler/tune_conv2d_layer_cuda.html" /> 
+    <link rel="prev" title="Bring Your Own Datatypes to TVM" href="bring_your_own_datatypes.html" /> 
 </head>
 
 <body class="wy-body-for-nav">
@@ -209,6 +209,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../index.html#autotvm-template-based-auto-tuning">AutoTVM : Template-based Auto Tuning</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../index.html#autoscheduler-template-free-auto-scheduling">AutoScheduler : Template-free Auto Scheduling</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="../index.html#developer-tutorials">Developer Tutorials</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="bring_your_own_datatypes.html">Bring Your Own Datatypes to TVM</a></li>
 <li class="toctree-l2 current"><a class="current reference internal" href="#">Writing a Customized Pass</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#prerequisites">Prerequisites</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#writing-a-pass">Writing a Pass</a><ul>
@@ -221,7 +222,6 @@
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="use_pass_infra.html">How to Use TVM Pass Infra</a></li>
-<li class="toctree-l2"><a class="reference internal" href="bring_your_own_datatypes.html">Bring Your Own Datatypes to TVM</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../index.html#topi-tvm-operator-inventory">TOPI: TVM Operator Inventory</a></li>
@@ -364,46 +364,15 @@ our customized lowering pass to manipulate the IR directly instead of using sche
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre>#[version = &quot;0.0.5&quot;]
-primfn(a_1: handle, b_1: handle, c_1: handle) -&gt; ()
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre>primfn(a_1: handle, b_1: handle, c_1: handle) -&gt; ()
   attr = {&quot;global_symbol&quot;: &quot;main&quot;, &quot;tir.noalias&quot;: True}
-  buffers = {b: Buffer(b_2: Pointer(float32), float32, [128], []),
-             c: Buffer(c_2: Pointer(float32), float32, [128], []),
+  buffers = {c: Buffer(c_2: Pointer(float32), float32, [128], []),
+             b: Buffer(b_2: Pointer(float32), float32, [128], []),
              a: Buffer(a_2: Pointer(float32), float32, [128], [])}
   buffer_map = {a_1: a, b_1: b, c_1: c} {
   for (i: int32, 0, 128) {
     c_2[i] = ((float32*)a_2[i] + (float32*)b_2[i])
   }
-}
-
-#[metadata]
-{
-  &quot;root&quot;: 1,
-  &quot;nodes&quot;: [
-    {
-      &quot;type_key&quot;: &quot;&quot;
-    },
-    {
-      &quot;type_key&quot;: &quot;Map&quot;,
-      &quot;keys&quot;: [
-        &quot;IntImm&quot;
-      ],
-      &quot;data&quot;: [2]
-    },
-    {
-      &quot;type_key&quot;: &quot;Array&quot;,
-      &quot;data&quot;: [3]
-    },
-    {
-      &quot;type_key&quot;: &quot;IntImm&quot;,
-      &quot;attrs&quot;: {
-        &quot;dtype&quot;: &quot;bool&quot;,
-        &quot;value&quot;: &quot;1&quot;
-      }
-    }
-  ],
-  &quot;b64ndarrays&quot;: [],
-  &quot;attrs&quot;: {&quot;tvm_version&quot;: &quot;0.8.dev0&quot;}
 }
 </pre></div>
 </div>
@@ -504,8 +473,7 @@ called after each phase is done.</p>
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre>#[version = &quot;0.0.5&quot;]
-primfn(a_1: handle, b_1: handle, c_1: handle) -&gt; ()
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre>primfn(a_1: handle, b_1: handle, c_1: handle) -&gt; ()
   attr = {&quot;global_symbol&quot;: &quot;main&quot;, &quot;tir.noalias&quot;: True}
   buffers = {c: Buffer(c_2: Pointer(float32), float32, [128], []),
              b: Buffer(b_2: Pointer(float32), float32, [128], []),
@@ -514,36 +482,6 @@ primfn(a_1: handle, b_1: handle, c_1: handle) -&gt; ()
   for (i.outer: int32, 0, 16) {
     c_2[ramp((i.outer*8), 1, 8)] = ((float32x8*)a_2[ramp((i.outer*8), 1, 8)] + (float32x8*)b_2[ramp((i.outer*8), 1, 8)])
   }
-}
-
-#[metadata]
-{
-  &quot;root&quot;: 1,
-  &quot;nodes&quot;: [
-    {
-      &quot;type_key&quot;: &quot;&quot;
-    },
-    {
-      &quot;type_key&quot;: &quot;Map&quot;,
-      &quot;keys&quot;: [
-        &quot;IntImm&quot;
-      ],
-      &quot;data&quot;: [2]
-    },
-    {
-      &quot;type_key&quot;: &quot;Array&quot;,
-      &quot;data&quot;: [3]
-    },
-    {
-      &quot;type_key&quot;: &quot;IntImm&quot;,
-      &quot;attrs&quot;: {
-        &quot;dtype&quot;: &quot;bool&quot;,
-        &quot;value&quot;: &quot;1&quot;
-      }
-    }
-  ],
-  &quot;b64ndarrays&quot;: [],
-  &quot;attrs&quot;: {&quot;tvm_version&quot;: &quot;0.8.dev0&quot;}
 }
 </pre></div>
 </div>
@@ -580,7 +518,7 @@ primfn(a_1: handle, b_1: handle, c_1: handle) -&gt; ()
         <a href="use_pass_infra.html" class="btn btn-neutral float-right" title="How to Use TVM Pass Infra" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
-        <a href="../auto_scheduler/tune_conv2d_layer_cuda.html" class="btn btn-neutral float-left" title="Auto-scheduling a convolution layer for GPU" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+        <a href="bring_your_own_datatypes.html" class="btn btn-neutral float-left" title="Bring Your Own Datatypes to TVM" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
       
     </div>
 

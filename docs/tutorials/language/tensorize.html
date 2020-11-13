@@ -44,8 +44,8 @@
     <script type="text/javascript" src="../../_static/js/tlcpack_theme.js"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
-    <link rel="next" title="How to optimize convolution on GPU" href="../optimize/opt_conv_cuda.html" />
-    <link rel="prev" title="Schedule Primitives in TVM" href="schedule_primitives.html" /> 
+    <link rel="next" title="Compute and Reduce with Tuple Inputs" href="tuple_inputs.html" />
+    <link rel="prev" title="External Tensor Functions" href="extern_op.html" /> 
 </head>
 
 <body class="wy-body-for-nav">
@@ -205,13 +205,10 @@
 <li class="toctree-l1"><a class="reference internal" href="../index.html">Get Started Tutorials</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../index.html#compile-deep-learning-models">Compile Deep Learning Models</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="../index.html#tensor-expression-and-schedules">Tensor Expression and Schedules</a><ul class="current">
-<li class="toctree-l2"><a class="reference internal" href="tedd.html">Use Tensor Expression Debug Display (TEDD) for Visualization</a></li>
-<li class="toctree-l2"><a class="reference internal" href="tuple_inputs.html">Compute and Reduce with Tuple Inputs</a></li>
-<li class="toctree-l2"><a class="reference internal" href="extern_op.html">External Tensor Functions</a></li>
-<li class="toctree-l2"><a class="reference internal" href="reduction.html">Reduction</a></li>
-<li class="toctree-l2"><a class="reference internal" href="scan.html">Scan and Recurrent Kernel</a></li>
-<li class="toctree-l2"><a class="reference internal" href="intrin_math.html">Intrinsics and Math Functions</a></li>
 <li class="toctree-l2"><a class="reference internal" href="schedule_primitives.html">Schedule Primitives in TVM</a></li>
+<li class="toctree-l2"><a class="reference internal" href="intrin_math.html">Intrinsics and Math Functions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="scan.html">Scan and Recurrent Kernel</a></li>
+<li class="toctree-l2"><a class="reference internal" href="extern_op.html">External Tensor Functions</a></li>
 <li class="toctree-l2 current"><a class="current reference internal" href="#">Use Tensorize to Leverage Hardware Intrinsics</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#define-matrix-multiplication">Define Matrix Multiplication</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#schedule-the-matmul">Schedule the Matmul</a></li>
@@ -220,6 +217,9 @@
 <li class="toctree-l3"><a class="reference internal" href="#summary">Summary</a></li>
 </ul>
 </li>
+<li class="toctree-l2"><a class="reference internal" href="tuple_inputs.html">Compute and Reduce with Tuple Inputs</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tedd.html">Use Tensor Expression Debug Display (TEDD) for Visualization</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reduction.html">Reduction</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../index.html#optimize-tensor-operators">Optimize Tensor Operators</a></li>
@@ -360,8 +360,7 @@ The following lines describe the computation <code class="code docutils literal 
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre>#[version = &quot;0.0.5&quot;]
-primfn(A_1: handle, B_1: handle, C_1: handle) -&gt; ()
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre>primfn(A_1: handle, B_1: handle, C_1: handle) -&gt; ()
   attr = {&quot;global_symbol&quot;: &quot;main&quot;, &quot;tir.noalias&quot;: True}
   buffers = {C: Buffer(C_2: Pointer(float32), float32, [1024, 512], []),
              B: Buffer(B_2: Pointer(float32), float32, [512, 64], []),
@@ -375,36 +374,6 @@ primfn(A_1: handle, B_1: handle, C_1: handle) -&gt; ()
       }
     }
   }
-}
-
-#[metadata]
-{
-  &quot;root&quot;: 1,
-  &quot;nodes&quot;: [
-    {
-      &quot;type_key&quot;: &quot;&quot;
-    },
-    {
-      &quot;type_key&quot;: &quot;Map&quot;,
-      &quot;keys&quot;: [
-        &quot;IntImm&quot;
-      ],
-      &quot;data&quot;: [2]
-    },
-    {
-      &quot;type_key&quot;: &quot;Array&quot;,
-      &quot;data&quot;: [3]
-    },
-    {
-      &quot;type_key&quot;: &quot;IntImm&quot;,
-      &quot;attrs&quot;: {
-        &quot;dtype&quot;: &quot;bool&quot;,
-        &quot;value&quot;: &quot;1&quot;
-      }
-    }
-  ],
-  &quot;b64ndarrays&quot;: [],
-  &quot;attrs&quot;: {&quot;tvm_version&quot;: &quot;0.8.dev0&quot;}
 }
 </pre></div>
 </div>
@@ -425,11 +394,10 @@ Thus we break down the matmul loops to make the innermost loops a (16x64) GEMV.<
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre>#[version = &quot;0.0.5&quot;]
-primfn(A_1: handle, B_1: handle, C_1: handle) -&gt; ()
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre>primfn(A_1: handle, B_1: handle, C_1: handle) -&gt; ()
   attr = {&quot;global_symbol&quot;: &quot;main&quot;, &quot;tir.noalias&quot;: True}
-  buffers = {C: Buffer(C_2: Pointer(float32), float32, [1024, 512], []),
-             B: Buffer(B_2: Pointer(float32), float32, [512, 64], []),
+  buffers = {B: Buffer(B_2: Pointer(float32), float32, [512, 64], []),
+             C: Buffer(C_2: Pointer(float32), float32, [1024, 512], []),
              A: Buffer(A_2: Pointer(float32), float32, [1024, 64], [])}
   buffer_map = {A_1: A, B_1: B, C_1: C} {
   for (i: int32, 0, 1024) {
@@ -442,36 +410,6 @@ primfn(A_1: handle, B_1: handle, C_1: handle) -&gt; ()
       }
     }
   }
-}
-
-#[metadata]
-{
-  &quot;root&quot;: 1,
-  &quot;nodes&quot;: [
-    {
-      &quot;type_key&quot;: &quot;&quot;
-    },
-    {
-      &quot;type_key&quot;: &quot;Map&quot;,
-      &quot;keys&quot;: [
-        &quot;IntImm&quot;
-      ],
-      &quot;data&quot;: [2]
-    },
-    {
-      &quot;type_key&quot;: &quot;Array&quot;,
-      &quot;data&quot;: [3]
-    },
-    {
-      &quot;type_key&quot;: &quot;IntImm&quot;,
-      &quot;attrs&quot;: {
-        &quot;dtype&quot;: &quot;bool&quot;,
-        &quot;value&quot;: &quot;1&quot;
-      }
-    }
-  ],
-  &quot;b64ndarrays&quot;: [],
-  &quot;attrs&quot;: {&quot;tvm_version&quot;: &quot;0.8.dev0&quot;}
 }
 </pre></div>
 </div>
@@ -544,11 +482,10 @@ such placeholder can be put to let TVM automatically bind the inferred value for
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre>#[version = &quot;0.0.5&quot;]
-primfn(A_1: handle, B_1: handle, C_1: handle) -&gt; ()
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre>primfn(A_1: handle, B_1: handle, C_1: handle) -&gt; ()
   attr = {&quot;global_symbol&quot;: &quot;main&quot;, &quot;tir.noalias&quot;: True}
-  buffers = {B: Buffer(B_2: Pointer(float32), float32, [512, 64], []),
-             C: Buffer(C_2: Pointer(float32), float32, [1024, 512], []),
+  buffers = {C: Buffer(C_2: Pointer(float32), float32, [1024, 512], []),
+             B: Buffer(B_2: Pointer(float32), float32, [512, 64], []),
              A: Buffer(A_2: Pointer(float32), float32, [1024, 64], [])}
   buffer_map = {A_1: A, B_1: B, C_1: C} {
   for (i: int32, 0, 1024) {
@@ -556,36 +493,6 @@ primfn(A_1: handle, B_1: handle, C_1: handle) -&gt; ()
       @tir.call_extern(&quot;gemv_update&quot;, @tir.tvm_access_ptr(@tir.type_annotation(, dtype=float32), C_2, ((i*512) + (j.outer*16)), 16, 2, dtype=handle), @tir.tvm_access_ptr(@tir.type_annotation(, dtype=float32), A_2, (i*64), 64, 1, dtype=handle), @tir.tvm_access_ptr(@tir.type_annotation(, dtype=float32), B_2, (j.outer*1024), 1024, 1, dtype=handle), 16, 64, 64, dtype=int32)
     }
   }
-}
-
-#[metadata]
-{
-  &quot;root&quot;: 1,
-  &quot;nodes&quot;: [
-    {
-      &quot;type_key&quot;: &quot;&quot;
-    },
-    {
-      &quot;type_key&quot;: &quot;Map&quot;,
-      &quot;keys&quot;: [
-        &quot;IntImm&quot;
-      ],
-      &quot;data&quot;: [2]
-    },
-    {
-      &quot;type_key&quot;: &quot;Array&quot;,
-      &quot;data&quot;: [3]
-    },
-    {
-      &quot;type_key&quot;: &quot;IntImm&quot;,
-      &quot;attrs&quot;: {
-        &quot;dtype&quot;: &quot;bool&quot;,
-        &quot;value&quot;: &quot;1&quot;
-      }
-    }
-  ],
-  &quot;b64ndarrays&quot;: [],
-  &quot;attrs&quot;: {&quot;tvm_version&quot;: &quot;0.8.dev0&quot;}
 }
 </pre></div>
 </div>
@@ -620,15 +527,14 @@ The importing needs to happen before the tensorized GEMV being executed.</p>
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre>#[version = &quot;0.0.5&quot;]
-primfn(A_1: handle, B_1: handle, C_1: handle) -&gt; ()
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre>primfn(A_1: handle, B_1: handle, C_1: handle) -&gt; ()
   attr = {&quot;global_symbol&quot;: &quot;main&quot;, &quot;tir.noalias&quot;: True}
   buffers = {C: Buffer(C_2: Pointer(float32), float32, [1024, 512], []),
              B: Buffer(B_2: Pointer(float32), float32, [512, 64], []),
              A: Buffer(A_2: Pointer(float32), float32, [1024, 64], [])}
   buffer_map = {A_1: A, B_1: B, C_1: C} {
-  attr [IterVar(i: int32, (nullptr), &quot;DataPar&quot;, &quot;&quot;)] &quot;pragma_import_llvm&quot; = &quot;; ModuleID = &#39;/tmp/tmpecxzodho/input0.cc&#39;
-source_filename = &quot;/tmp/tmpecxzodho/input0.cc&quot;
+  attr [IterVar(i: int32, (nullptr), &quot;DataPar&quot;, &quot;&quot;)] &quot;pragma_import_llvm&quot; = &quot;; ModuleID = &#39;/tmp/tmp9hp1s94b/input0.cc&#39;
+source_filename = &quot;/tmp/tmp9hp1s94b/input0.cc&quot;
 target datalayout = &quot;e-m:e-i64:64-f80:128-n8:16:32:64-S128&quot;
 target triple = &quot;x86_64-pc-linux-gnu&quot;
 
@@ -724,36 +630,6 @@ attributes #0 = { noinline nounwind optnone uwtable &quot;correctly-rounded-divi
       @tir.call_extern(&quot;gemv_update&quot;, @tir.tvm_access_ptr(@tir.type_annotation(, dtype=float32), C_2, ((i*512) + (j.outer*16)), 16, 2, dtype=handle), @tir.tvm_access_ptr(@tir.type_annotation(, dtype=float32), A_2, (i*64), 64, 1, dtype=handle), @tir.tvm_access_ptr(@tir.type_annotation(, dtype=float32), B_2, (j.outer*1024), 1024, 1, dtype=handle), 16, 64, 64, dtype=int32)
     }
   }
-}
-
-#[metadata]
-{
-  &quot;root&quot;: 1,
-  &quot;nodes&quot;: [
-    {
-      &quot;type_key&quot;: &quot;&quot;
-    },
-    {
-      &quot;type_key&quot;: &quot;Map&quot;,
-      &quot;keys&quot;: [
-        &quot;IntImm&quot;
-      ],
-      &quot;data&quot;: [2]
-    },
-    {
-      &quot;type_key&quot;: &quot;Array&quot;,
-      &quot;data&quot;: [3]
-    },
-    {
-      &quot;type_key&quot;: &quot;IntImm&quot;,
-      &quot;attrs&quot;: {
-        &quot;dtype&quot;: &quot;bool&quot;,
-        &quot;value&quot;: &quot;1&quot;
-      }
-    }
-  ],
-  &quot;b64ndarrays&quot;: [],
-  &quot;attrs&quot;: {&quot;tvm_version&quot;: &quot;0.8.dev0&quot;}
 }
 </pre></div>
 </div>
@@ -911,10 +787,10 @@ which helps users inject asm easily into the schedule.</p>
 
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="../optimize/opt_conv_cuda.html" class="btn btn-neutral float-right" title="How to optimize convolution on GPU" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+        <a href="tuple_inputs.html" class="btn btn-neutral float-right" title="Compute and Reduce with Tuple Inputs" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
-        <a href="schedule_primitives.html" class="btn btn-neutral float-left" title="Schedule Primitives in TVM" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+        <a href="extern_op.html" class="btn btn-neutral float-left" title="External Tensor Functions" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
       
     </div>
 

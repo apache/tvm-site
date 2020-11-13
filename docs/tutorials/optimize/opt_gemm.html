@@ -44,8 +44,8 @@
     <script type="text/javascript" src="../../_static/js/tlcpack_theme.js"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
-    <link rel="next" title="How to optimize convolution using TensorCores" href="opt_conv_tensorcore.html" />
-    <link rel="prev" title="How to optimize convolution on GPU" href="opt_conv_cuda.html" /> 
+    <link rel="next" title="How to optimize convolution on GPU" href="opt_conv_cuda.html" />
+    <link rel="prev" title="Reduction" href="../language/reduction.html" /> 
 </head>
 
 <body class="wy-body-for-nav">
@@ -206,7 +206,6 @@
 <li class="toctree-l1"><a class="reference internal" href="../index.html#compile-deep-learning-models">Compile Deep Learning Models</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../index.html#tensor-expression-and-schedules">Tensor Expression and Schedules</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="../index.html#optimize-tensor-operators">Optimize Tensor Operators</a><ul class="current">
-<li class="toctree-l2"><a class="reference internal" href="opt_conv_cuda.html">How to optimize convolution on GPU</a></li>
 <li class="toctree-l2 current"><a class="current reference internal" href="#">How to optimize GEMM on CPU</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#preparation-and-baseline">Preparation and Baseline</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#blocking">Blocking</a></li>
@@ -218,6 +217,7 @@
 <li class="toctree-l3"><a class="reference internal" href="#summary">Summary</a></li>
 </ul>
 </li>
+<li class="toctree-l2"><a class="reference internal" href="opt_conv_cuda.html">How to optimize convolution on GPU</a></li>
 <li class="toctree-l2"><a class="reference internal" href="opt_conv_tensorcore.html">How to optimize convolution using TensorCores</a></li>
 <li class="toctree-l2"><a class="reference internal" href="opt_matmul_auto_tensorcore.html">How to optimize matmul with Auto TensorCore CodeGen</a></li>
 </ul>
@@ -420,8 +420,8 @@ Then we write a baseline implementation, the simplest way to write a matrix mult
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre>Numpy running time: 0.007637
-Baseline: 3.155903
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre>Numpy running time: 0.013220
+Baseline: 3.412455
 </pre></div>
 </div>
 <p>In TVM, we can always inspect lower level IR to debug or optimize our schedule.
@@ -430,8 +430,7 @@ Here is the generated IR using our baseline schedule.</p>
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre>#[version = &quot;0.0.5&quot;]
-primfn(A_1: handle, B_1: handle, C_1: handle) -&gt; ()
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre>primfn(A_1: handle, B_1: handle, C_1: handle) -&gt; ()
   attr = {&quot;global_symbol&quot;: &quot;main&quot;, &quot;tir.noalias&quot;: True}
   buffers = {C: Buffer(C_2: Pointer(float32), float32, [1024, 1024], []),
              B: Buffer(B_2: Pointer(float32), float32, [1024, 1024], []),
@@ -445,36 +444,6 @@ primfn(A_1: handle, B_1: handle, C_1: handle) -&gt; ()
       }
     }
   }
-}
-
-#[metadata]
-{
-  &quot;root&quot;: 1,
-  &quot;nodes&quot;: [
-    {
-      &quot;type_key&quot;: &quot;&quot;
-    },
-    {
-      &quot;type_key&quot;: &quot;Map&quot;,
-      &quot;keys&quot;: [
-        &quot;IntImm&quot;
-      ],
-      &quot;data&quot;: [2]
-    },
-    {
-      &quot;type_key&quot;: &quot;Array&quot;,
-      &quot;data&quot;: [3]
-    },
-    {
-      &quot;type_key&quot;: &quot;IntImm&quot;,
-      &quot;attrs&quot;: {
-        &quot;dtype&quot;: &quot;bool&quot;,
-        &quot;value&quot;: &quot;1&quot;
-      }
-    }
-  ],
-  &quot;b64ndarrays&quot;: [],
-  &quot;attrs&quot;: {&quot;tvm_version&quot;: &quot;0.8.dev0&quot;}
 }
 </pre></div>
 </div>
@@ -510,7 +479,7 @@ fill 32 * 32 * sizeof(float) which is 4KB in the cache whose total size is 32KB 
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre>Opt1: 0.291305
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre>Opt1: 0.284645
 </pre></div>
 </div>
 <p>Here is the generated IR after blocking.</p>
@@ -518,11 +487,10 @@ fill 32 * 32 * sizeof(float) which is 4KB in the cache whose total size is 32KB 
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre>#[version = &quot;0.0.5&quot;]
-primfn(A_1: handle, B_1: handle, C_1: handle) -&gt; ()
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre>primfn(A_1: handle, B_1: handle, C_1: handle) -&gt; ()
   attr = {&quot;global_symbol&quot;: &quot;main&quot;, &quot;tir.noalias&quot;: True}
-  buffers = {C: Buffer(C_2: Pointer(float32), float32, [1024, 1024], []),
-             B: Buffer(B_2: Pointer(float32), float32, [1024, 1024], []),
+  buffers = {B: Buffer(B_2: Pointer(float32), float32, [1024, 1024], []),
+             C: Buffer(C_2: Pointer(float32), float32, [1024, 1024], []),
              A: Buffer(A_2: Pointer(float32), float32, [1024, 1024], [])}
   buffer_map = {A_1: A, B_1: B, C_1: C} {
   for (x.outer: int32, 0, 32) {
@@ -543,36 +511,6 @@ primfn(A_1: handle, B_1: handle, C_1: handle) -&gt; ()
       }
     }
   }
-}
-
-#[metadata]
-{
-  &quot;root&quot;: 1,
-  &quot;nodes&quot;: [
-    {
-      &quot;type_key&quot;: &quot;&quot;
-    },
-    {
-      &quot;type_key&quot;: &quot;Map&quot;,
-      &quot;keys&quot;: [
-        &quot;IntImm&quot;
-      ],
-      &quot;data&quot;: [2]
-    },
-    {
-      &quot;type_key&quot;: &quot;Array&quot;,
-      &quot;data&quot;: [3]
-    },
-    {
-      &quot;type_key&quot;: &quot;IntImm&quot;,
-      &quot;attrs&quot;: {
-        &quot;dtype&quot;: &quot;bool&quot;,
-        &quot;value&quot;: &quot;1&quot;
-      }
-    }
-  ],
-  &quot;b64ndarrays&quot;: [],
-  &quot;attrs&quot;: {&quot;tvm_version&quot;: &quot;0.8.dev0&quot;}
 }
 </pre></div>
 </div>
@@ -605,7 +543,7 @@ we can use <cite>vectorize</cite> interface to hint the compiler this pattern, s
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre>Opt2: 0.324082
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre>Opt2: 0.320737
 </pre></div>
 </div>
 <p>Here is the generated IR after vectorization.</p>
@@ -613,8 +551,7 @@ we can use <cite>vectorize</cite> interface to hint the compiler this pattern, s
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre>#[version = &quot;0.0.5&quot;]
-primfn(A_1: handle, B_1: handle, C_1: handle) -&gt; ()
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre>primfn(A_1: handle, B_1: handle, C_1: handle) -&gt; ()
   attr = {&quot;global_symbol&quot;: &quot;main&quot;, &quot;tir.noalias&quot;: True}
   buffers = {C: Buffer(C_2: Pointer(float32), float32, [1024, 1024], []),
              B: Buffer(B_2: Pointer(float32), float32, [1024, 1024], []),
@@ -634,36 +571,6 @@ primfn(A_1: handle, B_1: handle, C_1: handle) -&gt; ()
       }
     }
   }
-}
-
-#[metadata]
-{
-  &quot;root&quot;: 1,
-  &quot;nodes&quot;: [
-    {
-      &quot;type_key&quot;: &quot;&quot;
-    },
-    {
-      &quot;type_key&quot;: &quot;Map&quot;,
-      &quot;keys&quot;: [
-        &quot;IntImm&quot;
-      ],
-      &quot;data&quot;: [2]
-    },
-    {
-      &quot;type_key&quot;: &quot;Array&quot;,
-      &quot;data&quot;: [3]
-    },
-    {
-      &quot;type_key&quot;: &quot;IntImm&quot;,
-      &quot;attrs&quot;: {
-        &quot;dtype&quot;: &quot;bool&quot;,
-        &quot;value&quot;: &quot;1&quot;
-      }
-    }
-  ],
-  &quot;b64ndarrays&quot;: [],
-  &quot;attrs&quot;: {&quot;tvm_version&quot;: &quot;0.8.dev0&quot;}
 }
 </pre></div>
 </div>
@@ -696,7 +603,7 @@ the access pattern for A matrix is more cache friendly.</p>
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre>Opt3: 0.111315
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre>Opt3: 0.111368
 </pre></div>
 </div>
 <p>Here is the generated IR after loop permutation.</p>
@@ -704,8 +611,7 @@ the access pattern for A matrix is more cache friendly.</p>
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre>#[version = &quot;0.0.5&quot;]
-primfn(A_1: handle, B_1: handle, C_1: handle) -&gt; ()
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre>primfn(A_1: handle, B_1: handle, C_1: handle) -&gt; ()
   attr = {&quot;global_symbol&quot;: &quot;main&quot;, &quot;tir.noalias&quot;: True}
   buffers = {C: Buffer(C_2: Pointer(float32), float32, [1024, 1024], []),
              B: Buffer(B_2: Pointer(float32), float32, [1024, 1024], []),
@@ -725,36 +631,6 @@ primfn(A_1: handle, B_1: handle, C_1: handle) -&gt; ()
       }
     }
   }
-}
-
-#[metadata]
-{
-  &quot;root&quot;: 1,
-  &quot;nodes&quot;: [
-    {
-      &quot;type_key&quot;: &quot;&quot;
-    },
-    {
-      &quot;type_key&quot;: &quot;Map&quot;,
-      &quot;keys&quot;: [
-        &quot;IntImm&quot;
-      ],
-      &quot;data&quot;: [2]
-    },
-    {
-      &quot;type_key&quot;: &quot;Array&quot;,
-      &quot;data&quot;: [3]
-    },
-    {
-      &quot;type_key&quot;: &quot;IntImm&quot;,
-      &quot;attrs&quot;: {
-        &quot;dtype&quot;: &quot;bool&quot;,
-        &quot;value&quot;: &quot;1&quot;
-      }
-    }
-  ],
-  &quot;b64ndarrays&quot;: [],
-  &quot;attrs&quot;: {&quot;tvm_version&quot;: &quot;0.8.dev0&quot;}
 }
 </pre></div>
 </div>
@@ -803,7 +679,7 @@ the corresponding value from the packed array.</p>
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre>Opt4: 0.105850
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre>Opt4: 0.105002
 </pre></div>
 </div>
 <p>Here is the generated IR after array packing.</p>
@@ -811,8 +687,7 @@ the corresponding value from the packed array.</p>
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre>#[version = &quot;0.0.5&quot;]
-primfn(A_1: handle, B_1: handle, C_1: handle) -&gt; ()
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre>primfn(A_1: handle, B_1: handle, C_1: handle) -&gt; ()
   attr = {&quot;global_symbol&quot;: &quot;main&quot;, &quot;tir.noalias&quot;: True}
   buffers = {C: Buffer(C_2: Pointer(float32), float32, [1024, 1024], []),
              B: Buffer(B_2: Pointer(float32), float32, [1024, 1024], []),
@@ -840,36 +715,6 @@ primfn(A_1: handle, B_1: handle, C_1: handle) -&gt; ()
       }
     }
   }
-}
-
-#[metadata]
-{
-  &quot;root&quot;: 1,
-  &quot;nodes&quot;: [
-    {
-      &quot;type_key&quot;: &quot;&quot;
-    },
-    {
-      &quot;type_key&quot;: &quot;Map&quot;,
-      &quot;keys&quot;: [
-        &quot;IntImm&quot;
-      ],
-      &quot;data&quot;: [2]
-    },
-    {
-      &quot;type_key&quot;: &quot;Array&quot;,
-      &quot;data&quot;: [3]
-    },
-    {
-      &quot;type_key&quot;: &quot;IntImm&quot;,
-      &quot;attrs&quot;: {
-        &quot;dtype&quot;: &quot;bool&quot;,
-        &quot;value&quot;: &quot;1&quot;
-      }
-    }
-  ],
-  &quot;b64ndarrays&quot;: [],
-  &quot;attrs&quot;: {&quot;tvm_version&quot;: &quot;0.8.dev0&quot;}
 }
 </pre></div>
 </div>
@@ -914,7 +759,7 @@ write to C when all the block results are ready.</p>
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre>Opt5: 0.106713
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre>Opt5: 0.097741
 </pre></div>
 </div>
 <p>Here is the generated IR after blocking.</p>
@@ -922,8 +767,7 @@ write to C when all the block results are ready.</p>
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre>#[version = &quot;0.0.5&quot;]
-primfn(A_1: handle, B_1: handle, C_1: handle) -&gt; ()
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre>primfn(A_1: handle, B_1: handle, C_1: handle) -&gt; ()
   attr = {&quot;global_symbol&quot;: &quot;main&quot;, &quot;tir.noalias&quot;: True}
   buffers = {C: Buffer(C_2: Pointer(float32), float32, [1024, 1024], []),
              B: Buffer(B_2: Pointer(float32), float32, [1024, 1024], []),
@@ -959,36 +803,6 @@ primfn(A_1: handle, B_1: handle, C_1: handle) -&gt; ()
       }
     }
   }
-}
-
-#[metadata]
-{
-  &quot;root&quot;: 1,
-  &quot;nodes&quot;: [
-    {
-      &quot;type_key&quot;: &quot;&quot;
-    },
-    {
-      &quot;type_key&quot;: &quot;Map&quot;,
-      &quot;keys&quot;: [
-        &quot;IntImm&quot;
-      ],
-      &quot;data&quot;: [2]
-    },
-    {
-      &quot;type_key&quot;: &quot;Array&quot;,
-      &quot;data&quot;: [3]
-    },
-    {
-      &quot;type_key&quot;: &quot;IntImm&quot;,
-      &quot;attrs&quot;: {
-        &quot;dtype&quot;: &quot;bool&quot;,
-        &quot;value&quot;: &quot;1&quot;
-      }
-    }
-  ],
-  &quot;b64ndarrays&quot;: [],
-  &quot;attrs&quot;: {&quot;tvm_version&quot;: &quot;0.8.dev0&quot;}
 }
 </pre></div>
 </div>
@@ -1032,7 +846,7 @@ primfn(A_1: handle, B_1: handle, C_1: handle) -&gt; ()
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre>Opt6: 0.034901
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre>Opt6: 0.032057
 </pre></div>
 </div>
 <p>Here is the generated IR after parallelization.</p>
@@ -1040,8 +854,7 @@ primfn(A_1: handle, B_1: handle, C_1: handle) -&gt; ()
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre>#[version = &quot;0.0.5&quot;]
-primfn(A_1: handle, B_1: handle, C_1: handle) -&gt; ()
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre>primfn(A_1: handle, B_1: handle, C_1: handle) -&gt; ()
   attr = {&quot;global_symbol&quot;: &quot;main&quot;, &quot;tir.noalias&quot;: True}
   buffers = {C: Buffer(C_2: Pointer(float32), float32, [1024, 1024], []),
              B: Buffer(B_2: Pointer(float32), float32, [1024, 1024], []),
@@ -1078,36 +891,6 @@ primfn(A_1: handle, B_1: handle, C_1: handle) -&gt; ()
     }
   }
 }
-
-#[metadata]
-{
-  &quot;root&quot;: 1,
-  &quot;nodes&quot;: [
-    {
-      &quot;type_key&quot;: &quot;&quot;
-    },
-    {
-      &quot;type_key&quot;: &quot;Map&quot;,
-      &quot;keys&quot;: [
-        &quot;IntImm&quot;
-      ],
-      &quot;data&quot;: [2]
-    },
-    {
-      &quot;type_key&quot;: &quot;Array&quot;,
-      &quot;data&quot;: [3]
-    },
-    {
-      &quot;type_key&quot;: &quot;IntImm&quot;,
-      &quot;attrs&quot;: {
-        &quot;dtype&quot;: &quot;bool&quot;,
-        &quot;value&quot;: &quot;1&quot;
-      }
-    }
-  ],
-  &quot;b64ndarrays&quot;: [],
-  &quot;attrs&quot;: {&quot;tvm_version&quot;: &quot;0.8.dev0&quot;}
-}
 </pre></div>
 </div>
 </div>
@@ -1140,10 +923,10 @@ tutorial by yourself to observe the performance gain acheived by TVM.</p>
 
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="opt_conv_tensorcore.html" class="btn btn-neutral float-right" title="How to optimize convolution using TensorCores" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+        <a href="opt_conv_cuda.html" class="btn btn-neutral float-right" title="How to optimize convolution on GPU" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
-        <a href="opt_conv_cuda.html" class="btn btn-neutral float-left" title="How to optimize convolution on GPU" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+        <a href="../language/reduction.html" class="btn btn-neutral float-left" title="Reduction" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
       
     </div>
 

@@ -44,8 +44,8 @@
     <script type="text/javascript" src="../../_static/js/tlcpack_theme.js"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
-    <link rel="next" title="Scan and Recurrent Kernel" href="scan.html" />
-    <link rel="prev" title="External Tensor Functions" href="extern_op.html" /> 
+    <link rel="next" title="How to optimize GEMM on CPU" href="../optimize/opt_gemm.html" />
+    <link rel="prev" title="Use Tensor Expression Debug Display (TEDD) for Visualization" href="tedd.html" /> 
 </head>
 
 <body class="wy-body-for-nav">
@@ -205,9 +205,13 @@
 <li class="toctree-l1"><a class="reference internal" href="../index.html">Get Started Tutorials</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../index.html#compile-deep-learning-models">Compile Deep Learning Models</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="../index.html#tensor-expression-and-schedules">Tensor Expression and Schedules</a><ul class="current">
-<li class="toctree-l2"><a class="reference internal" href="tedd.html">Use Tensor Expression Debug Display (TEDD) for Visualization</a></li>
-<li class="toctree-l2"><a class="reference internal" href="tuple_inputs.html">Compute and Reduce with Tuple Inputs</a></li>
+<li class="toctree-l2"><a class="reference internal" href="schedule_primitives.html">Schedule Primitives in TVM</a></li>
+<li class="toctree-l2"><a class="reference internal" href="intrin_math.html">Intrinsics and Math Functions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="scan.html">Scan and Recurrent Kernel</a></li>
 <li class="toctree-l2"><a class="reference internal" href="extern_op.html">External Tensor Functions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tensorize.html">Use Tensorize to Leverage Hardware Intrinsics</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tuple_inputs.html">Compute and Reduce with Tuple Inputs</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tedd.html">Use Tensor Expression Debug Display (TEDD) for Visualization</a></li>
 <li class="toctree-l2 current"><a class="current reference internal" href="#">Reduction</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#describe-sum-of-rows">Describe Sum of Rows</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#schedule-the-reduction">Schedule the Reduction</a></li>
@@ -218,10 +222,6 @@
 <li class="toctree-l3"><a class="reference internal" href="#summary">Summary</a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="scan.html">Scan and Recurrent Kernel</a></li>
-<li class="toctree-l2"><a class="reference internal" href="intrin_math.html">Intrinsics and Math Functions</a></li>
-<li class="toctree-l2"><a class="reference internal" href="schedule_primitives.html">Schedule Primitives in TVM</a></li>
-<li class="toctree-l2"><a class="reference internal" href="tensorize.html">Use Tensorize to Leverage Hardware Intrinsics</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../index.html#optimize-tensor-operators">Optimize Tensor Operators</a></li>
@@ -379,8 +379,7 @@ Before doing anything, let us print out the IR code of default schedule.</p>
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre>#[version = &quot;0.0.5&quot;]
-primfn(A_1: handle, B_1: handle) -&gt; ()
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre>primfn(A_1: handle, B_1: handle) -&gt; ()
   attr = {&quot;global_symbol&quot;: &quot;main&quot;, &quot;tir.noalias&quot;: True}
   buffers = {B: Buffer(B_2: Pointer(float32), float32, [n: int32], [stride: int32], type=&quot;auto&quot;),
              A: Buffer(A_2: Pointer(float32), float32, [n, m: int32], [stride_1: int32, stride_2: int32], type=&quot;auto&quot;)}
@@ -391,36 +390,6 @@ primfn(A_1: handle, B_1: handle) -&gt; ()
       B_2[(i*stride)] = ((float32*)B_2[(i*stride)] + (float32*)A_2[((i*stride_1) + (k*stride_2))])
     }
   }
-}
-
-#[metadata]
-{
-  &quot;root&quot;: 1,
-  &quot;nodes&quot;: [
-    {
-      &quot;type_key&quot;: &quot;&quot;
-    },
-    {
-      &quot;type_key&quot;: &quot;Map&quot;,
-      &quot;keys&quot;: [
-        &quot;IntImm&quot;
-      ],
-      &quot;data&quot;: [2]
-    },
-    {
-      &quot;type_key&quot;: &quot;Array&quot;,
-      &quot;data&quot;: [3]
-    },
-    {
-      &quot;type_key&quot;: &quot;IntImm&quot;,
-      &quot;attrs&quot;: {
-        &quot;dtype&quot;: &quot;bool&quot;,
-        &quot;value&quot;: &quot;1&quot;
-      }
-    }
-  ],
-  &quot;b64ndarrays&quot;: [],
-  &quot;attrs&quot;: {&quot;tvm_version&quot;: &quot;0.8.dev0&quot;}
 }
 </pre></div>
 </div>
@@ -434,8 +403,7 @@ axis by different factors. The result is a nested reduction.</p>
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre>#[version = &quot;0.0.5&quot;]
-primfn(A_1: handle, B_1: handle) -&gt; ()
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre>primfn(A_1: handle, B_1: handle) -&gt; ()
   attr = {&quot;global_symbol&quot;: &quot;main&quot;, &quot;tir.noalias&quot;: True}
   buffers = {B: Buffer(B_2: Pointer(float32), float32, [n: int32], [stride: int32], type=&quot;auto&quot;),
              A: Buffer(A_2: Pointer(float32), float32, [n, m: int32], [stride_1: int32, stride_2: int32], type=&quot;auto&quot;)}
@@ -457,36 +425,6 @@ primfn(A_1: handle, B_1: handle) -&gt; ()
     }
   }
 }
-
-#[metadata]
-{
-  &quot;root&quot;: 1,
-  &quot;nodes&quot;: [
-    {
-      &quot;type_key&quot;: &quot;&quot;
-    },
-    {
-      &quot;type_key&quot;: &quot;Map&quot;,
-      &quot;keys&quot;: [
-        &quot;IntImm&quot;
-      ],
-      &quot;data&quot;: [2]
-    },
-    {
-      &quot;type_key&quot;: &quot;Array&quot;,
-      &quot;data&quot;: [3]
-    },
-    {
-      &quot;type_key&quot;: &quot;IntImm&quot;,
-      &quot;attrs&quot;: {
-        &quot;dtype&quot;: &quot;bool&quot;,
-        &quot;value&quot;: &quot;1&quot;
-      }
-    }
-  ],
-  &quot;b64ndarrays&quot;: [],
-  &quot;attrs&quot;: {&quot;tvm_version&quot;: &quot;0.8.dev0&quot;}
-}
 </pre></div>
 </div>
 <p>If we are building a GPU kernel, we can bind the rows of B to GPU threads.</p>
@@ -496,8 +434,7 @@ primfn(A_1: handle, B_1: handle) -&gt; ()
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre>#[version = &quot;0.0.5&quot;]
-primfn(A_1: handle, B_1: handle) -&gt; ()
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre>primfn(A_1: handle, B_1: handle) -&gt; ()
   attr = {&quot;global_symbol&quot;: &quot;main&quot;, &quot;tir.noalias&quot;: True}
   buffers = {B: Buffer(B_2: Pointer(float32), float32, [n: int32], [stride: int32], type=&quot;auto&quot;),
              A: Buffer(A_2: Pointer(float32), float32, [n, m: int32], [stride_1: int32, stride_2: int32], type=&quot;auto&quot;)}
@@ -518,36 +455,6 @@ primfn(A_1: handle, B_1: handle) -&gt; ()
     }
   }
 }
-
-#[metadata]
-{
-  &quot;root&quot;: 1,
-  &quot;nodes&quot;: [
-    {
-      &quot;type_key&quot;: &quot;&quot;
-    },
-    {
-      &quot;type_key&quot;: &quot;Map&quot;,
-      &quot;keys&quot;: [
-        &quot;IntImm&quot;
-      ],
-      &quot;data&quot;: [2]
-    },
-    {
-      &quot;type_key&quot;: &quot;Array&quot;,
-      &quot;data&quot;: [3]
-    },
-    {
-      &quot;type_key&quot;: &quot;IntImm&quot;,
-      &quot;attrs&quot;: {
-        &quot;dtype&quot;: &quot;bool&quot;,
-        &quot;value&quot;: &quot;1&quot;
-      }
-    }
-  ],
-  &quot;b64ndarrays&quot;: [],
-  &quot;attrs&quot;: {&quot;tvm_version&quot;: &quot;0.8.dev0&quot;}
-}
 </pre></div>
 </div>
 </div>
@@ -567,8 +474,7 @@ result B.rf. The factored dimension becomes the first dimension of B.rf.</p>
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre>#[version = &quot;0.0.5&quot;]
-primfn(A_1: handle, B_1: handle) -&gt; ()
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre>primfn(A_1: handle, B_1: handle) -&gt; ()
   attr = {&quot;global_symbol&quot;: &quot;main&quot;, &quot;tir.noalias&quot;: True}
   buffers = {B: Buffer(B_2: Pointer(float32), float32, [n: int32], [stride: int32], type=&quot;auto&quot;),
              A: Buffer(A_2: Pointer(float32), float32, [n, m: int32], [stride_1: int32, stride_2: int32], type=&quot;auto&quot;)}
@@ -592,36 +498,6 @@ primfn(A_1: handle, B_1: handle) -&gt; ()
       }
     }
   }
-}
-
-#[metadata]
-{
-  &quot;root&quot;: 1,
-  &quot;nodes&quot;: [
-    {
-      &quot;type_key&quot;: &quot;&quot;
-    },
-    {
-      &quot;type_key&quot;: &quot;Map&quot;,
-      &quot;keys&quot;: [
-        &quot;IntImm&quot;
-      ],
-      &quot;data&quot;: [2]
-    },
-    {
-      &quot;type_key&quot;: &quot;Array&quot;,
-      &quot;data&quot;: [3]
-    },
-    {
-      &quot;type_key&quot;: &quot;IntImm&quot;,
-      &quot;attrs&quot;: {
-        &quot;dtype&quot;: &quot;bool&quot;,
-        &quot;value&quot;: &quot;1&quot;
-      }
-    }
-  ],
-  &quot;b64ndarrays&quot;: [],
-  &quot;attrs&quot;: {&quot;tvm_version&quot;: &quot;0.8.dev0&quot;}
 }
 </pre></div>
 </div>
@@ -718,8 +594,7 @@ Here is an example for 2D convolution with filter size = [3, 3] and strides = [1
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre>#[version = &quot;0.0.5&quot;]
-primfn(Input_1: handle, Filter_1: handle, Output_1: handle) -&gt; ()
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre>primfn(Input_1: handle, Filter_1: handle, Output_1: handle) -&gt; ()
   attr = {&quot;global_symbol&quot;: &quot;main&quot;, &quot;tir.noalias&quot;: True}
   buffers = {Output: Buffer(Output_2: Pointer(float32), float32, [(n: int32 - 2), (n - 2)], []),
              Filter: Buffer(Filter_2: Pointer(float32), float32, [3, 3], []),
@@ -735,36 +610,6 @@ primfn(Input_1: handle, Filter_1: handle, Output_1: handle) -&gt; ()
       }
     }
   }
-}
-
-#[metadata]
-{
-  &quot;root&quot;: 1,
-  &quot;nodes&quot;: [
-    {
-      &quot;type_key&quot;: &quot;&quot;
-    },
-    {
-      &quot;type_key&quot;: &quot;Map&quot;,
-      &quot;keys&quot;: [
-        &quot;IntImm&quot;
-      ],
-      &quot;data&quot;: [2]
-    },
-    {
-      &quot;type_key&quot;: &quot;Array&quot;,
-      &quot;data&quot;: [3]
-    },
-    {
-      &quot;type_key&quot;: &quot;IntImm&quot;,
-      &quot;attrs&quot;: {
-        &quot;dtype&quot;: &quot;bool&quot;,
-        &quot;value&quot;: &quot;1&quot;
-      }
-    }
-  ],
-  &quot;b64ndarrays&quot;: [],
-  &quot;attrs&quot;: {&quot;tvm_version&quot;: &quot;0.8.dev0&quot;}
 }
 </pre></div>
 </div>
@@ -819,10 +664,10 @@ See <a class="reference internal" href="tuple_inputs.html#reduction-with-tuple-i
 
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="scan.html" class="btn btn-neutral float-right" title="Scan and Recurrent Kernel" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+        <a href="../optimize/opt_gemm.html" class="btn btn-neutral float-right" title="How to optimize GEMM on CPU" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
-        <a href="extern_op.html" class="btn btn-neutral float-left" title="External Tensor Functions" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+        <a href="tedd.html" class="btn btn-neutral float-left" title="Use Tensor Expression Debug Display (TEDD) for Visualization" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
       
     </div>
 

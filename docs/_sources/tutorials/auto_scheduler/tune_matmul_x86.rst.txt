@@ -11,7 +11,7 @@ Auto-scheduling matrix multiplication for CPU
 =============================================
 **Author**: `Lianmin Zheng <https://github.com/merrymercy>`_,             `Chengfan Jia <https://github.com/jcf94/>`_
 
-Different from the existing :ref:`autotvm <tutorials-autotvm-sec>` which relies on 
+Different from the template-based :ref:`autotvm <tutorials-autotvm-sec>` which relies on
 manual templates to define the search space, the auto-scheduler does not require any templates.
 Users only need to write the computation declaration without any schedule commands or templates.
 The auto-scheduler can automatically generate a large search space and
@@ -153,7 +153,7 @@ After some measurement trials, it will return the best schedule it found.
 
  .. code-block:: none
 
-    *T*T*T*T*T*T*T*T*T
+    *T*T*T*T*T*T*T*T*T*T
 
 
 
@@ -177,75 +177,32 @@ parallelization, vectorization, unrolling and operator fusion.
 
  .. code-block:: none
 
-    #[version = "0.0.5"]
     primfn(A_1: handle, B_1: handle, C_1: handle, out_1: handle) -> ()
       attr = {"global_symbol": "main", "tir.noalias": True}
       buffers = {out: Buffer(out_2: Pointer(float32), float32, [128, 128], []),
-                 B: Buffer(B_2: Pointer(float32), float32, [128, 128], []),
                  C: Buffer(C_2: Pointer(float32), float32, [128, 128], []),
+                 B: Buffer(B_2: Pointer(float32), float32, [128, 128], []),
                  A: Buffer(A_2: Pointer(float32), float32, [128, 128], [])}
       buffer_map = {A_1: A, B_1: B, C_1: C, out_1: out} {
       attr [matmul: Pointer(float32)] "storage_scope" = "global";
       allocate(matmul, float32, [16384]) {
-        for (i.outer.outer.inner: int32, 0, 2) {
-          for (j.outer.outer.inner: int32, 0, 2) {
-            for (j.outer.inner.init: int32, 0, 2) {
-              for (i.inner.init: int32, 0, 64) {
-                for (j.inner.init: int32, 0, 32) {
-                  matmul[(((((i.outer.outer.inner*8192) + (i.inner.init*128)) + (j.outer.outer.inner*64)) + (j.outer.inner.init*32)) + j.inner.init)] = 0f32
-                }
-              }
-            }
-            for (k.outer: int32, 0, 4) {
-              for (j.outer.inner: int32, 0, 2) {
-                for (k.inner: int32, 0, 32) {
-                  for (i.inner: int32, 0, 64) {
-                    for (j.inner: int32, 0, 32) {
-                      matmul[(((((i.outer.outer.inner*8192) + (i.inner*128)) + (j.outer.outer.inner*64)) + (j.outer.inner*32)) + j.inner)] = ((float32*)matmul[(((((i.outer.outer.inner*8192) + (i.inner*128)) + (j.outer.outer.inner*64)) + (j.outer.inner*32)) + j.inner)] + ((float32*)A_2[((((i.outer.outer.inner*8192) + (i.inner*128)) + (k.outer*32)) + k.inner)]*(float32*)B_2[(((((k.outer*4096) + (k.inner*128)) + (j.outer.outer.inner*64)) + (j.outer.inner*32)) + j.inner)]))
-                    }
-                  }
-                }
-              }
+        for (i: int32, 0, 128) {
+          for (j: int32, 0, 128) {
+            matmul[((i*128) + j)] = 0f32
+            for (k: int32, 0, 128) {
+              matmul[((i*128) + j)] = ((float32*)matmul[((i*128) + j)] + ((float32*)A_2[((i*128) + k)]*(float32*)B_2[((k*128) + j)]))
             }
           }
         }
-        for (i.inner_1: int32, 0, 128) {
-          for (j.inner_1: int32, 0, 128) {
-            out_2[((i.inner_1*128) + j.inner_1)] = ((float32*)matmul[((i.inner_1*128) + j.inner_1)] + (float32*)C_2[((i.inner_1*128) + j.inner_1)])
+        for (i_1: int32, 0, 128) {
+          for (j_1: int32, 0, 128) {
+            out_2[((i_1*128) + j_1)] = ((float32*)matmul[((i_1*128) + j_1)] + (float32*)C_2[((i_1*128) + j_1)])
           }
         }
       }
     }
 
-    #[metadata]
-    {
-      "root": 1, 
-      "nodes": [
-        {
-          "type_key": ""
-        }, 
-        {
-          "type_key": "Map", 
-          "keys": [
-            "IntImm"
-          ], 
-          "data": [2]
-        }, 
-        {
-          "type_key": "Array", 
-          "data": [3]
-        }, 
-        {
-          "type_key": "IntImm", 
-          "attrs": {
-            "dtype": "bool", 
-            "value": "1"
-          }
-        }
-      ], 
-      "b64ndarrays": [], 
-      "attrs": {"tvm_version": "0.8.dev0"}
-    }
+
 
 
 
@@ -291,7 +248,7 @@ We build the binary and check its correctness and performance.
 
  .. code-block:: none
 
-    Execution time of this operator: 0.229 ms
+    Execution time of this operator: 2.209 ms
 
 
 
@@ -407,7 +364,7 @@ In the example below we resume the status and do more 5 trials.
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** ( 1 minutes  44.820 seconds)
+   **Total running time of the script:** ( 1 minutes  54.000 seconds)
 
 
 .. _sphx_glr_download_tutorials_auto_scheduler_tune_matmul_x86.py:

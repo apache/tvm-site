@@ -10,7 +10,6 @@ sourcesIndex["string"] = {"name":"","files":["string.rs"]};
 sourcesIndex["test_rt_nn"] = {"name":"","files":["main.rs"]};
 sourcesIndex["test_rt_tvm_basic"] = {"name":"","files":["main.rs"]};
 sourcesIndex["test_rt_tvm_dso"] = {"name":"","files":["main.rs"]};
-sourcesIndex["test_rt_wasm32"] = {"name":"","files":["main.rs"]};
 sourcesIndex["tvm"] = {"name":"","dirs":[{"name":"ir","dirs":[{"name":"diagnostics","files":["codespan.rs","mod.rs"]},{"name":"relay","dirs":[{"name":"attrs","files":["mod.rs","nn.rs","transform.rs"]}],"files":["mod.rs"]}],"files":["arith.rs","attrs.rs","expr.rs","function.rs","mod.rs","module.rs","op.rs","source_map.rs","span.rs","tir.rs","ty.rs"]},{"name":"runtime","files":["graph_rt.rs","mod.rs"]}],"files":["lib.rs","python.rs","transform.rs"]};
 sourcesIndex["tvm_graph_rt"] = {"name":"","dirs":[{"name":"module","files":["dso.rs","mod.rs","syslib.rs"]}],"files":["allocator.rs","array.rs","errors.rs","graph.rs","lib.rs","threading.rs","workspace.rs"]};
 sourcesIndex["tvm_macros"] = {"name":"","files":["external.rs","import_module.rs","lib.rs","object.rs","util.rs"]};

@@ -449,6 +449,44 @@
 <span id="448">448</span>
 <span id="449">449</span>
 <span id="450">450</span>
+<span id="451">451</span>
+<span id="452">452</span>
+<span id="453">453</span>
+<span id="454">454</span>
+<span id="455">455</span>
+<span id="456">456</span>
+<span id="457">457</span>
+<span id="458">458</span>
+<span id="459">459</span>
+<span id="460">460</span>
+<span id="461">461</span>
+<span id="462">462</span>
+<span id="463">463</span>
+<span id="464">464</span>
+<span id="465">465</span>
+<span id="466">466</span>
+<span id="467">467</span>
+<span id="468">468</span>
+<span id="469">469</span>
+<span id="470">470</span>
+<span id="471">471</span>
+<span id="472">472</span>
+<span id="473">473</span>
+<span id="474">474</span>
+<span id="475">475</span>
+<span id="476">476</span>
+<span id="477">477</span>
+<span id="478">478</span>
+<span id="479">479</span>
+<span id="480">480</span>
+<span id="481">481</span>
+<span id="482">482</span>
+<span id="483">483</span>
+<span id="484">484</span>
+<span id="485">485</span>
+<span id="486">486</span>
+<span id="487">487</span>
+<span id="488">488</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="comment">/*
  * Licensed to the Apache Software Foundation (ASF) under one
@@ -471,6 +509,7 @@
 
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">convert</span>::<span class="ident">TryFrom</span>;
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">ffi</span>::<span class="ident">CString</span>;
+<span class="kw">use</span> <span class="ident">std</span>::<span class="ident">fmt</span>;
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">ptr</span>::<span class="ident">NonNull</span>;
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">sync</span>::<span class="ident">atomic</span>::<span class="ident">AtomicI32</span>;
 
@@ -599,6 +638,18 @@
     }
 }
 
+<span class="comment">// impl fmt::Debug for Object {</span>
+<span class="comment">//     fn fmt(&amp;self, f: &amp;mut fmt::Formatter&lt;&#39;_&gt;) -&gt; fmt::Result {</span>
+<span class="comment">//         let index =</span>
+<span class="comment">//             format!(&quot;{} // key: {}&quot;, self.type_index, &quot;the_key&quot;);</span>
+
+<span class="comment">//         f.debug_struct(&quot;Object&quot;)</span>
+<span class="comment">//          .field(&quot;type_index&quot;, &amp;index)</span>
+<span class="comment">//          // TODO(@jroesch: do we expose other fields?)</span>
+<span class="comment">//          .finish()</span>
+<span class="comment">//     }</span>
+<span class="comment">// }</span>
+
 <span class="doccomment">/// An unsafe trait which should be implemented for an object</span>
 <span class="doccomment">/// subtype.</span>
 <span class="doccomment">///</span>
@@ -606,7 +657,7 @@
 <span class="doccomment">/// index, a method for accessing the base object given the</span>
 <span class="doccomment">/// subtype, and a typed delete method which is specialized</span>
 <span class="doccomment">/// to the subtype.</span>
-<span class="kw">pub</span> <span class="kw">unsafe</span> <span class="kw">trait</span> <span class="ident">IsObject</span>: <span class="ident">AsRef</span><span class="op">&lt;</span><span class="ident">Object</span><span class="op">&gt;</span> {
+<span class="kw">pub</span> <span class="kw">unsafe</span> <span class="kw">trait</span> <span class="ident">IsObject</span>: <span class="ident">AsRef</span><span class="op">&lt;</span><span class="ident">Object</span><span class="op">&gt;</span> <span class="op">+</span> <span class="ident">std</span>::<span class="ident">fmt</span>::<span class="ident">Debug</span> {
     <span class="kw">const</span> <span class="ident">TYPE_KEY</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> <span class="ident">str</span>;
 
     <span class="kw">unsafe</span> <span class="kw">extern</span> <span class="string">&quot;C&quot;</span> <span class="kw">fn</span> <span class="ident">typed_delete</span>(<span class="ident">object</span>: <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="self">Self</span>) {
@@ -716,6 +767,13 @@
     }
 }
 
+<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span>: <span class="ident">IsObject</span><span class="op">&gt;</span> <span class="ident">fmt</span>::<span class="ident">Debug</span> <span class="kw">for</span> <span class="ident">ObjectPtr</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">fmt</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">f</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">fmt</span>::<span class="ident">Formatter</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span>) <span class="op">-&gt;</span> <span class="ident">fmt</span>::<span class="prelude-ty">Result</span> {
+        <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">ops</span>::<span class="ident">Deref</span>;
+        <span class="macro">write</span><span class="macro">!</span>(<span class="ident">f</span>, <span class="string">&quot;{:?}&quot;</span>, <span class="self">self</span>.<span class="ident">deref</span>())
+    }
+}
+
 <span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">T</span>: <span class="ident">IsObject</span><span class="op">&gt;</span> <span class="ident">From</span><span class="op">&lt;</span><span class="ident">ObjectPtr</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;&gt;</span> <span class="kw">for</span> <span class="ident">RetValue</span> {
     <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">object_ptr</span>: <span class="ident">ObjectPtr</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>) <span class="op">-&gt;</span> <span class="ident">RetValue</span> {
         <span class="kw">let</span> <span class="ident">raw_object_ptr</span> <span class="op">=</span> <span class="ident">ObjectPtr</span>::<span class="ident">leak</span>(<span class="ident">object_ptr</span>) <span class="kw">as</span> <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">T</span> <span class="kw">as</span> <span class="kw-2">*</span><span class="kw-2">mut</span> <span class="ident">std</span>::<span class="ident">ffi</span>::<span class="ident">c_void</span>;
@@ -793,6 +851,24 @@
         }
     }
 }
+
+<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span>: <span class="ident">IsObject</span><span class="op">&gt;</span> <span class="ident">std</span>::<span class="ident">hash</span>::<span class="ident">Hash</span> <span class="kw">for</span> <span class="ident">ObjectPtr</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">hash</span><span class="op">&lt;</span><span class="ident">H</span>: <span class="ident">std</span>::<span class="ident">hash</span>::<span class="ident">Hasher</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">state</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">H</span>) {
+        <span class="ident">state</span>.<span class="ident">write_i64</span>(
+            <span class="kw">super</span>::<span class="ident">structural_hash</span>(<span class="ident">ObjectRef</span>(<span class="prelude-val">Some</span>(<span class="self">self</span>.<span class="ident">clone</span>().<span class="ident">upcast</span>())), <span class="bool-val">false</span>).<span class="ident">unwrap</span>(),
+        )
+    }
+}
+
+<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span>: <span class="ident">IsObject</span><span class="op">&gt;</span> <span class="ident">PartialEq</span> <span class="kw">for</span> <span class="ident">ObjectPtr</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">eq</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">other</span>: <span class="kw-2">&amp;</span><span class="self">Self</span>) <span class="op">-&gt;</span> <span class="ident">bool</span> {
+        <span class="kw">let</span> <span class="ident">lhs</span> <span class="op">=</span> <span class="ident">ObjectRef</span>(<span class="prelude-val">Some</span>(<span class="self">self</span>.<span class="ident">clone</span>().<span class="ident">upcast</span>()));
+        <span class="kw">let</span> <span class="ident">rhs</span> <span class="op">=</span> <span class="ident">ObjectRef</span>(<span class="prelude-val">Some</span>(<span class="ident">other</span>.<span class="ident">clone</span>().<span class="ident">upcast</span>()));
+        <span class="kw">super</span>::<span class="ident">structural_equal</span>(<span class="ident">lhs</span>, <span class="ident">rhs</span>, <span class="bool-val">false</span>, <span class="bool-val">false</span>).<span class="ident">unwrap</span>()
+    }
+}
+
+<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span>: <span class="ident">IsObject</span><span class="op">&gt;</span> <span class="ident">Eq</span> <span class="kw">for</span> <span class="ident">ObjectPtr</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> {}
 
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">test</span>)]</span>
 <span class="kw">mod</span> <span class="ident">tests</span> {

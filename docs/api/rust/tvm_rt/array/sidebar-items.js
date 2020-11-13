@@ -1,1 +1,1 @@
-initSidebarItems({"fn":[["array_get_item",""],["array_size",""]],"struct":[["Array",""],["IntoIter",""]]});
+initSidebarItems({"struct":[["Array",""],["IntoIter",""]]});

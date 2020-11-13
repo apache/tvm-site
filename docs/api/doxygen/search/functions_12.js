@@ -1,6 +1,6 @@
 var searchData=
 [
-  ['ramp',['Ramp',['../classtvm_1_1tir_1_1Ramp.html#a6432818d5f801e3adbb8d587b75b7ff5',1,'tvm::tir::Ramp']]],
+  ['ramp',['Ramp',['../classtvm_1_1tir_1_1Ramp.html#ad5a1ca5d32edf9e016e03366381bc693',1,'tvm::tir::Ramp']]],
   ['randommodel',['RandomModel',['../classtvm_1_1auto__scheduler_1_1RandomModel.html#aa456abf1dc91cbf76935189424d8954f',1,'tvm::auto_scheduler::RandomModel::RandomModel()'],['../classtvm_1_1auto__scheduler_1_1RandomModel.html#ac2b355e61135f2ff57d4f96fe2fba845',1,'tvm::auto_scheduler::RandomModel::RandomModel(::tvm::runtime::ObjectPtr&lt;::tvm::runtime::Object &gt; n)']]],
   ['range',['Range',['../classtvm_1_1Range.html#abc08435178fe9ac6ab83db6c9025757c',1,'tvm::Range']]],
   ['rangenode',['RangeNode',['../classtvm_1_1RangeNode.html#ab845f7ed4ed85e360b730df3450d1aab',1,'tvm::RangeNode::RangeNode()'],['../classtvm_1_1RangeNode.html#a6ee2e11a496cc52627354fd90f00e2a0',1,'tvm::RangeNode::RangeNode(PrimExpr min, PrimExpr extent)']]],
@@ -18,7 +18,7 @@ var searchData=
   ['receiver',['Receiver',['../classtvm_1_1runtime_1_1micro__rpc_1_1Session.html#a4d068350809f475e3ffeefee0197d6c4',1,'tvm::runtime::micro_rpc::Session']]],
   ['recordreader',['RecordReader',['../classtvm_1_1auto__scheduler_1_1RecordReader.html#a37bd4d69ea3098678c40c1ddd474ea6e',1,'tvm::auto_scheduler::RecordReader']]],
   ['recordtofile',['RecordToFile',['../classtvm_1_1auto__scheduler_1_1RecordToFile.html#a66f2e5f70b3058a9491ffbbbd4a05f0c',1,'tvm::auto_scheduler::RecordToFile']]],
-  ['reduce',['Reduce',['../classtvm_1_1tir_1_1Reduce.html#a0b1a98d39289b6392e5e637b0a778a2c',1,'tvm::tir::Reduce']]],
+  ['reduce',['Reduce',['../classtvm_1_1tir_1_1Reduce.html#a91b058085155b5a548226bcd9feced03',1,'tvm::tir::Reduce']]],
   ['reduce_5faxis',['reduce_axis',['../namespacetvm_1_1te.html#aae384e9b73c2271905486e4a74b69265',1,'tvm::te']]],
   ['refcreate',['RefCreate',['../classtvm_1_1relay_1_1RefCreate.html#ae4d23ea5efe119f3f191162bcfeddeb2',1,'tvm::relay::RefCreate']]],
   ['refread',['RefRead',['../classtvm_1_1relay_1_1RefRead.html#ae00e55b7051c34f3f2a57f4566913071',1,'tvm::relay::RefRead']]],
