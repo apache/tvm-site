@@ -15,6 +15,7 @@ var searchData=
   ['addimplementation',['AddImplementation',['../classtvm_1_1relay_1_1OpSpecialization.html#ac76d48fb032a2e732a4309dc0ce7a636',1,'tvm::relay::OpSpecialization::AddImplementation()'],['../classtvm_1_1relay_1_1OpStrategy.html#a3d389c44571d9b3e5a6135f22b8a7bf3',1,'tvm::relay::OpStrategy::AddImplementation()']]],
   ['address_5fof',['address_of',['../namespacetvm_1_1tir_1_1builtin.html#a700b7018f2c1f1fba8b4e28f264d8bbb',1,'tvm::tir::builtin']]],
   ['addressof',['AddressOf',['../classtvm_1_1runtime_1_1InplaceArrayBase.html#ae4f845e2695ce301c6c3916a6e280c49',1,'tvm::runtime::InplaceArrayBase']]],
+  ['addrpcsessionmask',['AddRPCSessionMask',['../namespacetvm_1_1runtime.html#a409b50f5d118a11f7a9f234498be7c27',1,'tvm::runtime']]],
   ['addtag',['AddTag',['../classtvm_1_1TargetTag.html#a467b19e6f2764e006f6ed412e3a8b48c',1,'tvm::TargetTag']]],
   ['addtypedef',['AddTypeDef',['../classtvm_1_1IRModuleNode.html#a4284c66981befd976af5deadaca2b7f6',1,'tvm::IRModuleNode']]],
   ['addtypedefunchecked',['AddTypeDefUnchecked',['../classtvm_1_1IRModuleNode.html#a1c4aaf62ebed8952d523c3e832051299',1,'tvm::IRModuleNode']]],

@@ -57,6 +57,7 @@ var searchData=
   ['getrealaxis',['GetRealAxis',['../namespacetvm_1_1topi.html#aa45cdc15f72e867eff29c74b2dffd185',1,'tvm::topi']]],
   ['getref',['GetRef',['../namespacetvm_1_1runtime.html#aa4a97de4fefd23aa5942c6a545544a05',1,'tvm::runtime::GetRef(const ObjectType *ptr)'],['../namespacetvm_1_1runtime.html#af63300957592e8991c18c54703123ef7',1,'tvm::runtime::GetRef(const ObjType *ptr)']]],
   ['getreprbytes',['GetReprBytes',['../classtvm_1_1ReflectionVTable.html#acc577dacd480beaee8f905bab8d2029c',1,'tvm::ReflectionVTable']]],
+  ['getrpcsessionindex',['GetRPCSessionIndex',['../namespacetvm_1_1runtime.html#a9ac54b0d7a3e3c22fd0ddef0a731cfd5',1,'tvm::runtime']]],
   ['getruntimedatatype',['GetRuntimeDataType',['../namespacetvm.html#a0447e9aa45f6cab707f6dc9f9281b3f5',1,'tvm']]],
   ['getshape',['GetShape',['../classtvm_1_1te_1_1TensorNode.html#a35df267780880731a051773b2dca7bbd',1,'tvm::te::TensorNode::GetShape()'],['../classtvm_1_1tir_1_1DataProducerNode.html#aa44d3146c9f543538a32dfd954512bf7',1,'tvm::tir::DataProducerNode::GetShape()']]],
   ['getsigntype',['GetSignType',['../classtvm_1_1arith_1_1IntSet.html#a651c7689d1da9b8f931312ffd6954dbd',1,'tvm::arith::IntSet']]],

@@ -89,6 +89,7 @@ var searchData=
   ['ispragmakey',['IsPragmaKey',['../namespacetvm_1_1tir_1_1attr.html#a385e883a7cecc309d063786e5fdf2c4b',1,'tvm::tir::attr']]],
   ['isprimal',['IsPrimal',['../classtvm_1_1tir_1_1LayoutAxis.html#a13e11bef75e29b71977779124f72e1b9',1,'tvm::tir::LayoutAxis']]],
   ['isprimitiveop',['IsPrimitiveOp',['../classtvm_1_1OpNode.html#a285c8dc0ccec2ca34386271d1b338506',1,'tvm::OpNode::IsPrimitiveOp()'],['../namespacetvm.html#a8259e23409eda017c6bde908e050b670',1,'tvm::IsPrimitiveOp()']]],
+  ['isrpcsessioncontext',['IsRPCSessionContext',['../namespacetvm_1_1runtime.html#af2a8f6198750ead46feeb72ef4f9de4c',1,'tvm::runtime']]],
   ['issimpleaccess',['IsSimpleAccess',['../classtvm_1_1auto__scheduler_1_1AccessAnalyzer.html#a9a059e6b4d9a04a700c9bf5ed72db7d1',1,'tvm::auto_scheduler::AccessAnalyzer']]],
   ['issinglepoint',['IsSinglePoint',['../classtvm_1_1arith_1_1IntSet.html#a7422ed5fde1738b2930af58666f9a946',1,'tvm::arith::IntSet']]],
   ['isstrictlyinlineable',['IsStrictlyInlineable',['../classtvm_1_1auto__scheduler_1_1AccessAnalyzer.html#a77b7f4c645c1d5f1bbf64417d718a3ce',1,'tvm::auto_scheduler::AccessAnalyzer']]],

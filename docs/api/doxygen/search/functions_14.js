@@ -148,6 +148,7 @@ var searchData=
   ['tvmpackedfunc_5finitmodulefunc',['TVMPackedFunc_InitModuleFunc',['../crt_2packed__func_8h.html#a65f35e3b3f521d105d7aa71347135efd',1,'packed_func.h']]],
   ['tvmpackedfunc_5fsetargs',['TVMPackedFunc_SetArgs',['../crt_2packed__func_8h.html#af145c1c723cc05360ab7b66bcf6f435e',1,'packed_func.h']]],
   ['tvmplatformabort',['TVMPlatformAbort',['../platform_8h.html#a47980e4ea2182978f94ca87cc15ca0c8',1,'platform.h']]],
+  ['tvmplatformformatmessage',['TVMPlatformFormatMessage',['../platform_8h.html#a6dfecb024ace62e724817f90b6407285',1,'platform.h']]],
   ['tvmpodvalue_5f',['TVMPODValue_',['../classtvm_1_1runtime_1_1TVMPODValue__.html#a2f46b59a6c1d5eb4575d7f583b5f1a0c',1,'tvm::runtime::TVMPODValue_::TVMPODValue_()'],['../classtvm_1_1runtime_1_1TVMPODValue__.html#afe1837bdbafe8341c2031c5cebcf6e74',1,'tvm::runtime::TVMPODValue_::TVMPODValue_(TVMValue value, int type_code)']]],
   ['tvmretvalue',['TVMRetValue',['../classtvm_1_1runtime_1_1TVMRetValue.html#a77455a8fe7d27b90a01a64f1cd28e9ec',1,'tvm::runtime::TVMRetValue::TVMRetValue()'],['../classtvm_1_1runtime_1_1TVMRetValue.html#ac4a3850c0989e7c2d5cd8e0f096d0997',1,'tvm::runtime::TVMRetValue::TVMRetValue(TVMRetValue &amp;&amp;other)'],['../classtvm_1_1runtime_1_1TVMRetValue.html#ab86bf21f214fca72e73a7f6e20ffab8d',1,'tvm::runtime::TVMRetValue::TVMRetValue(const TVMRetValue &amp;other)']]],
   ['tvmsetstream',['TVMSetStream',['../c__runtime__api_8h.html#ac414ed248ddb1bfb561685bba3de5e89',1,'c_runtime_api.h']]],
