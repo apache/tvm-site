@@ -5,6 +5,7 @@ var searchData=
   ['backwardindex',['BackwardIndex',['../classtvm_1_1tir_1_1BijectiveLayout.html#adc3e54d180453d66e64281c425c880e9',1,'tvm::tir::BijectiveLayout']]],
   ['backwardshape',['BackwardShape',['../classtvm_1_1tir_1_1BijectiveLayout.html#a7324c045c1d7293a9d137ab585acb3f2',1,'tvm::tir::BijectiveLayout']]],
   ['basicblocknormalformcheck',['BasicBlockNormalFormCheck',['../namespacetvm_1_1relay.html#ae213c1d2fac14b9fa66d5d41bd261d80',1,'tvm::relay']]],
+  ['batch_5fto_5fspace_5fnd',['batch_to_space_nd',['../namespacetvm_1_1topi.html#a1caea8117d7ed6ef9ebcae1aa57cdbd0',1,'tvm::topi']]],
   ['begin',['begin',['../classtvm_1_1MapNode.html#afb5d2590e832ce7cf72523daf2727824',1,'tvm::MapNode::begin()'],['../classtvm_1_1SmallMapNode.html#afcc67ac4b1528ea73541ee46ed360c01',1,'tvm::SmallMapNode::begin()'],['../classtvm_1_1DenseMapNode.html#a7f0a1799de5b5a4940d9eb023d410eb4',1,'tvm::DenseMapNode::begin()'],['../classtvm_1_1Map.html#abd05e398b026981426bce7c45c51e0aa',1,'tvm::Map::begin()'],['../classtvm_1_1runtime_1_1ArrayNode.html#a1e04749fe10a9fe51b7c57d26aeab624',1,'tvm::runtime::ArrayNode::begin()'],['../classtvm_1_1runtime_1_1Array.html#aeb925b9403c944e8c8c9f3934b48de4f',1,'tvm::runtime::Array::begin()']]],
   ['bf16legalize',['BF16Legalize',['../namespacetvm_1_1tir_1_1transform.html#a2d253fffbff469622fa63c52dff89352',1,'tvm::tir::transform']]],
   ['bias_5fadd',['bias_add',['../namespacetvm_1_1topi_1_1nn.html#a258f660698c476e2ac7e7f78b32ad6ba',1,'tvm::topi::nn']]],

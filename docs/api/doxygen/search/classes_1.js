@@ -11,6 +11,7 @@ var searchData=
   ['basevalueequal',['BaseValueEqual',['../classtvm_1_1BaseValueEqual.html',1,'tvm']]],
   ['basevaluehash',['BaseValueHash',['../classtvm_1_1BaseValueHash.html',1,'tvm']]],
   ['batchnormattrs',['BatchNormAttrs',['../structtvm_1_1relay_1_1BatchNormAttrs.html',1,'tvm::relay']]],
+  ['batchtospacendattrs',['BatchToSpaceNDAttrs',['../structtvm_1_1relay_1_1BatchToSpaceNDAttrs.html',1,'tvm::relay']]],
   ['biasaddattrs',['BiasAddAttrs',['../structtvm_1_1relay_1_1BiasAddAttrs.html',1,'tvm::relay']]],
   ['bijectivelayout',['BijectiveLayout',['../classtvm_1_1tir_1_1BijectiveLayout.html',1,'tvm::tir']]],
   ['bijectivelayoutnode',['BijectiveLayoutNode',['../classtvm_1_1tir_1_1BijectiveLayoutNode.html',1,'tvm::tir']]],

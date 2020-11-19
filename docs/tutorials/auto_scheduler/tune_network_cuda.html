@@ -398,10 +398,10 @@ for convolutional neural networks, so we use NHWC layout in this tutorial.</p>
             <span class="n">batch_size</span><span class="o">=</span><span class="n">batch_size</span><span class="p">,</span> <span class="n">layout</span><span class="o">=</span><span class="n">layout</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">,</span> <span class="n">image_shape</span><span class="o">=</span><span class="n">image_shape</span>
         <span class="p">)</span>
     <span class="k">elif</span> <span class="n">name</span> <span class="o">==</span> <span class="s2">&quot;squeezenet_v1.1&quot;</span><span class="p">:</span>
+        <span class="k">assert</span> <span class="n">layout</span> <span class="o">==</span> <span class="s2">&quot;NCHW&quot;</span><span class="p">,</span> <span class="s2">&quot;squeezenet_v1.1 only supports NCHW layout&quot;</span>
         <span class="n">mod</span><span class="p">,</span> <span class="n">params</span> <span class="o">=</span> <a href="../../api/python/relay/testing.html#tvm.relay.testing.squeezenet.get_workload" title="View documentation for tvm.relay.testing.squeezenet.get_workload"><span class="n">relay</span><span class="o">.</span><span class="n">testing</span><span class="o">.</span><span class="n">squeezenet</span><span class="o">.</span><span class="n">get_workload</span></a><span class="p">(</span>
             <span class="n">version</span><span class="o">=</span><span class="s2">&quot;1.1&quot;</span><span class="p">,</span>
             <span class="n">batch_size</span><span class="o">=</span><span class="n">batch_size</span><span class="p">,</span>
-            <span class="n">layout</span><span class="o">=</span><span class="n">layout</span><span class="p">,</span>
             <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">,</span>
             <span class="n">image_shape</span><span class="o">=</span><span class="n">image_shape</span><span class="p">,</span>
         <span class="p">)</span>
@@ -444,10 +444,7 @@ By using the weight, we can approximate the end-to-end latency of the network
 as <code class="code docutils literal notranslate"><span class="pre">sum(latency[t]</span> <span class="pre">*</span> <span class="pre">weight[t])</span></code>, where <code class="code docutils literal notranslate"><span class="pre">latency[t]</span></code> is the
 latency of a task and <code class="code docutils literal notranslate"><span class="pre">weight[t]</span></code> is the weight of the task.
 The task scheduler will just optimize this objective.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span class="c1"># Enable auto-scheduler in relay</span>
-<a href="../../api/python/auto_scheduler.html#tvm.auto_scheduler.enable_relay_integration" title="View documentation for tvm.auto_scheduler.enable_relay_integration"><span class="n">auto_scheduler</span><span class="o">.</span><span class="n">enable_relay_integration</span></a><span class="p">()</span>
-
-<span class="c1"># Extract tasks from the network</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span class="c1"># Extract tasks from the network</span>
 <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Extract tasks...&quot;</span><span class="p">)</span>
 <span class="n">mod</span><span class="p">,</span> <span class="n">params</span><span class="p">,</span> <span class="n">input_shape</span><span class="p">,</span> <span class="n">output_shape</span> <span class="o">=</span> <span class="n">get_network</span><span class="p">(</span><span class="n">network</span><span class="p">,</span> <span class="n">batch_size</span><span class="p">,</span> <span class="n">layout</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">)</span>
 <span class="n">tasks</span><span class="p">,</span> <span class="n">task_weights</span> <span class="o">=</span> <a href="../../api/python/auto_scheduler.html#tvm.auto_scheduler.extract_tasks" title="View documentation for tvm.auto_scheduler.extract_tasks"><span class="n">auto_scheduler</span><span class="o">.</span><span class="n">extract_tasks</span></a><span class="p">(</span><span class="n">mod</span><span class="p">[</span><span class="s2">&quot;main&quot;</span><span class="p">],</span> <span class="n">params</span><span class="p">,</span> <span class="n">target</span><span class="p">)</span>
@@ -459,14 +456,26 @@ The task scheduler will just optimize this objective.</p>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
 <div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre>Extract tasks...
-========== Task 0  (workload key: [&quot;d09dc1a6bb90d59c91b68989ad3492ff&quot;]) ==========
+========== Task 0  (workload key: [&quot;b32ed43fb351136894c322ee49097a1a&quot;]) ==========
+placeholder = PLACEHOLDER [1, 1000]
+T_softmax_maxelem(i0) max= placeholder[i0, k]
+T_softmax_exp(i0, i1) = tir.exp((placeholder[i0, i1] - T_softmax_maxelem[i0]))
+T_softmax_expsum(i0) += T_softmax_exp[i0, k]
+T_softmax_norm(i0, i1) = (T_softmax_exp[i0, i1]/T_softmax_expsum[i0])
+
+========== Task 1  (workload key: [&quot;d09dc1a6bb90d59c91b68989ad3492ff&quot;]) ==========
 placeholder = PLACEHOLDER [1, 512]
 placeholder = PLACEHOLDER [1000, 512]
 T_dense(i, j) += (placeholder[i, k]*placeholder[j, k])
 placeholder = PLACEHOLDER [1000]
 T_add(ax0, ax1) = (T_dense[ax0, ax1] + placeholder[ax1])
 
-========== Task 1  (workload key: [&quot;8d5a93959138dc7b2ee1f1b3219dfa14&quot;]) ==========
+========== Task 2  (workload key: [&quot;7de313da0ca29a8c63f647791692430d&quot;]) ==========
+placeholder = PLACEHOLDER [1, 7, 7, 512]
+tensor(ax0, ax1, ax2, ax3) += placeholder[ax0, ((ax1*7) + rv0), ((ax2*7) + rv1), ax3]
+tensor(ax0, ax1, ax2, ax3) = (tensor[ax0, ax1, ax2, ax3]/(float32((select((bool)1, ((ax1 + 1)*7), (((ax1 + 1)*7) + 1)) - (ax1*7)))*float32((select((bool)1, ((ax2 + 1)*7), (((ax2 + 1)*7) + 1)) - (ax2*7)))))
+
+========== Task 3  (workload key: [&quot;8d5a93959138dc7b2ee1f1b3219dfa14&quot;]) ==========
 placeholder = PLACEHOLDER [1, 7, 7, 512]
 data_pad(i0, i1, i2, i3) = tir.if_then_else(((((i1 &gt;= 1) &amp;&amp; (i1 &lt; 8)) &amp;&amp; (i2 &gt;= 1)) &amp;&amp; (i2 &lt; 8)), placeholder[i0, (i1 - 1), (i2 - 1), i3], 0f)
 input_tile(eps, nu, p, ci) = data_pad[floordiv(p, 16), ((floormod(floordiv(p, 4), 4)*2) + eps), ((floormod(p, 4)*2) + nu), ci]
@@ -485,7 +494,7 @@ placeholder = PLACEHOLDER [1, 1, 1, 512]
 T_add(ax0, ax1, ax2, ax3) = (T_multiply[ax0, ax1, ax2, ax3] + placeholder[ax0, 0, 0, ax3])
 T_relu(ax0, ax1, ax2, ax3) = max(T_add[ax0, ax1, ax2, ax3], 0f)
 
-========== Task 2  (workload key: [&quot;ac6920940de3797cc3f9f9c260675e5d&quot;]) ==========
+========== Task 4  (workload key: [&quot;ac6920940de3797cc3f9f9c260675e5d&quot;]) ==========
 placeholder = PLACEHOLDER [1, 7, 7, 512]
 data_pad(i0, i1, i2, i3) = tir.if_then_else(((((i1 &gt;= 1) &amp;&amp; (i1 &lt; 8)) &amp;&amp; (i2 &gt;= 1)) &amp;&amp; (i2 &lt; 8)), placeholder[i0, (i1 - 1), (i2 - 1), i3], 0f)
 input_tile(eps, nu, p, ci) = data_pad[floordiv(p, 16), ((floormod(floordiv(p, 4), 4)*2) + eps), ((floormod(p, 4)*2) + nu), ci]
@@ -500,7 +509,7 @@ placeholder = PLACEHOLDER [1, 1, 1, 512]
 T_add(ax0, ax1, ax2, ax3) = (conv2d_winograd[ax0, ax1, ax2, ax3] + placeholder[ax0, 0, 0, ax3])
 T_relu(ax0, ax1, ax2, ax3) = max(T_add[ax0, ax1, ax2, ax3], 0f)
 
-========== Task 3  (workload key: [&quot;7e83a2ee5cd5d50282ed19310700046a&quot;]) ==========
+========== Task 5  (workload key: [&quot;7e83a2ee5cd5d50282ed19310700046a&quot;]) ==========
 placeholder = PLACEHOLDER [1, 7, 7, 512]
 data_pad(i0, i1, i2, i3) = tir.if_then_else(((((i1 &gt;= 1) &amp;&amp; (i1 &lt; 8)) &amp;&amp; (i2 &gt;= 1)) &amp;&amp; (i2 &lt; 8)), placeholder[i0, (i1 - 1), (i2 - 1), i3], 0f)
 input_tile(eps, nu, p, ci) = data_pad[floordiv(p, 16), ((floormod(floordiv(p, 4), 4)*2) + eps), ((floormod(p, 4)*2) + nu), ci]
@@ -514,7 +523,7 @@ conv2d_winograd(n, h, w, co) = inverse[floormod(h, 2), floormod(w, 2), ((((n*4)*
 placeholder = PLACEHOLDER [1, 7, 7, 512]
 T_add(ax0, ax1, ax2, ax3) = (conv2d_winograd[ax0, ax1, ax2, ax3] + placeholder[ax0, ax1, ax2, ax3])
 
-========== Task 4  (workload key: [&quot;1f6cd3637ec856bf5cf5010a623eed05&quot;]) ==========
+========== Task 6  (workload key: [&quot;1f6cd3637ec856bf5cf5010a623eed05&quot;]) ==========
 placeholder = PLACEHOLDER [1, 14, 14, 256]
 PaddedInput(i0, i1, i2, i3) = tir.if_then_else(((((i1 &gt;= 1) &amp;&amp; (i1 &lt; 15)) &amp;&amp; (i2 &gt;= 1)) &amp;&amp; (i2 &lt; 15)), placeholder[i0, (i1 - 1), (i2 - 1), i3], 0f)
 placeholder = PLACEHOLDER [3, 3, 256, 512]
@@ -523,7 +532,7 @@ placeholder = PLACEHOLDER [1, 1, 1, 512]
 T_add(ax0, ax1, ax2, ax3) = (Conv2dOutput[ax0, ax1, ax2, ax3] + placeholder[ax0, 0, 0, ax3])
 T_relu(ax0, ax1, ax2, ax3) = max(T_add[ax0, ax1, ax2, ax3], 0f)
 
-========== Task 5  (workload key: [&quot;424ba83160af31badc0b098136e1a3b0&quot;]) ==========
+========== Task 7  (workload key: [&quot;424ba83160af31badc0b098136e1a3b0&quot;]) ==========
 placeholder = PLACEHOLDER [1, 14, 14, 256]
 data_pad(i0, i1, i2, i3) = tir.if_then_else(((((i1 &gt;= 1) &amp;&amp; (i1 &lt; 15)) &amp;&amp; (i2 &gt;= 1)) &amp;&amp; (i2 &lt; 15)), placeholder[i0, (i1 - 1), (i2 - 1), i3], 0f)
 input_tile(eps, nu, p, ci) = data_pad[floordiv(p, 49), ((floormod(floordiv(p, 7), 7)*2) + eps), ((floormod(p, 7)*2) + nu), ci]
@@ -540,7 +549,7 @@ placeholder = PLACEHOLDER [1, 1, 1, 256]
 T_add(ax0, ax1, ax2, ax3) = (T_add[ax0, ax1, ax2, ax3] + placeholder[ax0, 0, 0, ax3])
 T_relu(ax0, ax1, ax2, ax3) = max(T_add[ax0, ax1, ax2, ax3], 0f)
 
-========== Task 6  (workload key: [&quot;a169cd0053d3a7ca82998fcb62e42c58&quot;]) ==========
+========== Task 8  (workload key: [&quot;a169cd0053d3a7ca82998fcb62e42c58&quot;]) ==========
 placeholder = PLACEHOLDER [1, 14, 14, 256]
 data_pad(i0, i1, i2, i3) = tir.if_then_else(((((i1 &gt;= 1) &amp;&amp; (i1 &lt; 15)) &amp;&amp; (i2 &gt;= 1)) &amp;&amp; (i2 &lt; 15)), placeholder[i0, (i1 - 1), (i2 - 1), i3], 0f)
 input_tile(eps, nu, p, ci) = data_pad[floordiv(p, 49), ((floormod(floordiv(p, 7), 7)*2) + eps), ((floormod(p, 7)*2) + nu), ci]
@@ -555,7 +564,7 @@ placeholder = PLACEHOLDER [1, 1, 1, 256]
 T_add(ax0, ax1, ax2, ax3) = (conv2d_winograd[ax0, ax1, ax2, ax3] + placeholder[ax0, 0, 0, ax3])
 T_relu(ax0, ax1, ax2, ax3) = max(T_add[ax0, ax1, ax2, ax3], 0f)
 
-========== Task 7  (workload key: [&quot;0141ffc4fbabc10cc5a94c954419055b&quot;]) ==========
+========== Task 9  (workload key: [&quot;0141ffc4fbabc10cc5a94c954419055b&quot;]) ==========
 placeholder = PLACEHOLDER [1, 14, 14, 256]
 data_pad(i0, i1, i2, i3) = tir.if_then_else(((((i1 &gt;= 1) &amp;&amp; (i1 &lt; 15)) &amp;&amp; (i2 &gt;= 1)) &amp;&amp; (i2 &lt; 15)), placeholder[i0, (i1 - 1), (i2 - 1), i3], 0f)
 input_tile(eps, nu, p, ci) = data_pad[floordiv(p, 49), ((floormod(floordiv(p, 7), 7)*2) + eps), ((floormod(p, 7)*2) + nu), ci]
@@ -569,7 +578,7 @@ conv2d_winograd(n, h, w, co) = inverse[floormod(h, 2), floormod(w, 2), ((((n*7)*
 placeholder = PLACEHOLDER [1, 14, 14, 256]
 T_add(ax0, ax1, ax2, ax3) = (conv2d_winograd[ax0, ax1, ax2, ax3] + placeholder[ax0, ax1, ax2, ax3])
 
-========== Task 8  (workload key: [&quot;81aae4b8e2c076a4014d403e8a2c70a1&quot;]) ==========
+========== Task 10  (workload key: [&quot;81aae4b8e2c076a4014d403e8a2c70a1&quot;]) ==========
 placeholder = PLACEHOLDER [1, 28, 28, 128]
 PaddedInput(i0, i1, i2, i3) = tir.if_then_else(((((i1 &gt;= 1) &amp;&amp; (i1 &lt; 29)) &amp;&amp; (i2 &gt;= 1)) &amp;&amp; (i2 &lt; 29)), placeholder[i0, (i1 - 1), (i2 - 1), i3], 0f)
 placeholder = PLACEHOLDER [3, 3, 128, 256]
@@ -578,7 +587,7 @@ placeholder = PLACEHOLDER [1, 1, 1, 256]
 T_add(ax0, ax1, ax2, ax3) = (Conv2dOutput[ax0, ax1, ax2, ax3] + placeholder[ax0, 0, 0, ax3])
 T_relu(ax0, ax1, ax2, ax3) = max(T_add[ax0, ax1, ax2, ax3], 0f)
 
-========== Task 9  (workload key: [&quot;c7a6b56bdc04b94c829fb2ef9874019e&quot;]) ==========
+========== Task 11  (workload key: [&quot;c7a6b56bdc04b94c829fb2ef9874019e&quot;]) ==========
 placeholder = PLACEHOLDER [1, 28, 28, 128]
 data_pad(i0, i1, i2, i3) = tir.if_then_else(((((i1 &gt;= 1) &amp;&amp; (i1 &lt; 29)) &amp;&amp; (i2 &gt;= 1)) &amp;&amp; (i2 &lt; 29)), placeholder[i0, (i1 - 1), (i2 - 1), i3], 0f)
 input_tile(eps, nu, p, ci) = data_pad[floordiv(p, 196), ((floormod(floordiv(p, 14), 14)*2) + eps), ((floormod(p, 14)*2) + nu), ci]
@@ -595,7 +604,7 @@ placeholder = PLACEHOLDER [1, 1, 1, 128]
 T_add(ax0, ax1, ax2, ax3) = (T_add[ax0, ax1, ax2, ax3] + placeholder[ax0, 0, 0, ax3])
 T_relu(ax0, ax1, ax2, ax3) = max(T_add[ax0, ax1, ax2, ax3], 0f)
 
-========== Task 10  (workload key: [&quot;c035cc8b0568a8e054d06bd7f4950550&quot;]) ==========
+========== Task 12  (workload key: [&quot;c035cc8b0568a8e054d06bd7f4950550&quot;]) ==========
 placeholder = PLACEHOLDER [1, 28, 28, 128]
 data_pad(i0, i1, i2, i3) = tir.if_then_else(((((i1 &gt;= 1) &amp;&amp; (i1 &lt; 29)) &amp;&amp; (i2 &gt;= 1)) &amp;&amp; (i2 &lt; 29)), placeholder[i0, (i1 - 1), (i2 - 1), i3], 0f)
 input_tile(eps, nu, p, ci) = data_pad[floordiv(p, 196), ((floormod(floordiv(p, 14), 14)*2) + eps), ((floormod(p, 14)*2) + nu), ci]
@@ -610,7 +619,7 @@ placeholder = PLACEHOLDER [1, 1, 1, 128]
 T_add(ax0, ax1, ax2, ax3) = (conv2d_winograd[ax0, ax1, ax2, ax3] + placeholder[ax0, 0, 0, ax3])
 T_relu(ax0, ax1, ax2, ax3) = max(T_add[ax0, ax1, ax2, ax3], 0f)
 
-========== Task 11  (workload key: [&quot;c5ee3e05edd9754492d0763aa41fd025&quot;]) ==========
+========== Task 13  (workload key: [&quot;c5ee3e05edd9754492d0763aa41fd025&quot;]) ==========
 placeholder = PLACEHOLDER [1, 28, 28, 128]
 data_pad(i0, i1, i2, i3) = tir.if_then_else(((((i1 &gt;= 1) &amp;&amp; (i1 &lt; 29)) &amp;&amp; (i2 &gt;= 1)) &amp;&amp; (i2 &lt; 29)), placeholder[i0, (i1 - 1), (i2 - 1), i3], 0f)
 input_tile(eps, nu, p, ci) = data_pad[floordiv(p, 196), ((floormod(floordiv(p, 14), 14)*2) + eps), ((floormod(p, 14)*2) + nu), ci]
@@ -624,7 +633,7 @@ conv2d_winograd(n, h, w, co) = inverse[floormod(h, 2), floormod(w, 2), ((((n*14)
 placeholder = PLACEHOLDER [1, 28, 28, 128]
 T_add(ax0, ax1, ax2, ax3) = (conv2d_winograd[ax0, ax1, ax2, ax3] + placeholder[ax0, ax1, ax2, ax3])
 
-========== Task 12  (workload key: [&quot;022ebb6b7c55c5ed030421380ec83a04&quot;]) ==========
+========== Task 14  (workload key: [&quot;022ebb6b7c55c5ed030421380ec83a04&quot;]) ==========
 placeholder = PLACEHOLDER [1, 56, 56, 64]
 PaddedInput(i0, i1, i2, i3) = tir.if_then_else(((((i1 &gt;= 1) &amp;&amp; (i1 &lt; 57)) &amp;&amp; (i2 &gt;= 1)) &amp;&amp; (i2 &lt; 57)), placeholder[i0, (i1 - 1), (i2 - 1), i3], 0f)
 placeholder = PLACEHOLDER [3, 3, 64, 128]
@@ -633,7 +642,7 @@ placeholder = PLACEHOLDER [1, 1, 1, 128]
 T_add(ax0, ax1, ax2, ax3) = (Conv2dOutput[ax0, ax1, ax2, ax3] + placeholder[ax0, 0, 0, ax3])
 T_relu(ax0, ax1, ax2, ax3) = max(T_add[ax0, ax1, ax2, ax3], 0f)
 
-========== Task 13  (workload key: [&quot;de0df0893e01892cfe69f7bc2c24111f&quot;]) ==========
+========== Task 15  (workload key: [&quot;de0df0893e01892cfe69f7bc2c24111f&quot;]) ==========
 placeholder = PLACEHOLDER [1, 56, 56, 64]
 data_pad(i0, i1, i2, i3) = tir.if_then_else(((((i1 &gt;= 1) &amp;&amp; (i1 &lt; 57)) &amp;&amp; (i2 &gt;= 1)) &amp;&amp; (i2 &lt; 57)), placeholder[i0, (i1 - 1), (i2 - 1), i3], 0f)
 input_tile(eps, nu, p, ci) = data_pad[floordiv(p, 196), ((floormod(floordiv(p, 14), 14)*4) + eps), ((floormod(p, 14)*4) + nu), ci]
@@ -650,7 +659,7 @@ placeholder = PLACEHOLDER [1, 1, 1, 64]
 T_add(ax0, ax1, ax2, ax3) = (T_add[ax0, ax1, ax2, ax3] + placeholder[ax0, 0, 0, ax3])
 T_relu(ax0, ax1, ax2, ax3) = max(T_add[ax0, ax1, ax2, ax3], 0f)
 
-========== Task 14  (workload key: [&quot;f2e3c09a00e7d0a9897f70497e089f1e&quot;]) ==========
+========== Task 16  (workload key: [&quot;f2e3c09a00e7d0a9897f70497e089f1e&quot;]) ==========
 placeholder = PLACEHOLDER [1, 56, 56, 64]
 data_pad(i0, i1, i2, i3) = tir.if_then_else(((((i1 &gt;= 1) &amp;&amp; (i1 &lt; 57)) &amp;&amp; (i2 &gt;= 1)) &amp;&amp; (i2 &lt; 57)), placeholder[i0, (i1 - 1), (i2 - 1), i3], 0f)
 input_tile(eps, nu, p, ci) = data_pad[floordiv(p, 196), ((floormod(floordiv(p, 14), 14)*4) + eps), ((floormod(p, 14)*4) + nu), ci]
@@ -665,7 +674,7 @@ placeholder = PLACEHOLDER [1, 1, 1, 64]
 T_add(ax0, ax1, ax2, ax3) = (conv2d_winograd[ax0, ax1, ax2, ax3] + placeholder[ax0, 0, 0, ax3])
 T_relu(ax0, ax1, ax2, ax3) = max(T_add[ax0, ax1, ax2, ax3], 0f)
 
-========== Task 15  (workload key: [&quot;fa26946d7ac51126bfa859cb183f9ca1&quot;]) ==========
+========== Task 17  (workload key: [&quot;fa26946d7ac51126bfa859cb183f9ca1&quot;]) ==========
 placeholder = PLACEHOLDER [1, 56, 56, 64]
 data_pad(i0, i1, i2, i3) = tir.if_then_else(((((i1 &gt;= 1) &amp;&amp; (i1 &lt; 57)) &amp;&amp; (i2 &gt;= 1)) &amp;&amp; (i2 &lt; 57)), placeholder[i0, (i1 - 1), (i2 - 1), i3], 0f)
 input_tile(eps, nu, p, ci) = data_pad[floordiv(p, 196), ((floormod(floordiv(p, 14), 14)*4) + eps), ((floormod(p, 14)*4) + nu), ci]
@@ -679,7 +688,15 @@ conv2d_winograd(n, h, w, co) = inverse[floormod(h, 4), floormod(w, 4), ((((n*14)
 placeholder = PLACEHOLDER [1, 56, 56, 64]
 T_add(ax0, ax1, ax2, ax3) = (conv2d_winograd[ax0, ax1, ax2, ax3] + placeholder[ax0, ax1, ax2, ax3])
 
-========== Task 16  (workload key: [&quot;a0eb8d6048282a4a0986cc2ccf14eaa2&quot;]) ==========
+========== Task 18  (workload key: [&quot;944921d3fd999ba7aa9ffe5a592a9241&quot;]) ==========
+placeholder = PLACEHOLDER [1, 112, 112, 64]
+pad_temp(ax0, ax1, ax2, ax3) = tir.if_then_else(((((ax1 &gt;= 1) &amp;&amp; (ax1 &lt; 113)) &amp;&amp; (ax2 &gt;= 1)) &amp;&amp; (ax2 &lt; 113)), placeholder[ax0, (ax1 - 1), (ax2 - 1), ax3], -3.40282e+38f)
+tensor(ax0, ax1, ax2, ax3) max= pad_temp[ax0, ((ax1*2) + rv), ((ax2*2) + rv), ax3]
+placeholder = PLACEHOLDER [1, 1, 1, 64]
+T_add(ax0, ax1, ax2, ax3) = (tensor[ax0, ax1, ax2, ax3] + placeholder[ax0, 0, 0, ax3])
+T_relu(ax0, ax1, ax2, ax3) = max(T_add[ax0, ax1, ax2, ax3], 0f)
+
+========== Task 19  (workload key: [&quot;a0eb8d6048282a4a0986cc2ccf14eaa2&quot;]) ==========
 placeholder = PLACEHOLDER [1, 224, 224, 3]
 PaddedInput(i0, i1, i2, i3) = tir.if_then_else(((((i1 &gt;= 3) &amp;&amp; (i1 &lt; 227)) &amp;&amp; (i2 &gt;= 3)) &amp;&amp; (i2 &lt; 227)), placeholder[i0, (i1 - 3), (i2 - 3), i3], 0f)
 placeholder = PLACEHOLDER [7, 7, 3, 64]
@@ -688,25 +705,25 @@ placeholder = PLACEHOLDER [1, 1, 1, 64]
 T_add(ax0, ax1, ax2, ax3) = (Conv2dOutput[ax0, ax1, ax2, ax3] + placeholder[ax0, 0, 0, ax3])
 T_relu(ax0, ax1, ax2, ax3) = max(T_add[ax0, ax1, ax2, ax3], 0f)
 
-========== Task 17  (workload key: [&quot;bf78a7bf0209980f72953637dfd14a6f&quot;]) ==========
+========== Task 20  (workload key: [&quot;bf78a7bf0209980f72953637dfd14a6f&quot;]) ==========
 placeholder = PLACEHOLDER [1, 56, 56, 64]
 PaddedInput(i0, i1, i2, i3) = placeholder[i0, i1, i2, i3]
 placeholder = PLACEHOLDER [1, 1, 64, 64]
 Conv2dOutput(nn, yy, xx, ff) += (PaddedInput[nn, (yy + ry), (xx + rx), rc]*placeholder[ry, rx, rc, ff])
 
-========== Task 18  (workload key: [&quot;6630936c26852f2b89dbfa2ff37fbb9c&quot;]) ==========
+========== Task 21  (workload key: [&quot;6630936c26852f2b89dbfa2ff37fbb9c&quot;]) ==========
 placeholder = PLACEHOLDER [1, 56, 56, 64]
 PaddedInput(i0, i1, i2, i3) = placeholder[i0, i1, i2, i3]
 placeholder = PLACEHOLDER [1, 1, 64, 128]
 Conv2dOutput(nn, yy, xx, ff) += (PaddedInput[nn, ((yy*2) + ry), ((xx*2) + rx), rc]*placeholder[ry, rx, rc, ff])
 
-========== Task 19  (workload key: [&quot;ba5f918733ccbbd4a1d7fd3724665a2f&quot;]) ==========
+========== Task 22  (workload key: [&quot;ba5f918733ccbbd4a1d7fd3724665a2f&quot;]) ==========
 placeholder = PLACEHOLDER [1, 28, 28, 128]
 PaddedInput(i0, i1, i2, i3) = placeholder[i0, i1, i2, i3]
 placeholder = PLACEHOLDER [1, 1, 128, 256]
 Conv2dOutput(nn, yy, xx, ff) += (PaddedInput[nn, ((yy*2) + ry), ((xx*2) + rx), rc]*placeholder[ry, rx, rc, ff])
 
-========== Task 20  (workload key: [&quot;21ad409d72953de188314010134e3acd&quot;]) ==========
+========== Task 23  (workload key: [&quot;21ad409d72953de188314010134e3acd&quot;]) ==========
 placeholder = PLACEHOLDER [1, 14, 14, 256]
 PaddedInput(i0, i1, i2, i3) = placeholder[i0, i1, i2, i3]
 placeholder = PLACEHOLDER [1, 1, 256, 512]
@@ -767,29 +784,32 @@ of the task scheduler. The following table is a sample output.</p>
 <span class="o">----------------------------------------------------------------------</span>
 <span class="o">|</span>  <span class="n">ID</span>  <span class="o">|</span> <span class="n">Latency</span> <span class="p">(</span><span class="n">ms</span><span class="p">)</span> <span class="o">|</span> <span class="n">Speed</span> <span class="p">(</span><span class="n">GFLOPS</span><span class="p">)</span> <span class="o">|</span> <span class="n">Trials</span> <span class="o">|</span>
 <span class="o">-------------------------------------------------</span>
-<span class="o">|</span>    <span class="mi">0</span> <span class="o">|</span>        <span class="mf">0.014</span> <span class="o">|</span>          <span class="mf">72.07</span> <span class="o">|</span>     <span class="mi">64</span> <span class="o">|</span>
-<span class="o">|</span>    <span class="mi">1</span> <span class="o">|</span>        <span class="mf">0.185</span> <span class="o">|</span>        <span class="mf">1250.68</span> <span class="o">|</span>    <span class="mi">128</span> <span class="o">|</span>
-<span class="o">|</span>    <span class="mi">2</span> <span class="o">|</span>        <span class="mf">0.142</span> <span class="o">|</span>        <span class="mf">1626.36</span> <span class="o">|</span>    <span class="mi">192</span> <span class="o">|</span>
-<span class="o">|</span>    <span class="mi">3</span> <span class="o">|</span>        <span class="mf">0.137</span> <span class="o">|</span>        <span class="mf">1689.42</span> <span class="o">|</span>    <span class="mi">128</span> <span class="o">|</span>
-<span class="o">|</span>    <span class="mi">4</span> <span class="o">|</span>        <span class="mf">0.097</span> <span class="o">|</span>        <span class="mf">1189.75</span> <span class="o">|</span>    <span class="mi">128</span> <span class="o">|</span>
-<span class="o">|</span>    <span class="mi">5</span> <span class="o">|</span>        <span class="mf">0.092</span> <span class="o">|</span>        <span class="mf">2505.25</span> <span class="o">|</span>    <span class="mi">128</span> <span class="o">|</span>
-<span class="o">|</span>    <span class="mi">6</span> <span class="o">|</span>        <span class="mf">0.080</span> <span class="o">|</span>        <span class="mf">2893.08</span> <span class="o">|</span>    <span class="mi">128</span> <span class="o">|</span>
-<span class="o">|</span>    <span class="mi">7</span> <span class="o">|</span>        <span class="mf">0.119</span> <span class="o">|</span>        <span class="mf">1947.84</span> <span class="o">|</span>    <span class="mi">128</span> <span class="o">|</span>
-<span class="o">|</span>    <span class="mi">8</span> <span class="o">|</span>        <span class="mf">0.090</span> <span class="o">|</span>        <span class="mf">1292.62</span> <span class="o">|</span>     <span class="mi">64</span> <span class="o">|</span>
-<span class="o">|</span>    <span class="mi">9</span> <span class="o">|</span>        <span class="mf">0.107</span> <span class="o">|</span>        <span class="mf">2172.30</span> <span class="o">|</span>     <span class="mi">64</span> <span class="o">|</span>
-<span class="o">|</span>   <span class="mi">10</span> <span class="o">|</span>        <span class="mf">0.095</span> <span class="o">|</span>        <span class="mf">2439.36</span> <span class="o">|</span>     <span class="mi">64</span> <span class="o">|</span>
-<span class="o">|</span>   <span class="mi">11</span> <span class="o">|</span>        <span class="mf">0.077</span> <span class="o">|</span>        <span class="mf">3003.22</span> <span class="o">|</span>     <span class="mi">64</span> <span class="o">|</span>
-<span class="o">|</span>   <span class="mi">12</span> <span class="o">|</span>        <span class="mf">0.068</span> <span class="o">|</span>        <span class="mf">1695.13</span> <span class="o">|</span>     <span class="mi">64</span> <span class="o">|</span>
-<span class="o">|</span>   <span class="mi">13</span> <span class="o">|</span>        <span class="mf">0.058</span> <span class="o">|</span>        <span class="mf">3979.29</span> <span class="o">|</span>     <span class="mi">64</span> <span class="o">|</span>
-<span class="o">|</span>   <span class="mi">14</span> <span class="o">|</span>        <span class="mf">0.048</span> <span class="o">|</span>        <span class="mf">4859.95</span> <span class="o">|</span>    <span class="mi">128</span> <span class="o">|</span>
-<span class="o">|</span>   <span class="mi">15</span> <span class="o">|</span>        <span class="mf">0.073</span> <span class="o">|</span>        <span class="mf">3151.76</span> <span class="o">|</span>     <span class="mi">64</span> <span class="o">|</span>
-<span class="o">|</span>   <span class="mi">16</span> <span class="o">|</span>        <span class="mf">0.056</span> <span class="o">|</span>        <span class="mf">4265.94</span> <span class="o">|</span>     <span class="mi">64</span> <span class="o">|</span>
-<span class="o">|</span>   <span class="mi">17</span> <span class="o">|</span>        <span class="mf">0.009</span> <span class="o">|</span>        <span class="mf">2754.90</span> <span class="o">|</span>     <span class="mi">64</span> <span class="o">|</span>
-<span class="o">|</span>   <span class="mi">18</span> <span class="o">|</span>        <span class="mf">0.011</span> <span class="o">|</span>        <span class="mf">1156.08</span> <span class="o">|</span>     <span class="mi">64</span> <span class="o">|</span>
-<span class="o">|</span>   <span class="mi">19</span> <span class="o">|</span>        <span class="mf">0.013</span> <span class="o">|</span>         <span class="mf">955.80</span> <span class="o">|</span>     <span class="mi">64</span> <span class="o">|</span>
-<span class="o">|</span>   <span class="mi">20</span> <span class="o">|</span>        <span class="mf">0.029</span> <span class="o">|</span>         <span class="mf">437.71</span> <span class="o">|</span>     <span class="mi">64</span> <span class="o">|</span>
+<span class="o">|</span>    <span class="mi">0</span> <span class="o">|</span>        <span class="mf">0.005</span> <span class="o">|</span>           <span class="mf">0.88</span> <span class="o">|</span>     <span class="mi">64</span> <span class="o">|</span>
+<span class="o">|</span>    <span class="mi">1</span> <span class="o">|</span>        <span class="mf">0.010</span> <span class="o">|</span>          <span class="mf">99.10</span> <span class="o">|</span>     <span class="mi">64</span> <span class="o">|</span>
+<span class="o">|</span>    <span class="mi">2</span> <span class="o">|</span>        <span class="mf">0.006</span> <span class="o">|</span>           <span class="mf">0.00</span> <span class="o">|</span>     <span class="mi">64</span> <span class="o">|</span>
+<span class="o">|</span>    <span class="mi">3</span> <span class="o">|</span>        <span class="mf">0.145</span> <span class="o">|</span>         <span class="mf">979.78</span> <span class="o">|</span>    <span class="mi">384</span> <span class="o">|</span>
+<span class="o">|</span>    <span class="mi">4</span> <span class="o">|</span>        <span class="mf">0.130</span> <span class="o">|</span>        <span class="mf">1097.02</span> <span class="o">|</span>    <span class="mi">384</span> <span class="o">|</span>
+<span class="o">|</span>    <span class="mi">5</span> <span class="o">|</span>        <span class="mf">0.143</span> <span class="o">|</span>         <span class="mf">992.69</span> <span class="o">|</span>    <span class="mi">384</span> <span class="o">|</span>
+<span class="o">|</span>    <span class="mi">6</span> <span class="o">|</span>        <span class="mf">0.076</span> <span class="o">|</span>        <span class="mf">1526.86</span> <span class="o">|</span>    <span class="mi">192</span> <span class="o">|</span>
+<span class="o">|</span>    <span class="mi">7</span> <span class="o">|</span>        <span class="mf">0.115</span> <span class="o">|</span>         <span class="mf">999.44</span> <span class="o">|</span>    <span class="mi">320</span> <span class="o">|</span>
+<span class="o">|</span>    <span class="mi">8</span> <span class="o">|</span>        <span class="mf">0.079</span> <span class="o">|</span>        <span class="mf">1449.39</span> <span class="o">|</span>    <span class="mi">320</span> <span class="o">|</span>
+<span class="o">|</span>    <span class="mi">9</span> <span class="o">|</span>        <span class="mf">0.122</span> <span class="o">|</span>         <span class="mf">938.73</span> <span class="o">|</span>    <span class="mi">384</span> <span class="o">|</span>
+<span class="o">|</span>   <span class="mi">10</span> <span class="o">|</span>        <span class="mf">0.063</span> <span class="o">|</span>        <span class="mf">1832.98</span> <span class="o">|</span>    <span class="mi">192</span> <span class="o">|</span>
+<span class="o">|</span>   <span class="mi">11</span> <span class="o">|</span>        <span class="mf">0.072</span> <span class="o">|</span>        <span class="mf">1763.62</span> <span class="o">|</span>    <span class="mi">256</span> <span class="o">|</span>
+<span class="o">|</span>   <span class="mi">12</span> <span class="o">|</span>        <span class="mf">0.062</span> <span class="o">|</span>        <span class="mf">2036.40</span> <span class="o">|</span>    <span class="mi">192</span> <span class="o">|</span>
+<span class="o">|</span>   <span class="mi">13</span> <span class="o">|</span>        <span class="mf">0.068</span> <span class="o">|</span>        <span class="mf">1874.44</span> <span class="o">|</span>    <span class="mi">192</span> <span class="o">|</span>
+<span class="o">|</span>   <span class="mi">14</span> <span class="o">|</span>        <span class="mf">0.049</span> <span class="o">|</span>        <span class="mf">2346.50</span> <span class="o">|</span>    <span class="mi">128</span> <span class="o">|</span>
+<span class="o">|</span>   <span class="mi">15</span> <span class="o">|</span>        <span class="mf">0.076</span> <span class="o">|</span>        <span class="mf">1694.31</span> <span class="o">|</span>    <span class="mi">256</span> <span class="o">|</span>
+<span class="o">|</span>   <span class="mi">16</span> <span class="o">|</span>        <span class="mf">0.067</span> <span class="o">|</span>        <span class="mf">1933.30</span> <span class="o">|</span>    <span class="mi">448</span> <span class="o">|</span>
+<span class="o">|</span>   <span class="mi">17</span> <span class="o">|</span>        <span class="mf">0.076</span> <span class="o">|</span>        <span class="mf">1680.90</span> <span class="o">|</span>    <span class="mi">256</span> <span class="o">|</span>
+<span class="o">|</span>   <span class="mi">18</span> <span class="o">|</span>        <span class="mf">0.022</span> <span class="o">|</span>          <span class="mf">98.43</span> <span class="o">|</span>     <span class="mi">64</span> <span class="o">|</span>
+<span class="o">|</span>   <span class="mi">19</span> <span class="o">|</span>        <span class="mf">0.076</span> <span class="o">|</span>        <span class="mf">3112.55</span> <span class="o">|</span>    <span class="mi">192</span> <span class="o">|</span>
+<span class="o">|</span>   <span class="mi">20</span> <span class="o">|</span>        <span class="mf">0.013</span> <span class="o">|</span>        <span class="mf">2026.44</span> <span class="o">|</span>     <span class="mi">64</span> <span class="o">|</span>
+<span class="o">|</span>   <span class="mi">21</span> <span class="o">|</span>        <span class="mf">0.011</span> <span class="o">|</span>        <span class="mf">1136.69</span> <span class="o">|</span>     <span class="mi">64</span> <span class="o">|</span>
+<span class="o">|</span>   <span class="mi">22</span> <span class="o">|</span>        <span class="mf">0.013</span> <span class="o">|</span>         <span class="mf">992.47</span> <span class="o">|</span>     <span class="mi">64</span> <span class="o">|</span>
+<span class="o">|</span>   <span class="mi">23</span> <span class="o">|</span>        <span class="mf">0.020</span> <span class="o">|</span>         <span class="mf">627.56</span> <span class="o">|</span>     <span class="mi">64</span> <span class="o">|</span>
 <span class="o">-------------------------------------------------</span>
-<span class="n">Estimated</span> <span class="n">total</span> <span class="nl">latency</span><span class="p">:</span> <span class="mf">1.649</span> <span class="n">ms</span>  <span class="nl">Trials</span><span class="p">:</span> <span class="mi">1920</span>  <span class="n">Used</span> <span class="nl">time</span> <span class="p">:</span> <span class="mi">3598</span> <span class="n">s</span>  <span class="n">Next</span> <span class="nl">ID</span><span class="p">:</span> <span class="mi">9</span>
+<span class="n">Estimated</span> <span class="n">total</span> <span class="nl">latency</span><span class="p">:</span> <span class="mf">1.587</span> <span class="n">ms</span>  <span class="nl">Trials</span><span class="p">:</span> <span class="mi">4992</span>  <span class="n">Used</span> <span class="nl">time</span> <span class="p">:</span> <span class="mi">13296</span> <span class="n">s</span>  <span class="n">Next</span> <span class="nl">ID</span><span class="p">:</span> <span class="mi">3</span>
 </pre></div>
 </div>
 <p>This table lists the latency and (estimated) speed of all tasks.
@@ -820,7 +840,7 @@ so we can read the log file and load the best schedules.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span class="c1"># Compile with the history best</span>
 <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Compile...&quot;</span><span class="p">)</span>
 <span class="k">with</span> <a href="../../api/python/auto_scheduler.html#tvm.auto_scheduler.ApplyHistoryBest" title="View documentation for tvm.auto_scheduler.ApplyHistoryBest"><span class="n">auto_scheduler</span><span class="o">.</span><span class="n">ApplyHistoryBest</span></a><span class="p">(</span><span class="n">log_file</span><span class="p">):</span>
-    <span class="k">with</span> <a href="../../api/python/ir.html#tvm.transform.PassContext" title="View documentation for tvm.transform.PassContext"><span class="n">tvm</span><span class="o">.</span><span class="n">transform</span><span class="o">.</span><span class="n">PassContext</span></a><span class="p">(</span><span class="n">opt_level</span><span class="o">=</span><span class="mi">3</span><span class="p">):</span>
+    <span class="k">with</span> <a href="../../api/python/ir.html#tvm.transform.PassContext" title="View documentation for tvm.transform.PassContext"><span class="n">tvm</span><span class="o">.</span><span class="n">transform</span><span class="o">.</span><span class="n">PassContext</span></a><span class="p">(</span><span class="n">opt_level</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">config</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;relay.backend.use_auto_scheduler&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">}):</span>
         <span class="n">lib</span> <span class="o">=</span> <a href="../../api/python/relay/index.html#tvm.relay.build" title="View documentation for tvm.relay.build"><span class="n">relay</span><span class="o">.</span><span class="n">build</span></a><span class="p">(</span><span class="n">mod</span><span class="p">,</span> <span class="n">target</span><span class="o">=</span><span class="n">target</span><span class="p">,</span> <span class="n">params</span><span class="o">=</span><span class="n">params</span><span class="p">)</span>
 
 <span class="c1"># Create graph runtime</span>
@@ -839,7 +859,7 @@ so we can read the log file and load the best schedules.</p>
 <p class="sphx-glr-script-out">Out:</p>
 <div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre>Compile...
 Evaluate inference time cost...
-Mean inference time (std dev): 3.14 ms (0.01 ms)
+Mean inference time (std dev): 1.60 ms (0.01 ms)
 </pre></div>
 </div>
 </div>

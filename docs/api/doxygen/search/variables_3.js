@@ -53,6 +53,7 @@ var searchData=
   ['costs',['costs',['../classtvm_1_1auto__scheduler_1_1MeasureResultNode.html#a35f811b15ecfdd1a54d27559228c98b1',1,'tvm::auto_scheduler::MeasureResultNode']]],
   ['count_5finclude_5fpad',['count_include_pad',['../structtvm_1_1relay_1_1AvgPool2DAttrs.html#ab8af740bf62dcdc954cdd31f64e701d9',1,'tvm::relay::AvgPool2DAttrs::count_include_pad()'],['../structtvm_1_1relay_1_1AvgPool1DAttrs.html#a40706eb3415bd5cec546d10721c41c8a',1,'tvm::relay::AvgPool1DAttrs::count_include_pad()'],['../structtvm_1_1relay_1_1AvgPool3DAttrs.html#ae59fca8d9b4572dc87c46520262c595b',1,'tvm::relay::AvgPool3DAttrs::count_include_pad()']]],
   ['crop_5fsize',['crop_size',['../structtvm_1_1relay_1_1CropAndResizeAttrs.html#aaf429a447bb693f1c86ee0cc091656f2',1,'tvm::relay::CropAndResizeAttrs']]],
+  ['crops',['crops',['../structtvm_1_1relay_1_1BatchToSpaceNDAttrs.html#af631cf77a6c0ad5f19a9f645ce51b8aa',1,'tvm::relay::BatchToSpaceNDAttrs']]],
   ['ct',['ct',['../classtvm_1_1auto__scheduler_1_1ProgramMeasurerNode.html#aae1a473d3d612cd302bc1ba7bb4fa147',1,'tvm::auto_scheduler::ProgramMeasurerNode']]],
   ['ctx',['ctx',['../structtvm_1_1runtime_1_1vm_1_1Buffer.html#ab6c427afefb8fc7afddeef6ead2ba4e4',1,'tvm::runtime::vm::Buffer']]],
   ['ctxs_5f',['ctxs_',['../classtvm_1_1runtime_1_1vm_1_1VirtualMachine.html#ae52ecf76ef854f8288ca2baa8f9d01ed',1,'tvm::runtime::vm::VirtualMachine']]],
