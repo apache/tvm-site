@@ -83,7 +83,7 @@
                    <a class="nav-link" href=https://tvmconf.org>Conference</a>
                 </li>
                 <li class="nav-item">
-                   <a class="nav-link" href=https://github.com/apache/incubator-tvm/>Github</a>
+                   <a class="nav-link" href=https://github.com/apache/tvm/>Github</a>
                 </li>
              </ul>
                <div class="responsivetlcdropdown">
@@ -199,6 +199,7 @@
 <li class="toctree-l2 current"><a class="current reference internal" href="#">Install from Source</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#developers-get-source-from-github">Developers: Get Source from Github</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#build-the-shared-library">Build the Shared Library</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#building-with-a-conda-environment">Building with a Conda Environment</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#building-on-windows">Building on Windows</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#building-rocm-support">Building ROCm support</a></li>
 </ul>
@@ -341,7 +342,7 @@ scratch on various systems. It consists of two steps:</p>
 <h2>Developers: Get Source from Github<a class="headerlink" href="#developers-get-source-from-github" title="Permalink to this headline">¶</a></h2>
 <p>You can also choose to clone the source repo from github.
 It is important to clone the submodules along, with <code class="docutils literal notranslate"><span class="pre">--recursive</span></code> option.</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre>git clone --recursive https://github.com/apache/incubator-tvm tvm
+<div class="highlight-bash notranslate"><div class="highlight"><pre>git clone --recursive https://github.com/apache/tvm tvm
 </pre></div>
 </div>
 <p>For windows users who use github tools, you can open the git shell, and type the following command.</p>
@@ -389,7 +390,7 @@ you want to build for (OpenCL, RCOM, METAL, VULKAN, …).</p></li>
 <li><p>To help with debugging, ensure the embedded graph runtime and debugging functions are enabled with <code class="docutils literal notranslate"><span class="pre">set(USE_GRAPH_RUNTIME</span> <span class="pre">ON)</span></code> and <code class="docutils literal notranslate"><span class="pre">set(USE_GRAPH_RUNTIME_DEBUG</span> <span class="pre">ON)</span></code></p></li>
 </ul>
 </li>
-<li><p>TVM optionally depends on LLVM. LLVM is required for CPU codegen that needs LLVM.</p>
+<li><p>TVM requires LLVM for for CPU codegen. We highly recommend you to build with the LLVM support on.</p>
 <ul class="simple">
 <li><p>LLVM 4.0 or higher is needed for build with LLVM. Note that version of LLVM from default apt may lower than 4.0.</p></li>
 <li><p>Since LLVM takes long time to build from source, you can download pre-built version of LLVM from
@@ -402,7 +403,7 @@ you want to build for (OpenCL, RCOM, METAL, VULKAN, …).</p></li>
 <li><p>You can also use <a class="reference external" href="https://apt.llvm.org/">LLVM Nightly Ubuntu Build</a></p>
 <ul>
 <li><p>Note that apt-package append <code class="docutils literal notranslate"><span class="pre">llvm-config</span></code> with version number.
-For example, set <code class="docutils literal notranslate"><span class="pre">set(LLVM_CONFIG</span> <span class="pre">llvm-config-4.0)</span></code> if you installed 4.0 package</p></li>
+For example, set <code class="docutils literal notranslate"><span class="pre">set(USE_LLVM</span> <span class="pre">llvm-config-10)</span></code> if you installed LLVM 10 package</p></li>
 </ul>
 </li>
 </ul>
@@ -424,22 +425,46 @@ ninja
 </li>
 </ul>
 <p>If everything goes well, we can go to <a class="reference internal" href="#python-package-installation"><span class="std std-ref">Python Package Installation</span></a></p>
+<div class="section" id="building-with-a-conda-environment">
+<span id="build-with-conda"></span><h3>Building with a Conda Environment<a class="headerlink" href="#building-with-a-conda-environment" title="Permalink to this headline">¶</a></h3>
+<p>Conda is a very handy way to the necessary obtain dependencies needed for running TVM.
+First, follow the <a class="reference external" href="https://docs.conda.io/projects/conda/en/latest/user-guide/install/">conda’s installation guide</a>
+to install miniconda or anaconda if you do not yet have conda in your system. Run the following command in a conda environment:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span class="c1"># Create a conda environment with the dependencies specified by the yaml</span>
+conda env create --file conda/build-environment.yaml
+<span class="c1"># Activate the created environment</span>
+conda activate tvm-build
+</pre></div>
+</div>
+<p>The above command will install all necessary build dependencies such as cmake and LLVM. You can then run the standard build process in the last section.</p>
+<p>If you want to use the compiled binary outside the conda environment,
+you can set LLVM to static linking mode <code class="docutils literal notranslate"><span class="pre">set(USE_LLVM</span> <span class="pre">&quot;llvm-config</span> <span class="pre">--link-static&quot;)</span></code>.
+In this way, the resulting library won’t depend on the dynamic LLVM libraries in the conda environment.</p>
+<p>The above instructions show how to use conda to provide the necessary build dependencies to build libtvm.
+If you are already using conda as your package manager and wish to directly build and install tvm as a conda package, you can follow the instructions below:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre>conda build --output-folder<span class="o">=</span>conda/pkg  conda/recipe
+<span class="c1"># Run conda/build_cuda.sh to build with cuda enabled</span>
+conda install tvm -c ./conda/pkg
+</pre></div>
+</div>
+</div>
 <div class="section" id="building-on-windows">
 <h3>Building on Windows<a class="headerlink" href="#building-on-windows" title="Permalink to this headline">¶</a></h3>
-<p>TVM support build via MSVC using cmake. The minimum required VS version is <strong>Visual Studio Community 2015 Update 3</strong>.
-In order to generate the VS solution file using cmake, make sure you have a recent version of cmake added to your path and then from the TVM directory:</p>
+<p>TVM support build via MSVC using cmake. You will need to ontain a visual studio compiler.
+The minimum required VS version is <strong>Visual Studio Community 2015 Update 3</strong>.
+We recommend following <a class="reference internal" href="#build-with-conda"><span class="std std-ref">Building with a Conda Environment</span></a> to obtain necessary dependencies and
+get an activated tvm-build environment. Then you can run the following command to build</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre>mkdir build
 <span class="nb">cd</span> build
-cmake -G <span class="s2">&quot;Visual Studio 14 2015 Win64&quot;</span> -DCMAKE_BUILD_TYPE<span class="o">=</span>Release -DCMAKE_CONFIGURATION_TYPES<span class="o">=</span><span class="s2">&quot;Release&quot;</span> ..
+cmake -A x64 -Thost<span class="o">=</span>x64 ..
+<span class="nb">cd</span> ..
 </pre></div>
 </div>
-<p>Starting with Visual Studio 2019 the architecture is specified differently so use this command</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre>cmake -G <span class="s2">&quot;Visual Studio 16 2019&quot;</span> -A x64 -DCMAKE_BUILD_TYPE<span class="o">=</span>Release -DCMAKE_CONFIGURATION_TYPES<span class="o">=</span><span class="s2">&quot;Release&quot;</span> ..
+<p>The above command generates the solution file under the build directory.
+You can then run the following command to build</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre>cmake --build build --config Release -- /m
 </pre></div>
 </div>
-<p>This will generate the VS project using the MSVC 64 bit generator.
-Open the .sln file in the build directory and build with Visual Studio.
-In order to build with LLVM in windows, you will need to build LLVM from source.</p>
 </div>
 <div class="section" id="building-rocm-support">
 <h3>Building ROCm support<a class="headerlink" href="#building-rocm-support" title="Permalink to this headline">¶</a></h3>
@@ -565,7 +590,7 @@ sudo make install
     </div>
 
     <ul>
-      <li class="footernote">Apache TVM is an effort undergoing incubation at The Apache Software Foundation (ASF), sponsored by the Apache Incubator. Incubation is required of all newly accepted projects until a further review indicates that the infrastructure, communications, and decision making process have stabilized in a manner consistent with other successful ASF projects. While incubation status is not necessarily a reflection of the completeness or stability of the code, it does indicate that the project has yet to be fully endorsed by the ASF. Copyright © 2020 The Apache Software Foundation. Apache TVM, Apache, the Apache feather, and the Apache TVM project logo are either trademarks or registered trademarks of the Apache Software Foundation.</li>
+      <li class="footernote">Copyright © 2020 The Apache Software Foundation. Apache TVM, Apache, the Apache feather, and the Apache TVM project logo are either trademarks or registered trademarks of the Apache Software Foundation.</li>
     </ul>
 
 </section>
