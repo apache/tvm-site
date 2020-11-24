@@ -12,7 +12,7 @@ description: "Download Apache TVM"
 # Download Apache TVM Source Code
 
 These source archives are generated from tagged releases.
-For any updates refer to the corresponding branches in the [GitHub repository](https://github.com/apache/incubator-tvm/).
+For any updates refer to the corresponding branches in the [GitHub repository](https://github.com/apache/tvm/).
 Choose your flavor of download from the following links:
 
 | Version | Source | PGP | SHA |
