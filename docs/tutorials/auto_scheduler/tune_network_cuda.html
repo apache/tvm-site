@@ -44,7 +44,7 @@
     <script type="text/javascript" src="../../_static/js/tlcpack_theme.js"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
-    <link rel="next" title="Bring Your Own Datatypes to TVM" href="../dev/bring_your_own_datatypes.html" />
+    <link rel="next" title="Auto-scheduling a Neural Network for x86 CPU" href="tune_network_x86.html" />
     <link rel="prev" title="Auto-scheduling a Convolution Layer for GPU" href="tune_conv2d_layer_cuda.html" /> 
 </head>
 
@@ -218,6 +218,7 @@
 <li class="toctree-l3"><a class="reference internal" href="#other-tips">Other Tips</a></li>
 </ul>
 </li>
+<li class="toctree-l2"><a class="reference internal" href="tune_network_x86.html">Auto-scheduling a Neural Network for x86 CPU</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../index.html#developer-tutorials">Developer Tutorials</a></li>
@@ -340,7 +341,7 @@ for good schedules (low-level optimizations).</p>
 <p>Different from the template-based <a class="reference internal" href="../index.html#tutorials-autotvm-sec"><span class="std std-ref">autotvm</span></a> which relies on
 manual templates to define the search space, the auto-scheduler does not require any
 schedule templates. In other words, the auto-scheduler only uses the compute declarations
-in <code class="code docutils literal notranslate"><span class="pre">tvm/python/topi</span></code> while does not use existing schedule templates.</p>
+in <code class="code docutils literal notranslate"><span class="pre">tvm/python/topi</span></code> and does not use existing schedule templates.</p>
 <p>Note that this tutorial will not run on Windows or recent versions of macOS. To
 get it to run, you will need to wrap the body of this tutorial in a <code class="code docutils literal notranslate"><span class="pre">if</span>
 <span class="pre">__name__</span> <span class="pre">==</span> <span class="pre">&quot;__main__&quot;:</span></code> block.</p>
@@ -358,9 +359,11 @@ get it to run, you will need to wrap the body of this tutorial in a <code class=
 We can load some pre-defined network from <code class="code docutils literal notranslate"><span class="pre">tvm.relay.testing</span></code>.
 We can also load models from MXNet, ONNX, PyTorch, and TensorFlow
 (see <a class="reference internal" href="../index.html#tutorial-frontend"><span class="std std-ref">front end tutorials</span></a>).</p>
-<p>Note that although auto-scheduler can work with any layouts,
-we found that the best performance is typically archived with NHWC layout
-for convolutional neural networks, so we use NHWC layout in this tutorial.</p>
+<p>For convolutional neural networks, although auto-scheduler can work correctly
+with any layout, we found the best performance is typically achieved with NHWC layout.
+We also implemented more optimizations for NHWC layout with the auto-scheduler.
+So it is recommended to convert your models to NHWC layout to use the auto-scheduler.
+You can use <a class="reference internal" href="../../dev/convert_layout.html#convert-layout-usage"><span class="std std-ref">ConvertLayout</span></a> pass to do the layout conversion in TVM.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span class="k">def</span> <span class="nf">get_network</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">batch_size</span><span class="p">,</span> <span class="n">layout</span><span class="o">=</span><span class="s2">&quot;NHWC&quot;</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="s2">&quot;float32&quot;</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Get the symbol definition and random weight of a network&quot;&quot;&quot;</span>
 
@@ -431,7 +434,7 @@ for convolutional neural networks, so we use NHWC layout in this tutorial.</p>
 <span class="n">layout</span> <span class="o">=</span> <span class="s2">&quot;NHWC&quot;</span>
 <span class="n">target</span> <span class="o">=</span> <a href="../../api/python/target.html#tvm.target.Target" title="View documentation for tvm.target.Target"><span class="n">tvm</span><span class="o">.</span><span class="n">target</span><span class="o">.</span><span class="n">Target</span></a><span class="p">(</span><span class="s2">&quot;cuda&quot;</span><span class="p">)</span>
 <span class="n">dtype</span> <span class="o">=</span> <span class="s2">&quot;float32&quot;</span>
-<span class="n">log_file</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">%s</span><span class="s2">-</span><span class="si">%s</span><span class="s2">-B</span><span class="si">%d</span><span class="s2">.json&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">network</span><span class="p">,</span> <span class="n">layout</span><span class="p">,</span> <span class="n">batch_size</span><span class="p">)</span>
+<span class="n">log_file</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="si">%s</span><span class="s2">-</span><span class="si">%s</span><span class="s2">-B</span><span class="si">%d</span><span class="s2">-</span><span class="si">%s</span><span class="s2">.json&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">network</span><span class="p">,</span> <span class="n">layout</span><span class="p">,</span> <span class="n">batch_size</span><span class="p">,</span> <span class="n">target</span><span class="o">.</span><span class="n">kind</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -743,11 +746,11 @@ This can warmup the GPU, which is necessary to get accurate measurement results.
 Typically, we recommend a value &gt;= 300 ms.</p></li>
 <li><p><code class="code docutils literal notranslate"><span class="pre">num_measure_trials</span></code> is the number of measurement trials we can use during the tuning.
 You can set it to a small number (e.g., 200) for a fast demonstrative run.
-In practice, we recommend setting it around <code class="code docutils literal notranslate"><span class="pre">1000</span> <span class="pre">*</span> <span class="pre">len(tasks)</span></code>,
+In practice, we recommend setting it around <code class="code docutils literal notranslate"><span class="pre">900</span> <span class="pre">*</span> <span class="pre">len(tasks)</span></code>,
 which is typically enough for the search to converge.
-For example, there are 21 tasks in resnet-18, so we can set it as 20000.
+For example, there are 24 tasks in resnet-18, so we can set it as 20000.
 You can adjust this parameter according to your time budget.</p></li>
-<li><p>In addition, we use <code class="code docutils literal notranslate"><span class="pre">RecordToFile</span></code> to dump measurement records into the log file,
+<li><p>In addition, we use <code class="code docutils literal notranslate"><span class="pre">RecordToFile</span></code> to dump measurement records into a log file,
 The measurement records can be used to query the history best, resume the search,
 and do more analyses later.</p></li>
 <li><p>see <a class="reference internal" href="../../api/python/auto_scheduler.html#tvm.auto_scheduler.TuningOptions" title="tvm.auto_scheduler.TuningOptions"><code class="xref any py py-class docutils literal notranslate"><span class="pre">auto_scheduler.TuningOptions</span></code></a>,
@@ -859,7 +862,7 @@ so we can read the log file and load the best schedules.</p>
 <p class="sphx-glr-script-out">Out:</p>
 <div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre>Compile...
 Evaluate inference time cost...
-Mean inference time (std dev): 1.65 ms (0.01 ms)
+Mean inference time (std dev): 2.43 ms (0.00 ms)
 </pre></div>
 </div>
 </div>
@@ -897,7 +900,7 @@ with <a class="reference internal" href="../../api/python/auto_scheduler.html#tv
 
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="../dev/bring_your_own_datatypes.html" class="btn btn-neutral float-right" title="Bring Your Own Datatypes to TVM" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+        <a href="tune_network_x86.html" class="btn btn-neutral float-right" title="Auto-scheduling a Neural Network for x86 CPU" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
         <a href="tune_conv2d_layer_cuda.html" class="btn btn-neutral float-left" title="Auto-scheduling a Convolution Layer for GPU" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
