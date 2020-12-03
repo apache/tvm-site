@@ -4,6 +4,7 @@ var searchData=
   ['scanopnode',['ScanOpNode',['../classtvm_1_1te_1_1ScanOpNode.html',1,'tvm::te']]],
   ['scatteraddattrs',['ScatterAddAttrs',['../structtvm_1_1relay_1_1ScatterAddAttrs.html',1,'tvm::relay']]],
   ['scatterattrs',['ScatterAttrs',['../structtvm_1_1relay_1_1ScatterAttrs.html',1,'tvm::relay']]],
+  ['scatterndattrs',['ScatterNDAttrs',['../structtvm_1_1relay_1_1ScatterNDAttrs.html',1,'tvm::relay']]],
   ['schedule',['Schedule',['../classtvm_1_1te_1_1Schedule.html',1,'tvm::te']]],
   ['schedulenode',['ScheduleNode',['../classtvm_1_1te_1_1ScheduleNode.html',1,'tvm::te']]],
   ['searchcallback',['SearchCallback',['../classtvm_1_1auto__scheduler_1_1SearchCallback.html',1,'tvm::auto_scheduler']]],

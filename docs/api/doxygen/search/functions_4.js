@@ -16,6 +16,7 @@ var searchData=
   ['defequal',['DefEqual',['../classtvm_1_1SEqualReducer.html#a62ba4c55928d4886853f9c33f4147340',1,'tvm::SEqualReducer']]],
   ['defhash',['DefHash',['../classtvm_1_1SHashReducer.html#a86a3513ec9866c77c59231663caa28c9',1,'tvm::SHashReducer']]],
   ['defined',['defined',['../classtvm_1_1runtime_1_1ObjectRef.html#a79d0ae0a887ed5cbfa67de7d43f0ef3a',1,'tvm::runtime::ObjectRef']]],
+  ['defuseops',['DefuseOps',['../namespacetvm_1_1relay_1_1transform.html#a8f3eee7092f7e3e58e1c76f4498e32e7',1,'tvm::relay::transform']]],
   ['deleter',['Deleter',['../classtvm_1_1runtime_1_1SimpleObjAllocator_1_1Handler.html#ad2425c09e13c317ab96e728ee6cd4065',1,'tvm::runtime::SimpleObjAllocator::Handler::Deleter()'],['../classtvm_1_1runtime_1_1SimpleObjAllocator_1_1ArrayHandler.html#af4771f19c83f265a9cdafd4362e49f56',1,'tvm::runtime::SimpleObjAllocator::ArrayHandler::Deleter()'],['../classtvm_1_1runtime_1_1vm_1_1StorageObj.html#aeff7038047b64e80d1e640368f6696b5',1,'tvm::runtime::vm::StorageObj::Deleter()']]],
   ['deletestage',['DeleteStage',['../classtvm_1_1auto__scheduler_1_1AttachMap.html#a7af553d4d27ce6dff65c823768c02c1b',1,'tvm::auto_scheduler::AttachMap']]],
   ['dense',['dense',['../namespacetvm_1_1topi_1_1nn.html#a34e1a8305acf89ef2f745c8d99bf8e89',1,'tvm::topi::nn']]],

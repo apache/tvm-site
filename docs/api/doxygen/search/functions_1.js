@@ -83,7 +83,9 @@ var searchData=
   ['attrstmt',['AttrStmt',['../classtvm_1_1tir_1_1AttrStmt.html#aa13c219c2fe4bfacc7493da15505e2c6',1,'tvm::tir::AttrStmt']]],
   ['attrswithdefaultvalues',['AttrsWithDefaultValues',['../namespacetvm.html#a2e3193a20ee748b08d5a528275859dbe',1,'tvm']]],
   ['attrtriggernondefaultentry',['AttrTriggerNonDefaultEntry',['../structtvm_1_1detail_1_1AttrTriggerNonDefaultEntry.html#a572356cfd8d20c258b03f7a5c62d3909',1,'tvm::detail::AttrTriggerNonDefaultEntry']]],
+  ['auto_5fscheduler_5flayout_5ftransform',['auto_scheduler_layout_transform',['../namespacetvm_1_1topi.html#a8e10f74deef4f22a9dc4b0a0b4370b08',1,'tvm::topi']]],
   ['autoinlineelemwise',['AutoInlineElemWise',['../namespacetvm_1_1te.html#a26ae0c9351036d0f7ca362e3c857d24a',1,'tvm::te']]],
   ['autoinlineinjective',['AutoInlineInjective',['../namespacetvm_1_1te.html#a9872626811f38606b4e934faa13b5b9f',1,'tvm::te']]],
-  ['autoschedule',['AutoSchedule',['../namespacetvm_1_1auto__scheduler.html#a1d6d14e885abf0c3b91e6b3cf542c2de',1,'tvm::auto_scheduler']]]
+  ['autoschedule',['AutoSchedule',['../namespacetvm_1_1auto__scheduler.html#a1d6d14e885abf0c3b91e6b3cf542c2de',1,'tvm::auto_scheduler']]],
+  ['autoschedulerlayoutrewrite',['AutoSchedulerLayoutRewrite',['../namespacetvm_1_1relay_1_1transform.html#a55b337ffaa1ad7a1e2e727329b2c9951',1,'tvm::relay::transform']]]
 ];

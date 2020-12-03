@@ -9,7 +9,7 @@ var searchData=
   ['randommodel',['RandomModel',['../classtvm_1_1auto__scheduler_1_1RandomModel.html#aa456abf1dc91cbf76935189424d8954f',1,'tvm::auto_scheduler::RandomModel::RandomModel()'],['../classtvm_1_1auto__scheduler_1_1RandomModel.html#ac2b355e61135f2ff57d4f96fe2fba845',1,'tvm::auto_scheduler::RandomModel::RandomModel(::tvm::runtime::ObjectPtr&lt;::tvm::runtime::Object &gt; n)']]],
   ['randommodel',['RandomModel',['../classtvm_1_1auto__scheduler_1_1RandomModel.html',1,'tvm::auto_scheduler']]],
   ['randommodelnode',['RandomModelNode',['../classtvm_1_1auto__scheduler_1_1RandomModelNode.html',1,'tvm::auto_scheduler']]],
-  ['range',['range',['../classtvm_1_1auto__scheduler_1_1IteratorNode.html#a2751c3164971b3154ffc506e3aebaf91',1,'tvm::auto_scheduler::IteratorNode::range()'],['../classtvm_1_1Range.html#abc08435178fe9ac6ab83db6c9025757c',1,'tvm::Range::Range()']]],
+  ['range',['Range',['../classtvm_1_1Range.html#abc08435178fe9ac6ab83db6c9025757c',1,'tvm::Range::Range()'],['../classtvm_1_1auto__scheduler_1_1IteratorNode.html#a2751c3164971b3154ffc506e3aebaf91',1,'tvm::auto_scheduler::IteratorNode::range()']]],
   ['range',['Range',['../classtvm_1_1Range.html',1,'tvm']]],
   ['rangenode',['RangeNode',['../classtvm_1_1RangeNode.html#ab845f7ed4ed85e360b730df3450d1aab',1,'tvm::RangeNode::RangeNode()'],['../classtvm_1_1RangeNode.html#a6ee2e11a496cc52627354fd90f00e2a0',1,'tvm::RangeNode::RangeNode(PrimExpr min, PrimExpr extent)']]],
   ['rangenode',['RangeNode',['../classtvm_1_1RangeNode.html',1,'tvm']]],
