@@ -8,7 +8,7 @@ var searchData=
   ['handler_3c_20dldatatype_20_3e',['Handler&lt; DLDataType &gt;',['../structdmlc_1_1serializer_1_1Handler_3_01DLDataType_01_4.html',1,'dmlc::serializer']]],
   ['hardware_5fparams',['hardware_params',['../classtvm_1_1auto__scheduler_1_1SearchTaskNode.html#a8f71d815c5608317a1cdba5b4303df12',1,'tvm::auto_scheduler::SearchTaskNode']]],
   ['hardwareparams',['HardwareParams',['../classtvm_1_1auto__scheduler_1_1HardwareParams.html',1,'tvm::auto_scheduler']]],
-  ['hardwareparams',['HardwareParams',['../classtvm_1_1auto__scheduler_1_1HardwareParams.html#ac09ff200d1968b485d26c9ae4b643958',1,'tvm::auto_scheduler::HardwareParams']]],
+  ['hardwareparams',['HardwareParams',['../classtvm_1_1auto__scheduler_1_1HardwareParams.html#a505cdbf19238fca932953095f8e7e810',1,'tvm::auto_scheduler::HardwareParams']]],
   ['hardwareparamsnode',['HardwareParamsNode',['../classtvm_1_1auto__scheduler_1_1HardwareParamsNode.html',1,'tvm::auto_scheduler']]],
   ['has_5fvalid',['has_valid',['../classtvm_1_1auto__scheduler_1_1ProgramMeasurerNode.html#a372418708e5f377e3b7efd84aa368974',1,'tvm::auto_scheduler::ProgramMeasurerNode']]],
   ['hasattrmap',['HasAttrMap',['../classtvm_1_1Op.html#aa6e0dd3175a9ac2687ec92c1c064fa2c',1,'tvm::Op']]],

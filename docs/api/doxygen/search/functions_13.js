@@ -142,7 +142,7 @@ var searchData=
   ['store',['Store',['../classtvm_1_1tir_1_1Store.html#a2c4278b8bcdae57ada2022ecc7c290c3',1,'tvm::tir::Store']]],
   ['str',['str',['../classtvm_1_1TargetNode.html#a04c6114b51f49035a69f6df8db0abaa0',1,'tvm::TargetNode']]],
   ['streamsync',['StreamSync',['../classtvm_1_1runtime_1_1DeviceAPI.html#a359964ae5ad0fbdba18da1a0db1a7ad6',1,'tvm::runtime::DeviceAPI']]],
-  ['strided_5fslice',['strided_slice',['../namespacetvm_1_1topi.html#a208e90d4a8db8cf2c7d77b4460f7df70',1,'tvm::topi']]],
+  ['strided_5fslice',['strided_slice',['../namespacetvm_1_1topi.html#a4faa327144d6450e446dceae76520cb1',1,'tvm::topi']]],
   ['string',['String',['../classtvm_1_1runtime_1_1String.html#ac5d930b522e9fef9c07e51819d96d2f3',1,'tvm::runtime::String::String()'],['../classtvm_1_1runtime_1_1String.html#a02fca36e3ff55cc1e83635b02a11fca3',1,'tvm::runtime::String::String(std::string other)'],['../classtvm_1_1runtime_1_1String.html#a68df7bab89fca339e3918438dd80300d',1,'tvm::runtime::String::String(const char *other)']]],
   ['string2dldatatype',['String2DLDataType',['../crt_2packed__func_8h.html#a1b379b0d66cecf7035d7d9efa4d87e5e',1,'String2DLDataType():&#160;packed_func.h'],['../namespacetvm_1_1runtime.html#a277f104e659f71cd8885744700016341',1,'tvm::runtime::String2DLDataType()']]],
   ['stringimm',['StringImm',['../classtvm_1_1tir_1_1StringImm.html#a0f2830290e055f677c5d5dea98aab726',1,'tvm::tir::StringImm']]],
