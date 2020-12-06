@@ -10,7 +10,7 @@ var searchData=
   ['fidentity',['FIdentity',['../namespacetvm_1_1topi.html#a7dd84c370a3377aec67ce83f94605df9',1,'tvm::topi']]],
   ['floatimmnode',['FloatImmNode',['../namespacetvm_1_1tir.html#adb123be81447d2871f4c716ce2d1dc00',1,'tvm::tir']]],
   ['fprimalgradient',['FPrimalGradient',['../namespacetvm_1_1relay.html#a9abada45a4f21ae750c1caba923f1059',1,'tvm::relay']]],
-  ['freduce',['FReduce',['../namespacetvm_1_1topi.html#a61ff09406948a8ab5d0769819b977900',1,'tvm::topi']]],
+  ['freduce',['FReduce',['../namespacetvm_1_1topi.html#af0e52ef3c0d8e11bf493d5163033cd0d',1,'tvm::topi']]],
   ['freprbytes',['FReprBytes',['../classtvm_1_1ReflectionVTable.html#aa2daafb800ea82c05b325383b986218b',1,'tvm::ReflectionVTable']]],
   ['fsequalreduce',['FSEqualReduce',['../classtvm_1_1ReflectionVTable.html#a656516c928f74d7b6345abd8c8f04358',1,'tvm::ReflectionVTable']]],
   ['fshapefunc',['FShapeFunc',['../namespacetvm_1_1relay.html#afeda9240bb23d0092992928c6d141729',1,'tvm::relay']]],
