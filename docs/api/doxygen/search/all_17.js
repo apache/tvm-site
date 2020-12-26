@@ -22,7 +22,7 @@ var searchData=
   ['write_5fstream_2eh',['write_stream.h',['../write__stream_8h.html',1,'']]],
   ['writeall',['WriteAll',['../classtvm_1_1runtime_1_1micro__rpc_1_1WriteStream.html#a50796cc3a1c0b1420d8cf98c2d415695',1,'tvm::runtime::micro_rpc::WriteStream']]],
   ['writefunc',['WriteFunc',['../classtvm_1_1runtime_1_1micro__rpc_1_1Framer.html#a4007e15f07da54cb6d8d037f88245498',1,'tvm::runtime::micro_rpc::Framer']]],
-  ['writemeasurerecords',['WriteMeasureRecords',['../namespacetvm_1_1auto__scheduler.html#af78d2ec1dd6edd0636ba56d921a8b00f',1,'tvm::auto_scheduler']]],
+  ['writemeasurerecords',['WriteMeasureRecords',['../namespacetvm_1_1auto__scheduler.html#a374a8aa311bb0c0e5b28509107b9064d',1,'tvm::auto_scheduler']]],
   ['writepayloadchunk',['WritePayloadChunk',['../classtvm_1_1runtime_1_1micro__rpc_1_1Framer.html#a4bfc1bf02d5c7b541d212c3040556717',1,'tvm::runtime::micro_rpc::Framer']]],
   ['writeregister',['WriteRegister',['../classtvm_1_1runtime_1_1vm_1_1VirtualMachine.html#a670a5e3f3d9c22bb822efface955bf17',1,'tvm::runtime::vm::VirtualMachine']]],
   ['writestream',['WriteStream',['../classtvm_1_1runtime_1_1micro__rpc_1_1WriteStream.html',1,'tvm::runtime::micro_rpc']]],

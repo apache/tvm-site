@@ -383,7 +383,11 @@ we skip the pytorch model construction part, and download the saved onnx model</
 </div>
 <div class="section" id="load-a-test-image">
 <h2>Load a test image<a class="headerlink" href="#load-a-test-image" title="Permalink to this headline">¶</a></h2>
-<p>A single cat dominates the examples!</p>
+<p>A single cat dominates the examples! This model takes a single input image of size
+224x224 and outputs a scaled image that is 3x greater than the input along each
+axis, a 672x672 image. Re-scale the cat image to fit this input shape then
+convert to <cite>YCbCr</cite>. The super resolution model will then be applied to the
+luminance (<cite>Y</cite>) channel.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">PIL</span> <span class="k">import</span> <span class="n">Image</span>
 
 <span class="n">img_url</span> <span class="o">=</span> <span class="s2">&quot;https://github.com/dmlc/mxnet.js/blob/main/data/cat.png?raw=true&quot;</span>
@@ -401,6 +405,13 @@ we skip the pytorch model construction part, and download the saved onnx model</
 </div>
 <div class="section" id="compile-the-model-with-relay">
 <h2>Compile the model with relay<a class="headerlink" href="#compile-the-model-with-relay" title="Permalink to this headline">¶</a></h2>
+<p>Typically ONNX models mix model input values with parameter values, with
+the input having the name <cite>1</cite>. This model dependent, and you should check
+with the documentation for your model to determine the full input and
+parameter name space.</p>
+<p>Passing in the shape dictionary to the <cite>relay.frontend.from_onnx</cite> method
+tells relay which ONNX parameters are inputs, and which are parameters, and
+provides a static definition of the input size.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span class="n">target</span> <span class="o">=</span> <span class="s2">&quot;llvm&quot;</span>
 
 <span class="n">input_name</span> <span class="o">=</span> <span class="s2">&quot;1&quot;</span>
@@ -412,7 +423,7 @@ we skip the pytorch model construction part, and download the saved onnx model</
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre>/workspace/docs/../python/tvm/relay/frontend/onnx.py:2737: UserWarning: Mismatched attribute type in &#39; : kernel_shape&#39;
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre>/workspace/docs/../python/tvm/relay/frontend/onnx.py:3075: UserWarning: Mismatched attribute type in &#39; : kernel_shape&#39;
 
 ==&gt; Context: Bad node spec: input: &quot;1&quot; input: &quot;2&quot; output: &quot;11&quot; op_type: &quot;Conv&quot; attribute { name: &quot;kernel_shape&quot; ints: 5 ints: 5 } attribute { name: &quot;strides&quot; ints: 1 ints: 1 } attribute { name: &quot;pads&quot; ints: 2 ints: 2 ints: 2 ints: 2 } attribute { name: &quot;dilations&quot; ints: 1 ints: 1 } attribute { name: &quot;group&quot; i: 1 }
   warnings.warn(str(e))
@@ -428,7 +439,9 @@ we skip the pytorch model construction part, and download the saved onnx model</
 </div>
 <div class="section" id="display-results">
 <h2>Display results<a class="headerlink" href="#display-results" title="Permalink to this headline">¶</a></h2>
-<p>We put input and output image neck to neck</p>
+<p>We put input and output image neck to neck. The luminance channel, <cite>Y</cite> is the output
+from the model. The chroma channels <cite>Cb</cite> and <cite>Cr</cite> are resized to match with a simple
+bicubic algorithm. The image is then recombined and converted back to <cite>RGB</cite>.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">matplotlib</span> <span class="k">import</span> <span class="n">pyplot</span> <span class="k">as</span> <span class="n">plt</span>
 
 <span class="n">out_y</span> <span class="o">=</span> <span class="n">Image</span><span class="o">.</span><span class="n">fromarray</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">uint8</span><span class="p">((</span><span class="n">tvm_output</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">])</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">255</span><span class="p">)),</span> <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;L&quot;</span><span class="p">)</span>
@@ -451,6 +464,10 @@ retains that dynamism upon import, and the compiler attemps to convert the model
 into a static shapes at compile time. If this fails, there may still be dynamic
 operations in the model. Not all TVM kernels currently support dynamic shapes,
 please file an issue on discuss.tvm.apache.org if you hit an error with dynamic kernels.</p>
+<p>This particular model was build using an older version of ONNX. During the import
+phase ONNX importer will run the ONNX verifier, which may throw a <cite>Mismatched attribute type</cite>
+warning. Because TVM supports a number of different ONNX versions, the Relay model
+will still be valid.</p>
 <div class="sphx-glr-footer class sphx-glr-footer-example docutils container" id="sphx-glr-download-tutorials-frontend-from-onnx-py">
 <div class="sphx-glr-download docutils container">
 <p><a class="reference download internal" download="" href="../../_downloads/696dd37904ef92773435ca321ff41bfb/from_onnx.py"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">from_onnx.py</span></code></a></p>

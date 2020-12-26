@@ -70,6 +70,7 @@ var searchData=
   ['atan',['atan',['../namespacetvm.html#a475b388b9a19d05dca849707d74636a7',1,'tvm::atan()'],['../namespacetvm_1_1topi.html#ae6359efdf50839f448d17f1ce8e64b55',1,'tvm::topi::atan()']]],
   ['atan2',['atan2',['../namespacetvm.html#a350f9808d53b5fd9ad5c4c50bb76d700',1,'tvm']]],
   ['atanh',['atanh',['../namespacetvm.html#ab72a6b6a2d0c2aa3f6a95f60dc831493',1,'tvm::atanh()'],['../namespacetvm_1_1topi.html#a0fe91ddd730e2f64fab60e863cfa619b',1,'tvm::topi::atanh()']]],
+  ['atomic_5fadd',['atomic_add',['../namespacetvm_1_1tir_1_1builtin.html#ab4a648f6e7451af295688f243a215cd7',1,'tvm::tir::builtin']]],
   ['attrdocentry',['AttrDocEntry',['../classtvm_1_1detail_1_1AttrDocEntry.html#ad364f21d28cf391fcfd8dc2364d88f89',1,'tvm::detail::AttrDocEntry']]],
   ['attrerror',['AttrError',['../structtvm_1_1AttrError.html#a3285db0171872bc2fdde8243f6e801d9',1,'tvm::AttrError']]],
   ['attrinitentry',['AttrInitEntry',['../structtvm_1_1detail_1_1AttrInitEntry.html#ad68ac350b0d49e97caab8443cc8fb08b',1,'tvm::detail::AttrInitEntry::AttrInitEntry()=default'],['../structtvm_1_1detail_1_1AttrInitEntry.html#af07c4a3a8f4663ac03ae238ab7b9d791',1,'tvm::detail::AttrInitEntry::AttrInitEntry(AttrInitEntry &amp;&amp;other)']]],

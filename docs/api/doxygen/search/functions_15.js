@@ -17,7 +17,7 @@ var searchData=
   ['updatetypedef',['UpdateTypeDef',['../classtvm_1_1IRModuleNode.html#a63b73181faaa31a95e8d71e1cf5b80b2',1,'tvm::IRModuleNode']]],
   ['use_5fcount',['use_count',['../classtvm_1_1runtime_1_1NDArray.html#acb2fd06934aac23ba492e78619c7eaa5',1,'tvm::runtime::NDArray::use_count()'],['../classtvm_1_1runtime_1_1ObjectPtr.html#a6e21dd2172469145baa7bf4d12a998ce',1,'tvm::runtime::ObjectPtr::use_count()'],['../classtvm_1_1runtime_1_1ObjectRef.html#a4cfef0af824ed4afb3daefa600b2aa04',1,'tvm::runtime::ObjectRef::use_count()']]],
   ['usedmemory',['UsedMemory',['../classtvm_1_1runtime_1_1vm_1_1Allocator.html#a66e334404d87a2716422a21e3813109e',1,'tvm::runtime::vm::Allocator']]],
-  ['utvmrpcserverinit',['UTvmRpcServerInit',['../utvm__rpc__server_8h.html#a3ba4573457fcc5b89f3cefafd0a719e8',1,'utvm_rpc_server.h']]],
+  ['utvmrpcserverinit',['UTvmRpcServerInit',['../utvm__rpc__server_8h.html#a755faf86efb2e6b1585008942b1a34b5',1,'utvm_rpc_server.h']]],
   ['utvmrpcserverloop',['UTvmRpcServerLoop',['../utvm__rpc__server_8h.html#ae26efe45b28d005993b768b8bbd4d117',1,'utvm_rpc_server.h']]],
   ['utvmruntimecreate',['UTVMRuntimeCreate',['../utvm__runtime_8h.html#a7b1c4e56ee09250e6910e460527a1088',1,'utvm_runtime.h']]],
   ['utvmruntimedestroy',['UTVMRuntimeDestroy',['../utvm__runtime_8h.html#abf893bf85d65824c181844b5837287b6',1,'utvm_runtime.h']]],

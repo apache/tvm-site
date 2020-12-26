@@ -64,6 +64,7 @@ var searchData=
   ['attrsnode_3c_20avgpool1dattrs_20_3e',['AttrsNode&lt; AvgPool1DAttrs &gt;',['../classtvm_1_1AttrsNode.html',1,'tvm']]],
   ['attrsnode_3c_20avgpool2dattrs_20_3e',['AttrsNode&lt; AvgPool2DAttrs &gt;',['../classtvm_1_1AttrsNode.html',1,'tvm']]],
   ['attrsnode_3c_20avgpool3dattrs_20_3e',['AttrsNode&lt; AvgPool3DAttrs &gt;',['../classtvm_1_1AttrsNode.html',1,'tvm']]],
+  ['attrsnode_3c_20batchmatmulattrs_20_3e',['AttrsNode&lt; BatchMatmulAttrs &gt;',['../classtvm_1_1AttrsNode.html',1,'tvm']]],
   ['attrsnode_3c_20batchnormattrs_20_3e',['AttrsNode&lt; BatchNormAttrs &gt;',['../classtvm_1_1AttrsNode.html',1,'tvm']]],
   ['attrsnode_3c_20batchtospacendattrs_20_3e',['AttrsNode&lt; BatchToSpaceNDAttrs &gt;',['../classtvm_1_1AttrsNode.html',1,'tvm']]],
   ['attrsnode_3c_20biasaddattrs_20_3e',['AttrsNode&lt; BiasAddAttrs &gt;',['../classtvm_1_1AttrsNode.html',1,'tvm']]],

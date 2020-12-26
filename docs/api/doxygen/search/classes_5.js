@@ -21,6 +21,8 @@ var searchData=
   ['fromstd',['FromStd',['../classtvm_1_1runtime_1_1StringObj_1_1FromStd.html',1,'tvm::runtime::StringObj']]],
   ['function',['Function',['../classtvm_1_1relay_1_1Function.html',1,'tvm::relay']]],
   ['functionnode',['FunctionNode',['../classtvm_1_1relay_1_1FunctionNode.html',1,'tvm::relay']]],
+  ['functionpattern',['FunctionPattern',['../classtvm_1_1relay_1_1FunctionPattern.html',1,'tvm::relay']]],
+  ['functionpatternnode',['FunctionPatternNode',['../classtvm_1_1relay_1_1FunctionPatternNode.html',1,'tvm::relay']]],
   ['functype',['FuncType',['../classtvm_1_1FuncType.html',1,'tvm']]],
   ['functypenode',['FuncTypeNode',['../classtvm_1_1FuncTypeNode.html',1,'tvm']]],
   ['fuse',['Fuse',['../classtvm_1_1te_1_1Fuse.html',1,'tvm::te']]],

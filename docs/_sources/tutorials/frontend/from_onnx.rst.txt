@@ -77,7 +77,11 @@ we skip the pytorch model construction part, and download the saved onnx model
 
 Load a test image
 ---------------------------------------------
-A single cat dominates the examples!
+A single cat dominates the examples! This model takes a single input image of size
+224x224 and outputs a scaled image that is 3x greater than the input along each
+axis, a 672x672 image. Re-scale the cat image to fit this input shape then
+convert to `YCbCr`. The super resolution model will then be applied to the
+luminance (`Y`) channel.
 
 
 .. code-block:: default
@@ -107,6 +111,14 @@ A single cat dominates the examples!
 
 Compile the model with relay
 ---------------------------------------------
+Typically ONNX models mix model input values with parameter values, with
+the input having the name `1`. This model dependent, and you should check
+with the documentation for your model to determine the full input and
+parameter name space.
+
+Passing in the shape dictionary to the `relay.frontend.from_onnx` method
+tells relay which ONNX parameters are inputs, and which are parameters, and
+provides a static definition of the input size.
 
 
 .. code-block:: default
@@ -130,7 +142,7 @@ Compile the model with relay
 
  .. code-block:: none
 
-    /workspace/docs/../python/tvm/relay/frontend/onnx.py:2737: UserWarning: Mismatched attribute type in ' : kernel_shape'
+    /workspace/docs/../python/tvm/relay/frontend/onnx.py:3075: UserWarning: Mismatched attribute type in ' : kernel_shape'
 
     ==> Context: Bad node spec: input: "1" input: "2" output: "11" op_type: "Conv" attribute { name: "kernel_shape" ints: 5 ints: 5 } attribute { name: "strides" ints: 1 ints: 1 } attribute { name: "pads" ints: 2 ints: 2 ints: 2 ints: 2 } attribute { name: "dilations" ints: 1 ints: 1 } attribute { name: "group" i: 1 }
       warnings.warn(str(e))
@@ -154,7 +166,9 @@ Execute on TVM
 
 Display results
 ---------------------------------------------
-We put input and output image neck to neck
+We put input and output image neck to neck. The luminance channel, `Y` is the output
+from the model. The chroma channels `Cb` and `Cr` are resized to match with a simple
+bicubic algorithm. The image is then recombined and converted back to `RGB`.
 
 
 .. code-block:: default
@@ -187,6 +201,11 @@ retains that dynamism upon import, and the compiler attemps to convert the model
 into a static shapes at compile time. If this fails, there may still be dynamic
 operations in the model. Not all TVM kernels currently support dynamic shapes,
 please file an issue on discuss.tvm.apache.org if you hit an error with dynamic kernels.
+
+This particular model was build using an older version of ONNX. During the import
+phase ONNX importer will run the ONNX verifier, which may throw a `Mismatched attribute type`
+warning. Because TVM supports a number of different ONNX versions, the Relay model
+will still be valid.
 
 
 .. _sphx_glr_download_tutorials_frontend_from_onnx.py:

@@ -218,6 +218,7 @@
 </li>
 <li class="toctree-l2"><a class="reference internal" href="tune_conv2d_layer_cuda.html">Auto-scheduling a Convolution Layer for GPU</a></li>
 <li class="toctree-l2"><a class="reference internal" href="tune_network_cuda.html">Auto-scheduling a Neural Network for NVIDIA GPU</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tune_network_mali.html">Auto-scheduling a Neural Network for mali GPU</a></li>
 <li class="toctree-l2"><a class="reference internal" href="tune_network_x86.html">Auto-scheduling a Neural Network for x86 CPU</a></li>
 </ul>
 </li>
@@ -427,7 +428,7 @@ file and apply it.</p>
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre>*T*T*T*T*T*T*T*T*T*T
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre>
 </pre></div>
 </div>
 <p>We can lower the schedule to see the IR after auto-scheduling.
@@ -442,8 +443,8 @@ layout transformation, parallelization, vectorization, unrolling, and operator f
 primfn(A_1: handle, B_1: handle, C_1: handle, out_1: handle) -&gt; ()
   attr = {&quot;global_symbol&quot;: &quot;main&quot;, &quot;tir.noalias&quot;: True}
   buffers = {out: Buffer(out_2: Pointer(float32), float32, [1024, 1024], []),
-             C: Buffer(C_2: Pointer(float32), float32, [1024, 1024], []),
              B: Buffer(B_2: Pointer(float32), float32, [1024, 1024], []),
+             C: Buffer(C_2: Pointer(float32), float32, [1024, 1024], []),
              A: Buffer(A_2: Pointer(float32), float32, [1024, 1024], [])}
   buffer_map = {A_1: A, B_1: B, C_1: C, out_1: out} {
   attr [auto_scheduler_layout_transform: Pointer(float32)] &quot;storage_scope&quot; = &quot;global&quot;;
@@ -507,7 +508,7 @@ primfn(A_1: handle, B_1: handle, C_1: handle, out_1: handle) -&gt; ()
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre>Execution time of this operator: 22.426 ms
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre>Execution time of this operator: 16.683 ms
 </pre></div>
 </div>
 </div>
@@ -553,41 +554,27 @@ s[out].vectorize(out_j_i)
 In this case, we need to create the search policy and cost model by ourselves
 and resume the status of search policy and cost model with the log file.
 In the example below we resume the status and do more 5 trials.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span class="k">def</span> <span class="nf">resume_search</span><span class="p">(</span><span class="n">task</span><span class="p">,</span> <span class="n">log_file_name</span><span class="p">):</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span class="k">def</span> <span class="nf">resume_search</span><span class="p">(</span><span class="n">task</span><span class="p">,</span> <span class="n">log_file</span><span class="p">):</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Resume search:&quot;</span><span class="p">)</span>
     <span class="n">cost_model</span> <span class="o">=</span> <a href="../../api/python/auto_scheduler.html#tvm.auto_scheduler.XGBModel" title="View documentation for tvm.auto_scheduler.XGBModel"><span class="n">auto_scheduler</span><span class="o">.</span><span class="n">XGBModel</span></a><span class="p">()</span>
-    <span class="n">cost_model</span><span class="o">.</span><span class="n">update_from_file</span><span class="p">(</span><span class="n">log_file_name</span><span class="p">)</span>
+    <span class="n">cost_model</span><span class="o">.</span><span class="n">update_from_file</span><span class="p">(</span><span class="n">log_file</span><span class="p">)</span>
     <span class="n">search_policy</span> <span class="o">=</span> <a href="../../api/python/auto_scheduler.html#tvm.auto_scheduler.SketchPolicy" title="View documentation for tvm.auto_scheduler.SketchPolicy"><span class="n">auto_scheduler</span><span class="o">.</span><span class="n">SketchPolicy</span></a><span class="p">(</span>
-        <span class="n">task</span><span class="p">,</span>
-        <span class="n">cost_model</span><span class="p">,</span>
-        <span class="n">init_search_callbacks</span><span class="o">=</span><span class="p">[</span><a href="../../api/python/auto_scheduler.html#tvm.auto_scheduler.PreloadMeasuredStates" title="View documentation for tvm.auto_scheduler.PreloadMeasuredStates"><span class="n">auto_scheduler</span><span class="o">.</span><span class="n">PreloadMeasuredStates</span></a><span class="p">(</span><span class="n">log_file_name</span><span class="p">)],</span>
+        <span class="n">task</span><span class="p">,</span> <span class="n">cost_model</span><span class="p">,</span> <span class="n">init_search_callbacks</span><span class="o">=</span><span class="p">[</span><a href="../../api/python/auto_scheduler.html#tvm.auto_scheduler.PreloadMeasuredStates" title="View documentation for tvm.auto_scheduler.PreloadMeasuredStates"><span class="n">auto_scheduler</span><span class="o">.</span><span class="n">PreloadMeasuredStates</span></a><span class="p">(</span><span class="n">log_file</span><span class="p">)]</span>
     <span class="p">)</span>
     <span class="n">tune_option</span> <span class="o">=</span> <a href="../../api/python/auto_scheduler.html#tvm.auto_scheduler.TuningOptions" title="View documentation for tvm.auto_scheduler.TuningOptions"><span class="n">auto_scheduler</span><span class="o">.</span><span class="n">TuningOptions</span></a><span class="p">(</span>
-        <span class="n">num_measure_trials</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">measure_callbacks</span><span class="o">=</span><span class="p">[</span><a href="../../api/python/auto_scheduler.html#tvm.auto_scheduler.RecordToFile" title="View documentation for tvm.auto_scheduler.RecordToFile"><span class="n">auto_scheduler</span><span class="o">.</span><span class="n">RecordToFile</span></a><span class="p">(</span><span class="n">log_file_name</span><span class="p">)]</span>
+        <span class="n">num_measure_trials</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">measure_callbacks</span><span class="o">=</span><span class="p">[</span><a href="../../api/python/auto_scheduler.html#tvm.auto_scheduler.RecordToFile" title="View documentation for tvm.auto_scheduler.RecordToFile"><span class="n">auto_scheduler</span><span class="o">.</span><span class="n">RecordToFile</span></a><span class="p">(</span><span class="n">log_file</span><span class="p">)]</span>
     <span class="p">)</span>
     <span class="n">task</span><span class="o">.</span><span class="n">tune</span><span class="p">(</span><span class="n">tune_option</span><span class="p">,</span> <span class="n">search_policy</span><span class="o">=</span><span class="n">search_policy</span><span class="p">)</span>
 
 
-<span class="c1"># resume_search(task, log_file)</span>
+<span class="n">resume_search</span><span class="p">(</span><span class="n">task</span><span class="p">,</span> <span class="n">log_file</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>We cannot run the line above because of the conflict between
-python’s multiprocessing and tvm’s thread pool.
-After running a tvm generated binary the python’s multiprocessing library
-will hang forever. You have to make sure that you don’t run any tvm
-generated binaries before calling auot-scheduler’s search.
-To run the function above, you should comment out all code in
-“Check correctness and evaluate performance” section.</p>
-<p>You should be careful about this problem in your applications.
-There are other workarounds for this problem.
-For example, you can start a new thread/process (with the builtin python library
-threading or multiprocessing) and run the tvm binaries in the new thread/process.
-This provides an isolation and avoids the conflict in the main thread/process.
-You can also use <a class="reference internal" href="../../api/python/auto_scheduler.html#tvm.auto_scheduler.LocalRPCMeasureContext" title="tvm.auto_scheduler.LocalRPCMeasureContext"><code class="xref any py py-class docutils literal notranslate"><span class="pre">auto_scheduler.LocalRPCMeasureContext</span></code></a> for auto-scheduler,
-as shown in the GPU tutorial (<a class="reference internal" href="tune_conv2d_layer_cuda.html#auto-scheduler-conv-gpu"><span class="std std-ref">Auto-scheduling a Convolution Layer for GPU</span></a>).</p>
+<p class="sphx-glr-script-out">Out:</p>
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre>Resume search:
+*T
+</pre></div>
 </div>
-<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 1 minutes  50.410 seconds)</p>
 <div class="sphx-glr-footer class sphx-glr-footer-example docutils container" id="sphx-glr-download-tutorials-auto-scheduler-tune-matmul-x86-py">
 <div class="sphx-glr-download docutils container">
 <p><a class="reference download internal" download="" href="../../_downloads/91b0339c8f3cc2594cee580dc450149a/tune_matmul_x86.py"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">tune_matmul_x86.py</span></code></a></p>

@@ -23,6 +23,7 @@ var searchData=
   ['fragment_5flayout',['fragment_layout',['../namespacetvm_1_1tir_1_1attr.html#a9b33cc65f756817e691b49782ee103bd',1,'tvm::tir::attr']]],
   ['fragment_5fshape',['fragment_shape',['../namespacetvm_1_1tir_1_1attr.html#a93d76d80fd7252d66991dc650693c0ef',1,'tvm::tir::attr']]],
   ['frames_5f',['frames_',['../classtvm_1_1runtime_1_1vm_1_1VirtualMachine.html#a4a268dec17fdd0942fe7dce78974783f',1,'tvm::runtime::vm::VirtualMachine']]],
+  ['free',['Free',['../structMemoryManagerInterface.html#a13dbc4e5169fa4711edbf6ee8801eb6b',1,'MemoryManagerInterface']]],
   ['free_5fvars',['free_vars',['../structtvm_1_1runtime_1_1vm_1_1Instruction.html#a720b762553a301b526d66042afcd5ca3',1,'tvm::runtime::vm::Instruction::free_vars()'],['../classtvm_1_1runtime_1_1vm_1_1VMClosureObj.html#ab16d6772f7b61f37b47ee7aa30aaa4cd',1,'tvm::runtime::vm::VMClosureObj::free_vars()']]],
   ['from',['from',['../structtvm_1_1runtime_1_1vm_1_1Instruction.html#a50da0d506e9a2bffeaf75c702cf2cc33',1,'tvm::runtime::vm::Instruction']]],
   ['fschedule',['fschedule',['../classtvm_1_1relay_1_1OpImplementationNode.html#a53fd916957cb15e070d736d12d8ced62',1,'tvm::relay::OpImplementationNode']]],

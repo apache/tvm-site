@@ -25,6 +25,6 @@ var searchData=
   ['visit_5flimit_5f',['visit_limit_',['../classtvm_1_1relay_1_1MixedModeVisitor.html#aa6ea62e128a480d6321abd882b2e3bdb',1,'tvm::relay::MixedModeVisitor']]],
   ['visitattrs',['VisitAttrs',['../structtvm_1_1detail_1_1ImplVisitAttrs.html#afd7588fbc6336565b47c77d04b0ab69b',1,'tvm::detail::ImplVisitAttrs::VisitAttrs()'],['../structtvm_1_1detail_1_1SelectVisitAttrs.html#aacd15172d6c63d2008e1d109530d174f',1,'tvm::detail::SelectVisitAttrs::VisitAttrs()']]],
   ['visited_5f',['visited_',['../classtvm_1_1relay_1_1DFPatternVisitor.html#af90576ccca72b94c42cd79c6ba63f242',1,'tvm::relay::DFPatternVisitor']]],
-  ['vleak_5fsize',['vleak_size',['../runtime_2crt_2memory_8h.html#a165c599c1f2bce12e7069568f9f00952',1,'memory.h']]],
+  ['vleak_5fsize',['vleak_size',['../structMemoryManagerInterface.html#a7ebe94f3ad1fb2877bc6cb9035808080',1,'MemoryManagerInterface::vleak_size()'],['../runtime_2crt_2memory_8h.html#a165c599c1f2bce12e7069568f9f00952',1,'vleak_size():&#160;memory.h']]],
   ['volatile_5fscope',['volatile_scope',['../namespacetvm_1_1tir_1_1attr.html#a14c2370f3a08792a6aaf70d7a3c773e4',1,'tvm::tir::attr']]]
 ];

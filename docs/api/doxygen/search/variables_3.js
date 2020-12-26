@@ -2,6 +2,7 @@ var searchData=
 [
   ['cache_5fline_5fbytes',['cache_line_bytes',['../classtvm_1_1auto__scheduler_1_1HardwareParamsNode.html#a3ed41e95549c177c0e3cbafefc0f3959',1,'tvm::auto_scheduler::HardwareParamsNode']]],
   ['call',['Call',['../structTVMPackedFunc.html#a8d30f9231108fec5e01b06f1c49d0681',1,'TVMPackedFunc']]],
+  ['callback_5ffunc',['callback_func',['../classtvm_1_1auto__scheduler_1_1PythonBasedMeasureCallbackNode.html#ad5ca2368cd2735e14aa30921cc28716c',1,'tvm::auto_scheduler::PythonBasedMeasureCallbackNode']]],
   ['callbacks',['callbacks',['../classtvm_1_1auto__scheduler_1_1ProgramMeasurerNode.html#a9454dd321ce373cb2434f10d392db345',1,'tvm::auto_scheduler::ProgramMeasurerNode']]],
   ['caller_5freturn_5fregister',['caller_return_register',['../structtvm_1_1runtime_1_1vm_1_1VMFrame.html#a2f6c425a89ee6872ead9bc71ab87fdd1',1,'tvm::runtime::vm::VMFrame']]],
   ['canonical_5fsimplify',['canonical_simplify',['../classtvm_1_1arith_1_1Analyzer.html#a6cdf29adeceaa20b8c3dd7c26b92cd00',1,'tvm::arith::Analyzer']]],

@@ -67,6 +67,7 @@ var searchData=
   ['full_5flike',['full_like',['../namespacetvm_1_1topi.html#aec68ce461f0a1965c27912b9ddb90aa2',1,'tvm::topi']]],
   ['func_5ftype_5fannotation',['func_type_annotation',['../classtvm_1_1relay_1_1FunctionNode.html#a758bc467aa4dc4041b0fc7b7dbca4e67',1,'tvm::relay::FunctionNode::func_type_annotation()'],['../classtvm_1_1tir_1_1PrimFuncNode.html#a63f4bba334dff54fee2097d17804c045',1,'tvm::tir::PrimFuncNode::func_type_annotation()']]],
   ['function',['Function',['../classtvm_1_1relay_1_1Function.html#a11ee77c0df8aa1c2c072c7cf613b9238',1,'tvm::relay::Function']]],
+  ['functionpattern',['FunctionPattern',['../classtvm_1_1relay_1_1FunctionPattern.html#a3e08e14375734b280d58b3934bf9671b',1,'tvm::relay::FunctionPattern']]],
   ['functype',['FuncType',['../classtvm_1_1FuncType.html#a91900b77ec8debd6e1b479a438eadbdd',1,'tvm::FuncType']]],
   ['fuse',['Fuse',['../classtvm_1_1te_1_1Fuse.html#a10b77eec10eb7dbc536b0c8d65163f9c',1,'tvm::te::Fuse::Fuse()'],['../classtvm_1_1auto__scheduler_1_1State.html#a76198c368b38ad64eefa45a3147aa6ac',1,'tvm::auto_scheduler::State::fuse()'],['../classtvm_1_1te_1_1Stage.html#a5658065d9cbbee620bbd107d30c4ae72',1,'tvm::te::Stage::fuse(IterVar outer, IterVar inner, IterVar *p_target)'],['../classtvm_1_1te_1_1Stage.html#a07b721494aa3c0c79e8a8654c433708f',1,'tvm::te::Stage::fuse(const Array&lt; IterVar &gt; &amp;axes, IterVar *p_target)']]],
   ['fuseops',['FuseOps',['../namespacetvm_1_1relay_1_1transform.html#a2a6be6024a96a84f7230faa2519f1a97',1,'tvm::relay::transform']]],

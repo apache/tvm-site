@@ -150,6 +150,7 @@ var searchData=
   ['ktvmerrornoerror',['kTvmErrorNoError',['../error__codes_8h.html#a77b4da0131882f0c9b887a47dd34467aae9d5e6d1ff25388e0b876747416f339f',1,'error_codes.h']]],
   ['ktvmerrorplatformcheckfailure',['kTvmErrorPlatformCheckFailure',['../error__codes_8h.html#a77b4da0131882f0c9b887a47dd34467aadd73109fe59db421e0040d6f41e8f272',1,'error_codes.h']]],
   ['ktvmerrorplatformmemorymanagerinitialized',['kTvmErrorPlatformMemoryManagerInitialized',['../error__codes_8h.html#a77b4da0131882f0c9b887a47dd34467aaa727eb5fad7de52d03d5625aa7412fe8',1,'error_codes.h']]],
+  ['ktvmerrorplatformnomemory',['kTvmErrorPlatformNoMemory',['../error__codes_8h.html#a77b4da0131882f0c9b887a47dd34467aa40ec6e4b1d01a289d429658df3c18e67',1,'error_codes.h']]],
   ['ktvmerrorplatformshutdown',['kTvmErrorPlatformShutdown',['../error__codes_8h.html#a77b4da0131882f0c9b887a47dd34467aae30a3abeae60decc627e5014fac4579b',1,'error_codes.h']]],
   ['ktvmerrorsessioninvalidstate',['kTvmErrorSessionInvalidState',['../error__codes_8h.html#a77b4da0131882f0c9b887a47dd34467aa1eba887f1e02a615c3bcadb8babf990c',1,'error_codes.h']]],
   ['ktvmerrorsessionreceivebufferbusy',['kTvmErrorSessionReceiveBufferBusy',['../error__codes_8h.html#a77b4da0131882f0c9b887a47dd34467aae70f626134baeb5295186f85ed273c66',1,'error_codes.h']]],

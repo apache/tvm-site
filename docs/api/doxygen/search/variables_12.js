@@ -40,7 +40,7 @@ var searchData=
   ['tvm_5fset_5fdevice',['tvm_set_device',['../namespacetvm_1_1runtime_1_1symbol.html#aaad9cf8f51a55b2ec5b19854d692bd21',1,'tvm::runtime::symbol']]],
   ['type',['type',['../classtvm_1_1relay_1_1TypePatternNode.html#aab5faa2a58862707b8dc18b59cccac19',1,'tvm::relay::TypePatternNode']]],
   ['type_5fannotation',['type_annotation',['../classtvm_1_1relay_1_1VarPatternNode.html#ac5c8070ca813620d9d01497292188657',1,'tvm::relay::VarPatternNode::type_annotation()'],['../classtvm_1_1relay_1_1VarNode.html#a79a56885eaf2a9326ff490164a5c1f0e',1,'tvm::relay::VarNode::type_annotation()'],['../classtvm_1_1tir_1_1VarNode.html#a7a84c6d137a79e9a5b9c4b6183f18353',1,'tvm::tir::VarNode::type_annotation()']]],
-  ['type_5fargs',['type_args',['../classtvm_1_1relay_1_1CallPatternNode.html#a6f60fdc5b3f813cdb1a3d2ed33afb76e',1,'tvm::relay::CallPatternNode::type_args()'],['../classtvm_1_1relay_1_1CallNode.html#ad23d97a6ae1cc1bea903d4c714f811d6',1,'tvm::relay::CallNode::type_args()']]],
+  ['type_5fargs',['type_args',['../classtvm_1_1relay_1_1CallNode.html#ad23d97a6ae1cc1bea903d4c714f811d6',1,'tvm::relay::CallNode']]],
   ['type_5fcode_5f',['type_code_',['../classtvm_1_1runtime_1_1TVMPODValue__.html#aed3e983e990c5c4ed3ac09b95055297e',1,'tvm::runtime::TVMPODValue_']]],
   ['type_5fcodes',['type_codes',['../classtvm_1_1runtime_1_1TVMArgs.html#abdb0f929087b14eb28d75c7a047cef9e',1,'tvm::runtime::TVMArgs']]],
   ['type_5fconstraints',['type_constraints',['../classtvm_1_1FuncTypeNode.html#a6dd6e8ed07019caa87943ec47d065499',1,'tvm::FuncTypeNode']]],

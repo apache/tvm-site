@@ -60,6 +60,7 @@ var searchData=
   ['getrpcsessionindex',['GetRPCSessionIndex',['../namespacetvm_1_1runtime.html#a9ac54b0d7a3e3c22fd0ddef0a731cfd5',1,'tvm::runtime']]],
   ['getruntimedatatype',['GetRuntimeDataType',['../namespacetvm.html#a0447e9aa45f6cab707f6dc9f9281b3f5',1,'tvm']]],
   ['getshape',['GetShape',['../classtvm_1_1te_1_1TensorNode.html#a35df267780880731a051773b2dca7bbd',1,'tvm::te::TensorNode::GetShape()'],['../classtvm_1_1tir_1_1DataProducerNode.html#aa44d3146c9f543538a32dfd954512bf7',1,'tvm::tir::DataProducerNode::GetShape()']]],
+  ['getshapefromrewrittenlayout',['GetShapeFromRewrittenLayout',['../namespacetvm_1_1auto__scheduler.html#af17f33579675323a67964d6653562b58',1,'tvm::auto_scheduler']]],
   ['getsigntype',['GetSignType',['../classtvm_1_1arith_1_1IntSet.html#a651c7689d1da9b8f931312ffd6954dbd',1,'tvm::arith::IntSet']]],
   ['getsource',['GetSource',['../classtvm_1_1runtime_1_1ModuleNode.html#a73ac521892f4263554116261303e7e44',1,'tvm::runtime::ModuleNode']]],
   ['getspan',['GetSpan',['../classtvm_1_1TypeReporterNode.html#a06af835a761aaa10627a88ac4b712a15',1,'tvm::TypeReporterNode']]],

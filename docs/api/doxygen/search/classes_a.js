@@ -31,6 +31,7 @@ var searchData=
   ['memoryinfo',['MemoryInfo',['../classtvm_1_1MemoryInfo.html',1,'tvm']]],
   ['memoryinfonode',['MemoryInfoNode',['../classtvm_1_1MemoryInfoNode.html',1,'tvm']]],
   ['memorymanager',['MemoryManager',['../classtvm_1_1runtime_1_1vm_1_1MemoryManager.html',1,'tvm::runtime::vm']]],
+  ['memorymanagerinterface',['MemoryManagerInterface',['../structMemoryManagerInterface.html',1,'']]],
   ['meshgridattrs',['MeshgridAttrs',['../structtvm_1_1relay_1_1MeshgridAttrs.html',1,'tvm::relay']]],
   ['min',['Min',['../classtvm_1_1tir_1_1Min.html',1,'tvm::tir']]],
   ['minnode',['MinNode',['../classtvm_1_1tir_1_1MinNode.html',1,'tvm::tir']]],

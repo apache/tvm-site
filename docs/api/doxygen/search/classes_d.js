@@ -61,6 +61,8 @@ var searchData=
   ['programrunner',['ProgramRunner',['../classtvm_1_1auto__scheduler_1_1ProgramRunner.html',1,'tvm::auto_scheduler']]],
   ['programrunnernode',['ProgramRunnerNode',['../classtvm_1_1auto__scheduler_1_1ProgramRunnerNode.html',1,'tvm::auto_scheduler']]],
   ['proposalattrs',['ProposalAttrs',['../structtvm_1_1relay_1_1ProposalAttrs.html',1,'tvm::relay']]],
+  ['pythonbasedmeasurecallback',['PythonBasedMeasureCallback',['../classtvm_1_1auto__scheduler_1_1PythonBasedMeasureCallback.html',1,'tvm::auto_scheduler']]],
+  ['pythonbasedmeasurecallbacknode',['PythonBasedMeasureCallbackNode',['../classtvm_1_1auto__scheduler_1_1PythonBasedMeasureCallbackNode.html',1,'tvm::auto_scheduler']]],
   ['pythonbasedmodel',['PythonBasedModel',['../classtvm_1_1auto__scheduler_1_1PythonBasedModel.html',1,'tvm::auto_scheduler']]],
   ['pythonbasedmodelnode',['PythonBasedModelNode',['../classtvm_1_1auto__scheduler_1_1PythonBasedModelNode.html',1,'tvm::auto_scheduler']]]
 ];
