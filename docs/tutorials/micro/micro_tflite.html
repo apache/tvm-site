@@ -11,7 +11,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Micro TVM with TFLite Models &mdash; tvm 0.8.dev0 documentation</title>
+  <title>microTVM with TFLite Models &mdash; tvm 0.8.dev0 documentation</title>
   
 
   
@@ -199,6 +199,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../contribute/index.html">Contribute to TVM</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../deploy/index.html">Deploy and Integration</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../dev/how_to.html">Developer How-To Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../microtvm/index.html">microTVM: TVM on bare-metal</a></li>
 </ul>
 <p class="caption"><span class="caption-text">Tutorials</span></p>
 <ul class="current">
@@ -210,9 +211,18 @@
 <li class="toctree-l1"><a class="reference internal" href="../index.html#autoscheduler-template-free-auto-scheduling">AutoScheduler : Template-free Auto Scheduling</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../index.html#developer-tutorials">Developer Tutorials</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../index.html#topi-tvm-operator-inventory">TOPI: TVM Operator Inventory</a></li>
-<li class="toctree-l1 current"><a class="reference internal" href="../index.html#micro-tvm">Micro TVM</a><ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="../index.html#microtvm">microTVM</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="micro_reference_vm.html">microTVM Reference Virtual Machines</a></li>
-<li class="toctree-l2 current"><a class="current reference internal" href="#">Micro TVM with TFLite Models</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">microTVM with TFLite Models</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#setup">Setup</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#install-tflite">Install TFLite</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#install-zephyr-physical-hardware-only">Install Zephyr (physical hardware only)</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#load-and-prepare-the-pre-trained-model">Load and prepare the Pre-Trained Model</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#defining-the-target">Defining the target</a></li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>
@@ -291,7 +301,7 @@
         
           <li><a href="../index.html">Get Started Tutorials</a> <span class="br-arrow">></span></li>
         
-      <li>Micro TVM with TFLite Models</li>
+      <li>microTVM with TFLite Models</li>
     
     
       <li class="wy-breadcrumbs-aside">
@@ -314,95 +324,106 @@
 <p class="admonition-title">Note</p>
 <p>Click <a class="reference internal" href="#sphx-glr-download-tutorials-micro-micro-tflite-py"><span class="std std-ref">here</span></a> to download the full example code</p>
 </div>
-<div class="sphx-glr-example-title section" id="micro-tvm-with-tflite-models">
-<span id="sphx-glr-tutorials-micro-micro-tflite-py"></span><h1>Micro TVM with TFLite Models<a class="headerlink" href="#micro-tvm-with-tflite-models" title="Permalink to this headline">¶</a></h1>
+<div class="sphx-glr-example-title section" id="microtvm-with-tflite-models">
+<span id="sphx-glr-tutorials-micro-micro-tflite-py"></span><h1>microTVM with TFLite Models<a class="headerlink" href="#microtvm-with-tflite-models" title="Permalink to this headline">¶</a></h1>
 <p><strong>Author</strong>: <a class="reference external" href="https://github.com/tom-gall">Tom Gall</a></p>
-<p>This tutorial is an introduction to working with MicroTVM and a TFLite
+<p>This tutorial is an introduction to working with microTVM and a TFLite
 model with Relay.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span class="c1"># %%</span>
-<span class="c1"># Setup</span>
-<span class="c1"># -----</span>
-<span class="c1">#</span>
-<span class="c1"># To get started, TFLite package needs to be installed as prerequisite.</span>
-<span class="c1">#</span>
-<span class="c1"># install tflite</span>
-<span class="c1">#</span>
-<span class="c1"># .. code-block:: bash</span>
-<span class="c1">#</span>
-<span class="c1">#   pip install tflite=2.1.0 --user</span>
-<span class="c1">#</span>
-<span class="c1"># or you could generate TFLite package yourself. The steps are the following:</span>
-<span class="c1">#</span>
-<span class="c1">#   Get the flatc compiler.</span>
-<span class="c1">#   Please refer to https://github.com/google/flatbuffers for details</span>
-<span class="c1">#   and make sure it is properly installed.</span>
-<span class="c1">#</span>
-<span class="c1"># .. code-block:: bash</span>
-<span class="c1">#</span>
-<span class="c1">#   flatc --version</span>
-<span class="c1">#</span>
-<span class="c1"># Get the TFLite schema.</span>
-<span class="c1">#</span>
-<span class="c1"># .. code-block:: bash</span>
-<span class="c1">#</span>
-<span class="c1">#   wget https://raw.githubusercontent.com/tensorflow/tensorflow/r1.13/tensorflow/lite/schema/schema.fbs</span>
-<span class="c1">#</span>
-<span class="c1"># Generate TFLite package.</span>
-<span class="c1">#</span>
-<span class="c1"># .. code-block:: bash</span>
-<span class="c1">#</span>
-<span class="c1">#   flatc --python schema.fbs</span>
-<span class="c1">#</span>
-<span class="c1"># Add the current folder (which contains generated tflite module) to PYTHONPATH.</span>
-<span class="c1">#</span>
-<span class="c1"># .. code-block:: bash</span>
-<span class="c1">#</span>
-<span class="c1">#   export PYTHONPATH=${PYTHONPATH:+$PYTHONPATH:}$(pwd)</span>
-<span class="c1">#</span>
-<span class="c1"># To validate that the TFLite package was installed successfully, ``python -c &quot;import tflite&quot;``</span>
-<span class="c1">#</span>
-<span class="c1"># CMSIS needs to be downloaded and the CMSIS_ST_PATH environment variable setup</span>
-<span class="c1"># This tutorial only supports the STM32F7xx series of boards.</span>
-<span class="c1"># Download from : https://www.st.com/en/embedded-software/stm32cubef7.html</span>
-<span class="c1"># After you&#39;ve expanded the zip file</span>
-<span class="c1">#</span>
-<span class="c1"># .. code-block:: bash</span>
-<span class="c1">#</span>
-<span class="c1">#   export CMSIS_ST_PATH=/path/to/STM32Cube_FW_F7_V1.16.0/Drivers/CMSIS</span>
-
-<span class="c1"># %%</span>
-<span class="c1"># Recreating your own Pre-Trained TFLite model</span>
-<span class="c1"># --------------------------------------------</span>
-<span class="c1">#</span>
-<span class="c1"># The tutorial downloads a pretrained TFLite model. When working with microcontrollers</span>
-<span class="c1"># you need to be mindful these are highly resource constrained devices as such standard</span>
-<span class="c1"># models like MobileNet may not fit into their modest memory.</span>
-<span class="c1">#</span>
-<span class="c1"># For this tutorial, we&#39;ll make use of one of the TF Micro example models.</span>
-<span class="c1">#</span>
-<span class="c1"># If you wish to replicate the training steps see:</span>
-<span class="c1"># https://github.com/tensorflow/tensorflow/tree/master/tensorflow/lite/micro/examples/hello_world/train</span>
-<span class="c1">#</span>
-<span class="c1">#   .. note::</span>
-<span class="c1">#</span>
-<span class="c1">#     If you accidentally download the example pretrained model from:</span>
-<span class="c1">#     wget https://storage.googleapis.com/download.tensorflow.org/models/tflite/micro/hello_world_2020_04_13.zip</span>
-<span class="c1">#     this will fail due to an unimplemented opcode (114)</span>
-
-<span class="kn">import</span> <span class="nn">os</span>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>If you want to run this tutorial on the microTVM Reference VM, download the Jupyter
+notebook using the link at the bottom of this page and save it into the TVM directory. Then:</p>
+<ol class="arabic">
+<li><p>Login to the reference VM with a modified <code class="docutils literal notranslate"><span class="pre">vagrant</span> <span class="pre">ssh</span></code> command:</p>
+<blockquote>
+<div><p><code class="docutils literal notranslate"><span class="pre">$</span> <span class="pre">vagrant</span> <span class="pre">ssh</span> <span class="pre">--</span> <span class="pre">-L8888:localhost:8888</span></code></p>
+</div></blockquote>
+</li>
+<li><p>Install jupyter:  <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">jupyterlab</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">cd</span></code> to the TVM directory.</p></li>
+<li><p>Install tflite: poetry install -E importer-tflite</p></li>
+<li><p>Launch Jupyter Notebook: <code class="docutils literal notranslate"><span class="pre">jupyter</span> <span class="pre">notebook</span></code></p></li>
+<li><p>Copy the localhost URL displayed, and paste it into your browser.</p></li>
+<li><p>Navigate to saved Jupyter Notebook (<code class="docutils literal notranslate"><span class="pre">.ipynb</span></code> file).</p></li>
+</ol>
+</div>
+<div class="section" id="setup">
+<h2>Setup<a class="headerlink" href="#setup" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="install-tflite">
+<h3>Install TFLite<a class="headerlink" href="#install-tflite" title="Permalink to this headline">¶</a></h3>
+<p>To get started, TFLite package needs to be installed as prerequisite. You can do this in two ways:</p>
+<ol class="arabic">
+<li><p>Install tflite with <code class="docutils literal notranslate"><span class="pre">pip</span></code></p>
+<blockquote>
+<div><div class="highlight-bash notranslate"><div class="highlight"><pre>pip install <span class="nv">tflite</span><span class="o">=</span>2.1.0 --user
+</pre></div>
+</div>
+</div></blockquote>
+</li>
+<li><p>Generate the TFLite package yourself. The steps are the following:</p>
+<blockquote>
+<div><p>Get the flatc compiler.
+Please refer to <a class="reference external" href="https://github.com/google/flatbuffers">https://github.com/google/flatbuffers</a> for details
+and make sure it is properly installed.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre>flatc --version
+</pre></div>
+</div>
+<p>Get the TFLite schema.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre>wget https://raw.githubusercontent.com/tensorflow/tensorflow/r1.13/tensorflow/lite/schema/schema.fbs
+</pre></div>
+</div>
+<p>Generate TFLite package.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre>flatc --python schema.fbs
+</pre></div>
+</div>
+<p>Add the current folder (which contains generated tflite module) to PYTHONPATH.</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span class="nb">export</span> <span class="nv">PYTHONPATH</span><span class="o">=</span><span class="si">${</span><span class="nv">PYTHONPATH</span><span class="p">:+</span>$<span class="nv">PYTHONPATH</span><span class="p">:</span><span class="si">}</span><span class="k">$(</span><span class="nb">pwd</span><span class="k">)</span>
+</pre></div>
+</div>
+</div></blockquote>
+</li>
+</ol>
+<p>To validate that the TFLite package was installed successfully, <code class="docutils literal notranslate"><span class="pre">python</span> <span class="pre">-c</span> <span class="pre">&quot;import</span> <span class="pre">tflite&quot;</span></code></p>
+</div>
+<div class="section" id="install-zephyr-physical-hardware-only">
+<h3>Install Zephyr (physical hardware only)<a class="headerlink" href="#install-zephyr-physical-hardware-only" title="Permalink to this headline">¶</a></h3>
+<p>When running this tutorial with a host simulation (the default), you can use the host <code class="docutils literal notranslate"><span class="pre">gcc</span></code> to
+build a firmware image that simulates the device. When compiling to run on physical hardware, you
+need to install a <em>toolchain</em> plus some target-specific dependencies. microTVM allows you to
+supply any compiler and runtime that can launch the TVM RPC server, but to get started, this
+tutorial relies on the Zephyr RTOS to provide these pieces.</p>
+<p>You can install Zephyr by following the
+<a class="reference external" href="https://docs.zephyrproject.org/latest/getting_started/index.html">Installation Instructions</a>.</p>
+<dl>
+<dt>Aside: Recreating your own Pre-Trained TFLite model</dt><dd><p>The tutorial downloads a pretrained TFLite model. When working with microcontrollers
+you need to be mindful these are highly resource constrained devices as such standard
+models like MobileNet may not fit into their modest memory.</p>
+<p>For this tutorial, we’ll make use of one of the TF Micro example models.</p>
+<p>If you wish to replicate the training steps see:
+<a class="reference external" href="https://github.com/tensorflow/tensorflow/tree/master/tensorflow/lite/micro/examples/hello_world/train">https://github.com/tensorflow/tensorflow/tree/master/tensorflow/lite/micro/examples/hello_world/train</a></p>
+<blockquote>
+<div><div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>If you accidentally download the example pretrained model from:</p>
+<p><code class="docutils literal notranslate"><span class="pre">wget</span> <span class="pre">https://storage.googleapis.com/download.tensorflow.org/models/tflite/micro/hello_world_2020_04_13.zip</span></code></p>
+<p>this will fail due to an unimplemented opcode (114)</p>
+</div>
+</div></blockquote>
+</dd>
+</dl>
+</div>
+</div>
+<div class="section" id="load-and-prepare-the-pre-trained-model">
+<h2>Load and prepare the Pre-Trained Model<a class="headerlink" href="#load-and-prepare-the-pre-trained-model" title="Permalink to this headline">¶</a></h2>
+<p>Load the pretrained TFLite model from a file in your current
+directory into a buffer</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span class="kn">import</span> <span class="nn">os</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">import</span> <span class="nn">tvm</span>
 <span class="kn">import</span> <span class="nn">tvm.micro</span> <span class="k">as</span> <span class="nn">micro</span>
 <span class="kn">from</span> <span class="nn">tvm.contrib.download</span> <span class="k">import</span> <span class="n">download_testdata</span>
 <span class="kn">from</span> <span class="nn">tvm.contrib</span> <span class="k">import</span> <span class="n">graph_runtime</span><span class="p">,</span> <span class="n">utils</span>
 <span class="kn">from</span> <span class="nn">tvm</span> <span class="k">import</span> <span class="n">relay</span>
-
-<span class="c1"># %%</span>
-<span class="c1"># Load and prepare the Pre-Trained Model</span>
-<span class="c1"># --------------------------------------</span>
-<span class="c1">#</span>
-<span class="c1"># Load the pretrained TFLite model from a file in your current</span>
-<span class="c1"># directory into a buffer</span>
 
 <span class="n">model_url</span> <span class="o">=</span> <span class="s2">&quot;https://people.linaro.org/~tom.gall/sine_model.tflite&quot;</span>
 <span class="n">model_file</span> <span class="o">=</span> <span class="s2">&quot;sine_model.tflite&quot;</span>
@@ -440,8 +461,8 @@ and weights.
 It is important to note that the input tensor name must match what
 is contained in the model.</p>
 <p>If you are unsure what that might be, this can be discovered by using
-the visualize.py script within the Tensorflow project.
-See : How do I inspect a .tflite file? <a class="reference external" href="https://www.tensorflow.org/lite/guide/faq">https://www.tensorflow.org/lite/guide/faq</a></p>
+the <code class="docutils literal notranslate"><span class="pre">visualize.py</span></code> script within the Tensorflow project.
+See <a class="reference external" href="https://www.tensorflow.org/lite/guide/faq">How do I inspect a .tflite file?</a></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span class="n">input_tensor</span> <span class="o">=</span> <span class="s2">&quot;dense_4_input&quot;</span>
 <span class="n">input_shape</span> <span class="o">=</span> <span class="p">(</span><span class="mi">1</span><span class="p">,)</span>
 <span class="n">input_dtype</span> <span class="o">=</span> <span class="s2">&quot;float32&quot;</span>
@@ -451,31 +472,61 @@ See : How do I inspect a .tflite file? <a class="reference external" href="https
 <span class="p">)</span>
 </pre></div>
 </div>
+</div>
+<div class="section" id="defining-the-target">
+<h2>Defining the target<a class="headerlink" href="#defining-the-target" title="Permalink to this headline">¶</a></h2>
 <p>Now we create a build config for relay. turning off two options
 and then calling relay.build which will result in a C source
-file.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre>
-</pre></div>
-</div>
+file. When running on a simulated target, choose “host” below:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span class="n">TARGET</span> <span class="o">=</span> <span class="n">tvm</span><span class="o">.</span><span class="n">target</span><span class="o">.</span><span class="n">target</span><span class="o">.</span><span class="n">micro</span><span class="p">(</span><span class="s2">&quot;host&quot;</span><span class="p">)</span>
 
-<span class="k">with</span> <a href="../../api/python/ir.html#tvm.transform.PassContext" title="View documentation for tvm.transform.PassContext"><span class="n">tvm</span><span class="o">.</span><span class="n">transform</span><span class="o">.</span><span class="n">PassContext</span></a><span class="p">(</span>
+<span class="c1"># %%</span>
+<span class="c1"># Compiling for physical hardware</span>
+<span class="c1">#  When running on physical hardware, choose a target that describes</span>
+<span class="c1">#  the hardware. The STM32F746 Nucleo target is chosen in this commented</span>
+<span class="c1">#  code:</span>
+<span class="c1">#</span>
+<span class="c1">#  .. code-block:: python</span>
+<span class="c1">#</span>
+<span class="c1">#     TARGET = tvm.target.target.micro(&quot;stm32f746xx&quot;)</span>
+</pre></div>
+</div>
+<p>Now, compile the model for the target:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span class="k">with</span> <a href="../../api/python/ir.html#tvm.transform.PassContext" title="View documentation for tvm.transform.PassContext"><span class="n">tvm</span><span class="o">.</span><span class="n">transform</span><span class="o">.</span><span class="n">PassContext</span></a><span class="p">(</span>
     <span class="n">opt_level</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">config</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;tir.disable_vectorize&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">},</span> <span class="n">disabled_pass</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;FuseOps&quot;</span><span class="p">]</span>
 <span class="p">):</span>
     <span class="n">graph</span><span class="p">,</span> <span class="n">c_mod</span><span class="p">,</span> <span class="n">c_params</span> <span class="o">=</span> <a href="../../api/python/relay/index.html#tvm.relay.build" title="View documentation for tvm.relay.build"><span class="n">relay</span><span class="o">.</span><span class="n">build</span></a><span class="p">(</span><span class="n">mod</span><span class="p">,</span> <span class="n">target</span><span class="o">=</span><span class="n">TARGET</span><span class="p">,</span> <span class="n">params</span><span class="o">=</span><span class="n">params</span><span class="p">)</span>
 
 
 <span class="c1"># %%</span>
-<span class="c1"># Running on simulated device</span>
-<span class="c1"># ----------------------------------------------</span>
+<span class="c1"># Compiling for a simulated device</span>
+<span class="c1"># --------------------------------</span>
 <span class="c1">#</span>
 <span class="c1"># First, compile a static microTVM runtime for the targeted device. In this case, the host simulated</span>
 <span class="c1"># device is used.</span>
-<span class="n">workspace</span> <span class="o">=</span> <a href="../../api/python/micro.html#tvm.micro.Workspace" title="View documentation for tvm.micro.Workspace"><span class="n">tvm</span><span class="o">.</span><span class="n">micro</span><span class="o">.</span><span class="n">Workspace</span></a><span class="p">()</span>
-
 <span class="n">compiler</span> <span class="o">=</span> <a href="../../api/python/micro.html#tvm.micro.DefaultCompiler" title="View documentation for tvm.micro.DefaultCompiler"><span class="n">tvm</span><span class="o">.</span><span class="n">micro</span><span class="o">.</span><span class="n">DefaultCompiler</span></a><span class="p">(</span><span class="n">target</span><span class="o">=</span><span class="n">TARGET</span><span class="p">)</span>
 <span class="n">opts</span> <span class="o">=</span> <a href="../../api/python/micro.html#tvm.micro.default_options" title="View documentation for tvm.micro.default_options"><span class="n">tvm</span><span class="o">.</span><span class="n">micro</span><span class="o">.</span><span class="n">default_options</span></a><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">tvm</span><span class="o">.</span><span class="n">micro</span><span class="o">.</span><span class="n">CRT_ROOT_DIR</span><span class="p">,</span> <span class="s2">&quot;host&quot;</span><span class="p">))</span>
 
+<span class="c1"># %%</span>
+<span class="c1"># Compiling for physical hardware</span>
+<span class="c1">#  For physical hardware, comment out the previous section and use this compiler definition instead.</span>
+<span class="c1">#</span>
+<span class="c1">#  .. code-block:: python</span>
+<span class="c1">#</span>
+<span class="c1">#     import subprocess</span>
+<span class="c1">#     from tvm.micro.contrib import zephyr</span>
+<span class="c1">#</span>
+<span class="c1">#     repo_root = subprocess.check_output([&quot;git&quot;, &quot;rev-parse&quot;, &quot;--show-toplevel&quot;], encoding=&#39;utf-8&#39;).strip()</span>
+<span class="c1">#     project_dir = f&quot;{repo_root}/tests/micro/qemu/zephyr-runtime&quot;</span>
+<span class="c1">#     compiler = zephyr.ZephyrCompiler(</span>
+<span class="c1">#            project_dir=project_dir,</span>
+<span class="c1">#            board=&quot;nucleo_f746zg&quot; if &quot;stm32f746&quot; in str(TARGET) else &quot;qemu_x86&quot;,</span>
+<span class="c1">#            zephyr_toolchain_variant=&quot;zephyr&quot;,</span>
+<span class="c1">#      )</span>
+<span class="c1">#</span>
+<span class="c1">#     opts = tvm.micro.default_options(os.path.join(tvm.micro.CRT_ROOT_DIR, &quot;host&quot;))</span>
+
+<span class="n">workspace</span> <span class="o">=</span> <a href="../../api/python/micro.html#tvm.micro.Workspace" title="View documentation for tvm.micro.Workspace"><span class="n">tvm</span><span class="o">.</span><span class="n">micro</span><span class="o">.</span><span class="n">Workspace</span></a><span class="p">()</span>
 <span class="n">micro_binary</span> <span class="o">=</span> <a href="../../api/python/micro.html#tvm.micro.build_static_runtime" title="View documentation for tvm.micro.build_static_runtime"><span class="n">tvm</span><span class="o">.</span><span class="n">micro</span><span class="o">.</span><span class="n">build_static_runtime</span></a><span class="p">(</span>
     <span class="c1"># the x86 compiler *expects* you to give the exact same dictionary for both</span>
     <span class="c1"># lib_opts and bin_opts. so the library compiler is mutating lib_opts and</span>
@@ -484,7 +535,7 @@ file.</p>
     <span class="n">workspace</span><span class="p">,</span>
     <span class="n">compiler</span><span class="p">,</span>
     <span class="n">c_mod</span><span class="p">,</span>
-    <span class="n">lib_opts</span><span class="o">=</span><span class="n">opts</span><span class="p">[</span><span class="s2">&quot;bin_opts&quot;</span><span class="p">],</span>
+    <span class="n">lib_opts</span><span class="o">=</span><span class="n">opts</span><span class="p">[</span><span class="s2">&quot;lib_opts&quot;</span><span class="p">],</span>
     <span class="n">bin_opts</span><span class="o">=</span><span class="n">opts</span><span class="p">[</span><span class="s2">&quot;bin_opts&quot;</span><span class="p">],</span>
     <span class="c1"># Use the microTVM memory manager. If, in your main.cc, you change TVMPlatformMemoryAllocate and</span>
     <span class="c1"># TVMPlatformMemoryFree to use e.g. malloc() and free(), you can omit this extra library.</span>
@@ -501,9 +552,6 @@ file.</p>
 computation. The <cite>with session</cite> line would typically flash an attached
 microcontroller, but in this tutorial, it simply launches a subprocess
 to stand in for an attached microcontroller.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre>
-</pre></div>
-</div>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span class="n">flasher</span> <span class="o">=</span> <span class="n">compiler</span><span class="o">.</span><span class="n">flasher</span><span class="p">()</span>
 <span class="k">with</span> <a href="../../api/python/micro.html#tvm.micro.Session" title="View documentation for tvm.micro.Session"><span class="n">tvm</span><span class="o">.</span><span class="n">micro</span><span class="o">.</span><span class="n">Session</span></a><span class="p">(</span><span class="n">binary</span><span class="o">=</span><span class="n">micro_binary</span><span class="p">,</span> <span class="n">flasher</span><span class="o">=</span><span class="n">flasher</span><span class="p">)</span> <span class="k">as</span> <span class="n">session</span><span class="p">:</span>
     <span class="n">graph_mod</span> <span class="o">=</span> <a href="../../api/python/micro.html#tvm.micro.create_local_graph_runtime" title="View documentation for tvm.micro.create_local_graph_runtime"><span class="n">tvm</span><span class="o">.</span><span class="n">micro</span><span class="o">.</span><span class="n">create_local_graph_runtime</span></a><span class="p">(</span>
@@ -536,6 +584,7 @@ to stand in for an attached microcontroller.</p>
 </div>
 </div>
 <p class="sphx-glr-signature"><a class="reference external" href="https://sphinx-gallery.github.io">Gallery generated by Sphinx-Gallery</a></p>
+</div>
 </div>
 
 

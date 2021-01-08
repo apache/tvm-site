@@ -199,6 +199,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../contribute/index.html">Contribute to TVM</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../deploy/index.html">Deploy and Integration</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../dev/how_to.html">Developer How-To Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../microtvm/index.html">microTVM: TVM on bare-metal</a></li>
 </ul>
 <p class="caption"><span class="caption-text">Tutorials</span></p>
 <ul class="current">
@@ -226,7 +227,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../index.html#autoscheduler-template-free-auto-scheduling">AutoScheduler : Template-free Auto Scheduling</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../index.html#developer-tutorials">Developer Tutorials</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../index.html#topi-tvm-operator-inventory">TOPI: TVM Operator Inventory</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../index.html#micro-tvm">Micro TVM</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../index.html#microtvm">microTVM</a></li>
 </ul>
 <p class="caption"><span class="caption-text">References</span></p>
 <ul>
@@ -420,8 +421,8 @@ Then we write a baseline implementation, the simplest way to write a matrix mult
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre>Numpy running time: 0.006749
-Baseline: 5.843904
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre>Numpy running time: 0.007890
+Baseline: 3.524739
 </pre></div>
 </div>
 <p>In TVM, we can always inspect lower level IR to debug or optimize our schedule.
@@ -479,7 +480,7 @@ fill 32 * 32 * sizeof(float) which is 4KB in the cache whose total size is 32KB 
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre>Opt1: 0.107367
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre>Opt1: 0.277637
 </pre></div>
 </div>
 <p>Here is the generated IR after blocking.</p>
@@ -543,7 +544,7 @@ we can use <cite>vectorize</cite> interface to hint the compiler this pattern, s
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre>Opt2: 0.112012
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre>Opt2: 0.328999
 </pre></div>
 </div>
 <p>Here is the generated IR after vectorization.</p>
@@ -603,7 +604,7 @@ the access pattern for A matrix is more cache friendly.</p>
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre>Opt3: 0.060845
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre>Opt3: 0.112921
 </pre></div>
 </div>
 <p>Here is the generated IR after loop permutation.</p>
@@ -679,7 +680,7 @@ the corresponding value from the packed array.</p>
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre>Opt4: 0.062676
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre>Opt4: 0.104967
 </pre></div>
 </div>
 <p>Here is the generated IR after array packing.</p>
@@ -693,7 +694,7 @@ the corresponding value from the packed array.</p>
              B: Buffer(B_2: Pointer(float32), float32, [1024, 1024], []),
              A: Buffer(A_2: Pointer(float32), float32, [1024, 1024], [])}
   buffer_map = {A_1: A, B_1: B, C_1: C} {
-  attr [packedB: Pointer(float32)] &quot;storage_scope&quot; = &quot;global&quot;;
+  attr [packedB: Pointer(float32x32)] &quot;storage_scope&quot; = &quot;global&quot;;
   allocate(packedB, float32x32, [32768]) {
     for (x: int32, 0, 32) &quot;parallel&quot; {
       for (y: int32, 0, 1024) {
@@ -759,7 +760,7 @@ write to C when all the block results are ready.</p>
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre>Opt5: 0.059428
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre>Opt5: 0.106465
 </pre></div>
 </div>
 <p>Here is the generated IR after blocking.</p>
@@ -773,7 +774,7 @@ write to C when all the block results are ready.</p>
              B: Buffer(B_2: Pointer(float32), float32, [1024, 1024], []),
              A: Buffer(A_2: Pointer(float32), float32, [1024, 1024], [])}
   buffer_map = {A_1: A, B_1: B, C_1: C} {
-  attr [packedB: Pointer(float32)] &quot;storage_scope&quot; = &quot;global&quot;;
+  attr [packedB: Pointer(float32x32)] &quot;storage_scope&quot; = &quot;global&quot;;
   allocate(packedB, float32x32, [32768]);
   attr [C.global: Pointer(float32)] &quot;storage_scope&quot; = &quot;global&quot;;
   allocate(C.global, float32, [1024]) {
@@ -846,7 +847,7 @@ write to C when all the block results are ready.</p>
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre>Opt6: 0.016327
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre>Opt6: 0.034980
 </pre></div>
 </div>
 <p>Here is the generated IR after parallelization.</p>
@@ -860,7 +861,7 @@ write to C when all the block results are ready.</p>
              B: Buffer(B_2: Pointer(float32), float32, [1024, 1024], []),
              A: Buffer(A_2: Pointer(float32), float32, [1024, 1024], [])}
   buffer_map = {A_1: A, B_1: B, C_1: C} {
-  attr [packedB: Pointer(float32)] &quot;storage_scope&quot; = &quot;global&quot;;
+  attr [packedB: Pointer(float32x32)] &quot;storage_scope&quot; = &quot;global&quot;;
   allocate(packedB, float32x32, [32768]) {
     for (x: int32, 0, 32) &quot;parallel&quot; {
       for (y: int32, 0, 1024) {

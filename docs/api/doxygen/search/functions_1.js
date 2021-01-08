@@ -77,7 +77,7 @@ var searchData=
   ['attrinitvisitor',['AttrInitVisitor',['../classtvm_1_1detail_1_1AttrInitVisitor.html#ac3c800c9249fee195db2a5fa473fe960',1,'tvm::detail::AttrInitVisitor']]],
   ['attrnondefaultvisitor',['AttrNonDefaultVisitor',['../classtvm_1_1detail_1_1AttrNonDefaultVisitor.html#a8b27d05c6de24ab60b999c227e346337',1,'tvm::detail::AttrNonDefaultVisitor']]],
   ['attrnormalvisitor',['AttrNormalVisitor',['../classtvm_1_1detail_1_1AttrNormalVisitor.html#a6ba81b2db584e6625a7ccf04d4bd04ed',1,'tvm::detail::AttrNormalVisitor']]],
-  ['attrpattern',['AttrPattern',['../classtvm_1_1relay_1_1AttrPattern.html#a306a64203c228e46cbb6c5780bcd9828',1,'tvm::relay::AttrPattern']]],
+  ['attrpattern',['AttrPattern',['../classtvm_1_1relay_1_1AttrPattern.html#a7bb94f5c26a9e56c84c3d7facde4efa5',1,'tvm::relay::AttrPattern']]],
   ['attrregistrymap',['AttrRegistryMap',['../classtvm_1_1AttrRegistryMap.html#aefe7933b03f49eac54bec961e75f8650',1,'tvm::AttrRegistryMap']]],
   ['attrssequalvisitor',['AttrsSEqualVisitor',['../classtvm_1_1detail_1_1AttrsSEqualVisitor.html#ac67ceda6a413da78e61fa91ca61fcf26',1,'tvm::detail::AttrsSEqualVisitor']]],
   ['attrsshashvisitor',['AttrsSHashVisitor',['../classtvm_1_1detail_1_1AttrsSHashVisitor.html#af5b71e60c1383705d275a5087f3073bb',1,'tvm::detail::AttrsSHashVisitor']]],

@@ -199,6 +199,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../contribute/index.html">Contribute to TVM</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../deploy/index.html">Deploy and Integration</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../dev/how_to.html">Developer How-To Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../microtvm/index.html">microTVM: TVM on bare-metal</a></li>
 </ul>
 <p class="caption"><span class="caption-text">Tutorials</span></p>
 <ul class="current">
@@ -217,14 +218,14 @@
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="tune_conv2d_layer_cuda.html">Auto-scheduling a Convolution Layer for GPU</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tune_network_x86.html">Auto-scheduling a Neural Network for x86 CPU</a></li>
 <li class="toctree-l2"><a class="reference internal" href="tune_network_cuda.html">Auto-scheduling a Neural Network for NVIDIA GPU</a></li>
 <li class="toctree-l2"><a class="reference internal" href="tune_network_mali.html">Auto-scheduling a Neural Network for mali GPU</a></li>
-<li class="toctree-l2"><a class="reference internal" href="tune_network_x86.html">Auto-scheduling a Neural Network for x86 CPU</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../index.html#developer-tutorials">Developer Tutorials</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../index.html#topi-tvm-operator-inventory">TOPI: TVM Operator Inventory</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../index.html#micro-tvm">Micro TVM</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../index.html#microtvm">microTVM</a></li>
 </ul>
 <p class="caption"><span class="caption-text">References</span></p>
 <ul>
@@ -428,7 +429,7 @@ file and apply it.</p>
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre>
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre>*T
 </pre></div>
 </div>
 <p>We can lower the schedule to see the IR after auto-scheduling.
@@ -449,13 +450,17 @@ primfn(A_1: handle, B_1: handle, C_1: handle, out_1: handle) -&gt; ()
   buffer_map = {A_1: A, B_1: B, C_1: C, out_1: out} {
   attr [auto_scheduler_layout_transform: Pointer(float32)] &quot;storage_scope&quot; = &quot;global&quot;;
   allocate(auto_scheduler_layout_transform, float32, [1048576]) {
-    for (ax0.ax1.fused.ax2.fused.ax3.fused.ax4.fused.ax5.fused.ax6.fused: int32, 0, 131072) &quot;parallel&quot; {
-      for (ax7: int32, 0, 8) {
-        auto_scheduler_layout_transform[((ax0.ax1.fused.ax2.fused.ax3.fused.ax4.fused.ax5.fused.ax6.fused*8) + ax7)] = (float32*)B_2[(((floormod(ax0.ax1.fused.ax2.fused.ax3.fused.ax4.fused.ax5.fused.ax6.fused, 1024)*1024) + (floordiv(ax0.ax1.fused.ax2.fused.ax3.fused.ax4.fused.ax5.fused.ax6.fused, 1024)*8)) + ax7)]
+    for (ax0.ax1.fused.ax2.fused: int32, 0, 128) &quot;parallel&quot; {
+      for (ax4: int32, 0, 256) {
+        for (ax6: int32, 0, 4) {
+          for (ax7: int32, 0, 8) {
+            auto_scheduler_layout_transform[((((ax0.ax1.fused.ax2.fused*8192) + (ax4*32)) + (ax6*8)) + ax7)] = (float32*)B_2[((((ax4*4096) + (ax6*1024)) + (ax0.ax1.fused.ax2.fused*8)) + ax7)]
+          }
+        }
       }
     }
     for (i.outer.outer.j.outer.outer.fused: int32, 0, 16384) &quot;parallel&quot; {
-      attr [matmul: Pointer(float32)] &quot;storage_scope&quot; = &quot;global&quot;;
+      attr [matmul: Pointer(float32x8)] &quot;storage_scope&quot; = &quot;global&quot;;
       allocate(matmul, float32x8, [4]);
       for (i.outer.inner: int32, 0, 2) {
         matmul[ramp(0, 1, 8)] = broadcast(0f32, 8)
@@ -508,7 +513,7 @@ primfn(A_1: handle, B_1: handle, C_1: handle, out_1: handle) -&gt; ()
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre>Execution time of this operator: 16.683 ms
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre>Execution time of this operator: 22.520 ms
 </pre></div>
 </div>
 </div>
@@ -572,7 +577,6 @@ In the example below we resume the status and do more 5 trials.</p>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
 <div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre>Resume search:
-*T
 </pre></div>
 </div>
 <div class="sphx-glr-footer class sphx-glr-footer-example docutils container" id="sphx-glr-download-tutorials-auto-scheduler-tune-matmul-x86-py">
