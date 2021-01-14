@@ -24,6 +24,7 @@ var searchData=
   ['tensortype',['TensorType',['../classtvm_1_1TensorType.html',1,'tvm']]],
   ['tensortypenode',['TensorTypeNode',['../classtvm_1_1TensorTypeNode.html',1,'tvm']]],
   ['threadgroup',['ThreadGroup',['../classtvm_1_1runtime_1_1threading_1_1ThreadGroup.html',1,'tvm::runtime::threading']]],
+  ['threefrygenerateattrs',['ThreefryGenerateAttrs',['../structtvm_1_1relay_1_1ThreefryGenerateAttrs.html',1,'tvm::relay']]],
   ['tileattrs',['TileAttrs',['../structtvm_1_1relay_1_1TileAttrs.html',1,'tvm::relay']]],
   ['topkattrs',['TopKAttrs',['../structtvm_1_1relay_1_1TopKAttrs.html',1,'tvm::relay']]],
   ['transposeattrs',['TransposeAttrs',['../structtvm_1_1relay_1_1TransposeAttrs.html',1,'tvm::relay']]],
