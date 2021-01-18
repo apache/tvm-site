@@ -25,7 +25,7 @@ var searchData=
   ['top_5fk',['top_k',['../structtvm_1_1relay_1_1NonMaximumSuppressionAttrs.html#ad9e2e281399a290410757e948784b93a',1,'tvm::relay::NonMaximumSuppressionAttrs']]],
   ['trace_5ffunc',['trace_func',['../classtvm_1_1transform_1_1PassContextNode.html#a84242480dd92b11637881d8313524481',1,'tvm::transform::PassContextNode']]],
   ['transform_5fsteps',['transform_steps',['../classtvm_1_1auto__scheduler_1_1StateNode.html#a980f03e5744ed104cf231219a4895d5e',1,'tvm::auto_scheduler::StateNode']]],
-  ['true_5fbranch',['true_branch',['../classtvm_1_1relay_1_1IfNode.html#abbda9637de8fac5d227ef7c305e5f34e',1,'tvm::relay::IfNode']]],
+  ['true_5fbranch',['true_branch',['../classtvm_1_1relay_1_1IfPatternNode.html#ad292c855acc88167ab25acd200c01d48',1,'tvm::relay::IfPatternNode::true_branch()'],['../classtvm_1_1relay_1_1IfNode.html#abbda9637de8fac5d227ef7c305e5f34e',1,'tvm::relay::IfNode::true_branch()']]],
   ['true_5foffset',['true_offset',['../structtvm_1_1runtime_1_1vm_1_1Instruction.html#a58e6e5eba0eba678b94273ef7deb1df2',1,'tvm::runtime::vm::Instruction']]],
   ['true_5fvalue',['true_value',['../classtvm_1_1tir_1_1SelectNode.html#a35e913f542bd1231b92adfc2d58938ef',1,'tvm::tir::SelectNode']]],
   ['tuple',['tuple',['../classtvm_1_1relay_1_1TupleGetItemPatternNode.html#a1fdd79b2fbbf3d7a14cea7e7efc38574',1,'tvm::relay::TupleGetItemPatternNode::tuple()'],['../classtvm_1_1relay_1_1TupleGetItemNode.html#aade4882f84d828975c689b5c6b1b68e6',1,'tvm::relay::TupleGetItemNode::tuple()']]],

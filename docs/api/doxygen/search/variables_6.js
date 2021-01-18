@@ -3,7 +3,7 @@ var searchData=
   ['factor',['factor',['../classtvm_1_1auto__scheduler_1_1StorageAlignStepNode.html#a6eb2b971d981f54c385065d78d6a1681',1,'tvm::auto_scheduler::StorageAlignStepNode::factor()'],['../classtvm_1_1te_1_1SplitNode.html#a60369ff01e34008f1b3215d7f215b972',1,'tvm::te::SplitNode::factor()']]],
   ['factor_5fiter_5fid',['factor_iter_id',['../classtvm_1_1auto__scheduler_1_1RfactorStepNode.html#a114f3ecd05a1cffd92353e156185e42c',1,'tvm::auto_scheduler::RfactorStepNode']]],
   ['factor_5for_5fnparts',['factor_or_nparts',['../classtvm_1_1auto__scheduler_1_1FollowFusedSplitStepNode.html#afa60f761e7ea48985e35234428a1911f',1,'tvm::auto_scheduler::FollowFusedSplitStepNode']]],
-  ['false_5fbranch',['false_branch',['../classtvm_1_1relay_1_1IfNode.html#ae6a504717890d97b574b93dba29e2641',1,'tvm::relay::IfNode']]],
+  ['false_5fbranch',['false_branch',['../classtvm_1_1relay_1_1IfPatternNode.html#adac717215307bb0f7a7b16333e27237f',1,'tvm::relay::IfPatternNode::false_branch()'],['../classtvm_1_1relay_1_1IfNode.html#ae6a504717890d97b574b93dba29e2641',1,'tvm::relay::IfNode::false_branch()']]],
   ['false_5foffset',['false_offset',['../structtvm_1_1runtime_1_1vm_1_1Instruction.html#a20f3b29da9e03f2fa6977743c30a02de',1,'tvm::runtime::vm::Instruction']]],
   ['false_5fvalue',['false_value',['../classtvm_1_1tir_1_1SelectNode.html#ac1b3f0f013b6a41a483c6d81397a6dac',1,'tvm::tir::SelectNode']]],
   ['fcompute',['fcompute',['../classtvm_1_1relay_1_1OpImplementationNode.html#abfdaa2a28cce000f920ef0c0cfed7e31',1,'tvm::relay::OpImplementationNode']]],

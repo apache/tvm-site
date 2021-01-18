@@ -58,7 +58,7 @@ var searchData=
   ['reshape',['reshape',['../namespacetvm_1_1topi.html#a3aad65f2505802109ba7d05359ce9005',1,'tvm::topi']]],
   ['reshapetensor',['ReshapeTensor',['../structtvm_1_1runtime_1_1vm_1_1Instruction.html#a78291b55a638084d12269102ec6a2e90',1,'tvm::runtime::vm::Instruction']]],
   ['resize',['resize',['../classtvm_1_1runtime_1_1Array.html#a8064044f8928cf3fed003507d65604c7',1,'tvm::runtime::Array']]],
-  ['ret',['Ret',['../structtvm_1_1runtime_1_1vm_1_1Instruction.html#a25ec217ce2afe8decb3d92c716e31c83',1,'tvm::runtime::vm::Instruction']]],
+  ['ret',['Ret',['../structtvm_1_1runtime_1_1vm_1_1Instruction.html#a25ec217ce2afe8decb3d92c716e31c83',1,'tvm::runtime::vm::Instruction::Ret()'],['../namespacetvm_1_1tir_1_1builtin.html#ae7816fdebd5d56f2145cdf371b756eb4',1,'tvm::tir::builtin::ret()'],['../namespacetvm.html#a0da40d3e210aa3b38a17982a7b7866b8',1,'tvm::ret()']]],
   ['reverse_5fsequence',['reverse_sequence',['../namespacetvm_1_1topi.html#ab8ad5eed3079de21c92a7639ed370096',1,'tvm::topi']]],
   ['reverseiteradapter',['ReverseIterAdapter',['../classtvm_1_1runtime_1_1ReverseIterAdapter.html#a579235eb3691b76d29b4ae5f178318ef',1,'tvm::runtime::ReverseIterAdapter']]],
   ['rewrite',['Rewrite',['../classtvm_1_1relay_1_1MixedModeMutator.html#a4c93a9094db80cace013ef02e6bcd724',1,'tvm::relay::MixedModeMutator::Rewrite()'],['../classtvm_1_1relay_1_1ExprRewriter.html#a28cebb8decbe035ff95683c45f69e53b',1,'tvm::relay::ExprRewriter::Rewrite()']]],
