@@ -1,5 +1,6 @@
 var searchData=
 [
+  ['einsum',['einsum',['../namespacetvm_1_1topi.html#af32230999c38eb624e8ea21ee6877eef',1,'tvm::topi']]],
   ['element_5fof',['element_of',['../classtvm_1_1runtime_1_1DataType.html#a022ff4c55c831167018e94213cac8564',1,'tvm::runtime::DataType']]],
   ['elementwisematch',['ElementWiseMatch',['../classtvm_1_1auto__scheduler_1_1AccessAnalyzer.html#ac6de8023d3b49169bdf33f29fe1c64a3',1,'tvm::auto_scheduler::AccessAnalyzer']]],
   ['elemwise_5fsum',['elemwise_sum',['../namespacetvm_1_1topi.html#a94c9e58d3a7e9f9a477962897c9df1d7',1,'tvm::topi']]],
@@ -7,7 +8,7 @@ var searchData=
   ['emit',['Emit',['../classtvm_1_1DiagnosticContext.html#a13cd654944714a1daa28cb3775211fd8',1,'tvm::DiagnosticContext']]],
   ['emitfatal',['EmitFatal',['../classtvm_1_1DiagnosticContext.html#a3668f9c5770d93f92bc1ad3b7b449ee4',1,'tvm::DiagnosticContext']]],
   ['emplaceinit',['EmplaceInit',['../classtvm_1_1runtime_1_1InplaceArrayBase.html#a7900079ae38be41d93b522239d3ba4f2',1,'tvm::runtime::InplaceArrayBase']]],
-  ['empty',['Empty',['../classtvm_1_1TupleType.html#af99baa239cc3c717979b2dfeefed75c2',1,'tvm::TupleType::Empty()'],['../classtvm_1_1MapNode.html#a09cd3d18c1c456f4b774cc799caa0a5e',1,'tvm::MapNode::Empty()'],['../classtvm_1_1runtime_1_1NDArray.html#a2ca068cfab0b928e5809631c1bec64e7',1,'tvm::runtime::NDArray::Empty()'],['../classtvm_1_1runtime_1_1vm_1_1Allocator.html#a45c8bd97bc9ebfedfbbad671be882106',1,'tvm::runtime::vm::Allocator::Empty()'],['../classtvm_1_1Map.html#a7f5b744e65b40aca81a167cec715ec2a',1,'tvm::Map::empty()'],['../classtvm_1_1runtime_1_1Array.html#a899a4f7a7dd72368bd54a4017757745f',1,'tvm::runtime::Array::empty()'],['../classtvm_1_1runtime_1_1String.html#a93f37d0bb56661345a4e0bf1c902b685',1,'tvm::runtime::String::empty()']]],
+  ['empty',['Empty',['../classtvm_1_1TupleType.html#af99baa239cc3c717979b2dfeefed75c2',1,'tvm::TupleType::Empty()'],['../classtvm_1_1MapNode.html#a09cd3d18c1c456f4b774cc799caa0a5e',1,'tvm::MapNode::Empty()'],['../classtvm_1_1runtime_1_1NDArray.html#a96c243ff281dce9bc1cc2ec5b3ac0bd7',1,'tvm::runtime::NDArray::Empty()'],['../classtvm_1_1runtime_1_1vm_1_1Allocator.html#a45c8bd97bc9ebfedfbbad671be882106',1,'tvm::runtime::vm::Allocator::Empty()'],['../classtvm_1_1Map.html#a7f5b744e65b40aca81a167cec715ec2a',1,'tvm::Map::empty()'],['../classtvm_1_1runtime_1_1Array.html#a899a4f7a7dd72368bd54a4017757745f',1,'tvm::runtime::Array::empty()'],['../classtvm_1_1runtime_1_1String.html#a93f37d0bb56661345a4e0bf1c902b685',1,'tvm::runtime::String::empty()']]],
   ['end',['end',['../classtvm_1_1MapNode.html#a47d7711998152c262ee539a2d79113ba',1,'tvm::MapNode::end()'],['../classtvm_1_1SmallMapNode.html#a134bfe85094dcfe2f118ed16b9a294af',1,'tvm::SmallMapNode::end()'],['../classtvm_1_1DenseMapNode.html#a9455a9f8f9890aff25e0694dce39a011',1,'tvm::DenseMapNode::end()'],['../classtvm_1_1Map.html#a0b475776d062f8fc32842e054d5674bd',1,'tvm::Map::end()'],['../classtvm_1_1runtime_1_1ArrayNode.html#a7ce2ef4241414c527c2852ffe9df2ac3',1,'tvm::runtime::ArrayNode::end()'],['../classtvm_1_1runtime_1_1Array.html#ad7ea4ad796a5d6e58139e8bdc1109a1c',1,'tvm::runtime::Array::end()']]],
   ['end_5findex',['end_index',['../namespacetvm_1_1topi_1_1nn.html#a8d244c196a5a481640cfc610fad3c7db',1,'tvm::topi::nn']]],
   ['enterconstraint',['EnterConstraint',['../classtvm_1_1arith_1_1RewriteSimplifier.html#a01dda385f4e0bb0e1155c76c2d28cb96',1,'tvm::arith::RewriteSimplifier']]],
@@ -30,6 +31,7 @@ var searchData=
   ['exp10',['exp10',['../namespacetvm.html#a65b68a0c2cea6c1bbd338585fcdf9fdd',1,'tvm']]],
   ['exp2',['exp2',['../namespacetvm.html#a50c4b8aeaf39b357013fc7f62b4a878c',1,'tvm']]],
   ['expand_5fdims',['expand_dims',['../namespacetvm_1_1topi.html#a7ddbd03d0d29a05618a1ef42f717ec9f',1,'tvm::topi']]],
+  ['expandanormalform',['ExpandANormalForm',['../namespacetvm_1_1relay.html#a18f47bbeaf5ccedf5e4cf525710a0c41',1,'tvm::relay']]],
   ['expanddataflow',['ExpandDataflow',['../namespacetvm_1_1relay.html#abd34311e0bf42aebcf785cfa390a3d5a',1,'tvm::relay']]],
   ['expandprimal',['ExpandPrimal',['../classtvm_1_1tir_1_1Layout.html#a88c306ea4682d28b85032277fa29df63',1,'tvm::tir::Layout']]],
   ['export',['Export',['../classtvm_1_1TargetNode.html#ad46056809a56a18a43303033f4353616',1,'tvm::TargetNode']]],

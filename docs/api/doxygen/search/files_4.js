@@ -1,5 +1,6 @@
 var searchData=
 [
+  ['einsum_2eh',['einsum.h',['../einsum_8h.html',1,'']]],
   ['elemwise_2eh',['elemwise.h',['../elemwise_8h.html',1,'']]],
   ['env_5ffunc_2eh',['env_func.h',['../env__func_8h.html',1,'']]],
   ['error_2eh',['error.h',['../error_8h.html',1,'']]],

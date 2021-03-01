@@ -34,6 +34,7 @@ var searchData=
   ['result_5f',['result_',['../classtvm_1_1detail_1_1AttrsSEqualVisitor.html#aeda3a91f0b2d1a7a9a075828954ff77f',1,'tvm::detail::AttrsSEqualVisitor']]],
   ['ret_5ftype',['ret_type',['../classtvm_1_1FuncTypeNode.html#a4d30bd05ee4751f963daf10f0c69036d',1,'tvm::FuncTypeNode::ret_type()'],['../structtvm_1_1relay_1_1TopKAttrs.html#a5717dfe7edcd2817fc35b2e84dc2305d',1,'tvm::relay::TopKAttrs::ret_type()'],['../classtvm_1_1relay_1_1FunctionNode.html#a075bcae369d873c24b7887eb7c96da40',1,'tvm::relay::FunctionNode::ret_type()'],['../classtvm_1_1tir_1_1PrimFuncNode.html#aa325068615c301abec6656416cab8e09',1,'tvm::tir::PrimFuncNode::ret_type()']]],
   ['ret_5fvalue',['ret_value',['../structTVMPackedFunc.html#a9e4f5b78551e27db970d3e5d48f92dcf',1,'TVMPackedFunc']]],
+  ['return_5fcounts',['return_counts',['../structtvm_1_1relay_1_1UniqueAttrs.html#a5ada31d79efbeb340a0cd7d5ca7c1afb',1,'tvm::relay::UniqueAttrs']]],
   ['return_5findices',['return_indices',['../structtvm_1_1relay_1_1NonMaximumSuppressionAttrs.html#a595087194062b5cce8a36479fa82716b',1,'tvm::relay::NonMaximumSuppressionAttrs']]],
   ['return_5fregister_5f',['return_register_',['../classtvm_1_1runtime_1_1vm_1_1VirtualMachine.html#afd0505002da7e7f86f82b2f3325ff127',1,'tvm::runtime::vm::VirtualMachine']]],
   ['rewrite_5fsimplify',['rewrite_simplify',['../classtvm_1_1arith_1_1Analyzer.html#acc86c6e8c04cb0de4ff9d78e769924b2',1,'tvm::arith::Analyzer']]],

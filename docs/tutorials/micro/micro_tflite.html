@@ -419,6 +419,8 @@ models like MobileNet may not fit into their modest memory.</p>
 directory into a buffer</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span class="kn">import</span> <span class="nn">os</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+
 <span class="kn">import</span> <span class="nn">tvm</span>
 <span class="kn">import</span> <span class="nn">tvm.micro</span> <span class="k">as</span> <span class="nn">micro</span>
 <span class="kn">from</span> <span class="nn">tvm.contrib.download</span> <span class="k">import</span> <span class="n">download_testdata</span>
@@ -497,7 +499,7 @@ file. When running on a simulated target, choose “host” below:</p>
 </div>
 <p>Now, compile the model for the target:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span class="k">with</span> <a href="../../api/python/ir.html#tvm.transform.PassContext" title="View documentation for tvm.transform.PassContext"><span class="n">tvm</span><span class="o">.</span><span class="n">transform</span><span class="o">.</span><span class="n">PassContext</span></a><span class="p">(</span>
-    <span class="n">opt_level</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">config</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;tir.disable_vectorize&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">},</span> <span class="n">disabled_pass</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;FuseOps&quot;</span><span class="p">]</span>
+    <span class="n">opt_level</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">config</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;tir.disable_vectorize&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">},</span> <span class="n">disabled_pass</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;FuseOps&quot;</span><span class="p">,</span> <span class="s2">&quot;AlterOpLayout&quot;</span><span class="p">]</span>
 <span class="p">):</span>
     <span class="n">graph</span><span class="p">,</span> <span class="n">c_mod</span><span class="p">,</span> <span class="n">c_params</span> <span class="o">=</span> <a href="../../api/python/relay/index.html#tvm.relay.build" title="View documentation for tvm.relay.build"><span class="n">relay</span><span class="o">.</span><span class="n">build</span></a><span class="p">(</span><span class="n">mod</span><span class="p">,</span> <span class="n">target</span><span class="o">=</span><span class="n">TARGET</span><span class="p">,</span> <span class="n">params</span><span class="o">=</span><span class="n">params</span><span class="p">)</span>
 
@@ -509,7 +511,9 @@ file. When running on a simulated target, choose “host” below:</p>
 <span class="c1"># First, compile a static microTVM runtime for the targeted device. In this case, the host simulated</span>
 <span class="c1"># device is used.</span>
 <span class="n">compiler</span> <span class="o">=</span> <a href="../../api/python/micro.html#tvm.micro.DefaultCompiler" title="View documentation for tvm.micro.DefaultCompiler"><span class="n">tvm</span><span class="o">.</span><span class="n">micro</span><span class="o">.</span><span class="n">DefaultCompiler</span></a><span class="p">(</span><span class="n">target</span><span class="o">=</span><span class="n">TARGET</span><span class="p">)</span>
-<span class="n">opts</span> <span class="o">=</span> <a href="../../api/python/micro.html#tvm.micro.default_options" title="View documentation for tvm.micro.default_options"><span class="n">tvm</span><span class="o">.</span><span class="n">micro</span><span class="o">.</span><span class="n">default_options</span></a><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">tvm</span><span class="o">.</span><span class="n">micro</span><span class="o">.</span><span class="n">CRT_ROOT_DIR</span><span class="p">,</span> <span class="s2">&quot;host&quot;</span><span class="p">))</span>
+<span class="n">opts</span> <span class="o">=</span> <a href="../../api/python/micro.html#tvm.micro.default_options" title="View documentation for tvm.micro.default_options"><span class="n">tvm</span><span class="o">.</span><span class="n">micro</span><span class="o">.</span><span class="n">default_options</span></a><span class="p">(</span>
+    <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><a href="../../api/python/micro.html#tvm.micro.get_standalone_crt_dir" title="View documentation for tvm.micro.get_standalone_crt_dir"><span class="n">tvm</span><span class="o">.</span><span class="n">micro</span><span class="o">.</span><span class="n">get_standalone_crt_dir</span></a><span class="p">(),</span> <span class="s2">&quot;template&quot;</span><span class="p">,</span> <span class="s2">&quot;host&quot;</span><span class="p">)</span>
+<span class="p">)</span>
 
 <span class="c1"># %%</span>
 <span class="c1"># Compiling for physical hardware</span>
@@ -529,21 +533,20 @@ file. When running on a simulated target, choose “host” below:</p>
 <span class="c1">#     )</span>
 <span class="c1">#</span>
 <span class="c1">#     opts = tvm.micro.default_options(f&quot;{project_dir}/crt&quot;)</span>
+<span class="c1">#</span>
+<span class="c1"># enable printing memory usage statistics of the runtime image</span>
+<span class="c1"># generated by Zephyr compiler for the physical hardware</span>
+<span class="c1"># logging.basicConfig(level=&quot;INFO&quot;)</span>
 
 <span class="n">workspace</span> <span class="o">=</span> <a href="../../api/python/micro.html#tvm.micro.Workspace" title="View documentation for tvm.micro.Workspace"><span class="n">tvm</span><span class="o">.</span><span class="n">micro</span><span class="o">.</span><span class="n">Workspace</span></a><span class="p">()</span>
 <span class="n">micro_binary</span> <span class="o">=</span> <a href="../../api/python/micro.html#tvm.micro.build_static_runtime" title="View documentation for tvm.micro.build_static_runtime"><span class="n">tvm</span><span class="o">.</span><span class="n">micro</span><span class="o">.</span><span class="n">build_static_runtime</span></a><span class="p">(</span>
-    <span class="c1"># the x86 compiler *expects* you to give the exact same dictionary for both</span>
-    <span class="c1"># lib_opts and bin_opts. so the library compiler is mutating lib_opts and</span>
-    <span class="c1"># the binary compiler is expecting those mutations to be in bin_opts.</span>
-    <span class="c1"># TODO(weberlo) fix this very bizarre behavior</span>
     <span class="n">workspace</span><span class="p">,</span>
     <span class="n">compiler</span><span class="p">,</span>
     <span class="n">c_mod</span><span class="p">,</span>
-    <span class="n">lib_opts</span><span class="o">=</span><span class="n">opts</span><span class="p">[</span><span class="s2">&quot;lib_opts&quot;</span><span class="p">],</span>
-    <span class="n">bin_opts</span><span class="o">=</span><span class="n">opts</span><span class="p">[</span><span class="s2">&quot;bin_opts&quot;</span><span class="p">],</span>
+    <span class="n">opts</span><span class="p">,</span>
     <span class="c1"># Use the microTVM memory manager. If, in your main.cc, you change TVMPlatformMemoryAllocate and</span>
     <span class="c1"># TVMPlatformMemoryFree to use e.g. malloc() and free(), you can omit this extra library.</span>
-    <span class="n">extra_libs</span><span class="o">=</span><span class="p">[</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">tvm</span><span class="o">.</span><span class="n">micro</span><span class="o">.</span><span class="n">build</span><span class="o">.</span><span class="n">CRT_ROOT_DIR</span><span class="p">,</span> <span class="s2">&quot;memory&quot;</span><span class="p">)],</span>
+    <span class="n">extra_libs</span><span class="o">=</span><span class="p">[</span><a href="../../api/python/micro.html#tvm.micro.get_standalone_crt_lib" title="View documentation for tvm.micro.get_standalone_crt_lib"><span class="n">tvm</span><span class="o">.</span><span class="n">micro</span><span class="o">.</span><span class="n">get_standalone_crt_lib</span></a><span class="p">(</span><span class="s2">&quot;memory&quot;</span><span class="p">)],</span>
 <span class="p">)</span>
 </pre></div>
 </div>

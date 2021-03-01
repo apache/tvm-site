@@ -17,6 +17,7 @@ var searchData=
   ['error_5fmsg',['error_msg',['../classtvm_1_1auto__scheduler_1_1BuildResultNode.html#a982386ef3037d2304897d0e3584832a4',1,'tvm::auto_scheduler::BuildResultNode::error_msg()'],['../classtvm_1_1auto__scheduler_1_1MeasureResultNode.html#adf18926ba960b870042248ec6144a6b9',1,'tvm::auto_scheduler::MeasureResultNode::error_msg()']]],
   ['error_5fno',['error_no',['../classtvm_1_1auto__scheduler_1_1BuildResultNode.html#a8b0da5bf37adcf6e8a761339a9daa7c1',1,'tvm::auto_scheduler::BuildResultNode::error_no()'],['../classtvm_1_1auto__scheduler_1_1MeasureResultNode.html#a11b3b1baf43ae85cc001a8d59e0e01fd',1,'tvm::auto_scheduler::MeasureResultNode::error_no()']]],
   ['exclude',['exclude',['../structtvm_1_1relay_1_1ReduceAttrs.html#ada05c6d2e36245d832449aa2479d3ab2',1,'tvm::relay::ReduceAttrs::exclude()'],['../structtvm_1_1relay_1_1VarianceAttrs.html#a10029f70d1f38da8c9cc415a76fe9807',1,'tvm::relay::VarianceAttrs::exclude()']]],
+  ['exclusive',['exclusive',['../structtvm_1_1relay_1_1CumsumAttrs.html#a210cebc9cbf055db26006b6fab9d6a29',1,'tvm::relay::CumsumAttrs']]],
   ['exec_5f',['exec_',['../classtvm_1_1runtime_1_1vm_1_1VirtualMachine.html#ad478992798013d0e3a72d220003c8881',1,'tvm::runtime::vm::VirtualMachine']]],
   ['exist_5f',['exist_',['../classtvm_1_1detail_1_1AttrExistVisitor.html#ac6ae7aa3d30f25a953810bcc0d0a938f',1,'tvm::detail::AttrExistVisitor']]],
   ['expr',['expr',['../classtvm_1_1relay_1_1ExprPatternNode.html#a184b973441a9c36e99ee6131118f6bd6',1,'tvm::relay::ExprPatternNode']]],

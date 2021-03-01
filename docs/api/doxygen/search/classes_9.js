@@ -13,6 +13,8 @@ var searchData=
   ['let',['Let',['../classtvm_1_1relay_1_1Let.html',1,'tvm::relay']]],
   ['letnode',['LetNode',['../classtvm_1_1tir_1_1LetNode.html',1,'tvm::tir']]],
   ['letnode',['LetNode',['../classtvm_1_1relay_1_1LetNode.html',1,'tvm::relay']]],
+  ['letpattern',['LetPattern',['../classtvm_1_1relay_1_1LetPattern.html',1,'tvm::relay']]],
+  ['letpatternnode',['LetPatternNode',['../classtvm_1_1relay_1_1LetPatternNode.html',1,'tvm::relay']]],
   ['letstmt',['LetStmt',['../classtvm_1_1tir_1_1LetStmt.html',1,'tvm::tir']]],
   ['letstmtnode',['LetStmtNode',['../classtvm_1_1tir_1_1LetStmtNode.html',1,'tvm::tir']]],
   ['linkedparam',['LinkedParam',['../classtvm_1_1tir_1_1LinkedParam.html',1,'tvm::tir']]],

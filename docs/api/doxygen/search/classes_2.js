@@ -69,5 +69,6 @@ var searchData=
   ['correlationattrs',['CorrelationAttrs',['../structtvm_1_1relay_1_1CorrelationAttrs.html',1,'tvm::relay']]],
   ['costmodel',['CostModel',['../classtvm_1_1auto__scheduler_1_1CostModel.html',1,'tvm::auto_scheduler']]],
   ['costmodelnode',['CostModelNode',['../classtvm_1_1auto__scheduler_1_1CostModelNode.html',1,'tvm::auto_scheduler']]],
-  ['cropandresizeattrs',['CropAndResizeAttrs',['../structtvm_1_1relay_1_1CropAndResizeAttrs.html',1,'tvm::relay']]]
+  ['cropandresizeattrs',['CropAndResizeAttrs',['../structtvm_1_1relay_1_1CropAndResizeAttrs.html',1,'tvm::relay']]],
+  ['cumsumattrs',['CumsumAttrs',['../structtvm_1_1relay_1_1CumsumAttrs.html',1,'tvm::relay']]]
 ];

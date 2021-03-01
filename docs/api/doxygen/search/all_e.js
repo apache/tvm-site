@@ -34,7 +34,6 @@ var searchData=
   ['node_2eh',['node.h',['../node_8h.html',1,'']]],
   ['nodefunctor',['NodeFunctor',['../classtvm_1_1NodeFunctor.html',1,'tvm']]],
   ['nodefunctor_3c_20r_28const_20objectref_20_26n_2c_20args_2e_2e_2e_29_3e',['NodeFunctor&lt; R(const ObjectRef &amp;n, Args...)&gt;',['../classtvm_1_1NodeFunctor_3_01R_07const_01ObjectRef_01_6n_00_01Args_8_8_8_08_4.html',1,'tvm']]],
-  ['none',['None',['../namespacetvm_1_1tir.html#aed067b57db2923a07913239b2165e019a6adf97f83acf6453d4a6a4b1070f3754',1,'tvm::tir']]],
   ['nonmaximumsuppressionattrs',['NonMaximumSuppressionAttrs',['../structtvm_1_1relay_1_1NonMaximumSuppressionAttrs.html',1,'tvm::relay']]],
   ['norewrite',['NoRewrite',['../namespacetvm_1_1auto__scheduler.html#a3e9480be0119338696abbe9c80193b9eaa6dd7ceb983e075b3efc829b61add2ac',1,'tvm::auto_scheduler']]],
   ['normalization_2eh',['normalization.h',['../cuda_2normalization_8h.html',1,'']]],
@@ -48,6 +47,8 @@ var searchData=
   ['nothing',['Nothing',['../classtvm_1_1arith_1_1IntSet.html#a9c2f6e224e86669e9552b4d481ad65ea',1,'tvm::arith::IntSet']]],
   ['notnode',['NotNode',['../classtvm_1_1tir_1_1NotNode.html',1,'tvm::tir']]],
   ['nparts',['nparts',['../classtvm_1_1te_1_1SplitNode.html#a4e809bca962d95b7fab6a98f1617a05c',1,'tvm::te::SplitNode']]],
+  ['npy_5fmaxargs',['NPY_MAXARGS',['../einsum_8h.html#a001b5a5cffb1e85728a176fed1180683',1,'einsum.h']]],
+  ['npy_5fmaxdims',['NPY_MAXDIMS',['../einsum_8h.html#a737679ea9ee902bfa707c146051c17b5',1,'einsum.h']]],
   ['nullopt',['NullOpt',['../namespacetvm.html#aae7034e3e41c18e7fb78ff32bfc6a318',1,'tvm']]],
   ['nullopttype',['NullOptType',['../structtvm_1_1runtime_1_1NullOptType.html',1,'tvm::runtime']]],
   ['nullvalue',['NullValue',['../namespacetvm.html#ab6c242e8ac09beb463fba306948b7f15',1,'tvm']]],
@@ -67,5 +68,6 @@ var searchData=
   ['num_5foutputs',['num_outputs',['../structTVMOpParam.html#ae3291eb5e9d754b98e470a6b028331a2',1,'TVMOpParam::num_outputs()'],['../classtvm_1_1te_1_1OperationNode.html#a8cc2b22da26b1a0cea21e1ea44f2146b',1,'tvm::te::OperationNode::num_outputs()'],['../classtvm_1_1te_1_1PlaceholderOpNode.html#a777ce9b0843eaaa37d0667b14d50059a',1,'tvm::te::PlaceholderOpNode::num_outputs()'],['../classtvm_1_1te_1_1ComputeOpNode.html#ac4b034b11601367864722954c1b7c7fe',1,'tvm::te::ComputeOpNode::num_outputs()'],['../classtvm_1_1te_1_1TensorComputeOpNode.html#afccdc3ad7b735d87f93dfecfc6f4021b',1,'tvm::te::TensorComputeOpNode::num_outputs()'],['../classtvm_1_1te_1_1ScanOpNode.html#a1c3059f01aa644a41a6fbfec16538d1e',1,'tvm::te::ScanOpNode::num_outputs()'],['../classtvm_1_1te_1_1ExternOpNode.html#a1a0ce8401e57d9c66ece44dd59b3fb7d',1,'tvm::te::ExternOpNode::num_outputs()'],['../classtvm_1_1te_1_1HybridOpNode.html#aa0ad4d918a2da7686be57ffacaff971c',1,'tvm::te::HybridOpNode::num_outputs()']]],
   ['num_5fschedulable_5fdims',['num_schedulable_dims',['../classtvm_1_1te_1_1BaseComputeOpNode.html#afff057b90df28567ab7b2ba19a05b17c',1,'tvm::te::BaseComputeOpNode::num_schedulable_dims()'],['../classtvm_1_1te_1_1ComputeOpNode.html#adafbc09da5da3629aef87a8e5145bdec',1,'tvm::te::ComputeOpNode::num_schedulable_dims()'],['../classtvm_1_1te_1_1TensorComputeOpNode.html#a028a9ae8d9d27abd972b85248c9e3160',1,'tvm::te::TensorComputeOpNode::num_schedulable_dims()']]],
   ['num_5ftask',['num_task',['../structTVMParallelGroupEnv.html#a6ff807972a918ee61dfc158abce825f6',1,'TVMParallelGroupEnv']]],
-  ['number',['number',['../classtvm_1_1auto__scheduler_1_1ProgramRunnerNode.html#a92333af32d2e22aec749eaad4ba3d18b',1,'tvm::auto_scheduler::ProgramRunnerNode']]]
+  ['number',['number',['../classtvm_1_1auto__scheduler_1_1ProgramRunnerNode.html#a92333af32d2e22aec749eaad4ba3d18b',1,'tvm::auto_scheduler::ProgramRunnerNode']]],
+  ['numpyeinsumshape',['NumpyEinsumShape',['../namespacetvm_1_1topi.html#abc85c139664cb45e0f83fe0acdbf67d0',1,'tvm::topi']]]
 ];

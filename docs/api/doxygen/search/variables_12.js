@@ -13,6 +13,7 @@ var searchData=
   ['tensors',['tensors',['../classtvm_1_1auto__scheduler_1_1ComputeDAGNode.html#afc71b9ecc0d6b82a5c2ab3250f01514b',1,'tvm::auto_scheduler::ComputeDAGNode::tensors()'],['../classtvm_1_1te_1_1TensorIntrinCallNode.html#a92b543750ea55b9cfd6852139e2ddbd6',1,'tvm::te::TensorIntrinCallNode::tensors()']]],
   ['test',['test',['../structtvm_1_1runtime_1_1vm_1_1Instruction.html#adebc0e955069bdaa543df3a908351532',1,'tvm::runtime::vm::Instruction']]],
   ['then_5fcase',['then_case',['../classtvm_1_1tir_1_1IfThenElseNode.html#ae7245cad13c62b608897f8c7ba70b6f6',1,'tvm::tir::IfThenElseNode']]],
+  ['thread_5fbinding',['thread_binding',['../classtvm_1_1tir_1_1ForNode.html#a0defab036f2eb9d431f549b8522050c8',1,'tvm::tir::ForNode']]],
   ['thread_5fextent',['thread_extent',['../namespacetvm_1_1tir_1_1attr.html#a399eed804ecc482a607f0f65f07b78dd',1,'tvm::tir::attr']]],
   ['thread_5ftag',['thread_tag',['../classtvm_1_1tir_1_1IterVarNode.html#a2addeb80da895ace5d42423cc959f862',1,'tvm::tir::IterVarNode']]],
   ['threshold',['threshold',['../structtvm_1_1relay_1_1MultiBoxTransformLocAttrs.html#aad37e7285068b8ea93b27caaad5409d2',1,'tvm::relay::MultiBoxTransformLocAttrs::threshold()'],['../structtvm_1_1relay_1_1ProposalAttrs.html#ae8473a10238c2e4f21875b7e40cbdc10',1,'tvm::relay::ProposalAttrs::threshold()']]],

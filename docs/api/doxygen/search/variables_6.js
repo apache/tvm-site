@@ -17,7 +17,6 @@ var searchData=
   ['filename',['filename',['../classtvm_1_1auto__scheduler_1_1BuildResultNode.html#a413830d32b8f10d3a0a85ac1f719569f',1,'tvm::auto_scheduler::BuildResultNode::filename()'],['../classtvm_1_1auto__scheduler_1_1RecordToFileNode.html#a5debadfa20ad8ff19965d074253978de',1,'tvm::auto_scheduler::RecordToFileNode::filename()'],['../classtvm_1_1auto__scheduler_1_1RecordReaderNode.html#af976bdc5730038a84c7dde509f9e09e0',1,'tvm::auto_scheduler::RecordReaderNode::filename()'],['../classtvm_1_1auto__scheduler_1_1PreloadMeasuredStatesNode.html#abdcef8d2b2e1c93e933913579e420b8a',1,'tvm::auto_scheduler::PreloadMeasuredStatesNode::filename()']]],
   ['flatten_5fdata',['flatten_data',['../structTVMOpParam.html#a3c6194fcb1b8472a878c7520cfa608b5',1,'TVMOpParam']]],
   ['flop_5fct',['flop_ct',['../classtvm_1_1auto__scheduler_1_1ComputeDAGNode.html#a17eac4bdf78fc87e94fbebd2d4a24916',1,'tvm::auto_scheduler::ComputeDAGNode']]],
-  ['for_5ftype',['for_type',['../classtvm_1_1tir_1_1ForNode.html#a16c251793b50476f3e61ad529c5a8986',1,'tvm::tir::ForNode']]],
   ['force_5fsuppress',['force_suppress',['../structtvm_1_1relay_1_1NonMaximumSuppressionAttrs.html#afe99a1c828b06460ea747ce859a44bdd',1,'tvm::relay::NonMaximumSuppressionAttrs']]],
   ['forward_5frule',['forward_rule',['../classtvm_1_1tir_1_1BijectiveLayoutNode.html#a21eb51d30c60622b38aec8a0953fd763',1,'tvm::tir::BijectiveLayoutNode']]],
   ['fragment_5flayout',['fragment_layout',['../namespacetvm_1_1tir_1_1attr.html#a9b33cc65f756817e691b49782ee103bd',1,'tvm::tir::attr']]],
