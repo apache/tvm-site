@@ -1,4 +1,124 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="4.1.1">Jekyll</generator><link href="/feed.xml" rel="self" type="application/atom+xml" /><link href="/" rel="alternate" type="text/html" /><updated>2021-01-04T16:22:52-05:00</updated><id>/feed.xml</id><title type="html">TVM</title><author><name>{&quot;name&quot;=&gt;nil}</name></author><entry><title type="html">Bring Your Own Datatypes: Enabling Custom Datatype Exploration in TVM</title><link href="/2020/09/26/bring-your-own-datatypes" rel="alternate" type="text/html" title="Bring Your Own Datatypes: Enabling Custom Datatype Exploration in TVM" /><published>2020-09-26T00:00:00-04:00</published><updated>2020-09-26T00:00:00-04:00</updated><id>/2020/09/26/bring-your-own-datatypes</id><content type="html" xml:base="/2020/09/26/bring-your-own-datatypes">&lt;p&gt;In this post, we describe the Bring Your Own Datatypes framework, which enables the use of custom datatypes within TVM.&lt;/p&gt;
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="4.1.1">Jekyll</generator><link href="/feed.xml" rel="self" type="application/atom+xml" /><link href="/" rel="alternate" type="text/html" /><updated>2021-03-03T01:20:46-08:00</updated><id>/feed.xml</id><title type="html">TVM</title><author><name>{&quot;name&quot;=&gt;nil}</name></author><entry><title type="html">Introducing TVM Auto-scheduler (a.k.a. Ansor)</title><link href="/2021/03/03/intro-auto-scheduler" rel="alternate" type="text/html" title="Introducing TVM Auto-scheduler (a.k.a. Ansor)" /><published>2021-03-03T00:00:00-08:00</published><updated>2021-03-03T00:00:00-08:00</updated><id>/2021/03/03/intro-auto-scheduler</id><content type="html" xml:base="/2021/03/03/intro-auto-scheduler">&lt;p&gt;Optimizing the execution speed of deep neural networks is extremely hard with the growing
+model size, operator diversity, and hardware heterogeneity.
+From a computational perspective, deep neural networks are just layers and layers of tensor computations.
+These tensor computations, such as matmul and conv2d, can be easily described by mathematical expressions.
+However, providing high-performance implementations for them on modern hardware can be very challenging.
+We have to apply various low-level optimizations and utilize special hardware intrinsics to achieve high performance.
+It takes huge engineering effort to build linear algebra and neural network acceleration libraries like CuBLAS, CuDNN, oneMKL, and oneDNN.&lt;/p&gt;
+
+&lt;p&gt;Our life will be much easier if we can just write mathematical expressions and have something
+magically turn them into efficient code implementations.
+Three years ago, deep learning compiler TVM and its search module AutoTVM were built as the first step towards this goal.
+AutoTVM employs a template-based search algorithm to find efficient implementations for a given tensor computation.
+However, it is a template-based approach, so it still requires domain experts to implement a non-trivial manual template
+for every operator on every platform.
+Today, there are more than 15k lines of code for these templates in the TVM code repository.
+Besides being very hard to develop, these templates often have inefficient and limited search spaces,
+making them unable to achieve optimal performance.&lt;/p&gt;
+
+&lt;p&gt;To address the limitations of AutoTVM, we started project Ansor aiming at a fully automated auto-scheduler for 
+generating code for tensor computations.
+Ansor auto-scheduler only takes tensor expressions as input and generates high-performance code without manual templates.
+We made innovations in the search space construction and search algorithm.
+As a result, the auto-scheduler can achieve better performance with less search time in a more automated way.&lt;/p&gt;
+
+&lt;p&gt;Ansor auto-scheduler is now integrated into Apache TVM as &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;tvm.auto_scheduler&lt;/code&gt; package.
+This is a joint effort by collaborators from UC Berkeley, Alibaba, AWS and OctoML.
+Detailed tutorials are available for Intel CPUs, ARM CPUs, NVIDIA CPUs, and Mali GPUs on the TVM website [1].
+In this blog post, we will give a high-level introduction and show some benchmark results.&lt;/p&gt;
+
+&lt;h1 id=&quot;system-overview&quot;&gt;System Overview&lt;/h1&gt;
+
+&lt;h2 id=&quot;autotvm-vs-auto-scheduler&quot;&gt;AutoTVM vs Auto-scheduler&lt;/h2&gt;
+&lt;p style=&quot;text-align: center&quot;&gt;&lt;img src=&quot;/images/intro-auto-scheduler/workflow.png&quot; alt=&quot;image&quot; width=&quot;75%&quot; /&gt;&lt;/p&gt;
+&lt;center&gt; Table 1. Workflow Comparision &lt;/center&gt;
+&lt;p&gt;&lt;/p&gt;
+
+&lt;p&gt;Table 1 compares the workflow for generating code for an operator in AutoTVM and auto-scheduler.
+In AutoTVM, the developer has to go through three steps.
+In step 1, the developer has to write the compute definition in TVM’s tensor expression language.
+This part is relatively easy because TVM’s tensor expression language looks just like math expressions.
+In step 2, the developer has to write a schedule template, which typically consists of 20-100 lines of tricky DSL code.
+This part requires domain expertise of both the target hardware architecture and operator semantics, so it is difficult.
+The last step, step 3, is automated by a search algorithm.&lt;/p&gt;
+
+&lt;p&gt;In auto-scheduler, we eliminate the most difficult step 2 by automatic search space construction and accelerate step 3 with a better search algorithm.
+By doing automatic search space construction, we not only eliminate huge manual effort, 
+but also enabling the exploration of much more optimization combinations.
+This automation does not come for free, because we still need to design rules to generate the search space.
+However, these rules are very general. They are based on static analysis of the tensor expressions.
+We only need to design a few general rules once and can apply them to almost all tensor computations in deep learning.&lt;/p&gt;
+
+&lt;h2 id=&quot;search-process&quot;&gt;Search Process&lt;/h2&gt;
+&lt;p style=&quot;text-align: center&quot;&gt;&lt;img src=&quot;/images/intro-auto-scheduler/search_overview.png&quot; alt=&quot;image&quot; width=&quot;40%&quot; /&gt;&lt;/p&gt;
+&lt;center&gt; Figure 1. Search Process Overview  &lt;/center&gt;
+&lt;p&gt;&lt;/p&gt;
+
+&lt;p&gt;Figure 1. shows the search process of auto-scheduler when optimizing a whole neural network.
+The system takes deep learning models as input.
+It then partitions the big model into small subgraphs with Relay’s operator fusion pass.
+A task scheduler is utilized to allocate the time resource for optimizing many subgraphs.
+At each iteration, it picks a subgraph that has the most potential to increase the end-to-end performance.
+For this subgraph, we analyze its tensor expression and generate several sketches for it.
+Then we run evolutionary search with a learned cost model to get a batch of optimized programs.
+The optimized programs are sent to actual hardware for measurements.
+When the measurements are finished, the profiling results are used as feedback to update all components of the system.
+This process is repeated iteratively until the optimization converges or we run out of time budget.
+More technical details can be found in our paper [3] and our code.&lt;/p&gt;
+
+&lt;p&gt;It is worth notiing that since the auto-scheduler generates schedules from scratch, 
+it reuses the existing computation definitions in TOPI but not schedule templates.&lt;/p&gt;
+
+&lt;h1 id=&quot;benchmark-results&quot;&gt;Benchmark Results&lt;/h1&gt;
+&lt;p&gt;In this section, we benchmark the performance of AutoTVM and Auto-scheduler.
+The CPU benchmark is done on an AWS c5.9xlarge, which is equipped with an Intel 18-core skylake 8124-m CPU. 
+The GPU benchmark is done on an AWS g4dn.4xlarge, which is equipped with an NVIDIA T4 GPU.
+All benchmark code, raw data, tuning logs can be found in this repo [2].&lt;/p&gt;
+
+&lt;h2 id=&quot;performance-of-the-generated-code&quot;&gt;Performance of the generated code&lt;/h2&gt;
+&lt;p&gt;We benchmark the fp32 single-batch inference latency on three networks.
+Figure 2 shows the relative speedup of auto-scheduler against AutoTVM.
+We can see auto-scheduler outperforms AutoTVM in all cases with 1.02x to 8.95x speedup.
+This is because auto-scheduler explores a larger search space, which covers more efficient combinations
+of optimizations that are missed in TOPI manual templates.
+The BERT-base@GPU is an extreme case where the manual templates are very badly designed.
+In other words, the manual template for dense layers does not perform well for the shapes in BERT model.&lt;/p&gt;
+
+&lt;p style=&quot;text-align: center&quot;&gt;&lt;img src=&quot;/images/intro-auto-scheduler/code_perf.png&quot; alt=&quot;image&quot; width=&quot;85%&quot; /&gt;&lt;/p&gt;
+&lt;center&gt; Figure 2. Code Performance Comparision (Higher is better) &lt;/center&gt;
+&lt;p&gt;&lt;/p&gt;
+
+&lt;h2 id=&quot;search-time&quot;&gt;Search Time&lt;/h2&gt;
+&lt;p&gt;As we know, the search-based approaches can be very time-consuming, so we also care about the search time.
+It typically takes several hours to let the search converge for a single neural network.
+Figure 3 compares the search time of AutoTVM and auto-scheduler.
+Auto-scheduler requires much less time to converge in most cases, despite its larger search space.
+This is mainly because of auto-scheduler has a better cost model and task scheduler.&lt;/p&gt;
+
+&lt;p style=&quot;text-align: center&quot;&gt;&lt;img src=&quot;/images/intro-auto-scheduler/search_time.png&quot; alt=&quot;image&quot; width=&quot;85%&quot; /&gt;&lt;/p&gt;
+&lt;center&gt; Figure 3. Search Time Comparision (Lower is better) &lt;/center&gt;
+&lt;p&gt;&lt;/p&gt;
+
+&lt;h2 id=&quot;more-results&quot;&gt;More Results&lt;/h2&gt;
+&lt;p&gt;The repo above serves as an internal benchmark tool for TVM, so it only compares the latest AutoTVM and AutoScheduler.
+You can find results for more libraries and backends in our paper [3].
+Recently, this blog post [4] also tried auto-scheduler on an Apple M1 chip and got some good results.&lt;/p&gt;
+
+&lt;h1 id=&quot;conclusion&quot;&gt;Conclusion&lt;/h1&gt;
+&lt;p&gt;We build TVM auto-scheduler, a system that automatically generates high-performance code for tensor expressions.
+Compared with the predecessor AutoTVM, auto-scheduler does not require manual templates.
+Besides, auto-scheduler is capable of generating schedules with better performance in a shorter time.
+We achieve this by making innovations in the search space construction and search algorithm.&lt;/p&gt;
+
+&lt;p&gt;We are excited about the current performance of auto-scheduler.
+In the future, we are interested in extending the ability of auto-scheduler to support
+sparse operators, low-precision operators, and dynamic shape better.&lt;/p&gt;
+
+&lt;h1 id=&quot;links&quot;&gt;Links&lt;/h1&gt;
+&lt;p&gt;[1] Tutorials: &lt;a href=&quot;https://tvm.apache.org/docs/tutorials/index.html#autoscheduler-template-free-auto-scheduling&quot;&gt;https://tvm.apache.org/docs/tutorials/index.html#autoscheduler-template-free-auto-scheduling&lt;/a&gt;&lt;br /&gt;
+[2] Benchmark repo: &lt;a href=&quot;https://github.com/tlc-pack/TLCBench&quot;&gt;https://github.com/tlc-pack/TLCBench&lt;/a&gt;&lt;br /&gt;
+[3] OSDI Paper: &lt;a href=&quot;https://arxiv.org/abs/2006.06762&quot;&gt;Ansor : Generating High-Performance Tensor Programs for Deep Learning&lt;/a&gt;&lt;br /&gt;
+[4] Results on Apple M1 chip: &lt;a href=&quot;https://medium.com/octoml/on-the-apple-m1-beating-apples-core-ml-4-with-30-model-performance-improvements-9d94af7d1b2d&quot;&gt;https://medium.com/octoml/on-the-apple-m1-beating-apples-core-ml-4-with-30-model-performance-improvements-9d94af7d1b2d&lt;/a&gt;.&lt;/p&gt;</content><author><name>Lianmin Zheng, Chengfan Jia, Minmin Sun, Zhao Wu, Cody Hao Yu</name></author><summary type="html">Optimizing the execution speed of deep neural networks is extremely hard with the growing model size, operator diversity, and hardware heterogeneity. From a computational perspective, deep neural networks are just layers and layers of tensor computations. These tensor computations, such as matmul and conv2d, can be easily described by mathematical expressions. However, providing high-performance implementations for them on modern hardware can be very challenging. We have to apply various low-level optimizations and utilize special hardware intrinsics to achieve high performance. It takes huge engineering effort to build linear algebra and neural network acceleration libraries like CuBLAS, CuDNN, oneMKL, and oneDNN.</summary></entry><entry><title type="html">Bring Your Own Datatypes: Enabling Custom Datatype Exploration in TVM</title><link href="/2020/09/26/bring-your-own-datatypes" rel="alternate" type="text/html" title="Bring Your Own Datatypes: Enabling Custom Datatype Exploration in TVM" /><published>2020-09-26T00:00:00-07:00</published><updated>2020-09-26T00:00:00-07:00</updated><id>/2020/09/26/bring-your-own-datatypes</id><content type="html" xml:base="/2020/09/26/bring-your-own-datatypes">&lt;p&gt;In this post, we describe the Bring Your Own Datatypes framework, which enables the use of custom datatypes within TVM.&lt;/p&gt;
 
 &lt;h2 id=&quot;introduction&quot;&gt;Introduction&lt;/h2&gt;
 
@@ -282,7 +402,7 @@ For more documentation about the Bring Your Own Datatypes framework
       &lt;p&gt;&lt;a href=&quot;https://posithub.org/docs/BeatingFloatingPoint.pdf&quot; target=&quot;_blank&quot;&gt;Beating Floating Point at its Own Game: Posit Arithmetic&lt;/a&gt; &lt;a href=&quot;#fnref:posit&quot; class=&quot;reversefootnote&quot; role=&quot;doc-backlink&quot;&gt;&amp;#8617;&lt;/a&gt;&lt;/p&gt;
     &lt;/li&gt;
   &lt;/ol&gt;
-&lt;/div&gt;</content><author><name>Gus Smith, Andrew Liu</name></author><summary type="html">In this post, we describe the Bring Your Own Datatypes framework, which enables the use of custom datatypes within TVM.</summary></entry><entry><title type="html">How to Bring Your Own Codegen to TVM</title><link href="/2020/07/15/how-to-bring-your-own-codegen-to-tvm" rel="alternate" type="text/html" title="How to Bring Your Own Codegen to TVM" /><published>2020-07-15T00:00:00-04:00</published><updated>2020-07-15T00:00:00-04:00</updated><id>/2020/07/15/how-to-bring-your-own-codegen-to-tvm</id><content type="html" xml:base="/2020/07/15/how-to-bring-your-own-codegen-to-tvm">&lt;p&gt;To free data scientists from worrying about the performance when developing a new model, hardware backend providers (e.g., Intel, NVIDIA, ARM, etc) either provide kernel libraries such as cuBLAS or cuDNN with many commonly used deep learning kernels, or provide frameworks such as DNNL or TensorRT with a graph engine to let users describe their models in a certain way to achieve high performance. In addition, emerging deep learning accelerators also have their own compilers, kernel libraries, or runtime frameworks.&lt;/p&gt;
+&lt;/div&gt;</content><author><name>Gus Smith, Andrew Liu</name></author><summary type="html">In this post, we describe the Bring Your Own Datatypes framework, which enables the use of custom datatypes within TVM.</summary></entry><entry><title type="html">How to Bring Your Own Codegen to TVM</title><link href="/2020/07/15/how-to-bring-your-own-codegen-to-tvm" rel="alternate" type="text/html" title="How to Bring Your Own Codegen to TVM" /><published>2020-07-15T00:00:00-07:00</published><updated>2020-07-15T00:00:00-07:00</updated><id>/2020/07/15/how-to-bring-your-own-codegen-to-tvm</id><content type="html" xml:base="/2020/07/15/how-to-bring-your-own-codegen-to-tvm">&lt;p&gt;To free data scientists from worrying about the performance when developing a new model, hardware backend providers (e.g., Intel, NVIDIA, ARM, etc) either provide kernel libraries such as cuBLAS or cuDNN with many commonly used deep learning kernels, or provide frameworks such as DNNL or TensorRT with a graph engine to let users describe their models in a certain way to achieve high performance. In addition, emerging deep learning accelerators also have their own compilers, kernel libraries, or runtime frameworks.&lt;/p&gt;
 
 &lt;p&gt;However, users have to learn a new programming interface when they attempt to work on a new kernel library or a device. As a result, the demand for a unified programming interface becomes more and more important to let all users and hardware backend providers stand on the same page.&lt;/p&gt;
 
@@ -751,7 +871,7 @@ Figure 4: After Graph Partitioning.
 
 &lt;h2 id=&quot;acknowledgment&quot;&gt;Acknowledgment&lt;/h2&gt;
 
-&lt;p&gt;We would like to thank our colleague Animesh Jain for valuable discussions in the framework design; Tianqi Chen and Jared Roesch from OctoML for system design discussions and prototyping; Masahiro Masuda from the TVM community to help code review and improve the DNNL integration. We would also like to thank Ramana Radhakrishnan, Matthew Barrett, Manupa Karunaratne, and Luke Hutton from ARM, U.K. for contributing several helpful ideas, related Relay passes, and the Arm Compute Library (ACL) integration with BYOC.&lt;/p&gt;</content><author><name>Zhi Chen and Cody Yu, Amazon Web Services, Inc</name></author><summary type="html">To free data scientists from worrying about the performance when developing a new model, hardware backend providers (e.g., Intel, NVIDIA, ARM, etc) either provide kernel libraries such as cuBLAS or cuDNN with many commonly used deep learning kernels, or provide frameworks such as DNNL or TensorRT with a graph engine to let users describe their models in a certain way to achieve high performance. In addition, emerging deep learning accelerators also have their own compilers, kernel libraries, or runtime frameworks.</summary></entry><entry><title type="html">Bridging PyTorch and TVM</title><link href="/2020/07/14/bert-pytorch-tvm" rel="alternate" type="text/html" title="Bridging PyTorch and TVM" /><published>2020-07-14T00:00:00-04:00</published><updated>2020-07-14T00:00:00-04:00</updated><id>/2020/07/14/bert-pytorch-tvm</id><content type="html" xml:base="/2020/07/14/bert-pytorch-tvm">&lt;p&gt;(A more code-heavy variant is crossposted on the more PyTorch affine &lt;a href=&quot;https://lernapparat.de/transformers-pytorch-tvm/&quot;&gt;Lernapparat&lt;/a&gt;,
+&lt;p&gt;We would like to thank our colleague Animesh Jain for valuable discussions in the framework design; Tianqi Chen and Jared Roesch from OctoML for system design discussions and prototyping; Masahiro Masuda from the TVM community to help code review and improve the DNNL integration. We would also like to thank Ramana Radhakrishnan, Matthew Barrett, Manupa Karunaratne, and Luke Hutton from ARM, U.K. for contributing several helpful ideas, related Relay passes, and the Arm Compute Library (ACL) integration with BYOC.&lt;/p&gt;</content><author><name>Zhi Chen and Cody Yu, Amazon Web Services, Inc</name></author><summary type="html">To free data scientists from worrying about the performance when developing a new model, hardware backend providers (e.g., Intel, NVIDIA, ARM, etc) either provide kernel libraries such as cuBLAS or cuDNN with many commonly used deep learning kernels, or provide frameworks such as DNNL or TensorRT with a graph engine to let users describe their models in a certain way to achieve high performance. In addition, emerging deep learning accelerators also have their own compilers, kernel libraries, or runtime frameworks.</summary></entry><entry><title type="html">Bridging PyTorch and TVM</title><link href="/2020/07/14/bert-pytorch-tvm" rel="alternate" type="text/html" title="Bridging PyTorch and TVM" /><published>2020-07-14T00:00:00-07:00</published><updated>2020-07-14T00:00:00-07:00</updated><id>/2020/07/14/bert-pytorch-tvm</id><content type="html" xml:base="/2020/07/14/bert-pytorch-tvm">&lt;p&gt;(A more code-heavy variant is crossposted on the more PyTorch affine &lt;a href=&quot;https://lernapparat.de/transformers-pytorch-tvm/&quot;&gt;Lernapparat&lt;/a&gt;,
  the Jupyter Notebook to follow along is on &lt;a href=&quot;https://github.com/t-vi/pytorch-tvmisc/tree/master/transformers-pytorch-tvm/&quot;&gt;github&lt;/a&gt;.)&lt;/p&gt;
 
 &lt;p&gt;Some of the most intriguing applications of Artificial Intelligence have been in Natural Language Processing.
@@ -1264,7 +1384,7 @@ one would want to re-do cheap computation, most prominently point-wise computati
 &lt;h1 id=&quot;author&quot;&gt;Author&lt;/h1&gt;
 
 &lt;p&gt;&lt;a href=&quot;https://lernapparat.de/&quot;&gt;Thomas Viehmann&lt;/a&gt; is the founder of &lt;a href=&quot;https://mathinf.eu/&quot;&gt;MathInf GmbH&lt;/a&gt;, Munich, Germany, a boutique training and consultancy firm focusing on Machine Learning and PyTorch.
-He is a PyTorch core developer and co-authored &lt;a href=&quot;https://www.manning.com/books/deep-learning-with-pytorch&quot;&gt;Deep Learning with PyTorch&lt;/a&gt;, which currently available as &lt;a href=&quot;https://pytorch.org/deep-learning-with-pytorch&quot;&gt;free download from the PyTorch website&lt;/a&gt;.&lt;/p&gt;</content><author><name>Thomas Viehmann, MathInf GmbH</name></author><summary type="html"></summary></entry><entry><title type="html">TinyML - How TVM is Taming Tiny</title><link href="/2020/06/04/tinyml-how-tvm-is-taming-tiny" rel="alternate" type="text/html" title="TinyML - How TVM is Taming Tiny" /><published>2020-06-04T00:00:00-04:00</published><updated>2020-06-04T00:00:00-04:00</updated><id>/2020/06/04/tinyml-how-tvm-is-taming-tiny</id><content type="html" xml:base="/2020/06/04/tinyml-how-tvm-is-taming-tiny">&lt;p&gt;&lt;img src=&quot;/images/microtvm/logo.png&quot; alt=&quot;microTVM logo&quot; width=&quot;30%&quot; /&gt;&lt;br /&gt;&lt;/p&gt;
+He is a PyTorch core developer and co-authored &lt;a href=&quot;https://www.manning.com/books/deep-learning-with-pytorch&quot;&gt;Deep Learning with PyTorch&lt;/a&gt;, which currently available as &lt;a href=&quot;https://pytorch.org/deep-learning-with-pytorch&quot;&gt;free download from the PyTorch website&lt;/a&gt;.&lt;/p&gt;</content><author><name>Thomas Viehmann, MathInf GmbH</name></author><summary type="html"></summary></entry><entry><title type="html">TinyML - How TVM is Taming Tiny</title><link href="/2020/06/04/tinyml-how-tvm-is-taming-tiny" rel="alternate" type="text/html" title="TinyML - How TVM is Taming Tiny" /><published>2020-06-04T00:00:00-07:00</published><updated>2020-06-04T00:00:00-07:00</updated><id>/2020/06/04/tinyml-how-tvm-is-taming-tiny</id><content type="html" xml:base="/2020/06/04/tinyml-how-tvm-is-taming-tiny">&lt;p&gt;&lt;img src=&quot;/images/microtvm/logo.png&quot; alt=&quot;microTVM logo&quot; width=&quot;30%&quot; /&gt;&lt;br /&gt;&lt;/p&gt;
 
 &lt;p&gt;The proliferation of low-cost, AI-powered consumer devices has led to widespread interest in “bare-metal” (low-power, often without an operating system) devices among ML researchers and practitioners.  While it is already possible for experts to run &lt;em&gt;some&lt;/em&gt; models on &lt;em&gt;some&lt;/em&gt; bare-metal devices, optimizing models for diverse sets of devices is challenging, often requiring manually optimized device-specific libraries.  And for those platforms without, say, Linux support, there exists no scalable solution for deploying models.  Because of this, in order to target new devices, developers must implement one-off custom software stacks for managing system resources and scheduling model execution.&lt;/p&gt;
 
@@ -1563,7 +1683,7 @@ Diagram from CMSIS-NN paper showing a 2x2 matrix multiplication microkernel&lt;/
   &lt;li&gt;&lt;a href=&quot;https://homes.cs.washington.edu/~moreau/&quot;&gt;Thierry Moreau&lt;/a&gt;, for mentoring me during my time at OctoML.&lt;/li&gt;
   &lt;li&gt;&lt;a href=&quot;https://homes.cs.washington.edu/~vegaluis/&quot;&gt;Luis Vega&lt;/a&gt;, for teaching me the fundamentals of interacting with microcontrollers.&lt;/li&gt;
   &lt;li&gt;&lt;a href=&quot;https://www.linkedin.com/in/themadrasi/?originalSubdomain=uk&quot;&gt;Ramana Radhakrishnan&lt;/a&gt;, for supplying the Arm hardware used in our experiments and for providing guidance on its usage.&lt;/li&gt;
-&lt;/ul&gt;</content><author><name>Logan Weber and Andrew Reusch, OctoML</name></author><summary type="html"></summary></entry><entry><title type="html">Compiling Machine Learning to WASM and WebGPU with Apache TVM</title><link href="/2020/05/14/compiling-machine-learning-to-webassembly-and-webgpu" rel="alternate" type="text/html" title="Compiling Machine Learning to WASM and WebGPU with Apache TVM" /><published>2020-05-14T00:00:00-04:00</published><updated>2020-05-14T00:00:00-04:00</updated><id>/2020/05/14/compiling-machine-learning-to-webassembly-and-webgpu</id><content type="html" xml:base="/2020/05/14/compiling-machine-learning-to-webassembly-and-webgpu">&lt;p&gt;&lt;strong&gt;TLDR&lt;/strong&gt;&lt;/p&gt;
+&lt;/ul&gt;</content><author><name>Logan Weber and Andrew Reusch, OctoML</name></author><summary type="html"></summary></entry><entry><title type="html">Compiling Machine Learning to WASM and WebGPU with Apache TVM</title><link href="/2020/05/14/compiling-machine-learning-to-webassembly-and-webgpu" rel="alternate" type="text/html" title="Compiling Machine Learning to WASM and WebGPU with Apache TVM" /><published>2020-05-14T00:00:00-07:00</published><updated>2020-05-14T00:00:00-07:00</updated><id>/2020/05/14/compiling-machine-learning-to-webassembly-and-webgpu</id><content type="html" xml:base="/2020/05/14/compiling-machine-learning-to-webassembly-and-webgpu">&lt;p&gt;&lt;strong&gt;TLDR&lt;/strong&gt;&lt;/p&gt;
 
 &lt;p&gt;We introduced support for WASM and WebGPU to the Apache TVM deep learning compiler. Our experiments shows that  TVM’s WebGPU backend can get &lt;strong&gt;close to native&lt;/strong&gt; &lt;strong&gt;GPU performance&lt;/strong&gt; when deploying models to the web.&lt;/p&gt;
 
@@ -1641,7 +1761,7 @@ Diagram from CMSIS-NN paper showing a 2x2 matrix multiplication microkernel&lt;/
 
 &lt;h2 id=&quot;acknowledgement&quot;&gt;Acknowledgement&lt;/h2&gt;
 
-&lt;p&gt;We would like to thank the emscripten project for providing the WASM compilation infrastructures as well as the JS library support on the web. We would also like to thank the WebGPU community for various helpful discussions. Thanks to Fletcher Haynes for valuable feedbacks to the post.&lt;/p&gt;</content><author><name>Tianqi Chen and Jared Roesch, OctoML</name></author><summary type="html">TLDR</summary></entry><entry><title type="html">Integrating TVM into PyTorch</title><link href="/2019/05/30/pytorch-frontend" rel="alternate" type="text/html" title="Integrating TVM into PyTorch" /><published>2019-05-30T00:00:00-04:00</published><updated>2019-05-30T00:00:00-04:00</updated><id>/2019/05/30/pytorch-frontend</id><content type="html" xml:base="/2019/05/30/pytorch-frontend">&lt;p&gt;As TVM continuously demonstrates improvements to the efficiency of deep learning execution,
+&lt;p&gt;We would like to thank the emscripten project for providing the WASM compilation infrastructures as well as the JS library support on the web. We would also like to thank the WebGPU community for various helpful discussions. Thanks to Fletcher Haynes for valuable feedbacks to the post.&lt;/p&gt;</content><author><name>Tianqi Chen and Jared Roesch, OctoML</name></author><summary type="html">TLDR</summary></entry><entry><title type="html">Integrating TVM into PyTorch</title><link href="/2019/05/30/pytorch-frontend" rel="alternate" type="text/html" title="Integrating TVM into PyTorch" /><published>2019-05-30T00:00:00-07:00</published><updated>2019-05-30T00:00:00-07:00</updated><id>/2019/05/30/pytorch-frontend</id><content type="html" xml:base="/2019/05/30/pytorch-frontend">&lt;p&gt;As TVM continuously demonstrates improvements to the efficiency of deep learning execution,
 it has become clear that PyTorch stands to benefit from directly leveraging the compiler stack.
 A major tenet of PyTorch is providing seamless and robust integrations that don’t get in the user’s way.
 To that end, PyTorch now has an official TVM-based backend, &lt;a href=&quot;https://github.com/pytorch/tvm&quot;&gt;torch_tvm&lt;/a&gt;.&lt;/p&gt;
@@ -1733,7 +1853,7 @@ def mul(a, b, c):
 
 # via script
 relay_graph = torch_tvm.to_relay(mul, inputs)
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;</content><author><name>Bram Wasti</name></author><summary type="html">As TVM continuously demonstrates improvements to the efficiency of deep learning execution, it has become clear that PyTorch stands to benefit from directly leveraging the compiler stack. A major tenet of PyTorch is providing seamless and robust integrations that don’t get in the user’s way. To that end, PyTorch now has an official TVM-based backend, torch_tvm.</summary></entry><entry><title type="html">Automating Optimization of Quantized Deep Learning Models on CUDA</title><link href="/2019/04/29/opt-cuda-quantized" rel="alternate" type="text/html" title="Automating Optimization of Quantized Deep Learning Models on CUDA" /><published>2019-04-29T12:00:00-04:00</published><updated>2019-04-29T12:00:00-04:00</updated><id>/2019/04/29/opt-cuda-quantized</id><content type="html" xml:base="/2019/04/29/opt-cuda-quantized">&lt;p&gt;Deep learning has been successfully applied to a variety of tasks.
+&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;</content><author><name>Bram Wasti</name></author><summary type="html">As TVM continuously demonstrates improvements to the efficiency of deep learning execution, it has become clear that PyTorch stands to benefit from directly leveraging the compiler stack. A major tenet of PyTorch is providing seamless and robust integrations that don’t get in the user’s way. To that end, PyTorch now has an official TVM-based backend, torch_tvm.</summary></entry><entry><title type="html">Automating Optimization of Quantized Deep Learning Models on CUDA</title><link href="/2019/04/29/opt-cuda-quantized" rel="alternate" type="text/html" title="Automating Optimization of Quantized Deep Learning Models on CUDA" /><published>2019-04-29T09:00:00-07:00</published><updated>2019-04-29T09:00:00-07:00</updated><id>/2019/04/29/opt-cuda-quantized</id><content type="html" xml:base="/2019/04/29/opt-cuda-quantized">&lt;p&gt;Deep learning has been successfully applied to a variety of tasks.
 On real-time scenarios such as inference on autonomous vehicles, the inference speed of the model is critical.
 Network quantization is an effective approach to accelerating deep learning models.
 In quantized models, both data and model parameters are represented with low precision data types such as &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;int8&lt;/code&gt; and &lt;code class=&quot;language-plaintext highlighter-rouge&quot;&gt;float16&lt;/code&gt;.
@@ -1868,7 +1988,7 @@ We show that automatic optimization in TVM makes it easy and flexible to support
 &lt;/ul&gt;
 
 &lt;h1 id=&quot;bio--acknowledgement&quot;&gt;Bio &amp;amp; Acknowledgement&lt;/h1&gt;
-&lt;p&gt;&lt;a href=&quot;https://wuwei.io/&quot;&gt;Wuwei Lin&lt;/a&gt; is an undergraduate student at SJTU. He is currently an intern at TuSimple. The author has many thanks to &lt;a href=&quot;https://homes.cs.washington.edu/~tqchen/&quot;&gt;Tianqi Chen&lt;/a&gt; and &lt;a href=&quot;https://homes.cs.washington.edu/~eqy/&quot;&gt;Eddie Yan&lt;/a&gt; for their reviews.&lt;/p&gt;</content><author><name>Wuwei Lin</name></author><summary type="html">Deep learning has been successfully applied to a variety of tasks. On real-time scenarios such as inference on autonomous vehicles, the inference speed of the model is critical. Network quantization is an effective approach to accelerating deep learning models. In quantized models, both data and model parameters are represented with low precision data types such as int8 and float16. The lowered data bandwidth reduces the inference time and memory/storage requirements, as well as the power consumption. Meanwhile, under proper quantization schemes, we can minimize the accuracy drops of the quantized models. Therefore, quantized models are of particular interests of researchers and developers as it makes large models suitable to deploy on diverse devices, such as GPU, CPU and mobile devices.</summary></entry><entry><title type="html">TVM Deep Learning Compiler Joins Apache Software Foundation</title><link href="/2019/03/18/tvm-apache-announcement" rel="alternate" type="text/html" title="TVM Deep Learning Compiler Joins Apache Software Foundation" /><published>2019-03-18T00:00:00-04:00</published><updated>2019-03-18T00:00:00-04:00</updated><id>/2019/03/18/tvm-apache-announcement</id><content type="html" xml:base="/2019/03/18/tvm-apache-announcement">&lt;p&gt;There is an increasing need to bring machine learning to a wide diversity of hardware devices. Current frameworks rely on vendor-specific operator libraries and optimize for a narrow range of server-class GPUs. Deploying workloads to new platforms – such as mobile phones, embedded devices, and accelerators (e.g., FPGAs, ASICs) – requires significant manual effort.&lt;/p&gt;
+&lt;p&gt;&lt;a href=&quot;https://wuwei.io/&quot;&gt;Wuwei Lin&lt;/a&gt; is an undergraduate student at SJTU. He is currently an intern at TuSimple. The author has many thanks to &lt;a href=&quot;https://homes.cs.washington.edu/~tqchen/&quot;&gt;Tianqi Chen&lt;/a&gt; and &lt;a href=&quot;https://homes.cs.washington.edu/~eqy/&quot;&gt;Eddie Yan&lt;/a&gt; for their reviews.&lt;/p&gt;</content><author><name>Wuwei Lin</name></author><summary type="html">Deep learning has been successfully applied to a variety of tasks. On real-time scenarios such as inference on autonomous vehicles, the inference speed of the model is critical. Network quantization is an effective approach to accelerating deep learning models. In quantized models, both data and model parameters are represented with low precision data types such as int8 and float16. The lowered data bandwidth reduces the inference time and memory/storage requirements, as well as the power consumption. Meanwhile, under proper quantization schemes, we can minimize the accuracy drops of the quantized models. Therefore, quantized models are of particular interests of researchers and developers as it makes large models suitable to deploy on diverse devices, such as GPU, CPU and mobile devices.</summary></entry><entry><title type="html">TVM Deep Learning Compiler Joins Apache Software Foundation</title><link href="/2019/03/18/tvm-apache-announcement" rel="alternate" type="text/html" title="TVM Deep Learning Compiler Joins Apache Software Foundation" /><published>2019-03-18T00:00:00-07:00</published><updated>2019-03-18T00:00:00-07:00</updated><id>/2019/03/18/tvm-apache-announcement</id><content type="html" xml:base="/2019/03/18/tvm-apache-announcement">&lt;p&gt;There is an increasing need to bring machine learning to a wide diversity of hardware devices. Current frameworks rely on vendor-specific operator libraries and optimize for a narrow range of server-class GPUs. Deploying workloads to new platforms – such as mobile phones, embedded devices, and accelerators (e.g., FPGAs, ASICs) – requires significant manual effort.&lt;/p&gt;
 
 &lt;p&gt;TVM is an open source deep learning compiler stack that closes the gap between the productivity-focused deep learning frameworks, and the performance- or efficiency-oriented hardware backends. Today, we are glad to announce that the TVM community has decided to move on to Apache incubator, and becomes an Apache(incubating) project.&lt;/p&gt;
 
@@ -1882,7 +2002,7 @@ We show that automatic optimization in TVM makes it easy and flexible to support
 
 &lt;p&gt;We would like to take this chance to thank the Allen School for supporting the SAMPL team that gave birth to the TVM project. We would also like to thank the Halide project which provided the basis for TVM’s loop-level IR and initial code generation. We would like to thank our Apache incubator mentors for introducing the project to Apache and providing useful guidance. Finally, we would like to thank the TVM community and all of the organizations, as listed above, that supported the developers of TVM.&lt;/p&gt;
 
-&lt;p&gt;See also the &lt;a href=&quot;https://news.cs.washington.edu/2019/03/18/allen-schools-tvm-deep-learning-compiler-framework-transitions-to-apache/&quot;&gt;Allen School news about the transition here&lt;/a&gt;, &lt;a href=&quot;https://sampl.cs.washington.edu/tvmconf/#about-tvmconf&quot;&gt;TVM conference program slides and recordings&lt;/a&gt;, and &lt;a href=&quot;https://tvm.apache.org/docs//contribute/community.html&quot;&gt;our community guideline here&lt;/a&gt;. Follow us on Twitter: &lt;a href=&quot;https://twitter.com/ApacheTVM&quot;&gt;@ApacheTVM&lt;/a&gt;.&lt;/p&gt;</content><author><name>TVM Community</name></author><summary type="html">There is an increasing need to bring machine learning to a wide diversity of hardware devices. Current frameworks rely on vendor-specific operator libraries and optimize for a narrow range of server-class GPUs. Deploying workloads to new platforms – such as mobile phones, embedded devices, and accelerators (e.g., FPGAs, ASICs) – requires significant manual effort.</summary></entry><entry><title type="html">TVM Golang Runtime for Deep Learning Deployment</title><link href="/2019/01/19/Golang" rel="alternate" type="text/html" title="TVM Golang Runtime for Deep Learning Deployment" /><published>2019-01-19T00:00:00-05:00</published><updated>2019-01-19T00:00:00-05:00</updated><id>/2019/01/19/Golang</id><content type="html" xml:base="/2019/01/19/Golang">&lt;h2 id=&quot;introduction&quot;&gt;Introduction&lt;/h2&gt;
+&lt;p&gt;See also the &lt;a href=&quot;https://news.cs.washington.edu/2019/03/18/allen-schools-tvm-deep-learning-compiler-framework-transitions-to-apache/&quot;&gt;Allen School news about the transition here&lt;/a&gt;, &lt;a href=&quot;https://sampl.cs.washington.edu/tvmconf/#about-tvmconf&quot;&gt;TVM conference program slides and recordings&lt;/a&gt;, and &lt;a href=&quot;https://tvm.apache.org/docs//contribute/community.html&quot;&gt;our community guideline here&lt;/a&gt;. Follow us on Twitter: &lt;a href=&quot;https://twitter.com/ApacheTVM&quot;&gt;@ApacheTVM&lt;/a&gt;.&lt;/p&gt;</content><author><name>TVM Community</name></author><summary type="html">There is an increasing need to bring machine learning to a wide diversity of hardware devices. Current frameworks rely on vendor-specific operator libraries and optimize for a narrow range of server-class GPUs. Deploying workloads to new platforms – such as mobile phones, embedded devices, and accelerators (e.g., FPGAs, ASICs) – requires significant manual effort.</summary></entry><entry><title type="html">TVM Golang Runtime for Deep Learning Deployment</title><link href="/2019/01/19/Golang" rel="alternate" type="text/html" title="TVM Golang Runtime for Deep Learning Deployment" /><published>2019-01-19T00:00:00-08:00</published><updated>2019-01-19T00:00:00-08:00</updated><id>/2019/01/19/Golang</id><content type="html" xml:base="/2019/01/19/Golang">&lt;h2 id=&quot;introduction&quot;&gt;Introduction&lt;/h2&gt;
 
 &lt;p&gt;TVM is an open deep learning compiler stack to compile various deep learning models from different
 frameworks to CPU, GPU or specialized accelerators.  TVM supports model compilation from a wide range
@@ -2043,155 +2163,4 @@ closure as TVM packed function and invoke the same across programming language b
   &lt;li&gt;[5] &lt;a href=&quot;https://blog.learngoprogramming.com/golang-variadic-funcs-how-to-patterns-369408f19085&quot;&gt;Go Variadic Functions&lt;/a&gt;&lt;/li&gt;
   &lt;li&gt;[6] &lt;a href=&quot;https://github.com/jdeng/gomxnet&quot;&gt;CFFI Ref&lt;/a&gt;&lt;/li&gt;
   &lt;li&gt;[7] &lt;a href=&quot;https://golang.org/pkg/runtime/#SetFinalizer&quot;&gt;Go Finalizers&lt;/a&gt;&lt;/li&gt;
-&lt;/ul&gt;</content><author><name>Siva</name></author><summary type="html">Introduction</summary></entry><entry><title type="html">Automating Generation of Low Precision Deep Learning Operators</title><link href="/2018/12/18/lowprecision-conv" rel="alternate" type="text/html" title="Automating Generation of Low Precision Deep Learning Operators" /><published>2018-12-18T00:00:00-05:00</published><updated>2018-12-18T00:00:00-05:00</updated><id>/2018/12/18/lowprecision-conv</id><content type="html" xml:base="/2018/12/18/lowprecision-conv">&lt;p&gt;As deep learning models grow larger and more complex, deploying them on low powered phone and IoT
-devices becomes challenging because of their limited compute and energy budgets. A  recent  trend
- in  deep  learning  is  the  use  of  extremely  quantized  models  that operate  on  inputs  and
- weights  of  a  few  bits, with networks like XNOR-Net, DoReFa-Net, and HWGQ-Net making steady
-progress improving accuracy.&lt;/p&gt;
-
-&lt;p&gt;An example of a low precision graph snippet is below. The low precision convolution takes in
-quantized data and bitpacks into the proper data layout for an efficient bitserial convolution.
-The output is in a higher precision and traditional deep learning layers such as batch normalization and ReLu are applied to it, before being re-quantized and sent through another low precision operator.&lt;/p&gt;
-
-&lt;p style=&quot;text-align: center&quot;&gt;&lt;img src=&quot;/images/low-precision/workflow.png&quot; alt=&quot;image&quot; width=&quot;50%&quot; /&gt;&lt;/p&gt;
-&lt;center&gt; Low precision convolution pipeline.&lt;/center&gt;
-&lt;p&gt;&lt;/p&gt;
-
-&lt;p&gt;Theoretically,  low  precision operators use less operations than
-floating point operators, leading many to believe they can achieve up tremendous speedups.
-However, deep  learning frameworks  leverage  decades  of  engineering  work  through  low  level
-BLAS  and LAPACK libraries that are incredibly well optimized, and CPUs include intrinsic
-instructions to accelerate these tasks.  In  practice,  it  is  not  simple  to  develop low-level
-operators such as convolutions  that  are competitive  with  8-bit  quantized  or  even floating
-point operators.
-In  this  post  we  introduce  our  approach to automatically generating optimized
-low  precision  convolutions for  CPUs. We declare our low precision operators so that they compute
-on efficiently stored low precision inputs, and describe a schedule that describes a search space
-of implementation parameters. We rely on AutoTVM to quickly search the space and find optimized
-parameters for the particular convolution, precision, and backend.&lt;/p&gt;
-
-&lt;h2 id=&quot;bitserial-computation-background&quot;&gt;Bitserial Computation Background&lt;/h2&gt;
-
-&lt;p&gt;The  core  of  low  precision  models  is  the bitserial dot product that enables convolution and
-dense operators to be computed using only bitwise operations and popcount.
- Typically, a dot product is computed by element wise multiplication of two vectors followed by
- summing all the elements, like the simple example below. If all the data is binary, the input
- vectors can be packed into single integer, and the dot product can be computed by  bitwise-anding
- the packed inputs and counting the number of 1’s in the result using popcount.
-Note: Depending how the input data is quantized, bitwise-xnor may be used instead of bitwise-and.&lt;/p&gt;
-
-&lt;p style=&quot;text-align: center&quot;&gt;&lt;img src=&quot;/images/low-precision/binary-dotproduct.png&quot; alt=&quot;image&quot; width=&quot;50%&quot; /&gt;&lt;/p&gt;
-&lt;center&gt; Binary dot product.&lt;/center&gt;
-&lt;p&gt;&lt;/p&gt;
-
-&lt;p&gt;Arbitrary precision dot products can be computed in this fashion by first separating input data
-into bitplanes. Once in this representation we can compute dotproduct by summing weighted binary
-dot products between the bitplanes of A and B. The number of binary dotproducts grows with the
-product of A and B’s precision, so this method is only practical for very low precision data.&lt;/p&gt;
-
-&lt;p style=&quot;text-align: center&quot;&gt;&lt;img src=&quot;/images/low-precision/bitserial-dotproduct.png&quot; alt=&quot;image&quot; width=&quot;50%&quot; /&gt;&lt;/p&gt;
-&lt;center&gt; Bitserial dot product.&lt;/center&gt;
-&lt;p&gt;&lt;/p&gt;
-
-&lt;h2 id=&quot;defining-operators-in-tvm&quot;&gt;Defining Operators in TVM&lt;/h2&gt;
-&lt;p&gt;Before the computation, input data needs to be bitpacked so that the bitplanes of the input data
-can be accessed and are packed into a supported datatype such as a uint8 or uint32. We provide
-a flexible bitpacking operator that takes arbitrary size input tensors and returns a bitpacked
-tensor where the user specifies which axis the bitplanes should be.&lt;/p&gt;
-
-&lt;p style=&quot;text-align: center&quot;&gt;&lt;img src=&quot;/images/low-precision/bitpack.png&quot; alt=&quot;image&quot; width=&quot;50%&quot; /&gt;&lt;/p&gt;
-&lt;center&gt; Different bitpacked layouts.&lt;/center&gt;
-&lt;p&gt;&lt;/p&gt;
-
-&lt;p&gt;Once in this bitpacked format the low precision  convolution can be computed bitserially.
-For this demo, that data is packed along the input channel and the bitplanes are added to the
-innermost axis, and the data is packed into 32-bit integers. The bitserial convolution is computed
-similar to a normal convolution, but the bitwise-and (&amp;amp;) replaces multiplication, and we use
-popcount to accumulate values in the packed data. The bitplane axes become additional reduction axes
-and compute the binary dot products between different bitplanes of the input and kernel.
-Finally, the output is computed in an unpacked format and in higher precision.&lt;/p&gt;
-
-&lt;div class=&quot;language-python highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;span class=&quot;n&quot;&gt;Input_bitpacked&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;bitpack&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Input&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;activation_bits&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;pack_axis&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;3&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;bit_axis&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;4&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;pack_type&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;’&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;uint32&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;’&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-&lt;span class=&quot;n&quot;&gt;Weights_bitpacked&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;bitpack&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Filter&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;weight_bits&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;pack_axis&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;2&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;bit_axis&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;4&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;pack_type&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;’&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;uint32&lt;/span&gt;&lt;span class=&quot;err&quot;&gt;’&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-&lt;span class=&quot;n&quot;&gt;batch&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;in_height&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;in_width&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;in_channel_q&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;_&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;Input_bitpacked&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;shape&lt;/span&gt;
-&lt;span class=&quot;n&quot;&gt;kernel_h&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;kernel_w&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;_&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;num_filter&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;_&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;Filter_bitpakced&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;shape&lt;/span&gt;
-
-&lt;span class=&quot;n&quot;&gt;stride_h&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;stride_w&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;stride&lt;/span&gt;
-&lt;span class=&quot;n&quot;&gt;pad_top&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;pad_left&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;pad_down&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;pad_right&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;get_pad_tuple&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;padding&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;kernel_h&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;kernel_w&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;))&lt;/span&gt;
-
-&lt;span class=&quot;c1&quot;&gt;# Computing the output shape
-&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;out_channel&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;num_filter&lt;/span&gt;
-&lt;span class=&quot;n&quot;&gt;out_height&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;simplify&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;((&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;in_height&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;-&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;kernel_h&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;+&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;pad_top&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;+&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;pad_down&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;//&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;stride_h&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;+&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-&lt;span class=&quot;n&quot;&gt;out_width&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;simplify&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;((&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;in_width&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;-&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;kernel_w&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;+&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;pad_left&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;+&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;pad_right&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;//&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;stride_w&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;+&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;1&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-&lt;span class=&quot;n&quot;&gt;pad_before&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;pad_top&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;pad_left&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt;
-&lt;span class=&quot;n&quot;&gt;pad_after&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;pad_down&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;pad_right&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt;
-&lt;span class=&quot;n&quot;&gt;Input_padded&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;pad&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;Input_bitpacked&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;pad_before&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;pad_after&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;name&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;&quot;PaddedInput&quot;&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-
-&lt;span class=&quot;c1&quot;&gt;# Treat the bitplane axes like additional reduction axes
-&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;rc&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;tvm&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;reduce_axis&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;((&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;in_channel_q&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;),&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;name&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;'rc'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-&lt;span class=&quot;n&quot;&gt;ry&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;tvm&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;reduce_axis&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;((&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;kernel_h&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;),&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;name&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;'ry'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-&lt;span class=&quot;n&quot;&gt;rx&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;tvm&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;reduce_axis&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;((&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;kernel_w&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;),&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;name&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;'rx'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-&lt;span class=&quot;n&quot;&gt;ib&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;tvm&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;reduce_axis&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;((&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;input_bits&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;),&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;name&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;'ib'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-&lt;span class=&quot;n&quot;&gt;wb&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;=&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;tvm&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;reduce_axis&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;((&lt;/span&gt;&lt;span class=&quot;mi&quot;&gt;0&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;weight_bits&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;),&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;name&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;s&quot;&gt;'wb'&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;)&lt;/span&gt;
-
-
-&lt;span class=&quot;n&quot;&gt;tvm&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;compute&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;((&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;batch&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;out_height&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;out_width&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;out_channel&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;),&lt;/span&gt; &lt;span class=&quot;k&quot;&gt;lambda&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;nn&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;yy&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;xx&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;ff&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;:&lt;/span&gt;
-             &lt;span class=&quot;n&quot;&gt;tvm&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;nb&quot;&gt;sum&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;tvm&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;.&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;popcount&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;
-               &lt;span class=&quot;n&quot;&gt;Input_padded&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;nn&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;yy&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;*&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;stride_h&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;+&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;ry&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;xx&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;*&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;stride_w&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;+&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;rx&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;rc&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;ib&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;amp;&lt;/span&gt;
-               &lt;span class=&quot;n&quot;&gt;Weights_bitpacked&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;ry&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;rx&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;rc&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;ff&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;wb&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]))&lt;/span&gt; &lt;span class=&quot;o&quot;&gt;&amp;lt;&amp;lt;&lt;/span&gt; &lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;ib&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;+&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;wb&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;))).&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;astype&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;(&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;out_dtype&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;),&lt;/span&gt;
-               &lt;span class=&quot;n&quot;&gt;axis&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;[&lt;/span&gt;&lt;span class=&quot;n&quot;&gt;rc&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;ry&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;rx&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;wb&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;,&lt;/span&gt; &lt;span class=&quot;n&quot;&gt;ib&lt;/span&gt;&lt;span class=&quot;p&quot;&gt;]))&lt;/span&gt;
-
-&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
-
-&lt;p&gt;In our schedule we apply common optimizations like vectorization and memory tiling to provide better
-memory locality and take advantage of SIMD units. Some of these optimizations such as tiling,
-require parameters that need to be tuned to for the specific microarchitecture. We expose these
-parameters as knobs to TVM and use AutoTVM to automatically tune all the parameters simultaneously.&lt;/p&gt;
-
-&lt;p&gt;Finally, we can craft small microkernels to replace the innermost loop(s) of computation and schedule
- them using TVM’s tensorize primitive. Since, compilers often produce suboptimal code, people can
- often write short assembly sequences that are more efficient. These microkernels often take advantage
- of new intrinsics that are being introduced to help accelerate deep learning workloads and use
- them clever ways to improve memory accesses or reduce the number instructions required.&lt;/p&gt;
-
-&lt;h2 id=&quot;results&quot;&gt;Results&lt;/h2&gt;
-
-&lt;h3 id=&quot;raspberry-pi&quot;&gt;Raspberry Pi&lt;/h3&gt;
-&lt;p&gt;Convolution speedups on Raspberry Pi 3B compared to 16-bit integer TVM implementation.
-Workload are convolution layers from ResNet18.&lt;/p&gt;
-
-&lt;p style=&quot;text-align: center&quot;&gt;&lt;img src=&quot;/images/low-precision/rasp-conv.png&quot; alt=&quot;image&quot; width=&quot;50%&quot; /&gt;&lt;/p&gt;
-&lt;center&gt; Speedup of low precision convolutions on a Raspberry Pi compared to 16-bit TVM implementation.&lt;/center&gt;
-&lt;p&gt;&lt;/p&gt;
-
-&lt;p&gt;2-bit activation, 1-bit weight convolution speedups on Raspberry Pi 3B compared to hand optimized implementation from &lt;a href=&quot;https://arxiv.org/pdf/1712.02427.pdf&quot;&gt;High performance ultra-low-precision convolutions
-on mobile devices.&lt;/a&gt;.
-Workload are convolution layers from ResNet18.&lt;/p&gt;
-
-&lt;p style=&quot;text-align: center&quot;&gt;&lt;img src=&quot;/images/low-precision/rasp-conv-2.png&quot; alt=&quot;image&quot; width=&quot;50%&quot; /&gt;&lt;/p&gt;
-&lt;center&gt; Speedup of 2-bit weight 1-bit activation Raspberry Pi convolutions against a hand optimized implementation.&lt;/center&gt;
-&lt;p&gt;&lt;/p&gt;
-
-&lt;h3 id=&quot;x86&quot;&gt;x86&lt;/h3&gt;
-
-&lt;p&gt;Convolution speedups on x86 compared to a 32-bit floating point TVM implementation.
-Note: x86 doesn’t support a vectorized popcount for this microarchitecture, so speedups are lower.&lt;/p&gt;
-&lt;p style=&quot;text-align: center&quot;&gt;&lt;img src=&quot;/images/low-precision/x86-conv.png&quot; alt=&quot;image&quot; width=&quot;50%&quot; /&gt;&lt;/p&gt;
-&lt;center&gt; Speedup of x86 low precision convolutions compared to a 32-bit floating point TVM implementation.&lt;/center&gt;
-&lt;p&gt;&lt;/p&gt;
-
-&lt;h2 id=&quot;show-me-the-code&quot;&gt;Show me the code&lt;/h2&gt;
-
-&lt;ul&gt;
-  &lt;li&gt;&lt;a href=&quot;https://github.com/apache/incubator-tvm/blob/main/topi/python/topi/nn/bitserial_conv2d.py&quot;&gt;TOPI bitserial convolution&lt;/a&gt;&lt;/li&gt;
-  &lt;li&gt;&lt;a href=&quot;https://github.com/apache/incubator-tvm/blob/main/topi/python/topi/arm_cpu/bitserial_conv2d.py&quot;&gt;TOPI ARM cpu bitserial convolution&lt;/a&gt;&lt;/li&gt;
-&lt;/ul&gt;
-
-&lt;h2 id=&quot;references&quot;&gt;References&lt;/h2&gt;
-
-&lt;ul&gt;
-  &lt;li&gt;[1] &lt;a href=&quot;https://arxiv.org/abs/1810.11066&quot;&gt;Automating Generation of Low Precision Deep Learning Operators&lt;/a&gt;&lt;/li&gt;
-  &lt;li&gt;[2] &lt;a href=&quot;https://arxiv.org/abs/1603.05279&quot;&gt;XNOR-Net&lt;/a&gt;&lt;/li&gt;
-  &lt;li&gt;[3] &lt;a href=&quot;https://arxiv.org/abs/1702.00953&quot;&gt;HWGQ&lt;/a&gt;&lt;/li&gt;
-  &lt;li&gt;[4] &lt;a href=&quot;https://arxiv.org/abs/1606.06160&quot;&gt;DoReFa&lt;/a&gt;&lt;/li&gt;
-&lt;/ul&gt;</content><author><name>Meghan Cowan</name></author><summary type="html">As deep learning models grow larger and more complex, deploying them on low powered phone and IoT devices becomes challenging because of their limited compute and energy budgets. A recent trend in deep learning is the use of extremely quantized models that operate on inputs and weights of a few bits, with networks like XNOR-Net, DoReFa-Net, and HWGQ-Net making steady progress improving accuracy.</summary></entry></feed>
+&lt;/ul&gt;</content><author><name>Siva</name></author><summary type="html">Introduction</summary></entry></feed>

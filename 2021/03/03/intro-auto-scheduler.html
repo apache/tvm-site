@@ -1,0 +1,321 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Introducing TVM Auto-scheduler (a.k.a. Ansor)</title>
+    <link rel="shortcut icon" href="/assets/images/favicon.ico">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+    <link rel="stylesheet" href="/css/slick.css">
+    <link rel="stylesheet" href="/css/slick-theme.css">
+    <link rel="stylesheet" href="/css/custom.css">
+</head>
+<body>
+
+    
+<div class="bannerPage">
+      <header class="header">
+      <div class="container">
+        <div class="headerInner d-flex justify-content-between align-items-center">
+          <div class="headerLogo">
+            <a href="/"><img src="/assets/images/logo.svg" alt="Logo"></a>
+          </div>
+          <div id="headMenu" class="headerNav">
+            <button type="button" id="closeHeadMenu" class="navCloseBtn"><img src="/assets/images/close-icon.svg"
+                alt="Close"></button>
+                <ul class="nav">
+    
+    <li class="nav-item">
+        <a class="nav-link" href="/community">Community</a>
+    </li>
+    
+    <li class="nav-item">
+        <a class="nav-link" href="/download">Download</a>
+    </li>
+    
+    <li class="nav-item">
+        <a class="nav-link" href="/vta">VTA</a>
+    </li>
+    
+    <li class="nav-item">
+        <a class="nav-link" href="/blog">Blog</a>
+    </li>
+    
+    <li class="nav-item">
+        <a class="nav-link" href="https://tvm.apache.org/docs/">Docs</a>
+    </li>
+    
+    <li class="nav-item">
+        <a class="nav-link" href="https://tvmconf.org/">Conference</a>
+    </li>
+    
+    <li class="nav-item">
+        <a class="nav-link" href="https://github.com/apache/incubator-tvm/">Github</a>
+    </li>
+    
+</ul>
+            <div class="responsiveasfdropdown">
+              <button type="button" class="btn-link">
+                ASF
+              </button>
+              <ul>
+    
+    <li>
+        <a href="https://www.apache.org/">Apache Homepage</a>
+    </li>
+    
+    <li>
+        <a href="https://www.apache.org/licenses/">License</a>
+    </li>
+    
+    <li>
+        <a href="https://www.apache.org/foundation/sponsorship.html">Sponsorship</a>
+    </li>
+    
+    <li>
+        <a href="https://www.apache.org/security/">Security</a>
+    </li>
+    
+    <li>
+        <a href="https://www.apache.org/foundation/thanks.html">Thanks</a>
+    </li>
+    
+    <li>
+        <a href="https://www.apache.org/events/current-event">Events</a>
+    </li>
+    
+</ul>
+            </div>
+          </div>
+          <div class="responsiveMenuIcon">
+            <button type="button" id="menuBtn" class="btn-menu"><img src="/assets/images/menu-icon.svg"
+                alt="Menu Icon" /></button>
+          </div>
+          <div class="asfDropdown">
+            <div class="dropdown">
+              <button type="button" class="btn-link dropdown-toggle" data-toggle="dropdown" aria-haspopup="true"
+                aria-expanded="false">
+                ASF
+              </button>
+              <div class="dropdown-menu dropdown-menu-right">
+                <ul>
+    
+    <li>
+        <a href="https://www.apache.org/">Apache Homepage</a>
+    </li>
+    
+    <li>
+        <a href="https://www.apache.org/licenses/">License</a>
+    </li>
+    
+    <li>
+        <a href="https://www.apache.org/foundation/sponsorship.html">Sponsorship</a>
+    </li>
+    
+    <li>
+        <a href="https://www.apache.org/security/">Security</a>
+    </li>
+    
+    <li>
+        <a href="https://www.apache.org/foundation/thanks.html">Thanks</a>
+    </li>
+    
+    <li>
+        <a href="https://www.apache.org/events/current-event">Events</a>
+    </li>
+    
+</ul>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </header>
+
+</div>
+
+
+<div class="container">
+<div class="content">
+  <div class="row">
+    <div class="span14 w-100">
+      <h1>Introducing TVM Auto-scheduler (a.k.a. Ansor) </h1>
+      <p class="post-meta">
+        <time datetime="2021-03-03T00:00:00-08:00" itemprop="datePublished">
+          Mar 3, 2021
+        </time>
+        
+        • <span itemprop="author" itemscope itemtype="http://schema.org/Person">
+          <span itemprop="name">Lianmin Zheng, Chengfan Jia, Minmin Sun, Zhao Wu, Cody Hao Yu</span>
+        </span>
+        
+      </p>
+      <p class="post-meta">
+        </p>
+    </br>
+    <p>Optimizing the execution speed of deep neural networks is extremely hard with the growing
+model size, operator diversity, and hardware heterogeneity.
+From a computational perspective, deep neural networks are just layers and layers of tensor computations.
+These tensor computations, such as matmul and conv2d, can be easily described by mathematical expressions.
+However, providing high-performance implementations for them on modern hardware can be very challenging.
+We have to apply various low-level optimizations and utilize special hardware intrinsics to achieve high performance.
+It takes huge engineering effort to build linear algebra and neural network acceleration libraries like CuBLAS, CuDNN, oneMKL, and oneDNN.</p>
+
+<p>Our life will be much easier if we can just write mathematical expressions and have something
+magically turn them into efficient code implementations.
+Three years ago, deep learning compiler TVM and its search module AutoTVM were built as the first step towards this goal.
+AutoTVM employs a template-based search algorithm to find efficient implementations for a given tensor computation.
+However, it is a template-based approach, so it still requires domain experts to implement a non-trivial manual template
+for every operator on every platform.
+Today, there are more than 15k lines of code for these templates in the TVM code repository.
+Besides being very hard to develop, these templates often have inefficient and limited search spaces,
+making them unable to achieve optimal performance.</p>
+
+<p>To address the limitations of AutoTVM, we started project Ansor aiming at a fully automated auto-scheduler for 
+generating code for tensor computations.
+Ansor auto-scheduler only takes tensor expressions as input and generates high-performance code without manual templates.
+We made innovations in the search space construction and search algorithm.
+As a result, the auto-scheduler can achieve better performance with less search time in a more automated way.</p>
+
+<p>Ansor auto-scheduler is now integrated into Apache TVM as <code class="language-plaintext highlighter-rouge">tvm.auto_scheduler</code> package.
+This is a joint effort by collaborators from UC Berkeley, Alibaba, AWS and OctoML.
+Detailed tutorials are available for Intel CPUs, ARM CPUs, NVIDIA CPUs, and Mali GPUs on the TVM website [1].
+In this blog post, we will give a high-level introduction and show some benchmark results.</p>
+
+<h1 id="system-overview">System Overview</h1>
+
+<h2 id="autotvm-vs-auto-scheduler">AutoTVM vs Auto-scheduler</h2>
+<p style="text-align: center"><img src="/images/intro-auto-scheduler/workflow.png" alt="image" width="75%" /></p>
+<center> Table 1. Workflow Comparision </center>
+<p></p>
+
+<p>Table 1 compares the workflow for generating code for an operator in AutoTVM and auto-scheduler.
+In AutoTVM, the developer has to go through three steps.
+In step 1, the developer has to write the compute definition in TVM’s tensor expression language.
+This part is relatively easy because TVM’s tensor expression language looks just like math expressions.
+In step 2, the developer has to write a schedule template, which typically consists of 20-100 lines of tricky DSL code.
+This part requires domain expertise of both the target hardware architecture and operator semantics, so it is difficult.
+The last step, step 3, is automated by a search algorithm.</p>
+
+<p>In auto-scheduler, we eliminate the most difficult step 2 by automatic search space construction and accelerate step 3 with a better search algorithm.
+By doing automatic search space construction, we not only eliminate huge manual effort, 
+but also enabling the exploration of much more optimization combinations.
+This automation does not come for free, because we still need to design rules to generate the search space.
+However, these rules are very general. They are based on static analysis of the tensor expressions.
+We only need to design a few general rules once and can apply them to almost all tensor computations in deep learning.</p>
+
+<h2 id="search-process">Search Process</h2>
+<p style="text-align: center"><img src="/images/intro-auto-scheduler/search_overview.png" alt="image" width="40%" /></p>
+<center> Figure 1. Search Process Overview  </center>
+<p></p>
+
+<p>Figure 1. shows the search process of auto-scheduler when optimizing a whole neural network.
+The system takes deep learning models as input.
+It then partitions the big model into small subgraphs with Relay’s operator fusion pass.
+A task scheduler is utilized to allocate the time resource for optimizing many subgraphs.
+At each iteration, it picks a subgraph that has the most potential to increase the end-to-end performance.
+For this subgraph, we analyze its tensor expression and generate several sketches for it.
+Then we run evolutionary search with a learned cost model to get a batch of optimized programs.
+The optimized programs are sent to actual hardware for measurements.
+When the measurements are finished, the profiling results are used as feedback to update all components of the system.
+This process is repeated iteratively until the optimization converges or we run out of time budget.
+More technical details can be found in our paper [3] and our code.</p>
+
+<p>It is worth notiing that since the auto-scheduler generates schedules from scratch, 
+it reuses the existing computation definitions in TOPI but not schedule templates.</p>
+
+<h1 id="benchmark-results">Benchmark Results</h1>
+<p>In this section, we benchmark the performance of AutoTVM and Auto-scheduler.
+The CPU benchmark is done on an AWS c5.9xlarge, which is equipped with an Intel 18-core skylake 8124-m CPU. 
+The GPU benchmark is done on an AWS g4dn.4xlarge, which is equipped with an NVIDIA T4 GPU.
+All benchmark code, raw data, tuning logs can be found in this repo [2].</p>
+
+<h2 id="performance-of-the-generated-code">Performance of the generated code</h2>
+<p>We benchmark the fp32 single-batch inference latency on three networks.
+Figure 2 shows the relative speedup of auto-scheduler against AutoTVM.
+We can see auto-scheduler outperforms AutoTVM in all cases with 1.02x to 8.95x speedup.
+This is because auto-scheduler explores a larger search space, which covers more efficient combinations
+of optimizations that are missed in TOPI manual templates.
+The BERT-base@GPU is an extreme case where the manual templates are very badly designed.
+In other words, the manual template for dense layers does not perform well for the shapes in BERT model.</p>
+
+<p style="text-align: center"><img src="/images/intro-auto-scheduler/code_perf.png" alt="image" width="85%" /></p>
+<center> Figure 2. Code Performance Comparision (Higher is better) </center>
+<p></p>
+
+<h2 id="search-time">Search Time</h2>
+<p>As we know, the search-based approaches can be very time-consuming, so we also care about the search time.
+It typically takes several hours to let the search converge for a single neural network.
+Figure 3 compares the search time of AutoTVM and auto-scheduler.
+Auto-scheduler requires much less time to converge in most cases, despite its larger search space.
+This is mainly because of auto-scheduler has a better cost model and task scheduler.</p>
+
+<p style="text-align: center"><img src="/images/intro-auto-scheduler/search_time.png" alt="image" width="85%" /></p>
+<center> Figure 3. Search Time Comparision (Lower is better) </center>
+<p></p>
+
+<h2 id="more-results">More Results</h2>
+<p>The repo above serves as an internal benchmark tool for TVM, so it only compares the latest AutoTVM and AutoScheduler.
+You can find results for more libraries and backends in our paper [3].
+Recently, this blog post [4] also tried auto-scheduler on an Apple M1 chip and got some good results.</p>
+
+<h1 id="conclusion">Conclusion</h1>
+<p>We build TVM auto-scheduler, a system that automatically generates high-performance code for tensor expressions.
+Compared with the predecessor AutoTVM, auto-scheduler does not require manual templates.
+Besides, auto-scheduler is capable of generating schedules with better performance in a shorter time.
+We achieve this by making innovations in the search space construction and search algorithm.</p>
+
+<p>We are excited about the current performance of auto-scheduler.
+In the future, we are interested in extending the ability of auto-scheduler to support
+sparse operators, low-precision operators, and dynamic shape better.</p>
+
+<h1 id="links">Links</h1>
+<p>[1] Tutorials: <a href="https://tvm.apache.org/docs/tutorials/index.html#autoscheduler-template-free-auto-scheduling">https://tvm.apache.org/docs/tutorials/index.html#autoscheduler-template-free-auto-scheduling</a><br />
+[2] Benchmark repo: <a href="https://github.com/tlc-pack/TLCBench">https://github.com/tlc-pack/TLCBench</a><br />
+[3] OSDI Paper: <a href="https://arxiv.org/abs/2006.06762">Ansor : Generating High-Performance Tensor Programs for Deep Learning</a><br />
+[4] Results on Apple M1 chip: <a href="https://medium.com/octoml/on-the-apple-m1-beating-apples-core-ml-4-with-30-model-performance-improvements-9d94af7d1b2d">https://medium.com/octoml/on-the-apple-m1-beating-apples-core-ml-4-with-30-model-performance-improvements-9d94af7d1b2d</a>.</p>
+
+
+    </div>
+  </div>
+</div>
+</div>
+
+    
+
+
+
+
+  <script src="https://code.jquery.com/jquery-2.2.0.min.js" type="text/javascript"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
+  <!-- <script src="./assets/js/slick.js"></script> -->
+  <script src="/assets/js/custome.js"></script>
+  <script async src="https://www.googletagmanager.com/gtag/js?id=UA-75982049-2"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'UA-75982049-2');
+  </script>
+</body>
+<section class="footerSec">
+  <div class="footerHeader">
+    <ul class="container d-flex align-md-items-center justify-content-between flex-column flex-md-row">
+      <li class="logo">
+
+        <p><a href="/"><img src="/assets/images/logo.svg" alt="logo" title="logo" /></a></p>
+      </li>
+      <li class="copywrite d-flex align-items-center">
+        <h5 id="apache-software-foundation--all-right-reserved">© 2020 Apache Software Foundation | All right reserved</h5>
+      </li>
+    </ul>
+
+  </div>
+
+  <ul class="container">
+    <li class="footernote">
+      Copyright © 2020 The Apache Software Foundation. Apache TVM, Apache, the Apache feather, and the Apache TVM project logo are either trademarks or registered trademarks of the Apache Software Foundation.</li>
+  </ul>
+
+</section>
+</html>
