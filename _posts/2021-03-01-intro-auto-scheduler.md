@@ -31,7 +31,7 @@ As a result, the auto-scheduler can achieve better performance with less search 
 
 Ansor auto-scheduler is now integrated into Apache TVM as `tvm.auto_scheduler` package.
 This is a joint effort by collaborators from UC Berkeley, Alibaba, AWS and OctoML.
-Detailed tutorials are available for Intel CPUs, ARM CPUs, NVIDIA CPUs, and Mali GPUs on the TVM website [1].
+Detailed tutorials are available for Intel CPUs, ARM CPUs, NVIDIA GPUs, and Mali GPUs on the TVM website [1].
 In this blog post, we will give a high-level introduction and show some benchmark results.
 
 # System Overview
