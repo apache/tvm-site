@@ -12,13 +12,14 @@ description: "Download Apache TVM"
 # Download Apache TVM Source Code
 
 These source archives are generated from tagged releases.
-For any updates refer to the corresponding branches in the [GitHub repository](https://github.com/apache/incubator-tvm/).
+For any updates refer to the corresponding branches in the [GitHub repository](https://github.com/apache/tvm/).
 Choose your flavor of download from the following links:
 
 | Version | Source | PGP | SHA |
 | ------- | ------ | --- | --- |
-| 0.6.1   | [apache-tvm-src-v0.6.1-incubating.tar.gz](https://dist.apache.org/repos/dist/release/incubator/tvm/tvm-v0.6.1/apache-tvm-src-v0.6.1-incubating.tar.gz) | [.asc](https://dist.apache.org/repos/dist/release/incubator/tvm/tvm-v0.6.1/apache-tvm-src-v0.6.1-incubating.tar.gz.asc) | [.sha512](https://dist.apache.org/repos/dist/release/incubator/tvm/tvm-v0.6.1/apache-tvm-src-v0.6.1-incubating.tar.gz.sha512) | 
-| 0.6.0   | [apache-tvm-src-v0.6.0-incubating.tar.gz](https://dist.apache.org/repos/dist/release/incubator/tvm/tvm-v0.6.0/apache-tvm-src-v0.6.0-incubating.tar.gz) | [.asc](https://dist.apache.org/repos/dist/release/incubator/tvm/tvm-v0.6.0/apache-tvm-src-v0.6.0-incubating.tar.gz.asc) | [.sha512](https://dist.apache.org/repos/dist/release/incubator/tvm/tvm-v0.6.0/apache-tvm-src-v0.6.0-incubating.tar.gz.sha512) | 
+| 0.7.0   | [apache-tvm-src-v0.7.0-incubating.tar.gz](https://dist.apache.org/repos/dist/release/tvm/tvm-v0.7.0/apache-tvm-src-v0.7.0-incubating.tar.gz) | [.asc](https://dist.apache.org/repos/dist/release/tvm/tvm-v0.7.0/apache-tvm-src-v0.7.0-incubating.tar.gz.asc) | [.sha512](https://dist.apache.org/repos/dist/release/tvm/tvm-v0.7.0/apache-tvm-src-v0.7.0-incubating.tar.gz.sha512) |
+| 0.6.1   | [apache-tvm-src-v0.6.1-incubating.tar.gz](https://dist.apache.org/repos/dist/release/tvm/tvm-v0.6.1/apache-tvm-src-v0.6.1-incubating.tar.gz) | [.asc](https://dist.apache.org/repos/dist/release/tvm/tvm-v0.6.1/apache-tvm-src-v0.6.1-incubating.tar.gz.asc) | [.sha512](https://dist.apache.org/repos/dist/release/tvm/tvm-v0.6.1/apache-tvm-src-v0.6.1-incubating.tar.gz.sha512) |
+| 0.6.0   | [apache-tvm-src-v0.6.0-incubating.tar.gz](https://dist.apache.org/repos/dist/release/tvm/tvm-v0.6.0/apache-tvm-src-v0.6.0-incubating.tar.gz) | [.asc](https://dist.apache.org/repos/dist/release/tvm/tvm-v0.6.0/apache-tvm-src-v0.6.0-incubating.tar.gz.asc) | [.sha512](https://dist.apache.org/repos/dist/release/tvm/tvm-v0.6.0/apache-tvm-src-v0.6.0-incubating.tar.gz.sha512) |
 
 
 <br>
@@ -27,7 +28,7 @@ Choose your flavor of download from the following links:
 
 It is essential that you verify the integrity of the downloaded file using the PGP signature (.asc file) or a hash (.md5 or .sha file). Please read [Verifying Apache Software Foundation Releases](https://www.apache.org/info/verification.html) for more information on why you should verify our releases.
 
-The PGP signature can be verified using PGP or GPG. First download the [KEYS](https://downloads.apache.org/incubator/tvm/KEYS) as well as the .asc signature file for the relevant distribution. Make sure you get these files from the main distribution site, rather than from a mirror. Then verify the signatures using one of the following alternatives:
+The PGP signature can be verified using PGP or GPG. First download the [KEYS](https://downloads.apache.org/tvm/KEYS) as well as the .asc signature file for the relevant distribution. Make sure you get these files from the main distribution site, rather than from a mirror. Then verify the signatures using one of the following alternatives:
 
 ```bash
 $ gpg --import KEYS
@@ -61,4 +62,3 @@ $ certUtil -hashfile pathToFileToCheck
 ```
 
 Unix-like systems (and macOS) will have a utility called `md5`, `md5sum` or `shasum`.
-
