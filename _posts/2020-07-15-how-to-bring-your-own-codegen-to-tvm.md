@@ -131,7 +131,7 @@ _register_external_op_helper("multiply")
 In the above example, we specify a list of operators that can be supported by DNNL codegen.
 
 ### Rules for graph patterns
-Your accelerator or compiler may have optimized some patterns (e.g., Conv2D + add + ReLU) to be a single instruction or an API. In this case, you can specify a mapping from a graph pattern to your instruction/API. For the case of the DNNL, its Conv2D API already includes bias addition and it allows the next ReLU to be attached, so we can call DNNL as the following code snippet (the complete implementation can be found [here]([https://github.com/apache/incubator-tvm/blob/main/src/runtime/contrib/dnnl/dnnl_json_runtime.cc#L151](https://github.com/apache/incubator-tvm/blob/main/src/runtime/contrib/dnnl/dnnl_json_runtime.cc#L151))):
+Your accelerator or compiler may have optimized some patterns (e.g., Conv2D + add + ReLU) to be a single instruction or an API. In this case, you can specify a mapping from a graph pattern to your instruction/API. For the case of the DNNL, its Conv2D API already includes bias addition and it allows the next ReLU to be attached, so we can call DNNL as the following code snippet (the complete implementation can be found [here](https://github.com/apache/incubator-tvm/blob/main/src/runtime/contrib/dnnl/dnnl_json_runtime.cc#L151)):
 
 ```c
 DNNLConv2d(const bool has_bias = false, const bool has_relu = false) {
