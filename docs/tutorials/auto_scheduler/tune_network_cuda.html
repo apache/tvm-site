@@ -203,13 +203,12 @@
 </ul>
 <p class="caption"><span class="caption-text">Tutorials</span></p>
 <ul class="current">
-<li class="toctree-l1"><a class="reference internal" href="../index.html">Get Started Tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../index.html">Getting Started With TVM</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../index.html#compile-deep-learning-models">Compile Deep Learning Models</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../index.html#tensor-expression-and-schedules">Tensor Expression and Schedules</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../index.html#optimize-tensor-operators">Optimize Tensor Operators</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../index.html#autotvm-template-based-auto-tuning">AutoTVM : Template-based Auto Tuning</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="../index.html#autoscheduler-template-free-auto-scheduling">AutoScheduler : Template-free Auto Scheduling</a><ul class="current">
-<li class="toctree-l2"><a class="reference internal" href="tune_matmul_x86.html">Auto-scheduling Matrix Multiplication for CPU</a></li>
 <li class="toctree-l2"><a class="reference internal" href="tune_conv2d_layer_cuda.html">Auto-scheduling a Convolution Layer for GPU</a></li>
 <li class="toctree-l2"><a class="reference internal" href="tune_network_x86.html">Auto-scheduling a Neural Network for x86 CPU</a></li>
 <li class="toctree-l2 current"><a class="current reference internal" href="#">Auto-scheduling a Neural Network for NVIDIA GPU</a><ul>
@@ -222,6 +221,7 @@
 </li>
 <li class="toctree-l2"><a class="reference internal" href="tune_network_arm.html">Auto-scheduling a Neural Network for ARM CPU</a></li>
 <li class="toctree-l2"><a class="reference internal" href="tune_network_mali.html">Auto-scheduling a Neural Network for mali GPU</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tune_sparse_x86.html">Auto-scheduling Sparse Matrix Multiplication on CPU with Custom Sketch Rule</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../index.html#developer-tutorials">Developer Tutorials</a></li>
@@ -301,7 +301,7 @@
     
       <li><a href="../../index.html">Docs</a> <span class="br-arrow">></span></li>
         
-          <li><a href="../index.html">Get Started Tutorials</a> <span class="br-arrow">></span></li>
+          <li><a href="../index.html">Getting Started With TVM</a> <span class="br-arrow">></span></li>
         
       <li>Auto-scheduling a Neural Network for NVIDIA GPU</li>
     
@@ -353,7 +353,7 @@ get it to run, you will need to wrap the body of this tutorial in a <code class=
 <span class="kn">import</span> <span class="nn">tvm</span>
 <span class="kn">from</span> <span class="nn">tvm</span> <span class="k">import</span> <span class="n">relay</span><span class="p">,</span> <span class="n">auto_scheduler</span>
 <span class="kn">import</span> <span class="nn">tvm.relay.testing</span>
-<span class="kn">from</span> <span class="nn">tvm.contrib</span> <span class="k">import</span> <span class="n">graph_runtime</span>
+<span class="kn">from</span> <span class="nn">tvm.contrib</span> <span class="k">import</span> <span class="n">graph_executor</span>
 </pre></div>
 </div>
 <div class="section" id="define-a-network">
@@ -825,7 +825,7 @@ which can be a rough estimation of the end-to-end execution time
 of the network.
 The last line also prints the total number of measurement trials,
 total time spent on auto-tuning and the id of the next task to tune.</p>
-<p>There will also be some “dmlc::Error”s and CUDA errors, because the
+<p>There will also be some “tvm::Error”s and CUDA errors, because the
 auto-scheduler will try some invalid schedules.
 You can safely ignore them if the tuning can continue, because these
 errors are isolated from the main process.</p>
@@ -849,15 +849,15 @@ so we can read the log file and load the best schedules.</p>
     <span class="k">with</span> <a href="../../api/python/ir.html#tvm.transform.PassContext" title="View documentation for tvm.transform.PassContext"><span class="n">tvm</span><span class="o">.</span><span class="n">transform</span><span class="o">.</span><span class="n">PassContext</span></a><span class="p">(</span><span class="n">opt_level</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">config</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;relay.backend.use_auto_scheduler&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">}):</span>
         <span class="n">lib</span> <span class="o">=</span> <a href="../../api/python/relay/index.html#tvm.relay.build" title="View documentation for tvm.relay.build"><span class="n">relay</span><span class="o">.</span><span class="n">build</span></a><span class="p">(</span><span class="n">mod</span><span class="p">,</span> <span class="n">target</span><span class="o">=</span><span class="n">target</span><span class="p">,</span> <span class="n">params</span><span class="o">=</span><span class="n">params</span><span class="p">)</span>
 
-<span class="c1"># Create graph runtime</span>
-<span class="n">ctx</span> <span class="o">=</span> <span class="n">tvm</span><span class="o">.</span><span class="n">context</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">target</span><span class="p">),</span> <span class="mi">0</span><span class="p">)</span>
-<span class="n">module</span> <span class="o">=</span> <a href="../../api/python/graph_runtime.html#tvm.contrib.graph_runtime.GraphModule" title="View documentation for tvm.contrib.graph_runtime.GraphModule"><span class="n">graph_runtime</span><span class="o">.</span><span class="n">GraphModule</span></a><span class="p">(</span><span class="n">lib</span><span class="p">[</span><span class="s2">&quot;default&quot;</span><span class="p">](</span><span class="n">ctx</span><span class="p">))</span>
+<span class="c1"># Create graph executor</span>
+<span class="n">dev</span> <span class="o">=</span> <span class="n">tvm</span><span class="o">.</span><span class="n">device</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">target</span><span class="p">),</span> <span class="mi">0</span><span class="p">)</span>
+<span class="n">module</span> <span class="o">=</span> <a href="../../api/python/graph_executor.html#tvm.contrib.graph_executor.GraphModule" title="View documentation for tvm.contrib.graph_executor.GraphModule"><span class="n">graph_executor</span><span class="o">.</span><span class="n">GraphModule</span></a><span class="p">(</span><span class="n">lib</span><span class="p">[</span><span class="s2">&quot;default&quot;</span><span class="p">](</span><span class="n">dev</span><span class="p">))</span>
 <span class="n">data_tvm</span> <span class="o">=</span> <a href="../../api/python/ndarray.html#tvm.nd.array" title="View documentation for tvm.nd.array"><span class="n">tvm</span><span class="o">.</span><span class="n">nd</span><span class="o">.</span><span class="n">array</span></a><span class="p">((</span><a href="https://numpy.org/doc/stable/reference/random/generated/numpy.random.uniform.html#numpy.random.uniform" title="View documentation for numpy.random.uniform"><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span></a><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="n">input_shape</span><span class="p">))</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">dtype</span><span class="p">))</span>
 <span class="n">module</span><span class="o">.</span><span class="n">set_input</span><span class="p">(</span><span class="s2">&quot;data&quot;</span><span class="p">,</span> <span class="n">data_tvm</span><span class="p">)</span>
 
 <span class="c1"># Evaluate</span>
 <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Evaluate inference time cost...&quot;</span><span class="p">)</span>
-<span class="n">ftimer</span> <span class="o">=</span> <span class="n">module</span><span class="o">.</span><span class="n">module</span><span class="o">.</span><span class="n">time_evaluator</span><span class="p">(</span><span class="s2">&quot;run&quot;</span><span class="p">,</span> <span class="n">ctx</span><span class="p">,</span> <span class="n">repeat</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">min_repeat_ms</span><span class="o">=</span><span class="mi">500</span><span class="p">)</span>
+<span class="n">ftimer</span> <span class="o">=</span> <span class="n">module</span><span class="o">.</span><span class="n">module</span><span class="o">.</span><span class="n">time_evaluator</span><span class="p">(</span><span class="s2">&quot;run&quot;</span><span class="p">,</span> <span class="n">dev</span><span class="p">,</span> <span class="n">repeat</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">min_repeat_ms</span><span class="o">=</span><span class="mi">500</span><span class="p">)</span>
 <span class="n">prof_res</span> <span class="o">=</span> <a href="https://numpy.org/doc/stable/reference/generated/numpy.array.html#numpy.array" title="View documentation for numpy.array"><span class="n">np</span><span class="o">.</span><span class="n">array</span></a><span class="p">(</span><span class="n">ftimer</span><span class="p">()</span><span class="o">.</span><span class="n">results</span><span class="p">)</span> <span class="o">*</span> <span class="mi">1</span><span class="n">e3</span>  <span class="c1"># convert to millisecond</span>
 <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Mean inference time (std dev): </span><span class="si">%.2f</span><span class="s2"> ms (</span><span class="si">%.2f</span><span class="s2"> ms)&quot;</span> <span class="o">%</span> <span class="p">(</span><a href="https://numpy.org/doc/stable/reference/generated/numpy.mean.html#numpy.mean" title="View documentation for numpy.mean"><span class="n">np</span><span class="o">.</span><span class="n">mean</span></a><span class="p">(</span><span class="n">prof_res</span><span class="p">),</span> <a href="https://numpy.org/doc/stable/reference/generated/numpy.std.html#numpy.std" title="View documentation for numpy.std"><span class="n">np</span><span class="o">.</span><span class="n">std</span></a><span class="p">(</span><span class="n">prof_res</span><span class="p">)))</span>
 </pre></div>
@@ -865,7 +865,7 @@ so we can read the log file and load the best schedules.</p>
 <p class="sphx-glr-script-out">Out:</p>
 <div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre>Compile...
 Evaluate inference time cost...
-Mean inference time (std dev): 3.22 ms (0.02 ms)
+Mean inference time (std dev): 3.15 ms (0.00 ms)
 </pre></div>
 </div>
 </div>

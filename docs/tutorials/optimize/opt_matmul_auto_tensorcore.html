@@ -44,7 +44,7 @@
     <script type="text/javascript" src="../../_static/js/tlcpack_theme.js"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
-    <link rel="next" title="Writing Tunable Templates and Using the Auto-tuner" href="../autotvm/tune_simple_template.html" />
+    <link rel="next" title="Tuning High Performance Convolution on NVIDIA GPUs" href="../autotvm/tune_conv2d_cuda.html" />
     <link rel="prev" title="How to optimize convolution using TensorCores" href="opt_conv_tensorcore.html" /> 
 </head>
 
@@ -203,7 +203,7 @@
 </ul>
 <p class="caption"><span class="caption-text">Tutorials</span></p>
 <ul class="current">
-<li class="toctree-l1"><a class="reference internal" href="../index.html">Get Started Tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../index.html">Getting Started With TVM</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../index.html#compile-deep-learning-models">Compile Deep Learning Models</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../index.html#tensor-expression-and-schedules">Tensor Expression and Schedules</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="../index.html#optimize-tensor-operators">Optimize Tensor Operators</a><ul class="current">
@@ -299,7 +299,7 @@
     
       <li><a href="../../index.html">Docs</a> <span class="br-arrow">></span></li>
         
-          <li><a href="../index.html">Get Started Tutorials</a> <span class="br-arrow">></span></li>
+          <li><a href="../index.html">Getting Started With TVM</a> <span class="br-arrow">></span></li>
         
       <li>How to optimize matmul with Auto TensorCore CodeGen</li>
     
@@ -545,8 +545,8 @@ and run the kernel to compare with numpy to check whether the results are correc
 <span class="k">if</span> <span class="ow">not</span> <span class="n">tvm</span><span class="o">.</span><span class="n">gpu</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">exist</span> <span class="ow">or</span> <span class="ow">not</span> <a href="../../api/python/runtime.html#tvm.runtime.enabled" title="View documentation for tvm.runtime.enabled"><span class="n">tvm</span><span class="o">.</span><span class="n">runtime</span><span class="o">.</span><span class="n">enabled</span></a><span class="p">(</span><span class="s2">&quot;cuda&quot;</span><span class="p">):</span>
     <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;skip building this tutorial because cuda is not enabled..&quot;</span><span class="p">)</span>
 
-<span class="n">ctx</span> <span class="o">=</span> <span class="n">tvm</span><span class="o">.</span><span class="n">gpu</span><span class="p">()</span>
-<span class="k">if</span> <span class="ow">not</span> <a href="../../api/python/contrib.html#tvm.contrib.nvcc.have_tensorcore" title="View documentation for tvm.contrib.nvcc.have_tensorcore"><span class="n">nvcc</span><span class="o">.</span><span class="n">have_tensorcore</span></a><span class="p">(</span><span class="n">ctx</span><span class="o">.</span><span class="n">compute_version</span><span class="p">):</span>
+<span class="n">dev</span> <span class="o">=</span> <span class="n">tvm</span><span class="o">.</span><span class="n">gpu</span><span class="p">()</span>
+<span class="k">if</span> <span class="ow">not</span> <a href="../../api/python/contrib.html#tvm.contrib.nvcc.have_tensorcore" title="View documentation for tvm.contrib.nvcc.have_tensorcore"><span class="n">nvcc</span><span class="o">.</span><span class="n">have_tensorcore</span></a><span class="p">(</span><span class="n">dev</span><span class="o">.</span><span class="n">compute_version</span><span class="p">):</span>
     <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;the gpu has no tensorcore, skipping...&quot;</span><span class="p">)</span>
 
 <span class="n">M</span><span class="p">,</span> <span class="n">N</span><span class="p">,</span> <span class="n">L</span> <span class="o">=</span> <span class="mi">512</span><span class="p">,</span> <span class="mi">32</span><span class="p">,</span> <span class="mi">512</span>
@@ -678,14 +678,14 @@ and run the kernel to compare with numpy to check whether the results are correc
                 <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">32</span><span class="p">):</span>
                     <span class="n">b_np</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="n">b_np</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">]</span> <span class="o">|</span> <span class="p">((</span><span class="n">b_np_int</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span> <span class="o">*</span> <span class="mi">32</span> <span class="o">+</span> <span class="n">k</span><span class="p">]</span> <span class="o">&amp;</span> <span class="mh">0xF</span><span class="p">)</span> <span class="o">&lt;&lt;</span> <span class="p">(</span><span class="mi">31</span> <span class="o">-</span> <span class="n">k</span><span class="p">))</span>
 
-    <span class="n">c_tvm</span> <span class="o">=</span> <a href="../../api/python/ndarray.html#tvm.nd.array" title="View documentation for tvm.nd.array"><span class="n">tvm</span><span class="o">.</span><span class="n">nd</span><span class="o">.</span><span class="n">array</span></a><span class="p">(</span><a href="https://numpy.org/doc/stable/reference/generated/numpy.zeros.html#numpy.zeros" title="View documentation for numpy.zeros"><span class="n">np</span><span class="o">.</span><span class="n">zeros</span></a><span class="p">(</span><span class="n">c_np</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">c_np_type</span><span class="p">),</span> <span class="n">ctx</span><span class="o">=</span><span class="n">ctx</span><span class="p">)</span>
-    <span class="n">a_tvm</span> <span class="o">=</span> <a href="../../api/python/ndarray.html#tvm.nd.array" title="View documentation for tvm.nd.array"><span class="n">tvm</span><span class="o">.</span><span class="n">nd</span><span class="o">.</span><span class="n">array</span></a><span class="p">(</span><span class="n">a_np</span><span class="p">,</span> <span class="n">ctx</span><span class="o">=</span><span class="n">ctx</span><span class="p">)</span>
-    <span class="n">b_tvm</span> <span class="o">=</span> <a href="../../api/python/ndarray.html#tvm.nd.array" title="View documentation for tvm.nd.array"><span class="n">tvm</span><span class="o">.</span><span class="n">nd</span><span class="o">.</span><span class="n">array</span></a><span class="p">(</span><span class="n">b_np</span><span class="p">,</span> <span class="n">ctx</span><span class="o">=</span><span class="n">ctx</span><span class="p">)</span>
+    <span class="n">c_tvm</span> <span class="o">=</span> <a href="../../api/python/ndarray.html#tvm.nd.array" title="View documentation for tvm.nd.array"><span class="n">tvm</span><span class="o">.</span><span class="n">nd</span><span class="o">.</span><span class="n">array</span></a><span class="p">(</span><a href="https://numpy.org/doc/stable/reference/generated/numpy.zeros.html#numpy.zeros" title="View documentation for numpy.zeros"><span class="n">np</span><span class="o">.</span><span class="n">zeros</span></a><span class="p">(</span><span class="n">c_np</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">c_np_type</span><span class="p">),</span> <span class="n">device</span><span class="o">=</span><span class="n">dev</span><span class="p">)</span>
+    <span class="n">a_tvm</span> <span class="o">=</span> <a href="../../api/python/ndarray.html#tvm.nd.array" title="View documentation for tvm.nd.array"><span class="n">tvm</span><span class="o">.</span><span class="n">nd</span><span class="o">.</span><span class="n">array</span></a><span class="p">(</span><span class="n">a_np</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">dev</span><span class="p">)</span>
+    <span class="n">b_tvm</span> <span class="o">=</span> <a href="../../api/python/ndarray.html#tvm.nd.array" title="View documentation for tvm.nd.array"><span class="n">tvm</span><span class="o">.</span><span class="n">nd</span><span class="o">.</span><span class="n">array</span></a><span class="p">(</span><span class="n">b_np</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">dev</span><span class="p">)</span>
     <span class="n">func</span><span class="p">(</span><span class="n">a_tvm</span><span class="p">,</span> <span class="n">b_tvm</span><span class="p">,</span> <span class="n">c_tvm</span><span class="p">)</span>
 
     <span class="n">tvm</span><span class="o">.</span><span class="n">testing</span><span class="o">.</span><span class="n">assert_allclose</span><span class="p">(</span><span class="n">c_np</span><span class="p">,</span> <span class="n">c_tvm</span><span class="o">.</span><span class="n">asnumpy</span><span class="p">(),</span> <span class="n">rtol</span><span class="o">=</span><span class="mi">1</span><span class="n">e</span><span class="o">-</span><span class="mi">3</span><span class="p">)</span>
 
-    <span class="n">evaluator</span> <span class="o">=</span> <span class="n">func</span><span class="o">.</span><span class="n">time_evaluator</span><span class="p">(</span><span class="n">func</span><span class="o">.</span><span class="n">entry_name</span><span class="p">,</span> <span class="n">ctx</span><span class="p">,</span> <span class="n">number</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span>
+    <span class="n">evaluator</span> <span class="o">=</span> <span class="n">func</span><span class="o">.</span><span class="n">time_evaluator</span><span class="p">(</span><span class="n">func</span><span class="o">.</span><span class="n">entry_name</span><span class="p">,</span> <span class="n">dev</span><span class="p">,</span> <span class="n">number</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span>
     <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Time cost of this operator: </span><span class="si">%f</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">evaluator</span><span class="p">(</span><span class="n">a_tvm</span><span class="p">,</span> <span class="n">b_tvm</span><span class="p">,</span> <span class="n">c_tvm</span><span class="p">)</span><span class="o">.</span><span class="n">mean</span><span class="p">)</span>
 
 
@@ -857,7 +857,7 @@ to generate tensorcore kernels.</p>
 
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="../autotvm/tune_simple_template.html" class="btn btn-neutral float-right" title="Writing Tunable Templates and Using the Auto-tuner" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+        <a href="../autotvm/tune_conv2d_cuda.html" class="btn btn-neutral float-right" title="Tuning High Performance Convolution on NVIDIA GPUs" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
         <a href="opt_conv_tensorcore.html" class="btn btn-neutral float-left" title="How to optimize convolution using TensorCores" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>

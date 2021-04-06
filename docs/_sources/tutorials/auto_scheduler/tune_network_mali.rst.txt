@@ -44,7 +44,7 @@ __name__ == "__main__":` block.
     import tvm
     from tvm import relay, auto_scheduler
     import tvm.relay.testing
-    from tvm.contrib import graph_runtime
+    from tvm.contrib import graph_executor
     import os
 
 
@@ -143,8 +143,7 @@ You can use :ref:`ConvertLayout <convert-layout-usage>` pass to do the layout co
     use_ndk = True
     # Path to cross compiler
     os.environ["TVM_NDK_CC"] = "/usr/bin/aarch64-linux-gnu-g++"
-    target_host = tvm.target.Target("llvm -mtriple=aarch64-linux-gnu")
-    target = tvm.target.Target("opencl -device=mali")
+    target = tvm.target.Target("opencl -device=mali", host="llvm -mtriple=aarch64-linux-gnu")
     dtype = "float32"
     log_file = "%s-%s-B%d-%s.json" % (network, layout, batch_size, target.kind.name)
 
@@ -192,7 +191,7 @@ The task scheduler will just optimize this objective.
     # Extract tasks from the network
     print("Extract tasks...")
     mod, params, input_shape, output_shape = get_network(network, batch_size, layout, dtype=dtype)
-    tasks, task_weights = auto_scheduler.extract_tasks(mod["main"], params, target, target_host)
+    tasks, task_weights = auto_scheduler.extract_tasks(mod["main"], params, target)
 
     for idx, task in enumerate(tasks):
         print("========== Task %d  (workload key: %s) ==========" % (idx, task.workload_key))
@@ -208,7 +207,7 @@ The task scheduler will just optimize this objective.
  .. code-block:: none
 
     Extract tasks...
-    ...2%, 0.01 MB, 79 KB/s, 0 seconds passed    ...5%, 0.02 MB, 158 KB/s, 0 seconds passed    ...7%, 0.02 MB, 235 KB/s, 0 seconds passed    ...10%, 0.03 MB, 313 KB/s, 0 seconds passed    ...12%, 0.04 MB, 388 KB/s, 0 seconds passed    ...15%, 0.05 MB, 451 KB/s, 0 seconds passed    ...18%, 0.05 MB, 521 KB/s, 0 seconds passed    ...20%, 0.06 MB, 595 KB/s, 0 seconds passed    ...23%, 0.07 MB, 659 KB/s, 0 seconds passed    ...25%, 0.08 MB, 731 KB/s, 0 seconds passed    ...28%, 0.09 MB, 804 KB/s, 0 seconds passed    ...30%, 0.09 MB, 875 KB/s, 0 seconds passed    ...33%, 0.10 MB, 916 KB/s, 0 seconds passed    ...36%, 0.11 MB, 986 KB/s, 0 seconds passed    ...38%, 0.12 MB, 1055 KB/s, 0 seconds passed    ...41%, 0.12 MB, 1125 KB/s, 0 seconds passed    ...43%, 0.13 MB, 1193 KB/s, 0 seconds passed    ...46%, 0.14 MB, 1261 KB/s, 0 seconds passed    ...48%, 0.15 MB, 1330 KB/s, 0 seconds passed    ...51%, 0.16 MB, 1399 KB/s, 0 seconds passed    ...54%, 0.16 MB, 1456 KB/s, 0 seconds passed    ...56%, 0.17 MB, 1523 KB/s, 0 seconds passed    ...59%, 0.18 MB, 1590 KB/s, 0 seconds passed    ...61%, 0.19 MB, 1658 KB/s, 0 seconds passed    ...64%, 0.20 MB, 1725 KB/s, 0 seconds passed    ...66%, 0.20 MB, 1792 KB/s, 0 seconds passed    ...69%, 0.21 MB, 1859 KB/s, 0 seconds passed    ...72%, 0.22 MB, 1927 KB/s, 0 seconds passed    ...74%, 0.23 MB, 1936 KB/s, 0 seconds passed    ...77%, 0.23 MB, 2001 KB/s, 0 seconds passed    ...79%, 0.24 MB, 2067 KB/s, 0 seconds passed    ...82%, 0.25 MB, 2132 KB/s, 0 seconds passed    ...84%, 0.26 MB, 2186 KB/s, 0 seconds passed    ...87%, 0.27 MB, 2251 KB/s, 0 seconds passed    ...90%, 0.27 MB, 2299 KB/s, 0 seconds passed    ...92%, 0.28 MB, 2364 KB/s, 0 seconds passed    ...95%, 0.29 MB, 2423 KB/s, 0 seconds passed    ...97%, 0.30 MB, 2487 KB/s, 0 seconds passed    ...100%, 0.30 MB, 2547 KB/s, 0 seconds passed
+    ...2%, 0.01 MB, 55 KB/s, 0 seconds passed    ...5%, 0.02 MB, 111 KB/s, 0 seconds passed    ...7%, 0.02 MB, 165 KB/s, 0 seconds passed    ...10%, 0.03 MB, 219 KB/s, 0 seconds passed    ...12%, 0.04 MB, 272 KB/s, 0 seconds passed    ...15%, 0.05 MB, 311 KB/s, 0 seconds passed    ...18%, 0.05 MB, 363 KB/s, 0 seconds passed    ...20%, 0.06 MB, 413 KB/s, 0 seconds passed    ...23%, 0.07 MB, 462 KB/s, 0 seconds passed    ...25%, 0.08 MB, 510 KB/s, 0 seconds passed    ...28%, 0.09 MB, 558 KB/s, 0 seconds passed    ...30%, 0.09 MB, 583 KB/s, 0 seconds passed    ...33%, 0.10 MB, 630 KB/s, 0 seconds passed    ...36%, 0.11 MB, 679 KB/s, 0 seconds passed    ...38%, 0.12 MB, 723 KB/s, 0 seconds passed    ...41%, 0.12 MB, 771 KB/s, 0 seconds passed    ...43%, 0.13 MB, 815 KB/s, 0 seconds passed    ...46%, 0.14 MB, 862 KB/s, 0 seconds passed    ...48%, 0.15 MB, 907 KB/s, 0 seconds passed    ...51%, 0.16 MB, 954 KB/s, 0 seconds passed    ...54%, 0.16 MB, 998 KB/s, 0 seconds passed    ...56%, 0.17 MB, 1045 KB/s, 0 seconds passed    ...59%, 0.18 MB, 1088 KB/s, 0 seconds passed    ...61%, 0.19 MB, 1135 KB/s, 0 seconds passed    ...64%, 0.20 MB, 1181 KB/s, 0 seconds passed    ...66%, 0.20 MB, 1225 KB/s, 0 seconds passed    ...69%, 0.21 MB, 1269 KB/s, 0 seconds passed    ...72%, 0.22 MB, 1315 KB/s, 0 seconds passed    ...74%, 0.23 MB, 1323 KB/s, 0 seconds passed    ...77%, 0.23 MB, 1367 KB/s, 0 seconds passed    ...79%, 0.24 MB, 1411 KB/s, 0 seconds passed    ...82%, 0.25 MB, 1449 KB/s, 0 seconds passed    ...84%, 0.26 MB, 1494 KB/s, 0 seconds passed    ...87%, 0.27 MB, 1538 KB/s, 0 seconds passed    ...90%, 0.27 MB, 1582 KB/s, 0 seconds passed    ...92%, 0.28 MB, 1626 KB/s, 0 seconds passed    ...95%, 0.29 MB, 1670 KB/s, 0 seconds passed    ...97%, 0.30 MB, 1711 KB/s, 0 seconds passed    ...100%, 0.30 MB, 1753 KB/s, 0 seconds passed
     ========== Task 0  (workload key: ["d7b65649a4dd54becea0a52aabbc5af5", 1, 1000, 1, 1000]) ==========
     placeholder = PLACEHOLDER [1, 1000]
     T_softmax_maxelem(i0) max= placeholder[i0, k]
@@ -410,14 +409,14 @@ The task scheduler will just optimize this objective.
 
     from tvm.auto_scheduler.utils import request_remote
     remote = request_remote(device_key, "0.0.0.0", 9190)
-    ctx = remote.cl()
-    max_shared_memory_per_block = ctx.max_shared_memory_per_block
+    dev = remote.cl()
+    max_shared_memory_per_block = dev.max_shared_memory_per_block
     # There is no explicit local memory limition
     # so we can use INT32_MAX to disalbe the check on local_memory.
     max_local_memory_per_block = 2147483647 # INT32_MAX
-    max_threads_per_block = ctx.max_threads_per_block
-    max_vthread_extent = int(ctx.warp_size / 4) if int(ctx.warp_size / 4) > 1 else ctx.warp_size
-    warp_size = ctx.warp_size
+    max_threads_per_block = dev.max_threads_per_block
+    max_vthread_extent = int(dev.warp_size / 4) if int(dev.warp_size / 4) > 1 else dev.warp_size
+    warp_size = dev.warp_size
     hardware_params = auto_scheduler.HardwareParams(-1, 16, 64,
                                                     max_shared_memory_per_block, max_local_memory_per_block,
                                                     max_threads_per_block, max_vthread_extent, warp_size)
@@ -426,7 +425,9 @@ The task scheduler will just optimize this objective.
 
   .. code-block:: python
 
-    tasks, task_weights = auto_scheduler.extract_tasks(mod["main"], params, target, target_host, hardware_params)
+   tasks, task_weights = auto_scheduler.extract_tasks(
+       mod["main"], params, target, hardware_params = hardware_params
+   )
 
 
 Tuning and Evaluate
@@ -471,14 +472,14 @@ Now, we set some options for tuning, launch the search tasks and evaluate the en
             with tvm.transform.PassContext(
                 opt_level=3, config={"relay.backend.use_auto_scheduler": True}
             ):
-                lib = relay.build(mod, target=target, target_host=target_host, params=params)
+                lib = relay.build(mod, target, params=params)
 
-        # Create graph runtime
+        # Create graph executor
         print("=============== Request Remote ===============")
         from tvm.auto_scheduler.utils import request_remote
 
         remote = request_remote(device_key, "0.0.0.0", 9190)
-        ctx = remote.cl()
+        dev = remote.cl()
         from tvm.contrib import utils, ndk
 
         temp = utils.tempdir()
@@ -487,14 +488,14 @@ Now, we set some options for tuning, launch the search tasks and evaluate the en
         lib.export_library(path_lib, ndk.create_shared)
         remote.upload(path_lib)
         loaded_lib = remote.load_module(filename)
-        module = graph_runtime.GraphModule(loaded_lib["default"](ctx))
+        module = graph_executor.GraphModule(loaded_lib["default"](dev))
         data = (np.random.uniform(size=input_shape)).astype(dtype)
         data_tvm = tvm.nd.array(data)
         module.set_input("data", data_tvm)
 
         # Evaluate
         print("Evaluate inference time cost...")
-        ftimer = module.module.time_evaluator("run", ctx, repeat=3, min_repeat_ms=500)
+        ftimer = module.module.time_evaluator("run", dev, repeat=3, min_repeat_ms=500)
         prof_res = np.array(ftimer().results) * 1e3  # convert to millisecond
         print(
             "Mean inference time (std dev): %.2f ms (%.2f ms)" % (np.mean(prof_res), np.std(prof_res))
@@ -565,7 +566,7 @@ Now, we set some options for tuning, launch the search tasks and evaluate the en
   The last line also prints the total number of measurement trials,
   total time spent on auto-tuning and the id of the next task to tune.
 
-  There will also be some "dmlc::Error"s errors, because the
+  There will also be some "tvm::Error"s errors, because the
   auto-scheduler will try some invalid schedules.
   You can safely ignore them if the tuning can continue, because these
   errors are isolated from the main process.

@@ -1,7 +1,7 @@
 var searchData=
 [
   ['refcountertype',['RefCounterType',['../classtvm_1_1runtime_1_1Object.html#a55549a6c23987890246248682560a03d',1,'tvm::runtime::Object']]],
-  ['reference',['reference',['../classtvm_1_1MapNode_1_1iterator.html#ab4c8e2a875998396500992c2de657a71',1,'tvm::MapNode::iterator::reference()'],['../classtvm_1_1Map_1_1iterator.html#a7992d079bd1c9a5bb5c01689b0f779b6',1,'tvm::Map::iterator::reference()'],['../classtvm_1_1runtime_1_1IterAdapter.html#a5fe6cfc0f51ecc13f40796d626cdbfd5',1,'tvm::runtime::IterAdapter::reference()'],['../classtvm_1_1runtime_1_1ReverseIterAdapter.html#a0e19189278a3986380ce021cac7ceded',1,'tvm::runtime::ReverseIterAdapter::reference()']]],
+  ['reference',['reference',['../classtvm_1_1runtime_1_1IterAdapter.html#a5fe6cfc0f51ecc13f40796d626cdbfd5',1,'tvm::runtime::IterAdapter::reference()'],['../classtvm_1_1runtime_1_1ReverseIterAdapter.html#a0e19189278a3986380ce021cac7ceded',1,'tvm::runtime::ReverseIterAdapter::reference()'],['../classtvm_1_1runtime_1_1MapNode_1_1iterator.html#abc5b09553663c05b863c4a406a343c92',1,'tvm::runtime::MapNode::iterator::reference()'],['../classtvm_1_1runtime_1_1Map_1_1iterator.html#ae7e2ecfde14f41cfbe28a2c845a023b7',1,'tvm::runtime::Map::iterator::reference()']]],
   ['region',['Region',['../namespacetvm_1_1tir.html#a8277e2a3d81a80a4776705673df51e0a',1,'tvm::tir']]],
   ['regname',['RegName',['../namespacetvm_1_1runtime_1_1vm.html#a3bbbf700719e9dc3dda2bc25210c18ae',1,'tvm::runtime::vm']]],
   ['relayreftype',['RelayRefType',['../namespacetvm_1_1relay.html#a13fd39dbc2a639262858e9b72e8fb37f',1,'tvm::relay']]],

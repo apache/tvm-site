@@ -203,7 +203,7 @@
 </ul>
 <p class="caption"><span class="caption-text">Tutorials</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="../tutorials/index.html">Get Started Tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tutorials/index.html">Getting Started With TVM</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../tutorials/index.html#compile-deep-learning-models">Compile Deep Learning Models</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../tutorials/index.html#tensor-expression-and-schedules">Tensor Expression and Schedules</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../tutorials/index.html#optimize-tensor-operators">Optimize Tensor Operators</a></li>
@@ -223,6 +223,7 @@
 <li class="toctree-l3"><a class="reference internal" href="relay_op.html">Relay Core Tensor Operators</a></li>
 <li class="toctree-l3 current"><a class="current reference internal" href="#">Pattern Matching in Relay</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#pattern-examples">Pattern Examples</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#matching-fuzzy-patterns">Matching Fuzzy Patterns</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#pattern-language-design">Pattern Language Design</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#applications">Applications</a></li>
 </ul>
@@ -571,6 +572,18 @@ are matched:</p>
 </pre></div>
 </div>
 </div>
+</div>
+<div class="section" id="matching-fuzzy-patterns">
+<h2>Matching Fuzzy Patterns<a class="headerlink" href="#matching-fuzzy-patterns" title="Permalink to this headline">¶</a></h2>
+<p>The Dominator analysis above lets one match a subgraph of Relay AST that doesn’t correspond to a set of patterns nodes exactly 1-to-1. There are a few other places where we support such “fuzzy” matching.</p>
+<p>Tuples, Functions, and Call nodes with any number of inputs can be matched by passing <cite>None</cite> as the argument value, i.e.:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span class="n">tuple_pattern</span> <span class="o">=</span> <span class="n">is_tuple</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span>
+<span class="n">func_pattern</span> <span class="o">=</span> <span class="n">FunctionPattern</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="n">wildcard</span><span class="p">()</span> <span class="o">+</span> <span class="n">wildcard</span><span class="p">())</span>
+<span class="n">call_pattern</span> <span class="o">=</span> <span class="n">func_pattern</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>These patterns allow matching more generic classes patterns by constraining the use of the arguments rather than the number of arguments.</p>
+<p>Additionally, we support matching Functions with fuzzy bodies, i.e., a function body that is under constrained by the pattern. The pattern <cite>FunctionPattern([is_var(), is_var()], wildcard() + wildcard()])</cite> will match <cite>relay.Function([x, y], x + y)</cite>, but it will also match <cite>relay.Function([x, y], x * x + y)</cite>. In the second case, the pattern doesn’t perfectly constrain the body of the function, so the resulting match is fuzzy.</p>
 </div>
 <div class="section" id="pattern-language-design">
 <h2>Pattern Language Design<a class="headerlink" href="#pattern-language-design" title="Permalink to this headline">¶</a></h2>

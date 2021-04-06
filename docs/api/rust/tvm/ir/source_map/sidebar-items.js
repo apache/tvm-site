@@ -1,1 +1,0 @@
-initSidebarItems({"struct":[["Source",""],["SourceMap",""],["SourceMapNode","A mapping from a unique source name to source fragments."],["SourceNode","A program source in any language."]]});

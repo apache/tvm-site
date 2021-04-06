@@ -71,8 +71,8 @@ The following lines describe the computation :code:`A * B^T` in TVM.
 
     primfn(A_1: handle, B_1: handle, C_1: handle) -> ()
       attr = {"global_symbol": "main", "tir.noalias": True}
-      buffers = {C: Buffer(C_2: Pointer(float32), float32, [1024, 512], []),
-                 B: Buffer(B_2: Pointer(float32), float32, [512, 64], []),
+      buffers = {B: Buffer(B_2: Pointer(float32), float32, [512, 64], []),
+                 C: Buffer(C_2: Pointer(float32), float32, [1024, 512], []),
                  A: Buffer(A_2: Pointer(float32), float32, [1024, 64], [])}
       buffer_map = {A_1: A, B_1: B, C_1: C} {
       for (i: int32, 0, 1024) {
@@ -120,8 +120,8 @@ Thus we break down the matmul loops to make the innermost loops a (16x64) GEMV.
 
     primfn(A_1: handle, B_1: handle, C_1: handle) -> ()
       attr = {"global_symbol": "main", "tir.noalias": True}
-      buffers = {B: Buffer(B_2: Pointer(float32), float32, [512, 64], []),
-                 C: Buffer(C_2: Pointer(float32), float32, [1024, 512], []),
+      buffers = {C: Buffer(C_2: Pointer(float32), float32, [1024, 512], []),
+                 B: Buffer(B_2: Pointer(float32), float32, [512, 64], []),
                  A: Buffer(A_2: Pointer(float32), float32, [1024, 64], [])}
       buffer_map = {A_1: A, B_1: B, C_1: C} {
       for (i: int32, 0, 1024) {
@@ -313,8 +313,8 @@ The importing needs to happen before the tensorized GEMV being executed.
                  B: Buffer(B_2: Pointer(float32), float32, [512, 64], []),
                  A: Buffer(A_2: Pointer(float32), float32, [1024, 64], [])}
       buffer_map = {A_1: A, B_1: B, C_1: C} {
-      attr [IterVar(i: int32, (nullptr), "DataPar", "")] "pragma_import_llvm" = "; ModuleID = '/tmp/tmpugf1o730/input0.cc'
-    source_filename = "/tmp/tmpugf1o730/input0.cc"
+      attr [IterVar(i: int32, (nullptr), "DataPar", "")] "pragma_import_llvm" = "; ModuleID = '/tmp/tmpsitotuym/input0.cc'
+    source_filename = "/tmp/tmpsitotuym/input0.cc"
     target datalayout = "e-m:e-i64:64-f80:128-n8:16:32:64-S128"
     target triple = "x86_64-pc-linux-gnu"
 
@@ -428,11 +428,11 @@ ensure our implementation is correct.
     from tvm.topi.utils import get_const_tuple
 
     dtype = A.dtype
-    ctx = tvm.context("cpu", 0)
+    dev = tvm.device("cpu", 0)
     a = np.random.uniform(size=get_const_tuple(A.shape)).astype(dtype)
     b = np.random.uniform(size=get_const_tuple(B.shape)).astype(dtype)
-    c = tvm.nd.array(np.zeros(get_const_tuple(C.shape), dtype=dtype), ctx)
-    func(tvm.nd.array(a, ctx), tvm.nd.array(b, ctx), c)
+    c = tvm.nd.array(np.zeros(get_const_tuple(C.shape), dtype=dtype), dev)
+    func(tvm.nd.array(a, dev), tvm.nd.array(b, dev), c)
     tvm.testing.assert_allclose(c.asnumpy(), np.dot(a, b.T), rtol=1e-3)
 
 
@@ -569,8 +569,8 @@ Tensorize for squared GEMV, build and check the results,
     func = tvm.build(s, [A, B, C], target="llvm", name="gemv")
     a = np.random.uniform(size=get_const_tuple(A.shape)).astype(dtype)
     b = np.random.uniform(size=get_const_tuple(B.shape)).astype(dtype)
-    c = tvm.nd.array(np.zeros(get_const_tuple(C.shape), dtype=dtype), ctx)
-    func(tvm.nd.array(a, ctx), tvm.nd.array(b, ctx), c)
+    c = tvm.nd.array(np.zeros(get_const_tuple(C.shape), dtype=dtype), dev)
+    func(tvm.nd.array(a, dev), tvm.nd.array(b, dev), c)
     tvm.testing.assert_allclose(c.asnumpy(), np.dot(a, b.T), rtol=1e-3)
 
 

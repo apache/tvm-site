@@ -214,6 +214,7 @@
 </li>
 <li class="toctree-l2"><a class="reference internal" href="tensorrt.html">Relay TensorRT Integration</a></li>
 <li class="toctree-l2"><a class="reference internal" href="vitis_ai.html">Vitis-AI Integration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="bnns.html">Relay BNNS Integration</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../dev/how_to.html">Developer How-To Guide</a></li>
@@ -221,7 +222,7 @@
 </ul>
 <p class="caption"><span class="caption-text">Tutorials</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="../tutorials/index.html">Get Started Tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../tutorials/index.html">Getting Started With TVM</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../tutorials/index.html#compile-deep-learning-models">Compile Deep Learning Models</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../tutorials/index.html#tensor-expression-and-schedules">Tensor Expression and Schedules</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../tutorials/index.html#optimize-tensor-operators">Optimize Tensor Operators</a></li>
@@ -357,7 +358,7 @@ mv ./linux-&lt;architecture-to-build-for&gt;-neon/* .
 </div>
 </li>
 </ul>
-<p>In both cases you will need to set USE_ARM_COMPUTE_LIB_GRAPH_RUNTIME to the path where the ACL package
+<p>In both cases you will need to set USE_ARM_COMPUTE_LIB_GRAPH_EXECUTOR to the path where the ACL package
 is located. Cmake will look in /path-to-acl/ along with /path-to-acl/lib and /path-to-acl/build for the
 required binaries. See the section below for more information on how to use these configuration options.</p>
 </div>
@@ -368,21 +369,21 @@ because ACL cannot be used on an x86 machine. However, we still want to be able 
 runtime module on an x86 machine.</p>
 <ul class="simple">
 <li><p>USE_ARM_COMPUTE_LIB=ON/OFF - Enabling this flag will add support for compiling an ACL runtime module.</p></li>
-<li><p>USE_ARM_COMPUTE_LIB_GRAPH_RUNTIME=ON/OFF/path-to-acl - Enabling this flag will allow the graph runtime to
+<li><p>USE_ARM_COMPUTE_LIB_GRAPH_EXECUTOR=ON/OFF/path-to-acl - Enabling this flag will allow the graph executor to
 compute the ACL offloaded functions.</p></li>
 </ul>
 <p>These flags can be used in different scenarios depending on your setup. For example, if you want
 to compile an ACL module on an x86 machine and then run the module on a remote Arm device via RPC, you will
-need to use USE_ARM_COMPUTE_LIB=ON on the x86 machine and USE_ARM_COMPUTE_LIB_GRAPH_RUNTIME=ON on the remote
+need to use USE_ARM_COMPUTE_LIB=ON on the x86 machine and USE_ARM_COMPUTE_LIB_GRAPH_EXECUTOR=ON on the remote
 AArch64 device.</p>
-<p>By default both options are set to OFF. Using USE_ARM_COMPUTE_LIB_GRAPH_RUNTIME=ON will mean that ACL
+<p>By default both options are set to OFF. Using USE_ARM_COMPUTE_LIB_GRAPH_EXECUTOR=ON will mean that ACL
 binaries are searched for by cmake in the default locations
 (see <a class="reference external" href="https://cmake.org/cmake/help/v3.4/command/find_library.html">https://cmake.org/cmake/help/v3.4/command/find_library.html</a>). In addition to this,
 /path-to-tvm-project/acl/ will also be searched. It is likely that you will need to set your own path to
 locate ACL. This can be done by specifying a path in the place of ON.</p>
 <p>These flags should be set in your config.cmake file. For example:</p>
 <div class="highlight-cmake notranslate"><div class="highlight"><pre><span class="nb">set</span><span class="p">(</span><span class="s">USE_ARM_COMPUTE_LIB</span> <span class="s">ON</span><span class="p">)</span>
-<span class="nb">set</span><span class="p">(</span><span class="s">USE_ARM_COMPUTE_LIB_GRAPH_RUNTIME</span> <span class="s">/path/to/acl</span><span class="p">)</span>
+<span class="nb">set</span><span class="p">(</span><span class="s">USE_ARM_COMPUTE_LIB_GRAPH_EXECUTOR</span> <span class="s">/path/to/acl</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
@@ -432,9 +433,9 @@ max_pool2d operator).</p>
 <p>Run Inference. This must be on an Arm device. If compiling on x86 device and running on AArch64,
 consider using the RPC mechanism. Tutorials for using the RPC mechanism:
 <a class="reference external" href="https://tvm.apache.org/docs/tutorials/get_started/cross_compilation_and_rpc.html">https://tvm.apache.org/docs/tutorials/get_started/cross_compilation_and_rpc.html</a></p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span class="n">ctx</span> <span class="o">=</span> <span class="n">tvm</span><span class="o">.</span><span class="n">cpu</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span class="n">dev</span> <span class="o">=</span> <span class="n">tvm</span><span class="o">.</span><span class="n">cpu</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
 <span class="n">loaded_lib</span> <span class="o">=</span> <span class="n">tvm</span><span class="o">.</span><span class="n">runtime</span><span class="o">.</span><span class="n">load_module</span><span class="p">(</span><span class="s1">&#39;lib_acl.so&#39;</span><span class="p">)</span>
-<span class="n">gen_module</span> <span class="o">=</span> <span class="n">tvm</span><span class="o">.</span><span class="n">contrib</span><span class="o">.</span><span class="n">graph_runtime</span><span class="o">.</span><span class="n">GraphModule</span><span class="p">(</span><span class="n">loaded_lib</span><span class="p">[</span><span class="s1">&#39;default&#39;</span><span class="p">](</span><span class="n">ctx</span><span class="p">))</span>
+<span class="n">gen_module</span> <span class="o">=</span> <span class="n">tvm</span><span class="o">.</span><span class="n">contrib</span><span class="o">.</span><span class="n">graph_executor</span><span class="o">.</span><span class="n">GraphModule</span><span class="p">(</span><span class="n">loaded_lib</span><span class="p">[</span><span class="s1">&#39;default&#39;</span><span class="p">](</span><span class="n">dev</span><span class="p">))</span>
 <span class="n">d_data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">data_shape</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">data_type</span><span class="p">)</span>
 <span class="n">map_inputs</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;data&#39;</span><span class="p">:</span> <span class="n">d_data</span><span class="p">}</span>
 <span class="n">gen_module</span><span class="o">.</span><span class="n">set_input</span><span class="p">(</span><span class="o">**</span><span class="n">map_inputs</span><span class="p">)</span>

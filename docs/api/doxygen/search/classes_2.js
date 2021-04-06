@@ -6,8 +6,9 @@ var searchData=
   ['cachewritestepnode',['CacheWriteStepNode',['../classtvm_1_1auto__scheduler_1_1CacheWriteStepNode.html',1,'tvm::auto_scheduler']]],
   ['call',['Call',['../classtvm_1_1tir_1_1Call.html',1,'tvm::tir']]],
   ['call',['Call',['../classtvm_1_1relay_1_1Call.html',1,'tvm::relay']]],
-  ['callnode',['CallNode',['../classtvm_1_1relay_1_1CallNode.html',1,'tvm::relay']]],
+  ['callframe',['CallFrame',['../structtvm_1_1runtime_1_1profiling_1_1CallFrame.html',1,'tvm::runtime::profiling']]],
   ['callnode',['CallNode',['../classtvm_1_1tir_1_1CallNode.html',1,'tvm::tir']]],
+  ['callnode',['CallNode',['../classtvm_1_1relay_1_1CallNode.html',1,'tvm::relay']]],
   ['callpattern',['CallPattern',['../classtvm_1_1relay_1_1CallPattern.html',1,'tvm::relay']]],
   ['callpatternnode',['CallPatternNode',['../classtvm_1_1relay_1_1CallPatternNode.html',1,'tvm::relay']]],
   ['canonicalsimplifier',['CanonicalSimplifier',['../classtvm_1_1arith_1_1CanonicalSimplifier.html',1,'tvm::arith']]],
@@ -29,6 +30,7 @@ var searchData=
   ['cmpopnode_3c_20nenode_20_3e',['CmpOpNode&lt; NENode &gt;',['../classtvm_1_1tir_1_1CmpOpNode.html',1,'tvm::tir']]],
   ['commreducer',['CommReducer',['../classtvm_1_1tir_1_1CommReducer.html',1,'tvm::tir']]],
   ['commreducernode',['CommReducerNode',['../classtvm_1_1tir_1_1CommReducerNode.html',1,'tvm::tir']]],
+  ['compileerror',['CompileError',['../classtvm_1_1CompileError.html',1,'tvm']]],
   ['compilerattrs',['CompilerAttrs',['../structtvm_1_1relay_1_1CompilerAttrs.html',1,'tvm::relay']]],
   ['computeatstep',['ComputeAtStep',['../classtvm_1_1auto__scheduler_1_1ComputeAtStep.html',1,'tvm::auto_scheduler']]],
   ['computeatstepnode',['ComputeAtStepNode',['../classtvm_1_1auto__scheduler_1_1ComputeAtStepNode.html',1,'tvm::auto_scheduler']]],
@@ -69,6 +71,6 @@ var searchData=
   ['correlationattrs',['CorrelationAttrs',['../structtvm_1_1relay_1_1CorrelationAttrs.html',1,'tvm::relay']]],
   ['costmodel',['CostModel',['../classtvm_1_1auto__scheduler_1_1CostModel.html',1,'tvm::auto_scheduler']]],
   ['costmodelnode',['CostModelNode',['../classtvm_1_1auto__scheduler_1_1CostModelNode.html',1,'tvm::auto_scheduler']]],
-  ['cropandresizeattrs',['CropAndResizeAttrs',['../structtvm_1_1relay_1_1CropAndResizeAttrs.html',1,'tvm::relay']]],
-  ['cumsumattrs',['CumsumAttrs',['../structtvm_1_1relay_1_1CumsumAttrs.html',1,'tvm::relay']]]
+  ['countnode',['CountNode',['../classtvm_1_1runtime_1_1profiling_1_1CountNode.html',1,'tvm::runtime::profiling']]],
+  ['cropandresizeattrs',['CropAndResizeAttrs',['../structtvm_1_1relay_1_1CropAndResizeAttrs.html',1,'tvm::relay']]]
 ];

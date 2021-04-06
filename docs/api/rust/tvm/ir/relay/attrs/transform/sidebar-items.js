@@ -1,1 +1,0 @@
-initSidebarItems({"struct":[["ConcatenateAttrs",""],["ConcatenateAttrsNode",""],["ExpandDimsAttrs",""],["ExpandDimsAttrsNode",""],["ReshapeAttrs",""],["ReshapeAttrsNode",""],["SplitAttrs",""],["SplitAttrsNode",""],["SqueezeAttrs",""],["SqueezeAttrsNode",""],["TransposeAttrs",""],["TransposeAttrsNode",""]]});

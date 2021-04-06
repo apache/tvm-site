@@ -1,1 +1,0 @@
-initSidebarItems({"fn":[["load","Load the Python interpreter into the address space."]]});

@@ -74,14 +74,12 @@ from tensorflow.
 
     # Target settings
     # Use these commented settings to build for cuda.
-    # target = 'cuda'
-    # target_host = 'llvm'
+    # target = tvm.target.Target("cuda", host="llvm")
     # layout = "NCHW"
-    # ctx = tvm.gpu(0)
-    target = "llvm"
-    target_host = "llvm"
+    # dev = tvm.gpu(0)
+    target = tvm.target.Target("llvm", host="llvm")
     layout = None
-    ctx = tvm.cpu(0)
+    dev = tvm.cpu(0)
 
 
 
@@ -195,9 +193,9 @@ Results:
 
  .. code-block:: none
 
-    /workspace/docs/../python/tvm/relay/frontend/tensorflow.py:3153: UserWarning: Ignore the passed shape. Shape in graphdef will be used for operator DecodeJpeg/contents.
+    /workspace/docs/../python/tvm/relay/frontend/tensorflow.py:3351: UserWarning: Ignore the passed shape. Shape in graphdef will be used for operator DecodeJpeg/contents.
       "will be used for operator %s." % node.name
-    /workspace/docs/../python/tvm/relay/frontend/tensorflow.py:882: UserWarning: DecodeJpeg: It's a pass through, please handle preprocessing before input
+    /workspace/docs/../python/tvm/relay/frontend/tensorflow.py:893: UserWarning: DecodeJpeg: It's a pass through, please handle preprocessing before input
       warnings.warn("DecodeJpeg: It's a pass through, please handle preprocessing before input")
     Tensorflow protobuf imported to relay frontend.
 
@@ -217,7 +215,7 @@ Results:
 
 
     with tvm.transform.PassContext(opt_level=3):
-        lib = relay.build(mod, target=target, target_host=target_host, params=params)
+        lib = relay.build(mod, target, params=params)
 
 
 
@@ -323,8 +321,6 @@ Results:
     conv2d NHWC layout is not optimized for x86 with autotvm.
     conv2d NHWC layout is not optimized for x86 with autotvm.
     conv2d NHWC layout is not optimized for x86 with autotvm.
-    Cannot find config for target=llvm -keys=cpu -link-params=0, workload=('dense_pack.x86', ('TENSOR', (1, 2048), 'float32'), ('TENSOR', (1008, 2048), 'float32'), None, 'float32'). A fallback configuration is used, which may bring great performance regression.
-    Cannot find config for target=llvm -keys=cpu -link-params=0, workload=('dense_pack.x86', ('TENSOR', (1, 2048), 'float32'), ('TENSOR', (63, 2048, 16), 'float32'), None, 'float32'). A fallback configuration is used, which may bring great performance regression.
     conv2d NHWC layout is not optimized for x86 with autotvm.
     conv2d NHWC layout is not optimized for x86 with autotvm.
     conv2d NHWC layout is not optimized for x86 with autotvm.
@@ -379,10 +375,10 @@ Now we can try deploying the compiled model on target.
 .. code-block:: default
 
 
-    from tvm.contrib import graph_runtime
+    from tvm.contrib import graph_executor
 
     dtype = "uint8"
-    m = graph_runtime.GraphModule(lib["default"](ctx))
+    m = graph_executor.GraphModule(lib["default"](dev))
     # set inputs
     m.set_input("DecodeJpeg/contents", tvm.nd.array(x.astype(dtype)))
     # execute

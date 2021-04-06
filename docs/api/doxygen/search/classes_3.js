@@ -8,7 +8,7 @@ var searchData=
   ['debugattrs',['DebugAttrs',['../structtvm_1_1relay_1_1DebugAttrs.html',1,'tvm::relay']]],
   ['deformableconv2dattrs',['DeformableConv2DAttrs',['../structtvm_1_1relay_1_1DeformableConv2DAttrs.html',1,'tvm::relay']]],
   ['denseattrs',['DenseAttrs',['../structtvm_1_1relay_1_1DenseAttrs.html',1,'tvm::relay']]],
-  ['densemapnode',['DenseMapNode',['../classtvm_1_1DenseMapNode.html',1,'tvm']]],
+  ['densemapnode',['DenseMapNode',['../classtvm_1_1runtime_1_1DenseMapNode.html',1,'tvm::runtime']]],
   ['dequantizeattrs',['DequantizeAttrs',['../structtvm_1_1relay_1_1qnn_1_1DequantizeAttrs.html',1,'tvm::relay::qnn']]],
   ['deviceapi',['DeviceAPI',['../classtvm_1_1runtime_1_1DeviceAPI.html',1,'tvm::runtime']]],
   ['devicecopyattrs',['DeviceCopyAttrs',['../structtvm_1_1relay_1_1DeviceCopyAttrs.html',1,'tvm::relay']]],
@@ -35,5 +35,6 @@ var searchData=
   ['divnode',['DivNode',['../classtvm_1_1tir_1_1DivNode.html',1,'tvm::tir']]],
   ['dominatorpattern',['DominatorPattern',['../classtvm_1_1relay_1_1DominatorPattern.html',1,'tvm::relay']]],
   ['dominatorpatternnode',['DominatorPatternNode',['../classtvm_1_1relay_1_1DominatorPatternNode.html',1,'tvm::relay']]],
-  ['dropoutattrs',['DropoutAttrs',['../structtvm_1_1relay_1_1DropoutAttrs.html',1,'tvm::relay']]]
+  ['dropoutattrs',['DropoutAttrs',['../structtvm_1_1relay_1_1DropoutAttrs.html',1,'tvm::relay']]],
+  ['durationnode',['DurationNode',['../classtvm_1_1runtime_1_1profiling_1_1DurationNode.html',1,'tvm::runtime::profiling']]]
 ];

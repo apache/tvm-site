@@ -6,7 +6,7 @@ var searchData=
   ['undefinedvars',['UndefinedVars',['../namespacetvm_1_1tir.html#ae110e02855d8bc12eb8b6f92ed391844',1,'tvm::tir::UndefinedVars(const Stmt &amp;stmt, const Array&lt; Var &gt; &amp;defs)'],['../namespacetvm_1_1tir.html#a99de316b20c7af2e8b4f06773ee69a5a',1,'tvm::tir::UndefinedVars(const PrimExpr &amp;expr)']]],
   ['unframer',['Unframer',['../classtvm_1_1runtime_1_1micro__rpc_1_1Unframer.html#a58d68e70d1819a706669c9934dd07639',1,'tvm::runtime::micro_rpc::Unframer']]],
   ['union',['Union',['../namespacetvm_1_1arith.html#a68a0523bf0384e492ab222d30be9160e',1,'tvm::arith']]],
-  ['unique',['unique',['../classtvm_1_1runtime_1_1ObjectPtr.html#a34b83145402b1340466d1ea7e667cd27',1,'tvm::runtime::ObjectPtr::unique()'],['../classtvm_1_1runtime_1_1ObjectRef.html#a4142990fd1959abc95aa0cccca4f6cda',1,'tvm::runtime::ObjectRef::unique()']]],
+  ['unique',['unique',['../classtvm_1_1runtime_1_1Object.html#aafaeed6a9a13be1149ce31d1409d1216',1,'tvm::runtime::Object::unique()'],['../classtvm_1_1runtime_1_1ObjectPtr.html#a34b83145402b1340466d1ea7e667cd27',1,'tvm::runtime::ObjectPtr::unique()'],['../classtvm_1_1runtime_1_1ObjectRef.html#a4142990fd1959abc95aa0cccca4f6cda',1,'tvm::runtime::ObjectRef::unique()']]],
   ['unmatchedcases',['UnmatchedCases',['../namespacetvm_1_1relay.html#aa3a8cace40f8056fd6412f39c3eaa605',1,'tvm::relay']]],
   ['unravel_5findex',['unravel_index',['../namespacetvm_1_1topi.html#a8811a02532bbe3047986bf1a8449ac0e',1,'tvm::topi']]],
   ['unroll',['unroll',['../classtvm_1_1auto__scheduler_1_1State.html#aa68a9d2e226bae38a36e4be4af1d1ae4',1,'tvm::auto_scheduler::State::unroll()'],['../classtvm_1_1te_1_1Stage.html#af83ad8672660403504f472228b044b33',1,'tvm::te::Stage::unroll()']]],

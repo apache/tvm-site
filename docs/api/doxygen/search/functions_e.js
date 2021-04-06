@@ -9,7 +9,7 @@ var searchData=
   ['ndim_5fprimal',['ndim_primal',['../classtvm_1_1tir_1_1Layout.html#a2f983c2de370c89a9f0b12ebcf9fec0c',1,'tvm::tir::Layout']]],
   ['ne',['NE',['../classtvm_1_1tir_1_1NE.html#a4620e4d3061a5b1048a271a9be7dc930',1,'tvm::tir::NE']]],
   ['nearbyint',['nearbyint',['../namespacetvm.html#ae7826d26d74304ff31ad2cbf278b772c',1,'tvm']]],
-  ['needsetdevicecontext',['NeedSetDeviceContext',['../classtvm_1_1runtime_1_1DeviceAPI.html#ab35f07aacd4717465f8912aeded7001c',1,'tvm::runtime::DeviceAPI']]],
+  ['needsetdevice',['NeedSetDevice',['../classtvm_1_1runtime_1_1DeviceAPI.html#a04a11f5fc72ad905880f639e5a7a4bd5',1,'tvm::runtime::DeviceAPI']]],
   ['needsmultileveltiling',['NeedsMultiLevelTiling',['../classtvm_1_1auto__scheduler_1_1AccessAnalyzer.html#ab107b9add4985219f62a781ceac20ca0',1,'tvm::auto_scheduler::AccessAnalyzer']]],
   ['neg',['neg',['../namespacetvm.html#a5cd85b156fb31f75f91c8a5c012f8a66',1,'tvm']]],
   ['negative',['negative',['../namespacetvm_1_1topi.html#af6b3e60333fce92bcf0930e45683a8f6',1,'tvm::topi']]],

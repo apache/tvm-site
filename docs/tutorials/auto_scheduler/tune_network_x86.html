@@ -203,13 +203,12 @@
 </ul>
 <p class="caption"><span class="caption-text">Tutorials</span></p>
 <ul class="current">
-<li class="toctree-l1"><a class="reference internal" href="../index.html">Get Started Tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../index.html">Getting Started With TVM</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../index.html#compile-deep-learning-models">Compile Deep Learning Models</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../index.html#tensor-expression-and-schedules">Tensor Expression and Schedules</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../index.html#optimize-tensor-operators">Optimize Tensor Operators</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../index.html#autotvm-template-based-auto-tuning">AutoTVM : Template-based Auto Tuning</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="../index.html#autoscheduler-template-free-auto-scheduling">AutoScheduler : Template-free Auto Scheduling</a><ul class="current">
-<li class="toctree-l2"><a class="reference internal" href="tune_matmul_x86.html">Auto-scheduling Matrix Multiplication for CPU</a></li>
 <li class="toctree-l2"><a class="reference internal" href="tune_conv2d_layer_cuda.html">Auto-scheduling a Convolution Layer for GPU</a></li>
 <li class="toctree-l2 current"><a class="current reference internal" href="#">Auto-scheduling a Neural Network for x86 CPU</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#define-a-network">Define a Network</a></li>
@@ -222,6 +221,7 @@
 <li class="toctree-l2"><a class="reference internal" href="tune_network_cuda.html">Auto-scheduling a Neural Network for NVIDIA GPU</a></li>
 <li class="toctree-l2"><a class="reference internal" href="tune_network_arm.html">Auto-scheduling a Neural Network for ARM CPU</a></li>
 <li class="toctree-l2"><a class="reference internal" href="tune_network_mali.html">Auto-scheduling a Neural Network for mali GPU</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tune_sparse_x86.html">Auto-scheduling Sparse Matrix Multiplication on CPU with Custom Sketch Rule</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../index.html#developer-tutorials">Developer Tutorials</a></li>
@@ -301,7 +301,7 @@
     
       <li><a href="../../index.html">Docs</a> <span class="br-arrow">></span></li>
         
-          <li><a href="../index.html">Get Started Tutorials</a> <span class="br-arrow">></span></li>
+          <li><a href="../index.html">Getting Started With TVM</a> <span class="br-arrow">></span></li>
         
       <li>Auto-scheduling a Neural Network for x86 CPU</li>
     
@@ -328,7 +328,7 @@
 </div>
 <div class="sphx-glr-example-title section" id="auto-scheduling-a-neural-network-for-x86-cpu">
 <span id="sphx-glr-tutorials-auto-scheduler-tune-network-x86-py"></span><h1>Auto-scheduling a Neural Network for x86 CPU<a class="headerlink" href="#auto-scheduling-a-neural-network-for-x86-cpu" title="Permalink to this headline">¶</a></h1>
-<p><strong>Author</strong>: <a class="reference external" href="https://github.com/merrymercy">Lianmin Zheng</a></p>
+<p><strong>Author</strong>: <a class="reference external" href="https://github.com/merrymercy">Lianmin Zheng</a>,             <a class="reference external" href="https://github.com/jcf94/">Chengfan Jia</a></p>
 <p>Auto-tuning for specific devices and workloads is critical for getting the
 best performance. This is a tutorial on how to tune a whole neural
 network for x86 CPU with the auto-scheduler.</p>
@@ -352,8 +352,9 @@ get it to run, you will need to wrap the body of this tutorial in a <code class=
 
 <span class="kn">import</span> <span class="nn">tvm</span>
 <span class="kn">from</span> <span class="nn">tvm</span> <span class="k">import</span> <span class="n">relay</span><span class="p">,</span> <span class="n">auto_scheduler</span>
+<span class="kn">from</span> <span class="nn">tvm.relay</span> <span class="k">import</span> <span class="n">data_dep_optimization</span> <span class="k">as</span> <span class="n">ddo</span>
 <span class="kn">import</span> <span class="nn">tvm.relay.testing</span>
-<span class="kn">from</span> <span class="nn">tvm.contrib</span> <span class="k">import</span> <span class="n">graph_runtime</span>
+<span class="kn">from</span> <span class="nn">tvm.contrib</span> <span class="k">import</span> <span class="n">graph_executor</span>
 </pre></div>
 </div>
 <div class="section" id="define-a-network">
@@ -367,7 +368,7 @@ with any layout, we found the best performance is typically achieved with NHWC l
 We also implemented more optimizations for NHWC layout with the auto-scheduler.
 So it is recommended to convert your models to NHWC layout to use the auto-scheduler.
 You can use <a class="reference internal" href="../../dev/convert_layout.html#convert-layout-usage"><span class="std std-ref">ConvertLayout</span></a> pass to do the layout conversion in TVM.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span class="k">def</span> <span class="nf">get_network</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">batch_size</span><span class="p">,</span> <span class="n">layout</span><span class="o">=</span><span class="s2">&quot;NHWC&quot;</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="s2">&quot;float32&quot;</span><span class="p">):</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span class="k">def</span> <span class="nf">get_network</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">batch_size</span><span class="p">,</span> <span class="n">layout</span><span class="o">=</span><span class="s2">&quot;NHWC&quot;</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="s2">&quot;float32&quot;</span><span class="p">,</span> <span class="n">use_sparse</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Get the symbol definition and random weight of a network&quot;&quot;&quot;</span>
 
     <span class="c1"># auto-scheduler prefers NHWC layout</span>
@@ -427,6 +428,17 @@ You can use <a class="reference internal" href="../../dev/convert_layout.html#co
             <span class="n">net</span><span class="o">.</span><span class="n">params</span><span class="p">,</span> <a href="../../api/python/relay/nn.html#tvm.relay.nn.softmax" title="View documentation for tvm.relay.nn.softmax"><span class="n">relay</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">softmax</span></a><span class="p">(</span><span class="n">net</span><span class="o">.</span><span class="n">body</span><span class="p">),</span> <span class="kc">None</span><span class="p">,</span> <span class="n">net</span><span class="o">.</span><span class="n">type_params</span><span class="p">,</span> <span class="n">net</span><span class="o">.</span><span class="n">attrs</span>
         <span class="p">)</span>
         <span class="n">mod</span> <span class="o">=</span> <span class="n">tvm</span><span class="o">.</span><span class="n">IRModule</span><span class="o">.</span><span class="n">from_expr</span><span class="p">(</span><span class="n">net</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">name</span> <span class="o">==</span> <span class="s2">&quot;mlp&quot;</span><span class="p">:</span>
+        <span class="n">mod</span><span class="p">,</span> <span class="n">params</span> <span class="o">=</span> <a href="../../api/python/relay/testing.html#tvm.relay.testing.mlp.get_workload" title="View documentation for tvm.relay.testing.mlp.get_workload"><span class="n">relay</span><span class="o">.</span><span class="n">testing</span><span class="o">.</span><span class="n">mlp</span><span class="o">.</span><span class="n">get_workload</span></a><span class="p">(</span>
+            <span class="n">batch_size</span><span class="o">=</span><span class="n">batch_size</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">,</span> <span class="n">image_shape</span><span class="o">=</span><span class="n">image_shape</span><span class="p">,</span> <span class="n">num_classes</span><span class="o">=</span><span class="mi">1000</span>
+        <span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Network not found.&quot;</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">use_sparse</span><span class="p">:</span>
+        <span class="kn">from</span> <span class="nn">tvm.topi.sparse.utils</span> <span class="k">import</span> <span class="n">convert_model_dense_to_sparse</span>
+
+        <span class="n">mod</span><span class="p">,</span> <span class="n">params</span> <span class="o">=</span> <span class="n">convert_model_dense_to_sparse</span><span class="p">(</span><span class="n">mod</span><span class="p">,</span> <span class="n">params</span><span class="p">,</span> <span class="n">random_params</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
     <span class="k">return</span> <span class="n">mod</span><span class="p">,</span> <span class="n">params</span><span class="p">,</span> <span class="n">input_shape</span><span class="p">,</span> <span class="n">output_shape</span>
 
@@ -435,6 +447,7 @@ You can use <a class="reference internal" href="../../dev/convert_layout.html#co
 <span class="c1"># If the target machine supports avx512 instructions, replace the</span>
 <span class="c1"># &quot;llvm -mcpu=core-avx2&quot; with &quot;llvm -mcpu=skylake-avx512&quot;</span>
 <span class="n">network</span> <span class="o">=</span> <span class="s2">&quot;resnet-50&quot;</span>
+<span class="n">use_sparse</span> <span class="o">=</span> <span class="kc">False</span>
 <span class="n">batch_size</span> <span class="o">=</span> <span class="mi">1</span>
 <span class="n">layout</span> <span class="o">=</span> <span class="s2">&quot;NHWC&quot;</span>
 <span class="n">target</span> <span class="o">=</span> <a href="../../api/python/target.html#tvm.target.Target" title="View documentation for tvm.target.Target"><span class="n">tvm</span><span class="o">.</span><span class="n">target</span><span class="o">.</span><span class="n">Target</span></a><span class="p">(</span><span class="s2">&quot;llvm -mcpu=core-avx2&quot;</span><span class="p">)</span>
@@ -453,8 +466,11 @@ as <code class="code docutils literal notranslate"><span class="pre">sum(latency
 latency of a task and <code class="code docutils literal notranslate"><span class="pre">weight[t]</span></code> is the weight of the task.
 The task scheduler will just optimize this objective.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span class="c1"># Extract tasks from the network</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Get model...&quot;</span><span class="p">)</span>
+<span class="n">mod</span><span class="p">,</span> <span class="n">params</span><span class="p">,</span> <span class="n">input_shape</span><span class="p">,</span> <span class="n">output_shape</span> <span class="o">=</span> <span class="n">get_network</span><span class="p">(</span>
+    <span class="n">network</span><span class="p">,</span> <span class="n">batch_size</span><span class="p">,</span> <span class="n">layout</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">,</span> <span class="n">use_sparse</span><span class="o">=</span><span class="n">use_sparse</span>
+<span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Extract tasks...&quot;</span><span class="p">)</span>
-<span class="n">mod</span><span class="p">,</span> <span class="n">params</span><span class="p">,</span> <span class="n">input_shape</span><span class="p">,</span> <span class="n">output_shape</span> <span class="o">=</span> <span class="n">get_network</span><span class="p">(</span><span class="n">network</span><span class="p">,</span> <span class="n">batch_size</span><span class="p">,</span> <span class="n">layout</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">)</span>
 <span class="n">tasks</span><span class="p">,</span> <span class="n">task_weights</span> <span class="o">=</span> <a href="../../api/python/auto_scheduler.html#tvm.auto_scheduler.extract_tasks" title="View documentation for tvm.auto_scheduler.extract_tasks"><span class="n">auto_scheduler</span><span class="o">.</span><span class="n">extract_tasks</span></a><span class="p">(</span><span class="n">mod</span><span class="p">[</span><span class="s2">&quot;main&quot;</span><span class="p">],</span> <span class="n">params</span><span class="p">,</span> <span class="n">target</span><span class="p">)</span>
 
 <span class="k">for</span> <span class="n">idx</span><span class="p">,</span> <span class="n">task</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">tasks</span><span class="p">):</span>
@@ -463,7 +479,8 @@ The task scheduler will just optimize this objective.</p>
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre>Extract tasks...
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre>Get model...
+Extract tasks...
 ========== Task 0  (workload key: [&quot;d7b65649a4dd54becea0a52aabbc5af5&quot;, 1, 1000, 1, 1000]) ==========
 placeholder = PLACEHOLDER [1, 1000]
 T_softmax_maxelem(i0) max= placeholder[i0, k]
@@ -809,7 +826,7 @@ which can be a rough estimation of the end-to-end execution time
 of the network.
 The last line also prints the total number of measurement trials,
 total time spent on auto-tuning and the id of the next task to tune.</p>
-<p>There will also be some “dmlc::Error”s errors, because the
+<p>There will also be some “tvm::Error”s errors, because the
 auto-scheduler will try some invalid schedules.
 You can safely ignore them if the tuning can continue, because these
 errors are isolated from the main process.</p>
@@ -833,15 +850,15 @@ so we can read the log file and load the best schedules.</p>
     <span class="k">with</span> <a href="../../api/python/ir.html#tvm.transform.PassContext" title="View documentation for tvm.transform.PassContext"><span class="n">tvm</span><span class="o">.</span><span class="n">transform</span><span class="o">.</span><span class="n">PassContext</span></a><span class="p">(</span><span class="n">opt_level</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">config</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;relay.backend.use_auto_scheduler&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">}):</span>
         <span class="n">lib</span> <span class="o">=</span> <a href="../../api/python/relay/index.html#tvm.relay.build" title="View documentation for tvm.relay.build"><span class="n">relay</span><span class="o">.</span><span class="n">build</span></a><span class="p">(</span><span class="n">mod</span><span class="p">,</span> <span class="n">target</span><span class="o">=</span><span class="n">target</span><span class="p">,</span> <span class="n">params</span><span class="o">=</span><span class="n">params</span><span class="p">)</span>
 
-<span class="c1"># Create graph runtime</span>
-<span class="n">ctx</span> <span class="o">=</span> <span class="n">tvm</span><span class="o">.</span><span class="n">context</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">target</span><span class="p">),</span> <span class="mi">0</span><span class="p">)</span>
-<span class="n">module</span> <span class="o">=</span> <a href="../../api/python/graph_runtime.html#tvm.contrib.graph_runtime.GraphModule" title="View documentation for tvm.contrib.graph_runtime.GraphModule"><span class="n">graph_runtime</span><span class="o">.</span><span class="n">GraphModule</span></a><span class="p">(</span><span class="n">lib</span><span class="p">[</span><span class="s2">&quot;default&quot;</span><span class="p">](</span><span class="n">ctx</span><span class="p">))</span>
+<span class="c1"># Create graph executor</span>
+<span class="n">dev</span> <span class="o">=</span> <span class="n">tvm</span><span class="o">.</span><span class="n">device</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">target</span><span class="p">),</span> <span class="mi">0</span><span class="p">)</span>
+<span class="n">module</span> <span class="o">=</span> <a href="../../api/python/graph_executor.html#tvm.contrib.graph_executor.GraphModule" title="View documentation for tvm.contrib.graph_executor.GraphModule"><span class="n">graph_executor</span><span class="o">.</span><span class="n">GraphModule</span></a><span class="p">(</span><span class="n">lib</span><span class="p">[</span><span class="s2">&quot;default&quot;</span><span class="p">](</span><span class="n">dev</span><span class="p">))</span>
 <span class="n">data_tvm</span> <span class="o">=</span> <a href="../../api/python/ndarray.html#tvm.nd.array" title="View documentation for tvm.nd.array"><span class="n">tvm</span><span class="o">.</span><span class="n">nd</span><span class="o">.</span><span class="n">array</span></a><span class="p">((</span><a href="https://numpy.org/doc/stable/reference/random/generated/numpy.random.uniform.html#numpy.random.uniform" title="View documentation for numpy.random.uniform"><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span></a><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="n">input_shape</span><span class="p">))</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">dtype</span><span class="p">))</span>
 <span class="n">module</span><span class="o">.</span><span class="n">set_input</span><span class="p">(</span><span class="s2">&quot;data&quot;</span><span class="p">,</span> <span class="n">data_tvm</span><span class="p">)</span>
 
 <span class="c1"># Evaluate</span>
 <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Evaluate inference time cost...&quot;</span><span class="p">)</span>
-<span class="n">ftimer</span> <span class="o">=</span> <span class="n">module</span><span class="o">.</span><span class="n">module</span><span class="o">.</span><span class="n">time_evaluator</span><span class="p">(</span><span class="s2">&quot;run&quot;</span><span class="p">,</span> <span class="n">ctx</span><span class="p">,</span> <span class="n">repeat</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">min_repeat_ms</span><span class="o">=</span><span class="mi">500</span><span class="p">)</span>
+<span class="n">ftimer</span> <span class="o">=</span> <span class="n">module</span><span class="o">.</span><span class="n">module</span><span class="o">.</span><span class="n">time_evaluator</span><span class="p">(</span><span class="s2">&quot;run&quot;</span><span class="p">,</span> <span class="n">dev</span><span class="p">,</span> <span class="n">repeat</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">min_repeat_ms</span><span class="o">=</span><span class="mi">500</span><span class="p">)</span>
 <span class="n">prof_res</span> <span class="o">=</span> <a href="https://numpy.org/doc/stable/reference/generated/numpy.array.html#numpy.array" title="View documentation for numpy.array"><span class="n">np</span><span class="o">.</span><span class="n">array</span></a><span class="p">(</span><span class="n">ftimer</span><span class="p">()</span><span class="o">.</span><span class="n">results</span><span class="p">)</span> <span class="o">*</span> <span class="mi">1</span><span class="n">e3</span>  <span class="c1"># convert to millisecond</span>
 <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Mean inference time (std dev): </span><span class="si">%.2f</span><span class="s2"> ms (</span><span class="si">%.2f</span><span class="s2"> ms)&quot;</span> <span class="o">%</span> <span class="p">(</span><a href="https://numpy.org/doc/stable/reference/generated/numpy.mean.html#numpy.mean" title="View documentation for numpy.mean"><span class="n">np</span><span class="o">.</span><span class="n">mean</span></a><span class="p">(</span><span class="n">prof_res</span><span class="p">),</span> <a href="https://numpy.org/doc/stable/reference/generated/numpy.std.html#numpy.std" title="View documentation for numpy.std"><span class="n">np</span><span class="o">.</span><span class="n">std</span></a><span class="p">(</span><span class="n">prof_res</span><span class="p">)))</span>
 </pre></div>
@@ -849,7 +866,7 @@ so we can read the log file and load the best schedules.</p>
 <p class="sphx-glr-script-out">Out:</p>
 <div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre>Compile...
 Evaluate inference time cost...
-Mean inference time (std dev): 553.12 ms (0.08 ms)
+Mean inference time (std dev): 536.03 ms (2.07 ms)
 </pre></div>
 </div>
 </div>
