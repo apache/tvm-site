@@ -30,7 +30,7 @@ var searchData=
   ['nn_2eh',['nn.h',['../topi_2nn_8h.html',1,'']]],
   ['no',['No',['../classtvm_1_1relay_1_1FeatureSet.html#a68c408c752ef58b2c27802491165adbb',1,'tvm::relay::FeatureSet']]],
   ['no_5fsplit_5fat_5finner',['no_split_at_inner',['../structtvm_1_1auto__scheduler_1_1SearchPolicyKey.html#afed5c29296a457bf681517a06f684164',1,'tvm::auto_scheduler::SearchPolicyKey']]],
-  ['node',['node',['../classtvm_1_1tir_1_1AttrStmtNode.html#a7dbc9628c9f3f35deaccf0526be4f699',1,'tvm::tir::AttrStmtNode']]],
+  ['node',['node',['../structtvm_1_1relay_1_1v__info.html#a191620268c1c0950be44049bf9c3ff95',1,'tvm::relay::v_info::node()'],['../classtvm_1_1tir_1_1AttrStmtNode.html#a7dbc9628c9f3f35deaccf0526be4f699',1,'tvm::tir::AttrStmtNode::node()']]],
   ['node_2eh',['node.h',['../node_8h.html',1,'']]],
   ['nodefunctor',['NodeFunctor',['../classtvm_1_1NodeFunctor.html',1,'tvm']]],
   ['nodefunctor_3c_20r_28const_20objectref_20_26n_2c_20args_2e_2e_2e_29_3e',['NodeFunctor&lt; R(const ObjectRef &amp;n, Args...)&gt;',['../classtvm_1_1NodeFunctor_3_01R_07const_01ObjectRef_01_6n_00_01Args_8_8_8_08_4.html',1,'tvm']]],

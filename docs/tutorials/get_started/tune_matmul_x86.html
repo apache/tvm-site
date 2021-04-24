@@ -200,6 +200,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../deploy/index.html">Deploy and Integration</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../dev/how_to.html">Developer How-To Guide</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../microtvm/index.html">microTVM: TVM on bare-metal</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../errors.html">What do to when encountering TVM Errors</a></li>
 </ul>
 <p class="caption"><span class="caption-text">Tutorials</span></p>
 <ul class="current">
@@ -477,33 +478,44 @@ primfn(A_1: handle, B_1: handle, C_1: handle, out_1: handle) -&gt; ()
   buffer_map = {A_1: A, B_1: B, C_1: C, out_1: out} {
   attr [auto_scheduler_layout_transform: Pointer(float32)] &quot;storage_scope&quot; = &quot;global&quot;;
   allocate(auto_scheduler_layout_transform, float32, [1048576]) {
-    for (ax0.ax1.fused.ax2.fused: int32, 0, 64) &quot;parallel&quot; {
-      for (ax3: int32, 0, 512) {
-        for (ax5: int32, 0, 2) {
-          for (ax6: int32, 0, 16) {
-            auto_scheduler_layout_transform[((((ax0.ax1.fused.ax2.fused*16384) + (ax3*32)) + (ax5*16)) + ax6)] = (float32*)B_2[((((ax3*2048) + (ax5*1024)) + (ax0.ax1.fused.ax2.fused*16)) + ax6)]
+    for (ax0.ax1.fused.ax2.fused: int32, 0, 128) &quot;parallel&quot; {
+      for (ax4: int32, 0, 256) {
+        for (ax6: int32, 0, 4) {
+          for (ax7: int32, 0, 8) {
+            auto_scheduler_layout_transform[((((ax0.ax1.fused.ax2.fused*8192) + (ax4*32)) + (ax6*8)) + ax7)] = (float32*)B_2[((((ax4*4096) + (ax6*1024)) + (ax0.ax1.fused.ax2.fused*8)) + ax7)]
           }
         }
       }
     }
-    for (i.outer.j.outer.fused: int32, 0, 512) &quot;parallel&quot; {
-      attr [matmul: Pointer(float32)] &quot;storage_scope&quot; = &quot;global&quot;;
-      allocate(matmul, float32, [2048]) {
-        for (i.outer.outer.inner: int32, 0, 16) {
-          for (j.outer.outer.inner: int32, 0, 4) {
-            matmul[ramp(((i.outer.outer.inner*128) + (j.outer.outer.inner*16)), 1, 16)] = broadcast(0f32, 16)
-            matmul[ramp((((i.outer.outer.inner*128) + (j.outer.outer.inner*16)) + 64), 1, 16)] = broadcast(0f32, 16)
-            for (k.outer: int32, 0, 512) {
-              matmul[ramp(((i.outer.outer.inner*128) + (j.outer.outer.inner*16)), 1, 16)] = ((float32x16*)matmul[ramp(((i.outer.outer.inner*128) + (j.outer.outer.inner*16)), 1, 16)] + (broadcast((float32*)A_2[(((floordiv(i.outer.j.outer.fused, 16)*32768) + (i.outer.outer.inner*2048)) + (k.outer*2))], 16)*(float32x16*)auto_scheduler_layout_transform[ramp((((floormod(i.outer.j.outer.fused, 16)*65536) + (j.outer.outer.inner*16384)) + (k.outer*32)), 1, 16)]))
-              matmul[ramp(((i.outer.outer.inner*128) + (j.outer.outer.inner*16)), 1, 16)] = ((float32x16*)matmul[ramp(((i.outer.outer.inner*128) + (j.outer.outer.inner*16)), 1, 16)] + (broadcast((float32*)A_2[((((floordiv(i.outer.j.outer.fused, 16)*32768) + (i.outer.outer.inner*2048)) + (k.outer*2)) + 1)], 16)*(float32x16*)auto_scheduler_layout_transform[ramp(((((floormod(i.outer.j.outer.fused, 16)*65536) + (j.outer.outer.inner*16384)) + (k.outer*32)) + 16), 1, 16)]))
-              matmul[ramp((((i.outer.outer.inner*128) + (j.outer.outer.inner*16)) + 64), 1, 16)] = ((float32x16*)matmul[ramp((((i.outer.outer.inner*128) + (j.outer.outer.inner*16)) + 64), 1, 16)] + (broadcast((float32*)A_2[((((floordiv(i.outer.j.outer.fused, 16)*32768) + (i.outer.outer.inner*2048)) + (k.outer*2)) + 1024)], 16)*(float32x16*)auto_scheduler_layout_transform[ramp((((floormod(i.outer.j.outer.fused, 16)*65536) + (j.outer.outer.inner*16384)) + (k.outer*32)), 1, 16)]))
-              matmul[ramp((((i.outer.outer.inner*128) + (j.outer.outer.inner*16)) + 64), 1, 16)] = ((float32x16*)matmul[ramp((((i.outer.outer.inner*128) + (j.outer.outer.inner*16)) + 64), 1, 16)] + (broadcast((float32*)A_2[((((floordiv(i.outer.j.outer.fused, 16)*32768) + (i.outer.outer.inner*2048)) + (k.outer*2)) + 1025)], 16)*(float32x16*)auto_scheduler_layout_transform[ramp(((((floormod(i.outer.j.outer.fused, 16)*65536) + (j.outer.outer.inner*16384)) + (k.outer*32)) + 16), 1, 16)]))
-            }
+    for (i.outer.outer.j.outer.outer.fused: int32, 0, 4096) &quot;parallel&quot; {
+      attr [matmul: Pointer(float32x8)] &quot;storage_scope&quot; = &quot;global&quot;;
+      allocate(matmul, float32x8, [4]);
+      for (i.outer.inner: int32, 0, 2) {
+        for (j.outer.inner: int32, 0, 4) {
+          matmul[ramp(0, 1, 8)] = broadcast(0f32, 8)
+          matmul[ramp(8, 1, 8)] = broadcast(0f32, 8)
+          matmul[ramp(16, 1, 8)] = broadcast(0f32, 8)
+          matmul[ramp(24, 1, 8)] = broadcast(0f32, 8)
+          for (k.outer: int32, 0, 256) {
+            matmul[ramp(0, 1, 8)] = ((float32x8*)matmul[ramp(0, 1, 8)] + (broadcast((float32*)A_2[(((floordiv(i.outer.outer.j.outer.outer.fused, 32)*8192) + (i.outer.inner*4096)) + (k.outer*4))], 8)*(float32x8*)auto_scheduler_layout_transform[ramp((((floormod(i.outer.outer.j.outer.outer.fused, 32)*32768) + (j.outer.inner*8192)) + (k.outer*32)), 1, 8)]))
+            matmul[ramp(8, 1, 8)] = ((float32x8*)matmul[ramp(8, 1, 8)] + (broadcast((float32*)A_2[((((floordiv(i.outer.outer.j.outer.outer.fused, 32)*8192) + (i.outer.inner*4096)) + (k.outer*4)) + 1024)], 8)*(float32x8*)auto_scheduler_layout_transform[ramp((((floormod(i.outer.outer.j.outer.outer.fused, 32)*32768) + (j.outer.inner*8192)) + (k.outer*32)), 1, 8)]))
+            matmul[ramp(16, 1, 8)] = ((float32x8*)matmul[ramp(16, 1, 8)] + (broadcast((float32*)A_2[((((floordiv(i.outer.outer.j.outer.outer.fused, 32)*8192) + (i.outer.inner*4096)) + (k.outer*4)) + 2048)], 8)*(float32x8*)auto_scheduler_layout_transform[ramp((((floormod(i.outer.outer.j.outer.outer.fused, 32)*32768) + (j.outer.inner*8192)) + (k.outer*32)), 1, 8)]))
+            matmul[ramp(24, 1, 8)] = ((float32x8*)matmul[ramp(24, 1, 8)] + (broadcast((float32*)A_2[((((floordiv(i.outer.outer.j.outer.outer.fused, 32)*8192) + (i.outer.inner*4096)) + (k.outer*4)) + 3072)], 8)*(float32x8*)auto_scheduler_layout_transform[ramp((((floormod(i.outer.outer.j.outer.outer.fused, 32)*32768) + (j.outer.inner*8192)) + (k.outer*32)), 1, 8)]))
+            matmul[ramp(0, 1, 8)] = ((float32x8*)matmul[ramp(0, 1, 8)] + (broadcast((float32*)A_2[((((floordiv(i.outer.outer.j.outer.outer.fused, 32)*8192) + (i.outer.inner*4096)) + (k.outer*4)) + 1)], 8)*(float32x8*)auto_scheduler_layout_transform[ramp(((((floormod(i.outer.outer.j.outer.outer.fused, 32)*32768) + (j.outer.inner*8192)) + (k.outer*32)) + 8), 1, 8)]))
+            matmul[ramp(8, 1, 8)] = ((float32x8*)matmul[ramp(8, 1, 8)] + (broadcast((float32*)A_2[((((floordiv(i.outer.outer.j.outer.outer.fused, 32)*8192) + (i.outer.inner*4096)) + (k.outer*4)) + 1025)], 8)*(float32x8*)auto_scheduler_layout_transform[ramp(((((floormod(i.outer.outer.j.outer.outer.fused, 32)*32768) + (j.outer.inner*8192)) + (k.outer*32)) + 8), 1, 8)]))
+            matmul[ramp(16, 1, 8)] = ((float32x8*)matmul[ramp(16, 1, 8)] + (broadcast((float32*)A_2[((((floordiv(i.outer.outer.j.outer.outer.fused, 32)*8192) + (i.outer.inner*4096)) + (k.outer*4)) + 2049)], 8)*(float32x8*)auto_scheduler_layout_transform[ramp(((((floormod(i.outer.outer.j.outer.outer.fused, 32)*32768) + (j.outer.inner*8192)) + (k.outer*32)) + 8), 1, 8)]))
+            matmul[ramp(24, 1, 8)] = ((float32x8*)matmul[ramp(24, 1, 8)] + (broadcast((float32*)A_2[((((floordiv(i.outer.outer.j.outer.outer.fused, 32)*8192) + (i.outer.inner*4096)) + (k.outer*4)) + 3073)], 8)*(float32x8*)auto_scheduler_layout_transform[ramp(((((floormod(i.outer.outer.j.outer.outer.fused, 32)*32768) + (j.outer.inner*8192)) + (k.outer*32)) + 8), 1, 8)]))
+            matmul[ramp(0, 1, 8)] = ((float32x8*)matmul[ramp(0, 1, 8)] + (broadcast((float32*)A_2[((((floordiv(i.outer.outer.j.outer.outer.fused, 32)*8192) + (i.outer.inner*4096)) + (k.outer*4)) + 2)], 8)*(float32x8*)auto_scheduler_layout_transform[ramp(((((floormod(i.outer.outer.j.outer.outer.fused, 32)*32768) + (j.outer.inner*8192)) + (k.outer*32)) + 16), 1, 8)]))
+            matmul[ramp(8, 1, 8)] = ((float32x8*)matmul[ramp(8, 1, 8)] + (broadcast((float32*)A_2[((((floordiv(i.outer.outer.j.outer.outer.fused, 32)*8192) + (i.outer.inner*4096)) + (k.outer*4)) + 1026)], 8)*(float32x8*)auto_scheduler_layout_transform[ramp(((((floormod(i.outer.outer.j.outer.outer.fused, 32)*32768) + (j.outer.inner*8192)) + (k.outer*32)) + 16), 1, 8)]))
+            matmul[ramp(16, 1, 8)] = ((float32x8*)matmul[ramp(16, 1, 8)] + (broadcast((float32*)A_2[((((floordiv(i.outer.outer.j.outer.outer.fused, 32)*8192) + (i.outer.inner*4096)) + (k.outer*4)) + 2050)], 8)*(float32x8*)auto_scheduler_layout_transform[ramp(((((floormod(i.outer.outer.j.outer.outer.fused, 32)*32768) + (j.outer.inner*8192)) + (k.outer*32)) + 16), 1, 8)]))
+            matmul[ramp(24, 1, 8)] = ((float32x8*)matmul[ramp(24, 1, 8)] + (broadcast((float32*)A_2[((((floordiv(i.outer.outer.j.outer.outer.fused, 32)*8192) + (i.outer.inner*4096)) + (k.outer*4)) + 3074)], 8)*(float32x8*)auto_scheduler_layout_transform[ramp(((((floormod(i.outer.outer.j.outer.outer.fused, 32)*32768) + (j.outer.inner*8192)) + (k.outer*32)) + 16), 1, 8)]))
+            matmul[ramp(0, 1, 8)] = ((float32x8*)matmul[ramp(0, 1, 8)] + (broadcast((float32*)A_2[((((floordiv(i.outer.outer.j.outer.outer.fused, 32)*8192) + (i.outer.inner*4096)) + (k.outer*4)) + 3)], 8)*(float32x8*)auto_scheduler_layout_transform[ramp(((((floormod(i.outer.outer.j.outer.outer.fused, 32)*32768) + (j.outer.inner*8192)) + (k.outer*32)) + 24), 1, 8)]))
+            matmul[ramp(8, 1, 8)] = ((float32x8*)matmul[ramp(8, 1, 8)] + (broadcast((float32*)A_2[((((floordiv(i.outer.outer.j.outer.outer.fused, 32)*8192) + (i.outer.inner*4096)) + (k.outer*4)) + 1027)], 8)*(float32x8*)auto_scheduler_layout_transform[ramp(((((floormod(i.outer.outer.j.outer.outer.fused, 32)*32768) + (j.outer.inner*8192)) + (k.outer*32)) + 24), 1, 8)]))
+            matmul[ramp(16, 1, 8)] = ((float32x8*)matmul[ramp(16, 1, 8)] + (broadcast((float32*)A_2[((((floordiv(i.outer.outer.j.outer.outer.fused, 32)*8192) + (i.outer.inner*4096)) + (k.outer*4)) + 2051)], 8)*(float32x8*)auto_scheduler_layout_transform[ramp(((((floormod(i.outer.outer.j.outer.outer.fused, 32)*32768) + (j.outer.inner*8192)) + (k.outer*32)) + 24), 1, 8)]))
+            matmul[ramp(24, 1, 8)] = ((float32x8*)matmul[ramp(24, 1, 8)] + (broadcast((float32*)A_2[((((floordiv(i.outer.outer.j.outer.outer.fused, 32)*8192) + (i.outer.inner*4096)) + (k.outer*4)) + 3075)], 8)*(float32x8*)auto_scheduler_layout_transform[ramp(((((floormod(i.outer.outer.j.outer.outer.fused, 32)*32768) + (j.outer.inner*8192)) + (k.outer*32)) + 24), 1, 8)]))
           }
-        }
-        for (i.inner: int32, 0, 32) {
-          for (j.inner: int32, 0, 64) {
-            out_2[((((floordiv(i.outer.j.outer.fused, 16)*32768) + (i.inner*1024)) + (floormod(i.outer.j.outer.fused, 16)*64)) + j.inner)] = ((float32*)matmul[((i.inner*64) + j.inner)] + (float32*)C_2[((((floordiv(i.outer.j.outer.fused, 16)*32768) + (i.inner*1024)) + (floormod(i.outer.j.outer.fused, 16)*64)) + j.inner)])
+          for (i.inner: int32, 0, 4) {
+            out_2[ramp((((((floordiv(i.outer.outer.j.outer.outer.fused, 32)*8192) + (i.outer.inner*4096)) + (i.inner*1024)) + (floormod(i.outer.outer.j.outer.outer.fused, 32)*32)) + (j.outer.inner*8)), 1, 8)] = ((float32x8*)matmul[ramp((i.inner*8), 1, 8)] + (float32x8*)C_2[ramp((((((floordiv(i.outer.outer.j.outer.outer.fused, 32)*8192) + (i.outer.inner*4096)) + (i.inner*1024)) + (floormod(i.outer.outer.j.outer.outer.fused, 32)*32)) + (j.outer.inner*8)), 1, 8)])
           }
         }
       }
@@ -541,7 +553,7 @@ primfn(A_1: handle, B_1: handle, C_1: handle, out_1: handle) -&gt; ()
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre>Execution time of this operator: 43.853 ms
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre>Execution time of this operator: 22.315 ms
 </pre></div>
 </div>
 </div>
@@ -561,23 +573,26 @@ the behavior of the auto-scheduler.</p>
 <div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre>Equivalent python schedule:
 matmul_i, matmul_j, matmul_k = tuple(matmul.op.axis) + tuple(matmul.op.reduce_axis)
 out_i, out_j = tuple(out.op.axis) + tuple(out.op.reduce_axis)
-matmul_i_o_i, matmul_i_i = s[matmul].split(matmul_i, factor=1)
-matmul_i_o_o_i, matmul_i_o_i = s[matmul].split(matmul_i_o_i, factor=2)
-matmul_i_o_o_o, matmul_i_o_o_i = s[matmul].split(matmul_i_o_o_i, factor=16)
-matmul_j_o_i, matmul_j_i = s[matmul].split(matmul_j, factor=16)
+matmul_i_o_i, matmul_i_i = s[matmul].split(matmul_i, factor=4)
+matmul_i_o_o_i, matmul_i_o_i = s[matmul].split(matmul_i_o_i, factor=1)
+matmul_i_o_o_o, matmul_i_o_o_i = s[matmul].split(matmul_i_o_o_i, factor=2)
+matmul_j_o_i, matmul_j_i = s[matmul].split(matmul_j, factor=8)
 matmul_j_o_o_i, matmul_j_o_i = s[matmul].split(matmul_j_o_i, factor=1)
 matmul_j_o_o_o, matmul_j_o_o_i = s[matmul].split(matmul_j_o_o_i, factor=4)
-matmul_k_o, matmul_k_i = s[matmul].split(matmul_k, factor=2)
+matmul_k_o, matmul_k_i = s[matmul].split(matmul_k, factor=4)
 s[matmul].reorder(matmul_i_o_o_o, matmul_j_o_o_o, matmul_i_o_o_i, matmul_j_o_o_i, matmul_k_o, matmul_i_o_i, matmul_j_o_i, matmul_k_i, matmul_i_i, matmul_j_i)
-out_i_o, out_i_i = s[out].split(out_i, factor=32)
-out_j_o, out_j_i = s[out].split(out_j, factor=64)
-s[out].reorder(out_i_o, out_j_o, out_i_i, out_j_i)
-s[matmul].compute_at(s[out], out_j_o)
-out_i_o_j_o_fused = s[out].fuse(out_i_o, out_j_o)
-s[out].parallel(out_i_o_j_o_fused)
-s[matmul].pragma(matmul_i_o_o_o, &quot;auto_unroll_max_step&quot;, 64)
+out_i_o_i, out_i_i = s[out].split(out_i, factor=4)
+out_i_o_o, out_i_o_i = s[out].split(out_i_o_i, factor=2)
+out_j_o_i, out_j_i = s[out].split(out_j, factor=8)
+out_j_o_o, out_j_o_i = s[out].split(out_j_o_i, factor=4)
+s[out].reorder(out_i_o_o, out_j_o_o, out_i_o_i, out_j_o_i, out_i_i, out_j_i)
+s[matmul].compute_at(s[out], out_j_o_i)
+out_i_o_o_j_o_o_fused = s[out].fuse(out_i_o_o, out_j_o_o)
+s[out].parallel(out_i_o_o_j_o_o_fused)
+s[matmul].pragma(matmul_i_o_o_o, &quot;auto_unroll_max_step&quot;, 512)
 s[matmul].pragma(matmul_i_o_o_o, &quot;unroll_explicit&quot;, True)
 s[matmul].vectorize(matmul_j_i)
+s[out].vectorize(out_j_i)
 </pre></div>
 </div>
 <p>A more complicated example is to resume the search.  In this case, we need to

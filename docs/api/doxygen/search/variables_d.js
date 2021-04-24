@@ -10,7 +10,7 @@ var searchData=
   ['needs_5fmulti_5flevel_5ftiling',['needs_multi_level_tiling',['../classtvm_1_1auto__scheduler_1_1AccessAnalyzerNode.html#abb94dd7d280540709c63c9522b002df4',1,'tvm::auto_scheduler::AccessAnalyzerNode']]],
   ['newshape',['newshape',['../structtvm_1_1relay_1_1ReshapeAttrs.html#a9bca32c3acff2ed8fd6bc63a50f82051',1,'tvm::relay::ReshapeAttrs::newshape()'],['../structtvm_1_1relay_1_1ReshapeTensorAttrs.html#aaacd1ab5124b54316a9e1f3ef5a5ec3c',1,'tvm::relay::ReshapeTensorAttrs::newshape()'],['../structtvm_1_1runtime_1_1vm_1_1Instruction.html#a5602ccf14b6bd90e33a38c6ab82b0b57',1,'tvm::runtime::vm::Instruction::newshape()']]],
   ['no_5fsplit_5fat_5finner',['no_split_at_inner',['../structtvm_1_1auto__scheduler_1_1SearchPolicyKey.html#afed5c29296a457bf681517a06f684164',1,'tvm::auto_scheduler::SearchPolicyKey']]],
-  ['node',['node',['../classtvm_1_1tir_1_1AttrStmtNode.html#a7dbc9628c9f3f35deaccf0526be4f699',1,'tvm::tir::AttrStmtNode']]],
+  ['node',['node',['../structtvm_1_1relay_1_1v__info.html#a191620268c1c0950be44049bf9c3ff95',1,'tvm::relay::v_info::node()'],['../classtvm_1_1tir_1_1AttrStmtNode.html#a7dbc9628c9f3f35deaccf0526be4f699',1,'tvm::tir::AttrStmtNode::node()']]],
   ['nparts',['nparts',['../classtvm_1_1te_1_1SplitNode.html#a4e809bca962d95b7fab6a98f1617a05c',1,'tvm::te::SplitNode']]],
   ['nullopt',['NullOpt',['../namespacetvm.html#aae7034e3e41c18e7fb78ff32bfc6a318',1,'tvm']]],
   ['num_5fargs',['num_args',['../classtvm_1_1runtime_1_1TVMArgs.html#afec79c909bdf103a01cdb4732c0afdf3',1,'tvm::runtime::TVMArgs::num_args()'],['../structtvm_1_1runtime_1_1vm_1_1Instruction.html#a5d98a3b5b50e6fa9029d05f741c0bce9',1,'tvm::runtime::vm::Instruction::num_args()']]],

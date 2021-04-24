@@ -200,15 +200,20 @@
 <li class="toctree-l1"><a class="reference internal" href="../deploy/index.html">Deploy and Integration</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="how_to.html">Developer How-To Guide</a><ul class="current">
 <li class="toctree-l2 current"><a class="current reference internal" href="#">Adding an Operator to Relay</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#registering-an-operator">Registering an Operator</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#creating-a-call-node">Creating a Call Node</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#including-a-python-api-hook">Including a Python API Hook</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#gradient-operators">Gradient Operators</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#defining-an-attribute-node">1. Defining an Attribute Node</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#writing-a-type-relation">2. Writing a Type Relation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#relating-the-arity-and-attributes-to-an-operation">3. Relating the Arity and Attributes to an Operation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#defining-the-compute-of-the-operation">4. Defining the Compute of the Operation</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#hooking-up-compute-and-strategy-with-relay">5. Hooking up Compute and Strategy with Relay</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#creating-a-relay-call-node-and-exposing-a-python-hook">6. Creating a Relay Call Node and Exposing a Python Hook</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#including-a-cleaner-python-api-hook">7. Including a Cleaner Python API Hook</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#writing-unit-tests">8. Writing Unit Tests!</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#other-topics">Other Topics</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#gradient-operators">Gradient Operators</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#adding-a-gradient-in-python">Adding a Gradient in Python</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#adding-a-gradient-in-c">Adding a Gradient in C++</a></li>
 </ul>
 </li>
-<li class="toctree-l3"><a class="reference internal" href="#summary">Summary</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="relay_add_pass.html">Adding a Compiler Pass to Relay</a></li>
@@ -217,6 +222,7 @@
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../microtvm/index.html">microTVM: TVM on bare-metal</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../errors.html">What do to when encountering TVM Errors</a></li>
 </ul>
 <p class="caption"><span class="caption-text">Tutorials</span></p>
 <ul>
@@ -326,61 +332,262 @@
             
   <div class="section" id="adding-an-operator-to-relay">
 <span id="relay-add-op"></span><h1>Adding an Operator to Relay<a class="headerlink" href="#adding-an-operator-to-relay" title="Permalink to this headline">¶</a></h1>
-<p>In order to use TVM operators from within the Relay IR, the
-operators need to be registered in Relay in order to ensure
-that they will be integrated into Relay’s type system.</p>
-<p>Registering an operator requires three steps:</p>
-<ul class="simple">
-<li><p>Using the <code class="docutils literal notranslate"><span class="pre">RELAY_REGISTER_OP</span></code> macro in C++ to register the operator’s arity and type information</p></li>
-<li><p>Defining a C++ function to produce a call node for the operator and registering a Python API hook for the function</p></li>
+<p>In this document we will go over the steps needed to register a new TVM operator
+in Relay. We will be following this PR which adds a <a class="reference external" href="https://github.com/apache/tvm/pull/7722">cumulative product</a> operation as an example.
+The PR itself builds upon another PR which adds a <a class="reference external" href="https://github.com/apache/tvm/pull/7334">cumulative sum</a> operation.</p>
+<p>Registering a new operator requires a few steps:</p>
+<ol class="arabic simple">
+<li><p>Add an attribute node declaring fixed arguments which are known at compile time</p></li>
+<li><p>Write a type relation for your operation to integrate into Relay’s type system.</p></li>
+<li><p>Use the <code class="docutils literal notranslate"><span class="pre">RELAY_REGISTER_OP</span></code> macro in C++ to register the operator’s arity, type, and other hints for the compiler</p></li>
+<li><p>Write how the operator is computed</p></li>
+<li><p>Register the compute, schedule with the relay operator</p></li>
+<li><p>Define a C++ function to produce a call node for the operator and registering a Python API hook for the function</p></li>
 <li><p>Wrapping the above Python API hook in a neater interface</p></li>
-</ul>
-<p>The file <code class="docutils literal notranslate"><span class="pre">src/relay/op/tensor/binary.cc</span></code> provides
-examples of the first two steps, while
-<code class="docutils literal notranslate"><span class="pre">python/tvm/relay/op/tensor.py</span></code> gives examples of the
-last.</p>
-<div class="section" id="registering-an-operator">
-<h2>Registering an Operator<a class="headerlink" href="#registering-an-operator" title="Permalink to this headline">¶</a></h2>
-<p>TVM already has an operator registry, but Relay cannot properly
-incorporate TVM operators without additional type information.</p>
+<li><p>Writing tests for the new relay operator</p></li>
+</ol>
+<div class="section" id="defining-an-attribute-node">
+<h2>1. Defining an Attribute Node<a class="headerlink" href="#defining-an-attribute-node" title="Permalink to this headline">¶</a></h2>
+<p>Attributes are fixed arguments which are supposed to be known at compile time. The stride and dilation of a convolution
+operator would be an appropriate example of fields which might belong in an attribute node for a convolution operator.</p>
+<p>Attributes should be defined in a file within the folder <a class="reference external" href="https://github.com/apache/tvm/tree/main/include/tvm/relay/attrs">include/tvm/relay/attrs/</a>.</p>
+<p>Ultimately we want to create an operator whose interface can be seen clearly in the final python interface:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span class="k">def</span> <span class="nf">cumprod</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">exclusive</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Numpy style cumprod op. Return the cumulative inclusive product of the elements along</span>
+<span class="sd">    a given axis.</span>
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    data : relay.Expr</span>
+<span class="sd">        The input data to the operator.</span>
+<span class="sd">    axis : int, optional</span>
+<span class="sd">        Axis along which the cumulative product is computed. The default (None) is to compute</span>
+<span class="sd">        the cumprod over the flattened array.</span>
+<span class="sd">    dtype : string, optional</span>
+<span class="sd">        Type of the returned array and of the accumulator in which the elements are multiplied.</span>
+<span class="sd">        If dtype is not specified, it defaults to the dtype of data.</span>
+<span class="sd">    exclusive : bool, optional</span>
+<span class="sd">        If true will return exclusive product in which the first element is not</span>
+<span class="sd">        included. In other terms, if true, the j-th output element would be</span>
+<span class="sd">        the product of the first (j-1) elements. Otherwise, it would be the product of</span>
+<span class="sd">        the first j elements. The product of zero elements will be 1.</span>
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    result : relay.Expr</span>
+<span class="sd">        The result has the same size as data, and the same shape as data if axis is not None.</span>
+<span class="sd">        If axis is None, the result is a 1-d array.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+</pre></div>
+</div>
+<p>A similiar interface exists for <code class="docutils literal notranslate"><span class="pre">cumsum()</span></code>.</p>
+<p>Therefore, when defining our attributes in <code class="docutils literal notranslate"><span class="pre">include/tvm/relay/attrs/transform.h</span></code> we choose the axis,
+accumulation dtype, and exclusivity of the operation as appropriate fields for the struct.</p>
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span class="cm">/*! \brief Attributes used in cumsum and cumprod operator */</span>
+<span class="k">struct</span> <span class="nl">ScanopAttrs</span> <span class="p">:</span> <span class="k">public</span> <span class="n">tvm</span><span class="o">::</span><span class="n">AttrsNode</span><span class="o">&lt;</span><span class="n">ScanopAttrs</span><span class="o">&gt;</span> <span class="p">{</span>
+  <span class="n">Integer</span> <span class="n">axis</span><span class="p">;</span>
+  <span class="n">DataType</span> <span class="n">dtype</span><span class="p">;</span>
+  <span class="n">Bool</span> <span class="n">exclusive</span> <span class="o">=</span> <span class="n">Bool</span><span class="p">(</span><span class="nb">false</span><span class="p">);</span>
+  <span class="n">TVM_DECLARE_ATTRS</span><span class="p">(</span><span class="n">ScanopAttrs</span><span class="p">,</span> <span class="s">&quot;relay.attrs.ScanopAttrs&quot;</span><span class="p">)</span> <span class="p">{</span>
+    <span class="n">TVM_ATTR_FIELD</span><span class="p">(</span><span class="n">axis</span><span class="p">).</span><span class="n">describe</span><span class="p">(</span><span class="s">&quot;The axis to operate over&quot;</span><span class="p">).</span><span class="n">set_default</span><span class="p">(</span><span class="n">NullValue</span><span class="o">&lt;</span><span class="n">Integer</span><span class="o">&gt;</span><span class="p">());</span>
+    <span class="n">TVM_ATTR_FIELD</span><span class="p">(</span><span class="n">dtype</span><span class="p">).</span><span class="n">describe</span><span class="p">(</span><span class="s">&quot;Output data type&quot;</span><span class="p">).</span><span class="n">set_default</span><span class="p">(</span><span class="n">NullValue</span><span class="o">&lt;</span><span class="n">DataType</span><span class="o">&gt;</span><span class="p">());</span>
+    <span class="n">TVM_ATTR_FIELD</span><span class="p">(</span><span class="n">exclusive</span><span class="p">)</span>
+        <span class="p">.</span><span class="n">describe</span><span class="p">(</span><span class="s">&quot;The first element is not included&quot;</span><span class="p">)</span>
+        <span class="p">.</span><span class="n">set_default</span><span class="p">(</span><span class="n">Bool</span><span class="p">(</span><span class="nb">false</span><span class="p">));</span>
+  <span class="p">}</span>
+<span class="p">};</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="writing-a-type-relation">
+<h2>2. Writing a Type Relation<a class="headerlink" href="#writing-a-type-relation" title="Permalink to this headline">¶</a></h2>
 <p>To allow for flexibility in registering operators and greater
 expressivity and granularity in expressing types in Relay, operators
 are typed using relations between input and output types. These relations
 are represented as functions that take in a list of input types and
 output types (any of these types may be incomplete) and return a list
-of input and output types that satisfies the relation. Essentially, a
+of input and output types that satisfies the relation. This includes shape
+information which can be determined statically at compile time. Essentially, a
 relation for an operator can enforce all the necessary typing rules
 (namely by inspecting the input types) in addition to computing the
 output type.</p>
-<p>For example, see <code class="docutils literal notranslate"><span class="pre">src/relay/op/type_relations.h</span></code> and their
-implementations. E.g., <code class="docutils literal notranslate"><span class="pre">BroadcastRel</span></code> takes two input types and an
-output type, checks that they are all tensor types with the same underlying
-data type, and finally ensures that the shape of the output type is the
-broadcast of the input types’ shapes.</p>
-<p>It may be necessary to add another type relation to <code class="docutils literal notranslate"><span class="pre">type_relations.h</span></code>
-if the existing ones do not capture the behavior of the desired operator.</p>
-<p>The <code class="docutils literal notranslate"><span class="pre">RELAY_REGISTER_OP</span></code> macro in C++ allows a developer
+<p>Type relation for the cumulative product and sum operators can be found in
+<code class="docutils literal notranslate"><span class="pre">src/relay/op/tensor/transform.cc</span></code>:</p>
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span class="n">TVM_REGISTER_NODE_TYPE</span><span class="p">(</span><span class="n">ScanopAttrs</span><span class="p">);</span>
+<span class="kt">bool</span> <span class="nf">ScanopRel</span><span class="p">(</span><span class="k">const</span> <span class="n">Array</span><span class="o">&lt;</span><span class="n">Type</span><span class="o">&gt;&amp;</span> <span class="n">types</span><span class="p">,</span> <span class="kt">int</span> <span class="n">num_inputs</span><span class="p">,</span> <span class="k">const</span> <span class="n">Attrs</span><span class="o">&amp;</span> <span class="n">attrs</span><span class="p">,</span> <span class="k">const</span> <span class="n">TypeReporter</span><span class="o">&amp;</span> <span class="n">reporter</span><span class="p">)</span> <span class="p">{</span>
+    <span class="c1">// types: [data, output]</span>
+    <span class="n">ICHECK_EQ</span><span class="p">(</span><span class="n">types</span><span class="p">.</span><span class="n">size</span><span class="p">(),</span> <span class="mi">2</span><span class="p">)</span> <span class="o">&lt;&lt;</span> <span class="s">&quot;Expects two types, one for the input and another for the output&quot;</span><span class="p">;</span>
+    <span class="k">const</span> <span class="k">auto</span><span class="o">*</span> <span class="n">data</span> <span class="o">=</span> <span class="n">types</span><span class="p">[</span><span class="mi">0</span><span class="p">].</span><span class="n">as</span><span class="o">&lt;</span><span class="n">TensorTypeNode</span><span class="o">&gt;</span><span class="p">();</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">data</span> <span class="o">==</span> <span class="k">nullptr</span><span class="p">)</span> <span class="p">{</span>
+        <span class="n">ICHECK</span><span class="p">(</span><span class="n">types</span><span class="p">[</span><span class="mi">0</span><span class="p">].</span><span class="n">as</span><span class="o">&lt;</span><span class="n">IncompleteTypeNode</span><span class="o">&gt;</span><span class="p">())</span>
+        <span class="o">&lt;&lt;</span> <span class="s">&quot;Scanop: expect input type to be TensorType but get &quot;</span> <span class="o">&lt;&lt;</span> <span class="n">types</span><span class="p">[</span><span class="mi">0</span><span class="p">];</span>
+        <span class="k">return</span> <span class="nb">false</span><span class="p">;</span>
+    <span class="p">}</span>
+
+    <span class="k">const</span> <span class="k">auto</span><span class="o">*</span> <span class="n">param</span> <span class="o">=</span> <span class="n">attrs</span><span class="p">.</span><span class="n">as</span><span class="o">&lt;</span><span class="n">ScanopAttrs</span><span class="o">&gt;</span><span class="p">();</span>
+
+    <span class="k">auto</span> <span class="n">dtype</span> <span class="o">=</span> <span class="n">param</span><span class="o">-&gt;</span><span class="n">dtype</span><span class="p">;</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">dtype</span><span class="p">.</span><span class="n">is_void</span><span class="p">())</span> <span class="p">{</span>
+        <span class="n">dtype</span> <span class="o">=</span> <span class="n">data</span><span class="o">-&gt;</span><span class="n">dtype</span><span class="p">;</span>
+    <span class="p">}</span>
+
+    <span class="k">if</span> <span class="p">(</span><span class="n">param</span><span class="o">-&gt;</span><span class="n">axis</span><span class="p">.</span><span class="n">defined</span><span class="p">())</span> <span class="p">{</span>
+        <span class="n">reporter</span><span class="o">-&gt;</span><span class="n">Assign</span><span class="p">(</span><span class="n">types</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">TensorType</span><span class="p">(</span><span class="n">data</span><span class="o">-&gt;</span><span class="n">shape</span><span class="p">,</span> <span class="n">dtype</span><span class="p">));</span>
+    <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+        <span class="k">auto</span> <span class="n">prod</span> <span class="o">=</span> <span class="n">data</span><span class="o">-&gt;</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">];</span>
+        <span class="k">for</span> <span class="p">(</span><span class="kt">size_t</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">data</span><span class="o">-&gt;</span><span class="n">shape</span><span class="p">.</span><span class="n">size</span><span class="p">();</span> <span class="o">++</span><span class="n">i</span><span class="p">)</span> <span class="p">{</span>
+            <span class="n">prod</span> <span class="o">=</span> <span class="n">prod</span> <span class="o">*</span> <span class="n">data</span><span class="o">-&gt;</span><span class="n">shape</span><span class="p">[</span><span class="n">i</span><span class="p">];</span>
+        <span class="p">}</span>
+        <span class="n">reporter</span><span class="o">-&gt;</span><span class="n">Assign</span><span class="p">(</span><span class="n">types</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">TensorType</span><span class="p">({</span><span class="n">prod</span><span class="p">},</span> <span class="n">dtype</span><span class="p">));</span>
+    <span class="p">}</span>
+
+    <span class="k">return</span> <span class="nb">true</span><span class="p">;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="relating-the-arity-and-attributes-to-an-operation">
+<h2>3. Relating the Arity and Attributes to an Operation<a class="headerlink" href="#relating-the-arity-and-attributes-to-an-operation" title="Permalink to this headline">¶</a></h2>
+<p>We then register the name of our new ops and annotate them with the calling interface.
+The <code class="docutils literal notranslate"><span class="pre">RELAY_REGISTER_OP</span></code> macro in C++ allows a developer
 to specify the following information about an operator in Relay:</p>
 <ul class="simple">
 <li><p>Arity (number of arguments)</p></li>
 <li><p>Names and descriptions for positional arguments</p></li>
 <li><p>Support level (1 indicates an internal intrinsic; higher numbers indicate less integral or externally supported operators)</p></li>
 <li><p>A type relation for the operator</p></li>
+<li><p>Other annotations useful when optimizing the operation.</p></li>
 </ul>
-<p>The below example is from <code class="docutils literal notranslate"><span class="pre">binary.cc</span></code> and uses a broadcasting
-add for tensors:</p>
-<div class="highlight-c notranslate"><div class="highlight"><pre><span class="n">RELAY_REGISTER_OP</span><span class="p">(</span><span class="s">&quot;add&quot;</span><span class="p">)</span>
-    <span class="p">.</span><span class="n">set_num_inputs</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
-    <span class="p">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s">&quot;lhs&quot;</span><span class="p">,</span> <span class="s">&quot;Tensor&quot;</span><span class="p">,</span> <span class="s">&quot;The left hand side tensor.&quot;</span><span class="p">)</span>
-    <span class="p">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s">&quot;rhs&quot;</span><span class="p">,</span> <span class="s">&quot;Tensor&quot;</span><span class="p">,</span> <span class="s">&quot;The right hand side tensor.&quot;</span><span class="p">)</span>
-    <span class="p">.</span><span class="n">set_support_level</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
-    <span class="p">.</span><span class="n">add_type_rel</span><span class="p">(</span><span class="s">&quot;Broadcast&quot;</span><span class="p">,</span> <span class="n">BroadcastRel</span><span class="p">);</span>
+<p>Once again we add this to <code class="docutils literal notranslate"><span class="pre">src/relay/op/tensor/transform.cc</span></code>:</p>
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span class="n">RELAY_REGISTER_OP</span><span class="p">(</span><span class="s">&quot;cumsum&quot;</span><span class="p">)</span>
+    <span class="p">.</span><span class="n">describe</span><span class="p">(</span>
+        <span class="n">R</span><span class="s">&quot;doc(Return the cumulative sum of the elements along a given axis.)doc&quot;</span> <span class="n">TVM_ADD_FILELINE</span><span class="p">)</span>
+    <span class="p">.</span><span class="n">set_num_inputs</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+    <span class="p">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s">&quot;data&quot;</span><span class="p">,</span> <span class="s">&quot;Tensor&quot;</span><span class="p">,</span> <span class="s">&quot;The input tensor.&quot;</span><span class="p">)</span>
+    <span class="p">.</span><span class="n">set_support_level</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+    <span class="p">.</span><span class="n">add_type_rel</span><span class="p">(</span><span class="s">&quot;Cumsum&quot;</span><span class="p">,</span> <span class="n">ScanopRel</span><span class="p">)</span>
+    <span class="p">.</span><span class="n">set_attr</span><span class="o">&lt;</span><span class="n">TOpPattern</span><span class="o">&gt;</span><span class="p">(</span><span class="s">&quot;TOpPattern&quot;</span><span class="p">,</span> <span class="n">kOpaque</span><span class="p">);</span>
+
+<span class="n">RELAY_REGISTER_OP</span><span class="p">(</span><span class="s">&quot;cumprod&quot;</span><span class="p">)</span>
+    <span class="p">.</span><span class="n">describe</span><span class="p">(</span>
+        <span class="n">R</span><span class="s">&quot;doc(Return the cumulative product of the elements along a given axis.)doc&quot;</span> <span class="n">TVM_ADD_FILELINE</span><span class="p">)</span>
+    <span class="p">.</span><span class="n">set_num_inputs</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+    <span class="p">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s">&quot;data&quot;</span><span class="p">,</span> <span class="s">&quot;Tensor&quot;</span><span class="p">,</span> <span class="s">&quot;The input tensor.&quot;</span><span class="p">)</span>
+    <span class="p">.</span><span class="n">set_support_level</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+    <span class="p">.</span><span class="n">add_type_rel</span><span class="p">(</span><span class="s">&quot;Cumprod&quot;</span><span class="p">,</span> <span class="n">ScanopRel</span><span class="p">)</span>
+    <span class="p">.</span><span class="n">set_attr</span><span class="o">&lt;</span><span class="n">TOpPattern</span><span class="o">&gt;</span><span class="p">(</span><span class="s">&quot;TOpPattern&quot;</span><span class="p">,</span> <span class="n">kOpaque</span><span class="p">);</span>
 </pre></div>
 </div>
+<p>In this case the <code class="docutils literal notranslate"><span class="pre">TOpPattern</span></code> is a hint to the compiler on the pattern of computation the operator does, which might be
+useful for fusing operators. <code class="docutils literal notranslate"><span class="pre">kOpaque</span></code> tells TVM to not bother trying to fuse this operator.</p>
 </div>
-<div class="section" id="creating-a-call-node">
-<h2>Creating a Call Node<a class="headerlink" href="#creating-a-call-node" title="Permalink to this headline">¶</a></h2>
-<p>This step requires simply writing a function that takes
+<div class="section" id="defining-the-compute-of-the-operation">
+<h2>4. Defining the Compute of the Operation<a class="headerlink" href="#defining-the-compute-of-the-operation" title="Permalink to this headline">¶</a></h2>
+<p>While we’ve now defined the interface for our operations we still need to define
+how to perform the actual calculations for cumulative sum and product.</p>
+<p>Writing this code is outside the scope of the tutorial. For now, we assume
+we have a well tested implementation for the operation’s compute. For
+more details on how to do this, we recommend looking up the tutorials
+on <a class="reference external" href="https://tvm.apache.org/docs/tutorials/get_started/tensor_expr_get_started.html">tensor expressions</a>, <a class="reference external" href="https://tvm.apache.org/docs/tutorials/topi/intro_topi.html">TVM’s operator inventory (topi)</a> and looking at the
+example cumulative sum and product implementations found in <a class="reference external" href="https://github.com/apache/tvm/blob/main/python/tvm/topi/scan.py">python/tvm/topi/scan.py</a>
+and the gpu versions in <a class="reference external" href="https://github.com/apache/tvm/blob/main/python/tvm/topi/cuda/scan.py">python/tvm/topi/cuda/scan.py</a>. In the case of our cumulative
+sum and product operations we write things directly in <a class="reference external" href="https://tvm.apache.org/docs/dev/index.html?highlight=tir#tvm-tir">TIR</a> which is the
+representation where tensor expressions and topi will lower into.</p>
+</div>
+<div class="section" id="hooking-up-compute-and-strategy-with-relay">
+<h2>5. Hooking up Compute and Strategy with Relay<a class="headerlink" href="#hooking-up-compute-and-strategy-with-relay" title="Permalink to this headline">¶</a></h2>
+<p>After you have implemented your compute function we now need to glue it to our
+relay operation. Within TVM this means not only defining the computation, but also the schedule
+for an operation. A strategy is a method which picks which computation and which schedule
+to use. For example, for 2D convolutions we might recognize we are doing a depthwise convolution
+and dispatch to a more efficient computation and schedule as a result. In our case however we have
+no such need except for dispatching between our CPU and GPU implementations. In
+<code class="docutils literal notranslate"><span class="pre">python/tvm/relay/op/strategy/generic.py</span></code> and <code class="docutils literal notranslate"><span class="pre">python/tvm/relay/op/strategy/cuda.py</span></code> we
+add the following strategies:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span class="k">def</span> <span class="nf">wrap_compute_scanop</span><span class="p">(</span><span class="n">topi_compute</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Wrap scanop style topi compute&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">_compute_scanop</span><span class="p">(</span><span class="n">attrs</span><span class="p">,</span> <span class="n">inputs</span><span class="p">,</span> <span class="n">_</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">[</span><span class="n">topi_compute</span><span class="p">(</span><span class="n">inputs</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">attrs</span><span class="o">.</span><span class="n">axis</span><span class="p">,</span> <span class="n">attrs</span><span class="o">.</span><span class="n">dtype</span><span class="p">,</span> <span class="n">attrs</span><span class="o">.</span><span class="n">exclusive</span><span class="p">)]</span>
+
+    <span class="k">return</span> <span class="n">_compute_scanop</span>
+
+
+<span class="nd">@override_native_generic_func</span><span class="p">(</span><span class="s2">&quot;cumsum_strategy&quot;</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">cumsum_strategy</span><span class="p">(</span><span class="n">attrs</span><span class="p">,</span> <span class="n">inputs</span><span class="p">,</span> <span class="n">out_type</span><span class="p">,</span> <span class="n">target</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;cumsum generic strategy&quot;&quot;&quot;</span>
+    <span class="n">strategy</span> <span class="o">=</span> <span class="n">_op</span><span class="o">.</span><span class="n">OpStrategy</span><span class="p">()</span>
+    <span class="n">strategy</span><span class="o">.</span><span class="n">add_implementation</span><span class="p">(</span>
+        <span class="n">wrap_compute_scanop</span><span class="p">(</span><span class="n">topi</span><span class="o">.</span><span class="n">cumsum</span><span class="p">),</span>
+        <span class="n">wrap_topi_schedule</span><span class="p">(</span><span class="n">topi</span><span class="o">.</span><span class="n">generic</span><span class="o">.</span><span class="n">schedule_extern</span><span class="p">),</span>
+        <span class="n">name</span><span class="o">=</span><span class="s2">&quot;cumsum.generic&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="k">return</span> <span class="n">strategy</span>
+
+
+<span class="nd">@override_native_generic_func</span><span class="p">(</span><span class="s2">&quot;cumprod_strategy&quot;</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">cumprod_strategy</span><span class="p">(</span><span class="n">attrs</span><span class="p">,</span> <span class="n">inputs</span><span class="p">,</span> <span class="n">out_type</span><span class="p">,</span> <span class="n">target</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;cumprod generic strategy&quot;&quot;&quot;</span>
+    <span class="n">strategy</span> <span class="o">=</span> <span class="n">_op</span><span class="o">.</span><span class="n">OpStrategy</span><span class="p">()</span>
+    <span class="n">strategy</span><span class="o">.</span><span class="n">add_implementation</span><span class="p">(</span>
+        <span class="n">wrap_compute_scanop</span><span class="p">(</span><span class="n">topi</span><span class="o">.</span><span class="n">cumprod</span><span class="p">),</span>
+        <span class="n">wrap_topi_schedule</span><span class="p">(</span><span class="n">topi</span><span class="o">.</span><span class="n">generic</span><span class="o">.</span><span class="n">schedule_extern</span><span class="p">),</span>
+        <span class="n">name</span><span class="o">=</span><span class="s2">&quot;cumprod.generic&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="k">return</span> <span class="n">strategy</span>
+
+<span class="nd">@cumsum_strategy.register</span><span class="p">([</span><span class="s2">&quot;cuda&quot;</span><span class="p">,</span> <span class="s2">&quot;gpu&quot;</span><span class="p">])</span>
+<span class="k">def</span> <span class="nf">cumsum_strategy_cuda</span><span class="p">(</span><span class="n">attrs</span><span class="p">,</span> <span class="n">inputs</span><span class="p">,</span> <span class="n">out_type</span><span class="p">,</span> <span class="n">target</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;cumsum cuda strategy&quot;&quot;&quot;</span>
+    <span class="n">strategy</span> <span class="o">=</span> <span class="n">_op</span><span class="o">.</span><span class="n">OpStrategy</span><span class="p">()</span>
+    <span class="n">strategy</span><span class="o">.</span><span class="n">add_implementation</span><span class="p">(</span>
+        <span class="n">wrap_compute_scanop</span><span class="p">(</span><span class="n">topi</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">cumsum</span><span class="p">),</span>
+        <span class="n">wrap_topi_schedule</span><span class="p">(</span><span class="n">topi</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">schedule_scan</span><span class="p">),</span>
+        <span class="n">name</span><span class="o">=</span><span class="s2">&quot;cumsum.cuda&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="k">return</span> <span class="n">strategy</span>
+
+
+<span class="nd">@cumprod_strategy.register</span><span class="p">([</span><span class="s2">&quot;cuda&quot;</span><span class="p">,</span> <span class="s2">&quot;gpu&quot;</span><span class="p">])</span>
+<span class="k">def</span> <span class="nf">cumprod_strategy_cuda</span><span class="p">(</span><span class="n">attrs</span><span class="p">,</span> <span class="n">inputs</span><span class="p">,</span> <span class="n">out_type</span><span class="p">,</span> <span class="n">target</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;cumprod cuda strategy&quot;&quot;&quot;</span>
+    <span class="n">strategy</span> <span class="o">=</span> <span class="n">_op</span><span class="o">.</span><span class="n">OpStrategy</span><span class="p">()</span>
+    <span class="n">strategy</span><span class="o">.</span><span class="n">add_implementation</span><span class="p">(</span>
+        <span class="n">wrap_compute_scanop</span><span class="p">(</span><span class="n">topi</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">cumprod</span><span class="p">),</span>
+        <span class="n">wrap_topi_schedule</span><span class="p">(</span><span class="n">topi</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">schedule_scan</span><span class="p">),</span>
+        <span class="n">name</span><span class="o">=</span><span class="s2">&quot;cumprod.cuda&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="k">return</span> <span class="n">strategy</span>
+</pre></div>
+</div>
+<p>Where in each strategy we define the compute we wrote and the schedule to use within <code class="docutils literal notranslate"><span class="pre">add_implementation()</span></code>.
+We finally link the strategy and compute with the defined relay operator in <code class="docutils literal notranslate"><span class="pre">python/tvm/relay/op/_transform.py</span></code>:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span class="c1"># cumsum</span>
+<span class="nd">@_reg.register_compute</span><span class="p">(</span><span class="s2">&quot;cumsum&quot;</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">compute_cumsum</span><span class="p">(</span><span class="n">attrs</span><span class="p">,</span> <span class="n">inputs</span><span class="p">,</span> <span class="n">output_type</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Compute definition of cumsum&quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="p">[</span><span class="n">topi</span><span class="o">.</span><span class="n">cumsum</span><span class="p">(</span><span class="n">inputs</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">attrs</span><span class="o">.</span><span class="n">axis</span><span class="p">,</span> <span class="n">attrs</span><span class="o">.</span><span class="n">dtype</span><span class="p">,</span> <span class="n">attrs</span><span class="o">.</span><span class="n">exclusive</span><span class="p">)]</span>
+
+
+<span class="n">_reg</span><span class="o">.</span><span class="n">register_strategy</span><span class="p">(</span><span class="s2">&quot;cumsum&quot;</span><span class="p">,</span> <span class="n">strategy</span><span class="o">.</span><span class="n">cumsum_strategy</span><span class="p">)</span>
+<span class="n">_reg</span><span class="o">.</span><span class="n">register_shape_func</span><span class="p">(</span><span class="s2">&quot;cumsum&quot;</span><span class="p">,</span> <span class="bp">False</span><span class="p">,</span> <span class="n">elemwise_shape_func</span><span class="p">)</span>
+
+<span class="c1"># cumprod</span>
+<span class="nd">@_reg.register_compute</span><span class="p">(</span><span class="s2">&quot;cumprod&quot;</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">compute_cumprod</span><span class="p">(</span><span class="n">attrs</span><span class="p">,</span> <span class="n">inputs</span><span class="p">,</span> <span class="n">output_type</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Compute definition of cumprod&quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="p">[</span><span class="n">topi</span><span class="o">.</span><span class="n">cumprod</span><span class="p">(</span><span class="n">inputs</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">attrs</span><span class="o">.</span><span class="n">axis</span><span class="p">,</span> <span class="n">attrs</span><span class="o">.</span><span class="n">dtype</span><span class="p">,</span> <span class="n">attrs</span><span class="o">.</span><span class="n">exclusive</span><span class="p">)]</span>
+
+
+<span class="n">_reg</span><span class="o">.</span><span class="n">register_strategy</span><span class="p">(</span><span class="s2">&quot;cumprod&quot;</span><span class="p">,</span> <span class="n">strategy</span><span class="o">.</span><span class="n">cumprod_strategy</span><span class="p">)</span>
+<span class="n">_reg</span><span class="o">.</span><span class="n">register_shape_func</span><span class="p">(</span><span class="s2">&quot;cumprod&quot;</span><span class="p">,</span> <span class="bp">False</span><span class="p">,</span> <span class="n">elemwise_shape_func</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The shape functions are used for determining output shape given a dynamically shaped tensor. In this
+case we tell TVM the output shape will be the same as the input shape.</p>
+</div>
+<div class="section" id="creating-a-relay-call-node-and-exposing-a-python-hook">
+<h2>6. Creating a Relay Call Node and Exposing a Python Hook<a class="headerlink" href="#creating-a-relay-call-node-and-exposing-a-python-hook" title="Permalink to this headline">¶</a></h2>
+<p>We now have a working operation and now just need to properly call it
+via a Relay Call Node. This step requires simply writing a function that takes
 the arguments to the operator (as Relay expressions) and
 returning a call node to the operator (i.e., the node that
 should be placed into the Relay AST where the call to the
@@ -388,41 +595,44 @@ operator is intended).</p>
 <p>At present call attributes and type arguments (the last two fields)
 are not supported, so it suffices to use <code class="docutils literal notranslate"><span class="pre">Op::Get</span></code> to fetch
 the operator’s information from the operator registry and pass in
-the arguments to the call node, as below.</p>
-<div class="highlight-c notranslate"><div class="highlight"><pre><span class="n">TVM_REGISTER_GLOBAL</span><span class="p">(</span><span class="s">&quot;relay.op._make.add&quot;</span><span class="p">)</span>
-    <span class="p">.</span><span class="n">set_body_typed</span><span class="o">&lt;</span><span class="n">Expr</span><span class="p">(</span><span class="n">Expr</span><span class="p">,</span> <span class="n">Expr</span><span class="p">)</span><span class="o">&gt;</span><span class="p">([](</span><span class="n">Expr</span> <span class="n">lhs</span><span class="p">,</span> <span class="n">Expr</span> <span class="n">rhs</span><span class="p">)</span> <span class="p">{</span>
-        <span class="k">static</span> <span class="k">const</span> <span class="n">Op</span><span class="o">&amp;</span> <span class="n">op</span> <span class="o">=</span> <span class="n">Op</span><span class="o">::</span><span class="n">Get</span><span class="p">(</span><span class="s">&quot;add&quot;</span><span class="p">);</span>
-      <span class="k">return</span> <span class="nf">Call</span><span class="p">(</span><span class="n">op</span><span class="p">,</span> <span class="p">{</span><span class="n">lhs</span><span class="p">,</span> <span class="n">rhs</span><span class="p">},</span> <span class="n">Attrs</span><span class="p">(),</span> <span class="p">{});</span>
-    <span class="p">});</span>
+the arguments to the call node, as below. In <code class="docutils literal notranslate"><span class="pre">src/relay/op/tensor/transform.cc</span></code>:</p>
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span class="n">Expr</span> <span class="nf">MakeCumsum</span><span class="p">(</span><span class="n">Expr</span> <span class="n">data</span><span class="p">,</span> <span class="n">Integer</span> <span class="n">axis</span><span class="p">,</span> <span class="n">DataType</span> <span class="n">dtype</span><span class="p">,</span> <span class="n">Bool</span> <span class="n">exclusive</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">auto</span> <span class="n">attrs</span> <span class="o">=</span> <span class="n">make_object</span><span class="o">&lt;</span><span class="n">ScanopAttrs</span><span class="o">&gt;</span><span class="p">();</span>
+    <span class="n">attrs</span><span class="o">-&gt;</span><span class="n">dtype</span> <span class="o">=</span> <span class="n">dtype</span><span class="p">;</span>
+    <span class="n">attrs</span><span class="o">-&gt;</span><span class="n">axis</span> <span class="o">=</span> <span class="n">axis</span><span class="p">;</span>
+    <span class="n">attrs</span><span class="o">-&gt;</span><span class="n">exclusive</span> <span class="o">=</span> <span class="n">exclusive</span><span class="p">;</span>
+    <span class="k">static</span> <span class="k">const</span> <span class="n">Op</span><span class="o">&amp;</span> <span class="n">op</span> <span class="o">=</span> <span class="n">Op</span><span class="o">::</span><span class="n">Get</span><span class="p">(</span><span class="s">&quot;cumsum&quot;</span><span class="p">);</span>
+    <span class="k">return</span> <span class="n">Call</span><span class="p">(</span><span class="n">op</span><span class="p">,</span> <span class="p">{</span><span class="n">data</span><span class="p">},</span> <span class="n">Attrs</span><span class="p">(</span><span class="n">attrs</span><span class="p">),</span> <span class="p">{});</span>
+<span class="p">}</span>
+
+<span class="n">TVM_REGISTER_GLOBAL</span><span class="p">(</span><span class="s">&quot;relay.op._make.cumsum&quot;</span><span class="p">).</span><span class="n">set_body_typed</span><span class="p">(</span><span class="n">MakeCumsum</span><span class="p">);</span>
+
+<span class="n">Expr</span> <span class="nf">MakeCumprod</span><span class="p">(</span><span class="n">Expr</span> <span class="n">data</span><span class="p">,</span> <span class="n">Integer</span> <span class="n">axis</span><span class="p">,</span> <span class="n">DataType</span> <span class="n">dtype</span><span class="p">,</span> <span class="n">Bool</span> <span class="n">exclusive</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">auto</span> <span class="n">attrs</span> <span class="o">=</span> <span class="n">make_object</span><span class="o">&lt;</span><span class="n">ScanopAttrs</span><span class="o">&gt;</span><span class="p">();</span>
+    <span class="n">attrs</span><span class="o">-&gt;</span><span class="n">dtype</span> <span class="o">=</span> <span class="n">dtype</span><span class="p">;</span>
+    <span class="n">attrs</span><span class="o">-&gt;</span><span class="n">axis</span> <span class="o">=</span> <span class="n">axis</span><span class="p">;</span>
+    <span class="n">attrs</span><span class="o">-&gt;</span><span class="n">exclusive</span> <span class="o">=</span> <span class="n">exclusive</span><span class="p">;</span>
+    <span class="k">static</span> <span class="k">const</span> <span class="n">Op</span><span class="o">&amp;</span> <span class="n">op</span> <span class="o">=</span> <span class="n">Op</span><span class="o">::</span><span class="n">Get</span><span class="p">(</span><span class="s">&quot;cumprod&quot;</span><span class="p">);</span>
+    <span class="k">return</span> <span class="n">Call</span><span class="p">(</span><span class="n">op</span><span class="p">,</span> <span class="p">{</span><span class="n">data</span><span class="p">},</span> <span class="n">Attrs</span><span class="p">(</span><span class="n">attrs</span><span class="p">),</span> <span class="p">{});</span>
+<span class="p">}</span>
+
+<span class="n">TVM_REGISTER_GLOBAL</span><span class="p">(</span><span class="s">&quot;relay.op._make.cumsum&quot;</span><span class="p">).</span><span class="n">set_body_typed</span><span class="p">(</span><span class="n">MakeCumprod</span><span class="p">);</span>
 </pre></div>
 </div>
+<p>Where <code class="docutils literal notranslate"><span class="pre">TVM_REGISTER_GLOBAL</span></code> exposes the <code class="docutils literal notranslate"><span class="pre">MakeCumsum</span></code> and <code class="docutils literal notranslate"><span class="pre">MakeCumprod</span></code> functions
+in Python via <code class="docutils literal notranslate"><span class="pre">relay.op._make.cumsum(...)</span></code> and <code class="docutils literal notranslate"><span class="pre">relay.op._make.cumsum(...)</span></code>.</p>
 </div>
-<div class="section" id="including-a-python-api-hook">
-<h2>Including a Python API Hook<a class="headerlink" href="#including-a-python-api-hook" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="including-a-cleaner-python-api-hook">
+<h2>7. Including a Cleaner Python API Hook<a class="headerlink" href="#including-a-cleaner-python-api-hook" title="Permalink to this headline">¶</a></h2>
 <p>It is generally the convention in Relay, that functions exported
 through <code class="docutils literal notranslate"><span class="pre">TVM_REGISTER_GLOBAL</span></code> should be wrapped in a separate
-Python function rather than called directly in Python. In the case
-of the functions that produce calls to operators, it may be convenient
-to bundle them, as in <code class="docutils literal notranslate"><span class="pre">python/tvm/relay/op/tensor.py</span></code>, where
-elementwise operators on tensors are all provided. For example,
-the following is how the add function from the previous section is
-exposed in Python:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span class="k">def</span> <span class="nf">add</span><span class="p">(</span><span class="n">lhs</span><span class="p">,</span> <span class="n">rhs</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;Elementwise addition.</span>
+Python function rather than called directly in Python. For our
+operators we expose this cleaner interface in <code class="docutils literal notranslate"><span class="pre">python/tvm/relay/op/transform.py</span></code></p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span class="k">def</span> <span class="nf">cumsum</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">exclusive</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">_make</span><span class="o">.</span><span class="n">cumsum</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">axis</span><span class="p">,</span> <span class="n">dtype</span><span class="p">,</span> <span class="n">exclusive</span><span class="p">)</span>
 
-<span class="sd">    Parameters</span>
-<span class="sd">    ----------</span>
-<span class="sd">    lhs : relay.Expr</span>
-<span class="sd">        The left hand side input data</span>
-<span class="sd">    rhs : relay.Expr</span>
-<span class="sd">        The right hand side input data</span>
-
-<span class="sd">    Returns</span>
-<span class="sd">    -------</span>
-<span class="sd">    result : relay.Expr</span>
-<span class="sd">        The computed result.</span>
-<span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">return</span> <span class="n">_make</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">lhs</span><span class="p">,</span> <span class="n">rhs</span><span class="p">)</span>
+<span class="k">def</span> <span class="nf">cumprod</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">exclusive</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">_make</span><span class="o">.</span><span class="n">cumprod</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">axis</span><span class="p">,</span> <span class="n">dtype</span><span class="p">,</span> <span class="n">exclusive</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>Note that these Python wrappers might also be good opportunities to
@@ -447,8 +657,16 @@ before producing the call node:</p>
 </pre></div>
 </div>
 </div>
+<div class="section" id="writing-unit-tests">
+<h2>8. Writing Unit Tests!<a class="headerlink" href="#writing-unit-tests" title="Permalink to this headline">¶</a></h2>
+<p>This is self explanatory! Some example unit tests can be found in
+<a class="reference external" href="https://github.com/apache/tvm/blob/main/tests/python/relay/test_op_level3.py">tests/python/relay/test_op_level3.py</a> for our cumulative sum
+and product operators.</p>
+</div>
+<div class="section" id="other-topics">
+<h2>Other Topics<a class="headerlink" href="#other-topics" title="Permalink to this headline">¶</a></h2>
 <div class="section" id="gradient-operators">
-<h2>Gradient Operators<a class="headerlink" href="#gradient-operators" title="Permalink to this headline">¶</a></h2>
+<h3>Gradient Operators<a class="headerlink" href="#gradient-operators" title="Permalink to this headline">¶</a></h3>
 <p>Gradient operators are important for writing differentiable programs in
 Relay. While it is the case that Relay’s autodiff algorithm can differentiate
 first-class language constructs, operators are opaque. Because Relay can’t
@@ -456,6 +674,7 @@ look into the implementation, an explicit differentiation rule must be
 provided.</p>
 <p>Both Python and C++ can be used to write gradient operators, but we focus our
 examples on Python, as it is more commonly used.</p>
+</div>
 <div class="section" id="adding-a-gradient-in-python">
 <h3>Adding a Gradient in Python<a class="headerlink" href="#adding-a-gradient-in-python" title="Permalink to this headline">¶</a></h3>
 <p>A collection of Python gradient operators can be found in
@@ -533,14 +752,6 @@ order to register the gradient.</p>
 </pre></div>
 </div>
 </div>
-</div>
-<div class="section" id="summary">
-<h2>Summary<a class="headerlink" href="#summary" title="Permalink to this headline">¶</a></h2>
-<ul class="simple">
-<li><p>A TVM operator can be registered in Relay using a relation to express the appropriate type information.</p></li>
-<li><p>Using an operator in Relay requires a function to produce a call node for the operator.</p></li>
-<li><p>It is best to have a simple Python wrapper for producing the call node.</p></li>
-</ul>
 </div>
 </div>
 

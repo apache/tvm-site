@@ -200,6 +200,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../deploy/index.html">Deploy and Integration</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../dev/how_to.html">Developer How-To Guide</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../microtvm/index.html">microTVM: TVM on bare-metal</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../errors.html">What do to when encountering TVM Errors</a></li>
 </ul>
 <p class="caption"><span class="caption-text">Tutorials</span></p>
 <ul class="current">
@@ -477,24 +478,32 @@ See <a class="reference external" href="https://www.tensorflow.org/lite/guide/fa
 </div>
 <div class="section" id="defining-the-target">
 <h2>Defining the target<a class="headerlink" href="#defining-the-target" title="Permalink to this headline">¶</a></h2>
-<p>Now we create a build config for relay. turning off two options
-and then calling relay.build which will result in a C source
-file. When running on a simulated target, choose “host” below:
-TARGET = tvm.target.target.micro(“host”)</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span class="c1"># %%</span>
-<span class="c1"># Compiling for physical hardware</span>
-<span class="c1">#  When running on physical hardware, choose a target and a board that</span>
-<span class="c1">#  describe the hardware. The STM32F746 Nucleo target and board is chosen in</span>
-<span class="c1">#  this commented code. Another option would be to choose the same target but</span>
-<span class="c1">#  the STM32F746 Discovery board instead. The disco board has the same</span>
-<span class="c1">#  microcontroller as the Nucleo board but a couple of wirings and configs</span>
-<span class="c1">#  differ, so it&#39;s necessary to select the &quot;stm32f746g_disco&quot; board below.</span>
-<span class="c1">#</span>
-<span class="c1">#  .. code-block:: python</span>
-<span class="c1">#</span>
-<span class="n">TARGET</span> <span class="o">=</span> <span class="n">tvm</span><span class="o">.</span><span class="n">target</span><span class="o">.</span><span class="n">target</span><span class="o">.</span><span class="n">micro</span><span class="p">(</span><span class="s2">&quot;host&quot;</span><span class="p">)</span>
-<span class="c1"># BOARD = &quot;nucleo_f746zg&quot; # or &quot;stm32f746g_disco&quot;</span>
+<p>Now we create a build config for relay, turning off two options and then calling relay.build which
+will result in a C source file for the selected TARGET. When running on a simulated target of the
+same architecture as the host (where this Python script is executed) choose “host” below for the
+TARGET and a proper board/VM to run it (Zephyr will create the right QEMU VM based on BOARD. In
+the example below the x86 arch is selected and a x86 VM is picked up accordingly:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span class="n">TARGET</span> <span class="o">=</span> <span class="n">tvm</span><span class="o">.</span><span class="n">target</span><span class="o">.</span><span class="n">target</span><span class="o">.</span><span class="n">micro</span><span class="p">(</span><span class="s2">&quot;host&quot;</span><span class="p">)</span>
 <span class="n">BOARD</span> <span class="o">=</span> <span class="s2">&quot;qemu_x86&quot;</span>
+<span class="c1">#</span>
+<span class="c1"># Compiling for physical hardware</span>
+<span class="c1">#  When running on physical hardware, choose a TARGET and a BOARD that describe the hardware. The</span>
+<span class="c1">#  STM32F746 Nucleo target and board is chosen in the example below. Another option would be to</span>
+<span class="c1">#  choose the STM32F746 Discovery board instead. Since that board has the same MCU as the Nucleo</span>
+<span class="c1">#  board but a couple of wirings and configs differ, it&#39;s necessary to select the &quot;stm32f746g_disco&quot;</span>
+<span class="c1">#  board to generated the right firmware image.</span>
+<span class="c1">#</span>
+<span class="c1">#  TARGET = tvm.target.target.micro(&quot;stm32f746xx&quot;)</span>
+<span class="c1">#  BOARD = &quot;nucleo_f746zg&quot; # or &quot;stm32f746g_disco#&quot;</span>
+<span class="c1">#</span>
+<span class="c1">#  For some boards, Zephyr runs them emulated by default, using QEMU. For example, below is the</span>
+<span class="c1">#  TARGET and BOARD used to build a microTVM firmware for the mps2-an521 board. Since that board</span>
+<span class="c1">#  runs emulated by default on Zephyr the suffix &quot;-qemu&quot; is added to the board name to inform</span>
+<span class="c1">#  microTVM that the QEMU transporter must be used to communicate with the board. If the board name</span>
+<span class="c1">#  already has the prefix &quot;qemu_&quot;, like &quot;qemu_x86&quot;, then it&#39;s not necessary to add that suffix.</span>
+<span class="c1">#</span>
+<span class="c1">#  TARGET = tvm.target.target.micro(&quot;mps2_an521&quot;)</span>
+<span class="c1">#  BOARD = &quot;mps2_an521-qemu&quot;</span>
 </pre></div>
 </div>
 <p>Now, compile the model for the target:</p>
@@ -504,9 +513,8 @@ TARGET = tvm.target.target.micro(“host”)</p>
     <span class="n">graph</span><span class="p">,</span> <span class="n">c_mod</span><span class="p">,</span> <span class="n">c_params</span> <span class="o">=</span> <a href="../../api/python/relay/index.html#tvm.relay.build" title="View documentation for tvm.relay.build"><span class="n">relay</span><span class="o">.</span><span class="n">build</span></a><span class="p">(</span><span class="n">mod</span><span class="p">,</span> <span class="n">target</span><span class="o">=</span><span class="n">TARGET</span><span class="p">,</span> <span class="n">params</span><span class="o">=</span><span class="n">params</span><span class="p">)</span>
 
 
-<span class="c1"># %%</span>
-<span class="c1"># Compiling for a simulated device</span>
-<span class="c1"># --------------------------------</span>
+<span class="c1"># Compiling for a host simulated device</span>
+<span class="c1"># -------------------------------------</span>
 <span class="c1">#</span>
 <span class="c1"># First, compile a static microTVM runtime for the targeted device. In this case, the host simulated</span>
 <span class="c1"># device is used.</span>
@@ -515,28 +523,27 @@ TARGET = tvm.target.target.micro(“host”)</p>
     <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><a href="../../api/python/micro.html#tvm.micro.get_standalone_crt_dir" title="View documentation for tvm.micro.get_standalone_crt_dir"><span class="n">tvm</span><span class="o">.</span><span class="n">micro</span><span class="o">.</span><span class="n">get_standalone_crt_dir</span></a><span class="p">(),</span> <span class="s2">&quot;template&quot;</span><span class="p">,</span> <span class="s2">&quot;host&quot;</span><span class="p">)</span>
 <span class="p">)</span>
 
-<span class="c1"># %%</span>
-<span class="c1"># Compiling for physical hardware</span>
-<span class="c1">#  For physical hardware, comment out the previous section and use this compiler definition instead.</span>
-<span class="c1">#</span>
-<span class="c1">#  .. code-block:: python</span>
+<span class="c1"># Compiling for physical hardware (or an emulated board, like the mps_an521)</span>
+<span class="c1"># --------------------------------------------------------------------------</span>
+<span class="c1">#  For physical hardware, comment out the previous section selecting TARGET and BOARD and use this</span>
+<span class="c1">#  compiler definition instead of the one above.</span>
 <span class="c1">#</span>
 <span class="c1">#     import subprocess</span>
 <span class="c1">#     from tvm.micro.contrib import zephyr</span>
 <span class="c1">#</span>
 <span class="c1">#     repo_root = subprocess.check_output([&quot;git&quot;, &quot;rev-parse&quot;, &quot;--show-toplevel&quot;], encoding=&#39;utf-8&#39;).strip()</span>
-<span class="c1">#     project_dir = f&quot;{repo_root}/tests/micro/qemu/zephyr-runtime&quot;</span>
+<span class="c1">#     project_dir = os.path.join(repo_root, &quot;apps&quot;, &quot;microtvm&quot;, &quot;zephyr&quot;, &quot;demo_runtime&quot;)</span>
 <span class="c1">#     compiler = zephyr.ZephyrCompiler(</span>
 <span class="c1">#         project_dir=project_dir,</span>
-<span class="c1">#         board=BOARD if &quot;stm32f746&quot; in str(TARGET) else &quot;qemu_x86&quot;,</span>
+<span class="c1">#         board=BOARD,</span>
 <span class="c1">#         zephyr_toolchain_variant=&quot;zephyr&quot;,</span>
 <span class="c1">#     )</span>
 <span class="c1">#</span>
 <span class="c1">#     opts = tvm.micro.default_options(f&quot;{project_dir}/crt&quot;)</span>
 <span class="c1">#</span>
-<span class="c1"># enable printing memory usage statistics of the runtime image</span>
-<span class="c1"># generated by Zephyr compiler for the physical hardware</span>
-<span class="c1"># logging.basicConfig(level=&quot;INFO&quot;)</span>
+<span class="c1">#</span>
+<span class="c1">#     # Enable printing memory usage statistics for the runtime image generated by Zephyr</span>
+<span class="c1">#     logging.basicConfig(level=&quot;INFO&quot;)</span>
 
 <span class="n">workspace</span> <span class="o">=</span> <a href="../../api/python/micro.html#tvm.micro.Workspace" title="View documentation for tvm.micro.Workspace"><span class="n">tvm</span><span class="o">.</span><span class="n">micro</span><span class="o">.</span><span class="n">Workspace</span></a><span class="p">()</span>
 <span class="n">micro_binary</span> <span class="o">=</span> <a href="../../api/python/micro.html#tvm.micro.build_static_runtime" title="View documentation for tvm.micro.build_static_runtime"><span class="n">tvm</span><span class="o">.</span><span class="n">micro</span><span class="o">.</span><span class="n">build_static_runtime</span></a><span class="p">(</span>

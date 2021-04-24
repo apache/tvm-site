@@ -208,6 +208,7 @@
 <li class="toctree-l3"><a class="reference internal" href="#dpu-naming-information">DPU naming information</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#build-instructions">Build instructions</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#cloud-dpucadx8g">Cloud (DPUCADX8G)</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#edge-dpuczdx8g">Edge (DPUCZDX8G)</a></li>
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="#getting-started">Getting started</a><ul>
@@ -224,6 +225,7 @@
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../dev/how_to.html">Developer How-To Guide</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../microtvm/index.html">microTVM: TVM on bare-metal</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../errors.html">What do to when encountering TVM Errors</a></li>
 </ul>
 <p class="caption"><span class="caption-text">Tutorials</span></p>
 <ul>
@@ -534,14 +536,14 @@ pip3 install -e . --user
 </li>
 </ol>
 </div>
+</div>
 <div class="section" id="edge-dpuczdx8g">
-<h4>Edge (DPUCZDX8G)<a class="headerlink" href="#edge-dpuczdx8g" title="Permalink to this headline">¶</a></h4>
+<h3>Edge (DPUCZDX8G)<a class="headerlink" href="#edge-dpuczdx8g" title="Permalink to this headline">¶</a></h3>
 <p>For edge deployment we make use of two systems referred to as host and
 edge. The <a class="reference external" href="#host-requirements">host</a> system is responsible for
 quantization and compilation of the neural network model in a first
 offline step. Afterwards, the model will de deployed on the
 <a class="reference external" href="#edge-requirements">edge</a> system.</p>
-</div>
 <div class="section" id="host-requirements">
 <h4>Host requirements<a class="headerlink" href="#host-requirements" title="Permalink to this headline">¶</a></h4>
 <p>The following table lists system requirements for running the TVM -
@@ -809,8 +811,8 @@ Byoc flow.</p>
 <h3>Cloud usage<a class="headerlink" href="#cloud-usage" title="Permalink to this headline">¶</a></h3>
 <p>This section shows how to accelerate a convolutional neural network
 model in TVM with Vitis-AI on the cloud.</p>
-<p>To be able to target the Vitis-AI cloud DPUCADX8G target we first have
-to import the target in PyXIR. This PyXIR package is the interface being
+<p>To be able to target the Vitis-AI cloud DPUCADX8G we first have
+to import the DPU target in PyXIR. This PyXIR package is the interface being
 used by TVM to integrate with the Vitis-AI stack. Additionaly, import
 the typical TVM and Relay modules and the Vitis-AI contrib module inside
 TVM.</p>
@@ -822,28 +824,25 @@ TVM.</p>
 <span class="kn">from</span> <span class="nn">tvm.contrib.target</span> <span class="kn">import</span> <span class="n">vitis_ai</span>
 <span class="kn">from</span> <span class="nn">tvm.contrib</span> <span class="kn">import</span> <span class="n">utils</span><span class="p">,</span> <span class="n">graph_executor</span>
 <span class="kn">from</span> <span class="nn">tvm.relay.build_module</span> <span class="kn">import</span> <span class="n">bind_params_by_name</span>
-<span class="kn">from</span> <span class="nn">tvm.relay.op.contrib.vitis_ai</span> <span class="kn">import</span> <span class="n">annotation</span>
+<span class="kn">from</span> <span class="nn">tvm.relay.op.contrib.vitis_ai</span> <span class="kn">import</span> <span class="n">partition_for_vitis_ai</span>
 </pre></div>
 </div>
 <p>After importing a convolutional neural network model using the usual
 Relay API’s, annotate the Relay expression for the given Vitis-AI DPU
 target and partition the graph.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span class="n">mod</span><span class="p">[</span><span class="s2">&quot;main&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">bind_params_by_name</span><span class="p">(</span><span class="n">mod</span><span class="p">[</span><span class="s2">&quot;main&quot;</span><span class="p">],</span> <span class="n">params</span><span class="p">)</span>
-<span class="n">mod</span> <span class="o">=</span> <span class="n">annotation</span><span class="p">(</span><span class="n">mod</span><span class="p">,</span> <span class="n">params</span><span class="p">,</span> <span class="n">target</span><span class="p">)</span>
-<span class="n">mod</span> <span class="o">=</span> <span class="n">relay</span><span class="o">.</span><span class="n">transform</span><span class="o">.</span><span class="n">MergeCompilerRegions</span><span class="p">()(</span><span class="n">mod</span><span class="p">)</span>
-<span class="n">mod</span> <span class="o">=</span> <span class="n">relay</span><span class="o">.</span><span class="n">transform</span><span class="o">.</span><span class="n">PartitionGraph</span><span class="p">()(</span><span class="n">mod</span><span class="p">)</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span class="n">dpu</span> <span class="o">=</span> <span class="s1">&#39;DPUCADX8G&#39;</span>
+<span class="n">mod</span> <span class="o">=</span> <span class="n">partition_for_vitis_ai</span><span class="p">(</span><span class="n">mod</span><span class="p">,</span> <span class="n">params</span><span class="p">,</span> <span class="n">dpu</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>Now, we can build the TVM runtime library for executing the model. The
 TVM target is ‘llvm’ as the operations that can’t be handled by the DPU
-are executed on the CPU. The Vitis-AI target is DPUCADX8G as we are
-targeting the cloud DPU and this target is passed as a config to the TVM
+are executed on the CPU. The Vitis-AI DPU is DPUCADX8G as we are
+targeting the cloud DPU and this DPU identifier is passed as a config to the TVM
 build call.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span class="n">tvm_target</span> <span class="o">=</span> <span class="s1">&#39;llvm&#39;</span>
-<span class="n">target</span><span class="o">=</span><span class="s1">&#39;DPUCADX8G&#39;</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span class="n">target</span> <span class="o">=</span> <span class="s1">&#39;llvm&#39;</span>
 
-<span class="k">with</span> <span class="n">tvm</span><span class="o">.</span><span class="n">transform</span><span class="o">.</span><span class="n">PassContext</span><span class="p">(</span><span class="n">opt_level</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">config</span><span class="o">=</span> <span class="p">{</span><span class="s1">&#39;relay.ext.vitis_ai.options.target&#39;</span><span class="p">:</span> <span class="n">target</span><span class="p">}):</span>
-   <span class="n">lib</span> <span class="o">=</span> <span class="n">relay</span><span class="o">.</span><span class="n">build</span><span class="p">(</span><span class="n">mod</span><span class="p">,</span> <span class="n">tvm_target</span><span class="p">,</span> <span class="n">params</span><span class="o">=</span><span class="n">params</span><span class="p">)</span>
+<span class="k">with</span> <span class="n">tvm</span><span class="o">.</span><span class="n">transform</span><span class="o">.</span><span class="n">PassContext</span><span class="p">(</span><span class="n">opt_level</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">config</span><span class="o">=</span> <span class="p">{</span><span class="s1">&#39;relay.ext.vitis_ai.options&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;dpu&#39;</span><span class="p">:</span> <span class="n">dpu</span><span class="p">}}):</span>
+   <span class="n">lib</span> <span class="o">=</span> <span class="n">relay</span><span class="o">.</span><span class="n">build</span><span class="p">(</span><span class="n">mod</span><span class="p">,</span> <span class="n">target</span><span class="p">,</span> <span class="n">params</span><span class="o">=</span><span class="n">params</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>As one more step before we can accelerate a model with Vitis-AI in TVM
@@ -894,8 +893,8 @@ compilation for deployment at the edge.</p>
 <p>A complete ResNet 18 example can be found <a class="reference external" href="https://github.com/Xilinx/pyxir/tree/master/examples/tvm">here</a>.</p>
 <div class="section" id="host-steps">
 <h4>Host steps<a class="headerlink" href="#host-steps" title="Permalink to this headline">¶</a></h4>
-<p>To be able to target the Vitis-AI cloud DPUCZDX8G target we first have
-to import the target in PyXIR. This PyXIR package is the interface being
+<p>To be able to target the Vitis-AI cloud DPUCZDX8G we first have
+to import the DPU target in PyXIR. This PyXIR package is the interface being
 used by TVM to integrate with the Vitis-AI stack. Additionaly, import
 the typical TVM and Relay modules and the Vitis-AI contrib module inside
 TVM.</p>
@@ -907,12 +906,12 @@ TVM.</p>
 <span class="kn">from</span> <span class="nn">tvm.contrib.target</span> <span class="kn">import</span> <span class="n">vitis_ai</span>
 <span class="kn">from</span> <span class="nn">tvm.contrib</span> <span class="kn">import</span> <span class="n">utils</span><span class="p">,</span> <span class="n">graph_executor</span>
 <span class="kn">from</span> <span class="nn">tvm.relay.build_module</span> <span class="kn">import</span> <span class="n">bind_params_by_name</span>
-<span class="kn">from</span> <span class="nn">tvm.relay.op.contrib.vitis_ai</span> <span class="kn">import</span> <span class="n">annotation</span>
+<span class="kn">from</span> <span class="nn">tvm.relay.op.contrib.vitis_ai</span> <span class="kn">import</span> <span class="n">partition_for_vitis_ai</span>
 </pre></div>
 </div>
 <p>After importing a convolutional neural network model using the usual
 Relay API’s, annotate the Relay expression for the given Vitis-AI DPU
-target and partition the graph.</p>
+and partition the graph.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p>We recommend converting DPU convolutions’ data layouts to NHWC and CPU convolutions’
@@ -938,10 +937,9 @@ tutorials for this).</p>
 <span class="k">with</span> <span class="n">tvm</span><span class="o">.</span><span class="n">transform</span><span class="o">.</span><span class="n">PassContext</span><span class="p">(</span><span class="n">opt_level</span><span class="o">=</span><span class="mi">3</span><span class="p">):</span>
     <span class="n">mod</span> <span class="o">=</span> <span class="n">seq</span><span class="p">(</span><span class="n">mod</span><span class="p">)</span>
 
-<span class="c1"># Annotate and partition the Relay expression for the given target</span>
-<span class="n">mod</span> <span class="o">=</span> <span class="n">annotation</span><span class="p">(</span><span class="n">mod</span><span class="p">,</span> <span class="n">params</span><span class="p">,</span> <span class="n">target</span><span class="p">)</span>
-<span class="n">mod</span> <span class="o">=</span> <span class="n">relay</span><span class="o">.</span><span class="n">transform</span><span class="o">.</span><span class="n">MergeCompilerRegions</span><span class="p">()(</span><span class="n">mod</span><span class="p">)</span>
-<span class="n">mod</span> <span class="o">=</span> <span class="n">relay</span><span class="o">.</span><span class="n">transform</span><span class="o">.</span><span class="n">PartitionGraph</span><span class="p">()(</span><span class="n">mod</span><span class="p">)</span>
+<span class="n">dpu</span> <span class="o">=</span> <span class="s1">&#39;DPUCZDX8G-zcu104&#39;</span>
+<span class="c1"># Annotate and partition the Relay expression for the given DPU</span>
+<span class="n">mod</span> <span class="o">=</span> <span class="n">partition_for_vitis_ai</span><span class="p">(</span><span class="n">mod</span><span class="p">,</span> <span class="n">params</span><span class="p">,</span> <span class="n">dpu</span><span class="p">)</span>
 
 <span class="c1"># After partitioning we recommend transforming the remaining convolutions</span>
 <span class="c1">#    (that will be executed on CPU, if any) back to NCHW data layout</span>
@@ -957,23 +955,25 @@ tutorials for this).</p>
 <p>Now, we can build the TVM runtime library for executing the model. The
 TVM target is ‘llvm’ as the operations that can’t be handled by the DPU
 are executed on the CPU. At this point that means the CPU on the host machine.
-The Vitis-AI target is DPUCZDX8G-zcu104 as we are targeting the edge DPU
-on the ZCU104 board and this target is passed as a config to the TVM
+The Vitis-AI DPU identifier is DPUCZDX8G-zcu104 as we are targeting the edge DPU
+on the ZCU104 board and this identifier is passed as a config to the TVM
 build call. Note that different identifiers can be passed for different
-targets, see <a class="reference external" href="#edge-requirements">edge targets info</a>. Additionally, we
+DPU’s, see <a class="reference external" href="#edge-requirements">edge DPU’s info</a>. Additionally, we
 provide the ‘export_runtime_module’ config that points to a file to which we
 can export the Vitis-AI runtime module. We have to do this because we will
 first be compiling and quantizing the model on the host machine before building
 the model for edge deployment. As you will see later on, the exported runtime
 module will be passed to the edge build so that the Vitis-AI runtime module
 can be included.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span class="n">tvm_target</span> <span class="o">=</span> <span class="s1">&#39;llvm&#39;</span>
-<span class="n">target</span><span class="o">=</span><span class="s1">&#39;DPUCZDX8G-zcu104&#39;</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span class="n">target</span> <span class="o">=</span> <span class="s1">&#39;llvm&#39;</span>
 <span class="n">export_rt_mod_file</span> <span class="o">=</span> <span class="s2">&quot;vitis_ai.rtmod&quot;</span>
 
-<span class="k">with</span> <span class="n">tvm</span><span class="o">.</span><span class="n">transform</span><span class="o">.</span><span class="n">PassContext</span><span class="p">(</span><span class="n">opt_level</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">config</span><span class="o">=</span> <span class="p">{</span><span class="s1">&#39;relay.ext.vitis_ai.options.target&#39;</span><span class="p">:</span> <span class="n">target</span><span class="p">,</span>
-                                                     <span class="s1">&#39;relay.ext.vitis_ai.options.export_runtime_module&#39;</span><span class="p">:</span> <span class="n">export_rt_mod_file</span><span class="p">}):</span>
-   <span class="n">lib</span> <span class="o">=</span> <span class="n">relay</span><span class="o">.</span><span class="n">build</span><span class="p">(</span><span class="n">mod</span><span class="p">,</span> <span class="n">tvm_target</span><span class="p">,</span> <span class="n">params</span><span class="o">=</span><span class="n">params</span><span class="p">)</span>
+<span class="n">build_options</span> <span class="o">=</span> <span class="p">{</span>
+   <span class="s1">&#39;dpu&#39;</span><span class="p">:</span> <span class="n">dpu</span><span class="p">,</span>
+   <span class="s1">&#39;export_runtime_module&#39;</span><span class="p">:</span> <span class="n">export_rt_mod_file</span>
+<span class="p">}</span>
+<span class="k">with</span> <span class="n">tvm</span><span class="o">.</span><span class="n">transform</span><span class="o">.</span><span class="n">PassContext</span><span class="p">(</span><span class="n">opt_level</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">config</span><span class="o">=</span> <span class="p">{</span><span class="s1">&#39;relay.ext.vitis_ai.options&#39;</span><span class="p">:</span> <span class="n">build_options</span><span class="p">}):</span>
+   <span class="n">lib</span> <span class="o">=</span> <span class="n">relay</span><span class="o">.</span><span class="n">build</span><span class="p">(</span><span class="n">mod</span><span class="p">,</span> <span class="n">target</span><span class="p">,</span> <span class="n">params</span><span class="o">=</span><span class="n">params</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>We will quantize and compile the model for execution on the DPU using on-the-fly
@@ -1002,15 +1002,17 @@ first N inputs we can build the model for execution on the ARM edge device.
 Here we pass the previously exported Vitis-AI runtime module so it can be included
 in the TVM build.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span class="c1"># Export lib for aarch64 target</span>
-<span class="n">tvm_target</span> <span class="o">=</span> <span class="n">tvm</span><span class="o">.</span><span class="n">target</span><span class="o">.</span><span class="n">arm_cpu</span><span class="p">(</span><span class="s1">&#39;ultra96&#39;</span><span class="p">)</span>
+<span class="n">target</span> <span class="o">=</span> <span class="n">tvm</span><span class="o">.</span><span class="n">target</span><span class="o">.</span><span class="n">arm_cpu</span><span class="p">(</span><span class="s1">&#39;ultra96&#39;</span><span class="p">)</span>
 <span class="n">lib_kwargs</span> <span class="o">=</span> <span class="p">{</span>
      <span class="s1">&#39;fcompile&#39;</span><span class="p">:</span> <span class="n">contrib</span><span class="o">.</span><span class="n">cc</span><span class="o">.</span><span class="n">create_shared</span><span class="p">,</span>
      <span class="s1">&#39;cc&#39;</span><span class="p">:</span> <span class="s2">&quot;/usr/aarch64-linux-gnu/bin/ld&quot;</span>
 <span class="p">}</span>
 
-<span class="k">with</span> <span class="n">tvm</span><span class="o">.</span><span class="n">transform</span><span class="o">.</span><span class="n">PassContext</span><span class="p">(</span><span class="n">opt_level</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
-                               <span class="n">config</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;relay.ext.vitis_ai.options.load_runtime_module&#39;</span><span class="p">:</span> <span class="n">export_rt_mod_file</span><span class="p">}):</span>
-     <span class="n">lib_arm</span> <span class="o">=</span> <span class="n">relay</span><span class="o">.</span><span class="n">build</span><span class="p">(</span><span class="n">mod</span><span class="p">,</span> <span class="n">tvm_target</span><span class="p">,</span> <span class="n">params</span><span class="o">=</span><span class="n">params</span><span class="p">)</span>
+<span class="n">build_options</span> <span class="o">=</span> <span class="p">{</span>
+     <span class="s1">&#39;load_runtime_module&#39;</span><span class="p">:</span> <span class="n">export_rt_mod_file</span>
+<span class="p">}</span>
+<span class="k">with</span> <span class="n">tvm</span><span class="o">.</span><span class="n">transform</span><span class="o">.</span><span class="n">PassContext</span><span class="p">(</span><span class="n">opt_level</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">config</span><span class="o">=</span><span class="p">{</span><span class="s1">&#39;relay.ext.vitis_ai.options&#39;</span><span class="p">:</span> <span class="n">build_options</span><span class="p">}):</span>
+     <span class="n">lib_arm</span> <span class="o">=</span> <span class="n">relay</span><span class="o">.</span><span class="n">build</span><span class="p">(</span><span class="n">mod</span><span class="p">,</span> <span class="n">target</span><span class="p">,</span> <span class="n">params</span><span class="o">=</span><span class="n">params</span><span class="p">)</span>
 
 <span class="n">lib_dpuv2</span><span class="o">.</span><span class="n">export_library</span><span class="p">(</span><span class="s1">&#39;tvm_dpu_arm.so&#39;</span><span class="p">,</span> <span class="o">**</span><span class="n">lib_kwargs</span><span class="p">)</span>
 </pre></div>
@@ -1030,7 +1032,7 @@ as root (execute <code class="docutils literal notranslate"><span class="pre">su
 <p class="admonition-title">Note</p>
 <p>You will see a warning about the ‘cpu-tf’ runtime not being found. This warning is
 expected on the board and can be ignored. Note also that you <strong>shouldn’t</strong> import the
-PyXIR targets in the run script (<code class="docutils literal notranslate"><span class="pre">import</span> <span class="pre">pyxir.contrib.target.DPUCZDX8G</span></code>).</p>
+PyXIR DPU targets in the run script (<code class="docutils literal notranslate"><span class="pre">import</span> <span class="pre">pyxir.contrib.target.DPUCZDX8G</span></code>).</p>
 </div>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span class="kn">import</span> <span class="nn">pyxir</span>
 <span class="kn">import</span> <span class="nn">tvm</span>

@@ -37,6 +37,8 @@ var searchData=
   ['reorderstep',['ReorderStep',['../classtvm_1_1auto__scheduler_1_1ReorderStep.html',1,'tvm::auto_scheduler']]],
   ['reorderstepnode',['ReorderStepNode',['../classtvm_1_1auto__scheduler_1_1ReorderStepNode.html',1,'tvm::auto_scheduler']]],
   ['repeatattrs',['RepeatAttrs',['../structtvm_1_1relay_1_1RepeatAttrs.html',1,'tvm::relay']]],
+  ['report',['Report',['../classtvm_1_1runtime_1_1profiling_1_1Report.html',1,'tvm::runtime::profiling']]],
+  ['reportnode',['ReportNode',['../classtvm_1_1runtime_1_1profiling_1_1ReportNode.html',1,'tvm::runtime::profiling']]],
   ['reprprinter',['ReprPrinter',['../classtvm_1_1ReprPrinter.html',1,'tvm']]],
   ['requantizeattrs',['RequantizeAttrs',['../structtvm_1_1relay_1_1qnn_1_1RequantizeAttrs.html',1,'tvm::relay::qnn']]],
   ['reshapeattrs',['ReshapeAttrs',['../structtvm_1_1relay_1_1ReshapeAttrs.html',1,'tvm::relay']]],

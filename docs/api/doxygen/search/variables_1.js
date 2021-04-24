@@ -5,6 +5,7 @@ var searchData=
   ['a_5fmin',['a_min',['../structtvm_1_1relay_1_1ClipAttrs.html#a8a9a5b34513d0e9b46cae1ac436c6917',1,'tvm::relay::ClipAttrs']]],
   ['access_5fanalyzer',['access_analyzer',['../classtvm_1_1auto__scheduler_1_1ComputeDAGNode.html#a5a8b2184133c91f2b0324836bb4d3d0c',1,'tvm::auto_scheduler::ComputeDAGNode']]],
   ['activation_5fbits',['activation_bits',['../structtvm_1_1relay_1_1BinaryConv2DAttrs.html#a195cc0d151991c9493b02e01e2fbe54d',1,'tvm::relay::BinaryConv2DAttrs']]],
+  ['affine_5fbinding',['affine_binding',['../structtvm_1_1tir_1_1BlockInfo.html#a67098e82972aa0c66351f63bc26d87f8',1,'tvm::tir::BlockInfo']]],
   ['after_5fids',['after_ids',['../classtvm_1_1auto__scheduler_1_1ReorderStepNode.html#a7ebdbb44a67f53a07d2f62c2ff5368b6',1,'tvm::auto_scheduler::ReorderStepNode']]],
   ['align_5fcorners',['align_corners',['../structtvm_1_1relay_1_1UpSamplingAttrs.html#a21fae218544c3215862fd5c7a4b4e4d9',1,'tvm::relay::UpSamplingAttrs']]],
   ['alignment',['alignment',['../structtvm_1_1runtime_1_1vm_1_1Instruction.html#a8d2b2e37051d12d60e6ae614d49de509',1,'tvm::runtime::vm::Instruction']]],

@@ -1,6 +1,7 @@
 var searchData=
 [
   ['map',['Map',['../classtvm_1_1runtime_1_1Map.html',1,'tvm::runtime']]],
+  ['map_3c_20tvm_3a_3aruntime_3a_3astring_2c_20tvm_3a_3aruntime_3a_3amap_3c_20tvm_3a_3aruntime_3a_3astring_2c_20tvm_3a_3aruntime_3a_3aobjectref_20_3e_20_3e',['Map&lt; tvm::runtime::String, tvm::runtime::Map&lt; tvm::runtime::String, tvm::runtime::ObjectRef &gt; &gt;',['../classtvm_1_1runtime_1_1Map.html',1,'tvm::runtime']]],
   ['mapnode',['MapNode',['../classtvm_1_1runtime_1_1MapNode.html',1,'tvm::runtime']]],
   ['match',['Match',['../classtvm_1_1relay_1_1Match.html',1,'tvm::relay']]],
   ['matchbufferregion',['MatchBufferRegion',['../classtvm_1_1tir_1_1MatchBufferRegion.html',1,'tvm::tir']]],

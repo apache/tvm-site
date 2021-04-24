@@ -32,7 +32,7 @@ var searchData=
   ['exp2',['exp2',['../namespacetvm.html#a50c4b8aeaf39b357013fc7f62b4a878c',1,'tvm']]],
   ['expand_5fdims',['expand_dims',['../namespacetvm_1_1topi.html#a7ddbd03d0d29a05618a1ef42f717ec9f',1,'tvm::topi']]],
   ['expandanormalform',['ExpandANormalForm',['../namespacetvm_1_1relay.html#a18f47bbeaf5ccedf5e4cf525710a0c41',1,'tvm::relay']]],
-  ['expanddataflow',['ExpandDataflow',['../namespacetvm_1_1relay.html#abd34311e0bf42aebcf785cfa390a3d5a',1,'tvm::relay']]],
+  ['expanddataflow',['ExpandDataflow',['../namespacetvm_1_1relay.html#ae36d7b9ccbc63dfc794e45de7b6af9b6',1,'tvm::relay::ExpandDataflow(Expr expr, FCheckVisited fcheck_visited, FVisitLeaf fvisit_leaf, FExpandExpr fexpand_expr)'],['../namespacetvm_1_1relay.html#abd34311e0bf42aebcf785cfa390a3d5a',1,'tvm::relay::ExpandDataflow(Expr expr, FCheckVisited fcheck_visited, FVisitLeaf fvisit_leaf)']]],
   ['expandprimal',['ExpandPrimal',['../classtvm_1_1tir_1_1Layout.html#a88c306ea4682d28b85032277fa29df63',1,'tvm::tir::Layout']]],
   ['export',['Export',['../classtvm_1_1TargetNode.html#ad46056809a56a18a43303033f4353616',1,'tvm::TargetNode']]],
   ['exprpattern',['ExprPattern',['../classtvm_1_1relay_1_1ExprPattern.html#a7a67b6d0ef6de34e597875f280086bef',1,'tvm::relay::ExprPattern']]],

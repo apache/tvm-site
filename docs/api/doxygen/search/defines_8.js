@@ -25,6 +25,7 @@ var searchData=
   ['tvm_5fdefine_5fint_5fop_5fconst_5fval_5foverload_5fspanned',['TVM_DEFINE_INT_OP_CONST_VAL_OVERLOAD_SPANNED',['../tir_2op_8h.html#ac211367ff4e2382caf322a3903f8c629',1,'op.h']]],
   ['tvm_5fdefine_5flogical_5fop_5fconst_5fval_5foverload',['TVM_DEFINE_LOGICAL_OP_CONST_VAL_OVERLOAD',['../tir_2op_8h.html#ab6a17993efa67183ba992dac29284c80',1,'op.h']]],
   ['tvm_5fdefine_5flogical_5fop_5fconst_5fval_5foverload_5fspanned',['TVM_DEFINE_LOGICAL_OP_CONST_VAL_OVERLOAD_SPANNED',['../tir_2op_8h.html#a29826503ae15ba83c6bc8e6cbe218a69',1,'op.h']]],
+  ['tvm_5fdefine_5fmutable_5fnotnullable_5fobject_5fref_5fmethods',['TVM_DEFINE_MUTABLE_NOTNULLABLE_OBJECT_REF_METHODS',['../object_8h.html#a98fa3013ab23958a9f05200330e35805',1,'object.h']]],
   ['tvm_5fdefine_5fmutable_5fobject_5fref_5fmethods',['TVM_DEFINE_MUTABLE_OBJECT_REF_METHODS',['../object_8h.html#aaaa3dc5b6dc33f84b2d28f9a81267212',1,'object.h']]],
   ['tvm_5fdefine_5fnotnullable_5fobject_5fref_5fmethods',['TVM_DEFINE_NOTNULLABLE_OBJECT_REF_METHODS',['../object_8h.html#a782d0de62fbf75736e29c1e79c22c7f1',1,'object.h']]],
   ['tvm_5fdefine_5fobject_5fref_5fcow_5fmethod',['TVM_DEFINE_OBJECT_REF_COW_METHOD',['../object_8h.html#af8330e3864503fb7c4133ae4d48fe4a2',1,'object.h']]],
