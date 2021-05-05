@@ -4,6 +4,7 @@ var searchData=
   ['backward_5frule',['backward_rule',['../classtvm_1_1tir_1_1BijectiveLayoutNode.html#af412c66da78635c724c74c581242d6b0',1,'tvm::tir::BijectiveLayoutNode']]],
   ['base',['base',['../classtvm_1_1arith_1_1ModularSetNode.html#afe63e5586712774be5935e86121431ad',1,'tvm::arith::ModularSetNode::base()'],['../classtvm_1_1arith_1_1IterSumExprNode.html#ab9516d8fa15d4691d2255e4d5371bdc6',1,'tvm::arith::IterSumExprNode::base()'],['../classtvm_1_1tir_1_1RampNode.html#aed87b929f940da5ded10afaa7a3a810c',1,'tvm::tir::RampNode::base()']]],
   ['batch_5faxis',['batch_axis',['../structtvm_1_1relay_1_1ReverseSequenceAttrs.html#a922eb49dd420d3a148f206efca0e0b48',1,'tvm::relay::ReverseSequenceAttrs']]],
+  ['batch_5fdims',['batch_dims',['../structtvm_1_1relay_1_1TakeAttrs.html#ad8d38a1e0ea91c357a55b141ae21fe68',1,'tvm::relay::TakeAttrs']]],
   ['begin',['begin',['../structtvm_1_1relay_1_1StridedSliceAttrs.html#ade582278d58f236cccf69167cdd961f1',1,'tvm::relay::StridedSliceAttrs']]],
   ['belong_5fto',['belong_to',['../classtvm_1_1ConstructorNode.html#a671fab9e6add1be16eca6e19efac99c5',1,'tvm::ConstructorNode']]],
   ['best_5fct',['best_ct',['../classtvm_1_1auto__scheduler_1_1ProgramMeasurerNode.html#aa3bc664752e531e75dcc238c534bfd08',1,'tvm::auto_scheduler::ProgramMeasurerNode']]],

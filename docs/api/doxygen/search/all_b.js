@@ -140,6 +140,7 @@ var searchData=
   ['kraw',['kRAW',['../namespacetvm_1_1tir.html#a82f5fe564edbe0dadbc4a56a82dfe12ea565ac768da7890c2660ff4b12d267f4b',1,'tvm::tir']]],
   ['kreadstate',['kReadState',['../namespacetvm_1_1tir.html#a8f4a86b205145696c0555fd02bd37f46a8d8bb1cb393c8e093395350919eed4a7',1,'tvm::tir']]],
   ['kreduction',['kReduction',['../namespacetvm_1_1auto__scheduler.html#a369a062b966070cea45c763bd9d2196da53db07df806f5847ee19a1230183a61b',1,'tvm::auto_scheduler']]],
+  ['kreshapeonly',['kReshapeOnly',['../namespacetvm_1_1relay_1_1attr.html#a6b63f68ed3b4bcf00f1ad58b6a881a4b',1,'tvm::relay::attr']]],
   ['kroot',['kRoot',['../structtvm_1_1runtime_1_1TypeIndex.html#aed93c7318efc8052201d4c404b21a40da21c1c4635ca4735380e1c10c543cdc47',1,'tvm::runtime::TypeIndex::kRoot()'],['../namespacetvm_1_1auto__scheduler.html#ab75208ecc6a00ca7f86af04b3cc5657fa88085f89c2abf0eb8bdbf5e603964099',1,'tvm::auto_scheduler::kRoot()']]],
   ['krpcsessmask',['kRPCSessMask',['../namespacetvm_1_1runtime.html#a48cbe06e6c95ca6fabc20dd1cbacc2c9',1,'tvm::runtime']]],
   ['kruntimeadt',['kRuntimeADT',['../structtvm_1_1runtime_1_1TypeIndex.html#aed93c7318efc8052201d4c404b21a40da7c34e382f8aef538d1ea67f7099a3acd',1,'tvm::runtime::TypeIndex']]],

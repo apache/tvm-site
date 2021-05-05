@@ -318,6 +318,7 @@ file and apply it.
 
 
 
+
 We can lower the schedule to see the IR after auto-scheduling.
 The auto-scheduler correctly performs optimizations including multi-level tiling,
 layout transformation, parallelization, vectorization, unrolling, and operator fusion.
@@ -342,31 +343,35 @@ layout transformation, parallelization, vectorization, unrolling, and operator f
     Lowered TIR:
     primfn(placeholder_5: handle, placeholder_6: handle, placeholder_7: handle, placeholder_8: handle, placeholder_9: handle, compute_1: handle) -> ()
       attr = {"global_symbol": "main", "tir.noalias": True}
-      buffers = {placeholder_4: Buffer(placeholder_10: Pointer(int32), int32, [33], []),
-                 placeholder_3: Buffer(placeholder_11: Pointer(float32), float32, [4916, 16, 1], []),
+      buffers = {placeholder_4: Buffer(placeholder_10: Pointer(float32), float32, [128, 512], []),
+                 placeholder: Buffer(placeholder_11: Pointer(float32), float32, [4916, 16, 1], []),
+                 placeholder_1: Buffer(placeholder_12: Pointer(float32), float32, [128, 256], []),
                  compute: Buffer(compute_2: Pointer(float32), float32, [128, 512], []),
-                 placeholder: Buffer(placeholder_12: Pointer(int32), int32, [4916], []),
-                 placeholder_1: Buffer(placeholder_13: Pointer(float32), float32, [128, 256], []),
-                 placeholder_2: Buffer(placeholder_14: Pointer(float32), float32, [128, 512], [])}
-      buffer_map = {compute_1: compute, placeholder_7: placeholder, placeholder_5: placeholder_1, placeholder_9: placeholder_2, placeholder_6: placeholder_3, placeholder_8: placeholder_4} {
-      for (i0.outer.i1.outer.fused: int32, 0, 512) "parallel" {
+                 placeholder_2: Buffer(placeholder_13: Pointer(int32), int32, [4916], []),
+                 placeholder_3: Buffer(placeholder_14: Pointer(int32), int32, [33], [])}
+      buffer_map = {placeholder_6: placeholder, placeholder_5: placeholder_1, placeholder_7: placeholder_2, placeholder_8: placeholder_3, placeholder_9: placeholder_4, compute_1: compute} {
+      for (i0.outer.i1.outer.fused: int32, 0, 32) "parallel" {
         attr [compute_3: Pointer(float32)] "storage_scope" = "global";
-        allocate(compute_3, float32, [128]) {
+        allocate(compute_3, float32, [2048]) {
           for (i.outer.inner: int32, 0, 4) {
             for (nb_j.inner: int32, 0, 2) {
-              for (j.init: int32, 0, 16) {
-                compute_3[(((i.outer.inner*32) + (nb_j.inner*16)) + j.init)] = 0f32
+              for (i.inner.init: int32, 0, 16) {
+                for (j.init: int32, 0, 16) {
+                  compute_3[((((i.outer.inner*512) + (i.inner.init*32)) + (nb_j.inner*16)) + j.init)] = 0f32
+                }
               }
-              for (elem_idx: int32, 0, ((int32*)placeholder_10[(((floormod(i0.outer.i1.outer.fused, 16)*2) + nb_j.inner) + 1)] - (int32*)placeholder_10[((floormod(i0.outer.i1.outer.fused, 16)*2) + nb_j.inner)])) {
-                for (j: int32, 0, 16) {
-                  compute_3[(((i.outer.inner*32) + (nb_j.inner*16)) + j)] = ((float32*)compute_3[(((i.outer.inner*32) + (nb_j.inner*16)) + j)] + ((float32*)placeholder_11[((((int32*)placeholder_10[((floormod(i0.outer.i1.outer.fused, 16)*2) + nb_j.inner)]*16) + (elem_idx*16)) + j)]*max((float32*)placeholder_13[(((floordiv(i0.outer.i1.outer.fused, 16)*1024) + (i.outer.inner*256)) + (int32*)placeholder_12[((int32*)placeholder_10[((floormod(i0.outer.i1.outer.fused, 16)*2) + nb_j.inner)] + elem_idx)])], 0f32)))
+              for (elem_idx: int32, 0, ((int32*)placeholder_14[(((floormod(i0.outer.i1.outer.fused, 16)*2) + nb_j.inner) + 1)] - (int32*)placeholder_14[((floormod(i0.outer.i1.outer.fused, 16)*2) + nb_j.inner)])) {
+                for (i.inner: int32, 0, 16) {
+                  for (j: int32, 0, 16) {
+                    compute_3[((((i.outer.inner*512) + (i.inner*32)) + (nb_j.inner*16)) + j)] = ((float32*)compute_3[((((i.outer.inner*512) + (i.inner*32)) + (nb_j.inner*16)) + j)] + ((float32*)placeholder_11[((((int32*)placeholder_14[((floormod(i0.outer.i1.outer.fused, 16)*2) + nb_j.inner)]*16) + (elem_idx*16)) + j)]*max((float32*)placeholder_12[((((floordiv(i0.outer.i1.outer.fused, 16)*16384) + (i.outer.inner*4096)) + (i.inner*256)) + (int32*)placeholder_13[((int32*)placeholder_14[((floormod(i0.outer.i1.outer.fused, 16)*2) + nb_j.inner)] + elem_idx)])], 0f32)))
+                  }
                 }
               }
             }
           }
-          for (i0.inner: int32, 0, 4) {
+          for (i0.inner: int32, 0, 64) {
             for (i1.inner: int32, 0, 32) {
-              compute_2[((((floordiv(i0.outer.i1.outer.fused, 16)*2048) + (i0.inner*512)) + (floormod(i0.outer.i1.outer.fused, 16)*32)) + i1.inner)] = max(((float32*)compute_3[((i0.inner*32) + i1.inner)] + (float32*)placeholder_14[((((floordiv(i0.outer.i1.outer.fused, 16)*2048) + (i0.inner*512)) + (floormod(i0.outer.i1.outer.fused, 16)*32)) + i1.inner)]), 0f32)
+              compute_2[((((floordiv(i0.outer.i1.outer.fused, 16)*32768) + (i0.inner*512)) + (floormod(i0.outer.i1.outer.fused, 16)*32)) + i1.inner)] = max(((float32*)compute_3[((i0.inner*32) + i1.inner)] + (float32*)placeholder_10[((((floordiv(i0.outer.i1.outer.fused, 16)*32768) + (i0.inner*512)) + (floormod(i0.outer.i1.outer.fused, 16)*32)) + i1.inner)]), 0f32)
             }
           }
         }
@@ -421,7 +426,7 @@ We build the binary and check its correctness and performance.
 
  .. code-block:: none
 
-    Execution time of this operator: 1.743 ms
+    Execution time of this operator: 1.275 ms
 
 
 

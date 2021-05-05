@@ -167,9 +167,9 @@
           
             
             
-              <div class="version">
-                0.8.dev0
-              </div>
+                <div class="version">
+                  0.8.dev0
+                </div>
             
           
 
@@ -714,7 +714,7 @@ specific workload.</p>
 <tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">scatter_add</span></code>(data, indices, updates[, axis])</p></td>
 <td><p>Update data by adding values in updates at positions defined by indices</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">scatter_nd</span></code>(data, indices, shape)</p></td>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">scatter_nd</span></code>(data, indices, updates, mode)</p></td>
 <td><p>Scatter elements from a n-dimension array.</p></td>
 </tr>
 <tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">sequence_mask</span></code>(data, valid_length[, …])</p></td>
@@ -768,7 +768,7 @@ specific workload.</p>
 <tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">sum</span></code>(data[, axis, keepdims])</p></td>
 <td><p>Sum of array elements over a given axis or a list of axes</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">take</span></code>(a, indices[, axis, mode])</p></td>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">take</span></code>(a, indices[, axis, batch_dims, mode])</p></td>
 <td><p>Take elements from an array along an axis.</p></td>
 </tr>
 <tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">take_legalize</span></code>(attrs, inputs, types)</p></td>
@@ -3203,26 +3203,30 @@ If axis is None, the result is a 1-d array.</p>
 
 <dl class="py function">
 <dt id="tvm.topi.scatter_nd">
-<code class="sig-prename descclassname">tvm.topi.</code><code class="sig-name descname">scatter_nd</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">data</span></em>, <em class="sig-param"><span class="n">indices</span></em>, <em class="sig-param"><span class="n">shape</span></em><span class="sig-paren">)</span><a class="headerlink" href="#tvm.topi.scatter_nd" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">tvm.topi.</code><code class="sig-name descname">scatter_nd</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">data</span></em>, <em class="sig-param"><span class="n">indices</span></em>, <em class="sig-param"><span class="n">updates</span></em>, <em class="sig-param"><span class="n">mode</span></em><span class="sig-paren">)</span><a class="headerlink" href="#tvm.topi.scatter_nd" title="Permalink to this definition">¶</a></dt>
 <dd><p>Scatter elements from a n-dimension array.</p>
-<p>Given data with shape (Y_0, …, Y_{K-1}, X_M, …, X_{N-1}), indices with shape
-(M, Y_0, …, Y_{K-1}), and output with shape (X_0, X_1, …, X_{N-1}), scatter_nd computes</p>
+<p>Given updates with shape (Y_0, …, Y_{K-1}, X_M, …, X_{N-1}), indices with shape
+(M, Y_0, …, Y_{K-1}), and output copied from data with shape (X_0, X_1, …, X_{N-1}),
+scatter_nd computes</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span class="n">output</span><span class="p">[</span><span class="n">indices</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="n">y_0</span><span class="p">,</span> <span class="o">...</span><span class="p">,</span> <span class="n">y_</span><span class="p">{</span><span class="n">K</span><span class="o">-</span><span class="mi">1</span><span class="p">}],</span>
        <span class="o">...</span><span class="p">,</span>
        <span class="n">indices</span><span class="p">[</span><span class="n">M</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">y_0</span><span class="p">,</span> <span class="o">...</span><span class="p">,</span> <span class="n">y_</span><span class="p">{</span><span class="n">K</span><span class="o">-</span><span class="mi">1</span><span class="p">}],</span>
        <span class="n">x_M</span><span class="p">,</span>
        <span class="o">...</span><span class="p">,</span>
        <span class="n">x_</span><span class="p">{</span><span class="n">N</span><span class="o">-</span><span class="mi">1</span><span class="p">}</span>
-      <span class="p">]</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="n">y_0</span><span class="p">,</span> <span class="o">...</span><span class="p">,</span> <span class="n">y_</span><span class="p">{</span><span class="n">K</span><span class="o">-</span><span class="mi">1</span><span class="p">},</span> <span class="n">x_M</span><span class="p">,</span> <span class="o">...</span><span class="p">,</span> <span class="n">x_</span><span class="p">{</span><span class="n">N</span><span class="o">-</span><span class="mi">1</span><span class="p">}]</span>
+      <span class="p">]</span> <span class="o">=</span> <span class="n">f</span><span class="p">(</span><span class="n">output</span><span class="p">[</span><span class="o">...</span><span class="p">],</span> <span class="n">updates</span><span class="p">[</span><span class="n">y_0</span><span class="p">,</span> <span class="o">...</span><span class="p">,</span> <span class="n">y_</span><span class="p">{</span><span class="n">K</span><span class="o">-</span><span class="mi">1</span><span class="p">},</span> <span class="n">x_M</span><span class="p">,</span> <span class="o">...</span><span class="p">,</span> <span class="n">x_</span><span class="p">{</span><span class="n">N</span><span class="o">-</span><span class="mi">1</span><span class="p">}])</span>
 </pre></div>
 </div>
-<p>all other entries in the output are 0. Repeated indices are summed.</p>
+<p>where the update function f is determinted by the mode.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>data</strong> (<a class="reference internal" href="te.html#tvm.te.Tensor" title="tvm.te.Tensor"><em>tvm.te.Tensor</em></a>) – The source array.</p></li>
 <li><p><strong>indices</strong> (<a class="reference internal" href="te.html#tvm.te.Tensor" title="tvm.te.Tensor"><em>tvm.te.Tensor</em></a>) – The indices of the values to extract.</p></li>
-<li><p><strong>shape</strong> (<em>Sequence</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)"><em>int</em></a><em>]</em>) – The output shape. This must be specified because it cannot be inferred.</p></li>
+<li><p><strong>updates</strong> (<a class="reference internal" href="te.html#tvm.te.Tensor" title="tvm.te.Tensor"><em>tvm.te.Tensor</em></a>) – The updates to apply at the Indices</p></li>
+<li><p><strong>mode</strong> (<em>string</em>) – The update mode for the algorithm, either “update” or “add”
+If update, the update values will replace the input data
+If add, the update values will be added to the input data</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
@@ -3608,7 +3612,7 @@ With this option, the result will broadcast correctly against the input array.</
 
 <dl class="py function">
 <dt id="tvm.topi.take">
-<code class="sig-prename descclassname">tvm.topi.</code><code class="sig-name descname">take</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">a</span></em>, <em class="sig-param"><span class="n">indices</span></em>, <em class="sig-param"><span class="n">axis</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">mode</span><span class="o">=</span><span class="default_value">'clip'</span></em><span class="sig-paren">)</span><a class="headerlink" href="#tvm.topi.take" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">tvm.topi.</code><code class="sig-name descname">take</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">a</span></em>, <em class="sig-param"><span class="n">indices</span></em>, <em class="sig-param"><span class="n">axis</span><span class="o">=</span><span class="default_value">None</span></em>, <em class="sig-param"><span class="n">batch_dims</span><span class="o">=</span><span class="default_value">0</span></em>, <em class="sig-param"><span class="n">mode</span><span class="o">=</span><span class="default_value">'clip'</span></em><span class="sig-paren">)</span><a class="headerlink" href="#tvm.topi.take" title="Permalink to this definition">¶</a></dt>
 <dd><p>Take elements from an array along an axis.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
@@ -3617,6 +3621,7 @@ With this option, the result will broadcast correctly against the input array.</
 <li><p><strong>indices</strong> (<a class="reference internal" href="te.html#tvm.te.Tensor" title="tvm.te.Tensor"><em>tvm.te.Tensor</em></a>) – The indices of the values to extract.</p></li>
 <li><p><strong>axis</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)"><em>int</em></a><em>, </em><em>optional</em>) – The axis over which to select values. By default,
 the flattened input array is used.</p></li>
+<li><p><strong>batch_dims</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.9)"><em>int</em></a>) – The number of batch dimensions. By default is 0.</p></li>
 <li><p><strong>mode</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)"><em>str</em></a><em>, </em><em>optional</em>) – Specifies how out-of-bound indices will behave.
 clip - clip to the range (default)
 wrap - wrap around the indices
@@ -4140,13 +4145,13 @@ by the index and False otherwise</p>
 <tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">pad</span></code>(data, pad_before[, pad_after, …])</p></td>
 <td><p>Pad Input with zeros.</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">pool</span></code>(data, kernel, stride, padding, pool_type)</p></td>
-<td><p>Perform pooling on height and width dimension of data.</p></td>
-</tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">pool1d</span></code>(data, kernel, stride, padding, pool_type)</p></td>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">pool1d</span></code>(data, kernel, stride, dilation, …)</p></td>
 <td><p>Perform pooling on width dimension of data.</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">pool3d</span></code>(data, kernel, stride, padding, pool_type)</p></td>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">pool2d</span></code>(data, kernel, stride, dilation, …)</p></td>
+<td><p>Perform pooling on height and width dimension of data.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">pool3d</span></code>(data, kernel, stride, dilation, …)</p></td>
 <td><p>Perform pooling on depth, height and width dimension of data.</p></td>
 </tr>
 <tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">pool_grad</span></code>(grads, data, kernel, stride, …)</p></td>
@@ -6075,48 +6080,8 @@ default value is 1 for NCHW format</p></li>
 </dd></dl>
 
 <dl class="py function">
-<dt id="tvm.topi.nn.pool">
-<code class="sig-prename descclassname">tvm.topi.nn.</code><code class="sig-name descname">pool</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">data</span></em>, <em class="sig-param"><span class="n">kernel</span></em>, <em class="sig-param"><span class="n">stride</span></em>, <em class="sig-param"><span class="n">padding</span></em>, <em class="sig-param"><span class="n">pool_type</span></em>, <em class="sig-param"><span class="n">ceil_mode</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">layout</span><span class="o">=</span><span class="default_value">'NCHW'</span></em>, <em class="sig-param"><span class="n">count_include_pad</span><span class="o">=</span><span class="default_value">True</span></em><span class="sig-paren">)</span><a class="headerlink" href="#tvm.topi.nn.pool" title="Permalink to this definition">¶</a></dt>
-<dd><dl class="simple">
-<dt>Perform pooling on height and width dimension of data.</dt><dd><p>It decides the height and width dimension according to the layout string,
-in which ‘W’ and ‘H’ means width and height respectively.
-Width and height dimension cannot be split.
-For example, NCHW, NCHW16c, etc. are valid for pool,
-while NCHW16w, NCHW16h are not.
-See parameter <cite>layout</cite> for more information of the layout string convention.</p>
-</dd>
-</dl>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>data</strong> (<a class="reference internal" href="te.html#tvm.te.Tensor" title="tvm.te.Tensor"><em>tvm.te.Tensor</em></a>) – n-D with shape of layout</p></li>
-<li><p><strong>kernel</strong> (<em>list/tuple of two ints</em>) – Kernel size, [kernel_height, kernel_width]</p></li>
-<li><p><strong>stride</strong> (<em>list/tuple of two ints</em>) – Stride size, [stride_height, stride_width]</p></li>
-<li><p><strong>padding</strong> (<em>list/tuple of four ints</em>) – Pad size, [pad_top, pad_left, pad_bottom, pad_right]]</p></li>
-<li><p><strong>pool_type</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)"><em>str</em></a>) – Pool type, ‘max’ or ‘avg’</p></li>
-<li><p><strong>ceil_mode</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.9)"><em>bool</em></a>) – Whether to use ceil when calculating output size.</p></li>
-<li><p><strong>layout</strong> (<em>string</em>) – Layout of the input data.
-The layout is supposed to be composed of upper cases, lower cases and numbers,
-where upper case indicates a dimension and
-the corresponding lower case with factor size indicates the split dimension.
-For example, NCHW16c can describe a 5-D tensor of
-[batch_size, channel, height, width, channel_block],
-in which channel_block=16 is a split of dimension channel.</p></li>
-<li><p><strong>count_include_pad</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.9)"><em>bool</em></a>) – Whether include padding in the calculation when pool_type is ‘avg’</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns</dt>
-<dd class="field-even"><p><strong>output</strong> – n-D in the same layout</p>
-</dd>
-<dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p><a class="reference internal" href="te.html#tvm.te.Tensor" title="tvm.te.Tensor">tvm.te.Tensor</a></p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py function">
 <dt id="tvm.topi.nn.pool1d">
-<code class="sig-prename descclassname">tvm.topi.nn.</code><code class="sig-name descname">pool1d</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">data</span></em>, <em class="sig-param"><span class="n">kernel</span></em>, <em class="sig-param"><span class="n">stride</span></em>, <em class="sig-param"><span class="n">padding</span></em>, <em class="sig-param"><span class="n">pool_type</span></em>, <em class="sig-param"><span class="n">ceil_mode</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">layout</span><span class="o">=</span><span class="default_value">'NCW'</span></em>, <em class="sig-param"><span class="n">count_include_pad</span><span class="o">=</span><span class="default_value">True</span></em><span class="sig-paren">)</span><a class="headerlink" href="#tvm.topi.nn.pool1d" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">tvm.topi.nn.</code><code class="sig-name descname">pool1d</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">data</span></em>, <em class="sig-param"><span class="n">kernel</span></em>, <em class="sig-param"><span class="n">stride</span></em>, <em class="sig-param"><span class="n">dilation</span></em>, <em class="sig-param"><span class="n">padding</span></em>, <em class="sig-param"><span class="n">pool_type</span></em>, <em class="sig-param"><span class="n">ceil_mode</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">layout</span><span class="o">=</span><span class="default_value">'NCW'</span></em>, <em class="sig-param"><span class="n">count_include_pad</span><span class="o">=</span><span class="default_value">True</span></em><span class="sig-paren">)</span><a class="headerlink" href="#tvm.topi.nn.pool1d" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="simple">
 <dt>Perform pooling on width dimension of data.</dt><dd><p>Width axis is determined according to the layout string.
 in which ‘w’ means width.
@@ -6155,8 +6120,48 @@ in which channel_block=16 is a split of dimension channel.</p></li>
 </dd></dl>
 
 <dl class="py function">
+<dt id="tvm.topi.nn.pool2d">
+<code class="sig-prename descclassname">tvm.topi.nn.</code><code class="sig-name descname">pool2d</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">data</span></em>, <em class="sig-param"><span class="n">kernel</span></em>, <em class="sig-param"><span class="n">stride</span></em>, <em class="sig-param"><span class="n">dilation</span></em>, <em class="sig-param"><span class="n">padding</span></em>, <em class="sig-param"><span class="n">pool_type</span></em>, <em class="sig-param"><span class="n">ceil_mode</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">layout</span><span class="o">=</span><span class="default_value">'NCHW'</span></em>, <em class="sig-param"><span class="n">count_include_pad</span><span class="o">=</span><span class="default_value">True</span></em><span class="sig-paren">)</span><a class="headerlink" href="#tvm.topi.nn.pool2d" title="Permalink to this definition">¶</a></dt>
+<dd><dl class="simple">
+<dt>Perform pooling on height and width dimension of data.</dt><dd><p>It decides the height and width dimension according to the layout string,
+in which ‘W’ and ‘H’ means width and height respectively.
+Width and height dimension cannot be split.
+For example, NCHW, NCHW16c, etc. are valid for pool,
+while NCHW16w, NCHW16h are not.
+See parameter <cite>layout</cite> for more information of the layout string convention.</p>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> (<a class="reference internal" href="te.html#tvm.te.Tensor" title="tvm.te.Tensor"><em>tvm.te.Tensor</em></a>) – n-D with shape of layout</p></li>
+<li><p><strong>kernel</strong> (<em>list/tuple of two ints</em>) – Kernel size, [kernel_height, kernel_width]</p></li>
+<li><p><strong>stride</strong> (<em>list/tuple of two ints</em>) – Stride size, [stride_height, stride_width]</p></li>
+<li><p><strong>padding</strong> (<em>list/tuple of four ints</em>) – Pad size, [pad_top, pad_left, pad_bottom, pad_right]]</p></li>
+<li><p><strong>pool_type</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.9)"><em>str</em></a>) – Pool type, ‘max’ or ‘avg’</p></li>
+<li><p><strong>ceil_mode</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.9)"><em>bool</em></a>) – Whether to use ceil when calculating output size.</p></li>
+<li><p><strong>layout</strong> (<em>string</em>) – Layout of the input data.
+The layout is supposed to be composed of upper cases, lower cases and numbers,
+where upper case indicates a dimension and
+the corresponding lower case with factor size indicates the split dimension.
+For example, NCHW16c can describe a 5-D tensor of
+[batch_size, channel, height, width, channel_block],
+in which channel_block=16 is a split of dimension channel.</p></li>
+<li><p><strong>count_include_pad</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.9)"><em>bool</em></a>) – Whether include padding in the calculation when pool_type is ‘avg’</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>output</strong> – n-D in the same layout</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference internal" href="te.html#tvm.te.Tensor" title="tvm.te.Tensor">tvm.te.Tensor</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
 <dt id="tvm.topi.nn.pool3d">
-<code class="sig-prename descclassname">tvm.topi.nn.</code><code class="sig-name descname">pool3d</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">data</span></em>, <em class="sig-param"><span class="n">kernel</span></em>, <em class="sig-param"><span class="n">stride</span></em>, <em class="sig-param"><span class="n">padding</span></em>, <em class="sig-param"><span class="n">pool_type</span></em>, <em class="sig-param"><span class="n">ceil_mode</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">layout</span><span class="o">=</span><span class="default_value">'NCDHW'</span></em>, <em class="sig-param"><span class="n">count_include_pad</span><span class="o">=</span><span class="default_value">True</span></em><span class="sig-paren">)</span><a class="headerlink" href="#tvm.topi.nn.pool3d" title="Permalink to this definition">¶</a></dt>
+<code class="sig-prename descclassname">tvm.topi.nn.</code><code class="sig-name descname">pool3d</code><span class="sig-paren">(</span><em class="sig-param"><span class="n">data</span></em>, <em class="sig-param"><span class="n">kernel</span></em>, <em class="sig-param"><span class="n">stride</span></em>, <em class="sig-param"><span class="n">dilation</span></em>, <em class="sig-param"><span class="n">padding</span></em>, <em class="sig-param"><span class="n">pool_type</span></em>, <em class="sig-param"><span class="n">ceil_mode</span><span class="o">=</span><span class="default_value">False</span></em>, <em class="sig-param"><span class="n">layout</span><span class="o">=</span><span class="default_value">'NCDHW'</span></em>, <em class="sig-param"><span class="n">count_include_pad</span><span class="o">=</span><span class="default_value">True</span></em><span class="sig-paren">)</span><a class="headerlink" href="#tvm.topi.nn.pool3d" title="Permalink to this definition">¶</a></dt>
 <dd><dl class="simple">
 <dt>Perform pooling on depth, height and width dimension of data.</dt><dd><p>It decides the depth, height and width dimension according to the layout string,
 in which ‘D’, ‘W’ and ‘H’ means depth, width and height respectively.

@@ -46,6 +46,7 @@ var searchData=
   ['kpayloadlength',['kPayloadLength',['../classtvm_1_1runtime_1_1micro__rpc_1_1PacketFieldSizeBytes.html#a69c71abb0d8cd0b7ede781082ee0391b',1,'tvm::runtime::micro_rpc::PacketFieldSizeBytes']]],
   ['kposinf',['kPosInf',['../classtvm_1_1arith_1_1ConstIntBoundNode.html#a035f9270597638a44a55dd2552f4ad20',1,'tvm::arith::ConstIntBoundNode::kPosInf()'],['../classtvm_1_1arith_1_1ConstIntBound.html#af55f0ada0b9e784197723b125f464f0f',1,'tvm::arith::ConstIntBound::kPosInf()']]],
   ['kprimitive',['kPrimitive',['../namespacetvm_1_1relay_1_1attr.html#ac3c86a7b4b9e64aed0da4b8294278484',1,'tvm::relay::attr']]],
+  ['kreshapeonly',['kReshapeOnly',['../namespacetvm_1_1relay_1_1attr.html#a6b63f68ed3b4bcf00f1ad58b6a881a4b',1,'tvm::relay::attr']]],
   ['krpcsessmask',['kRPCSessMask',['../namespacetvm_1_1runtime.html#a48cbe06e6c95ca6fabc20dd1cbacc2c9',1,'tvm::runtime']]],
   ['ksimplifyrewritecanonicalrewrite',['kSimplifyRewriteCanonicalRewrite',['../namespacetvm_1_1arith.html#a76835a091e20acfbce65f678114c0291',1,'tvm::arith']]],
   ['kskipoptimization',['kSkipOptimization',['../namespacetvm_1_1relay_1_1attr.html#aed3671df7e12d228b8070806d07f7c62',1,'tvm::relay::attr']]],
