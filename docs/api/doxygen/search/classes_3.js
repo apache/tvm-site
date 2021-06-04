@@ -8,7 +8,9 @@ var searchData=
   ['debugattrs',['DebugAttrs',['../structtvm_1_1relay_1_1DebugAttrs.html',1,'tvm::relay']]],
   ['deformableconv2dattrs',['DeformableConv2DAttrs',['../structtvm_1_1relay_1_1DeformableConv2DAttrs.html',1,'tvm::relay']]],
   ['denseattrs',['DenseAttrs',['../structtvm_1_1relay_1_1DenseAttrs.html',1,'tvm::relay']]],
-  ['densemapnode',['DenseMapNode',['../classtvm_1_1DenseMapNode.html',1,'tvm']]],
+  ['densemapnode',['DenseMapNode',['../classtvm_1_1runtime_1_1DenseMapNode.html',1,'tvm::runtime']]],
+  ['dependency',['Dependency',['../classtvm_1_1tir_1_1Dependency.html',1,'tvm::tir']]],
+  ['dependencynode',['DependencyNode',['../classtvm_1_1tir_1_1DependencyNode.html',1,'tvm::tir']]],
   ['dequantizeattrs',['DequantizeAttrs',['../structtvm_1_1relay_1_1qnn_1_1DequantizeAttrs.html',1,'tvm::relay::qnn']]],
   ['deviceapi',['DeviceAPI',['../classtvm_1_1runtime_1_1DeviceAPI.html',1,'tvm::runtime']]],
   ['devicecopyattrs',['DeviceCopyAttrs',['../structtvm_1_1relay_1_1DeviceCopyAttrs.html',1,'tvm::relay']]],
@@ -20,6 +22,13 @@ var searchData=
   ['dfpatternfunctor_3c_20void_28const_20dfpattern_20_26_29_3e',['DFPatternFunctor&lt; void(const DFPattern &amp;)&gt;',['../classtvm_1_1relay_1_1DFPatternFunctor.html',1,'tvm::relay']]],
   ['dfpatternnode',['DFPatternNode',['../classtvm_1_1relay_1_1DFPatternNode.html',1,'tvm::relay']]],
   ['dfpatternvisitor',['DFPatternVisitor',['../classtvm_1_1relay_1_1DFPatternVisitor.html',1,'tvm::relay']]],
+  ['diagnostic',['Diagnostic',['../classtvm_1_1Diagnostic.html',1,'tvm']]],
+  ['diagnosticbuilder',['DiagnosticBuilder',['../classtvm_1_1DiagnosticBuilder.html',1,'tvm']]],
+  ['diagnosticcontext',['DiagnosticContext',['../classtvm_1_1DiagnosticContext.html',1,'tvm']]],
+  ['diagnosticcontextnode',['DiagnosticContextNode',['../classtvm_1_1DiagnosticContextNode.html',1,'tvm']]],
+  ['diagnosticnode',['DiagnosticNode',['../classtvm_1_1DiagnosticNode.html',1,'tvm']]],
+  ['diagnosticrenderer',['DiagnosticRenderer',['../classtvm_1_1DiagnosticRenderer.html',1,'tvm']]],
+  ['diagnosticrenderernode',['DiagnosticRendererNode',['../classtvm_1_1DiagnosticRendererNode.html',1,'tvm']]],
   ['dictattrs',['DictAttrs',['../classtvm_1_1DictAttrs.html',1,'tvm']]],
   ['dictattrsnode',['DictAttrsNode',['../classtvm_1_1DictAttrsNode.html',1,'tvm']]],
   ['dilateattrs',['DilateAttrs',['../structtvm_1_1relay_1_1DilateAttrs.html',1,'tvm::relay']]],
@@ -28,5 +37,6 @@ var searchData=
   ['divnode',['DivNode',['../classtvm_1_1tir_1_1DivNode.html',1,'tvm::tir']]],
   ['dominatorpattern',['DominatorPattern',['../classtvm_1_1relay_1_1DominatorPattern.html',1,'tvm::relay']]],
   ['dominatorpatternnode',['DominatorPatternNode',['../classtvm_1_1relay_1_1DominatorPatternNode.html',1,'tvm::relay']]],
-  ['dropoutattrs',['DropoutAttrs',['../structtvm_1_1relay_1_1DropoutAttrs.html',1,'tvm::relay']]]
+  ['dropoutattrs',['DropoutAttrs',['../structtvm_1_1relay_1_1DropoutAttrs.html',1,'tvm::relay']]],
+  ['durationnode',['DurationNode',['../classtvm_1_1runtime_1_1profiling_1_1DurationNode.html',1,'tvm::runtime::profiling']]]
 ];

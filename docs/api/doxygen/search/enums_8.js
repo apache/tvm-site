@@ -1,4 +1,5 @@
 var searchData=
 [
-  ['pooltype',['PoolType',['../namespacetvm_1_1topi_1_1nn.html#a3ffa0974d8cdcd5b8ca7afb3cfbaf53c',1,'tvm::topi::nn']]]
+  ['measureerrorno',['MeasureErrorNO',['../namespacetvm_1_1auto__scheduler.html#acd2b9ff22c8ef2f009aef57f80926b9a',1,'tvm::auto_scheduler']]],
+  ['messagetype',['MessageType',['../namespacetvm_1_1runtime_1_1micro__rpc.html#a07b2902f093d341cd67bd16738037a85',1,'tvm::runtime::micro_rpc']]]
 ];

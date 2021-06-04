@@ -1,6 +1,7 @@
 var searchData=
 [
   ['gatherattrs',['GatherAttrs',['../structtvm_1_1relay_1_1GatherAttrs.html',1,'tvm::relay']]],
+  ['gatherndattrs',['GatherNDAttrs',['../structtvm_1_1relay_1_1GatherNDAttrs.html',1,'tvm::relay']]],
   ['ge',['GE',['../classtvm_1_1tir_1_1GE.html',1,'tvm::tir']]],
   ['genericfunc',['GenericFunc',['../classtvm_1_1GenericFunc.html',1,'tvm']]],
   ['genericfuncnode',['GenericFuncNode',['../classtvm_1_1GenericFuncNode.html',1,'tvm']]],

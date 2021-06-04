@@ -1,0 +1,541 @@
+.. note::
+    :class: sphx-glr-download-link-note
+
+    Click :ref:`here <sphx_glr_download_tutorials_auto_scheduler_tune_conv2d_layer_cuda.py>` to download the full example code
+.. rst-class:: sphx-glr-example-title
+
+.. _sphx_glr_tutorials_auto_scheduler_tune_conv2d_layer_cuda.py:
+
+
+.. _auto-scheduler-conv-gpu:
+
+Auto-scheduling a Convolution Layer for GPU
+===========================================
+**Author**: `Lianmin Zheng <https://github.com/merrymercy>`_,             `Chengfan Jia <https://github.com/jcf94/>`_
+
+This is a tutorial on how to use the auto-scheduler for GPUs.
+
+Different from the template-based :ref:`autotvm <tutorials-autotvm-sec>` which relies on
+manual templates to define the search space, the auto-scheduler does not require any templates.
+Users only need to write the computation declaration without any schedule commands or templates.
+The auto-scheduler can automatically generate a large search space and
+find a good schedule in the space.
+
+We use a convolution layer as an example in this tutorial.
+
+Note that this tutorial will not run on Windows or recent versions of macOS. To
+get it to run, you will need to wrap the body of this tutorial in a :code:`if
+__name__ == "__main__":` block.
+
+
+.. code-block:: default
+
+
+    import os
+
+    import numpy as np
+    import tvm
+    from tvm import te, auto_scheduler, topi
+    from tvm.topi.testing import conv2d_nchw_python
+
+
+
+
+
+
+
+Define the computation
+^^^^^^^^^^^^^^^^^^^^^^
+To begin with, let us define the computation of a convolution layer.
+The function should return the list of input/output tensors.
+From these tensors, the auto-scheduler can get the whole computational graph.
+
+
+.. code-block:: default
+
+
+
+    @auto_scheduler.register_workload
+    def conv2d_layer(N, H, W, CO, CI, KH, KW, stride, padding):
+        data = te.placeholder((N, CI, H, W), name="data")
+        kernel = te.placeholder((CO, CI, KH, KW), name="kernel")
+        bias = te.placeholder((1, CO, 1, 1), name="bias")
+        conv = topi.nn.conv2d_nchw(data, kernel, stride, padding, dilation=1, out_dtype="float32")
+        out = topi.nn.relu(conv + bias)
+        return [data, kernel, bias, out]
+
+
+
+
+
+
+
+
+Create the search task
+^^^^^^^^^^^^^^^^^^^^^^
+We then create a search task for the last convolution layer in the resnet.
+
+
+.. code-block:: default
+
+
+    target = tvm.target.Target("cuda")
+
+    # Use the last layer in ResNet-50
+    N, H, W, CO, CI, KH, KW, strides, padding = 1, 7, 7, 512, 512, 3, 3, (1, 1), (1, 1)
+    task = auto_scheduler.SearchTask(
+        func=conv2d_layer, args=(N, H, W, CO, CI, KH, KW, strides, padding), target=target
+    )
+
+    # Inspect the computational graph
+    print("Computational DAG:")
+    print(task.compute_dag)
+
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    Computational DAG:
+    data = PLACEHOLDER [1, 512, 7, 7]
+    pad_temp(i0, i1, i2, i3) = tir.if_then_else(((((i2 >= 1) && (i2 < 8)) && (i3 >= 1)) && (i3 < 8)), data[i0, i1, (i2 - 1), (i3 - 1)], 0f)
+    kernel = PLACEHOLDER [512, 512, 3, 3]
+    compute(nn, ff, yy, xx) += (pad_temp[nn, rc, (yy + ry), (xx + rx)]*kernel[ff, rc, ry, rx])
+    bias = PLACEHOLDER [1, 512, 1, 1]
+    T_add(ax0, ax1, ax2, ax3) = (compute[ax0, ax1, ax2, ax3] + bias[ax0, ax1, 0, 0])
+    compute(i0, i1, i2, i3) = max(T_add[i0, i1, i2, i3], 0f)
+
+
+
+
+Next, we set parameters for the auto-scheduler. These parameters
+mainly specify how we do the measurement during the search.
+
+* :code:`measure_ctx` launches a different process for measurement to
+  provide isolation. It can protect the master process from GPU crashes
+  during measurement and avoid other runtime conflicts.
+* :code:`min_repeat_ms` defines the minimum duration of one "repeat" in every measurement.
+  This can warmup the GPU, which is necessary to get accurate measurement results.
+  Typically, we recommend a value >= 300 ms.
+* :code:`num_measure_trials` is the number of measurement trials we can use during the search.
+  We only make 10 trials in this tutorial for a fast demonstration. In practice, 1000 is a
+  good value for the search to converge. You can do more trials according to your time budget.
+* In addition, we use :code:`RecordToFile` to dump measurement records into a file `conv2d.json`.
+  The measurement records can be used to query the history best, resume the search,
+  and do more analyses later.
+* see :any:`auto_scheduler.TuningOptions`,
+  :any:`auto_scheduler.LocalRPCMeasureContext` for more parameters.
+
+
+.. code-block:: default
+
+
+    log_file = "conv2d.json"
+    measure_ctx = auto_scheduler.LocalRPCMeasureContext(min_repeat_ms=300)
+    tune_option = auto_scheduler.TuningOptions(
+        num_measure_trials=10,  # change this to 1000 to achieve the best performance
+        runner=measure_ctx.runner,
+        measure_callbacks=[auto_scheduler.RecordToFile(log_file)],
+        verbose=2,
+    )
+
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    Get devices for measurement successfully!
+
+
+
+Run the search
+^^^^^^^^^^^^^^
+Now we get all inputs ready. Pretty simple, isn't it?
+We can kick off the search and let the auto-scheduler do its magic.
+After some measurement trials, we can load the best schedule from the log
+file and apply it.
+
+
+.. code-block:: default
+
+
+    # Run auto-tuning (search)
+    task.tune(tune_option)
+    # Apply the best schedule
+    sch, args = task.apply_best(log_file)
+
+    # Kill the measurement process
+    del measure_ctx
+
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+
+
+
+
+We can lower the schedule to see the IR after auto-scheduling.
+The auto-scheduler correctly performs optimizations including multi-level tiling,
+cooperative fetching, unrolling and operator fusion.
+
+
+.. code-block:: default
+
+
+    print("Lowered TIR:")
+    print(tvm.lower(sch, args, simple_mode=True))
+
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    Lowered TIR:
+    primfn(data_1: handle, kernel_1: handle, bias_1: handle, compute_1: handle) -> ()
+      attr = {"global_symbol": "main", "tir.noalias": True}
+      buffers = {compute: Buffer(compute_2: Pointer(float32), float32, [1, 512, 7, 7], []),
+                 bias: Buffer(bias_2: Pointer(float32), float32, [1, 512, 1, 1], []),
+                 data: Buffer(data_2: Pointer(float32), float32, [1, 512, 7, 7], []),
+                 kernel: Buffer(kernel_2: Pointer(float32), float32, [512, 512, 3, 3], [])}
+      buffer_map = {data_1: data, kernel_1: kernel, bias_1: bias, compute_1: compute} {
+      attr [IterVar(blockIdx.x: int32, (nullptr), "ThreadIndex", "blockIdx.x")] "thread_extent" = 28;
+      attr [compute_3: Pointer(float32)] "storage_scope" = "local";
+      allocate(compute_3, float32, [2]);
+      attr [pad_temp.shared: Pointer(float32)] "storage_scope" = "shared";
+      allocate(pad_temp.shared, float32, [36]);
+      attr [kernel.shared: Pointer(float32)] "storage_scope" = "shared";
+      allocate(kernel.shared, float32, [1536]);
+      attr [IterVar(threadIdx.x: int32, (nullptr), "ThreadIndex", "threadIdx.x")] "thread_extent" = 448 {
+        compute_3[0] = 0f32
+        compute_3[1] = 0f32
+        for (rc.outer.outer: int32, 0, 128) {
+          for (rx.outer.outer: int32, 0, 3) {
+            attr [IterVar(threadIdx.x_1: int32, (nullptr), "ThreadIndex", "threadIdx.x")] "thread_extent" = 448;
+            if @tir.likely((threadIdx.x_1 < 36), dtype=bool) {
+              pad_temp.shared[threadIdx.x_1] = @tir.if_then_else(((((1 <= floormod(threadIdx.x_1, 9)) && (floormod(threadIdx.x_1, 9) < 8)) && (1 <= (rx.outer.outer + floormod(blockIdx.x, 7)))) && ((rx.outer.outer + floormod(blockIdx.x, 7)) < 8)), (float32*)data_2[((((((rc.outer.outer*196) + (floordiv(threadIdx.x_1, 9)*49)) + (floormod(threadIdx.x_1, 9)*7)) + rx.outer.outer) + floormod(blockIdx.x, 7)) - 8)], 0f32, dtype=float32)
+            }
+            for (ax0.ax1.fused.ax2.fused.ax3.fused.outer.outer: int32, 0, 4) {
+              attr [IterVar(threadIdx.x_2: int32, (nullptr), "ThreadIndex", "threadIdx.x")] "thread_extent" = 448;
+              if @tir.likely((((ax0.ax1.fused.ax2.fused.ax3.fused.outer.outer*448) + threadIdx.x_2) < 1536), dtype=bool) {
+                kernel.shared[((ax0.ax1.fused.ax2.fused.ax3.fused.outer.outer*448) + threadIdx.x_2)] = (float32*)kernel_2[(((((floordiv(blockIdx.x, 7)*589824) + (floordiv(((ax0.ax1.fused.ax2.fused.ax3.fused.outer.outer*448) + threadIdx.x_2), 12)*4608)) + (rc.outer.outer*36)) + (floormod(((ax0.ax1.fused.ax2.fused.ax3.fused.outer.outer*448) + threadIdx.x_2), 12)*3)) + rx.outer.outer)]
+              }
+            }
+            for (rc.outer.inner: int32, 0, 2) {
+              for (rc.inner: int32, 0, 2) {
+                for (ry.inner: int32, 0, 3) {
+                  compute_3[0] = ((float32*)compute_3[0] + ((float32*)pad_temp.shared[((((rc.outer.inner*18) + (rc.inner*9)) + ry.inner) + floormod(threadIdx.x, 7))]*(float32*)kernel.shared[((((floordiv(threadIdx.x, 7)*12) + (rc.outer.inner*6)) + (rc.inner*3)) + ry.inner)]))
+                  compute_3[1] = ((float32*)compute_3[1] + ((float32*)pad_temp.shared[((((rc.outer.inner*18) + (rc.inner*9)) + ry.inner) + floormod(threadIdx.x, 7))]*(float32*)kernel.shared[(((((floordiv(threadIdx.x, 7)*12) + (rc.outer.inner*6)) + (rc.inner*3)) + ry.inner) + 768)]))
+                }
+              }
+            }
+          }
+        }
+        compute_2[(((floordiv(blockIdx.x, 7)*6272) + (threadIdx.x*7)) + floormod(blockIdx.x, 7))] = max(((float32*)compute_3[0] + (float32*)bias_2[((floordiv(blockIdx.x, 7)*128) + floordiv(threadIdx.x, 7))]), 0f32)
+        compute_2[((((floordiv(blockIdx.x, 7)*6272) + (threadIdx.x*7)) + floormod(blockIdx.x, 7)) + 3136)] = max(((float32*)compute_3[1] + (float32*)bias_2[(((floordiv(blockIdx.x, 7)*128) + floordiv(threadIdx.x, 7)) + 64)]), 0f32)
+      }
+    }
+
+
+
+
+
+Check correctness and evaluate performance
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+We build the binary and check its correctness and performance.
+
+
+.. code-block:: default
+
+
+    func = tvm.build(sch, args, target)
+
+    # Check correctness
+    data_np = np.random.uniform(size=(N, CI, H, W)).astype(np.float32)
+    weight_np = np.random.uniform(size=(CO, CI, KH, KW)).astype(np.float32)
+    bias_np = np.random.uniform(size=(1, CO, 1, 1)).astype(np.float32)
+    conv_np = conv2d_nchw_python(data_np, weight_np, strides, padding)
+    out_np = np.maximum(conv_np + bias_np, 0.0)
+
+    dev = tvm.cuda()
+    data_tvm = tvm.nd.array(data_np, device=dev)
+    weight_tvm = tvm.nd.array(weight_np, device=dev)
+    bias_tvm = tvm.nd.array(bias_np, device=dev)
+    out_tvm = tvm.nd.empty(out_np.shape, device=dev)
+    func(data_tvm, weight_tvm, bias_tvm, out_tvm)
+
+    # Check results
+    np.testing.assert_allclose(out_np, out_tvm.numpy(), rtol=1e-3)
+
+    # Evaluate execution time
+    evaluator = func.time_evaluator(func.entry_name, dev, min_repeat_ms=500)
+    print(
+        "Execution time of this operator: %.3f ms"
+        % (np.median(evaluator(data_tvm, weight_tvm, bias_tvm, out_tvm).results) * 1000)
+    )
+
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    Execution time of this operator: 0.375 ms
+
+
+
+Using the record file
+^^^^^^^^^^^^^^^^^^^^^
+During the search, all measurement records are dumped into the record
+file "conv2d.json". The measurement records can be used to re-apply search results,
+resume the search, and perform other analyses.
+
+Here is an example where we load the best schedule from a file,
+print the equivalent python schedule API and CUDA source code.
+They can be used for debugging and learning the behavior of the auto-scheduler.
+
+
+.. code-block:: default
+
+
+    print("Equivalent python schedule:")
+    print(task.print_best(log_file, print_mode="schedule"))
+
+    print("CUDA source code:")
+    print(task.print_best(log_file, print_mode="cuda"))
+
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    Equivalent python schedule:
+    pad_temp_i0, pad_temp_i1, pad_temp_i2, pad_temp_i3 = tuple(pad_temp.op.axis) + tuple(pad_temp.op.reduce_axis)
+    compute_nn, compute_ff, compute_yy, compute_xx, compute_rc, compute_ry, compute_rx = tuple(compute.op.axis) + tuple(compute.op.reduce_axis)
+    T_add_ax0, T_add_ax1, T_add_ax2, T_add_ax3 = tuple(T_add.op.axis) + tuple(T_add.op.reduce_axis)
+    compute_i0, compute_i1, compute_i2, compute_i3 = tuple(compute.op.axis) + tuple(compute.op.reduce_axis)
+    s[T_add].compute_inline()
+    compute_nn_o_i, compute_nn_i = s[compute].split(compute_nn, factor=1)
+    compute_nn_o_o_i, compute_nn_o_i = s[compute].split(compute_nn_o_i, factor=1)
+    compute_nn_o_o_o_i, compute_nn_o_o_i = s[compute].split(compute_nn_o_o_i, factor=1)
+    compute_nn_o_o_o_o, compute_nn_o_o_o_i = s[compute].split(compute_nn_o_o_o_i, factor=1)
+    compute_ff_o_i, compute_ff_i = s[compute].split(compute_ff, factor=1)
+    compute_ff_o_o_i, compute_ff_o_i = s[compute].split(compute_ff_o_i, factor=1)
+    compute_ff_o_o_o_i, compute_ff_o_o_i = s[compute].split(compute_ff_o_o_i, factor=64)
+    compute_ff_o_o_o_o, compute_ff_o_o_o_i = s[compute].split(compute_ff_o_o_o_i, factor=2)
+    compute_yy_o_i, compute_yy_i = s[compute].split(compute_yy, factor=1)
+    compute_yy_o_o_i, compute_yy_o_i = s[compute].split(compute_yy_o_i, factor=1)
+    compute_yy_o_o_o_i, compute_yy_o_o_i = s[compute].split(compute_yy_o_o_i, factor=7)
+    compute_yy_o_o_o_o, compute_yy_o_o_o_i = s[compute].split(compute_yy_o_o_o_i, factor=1)
+    compute_xx_o_i, compute_xx_i = s[compute].split(compute_xx, factor=1)
+    compute_xx_o_o_i, compute_xx_o_i = s[compute].split(compute_xx_o_i, factor=1)
+    compute_xx_o_o_o_i, compute_xx_o_o_i = s[compute].split(compute_xx_o_o_i, factor=1)
+    compute_xx_o_o_o_o, compute_xx_o_o_o_i = s[compute].split(compute_xx_o_o_o_i, factor=1)
+    compute_rc_o_i, compute_rc_i = s[compute].split(compute_rc, factor=2)
+    compute_rc_o_o, compute_rc_o_i = s[compute].split(compute_rc_o_i, factor=2)
+    compute_ry_o_i, compute_ry_i = s[compute].split(compute_ry, factor=3)
+    compute_ry_o_o, compute_ry_o_i = s[compute].split(compute_ry_o_i, factor=1)
+    compute_rx_o_i, compute_rx_i = s[compute].split(compute_rx, factor=1)
+    compute_rx_o_o, compute_rx_o_i = s[compute].split(compute_rx_o_i, factor=1)
+    s[compute].reorder(compute_nn_o_o_o_o, compute_ff_o_o_o_o, compute_yy_o_o_o_o, compute_xx_o_o_o_o, compute_nn_o_o_o_i, compute_ff_o_o_o_i, compute_yy_o_o_o_i, compute_xx_o_o_o_i, compute_nn_o_o_i, compute_ff_o_o_i, compute_yy_o_o_i, compute_xx_o_o_i, compute_rc_o_o, compute_ry_o_o, compute_rx_o_o, compute_rc_o_i, compute_ry_o_i, compute_rx_o_i, compute_nn_o_i, compute_ff_o_i, compute_yy_o_i, compute_xx_o_i, compute_rc_i, compute_ry_i, compute_rx_i, compute_nn_i, compute_ff_i, compute_yy_i, compute_xx_i)
+    compute_i0_o_i, compute_i0_i = s[compute].split(compute_i0, factor=1)
+    compute_i0_o_o_i, compute_i0_o_i = s[compute].split(compute_i0_o_i, factor=1)
+    compute_i0_o_o_o, compute_i0_o_o_i = s[compute].split(compute_i0_o_o_i, factor=1)
+    compute_i1_o_i, compute_i1_i = s[compute].split(compute_i1, factor=1)
+    compute_i1_o_o_i, compute_i1_o_i = s[compute].split(compute_i1_o_i, factor=64)
+    compute_i1_o_o_o, compute_i1_o_o_i = s[compute].split(compute_i1_o_o_i, factor=2)
+    compute_i2_o_i, compute_i2_i = s[compute].split(compute_i2, factor=1)
+    compute_i2_o_o_i, compute_i2_o_i = s[compute].split(compute_i2_o_i, factor=7)
+    compute_i2_o_o_o, compute_i2_o_o_i = s[compute].split(compute_i2_o_o_i, factor=1)
+    compute_i3_o_i, compute_i3_i = s[compute].split(compute_i3, factor=1)
+    compute_i3_o_o_i, compute_i3_o_i = s[compute].split(compute_i3_o_i, factor=1)
+    compute_i3_o_o_o, compute_i3_o_o_i = s[compute].split(compute_i3_o_o_i, factor=1)
+    s[compute].reorder(compute_i0_o_o_o, compute_i1_o_o_o, compute_i2_o_o_o, compute_i3_o_o_o, compute_i0_o_o_i, compute_i1_o_o_i, compute_i2_o_o_i, compute_i3_o_o_i, compute_i0_o_i, compute_i1_o_i, compute_i2_o_i, compute_i3_o_i, compute_i0_i, compute_i1_i, compute_i2_i, compute_i3_i)
+    s[compute].compute_at(s[compute], compute_i3_o_i)
+    kernel_shared = s.cache_read(kernel, "shared", [compute])
+    kernel_shared_ax0, kernel_shared_ax1, kernel_shared_ax2, kernel_shared_ax3 = tuple(kernel_shared.op.axis)
+    s[kernel_shared].compute_at(s[compute], compute_rx_o_o)
+    pad_temp_shared = s.cache_read(pad_temp, "shared", [compute])
+    pad_temp_shared_ax0, pad_temp_shared_ax1, pad_temp_shared_ax2, pad_temp_shared_ax3 = tuple(pad_temp_shared.op.axis)
+    s[pad_temp_shared].compute_at(s[compute], compute_rx_o_o)
+    s[pad_temp].compute_inline()
+    compute_i0_o_o_o_i1_o_o_o_fused_i2_o_o_o_fused_i3_o_o_o_fused = s[compute].fuse(compute_i0_o_o_o, compute_i1_o_o_o, compute_i2_o_o_o, compute_i3_o_o_o)
+    s[compute].bind(compute_i0_o_o_o_i1_o_o_o_fused_i2_o_o_o_fused_i3_o_o_o_fused, te.thread_axis("blockIdx.x"))
+    compute_i0_o_o_i_i1_o_o_i_fused_i2_o_o_i_fused_i3_o_o_i_fused = s[compute].fuse(compute_i0_o_o_i, compute_i1_o_o_i, compute_i2_o_o_i, compute_i3_o_o_i)
+    s[compute].bind(compute_i0_o_o_i_i1_o_o_i_fused_i2_o_o_i_fused_i3_o_o_i_fused, te.thread_axis("vthread"))
+    compute_i0_o_i_i1_o_i_fused_i2_o_i_fused_i3_o_i_fused = s[compute].fuse(compute_i0_o_i, compute_i1_o_i, compute_i2_o_i, compute_i3_o_i)
+    s[compute].bind(compute_i0_o_i_i1_o_i_fused_i2_o_i_fused_i3_o_i_fused, te.thread_axis("threadIdx.x"))
+    kernel_shared_ax0_ax1_fused_ax2_fused_ax3_fused = s[kernel_shared].fuse(kernel_shared_ax0, kernel_shared_ax1, kernel_shared_ax2, kernel_shared_ax3)
+    kernel_shared_ax0_ax1_fused_ax2_fused_ax3_fused_o, kernel_shared_ax0_ax1_fused_ax2_fused_ax3_fused_i = s[kernel_shared].split(kernel_shared_ax0_ax1_fused_ax2_fused_ax3_fused, factor=1)
+    s[kernel_shared].vectorize(kernel_shared_ax0_ax1_fused_ax2_fused_ax3_fused_i)
+    kernel_shared_ax0_ax1_fused_ax2_fused_ax3_fused_o_o, kernel_shared_ax0_ax1_fused_ax2_fused_ax3_fused_o_i = s[kernel_shared].split(kernel_shared_ax0_ax1_fused_ax2_fused_ax3_fused_o, factor=448)
+    s[kernel_shared].bind(kernel_shared_ax0_ax1_fused_ax2_fused_ax3_fused_o_i, te.thread_axis("threadIdx.x"))
+    pad_temp_shared_ax0_ax1_fused_ax2_fused_ax3_fused = s[pad_temp_shared].fuse(pad_temp_shared_ax0, pad_temp_shared_ax1, pad_temp_shared_ax2, pad_temp_shared_ax3)
+    pad_temp_shared_ax0_ax1_fused_ax2_fused_ax3_fused_o, pad_temp_shared_ax0_ax1_fused_ax2_fused_ax3_fused_i = s[pad_temp_shared].split(pad_temp_shared_ax0_ax1_fused_ax2_fused_ax3_fused, factor=1)
+    s[pad_temp_shared].vectorize(pad_temp_shared_ax0_ax1_fused_ax2_fused_ax3_fused_i)
+    pad_temp_shared_ax0_ax1_fused_ax2_fused_ax3_fused_o_o, pad_temp_shared_ax0_ax1_fused_ax2_fused_ax3_fused_o_i = s[pad_temp_shared].split(pad_temp_shared_ax0_ax1_fused_ax2_fused_ax3_fused_o, factor=448)
+    s[pad_temp_shared].bind(pad_temp_shared_ax0_ax1_fused_ax2_fused_ax3_fused_o_i, te.thread_axis("threadIdx.x"))
+    s[compute].pragma(compute_nn_o_o_o_o, "auto_unroll_max_step", 0)
+    s[compute].pragma(compute_nn_o_o_o_o, "unroll_explicit", True)
+
+    CUDA source code:
+
+    #ifdef _WIN32
+      using uint = unsigned int;
+      using uchar = unsigned char;
+      using ushort = unsigned short;
+      using int64_t = long long;
+      using uint64_t = unsigned long long;
+    #else
+      #define uint unsigned int
+      #define uchar unsigned char
+      #define ushort unsigned short
+      #define int64_t long long
+      #define uint64_t unsigned long long
+    #endif
+    extern "C" __global__ void default_function_kernel0(float* __restrict__ data, float* __restrict__ kernel, float* __restrict__ compute, float* __restrict__ bias) {
+      float compute1[2];
+      __shared__ float pad_temp_shared[36];
+      __shared__ float kernel_shared[1536];
+      compute1[(0)] = 0.000000e+00f;
+      compute1[(1)] = 0.000000e+00f;
+      for (int rc_outer_outer = 0; rc_outer_outer < 128; ++rc_outer_outer) {
+        for (int rx_outer_outer = 0; rx_outer_outer < 3; ++rx_outer_outer) {
+          __syncthreads();
+          if (((int)threadIdx.x) < 36) {
+            pad_temp_shared[(((int)threadIdx.x))] = (((((1 <= (((int)threadIdx.x) % 9)) && ((((int)threadIdx.x) % 9) < 8)) && (1 <= (rx_outer_outer + (((int)blockIdx.x) % 7)))) && ((rx_outer_outer + (((int)blockIdx.x) % 7)) < 8)) ? data[(((((((rc_outer_outer * 196) + ((((int)threadIdx.x) / 9) * 49)) + ((((int)threadIdx.x) % 9) * 7)) + rx_outer_outer) + (((int)blockIdx.x) % 7)) - 8))] : 0.000000e+00f);
+          }
+          for (int ax0_ax1_fused_ax2_fused_ax3_fused_outer_outer = 0; ax0_ax1_fused_ax2_fused_ax3_fused_outer_outer < 4; ++ax0_ax1_fused_ax2_fused_ax3_fused_outer_outer) {
+            if (((ax0_ax1_fused_ax2_fused_ax3_fused_outer_outer * 448) + ((int)threadIdx.x)) < 1536) {
+              kernel_shared[(((ax0_ax1_fused_ax2_fused_ax3_fused_outer_outer * 448) + ((int)threadIdx.x)))] = kernel[(((((((((int)blockIdx.x) / 7) * 589824) + ((((ax0_ax1_fused_ax2_fused_ax3_fused_outer_outer * 448) + ((int)threadIdx.x)) / 12) * 4608)) + (rc_outer_outer * 36)) + ((((ax0_ax1_fused_ax2_fused_ax3_fused_outer_outer * 448) + ((int)threadIdx.x)) % 12) * 3)) + rx_outer_outer))];
+            }
+          }
+          __syncthreads();
+          for (int rc_outer_inner = 0; rc_outer_inner < 2; ++rc_outer_inner) {
+            for (int rc_inner = 0; rc_inner < 2; ++rc_inner) {
+              for (int ry_inner = 0; ry_inner < 3; ++ry_inner) {
+                compute1[(0)] = (compute1[(0)] + (pad_temp_shared[(((((rc_outer_inner * 18) + (rc_inner * 9)) + ry_inner) + (((int)threadIdx.x) % 7)))] * kernel_shared[((((((((int)threadIdx.x) / 7) * 12) + (rc_outer_inner * 6)) + (rc_inner * 3)) + ry_inner))]));
+                compute1[(1)] = (compute1[(1)] + (pad_temp_shared[(((((rc_outer_inner * 18) + (rc_inner * 9)) + ry_inner) + (((int)threadIdx.x) % 7)))] * kernel_shared[(((((((((int)threadIdx.x) / 7) * 12) + (rc_outer_inner * 6)) + (rc_inner * 3)) + ry_inner) + 768))]));
+              }
+            }
+          }
+        }
+      }
+      compute[(((((((int)blockIdx.x) / 7) * 6272) + (((int)threadIdx.x) * 7)) + (((int)blockIdx.x) % 7)))] = max((compute1[(0)] + bias[((((((int)blockIdx.x) / 7) * 128) + (((int)threadIdx.x) / 7)))]), 0.000000e+00f);
+      compute[((((((((int)blockIdx.x) / 7) * 6272) + (((int)threadIdx.x) * 7)) + (((int)blockIdx.x) % 7)) + 3136))] = max((compute1[(1)] + bias[(((((((int)blockIdx.x) / 7) * 128) + (((int)threadIdx.x) / 7)) + 64))]), 0.000000e+00f);
+    }
+
+
+
+
+
+A more complicated example is to resume the search.
+In this case, we need to create the search policy and cost model by ourselves
+and resume the status of search policy and cost model with the log file.
+In the example below we resume the status and do more 5 trials.
+
+
+.. code-block:: default
+
+
+
+    def resume_search(task, log_file):
+        print("Resume search:")
+        cost_model = auto_scheduler.XGBModel()
+        cost_model.update_from_file(log_file)
+        search_policy = auto_scheduler.SketchPolicy(
+            task, cost_model, init_search_callbacks=[auto_scheduler.PreloadMeasuredStates(log_file)]
+        )
+        measure_ctx = auto_scheduler.LocalRPCMeasureContext(min_repeat_ms=300)
+        tune_option = auto_scheduler.TuningOptions(
+            num_measure_trials=5,
+            runner=measure_ctx.runner,
+            measure_callbacks=[auto_scheduler.RecordToFile(log_file)],
+        )
+        task.tune(tune_option, search_policy=search_policy)
+
+        # Kill the measurement process
+        del measure_ctx
+
+
+    resume_search(task, log_file)
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    Resume search:
+    /usr/local/lib/python3.6/dist-packages/xgboost/training.py:17: UserWarning: Old style callback is deprecated.  See: https://xgboost.readthedocs.io/en/latest/python/callbacks.html
+      warnings.warn(f'Old style callback is deprecated.  See: {link}', UserWarning)
+    Get devices for measurement successfully!
+
+
+
+
+
+.. rst-class:: sphx-glr-timing
+
+   **Total running time of the script:** ( 1 minutes  1.798 seconds)
+
+
+.. _sphx_glr_download_tutorials_auto_scheduler_tune_conv2d_layer_cuda.py:
+
+
+.. only :: html
+
+ .. container:: sphx-glr-footer
+    :class: sphx-glr-footer-example
+
+
+
+  .. container:: sphx-glr-download
+
+     :download:`Download Python source code: tune_conv2d_layer_cuda.py <tune_conv2d_layer_cuda.py>`
+
+
+
+  .. container:: sphx-glr-download
+
+     :download:`Download Jupyter notebook: tune_conv2d_layer_cuda.ipynb <tune_conv2d_layer_cuda.ipynb>`
+
+
+.. only:: html
+
+ .. rst-class:: sphx-glr-signature
+
+    `Gallery generated by Sphinx-Gallery <https://sphinx-gallery.github.io>`_
