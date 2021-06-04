@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['norewrite',['NoRewrite',['../namespacetvm_1_1auto__scheduler.html#a3e9480be0119338696abbe9c80193b9eaa6dd7ceb983e075b3efc829b61add2ac',1,'tvm::auto_scheduler']]]
+  ['parallel',['Parallel',['../namespacetvm_1_1tir.html#ae35cce8e3f1e8d7366dc0d9b15536736a98402eecfbcefc336954458a01752131',1,'tvm::tir']]]
 ];

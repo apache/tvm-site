@@ -1,4 +1,5 @@
 var searchData=
 [
-  ['escape',['Escape',['../namespacetvm_1_1runtime_1_1micro__rpc.html#ae62577b404cccb2018ca8576b1f75bb6',1,'tvm::runtime::micro_rpc']]]
+  ['feature',['Feature',['../namespacetvm_1_1relay.html#a926750aeda977340aa82bceac863fc9e',1,'tvm::relay']]],
+  ['fortype',['ForType',['../namespacetvm_1_1tir.html#ae35cce8e3f1e8d7366dc0d9b15536736',1,'tvm::tir']]]
 ];
