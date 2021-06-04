@@ -180,7 +180,7 @@ computation performed by numpy.
     b = tvm.nd.array(np.random.uniform(size=n).astype(B.dtype), dev)
     c = tvm.nd.array(np.zeros(n, dtype=C.dtype), dev)
     fadd(a, b, c)
-    tvm.testing.assert_allclose(c.asnumpy(), a.asnumpy() + b.asnumpy())
+    tvm.testing.assert_allclose(c.numpy(), a.numpy() + b.numpy())
 
 
 
@@ -236,8 +236,8 @@ helper function to run a profile of the TVM generated code.
 
  .. code-block:: none
 
-    Numpy running time: 0.000014
-    naive: 0.000011
+    Numpy running time: 0.000010
+    naive: 0.000007
 
 
 
@@ -290,12 +290,12 @@ return a readable C-style statement.
 
     primfn(A_1: handle, B_1: handle, C_1: handle) -> ()
       attr = {"global_symbol": "main", "tir.noalias": True}
-      buffers = {B: Buffer(B_2: Pointer(float32), float32, [n: int32], [stride: int32], type="auto"),
-                 C: Buffer(C_2: Pointer(float32), float32, [n], [stride_1: int32], type="auto"),
-                 A: Buffer(A_2: Pointer(float32), float32, [n], [stride_2: int32], type="auto")}
+      buffers = {C: Buffer(C_2: Pointer(float32), float32, [n: int32], [stride: int32], type="auto"),
+                 A: Buffer(A_2: Pointer(float32), float32, [n], [stride_1: int32], type="auto"),
+                 B: Buffer(B_2: Pointer(float32), float32, [n], [stride_2: int32], type="auto")}
       buffer_map = {A_1: A, B_1: B, C_1: C} {
       for (i: int32, 0, n) "parallel" {
-        C_2[(i*stride_1)] = ((float32*)A_2[(i*stride_2)] + (float32*)B_2[(i*stride)])
+        C_2[(i*stride)] = ((float32*)A_2[(i*stride_1)] + (float32*)B_2[(i*stride_2)])
       }
     }
 
@@ -313,7 +313,7 @@ compile and run this new schedule with the parallel operation applied:
     fadd_parallel = tvm.build(s, [A, B, C], tgt, name="myadd_parallel")
     fadd_parallel(a, b, c)
 
-    tvm.testing.assert_allclose(c.asnumpy(), a.asnumpy() + b.asnumpy())
+    tvm.testing.assert_allclose(c.numpy(), a.numpy() + b.numpy())
 
     evaluate_addition(fadd_parallel, tgt, "parallel", log=log)
 
@@ -327,7 +327,7 @@ compile and run this new schedule with the parallel operation applied:
 
  .. code-block:: none
 
-    parallel: 0.000005
+    parallel: 0.000004
 
 
 
@@ -380,17 +380,17 @@ factor to be the number of threads on your CPU.
 
  .. code-block:: none
 
-    vector: 0.000017
+    vector: 0.000014
     primfn(A_1: handle, B_1: handle, C_1: handle) -> ()
       attr = {"global_symbol": "main", "tir.noalias": True}
       buffers = {C: Buffer(C_2: Pointer(float32), float32, [n: int32], [stride: int32], type="auto"),
-                 B: Buffer(B_2: Pointer(float32), float32, [n], [stride_1: int32], type="auto"),
-                 A: Buffer(A_2: Pointer(float32), float32, [n], [stride_2: int32], type="auto")}
+                 A: Buffer(A_2: Pointer(float32), float32, [n], [stride_1: int32], type="auto"),
+                 B: Buffer(B_2: Pointer(float32), float32, [n], [stride_2: int32], type="auto")}
       buffer_map = {A_1: A, B_1: B, C_1: C} {
       for (i.outer: int32, 0, floordiv((n + 3), 4)) "parallel" {
         for (i.inner.s: int32, 0, 4) {
           if @tir.likely((((i.outer*4) + i.inner.s) < n), dtype=bool) {
-            C_2[(((i.outer*4) + i.inner.s)*stride)] = ((float32*)A_2[(((i.outer*4) + i.inner.s)*stride_2)] + (float32*)B_2[(((i.outer*4) + i.inner.s)*stride_1)])
+            C_2[(((i.outer*4) + i.inner.s)*stride)] = ((float32*)A_2[(((i.outer*4) + i.inner.s)*stride_1)] + (float32*)B_2[(((i.outer*4) + i.inner.s)*stride_2)])
           }
         }
       }
@@ -428,10 +428,10 @@ We can now compare the different schedules
  .. code-block:: none
 
                 Operator                  Timing             Performance
-                   numpy    1.3710560160689056e-05                   1.0
-                   naive    1.0926500000000001e-05    0.7969404511515498
-                parallel    5.0590999999999996e-06    0.3689929470938365
-                  vector             1.65544e-05       1.207419668195965
+                   numpy    9.691599989309908e-06                    1.0
+                   naive    7.080400000000001e-06     0.7305708043883229
+                parallel              3.5267e-06      0.3638924433416612
+                  vector    1.3903399999999998e-05    1.4345825266556418
 
 
 
@@ -523,7 +523,7 @@ will target compilation of the vector addition to GPUs.
         # - We first create a GPU device.
         # - Then tvm.nd.array copies the data to the GPU.
         # - ``fadd`` runs the actual computation
-        # - ``asnumpy()`` copies the GPU array back to the CPU (so we can verify correctness).
+        # - ``numpy()`` copies the GPU array back to the CPU (so we can verify correctness).
         #
         # Note that copying the data to and from the memory on the GPU is a required step.
 
@@ -534,7 +534,7 @@ will target compilation of the vector addition to GPUs.
         b = tvm.nd.array(np.random.uniform(size=n).astype(B.dtype), dev)
         c = tvm.nd.array(np.zeros(n, dtype=C.dtype), dev)
         fadd(a, b, c)
-        tvm.testing.assert_allclose(c.asnumpy(), a.asnumpy() + b.asnumpy())
+        tvm.testing.assert_allclose(c.numpy(), a.numpy() + b.numpy())
 
         ################################################################################
         # Inspect the Generated GPU Code
@@ -636,7 +636,7 @@ together. We can verify that the newly loaded function works.
         fadd1.import_module(fadd1_dev)
 
     fadd1(a, b, c)
-    tvm.testing.assert_allclose(c.asnumpy(), a.asnumpy() + b.asnumpy())
+    tvm.testing.assert_allclose(c.numpy(), a.numpy() + b.numpy())
 
 
 
@@ -658,7 +658,7 @@ code. Currently we support packing of Metal, OpenCL and CUDA modules.
     fadd.export_library(temp.relpath("myadd_pack.so"))
     fadd2 = tvm.runtime.load_module(temp.relpath("myadd_pack.so"))
     fadd2(a, b, c)
-    tvm.testing.assert_allclose(c.asnumpy(), a.asnumpy() + b.asnumpy())
+    tvm.testing.assert_allclose(c.numpy(), a.numpy() + b.numpy())
 
 
 
@@ -698,7 +698,7 @@ device, and verifies the correctness of the code.
         b = tvm.nd.array(np.random.uniform(size=n).astype(B.dtype), dev)
         c = tvm.nd.array(np.zeros(n, dtype=C.dtype), dev)
         fadd_cl(a, b, c)
-        tvm.testing.assert_allclose(c.asnumpy(), a.asnumpy() + b.asnumpy())
+        tvm.testing.assert_allclose(c.numpy(), a.numpy() + b.numpy())
 
 
 
@@ -804,7 +804,7 @@ matrix multiplication.
     )
     print("Numpy running time: %f" % (np_running_time / np_repeat))
 
-    answer = numpy.dot(a.asnumpy(), b.asnumpy())
+    answer = numpy.dot(a.numpy(), b.numpy())
 
 
 
@@ -816,7 +816,7 @@ matrix multiplication.
 
  .. code-block:: none
 
-    Numpy running time: 0.012868
+    Numpy running time: 0.007988
 
 
 
@@ -841,7 +841,7 @@ optimizations.
 
     c = tvm.nd.array(numpy.zeros((M, N), dtype=dtype), dev)
     func(a, b, c)
-    tvm.testing.assert_allclose(c.asnumpy(), answer, rtol=1e-5)
+    tvm.testing.assert_allclose(c.numpy(), answer, rtol=1e-5)
 
 
     def evaluate_operation(s, vars, target, name, optimization, log):
@@ -850,7 +850,7 @@ optimizations.
 
         c = tvm.nd.array(numpy.zeros((M, N), dtype=dtype), dev)
         func(a, b, c)
-        tvm.testing.assert_allclose(c.asnumpy(), answer, rtol=1e-5)
+        tvm.testing.assert_allclose(c.numpy(), answer, rtol=1e-5)
 
         evaluator = func.time_evaluator(func.entry_name, dev, number=10)
         mean_time = evaluator(a, b, c).mean
@@ -872,7 +872,7 @@ optimizations.
 
  .. code-block:: none
 
-    none: 3.508450
+    none: 6.006971
 
 
 
@@ -900,8 +900,8 @@ nested loops over the indices of the A and B matrices.
     primfn(A_1: handle, B_1: handle, C_1: handle) -> ()
       attr = {"global_symbol": "main", "tir.noalias": True}
       buffers = {C: Buffer(C_2: Pointer(float32), float32, [1024, 1024], []),
-                 B: Buffer(B_2: Pointer(float32), float32, [1024, 1024], []),
-                 A: Buffer(A_2: Pointer(float32), float32, [1024, 1024], [])}
+                 A: Buffer(A_2: Pointer(float32), float32, [1024, 1024], []),
+                 B: Buffer(B_2: Pointer(float32), float32, [1024, 1024], [])}
       buffer_map = {A_1: A, B_1: B, C_1: C} {
       for (x: int32, 0, 1024) {
         for (y: int32, 0, 1024) {
@@ -968,7 +968,7 @@ schedule.
 
  .. code-block:: none
 
-    blocking: 0.289656
+    blocking: 0.110070
 
 
 
@@ -995,8 +995,8 @@ internal representation and compare it to the original:
     primfn(A_1: handle, B_1: handle, C_1: handle) -> ()
       attr = {"global_symbol": "main", "tir.noalias": True}
       buffers = {C: Buffer(C_2: Pointer(float32), float32, [1024, 1024], []),
-                 B: Buffer(B_2: Pointer(float32), float32, [1024, 1024], []),
-                 A: Buffer(A_2: Pointer(float32), float32, [1024, 1024], [])}
+                 A: Buffer(A_2: Pointer(float32), float32, [1024, 1024], []),
+                 B: Buffer(B_2: Pointer(float32), float32, [1024, 1024], [])}
       buffer_map = {A_1: A, B_1: B, C_1: C} {
       for (x.outer: int32, 0, 32) {
         for (y.outer: int32, 0, 32) {
@@ -1056,12 +1056,12 @@ already cache friendly from our previous optimizations.
 
  .. code-block:: none
 
-    vectorization: 0.324798
+    vectorization: 0.117100
     primfn(A_1: handle, B_1: handle, C_1: handle) -> ()
       attr = {"global_symbol": "main", "tir.noalias": True}
-      buffers = {B: Buffer(B_2: Pointer(float32), float32, [1024, 1024], []),
-                 C: Buffer(C_2: Pointer(float32), float32, [1024, 1024], []),
-                 A: Buffer(A_2: Pointer(float32), float32, [1024, 1024], [])}
+      buffers = {C: Buffer(C_2: Pointer(float32), float32, [1024, 1024], []),
+                 A: Buffer(A_2: Pointer(float32), float32, [1024, 1024], []),
+                 B: Buffer(B_2: Pointer(float32), float32, [1024, 1024], [])}
       buffer_map = {A_1: A, B_1: B, C_1: C} {
       for (x.outer: int32, 0, 32) {
         for (y.outer: int32, 0, 32) {
@@ -1124,12 +1124,12 @@ more cache friendly.
 
  .. code-block:: none
 
-    loop permutation: 0.109318
+    loop permutation: 0.060846
     primfn(A_1: handle, B_1: handle, C_1: handle) -> ()
       attr = {"global_symbol": "main", "tir.noalias": True}
       buffers = {C: Buffer(C_2: Pointer(float32), float32, [1024, 1024], []),
-                 B: Buffer(B_2: Pointer(float32), float32, [1024, 1024], []),
-                 A: Buffer(A_2: Pointer(float32), float32, [1024, 1024], [])}
+                 A: Buffer(A_2: Pointer(float32), float32, [1024, 1024], []),
+                 B: Buffer(B_2: Pointer(float32), float32, [1024, 1024], [])}
       buffer_map = {A_1: A, B_1: B, C_1: C} {
       for (x.outer: int32, 0, 32) {
         for (y.outer: int32, 0, 32) {
@@ -1217,12 +1217,12 @@ optimized schedule.
 
  .. code-block:: none
 
-    array packing: 0.201209
+    array packing: 0.062176
     primfn(A_1: handle, B_1: handle, C_1: handle) -> ()
       attr = {"global_symbol": "main", "tir.noalias": True}
       buffers = {C: Buffer(C_2: Pointer(float32), float32, [1024, 1024], []),
-                 B: Buffer(B_2: Pointer(float32), float32, [1024, 1024], []),
-                 A: Buffer(A_2: Pointer(float32), float32, [1024, 1024], [])}
+                 A: Buffer(A_2: Pointer(float32), float32, [1024, 1024], []),
+                 B: Buffer(B_2: Pointer(float32), float32, [1024, 1024], [])}
       buffer_map = {A_1: A, B_1: B, C_1: C} {
       attr [packedB: Pointer(float32x32)] "storage_scope" = "global";
       allocate(packedB, float32x32, [32768]) {
@@ -1305,12 +1305,12 @@ to `C` when all the block results are ready.
 
  .. code-block:: none
 
-    block caching: 0.185369
+    block caching: 0.059559
     primfn(A_1: handle, B_1: handle, C_1: handle) -> ()
       attr = {"global_symbol": "main", "tir.noalias": True}
       buffers = {C: Buffer(C_2: Pointer(float32), float32, [1024, 1024], []),
-                 B: Buffer(B_2: Pointer(float32), float32, [1024, 1024], []),
-                 A: Buffer(A_2: Pointer(float32), float32, [1024, 1024], [])}
+                 A: Buffer(A_2: Pointer(float32), float32, [1024, 1024], []),
+                 B: Buffer(B_2: Pointer(float32), float32, [1024, 1024], [])}
       buffer_map = {A_1: A, B_1: B, C_1: C} {
       attr [packedB: Pointer(float32x32)] "storage_scope" = "global";
       allocate(packedB, float32x32, [32768]);
@@ -1384,12 +1384,12 @@ of thread-level parallelization.
 
  .. code-block:: none
 
-    parallelization: 0.057319
+    parallelization: 0.016043
     primfn(A_1: handle, B_1: handle, C_1: handle) -> ()
       attr = {"global_symbol": "main", "tir.noalias": True}
-      buffers = {B: Buffer(B_2: Pointer(float32), float32, [1024, 1024], []),
-                 C: Buffer(C_2: Pointer(float32), float32, [1024, 1024], []),
-                 A: Buffer(A_2: Pointer(float32), float32, [1024, 1024], [])}
+      buffers = {C: Buffer(C_2: Pointer(float32), float32, [1024, 1024], []),
+                 A: Buffer(A_2: Pointer(float32), float32, [1024, 1024], []),
+                 B: Buffer(B_2: Pointer(float32), float32, [1024, 1024], [])}
       buffer_map = {A_1: A, B_1: B, C_1: C} {
       attr [packedB: Pointer(float32x32)] "storage_scope" = "global";
       allocate(packedB, float32x32, [32768]) {
@@ -1458,13 +1458,13 @@ working, we can compare the results.
  .. code-block:: none
 
                 Operator                  Timing             Performance
-                    none      3.5084501237999994                     1.0
-                blocking            0.2896558851     0.08255949917460248
-           vectorization     0.32479784629999997     0.09257587676583862
-        loop permutation     0.10931828029999999     0.03115856758470816
-           array packing            0.2012089377    0.057349807065825056
-           block caching            0.1853688535     0.05283496899172879
-         parallelization            0.0573185166     0.01633727559960817
+                    none            6.0069714717                     1.0
+                blocking            0.1100704531    0.018323784892031385
+           vectorization            0.1171002217      0.0194940532432494
+        loop permutation            0.0608457194    0.010129184013384432
+           array packing            0.0621763721    0.010350702078896974
+           block caching            0.0595586284    0.009914917805185554
+         parallelization            0.0160434783    0.002670809804172355
 
 
 
@@ -1501,7 +1501,7 @@ the computation for specific platforms.
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** ( 1 minutes  2.464 seconds)
+   **Total running time of the script:** ( 1 minutes  25.223 seconds)
 
 
 .. _sphx_glr_download_tutorials_get_started_tensor_expr_get_started.py:

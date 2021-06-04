@@ -8,7 +8,8 @@
 <html class="writer-html5" lang="en" >
 <head>
   <meta charset="utf-8">
-  
+  <meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
   <title>Convert Layout Pass &mdash; tvm 0.8.dev0 documentation</title>
@@ -19,6 +20,8 @@
   <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
   <link rel="stylesheet" href="../_static/css/tlcpack_theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="../_static/gallery.css" type="text/css" />
 
   
@@ -32,11 +35,10 @@
   
     
       <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
         <script src="../_static/jquery.js"></script>
         <script src="../_static/underscore.js"></script>
         <script src="../_static/doctools.js"></script>
-        <script src="../_static/language_data.js"></script>
-        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
     
     <script type="text/javascript" src="../_static/js/theme.js"></script>
 
@@ -337,16 +339,16 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <div class="section" id="convert-layout-pass">
+  <section id="convert-layout-pass">
 <h1>Convert Layout Pass<a class="headerlink" href="#convert-layout-pass" title="Permalink to this headline">¶</a></h1>
 <p><strong>Author</strong>: <a class="reference external" href="https://github.com/anijain2305">Animesh Jain</a></p>
-<div class="section" id="background">
+<section id="background">
 <h2>1. Background<a class="headerlink" href="#background" title="Permalink to this headline">¶</a></h2>
 <p>Data layout format describes how the data is laid out in the memory. For example, Tensorflow framework default data layout for convolution operator is NHWC, i.e, the data is 4-dimensions and is laid out in row-major format with N being the first dimension and C being the last dimension. Data layout has a major role in model performance, significantly affecting spatial and temporal locality. For example, Intel x86 backend in TVM prefers layout as NCHWc where the C dimension is tiled in 2 dimensions to exploit data locality efficiently. Similarly, CUDA backend prefers the data layout to be in NCHW format.</p>
 <p>Essentially, TVM has to deal with data layouts throughout the compiler toolchain - Framework parsers, Relay layout transformations, and TOPI schedules. As we move towards third-party codegen integration, which might have their own data layout restrictions, handling layouts at all levels in TVM toolchain is going to become even more challenging. Therefore, we developed a new Relay pass - <strong>ConvertLayout</strong> – to reduce some of the complications that arise due to layout handling.</p>
 <p>If you directly want to understand the usage of ConvertLayout Pass, directly jump to Section 4 - Usage.</p>
-</div>
-<div class="section" id="motivation-and-overview">
+</section>
+<section id="motivation-and-overview">
 <h2>2. Motivation and Overview<a class="headerlink" href="#motivation-and-overview" title="Permalink to this headline">¶</a></h2>
 <p>Let’s look at a simple scenario to understand the complications that arise due to different layouts - Suppose we want to compile a Tensorflow NHWC graph for an ARM edge device. But, suppose we currently support only NCHW schedules in TOPI for ARM. So, there is a mismatch between framework layout and TOPI-supported layout. One way to deal with this mismatch is to insert layout transforms before each and after convolution, such that resulting convolution has NCHW input data layout and can use TOPI schedules. However, this can lead to performance degradation because of the presence of too many layout transforms.</p>
 <p>We encountered similar problems in other use cases as well</p>
@@ -357,7 +359,7 @@
 <li><p>Complication in third-party codegen integrations like TensorRT that prefers data layout to be in one format.</p></li>
 </ul>
 <p>To solve these problems, we introduced <em>ConvertLayout</em> pass that sets up the infrastructure to change the data layout of the whole graph with minimal number of data layout transforms. In ideal cases, we will have only 2 layout transforms for data, one at the start and one at the end. An example to show the transformation is below</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span class="c1"># Original graph - 2 convolutions in NHWC format.</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Original graph - 2 convolutions in NHWC format.</span>
 <span class="n">fn</span> <span class="p">(</span><span class="o">%</span><span class="n">x</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">[(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">56</span><span class="p">,</span> <span class="mi">56</span><span class="p">,</span> <span class="mi">64</span><span class="p">),</span> <span class="n">float32</span><span class="p">],</span> <span class="o">%</span><span class="n">weight1</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">[(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">64</span><span class="p">,</span> <span class="mi">32</span><span class="p">),</span> <span class="n">float32</span><span class="p">],</span> <span class="o">%</span><span class="n">weight2</span><span class="p">:</span> <span class="n">Tensor</span><span class="p">[(</span><span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">32</span><span class="p">,</span> <span class="mi">32</span><span class="p">),</span> <span class="n">float32</span><span class="p">])</span> <span class="p">{</span>
   <span class="o">%</span><span class="mi">0</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">conv2d</span><span class="p">(</span><span class="o">%</span><span class="n">x</span><span class="p">,</span> <span class="o">%</span><span class="n">weight1</span><span class="p">,</span> <span class="n">padding</span><span class="o">=</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="n">channels</span><span class="o">=</span><span class="mi">32</span><span class="p">,</span> <span class="n">kernel_size</span><span class="o">=</span><span class="p">[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span> <span class="n">data_layout</span><span class="o">=</span><span class="s2">&quot;NHWC&quot;</span><span class="p">,</span> <span class="n">kernel_layout</span><span class="o">=</span><span class="s2">&quot;HWIO&quot;</span><span class="p">);</span>
   <span class="o">%</span><span class="mi">1</span> <span class="o">=</span> <span class="n">nn</span><span class="o">.</span><span class="n">relu</span><span class="p">(</span><span class="o">%</span><span class="mi">0</span><span class="p">);</span>
@@ -379,8 +381,8 @@
 <span class="p">}</span>
 </pre></div>
 </div>
-</div>
-<div class="section" id="design">
+</section>
+<section id="design">
 <h2>3. Design<a class="headerlink" href="#design" title="Permalink to this headline">¶</a></h2>
 <p>Before delving into ConvertLayout pass, let’s categorize the operators into 3 categories based on their sensitivity to data layouts. This categorization will be useful later to understand Convertlayout pass details.</p>
 <ul class="simple">
@@ -396,7 +398,7 @@
 </ul>
 <p>These steps happen for each operator in sequence, where ConvertLayout pass keeps on passing the new layouts to the next operator properties, finally resulting in modifying the whole graph operator-by-operator. Now, let’s look at a couple of examples of how to define the two properties.</p>
 <p><strong>FTVMConvertLayout - Python callback for layout alteration</strong> - This is used for <em>heavily-layout sensitive</em> operators. For example, one can return a new convolution operator with new data and kernel layout. The other 2 components will infer layout and insert layout transforms if needed. One example for convolution operator is as follows where we are converting to NCHW layout.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span class="nd">@reg.register_convert_op_layout</span><span class="p">(</span><span class="s2">&quot;nn.conv2d&quot;</span><span class="p">)</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nd">@reg.register_convert_op_layout</span><span class="p">(</span><span class="s2">&quot;nn.conv2d&quot;</span><span class="p">)</span>
 <span class="k">def</span> <span class="nf">convert_conv2d</span><span class="p">(</span><span class="n">attrs</span><span class="p">,</span> <span class="n">inputs</span><span class="p">,</span> <span class="n">tinfos</span><span class="p">,</span> <span class="n">desired_layouts</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Convert Layout pass registration for conv2d op.</span>
 
@@ -447,7 +449,7 @@
 </div>
 <p><strong>FInferCorrectLayout - Layout inference</strong> - Currently, this attribute is exposed only in C++. This function takes original input layouts and the new input layouts (passed from the previous operator or from the python callback for layout alteration), and infers the final data layouts. Layout inference is called for each operator. The usage might vary for different operator categories. For layout agnostic operators, we just want to return the new data layouts in this function. For lightly-layout and heavily-layout sensitive operators, we can change the operator attributes (like axis for concatenate, pad_width for pad) so that we can adapt to the new data layout, preventing insertion of layout transforms. Let’s look at a couple of examples to understand this better.</p>
 <p>First example is for layout agnostic operators. These operators do not have any operator attributes that are affected by data layouts, so we just adapt to new layouts.</p>
-<div class="highlight-c++ notranslate"><div class="highlight"><pre><span class="c1">// For operator set its attributes like following</span>
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="c1">// For operator set its attributes like following</span>
 <span class="c1">//          .set_attr&lt;FInferCorrectLayout&gt;(&quot;FInferCorrectLayout&quot;, ElemwiseArbitraryLayout);</span>
 
 <span class="c1">// Take arbitrary input layouts and copy to outputs.</span>
@@ -474,7 +476,7 @@
 </pre></div>
 </div>
 <p>Second example is for a lightly-layout sensitive operator - batch normalization. BatchNorm has an axis operator that has to change when we go from NHWC to NCHW data layout. (Similar handling also needs to be for heavily-layout sensitive operators)</p>
-<div class="highlight-c++ notranslate"><div class="highlight"><pre><span class="n">Array</span><span class="o">&lt;</span><span class="n">Array</span><span class="o">&lt;</span><span class="n">Layout</span><span class="o">&gt;&gt;</span> <span class="n">BatchNormInferCorrectLayout</span><span class="p">(</span><span class="k">const</span> <span class="n">Attrs</span><span class="o">&amp;</span> <span class="n">attrs</span><span class="p">,</span>
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="n">Array</span><span class="o">&lt;</span><span class="n">Array</span><span class="o">&lt;</span><span class="n">Layout</span><span class="o">&gt;&gt;</span> <span class="n">BatchNormInferCorrectLayout</span><span class="p">(</span><span class="k">const</span> <span class="n">Attrs</span><span class="o">&amp;</span> <span class="n">attrs</span><span class="p">,</span>
                                                  <span class="k">const</span> <span class="n">Array</span><span class="o">&lt;</span><span class="n">Layout</span><span class="o">&gt;&amp;</span> <span class="n">new_in_layouts</span><span class="p">,</span>
                                                  <span class="k">const</span> <span class="n">Array</span><span class="o">&lt;</span><span class="n">Layout</span><span class="o">&gt;&amp;</span> <span class="n">old_in_layouts</span><span class="p">,</span>
                                                  <span class="k">const</span> <span class="n">Array</span><span class="o">&lt;</span><span class="n">Array</span><span class="o">&lt;</span><span class="n">IndexExpr</span><span class="o">&gt;&gt;&amp;</span> <span class="n">old_in_shapes</span><span class="p">)</span> <span class="p">{</span>
@@ -521,12 +523,12 @@
 <span class="p">}</span>
 </pre></div>
 </div>
-</div>
-<div class="section" id="usage">
+</section>
+<section id="usage">
 <h2>4. Usage<a class="headerlink" href="#usage" title="Permalink to this headline">¶</a></h2>
 <p id="convert-layout-usage">ConvertLayout pass is extremely easy to use. The pass is not a part of default relay.build pipeline. The intended usage is to call it between the framework-to-relay parser and relay.build module call.</p>
 <p>In order to specify the layouts to convert to, we create a mapping of heavily-layout sensitive operators to a list of the desired layouts for that operator. The first example below specifies data layout, we allow the kernel layout to be automatically converted to one that is supported by TVM (for that particular data layout and operator). This is specified by the use of the “default” keyword. The second example shows how we could have also converted to a specific kernel layout of our choosing. It’s worth noting that the following examples will convert to the same layouts i.e. <cite>{‘nn.conv2d’: [‘NCHW’, ‘default’]} == {‘nn.conv2d’: [‘NCHW’, ‘OIHW’]}</cite></p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span class="c1"># TFlite framework to Relay parser - Default layout is NHWC</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># TFlite framework to Relay parser - Default layout is NHWC</span>
 <span class="n">mod</span><span class="p">,</span> <span class="n">params</span> <span class="o">=</span> <span class="n">relay</span><span class="o">.</span><span class="n">frontend</span><span class="o">.</span><span class="n">from_tflite</span><span class="p">(</span><span class="n">tflite_model</span><span class="p">,</span>
                                          <span class="n">shape_dict</span><span class="o">=</span><span class="n">shape_dict</span><span class="p">,</span>
                                          <span class="n">dtype_dict</span><span class="o">=</span><span class="n">dtype_dict</span><span class="p">)</span>
@@ -546,7 +548,7 @@
      <span class="n">graph</span><span class="p">,</span> <span class="n">lib</span><span class="p">,</span> <span class="n">params</span> <span class="o">=</span> <span class="n">relay</span><span class="o">.</span><span class="n">build</span><span class="p">(</span><span class="n">mod</span><span class="p">,</span> <span class="n">target</span><span class="p">,</span> <span class="n">params</span><span class="o">=</span><span class="n">params</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span class="n">desired_layouts</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;nn.conv2d&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;NCHW&#39;</span><span class="p">,</span> <span class="s1">&#39;OIHW&#39;</span><span class="p">]}</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">desired_layouts</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;nn.conv2d&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;NCHW&#39;</span><span class="p">,</span> <span class="s1">&#39;OIHW&#39;</span><span class="p">]}</span>
 <span class="k">pass</span> <span class="o">=</span> <span class="n">relay</span><span class="o">.</span><span class="n">transform</span><span class="o">.</span><span class="n">ConvertLayout</span><span class="p">(</span><span class="n">desired_layouts</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -556,8 +558,8 @@
 <li><p>Layout inference for <a class="reference external" href="https://github.com/apache/tvm/pull/4600">Batch Norm</a> - Batch normalization falls into the category of lightly-sensitive operator. The PR shows how to handle the layout inference for batch norm.</p></li>
 <li><p>Python Callback for <a class="reference external" href="https://github.com/apache/tvm/pull/4335">Convolution</a>- For highly-sensitive operators, one might have to do python callback as well. The PR shows how to define a python callback function for Convolution operator.</p></li>
 </ul>
-</div>
-</div>
+</section>
+</section>
 
 
            </div>

@@ -1,7 +1,7 @@
 var searchData=
 [
   ['partialsolvedinequalities',['PartialSolvedInequalities',['../namespacetvm_1_1arith.html#adf7450490c4a53f62bab4463cdb5e9c8',1,'tvm::arith']]],
-  ['partitionerfunctype',['PartitionerFuncType',['../namespacetvm_1_1support.html#a319637dc5e8bf62b2ef0a0937437f67d',1,'tvm::support']]],
+  ['partitionerfunctype',['PartitionerFuncType',['../namespacetvm_1_1support.html#a34824d8de8374a4144dc4754ccafdd74',1,'tvm::support']]],
   ['pass',['Pass',['../namespacetvm_1_1relay_1_1transform.html#afa666ade112e9955059095d695238a9a',1,'tvm::relay::transform']]],
   ['passcontext',['PassContext',['../namespacetvm_1_1relay_1_1transform.html#a744a05f8bba3c2ac238ba4569d926184',1,'tvm::relay::transform']]],
   ['passcontextnode',['PassContextNode',['../namespacetvm_1_1relay_1_1transform.html#a72900733e0d3510ae61a1c287c2ec125',1,'tvm::relay::transform']]],

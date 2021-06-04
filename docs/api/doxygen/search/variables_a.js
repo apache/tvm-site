@@ -14,6 +14,7 @@ var searchData=
   ['kconv2dhwcn',['kConv2dHWCN',['../namespacetvm_1_1topi.html#a8c924d6d8fc010283ca60928c23101f1',1,'tvm::topi']]],
   ['kconv2dnchw',['kConv2dNCHW',['../namespacetvm_1_1topi.html#a2fd97432407bc468930e459a9826ce95',1,'tvm::topi']]],
   ['kcrc',['kCrc',['../classtvm_1_1runtime_1_1micro__rpc_1_1PacketFieldSizeBytes.html#a0451ac7e42968a63b89b59987d6e2242',1,'tvm::runtime::micro_rpc::PacketFieldSizeBytes']]],
+  ['kdefaultworkspacealignment',['kDefaultWorkspaceAlignment',['../namespacetvm_1_1runtime.html#a551bab1e24e2e794f8ccd4446b63a7af',1,'tvm::runtime']]],
   ['kdepthwiseconv2dbackinputnhwc',['kDepthwiseConv2dBackInputNHWC',['../namespacetvm_1_1topi.html#aad71825e552f8805698db11912c017b6',1,'tvm::topi']]],
   ['kdepthwiseconv2dbackweightnhwc',['kDepthwiseConv2dBackWeightNHWC',['../namespacetvm_1_1topi.html#a969830c2a564f886efdd2ab7555028f8',1,'tvm::topi']]],
   ['kdepthwiseconv2dnchw',['kDepthwiseConv2dNCHW',['../namespacetvm_1_1topi.html#a67461e3d47ef738a69d2c69824411123',1,'tvm::topi']]],

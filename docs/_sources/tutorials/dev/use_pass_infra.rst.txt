@@ -533,14 +533,16 @@ could be like the following to enable IR dumping for ``FoldConstant`` optimizati
     # An example is below.
 
 
-    def print_ir(mod, info, is_before):
+    @tvm.instrument.pass_instrument
+    class PrintIR:
         """Print the name of the pass, the IR, only before passes execute."""
-        if is_before:
+
+        def run_before_pass(self, mod, info):
             print("Running pass: {}", info)
             print(mod)
 
 
-    with tvm.transform.PassContext(opt_level=3, trace=print_ir):
+    with tvm.transform.PassContext(opt_level=3, instruments=[PrintIR()]):
         with tvm.target.Target("llvm"):
             # Perform the optimizations.
             mod = seq(mod)
@@ -558,6 +560,20 @@ could be like the following to enable IR dumping for ``FoldConstant`` optimizati
 
  .. code-block:: none
 
+    Running pass: {} The meta data of the pass: pass name: sequentialopt_level: 2required passes: [
+    ]
+
+    def @main(%x: Tensor[(1, 64, 56, 56), float32], %weight: Tensor[(64, 64, 3, 3), float32]) {
+      %0 = add(meta[relay.Constant][0], meta[relay.Constant][0]);
+      %1 = nn.conv2d(%x, %weight, padding=[0, 0, 0, 0]);
+      %2 = multiply(%0, 2f);
+      %3 = add(%1, %2);
+      %4 = add(%3, meta[relay.Constant][0]);
+      %5 = add(%3, meta[relay.Constant][0]);
+      add(%4, %5)
+    }
+
+
     Running pass: {} The meta data of the pass: pass name: FoldConstantopt_level: 2required passes: [
     ]
 
@@ -569,6 +585,14 @@ could be like the following to enable IR dumping for ``FoldConstant`` optimizati
       %4 = add(%3, meta[relay.Constant][0]);
       %5 = add(%3, meta[relay.Constant][0]);
       add(%4, %5)
+    }
+
+
+    Running pass: {} The meta data of the pass: pass name: sequentialopt_level: 2required passes: [
+    ]
+
+    def @main() {
+      add(meta[relay.Constant][0], meta[relay.Constant][0])
     }
 
 
@@ -620,6 +644,14 @@ could be like the following to enable IR dumping for ``FoldConstant`` optimizati
       };
       let %x2 = %x1(%x);
       %x2
+    }
+
+
+    Running pass: {} The meta data of the pass: pass name: sequentialopt_level: 2required passes: [
+    ]
+
+    def @main() {
+      multiply(meta[relay.Constant][0], 2f)
     }
 
 

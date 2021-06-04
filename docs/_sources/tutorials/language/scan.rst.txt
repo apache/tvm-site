@@ -132,14 +132,14 @@ numpy to verify the correctness of the result.
 .. code-block:: default
 
     fscan = tvm.build(s, [X, s_scan], "cuda", name="myscan")
-    dev = tvm.gpu(0)
+    dev = tvm.cuda(0)
     n = 1024
     m = 10
     a_np = np.random.uniform(size=(m, n)).astype(s_scan.dtype)
     a = tvm.nd.array(a_np, dev)
     b = tvm.nd.array(np.zeros((m, n), dtype=s_scan.dtype), dev)
     fscan(a, b)
-    tvm.testing.assert_allclose(b.asnumpy(), np.cumsum(a_np, axis=0))
+    tvm.testing.assert_allclose(b.numpy(), np.cumsum(a_np, axis=0))
 
 
 
@@ -268,21 +268,21 @@ The following example demonstrates how we can build recurrence with two states.
     primfn(X_1: handle, scan.v0_1: handle, scan.v1_1: handle) -> ()
       attr = {"global_symbol": "main", "tir.noalias": True}
       buffers = {scan.v1: Buffer(scan.v1_2: Pointer(float32), float32, [m: int32, l: int32], [stride: int32, stride_1: int32], type="auto"),
-                 scan.v0: Buffer(scan.v0_2: Pointer(float32), float32, [m, n: int32], [stride_2: int32, stride_3: int32], type="auto"),
-                 X: Buffer(X_2: Pointer(float32), float32, [m, n], [stride_4: int32, stride_5: int32], type="auto")}
+                 X: Buffer(X_2: Pointer(float32), float32, [m, n: int32], [stride_2: int32, stride_3: int32], type="auto"),
+                 scan.v0: Buffer(scan.v0_2: Pointer(float32), float32, [m, n], [stride_4: int32, stride_5: int32], type="auto")}
       buffer_map = {X_1: X, scan.v0_1: scan.v0, scan.v1_1: scan.v1} {
       for (i: int32, 0, n) {
-        scan.v0_2[(i*stride_3)] = (float32*)X_2[(i*stride_5)]
+        scan.v0_2[(i*stride_5)] = (float32*)X_2[(i*stride_3)]
       }
       for (i_1: int32, 0, l) {
         scan.v1_2[(i_1*stride_1)] = 0f32
       }
       for (scan.idx: int32, 0, (m - 1)) {
         for (i_2: int32, 0, n) {
-          scan.v0_2[(((scan.idx + 1)*stride_2) + (i_2*stride_3))] = ((float32*)scan.v0_2[((scan.idx*stride_2) + (i_2*stride_3))] + (float32*)X_2[(((scan.idx + 1)*stride_4) + (i_2*stride_5))])
+          scan.v0_2[(((scan.idx + 1)*stride_4) + (i_2*stride_5))] = ((float32*)scan.v0_2[((scan.idx*stride_4) + (i_2*stride_5))] + (float32*)X_2[(((scan.idx + 1)*stride_2) + (i_2*stride_3))])
         }
         for (i_3: int32, 0, l) {
-          scan.v1_2[(((scan.idx + 1)*stride) + (i_3*stride_1))] = ((float32*)scan.v1_2[((scan.idx*stride) + (i_3*stride_1))] + (float32*)scan.v0_2[(scan.idx*stride_2)])
+          scan.v1_2[(((scan.idx + 1)*stride) + (i_3*stride_1))] = ((float32*)scan.v1_2[((scan.idx*stride) + (i_3*stride_1))] + (float32*)scan.v0_2[(scan.idx*stride_4)])
         }
       }
     }

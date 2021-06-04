@@ -8,7 +8,8 @@
 <html class="writer-html5" lang="en" >
 <head>
   <meta charset="utf-8">
-  
+  <meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
   <title>Writing a Customized Pass &mdash; tvm 0.8.dev0 documentation</title>
@@ -19,6 +20,8 @@
   <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
   <link rel="stylesheet" href="../../_static/css/tlcpack_theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="../../_static/gallery.css" type="text/css" />
 
   
@@ -32,11 +35,10 @@
   
     
       <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+        <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
         <script src="../../_static/jquery.js"></script>
         <script src="../../_static/underscore.js"></script>
         <script src="../../_static/doctools.js"></script>
-        <script src="../../_static/language_data.js"></script>
-        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
     
     <script type="text/javascript" src="../../_static/js/theme.js"></script>
 
@@ -327,14 +329,14 @@
 <p class="admonition-title">Note</p>
 <p>Click <a class="reference internal" href="#sphx-glr-download-tutorials-dev-low-level-custom-pass-py"><span class="std std-ref">here</span></a> to download the full example code</p>
 </div>
-<div class="sphx-glr-example-title section" id="writing-a-customized-pass">
+<section class="sphx-glr-example-title" id="writing-a-customized-pass">
 <span id="sphx-glr-tutorials-dev-low-level-custom-pass-py"></span><h1>Writing a Customized Pass<a class="headerlink" href="#writing-a-customized-pass" title="Permalink to this headline">¶</a></h1>
 <p><strong>Author</strong>: <a class="reference external" href="https://were.github.io">Jian Weng</a></p>
 <p>TVM is a framework that abstracts away the heterogenity of machine learning accelerators.
 Sometimes users may want customize some analysis and IR transformations
 to adapt TVM to their own specialized hardware. This tutorial helps users write
 a customized pass in TVM.</p>
-<div class="section" id="prerequisites">
+<section id="prerequisites">
 <h2>Prerequisites<a class="headerlink" href="#prerequisites" title="Permalink to this headline">¶</a></h2>
 <p>Before reading this tutorial, we assume readers have already known these topics well:</p>
 <ul class="simple">
@@ -348,14 +350,14 @@ visitor is implemented.</p></li>
 <li><p>How a Schedule is lowered to either an IRModule class or a LLVM module. Otherwise,
 take a look at <code class="docutils literal notranslate"><span class="pre">python/tvm/build_module.py</span></code> to get some basics.</p></li>
 </ul>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span class="kn">import</span> <span class="nn">tvm</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">tvm</span>
 <span class="kn">from</span> <span class="nn">tvm</span> <span class="k">import</span> <span class="n">te</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 </pre></div>
 </div>
 <p>We first write a very simple vector add and build it with the default schedule. Then, we use
 our customized lowering pass to manipulate the IR directly instead of using schedule primitives.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span class="n">n</span> <span class="o">=</span> <span class="n">tvm</span><span class="o">.</span><span class="n">tir</span><span class="o">.</span><span class="n">const</span><span class="p">(</span><span class="mi">128</span><span class="p">,</span> <span class="s2">&quot;int32&quot;</span><span class="p">)</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">n</span> <span class="o">=</span> <span class="n">tvm</span><span class="o">.</span><span class="n">tir</span><span class="o">.</span><span class="n">const</span><span class="p">(</span><span class="mi">128</span><span class="p">,</span> <span class="s2">&quot;int32&quot;</span><span class="p">)</span>
 <span class="n">a</span> <span class="o">=</span> <a href="../../api/python/te.html#tvm.te.placeholder" title="View documentation for tvm.te.placeholder"><span class="n">te</span><span class="o">.</span><span class="n">placeholder</span></a><span class="p">((</span><span class="n">n</span><span class="p">,),</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;a&quot;</span><span class="p">)</span>
 <span class="n">b</span> <span class="o">=</span> <a href="../../api/python/te.html#tvm.te.placeholder" title="View documentation for tvm.te.placeholder"><span class="n">te</span><span class="o">.</span><span class="n">placeholder</span></a><span class="p">((</span><span class="n">n</span><span class="p">,),</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;b&quot;</span><span class="p">)</span>
 <span class="n">c</span> <span class="o">=</span> <a href="../../api/python/te.html#tvm.te.compute" title="View documentation for tvm.te.compute"><span class="n">te</span><span class="o">.</span><span class="n">compute</span></a><span class="p">((</span><span class="n">n</span><span class="p">,),</span> <span class="k">lambda</span> <span class="n">i</span><span class="p">:</span> <span class="n">a</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">+</span> <span class="n">b</span><span class="p">[</span><span class="n">i</span><span class="p">],</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;c&quot;</span><span class="p">)</span>
@@ -366,11 +368,11 @@ our customized lowering pass to manipulate the IR directly instead of using sche
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre>primfn(a_1: handle, b_1: handle, c_1: handle) -&gt; ()
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>primfn(a_1: handle, b_1: handle, c_1: handle) -&gt; ()
   attr = {&quot;global_symbol&quot;: &quot;main&quot;, &quot;tir.noalias&quot;: True}
   buffers = {c: Buffer(c_2: Pointer(float32), float32, [128], []),
-             b: Buffer(b_2: Pointer(float32), float32, [128], []),
-             a: Buffer(a_2: Pointer(float32), float32, [128], [])}
+             a: Buffer(a_2: Pointer(float32), float32, [128], []),
+             b: Buffer(b_2: Pointer(float32), float32, [128], [])}
   buffer_map = {a_1: a, b_1: b, c_1: c} {
   for (i: int32, 0, 128) {
     c_2[i] = ((float32*)a_2[i] + (float32*)b_2[i])
@@ -378,13 +380,13 @@ our customized lowering pass to manipulate the IR directly instead of using sche
 }
 </pre></div>
 </div>
-</div>
-<div class="section" id="writing-a-pass">
+</section>
+<section id="writing-a-pass">
 <h2>Writing a Pass<a class="headerlink" href="#writing-a-pass" title="Permalink to this headline">¶</a></h2>
 <p>Essentially, an “IR transformation pass” is a function which maps a statement to a new statement.
 Thus, we define this vectorize function and implement it step by step.</p>
 <p>TVM already provides two class for users to both analyze and transform IR.</p>
-<div class="section" id="ir-visitor">
+<section id="ir-visitor">
 <h3>IR Visitor<a class="headerlink" href="#ir-visitor" title="Permalink to this headline">¶</a></h3>
 <p>We can use <code class="docutils literal notranslate"><span class="pre">tvm.tir.stmt_functor.post_order_visit(stmt,</span> <span class="pre">func)</span></code> to gather information from the Halide IR.
 <code class="docutils literal notranslate"><span class="pre">func</span></code> is a function callback. This function will be called before exiting the current IR node,
@@ -396,7 +398,7 @@ return value of <code class="docutils literal notranslate"><span class="pre">fun
 This is mainly due to the constraints in the Python-C runtime. The variable values will be
 refreshed every recursion but the array values will be preserved.</p>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span class="n">loops</span> <span class="o">=</span> <span class="p">[]</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">loops</span> <span class="o">=</span> <span class="p">[]</span>
 
 
 <span class="k">def</span> <span class="nf">find_width8</span><span class="p">(</span><span class="n">op</span><span class="p">):</span>
@@ -407,8 +409,8 @@ refreshed every recursion but the array values will be preserved.</p>
                 <span class="n">loops</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">op</span><span class="p">)</span>
 </pre></div>
 </div>
-</div>
-<div class="section" id="ir-transformation">
+</section>
+<section id="ir-transformation">
 <h3>IR Transformation<a class="headerlink" href="#ir-transformation" title="Permalink to this headline">¶</a></h3>
 <p>The transformation interface is slightly different from the visitor interface. There is only a
 post-order callback in the visitor, but transformation visitor supports both a pre-order and a
@@ -420,7 +422,7 @@ this value.</p>
 <p>If the pre-order function is called and returns a value which is not None, the post-order
 function will be skipped.</p>
 </div>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span class="k">def</span> <span class="nf">vectorize8</span><span class="p">(</span><span class="n">op</span><span class="p">):</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">vectorize8</span><span class="p">(</span><span class="n">op</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot; Split can vectorize the loops found in `find_width8`. &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="n">op</span> <span class="ow">in</span> <span class="n">loops</span><span class="p">:</span>
         <span class="n">extent</span> <span class="o">=</span> <span class="n">op</span><span class="o">.</span><span class="n">extent</span><span class="o">.</span><span class="n">value</span>
@@ -447,9 +449,9 @@ function will be skipped.</p>
     <span class="k">return</span> <span class="n">f</span><span class="o">.</span><span class="n">with_body</span><span class="p">(</span><a href="../../api/python/tir.html#tvm.tir.stmt_functor.ir_transform" title="View documentation for tvm.tir.stmt_functor.ir_transform"><span class="n">tvm</span><span class="o">.</span><span class="n">tir</span><span class="o">.</span><span class="n">stmt_functor</span><span class="o">.</span><span class="n">ir_transform</span></a><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">body</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="n">vectorize8</span><span class="p">,</span> <span class="p">[</span><span class="s2">&quot;tir.For&quot;</span><span class="p">]))</span>
 </pre></div>
 </div>
-</div>
-</div>
-<div class="section" id="glue-to-lowering">
+</section>
+</section>
+<section id="glue-to-lowering">
 <h2>Glue to Lowering<a class="headerlink" href="#glue-to-lowering" title="Permalink to this headline">¶</a></h2>
 <p>So far, we are done with writing this IR transformation pass. What we need to do next is to glue
 this pass to TVM’s lower pass.</p>
@@ -470,16 +472,16 @@ called after each phase is done.</p>
 </dl>
 </div>
 <p>Thus, a good place to put this transformation pass is just after Phase 1.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span class="k">with</span> <a href="../../api/python/ir.html#tvm.transform.PassContext" title="View documentation for tvm.transform.PassContext"><span class="n">tvm</span><span class="o">.</span><span class="n">transform</span><span class="o">.</span><span class="n">PassContext</span></a><span class="p">(</span><span class="n">config</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;tir.add_lower_pass&quot;</span><span class="p">:</span> <span class="p">[(</span><span class="mi">1</span><span class="p">,</span> <span class="n">vectorize</span><span class="p">)]}):</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">with</span> <a href="../../api/python/ir.html#tvm.transform.PassContext" title="View documentation for tvm.transform.PassContext"><span class="n">tvm</span><span class="o">.</span><span class="n">transform</span><span class="o">.</span><span class="n">PassContext</span></a><span class="p">(</span><span class="n">config</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;tir.add_lower_pass&quot;</span><span class="p">:</span> <span class="p">[(</span><span class="mi">1</span><span class="p">,</span> <span class="n">vectorize</span><span class="p">)]}):</span>
     <span class="nb">print</span><span class="p">(</span><a href="../../api/python/driver.html#tvm.lower" title="View documentation for tvm.lower"><span class="n">tvm</span><span class="o">.</span><span class="n">lower</span></a><span class="p">(</span><span class="n">sch</span><span class="p">,</span> <span class="p">[</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">c</span><span class="p">]))</span>
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre>primfn(a_1: handle, b_1: handle, c_1: handle) -&gt; ()
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>primfn(a_1: handle, b_1: handle, c_1: handle) -&gt; ()
   attr = {&quot;global_symbol&quot;: &quot;main&quot;, &quot;tir.noalias&quot;: True}
   buffers = {c: Buffer(c_2: Pointer(float32), float32, [128], []),
-             b: Buffer(b_2: Pointer(float32), float32, [128], []),
-             a: Buffer(a_2: Pointer(float32), float32, [128], [])}
+             a: Buffer(a_2: Pointer(float32), float32, [128], []),
+             b: Buffer(b_2: Pointer(float32), float32, [128], [])}
   buffer_map = {a_1: a, b_1: b, c_1: c} {
   for (i.outer: int32, 0, 16) {
     c_2[ramp((i.outer*8), 1, 8)] = ((float32x8*)a_2[ramp((i.outer*8), 1, 8)] + (float32x8*)b_2[ramp((i.outer*8), 1, 8)])
@@ -487,8 +489,8 @@ called after each phase is done.</p>
 }
 </pre></div>
 </div>
-</div>
-<div class="section" id="quick-view">
+</section>
+<section id="quick-view">
 <h2>Quick View<a class="headerlink" href="#quick-view" title="Permalink to this headline">¶</a></h2>
 <p>This tutorial gives a quick view of writing a customized IR transformation pass:
 - Use <code class="docutils literal notranslate"><span class="pre">tvm.tir.stmt_functor.post_order_visit</span></code> to gather information on each IR nodes.
@@ -504,8 +506,8 @@ called after each phase is done.</p>
 </div>
 </div>
 <p class="sphx-glr-signature"><a class="reference external" href="https://sphinx-gallery.github.io">Gallery generated by Sphinx-Gallery</a></p>
-</div>
-</div>
+</section>
+</section>
 
 
            </div>

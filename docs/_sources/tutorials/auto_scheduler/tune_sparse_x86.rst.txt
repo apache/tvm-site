@@ -34,6 +34,7 @@ __name__ == "__main__":` block.
 
     import numpy as np
     import tvm
+    import tvm.testing
     from tvm import te, auto_scheduler, runtime, topi
     from tvm.auto_scheduler import _ffi_api
     from tvm.topi.utils import get_const_tuple
@@ -130,7 +131,14 @@ If your machine supports avx instructions, you can
     target = tvm.target.Target("llvm")
 
     # Register the sparse data to task inputs
-    prefix = "sparse_dense_bsr_%d_%d_%d_%d_%.2f_" % (N, K, BS_R, BS_C, density)
+    prefix = "sparse_dense_bsr_%d_%d_%d_%d_%d_%d_" % (
+        N,
+        K,
+        BS_R,
+        BS_C,
+        W_sp_np.indices.shape[0],
+        W_sp_np.indptr.shape[0],
+    )
     task = tvm.auto_scheduler.SearchTask(
         func=sparse_dense,
         args=(M, N, K, W_sp_np.data.shape, W_sp_np.indices.shape, W_sp_np.indptr.shape, "float32"),
@@ -314,7 +322,10 @@ file and apply it.
 
  .. code-block:: none
 
-
+    /usr/local/lib/python3.6/dist-packages/numpy/core/_methods.py:34: RuntimeWarning: invalid value encountered in reduce
+      return umr_minimum(a, axis, None, out, keepdims, initial, where)
+    /usr/local/lib/python3.6/dist-packages/numpy/core/_methods.py:30: RuntimeWarning: invalid value encountered in reduce
+      return umr_maximum(a, axis, None, out, keepdims, initial, where)
 
 
 
@@ -343,36 +354,58 @@ layout transformation, parallelization, vectorization, unrolling, and operator f
     Lowered TIR:
     primfn(placeholder_5: handle, placeholder_6: handle, placeholder_7: handle, placeholder_8: handle, placeholder_9: handle, compute_1: handle) -> ()
       attr = {"global_symbol": "main", "tir.noalias": True}
-      buffers = {placeholder_4: Buffer(placeholder_10: Pointer(float32), float32, [128, 512], []),
-                 placeholder: Buffer(placeholder_11: Pointer(float32), float32, [4916, 16, 1], []),
-                 placeholder_1: Buffer(placeholder_12: Pointer(float32), float32, [128, 256], []),
+      buffers = {placeholder_4: Buffer(placeholder_10: Pointer(int32), int32, [4916], []),
                  compute: Buffer(compute_2: Pointer(float32), float32, [128, 512], []),
-                 placeholder_2: Buffer(placeholder_13: Pointer(int32), int32, [4916], []),
-                 placeholder_3: Buffer(placeholder_14: Pointer(int32), int32, [33], [])}
-      buffer_map = {placeholder_6: placeholder, placeholder_5: placeholder_1, placeholder_7: placeholder_2, placeholder_8: placeholder_3, placeholder_9: placeholder_4, compute_1: compute} {
-      for (i0.outer.i1.outer.fused: int32, 0, 32) "parallel" {
+                 placeholder_3: Buffer(placeholder_11: Pointer(float32), float32, [128, 512], []),
+                 placeholder_2: Buffer(placeholder_12: Pointer(int32), int32, [33], []),
+                 placeholder: Buffer(placeholder_13: Pointer(float32), float32, [128, 256], []),
+                 placeholder_1: Buffer(placeholder_14: Pointer(float32), float32, [4916, 16, 1], [])}
+      buffer_map = {placeholder_5: placeholder, placeholder_6: placeholder_1, placeholder_8: placeholder_2, placeholder_9: placeholder_3, compute_1: compute, placeholder_7: placeholder_4} {
+      for (i0.outer.i1.outer.fused: int32, 0, 128) "parallel" {
         attr [compute_3: Pointer(float32)] "storage_scope" = "global";
-        allocate(compute_3, float32, [2048]) {
-          for (i.outer.inner: int32, 0, 4) {
-            for (nb_j.inner: int32, 0, 2) {
-              for (i.inner.init: int32, 0, 16) {
-                for (j.init: int32, 0, 16) {
-                  compute_3[((((i.outer.inner*512) + (i.inner.init*32)) + (nb_j.inner*16)) + j.init)] = 0f32
-                }
-              }
-              for (elem_idx: int32, 0, ((int32*)placeholder_14[(((floormod(i0.outer.i1.outer.fused, 16)*2) + nb_j.inner) + 1)] - (int32*)placeholder_14[((floormod(i0.outer.i1.outer.fused, 16)*2) + nb_j.inner)])) {
-                for (i.inner: int32, 0, 16) {
-                  for (j: int32, 0, 16) {
-                    compute_3[((((i.outer.inner*512) + (i.inner*32)) + (nb_j.inner*16)) + j)] = ((float32*)compute_3[((((i.outer.inner*512) + (i.inner*32)) + (nb_j.inner*16)) + j)] + ((float32*)placeholder_11[((((int32*)placeholder_14[((floormod(i0.outer.i1.outer.fused, 16)*2) + nb_j.inner)]*16) + (elem_idx*16)) + j)]*max((float32*)placeholder_12[((((floordiv(i0.outer.i1.outer.fused, 16)*16384) + (i.outer.inner*4096)) + (i.inner*256)) + (int32*)placeholder_13[((int32*)placeholder_14[((floormod(i0.outer.i1.outer.fused, 16)*2) + nb_j.inner)] + elem_idx)])], 0f32)))
-                  }
-                }
+        allocate(compute_3, float32, [512]) {
+          for (nb_j.inner: int32, 0, 2) {
+            for (i.inner.init: int32, 0, 16) {
+              compute_3[((i.inner.init*32) + (nb_j.inner*16))] = 0f32
+              compute_3[(((i.inner.init*32) + (nb_j.inner*16)) + 1)] = 0f32
+              compute_3[(((i.inner.init*32) + (nb_j.inner*16)) + 2)] = 0f32
+              compute_3[(((i.inner.init*32) + (nb_j.inner*16)) + 3)] = 0f32
+              compute_3[(((i.inner.init*32) + (nb_j.inner*16)) + 4)] = 0f32
+              compute_3[(((i.inner.init*32) + (nb_j.inner*16)) + 5)] = 0f32
+              compute_3[(((i.inner.init*32) + (nb_j.inner*16)) + 6)] = 0f32
+              compute_3[(((i.inner.init*32) + (nb_j.inner*16)) + 7)] = 0f32
+              compute_3[(((i.inner.init*32) + (nb_j.inner*16)) + 8)] = 0f32
+              compute_3[(((i.inner.init*32) + (nb_j.inner*16)) + 9)] = 0f32
+              compute_3[(((i.inner.init*32) + (nb_j.inner*16)) + 10)] = 0f32
+              compute_3[(((i.inner.init*32) + (nb_j.inner*16)) + 11)] = 0f32
+              compute_3[(((i.inner.init*32) + (nb_j.inner*16)) + 12)] = 0f32
+              compute_3[(((i.inner.init*32) + (nb_j.inner*16)) + 13)] = 0f32
+              compute_3[(((i.inner.init*32) + (nb_j.inner*16)) + 14)] = 0f32
+              compute_3[(((i.inner.init*32) + (nb_j.inner*16)) + 15)] = 0f32
+            }
+            for (elem_idx: int32, 0, ((int32*)placeholder_12[(((floormod(i0.outer.i1.outer.fused, 16)*2) + nb_j.inner) + 1)] - (int32*)placeholder_12[((floormod(i0.outer.i1.outer.fused, 16)*2) + nb_j.inner)])) {
+              for (i.inner: int32, 0, 16) {
+                compute_3[((i.inner*32) + (nb_j.inner*16))] = ((float32*)compute_3[((i.inner*32) + (nb_j.inner*16))] + ((float32*)placeholder_14[(((int32*)placeholder_12[((floormod(i0.outer.i1.outer.fused, 16)*2) + nb_j.inner)]*16) + (elem_idx*16))]*max((float32*)placeholder_13[(((floordiv(i0.outer.i1.outer.fused, 16)*4096) + (i.inner*256)) + (int32*)placeholder_10[((int32*)placeholder_12[((floormod(i0.outer.i1.outer.fused, 16)*2) + nb_j.inner)] + elem_idx)])], 0f32)))
+                compute_3[(((i.inner*32) + (nb_j.inner*16)) + 1)] = ((float32*)compute_3[(((i.inner*32) + (nb_j.inner*16)) + 1)] + ((float32*)placeholder_14[((((int32*)placeholder_12[((floormod(i0.outer.i1.outer.fused, 16)*2) + nb_j.inner)]*16) + (elem_idx*16)) + 1)]*max((float32*)placeholder_13[(((floordiv(i0.outer.i1.outer.fused, 16)*4096) + (i.inner*256)) + (int32*)placeholder_10[((int32*)placeholder_12[((floormod(i0.outer.i1.outer.fused, 16)*2) + nb_j.inner)] + elem_idx)])], 0f32)))
+                compute_3[(((i.inner*32) + (nb_j.inner*16)) + 2)] = ((float32*)compute_3[(((i.inner*32) + (nb_j.inner*16)) + 2)] + ((float32*)placeholder_14[((((int32*)placeholder_12[((floormod(i0.outer.i1.outer.fused, 16)*2) + nb_j.inner)]*16) + (elem_idx*16)) + 2)]*max((float32*)placeholder_13[(((floordiv(i0.outer.i1.outer.fused, 16)*4096) + (i.inner*256)) + (int32*)placeholder_10[((int32*)placeholder_12[((floormod(i0.outer.i1.outer.fused, 16)*2) + nb_j.inner)] + elem_idx)])], 0f32)))
+                compute_3[(((i.inner*32) + (nb_j.inner*16)) + 3)] = ((float32*)compute_3[(((i.inner*32) + (nb_j.inner*16)) + 3)] + ((float32*)placeholder_14[((((int32*)placeholder_12[((floormod(i0.outer.i1.outer.fused, 16)*2) + nb_j.inner)]*16) + (elem_idx*16)) + 3)]*max((float32*)placeholder_13[(((floordiv(i0.outer.i1.outer.fused, 16)*4096) + (i.inner*256)) + (int32*)placeholder_10[((int32*)placeholder_12[((floormod(i0.outer.i1.outer.fused, 16)*2) + nb_j.inner)] + elem_idx)])], 0f32)))
+                compute_3[(((i.inner*32) + (nb_j.inner*16)) + 4)] = ((float32*)compute_3[(((i.inner*32) + (nb_j.inner*16)) + 4)] + ((float32*)placeholder_14[((((int32*)placeholder_12[((floormod(i0.outer.i1.outer.fused, 16)*2) + nb_j.inner)]*16) + (elem_idx*16)) + 4)]*max((float32*)placeholder_13[(((floordiv(i0.outer.i1.outer.fused, 16)*4096) + (i.inner*256)) + (int32*)placeholder_10[((int32*)placeholder_12[((floormod(i0.outer.i1.outer.fused, 16)*2) + nb_j.inner)] + elem_idx)])], 0f32)))
+                compute_3[(((i.inner*32) + (nb_j.inner*16)) + 5)] = ((float32*)compute_3[(((i.inner*32) + (nb_j.inner*16)) + 5)] + ((float32*)placeholder_14[((((int32*)placeholder_12[((floormod(i0.outer.i1.outer.fused, 16)*2) + nb_j.inner)]*16) + (elem_idx*16)) + 5)]*max((float32*)placeholder_13[(((floordiv(i0.outer.i1.outer.fused, 16)*4096) + (i.inner*256)) + (int32*)placeholder_10[((int32*)placeholder_12[((floormod(i0.outer.i1.outer.fused, 16)*2) + nb_j.inner)] + elem_idx)])], 0f32)))
+                compute_3[(((i.inner*32) + (nb_j.inner*16)) + 6)] = ((float32*)compute_3[(((i.inner*32) + (nb_j.inner*16)) + 6)] + ((float32*)placeholder_14[((((int32*)placeholder_12[((floormod(i0.outer.i1.outer.fused, 16)*2) + nb_j.inner)]*16) + (elem_idx*16)) + 6)]*max((float32*)placeholder_13[(((floordiv(i0.outer.i1.outer.fused, 16)*4096) + (i.inner*256)) + (int32*)placeholder_10[((int32*)placeholder_12[((floormod(i0.outer.i1.outer.fused, 16)*2) + nb_j.inner)] + elem_idx)])], 0f32)))
+                compute_3[(((i.inner*32) + (nb_j.inner*16)) + 7)] = ((float32*)compute_3[(((i.inner*32) + (nb_j.inner*16)) + 7)] + ((float32*)placeholder_14[((((int32*)placeholder_12[((floormod(i0.outer.i1.outer.fused, 16)*2) + nb_j.inner)]*16) + (elem_idx*16)) + 7)]*max((float32*)placeholder_13[(((floordiv(i0.outer.i1.outer.fused, 16)*4096) + (i.inner*256)) + (int32*)placeholder_10[((int32*)placeholder_12[((floormod(i0.outer.i1.outer.fused, 16)*2) + nb_j.inner)] + elem_idx)])], 0f32)))
+                compute_3[(((i.inner*32) + (nb_j.inner*16)) + 8)] = ((float32*)compute_3[(((i.inner*32) + (nb_j.inner*16)) + 8)] + ((float32*)placeholder_14[((((int32*)placeholder_12[((floormod(i0.outer.i1.outer.fused, 16)*2) + nb_j.inner)]*16) + (elem_idx*16)) + 8)]*max((float32*)placeholder_13[(((floordiv(i0.outer.i1.outer.fused, 16)*4096) + (i.inner*256)) + (int32*)placeholder_10[((int32*)placeholder_12[((floormod(i0.outer.i1.outer.fused, 16)*2) + nb_j.inner)] + elem_idx)])], 0f32)))
+                compute_3[(((i.inner*32) + (nb_j.inner*16)) + 9)] = ((float32*)compute_3[(((i.inner*32) + (nb_j.inner*16)) + 9)] + ((float32*)placeholder_14[((((int32*)placeholder_12[((floormod(i0.outer.i1.outer.fused, 16)*2) + nb_j.inner)]*16) + (elem_idx*16)) + 9)]*max((float32*)placeholder_13[(((floordiv(i0.outer.i1.outer.fused, 16)*4096) + (i.inner*256)) + (int32*)placeholder_10[((int32*)placeholder_12[((floormod(i0.outer.i1.outer.fused, 16)*2) + nb_j.inner)] + elem_idx)])], 0f32)))
+                compute_3[(((i.inner*32) + (nb_j.inner*16)) + 10)] = ((float32*)compute_3[(((i.inner*32) + (nb_j.inner*16)) + 10)] + ((float32*)placeholder_14[((((int32*)placeholder_12[((floormod(i0.outer.i1.outer.fused, 16)*2) + nb_j.inner)]*16) + (elem_idx*16)) + 10)]*max((float32*)placeholder_13[(((floordiv(i0.outer.i1.outer.fused, 16)*4096) + (i.inner*256)) + (int32*)placeholder_10[((int32*)placeholder_12[((floormod(i0.outer.i1.outer.fused, 16)*2) + nb_j.inner)] + elem_idx)])], 0f32)))
+                compute_3[(((i.inner*32) + (nb_j.inner*16)) + 11)] = ((float32*)compute_3[(((i.inner*32) + (nb_j.inner*16)) + 11)] + ((float32*)placeholder_14[((((int32*)placeholder_12[((floormod(i0.outer.i1.outer.fused, 16)*2) + nb_j.inner)]*16) + (elem_idx*16)) + 11)]*max((float32*)placeholder_13[(((floordiv(i0.outer.i1.outer.fused, 16)*4096) + (i.inner*256)) + (int32*)placeholder_10[((int32*)placeholder_12[((floormod(i0.outer.i1.outer.fused, 16)*2) + nb_j.inner)] + elem_idx)])], 0f32)))
+                compute_3[(((i.inner*32) + (nb_j.inner*16)) + 12)] = ((float32*)compute_3[(((i.inner*32) + (nb_j.inner*16)) + 12)] + ((float32*)placeholder_14[((((int32*)placeholder_12[((floormod(i0.outer.i1.outer.fused, 16)*2) + nb_j.inner)]*16) + (elem_idx*16)) + 12)]*max((float32*)placeholder_13[(((floordiv(i0.outer.i1.outer.fused, 16)*4096) + (i.inner*256)) + (int32*)placeholder_10[((int32*)placeholder_12[((floormod(i0.outer.i1.outer.fused, 16)*2) + nb_j.inner)] + elem_idx)])], 0f32)))
+                compute_3[(((i.inner*32) + (nb_j.inner*16)) + 13)] = ((float32*)compute_3[(((i.inner*32) + (nb_j.inner*16)) + 13)] + ((float32*)placeholder_14[((((int32*)placeholder_12[((floormod(i0.outer.i1.outer.fused, 16)*2) + nb_j.inner)]*16) + (elem_idx*16)) + 13)]*max((float32*)placeholder_13[(((floordiv(i0.outer.i1.outer.fused, 16)*4096) + (i.inner*256)) + (int32*)placeholder_10[((int32*)placeholder_12[((floormod(i0.outer.i1.outer.fused, 16)*2) + nb_j.inner)] + elem_idx)])], 0f32)))
+                compute_3[(((i.inner*32) + (nb_j.inner*16)) + 14)] = ((float32*)compute_3[(((i.inner*32) + (nb_j.inner*16)) + 14)] + ((float32*)placeholder_14[((((int32*)placeholder_12[((floormod(i0.outer.i1.outer.fused, 16)*2) + nb_j.inner)]*16) + (elem_idx*16)) + 14)]*max((float32*)placeholder_13[(((floordiv(i0.outer.i1.outer.fused, 16)*4096) + (i.inner*256)) + (int32*)placeholder_10[((int32*)placeholder_12[((floormod(i0.outer.i1.outer.fused, 16)*2) + nb_j.inner)] + elem_idx)])], 0f32)))
+                compute_3[(((i.inner*32) + (nb_j.inner*16)) + 15)] = ((float32*)compute_3[(((i.inner*32) + (nb_j.inner*16)) + 15)] + ((float32*)placeholder_14[((((int32*)placeholder_12[((floormod(i0.outer.i1.outer.fused, 16)*2) + nb_j.inner)]*16) + (elem_idx*16)) + 15)]*max((float32*)placeholder_13[(((floordiv(i0.outer.i1.outer.fused, 16)*4096) + (i.inner*256)) + (int32*)placeholder_10[((int32*)placeholder_12[((floormod(i0.outer.i1.outer.fused, 16)*2) + nb_j.inner)] + elem_idx)])], 0f32)))
               }
             }
           }
-          for (i0.inner: int32, 0, 64) {
-            for (i1.inner: int32, 0, 32) {
-              compute_2[((((floordiv(i0.outer.i1.outer.fused, 16)*32768) + (i0.inner*512)) + (floormod(i0.outer.i1.outer.fused, 16)*32)) + i1.inner)] = max(((float32*)compute_3[((i0.inner*32) + i1.inner)] + (float32*)placeholder_10[((((floordiv(i0.outer.i1.outer.fused, 16)*32768) + (i0.inner*512)) + (floormod(i0.outer.i1.outer.fused, 16)*32)) + i1.inner)]), 0f32)
-            }
+          for (i0.inner: int32, 0, 16) {
+            compute_2[ramp((((floordiv(i0.outer.i1.outer.fused, 16)*8192) + (i0.inner*512)) + (floormod(i0.outer.i1.outer.fused, 16)*32)), 1, 32)] = max(((float32x32*)compute_3[ramp((i0.inner*32), 1, 32)] + (float32x32*)placeholder_11[ramp((((floordiv(i0.outer.i1.outer.fused, 16)*8192) + (i0.inner*512)) + (floormod(i0.outer.i1.outer.fused, 16)*32)), 1, 32)]), broadcast(0f32, 32))
           }
         }
       }
@@ -404,7 +437,7 @@ We build the binary and check its correctness and performance.
     func(X_tvm, W_data_tvm, W_indices_tvm, W_indptr_tvm, B_tvm, Y_tvm)
 
     # Check results
-    tvm.testing.assert_allclose(Y_np, Y_tvm.asnumpy(), atol=1e-4, rtol=1e-4)
+    tvm.testing.assert_allclose(Y_np, Y_tvm.numpy(), atol=1e-4, rtol=1e-4)
 
     # Evaluate execution time.
     evaluator = func.time_evaluator(func.entry_name, dev, min_repeat_ms=500)
@@ -426,7 +459,7 @@ We build the binary and check its correctness and performance.
 
  .. code-block:: none
 
-    Execution time of this operator: 1.275 ms
+    Execution time of this operator: 0.891 ms
 
 
 

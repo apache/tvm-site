@@ -14,6 +14,8 @@ var searchData=
   ['passcontextnode',['PassContextNode',['../classtvm_1_1transform_1_1PassContextNode.html',1,'tvm::transform']]],
   ['passinfo',['PassInfo',['../classtvm_1_1transform_1_1PassInfo.html',1,'tvm::transform']]],
   ['passinfonode',['PassInfoNode',['../classtvm_1_1transform_1_1PassInfoNode.html',1,'tvm::transform']]],
+  ['passinstrument',['PassInstrument',['../classtvm_1_1instrument_1_1PassInstrument.html',1,'tvm::instrument']]],
+  ['passinstrumentnode',['PassInstrumentNode',['../classtvm_1_1instrument_1_1PassInstrumentNode.html',1,'tvm::instrument']]],
   ['passnode',['PassNode',['../classtvm_1_1transform_1_1PassNode.html',1,'tvm::transform']]],
   ['pattern',['Pattern',['../classtvm_1_1relay_1_1Pattern.html',1,'tvm::relay']]],
   ['patternconstructor',['PatternConstructor',['../classtvm_1_1relay_1_1PatternConstructor.html',1,'tvm::relay']]],

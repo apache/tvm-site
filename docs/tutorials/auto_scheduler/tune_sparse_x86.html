@@ -8,7 +8,8 @@
 <html class="writer-html5" lang="en" >
 <head>
   <meta charset="utf-8">
-  
+  <meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
   <title>Auto-scheduling Sparse Matrix Multiplication on CPU with Custom Sketch Rule &mdash; tvm 0.8.dev0 documentation</title>
@@ -19,6 +20,8 @@
   <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
   <link rel="stylesheet" href="../../_static/css/tlcpack_theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="../../_static/gallery.css" type="text/css" />
 
   
@@ -32,11 +35,10 @@
   
     
       <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+        <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
         <script src="../../_static/jquery.js"></script>
         <script src="../../_static/underscore.js"></script>
         <script src="../../_static/doctools.js"></script>
-        <script src="../../_static/language_data.js"></script>
-        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
     
     <script type="text/javascript" src="../../_static/js/theme.js"></script>
 
@@ -328,7 +330,7 @@
 <p class="admonition-title">Note</p>
 <p>Click <a class="reference internal" href="#sphx-glr-download-tutorials-auto-scheduler-tune-sparse-x86-py"><span class="std std-ref">here</span></a> to download the full example code</p>
 </div>
-<div class="sphx-glr-example-title section" id="auto-scheduling-sparse-matrix-multiplication-on-cpu-with-custom-sketch-rule">
+<section class="sphx-glr-example-title" id="auto-scheduling-sparse-matrix-multiplication-on-cpu-with-custom-sketch-rule">
 <span id="sphx-glr-tutorials-auto-scheduler-tune-sparse-x86-py"></span><h1>Auto-scheduling Sparse Matrix Multiplication on CPU with Custom Sketch Rule<a class="headerlink" href="#auto-scheduling-sparse-matrix-multiplication-on-cpu-with-custom-sketch-rule" title="Permalink to this headline">¶</a></h1>
 <p><strong>Author</strong>: <a class="reference external" href="https://github.com/jcf94/">Chengfan Jia</a></p>
 <p>This is a tutorial on how to use the auto-scheduler to tune a sparse matrix multiplication for
@@ -342,22 +344,23 @@ and plug a custom sketch rule to the auto-scheduler’s search policy.</p>
 <p>Note that this tutorial will not run on Windows or recent versions of macOS. To
 get it to run, you will need to wrap the body of this tutorial in a <code class="code docutils literal notranslate"><span class="pre">if</span>
 <span class="pre">__name__</span> <span class="pre">==</span> <span class="pre">&quot;__main__&quot;:</span></code> block.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span class="kn">import</span> <span class="nn">os</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">os</span>
 
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">import</span> <span class="nn">tvm</span>
+<span class="kn">import</span> <span class="nn">tvm.testing</span>
 <span class="kn">from</span> <span class="nn">tvm</span> <span class="k">import</span> <span class="n">te</span><span class="p">,</span> <span class="n">auto_scheduler</span><span class="p">,</span> <span class="n">runtime</span><span class="p">,</span> <span class="n">topi</span>
 <span class="kn">from</span> <span class="nn">tvm.auto_scheduler</span> <span class="k">import</span> <span class="n">_ffi_api</span>
 <span class="kn">from</span> <span class="nn">tvm.topi.utils</span> <span class="k">import</span> <span class="n">get_const_tuple</span>
 <span class="kn">from</span> <span class="nn">tvm.topi.sparse.utils</span> <span class="k">import</span> <span class="n">random_bsr_matrix</span>
 </pre></div>
 </div>
-<div class="section" id="define-the-computation">
+<section id="define-the-computation">
 <h2>Define the computation<a class="headerlink" href="#define-the-computation" title="Permalink to this headline">¶</a></h2>
 <p>To begin with, let us define the computation of a sparse matmul with several relu and bias add.
 The function should return the list of input/output tensors.
 From these tensors, the auto-scheduler can get the whole computational graph.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span class="nd">@auto_scheduler</span><span class="o">.</span><span class="n">register_workload</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nd">@auto_scheduler</span><span class="o">.</span><span class="n">register_workload</span>
 <span class="k">def</span> <span class="nf">sparse_dense</span><span class="p">(</span><span class="n">M</span><span class="p">,</span> <span class="n">N</span><span class="p">,</span> <span class="n">K</span><span class="p">,</span> <span class="n">w_data_shape</span><span class="p">,</span> <span class="n">w_indices_shape</span><span class="p">,</span> <span class="n">w_indptr_shape</span><span class="p">,</span> <span class="n">dtype</span><span class="p">):</span>
     <span class="n">X</span> <span class="o">=</span> <a href="../../api/python/te.html#tvm.te.placeholder" title="View documentation for tvm.te.placeholder"><span class="n">te</span><span class="o">.</span><span class="n">placeholder</span></a><span class="p">(</span><span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="n">M</span><span class="p">,</span> <span class="n">K</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">)</span>
     <span class="n">W_data</span> <span class="o">=</span> <a href="../../api/python/te.html#tvm.te.placeholder" title="View documentation for tvm.te.placeholder"><span class="n">te</span><span class="o">.</span><span class="n">placeholder</span></a><span class="p">(</span><span class="n">shape</span><span class="o">=</span><span class="n">w_data_shape</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">)</span>
@@ -372,8 +375,8 @@ From these tensors, the auto-scheduler can get the whole computational graph.</p
     <span class="k">return</span> <span class="p">[</span><span class="n">X</span><span class="p">,</span> <span class="n">W_data</span><span class="p">,</span> <span class="n">W_indices</span><span class="p">,</span> <span class="n">W_indptr</span><span class="p">,</span> <span class="n">B</span><span class="p">,</span> <span class="n">out</span><span class="p">]</span>
 </pre></div>
 </div>
-</div>
-<div class="section" id="special-step-for-sparse-workload">
+</section>
+<section id="special-step-for-sparse-workload">
 <h2>Special step for sparse workload<a class="headerlink" href="#special-step-for-sparse-workload" title="Permalink to this headline">¶</a></h2>
 <p>During schedule tuning, auto-scheduler will use random inputs to measure the performance of a
 generated schedule. While we cannot directly use a random array as the input of a sparse op, for
@@ -381,7 +384,7 @@ the “indices” and “indptr” array are meaningful for the computation.</p>
 <p>To solve this problem, we register these as special buffers, and load them when process program
 measuring.
 See the <cite>tvm.auto_scheduler.measure.py</cite> for more details.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span class="c1"># Define the basic shapes of this sparse computation</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Define the basic shapes of this sparse computation</span>
 <span class="n">M</span> <span class="o">=</span> <span class="mi">128</span>
 <span class="n">K</span> <span class="o">=</span> <span class="mi">256</span>
 <span class="n">N</span> <span class="o">=</span> <span class="mi">512</span>
@@ -400,8 +403,8 @@ See the <cite>tvm.auto_scheduler.measure.py</cite> for more details.</p>
 <span class="n">Y_np</span> <span class="o">=</span> <a href="https://numpy.org/doc/stable/reference/generated/numpy.maximum.html#numpy.maximum" title="View documentation for numpy.maximum"><span class="n">np</span><span class="o">.</span><span class="n">maximum</span></a><span class="p">(</span><a href="https://numpy.org/doc/stable/reference/generated/numpy.zeros.html#numpy.zeros" title="View documentation for numpy.zeros"><span class="n">np</span><span class="o">.</span><span class="n">zeros</span></a><span class="p">((</span><span class="n">M</span><span class="p">,</span> <span class="n">N</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="s2">&quot;float32&quot;</span><span class="p">),</span> <span class="n">Y_np</span><span class="p">)</span>  <span class="c1"># Relu</span>
 </pre></div>
 </div>
-</div>
-<div class="section" id="create-the-search-task">
+</section>
+<section id="create-the-search-task">
 <h2>Create the search task<a class="headerlink" href="#create-the-search-task" title="Permalink to this headline">¶</a></h2>
 <p>We then create a search task with M=N=K=512 and dtype=”float32”
 If your machine supports avx instructions, you can</p>
@@ -411,10 +414,17 @@ If your machine supports avx instructions, you can</p>
 <li><p>replace “llvm” below with “llvm -mcpu=skylake-avx512” to enable AVX-512</p></li>
 </ul>
 </div></blockquote>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span class="n">target</span> <span class="o">=</span> <a href="../../api/python/target.html#tvm.target.Target" title="View documentation for tvm.target.Target"><span class="n">tvm</span><span class="o">.</span><span class="n">target</span><span class="o">.</span><span class="n">Target</span></a><span class="p">(</span><span class="s2">&quot;llvm&quot;</span><span class="p">)</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">target</span> <span class="o">=</span> <a href="../../api/python/target.html#tvm.target.Target" title="View documentation for tvm.target.Target"><span class="n">tvm</span><span class="o">.</span><span class="n">target</span><span class="o">.</span><span class="n">Target</span></a><span class="p">(</span><span class="s2">&quot;llvm&quot;</span><span class="p">)</span>
 
 <span class="c1"># Register the sparse data to task inputs</span>
-<span class="n">prefix</span> <span class="o">=</span> <span class="s2">&quot;sparse_dense_bsr_</span><span class="si">%d</span><span class="s2">_</span><span class="si">%d</span><span class="s2">_</span><span class="si">%d</span><span class="s2">_</span><span class="si">%d</span><span class="s2">_</span><span class="si">%.2f</span><span class="s2">_&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">N</span><span class="p">,</span> <span class="n">K</span><span class="p">,</span> <span class="n">BS_R</span><span class="p">,</span> <span class="n">BS_C</span><span class="p">,</span> <span class="n">density</span><span class="p">)</span>
+<span class="n">prefix</span> <span class="o">=</span> <span class="s2">&quot;sparse_dense_bsr_</span><span class="si">%d</span><span class="s2">_</span><span class="si">%d</span><span class="s2">_</span><span class="si">%d</span><span class="s2">_</span><span class="si">%d</span><span class="s2">_</span><span class="si">%d</span><span class="s2">_</span><span class="si">%d</span><span class="s2">_&quot;</span> <span class="o">%</span> <span class="p">(</span>
+    <span class="n">N</span><span class="p">,</span>
+    <span class="n">K</span><span class="p">,</span>
+    <span class="n">BS_R</span><span class="p">,</span>
+    <span class="n">BS_C</span><span class="p">,</span>
+    <span class="n">W_sp_np</span><span class="o">.</span><span class="n">indices</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+    <span class="n">W_sp_np</span><span class="o">.</span><span class="n">indptr</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+<span class="p">)</span>
 <span class="n">task</span> <span class="o">=</span> <a href="../../api/python/auto_scheduler.html#tvm.auto_scheduler.SearchTask" title="View documentation for tvm.auto_scheduler.SearchTask"><span class="n">tvm</span><span class="o">.</span><span class="n">auto_scheduler</span><span class="o">.</span><span class="n">SearchTask</span></a><span class="p">(</span>
     <span class="n">func</span><span class="o">=</span><span class="n">sparse_dense</span><span class="p">,</span>
     <span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="n">M</span><span class="p">,</span> <span class="n">N</span><span class="p">,</span> <span class="n">K</span><span class="p">,</span> <span class="n">W_sp_np</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">W_sp_np</span><span class="o">.</span><span class="n">indices</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">W_sp_np</span><span class="o">.</span><span class="n">indptr</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="s2">&quot;float32&quot;</span><span class="p">),</span>
@@ -433,7 +443,7 @@ If your machine supports avx instructions, you can</p>
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre>Computational DAG:
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Computational DAG:
 placeholder = PLACEHOLDER [33]
 placeholder = PLACEHOLDER [4916, 16, 1]
 placeholder = PLACEHOLDER [4916]
@@ -446,8 +456,8 @@ BiasAdd(i, j) = (compute[i, j] + placeholder[i, j])
 compute(i0, i1) = max(BiasAdd[i0, i1], 0f)
 </pre></div>
 </div>
-</div>
-<div class="section" id="write-the-custom-sketch-for-sparse-dense-op">
+</section>
+<section id="write-the-custom-sketch-for-sparse-dense-op">
 <h2>Write the custom sketch for sparse dense op<a class="headerlink" href="#write-the-custom-sketch-for-sparse-dense-op" title="Permalink to this headline">¶</a></h2>
 <p>Before tuning, we will need to define the CustomSketchRule for the sparse dense op.</p>
 <p>CustomSketchRule consists of two parts: the condition function and the apply function.</p>
@@ -459,7 +469,7 @@ the rule to the sparse ops by matching their name and tag.</p></li>
 auto-scheduler provided loop state APIs.</p></li>
 </ul>
 </div></blockquote>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span class="k">def</span> <span class="nf">meet_condition_func</span><span class="p">(</span><span class="n">search_policy</span><span class="p">,</span> <span class="n">state</span><span class="p">,</span> <span class="n">stage_id</span><span class="p">):</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">meet_condition_func</span><span class="p">(</span><span class="n">search_policy</span><span class="p">,</span> <span class="n">state</span><span class="p">,</span> <span class="n">stage_id</span><span class="p">):</span>
     <span class="n">state</span> <span class="o">=</span> <span class="n">auto_scheduler</span><span class="o">.</span><span class="n">loop_state</span><span class="o">.</span><span class="n">State</span><span class="p">(</span><span class="n">state</span><span class="p">,</span> <span class="n">search_policy</span><span class="o">.</span><span class="n">search_task</span><span class="o">.</span><span class="n">compute_dag</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">state</span><span class="o">.</span><span class="n">stages</span><span class="p">[</span><span class="n">stage_id</span><span class="p">]</span><span class="o">.</span><span class="n">op</span><span class="o">.</span><span class="n">tag</span> <span class="ow">in</span> <span class="p">[</span>
         <span class="s2">&quot;sparse_dense_sp_rhs_bsrmm&quot;</span><span class="p">,</span>
@@ -525,7 +535,7 @@ and do more analyses later.</p></li>
 <li><p>Here, we need to create a <code class="code docutils literal notranslate"><span class="pre">auto_scheduler.SketchPolicy</span></code> object, and add the custom sketch
 rule as a <cite>init_search_callbacks</cite>.</p></li>
 </ul>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span class="n">log_file</span> <span class="o">=</span> <span class="s2">&quot;sparse_dense.json&quot;</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">log_file</span> <span class="o">=</span> <span class="s2">&quot;sparse_dense.json&quot;</span>
 <span class="n">tune_option</span> <span class="o">=</span> <a href="../../api/python/auto_scheduler.html#tvm.auto_scheduler.TuningOptions" title="View documentation for tvm.auto_scheduler.TuningOptions"><span class="n">auto_scheduler</span><span class="o">.</span><span class="n">TuningOptions</span></a><span class="p">(</span>
     <span class="n">num_measure_trials</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
     <span class="n">measure_callbacks</span><span class="o">=</span><span class="p">[</span><a href="../../api/python/auto_scheduler.html#tvm.auto_scheduler.RecordToFile" title="View documentation for tvm.auto_scheduler.RecordToFile"><span class="n">auto_scheduler</span><span class="o">.</span><span class="n">RecordToFile</span></a><span class="p">(</span><span class="n">log_file</span><span class="p">)],</span>
@@ -541,14 +551,14 @@ rule as a <cite>init_search_callbacks</cite>.</p></li>
 <span class="p">)</span>
 </pre></div>
 </div>
-</div>
-<div class="section" id="run-the-search">
+</section>
+<section id="run-the-search">
 <h2>Run the search<a class="headerlink" href="#run-the-search" title="Permalink to this headline">¶</a></h2>
 <p>Now we get all inputs ready.
 We can kick off the search and let the auto-scheduler do its magic.
 After some measurement trials, we can load the best schedule from the log
 file and apply it.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span class="c1"># Run auto-tuning (search)</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Run auto-tuning (search)</span>
 <span class="c1"># Notice: We do not run the tuning in our webpage server since it takes too long.</span>
 <span class="c1"># Uncomment the following line to run it by yourself.</span>
 <span class="n">task</span><span class="o">.</span><span class="n">tune</span><span class="p">(</span><span class="n">tune_option</span><span class="p">,</span> <span class="n">search_policy</span><span class="p">)</span>
@@ -558,61 +568,86 @@ file and apply it.</p>
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre>
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>/usr/local/lib/python3.6/dist-packages/numpy/core/_methods.py:34: RuntimeWarning: invalid value encountered in reduce
+  return umr_minimum(a, axis, None, out, keepdims, initial, where)
+/usr/local/lib/python3.6/dist-packages/numpy/core/_methods.py:30: RuntimeWarning: invalid value encountered in reduce
+  return umr_maximum(a, axis, None, out, keepdims, initial, where)
 </pre></div>
 </div>
 <p>We can lower the schedule to see the IR after auto-scheduling.
 The auto-scheduler correctly performs optimizations including multi-level tiling,
 layout transformation, parallelization, vectorization, unrolling, and operator fusion.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Lowered TIR:&quot;</span><span class="p">)</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Lowered TIR:&quot;</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><a href="../../api/python/driver.html#tvm.lower" title="View documentation for tvm.lower"><span class="n">tvm</span><span class="o">.</span><span class="n">lower</span></a><span class="p">(</span><span class="n">sch</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">simple_mode</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span>
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre>Lowered TIR:
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Lowered TIR:
 primfn(placeholder_5: handle, placeholder_6: handle, placeholder_7: handle, placeholder_8: handle, placeholder_9: handle, compute_1: handle) -&gt; ()
   attr = {&quot;global_symbol&quot;: &quot;main&quot;, &quot;tir.noalias&quot;: True}
-  buffers = {placeholder_4: Buffer(placeholder_10: Pointer(float32), float32, [128, 512], []),
-             placeholder: Buffer(placeholder_11: Pointer(float32), float32, [4916, 16, 1], []),
-             placeholder_1: Buffer(placeholder_12: Pointer(float32), float32, [128, 256], []),
+  buffers = {placeholder_4: Buffer(placeholder_10: Pointer(int32), int32, [4916], []),
              compute: Buffer(compute_2: Pointer(float32), float32, [128, 512], []),
-             placeholder_2: Buffer(placeholder_13: Pointer(int32), int32, [4916], []),
-             placeholder_3: Buffer(placeholder_14: Pointer(int32), int32, [33], [])}
-  buffer_map = {placeholder_6: placeholder, placeholder_5: placeholder_1, placeholder_7: placeholder_2, placeholder_8: placeholder_3, placeholder_9: placeholder_4, compute_1: compute} {
-  for (i0.outer.i1.outer.fused: int32, 0, 32) &quot;parallel&quot; {
+             placeholder_3: Buffer(placeholder_11: Pointer(float32), float32, [128, 512], []),
+             placeholder_2: Buffer(placeholder_12: Pointer(int32), int32, [33], []),
+             placeholder: Buffer(placeholder_13: Pointer(float32), float32, [128, 256], []),
+             placeholder_1: Buffer(placeholder_14: Pointer(float32), float32, [4916, 16, 1], [])}
+  buffer_map = {placeholder_5: placeholder, placeholder_6: placeholder_1, placeholder_8: placeholder_2, placeholder_9: placeholder_3, compute_1: compute, placeholder_7: placeholder_4} {
+  for (i0.outer.i1.outer.fused: int32, 0, 128) &quot;parallel&quot; {
     attr [compute_3: Pointer(float32)] &quot;storage_scope&quot; = &quot;global&quot;;
-    allocate(compute_3, float32, [2048]) {
-      for (i.outer.inner: int32, 0, 4) {
-        for (nb_j.inner: int32, 0, 2) {
-          for (i.inner.init: int32, 0, 16) {
-            for (j.init: int32, 0, 16) {
-              compute_3[((((i.outer.inner*512) + (i.inner.init*32)) + (nb_j.inner*16)) + j.init)] = 0f32
-            }
-          }
-          for (elem_idx: int32, 0, ((int32*)placeholder_14[(((floormod(i0.outer.i1.outer.fused, 16)*2) + nb_j.inner) + 1)] - (int32*)placeholder_14[((floormod(i0.outer.i1.outer.fused, 16)*2) + nb_j.inner)])) {
-            for (i.inner: int32, 0, 16) {
-              for (j: int32, 0, 16) {
-                compute_3[((((i.outer.inner*512) + (i.inner*32)) + (nb_j.inner*16)) + j)] = ((float32*)compute_3[((((i.outer.inner*512) + (i.inner*32)) + (nb_j.inner*16)) + j)] + ((float32*)placeholder_11[((((int32*)placeholder_14[((floormod(i0.outer.i1.outer.fused, 16)*2) + nb_j.inner)]*16) + (elem_idx*16)) + j)]*max((float32*)placeholder_12[((((floordiv(i0.outer.i1.outer.fused, 16)*16384) + (i.outer.inner*4096)) + (i.inner*256)) + (int32*)placeholder_13[((int32*)placeholder_14[((floormod(i0.outer.i1.outer.fused, 16)*2) + nb_j.inner)] + elem_idx)])], 0f32)))
-              }
-            }
+    allocate(compute_3, float32, [512]) {
+      for (nb_j.inner: int32, 0, 2) {
+        for (i.inner.init: int32, 0, 16) {
+          compute_3[((i.inner.init*32) + (nb_j.inner*16))] = 0f32
+          compute_3[(((i.inner.init*32) + (nb_j.inner*16)) + 1)] = 0f32
+          compute_3[(((i.inner.init*32) + (nb_j.inner*16)) + 2)] = 0f32
+          compute_3[(((i.inner.init*32) + (nb_j.inner*16)) + 3)] = 0f32
+          compute_3[(((i.inner.init*32) + (nb_j.inner*16)) + 4)] = 0f32
+          compute_3[(((i.inner.init*32) + (nb_j.inner*16)) + 5)] = 0f32
+          compute_3[(((i.inner.init*32) + (nb_j.inner*16)) + 6)] = 0f32
+          compute_3[(((i.inner.init*32) + (nb_j.inner*16)) + 7)] = 0f32
+          compute_3[(((i.inner.init*32) + (nb_j.inner*16)) + 8)] = 0f32
+          compute_3[(((i.inner.init*32) + (nb_j.inner*16)) + 9)] = 0f32
+          compute_3[(((i.inner.init*32) + (nb_j.inner*16)) + 10)] = 0f32
+          compute_3[(((i.inner.init*32) + (nb_j.inner*16)) + 11)] = 0f32
+          compute_3[(((i.inner.init*32) + (nb_j.inner*16)) + 12)] = 0f32
+          compute_3[(((i.inner.init*32) + (nb_j.inner*16)) + 13)] = 0f32
+          compute_3[(((i.inner.init*32) + (nb_j.inner*16)) + 14)] = 0f32
+          compute_3[(((i.inner.init*32) + (nb_j.inner*16)) + 15)] = 0f32
+        }
+        for (elem_idx: int32, 0, ((int32*)placeholder_12[(((floormod(i0.outer.i1.outer.fused, 16)*2) + nb_j.inner) + 1)] - (int32*)placeholder_12[((floormod(i0.outer.i1.outer.fused, 16)*2) + nb_j.inner)])) {
+          for (i.inner: int32, 0, 16) {
+            compute_3[((i.inner*32) + (nb_j.inner*16))] = ((float32*)compute_3[((i.inner*32) + (nb_j.inner*16))] + ((float32*)placeholder_14[(((int32*)placeholder_12[((floormod(i0.outer.i1.outer.fused, 16)*2) + nb_j.inner)]*16) + (elem_idx*16))]*max((float32*)placeholder_13[(((floordiv(i0.outer.i1.outer.fused, 16)*4096) + (i.inner*256)) + (int32*)placeholder_10[((int32*)placeholder_12[((floormod(i0.outer.i1.outer.fused, 16)*2) + nb_j.inner)] + elem_idx)])], 0f32)))
+            compute_3[(((i.inner*32) + (nb_j.inner*16)) + 1)] = ((float32*)compute_3[(((i.inner*32) + (nb_j.inner*16)) + 1)] + ((float32*)placeholder_14[((((int32*)placeholder_12[((floormod(i0.outer.i1.outer.fused, 16)*2) + nb_j.inner)]*16) + (elem_idx*16)) + 1)]*max((float32*)placeholder_13[(((floordiv(i0.outer.i1.outer.fused, 16)*4096) + (i.inner*256)) + (int32*)placeholder_10[((int32*)placeholder_12[((floormod(i0.outer.i1.outer.fused, 16)*2) + nb_j.inner)] + elem_idx)])], 0f32)))
+            compute_3[(((i.inner*32) + (nb_j.inner*16)) + 2)] = ((float32*)compute_3[(((i.inner*32) + (nb_j.inner*16)) + 2)] + ((float32*)placeholder_14[((((int32*)placeholder_12[((floormod(i0.outer.i1.outer.fused, 16)*2) + nb_j.inner)]*16) + (elem_idx*16)) + 2)]*max((float32*)placeholder_13[(((floordiv(i0.outer.i1.outer.fused, 16)*4096) + (i.inner*256)) + (int32*)placeholder_10[((int32*)placeholder_12[((floormod(i0.outer.i1.outer.fused, 16)*2) + nb_j.inner)] + elem_idx)])], 0f32)))
+            compute_3[(((i.inner*32) + (nb_j.inner*16)) + 3)] = ((float32*)compute_3[(((i.inner*32) + (nb_j.inner*16)) + 3)] + ((float32*)placeholder_14[((((int32*)placeholder_12[((floormod(i0.outer.i1.outer.fused, 16)*2) + nb_j.inner)]*16) + (elem_idx*16)) + 3)]*max((float32*)placeholder_13[(((floordiv(i0.outer.i1.outer.fused, 16)*4096) + (i.inner*256)) + (int32*)placeholder_10[((int32*)placeholder_12[((floormod(i0.outer.i1.outer.fused, 16)*2) + nb_j.inner)] + elem_idx)])], 0f32)))
+            compute_3[(((i.inner*32) + (nb_j.inner*16)) + 4)] = ((float32*)compute_3[(((i.inner*32) + (nb_j.inner*16)) + 4)] + ((float32*)placeholder_14[((((int32*)placeholder_12[((floormod(i0.outer.i1.outer.fused, 16)*2) + nb_j.inner)]*16) + (elem_idx*16)) + 4)]*max((float32*)placeholder_13[(((floordiv(i0.outer.i1.outer.fused, 16)*4096) + (i.inner*256)) + (int32*)placeholder_10[((int32*)placeholder_12[((floormod(i0.outer.i1.outer.fused, 16)*2) + nb_j.inner)] + elem_idx)])], 0f32)))
+            compute_3[(((i.inner*32) + (nb_j.inner*16)) + 5)] = ((float32*)compute_3[(((i.inner*32) + (nb_j.inner*16)) + 5)] + ((float32*)placeholder_14[((((int32*)placeholder_12[((floormod(i0.outer.i1.outer.fused, 16)*2) + nb_j.inner)]*16) + (elem_idx*16)) + 5)]*max((float32*)placeholder_13[(((floordiv(i0.outer.i1.outer.fused, 16)*4096) + (i.inner*256)) + (int32*)placeholder_10[((int32*)placeholder_12[((floormod(i0.outer.i1.outer.fused, 16)*2) + nb_j.inner)] + elem_idx)])], 0f32)))
+            compute_3[(((i.inner*32) + (nb_j.inner*16)) + 6)] = ((float32*)compute_3[(((i.inner*32) + (nb_j.inner*16)) + 6)] + ((float32*)placeholder_14[((((int32*)placeholder_12[((floormod(i0.outer.i1.outer.fused, 16)*2) + nb_j.inner)]*16) + (elem_idx*16)) + 6)]*max((float32*)placeholder_13[(((floordiv(i0.outer.i1.outer.fused, 16)*4096) + (i.inner*256)) + (int32*)placeholder_10[((int32*)placeholder_12[((floormod(i0.outer.i1.outer.fused, 16)*2) + nb_j.inner)] + elem_idx)])], 0f32)))
+            compute_3[(((i.inner*32) + (nb_j.inner*16)) + 7)] = ((float32*)compute_3[(((i.inner*32) + (nb_j.inner*16)) + 7)] + ((float32*)placeholder_14[((((int32*)placeholder_12[((floormod(i0.outer.i1.outer.fused, 16)*2) + nb_j.inner)]*16) + (elem_idx*16)) + 7)]*max((float32*)placeholder_13[(((floordiv(i0.outer.i1.outer.fused, 16)*4096) + (i.inner*256)) + (int32*)placeholder_10[((int32*)placeholder_12[((floormod(i0.outer.i1.outer.fused, 16)*2) + nb_j.inner)] + elem_idx)])], 0f32)))
+            compute_3[(((i.inner*32) + (nb_j.inner*16)) + 8)] = ((float32*)compute_3[(((i.inner*32) + (nb_j.inner*16)) + 8)] + ((float32*)placeholder_14[((((int32*)placeholder_12[((floormod(i0.outer.i1.outer.fused, 16)*2) + nb_j.inner)]*16) + (elem_idx*16)) + 8)]*max((float32*)placeholder_13[(((floordiv(i0.outer.i1.outer.fused, 16)*4096) + (i.inner*256)) + (int32*)placeholder_10[((int32*)placeholder_12[((floormod(i0.outer.i1.outer.fused, 16)*2) + nb_j.inner)] + elem_idx)])], 0f32)))
+            compute_3[(((i.inner*32) + (nb_j.inner*16)) + 9)] = ((float32*)compute_3[(((i.inner*32) + (nb_j.inner*16)) + 9)] + ((float32*)placeholder_14[((((int32*)placeholder_12[((floormod(i0.outer.i1.outer.fused, 16)*2) + nb_j.inner)]*16) + (elem_idx*16)) + 9)]*max((float32*)placeholder_13[(((floordiv(i0.outer.i1.outer.fused, 16)*4096) + (i.inner*256)) + (int32*)placeholder_10[((int32*)placeholder_12[((floormod(i0.outer.i1.outer.fused, 16)*2) + nb_j.inner)] + elem_idx)])], 0f32)))
+            compute_3[(((i.inner*32) + (nb_j.inner*16)) + 10)] = ((float32*)compute_3[(((i.inner*32) + (nb_j.inner*16)) + 10)] + ((float32*)placeholder_14[((((int32*)placeholder_12[((floormod(i0.outer.i1.outer.fused, 16)*2) + nb_j.inner)]*16) + (elem_idx*16)) + 10)]*max((float32*)placeholder_13[(((floordiv(i0.outer.i1.outer.fused, 16)*4096) + (i.inner*256)) + (int32*)placeholder_10[((int32*)placeholder_12[((floormod(i0.outer.i1.outer.fused, 16)*2) + nb_j.inner)] + elem_idx)])], 0f32)))
+            compute_3[(((i.inner*32) + (nb_j.inner*16)) + 11)] = ((float32*)compute_3[(((i.inner*32) + (nb_j.inner*16)) + 11)] + ((float32*)placeholder_14[((((int32*)placeholder_12[((floormod(i0.outer.i1.outer.fused, 16)*2) + nb_j.inner)]*16) + (elem_idx*16)) + 11)]*max((float32*)placeholder_13[(((floordiv(i0.outer.i1.outer.fused, 16)*4096) + (i.inner*256)) + (int32*)placeholder_10[((int32*)placeholder_12[((floormod(i0.outer.i1.outer.fused, 16)*2) + nb_j.inner)] + elem_idx)])], 0f32)))
+            compute_3[(((i.inner*32) + (nb_j.inner*16)) + 12)] = ((float32*)compute_3[(((i.inner*32) + (nb_j.inner*16)) + 12)] + ((float32*)placeholder_14[((((int32*)placeholder_12[((floormod(i0.outer.i1.outer.fused, 16)*2) + nb_j.inner)]*16) + (elem_idx*16)) + 12)]*max((float32*)placeholder_13[(((floordiv(i0.outer.i1.outer.fused, 16)*4096) + (i.inner*256)) + (int32*)placeholder_10[((int32*)placeholder_12[((floormod(i0.outer.i1.outer.fused, 16)*2) + nb_j.inner)] + elem_idx)])], 0f32)))
+            compute_3[(((i.inner*32) + (nb_j.inner*16)) + 13)] = ((float32*)compute_3[(((i.inner*32) + (nb_j.inner*16)) + 13)] + ((float32*)placeholder_14[((((int32*)placeholder_12[((floormod(i0.outer.i1.outer.fused, 16)*2) + nb_j.inner)]*16) + (elem_idx*16)) + 13)]*max((float32*)placeholder_13[(((floordiv(i0.outer.i1.outer.fused, 16)*4096) + (i.inner*256)) + (int32*)placeholder_10[((int32*)placeholder_12[((floormod(i0.outer.i1.outer.fused, 16)*2) + nb_j.inner)] + elem_idx)])], 0f32)))
+            compute_3[(((i.inner*32) + (nb_j.inner*16)) + 14)] = ((float32*)compute_3[(((i.inner*32) + (nb_j.inner*16)) + 14)] + ((float32*)placeholder_14[((((int32*)placeholder_12[((floormod(i0.outer.i1.outer.fused, 16)*2) + nb_j.inner)]*16) + (elem_idx*16)) + 14)]*max((float32*)placeholder_13[(((floordiv(i0.outer.i1.outer.fused, 16)*4096) + (i.inner*256)) + (int32*)placeholder_10[((int32*)placeholder_12[((floormod(i0.outer.i1.outer.fused, 16)*2) + nb_j.inner)] + elem_idx)])], 0f32)))
+            compute_3[(((i.inner*32) + (nb_j.inner*16)) + 15)] = ((float32*)compute_3[(((i.inner*32) + (nb_j.inner*16)) + 15)] + ((float32*)placeholder_14[((((int32*)placeholder_12[((floormod(i0.outer.i1.outer.fused, 16)*2) + nb_j.inner)]*16) + (elem_idx*16)) + 15)]*max((float32*)placeholder_13[(((floordiv(i0.outer.i1.outer.fused, 16)*4096) + (i.inner*256)) + (int32*)placeholder_10[((int32*)placeholder_12[((floormod(i0.outer.i1.outer.fused, 16)*2) + nb_j.inner)] + elem_idx)])], 0f32)))
           }
         }
       }
-      for (i0.inner: int32, 0, 64) {
-        for (i1.inner: int32, 0, 32) {
-          compute_2[((((floordiv(i0.outer.i1.outer.fused, 16)*32768) + (i0.inner*512)) + (floormod(i0.outer.i1.outer.fused, 16)*32)) + i1.inner)] = max(((float32*)compute_3[((i0.inner*32) + i1.inner)] + (float32*)placeholder_10[((((floordiv(i0.outer.i1.outer.fused, 16)*32768) + (i0.inner*512)) + (floormod(i0.outer.i1.outer.fused, 16)*32)) + i1.inner)]), 0f32)
-        }
+      for (i0.inner: int32, 0, 16) {
+        compute_2[ramp((((floordiv(i0.outer.i1.outer.fused, 16)*8192) + (i0.inner*512)) + (floormod(i0.outer.i1.outer.fused, 16)*32)), 1, 32)] = max(((float32x32*)compute_3[ramp((i0.inner*32), 1, 32)] + (float32x32*)placeholder_11[ramp((((floordiv(i0.outer.i1.outer.fused, 16)*8192) + (i0.inner*512)) + (floormod(i0.outer.i1.outer.fused, 16)*32)), 1, 32)]), broadcast(0f32, 32))
       }
     }
   }
 }
 </pre></div>
 </div>
-</div>
-<div class="section" id="check-correctness-and-evaluate-performance">
+</section>
+<section id="check-correctness-and-evaluate-performance">
 <h2>Check correctness and evaluate performance<a class="headerlink" href="#check-correctness-and-evaluate-performance" title="Permalink to this headline">¶</a></h2>
 <p>We build the binary and check its correctness and performance.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span class="n">func</span> <span class="o">=</span> <a href="../../api/python/driver.html#tvm.build" title="View documentation for tvm.build"><span class="n">tvm</span><span class="o">.</span><span class="n">build</span></a><span class="p">(</span><span class="n">sch</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">target</span><span class="p">)</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">func</span> <span class="o">=</span> <a href="../../api/python/driver.html#tvm.build" title="View documentation for tvm.build"><span class="n">tvm</span><span class="o">.</span><span class="n">build</span></a><span class="p">(</span><span class="n">sch</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">target</span><span class="p">)</span>
 
 <span class="n">dev</span> <span class="o">=</span> <span class="n">tvm</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span>
 
@@ -626,7 +661,7 @@ primfn(placeholder_5: handle, placeholder_6: handle, placeholder_7: handle, plac
 <span class="n">func</span><span class="p">(</span><span class="n">X_tvm</span><span class="p">,</span> <span class="n">W_data_tvm</span><span class="p">,</span> <span class="n">W_indices_tvm</span><span class="p">,</span> <span class="n">W_indptr_tvm</span><span class="p">,</span> <span class="n">B_tvm</span><span class="p">,</span> <span class="n">Y_tvm</span><span class="p">)</span>
 
 <span class="c1"># Check results</span>
-<span class="n">tvm</span><span class="o">.</span><span class="n">testing</span><span class="o">.</span><span class="n">assert_allclose</span><span class="p">(</span><span class="n">Y_np</span><span class="p">,</span> <span class="n">Y_tvm</span><span class="o">.</span><span class="n">asnumpy</span><span class="p">(),</span> <span class="n">atol</span><span class="o">=</span><span class="mi">1</span><span class="n">e</span><span class="o">-</span><span class="mi">4</span><span class="p">,</span> <span class="n">rtol</span><span class="o">=</span><span class="mi">1</span><span class="n">e</span><span class="o">-</span><span class="mi">4</span><span class="p">)</span>
+<span class="n">tvm</span><span class="o">.</span><span class="n">testing</span><span class="o">.</span><span class="n">assert_allclose</span><span class="p">(</span><span class="n">Y_np</span><span class="p">,</span> <span class="n">Y_tvm</span><span class="o">.</span><span class="n">numpy</span><span class="p">(),</span> <span class="n">atol</span><span class="o">=</span><span class="mf">1e-4</span><span class="p">,</span> <span class="n">rtol</span><span class="o">=</span><span class="mf">1e-4</span><span class="p">)</span>
 
 <span class="c1"># Evaluate execution time.</span>
 <span class="n">evaluator</span> <span class="o">=</span> <span class="n">func</span><span class="o">.</span><span class="n">time_evaluator</span><span class="p">(</span><span class="n">func</span><span class="o">.</span><span class="n">entry_name</span><span class="p">,</span> <span class="n">dev</span><span class="p">,</span> <span class="n">min_repeat_ms</span><span class="o">=</span><span class="mi">500</span><span class="p">)</span>
@@ -640,13 +675,13 @@ primfn(placeholder_5: handle, placeholder_6: handle, placeholder_7: handle, plac
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre>Execution time of this operator: 1.275 ms
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Execution time of this operator: 0.891 ms
 </pre></div>
 </div>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p>Tuning result example</p>
-<div class="highlight-c notranslate"><div class="highlight"><pre><span class="o">----------------------------------------------------------------------</span>
+<div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="o">----------------------------------------------------------------------</span>
 <span class="n">Lowered</span> <span class="nl">TIR</span><span class="p">:</span>
 <span class="n">primfn</span><span class="p">(</span><span class="nl">placeholder_5</span><span class="p">:</span> <span class="n">handle</span><span class="p">,</span> <span class="nl">placeholder_6</span><span class="p">:</span> <span class="n">handle</span><span class="p">,</span> <span class="nl">placeholder_7</span><span class="p">:</span> <span class="n">handle</span><span class="p">,</span> <span class="nl">placeholder_8</span><span class="p">:</span> <span class="n">handle</span><span class="p">,</span> <span class="nl">placeholder_9</span><span class="p">:</span> <span class="n">handle</span><span class="p">,</span> <span class="nl">compute_1</span><span class="p">:</span> <span class="n">handle</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="p">()</span>
   <span class="n">attr</span> <span class="o">=</span> <span class="p">{</span><span class="s">&quot;global_symbol&quot;</span><span class="o">:</span> <span class="s">&quot;main&quot;</span><span class="p">,</span> <span class="s">&quot;tir.noalias&quot;</span><span class="o">:</span> <span class="n">True</span><span class="p">}</span>
@@ -692,8 +727,8 @@ primfn(placeholder_5: handle, placeholder_6: handle, placeholder_7: handle, plac
 </div>
 </div>
 <p class="sphx-glr-signature"><a class="reference external" href="https://sphinx-gallery.github.io">Gallery generated by Sphinx-Gallery</a></p>
-</div>
-</div>
+</section>
+</section>
 
 
            </div>

@@ -53,6 +53,7 @@ var searchData=
   ['tvm_5fregister_5freflection_5fvtable',['TVM_REGISTER_REFLECTION_VTABLE',['../reflection_8h.html#ad7093e57035dde5910eb7cdb2f08c64f',1,'reflection.h']]],
   ['tvm_5fregister_5ftarget_5fkind',['TVM_REGISTER_TARGET_KIND',['../target__kind_8h.html#a036b7ecec73974b7782644f28671c786',1,'target_kind.h']]],
   ['tvm_5fregister_5ftarget_5ftag',['TVM_REGISTER_TARGET_TAG',['../tag_8h.html#a7fe29db2695f0c156ce18bb2506290e6',1,'tag.h']]],
+  ['tvm_5fruntime_5falloc_5falignment_5fbytes',['TVM_RUNTIME_ALLOC_ALIGNMENT_BYTES',['../stack__allocator_8h.html#ad59ee29e418fab065b127993d2ebb0e2',1,'stack_allocator.h']]],
   ['tvm_5fruntime_5fheader_5fonly',['TVM_RUNTIME_HEADER_ONLY',['../packed__func_8h.html#a50e8d21ff57c58c35bc4cc9310e64273',1,'packed_func.h']]],
   ['tvm_5fstatic_5fir_5ffunctor',['TVM_STATIC_IR_FUNCTOR',['../functor_8h.html#a2a8f992f14c3ef28a35830bb8499d538',1,'functor.h']]],
   ['tvm_5fstr_5fconcat',['TVM_STR_CONCAT',['../object_8h.html#a73bf3e57b9d7a6e0dd55d901321d01ed',1,'object.h']]],

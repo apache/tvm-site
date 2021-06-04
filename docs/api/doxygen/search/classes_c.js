@@ -6,6 +6,7 @@ var searchData=
   ['objectequal',['ObjectEqual',['../structtvm_1_1runtime_1_1ObjectEqual.html',1,'tvm::runtime']]],
   ['objecthash',['ObjectHash',['../structtvm_1_1runtime_1_1ObjectHash.html',1,'tvm::runtime']]],
   ['objectptr',['ObjectPtr',['../classtvm_1_1runtime_1_1ObjectPtr.html',1,'tvm::runtime']]],
+  ['objectptr_3c_20tvm_3a_3aattrfieldinfonode_20_3e',['ObjectPtr&lt; tvm::AttrFieldInfoNode &gt;',['../classtvm_1_1runtime_1_1ObjectPtr.html',1,'tvm::runtime']]],
   ['objectptr_3c_20tvm_3a_3aruntime_3a_3aobject_20_3e',['ObjectPtr&lt; tvm::runtime::Object &gt;',['../classtvm_1_1runtime_1_1ObjectPtr.html',1,'tvm::runtime']]],
   ['objectptrequal',['ObjectPtrEqual',['../structtvm_1_1runtime_1_1ObjectPtrEqual.html',1,'tvm::runtime']]],
   ['objectptrhash',['ObjectPtrHash',['../structtvm_1_1runtime_1_1ObjectPtrHash.html',1,'tvm::runtime']]],
@@ -28,6 +29,15 @@ var searchData=
   ['opstrategy',['OpStrategy',['../classtvm_1_1relay_1_1OpStrategy.html',1,'tvm::relay']]],
   ['opstrategynode',['OpStrategyNode',['../classtvm_1_1relay_1_1OpStrategyNode.html',1,'tvm::relay']]],
   ['optional',['Optional',['../classtvm_1_1runtime_1_1Optional.html',1,'tvm::runtime']]],
+  ['optional_3c_20tvm_3a_3adiagnosticcontext_20_3e',['Optional&lt; tvm::DiagnosticContext &gt;',['../classtvm_1_1runtime_1_1Optional.html',1,'tvm::runtime']]],
+  ['optional_3c_20tvm_3a_3afloatimm_20_3e',['Optional&lt; tvm::FloatImm &gt;',['../classtvm_1_1runtime_1_1Optional.html',1,'tvm::runtime']]],
+  ['optional_3c_20tvm_3a_3ainteger_20_3e',['Optional&lt; tvm::Integer &gt;',['../classtvm_1_1runtime_1_1Optional.html',1,'tvm::runtime']]],
+  ['optional_3c_20tvm_3a_3aprimexpr_20_3e',['Optional&lt; tvm::PrimExpr &gt;',['../classtvm_1_1runtime_1_1Optional.html',1,'tvm::runtime']]],
+  ['optional_3c_20tvm_3a_3aruntime_3a_3aarray_3c_20tvm_3a_3aauto_5fscheduler_3a_3ameasurecallback_20_3e_20_3e',['Optional&lt; tvm::runtime::Array&lt; tvm::auto_scheduler::MeasureCallback &gt; &gt;',['../classtvm_1_1runtime_1_1Optional.html',1,'tvm::runtime']]],
+  ['optional_3c_20tvm_3a_3aruntime_3a_3aarray_3c_20tvm_3a_3ainteger_20_3e_20_3e',['Optional&lt; tvm::runtime::Array&lt; tvm::Integer &gt; &gt;',['../classtvm_1_1runtime_1_1Optional.html',1,'tvm::runtime']]],
+  ['optional_3c_20tvm_3a_3aruntime_3a_3aobjectref_20_3e',['Optional&lt; tvm::runtime::ObjectRef &gt;',['../classtvm_1_1runtime_1_1Optional.html',1,'tvm::runtime']]],
+  ['optional_3c_20tvm_3a_3atir_3a_3aitervar_20_3e',['Optional&lt; tvm::tir::IterVar &gt;',['../classtvm_1_1runtime_1_1Optional.html',1,'tvm::runtime']]],
+  ['optional_3c_20tvm_3a_3atir_3a_3astmt_20_3e',['Optional&lt; tvm::tir::Stmt &gt;',['../classtvm_1_1runtime_1_1Optional.html',1,'tvm::runtime']]],
   ['or',['Or',['../classtvm_1_1tir_1_1Or.html',1,'tvm::tir']]],
   ['ornode',['OrNode',['../classtvm_1_1tir_1_1OrNode.html',1,'tvm::tir']]]
 ];

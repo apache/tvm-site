@@ -8,7 +8,8 @@
 <html class="writer-html5" lang="en" >
 <head>
   <meta charset="utf-8">
-  
+  <meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
   <title>Introduction to Module Serialization &mdash; tvm 0.8.dev0 documentation</title>
@@ -19,6 +20,8 @@
   <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
   <link rel="stylesheet" href="../_static/css/tlcpack_theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="../_static/gallery.css" type="text/css" />
 
   
@@ -32,11 +35,10 @@
   
     
       <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
         <script src="../_static/jquery.js"></script>
         <script src="../_static/underscore.js"></script>
         <script src="../_static/doctools.js"></script>
-        <script src="../_static/language_data.js"></script>
-        <script async="async" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
     
     <script type="text/javascript" src="../_static/js/theme.js"></script>
 
@@ -228,6 +230,7 @@
 <li class="toctree-l2"><a class="reference internal" href="index.html#tvm-support">tvm/support</a></li>
 <li class="toctree-l2 current"><a class="reference internal" href="index.html#tvm-runtime">tvm/runtime</a><ul class="current">
 <li class="toctree-l3"><a class="reference internal" href="runtime.html">TVM Runtime System</a></li>
+<li class="toctree-l3"><a class="reference internal" href="runtime.html#runtime-specific-information">Runtime-Specific Information</a></li>
 <li class="toctree-l3"><a class="reference internal" href="debugger.html">Debugger</a></li>
 <li class="toctree-l3"><a class="reference internal" href="virtual_machine.html">Putting the VM in TVM: The Relay Virtual Machine</a></li>
 <li class="toctree-l3 current"><a class="current reference internal" href="#">Introduction to Module Serialization</a><ul>
@@ -338,15 +341,15 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <div class="section" id="introduction-to-module-serialization">
+  <section id="introduction-to-module-serialization">
 <h1>Introduction to Module Serialization<a class="headerlink" href="#introduction-to-module-serialization" title="Permalink to this headline">¶</a></h1>
 <p>When to deploy TVM runtime module, no matter whether it is CPU or GPU, TVM only needs one single dynamic
 shared library. The key is our unified module serialization mechanism. This document will introduce TVM module
 serialization format standard and implementation details.</p>
-<div class="section" id="module-export-example">
+<section id="module-export-example">
 <h2>Module Export Example<a class="headerlink" href="#module-export-example" title="Permalink to this headline">¶</a></h2>
 <p>Let us build one ResNet-18 workload for GPU as an example first.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span class="kn">from</span> <span class="nn">tvm</span> <span class="kn">import</span> <span class="n">relay</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">tvm</span> <span class="kn">import</span> <span class="n">relay</span>
 <span class="kn">from</span> <span class="nn">tvm.relay</span> <span class="kn">import</span> <span class="n">testing</span>
 <span class="kn">from</span> <span class="nn">tvm.contrib</span> <span class="kn">import</span> <span class="n">utils</span>
 <span class="kn">import</span> <span class="nn">tvm</span>
@@ -374,8 +377,8 @@ serialization format standard and implementation details.</p>
 <span class="k">assert</span> <span class="n">loaded_lib</span><span class="o">.</span><span class="n">imported_modules</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">type_key</span> <span class="o">==</span> <span class="s2">&quot;cuda&quot;</span>
 </pre></div>
 </div>
-</div>
-<div class="section" id="serialization">
+</section>
+<section id="serialization">
 <h2>Serialization<a class="headerlink" href="#serialization" title="Permalink to this headline">¶</a></h2>
 <p>The entrance API is <code class="docutils literal notranslate"><span class="pre">export_library</span></code> of <code class="docutils literal notranslate"><span class="pre">tvm.module.Module</span></code>.
 Inside this function, we will do the following steps:</p>
@@ -398,8 +401,8 @@ dynamic shared library.</p></li>
 They achieve the same goal in fact.</p></li>
 </ol>
 </div>
-</div>
-<div class="section" id="under-the-hood-of-serialization-and-format-standard">
+</section>
+<section id="under-the-hood-of-serialization-and-format-standard">
 <h2>Under the Hood of Serialization and Format Standard<a class="headerlink" href="#under-the-hood-of-serialization-and-format-standard" title="Permalink to this headline">¶</a></h2>
 <p>As said before, we will do the serialization work in the <code class="docutils literal notranslate"><span class="pre">_PackImportsToLLVM</span></code> or <code class="docutils literal notranslate"><span class="pre">_PackImportsToC</span></code>.
 They both call <code class="docutils literal notranslate"><span class="pre">SerializeModule</span></code> to serialize the runtime module. In <code class="docutils literal notranslate"><span class="pre">SerializeModule</span></code>
@@ -407,7 +410,7 @@ function, we firstly construct one helper class <code class="docutils literal no
 initialization work, like marking module index. Then we could use its <code class="docutils literal notranslate"><span class="pre">SerializeModule</span></code> to serialize module.</p>
 <p>For better understanding, let us dig the implementation of this class a little deeper.</p>
 <p>The following code is used to construct <code class="docutils literal notranslate"><span class="pre">ModuleSerializer</span></code>:</p>
-<div class="highlight-c++ notranslate"><div class="highlight"><pre><span class="k">explicit</span> <span class="nf">ModuleSerializer</span><span class="p">(</span><span class="n">runtime</span><span class="o">::</span><span class="n">Module</span> <span class="n">mod</span><span class="p">)</span> <span class="o">:</span> <span class="n">mod_</span><span class="p">(</span><span class="n">mod</span><span class="p">)</span> <span class="p">{</span>
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="k">explicit</span> <span class="nf">ModuleSerializer</span><span class="p">(</span><span class="n">runtime</span><span class="o">::</span><span class="n">Module</span> <span class="n">mod</span><span class="p">)</span> <span class="o">:</span> <span class="n">mod_</span><span class="p">(</span><span class="n">mod</span><span class="p">)</span> <span class="p">{</span>
   <span class="n">Init</span><span class="p">();</span>
 <span class="p">}</span>
 <span class="k">private</span><span class="o">:</span>
@@ -420,7 +423,7 @@ initialization work, like marking module index. Then we could use its <code clas
 <p>In <code class="docutils literal notranslate"><span class="pre">CreateModuleIndex()</span></code>, We will inspect module import relationship
 using DFS and create index for them. Note the root module is fixed at
 location 0. In our example, we have module relationship like this:</p>
-<div class="highlight-c++ notranslate"><div class="highlight"><pre><span class="nl">llvm_mod</span><span class="p">:</span><span class="n">imported_modules</span>
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="nl">llvm_mod</span><span class="p">:</span><span class="n">imported_modules</span>
   <span class="o">-</span> <span class="n">cuda_mod</span>
 </pre></div>
 </div>
@@ -433,7 +436,7 @@ index. In code, we use <code class="docutils literal notranslate"><span class="p
 <code class="docutils literal notranslate"><span class="pre">import_tree_child_indices_</span></code> to represent them.</p>
 <p>After initialization, we could serialize module using <code class="docutils literal notranslate"><span class="pre">SerializeModule</span></code> function.
 In its function logic, we will assume the serialization format like this:</p>
-<div class="highlight-c++ notranslate"><div class="highlight"><pre><span class="n">binary_blob_size</span>
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="n">binary_blob_size</span>
 <span class="n">binary_blob_type_key</span>
 <span class="n">binary_blob_logic</span>
 <span class="n">binary_blob_type_key</span>
@@ -472,15 +475,15 @@ and <code class="docutils literal notranslate"><span class="pre">import_tree_chi
 libary.</p>
 <p>Now, we complete the serialization part. As you have seen, we could
 support arbitrary modules to import ideally.</p>
-</div>
-<div class="section" id="deserialization">
+</section>
+<section id="deserialization">
 <h2>Deserialization<a class="headerlink" href="#deserialization" title="Permalink to this headline">¶</a></h2>
 <p>The entrance API is <code class="docutils literal notranslate"><span class="pre">tvm.runtime.load</span></code>. This function
 is to call <code class="docutils literal notranslate"><span class="pre">_LoadFromFile</span></code> in fact. If we dig it a little deeper, this is
 <code class="docutils literal notranslate"><span class="pre">Module::LoadFromFile</span></code>. In our example, the file is <code class="docutils literal notranslate"><span class="pre">deploy.so</span></code>,
 according to the function logic, we will call <code class="docutils literal notranslate"><span class="pre">module.loadfile_so</span></code> in
 <code class="docutils literal notranslate"><span class="pre">dso_library.cc</span></code>. The key is here:</p>
-<div class="highlight-c++ notranslate"><div class="highlight"><pre><span class="c1">// Load the imported modules</span>
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="c1">// Load the imported modules</span>
 <span class="k">const</span> <span class="kt">char</span><span class="o">*</span> <span class="n">dev_mblob</span> <span class="o">=</span> <span class="k">reinterpret_cast</span><span class="o">&lt;</span><span class="k">const</span> <span class="kt">char</span><span class="o">*&gt;</span><span class="p">(</span><span class="n">lib</span><span class="o">-&gt;</span><span class="n">GetSymbol</span><span class="p">(</span><span class="n">runtime</span><span class="o">::</span><span class="n">symbol</span><span class="o">::</span><span class="n">tvm_dev_mblob</span><span class="p">));</span>
 <span class="n">Module</span> <span class="n">root_mod</span><span class="p">;</span>
 <span class="k">if</span> <span class="p">(</span><span class="n">dev_mblob</span> <span class="o">!=</span> <span class="k">nullptr</span><span class="p">)</span> <span class="p">{</span>
@@ -495,7 +498,7 @@ according to the function logic, we will call <code class="docutils literal notr
 <code class="docutils literal notranslate"><span class="pre">runtime::symbol::tvm_dev_mblob</span></code>. During deserialization part, we will
 inspect it. If we have <code class="docutils literal notranslate"><span class="pre">runtime::symbol::tvm_dev_mblob</span></code>, we will call <code class="docutils literal notranslate"><span class="pre">ProcessModuleBlob</span></code>,
 whose logic like this:</p>
-<div class="highlight-c++ notranslate"><div class="highlight"><pre><span class="n">READ</span><span class="p">(</span><span class="n">blob_size</span><span class="p">)</span>
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="n">READ</span><span class="p">(</span><span class="n">blob_size</span><span class="p">)</span>
 <span class="n">READ</span><span class="p">(</span><span class="n">blob_type_key</span><span class="p">)</span>
 <span class="k">for</span> <span class="p">(</span><span class="kt">size_t</span> <span class="n">i</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span> <span class="n">i</span> <span class="o">&lt;</span> <span class="n">blob_size</span><span class="p">;</span> <span class="n">i</span><span class="o">++</span><span class="p">)</span> <span class="p">{</span>
     <span class="k">if</span> <span class="p">(</span><span class="n">blob_type_key</span> <span class="o">==</span> <span class="s">&quot;_lib&quot;</span><span class="p">)</span> <span class="p">{</span>
@@ -517,8 +520,8 @@ whose logic like this:</p>
 <p>After this, we will set the <code class="docutils literal notranslate"><span class="pre">ctx_address</span></code> to be the <code class="docutils literal notranslate"><span class="pre">root_module</span></code> so
 that allow lookup of symbol from root (so all symbols are visible).</p>
 <p>Finally, we complete the deserialization part.</p>
-</div>
-</div>
+</section>
+</section>
 
 
            </div>

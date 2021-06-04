@@ -1,6 +1,7 @@
 var searchData=
 [
   ['sample_5fratio',['sample_ratio',['../structtvm_1_1relay_1_1ROIAlignAttrs.html#a44a199408088e3c6d2b0ae13e13eff40',1,'tvm::relay::ROIAlignAttrs']]],
+  ['saved_5fdeleter_5f',['saved_deleter_',['../classtvm_1_1relay_1_1CallNode.html#a918ffd45556abd8b476e8e5d701e95fc',1,'tvm::relay::CallNode']]],
   ['scalar_5finputs',['scalar_inputs',['../classtvm_1_1te_1_1TensorComputeOpNode.html#ae96efdee192da92765d2a64aff1f9999',1,'tvm::te::TensorComputeOpNode::scalar_inputs()'],['../classtvm_1_1te_1_1TensorIntrinCallNode.html#a862c22c7362a799b0f44de41920bffc8',1,'tvm::te::TensorIntrinCallNode::scalar_inputs()']]],
   ['scalar_5fparams',['scalar_params',['../classtvm_1_1te_1_1TensorIntrinNode.html#a9bd674ec6c6a695ea81a3651e99a78f0',1,'tvm::te::TensorIntrinNode']]],
   ['scale',['scale',['../classtvm_1_1arith_1_1IterSplitExprNode.html#a93c760bb7a5af0c7c442dc879d7bc55a',1,'tvm::arith::IterSplitExprNode::scale()'],['../structtvm_1_1relay_1_1BatchNormAttrs.html#a24be5ce23e38232943c34324885377ff',1,'tvm::relay::BatchNormAttrs::scale()'],['../structtvm_1_1relay_1_1InstanceNormAttrs.html#a3c3ea1bc3de46864e1a355711ac7d2a1',1,'tvm::relay::InstanceNormAttrs::scale()'],['../structtvm_1_1relay_1_1LayerNormAttrs.html#ac3fd4a906b04ce84722adc3fdf9dfc0b',1,'tvm::relay::LayerNormAttrs::scale()'],['../structtvm_1_1relay_1_1GroupNormAttrs.html#aafc02cdca5286cca8ee5c7f23cf091ba',1,'tvm::relay::GroupNormAttrs::scale()']]],
@@ -73,7 +74,7 @@ var searchData=
   ['storage_5fid',['storage_id',['../structTVMGraphExecutorGraphAttr.html#a8a0d6d05adcffbf499aafb6a6700c400',1,'TVMGraphExecutorGraphAttr']]],
   ['storage_5fnum_5fnot_5falloctaed',['storage_num_not_alloctaed',['../structTVMGraphExecutorGraphAttr.html#ae1937d45b634bf58303a3ab48622256e',1,'TVMGraphExecutorGraphAttr']]],
   ['storage_5foffset',['storage_offset',['../structtvm_1_1auto__scheduler_1_1StageAttributes.html#a9adf0225217392dc39d5cfcf67ead607',1,'tvm::auto_scheduler::StageAttributes']]],
-  ['storage_5fscope',['storage_scope',['../namespacetvm_1_1tir_1_1attr.html#a04f015503117e6b781ade61e103b074a',1,'tvm::tir::attr']]],
+  ['storage_5fscope',['storage_scope',['../classtvm_1_1PointerTypeNode.html#aef547d49d4f3cb208b6248745f56750a',1,'tvm::PointerTypeNode::storage_scope()'],['../namespacetvm_1_1tir_1_1attr.html#a04f015503117e6b781ade61e103b074a',1,'tvm::tir::attr::storage_scope()']]],
   ['store_5fpredicate',['store_predicate',['../classtvm_1_1te_1_1StageNode.html#a8f4ba7f2931b3541c12734af511600a7',1,'tvm::te::StageNode']]],
   ['stream',['stream',['../classtvm_1_1ReprPrinter.html#a036409dcdcf6f0ac5c6d7d27ec60ed94',1,'tvm::ReprPrinter']]],
   ['stride',['stride',['../structtvm_1_1relay_1_1YoloReorgAttrs.html#a720c79759a2f2b603b006b0bfcab5fe0',1,'tvm::relay::YoloReorgAttrs::stride()'],['../classtvm_1_1tir_1_1RampNode.html#a618c78e39d18f999dbdd3fe01436f447',1,'tvm::tir::RampNode::stride()']]],
