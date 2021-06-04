@@ -31,11 +31,6 @@ the interface via tvm's intrinsic API.
     from tvm.ir import register_op_attr, register_intrin_lowering
 
 
-
-
-
-
-
 Direct Declare Extern Math Call
 -------------------------------
 The most straight-forward way to call target specific function is via
@@ -57,43 +52,6 @@ In the following example, we use :any:`tvm.tir.call_pure_extern` to call
     s[B].bind(tx, te.thread_axis("threadIdx.x"))
     f = tvm.build(s, [A, B], "cuda", name="myexp")
     print(f.imported_modules[0].get_source())
-
-
-
-
-
-.. rst-class:: sphx-glr-script-out
-
- Out:
-
- .. code-block:: none
-
-
-    #ifdef _WIN32
-      using uint = unsigned int;
-      using uchar = unsigned char;
-      using ushort = unsigned short;
-      using int64_t = long long;
-      using uint64_t = unsigned long long;
-    #else
-      #define uint unsigned int
-      #define uchar unsigned char
-      #define ushort unsigned short
-      #define int64_t long long
-      #define uint64_t unsigned long long
-    #endif
-    extern "C" __global__ void myexp_kernel0(float* __restrict__ B, float* __restrict__ A, int n, int stride, int stride1) {
-      if (((int)blockIdx.x) < (n >> 6)) {
-        B[((((((int)blockIdx.x) * 64) + ((int)threadIdx.x)) * stride1))] = __expf(A[((((((int)blockIdx.x) * 64) + ((int)threadIdx.x)) * stride))]);
-      } else {
-        if (((((int)blockIdx.x) * 64) + ((int)threadIdx.x)) < n) {
-          B[((((((int)blockIdx.x) * 64) + ((int)threadIdx.x)) * stride1))] = __expf(A[((((((int)blockIdx.x) * 64) + ((int)threadIdx.x)) * stride))]);
-        }
-      }
-    }
-
-
-
 
 
 Unified Intrinsic Call
@@ -123,43 +81,6 @@ The following code use te.exp instead, which create an intrinsic call
     fcuda = tvm.build(s, [A, B], "cuda", name="myexp")
     print(fcuda.imported_modules[0].get_source())
 
-
-
-
-.. rst-class:: sphx-glr-script-out
-
- Out:
-
- .. code-block:: none
-
-
-    #ifdef _WIN32
-      using uint = unsigned int;
-      using uchar = unsigned char;
-      using ushort = unsigned short;
-      using int64_t = long long;
-      using uint64_t = unsigned long long;
-    #else
-      #define uint unsigned int
-      #define uchar unsigned char
-      #define ushort unsigned short
-      #define int64_t long long
-      #define uint64_t unsigned long long
-    #endif
-    extern "C" __global__ void myexp_kernel0(float* __restrict__ B, float* __restrict__ A, int n, int stride, int stride1) {
-      if (((int)blockIdx.x) < (n >> 6)) {
-        B[((((((int)blockIdx.x) * 64) + ((int)threadIdx.x)) * stride1))] = __expf(A[((((((int)blockIdx.x) * 64) + ((int)threadIdx.x)) * stride))]);
-      } else {
-        if (((((int)blockIdx.x) * 64) + ((int)threadIdx.x)) < n) {
-          B[((((((int)blockIdx.x) * 64) + ((int)threadIdx.x)) * stride1))] = __expf(A[((((((int)blockIdx.x) * 64) + ((int)threadIdx.x)) * stride))]);
-        }
-      }
-    }
-
-
-
-
-
 We can find that the code works for both CUDA and opencl.
 The same te.exp can also be used for float64 data types.
 
@@ -169,30 +90,6 @@ The same te.exp can also be used for float64 data types.
 
     fopencl = tvm.build(s, [A, B], "opencl", name="myexp")
     print(fopencl.imported_modules[0].get_source())
-
-
-
-
-
-.. rst-class:: sphx-glr-script-out
-
- Out:
-
- .. code-block:: none
-
-    // Function: myexp_kernel0
-    __kernel void myexp_kernel0(__global float* restrict B, __global float* restrict A, int n, int stride, int stride1) {
-      if (((int)get_group_id(0)) < (n >> 6)) {
-        B[((((((int)get_group_id(0)) * 64) + ((int)get_local_id(0))) * stride1))] = exp(A[((((((int)get_group_id(0)) * 64) + ((int)get_local_id(0))) * stride))]);
-      } else {
-        if (((((int)get_group_id(0)) * 64) + ((int)get_local_id(0))) < n) {
-          B[((((((int)get_group_id(0)) * 64) + ((int)get_local_id(0))) * stride1))] = exp(A[((((((int)get_group_id(0)) * 64) + ((int)get_local_id(0))) * stride))]);
-        }
-      }
-    }
-
-
-
 
 
 Intrinsic Lowering Rule
@@ -229,11 +126,6 @@ The following example customizes CUDA lowering rule for :code:`exp`.
 
     register_intrin_lowering("tir.exp", target="cuda", f=my_cuda_math_rule, level=99)
 
-
-
-
-
-
 Register the rule to TVM with override option to override existing rule.
 Notice the difference between the printed code from previous one:
 our new rule uses math function :code:`expf` instead of
@@ -245,43 +137,6 @@ fast math version :code:`__expf`.
 
     fcuda = tvm.build(s, [A, B], "cuda", name="myexp")
     print(fcuda.imported_modules[0].get_source())
-
-
-
-
-
-.. rst-class:: sphx-glr-script-out
-
- Out:
-
- .. code-block:: none
-
-
-    #ifdef _WIN32
-      using uint = unsigned int;
-      using uchar = unsigned char;
-      using ushort = unsigned short;
-      using int64_t = long long;
-      using uint64_t = unsigned long long;
-    #else
-      #define uint unsigned int
-      #define uchar unsigned char
-      #define ushort unsigned short
-      #define int64_t long long
-      #define uint64_t unsigned long long
-    #endif
-    extern "C" __global__ void myexp_kernel0(float* __restrict__ B, float* __restrict__ A, int n, int stride, int stride1) {
-      if (((int)blockIdx.x) < (n >> 6)) {
-        B[((((((int)blockIdx.x) * 64) + ((int)threadIdx.x)) * stride1))] = expf(A[((((((int)blockIdx.x) * 64) + ((int)threadIdx.x)) * stride))]);
-      } else {
-        if (((((int)blockIdx.x) * 64) + ((int)threadIdx.x)) < n) {
-          B[((((((int)blockIdx.x) * 64) + ((int)threadIdx.x)) * stride1))] = expf(A[((((((int)blockIdx.x) * 64) + ((int)threadIdx.x)) * stride))]);
-        }
-      }
-    }
-
-
-
 
 
 Add Your Own Intrinsic
@@ -325,43 +180,6 @@ The following example add an intrinsic :code:`mylog` to the system.
     s[B].bind(tx, te.thread_axis("threadIdx.x"))
     fcuda = tvm.build(s, [A, B], "cuda", name="mylog")
     print(fcuda.imported_modules[0].get_source())
-
-
-
-
-
-.. rst-class:: sphx-glr-script-out
-
- Out:
-
- .. code-block:: none
-
-
-    #ifdef _WIN32
-      using uint = unsigned int;
-      using uchar = unsigned char;
-      using ushort = unsigned short;
-      using int64_t = long long;
-      using uint64_t = unsigned long long;
-    #else
-      #define uint unsigned int
-      #define uchar unsigned char
-      #define ushort unsigned short
-      #define int64_t long long
-      #define uint64_t unsigned long long
-    #endif
-    extern "C" __global__ void mylog_kernel0(float* __restrict__ B, float* __restrict__ A, int n, int stride, int stride1) {
-      if (((int)blockIdx.x) < (n >> 6)) {
-        B[((((((int)blockIdx.x) * 64) + ((int)threadIdx.x)) * stride1))] = logf(A[((((((int)blockIdx.x) * 64) + ((int)threadIdx.x)) * stride))]);
-      } else {
-        if (((((int)blockIdx.x) * 64) + ((int)threadIdx.x)) < n) {
-          B[((((((int)blockIdx.x) * 64) + ((int)threadIdx.x)) * stride1))] = logf(A[((((((int)blockIdx.x) * 64) + ((int)threadIdx.x)) * stride))]);
-        }
-      }
-    }
-
-
-
 
 
 Summary

@@ -42,11 +42,6 @@ Please install CFFI and CV2 before executing this script
     import tvm.relay.testing.darknet
 
 
-
-
-
-
-
 Choose the model
 -----------------------
 Models are: 'yolov2', 'yolov3' or 'yolov3-tiny'
@@ -57,11 +52,6 @@ Models are: 'yolov2', 'yolov3' or 'yolov3-tiny'
 
     # Model name
     MODEL_NAME = "yolov3"
-
-
-
-
-
 
 
 Download required files
@@ -104,22 +94,6 @@ Download cfg and weights file if first time.
     mod, params = relay.frontend.from_darknet(net, dtype=dtype, shape=data.shape)
 
 
-
-
-
-.. rst-class:: sphx-glr-script-out
-
- Out:
-
- .. code-block:: none
-
-    File /workspace/.tvm_test_data/darknet/yolov3.cfg exists, skip.
-    File /workspace/.tvm_test_data/darknet/yolov3.weights exists, skip.
-    File /workspace/.tvm_test_data/darknet/libdarknet2.0.so exists, skip.
-    Converting darknet to relay functions...
-
-
-
 Import the graph to Relay
 -------------------------
 compile the model
@@ -137,19 +111,6 @@ compile the model
 
     [neth, netw] = shape["data"][2:]  # Current image shape is 608x608
 
-
-
-
-.. rst-class:: sphx-glr-script-out
-
- Out:
-
- .. code-block:: none
-
-    Compiling the model...
-
-
-
 Load a test image
 -----------------
 
@@ -162,20 +123,6 @@ Load a test image
     img_path = download_testdata(img_url, test_image, "data")
 
     data = tvm.relay.testing.darknet.load_image(img_path, netw, neth)
-
-
-
-
-.. rst-class:: sphx-glr-script-out
-
- Out:
-
- .. code-block:: none
-
-    Loading the test image...
-    File /workspace/.tvm_test_data/data/dog.jpg exists, skip.
-
-
 
 Execute on TVM Runtime
 ----------------------
@@ -205,10 +152,10 @@ The process is no different from other examples.
         layer_out = {}
         layer_out["type"] = "Region"
         # Get the region layer attributes (n, out_c, out_h, out_w, classes, coords, background)
-        layer_attr = m.get_output(2).numpy()
-        layer_out["biases"] = m.get_output(1).numpy()
+        layer_attr = m.get_output(2).asnumpy()
+        layer_out["biases"] = m.get_output(1).asnumpy()
         out_shape = (layer_attr[0], layer_attr[1] // layer_attr[0], layer_attr[2], layer_attr[3])
-        layer_out["output"] = m.get_output(0).numpy().reshape(out_shape)
+        layer_out["output"] = m.get_output(0).asnumpy().reshape(out_shape)
         layer_out["classes"] = layer_attr[4]
         layer_out["coords"] = layer_attr[5]
         layer_out["background"] = layer_attr[6]
@@ -219,11 +166,11 @@ The process is no different from other examples.
             layer_out = {}
             layer_out["type"] = "Yolo"
             # Get the yolo layer attributes (n, out_c, out_h, out_w, classes, total)
-            layer_attr = m.get_output(i * 4 + 3).numpy()
-            layer_out["biases"] = m.get_output(i * 4 + 2).numpy()
-            layer_out["mask"] = m.get_output(i * 4 + 1).numpy()
+            layer_attr = m.get_output(i * 4 + 3).asnumpy()
+            layer_out["biases"] = m.get_output(i * 4 + 2).asnumpy()
+            layer_out["mask"] = m.get_output(i * 4 + 1).asnumpy()
             out_shape = (layer_attr[0], layer_attr[1] // layer_attr[0], layer_attr[2], layer_attr[3])
-            layer_out["output"] = m.get_output(i * 4).numpy().reshape(out_shape)
+            layer_out["output"] = m.get_output(i * 4).asnumpy().reshape(out_shape)
             layer_out["classes"] = layer_attr[4]
             tvm_out.append(layer_out)
 
@@ -232,11 +179,11 @@ The process is no different from other examples.
             layer_out = {}
             layer_out["type"] = "Yolo"
             # Get the yolo layer attributes (n, out_c, out_h, out_w, classes, total)
-            layer_attr = m.get_output(i * 4 + 3).numpy()
-            layer_out["biases"] = m.get_output(i * 4 + 2).numpy()
-            layer_out["mask"] = m.get_output(i * 4 + 1).numpy()
+            layer_attr = m.get_output(i * 4 + 3).asnumpy()
+            layer_out["biases"] = m.get_output(i * 4 + 2).asnumpy()
+            layer_out["mask"] = m.get_output(i * 4 + 1).asnumpy()
             out_shape = (layer_attr[0], layer_attr[1] // layer_attr[0], layer_attr[2], layer_attr[3])
-            layer_out["output"] = m.get_output(i * 4).numpy().reshape(out_shape)
+            layer_out["output"] = m.get_output(i * 4).asnumpy().reshape(out_shape)
             layer_out["classes"] = layer_attr[4]
             tvm_out.append(layer_out)
             thresh = 0.560
@@ -268,27 +215,6 @@ The process is no different from other examples.
     )
     plt.imshow(img.transpose(1, 2, 0))
     plt.show()
-
-
-
-.. image:: /tutorials/frontend/images/sphx_glr_from_darknet_001.png
-    :class: sphx-glr-single-img
-
-
-.. rst-class:: sphx-glr-script-out
-
- Out:
-
- .. code-block:: none
-
-    Running the test image...
-    File /workspace/.tvm_test_data/data/coco.names exists, skip.
-    File /workspace/.tvm_test_data/data/arial.ttf exists, skip.
-    class:['dog 0.994'] left:127 right:227 top:316 bottom:533
-    class:['truck 0.9266'] left:471 right:83 top:689 bottom:169
-    class:['bicycle 0.9984'] left:111 right:113 top:577 bottom:447
-
-
 
 
 .. _sphx_glr_download_tutorials_frontend_from_darknet.py:

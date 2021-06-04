@@ -85,11 +85,6 @@ tensorflow 2.2+ are required.
 
 
 
-
-
-
-
-
 Configure Settings
 ------------------
 Let's start by defining some parameters that define the type of model
@@ -108,7 +103,7 @@ and sparsity to run.
     # TVM platform identifier. Note that best cpu performance can be achieved by setting -mcpu
     # appropriately for your specific machine. CUDA and ROCm are also supported.
     target = "llvm"
-    # Which device to run on. Should be one of tvm.cpu() or tvm.cuda().
+    # Which device to run on. Should be one of tvm.cpu() or tvm.gpu().
     dev = tvm.cpu()
     # If true, then a sparse variant of the network will be run and
     # benchmarked.
@@ -120,11 +115,6 @@ and sparsity to run.
     # determines how sparse the generated weights should be. The higher
     # the sparsity, the faster the result.
     sparsity = 0.85
-
-
-
-
-
 
 
 
@@ -174,11 +164,6 @@ a relay graph that we can optimize and deploy.
 
 
 
-
-
-
-
-
 Convert to Relay Graph
 ----------------------
 We now have all the tooling to get a transformers model in the right format
@@ -219,12 +204,7 @@ to reimport from tensorflow each time this script is run.
                 with open(os.path.join(abs_path, relay_params), "wb") as fo:
                     fo.write(runtime.save_param_dict(params))
 
-        return mod, dict(params.items()), shape_dict
-
-
-
-
-
+        return mod, params, shape_dict
 
 
 
@@ -261,11 +241,6 @@ tensors instead of sparse aware kernels.
     def run_dense(mod, params, shape_dict, target, dev):
         print("Dense Model Benchmark:")
         return run_relay_graph(mod, params, shape_dict, target, dev)
-
-
-
-
-
 
 
 
@@ -320,7 +295,7 @@ run faster.
         def deepcopy(param_dic):
             ret = {}
             for k, v in param_dic.items():
-                ret[k] = tvm.nd.array(v.numpy())
+                ret[k] = tvm.nd.array(v.asnumpy())
             return ret
 
         new_params = deepcopy(params)
@@ -344,11 +319,6 @@ run faster.
 
 
 
-
-
-
-
-
 Run All the Code!
 -----------------
 And that's it! Now we'll simply call all the needed function to benchmark
@@ -367,11 +337,6 @@ you'll need to uncomment the last line first.
 
 
     # benchmark()
-
-
-
-
-
 
 
 Sample Output
@@ -408,11 +373,6 @@ and shows about a 2.5X speedup from using sparsity.
     # Runtime:             10.64 ms            (0.29 ms)
     # Block Sparse Model with 1x1 blocks:
     # Runtime:             6.46 ms             (0.05 ms)
-
-
-
-
-
 
 
 .. _sphx_glr_download_tutorials_frontend_deploy_sparse.py:

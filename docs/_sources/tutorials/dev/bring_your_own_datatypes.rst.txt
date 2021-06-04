@@ -62,11 +62,6 @@ We'll begin by writing a simple program in TVM; afterwards, we will re-write it 
     module = tvm.IRModule.from_expr(program)
 
 
-
-
-
-
-
 Now, we create random inputs to feed into this program using numpy:
 
 
@@ -83,20 +78,6 @@ Now, we create random inputs to feed into this program using numpy:
     print("y: {}".format(y_input))
 
 
-
-
-
-.. rst-class:: sphx-glr-script-out
-
- Out:
-
- .. code-block:: none
-
-    x: [0.51729786 0.9469626  0.7654598 ]
-    y: [0.28239584 0.22104536 0.6862221 ]
-
-
-
 Finally, we're ready to run the program:
 
 
@@ -107,19 +88,6 @@ Finally, we're ready to run the program:
 
     z_output = ex.evaluate()(x_input, y_input)
     print("z: {}".format(z_output))
-
-
-
-
-
-.. rst-class:: sphx-glr-script-out
-
- Out:
-
- .. code-block:: none
-
-    z: [0.7996937 1.168008  1.4516819]
-
 
 
 Adding Custom Datatypes
@@ -146,19 +114,6 @@ Additionally, note the "32" after the datatype: this is the bitwidth of the cust
         print(str(e).split("\n")[-1])
 
 
-
-
-
-.. rst-class:: sphx-glr-script-out
-
- Out:
-
- .. code-block:: none
-
-
-
-
-
 Trying to generate this program throws an error from TVM.
 TVM does not know how to handle any custom datatype out of the box!
 We first have to register the custom type with TVM, giving it a name and a type code:
@@ -168,11 +123,6 @@ We first have to register the custom type with TVM, giving it a name and a type 
 
 
     tvm.target.datatype.register("myfloat", 150)
-
-
-
-
-
 
 
 Note that the type code, 150, is currently chosen manually by the user.
@@ -192,35 +142,12 @@ Now we can generate our program again:
     module = relay.transform.InferType()(module)
 
 
-
-
-
-
-
 Now we have a Relay program that uses myfloat!
 
 
 .. code-block:: default
 
     print(program)
-
-
-
-
-
-.. rst-class:: sphx-glr-script-out
-
- Out:
-
- .. code-block:: none
-
-    fn (%x: Tensor[(3), float32], %y: Tensor[(3), float32]) {
-      %0 = cast(%x, dtype="custom[myfloat]32");
-      %1 = cast(%y, dtype="custom[myfloat]32");
-      %2 = add(%0, %1);
-      cast(%2, dtype="float32")
-    }
-
 
 
 Now that we can express our program without errors, let's try running it!
@@ -236,19 +163,6 @@ Now that we can express our program without errors, let's try running it!
     except tvm.TVMError as e:
         # Print last line of error
         print(str(e).split("\n")[-1])
-
-
-
-
-
-.. rst-class:: sphx-glr-script-out
-
- Out:
-
- .. code-block:: none
-
-      Check failed: (lower) is false: Cast lowering function for target llvm destination type 150 source type 2 not found
-
 
 
 Now, trying to compile this program throws an error.
@@ -278,11 +192,6 @@ To fix this error, we simply need to specify a lowering function:
     )
 
 
-
-
-
-
-
 The ``register_op(...)`` call takes a lowering function, and a number of parameters which specify exactly the operation which should be lowered with the provided lowering function.
 In this case, the arguments we pass specify that this lowering function is for lowering a ``Cast`` from ``float`` to ``myfloat`` for target ``"llvm"``.
 
@@ -308,19 +217,6 @@ For more information, see `the source code <https://github.com/apache/tvm/blob/m
     except tvm.TVMError as e:
         # Print last line of error
         print(str(e).split("\n")[-1])
-
-
-
-
-
-.. rst-class:: sphx-glr-script-out
-
- Out:
-
- .. code-block:: none
-
-      Check failed: (lower) is false: Add lowering function for target llvm type 150 not found
-
 
 
 This new error tells us that the ``Add`` lowering function is not found, which is good news, as it's no longer complaining about the ``Cast``!
@@ -359,23 +255,6 @@ while for all other operations, the bit length is the same between the operands 
     print("z (myfloat32):\t{}".format(z_output_myfloat))
 
     # Perhaps as expected, the ``myfloat32`` results and ``float32`` are exactly the same!
-
-
-
-
-
-.. rst-class:: sphx-glr-script-out
-
- Out:
-
- .. code-block:: none
-
-    z: [0.7996937 1.168008  1.4516819]
-    x:              [0.51729786 0.9469626  0.7654598 ]
-    y:              [0.28239584 0.22104536 0.6862221 ]
-    z (float32):    [0.7996937 1.168008  1.4516819]
-    z (myfloat32):  [0.7996937 1.168008  1.4516819]
-
 
 
 Running Models With Custom Datatypes
@@ -419,11 +298,6 @@ First let us define two helper functions to get the mobilenet model and a cat im
     module, params = get_mobilenet()
 
 
-
-
-
-
-
 It's easy to execute MobileNet with native TVM:
 
 
@@ -432,24 +306,9 @@ It's easy to execute MobileNet with native TVM:
 
     ex = tvm.relay.create_executor("graph", mod=module)
     input = get_cat_image()
-    result = ex.evaluate()(input, **params).numpy()
+    result = ex.evaluate()(input, **params).asnumpy()
     # print first 10 elements
     print(result.flatten()[:10])
-
-
-
-
-
-.. rst-class:: sphx-glr-script-out
-
- Out:
-
- .. code-block:: none
-
-    File /workspace/.tvm_test_data/data/cat.png exists, skip.
-    [ -7.5350165   2.0368009 -12.706646   -5.63786   -12.684058    4.0723605
-       2.618876    3.4049501  -9.867913  -24.53311  ]
-
 
 
 Now, we would like to change the model to use myfloat internally. To do so, we need to convert the network. To do this, we first define a function which will help us convert tensors:
@@ -465,11 +324,6 @@ Now, we would like to change the model to use myfloat internally. To do so, we n
         cast = relay.Function([x], x.astype(dst_dtype))
         with tvm.transform.PassContext(config={"tir.disable_vectorize": True}):
             return relay.create_executor("graph").evaluate(cast)(array)
-
-
-
-
-
 
 
 
@@ -510,19 +364,6 @@ Now, to actually convert the entire network, we have written `a pass in Relay <h
             result_myfloat = ex.evaluate(expr)(input, **params)
     except tvm.TVMError as e:
         print(str(e).split("\n")[-1])
-
-
-
-
-
-.. rst-class:: sphx-glr-script-out
-
- Out:
-
- .. code-block:: none
-
-      Check failed: (lower) is false: FloatImm lowering function for target llvm type 150 not found
-
 
 
 When we attempt to run the model, we get a familiar error telling us that more funcions need to be registerd for myfloat.
@@ -602,11 +443,6 @@ Here, we register all the needed functions:
     )
 
 
-
-
-
-
-
 Note we are making use of two new functions: ``register_min_func`` and ``create_min_lower_func``.
 
 ``register_min_func`` takes in an integer ``num_bits`` for the bit length, and should return an operation
@@ -624,27 +460,13 @@ Now we can finally run the model:
     # Vectorization is not implemented with custom datatypes.
     with tvm.transform.PassContext(config={"tir.disable_vectorize": True}):
         result_myfloat = ex.evaluate(expr)(input, **params)
-        result_myfloat = convert_ndarray(src_dtype, result_myfloat).numpy()
+        result_myfloat = convert_ndarray(src_dtype, result_myfloat).asnumpy()
         # print first 10 elements
         print(result_myfloat.flatten()[:10])
 
     # Again, note that the output using 32-bit myfloat exactly the same as 32-bit floats,
     # because myfloat is exactly a float!
     np.testing.assert_array_equal(result, result_myfloat)
-
-
-
-
-.. rst-class:: sphx-glr-script-out
-
- Out:
-
- .. code-block:: none
-
-    [ -7.5350165   2.0368009 -12.706646   -5.63786   -12.684058    4.0723605
-       2.618876    3.4049501  -9.867913  -24.53311  ]
-
-
 
 
 .. _sphx_glr_download_tutorials_dev_bring_your_own_datatypes.py:

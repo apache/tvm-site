@@ -58,11 +58,6 @@ environment.
     tgt = tvm.target.Target(target="llvm", host="llvm")
 
 
-
-
-
-
-
 Describing the Vector Computation
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 We describe a vector addition computation. TVM adopts tensor semantics, with
@@ -87,11 +82,6 @@ are only declaring how the computation should be done.
     A = te.placeholder((n,), name="A")
     B = te.placeholder((n,), name="B")
     C = te.compute(A.shape, lambda i: A[i] + B[i], name="C")
-
-
-
-
-
 
 
 .. note:: Lambda Functions
@@ -131,11 +121,6 @@ iterating in row major order.
     s = te.create_schedule(C.op)
 
 
-
-
-
-
-
 Compile and Evaluate the Default Schedule
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 With the TE expression and a schedule, we can produce runnable code for our
@@ -153,11 +138,6 @@ the inputs and outputs) as well as target language we want to compile to.
 
 
     fadd = tvm.build(s, [A, B, C], tgt, name="myadd")
-
-
-
-
-
 
 
 Let's run the function, and compare the output to the same computation in
@@ -180,12 +160,7 @@ computation performed by numpy.
     b = tvm.nd.array(np.random.uniform(size=n).astype(B.dtype), dev)
     c = tvm.nd.array(np.zeros(n, dtype=C.dtype), dev)
     fadd(a, b, c)
-    tvm.testing.assert_allclose(c.numpy(), a.numpy() + b.numpy())
-
-
-
-
-
+    tvm.testing.assert_allclose(c.asnumpy(), a.asnumpy() + b.asnumpy())
 
 
 To get a comparison of how fast this version is compared to numpy, create a
@@ -227,20 +202,6 @@ helper function to run a profile of the TVM generated code.
     evaluate_addition(fadd, tgt, "naive", log=log)
 
 
-
-
-
-.. rst-class:: sphx-glr-script-out
-
- Out:
-
- .. code-block:: none
-
-    Numpy running time: 0.000010
-    naive: 0.000007
-
-
-
 Updating the Schedule to Use Paralleism
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -261,11 +222,6 @@ schedule operation to our computation.
     s[C].parallel(C.op.axis[0])
 
 
-
-
-
-
-
 The ``tvm.lower`` command will generate the Intermediate Representation (IR)
 of the TE, with the corresponding schedule. By lowering the expression as we
 apply different schedule operations, we can see the effect of scheduling on
@@ -279,30 +235,6 @@ return a readable C-style statement.
     print(tvm.lower(s, [A, B, C], simple_mode=True))
 
 
-
-
-
-.. rst-class:: sphx-glr-script-out
-
- Out:
-
- .. code-block:: none
-
-    primfn(A_1: handle, B_1: handle, C_1: handle) -> ()
-      attr = {"global_symbol": "main", "tir.noalias": True}
-      buffers = {C: Buffer(C_2: Pointer(float32), float32, [n: int32], [stride: int32], type="auto"),
-                 A: Buffer(A_2: Pointer(float32), float32, [n], [stride_1: int32], type="auto"),
-                 B: Buffer(B_2: Pointer(float32), float32, [n], [stride_2: int32], type="auto")}
-      buffer_map = {A_1: A, B_1: B, C_1: C} {
-      for (i: int32, 0, n) "parallel" {
-        C_2[(i*stride)] = ((float32*)A_2[(i*stride_1)] + (float32*)B_2[(i*stride_2)])
-      }
-    }
-
-
-
-
-
 It's now possible for TVM to run these blocks on independent threads. Let's
 compile and run this new schedule with the parallel operation applied:
 
@@ -313,22 +245,9 @@ compile and run this new schedule with the parallel operation applied:
     fadd_parallel = tvm.build(s, [A, B, C], tgt, name="myadd_parallel")
     fadd_parallel(a, b, c)
 
-    tvm.testing.assert_allclose(c.numpy(), a.numpy() + b.numpy())
+    tvm.testing.assert_allclose(c.asnumpy(), a.asnumpy() + b.asnumpy())
 
     evaluate_addition(fadd_parallel, tgt, "parallel", log=log)
-
-
-
-
-
-.. rst-class:: sphx-glr-script-out
-
- Out:
-
- .. code-block:: none
-
-    parallel: 0.000004
-
 
 
 Updating the Schedule to Use Vectorization
@@ -371,35 +290,6 @@ factor to be the number of threads on your CPU.
     print(tvm.lower(s, [A, B, C], simple_mode=True))
 
 
-
-
-
-.. rst-class:: sphx-glr-script-out
-
- Out:
-
- .. code-block:: none
-
-    vector: 0.000014
-    primfn(A_1: handle, B_1: handle, C_1: handle) -> ()
-      attr = {"global_symbol": "main", "tir.noalias": True}
-      buffers = {C: Buffer(C_2: Pointer(float32), float32, [n: int32], [stride: int32], type="auto"),
-                 A: Buffer(A_2: Pointer(float32), float32, [n], [stride_1: int32], type="auto"),
-                 B: Buffer(B_2: Pointer(float32), float32, [n], [stride_2: int32], type="auto")}
-      buffer_map = {A_1: A, B_1: B, C_1: C} {
-      for (i.outer: int32, 0, floordiv((n + 3), 4)) "parallel" {
-        for (i.inner.s: int32, 0, 4) {
-          if @tir.likely((((i.outer*4) + i.inner.s) < n), dtype=bool) {
-            C_2[(((i.outer*4) + i.inner.s)*stride)] = ((float32*)A_2[(((i.outer*4) + i.inner.s)*stride_1)] + (float32*)B_2[(((i.outer*4) + i.inner.s)*stride_2)])
-          }
-        }
-      }
-    }
-
-
-
-
-
 Comparing the Diferent Schedules
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 We can now compare the different schedules
@@ -415,23 +305,6 @@ We can now compare the different schedules
             "%s\t%s\t%s"
             % (result[0].rjust(20), str(result[1]).rjust(20), str(result[1] / baseline).rjust(20))
         )
-
-
-
-
-
-
-.. rst-class:: sphx-glr-script-out
-
- Out:
-
- .. code-block:: none
-
-                Operator                  Timing             Performance
-                   numpy    9.691599989309908e-06                    1.0
-                   naive    7.080400000000001e-06     0.7305708043883229
-                parallel              3.5267e-06      0.3638924433416612
-                  vector    1.3903399999999998e-05    1.4345825266556418
 
 
 
@@ -523,7 +396,7 @@ will target compilation of the vector addition to GPUs.
         # - We first create a GPU device.
         # - Then tvm.nd.array copies the data to the GPU.
         # - ``fadd`` runs the actual computation
-        # - ``numpy()`` copies the GPU array back to the CPU (so we can verify correctness).
+        # - ``asnumpy()`` copies the GPU array back to the CPU (so we can verify correctness).
         #
         # Note that copying the data to and from the memory on the GPU is a required step.
 
@@ -534,7 +407,7 @@ will target compilation of the vector addition to GPUs.
         b = tvm.nd.array(np.random.uniform(size=n).astype(B.dtype), dev)
         c = tvm.nd.array(np.zeros(n, dtype=C.dtype), dev)
         fadd(a, b, c)
-        tvm.testing.assert_allclose(c.numpy(), a.numpy() + b.numpy())
+        tvm.testing.assert_allclose(c.asnumpy(), a.asnumpy() + b.asnumpy())
 
         ################################################################################
         # Inspect the Generated GPU Code
@@ -555,11 +428,6 @@ will target compilation of the vector addition to GPUs.
             print(dev_module.get_source())
         else:
             print(fadd.get_source())
-
-
-
-
-
 
 
 Saving and Loading Compiled Modules
@@ -590,19 +458,6 @@ The following code first performs the following steps:
         fadd.imported_modules[0].save(temp.relpath("myadd.cl"))
     cc.create_shared(temp.relpath("myadd.so"), [temp.relpath("myadd.o")])
     print(temp.listdir())
-
-
-
-
-
-.. rst-class:: sphx-glr-script-out
-
- Out:
-
- .. code-block:: none
-
-    ['myadd.so', 'myadd.o']
-
 
 
 .. note:: Module Storage Format
@@ -636,12 +491,7 @@ together. We can verify that the newly loaded function works.
         fadd1.import_module(fadd1_dev)
 
     fadd1(a, b, c)
-    tvm.testing.assert_allclose(c.numpy(), a.numpy() + b.numpy())
-
-
-
-
-
+    tvm.testing.assert_allclose(c.asnumpy(), a.asnumpy() + b.asnumpy())
 
 
 Pack Everything into One Library
@@ -658,12 +508,7 @@ code. Currently we support packing of Metal, OpenCL and CUDA modules.
     fadd.export_library(temp.relpath("myadd_pack.so"))
     fadd2 = tvm.runtime.load_module(temp.relpath("myadd_pack.so"))
     fadd2(a, b, c)
-    tvm.testing.assert_allclose(c.numpy(), a.numpy() + b.numpy())
-
-
-
-
-
+    tvm.testing.assert_allclose(c.asnumpy(), a.asnumpy() + b.asnumpy())
 
 
 .. note:: Runtime API and Thread-Safety
@@ -698,12 +543,7 @@ device, and verifies the correctness of the code.
         b = tvm.nd.array(np.random.uniform(size=n).astype(B.dtype), dev)
         c = tvm.nd.array(np.zeros(n, dtype=C.dtype), dev)
         fadd_cl(a, b, c)
-        tvm.testing.assert_allclose(c.numpy(), a.numpy() + b.numpy())
-
-
-
-
-
+        tvm.testing.assert_allclose(c.asnumpy(), a.asnumpy() + b.asnumpy())
 
 
 .. note:: TE Scheduling Primitives
@@ -804,20 +644,7 @@ matrix multiplication.
     )
     print("Numpy running time: %f" % (np_running_time / np_repeat))
 
-    answer = numpy.dot(a.numpy(), b.numpy())
-
-
-
-
-
-.. rst-class:: sphx-glr-script-out
-
- Out:
-
- .. code-block:: none
-
-    Numpy running time: 0.007988
-
+    answer = numpy.dot(a.asnumpy(), b.asnumpy())
 
 
 Now we write a basic matrix multiplication using TVM TE and verify that it
@@ -841,7 +668,7 @@ optimizations.
 
     c = tvm.nd.array(numpy.zeros((M, N), dtype=dtype), dev)
     func(a, b, c)
-    tvm.testing.assert_allclose(c.numpy(), answer, rtol=1e-5)
+    tvm.testing.assert_allclose(c.asnumpy(), answer, rtol=1e-5)
 
 
     def evaluate_operation(s, vars, target, name, optimization, log):
@@ -850,7 +677,7 @@ optimizations.
 
         c = tvm.nd.array(numpy.zeros((M, N), dtype=dtype), dev)
         func(a, b, c)
-        tvm.testing.assert_allclose(c.numpy(), answer, rtol=1e-5)
+        tvm.testing.assert_allclose(c.asnumpy(), answer, rtol=1e-5)
 
         evaluator = func.time_evaluator(func.entry_name, dev, number=10)
         mean_time = evaluator(a, b, c).mean
@@ -863,19 +690,6 @@ optimizations.
     evaluate_operation(s, [A, B, C], target=target, name="mmult", optimization="none", log=log)
 
 
-
-
-
-.. rst-class:: sphx-glr-script-out
-
- Out:
-
- .. code-block:: none
-
-    none: 6.006971
-
-
-
 Let's take a look at the intermediate representation of the operator and
 default schedule using the TVM lower function. Note how the implementation is
 essentially a naive implementation of a matrix multiplication, using three
@@ -886,35 +700,6 @@ nested loops over the indices of the A and B matrices.
 
 
     print(tvm.lower(s, [A, B, C], simple_mode=True))
-
-
-
-
-
-.. rst-class:: sphx-glr-script-out
-
- Out:
-
- .. code-block:: none
-
-    primfn(A_1: handle, B_1: handle, C_1: handle) -> ()
-      attr = {"global_symbol": "main", "tir.noalias": True}
-      buffers = {C: Buffer(C_2: Pointer(float32), float32, [1024, 1024], []),
-                 A: Buffer(A_2: Pointer(float32), float32, [1024, 1024], []),
-                 B: Buffer(B_2: Pointer(float32), float32, [1024, 1024], [])}
-      buffer_map = {A_1: A, B_1: B, C_1: C} {
-      for (x: int32, 0, 1024) {
-        for (y: int32, 0, 1024) {
-          C_2[((x*1024) + y)] = 0f32
-          for (k: int32, 0, 1024) {
-            C_2[((x*1024) + y)] = ((float32*)C_2[((x*1024) + y)] + ((float32*)A_2[((x*1024) + k)]*(float32*)B_2[((k*1024) + y)]))
-          }
-        }
-      }
-    }
-
-
-
 
 
 Optimization 1: Blocking
@@ -959,19 +744,6 @@ schedule.
     evaluate_operation(s, [A, B, C], target=target, name="mmult", optimization="blocking", log=log)
 
 
-
-
-
-.. rst-class:: sphx-glr-script-out
-
- Out:
-
- .. code-block:: none
-
-    blocking: 0.110070
-
-
-
 By reordering the computation to take advantage of caching, you should see a
 significant improvement in the performance of the computation. Now, print the
 internal representation and compare it to the original:
@@ -981,45 +753,6 @@ internal representation and compare it to the original:
 
 
     print(tvm.lower(s, [A, B, C], simple_mode=True))
-
-
-
-
-
-.. rst-class:: sphx-glr-script-out
-
- Out:
-
- .. code-block:: none
-
-    primfn(A_1: handle, B_1: handle, C_1: handle) -> ()
-      attr = {"global_symbol": "main", "tir.noalias": True}
-      buffers = {C: Buffer(C_2: Pointer(float32), float32, [1024, 1024], []),
-                 A: Buffer(A_2: Pointer(float32), float32, [1024, 1024], []),
-                 B: Buffer(B_2: Pointer(float32), float32, [1024, 1024], [])}
-      buffer_map = {A_1: A, B_1: B, C_1: C} {
-      for (x.outer: int32, 0, 32) {
-        for (y.outer: int32, 0, 32) {
-          for (x.inner.init: int32, 0, 32) {
-            for (y.inner.init: int32, 0, 32) {
-              C_2[((((x.outer*32768) + (x.inner.init*1024)) + (y.outer*32)) + y.inner.init)] = 0f32
-            }
-          }
-          for (k.outer: int32, 0, 256) {
-            for (k.inner: int32, 0, 4) {
-              for (x.inner: int32, 0, 32) {
-                for (y.inner: int32, 0, 32) {
-                  C_2[((((x.outer*32768) + (x.inner*1024)) + (y.outer*32)) + y.inner)] = ((float32*)C_2[((((x.outer*32768) + (x.inner*1024)) + (y.outer*32)) + y.inner)] + ((float32*)A_2[((((x.outer*32768) + (x.inner*1024)) + (k.outer*4)) + k.inner)]*(float32*)B_2[((((k.outer*4096) + (k.inner*1024)) + (y.outer*32)) + y.inner)]))
-                }
-              }
-            }
-          }
-        }
-      }
-    }
-
-
-
 
 
 Optimization 2: Vectorization
@@ -1045,42 +778,6 @@ already cache friendly from our previous optimizations.
 
     # The generalized IR after vectorization
     print(tvm.lower(s, [A, B, C], simple_mode=True))
-
-
-
-
-
-.. rst-class:: sphx-glr-script-out
-
- Out:
-
- .. code-block:: none
-
-    vectorization: 0.117100
-    primfn(A_1: handle, B_1: handle, C_1: handle) -> ()
-      attr = {"global_symbol": "main", "tir.noalias": True}
-      buffers = {C: Buffer(C_2: Pointer(float32), float32, [1024, 1024], []),
-                 A: Buffer(A_2: Pointer(float32), float32, [1024, 1024], []),
-                 B: Buffer(B_2: Pointer(float32), float32, [1024, 1024], [])}
-      buffer_map = {A_1: A, B_1: B, C_1: C} {
-      for (x.outer: int32, 0, 32) {
-        for (y.outer: int32, 0, 32) {
-          for (x.inner.init: int32, 0, 32) {
-            C_2[ramp((((x.outer*32768) + (x.inner.init*1024)) + (y.outer*32)), 1, 32)] = broadcast(0f32, 32)
-          }
-          for (k.outer: int32, 0, 256) {
-            for (k.inner: int32, 0, 4) {
-              for (x.inner: int32, 0, 32) {
-                C_2[ramp((((x.outer*32768) + (x.inner*1024)) + (y.outer*32)), 1, 32)] = ((float32x32*)C_2[ramp((((x.outer*32768) + (x.inner*1024)) + (y.outer*32)), 1, 32)] + (broadcast((float32*)A_2[((((x.outer*32768) + (x.inner*1024)) + (k.outer*4)) + k.inner)], 32)*(float32x32*)B_2[ramp((((k.outer*4096) + (k.inner*1024)) + (y.outer*32)), 1, 32)]))
-              }
-            }
-          }
-        }
-      }
-    }
-
-
-
 
 
 Optimization 3: Loop Permutation
@@ -1113,42 +810,6 @@ more cache friendly.
 
     # Again, print the new generalized IR
     print(tvm.lower(s, [A, B, C], simple_mode=True))
-
-
-
-
-
-.. rst-class:: sphx-glr-script-out
-
- Out:
-
- .. code-block:: none
-
-    loop permutation: 0.060846
-    primfn(A_1: handle, B_1: handle, C_1: handle) -> ()
-      attr = {"global_symbol": "main", "tir.noalias": True}
-      buffers = {C: Buffer(C_2: Pointer(float32), float32, [1024, 1024], []),
-                 A: Buffer(A_2: Pointer(float32), float32, [1024, 1024], []),
-                 B: Buffer(B_2: Pointer(float32), float32, [1024, 1024], [])}
-      buffer_map = {A_1: A, B_1: B, C_1: C} {
-      for (x.outer: int32, 0, 32) {
-        for (y.outer: int32, 0, 32) {
-          for (x.inner.init: int32, 0, 32) {
-            C_2[ramp((((x.outer*32768) + (x.inner.init*1024)) + (y.outer*32)), 1, 32)] = broadcast(0f32, 32)
-          }
-          for (k.outer: int32, 0, 256) {
-            for (x.inner: int32, 0, 32) {
-              for (k.inner: int32, 0, 4) {
-                C_2[ramp((((x.outer*32768) + (x.inner*1024)) + (y.outer*32)), 1, 32)] = ((float32x32*)C_2[ramp((((x.outer*32768) + (x.inner*1024)) + (y.outer*32)), 1, 32)] + (broadcast((float32*)A_2[((((x.outer*32768) + (x.inner*1024)) + (k.outer*4)) + k.inner)], 32)*(float32x32*)B_2[ramp((((k.outer*4096) + (k.inner*1024)) + (y.outer*32)), 1, 32)]))
-              }
-            }
-          }
-        }
-      }
-    }
-
-
-
 
 
 Optimization 4: Array Packing
@@ -1208,50 +869,6 @@ optimized schedule.
     print(tvm.lower(s, [A, B, C], simple_mode=True))
 
 
-
-
-
-.. rst-class:: sphx-glr-script-out
-
- Out:
-
- .. code-block:: none
-
-    array packing: 0.062176
-    primfn(A_1: handle, B_1: handle, C_1: handle) -> ()
-      attr = {"global_symbol": "main", "tir.noalias": True}
-      buffers = {C: Buffer(C_2: Pointer(float32), float32, [1024, 1024], []),
-                 A: Buffer(A_2: Pointer(float32), float32, [1024, 1024], []),
-                 B: Buffer(B_2: Pointer(float32), float32, [1024, 1024], [])}
-      buffer_map = {A_1: A, B_1: B, C_1: C} {
-      attr [packedB: Pointer(float32x32)] "storage_scope" = "global";
-      allocate(packedB, float32x32, [32768]) {
-        for (x: int32, 0, 32) "parallel" {
-          for (y: int32, 0, 1024) {
-            packedB[ramp(((x*32768) + (y*32)), 1, 32)] = (float32x32*)B_2[ramp(((y*1024) + (x*32)), 1, 32)]
-          }
-        }
-        for (x.outer: int32, 0, 32) {
-          for (y.outer: int32, 0, 32) {
-            for (x.inner.init: int32, 0, 32) {
-              C_2[ramp((((x.outer*32768) + (x.inner.init*1024)) + (y.outer*32)), 1, 32)] = broadcast(0f32, 32)
-            }
-            for (k.outer: int32, 0, 256) {
-              for (x.inner: int32, 0, 32) {
-                for (k.inner: int32, 0, 4) {
-                  C_2[ramp((((x.outer*32768) + (x.inner*1024)) + (y.outer*32)), 1, 32)] = ((float32x32*)C_2[ramp((((x.outer*32768) + (x.inner*1024)) + (y.outer*32)), 1, 32)] + (broadcast((float32*)A_2[((((x.outer*32768) + (x.inner*1024)) + (k.outer*4)) + k.inner)], 32)*(float32x32*)packedB[ramp((((y.outer*32768) + (k.outer*128)) + (k.inner*32)), 1, 32)]))
-                }
-              }
-            }
-          }
-        }
-      }
-    }
-
-
-
-
-
 Optimization 5: Optimizing Block Writing Through Caching
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -1296,58 +913,6 @@ to `C` when all the block results are ready.
     print(tvm.lower(s, [A, B, C], simple_mode=True))
 
 
-
-
-
-.. rst-class:: sphx-glr-script-out
-
- Out:
-
- .. code-block:: none
-
-    block caching: 0.059559
-    primfn(A_1: handle, B_1: handle, C_1: handle) -> ()
-      attr = {"global_symbol": "main", "tir.noalias": True}
-      buffers = {C: Buffer(C_2: Pointer(float32), float32, [1024, 1024], []),
-                 A: Buffer(A_2: Pointer(float32), float32, [1024, 1024], []),
-                 B: Buffer(B_2: Pointer(float32), float32, [1024, 1024], [])}
-      buffer_map = {A_1: A, B_1: B, C_1: C} {
-      attr [packedB: Pointer(float32x32)] "storage_scope" = "global";
-      allocate(packedB, float32x32, [32768]);
-      attr [C.global: Pointer(float32)] "storage_scope" = "global";
-      allocate(C.global, float32, [1024]) {
-        for (x: int32, 0, 32) "parallel" {
-          for (y: int32, 0, 1024) {
-            packedB[ramp(((x*32768) + (y*32)), 1, 32)] = (float32x32*)B_2[ramp(((y*1024) + (x*32)), 1, 32)]
-          }
-        }
-        for (x.outer: int32, 0, 32) {
-          for (y.outer: int32, 0, 32) {
-            for (x.c.init: int32, 0, 32) {
-              C.global[ramp((x.c.init*32), 1, 32)] = broadcast(0f32, 32)
-            }
-            for (k.outer: int32, 0, 256) {
-              for (x.c: int32, 0, 32) {
-                C.global[ramp((x.c*32), 1, 32)] = ((float32x32*)C.global[ramp((x.c*32), 1, 32)] + (broadcast((float32*)A_2[(((x.outer*32768) + (x.c*1024)) + (k.outer*4))], 32)*(float32x32*)packedB[ramp(((y.outer*32768) + (k.outer*128)), 1, 32)]))
-                C.global[ramp((x.c*32), 1, 32)] = ((float32x32*)C.global[ramp((x.c*32), 1, 32)] + (broadcast((float32*)A_2[((((x.outer*32768) + (x.c*1024)) + (k.outer*4)) + 1)], 32)*(float32x32*)packedB[ramp((((y.outer*32768) + (k.outer*128)) + 32), 1, 32)]))
-                C.global[ramp((x.c*32), 1, 32)] = ((float32x32*)C.global[ramp((x.c*32), 1, 32)] + (broadcast((float32*)A_2[((((x.outer*32768) + (x.c*1024)) + (k.outer*4)) + 2)], 32)*(float32x32*)packedB[ramp((((y.outer*32768) + (k.outer*128)) + 64), 1, 32)]))
-                C.global[ramp((x.c*32), 1, 32)] = ((float32x32*)C.global[ramp((x.c*32), 1, 32)] + (broadcast((float32*)A_2[((((x.outer*32768) + (x.c*1024)) + (k.outer*4)) + 3)], 32)*(float32x32*)packedB[ramp((((y.outer*32768) + (k.outer*128)) + 96), 1, 32)]))
-              }
-            }
-            for (x.inner: int32, 0, 32) {
-              for (y.inner: int32, 0, 32) {
-                C_2[((((x.outer*32768) + (x.inner*1024)) + (y.outer*32)) + y.inner)] = (float32*)C.global[((x.inner*32) + y.inner)]
-              }
-            }
-          }
-        }
-      }
-    }
-
-
-
-
-
 Optimization 6: Parallelization
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -1375,58 +940,6 @@ of thread-level parallelization.
     print(tvm.lower(s, [A, B, C], simple_mode=True))
 
 
-
-
-
-.. rst-class:: sphx-glr-script-out
-
- Out:
-
- .. code-block:: none
-
-    parallelization: 0.016043
-    primfn(A_1: handle, B_1: handle, C_1: handle) -> ()
-      attr = {"global_symbol": "main", "tir.noalias": True}
-      buffers = {C: Buffer(C_2: Pointer(float32), float32, [1024, 1024], []),
-                 A: Buffer(A_2: Pointer(float32), float32, [1024, 1024], []),
-                 B: Buffer(B_2: Pointer(float32), float32, [1024, 1024], [])}
-      buffer_map = {A_1: A, B_1: B, C_1: C} {
-      attr [packedB: Pointer(float32x32)] "storage_scope" = "global";
-      allocate(packedB, float32x32, [32768]) {
-        for (x: int32, 0, 32) "parallel" {
-          for (y: int32, 0, 1024) {
-            packedB[ramp(((x*32768) + (y*32)), 1, 32)] = (float32x32*)B_2[ramp(((y*1024) + (x*32)), 1, 32)]
-          }
-        }
-        for (x.outer: int32, 0, 32) "parallel" {
-          attr [C.global: Pointer(float32)] "storage_scope" = "global";
-          allocate(C.global, float32, [1024]);
-          for (y.outer: int32, 0, 32) {
-            for (x.c.init: int32, 0, 32) {
-              C.global[ramp((x.c.init*32), 1, 32)] = broadcast(0f32, 32)
-            }
-            for (k.outer: int32, 0, 256) {
-              for (x.c: int32, 0, 32) {
-                C.global[ramp((x.c*32), 1, 32)] = ((float32x32*)C.global[ramp((x.c*32), 1, 32)] + (broadcast((float32*)A_2[(((x.outer*32768) + (x.c*1024)) + (k.outer*4))], 32)*(float32x32*)packedB[ramp(((y.outer*32768) + (k.outer*128)), 1, 32)]))
-                C.global[ramp((x.c*32), 1, 32)] = ((float32x32*)C.global[ramp((x.c*32), 1, 32)] + (broadcast((float32*)A_2[((((x.outer*32768) + (x.c*1024)) + (k.outer*4)) + 1)], 32)*(float32x32*)packedB[ramp((((y.outer*32768) + (k.outer*128)) + 32), 1, 32)]))
-                C.global[ramp((x.c*32), 1, 32)] = ((float32x32*)C.global[ramp((x.c*32), 1, 32)] + (broadcast((float32*)A_2[((((x.outer*32768) + (x.c*1024)) + (k.outer*4)) + 2)], 32)*(float32x32*)packedB[ramp((((y.outer*32768) + (k.outer*128)) + 64), 1, 32)]))
-                C.global[ramp((x.c*32), 1, 32)] = ((float32x32*)C.global[ramp((x.c*32), 1, 32)] + (broadcast((float32*)A_2[((((x.outer*32768) + (x.c*1024)) + (k.outer*4)) + 3)], 32)*(float32x32*)packedB[ramp((((y.outer*32768) + (k.outer*128)) + 96), 1, 32)]))
-              }
-            }
-            for (x.inner: int32, 0, 32) {
-              for (y.inner: int32, 0, 32) {
-                C_2[((((x.outer*32768) + (x.inner*1024)) + (y.outer*32)) + y.inner)] = (float32*)C.global[((x.inner*32) + y.inner)]
-              }
-            }
-          }
-        }
-      }
-    }
-
-
-
-
-
 Summary of Matrix Multiplication Example
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -1446,26 +959,6 @@ working, we can compare the results.
             "%s\t%s\t%s"
             % (result[0].rjust(20), str(result[1]).rjust(20), str(result[1] / baseline).rjust(20))
         )
-
-
-
-
-
-.. rst-class:: sphx-glr-script-out
-
- Out:
-
- .. code-block:: none
-
-                Operator                  Timing             Performance
-                    none            6.0069714717                     1.0
-                blocking            0.1100704531    0.018323784892031385
-           vectorization            0.1171002217      0.0194940532432494
-        loop permutation            0.0608457194    0.010129184013384432
-           array packing            0.0621763721    0.010350702078896974
-           block caching            0.0595586284    0.009914917805185554
-         parallelization            0.0160434783    0.002670809804172355
-
 
 
 Note that the outputs on the web page reflect the running times on a
@@ -1497,11 +990,6 @@ Upcoming tutorials expand on the matrix multiplication example, and show how
 you can build generic templates of the matrix multiplication and other
 operations with tunable parameters that allows you to automatically optimize
 the computation for specific platforms.
-
-
-.. rst-class:: sphx-glr-timing
-
-   **Total running time of the script:** ( 1 minutes  25.223 seconds)
 
 
 .. _sphx_glr_download_tutorials_get_started_tensor_expr_get_started.py:

@@ -160,7 +160,7 @@ module.set_input(input_tensor, tvm.nd.array(image_data))
 module.run()
 
 # Get output
-tvm_output = module.get_output(0).numpy()
+tvm_output = module.get_output(0).asnumpy()
 
 ######################################################################
 # Display results

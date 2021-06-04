@@ -84,7 +84,7 @@ module.set_input("data", data)
 module.run()
 out_shape = (batch_size, out_channels, 224, 224)
 out = module.get_output(0, tvm.nd.empty(out_shape))
-out_cuda = out.numpy()
+out_cuda = out.asnumpy()
 ######################################################################
 # The generated pseudo code should look something like below.
 # Note how bias add, batch normalization, and ReLU activation are fused into the convolution kernel.
@@ -505,7 +505,7 @@ module.set_input("data", data)
 module.run()
 out_shape = (batch_size, out_channels, 224, 224)
 out = module.get_output(0, tvm.nd.empty(out_shape))
-out_cudnn = out.numpy()
+out_cudnn = out.asnumpy()
 
 ######################################################################
 # Note that if you use cuDNN, Relay cannot fuse convolution with layers following it.

@@ -8,11 +8,10 @@
 <html class="writer-html5" lang="en" >
 <head>
   <meta charset="utf-8">
-  <meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
-
+  
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Auto-scheduling a Convolution Layer for GPU &mdash; tvm 0.8.dev0 documentation</title>
+  <title>Auto-scheduling a Convolution Layer for GPU &mdash; tvm 0.8.dev921+g7a063514d documentation</title>
   
 
   
@@ -20,8 +19,6 @@
   <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
   <link rel="stylesheet" href="../../_static/css/tlcpack_theme.css" type="text/css" />
-  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
-  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="../../_static/gallery.css" type="text/css" />
 
   
@@ -35,7 +32,6 @@
   
     
       <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
-        <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
         <script src="../../_static/jquery.js"></script>
         <script src="../../_static/underscore.js"></script>
         <script src="../../_static/doctools.js"></script>
@@ -169,9 +165,9 @@
           
             
             
-                <div class="version">
-                  0.8.dev0
-                </div>
+              <div class="version">
+                0.8.dev921+g7a063514d
+              </div>
             
           
 
@@ -329,7 +325,7 @@
 <p class="admonition-title">Note</p>
 <p>Click <a class="reference internal" href="#sphx-glr-download-tutorials-auto-scheduler-tune-conv2d-layer-cuda-py"><span class="std std-ref">here</span></a> to download the full example code</p>
 </div>
-<section class="sphx-glr-example-title" id="auto-scheduling-a-convolution-layer-for-gpu">
+<div class="sphx-glr-example-title section" id="auto-scheduling-a-convolution-layer-for-gpu">
 <span id="auto-scheduler-conv-gpu"></span><span id="sphx-glr-tutorials-auto-scheduler-tune-conv2d-layer-cuda-py"></span><h1>Auto-scheduling a Convolution Layer for GPU<a class="headerlink" href="#auto-scheduling-a-convolution-layer-for-gpu" title="Permalink to this headline">¶</a></h1>
 <p><strong>Author</strong>: <a class="reference external" href="https://github.com/merrymercy">Lianmin Zheng</a>,             <a class="reference external" href="https://github.com/jcf94/">Chengfan Jia</a></p>
 <p>This is a tutorial on how to use the auto-scheduler for GPUs.</p>
@@ -350,7 +346,7 @@ get it to run, you will need to wrap the body of this tutorial in a <code class=
 <span class="kn">from</span> <span class="nn">tvm.topi.testing</span> <span class="k">import</span> <span class="n">conv2d_nchw_python</span>
 </pre></div>
 </div>
-<section id="define-the-computation">
+<div class="section" id="define-the-computation">
 <h2>Define the computation<a class="headerlink" href="#define-the-computation" title="Permalink to this headline">¶</a></h2>
 <p>To begin with, let us define the computation of a convolution layer.
 The function should return the list of input/output tensors.
@@ -365,8 +361,8 @@ From these tensors, the auto-scheduler can get the whole computational graph.</p
     <span class="k">return</span> <span class="p">[</span><span class="n">data</span><span class="p">,</span> <span class="n">kernel</span><span class="p">,</span> <span class="n">bias</span><span class="p">,</span> <span class="n">out</span><span class="p">]</span>
 </pre></div>
 </div>
-</section>
-<section id="create-the-search-task">
+</div>
+<div class="section" id="create-the-search-task">
 <h2>Create the search task<a class="headerlink" href="#create-the-search-task" title="Permalink to this headline">¶</a></h2>
 <p>We then create a search task for the last convolution layer in the resnet.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">target</span> <span class="o">=</span> <a href="../../api/python/target.html#tvm.target.Target" title="View documentation for tvm.target.Target"><span class="n">tvm</span><span class="o">.</span><span class="n">target</span><span class="o">.</span><span class="n">Target</span></a><span class="p">(</span><span class="s2">&quot;cuda&quot;</span><span class="p">)</span>
@@ -380,17 +376,6 @@ From these tensors, the auto-scheduler can get the whole computational graph.</p
 <span class="c1"># Inspect the computational graph</span>
 <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Computational DAG:&quot;</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="n">task</span><span class="o">.</span><span class="n">compute_dag</span><span class="p">)</span>
-</pre></div>
-</div>
-<p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Computational DAG:
-data = PLACEHOLDER [1, 512, 7, 7]
-pad_temp(i0, i1, i2, i3) = tir.if_then_else(((((i2 &gt;= 1) &amp;&amp; (i2 &lt; 8)) &amp;&amp; (i3 &gt;= 1)) &amp;&amp; (i3 &lt; 8)), data[i0, i1, (i2 - 1), (i3 - 1)], 0f)
-kernel = PLACEHOLDER [512, 512, 3, 3]
-compute(nn, ff, yy, xx) += (pad_temp[nn, rc, (yy + ry), (xx + rx)]*kernel[ff, rc, ry, rx])
-bias = PLACEHOLDER [1, 512, 1, 1]
-T_add(ax0, ax1, ax2, ax3) = (compute[ax0, ax1, ax2, ax3] + bias[ax0, ax1, 0, 0])
-compute(i0, i1, i2, i3) = max(T_add[i0, i1, i2, i3], 0f)
 </pre></div>
 </div>
 <p>Next, we set parameters for the auto-scheduler. These parameters
@@ -421,12 +406,8 @@ and do more analyses later.</p></li>
 <span class="p">)</span>
 </pre></div>
 </div>
-<p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Get devices for measurement successfully!
-</pre></div>
 </div>
-</section>
-<section id="run-the-search">
+<div class="section" id="run-the-search">
 <h2>Run the search<a class="headerlink" href="#run-the-search" title="Permalink to this headline">¶</a></h2>
 <p>Now we get all inputs ready. Pretty simple, isn’t it?
 We can kick off the search and let the auto-scheduler do its magic.
@@ -441,10 +422,6 @@ file and apply it.</p>
 <span class="k">del</span> <span class="n">measure_ctx</span>
 </pre></div>
 </div>
-<p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>
-</pre></div>
-</div>
 <p>We can lower the schedule to see the IR after auto-scheduling.
 The auto-scheduler correctly performs optimizations including multi-level tiling,
 cooperative fetching, unrolling and operator fusion.</p>
@@ -452,55 +429,8 @@ cooperative fetching, unrolling and operator fusion.</p>
 <span class="nb">print</span><span class="p">(</span><a href="../../api/python/driver.html#tvm.lower" title="View documentation for tvm.lower"><span class="n">tvm</span><span class="o">.</span><span class="n">lower</span></a><span class="p">(</span><span class="n">sch</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">simple_mode</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span>
 </pre></div>
 </div>
-<p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Lowered TIR:
-primfn(data_1: handle, kernel_1: handle, bias_1: handle, compute_1: handle) -&gt; ()
-  attr = {&quot;global_symbol&quot;: &quot;main&quot;, &quot;tir.noalias&quot;: True}
-  buffers = {compute: Buffer(compute_2: Pointer(float32), float32, [1, 512, 7, 7], []),
-             bias: Buffer(bias_2: Pointer(float32), float32, [1, 512, 1, 1], []),
-             data: Buffer(data_2: Pointer(float32), float32, [1, 512, 7, 7], []),
-             kernel: Buffer(kernel_2: Pointer(float32), float32, [512, 512, 3, 3], [])}
-  buffer_map = {data_1: data, kernel_1: kernel, bias_1: bias, compute_1: compute} {
-  attr [IterVar(blockIdx.x: int32, (nullptr), &quot;ThreadIndex&quot;, &quot;blockIdx.x&quot;)] &quot;thread_extent&quot; = 28;
-  attr [compute_3: Pointer(float32)] &quot;storage_scope&quot; = &quot;local&quot;;
-  allocate(compute_3, float32, [2]);
-  attr [pad_temp.shared: Pointer(float32)] &quot;storage_scope&quot; = &quot;shared&quot;;
-  allocate(pad_temp.shared, float32, [36]);
-  attr [kernel.shared: Pointer(float32)] &quot;storage_scope&quot; = &quot;shared&quot;;
-  allocate(kernel.shared, float32, [1536]);
-  attr [IterVar(threadIdx.x: int32, (nullptr), &quot;ThreadIndex&quot;, &quot;threadIdx.x&quot;)] &quot;thread_extent&quot; = 448 {
-    compute_3[0] = 0f32
-    compute_3[1] = 0f32
-    for (rc.outer.outer: int32, 0, 128) {
-      for (rx.outer.outer: int32, 0, 3) {
-        attr [IterVar(threadIdx.x_1: int32, (nullptr), &quot;ThreadIndex&quot;, &quot;threadIdx.x&quot;)] &quot;thread_extent&quot; = 448;
-        if @tir.likely((threadIdx.x_1 &lt; 36), dtype=bool) {
-          pad_temp.shared[threadIdx.x_1] = @tir.if_then_else(((((1 &lt;= floormod(threadIdx.x_1, 9)) &amp;&amp; (floormod(threadIdx.x_1, 9) &lt; 8)) &amp;&amp; (1 &lt;= (rx.outer.outer + floormod(blockIdx.x, 7)))) &amp;&amp; ((rx.outer.outer + floormod(blockIdx.x, 7)) &lt; 8)), (float32*)data_2[((((((rc.outer.outer*196) + (floordiv(threadIdx.x_1, 9)*49)) + (floormod(threadIdx.x_1, 9)*7)) + rx.outer.outer) + floormod(blockIdx.x, 7)) - 8)], 0f32, dtype=float32)
-        }
-        for (ax0.ax1.fused.ax2.fused.ax3.fused.outer.outer: int32, 0, 4) {
-          attr [IterVar(threadIdx.x_2: int32, (nullptr), &quot;ThreadIndex&quot;, &quot;threadIdx.x&quot;)] &quot;thread_extent&quot; = 448;
-          if @tir.likely((((ax0.ax1.fused.ax2.fused.ax3.fused.outer.outer*448) + threadIdx.x_2) &lt; 1536), dtype=bool) {
-            kernel.shared[((ax0.ax1.fused.ax2.fused.ax3.fused.outer.outer*448) + threadIdx.x_2)] = (float32*)kernel_2[(((((floordiv(blockIdx.x, 7)*589824) + (floordiv(((ax0.ax1.fused.ax2.fused.ax3.fused.outer.outer*448) + threadIdx.x_2), 12)*4608)) + (rc.outer.outer*36)) + (floormod(((ax0.ax1.fused.ax2.fused.ax3.fused.outer.outer*448) + threadIdx.x_2), 12)*3)) + rx.outer.outer)]
-          }
-        }
-        for (rc.outer.inner: int32, 0, 2) {
-          for (rc.inner: int32, 0, 2) {
-            for (ry.inner: int32, 0, 3) {
-              compute_3[0] = ((float32*)compute_3[0] + ((float32*)pad_temp.shared[((((rc.outer.inner*18) + (rc.inner*9)) + ry.inner) + floormod(threadIdx.x, 7))]*(float32*)kernel.shared[((((floordiv(threadIdx.x, 7)*12) + (rc.outer.inner*6)) + (rc.inner*3)) + ry.inner)]))
-              compute_3[1] = ((float32*)compute_3[1] + ((float32*)pad_temp.shared[((((rc.outer.inner*18) + (rc.inner*9)) + ry.inner) + floormod(threadIdx.x, 7))]*(float32*)kernel.shared[(((((floordiv(threadIdx.x, 7)*12) + (rc.outer.inner*6)) + (rc.inner*3)) + ry.inner) + 768)]))
-            }
-          }
-        }
-      }
-    }
-    compute_2[(((floordiv(blockIdx.x, 7)*6272) + (threadIdx.x*7)) + floormod(blockIdx.x, 7))] = max(((float32*)compute_3[0] + (float32*)bias_2[((floordiv(blockIdx.x, 7)*128) + floordiv(threadIdx.x, 7))]), 0f32)
-    compute_2[((((floordiv(blockIdx.x, 7)*6272) + (threadIdx.x*7)) + floormod(blockIdx.x, 7)) + 3136)] = max(((float32*)compute_3[1] + (float32*)bias_2[(((floordiv(blockIdx.x, 7)*128) + floordiv(threadIdx.x, 7)) + 64)]), 0f32)
-  }
-}
-</pre></div>
 </div>
-</section>
-<section id="check-correctness-and-evaluate-performance">
+<div class="section" id="check-correctness-and-evaluate-performance">
 <h2>Check correctness and evaluate performance<a class="headerlink" href="#check-correctness-and-evaluate-performance" title="Permalink to this headline">¶</a></h2>
 <p>We build the binary and check its correctness and performance.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">func</span> <span class="o">=</span> <a href="../../api/python/driver.html#tvm.build" title="View documentation for tvm.build"><span class="n">tvm</span><span class="o">.</span><span class="n">build</span></a><span class="p">(</span><span class="n">sch</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">target</span><span class="p">)</span>
@@ -512,7 +442,7 @@ primfn(data_1: handle, kernel_1: handle, bias_1: handle, compute_1: handle) -&gt
 <span class="n">conv_np</span> <span class="o">=</span> <span class="n">conv2d_nchw_python</span><span class="p">(</span><span class="n">data_np</span><span class="p">,</span> <span class="n">weight_np</span><span class="p">,</span> <span class="n">strides</span><span class="p">,</span> <span class="n">padding</span><span class="p">)</span>
 <span class="n">out_np</span> <span class="o">=</span> <a href="https://numpy.org/doc/stable/reference/generated/numpy.maximum.html#numpy.maximum" title="View documentation for numpy.maximum"><span class="n">np</span><span class="o">.</span><span class="n">maximum</span></a><span class="p">(</span><span class="n">conv_np</span> <span class="o">+</span> <span class="n">bias_np</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">)</span>
 
-<span class="n">dev</span> <span class="o">=</span> <span class="n">tvm</span><span class="o">.</span><span class="n">cuda</span><span class="p">()</span>
+<span class="n">dev</span> <span class="o">=</span> <span class="n">tvm</span><span class="o">.</span><span class="n">gpu</span><span class="p">()</span>
 <span class="n">data_tvm</span> <span class="o">=</span> <a href="../../api/python/ndarray.html#tvm.nd.array" title="View documentation for tvm.nd.array"><span class="n">tvm</span><span class="o">.</span><span class="n">nd</span><span class="o">.</span><span class="n">array</span></a><span class="p">(</span><span class="n">data_np</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">dev</span><span class="p">)</span>
 <span class="n">weight_tvm</span> <span class="o">=</span> <a href="../../api/python/ndarray.html#tvm.nd.array" title="View documentation for tvm.nd.array"><span class="n">tvm</span><span class="o">.</span><span class="n">nd</span><span class="o">.</span><span class="n">array</span></a><span class="p">(</span><span class="n">weight_np</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">dev</span><span class="p">)</span>
 <span class="n">bias_tvm</span> <span class="o">=</span> <a href="../../api/python/ndarray.html#tvm.nd.array" title="View documentation for tvm.nd.array"><span class="n">tvm</span><span class="o">.</span><span class="n">nd</span><span class="o">.</span><span class="n">array</span></a><span class="p">(</span><span class="n">bias_np</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">dev</span><span class="p">)</span>
@@ -520,7 +450,7 @@ primfn(data_1: handle, kernel_1: handle, bias_1: handle, compute_1: handle) -&gt
 <span class="n">func</span><span class="p">(</span><span class="n">data_tvm</span><span class="p">,</span> <span class="n">weight_tvm</span><span class="p">,</span> <span class="n">bias_tvm</span><span class="p">,</span> <span class="n">out_tvm</span><span class="p">)</span>
 
 <span class="c1"># Check results</span>
-<a href="https://numpy.org/doc/stable/reference/generated/numpy.testing.assert_allclose.html#numpy.testing.assert_allclose" title="View documentation for numpy.testing.assert_allclose"><span class="n">np</span><span class="o">.</span><span class="n">testing</span><span class="o">.</span><span class="n">assert_allclose</span></a><span class="p">(</span><span class="n">out_np</span><span class="p">,</span> <span class="n">out_tvm</span><span class="o">.</span><span class="n">numpy</span><span class="p">(),</span> <span class="n">rtol</span><span class="o">=</span><span class="mf">1e-3</span><span class="p">)</span>
+<a href="https://numpy.org/doc/stable/reference/generated/numpy.testing.assert_allclose.html#numpy.testing.assert_allclose" title="View documentation for numpy.testing.assert_allclose"><span class="n">np</span><span class="o">.</span><span class="n">testing</span><span class="o">.</span><span class="n">assert_allclose</span></a><span class="p">(</span><span class="n">out_np</span><span class="p">,</span> <span class="n">out_tvm</span><span class="o">.</span><span class="n">asnumpy</span><span class="p">(),</span> <span class="n">rtol</span><span class="o">=</span><span class="mf">1e-3</span><span class="p">)</span>
 
 <span class="c1"># Evaluate execution time</span>
 <span class="n">evaluator</span> <span class="o">=</span> <span class="n">func</span><span class="o">.</span><span class="n">time_evaluator</span><span class="p">(</span><span class="n">func</span><span class="o">.</span><span class="n">entry_name</span><span class="p">,</span> <span class="n">dev</span><span class="p">,</span> <span class="n">min_repeat_ms</span><span class="o">=</span><span class="mi">500</span><span class="p">)</span>
@@ -530,12 +460,8 @@ primfn(data_1: handle, kernel_1: handle, bias_1: handle, compute_1: handle) -&gt
 <span class="p">)</span>
 </pre></div>
 </div>
-<p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Execution time of this operator: 0.375 ms
-</pre></div>
 </div>
-</section>
-<section id="using-the-record-file">
+<div class="section" id="using-the-record-file">
 <h2>Using the record file<a class="headerlink" href="#using-the-record-file" title="Permalink to this headline">¶</a></h2>
 <p>During the search, all measurement records are dumped into the record
 file “conv2d.json”. The measurement records can be used to re-apply search results,
@@ -548,124 +474,6 @@ They can be used for debugging and learning the behavior of the auto-scheduler.<
 
 <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;CUDA source code:&quot;</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="n">task</span><span class="o">.</span><span class="n">print_best</span><span class="p">(</span><span class="n">log_file</span><span class="p">,</span> <span class="n">print_mode</span><span class="o">=</span><span class="s2">&quot;cuda&quot;</span><span class="p">))</span>
-</pre></div>
-</div>
-<p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Equivalent python schedule:
-pad_temp_i0, pad_temp_i1, pad_temp_i2, pad_temp_i3 = tuple(pad_temp.op.axis) + tuple(pad_temp.op.reduce_axis)
-compute_nn, compute_ff, compute_yy, compute_xx, compute_rc, compute_ry, compute_rx = tuple(compute.op.axis) + tuple(compute.op.reduce_axis)
-T_add_ax0, T_add_ax1, T_add_ax2, T_add_ax3 = tuple(T_add.op.axis) + tuple(T_add.op.reduce_axis)
-compute_i0, compute_i1, compute_i2, compute_i3 = tuple(compute.op.axis) + tuple(compute.op.reduce_axis)
-s[T_add].compute_inline()
-compute_nn_o_i, compute_nn_i = s[compute].split(compute_nn, factor=1)
-compute_nn_o_o_i, compute_nn_o_i = s[compute].split(compute_nn_o_i, factor=1)
-compute_nn_o_o_o_i, compute_nn_o_o_i = s[compute].split(compute_nn_o_o_i, factor=1)
-compute_nn_o_o_o_o, compute_nn_o_o_o_i = s[compute].split(compute_nn_o_o_o_i, factor=1)
-compute_ff_o_i, compute_ff_i = s[compute].split(compute_ff, factor=1)
-compute_ff_o_o_i, compute_ff_o_i = s[compute].split(compute_ff_o_i, factor=1)
-compute_ff_o_o_o_i, compute_ff_o_o_i = s[compute].split(compute_ff_o_o_i, factor=64)
-compute_ff_o_o_o_o, compute_ff_o_o_o_i = s[compute].split(compute_ff_o_o_o_i, factor=2)
-compute_yy_o_i, compute_yy_i = s[compute].split(compute_yy, factor=1)
-compute_yy_o_o_i, compute_yy_o_i = s[compute].split(compute_yy_o_i, factor=1)
-compute_yy_o_o_o_i, compute_yy_o_o_i = s[compute].split(compute_yy_o_o_i, factor=7)
-compute_yy_o_o_o_o, compute_yy_o_o_o_i = s[compute].split(compute_yy_o_o_o_i, factor=1)
-compute_xx_o_i, compute_xx_i = s[compute].split(compute_xx, factor=1)
-compute_xx_o_o_i, compute_xx_o_i = s[compute].split(compute_xx_o_i, factor=1)
-compute_xx_o_o_o_i, compute_xx_o_o_i = s[compute].split(compute_xx_o_o_i, factor=1)
-compute_xx_o_o_o_o, compute_xx_o_o_o_i = s[compute].split(compute_xx_o_o_o_i, factor=1)
-compute_rc_o_i, compute_rc_i = s[compute].split(compute_rc, factor=2)
-compute_rc_o_o, compute_rc_o_i = s[compute].split(compute_rc_o_i, factor=2)
-compute_ry_o_i, compute_ry_i = s[compute].split(compute_ry, factor=3)
-compute_ry_o_o, compute_ry_o_i = s[compute].split(compute_ry_o_i, factor=1)
-compute_rx_o_i, compute_rx_i = s[compute].split(compute_rx, factor=1)
-compute_rx_o_o, compute_rx_o_i = s[compute].split(compute_rx_o_i, factor=1)
-s[compute].reorder(compute_nn_o_o_o_o, compute_ff_o_o_o_o, compute_yy_o_o_o_o, compute_xx_o_o_o_o, compute_nn_o_o_o_i, compute_ff_o_o_o_i, compute_yy_o_o_o_i, compute_xx_o_o_o_i, compute_nn_o_o_i, compute_ff_o_o_i, compute_yy_o_o_i, compute_xx_o_o_i, compute_rc_o_o, compute_ry_o_o, compute_rx_o_o, compute_rc_o_i, compute_ry_o_i, compute_rx_o_i, compute_nn_o_i, compute_ff_o_i, compute_yy_o_i, compute_xx_o_i, compute_rc_i, compute_ry_i, compute_rx_i, compute_nn_i, compute_ff_i, compute_yy_i, compute_xx_i)
-compute_i0_o_i, compute_i0_i = s[compute].split(compute_i0, factor=1)
-compute_i0_o_o_i, compute_i0_o_i = s[compute].split(compute_i0_o_i, factor=1)
-compute_i0_o_o_o, compute_i0_o_o_i = s[compute].split(compute_i0_o_o_i, factor=1)
-compute_i1_o_i, compute_i1_i = s[compute].split(compute_i1, factor=1)
-compute_i1_o_o_i, compute_i1_o_i = s[compute].split(compute_i1_o_i, factor=64)
-compute_i1_o_o_o, compute_i1_o_o_i = s[compute].split(compute_i1_o_o_i, factor=2)
-compute_i2_o_i, compute_i2_i = s[compute].split(compute_i2, factor=1)
-compute_i2_o_o_i, compute_i2_o_i = s[compute].split(compute_i2_o_i, factor=7)
-compute_i2_o_o_o, compute_i2_o_o_i = s[compute].split(compute_i2_o_o_i, factor=1)
-compute_i3_o_i, compute_i3_i = s[compute].split(compute_i3, factor=1)
-compute_i3_o_o_i, compute_i3_o_i = s[compute].split(compute_i3_o_i, factor=1)
-compute_i3_o_o_o, compute_i3_o_o_i = s[compute].split(compute_i3_o_o_i, factor=1)
-s[compute].reorder(compute_i0_o_o_o, compute_i1_o_o_o, compute_i2_o_o_o, compute_i3_o_o_o, compute_i0_o_o_i, compute_i1_o_o_i, compute_i2_o_o_i, compute_i3_o_o_i, compute_i0_o_i, compute_i1_o_i, compute_i2_o_i, compute_i3_o_i, compute_i0_i, compute_i1_i, compute_i2_i, compute_i3_i)
-s[compute].compute_at(s[compute], compute_i3_o_i)
-kernel_shared = s.cache_read(kernel, &quot;shared&quot;, [compute])
-kernel_shared_ax0, kernel_shared_ax1, kernel_shared_ax2, kernel_shared_ax3 = tuple(kernel_shared.op.axis)
-s[kernel_shared].compute_at(s[compute], compute_rx_o_o)
-pad_temp_shared = s.cache_read(pad_temp, &quot;shared&quot;, [compute])
-pad_temp_shared_ax0, pad_temp_shared_ax1, pad_temp_shared_ax2, pad_temp_shared_ax3 = tuple(pad_temp_shared.op.axis)
-s[pad_temp_shared].compute_at(s[compute], compute_rx_o_o)
-s[pad_temp].compute_inline()
-compute_i0_o_o_o_i1_o_o_o_fused_i2_o_o_o_fused_i3_o_o_o_fused = s[compute].fuse(compute_i0_o_o_o, compute_i1_o_o_o, compute_i2_o_o_o, compute_i3_o_o_o)
-s[compute].bind(compute_i0_o_o_o_i1_o_o_o_fused_i2_o_o_o_fused_i3_o_o_o_fused, te.thread_axis(&quot;blockIdx.x&quot;))
-compute_i0_o_o_i_i1_o_o_i_fused_i2_o_o_i_fused_i3_o_o_i_fused = s[compute].fuse(compute_i0_o_o_i, compute_i1_o_o_i, compute_i2_o_o_i, compute_i3_o_o_i)
-s[compute].bind(compute_i0_o_o_i_i1_o_o_i_fused_i2_o_o_i_fused_i3_o_o_i_fused, te.thread_axis(&quot;vthread&quot;))
-compute_i0_o_i_i1_o_i_fused_i2_o_i_fused_i3_o_i_fused = s[compute].fuse(compute_i0_o_i, compute_i1_o_i, compute_i2_o_i, compute_i3_o_i)
-s[compute].bind(compute_i0_o_i_i1_o_i_fused_i2_o_i_fused_i3_o_i_fused, te.thread_axis(&quot;threadIdx.x&quot;))
-kernel_shared_ax0_ax1_fused_ax2_fused_ax3_fused = s[kernel_shared].fuse(kernel_shared_ax0, kernel_shared_ax1, kernel_shared_ax2, kernel_shared_ax3)
-kernel_shared_ax0_ax1_fused_ax2_fused_ax3_fused_o, kernel_shared_ax0_ax1_fused_ax2_fused_ax3_fused_i = s[kernel_shared].split(kernel_shared_ax0_ax1_fused_ax2_fused_ax3_fused, factor=1)
-s[kernel_shared].vectorize(kernel_shared_ax0_ax1_fused_ax2_fused_ax3_fused_i)
-kernel_shared_ax0_ax1_fused_ax2_fused_ax3_fused_o_o, kernel_shared_ax0_ax1_fused_ax2_fused_ax3_fused_o_i = s[kernel_shared].split(kernel_shared_ax0_ax1_fused_ax2_fused_ax3_fused_o, factor=448)
-s[kernel_shared].bind(kernel_shared_ax0_ax1_fused_ax2_fused_ax3_fused_o_i, te.thread_axis(&quot;threadIdx.x&quot;))
-pad_temp_shared_ax0_ax1_fused_ax2_fused_ax3_fused = s[pad_temp_shared].fuse(pad_temp_shared_ax0, pad_temp_shared_ax1, pad_temp_shared_ax2, pad_temp_shared_ax3)
-pad_temp_shared_ax0_ax1_fused_ax2_fused_ax3_fused_o, pad_temp_shared_ax0_ax1_fused_ax2_fused_ax3_fused_i = s[pad_temp_shared].split(pad_temp_shared_ax0_ax1_fused_ax2_fused_ax3_fused, factor=1)
-s[pad_temp_shared].vectorize(pad_temp_shared_ax0_ax1_fused_ax2_fused_ax3_fused_i)
-pad_temp_shared_ax0_ax1_fused_ax2_fused_ax3_fused_o_o, pad_temp_shared_ax0_ax1_fused_ax2_fused_ax3_fused_o_i = s[pad_temp_shared].split(pad_temp_shared_ax0_ax1_fused_ax2_fused_ax3_fused_o, factor=448)
-s[pad_temp_shared].bind(pad_temp_shared_ax0_ax1_fused_ax2_fused_ax3_fused_o_i, te.thread_axis(&quot;threadIdx.x&quot;))
-s[compute].pragma(compute_nn_o_o_o_o, &quot;auto_unroll_max_step&quot;, 0)
-s[compute].pragma(compute_nn_o_o_o_o, &quot;unroll_explicit&quot;, True)
-
-CUDA source code:
-
-#ifdef _WIN32
-  using uint = unsigned int;
-  using uchar = unsigned char;
-  using ushort = unsigned short;
-  using int64_t = long long;
-  using uint64_t = unsigned long long;
-#else
-  #define uint unsigned int
-  #define uchar unsigned char
-  #define ushort unsigned short
-  #define int64_t long long
-  #define uint64_t unsigned long long
-#endif
-extern &quot;C&quot; __global__ void default_function_kernel0(float* __restrict__ data, float* __restrict__ kernel, float* __restrict__ compute, float* __restrict__ bias) {
-  float compute1[2];
-  __shared__ float pad_temp_shared[36];
-  __shared__ float kernel_shared[1536];
-  compute1[(0)] = 0.000000e+00f;
-  compute1[(1)] = 0.000000e+00f;
-  for (int rc_outer_outer = 0; rc_outer_outer &lt; 128; ++rc_outer_outer) {
-    for (int rx_outer_outer = 0; rx_outer_outer &lt; 3; ++rx_outer_outer) {
-      __syncthreads();
-      if (((int)threadIdx.x) &lt; 36) {
-        pad_temp_shared[(((int)threadIdx.x))] = (((((1 &lt;= (((int)threadIdx.x) % 9)) &amp;&amp; ((((int)threadIdx.x) % 9) &lt; 8)) &amp;&amp; (1 &lt;= (rx_outer_outer + (((int)blockIdx.x) % 7)))) &amp;&amp; ((rx_outer_outer + (((int)blockIdx.x) % 7)) &lt; 8)) ? data[(((((((rc_outer_outer * 196) + ((((int)threadIdx.x) / 9) * 49)) + ((((int)threadIdx.x) % 9) * 7)) + rx_outer_outer) + (((int)blockIdx.x) % 7)) - 8))] : 0.000000e+00f);
-      }
-      for (int ax0_ax1_fused_ax2_fused_ax3_fused_outer_outer = 0; ax0_ax1_fused_ax2_fused_ax3_fused_outer_outer &lt; 4; ++ax0_ax1_fused_ax2_fused_ax3_fused_outer_outer) {
-        if (((ax0_ax1_fused_ax2_fused_ax3_fused_outer_outer * 448) + ((int)threadIdx.x)) &lt; 1536) {
-          kernel_shared[(((ax0_ax1_fused_ax2_fused_ax3_fused_outer_outer * 448) + ((int)threadIdx.x)))] = kernel[(((((((((int)blockIdx.x) / 7) * 589824) + ((((ax0_ax1_fused_ax2_fused_ax3_fused_outer_outer * 448) + ((int)threadIdx.x)) / 12) * 4608)) + (rc_outer_outer * 36)) + ((((ax0_ax1_fused_ax2_fused_ax3_fused_outer_outer * 448) + ((int)threadIdx.x)) % 12) * 3)) + rx_outer_outer))];
-        }
-      }
-      __syncthreads();
-      for (int rc_outer_inner = 0; rc_outer_inner &lt; 2; ++rc_outer_inner) {
-        for (int rc_inner = 0; rc_inner &lt; 2; ++rc_inner) {
-          for (int ry_inner = 0; ry_inner &lt; 3; ++ry_inner) {
-            compute1[(0)] = (compute1[(0)] + (pad_temp_shared[(((((rc_outer_inner * 18) + (rc_inner * 9)) + ry_inner) + (((int)threadIdx.x) % 7)))] * kernel_shared[((((((((int)threadIdx.x) / 7) * 12) + (rc_outer_inner * 6)) + (rc_inner * 3)) + ry_inner))]));
-            compute1[(1)] = (compute1[(1)] + (pad_temp_shared[(((((rc_outer_inner * 18) + (rc_inner * 9)) + ry_inner) + (((int)threadIdx.x) % 7)))] * kernel_shared[(((((((((int)threadIdx.x) / 7) * 12) + (rc_outer_inner * 6)) + (rc_inner * 3)) + ry_inner) + 768))]));
-          }
-        }
-      }
-    }
-  }
-  compute[(((((((int)blockIdx.x) / 7) * 6272) + (((int)threadIdx.x) * 7)) + (((int)blockIdx.x) % 7)))] = max((compute1[(0)] + bias[((((((int)blockIdx.x) / 7) * 128) + (((int)threadIdx.x) / 7)))]), 0.000000e+00f);
-  compute[((((((((int)blockIdx.x) / 7) * 6272) + (((int)threadIdx.x) * 7)) + (((int)blockIdx.x) % 7)) + 3136))] = max((compute1[(1)] + bias[(((((((int)blockIdx.x) / 7) * 128) + (((int)threadIdx.x) / 7)) + 64))]), 0.000000e+00f);
-}
 </pre></div>
 </div>
 <p>A more complicated example is to resume the search.
@@ -694,14 +502,6 @@ In the example below we resume the status and do more 5 trials.</p>
 <span class="n">resume_search</span><span class="p">(</span><span class="n">task</span><span class="p">,</span> <span class="n">log_file</span><span class="p">)</span>
 </pre></div>
 </div>
-<p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Resume search:
-/usr/local/lib/python3.6/dist-packages/xgboost/training.py:17: UserWarning: Old style callback is deprecated.  See: https://xgboost.readthedocs.io/en/latest/python/callbacks.html
-  warnings.warn(f&#39;Old style callback is deprecated.  See: {link}&#39;, UserWarning)
-Get devices for measurement successfully!
-</pre></div>
-</div>
-<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 1 minutes  1.798 seconds)</p>
 <div class="sphx-glr-footer class sphx-glr-footer-example docutils container" id="sphx-glr-download-tutorials-auto-scheduler-tune-conv2d-layer-cuda-py">
 <div class="sphx-glr-download docutils container">
 <p><a class="reference download internal" download="" href="../../_downloads/678f3c372a599a18d909aed0fefb30be/tune_conv2d_layer_cuda.py"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">tune_conv2d_layer_cuda.py</span></code></a></p>
@@ -711,8 +511,8 @@ Get devices for measurement successfully!
 </div>
 </div>
 <p class="sphx-glr-signature"><a class="reference external" href="https://sphinx-gallery.github.io">Gallery generated by Sphinx-Gallery</a></p>
-</section>
-</section>
+</div>
+</div>
 
 
            </div>
@@ -755,6 +555,7 @@ Get devices for measurement successfully!
 
   </div>
   
+
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>

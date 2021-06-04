@@ -70,11 +70,6 @@ We start by programming the Pynq's FPGA and building its RPC runtime.
         remote = rpc.LocalSession()
 
 
-
-
-
-
-
 Computation Declaration
 -----------------------
 As a first step, we need to describe our 2D convolution computation
@@ -216,11 +211,6 @@ manageable chunks.
 
 
 
-
-
-
-
-
 Scheduling the Computation
 --------------------------
 We'll look at a set of schedule transformations necessary to map the
@@ -239,110 +229,6 @@ Those include:
     s = te.create_schedule(res.op)
     # Let's look at the default TVM schedule
     print(tvm.lower(s, [data, kernel, res], simple_mode=True))
-
-
-
-
-
-.. rst-class:: sphx-glr-script-out
-
- Out:
-
- .. code-block:: none
-
-    primfn(data_1: handle, kernel_1: handle, res_1: handle) -> ()
-      attr = {"global_symbol": "main", "tir.noalias": True}
-      buffers = {res: Buffer(res_2: Pointer(int8), int8, [1, 16, 14, 14, 1, 16], []),
-                 data: Buffer(data_2: Pointer(int8), int8, [1, 16, 14, 14, 1, 16], []),
-                 kernel: Buffer(kernel_2: Pointer(int8), int8, [16, 16, 3, 3, 16, 16], [])}
-      buffer_map = {data_1: data, kernel_1: kernel, res_1: res} {
-      attr [data_buf: Pointer(int8)] "storage_scope" = "global";
-      allocate(data_buf, int8, [65536]);
-      attr [kernel_buf: Pointer(int8)] "storage_scope" = "global";
-      allocate(kernel_buf, int8, [589824]);
-      attr [res_conv: Pointer(int32)] "storage_scope" = "global";
-      allocate(res_conv, int32, [50176]) {
-        for (i1: int32, 0, 16) {
-          for (i2: int32, 0, 16) {
-            for (i3: int32, 0, 16) {
-              for (i5: int32, 0, 16) {
-                data_buf[((((i1*4096) + (i2*256)) + (i3*16)) + i5)] = @tir.if_then_else(((((1 <= i2) && (i2 < 15)) && (1 <= i3)) && (i3 < 15)), (int8*)data_2[(((((i1*3136) + (i2*224)) + (i3*16)) + i5) - 240)], 0i8, dtype=int8)
-              }
-            }
-          }
-        }
-        for (i0: int32, 0, 16) {
-          for (i1_1: int32, 0, 16) {
-            for (i2_1: int32, 0, 3) {
-              for (i3_1: int32, 0, 3) {
-                for (i4: int32, 0, 16) {
-                  for (i5_1: int32, 0, 16) {
-                    kernel_buf[((((((i0*36864) + (i1_1*2304)) + (i2_1*768)) + (i3_1*256)) + (i4*16)) + i5_1)] = (int8*)kernel_2[((((((i0*36864) + (i1_1*2304)) + (i2_1*768)) + (i3_1*256)) + (i4*16)) + i5_1)]
-                  }
-                }
-              }
-            }
-          }
-        }
-        for (co: int32, 0, 16) {
-          for (i: int32, 0, 14) {
-            for (j: int32, 0, 14) {
-              for (ci: int32, 0, 16) {
-                res_conv[((((co*3136) + (i*224)) + (j*16)) + ci)] = 0
-                for (ic: int32, 0, 16) {
-                  for (dy: int32, 0, 3) {
-                    for (dx: int32, 0, 3) {
-                      for (ic_tns: int32, 0, 16) {
-                        res_conv[((((co*3136) + (i*224)) + (j*16)) + ci)] = ((int32*)res_conv[((((co*3136) + (i*224)) + (j*16)) + ci)] + (cast(int32, (int8*)data_buf[((((((ic*4096) + (i*256)) + (dy*256)) + (j*16)) + (dx*16)) + ic_tns)])*cast(int32, (int8*)kernel_buf[((((((co*36864) + (ic*2304)) + (dy*768)) + (dx*256)) + (ci*16)) + ic_tns)])))
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
-        for (i1_2: int32, 0, 16) {
-          for (i2_2: int32, 0, 14) {
-            for (i3_2: int32, 0, 14) {
-              for (i5_2: int32, 0, 16) {
-                res_conv[((((i1_2*3136) + (i2_2*224)) + (i3_2*16)) + i5_2)] = @tir.shift_right((int32*)res_conv[((((i1_2*3136) + (i2_2*224)) + (i3_2*16)) + i5_2)], 8, dtype=int32)
-              }
-            }
-          }
-        }
-        for (i1_3: int32, 0, 16) {
-          for (i2_3: int32, 0, 14) {
-            for (i3_3: int32, 0, 14) {
-              for (i5_3: int32, 0, 16) {
-                res_conv[((((i1_3*3136) + (i2_3*224)) + (i3_3*16)) + i5_3)] = max((int32*)res_conv[((((i1_3*3136) + (i2_3*224)) + (i3_3*16)) + i5_3)], 0)
-              }
-            }
-          }
-        }
-        for (i1_4: int32, 0, 16) {
-          for (i2_4: int32, 0, 14) {
-            for (i3_4: int32, 0, 14) {
-              for (i5_4: int32, 0, 16) {
-                res_conv[((((i1_4*3136) + (i2_4*224)) + (i3_4*16)) + i5_4)] = min((int32*)res_conv[((((i1_4*3136) + (i2_4*224)) + (i3_4*16)) + i5_4)], 127)
-              }
-            }
-          }
-        }
-        for (i1_5: int32, 0, 16) {
-          for (i2_5: int32, 0, 14) {
-            for (i3_5: int32, 0, 14) {
-              for (i5_5: int32, 0, 16) {
-                res_2[((((i1_5*3136) + (i2_5*224)) + (i3_5*16)) + i5_5)] = cast(int8, (int32*)res_conv[((((i1_5*3136) + (i2_5*224)) + (i3_5*16)) + i5_5)])
-              }
-            }
-          }
-        }
-      }
-    }
-
-
-
 
 
 Blocking the Computation
@@ -400,11 +286,6 @@ locality, it's best not to block along the innermost dimension).
     s[res_conv].reorder(ic_out, b_inn, oc_inn, y_inn, ic_inn, dy, dx, x_inn, b_tns, oc_tns, ic_tns)
 
 
-
-
-
-
-
 Virtual Threading
 ~~~~~~~~~~~~~~~~~
 Virtual threading is a mechanism that increases task-level pipeline
@@ -435,126 +316,6 @@ below.
 
     # Let's look at the current TVM schedule after blocking and virtual threading
     print(tvm.lower(s, [data, kernel, res], simple_mode=True))
-
-
-
-
-
-.. rst-class:: sphx-glr-script-out
-
- Out:
-
- .. code-block:: none
-
-    primfn(data_1: handle, kernel_1: handle, res_1: handle) -> ()
-      attr = {"global_symbol": "main", "tir.noalias": True}
-      buffers = {res: Buffer(res_2: Pointer(int8), int8, [1, 16, 14, 14, 1, 16], []),
-                 data: Buffer(data_2: Pointer(int8), int8, [1, 16, 14, 14, 1, 16], []),
-                 kernel: Buffer(kernel_2: Pointer(int8), int8, [16, 16, 3, 3, 16, 16], [])}
-      buffer_map = {data_1: data, kernel_1: kernel, res_1: res} {
-      attr [data_buf: Pointer(int8)] "storage_scope" = "global";
-      allocate(data_buf, int8, [65536]);
-      attr [kernel_buf: Pointer(int8)] "storage_scope" = "global";
-      allocate(kernel_buf, int8, [589824]);
-      attr [res_conv: Pointer(int32)] "storage_scope" = "global";
-      allocate(res_conv, int32, [25088]) {
-        for (i1: int32, 0, 16) {
-          for (i2: int32, 0, 16) {
-            for (i3: int32, 0, 16) {
-              for (i5: int32, 0, 16) {
-                data_buf[((((i1*4096) + (i2*256)) + (i3*16)) + i5)] = @tir.if_then_else(((((1 <= i2) && (i2 < 15)) && (1 <= i3)) && (i3 < 15)), (int8*)data_2[(((((i1*3136) + (i2*224)) + (i3*16)) + i5) - 240)], 0i8, dtype=int8)
-              }
-            }
-          }
-        }
-        for (i0: int32, 0, 16) {
-          for (i1_1: int32, 0, 16) {
-            for (i2_1: int32, 0, 3) {
-              for (i3_1: int32, 0, 3) {
-                for (i4: int32, 0, 16) {
-                  for (i5_1: int32, 0, 16) {
-                    kernel_buf[((((((i0*36864) + (i1_1*2304)) + (i2_1*768)) + (i3_1*256)) + (i4*16)) + i5_1)] = (int8*)kernel_2[((((((i0*36864) + (i1_1*2304)) + (i2_1*768)) + (i3_1*256)) + (i4*16)) + i5_1)]
-                  }
-                }
-              }
-            }
-          }
-        }
-        for (i2.outer: int32, 0, 2) {
-          for (co.init: int32, 0, 8) {
-            for (i.init: int32, 0, 7) {
-              for (j.init: int32, 0, 14) {
-                for (ci.init: int32, 0, 16) {
-                  res_conv[((((co.init*1568) + (i.init*224)) + (j.init*16)) + ci.init)] = 0
-                  res_conv[(((((co.init*1568) + (i.init*224)) + (j.init*16)) + ci.init) + 12544)] = 0
-                }
-              }
-            }
-          }
-          for (ic.outer: int32, 0, 16) {
-            for (co: int32, 0, 8) {
-              for (i: int32, 0, 7) {
-                for (dy: int32, 0, 3) {
-                  for (dx: int32, 0, 3) {
-                    for (j: int32, 0, 14) {
-                      for (ci: int32, 0, 16) {
-                        for (ic_tns: int32, 0, 16) {
-                          res_conv[((((co*1568) + (i*224)) + (j*16)) + ci)] = ((int32*)res_conv[((((co*1568) + (i*224)) + (j*16)) + ci)] + (cast(int32, (int8*)data_buf[(((((((ic.outer*4096) + (i2.outer*1792)) + (i*256)) + (dy*256)) + (j*16)) + (dx*16)) + ic_tns)])*cast(int32, (int8*)kernel_buf[((((((co*36864) + (ic.outer*2304)) + (dy*768)) + (dx*256)) + (ci*16)) + ic_tns)])))
-                          res_conv[(((((co*1568) + (i*224)) + (j*16)) + ci) + 12544)] = ((int32*)res_conv[(((((co*1568) + (i*224)) + (j*16)) + ci) + 12544)] + (cast(int32, (int8*)data_buf[(((((((ic.outer*4096) + (i2.outer*1792)) + (i*256)) + (dy*256)) + (j*16)) + (dx*16)) + ic_tns)])*cast(int32, (int8*)kernel_buf[(((((((co*36864) + (ic.outer*2304)) + (dy*768)) + (dx*256)) + (ci*16)) + ic_tns) + 294912)])))
-                        }
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          }
-          for (i1_2: int32, 0, 8) {
-            for (i2_2: int32, 0, 7) {
-              for (i3_2: int32, 0, 14) {
-                for (i5_2: int32, 0, 16) {
-                  res_conv[((((i1_2*1568) + (i2_2*224)) + (i3_2*16)) + i5_2)] = @tir.shift_right((int32*)res_conv[((((i1_2*1568) + (i2_2*224)) + (i3_2*16)) + i5_2)], 8, dtype=int32)
-                  res_conv[(((((i1_2*1568) + (i2_2*224)) + (i3_2*16)) + i5_2) + 12544)] = @tir.shift_right((int32*)res_conv[(((((i1_2*1568) + (i2_2*224)) + (i3_2*16)) + i5_2) + 12544)], 8, dtype=int32)
-                }
-              }
-            }
-          }
-          for (i1_3: int32, 0, 8) {
-            for (i2_3: int32, 0, 7) {
-              for (i3_3: int32, 0, 14) {
-                for (i5_3: int32, 0, 16) {
-                  res_conv[((((i1_3*1568) + (i2_3*224)) + (i3_3*16)) + i5_3)] = max((int32*)res_conv[((((i1_3*1568) + (i2_3*224)) + (i3_3*16)) + i5_3)], 0)
-                  res_conv[(((((i1_3*1568) + (i2_3*224)) + (i3_3*16)) + i5_3) + 12544)] = max((int32*)res_conv[(((((i1_3*1568) + (i2_3*224)) + (i3_3*16)) + i5_3) + 12544)], 0)
-                }
-              }
-            }
-          }
-          for (i1_4: int32, 0, 8) {
-            for (i2_4: int32, 0, 7) {
-              for (i3_4: int32, 0, 14) {
-                for (i5_4: int32, 0, 16) {
-                  res_conv[((((i1_4*1568) + (i2_4*224)) + (i3_4*16)) + i5_4)] = min((int32*)res_conv[((((i1_4*1568) + (i2_4*224)) + (i3_4*16)) + i5_4)], 127)
-                  res_conv[(((((i1_4*1568) + (i2_4*224)) + (i3_4*16)) + i5_4) + 12544)] = min((int32*)res_conv[(((((i1_4*1568) + (i2_4*224)) + (i3_4*16)) + i5_4) + 12544)], 127)
-                }
-              }
-            }
-          }
-          for (i1.inner: int32, 0, 8) {
-            for (i2.inner: int32, 0, 7) {
-              for (i3.inner: int32, 0, 14) {
-                for (i5_5: int32, 0, 16) {
-                  res_2[(((((i1.inner*3136) + (i2.outer*1568)) + (i2.inner*224)) + (i3.inner*16)) + i5_5)] = cast(int8, (int32*)res_conv[((((i1.inner*1568) + (i2.inner*224)) + (i3.inner*16)) + i5_5)])
-                  res_2[((((((i1.inner*3136) + (i2.outer*1568)) + (i2.inner*224)) + (i3.inner*16)) + i5_5) + 25088)] = cast(int8, (int32*)res_conv[(((((i1.inner*1568) + (i2.inner*224)) + (i3.inner*16)) + i5_5) + 12544)])
-                }
-              }
-            }
-          }
-        }
-      }
-    }
-
-
-
 
 
 Lowering Copies to DMA Transfers
@@ -591,11 +352,6 @@ to perform bulk memory transfers on VTA.
     s[res].pragma(s[res].op.axis[4], env.dma_copy)
 
 
-
-
-
-
-
 Lowering Computation to VTA Compute Intrinsics
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 The last phase is to lower the computation loops down to VTA hardware
@@ -618,121 +374,6 @@ and mapping the shift, and clipping computation to the vector ALU.
     # loads/stores down to DMA copy intrinsics, and the computation down to
     # VTA compute intrinsics.
     print(vta.lower(s, [data, kernel, res], simple_mode=True))
-
-
-
-
-
-.. rst-class:: sphx-glr-script-out
-
- Out:
-
- .. code-block:: none
-
-    primfn(data_1: handle, kernel_1: handle, res_1: handle) -> ()
-      attr = {"global_symbol": "main", "tir.noalias": True}
-      buffers = {res: Buffer(res_2: Pointer(int8), int8, [1, 16, 14, 14, 1, 16], []),
-                 data: Buffer(data_2: Pointer(int8), int8, [1, 16, 14, 14, 1, 16], []),
-                 kernel: Buffer(kernel_2: Pointer(int8), int8, [16, 16, 3, 3, 16, 16], [])}
-      buffer_map = {data_1: data, kernel_1: kernel, res_1: res} {
-      attr [res_conv: Pointer(int32)] "storage_scope" = "local.acc_buffer";
-      attr [data_buf: Pointer(int8)] "storage_scope" = "local.inp_buffer";
-      attr [kernel_buf: Pointer(int8)] "storage_scope" = "local.wgt_buffer" {
-        @tir.vta.coproc_dep_push(3, 2, dtype=int32)
-        @tir.vta.coproc_dep_push(3, 2, dtype=int32)
-        for (i2.outer: int32, 0, 2) {
-          for (cthread.s: int32, 0, 2) {
-            attr [IterVar(vta: int32, (nullptr), "ThreadIndex", "vta")] "coproc_scope" = 2 {
-              @tir.vta.coproc_dep_pop(3, 2, dtype=int32)
-              attr [IterVar(vta, (nullptr), "ThreadIndex", "vta")] "coproc_uop_scope" = "VTAPushGEMMOp" {
-                @tir.call_extern("VTAUopLoopBegin", 8, 98, 0, 0, dtype=int32)
-                @tir.call_extern("VTAUopLoopBegin", 7, 14, 0, 0, dtype=int32)
-                for (j.init: int32, 0, 14) {
-                  @tir.vta.uop_push(0, 1, ((cthread.s*784) + j.init), 0, 0, 0, 0, 0, dtype=int32)
-                }
-                @tir.call_extern("VTAUopLoopEnd", dtype=int32)
-                @tir.call_extern("VTAUopLoopEnd", dtype=int32)
-              }
-              @tir.vta.coproc_dep_push(2, 1, dtype=int32)
-            }
-          }
-          for (ic.outer: int32, 0, 16) {
-            attr [IterVar(vta, (nullptr), "ThreadIndex", "vta")] "coproc_scope" = 1 {
-              @tir.vta.coproc_dep_pop(2, 1, dtype=int32)
-              @tir.call_extern("VTALoadBuffer2D", @tir.tvm_thread_context(@tir.vta.command_handle(, dtype=handle), dtype=handle), data_2, ((((ic.outer*196) + (i2.outer*98)) + (max((1 - (i2.outer*7)), 0)*14)) - 14), 14, ((9 - max((1 - (i2.outer*7)), 0)) - max(((i2.outer*7) - 6), 0)), 14, 1, max((1 - (i2.outer*7)), 0), 1, max(((i2.outer*7) - 6), 0), 0, 2, dtype=int32)
-              @tir.call_extern("VTALoadBuffer2D", @tir.tvm_thread_context(@tir.vta.command_handle(, dtype=handle), dtype=handle), kernel_2, (ic.outer*9), 9, 8, 144, 0, 0, 0, 0, 0, 1, dtype=int32)
-              @tir.vta.coproc_dep_push(1, 2, dtype=int32)
-            }
-            attr [IterVar(vta, (nullptr), "ThreadIndex", "vta")] "coproc_scope" = 1 {
-              @tir.vta.coproc_dep_pop(2, 1, dtype=int32)
-              @tir.call_extern("VTALoadBuffer2D", @tir.tvm_thread_context(@tir.vta.command_handle(, dtype=handle), dtype=handle), data_2, ((((ic.outer*196) + (i2.outer*98)) + (max((1 - (i2.outer*7)), 0)*14)) - 14), 14, ((9 - max((1 - (i2.outer*7)), 0)) - max(((i2.outer*7) - 6), 0)), 14, 1, max((1 - (i2.outer*7)), 0), 1, max(((i2.outer*7) - 6), 0), 144, 2, dtype=int32)
-              @tir.call_extern("VTALoadBuffer2D", @tir.tvm_thread_context(@tir.vta.command_handle(, dtype=handle), dtype=handle), kernel_2, ((ic.outer*9) + 1152), 9, 8, 144, 0, 0, 0, 0, 72, 1, dtype=int32)
-              @tir.vta.coproc_dep_push(1, 2, dtype=int32)
-            }
-            for (cthread.s_1: int32, 0, 2) {
-              attr [IterVar(vta, (nullptr), "ThreadIndex", "vta")] "coproc_scope" = 2 {
-                @tir.vta.coproc_dep_pop(1, 2, dtype=int32)
-                attr [IterVar(vta, (nullptr), "ThreadIndex", "vta")] "coproc_uop_scope" = "VTAPushGEMMOp" {
-                  @tir.call_extern("VTAUopLoopBegin", 8, 98, 0, 9, dtype=int32)
-                  @tir.call_extern("VTAUopLoopBegin", 7, 14, 16, 0, dtype=int32)
-                  for (dy: int32, 0, 3) {
-                    for (dx: int32, 0, 3) {
-                      for (j: int32, 0, 14) {
-                        @tir.vta.uop_push(0, 0, ((cthread.s_1*784) + j), ((((cthread.s_1*144) + (dy*16)) + j) + dx), (((cthread.s_1*72) + (dy*3)) + dx), 0, 0, 0, dtype=int32)
-                      }
-                    }
-                  }
-                  @tir.call_extern("VTAUopLoopEnd", dtype=int32)
-                  @tir.call_extern("VTAUopLoopEnd", dtype=int32)
-                }
-                @tir.vta.coproc_dep_push(2, 1, dtype=int32)
-              }
-            }
-          }
-          @tir.vta.coproc_dep_pop(2, 1, dtype=int32)
-          @tir.vta.coproc_dep_pop(2, 1, dtype=int32)
-          for (cthread.s_2: int32, 0, 2) {
-            attr [IterVar(vta, (nullptr), "ThreadIndex", "vta")] "coproc_scope" = 2 {
-              attr [IterVar(vta, (nullptr), "ThreadIndex", "vta")] "coproc_uop_scope" = "VTAPushALUOp" {
-                @tir.call_extern("VTAUopLoopBegin", 784, 1, 1, 0, dtype=int32)
-                @tir.vta.uop_push(1, 0, (cthread.s_2*784), (cthread.s_2*784), 0, 3, 1, 8, dtype=int32)
-                @tir.call_extern("VTAUopLoopEnd", dtype=int32)
-              }
-              attr [IterVar(vta, (nullptr), "ThreadIndex", "vta")] "coproc_uop_scope" = "VTAPushALUOp" {
-                @tir.call_extern("VTAUopLoopBegin", 784, 1, 1, 0, dtype=int32)
-                @tir.vta.uop_push(1, 0, (cthread.s_2*784), (cthread.s_2*784), 0, 1, 1, 0, dtype=int32)
-                @tir.call_extern("VTAUopLoopEnd", dtype=int32)
-              }
-              attr [IterVar(vta, (nullptr), "ThreadIndex", "vta")] "coproc_uop_scope" = "VTAPushALUOp" {
-                @tir.call_extern("VTAUopLoopBegin", 784, 1, 1, 0, dtype=int32)
-                @tir.vta.uop_push(1, 0, (cthread.s_2*784), (cthread.s_2*784), 0, 0, 1, 127, dtype=int32)
-                @tir.call_extern("VTAUopLoopEnd", dtype=int32)
-              }
-              @tir.vta.coproc_dep_push(2, 3, dtype=int32)
-            }
-          }
-          for (cthread.s_3: int32, 0, 2) {
-            attr [IterVar(vta, (nullptr), "ThreadIndex", "vta")] "coproc_scope" = 3 {
-              @tir.vta.coproc_dep_pop(2, 3, dtype=int32)
-              for (i1.inner: int32, 0, 8) {
-                for (i2.inner: int32, 0, 7) {
-                  for (i3.inner: int32, 0, 14) {
-                    @tir.call_extern("VTAStoreBuffer2D", @tir.tvm_thread_context(@tir.vta.command_handle(, dtype=handle), dtype=handle), ((((cthread.s_3*784) + (i1.inner*98)) + (i2.inner*14)) + i3.inner), 4, res_2, (((((cthread.s_3*1568) + (i1.inner*196)) + (i2.outer*98)) + (i2.inner*14)) + i3.inner), 1, 1, 1, dtype=int32)
-                  }
-                }
-              }
-              @tir.vta.coproc_dep_push(3, 2, dtype=int32)
-            }
-          }
-        }
-        @tir.vta.coproc_dep_pop(3, 2, dtype=int32)
-        @tir.vta.coproc_dep_pop(3, 2, dtype=int32)
-        @tir.vta.coproc_sync(, dtype=int32)
-      }
-    }
-
-
-
 
 
 TVM Compilation and Verification
@@ -815,7 +456,7 @@ ensure correctness.
             fout_width,
         )
     ).transpose((0, 2, 4, 5, 1, 3))
-    tvm.testing.assert_allclose(res_ref, res_nd.numpy())
+    tvm.testing.assert_allclose(res_ref, res_nd.asnumpy())
 
     # Print stats
     if env.TARGET in ["sim", "tsim"]:
@@ -825,27 +466,6 @@ ensure correctness.
             print("\t{:<16}: {:>16}".format(k, v))
 
     print("Successful 2D convolution test!")
-
-
-
-
-
-.. rst-class:: sphx-glr-script-out
-
- Out:
-
- .. code-block:: none
-
-    Execution statistics:
-            inp_load_nbytes :           114688
-            wgt_load_nbytes :          1179648
-            acc_load_nbytes :                0
-            uop_load_nbytes :             1144
-            out_store_nbytes:            50176
-            gemm_counter    :           451584
-            alu_counter     :             9408
-    Successful 2D convolution test!
-
 
 
 Summary

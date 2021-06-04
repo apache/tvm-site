@@ -273,16 +273,14 @@ seq = tvm.transform.Sequential(
 # An example is below.
 
 
-@tvm.instrument.pass_instrument
-class PrintIR:
+def print_ir(mod, info, is_before):
     """Print the name of the pass, the IR, only before passes execute."""
-
-    def run_before_pass(self, mod, info):
+    if is_before:
         print("Running pass: {}", info)
         print(mod)
 
 
-with tvm.transform.PassContext(opt_level=3, instruments=[PrintIR()]):
+with tvm.transform.PassContext(opt_level=3, trace=print_ir):
     with tvm.target.Target("llvm"):
         # Perform the optimizations.
         mod = seq(mod)

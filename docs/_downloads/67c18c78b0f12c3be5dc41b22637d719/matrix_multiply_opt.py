@@ -351,7 +351,7 @@ res_ref = res_ref.astype(res.dtype)
 res_ref = res_ref.reshape(
     batch_size // env.BATCH, env.BATCH, out_channels // env.BLOCK_OUT, env.BLOCK_OUT
 ).transpose((0, 2, 1, 3))
-np.testing.assert_equal(res_ref, res_nd.numpy())
+np.testing.assert_equal(res_ref, res_nd.asnumpy())
 
 # Print stats
 if env.TARGET in ["sim", "tsim"]:

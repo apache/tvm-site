@@ -136,11 +136,6 @@ NHWCnc memory layout.The following code defines the convolution algorithm in TVM
     s[Apad].compute_inline()
 
 
-
-
-
-
-
 Memory Scope
 ------------
 In traditional GPU schedule, we have global, shared and local memory scope.
@@ -158,11 +153,6 @@ stores at the on-chip registers level, the same place with local memory.
     AF = s.cache_read(AS, "wmma.matrix_a", [Conv])
     WF = s.cache_read(WS, "wmma.matrix_b", [Conv])
     ConvF = s.cache_write(Conv, "wmma.accumulator")
-
-
-
-
-
 
 
 Define Tensor Intrinsic
@@ -300,11 +290,6 @@ are both used in matrix multiplication, so we can just write following three int
 
 
 
-
-
-
-
-
 Scheduling the Computation
 --------------------------
 To use TensorCores in TVM, we must schedule the computation into specific structure
@@ -394,108 +379,6 @@ one time.
     print(tvm.lower(s, [A, W, Conv], simple_mode=True))
 
 
-
-
-
-.. rst-class:: sphx-glr-script-out
-
- Out:
-
- .. code-block:: none
-
-    primfn(A_1: handle, W_1: handle, Conv_1: handle) -> ()
-      attr = {"global_symbol": "main", "tir.noalias": True}
-      buffers = {Conv: Buffer(Conv_2: Pointer(float32), float32, [16, 14, 14, 32, 16, 16], []),
-                 A: Buffer(A_2: Pointer(float16), float16, [16, 14, 14, 16, 16, 16], []),
-                 W: Buffer(W_2: Pointer(float16), float16, [3, 3, 16, 32, 16, 16], [])}
-      buffer_map = {A_1: A, W_1: W, Conv_1: Conv} {
-      attr [IterVar(blockIdx.z: int32, (nullptr), "ThreadIndex", "blockIdx.z")] "thread_extent" = 196;
-      attr [Conv.wmma.accumulator: Pointer(float32)] "storage_scope" = "wmma.accumulator";
-      allocate(Conv.wmma.accumulator, float32, [2048]);
-      attr [Apad.shared: Pointer(float16)] "storage_scope" = "shared";
-      allocate(Apad.shared, float16, [12288]);
-      attr [W.shared: Pointer(float16)] "storage_scope" = "shared";
-      allocate(W.shared, float16, [12288]);
-      attr [Apad.shared.wmma.matrix_a: Pointer(float16)] "storage_scope" = "wmma.matrix_a";
-      allocate(Apad.shared.wmma.matrix_a, float16, [512]);
-      attr [W.shared.wmma.matrix_b: Pointer(float16)] "storage_scope" = "wmma.matrix_b";
-      allocate(W.shared.wmma.matrix_b, float16, [1024]);
-      attr [IterVar(blockIdx.x: int32, (nullptr), "ThreadIndex", "blockIdx.x")] "thread_extent" = 2;
-      attr [IterVar(blockIdx.y: int32, (nullptr), "ThreadIndex", "blockIdx.y")] "thread_extent" = 4;
-      attr [IterVar(threadIdx.y: int32, (nullptr), "ThreadIndex", "threadIdx.y")] "thread_extent" = 4;
-      attr [IterVar(threadIdx.z: int32, (nullptr), "ThreadIndex", "threadIdx.z")] "thread_extent" = 2 {
-        for (n.c.init: int32, 0, 2) {
-          for (o.c.init: int32, 0, 4) {
-            for (nn.c.init: int32, 0, 16) {
-              for (oo.c.init: int32, 0, 16) {
-                Conv.wmma.accumulator[((((n.c.init*1024) + (o.c.init*256)) + (nn.c.init*16)) + oo.c.init)] = 0f32
-              }
-            }
-          }
-        }
-        for (ic.outer: int32, 0, 8) {
-          for (kh: int32, 0, 3) {
-            for (ax2: int32, 0, 3) {
-              for (ax3: int32, 0, 2) {
-                for (ax4.ax5.fused.outer: int32, 0, 8) {
-                  attr [IterVar(threadIdx.x: int32, (nullptr), "ThreadIndex", "threadIdx.x")] "thread_extent" = 32;
-                  Apad.shared[((((((threadIdx.y*3072) + (threadIdx.z*1536)) + (ax2*512)) + (ax3*256)) + (ax4.ax5.fused.outer*32)) + threadIdx.x)] = @tir.if_then_else(((((1 <= (floordiv(blockIdx.z, 14) + kh)) && ((floordiv(blockIdx.z, 14) + kh) < 15)) && (1 <= (ax2 + floormod(blockIdx.z, 14)))) && ((ax2 + floormod(blockIdx.z, 14)) < 15)), (float16*)A_2[(((((((((((blockIdx.x*6422528) + (threadIdx.y*1605632)) + (threadIdx.z*802816)) + (kh*57344)) + (blockIdx.z*4096)) + (ax2*4096)) + (ic.outer*512)) + (ax3*256)) + (ax4.ax5.fused.outer*32)) + threadIdx.x) - 61440)], 0f16, dtype=float16)
-                }
-              }
-            }
-            for (ax1: int32, 0, 3) {
-              for (ax2_1: int32, 0, 2) {
-                attr [IterVar(threadIdx.x, (nullptr), "ThreadIndex", "threadIdx.x")] "thread_extent" = 32;
-                W.shared[ramp((((((ax1*4096) + (ax2_1*2048)) + (threadIdx.y*512)) + (threadIdx.z*256)) + (threadIdx.x*8)), 1, 8)] = (float16x8*)W_2[ramp(((((((((kh*393216) + (ax1*131072)) + (ic.outer*16384)) + (ax2_1*8192)) + (blockIdx.y*2048)) + (threadIdx.y*512)) + (threadIdx.z*256)) + (threadIdx.x*8)), 1, 8)]
-              }
-            }
-            for (ic.inner: int32, 0, 2) {
-              for (kw: int32, 0, 3) {
-                for (ax0: int32, 0, 2) {
-                  for (ax4: int32, 0, 16) {
-                    for (ax5: int32, 0, 16) {
-                      Apad.shared.wmma.matrix_a[(((ax0*256) + (ax4*16)) + ax5)] = (float16*)Apad.shared[((((((threadIdx.y*3072) + (ax0*1536)) + (kw*512)) + (ic.inner*256)) + (ax4*16)) + ax5)]
-                    }
-                  }
-                }
-                for (ax3_1: int32, 0, 4) {
-                  for (ax4_1: int32, 0, 16) {
-                    for (ax5_1: int32, 0, 16) {
-                      W.shared.wmma.matrix_b[(((ax3_1*256) + (ax4_1*16)) + ax5_1)] = (float16*)W.shared[((((((kw*4096) + (ic.inner*2048)) + (threadIdx.z*1024)) + (ax3_1*256)) + (ax4_1*16)) + ax5_1)]
-                    }
-                  }
-                }
-                for (n.c: int32, 0, 2) {
-                  for (o.c: int32, 0, 4) {
-                    for (nn.c: int32, 0, 16) {
-                      for (oo.c: int32, 0, 16) {
-                        for (ii: int32, 0, 16) {
-                          Conv.wmma.accumulator[((((n.c*1024) + (o.c*256)) + (nn.c*16)) + oo.c)] = ((float32*)Conv.wmma.accumulator[((((n.c*1024) + (o.c*256)) + (nn.c*16)) + oo.c)] + (cast(float32, (float16*)Apad.shared.wmma.matrix_a[(((n.c*256) + (nn.c*16)) + ii)])*cast(float32, (float16*)W.shared.wmma.matrix_b[(((o.c*256) + (ii*16)) + oo.c)])))
-                        }
-                      }
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
-        for (n.inner: int32, 0, 2) {
-          for (o.inner: int32, 0, 4) {
-            for (nn: int32, 0, 16) {
-              for (oo: int32, 0, 16) {
-                Conv_2[(((((((((blockIdx.x*12845056) + (threadIdx.y*3211264)) + (n.inner*1605632)) + (blockIdx.z*8192)) + (blockIdx.y*2048)) + (threadIdx.z*1024)) + (o.inner*256)) + (nn*16)) + oo)] = (float32*)Conv.wmma.accumulator[((((n.inner*1024) + (o.inner*256)) + (nn*16)) + oo)]
-              }
-            }
-          }
-        }
-      }
-    }
-
-
-
-
-
 Lowering Computation to Intrinsics
 ----------------------------------
 The last phase is to lower the computation loops down to TensorCore hardware intrinsics
@@ -512,86 +395,6 @@ by mapping the 2D convolution to tensor intrinsics
     print(tvm.lower(s, [A, W, Conv], simple_mode=True))
 
 
-
-
-
-.. rst-class:: sphx-glr-script-out
-
- Out:
-
- .. code-block:: none
-
-    primfn(A_1: handle, W_1: handle, Conv_1: handle) -> ()
-      attr = {"global_symbol": "main", "tir.noalias": True}
-      buffers = {Conv: Buffer(Conv_2: Pointer(float32), float32, [16, 14, 14, 32, 16, 16], []),
-                 A: Buffer(A_2: Pointer(float16), float16, [16, 14, 14, 16, 16, 16], []),
-                 W: Buffer(W_2: Pointer(float16), float16, [3, 3, 16, 32, 16, 16], [])}
-      buffer_map = {A_1: A, W_1: W, Conv_1: Conv} {
-      attr [IterVar(blockIdx.z: int32, (nullptr), "ThreadIndex", "blockIdx.z")] "thread_extent" = 196;
-      attr [Conv.wmma.accumulator: Pointer(float32)] "storage_scope" = "wmma.accumulator";
-      allocate(Conv.wmma.accumulator, float32, [2048]);
-      attr [Apad.shared: Pointer(float16)] "storage_scope" = "shared";
-      allocate(Apad.shared, float16, [12288]);
-      attr [W.shared: Pointer(float16)] "storage_scope" = "shared";
-      allocate(W.shared, float16, [12288]);
-      attr [Apad.shared.wmma.matrix_a: Pointer(float16)] "storage_scope" = "wmma.matrix_a";
-      allocate(Apad.shared.wmma.matrix_a, float16, [512]);
-      attr [W.shared.wmma.matrix_b: Pointer(float16)] "storage_scope" = "wmma.matrix_b";
-      allocate(W.shared.wmma.matrix_b, float16, [1024]);
-      attr [IterVar(blockIdx.x: int32, (nullptr), "ThreadIndex", "blockIdx.x")] "thread_extent" = 2;
-      attr [IterVar(blockIdx.y: int32, (nullptr), "ThreadIndex", "blockIdx.y")] "thread_extent" = 4;
-      attr [IterVar(threadIdx.y: int32, (nullptr), "ThreadIndex", "threadIdx.y")] "thread_extent" = 4;
-      attr [IterVar(threadIdx.z: int32, (nullptr), "ThreadIndex", "threadIdx.z")] "thread_extent" = 2 {
-        for (n.c.init: int32, 0, 2) {
-          for (o.c.init: int32, 0, 4) {
-            @tir.tvm_fill_fragment(Conv.wmma.accumulator, 16, 16, 16, ((n.c.init*4) + o.c.init), 0f32, dtype=handle)
-          }
-        }
-        for (ic.outer: int32, 0, 8) {
-          for (kh: int32, 0, 3) {
-            for (ax2: int32, 0, 3) {
-              for (ax3: int32, 0, 2) {
-                for (ax4.ax5.fused.outer: int32, 0, 8) {
-                  attr [IterVar(threadIdx.x: int32, (nullptr), "ThreadIndex", "threadIdx.x")] "thread_extent" = 32;
-                  Apad.shared[((((((threadIdx.y*3072) + (threadIdx.z*1536)) + (ax2*512)) + (ax3*256)) + (ax4.ax5.fused.outer*32)) + threadIdx.x)] = @tir.if_then_else(((((1 <= (floordiv(blockIdx.z, 14) + kh)) && ((floordiv(blockIdx.z, 14) + kh) < 15)) && (1 <= (ax2 + floormod(blockIdx.z, 14)))) && ((ax2 + floormod(blockIdx.z, 14)) < 15)), (float16*)A_2[(((((((((((blockIdx.x*6422528) + (threadIdx.y*1605632)) + (threadIdx.z*802816)) + (kh*57344)) + (blockIdx.z*4096)) + (ax2*4096)) + (ic.outer*512)) + (ax3*256)) + (ax4.ax5.fused.outer*32)) + threadIdx.x) - 61440)], 0f16, dtype=float16)
-                }
-              }
-            }
-            for (ax1: int32, 0, 3) {
-              for (ax2_1: int32, 0, 2) {
-                attr [IterVar(threadIdx.x, (nullptr), "ThreadIndex", "threadIdx.x")] "thread_extent" = 32;
-                W.shared[ramp((((((ax1*4096) + (ax2_1*2048)) + (threadIdx.y*512)) + (threadIdx.z*256)) + (threadIdx.x*8)), 1, 8)] = (float16x8*)W_2[ramp(((((((((kh*393216) + (ax1*131072)) + (ic.outer*16384)) + (ax2_1*8192)) + (blockIdx.y*2048)) + (threadIdx.y*512)) + (threadIdx.z*256)) + (threadIdx.x*8)), 1, 8)]
-              }
-            }
-            for (ic.inner: int32, 0, 2) {
-              for (kw: int32, 0, 3) {
-                for (ax0: int32, 0, 2) {
-                  @tir.tvm_load_matrix_sync(Apad.shared.wmma.matrix_a, 16, 16, 16, ax0, @tir.tvm_access_ptr(@tir.type_annotation(, dtype=float16), Apad.shared, ((((threadIdx.y*3072) + (ax0*1536)) + (kw*512)) + (ic.inner*256)), 256, 1, dtype=handle), 16, "row_major", dtype=handle)
-                }
-                for (ax3_1: int32, 0, 4) {
-                  @tir.tvm_load_matrix_sync(W.shared.wmma.matrix_b, 16, 16, 16, ax3_1, @tir.tvm_access_ptr(@tir.type_annotation(, dtype=float16), W.shared, ((((kw*4096) + (ic.inner*2048)) + (threadIdx.z*1024)) + (ax3_1*256)), 256, 1, dtype=handle), 16, "row_major", dtype=handle)
-                }
-                for (n.c: int32, 0, 2) {
-                  for (o.c: int32, 0, 4) {
-                    @tir.tvm_mma_sync(Conv.wmma.accumulator, ((n.c*4) + o.c), Apad.shared.wmma.matrix_a, n.c, W.shared.wmma.matrix_b, o.c, Conv.wmma.accumulator, ((n.c*4) + o.c), dtype=handle)
-                  }
-                }
-              }
-            }
-          }
-        }
-        for (n.inner: int32, 0, 2) {
-          for (o.inner: int32, 0, 4) {
-            @tir.tvm_store_matrix_sync(Conv.wmma.accumulator, 16, 16, 16, ((n.inner*4) + o.inner), @tir.tvm_access_ptr(@tir.type_annotation(, dtype=float32), Conv_2, (((((((blockIdx.x*12845056) + (threadIdx.y*3211264)) + (n.inner*1605632)) + (blockIdx.z*8192)) + (blockIdx.y*2048)) + (threadIdx.z*1024)) + (o.inner*256)), 256, 2, dtype=handle), 16, "row_major", dtype=handle)
-          }
-        }
-      }
-    }
-
-
-
-
-
 Generate CUDA Kernel
 --------------------
 Finally we use TVM to generate and compile the CUDA kernel, and evaluate the latency of convolution.
@@ -602,7 +405,7 @@ be able to run on our build server
 .. code-block:: default
 
 
-    dev = tvm.cuda(0)
+    dev = tvm.gpu(0)
     if nvcc.have_tensorcore(dev.compute_version):
         with tvm.transform.PassContext(config={"tir.UnrollLoop": {"auto_max_step": 16}}):
             func = tvm.build(s, [A, W, Conv], "cuda")
@@ -613,19 +416,6 @@ be able to run on our build server
         c = tvm.nd.array(np.zeros(output_shape, dtype=Conv.dtype), dev)
         evaluator = func.time_evaluator(func.entry_name, dev, number=10)
         print("conv2d with tensor core: %f ms" % (evaluator(a, w, c).mean * 1e3))
-
-
-
-
-
-.. rst-class:: sphx-glr-script-out
-
- Out:
-
- .. code-block:: none
-
-    conv2d with tensor core: 6.615892 ms
-
 
 
 Summary

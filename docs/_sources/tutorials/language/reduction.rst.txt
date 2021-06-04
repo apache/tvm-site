@@ -28,11 +28,6 @@ In this tutorial, we will demonstrate how to do reduction in TVM.
     import numpy as np
 
 
-
-
-
-
-
 Describe Sum of Rows
 --------------------
 Assume we want to compute sum of rows as our example.
@@ -66,11 +61,6 @@ The equivalent C code is as follows:
     B = te.compute((n,), lambda i: te.sum(A[i, k], axis=k), name="B")
 
 
-
-
-
-
-
 Schedule the Reduction
 ----------------------
 There are several ways to schedule a reduction.
@@ -82,32 +72,6 @@ Before doing anything, let us print out the IR code of default schedule.
 
     s = te.create_schedule(B.op)
     print(tvm.lower(s, [A, B], simple_mode=True))
-
-
-
-
-
-.. rst-class:: sphx-glr-script-out
-
- Out:
-
- .. code-block:: none
-
-    primfn(A_1: handle, B_1: handle) -> ()
-      attr = {"global_symbol": "main", "tir.noalias": True}
-      buffers = {B: Buffer(B_2: Pointer(float32), float32, [n: int32], [stride: int32], type="auto"),
-                 A: Buffer(A_2: Pointer(float32), float32, [n, m: int32], [stride_1: int32, stride_2: int32], type="auto")}
-      buffer_map = {A_1: A, B_1: B} {
-      for (i: int32, 0, n) {
-        B_2[(i*stride)] = 0f32
-        for (k: int32, 0, m) {
-          B_2[(i*stride)] = ((float32*)B_2[(i*stride)] + (float32*)A_2[((i*stride_1) + (k*stride_2))])
-        }
-      }
-    }
-
-
-
 
 
 You can find that the IR code is quite like the C code.
@@ -125,42 +89,6 @@ axis by different factors. The result is a nested reduction.
     print(tvm.lower(s, [A, B], simple_mode=True))
 
 
-
-
-
-.. rst-class:: sphx-glr-script-out
-
- Out:
-
- .. code-block:: none
-
-    primfn(A_1: handle, B_1: handle) -> ()
-      attr = {"global_symbol": "main", "tir.noalias": True}
-      buffers = {B: Buffer(B_2: Pointer(float32), float32, [n: int32], [stride: int32], type="auto"),
-                 A: Buffer(A_2: Pointer(float32), float32, [n, m: int32], [stride_1: int32, stride_2: int32], type="auto")}
-      buffer_map = {A_1: A, B_1: B} {
-      for (i.outer: int32, 0, floordiv((n + 31), 32)) {
-        for (i.inner: int32, 0, 32) {
-          if @tir.likely((((i.outer*32) + i.inner) < n), dtype=bool) {
-            B_2[(((i.outer*32) + i.inner)*stride)] = 0f32
-          }
-          if @tir.likely((((i.outer*32) + i.inner) < n), dtype=bool) {
-            for (k.outer: int32, 0, floordiv((m + 15), 16)) {
-              for (k.inner: int32, 0, 16) {
-                if @tir.likely((((k.outer*16) + k.inner) < m), dtype=bool) {
-                  B_2[(((i.outer*32) + i.inner)*stride)] = ((float32*)B_2[(((i.outer*32) + i.inner)*stride)] + (float32*)A_2[((((i.outer*32) + i.inner)*stride_1) + (((k.outer*16) + k.inner)*stride_2))])
-                }
-              }
-            }
-          }
-        }
-      }
-    }
-
-
-
-
-
 If we are building a GPU kernel, we can bind the rows of B to GPU threads.
 
 
@@ -169,41 +97,6 @@ If we are building a GPU kernel, we can bind the rows of B to GPU threads.
     s[B].bind(xo, te.thread_axis("blockIdx.x"))
     s[B].bind(xi, te.thread_axis("threadIdx.x"))
     print(tvm.lower(s, [A, B], simple_mode=True))
-
-
-
-
-
-.. rst-class:: sphx-glr-script-out
-
- Out:
-
- .. code-block:: none
-
-    primfn(A_1: handle, B_1: handle) -> ()
-      attr = {"global_symbol": "main", "tir.noalias": True}
-      buffers = {B: Buffer(B_2: Pointer(float32), float32, [n: int32], [stride: int32], type="auto"),
-                 A: Buffer(A_2: Pointer(float32), float32, [n, m: int32], [stride_1: int32, stride_2: int32], type="auto")}
-      buffer_map = {A_1: A, B_1: B} {
-      attr [IterVar(blockIdx.x: int32, (nullptr), "ThreadIndex", "blockIdx.x")] "thread_extent" = floordiv((n + 31), 32);
-      attr [IterVar(threadIdx.x: int32, (nullptr), "ThreadIndex", "threadIdx.x")] "thread_extent" = 32 {
-        if @tir.likely((((blockIdx.x*32) + threadIdx.x) < n), dtype=bool) {
-          B_2[(((blockIdx.x*32) + threadIdx.x)*stride)] = 0f32
-        }
-        for (k.outer: int32, 0, floordiv((m + 15), 16)) {
-          for (k.inner: int32, 0, 16) {
-            if @tir.likely((((blockIdx.x*32) + threadIdx.x) < n), dtype=bool) {
-              if @tir.likely((((k.outer*16) + k.inner) < m), dtype=bool) {
-                B_2[(((blockIdx.x*32) + threadIdx.x)*stride)] = ((float32*)B_2[(((blockIdx.x*32) + threadIdx.x)*stride)] + (float32*)A_2[((((blockIdx.x*32) + threadIdx.x)*stride_1) + (((k.outer*16) + k.inner)*stride_2))])
-              }
-            }
-          }
-        }
-      }
-    }
-
-
-
 
 
 Reduction Factoring and Parallelization
@@ -227,45 +120,6 @@ result B.rf. The factored dimension becomes the first dimension of B.rf.
     print(tvm.lower(s, [A, B], simple_mode=True))
 
 
-
-
-
-.. rst-class:: sphx-glr-script-out
-
- Out:
-
- .. code-block:: none
-
-    primfn(A_1: handle, B_1: handle) -> ()
-      attr = {"global_symbol": "main", "tir.noalias": True}
-      buffers = {B: Buffer(B_2: Pointer(float32), float32, [n: int32], [stride: int32], type="auto"),
-                 A: Buffer(A_2: Pointer(float32), float32, [n, m: int32], [stride_1: int32, stride_2: int32], type="auto")}
-      buffer_map = {A_1: A, B_1: B} {
-      attr [B.rf: Pointer(float32)] "storage_scope" = "global";
-      allocate(B.rf, float32, [(n*16)]) {
-        for (k.inner: int32, 0, 16) {
-          for (i: int32, 0, n) {
-            B.rf[((k.inner*n) + i)] = 0f32
-            for (k.outer: int32, 0, floordiv((m + 15), 16)) {
-              if @tir.likely((((k.outer*16) + k.inner) < m), dtype=bool) {
-                B.rf[((k.inner*n) + i)] = ((float32*)B.rf[((k.inner*n) + i)] + (float32*)A_2[((i*stride_1) + (((k.outer*16) + k.inner)*stride_2))])
-              }
-            }
-          }
-        }
-        for (ax0: int32, 0, n) {
-          B_2[(ax0*stride)] = 0f32
-          for (k.inner.v: int32, 0, 16) {
-            B_2[(ax0*stride)] = ((float32*)B_2[(ax0*stride)] + (float32*)B.rf[((k.inner.v*n) + ax0)])
-          }
-        }
-      }
-    }
-
-
-
-
-
 The scheduled operator of B also get rewritten to be sum over
 the first axis of reduced result of B.f
 
@@ -274,19 +128,6 @@ the first axis of reduced result of B.f
 .. code-block:: default
 
     print(s[B].op.body)
-
-
-
-
-
-.. rst-class:: sphx-glr-script-out
-
- Out:
-
- .. code-block:: none
-
-    [reduce(combiner=comm_reducer(result=[(x + y)], lhs=[x], rhs=[y], identity_element=[0f]), source=[B.rf[k.inner.v, ax0]], init=[], axis=[iter_var(k.inner.v, range(min=0, ext=16))], where=(bool)1, value_index=0)]
-
 
 
 Cross Thread Reduction
@@ -316,64 +157,6 @@ columns by threadIdx.x and finally do a cross thread reduction over threadIdx.x
     print(fcuda.imported_modules[0].get_source())
 
 
-
-
-
-.. rst-class:: sphx-glr-script-out
-
- Out:
-
- .. code-block:: none
-
-
-    #ifdef _WIN32
-      using uint = unsigned int;
-      using uchar = unsigned char;
-      using ushort = unsigned short;
-      using int64_t = long long;
-      using uint64_t = unsigned long long;
-    #else
-      #define uint unsigned int
-      #define uchar unsigned char
-      #define ushort unsigned short
-      #define int64_t long long
-      #define uint64_t unsigned long long
-    #endif
-    extern "C" __global__ void default_function_kernel0(float* __restrict__ A, float* __restrict__ B, int m, int n, int stride, int stride1, int stride2) {
-      float B_rf[1];
-      __shared__ float red_buf0[512];
-      B_rf[(0)] = 0.000000e+00f;
-      for (int k_outer = 0; k_outer < (m >> 4); ++k_outer) {
-        if (((((int)blockIdx.x) * 32) + ((int)threadIdx.y)) < n) {
-          B_rf[(0)] = (B_rf[(0)] + A[(((((((int)blockIdx.x) * 32) + ((int)threadIdx.y)) * stride) + (((k_outer * 16) + ((int)threadIdx.x)) * stride1)))]);
-        }
-      }
-      for (int k_outer1 = 0; k_outer1 < (((m & 15) + 15) >> 4); ++k_outer1) {
-        if (((((int)blockIdx.x) * 32) + ((int)threadIdx.y)) < n) {
-          if (((((m >> 4) * 16) + (k_outer1 * 16)) + ((int)threadIdx.x)) < m) {
-            B_rf[(0)] = (B_rf[(0)] + A[(((((((int)blockIdx.x) * 32) + ((int)threadIdx.y)) * stride) + (((((m >> 4) * 16) + (k_outer1 * 16)) + ((int)threadIdx.x)) * stride1)))]);
-          }
-        }
-      }
-      __syncthreads();
-      ((volatile float*)red_buf0)[(((((int)threadIdx.y) * 16) + ((int)threadIdx.x)))] = B_rf[(0)];
-      __syncthreads();
-      if (((int)threadIdx.x) < 8) {
-        ((volatile float*)red_buf0)[(((((int)threadIdx.y) * 16) + ((int)threadIdx.x)))] = (((volatile float*)red_buf0)[(((((int)threadIdx.y) * 16) + ((int)threadIdx.x)))] + ((volatile float*)red_buf0)[((((((int)threadIdx.y) * 16) + ((int)threadIdx.x)) + 8))]);
-        ((volatile float*)red_buf0)[(((((int)threadIdx.y) * 16) + ((int)threadIdx.x)))] = (((volatile float*)red_buf0)[(((((int)threadIdx.y) * 16) + ((int)threadIdx.x)))] + ((volatile float*)red_buf0)[((((((int)threadIdx.y) * 16) + ((int)threadIdx.x)) + 4))]);
-        ((volatile float*)red_buf0)[(((((int)threadIdx.y) * 16) + ((int)threadIdx.x)))] = (((volatile float*)red_buf0)[(((((int)threadIdx.y) * 16) + ((int)threadIdx.x)))] + ((volatile float*)red_buf0)[((((((int)threadIdx.y) * 16) + ((int)threadIdx.x)) + 2))]);
-        ((volatile float*)red_buf0)[(((((int)threadIdx.y) * 16) + ((int)threadIdx.x)))] = (((volatile float*)red_buf0)[(((((int)threadIdx.y) * 16) + ((int)threadIdx.x)))] + ((volatile float*)red_buf0)[((((((int)threadIdx.y) * 16) + ((int)threadIdx.x)) + 1))]);
-      }
-      __syncthreads();
-      if (((int)threadIdx.x) == 0) {
-        B[((((((int)blockIdx.x) * 32) + ((int)threadIdx.y)) * stride2))] = ((volatile float*)red_buf0)[((((int)threadIdx.y) * 16))];
-      }
-    }
-
-
-
-
-
 Verify the correctness of result kernel by comparing it to numpy.
 
 
@@ -381,16 +164,11 @@ Verify the correctness of result kernel by comparing it to numpy.
 .. code-block:: default
 
     nn = 128
-    dev = tvm.cuda(0)
+    dev = tvm.gpu(0)
     a = tvm.nd.array(np.random.uniform(size=(nn, nn)).astype(A.dtype), dev)
     b = tvm.nd.array(np.zeros(nn, dtype=B.dtype), dev)
     fcuda(a, b)
-    tvm.testing.assert_allclose(b.numpy(), np.sum(a.numpy(), axis=1), rtol=1e-4)
-
-
-
-
-
+    tvm.testing.assert_allclose(b.asnumpy(), np.sum(a.asnumpy(), axis=1), rtol=1e-4)
 
 
 Describe Convolution via 2D Reduction
@@ -416,37 +194,6 @@ Here is an example for 2D convolution with filter size = [3, 3] and strides = [1
     print(tvm.lower(s, [Input, Filter, Output], simple_mode=True))
 
 
-
-
-
-.. rst-class:: sphx-glr-script-out
-
- Out:
-
- .. code-block:: none
-
-    primfn(Input_1: handle, Filter_1: handle, Output_1: handle) -> ()
-      attr = {"global_symbol": "main", "tir.noalias": True}
-      buffers = {Output: Buffer(Output_2: Pointer(float32), float32, [(n: int32 - 2), (n - 2)], []),
-                 Input: Buffer(Input_2: Pointer(float32), float32, [n, n], [stride: int32, stride_1: int32], type="auto"),
-                 Filter: Buffer(Filter_2: Pointer(float32), float32, [3, 3], [])}
-      buffer_map = {Input_1: Input, Filter_1: Filter, Output_1: Output} {
-      for (i: int32, 0, (n - 2)) {
-        for (j: int32, 0, (n - 2)) {
-          Output_2[((i*(n - 2)) + j)] = 0f32
-          for (di: int32, 0, 3) {
-            for (dj: int32, 0, 3) {
-              Output_2[((i*(n - 2)) + j)] = ((float32*)Output_2[((i*(n - 2)) + j)] + ((float32*)Input_2[(((i + di)*stride) + ((j + dj)*stride_1))]*(float32*)Filter_2[((di*3) + dj)]))
-            }
-          }
-        }
-      }
-    }
-
-
-
-
-
 .. _general-reduction:
 
 Define General Commutative Reduction Operation
@@ -466,11 +213,6 @@ commutative reduction operation by :any:`te.comm_reducer`.
     A = te.placeholder((n, m), name="A")
     k = te.reduce_axis((0, m), name="k")
     B = te.compute((n,), lambda i: product(A[i, k], axis=k), name="B")
-
-
-
-
-
 
 
 .. note::

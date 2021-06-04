@@ -69,11 +69,6 @@ Now return to python code. Begin by importing the required packages.
     from tvm import autotvm
 
 
-
-
-
-
-
 Basic Matrix Multiplication with TE
 -----------------------------------
 Recall the basic implementation of matrix multiplication using TE. We write
@@ -89,7 +84,7 @@ reordering.
 
     def matmul_basic(N, L, M, dtype):
 
-        A = te.placeholder((N, L), name="A", dtype=dtype)
+        a = te.placeholder((n, l), name="a", dtype=dtype)
         B = te.placeholder((L, M), name="B", dtype=dtype)
 
         k = te.reduce_axis((0, L), name="k")
@@ -106,11 +101,6 @@ reordering.
         s[C].reorder(yo, xo, k, yi, xi)
 
         return s, [A, B, C]
-
-
-
-
-
 
 
 
@@ -165,11 +155,6 @@ block size of the `split` scheduling operation.
         s[C].reorder(yo, xo, k, yi, xi)
 
         return s, [A, B, C]
-
-
-
-
-
 
 
 
@@ -260,11 +245,6 @@ can always fall back to using the low level API.
 
 
 
-
-
-
-
-
 .. note:: More Explanation on :code:`cfg.define_split`
 
  In this template, :code:`cfg.define_split("tile_y", y, num_outputs=2)` will
@@ -337,22 +317,6 @@ the task and search space are independent of the tuner picked.
     print(task.config_space)
 
 
-
-
-
-.. rst-class:: sphx-glr-script-out
-
- Out:
-
- .. code-block:: none
-
-    ConfigSpace (len=100, space_map=
-       0 tile_y: Split(policy=factors, product=512, num_outputs=2) len=10
-       1 tile_x: Split(policy=factors, product=512, num_outputs=2) len=10
-    )
-
-
-
 Then we need to define how to measure the generated code and pick a tuner.
 Since our space is small, a random tuner is just okay.
 
@@ -368,11 +332,6 @@ configuration discovered by the tuner later.
     # logging config (for printing tuning log to the screen)
     logging.getLogger("autotvm").setLevel(logging.DEBUG)
     logging.getLogger("autotvm").addHandler(logging.StreamHandler(sys.stdout))
-
-
-
-
-
 
 
 There are two steps for measuring a config: build and run. By default, we use
@@ -392,11 +351,6 @@ reduce variance, we take 5 measurements and average them.
         measure_option=measure_option,
         callbacks=[autotvm.callback.log_to_file("matmul.log")],
     )
-
-
-
-
-
 
 
 With tuning completed, we can choose the configuration from the log file that
@@ -425,12 +379,7 @@ best config with the same argument.
     c_tvm = tvm.nd.empty(c_np.shape)
     func(tvm.nd.array(a_np), tvm.nd.array(b_np), c_tvm)
 
-    tvm.testing.assert_allclose(c_np, c_tvm.numpy(), rtol=1e-4)
-
-
-
-
-
+    tvm.testing.assert_allclose(c_np, c_tvm.asnumpy(), rtol=1e-4)
 
 
 Final Notes and Summary

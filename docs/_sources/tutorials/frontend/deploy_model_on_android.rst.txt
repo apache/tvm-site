@@ -33,11 +33,6 @@ This is an example of using Relay to compile a keras model and deploy it on Andr
 
 
 
-
-
-
-
-
 Setup Environment
 -----------------
 Since there are many required packages for Android, it is recommended to use the official Docker Image.
@@ -204,19 +199,6 @@ We load a pretrained MobileNetV2(alpha=0.5) classification model provided by ker
     keras_mobilenet_v2.load_weights(weights_path)
 
 
-
-
-
-.. rst-class:: sphx-glr-script-out
-
- Out:
-
- .. code-block:: none
-
-    File /workspace/.tvm_test_data/keras/mobilenet_v2_weights.h5 exists, skip.
-
-
-
 In order to test our model, here we download an image of cat and
 transform its format.
 
@@ -241,19 +223,6 @@ transform its format.
     x = transform_image(image)
 
 
-
-
-
-.. rst-class:: sphx-glr-script-out
-
- Out:
-
- .. code-block:: none
-
-    File /workspace/.tvm_test_data/data/cat.png exists, skip.
-
-
-
 synset is used to transform the label from number of ImageNet class to
 the word human can understand.
 
@@ -272,19 +241,6 @@ the word human can understand.
     synset_path = download_testdata(synset_url, synset_name, module="data")
     with open(synset_path) as f:
         synset = eval(f.read())
-
-
-
-
-
-
-.. rst-class:: sphx-glr-script-out
-
- Out:
-
- .. code-block:: none
-
-    File /workspace/.tvm_test_data/data/imagenet1000_clsid_to_human.txt exists, skip.
 
 
 
@@ -335,11 +291,6 @@ to run this tutorial with a real device.
     lib.export_library(lib_fname, fcompile)
 
 
-
-
-
-
-
 Deploy the Model Remotely by RPC
 --------------------------------
 With RPC, you can deploy the model remotely from your host machine
@@ -349,7 +300,7 @@ to the remote android device.
 .. code-block:: default
 
 
-    tracker_host = os.environ.get("TVM_TRACKER_HOST", "127.0.0.1")
+    tracker_host = os.environ.get("TVM_TRACKER_HOST", "0.0.0.0")
     tracker_port = int(os.environ.get("TVM_TRACKER_PORT", 9190))
     key = "android"
 
@@ -377,11 +328,6 @@ to the remote android device.
     module = runtime.GraphModule(rlib["default"](dev))
 
 
-
-
-
-
-
 Execute on TVM
 --------------
 
@@ -397,28 +343,13 @@ Execute on TVM
     out = module.get_output(0)
 
     # get top1 result
-    top1 = np.argmax(out.numpy())
+    top1 = np.argmax(out.asnumpy())
     print("TVM prediction top-1: {}".format(synset[top1]))
 
     print("Evaluate inference time cost...")
     ftimer = module.module.time_evaluator("run", dev, number=1, repeat=10)
     prof_res = np.array(ftimer().results) * 1000  # convert to millisecond
     print("Mean inference time (std dev): %.2f ms (%.2f ms)" % (np.mean(prof_res), np.std(prof_res)))
-
-
-
-
-
-.. rst-class:: sphx-glr-script-out
-
- Out:
-
- .. code-block:: none
-
-    TVM prediction top-1: tiger cat
-    Evaluate inference time cost...
-    Mean inference time (std dev): 4.88 ms (0.09 ms)
-
 
 
 Sample Output
