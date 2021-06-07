@@ -61,6 +61,19 @@ This part reuses the code from the above example.
 
 
 
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    Using backend: pytorch
+
+
+
 Define the functions to load dataset and evaluate accuracy
 ----------------------------------------------------------
 You may substitute this part with your own dataset, here we load data from DGL
@@ -91,6 +104,11 @@ You may substitute this part with your own dataset, here we load data from DGL
         acc = ((pred == data.labels) * test_mask).sum() / test_mask.sum()
 
         return acc
+
+
+
+
+
 
 
 
@@ -128,6 +146,32 @@ Load the data and set up model parameters
     num_classes = data.num_labels
 
 
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+      NumNodes: 2708
+      NumEdges: 10556
+      NumFeats: 1433
+      NumClasses: 7
+      NumTrainingSamples: 140
+      NumValidationSamples: 500
+      NumTestSamples: 1000
+    Done loading data from cached files.
+    /usr/local/lib/python3.6/dist-packages/dgl/data/utils.py:285: UserWarning: Property dataset.graph will be deprecated, please use dataset[0] instead.
+      warnings.warn('Property {} will be deprecated, please use {} instead.'.format(old, new))
+    /usr/local/lib/python3.6/dist-packages/dgl/data/utils.py:285: UserWarning: Property dataset.feat will be deprecated, please use g.ndata['feat'] instead.
+      warnings.warn('Property {} will be deprecated, please use {} instead.'.format(old, new))
+    /usr/local/lib/python3.6/dist-packages/dgl/data/utils.py:285: UserWarning: Property dataset.num_labels will be deprecated, please use dataset.num_classes instead.
+      warnings.warn('Property {} will be deprecated, please use {} instead.'.format(old, new))
+
+
+
 Set up the DGL-PyTorch model and get the golden results
 -------------------------------------------------------
 
@@ -153,6 +197,21 @@ The weights are trained with https://github.com/dmlc/dgl/blob/master/examples/py
 
 
 
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    /usr/local/lib/python3.6/dist-packages/dgl/base.py:45: DGLWarning: Recommend creating graphs by `dgl.graph(data)` instead of `dgl.DGLGraph(data)`.
+      return warnings.warn(message, category=category, stacklevel=1)
+    File /workspace/.tvm_test_data/gcn_model/gcn_cora.pickle exists, skip.
+
+
+
 Run the DGL model and test for accuracy
 ---------------------------------------
 
@@ -166,6 +225,29 @@ Run the DGL model and test for accuracy
 
     acc = evaluate(data, logits_torch.numpy())
     print("Test accuracy of DGL results: {:.2%}".format(acc))
+
+
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    Print the first five outputs from DGL-PyTorch execution
+     tensor([[-2.2395, -0.9681,  3.4042, -0.1481, -0.0272, -1.2441, -1.8549],
+            [-1.6017, -1.3846,  0.7642,  2.5430, -1.7420, -1.3704,  0.4249],
+            [-2.0039, -1.2357,  2.4931,  1.0323, -1.3252, -1.3401, -0.5114],
+            [ 0.1647, -2.0421, -0.2668,  0.1527, -0.6965,  1.1109,  1.1034],
+            [-0.8606, -0.6954,  0.1959,  0.6853,  0.0284, -0.6652,  0.2225]])
+    /usr/local/lib/python3.6/dist-packages/dgl/data/utils.py:285: UserWarning: Property dataset.test_mask will be deprecated, please use g.ndata['test_mask'] instead.
+      warnings.warn('Property {} will be deprecated, please use {} instead.'.format(old, new))
+    /usr/local/lib/python3.6/dist-packages/dgl/data/utils.py:285: UserWarning: Property dataset.label will be deprecated, please use g.ndata['label'] instead.
+      warnings.warn('Property {} will be deprecated, please use {} instead.'.format(old, new))
+    Test accuracy of DGL results: 5.30%
 
 
 
@@ -245,6 +327,11 @@ this method is temporary and will be updated in next few weeks when we have spar
 
 
 
+
+
+
+
+
 Prepare the parameters needed in the GraphConv layers
 -----------------------------------------------------
 
@@ -284,6 +371,11 @@ Prepare the parameters needed in the GraphConv layers
         params["g_data"] is not None and params["indices"] is not None and params["indptr"] is not None
     )
     assert params["infeats"].shape[0] == params["indptr"].shape[0] - 1
+
+
+
+
+
 
 
 Put layers together
@@ -332,6 +424,11 @@ Put layers together
     output = layers[-1]
 
 
+
+
+
+
+
 Compile and run with TVM
 ------------------------
 
@@ -364,6 +461,11 @@ Export the weigths from PyTorch model to Python Dict
     m = graph_executor.GraphModule(lib["default"](dev))
 
 
+
+
+
+
+
 Run the TVM model, test for accuracy and verify with DGL
 --------------------------------------------------------
 
@@ -371,7 +473,7 @@ Run the TVM model, test for accuracy and verify with DGL
 .. code-block:: default
 
     m.run()
-    logits_tvm = m.get_output(0).asnumpy()
+    logits_tvm = m.get_output(0).numpy()
     print("Print the first five outputs from TVM execution\n", logits_tvm[:5])
 
     labels = data.labels
@@ -384,6 +486,30 @@ Run the TVM model, test for accuracy and verify with DGL
 
     # Verify the results with the DGL model
     tvm.testing.assert_allclose(logits_torch, logits_tvm, atol=1e-3)
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    Print the first five outputs from TVM execution
+     [[-2.2394986  -0.9680933   3.4041846  -0.14806426 -0.02724874 -1.2441163
+      -1.8548993 ]
+     [-1.6016592  -1.3846085   0.7641872   2.5430043  -1.7419695  -1.3703678
+       0.42491326]
+     [-2.0038617  -1.2356598   2.4931228   1.0322791  -1.325198   -1.3400824
+      -0.51143134]
+     [ 0.16473567 -2.0420618  -0.26682284  0.15265226 -0.6964847   1.1109071
+       1.103439  ]
+     [-0.8606019  -0.69538236  0.1958623   0.6853092   0.02840531 -0.6652414
+       0.22247872]]
+    Test accuracy of TVM results: 5.30%
+
+
 
 
 .. _sphx_glr_download_tutorials_frontend_build_gcn.py:

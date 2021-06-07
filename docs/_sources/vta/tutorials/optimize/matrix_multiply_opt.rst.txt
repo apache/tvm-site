@@ -68,6 +68,11 @@ We start by programming the Pynq's FPGA and building its RPC runtime.
         remote = rpc.LocalSession()
 
 
+
+
+
+
+
 Computation Declaration
 -----------------------
 As a first step, we need to describe our matrix multiplication computation.
@@ -148,6 +153,11 @@ manageable chunks.
     res = te.compute(output_shape, lambda *i: res_min(*i).astype(env.inp_dtype), name="res")
 
 
+
+
+
+
+
 Scheduling the Computation
 --------------------------
 We'll look at a set of schedule transformations necessary to map the
@@ -166,6 +176,78 @@ Those include:
     s = te.create_schedule(res.op)
     # Let's look at the default TVM schedule
     print(tvm.lower(s, [data, weight, res], simple_mode=True))
+
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    primfn(data_1: handle, weight_1: handle, res_1: handle) -> ()
+      attr = {"global_symbol": "main", "tir.noalias": True}
+      buffers = {res: Buffer(res_2: Pointer(int8), int8, [1, 64, 1, 16], []),
+                 data: Buffer(data_2: Pointer(int8), int8, [1, 64, 1, 16], []),
+                 weight: Buffer(weight_2: Pointer(int8), int8, [64, 64, 16, 16], [])}
+      buffer_map = {data_1: data, weight_1: weight, res_1: res} {
+      attr [data_buf: Pointer(int8)] "storage_scope" = "global";
+      allocate(data_buf, int8, [1024]);
+      attr [weight_buf: Pointer(int8)] "storage_scope" = "global";
+      allocate(weight_buf, int8, [1048576]);
+      attr [res_gem: Pointer(int32)] "storage_scope" = "global";
+      allocate(res_gem, int32, [1024]) {
+        for (i1: int32, 0, 64) {
+          for (i3: int32, 0, 16) {
+            data_buf[((i1*16) + i3)] = (int8*)data_2[((i1*16) + i3)]
+          }
+        }
+        for (i0: int32, 0, 64) {
+          for (i1_1: int32, 0, 64) {
+            for (i2: int32, 0, 16) {
+              for (i3_1: int32, 0, 16) {
+                weight_buf[((((i0*16384) + (i1_1*256)) + (i2*16)) + i3_1)] = (int8*)weight_2[((((i0*16384) + (i1_1*256)) + (i2*16)) + i3_1)]
+              }
+            }
+          }
+        }
+        for (co: int32, 0, 64) {
+          for (ci: int32, 0, 16) {
+            res_gem[((co*16) + ci)] = 0
+            for (ic: int32, 0, 64) {
+              for (ic_tns: int32, 0, 16) {
+                res_gem[((co*16) + ci)] = ((int32*)res_gem[((co*16) + ci)] + (cast(int32, (int8*)data_buf[((ic*16) + ic_tns)])*cast(int32, (int8*)weight_buf[((((co*16384) + (ic*256)) + (ci*16)) + ic_tns)])))
+              }
+            }
+          }
+        }
+        for (i1_2: int32, 0, 64) {
+          for (i3_2: int32, 0, 16) {
+            res_gem[((i1_2*16) + i3_2)] = @tir.shift_right((int32*)res_gem[((i1_2*16) + i3_2)], 8, dtype=int32)
+          }
+        }
+        for (i1_3: int32, 0, 64) {
+          for (i3_3: int32, 0, 16) {
+            res_gem[((i1_3*16) + i3_3)] = max((int32*)res_gem[((i1_3*16) + i3_3)], 0)
+          }
+        }
+        for (i1_4: int32, 0, 64) {
+          for (i3_4: int32, 0, 16) {
+            res_gem[((i1_4*16) + i3_4)] = min((int32*)res_gem[((i1_4*16) + i3_4)], 127)
+          }
+        }
+        for (i1_5: int32, 0, 64) {
+          for (i3_5: int32, 0, 16) {
+            res_2[((i1_5*16) + i3_5)] = cast(int8, (int32*)res_gem[((i1_5*16) + i3_5)])
+          }
+        }
+      }
+    }
+
+
+
 
 
 Blocking the Computation
@@ -258,6 +340,86 @@ below:
     print(tvm.lower(s, [data, weight, res], simple_mode=True))
 
 
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    primfn(data_1: handle, weight_1: handle, res_1: handle) -> ()
+      attr = {"global_symbol": "main", "tir.noalias": True}
+      buffers = {res: Buffer(res_2: Pointer(int8), int8, [1, 64, 1, 16], []),
+                 data: Buffer(data_2: Pointer(int8), int8, [1, 64, 1, 16], []),
+                 weight: Buffer(weight_2: Pointer(int8), int8, [64, 64, 16, 16], [])}
+      buffer_map = {data_1: data, weight_1: weight, res_1: res} {
+      attr [data_buf: Pointer(int8)] "storage_scope" = "global";
+      allocate(data_buf, int8, [1024]);
+      attr [weight_buf: Pointer(int8)] "storage_scope" = "global";
+      allocate(weight_buf, int8, [1048576]);
+      attr [res_gem: Pointer(int32)] "storage_scope" = "global";
+      allocate(res_gem, int32, [256]) {
+        for (i1: int32, 0, 64) {
+          for (i3: int32, 0, 16) {
+            data_buf[((i1*16) + i3)] = (int8*)data_2[((i1*16) + i3)]
+          }
+        }
+        for (i0: int32, 0, 64) {
+          for (i1_1: int32, 0, 64) {
+            for (i2: int32, 0, 16) {
+              for (i3_1: int32, 0, 16) {
+                weight_buf[((((i0*16384) + (i1_1*256)) + (i2*16)) + i3_1)] = (int8*)weight_2[((((i0*16384) + (i1_1*256)) + (i2*16)) + i3_1)]
+              }
+            }
+          }
+        }
+        for (i1.outer: int32, 0, 4) {
+          for (co.init: int32, 0, 16) {
+            for (ci.init: int32, 0, 16) {
+              res_gem[((co.init*16) + ci.init)] = 0
+            }
+          }
+          for (ic.outer: int32, 0, 4) {
+            for (co: int32, 0, 16) {
+              for (ic.inner: int32, 0, 16) {
+                for (ci: int32, 0, 16) {
+                  for (ic_tns: int32, 0, 16) {
+                    res_gem[((co*16) + ci)] = ((int32*)res_gem[((co*16) + ci)] + (cast(int32, (int8*)data_buf[(((ic.outer*256) + (ic.inner*16)) + ic_tns)])*cast(int32, (int8*)weight_buf[((((((i1.outer*262144) + (co*16384)) + (ic.outer*4096)) + (ic.inner*256)) + (ci*16)) + ic_tns)])))
+                  }
+                }
+              }
+            }
+          }
+          for (i1_2: int32, 0, 16) {
+            for (i3_2: int32, 0, 16) {
+              res_gem[((i1_2*16) + i3_2)] = @tir.shift_right((int32*)res_gem[((i1_2*16) + i3_2)], 8, dtype=int32)
+            }
+          }
+          for (i1_3: int32, 0, 16) {
+            for (i3_3: int32, 0, 16) {
+              res_gem[((i1_3*16) + i3_3)] = max((int32*)res_gem[((i1_3*16) + i3_3)], 0)
+            }
+          }
+          for (i1_4: int32, 0, 16) {
+            for (i3_4: int32, 0, 16) {
+              res_gem[((i1_4*16) + i3_4)] = min((int32*)res_gem[((i1_4*16) + i3_4)], 127)
+            }
+          }
+          for (i1.inner: int32, 0, 16) {
+            for (i3_5: int32, 0, 16) {
+              res_2[(((i1.outer*256) + (i1.inner*16)) + i3_5)] = cast(int8, (int32*)res_gem[((i1.inner*16) + i3_5)])
+            }
+          }
+        }
+      }
+    }
+
+
+
+
+
 Lowering Copies to DMA Transfers
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Next we set the buffer scopes to the corresponding on-chip VTA SRAM buffers.
@@ -292,6 +454,11 @@ to perform bulk memory transfers on VTA.
     s[res].pragma(s[res].op.axis[2], env.dma_copy)
 
 
+
+
+
+
+
 Lowering Computation to VTA Compute Intrinsics
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 The last phase is to lower the computation loops down to VTA hardware
@@ -314,6 +481,90 @@ and mapping the shift, and clipping computation to the vector ALU.
     # loads/stores down to DMA copy intrinsics, and the computation down to
     # VTA compute intrinsics.
     print(vta.lower(s, [data, weight, res], simple_mode=True))
+
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    primfn(data_1: handle, weight_1: handle, res_1: handle) -> ()
+      attr = {"global_symbol": "main", "tir.noalias": True}
+      buffers = {res: Buffer(res_2: Pointer(int8), int8, [1, 64, 1, 16], []),
+                 data: Buffer(data_2: Pointer(int8), int8, [1, 64, 1, 16], []),
+                 weight: Buffer(weight_2: Pointer(int8), int8, [64, 64, 16, 16], [])}
+      buffer_map = {data_1: data, weight_1: weight, res_1: res} {
+      attr [res_gem: Pointer(int32)] "storage_scope" = "local.acc_buffer";
+      attr [data_buf: Pointer(int8)] "storage_scope" = "local.inp_buffer";
+      attr [weight_buf: Pointer(int8)] "storage_scope" = "local.wgt_buffer" {
+        @tir.vta.coproc_dep_push(3, 2, dtype=int32)
+        for (i1.outer: int32, 0, 4) {
+          attr [IterVar(vta: int32, (nullptr), "ThreadIndex", "vta")] "coproc_scope" = 2 {
+            @tir.vta.coproc_dep_pop(3, 2, dtype=int32)
+            attr [IterVar(vta, (nullptr), "ThreadIndex", "vta")] "coproc_uop_scope" = "VTAPushGEMMOp" {
+              @tir.call_extern("VTAUopLoopBegin", 16, 1, 0, 0, dtype=int32)
+              @tir.vta.uop_push(0, 1, 0, 0, 0, 0, 0, 0, dtype=int32)
+              @tir.call_extern("VTAUopLoopEnd", dtype=int32)
+            }
+            @tir.vta.coproc_dep_push(2, 1, dtype=int32)
+          }
+          for (ic.outer: int32, 0, 4) {
+            attr [IterVar(vta, (nullptr), "ThreadIndex", "vta")] "coproc_scope" = 1 {
+              @tir.vta.coproc_dep_pop(2, 1, dtype=int32)
+              @tir.call_extern("VTALoadBuffer2D", @tir.tvm_thread_context(@tir.vta.command_handle(, dtype=handle), dtype=handle), data_2, (ic.outer*16), 16, 1, 16, 0, 0, 0, 0, 0, 2, dtype=int32)
+              @tir.call_extern("VTALoadBuffer2D", @tir.tvm_thread_context(@tir.vta.command_handle(, dtype=handle), dtype=handle), weight_2, ((i1.outer*1024) + (ic.outer*16)), 16, 16, 64, 0, 0, 0, 0, 0, 1, dtype=int32)
+              @tir.vta.coproc_dep_push(1, 2, dtype=int32)
+            }
+            attr [IterVar(vta, (nullptr), "ThreadIndex", "vta")] "coproc_scope" = 2 {
+              @tir.vta.coproc_dep_pop(1, 2, dtype=int32)
+              attr [IterVar(vta, (nullptr), "ThreadIndex", "vta")] "coproc_uop_scope" = "VTAPushGEMMOp" {
+                @tir.call_extern("VTAUopLoopBegin", 16, 1, 0, 16, dtype=int32)
+                @tir.call_extern("VTAUopLoopBegin", 16, 0, 1, 1, dtype=int32)
+                @tir.vta.uop_push(0, 0, 0, 0, 0, 0, 0, 0, dtype=int32)
+                @tir.call_extern("VTAUopLoopEnd", dtype=int32)
+                @tir.call_extern("VTAUopLoopEnd", dtype=int32)
+              }
+              @tir.vta.coproc_dep_push(2, 1, dtype=int32)
+            }
+          }
+          @tir.vta.coproc_dep_pop(2, 1, dtype=int32)
+          attr [IterVar(vta, (nullptr), "ThreadIndex", "vta")] "coproc_scope" = 2 {
+            attr [IterVar(vta, (nullptr), "ThreadIndex", "vta")] "coproc_uop_scope" = "VTAPushALUOp" {
+              @tir.call_extern("VTAUopLoopBegin", 16, 1, 1, 0, dtype=int32)
+              @tir.vta.uop_push(1, 0, 0, 0, 0, 3, 1, 8, dtype=int32)
+              @tir.call_extern("VTAUopLoopEnd", dtype=int32)
+            }
+            attr [IterVar(vta, (nullptr), "ThreadIndex", "vta")] "coproc_uop_scope" = "VTAPushALUOp" {
+              @tir.call_extern("VTAUopLoopBegin", 16, 1, 1, 0, dtype=int32)
+              @tir.vta.uop_push(1, 0, 0, 0, 0, 1, 1, 0, dtype=int32)
+              @tir.call_extern("VTAUopLoopEnd", dtype=int32)
+            }
+            attr [IterVar(vta, (nullptr), "ThreadIndex", "vta")] "coproc_uop_scope" = "VTAPushALUOp" {
+              @tir.call_extern("VTAUopLoopBegin", 16, 1, 1, 0, dtype=int32)
+              @tir.vta.uop_push(1, 0, 0, 0, 0, 0, 1, 127, dtype=int32)
+              @tir.call_extern("VTAUopLoopEnd", dtype=int32)
+            }
+            @tir.vta.coproc_dep_push(2, 3, dtype=int32)
+          }
+          attr [IterVar(vta, (nullptr), "ThreadIndex", "vta")] "coproc_scope" = 3 {
+            @tir.vta.coproc_dep_pop(2, 3, dtype=int32)
+            for (i1.inner: int32, 0, 16) {
+              @tir.call_extern("VTAStoreBuffer2D", @tir.tvm_thread_context(@tir.vta.command_handle(, dtype=handle), dtype=handle), i1.inner, 4, res_2, ((i1.outer*16) + i1.inner), 1, 1, 1, dtype=int32)
+            }
+            @tir.vta.coproc_dep_push(3, 2, dtype=int32)
+          }
+        }
+        @tir.vta.coproc_sync(, dtype=int32)
+        @tir.vta.coproc_dep_pop(3, 2, dtype=int32)
+      }
+    }
+
+
+
 
 
 TVM Compilation and Verification
@@ -369,7 +620,7 @@ ensure correctness.
     res_ref = res_ref.reshape(
         batch_size // env.BATCH, env.BATCH, out_channels // env.BLOCK_OUT, env.BLOCK_OUT
     ).transpose((0, 2, 1, 3))
-    np.testing.assert_equal(res_ref, res_nd.asnumpy())
+    np.testing.assert_equal(res_ref, res_nd.numpy())
 
     # Print stats
     if env.TARGET in ["sim", "tsim"]:
@@ -379,6 +630,27 @@ ensure correctness.
             print("\t{:<16}: {:>16}".format(k, v))
 
     print("Successful blocked matrix multiply test!")
+
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    Execution statistics:
+            inp_load_nbytes :             4096
+            wgt_load_nbytes :          1048576
+            acc_load_nbytes :                0
+            uop_load_nbytes :               20
+            out_store_nbytes:             1024
+            gemm_counter    :             4096
+            alu_counter     :              192
+    Successful blocked matrix multiply test!
+
 
 
 Summary

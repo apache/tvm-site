@@ -37,6 +37,11 @@ First, necessary imports
 
 
 
+
+
+
+
+
 Helper functions to run the demo
 
 
@@ -92,7 +97,12 @@ Helper functions to run the demo
 
         runtime.set_input(input_name, inp)
         runtime.run()
-        return runtime.get_output(0).asnumpy(), runtime
+        return runtime.get_output(0).numpy(), runtime
+
+
+
+
+
 
 
 
@@ -105,12 +115,38 @@ are reasonable
     synset = get_synset()
 
 
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    File /workspace/.tvm_test_data/data/imagenet1000_clsid_to_human.txt exists, skip.
+
+
+
 Everyone's favorite cat image for demonstration
 
 
 .. code-block:: default
 
     inp = get_imagenet_input()
+
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    File /workspace/.tvm_test_data/data/cat.png exists, skip.
+
 
 
 Deploy a quantized PyTorch Model
@@ -141,6 +177,11 @@ The model is per-channel quantized.
 
 
 
+
+
+
+
+
 Load quantization-ready, pretrained Mobilenet v2 model from torchvision
 -----------------------------------------------------------------------
 We choose mobilenet v2 because this model was trained with quantization aware
@@ -150,6 +191,11 @@ training. Other models require a full post training calibration.
 .. code-block:: default
 
     qmodel = qmobilenet.mobilenet_v2(pretrained=True).eval()
+
+
+
+
+
 
 
 Quantize, trace and run the PyTorch Mobilenet v2 model
@@ -166,6 +212,22 @@ on the PyTorch website to learn about quantization and jit.
 
     with torch.no_grad():
         pt_result = script_module(pt_inp).numpy()
+
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    /usr/local/lib/python3.6/dist-packages/torch/quantization/observer.py:121: UserWarning: Please use quant_min and quant_max to specify the range for observers.                     reduce_range will be deprecated in a future release of PyTorch.
+      reduce_range will be deprecated in a future release of PyTorch."
+    /usr/local/lib/python3.6/dist-packages/torch/quantization/observer.py:990: UserWarning: must run observer before calling calculate_qparams.                                    Returning default scale and zero point 
+      Returning default scale and zero point "
+
 
 
 Convert quantized Mobilenet v2 to Relay-QNN using the PyTorch frontend
@@ -189,6 +251,11 @@ qnn.quantize, qnn.dequantize, qnn.requantize, and qnn.conv2d etc.
     # print(mod) # comment in to see the QNN IR dump
 
 
+
+
+
+
+
 Compile and run the Relay module
 --------------------------------
 Once we obtained the quantized Relay module, the rest of the workflow
@@ -202,6 +269,11 @@ standard Relay operators before compilation.
 .. code-block:: default
 
     tvm_result, rt_mod = run_tvm_model(mod, params, input_name, inp, target="llvm")
+
+
+
+
+
 
 
 Compare the output labels
@@ -218,6 +290,20 @@ We should see identical labels printed.
     print("TVM top3 labels:", [synset[label] for label in tvm_top3_labels])
 
 
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    PyTorch top3 labels: ['tiger cat', 'Egyptian cat', 'tabby, tabby cat']
+    TVM top3 labels: ['tiger cat', 'Egyptian cat', 'tabby, tabby cat']
+
+
+
 However, due to the difference in numerics, in general the raw floating point
 outputs are not expected to be identical. Here, we print how many floating point
 output values are identical out of 1000 outputs from mobilenet v2.
@@ -226,6 +312,19 @@ output values are identical out of 1000 outputs from mobilenet v2.
 .. code-block:: default
 
     print("%d in 1000 raw floating outputs identical." % np.sum(tvm_result[0] == pt_result[0]))
+
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    161 in 1000 raw floating outputs identical.
+
 
 
 Measure performance
@@ -240,6 +339,19 @@ Here we give an example of how to measure performance of TVM compiled models.
     ftimer = rt_mod.module.time_evaluator("run", dev, number=1, repeat=n_repeat)
     prof_res = np.array(ftimer().results) * 1e3
     print("Elapsed average ms:", np.mean(prof_res))
+
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    Elapsed average ms: 14.218015849999999
+
 
 
 .. note::

@@ -8,18 +8,21 @@
 <html class="writer-html5" lang="en" >
 <head>
   <meta charset="utf-8">
-  
+  <meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Use Tensorize to Leverage Hardware Intrinsics &mdash; tvm 0.8.dev921+g7a063514d documentation</title>
+  <title>Use Tensorize to Leverage Hardware Intrinsics &mdash; tvm 0.8.dev0 documentation</title>
   
 
   
   <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
   <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
-  <link rel="stylesheet" href="../../_static/css/tlcpack_theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="../../_static/gallery.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/css/tlcpack_theme.css" type="text/css" />
 
   
   
@@ -32,6 +35,7 @@
   
     
       <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+        <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
         <script src="../../_static/jquery.js"></script>
         <script src="../../_static/underscore.js"></script>
         <script src="../../_static/doctools.js"></script>
@@ -165,9 +169,9 @@
           
             
             
-              <div class="version">
-                0.8.dev921+g7a063514d
-              </div>
+                <div class="version">
+                  0.8.dev0
+                </div>
             
           
 
@@ -327,7 +331,7 @@
 <p class="admonition-title">Note</p>
 <p>Click <a class="reference internal" href="#sphx-glr-download-tutorials-language-tensorize-py"><span class="std std-ref">here</span></a> to download the full example code</p>
 </div>
-<div class="sphx-glr-example-title section" id="use-tensorize-to-leverage-hardware-intrinsics">
+<section class="sphx-glr-example-title" id="use-tensorize-to-leverage-hardware-intrinsics">
 <span id="tutorials-tensorize"></span><span id="sphx-glr-tutorials-language-tensorize-py"></span><h1>Use Tensorize to Leverage Hardware Intrinsics<a class="headerlink" href="#use-tensorize-to-leverage-hardware-intrinsics" title="Permalink to this headline">¶</a></h1>
 <p><strong>Author</strong>: <a class="reference external" href="https://github.com/yzhliu">Yizhi Liu</a></p>
 <p>This is an introduction material on how to perform tensorization in TVM.</p>
@@ -345,7 +349,7 @@ and usage of tensorize instead of providing an efficient solution.</p>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 </pre></div>
 </div>
-<div class="section" id="define-matrix-multiplication">
+<section id="define-matrix-multiplication">
 <h2>Define Matrix Multiplication<a class="headerlink" href="#define-matrix-multiplication" title="Permalink to this headline">¶</a></h2>
 <p>Take matrix multiplication as our example.
 Matmul first multiply the corresponding elements between two matrix,
@@ -360,8 +364,26 @@ The following lines describe the computation <code class="code docutils literal 
 <span class="nb">print</span><span class="p">(</span><a href="../../api/python/driver.html#tvm.lower" title="View documentation for tvm.lower"><span class="n">tvm</span><span class="o">.</span><span class="n">lower</span></a><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="p">[</span><span class="n">A</span><span class="p">,</span> <span class="n">B</span><span class="p">,</span> <span class="n">C</span><span class="p">],</span> <span class="n">simple_mode</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span>
 </pre></div>
 </div>
+<p class="sphx-glr-script-out">Out:</p>
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>primfn(A_1: handle, B_1: handle, C_1: handle) -&gt; ()
+  attr = {&quot;global_symbol&quot;: &quot;main&quot;, &quot;tir.noalias&quot;: True}
+  buffers = {C: Buffer(C_2: Pointer(float32), float32, [1024, 512], []),
+             A: Buffer(A_2: Pointer(float32), float32, [1024, 64], []),
+             B: Buffer(B_2: Pointer(float32), float32, [512, 64], [])}
+  buffer_map = {A_1: A, B_1: B, C_1: C} {
+  for (i: int32, 0, 1024) {
+    for (j: int32, 0, 512) {
+      C_2[((i*512) + j)] = 0f32
+      for (k: int32, 0, 64) {
+        C_2[((i*512) + j)] = ((float32*)C_2[((i*512) + j)] + ((float32*)A_2[((i*64) + k)]*(float32*)B_2[((j*64) + k)]))
+      }
+    }
+  }
+}
+</pre></div>
 </div>
-<div class="section" id="schedule-the-matmul">
+</section>
+<section id="schedule-the-matmul">
 <h2>Schedule the Matmul<a class="headerlink" href="#schedule-the-matmul" title="Permalink to this headline">¶</a></h2>
 <p>Now, suppose we have an accelerator that supports
 matrix-vector multiplication (GEMV) as a hardware primitive,
@@ -376,6 +398,26 @@ Thus we break down the matmul loops to make the innermost loops a (16x64) GEMV.<
 <span class="nb">print</span><span class="p">(</span><a href="../../api/python/driver.html#tvm.lower" title="View documentation for tvm.lower"><span class="n">tvm</span><span class="o">.</span><span class="n">lower</span></a><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="p">[</span><span class="n">A</span><span class="p">,</span> <span class="n">B</span><span class="p">,</span> <span class="n">C</span><span class="p">],</span> <span class="n">simple_mode</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span>
 </pre></div>
 </div>
+<p class="sphx-glr-script-out">Out:</p>
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>primfn(A_1: handle, B_1: handle, C_1: handle) -&gt; ()
+  attr = {&quot;global_symbol&quot;: &quot;main&quot;, &quot;tir.noalias&quot;: True}
+  buffers = {C: Buffer(C_2: Pointer(float32), float32, [1024, 512], []),
+             A: Buffer(A_2: Pointer(float32), float32, [1024, 64], []),
+             B: Buffer(B_2: Pointer(float32), float32, [512, 64], [])}
+  buffer_map = {A_1: A, B_1: B, C_1: C} {
+  for (i: int32, 0, 1024) {
+    for (j.outer: int32, 0, 32) {
+      for (j.inner: int32, 0, 16) {
+        C_2[(((i*512) + (j.outer*16)) + j.inner)] = 0f32
+        for (k: int32, 0, 64) {
+          C_2[(((i*512) + (j.outer*16)) + j.inner)] = ((float32*)C_2[(((i*512) + (j.outer*16)) + j.inner)] + ((float32*)A_2[((i*64) + k)]*(float32*)B_2[(((j.outer*1024) + (j.inner*64)) + k)]))
+        }
+      }
+    }
+  }
+}
+</pre></div>
+</div>
 <p>As showed in the IR printed above,
 the inner loops <code class="code docutils literal notranslate"><span class="pre">j.inner</span></code> along with <code class="code docutils literal notranslate"><span class="pre">k</span></code> together form a computation of GEMV
 - within the inner most two loops, the index <code class="code docutils literal notranslate"><span class="pre">i</span></code> is fixed,
@@ -383,8 +425,8 @@ the access to the matrix <code class="code docutils literal notranslate"><span c
 which makes the access pattern of <code class="code docutils literal notranslate"><span class="pre">A</span></code> a “vector”.
 In order to leverage our hypothetical hardware’s GEMV instruction,
 we can tensorize over <code class="code docutils literal notranslate"><span class="pre">j.inner</span></code>.</p>
-</div>
-<div class="section" id="define-gemv-tensorization-intrinsic">
+</section>
+<section id="define-gemv-tensorization-intrinsic">
 <h2>Define GEMV Tensorization Intrinsic<a class="headerlink" href="#define-gemv-tensorization-intrinsic" title="Permalink to this headline">¶</a></h2>
 <p>Before scheduling the tensorization, we need to first define the intrinsic function for GEMV.
 It includes two parts, the first is a compute definition of GEMV.
@@ -444,6 +486,21 @@ such placeholder can be put to let TVM automatically bind the inferred value for
 <span class="nb">print</span><span class="p">(</span><a href="../../api/python/driver.html#tvm.lower" title="View documentation for tvm.lower"><span class="n">tvm</span><span class="o">.</span><span class="n">lower</span></a><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="p">[</span><span class="n">A</span><span class="p">,</span> <span class="n">B</span><span class="p">,</span> <span class="n">C</span><span class="p">],</span> <span class="n">simple_mode</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span>
 </pre></div>
 </div>
+<p class="sphx-glr-script-out">Out:</p>
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>primfn(A_1: handle, B_1: handle, C_1: handle) -&gt; ()
+  attr = {&quot;global_symbol&quot;: &quot;main&quot;, &quot;tir.noalias&quot;: True}
+  buffers = {C: Buffer(C_2: Pointer(float32), float32, [1024, 512], []),
+             A: Buffer(A_2: Pointer(float32), float32, [1024, 64], []),
+             B: Buffer(B_2: Pointer(float32), float32, [512, 64], [])}
+  buffer_map = {A_1: A, B_1: B, C_1: C} {
+  for (i: int32, 0, 1024) {
+    for (j.outer: int32, 0, 32) {
+      @tir.call_extern(&quot;gemv_update&quot;, @tir.tvm_access_ptr(@tir.type_annotation(, dtype=float32), C_2, ((i*512) + (j.outer*16)), 16, 2, dtype=handle), @tir.tvm_access_ptr(@tir.type_annotation(, dtype=float32), A_2, (i*64), 64, 1, dtype=handle), @tir.tvm_access_ptr(@tir.type_annotation(, dtype=float32), B_2, (j.outer*1024), 1024, 1, dtype=handle), 16, 64, 64, dtype=int32)
+    }
+  }
+}
+</pre></div>
+</div>
 <p>By tensorizing over <code class="code docutils literal notranslate"><span class="pre">yi</span></code>, the inner most two loops are
 now replaced by the intrinsic function we defined before.
 In order to build and run the module, let’s define the external function <code class="code docutils literal notranslate"><span class="pre">gemv_update</span></code>,
@@ -474,6 +531,113 @@ The importing needs to happen before the tensorized GEMV being executed.</p>
 <span class="nb">print</span><span class="p">(</span><a href="../../api/python/driver.html#tvm.lower" title="View documentation for tvm.lower"><span class="n">tvm</span><span class="o">.</span><span class="n">lower</span></a><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="p">[</span><span class="n">A</span><span class="p">,</span> <span class="n">B</span><span class="p">,</span> <span class="n">C</span><span class="p">],</span> <span class="n">simple_mode</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span>
 </pre></div>
 </div>
+<p class="sphx-glr-script-out">Out:</p>
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>primfn(A_1: handle, B_1: handle, C_1: handle) -&gt; ()
+  attr = {&quot;global_symbol&quot;: &quot;main&quot;, &quot;tir.noalias&quot;: True}
+  buffers = {A: Buffer(A_2: Pointer(float32), float32, [1024, 64], []),
+             C: Buffer(C_2: Pointer(float32), float32, [1024, 512], []),
+             B: Buffer(B_2: Pointer(float32), float32, [512, 64], [])}
+  buffer_map = {A_1: A, B_1: B, C_1: C} {
+  attr [IterVar(i: int32, (nullptr), &quot;DataPar&quot;, &quot;&quot;)] &quot;pragma_import_llvm&quot; = &quot;; ModuleID = &#39;/tmp/tmp5lqx02yg/input0.cc&#39;
+source_filename = &quot;/tmp/tmp5lqx02yg/input0.cc&quot;
+target datalayout = &quot;e-m:e-i64:64-f80:128-n8:16:32:64-S128&quot;
+target triple = &quot;x86_64-pc-linux-gnu&quot;
+
+; Function Attrs: noinline nounwind optnone uwtable
+define dso_local i32 @gemv_update(float*, float*, float*, i32, i32, i32) #0 {
+  %7 = alloca float*, align 8
+  %8 = alloca float*, align 8
+  %9 = alloca float*, align 8
+  %10 = alloca i32, align 4
+  %11 = alloca i32, align 4
+  %12 = alloca i32, align 4
+  %13 = alloca i32, align 4
+  %14 = alloca i32, align 4
+  store float* %0, float** %7, align 8
+  store float* %1, float** %8, align 8
+  store float* %2, float** %9, align 8
+  store i32 %3, i32* %10, align 4
+  store i32 %4, i32* %11, align 4
+  store i32 %5, i32* %12, align 4
+  store i32 0, i32* %13, align 4
+  br label %15
+
+15:                                               ; preds = %50, %6
+  %16 = load i32, i32* %13, align 4
+  %17 = load i32, i32* %10, align 4
+  %18 = icmp slt i32 %16, %17
+  br i1 %18, label %19, label %53
+
+19:                                               ; preds = %15
+  store i32 0, i32* %14, align 4
+  br label %20
+
+20:                                               ; preds = %46, %19
+  %21 = load i32, i32* %14, align 4
+  %22 = load i32, i32* %11, align 4
+  %23 = icmp slt i32 %21, %22
+  br i1 %23, label %24, label %49
+
+24:                                               ; preds = %20
+  %25 = load float*, float** %8, align 8
+  %26 = load i32, i32* %14, align 4
+  %27 = sext i32 %26 to i64
+  %28 = getelementptr inbounds float, float* %25, i64 %27
+  %29 = load float, float* %28, align 4
+  %30 = load float*, float** %9, align 8
+  %31 = load i32, i32* %13, align 4
+  %32 = load i32, i32* %12, align 4
+  %33 = mul nsw i32 %31, %32
+  %34 = load i32, i32* %14, align 4
+  %35 = add nsw i32 %33, %34
+  %36 = sext i32 %35 to i64
+  %37 = getelementptr inbounds float, float* %30, i64 %36
+  %38 = load float, float* %37, align 4
+  %39 = fmul float %29, %38
+  %40 = load float*, float** %7, align 8
+  %41 = load i32, i32* %13, align 4
+  %42 = sext i32 %41 to i64
+  %43 = getelementptr inbounds float, float* %40, i64 %42
+  %44 = load float, float* %43, align 4
+  %45 = fadd float %44, %39
+  store float %45, float* %43, align 4
+  br label %46
+
+46:                                               ; preds = %24
+  %47 = load i32, i32* %14, align 4
+  %48 = add nsw i32 %47, 1
+  store i32 %48, i32* %14, align 4
+  br label %20
+
+49:                                               ; preds = %20
+  br label %50
+
+50:                                               ; preds = %49
+  %51 = load i32, i32* %13, align 4
+  %52 = add nsw i32 %51, 1
+  store i32 %52, i32* %13, align 4
+  br label %15
+
+53:                                               ; preds = %15
+  ret i32 0
+}
+
+attributes #0 = { noinline nounwind optnone uwtable &quot;correctly-rounded-divide-sqrt-fp-math&quot;=&quot;false&quot; &quot;disable-tail-calls&quot;=&quot;false&quot; &quot;less-precise-fpmad&quot;=&quot;false&quot; &quot;min-legal-vector-width&quot;=&quot;0&quot; &quot;no-frame-pointer-elim&quot;=&quot;true&quot; &quot;no-frame-pointer-elim-non-leaf&quot; &quot;no-infs-fp-math&quot;=&quot;false&quot; &quot;no-jump-tables&quot;=&quot;false&quot; &quot;no-nans-fp-math&quot;=&quot;false&quot; &quot;no-signed-zeros-fp-math&quot;=&quot;false&quot; &quot;no-trapping-math&quot;=&quot;false&quot; &quot;stack-protector-buffer-size&quot;=&quot;8&quot; &quot;target-cpu&quot;=&quot;x86-64&quot; &quot;target-features&quot;=&quot;+cx8,+fxsr,+mmx,+sse,+sse2,+x87&quot; &quot;unsafe-fp-math&quot;=&quot;false&quot; &quot;use-soft-float&quot;=&quot;false&quot; }
+
+!llvm.module.flags = !{!0}
+!llvm.ident = !{!1}
+
+!0 = !{i32 1, !&quot;wchar_size&quot;, i32 4}
+!1 = !{!&quot;clang version 9.0.0-2~ubuntu18.04.2 (tags/RELEASE_900/final)&quot;}
+&quot;;
+  for (i, 0, 1024) {
+    for (j.outer: int32, 0, 32) {
+      @tir.call_extern(&quot;gemv_update&quot;, @tir.tvm_access_ptr(@tir.type_annotation(, dtype=float32), C_2, ((i*512) + (j.outer*16)), 16, 2, dtype=handle), @tir.tvm_access_ptr(@tir.type_annotation(, dtype=float32), A_2, (i*64), 64, 1, dtype=handle), @tir.tvm_access_ptr(@tir.type_annotation(, dtype=float32), B_2, (j.outer*1024), 1024, 1, dtype=handle), 16, 64, 64, dtype=int32)
+    }
+  }
+}
+</pre></div>
+</div>
 <p>Finally we compare the tensorize version with that <code class="code docutils literal notranslate"><span class="pre">numpy.dot</span></code> produces,
 ensure our implementation is correct.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">func</span> <span class="o">=</span> <a href="../../api/python/driver.html#tvm.build" title="View documentation for tvm.build"><span class="n">tvm</span><span class="o">.</span><span class="n">build</span></a><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="p">[</span><span class="n">A</span><span class="p">,</span> <span class="n">B</span><span class="p">,</span> <span class="n">C</span><span class="p">],</span> <span class="n">target</span><span class="o">=</span><span class="s2">&quot;llvm&quot;</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;gemv&quot;</span><span class="p">)</span>
@@ -486,11 +650,11 @@ ensure our implementation is correct.</p>
 <span class="n">b</span> <span class="o">=</span> <a href="https://numpy.org/doc/stable/reference/random/generated/numpy.random.uniform.html#numpy.random.uniform" title="View documentation for numpy.random.uniform"><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span></a><span class="p">(</span><span class="n">size</span><span class="o">=</span><a href="../../api/python/topi.html#tvm.topi.get_const_tuple" title="View documentation for tvm.topi.utils.get_const_tuple"><span class="n">get_const_tuple</span></a><span class="p">(</span><span class="n">B</span><span class="o">.</span><span class="n">shape</span><span class="p">))</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">dtype</span><span class="p">)</span>
 <span class="n">c</span> <span class="o">=</span> <a href="../../api/python/ndarray.html#tvm.nd.array" title="View documentation for tvm.nd.array"><span class="n">tvm</span><span class="o">.</span><span class="n">nd</span><span class="o">.</span><span class="n">array</span></a><span class="p">(</span><a href="https://numpy.org/doc/stable/reference/generated/numpy.zeros.html#numpy.zeros" title="View documentation for numpy.zeros"><span class="n">np</span><span class="o">.</span><span class="n">zeros</span></a><span class="p">(</span><a href="../../api/python/topi.html#tvm.topi.get_const_tuple" title="View documentation for tvm.topi.utils.get_const_tuple"><span class="n">get_const_tuple</span></a><span class="p">(</span><span class="n">C</span><span class="o">.</span><span class="n">shape</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">),</span> <span class="n">dev</span><span class="p">)</span>
 <span class="n">func</span><span class="p">(</span><a href="../../api/python/ndarray.html#tvm.nd.array" title="View documentation for tvm.nd.array"><span class="n">tvm</span><span class="o">.</span><span class="n">nd</span><span class="o">.</span><span class="n">array</span></a><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">dev</span><span class="p">),</span> <a href="../../api/python/ndarray.html#tvm.nd.array" title="View documentation for tvm.nd.array"><span class="n">tvm</span><span class="o">.</span><span class="n">nd</span><span class="o">.</span><span class="n">array</span></a><span class="p">(</span><span class="n">b</span><span class="p">,</span> <span class="n">dev</span><span class="p">),</span> <span class="n">c</span><span class="p">)</span>
-<span class="n">tvm</span><span class="o">.</span><span class="n">testing</span><span class="o">.</span><span class="n">assert_allclose</span><span class="p">(</span><span class="n">c</span><span class="o">.</span><span class="n">asnumpy</span><span class="p">(),</span> <a href="https://numpy.org/doc/stable/reference/generated/numpy.dot.html#numpy.dot" title="View documentation for numpy.dot"><span class="n">np</span><span class="o">.</span><span class="n">dot</span></a><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="o">.</span><span class="n">T</span><span class="p">),</span> <span class="n">rtol</span><span class="o">=</span><span class="mf">1e-3</span><span class="p">)</span>
+<span class="n">tvm</span><span class="o">.</span><span class="n">testing</span><span class="o">.</span><span class="n">assert_allclose</span><span class="p">(</span><span class="n">c</span><span class="o">.</span><span class="n">numpy</span><span class="p">(),</span> <a href="https://numpy.org/doc/stable/reference/generated/numpy.dot.html#numpy.dot" title="View documentation for numpy.dot"><span class="n">np</span><span class="o">.</span><span class="n">dot</span></a><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="o">.</span><span class="n">T</span><span class="p">),</span> <span class="n">rtol</span><span class="o">=</span><span class="mf">1e-3</span><span class="p">)</span>
 </pre></div>
 </div>
-</div>
-<div class="section" id="reduce-update-for-tensorize">
+</section>
+<section id="reduce-update-for-tensorize">
 <h2>Reduce-update for Tensorize<a class="headerlink" href="#reduce-update-for-tensorize" title="Permalink to this headline">¶</a></h2>
 <p>So far you have learned the basic idea of tensorize,
 now let’s move one step forward to a more complicated case.</p>
@@ -592,11 +756,11 @@ due to the tiling.</p>
 <span class="n">b</span> <span class="o">=</span> <a href="https://numpy.org/doc/stable/reference/random/generated/numpy.random.uniform.html#numpy.random.uniform" title="View documentation for numpy.random.uniform"><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span></a><span class="p">(</span><span class="n">size</span><span class="o">=</span><a href="../../api/python/topi.html#tvm.topi.get_const_tuple" title="View documentation for tvm.topi.utils.get_const_tuple"><span class="n">get_const_tuple</span></a><span class="p">(</span><span class="n">B</span><span class="o">.</span><span class="n">shape</span><span class="p">))</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">dtype</span><span class="p">)</span>
 <span class="n">c</span> <span class="o">=</span> <a href="../../api/python/ndarray.html#tvm.nd.array" title="View documentation for tvm.nd.array"><span class="n">tvm</span><span class="o">.</span><span class="n">nd</span><span class="o">.</span><span class="n">array</span></a><span class="p">(</span><a href="https://numpy.org/doc/stable/reference/generated/numpy.zeros.html#numpy.zeros" title="View documentation for numpy.zeros"><span class="n">np</span><span class="o">.</span><span class="n">zeros</span></a><span class="p">(</span><a href="../../api/python/topi.html#tvm.topi.get_const_tuple" title="View documentation for tvm.topi.utils.get_const_tuple"><span class="n">get_const_tuple</span></a><span class="p">(</span><span class="n">C</span><span class="o">.</span><span class="n">shape</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">),</span> <span class="n">dev</span><span class="p">)</span>
 <span class="n">func</span><span class="p">(</span><a href="../../api/python/ndarray.html#tvm.nd.array" title="View documentation for tvm.nd.array"><span class="n">tvm</span><span class="o">.</span><span class="n">nd</span><span class="o">.</span><span class="n">array</span></a><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">dev</span><span class="p">),</span> <a href="../../api/python/ndarray.html#tvm.nd.array" title="View documentation for tvm.nd.array"><span class="n">tvm</span><span class="o">.</span><span class="n">nd</span><span class="o">.</span><span class="n">array</span></a><span class="p">(</span><span class="n">b</span><span class="p">,</span> <span class="n">dev</span><span class="p">),</span> <span class="n">c</span><span class="p">)</span>
-<span class="n">tvm</span><span class="o">.</span><span class="n">testing</span><span class="o">.</span><span class="n">assert_allclose</span><span class="p">(</span><span class="n">c</span><span class="o">.</span><span class="n">asnumpy</span><span class="p">(),</span> <a href="https://numpy.org/doc/stable/reference/generated/numpy.dot.html#numpy.dot" title="View documentation for numpy.dot"><span class="n">np</span><span class="o">.</span><span class="n">dot</span></a><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="o">.</span><span class="n">T</span><span class="p">),</span> <span class="n">rtol</span><span class="o">=</span><span class="mf">1e-3</span><span class="p">)</span>
+<span class="n">tvm</span><span class="o">.</span><span class="n">testing</span><span class="o">.</span><span class="n">assert_allclose</span><span class="p">(</span><span class="n">c</span><span class="o">.</span><span class="n">numpy</span><span class="p">(),</span> <a href="https://numpy.org/doc/stable/reference/generated/numpy.dot.html#numpy.dot" title="View documentation for numpy.dot"><span class="n">np</span><span class="o">.</span><span class="n">dot</span></a><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="o">.</span><span class="n">T</span><span class="p">),</span> <span class="n">rtol</span><span class="o">=</span><span class="mf">1e-3</span><span class="p">)</span>
 </pre></div>
 </div>
-</div>
-<div class="section" id="summary">
+</section>
+<section id="summary">
 <h2>Summary<a class="headerlink" href="#summary" title="Permalink to this headline">¶</a></h2>
 <p>This tutorial demonstrates the usage of tensorize intrinsic in TVM.
 Tensorize provides a way for users to get fully optimized schedule via micro-kernels.
@@ -615,8 +779,8 @@ which helps users inject asm easily into the schedule.</p>
 </div>
 </div>
 <p class="sphx-glr-signature"><a class="reference external" href="https://sphinx-gallery.github.io">Gallery generated by Sphinx-Gallery</a></p>
-</div>
-</div>
+</section>
+</section>
 
 
            </div>
@@ -659,7 +823,6 @@ which helps users inject asm easily into the schedule.</p>
 
   </div>
   
-
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>

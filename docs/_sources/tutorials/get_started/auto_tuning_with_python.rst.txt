@@ -57,6 +57,11 @@ Graph Executor.
     from tvm.contrib import graph_executor
 
 
+
+
+
+
+
 Downloading and Loading the ONNX Model
 --------------------------------------
 
@@ -94,6 +99,19 @@ then load it into memory using the ONNX runtime.
 
     model_path = download_testdata(model_url, "resnet50-v2-7.onnx", module="onnx")
     onnx_model = onnx.load(model_path)
+
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    File /workspace/.tvm_test_data/onnx/resnet50-v2-7.onnx exists, skip.
+
 
 
 Downloading, Preprocessing, and Loading the Test Image
@@ -137,6 +155,19 @@ Download the image data, then convert it to a numpy array to use as an input to 
     img_data = np.expand_dims(norm_img_data, axis=0)
 
 
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    File /workspace/.tvm_test_data/data/imagenet_cat.png exists, skip.
+
+
+
 Compile the Model With Relay
 ----------------------------
 
@@ -150,6 +181,11 @@ runtime module from the library.
 
 
     target = "llvm"
+
+
+
+
+
 
 
 .. note:: Defining the Correct Target
@@ -184,6 +220,19 @@ runtime module from the library.
     module = graph_executor.GraphModule(lib["default"](dev))
 
 
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    ...47%, 0.01 MB, 483 KB/s, 0 seconds passed    ...94%, 0.02 MB, 947 KB/s, 0 seconds passed    ...100%, 0.02 MB, 1404 KB/s, 0 seconds passed
+
+
+
 Execute on the TVM Runtime
 --------------------------
 Now that we've compiled the model, we can use the TVM runtime to make
@@ -201,7 +250,12 @@ need two things:
     module.set_input(input_name, img_data)
     module.run()
     output_shape = (1, 1000)
-    tvm_output = module.get_output(0, tvm.nd.empty(output_shape)).asnumpy()
+    tvm_output = module.get_output(0, tvm.nd.empty(output_shape)).numpy()
+
+
+
+
+
 
 
 Collect Basic Performance Data
@@ -233,6 +287,19 @@ standard deviation.
     print(unoptimized)
 
 
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    {'mean': 84.46302120108157, 'median': 84.24859350197949, 'std': 0.5331460822777307}
+
+
+
 Postprocess the output
 ----------------------
 
@@ -262,6 +329,24 @@ for the model.
     ranks = np.argsort(scores)[::-1]
     for rank in ranks[0:5]:
         print("class='%s' with probability=%f" % (labels[rank], scores[rank]))
+
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    File /workspace/.tvm_test_data/data/synset.txt exists, skip.
+    class='n02123045 tabby, tabby cat' with probability=0.610552
+    class='n02123159 tiger cat' with probability=0.367179
+    class='n02124075 Egyptian cat' with probability=0.019365
+    class='n02129604 tiger, Panthera tigris' with probability=0.001273
+    class='n04040759 radiator' with probability=0.000261
+
 
 
 This should produce the following output:
@@ -355,6 +440,11 @@ In the simplest form, tuning requires you to provide three things:
     }
 
 
+
+
+
+
+
 .. note:: Defining the Tuning Search Algorithm
 
   By default this search is guided using an `XGBoost Grid` algorithm.
@@ -389,6 +479,43 @@ In the simplest form, tuning requires you to provide three things:
                 autotvm.callback.log_to_file(tuning_option["tuning_records"]),
             ],
         )
+
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    [Task  1/25]  Current/Best:    0.00/   0.00 GFLOPS | Progress: (0/10) | 0.00 s    [Task  1/25]  Current/Best:   30.75/  68.58 GFLOPS | Progress: (10/10) | 12.72 s Done.
+    [Task  2/25]  Current/Best:    0.00/   0.00 GFLOPS | Progress: (0/10) | 0.00 s    [Task  2/25]  Current/Best:    5.63/  48.86 GFLOPS | Progress: (10/10) | 12.70 s Done.
+    [Task  3/25]  Current/Best:    0.00/   0.00 GFLOPS | Progress: (0/10) | 0.00 s    [Task  3/25]  Current/Best:   56.34/  69.89 GFLOPS | Progress: (10/10) | 4.08 s Done.
+    [Task  4/25]  Current/Best:    0.00/   0.00 GFLOPS | Progress: (0/10) | 0.00 s    [Task  4/25]  Current/Best:   35.63/  99.00 GFLOPS | Progress: (10/10) | 4.33 s Done.
+    [Task  5/25]  Current/Best:    0.00/   0.00 GFLOPS | Progress: (0/10) | 0.00 s    [Task  5/25]  Current/Best:   73.77/  73.77 GFLOPS | Progress: (10/10) | 4.04 s Done.
+    [Task  6/25]  Current/Best:    0.00/   0.00 GFLOPS | Progress: (0/10) | 0.00 s    [Task  6/25]  Current/Best:   56.33/ 101.07 GFLOPS | Progress: (10/10) | 4.78 s Done.
+    [Task  7/25]  Current/Best:    0.00/   0.00 GFLOPS | Progress: (0/10) | 0.00 s    [Task  7/25]  Current/Best:   77.71/  91.40 GFLOPS | Progress: (10/10) | 6.37 s Done.
+    [Task  8/25]  Current/Best:    0.00/   0.00 GFLOPS | Progress: (0/10) | 0.00 s    [Task  8/25]  Current/Best:   41.30/  71.79 GFLOPS | Progress: (10/10) | 5.31 s Done.
+    [Task  9/25]  Current/Best:    0.00/   0.00 GFLOPS | Progress: (0/10) | 0.00 s    [Task  9/25]  Current/Best:   56.41/  98.42 GFLOPS | Progress: (10/10) | 4.44 s Done.
+    [Task 10/25]  Current/Best:    0.00/   0.00 GFLOPS | Progress: (0/10) | 0.00 s    [Task 10/25]  Current/Best:   50.77/  78.14 GFLOPS | Progress: (10/10) | 3.86 s Done.
+    [Task 11/25]  Current/Best:    0.00/   0.00 GFLOPS | Progress: (0/10) | 0.00 s    [Task 11/25]  Current/Best:   71.29/ 104.68 GFLOPS | Progress: (10/10) | 4.66 s Done.
+    [Task 12/25]  Current/Best:    0.00/   0.00 GFLOPS | Progress: (0/10) | 0.00 s    [Task 12/25]  Current/Best:   47.92/  86.42 GFLOPS | Progress: (10/10) | 3.63 s Done.
+    [Task 13/25]  Current/Best:    0.00/   0.00 GFLOPS | Progress: (0/10) | 0.00 s    [Task 13/25]  Current/Best:   44.70/  58.88 GFLOPS | Progress: (10/10) | 12.93 s Done.
+    [Task 14/25]  Current/Best:    0.00/   0.00 GFLOPS | Progress: (0/10) | 0.00 s    [Task 14/25]  Current/Best:   76.40/ 109.70 GFLOPS | Progress: (10/10) | 3.68 s Done.
+    [Task 15/25]  Current/Best:    0.00/   0.00 GFLOPS | Progress: (0/10) | 0.00 s    [Task 15/25]  Current/Best:   73.47/  73.47 GFLOPS | Progress: (10/10) | 4.28 s Done.
+    [Task 16/25]  Current/Best:    0.00/   0.00 GFLOPS | Progress: (0/10) | 0.00 s    [Task 16/25]  Current/Best:   63.63/  90.05 GFLOPS | Progress: (10/10) | 4.25 s Done.
+    [Task 17/25]  Current/Best:    0.00/   0.00 GFLOPS | Progress: (0/10) | 0.00 s    [Task 17/25]  Current/Best:   77.19/  81.97 GFLOPS | Progress: (10/10) | 5.67 s Done.
+    [Task 18/25]  Current/Best:    0.00/   0.00 GFLOPS | Progress: (0/10) | 0.00 s    [Task 18/25]  Current/Best:   56.11/  69.52 GFLOPS | Progress: (10/10) | 12.79 s Done.
+    [Task 19/25]  Current/Best:    0.00/   0.00 GFLOPS | Progress: (0/10) | 0.00 s    [Task 19/25]  Current/Best:   38.56/ 106.38 GFLOPS | Progress: (10/10) | 4.07 s Done.
+    [Task 20/25]  Current/Best:    0.00/   0.00 GFLOPS | Progress: (0/10) | 0.00 s    [Task 20/25]  Current/Best:   57.57/  58.49 GFLOPS | Progress: (10/10) | 3.58 s Done.
+    [Task 21/25]  Current/Best:    0.00/   0.00 GFLOPS | Progress: (0/10) | 0.00 s    [Task 21/25]  Current/Best:   48.15/  49.04 GFLOPS | Progress: (10/10) | 3.72 s Done.
+    [Task 22/25]  Current/Best:    0.00/   0.00 GFLOPS | Progress: (0/10) | 0.00 s    [Task 22/25]  Current/Best:   55.31/  89.96 GFLOPS | Progress: (10/10) | 4.68 s Done.
+    [Task 23/25]  Current/Best:    0.00/   0.00 GFLOPS | Progress: (0/10) | 0.00 s    [Task 23/25]  Current/Best:   27.84/ 106.65 GFLOPS | Progress: (10/10) | 3.86 s Done.
+    [Task 24/25]  Current/Best:    0.00/   0.00 GFLOPS | Progress: (0/10) | 0.00 s    [Task 24/25]  Current/Best:   84.77/  84.77 GFLOPS | Progress: (10/10) | 8.54 s Done.
+    [Task 25/25]  Current/Best:    0.00/   0.00 GFLOPS | Progress: (0/10) | 0.00 s    [Task 25/25]  Current/Best:   71.96/ 107.68 GFLOPS | Progress: (10/10) | 6.63 s Done.
+
 
 
 The output from this tuning process will look something like this:
@@ -443,6 +570,11 @@ model using optimized operators to speed up our computations.
     module = graph_executor.GraphModule(lib["default"](dev))
 
 
+
+
+
+
+
 Verify that the optimized model runs and produces the same results:
 
 
@@ -453,7 +585,7 @@ Verify that the optimized model runs and produces the same results:
     module.set_input(input_name, img_data)
     module.run()
     output_shape = (1, 1000)
-    tvm_output = module.get_output(0, tvm.nd.empty(output_shape)).asnumpy()
+    tvm_output = module.get_output(0, tvm.nd.empty(output_shape)).numpy()
 
     scores = softmax(tvm_output)
     scores = np.squeeze(scores)
@@ -470,6 +602,23 @@ Verify that the optimized model runs and produces the same results:
     #   # class='n02124075 Egyptian cat' with probability=0.019365
     #   # class='n02129604 tiger, Panthera tigris' with probability=0.001273
     #   # class='n04040759 radiator' with probability=0.000261
+
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    class='n02123045 tabby, tabby cat' with probability=0.610551
+    class='n02123159 tiger cat' with probability=0.367181
+    class='n02124075 Egyptian cat' with probability=0.019365
+    class='n02129604 tiger, Panthera tigris' with probability=0.001273
+    class='n04040759 radiator' with probability=0.000261
+
 
 
 Comparing the Tuned and Untuned Models
@@ -499,10 +648,24 @@ improvement in comparing the optimized model to the unoptimized model.
     print("unoptimized: %s" % (unoptimized))
 
 
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    optimized: {'mean': 82.90143675054424, 'median': 82.53361214883626, 'std': 2.258990517555402}
+    unoptimized: {'mean': 84.46302120108157, 'median': 84.24859350197949, 'std': 0.5331460822777307}
+
+
+
 Final Remarks
 -------------
 
-In this tutorial, we we gave a short example of how to use the TVM Python API
+In this tutorial, we gave a short example of how to use the TVM Python API
 to compile, run, and tune a model. We also discussed the need for pre and
 post-processing of inputs and outputs. After the tuning process, we
 demonstrated how to compare the performance of the unoptimized and optimize
@@ -511,6 +674,11 @@ models.
 Here we presented a simple example using ResNet 50 V2 locally. However, TVM
 supports many more features including cross-compilation, remote execution and
 profiling/benchmarking.
+
+
+.. rst-class:: sphx-glr-timing
+
+   **Total running time of the script:** ( 3 minutes  26.284 seconds)
 
 
 .. _sphx_glr_download_tutorials_get_started_auto_tuning_with_python.py:

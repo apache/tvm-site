@@ -8,18 +8,21 @@
 <html class="writer-html5" lang="en" >
 <head>
   <meta charset="utf-8">
-  
+  <meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>TVM Runtime System &mdash; tvm 0.8.dev921+g7a063514d documentation</title>
+  <title>TVM Runtime System &mdash; tvm 0.8.dev0 documentation</title>
   
 
   
   <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
   <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
-  <link rel="stylesheet" href="../_static/css/tlcpack_theme.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="../_static/gallery.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../_static/css/tlcpack_theme.css" type="text/css" />
 
   
   
@@ -32,6 +35,7 @@
   
     
       <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+        <script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
         <script src="../_static/jquery.js"></script>
         <script src="../_static/underscore.js"></script>
         <script src="../_static/doctools.js"></script>
@@ -42,7 +46,7 @@
     <script type="text/javascript" src="../_static/js/tlcpack_theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="Debugger" href="debugger.html" />
+    <link rel="next" title="Vulkan Runtime" href="runtimes/vulkan.html" />
     <link rel="prev" title="Design and Architecture" href="index.html" /> 
 </head>
 
@@ -165,9 +169,9 @@
           
             
             
-              <div class="version">
-                0.8.dev921+g7a063514d
-              </div>
+                <div class="version">
+                  0.8.dev0
+                </div>
             
           
 
@@ -231,6 +235,10 @@
 <li class="toctree-l4"><a class="reference internal" href="#remote-deployment">Remote Deployment</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#tvm-object-and-compiler-stack">TVM Object and Compiler Stack</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#implementation-details">Implementation Details</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#runtime-specific-information">Runtime-Specific Information</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="runtimes/vulkan.html">Vulkan Runtime</a></li>
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="debugger.html">Debugger</a></li>
@@ -337,7 +345,7 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <div class="section" id="tvm-runtime-system">
+  <section id="tvm-runtime-system">
 <span id="id1"></span><h1>TVM Runtime System<a class="headerlink" href="#tvm-runtime-system" title="Permalink to this headline">¶</a></h1>
 <p>TVM supports multiple programming languages for the compiler stack development and deployment.
 In this note, we explain the key elements of the TVM runtime.</p>
@@ -353,10 +361,12 @@ In this note, we explain the key elements of the TVM runtime.</p>
 </ul>
 <p>We want to be able to define a function from any language and call from another.
 We also want the runtime core to be minimal to deploy to embedded devices.</p>
-<div class="section" id="packedfunc">
+<section id="packedfunc">
 <span id="tvm-runtime-system-packed-func"></span><h2>PackedFunc<a class="headerlink" href="#packedfunc" title="Permalink to this headline">¶</a></h2>
-<p><a class="reference external" href="https://github.com/apache/tvm/blob/main/include/tvm/runtime/packed_func.h">PackedFunc</a> is a simple but elegant solution
-we find to solve the challenges listed. The following code block provides an example in C++</p>
+<p><a class="reference external" href="https://github.com/apache/tvm/blob/main/include/tvm/runtime/packed_func.h">PackedFunc</a> is a simple but elegant solution we find to solve the
+challenges listed.  A single <code class="docutils literal notranslate"><span class="pre">PackedFunc</span></code> object represents a
+function call whose caller and callee may be in different languages.</p>
+<p>The following code block provides an example in C++</p>
 <div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="cp">#include</span> <span class="cpf">&lt;tvm/runtime/packed_func.h&gt;</span><span class="cp"></span>
 
 <span class="kt">void</span> <span class="nf">MyAdd</span><span class="p">(</span><span class="n">TVMArgs</span> <span class="n">args</span><span class="p">,</span> <span class="n">TVMRetValue</span><span class="o">*</span> <span class="n">rv</span><span class="p">)</span> <span class="p">{</span>
@@ -433,16 +443,16 @@ which allows us to embed the PackedFunc into any languages. Besides python, so f
 This philosophy of embedded API is very like Lua, except that we don’t have a new language but use C++.</p>
 <p>One fun fact about PackedFunc is that we use it for both compiler and deployment stack.</p>
 <ul class="simple">
-<li><p>All compiler pass functions of TVM are exposed to frontend as PackedFunc, see <a class="reference external" href="https://github.com/apache/tvm/tree/main/src/api">here</a></p></li>
+<li><p>All compiler pass functions of TVM are exposed to frontend as PackedFunc</p></li>
 <li><p>The compiled module also returns the compiled function as PackedFunc</p></li>
 </ul>
 <p>To keep the runtime minimum, we isolated the IR Object support from the deployment runtime. The resulting runtime takes around 200K - 600K depending on how many runtime driver modules (e.g., CUDA) get included.</p>
 <p>The overhead of calling into PackedFunc vs. a normal function is small, as it is only saving a few values on the stack.
 So it is OK as long as we don’t wrap small functions.
 In summary, the PackedFunc is the universal glue in TVM where we use it extensively to support our compiler and deployment.</p>
-</div>
-<div class="section" id="module">
-<h2>Module<a class="headerlink" href="#module" title="Permalink to this headline">¶</a></h2>
+</section>
+<section id="module">
+<span id="tvm-runtime-system-module"></span><h2>Module<a class="headerlink" href="#module" title="Permalink to this headline">¶</a></h2>
 <p>Since TVM supports multiple types of devices, we need to support different type of drivers.
 We have to use the driver API to load the kernel, set up the argument in packed format and perform kernel launch.
 We also need to patch up the driver API so that the exposed functions are threadsafe.
@@ -454,8 +464,8 @@ The generated compiled code can dynamically get function from Module in runtime.
 <p>The ModuleNode is an abstract class that can be implemented by each type of device.
 So far we support modules for CUDA, Metal, OpenCL and loading dynamic shared libraries. This abstraction makes introduction
 of new device easy, and we do not need to redo the host code generation for each type of device.</p>
-</div>
-<div class="section" id="remote-deployment">
+</section>
+<section id="remote-deployment">
 <h2>Remote Deployment<a class="headerlink" href="#remote-deployment" title="Permalink to this headline">¶</a></h2>
 <p>The PackedFunc and Module system also makes it easy to ship the function into remote devices directly.
 Under the hood, we have an RPCModule that serializes the arguments to do the data movement and launches the computation on the remote.</p>
@@ -464,8 +474,8 @@ Under the hood, we have an RPCModule that serializes the arguments to do the dat
 RPC server on iPhone/android/raspberry pi or even the browser. The cross compilation on server and shipping of the module for testing can be done in the same script. Checkout
 <a class="reference internal" href="../tutorials/get_started/cross_compilation_and_rpc.html#tutorial-cross-compilation-and-rpc"><span class="std std-ref">Cross Compilation and RPC</span></a> for more details.</p>
 <p>This instant feedback gives us a lot of advantages. For example, to test the correctness of generated code on iPhone, we no longer have to write test-cases in swift/objective-c from scratch – We can use RPC to execute on iPhone, copy the result back and do verification on the host via numpy. We can also do the profiling using the same script.</p>
-</div>
-<div class="section" id="tvm-object-and-compiler-stack">
+</section>
+<section id="tvm-object-and-compiler-stack">
 <h2>TVM Object and Compiler Stack<a class="headerlink" href="#tvm-object-and-compiler-stack" title="Permalink to this headline">¶</a></h2>
 <p>As we mentioned earlier, we build compiler stack API on top of the PackedFunc runtime system.
 We faced a constant changing of the compiler API for the need of research. We need a new language object or IR node whenever we want to test out new primitives.
@@ -543,10 +553,10 @@ For example, in the following code, we accessed the op field of the TensorNode.<
 Note that this is not the fastest way to expose members to front-end language, but might be one of the simplest
 approaches possible. We also find that it fits our purposes as we mainly use python for testing and prototyping and still use c++
 to do the heavy lifting job.</p>
-</div>
-<div class="section" id="implementation-details">
+</section>
+<section id="implementation-details">
 <h2>Implementation Details<a class="headerlink" href="#implementation-details" title="Permalink to this headline">¶</a></h2>
-<p>Each argument in PackedFunc contains a union value <a class="reference external" href="https://github.com/apache/tvm/blob/main/include/tvm/runtime/c_runtime_api.h#L122">TVMValue</a>
+<p>Each argument in PackedFunc contains a union value <a class="reference external" href="https://github.com/apache/tvm/blob/main/include/tvm/runtime/c_runtime_api.h#L135">TVMValue</a>
 and a type code. This design allows the dynamically typed language to convert to the corresponding type directly, and statically typed language to
 do runtime type checking during conversion.</p>
 <p>The relevant files are</p>
@@ -556,8 +566,16 @@ do runtime type checking during conversion.</p>
 </ul>
 <p>To support extension types, we used a registry system to register type related information, like support of any
 in C++, see <a class="reference external" href="https://github.com/apache/tvm/tree/main/apps/extension">Extension types</a> for more details.</p>
+</section>
+</section>
+<section id="runtime-specific-information">
+<h1>Runtime-Specific Information<a class="headerlink" href="#runtime-specific-information" title="Permalink to this headline">¶</a></h1>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="runtimes/vulkan.html">Vulkan Runtime</a></li>
+</ul>
 </div>
-</div>
+</section>
 
 
            </div>
@@ -569,7 +587,7 @@ in C++, see <a class="reference external" href="https://github.com/apache/tvm/tr
 
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="debugger.html" class="btn btn-neutral float-right" title="Debugger" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+        <a href="runtimes/vulkan.html" class="btn btn-neutral float-right" title="Vulkan Runtime" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
         <a href="index.html" class="btn btn-neutral float-left" title="Design and Architecture" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
@@ -600,7 +618,6 @@ in C++, see <a class="reference external" href="https://github.com/apache/tvm/tr
 
   </div>
   
-
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>

@@ -47,6 +47,11 @@ Please refer to https://www.tensorflow.org/install
     image_url = os.path.join(repo_base, img_name)
 
 
+
+
+
+
+
 Tutorials
 ---------
 Please refer docs/frontend/tensorflow.md for more details for various models
@@ -71,10 +76,15 @@ from tensorflow.
     # Use these commented settings to build for cuda.
     # target = tvm.target.Target("cuda", host="llvm")
     # layout = "NCHW"
-    # dev = tvm.gpu(0)
+    # dev = tvm.cuda(0)
     target = tvm.target.Target("llvm", host="llvm")
     layout = None
     dev = tvm.cpu(0)
+
+
+
+
+
 
 
 Download required files
@@ -90,6 +100,22 @@ Download files listed above.
     model_path = download_testdata(model_url, model_name, module=["tf", "InceptionV1"])
     map_proto_path = download_testdata(map_proto_url, map_proto, module="data")
     label_path = download_testdata(label_map_url, label_map, module="data")
+
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    File /workspace/.tvm_test_data/data/elephant-299.jpg exists, skip.
+    File /workspace/.tvm_test_data/tf/InceptionV1/classify_image_graph_def-with_shapes.pb exists, skip.
+    File /workspace/.tvm_test_data/data/imagenet_2012_challenge_label_map_proto.pbtxt exists, skip.
+    File /workspace/.tvm_test_data/data/imagenet_synset_to_human_label_map.txt exists, skip.
+
 
 
 Import model
@@ -109,6 +135,11 @@ Creates tensorflow graph definition from protobuf file.
         # Add shapes to the graph.
         with tf_compat_v1.Session() as sess:
             graph_def = tf_testing.AddShapesToGraphDef(sess, "softmax")
+
+
+
+
+
 
 
 Decode image
@@ -131,6 +162,11 @@ Decode image
     x = np.array(image)
 
 
+
+
+
+
+
 Import the graph to Relay
 -------------------------
 Import tensorflow graph definition to relay frontend.
@@ -148,6 +184,23 @@ Results:
 
     print("Tensorflow protobuf imported to relay frontend.")
 
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    /workspace/docs/../python/tvm/relay/frontend/tensorflow.py:3482: UserWarning: Ignore the passed shape. Shape in graphdef will be used for operator DecodeJpeg/contents.
+      "will be used for operator %s." % node.name
+    /workspace/docs/../python/tvm/relay/frontend/tensorflow.py:1002: UserWarning: DecodeJpeg: It's a pass through, please handle preprocessing before input
+      warnings.warn("DecodeJpeg: It's a pass through, please handle preprocessing before input")
+    Tensorflow protobuf imported to relay frontend.
+
+
+
 Relay Build
 -----------
 Compile the graph to llvm target with given input specification.
@@ -163,6 +216,11 @@ Results:
 
     with tvm.transform.PassContext(opt_level=3):
         lib = relay.build(mod, target, params=params)
+
+
+
+
+
 
 
 Execute the portable graph on TVM
@@ -185,6 +243,11 @@ Now we can try deploying the compiled model on target.
     tvm_output = m.get_output(0, tvm.nd.empty(((1, 1008)), "float32"))
 
 
+
+
+
+
+
 Process the output
 ------------------
 Process the model output to human readable text for InceptionV1.
@@ -192,7 +255,7 @@ Process the model output to human readable text for InceptionV1.
 
 .. code-block:: default
 
-    predictions = tvm_output.asnumpy()
+    predictions = tvm_output.numpy()
     predictions = np.squeeze(predictions)
 
     # Creates node ID --> English string lookup.
@@ -204,6 +267,23 @@ Process the model output to human readable text for InceptionV1.
         human_string = node_lookup.id_to_string(node_id)
         score = predictions[node_id]
         print("%s (score = %.5f)" % (human_string, score))
+
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    African elephant, Loxodonta africana (score = 0.58335)
+    tusker (score = 0.33901)
+    Indian elephant, Elephas maximus (score = 0.02391)
+    banana (score = 0.00025)
+    vault (score = 0.00021)
+
 
 
 Inference on tensorflow
@@ -266,6 +346,24 @@ Run the corresponding model on tensorflow
 
 
     run_inference_on_image(img_path)
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    ===== TENSORFLOW RESULTS =======
+    African elephant, Loxodonta africana (score = 0.58394)
+    tusker (score = 0.33909)
+    Indian elephant, Elephas maximus (score = 0.03186)
+    banana (score = 0.00022)
+    desk (score = 0.00019)
+
+
 
 
 .. _sphx_glr_download_tutorials_frontend_from_tensorflow.py:

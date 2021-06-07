@@ -25,6 +25,11 @@ Recurrent computing is a typical pattern in neural networks.
     import numpy as np
 
 
+
+
+
+
+
 TVM supports a scan operator to describe symbolic loop.
 The following scan op computes cumsum over columns of X.
 
@@ -56,6 +61,11 @@ update over the time domain.
     s_scan = tvm.te.scan(s_init, s_update, s_state, inputs=[X])
 
 
+
+
+
+
+
 Schedule the Scan Cell
 ----------------------
 We can schedule the body of the scan by scheduling the update and
@@ -80,6 +90,38 @@ To split on the time iteration, user can schedule on scan_op.scan_axis instead.
     print(tvm.lower(s, [X, s_scan], simple_mode=True))
 
 
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    primfn(X_1: handle, scan_1: handle) -> ()
+      attr = {"global_symbol": "main", "tir.noalias": True}
+      buffers = {scan: Buffer(scan_2: Pointer(float32), float32, [m: int32, n: int32], [stride: int32, stride_1: int32], type="auto"),
+                 X: Buffer(X_2: Pointer(float32), float32, [m, n], [stride_2: int32, stride_3: int32], type="auto")}
+      buffer_map = {X_1: X, scan_1: scan} {
+      attr [IterVar(blockIdx.x: int32, (nullptr), "ThreadIndex", "blockIdx.x")] "thread_extent" = floordiv((n + 255), 256);
+      attr [IterVar(threadIdx.x: int32, (nullptr), "ThreadIndex", "threadIdx.x")] "thread_extent" = 256;
+      if @tir.likely((((blockIdx.x*256) + threadIdx.x) < n), dtype=bool) {
+        scan_2[(((blockIdx.x*256) + threadIdx.x)*stride_1)] = (float32*)X_2[(((blockIdx.x*256) + threadIdx.x)*stride_3)]
+      }
+      for (scan.idx: int32, 0, (m - 1)) {
+        attr [IterVar(blockIdx.x, (nullptr), "ThreadIndex", "blockIdx.x")] "thread_extent" = floordiv((n + 255), 256);
+        attr [IterVar(threadIdx.x, (nullptr), "ThreadIndex", "threadIdx.x")] "thread_extent" = 256;
+        if @tir.likely((((blockIdx.x*256) + threadIdx.x) < n), dtype=bool) {
+          scan_2[(((scan.idx + 1)*stride) + (((blockIdx.x*256) + threadIdx.x)*stride_1))] = ((float32*)scan_2[((scan.idx*stride) + (((blockIdx.x*256) + threadIdx.x)*stride_1))] + (float32*)X_2[(((scan.idx + 1)*stride_2) + (((blockIdx.x*256) + threadIdx.x)*stride_3))])
+        }
+      }
+    }
+
+
+
+
+
 Build and Verify
 ----------------
 We can build the scan kernel like other TVM kernels, here we use
@@ -90,14 +132,19 @@ numpy to verify the correctness of the result.
 .. code-block:: default
 
     fscan = tvm.build(s, [X, s_scan], "cuda", name="myscan")
-    dev = tvm.gpu(0)
+    dev = tvm.cuda(0)
     n = 1024
     m = 10
     a_np = np.random.uniform(size=(m, n)).astype(s_scan.dtype)
     a = tvm.nd.array(a_np, dev)
     b = tvm.nd.array(np.zeros((m, n), dtype=s_scan.dtype), dev)
     fscan(a, b)
-    tvm.testing.assert_allclose(b.asnumpy(), np.cumsum(a_np, axis=0))
+    tvm.testing.assert_allclose(b.numpy(), np.cumsum(a_np, axis=0))
+
+
+
+
+
 
 
 Multi-Stage Scan Cell
@@ -123,6 +170,11 @@ in the scan cell.
     s_scan = tvm.te.scan(s_init, s_update_s2, s_state, inputs=[X])
 
 
+
+
+
+
+
 These intermediate tensors can also be scheduled normally.
 To ensure correctness, TVM creates a group constraint to forbid
 the body of scan to be compute_at locations outside the scan loop.
@@ -135,6 +187,46 @@ the body of scan to be compute_at locations outside the scan loop.
     xo, xi = s[s_update_s2].split(s_update_s2.op.axis[1], factor=32)
     s[s_update_s1].compute_at(s[s_update_s2], xo)
     print(tvm.lower(s, [X, s_scan], simple_mode=True))
+
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    primfn(X_1: handle, scan_1: handle) -> ()
+      attr = {"global_symbol": "main", "tir.noalias": True}
+      buffers = {scan: Buffer(scan_2: Pointer(float32), float32, [m: int32, n: int32], [stride: int32, stride_1: int32], type="auto"),
+                 X: Buffer(X_2: Pointer(float32), float32, [m, n], [stride_2: int32, stride_3: int32], type="auto")}
+      buffer_map = {X_1: X, scan_1: scan} {
+      attr [s1: Pointer(float32)] "storage_scope" = "global";
+      allocate(s1, float32, [32]) {
+        for (i: int32, 0, n) {
+          scan_2[(i*stride_1)] = (float32*)X_2[(i*stride_3)]
+        }
+        for (scan.idx: int32, 0, (m - 1)) {
+          for (i.outer: int32, 0, floordiv((n + 31), 32)) {
+            for (i_1: int32, 0, 32) {
+              if @tir.likely((((i.outer*32) + i_1) < n), dtype=bool) {
+                s1[i_1] = ((float32*)scan_2[((scan.idx*stride) + (((i.outer*32) + i_1)*stride_1))]*2f32)
+              }
+            }
+            for (i.inner: int32, 0, 32) {
+              if @tir.likely((((i.outer*32) + i.inner) < n), dtype=bool) {
+                scan_2[(((scan.idx + 1)*stride) + (((i.outer*32) + i.inner)*stride_1))] = ((float32*)s1[i.inner] + (float32*)X_2[(((scan.idx + 1)*stride_2) + (((i.outer*32) + i.inner)*stride_3))])
+              }
+            }
+          }
+        }
+      }
+    }
+
+
+
 
 
 Multiple States
@@ -162,6 +254,41 @@ The following example demonstrates how we can build recurrence with two states.
     )
     s = te.create_schedule(s_scan1.op)
     print(tvm.lower(s, [X, s_scan1, s_scan2], simple_mode=True))
+
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    primfn(X_1: handle, scan.v0_1: handle, scan.v1_1: handle) -> ()
+      attr = {"global_symbol": "main", "tir.noalias": True}
+      buffers = {scan.v1: Buffer(scan.v1_2: Pointer(float32), float32, [m: int32, l: int32], [stride: int32, stride_1: int32], type="auto"),
+                 X: Buffer(X_2: Pointer(float32), float32, [m, n: int32], [stride_2: int32, stride_3: int32], type="auto"),
+                 scan.v0: Buffer(scan.v0_2: Pointer(float32), float32, [m, n], [stride_4: int32, stride_5: int32], type="auto")}
+      buffer_map = {X_1: X, scan.v0_1: scan.v0, scan.v1_1: scan.v1} {
+      for (i: int32, 0, n) {
+        scan.v0_2[(i*stride_5)] = (float32*)X_2[(i*stride_3)]
+      }
+      for (i_1: int32, 0, l) {
+        scan.v1_2[(i_1*stride_1)] = 0f32
+      }
+      for (scan.idx: int32, 0, (m - 1)) {
+        for (i_2: int32, 0, n) {
+          scan.v0_2[(((scan.idx + 1)*stride_4) + (i_2*stride_5))] = ((float32*)scan.v0_2[((scan.idx*stride_4) + (i_2*stride_5))] + (float32*)X_2[(((scan.idx + 1)*stride_2) + (i_2*stride_3))])
+        }
+        for (i_3: int32, 0, l) {
+          scan.v1_2[(((scan.idx + 1)*stride) + (i_3*stride_1))] = ((float32*)scan.v1_2[((scan.idx*stride) + (i_3*stride_1))] + (float32*)scan.v0_2[(scan.idx*stride_4)])
+        }
+      }
+    }
+
+
+
 
 
 Summary

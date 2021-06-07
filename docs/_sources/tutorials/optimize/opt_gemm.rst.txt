@@ -88,7 +88,7 @@ Then we write a baseline implementation, the simplest way to write a matrix mult
     )
     print("Numpy running time: %f" % (np_runing_time / np_repeat))
 
-    answer = numpy.dot(a.asnumpy(), b.asnumpy())
+    answer = numpy.dot(a.numpy(), b.numpy())
 
     # Algorithm
     k = te.reduce_axis((0, K), "k")
@@ -103,10 +103,24 @@ Then we write a baseline implementation, the simplest way to write a matrix mult
 
     c = tvm.nd.array(numpy.zeros((M, N), dtype=dtype), dev)
     func(a, b, c)
-    tvm.testing.assert_allclose(c.asnumpy(), answer, rtol=1e-5)
+    tvm.testing.assert_allclose(c.numpy(), answer, rtol=1e-5)
 
     evaluator = func.time_evaluator(func.entry_name, dev, number=1)
     print("Baseline: %f" % evaluator(a, b, c).mean)
+
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    Numpy running time: 0.006920
+    Baseline: 5.884067
+
 
 
 In TVM, we can always inspect lower level IR to debug or optimize our schedule.
@@ -117,6 +131,35 @@ Here is the generated IR using our baseline schedule.
 
 
     print(tvm.lower(s, [A, B, C], simple_mode=True))
+
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    primfn(A_1: handle, B_1: handle, C_1: handle) -> ()
+      attr = {"global_symbol": "main", "tir.noalias": True}
+      buffers = {C: Buffer(C_2: Pointer(float32), float32, [1024, 1024], []),
+                 A: Buffer(A_2: Pointer(float32), float32, [1024, 1024], []),
+                 B: Buffer(B_2: Pointer(float32), float32, [1024, 1024], [])}
+      buffer_map = {A_1: A, B_1: B, C_1: C} {
+      for (x: int32, 0, 1024) {
+        for (y: int32, 0, 1024) {
+          C_2[((x*1024) + y)] = 0f32
+          for (k: int32, 0, 1024) {
+            C_2[((x*1024) + y)] = ((float32*)C_2[((x*1024) + y)] + ((float32*)A_2[((x*1024) + k)]*(float32*)B_2[((k*1024) + y)]))
+          }
+        }
+      }
+    }
+
+
+
 
 
 Blocking
@@ -146,12 +189,25 @@ fill 32 * 32 * sizeof(float) which is 4KB in the cache whose total size is 32KB 
 
     c = tvm.nd.array(numpy.zeros((M, N), dtype=dtype), dev)
     func(a, b, c)
-    tvm.testing.assert_allclose(c.asnumpy(), answer, rtol=1e-5)
+    tvm.testing.assert_allclose(c.numpy(), answer, rtol=1e-5)
 
     # By simply tiling the loop 32x32, and hoisting ko, ki outside the blocking loops,
     # we can see big speedup compared with the baseline.
     evaluator = func.time_evaluator(func.entry_name, dev, number=10)
     print("Opt1: %f" % evaluator(a, b, c).mean)
+
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    Opt1: 0.114601
+
 
 
 Here is the generated IR after blocking.
@@ -161,6 +217,45 @@ Here is the generated IR after blocking.
 
 
     print(tvm.lower(s, [A, B, C], simple_mode=True))
+
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    primfn(A_1: handle, B_1: handle, C_1: handle) -> ()
+      attr = {"global_symbol": "main", "tir.noalias": True}
+      buffers = {C: Buffer(C_2: Pointer(float32), float32, [1024, 1024], []),
+                 A: Buffer(A_2: Pointer(float32), float32, [1024, 1024], []),
+                 B: Buffer(B_2: Pointer(float32), float32, [1024, 1024], [])}
+      buffer_map = {A_1: A, B_1: B, C_1: C} {
+      for (x.outer: int32, 0, 32) {
+        for (y.outer: int32, 0, 32) {
+          for (x.inner.init: int32, 0, 32) {
+            for (y.inner.init: int32, 0, 32) {
+              C_2[((((x.outer*32768) + (x.inner.init*1024)) + (y.outer*32)) + y.inner.init)] = 0f32
+            }
+          }
+          for (k.outer: int32, 0, 256) {
+            for (k.inner: int32, 0, 4) {
+              for (x.inner: int32, 0, 32) {
+                for (y.inner: int32, 0, 32) {
+                  C_2[((((x.outer*32768) + (x.inner*1024)) + (y.outer*32)) + y.inner)] = ((float32*)C_2[((((x.outer*32768) + (x.inner*1024)) + (y.outer*32)) + y.inner)] + ((float32*)A_2[((((x.outer*32768) + (x.inner*1024)) + (k.outer*4)) + k.inner)]*(float32*)B_2[((((k.outer*4096) + (k.inner*1024)) + (y.outer*32)) + y.inner)]))
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+
+
+
 
 
 Vectorization
@@ -190,10 +285,23 @@ In this tutorial, we chose to vectorize the inner loop row data since it is cach
 
     c = tvm.nd.array(numpy.zeros((M, N), dtype=dtype), dev)
     func(a, b, c)
-    tvm.testing.assert_allclose(c.asnumpy(), answer, rtol=1e-5)
+    tvm.testing.assert_allclose(c.numpy(), answer, rtol=1e-5)
 
     evaluator = func.time_evaluator(func.entry_name, dev, number=10)
     print("Opt2: %f" % evaluator(a, b, c).mean)
+
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    Opt2: 0.112050
+
 
 
 Here is the generated IR after vectorization.
@@ -203,6 +311,41 @@ Here is the generated IR after vectorization.
 
 
     print(tvm.lower(s, [A, B, C], simple_mode=True))
+
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    primfn(A_1: handle, B_1: handle, C_1: handle) -> ()
+      attr = {"global_symbol": "main", "tir.noalias": True}
+      buffers = {C: Buffer(C_2: Pointer(float32), float32, [1024, 1024], []),
+                 A: Buffer(A_2: Pointer(float32), float32, [1024, 1024], []),
+                 B: Buffer(B_2: Pointer(float32), float32, [1024, 1024], [])}
+      buffer_map = {A_1: A, B_1: B, C_1: C} {
+      for (x.outer: int32, 0, 32) {
+        for (y.outer: int32, 0, 32) {
+          for (x.inner.init: int32, 0, 32) {
+            C_2[ramp((((x.outer*32768) + (x.inner.init*1024)) + (y.outer*32)), 1, 32)] = broadcast(0f32, 32)
+          }
+          for (k.outer: int32, 0, 256) {
+            for (k.inner: int32, 0, 4) {
+              for (x.inner: int32, 0, 32) {
+                C_2[ramp((((x.outer*32768) + (x.inner*1024)) + (y.outer*32)), 1, 32)] = ((float32x32*)C_2[ramp((((x.outer*32768) + (x.inner*1024)) + (y.outer*32)), 1, 32)] + (broadcast((float32*)A_2[((((x.outer*32768) + (x.inner*1024)) + (k.outer*4)) + k.inner)], 32)*(float32x32*)B_2[ramp((((k.outer*4096) + (k.inner*1024)) + (y.outer*32)), 1, 32)]))
+              }
+            }
+          }
+        }
+      }
+    }
+
+
+
 
 
 Loop Permutation
@@ -231,10 +374,23 @@ the access pattern for A matrix is more cache friendly.
 
     c = tvm.nd.array(numpy.zeros((M, N), dtype=dtype), dev)
     func(a, b, c)
-    tvm.testing.assert_allclose(c.asnumpy(), answer, rtol=1e-5)
+    tvm.testing.assert_allclose(c.numpy(), answer, rtol=1e-5)
 
     evaluator = func.time_evaluator(func.entry_name, dev, number=10)
     print("Opt3: %f" % evaluator(a, b, c).mean)
+
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    Opt3: 0.060178
+
 
 
 Here is the generated IR after loop permutation.
@@ -244,6 +400,41 @@ Here is the generated IR after loop permutation.
 
 
     print(tvm.lower(s, [A, B, C], simple_mode=True))
+
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    primfn(A_1: handle, B_1: handle, C_1: handle) -> ()
+      attr = {"global_symbol": "main", "tir.noalias": True}
+      buffers = {C: Buffer(C_2: Pointer(float32), float32, [1024, 1024], []),
+                 A: Buffer(A_2: Pointer(float32), float32, [1024, 1024], []),
+                 B: Buffer(B_2: Pointer(float32), float32, [1024, 1024], [])}
+      buffer_map = {A_1: A, B_1: B, C_1: C} {
+      for (x.outer: int32, 0, 32) {
+        for (y.outer: int32, 0, 32) {
+          for (x.inner.init: int32, 0, 32) {
+            C_2[ramp((((x.outer*32768) + (x.inner.init*1024)) + (y.outer*32)), 1, 32)] = broadcast(0f32, 32)
+          }
+          for (k.outer: int32, 0, 256) {
+            for (x.inner: int32, 0, 32) {
+              for (k.inner: int32, 0, 4) {
+                C_2[ramp((((x.outer*32768) + (x.inner*1024)) + (y.outer*32)), 1, 32)] = ((float32x32*)C_2[ramp((((x.outer*32768) + (x.inner*1024)) + (y.outer*32)), 1, 32)] + (broadcast((float32*)A_2[((((x.outer*32768) + (x.inner*1024)) + (k.outer*4)) + k.inner)], 32)*(float32x32*)B_2[ramp((((k.outer*4096) + (k.inner*1024)) + (y.outer*32)), 1, 32)]))
+              }
+            }
+          }
+        }
+      }
+    }
+
+
+
 
 
 Array Packing
@@ -293,10 +484,23 @@ the corresponding value from the packed array.
 
     c = tvm.nd.array(numpy.zeros((M, N), dtype=dtype), dev)
     func(a, b, c)
-    tvm.testing.assert_allclose(c.asnumpy(), answer, rtol=1e-5)
+    tvm.testing.assert_allclose(c.numpy(), answer, rtol=1e-5)
 
     evaluator = func.time_evaluator(func.entry_name, dev, number=10)
     print("Opt4: %f" % evaluator(a, b, c).mean)
+
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    Opt4: 0.061825
+
 
 
 Here is the generated IR after array packing.
@@ -306,6 +510,49 @@ Here is the generated IR after array packing.
 
 
     print(tvm.lower(s, [A, B, C], simple_mode=True))
+
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    primfn(A_1: handle, B_1: handle, C_1: handle) -> ()
+      attr = {"global_symbol": "main", "tir.noalias": True}
+      buffers = {A: Buffer(A_2: Pointer(float32), float32, [1024, 1024], []),
+                 C: Buffer(C_2: Pointer(float32), float32, [1024, 1024], []),
+                 B: Buffer(B_2: Pointer(float32), float32, [1024, 1024], [])}
+      buffer_map = {A_1: A, B_1: B, C_1: C} {
+      attr [packedB: Pointer(float32x32)] "storage_scope" = "global";
+      allocate(packedB, float32x32, [32768]) {
+        for (x: int32, 0, 32) "parallel" {
+          for (y: int32, 0, 1024) {
+            packedB[ramp(((x*32768) + (y*32)), 1, 32)] = (float32x32*)B_2[ramp(((y*1024) + (x*32)), 1, 32)]
+          }
+        }
+        for (x.outer: int32, 0, 32) {
+          for (y.outer: int32, 0, 32) {
+            for (x.inner.init: int32, 0, 32) {
+              C_2[ramp((((x.outer*32768) + (x.inner.init*1024)) + (y.outer*32)), 1, 32)] = broadcast(0f32, 32)
+            }
+            for (k.outer: int32, 0, 256) {
+              for (x.inner: int32, 0, 32) {
+                for (k.inner: int32, 0, 4) {
+                  C_2[ramp((((x.outer*32768) + (x.inner*1024)) + (y.outer*32)), 1, 32)] = ((float32x32*)C_2[ramp((((x.outer*32768) + (x.inner*1024)) + (y.outer*32)), 1, 32)] + (broadcast((float32*)A_2[((((x.outer*32768) + (x.inner*1024)) + (k.outer*4)) + k.inner)], 32)*(float32x32*)packedB[ramp((((y.outer*32768) + (k.outer*128)) + (k.inner*32)), 1, 32)]))
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+
+
+
 
 
 Write cache for blocks
@@ -347,10 +594,23 @@ write to C when all the block results are ready.
 
     c = tvm.nd.array(numpy.zeros((M, N), dtype=dtype), dev)
     func(a, b, c)
-    tvm.testing.assert_allclose(c.asnumpy(), answer, rtol=1e-5)
+    tvm.testing.assert_allclose(c.numpy(), answer, rtol=1e-5)
 
     evaluator = func.time_evaluator(func.entry_name, dev, number=10)
     print("Opt5: %f" % evaluator(a, b, c).mean)
+
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    Opt5: 0.060100
+
 
 
 Here is the generated IR after blocking.
@@ -360,6 +620,57 @@ Here is the generated IR after blocking.
 
 
     print(tvm.lower(s, [A, B, C], simple_mode=True))
+
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    primfn(A_1: handle, B_1: handle, C_1: handle) -> ()
+      attr = {"global_symbol": "main", "tir.noalias": True}
+      buffers = {C: Buffer(C_2: Pointer(float32), float32, [1024, 1024], []),
+                 A: Buffer(A_2: Pointer(float32), float32, [1024, 1024], []),
+                 B: Buffer(B_2: Pointer(float32), float32, [1024, 1024], [])}
+      buffer_map = {A_1: A, B_1: B, C_1: C} {
+      attr [packedB: Pointer(float32x32)] "storage_scope" = "global";
+      allocate(packedB, float32x32, [32768]);
+      attr [C.global: Pointer(float32)] "storage_scope" = "global";
+      allocate(C.global, float32, [1024]) {
+        for (x: int32, 0, 32) "parallel" {
+          for (y: int32, 0, 1024) {
+            packedB[ramp(((x*32768) + (y*32)), 1, 32)] = (float32x32*)B_2[ramp(((y*1024) + (x*32)), 1, 32)]
+          }
+        }
+        for (x.outer: int32, 0, 32) {
+          for (y.outer: int32, 0, 32) {
+            for (x.c.init: int32, 0, 32) {
+              C.global[ramp((x.c.init*32), 1, 32)] = broadcast(0f32, 32)
+            }
+            for (k.outer: int32, 0, 256) {
+              for (x.c: int32, 0, 32) {
+                C.global[ramp((x.c*32), 1, 32)] = ((float32x32*)C.global[ramp((x.c*32), 1, 32)] + (broadcast((float32*)A_2[(((x.outer*32768) + (x.c*1024)) + (k.outer*4))], 32)*(float32x32*)packedB[ramp(((y.outer*32768) + (k.outer*128)), 1, 32)]))
+                C.global[ramp((x.c*32), 1, 32)] = ((float32x32*)C.global[ramp((x.c*32), 1, 32)] + (broadcast((float32*)A_2[((((x.outer*32768) + (x.c*1024)) + (k.outer*4)) + 1)], 32)*(float32x32*)packedB[ramp((((y.outer*32768) + (k.outer*128)) + 32), 1, 32)]))
+                C.global[ramp((x.c*32), 1, 32)] = ((float32x32*)C.global[ramp((x.c*32), 1, 32)] + (broadcast((float32*)A_2[((((x.outer*32768) + (x.c*1024)) + (k.outer*4)) + 2)], 32)*(float32x32*)packedB[ramp((((y.outer*32768) + (k.outer*128)) + 64), 1, 32)]))
+                C.global[ramp((x.c*32), 1, 32)] = ((float32x32*)C.global[ramp((x.c*32), 1, 32)] + (broadcast((float32*)A_2[((((x.outer*32768) + (x.c*1024)) + (k.outer*4)) + 3)], 32)*(float32x32*)packedB[ramp((((y.outer*32768) + (k.outer*128)) + 96), 1, 32)]))
+              }
+            }
+            for (x.inner: int32, 0, 32) {
+              for (y.inner: int32, 0, 32) {
+                C_2[((((x.outer*32768) + (x.inner*1024)) + (y.outer*32)) + y.inner)] = (float32*)C.global[((x.inner*32) + y.inner)]
+              }
+            }
+          }
+        }
+      }
+    }
+
+
+
 
 
 Parallel
@@ -398,11 +709,24 @@ Futhermore, we can also utilize multi-core processors to do the thread-level par
 
     c = tvm.nd.array(numpy.zeros((M, N), dtype=dtype), dev)
     func(a, b, c)
-    tvm.testing.assert_allclose(c.asnumpy(), answer, rtol=1e-5)
+    tvm.testing.assert_allclose(c.numpy(), answer, rtol=1e-5)
 
     evaluator = func.time_evaluator(func.entry_name, dev, number=50)
     opt6_time = evaluator(a, b, c).mean
     print("Opt6: %f" % opt6_time)
+
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    Opt6: 0.016985
+
 
 
 Here is the generated IR after parallelization.
@@ -412,6 +736,57 @@ Here is the generated IR after parallelization.
 
 
     print(tvm.lower(s, [A, B, C], simple_mode=True))
+
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    primfn(A_1: handle, B_1: handle, C_1: handle) -> ()
+      attr = {"global_symbol": "main", "tir.noalias": True}
+      buffers = {C: Buffer(C_2: Pointer(float32), float32, [1024, 1024], []),
+                 A: Buffer(A_2: Pointer(float32), float32, [1024, 1024], []),
+                 B: Buffer(B_2: Pointer(float32), float32, [1024, 1024], [])}
+      buffer_map = {A_1: A, B_1: B, C_1: C} {
+      attr [packedB: Pointer(float32x32)] "storage_scope" = "global";
+      allocate(packedB, float32x32, [32768]) {
+        for (x: int32, 0, 32) "parallel" {
+          for (y: int32, 0, 1024) {
+            packedB[ramp(((x*32768) + (y*32)), 1, 32)] = (float32x32*)B_2[ramp(((y*1024) + (x*32)), 1, 32)]
+          }
+        }
+        for (x.outer: int32, 0, 32) "parallel" {
+          attr [C.global: Pointer(float32)] "storage_scope" = "global";
+          allocate(C.global, float32, [1024]);
+          for (y.outer: int32, 0, 32) {
+            for (x.c.init: int32, 0, 32) {
+              C.global[ramp((x.c.init*32), 1, 32)] = broadcast(0f32, 32)
+            }
+            for (k.outer: int32, 0, 256) {
+              for (x.c: int32, 0, 32) {
+                C.global[ramp((x.c*32), 1, 32)] = ((float32x32*)C.global[ramp((x.c*32), 1, 32)] + (broadcast((float32*)A_2[(((x.outer*32768) + (x.c*1024)) + (k.outer*4))], 32)*(float32x32*)packedB[ramp(((y.outer*32768) + (k.outer*128)), 1, 32)]))
+                C.global[ramp((x.c*32), 1, 32)] = ((float32x32*)C.global[ramp((x.c*32), 1, 32)] + (broadcast((float32*)A_2[((((x.outer*32768) + (x.c*1024)) + (k.outer*4)) + 1)], 32)*(float32x32*)packedB[ramp((((y.outer*32768) + (k.outer*128)) + 32), 1, 32)]))
+                C.global[ramp((x.c*32), 1, 32)] = ((float32x32*)C.global[ramp((x.c*32), 1, 32)] + (broadcast((float32*)A_2[((((x.outer*32768) + (x.c*1024)) + (k.outer*4)) + 2)], 32)*(float32x32*)packedB[ramp((((y.outer*32768) + (k.outer*128)) + 64), 1, 32)]))
+                C.global[ramp((x.c*32), 1, 32)] = ((float32x32*)C.global[ramp((x.c*32), 1, 32)] + (broadcast((float32*)A_2[((((x.outer*32768) + (x.c*1024)) + (k.outer*4)) + 3)], 32)*(float32x32*)packedB[ramp((((y.outer*32768) + (k.outer*128)) + 96), 1, 32)]))
+              }
+            }
+            for (x.inner: int32, 0, 32) {
+              for (y.inner: int32, 0, 32) {
+                C_2[((((x.outer*32768) + (x.inner*1024)) + (y.outer*32)) + y.inner)] = (float32*)C.global[((x.inner*32) + y.inner)]
+              }
+            }
+          }
+        }
+      }
+    }
+
+
+
 
 
 Summary

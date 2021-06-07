@@ -49,6 +49,11 @@ Necessary imports
 
 
 
+
+
+
+
+
 Download pretrained Quantized TFLite model
 ------------------------------------------
 
@@ -72,6 +77,19 @@ Download pretrained Quantized TFLite model
 
 
 
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    File /workspace/.tvm_test_data/tf/official/mobilenet_v2_1.0_224_quant.tgz exists, skip.
+
+
+
 Utils for downloading and extracting zip files
 ----------------------------------------------
 
@@ -91,6 +109,11 @@ Utils for downloading and extracting zip files
 
 
     extract(model_path)
+
+
+
+
+
 
 
 
@@ -119,6 +142,19 @@ Get a real image for e2e testing
     data = get_real_image(224, 224)
 
 
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    File /workspace/.tvm_test_data/data/elephant-299.jpg exists, skip.
+
+
+
 Load a tflite model
 -------------------
 
@@ -141,13 +177,18 @@ Now we can open mobilenet_v2_1.0_224.tflite
         tflite_model = tflite.Model.Model.GetRootAsModel(tflite_model_buf, 0)
 
 
+
+
+
+
+
 Lets run TFLite pre-quantized model inference and get the TFLite prediction.
 
 
 .. code-block:: default
 
     def run_tflite_model(tflite_model_buf, input_data):
-        """ Generic function to execute TFLite """
+        """Generic function to execute TFLite"""
         try:
             from tensorflow import lite as interpreter_wrapper
         except ImportError:
@@ -178,6 +219,11 @@ Lets run TFLite pre-quantized model inference and get the TFLite prediction.
 
 
 
+
+
+
+
+
 Lets run TVM compiled pre-quantized model inference and get the TVM prediction.
 
 
@@ -189,9 +235,14 @@ Lets run TVM compiled pre-quantized model inference and get the TVM prediction.
         rt_mod = graph_executor.GraphModule(lib["default"](tvm.cpu(0)))
         rt_mod.set_input("input", data)
         rt_mod.run()
-        tvm_res = rt_mod.get_output(0).asnumpy()
+        tvm_res = rt_mod.get_output(0).numpy()
         tvm_pred = np.squeeze(tvm_res).argsort()[-5:][::-1]
         return tvm_pred, rt_mod
+
+
+
+
+
 
 
 
@@ -205,6 +256,11 @@ Run TFLite inference on the quantized model.
 
     tflite_res = run_tflite_model(tflite_model_buf, data)
     tflite_pred = np.squeeze(tflite_res).argsort()[-5:][::-1]
+
+
+
+
+
 
 
 TVM compilation and inference
@@ -225,6 +281,11 @@ will see many QNN operators, like, Requantize, Quantize and QNN Conv2D.
     # print(mod)
 
 
+
+
+
+
+
 Lets now the compile the Relay module. We use the "llvm" target here. Please replace it with the
 target platform that you are interested in.
 
@@ -236,12 +297,22 @@ target platform that you are interested in.
         lib = relay.build_module.build(mod, target=target, params=params)
 
 
+
+
+
+
+
 Finally, lets call inference on the TVM compiled module.
 
 
 .. code-block:: default
 
     tvm_pred, rt_mod = run_tvm(lib)
+
+
+
+
+
 
 
 Accuracy comparison
@@ -260,6 +331,20 @@ TFLite and Relay. This cause final output numbers to mismatch. So, testing accur
 
 
 
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    TVM Top-5 labels: [387 102 386 349 341]
+    TFLite Top-5 labels: [387 102 386 341 880]
+
+
+
 Measure performance
 -------------------
 Here we give an example of how to measure performance of TVM compiled models.
@@ -272,6 +357,19 @@ Here we give an example of how to measure performance of TVM compiled models.
     ftimer = rt_mod.module.time_evaluator("run", dev, number=1, repeat=n_repeat)
     prof_res = np.array(ftimer().results) * 1e3
     print("Elapsed average ms:", np.mean(prof_res))
+
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    Elapsed average ms: 33.370725379999996
+
 
 
 .. note::
@@ -299,6 +397,11 @@ Here we give an example of how to measure performance of TVM compiled models.
    * To get best inference performance on ARM CPU, change target argument according to your
      device and follow `Auto-tuning a convolution network for ARM CPU
      <https://tvm.apache.org/docs/tutorials/autotvm/tune_relay_arm.html>`_.
+
+
+.. rst-class:: sphx-glr-timing
+
+   **Total running time of the script:** ( 1 minutes  40.141 seconds)
 
 
 .. _sphx_glr_download_tutorials_frontend_deploy_prequantized_tflite.py:

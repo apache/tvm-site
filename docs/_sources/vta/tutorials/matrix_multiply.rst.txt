@@ -65,6 +65,11 @@ as we did in the VTA introductory tutorial.
         remote = rpc.LocalSession()
 
 
+
+
+
+
+
 Computation Declaration
 -----------------------
 In this example we describe a simple matrix multiplication addition, which
@@ -172,6 +177,11 @@ integer.
     B_buf = te.compute((m, n, env.BLOCK_OUT, env.BLOCK_IN), lambda *i: B(*i), "B_buf")
 
 
+
+
+
+
+
 Matrix Multiplication
 ~~~~~~~~~~~~~~~~~~~~~
 Now we're ready to describe the matrix multiplication result tensor :code:`C`,
@@ -212,6 +222,11 @@ the computation should be done.
     )
 
 
+
+
+
+
+
 Casting the Results
 ~~~~~~~~~~~~~~~~~~~
 After the computation is done, we'll need to send the results computed by VTA
@@ -243,6 +258,11 @@ input activation data format.
     )
 
 
+
+
+
+
+
 This concludes the computation declaration part of this tutorial.
 
 Scheduling the Computation
@@ -271,6 +291,63 @@ After we construct the schedule, by default the schedule computes
     # Let's take a look at the generated schedule
     s = te.create_schedule(C.op)
     print(tvm.lower(s, [A, B, C], simple_mode=True))
+
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    primfn(A_1: handle, B_1: handle, C_1: handle) -> ()
+      attr = {"global_symbol": "main", "tir.noalias": True}
+      buffers = {A: Buffer(A_2: Pointer(int8), int8, [1, 16, 1, 16], []),
+                 C: Buffer(C_2: Pointer(int8), int8, [1, 16, 1, 16], []),
+                 B: Buffer(B_2: Pointer(int8), int8, [16, 16, 16, 16], [])}
+      buffer_map = {A_1: A, B_1: B, C_1: C} {
+      attr [A_buf: Pointer(int8)] "storage_scope" = "global";
+      allocate(A_buf, int8, [256]);
+      attr [B_buf: Pointer(int8)] "storage_scope" = "global";
+      allocate(B_buf, int8, [65536]);
+      attr [C_buf: Pointer(int32)] "storage_scope" = "global";
+      allocate(C_buf, int32, [256]) {
+        for (i1: int32, 0, 16) {
+          for (i3: int32, 0, 16) {
+            A_buf[((i1*16) + i3)] = (int8*)A_2[((i1*16) + i3)]
+          }
+        }
+        for (i0: int32, 0, 16) {
+          for (i1_1: int32, 0, 16) {
+            for (i2: int32, 0, 16) {
+              for (i3_1: int32, 0, 16) {
+                B_buf[((((i0*4096) + (i1_1*256)) + (i2*16)) + i3_1)] = (int8*)B_2[((((i0*4096) + (i1_1*256)) + (i2*16)) + i3_1)]
+              }
+            }
+          }
+        }
+        for (co: int32, 0, 16) {
+          for (ci: int32, 0, 16) {
+            C_buf[((co*16) + ci)] = 0
+            for (ko: int32, 0, 16) {
+              for (ki: int32, 0, 16) {
+                C_buf[((co*16) + ci)] = ((int32*)C_buf[((co*16) + ci)] + (cast(int32, (int8*)A_buf[((ko*16) + ki)])*cast(int32, (int8*)B_buf[((((co*4096) + (ko*256)) + (ci*16)) + ki)])))
+              }
+            }
+          }
+        }
+        for (i1_2: int32, 0, 16) {
+          for (i3_2: int32, 0, 16) {
+            C_2[((i1_2*16) + i3_2)] = cast(int8, (int32*)C_buf[((i1_2*16) + i3_2)])
+          }
+        }
+      }
+    }
+
+
+
 
 
 Although this schedule makes sense, it won't compile to VTA.
@@ -326,6 +403,11 @@ memory.
     s[C_buf].set_scope(env.acc_scope)
 
 
+
+
+
+
+
 DMA Transfers
 ~~~~~~~~~~~~~
 We need to schedule DMA transfers to move data living in DRAM to
@@ -355,6 +437,58 @@ moving the copy operations into the matrix multiplication loop.
 
     # Let's take a look at the transformed schedule
     print(tvm.lower(s, [A, B, C], simple_mode=True))
+
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    primfn(A_1: handle, B_1: handle, C_1: handle) -> ()
+      attr = {"global_symbol": "main", "tir.noalias": True}
+      buffers = {C: Buffer(C_2: Pointer(int8), int8, [1, 16, 1, 16], []),
+                 A: Buffer(A_2: Pointer(int8), int8, [1, 16, 1, 16], []),
+                 B: Buffer(B_2: Pointer(int8), int8, [16, 16, 16, 16], [])}
+      buffer_map = {A_1: A, B_1: B, C_1: C} {
+      attr [C_buf: Pointer(int32)] "storage_scope" = "local.acc_buffer";
+      allocate(C_buf, int32, [256]);
+      attr [A_buf: Pointer(int8)] "storage_scope" = "local.inp_buffer";
+      allocate(A_buf, int8, [16]);
+      attr [B_buf: Pointer(int8)] "storage_scope" = "local.wgt_buffer";
+      allocate(B_buf, int8, [16]) {
+        for (co: int32, 0, 16) {
+          for (ci: int32, 0, 16) {
+            C_buf[((co*16) + ci)] = 0
+            for (ko: int32, 0, 16) {
+              attr [IterVar(i0: int32, (nullptr), "DataPar", "")] "pragma_dma_copy" = 1;
+              for (i3: int32, 0, 16) {
+                A_buf[i3] = (int8*)A_2[((ko*16) + i3)]
+              }
+              attr [IterVar(i0_1: int32, (nullptr), "DataPar", "")] "pragma_dma_copy" = 1;
+              for (i3_1: int32, 0, 16) {
+                B_buf[i3_1] = (int8*)B_2[((((co*4096) + (ko*256)) + (ci*16)) + i3_1)]
+              }
+              for (ki: int32, 0, 16) {
+                C_buf[((co*16) + ci)] = ((int32*)C_buf[((co*16) + ci)] + (cast(int32, (int8*)A_buf[ki])*cast(int32, (int8*)B_buf[ki])))
+              }
+            }
+          }
+        }
+        attr [IterVar(i0_2: int32, (nullptr), "DataPar", "")] "pragma_dma_copy" = 1;
+        for (i1: int32, 0, 16) {
+          for (i3_2: int32, 0, 16) {
+            C_2[((i1*16) + i3_2)] = cast(int8, (int32*)C_buf[((i1*16) + i3_2)])
+          }
+        }
+      }
+    }
+
+
+
 
 
 Tensorization
@@ -390,6 +524,63 @@ by the VTA runtime JIT compiler.
     print(vta.lower(s, [A, B, C], simple_mode=True))
 
 
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    primfn(A_1: handle, B_1: handle, C_1: handle) -> ()
+      attr = {"global_symbol": "main", "tir.noalias": True}
+      buffers = {C: Buffer(C_2: Pointer(int8), int8, [1, 16, 1, 16], []),
+                 A: Buffer(A_2: Pointer(int8), int8, [1, 16, 1, 16], []),
+                 B: Buffer(B_2: Pointer(int8), int8, [16, 16, 16, 16], [])}
+      buffer_map = {A_1: A, B_1: B, C_1: C} {
+      attr [C_buf: Pointer(int32)] "storage_scope" = "local.acc_buffer";
+      attr [A_buf: Pointer(int8)] "storage_scope" = "local.inp_buffer";
+      attr [B_buf: Pointer(int8)] "storage_scope" = "local.wgt_buffer" {
+        attr [IterVar(vta: int32, (nullptr), "ThreadIndex", "vta")] "coproc_scope" = 2 {
+          attr [IterVar(vta, (nullptr), "ThreadIndex", "vta")] "coproc_uop_scope" = "VTAPushGEMMOp" {
+            @tir.call_extern("VTAUopLoopBegin", 16, 1, 0, 0, dtype=int32)
+            @tir.vta.uop_push(0, 1, 0, 0, 0, 0, 0, 0, dtype=int32)
+            @tir.call_extern("VTAUopLoopEnd", dtype=int32)
+          }
+          @tir.vta.coproc_dep_push(2, 1, dtype=int32)
+        }
+        for (ko: int32, 0, 16) {
+          attr [IterVar(vta, (nullptr), "ThreadIndex", "vta")] "coproc_scope" = 1 {
+            @tir.vta.coproc_dep_pop(2, 1, dtype=int32)
+            @tir.call_extern("VTALoadBuffer2D", @tir.tvm_thread_context(@tir.vta.command_handle(, dtype=handle), dtype=handle), A_2, ko, 1, 1, 1, 0, 0, 0, 0, 0, 2, dtype=int32)
+            @tir.call_extern("VTALoadBuffer2D", @tir.tvm_thread_context(@tir.vta.command_handle(, dtype=handle), dtype=handle), B_2, ko, 1, 16, 16, 0, 0, 0, 0, 0, 1, dtype=int32)
+            @tir.vta.coproc_dep_push(1, 2, dtype=int32)
+          }
+          attr [IterVar(vta, (nullptr), "ThreadIndex", "vta")] "coproc_scope" = 2 {
+            @tir.vta.coproc_dep_pop(1, 2, dtype=int32)
+            attr [IterVar(vta, (nullptr), "ThreadIndex", "vta")] "coproc_uop_scope" = "VTAPushGEMMOp" {
+              @tir.call_extern("VTAUopLoopBegin", 16, 1, 0, 1, dtype=int32)
+              @tir.vta.uop_push(0, 0, 0, 0, 0, 0, 0, 0, dtype=int32)
+              @tir.call_extern("VTAUopLoopEnd", dtype=int32)
+            }
+            @tir.vta.coproc_dep_push(2, 1, dtype=int32)
+          }
+        }
+        @tir.vta.coproc_dep_push(2, 3, dtype=int32)
+        @tir.vta.coproc_dep_pop(2, 1, dtype=int32)
+        attr [IterVar(vta, (nullptr), "ThreadIndex", "vta")] "coproc_scope" = 3 {
+          @tir.vta.coproc_dep_pop(2, 3, dtype=int32)
+          @tir.call_extern("VTAStoreBuffer2D", @tir.tvm_thread_context(@tir.vta.command_handle(, dtype=handle), dtype=handle), 0, 4, C_2, 0, 16, 1, 16, dtype=int32)
+        }
+        @tir.vta.coproc_sync(, dtype=int32)
+      }
+    }
+
+
+
+
+
 This concludes the scheduling portion of this tutorial.
 
 TVM Compilation
@@ -415,6 +606,11 @@ into a TVM function.
     f = remote.load_module("gemm.o")
 
 
+
+
+
+
+
 Running the Function
 --------------------
 The compiled TVM function uses a concise C API and can be invoked from
@@ -426,7 +622,7 @@ The array API is based on `DLPack <https://github.com/dmlc/dlpack>`_ standard.
 - We first create a remote context (for remote execution on the Pynq).
 - Then :code:`tvm.nd.array` formats the data accordingly.
 - :code:`f()` runs the actual computation.
-- :code:`asnumpy()` copies the result array back in a format that can be
+- :code:`numpy()` copies the result array back in a format that can be
   interpreted.
 
 
@@ -458,6 +654,11 @@ The array API is based on `DLPack <https://github.com/dmlc/dlpack>`_ standard.
     f(A_nd, B_nd, C_nd)
 
 
+
+
+
+
+
 Verifying Correctness
 ---------------------
 Compute the reference result with numpy and assert that the output of the
@@ -470,7 +671,7 @@ matrix multiplication indeed is correct
     # Compute reference result with numpy
     C_ref = np.dot(A_orig.astype(env.acc_dtype), B_orig.T.astype(env.acc_dtype)).astype(C.dtype)
     C_ref = C_ref.reshape(o, env.BATCH, m, env.BLOCK_OUT).transpose((0, 2, 1, 3))
-    np.testing.assert_equal(C_ref, C_nd.asnumpy())
+    np.testing.assert_equal(C_ref, C_nd.numpy())
 
     # Print stats
     if env.TARGET in ["sim", "tsim"]:
@@ -480,6 +681,27 @@ matrix multiplication indeed is correct
             print("\t{:<16}: {:>16}".format(k, v))
 
     print("Successful matrix multiply test!")
+
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    Execution statistics:
+            inp_load_nbytes :              256
+            wgt_load_nbytes :            65536
+            acc_load_nbytes :                0
+            uop_load_nbytes :                8
+            out_store_nbytes:              256
+            gemm_counter    :              256
+            alu_counter     :                0
+    Successful matrix multiply test!
+
 
 
 Summary

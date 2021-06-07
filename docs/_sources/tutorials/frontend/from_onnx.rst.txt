@@ -35,6 +35,11 @@ https://github.com/onnx/onnx
     from tvm.contrib.download import download_testdata
 
 
+
+
+
+
+
 Load pretrained ONNX model
 ---------------------------------------------
 The example super resolution model used here is exactly the same model in onnx tutorial
@@ -57,6 +62,19 @@ we skip the pytorch model construction part, and download the saved onnx model
     onnx_model = onnx.load(model_path)
 
 
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    File /workspace/.tvm_test_data/onnx/super_resolution.onnx exists, skip.
+
+
+
 Load a test image
 ---------------------------------------------
 A single cat dominates the examples! This model takes a single input image of size
@@ -76,6 +94,19 @@ luminance (`Y`) channel.
     img_ycbcr = img.convert("YCbCr")  # convert to YCbCr
     img_y, img_cb, img_cr = img_ycbcr.split()
     x = np.array(img_y)[np.newaxis, np.newaxis, :, :]
+
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    File /workspace/.tvm_test_data/data/cat.png exists, skip.
+
 
 
 Compile the model with relay
@@ -102,6 +133,22 @@ provides a static definition of the input size.
         intrp = relay.build_module.create_executor("graph", mod, tvm.cpu(0), target)
 
 
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    /workspace/docs/../python/tvm/relay/frontend/onnx.py:3585: UserWarning: Mismatched attribute type in ' : kernel_shape'
+
+    ==> Context: Bad node spec: input: "1" input: "2" output: "11" op_type: "Conv" attribute { name: "kernel_shape" ints: 5 ints: 5 } attribute { name: "strides" ints: 1 ints: 1 } attribute { name: "pads" ints: 2 ints: 2 ints: 2 ints: 2 } attribute { name: "dilations" ints: 1 ints: 1 } attribute { name: "group" i: 1 }
+      warnings.warn(str(e))
+
+
+
 Execute on TVM
 ---------------------------------------------
 
@@ -109,7 +156,12 @@ Execute on TVM
 .. code-block:: default
 
     dtype = "float32"
-    tvm_output = intrp.evaluate()(tvm.nd.array(x.astype(dtype)), **params).asnumpy()
+    tvm_output = intrp.evaluate()(tvm.nd.array(x.astype(dtype)), **params).numpy()
+
+
+
+
+
 
 
 Display results
@@ -132,6 +184,14 @@ bicubic algorithm. The image is then recombined and converted back to `RGB`.
     canvas[:, 672:, :] = np.asarray(result)
     plt.imshow(canvas.astype(np.uint8))
     plt.show()
+
+
+
+
+.. image:: /tutorials/frontend/images/sphx_glr_from_onnx_001.png
+    :class: sphx-glr-single-img
+
+
 
 
 Notes

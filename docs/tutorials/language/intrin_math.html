@@ -8,18 +8,21 @@
 <html class="writer-html5" lang="en" >
 <head>
   <meta charset="utf-8">
-  
+  <meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Intrinsics and Math Functions &mdash; tvm 0.8.dev921+g7a063514d documentation</title>
+  <title>Intrinsics and Math Functions &mdash; tvm 0.8.dev0 documentation</title>
   
 
   
   <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
   <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
-  <link rel="stylesheet" href="../../_static/css/tlcpack_theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="../../_static/gallery.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/css/tlcpack_theme.css" type="text/css" />
 
   
   
@@ -32,6 +35,7 @@
   
     
       <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+        <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
         <script src="../../_static/jquery.js"></script>
         <script src="../../_static/underscore.js"></script>
         <script src="../../_static/doctools.js"></script>
@@ -165,9 +169,9 @@
           
             
             
-              <div class="version">
-                0.8.dev921+g7a063514d
-              </div>
+                <div class="version">
+                  0.8.dev0
+                </div>
             
           
 
@@ -327,7 +331,7 @@
 <p class="admonition-title">Note</p>
 <p>Click <a class="reference internal" href="#sphx-glr-download-tutorials-language-intrin-math-py"><span class="std std-ref">here</span></a> to download the full example code</p>
 </div>
-<div class="sphx-glr-example-title section" id="intrinsics-and-math-functions">
+<section class="sphx-glr-example-title" id="intrinsics-and-math-functions">
 <span id="sphx-glr-tutorials-language-intrin-math-py"></span><h1>Intrinsics and Math Functions<a class="headerlink" href="#intrinsics-and-math-functions" title="Permalink to this headline">¶</a></h1>
 <p><strong>Author</strong>: <a class="reference external" href="https://tqchen.github.io">Tianqi Chen</a></p>
 <p>While TVM supports basic arithmetic operations. In many cases
@@ -345,7 +349,7 @@ the interface via tvm’s intrinsic API.</p>
 <span class="kn">from</span> <span class="nn">tvm.ir</span> <span class="k">import</span> <a href="../../api/python/ir.html#tvm.ir.register_op_attr" title="View documentation for tvm.ir.register_op_attr"><span class="n">register_op_attr</span></a><span class="p">,</span> <a href="../../api/python/ir.html#tvm.ir.register_intrin_lowering" title="View documentation for tvm.ir.register_intrin_lowering"><span class="n">register_intrin_lowering</span></a>
 </pre></div>
 </div>
-<div class="section" id="direct-declare-extern-math-call">
+<section id="direct-declare-extern-math-call">
 <h2>Direct Declare Extern Math Call<a class="headerlink" href="#direct-declare-extern-math-call" title="Permalink to this headline">¶</a></h2>
 <p>The most straight-forward way to call target specific function is via
 extern function call construct in tvm.
@@ -363,8 +367,33 @@ In the following example, we use <a class="reference internal" href="../../api/p
 <span class="nb">print</span><span class="p">(</span><span class="n">f</span><span class="o">.</span><span class="n">imported_modules</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">get_source</span><span class="p">())</span>
 </pre></div>
 </div>
+<p class="sphx-glr-script-out">Out:</p>
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>#ifdef _WIN32
+  using uint = unsigned int;
+  using uchar = unsigned char;
+  using ushort = unsigned short;
+  using int64_t = long long;
+  using uint64_t = unsigned long long;
+#else
+  #define uint unsigned int
+  #define uchar unsigned char
+  #define ushort unsigned short
+  #define int64_t long long
+  #define uint64_t unsigned long long
+#endif
+extern &quot;C&quot; __global__ void myexp_kernel0(float* __restrict__ B, float* __restrict__ A, int n, int stride, int stride1) {
+  if (((int)blockIdx.x) &lt; (n &gt;&gt; 6)) {
+    B[((((((int)blockIdx.x) * 64) + ((int)threadIdx.x)) * stride1))] = __expf(A[((((((int)blockIdx.x) * 64) + ((int)threadIdx.x)) * stride))]);
+  } else {
+    if (((((int)blockIdx.x) * 64) + ((int)threadIdx.x)) &lt; n) {
+      B[((((((int)blockIdx.x) * 64) + ((int)threadIdx.x)) * stride1))] = __expf(A[((((((int)blockIdx.x) * 64) + ((int)threadIdx.x)) * stride))]);
+    }
+  }
+}
+</pre></div>
 </div>
-<div class="section" id="unified-intrinsic-call">
+</section>
+<section id="unified-intrinsic-call">
 <h2>Unified Intrinsic Call<a class="headerlink" href="#unified-intrinsic-call" title="Permalink to this headline">¶</a></h2>
 <p>The above code verifies that direct external call can be used to
 call into device specific functions.
@@ -386,14 +415,52 @@ The following code use te.exp instead, which create an intrinsic call
 <span class="nb">print</span><span class="p">(</span><span class="n">fcuda</span><span class="o">.</span><span class="n">imported_modules</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">get_source</span><span class="p">())</span>
 </pre></div>
 </div>
+<p class="sphx-glr-script-out">Out:</p>
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>#ifdef _WIN32
+  using uint = unsigned int;
+  using uchar = unsigned char;
+  using ushort = unsigned short;
+  using int64_t = long long;
+  using uint64_t = unsigned long long;
+#else
+  #define uint unsigned int
+  #define uchar unsigned char
+  #define ushort unsigned short
+  #define int64_t long long
+  #define uint64_t unsigned long long
+#endif
+extern &quot;C&quot; __global__ void myexp_kernel0(float* __restrict__ B, float* __restrict__ A, int n, int stride, int stride1) {
+  if (((int)blockIdx.x) &lt; (n &gt;&gt; 6)) {
+    B[((((((int)blockIdx.x) * 64) + ((int)threadIdx.x)) * stride1))] = __expf(A[((((((int)blockIdx.x) * 64) + ((int)threadIdx.x)) * stride))]);
+  } else {
+    if (((((int)blockIdx.x) * 64) + ((int)threadIdx.x)) &lt; n) {
+      B[((((((int)blockIdx.x) * 64) + ((int)threadIdx.x)) * stride1))] = __expf(A[((((((int)blockIdx.x) * 64) + ((int)threadIdx.x)) * stride))]);
+    }
+  }
+}
+</pre></div>
+</div>
 <p>We can find that the code works for both CUDA and opencl.
 The same te.exp can also be used for float64 data types.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">fopencl</span> <span class="o">=</span> <a href="../../api/python/driver.html#tvm.build" title="View documentation for tvm.build"><span class="n">tvm</span><span class="o">.</span><span class="n">build</span></a><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="p">[</span><span class="n">A</span><span class="p">,</span> <span class="n">B</span><span class="p">],</span> <span class="s2">&quot;opencl&quot;</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;myexp&quot;</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="n">fopencl</span><span class="o">.</span><span class="n">imported_modules</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">get_source</span><span class="p">())</span>
 </pre></div>
 </div>
+<p class="sphx-glr-script-out">Out:</p>
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>// Function: myexp_kernel0
+__kernel void myexp_kernel0(__global float* restrict B, __global float* restrict A, int n, int stride, int stride1) {
+  if (((int)get_group_id(0)) &lt; (n &gt;&gt; 6)) {
+    B[((((((int)get_group_id(0)) * 64) + ((int)get_local_id(0))) * stride1))] = exp(A[((((((int)get_group_id(0)) * 64) + ((int)get_local_id(0))) * stride))]);
+  } else {
+    if (((((int)get_group_id(0)) * 64) + ((int)get_local_id(0))) &lt; n) {
+      B[((((((int)get_group_id(0)) * 64) + ((int)get_local_id(0))) * stride1))] = exp(A[((((((int)get_group_id(0)) * 64) + ((int)get_local_id(0))) * stride))]);
+    }
+  }
+}
+</pre></div>
 </div>
-<div class="section" id="intrinsic-lowering-rule">
+</section>
+<section id="intrinsic-lowering-rule">
 <h2>Intrinsic Lowering Rule<a class="headerlink" href="#intrinsic-lowering-rule" title="Permalink to this headline">¶</a></h2>
 <p>When <a class="reference internal" href="../../api/python/te.html#tvm.te.exp" title="tvm.te.exp"><code class="xref py py-func docutils literal notranslate"><span class="pre">tvm.te.exp()</span></code></a> is called, TVM creates an intrinsic Call Expr.
 TVM uses transformation rules to transform the intrinsic
@@ -428,8 +495,33 @@ fast math version <code class="code docutils literal notranslate"><span class="p
 <span class="nb">print</span><span class="p">(</span><span class="n">fcuda</span><span class="o">.</span><span class="n">imported_modules</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">get_source</span><span class="p">())</span>
 </pre></div>
 </div>
+<p class="sphx-glr-script-out">Out:</p>
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>#ifdef _WIN32
+  using uint = unsigned int;
+  using uchar = unsigned char;
+  using ushort = unsigned short;
+  using int64_t = long long;
+  using uint64_t = unsigned long long;
+#else
+  #define uint unsigned int
+  #define uchar unsigned char
+  #define ushort unsigned short
+  #define int64_t long long
+  #define uint64_t unsigned long long
+#endif
+extern &quot;C&quot; __global__ void myexp_kernel0(float* __restrict__ B, float* __restrict__ A, int n, int stride, int stride1) {
+  if (((int)blockIdx.x) &lt; (n &gt;&gt; 6)) {
+    B[((((((int)blockIdx.x) * 64) + ((int)threadIdx.x)) * stride1))] = expf(A[((((((int)blockIdx.x) * 64) + ((int)threadIdx.x)) * stride))]);
+  } else {
+    if (((((int)blockIdx.x) * 64) + ((int)threadIdx.x)) &lt; n) {
+      B[((((((int)blockIdx.x) * 64) + ((int)threadIdx.x)) * stride1))] = expf(A[((((((int)blockIdx.x) * 64) + ((int)threadIdx.x)) * stride))]);
+    }
+  }
+}
+</pre></div>
 </div>
-<div class="section" id="add-your-own-intrinsic">
+</section>
+<section id="add-your-own-intrinsic">
 <h2>Add Your Own Intrinsic<a class="headerlink" href="#add-your-own-intrinsic" title="Permalink to this headline">¶</a></h2>
 <p>If there is an intrinsic that is not provided by TVM.
 User can easily add new intrinsic by using the intrinsic rule system.
@@ -465,8 +557,33 @@ The following example add an intrinsic <code class="code docutils literal notran
 <span class="nb">print</span><span class="p">(</span><span class="n">fcuda</span><span class="o">.</span><span class="n">imported_modules</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">get_source</span><span class="p">())</span>
 </pre></div>
 </div>
+<p class="sphx-glr-script-out">Out:</p>
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>#ifdef _WIN32
+  using uint = unsigned int;
+  using uchar = unsigned char;
+  using ushort = unsigned short;
+  using int64_t = long long;
+  using uint64_t = unsigned long long;
+#else
+  #define uint unsigned int
+  #define uchar unsigned char
+  #define ushort unsigned short
+  #define int64_t long long
+  #define uint64_t unsigned long long
+#endif
+extern &quot;C&quot; __global__ void mylog_kernel0(float* __restrict__ B, float* __restrict__ A, int n, int stride, int stride1) {
+  if (((int)blockIdx.x) &lt; (n &gt;&gt; 6)) {
+    B[((((((int)blockIdx.x) * 64) + ((int)threadIdx.x)) * stride1))] = logf(A[((((((int)blockIdx.x) * 64) + ((int)threadIdx.x)) * stride))]);
+  } else {
+    if (((((int)blockIdx.x) * 64) + ((int)threadIdx.x)) &lt; n) {
+      B[((((((int)blockIdx.x) * 64) + ((int)threadIdx.x)) * stride1))] = logf(A[((((((int)blockIdx.x) * 64) + ((int)threadIdx.x)) * stride))]);
+    }
+  }
+}
+</pre></div>
 </div>
-<div class="section" id="summary">
+</section>
+<section id="summary">
 <h2>Summary<a class="headerlink" href="#summary" title="Permalink to this headline">¶</a></h2>
 <ul class="simple">
 <li><p>TVM can call extern target dependent math function.</p></li>
@@ -483,8 +600,8 @@ The following example add an intrinsic <code class="code docutils literal notran
 </div>
 </div>
 <p class="sphx-glr-signature"><a class="reference external" href="https://sphinx-gallery.github.io">Gallery generated by Sphinx-Gallery</a></p>
-</div>
-</div>
+</section>
+</section>
 
 
            </div>
@@ -527,7 +644,6 @@ The following example add an intrinsic <code class="code docutils literal notran
 
   </div>
   
-
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
