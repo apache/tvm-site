@@ -7,6 +7,7 @@ var searchData=
   ['serialization_2eh',['serialization.h',['../serialization_8h.html',1,'']]],
   ['serializer_2eh',['serializer.h',['../serializer_8h.html',1,'']]],
   ['session_2eh',['session.h',['../session_8h.html',1,'']]],
+  ['shape_5ftuple_2eh',['shape_tuple.h',['../shape__tuple_8h.html',1,'']]],
   ['softmax_2eh',['softmax.h',['../cuda_2softmax_8h.html',1,'(Global Namespace)'],['../nn_2softmax_8h.html',1,'(Global Namespace)'],['../rocm_2softmax_8h.html',1,'(Global Namespace)']]],
   ['source_5fmap_2eh',['source_map.h',['../source__map_8h.html',1,'']]],
   ['span_2eh',['span.h',['../span_8h.html',1,'']]],

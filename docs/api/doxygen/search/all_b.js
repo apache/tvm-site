@@ -154,6 +154,7 @@ var searchData=
   ['kruntimemodule',['kRuntimeModule',['../structtvm_1_1runtime_1_1TypeIndex.html#aed93c7318efc8052201d4c404b21a40da8ce1dbb49ce074502049c6909061a2ae',1,'tvm::runtime::TypeIndex']]],
   ['kruntimendarray',['kRuntimeNDArray',['../structtvm_1_1runtime_1_1TypeIndex.html#aed93c7318efc8052201d4c404b21a40da48232c4de1fa5119f58c3ba3fc88334c',1,'tvm::runtime::TypeIndex']]],
   ['kruntimeouterror',['kRunTimeoutError',['../namespacetvm_1_1auto__scheduler.html#acd2b9ff22c8ef2f009aef57f80926b9aab94ae3ccd84f5ba95151375a2c4db28f',1,'tvm::auto_scheduler']]],
+  ['kruntimeshapetuple',['kRuntimeShapeTuple',['../structtvm_1_1runtime_1_1TypeIndex.html#aed93c7318efc8052201d4c404b21a40dae2bdfcaf2a93d7e1dfef9012bd0cae77',1,'tvm::runtime::TypeIndex']]],
   ['kruntimestring',['kRuntimeString',['../structtvm_1_1runtime_1_1TypeIndex.html#aed93c7318efc8052201d4c404b21a40da8357e60842dac9c20ddbced5b863b03a',1,'tvm::runtime::TypeIndex']]],
   ['kscanupdate',['kScanUpdate',['../namespacetvm_1_1te.html#a7693a274748dadfa2eaa35f5ce9008a5a502d1f34c7923709e22688c3a1514e80',1,'tvm::te']]],
   ['kscope',['kScope',['../namespacetvm_1_1te.html#a7693a274748dadfa2eaa35f5ce9008a5a672a7857e6a2ba34f56bc81e66f4133e',1,'tvm::te']]],

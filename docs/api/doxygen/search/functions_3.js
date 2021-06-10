@@ -82,7 +82,7 @@ var searchData=
   ['constructornode',['ConstructorNode',['../classtvm_1_1ConstructorNode.html#ab53a12f5a1ab1d262c49c16d189fe27c',1,'tvm::ConstructorNode']]],
   ['constructorvalue',['ConstructorValue',['../classtvm_1_1relay_1_1ConstructorValue.html#aff30abb56a77b9964a4bb851b2e2721d',1,'tvm::relay::ConstructorValue']]],
   ['contain',['Contain',['../classtvm_1_1te_1_1ScheduleNode.html#a3e2f672b21e76d981064cc4fce65492f',1,'tvm::te::ScheduleNode::Contain(const Operation &amp;op) const'],['../classtvm_1_1te_1_1ScheduleNode.html#a4b341a8157026604f5c8831318b75f09',1,'tvm::te::ScheduleNode::Contain(const Tensor &amp;tensor) const']]],
-  ['container',['Container',['../classtvm_1_1runtime_1_1NDArray_1_1Container.html#a39b39ce5a2a658b44944381f1835404a',1,'tvm::runtime::NDArray::Container::Container()'],['../classtvm_1_1runtime_1_1NDArray_1_1Container.html#ab60f1b9de3e735292568a2673bb36c50',1,'tvm::runtime::NDArray::Container::Container(void *data, std::vector&lt; int64_t &gt; shape, DLDataType dtype, Device dev)']]],
+  ['container',['Container',['../classtvm_1_1runtime_1_1NDArray_1_1Container.html#a39b39ce5a2a658b44944381f1835404a',1,'tvm::runtime::NDArray::Container::Container()'],['../classtvm_1_1runtime_1_1NDArray_1_1Container.html#a5f3c42a1a5d71d914d3ca326553e4f79',1,'tvm::runtime::NDArray::Container::Container(void *data, ShapeTuple shape, DLDataType dtype, Device dev)']]],
   ['containglobaltypevar',['ContainGlobalTypeVar',['../classtvm_1_1IRModuleNode.html#a0d057636380f1d0f72c83eeef5881dd4',1,'tvm::IRModuleNode']]],
   ['containglobalvar',['ContainGlobalVar',['../classtvm_1_1IRModuleNode.html#ae211092cf3706d0d04aeac33e6643b6c',1,'tvm::IRModuleNode']]],
   ['contains',['Contains',['../classtvm_1_1tir_1_1Layout.html#aa6326f16729fe950b537243e41a57aee',1,'tvm::tir::Layout']]],
@@ -125,7 +125,7 @@ var searchData=
   ['createprimfuncpass',['CreatePrimFuncPass',['../namespacetvm_1_1tir_1_1transform.html#a6b1492ac3cab5f661e4fb05d26a19200',1,'tvm::tir::transform']]],
   ['createrepeated',['CreateRepeated',['../classtvm_1_1runtime_1_1ArrayNode.html#aae210dbc3667622a873a27b822462ace',1,'tvm::runtime::ArrayNode']]],
   ['createstream',['CreateStream',['../classtvm_1_1runtime_1_1DeviceAPI.html#a33ace0cb4e8bfc9708fc5599a7ffe96a',1,'tvm::runtime::DeviceAPI']]],
-  ['createview',['CreateView',['../classtvm_1_1runtime_1_1NDArray.html#a368d0f65ebf07dc2ee5a717a85b3bc60',1,'tvm::runtime::NDArray']]],
+  ['createview',['CreateView',['../classtvm_1_1runtime_1_1NDArray.html#ae0f316337429906e958021fca394eb38',1,'tvm::runtime::NDArray']]],
   ['cublas_5fbatch_5fmatmul',['cublas_batch_matmul',['../namespacetvm_1_1topi_1_1contrib.html#a73b932a26374350f8a1b75b092c92091',1,'tvm::topi::contrib']]],
   ['cublas_5fmatmul',['cublas_matmul',['../namespacetvm_1_1topi_1_1contrib.html#a68c8492ea536608724ef6267b0785054',1,'tvm::topi::contrib']]],
   ['current',['Current',['../classtvm_1_1transform_1_1PassContext.html#a4d21045965f6e5ea9338a1e8111af5fc',1,'tvm::transform::PassContext::Current()'],['../classtvm_1_1Target.html#abed5e5cfb5d36e70ea5eaadef9fb63b2',1,'tvm::Target::Current()'],['../classtvm_1_1te_1_1SpecializedCondition.html#a5da12dcea3337e0caf59ffda33dd824a',1,'tvm::te::SpecializedCondition::Current()']]]

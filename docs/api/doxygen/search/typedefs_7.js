@@ -3,6 +3,7 @@ var searchData=
   ['incompletetype',['IncompleteType',['../namespacetvm_1_1relay.html#a34535a1f05224c26db569bc134de7647',1,'tvm::relay']]],
   ['incompletetypenode',['IncompleteTypeNode',['../namespacetvm_1_1relay.html#a517ebee34b82bdb80f74ffcdcf361940',1,'tvm::relay']]],
   ['index',['Index',['../namespacetvm_1_1runtime_1_1vm.html#a3597867d2db714bf760876a23d6b7d3d',1,'tvm::runtime::vm']]],
+  ['index_5ftype',['index_type',['../classtvm_1_1runtime_1_1ShapeTupleObj.html#a1643493aa0f06a1514c5545b53a2e9be',1,'tvm::runtime::ShapeTupleObj::index_type()'],['../classtvm_1_1runtime_1_1ShapeTupleObj_1_1FromStd.html#a324c2a2df55fda8bf6bded497dea4621',1,'tvm::runtime::ShapeTupleObj::FromStd::index_type()'],['../classtvm_1_1runtime_1_1ShapeTuple.html#aea4f2fe4a3b8d36cb88193298f346228',1,'tvm::runtime::ShapeTuple::index_type()']]],
   ['indexexpr',['IndexExpr',['../namespacetvm_1_1relay.html#ae153a27d81399fd266b8d598227764c4',1,'tvm::relay']]],
   ['intimmnode',['IntImmNode',['../namespacetvm_1_1tir.html#ae8c7db788e840dc1c2ed1f365d5ea829',1,'tvm::tir']]],
   ['iterator',['iterator',['../classtvm_1_1runtime_1_1Array.html#a98e5ad633b8195d954c98067213ae29f',1,'tvm::runtime::Array']]],

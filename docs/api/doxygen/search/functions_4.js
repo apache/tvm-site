@@ -1,6 +1,6 @@
 var searchData=
 [
-  ['data',['data',['../classtvm_1_1runtime_1_1String.html#a5f82ed0ef356225883e118eb76392cd5',1,'tvm::runtime::String']]],
+  ['data',['data',['../classtvm_1_1runtime_1_1ShapeTuple.html#a0dd7bc3ff59edfc5e64df0d9e38fd7d5',1,'tvm::runtime::ShapeTuple::data()'],['../classtvm_1_1runtime_1_1String.html#a5f82ed0ef356225883e118eb76392cd5',1,'tvm::runtime::String::data()']]],
   ['datatype',['DataType',['../classtvm_1_1runtime_1_1DataType.html#a6db427a47b8d503b10cd2aee6a39d3a9',1,'tvm::runtime::DataType::DataType()'],['../classtvm_1_1runtime_1_1DataType.html#aa27f63a2395ce1ac52e4d7740a31383b',1,'tvm::runtime::DataType::DataType(DLDataType dtype)'],['../classtvm_1_1runtime_1_1DataType.html#a58d36fef8d6b5fb39b01dccd79ff1db4',1,'tvm::runtime::DataType::DataType(int code, int bits, int lanes)'],['../classtvm_1_1runtime_1_1NDArray.html#a87d9cadd0c232324c101f7ed231aa193',1,'tvm::runtime::NDArray::DataType()']]],
   ['datatypepattern',['DataTypePattern',['../classtvm_1_1relay_1_1DataTypePattern.html#a1af68239730a8b75bfb35cfce320b653',1,'tvm::relay::DataTypePattern']]],
   ['deadcodeelimination',['DeadCodeElimination',['../namespacetvm_1_1relay_1_1transform.html#aaa08e0ced82fc7efe515d610104b070c',1,'tvm::relay::transform']]],
