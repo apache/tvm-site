@@ -13,6 +13,7 @@ var searchData=
   ['ifpatternnode',['IfPatternNode',['../classtvm_1_1relay_1_1IfPatternNode.html',1,'tvm::relay']]],
   ['ifthenelse',['IfThenElse',['../classtvm_1_1tir_1_1IfThenElse.html',1,'tvm::tir::IfThenElse'],['../classtvm_1_1tir_1_1IfThenElse.html#a57ecc0e036e0281fbf65ee97c7e54249',1,'tvm::tir::IfThenElse::IfThenElse()']]],
   ['ifthenelsenode',['IfThenElseNode',['../classtvm_1_1tir_1_1IfThenElseNode.html',1,'tvm::tir']]],
+  ['ignore_5findex',['ignore_index',['../structtvm_1_1relay_1_1NLLLossAttrs.html#acfa25dd0c30a236b965afb0fec6bc43d',1,'tvm::relay::NLLLossAttrs']]],
   ['image_2eh',['image.h',['../image_8h.html',1,'']]],
   ['implementations',['implementations',['../classtvm_1_1relay_1_1OpSpecializationNode.html#a8d5ffe97532ff7b663d2b7da09bd9042',1,'tvm::relay::OpSpecializationNode']]],
   ['implsequalreduce',['ImplSEqualReduce',['../structtvm_1_1detail_1_1ImplSEqualReduce.html',1,'tvm::detail']]],

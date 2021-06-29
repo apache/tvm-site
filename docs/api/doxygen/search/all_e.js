@@ -25,6 +25,8 @@ var searchData=
   ['newshape',['newshape',['../structtvm_1_1relay_1_1ReshapeAttrs.html#a9bca32c3acff2ed8fd6bc63a50f82051',1,'tvm::relay::ReshapeAttrs::newshape()'],['../structtvm_1_1relay_1_1ReshapeTensorAttrs.html#aaacd1ab5124b54316a9e1f3ef5a5ec3c',1,'tvm::relay::ReshapeTensorAttrs::newshape()'],['../structtvm_1_1runtime_1_1vm_1_1Instruction.html#a5602ccf14b6bd90e33a38c6ab82b0b57',1,'tvm::runtime::vm::Instruction::newshape()']]],
   ['next_5falloc',['next_alloc',['../structtvm__workspace__t.html#a5da9eaf15149d785a9b537f7c9e3945b',1,'tvm_workspace_t']]],
   ['nextafter',['nextafter',['../namespacetvm.html#a96d86ba91e4855c84879ba886465cacf',1,'tvm']]],
+  ['nll_5floss',['nll_loss',['../namespacetvm_1_1topi.html#aeb1547800d4b7625326a176ca1dec6e0',1,'tvm::topi']]],
+  ['nlllossattrs',['NLLLossAttrs',['../structtvm_1_1relay_1_1NLLLossAttrs.html',1,'tvm::relay']]],
   ['nn_2eh',['nn.h',['../relay_2attrs_2nn_8h.html',1,'(Global Namespace)'],['../topi_2nn_8h.html',1,'(Global Namespace)']]],
   ['no',['No',['../classtvm_1_1relay_1_1FeatureSet.html#a68c408c752ef58b2c27802491165adbb',1,'tvm::relay::FeatureSet']]],
   ['no_5fsplit_5fat_5finner',['no_split_at_inner',['../structtvm_1_1auto__scheduler_1_1SearchPolicyKey.html#afed5c29296a457bf681517a06f684164',1,'tvm::auto_scheduler::SearchPolicyKey']]],

@@ -19,14 +19,5 @@ var searchData=
   ['updatestagetoaxesmap',['UpdateStageToAxesMap',['../namespacetvm_1_1auto__scheduler.html#af721042ba0b561f387dbcc5d2fe3b5b0',1,'tvm::auto_scheduler']]],
   ['updatetypedef',['UpdateTypeDef',['../classtvm_1_1IRModuleNode.html#a63b73181faaa31a95e8d71e1cf5b80b2',1,'tvm::IRModuleNode']]],
   ['use_5fcount',['use_count',['../classtvm_1_1runtime_1_1NDArray.html#aa1e7d2346052e198b409966eb67be92b',1,'tvm::runtime::NDArray::use_count()'],['../classtvm_1_1runtime_1_1ObjectPtr.html#a7e9be91964e9a50d32d85280eabff23a',1,'tvm::runtime::ObjectPtr::use_count()'],['../classtvm_1_1runtime_1_1ObjectRef.html#a0ae0da21d247cd87ea94fe3777c4405e',1,'tvm::runtime::ObjectRef::use_count()']]],
-  ['usedmemory',['UsedMemory',['../classtvm_1_1runtime_1_1vm_1_1Allocator.html#a66e334404d87a2716422a21e3813109e',1,'tvm::runtime::vm::Allocator']]],
-  ['utvmrpcserverinit',['UTvmRpcServerInit',['../utvm__rpc__server_8h.html#a755faf86efb2e6b1585008942b1a34b5',1,'utvm_rpc_server.h']]],
-  ['utvmrpcserverloop',['UTvmRpcServerLoop',['../utvm__rpc__server_8h.html#ae26efe45b28d005993b768b8bbd4d117',1,'utvm_rpc_server.h']]],
-  ['utvmruntimecreate',['UTVMRuntimeCreate',['../utvm__runtime_8h.html#a7b1c4e56ee09250e6910e460527a1088',1,'utvm_runtime.h']]],
-  ['utvmruntimedestroy',['UTVMRuntimeDestroy',['../utvm__runtime_8h.html#abf893bf85d65824c181844b5837287b6',1,'utvm_runtime.h']]],
-  ['utvmruntimedsomodulecreate',['UTVMRuntimeDSOModuleCreate',['../utvm__runtime_8h.html#a6abb5a26789e5997394a7f3e8e92187f',1,'utvm_runtime.h']]],
-  ['utvmruntimedsomoduledestroy',['UTVMRuntimeDSOModuleDestroy',['../utvm__runtime_8h.html#ae1285eaab9ec43f529f654ea5fc5e496',1,'utvm_runtime.h']]],
-  ['utvmruntimegetoutput',['UTVMRuntimeGetOutput',['../utvm__runtime_8h.html#a4dbabaa36630d5034cb9b011be1d7c35',1,'utvm_runtime.h']]],
-  ['utvmruntimerun',['UTVMRuntimeRun',['../utvm__runtime_8h.html#af1809b86c1f76b3e59e077f5a223d035',1,'utvm_runtime.h']]],
-  ['utvmruntimesetinput',['UTVMRuntimeSetInput',['../utvm__runtime_8h.html#a30d55e38bd6d3e2e2f02fbe713c5254d',1,'utvm_runtime.h']]]
+  ['usedmemory',['UsedMemory',['../classtvm_1_1runtime_1_1vm_1_1Allocator.html#a66e334404d87a2716422a21e3813109e',1,'tvm::runtime::vm::Allocator']]]
 ];

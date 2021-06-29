@@ -37,7 +37,7 @@ var searchData=
   ['tvm_5fdll_5fexport_5ftyped_5ffunc',['TVM_DLL_EXPORT_TYPED_FUNC',['../packed__func_8h.html#ae5b445392a64daa55bef53b4cf53025c',1,'packed_func.h']]],
   ['tvm_5ffunc_5freg_5fvar_5fdef',['TVM_FUNC_REG_VAR_DEF',['../registry_8h.html#a11b8ea3ea0ce4b6cd2d7be2d5a5627b8',1,'registry.h']]],
   ['tvm_5fgeneric_5ffunc_5freg_5fvar_5fdef',['TVM_GENERIC_FUNC_REG_VAR_DEF',['../generic__func_8h.html#a10648c82893ca73b419af99573860159',1,'generic_func.h']]],
-  ['tvm_5fmicro_5fruntime_5fapi_5fapi',['TVM_MICRO_RUNTIME_API_API',['../utvm__runtime_8h.html#a82bcf22ac3cc35341edf8624944d2b6e',1,'utvm_runtime.h']]],
+  ['tvm_5fmicro_5fruntime_5fapi_5fapi',['TVM_MICRO_RUNTIME_API_API',['../microtvm__runtime_8h.html#a82bcf22ac3cc35341edf8624944d2b6e',1,'microtvm_runtime.h']]],
   ['tvm_5fobject_5fatomic_5fref_5fcounter',['TVM_OBJECT_ATOMIC_REF_COUNTER',['../object_8h.html#a5f80f888f69ef72c51ba04cac65d033c',1,'object.h']]],
   ['tvm_5fobject_5freg_5fvar_5fdef',['TVM_OBJECT_REG_VAR_DEF',['../object_8h.html#ac63db332fce1a32738566c8880f0d425',1,'object.h']]],
   ['tvm_5fop_5fregister_5fvar_5fdef',['TVM_OP_REGISTER_VAR_DEF',['../ir_2op_8h.html#ab5474fc13be62edade1979771c0c2a49',1,'op.h']]],

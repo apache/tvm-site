@@ -4,6 +4,7 @@ var searchData=
   ['id_5findex',['id_index',['../structtvm_1_1relay_1_1GetValidCountsAttrs.html#ac389b60b8ef5e90becba282516860c8e',1,'tvm::relay::GetValidCountsAttrs::id_index()'],['../structtvm_1_1relay_1_1NonMaximumSuppressionAttrs.html#a30440265e31b996c01f9732be77156cb',1,'tvm::relay::NonMaximumSuppressionAttrs::id_index()']]],
   ['identity_5felement',['identity_element',['../classtvm_1_1tir_1_1CommReducerNode.html#ad8cbb3f8e12db0a2a814c1cbde2e8b9c',1,'tvm::tir::CommReducerNode']]],
   ['if_5fop',['if_op',['../structtvm_1_1runtime_1_1vm_1_1Instruction.html#a039413e469418af54f5fef9280b9035c',1,'tvm::runtime::vm::Instruction']]],
+  ['ignore_5findex',['ignore_index',['../structtvm_1_1relay_1_1NLLLossAttrs.html#acfa25dd0c30a236b965afb0fec6bc43d',1,'tvm::relay::NLLLossAttrs']]],
   ['implementations',['implementations',['../classtvm_1_1relay_1_1OpSpecializationNode.html#a8d5ffe97532ff7b663d2b7da09bd9042',1,'tvm::relay::OpSpecializationNode']]],
   ['imports_5f',['imports_',['../classtvm_1_1runtime_1_1ModuleNode.html#af05db5c6d76f9b4dbf0631815170c5a7',1,'tvm::runtime::ModuleNode']]],
   ['indent',['indent',['../classtvm_1_1ReprPrinter.html#ae39b784d74fbac5576f48abc37885db0',1,'tvm::ReprPrinter']]],

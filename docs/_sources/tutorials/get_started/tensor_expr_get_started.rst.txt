@@ -234,7 +234,7 @@ helper function to run a profile of the TVM generated code.
  .. code-block:: none
 
     Numpy running time: 0.000005
-    naive: 0.000004
+    naive: 0.000003
 
 
 
@@ -425,10 +425,10 @@ We can now compare the different schedules
  .. code-block:: none
 
                 Operator                  Timing             Performance
-                   numpy    4.978140350431204e-06                    1.0
-                   naive              3.5808e-06      0.7193047499534305
-                parallel              2.4637e-06     0.49490368422147746
-                  vector             1.41518e-05      2.8427884719590475
+                   numpy    4.897489852737635e-06                    1.0
+                   naive              3.4977e-06      0.7141821841743745
+                parallel    2.3685000000000003e-06    0.4836150908359797
+                  vector             1.41619e-05       2.891665001017547
 
 
 
@@ -721,7 +721,7 @@ device, and verifies the correctness of the code.
     before it moves on to the next stage.
 
   A complete description of these primitives can be found in the
-[Schedule Primitives](https://tvm.apache.org/docs/tutorials/language/schedule_primitives.html) docs page.
+  [Schedule Primitives](https://tvm.apache.org/docs/tutorials/language/schedule_primitives.html) docs page.
 
 Example 2: Manually Optimizing Matrix Multiplication with TE
 ------------------------------------------------------------
@@ -729,14 +729,20 @@ Example 2: Manually Optimizing Matrix Multiplication with TE
 Now we will consider a second, more advanced example, demonstrating how with
 just 18 lines of python code TVM speeds up a common matrix multiplication operation by 18x.
 
-**Matrix multiplication is a compute intensive operation. There are two important optimizations for good CPU performance:**
-1. Increase the cache hit rate of memory access. Both complex numerical
-   computation and hot-spot memory access can be accelerated by a high cache hit
-   rate. This requires us to transform the origin memory access pattern to a pattern that fits the cache policy.
-2. SIMD (Single instruction multi-data), also known as the vector processing
-   unit. On each cycle instead of processing a single value, SIMD can process a small batch of data.
-   This requires us to transform the data access pattern in the loop
-   body in uniform pattern so that the LLVM backend can lower it to SIMD.
+**Matrix multiplication is a compute intensive operation. There are
+two important optimizations for good CPU performance:**
+
+1. Increase the cache hit rate of memory access. Both complex
+   numerical computation and hot-spot memory access can be
+   accelerated by a high cache hit rate. This requires us to
+   transform the origin memory access pattern to a pattern that fits
+   the cache policy.
+
+2. SIMD (Single instruction multi-data), also known as the vector
+   processing unit. On each cycle instead of processing a single
+   value, SIMD can process a small batch of data.  This requires us
+   to transform the data access pattern in the loop body in uniform
+   pattern so that the LLVM backend can lower it to SIMD.
 
 The techniques used in this tutorial are a subset of tricks mentioned in this
 `repository <https://github.com/flame/how-to-optimize-gemm>`_. Some of them
@@ -811,7 +817,7 @@ matrix multiplication.
 
  .. code-block:: none
 
-    Numpy running time: 0.006941
+    Numpy running time: 0.006495
 
 
 
@@ -867,7 +873,7 @@ optimizations.
 
  .. code-block:: none
 
-    none: 5.871126
+    none: 5.855593
 
 
 
@@ -963,7 +969,7 @@ schedule.
 
  .. code-block:: none
 
-    blocking: 0.116482
+    blocking: 0.121926
 
 
 
@@ -989,8 +995,8 @@ internal representation and compare it to the original:
 
     primfn(A_1: handle, B_1: handle, C_1: handle) -> ()
       attr = {"global_symbol": "main", "tir.noalias": True}
-      buffers = {A: Buffer(A_2: Pointer(float32), float32, [1024, 1024], []),
-                 C: Buffer(C_2: Pointer(float32), float32, [1024, 1024], []),
+      buffers = {C: Buffer(C_2: Pointer(float32), float32, [1024, 1024], []),
+                 A: Buffer(A_2: Pointer(float32), float32, [1024, 1024], []),
                  B: Buffer(B_2: Pointer(float32), float32, [1024, 1024], [])}
       buffer_map = {A_1: A, B_1: B, C_1: C} {
       for (x.outer: int32, 0, 32) {
@@ -1051,7 +1057,7 @@ already cache friendly from our previous optimizations.
 
  .. code-block:: none
 
-    vectorization: 0.129899
+    vectorization: 0.138534
     primfn(A_1: handle, B_1: handle, C_1: handle) -> ()
       attr = {"global_symbol": "main", "tir.noalias": True}
       buffers = {C: Buffer(C_2: Pointer(float32), float32, [1024, 1024], []),
@@ -1119,7 +1125,7 @@ more cache friendly.
 
  .. code-block:: none
 
-    loop permutation: 0.059711
+    loop permutation: 0.060371
     primfn(A_1: handle, B_1: handle, C_1: handle) -> ()
       attr = {"global_symbol": "main", "tir.noalias": True}
       buffers = {C: Buffer(C_2: Pointer(float32), float32, [1024, 1024], []),
@@ -1212,7 +1218,7 @@ optimized schedule.
 
  .. code-block:: none
 
-    array packing: 0.060550
+    array packing: 0.061665
     primfn(A_1: handle, B_1: handle, C_1: handle) -> ()
       attr = {"global_symbol": "main", "tir.noalias": True}
       buffers = {C: Buffer(C_2: Pointer(float32), float32, [1024, 1024], []),
@@ -1300,7 +1306,7 @@ to `C` when all the block results are ready.
 
  .. code-block:: none
 
-    block caching: 0.058847
+    block caching: 0.059888
     primfn(A_1: handle, B_1: handle, C_1: handle) -> ()
       attr = {"global_symbol": "main", "tir.noalias": True}
       buffers = {C: Buffer(C_2: Pointer(float32), float32, [1024, 1024], []),
@@ -1379,7 +1385,7 @@ of thread-level parallelization.
 
  .. code-block:: none
 
-    parallelization: 0.015944
+    parallelization: 0.015720
     primfn(A_1: handle, B_1: handle, C_1: handle) -> ()
       attr = {"global_symbol": "main", "tir.noalias": True}
       buffers = {C: Buffer(C_2: Pointer(float32), float32, [1024, 1024], []),
@@ -1453,13 +1459,13 @@ working, we can compare the results.
  .. code-block:: none
 
                 Operator                  Timing             Performance
-                    none            5.8711263175                     1.0
-                blocking     0.11648151089999999    0.019839721477769072
-           vectorization            0.1298985455    0.022124978832905172
-        loop permutation             0.059711437     0.01017035467658374
-           array packing    0.060549881800000004    0.010313162845691065
-           block caching            0.0588466685    0.010023062921435772
-         parallelization            0.0159438366    0.0027156350822288367
+                    none       5.855593001099999                     1.0
+                blocking     0.12192608379999999     0.02082215819594969
+           vectorization            0.1385338242     0.02365837655963722
+        loop permutation    0.060370794500000005     0.01030993692503203
+           array packing     0.06166534110000001    0.010531015575777876
+           block caching            0.0598879426    0.010227476976072241
+         parallelization            0.0157201477    0.0026846380370095565
 
 
 
@@ -1496,7 +1502,7 @@ the computation for specific platforms.
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** ( 1 minutes  23.171 seconds)
+   **Total running time of the script:** ( 1 minutes  23.221 seconds)
 
 
 .. _sphx_glr_download_tutorials_get_started_tensor_expr_get_started.py:

@@ -15,6 +15,7 @@ var searchData=
   ['negative',['negative',['../namespacetvm_1_1topi.html#af6b3e60333fce92bcf0930e45683a8f6',1,'tvm::topi']]],
   ['new',['New',['../classtvm_1_1runtime_1_1SimpleObjAllocator_1_1Handler.html#afedd0ba3dc8dc82c7566bb9120a7c56d',1,'tvm::runtime::SimpleObjAllocator::Handler::New()'],['../classtvm_1_1runtime_1_1SimpleObjAllocator_1_1ArrayHandler.html#a310471cff82c5d0836f65ec7f199e621',1,'tvm::runtime::SimpleObjAllocator::ArrayHandler::New()']]],
   ['nextafter',['nextafter',['../namespacetvm.html#a96d86ba91e4855c84879ba886465cacf',1,'tvm']]],
+  ['nll_5floss',['nll_loss',['../namespacetvm_1_1topi.html#aeb1547800d4b7625326a176ca1dec6e0',1,'tvm::topi']]],
   ['no',['No',['../classtvm_1_1relay_1_1FeatureSet.html#a68c408c752ef58b2c27802491165adbb',1,'tvm::relay::FeatureSet']]],
   ['normalize',['normalize',['../classtvm_1_1te_1_1Schedule.html#a3fcdec89d8dec36d7b2586b9b0414dfe',1,'tvm::te::Schedule']]],
   ['normalize_5ffor_5ffeature_5fextraction',['normalize_for_feature_extraction',['../classtvm_1_1te_1_1Schedule.html#a15b572232c5cf46bbeaaae4d83458202',1,'tvm::te::Schedule']]],

@@ -216,10 +216,10 @@ var menudata={children:[
 {text:"u",url:"globals_u.html#index_u"},
 {text:"v",url:"globals_v.html#index_v"}]},
 {text:"Functions",url:"globals_func.html",children:[
+{text:"m",url:"globals_func.html#index_m"},
 {text:"p",url:"globals_func.html#index_p"},
 {text:"s",url:"globals_func.html#index_s"},
-{text:"t",url:"globals_func.html#index_t"},
-{text:"u",url:"globals_func.html#index_u"}]},
+{text:"t",url:"globals_func.html#index_t"}]},
 {text:"Variables",url:"globals_vars.html"},
 {text:"Typedefs",url:"globals_type.html"},
 {text:"Enumerations",url:"globals_enum.html"},

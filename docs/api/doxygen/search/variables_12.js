@@ -39,7 +39,7 @@ var searchData=
   ['tvm_5fmodule_5fmain',['tvm_module_main',['../namespacetvm_1_1runtime_1_1symbol.html#abfc81fd15b5d8087b956a8cef4152bf4',1,'tvm::runtime::symbol']]],
   ['tvm_5fparam_5fprefix',['tvm_param_prefix',['../namespacetvm_1_1runtime_1_1symbol.html#ae37724090c492bb8cdf40f967eef111c',1,'tvm::runtime::symbol']]],
   ['tvm_5fprepare_5fglobal_5fbarrier',['tvm_prepare_global_barrier',['../namespacetvm_1_1runtime_1_1symbol.html#af4a5fe87c6e95d6b082a2be1960efbe5',1,'tvm::runtime::symbol']]],
-  ['tvm_5frun_5ffunc_5fprefix',['tvm_run_func_prefix',['../namespacetvm_1_1runtime_1_1symbol.html#a4fc3086bb77f0a41c8df3f45a260eec5',1,'tvm::runtime::symbol']]],
+  ['tvm_5frun_5ffunc_5fsuffix',['tvm_run_func_suffix',['../namespacetvm_1_1runtime_1_1symbol.html#af0339fd6150c77e921b74c9c22a4c4ec',1,'tvm::runtime::symbol']]],
   ['tvm_5fset_5fdevice',['tvm_set_device',['../namespacetvm_1_1runtime_1_1symbol.html#aaad9cf8f51a55b2ec5b19854d692bd21',1,'tvm::runtime::symbol']]],
   ['type',['type',['../classtvm_1_1relay_1_1TypePatternNode.html#aab5faa2a58862707b8dc18b59cccac19',1,'tvm::relay::TypePatternNode']]],
   ['type_5fannotation',['type_annotation',['../classtvm_1_1relay_1_1VarNode.html#a79a56885eaf2a9326ff490164a5c1f0e',1,'tvm::relay::VarNode::type_annotation()'],['../classtvm_1_1tir_1_1VarNode.html#a7a84c6d137a79e9a5b9c4b6183f18353',1,'tvm::tir::VarNode::type_annotation()']]],

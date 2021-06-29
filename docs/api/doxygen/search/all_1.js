@@ -275,6 +275,7 @@ var searchData=
   ['attrsnode_3c_20multiboxpriorattrs_20_3e',['AttrsNode&lt; MultiBoxPriorAttrs &gt;',['../classtvm_1_1AttrsNode.html',1,'tvm']]],
   ['attrsnode_3c_20multiboxtransformlocattrs_20_3e',['AttrsNode&lt; MultiBoxTransformLocAttrs &gt;',['../classtvm_1_1AttrsNode.html',1,'tvm']]],
   ['attrsnode_3c_20ndarraysizeattrs_20_3e',['AttrsNode&lt; NdarraySizeAttrs &gt;',['../classtvm_1_1AttrsNode.html',1,'tvm']]],
+  ['attrsnode_3c_20nlllossattrs_20_3e',['AttrsNode&lt; NLLLossAttrs &gt;',['../classtvm_1_1AttrsNode.html',1,'tvm']]],
   ['attrsnode_3c_20nonmaximumsuppressionattrs_20_3e',['AttrsNode&lt; NonMaximumSuppressionAttrs &gt;',['../classtvm_1_1AttrsNode.html',1,'tvm']]],
   ['attrsnode_3c_20ondeviceattrs_20_3e',['AttrsNode&lt; OnDeviceAttrs &gt;',['../classtvm_1_1AttrsNode.html',1,'tvm']]],
   ['attrsnode_3c_20onehotattrs_20_3e',['AttrsNode&lt; OneHotAttrs &gt;',['../classtvm_1_1AttrsNode.html',1,'tvm']]],
