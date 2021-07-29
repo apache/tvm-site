@@ -8,8 +8,7 @@
 <html class="writer-html5" lang="en" >
 <head>
   <meta charset="utf-8">
-  <meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
-
+  
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
   <title>InferBound Pass &mdash; tvm 0.8.dev0 documentation</title>
@@ -258,6 +257,7 @@
 <p class="caption"><span class="caption-text">MISC</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../vta/index.html">VTA: Deep Learning Accelerator Stack</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../profiling/index.html">Profiling Deep Learning Models</a></li>
 </ul>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../genindex.html">Index</a></li>
@@ -338,7 +338,7 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <section id="inferbound-pass">
+  <div class="section" id="inferbound-pass">
 <span id="dev-inferbound-pass"></span><h1>InferBound Pass<a class="headerlink" href="#inferbound-pass" title="Permalink to this headline">¶</a></h1>
 <p>The InferBound pass is run after normalize, and before ScheduleOps <a class="reference external" href="https://github.com/apache/tvm/blob/main/python/tvm/driver/build_module.py">build_module.py</a>. The main job of InferBound is to create the bounds map, which specifies a Range for each IterVar in the program. These bounds are then passed to ScheduleOps, where they are used to set the extents of For loops, see <a class="reference external" href="https://github.com/apache/tvm/blob/main/src/te/operation/op_util.cc">MakeLoopNest</a>, and to set the sizes of allocated buffers (<a class="reference external" href="https://github.com/apache/tvm/blob/main/src/te/operation/compute_op.cc">BuildRealize</a>), among other uses.</p>
 <p>The output of InferBound is a map from IterVar to Range:</p>
@@ -445,15 +445,15 @@
 </ol>
 <p>So it remains to explain what InferBound does when it visits a stage. As can be seen in the pseudo-code above, InferBound calls two functions on each stage: InferRootBound, and PassDownDomain. The purpose of InferRootBound is to set the Range (in <code class="docutils literal notranslate"><span class="pre">rmap</span></code>) of each root_iter_var of the stage. (Note: InferRootBound does not set the Range of any other IterVar, only those belonging to root_iter_vars). The purpose of PassDownDomain is to propagate this information to the rest of the stage’s IterVars.  When PassDownDomain returns, all IterVars of the stage have known Ranges in <code class="docutils literal notranslate"><span class="pre">rmap</span></code>.</p>
 <p>The remainder of the document dives into the details of InferRootBound and PassDownDomain. Since PassDownDomain is simpler to describe, we will cover it first.</p>
-<section id="itervar-hyper-graph">
+<div class="section" id="itervar-hyper-graph">
 <span id="itervarhypergraph"></span><h2>IterVar Hyper-graph<a class="headerlink" href="#itervar-hyper-graph" title="Permalink to this headline">¶</a></h2>
 <p>The InferBound pass traverses the stage graph, as described above. However, within each stage is another graph, whose nodes are IterVars. InferRootBound and PassDownDomain perform message-passing on these IterVar graphs.</p>
 <p>Recall that all IterVars of the stage are related by IterVarRelations. The IterVarRelations of a stage form a directed acyclic hyper-graph, where each node of the graph corresponds to an IterVar, and each hyper-edge corresponds to an IterVarRelation. We can also represent this hyper-graph as a DAG, which is simpler to visualize as shown below.</p>
 <img alt="https://raw.githubusercontent.com/tvmai/tvmai.github.io/main/images/docs/inferbound/relations.png" class="align-center" src="https://raw.githubusercontent.com/tvmai/tvmai.github.io/main/images/docs/inferbound/relations.png" />
 <p>The above diagram shows the IterVar hyper-graph for one stage. The stage has one root_iter_var, <code class="docutils literal notranslate"><span class="pre">i</span></code>. It has been split, and the resulting inner axis <code class="docutils literal notranslate"><span class="pre">i.inner</span></code>, has been split again. The leaf_iter_vars of the stage are shown in green: <code class="docutils literal notranslate"><span class="pre">i.outer</span></code>, <code class="docutils literal notranslate"><span class="pre">i.inner.outer</span></code>, and <code class="docutils literal notranslate"><span class="pre">i.inner.inner</span></code>.</p>
 <p>Message passing functions are named “PassUp” or “PassDown”, depending on whether messages are passed from children to their parent in the DAG (“PassUp”), or from the parent to its children (“PassDown”). For example, the large arrow on the left-hand side of the diagram above, shows that PassDownDomain sends messages from the root IterVar <code class="docutils literal notranslate"><span class="pre">i</span></code> to its children <code class="docutils literal notranslate"><span class="pre">i.outer</span></code> and <code class="docutils literal notranslate"><span class="pre">i.inner</span></code>.</p>
-</section>
-<section id="passdowndomain">
+</div>
+<div class="section" id="passdowndomain">
 <span id="id1"></span><h2>PassDownDomain<a class="headerlink" href="#passdowndomain" title="Permalink to this headline">¶</a></h2>
 <p>The purpose of PassDownDomain is to take the Ranges produced by InferRootBound for the root_iter_vars, and set the Ranges of all other IterVars in the stage.</p>
 <p>PassDownDomain iterates through the stage’s IterVarRelations. There are three possible types of IterVarRelation: split, fuse, and rebase. The most interesting case (since it offers opportunity for improvement), is IterVarRelations representing splits.</p>
@@ -467,8 +467,8 @@
 <div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="n">rmap</span><span class="p">[</span><span class="n">fuse</span><span class="o">-&gt;</span><span class="n">fused</span><span class="p">]</span> <span class="o">=</span> <span class="n">Range</span><span class="o">::</span><span class="n">FromMinExtent</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">rmap</span><span class="p">[</span><span class="n">fuse</span><span class="o">-&gt;</span><span class="n">outer</span><span class="p">]</span><span class="o">-&gt;</span><span class="n">extent</span> <span class="o">*</span> <span class="n">rmap</span><span class="p">[</span><span class="n">fuse</span><span class="o">-&gt;</span><span class="n">inner</span><span class="p">]</span><span class="o">-&gt;</span><span class="n">extent</span><span class="p">)</span>
 </pre></div>
 </div>
-</section>
-<section id="inferrootbound">
+</div>
+<div class="section" id="inferrootbound">
 <h2>InferRootBound<a class="headerlink" href="#inferrootbound" title="Permalink to this headline">¶</a></h2>
 <p>Recall that InferBound calls InferRootBound, followed by <a class="reference internal" href="#passdowndomain"><span class="std std-ref">PassDownDomain</span></a> on each stage in the stage graph. The purpose of InferRootBound is to set the Range of each root_iter_var of the Stage’s operation. These Ranges will be propagated to the rest of the stage’s IterVars using <a class="reference internal" href="#passdowndomain"><span class="std std-ref">PassDownDomain</span></a>. Note that InferRootBound does not set the Range of any other IterVar, only those belonging to the stage’s root_iter_vars.</p>
 <p>If the stage is an output stage or placeholder, InferRootBound simply sets the root_iter_var Ranges to their default values. The default Range for a root_iter_var is taken from the <code class="docutils literal notranslate"><span class="pre">dom</span></code> member of the IterVar (see the IterVarNode class declaration above).</p>
@@ -476,14 +476,14 @@
 <p>This process can seem complicated. One reason is that a stage can have more than one consumer. Each consumer has different requirements, and these must somehow be consolidated. Similarly, the stage may output more than one tensor, and each consumer only uses a particular subset of these tensors. Furthermore, even if a consumer uses a particular tensor, it may not use all elements of the tensor.</p>
 <p>As mentioned above, a consumer may only require a small number of elements from each tensor. The consumers can be thought of as making requests to the stage, for certain regions of its output tensors. The job of Phases 1-3 is to establish the regions of each output tensor that are required by each consumer.</p>
 <img alt="https://raw.githubusercontent.com/tvmai/tvmai.github.io/main/images/docs/inferbound/inferbound_phases.png" class="align-center" src="https://raw.githubusercontent.com/tvmai/tvmai.github.io/main/images/docs/inferbound/inferbound_phases.png" />
-<section id="intsets">
+<div class="section" id="intsets">
 <h3>IntSets<a class="headerlink" href="#intsets" title="Permalink to this headline">¶</a></h3>
 <p>During InferRootBound, Ranges are converted to IntSets, and message passing is performed over IntSets. Therefore, it is important to understand the difference between Ranges and IntSets. The name “IntSet” suggests it can represent an arbitrary set of integers, e.g., A = {-10, 0, 10, 12, 13}. This would certainly be more expressive than a Range, which only represents a set of contiguous integers, e.g., B = {10,11,12}.</p>
 <p>However, currently IntSets come in only three varieties: IntervalSets, StrideSets, and ModularSets. IntervalSets, similarly to Ranges, only represent sets of contiguous integers. A StrideSet is defined by a base IntervalSet, a list of strides, and a list of extents. However, StrideSet is unused, and ModularSet is only used by the frontend.</p>
 <p>Therefore, not all sets of integers can be represented by an IntSet in TVM currently. For example, set A in the example above can not be represented by an IntSet. However, in future the functionality of IntSet can be extended to handle more general kinds of integer sets, without requiring modification to users of IntSet.</p>
 <p><em>InferBound is more complicated for schedules that contain compute_at. Therefore, we first explain InferBound for schedules that do not contain compute_at.</em></p>
-</section>
-<section id="phase-1-initialize-intsets-for-consumer-s-leaf-iter-vars">
+</div>
+<div class="section" id="phase-1-initialize-intsets-for-consumer-s-leaf-iter-vars">
 <span id="phase1"></span><h3>Phase 1: Initialize IntSets for consumer’s leaf_iter_vars<a class="headerlink" href="#phase-1-initialize-intsets-for-consumer-s-leaf-iter-vars" title="Permalink to this headline">¶</a></h3>
 <div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="cm">/*</span>
 <span class="cm"> * Input: Map&lt;IterVar, Range&gt; rmap: contains the Range for each IterVar of the consumer stage</span>
@@ -499,8 +499,8 @@
 <li><p>Case 3: Relaxation is needed. In this case, the leaf’s Range is simply converted to an IntSet.</p></li>
 </ul>
 <p>For simplicity, we assume the schedule does not contain thread axes. In this case, Case 2 is only relevant if the schedule contains compute_at. Please refer to the section <a class="reference internal" href="#inferboundca"><span class="std std-ref">InferBound with compute_at</span></a>, for further explanation.</p>
-</section>
-<section id="phase-2-propagate-intsets-from-consumer-s-leaves-to-consumer-s-roots">
+</div>
+<div class="section" id="phase-2-propagate-intsets-from-consumer-s-leaves-to-consumer-s-roots">
 <span id="phase2"></span><h3>Phase 2: Propagate IntSets from consumer’s leaves to consumer’s roots<a class="headerlink" href="#phase-2-propagate-intsets-from-consumer-s-leaves-to-consumer-s-roots" title="Permalink to this headline">¶</a></h3>
 <div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="cm">/*</span>
 <span class="cm"> * Input: Map&lt;IterVar, IntSet&gt; up_state: consumer leaf -&gt; IntSet</span>
@@ -520,8 +520,8 @@
 </pre></div>
 </div>
 <p>Note that if the schedule does not contain compute_at, Phases 1-2 are actually unnecessary. dom_map can be built directly from the known Ranges in rmap. Ranges simply need to be converted to IntSets, which involves no loss of information.</p>
-</section>
-<section id="phase-3-propagate-intsets-to-consumer-s-input-tensors">
+</div>
+<div class="section" id="phase-3-propagate-intsets-to-consumer-s-input-tensors">
 <span id="phase3"></span><h3>Phase 3: Propagate IntSets to consumer’s input tensors<a class="headerlink" href="#phase-3-propagate-intsets-to-consumer-s-input-tensors" title="Permalink to this headline">¶</a></h3>
 <div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="cm">/*</span>
 <span class="cm"> * Input: Map&lt;IterVar, IntSet&gt; dom_map: consumer root -&gt; IntSet</span>
@@ -539,8 +539,8 @@
 <span class="p">}</span>
 </pre></div>
 </div>
-</section>
-<section id="phase-4-consolidate-across-all-consumers">
+</div>
+<div class="section" id="phase-4-consolidate-across-all-consumers">
 <span id="phase4"></span><h3>Phase 4: Consolidate across all consumers<a class="headerlink" href="#phase-4-consolidate-across-all-consumers" title="Permalink to this headline">¶</a></h3>
 <div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="cm">/*</span>
 <span class="cm"> * Input: Map&lt;Tensor, TensorDom&gt; tmap: output tensor -&gt; vector&lt;vector&lt;IntSet&gt; &gt;</span>
@@ -561,12 +561,12 @@
 <p>This clearly results in some unnecessary computation, i.e., tensor elements will be computed that are never used.</p>
 <p>Unfortunately, even if we’re lucky and the IntervalSet unions do not produce unnecessary computation, the fact that GatherBound considers each dimension of the tensor separately can also cause unnecessary computation. For example, in the diagram below the two consumers A and B require disjoint regions of the 2D tensor: consumer A requires T[0:2, 0:2], and consumer B requires T[2:4, 2:4]. GatherBound operates on each dimension of the tensor separately. For the first dimension of the tensor, GatherBound takes the union of intervals 0:2 and 2:4, producing 0:4 (note that no approximation was required here). Similarly for the second dimension of the tensor. Therefore, the dimension-wise union of these two requests is T[0:4, 0:4]. So GatherBound will cause all 16 elements of tensor T to be computed, even though only half of those elements will ever be used.</p>
 <img alt="https://raw.githubusercontent.com/tvmai/tvmai.github.io/main/images/docs/inferbound/gatherbound_problem.png" class="align-center" src="https://raw.githubusercontent.com/tvmai/tvmai.github.io/main/images/docs/inferbound/gatherbound_problem.png" />
-</section>
-</section>
-<section id="inferbound-with-compute-at">
+</div>
+</div>
+<div class="section" id="inferbound-with-compute-at">
 <span id="inferboundca"></span><h2>InferBound with compute_at<a class="headerlink" href="#inferbound-with-compute-at" title="Permalink to this headline">¶</a></h2>
 <p>If the schedule contains compute_at, Phases 1-2 of InferRootBound become more complex.</p>
-<section id="motivation">
+<div class="section" id="motivation">
 <h3>Motivation<a class="headerlink" href="#motivation" title="Permalink to this headline">¶</a></h3>
 <p><strong>Ex. 1</strong></p>
 <p>Consider the following snippet of a TVM program:</p>
@@ -607,8 +607,8 @@
 </pre></div>
 </div>
 <p>Based on the above examples, it is clear that InferBound should give different answers for stage C depending on where in its consumer D it is “attached”.</p>
-</section>
-<section id="attach-paths">
+</div>
+<div class="section" id="attach-paths">
 <span id="attachpaths"></span><h3>Attach Paths<a class="headerlink" href="#attach-paths" title="Permalink to this headline">¶</a></h3>
 <p>If stage C is computed at axis j of stage D, we say that C is  <em>attached</em>  to axis j of stage D. This is reflected in the Stage object by setting the following three member variables:</p>
 <div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">StageNode</span> <span class="o">:</span> <span class="k">public</span> <span class="n">Node</span> <span class="p">{</span>
@@ -640,13 +640,11 @@
 </pre></div>
 </div>
 <p>Here is the IR after ScheduleOps (note that loops with extent 1 have been preserved, using the <code class="docutils literal notranslate"><span class="pre">debug_keep_trivial_loop</span></code> argument of ScheduleOps):</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">//</span> <span class="n">attr</span> <span class="p">[</span><span class="n">compute</span><span class="p">(</span><span class="n">D</span><span class="p">,</span> <span class="mh">0x2c070b0</span><span class="p">)]</span> <span class="n">realize_scope</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
-<span class="n">realize</span> <span class="n">D</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">4</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">5</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">16</span><span class="p">])</span> <span class="p">{</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">realize</span> <span class="n">D</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">4</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">5</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">16</span><span class="p">])</span> <span class="p">{</span>
   <span class="n">produce</span> <span class="n">D</span> <span class="p">{</span>
     <span class="k">for</span> <span class="p">(</span><span class="n">di</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span> <span class="p">{</span>
       <span class="k">for</span> <span class="p">(</span><span class="n">dj</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">5</span><span class="p">)</span> <span class="p">{</span>
         <span class="k">for</span> <span class="p">(</span><span class="n">dk</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">16</span><span class="p">)</span> <span class="p">{</span>
-          <span class="o">//</span> <span class="n">attr</span> <span class="p">[</span><span class="n">compute</span><span class="p">(</span><span class="n">C</span><span class="p">,</span> <span class="mh">0x2c29990</span><span class="p">)]</span> <span class="n">realize_scope</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
           <span class="n">realize</span> <span class="n">C</span><span class="p">([</span><span class="n">dj</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="n">dk</span><span class="p">,</span> <span class="mi">1</span><span class="p">])</span> <span class="p">{</span>
             <span class="n">produce</span> <span class="n">C</span> <span class="p">{</span>
               <span class="k">for</span> <span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span> <span class="p">{</span>
@@ -682,8 +680,8 @@
             <span class="n">D</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">j_outer</span><span class="o">*</span><span class="mi">8</span> <span class="o">+</span> <span class="n">j_inner</span><span class="p">]</span> <span class="o">=</span> <span class="n">C</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">*</span><span class="mi">2</span>
 </pre></div>
 </div>
-</section>
-<section id="building-an-attach-path">
+</div>
+<div class="section" id="building-an-attach-path">
 <h3>Building an Attach Path<a class="headerlink" href="#building-an-attach-path" title="Permalink to this headline">¶</a></h3>
 <p>We continue to refer to stages C and D, as introduced in the previous section. The CreateAttachPath algorithm builds the attach path of a stage C as follows. If C does not have attach_type <code class="docutils literal notranslate"><span class="pre">kScope</span></code>, then C has no attachment, and C’s attach path is empty. Otherwise, C is attached at attach_stage=D. We iterate through D’s leaf variables in top-down order. All leaf variables starting from C.attach_ivar and lower are added to C’s attach path. Then, if D is also attached somewhere, e.g., to stage E, the process is repeated for E’s leaves. Thus CreateAttachPath continues to add variables to C’s attach path until a stage with no attachment is encountered.</p>
 <p>In the example below, C is attached at D, and D is attached at E.</p>
@@ -723,14 +721,14 @@
 <span class="p">}</span>
 </pre></div>
 </div>
-</section>
-<section id="id2">
+</div>
+<div class="section" id="id2">
 <h3>InferBound with compute_at<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h3>
 <p>Now that the concept of an attach path has been introduced, we return to how InferBound differs if the schedule contains compute_at. The only difference is in InferRootBound, <a class="reference internal" href="#phase1"><span class="std std-ref">Phase 1: Initialize IntSets for consumer’s leaf_iter_vars</span></a> and <a class="reference internal" href="#phase2"><span class="std std-ref">Phase 2: Propagate IntSets from consumer’s leaves to consumer’s roots</span></a>.</p>
 <p>In InferRootBound, the goal is to determine Ranges for the root_iter_vars of a particular stage, C. Phases 1-2 of InferRootBound assign IntSets to the leaf IterVars of C’s consumers, and then propagate those IntSets up to the consumers’ root_iter_vars.</p>
 <p>If there are no attachments, the Ranges already computed for the consumer’s variables define how much of C is needed by the consumer. However, if the stage is actually inside the scope of one of the consumer’s variables j, then only a single point within the Range of j is needed at a time.</p>
-</section>
-<section id="phase1ca">
+</div>
+<div class="section" id="phase1ca">
 <span id="id3"></span><h3>Phase 1: Initialize IntSets for consumer’s leaf_iter_vars<a class="headerlink" href="#phase1ca" title="Permalink to this headline">¶</a></h3>
 <div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="cm">/*</span>
 <span class="cm"> * Input: Map&lt;IterVar, Range&gt; rmap: contains the Range for each IterVar of the consumer stage</span>
@@ -746,8 +744,8 @@
 <li><p>Case 3: Relaxation is needed. In this case, the leaf’s Range is simply converted to an IntSet.</p></li>
 </ul>
 <p>Case 2 occurs if we encounter the attachment point of stage C in the consumer. For this attach_ivar, and all higher leaf variables of the consumer, Case 2 will be applied. This ensures that only a single point within the Range of the leaf variable will be requested, if C is inside the leaf variable’s scope.</p>
-</section>
-<section id="phase2ca">
+</div>
+<div class="section" id="phase2ca">
 <span id="id4"></span><h3>Phase 2: Propagate IntSets from consumer’s leaves to consumer’s roots<a class="headerlink" href="#phase2ca" title="Permalink to this headline">¶</a></h3>
 <div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="cm">/*</span>
 <span class="cm"> * Input: Map&lt;IterVar, IntSet&gt; up_state: consumer leaf -&gt; IntSet</span>
@@ -779,8 +777,8 @@
         <span class="n">E</span><span class="p">[</span><span class="n">ei</span><span class="p">,</span> <span class="n">ej</span><span class="p">]</span> <span class="o">=</span> <span class="n">D</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">*</span><span class="mi">4</span>
 </pre></div>
 </div>
-</section>
-<section id="limitations-of-passupdomain">
+</div>
+<div class="section" id="limitations-of-passupdomain">
 <h3>Limitations of PassUpDomain<a class="headerlink" href="#limitations-of-passupdomain" title="Permalink to this headline">¶</a></h3>
 <p>This section describes known limitations of PassUpDomain. These limitations affect the Ranges produced by InferBound, as well as other users of PassUpDomain such as <code class="docutils literal notranslate"><span class="pre">tensorize</span></code>.</p>
 <p><strong>Ex. 6</strong></p>
@@ -933,9 +931,9 @@
 <img alt="https://raw.githubusercontent.com/tvmai/tvmai.github.io/main/images/docs/inferbound/passupdomain_nodiv.png" class="align-center" src="https://raw.githubusercontent.com/tvmai/tvmai.github.io/main/images/docs/inferbound/passupdomain_nodiv.png" />
 <p>The best that can be done with rectangular regions is shown in the following diagram. The orange regions are the minimum rectangular regions covering the region of B that needs to be computed, at each iteration of the outer loop.</p>
 <img alt="https://raw.githubusercontent.com/tvmai/tvmai.github.io/main/images/docs/inferbound/passupdomain_min.png" class="align-center" src="https://raw.githubusercontent.com/tvmai/tvmai.github.io/main/images/docs/inferbound/passupdomain_min.png" />
-</section>
-</section>
-</section>
+</div>
+</div>
+</div>
 
 
            </div>

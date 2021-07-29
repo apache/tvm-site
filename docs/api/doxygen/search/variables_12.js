@@ -27,6 +27,8 @@ var searchData=
   ['timestamp',['timestamp',['../classtvm_1_1auto__scheduler_1_1MeasureResultNode.html#a8b19513d8b082d04eba41a9f353beee0',1,'tvm::auto_scheduler::MeasureResultNode']]],
   ['top_5fk',['top_k',['../structtvm_1_1relay_1_1NonMaximumSuppressionAttrs.html#ad9e2e281399a290410757e948784b93a',1,'tvm::relay::NonMaximumSuppressionAttrs']]],
   ['transform_5fsteps',['transform_steps',['../classtvm_1_1auto__scheduler_1_1StateNode.html#a980f03e5744ed104cf231219a4895d5e',1,'tvm::auto_scheduler::StateNode']]],
+  ['transpose_5fa',['transpose_a',['../structtvm_1_1relay_1_1MatmulAttrs.html#a397aa1573fc7e0bc13930390298a22fc',1,'tvm::relay::MatmulAttrs']]],
+  ['transpose_5fb',['transpose_b',['../structtvm_1_1relay_1_1MatmulAttrs.html#afd2c250d27a093cd4afbdb6d6fa7e370',1,'tvm::relay::MatmulAttrs']]],
   ['true_5fbranch',['true_branch',['../classtvm_1_1relay_1_1IfPatternNode.html#ad292c855acc88167ab25acd200c01d48',1,'tvm::relay::IfPatternNode::true_branch()'],['../classtvm_1_1relay_1_1IfNode.html#abbda9637de8fac5d227ef7c305e5f34e',1,'tvm::relay::IfNode::true_branch()']]],
   ['true_5foffset',['true_offset',['../structtvm_1_1runtime_1_1vm_1_1Instruction.html#a58e6e5eba0eba678b94273ef7deb1df2',1,'tvm::runtime::vm::Instruction']]],
   ['true_5fvalue',['true_value',['../classtvm_1_1tir_1_1SelectNode.html#a35e913f542bd1231b92adfc2d58938ef',1,'tvm::tir::SelectNode']]],

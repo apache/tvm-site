@@ -57,6 +57,7 @@ var searchData=
   ['kdevicekernellaunch',['kDeviceKernelLaunch',['../namespacetvm.html#a85e4536ea4e1c8d3d48c61135f0a8ff0aea7c0ea92da6200bb14ea17a6094e2bc',1,'tvm']]],
   ['kdevicename',['kDeviceName',['../namespacetvm_1_1runtime.html#a46fef1ca0ccc05473e9bb0a8c6b66619a0ac04959bdda893a53c05024409de9ca',1,'tvm::runtime']]],
   ['kdevicethreadaxis',['kDeviceThreadAxis',['../namespacetvm_1_1tir_1_1attr.html#a4933845b75cf4f08fb66f55fdd94986f',1,'tvm::tir::attr']]],
+  ['kdeviceusedynsharedmemory',['kDeviceUseDynSharedMemory',['../namespacetvm_1_1tir_1_1attr.html#a6644dc9ce51ba96b0364f7f891dcad9a',1,'tvm::tir::attr']]],
   ['kdlaocl',['kDLAOCL',['../c__runtime__api_8h.html#a57cbccb14c35a0e62dbc1b911188fcefad77aa5af5411ed9f3719f48af1f04b02',1,'c_runtime_api.h']]],
   ['kdldevice',['kDLDevice',['../c__runtime__api_8h.html#a190e81769e805cca153514137a66e793a924f1cfac1f15ee1995cb10fc0af4479',1,'c_runtime_api.h']]],
   ['kdlhexagon',['kDLHexagon',['../c__runtime__api_8h.html#a57cbccb14c35a0e62dbc1b911188fcefaad7f2a6159af2f349840446d850f1402',1,'c_runtime_api.h']]],

@@ -61,6 +61,7 @@ var searchData=
   ['ascsv',['AsCSV',['../classtvm_1_1runtime_1_1profiling_1_1ReportNode.html#a8ccd2ad227d7e4d18ac9194c64db05dd',1,'tvm::runtime::profiling::ReportNode']]],
   ['asin',['asin',['../namespacetvm.html#a9eabd3011b72041605ac7475094c87b1',1,'tvm::asin()'],['../namespacetvm_1_1topi.html#a95afdc62604276eb53f08c33d3fcf065',1,'tvm::topi::asin()']]],
   ['asinh',['asinh',['../namespacetvm.html#a52a4f309e25bcb51c6038f6e3ee931ec',1,'tvm::asinh()'],['../namespacetvm_1_1topi.html#a4d03b81c6aea45db35a800144da6cfb7',1,'tvm::topi::asinh()']]],
+  ['asjson',['AsJSON',['../classtvm_1_1runtime_1_1profiling_1_1ReportNode.html#a14a4f9e4ab99622474e423f7adbd26e3',1,'tvm::runtime::profiling::ReportNode']]],
   ['asobjectref',['AsObjectRef',['../classtvm_1_1runtime_1_1TVMPODValue__.html#a289a65bf255e3d192c60d7b5a8dcf097',1,'tvm::runtime::TVMPODValue_']]],
   ['assert',['Assert',['../classtvm_1_1TypeReporterNode.html#a45f573e694c0d74b655564d8250e99be',1,'tvm::TypeReporterNode']]],
   ['asserteq',['AssertEQ',['../classtvm_1_1TypeReporterNode.html#aeea573240a4b4a3c73f63724ea1120aa',1,'tvm::TypeReporterNode']]],

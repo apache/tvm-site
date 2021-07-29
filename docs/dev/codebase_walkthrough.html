@@ -8,8 +8,7 @@
 <html class="writer-html5" lang="en" >
 <head>
   <meta charset="utf-8">
-  <meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
-
+  
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
   <title>TVM Codebase Walkthrough by Example &mdash; tvm 0.8.dev0 documentation</title>
@@ -240,6 +239,7 @@
 <p class="caption"><span class="caption-text">MISC</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../vta/index.html">VTA: Deep Learning Accelerator Stack</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../profiling/index.html">Profiling Deep Learning Models</a></li>
 </ul>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../genindex.html">Index</a></li>
@@ -320,10 +320,10 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <section id="tvm-codebase-walkthrough-by-example">
+  <div class="section" id="tvm-codebase-walkthrough-by-example">
 <h1>TVM Codebase Walkthrough by Example<a class="headerlink" href="#tvm-codebase-walkthrough-by-example" title="Permalink to this headline">¶</a></h1>
 <p>Getting to know a new codebase can be a challenge. This is especially true for a codebase like that of TVM, where different components interact in non-obvious ways. In this guide, we try to illustrate the key elements that comprise a compilation pipeline with a simple example. For each important step, we show where in the codebase it is implemented. The purpose is to let new developers and interested users dive into the codebase more quickly.</p>
-<section id="codebase-structure-overview">
+<div class="section" id="codebase-structure-overview">
 <h2>Codebase Structure Overview<a class="headerlink" href="#codebase-structure-overview" title="Permalink to this headline">¶</a></h2>
 <p>At the root of the TVM repository, we have following subdirectories that together comprise a bulk of the codebase.</p>
 <ul class="simple">
@@ -340,8 +340,8 @@
 <li><p>Compile the operator into object code</p></li>
 </ul>
 <p>One of the interesting aspects of the TVM codebase is that interoperability between C++ and Python is not unidirectional. Typically, all code that performs heavy lifting is implemented in C++, and Python bindings are provided for the user interface. This is also true in TVM, but in the TVM codebase, C++ code can also call into functions defined in a Python module. For example, the convolution operator is implemented in Python, and its implementation is invoked from C++ code in Relay.</p>
-</section>
-<section id="vector-add-example">
+</div>
+<div class="section" id="vector-add-example">
 <h2>Vector Add Example<a class="headerlink" href="#vector-add-example" title="Permalink to this headline">¶</a></h2>
 <p>We use a simple example that uses the low level TVM API directly. The example is vector addition, which is covered in detail in <a class="reference internal" href="../tutorials/get_started/tensor_expr_get_started.html#tutorial-tensor-expr-get-started"><span class="std std-ref">Working with Operators Using Tensor Expression</span></a></p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">n</span> <span class="o">=</span> <span class="mi">1024</span>
@@ -442,7 +442,7 @@ You can also checkout <a class="reference external" href="https://github.com/tqc
   <span class="n">auto</span> <span class="n">it</span> <span class="o">=</span> <span class="n">fmap_</span><span class="o">.</span><span class="n">find</span><span class="p">(</span><span class="n">name</span><span class="p">);</span>
   <span class="n">const</span> <span class="n">FunctionInfo</span><span class="o">&amp;</span> <span class="n">info</span> <span class="o">=</span> <span class="n">it</span><span class="o">-&gt;</span><span class="n">second</span><span class="p">;</span>
   <span class="n">CUDAWrappedFunc</span> <span class="n">f</span><span class="p">;</span>
-  <span class="n">f</span><span class="o">.</span><span class="n">Init</span><span class="p">(</span><span class="n">this</span><span class="p">,</span> <span class="n">sptr_to_self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">info</span><span class="o">.</span><span class="n">arg_types</span><span class="o">.</span><span class="n">size</span><span class="p">(),</span> <span class="n">info</span><span class="o">.</span><span class="n">thread_axis_tags</span><span class="p">);</span>
+  <span class="n">f</span><span class="o">.</span><span class="n">Init</span><span class="p">(</span><span class="n">this</span><span class="p">,</span> <span class="n">sptr_to_self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">info</span><span class="o">.</span><span class="n">arg_types</span><span class="o">.</span><span class="n">size</span><span class="p">(),</span> <span class="n">info</span><span class="o">.</span><span class="n">launch_param_tags</span><span class="p">);</span>
   <span class="k">return</span> <span class="n">PackFuncVoidAddr</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">info</span><span class="o">.</span><span class="n">arg_types</span><span class="p">);</span>
 <span class="p">}</span>
 </pre></div>
@@ -461,7 +461,7 @@ You can also checkout <a class="reference external" href="https://github.com/tqc
       <span class="n">fcache_</span><span class="p">[</span><span class="n">device_id</span><span class="p">]</span> <span class="o">=</span> <span class="n">m_</span><span class="o">-&gt;</span><span class="n">GetFunc</span><span class="p">(</span><span class="n">device_id</span><span class="p">,</span> <span class="n">func_name_</span><span class="p">);</span>
     <span class="p">}</span>
     <span class="n">CUstream</span> <span class="n">strm</span> <span class="o">=</span> <span class="n">static_cast</span><span class="o">&lt;</span><span class="n">CUstream</span><span class="o">&gt;</span><span class="p">(</span><span class="n">CUDAThreadEntry</span><span class="p">::</span><span class="n">ThreadLocal</span><span class="p">()</span><span class="o">-&gt;</span><span class="n">stream</span><span class="p">);</span>
-    <span class="n">ThreadWorkLoad</span> <span class="n">wl</span> <span class="o">=</span> <span class="n">thread_axis_cfg_</span><span class="o">.</span><span class="n">Extract</span><span class="p">(</span><span class="n">args</span><span class="p">);</span>
+    <span class="n">ThreadWorkLoad</span> <span class="n">wl</span> <span class="o">=</span> <span class="n">launch_param_config_</span><span class="o">.</span><span class="n">Extract</span><span class="p">(</span><span class="n">args</span><span class="p">);</span>
     <span class="n">CUresult</span> <span class="n">result</span> <span class="o">=</span> <span class="n">cuLaunchKernel</span><span class="p">(</span>
         <span class="n">fcache_</span><span class="p">[</span><span class="n">device_id</span><span class="p">],</span>
         <span class="n">wl</span><span class="o">.</span><span class="n">grid_dim</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span>
@@ -476,8 +476,8 @@ You can also checkout <a class="reference external" href="https://github.com/tqc
 </pre></div>
 </div>
 <p>This concludes an overview of how TVM compiles and executes a function. Although we did not detail TOPI or Relay, in the end, all neural network operators go through the same compilation process as above. You are encouraged to dive into the details of the rest of the codebase.</p>
-</section>
-</section>
+</div>
+</div>
 
 
            </div>

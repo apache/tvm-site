@@ -122,6 +122,7 @@ var searchData=
   ['createinterpreter',['CreateInterpreter',['../namespacetvm_1_1relay.html#a461d2f1ed5e0162c4241d455a7d78e0a',1,'tvm::relay']]],
   ['createmodulepass',['CreateModulePass',['../namespacetvm_1_1transform.html#a241d7d09dbbff79f935e67a8c5fce7e9',1,'tvm::transform']]],
   ['createobject',['CreateObject',['../classtvm_1_1ReflectionVTable.html#a7e9282bf41a0b789833f63fd93f4d181',1,'tvm::ReflectionVTable::CreateObject(const std::string &amp;type_key, const runtime::TVMArgs &amp;kwargs)'],['../classtvm_1_1ReflectionVTable.html#a64c45110f5eb7dbb7976a35f58a3e20c',1,'tvm::ReflectionVTable::CreateObject(const std::string &amp;type_key, const Map&lt; String, ObjectRef &gt; &amp;kwargs)']]],
+  ['createpapimetriccollector',['CreatePAPIMetricCollector',['../namespacetvm_1_1runtime_1_1profiling.html#af49d404b75e55adc53c4282c4b247573',1,'tvm::runtime::profiling']]],
   ['createprimfuncpass',['CreatePrimFuncPass',['../namespacetvm_1_1tir_1_1transform.html#a6b1492ac3cab5f661e4fb05d26a19200',1,'tvm::tir::transform']]],
   ['createrepeated',['CreateRepeated',['../classtvm_1_1runtime_1_1ArrayNode.html#aae210dbc3667622a873a27b822462ace',1,'tvm::runtime::ArrayNode']]],
   ['createstream',['CreateStream',['../classtvm_1_1runtime_1_1DeviceAPI.html#a33ace0cb4e8bfc9708fc5599a7ffe96a',1,'tvm::runtime::DeviceAPI']]],

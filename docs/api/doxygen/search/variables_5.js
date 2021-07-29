@@ -24,6 +24,7 @@ var searchData=
   ['extent',['extent',['../classtvm_1_1arith_1_1IterMarkNode.html#a65af849dc6a0214b9b192ddbc684f96e',1,'tvm::arith::IterMarkNode::extent()'],['../classtvm_1_1arith_1_1IterSplitExprNode.html#afe50d660cd72a521455f9cbfb5ac77ff',1,'tvm::arith::IterSplitExprNode::extent()'],['../classtvm_1_1auto__scheduler_1_1SplitStepNode.html#a4b675f63d0f6e060598853840140a749',1,'tvm::auto_scheduler::SplitStepNode::extent()'],['../classtvm_1_1RangeNode.html#acd2ddcfab1f591a6c1f2568dd0180845',1,'tvm::RangeNode::extent()'],['../classtvm_1_1tir_1_1ForNode.html#ab54798257255b682a1aad74cec33e070',1,'tvm::tir::ForNode::extent()']]],
   ['extents',['extents',['../classtvm_1_1tir_1_1AllocateNode.html#a0f6d59cffc5fda07450e0fdab6b66bcb',1,'tvm::tir::AllocateNode']]],
   ['extern_5fscope',['extern_scope',['../namespacetvm_1_1tir_1_1attr.html#a4bd38b620e1e9907216f3e583839dea3',1,'tvm::tir::attr']]],
+  ['extra_5fcollectors',['extra_collectors',['../structtvm_1_1runtime_1_1profiling_1_1CallFrame.html#a6df052f29c9c70ed46cf5c7a5cff11e1',1,'tvm::runtime::profiling::CallFrame']]],
   ['extra_5fmetrics',['extra_metrics',['../structtvm_1_1runtime_1_1profiling_1_1CallFrame.html#a436873f87bc5316bbab15e2811ff29d4',1,'tvm::runtime::profiling::CallFrame']]],
   ['extrapolation_5fvalue',['extrapolation_value',['../structtvm_1_1relay_1_1CropAndResizeAttrs.html#abb037f0a2525a31e1bc12439978e377d',1,'tvm::relay::CropAndResizeAttrs']]]
 ];

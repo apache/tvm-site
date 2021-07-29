@@ -8,8 +8,7 @@
 <html class="writer-html5" lang="en" >
 <head>
   <meta charset="utf-8">
-  <meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
-
+  
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
   <title>Reduction &mdash; tvm 0.8.dev0 documentation</title>
@@ -249,6 +248,7 @@
 <p class="caption"><span class="caption-text">MISC</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../vta/index.html">VTA: Deep Learning Accelerator Stack</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../profiling/index.html">Profiling Deep Learning Models</a></li>
 </ul>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../genindex.html">Index</a></li>
@@ -333,7 +333,7 @@
 <p class="admonition-title">Note</p>
 <p>Click <a class="reference internal" href="#sphx-glr-download-tutorials-language-reduction-py"><span class="std std-ref">here</span></a> to download the full example code</p>
 </div>
-<section class="sphx-glr-example-title" id="reduction">
+<div class="sphx-glr-example-title section" id="reduction">
 <span id="sphx-glr-tutorials-language-reduction-py"></span><h1>Reduction<a class="headerlink" href="#reduction" title="Permalink to this headline">¶</a></h1>
 <p><strong>Author</strong>: <a class="reference external" href="https://tqchen.github.io">Tianqi Chen</a></p>
 <p>This is an introduction material on how to do reduction in TVM.
@@ -348,7 +348,7 @@ construction blocks of linear algebra operations.</p>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 </pre></div>
 </div>
-<section id="describe-sum-of-rows">
+<div class="section" id="describe-sum-of-rows">
 <h2>Describe Sum of Rows<a class="headerlink" href="#describe-sum-of-rows" title="Permalink to this headline">¶</a></h2>
 <p>Assume we want to compute sum of rows as our example.
 In numpy semantics this can be written as <code class="code docutils literal notranslate"><span class="pre">B</span> <span class="pre">=</span> <span class="pre">numpy.sum(A,</span> <span class="pre">axis=1)</span></code></p>
@@ -373,8 +373,8 @@ axis and compute the sum of value over all k in the declared range.</p>
 <span class="n">B</span> <span class="o">=</span> <a href="../../api/python/te.html#tvm.te.compute" title="View documentation for tvm.te.compute"><span class="n">te</span><span class="o">.</span><span class="n">compute</span></a><span class="p">((</span><span class="n">n</span><span class="p">,),</span> <span class="k">lambda</span> <span class="n">i</span><span class="p">:</span> <a href="../../api/python/te.html#tvm.te.sum" title="View documentation for tvm.te.sum"><span class="n">te</span><span class="o">.</span><span class="n">sum</span></a><span class="p">(</span><span class="n">A</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">k</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="n">k</span><span class="p">),</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;B&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
-</section>
-<section id="schedule-the-reduction">
+</div>
+<div class="section" id="schedule-the-reduction">
 <h2>Schedule the Reduction<a class="headerlink" href="#schedule-the-reduction" title="Permalink to this headline">¶</a></h2>
 <p>There are several ways to schedule a reduction.
 Before doing anything, let us print out the IR code of default schedule.</p>
@@ -461,8 +461,8 @@ axis by different factors. The result is a nested reduction.</p>
 }
 </pre></div>
 </div>
-</section>
-<section id="reduction-factoring-and-parallelization">
+</div>
+<div class="section" id="reduction-factoring-and-parallelization">
 <h2>Reduction Factoring and Parallelization<a class="headerlink" href="#reduction-factoring-and-parallelization" title="Permalink to this headline">¶</a></h2>
 <p>One problem of building a reduction is that we cannot simply
 parallelize over the reduction axis. We need to divide the computation
@@ -483,7 +483,7 @@ result B.rf. The factored dimension becomes the first dimension of B.rf.</p>
   buffers = {B: Buffer(B_2: Pointer(float32), float32, [n: int32], [stride: int32], type=&quot;auto&quot;),
              A: Buffer(A_2: Pointer(float32), float32, [n, m: int32], [stride_1: int32, stride_2: int32], type=&quot;auto&quot;)}
   buffer_map = {A_1: A, B_1: B} {
-  attr [B.rf: Pointer(float32)] &quot;storage_scope&quot; = &quot;global&quot;;
+  attr [B.rf: Pointer(global float32)] &quot;storage_scope&quot; = &quot;global&quot;;
   allocate(B.rf, float32, [(n*16)]) {
     for (k.inner: int32, 0, 16) {
       for (i: int32, 0, n) {
@@ -514,8 +514,8 @@ the first axis of reduced result of B.f</p>
 <div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>[reduce(combiner=comm_reducer(result=[(x + y)], lhs=[x], rhs=[y], identity_element=[0f]), source=[B.rf[k.inner.v, ax0]], init=[], axis=[iter_var(k.inner.v, range(min=0, ext=16))], where=(bool)1, value_index=0)]
 </pre></div>
 </div>
-</section>
-<section id="cross-thread-reduction">
+</div>
+<div class="section" id="cross-thread-reduction">
 <h2>Cross Thread Reduction<a class="headerlink" href="#cross-thread-reduction" title="Permalink to this headline">¶</a></h2>
 <p>We can now parallelize over the factored axis.
 Here the reduction axis of B is marked to be a thread.
@@ -570,10 +570,14 @@ extern &quot;C&quot; __global__ void default_function_kernel0(float* __restrict_
   ((volatile float*)red_buf0)[(((((int)threadIdx.y) * 16) + ((int)threadIdx.x)))] = B_rf[(0)];
   __syncthreads();
   if (((int)threadIdx.x) &lt; 8) {
-    ((volatile float*)red_buf0)[(((((int)threadIdx.y) * 16) + ((int)threadIdx.x)))] = (((volatile float*)red_buf0)[(((((int)threadIdx.y) * 16) + ((int)threadIdx.x)))] + ((volatile float*)red_buf0)[((((((int)threadIdx.y) * 16) + ((int)threadIdx.x)) + 8))]);
-    ((volatile float*)red_buf0)[(((((int)threadIdx.y) * 16) + ((int)threadIdx.x)))] = (((volatile float*)red_buf0)[(((((int)threadIdx.y) * 16) + ((int)threadIdx.x)))] + ((volatile float*)red_buf0)[((((((int)threadIdx.y) * 16) + ((int)threadIdx.x)) + 4))]);
-    ((volatile float*)red_buf0)[(((((int)threadIdx.y) * 16) + ((int)threadIdx.x)))] = (((volatile float*)red_buf0)[(((((int)threadIdx.y) * 16) + ((int)threadIdx.x)))] + ((volatile float*)red_buf0)[((((((int)threadIdx.y) * 16) + ((int)threadIdx.x)) + 2))]);
-    ((volatile float*)red_buf0)[(((((int)threadIdx.y) * 16) + ((int)threadIdx.x)))] = (((volatile float*)red_buf0)[(((((int)threadIdx.y) * 16) + ((int)threadIdx.x)))] + ((volatile float*)red_buf0)[((((((int)threadIdx.y) * 16) + ((int)threadIdx.x)) + 1))]);
+    float w_8_0 = (((volatile float*)red_buf0)[(((((int)threadIdx.y) * 16) + ((int)threadIdx.x)))] + ((volatile float*)red_buf0)[((((((int)threadIdx.y) * 16) + ((int)threadIdx.x)) + 8))]);
+    ((volatile float*)red_buf0)[(((((int)threadIdx.y) * 16) + ((int)threadIdx.x)))] = w_8_0;
+    float w_4_0 = (((volatile float*)red_buf0)[(((((int)threadIdx.y) * 16) + ((int)threadIdx.x)))] + ((volatile float*)red_buf0)[((((((int)threadIdx.y) * 16) + ((int)threadIdx.x)) + 4))]);
+    ((volatile float*)red_buf0)[(((((int)threadIdx.y) * 16) + ((int)threadIdx.x)))] = w_4_0;
+    float w_2_0 = (((volatile float*)red_buf0)[(((((int)threadIdx.y) * 16) + ((int)threadIdx.x)))] + ((volatile float*)red_buf0)[((((((int)threadIdx.y) * 16) + ((int)threadIdx.x)) + 2))]);
+    ((volatile float*)red_buf0)[(((((int)threadIdx.y) * 16) + ((int)threadIdx.x)))] = w_2_0;
+    float w_1_0 = (((volatile float*)red_buf0)[(((((int)threadIdx.y) * 16) + ((int)threadIdx.x)))] + ((volatile float*)red_buf0)[((((((int)threadIdx.y) * 16) + ((int)threadIdx.x)) + 1))]);
+    ((volatile float*)red_buf0)[(((((int)threadIdx.y) * 16) + ((int)threadIdx.x)))] = w_1_0;
   }
   __syncthreads();
   if (((int)threadIdx.x) == 0) {
@@ -591,8 +595,8 @@ extern &quot;C&quot; __global__ void default_function_kernel0(float* __restrict_
 <span class="n">tvm</span><span class="o">.</span><span class="n">testing</span><span class="o">.</span><span class="n">assert_allclose</span><span class="p">(</span><span class="n">b</span><span class="o">.</span><span class="n">numpy</span><span class="p">(),</span> <a href="https://numpy.org/doc/stable/reference/generated/numpy.sum.html#numpy.sum" title="View documentation for numpy.sum"><span class="n">np</span><span class="o">.</span><span class="n">sum</span></a><span class="p">(</span><span class="n">a</span><span class="o">.</span><span class="n">numpy</span><span class="p">(),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span> <span class="n">rtol</span><span class="o">=</span><span class="mf">1e-4</span><span class="p">)</span>
 </pre></div>
 </div>
-</section>
-<section id="describe-convolution-via-2d-reduction">
+</div>
+<div class="section" id="describe-convolution-via-2d-reduction">
 <h2>Describe Convolution via 2D Reduction<a class="headerlink" href="#describe-convolution-via-2d-reduction" title="Permalink to this headline">¶</a></h2>
 <p>In TVM, we can describe convolution via 2D reduction in a simple way.
 Here is an example for 2D convolution with filter size = [3, 3] and strides = [1, 1].</p>
@@ -630,8 +634,8 @@ Here is an example for 2D convolution with filter size = [3, 3] and strides = [1
 }
 </pre></div>
 </div>
-</section>
-<section id="define-general-commutative-reduction-operation">
+</div>
+<div class="section" id="define-general-commutative-reduction-operation">
 <span id="general-reduction"></span><h2>Define General Commutative Reduction Operation<a class="headerlink" href="#define-general-commutative-reduction-operation" title="Permalink to this headline">¶</a></h2>
 <p>Besides the built-in reduction operations like <a class="reference internal" href="../../api/python/te.html#tvm.te.sum" title="tvm.te.sum"><code class="xref any py py-func docutils literal notranslate"><span class="pre">te.sum</span></code></a>,
 <a class="reference internal" href="../../api/python/te.html#tvm.te.min" title="tvm.te.min"><code class="xref any py py-func docutils literal notranslate"><span class="pre">tvm.te.min</span></code></a> and <a class="reference internal" href="../../api/python/te.html#tvm.te.max" title="tvm.te.max"><code class="xref any py py-func docutils literal notranslate"><span class="pre">tvm.te.max</span></code></a>, you can also define your
@@ -650,8 +654,8 @@ commutative reduction operation by <a class="reference internal" href="../../api
 values like <code class="code docutils literal notranslate"><span class="pre">argmax</span></code>, which can be done by tuple inputs.
 See <a class="reference internal" href="tuple_inputs.html#reduction-with-tuple-inputs"><span class="std std-ref">Describe Reduction with Collaborative Inputs</span></a> for more detail.</p>
 </div>
-</section>
-<section id="summary">
+</div>
+<div class="section" id="summary">
 <h2>Summary<a class="headerlink" href="#summary" title="Permalink to this headline">¶</a></h2>
 <p>This tutorial provides a walk through of reduction schedule.</p>
 <ul class="simple">
@@ -668,8 +672,8 @@ See <a class="reference internal" href="tuple_inputs.html#reduction-with-tuple-i
 </div>
 </div>
 <p class="sphx-glr-signature"><a class="reference external" href="https://sphinx-gallery.github.io">Gallery generated by Sphinx-Gallery</a></p>
-</section>
-</section>
+</div>
+</div>
 
 
            </div>

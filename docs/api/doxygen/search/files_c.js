@@ -3,6 +3,7 @@ var searchData=
   ['packed_5ffunc_2eh',['packed_func.h',['../crt_2packed__func_8h.html',1,'(Global Namespace)'],['../packed__func_8h.html',1,'(Global Namespace)']]],
   ['pad_5futils_2eh',['pad_utils.h',['../pad__utils_8h.html',1,'']]],
   ['page_5fallocator_2eh',['page_allocator.h',['../page__allocator_8h.html',1,'']]],
+  ['papi_2eh',['papi.h',['../papi_8h.html',1,'']]],
   ['parallel_5ffor_2eh',['parallel_for.h',['../parallel__for_8h.html',1,'']]],
   ['parser_2eh',['parser.h',['../parser_8h.html',1,'']]],
   ['pattern_2eh',['pattern.h',['../pattern_8h.html',1,'']]],

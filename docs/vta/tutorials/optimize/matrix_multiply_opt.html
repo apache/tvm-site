@@ -8,8 +8,7 @@
 <html class="writer-html5" lang="en" >
 <head>
   <meta charset="utf-8">
-  <meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
-
+  
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
   <title>Matrix Multiply Blocking &mdash; tvm 0.8.dev0 documentation</title>
@@ -247,6 +246,7 @@
 <li class="toctree-l2"><a class="reference internal" href="../../index.html#literature">Literature</a></li>
 </ul>
 </li>
+<li class="toctree-l1"><a class="reference internal" href="../../../profiling/index.html">Profiling Deep Learning Models</a></li>
 </ul>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../../genindex.html">Index</a></li>
@@ -333,7 +333,7 @@
 <p class="admonition-title">Note</p>
 <p>Click <a class="reference internal" href="#sphx-glr-download-vta-tutorials-optimize-matrix-multiply-opt-py"><span class="std std-ref">here</span></a> to download the full example code</p>
 </div>
-<section class="sphx-glr-example-title" id="matrix-multiply-blocking">
+<div class="sphx-glr-example-title section" id="matrix-multiply-blocking">
 <span id="vta-mat-mult-opt"></span><span id="sphx-glr-vta-tutorials-optimize-matrix-multiply-opt-py"></span><h1>Matrix Multiply Blocking<a class="headerlink" href="#matrix-multiply-blocking" title="Permalink to this headline">¶</a></h1>
 <p><strong>Author</strong>: <a class="reference external" href="https://homes.cs.washington.edu/~moreau/">Thierry Moreau</a></p>
 <p>This tutorial provides an overview on how to use TVM to map matrix
@@ -342,7 +342,7 @@ We recommend covering the <a class="reference internal" href="../matrix_multiply
 <p>In this tutorial, we will demonstrate TVM schedule optimizations to break large
 neural network operators down onto smaller blocks to achieve computation within
 limited hardware accelerator resources.</p>
-<section id="rpc-setup">
+<div class="section" id="rpc-setup">
 <h2>RPC Setup<a class="headerlink" href="#rpc-setup" title="Permalink to this headline">¶</a></h2>
 <p>We start by programming the Pynq’s FPGA and building its RPC runtime.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">__future__</span> <span class="k">import</span> <span class="n">absolute_import</span><span class="p">,</span> <span class="n">print_function</span>
@@ -384,8 +384,8 @@ limited hardware accelerator resources.</p>
     <span class="n">remote</span> <span class="o">=</span> <a href="../../../api/python/rpc.html#tvm.rpc.LocalSession" title="View documentation for tvm.rpc.LocalSession"><span class="n">rpc</span><span class="o">.</span><span class="n">LocalSession</span></a><span class="p">()</span>
 </pre></div>
 </div>
-</section>
-<section id="computation-declaration">
+</div>
+<div class="section" id="computation-declaration">
 <h2>Computation Declaration<a class="headerlink" href="#computation-declaration" title="Permalink to this headline">¶</a></h2>
 <p>As a first step, we need to describe our matrix multiplication computation.
 We define the matrix multiplication as the computation one would find in a
@@ -456,8 +456,8 @@ manageable chunks.</p>
 <span class="n">res</span> <span class="o">=</span> <a href="../../../api/python/te.html#tvm.te.compute" title="View documentation for tvm.te.compute"><span class="n">te</span><span class="o">.</span><span class="n">compute</span></a><span class="p">(</span><span class="n">output_shape</span><span class="p">,</span> <span class="k">lambda</span> <span class="o">*</span><span class="n">i</span><span class="p">:</span> <span class="n">res_min</span><span class="p">(</span><span class="o">*</span><span class="n">i</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">env</span><span class="o">.</span><span class="n">inp_dtype</span><span class="p">),</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;res&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
-</section>
-<section id="scheduling-the-computation">
+</div>
+<div class="section" id="scheduling-the-computation">
 <h2>Scheduling the Computation<a class="headerlink" href="#scheduling-the-computation" title="Permalink to this headline">¶</a></h2>
 <p>We’ll look at a set of schedule transformations necessary to map the
 matrix multiplications onto VTA in an efficient fashion.
@@ -479,11 +479,11 @@ Those include:</p>
              data: Buffer(data_2: Pointer(int8), int8, [1, 64, 1, 16], []),
              weight: Buffer(weight_2: Pointer(int8), int8, [64, 64, 16, 16], [])}
   buffer_map = {data_1: data, weight_1: weight, res_1: res} {
-  attr [data_buf: Pointer(int8)] &quot;storage_scope&quot; = &quot;global&quot;;
+  attr [data_buf: Pointer(global int8)] &quot;storage_scope&quot; = &quot;global&quot;;
   allocate(data_buf, int8, [1024]);
-  attr [weight_buf: Pointer(int8)] &quot;storage_scope&quot; = &quot;global&quot;;
+  attr [weight_buf: Pointer(global int8)] &quot;storage_scope&quot; = &quot;global&quot;;
   allocate(weight_buf, int8, [1048576]);
-  attr [res_gem: Pointer(int32)] &quot;storage_scope&quot; = &quot;global&quot;;
+  attr [res_gem: Pointer(global int32)] &quot;storage_scope&quot; = &quot;global&quot;;
   allocate(res_gem, int32, [1024]) {
     for (i1: int32, 0, 64) {
       for (i3: int32, 0, 16) {
@@ -533,7 +533,7 @@ Those include:</p>
 }
 </pre></div>
 </div>
-<section id="blocking-the-computation">
+<div class="section" id="blocking-the-computation">
 <h3>Blocking the Computation<a class="headerlink" href="#blocking-the-computation" title="Permalink to this headline">¶</a></h3>
 <p>The matrix multiplication is by default too large for activations or weights
 to fit on VTA’s on-chip buffers all at once.
@@ -620,11 +620,11 @@ inference in this example:</p>
              data: Buffer(data_2: Pointer(int8), int8, [1, 64, 1, 16], []),
              weight: Buffer(weight_2: Pointer(int8), int8, [64, 64, 16, 16], [])}
   buffer_map = {data_1: data, weight_1: weight, res_1: res} {
-  attr [data_buf: Pointer(int8)] &quot;storage_scope&quot; = &quot;global&quot;;
+  attr [data_buf: Pointer(global int8)] &quot;storage_scope&quot; = &quot;global&quot;;
   allocate(data_buf, int8, [1024]);
-  attr [weight_buf: Pointer(int8)] &quot;storage_scope&quot; = &quot;global&quot;;
+  attr [weight_buf: Pointer(global int8)] &quot;storage_scope&quot; = &quot;global&quot;;
   allocate(weight_buf, int8, [1048576]);
-  attr [res_gem: Pointer(int32)] &quot;storage_scope&quot; = &quot;global&quot;;
+  attr [res_gem: Pointer(global int32)] &quot;storage_scope&quot; = &quot;global&quot;;
   allocate(res_gem, int32, [256]) {
     for (i1: int32, 0, 64) {
       for (i3: int32, 0, 16) {
@@ -682,8 +682,8 @@ inference in this example:</p>
 }
 </pre></div>
 </div>
-</section>
-<section id="lowering-copies-to-dma-transfers">
+</div>
+<div class="section" id="lowering-copies-to-dma-transfers">
 <h3>Lowering Copies to DMA Transfers<a class="headerlink" href="#lowering-copies-to-dma-transfers" title="Permalink to this headline">¶</a></h3>
 <p>Next we set the buffer scopes to the corresponding on-chip VTA SRAM buffers.
 We move the load loops into the matrix multiply computation loop to stage
@@ -712,8 +712,8 @@ to perform bulk memory transfers on VTA.</p>
 <span class="n">s</span><span class="p">[</span><span class="n">res</span><span class="p">]</span><span class="o">.</span><span class="n">pragma</span><span class="p">(</span><span class="n">s</span><span class="p">[</span><span class="n">res</span><span class="p">]</span><span class="o">.</span><span class="n">op</span><span class="o">.</span><span class="n">axis</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="n">env</span><span class="o">.</span><span class="n">dma_copy</span><span class="p">)</span>
 </pre></div>
 </div>
-</section>
-<section id="lowering-computation-to-vta-compute-intrinsics">
+</div>
+<div class="section" id="lowering-computation-to-vta-compute-intrinsics">
 <h3>Lowering Computation to VTA Compute Intrinsics<a class="headerlink" href="#lowering-computation-to-vta-compute-intrinsics" title="Permalink to this headline">¶</a></h3>
 <p>The last phase is to lower the computation loops down to VTA hardware
 intrinsics by mapping the matrix multiplication to tensor intrinsics,
@@ -739,9 +739,9 @@ and mapping the shift, and clipping computation to the vector ALU.</p>
              data: Buffer(data_2: Pointer(int8), int8, [1, 64, 1, 16], []),
              weight: Buffer(weight_2: Pointer(int8), int8, [64, 64, 16, 16], [])}
   buffer_map = {data_1: data, weight_1: weight, res_1: res} {
-  attr [res_gem: Pointer(int32)] &quot;storage_scope&quot; = &quot;local.acc_buffer&quot;;
-  attr [data_buf: Pointer(int8)] &quot;storage_scope&quot; = &quot;local.inp_buffer&quot;;
-  attr [weight_buf: Pointer(int8)] &quot;storage_scope&quot; = &quot;local.wgt_buffer&quot; {
+  attr [res_gem: Pointer(local.acc_buffer int32)] &quot;storage_scope&quot; = &quot;local.acc_buffer&quot;;
+  attr [data_buf: Pointer(local.inp_buffer int8)] &quot;storage_scope&quot; = &quot;local.inp_buffer&quot;;
+  attr [weight_buf: Pointer(local.wgt_buffer int8)] &quot;storage_scope&quot; = &quot;local.wgt_buffer&quot; {
     @tir.vta.coproc_dep_push(3, 2, dtype=int32)
     for (i1.outer: int32, 0, 4) {
       attr [IterVar(vta: int32, (nullptr), &quot;ThreadIndex&quot;, &quot;vta&quot;)] &quot;coproc_scope&quot; = 2 {
@@ -805,9 +805,9 @@ and mapping the shift, and clipping computation to the vector ALU.</p>
 }
 </pre></div>
 </div>
-</section>
-</section>
-<section id="tvm-compilation-and-verification">
+</div>
+</div>
+<div class="section" id="tvm-compilation-and-verification">
 <h2>TVM Compilation and Verification<a class="headerlink" href="#tvm-compilation-and-verification" title="Permalink to this headline">¶</a></h2>
 <p>After specifying the schedule, we can compile it into a TVM function.
 We save the module so we can send it over RPC.
@@ -879,8 +879,8 @@ ensure correctness.</p>
 Successful blocked matrix multiply test!
 </pre></div>
 </div>
-</section>
-<section id="summary">
+</div>
+<div class="section" id="summary">
 <h2>Summary<a class="headerlink" href="#summary" title="Permalink to this headline">¶</a></h2>
 <p>This tutorial demonstrates how TVM scheduling primitives can achieve
 computation blocking for a matrix multiplication example.
@@ -895,8 +895,8 @@ hardware accelerator resources.</p>
 </div>
 </div>
 <p class="sphx-glr-signature"><a class="reference external" href="https://sphinx-gallery.github.io">Gallery generated by Sphinx-Gallery</a></p>
-</section>
-</section>
+</div>
+</div>
 
 
            </div>

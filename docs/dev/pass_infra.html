@@ -8,8 +8,7 @@
 <html class="writer-html5" lang="en" >
 <head>
   <meta charset="utf-8">
-  <meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
-
+  
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
   <title>Pass Infrastructure &mdash; tvm 0.8.dev0 documentation</title>
@@ -254,6 +253,7 @@
 <p class="caption"><span class="caption-text">MISC</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../vta/index.html">VTA: Deep Learning Accelerator Stack</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../profiling/index.html">Profiling Deep Learning Models</a></li>
 </ul>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../genindex.html">Index</a></li>
@@ -334,7 +334,7 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <section id="pass-infrastructure">
+  <div class="section" id="pass-infrastructure">
 <span id="pass-infra"></span><h1>Pass Infrastructure<a class="headerlink" href="#pass-infrastructure" title="Permalink to this headline">¶</a></h1>
 <p>Both Relay and TVM IR contain a series of optimization passes which improve performance metrics
 of models such as mean inference, memory footprint, or power consumption for
@@ -375,14 +375,14 @@ dependencies between passes.</p></li>
 allow users to implement a pass in Python and let the pass infra manipulate
 its execution.</p></li>
 </ol>
-<section id="the-design">
+<div class="section" id="the-design">
 <h2>The Design<a class="headerlink" href="#the-design" title="Permalink to this headline">¶</a></h2>
 <p>We focus on ease of extension for users, making it possible for users to quickly
 add new passes without loss of backward compatibility. The design contains both
 the backend and the frontend. The former implements the main logic of the pass
 infra. The latter provides simple APIs for users to interact with, i.e.,
 allowing users to quickly create their own optimization pipelines.</p>
-<section id="c-backend">
+<div class="section" id="c-backend">
 <h3>C++ Backend<a class="headerlink" href="#c-backend" title="Permalink to this headline">¶</a></h3>
 <p>We provide a <code class="docutils literal notranslate"><span class="pre">PassInfo</span></code> object to contain the basic information needed by
 a pass. <code class="docutils literal notranslate"><span class="pre">name</span></code> is the pass name, <code class="docutils literal notranslate"><span class="pre">opt_level</span></code> indicates at which optimization
@@ -401,7 +401,7 @@ needs to be executed when running under a user-provided optimization level. The
 <span class="p">};</span>
 </pre></div>
 </div>
-<section id="passcontext">
+<div class="section" id="passcontext">
 <h4>PassContext<a class="headerlink" href="#passcontext" title="Permalink to this headline">¶</a></h4>
 <p><code class="docutils literal notranslate"><span class="pre">PassContext</span></code> carries useful information for an optimization pass. For
 example, it contains the error reporting system so optimization authors can
@@ -411,7 +411,8 @@ configure the compilation options, including optimization level and
 required/disabled passes, etc. For instance, we may have a configuration which
 performs all passes at <code class="docutils literal notranslate"><span class="pre">opt_level=3</span></code> with some disabled passes using
 <code class="docutils literal notranslate"><span class="pre">disabled_pass=xx</span></code> provided by <code class="docutils literal notranslate"><span class="pre">PassContext</span></code>. Now we could glob all passes
-at <code class="docutils literal notranslate"><span class="pre">opt_level=3</span></code> and exclude those in the disabled pass list.</p>
+at <code class="docutils literal notranslate"><span class="pre">opt_level=3</span></code> and exclude those in the disabled pass list. <code class="docutils literal notranslate"><span class="pre">PassContext</span></code>
+also provides a way to instrument all passes. See section <a class="reference internal" href="#pass-instrument-cpp-backend"><span class="std std-ref">Pass Instrument</span></a>.</p>
 <p>This class is designed for users to conveniently write the Python <code class="docutils literal notranslate"><span class="pre">with</span></code>
 syntax to perform optimizations under a certain configuration. In addition, the
 users can obtain the context that is available within a certain program scope in
@@ -421,16 +422,22 @@ objects. Examples will be provided later to show how we can use both the C++ and
 Python APIs to create a compilation pipeline using pass context.</p>
 <div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="k">class</span> <span class="nc">PassContextNode</span> <span class="o">:</span> <span class="k">public</span> <span class="n">Object</span> <span class="p">{</span>
  <span class="k">public</span><span class="o">:</span>
-  <span class="n">ErrorReporter</span> <span class="n">err_reporter</span><span class="p">;</span>
   <span class="kt">int</span> <span class="n">opt_level</span><span class="p">{</span><span class="mi">2</span><span class="p">};</span>
   <span class="n">tvm</span><span class="o">::</span><span class="n">Array</span><span class="o">&lt;</span><span class="n">tvm</span><span class="o">::</span><span class="n">Expr</span><span class="o">&gt;</span> <span class="n">required_pass</span><span class="p">;</span>
   <span class="n">tvm</span><span class="o">::</span><span class="n">Array</span><span class="o">&lt;</span><span class="n">tvm</span><span class="o">::</span><span class="n">Expr</span><span class="o">&gt;</span> <span class="n">disabled_pass</span><span class="p">;</span>
+  <span class="k">mutable</span> <span class="n">Optional</span><span class="o">&lt;</span><span class="n">DiagnosticContext</span><span class="o">&gt;</span> <span class="n">diag_ctx</span><span class="p">;</span>
+  <span class="n">Map</span><span class="o">&lt;</span><span class="n">String</span><span class="p">,</span> <span class="n">ObjectRef</span><span class="o">&gt;</span> <span class="n">config</span><span class="p">;</span>
+  <span class="n">Array</span><span class="o">&lt;</span><span class="n">instrument</span><span class="o">::</span><span class="n">PassInstrument</span><span class="o">&gt;</span> <span class="n">instruments</span><span class="p">;</span>
 <span class="p">};</span>
 
 <span class="k">class</span> <span class="nc">PassContext</span> <span class="o">:</span> <span class="k">public</span> <span class="n">NodeRef</span> <span class="p">{</span>
  <span class="k">public</span><span class="o">:</span>
   <span class="n">TVM_DLL</span> <span class="k">static</span> <span class="n">PassContext</span> <span class="n">Create</span><span class="p">();</span>
   <span class="n">TVM_DLL</span> <span class="k">static</span> <span class="n">PassContext</span> <span class="nf">Current</span><span class="p">();</span>
+  <span class="n">TVM_DLL</span> <span class="kt">void</span> <span class="nf">InstrumentEnterPassContext</span><span class="p">();</span>
+  <span class="n">TVM_DLL</span> <span class="kt">void</span> <span class="nf">InstrumentExitPassContext</span><span class="p">();</span>
+  <span class="n">TVM_DLL</span> <span class="kt">bool</span> <span class="nf">InstrumentBeforePass</span><span class="p">(</span><span class="k">const</span> <span class="n">IRModule</span><span class="o">&amp;</span> <span class="n">mod</span><span class="p">,</span> <span class="k">const</span> <span class="n">PassInfo</span><span class="o">&amp;</span> <span class="n">info</span><span class="p">)</span> <span class="k">const</span><span class="p">;</span>
+  <span class="n">TVM_DLL</span> <span class="kt">void</span> <span class="nf">InstrumentAfterPass</span><span class="p">(</span><span class="k">const</span> <span class="n">IRModule</span><span class="o">&amp;</span> <span class="n">mod</span><span class="p">,</span> <span class="k">const</span> <span class="n">PassInfo</span><span class="o">&amp;</span> <span class="n">info</span><span class="p">)</span> <span class="k">const</span><span class="p">;</span>
   <span class="cm">/* Other fields are omitted. */</span>
 
  <span class="k">private</span><span class="o">:</span>
@@ -458,8 +465,8 @@ Python APIs to create a compilation pipeline using pass context.</p>
      <span class="n">PassContextThreadLocalStore</span><span class="p">;</span>
 </pre></div>
 </div>
-</section>
-<section id="pass-constructs">
+</div>
+<div class="section" id="pass-constructs">
 <h4>Pass Constructs<a class="headerlink" href="#pass-constructs" title="Permalink to this headline">¶</a></h4>
 <p>The pass infra is designed in a hierarchical manner, and it could work at
 different granularities of Relay/tir programs. A pure virtual class <code class="docutils literal notranslate"><span class="pre">PassNode</span></code> is
@@ -483,8 +490,8 @@ sequential passes.  Each subclass itself could act as a pass manager. For
 instance, they could collect the required passes and execute them or build
 a dependency graph based on the given metadata. The full definition of them
 can be found in <a class="reference external" href="https://github.com/apache/tvm/blob/main/src/relay/ir/transform.cc">src/relay/ir/transform.cc</a> and <a class="reference external" href="https://github.com/apache/tvm/blob/main/src/ir/transform.cc">src/ir/transform.cc</a>.</p>
-</section>
-<section id="module-level-passes">
+</div>
+<div class="section" id="module-level-passes">
 <h4>Module-Level Passes<a class="headerlink" href="#module-level-passes" title="Permalink to this headline">¶</a></h4>
 <p>Module level passes are geared mainly for global and inter-procedural
 optimizations (IPO), which are similar to the module pass used in LLVM. Some
@@ -507,8 +514,8 @@ the <code class="docutils literal notranslate"><span class="pre">pass_func</span
 including the unused functions in the module. Note that this field is designed
 as a packed function, which enables the implementation of the optimization in
 both C++ and Python.</p>
-</section>
-<section id="function-level-passes">
+</div>
+<div class="section" id="function-level-passes">
 <h4>Function-Level Passes<a class="headerlink" href="#function-level-passes" title="Permalink to this headline">¶</a></h4>
 <p>Function-level passes are used to implement various intra-function level
 optimizations for a given Relay/tir module. It fetches one function at a time from
@@ -532,8 +539,8 @@ the global information.</p>
 <code class="docutils literal notranslate"><span class="pre">pass_func</span></code> takes a function for optimization, it also needs a module as we
 may use it for reporting errors. A function could be annotated with
 “SkipOptimization” so that it will be ignored during optimization.</p>
-</section>
-<section id="sequential-passes">
+</div>
+<div class="section" id="sequential-passes">
 <h4>Sequential Passes<a class="headerlink" href="#sequential-passes" title="Permalink to this headline">¶</a></h4>
 <p><code class="docutils literal notranslate"><span class="pre">SequentialPass</span></code> is similar to Pytorch <code class="docutils literal notranslate"><span class="pre">nn.Sequential</span></code> that contains a host
 of passes for execution.</p>
@@ -615,10 +622,9 @@ favorably use Python APIs to create a specific pass object.</p>
 <span class="n">Pass</span> <span class="nf">Sequential</span><span class="p">(</span><span class="n">tvm</span><span class="o">::</span><span class="n">Array</span><span class="o">&lt;</span><span class="n">Pass</span><span class="o">&gt;</span> <span class="n">passes</span><span class="p">,</span> <span class="n">PassInfo</span> <span class="n">pass_info</span><span class="p">);</span>
 </pre></div>
 </div>
-</section>
-</section>
-<section id="pass-registration">
-<h3>Pass Registration<a class="headerlink" href="#pass-registration" title="Permalink to this headline">¶</a></h3>
+</div>
+<div class="section" id="pass-registration">
+<h4>Pass Registration<a class="headerlink" href="#pass-registration" title="Permalink to this headline">¶</a></h4>
 <p>We’ve covered the concept of different level of passes and the context used for
 compilation. It would be interesting to see how easily users can register
 a pass.  Let’s take const folding as an example. This pass has already been
@@ -660,8 +666,145 @@ Python when needed.</p>
 <div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="n">TVM_DLL</span> <span class="n">Pass</span> <span class="nf">FoldConstant</span><span class="p">();</span>
 </pre></div>
 </div>
-</section>
-<section id="python-frontend">
+</div>
+<div class="section" id="pass-instrument">
+<span id="pass-instrument-cpp-backend"></span><h4>Pass Instrument<a class="headerlink" href="#pass-instrument" title="Permalink to this headline">¶</a></h4>
+<p>Pass Instrument is a mechanism to analyze the pass itself. For example,
+we can use the infrastructure to know how much time and memory a pass requires
+or how a pass can transform the IR module.</p>
+<p>We introduce four instrument points in the life-cycle of <code class="docutils literal notranslate"><span class="pre">PassContext</span></code>.</p>
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="n">TVM_DLL</span> <span class="kt">void</span> <span class="nf">InstrumentEnterPassContext</span><span class="p">();</span>
+<span class="n">TVM_DLL</span> <span class="kt">void</span> <span class="nf">InstrumentExitPassContext</span><span class="p">();</span>
+<span class="n">TVM_DLL</span> <span class="kt">bool</span> <span class="nf">InstrumentBeforePass</span><span class="p">(</span><span class="k">const</span> <span class="n">IRModule</span><span class="o">&amp;</span> <span class="n">mod</span><span class="p">,</span> <span class="k">const</span> <span class="n">PassInfo</span><span class="o">&amp;</span> <span class="n">info</span><span class="p">)</span> <span class="k">const</span><span class="p">;</span>
+<span class="n">TVM_DLL</span> <span class="kt">void</span> <span class="nf">InstrumentAfterPass</span><span class="p">(</span><span class="k">const</span> <span class="n">IRModule</span><span class="o">&amp;</span> <span class="n">mod</span><span class="p">,</span> <span class="k">const</span> <span class="n">PassInfo</span><span class="o">&amp;</span> <span class="n">info</span><span class="p">)</span> <span class="k">const</span><span class="p">;</span>
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">InstrumentEnterPassContext</span></code> is called immediately when entering the scope
+of the <code class="docutils literal notranslate"><span class="pre">PassContext</span></code> instance.</p>
+<p><code class="docutils literal notranslate"><span class="pre">InstrumentExitPassContext</span></code> is called when leaving the scope of <code class="docutils literal notranslate"><span class="pre">PassContext</span></code>,
+or exceptions occur during the execution of passes.
+This method is also called when instruments is being overriden by <code class="docutils literal notranslate"><span class="pre">override_instruments</span></code> in <a class="reference internal" href="../api/python/ir.html#tvm.transform.PassContext" title="tvm.transform.PassContext"><code class="xref py py-class docutils literal notranslate"><span class="pre">tvm.transform.PassContext</span></code></a>.
+See <a class="reference internal" href="#pass-instrument-overriden"><span class="std std-ref">Override Instruments in Current PassContext</span></a>.</p>
+<p><code class="docutils literal notranslate"><span class="pre">InstrumentBeforePass</span></code> is called before execution.
+<code class="docutils literal notranslate"><span class="pre">InstrumentAfterPass</span></code> is called after execution if the pass should be run. The behavior is like:</p>
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="k">if</span> <span class="p">(</span><span class="n">pass_ctx</span><span class="p">.</span><span class="n">InstrumentBeforePass</span><span class="p">(</span><span class="n">ir_module</span><span class="p">,</span> <span class="n">pass_info</span><span class="p">))</span> <span class="p">{</span>
+  <span class="n">new_ir_module</span> <span class="o">=</span> <span class="n">run_pass</span><span class="p">(</span><span class="n">ir_module</span><span class="p">,</span> <span class="n">pass_ctx</span><span class="p">);</span>
+  <span class="n">pass_ctx</span><span class="p">.</span><span class="n">InstrumentAfterPass</span><span class="p">(</span><span class="n">new_ir_module</span><span class="p">,</span> <span class="n">pass_info</span><span class="p">);</span>
+  <span class="k">return</span> <span class="n">new_ir_module</span><span class="p">;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>The <code class="docutils literal notranslate"><span class="pre">PassInstrument</span></code> interface allow you to run arbitrary code inside above four methods.
+Multiple <code class="docutils literal notranslate"><span class="pre">PassInstrument</span></code> instances can be registed into a single
+<code class="docutils literal notranslate"><span class="pre">PassContext</span></code>. <code class="docutils literal notranslate"><span class="pre">PassInstrument</span></code> instances are called sequentially in the order of
+<code class="docutils literal notranslate"><span class="pre">instruments</span></code> argument passed to <code class="docutils literal notranslate"><span class="pre">PassContext</span></code>.</p>
+<p><code class="docutils literal notranslate"><span class="pre">PassInstrument</span></code> provides following interfaces:</p>
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="k">namespace</span> <span class="n">instrument</span> <span class="p">{</span>
+
+<span class="k">class</span> <span class="nc">PassInstrumentNode</span> <span class="o">:</span> <span class="k">public</span> <span class="n">Object</span> <span class="p">{</span>
+ <span class="k">public</span><span class="o">:</span>
+  <span class="n">String</span> <span class="n">name</span><span class="p">;</span>
+  <span class="k">virtual</span> <span class="kt">void</span> <span class="nf">EnterPassContext</span><span class="p">()</span> <span class="k">const</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+  <span class="k">virtual</span> <span class="kt">void</span> <span class="nf">ExitPassContext</span><span class="p">()</span> <span class="k">const</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+  <span class="k">virtual</span> <span class="kt">bool</span> <span class="nf">ShouldRun</span><span class="p">(</span><span class="k">const</span> <span class="n">IRModule</span><span class="o">&amp;</span> <span class="n">mod</span><span class="p">,</span> <span class="k">const</span> <span class="n">transform</span><span class="o">::</span><span class="n">PassInfo</span><span class="o">&amp;</span> <span class="n">info</span><span class="p">)</span> <span class="k">const</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+  <span class="k">virtual</span> <span class="kt">void</span> <span class="nf">RunBeforePass</span><span class="p">(</span><span class="k">const</span> <span class="n">IRModule</span><span class="o">&amp;</span> <span class="n">mod</span><span class="p">,</span> <span class="k">const</span> <span class="n">transform</span><span class="o">::</span><span class="n">PassInfo</span><span class="o">&amp;</span> <span class="n">info</span><span class="p">)</span> <span class="k">const</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+  <span class="k">virtual</span> <span class="kt">void</span> <span class="nf">RunAfterPass</span><span class="p">(</span><span class="k">const</span> <span class="n">IRModule</span><span class="o">&amp;</span> <span class="n">mod</span><span class="p">,</span> <span class="k">const</span> <span class="n">transform</span><span class="o">::</span><span class="n">PassInfo</span><span class="o">&amp;</span> <span class="n">info</span><span class="p">)</span> <span class="k">const</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+  <span class="cm">/* Other fields are omitted. */</span>
+<span class="p">};</span>
+
+<span class="k">class</span> <span class="nc">PassInstrument</span> <span class="o">:</span> <span class="k">public</span> <span class="n">ObjectRef</span> <span class="p">{</span>
+ <span class="k">public</span><span class="o">:</span>
+  <span class="n">TVM_DEFINE_OBJECT_REF_METHODS</span><span class="p">(</span><span class="n">PassInstrument</span><span class="p">,</span> <span class="n">ObjectRef</span><span class="p">,</span> <span class="n">PassInstrumentNode</span><span class="p">);</span>
+<span class="p">};</span>
+
+<span class="p">}</span>  <span class="c1">// namespace instrument</span>
+</pre></div>
+</div>
+<p>Python frontend are provided to implement <code class="docutils literal notranslate"><span class="pre">PassInstrument</span></code> quickly. See <a class="reference internal" href="#pass-instrument-py-frontend"><span class="std std-ref">Pass Instrument</span></a>.</p>
+<p>Within a <code class="docutils literal notranslate"><span class="pre">PassContext</span></code>, the call sequence of a <code class="docutils literal notranslate"><span class="pre">PassInstrument</span></code> instance is like:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">with</span> <span class="n">PassContext</span><span class="p">(</span><span class="n">instruments</span><span class="o">=</span><span class="p">[</span><span class="n">pi</span><span class="p">])</span> <span class="c1"># pi = a PassInstrument implementation.</span>
+    <span class="n">pi</span><span class="o">.</span><span class="n">EnterPassContext</span><span class="p">()</span>
+
+    <span class="k">if</span> <span class="n">pi</span><span class="o">.</span><span class="n">ShouldRun</span><span class="p">(</span><span class="n">Pass1</span><span class="p">):</span>
+        <span class="n">pi</span><span class="o">.</span><span class="n">RunBeforePass</span><span class="p">()</span>
+        <span class="n">Pass1</span><span class="p">()</span>
+        <span class="n">pi</span><span class="o">.</span><span class="n">RunAfterPass</span><span class="p">()</span>
+
+    <span class="k">if</span> <span class="n">pi</span><span class="o">.</span><span class="n">ShouldRun</span><span class="p">(</span><span class="n">Pass2</span><span class="p">):</span>
+        <span class="n">pi</span><span class="o">.</span><span class="n">RunBeforePass</span><span class="p">()</span>
+        <span class="n">Pass2</span><span class="p">()</span>
+        <span class="n">pi</span><span class="o">.</span><span class="n">RunAfterPass</span><span class="p">()</span>
+
+    <span class="n">pi</span><span class="o">.</span><span class="n">ExitPassContext</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>Here is a brief introduction of relations between <code class="docutils literal notranslate"><span class="pre">PassInstrument</span></code> interfaces
+and <code class="docutils literal notranslate"><span class="pre">PassContext</span></code> methods. See (<a class="reference external" href="https://github.com/apache/tvm/blob/main/src/ir/transform.cc">src/ir/transform.cc</a>) for more details.</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">InstrumentEnterPassContext</span></code></p>
+<ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">EnterPassContext()</span></code> is executed in the order of <code class="docutils literal notranslate"><span class="pre">instruments</span></code> passed to the <code class="docutils literal notranslate"><span class="pre">PassContext</span></code>.</p></li>
+<li><p>When an exception raises, <code class="docutils literal notranslate"><span class="pre">PassContext</span></code> disable the pass instrumentation
+by clearing all registered <code class="docutils literal notranslate"><span class="pre">PassInstrument</span></code> instances.</p></li>
+<li><p>Then <code class="docutils literal notranslate"><span class="pre">PassContext</span></code> execute <code class="docutils literal notranslate"><span class="pre">ExitPassContext()</span></code> method of each <code class="docutils literal notranslate"><span class="pre">PassInstrument</span></code>
+instances which successfully finished <code class="docutils literal notranslate"><span class="pre">EnterPassContext()</span></code></p></li>
+<li><p>For example, if <code class="docutils literal notranslate"><span class="pre">PassInstrument</span></code> A, B, and C are registered to a <code class="docutils literal notranslate"><span class="pre">PassContext</span></code>
+and A finished <code class="docutils literal notranslate"><span class="pre">EnterPassContext()</span></code> while B throws an exception, then C
+is never executed; <code class="docutils literal notranslate"><span class="pre">ExitPassContext()</span></code> of A is executed.</p></li>
+</ul>
+</li>
+<li><p><code class="docutils literal notranslate"><span class="pre">InstrumentExitPassContext</span></code></p>
+<ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">ExitPassContext()</span></code> of each <code class="docutils literal notranslate"><span class="pre">PassInstrument</span></code> instances are executed in
+the order of <code class="docutils literal notranslate"><span class="pre">instruments</span></code> passed to the <code class="docutils literal notranslate"><span class="pre">PassContext</span></code>.</p></li>
+<li><p>While an exception occurs, <code class="docutils literal notranslate"><span class="pre">instruments</span></code> is cleared.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">PassInstrument</span></code> Instances registered after the one throwing exceptions do not execute <code class="docutils literal notranslate"><span class="pre">ExitPassContext</span></code>.</p></li>
+</ul>
+</li>
+<li><p><code class="docutils literal notranslate"><span class="pre">InstrumentBeforePass</span></code></p>
+<ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">ShouldRun</span></code> is executed if the pass is not listed as a required pass.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">RunBeforePass</span></code> is executed in the order of <code class="docutils literal notranslate"><span class="pre">instruments</span></code> if the pass is not blocked by <code class="docutils literal notranslate"><span class="pre">ShouldRun</span></code>.</p></li>
+<li><p>Note that <code class="docutils literal notranslate"><span class="pre">InstrumentBeforePass</span></code> returns a boolean indicating whether or not the pass should be run.</p></li>
+<li><p>When an exception occur, it is thrown immediately.
+We rely on Python Context Manager to exit <code class="docutils literal notranslate"><span class="pre">PassContext</span></code> safely
+(meaning <code class="docutils literal notranslate"><span class="pre">ExitPassContext</span></code> of each instruments will be run. For C++, please refer to <a class="reference external" href="https://github.com/apache/tvm/blob/main/include/tvm/support/with.h">include/tvm/support/with.h</a>.)</p></li>
+</ul>
+</li>
+<li><p><code class="docutils literal notranslate"><span class="pre">InstrumentAfterPass</span></code></p>
+<ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">RunAfterPass</span></code> is executed in the order of <code class="docutils literal notranslate"><span class="pre">instruments</span></code> passed to the <code class="docutils literal notranslate"><span class="pre">PassContext</span></code>.</p></li>
+<li><p>When an exception occur, it is thrown immediately.
+We rely on Python Context Manager or <code class="docutils literal notranslate"><span class="pre">With</span></code> class(<a class="reference external" href="https://github.com/apache/tvm/blob/main/include/tvm/support/with.h">include/tvm/support/with.h</a>) to exit <code class="docutils literal notranslate"><span class="pre">PassContext</span></code> safely</p></li>
+</ul>
+</li>
+</ul>
+</div>
+<div class="section" id="built-in-instrument">
+<h4>Built-in Instrument<a class="headerlink" href="#built-in-instrument" title="Permalink to this headline">¶</a></h4>
+<p>There are several built-in instruments. Those marked with <em>TODO</em> are not implemented yet.</p>
+<ul class="simple">
+<li><p>PassTimingInstrument (see <a class="reference external" href="https://github.com/apache/tvm/blob/main/src/ir/instrument.cc">src/ir/instrument.cc</a>)</p>
+<ul>
+<li><p>Profile the execution time of passes.</p></li>
+</ul>
+</li>
+<li><p>PrintIRBefore(TODO)</p>
+<ul>
+<li><p>Print the IR module before the pass transforms it. <a class="reference internal" href="../api/python/ir.html#tvm.transform.PrintIR" title="tvm.transform.PrintIR"><code class="xref py py-func docutils literal notranslate"><span class="pre">tvm.transform.PrintIR()</span></code></a>
+can also serve this purpose if we insert it around passes. However,
+with the <code class="docutils literal notranslate"><span class="pre">PassInstrument</span></code>, we don’t need to modify the sequence of passes.</p></li>
+</ul>
+</li>
+<li><p>PrintAfter(TODO)</p>
+<ul>
+<li><p>Print the IR module after the pass transforms it.</p></li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+<div class="section" id="python-frontend">
 <h3>Python Frontend<a class="headerlink" href="#python-frontend" title="Permalink to this headline">¶</a></h3>
 <p>Only some simple APIs are needed for the frontend side. For example, we can
 provide users the following APIs to create and execute a pass (full
@@ -669,7 +812,7 @@ implementation is provided in <a class="reference external" href="https://github
 <a class="reference external" href="https://github.com/apache/tvm/blob/main/python/tvm/ir/transform.py">python/tvm/ir/transform.py</a>). The backend
 receives the information and decides which function it should use to create
 a Pass object.</p>
-<section id="id1">
+<div class="section" id="id1">
 <h4>PassContext<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h4>
 <p>Python frontend provides a wrapper for the <code class="docutils literal notranslate"><span class="pre">PassContext</span></code> to enable the
 <code class="docutils literal notranslate"><span class="pre">with</span></code> syntax by overriding <code class="docutils literal notranslate"><span class="pre">__enter__</span></code> and <code class="docutils literal notranslate"><span class="pre">__exit__</span></code>. A <code class="docutils literal notranslate"><span class="pre">current</span></code>
@@ -701,8 +844,8 @@ loop unrolling pass</p>
 </pre></div>
 </div>
 <p>Please refer to <a class="reference external" href="https://github.com/apache/tvm/blob/main/src/tir/transforms/unroll_loop.cc">src/tir/transforms/unroll_loop.cc</a> for more details.</p>
-</section>
-<section id="pass-objects">
+</div>
+<div class="section" id="pass-objects">
 <h4>Pass Objects<a class="headerlink" href="#pass-objects" title="Permalink to this headline">¶</a></h4>
 <p><code class="docutils literal notranslate"><span class="pre">Pass</span></code> is the base class of all pass objects. All methods here are just simple
 wrappers that were implemented in the backend. They are defined for users to
@@ -734,7 +877,7 @@ const folding has a Python API like the following:</p>
     <span class="n">x</span> <span class="o">=</span> <span class="n">relay</span><span class="o">.</span><span class="n">var</span><span class="p">(</span><span class="s2">&quot;x&quot;</span><span class="p">,</span> <span class="n">tp</span><span class="p">)</span>
     <span class="n">gv</span> <span class="o">=</span> <span class="n">relay</span><span class="o">.</span><span class="n">GlobalVar</span><span class="p">(</span><span class="s2">&quot;abs&quot;</span><span class="p">)</span>
     <span class="n">func</span> <span class="o">=</span> <span class="n">relay</span><span class="o">.</span><span class="n">Function</span><span class="p">([</span><span class="n">x</span><span class="p">],</span> <span class="n">relay</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">x</span><span class="p">))</span>
-    <span class="n">new_mod</span> <span class="o">=</span> <span class="n">relay</span><span class="o">.</span><span class="n">Module</span><span class="p">({</span><span class="n">gv</span><span class="p">:</span> <span class="n">func</span><span class="p">})</span>
+    <span class="n">new_mod</span> <span class="o">=</span> <span class="n">tvm</span><span class="o">.</span><span class="n">IRModule</span><span class="p">({</span><span class="n">gv</span><span class="p">:</span> <span class="n">func</span><span class="p">})</span>
     <span class="n">new_mod</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">mod</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">new_mod</span>
 
@@ -748,7 +891,7 @@ but it could be any customized optimizations at the module level. After
 creating this <code class="docutils literal notranslate"><span class="pre">module_pass</span></code>, users can apply it on any Relay module. For
 example, we can build an empty module and apply this pass to add an <code class="docutils literal notranslate"><span class="pre">abs</span></code>
 function.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">mod</span> <span class="o">=</span> <span class="n">relay</span><span class="o">.</span><span class="n">Module</span><span class="p">()</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">mod</span> <span class="o">=</span> <span class="n">tvm</span><span class="o">.</span><span class="n">IRModule</span><span class="p">()</span>
 <span class="n">mod</span> <span class="o">=</span> <span class="n">module_pass</span><span class="p">(</span><span class="n">mod</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -777,10 +920,64 @@ instance, an example function-level pass could be written as the following:</p>
 decorators and then invoke it. For more examples about how to customize your own
 optimization pipeline and debug Relay and tir passes, please refer to the
 <a class="reference external" href="https://github.com/apache/tvm/blob/main/tutorials/dev/use_pass_infra.py">use pass infra</a> tutorial.</p>
-</section>
-</section>
-</section>
-</section>
+</div>
+<div class="section" id="pass-instrument-py-frontend">
+<span id="id2"></span><h4>Pass Instrument<a class="headerlink" href="#pass-instrument-py-frontend" title="Permalink to this headline">¶</a></h4>
+<p>One can implement a <code class="docutils literal notranslate"><span class="pre">PassInstrument</span></code> by using the <code class="docutils literal notranslate"><span class="pre">pass_instrument</span></code>
+decorator(<a class="reference external" href="https://github.com/apache/tvm/blob/main/python/tvm/ir/instrument.py">python/tvm/ir/instrument.py</a>) on a class implementing following methods.
+Note that it is recommended to use the <code class="docutils literal notranslate"><span class="pre">pass_instrument</span></code> decorator to implement
+<code class="docutils literal notranslate"><span class="pre">PassInstrument</span></code>, instead of overriding or subclassing.</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">enter_pass_ctx</span></code></p>
+<ul>
+<li><p>This method is run when entering <code class="docutils literal notranslate"><span class="pre">PassContext</span></code>.</p></li>
+</ul>
+</li>
+<li><p><code class="docutils literal notranslate"><span class="pre">exit_pass_ctx</span></code></p>
+<ul>
+<li><p>This method is run when exiting <code class="docutils literal notranslate"><span class="pre">PassContext</span></code>.</p></li>
+</ul>
+</li>
+<li><p><code class="docutils literal notranslate"><span class="pre">should_run</span></code></p>
+<ul>
+<li><p>This method is run before a pass is executed, returning a boolean
+indicating whether or not the pass should be run.</p></li>
+</ul>
+</li>
+<li><p><code class="docutils literal notranslate"><span class="pre">run_before_pass</span></code></p>
+<ul>
+<li><p>If a pass should be run, this method is run just before pass execution.</p></li>
+</ul>
+</li>
+<li><p><code class="docutils literal notranslate"><span class="pre">run_after_pass</span></code></p>
+<ul>
+<li><p>This method is run right after a pass has been executed.</p></li>
+</ul>
+</li>
+</ul>
+<p><code class="docutils literal notranslate"><span class="pre">PassInstrument</span></code> instances can be registered through <code class="docutils literal notranslate"><span class="pre">instruments</span></code> argument in
+<a class="reference internal" href="../api/python/ir.html#tvm.transform.PassContext" title="tvm.transform.PassContext"><code class="xref py py-class docutils literal notranslate"><span class="pre">tvm.transform.PassContext</span></code></a>.</p>
+<p><a class="reference external" href="https://github.com/apache/tvm/blob/main/tutorials/dev/use_pass_instrument.py">use pass instrument</a> tutorial provides examples for how to implement <code class="docutils literal notranslate"><span class="pre">PassInstrument</span></code> with Python APIs.</p>
+</div>
+<div class="section" id="override-instruments-in-current-passcontext">
+<span id="pass-instrument-overriden"></span><h4>Override Instruments in Current PassContext<a class="headerlink" href="#override-instruments-in-current-passcontext" title="Permalink to this headline">¶</a></h4>
+<p><code class="docutils literal notranslate"><span class="pre">override_instruments</span></code> method is provided to override the <code class="docutils literal notranslate"><span class="pre">instruments</span></code> of current <code class="docutils literal notranslate"><span class="pre">PassContext</span></code>.
+For example, if passes are run without explicitly creating a new <code class="docutils literal notranslate"><span class="pre">PassContext</span></code>,
+one can still register <code class="docutils literal notranslate"><span class="pre">PassInstrument</span></code> into the global <code class="docutils literal notranslate"><span class="pre">PassContext</span></code> by:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">cur_pass_ctx</span> <span class="o">=</span> <span class="n">tvm</span><span class="o">.</span><span class="n">transform</span><span class="o">.</span><span class="n">PassContext</span><span class="o">.</span><span class="n">current</span><span class="p">()</span>
+<span class="c1"># override PassInstrument instances</span>
+<span class="n">cur_pass_ctx</span><span class="o">.</span><span class="n">override_instruments</span><span class="p">([</span><span class="n">pass_inst</span><span class="p">])</span>
+<span class="n">mod</span> <span class="o">=</span> <span class="n">pass_seq</span><span class="p">(</span><span class="n">mod</span><span class="p">)</span>
+<span class="n">result</span> <span class="o">=</span> <span class="n">pass_inst</span><span class="o">.</span><span class="n">get_result</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>Note that when <code class="docutils literal notranslate"><span class="pre">override_instruments</span></code> is called, the <code class="docutils literal notranslate"><span class="pre">exit_pass_ctx</span></code> method of
+old <code class="docutils literal notranslate"><span class="pre">PassInstrument</span></code> instances are called. Then the <code class="docutils literal notranslate"><span class="pre">enter_pass_ctx</span></code> method of
+new <code class="docutils literal notranslate"><span class="pre">PassInstrument</span></code> are called.</p>
+</div>
+</div>
+</div>
+</div>
 
 
            </div>

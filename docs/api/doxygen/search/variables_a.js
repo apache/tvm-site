@@ -20,6 +20,7 @@ var searchData=
   ['kdepthwiseconv2dnchw',['kDepthwiseConv2dNCHW',['../namespacetvm_1_1topi.html#a67461e3d47ef738a69d2c69824411123',1,'tvm::topi']]],
   ['kdepthwiseconv2dnhwc',['kDepthwiseConv2dNHWC',['../namespacetvm_1_1topi.html#a9094c3c432410ef2675444ecf8e06bfe',1,'tvm::topi']]],
   ['kdevicethreadaxis',['kDeviceThreadAxis',['../namespacetvm_1_1tir_1_1attr.html#a4933845b75cf4f08fb66f55fdd94986f',1,'tvm::tir::attr']]],
+  ['kdeviceusedynsharedmemory',['kDeviceUseDynSharedMemory',['../namespacetvm_1_1tir_1_1attr.html#a6644dc9ce51ba96b0364f7f891dcad9a',1,'tvm::tir::attr']]],
   ['keepdims',['keepdims',['../structtvm_1_1relay_1_1ReduceAttrs.html#afa8f7f2b60bcb5c44f6cd3338d80143a',1,'tvm::relay::ReduceAttrs::keepdims()'],['../structtvm_1_1relay_1_1VarianceAttrs.html#a35d1aaaa1f07c395f999eafb5a4ae60d',1,'tvm::relay::VarianceAttrs::keepdims()']]],
   ['keinsum',['kEinsum',['../namespacetvm_1_1topi.html#a6b33f2b888123f3ccd7191feeaedb93b',1,'tvm::topi']]],
   ['kelementwise',['kElementWise',['../namespacetvm_1_1topi.html#a0250c4095f19ae8a22ed85bc4ce5a40d',1,'tvm::topi']]],

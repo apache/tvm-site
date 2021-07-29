@@ -98,6 +98,7 @@ var searchData=
   ['extern_5fscope',['extern_scope',['../namespacetvm_1_1tir_1_1attr.html#a4bd38b620e1e9907216f3e583839dea3',1,'tvm::tir::attr']]],
   ['externop',['ExternOp',['../classtvm_1_1te_1_1ExternOp.html',1,'tvm::te::ExternOp'],['../classtvm_1_1te_1_1ExternOp.html#ab851798912152054fdb230f7176fda8a',1,'tvm::te::ExternOp::ExternOp()']]],
   ['externopnode',['ExternOpNode',['../classtvm_1_1te_1_1ExternOpNode.html',1,'tvm::te::ExternOpNode'],['../classtvm_1_1te_1_1ExternOpNode.html#aa2781af3e0414490286d62ed05722e7c',1,'tvm::te::ExternOpNode::ExternOpNode()']]],
+  ['extra_5fcollectors',['extra_collectors',['../structtvm_1_1runtime_1_1profiling_1_1CallFrame.html#a6df052f29c9c70ed46cf5c7a5cff11e1',1,'tvm::runtime::profiling::CallFrame']]],
   ['extra_5fmetrics',['extra_metrics',['../structtvm_1_1runtime_1_1profiling_1_1CallFrame.html#a436873f87bc5316bbab15e2811ff29d4',1,'tvm::runtime::profiling::CallFrame']]],
   ['extractelement',['ExtractElement',['../classtvm_1_1tir_1_1Shuffle.html#aebe8e15b3820297dfa79a5e5e89fa40c',1,'tvm::tir::Shuffle']]],
   ['extractsplitlength',['ExtractSplitLength',['../classtvm_1_1auto__scheduler_1_1FollowFusedSplitStepNode.html#a84ff625309e23fd7bd1eb90d7e74ae18',1,'tvm::auto_scheduler::FollowFusedSplitStepNode']]],

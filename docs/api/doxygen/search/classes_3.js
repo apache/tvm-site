@@ -14,6 +14,8 @@ var searchData=
   ['dequantizeattrs',['DequantizeAttrs',['../structtvm_1_1relay_1_1qnn_1_1DequantizeAttrs.html',1,'tvm::relay::qnn']]],
   ['deviceapi',['DeviceAPI',['../classtvm_1_1runtime_1_1DeviceAPI.html',1,'tvm::runtime']]],
   ['devicecopyattrs',['DeviceCopyAttrs',['../structtvm_1_1relay_1_1DeviceCopyAttrs.html',1,'tvm::relay']]],
+  ['devicewrapper',['DeviceWrapper',['../classtvm_1_1runtime_1_1profiling_1_1DeviceWrapper.html',1,'tvm::runtime::profiling']]],
+  ['devicewrappernode',['DeviceWrapperNode',['../structtvm_1_1runtime_1_1profiling_1_1DeviceWrapperNode.html',1,'tvm::runtime::profiling']]],
   ['dfpattern',['DFPattern',['../classtvm_1_1relay_1_1DFPattern.html',1,'tvm::relay']]],
   ['dfpatterncallback',['DFPatternCallback',['../classtvm_1_1relay_1_1DFPatternCallback.html',1,'tvm::relay']]],
   ['dfpatterncallbacknode',['DFPatternCallbackNode',['../classtvm_1_1relay_1_1DFPatternCallbackNode.html',1,'tvm::relay']]],

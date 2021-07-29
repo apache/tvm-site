@@ -12,8 +12,6 @@ var searchData=
   ['best_5fstate',['best_state',['../classtvm_1_1auto__scheduler_1_1ProgramMeasurerNode.html#a2fa6c1e2c74e0a8c56e0920756ac73cc',1,'tvm::auto_scheduler::ProgramMeasurerNode']]],
   ['beta',['beta',['../structtvm_1_1relay_1_1LRNAttrs.html#a53d47622301261204b6b5a836747ac07',1,'tvm::relay::LRNAttrs']]],
   ['bias',['bias',['../structtvm_1_1relay_1_1LRNAttrs.html#a390e11f169baddcb73e986dd4140a509',1,'tvm::relay::LRNAttrs']]],
-  ['bicubic_5falpha',['bicubic_alpha',['../structtvm_1_1relay_1_1ResizeAttrs.html#ab67fa94f353da458525b2a4d3f80abb7',1,'tvm::relay::ResizeAttrs']]],
-  ['bicubic_5fexclude',['bicubic_exclude',['../structtvm_1_1relay_1_1ResizeAttrs.html#afa99dcdfe21d7c4a62bd8a9e2a6e006c',1,'tvm::relay::ResizeAttrs']]],
   ['bind',['bind',['../classtvm_1_1relay_1_1RecClosureObj.html#ac275a8446970b548e574370b6795316f',1,'tvm::relay::RecClosureObj']]],
   ['bind_5fthread',['bind_thread',['../classtvm_1_1te_1_1IterVarAttrNode.html#a8bd9e6a5cf8ce894eddee84a8cc98bfd',1,'tvm::te::IterVarAttrNode']]],
   ['bit_5faxis',['bit_axis',['../structtvm_1_1relay_1_1BitPackAttrs.html#a4ed88a7ac71cae50fc5b0309d43a401e',1,'tvm::relay::BitPackAttrs']]],

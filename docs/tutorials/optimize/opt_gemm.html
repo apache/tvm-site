@@ -8,8 +8,7 @@
 <html class="writer-html5" lang="en" >
 <head>
   <meta charset="utf-8">
-  <meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
-
+  
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
   <title>How to optimize GEMM on CPU &mdash; tvm 0.8.dev0 documentation</title>
@@ -245,6 +244,7 @@
 <p class="caption"><span class="caption-text">MISC</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../vta/index.html">VTA: Deep Learning Accelerator Stack</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../profiling/index.html">Profiling Deep Learning Models</a></li>
 </ul>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../genindex.html">Index</a></li>
@@ -329,7 +329,7 @@
 <p class="admonition-title">Note</p>
 <p>Click <a class="reference internal" href="#sphx-glr-download-tutorials-optimize-opt-gemm-py"><span class="std std-ref">here</span></a> to download the full example code</p>
 </div>
-<section class="sphx-glr-example-title" id="how-to-optimize-gemm-on-cpu">
+<div class="sphx-glr-example-title section" id="how-to-optimize-gemm-on-cpu">
 <span id="opt-gemm"></span><span id="sphx-glr-tutorials-optimize-opt-gemm-py"></span><h1>How to optimize GEMM on CPU<a class="headerlink" href="#how-to-optimize-gemm-on-cpu" title="Permalink to this headline">¶</a></h1>
 <p><strong>Author</strong>: <a class="reference external" href="https://github.com/were">Jian Weng</a>,             <a class="reference external" href="https://github.com/yuruofeifei">Ruofei Yu</a></p>
 <p>(TL;DR) TVM provides abstract interfaces which allows users to depict an algorithm and the
@@ -356,7 +356,7 @@ backend can lower it to SIMD.</p></li>
 abstraction automatically, but some of them cannot be simply applied due to TVM constraints.</p>
 <p>All the experiment results mentioned below, are executed on 2015’s 15’ MacBook equipped with
 Intel i7-4770HQ CPU. The cache line size should be 64 bytes for all the x86 CPUs.</p>
-<section id="preparation-and-baseline">
+<div class="section" id="preparation-and-baseline">
 <h2>Preparation and Baseline<a class="headerlink" href="#preparation-and-baseline" title="Permalink to this headline">¶</a></h2>
 <p>In this tutorial, we will demo how to use TVM to optimize matrix multiplication.
 Before actually demonstrating, we first define these variables.
@@ -423,8 +423,8 @@ Then we write a baseline implementation, the simplest way to write a matrix mult
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Numpy running time: 0.006822
-Baseline: 5.992705
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Numpy running time: 0.009430
+Baseline: 3.431324
 </pre></div>
 </div>
 <p>In TVM, we can always inspect lower level IR to debug or optimize our schedule.
@@ -435,8 +435,8 @@ Here is the generated IR using our baseline schedule.</p>
 <p class="sphx-glr-script-out">Out:</p>
 <div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>primfn(A_1: handle, B_1: handle, C_1: handle) -&gt; ()
   attr = {&quot;global_symbol&quot;: &quot;main&quot;, &quot;tir.noalias&quot;: True}
-  buffers = {A: Buffer(A_2: Pointer(float32), float32, [1024, 1024], []),
-             C: Buffer(C_2: Pointer(float32), float32, [1024, 1024], []),
+  buffers = {C: Buffer(C_2: Pointer(float32), float32, [1024, 1024], []),
+             A: Buffer(A_2: Pointer(float32), float32, [1024, 1024], []),
              B: Buffer(B_2: Pointer(float32), float32, [1024, 1024], [])}
   buffer_map = {A_1: A, B_1: B, C_1: C} {
   for (x: int32, 0, 1024) {
@@ -450,8 +450,8 @@ Here is the generated IR using our baseline schedule.</p>
 }
 </pre></div>
 </div>
-</section>
-<section id="blocking">
+</div>
+<div class="section" id="blocking">
 <h2>Blocking<a class="headerlink" href="#blocking" title="Permalink to this headline">¶</a></h2>
 <p>A important trick to enhance the cache hit rate is blocking — data chunk will be computed
 block by block. The memory access inside the block is a small neighbourhood which is with high
@@ -482,7 +482,7 @@ fill 32 * 32 * sizeof(float) which is 4KB in the cache whose total size is 32KB 
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Opt1: 0.108867
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Opt1: 0.302728
 </pre></div>
 </div>
 <p>Here is the generated IR after blocking.</p>
@@ -517,8 +517,8 @@ fill 32 * 32 * sizeof(float) which is 4KB in the cache whose total size is 32KB 
 }
 </pre></div>
 </div>
-</section>
-<section id="vectorization">
+</div>
+<div class="section" id="vectorization">
 <h2>Vectorization<a class="headerlink" href="#vectorization" title="Permalink to this headline">¶</a></h2>
 <p>Another important trick is vectorization. When the memory access pattern is uniform,
 the compiler can detect this pattern and pass the continuous memory to vector processor. In TVM,
@@ -546,7 +546,7 @@ we can use <cite>vectorize</cite> interface to hint the compiler this pattern, s
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Opt2: 0.112521
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Opt2: 0.335738
 </pre></div>
 </div>
 <p>Here is the generated IR after vectorization.</p>
@@ -556,8 +556,8 @@ we can use <cite>vectorize</cite> interface to hint the compiler this pattern, s
 <p class="sphx-glr-script-out">Out:</p>
 <div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>primfn(A_1: handle, B_1: handle, C_1: handle) -&gt; ()
   attr = {&quot;global_symbol&quot;: &quot;main&quot;, &quot;tir.noalias&quot;: True}
-  buffers = {C: Buffer(C_2: Pointer(float32), float32, [1024, 1024], []),
-             A: Buffer(A_2: Pointer(float32), float32, [1024, 1024], []),
+  buffers = {A: Buffer(A_2: Pointer(float32), float32, [1024, 1024], []),
+             C: Buffer(C_2: Pointer(float32), float32, [1024, 1024], []),
              B: Buffer(B_2: Pointer(float32), float32, [1024, 1024], [])}
   buffer_map = {A_1: A, B_1: B, C_1: C} {
   for (x.outer: int32, 0, 32) {
@@ -577,8 +577,8 @@ we can use <cite>vectorize</cite> interface to hint the compiler this pattern, s
 }
 </pre></div>
 </div>
-</section>
-<section id="loop-permutation">
+</div>
+<div class="section" id="loop-permutation">
 <h2>Loop Permutation<a class="headerlink" href="#loop-permutation" title="Permalink to this headline">¶</a></h2>
 <p>If we look at the above IR, we can see the inner loop row data is vectorized and
 B is transformed into PackedB. The traversal of PackedB is sequential now.
@@ -606,7 +606,7 @@ the access pattern for A matrix is more cache friendly.</p>
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Opt3: 0.062242
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Opt3: 0.114041
 </pre></div>
 </div>
 <p>Here is the generated IR after loop permutation.</p>
@@ -637,8 +637,8 @@ the access pattern for A matrix is more cache friendly.</p>
 }
 </pre></div>
 </div>
-</section>
-<section id="array-packing">
+</div>
+<div class="section" id="array-packing">
 <h2>Array Packing<a class="headerlink" href="#array-packing" title="Permalink to this headline">¶</a></h2>
 <p>Another important trick is array packing. This trick is to reorder the storage dimension of the
 array to convert the continuous access pattern on certain dimension to a sequential pattern after
@@ -682,7 +682,7 @@ the corresponding value from the packed array.</p>
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Opt4: 0.061496
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Opt4: 0.218964
 </pre></div>
 </div>
 <p>Here is the generated IR after array packing.</p>
@@ -696,7 +696,7 @@ the corresponding value from the packed array.</p>
              A: Buffer(A_2: Pointer(float32), float32, [1024, 1024], []),
              B: Buffer(B_2: Pointer(float32), float32, [1024, 1024], [])}
   buffer_map = {A_1: A, B_1: B, C_1: C} {
-  attr [packedB: Pointer(float32x32)] &quot;storage_scope&quot; = &quot;global&quot;;
+  attr [packedB: Pointer(global float32x32)] &quot;storage_scope&quot; = &quot;global&quot;;
   allocate(packedB, float32x32, [32768]) {
     for (x: int32, 0, 32) &quot;parallel&quot; {
       for (y: int32, 0, 1024) {
@@ -721,8 +721,8 @@ the corresponding value from the packed array.</p>
 }
 </pre></div>
 </div>
-</section>
-<section id="write-cache-for-blocks">
+</div>
+<div class="section" id="write-cache-for-blocks">
 <h2>Write cache for blocks<a class="headerlink" href="#write-cache-for-blocks" title="Permalink to this headline">¶</a></h2>
 <p>After blocking, the program will write result to C block by block, the access pattern
 is not sequential. So we can use a sequential cache array to hold the block results and
@@ -762,7 +762,7 @@ write to C when all the block results are ready.</p>
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Opt5: 0.059576
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Opt5: 0.215271
 </pre></div>
 </div>
 <p>Here is the generated IR after blocking.</p>
@@ -776,9 +776,9 @@ write to C when all the block results are ready.</p>
              A: Buffer(A_2: Pointer(float32), float32, [1024, 1024], []),
              B: Buffer(B_2: Pointer(float32), float32, [1024, 1024], [])}
   buffer_map = {A_1: A, B_1: B, C_1: C} {
-  attr [packedB: Pointer(float32x32)] &quot;storage_scope&quot; = &quot;global&quot;;
+  attr [packedB: Pointer(global float32x32)] &quot;storage_scope&quot; = &quot;global&quot;;
   allocate(packedB, float32x32, [32768]);
-  attr [C.global: Pointer(float32)] &quot;storage_scope&quot; = &quot;global&quot;;
+  attr [C.global: Pointer(global float32)] &quot;storage_scope&quot; = &quot;global&quot;;
   allocate(C.global, float32, [1024]) {
     for (x: int32, 0, 32) &quot;parallel&quot; {
       for (y: int32, 0, 1024) {
@@ -809,8 +809,8 @@ write to C when all the block results are ready.</p>
 }
 </pre></div>
 </div>
-</section>
-<section id="parallel">
+</div>
+<div class="section" id="parallel">
 <h2>Parallel<a class="headerlink" href="#parallel" title="Permalink to this headline">¶</a></h2>
 <p>Futhermore, we can also utilize multi-core processors to do the thread-level parallelization.</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">s</span> <span class="o">=</span> <a href="../../api/python/te.html#tvm.te.create_schedule" title="View documentation for tvm.te.create_schedule"><span class="n">te</span><span class="o">.</span><span class="n">create_schedule</span></a><span class="p">(</span><span class="n">C</span><span class="o">.</span><span class="n">op</span><span class="p">)</span>
@@ -849,7 +849,7 @@ write to C when all the block results are ready.</p>
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Opt6: 0.016210
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Opt6: 0.066557
 </pre></div>
 </div>
 <p>Here is the generated IR after parallelization.</p>
@@ -863,7 +863,7 @@ write to C when all the block results are ready.</p>
              A: Buffer(A_2: Pointer(float32), float32, [1024, 1024], []),
              B: Buffer(B_2: Pointer(float32), float32, [1024, 1024], [])}
   buffer_map = {A_1: A, B_1: B, C_1: C} {
-  attr [packedB: Pointer(float32x32)] &quot;storage_scope&quot; = &quot;global&quot;;
+  attr [packedB: Pointer(global float32x32)] &quot;storage_scope&quot; = &quot;global&quot;;
   allocate(packedB, float32x32, [32768]) {
     for (x: int32, 0, 32) &quot;parallel&quot; {
       for (y: int32, 0, 1024) {
@@ -871,7 +871,7 @@ write to C when all the block results are ready.</p>
       }
     }
     for (x.outer: int32, 0, 32) &quot;parallel&quot; {
-      attr [C.global: Pointer(float32)] &quot;storage_scope&quot; = &quot;global&quot;;
+      attr [C.global: Pointer(global float32)] &quot;storage_scope&quot; = &quot;global&quot;;
       allocate(C.global, float32, [1024]);
       for (y.outer: int32, 0, 32) {
         for (x.c.init: int32, 0, 32) {
@@ -896,8 +896,8 @@ write to C when all the block results are ready.</p>
 }
 </pre></div>
 </div>
-</section>
-<section id="summary">
+</div>
+<div class="section" id="summary">
 <h2>Summary<a class="headerlink" href="#summary" title="Permalink to this headline">¶</a></h2>
 <p>After applying the above simple optimizations with only 18 lines of code,
 our generated code can achieve 60% of the <cite>numpy</cite> performance with MKL.
@@ -913,8 +913,8 @@ tutorial by yourself to observe the performance gain acheived by TVM.</p>
 </div>
 </div>
 <p class="sphx-glr-signature"><a class="reference external" href="https://sphinx-gallery.github.io">Gallery generated by Sphinx-Gallery</a></p>
-</section>
-</section>
+</div>
+</div>
 
 
            </div>

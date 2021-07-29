@@ -8,8 +8,7 @@
 <html class="writer-html5" lang="en" >
 <head>
   <meta charset="utf-8">
-  <meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
-
+  
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
   <title>Design and Architecture &mdash; tvm 0.8.dev0 documentation</title>
@@ -283,6 +282,7 @@
 </li>
 <li class="toctree-l2"><a class="reference internal" href="#microtvm">microTVM</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="microtvm_design.html">microTVM Design Document</a></li>
+<li class="toctree-l3"><a class="reference internal" href="model_library_format.html">Model Library Format</a></li>
 </ul>
 </li>
 </ul>
@@ -291,6 +291,7 @@
 <p class="caption"><span class="caption-text">MISC</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../vta/index.html">VTA: Deep Learning Accelerator Stack</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../profiling/index.html">Profiling Deep Learning Models</a></li>
 </ul>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../genindex.html">Index</a></li>
@@ -369,7 +370,7 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
             
-  <section id="design-and-architecture">
+  <div class="section" id="design-and-architecture">
 <h1>Design and Architecture<a class="headerlink" href="#design-and-architecture" title="Permalink to this headline">¶</a></h1>
 <p>This document is intended for developers who want to understand the
 architecture of TVM and/or actively develop on the project.
@@ -389,7 +390,7 @@ and code-generation target.</p></li>
 First, we review a single end-to-end compilation flow and discuss the key data structures and the transformations.
 This runtime-based view focuses on the interactions of each components when running the compiler.
 Then we will review the logical modules of the codebase and their relationship. This part provides a static overarching view of the design.</p>
-<section id="example-compilation-flow">
+<div class="section" id="example-compilation-flow">
 <h2>Example Compilation Flow<a class="headerlink" href="#example-compilation-flow" title="Permalink to this headline">¶</a></h2>
 <p>In this guide, we will study an example compilation flow in the compiler. The figure below shows the flow. At a high-level, it contains several steps:</p>
 <ul class="simple">
@@ -401,10 +402,10 @@ We also allow target to affect the configuration of the transformation pipeline.
 The target translation result is encapsulated as a <cite>runtime.Module</cite> that can be exported, loaded, and executed on the target runtime environment.</p></li>
 <li><p>Runtime Execution: the user loads back a <cite>runtime.Module</cite> and runs the compiled functions in the supported runtime environment.</p></li>
 </ul>
-<figure class="align-center">
+<div class="figure align-center">
 <a class="reference internal image-reference" href="https://raw.githubusercontent.com/tlc-pack/web-data/main/images/design/tvm_dyn_workflow.svg"><img alt="https://raw.githubusercontent.com/tlc-pack/web-data/main/images/design/tvm_dyn_workflow.svg" src="https://raw.githubusercontent.com/tlc-pack/web-data/main/images/design/tvm_dyn_workflow.svg" width="85%" /></a>
-</figure>
-<section id="key-data-structures">
+</div>
+<div class="section" id="key-data-structures">
 <h3>Key data structures<a class="headerlink" href="#key-data-structures" title="Permalink to this headline">¶</a></h3>
 <p>One of the best ways to design and understand a complex system is to identify the key data structures and APIs that
 manipulate (transform) these data structures. Once we identified the key data structures, we can then breakdown a system into logical
@@ -419,8 +420,8 @@ threading, and vector/tensor instructions. It is usually used to represent an op
 </ul>
 <p>During the compilation, a relay function may be lowered to multiple tir::PrimFunc functions and a top-level function that calls into
 those tir::PrimFunc functions.</p>
-</section>
-<section id="transformations">
+</div>
+<div class="section" id="transformations">
 <h3>Transformations<a class="headerlink" href="#transformations" title="Permalink to this headline">¶</a></h3>
 <p>Now that we have covered the key data structures, let us talk about the transformations. Each transformation could serve one of the following purposes:</p>
 <ul class="simple">
@@ -442,8 +443,8 @@ phase and use external code generators.</p>
 <p>There are a few different ways(in relay/backend) to handle the calls into the overall execution problem. For simple models with known shapes and no control flow, we can lower to a graph executor that stores the execution structure in a graph. We also support a virtual machine backend for dynamic executions. Finally, we plan to support ahead of time compilation that compiles the high-level execution structure into the executable and generated primitive functions. All of these execution modes are encapsulated by a unified <strong>runtime.Module</strong> interface, which we will discuss in the latter part of the guide.</p>
 <p><strong>tir/transform</strong> contains transformation passes for TIR level functions. Many tir passes serve the purpose of lowering. For example, there are passes to flatten multi-dimensional access to one-dimensional pointer access, to expand the intrinsics into target-specific ones, and to decorate the function entry to meet the runtime calling convention. Of course, there are also optimizations passes, such as access index simplification and dead code elimination.</p>
 <p>Many low-level optimizations can be handled in the target phase by the LLVM, CUDA C, and other target compilers. As a result, we leave low-level optimizations such as register allocation to the downstream compilers and only focus on optimizations that are not covered by them.</p>
-</section>
-<section id="search-space-and-learning-based-transformations">
+</div>
+<div class="section" id="search-space-and-learning-based-transformations">
 <h3>Search-space and Learning-based Transformations<a class="headerlink" href="#search-space-and-learning-based-transformations" title="Permalink to this headline">¶</a></h3>
 <p>The transformation passes we described so far are deterministic and rule-based. One design goal of the TVM stack is to support high-performance code optimizations for different hardware platforms. To do so, we will need to investigate as many optimization choices as possible, including but not limited to, multi-dimensional tensor access, loop tiling behavior, special accelerator memory hierarchy, and threading.</p>
 <p>It is hard to define a heuristic to make all of the choices. Instead, we will take a search and learning-based approach.
@@ -457,8 +458,8 @@ schedule sequence and apply it to the program. Notably, this schedule applicatio
 enabling us to share the same interface convention with tradition passes.</p>
 <p>We use search based optimizations to handle the initial tir function generation problem. This part of the module is called AutoTVM(auto_scheduler).
 We expect to expand the learning-based transformations to more areas as we continue to develop the TVM stack.</p>
-</section>
-<section id="target-translation">
+</div>
+<div class="section" id="target-translation">
 <h3>Target Translation<a class="headerlink" href="#target-translation" title="Permalink to this headline">¶</a></h3>
 <p>The target translation phase transforms an IRModule to the corresponding target executable format.
 For backends such as x86 and ARM, we use the LLVM IRBuilder to build in-memory LLVM IR.
@@ -469,8 +470,8 @@ and lowering should be performed before the target translation phase.</p>
 <p>We also provide a Target structure to specify the compilation target.
 The transformations before the target translation phase can also be affected by the target — for example,
 a target’s vector length would change the vectorization behavior.</p>
-</section>
-<section id="runtime-execution">
+</div>
+<div class="section" id="runtime-execution">
 <h3>Runtime Execution<a class="headerlink" href="#runtime-execution" title="Permalink to this headline">¶</a></h3>
 <p>The main goal of TVM’s runtime is to provide a minimal API for loading and executing the compiled artifact in a language of their choice, including Python, C++, Rust, Go, Java, and JavaScript. The code snippet below shows such an example in Python:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">tvm</span>
@@ -502,8 +503,8 @@ following types: POD types(int, float), string, runtime.PackedFunc, runtime.Modu
 </pre></div>
 </div>
 <p>The main take away is that runtime.Module and runtime.PackedFunc are sufficient to encapsulate both operator level programs (such as addone), as well as the end-to-end models.</p>
-</section>
-<section id="summary-and-discussions">
+</div>
+<div class="section" id="summary-and-discussions">
 <h3>Summary and Discussions<a class="headerlink" href="#summary-and-discussions" title="Permalink to this headline">¶</a></h3>
 <p>In summary, the key data structures in the compilation flows are:</p>
 <ul class="simple">
@@ -523,24 +524,22 @@ except that the data structure of interest changes from the numpy.ndarray to tvm
 <li><p>Compose a custom set of transformations(e.g. customize quantization).</p></li>
 <li><p>Manipulate the IR directly using TVM’s python API.</p></li>
 </ul>
-</section>
-</section>
-<section id="logical-architecture-components">
+</div>
+</div>
+<div class="section" id="logical-architecture-components">
 <h2>Logical Architecture Components<a class="headerlink" href="#logical-architecture-components" title="Permalink to this headline">¶</a></h2>
-<figure class="align-center" id="id1">
+<div class="figure align-center" id="id1">
 <a class="reference internal image-reference" href="https://raw.githubusercontent.com/tlc-pack/web-data/main/images/design/tvm_static_overview.svg"><img alt="https://raw.githubusercontent.com/tlc-pack/web-data/main/images/design/tvm_static_overview.svg" src="https://raw.githubusercontent.com/tlc-pack/web-data/main/images/design/tvm_static_overview.svg" width="85%" /></a>
-<figcaption>
-<p><span class="caption-text">TVM Architecture Diagram</span><a class="headerlink" href="#id1" title="Permalink to this image">¶</a></p>
-</figcaption>
-</figure>
+<p class="caption"><span class="caption-text">TVM Architecture Diagram</span><a class="headerlink" href="#id1" title="Permalink to this image">¶</a></p>
+</div>
 <p>The above figure shows the major logical components in the project. Please read the following sections
 for information about the components and their relations.</p>
-</section>
-<section id="tvm-support">
+</div>
+<div class="section" id="tvm-support">
 <h2>tvm/support<a class="headerlink" href="#tvm-support" title="Permalink to this headline">¶</a></h2>
 <p>The support module contains the most common utilities for the infrastructure, such as generic arena allocator, socket, and logging.</p>
-</section>
-<section id="tvm-runtime">
+</div>
+<div class="section" id="tvm-runtime">
 <h2>tvm/runtime<a class="headerlink" href="#tvm-runtime" title="Permalink to this headline">¶</a></h2>
 <p>The runtime serves as the foundation of the TVM stack. It provides the mechanism to load and execute compiled artifacts.
 The runtime defines a stable standard set of C APIs to interface with frontend languages such as Python and Rust.</p>
@@ -569,8 +568,8 @@ for learning-based optimizations.</p>
 <li class="toctree-l1"><a class="reference internal" href="device_target_interactions.html">Device/Target Interactions</a></li>
 </ul>
 </div>
-</section>
-<section id="tvm-node">
+</div>
+<div class="section" id="tvm-node">
 <h2>tvm/node<a class="headerlink" href="#tvm-node" title="Permalink to this headline">¶</a></h2>
 <p>The node module adds additional features on top of the <cite>runtime::Object</cite> for IR data structures.
 The main features include reflection, serialization, structural equivalence, and hashing.</p>
@@ -584,8 +583,8 @@ The main features include reflection, serialization, structural equivalence, and
 </div>
 <p>We can also serialize arbitrary IR node into a JSON format, and load them back.
 The ability to save/store, and inspect an IR node provides a foundation for making the compiler more accessible.</p>
-</section>
-<section id="tvm-ir">
+</div>
+<div class="section" id="tvm-ir">
 <h2>tvm/ir<a class="headerlink" href="#tvm-ir" title="Permalink to this headline">¶</a></h2>
 <p>The <cite>tvm/ir</cite> folder contains the unified data structure and interfaces across for all IR function variants.
 The components in <cite>tvm/ir</cite> are shared by <cite>tvm/relay</cite> and <cite>tvm/tir</cite>, notable ones include</p>
@@ -614,8 +613,8 @@ Developers can register new Ops as well as their additional attributes(e.g. whet
 <li class="toctree-l1"><a class="reference internal" href="pass_infra.html">Pass Infrastructure</a></li>
 </ul>
 </div>
-</section>
-<section id="tvm-target">
+</div>
+<div class="section" id="tvm-target">
 <h2>tvm/target<a class="headerlink" href="#tvm-target" title="Permalink to this headline">¶</a></h2>
 <p>The target module contains all the code generators that translate an IRModule to a target runtime.Module.
 It also provides a common <cite>Target</cite> class that describes the target.</p>
@@ -626,19 +625,19 @@ in the target and builtin information registered to each target id(cuda, opencl)
 <li class="toctree-l1"><a class="reference internal" href="device_target_interactions.html">Device/Target Interactions</a></li>
 </ul>
 </div>
-</section>
-<section id="tvm-tir">
+</div>
+<div class="section" id="tvm-tir">
 <h2>tvm/tir<a class="headerlink" href="#tvm-tir" title="Permalink to this headline">¶</a></h2>
 <p>TIR contains the definition of the low-level program representations. We use <cite>tir::PrimFunc</cite> to represent functions that can be transformed by TIR passes.
 Besides the IR data structures, the tir module also defines a set of builtin intrinsics and their attributes via the common Op registry, as well as transformation passes in <cite>tir/transform</cite>.</p>
-</section>
-<section id="tvm-arith">
+</div>
+<div class="section" id="tvm-arith">
 <h2>tvm/arith<a class="headerlink" href="#tvm-arith" title="Permalink to this headline">¶</a></h2>
 <p>This module is closely tied to the TIR. One of the key problems in the low-level code generation is the analysis of the indices’
 arithmetic properties — the positiveness, variable bound, and the integer set that describes the iterator space. arith module provides
 a collection of tools that do (primarily integer) analysis. A TIR pass can use these analyses to simplify and optimize the code.</p>
-</section>
-<section id="tvm-te">
+</div>
+<div class="section" id="tvm-te">
 <h2>tvm/te<a class="headerlink" href="#tvm-te" title="Permalink to this headline">¶</a></h2>
 <p>The name te stands for “tensor expression”. This is a domain-specific language module that allows us to construct <cite>tir::PrimFunc</cite> variants quickly by writing tensor expressions.
 Importantly, a tensor expression itself is not a self-contained function that can be stored into IRModule. Instead, it is a fragment of IR that we can stitch together to build an IRModule.</p>
@@ -650,14 +649,14 @@ these scheduling components to the a <cite>tir::PrimFunc</cite> itself.</p>
 <li class="toctree-l1"><a class="reference internal" href="hybrid_script.html">Hybrid Frontend Developer Guide</a></li>
 </ul>
 </div>
-</section>
-<section id="tvm-topi">
+</div>
+<div class="section" id="tvm-topi">
 <h2>tvm/topi<a class="headerlink" href="#tvm-topi" title="Permalink to this headline">¶</a></h2>
 <p>While possible to construct operators directly via TIR or tensor expressions (TE) for each use case it is tedious to do so.
 <cite>topi</cite> (Tensor operator inventory) provides a set of pre-defined operators (in TE or TIR) defined by
 numpy and found in common deep learning workloads. We also provide a collection of common schedule templates to obtain performant implementations across different target platforms.</p>
-</section>
-<section id="tvm-relay">
+</div>
+<div class="section" id="tvm-relay">
 <h2>tvm/relay<a class="headerlink" href="#tvm-relay" title="Permalink to this headline">¶</a></h2>
 <p>Relay is the high-level functional IR used to represent full models. Various optimizations are defined in <cite>relay.transform</cite>. The Relay compiler defines multiple dialects,
 and each dialect is designed to support specific styles of optimization. Notable ones include QNN(for importing pre-quantized models), VM(for lowering to dynamic virtual machine),
@@ -669,8 +668,8 @@ memory(for memory optimization).</p>
 <li class="toctree-l1"><a class="reference internal" href="convert_layout.html">Convert Layout Pass</a></li>
 </ul>
 </div>
-</section>
-<section id="tvm-autotvm">
+</div>
+<div class="section" id="tvm-autotvm">
 <h2>tvm/autotvm<a class="headerlink" href="#tvm-autotvm" title="Permalink to this headline">¶</a></h2>
 <p>AutoTVM and AutoScheduler are both components which automate search based program optimization. This is rapidly evolving and primarily consists of:</p>
 <ul class="simple">
@@ -686,8 +685,8 @@ customize the search and plugin their algorithms from the Python binding.</p>
 <li class="toctree-l1"><a class="reference internal" href="benchmark.html">Benchmark Performance Log Format</a></li>
 </ul>
 </div>
-</section>
-<section id="frontends">
+</div>
+<div class="section" id="frontends">
 <h2>Frontends<a class="headerlink" href="#frontends" title="Permalink to this headline">¶</a></h2>
 <p>Frontends ingest models from different frameworks into the TVM stack.
 <a class="reference internal" href="../api/python/relay/frontend.html#module-tvm.relay.frontend" title="tvm.relay.frontend"><code class="xref py py-mod docutils literal notranslate"><span class="pre">tvm.relay.frontend</span></code></a> is the namespace for model ingestion APIs.</p>
@@ -696,24 +695,25 @@ customize the search and plugin their algorithms from the Python binding.</p>
 <li class="toctree-l1"><a class="reference internal" href="frontend/tensorflow.html">TensorFlow Frontend</a></li>
 </ul>
 </div>
-</section>
-<section id="security">
+</div>
+<div class="section" id="security">
 <h2>Security<a class="headerlink" href="#security" title="Permalink to this headline">¶</a></h2>
 <div class="toctree-wrapper compound">
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="security.html">Security Guide</a></li>
 </ul>
 </div>
-</section>
-<section id="microtvm">
+</div>
+<div class="section" id="microtvm">
 <h2>microTVM<a class="headerlink" href="#microtvm" title="Permalink to this headline">¶</a></h2>
 <div class="toctree-wrapper compound">
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="microtvm_design.html">microTVM Design Document</a></li>
+<li class="toctree-l1"><a class="reference internal" href="model_library_format.html">Model Library Format</a></li>
 </ul>
 </div>
-</section>
-</section>
+</div>
+</div>
 
 
            </div>
