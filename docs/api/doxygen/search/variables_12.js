@@ -27,14 +27,15 @@ var searchData=
   ['timestamp',['timestamp',['../classtvm_1_1auto__scheduler_1_1MeasureResultNode.html#a8b19513d8b082d04eba41a9f353beee0',1,'tvm::auto_scheduler::MeasureResultNode']]],
   ['top_5fk',['top_k',['../structtvm_1_1relay_1_1NonMaximumSuppressionAttrs.html#ad9e2e281399a290410757e948784b93a',1,'tvm::relay::NonMaximumSuppressionAttrs']]],
   ['transform_5fsteps',['transform_steps',['../classtvm_1_1auto__scheduler_1_1StateNode.html#a980f03e5744ed104cf231219a4895d5e',1,'tvm::auto_scheduler::StateNode']]],
-  ['transpose_5fa',['transpose_a',['../structtvm_1_1relay_1_1MatmulAttrs.html#a397aa1573fc7e0bc13930390298a22fc',1,'tvm::relay::MatmulAttrs']]],
-  ['transpose_5fb',['transpose_b',['../structtvm_1_1relay_1_1MatmulAttrs.html#afd2c250d27a093cd4afbdb6d6fa7e370',1,'tvm::relay::MatmulAttrs']]],
+  ['transpose_5fa',['transpose_a',['../structtvm_1_1relay_1_1MatmulAttrs.html#a397aa1573fc7e0bc13930390298a22fc',1,'tvm::relay::MatmulAttrs::transpose_a()'],['../structtvm_1_1relay_1_1BatchMatmulAttrs.html#aea3a5e93559981fc31122615d677d831',1,'tvm::relay::BatchMatmulAttrs::transpose_a()']]],
+  ['transpose_5fb',['transpose_b',['../structtvm_1_1relay_1_1MatmulAttrs.html#afd2c250d27a093cd4afbdb6d6fa7e370',1,'tvm::relay::MatmulAttrs::transpose_b()'],['../structtvm_1_1relay_1_1BatchMatmulAttrs.html#a05710acb6565be899d567f642a26639a',1,'tvm::relay::BatchMatmulAttrs::transpose_b()']]],
   ['true_5fbranch',['true_branch',['../classtvm_1_1relay_1_1IfPatternNode.html#ad292c855acc88167ab25acd200c01d48',1,'tvm::relay::IfPatternNode::true_branch()'],['../classtvm_1_1relay_1_1IfNode.html#abbda9637de8fac5d227ef7c305e5f34e',1,'tvm::relay::IfNode::true_branch()']]],
   ['true_5foffset',['true_offset',['../structtvm_1_1runtime_1_1vm_1_1Instruction.html#a58e6e5eba0eba678b94273ef7deb1df2',1,'tvm::runtime::vm::Instruction']]],
   ['true_5fvalue',['true_value',['../classtvm_1_1tir_1_1SelectNode.html#a35e913f542bd1231b92adfc2d58938ef',1,'tvm::tir::SelectNode']]],
   ['tuple',['tuple',['../classtvm_1_1relay_1_1TupleGetItemPatternNode.html#a1fdd79b2fbbf3d7a14cea7e7efc38574',1,'tvm::relay::TupleGetItemPatternNode::tuple()'],['../classtvm_1_1relay_1_1TupleGetItemNode.html#aade4882f84d828975c689b5c6b1b68e6',1,'tvm::relay::TupleGetItemNode::tuple()']]],
   ['tvm_5fdev_5fmblob',['tvm_dev_mblob',['../namespacetvm_1_1runtime_1_1symbol.html#a316b327224938ffb2a73a9c4432d1da9',1,'tvm::runtime::symbol']]],
   ['tvm_5fdev_5fmblob_5fnbytes',['tvm_dev_mblob_nbytes',['../namespacetvm_1_1runtime_1_1symbol.html#aba35391edf7c3a25628bf99ed42cdca1',1,'tvm::runtime::symbol']]],
+  ['tvm_5fentrypoint_5fsuffix',['tvm_entrypoint_suffix',['../namespacetvm_1_1runtime_1_1symbol.html#a00aad7edbef6fd3a1e2f6f94582fea8d',1,'tvm::runtime::symbol']]],
   ['tvm_5fglobal_5fbarrier_5fstate',['tvm_global_barrier_state',['../namespacetvm_1_1runtime_1_1symbol.html#ac21d436bd65464b49858ba4bc55fb3ec',1,'tvm::runtime::symbol']]],
   ['tvm_5flookup_5flinked_5fparam',['tvm_lookup_linked_param',['../namespacetvm_1_1runtime_1_1symbol.html#a209395ae8f4fe3b2a46e2b4a205e4772',1,'tvm::runtime::symbol']]],
   ['tvm_5fmodule_5fctx',['tvm_module_ctx',['../namespacetvm_1_1runtime_1_1symbol.html#aeebcec34a8e6cc24c495710aedea5de9',1,'tvm::runtime::symbol']]],
@@ -54,5 +55,6 @@ var searchData=
   ['type_5finfo',['type_info',['../classtvm_1_1AttrFieldInfoNode.html#aa0e740cddb317c3a74a12302ab531b9b',1,'tvm::AttrFieldInfoNode']]],
   ['type_5fkey_5f',['type_key_',['../structtvm_1_1detail_1_1AttrInitEntry.html#a573a25648ca0d3d8fe28f6c7614248bf',1,'tvm::detail::AttrInitEntry']]],
   ['type_5fparams',['type_params',['../classtvm_1_1FuncTypeNode.html#acc1bb373c5851f6cec016a874f304d05',1,'tvm::FuncTypeNode::type_params()'],['../classtvm_1_1relay_1_1FunctionNode.html#a558ecb3ab57111b1a0f347764054d5e1',1,'tvm::relay::FunctionNode::type_params()']]],
-  ['type_5fvars',['type_vars',['../classtvm_1_1TypeDataNode.html#a350a23efc88be1def5b93d27ac6fa88b',1,'tvm::TypeDataNode']]]
+  ['type_5fvars',['type_vars',['../classtvm_1_1TypeDataNode.html#a350a23efc88be1def5b93d27ac6fa88b',1,'tvm::TypeDataNode']]],
+  ['types',['types',['../classtvm_1_1TupleAffineTypeNode.html#a30c834b7e1cb64467e6587ac16ebb187',1,'tvm::TupleAffineTypeNode']]]
 ];

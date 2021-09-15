@@ -94,7 +94,7 @@ Before doing anything, let us print out the IR code of default schedule.
  .. code-block:: none
 
     primfn(A_1: handle, B_1: handle) -> ()
-      attr = {"global_symbol": "main", "tir.noalias": True}
+      attr = {"from_legacy_te_schedule": True, "global_symbol": "main", "tir.noalias": True}
       buffers = {B: Buffer(B_2: Pointer(float32), float32, [n: int32], [stride: int32], type="auto"),
                  A: Buffer(A_2: Pointer(float32), float32, [n, m: int32], [stride_1: int32, stride_2: int32], type="auto")}
       buffer_map = {A_1: A, B_1: B} {
@@ -135,7 +135,7 @@ axis by different factors. The result is a nested reduction.
  .. code-block:: none
 
     primfn(A_1: handle, B_1: handle) -> ()
-      attr = {"global_symbol": "main", "tir.noalias": True}
+      attr = {"from_legacy_te_schedule": True, "global_symbol": "main", "tir.noalias": True}
       buffers = {B: Buffer(B_2: Pointer(float32), float32, [n: int32], [stride: int32], type="auto"),
                  A: Buffer(A_2: Pointer(float32), float32, [n, m: int32], [stride_1: int32, stride_2: int32], type="auto")}
       buffer_map = {A_1: A, B_1: B} {
@@ -181,7 +181,7 @@ If we are building a GPU kernel, we can bind the rows of B to GPU threads.
  .. code-block:: none
 
     primfn(A_1: handle, B_1: handle) -> ()
-      attr = {"global_symbol": "main", "tir.noalias": True}
+      attr = {"from_legacy_te_schedule": True, "global_symbol": "main", "tir.noalias": True}
       buffers = {B: Buffer(B_2: Pointer(float32), float32, [n: int32], [stride: int32], type="auto"),
                  A: Buffer(A_2: Pointer(float32), float32, [n, m: int32], [stride_1: int32, stride_2: int32], type="auto")}
       buffer_map = {A_1: A, B_1: B} {
@@ -237,12 +237,11 @@ result B.rf. The factored dimension becomes the first dimension of B.rf.
  .. code-block:: none
 
     primfn(A_1: handle, B_1: handle) -> ()
-      attr = {"global_symbol": "main", "tir.noalias": True}
+      attr = {"from_legacy_te_schedule": True, "global_symbol": "main", "tir.noalias": True}
       buffers = {B: Buffer(B_2: Pointer(float32), float32, [n: int32], [stride: int32], type="auto"),
                  A: Buffer(A_2: Pointer(float32), float32, [n, m: int32], [stride_1: int32, stride_2: int32], type="auto")}
       buffer_map = {A_1: A, B_1: B} {
-      attr [B.rf: Pointer(global float32)] "storage_scope" = "global";
-      allocate(B.rf, float32, [(n*16)]) {
+      allocate(B.rf: Pointer(global float32), float32, [(n*16)]), storage_scope = global {
         for (k.inner: int32, 0, 16) {
           for (i: int32, 0, n) {
             B.rf[((k.inner*n) + i)] = 0f32
@@ -339,7 +338,7 @@ columns by threadIdx.x and finally do a cross thread reduction over threadIdx.x
       #define int64_t long long
       #define uint64_t unsigned long long
     #endif
-    extern "C" __global__ void default_function_kernel0(float* __restrict__ A, float* __restrict__ B, int m, int n, int stride, int stride1, int stride2) {
+    extern "C" __global__ void __launch_bounds__(512) default_function_kernel0(float* __restrict__ A, float* __restrict__ B, int m, int n, int stride, int stride1, int stride2) {
       float B_rf[1];
       __shared__ float red_buf0[512];
       B_rf[(0)] = 0.000000e+00f;
@@ -430,9 +429,9 @@ Here is an example for 2D convolution with filter size = [3, 3] and strides = [1
  .. code-block:: none
 
     primfn(Input_1: handle, Filter_1: handle, Output_1: handle) -> ()
-      attr = {"global_symbol": "main", "tir.noalias": True}
-      buffers = {Output: Buffer(Output_2: Pointer(float32), float32, [(n: int32 - 2), (n - 2)], []),
-                 Input: Buffer(Input_2: Pointer(float32), float32, [n, n], [stride: int32, stride_1: int32], type="auto"),
+      attr = {"from_legacy_te_schedule": True, "global_symbol": "main", "tir.noalias": True}
+      buffers = {Input: Buffer(Input_2: Pointer(float32), float32, [n: int32, n], [stride: int32, stride_1: int32], type="auto"),
+                 Output: Buffer(Output_2: Pointer(float32), float32, [(n - 2), (n - 2)], []),
                  Filter: Buffer(Filter_2: Pointer(float32), float32, [3, 3], [])}
       buffer_map = {Input_1: Input, Filter_1: Filter, Output_1: Output} {
       for (i: int32, 0, (n - 2)) {

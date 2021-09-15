@@ -303,17 +303,14 @@ After we construct the schedule, by default the schedule computes
  .. code-block:: none
 
     primfn(A_1: handle, B_1: handle, C_1: handle) -> ()
-      attr = {"global_symbol": "main", "tir.noalias": True}
+      attr = {"from_legacy_te_schedule": True, "global_symbol": "main", "tir.noalias": True}
       buffers = {C: Buffer(C_2: Pointer(int8), int8, [1, 16, 1, 16], []),
                  A: Buffer(A_2: Pointer(int8), int8, [1, 16, 1, 16], []),
                  B: Buffer(B_2: Pointer(int8), int8, [16, 16, 16, 16], [])}
       buffer_map = {A_1: A, B_1: B, C_1: C} {
-      attr [A_buf: Pointer(global int8)] "storage_scope" = "global";
-      allocate(A_buf, int8, [256]);
-      attr [B_buf: Pointer(global int8)] "storage_scope" = "global";
-      allocate(B_buf, int8, [65536]);
-      attr [C_buf: Pointer(global int32)] "storage_scope" = "global";
-      allocate(C_buf, int32, [256]) {
+      allocate(A_buf: Pointer(global int8), int8, [256]), storage_scope = global;
+      allocate(B_buf: Pointer(global int8), int8, [65536]), storage_scope = global;
+      allocate(C_buf: Pointer(global int32), int32, [256]), storage_scope = global {
         for (i1: int32, 0, 16) {
           for (i3: int32, 0, 16) {
             A_buf[((i1*16) + i3)] = (int8*)A_2[((i1*16) + i3)]
@@ -449,17 +446,14 @@ moving the copy operations into the matrix multiplication loop.
  .. code-block:: none
 
     primfn(A_1: handle, B_1: handle, C_1: handle) -> ()
-      attr = {"global_symbol": "main", "tir.noalias": True}
-      buffers = {C: Buffer(C_2: Pointer(int8), int8, [1, 16, 1, 16], []),
-                 A: Buffer(A_2: Pointer(int8), int8, [1, 16, 1, 16], []),
+      attr = {"from_legacy_te_schedule": True, "global_symbol": "main", "tir.noalias": True}
+      buffers = {A: Buffer(A_2: Pointer(int8), int8, [1, 16, 1, 16], []),
+                 C: Buffer(C_2: Pointer(int8), int8, [1, 16, 1, 16], []),
                  B: Buffer(B_2: Pointer(int8), int8, [16, 16, 16, 16], [])}
       buffer_map = {A_1: A, B_1: B, C_1: C} {
-      attr [C_buf: Pointer(local.acc_buffer int32)] "storage_scope" = "local.acc_buffer";
-      allocate(C_buf, int32, [256]);
-      attr [A_buf: Pointer(local.inp_buffer int8)] "storage_scope" = "local.inp_buffer";
-      allocate(A_buf, int8, [16]);
-      attr [B_buf: Pointer(local.wgt_buffer int8)] "storage_scope" = "local.wgt_buffer";
-      allocate(B_buf, int8, [16]) {
+      allocate(C_buf: Pointer(local.acc_buffer int32), int32, [256]), storage_scope = local.acc_buffer;
+      allocate(A_buf: Pointer(local.inp_buffer int8), int8, [16]), storage_scope = local.inp_buffer;
+      allocate(B_buf: Pointer(local.wgt_buffer int8), int8, [16]), storage_scope = local.wgt_buffer {
         for (co: int32, 0, 16) {
           for (ci: int32, 0, 16) {
             C_buf[((co*16) + ci)] = 0
@@ -534,47 +528,43 @@ by the VTA runtime JIT compiler.
  .. code-block:: none
 
     primfn(A_1: handle, B_1: handle, C_1: handle) -> ()
-      attr = {"global_symbol": "main", "tir.noalias": True}
+      attr = {"from_legacy_te_schedule": True, "global_symbol": "main", "tir.noalias": True}
       buffers = {C: Buffer(C_2: Pointer(int8), int8, [1, 16, 1, 16], []),
                  A: Buffer(A_2: Pointer(int8), int8, [1, 16, 1, 16], []),
                  B: Buffer(B_2: Pointer(int8), int8, [16, 16, 16, 16], [])}
       buffer_map = {A_1: A, B_1: B, C_1: C} {
-      attr [C_buf: Pointer(local.acc_buffer int32)] "storage_scope" = "local.acc_buffer";
-      attr [A_buf: Pointer(local.inp_buffer int8)] "storage_scope" = "local.inp_buffer";
-      attr [B_buf: Pointer(local.wgt_buffer int8)] "storage_scope" = "local.wgt_buffer" {
-        attr [IterVar(vta: int32, (nullptr), "ThreadIndex", "vta")] "coproc_scope" = 2 {
+      attr [IterVar(vta: int32, (nullptr), "ThreadIndex", "vta")] "coproc_scope" = 2 {
+        attr [IterVar(vta, (nullptr), "ThreadIndex", "vta")] "coproc_uop_scope" = "VTAPushGEMMOp" {
+          @tir.call_extern("VTAUopLoopBegin", 16, 1, 0, 0, dtype=int32)
+          @tir.vta.uop_push(0, 1, 0, 0, 0, 0, 0, 0, dtype=int32)
+          @tir.call_extern("VTAUopLoopEnd", dtype=int32)
+        }
+        @tir.vta.coproc_dep_push(2, 1, dtype=int32)
+      }
+      for (ko: int32, 0, 16) {
+        attr [IterVar(vta, (nullptr), "ThreadIndex", "vta")] "coproc_scope" = 1 {
+          @tir.vta.coproc_dep_pop(2, 1, dtype=int32)
+          @tir.call_extern("VTALoadBuffer2D", @tir.tvm_thread_context(@tir.vta.command_handle(, dtype=handle), dtype=handle), A_2, ko, 1, 1, 1, 0, 0, 0, 0, 0, 2, dtype=int32)
+          @tir.call_extern("VTALoadBuffer2D", @tir.tvm_thread_context(@tir.vta.command_handle(, dtype=handle), dtype=handle), B_2, ko, 1, 16, 16, 0, 0, 0, 0, 0, 1, dtype=int32)
+          @tir.vta.coproc_dep_push(1, 2, dtype=int32)
+        }
+        attr [IterVar(vta, (nullptr), "ThreadIndex", "vta")] "coproc_scope" = 2 {
+          @tir.vta.coproc_dep_pop(1, 2, dtype=int32)
           attr [IterVar(vta, (nullptr), "ThreadIndex", "vta")] "coproc_uop_scope" = "VTAPushGEMMOp" {
-            @tir.call_extern("VTAUopLoopBegin", 16, 1, 0, 0, dtype=int32)
-            @tir.vta.uop_push(0, 1, 0, 0, 0, 0, 0, 0, dtype=int32)
+            @tir.call_extern("VTAUopLoopBegin", 16, 1, 0, 1, dtype=int32)
+            @tir.vta.uop_push(0, 0, 0, 0, 0, 0, 0, 0, dtype=int32)
             @tir.call_extern("VTAUopLoopEnd", dtype=int32)
           }
           @tir.vta.coproc_dep_push(2, 1, dtype=int32)
         }
-        for (ko: int32, 0, 16) {
-          attr [IterVar(vta, (nullptr), "ThreadIndex", "vta")] "coproc_scope" = 1 {
-            @tir.vta.coproc_dep_pop(2, 1, dtype=int32)
-            @tir.call_extern("VTALoadBuffer2D", @tir.tvm_thread_context(@tir.vta.command_handle(, dtype=handle), dtype=handle), A_2, ko, 1, 1, 1, 0, 0, 0, 0, 0, 2, dtype=int32)
-            @tir.call_extern("VTALoadBuffer2D", @tir.tvm_thread_context(@tir.vta.command_handle(, dtype=handle), dtype=handle), B_2, ko, 1, 16, 16, 0, 0, 0, 0, 0, 1, dtype=int32)
-            @tir.vta.coproc_dep_push(1, 2, dtype=int32)
-          }
-          attr [IterVar(vta, (nullptr), "ThreadIndex", "vta")] "coproc_scope" = 2 {
-            @tir.vta.coproc_dep_pop(1, 2, dtype=int32)
-            attr [IterVar(vta, (nullptr), "ThreadIndex", "vta")] "coproc_uop_scope" = "VTAPushGEMMOp" {
-              @tir.call_extern("VTAUopLoopBegin", 16, 1, 0, 1, dtype=int32)
-              @tir.vta.uop_push(0, 0, 0, 0, 0, 0, 0, 0, dtype=int32)
-              @tir.call_extern("VTAUopLoopEnd", dtype=int32)
-            }
-            @tir.vta.coproc_dep_push(2, 1, dtype=int32)
-          }
-        }
-        @tir.vta.coproc_dep_push(2, 3, dtype=int32)
-        @tir.vta.coproc_dep_pop(2, 1, dtype=int32)
-        attr [IterVar(vta, (nullptr), "ThreadIndex", "vta")] "coproc_scope" = 3 {
-          @tir.vta.coproc_dep_pop(2, 3, dtype=int32)
-          @tir.call_extern("VTAStoreBuffer2D", @tir.tvm_thread_context(@tir.vta.command_handle(, dtype=handle), dtype=handle), 0, 4, C_2, 0, 16, 1, 16, dtype=int32)
-        }
-        @tir.vta.coproc_sync(, dtype=int32)
       }
+      @tir.vta.coproc_dep_push(2, 3, dtype=int32)
+      @tir.vta.coproc_dep_pop(2, 1, dtype=int32)
+      attr [IterVar(vta, (nullptr), "ThreadIndex", "vta")] "coproc_scope" = 3 {
+        @tir.vta.coproc_dep_pop(2, 3, dtype=int32)
+        @tir.call_extern("VTAStoreBuffer2D", @tir.tvm_thread_context(@tir.vta.command_handle(, dtype=handle), dtype=handle), 0, 4, C_2, 0, 16, 1, 16, dtype=int32)
+      }
+      @tir.vta.coproc_sync(, dtype=int32)
     }
 
 

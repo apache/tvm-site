@@ -186,7 +186,6 @@ trials, we can load the best schedule from the log file and apply it.
 
 
 
-
 Inspecting the Optimized Schedule
 ---------------------------------
 We can lower the schedule to see the IR after auto-scheduling.  The
@@ -213,14 +212,13 @@ operator fusion.
 
     Lowered TIR:
     primfn(A_1: handle, B_1: handle, C_1: handle, out_1: handle) -> ()
-      attr = {"global_symbol": "main", "tir.noalias": True}
+      attr = {"from_legacy_te_schedule": True, "global_symbol": "main", "tir.noalias": True}
       buffers = {out: Buffer(out_2: Pointer(float32), float32, [1024, 1024], []),
                  C: Buffer(C_2: Pointer(float32), float32, [1024, 1024], []),
                  A: Buffer(A_2: Pointer(float32), float32, [1024, 1024], []),
                  B: Buffer(B_2: Pointer(float32), float32, [1024, 1024], [])}
       buffer_map = {A_1: A, B_1: B, C_1: C, out_1: out} {
-      attr [auto_scheduler_layout_transform: Pointer(global float32)] "storage_scope" = "global";
-      allocate(auto_scheduler_layout_transform, float32, [1048576]) {
+      allocate(auto_scheduler_layout_transform: Pointer(global float32), float32, [1048576]), storage_scope = global {
         for (ax0.ax1.fused.ax2.fused: int32, 0, 128) "parallel" {
           for (ax4: int32, 0, 256) {
             for (ax6: int32, 0, 4) {
@@ -231,8 +229,7 @@ operator fusion.
           }
         }
         for (i.outer.outer.j.outer.outer.fused: int32, 0, 16384) "parallel" {
-          attr [matmul: Pointer(global float32x8)] "storage_scope" = "global";
-          allocate(matmul, float32x8, [4]);
+          allocate(matmul: Pointer(global float32x8), float32x8, [4]), storage_scope = global;
           for (i.outer.inner: int32, 0, 2) {
             matmul[ramp(0, 1, 8)] = broadcast(0f32, 8)
             matmul[ramp(8, 1, 8)] = broadcast(0f32, 8)
@@ -300,7 +297,7 @@ We build the binary and check its correctness and performance.
 
  .. code-block:: none
 
-    Execution time of this operator: 46.867 ms
+    Execution time of this operator: 21.160 ms
 
 
 

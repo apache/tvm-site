@@ -207,8 +207,59 @@ The task scheduler will just optimize this objective.
  .. code-block:: none
 
     Extract tasks...
-    ...2%, 0.01 MB, 311 KB/s, 0 seconds passed    ...5%, 0.02 MB, 619 KB/s, 0 seconds passed    ...7%, 0.02 MB, 925 KB/s, 0 seconds passed    ...10%, 0.03 MB, 1204 KB/s, 0 seconds passed    ...12%, 0.04 MB, 1454 KB/s, 0 seconds passed    ...15%, 0.05 MB, 1521 KB/s, 0 seconds passed    ...18%, 0.05 MB, 1709 KB/s, 0 seconds passed    ...20%, 0.06 MB, 1946 KB/s, 0 seconds passed    ...23%, 0.07 MB, 2137 KB/s, 0 seconds passed    ...25%, 0.08 MB, 2366 KB/s, 0 seconds passed    ...28%, 0.09 MB, 2595 KB/s, 0 seconds passed    ...30%, 0.09 MB, 2550 KB/s, 0 seconds passed    ...33%, 0.10 MB, 2673 KB/s, 0 seconds passed    ...36%, 0.11 MB, 2871 KB/s, 0 seconds passed    ...38%, 0.12 MB, 3068 KB/s, 0 seconds passed    ...41%, 0.12 MB, 3254 KB/s, 0 seconds passed    ...43%, 0.13 MB, 3444 KB/s, 0 seconds passed    ...46%, 0.14 MB, 3637 KB/s, 0 seconds passed    ...48%, 0.15 MB, 3830 KB/s, 0 seconds passed    ...51%, 0.16 MB, 4022 KB/s, 0 seconds passed    ...54%, 0.16 MB, 4158 KB/s, 0 seconds passed    ...56%, 0.17 MB, 4343 KB/s, 0 seconds passed    ...59%, 0.18 MB, 4529 KB/s, 0 seconds passed    ...61%, 0.19 MB, 4715 KB/s, 0 seconds passed    ...64%, 0.20 MB, 4849 KB/s, 0 seconds passed    ...66%, 0.20 MB, 5029 KB/s, 0 seconds passed    ...69%, 0.21 MB, 5209 KB/s, 0 seconds passed    ...72%, 0.22 MB, 5389 KB/s, 0 seconds passed    ...74%, 0.23 MB, 5545 KB/s, 0 seconds passed    ...77%, 0.23 MB, 5475 KB/s, 0 seconds passed    ...79%, 0.24 MB, 5504 KB/s, 0 seconds passed    ...82%, 0.25 MB, 5666 KB/s, 0 seconds passed    ...84%, 0.26 MB, 5827 KB/s, 0 seconds passed    ...87%, 0.27 MB, 5989 KB/s, 0 seconds passed    ...90%, 0.27 MB, 6152 KB/s, 0 seconds passed    ...92%, 0.28 MB, 6312 KB/s, 0 seconds passed    ...95%, 0.29 MB, 6454 KB/s, 0 seconds passed    ...97%, 0.30 MB, 6613 KB/s, 0 seconds passed    ...100%, 0.30 MB, 6758 KB/s, 0 seconds passed
-    ========== Task 0  (workload key: ["98418eda02701ddd175ad50e364a0638", 1, 224, 224, 3, 3, 3, 3, 32, 1, 112, 1, 1, 1, 112, 1, 1, 1, 112, 112, 32]) ==========
+    ========== Task 0  (workload key: ["7d44c6e3c81cd80f61ff2265b2bae89a", [1, 1024], [1000, 1024], [1, 1000], [1, 1000]]) ==========
+    placeholder = PLACEHOLDER [1, 1024]
+    placeholder = PLACEHOLDER [1000, 1024]
+    T_matmul_NT(i, j) += (placeholder[i, k]*placeholder[j, k])
+    placeholder = PLACEHOLDER [1, 1000]
+    T_add(ax0, ax1) = (T_matmul_NT[ax0, ax1] + placeholder[ax0, ax1])
+
+    ========== Task 1  (workload key: ["6b7583cf23c7c37d3212cad9d06e58c1", [1, 28, 28, 128], [1, 1, 128, 256], [1, 1, 1, 256], [1, 28, 28, 256]]) ==========
+    placeholder = PLACEHOLDER [1, 28, 28, 128]
+    PaddedInput(i0, i1, i2, i3) = placeholder[i0, i1, i2, i3]
+    placeholder = PLACEHOLDER [1, 1, 128, 256]
+    Conv2dOutput(nn, yy, xx, ff) += (PaddedInput[nn, (yy + ry), (xx + rx), rc]*placeholder[ry, rx, rc, ff])
+    placeholder = PLACEHOLDER [1, 1, 1, 256]
+    T_add(ax0, ax1, ax2, ax3) = (Conv2dOutput[ax0, ax1, ax2, ax3] + placeholder[ax0, 0, 0, ax3])
+    T_relu(ax0, ax1, ax2, ax3) = max(T_add[ax0, ax1, ax2, ax3], 0f)
+
+    ========== Task 2  (workload key: ["6b7583cf23c7c37d3212cad9d06e58c1", [1, 28, 28, 256], [1, 1, 256, 256], [1, 1, 1, 256], [1, 28, 28, 256]]) ==========
+    placeholder = PLACEHOLDER [1, 28, 28, 256]
+    PaddedInput(i0, i1, i2, i3) = placeholder[i0, i1, i2, i3]
+    placeholder = PLACEHOLDER [1, 1, 256, 256]
+    Conv2dOutput(nn, yy, xx, ff) += (PaddedInput[nn, (yy + ry), (xx + rx), rc]*placeholder[ry, rx, rc, ff])
+    placeholder = PLACEHOLDER [1, 1, 1, 256]
+    T_add(ax0, ax1, ax2, ax3) = (Conv2dOutput[ax0, ax1, ax2, ax3] + placeholder[ax0, 0, 0, ax3])
+    T_relu(ax0, ax1, ax2, ax3) = max(T_add[ax0, ax1, ax2, ax3], 0f)
+
+    ========== Task 3  (workload key: ["06fce76bd84cb904eee50b905ca9449a", [1, 14, 14, 512], [3, 3, 512, 1], [1, 1, 1, 512], [1, 14, 14, 512]]) ==========
+    placeholder = PLACEHOLDER [1, 14, 14, 512]
+    PaddedInput(i0, i1, i2, i3) = tir.if_then_else(((((i1 >= 1) && (i1 < 15)) && (i2 >= 1)) && (i2 < 15)), placeholder[i0, (i1 - 1), (i2 - 1), i3], 0f)
+    placeholder = PLACEHOLDER [3, 3, 512, 1]
+    DepthwiseConv2d(b, i, j, c) += (PaddedInput[b, (i + di), (j + dj), c]*placeholder[di, dj, c, 0])
+    placeholder = PLACEHOLDER [1, 1, 1, 512]
+    T_add(ax0, ax1, ax2, ax3) = (DepthwiseConv2d[ax0, ax1, ax2, ax3] + placeholder[ax0, 0, 0, ax3])
+    T_relu(ax0, ax1, ax2, ax3) = max(T_add[ax0, ax1, ax2, ax3], 0f)
+
+    ========== Task 4  (workload key: ["6b7583cf23c7c37d3212cad9d06e58c1", [1, 14, 14, 512], [1, 1, 512, 512], [1, 1, 1, 512], [1, 14, 14, 512]]) ==========
+    placeholder = PLACEHOLDER [1, 14, 14, 512]
+    PaddedInput(i0, i1, i2, i3) = placeholder[i0, i1, i2, i3]
+    placeholder = PLACEHOLDER [1, 1, 512, 512]
+    Conv2dOutput(nn, yy, xx, ff) += (PaddedInput[nn, (yy + ry), (xx + rx), rc]*placeholder[ry, rx, rc, ff])
+    placeholder = PLACEHOLDER [1, 1, 1, 512]
+    T_add(ax0, ax1, ax2, ax3) = (Conv2dOutput[ax0, ax1, ax2, ax3] + placeholder[ax0, 0, 0, ax3])
+    T_relu(ax0, ax1, ax2, ax3) = max(T_add[ax0, ax1, ax2, ax3], 0f)
+
+    ========== Task 5  (workload key: ["c87ba68bc180312f5716af09a77ca15b", [1, 56, 56, 128], [3, 3, 128, 1], [1, 1, 1, 128], [1, 28, 28, 128]]) ==========
+    placeholder = PLACEHOLDER [1, 56, 56, 128]
+    PaddedInput(i0, i1, i2, i3) = tir.if_then_else(((((i1 >= 1) && (i1 < 57)) && (i2 >= 1)) && (i2 < 57)), placeholder[i0, (i1 - 1), (i2 - 1), i3], 0f)
+    placeholder = PLACEHOLDER [3, 3, 128, 1]
+    DepthwiseConv2d(b, i, j, c) += (PaddedInput[b, ((i*2) + di), ((j*2) + dj), c]*placeholder[di, dj, c, 0])
+    placeholder = PLACEHOLDER [1, 1, 1, 128]
+    T_add(ax0, ax1, ax2, ax3) = (DepthwiseConv2d[ax0, ax1, ax2, ax3] + placeholder[ax0, 0, 0, ax3])
+    T_relu(ax0, ax1, ax2, ax3) = max(T_add[ax0, ax1, ax2, ax3], 0f)
+
+    ========== Task 6  (workload key: ["98418eda02701ddd175ad50e364a0638", [1, 224, 224, 3], [3, 3, 3, 32], [1, 112, 1, 1], [1, 112, 1, 1], [1, 112, 112, 32]]) ==========
     placeholder = PLACEHOLDER [1, 224, 224, 3]
     PaddedInput(i0, i1, i2, i3) = tir.if_then_else(((((i1 >= 1) && (i1 < 225)) && (i2 >= 1)) && (i2 < 225)), placeholder[i0, (i1 - 1), (i2 - 1), i3], 0f)
     placeholder = PLACEHOLDER [3, 3, 3, 32]
@@ -219,79 +270,7 @@ The task scheduler will just optimize this objective.
     T_add(ax0, ax1, ax2, ax3) = (T_multiply[ax0, ax1, ax2, ax3] + placeholder[ax0, ax1, 0, 0])
     T_relu(ax0, ax1, ax2, ax3) = max(T_add[ax0, ax1, ax2, ax3], 0f)
 
-    ========== Task 1  (workload key: ["06fce76bd84cb904eee50b905ca9449a", 1, 112, 112, 32, 3, 3, 32, 1, 1, 1, 1, 32, 1, 112, 112, 32]) ==========
-    placeholder = PLACEHOLDER [1, 112, 112, 32]
-    PaddedInput(i0, i1, i2, i3) = tir.if_then_else(((((i1 >= 1) && (i1 < 113)) && (i2 >= 1)) && (i2 < 113)), placeholder[i0, (i1 - 1), (i2 - 1), i3], 0f)
-    placeholder = PLACEHOLDER [3, 3, 32, 1]
-    DepthwiseConv2d(b, i, j, c) += (PaddedInput[b, (i + di), (j + dj), c]*placeholder[di, dj, c, 0])
-    placeholder = PLACEHOLDER [1, 1, 1, 32]
-    T_add(ax0, ax1, ax2, ax3) = (DepthwiseConv2d[ax0, ax1, ax2, ax3] + placeholder[ax0, 0, 0, ax3])
-    T_relu(ax0, ax1, ax2, ax3) = max(T_add[ax0, ax1, ax2, ax3], 0f)
-
-    ========== Task 2  (workload key: ["6b7583cf23c7c37d3212cad9d06e58c1", 1, 112, 112, 32, 1, 1, 32, 64, 1, 1, 1, 64, 1, 112, 112, 64]) ==========
-    placeholder = PLACEHOLDER [1, 112, 112, 32]
-    PaddedInput(i0, i1, i2, i3) = placeholder[i0, i1, i2, i3]
-    placeholder = PLACEHOLDER [1, 1, 32, 64]
-    Conv2dOutput(nn, yy, xx, ff) += (PaddedInput[nn, (yy + ry), (xx + rx), rc]*placeholder[ry, rx, rc, ff])
-    placeholder = PLACEHOLDER [1, 1, 1, 64]
-    T_add(ax0, ax1, ax2, ax3) = (Conv2dOutput[ax0, ax1, ax2, ax3] + placeholder[ax0, 0, 0, ax3])
-    T_relu(ax0, ax1, ax2, ax3) = max(T_add[ax0, ax1, ax2, ax3], 0f)
-
-    ========== Task 3  (workload key: ["c87ba68bc180312f5716af09a77ca15b", 1, 112, 112, 64, 3, 3, 64, 1, 1, 1, 1, 64, 1, 56, 56, 64]) ==========
-    placeholder = PLACEHOLDER [1, 112, 112, 64]
-    PaddedInput(i0, i1, i2, i3) = tir.if_then_else(((((i1 >= 1) && (i1 < 113)) && (i2 >= 1)) && (i2 < 113)), placeholder[i0, (i1 - 1), (i2 - 1), i3], 0f)
-    placeholder = PLACEHOLDER [3, 3, 64, 1]
-    DepthwiseConv2d(b, i, j, c) += (PaddedInput[b, ((i*2) + di), ((j*2) + dj), c]*placeholder[di, dj, c, 0])
-    placeholder = PLACEHOLDER [1, 1, 1, 64]
-    T_add(ax0, ax1, ax2, ax3) = (DepthwiseConv2d[ax0, ax1, ax2, ax3] + placeholder[ax0, 0, 0, ax3])
-    T_relu(ax0, ax1, ax2, ax3) = max(T_add[ax0, ax1, ax2, ax3], 0f)
-
-    ========== Task 4  (workload key: ["6b7583cf23c7c37d3212cad9d06e58c1", 1, 56, 56, 64, 1, 1, 64, 128, 1, 1, 1, 128, 1, 56, 56, 128]) ==========
-    placeholder = PLACEHOLDER [1, 56, 56, 64]
-    PaddedInput(i0, i1, i2, i3) = placeholder[i0, i1, i2, i3]
-    placeholder = PLACEHOLDER [1, 1, 64, 128]
-    Conv2dOutput(nn, yy, xx, ff) += (PaddedInput[nn, (yy + ry), (xx + rx), rc]*placeholder[ry, rx, rc, ff])
-    placeholder = PLACEHOLDER [1, 1, 1, 128]
-    T_add(ax0, ax1, ax2, ax3) = (Conv2dOutput[ax0, ax1, ax2, ax3] + placeholder[ax0, 0, 0, ax3])
-    T_relu(ax0, ax1, ax2, ax3) = max(T_add[ax0, ax1, ax2, ax3], 0f)
-
-    ========== Task 5  (workload key: ["06fce76bd84cb904eee50b905ca9449a", 1, 56, 56, 128, 3, 3, 128, 1, 1, 1, 1, 128, 1, 56, 56, 128]) ==========
-    placeholder = PLACEHOLDER [1, 56, 56, 128]
-    PaddedInput(i0, i1, i2, i3) = tir.if_then_else(((((i1 >= 1) && (i1 < 57)) && (i2 >= 1)) && (i2 < 57)), placeholder[i0, (i1 - 1), (i2 - 1), i3], 0f)
-    placeholder = PLACEHOLDER [3, 3, 128, 1]
-    DepthwiseConv2d(b, i, j, c) += (PaddedInput[b, (i + di), (j + dj), c]*placeholder[di, dj, c, 0])
-    placeholder = PLACEHOLDER [1, 1, 1, 128]
-    T_add(ax0, ax1, ax2, ax3) = (DepthwiseConv2d[ax0, ax1, ax2, ax3] + placeholder[ax0, 0, 0, ax3])
-    T_relu(ax0, ax1, ax2, ax3) = max(T_add[ax0, ax1, ax2, ax3], 0f)
-
-    ========== Task 6  (workload key: ["6b7583cf23c7c37d3212cad9d06e58c1", 1, 56, 56, 128, 1, 1, 128, 128, 1, 1, 1, 128, 1, 56, 56, 128]) ==========
-    placeholder = PLACEHOLDER [1, 56, 56, 128]
-    PaddedInput(i0, i1, i2, i3) = placeholder[i0, i1, i2, i3]
-    placeholder = PLACEHOLDER [1, 1, 128, 128]
-    Conv2dOutput(nn, yy, xx, ff) += (PaddedInput[nn, (yy + ry), (xx + rx), rc]*placeholder[ry, rx, rc, ff])
-    placeholder = PLACEHOLDER [1, 1, 1, 128]
-    T_add(ax0, ax1, ax2, ax3) = (Conv2dOutput[ax0, ax1, ax2, ax3] + placeholder[ax0, 0, 0, ax3])
-    T_relu(ax0, ax1, ax2, ax3) = max(T_add[ax0, ax1, ax2, ax3], 0f)
-
-    ========== Task 7  (workload key: ["c87ba68bc180312f5716af09a77ca15b", 1, 56, 56, 128, 3, 3, 128, 1, 1, 1, 1, 128, 1, 28, 28, 128]) ==========
-    placeholder = PLACEHOLDER [1, 56, 56, 128]
-    PaddedInput(i0, i1, i2, i3) = tir.if_then_else(((((i1 >= 1) && (i1 < 57)) && (i2 >= 1)) && (i2 < 57)), placeholder[i0, (i1 - 1), (i2 - 1), i3], 0f)
-    placeholder = PLACEHOLDER [3, 3, 128, 1]
-    DepthwiseConv2d(b, i, j, c) += (PaddedInput[b, ((i*2) + di), ((j*2) + dj), c]*placeholder[di, dj, c, 0])
-    placeholder = PLACEHOLDER [1, 1, 1, 128]
-    T_add(ax0, ax1, ax2, ax3) = (DepthwiseConv2d[ax0, ax1, ax2, ax3] + placeholder[ax0, 0, 0, ax3])
-    T_relu(ax0, ax1, ax2, ax3) = max(T_add[ax0, ax1, ax2, ax3], 0f)
-
-    ========== Task 8  (workload key: ["6b7583cf23c7c37d3212cad9d06e58c1", 1, 28, 28, 128, 1, 1, 128, 256, 1, 1, 1, 256, 1, 28, 28, 256]) ==========
-    placeholder = PLACEHOLDER [1, 28, 28, 128]
-    PaddedInput(i0, i1, i2, i3) = placeholder[i0, i1, i2, i3]
-    placeholder = PLACEHOLDER [1, 1, 128, 256]
-    Conv2dOutput(nn, yy, xx, ff) += (PaddedInput[nn, (yy + ry), (xx + rx), rc]*placeholder[ry, rx, rc, ff])
-    placeholder = PLACEHOLDER [1, 1, 1, 256]
-    T_add(ax0, ax1, ax2, ax3) = (Conv2dOutput[ax0, ax1, ax2, ax3] + placeholder[ax0, 0, 0, ax3])
-    T_relu(ax0, ax1, ax2, ax3) = max(T_add[ax0, ax1, ax2, ax3], 0f)
-
-    ========== Task 9  (workload key: ["06fce76bd84cb904eee50b905ca9449a", 1, 28, 28, 256, 3, 3, 256, 1, 1, 1, 1, 256, 1, 28, 28, 256]) ==========
+    ========== Task 7  (workload key: ["06fce76bd84cb904eee50b905ca9449a", [1, 28, 28, 256], [3, 3, 256, 1], [1, 1, 1, 256], [1, 28, 28, 256]]) ==========
     placeholder = PLACEHOLDER [1, 28, 28, 256]
     PaddedInput(i0, i1, i2, i3) = tir.if_then_else(((((i1 >= 1) && (i1 < 29)) && (i2 >= 1)) && (i2 < 29)), placeholder[i0, (i1 - 1), (i2 - 1), i3], 0f)
     placeholder = PLACEHOLDER [3, 3, 256, 1]
@@ -300,79 +279,7 @@ The task scheduler will just optimize this objective.
     T_add(ax0, ax1, ax2, ax3) = (DepthwiseConv2d[ax0, ax1, ax2, ax3] + placeholder[ax0, 0, 0, ax3])
     T_relu(ax0, ax1, ax2, ax3) = max(T_add[ax0, ax1, ax2, ax3], 0f)
 
-    ========== Task 10  (workload key: ["6b7583cf23c7c37d3212cad9d06e58c1", 1, 28, 28, 256, 1, 1, 256, 256, 1, 1, 1, 256, 1, 28, 28, 256]) ==========
-    placeholder = PLACEHOLDER [1, 28, 28, 256]
-    PaddedInput(i0, i1, i2, i3) = placeholder[i0, i1, i2, i3]
-    placeholder = PLACEHOLDER [1, 1, 256, 256]
-    Conv2dOutput(nn, yy, xx, ff) += (PaddedInput[nn, (yy + ry), (xx + rx), rc]*placeholder[ry, rx, rc, ff])
-    placeholder = PLACEHOLDER [1, 1, 1, 256]
-    T_add(ax0, ax1, ax2, ax3) = (Conv2dOutput[ax0, ax1, ax2, ax3] + placeholder[ax0, 0, 0, ax3])
-    T_relu(ax0, ax1, ax2, ax3) = max(T_add[ax0, ax1, ax2, ax3], 0f)
-
-    ========== Task 11  (workload key: ["c87ba68bc180312f5716af09a77ca15b", 1, 28, 28, 256, 3, 3, 256, 1, 1, 1, 1, 256, 1, 14, 14, 256]) ==========
-    placeholder = PLACEHOLDER [1, 28, 28, 256]
-    PaddedInput(i0, i1, i2, i3) = tir.if_then_else(((((i1 >= 1) && (i1 < 29)) && (i2 >= 1)) && (i2 < 29)), placeholder[i0, (i1 - 1), (i2 - 1), i3], 0f)
-    placeholder = PLACEHOLDER [3, 3, 256, 1]
-    DepthwiseConv2d(b, i, j, c) += (PaddedInput[b, ((i*2) + di), ((j*2) + dj), c]*placeholder[di, dj, c, 0])
-    placeholder = PLACEHOLDER [1, 1, 1, 256]
-    T_add(ax0, ax1, ax2, ax3) = (DepthwiseConv2d[ax0, ax1, ax2, ax3] + placeholder[ax0, 0, 0, ax3])
-    T_relu(ax0, ax1, ax2, ax3) = max(T_add[ax0, ax1, ax2, ax3], 0f)
-
-    ========== Task 12  (workload key: ["6b7583cf23c7c37d3212cad9d06e58c1", 1, 14, 14, 256, 1, 1, 256, 512, 1, 1, 1, 512, 1, 14, 14, 512]) ==========
-    placeholder = PLACEHOLDER [1, 14, 14, 256]
-    PaddedInput(i0, i1, i2, i3) = placeholder[i0, i1, i2, i3]
-    placeholder = PLACEHOLDER [1, 1, 256, 512]
-    Conv2dOutput(nn, yy, xx, ff) += (PaddedInput[nn, (yy + ry), (xx + rx), rc]*placeholder[ry, rx, rc, ff])
-    placeholder = PLACEHOLDER [1, 1, 1, 512]
-    T_add(ax0, ax1, ax2, ax3) = (Conv2dOutput[ax0, ax1, ax2, ax3] + placeholder[ax0, 0, 0, ax3])
-    T_relu(ax0, ax1, ax2, ax3) = max(T_add[ax0, ax1, ax2, ax3], 0f)
-
-    ========== Task 13  (workload key: ["06fce76bd84cb904eee50b905ca9449a", 1, 14, 14, 512, 3, 3, 512, 1, 1, 1, 1, 512, 1, 14, 14, 512]) ==========
-    placeholder = PLACEHOLDER [1, 14, 14, 512]
-    PaddedInput(i0, i1, i2, i3) = tir.if_then_else(((((i1 >= 1) && (i1 < 15)) && (i2 >= 1)) && (i2 < 15)), placeholder[i0, (i1 - 1), (i2 - 1), i3], 0f)
-    placeholder = PLACEHOLDER [3, 3, 512, 1]
-    DepthwiseConv2d(b, i, j, c) += (PaddedInput[b, (i + di), (j + dj), c]*placeholder[di, dj, c, 0])
-    placeholder = PLACEHOLDER [1, 1, 1, 512]
-    T_add(ax0, ax1, ax2, ax3) = (DepthwiseConv2d[ax0, ax1, ax2, ax3] + placeholder[ax0, 0, 0, ax3])
-    T_relu(ax0, ax1, ax2, ax3) = max(T_add[ax0, ax1, ax2, ax3], 0f)
-
-    ========== Task 14  (workload key: ["6b7583cf23c7c37d3212cad9d06e58c1", 1, 14, 14, 512, 1, 1, 512, 512, 1, 1, 1, 512, 1, 14, 14, 512]) ==========
-    placeholder = PLACEHOLDER [1, 14, 14, 512]
-    PaddedInput(i0, i1, i2, i3) = placeholder[i0, i1, i2, i3]
-    placeholder = PLACEHOLDER [1, 1, 512, 512]
-    Conv2dOutput(nn, yy, xx, ff) += (PaddedInput[nn, (yy + ry), (xx + rx), rc]*placeholder[ry, rx, rc, ff])
-    placeholder = PLACEHOLDER [1, 1, 1, 512]
-    T_add(ax0, ax1, ax2, ax3) = (Conv2dOutput[ax0, ax1, ax2, ax3] + placeholder[ax0, 0, 0, ax3])
-    T_relu(ax0, ax1, ax2, ax3) = max(T_add[ax0, ax1, ax2, ax3], 0f)
-
-    ========== Task 15  (workload key: ["c87ba68bc180312f5716af09a77ca15b", 1, 14, 14, 512, 3, 3, 512, 1, 1, 1, 1, 512, 1, 7, 7, 512]) ==========
-    placeholder = PLACEHOLDER [1, 14, 14, 512]
-    PaddedInput(i0, i1, i2, i3) = tir.if_then_else(((((i1 >= 1) && (i1 < 15)) && (i2 >= 1)) && (i2 < 15)), placeholder[i0, (i1 - 1), (i2 - 1), i3], 0f)
-    placeholder = PLACEHOLDER [3, 3, 512, 1]
-    DepthwiseConv2d(b, i, j, c) += (PaddedInput[b, ((i*2) + di), ((j*2) + dj), c]*placeholder[di, dj, c, 0])
-    placeholder = PLACEHOLDER [1, 1, 1, 512]
-    T_add(ax0, ax1, ax2, ax3) = (DepthwiseConv2d[ax0, ax1, ax2, ax3] + placeholder[ax0, 0, 0, ax3])
-    T_relu(ax0, ax1, ax2, ax3) = max(T_add[ax0, ax1, ax2, ax3], 0f)
-
-    ========== Task 16  (workload key: ["6b7583cf23c7c37d3212cad9d06e58c1", 1, 7, 7, 512, 1, 1, 512, 1024, 1, 1, 1, 1024, 1, 7, 7, 1024]) ==========
-    placeholder = PLACEHOLDER [1, 7, 7, 512]
-    PaddedInput(i0, i1, i2, i3) = placeholder[i0, i1, i2, i3]
-    placeholder = PLACEHOLDER [1, 1, 512, 1024]
-    Conv2dOutput(nn, yy, xx, ff) += (PaddedInput[nn, (yy + ry), (xx + rx), rc]*placeholder[ry, rx, rc, ff])
-    placeholder = PLACEHOLDER [1, 1, 1, 1024]
-    T_add(ax0, ax1, ax2, ax3) = (Conv2dOutput[ax0, ax1, ax2, ax3] + placeholder[ax0, 0, 0, ax3])
-    T_relu(ax0, ax1, ax2, ax3) = max(T_add[ax0, ax1, ax2, ax3], 0f)
-
-    ========== Task 17  (workload key: ["06fce76bd84cb904eee50b905ca9449a", 1, 7, 7, 1024, 3, 3, 1024, 1, 1, 1, 1, 1024, 1, 7, 7, 1024]) ==========
-    placeholder = PLACEHOLDER [1, 7, 7, 1024]
-    PaddedInput(i0, i1, i2, i3) = tir.if_then_else(((((i1 >= 1) && (i1 < 8)) && (i2 >= 1)) && (i2 < 8)), placeholder[i0, (i1 - 1), (i2 - 1), i3], 0f)
-    placeholder = PLACEHOLDER [3, 3, 1024, 1]
-    DepthwiseConv2d(b, i, j, c) += (PaddedInput[b, (i + di), (j + dj), c]*placeholder[di, dj, c, 0])
-    placeholder = PLACEHOLDER [1, 1, 1, 1024]
-    T_add(ax0, ax1, ax2, ax3) = (DepthwiseConv2d[ax0, ax1, ax2, ax3] + placeholder[ax0, 0, 0, ax3])
-    T_relu(ax0, ax1, ax2, ax3) = max(T_add[ax0, ax1, ax2, ax3], 0f)
-
-    ========== Task 18  (workload key: ["6b7583cf23c7c37d3212cad9d06e58c1", 1, 7, 7, 1024, 1, 1, 1024, 1024, 1, 1, 1, 1024, 1, 7, 7, 1024]) ==========
+    ========== Task 8  (workload key: ["6b7583cf23c7c37d3212cad9d06e58c1", [1, 7, 7, 1024], [1, 1, 1024, 1024], [1, 1, 1, 1024], [1, 7, 7, 1024]]) ==========
     placeholder = PLACEHOLDER [1, 7, 7, 1024]
     PaddedInput(i0, i1, i2, i3) = placeholder[i0, i1, i2, i3]
     placeholder = PLACEHOLDER [1, 1, 1024, 1024]
@@ -381,24 +288,116 @@ The task scheduler will just optimize this objective.
     T_add(ax0, ax1, ax2, ax3) = (Conv2dOutput[ax0, ax1, ax2, ax3] + placeholder[ax0, 0, 0, ax3])
     T_relu(ax0, ax1, ax2, ax3) = max(T_add[ax0, ax1, ax2, ax3], 0f)
 
-    ========== Task 19  (workload key: ["69115f188984ae34ede37c3b8ca40b43", 1, 7, 7, 1024, 1, 1, 1, 1024]) ==========
+    ========== Task 9  (workload key: ["6b7583cf23c7c37d3212cad9d06e58c1", [1, 56, 56, 128], [1, 1, 128, 128], [1, 1, 1, 128], [1, 56, 56, 128]]) ==========
+    placeholder = PLACEHOLDER [1, 56, 56, 128]
+    PaddedInput(i0, i1, i2, i3) = placeholder[i0, i1, i2, i3]
+    placeholder = PLACEHOLDER [1, 1, 128, 128]
+    Conv2dOutput(nn, yy, xx, ff) += (PaddedInput[nn, (yy + ry), (xx + rx), rc]*placeholder[ry, rx, rc, ff])
+    placeholder = PLACEHOLDER [1, 1, 1, 128]
+    T_add(ax0, ax1, ax2, ax3) = (Conv2dOutput[ax0, ax1, ax2, ax3] + placeholder[ax0, 0, 0, ax3])
+    T_relu(ax0, ax1, ax2, ax3) = max(T_add[ax0, ax1, ax2, ax3], 0f)
+
+    ========== Task 10  (workload key: ["06fce76bd84cb904eee50b905ca9449a", [1, 56, 56, 128], [3, 3, 128, 1], [1, 1, 1, 128], [1, 56, 56, 128]]) ==========
+    placeholder = PLACEHOLDER [1, 56, 56, 128]
+    PaddedInput(i0, i1, i2, i3) = tir.if_then_else(((((i1 >= 1) && (i1 < 57)) && (i2 >= 1)) && (i2 < 57)), placeholder[i0, (i1 - 1), (i2 - 1), i3], 0f)
+    placeholder = PLACEHOLDER [3, 3, 128, 1]
+    DepthwiseConv2d(b, i, j, c) += (PaddedInput[b, (i + di), (j + dj), c]*placeholder[di, dj, c, 0])
+    placeholder = PLACEHOLDER [1, 1, 1, 128]
+    T_add(ax0, ax1, ax2, ax3) = (DepthwiseConv2d[ax0, ax1, ax2, ax3] + placeholder[ax0, 0, 0, ax3])
+    T_relu(ax0, ax1, ax2, ax3) = max(T_add[ax0, ax1, ax2, ax3], 0f)
+
+    ========== Task 11  (workload key: ["c87ba68bc180312f5716af09a77ca15b", [1, 28, 28, 256], [3, 3, 256, 1], [1, 1, 1, 256], [1, 14, 14, 256]]) ==========
+    placeholder = PLACEHOLDER [1, 28, 28, 256]
+    PaddedInput(i0, i1, i2, i3) = tir.if_then_else(((((i1 >= 1) && (i1 < 29)) && (i2 >= 1)) && (i2 < 29)), placeholder[i0, (i1 - 1), (i2 - 1), i3], 0f)
+    placeholder = PLACEHOLDER [3, 3, 256, 1]
+    DepthwiseConv2d(b, i, j, c) += (PaddedInput[b, ((i*2) + di), ((j*2) + dj), c]*placeholder[di, dj, c, 0])
+    placeholder = PLACEHOLDER [1, 1, 1, 256]
+    T_add(ax0, ax1, ax2, ax3) = (DepthwiseConv2d[ax0, ax1, ax2, ax3] + placeholder[ax0, 0, 0, ax3])
+    T_relu(ax0, ax1, ax2, ax3) = max(T_add[ax0, ax1, ax2, ax3], 0f)
+
+    ========== Task 12  (workload key: ["c87ba68bc180312f5716af09a77ca15b", [1, 14, 14, 512], [3, 3, 512, 1], [1, 1, 1, 512], [1, 7, 7, 512]]) ==========
+    placeholder = PLACEHOLDER [1, 14, 14, 512]
+    PaddedInput(i0, i1, i2, i3) = tir.if_then_else(((((i1 >= 1) && (i1 < 15)) && (i2 >= 1)) && (i2 < 15)), placeholder[i0, (i1 - 1), (i2 - 1), i3], 0f)
+    placeholder = PLACEHOLDER [3, 3, 512, 1]
+    DepthwiseConv2d(b, i, j, c) += (PaddedInput[b, ((i*2) + di), ((j*2) + dj), c]*placeholder[di, dj, c, 0])
+    placeholder = PLACEHOLDER [1, 1, 1, 512]
+    T_add(ax0, ax1, ax2, ax3) = (DepthwiseConv2d[ax0, ax1, ax2, ax3] + placeholder[ax0, 0, 0, ax3])
+    T_relu(ax0, ax1, ax2, ax3) = max(T_add[ax0, ax1, ax2, ax3], 0f)
+
+    ========== Task 13  (workload key: ["6b7583cf23c7c37d3212cad9d06e58c1", [1, 14, 14, 256], [1, 1, 256, 512], [1, 1, 1, 512], [1, 14, 14, 512]]) ==========
+    placeholder = PLACEHOLDER [1, 14, 14, 256]
+    PaddedInput(i0, i1, i2, i3) = placeholder[i0, i1, i2, i3]
+    placeholder = PLACEHOLDER [1, 1, 256, 512]
+    Conv2dOutput(nn, yy, xx, ff) += (PaddedInput[nn, (yy + ry), (xx + rx), rc]*placeholder[ry, rx, rc, ff])
+    placeholder = PLACEHOLDER [1, 1, 1, 512]
+    T_add(ax0, ax1, ax2, ax3) = (Conv2dOutput[ax0, ax1, ax2, ax3] + placeholder[ax0, 0, 0, ax3])
+    T_relu(ax0, ax1, ax2, ax3) = max(T_add[ax0, ax1, ax2, ax3], 0f)
+
+    ========== Task 14  (workload key: ["69115f188984ae34ede37c3b8ca40b43", [1, 7, 7, 1024], [1, 1, 1, 1024]]) ==========
     placeholder = PLACEHOLDER [1, 7, 7, 1024]
     tensor(ax0, ax1, ax2, ax3) += placeholder[ax0, ((ax1*7) + rv0), ((ax2*7) + rv1), ax3]
     tensor(ax0, ax1, ax2, ax3) = (tensor[ax0, ax1, ax2, ax3]/(float32((select((bool)1, ((ax1 + 1)*7), (((ax1 + 1)*7) + 1)) - (ax1*7)))*float32((select((bool)1, ((ax2 + 1)*7), (((ax2 + 1)*7) + 1)) - (ax2*7)))))
 
-    ========== Task 20  (workload key: ["70758c63f9b0db1b512884417117d377", 1, 1024, 1000, 1024, 1000, 1, 1000]) ==========
-    placeholder = PLACEHOLDER [1, 1024]
-    placeholder = PLACEHOLDER [1000, 1024]
-    T_matmul_NT(i, j) += (placeholder[i, k]*placeholder[j, k])
-    placeholder = PLACEHOLDER [1000]
-    T_add(ax0, ax1) = (T_matmul_NT[ax0, ax1] + placeholder[ax1])
+    ========== Task 15  (workload key: ["6b7583cf23c7c37d3212cad9d06e58c1", [1, 7, 7, 512], [1, 1, 512, 1024], [1, 1, 1, 1024], [1, 7, 7, 1024]]) ==========
+    placeholder = PLACEHOLDER [1, 7, 7, 512]
+    PaddedInput(i0, i1, i2, i3) = placeholder[i0, i1, i2, i3]
+    placeholder = PLACEHOLDER [1, 1, 512, 1024]
+    Conv2dOutput(nn, yy, xx, ff) += (PaddedInput[nn, (yy + ry), (xx + rx), rc]*placeholder[ry, rx, rc, ff])
+    placeholder = PLACEHOLDER [1, 1, 1, 1024]
+    T_add(ax0, ax1, ax2, ax3) = (Conv2dOutput[ax0, ax1, ax2, ax3] + placeholder[ax0, 0, 0, ax3])
+    T_relu(ax0, ax1, ax2, ax3) = max(T_add[ax0, ax1, ax2, ax3], 0f)
 
-    ========== Task 21  (workload key: ["d7b65649a4dd54becea0a52aabbc5af5", 1, 1000, 1, 1000]) ==========
+    ========== Task 16  (workload key: ["06fce76bd84cb904eee50b905ca9449a", [1, 7, 7, 1024], [3, 3, 1024, 1], [1, 1, 1, 1024], [1, 7, 7, 1024]]) ==========
+    placeholder = PLACEHOLDER [1, 7, 7, 1024]
+    PaddedInput(i0, i1, i2, i3) = tir.if_then_else(((((i1 >= 1) && (i1 < 8)) && (i2 >= 1)) && (i2 < 8)), placeholder[i0, (i1 - 1), (i2 - 1), i3], 0f)
+    placeholder = PLACEHOLDER [3, 3, 1024, 1]
+    DepthwiseConv2d(b, i, j, c) += (PaddedInput[b, (i + di), (j + dj), c]*placeholder[di, dj, c, 0])
+    placeholder = PLACEHOLDER [1, 1, 1, 1024]
+    T_add(ax0, ax1, ax2, ax3) = (DepthwiseConv2d[ax0, ax1, ax2, ax3] + placeholder[ax0, 0, 0, ax3])
+    T_relu(ax0, ax1, ax2, ax3) = max(T_add[ax0, ax1, ax2, ax3], 0f)
+
+    ========== Task 17  (workload key: ["6b7583cf23c7c37d3212cad9d06e58c1", [1, 56, 56, 64], [1, 1, 64, 128], [1, 1, 1, 128], [1, 56, 56, 128]]) ==========
+    placeholder = PLACEHOLDER [1, 56, 56, 64]
+    PaddedInput(i0, i1, i2, i3) = placeholder[i0, i1, i2, i3]
+    placeholder = PLACEHOLDER [1, 1, 64, 128]
+    Conv2dOutput(nn, yy, xx, ff) += (PaddedInput[nn, (yy + ry), (xx + rx), rc]*placeholder[ry, rx, rc, ff])
+    placeholder = PLACEHOLDER [1, 1, 1, 128]
+    T_add(ax0, ax1, ax2, ax3) = (Conv2dOutput[ax0, ax1, ax2, ax3] + placeholder[ax0, 0, 0, ax3])
+    T_relu(ax0, ax1, ax2, ax3) = max(T_add[ax0, ax1, ax2, ax3], 0f)
+
+    ========== Task 18  (workload key: ["c87ba68bc180312f5716af09a77ca15b", [1, 112, 112, 64], [3, 3, 64, 1], [1, 1, 1, 64], [1, 56, 56, 64]]) ==========
+    placeholder = PLACEHOLDER [1, 112, 112, 64]
+    PaddedInput(i0, i1, i2, i3) = tir.if_then_else(((((i1 >= 1) && (i1 < 113)) && (i2 >= 1)) && (i2 < 113)), placeholder[i0, (i1 - 1), (i2 - 1), i3], 0f)
+    placeholder = PLACEHOLDER [3, 3, 64, 1]
+    DepthwiseConv2d(b, i, j, c) += (PaddedInput[b, ((i*2) + di), ((j*2) + dj), c]*placeholder[di, dj, c, 0])
+    placeholder = PLACEHOLDER [1, 1, 1, 64]
+    T_add(ax0, ax1, ax2, ax3) = (DepthwiseConv2d[ax0, ax1, ax2, ax3] + placeholder[ax0, 0, 0, ax3])
+    T_relu(ax0, ax1, ax2, ax3) = max(T_add[ax0, ax1, ax2, ax3], 0f)
+
+    ========== Task 19  (workload key: ["d7b65649a4dd54becea0a52aabbc5af5", [1, 1000], [1, 1000]]) ==========
     placeholder = PLACEHOLDER [1, 1000]
     T_softmax_maxelem(i0) max= placeholder[i0, k]
     T_softmax_exp(i0, i1) = tir.exp((placeholder[i0, i1] - T_softmax_maxelem[i0]))
     T_softmax_expsum(i0) += T_softmax_exp[i0, k]
     T_softmax_norm(i0, i1) = (T_softmax_exp[i0, i1]/T_softmax_expsum[i0])
+
+    ========== Task 20  (workload key: ["06fce76bd84cb904eee50b905ca9449a", [1, 112, 112, 32], [3, 3, 32, 1], [1, 1, 1, 32], [1, 112, 112, 32]]) ==========
+    placeholder = PLACEHOLDER [1, 112, 112, 32]
+    PaddedInput(i0, i1, i2, i3) = tir.if_then_else(((((i1 >= 1) && (i1 < 113)) && (i2 >= 1)) && (i2 < 113)), placeholder[i0, (i1 - 1), (i2 - 1), i3], 0f)
+    placeholder = PLACEHOLDER [3, 3, 32, 1]
+    DepthwiseConv2d(b, i, j, c) += (PaddedInput[b, (i + di), (j + dj), c]*placeholder[di, dj, c, 0])
+    placeholder = PLACEHOLDER [1, 1, 1, 32]
+    T_add(ax0, ax1, ax2, ax3) = (DepthwiseConv2d[ax0, ax1, ax2, ax3] + placeholder[ax0, 0, 0, ax3])
+    T_relu(ax0, ax1, ax2, ax3) = max(T_add[ax0, ax1, ax2, ax3], 0f)
+
+    ========== Task 21  (workload key: ["6b7583cf23c7c37d3212cad9d06e58c1", [1, 112, 112, 32], [1, 1, 32, 64], [1, 1, 1, 64], [1, 112, 112, 64]]) ==========
+    placeholder = PLACEHOLDER [1, 112, 112, 32]
+    PaddedInput(i0, i1, i2, i3) = placeholder[i0, i1, i2, i3]
+    placeholder = PLACEHOLDER [1, 1, 32, 64]
+    Conv2dOutput(nn, yy, xx, ff) += (PaddedInput[nn, (yy + ry), (xx + rx), rc]*placeholder[ry, rx, rc, ff])
+    placeholder = PLACEHOLDER [1, 1, 1, 64]
+    T_add(ax0, ax1, ax2, ax3) = (Conv2dOutput[ax0, ax1, ax2, ax3] + placeholder[ax0, 0, 0, ax3])
+    T_relu(ax0, ax1, ax2, ax3) = max(T_add[ax0, ax1, ax2, ax3], 0f)
 
 
 
@@ -495,11 +494,7 @@ Now, we set some options for tuning, launch the search tasks and evaluate the en
 
         # Evaluate
         print("Evaluate inference time cost...")
-        ftimer = module.module.time_evaluator("run", dev, repeat=3, min_repeat_ms=500)
-        prof_res = np.array(ftimer().results) * 1e3  # convert to millisecond
-        print(
-            "Mean inference time (std dev): %.2f ms (%.2f ms)" % (np.mean(prof_res), np.std(prof_res))
-        )
+        print(module.benchmark(dev, repeat=3, min_repeat_ms=500))
 
 
     # We do not run the tuning in our webpage server since server doesn't have mali gpu.

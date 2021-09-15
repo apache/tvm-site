@@ -11,7 +11,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>How to optimize convolution using TensorCores &mdash; tvm 0.8.dev0 documentation</title>
+  <title>How to optimize convolution using TensorCores &mdash; tvm 0.8.dev1706+gdc2f70e3c documentation</title>
   
 
   
@@ -169,7 +169,7 @@
             
             
                 <div class="version">
-                  0.8.dev0
+                  0.8.dev1706+gdc2f70e3c
                 </div>
             
           
@@ -194,7 +194,7 @@
               
             
             
-              <p class="caption"><span class="caption-text">How to</span></p>
+              <p class="caption" role="heading"><span class="caption-text">How to</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../install/index.html">Installation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../contribute/index.html">Contribute to TVM</a></li>
@@ -204,7 +204,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../errors.html">What do to when encountering TVM Errors</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../faq.html">Frequently Asked Questions</a></li>
 </ul>
-<p class="caption"><span class="caption-text">Tutorials</span></p>
+<p class="caption" role="heading"><span class="caption-text">Tutorials</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="../index.html">Getting Started With TVM</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../index.html#compile-deep-learning-models">Compile Deep Learning Models</a></li>
@@ -231,17 +231,17 @@
 <li class="toctree-l1"><a class="reference internal" href="../index.html#topi-tvm-operator-inventory">TOPI: TVM Operator Inventory</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../index.html#microtvm">microTVM</a></li>
 </ul>
-<p class="caption"><span class="caption-text">References</span></p>
+<p class="caption" role="heading"><span class="caption-text">References</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../langref/index.html">Language Reference</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../api/python/index.html">Python API</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../api/links.html">Links to Other API References</a></li>
 </ul>
-<p class="caption"><span class="caption-text">Deep Dive</span></p>
+<p class="caption" role="heading"><span class="caption-text">Deep Dive</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../dev/index.html">Design and Architecture</a></li>
 </ul>
-<p class="caption"><span class="caption-text">MISC</span></p>
+<p class="caption" role="heading"><span class="caption-text">MISC</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../vta/index.html">VTA: Deep Learning Accelerator Stack</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../profiling/index.html">Profiling Deep Learning Models</a></li>
@@ -675,22 +675,17 @@ The only thing we should do is to make sure all threads in a warp can call Tenso
 </div>
 <p class="sphx-glr-script-out">Out:</p>
 <div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>primfn(A_1: handle, W_1: handle, Conv_1: handle) -&gt; ()
-  attr = {&quot;global_symbol&quot;: &quot;main&quot;, &quot;tir.noalias&quot;: True}
+  attr = {&quot;from_legacy_te_schedule&quot;: True, &quot;global_symbol&quot;: &quot;main&quot;, &quot;tir.noalias&quot;: True}
   buffers = {A: Buffer(A_2: Pointer(float16), float16, [16, 14, 14, 16, 16, 16], []),
              Conv: Buffer(Conv_2: Pointer(float32), float32, [16, 14, 14, 32, 16, 16], []),
              W: Buffer(W_2: Pointer(float16), float16, [3, 3, 16, 32, 16, 16], [])}
   buffer_map = {A_1: A, W_1: W, Conv_1: Conv} {
   attr [IterVar(blockIdx.z: int32, (nullptr), &quot;ThreadIndex&quot;, &quot;blockIdx.z&quot;)] &quot;thread_extent&quot; = 196;
-  attr [Conv.wmma.accumulator: Pointer(wmma.accumulator float32)] &quot;storage_scope&quot; = &quot;wmma.accumulator&quot;;
-  allocate(Conv.wmma.accumulator, float32, [2048]);
-  attr [Apad.shared: Pointer(shared float16)] &quot;storage_scope&quot; = &quot;shared&quot;;
-  allocate(Apad.shared, float16, [12288]);
-  attr [W.shared: Pointer(shared float16)] &quot;storage_scope&quot; = &quot;shared&quot;;
-  allocate(W.shared, float16, [12288]);
-  attr [Apad.shared.wmma.matrix_a: Pointer(wmma.matrix_a float16)] &quot;storage_scope&quot; = &quot;wmma.matrix_a&quot;;
-  allocate(Apad.shared.wmma.matrix_a, float16, [512]);
-  attr [W.shared.wmma.matrix_b: Pointer(wmma.matrix_b float16)] &quot;storage_scope&quot; = &quot;wmma.matrix_b&quot;;
-  allocate(W.shared.wmma.matrix_b, float16, [1024]);
+  allocate(Conv.wmma.accumulator: Pointer(wmma.accumulator float32), float32, [2048]), storage_scope = wmma.accumulator;
+  allocate(Apad.shared: Pointer(shared float16), float16, [12288]), storage_scope = shared;
+  allocate(W.shared: Pointer(shared float16), float16, [12288]), storage_scope = shared;
+  allocate(Apad.shared.wmma.matrix_a: Pointer(wmma.matrix_a float16), float16, [512]), storage_scope = wmma.matrix_a;
+  allocate(W.shared.wmma.matrix_b: Pointer(wmma.matrix_b float16), float16, [1024]), storage_scope = wmma.matrix_b;
   attr [IterVar(blockIdx.x: int32, (nullptr), &quot;ThreadIndex&quot;, &quot;blockIdx.x&quot;)] &quot;thread_extent&quot; = 2;
   attr [IterVar(blockIdx.y: int32, (nullptr), &quot;ThreadIndex&quot;, &quot;blockIdx.y&quot;)] &quot;thread_extent&quot; = 4;
   attr [IterVar(threadIdx.y: int32, (nullptr), &quot;ThreadIndex&quot;, &quot;threadIdx.y&quot;)] &quot;thread_extent&quot; = 4;
@@ -778,22 +773,17 @@ by mapping the 2D convolution to tensor intrinsics</p>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
 <div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>primfn(A_1: handle, W_1: handle, Conv_1: handle) -&gt; ()
-  attr = {&quot;global_symbol&quot;: &quot;main&quot;, &quot;tir.noalias&quot;: True}
+  attr = {&quot;from_legacy_te_schedule&quot;: True, &quot;global_symbol&quot;: &quot;main&quot;, &quot;tir.noalias&quot;: True}
   buffers = {Conv: Buffer(Conv_2: Pointer(float32), float32, [16, 14, 14, 32, 16, 16], []),
              A: Buffer(A_2: Pointer(float16), float16, [16, 14, 14, 16, 16, 16], []),
              W: Buffer(W_2: Pointer(float16), float16, [3, 3, 16, 32, 16, 16], [])}
   buffer_map = {A_1: A, W_1: W, Conv_1: Conv} {
   attr [IterVar(blockIdx.z: int32, (nullptr), &quot;ThreadIndex&quot;, &quot;blockIdx.z&quot;)] &quot;thread_extent&quot; = 196;
-  attr [Conv.wmma.accumulator: Pointer(wmma.accumulator float32)] &quot;storage_scope&quot; = &quot;wmma.accumulator&quot;;
-  allocate(Conv.wmma.accumulator, float32, [2048]);
-  attr [Apad.shared: Pointer(shared float16)] &quot;storage_scope&quot; = &quot;shared&quot;;
-  allocate(Apad.shared, float16, [12288]);
-  attr [W.shared: Pointer(shared float16)] &quot;storage_scope&quot; = &quot;shared&quot;;
-  allocate(W.shared, float16, [12288]);
-  attr [Apad.shared.wmma.matrix_a: Pointer(wmma.matrix_a float16)] &quot;storage_scope&quot; = &quot;wmma.matrix_a&quot;;
-  allocate(Apad.shared.wmma.matrix_a, float16, [512]);
-  attr [W.shared.wmma.matrix_b: Pointer(wmma.matrix_b float16)] &quot;storage_scope&quot; = &quot;wmma.matrix_b&quot;;
-  allocate(W.shared.wmma.matrix_b, float16, [1024]);
+  allocate(Conv.wmma.accumulator: Pointer(wmma.accumulator float32), float32, [2048]), storage_scope = wmma.accumulator;
+  allocate(Apad.shared: Pointer(shared float16), float16, [12288]), storage_scope = shared;
+  allocate(W.shared: Pointer(shared float16), float16, [12288]), storage_scope = shared;
+  allocate(Apad.shared.wmma.matrix_a: Pointer(wmma.matrix_a float16), float16, [512]), storage_scope = wmma.matrix_a;
+  allocate(W.shared.wmma.matrix_b: Pointer(wmma.matrix_b float16), float16, [1024]), storage_scope = wmma.matrix_b;
   attr [IterVar(blockIdx.x: int32, (nullptr), &quot;ThreadIndex&quot;, &quot;blockIdx.x&quot;)] &quot;thread_extent&quot; = 2;
   attr [IterVar(blockIdx.y: int32, (nullptr), &quot;ThreadIndex&quot;, &quot;blockIdx.y&quot;)] &quot;thread_extent&quot; = 4;
   attr [IterVar(threadIdx.y: int32, (nullptr), &quot;ThreadIndex&quot;, &quot;threadIdx.y&quot;)] &quot;thread_extent&quot; = 4;
@@ -865,7 +855,7 @@ be able to run on our build server</p>
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>conv2d with tensor core: 9.623236 ms
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>conv2d with tensor core: 4.535341 ms
 </pre></div>
 </div>
 </div>

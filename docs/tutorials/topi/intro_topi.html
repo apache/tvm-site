@@ -11,7 +11,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Introduction to TOPI &mdash; tvm 0.8.dev0 documentation</title>
+  <title>Introduction to TOPI &mdash; tvm 0.8.dev1706+gdc2f70e3c documentation</title>
   
 
   
@@ -45,7 +45,7 @@
     <script type="text/javascript" src="../../_static/js/tlcpack_theme.js"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
-    <link rel="next" title="microTVM Reference Virtual Machines" href="../micro/micro_reference_vm.html" />
+    <link rel="next" title="Autotuning with micro TVM" href="../micro/micro_autotune.html" />
     <link rel="prev" title="Bring Your Own Datatypes to TVM" href="../dev/bring_your_own_datatypes.html" /> 
 </head>
 
@@ -169,7 +169,7 @@
             
             
                 <div class="version">
-                  0.8.dev0
+                  0.8.dev1706+gdc2f70e3c
                 </div>
             
           
@@ -194,7 +194,7 @@
               
             
             
-              <p class="caption"><span class="caption-text">How to</span></p>
+              <p class="caption" role="heading"><span class="caption-text">How to</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../install/index.html">Installation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../contribute/index.html">Contribute to TVM</a></li>
@@ -204,7 +204,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../errors.html">What do to when encountering TVM Errors</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../faq.html">Frequently Asked Questions</a></li>
 </ul>
-<p class="caption"><span class="caption-text">Tutorials</span></p>
+<p class="caption" role="heading"><span class="caption-text">Tutorials</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="../index.html">Getting Started With TVM</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../index.html#compile-deep-learning-models">Compile Deep Learning Models</a></li>
@@ -226,17 +226,17 @@
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../index.html#microtvm">microTVM</a></li>
 </ul>
-<p class="caption"><span class="caption-text">References</span></p>
+<p class="caption" role="heading"><span class="caption-text">References</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../langref/index.html">Language Reference</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../api/python/index.html">Python API</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../api/links.html">Links to Other API References</a></li>
 </ul>
-<p class="caption"><span class="caption-text">Deep Dive</span></p>
+<p class="caption" role="heading"><span class="caption-text">Deep Dive</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../dev/index.html">Design and Architecture</a></li>
 </ul>
-<p class="caption"><span class="caption-text">MISC</span></p>
+<p class="caption" role="heading"><span class="caption-text">MISC</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../vta/index.html">VTA: Deep Learning Accelerator Stack</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../profiling/index.html">Profiling Deep Learning Models</a></li>
@@ -357,11 +357,10 @@ specify the symbolic operation as well as schedule as follows</p>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
 <div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>primfn(A_1: handle) -&gt; ()
-  attr = {&quot;global_symbol&quot;: &quot;main&quot;, &quot;tir.noalias&quot;: True}
+  attr = {&quot;from_legacy_te_schedule&quot;: True, &quot;global_symbol&quot;: &quot;main&quot;, &quot;tir.noalias&quot;: True}
   buffers = {A: Buffer(A_2: Pointer(float32), float32, [n: int32, m: int32], [stride: int32, stride_1: int32], type=&quot;auto&quot;)}
   buffer_map = {A_1: A} {
-  attr [B: Pointer(global float32)] &quot;storage_scope&quot; = &quot;global&quot;;
-  allocate(B, float32, [n]);
+  allocate(B: Pointer(global float32), float32, [n]), storage_scope = global;
   for (i: int32, 0, n) {
     B[i] = 0f32
     for (k: int32, 0, m) {
@@ -381,11 +380,10 @@ Fortunately, we can replace those two lines with simple <code class="code docuti
 </div>
 <p class="sphx-glr-script-out">Out:</p>
 <div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>primfn(A_1: handle) -&gt; ()
-  attr = {&quot;global_symbol&quot;: &quot;main&quot;, &quot;tir.noalias&quot;: True}
+  attr = {&quot;from_legacy_te_schedule&quot;: True, &quot;global_symbol&quot;: &quot;main&quot;, &quot;tir.noalias&quot;: True}
   buffers = {A: Buffer(A_2: Pointer(float32), float32, [n: int32, m: int32], [stride: int32, stride_1: int32], type=&quot;auto&quot;)}
   buffer_map = {A_1: A} {
-  attr [A_red: Pointer(global float32)] &quot;storage_scope&quot; = &quot;global&quot;;
-  allocate(A_red, float32, [n]);
+  allocate(A_red: Pointer(global float32), float32, [n]), storage_scope = global;
   for (ax0: int32, 0, n) {
     A_red[ax0] = 0f32
     for (k1: int32, 0, m) {
@@ -426,17 +424,14 @@ we can schedule the following series of operations ending with <code class="code
 </div>
 <p class="sphx-glr-script-out">Out:</p>
 <div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>primfn(a_1: handle, b_1: handle) -&gt; ()
-  attr = {&quot;global_symbol&quot;: &quot;main&quot;, &quot;tir.noalias&quot;: True}
+  attr = {&quot;from_legacy_te_schedule&quot;: True, &quot;global_symbol&quot;: &quot;main&quot;, &quot;tir.noalias&quot;: True}
   buffers = {b: Buffer(b_2: Pointer(float32), float32, [10, 10], []),
              a: Buffer(a_2: Pointer(float32), float32, [100, 10, 10], [])}
   buffer_map = {a_1: a, b_1: b} {
-  attr [T_divide_red: Pointer(global float32)] &quot;storage_scope&quot; = &quot;global&quot;;
-  allocate(T_divide_red, float32, [1]);
+  allocate(T_divide_red: Pointer(global float32), float32, [1]), storage_scope = global;
   attr [IterVar(threadIdx.x: int32, [0:1024], &quot;ThreadIndex&quot;, &quot;threadIdx.x&quot;)] &quot;thread_extent&quot; = 1024;
-  attr [T_divide_red.rf: Pointer(local float32)] &quot;storage_scope&quot; = &quot;local&quot;;
-  allocate(T_divide_red.rf, float32, [1]);
-  attr [reduce_temp0: Pointer(local float32)] &quot;storage_scope&quot; = &quot;local&quot;;
-  allocate(reduce_temp0, float32, [1]) {
+  allocate(T_divide_red.rf: Pointer(local float32), float32, [1]), storage_scope = local;
+  allocate(reduce_temp0: Pointer(local float32), float32, [1]), storage_scope = local {
     T_divide_red.rf[0] = 0f32
     for (k0.k1.fused.k2.fused.outer: int32, 0, 10) {
       if @tir.likely((((((k0.k1.fused.k2.fused.outer*1024) + threadIdx.x) &lt; 10000) &amp;&amp; (((k0.k1.fused.k2.fused.outer*1024) + threadIdx.x) &lt; 10000)) &amp;&amp; (((k0.k1.fused.k2.fused.outer*1024) + threadIdx.x) &lt; 10000)), dtype=bool) {
@@ -457,7 +452,7 @@ we can schedule the following series of operations ending with <code class="code
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>[stage(a, placeholder(a, 0xec916f20)), stage(b, placeholder(b, 0xec12f6c0)), stage(T_add, compute(T_add, body=[(a[ax0, ax1, ax2] + b[ax1, ax2])], axis=[iter_var(ax0, range(min=0, ext=100)), iter_var(ax1, range(min=0, ext=10)), iter_var(ax2, range(min=0, ext=10))], reduce_axis=[], tag=broadcast, attrs={})), stage(T_multiply, compute(T_multiply, body=[(a[ax0, ax1, ax2]*b[ax1, ax2])], axis=[iter_var(ax0, range(min=0, ext=100)), iter_var(ax1, range(min=0, ext=10)), iter_var(ax2, range(min=0, ext=10))], reduce_axis=[], tag=broadcast, attrs={})), stage(T_elemwise_sum, compute(T_elemwise_sum, body=[(T_add[ax0, ax1, ax2] + T_multiply[ax0, ax1, ax2])], axis=[iter_var(ax0, range(min=0, ext=100)), iter_var(ax1, range(min=0, ext=10)), iter_var(ax2, range(min=0, ext=10))], reduce_axis=[], tag=elemwise, attrs={})), stage(T_divide, compute(T_divide, body=[(T_elemwise_sum[ax0, ax1, ax2]/2f)], axis=[iter_var(ax0, range(min=0, ext=100)), iter_var(ax1, range(min=0, ext=10)), iter_var(ax2, range(min=0, ext=10))], reduce_axis=[], tag=elemwise, attrs={})), stage(T_divide_red.rf, compute(T_divide_red.rf, body=[reduce(combiner=comm_reducer(result=[(x + y)], lhs=[x], rhs=[y], identity_element=[0f]), source=[T_divide[floordiv(floordiv((k0.k1.fused.k2.fused.inner + (k0.k1.fused.k2.fused.outer*1024)), 10), 10), floormod(floordiv((k0.k1.fused.k2.fused.inner + (k0.k1.fused.k2.fused.outer*1024)), 10), 10), floormod((k0.k1.fused.k2.fused.inner + (k0.k1.fused.k2.fused.outer*1024)), 10)]], init=[], axis=[iter_var(k0.k1.fused.k2.fused.outer, range(min=0, ext=10))], where=tir.likely((((floordiv(floordiv((k0.k1.fused.k2.fused.inner + (k0.k1.fused.k2.fused.outer*1024)), 10), 10) &lt; 100) &amp;&amp; (floordiv((k0.k1.fused.k2.fused.inner + (k0.k1.fused.k2.fused.outer*1024)), 10) &lt; 1000)) &amp;&amp; ((k0.k1.fused.k2.fused.inner + (k0.k1.fused.k2.fused.outer*1024)) &lt; 10000))), value_index=0)], axis=[iter_var(k0.k1.fused.k2.fused.inner, range(min=0, ext=1024))], reduce_axis=[iter_var(k0.k1.fused.k2.fused.outer, range(min=0, ext=10))], tag=, attrs={})), stage(T_divide_red, compute(T_divide_red.repl, body=[reduce(combiner=comm_reducer(result=[(x + y)], lhs=[x], rhs=[y], identity_element=[0f]), source=[T_divide_red.rf[k0.k1.fused.k2.fused.inner.v]], init=[], axis=[iter_var(k0.k1.fused.k2.fused.inner.v, range(min=0, ext=1024))], where=(bool)1, value_index=0)], axis=[], reduce_axis=[iter_var(k0.k1.fused.k2.fused.inner.v, range(min=0, ext=1024))], tag=, attrs={}))]
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>[stage(a, placeholder(a, 0xba784780)), stage(b, placeholder(b, 0xda4d2800)), stage(T_add, compute(T_add, body=[(a[ax0, ax1, ax2] + b[ax1, ax2])], axis=[iter_var(ax0, range(min=0, ext=100)), iter_var(ax1, range(min=0, ext=10)), iter_var(ax2, range(min=0, ext=10))], reduce_axis=[], tag=broadcast, attrs={})), stage(T_multiply, compute(T_multiply, body=[(a[ax0, ax1, ax2]*b[ax1, ax2])], axis=[iter_var(ax0, range(min=0, ext=100)), iter_var(ax1, range(min=0, ext=10)), iter_var(ax2, range(min=0, ext=10))], reduce_axis=[], tag=broadcast, attrs={})), stage(T_elemwise_sum, compute(T_elemwise_sum, body=[(T_add[ax0, ax1, ax2] + T_multiply[ax0, ax1, ax2])], axis=[iter_var(ax0, range(min=0, ext=100)), iter_var(ax1, range(min=0, ext=10)), iter_var(ax2, range(min=0, ext=10))], reduce_axis=[], tag=elemwise, attrs={})), stage(T_divide, compute(T_divide, body=[(T_elemwise_sum[ax0, ax1, ax2]/2f)], axis=[iter_var(ax0, range(min=0, ext=100)), iter_var(ax1, range(min=0, ext=10)), iter_var(ax2, range(min=0, ext=10))], reduce_axis=[], tag=elemwise, attrs={})), stage(T_divide_red.rf, compute(T_divide_red.rf, body=[reduce(combiner=comm_reducer(result=[(x + y)], lhs=[x], rhs=[y], identity_element=[0f]), source=[T_divide[floordiv(floordiv((k0.k1.fused.k2.fused.inner + (k0.k1.fused.k2.fused.outer*1024)), 10), 10), floormod(floordiv((k0.k1.fused.k2.fused.inner + (k0.k1.fused.k2.fused.outer*1024)), 10), 10), floormod((k0.k1.fused.k2.fused.inner + (k0.k1.fused.k2.fused.outer*1024)), 10)]], init=[], axis=[iter_var(k0.k1.fused.k2.fused.outer, range(min=0, ext=10))], where=tir.likely((((floordiv(floordiv((k0.k1.fused.k2.fused.inner + (k0.k1.fused.k2.fused.outer*1024)), 10), 10) &lt; 100) &amp;&amp; (floordiv((k0.k1.fused.k2.fused.inner + (k0.k1.fused.k2.fused.outer*1024)), 10) &lt; 1000)) &amp;&amp; ((k0.k1.fused.k2.fused.inner + (k0.k1.fused.k2.fused.outer*1024)) &lt; 10000))), value_index=0)], axis=[iter_var(k0.k1.fused.k2.fused.inner, range(min=0, ext=1024))], reduce_axis=[iter_var(k0.k1.fused.k2.fused.outer, range(min=0, ext=10))], tag=, attrs={})), stage(T_divide_red, compute(T_divide_red.repl, body=[reduce(combiner=comm_reducer(result=[(x + y)], lhs=[x], rhs=[y], identity_element=[0f]), source=[T_divide_red.rf[k0.k1.fused.k2.fused.inner.v]], init=[], axis=[iter_var(k0.k1.fused.k2.fused.inner.v, range(min=0, ext=1024))], where=(bool)1, value_index=0)], axis=[], reduce_axis=[iter_var(k0.k1.fused.k2.fused.inner.v, range(min=0, ext=1024))], tag=, attrs={}))]
 </pre></div>
 </div>
 <p>We can test the correctness by comparing with <code class="code docutils literal notranslate"><span class="pre">numpy</span></code> result as follows</p>
@@ -483,22 +478,16 @@ we can schedule the following series of operations ending with <code class="code
 </div>
 <p class="sphx-glr-script-out">Out:</p>
 <div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>primfn(tarray_1: handle) -&gt; ()
-  attr = {&quot;global_symbol&quot;: &quot;main&quot;, &quot;tir.noalias&quot;: True}
+  attr = {&quot;from_legacy_te_schedule&quot;: True, &quot;global_symbol&quot;: &quot;main&quot;, &quot;tir.noalias&quot;: True}
   buffers = {tarray: Buffer(tarray_2: Pointer(float32), float32, [512, 512], [])}
   buffer_map = {tarray_1: tarray} {
-  attr [T_softmax_norm: Pointer(global float32x4)] &quot;storage_scope&quot; = &quot;global&quot;;
-  allocate(T_softmax_norm, float32x4, [65536]);
+  allocate(T_softmax_norm: Pointer(global float32x4), float32x4, [65536]), storage_scope = global;
   attr [IterVar(blockIdx.x: int32, (nullptr), &quot;ThreadIndex&quot;, &quot;blockIdx.x&quot;)] &quot;thread_extent&quot; = 512;
-  attr [normal_reduce_temp0: Pointer(local float32)] &quot;storage_scope&quot; = &quot;local&quot;;
-  allocate(normal_reduce_temp0, float32, [1]);
-  attr [reduce_temp0: Pointer(local float32)] &quot;storage_scope&quot; = &quot;local&quot;;
-  allocate(reduce_temp0, float32, [1]);
-  attr [T_softmax_exp: Pointer(warp float32)] &quot;storage_scope&quot; = &quot;warp&quot;;
-  allocate(T_softmax_exp, float32, [512]);
-  attr [normal_reduce_temp0_1: Pointer(local float32)] &quot;storage_scope&quot; = &quot;local&quot;;
-  allocate(normal_reduce_temp0_1, float32, [1]);
-  attr [reduce_temp0_1: Pointer(local float32)] &quot;storage_scope&quot; = &quot;local&quot;;
-  allocate(reduce_temp0_1, float32, [1]) {
+  allocate(normal_reduce_temp0: Pointer(local float32), float32, [1]), storage_scope = local;
+  allocate(reduce_temp0: Pointer(local float32), float32, [1]), storage_scope = local;
+  allocate(T_softmax_exp: Pointer(warp float32), float32, [512]), storage_scope = warp;
+  allocate(normal_reduce_temp0_1: Pointer(local float32), float32, [1]), storage_scope = local;
+  allocate(reduce_temp0_1: Pointer(local float32), float32, [1]), storage_scope = local {
     attr [IterVar(threadIdx.x: int32, [0:32], &quot;ThreadIndex&quot;, &quot;threadIdx.x&quot;)] &quot;thread_extent&quot; = 32 {
       normal_reduce_temp0[0] = -3.40282e+38f32
       for (k.inner: int32, 0, 16) {
@@ -549,19 +538,15 @@ the target information.</p>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
 <div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>primfn(placeholder_2: handle, placeholder_3: handle) -&gt; ()
-  attr = {&quot;global_symbol&quot;: &quot;main&quot;, &quot;tir.noalias&quot;: True}
+  attr = {&quot;from_legacy_te_schedule&quot;: True, &quot;global_symbol&quot;: &quot;main&quot;, &quot;tir.noalias&quot;: True}
   buffers = {placeholder_1: Buffer(placeholder_4: Pointer(float32), float32, [10, 3, 5, 5], []),
              placeholder: Buffer(placeholder_5: Pointer(float32), float32, [1, 3, 224, 224], [])}
   buffer_map = {placeholder_2: placeholder, placeholder_3: placeholder_1} {
-  attr [compute: Pointer(global float32)] &quot;storage_scope&quot; = &quot;global&quot;;
-  allocate(compute, float32, [501760]);
+  allocate(compute: Pointer(global float32), float32, [501760]), storage_scope = global;
   attr [IterVar(blockIdx.z: int32, (nullptr), &quot;ThreadIndex&quot;, &quot;blockIdx.z&quot;)] &quot;thread_extent&quot; = 5;
-  attr [compute_1: Pointer(local float32)] &quot;storage_scope&quot; = &quot;local&quot;;
-  allocate(compute_1, float32, [14]);
-  attr [pad_temp.shared: Pointer(shared float32)] &quot;storage_scope&quot; = &quot;shared&quot;;
-  allocate(pad_temp.shared, float32, [112]);
-  attr [placeholder.shared: Pointer(shared float32)] &quot;storage_scope&quot; = &quot;shared&quot;;
-  allocate(placeholder.shared, float32, [2]);
+  allocate(compute_1: Pointer(local float32), float32, [14]), storage_scope = local;
+  allocate(pad_temp.shared: Pointer(shared float32), float32, [112]), storage_scope = shared;
+  allocate(placeholder.shared: Pointer(shared float32), float32, [2]), storage_scope = shared;
   attr [IterVar(blockIdx.y: int32, (nullptr), &quot;ThreadIndex&quot;, &quot;blockIdx.y&quot;)] &quot;thread_extent&quot; = 224;
   attr [IterVar(blockIdx.x: int32, (nullptr), &quot;ThreadIndex&quot;, &quot;blockIdx.x&quot;)] &quot;thread_extent&quot; = 2;
   attr [IterVar(threadIdx.z: int32, (nullptr), &quot;ThreadIndex&quot;, &quot;threadIdx.z&quot;)] &quot;thread_extent&quot; = 1;
@@ -788,7 +773,7 @@ the target information.</p>
 
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="../micro/micro_reference_vm.html" class="btn btn-neutral float-right" title="microTVM Reference Virtual Machines" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+        <a href="../micro/micro_autotune.html" class="btn btn-neutral float-right" title="Autotuning with micro TVM" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
         <a href="../dev/bring_your_own_datatypes.html" class="btn btn-neutral float-left" title="Bring Your Own Datatypes to TVM" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>

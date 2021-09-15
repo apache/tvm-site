@@ -150,6 +150,7 @@ var searchData=
   ['ktvmerrorframingpayloadoverflow',['kTvmErrorFramingPayloadOverflow',['../error__codes_8h.html#a77b4da0131882f0c9b887a47dd34467aaafe05fbf089ae51c70bfbd0d817fadd0',1,'error_codes.h']]],
   ['ktvmerrorframingshortpacket',['kTvmErrorFramingShortPacket',['../error__codes_8h.html#a77b4da0131882f0c9b887a47dd34467aa03abcf8496c2d90d74d6461905f7c115',1,'error_codes.h']]],
   ['ktvmerrorfunctionalreadydefined',['kTvmErrorFunctionAlreadyDefined',['../error__codes_8h.html#a77b4da0131882f0c9b887a47dd34467aaa07a3a706c4d9217a760a510cf5fff7b',1,'error_codes.h']]],
+  ['ktvmerrorfunctioncallinvalidarg',['kTvmErrorFunctionCallInvalidArg',['../error__codes_8h.html#a77b4da0131882f0c9b887a47dd34467aae89eb63ba59c5b8319fd4601cb3cfdf6',1,'error_codes.h']]],
   ['ktvmerrorfunctioncallnotimplemented',['kTvmErrorFunctionCallNotImplemented',['../error__codes_8h.html#a77b4da0131882f0c9b887a47dd34467aa82501f0806b0ed8a3dad89668a37c167',1,'error_codes.h']]],
   ['ktvmerrorfunctioncallnumarguments',['kTvmErrorFunctionCallNumArguments',['../error__codes_8h.html#a77b4da0131882f0c9b887a47dd34467aad5308959a05bda2c0fe980520c5b698c',1,'error_codes.h']]],
   ['ktvmerrorfunctioncallwrongargtype',['kTvmErrorFunctionCallWrongArgType',['../error__codes_8h.html#a77b4da0131882f0c9b887a47dd34467aaa4f754336ee2a1e3280945eb8b7a7b92',1,'error_codes.h']]],

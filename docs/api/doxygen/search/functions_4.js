@@ -39,7 +39,7 @@ var searchData=
   ['devicename',['DeviceName',['../namespacetvm_1_1runtime.html#a9109e4efe269213052ed6a94853c0c00',1,'tvm::runtime']]],
   ['devicewrapper',['DeviceWrapper',['../classtvm_1_1runtime_1_1profiling_1_1DeviceWrapper.html#adc1844f93c34bf5b21a67cb194564d8a',1,'tvm::runtime::profiling::DeviceWrapper']]],
   ['devicewrappernode',['DeviceWrapperNode',['../structtvm_1_1runtime_1_1profiling_1_1DeviceWrapperNode.html#a2c0d565e6e24bb1f4047716ecf68be6d',1,'tvm::runtime::profiling::DeviceWrapperNode']]],
-  ['dfpatterncallback',['DFPatternCallback',['../classtvm_1_1relay_1_1DFPatternCallback.html#a820597c8dc9ec76160d3283e71cf57ba',1,'tvm::relay::DFPatternCallback']]],
+  ['dfpatterncallback',['DFPatternCallback',['../classtvm_1_1relay_1_1DFPatternCallback.html#afb8af748ce3c3f9c31ee5b1c73ffb6a4',1,'tvm::relay::DFPatternCallback']]],
   ['diagnostic',['Diagnostic',['../classtvm_1_1Diagnostic.html#a3e841d675315f73ce32ffa5c81dd9c26',1,'tvm::Diagnostic']]],
   ['diagnosticbuilder',['DiagnosticBuilder',['../classtvm_1_1DiagnosticBuilder.html#ab8cb7481e5112445af289832dc718e36',1,'tvm::DiagnosticBuilder::DiagnosticBuilder()'],['../classtvm_1_1DiagnosticBuilder.html#a3204dda7b9a0625027f3d7cba87558f7',1,'tvm::DiagnosticBuilder::DiagnosticBuilder(const DiagnosticBuilder &amp;builder)'],['../classtvm_1_1DiagnosticBuilder.html#a6e323e92313d91fe45970b3ee39b8e63',1,'tvm::DiagnosticBuilder::DiagnosticBuilder(DiagnosticLevel level, Span span)']]],
   ['diagnosticcontext',['DiagnosticContext',['../classtvm_1_1DiagnosticContext.html#a95a504685fb72779a8b63abb3e2923ea',1,'tvm::DiagnosticContext']]],

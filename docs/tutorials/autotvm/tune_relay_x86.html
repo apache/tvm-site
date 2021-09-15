@@ -11,7 +11,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Auto-tuning a Convolutional Network for x86 CPU &mdash; tvm 0.8.dev0 documentation</title>
+  <title>Auto-tuning a Convolutional Network for x86 CPU &mdash; tvm 0.8.dev1706+gdc2f70e3c documentation</title>
   
 
   
@@ -169,7 +169,7 @@
             
             
                 <div class="version">
-                  0.8.dev0
+                  0.8.dev1706+gdc2f70e3c
                 </div>
             
           
@@ -194,7 +194,7 @@
               
             
             
-              <p class="caption"><span class="caption-text">How to</span></p>
+              <p class="caption" role="heading"><span class="caption-text">How to</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../install/index.html">Installation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../contribute/index.html">Contribute to TVM</a></li>
@@ -204,7 +204,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../errors.html">What do to when encountering TVM Errors</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../faq.html">Frequently Asked Questions</a></li>
 </ul>
-<p class="caption"><span class="caption-text">Tutorials</span></p>
+<p class="caption" role="heading"><span class="caption-text">Tutorials</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="../index.html">Getting Started With TVM</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../index.html#compile-deep-learning-models">Compile Deep Learning Models</a></li>
@@ -228,17 +228,17 @@
 <li class="toctree-l1"><a class="reference internal" href="../index.html#topi-tvm-operator-inventory">TOPI: TVM Operator Inventory</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../index.html#microtvm">microTVM</a></li>
 </ul>
-<p class="caption"><span class="caption-text">References</span></p>
+<p class="caption" role="heading"><span class="caption-text">References</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../langref/index.html">Language Reference</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../api/python/index.html">Python API</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../api/links.html">Links to Other API References</a></li>
 </ul>
-<p class="caption"><span class="caption-text">Deep Dive</span></p>
+<p class="caption" role="heading"><span class="caption-text">Deep Dive</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../dev/index.html">Design and Architecture</a></li>
 </ul>
-<p class="caption"><span class="caption-text">MISC</span></p>
+<p class="caption" role="heading"><span class="caption-text">MISC</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../vta/index.html">VTA: Deep Learning Accelerator Stack</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../profiling/index.html">Profiling Deep Learning Models</a></li>
@@ -491,7 +491,19 @@ latency of one operator closer to its actual latency during end-to-end inference
 </pre></div>
 </div>
 <p>Finally, we launch tuning jobs and evaluate the end-to-end performance.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">tune_and_evaluate</span><span class="p">(</span><span class="n">tuning_opt</span><span class="p">):</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">evaluate_performance</span><span class="p">(</span><span class="n">lib</span><span class="p">,</span> <span class="n">data_shape</span><span class="p">):</span>
+    <span class="c1"># upload parameters to device</span>
+    <span class="n">dev</span> <span class="o">=</span> <span class="n">tvm</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span>
+    <span class="n">data_tvm</span> <span class="o">=</span> <a href="../../api/python/ndarray.html#tvm.nd.array" title="View documentation for tvm.nd.array"><span class="n">tvm</span><span class="o">.</span><span class="n">nd</span><span class="o">.</span><span class="n">array</span></a><span class="p">((</span><a href="https://numpy.org/doc/stable/reference/random/generated/numpy.random.uniform.html#numpy.random.uniform" title="View documentation for numpy.random.uniform"><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span></a><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="n">data_shape</span><span class="p">))</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">dtype</span><span class="p">))</span>
+    <span class="n">module</span> <span class="o">=</span> <a href="../../api/python/graph_executor.html#tvm.contrib.graph_executor.GraphModule" title="View documentation for tvm.contrib.graph_executor.GraphModule"><span class="n">runtime</span><span class="o">.</span><span class="n">GraphModule</span></a><span class="p">(</span><span class="n">lib</span><span class="p">[</span><span class="s2">&quot;default&quot;</span><span class="p">](</span><span class="n">dev</span><span class="p">))</span>
+    <span class="n">module</span><span class="o">.</span><span class="n">set_input</span><span class="p">(</span><span class="n">input_name</span><span class="p">,</span> <span class="n">data_tvm</span><span class="p">)</span>
+
+    <span class="c1"># evaluate</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Evaluate inference time cost...&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">module</span><span class="o">.</span><span class="n">benchmark</span><span class="p">(</span><span class="n">dev</span><span class="p">,</span> <span class="n">number</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">repeat</span><span class="o">=</span><span class="mi">3</span><span class="p">))</span>
+
+
+<span class="k">def</span> <span class="nf">tune_and_evaluate</span><span class="p">(</span><span class="n">tuning_opt</span><span class="p">):</span>
     <span class="c1"># extract workloads from relay program</span>
     <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Extract tasks...&quot;</span><span class="p">)</span>
     <span class="n">mod</span><span class="p">,</span> <span class="n">params</span><span class="p">,</span> <span class="n">data_shape</span><span class="p">,</span> <span class="n">out_shape</span> <span class="o">=</span> <span class="n">get_network</span><span class="p">(</span><span class="n">model_name</span><span class="p">,</span> <span class="n">batch_size</span><span class="p">)</span>
@@ -503,26 +515,28 @@ latency of one operator closer to its actual latency during end-to-end inference
     <span class="n">tune_kernels</span><span class="p">(</span><span class="n">tasks</span><span class="p">,</span> <span class="o">**</span><span class="n">tuning_opt</span><span class="p">)</span>
     <span class="n">tune_graph</span><span class="p">(</span><span class="n">mod</span><span class="p">[</span><span class="s2">&quot;main&quot;</span><span class="p">],</span> <span class="n">data_shape</span><span class="p">,</span> <span class="n">log_file</span><span class="p">,</span> <span class="n">graph_opt_sch_file</span><span class="p">)</span>
 
+    <span class="c1"># compile kernels in default mode</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Evaluation of the network compiled in &#39;default&#39; mode without auto tune:&quot;</span><span class="p">)</span>
+    <span class="k">with</span> <a href="../../api/python/ir.html#tvm.transform.PassContext" title="View documentation for tvm.transform.PassContext"><span class="n">tvm</span><span class="o">.</span><span class="n">transform</span><span class="o">.</span><span class="n">PassContext</span></a><span class="p">(</span><span class="n">opt_level</span><span class="o">=</span><span class="mi">3</span><span class="p">):</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Compile...&quot;</span><span class="p">)</span>
+        <span class="n">lib</span> <span class="o">=</span> <span class="n">relay</span><span class="o">.</span><span class="n">build</span><span class="p">(</span><span class="n">mod</span><span class="p">,</span> <span class="n">target</span><span class="o">=</span><span class="n">target</span><span class="p">,</span> <span class="n">params</span><span class="o">=</span><span class="n">params</span><span class="p">)</span>
+        <span class="n">evaluate_performance</span><span class="p">(</span><span class="n">lib</span><span class="p">,</span> <span class="n">data_shape</span><span class="p">)</span>
+
+    <span class="c1"># compile kernels in kernel tuned only mode</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Evaluation of the network been tuned on kernel level:&quot;</span><span class="p">)</span>
+    <span class="k">with</span> <a href="../../api/python/autotvm.html#tvm.autotvm.apply_history_best" title="View documentation for tvm.autotvm.apply_history_best"><span class="n">autotvm</span><span class="o">.</span><span class="n">apply_history_best</span></a><span class="p">(</span><span class="n">log_file</span><span class="p">):</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Compile...&quot;</span><span class="p">)</span>
+        <span class="k">with</span> <a href="../../api/python/ir.html#tvm.transform.PassContext" title="View documentation for tvm.transform.PassContext"><span class="n">tvm</span><span class="o">.</span><span class="n">transform</span><span class="o">.</span><span class="n">PassContext</span></a><span class="p">(</span><span class="n">opt_level</span><span class="o">=</span><span class="mi">3</span><span class="p">):</span>
+            <span class="n">lib</span> <span class="o">=</span> <span class="n">relay</span><span class="o">.</span><span class="n">build</span><span class="p">(</span><span class="n">mod</span><span class="p">,</span> <span class="n">target</span><span class="o">=</span><span class="n">target</span><span class="p">,</span> <span class="n">params</span><span class="o">=</span><span class="n">params</span><span class="p">)</span>
+        <span class="n">evaluate_performance</span><span class="p">(</span><span class="n">lib</span><span class="p">,</span> <span class="n">data_shape</span><span class="p">)</span>
+
     <span class="c1"># compile kernels with graph-level best records</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Evaluation of the network been tuned on graph level:&quot;</span><span class="p">)</span>
     <span class="k">with</span> <span class="n">autotvm</span><span class="o">.</span><span class="n">apply_graph_best</span><span class="p">(</span><span class="n">graph_opt_sch_file</span><span class="p">):</span>
         <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Compile...&quot;</span><span class="p">)</span>
         <span class="k">with</span> <a href="../../api/python/ir.html#tvm.transform.PassContext" title="View documentation for tvm.transform.PassContext"><span class="n">tvm</span><span class="o">.</span><span class="n">transform</span><span class="o">.</span><span class="n">PassContext</span></a><span class="p">(</span><span class="n">opt_level</span><span class="o">=</span><span class="mi">3</span><span class="p">):</span>
             <span class="n">lib</span> <span class="o">=</span> <span class="n">relay</span><span class="o">.</span><span class="n">build_module</span><span class="o">.</span><span class="n">build</span><span class="p">(</span><span class="n">mod</span><span class="p">,</span> <span class="n">target</span><span class="o">=</span><span class="n">target</span><span class="p">,</span> <span class="n">params</span><span class="o">=</span><span class="n">params</span><span class="p">)</span>
-
-        <span class="c1"># upload parameters to device</span>
-        <span class="n">dev</span> <span class="o">=</span> <span class="n">tvm</span><span class="o">.</span><span class="n">cpu</span><span class="p">()</span>
-        <span class="n">data_tvm</span> <span class="o">=</span> <a href="../../api/python/ndarray.html#tvm.nd.array" title="View documentation for tvm.nd.array"><span class="n">tvm</span><span class="o">.</span><span class="n">nd</span><span class="o">.</span><span class="n">array</span></a><span class="p">((</span><a href="https://numpy.org/doc/stable/reference/random/generated/numpy.random.uniform.html#numpy.random.uniform" title="View documentation for numpy.random.uniform"><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span></a><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="n">data_shape</span><span class="p">))</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">dtype</span><span class="p">))</span>
-        <span class="n">module</span> <span class="o">=</span> <a href="../../api/python/graph_executor.html#tvm.contrib.graph_executor.GraphModule" title="View documentation for tvm.contrib.graph_executor.GraphModule"><span class="n">runtime</span><span class="o">.</span><span class="n">GraphModule</span></a><span class="p">(</span><span class="n">lib</span><span class="p">[</span><span class="s2">&quot;default&quot;</span><span class="p">](</span><span class="n">dev</span><span class="p">))</span>
-        <span class="n">module</span><span class="o">.</span><span class="n">set_input</span><span class="p">(</span><span class="n">input_name</span><span class="p">,</span> <span class="n">data_tvm</span><span class="p">)</span>
-
-        <span class="c1"># evaluate</span>
-        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Evaluate inference time cost...&quot;</span><span class="p">)</span>
-        <span class="n">ftimer</span> <span class="o">=</span> <span class="n">module</span><span class="o">.</span><span class="n">module</span><span class="o">.</span><span class="n">time_evaluator</span><span class="p">(</span><span class="s2">&quot;run&quot;</span><span class="p">,</span> <span class="n">dev</span><span class="p">,</span> <span class="n">number</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">repeat</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
-        <span class="n">prof_res</span> <span class="o">=</span> <a href="https://numpy.org/doc/stable/reference/generated/numpy.array.html#numpy.array" title="View documentation for numpy.array"><span class="n">np</span><span class="o">.</span><span class="n">array</span></a><span class="p">(</span><span class="n">ftimer</span><span class="p">()</span><span class="o">.</span><span class="n">results</span><span class="p">)</span> <span class="o">*</span> <span class="mi">1000</span>  <span class="c1"># convert to millisecond</span>
-        <span class="nb">print</span><span class="p">(</span>
-            <span class="s2">&quot;Mean inference time (std dev): </span><span class="si">%.2f</span><span class="s2"> ms (</span><span class="si">%.2f</span><span class="s2"> ms)&quot;</span>
-            <span class="o">%</span> <span class="p">(</span><a href="https://numpy.org/doc/stable/reference/generated/numpy.mean.html#numpy.mean" title="View documentation for numpy.mean"><span class="n">np</span><span class="o">.</span><span class="n">mean</span></a><span class="p">(</span><span class="n">prof_res</span><span class="p">),</span> <a href="https://numpy.org/doc/stable/reference/generated/numpy.std.html#numpy.std" title="View documentation for numpy.std"><span class="n">np</span><span class="o">.</span><span class="n">std</span></a><span class="p">(</span><span class="n">prof_res</span><span class="p">))</span>
-        <span class="p">)</span>
+        <span class="n">evaluate_performance</span><span class="p">(</span><span class="n">lib</span><span class="p">,</span> <span class="n">data_shape</span><span class="p">)</span>
 
 
 <span class="c1"># We do not run the tuning in our webpage server since it takes too long.</span>
@@ -551,7 +565,30 @@ Tuning...
 <span class="o">[</span>Task <span class="m">10</span>/12<span class="o">]</span>  Current/Best:  <span class="m">182</span>.33/1734.45 GFLOPS <span class="p">|</span> Progress: <span class="o">(</span><span class="m">360</span>/360<span class="o">)</span> <span class="p">|</span> <span class="m">1755</span>.06 s Done.
 <span class="o">[</span>Task <span class="m">11</span>/12<span class="o">]</span>  Current/Best:  <span class="m">372</span>.18/1745.15 GFLOPS <span class="p">|</span> Progress: <span class="o">(</span><span class="m">360</span>/360<span class="o">)</span> <span class="p">|</span> <span class="m">1684</span>.50 s Done.
 <span class="o">[</span>Task <span class="m">12</span>/12<span class="o">]</span>  Current/Best:  <span class="m">215</span>.34/2271.11 GFLOPS <span class="p">|</span> Progress: <span class="o">(</span><span class="m">400</span>/400<span class="o">)</span> <span class="p">|</span> <span class="m">2128</span>.74 s Done.
+INFO Start to benchmark layout transformation...
+INFO Benchmarking layout transformation successful.
+INFO Start to run dynamic programming algorithm...
+INFO Start forward pass...
+INFO Finished forward pass.
+INFO Start backward pass...
+INFO Finished backward pass...
+INFO Finished DPExecutor run.
+INFO Writing optimal schedules to resnet-18_graph_opt.log successfully.
+
+Evaluation of the network compiled in <span class="s1">&#39;default&#39;</span> mode without auto tune:
 Compile...
+Evaluate inference <span class="nb">time</span> cost...
+Mean inference <span class="nb">time</span> <span class="o">(</span>std dev<span class="o">)</span>: <span class="m">4</span>.5 ms <span class="o">(</span><span class="m">0</span>.03 ms<span class="o">)</span>
+
+Evaluation of the network been tuned on kernel level:
+Compile...
+Evaluate inference <span class="nb">time</span> cost...
+Mean inference <span class="nb">time</span> <span class="o">(</span>std dev<span class="o">)</span>: <span class="m">3</span>.2 ms <span class="o">(</span><span class="m">0</span>.03 ms<span class="o">)</span>
+
+Evaluation of the network been tuned on graph level:
+Compile...
+Config <span class="k">for</span> <span class="nv">target</span><span class="o">=</span>llvm -keys<span class="o">=</span>cpu -link-params<span class="o">=</span><span class="m">0</span>, <span class="nv">workload</span><span class="o">=(</span><span class="s1">&#39;dense_nopack.x86&#39;</span>, <span class="o">(</span><span class="s1">&#39;TENSOR&#39;</span>, <span class="o">(</span><span class="m">1</span>, <span class="m">512</span><span class="o">)</span>, <span class="s1">&#39;float32&#39;</span><span class="o">)</span>, <span class="o">(</span><span class="s1">&#39;TENSOR&#39;</span>, <span class="o">(</span><span class="m">1000</span>, <span class="m">512</span><span class="o">)</span>, <span class="s1">&#39;float32&#39;</span><span class="o">)</span>, None, <span class="s1">&#39;float32&#39;</span><span class="o">)</span> is missing in ApplyGraphBest context. A fallback configuration is used, which may bring great performance regression.
+Config <span class="k">for</span> <span class="nv">target</span><span class="o">=</span>llvm -keys<span class="o">=</span>cpu -link-params<span class="o">=</span><span class="m">0</span>, <span class="nv">workload</span><span class="o">=(</span><span class="s1">&#39;dense_pack.x86&#39;</span>, <span class="o">(</span><span class="s1">&#39;TENSOR&#39;</span>, <span class="o">(</span><span class="m">1</span>, <span class="m">512</span><span class="o">)</span>, <span class="s1">&#39;float32&#39;</span><span class="o">)</span>, <span class="o">(</span><span class="s1">&#39;TENSOR&#39;</span>, <span class="o">(</span><span class="m">1000</span>, <span class="m">512</span><span class="o">)</span>, <span class="s1">&#39;float32&#39;</span><span class="o">)</span>, None, <span class="s1">&#39;float32&#39;</span><span class="o">)</span> is missing in ApplyGraphBest context. A fallback configuration is used, which may bring great performance regression.
 Evaluate inference <span class="nb">time</span> cost...
 Mean inference <span class="nb">time</span> <span class="o">(</span>std dev<span class="o">)</span>: <span class="m">3</span>.16 ms <span class="o">(</span><span class="m">0</span>.03 ms<span class="o">)</span>
 </pre></div>

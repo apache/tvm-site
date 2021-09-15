@@ -9,6 +9,7 @@ var searchData=
   ['deformableconv2dattrs',['DeformableConv2DAttrs',['../structtvm_1_1relay_1_1DeformableConv2DAttrs.html',1,'tvm::relay']]],
   ['denseattrs',['DenseAttrs',['../structtvm_1_1relay_1_1DenseAttrs.html',1,'tvm::relay']]],
   ['densemapnode',['DenseMapNode',['../classtvm_1_1runtime_1_1DenseMapNode.html',1,'tvm::runtime']]],
+  ['densepackattrs',['DensePackAttrs',['../structtvm_1_1relay_1_1DensePackAttrs.html',1,'tvm::relay']]],
   ['dependency',['Dependency',['../classtvm_1_1tir_1_1Dependency.html',1,'tvm::tir']]],
   ['dependencynode',['DependencyNode',['../classtvm_1_1tir_1_1DependencyNode.html',1,'tvm::tir']]],
   ['dequantizeattrs',['DequantizeAttrs',['../structtvm_1_1relay_1_1qnn_1_1DequantizeAttrs.html',1,'tvm::relay::qnn']]],

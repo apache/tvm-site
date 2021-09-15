@@ -31,5 +31,6 @@ var searchData=
   ['mode',['mode',['../structtvm_1_1relay_1_1MirrorPadAttrs.html#af5381d72f1d9c9abcb9d2e522966ad86',1,'tvm::relay::MirrorPadAttrs::mode()'],['../structtvm_1_1relay_1_1SubPixelAttrs.html#a6f0822aa1ad7672a18ab73c64e83fa99',1,'tvm::relay::SubPixelAttrs::mode()'],['../structtvm_1_1relay_1_1ScatterNDAttrs.html#ab13eeaa700fe7e41666ac04179e0fd62',1,'tvm::relay::ScatterNDAttrs::mode()'],['../structtvm_1_1relay_1_1TakeAttrs.html#ac7fd604371e248cce170a05be605bd43',1,'tvm::relay::TakeAttrs::mode()'],['../structtvm_1_1relay_1_1ROIAlignAttrs.html#a8eebb8a7557d32676c8c4c0766814432',1,'tvm::relay::ROIAlignAttrs::mode()']]],
   ['modular_5fset',['modular_set',['../classtvm_1_1arith_1_1Analyzer.html#acac92a9522deabe289fea99efbd9eaec',1,'tvm::arith::Analyzer']]],
   ['module',['module',['../classtvm_1_1DiagnosticContextNode.html#adea7e38a6e47cbab7fb5639f208aa536',1,'tvm::DiagnosticContextNode']]],
-  ['multiplier',['multiplier',['../structtvm_1_1relay_1_1FixedPointMultiplyAttrs.html#a317374d804a576b50d9a51e4a8ee3ff2',1,'tvm::relay::FixedPointMultiplyAttrs']]]
+  ['modulus',['modulus',['../classtvm_1_1support_1_1LinearCongruentialEngine.html#a23bc67890d791f38859217b89e80482f',1,'tvm::support::LinearCongruentialEngine']]],
+  ['multiplier',['multiplier',['../structtvm_1_1relay_1_1FixedPointMultiplyAttrs.html#a317374d804a576b50d9a51e4a8ee3ff2',1,'tvm::relay::FixedPointMultiplyAttrs::multiplier()'],['../classtvm_1_1support_1_1LinearCongruentialEngine.html#a128489c9a75bc034c1363f166156c25c',1,'tvm::support::LinearCongruentialEngine::multiplier()']]]
 ];

@@ -7,7 +7,7 @@ var searchData=
   ['scatterattrs',['ScatterAttrs',['../structtvm_1_1relay_1_1ScatterAttrs.html',1,'tvm::relay']]],
   ['scatterndattrs',['ScatterNDAttrs',['../structtvm_1_1relay_1_1ScatterNDAttrs.html',1,'tvm::relay']]],
   ['schedule',['Schedule',['../classtvm_1_1te_1_1Schedule.html',1,'tvm::te::Schedule'],['../classtvm_1_1tir_1_1Schedule.html',1,'tvm::tir::Schedule']]],
-  ['schedulenode',['ScheduleNode',['../classtvm_1_1tir_1_1ScheduleNode.html',1,'tvm::tir::ScheduleNode'],['../classtvm_1_1te_1_1ScheduleNode.html',1,'tvm::te::ScheduleNode']]],
+  ['schedulenode',['ScheduleNode',['../classtvm_1_1te_1_1ScheduleNode.html',1,'tvm::te::ScheduleNode'],['../classtvm_1_1tir_1_1ScheduleNode.html',1,'tvm::tir::ScheduleNode']]],
   ['schedulestate',['ScheduleState',['../classtvm_1_1tir_1_1ScheduleState.html',1,'tvm::tir']]],
   ['schedulestatenode',['ScheduleStateNode',['../classtvm_1_1tir_1_1ScheduleStateNode.html',1,'tvm::tir']]],
   ['searchcallback',['SearchCallback',['../classtvm_1_1auto__scheduler_1_1SearchCallback.html',1,'tvm::auto_scheduler']]],

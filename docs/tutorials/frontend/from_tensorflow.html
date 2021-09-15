@@ -11,7 +11,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Compile Tensorflow Models &mdash; tvm 0.8.dev0 documentation</title>
+  <title>Compile Tensorflow Models &mdash; tvm 0.8.dev1706+gdc2f70e3c documentation</title>
   
 
   
@@ -169,7 +169,7 @@
             
             
                 <div class="version">
-                  0.8.dev0
+                  0.8.dev1706+gdc2f70e3c
                 </div>
             
           
@@ -194,7 +194,7 @@
               
             
             
-              <p class="caption"><span class="caption-text">How to</span></p>
+              <p class="caption" role="heading"><span class="caption-text">How to</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../install/index.html">Installation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../contribute/index.html">Contribute to TVM</a></li>
@@ -204,7 +204,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../errors.html">What do to when encountering TVM Errors</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../faq.html">Frequently Asked Questions</a></li>
 </ul>
-<p class="caption"><span class="caption-text">Tutorials</span></p>
+<p class="caption" role="heading"><span class="caption-text">Tutorials</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="../index.html">Getting Started With TVM</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="../index.html#compile-deep-learning-models">Compile Deep Learning Models</a><ul class="current">
@@ -248,17 +248,17 @@
 <li class="toctree-l1"><a class="reference internal" href="../index.html#topi-tvm-operator-inventory">TOPI: TVM Operator Inventory</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../index.html#microtvm">microTVM</a></li>
 </ul>
-<p class="caption"><span class="caption-text">References</span></p>
+<p class="caption" role="heading"><span class="caption-text">References</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../langref/index.html">Language Reference</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../api/python/index.html">Python API</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../api/links.html">Links to Other API References</a></li>
 </ul>
-<p class="caption"><span class="caption-text">Deep Dive</span></p>
+<p class="caption" role="heading"><span class="caption-text">Deep Dive</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../dev/index.html">Design and Architecture</a></li>
 </ul>
-<p class="caption"><span class="caption-text">MISC</span></p>
+<p class="caption" role="heading"><span class="caption-text">MISC</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../vta/index.html">VTA: Deep Learning Accelerator Stack</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../profiling/index.html">Profiling Deep Learning Models</a></li>
@@ -363,6 +363,21 @@
 <span class="c1"># Tensorflow imports</span>
 <span class="kn">import</span> <span class="nn">tensorflow</span> <span class="k">as</span> <span class="nn">tf</span>
 
+
+<span class="c1"># Ask tensorflow to limit its GPU memory to what&#39;s actually needed</span>
+<span class="c1"># instead of gobbling everything that&#39;s available.</span>
+<span class="c1"># https://www.tensorflow.org/guide/gpu#limiting_gpu_memory_growth</span>
+<span class="c1"># This way this tutorial is a little more friendly to sphinx-gallery.</span>
+<span class="n">gpus</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">list_physical_devices</span><span class="p">(</span><span class="s2">&quot;GPU&quot;</span><span class="p">)</span>
+<span class="k">if</span> <span class="n">gpus</span><span class="p">:</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">gpu</span> <span class="ow">in</span> <span class="n">gpus</span><span class="p">:</span>
+            <span class="n">tf</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">experimental</span><span class="o">.</span><span class="n">set_memory_growth</span><span class="p">(</span><span class="n">gpu</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;tensorflow will use experimental.set_memory_growth(True)&quot;</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">RuntimeError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;experimental.set_memory_growth option is not available: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">e</span><span class="p">))</span>
+
+
 <span class="k">try</span><span class="p">:</span>
     <span class="n">tf_compat_v1</span> <span class="o">=</span> <span class="n">tf</span><span class="o">.</span><span class="n">compat</span><span class="o">.</span><span class="n">v1</span>
 <span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
@@ -377,6 +392,10 @@
 <span class="c1"># Test image</span>
 <span class="n">img_name</span> <span class="o">=</span> <span class="s2">&quot;elephant-299.jpg&quot;</span>
 <span class="n">image_url</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">repo_base</span><span class="p">,</span> <span class="n">img_name</span><span class="p">)</span>
+</pre></div>
+</div>
+<p class="sphx-glr-script-out">Out:</p>
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>tensorflow will use experimental.set_memory_growth(True)
 </pre></div>
 </div>
 <div class="section" id="tutorials">
@@ -414,13 +433,6 @@ from tensorflow.</p>
 <span class="n">model_path</span> <span class="o">=</span> <span class="n">download_testdata</span><span class="p">(</span><span class="n">model_url</span><span class="p">,</span> <span class="n">model_name</span><span class="p">,</span> <span class="n">module</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;tf&quot;</span><span class="p">,</span> <span class="s2">&quot;InceptionV1&quot;</span><span class="p">])</span>
 <span class="n">map_proto_path</span> <span class="o">=</span> <span class="n">download_testdata</span><span class="p">(</span><span class="n">map_proto_url</span><span class="p">,</span> <span class="n">map_proto</span><span class="p">,</span> <span class="n">module</span><span class="o">=</span><span class="s2">&quot;data&quot;</span><span class="p">)</span>
 <span class="n">label_path</span> <span class="o">=</span> <span class="n">download_testdata</span><span class="p">(</span><span class="n">label_map_url</span><span class="p">,</span> <span class="n">label_map</span><span class="p">,</span> <span class="n">module</span><span class="o">=</span><span class="s2">&quot;data&quot;</span><span class="p">)</span>
-</pre></div>
-</div>
-<p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>File /workspace/.tvm_test_data/data/elephant-299.jpg exists, skip.
-File /workspace/.tvm_test_data/tf/InceptionV1/classify_image_graph_def-with_shapes.pb exists, skip.
-File /workspace/.tvm_test_data/data/imagenet_2012_challenge_label_map_proto.pbtxt exists, skip.
-File /workspace/.tvm_test_data/data/imagenet_synset_to_human_label_map.txt exists, skip.
 </pre></div>
 </div>
 </div>
@@ -471,9 +483,9 @@ params: params converted from tensorflow params (tensor protobuf).</p>
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>/workspace/docs/../python/tvm/relay/frontend/tensorflow.py:530: UserWarning: Ignore the passed shape. Shape in graphdef will be used for operator DecodeJpeg/contents.
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>../../python/tvm/relay/frontend/tensorflow.py:535: UserWarning: Ignore the passed shape. Shape in graphdef will be used for operator DecodeJpeg/contents.
   &quot;will be used for operator %s.&quot; % node.name
-/workspace/docs/../python/tvm/relay/frontend/tensorflow_ops.py:1006: UserWarning: DecodeJpeg: It&#39;s a pass through, please handle preprocessing before input
+../../python/tvm/relay/frontend/tensorflow_ops.py:1006: UserWarning: DecodeJpeg: It&#39;s a pass through, please handle preprocessing before input
   warnings.warn(&quot;DecodeJpeg: It&#39;s a pass through, please handle preprocessing before input&quot;)
 Tensorflow protobuf imported to relay frontend.
 </pre></div>
@@ -490,6 +502,146 @@ lib: target library which can be deployed on target with TVM runtime.</p>
 </dl>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">with</span> <a href="../../api/python/ir.html#tvm.transform.PassContext" title="View documentation for tvm.transform.PassContext"><span class="n">tvm</span><span class="o">.</span><span class="n">transform</span><span class="o">.</span><span class="n">PassContext</span></a><span class="p">(</span><span class="n">opt_level</span><span class="o">=</span><span class="mi">3</span><span class="p">):</span>
     <span class="n">lib</span> <span class="o">=</span> <span class="n">relay</span><span class="o">.</span><span class="n">build</span><span class="p">(</span><span class="n">mod</span><span class="p">,</span> <span class="n">target</span><span class="p">,</span> <span class="n">params</span><span class="o">=</span><span class="n">params</span><span class="p">)</span>
+</pre></div>
+</div>
+<p class="sphx-glr-script-out">Out:</p>
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>conv2d NHWC layout is not optimized for x86 with autotvm.
+conv2d NHWC layout is not optimized for x86 with autotvm.
+conv2d NHWC layout is not optimized for x86 with autotvm.
+conv2d NHWC layout is not optimized for x86 with autotvm.
+conv2d NHWC layout is not optimized for x86 with autotvm.
+conv2d NHWC layout is not optimized for x86 with autotvm.
+conv2d NHWC layout is not optimized for x86 with autotvm.
+conv2d NHWC layout is not optimized for x86 with autotvm.
+conv2d NHWC layout is not optimized for x86 with autotvm.
+conv2d NHWC layout is not optimized for x86 with autotvm.
+conv2d NHWC layout is not optimized for x86 with autotvm.
+conv2d NHWC layout is not optimized for x86 with autotvm.
+conv2d NHWC layout is not optimized for x86 with autotvm.
+conv2d NHWC layout is not optimized for x86 with autotvm.
+conv2d NHWC layout is not optimized for x86 with autotvm.
+conv2d NHWC layout is not optimized for x86 with autotvm.
+conv2d NHWC layout is not optimized for x86 with autotvm.
+conv2d NHWC layout is not optimized for x86 with autotvm.
+conv2d NHWC layout is not optimized for x86 with autotvm.
+conv2d NHWC layout is not optimized for x86 with autotvm.
+conv2d NHWC layout is not optimized for x86 with autotvm.
+conv2d NHWC layout is not optimized for x86 with autotvm.
+conv2d NHWC layout is not optimized for x86 with autotvm.
+conv2d NHWC layout is not optimized for x86 with autotvm.
+conv2d NHWC layout is not optimized for x86 with autotvm.
+conv2d NHWC layout is not optimized for x86 with autotvm.
+conv2d NHWC layout is not optimized for x86 with autotvm.
+conv2d NHWC layout is not optimized for x86 with autotvm.
+conv2d NHWC layout is not optimized for x86 with autotvm.
+conv2d NHWC layout is not optimized for x86 with autotvm.
+conv2d NHWC layout is not optimized for x86 with autotvm.
+conv2d NHWC layout is not optimized for x86 with autotvm.
+conv2d NHWC layout is not optimized for x86 with autotvm.
+conv2d NHWC layout is not optimized for x86 with autotvm.
+conv2d NHWC layout is not optimized for x86 with autotvm.
+conv2d NHWC layout is not optimized for x86 with autotvm.
+conv2d NHWC layout is not optimized for x86 with autotvm.
+conv2d NHWC layout is not optimized for x86 with autotvm.
+conv2d NHWC layout is not optimized for x86 with autotvm.
+conv2d NHWC layout is not optimized for x86 with autotvm.
+conv2d NHWC layout is not optimized for x86 with autotvm.
+conv2d NHWC layout is not optimized for x86 with autotvm.
+conv2d NHWC layout is not optimized for x86 with autotvm.
+conv2d NHWC layout is not optimized for x86 with autotvm.
+conv2d NHWC layout is not optimized for x86 with autotvm.
+conv2d NHWC layout is not optimized for x86 with autotvm.
+conv2d NHWC layout is not optimized for x86 with autotvm.
+conv2d NHWC layout is not optimized for x86 with autotvm.
+conv2d NHWC layout is not optimized for x86 with autotvm.
+conv2d NHWC layout is not optimized for x86 with autotvm.
+conv2d NHWC layout is not optimized for x86 with autotvm.
+conv2d NHWC layout is not optimized for x86 with autotvm.
+conv2d NHWC layout is not optimized for x86 with autotvm.
+conv2d NHWC layout is not optimized for x86 with autotvm.
+conv2d NHWC layout is not optimized for x86 with autotvm.
+conv2d NHWC layout is not optimized for x86 with autotvm.
+conv2d NHWC layout is not optimized for x86 with autotvm.
+conv2d NHWC layout is not optimized for x86 with autotvm.
+conv2d NHWC layout is not optimized for x86 with autotvm.
+conv2d NHWC layout is not optimized for x86 with autotvm.
+conv2d NHWC layout is not optimized for x86 with autotvm.
+conv2d NHWC layout is not optimized for x86 with autotvm.
+conv2d NHWC layout is not optimized for x86 with autotvm.
+conv2d NHWC layout is not optimized for x86 with autotvm.
+conv2d NHWC layout is not optimized for x86 with autotvm.
+conv2d NHWC layout is not optimized for x86 with autotvm.
+conv2d NHWC layout is not optimized for x86 with autotvm.
+conv2d NHWC layout is not optimized for x86 with autotvm.
+conv2d NHWC layout is not optimized for x86 with autotvm.
+conv2d NHWC layout is not optimized for x86 with autotvm.
+conv2d NHWC layout is not optimized for x86 with autotvm.
+conv2d NHWC layout is not optimized for x86 with autotvm.
+conv2d NHWC layout is not optimized for x86 with autotvm.
+conv2d NHWC layout is not optimized for x86 with autotvm.
+conv2d NHWC layout is not optimized for x86 with autotvm.
+conv2d NHWC layout is not optimized for x86 with autotvm.
+conv2d NHWC layout is not optimized for x86 with autotvm.
+conv2d NHWC layout is not optimized for x86 with autotvm.
+conv2d NHWC layout is not optimized for x86 with autotvm.
+conv2d NHWC layout is not optimized for x86 with autotvm.
+conv2d NHWC layout is not optimized for x86 with autotvm.
+conv2d NHWC layout is not optimized for x86 with autotvm.
+conv2d NHWC layout is not optimized for x86 with autotvm.
+conv2d NHWC layout is not optimized for x86 with autotvm.
+conv2d NHWC layout is not optimized for x86 with autotvm.
+conv2d NHWC layout is not optimized for x86 with autotvm.
+conv2d NHWC layout is not optimized for x86 with autotvm.
+conv2d NHWC layout is not optimized for x86 with autotvm.
+conv2d NHWC layout is not optimized for x86 with autotvm.
+conv2d NHWC layout is not optimized for x86 with autotvm.
+conv2d NHWC layout is not optimized for x86 with autotvm.
+conv2d NHWC layout is not optimized for x86 with autotvm.
+conv2d NHWC layout is not optimized for x86 with autotvm.
+conv2d NHWC layout is not optimized for x86 with autotvm.
+conv2d NHWC layout is not optimized for x86 with autotvm.
+conv2d NHWC layout is not optimized for x86 with autotvm.
+conv2d NHWC layout is not optimized for x86 with autotvm.
+conv2d NHWC layout is not optimized for x86 with autotvm.
+conv2d NHWC layout is not optimized for x86 with autotvm.
+conv2d NHWC layout is not optimized for x86 with autotvm.
+conv2d NHWC layout is not optimized for x86 with autotvm.
+conv2d NHWC layout is not optimized for x86 with autotvm.
+conv2d NHWC layout is not optimized for x86 with autotvm.
+conv2d NHWC layout is not optimized for x86 with autotvm.
+conv2d NHWC layout is not optimized for x86 with autotvm.
+conv2d NHWC layout is not optimized for x86 with autotvm.
+conv2d NHWC layout is not optimized for x86 with autotvm.
+conv2d NHWC layout is not optimized for x86 with autotvm.
+conv2d NHWC layout is not optimized for x86 with autotvm.
+conv2d NHWC layout is not optimized for x86 with autotvm.
+conv2d NHWC layout is not optimized for x86 with autotvm.
+conv2d NHWC layout is not optimized for x86 with autotvm.
+conv2d NHWC layout is not optimized for x86 with autotvm.
+conv2d NHWC layout is not optimized for x86 with autotvm.
+conv2d NHWC layout is not optimized for x86 with autotvm.
+conv2d NHWC layout is not optimized for x86 with autotvm.
+conv2d NHWC layout is not optimized for x86 with autotvm.
+conv2d NHWC layout is not optimized for x86 with autotvm.
+conv2d NHWC layout is not optimized for x86 with autotvm.
+conv2d NHWC layout is not optimized for x86 with autotvm.
+conv2d NHWC layout is not optimized for x86 with autotvm.
+conv2d NHWC layout is not optimized for x86 with autotvm.
+conv2d NHWC layout is not optimized for x86 with autotvm.
+conv2d NHWC layout is not optimized for x86 with autotvm.
+conv2d NHWC layout is not optimized for x86 with autotvm.
+conv2d NHWC layout is not optimized for x86 with autotvm.
+conv2d NHWC layout is not optimized for x86 with autotvm.
+conv2d NHWC layout is not optimized for x86 with autotvm.
+conv2d NHWC layout is not optimized for x86 with autotvm.
+conv2d NHWC layout is not optimized for x86 with autotvm.
+conv2d NHWC layout is not optimized for x86 with autotvm.
+conv2d NHWC layout is not optimized for x86 with autotvm.
+conv2d NHWC layout is not optimized for x86 with autotvm.
+conv2d NHWC layout is not optimized for x86 with autotvm.
+conv2d NHWC layout is not optimized for x86 with autotvm.
+conv2d NHWC layout is not optimized for x86 with autotvm.
+conv2d NHWC layout is not optimized for x86 with autotvm.
 </pre></div>
 </div>
 </div>
@@ -600,7 +752,6 @@ banana (score = 0.00022)
 desk (score = 0.00019)
 </pre></div>
 </div>
-<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 1 minutes  16.221 seconds)</p>
 <div class="sphx-glr-footer class sphx-glr-footer-example docutils container" id="sphx-glr-download-tutorials-frontend-from-tensorflow-py">
 <div class="sphx-glr-download docutils container">
 <p><a class="reference download internal" download="" href="../../_downloads/50b174352ccf0a0defcbd8e6b40145e2/from_tensorflow.py"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">from_tensorflow.py</span></code></a></p>

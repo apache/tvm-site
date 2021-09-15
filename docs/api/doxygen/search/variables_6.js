@@ -1,5 +1,9 @@
 var searchData=
 [
+  ['f_5fapply_5fto_5fschedule',['f_apply_to_schedule',['../classtvm_1_1tir_1_1InstructionKindNode.html#a6d0d0766ee77f65929e6389758890691',1,'tvm::tir::InstructionKindNode']]],
+  ['f_5fas_5fpython',['f_as_python',['../classtvm_1_1tir_1_1InstructionKindNode.html#ae8e760186d900cbae90a5fad0a71b1ee',1,'tvm::tir::InstructionKindNode']]],
+  ['f_5fattrs_5fas_5fjson',['f_attrs_as_json',['../classtvm_1_1tir_1_1InstructionKindNode.html#a85dd355cf370d8d599dc2e5c44484952',1,'tvm::tir::InstructionKindNode']]],
+  ['f_5fattrs_5ffrom_5fjson',['f_attrs_from_json',['../classtvm_1_1tir_1_1InstructionKindNode.html#ad827304fa18acdfb0e65c2cfa9717936',1,'tvm::tir::InstructionKindNode']]],
   ['factor',['factor',['../classtvm_1_1auto__scheduler_1_1StorageAlignStepNode.html#a6eb2b971d981f54c385065d78d6a1681',1,'tvm::auto_scheduler::StorageAlignStepNode::factor()'],['../classtvm_1_1te_1_1SplitNode.html#a60369ff01e34008f1b3215d7f215b972',1,'tvm::te::SplitNode::factor()']]],
   ['factor_5fiter_5fid',['factor_iter_id',['../classtvm_1_1auto__scheduler_1_1RfactorStepNode.html#a114f3ecd05a1cffd92353e156185e42c',1,'tvm::auto_scheduler::RfactorStepNode']]],
   ['factor_5for_5fnparts',['factor_or_nparts',['../classtvm_1_1auto__scheduler_1_1FollowFusedSplitStepNode.html#afa60f761e7ea48985e35234428a1911f',1,'tvm::auto_scheduler::FollowFusedSplitStepNode']]],
