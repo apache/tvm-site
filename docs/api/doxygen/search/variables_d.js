@@ -25,8 +25,9 @@ var searchData=
   ['num_5finputs',['num_inputs',['../classtvm_1_1OpNode.html#aa13505588162bc5448bd03f02f5c545b',1,'tvm::OpNode::num_inputs()'],['../classtvm_1_1TypeRelationNode.html#aacb622dd257962ccb4ddfca4c89e09b4',1,'tvm::TypeRelationNode::num_inputs()'],['../structTVMOpParam.html#ad120033ecf2a390a6e511dc0a7d24a9d',1,'TVMOpParam::num_inputs()']]],
   ['num_5fmeasure_5ftrials',['num_measure_trials',['../classtvm_1_1auto__scheduler_1_1TuningOptionsNode.html#af6f3c49598d8377e02df4cd4d43ce732',1,'tvm::auto_scheduler::TuningOptionsNode']]],
   ['num_5fmeasures_5fper_5fround',['num_measures_per_round',['../classtvm_1_1auto__scheduler_1_1TuningOptionsNode.html#ad8c637afdcaa02bf01785a5674ae534f',1,'tvm::auto_scheduler::TuningOptionsNode']]],
-  ['num_5fnewaxis',['num_newaxis',['../structtvm_1_1relay_1_1ExpandDimsAttrs.html#af2885538e2f74029ecad343a9844fc8a',1,'tvm::relay::ExpandDimsAttrs']]],
+  ['num_5fnewaxis',['num_newaxis',['../structtvm_1_1relay_1_1ExpandDimsAttrs.html#af2885538e2f74029ecad343a9844fc8a',1,'tvm::relay::ExpandDimsAttrs::num_newaxis()'],['../structtvm_1_1relay_1_1DynExpandDimsAttrs.html#a5a0dbf8383656b0c5f6181ee5581881b',1,'tvm::relay::DynExpandDimsAttrs::num_newaxis()']]],
   ['num_5foutputs',['num_outputs',['../structTVMOpParam.html#ae3291eb5e9d754b98e470a6b028331a2',1,'TVMOpParam']]],
   ['num_5ftask',['num_task',['../structTVMParallelGroupEnv.html#a6ff807972a918ee61dfc158abce825f6',1,'TVMParallelGroupEnv']]],
+  ['num_5fthreads',['num_threads',['../classtvm_1_1meta__schedule_1_1TuneContextNode.html#aa7136d896f4145357ebb1b7639a25d65',1,'tvm::meta_schedule::TuneContextNode']]],
   ['number',['number',['../classtvm_1_1auto__scheduler_1_1ProgramRunnerNode.html#a92333af32d2e22aec749eaad4ba3d18b',1,'tvm::auto_scheduler::ProgramRunnerNode']]]
 ];

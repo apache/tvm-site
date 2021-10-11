@@ -1,5 +1,6 @@
 var searchData=
 [
+  ['rand_5fstate',['rand_state',['../classtvm_1_1meta__schedule_1_1TuneContextNode.html#abd83e6598eeb8d3b4b899907e9cf506c',1,'tvm::meta_schedule::TuneContextNode']]],
   ['random_5fnumber_5ffunc',['random_number_func',['../classtvm_1_1auto__scheduler_1_1RandomModelNode.html#a983ca23a9dad4db927c2c5787bcbb34e',1,'tvm::auto_scheduler::RandomModelNode']]],
   ['range',['range',['../classtvm_1_1auto__scheduler_1_1IteratorNode.html#a2751c3164971b3154ffc506e3aebaf91',1,'tvm::auto_scheduler::IteratorNode']]],
   ['ranges',['ranges',['../classtvm_1_1arith_1_1IntConstraintsNode.html#ab23d4d806766c88b0df69dbfb5ebd63c',1,'tvm::arith::IntConstraintsNode']]],
@@ -52,5 +53,7 @@ var searchData=
   ['rpn_5fmin_5fsize',['rpn_min_size',['../structtvm_1_1relay_1_1ProposalAttrs.html#abee4a0809679e2a5a4f00e07e9650b5e',1,'tvm::relay::ProposalAttrs']]],
   ['rpn_5fpost_5fnms_5ftop_5fn',['rpn_post_nms_top_n',['../structtvm_1_1relay_1_1ProposalAttrs.html#afbd367be5eda478b817075e70cc6edbc',1,'tvm::relay::ProposalAttrs']]],
   ['rpn_5fpre_5fnms_5ftop_5fn',['rpn_pre_nms_top_n',['../structtvm_1_1relay_1_1ProposalAttrs.html#a87c3a6d7d2e0225ebbab9353bc60af25',1,'tvm::relay::ProposalAttrs']]],
-  ['runner',['runner',['../classtvm_1_1auto__scheduler_1_1TuningOptionsNode.html#a355d86b2c38f0827ae1b158753d1daa2',1,'tvm::auto_scheduler::TuningOptionsNode::runner()'],['../classtvm_1_1auto__scheduler_1_1ProgramMeasurerNode.html#a0f7a4a84637fd0309b52f61b65bee158',1,'tvm::auto_scheduler::ProgramMeasurerNode::runner()']]]
+  ['run_5fsecs',['run_secs',['../classtvm_1_1meta__schedule_1_1TuningRecordNode.html#a5ee669c272da1447f3f666d9faf5e449',1,'tvm::meta_schedule::TuningRecordNode::run_secs()'],['../classtvm_1_1meta__schedule_1_1RunnerResultNode.html#a23d5a15c8d72c17c59ec4e7f2d3fabf3',1,'tvm::meta_schedule::RunnerResultNode::run_secs()']]],
+  ['runner',['runner',['../classtvm_1_1auto__scheduler_1_1TuningOptionsNode.html#a355d86b2c38f0827ae1b158753d1daa2',1,'tvm::auto_scheduler::TuningOptionsNode::runner()'],['../classtvm_1_1auto__scheduler_1_1ProgramMeasurerNode.html#a0f7a4a84637fd0309b52f61b65bee158',1,'tvm::auto_scheduler::ProgramMeasurerNode::runner()'],['../classtvm_1_1meta__schedule_1_1TaskSchedulerNode.html#a13c74317fb8dccd7fbdb728336b09501',1,'tvm::meta_schedule::TaskSchedulerNode::runner()']]],
+  ['runner_5ffutures',['runner_futures',['../classtvm_1_1meta__schedule_1_1TuneContextNode.html#a8b7bfb296b89ad8645fcf89bf645092a',1,'tvm::meta_schedule::TuneContextNode']]]
 ];

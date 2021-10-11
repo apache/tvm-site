@@ -27,7 +27,7 @@ var searchData=
   ['refvalueobj',['RefValueObj',['../structtvm_1_1relay_1_1RefValueObj.html',1,'tvm::relay']]],
   ['refwrite',['RefWrite',['../classtvm_1_1relay_1_1RefWrite.html',1,'tvm::relay']]],
   ['refwritenode',['RefWriteNode',['../classtvm_1_1relay_1_1RefWriteNode.html',1,'tvm::relay']]],
-  ['registry',['Registry',['../classtvm_1_1ReflectionVTable_1_1Registry.html',1,'tvm::ReflectionVTable::Registry'],['../classtvm_1_1runtime_1_1Registry.html',1,'tvm::runtime::Registry']]],
+  ['registry',['Registry',['../classtvm_1_1runtime_1_1Registry.html',1,'tvm::runtime::Registry'],['../classtvm_1_1ReflectionVTable_1_1Registry.html',1,'tvm::ReflectionVTable::Registry']]],
   ['relayexpr',['RelayExpr',['../classtvm_1_1RelayExpr.html',1,'tvm']]],
   ['relayexprnode',['RelayExprNode',['../classtvm_1_1RelayExprNode.html',1,'tvm']]],
   ['relaynode',['RelayNode',['../classtvm_1_1relay_1_1RelayNode.html',1,'tvm::relay']]],
@@ -55,5 +55,13 @@ var searchData=
   ['roialignattrs',['ROIAlignAttrs',['../structtvm_1_1relay_1_1ROIAlignAttrs.html',1,'tvm::relay']]],
   ['roipoolattrs',['ROIPoolAttrs',['../structtvm_1_1relay_1_1ROIPoolAttrs.html',1,'tvm::relay']]],
   ['rpcrunner',['RPCRunner',['../classtvm_1_1auto__scheduler_1_1RPCRunner.html',1,'tvm::auto_scheduler']]],
-  ['rpcrunnernode',['RPCRunnerNode',['../classtvm_1_1auto__scheduler_1_1RPCRunnerNode.html',1,'tvm::auto_scheduler']]]
+  ['rpcrunnernode',['RPCRunnerNode',['../classtvm_1_1auto__scheduler_1_1RPCRunnerNode.html',1,'tvm::auto_scheduler']]],
+  ['runner',['Runner',['../classtvm_1_1meta__schedule_1_1Runner.html',1,'tvm::meta_schedule']]],
+  ['runnerfuture',['RunnerFuture',['../classtvm_1_1meta__schedule_1_1RunnerFuture.html',1,'tvm::meta_schedule']]],
+  ['runnerfuturenode',['RunnerFutureNode',['../classtvm_1_1meta__schedule_1_1RunnerFutureNode.html',1,'tvm::meta_schedule']]],
+  ['runnerinput',['RunnerInput',['../classtvm_1_1meta__schedule_1_1RunnerInput.html',1,'tvm::meta_schedule']]],
+  ['runnerinputnode',['RunnerInputNode',['../classtvm_1_1meta__schedule_1_1RunnerInputNode.html',1,'tvm::meta_schedule']]],
+  ['runnernode',['RunnerNode',['../classtvm_1_1meta__schedule_1_1RunnerNode.html',1,'tvm::meta_schedule']]],
+  ['runnerresult',['RunnerResult',['../classtvm_1_1meta__schedule_1_1RunnerResult.html',1,'tvm::meta_schedule']]],
+  ['runnerresultnode',['RunnerResultNode',['../classtvm_1_1meta__schedule_1_1RunnerResultNode.html',1,'tvm::meta_schedule']]]
 ];

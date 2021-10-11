@@ -8,6 +8,7 @@ var searchData=
   ['bound_2eh',['bound.h',['../bound_8h.html',1,'']]],
   ['broadcast_2eh',['broadcast.h',['../broadcast_8h.html',1,'(Global Namespace)'],['../detail_2broadcast_8h.html',1,'(Global Namespace)']]],
   ['buffer_2eh',['buffer.h',['../buffer_8h.html',1,'']]],
+  ['builder_2eh',['builder.h',['../builder_8h.html',1,'']]],
   ['builtin_2eh',['builtin.h',['../builtin_8h.html',1,'']]],
   ['bytecode_2eh',['bytecode.h',['../bytecode_8h.html',1,'']]]
 ];

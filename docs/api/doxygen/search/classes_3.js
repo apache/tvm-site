@@ -1,5 +1,7 @@
 var searchData=
 [
+  ['database',['Database',['../classtvm_1_1meta__schedule_1_1Database.html',1,'tvm::meta_schedule']]],
+  ['databasenode',['DatabaseNode',['../classtvm_1_1meta__schedule_1_1DatabaseNode.html',1,'tvm::meta_schedule']]],
   ['dataproducer',['DataProducer',['../classtvm_1_1tir_1_1DataProducer.html',1,'tvm::tir']]],
   ['dataproducernode',['DataProducerNode',['../classtvm_1_1tir_1_1DataProducerNode.html',1,'tvm::tir']]],
   ['datatype',['DataType',['../classtvm_1_1runtime_1_1DataType.html',1,'tvm::runtime']]],
@@ -41,5 +43,6 @@ var searchData=
   ['dominatorpattern',['DominatorPattern',['../classtvm_1_1relay_1_1DominatorPattern.html',1,'tvm::relay']]],
   ['dominatorpatternnode',['DominatorPatternNode',['../classtvm_1_1relay_1_1DominatorPatternNode.html',1,'tvm::relay']]],
   ['dropoutattrs',['DropoutAttrs',['../structtvm_1_1relay_1_1DropoutAttrs.html',1,'tvm::relay']]],
-  ['durationnode',['DurationNode',['../classtvm_1_1runtime_1_1profiling_1_1DurationNode.html',1,'tvm::runtime::profiling']]]
+  ['durationnode',['DurationNode',['../classtvm_1_1runtime_1_1profiling_1_1DurationNode.html',1,'tvm::runtime::profiling']]],
+  ['dynexpanddimsattrs',['DynExpandDimsAttrs',['../structtvm_1_1relay_1_1DynExpandDimsAttrs.html',1,'tvm::relay']]]
 ];
