@@ -94,6 +94,8 @@ var searchData=
   ['ops_5ftopo_5forder',['ops_topo_order',['../classtvm_1_1auto__scheduler_1_1AccessAnalyzerNode.html#a7707d940b81b5932c7487fae025be3c8',1,'tvm::auto_scheduler::AccessAnalyzerNode']]],
   ['opspecialization',['OpSpecialization',['../classtvm_1_1relay_1_1OpSpecialization.html',1,'tvm::relay']]],
   ['opspecializationnode',['OpSpecializationNode',['../classtvm_1_1relay_1_1OpSpecializationNode.html',1,'tvm::relay']]],
+  ['opstarthook',['OpStartHook',['../classtvm_1_1runtime_1_1vm_1_1VirtualMachine.html#a4e3d0f62ef25486968335336d1445bfa',1,'tvm::runtime::vm::VirtualMachine']]],
+  ['opstophook',['OpStopHook',['../classtvm_1_1runtime_1_1vm_1_1VirtualMachine.html#a4f9142d370e9629f86b792c4328c24a4',1,'tvm::runtime::vm::VirtualMachine']]],
   ['opstrategy',['OpStrategy',['../classtvm_1_1relay_1_1OpStrategy.html',1,'tvm::relay']]],
   ['opstrategynode',['OpStrategyNode',['../classtvm_1_1relay_1_1OpStrategyNode.html',1,'tvm::relay']]],
   ['opt_5flevel',['opt_level',['../classtvm_1_1transform_1_1PassContextNode.html#af166034a8746d65044eea0a2673de991',1,'tvm::transform::PassContextNode::opt_level()'],['../classtvm_1_1transform_1_1PassInfoNode.html#a8e22e5767cd899bb9aef1ee1c529a2a7',1,'tvm::transform::PassInfoNode::opt_level()']]],

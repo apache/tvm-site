@@ -206,6 +206,7 @@ var searchData=
   ['attrsnode_3c_20scatteraddattrs_20_3e',['AttrsNode&lt; ScatterAddAttrs &gt;',['../classtvm_1_1AttrsNode.html',1,'tvm']]],
   ['attrsnode_3c_20scatterattrs_20_3e',['AttrsNode&lt; ScatterAttrs &gt;',['../classtvm_1_1AttrsNode.html',1,'tvm']]],
   ['attrsnode_3c_20scatterndattrs_20_3e',['AttrsNode&lt; ScatterNDAttrs &gt;',['../classtvm_1_1AttrsNode.html',1,'tvm']]],
+  ['attrsnode_3c_20searchsortedattrs_20_3e',['AttrsNode&lt; SearchSortedAttrs &gt;',['../classtvm_1_1AttrsNode.html',1,'tvm']]],
   ['attrsnode_3c_20sequencemaskattrs_20_3e',['AttrsNode&lt; SequenceMaskAttrs &gt;',['../classtvm_1_1AttrsNode.html',1,'tvm']]],
   ['attrsnode_3c_20shapefuncattrs_20_3e',['AttrsNode&lt; ShapeFuncAttrs &gt;',['../classtvm_1_1AttrsNode.html',1,'tvm']]],
   ['attrsnode_3c_20shapeofattrs_20_3e',['AttrsNode&lt; ShapeOfAttrs &gt;',['../classtvm_1_1AttrsNode.html',1,'tvm']]],

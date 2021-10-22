@@ -47,7 +47,7 @@ var searchData=
   ['rhs',['rhs',['../classtvm_1_1relay_1_1ClauseNode.html#a93217eeea15c1f7c1a659da3da86d3bd',1,'tvm::relay::ClauseNode::rhs()'],['../classtvm_1_1tir_1_1CommReducerNode.html#a2902b0d55dd823febc6941fae9f32337',1,'tvm::tir::CommReducerNode::rhs()']]],
   ['rhs_5fbegin',['rhs_begin',['../structtvm_1_1relay_1_1ReshapeLikeAttrs.html#a8f25936511569c3ea754e9d065ccff81',1,'tvm::relay::ReshapeLikeAttrs']]],
   ['rhs_5fend',['rhs_end',['../structtvm_1_1relay_1_1ReshapeLikeAttrs.html#a6d8d5503c7880be0e179c0f54972afad',1,'tvm::relay::ReshapeLikeAttrs']]],
-  ['right',['right',['../classtvm_1_1relay_1_1AltPatternNode.html#a01262756211205f8764d07f2372c5d36',1,'tvm::relay::AltPatternNode']]],
+  ['right',['right',['../structtvm_1_1relay_1_1SearchSortedAttrs.html#a97bbdca17a8d0657b76b892fa3b7777a',1,'tvm::relay::SearchSortedAttrs::right()'],['../classtvm_1_1relay_1_1AltPatternNode.html#a01262756211205f8764d07f2372c5d36',1,'tvm::relay::AltPatternNode::right()']]],
   ['rounding',['rounding',['../structtvm_1_1relay_1_1qnn_1_1RequantizeAttrs.html#ae786b4706ed872d99ad26d6c42467f87',1,'tvm::relay::qnn::RequantizeAttrs']]],
   ['rounding_5fmethod',['rounding_method',['../structtvm_1_1relay_1_1Resize1DAttrs.html#a1133dc610787d50cc164dc9ed6319f0c',1,'tvm::relay::Resize1DAttrs::rounding_method()'],['../structtvm_1_1relay_1_1Resize2DAttrs.html#a08b8f79180e71137f2990c7123580d7a',1,'tvm::relay::Resize2DAttrs::rounding_method()'],['../structtvm_1_1relay_1_1Resize3DAttrs.html#a6e15ec45b5788ebaf2101e14e7a366fb',1,'tvm::relay::Resize3DAttrs::rounding_method()']]],
   ['rpn_5fmin_5fsize',['rpn_min_size',['../structtvm_1_1relay_1_1ProposalAttrs.html#abee4a0809679e2a5a4f00e07e9650b5e',1,'tvm::relay::ProposalAttrs']]],

@@ -19,7 +19,7 @@ var searchData=
   ['exprfunctor_3c_20r_28const_20primexpr_20_26n_2c_20args_2e_2e_2e_29_3e',['ExprFunctor&lt; R(const PrimExpr &amp;n, Args...)&gt;',['../classtvm_1_1tir_1_1ExprFunctor_3_01R_07const_01PrimExpr_01_6n_00_01Args_8_8_8_08_4.html',1,'tvm::tir']]],
   ['exprfunctor_3c_20void_28const_20expr_20_26n_29_3e',['ExprFunctor&lt; void(const Expr &amp;n)&gt;',['../classtvm_1_1relay_1_1ExprFunctor.html',1,'tvm::relay']]],
   ['exprfunctor_3c_20void_28const_20primexpr_20_26_29_3e',['ExprFunctor&lt; void(const PrimExpr &amp;)&gt;',['../classtvm_1_1tir_1_1ExprFunctor.html',1,'tvm::tir']]],
-  ['exprmutator',['ExprMutator',['../classtvm_1_1tir_1_1ExprMutator.html',1,'tvm::tir::ExprMutator'],['../classtvm_1_1relay_1_1ExprMutator.html',1,'tvm::relay::ExprMutator']]],
+  ['exprmutator',['ExprMutator',['../classtvm_1_1relay_1_1ExprMutator.html',1,'tvm::relay::ExprMutator'],['../classtvm_1_1tir_1_1ExprMutator.html',1,'tvm::tir::ExprMutator']]],
   ['exprpattern',['ExprPattern',['../classtvm_1_1relay_1_1ExprPattern.html',1,'tvm::relay']]],
   ['exprpatternnode',['ExprPatternNode',['../classtvm_1_1relay_1_1ExprPatternNode.html',1,'tvm::relay']]],
   ['exprrewriter',['ExprRewriter',['../classtvm_1_1relay_1_1ExprRewriter.html',1,'tvm::relay']]],
