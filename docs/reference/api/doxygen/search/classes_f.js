@@ -63,5 +63,8 @@ var searchData=
   ['runnerinputnode',['RunnerInputNode',['../classtvm_1_1meta__schedule_1_1RunnerInputNode.html',1,'tvm::meta_schedule']]],
   ['runnernode',['RunnerNode',['../classtvm_1_1meta__schedule_1_1RunnerNode.html',1,'tvm::meta_schedule']]],
   ['runnerresult',['RunnerResult',['../classtvm_1_1meta__schedule_1_1RunnerResult.html',1,'tvm::meta_schedule']]],
-  ['runnerresultnode',['RunnerResultNode',['../classtvm_1_1meta__schedule_1_1RunnerResultNode.html',1,'tvm::meta_schedule']]]
+  ['runnerresultnode',['RunnerResultNode',['../classtvm_1_1meta__schedule_1_1RunnerResultNode.html',1,'tvm::meta_schedule']]],
+  ['runtime',['Runtime',['../classtvm_1_1relay_1_1Runtime.html',1,'tvm::relay']]],
+  ['runtimenode',['RuntimeNode',['../classtvm_1_1relay_1_1RuntimeNode.html',1,'tvm::relay']]],
+  ['runtimeregentry',['RuntimeRegEntry',['../classtvm_1_1relay_1_1RuntimeRegEntry.html',1,'tvm::relay']]]
 ];

@@ -9,7 +9,7 @@ var searchData=
   ['le',['LE',['../classtvm_1_1tir_1_1LE.html',1,'tvm::tir']]],
   ['leakyreluattrs',['LeakyReluAttrs',['../structtvm_1_1relay_1_1LeakyReluAttrs.html',1,'tvm::relay']]],
   ['lenode',['LENode',['../structtvm_1_1tir_1_1LENode.html',1,'tvm::tir']]],
-  ['let',['Let',['../classtvm_1_1tir_1_1Let.html',1,'tvm::tir::Let'],['../classtvm_1_1relay_1_1Let.html',1,'tvm::relay::Let']]],
+  ['let',['Let',['../classtvm_1_1relay_1_1Let.html',1,'tvm::relay::Let'],['../classtvm_1_1tir_1_1Let.html',1,'tvm::tir::Let']]],
   ['letnode',['LetNode',['../classtvm_1_1tir_1_1LetNode.html',1,'tvm::tir::LetNode'],['../classtvm_1_1relay_1_1LetNode.html',1,'tvm::relay::LetNode']]],
   ['letpattern',['LetPattern',['../classtvm_1_1relay_1_1LetPattern.html',1,'tvm::relay']]],
   ['letpatternnode',['LetPatternNode',['../classtvm_1_1relay_1_1LetPatternNode.html',1,'tvm::relay']]],
