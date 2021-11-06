@@ -26,7 +26,9 @@ var searchData=
   ['exprpattern',['ExprPattern',['../classtvm_1_1relay_1_1ExprPattern.html',1,'tvm::relay']]],
   ['exprpatternnode',['ExprPatternNode',['../classtvm_1_1relay_1_1ExprPatternNode.html',1,'tvm::relay']]],
   ['exprrewriter',['ExprRewriter',['../classtvm_1_1relay_1_1ExprRewriter.html',1,'tvm::relay']]],
-  ['exprvisitor',['ExprVisitor',['../classtvm_1_1tir_1_1ExprVisitor.html',1,'tvm::tir::ExprVisitor'],['../classtvm_1_1relay_1_1ExprVisitor.html',1,'tvm::relay::ExprVisitor']]],
+  ['exprvisitor',['ExprVisitor',['../classtvm_1_1relay_1_1ExprVisitor.html',1,'tvm::relay::ExprVisitor'],['../classtvm_1_1tir_1_1ExprVisitor.html',1,'tvm::tir::ExprVisitor']]],
   ['externop',['ExternOp',['../classtvm_1_1te_1_1ExternOp.html',1,'tvm::te']]],
-  ['externopnode',['ExternOpNode',['../classtvm_1_1te_1_1ExternOpNode.html',1,'tvm::te']]]
+  ['externopnode',['ExternOpNode',['../classtvm_1_1te_1_1ExternOpNode.html',1,'tvm::te']]],
+  ['extractedtask',['ExtractedTask',['../classtvm_1_1meta__schedule_1_1ExtractedTask.html',1,'tvm::meta_schedule']]],
+  ['extractedtasknode',['ExtractedTaskNode',['../classtvm_1_1meta__schedule_1_1ExtractedTaskNode.html',1,'tvm::meta_schedule']]]
 ];

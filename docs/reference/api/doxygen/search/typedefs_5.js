@@ -15,6 +15,7 @@ var searchData=
   ['fgeneratemeasurecandidates',['FGenerateMeasureCandidates',['../classtvm_1_1meta__schedule_1_1PySearchStrategyNode.html#a87e2f696bcd7ab1c4066487f4cba7d29',1,'tvm::meta_schedule::PySearchStrategyNode']]],
   ['fgettopk',['FGetTopK',['../classtvm_1_1meta__schedule_1_1PyDatabaseNode.html#ad5e04e950cd2a63f439d95285b5674b6',1,'tvm::meta_schedule::PyDatabaseNode']]],
   ['fidentity',['FIdentity',['../namespacetvm_1_1topi.html#a7dd84c370a3377aec67ce83f94605df9',1,'tvm::topi']]],
+  ['finitializetask',['FInitializeTask',['../classtvm_1_1meta__schedule_1_1PyTaskSchedulerNode.html#a3d58d2439816fbdefb912164ecfca06c',1,'tvm::meta_schedule::PyTaskSchedulerNode']]],
   ['finitializewithtunecontext',['FInitializeWithTuneContext',['../classtvm_1_1meta__schedule_1_1PySearchStrategyNode.html#acf145edd9c5a047166dd8f29f65ab75e',1,'tvm::meta_schedule::PySearchStrategyNode::FInitializeWithTuneContext()'],['../classtvm_1_1meta__schedule_1_1PySpaceGeneratorNode.html#ac1339a759f2ccd17954bd1643d16f5ac',1,'tvm::meta_schedule::PySpaceGeneratorNode::FInitializeWithTuneContext()']]],
   ['finstructionapply',['FInstructionApply',['../namespacetvm_1_1tir.html#a6e4f9f172368158c130f70d363c2166a',1,'tvm::tir']]],
   ['finstructionaspython',['FInstructionAsPython',['../namespacetvm_1_1tir.html#ad454359868d4097a13bb0ac8f9bbafdb',1,'tvm::tir']]],

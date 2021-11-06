@@ -45,6 +45,7 @@ var searchData=
   ['any',['Any',['../classtvm_1_1tir_1_1Any.html#afdb8854b3952dbfa4b02f151ead3bdfd',1,'tvm::tir::Any::Any()'],['../namespacetvm.html#a5efd9942cdee5a56cfc438ba523c04f0',1,'tvm::any()'],['../namespacetvm_1_1topi.html#afb48d90f345698b1b3417bafa1911504',1,'tvm::topi::any()']]],
   ['anyerrors',['AnyErrors',['../classtvm_1_1ErrorReporter.html#a7ec11efb5e9680cfd57e05d573fc0927',1,'tvm::ErrorReporter']]],
   ['append',['Append',['../classtvm_1_1tir_1_1TraceNode.html#afaa0e3d25cf54e8a33bf4af4ded99006',1,'tvm::tir::TraceNode::Append(Instruction inst)'],['../classtvm_1_1tir_1_1TraceNode.html#a6d101010417222bf43d131d9998e8824',1,'tvm::tir::TraceNode::Append(Instruction inst, ObjectRef decision)']]],
+  ['applyhistorybest',['ApplyHistoryBest',['../classtvm_1_1meta__schedule_1_1ApplyHistoryBest.html#a577ba1c425cbb630605e31689d55daeb',1,'tvm::meta_schedule::ApplyHistoryBest']]],
   ['applyjsontoschedule',['ApplyJSONToSchedule',['../classtvm_1_1tir_1_1Trace.html#abdc2b45c2b9b78602aeb47121389bf13',1,'tvm::tir::Trace']]],
   ['applystageidoffset',['ApplyStageIdOffset',['../classtvm_1_1auto__scheduler_1_1AttachMap.html#aa5e3210da09045d8f7910626633e69ca',1,'tvm::auto_scheduler::AttachMap']]],
   ['applysteps',['ApplySteps',['../classtvm_1_1auto__scheduler_1_1ComputeDAG.html#a3c15a348dca805aa563cb203adcaf0f6',1,'tvm::auto_scheduler::ComputeDAG']]],

@@ -1,6 +1,7 @@
 var searchData=
 [
   ['map',['Map',['../classtvm_1_1runtime_1_1Map.html',1,'tvm::runtime']]],
+  ['map_3c_20integer_2c_20target_20_3e',['Map&lt; Integer, Target &gt;',['../classtvm_1_1runtime_1_1Map.html',1,'tvm::runtime']]],
   ['map_3c_20tvm_3a_3aglobaltypevar_2c_20tvm_3a_3atypedata_20_3e',['Map&lt; tvm::GlobalTypeVar, tvm::TypeData &gt;',['../classtvm_1_1runtime_1_1Map.html',1,'tvm::runtime']]],
   ['map_3c_20tvm_3a_3aglobalvar_2c_20tvm_3a_3abasefunc_20_3e',['Map&lt; tvm::GlobalVar, tvm::BaseFunc &gt;',['../classtvm_1_1runtime_1_1Map.html',1,'tvm::runtime']]],
   ['map_3c_20tvm_3a_3arelay_3a_3avar_2c_20tvm_3a_3aruntime_3a_3aobjectref_20_3e',['Map&lt; tvm::relay::Var, tvm::runtime::ObjectRef &gt;',['../classtvm_1_1runtime_1_1Map.html',1,'tvm::runtime']]],
@@ -40,6 +41,8 @@ var searchData=
   ['memorymanager',['MemoryManager',['../classtvm_1_1runtime_1_1vm_1_1MemoryManager.html',1,'tvm::runtime::vm']]],
   ['memorymanagerinterface',['MemoryManagerInterface',['../structMemoryManagerInterface.html',1,'']]],
   ['meshgridattrs',['MeshgridAttrs',['../structtvm_1_1relay_1_1MeshgridAttrs.html',1,'tvm::relay']]],
+  ['metaschedulecontext',['MetaScheduleContext',['../classtvm_1_1meta__schedule_1_1MetaScheduleContext.html',1,'tvm::meta_schedule']]],
+  ['metaschedulecontextnode',['MetaScheduleContextNode',['../classtvm_1_1meta__schedule_1_1MetaScheduleContextNode.html',1,'tvm::meta_schedule']]],
   ['metriccollector',['MetricCollector',['../classtvm_1_1runtime_1_1profiling_1_1MetricCollector.html',1,'tvm::runtime::profiling']]],
   ['metriccollectornode',['MetricCollectorNode',['../classtvm_1_1runtime_1_1profiling_1_1MetricCollectorNode.html',1,'tvm::runtime::profiling']]],
   ['min',['Min',['../classtvm_1_1tir_1_1Min.html',1,'tvm::tir']]],
