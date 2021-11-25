@@ -18,9 +18,7 @@ Choose your flavor of download from the following links:
 | Version | Source | PGP | SHA |
 | ------- | ------ | --- | --- |
 | 0.8.0   | [apache-tvm-src-v0.8.0.tar.gz](https://dist.apache.org/repos/dist/release/tvm/tvm-v0.8.0/apache-tvm-src-v0.8.0.tar.gz) | [.asc](https://dist.apache.org/repos/dist/release/tvm/tvm-v0.8.0/apache-tvm-src-v0.8.0.tar.gz.asc) | [.sha512](https://dist.apache.org/repos/dist/release/tvm/tvm-v0.8.0/apache-tvm-src-v0.8.0.tar.gz.sha512) |
-| 0.7.0   | [apache-tvm-src-v0.7.0-incubating.tar.gz](https://dist.apache.org/repos/dist/release/tvm/tvm-v0.7.0/apache-tvm-src-v0.7.0-incubating.tar.gz) | [.asc](https://dist.apache.org/repos/dist/release/tvm/tvm-v0.7.0/apache-tvm-src-v0.7.0-incubating.tar.gz.asc) | [.sha512](https://dist.apache.org/repos/dist/release/tvm/tvm-v0.7.0/apache-tvm-src-v0.7.0-incubating.tar.gz.sha512) |
-| 0.6.1   | [apache-tvm-src-v0.6.1-incubating.tar.gz](https://dist.apache.org/repos/dist/release/tvm/tvm-v0.6.1/apache-tvm-src-v0.6.1-incubating.tar.gz) | [.asc](https://dist.apache.org/repos/dist/release/tvm/tvm-v0.6.1/apache-tvm-src-v0.6.1-incubating.tar.gz.asc) | [.sha512](https://dist.apache.org/repos/dist/release/tvm/tvm-v0.6.1/apache-tvm-src-v0.6.1-incubating.tar.gz.sha512) |
-| 0.6.0   | [apache-tvm-src-v0.6.0-incubating.tar.gz](https://dist.apache.org/repos/dist/release/tvm/tvm-v0.6.0/apache-tvm-src-v0.6.0-incubating.tar.gz) | [.asc](https://dist.apache.org/repos/dist/release/tvm/tvm-v0.6.0/apache-tvm-src-v0.6.0-incubating.tar.gz.asc) | [.sha512](https://dist.apache.org/repos/dist/release/tvm/tvm-v0.6.0/apache-tvm-src-v0.6.0-incubating.tar.gz.sha512) |
+
 
 
 <br>
