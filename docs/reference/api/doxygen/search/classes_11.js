@@ -36,7 +36,6 @@ var searchData=
   ['tileattrs',['TileAttrs',['../structtvm_1_1relay_1_1TileAttrs.html',1,'tvm::relay']]],
   ['timer',['Timer',['../classtvm_1_1runtime_1_1Timer.html',1,'tvm::runtime']]],
   ['timernode',['TimerNode',['../classtvm_1_1runtime_1_1TimerNode.html',1,'tvm::runtime']]],
-  ['tircallattrs',['TIRCallAttrs',['../structtvm_1_1relay_1_1TIRCallAttrs.html',1,'tvm::relay']]],
   ['topkattrs',['TopKAttrs',['../structtvm_1_1relay_1_1TopKAttrs.html',1,'tvm::relay']]],
   ['trace',['Trace',['../classtvm_1_1tir_1_1Trace.html',1,'tvm::tir']]],
   ['tracenode',['TraceNode',['../classtvm_1_1tir_1_1TraceNode.html',1,'tvm::tir']]],

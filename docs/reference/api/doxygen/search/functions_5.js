@@ -35,6 +35,7 @@ var searchData=
   ['evalsetforeachsubexpr',['EvalSetForEachSubExpr',['../namespacetvm_1_1arith.html#a8a112f07411c5e1237b0c045ff276ac6',1,'tvm::arith']]],
   ['evaluate',['Evaluate',['../classtvm_1_1tir_1_1Evaluate.html#abf75c5d934947831065f9cd668fa84ad',1,'tvm::tir::Evaluate::Evaluate(PrimExpr value, Span span=Span())'],['../classtvm_1_1tir_1_1Evaluate.html#a3b7fb8cd8d3260eb76b3c6f0e68219b7',1,'tvm::tir::Evaluate::Evaluate(int value, Span span=Span())']]],
   ['everything',['Everything',['../classtvm_1_1arith_1_1IntSet.html#ae53fdd0ee6775e59aa8194c89afa1d86',1,'tvm::arith::IntSet']]],
+  ['executor',['Executor',['../classtvm_1_1relay_1_1Executor.html#aace7c7d3fd394411923c83d7f5b45df8',1,'tvm::relay::Executor']]],
   ['exitpasscontext',['ExitPassContext',['../classtvm_1_1instrument_1_1PassInstrumentNode.html#a21f748367b2571654748b06f2015f655',1,'tvm::instrument::PassInstrumentNode']]],
   ['exitwithscope',['ExitWithScope',['../classtvm_1_1meta__schedule_1_1MetaScheduleContext.html#a4968b91856dbea85faa5c54cb1a26b90',1,'tvm::meta_schedule::MetaScheduleContext']]],
   ['exp',['exp',['../namespacetvm.html#a82be70bd7794abca32473604cbb09569',1,'tvm::exp()'],['../namespacetvm_1_1topi.html#a466452c7337b11c7237b8756cf7da621',1,'tvm::topi::exp()']]],

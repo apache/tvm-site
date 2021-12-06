@@ -27,5 +27,5 @@ var searchData=
   ['extern_5fscope',['extern_scope',['../namespacetvm_1_1tir_1_1attr.html#a4bd38b620e1e9907216f3e583839dea3',1,'tvm::tir::attr']]],
   ['extra_5fcollectors',['extra_collectors',['../structtvm_1_1runtime_1_1profiling_1_1CallFrame.html#a6df052f29c9c70ed46cf5c7a5cff11e1',1,'tvm::runtime::profiling::CallFrame']]],
   ['extra_5fmetrics',['extra_metrics',['../structtvm_1_1runtime_1_1profiling_1_1CallFrame.html#a436873f87bc5316bbab15e2811ff29d4',1,'tvm::runtime::profiling::CallFrame']]],
-  ['extrapolation_5fvalue',['extrapolation_value',['../structtvm_1_1relay_1_1CropAndResizeAttrs.html#abb037f0a2525a31e1bc12439978e377d',1,'tvm::relay::CropAndResizeAttrs']]]
+  ['extrapolation_5fvalue',['extrapolation_value',['../structtvm_1_1relay_1_1Resize1DAttrs.html#ae87dc3b2fd5a7312bcfd856e886fcdc5',1,'tvm::relay::Resize1DAttrs::extrapolation_value()'],['../structtvm_1_1relay_1_1Resize2DAttrs.html#aefab76f5bbc309bf4a492a1bf99d87ef',1,'tvm::relay::Resize2DAttrs::extrapolation_value()'],['../structtvm_1_1relay_1_1Resize3DAttrs.html#a7bd50e1554aae78f2240faa11573659f',1,'tvm::relay::Resize3DAttrs::extrapolation_value()'],['../structtvm_1_1relay_1_1CropAndResizeAttrs.html#abb037f0a2525a31e1bc12439978e377d',1,'tvm::relay::CropAndResizeAttrs::extrapolation_value()']]]
 ];

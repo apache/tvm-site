@@ -27,6 +27,7 @@ var searchData=
   ['topi',['topi',['../namespacetvm_1_1topi.html',1,'tvm']]],
   ['transform',['transform',['../namespacetvm_1_1relay_1_1qnn_1_1transform.html',1,'tvm::relay::qnn::transform'],['../namespacetvm_1_1relay_1_1transform.html',1,'tvm::relay::transform'],['../namespacetvm_1_1tir_1_1transform.html',1,'tvm::tir::transform'],['../namespacetvm_1_1transform.html',1,'tvm::transform']]],
   ['tvm',['tvm',['../namespacetvm.html',1,'']]],
+  ['usmp',['usmp',['../namespacetvm_1_1tir_1_1usmp.html',1,'tvm::tir']]],
   ['vision',['vision',['../namespacetvm_1_1topi_1_1vision.html',1,'tvm::topi']]],
   ['vm',['vm',['../namespacetvm_1_1runtime_1_1vm.html',1,'tvm::runtime']]],
   ['x86',['x86',['../namespacetvm_1_1topi_1_1x86.html',1,'tvm::topi']]]

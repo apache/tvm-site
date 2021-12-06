@@ -48,7 +48,7 @@ Defining the Matrix Multiplication
 ----------------------------------
 To start, we define a matrix multiplication with a bias addition.  Note that
 this uses standard operations available in TVMs Tensor Expression language.
-The major difference is the use of the `auto_sceduler` decorator at the top
+The major difference is the use of the :any:`register_workload` decorator at the top
 of the function definition.  The function should return a list of
 input/output tensors.  From these tensors, the auto-scheduler can get the
 whole computational graph.
@@ -89,11 +89,13 @@ to search against. We specify the particular parameters for this matrix
 multiplication, in this case a multiplication of to square matricies of size
 1024x1024. We then create a search task with N=L=M=1024 and dtype="float32"
 
-.. note:: Improve performance with custom targets
+.. admonition:: Improve performance with custom targets
+
   In order for TVM to take full advantage of specific hardware platforms,
   you will want to manuall specify your CPU capabilities. For example:
-  - replace "llvm" below with "llvm -mcpu=core-avx2" to enable AVX2
-  - replace "llvm" below with "llvm -mcpu=skylake-avx512" to enable AVX-512
+
+    - replace ``llvm`` below with ``llvm -mcpu=core-avx2`` to enable AVX2
+    - replace ``llvm`` below with ``llvm -mcpu=skylake-avx512`` to enable AVX-512
 
 
 .. code-block:: default
@@ -135,10 +137,10 @@ Next, we set parameters for the auto-scheduler.
   during the search.  We only make 10 trials in this tutorial for a fast
   demonstration. In practice, 1000 is a good value for the search to converge.
   You can do more trials according to your time budget.
-* In addition, we use :code:`RecordToFile` to log measurement records into a
-  file `matmul.json`.  The measurement records can be used to query the history
+* In addition, we use :any:`RecordToFile <auto_scheduler.RecordToFile>` to log measurement records into a
+  file ``matmul.json``.  The measurement records can be used to query the history
   best, resume the search, and do more analyses later.
-* see :any:`auto_scheduler.TuningOptions` for more parameters
+* see :any:`TuningOptions <auto_scheduler.TuningOptions>` for more parameters
 
 
 .. code-block:: default
@@ -186,7 +188,6 @@ trials, we can load the best schedule from the log file and apply it.
 
 
 
-
 Inspecting the Optimized Schedule
 ---------------------------------
 We can lower the schedule to see the IR after auto-scheduling.  The
@@ -212,11 +213,11 @@ operator fusion.
  .. code-block:: none
 
     Lowered TIR:
-    primfn(A_1: handle, B_1: handle, C_1: handle, out_1: handle) -> ()
+    @main = primfn(A_1: handle, B_1: handle, C_1: handle, out_1: handle) -> ()
       attr = {"from_legacy_te_schedule": True, "global_symbol": "main", "tir.noalias": True}
       buffers = {out: Buffer(out_2: Pointer(float32), float32, [1024, 1024], []),
-                 A: Buffer(A_2: Pointer(float32), float32, [1024, 1024], []),
                  C: Buffer(C_2: Pointer(float32), float32, [1024, 1024], []),
+                 A: Buffer(A_2: Pointer(float32), float32, [1024, 1024], []),
                  B: Buffer(B_2: Pointer(float32), float32, [1024, 1024], [])}
       buffer_map = {A_1: A, B_1: B, C_1: C, out_1: out} {
       allocate(auto_scheduler_layout_transform: Pointer(global float32), float32, [1048576]), storage_scope = global {
@@ -298,14 +299,14 @@ We build the binary and check its correctness and performance.
 
  .. code-block:: none
 
-    Execution time of this operator: 45.418 ms
+    Execution time of this operator: 22.423 ms
 
 
 
 Using the record file
 ---------------------
 During the search, all measurement records are logged into the record file
-"matmul.json". The measurement records can be used to re-apply search
+``matmul.json```. The measurement records can be used to re-apply search
 results, resume the search, and perform other analyses.
 
 Here is an example where we load the best schedule from a file, and print the

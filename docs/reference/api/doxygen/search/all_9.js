@@ -22,6 +22,7 @@ var searchData=
   ['hit_5fcount_5f',['hit_count_',['../classtvm_1_1detail_1_1AttrInitVisitor.html#a40694e8ade57b3e5167ec74404188f9e',1,'tvm::detail::AttrInitVisitor']]],
   ['hoistifthenelse',['HoistIfThenElse',['../namespacetvm_1_1tir_1_1transform.html#acd2b8fdd84785388630e2d52a6e3cc54',1,'tvm::tir::transform']]],
   ['host',['host',['../classtvm_1_1auto__scheduler_1_1RPCRunnerNode.html#a2202fad592241807a3e14e39bb8b2532',1,'tvm::auto_scheduler::RPCRunnerNode::host()'],['../classtvm_1_1TargetNode.html#abdeae1bf6e037771b1b931f26dba15c6',1,'tvm::TargetNode::host()']]],
+  ['host_5fdevice_5findex',['host_device_index',['../classtvm_1_1runtime_1_1vm_1_1Executable.html#a479da288ec1ca197e7fd353b7858f211',1,'tvm::runtime::vm::Executable']]],
   ['host_5fse_5fscope',['host_se_scope',['../classtvm_1_1CompilationConfigNode.html#aeae536c6ed3b9c90ebccfa3227344055',1,'tvm::CompilationConfigNode']]],
   ['host_5ftarget',['host_target',['../classtvm_1_1CompilationConfigNode.html#aad59e791b8292600a3d86ae182a85269',1,'tvm::CompilationConfigNode']]],
   ['hostmodulepassmanager',['HostModulePassManager',['../namespacetvm.html#a0e48ca039d0eb66e13bdece8f8f55a1b',1,'tvm']]],

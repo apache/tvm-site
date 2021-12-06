@@ -8,7 +8,7 @@ var searchData=
   ['affine_5fbinding',['affine_binding',['../structtvm_1_1tir_1_1BlockInfo.html#a67098e82972aa0c66351f63bc26d87f8',1,'tvm::tir::BlockInfo']]],
   ['after_5fids',['after_ids',['../classtvm_1_1auto__scheduler_1_1ReorderStepNode.html#a7ebdbb44a67f53a07d2f62c2ff5368b6',1,'tvm::auto_scheduler::ReorderStepNode']]],
   ['align_5fcorners',['align_corners',['../structtvm_1_1relay_1_1UpSamplingAttrs.html#a21fae218544c3215862fd5c7a4b4e4d9',1,'tvm::relay::UpSamplingAttrs']]],
-  ['alignment',['alignment',['../structtvm_1_1runtime_1_1vm_1_1Instruction.html#a8d2b2e37051d12d60e6ae614d49de509',1,'tvm::runtime::vm::Instruction']]],
+  ['alignment',['alignment',['../structtvm_1_1runtime_1_1vm_1_1Instruction.html#a8d2b2e37051d12d60e6ae614d49de509',1,'tvm::runtime::vm::Instruction::alignment()'],['../structtvm_1_1tir_1_1usmp_1_1BufferInfoNode.html#a6e91011d58b455653041b56a99f8b671',1,'tvm::tir::usmp::BufferInfoNode::alignment()']]],
   ['all_5fcost',['all_cost',['../classtvm_1_1auto__scheduler_1_1MeasureResultNode.html#abc6b1d7555990a6f8a845688cad6b4f4',1,'tvm::auto_scheduler::MeasureResultNode']]],
   ['all_5fiter_5fvars',['all_iter_vars',['../classtvm_1_1te_1_1StageNode.html#ae4592502d1c99f2515be61a6503bb7a6',1,'tvm::te::StageNode']]],
   ['alloc_5fbuffers',['alloc_buffers',['../classtvm_1_1tir_1_1BlockNode.html#a8c9f578334d927a495c2d449d6c9dd91',1,'tvm::tir::BlockNode']]],

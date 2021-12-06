@@ -57,6 +57,7 @@ var searchData=
   ['lookuptypedef',['LookupTypeDef',['../classtvm_1_1IRModuleNode.html#ae095c1fd87642bd417224668c5b4d910',1,'tvm::IRModuleNode::LookupTypeDef(const GlobalTypeVar &amp;var) const'],['../classtvm_1_1IRModuleNode.html#a23f3769fe60b3b06c9d163650ea7caaf',1,'tvm::IRModuleNode::LookupTypeDef(const String &amp;var) const']]],
   ['looppartition',['LoopPartition',['../namespacetvm_1_1tir_1_1transform.html#a17b0910c03b6f2d462448fa2725c1f5e',1,'tvm::tir::transform']]],
   ['looprv',['LoopRV',['../classtvm_1_1tir_1_1LoopRV.html#ad47c4e83701875b84c9efd36ee3dc323',1,'tvm::tir::LoopRV']]],
+  ['lowercrossthreadreduction',['LowerCrossThreadReduction',['../namespacetvm_1_1tir_1_1transform.html#a641a33aa6ac3ec146be1196a091af5d5',1,'tvm::tir::transform']]],
   ['lowercustomdatatypes',['LowerCustomDatatypes',['../namespacetvm_1_1tir_1_1transform.html#a0d6b2682a93ca4136ed4fa6d8fa7bc2f',1,'tvm::tir::transform']]],
   ['lowerdevicestorageaccessinfo',['LowerDeviceStorageAccessInfo',['../namespacetvm_1_1tir_1_1transform.html#a53b7a3b7552ad5fa7b49e90470aff02b',1,'tvm::tir::transform']]],
   ['lowerinitblock',['LowerInitBlock',['../namespacetvm_1_1tir_1_1transform.html#aeaa9c663bdf10c5c596d81f8d5b6f1ed',1,'tvm::tir::transform']]],

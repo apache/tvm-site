@@ -32,6 +32,7 @@ var searchData=
   ['broadcast',['Broadcast',['../classtvm_1_1tir_1_1Broadcast.html#a8d75100fc3b889b0719b23bbd8e1aa23',1,'tvm::tir::Broadcast']]],
   ['broadcast_5fto',['broadcast_to',['../namespacetvm_1_1topi.html#a545c1404478aba2e2a44c77438da9fd5',1,'tvm::topi']]],
   ['buffer',['Buffer',['../classtvm_1_1tir_1_1Buffer.html#a380593c00b837c39ff830c0c7b7585b5',1,'tvm::tir::Buffer']]],
+  ['bufferinfo',['BufferInfo',['../classtvm_1_1tir_1_1usmp_1_1BufferInfo.html#a56c05fe02fbd0b4e14b06ab614d4dd18',1,'tvm::tir::usmp::BufferInfo']]],
   ['bufferload',['BufferLoad',['../classtvm_1_1tir_1_1BufferLoad.html#a5f1d2fe0e7ee0ebd1dbed005aa11f79f',1,'tvm::tir::BufferLoad']]],
   ['buffernode',['BufferNode',['../classtvm_1_1tir_1_1BufferNode.html#a1abac917e1de0b3c43774ee94477016b',1,'tvm::tir::BufferNode']]],
   ['bufferrealize',['BufferRealize',['../classtvm_1_1tir_1_1BufferRealize.html#a327a887caf382c9842e8a4901edad870',1,'tvm::tir::BufferRealize']]],

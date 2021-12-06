@@ -98,6 +98,8 @@ var searchData=
   ['buffer_5ftype',['buffer_type',['../classtvm_1_1tir_1_1BufferNode.html#a2ce595dfcf7a726c7e0f86a6942d2568',1,'tvm::tir::BufferNode']]],
   ['buffer_5fvar',['buffer_var',['../classtvm_1_1tir_1_1LoadNode.html#a2c69902eee069e824c822492068e6913',1,'tvm::tir::LoadNode::buffer_var()'],['../classtvm_1_1tir_1_1StoreNode.html#aed2fc3d3c119126a61182666930e8729',1,'tvm::tir::StoreNode::buffer_var()'],['../classtvm_1_1tir_1_1AllocateNode.html#acc0828bc8173ba2d46f90ddd2a329ae0',1,'tvm::tir::AllocateNode::buffer_var()']]],
   ['buffer_5fwriters',['buffer_writers',['../classtvm_1_1tir_1_1BlockScopeNode.html#af5aafa70b0f0625c5f6d8556c799ed90',1,'tvm::tir::BlockScopeNode']]],
+  ['bufferinfo',['BufferInfo',['../classtvm_1_1tir_1_1usmp_1_1BufferInfo.html',1,'tvm::tir::usmp::BufferInfo'],['../classtvm_1_1tir_1_1usmp_1_1BufferInfo.html#a56c05fe02fbd0b4e14b06ab614d4dd18',1,'tvm::tir::usmp::BufferInfo::BufferInfo()']]],
+  ['bufferinfonode',['BufferInfoNode',['../structtvm_1_1tir_1_1usmp_1_1BufferInfoNode.html',1,'tvm::tir::usmp']]],
   ['bufferload',['BufferLoad',['../classtvm_1_1tir_1_1BufferLoad.html',1,'tvm::tir::BufferLoad'],['../classtvm_1_1tir_1_1BufferLoad.html#a5f1d2fe0e7ee0ebd1dbed005aa11f79f',1,'tvm::tir::BufferLoad::BufferLoad()']]],
   ['bufferloadnode',['BufferLoadNode',['../classtvm_1_1tir_1_1BufferLoadNode.html',1,'tvm::tir']]],
   ['buffernode',['BufferNode',['../classtvm_1_1tir_1_1BufferNode.html',1,'tvm::tir::BufferNode'],['../classtvm_1_1tir_1_1BufferNode.html#a1abac917e1de0b3c43774ee94477016b',1,'tvm::tir::BufferNode::BufferNode()']]],
@@ -124,6 +126,7 @@ var searchData=
   ['buildresult',['BuildResult',['../classtvm_1_1auto__scheduler_1_1BuildResult.html',1,'tvm::auto_scheduler::BuildResult'],['../classtvm_1_1auto__scheduler_1_1BuildResult.html#a1eb385bc673fc83809a97bf68f3fab59',1,'tvm::auto_scheduler::BuildResult::BuildResult()']]],
   ['buildresultnode',['BuildResultNode',['../classtvm_1_1auto__scheduler_1_1BuildResultNode.html',1,'tvm::auto_scheduler']]],
   ['builtin_2eh',['builtin.h',['../builtin_8h.html',1,'']]],
+  ['byte_5foffset',['byte_offset',['../structtvm_1_1tir_1_1usmp_1_1PoolAllocationNode.html#a50746d43c1d14584dc8cc1f2b4c31bd7',1,'tvm::tir::usmp::PoolAllocationNode']]],
   ['bytecode_2eh',['bytecode.h',['../bytecode_8h.html',1,'']]],
   ['bytes',['bytes',['../classtvm_1_1runtime_1_1DataType.html#a3c195fd818d2eb645f9aa0ab826ba09c',1,'tvm::runtime::DataType']]],
   ['bytesneeded',['BytesNeeded',['../classtvm_1_1runtime_1_1micro__rpc_1_1Unframer.html#ae802a84056f8968d2fcd3b803a01c75f',1,'tvm::runtime::micro_rpc::Unframer']]]

@@ -1,0 +1,779 @@
+.. note::
+    :class: sphx-glr-download-link-note
+
+    Click :ref:`here <sphx_glr_download_tutorials_dev_use_pass_instrument.py>` to download the full example code
+.. rst-class:: sphx-glr-example-title
+
+.. _sphx_glr_tutorials_dev_use_pass_instrument.py:
+
+
+.. _tutorial-use-pass-instrument:
+
+How to Use TVM Pass Instrument
+==============================
+**Author**: `Chi-Wei Wang <https://github.com/chiwwang>`_
+
+As more and more passes are implemented, it becomes useful to instrument
+pass execution, analyze per-pass effects, and observe various events.
+
+We can instrument passes by providing a list of :py:class:`tvm.ir.instrument.PassInstrument`
+instances to :py:class:`tvm.transform.PassContext`. We provide a pass instrument
+for collecting timing information (:py:class:`tvm.ir.instrument.PassTimingInstrument`),
+but an extension mechanism is available via the :py:func:`tvm.instrument.pass_instrument` decorator.
+
+This tutorial demostrates how developers can use ``PassContext`` to instrument
+passes. Please also refer to the :ref:`pass-infra`.
+
+
+.. code-block:: default
+
+    import tvm
+    import tvm.relay as relay
+    from tvm.relay.testing import resnet
+    from tvm.contrib.download import download_testdata
+    from tvm.relay.build_module import bind_params_by_name
+    from tvm.ir.instrument import (
+        PassTimingInstrument,
+        pass_instrument,
+    )
+
+
+
+
+
+
+
+
+Create An Example Relay Program
+-------------------------------
+We use pre-defined resnet-18 network in Relay.
+
+
+.. code-block:: default
+
+    batch_size = 1
+    num_of_image_class = 1000
+    image_shape = (3, 224, 224)
+    output_shape = (batch_size, num_of_image_class)
+    relay_mod, relay_params = resnet.get_workload(num_layers=18, batch_size=1, image_shape=image_shape)
+    print("Printing the IR module...")
+    print(relay_mod.astext(show_meta_data=False))
+
+
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    Printing the IR module...
+    #[version = "0.0.5"]
+    def @main(%data: Tensor[(1, 3, 224, 224), float32], %bn_data_gamma: Tensor[(3), float32], %bn_data_beta: Tensor[(3), float32], %bn_data_moving_mean: Tensor[(3), float32], %bn_data_moving_var: Tensor[(3), float32], %conv0_weight: Tensor[(64, 3, 7, 7), float32], %bn0_gamma: Tensor[(64), float32], %bn0_beta: Tensor[(64), float32], %bn0_moving_mean: Tensor[(64), float32], %bn0_moving_var: Tensor[(64), float32], %stage1_unit1_bn1_gamma: Tensor[(64), float32], %stage1_unit1_bn1_beta: Tensor[(64), float32], %stage1_unit1_bn1_moving_mean: Tensor[(64), float32], %stage1_unit1_bn1_moving_var: Tensor[(64), float32], %stage1_unit1_conv1_weight: Tensor[(64, 64, 3, 3), float32], %stage1_unit1_bn2_gamma: Tensor[(64), float32], %stage1_unit1_bn2_beta: Tensor[(64), float32], %stage1_unit1_bn2_moving_mean: Tensor[(64), float32], %stage1_unit1_bn2_moving_var: Tensor[(64), float32], %stage1_unit1_conv2_weight: Tensor[(64, 64, 3, 3), float32], %stage1_unit1_sc_weight: Tensor[(64, 64, 1, 1), float32], %stage1_unit2_bn1_gamma: Tensor[(64), float32], %stage1_unit2_bn1_beta: Tensor[(64), float32], %stage1_unit2_bn1_moving_mean: Tensor[(64), float32], %stage1_unit2_bn1_moving_var: Tensor[(64), float32], %stage1_unit2_conv1_weight: Tensor[(64, 64, 3, 3), float32], %stage1_unit2_bn2_gamma: Tensor[(64), float32], %stage1_unit2_bn2_beta: Tensor[(64), float32], %stage1_unit2_bn2_moving_mean: Tensor[(64), float32], %stage1_unit2_bn2_moving_var: Tensor[(64), float32], %stage1_unit2_conv2_weight: Tensor[(64, 64, 3, 3), float32], %stage2_unit1_bn1_gamma: Tensor[(64), float32], %stage2_unit1_bn1_beta: Tensor[(64), float32], %stage2_unit1_bn1_moving_mean: Tensor[(64), float32], %stage2_unit1_bn1_moving_var: Tensor[(64), float32], %stage2_unit1_conv1_weight: Tensor[(128, 64, 3, 3), float32], %stage2_unit1_bn2_gamma: Tensor[(128), float32], %stage2_unit1_bn2_beta: Tensor[(128), float32], %stage2_unit1_bn2_moving_mean: Tensor[(128), float32], %stage2_unit1_bn2_moving_var: Tensor[(128), float32], %stage2_unit1_conv2_weight: Tensor[(128, 128, 3, 3), float32], %stage2_unit1_sc_weight: Tensor[(128, 64, 1, 1), float32], %stage2_unit2_bn1_gamma: Tensor[(128), float32], %stage2_unit2_bn1_beta: Tensor[(128), float32], %stage2_unit2_bn1_moving_mean: Tensor[(128), float32], %stage2_unit2_bn1_moving_var: Tensor[(128), float32], %stage2_unit2_conv1_weight: Tensor[(128, 128, 3, 3), float32], %stage2_unit2_bn2_gamma: Tensor[(128), float32], %stage2_unit2_bn2_beta: Tensor[(128), float32], %stage2_unit2_bn2_moving_mean: Tensor[(128), float32], %stage2_unit2_bn2_moving_var: Tensor[(128), float32], %stage2_unit2_conv2_weight: Tensor[(128, 128, 3, 3), float32], %stage3_unit1_bn1_gamma: Tensor[(128), float32], %stage3_unit1_bn1_beta: Tensor[(128), float32], %stage3_unit1_bn1_moving_mean: Tensor[(128), float32], %stage3_unit1_bn1_moving_var: Tensor[(128), float32], %stage3_unit1_conv1_weight: Tensor[(256, 128, 3, 3), float32], %stage3_unit1_bn2_gamma: Tensor[(256), float32], %stage3_unit1_bn2_beta: Tensor[(256), float32], %stage3_unit1_bn2_moving_mean: Tensor[(256), float32], %stage3_unit1_bn2_moving_var: Tensor[(256), float32], %stage3_unit1_conv2_weight: Tensor[(256, 256, 3, 3), float32], %stage3_unit1_sc_weight: Tensor[(256, 128, 1, 1), float32], %stage3_unit2_bn1_gamma: Tensor[(256), float32], %stage3_unit2_bn1_beta: Tensor[(256), float32], %stage3_unit2_bn1_moving_mean: Tensor[(256), float32], %stage3_unit2_bn1_moving_var: Tensor[(256), float32], %stage3_unit2_conv1_weight: Tensor[(256, 256, 3, 3), float32], %stage3_unit2_bn2_gamma: Tensor[(256), float32], %stage3_unit2_bn2_beta: Tensor[(256), float32], %stage3_unit2_bn2_moving_mean: Tensor[(256), float32], %stage3_unit2_bn2_moving_var: Tensor[(256), float32], %stage3_unit2_conv2_weight: Tensor[(256, 256, 3, 3), float32], %stage4_unit1_bn1_gamma: Tensor[(256), float32], %stage4_unit1_bn1_beta: Tensor[(256), float32], %stage4_unit1_bn1_moving_mean: Tensor[(256), float32], %stage4_unit1_bn1_moving_var: Tensor[(256), float32], %stage4_unit1_conv1_weight: Tensor[(512, 256, 3, 3), float32], %stage4_unit1_bn2_gamma: Tensor[(512), float32], %stage4_unit1_bn2_beta: Tensor[(512), float32], %stage4_unit1_bn2_moving_mean: Tensor[(512), float32], %stage4_unit1_bn2_moving_var: Tensor[(512), float32], %stage4_unit1_conv2_weight: Tensor[(512, 512, 3, 3), float32], %stage4_unit1_sc_weight: Tensor[(512, 256, 1, 1), float32], %stage4_unit2_bn1_gamma: Tensor[(512), float32], %stage4_unit2_bn1_beta: Tensor[(512), float32], %stage4_unit2_bn1_moving_mean: Tensor[(512), float32], %stage4_unit2_bn1_moving_var: Tensor[(512), float32], %stage4_unit2_conv1_weight: Tensor[(512, 512, 3, 3), float32], %stage4_unit2_bn2_gamma: Tensor[(512), float32], %stage4_unit2_bn2_beta: Tensor[(512), float32], %stage4_unit2_bn2_moving_mean: Tensor[(512), float32], %stage4_unit2_bn2_moving_var: Tensor[(512), float32], %stage4_unit2_conv2_weight: Tensor[(512, 512, 3, 3), float32], %bn1_gamma: Tensor[(512), float32], %bn1_beta: Tensor[(512), float32], %bn1_moving_mean: Tensor[(512), float32], %bn1_moving_var: Tensor[(512), float32], %fc1_weight: Tensor[(1000, 512), float32], %fc1_bias: Tensor[(1000), float32]) -> Tensor[(1, 1000), float32] {
+      %0 = nn.batch_norm(%data, %bn_data_gamma, %bn_data_beta, %bn_data_moving_mean, %bn_data_moving_var, epsilon=2e-05f, scale=False) /* ty=(Tensor[(1, 3, 224, 224), float32], Tensor[(3), float32], Tensor[(3), float32]) */;
+      %1 = %0.0;
+      %2 = nn.conv2d(%1, %conv0_weight, strides=[2, 2], padding=[3, 3, 3, 3], channels=64, kernel_size=[7, 7]) /* ty=Tensor[(1, 64, 112, 112), float32] */;
+      %3 = nn.batch_norm(%2, %bn0_gamma, %bn0_beta, %bn0_moving_mean, %bn0_moving_var, epsilon=2e-05f) /* ty=(Tensor[(1, 64, 112, 112), float32], Tensor[(64), float32], Tensor[(64), float32]) */;
+      %4 = %3.0;
+      %5 = nn.relu(%4) /* ty=Tensor[(1, 64, 112, 112), float32] */;
+      %6 = nn.max_pool2d(%5, pool_size=[3, 3], strides=[2, 2], padding=[1, 1, 1, 1]) /* ty=Tensor[(1, 64, 56, 56), float32] */;
+      %7 = nn.batch_norm(%6, %stage1_unit1_bn1_gamma, %stage1_unit1_bn1_beta, %stage1_unit1_bn1_moving_mean, %stage1_unit1_bn1_moving_var, epsilon=2e-05f) /* ty=(Tensor[(1, 64, 56, 56), float32], Tensor[(64), float32], Tensor[(64), float32]) */;
+      %8 = %7.0;
+      %9 = nn.relu(%8) /* ty=Tensor[(1, 64, 56, 56), float32] */;
+      %10 = nn.conv2d(%9, %stage1_unit1_conv1_weight, padding=[1, 1, 1, 1], channels=64, kernel_size=[3, 3]) /* ty=Tensor[(1, 64, 56, 56), float32] */;
+      %11 = nn.batch_norm(%10, %stage1_unit1_bn2_gamma, %stage1_unit1_bn2_beta, %stage1_unit1_bn2_moving_mean, %stage1_unit1_bn2_moving_var, epsilon=2e-05f) /* ty=(Tensor[(1, 64, 56, 56), float32], Tensor[(64), float32], Tensor[(64), float32]) */;
+      %12 = %11.0;
+      %13 = nn.relu(%12) /* ty=Tensor[(1, 64, 56, 56), float32] */;
+      %14 = nn.conv2d(%13, %stage1_unit1_conv2_weight, padding=[1, 1, 1, 1], channels=64, kernel_size=[3, 3]) /* ty=Tensor[(1, 64, 56, 56), float32] */;
+      %15 = nn.conv2d(%9, %stage1_unit1_sc_weight, padding=[0, 0, 0, 0], channels=64, kernel_size=[1, 1]) /* ty=Tensor[(1, 64, 56, 56), float32] */;
+      %16 = add(%14, %15) /* ty=Tensor[(1, 64, 56, 56), float32] */;
+      %17 = nn.batch_norm(%16, %stage1_unit2_bn1_gamma, %stage1_unit2_bn1_beta, %stage1_unit2_bn1_moving_mean, %stage1_unit2_bn1_moving_var, epsilon=2e-05f) /* ty=(Tensor[(1, 64, 56, 56), float32], Tensor[(64), float32], Tensor[(64), float32]) */;
+      %18 = %17.0;
+      %19 = nn.relu(%18) /* ty=Tensor[(1, 64, 56, 56), float32] */;
+      %20 = nn.conv2d(%19, %stage1_unit2_conv1_weight, padding=[1, 1, 1, 1], channels=64, kernel_size=[3, 3]) /* ty=Tensor[(1, 64, 56, 56), float32] */;
+      %21 = nn.batch_norm(%20, %stage1_unit2_bn2_gamma, %stage1_unit2_bn2_beta, %stage1_unit2_bn2_moving_mean, %stage1_unit2_bn2_moving_var, epsilon=2e-05f) /* ty=(Tensor[(1, 64, 56, 56), float32], Tensor[(64), float32], Tensor[(64), float32]) */;
+      %22 = %21.0;
+      %23 = nn.relu(%22) /* ty=Tensor[(1, 64, 56, 56), float32] */;
+      %24 = nn.conv2d(%23, %stage1_unit2_conv2_weight, padding=[1, 1, 1, 1], channels=64, kernel_size=[3, 3]) /* ty=Tensor[(1, 64, 56, 56), float32] */;
+      %25 = add(%24, %16) /* ty=Tensor[(1, 64, 56, 56), float32] */;
+      %26 = nn.batch_norm(%25, %stage2_unit1_bn1_gamma, %stage2_unit1_bn1_beta, %stage2_unit1_bn1_moving_mean, %stage2_unit1_bn1_moving_var, epsilon=2e-05f) /* ty=(Tensor[(1, 64, 56, 56), float32], Tensor[(64), float32], Tensor[(64), float32]) */;
+      %27 = %26.0;
+      %28 = nn.relu(%27) /* ty=Tensor[(1, 64, 56, 56), float32] */;
+      %29 = nn.conv2d(%28, %stage2_unit1_conv1_weight, strides=[2, 2], padding=[1, 1, 1, 1], channels=128, kernel_size=[3, 3]) /* ty=Tensor[(1, 128, 28, 28), float32] */;
+      %30 = nn.batch_norm(%29, %stage2_unit1_bn2_gamma, %stage2_unit1_bn2_beta, %stage2_unit1_bn2_moving_mean, %stage2_unit1_bn2_moving_var, epsilon=2e-05f) /* ty=(Tensor[(1, 128, 28, 28), float32], Tensor[(128), float32], Tensor[(128), float32]) */;
+      %31 = %30.0;
+      %32 = nn.relu(%31) /* ty=Tensor[(1, 128, 28, 28), float32] */;
+      %33 = nn.conv2d(%32, %stage2_unit1_conv2_weight, padding=[1, 1, 1, 1], channels=128, kernel_size=[3, 3]) /* ty=Tensor[(1, 128, 28, 28), float32] */;
+      %34 = nn.conv2d(%28, %stage2_unit1_sc_weight, strides=[2, 2], padding=[0, 0, 0, 0], channels=128, kernel_size=[1, 1]) /* ty=Tensor[(1, 128, 28, 28), float32] */;
+      %35 = add(%33, %34) /* ty=Tensor[(1, 128, 28, 28), float32] */;
+      %36 = nn.batch_norm(%35, %stage2_unit2_bn1_gamma, %stage2_unit2_bn1_beta, %stage2_unit2_bn1_moving_mean, %stage2_unit2_bn1_moving_var, epsilon=2e-05f) /* ty=(Tensor[(1, 128, 28, 28), float32], Tensor[(128), float32], Tensor[(128), float32]) */;
+      %37 = %36.0;
+      %38 = nn.relu(%37) /* ty=Tensor[(1, 128, 28, 28), float32] */;
+      %39 = nn.conv2d(%38, %stage2_unit2_conv1_weight, padding=[1, 1, 1, 1], channels=128, kernel_size=[3, 3]) /* ty=Tensor[(1, 128, 28, 28), float32] */;
+      %40 = nn.batch_norm(%39, %stage2_unit2_bn2_gamma, %stage2_unit2_bn2_beta, %stage2_unit2_bn2_moving_mean, %stage2_unit2_bn2_moving_var, epsilon=2e-05f) /* ty=(Tensor[(1, 128, 28, 28), float32], Tensor[(128), float32], Tensor[(128), float32]) */;
+      %41 = %40.0;
+      %42 = nn.relu(%41) /* ty=Tensor[(1, 128, 28, 28), float32] */;
+      %43 = nn.conv2d(%42, %stage2_unit2_conv2_weight, padding=[1, 1, 1, 1], channels=128, kernel_size=[3, 3]) /* ty=Tensor[(1, 128, 28, 28), float32] */;
+      %44 = add(%43, %35) /* ty=Tensor[(1, 128, 28, 28), float32] */;
+      %45 = nn.batch_norm(%44, %stage3_unit1_bn1_gamma, %stage3_unit1_bn1_beta, %stage3_unit1_bn1_moving_mean, %stage3_unit1_bn1_moving_var, epsilon=2e-05f) /* ty=(Tensor[(1, 128, 28, 28), float32], Tensor[(128), float32], Tensor[(128), float32]) */;
+      %46 = %45.0;
+      %47 = nn.relu(%46) /* ty=Tensor[(1, 128, 28, 28), float32] */;
+      %48 = nn.conv2d(%47, %stage3_unit1_conv1_weight, strides=[2, 2], padding=[1, 1, 1, 1], channels=256, kernel_size=[3, 3]) /* ty=Tensor[(1, 256, 14, 14), float32] */;
+      %49 = nn.batch_norm(%48, %stage3_unit1_bn2_gamma, %stage3_unit1_bn2_beta, %stage3_unit1_bn2_moving_mean, %stage3_unit1_bn2_moving_var, epsilon=2e-05f) /* ty=(Tensor[(1, 256, 14, 14), float32], Tensor[(256), float32], Tensor[(256), float32]) */;
+      %50 = %49.0;
+      %51 = nn.relu(%50) /* ty=Tensor[(1, 256, 14, 14), float32] */;
+      %52 = nn.conv2d(%51, %stage3_unit1_conv2_weight, padding=[1, 1, 1, 1], channels=256, kernel_size=[3, 3]) /* ty=Tensor[(1, 256, 14, 14), float32] */;
+      %53 = nn.conv2d(%47, %stage3_unit1_sc_weight, strides=[2, 2], padding=[0, 0, 0, 0], channels=256, kernel_size=[1, 1]) /* ty=Tensor[(1, 256, 14, 14), float32] */;
+      %54 = add(%52, %53) /* ty=Tensor[(1, 256, 14, 14), float32] */;
+      %55 = nn.batch_norm(%54, %stage3_unit2_bn1_gamma, %stage3_unit2_bn1_beta, %stage3_unit2_bn1_moving_mean, %stage3_unit2_bn1_moving_var, epsilon=2e-05f) /* ty=(Tensor[(1, 256, 14, 14), float32], Tensor[(256), float32], Tensor[(256), float32]) */;
+      %56 = %55.0;
+      %57 = nn.relu(%56) /* ty=Tensor[(1, 256, 14, 14), float32] */;
+      %58 = nn.conv2d(%57, %stage3_unit2_conv1_weight, padding=[1, 1, 1, 1], channels=256, kernel_size=[3, 3]) /* ty=Tensor[(1, 256, 14, 14), float32] */;
+      %59 = nn.batch_norm(%58, %stage3_unit2_bn2_gamma, %stage3_unit2_bn2_beta, %stage3_unit2_bn2_moving_mean, %stage3_unit2_bn2_moving_var, epsilon=2e-05f) /* ty=(Tensor[(1, 256, 14, 14), float32], Tensor[(256), float32], Tensor[(256), float32]) */;
+      %60 = %59.0;
+      %61 = nn.relu(%60) /* ty=Tensor[(1, 256, 14, 14), float32] */;
+      %62 = nn.conv2d(%61, %stage3_unit2_conv2_weight, padding=[1, 1, 1, 1], channels=256, kernel_size=[3, 3]) /* ty=Tensor[(1, 256, 14, 14), float32] */;
+      %63 = add(%62, %54) /* ty=Tensor[(1, 256, 14, 14), float32] */;
+      %64 = nn.batch_norm(%63, %stage4_unit1_bn1_gamma, %stage4_unit1_bn1_beta, %stage4_unit1_bn1_moving_mean, %stage4_unit1_bn1_moving_var, epsilon=2e-05f) /* ty=(Tensor[(1, 256, 14, 14), float32], Tensor[(256), float32], Tensor[(256), float32]) */;
+      %65 = %64.0;
+      %66 = nn.relu(%65) /* ty=Tensor[(1, 256, 14, 14), float32] */;
+      %67 = nn.conv2d(%66, %stage4_unit1_conv1_weight, strides=[2, 2], padding=[1, 1, 1, 1], channels=512, kernel_size=[3, 3]) /* ty=Tensor[(1, 512, 7, 7), float32] */;
+      %68 = nn.batch_norm(%67, %stage4_unit1_bn2_gamma, %stage4_unit1_bn2_beta, %stage4_unit1_bn2_moving_mean, %stage4_unit1_bn2_moving_var, epsilon=2e-05f) /* ty=(Tensor[(1, 512, 7, 7), float32], Tensor[(512), float32], Tensor[(512), float32]) */;
+      %69 = %68.0;
+      %70 = nn.relu(%69) /* ty=Tensor[(1, 512, 7, 7), float32] */;
+      %71 = nn.conv2d(%70, %stage4_unit1_conv2_weight, padding=[1, 1, 1, 1], channels=512, kernel_size=[3, 3]) /* ty=Tensor[(1, 512, 7, 7), float32] */;
+      %72 = nn.conv2d(%66, %stage4_unit1_sc_weight, strides=[2, 2], padding=[0, 0, 0, 0], channels=512, kernel_size=[1, 1]) /* ty=Tensor[(1, 512, 7, 7), float32] */;
+      %73 = add(%71, %72) /* ty=Tensor[(1, 512, 7, 7), float32] */;
+      %74 = nn.batch_norm(%73, %stage4_unit2_bn1_gamma, %stage4_unit2_bn1_beta, %stage4_unit2_bn1_moving_mean, %stage4_unit2_bn1_moving_var, epsilon=2e-05f) /* ty=(Tensor[(1, 512, 7, 7), float32], Tensor[(512), float32], Tensor[(512), float32]) */;
+      %75 = %74.0;
+      %76 = nn.relu(%75) /* ty=Tensor[(1, 512, 7, 7), float32] */;
+      %77 = nn.conv2d(%76, %stage4_unit2_conv1_weight, padding=[1, 1, 1, 1], channels=512, kernel_size=[3, 3]) /* ty=Tensor[(1, 512, 7, 7), float32] */;
+      %78 = nn.batch_norm(%77, %stage4_unit2_bn2_gamma, %stage4_unit2_bn2_beta, %stage4_unit2_bn2_moving_mean, %stage4_unit2_bn2_moving_var, epsilon=2e-05f) /* ty=(Tensor[(1, 512, 7, 7), float32], Tensor[(512), float32], Tensor[(512), float32]) */;
+      %79 = %78.0;
+      %80 = nn.relu(%79) /* ty=Tensor[(1, 512, 7, 7), float32] */;
+      %81 = nn.conv2d(%80, %stage4_unit2_conv2_weight, padding=[1, 1, 1, 1], channels=512, kernel_size=[3, 3]) /* ty=Tensor[(1, 512, 7, 7), float32] */;
+      %82 = add(%81, %73) /* ty=Tensor[(1, 512, 7, 7), float32] */;
+      %83 = nn.batch_norm(%82, %bn1_gamma, %bn1_beta, %bn1_moving_mean, %bn1_moving_var, epsilon=2e-05f) /* ty=(Tensor[(1, 512, 7, 7), float32], Tensor[(512), float32], Tensor[(512), float32]) */;
+      %84 = %83.0;
+      %85 = nn.relu(%84) /* ty=Tensor[(1, 512, 7, 7), float32] */;
+      %86 = nn.global_avg_pool2d(%85) /* ty=Tensor[(1, 512, 1, 1), float32] */;
+      %87 = nn.batch_flatten(%86) /* ty=Tensor[(1, 512), float32] */;
+      %88 = nn.dense(%87, %fc1_weight, units=1000) /* ty=Tensor[(1, 1000), float32] */;
+      %89 = nn.bias_add(%88, %fc1_bias, axis=-1) /* ty=Tensor[(1, 1000), float32] */;
+      nn.softmax(%89) /* ty=Tensor[(1, 1000), float32] */
+    }
+
+
+
+
+Create PassContext With Instruments
+-----------------------------------
+To run all passes with an instrument, pass it via the ``instruments`` argument to
+the ``PassContext`` constructor. A built-in ``PassTimingInstrument`` is used to
+profile the execution time of each passes.
+
+
+.. code-block:: default
+
+    timing_inst = PassTimingInstrument()
+    with tvm.transform.PassContext(instruments=[timing_inst]):
+        relay_mod = relay.transform.InferType()(relay_mod)
+        relay_mod = relay.transform.FoldScaleAxis()(relay_mod)
+        # before exiting the context, get profile results.
+        profiles = timing_inst.render()
+    print("Printing results of timing profile...")
+    print(profiles)
+
+
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    Printing results of timing profile...
+    InferType: 3752us [3752us] (45.67%; 45.67%)
+    FoldScaleAxis: 4464us [2us] (54.33%; 54.33%)
+            FoldConstant: 4463us [920us] (54.31%; 99.96%)
+                    InferType: 3542us [3542us] (43.12%; 79.38%)
+
+
+
+
+Use Current PassContext With Instruments
+----------------------------------------
+One can also use the current ``PassContext`` and register
+``PassInstrument`` instances by ``override_instruments`` method.
+Note that ``override_instruments`` executes ``exit_pass_ctx`` method
+if any instrument already exists. Then it switches to new instruments
+and calls ``enter_pass_ctx`` method of new instruments.
+Refer to following sections and :py:func:`tvm.instrument.pass_instrument` for these methods.
+
+
+.. code-block:: default
+
+    cur_pass_ctx = tvm.transform.PassContext.current()
+    cur_pass_ctx.override_instruments([timing_inst])
+    relay_mod = relay.transform.InferType()(relay_mod)
+    relay_mod = relay.transform.FoldScaleAxis()(relay_mod)
+    profiles = timing_inst.render()
+    print("Printing results of timing profile...")
+    print(profiles)
+
+
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    Printing results of timing profile...
+    InferType: 3532us [3532us] (44.22%; 44.22%)
+    FoldScaleAxis: 4455us [2us] (55.78%; 55.78%)
+            FoldConstant: 4454us [969us] (55.76%; 99.97%)
+                    InferType: 3485us [3485us] (43.63%; 78.24%)
+
+
+
+
+Register empty list to clear existing instruments.
+
+Note that ``exit_pass_ctx`` of ``PassTimingInstrument`` is called.
+Profiles are cleared so nothing is printed.
+
+
+.. code-block:: default
+
+    cur_pass_ctx.override_instruments([])
+    # Uncomment the call to .render() to see a warning like:
+    # Warning: no passes have been profiled, did you enable pass profiling?
+    # profiles = timing_inst.render()
+
+
+
+
+
+
+
+
+Create Customized Instrument Class
+----------------------------------
+A customized instrument class can be created using the
+:py:func:`tvm.instrument.pass_instrument` decorator.
+
+Let's create an instrument class which calculates the change in number of
+occurrences of each operator caused by each pass. We can look at ``op.name`` to
+find the name of each operator. And we do this before and after passes to calculate the difference.
+
+
+.. code-block:: default
+
+
+
+    @pass_instrument
+    class RelayCallNodeDiffer:
+        def __init__(self):
+            self._op_diff = []
+            # Passes can be nested.
+            # Use stack to make sure we get correct before/after pairs.
+            self._op_cnt_before_stack = []
+
+        def enter_pass_ctx(self):
+            self._op_diff = []
+            self._op_cnt_before_stack = []
+
+        def exit_pass_ctx(self):
+            assert len(self._op_cnt_before_stack) == 0, "The stack is not empty. Something wrong."
+
+        def run_before_pass(self, mod, info):
+            self._op_cnt_before_stack.append((info.name, self._count_nodes(mod)))
+
+        def run_after_pass(self, mod, info):
+            # Pop out the latest recorded pass.
+            name_before, op_to_cnt_before = self._op_cnt_before_stack.pop()
+            assert name_before == info.name, "name_before: {}, info.name: {} doesn't match".format(
+                name_before, info.name
+            )
+            cur_depth = len(self._op_cnt_before_stack)
+            op_to_cnt_after = self._count_nodes(mod)
+            op_diff = self._diff(op_to_cnt_after, op_to_cnt_before)
+            # only record passes causing differences.
+            if op_diff:
+                self._op_diff.append((cur_depth, info.name, op_diff))
+
+        def get_pass_to_op_diff(self):
+            """
+            return [
+              (depth, pass_name, {op_name: diff_num, ...}), ...
+            ]
+            """
+            return self._op_diff
+
+        @staticmethod
+        def _count_nodes(mod):
+            """Count the number of occurrences of each operator in the module"""
+            ret = {}
+
+            def visit(node):
+                if isinstance(node, relay.expr.Call):
+                    if hasattr(node.op, "name"):
+                        op_name = node.op.name
+                    else:
+                        # Some CallNode may not have 'name' such as relay.Function
+                        return
+                    ret[op_name] = ret.get(op_name, 0) + 1
+
+            relay.analysis.post_order_visit(mod["main"], visit)
+            return ret
+
+        @staticmethod
+        def _diff(d_after, d_before):
+            """Calculate the difference of two dictionary along their keys.
+            The result is values in d_after minus values in d_before.
+            """
+            ret = {}
+            key_after, key_before = set(d_after), set(d_before)
+            for k in key_before & key_after:
+                tmp = d_after[k] - d_before[k]
+                if tmp:
+                    ret[k] = d_after[k] - d_before[k]
+            for k in key_after - key_before:
+                ret[k] = d_after[k]
+            for k in key_before - key_after:
+                ret[k] = -d_before[k]
+            return ret
+
+
+
+
+
+
+
+
+Apply Passes and Multiple Instrument Classes
+--------------------------------------------
+We can use multiple instrument classes in a ``PassContext``.
+However, it should be noted that instrument methods are executed sequentially,
+obeying the order of ``instruments`` argument.
+So for instrument classes like ``PassTimingInstrument``, it is inevitable to
+count-up the execution time of other instrument classes to the final
+profile result.
+
+
+.. code-block:: default
+
+    call_node_inst = RelayCallNodeDiffer()
+    desired_layouts = {
+        "nn.conv2d": ["NHWC", "HWIO"],
+    }
+    pass_seq = tvm.transform.Sequential(
+        [
+            relay.transform.FoldConstant(),
+            relay.transform.ConvertLayout(desired_layouts),
+            relay.transform.FoldConstant(),
+        ]
+    )
+    relay_mod["main"] = bind_params_by_name(relay_mod["main"], relay_params)
+    # timing_inst is put after call_node_inst.
+    # So the execution time of ``call_node.inst.run_after_pass()`` is also counted.
+    with tvm.transform.PassContext(opt_level=3, instruments=[call_node_inst, timing_inst]):
+        relay_mod = pass_seq(relay_mod)
+        profiles = timing_inst.render()
+    # Uncomment the next line to see timing-profile results.
+    # print(profiles)
+
+
+
+
+
+
+
+
+We can see how many CallNode increase/decrease per op type.
+
+
+.. code-block:: default
+
+    from pprint import pprint
+
+    print("Printing the change in number of occurrences of each operator caused by each pass...")
+    pprint(call_node_inst.get_pass_to_op_diff())
+
+
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    Printing the change in number of occurrences of each operator caused by each pass...
+    [(1, 'CanonicalizeOps', {'add': 1, 'nn.bias_add': -1}),
+     (1, 'ConvertLayout', {'expand_dims': 1, 'layout_transform': 23}),
+     (1, 'FoldConstant', {'expand_dims': -1, 'layout_transform': -21}),
+     (0, 'sequential', {'add': 1, 'layout_transform': 2, 'nn.bias_add': -1})]
+
+
+
+Exception Handling
+------------------
+Let's see what happens if an exception occurs in a method of a ``PassInstrument``.
+
+Define ``PassInstrument`` classes which raise exceptions in enter/exit ``PassContext``:
+
+
+.. code-block:: default
+
+    class PassExampleBase:
+        def __init__(self, name):
+            self._name = name
+
+        def enter_pass_ctx(self):
+            print(self._name, "enter_pass_ctx")
+
+        def exit_pass_ctx(self):
+            print(self._name, "exit_pass_ctx")
+
+        def should_run(self, mod, info):
+            print(self._name, "should_run")
+            return True
+
+        def run_before_pass(self, mod, pass_info):
+            print(self._name, "run_before_pass")
+
+        def run_after_pass(self, mod, pass_info):
+            print(self._name, "run_after_pass")
+
+
+    @pass_instrument
+    class PassFine(PassExampleBase):
+        pass
+
+
+    @pass_instrument
+    class PassBadEnterCtx(PassExampleBase):
+        def enter_pass_ctx(self):
+            print(self._name, "bad enter_pass_ctx!!!")
+            raise ValueError("{} bad enter_pass_ctx".format(self._name))
+
+
+    @pass_instrument
+    class PassBadExitCtx(PassExampleBase):
+        def exit_pass_ctx(self):
+            print(self._name, "bad exit_pass_ctx!!!")
+            raise ValueError("{} bad exit_pass_ctx".format(self._name))
+
+
+
+
+
+
+
+
+If an exception occurs in ``enter_pass_ctx``, ``PassContext`` will disable the pass
+instrumentation. And it will run the ``exit_pass_ctx`` of each ``PassInstrument``
+which successfully finished ``enter_pass_ctx``.
+
+In following example, we can see ``exit_pass_ctx`` of `PassFine_0` is executed after exception.
+
+
+.. code-block:: default
+
+    demo_ctx = tvm.transform.PassContext(
+        instruments=[
+            PassFine("PassFine_0"),
+            PassBadEnterCtx("PassBadEnterCtx"),
+            PassFine("PassFine_1"),
+        ]
+    )
+    try:
+        with demo_ctx:
+            relay_mod = relay.transform.InferType()(relay_mod)
+    except ValueError as ex:
+        print("Catching", str(ex).split("\n")[-1])
+
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    PassFine_0 enter_pass_ctx
+    PassBadEnterCtx bad enter_pass_ctx!!!
+    PassFine_0 exit_pass_ctx
+    Catching ValueError: PassBadEnterCtx bad enter_pass_ctx
+
+
+
+Exceptions in ``PassInstrument`` instances cause all instruments of the current ``PassContext``
+to be cleared, so nothing is printed when ``override_instruments`` is called.
+
+
+.. code-block:: default
+
+    demo_ctx.override_instruments([])  # no PassFine_0 exit_pass_ctx printed....etc
+
+
+
+
+
+
+
+If an exception occurs in ``exit_pass_ctx``, then the pass instrument is disabled.
+Then exception is propagated. That means ``PassInstrument`` instances registered
+after the one throwing the exception do not execute ``exit_pass_ctx``.
+
+
+.. code-block:: default
+
+    demo_ctx = tvm.transform.PassContext(
+        instruments=[
+            PassFine("PassFine_0"),
+            PassBadExitCtx("PassBadExitCtx"),
+            PassFine("PassFine_1"),
+        ]
+    )
+    try:
+        # PassFine_1 execute enter_pass_ctx, but not exit_pass_ctx.
+        with demo_ctx:
+            relay_mod = relay.transform.InferType()(relay_mod)
+    except ValueError as ex:
+        print("Catching", str(ex).split("\n")[-1])
+
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    PassFine_0 enter_pass_ctx
+    PassBadExitCtx enter_pass_ctx
+    PassFine_1 enter_pass_ctx
+    PassFine_0 should_run
+    PassBadExitCtx should_run
+    PassFine_1 should_run
+    PassFine_0 run_before_pass
+    PassBadExitCtx run_before_pass
+    PassFine_1 run_before_pass
+    PassFine_0 run_after_pass
+    PassBadExitCtx run_after_pass
+    PassFine_1 run_after_pass
+    PassFine_0 exit_pass_ctx
+    PassBadExitCtx bad exit_pass_ctx!!!
+    Catching ValueError: PassBadExitCtx bad exit_pass_ctx
+
+
+
+Exceptions occured in ``should_run``, ``run_before_pass``, ``run_after_pass``
+are not handled explicitly -- we rely on the context manager (the ``with`` syntax)
+to exit ``PassContext`` safely.
+
+We use ``run_before_pass`` as an example:
+
+
+.. code-block:: default
+
+    @pass_instrument
+    class PassBadRunBefore(PassExampleBase):
+        def run_before_pass(self, mod, pass_info):
+            print(self._name, "bad run_before_pass!!!")
+            raise ValueError("{} bad run_before_pass".format(self._name))
+
+
+    demo_ctx = tvm.transform.PassContext(
+        instruments=[
+            PassFine("PassFine_0"),
+            PassBadRunBefore("PassBadRunBefore"),
+            PassFine("PassFine_1"),
+        ]
+    )
+    try:
+        # All exit_pass_ctx are called.
+        with demo_ctx:
+            relay_mod = relay.transform.InferType()(relay_mod)
+    except ValueError as ex:
+        print("Catching", str(ex).split("\n")[-1])
+
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    PassFine_0 enter_pass_ctx
+    PassBadRunBefore enter_pass_ctx
+    PassFine_1 enter_pass_ctx
+    PassFine_0 should_run
+    PassBadRunBefore should_run
+    PassFine_1 should_run
+    PassFine_0 run_before_pass
+    PassBadRunBefore bad run_before_pass!!!
+    PassFine_0 exit_pass_ctx
+    PassBadRunBefore exit_pass_ctx
+    PassFine_1 exit_pass_ctx
+    Catching ValueError: PassBadRunBefore bad run_before_pass
+
+
+
+Also note that pass instrumentation is not disable. So if we call
+``override_instruments``, the ``exit_pass_ctx`` of old registered ``PassInstrument``
+is called.
+
+
+.. code-block:: default
+
+    demo_ctx.override_instruments([])
+
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    PassFine_0 exit_pass_ctx
+    PassBadRunBefore exit_pass_ctx
+    PassFine_1 exit_pass_ctx
+
+
+
+If we don't wrap pass execution with ``with`` syntax, ``exit_pass_ctx`` is not
+called. Let try this with current ``PassContext``:
+
+
+.. code-block:: default
+
+    cur_pass_ctx = tvm.transform.PassContext.current()
+    cur_pass_ctx.override_instruments(
+        [
+            PassFine("PassFine_0"),
+            PassBadRunBefore("PassBadRunBefore"),
+            PassFine("PassFine_1"),
+        ]
+    )
+
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    PassFine_0 enter_pass_ctx
+    PassBadRunBefore enter_pass_ctx
+    PassFine_1 enter_pass_ctx
+
+
+
+Then call passes. ``exit_pass_ctx`` is not executed after the exception,
+as expectation.
+
+
+.. code-block:: default
+
+    try:
+        # No ``exit_pass_ctx`` got executed.
+        relay_mod = relay.transform.InferType()(relay_mod)
+    except ValueError as ex:
+        print("Catching", str(ex).split("\n")[-1])
+
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    PassFine_0 should_run
+    PassBadRunBefore should_run
+    PassFine_1 should_run
+    PassFine_0 run_before_pass
+    PassBadRunBefore bad run_before_pass!!!
+    Catching ValueError: PassBadRunBefore bad run_before_pass
+
+
+
+Clear instruments.
+
+
+.. code-block:: default
+
+    cur_pass_ctx.override_instruments([])
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    PassFine_0 exit_pass_ctx
+    PassBadRunBefore exit_pass_ctx
+    PassFine_1 exit_pass_ctx
+
+
+
+
+.. _sphx_glr_download_tutorials_dev_use_pass_instrument.py:
+
+
+.. only :: html
+
+ .. container:: sphx-glr-footer
+    :class: sphx-glr-footer-example
+
+
+
+  .. container:: sphx-glr-download
+
+     :download:`Download Python source code: use_pass_instrument.py <use_pass_instrument.py>`
+
+
+
+  .. container:: sphx-glr-download
+
+     :download:`Download Jupyter notebook: use_pass_instrument.ipynb <use_pass_instrument.ipynb>`
+
+
+.. only:: html
+
+ .. rst-class:: sphx-glr-signature
+
+    `Gallery generated by Sphinx-Gallery <https://sphinx-gallery.github.io>`_

@@ -11,7 +11,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>microTVM with TFLite Models &mdash; tvm 0.8.dev0 documentation</title>
+  <title>microTVM with TFLite Models &mdash; tvm 0.9.dev114+g278173c18 documentation</title>
   
 
   
@@ -169,7 +169,7 @@
             
             
                 <div class="version">
-                  0.8.dev0
+                  0.9.dev114+g278173c18
                 </div>
             
           
@@ -427,12 +427,9 @@ models like MobileNet may not fit into their modest memory.</p>
 directory into a buffer</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">os</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
-<span class="kn">import</span> <span class="nn">logging</span>
 
 <span class="kn">import</span> <span class="nn">tvm</span>
-<span class="kn">import</span> <span class="nn">tvm.micro</span> <span class="k">as</span> <span class="nn">micro</span>
 <span class="kn">from</span> <span class="nn">tvm.contrib.download</span> <span class="k">import</span> <span class="n">download_testdata</span>
-<span class="kn">from</span> <span class="nn">tvm.contrib</span> <span class="k">import</span> <span class="n">graph_executor</span><span class="p">,</span> <span class="n">utils</span>
 <span class="kn">from</span> <span class="nn">tvm</span> <span class="k">import</span> <span class="n">relay</span>
 
 <span class="n">model_url</span> <span class="o">=</span> <span class="s2">&quot;https://people.linaro.org/~tom.gall/sine_model.tflite&quot;</span>
@@ -484,9 +481,10 @@ See <a class="reference external" href="https://www.tensorflow.org/lite/guide/fa
 <p>Now we create a build config for relay, turning off two options and then calling relay.build which
 will result in a C source file for the selected TARGET. When running on a simulated target of the
 same architecture as the host (where this Python script is executed) choose “host” below for the
-TARGET and a proper board/VM to run it (Zephyr will create the right QEMU VM based on BOARD. In
-the example below the x86 arch is selected and a x86 VM is picked up accordingly:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">TARGET</span> <span class="o">=</span> <span class="n">tvm</span><span class="o">.</span><span class="n">target</span><span class="o">.</span><span class="n">target</span><span class="o">.</span><span class="n">micro</span><span class="p">(</span><span class="s2">&quot;host&quot;</span><span class="p">)</span>
+TARGET, the C Runtime as the RUNTIME and a proper board/VM to run it (Zephyr will create the right
+QEMU VM based on BOARD. In the example below the x86 arch is selected and a x86 VM is picked up accordingly:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">RUNTIME</span> <span class="o">=</span> <span class="n">tvm</span><span class="o">.</span><span class="n">relay</span><span class="o">.</span><span class="n">backend</span><span class="o">.</span><span class="n">Runtime</span><span class="p">(</span><span class="s2">&quot;crt&quot;</span><span class="p">,</span> <span class="p">{</span><span class="s2">&quot;system-lib&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">})</span>
+<span class="n">TARGET</span> <span class="o">=</span> <span class="n">tvm</span><span class="o">.</span><span class="n">target</span><span class="o">.</span><span class="n">target</span><span class="o">.</span><span class="n">micro</span><span class="p">(</span><span class="s2">&quot;host&quot;</span><span class="p">)</span>
 <span class="n">BOARD</span> <span class="o">=</span> <span class="s2">&quot;qemu_x86&quot;</span>
 <span class="c1">#</span>
 <span class="c1"># Compiling for physical hardware</span>
@@ -513,7 +511,7 @@ the example below the x86 arch is selected and a x86 VM is picked up accordingly
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">with</span> <a href="../../reference/api/python/ir.html#tvm.transform.PassContext" title="View documentation for tvm.transform.PassContext"><span class="n">tvm</span><span class="o">.</span><span class="n">transform</span><span class="o">.</span><span class="n">PassContext</span></a><span class="p">(</span>
     <span class="n">opt_level</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">config</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;tir.disable_vectorize&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">},</span> <span class="n">disabled_pass</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;AlterOpLayout&quot;</span><span class="p">]</span>
 <span class="p">):</span>
-    <span class="n">module</span> <span class="o">=</span> <span class="n">relay</span><span class="o">.</span><span class="n">build</span><span class="p">(</span><span class="n">mod</span><span class="p">,</span> <span class="n">target</span><span class="o">=</span><span class="n">TARGET</span><span class="p">,</span> <span class="n">params</span><span class="o">=</span><span class="n">params</span><span class="p">)</span>
+    <span class="n">module</span> <span class="o">=</span> <span class="n">relay</span><span class="o">.</span><span class="n">build</span><span class="p">(</span><span class="n">mod</span><span class="p">,</span> <span class="n">target</span><span class="o">=</span><span class="n">TARGET</span><span class="p">,</span> <span class="n">runtime</span><span class="o">=</span><span class="n">RUNTIME</span><span class="p">,</span> <span class="n">params</span><span class="o">=</span><span class="n">params</span><span class="p">)</span>
 
 
 <span class="c1"># Inspecting the compilation output</span>
@@ -598,7 +596,7 @@ the example below the x86 arch is selected and a x86 VM is picked up accordingly
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>// tvm target: c -keys=cpu -link-params=0 -model=host -runtime=c -system-lib=1
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>// tvm target: c -keys=cpu -link-params=0 -model=host
 #define TVM_EXPORTS
 #include &quot;tvm/runtime/c_runtime_api.h&quot;
 #include &quot;tvm/runtime/c_backend_api.h&quot;
@@ -606,22 +604,22 @@ the example below the x86 arch is selected and a x86 VM is picked up accordingly
 #ifdef __cplusplus
 extern &quot;C&quot;
 #endif
-TVM_DLL int32_t tvmgen_default_fused_nn_dense_add_nn_relu_1(void* args, void* arg_type_ids, int32_t num_args, void* out_ret_value, void* out_ret_tcode, void* resource_handle) {
+TVM_DLL int32_t tvmgen_default_fused_reshape_1(void* args, void* arg_type_ids, int32_t num_args, void* out_ret_value, void* out_ret_tcode, void* resource_handle) {
   void* arg0 = (((TVMValue*)args)[0].v_handle);
  - .
+ - ./src
+ - ./src/relay.txt
  - ./codegen
  - ./codegen/host
  - ./codegen/host/src
- - ./codegen/host/src/default_lib1.c
  - ./codegen/host/src/default_lib0.c
+ - ./codegen/host/src/default_lib1.c
+ - ./parameters
+ - ./parameters/default.params
+ - ./metadata.json
  - ./executor-config
  - ./executor-config/graph
  - ./executor-config/graph/graph.json
- - ./parameters
- - ./parameters/default.params
- - ./src
- - ./src/relay.txt
- - ./metadata.json
 </pre></div>
 </div>
 <p>Next, establish a session with the simulated device and run the

@@ -118,12 +118,9 @@ directory into a buffer
 
     import os
     import numpy as np
-    import logging
 
     import tvm
-    import tvm.micro as micro
     from tvm.contrib.download import download_testdata
-    from tvm.contrib import graph_executor, utils
     from tvm import relay
 
     model_url = "https://people.linaro.org/~tom.gall/sine_model.tflite"
@@ -213,13 +210,14 @@ Defining the target
 Now we create a build config for relay, turning off two options and then calling relay.build which
 will result in a C source file for the selected TARGET. When running on a simulated target of the
 same architecture as the host (where this Python script is executed) choose "host" below for the
-TARGET and a proper board/VM to run it (Zephyr will create the right QEMU VM based on BOARD. In
-the example below the x86 arch is selected and a x86 VM is picked up accordingly:
+TARGET, the C Runtime as the RUNTIME and a proper board/VM to run it (Zephyr will create the right
+QEMU VM based on BOARD. In the example below the x86 arch is selected and a x86 VM is picked up accordingly:
 
 
 
 .. code-block:: default
 
+    RUNTIME = tvm.relay.backend.Runtime("crt", {"system-lib": True})
     TARGET = tvm.target.target.micro("host")
     BOARD = "qemu_x86"
     #
@@ -257,7 +255,7 @@ Now, compile the model for the target:
     with tvm.transform.PassContext(
         opt_level=3, config={"tir.disable_vectorize": True}, disabled_pass=["AlterOpLayout"]
     ):
-        module = relay.build(mod, target=TARGET, params=params)
+        module = relay.build(mod, target=TARGET, runtime=RUNTIME, params=params)
 
 
     # Inspecting the compilation output
@@ -351,7 +349,7 @@ Now, compile the model for the target:
 
  .. code-block:: none
 
-    // tvm target: c -keys=cpu -link-params=0 -model=host -runtime=c -system-lib=1
+    // tvm target: c -keys=cpu -link-params=0 -model=host
     #define TVM_EXPORTS
     #include "tvm/runtime/c_runtime_api.h"
     #include "tvm/runtime/c_backend_api.h"
@@ -359,22 +357,22 @@ Now, compile the model for the target:
     #ifdef __cplusplus
     extern "C"
     #endif
-    TVM_DLL int32_t tvmgen_default_fused_nn_dense_add_nn_relu_1(void* args, void* arg_type_ids, int32_t num_args, void* out_ret_value, void* out_ret_tcode, void* resource_handle) {
+    TVM_DLL int32_t tvmgen_default_fused_reshape_1(void* args, void* arg_type_ids, int32_t num_args, void* out_ret_value, void* out_ret_tcode, void* resource_handle) {
       void* arg0 = (((TVMValue*)args)[0].v_handle);
      - .
+     - ./src
+     - ./src/relay.txt
      - ./codegen
      - ./codegen/host
      - ./codegen/host/src
-     - ./codegen/host/src/default_lib1.c
      - ./codegen/host/src/default_lib0.c
+     - ./codegen/host/src/default_lib1.c
+     - ./parameters
+     - ./parameters/default.params
+     - ./metadata.json
      - ./executor-config
      - ./executor-config/graph
      - ./executor-config/graph/graph.json
-     - ./parameters
-     - ./parameters/default.params
-     - ./src
-     - ./src/relay.txt
-     - ./metadata.json
 
 
 

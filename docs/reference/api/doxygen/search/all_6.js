@@ -64,7 +64,7 @@ var searchData=
   ['exec_5f',['exec_',['../classtvm_1_1runtime_1_1vm_1_1VirtualMachine.html#ad478992798013d0e3a72d220003c8881',1,'tvm::runtime::vm::VirtualMachine']]],
   ['executable',['Executable',['../classtvm_1_1runtime_1_1vm_1_1Executable.html',1,'tvm::runtime::vm']]],
   ['executable_2eh',['executable.h',['../executable_8h.html',1,'']]],
-  ['executor',['Executor',['../classtvm_1_1relay_1_1Executor.html',1,'tvm::relay::Executor'],['../classtvm_1_1relay_1_1ExecutorRegEntry.html#a763b2f90bc53f92d680a635fe28e858e',1,'tvm::relay::ExecutorRegEntry::Executor()']]],
+  ['executor',['Executor',['../classtvm_1_1relay_1_1Executor.html',1,'tvm::relay::Executor'],['../classtvm_1_1relay_1_1ExecutorRegEntry.html#a763b2f90bc53f92d680a635fe28e858e',1,'tvm::relay::ExecutorRegEntry::Executor()'],['../classtvm_1_1relay_1_1Executor.html#aace7c7d3fd394411923c83d7f5b45df8',1,'tvm::relay::Executor::Executor()']]],
   ['executor_2eh',['executor.h',['../executor_8h.html',1,'']]],
   ['executor_5finfo_2eh',['executor_info.h',['../executor__info_8h.html',1,'']]],
   ['executornode',['ExecutorNode',['../classtvm_1_1relay_1_1ExecutorNode.html',1,'tvm::relay']]],
@@ -116,5 +116,5 @@ var searchData=
   ['extractelement',['ExtractElement',['../classtvm_1_1tir_1_1Shuffle.html#aebe8e15b3820297dfa79a5e5e89fa40c',1,'tvm::tir::Shuffle']]],
   ['extractsplitlength',['ExtractSplitLength',['../classtvm_1_1auto__scheduler_1_1FollowFusedSplitStepNode.html#a84ff625309e23fd7bd1eb90d7e74ae18',1,'tvm::auto_scheduler::FollowFusedSplitStepNode']]],
   ['extractsplitlengths',['ExtractSplitLengths',['../classtvm_1_1auto__scheduler_1_1FollowSplitStepNode.html#afafbcd622b135713f3131e5388c5032f',1,'tvm::auto_scheduler::FollowSplitStepNode']]],
-  ['extrapolation_5fvalue',['extrapolation_value',['../structtvm_1_1relay_1_1CropAndResizeAttrs.html#abb037f0a2525a31e1bc12439978e377d',1,'tvm::relay::CropAndResizeAttrs']]]
+  ['extrapolation_5fvalue',['extrapolation_value',['../structtvm_1_1relay_1_1Resize1DAttrs.html#ae87dc3b2fd5a7312bcfd856e886fcdc5',1,'tvm::relay::Resize1DAttrs::extrapolation_value()'],['../structtvm_1_1relay_1_1Resize2DAttrs.html#aefab76f5bbc309bf4a492a1bf99d87ef',1,'tvm::relay::Resize2DAttrs::extrapolation_value()'],['../structtvm_1_1relay_1_1Resize3DAttrs.html#a7bd50e1554aae78f2240faa11573659f',1,'tvm::relay::Resize3DAttrs::extrapolation_value()'],['../structtvm_1_1relay_1_1CropAndResizeAttrs.html#abb037f0a2525a31e1bc12439978e377d',1,'tvm::relay::CropAndResizeAttrs::extrapolation_value()']]]
 ];

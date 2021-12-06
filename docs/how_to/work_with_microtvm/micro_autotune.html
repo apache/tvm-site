@@ -11,7 +11,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Autotuning with micro TVM &mdash; tvm 0.8.dev0 documentation</title>
+  <title>Autotuning with micro TVM &mdash; tvm 0.9.dev114+g278173c18 documentation</title>
   
 
   
@@ -169,7 +169,7 @@
             
             
                 <div class="version">
-                  0.8.dev0
+                  0.9.dev114+g278173c18
                 </div>
             
           
@@ -346,6 +346,7 @@
 <span class="kn">import</span> <span class="nn">pathlib</span>
 
 <span class="kn">import</span> <span class="nn">tvm</span>
+<span class="kn">from</span> <span class="nn">tvm.relay.backend</span> <span class="k">import</span> <span class="n">Executor</span><span class="p">,</span> <span class="n">Runtime</span>
 </pre></div>
 </div>
 <div class="section" id="defining-the-model">
@@ -384,13 +385,15 @@ fill parameters with random numbers.</p>
 <h2>Defining the target #<a class="headerlink" href="#defining-the-target" title="Permalink to this headline">¶</a></h2>
 <blockquote>
 <div><p>Now we define the TVM target that describes the execution environment. This looks very similar
-to target definitions from other microTVM tutorials.</p>
+to target definitions from other microTVM tutorials. Alongside this we pick the C Runtime to code
+generate our model against.</p>
 <p>When running on physical hardware, choose a target and a board that
 describe the hardware. There are multiple hardware targets that could be selected from
 PLATFORM list in this tutorial. You can chose the platform by passing –platform argument when running
 this tutorial.</p>
 </div></blockquote>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">TARGET</span> <span class="o">=</span> <span class="n">tvm</span><span class="o">.</span><span class="n">target</span><span class="o">.</span><span class="n">target</span><span class="o">.</span><span class="n">micro</span><span class="p">(</span><span class="s2">&quot;host&quot;</span><span class="p">)</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">RUNTIME</span> <span class="o">=</span> <span class="n">Runtime</span><span class="p">(</span><span class="s2">&quot;crt&quot;</span><span class="p">,</span> <span class="p">{</span><span class="s2">&quot;system-lib&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">})</span>
+<span class="n">TARGET</span> <span class="o">=</span> <span class="n">tvm</span><span class="o">.</span><span class="n">target</span><span class="o">.</span><span class="n">target</span><span class="o">.</span><span class="n">micro</span><span class="p">(</span><span class="s2">&quot;host&quot;</span><span class="p">)</span>
 
 <span class="c1"># Compiling for physical hardware</span>
 <span class="c1"># --------------------------------------------------------------------------</span>
@@ -437,6 +440,7 @@ choose other options by choosing from <cite>PLATFORM</cite> list.</p>
     <span class="n">build_kwargs</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;build_option&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;tir.disable_vectorize&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">}},</span>
     <span class="n">do_fork</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
     <span class="n">build_func</span><span class="o">=</span><a href="../../reference/api/python/micro.html#tvm.micro.autotvm_build_func" title="View documentation for tvm.micro.autotvm_build_func"><span class="n">tvm</span><span class="o">.</span><span class="n">micro</span><span class="o">.</span><span class="n">autotvm_build_func</span></a><span class="p">,</span>
+    <span class="n">runtime</span><span class="o">=</span><span class="n">RUNTIME</span><span class="p">,</span>
 <span class="p">)</span>
 <span class="n">runner</span> <span class="o">=</span> <span class="n">tvm</span><span class="o">.</span><span class="n">autotvm</span><span class="o">.</span><span class="n">LocalRunner</span><span class="p">(</span><span class="n">number</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">repeat</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">module_loader</span><span class="o">=</span><span class="n">module_loader</span><span class="p">)</span>
 
@@ -491,7 +495,7 @@ will select a randomly-tuned implementation for each operator, which should not 
 the tuned operator.</p>
 </div></blockquote>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">with</span> <span class="n">pass_context</span><span class="p">:</span>
-    <span class="n">lowered</span> <span class="o">=</span> <span class="n">tvm</span><span class="o">.</span><span class="n">relay</span><span class="o">.</span><span class="n">build</span><span class="p">(</span><span class="n">relay_mod</span><span class="p">,</span> <span class="n">target</span><span class="o">=</span><span class="n">TARGET</span><span class="p">,</span> <span class="n">params</span><span class="o">=</span><span class="n">params</span><span class="p">)</span>
+    <span class="n">lowered</span> <span class="o">=</span> <span class="n">tvm</span><span class="o">.</span><span class="n">relay</span><span class="o">.</span><span class="n">build</span><span class="p">(</span><span class="n">relay_mod</span><span class="p">,</span> <span class="n">target</span><span class="o">=</span><span class="n">TARGET</span><span class="p">,</span> <span class="n">runtime</span><span class="o">=</span><span class="n">RUNTIME</span><span class="p">,</span> <span class="n">params</span><span class="o">=</span><span class="n">params</span><span class="p">)</span>
 
 <span class="n">temp_dir</span> <span class="o">=</span> <a href="../../reference/api/python/contrib.html#tvm.contrib.utils.tempdir" title="View documentation for tvm.contrib.utils.tempdir"><span class="n">tvm</span><span class="o">.</span><span class="n">contrib</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">tempdir</span></a><span class="p">()</span>
 
@@ -529,13 +533,15 @@ the tuned operator.</p>
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>########## Build without Autotuning ##########
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>/home/areusch/ws/tvm3/python/tvm/driver/build_module.py:235: UserWarning: Specifying name with IRModule input is useless
+  warnings.warn(&quot;Specifying name with IRModule input is useless&quot;)
+########## Build without Autotuning ##########
 Node Name                                     Ops                                           Time(us)  Time(%)  Shape              Inputs  Outputs
 ---------                                     ---                                           --------  -------  -----              ------  -------
-tvmgen_default_fused_nn_contrib_conv2d_NCHWc  tvmgen_default_fused_nn_contrib_conv2d_NCHWc  309.9     98.726   (1, 2, 10, 10, 3)  2       1
-tvmgen_default_fused_layout_transform         tvmgen_default_fused_layout_transform         3.076     0.98     (1, 6, 10, 10)     1       1
-tvmgen_default_fused_layout_transform_1       tvmgen_default_fused_layout_transform_1       0.922     0.294    (1, 1, 10, 10, 3)  1       1
-Total_time                                    -                                             313.898   -        -                  -       -
+tvmgen_default_fused_nn_contrib_conv2d_NCHWc  tvmgen_default_fused_nn_contrib_conv2d_NCHWc  502.5     98.236   (1, 2, 10, 10, 3)  2       1
+tvmgen_default_fused_layout_transform_1       tvmgen_default_fused_layout_transform_1       5.521     1.079    (1, 6, 10, 10)     1       1
+tvmgen_default_fused_layout_transform         tvmgen_default_fused_layout_transform         3.503     0.685    (1, 1, 10, 10, 3)  1       1
+Total_time                                    -                                             511.525   -        -                  -       -
 </pre></div>
 </div>
 </div>
@@ -546,7 +552,7 @@ Total_time                                    -                                 
 </div></blockquote>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">with</span> <a href="../../reference/api/python/autotvm.html#tvm.autotvm.apply_history_best" title="View documentation for tvm.autotvm.apply_history_best"><span class="n">tvm</span><span class="o">.</span><span class="n">autotvm</span><span class="o">.</span><span class="n">apply_history_best</span></a><span class="p">(</span><span class="s2">&quot;microtvm_autotune.log.txt&quot;</span><span class="p">):</span>
     <span class="k">with</span> <span class="n">pass_context</span><span class="p">:</span>
-        <span class="n">lowered_tuned</span> <span class="o">=</span> <span class="n">tvm</span><span class="o">.</span><span class="n">relay</span><span class="o">.</span><span class="n">build</span><span class="p">(</span><span class="n">relay_mod</span><span class="p">,</span> <span class="n">target</span><span class="o">=</span><span class="n">TARGET</span><span class="p">,</span> <span class="n">params</span><span class="o">=</span><span class="n">params</span><span class="p">)</span>
+        <span class="n">lowered_tuned</span> <span class="o">=</span> <span class="n">tvm</span><span class="o">.</span><span class="n">relay</span><span class="o">.</span><span class="n">build</span><span class="p">(</span><span class="n">relay_mod</span><span class="p">,</span> <span class="n">target</span><span class="o">=</span><span class="n">TARGET</span><span class="p">,</span> <span class="n">runtime</span><span class="o">=</span><span class="n">RUNTIME</span><span class="p">,</span> <span class="n">params</span><span class="o">=</span><span class="n">params</span><span class="p">)</span>
 
 <span class="n">temp_dir</span> <span class="o">=</span> <a href="../../reference/api/python/contrib.html#tvm.contrib.utils.tempdir" title="View documentation for tvm.contrib.utils.tempdir"><span class="n">tvm</span><span class="o">.</span><span class="n">contrib</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">tempdir</span></a><span class="p">()</span>
 
@@ -587,10 +593,10 @@ Total_time                                    -                                 
 <div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>########## Build with Autotuning ##########
 Node Name                                     Ops                                           Time(us)  Time(%)  Shape              Inputs  Outputs
 ---------                                     ---                                           --------  -------  -----              ------  -------
-tvmgen_default_fused_nn_contrib_conv2d_NCHWc  tvmgen_default_fused_nn_contrib_conv2d_NCHWc  177.6     98.456   (1, 1, 10, 10, 6)  2       1
-tvmgen_default_fused_layout_transform         tvmgen_default_fused_layout_transform         1.952     1.082    (1, 6, 10, 10)     1       1
-tvmgen_default_fused_layout_transform_1       tvmgen_default_fused_layout_transform_1       0.833     0.462    (1, 3, 10, 10, 1)  1       1
-Total_time                                    -                                             180.385   -        -                  -       -
+tvmgen_default_fused_nn_contrib_conv2d_NCHWc  tvmgen_default_fused_nn_contrib_conv2d_NCHWc  316.2     97.773   (1, 6, 10, 10, 1)  2       1
+tvmgen_default_fused_layout_transform_1       tvmgen_default_fused_layout_transform_1       4.723     1.46     (1, 6, 10, 10)     1       1
+tvmgen_default_fused_layout_transform         tvmgen_default_fused_layout_transform         2.478     0.766    (1, 1, 10, 10, 3)  1       1
+Total_time                                    -                                             323.401   -        -                  -       -
 </pre></div>
 </div>
 <div class="sphx-glr-footer class sphx-glr-footer-example docutils container" id="sphx-glr-download-how-to-work-with-microtvm-micro-autotune-py">
