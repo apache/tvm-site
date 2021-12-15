@@ -111,18 +111,16 @@ Following is a simple example for vector addition.
     @tvm.script.ir_module
     class Module:
         @T.prim_func
-        def main(a: T.handle, b: T.handle) -> None:
+        def main(A: T.Buffer[(8,), "float32"], B: T.Buffer[(8,), "float32"]) -> None:
             # function attr dict
             T.func_attr({"global_symbol": "main", "tir.noalias": True})
-            A = T.match_buffer(a, [8], dtype="float32")
-            B = T.match_buffer(b, [8], dtype="float32")
             # body
             # with T.block("root")
-            for i in T.serial(0, 8):
+            for i in T.serial(8):
                 with T.block("B"):
                     vi = T.axis.spatial(8, i)
-                    T.reads([A[vi]])
-                    T.writes([B[vi]])
+                    T.reads(A[vi])
+                    T.writes(B[vi])
                     B[vi] = A[vi] + T.float32(1)
     
 
@@ -160,16 +158,16 @@ to an IRModule.
     @tvm.script.ir_module
     class Module:
         @T.prim_func
-        def main(var_A: T.handle, var_B: T.handle) -> None:
-            A = T.match_buffer(var_A, [8], dtype="float32")
-            B = T.match_buffer(var_B, [8], dtype="float32")
+        def main(A: T.Buffer[(8,), "float32"], B: T.Buffer[(8,), "float32"]) -> None:
+            # function attr dict
+            T.func_attr({"global_symbol": "main", "tir.noalias": True})
             # body
             # with T.block("root")
-            for i0 in T.serial(0, 8):
+            for i0 in T.serial(8):
                 with T.block("B"):
                     i0_1 = T.axis.spatial(8, i0)
-                    T.reads([A[i0_1]])
-                    T.writes([B[i0_1]])
+                    T.reads(A[i0_1])
+                    T.writes(B[i0_1])
                     B[i0_1] = A[i0_1] + T.float32(1)
     
 
@@ -198,8 +196,6 @@ We can build the IRModule into a runnable module with specific target backends.
 
  .. code-block:: none
 
-    /home/areusch/ws/tvm3/python/tvm/driver/build_module.py:235: UserWarning: Specifying name with IRModule input is useless
-      warnings.warn("Specifying name with IRModule input is useless")
     <class 'tvm.driver.build_module.OperatorModule'>
 
 
@@ -301,18 +297,16 @@ Tile the loop into 3 loops and print the result.
     @tvm.script.ir_module
     class Module:
         @T.prim_func
-        def main(a: T.handle, b: T.handle) -> None:
+        def main(A: T.Buffer[(8,), "float32"], B: T.Buffer[(8,), "float32"]) -> None:
             # function attr dict
             T.func_attr({"global_symbol": "main", "tir.noalias": True})
-            A = T.match_buffer(a, [8], dtype="float32")
-            B = T.match_buffer(b, [8], dtype="float32")
             # body
             # with T.block("root")
             for i_0, i_1, i_2 in T.grid(2, 2, 2):
                 with T.block("B"):
                     vi = T.axis.spatial(8, i_0 * 4 + i_1 * 2 + i_2)
-                    T.reads([A[vi]])
-                    T.writes([B[vi]])
+                    T.reads(A[vi])
+                    T.writes(B[vi])
                     B[vi] = A[vi] + T.float32(1)
     
 
@@ -342,18 +336,16 @@ We can also reorder the loops. Now we move loop `i_2` to outside of `i_1`.
     @tvm.script.ir_module
     class Module:
         @T.prim_func
-        def main(a: T.handle, b: T.handle) -> None:
+        def main(A: T.Buffer[(8,), "float32"], B: T.Buffer[(8,), "float32"]) -> None:
             # function attr dict
             T.func_attr({"global_symbol": "main", "tir.noalias": True})
-            A = T.match_buffer(a, [8], dtype="float32")
-            B = T.match_buffer(b, [8], dtype="float32")
             # body
             # with T.block("root")
             for i_0, i_2, i_1 in T.grid(2, 2, 2):
                 with T.block("B"):
                     vi = T.axis.spatial(8, i_0 * 4 + i_1 * 2 + i_2)
-                    T.reads([A[vi]])
-                    T.writes([B[vi]])
+                    T.reads(A[vi])
+                    T.writes(B[vi])
                     B[vi] = A[vi] + T.float32(1)
     
 
@@ -389,20 +381,18 @@ also use primitives and do incrementally transformation.
     @tvm.script.ir_module
     class Module:
         @T.prim_func
-        def main(a: T.handle, b: T.handle) -> None:
+        def main(A: T.Buffer[(8,), "float32"], B: T.Buffer[(8,), "float32"]) -> None:
             # function attr dict
             T.func_attr({"global_symbol": "main", "tir.noalias": True})
-            A = T.match_buffer(a, [8], dtype="float32")
-            B = T.match_buffer(b, [8], dtype="float32")
             # body
             # with T.block("root")
-            for i_0 in T.thread_binding(0, 2, thread="blockIdx.x"):
-                for i_2 in T.thread_binding(0, 2, thread="threadIdx.x"):
-                    for i_1 in T.serial(0, 2):
+            for i_0 in T.thread_binding(2, thread="blockIdx.x"):
+                for i_2 in T.thread_binding(2, thread="threadIdx.x"):
+                    for i_1 in T.serial(2):
                         with T.block("B"):
                             vi = T.axis.spatial(8, i_0 * 4 + i_1 * 2 + i_2)
-                            T.reads([A[vi]])
-                            T.writes([B[vi]])
+                            T.reads(A[vi])
+                            T.writes(B[vi])
                             B[vi] = A[vi] + T.float32(1)
     
 

@@ -14,6 +14,7 @@ var searchData=
   ['map_3c_20tvm_3a_3ate_3a_3aoperation_2c_20tvm_3a_3ate_3a_3astage_20_3e',['Map&lt; tvm::te::Operation, tvm::te::Stage &gt;',['../classtvm_1_1runtime_1_1Map.html',1,'tvm::runtime']]],
   ['map_3c_20tvm_3a_3atir_3a_3ainstruction_2c_20tvm_3a_3aruntime_3a_3aobjectref_20_3e',['Map&lt; tvm::tir::Instruction, tvm::runtime::ObjectRef &gt;',['../classtvm_1_1runtime_1_1Map.html',1,'tvm::runtime']]],
   ['map_3c_20tvm_3a_3atir_3a_3aitervar_2c_20tvm_3a_3ate_3a_3aitervarattr_20_3e',['Map&lt; tvm::tir::IterVar, tvm::te::IterVarAttr &gt;',['../classtvm_1_1runtime_1_1Map.html',1,'tvm::runtime']]],
+  ['map_3c_20tvm_3a_3atir_3a_3ausmp_3a_3abufferinfo_2c_20tvm_3a_3atir_3a_3astmt_20_3e',['Map&lt; tvm::tir::usmp::BufferInfo, tvm::tir::Stmt &gt;',['../classtvm_1_1runtime_1_1Map.html',1,'tvm::runtime']]],
   ['map_3c_20tvm_3a_3atir_3a_3avar_2c_20tvm_3a_3aprimexpr_20_3e',['Map&lt; tvm::tir::Var, tvm::PrimExpr &gt;',['../classtvm_1_1runtime_1_1Map.html',1,'tvm::runtime']]],
   ['map_3c_20tvm_3a_3atir_3a_3avar_2c_20tvm_3a_3arange_20_3e',['Map&lt; tvm::tir::Var, tvm::Range &gt;',['../classtvm_1_1runtime_1_1Map.html',1,'tvm::runtime']]],
   ['map_3c_20tvm_3a_3atir_3a_3avar_2c_20tvm_3a_3atir_3a_3abuffer_20_3e',['Map&lt; tvm::tir::Var, tvm::tir::Buffer &gt;',['../classtvm_1_1runtime_1_1Map.html',1,'tvm::runtime']]],

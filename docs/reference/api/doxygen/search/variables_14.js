@@ -20,6 +20,7 @@ var searchData=
   ['vectors',['vectors',['../classtvm_1_1tir_1_1ShuffleNode.html#aa444b61cf671ef31060535c61746ab6c',1,'tvm::tir::ShuffleNode']]],
   ['verbose',['verbose',['../classtvm_1_1auto__scheduler_1_1TuningOptionsNode.html#ab5804969081fc4f1e1330b3e55da692f',1,'tvm::auto_scheduler::TuningOptionsNode::verbose()'],['../classtvm_1_1auto__scheduler_1_1ProgramMeasurerNode.html#a59dc00655b6e7fb37d49249555369d6f',1,'tvm::auto_scheduler::ProgramMeasurerNode::verbose()'],['../classtvm_1_1auto__scheduler_1_1SearchPolicyNode.html#a626eea16092d3c1a7d86497ee712f064',1,'tvm::auto_scheduler::SearchPolicyNode::verbose()']]],
   ['vid',['vid',['../classtvm_1_1relay_1_1VarNode.html#af191a8eedf3575d626771c9c820ddb63',1,'tvm::relay::VarNode']]],
+  ['virtual_5fdevice_5f',['virtual_device_',['../classtvm_1_1RelayExprNode.html#ad6ea21e1a03d972ac5cf81b80b88b2c4',1,'tvm::RelayExprNode']]],
   ['virtual_5fdevice_5fid',['virtual_device_id',['../classtvm_1_1SEScopeNode.html#a6881b1cb9cb1bb388cc05183ed07dbb8',1,'tvm::SEScopeNode']]],
   ['virtual_5fdevices',['virtual_devices',['../classtvm_1_1runtime_1_1vm_1_1Executable.html#aae6b6508e423538a82c23a1724c87877',1,'tvm::runtime::vm::Executable']]],
   ['virtual_5fthread',['virtual_thread',['../namespacetvm_1_1tir_1_1attr.html#a464533c1560ace5e0b5071ba6902482e',1,'tvm::tir::attr']]],

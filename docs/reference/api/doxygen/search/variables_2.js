@@ -26,6 +26,7 @@ var searchData=
   ['buffer_5fbind_5fscope',['buffer_bind_scope',['../namespacetvm_1_1tir_1_1attr.html#a0497d7cff1d672920c2fbd4d92869e62',1,'tvm::tir::attr']]],
   ['buffer_5fbound',['buffer_bound',['../namespacetvm_1_1tir_1_1attr.html#ac76fd8d0227265617e2f2bb8402d1e19',1,'tvm::tir::attr']]],
   ['buffer_5fdim_5falign',['buffer_dim_align',['../namespacetvm_1_1tir_1_1attr.html#a0ff3c4642eebe20842b1c26e98288a5d',1,'tvm::tir::attr']]],
+  ['buffer_5finfo_5fstmts',['buffer_info_stmts',['../structtvm_1_1tir_1_1usmp_1_1BufferInfoAnalysisNode.html#a71a0e484d5df7b61c9f5c12fe61c590b',1,'tvm::tir::usmp::BufferInfoAnalysisNode']]],
   ['buffer_5fmap',['buffer_map',['../classtvm_1_1tir_1_1PrimFuncNode.html#aeb1f162516e09122852496f2a945d100',1,'tvm::tir::PrimFuncNode']]],
   ['buffer_5ftype',['buffer_type',['../classtvm_1_1tir_1_1BufferNode.html#a2ce595dfcf7a726c7e0f86a6942d2568',1,'tvm::tir::BufferNode']]],
   ['buffer_5fvar',['buffer_var',['../classtvm_1_1tir_1_1LoadNode.html#a2c69902eee069e824c822492068e6913',1,'tvm::tir::LoadNode::buffer_var()'],['../classtvm_1_1tir_1_1StoreNode.html#aed2fc3d3c119126a61182666930e8729',1,'tvm::tir::StoreNode::buffer_var()'],['../classtvm_1_1tir_1_1AllocateNode.html#acc0828bc8173ba2d46f90ddd2a329ae0',1,'tvm::tir::AllocateNode::buffer_var()']]],

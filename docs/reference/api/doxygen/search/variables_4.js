@@ -26,7 +26,6 @@ var searchData=
   ['device_5fmetrics',['device_metrics',['../classtvm_1_1runtime_1_1profiling_1_1ReportNode.html#ababc1b17ad3a7f9bfe9a8006cc2c4cd0',1,'tvm::runtime::profiling::ReportNode']]],
   ['device_5fscope',['device_scope',['../namespacetvm_1_1tir_1_1attr.html#a36db026f638ad3d951c302796ddcae24',1,'tvm::tir::attr']]],
   ['device_5ftype',['device_type',['../classtvm_1_1meta__schedule_1_1RunnerInputNode.html#a5879e387f788cfd90b5a62ef1e55011e',1,'tvm::meta_schedule::RunnerInputNode::device_type()'],['../classtvm_1_1TargetKindNode.html#a18459286d8d501892992a4209ad08652',1,'tvm::TargetKindNode::device_type()'],['../namespacetvm_1_1tir_1_1attr.html#a7e4e7cd47471a9089022214d63d24206',1,'tvm::tir::attr::device_type()']]],
-  ['device_5ftype_5fint',['device_type_int',['../classtvm_1_1SEScopeNode.html#a57304b6e434e200c534a270c246a12c6',1,'tvm::SEScopeNode']]],
   ['devices_5f',['devices_',['../classtvm_1_1runtime_1_1vm_1_1VirtualMachine.html#a602daa8d70ae598a833d8601d1ef6d95',1,'tvm::runtime::vm::VirtualMachine']]],
   ['diag_5fctx',['diag_ctx',['../classtvm_1_1transform_1_1PassContextNode.html#aa7bfc5ab1cf83d43a9b9bf4f1e62dd8c',1,'tvm::transform::PassContextNode']]],
   ['diagnostics',['diagnostics',['../classtvm_1_1DiagnosticContextNode.html#ada207669f235f6aa8dbf310583a92339',1,'tvm::DiagnosticContextNode']]],

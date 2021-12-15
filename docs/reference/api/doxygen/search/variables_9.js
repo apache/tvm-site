@@ -32,7 +32,6 @@ var searchData=
   ['invoke_5fargs_5fregisters',['invoke_args_registers',['../structtvm_1_1runtime_1_1vm_1_1Instruction.html#a6fc678bca0e215303087981a79f23b7f',1,'tvm::runtime::vm::Instruction']]],
   ['iou_5floss',['iou_loss',['../structtvm_1_1relay_1_1ProposalAttrs.html#a0f8dbb0dfdc411a67254588e4ccf0f65',1,'tvm::relay::ProposalAttrs']]],
   ['is_5fascend',['is_ascend',['../structtvm_1_1relay_1_1ArgsortAttrs.html#a97f3acf400fafc612854c955a88673ea',1,'tvm::relay::ArgsortAttrs::is_ascend()'],['../structtvm_1_1relay_1_1TopKAttrs.html#ae2ccec6187706f54757242e1839bb2d1',1,'tvm::relay::TopKAttrs::is_ascend()']]],
-  ['is_5ffixed',['is_fixed',['../structtvm_1_1relay_1_1OnDeviceAttrs.html#a055c67855c7d5de46d08db352d84780c',1,'tvm::relay::OnDeviceAttrs']]],
   ['is_5finput',['is_input',['../structtvm_1_1relay_1_1ShapeFuncAttrs.html#a1697a5a1b9e17876dd1a3db8a31264a5',1,'tvm::relay::ShapeFuncAttrs']]],
   ['is_5fmultiply',['is_multiply',['../structtvm_1_1relay_1_1CorrelationAttrs.html#aff24797202623253394eb46870aaa192',1,'tvm::relay::CorrelationAttrs']]],
   ['is_5foutput',['is_output',['../classtvm_1_1auto__scheduler_1_1AccessAnalyzerNode.html#a99f270b8b0d0beb3367ea53215cc7440',1,'tvm::auto_scheduler::AccessAnalyzerNode::is_output()'],['../classtvm_1_1te_1_1StageNode.html#af5cc9e6c2276cf8abde8f437f8bdbda4',1,'tvm::te::StageNode::is_output()']]],

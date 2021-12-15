@@ -43,6 +43,8 @@ var searchData=
   ['broadcastnode',['BroadcastNode',['../classtvm_1_1tir_1_1BroadcastNode.html',1,'tvm::tir']]],
   ['buffer',['Buffer',['../structtvm_1_1runtime_1_1vm_1_1Buffer.html',1,'tvm::runtime::vm::Buffer'],['../classtvm_1_1tir_1_1Buffer.html',1,'tvm::tir::Buffer']]],
   ['bufferinfo',['BufferInfo',['../classtvm_1_1tir_1_1usmp_1_1BufferInfo.html',1,'tvm::tir::usmp']]],
+  ['bufferinfoanalysis',['BufferInfoAnalysis',['../classtvm_1_1tir_1_1usmp_1_1BufferInfoAnalysis.html',1,'tvm::tir::usmp']]],
+  ['bufferinfoanalysisnode',['BufferInfoAnalysisNode',['../structtvm_1_1tir_1_1usmp_1_1BufferInfoAnalysisNode.html',1,'tvm::tir::usmp']]],
   ['bufferinfonode',['BufferInfoNode',['../structtvm_1_1tir_1_1usmp_1_1BufferInfoNode.html',1,'tvm::tir::usmp']]],
   ['bufferload',['BufferLoad',['../classtvm_1_1tir_1_1BufferLoad.html',1,'tvm::tir']]],
   ['bufferloadnode',['BufferLoadNode',['../classtvm_1_1tir_1_1BufferLoadNode.html',1,'tvm::tir']]],

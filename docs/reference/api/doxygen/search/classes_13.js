@@ -5,7 +5,7 @@ var searchData=
   ['valuetypeinfomaker',['ValueTypeInfoMaker',['../structtvm_1_1detail_1_1ValueTypeInfoMaker.html',1,'tvm::detail']]],
   ['var',['Var',['../classtvm_1_1tir_1_1Var.html',1,'tvm::tir::Var'],['../classtvm_1_1relay_1_1Var.html',1,'tvm::relay::Var']]],
   ['varianceattrs',['VarianceAttrs',['../structtvm_1_1relay_1_1VarianceAttrs.html',1,'tvm::relay']]],
-  ['varnode',['VarNode',['../classtvm_1_1relay_1_1VarNode.html',1,'tvm::relay::VarNode'],['../classtvm_1_1tir_1_1VarNode.html',1,'tvm::tir::VarNode']]],
+  ['varnode',['VarNode',['../classtvm_1_1tir_1_1VarNode.html',1,'tvm::tir::VarNode'],['../classtvm_1_1relay_1_1VarNode.html',1,'tvm::relay::VarNode']]],
   ['varpattern',['VarPattern',['../classtvm_1_1relay_1_1VarPattern.html',1,'tvm::relay']]],
   ['varpatternnode',['VarPatternNode',['../classtvm_1_1relay_1_1VarPatternNode.html',1,'tvm::relay']]],
   ['virtualmachine',['VirtualMachine',['../classtvm_1_1runtime_1_1vm_1_1VirtualMachine.html',1,'tvm::runtime::vm']]],

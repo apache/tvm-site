@@ -46,6 +46,7 @@ var searchData=
   ['optional_3c_20tvm_3a_3atarget_20_3e',['Optional&lt; tvm::Target &gt;',['../classtvm_1_1runtime_1_1Optional.html',1,'tvm::runtime']]],
   ['optional_3c_20tvm_3a_3atir_3a_3aitervar_20_3e',['Optional&lt; tvm::tir::IterVar &gt;',['../classtvm_1_1runtime_1_1Optional.html',1,'tvm::runtime']]],
   ['optional_3c_20tvm_3a_3atir_3a_3astmt_20_3e',['Optional&lt; tvm::tir::Stmt &gt;',['../classtvm_1_1runtime_1_1Optional.html',1,'tvm::runtime']]],
+  ['optional_3c_20tvm_3a_3atir_3a_3avar_20_3e',['Optional&lt; tvm::tir::Var &gt;',['../classtvm_1_1runtime_1_1Optional.html',1,'tvm::runtime']]],
   ['or',['Or',['../classtvm_1_1tir_1_1Or.html',1,'tvm::tir']]],
   ['ornode',['OrNode',['../classtvm_1_1tir_1_1OrNode.html',1,'tvm::tir']]]
 ];

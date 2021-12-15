@@ -86,7 +86,6 @@ var searchData=
   ['device_5fmetrics',['device_metrics',['../classtvm_1_1runtime_1_1profiling_1_1ReportNode.html#ababc1b17ad3a7f9bfe9a8006cc2c4cd0',1,'tvm::runtime::profiling::ReportNode']]],
   ['device_5fscope',['device_scope',['../namespacetvm_1_1tir_1_1attr.html#a36db026f638ad3d951c302796ddcae24',1,'tvm::tir::attr']]],
   ['device_5ftype',['device_type',['../classtvm_1_1meta__schedule_1_1RunnerInputNode.html#a5879e387f788cfd90b5a62ef1e55011e',1,'tvm::meta_schedule::RunnerInputNode::device_type()'],['../classtvm_1_1TargetKindNode.html#a18459286d8d501892992a4209ad08652',1,'tvm::TargetKindNode::device_type()'],['../classtvm_1_1SEScopeNode.html#ae64668b36ec5709c335186ed56ca9aec',1,'tvm::SEScopeNode::device_type()'],['../namespacetvm_1_1tir_1_1attr.html#a7e4e7cd47471a9089022214d63d24206',1,'tvm::tir::attr::device_type()']]],
-  ['device_5ftype_5fint',['device_type_int',['../classtvm_1_1SEScopeNode.html#a57304b6e434e200c534a270c246a12c6',1,'tvm::SEScopeNode']]],
   ['deviceapi',['DeviceAPI',['../classtvm_1_1runtime_1_1DeviceAPI.html',1,'tvm::runtime']]],
   ['deviceattrkind',['DeviceAttrKind',['../namespacetvm_1_1runtime.html#a46fef1ca0ccc05473e9bb0a8c6b66619',1,'tvm::runtime']]],
   ['devicecopy',['DeviceCopy',['../structtvm_1_1runtime_1_1vm_1_1Instruction.html#ad38748aeb7650b185d8548e491aa9da6',1,'tvm::runtime::vm::Instruction::DeviceCopy()'],['../namespacetvm_1_1runtime_1_1vm.html#a8d8d95ce8d629c7213f2f595917870ecaf695012a8c440065a5e913a682e77b5c',1,'tvm::runtime::vm::DeviceCopy()']]],

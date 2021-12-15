@@ -20,6 +20,7 @@ var searchData=
   ['measured_5fstates_5fthroughputs_5f',['measured_states_throughputs_',['../classtvm_1_1auto__scheduler_1_1SearchPolicyNode.html#a5d1b9cf934cfee1f4161f45ff2f12f4f',1,'tvm::auto_scheduler::SearchPolicyNode']]],
   ['measured_5fstates_5fvector_5f',['measured_states_vector_',['../classtvm_1_1auto__scheduler_1_1SearchPolicyNode.html#aab68b70a8b21b353746921487c1cb29b',1,'tvm::auto_scheduler::SearchPolicyNode']]],
   ['memo_5f',['memo_',['../classtvm_1_1relay_1_1ExprMutator.html#a605c320fa66c769991738380bc8a69c8',1,'tvm::relay::ExprMutator']]],
+  ['memory_5fpressure',['memory_pressure',['../structtvm_1_1tir_1_1usmp_1_1BufferInfoAnalysisNode.html#ae1ba470754329214107d1ec5e276c2b0',1,'tvm::tir::usmp::BufferInfoAnalysisNode']]],
   ['memory_5fscope',['memory_scope',['../classtvm_1_1SEScopeNode.html#a414638b5bfedaa2898d6ec4c3ec0f027',1,'tvm::SEScopeNode']]],
   ['message',['message',['../classtvm_1_1DiagnosticNode.html#a6cb3da3e81e6d6dce39a046c18f55f04',1,'tvm::DiagnosticNode::message()'],['../classtvm_1_1tir_1_1AssertStmtNode.html#a42ff732b4df33bddf74f9a92669cebb9',1,'tvm::tir::AssertStmtNode::message()']]],
   ['message_5ftype',['message_type',['../structtvm_1_1runtime_1_1micro__rpc_1_1SessionHeader.html#a6361d74689ff447ee5b072255e9f3d64',1,'tvm::runtime::micro_rpc::SessionHeader']]],

@@ -45,6 +45,8 @@ var searchData=
   ['const_5fpool_5f',['const_pool_',['../classtvm_1_1runtime_1_1vm_1_1VirtualMachine.html#a50557c8e0398599341c1a8539c528860',1,'tvm::runtime::vm::VirtualMachine']]],
   ['const_5fshape',['const_shape',['../structtvm_1_1relay_1_1AllocTensorAttrs.html#a3a6a06f96895107cce3ed17d85101cee',1,'tvm::relay::AllocTensorAttrs']]],
   ['constants',['constants',['../classtvm_1_1runtime_1_1vm_1_1Executable.html#a64a56d507939eee688f485057a2c7d2e',1,'tvm::runtime::vm::Executable']]],
+  ['constrain_5fbody',['constrain_body',['../structtvm_1_1relay_1_1OnDeviceAttrs.html#ad80798c111893bb5904bda3b4f70645d',1,'tvm::relay::OnDeviceAttrs']]],
+  ['constrain_5fresult',['constrain_result',['../structtvm_1_1relay_1_1OnDeviceAttrs.html#a219e14dc39b3d3d302e6b3d8b59167e1',1,'tvm::relay::OnDeviceAttrs']]],
   ['constructor',['constructor',['../classtvm_1_1relay_1_1PatternConstructorNode.html#a4ad38292de4758a711a01982ebf78f54',1,'tvm::relay::PatternConstructorNode::constructor()'],['../structtvm_1_1relay_1_1ConstructorValueObj.html#a8a8374bec3445e7225ec5ee3fcdb5b6e',1,'tvm::relay::ConstructorValueObj::constructor()']]],
   ['constructor_5ftag',['constructor_tag',['../structtvm_1_1runtime_1_1vm_1_1Instruction.html#a7349fa2a2e70149d4af08289c539150f',1,'tvm::runtime::vm::Instruction']]],
   ['constructors',['constructors',['../classtvm_1_1TypeDataNode.html#a4b8e6e09856e514b91586223d48fd117',1,'tvm::TypeDataNode']]],

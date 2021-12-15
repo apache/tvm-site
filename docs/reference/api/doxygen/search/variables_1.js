@@ -16,6 +16,7 @@ var searchData=
   ['alloc_5ftensor',['alloc_tensor',['../structtvm_1_1runtime_1_1vm_1_1Instruction.html#ad93d457f8af7065ea0a27526fe0d0948',1,'tvm::runtime::vm::Instruction']]],
   ['alloc_5ftensor_5freg',['alloc_tensor_reg',['../structtvm_1_1runtime_1_1vm_1_1Instruction.html#a9c2db93bf0602b1a6d17928e52821bf8',1,'tvm::runtime::vm::Instruction']]],
   ['allocate',['Allocate',['../structMemoryManagerInterface.html#a1dd2857f3cf22e16c431b0d67356e93b',1,'MemoryManagerInterface']]],
+  ['allocated_5fsize',['allocated_size',['../structtvm_1_1tir_1_1usmp_1_1AllocatedPoolInfoNode.html#ae22f04d799f7cc35273d85fd3d9851fd',1,'tvm::tir::usmp::AllocatedPoolInfoNode']]],
   ['allocation_5fsize',['allocation_size',['../structtvm_1_1runtime_1_1vm_1_1Instruction.html#a4f907889caa7c348a3a2dea88e89b827',1,'tvm::runtime::vm::Instruction']]],
   ['allocators_5f',['allocators_',['../classtvm_1_1runtime_1_1vm_1_1VirtualMachine.html#a0ef00d527a1c03221030c5fec2ad519d',1,'tvm::runtime::vm::VirtualMachine']]],
   ['allow_5fcopy_5fon_5fwrite_5f',['allow_copy_on_write_',['../classtvm_1_1tir_1_1StmtMutator.html#a620e6041832441d25ee4f4d65921231f',1,'tvm::tir::StmtMutator']]],

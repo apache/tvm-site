@@ -14,6 +14,8 @@ var searchData=
   ['affinetypenode',['AffineTypeNode',['../classtvm_1_1AffineTypeNode.html',1,'tvm']]],
   ['allclassnonmaximumsuppressionattrs',['AllClassNonMaximumSuppressionAttrs',['../structtvm_1_1relay_1_1AllClassNonMaximumSuppressionAttrs.html',1,'tvm::relay']]],
   ['allocate',['Allocate',['../classtvm_1_1tir_1_1Allocate.html',1,'tvm::tir']]],
+  ['allocatedpoolinfo',['AllocatedPoolInfo',['../classtvm_1_1tir_1_1usmp_1_1AllocatedPoolInfo.html',1,'tvm::tir::usmp']]],
+  ['allocatedpoolinfonode',['AllocatedPoolInfoNode',['../structtvm_1_1tir_1_1usmp_1_1AllocatedPoolInfoNode.html',1,'tvm::tir::usmp']]],
   ['allocatenode',['AllocateNode',['../classtvm_1_1tir_1_1AllocateNode.html',1,'tvm::tir']]],
   ['allocator',['Allocator',['../classtvm_1_1runtime_1_1vm_1_1Allocator.html',1,'tvm::runtime::vm']]],
   ['allocstorageattrs',['AllocStorageAttrs',['../structtvm_1_1relay_1_1AllocStorageAttrs.html',1,'tvm::relay']]],
