@@ -4,7 +4,7 @@ set -e
 set -u
 
 echo "Start to generate and deploy site ..."
-jekyll b
+bundle exec jekyll b
 cp .gitignore .gitignore.bak
 cp .asf.yaml .asf.yaml.bak
 
