@@ -11,7 +11,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Autotuning with micro TVM &mdash; tvm 0.9.dev182+ge718f5a8a documentation</title>
+  <title>Autotuning with microTVM &mdash; tvm 0.9.dev0 documentation</title>
   
 
   
@@ -169,7 +169,7 @@
             
             
                 <div class="version">
-                  0.9.dev182+ge718f5a8a
+                  0.9.dev0
                 </div>
             
           
@@ -211,11 +211,12 @@
 <li class="toctree-l2"><a class="reference internal" href="../tune_with_autotvm/index.html">Auto-Tune with Templates and AutoTVM</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../tune_with_autoscheduler/index.html">Use AutoScheduler for Template-Free Scheduling</a></li>
 <li class="toctree-l2 current"><a class="reference internal" href="index.html">Work With microTVM</a><ul class="current">
-<li class="toctree-l3 current"><a class="current reference internal" href="#">Autotuning with micro TVM</a><ul>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">Autotuning with microTVM</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#defining-the-model">Defining the model</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#defining-the-target">Defining the target #</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#defining-the-target">Defining the target</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#extracting-tuning-tasks">Extracting tuning tasks</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#configuring-microtvm">Configuring microTVM</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#run-autotuning">Run Autotuning</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#timing-the-untuned-program">Timing the untuned program</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#timing-the-tuned-program">Timing the tuned program</a></li>
 </ul>
@@ -223,6 +224,7 @@
 <li class="toctree-l3"><a class="reference internal" href="micro_ethosu.html">Running TVM on bare metal Arm(R) Cortex(R)-M55 CPU and Ethos(TM)-U55 NPU</a></li>
 <li class="toctree-l3"><a class="reference internal" href="micro_reference_vm.html">microTVM Reference Virtual Machines</a></li>
 <li class="toctree-l3"><a class="reference internal" href="micro_tflite.html">microTVM with TFLite Models</a></li>
+<li class="toctree-l3"><a class="reference internal" href="micro_tvmc.html">Executing a Tiny Model with TVMC Micro</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="../extend_tvm/index.html">Extend TVM</a></li>
@@ -313,7 +315,7 @@
         
           <li><a href="index.html">Work With microTVM</a> <span class="br-arrow">></span></li>
         
-      <li>Autotuning with micro TVM</li>
+      <li>Autotuning with microTVM</li>
     
     
       <li class="wy-breadcrumbs-aside">
@@ -336,18 +338,21 @@
 <p class="admonition-title">Note</p>
 <p>Click <a class="reference internal" href="#sphx-glr-download-how-to-work-with-microtvm-micro-autotune-py"><span class="std std-ref">here</span></a> to download the full example code</p>
 </div>
-<div class="sphx-glr-example-title section" id="autotuning-with-micro-tvm">
-<span id="tutorial-micro-autotune"></span><span id="sphx-glr-how-to-work-with-microtvm-micro-autotune-py"></span><h1>Autotuning with micro TVM<a class="headerlink" href="#autotuning-with-micro-tvm" title="Permalink to this headline">¶</a></h1>
+<div class="sphx-glr-example-title section" id="autotuning-with-microtvm">
+<span id="tutorial-micro-autotune"></span><span id="sphx-glr-how-to-work-with-microtvm-micro-autotune-py"></span><h1>Autotuning with microTVM<a class="headerlink" href="#autotuning-with-microtvm" title="Permalink to this headline">¶</a></h1>
 <p><strong>Authors</strong>:
 <a class="reference external" href="https://github.com/areusch">Andrew Reusch</a>,
 <a class="reference external" href="https://github.com/mehrdadh">Mehrdad Hessar</a></p>
 <p>This tutorial explains how to autotune a model using the C runtime.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
-<span class="kn">import</span> <span class="nn">subprocess</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">json</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">import</span> <span class="nn">pathlib</span>
 
 <span class="kn">import</span> <span class="nn">tvm</span>
-<span class="kn">from</span> <span class="nn">tvm.relay.backend</span> <span class="k">import</span> <span class="n">Executor</span><span class="p">,</span> <span class="n">Runtime</span>
+<span class="kn">from</span> <span class="nn">tvm.relay.backend</span> <span class="k">import</span> <span class="n">Runtime</span>
+
+<span class="n">use_physical_hw</span> <span class="o">=</span> <span class="nb">bool</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">getenv</span><span class="p">(</span><span class="s2">&quot;TVM_MICRO_USE_HW&quot;</span><span class="p">))</span>
 </pre></div>
 </div>
 <div class="section" id="defining-the-model">
@@ -383,7 +388,7 @@ fill parameters with random numbers.</p>
 </div>
 </div>
 <div class="section" id="defining-the-target">
-<h2>Defining the target #<a class="headerlink" href="#defining-the-target" title="Permalink to this headline">¶</a></h2>
+<h2>Defining the target<a class="headerlink" href="#defining-the-target" title="Permalink to this headline">¶</a></h2>
 <blockquote>
 <div><p>Now we define the TVM target that describes the execution environment. This looks very similar
 to target definitions from other microTVM tutorials. Alongside this we pick the C Runtime to code
@@ -400,9 +405,13 @@ this tutorial.</p>
 <span class="c1"># --------------------------------------------------------------------------</span>
 <span class="c1">#  When running on physical hardware, choose a TARGET and a BOARD that describe the hardware. The</span>
 <span class="c1">#  STM32L4R5ZI Nucleo target and board is chosen in the example below.</span>
-<span class="c1">#</span>
-<span class="c1">#    TARGET = tvm.target.target.micro(&quot;stm32l4r5zi&quot;)</span>
-<span class="c1">#    BOARD = &quot;nucleo_l4r5zi&quot;</span>
+<span class="k">if</span> <span class="n">use_physical_hw</span><span class="p">:</span>
+    <span class="n">boards_file</span> <span class="o">=</span> <span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">(</span><a href="../../reference/api/python/micro.html#tvm.micro.get_microtvm_template_projects" title="View documentation for tvm.micro.get_microtvm_template_projects"><span class="n">tvm</span><span class="o">.</span><span class="n">micro</span><span class="o">.</span><span class="n">get_microtvm_template_projects</span></a><span class="p">(</span><span class="s2">&quot;zephyr&quot;</span><span class="p">))</span> <span class="o">/</span> <span class="s2">&quot;boards.json&quot;</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">boards_file</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+        <span class="n">boards</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+
+    <span class="n">BOARD</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">getenv</span><span class="p">(</span><span class="s2">&quot;TVM_MICRO_BOARD&quot;</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="s2">&quot;nucleo_l4r5zi&quot;</span><span class="p">)</span>
+    <span class="n">TARGET</span> <span class="o">=</span> <span class="n">tvm</span><span class="o">.</span><span class="n">target</span><span class="o">.</span><span class="n">target</span><span class="o">.</span><span class="n">micro</span><span class="p">(</span><span class="n">boards</span><span class="p">[</span><span class="n">BOARD</span><span class="p">][</span><span class="s2">&quot;model&quot;</span><span class="p">])</span>
 </pre></div>
 </div>
 </div>
@@ -448,30 +457,37 @@ choose other options by choosing from <cite>PLATFORM</cite> list.</p>
 <span class="n">measure_option</span> <span class="o">=</span> <span class="n">tvm</span><span class="o">.</span><span class="n">autotvm</span><span class="o">.</span><span class="n">measure_option</span><span class="p">(</span><span class="n">builder</span><span class="o">=</span><span class="n">builder</span><span class="p">,</span> <span class="n">runner</span><span class="o">=</span><span class="n">runner</span><span class="p">)</span>
 
 <span class="c1"># Compiling for physical hardware</span>
-<span class="c1"># --------------------------------------------------------------------------</span>
-<span class="c1">#    module_loader = tvm.micro.AutoTvmModuleLoader(</span>
-<span class="c1">#        template_project_dir=pathlib.Path(tvm.micro.get_microtvm_template_projects(&quot;zephyr&quot;)),</span>
-<span class="c1">#        project_options={</span>
-<span class="c1">#            &quot;zephyr_board&quot;: BOARD,</span>
-<span class="c1">#            &quot;west_cmd&quot;: &quot;west&quot;,</span>
-<span class="c1">#            &quot;verbose&quot;: False,</span>
-<span class="c1">#            &quot;project_type&quot;: &quot;host_driven&quot;,</span>
-<span class="c1">#        },</span>
-<span class="c1">#    )</span>
-<span class="c1">#    builder = tvm.autotvm.LocalBuilder(</span>
-<span class="c1">#        n_parallel=1,</span>
-<span class="c1">#        build_kwargs={&quot;build_option&quot;: {&quot;tir.disable_vectorize&quot;: True}},</span>
-<span class="c1">#        do_fork=False,</span>
-<span class="c1">#        build_func=tvm.micro.autotvm_build_func,</span>
-<span class="c1">#    )</span>
-<span class="c1">#    runner = tvm.autotvm.LocalRunner(number=1, repeat=1, timeout=100, module_loader=module_loader)</span>
-<span class="c1">#</span>
-<span class="c1">#    measure_option = tvm.autotvm.measure_option(builder=builder, runner=runner)</span>
+<span class="k">if</span> <span class="n">use_physical_hw</span><span class="p">:</span>
+    <span class="n">module_loader</span> <span class="o">=</span> <a href="../../reference/api/python/micro.html#tvm.micro.AutoTvmModuleLoader" title="View documentation for tvm.micro.AutoTvmModuleLoader"><span class="n">tvm</span><span class="o">.</span><span class="n">micro</span><span class="o">.</span><span class="n">AutoTvmModuleLoader</span></a><span class="p">(</span>
+        <span class="n">template_project_dir</span><span class="o">=</span><span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">(</span><a href="../../reference/api/python/micro.html#tvm.micro.get_microtvm_template_projects" title="View documentation for tvm.micro.get_microtvm_template_projects"><span class="n">tvm</span><span class="o">.</span><span class="n">micro</span><span class="o">.</span><span class="n">get_microtvm_template_projects</span></a><span class="p">(</span><span class="s2">&quot;zephyr&quot;</span><span class="p">)),</span>
+        <span class="n">project_options</span><span class="o">=</span><span class="p">{</span>
+            <span class="s2">&quot;zephyr_board&quot;</span><span class="p">:</span> <span class="n">BOARD</span><span class="p">,</span>
+            <span class="s2">&quot;west_cmd&quot;</span><span class="p">:</span> <span class="s2">&quot;west&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;verbose&quot;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
+            <span class="s2">&quot;project_type&quot;</span><span class="p">:</span> <span class="s2">&quot;host_driven&quot;</span><span class="p">,</span>
+        <span class="p">},</span>
+    <span class="p">)</span>
+    <span class="n">builder</span> <span class="o">=</span> <span class="n">tvm</span><span class="o">.</span><span class="n">autotvm</span><span class="o">.</span><span class="n">LocalBuilder</span><span class="p">(</span>
+        <span class="n">n_parallel</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+        <span class="n">build_kwargs</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;build_option&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;tir.disable_vectorize&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">}},</span>
+        <span class="n">do_fork</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">build_func</span><span class="o">=</span><a href="../../reference/api/python/micro.html#tvm.micro.autotvm_build_func" title="View documentation for tvm.micro.autotvm_build_func"><span class="n">tvm</span><span class="o">.</span><span class="n">micro</span><span class="o">.</span><span class="n">autotvm_build_func</span></a><span class="p">,</span>
+        <span class="n">runtime</span><span class="o">=</span><span class="n">RUNTIME</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">runner</span> <span class="o">=</span> <span class="n">tvm</span><span class="o">.</span><span class="n">autotvm</span><span class="o">.</span><span class="n">LocalRunner</span><span class="p">(</span><span class="n">number</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">repeat</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">module_loader</span><span class="o">=</span><span class="n">module_loader</span><span class="p">)</span>
 
-<span class="c1">################</span>
-<span class="c1"># Run Autotuning</span>
-<span class="c1">################</span>
-<span class="c1"># Now we can run autotuning separately on each extracted task.</span>
+    <span class="n">measure_option</span> <span class="o">=</span> <span class="n">tvm</span><span class="o">.</span><span class="n">autotvm</span><span class="o">.</span><span class="n">measure_option</span><span class="p">(</span><span class="n">builder</span><span class="o">=</span><span class="n">builder</span><span class="p">,</span> <span class="n">runner</span><span class="o">=</span><span class="n">runner</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="run-autotuning">
+<h2>Run Autotuning<a class="headerlink" href="#run-autotuning" title="Permalink to this headline">¶</a></h2>
+<blockquote>
+<div><p>Now we can run autotuning separately on each extracted task on microTVM device.</p>
+</div></blockquote>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">autotune_log_file</span> <span class="o">=</span> <span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">(</span><span class="s2">&quot;microtvm_autotune.log.txt&quot;</span><span class="p">)</span>
+<span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">autotune_log_file</span><span class="p">):</span>
+    <span class="n">os</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">autotune_log_file</span><span class="p">)</span>
 
 <span class="n">num_trials</span> <span class="o">=</span> <span class="mi">10</span>
 <span class="k">for</span> <span class="n">task</span> <span class="ow">in</span> <span class="n">tasks</span><span class="p">:</span>
@@ -480,7 +496,7 @@ choose other options by choosing from <cite>PLATFORM</cite> list.</p>
         <span class="n">n_trial</span><span class="o">=</span><span class="n">num_trials</span><span class="p">,</span>
         <span class="n">measure_option</span><span class="o">=</span><span class="n">measure_option</span><span class="p">,</span>
         <span class="n">callbacks</span><span class="o">=</span><span class="p">[</span>
-            <span class="n">tvm</span><span class="o">.</span><span class="n">autotvm</span><span class="o">.</span><span class="n">callback</span><span class="o">.</span><span class="n">log_to_file</span><span class="p">(</span><span class="s2">&quot;microtvm_autotune.log.txt&quot;</span><span class="p">),</span>
+            <span class="n">tvm</span><span class="o">.</span><span class="n">autotvm</span><span class="o">.</span><span class="n">callback</span><span class="o">.</span><span class="n">log_to_file</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">autotune_log_file</span><span class="p">)),</span>
             <span class="n">tvm</span><span class="o">.</span><span class="n">autotvm</span><span class="o">.</span><span class="n">callback</span><span class="o">.</span><span class="n">progress_bar</span><span class="p">(</span><span class="n">num_trials</span><span class="p">,</span> <span class="n">si_prefix</span><span class="o">=</span><span class="s2">&quot;M&quot;</span><span class="p">),</span>
         <span class="p">],</span>
         <span class="n">si_prefix</span><span class="o">=</span><span class="s2">&quot;M&quot;</span><span class="p">,</span>
@@ -499,7 +515,6 @@ the tuned operator.</p>
     <span class="n">lowered</span> <span class="o">=</span> <span class="n">tvm</span><span class="o">.</span><span class="n">relay</span><span class="o">.</span><span class="n">build</span><span class="p">(</span><span class="n">relay_mod</span><span class="p">,</span> <span class="n">target</span><span class="o">=</span><span class="n">TARGET</span><span class="p">,</span> <span class="n">runtime</span><span class="o">=</span><span class="n">RUNTIME</span><span class="p">,</span> <span class="n">params</span><span class="o">=</span><span class="n">params</span><span class="p">)</span>
 
 <span class="n">temp_dir</span> <span class="o">=</span> <a href="../../reference/api/python/contrib.html#tvm.contrib.utils.tempdir" title="View documentation for tvm.contrib.utils.tempdir"><span class="n">tvm</span><span class="o">.</span><span class="n">contrib</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">tempdir</span></a><span class="p">()</span>
-
 <span class="n">project</span> <span class="o">=</span> <a href="../../reference/api/python/micro.html#tvm.micro.generate_project" title="View documentation for tvm.micro.generate_project"><span class="n">tvm</span><span class="o">.</span><span class="n">micro</span><span class="o">.</span><span class="n">generate_project</span></a><span class="p">(</span>
     <span class="nb">str</span><span class="p">(</span><a href="../../reference/api/python/micro.html#tvm.micro.get_microtvm_template_projects" title="View documentation for tvm.micro.get_microtvm_template_projects"><span class="n">tvm</span><span class="o">.</span><span class="n">micro</span><span class="o">.</span><span class="n">get_microtvm_template_projects</span></a><span class="p">(</span><span class="s2">&quot;crt&quot;</span><span class="p">)),</span>
     <span class="n">lowered</span><span class="p">,</span>
@@ -508,18 +523,19 @@ the tuned operator.</p>
 <span class="p">)</span>
 
 <span class="c1"># Compiling for physical hardware</span>
-<span class="c1"># --------------------------------------------------------------------------</span>
-<span class="c1">#    project = tvm.micro.generate_project(</span>
-<span class="c1">#        str(tvm.micro.get_microtvm_template_projects(&quot;zephyr&quot;)),</span>
-<span class="c1">#        lowered,</span>
-<span class="c1">#        temp_dir / &quot;project&quot;,</span>
-<span class="c1">#        {</span>
-<span class="c1">#            &quot;zephyr_board&quot;: BOARD,</span>
-<span class="c1">#            &quot;west_cmd&quot;: &quot;west&quot;,</span>
-<span class="c1">#            &quot;verbose&quot;: False,</span>
-<span class="c1">#            &quot;project_type&quot;: &quot;host_driven&quot;,</span>
-<span class="c1">#        },</span>
-<span class="c1">#    )</span>
+<span class="k">if</span> <span class="n">use_physical_hw</span><span class="p">:</span>
+    <span class="n">temp_dir</span> <span class="o">=</span> <a href="../../reference/api/python/contrib.html#tvm.contrib.utils.tempdir" title="View documentation for tvm.contrib.utils.tempdir"><span class="n">tvm</span><span class="o">.</span><span class="n">contrib</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">tempdir</span></a><span class="p">()</span>
+    <span class="n">project</span> <span class="o">=</span> <a href="../../reference/api/python/micro.html#tvm.micro.generate_project" title="View documentation for tvm.micro.generate_project"><span class="n">tvm</span><span class="o">.</span><span class="n">micro</span><span class="o">.</span><span class="n">generate_project</span></a><span class="p">(</span>
+        <span class="nb">str</span><span class="p">(</span><a href="../../reference/api/python/micro.html#tvm.micro.get_microtvm_template_projects" title="View documentation for tvm.micro.get_microtvm_template_projects"><span class="n">tvm</span><span class="o">.</span><span class="n">micro</span><span class="o">.</span><span class="n">get_microtvm_template_projects</span></a><span class="p">(</span><span class="s2">&quot;zephyr&quot;</span><span class="p">)),</span>
+        <span class="n">lowered</span><span class="p">,</span>
+        <span class="n">temp_dir</span> <span class="o">/</span> <span class="s2">&quot;project&quot;</span><span class="p">,</span>
+        <span class="p">{</span>
+            <span class="s2">&quot;zephyr_board&quot;</span><span class="p">:</span> <span class="n">BOARD</span><span class="p">,</span>
+            <span class="s2">&quot;west_cmd&quot;</span><span class="p">:</span> <span class="s2">&quot;west&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;verbose&quot;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
+            <span class="s2">&quot;project_type&quot;</span><span class="p">:</span> <span class="s2">&quot;host_driven&quot;</span><span class="p">,</span>
+        <span class="p">},</span>
+    <span class="p">)</span>
 
 <span class="n">project</span><span class="o">.</span><span class="n">build</span><span class="p">()</span>
 <span class="n">project</span><span class="o">.</span><span class="n">flash</span><span class="p">()</span>
@@ -537,10 +553,10 @@ the tuned operator.</p>
 <div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>########## Build without Autotuning ##########
 Node Name                                     Ops                                           Time(us)  Time(%)  Shape              Inputs  Outputs
 ---------                                     ---                                           --------  -------  -----              ------  -------
-tvmgen_default_fused_nn_contrib_conv2d_NCHWc  tvmgen_default_fused_nn_contrib_conv2d_NCHWc  613.2     98.379   (1, 2, 10, 10, 3)  2       1
-tvmgen_default_fused_layout_transform_1       tvmgen_default_fused_layout_transform_1       6.7       1.075    (1, 6, 10, 10)     1       1
-tvmgen_default_fused_layout_transform         tvmgen_default_fused_layout_transform         3.403     0.546    (1, 1, 10, 10, 3)  1       1
-Total_time                                    -                                             623.303   -        -                  -       -
+tvmgen_default_fused_nn_contrib_conv2d_NCHWc  tvmgen_default_fused_nn_contrib_conv2d_NCHWc  302.9     98.73    (1, 2, 10, 10, 3)  2       1
+tvmgen_default_fused_layout_transform_1       tvmgen_default_fused_layout_transform_1       2.976     0.97     (1, 6, 10, 10)     1       1
+tvmgen_default_fused_layout_transform         tvmgen_default_fused_layout_transform         0.92      0.3      (1, 1, 10, 10, 3)  1       1
+Total_time                                    -                                             306.797   -        -                  -       -
 </pre></div>
 </div>
 </div>
@@ -549,12 +565,11 @@ Total_time                                    -                                 
 <blockquote>
 <div><p>Once autotuning completes, you can time execution of the entire program using the Debug Runtime:</p>
 </div></blockquote>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">with</span> <a href="../../reference/api/python/autotvm.html#tvm.autotvm.apply_history_best" title="View documentation for tvm.autotvm.apply_history_best"><span class="n">tvm</span><span class="o">.</span><span class="n">autotvm</span><span class="o">.</span><span class="n">apply_history_best</span></a><span class="p">(</span><span class="s2">&quot;microtvm_autotune.log.txt&quot;</span><span class="p">):</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">with</span> <a href="../../reference/api/python/autotvm.html#tvm.autotvm.apply_history_best" title="View documentation for tvm.autotvm.apply_history_best"><span class="n">tvm</span><span class="o">.</span><span class="n">autotvm</span><span class="o">.</span><span class="n">apply_history_best</span></a><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">autotune_log_file</span><span class="p">)):</span>
     <span class="k">with</span> <span class="n">pass_context</span><span class="p">:</span>
         <span class="n">lowered_tuned</span> <span class="o">=</span> <span class="n">tvm</span><span class="o">.</span><span class="n">relay</span><span class="o">.</span><span class="n">build</span><span class="p">(</span><span class="n">relay_mod</span><span class="p">,</span> <span class="n">target</span><span class="o">=</span><span class="n">TARGET</span><span class="p">,</span> <span class="n">runtime</span><span class="o">=</span><span class="n">RUNTIME</span><span class="p">,</span> <span class="n">params</span><span class="o">=</span><span class="n">params</span><span class="p">)</span>
 
 <span class="n">temp_dir</span> <span class="o">=</span> <a href="../../reference/api/python/contrib.html#tvm.contrib.utils.tempdir" title="View documentation for tvm.contrib.utils.tempdir"><span class="n">tvm</span><span class="o">.</span><span class="n">contrib</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">tempdir</span></a><span class="p">()</span>
-
 <span class="n">project</span> <span class="o">=</span> <a href="../../reference/api/python/micro.html#tvm.micro.generate_project" title="View documentation for tvm.micro.generate_project"><span class="n">tvm</span><span class="o">.</span><span class="n">micro</span><span class="o">.</span><span class="n">generate_project</span></a><span class="p">(</span>
     <span class="nb">str</span><span class="p">(</span><a href="../../reference/api/python/micro.html#tvm.micro.get_microtvm_template_projects" title="View documentation for tvm.micro.get_microtvm_template_projects"><span class="n">tvm</span><span class="o">.</span><span class="n">micro</span><span class="o">.</span><span class="n">get_microtvm_template_projects</span></a><span class="p">(</span><span class="s2">&quot;crt&quot;</span><span class="p">)),</span>
     <span class="n">lowered_tuned</span><span class="p">,</span>
@@ -563,18 +578,19 @@ Total_time                                    -                                 
 <span class="p">)</span>
 
 <span class="c1"># Compiling for physical hardware</span>
-<span class="c1"># --------------------------------------------------------------------------</span>
-<span class="c1">#    project = tvm.micro.generate_project(</span>
-<span class="c1">#        str(tvm.micro.get_microtvm_template_projects(&quot;zephyr&quot;)),</span>
-<span class="c1">#        lowered_tuned,</span>
-<span class="c1">#        temp_dir / &quot;project&quot;,</span>
-<span class="c1">#        {</span>
-<span class="c1">#            &quot;zephyr_board&quot;: BOARD,</span>
-<span class="c1">#            &quot;west_cmd&quot;: &quot;west&quot;,</span>
-<span class="c1">#            &quot;verbose&quot;: False,</span>
-<span class="c1">#            &quot;project_type&quot;: &quot;host_driven&quot;,</span>
-<span class="c1">#        },</span>
-<span class="c1">#    )</span>
+<span class="k">if</span> <span class="n">use_physical_hw</span><span class="p">:</span>
+    <span class="n">temp_dir</span> <span class="o">=</span> <a href="../../reference/api/python/contrib.html#tvm.contrib.utils.tempdir" title="View documentation for tvm.contrib.utils.tempdir"><span class="n">tvm</span><span class="o">.</span><span class="n">contrib</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">tempdir</span></a><span class="p">()</span>
+    <span class="n">project</span> <span class="o">=</span> <a href="../../reference/api/python/micro.html#tvm.micro.generate_project" title="View documentation for tvm.micro.generate_project"><span class="n">tvm</span><span class="o">.</span><span class="n">micro</span><span class="o">.</span><span class="n">generate_project</span></a><span class="p">(</span>
+        <span class="nb">str</span><span class="p">(</span><a href="../../reference/api/python/micro.html#tvm.micro.get_microtvm_template_projects" title="View documentation for tvm.micro.get_microtvm_template_projects"><span class="n">tvm</span><span class="o">.</span><span class="n">micro</span><span class="o">.</span><span class="n">get_microtvm_template_projects</span></a><span class="p">(</span><span class="s2">&quot;zephyr&quot;</span><span class="p">)),</span>
+        <span class="n">lowered_tuned</span><span class="p">,</span>
+        <span class="n">temp_dir</span> <span class="o">/</span> <span class="s2">&quot;project&quot;</span><span class="p">,</span>
+        <span class="p">{</span>
+            <span class="s2">&quot;zephyr_board&quot;</span><span class="p">:</span> <span class="n">BOARD</span><span class="p">,</span>
+            <span class="s2">&quot;west_cmd&quot;</span><span class="p">:</span> <span class="s2">&quot;west&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;verbose&quot;</span><span class="p">:</span> <span class="kc">False</span><span class="p">,</span>
+            <span class="s2">&quot;project_type&quot;</span><span class="p">:</span> <span class="s2">&quot;host_driven&quot;</span><span class="p">,</span>
+        <span class="p">},</span>
+    <span class="p">)</span>
 
 <span class="n">project</span><span class="o">.</span><span class="n">build</span><span class="p">()</span>
 <span class="n">project</span><span class="o">.</span><span class="n">flash</span><span class="p">()</span>
@@ -592,10 +608,10 @@ Total_time                                    -                                 
 <div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>########## Build with Autotuning ##########
 Node Name                                     Ops                                           Time(us)  Time(%)  Shape              Inputs  Outputs
 ---------                                     ---                                           --------  -------  -----              ------  -------
-tvmgen_default_fused_nn_contrib_conv2d_NCHWc  tvmgen_default_fused_nn_contrib_conv2d_NCHWc  320.2     97.793   (1, 6, 10, 10, 1)  2       1
-tvmgen_default_fused_layout_transform_1       tvmgen_default_fused_layout_transform_1       4.709     1.438    (1, 6, 10, 10)     1       1
-tvmgen_default_fused_layout_transform         tvmgen_default_fused_layout_transform         2.518     0.769    (1, 1, 10, 10, 3)  1       1
-Total_time                                    -                                             327.427   -        -                  -       -
+tvmgen_default_fused_nn_contrib_conv2d_NCHWc  tvmgen_default_fused_nn_contrib_conv2d_NCHWc  79.6      96.785   (1, 6, 10, 10, 1)  2       1
+tvmgen_default_fused_layout_transform_1       tvmgen_default_fused_layout_transform_1       1.7       2.067    (1, 6, 10, 10)     1       1
+tvmgen_default_fused_layout_transform         tvmgen_default_fused_layout_transform         0.944     1.148    (1, 1, 10, 10, 3)  1       1
+Total_time                                    -                                             82.244    -        -                  -       -
 </pre></div>
 </div>
 <div class="sphx-glr-footer class sphx-glr-footer-example docutils container" id="sphx-glr-download-how-to-work-with-microtvm-micro-autotune-py">

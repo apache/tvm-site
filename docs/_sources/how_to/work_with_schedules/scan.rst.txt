@@ -113,7 +113,8 @@ To split on the time iteration, user can schedule on scan_op.scan_axis instead.
         attr [IterVar(blockIdx.x, (nullptr), "ThreadIndex", "blockIdx.x")] "thread_extent" = floordiv((n + 255), 256);
         attr [IterVar(threadIdx.x, (nullptr), "ThreadIndex", "threadIdx.x")] "thread_extent" = 256;
         if @tir.likely((((blockIdx.x*256) + threadIdx.x) < n), dtype=bool) {
-          scan_2[(((scan.idx + 1)*stride) + (((blockIdx.x*256) + threadIdx.x)*stride_1))] = ((float32*)scan_2[((scan.idx*stride) + (((blockIdx.x*256) + threadIdx.x)*stride_1))] + (float32*)X_2[(((scan.idx + 1)*stride_2) + (((blockIdx.x*256) + threadIdx.x)*stride_3))])
+          let cse_var_1: int32 = (scan.idx + 1)
+          scan_2[((cse_var_1*stride) + (((blockIdx.x*256) + threadIdx.x)*stride_1))] = ((float32*)scan_2[((scan.idx*stride) + (((blockIdx.x*256) + threadIdx.x)*stride_1))] + (float32*)X_2[((cse_var_1*stride_2) + (((blockIdx.x*256) + threadIdx.x)*stride_3))])
         }
       }
     }
@@ -216,7 +217,9 @@ the body of scan to be compute_at locations outside the scan loop.
             }
             for (i.inner: int32, 0, 32) {
               if @tir.likely((((i.outer*32) + i.inner) < n), dtype=bool) {
-                scan_2[(((scan.idx + 1)*stride) + (((i.outer*32) + i.inner)*stride_1))] = ((float32*)s1[i.inner] + (float32*)X_2[(((scan.idx + 1)*stride_2) + (((i.outer*32) + i.inner)*stride_3))])
+                let cse_var_2: int32 = (scan.idx + 1)
+                let cse_var_1: int32 = ((i.outer*32) + i.inner)
+                scan_2[((cse_var_2*stride) + (cse_var_1*stride_1))] = ((float32*)s1[i.inner] + (float32*)X_2[((cse_var_2*stride_2) + (cse_var_1*stride_3))])
               }
             }
           }
@@ -278,7 +281,8 @@ The following example demonstrates how we can build recurrence with two states.
       }
       for (scan.idx: int32, 0, (m - 1)) {
         for (i_2: int32, 0, n) {
-          scan_5[(((scan.idx + 1)*stride_4) + (i_2*stride_5))] = ((float32*)scan_5[((scan.idx*stride_4) + (i_2*stride_5))] + (float32*)X_2[(((scan.idx + 1)*stride_2) + (i_2*stride_3))])
+          let cse_var_1: int32 = (scan.idx + 1)
+          scan_5[((cse_var_1*stride_4) + (i_2*stride_5))] = ((float32*)scan_5[((scan.idx*stride_4) + (i_2*stride_5))] + (float32*)X_2[((cse_var_1*stride_2) + (i_2*stride_3))])
         }
         for (i_3: int32, 0, l) {
           scan_4[(((scan.idx + 1)*stride) + (i_3*stride_1))] = ((float32*)scan_4[((scan.idx*stride) + (i_3*stride_1))] + (float32*)scan_5[(scan.idx*stride_4)])

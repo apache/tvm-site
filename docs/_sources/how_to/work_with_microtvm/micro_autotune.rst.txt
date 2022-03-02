@@ -9,7 +9,7 @@
 
 .. _tutorial-micro-autotune:
 
-Autotuning with micro TVM
+Autotuning with microTVM
 =========================
 **Authors**:
 `Andrew Reusch <https://github.com/areusch>`_,
@@ -21,12 +21,15 @@ This tutorial explains how to autotune a model using the C runtime.
 .. code-block:: default
 
 
+    import os
+    import json
     import numpy as np
-    import subprocess
     import pathlib
 
     import tvm
-    from tvm.relay.backend import Executor, Runtime
+    from tvm.relay.backend import Runtime
+
+    use_physical_hw = bool(os.getenv("TVM_MICRO_USE_HW"))
 
 
 
@@ -75,7 +78,7 @@ Defining the model
 
 
 
-Defining the target #
+Defining the target
 ######################
  Now we define the TVM target that describes the execution environment. This looks very similar
  to target definitions from other microTVM tutorials. Alongside this we pick the C Runtime to code
@@ -90,6 +93,7 @@ Defining the target #
 
 .. code-block:: default
 
+
     RUNTIME = Runtime("crt", {"system-lib": True})
     TARGET = tvm.target.target.micro("host")
 
@@ -97,9 +101,14 @@ Defining the target #
     # --------------------------------------------------------------------------
     #  When running on physical hardware, choose a TARGET and a BOARD that describe the hardware. The
     #  STM32L4R5ZI Nucleo target and board is chosen in the example below.
-    #
-    #    TARGET = tvm.target.target.micro("stm32l4r5zi")
-    #    BOARD = "nucleo_l4r5zi"
+    if use_physical_hw:
+        boards_file = pathlib.Path(tvm.micro.get_microtvm_template_projects("zephyr")) / "boards.json"
+        with open(boards_file) as f:
+            boards = json.load(f)
+
+        BOARD = os.getenv("TVM_MICRO_BOARD", default="nucleo_l4r5zi")
+        TARGET = tvm.target.target.micro(boards[BOARD]["model"])
+
 
 
 
@@ -115,6 +124,7 @@ Extracting tuning tasks
 
  Because task extraction involves running the compiler, we first configure the compiler's
  transformation passes; we'll apply the same configuration later on during autotuning.
+
 
 
 .. code-block:: default
@@ -146,7 +156,6 @@ Configuring microTVM
 .. code-block:: default
 
 
-
     module_loader = tvm.micro.AutoTvmModuleLoader(
         template_project_dir=pathlib.Path(tvm.micro.get_microtvm_template_projects("crt")),
         project_options={"verbose": False},
@@ -163,30 +172,45 @@ Configuring microTVM
     measure_option = tvm.autotvm.measure_option(builder=builder, runner=runner)
 
     # Compiling for physical hardware
-    # --------------------------------------------------------------------------
-    #    module_loader = tvm.micro.AutoTvmModuleLoader(
-    #        template_project_dir=pathlib.Path(tvm.micro.get_microtvm_template_projects("zephyr")),
-    #        project_options={
-    #            "zephyr_board": BOARD,
-    #            "west_cmd": "west",
-    #            "verbose": False,
-    #            "project_type": "host_driven",
-    #        },
-    #    )
-    #    builder = tvm.autotvm.LocalBuilder(
-    #        n_parallel=1,
-    #        build_kwargs={"build_option": {"tir.disable_vectorize": True}},
-    #        do_fork=False,
-    #        build_func=tvm.micro.autotvm_build_func,
-    #    )
-    #    runner = tvm.autotvm.LocalRunner(number=1, repeat=1, timeout=100, module_loader=module_loader)
-    #
-    #    measure_option = tvm.autotvm.measure_option(builder=builder, runner=runner)
+    if use_physical_hw:
+        module_loader = tvm.micro.AutoTvmModuleLoader(
+            template_project_dir=pathlib.Path(tvm.micro.get_microtvm_template_projects("zephyr")),
+            project_options={
+                "zephyr_board": BOARD,
+                "west_cmd": "west",
+                "verbose": False,
+                "project_type": "host_driven",
+            },
+        )
+        builder = tvm.autotvm.LocalBuilder(
+            n_parallel=1,
+            build_kwargs={"build_option": {"tir.disable_vectorize": True}},
+            do_fork=False,
+            build_func=tvm.micro.autotvm_build_func,
+            runtime=RUNTIME,
+        )
+        runner = tvm.autotvm.LocalRunner(number=1, repeat=1, timeout=100, module_loader=module_loader)
 
-    ################
-    # Run Autotuning
-    ################
-    # Now we can run autotuning separately on each extracted task.
+        measure_option = tvm.autotvm.measure_option(builder=builder, runner=runner)
+
+
+
+
+
+
+
+Run Autotuning
+#########################
+ Now we can run autotuning separately on each extracted task on microTVM device.
+
+
+
+.. code-block:: default
+
+
+    autotune_log_file = pathlib.Path("microtvm_autotune.log.txt")
+    if os.path.exists(autotune_log_file):
+        os.remove(autotune_log_file)
 
     num_trials = 10
     for task in tasks:
@@ -195,7 +219,7 @@ Configuring microTVM
             n_trial=num_trials,
             measure_option=measure_option,
             callbacks=[
-                tvm.autotvm.callback.log_to_file("microtvm_autotune.log.txt"),
+                tvm.autotvm.callback.log_to_file(str(autotune_log_file)),
                 tvm.autotvm.callback.progress_bar(num_trials, si_prefix="M"),
             ],
             si_prefix="M",
@@ -214,6 +238,7 @@ Timing the untuned program
  the tuned operator.
 
 
+
 .. code-block:: default
 
 
@@ -221,7 +246,6 @@ Timing the untuned program
         lowered = tvm.relay.build(relay_mod, target=TARGET, runtime=RUNTIME, params=params)
 
     temp_dir = tvm.contrib.utils.tempdir()
-
     project = tvm.micro.generate_project(
         str(tvm.micro.get_microtvm_template_projects("crt")),
         lowered,
@@ -230,18 +254,19 @@ Timing the untuned program
     )
 
     # Compiling for physical hardware
-    # --------------------------------------------------------------------------
-    #    project = tvm.micro.generate_project(
-    #        str(tvm.micro.get_microtvm_template_projects("zephyr")),
-    #        lowered,
-    #        temp_dir / "project",
-    #        {
-    #            "zephyr_board": BOARD,
-    #            "west_cmd": "west",
-    #            "verbose": False,
-    #            "project_type": "host_driven",
-    #        },
-    #    )
+    if use_physical_hw:
+        temp_dir = tvm.contrib.utils.tempdir()
+        project = tvm.micro.generate_project(
+            str(tvm.micro.get_microtvm_template_projects("zephyr")),
+            lowered,
+            temp_dir / "project",
+            {
+                "zephyr_board": BOARD,
+                "west_cmd": "west",
+                "verbose": False,
+                "project_type": "host_driven",
+            },
+        )
 
     project.build()
     project.flash()
@@ -267,10 +292,10 @@ Timing the untuned program
     ########## Build without Autotuning ##########
     Node Name                                     Ops                                           Time(us)  Time(%)  Shape              Inputs  Outputs  
     ---------                                     ---                                           --------  -------  -----              ------  -------  
-    tvmgen_default_fused_nn_contrib_conv2d_NCHWc  tvmgen_default_fused_nn_contrib_conv2d_NCHWc  613.2     98.379   (1, 2, 10, 10, 3)  2       1        
-    tvmgen_default_fused_layout_transform_1       tvmgen_default_fused_layout_transform_1       6.7       1.075    (1, 6, 10, 10)     1       1        
-    tvmgen_default_fused_layout_transform         tvmgen_default_fused_layout_transform         3.403     0.546    (1, 1, 10, 10, 3)  1       1        
-    Total_time                                    -                                             623.303   -        -                  -       -        
+    tvmgen_default_fused_nn_contrib_conv2d_NCHWc  tvmgen_default_fused_nn_contrib_conv2d_NCHWc  302.9     98.73    (1, 2, 10, 10, 3)  2       1        
+    tvmgen_default_fused_layout_transform_1       tvmgen_default_fused_layout_transform_1       2.976     0.97     (1, 6, 10, 10)     1       1        
+    tvmgen_default_fused_layout_transform         tvmgen_default_fused_layout_transform         0.92      0.3      (1, 1, 10, 10, 3)  1       1        
+    Total_time                                    -                                             306.797   -        -                  -       -        
 
 
 
@@ -282,12 +307,11 @@ Timing the tuned program
 .. code-block:: default
 
 
-    with tvm.autotvm.apply_history_best("microtvm_autotune.log.txt"):
+    with tvm.autotvm.apply_history_best(str(autotune_log_file)):
         with pass_context:
             lowered_tuned = tvm.relay.build(relay_mod, target=TARGET, runtime=RUNTIME, params=params)
 
     temp_dir = tvm.contrib.utils.tempdir()
-
     project = tvm.micro.generate_project(
         str(tvm.micro.get_microtvm_template_projects("crt")),
         lowered_tuned,
@@ -296,18 +320,19 @@ Timing the tuned program
     )
 
     # Compiling for physical hardware
-    # --------------------------------------------------------------------------
-    #    project = tvm.micro.generate_project(
-    #        str(tvm.micro.get_microtvm_template_projects("zephyr")),
-    #        lowered_tuned,
-    #        temp_dir / "project",
-    #        {
-    #            "zephyr_board": BOARD,
-    #            "west_cmd": "west",
-    #            "verbose": False,
-    #            "project_type": "host_driven",
-    #        },
-    #    )
+    if use_physical_hw:
+        temp_dir = tvm.contrib.utils.tempdir()
+        project = tvm.micro.generate_project(
+            str(tvm.micro.get_microtvm_template_projects("zephyr")),
+            lowered_tuned,
+            temp_dir / "project",
+            {
+                "zephyr_board": BOARD,
+                "west_cmd": "west",
+                "verbose": False,
+                "project_type": "host_driven",
+            },
+        )
 
     project.build()
     project.flash()
@@ -332,10 +357,10 @@ Timing the tuned program
     ########## Build with Autotuning ##########
     Node Name                                     Ops                                           Time(us)  Time(%)  Shape              Inputs  Outputs  
     ---------                                     ---                                           --------  -------  -----              ------  -------  
-    tvmgen_default_fused_nn_contrib_conv2d_NCHWc  tvmgen_default_fused_nn_contrib_conv2d_NCHWc  320.2     97.793   (1, 6, 10, 10, 1)  2       1        
-    tvmgen_default_fused_layout_transform_1       tvmgen_default_fused_layout_transform_1       4.709     1.438    (1, 6, 10, 10)     1       1        
-    tvmgen_default_fused_layout_transform         tvmgen_default_fused_layout_transform         2.518     0.769    (1, 1, 10, 10, 3)  1       1        
-    Total_time                                    -                                             327.427   -        -                  -       -        
+    tvmgen_default_fused_nn_contrib_conv2d_NCHWc  tvmgen_default_fused_nn_contrib_conv2d_NCHWc  79.6      96.785   (1, 6, 10, 10, 1)  2       1        
+    tvmgen_default_fused_layout_transform_1       tvmgen_default_fused_layout_transform_1       1.7       2.067    (1, 6, 10, 10)     1       1        
+    tvmgen_default_fused_layout_transform         tvmgen_default_fused_layout_transform         0.944     1.148    (1, 1, 10, 10, 3)  1       1        
+    Total_time                                    -                                             82.244    -        -                  -       -        
 
 
 

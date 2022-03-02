@@ -87,13 +87,13 @@ schedule computes tensor in a serial manner in a row-major order.
 
     @main = primfn(A_1: handle, B_1: handle, C_1: handle) -> ()
       attr = {"from_legacy_te_schedule": True, "global_symbol": "main", "tir.noalias": True}
-      buffers = {A: Buffer(A_2: Pointer(float32), float32, [m: int32, n: int32], [stride: int32, stride_1: int32], type="auto"),
-                 C: Buffer(C_2: Pointer(float32), float32, [m, n], [stride_2: int32, stride_3: int32], type="auto"),
+      buffers = {C: Buffer(C_2: Pointer(float32), float32, [m: int32, n: int32], [stride: int32, stride_1: int32], type="auto"),
+                 A: Buffer(A_2: Pointer(float32), float32, [m, n], [stride_2: int32, stride_3: int32], type="auto"),
                  B: Buffer(B_2: Pointer(float32), float32, [m, n], [stride_4: int32, stride_5: int32], type="auto")}
       buffer_map = {A_1: A, B_1: B, C_1: C} {
       for (i: int32, 0, m) {
         for (j: int32, 0, n) {
-          C_2[((i*stride_2) + (j*stride_3))] = ((float32*)A_2[((i*stride) + (j*stride_1))]*(float32*)B_2[((i*stride_4) + (j*stride_5))])
+          C_2[((i*stride) + (j*stride_1))] = ((float32*)A_2[((i*stride_2) + (j*stride_3))]*(float32*)B_2[((i*stride_4) + (j*stride_5))])
         }
       }
     }
@@ -139,7 +139,8 @@ split
       for (i.outer: int32, 0, floordiv((m + 31), 32)) {
         for (i.inner: int32, 0, 32) {
           if @tir.likely((((i.outer*32) + i.inner) < m), dtype=bool) {
-            B_2[(((i.outer*32) + i.inner)*stride)] = ((float32*)A_2[(((i.outer*32) + i.inner)*stride_1)]*2f32)
+            let cse_var_1: int32 = ((i.outer*32) + i.inner)
+            B_2[(cse_var_1*stride)] = ((float32*)A_2[(cse_var_1*stride_1)]*2f32)
           }
         }
       }
@@ -226,7 +227,9 @@ axes.
             if @tir.likely((((i.outer*10) + i.inner) < m), dtype=bool) {
               for (j.inner: int32, 0, 5) {
                 if @tir.likely((((j.outer*5) + j.inner) < n), dtype=bool) {
-                  B_2[((((i.outer*10) + i.inner)*stride) + (((j.outer*5) + j.inner)*stride_1))] = (float32*)A_2[((((i.outer*10) + i.inner)*stride_2) + (((j.outer*5) + j.inner)*stride_3))]
+                  let cse_var_2: int32 = ((j.outer*5) + j.inner)
+                  let cse_var_1: int32 = ((i.outer*10) + i.inner)
+                  B_2[((cse_var_1*stride) + (cse_var_2*stride_1))] = (float32*)A_2[((cse_var_1*stride_2) + (cse_var_2*stride_3))]
                 }
               }
             }
@@ -276,7 +279,9 @@ fuse
           for (i.inner.j.inner.fused: int32, 0, 50) {
             if @tir.likely((((i.outer*10) + floordiv(i.inner.j.inner.fused, 5)) < m), dtype=bool) {
               if @tir.likely((((j.outer*5) + floormod(i.inner.j.inner.fused, 5)) < n), dtype=bool) {
-                B_2[((((i.outer*10) + floordiv(i.inner.j.inner.fused, 5))*stride) + (((j.outer*5) + floormod(i.inner.j.inner.fused, 5))*stride_1))] = (float32*)A_2[((((i.outer*10) + floordiv(i.inner.j.inner.fused, 5))*stride_2) + (((j.outer*5) + floormod(i.inner.j.inner.fused, 5))*stride_3))]
+                let cse_var_2: int32 = ((j.outer*5) + floormod(i.inner.j.inner.fused, 5))
+                let cse_var_1: int32 = ((i.outer*10) + floordiv(i.inner.j.inner.fused, 5))
+                B_2[((cse_var_1*stride) + (cse_var_2*stride_1))] = (float32*)A_2[((cse_var_1*stride_2) + (cse_var_2*stride_3))]
               }
             }
           }
@@ -326,7 +331,9 @@ reorder
             if @tir.likely((((i.outer*10) + i.inner) < m), dtype=bool) {
               for (j.inner: int32, 0, 5) {
                 if @tir.likely((((j.outer*5) + j.inner) < n), dtype=bool) {
-                  B_2[((((i.outer*10) + i.inner)*stride) + (((j.outer*5) + j.inner)*stride_1))] = (float32*)A_2[((((i.outer*10) + i.inner)*stride_2) + (((j.outer*5) + j.inner)*stride_3))]
+                  let cse_var_2: int32 = ((j.outer*5) + j.inner)
+                  let cse_var_1: int32 = ((i.outer*10) + i.inner)
+                  B_2[((cse_var_1*stride) + (cse_var_2*stride_1))] = (float32*)A_2[((cse_var_1*stride_2) + (cse_var_2*stride_3))]
                 }
               }
             }

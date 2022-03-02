@@ -11,7 +11,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>microTVM with TFLite Models &mdash; tvm 0.9.dev182+ge718f5a8a documentation</title>
+  <title>microTVM with TFLite Models &mdash; tvm 0.9.dev0 documentation</title>
   
 
   
@@ -45,7 +45,7 @@
     <script type="text/javascript" src="../../_static/js/tlcpack_theme.js"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
-    <link rel="next" title="Extend TVM" href="../extend_tvm/index.html" />
+    <link rel="next" title="Executing a Tiny Model with TVMC Micro" href="micro_tvmc.html" />
     <link rel="prev" title="microTVM Reference Virtual Machines" href="micro_reference_vm.html" /> 
 </head>
 
@@ -169,7 +169,7 @@
             
             
                 <div class="version">
-                  0.9.dev182+ge718f5a8a
+                  0.9.dev0
                 </div>
             
           
@@ -211,7 +211,7 @@
 <li class="toctree-l2"><a class="reference internal" href="../tune_with_autotvm/index.html">Auto-Tune with Templates and AutoTVM</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../tune_with_autoscheduler/index.html">Use AutoScheduler for Template-Free Scheduling</a></li>
 <li class="toctree-l2 current"><a class="reference internal" href="index.html">Work With microTVM</a><ul class="current">
-<li class="toctree-l3"><a class="reference internal" href="micro_autotune.html">Autotuning with micro TVM</a></li>
+<li class="toctree-l3"><a class="reference internal" href="micro_autotune.html">Autotuning with microTVM</a></li>
 <li class="toctree-l3"><a class="reference internal" href="micro_ethosu.html">Running TVM on bare metal Arm(R) Cortex(R)-M55 CPU and Ethos(TM)-U55 NPU</a></li>
 <li class="toctree-l3"><a class="reference internal" href="micro_reference_vm.html">microTVM Reference Virtual Machines</a></li>
 <li class="toctree-l3 current"><a class="current reference internal" href="#">microTVM with TFLite Models</a><ul>
@@ -220,6 +220,7 @@
 <li class="toctree-l4"><a class="reference internal" href="#defining-the-target">Defining the target</a></li>
 </ul>
 </li>
+<li class="toctree-l3"><a class="reference internal" href="micro_tvmc.html">Executing a Tiny Model with TVMC Micro</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="../extend_tvm/index.html">Extend TVM</a></li>
@@ -427,12 +428,18 @@ models like MobileNet may not fit into their modest memory.</p>
 <p>Load the pretrained TFLite model from a file in your current
 directory into a buffer</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">json</span>
+<span class="kn">import</span> <span class="nn">tarfile</span>
+<span class="kn">import</span> <span class="nn">pathlib</span>
+<span class="kn">import</span> <span class="nn">tempfile</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 
 <span class="kn">import</span> <span class="nn">tvm</span>
-<span class="kn">from</span> <span class="nn">tvm.contrib.download</span> <span class="k">import</span> <span class="n">download_testdata</span>
 <span class="kn">from</span> <span class="nn">tvm</span> <span class="k">import</span> <span class="n">relay</span>
+<span class="kn">import</span> <span class="nn">tvm.contrib.utils</span>
+<span class="kn">from</span> <span class="nn">tvm.contrib.download</span> <span class="k">import</span> <span class="n">download_testdata</span>
 
+<span class="n">use_physical_hw</span> <span class="o">=</span> <span class="nb">bool</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">getenv</span><span class="p">(</span><span class="s2">&quot;TVM_MICRO_USE_HW&quot;</span><span class="p">))</span>
 <span class="n">model_url</span> <span class="o">=</span> <span class="s2">&quot;https://people.linaro.org/~tom.gall/sine_model.tflite&quot;</span>
 <span class="n">model_file</span> <span class="o">=</span> <span class="s2">&quot;sine_model.tflite&quot;</span>
 <span class="n">model_path</span> <span class="o">=</span> <span class="n">download_testdata</span><span class="p">(</span><span class="n">model_url</span><span class="p">,</span> <span class="n">model_file</span><span class="p">,</span> <span class="n">module</span><span class="o">=</span><span class="s2">&quot;data&quot;</span><span class="p">)</span>
@@ -486,7 +493,7 @@ TARGET, the C Runtime as the RUNTIME and a proper board/VM to run it (Zephyr wil
 QEMU VM based on BOARD. In the example below the x86 arch is selected and a x86 VM is picked up accordingly:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">RUNTIME</span> <span class="o">=</span> <span class="n">tvm</span><span class="o">.</span><span class="n">relay</span><span class="o">.</span><span class="n">backend</span><span class="o">.</span><span class="n">Runtime</span><span class="p">(</span><span class="s2">&quot;crt&quot;</span><span class="p">,</span> <span class="p">{</span><span class="s2">&quot;system-lib&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">})</span>
 <span class="n">TARGET</span> <span class="o">=</span> <span class="n">tvm</span><span class="o">.</span><span class="n">target</span><span class="o">.</span><span class="n">target</span><span class="o">.</span><span class="n">micro</span><span class="p">(</span><span class="s2">&quot;host&quot;</span><span class="p">)</span>
-<span class="n">BOARD</span> <span class="o">=</span> <span class="s2">&quot;qemu_x86&quot;</span>
+
 <span class="c1">#</span>
 <span class="c1"># Compiling for physical hardware</span>
 <span class="c1">#  When running on physical hardware, choose a TARGET and a BOARD that describe the hardware. The</span>
@@ -495,8 +502,15 @@ QEMU VM based on BOARD. In the example below the x86 arch is selected and a x86 
 <span class="c1">#  board but a couple of wirings and configs differ, it&#39;s necessary to select the &quot;stm32f746g_disco&quot;</span>
 <span class="c1">#  board to generated the right firmware image.</span>
 <span class="c1">#</span>
-<span class="c1">#  TARGET = tvm.target.target.micro(&quot;stm32f746xx&quot;)</span>
-<span class="c1">#  BOARD = &quot;nucleo_f746zg&quot; # or &quot;stm32f746g_disco#&quot;</span>
+
+<span class="k">if</span> <span class="n">use_physical_hw</span><span class="p">:</span>
+    <span class="n">boards_file</span> <span class="o">=</span> <span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">(</span><a href="../../reference/api/python/micro.html#tvm.micro.get_microtvm_template_projects" title="View documentation for tvm.micro.get_microtvm_template_projects"><span class="n">tvm</span><span class="o">.</span><span class="n">micro</span><span class="o">.</span><span class="n">get_microtvm_template_projects</span></a><span class="p">(</span><span class="s2">&quot;zephyr&quot;</span><span class="p">))</span> <span class="o">/</span> <span class="s2">&quot;boards.json&quot;</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">boards_file</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+        <span class="n">boards</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+
+    <span class="n">BOARD</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">getenv</span><span class="p">(</span><span class="s2">&quot;TVM_MICRO_BOARD&quot;</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="s2">&quot;nucleo_f746zg&quot;</span><span class="p">)</span>
+    <span class="n">TARGET</span> <span class="o">=</span> <span class="n">tvm</span><span class="o">.</span><span class="n">target</span><span class="o">.</span><span class="n">target</span><span class="o">.</span><span class="n">micro</span><span class="p">(</span><span class="n">boards</span><span class="p">[</span><span class="n">BOARD</span><span class="p">][</span><span class="s2">&quot;model&quot;</span><span class="p">])</span>
+
 <span class="c1">#</span>
 <span class="c1">#  For some boards, Zephyr runs them emulated by default, using QEMU. For example, below is the</span>
 <span class="c1">#  TARGET and BOARD used to build a microTVM firmware for the mps2-an521 board. Since that board</span>
@@ -541,14 +555,11 @@ QEMU VM based on BOARD. In the example below the x86 arch is selected and a x86 
 <span class="c1"># (:doc:`Model Library Format` &lt;/dev/model_library_format&gt;`). This is a tarball with a standard layout:</span>
 
 <span class="c1"># Get a temporary path where we can store the tarball (since this is running as a tutorial).</span>
-<span class="kn">import</span> <span class="nn">tempfile</span>
 
 <span class="n">fd</span><span class="p">,</span> <span class="n">model_library_format_tar_path</span> <span class="o">=</span> <span class="n">tempfile</span><span class="o">.</span><span class="n">mkstemp</span><span class="p">()</span>
 <span class="n">os</span><span class="o">.</span><span class="n">close</span><span class="p">(</span><span class="n">fd</span><span class="p">)</span>
 <span class="n">os</span><span class="o">.</span><span class="n">unlink</span><span class="p">(</span><span class="n">model_library_format_tar_path</span><span class="p">)</span>
 <a href="../../reference/api/python/micro.html#tvm.micro.export_model_library_format" title="View documentation for tvm.micro.export_model_library_format"><span class="n">tvm</span><span class="o">.</span><span class="n">micro</span><span class="o">.</span><span class="n">export_model_library_format</span></a><span class="p">(</span><span class="n">module</span><span class="p">,</span> <span class="n">model_library_format_tar_path</span><span class="p">)</span>
-
-<span class="kn">import</span> <span class="nn">tarfile</span>
 
 <span class="k">with</span> <span class="n">tarfile</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">model_library_format_tar_path</span><span class="p">,</span> <span class="s2">&quot;r:*&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">tar_f</span><span class="p">:</span>
     <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">f</span><span class="s2">&quot; - </span><span class="si">{m.name}</span><span class="s2">&quot;</span> <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="n">tar_f</span><span class="o">.</span><span class="n">getmembers</span><span class="p">()))</span>
@@ -568,9 +579,6 @@ QEMU VM based on BOARD. In the example below the x86 arch is selected and a x86 
 <span class="c1"># this lives in a file ``microtvm_api_server.py`` in the root directory). Let&#39;s use the example ``host``</span>
 <span class="c1"># project in this tutorial, which simulates the device using a POSIX subprocess and pipes:</span>
 
-<span class="kn">import</span> <span class="nn">subprocess</span>
-<span class="kn">import</span> <span class="nn">pathlib</span>
-
 <span class="n">template_project_path</span> <span class="o">=</span> <span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">(</span><a href="../../reference/api/python/micro.html#tvm.micro.get_microtvm_template_projects" title="View documentation for tvm.micro.get_microtvm_template_projects"><span class="n">tvm</span><span class="o">.</span><span class="n">micro</span><span class="o">.</span><span class="n">get_microtvm_template_projects</span></a><span class="p">(</span><span class="s2">&quot;crt&quot;</span><span class="p">))</span>
 <span class="n">project_options</span> <span class="o">=</span> <span class="p">{}</span>  <span class="c1"># You can use options to provide platform-specific options through TVM.</span>
 
@@ -579,11 +587,12 @@ QEMU VM based on BOARD. In the example below the x86 arch is selected and a x86 
 <span class="c1">#  For physical hardware, you can try out the Zephyr platform by using a different template project</span>
 <span class="c1">#  and options:</span>
 <span class="c1">#</span>
-<span class="c1">#     template_project_path = pathlib.Path(tvm.micro.get_microtvm_template_projects(&quot;zephyr&quot;))</span>
-<span class="c1">#     project_options = {&quot;project_type&quot;: &quot;host_driven&quot;, zephyr_board&quot;: &quot;nucleo_f746zg&quot;}}</span>
+
+<span class="k">if</span> <span class="n">use_physical_hw</span><span class="p">:</span>
+    <span class="n">template_project_path</span> <span class="o">=</span> <span class="n">pathlib</span><span class="o">.</span><span class="n">Path</span><span class="p">(</span><a href="../../reference/api/python/micro.html#tvm.micro.get_microtvm_template_projects" title="View documentation for tvm.micro.get_microtvm_template_projects"><span class="n">tvm</span><span class="o">.</span><span class="n">micro</span><span class="o">.</span><span class="n">get_microtvm_template_projects</span></a><span class="p">(</span><span class="s2">&quot;zephyr&quot;</span><span class="p">))</span>
+    <span class="n">project_options</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;project_type&quot;</span><span class="p">:</span> <span class="s2">&quot;host_driven&quot;</span><span class="p">,</span> <span class="s2">&quot;zephyr_board&quot;</span><span class="p">:</span> <span class="n">BOARD</span><span class="p">}</span>
 
 <span class="c1"># Create a temporary directory</span>
-<span class="kn">import</span> <span class="nn">tvm.contrib.utils</span>
 
 <span class="n">temp_dir</span> <span class="o">=</span> <a href="../../reference/api/python/contrib.html#tvm.contrib.utils.tempdir" title="View documentation for tvm.contrib.utils.tempdir"><span class="n">tvm</span><span class="o">.</span><span class="n">contrib</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">tempdir</span></a><span class="p">()</span>
 <span class="n">generated_project_dir</span> <span class="o">=</span> <span class="n">temp_dir</span> <span class="o">/</span> <span class="s2">&quot;generated-project&quot;</span>
@@ -610,17 +619,17 @@ TVM_DLL int32_t tvmgen_default_fused_nn_dense_add_nn_relu_1(void* args, void* ar
  - .
  - ./src
  - ./src/relay.txt
+ - ./metadata.json
  - ./codegen
  - ./codegen/host
  - ./codegen/host/src
  - ./codegen/host/src/default_lib0.c
  - ./codegen/host/src/default_lib1.c
- - ./parameters
- - ./parameters/default.params
- - ./metadata.json
  - ./executor-config
  - ./executor-config/graph
  - ./executor-config/graph/graph.json
+ - ./parameters
+ - ./parameters/default.params
 </pre></div>
 </div>
 <p>Next, establish a session with the simulated device and run the
@@ -671,7 +680,7 @@ to stand in for an attached microcontroller.</p>
 
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="../extend_tvm/index.html" class="btn btn-neutral float-right" title="Extend TVM" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+        <a href="micro_tvmc.html" class="btn btn-neutral float-right" title="Executing a Tiny Model with TVMC Micro" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
         <a href="micro_reference_vm.html" class="btn btn-neutral float-left" title="microTVM Reference Virtual Machines" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>

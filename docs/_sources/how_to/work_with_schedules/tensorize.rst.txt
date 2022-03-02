@@ -79,7 +79,8 @@ The following lines describe the computation :code:`A * B^T` in TVM.
         for (j: int32, 0, 512) {
           C_2[((i*512) + j)] = 0f32
           for (k: int32, 0, 64) {
-            C_2[((i*512) + j)] = ((float32*)C_2[((i*512) + j)] + ((float32*)A_2[((i*64) + k)]*(float32*)B_2[((j*64) + k)]))
+            let cse_var_1: int32 = ((i*512) + j)
+            C_2[cse_var_1] = ((float32*)C_2[cse_var_1] + ((float32*)A_2[((i*64) + k)]*(float32*)B_2[((j*64) + k)]))
           }
         }
       }
@@ -129,7 +130,8 @@ Thus we break down the matmul loops to make the innermost loops a (16x64) GEMV.
           for (j.inner: int32, 0, 16) {
             C_2[(((i*512) + (j.outer*16)) + j.inner)] = 0f32
             for (k: int32, 0, 64) {
-              C_2[(((i*512) + (j.outer*16)) + j.inner)] = ((float32*)C_2[(((i*512) + (j.outer*16)) + j.inner)] + ((float32*)A_2[((i*64) + k)]*(float32*)B_2[(((j.outer*1024) + (j.inner*64)) + k)]))
+              let cse_var_1: int32 = (((i*512) + (j.outer*16)) + j.inner)
+              C_2[cse_var_1] = ((float32*)C_2[cse_var_1] + ((float32*)A_2[((i*64) + k)]*(float32*)B_2[(((j.outer*1024) + (j.inner*64)) + k)]))
             }
           }
         }
@@ -309,12 +311,12 @@ The importing needs to happen before the tensorized GEMV being executed.
 
     @main = primfn(A_1: handle, B_1: handle, C_1: handle) -> ()
       attr = {"from_legacy_te_schedule": True, "global_symbol": "main", "tir.noalias": True}
-      buffers = {A: Buffer(A_2: Pointer(float32), float32, [1024, 64], []),
-                 C: Buffer(C_2: Pointer(float32), float32, [1024, 512], []),
+      buffers = {C: Buffer(C_2: Pointer(float32), float32, [1024, 512], []),
+                 A: Buffer(A_2: Pointer(float32), float32, [1024, 64], []),
                  B: Buffer(B_2: Pointer(float32), float32, [512, 64], [])}
       buffer_map = {A_1: A, B_1: B, C_1: C} {
-      attr [IterVar(i: int32, (nullptr), "DataPar", "")] "pragma_import_llvm" = "; ModuleID = '/tmp/tmpdzp_v5tr/input0.cc'
-    source_filename = "/tmp/tmpdzp_v5tr/input0.cc"
+      attr [IterVar(i: int32, (nullptr), "DataPar", "")] "pragma_import_llvm" = "; ModuleID = '/tmp/tmpc2h1yvzp/input0.cc'
+    source_filename = "/tmp/tmpc2h1yvzp/input0.cc"
     target datalayout = "e-m:e-i64:64-f80:128-n8:16:32:64-S128"
     target triple = "x86_64-pc-linux-gnu"
 

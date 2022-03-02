@@ -1,6 +1,7 @@
 var searchData=
 [
   ['ndarray',['NDArray',['../classtvm_1_1runtime_1_1NDArray.html',1,'tvm::runtime']]],
+  ['ndarraycontainertrait',['NDArrayContainerTrait',['../structtvm_1_1NDArrayContainerTrait.html',1,'tvm']]],
   ['ndarraysizeattrs',['NdarraySizeAttrs',['../structtvm_1_1relay_1_1NdarraySizeAttrs.html',1,'tvm::relay']]],
   ['ne',['NE',['../classtvm_1_1tir_1_1NE.html',1,'tvm::tir']]],
   ['nenode',['NENode',['../classtvm_1_1tir_1_1NENode.html',1,'tvm::tir']]],

@@ -9,5 +9,7 @@ var searchData=
   ['workloadequal',['WorkloadEqual',['../structtvm_1_1meta__schedule_1_1WorkloadEqual.html',1,'tvm::meta_schedule']]],
   ['workloadhash',['WorkloadHash',['../structtvm_1_1meta__schedule_1_1WorkloadHash.html',1,'tvm::meta_schedule']]],
   ['workloadnode',['WorkloadNode',['../classtvm_1_1meta__schedule_1_1WorkloadNode.html',1,'tvm::meta_schedule']]],
+  ['workspacememorypools',['WorkspaceMemoryPools',['../classtvm_1_1WorkspaceMemoryPools.html',1,'tvm']]],
+  ['workspacememorypoolsnode',['WorkspaceMemoryPoolsNode',['../structtvm_1_1WorkspaceMemoryPoolsNode.html',1,'tvm']]],
   ['writestream',['WriteStream',['../classtvm_1_1runtime_1_1micro__rpc_1_1WriteStream.html',1,'tvm::runtime::micro_rpc']]]
 ];

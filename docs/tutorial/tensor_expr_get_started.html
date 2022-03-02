@@ -11,7 +11,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Working with Operators Using Tensor Expression &mdash; tvm 0.9.dev182+ge718f5a8a documentation</title>
+  <title>Working with Operators Using Tensor Expression &mdash; tvm 0.9.dev0 documentation</title>
   
 
   
@@ -169,7 +169,7 @@
             
             
                 <div class="version">
-                  0.9.dev182+ge718f5a8a
+                  0.9.dev0
                 </div>
             
           
@@ -206,6 +206,7 @@
 <li class="toctree-l2"><a class="reference internal" href="introduction.html#an-overview-of-tvm-and-model-optimization">An Overview of TVM and Model Optimization</a></li>
 <li class="toctree-l2"><a class="reference internal" href="install.html">Installing TVM</a></li>
 <li class="toctree-l2"><a class="reference internal" href="tvmc_command_line_driver.html">Compiling and Optimizing a Model with TVMC</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tvmc_python.html">Getting Starting using TVMC Python: a high-level API for TVM</a></li>
 <li class="toctree-l2"><a class="reference internal" href="autotvm_relay_x86.html">Compiling and Optimizing a Model with the Python Interface (AutoTVM)</a></li>
 <li class="toctree-l2 current"><a class="current reference internal" href="#">Working with Operators Using Tensor Expression</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#example-1-writing-and-scheduling-vector-addition-in-te-for-cpu">Example 1: Writing and Scheduling Vector Addition in TE for CPU</a><ul>
@@ -506,8 +507,8 @@ helper function to run a profile of the TVM generated code.</p>
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Numpy running time: 0.000007
-naive: 0.000005
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Numpy running time: 0.000008
+naive: 0.000006
 </pre></div>
 </div>
 </div>
@@ -557,7 +558,7 @@ compile and run this new schedule with the parallel operation applied:</p>
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>parallel: 0.000004
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>parallel: 0.000006
 </pre></div>
 </div>
 </div>
@@ -597,7 +598,7 @@ factor to be the number of threads on your CPU.</p>
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>vector: 0.000022
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>vector: 0.000025
 @main = primfn(A_1: handle, B_1: handle, C_1: handle) -&gt; ()
   attr = {&quot;from_legacy_te_schedule&quot;: True, &quot;global_symbol&quot;: &quot;main&quot;, &quot;tir.noalias&quot;: True}
   buffers = {C: Buffer(C_2: Pointer(float32), float32, [n: int32], [stride: int32], type=&quot;auto&quot;),
@@ -607,7 +608,8 @@ factor to be the number of threads on your CPU.</p>
   for (i.outer: int32, 0, floordiv((n + 3), 4)) &quot;parallel&quot; {
     for (i.inner.s: int32, 0, 4) {
       if @tir.likely((((i.outer*4) + i.inner.s) &lt; n), dtype=bool) {
-        C_2[(((i.outer*4) + i.inner.s)*stride)] = ((float32*)A_2[(((i.outer*4) + i.inner.s)*stride_1)] + (float32*)B_2[(((i.outer*4) + i.inner.s)*stride_2)])
+        let cse_var_1: int32 = ((i.outer*4) + i.inner.s)
+        C_2[(cse_var_1*stride)] = ((float32*)A_2[(cse_var_1*stride_1)] + (float32*)B_2[(cse_var_1*stride_2)])
       }
     }
   }
@@ -629,10 +631,10 @@ factor to be the number of threads on your CPU.</p>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
 <div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Operator                  Timing             Performance
-   numpy    6.619859486818314e-06                    1.0
-   naive              4.9303e-06      0.7447741164019234
-parallel              4.4504e-06       0.672280130546847
-  vector             2.20605e-05      3.3324725462719575
+   numpy    8.104600001388462e-06                    1.0
+   naive    5.6384999999999995e-06    0.6957160130091583
+parallel              5.8256e-06      0.7188016680652927
+  vector             2.50895e-05      3.0957110771292506
 </pre></div>
 </div>
 <div class="admonition-code-specialization admonition">
@@ -776,7 +778,7 @@ load them back later.</p>
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>[&#39;myadd.o&#39;, &#39;myadd.so&#39;]
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>[&#39;myadd.so&#39;, &#39;myadd.o&#39;]
 </pre></div>
 </div>
 <div class="admonition-module-storage-format admonition">
@@ -950,7 +952,7 @@ matrix multiplication.</p>
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Numpy running time: 0.019480
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Numpy running time: 0.014043
 </pre></div>
 </div>
 <p>Now we write a basic matrix multiplication using TVM TE and verify that it
@@ -992,7 +994,7 @@ optimizations.</p>
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>none: 6.920286
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>none: 3.217671
 </pre></div>
 </div>
 <p>Let’s take a look at the intermediate representation of the operator and
@@ -1013,7 +1015,9 @@ nested loops over the indices of the A and B matrices.</p>
     for (y: int32, 0, 1024) {
       C_2[((x*1024) + y)] = 0f32
       for (k: int32, 0, 1024) {
-        C_2[((x*1024) + y)] = ((float32*)C_2[((x*1024) + y)] + ((float32*)A_2[((x*1024) + k)]*(float32*)B_2[((k*1024) + y)]))
+        let cse_var_2: int32 = (x*1024)
+        let cse_var_1: int32 = (cse_var_2 + y)
+        C_2[cse_var_1] = ((float32*)C_2[cse_var_1] + ((float32*)A_2[(cse_var_2 + k)]*(float32*)B_2[((k*1024) + y)]))
       }
     }
   }
@@ -1056,7 +1060,7 @@ schedule.</p>
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>blocking: 0.198564
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>blocking: 0.289537
 </pre></div>
 </div>
 <p>By reordering the computation to take advantage of caching, you should see a
@@ -1083,7 +1087,10 @@ internal representation and compare it to the original:</p>
         for (k.inner: int32, 0, 4) {
           for (x.inner: int32, 0, 32) {
             for (y.inner: int32, 0, 32) {
-              C_2[((((x.outer*32768) + (x.inner*1024)) + (y.outer*32)) + y.inner)] = ((float32*)C_2[((((x.outer*32768) + (x.inner*1024)) + (y.outer*32)) + y.inner)] + ((float32*)A_2[((((x.outer*32768) + (x.inner*1024)) + (k.outer*4)) + k.inner)]*(float32*)B_2[((((k.outer*4096) + (k.inner*1024)) + (y.outer*32)) + y.inner)]))
+              let cse_var_3: int32 = (y.outer*32)
+              let cse_var_2: int32 = ((x.outer*32768) + (x.inner*1024))
+              let cse_var_1: int32 = ((cse_var_2 + cse_var_3) + y.inner)
+              C_2[cse_var_1] = ((float32*)C_2[cse_var_1] + ((float32*)A_2[((cse_var_2 + (k.outer*4)) + k.inner)]*(float32*)B_2[((((k.outer*4096) + (k.inner*1024)) + cse_var_3) + y.inner)]))
             }
           }
         }
@@ -1113,7 +1120,7 @@ already cache friendly from our previous optimizations.</p>
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>vectorization: 0.145182
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>vectorization: 0.326130
 @main = primfn(A_1: handle, B_1: handle, C_1: handle) -&gt; ()
   attr = {&quot;from_legacy_te_schedule&quot;: True, &quot;global_symbol&quot;: &quot;main&quot;, &quot;tir.noalias&quot;: True}
   buffers = {C: Buffer(C_2: Pointer(float32), float32, [1024, 1024], []),
@@ -1128,7 +1135,10 @@ already cache friendly from our previous optimizations.</p>
       for (k.outer: int32, 0, 256) {
         for (k.inner: int32, 0, 4) {
           for (x.inner: int32, 0, 32) {
-            C_2[ramp((((x.outer*32768) + (x.inner*1024)) + (y.outer*32)), 1, 32)] = ((float32x32*)C_2[ramp((((x.outer*32768) + (x.inner*1024)) + (y.outer*32)), 1, 32)] + (broadcast((float32*)A_2[((((x.outer*32768) + (x.inner*1024)) + (k.outer*4)) + k.inner)], 32)*(float32x32*)B_2[ramp((((k.outer*4096) + (k.inner*1024)) + (y.outer*32)), 1, 32)]))
+            let cse_var_3: int32 = (y.outer*32)
+            let cse_var_2: int32 = ((x.outer*32768) + (x.inner*1024))
+            let cse_var_1: int32 = (cse_var_2 + cse_var_3)
+            C_2[ramp(cse_var_1, 1, 32)] = ((float32x32*)C_2[ramp(cse_var_1, 1, 32)] + (broadcast((float32*)A_2[((cse_var_2 + (k.outer*4)) + k.inner)], 32)*(float32x32*)B_2[ramp((((k.outer*4096) + (k.inner*1024)) + cse_var_3), 1, 32)]))
           }
         }
       }
@@ -1165,7 +1175,7 @@ more cache friendly.</p>
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>loop permutation: 0.082540
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>loop permutation: 0.111087
 @main = primfn(A_1: handle, B_1: handle, C_1: handle) -&gt; ()
   attr = {&quot;from_legacy_te_schedule&quot;: True, &quot;global_symbol&quot;: &quot;main&quot;, &quot;tir.noalias&quot;: True}
   buffers = {C: Buffer(C_2: Pointer(float32), float32, [1024, 1024], []),
@@ -1180,7 +1190,10 @@ more cache friendly.</p>
       for (k.outer: int32, 0, 256) {
         for (x.inner: int32, 0, 32) {
           for (k.inner: int32, 0, 4) {
-            C_2[ramp((((x.outer*32768) + (x.inner*1024)) + (y.outer*32)), 1, 32)] = ((float32x32*)C_2[ramp((((x.outer*32768) + (x.inner*1024)) + (y.outer*32)), 1, 32)] + (broadcast((float32*)A_2[((((x.outer*32768) + (x.inner*1024)) + (k.outer*4)) + k.inner)], 32)*(float32x32*)B_2[ramp((((k.outer*4096) + (k.inner*1024)) + (y.outer*32)), 1, 32)]))
+            let cse_var_3: int32 = (y.outer*32)
+            let cse_var_2: int32 = ((x.outer*32768) + (x.inner*1024))
+            let cse_var_1: int32 = (cse_var_2 + cse_var_3)
+            C_2[ramp(cse_var_1, 1, 32)] = ((float32x32*)C_2[ramp(cse_var_1, 1, 32)] + (broadcast((float32*)A_2[((cse_var_2 + (k.outer*4)) + k.inner)], 32)*(float32x32*)B_2[ramp((((k.outer*4096) + (k.inner*1024)) + cse_var_3), 1, 32)]))
           }
         }
       }
@@ -1238,7 +1251,7 @@ optimized schedule.</p>
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>array packing: 0.105897
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>array packing: 0.103804
 @main = primfn(A_1: handle, B_1: handle, C_1: handle) -&gt; ()
   attr = {&quot;from_legacy_te_schedule&quot;: True, &quot;global_symbol&quot;: &quot;main&quot;, &quot;tir.noalias&quot;: True}
   buffers = {C: Buffer(C_2: Pointer(float32), float32, [1024, 1024], []),
@@ -1259,7 +1272,9 @@ optimized schedule.</p>
         for (k.outer: int32, 0, 256) {
           for (x.inner: int32, 0, 32) {
             for (k.inner: int32, 0, 4) {
-              C_2[ramp((((x.outer*32768) + (x.inner*1024)) + (y.outer*32)), 1, 32)] = ((float32x32*)C_2[ramp((((x.outer*32768) + (x.inner*1024)) + (y.outer*32)), 1, 32)] + (broadcast((float32*)A_2[((((x.outer*32768) + (x.inner*1024)) + (k.outer*4)) + k.inner)], 32)*(float32x32*)packedB[ramp((((y.outer*32768) + (k.outer*128)) + (k.inner*32)), 1, 32)]))
+              let cse_var_2: int32 = ((x.outer*32768) + (x.inner*1024))
+              let cse_var_1: int32 = (cse_var_2 + (y.outer*32))
+              C_2[ramp(cse_var_1, 1, 32)] = ((float32x32*)C_2[ramp(cse_var_1, 1, 32)] + (broadcast((float32*)A_2[((cse_var_2 + (k.outer*4)) + k.inner)], 32)*(float32x32*)packedB[ramp((((y.outer*32768) + (k.outer*128)) + (k.inner*32)), 1, 32)]))
             }
           }
         }
@@ -1309,7 +1324,7 @@ to `C</cite> when all the block results are ready.</p>
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>block caching: 0.094381
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>block caching: 0.094891
 @main = primfn(A_1: handle, B_1: handle, C_1: handle) -&gt; ()
   attr = {&quot;from_legacy_te_schedule&quot;: True, &quot;global_symbol&quot;: &quot;main&quot;, &quot;tir.noalias&quot;: True}
   buffers = {C: Buffer(C_2: Pointer(float32), float32, [1024, 1024], []),
@@ -1330,10 +1345,15 @@ to `C</cite> when all the block results are ready.</p>
         }
         for (k.outer: int32, 0, 256) {
           for (x.c: int32, 0, 32) {
-            C.global[ramp((x.c*32), 1, 32)] = ((float32x32*)C.global[ramp((x.c*32), 1, 32)] + (broadcast((float32*)A_2[(((x.outer*32768) + (x.c*1024)) + (k.outer*4))], 32)*(float32x32*)packedB[ramp(((y.outer*32768) + (k.outer*128)), 1, 32)]))
-            C.global[ramp((x.c*32), 1, 32)] = ((float32x32*)C.global[ramp((x.c*32), 1, 32)] + (broadcast((float32*)A_2[((((x.outer*32768) + (x.c*1024)) + (k.outer*4)) + 1)], 32)*(float32x32*)packedB[ramp((((y.outer*32768) + (k.outer*128)) + 32), 1, 32)]))
-            C.global[ramp((x.c*32), 1, 32)] = ((float32x32*)C.global[ramp((x.c*32), 1, 32)] + (broadcast((float32*)A_2[((((x.outer*32768) + (x.c*1024)) + (k.outer*4)) + 2)], 32)*(float32x32*)packedB[ramp((((y.outer*32768) + (k.outer*128)) + 64), 1, 32)]))
-            C.global[ramp((x.c*32), 1, 32)] = ((float32x32*)C.global[ramp((x.c*32), 1, 32)] + (broadcast((float32*)A_2[((((x.outer*32768) + (x.c*1024)) + (k.outer*4)) + 3)], 32)*(float32x32*)packedB[ramp((((y.outer*32768) + (k.outer*128)) + 96), 1, 32)]))
+            let cse_var_3: int32 = (x.c*32)
+            let cse_var_2: int32 = ((y.outer*32768) + (k.outer*128))
+            let cse_var_1: int32 = (((x.outer*32768) + (x.c*1024)) + (k.outer*4))
+             {
+              C.global[ramp(cse_var_3, 1, 32)] = ((float32x32*)C.global[ramp(cse_var_3, 1, 32)] + (broadcast((float32*)A_2[cse_var_1], 32)*(float32x32*)packedB[ramp(cse_var_2, 1, 32)]))
+              C.global[ramp(cse_var_3, 1, 32)] = ((float32x32*)C.global[ramp(cse_var_3, 1, 32)] + (broadcast((float32*)A_2[(cse_var_1 + 1)], 32)*(float32x32*)packedB[ramp((cse_var_2 + 32), 1, 32)]))
+              C.global[ramp(cse_var_3, 1, 32)] = ((float32x32*)C.global[ramp(cse_var_3, 1, 32)] + (broadcast((float32*)A_2[(cse_var_1 + 2)], 32)*(float32x32*)packedB[ramp((cse_var_2 + 64), 1, 32)]))
+              C.global[ramp(cse_var_3, 1, 32)] = ((float32x32*)C.global[ramp(cse_var_3, 1, 32)] + (broadcast((float32*)A_2[(cse_var_1 + 3)], 32)*(float32x32*)packedB[ramp((cse_var_2 + 96), 1, 32)]))
+            }
           }
         }
         for (x.inner: int32, 0, 32) {
@@ -1370,7 +1390,7 @@ of thread-level parallelization.</p>
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>parallelization: 0.021283
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>parallelization: 0.125543
 @main = primfn(A_1: handle, B_1: handle, C_1: handle) -&gt; ()
   attr = {&quot;from_legacy_te_schedule&quot;: True, &quot;global_symbol&quot;: &quot;main&quot;, &quot;tir.noalias&quot;: True}
   buffers = {C: Buffer(C_2: Pointer(float32), float32, [1024, 1024], []),
@@ -1391,10 +1411,15 @@ of thread-level parallelization.</p>
         }
         for (k.outer: int32, 0, 256) {
           for (x.c: int32, 0, 32) {
-            C.global[ramp((x.c*32), 1, 32)] = ((float32x32*)C.global[ramp((x.c*32), 1, 32)] + (broadcast((float32*)A_2[(((x.outer*32768) + (x.c*1024)) + (k.outer*4))], 32)*(float32x32*)packedB[ramp(((y.outer*32768) + (k.outer*128)), 1, 32)]))
-            C.global[ramp((x.c*32), 1, 32)] = ((float32x32*)C.global[ramp((x.c*32), 1, 32)] + (broadcast((float32*)A_2[((((x.outer*32768) + (x.c*1024)) + (k.outer*4)) + 1)], 32)*(float32x32*)packedB[ramp((((y.outer*32768) + (k.outer*128)) + 32), 1, 32)]))
-            C.global[ramp((x.c*32), 1, 32)] = ((float32x32*)C.global[ramp((x.c*32), 1, 32)] + (broadcast((float32*)A_2[((((x.outer*32768) + (x.c*1024)) + (k.outer*4)) + 2)], 32)*(float32x32*)packedB[ramp((((y.outer*32768) + (k.outer*128)) + 64), 1, 32)]))
-            C.global[ramp((x.c*32), 1, 32)] = ((float32x32*)C.global[ramp((x.c*32), 1, 32)] + (broadcast((float32*)A_2[((((x.outer*32768) + (x.c*1024)) + (k.outer*4)) + 3)], 32)*(float32x32*)packedB[ramp((((y.outer*32768) + (k.outer*128)) + 96), 1, 32)]))
+            let cse_var_3: int32 = (x.c*32)
+            let cse_var_2: int32 = ((y.outer*32768) + (k.outer*128))
+            let cse_var_1: int32 = (((x.outer*32768) + (x.c*1024)) + (k.outer*4))
+             {
+              C.global[ramp(cse_var_3, 1, 32)] = ((float32x32*)C.global[ramp(cse_var_3, 1, 32)] + (broadcast((float32*)A_2[cse_var_1], 32)*(float32x32*)packedB[ramp(cse_var_2, 1, 32)]))
+              C.global[ramp(cse_var_3, 1, 32)] = ((float32x32*)C.global[ramp(cse_var_3, 1, 32)] + (broadcast((float32*)A_2[(cse_var_1 + 1)], 32)*(float32x32*)packedB[ramp((cse_var_2 + 32), 1, 32)]))
+              C.global[ramp(cse_var_3, 1, 32)] = ((float32x32*)C.global[ramp(cse_var_3, 1, 32)] + (broadcast((float32*)A_2[(cse_var_1 + 2)], 32)*(float32x32*)packedB[ramp((cse_var_2 + 64), 1, 32)]))
+              C.global[ramp(cse_var_3, 1, 32)] = ((float32x32*)C.global[ramp(cse_var_3, 1, 32)] + (broadcast((float32*)A_2[(cse_var_1 + 3)], 32)*(float32x32*)packedB[ramp((cse_var_2 + 96), 1, 32)]))
+            }
           }
         }
         for (x.inner: int32, 0, 32) {
@@ -1426,13 +1451,13 @@ working, we can compare the results.</p>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
 <div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>        Operator                  Timing             Performance
-            none       6.920285553400001                     1.0
-        blocking            0.1985643645    0.028693088307959122
-   vectorization            0.1451821941    0.020979220146294487
-loop permutation            0.0825396215    0.011927198793039329
-   array packing             0.105896599    0.015302345283710439
-   block caching     0.09438099479999999    0.013638309296880058
- parallelization    0.021282874200000003    0.003075432947928504
+            none      3.2176713028000004                     1.0
+        blocking     0.28953682459999996     0.08998334427386867
+   vectorization            0.3261302856     0.10135599783489481
+loop permutation            0.1110869506     0.03452402068021452
+   array packing     0.10380390890000002    0.032260569564601084
+   block caching     0.09489119030000001      0.0294906413272935
+ parallelization            0.1255432151     0.03901679298030006
 </pre></div>
 </div>
 <p>Note that the outputs on the web page reflect the running times on a
@@ -1464,7 +1489,6 @@ is</p>
 you can build generic templates of the matrix multiplication and other
 operations with tunable parameters that allows you to automatically optimize
 the computation for specific platforms.</p>
-<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 1 minutes  41.156 seconds)</p>
 <div class="sphx-glr-footer class sphx-glr-footer-example docutils container" id="sphx-glr-download-tutorial-tensor-expr-get-started-py">
 <div class="sphx-glr-download docutils container">
 <p><a class="reference download internal" download="" href="../_downloads/40a01cffb015a67aaec0fad7e27cf80d/tensor_expr_get_started.py"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">tensor_expr_get_started.py</span></code></a></p>

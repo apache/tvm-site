@@ -11,7 +11,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Optimizing Operators with Auto-scheduling &mdash; tvm 0.9.dev182+ge718f5a8a documentation</title>
+  <title>Optimizing Operators with Auto-scheduling &mdash; tvm 0.9.dev0 documentation</title>
   
 
   
@@ -169,7 +169,7 @@
             
             
                 <div class="version">
-                  0.9.dev182+ge718f5a8a
+                  0.9.dev0
                 </div>
             
           
@@ -206,6 +206,7 @@
 <li class="toctree-l2"><a class="reference internal" href="introduction.html#an-overview-of-tvm-and-model-optimization">An Overview of TVM and Model Optimization</a></li>
 <li class="toctree-l2"><a class="reference internal" href="install.html">Installing TVM</a></li>
 <li class="toctree-l2"><a class="reference internal" href="tvmc_command_line_driver.html">Compiling and Optimizing a Model with TVMC</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tvmc_python.html">Getting Starting using TVMC Python: a high-level API for TVM</a></li>
 <li class="toctree-l2"><a class="reference internal" href="autotvm_relay_x86.html">Compiling and Optimizing a Model with the Python Interface (AutoTVM)</a></li>
 <li class="toctree-l2"><a class="reference internal" href="tensor_expr_get_started.html">Working with Operators Using Tensor Expression</a></li>
 <li class="toctree-l2"><a class="reference internal" href="autotvm_matmul_x86.html">Optimizing Operators with Schedule Templates and AutoTVM</a></li>
@@ -470,9 +471,9 @@ operator fusion.</p>
 <div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Lowered TIR:
 @main = primfn(A_1: handle, B_1: handle, C_1: handle, out_1: handle) -&gt; ()
   attr = {&quot;from_legacy_te_schedule&quot;: True, &quot;global_symbol&quot;: &quot;main&quot;, &quot;tir.noalias&quot;: True}
-  buffers = {C: Buffer(C_2: Pointer(float32), float32, [1024, 1024], []),
+  buffers = {out: Buffer(out_2: Pointer(float32), float32, [1024, 1024], []),
+             C: Buffer(C_2: Pointer(float32), float32, [1024, 1024], []),
              A: Buffer(A_2: Pointer(float32), float32, [1024, 1024], []),
-             out: Buffer(out_2: Pointer(float32), float32, [1024, 1024], []),
              B: Buffer(B_2: Pointer(float32), float32, [1024, 1024], [])}
   buffer_map = {A_1: A, B_1: B, C_1: C, out_1: out} {
   allocate(auto_scheduler_layout_transform: Pointer(global float32), float32, [1048576]), storage_scope = global {
@@ -494,14 +495,19 @@ operator fusion.</p>
         matmul[ramp(24, 1, 8)] = broadcast(0f32, 8)
         for (k.outer: int32, 0, 256) {
           for (k.inner: int32, 0, 4) {
-            matmul[ramp(0, 1, 8)] = ((float32x8*)matmul[ramp(0, 1, 8)] + (broadcast((float32*)A_2[((((floordiv(i.outer.outer.j.outer.outer.fused, 128)*8192) + (i.outer.inner*4096)) + (k.outer*4)) + k.inner)], 8)*(float32x8*)auto_scheduler_layout_transform[ramp((((floormod(i.outer.outer.j.outer.outer.fused, 128)*8192) + (k.outer*32)) + (k.inner*8)), 1, 8)]))
-            matmul[ramp(8, 1, 8)] = ((float32x8*)matmul[ramp(8, 1, 8)] + (broadcast((float32*)A_2[(((((floordiv(i.outer.outer.j.outer.outer.fused, 128)*8192) + (i.outer.inner*4096)) + (k.outer*4)) + k.inner) + 1024)], 8)*(float32x8*)auto_scheduler_layout_transform[ramp((((floormod(i.outer.outer.j.outer.outer.fused, 128)*8192) + (k.outer*32)) + (k.inner*8)), 1, 8)]))
-            matmul[ramp(16, 1, 8)] = ((float32x8*)matmul[ramp(16, 1, 8)] + (broadcast((float32*)A_2[(((((floordiv(i.outer.outer.j.outer.outer.fused, 128)*8192) + (i.outer.inner*4096)) + (k.outer*4)) + k.inner) + 2048)], 8)*(float32x8*)auto_scheduler_layout_transform[ramp((((floormod(i.outer.outer.j.outer.outer.fused, 128)*8192) + (k.outer*32)) + (k.inner*8)), 1, 8)]))
-            matmul[ramp(24, 1, 8)] = ((float32x8*)matmul[ramp(24, 1, 8)] + (broadcast((float32*)A_2[(((((floordiv(i.outer.outer.j.outer.outer.fused, 128)*8192) + (i.outer.inner*4096)) + (k.outer*4)) + k.inner) + 3072)], 8)*(float32x8*)auto_scheduler_layout_transform[ramp((((floormod(i.outer.outer.j.outer.outer.fused, 128)*8192) + (k.outer*32)) + (k.inner*8)), 1, 8)]))
+            let cse_var_2: int32 = (((floormod(i.outer.outer.j.outer.outer.fused, 128)*8192) + (k.outer*32)) + (k.inner*8))
+            let cse_var_1: int32 = ((((floordiv(i.outer.outer.j.outer.outer.fused, 128)*8192) + (i.outer.inner*4096)) + (k.outer*4)) + k.inner)
+             {
+              matmul[ramp(0, 1, 8)] = ((float32x8*)matmul[ramp(0, 1, 8)] + (broadcast((float32*)A_2[cse_var_1], 8)*(float32x8*)auto_scheduler_layout_transform[ramp(cse_var_2, 1, 8)]))
+              matmul[ramp(8, 1, 8)] = ((float32x8*)matmul[ramp(8, 1, 8)] + (broadcast((float32*)A_2[(cse_var_1 + 1024)], 8)*(float32x8*)auto_scheduler_layout_transform[ramp(cse_var_2, 1, 8)]))
+              matmul[ramp(16, 1, 8)] = ((float32x8*)matmul[ramp(16, 1, 8)] + (broadcast((float32*)A_2[(cse_var_1 + 2048)], 8)*(float32x8*)auto_scheduler_layout_transform[ramp(cse_var_2, 1, 8)]))
+              matmul[ramp(24, 1, 8)] = ((float32x8*)matmul[ramp(24, 1, 8)] + (broadcast((float32*)A_2[(cse_var_1 + 3072)], 8)*(float32x8*)auto_scheduler_layout_transform[ramp(cse_var_2, 1, 8)]))
+            }
           }
         }
         for (i.inner: int32, 0, 4) {
-          out_2[ramp(((((floordiv(i.outer.outer.j.outer.outer.fused, 128)*8192) + (i.outer.inner*4096)) + (i.inner*1024)) + (floormod(i.outer.outer.j.outer.outer.fused, 128)*8)), 1, 8)] = ((float32x8*)matmul[ramp((i.inner*8), 1, 8)] + (float32x8*)C_2[ramp(((((floordiv(i.outer.outer.j.outer.outer.fused, 128)*8192) + (i.outer.inner*4096)) + (i.inner*1024)) + (floormod(i.outer.outer.j.outer.outer.fused, 128)*8)), 1, 8)])
+          let cse_var_3: int32 = ((((floordiv(i.outer.outer.j.outer.outer.fused, 128)*8192) + (i.outer.inner*4096)) + (i.inner*1024)) + (floormod(i.outer.outer.j.outer.outer.fused, 128)*8))
+          out_2[ramp(cse_var_3, 1, 8)] = ((float32x8*)matmul[ramp((i.inner*8), 1, 8)] + (float32x8*)C_2[ramp(cse_var_3, 1, 8)])
         }
       }
     }
@@ -538,7 +544,7 @@ operator fusion.</p>
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Execution time of this operator: 24.636 ms
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Execution time of this operator: 91.622 ms
 </pre></div>
 </div>
 </div>
@@ -604,7 +610,6 @@ resume the status and do more 5 trials.</p>
 <div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Resume search:
 /usr/local/lib/python3.6/dist-packages/xgboost/training.py:17: UserWarning: Old style callback is deprecated.  See: https://xgboost.readthedocs.io/en/latest/python/callbacks.html
   warnings.warn(f&#39;Old style callback is deprecated.  See: {link}&#39;, UserWarning)
-*E
 </pre></div>
 </div>
 </div>

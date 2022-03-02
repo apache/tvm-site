@@ -11,7 +11,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   
-  <title>Reduction &mdash; tvm 0.9.dev182+ge718f5a8a documentation</title>
+  <title>Reduction &mdash; tvm 0.9.dev0 documentation</title>
   
 
   
@@ -169,7 +169,7 @@
             
             
                 <div class="version">
-                  0.9.dev182+ge718f5a8a
+                  0.9.dev0
                 </div>
             
           
@@ -429,7 +429,8 @@ axis by different factors. The result is a nested reduction.</p>
         for (k.outer: int32, 0, floordiv((m + 15), 16)) {
           for (k.inner: int32, 0, 16) {
             if @tir.likely((((k.outer*16) + k.inner) &lt; m), dtype=bool) {
-              B_2[(((i.outer*32) + i.inner)*stride)] = ((float32*)B_2[(((i.outer*32) + i.inner)*stride)] + (float32*)A_2[((((i.outer*32) + i.inner)*stride_1) + (((k.outer*16) + k.inner)*stride_2))])
+              let cse_var_1: int32 = ((i.outer*32) + i.inner)
+              B_2[(cse_var_1*stride)] = ((float32*)B_2[(cse_var_1*stride)] + (float32*)A_2[((cse_var_1*stride_1) + (((k.outer*16) + k.inner)*stride_2))])
             }
           }
         }
@@ -544,7 +545,19 @@ columns by threadIdx.x and finally do a cross thread reduction over threadIdx.x<
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>#ifdef _WIN32
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>#if defined(__CUDA_ARCH__) &amp;&amp; (__CUDA_ARCH__ &lt; 700)
+#define __shfl_sync(mask, var, lane, width) \
+        __shfl((var), (lane), (width))
+
+#define __shfl_down_sync(mask, var, offset, width) \
+        __shfl_down((var), (offset), (width))
+
+#define __shfl_up_sync(mask, var, offset, width) \
+        __shfl_up((var), (offset), (width))
+#endif
+
+
+#ifdef _WIN32
   using uint = unsigned int;
   using uchar = unsigned char;
   using ushort = unsigned short;
@@ -559,7 +572,7 @@ columns by threadIdx.x and finally do a cross thread reduction over threadIdx.x<
 #endif
 extern &quot;C&quot; __global__ void __launch_bounds__(512) default_function_kernel0(float* __restrict__ A, float* __restrict__ B, int m, int n, int stride, int stride1, int stride2) {
   float B_rf[1];
-  __shared__ float red_buf0[512];
+  float red_buf0[1];
   B_rf[(0)] = 0.000000e+00f;
   for (int k_outer = 0; k_outer &lt; (m &gt;&gt; 4); ++k_outer) {
     if (((((int)blockIdx.x) * 32) + ((int)threadIdx.y)) &lt; n) {
@@ -573,22 +586,21 @@ extern &quot;C&quot; __global__ void __launch_bounds__(512) default_function_ker
       }
     }
   }
-  __syncthreads();
-  ((volatile float*)red_buf0)[(((((int)threadIdx.y) * 16) + ((int)threadIdx.x)))] = B_rf[(0)];
-  __syncthreads();
-  if (((int)threadIdx.x) &lt; 8) {
-    float w_8_0 = (((volatile float*)red_buf0)[(((((int)threadIdx.y) * 16) + ((int)threadIdx.x)))] + ((volatile float*)red_buf0)[((((((int)threadIdx.y) * 16) + ((int)threadIdx.x)) + 8))]);
-    ((volatile float*)red_buf0)[(((((int)threadIdx.y) * 16) + ((int)threadIdx.x)))] = w_8_0;
-    float w_4_0 = (((volatile float*)red_buf0)[(((((int)threadIdx.y) * 16) + ((int)threadIdx.x)))] + ((volatile float*)red_buf0)[((((((int)threadIdx.y) * 16) + ((int)threadIdx.x)) + 4))]);
-    ((volatile float*)red_buf0)[(((((int)threadIdx.y) * 16) + ((int)threadIdx.x)))] = w_4_0;
-    float w_2_0 = (((volatile float*)red_buf0)[(((((int)threadIdx.y) * 16) + ((int)threadIdx.x)))] + ((volatile float*)red_buf0)[((((((int)threadIdx.y) * 16) + ((int)threadIdx.x)) + 2))]);
-    ((volatile float*)red_buf0)[(((((int)threadIdx.y) * 16) + ((int)threadIdx.x)))] = w_2_0;
-    float w_1_0 = (((volatile float*)red_buf0)[(((((int)threadIdx.y) * 16) + ((int)threadIdx.x)))] + ((volatile float*)red_buf0)[((((((int)threadIdx.y) * 16) + ((int)threadIdx.x)) + 1))]);
-    ((volatile float*)red_buf0)[(((((int)threadIdx.y) * 16) + ((int)threadIdx.x)))] = w_1_0;
-  }
-  __syncthreads();
+  uint mask[1];
+  float t0[1];
+  red_buf0[(0)] = B_rf[(0)];
+  mask[(0)] = (__activemask() &amp; ((uint)(65535 &lt;&lt; (((int)threadIdx.y) * 16))));
+  t0[(0)] = __shfl_down_sync(mask[(0)], red_buf0[(0)], 8, 32);
+  red_buf0[(0)] = (red_buf0[(0)] + t0[(0)]);
+  t0[(0)] = __shfl_down_sync(mask[(0)], red_buf0[(0)], 4, 32);
+  red_buf0[(0)] = (red_buf0[(0)] + t0[(0)]);
+  t0[(0)] = __shfl_down_sync(mask[(0)], red_buf0[(0)], 2, 32);
+  red_buf0[(0)] = (red_buf0[(0)] + t0[(0)]);
+  t0[(0)] = __shfl_down_sync(mask[(0)], red_buf0[(0)], 1, 32);
+  red_buf0[(0)] = (red_buf0[(0)] + t0[(0)]);
+  red_buf0[(0)] = __shfl_sync(mask[(0)], red_buf0[(0)], (((int)threadIdx.y) * 16), 32);
   if (((int)threadIdx.x) == 0) {
-    B[((((((int)blockIdx.x) * 32) + ((int)threadIdx.y)) * stride2))] = ((volatile float*)red_buf0)[((((int)threadIdx.y) * 16))];
+    B[((((((int)blockIdx.x) * 32) + ((int)threadIdx.y)) * stride2))] = red_buf0[(0)];
   }
 }
 </pre></div>

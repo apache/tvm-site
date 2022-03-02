@@ -243,8 +243,8 @@ helper function to run a profile of the TVM generated code.
 
  .. code-block:: none
 
-    Numpy running time: 0.000007
-    naive: 0.000005
+    Numpy running time: 0.000008
+    naive: 0.000006
 
 
 
@@ -334,7 +334,7 @@ compile and run this new schedule with the parallel operation applied:
 
  .. code-block:: none
 
-    parallel: 0.000004
+    parallel: 0.000006
 
 
 
@@ -387,7 +387,7 @@ factor to be the number of threads on your CPU.
 
  .. code-block:: none
 
-    vector: 0.000022
+    vector: 0.000025
     @main = primfn(A_1: handle, B_1: handle, C_1: handle) -> ()
       attr = {"from_legacy_te_schedule": True, "global_symbol": "main", "tir.noalias": True}
       buffers = {C: Buffer(C_2: Pointer(float32), float32, [n: int32], [stride: int32], type="auto"),
@@ -397,7 +397,8 @@ factor to be the number of threads on your CPU.
       for (i.outer: int32, 0, floordiv((n + 3), 4)) "parallel" {
         for (i.inner.s: int32, 0, 4) {
           if @tir.likely((((i.outer*4) + i.inner.s) < n), dtype=bool) {
-            C_2[(((i.outer*4) + i.inner.s)*stride)] = ((float32*)A_2[(((i.outer*4) + i.inner.s)*stride_1)] + (float32*)B_2[(((i.outer*4) + i.inner.s)*stride_2)])
+            let cse_var_1: int32 = ((i.outer*4) + i.inner.s)
+            C_2[(cse_var_1*stride)] = ((float32*)A_2[(cse_var_1*stride_1)] + (float32*)B_2[(cse_var_1*stride_2)])
           }
         }
       }
@@ -435,10 +436,10 @@ We can now compare the different schedules
  .. code-block:: none
 
                 Operator                  Timing             Performance
-                   numpy    6.619859486818314e-06                    1.0
-                   naive              4.9303e-06      0.7447741164019234
-                parallel              4.4504e-06       0.672280130546847
-                  vector             2.20605e-05      3.3324725462719575
+                   numpy    8.104600001388462e-06                    1.0
+                   naive    5.6384999999999995e-06    0.6957160130091583
+                parallel              5.8256e-06      0.7188016680652927
+                  vector             2.50895e-05      3.0957110771292506
 
 
 
@@ -606,7 +607,7 @@ The following code first performs the following steps:
 
  .. code-block:: none
 
-    ['myadd.o', 'myadd.so']
+    ['myadd.so', 'myadd.o']
 
 
 
@@ -827,7 +828,7 @@ matrix multiplication.
 
  .. code-block:: none
 
-    Numpy running time: 0.019480
+    Numpy running time: 0.014043
 
 
 
@@ -883,7 +884,7 @@ optimizations.
 
  .. code-block:: none
 
-    none: 6.920286
+    none: 3.217671
 
 
 
@@ -918,7 +919,9 @@ nested loops over the indices of the A and B matrices.
         for (y: int32, 0, 1024) {
           C_2[((x*1024) + y)] = 0f32
           for (k: int32, 0, 1024) {
-            C_2[((x*1024) + y)] = ((float32*)C_2[((x*1024) + y)] + ((float32*)A_2[((x*1024) + k)]*(float32*)B_2[((k*1024) + y)]))
+            let cse_var_2: int32 = (x*1024)
+            let cse_var_1: int32 = (cse_var_2 + y)
+            C_2[cse_var_1] = ((float32*)C_2[cse_var_1] + ((float32*)A_2[(cse_var_2 + k)]*(float32*)B_2[((k*1024) + y)]))
           }
         }
       }
@@ -979,7 +982,7 @@ schedule.
 
  .. code-block:: none
 
-    blocking: 0.198564
+    blocking: 0.289537
 
 
 
@@ -1020,7 +1023,10 @@ internal representation and compare it to the original:
             for (k.inner: int32, 0, 4) {
               for (x.inner: int32, 0, 32) {
                 for (y.inner: int32, 0, 32) {
-                  C_2[((((x.outer*32768) + (x.inner*1024)) + (y.outer*32)) + y.inner)] = ((float32*)C_2[((((x.outer*32768) + (x.inner*1024)) + (y.outer*32)) + y.inner)] + ((float32*)A_2[((((x.outer*32768) + (x.inner*1024)) + (k.outer*4)) + k.inner)]*(float32*)B_2[((((k.outer*4096) + (k.inner*1024)) + (y.outer*32)) + y.inner)]))
+                  let cse_var_3: int32 = (y.outer*32)
+                  let cse_var_2: int32 = ((x.outer*32768) + (x.inner*1024))
+                  let cse_var_1: int32 = ((cse_var_2 + cse_var_3) + y.inner)
+                  C_2[cse_var_1] = ((float32*)C_2[cse_var_1] + ((float32*)A_2[((cse_var_2 + (k.outer*4)) + k.inner)]*(float32*)B_2[((((k.outer*4096) + (k.inner*1024)) + cse_var_3) + y.inner)]))
                 }
               }
             }
@@ -1067,7 +1073,7 @@ already cache friendly from our previous optimizations.
 
  .. code-block:: none
 
-    vectorization: 0.145182
+    vectorization: 0.326130
     @main = primfn(A_1: handle, B_1: handle, C_1: handle) -> ()
       attr = {"from_legacy_te_schedule": True, "global_symbol": "main", "tir.noalias": True}
       buffers = {C: Buffer(C_2: Pointer(float32), float32, [1024, 1024], []),
@@ -1082,7 +1088,10 @@ already cache friendly from our previous optimizations.
           for (k.outer: int32, 0, 256) {
             for (k.inner: int32, 0, 4) {
               for (x.inner: int32, 0, 32) {
-                C_2[ramp((((x.outer*32768) + (x.inner*1024)) + (y.outer*32)), 1, 32)] = ((float32x32*)C_2[ramp((((x.outer*32768) + (x.inner*1024)) + (y.outer*32)), 1, 32)] + (broadcast((float32*)A_2[((((x.outer*32768) + (x.inner*1024)) + (k.outer*4)) + k.inner)], 32)*(float32x32*)B_2[ramp((((k.outer*4096) + (k.inner*1024)) + (y.outer*32)), 1, 32)]))
+                let cse_var_3: int32 = (y.outer*32)
+                let cse_var_2: int32 = ((x.outer*32768) + (x.inner*1024))
+                let cse_var_1: int32 = (cse_var_2 + cse_var_3)
+                C_2[ramp(cse_var_1, 1, 32)] = ((float32x32*)C_2[ramp(cse_var_1, 1, 32)] + (broadcast((float32*)A_2[((cse_var_2 + (k.outer*4)) + k.inner)], 32)*(float32x32*)B_2[ramp((((k.outer*4096) + (k.inner*1024)) + cse_var_3), 1, 32)]))
               }
             }
           }
@@ -1135,7 +1144,7 @@ more cache friendly.
 
  .. code-block:: none
 
-    loop permutation: 0.082540
+    loop permutation: 0.111087
     @main = primfn(A_1: handle, B_1: handle, C_1: handle) -> ()
       attr = {"from_legacy_te_schedule": True, "global_symbol": "main", "tir.noalias": True}
       buffers = {C: Buffer(C_2: Pointer(float32), float32, [1024, 1024], []),
@@ -1150,7 +1159,10 @@ more cache friendly.
           for (k.outer: int32, 0, 256) {
             for (x.inner: int32, 0, 32) {
               for (k.inner: int32, 0, 4) {
-                C_2[ramp((((x.outer*32768) + (x.inner*1024)) + (y.outer*32)), 1, 32)] = ((float32x32*)C_2[ramp((((x.outer*32768) + (x.inner*1024)) + (y.outer*32)), 1, 32)] + (broadcast((float32*)A_2[((((x.outer*32768) + (x.inner*1024)) + (k.outer*4)) + k.inner)], 32)*(float32x32*)B_2[ramp((((k.outer*4096) + (k.inner*1024)) + (y.outer*32)), 1, 32)]))
+                let cse_var_3: int32 = (y.outer*32)
+                let cse_var_2: int32 = ((x.outer*32768) + (x.inner*1024))
+                let cse_var_1: int32 = (cse_var_2 + cse_var_3)
+                C_2[ramp(cse_var_1, 1, 32)] = ((float32x32*)C_2[ramp(cse_var_1, 1, 32)] + (broadcast((float32*)A_2[((cse_var_2 + (k.outer*4)) + k.inner)], 32)*(float32x32*)B_2[ramp((((k.outer*4096) + (k.inner*1024)) + cse_var_3), 1, 32)]))
               }
             }
           }
@@ -1228,7 +1240,7 @@ optimized schedule.
 
  .. code-block:: none
 
-    array packing: 0.105897
+    array packing: 0.103804
     @main = primfn(A_1: handle, B_1: handle, C_1: handle) -> ()
       attr = {"from_legacy_te_schedule": True, "global_symbol": "main", "tir.noalias": True}
       buffers = {C: Buffer(C_2: Pointer(float32), float32, [1024, 1024], []),
@@ -1249,7 +1261,9 @@ optimized schedule.
             for (k.outer: int32, 0, 256) {
               for (x.inner: int32, 0, 32) {
                 for (k.inner: int32, 0, 4) {
-                  C_2[ramp((((x.outer*32768) + (x.inner*1024)) + (y.outer*32)), 1, 32)] = ((float32x32*)C_2[ramp((((x.outer*32768) + (x.inner*1024)) + (y.outer*32)), 1, 32)] + (broadcast((float32*)A_2[((((x.outer*32768) + (x.inner*1024)) + (k.outer*4)) + k.inner)], 32)*(float32x32*)packedB[ramp((((y.outer*32768) + (k.outer*128)) + (k.inner*32)), 1, 32)]))
+                  let cse_var_2: int32 = ((x.outer*32768) + (x.inner*1024))
+                  let cse_var_1: int32 = (cse_var_2 + (y.outer*32))
+                  C_2[ramp(cse_var_1, 1, 32)] = ((float32x32*)C_2[ramp(cse_var_1, 1, 32)] + (broadcast((float32*)A_2[((cse_var_2 + (k.outer*4)) + k.inner)], 32)*(float32x32*)packedB[ramp((((y.outer*32768) + (k.outer*128)) + (k.inner*32)), 1, 32)]))
                 }
               }
             }
@@ -1315,7 +1329,7 @@ to `C` when all the block results are ready.
 
  .. code-block:: none
 
-    block caching: 0.094381
+    block caching: 0.094891
     @main = primfn(A_1: handle, B_1: handle, C_1: handle) -> ()
       attr = {"from_legacy_te_schedule": True, "global_symbol": "main", "tir.noalias": True}
       buffers = {C: Buffer(C_2: Pointer(float32), float32, [1024, 1024], []),
@@ -1336,10 +1350,15 @@ to `C` when all the block results are ready.
             }
             for (k.outer: int32, 0, 256) {
               for (x.c: int32, 0, 32) {
-                C.global[ramp((x.c*32), 1, 32)] = ((float32x32*)C.global[ramp((x.c*32), 1, 32)] + (broadcast((float32*)A_2[(((x.outer*32768) + (x.c*1024)) + (k.outer*4))], 32)*(float32x32*)packedB[ramp(((y.outer*32768) + (k.outer*128)), 1, 32)]))
-                C.global[ramp((x.c*32), 1, 32)] = ((float32x32*)C.global[ramp((x.c*32), 1, 32)] + (broadcast((float32*)A_2[((((x.outer*32768) + (x.c*1024)) + (k.outer*4)) + 1)], 32)*(float32x32*)packedB[ramp((((y.outer*32768) + (k.outer*128)) + 32), 1, 32)]))
-                C.global[ramp((x.c*32), 1, 32)] = ((float32x32*)C.global[ramp((x.c*32), 1, 32)] + (broadcast((float32*)A_2[((((x.outer*32768) + (x.c*1024)) + (k.outer*4)) + 2)], 32)*(float32x32*)packedB[ramp((((y.outer*32768) + (k.outer*128)) + 64), 1, 32)]))
-                C.global[ramp((x.c*32), 1, 32)] = ((float32x32*)C.global[ramp((x.c*32), 1, 32)] + (broadcast((float32*)A_2[((((x.outer*32768) + (x.c*1024)) + (k.outer*4)) + 3)], 32)*(float32x32*)packedB[ramp((((y.outer*32768) + (k.outer*128)) + 96), 1, 32)]))
+                let cse_var_3: int32 = (x.c*32)
+                let cse_var_2: int32 = ((y.outer*32768) + (k.outer*128))
+                let cse_var_1: int32 = (((x.outer*32768) + (x.c*1024)) + (k.outer*4))
+                 {
+                  C.global[ramp(cse_var_3, 1, 32)] = ((float32x32*)C.global[ramp(cse_var_3, 1, 32)] + (broadcast((float32*)A_2[cse_var_1], 32)*(float32x32*)packedB[ramp(cse_var_2, 1, 32)]))
+                  C.global[ramp(cse_var_3, 1, 32)] = ((float32x32*)C.global[ramp(cse_var_3, 1, 32)] + (broadcast((float32*)A_2[(cse_var_1 + 1)], 32)*(float32x32*)packedB[ramp((cse_var_2 + 32), 1, 32)]))
+                  C.global[ramp(cse_var_3, 1, 32)] = ((float32x32*)C.global[ramp(cse_var_3, 1, 32)] + (broadcast((float32*)A_2[(cse_var_1 + 2)], 32)*(float32x32*)packedB[ramp((cse_var_2 + 64), 1, 32)]))
+                  C.global[ramp(cse_var_3, 1, 32)] = ((float32x32*)C.global[ramp(cse_var_3, 1, 32)] + (broadcast((float32*)A_2[(cse_var_1 + 3)], 32)*(float32x32*)packedB[ramp((cse_var_2 + 96), 1, 32)]))
+                }
               }
             }
             for (x.inner: int32, 0, 32) {
@@ -1392,7 +1411,7 @@ of thread-level parallelization.
 
  .. code-block:: none
 
-    parallelization: 0.021283
+    parallelization: 0.125543
     @main = primfn(A_1: handle, B_1: handle, C_1: handle) -> ()
       attr = {"from_legacy_te_schedule": True, "global_symbol": "main", "tir.noalias": True}
       buffers = {C: Buffer(C_2: Pointer(float32), float32, [1024, 1024], []),
@@ -1413,10 +1432,15 @@ of thread-level parallelization.
             }
             for (k.outer: int32, 0, 256) {
               for (x.c: int32, 0, 32) {
-                C.global[ramp((x.c*32), 1, 32)] = ((float32x32*)C.global[ramp((x.c*32), 1, 32)] + (broadcast((float32*)A_2[(((x.outer*32768) + (x.c*1024)) + (k.outer*4))], 32)*(float32x32*)packedB[ramp(((y.outer*32768) + (k.outer*128)), 1, 32)]))
-                C.global[ramp((x.c*32), 1, 32)] = ((float32x32*)C.global[ramp((x.c*32), 1, 32)] + (broadcast((float32*)A_2[((((x.outer*32768) + (x.c*1024)) + (k.outer*4)) + 1)], 32)*(float32x32*)packedB[ramp((((y.outer*32768) + (k.outer*128)) + 32), 1, 32)]))
-                C.global[ramp((x.c*32), 1, 32)] = ((float32x32*)C.global[ramp((x.c*32), 1, 32)] + (broadcast((float32*)A_2[((((x.outer*32768) + (x.c*1024)) + (k.outer*4)) + 2)], 32)*(float32x32*)packedB[ramp((((y.outer*32768) + (k.outer*128)) + 64), 1, 32)]))
-                C.global[ramp((x.c*32), 1, 32)] = ((float32x32*)C.global[ramp((x.c*32), 1, 32)] + (broadcast((float32*)A_2[((((x.outer*32768) + (x.c*1024)) + (k.outer*4)) + 3)], 32)*(float32x32*)packedB[ramp((((y.outer*32768) + (k.outer*128)) + 96), 1, 32)]))
+                let cse_var_3: int32 = (x.c*32)
+                let cse_var_2: int32 = ((y.outer*32768) + (k.outer*128))
+                let cse_var_1: int32 = (((x.outer*32768) + (x.c*1024)) + (k.outer*4))
+                 {
+                  C.global[ramp(cse_var_3, 1, 32)] = ((float32x32*)C.global[ramp(cse_var_3, 1, 32)] + (broadcast((float32*)A_2[cse_var_1], 32)*(float32x32*)packedB[ramp(cse_var_2, 1, 32)]))
+                  C.global[ramp(cse_var_3, 1, 32)] = ((float32x32*)C.global[ramp(cse_var_3, 1, 32)] + (broadcast((float32*)A_2[(cse_var_1 + 1)], 32)*(float32x32*)packedB[ramp((cse_var_2 + 32), 1, 32)]))
+                  C.global[ramp(cse_var_3, 1, 32)] = ((float32x32*)C.global[ramp(cse_var_3, 1, 32)] + (broadcast((float32*)A_2[(cse_var_1 + 2)], 32)*(float32x32*)packedB[ramp((cse_var_2 + 64), 1, 32)]))
+                  C.global[ramp(cse_var_3, 1, 32)] = ((float32x32*)C.global[ramp(cse_var_3, 1, 32)] + (broadcast((float32*)A_2[(cse_var_1 + 3)], 32)*(float32x32*)packedB[ramp((cse_var_2 + 96), 1, 32)]))
+                }
               }
             }
             for (x.inner: int32, 0, 32) {
@@ -1464,13 +1488,13 @@ working, we can compare the results.
  .. code-block:: none
 
                 Operator                  Timing             Performance
-                    none       6.920285553400001                     1.0
-                blocking            0.1985643645    0.028693088307959122
-           vectorization            0.1451821941    0.020979220146294487
-        loop permutation            0.0825396215    0.011927198793039329
-           array packing             0.105896599    0.015302345283710439
-           block caching     0.09438099479999999    0.013638309296880058
-         parallelization    0.021282874200000003    0.003075432947928504
+                    none      3.2176713028000004                     1.0
+                blocking     0.28953682459999996     0.08998334427386867
+           vectorization            0.3261302856     0.10135599783489481
+        loop permutation            0.1110869506     0.03452402068021452
+           array packing     0.10380390890000002    0.032260569564601084
+           block caching     0.09489119030000001      0.0294906413272935
+         parallelization            0.1255432151     0.03901679298030006
 
 
 
@@ -1503,11 +1527,6 @@ Upcoming tutorials expand on the matrix multiplication example, and show how
 you can build generic templates of the matrix multiplication and other
 operations with tunable parameters that allows you to automatically optimize
 the computation for specific platforms.
-
-
-.. rst-class:: sphx-glr-timing
-
-   **Total running time of the script:** ( 1 minutes  41.156 seconds)
 
 
 .. _sphx_glr_download_tutorial_tensor_expr_get_started.py:
