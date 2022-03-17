@@ -6,7 +6,7 @@ var searchData=
   ['auto_5fscheduler',['auto_scheduler',['../namespacetvm_1_1auto__scheduler.html',1,'tvm']]],
   ['builtin',['builtin',['../namespacetvm_1_1tir_1_1builtin.html',1,'tvm::tir']]],
   ['codegen',['codegen',['../namespacetvm_1_1codegen.html',1,'tvm']]],
-  ['contrib',['contrib',['../namespacetvm_1_1topi_1_1contrib.html',1,'tvm::topi']]],
+  ['contrib',['contrib',['../namespacetvm_1_1runtime_1_1contrib.html',1,'tvm::runtime::contrib'],['../namespacetvm_1_1topi_1_1contrib.html',1,'tvm::topi::contrib']]],
   ['cuda',['cuda',['../namespacetvm_1_1topi_1_1cuda.html',1,'tvm::topi']]],
   ['detail',['detail',['../namespacetvm_1_1detail.html',1,'tvm']]],
   ['generic',['generic',['../namespacetvm_1_1topi_1_1generic.html',1,'tvm::topi']]],

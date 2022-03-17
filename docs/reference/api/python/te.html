@@ -1896,6 +1896,9 @@ over the factored tensor.</p>
 <tr class="row-even"><td><p><a class="reference internal" href="#tvm.te.Stage.rolling_buffer" title="tvm.te.Stage.rolling_buffer"><code class="xref py py-obj docutils literal notranslate"><span class="pre">rolling_buffer</span></code></a>()</p></td>
 <td><p>Compute the current stage via rolling buffering.</p></td>
 </tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#tvm.te.Stage.transform_layout" title="tvm.te.Stage.transform_layout"><code class="xref py py-obj docutils literal notranslate"><span class="pre">transform_layout</span></code></a>(mapping_function)</p></td>
+<td><p>Defines the layout transformation for the current stage's tensor.</p></td>
+</tr>
 </tbody>
 </table>
 <dl class="py method">
@@ -2204,6 +2207,75 @@ Can be useful to hide load latency.</p>
 <dd><p>Compute the current stage via rolling buffering.</p>
 <p>This can only be applied to intermediate stage.
 This will change the storage cost of the current stage.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="tvm.te.Stage.transform_layout">
+<span class="sig-name descname"><span class="pre">transform_layout</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mapping_function</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Callable</span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">[</span></span><span class="p"><span class="pre">...</span></span><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span> </span><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="ir.html#tvm.ir.PrimExpr" title="tvm.ir.expr.PrimExpr"><span class="pre">tvm.ir.expr.PrimExpr</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#tvm.te.Stage.transform_layout" title="Permalink to this definition">¶</a></dt>
+<dd><p>Defines the layout transformation for the current stage’s tensor.</p>
+<p>The map from initial_indices to final_indices must be an
+invertible affine transformation.  This method may be called
+more than once for a given tensor, in which case each
+transformation is applied sequentially.</p>
+<p>If the stage is a ComputeOp, then the iteration order of the
+compute stage is rewritten to be a row-major traversal of the
+tensor, and the new loop iteration variables are returned.
+For all other stages, the loop iteration order is unmodified,
+and the return value is None.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>mapping_function</strong> (<em>Callable</em><em>[</em><em>...</em><em>, </em><em>List</em><em>[</em><em>tvm.tir.PrimExpr</em><em>]</em><em>]</em>) – A callable that accepts N arguments of type tvm.tir.Var,
+and outputs a list of PrimExpr.  The input arguments
+represent the location of a value in the current stage’s
+tensor, using the pre-transformation layout.  The return
+value of the function gives the location of that value in
+the current stage’s tensor, using the post-transformation
+layout.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><p><strong>new_iter_vars</strong> – If the stage is a ComputeOp, then the return will be the
+updated loop iteration variables over the data array, in
+the same order as the output values from the
+<cite>mapping_function</cite>.</p>
+<p>Otherwise, the return value is None.</p>
+</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>Optional[List[<a class="reference internal" href="tir.html#tvm.tir.IterVar" title="tvm.tir.IterVar">tvm.tir.IterVar</a>]]</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># ``A`` is a tensor whose compute definition is in NHWC</span>
+<span class="c1"># format, and should be transformed into NCHWc format.</span>
+
+<span class="n">s</span><span class="p">[</span><span class="n">A</span><span class="p">]</span><span class="o">.</span><span class="n">transform_layout</span><span class="p">(</span>
+    <span class="k">lambda</span> <span class="n">n</span><span class="p">,</span><span class="n">h</span><span class="p">,</span><span class="n">w</span><span class="p">,</span><span class="n">c</span><span class="p">:</span> <span class="p">[</span><span class="n">n</span><span class="p">,</span> <span class="n">c</span><span class="o">//</span><span class="mi">4</span><span class="p">,</span> <span class="n">h</span><span class="p">,</span> <span class="n">w</span><span class="p">,</span> <span class="n">c</span><span class="o">%</span><span class="mi">4</span><span class="p">]</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># ``A`` is a tensor whose compute definition is in an</span>
+<span class="c1"># arbitrary format, and should be transformed such that</span>
+<span class="c1"># the last index is split, with the slower-changing index</span>
+<span class="c1"># of the split placed at the slowest changing dimension.</span>
+
+<span class="n">s</span><span class="p">[</span><span class="n">A</span><span class="p">]</span><span class="o">.</span><span class="n">transform_layout</span><span class="p">(</span>
+    <span class="k">lambda</span> <span class="o">*</span><span class="n">indices</span><span class="p">,</span> <span class="n">i</span><span class="p">:</span> <span class="p">[</span><span class="n">i</span><span class="o">//</span><span class="mi">4</span><span class="p">,</span> <span class="o">*</span><span class="n">indices</span><span class="p">,</span> <span class="n">i</span><span class="o">%</span><span class="mi">4</span><span class="p">]</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># ``B`` is a tensor defined by te.compute to be a copy of</span>
+<span class="c1"># ``A`, and should be transformed such that ``B``&#39;s layout</span>
+<span class="c1"># is a transpose of ``A``&#39;s layout.  The loop iteration</span>
+<span class="c1"># that computes ``B`` will correspond to ``B``&#39;s memory</span>
+<span class="c1"># layout.</span>
+
+<span class="n">A</span> <span class="o">=</span> <span class="n">te</span><span class="o">.</span><span class="n">placeholder</span><span class="p">([</span><span class="n">n</span><span class="p">,</span><span class="n">m</span><span class="p">])</span>
+<span class="n">B</span> <span class="o">=</span> <span class="n">te</span><span class="o">.</span><span class="n">compute</span><span class="p">(</span><span class="n">A</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="k">lambda</span> <span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">:</span> <span class="n">A</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">])</span>
+<span class="n">s</span> <span class="o">=</span> <span class="n">te</span><span class="o">.</span><span class="n">create_schedule</span><span class="p">(</span><span class="n">B</span><span class="o">.</span><span class="n">op</span><span class="p">)</span>
+
+<span class="n">s</span><span class="p">[</span><span class="n">B</span><span class="p">]</span><span class="o">.</span><span class="n">transform_layout</span><span class="p">(</span><span class="k">lambda</span> <span class="n">i</span><span class="p">,</span><span class="n">j</span><span class="p">:</span> <span class="p">[</span><span class="n">j</span><span class="p">,</span><span class="n">i</span><span class="p">])</span>
+</pre></div>
+</div>
 </dd></dl>
 
 </dd></dl>
@@ -2686,7 +2758,7 @@ When str is passed, dom is set to None and str is used as tag</p></li>
 <dd><p>Create a TensorIR PrimFunc from tensor expression</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>ops</strong> (<a class="reference internal" href="relay/dataflow_pattern.html#tvm.relay.dataflow_pattern.List" title="tvm.relay.dataflow_pattern.List"><em>List</em></a><em>[</em><a class="reference internal" href="#tvm.te.Tensor" title="tvm.te.Tensor"><em>Tensor</em></a><em>]</em>) – The source expression.</p>
+<dd class="field-odd"><p><strong>ops</strong> (<em>List</em><em>[</em><a class="reference internal" href="#tvm.te.Tensor" title="tvm.te.Tensor"><em>Tensor</em></a><em>]</em>) – The source expression.</p>
 </dd>
 </dl>
 <p class="rubric">Example</p>
@@ -2737,7 +2809,7 @@ The generated function looks like:</p>
 <dd><p>Create a TensorIR PrimFunc from output tensor(s) in TE</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
-<dd class="field-odd"><p><strong>outputs</strong> (<em>Union</em><em>[</em><a class="reference internal" href="#tvm.te.Tensor" title="tvm.te.Tensor"><em>Tensor</em></a><em>, </em><a class="reference internal" href="relay/dataflow_pattern.html#tvm.relay.dataflow_pattern.List" title="tvm.relay.dataflow_pattern.List"><em>List</em></a><em>[</em><a class="reference internal" href="#tvm.te.Tensor" title="tvm.te.Tensor"><em>Tensor</em></a><em>]</em><em>]</em>) – The source expression.</p>
+<dd class="field-odd"><p><strong>outputs</strong> (<em>Union</em><em>[</em><a class="reference internal" href="#tvm.te.Tensor" title="tvm.te.Tensor"><em>Tensor</em></a><em>, </em><em>List</em><em>[</em><a class="reference internal" href="#tvm.te.Tensor" title="tvm.te.Tensor"><em>Tensor</em></a><em>]</em><em>]</em>) – The source expression.</p>
 </dd>
 <dt class="field-even">Returns</dt>
 <dd class="field-even"><p><strong>func</strong> – The created function.</p>
@@ -2828,7 +2900,7 @@ The generated function looks like:</p>
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>output</strong> (<a class="reference internal" href="#tvm.te.Tensor" title="tvm.te.Tensor"><em>Tensor</em></a>) – The tensor to differentiate.</p></li>
-<li><p><strong>inputs</strong> (<a class="reference internal" href="relay/dataflow_pattern.html#tvm.relay.dataflow_pattern.List" title="tvm.relay.dataflow_pattern.List"><em>List</em></a><em>[</em><a class="reference internal" href="#tvm.te.Tensor" title="tvm.te.Tensor"><em>Tensor</em></a><em>]</em>) – The list of input tensors to be differentiated wrt.</p></li>
+<li><p><strong>inputs</strong> (<em>List</em><em>[</em><a class="reference internal" href="#tvm.te.Tensor" title="tvm.te.Tensor"><em>Tensor</em></a><em>]</em>) – The list of input tensors to be differentiated wrt.</p></li>
 <li><p><strong>head</strong> (<a class="reference internal" href="#tvm.te.Tensor" title="tvm.te.Tensor"><em>Tensor</em></a>) – The adjoint of the output, in other words, some tensor, by which the Jacobians
 will be multiplied. Its shape must be of the form <cite>prefix + output.shape</cite>.
 If <cite>None</cite> is passed, the identity tensor of shape <cite>output.shape + output.shape</cite>
@@ -2839,7 +2911,7 @@ will be used.</p></li>
 <dd class="field-even"><p><strong>tensors</strong> – The result gradient, in the same order as the inputs</p>
 </dd>
 <dt class="field-odd">Return type</dt>
-<dd class="field-odd"><p><a class="reference internal" href="relay/dataflow_pattern.html#tvm.relay.dataflow_pattern.List" title="tvm.relay.dataflow_pattern.List">List</a>[<a class="reference internal" href="#tvm.te.Tensor" title="tvm.te.Tensor">Tensor</a>]</p>
+<dd class="field-odd"><p>List[<a class="reference internal" href="#tvm.te.Tensor" title="tvm.te.Tensor">Tensor</a>]</p>
 </dd>
 </dl>
 <p class="rubric">Example</p>

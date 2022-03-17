@@ -397,20 +397,20 @@ To split on the time iteration, user can schedule on scan_op.scan_axis instead.<
 <p class="sphx-glr-script-out">Out:</p>
 <div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>@main = primfn(X_1: handle, scan_1: handle) -&gt; ()
   attr = {&quot;from_legacy_te_schedule&quot;: True, &quot;global_symbol&quot;: &quot;main&quot;, &quot;tir.noalias&quot;: True}
-  buffers = {scan: Buffer(scan_2: Pointer(float32), float32, [m: int32, n: int32], [stride: int32, stride_1: int32], type=&quot;auto&quot;),
-             X: Buffer(X_2: Pointer(float32), float32, [m, n], [stride_2: int32, stride_3: int32], type=&quot;auto&quot;)}
+  buffers = {scan: Buffer(scan_2: Pointer(float32), float32, [(stride: int32*m: int32)], [], type=&quot;auto&quot;),
+             X: Buffer(X_2: Pointer(float32), float32, [(stride_1: int32*m)], [], type=&quot;auto&quot;)}
   buffer_map = {X_1: X, scan_1: scan} {
-  attr [IterVar(blockIdx.x: int32, (nullptr), &quot;ThreadIndex&quot;, &quot;blockIdx.x&quot;)] &quot;thread_extent&quot; = floordiv((n + 255), 256);
+  attr [IterVar(blockIdx.x: int32, (nullptr), &quot;ThreadIndex&quot;, &quot;blockIdx.x&quot;)] &quot;thread_extent&quot; = floordiv((n: int32 + 255), 256);
   attr [IterVar(threadIdx.x: int32, (nullptr), &quot;ThreadIndex&quot;, &quot;threadIdx.x&quot;)] &quot;thread_extent&quot; = 256;
   if @tir.likely((((blockIdx.x*256) + threadIdx.x) &lt; n), dtype=bool) {
-    scan_2[(((blockIdx.x*256) + threadIdx.x)*stride_1)] = (float32*)X_2[(((blockIdx.x*256) + threadIdx.x)*stride_3)]
+    scan[(((blockIdx.x*256) + threadIdx.x)*stride_2: int32)] = X[(((blockIdx.x*256) + threadIdx.x)*stride_3: int32)]
   }
   for (scan.idx: int32, 0, (m - 1)) {
     attr [IterVar(blockIdx.x, (nullptr), &quot;ThreadIndex&quot;, &quot;blockIdx.x&quot;)] &quot;thread_extent&quot; = floordiv((n + 255), 256);
     attr [IterVar(threadIdx.x, (nullptr), &quot;ThreadIndex&quot;, &quot;threadIdx.x&quot;)] &quot;thread_extent&quot; = 256;
     if @tir.likely((((blockIdx.x*256) + threadIdx.x) &lt; n), dtype=bool) {
       let cse_var_1: int32 = (scan.idx + 1)
-      scan_2[((cse_var_1*stride) + (((blockIdx.x*256) + threadIdx.x)*stride_1))] = ((float32*)scan_2[((scan.idx*stride) + (((blockIdx.x*256) + threadIdx.x)*stride_1))] + (float32*)X_2[((cse_var_1*stride_2) + (((blockIdx.x*256) + threadIdx.x)*stride_3))])
+      scan[((cse_var_1*stride) + (((blockIdx.x*256) + threadIdx.x)*stride_2))] = (scan[((scan.idx*stride) + (((blockIdx.x*256) + threadIdx.x)*stride_2))] + X[((cse_var_1*stride_1) + (((blockIdx.x*256) + threadIdx.x)*stride_3))])
     }
   }
 }
@@ -462,25 +462,25 @@ the body of scan to be compute_at locations outside the scan loop.</p>
 <p class="sphx-glr-script-out">Out:</p>
 <div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>@main = primfn(X_1: handle, scan_1: handle) -&gt; ()
   attr = {&quot;from_legacy_te_schedule&quot;: True, &quot;global_symbol&quot;: &quot;main&quot;, &quot;tir.noalias&quot;: True}
-  buffers = {scan: Buffer(scan_2: Pointer(float32), float32, [m: int32, n: int32], [stride: int32, stride_1: int32], type=&quot;auto&quot;),
-             X: Buffer(X_2: Pointer(float32), float32, [m, n], [stride_2: int32, stride_3: int32], type=&quot;auto&quot;)}
+  buffers = {scan: Buffer(scan_2: Pointer(float32), float32, [(stride: int32*m: int32)], [], type=&quot;auto&quot;),
+             X: Buffer(X_2: Pointer(float32), float32, [(stride_1: int32*m)], [], type=&quot;auto&quot;)}
   buffer_map = {X_1: X, scan_1: scan} {
   allocate(s1: Pointer(global float32), float32, [32]), storage_scope = global {
-    for (i: int32, 0, n) {
-      scan_2[(i*stride_1)] = (float32*)X_2[(i*stride_3)]
+    for (i: int32, 0, n: int32) {
+      scan[(i*stride_2: int32)] = X[(i*stride_3: int32)]
     }
     for (scan.idx: int32, 0, (m - 1)) {
       for (i.outer: int32, 0, floordiv((n + 31), 32)) {
         for (i_1: int32, 0, 32) {
           if @tir.likely((((i.outer*32) + i_1) &lt; n), dtype=bool) {
-            s1[i_1] = ((float32*)scan_2[((scan.idx*stride) + (((i.outer*32) + i_1)*stride_1))]*2f32)
+            s1_1: Buffer(s1, float32, [32], [])[i_1] = (scan[((scan.idx*stride) + (((i.outer*32) + i_1)*stride_2))]*2f32)
           }
         }
         for (i.inner: int32, 0, 32) {
           if @tir.likely((((i.outer*32) + i.inner) &lt; n), dtype=bool) {
             let cse_var_2: int32 = (scan.idx + 1)
             let cse_var_1: int32 = ((i.outer*32) + i.inner)
-            scan_2[((cse_var_2*stride) + (cse_var_1*stride_1))] = ((float32*)s1[i.inner] + (float32*)X_2[((cse_var_2*stride_2) + (cse_var_1*stride_3))])
+            scan[((cse_var_2*stride) + (cse_var_1*stride_2))] = (s1_1[i.inner] + X[((cse_var_2*stride_1) + (cse_var_1*stride_3))])
           }
         }
       }
@@ -515,23 +515,23 @@ The following example demonstrates how we can build recurrence with two states.<
 <p class="sphx-glr-script-out">Out:</p>
 <div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>@main = primfn(X_1: handle, scan_2: handle, scan_3: handle) -&gt; ()
   attr = {&quot;from_legacy_te_schedule&quot;: True, &quot;global_symbol&quot;: &quot;main&quot;, &quot;tir.noalias&quot;: True}
-  buffers = {scan_1: Buffer(scan_4: Pointer(float32), float32, [m: int32, l: int32], [stride: int32, stride_1: int32], type=&quot;auto&quot;),
-             X: Buffer(X_2: Pointer(float32), float32, [m, n: int32], [stride_2: int32, stride_3: int32], type=&quot;auto&quot;),
-             scan: Buffer(scan_5: Pointer(float32), float32, [m, n], [stride_4: int32, stride_5: int32], type=&quot;auto&quot;)}
+  buffers = {X: Buffer(X_2: Pointer(float32), float32, [(stride: int32*m: int32)], [], type=&quot;auto&quot;),
+             scan_1: Buffer(scan_4: Pointer(float32), float32, [(stride_1: int32*m)], [], type=&quot;auto&quot;),
+             scan: Buffer(scan_5: Pointer(float32), float32, [(stride_2: int32*m)], [], type=&quot;auto&quot;)}
   buffer_map = {X_1: X, scan_2: scan, scan_3: scan_1} {
-  for (i: int32, 0, n) {
-    scan_5[(i*stride_5)] = (float32*)X_2[(i*stride_3)]
+  for (i: int32, 0, n: int32) {
+    scan[(i*stride_3: int32)] = X[(i*stride_4: int32)]
   }
-  for (i_1: int32, 0, l) {
-    scan_4[(i_1*stride_1)] = 0f32
+  for (i_1: int32, 0, l: int32) {
+    scan_1[(i_1*stride_5: int32)] = 0f32
   }
   for (scan.idx: int32, 0, (m - 1)) {
     for (i_2: int32, 0, n) {
       let cse_var_1: int32 = (scan.idx + 1)
-      scan_5[((cse_var_1*stride_4) + (i_2*stride_5))] = ((float32*)scan_5[((scan.idx*stride_4) + (i_2*stride_5))] + (float32*)X_2[((cse_var_1*stride_2) + (i_2*stride_3))])
+      scan[((cse_var_1*stride_2) + (i_2*stride_3))] = (scan[((scan.idx*stride_2) + (i_2*stride_3))] + X[((cse_var_1*stride) + (i_2*stride_4))])
     }
     for (i_3: int32, 0, l) {
-      scan_4[(((scan.idx + 1)*stride) + (i_3*stride_1))] = ((float32*)scan_4[((scan.idx*stride) + (i_3*stride_1))] + (float32*)scan_5[(scan.idx*stride_4)])
+      scan_1[(((scan.idx + 1)*stride_1) + (i_3*stride_5))] = (scan_1[((scan.idx*stride_1) + (i_3*stride_5))] + scan[(scan.idx*stride_2)])
     }
   }
 }

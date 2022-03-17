@@ -27,6 +27,7 @@ var searchData=
   ['num_5fmeasures_5fper_5fround',['num_measures_per_round',['../classtvm_1_1auto__scheduler_1_1TuningOptionsNode.html#ad8c637afdcaa02bf01785a5674ae534f',1,'tvm::auto_scheduler::TuningOptionsNode']]],
   ['num_5fnewaxis',['num_newaxis',['../structtvm_1_1relay_1_1ExpandDimsAttrs.html#af2885538e2f74029ecad343a9844fc8a',1,'tvm::relay::ExpandDimsAttrs::num_newaxis()'],['../structtvm_1_1relay_1_1DynExpandDimsAttrs.html#a5a0dbf8383656b0c5f6181ee5581881b',1,'tvm::relay::DynExpandDimsAttrs::num_newaxis()']]],
   ['num_5foutputs',['num_outputs',['../structTVMOpParam.html#ae3291eb5e9d754b98e470a6b028331a2',1,'TVMOpParam::num_outputs()'],['../structTVMMetadata.html#a2b75989a3e2ed401b97fa825b056f6ed',1,'TVMMetadata::num_outputs()']]],
+  ['num_5fpools',['num_pools',['../structTVMMetadata.html#ad63a914db4f8f3967c189544abc13935',1,'TVMMetadata']]],
   ['num_5fshape',['num_shape',['../structTVMTensorInfo.html#a06914e1f39997fd01fec5c6b8103b9ac',1,'TVMTensorInfo']]],
   ['num_5ftask',['num_task',['../structTVMParallelGroupEnv.html#a6ff807972a918ee61dfc158abce825f6',1,'TVMParallelGroupEnv']]],
   ['num_5fthreads',['num_threads',['../classtvm_1_1meta__schedule_1_1TuneContextNode.html#aa7136d896f4145357ebb1b7639a25d65',1,'tvm::meta_schedule::TuneContextNode']]],

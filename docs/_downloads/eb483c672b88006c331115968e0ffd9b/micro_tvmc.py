@@ -57,14 +57,15 @@ and run the model all using `tvmc micro` command.
 #
 # .. code-block:: bash
 #
-#     tvmc --help
+#	  tvmc --help
 #
 # To compile a model for microtvm we use ``tvmc compile`` subcommand. The output of this command
 # is used in next steps with ``tvmc micro`` subcommands. You can check the availability of TVMC Micro using:
 #
 # .. code-block:: bash
 #
-#     tvmc micro --help
+#	  tvmc micro --help
+#
 #
 # The main tasks that you can perform using ``tvmc micro`` are ``create``, ``build`` and ``flash``.
 # To read about specific options under a givern subcommand, use
@@ -82,7 +83,7 @@ and run the model all using `tvmc micro` command.
 #
 # .. code-block:: bash
 #
-#     wget https://github.com/tensorflow/tflite-micro/raw/main/tensorflow/lite/micro/examples/magic_wand/magic_wand.tflite
+#	  wget https://github.com/tensorflow/tflite-micro/raw/main/tensorflow/lite/micro/examples/magic_wand/magic_wand.tflite
 #
 
 ############################################################
@@ -97,16 +98,16 @@ and run the model all using `tvmc micro` command.
 #
 # .. code-block:: bash
 #
-#     tvmc compile magic_wand.tflite \
-#       --target='c -keys=cpu -link-params=0 -model=host' \
-#       --runtime=crt \
-#       --runtime-crt-system-lib 1 \
-#       --executor='graph' \
-#       --executor-graph-link-params 0 \
-#       --output model.tar \
-#       --output-format mlf \
-#       --pass-config tir.disable_vectorize=1 \
-#       --disabled-pass=AlterOpLayout
+#	  tvmc compile magic_wand.tflite \
+#	      --target='c -keys=cpu -link-params=0 -model=host' \
+#	      --runtime=crt \
+#	      --runtime-crt-system-lib 1 \
+#	      --executor='graph' \
+#	      --executor-graph-link-params 0 \
+#	      --output model.tar \
+#	      --output-format mlf \
+#	      --pass-config tir.disable_vectorize=1 \
+#	      --disabled-pass=AlterOpLayout
 #
 # This will generate a ``model.tar`` file which contains TVM compiler output files. To run this command for
 # a different Zephyr device, you need to update ``target``. For instance, for ``nrf5340dk_nrf5340_cpuapp`` board
@@ -124,11 +125,11 @@ and run the model all using `tvmc micro` command.
 #
 # .. code-block:: bash
 #
-#     tvmc micro create \
-#       project \
-#       model.tar \
-#       zephyr \
-#       --project-option project_type=host_driven zephyr_board=qemu_x86
+#	  tvmc micro create \
+#	      project \
+#	      model.tar \
+#	      zephyr \
+#	      --project-option project_type=host_driven zephyr_board=qemu_x86
 #
 # This will generate a ``Host-Driven`` Zephyr project for ``qemu_x86`` Zephyr board. In Host-Driven template project,
 # the Graph Executor will run on host and perform the model execution on Zephyr device by issuing commands to the
@@ -150,10 +151,10 @@ and run the model all using `tvmc micro` command.
 #
 # .. code-block:: bash
 #
-#     tvmc micro build \
-#       project \
-#       zephyr \
-#       --project-option zephyr_board=qemu_x86
+#	  tvmc micro build \
+#	      project \
+#	      zephyr \
+#	      --project-option zephyr_board=qemu_x86
 #
 # This will build the project in ``project`` directory and generates binary files under ``project/build``. To build
 # Zephyr project for a different Zephyr board, change ``zephyr_board`` project option.
@@ -163,10 +164,10 @@ and run the model all using `tvmc micro` command.
 #
 # .. code-block:: bash
 #
-#     tvmc micro flash \
-#       project \
-#       zephyr \
-#       --project-option zephyr_board=qemu_x86
+#	  tvmc micro flash \
+#	      project \
+#	      zephyr \
+#	      --project-option zephyr_board=qemu_x86
 #
 
 ############################################################
@@ -181,12 +182,13 @@ and run the model all using `tvmc micro` command.
 #
 # .. code-block:: bash
 #
-#     tvmc run \
-#       --device micro \
-#       project \
-#       --project-option zephyr_board=qemu_x86 \
-#       --fill-mode ones
-#       --print-top 4
+#	  tvmc run \
+#	      --device micro \
+#	      project \
+#	      --project-option zephyr_board=qemu_x86 \
+#	      --fill-mode ones \
+#	      --print-top 4
+#
 #     # Output:
 #     #
 #     # INFO:__main__:b'[100%] [QEMU] CPU: qemu32,+nx,+pae\n'

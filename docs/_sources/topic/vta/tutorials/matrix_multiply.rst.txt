@@ -304,9 +304,9 @@ After we construct the schedule, by default the schedule computes
 
     @main = primfn(A_1: handle, B_1: handle, C_1: handle) -> ()
       attr = {"from_legacy_te_schedule": True, "global_symbol": "main", "tir.noalias": True}
-      buffers = {C: Buffer(C_2: Pointer(int8), int8, [1, 16, 1, 16], []),
-                 A: Buffer(A_2: Pointer(int8), int8, [1, 16, 1, 16], []),
-                 B: Buffer(B_2: Pointer(int8), int8, [16, 16, 16, 16], [])}
+      buffers = {C: Buffer(C_2: Pointer(int8), int8, [256], []),
+                 A: Buffer(A_2: Pointer(int8), int8, [256], []),
+                 B: Buffer(B_2: Pointer(int8), int8, [65536], [])}
       buffer_map = {A_1: A, B_1: B, C_1: C} {
       allocate(A_buf: Pointer(global int8), int8, [256]), storage_scope = global;
       allocate(B_buf: Pointer(global int8), int8, [65536]), storage_scope = global;
@@ -314,7 +314,7 @@ After we construct the schedule, by default the schedule computes
         for (i1: int32, 0, 16) {
           for (i3: int32, 0, 16) {
             let cse_var_1: int32 = ((i1*16) + i3)
-            A_buf[cse_var_1] = (int8*)A_2[cse_var_1]
+            A_buf_1: Buffer(A_buf, int8, [256], [])[cse_var_1] = A[cse_var_1]
           }
         }
         for (i0: int32, 0, 16) {
@@ -322,18 +322,18 @@ After we construct the schedule, by default the schedule computes
             for (i2: int32, 0, 16) {
               for (i3_1: int32, 0, 16) {
                 let cse_var_2: int32 = ((((i0*4096) + (i1_1*256)) + (i2*16)) + i3_1)
-                B_buf[cse_var_2] = (int8*)B_2[cse_var_2]
+                B_buf_1: Buffer(B_buf, int8, [65536], [])[cse_var_2] = B[cse_var_2]
               }
             }
           }
         }
         for (co: int32, 0, 16) {
           for (ci: int32, 0, 16) {
-            C_buf[((co*16) + ci)] = 0
+            C_buf_1: Buffer(C_buf, int32, [256], [])[((co*16) + ci)] = 0
             for (ko: int32, 0, 16) {
               for (ki: int32, 0, 16) {
                 let cse_var_3: int32 = ((co*16) + ci)
-                C_buf[cse_var_3] = ((int32*)C_buf[cse_var_3] + (cast(int32, (int8*)A_buf[((ko*16) + ki)])*cast(int32, (int8*)B_buf[((((co*4096) + (ko*256)) + (ci*16)) + ki)])))
+                C_buf_1[cse_var_3] = (C_buf_1[cse_var_3] + (cast(int32, A_buf_1[((ko*16) + ki)])*cast(int32, B_buf_1[((((co*4096) + (ko*256)) + (ci*16)) + ki)])))
               }
             }
           }
@@ -341,7 +341,7 @@ After we construct the schedule, by default the schedule computes
         for (i1_2: int32, 0, 16) {
           for (i3_2: int32, 0, 16) {
             let cse_var_4: int32 = ((i1_2*16) + i3_2)
-            C_2[cse_var_4] = cast(int8, (int32*)C_buf[cse_var_4])
+            C[cse_var_4] = cast(int8, C_buf_1[cse_var_4])
           }
         }
       }
@@ -451,28 +451,28 @@ moving the copy operations into the matrix multiplication loop.
 
     @main = primfn(A_1: handle, B_1: handle, C_1: handle) -> ()
       attr = {"from_legacy_te_schedule": True, "global_symbol": "main", "tir.noalias": True}
-      buffers = {C: Buffer(C_2: Pointer(int8), int8, [1, 16, 1, 16], []),
-                 A: Buffer(A_2: Pointer(int8), int8, [1, 16, 1, 16], []),
-                 B: Buffer(B_2: Pointer(int8), int8, [16, 16, 16, 16], [])}
+      buffers = {C: Buffer(C_2: Pointer(int8), int8, [256], []),
+                 A: Buffer(A_2: Pointer(int8), int8, [256], []),
+                 B: Buffer(B_2: Pointer(int8), int8, [65536], [])}
       buffer_map = {A_1: A, B_1: B, C_1: C} {
       allocate(C_buf: Pointer(local.acc_buffer int32), int32, [256]), storage_scope = local.acc_buffer;
       allocate(A_buf: Pointer(local.inp_buffer int8), int8, [16]), storage_scope = local.inp_buffer;
       allocate(B_buf: Pointer(local.wgt_buffer int8), int8, [16]), storage_scope = local.wgt_buffer {
         for (co: int32, 0, 16) {
           for (ci: int32, 0, 16) {
-            C_buf[((co*16) + ci)] = 0
+            C_buf_1: Buffer(C_buf, int32, [256], [], scope="local.acc_buffer", align=16)[((co*16) + ci)] = 0
             for (ko: int32, 0, 16) {
               attr [IterVar(i0: int32, (nullptr), "DataPar", "")] "pragma_dma_copy" = 1;
               for (i3: int32, 0, 16) {
-                A_buf[i3] = (int8*)A_2[((ko*16) + i3)]
+                A_buf_1: Buffer(A_buf, int8, [16], [], scope="local.inp_buffer", align=16)[i3] = A[((ko*16) + i3)]
               }
               attr [IterVar(i0_1: int32, (nullptr), "DataPar", "")] "pragma_dma_copy" = 1;
               for (i3_1: int32, 0, 16) {
-                B_buf[i3_1] = (int8*)B_2[((((co*4096) + (ko*256)) + (ci*16)) + i3_1)]
+                B_buf_1: Buffer(B_buf, int8, [16], [], scope="local.wgt_buffer", align=256)[i3_1] = B[((((co*4096) + (ko*256)) + (ci*16)) + i3_1)]
               }
               for (ki: int32, 0, 16) {
                 let cse_var_1: int32 = ((co*16) + ci)
-                C_buf[cse_var_1] = ((int32*)C_buf[cse_var_1] + (cast(int32, (int8*)A_buf[ki])*cast(int32, (int8*)B_buf[ki])))
+                C_buf_1[cse_var_1] = (C_buf_1[cse_var_1] + (cast(int32, A_buf_1[ki])*cast(int32, B_buf_1[ki])))
               }
             }
           }
@@ -481,7 +481,7 @@ moving the copy operations into the matrix multiplication loop.
         for (i1: int32, 0, 16) {
           for (i3_2: int32, 0, 16) {
             let cse_var_2: int32 = ((i1*16) + i3_2)
-            C_2[cse_var_2] = cast(int8, (int32*)C_buf[cse_var_2])
+            C[cse_var_2] = cast(int8, C_buf_1[cse_var_2])
           }
         }
       }
@@ -535,9 +535,9 @@ by the VTA runtime JIT compiler.
 
     @main = primfn(A_1: handle, B_1: handle, C_1: handle) -> ()
       attr = {"from_legacy_te_schedule": True, "global_symbol": "main", "tir.noalias": True}
-      buffers = {A: Buffer(A_2: Pointer(int8), int8, [1, 16, 1, 16], []),
-                 C: Buffer(C_2: Pointer(int8), int8, [1, 16, 1, 16], []),
-                 B: Buffer(B_2: Pointer(int8), int8, [16, 16, 16, 16], [])}
+      buffers = {C: Buffer(C_2: Pointer(int8), int8, [256], []),
+                 A: Buffer(A_2: Pointer(int8), int8, [256], []),
+                 B: Buffer(B_2: Pointer(int8), int8, [65536], [])}
       buffer_map = {A_1: A, B_1: B, C_1: C} {
       attr [IterVar(vta: int32, (nullptr), "ThreadIndex", "vta")] "coproc_scope" = 2 {
         attr [IterVar(vta, (nullptr), "ThreadIndex", "vta")] "coproc_uop_scope" = "VTAPushGEMMOp" {

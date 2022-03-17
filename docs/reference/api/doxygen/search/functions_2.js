@@ -32,7 +32,7 @@ var searchData=
   ['boundvars',['BoundVars',['../namespacetvm_1_1relay.html#a0bcc32688b446d3574932554f6b8c2df',1,'tvm::relay::BoundVars(const Expr &amp;expr)'],['../namespacetvm_1_1relay.html#aedcb2b290b4f80292eb34afefc41f0ac',1,'tvm::relay::BoundVars(const Pattern &amp;pat)']]],
   ['broadcast',['Broadcast',['../classtvm_1_1tir_1_1Broadcast.html#a8d75100fc3b889b0719b23bbd8e1aa23',1,'tvm::tir::Broadcast']]],
   ['broadcast_5fto',['broadcast_to',['../namespacetvm_1_1topi.html#a545c1404478aba2e2a44c77438da9fd5',1,'tvm::topi']]],
-  ['buffer',['Buffer',['../classtvm_1_1tir_1_1Buffer.html#a32b349cccf86a44fc48d87f75951dbfd',1,'tvm::tir::Buffer']]],
+  ['buffer',['Buffer',['../classtvm_1_1tir_1_1Buffer.html#a96bc724486ee74cf7e1379a257b48ab7',1,'tvm::tir::Buffer']]],
   ['bufferinfo',['BufferInfo',['../classtvm_1_1tir_1_1usmp_1_1BufferInfo.html#a56c05fe02fbd0b4e14b06ab614d4dd18',1,'tvm::tir::usmp::BufferInfo']]],
   ['bufferinfoanalysis',['BufferInfoAnalysis',['../classtvm_1_1tir_1_1usmp_1_1BufferInfoAnalysis.html#a3e3ef785c00a36fef0b1f0872c949d5a',1,'tvm::tir::usmp::BufferInfoAnalysis']]],
   ['bufferload',['BufferLoad',['../classtvm_1_1tir_1_1BufferLoad.html#a5f1d2fe0e7ee0ebd1dbed005aa11f79f',1,'tvm::tir::BufferLoad']]],

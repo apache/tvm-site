@@ -19,6 +19,8 @@ var searchData=
   ['implvisitattrs_3c_20t_2c_20true_20_3e',['ImplVisitAttrs&lt; T, true &gt;',['../structtvm_1_1detail_1_1ImplVisitAttrs_3_01T_00_01true_01_4.html',1,'tvm::detail']]],
   ['incompletetype',['IncompleteType',['../classtvm_1_1IncompleteType.html',1,'tvm']]],
   ['incompletetypenode',['IncompleteTypeNode',['../classtvm_1_1IncompleteTypeNode.html',1,'tvm']]],
+  ['indexmap',['IndexMap',['../classtvm_1_1tir_1_1IndexMap.html',1,'tvm::tir']]],
+  ['indexmapnode',['IndexMapNode',['../classtvm_1_1tir_1_1IndexMapNode.html',1,'tvm::tir']]],
   ['initopattrs',['InitOpAttrs',['../structtvm_1_1relay_1_1InitOpAttrs.html',1,'tvm::relay']]],
   ['inplacearraybase',['InplaceArrayBase',['../classtvm_1_1runtime_1_1InplaceArrayBase.html',1,'tvm::runtime']]],
   ['inplacearraybase_3c_20adtobj_2c_20objectref_20_3e',['InplaceArrayBase&lt; ADTObj, ObjectRef &gt;',['../classtvm_1_1runtime_1_1InplaceArrayBase.html',1,'tvm::runtime']]],

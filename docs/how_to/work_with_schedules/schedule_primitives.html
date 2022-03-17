@@ -385,13 +385,13 @@ schedule computes tensor in a serial manner in a row-major order.</p>
 <p class="sphx-glr-script-out">Out:</p>
 <div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>@main = primfn(A_1: handle, B_1: handle, C_1: handle) -&gt; ()
   attr = {&quot;from_legacy_te_schedule&quot;: True, &quot;global_symbol&quot;: &quot;main&quot;, &quot;tir.noalias&quot;: True}
-  buffers = {C: Buffer(C_2: Pointer(float32), float32, [m: int32, n: int32], [stride: int32, stride_1: int32], type=&quot;auto&quot;),
-             A: Buffer(A_2: Pointer(float32), float32, [m, n], [stride_2: int32, stride_3: int32], type=&quot;auto&quot;),
-             B: Buffer(B_2: Pointer(float32), float32, [m, n], [stride_4: int32, stride_5: int32], type=&quot;auto&quot;)}
+  buffers = {C: Buffer(C_2: Pointer(float32), float32, [(stride: int32*m: int32)], [], type=&quot;auto&quot;),
+             A: Buffer(A_2: Pointer(float32), float32, [(stride_1: int32*m)], [], type=&quot;auto&quot;),
+             B: Buffer(B_2: Pointer(float32), float32, [(stride_2: int32*m)], [], type=&quot;auto&quot;)}
   buffer_map = {A_1: A, B_1: B, C_1: C} {
   for (i: int32, 0, m) {
-    for (j: int32, 0, n) {
-      C_2[((i*stride) + (j*stride_1))] = ((float32*)A_2[((i*stride_2) + (j*stride_3))]*(float32*)B_2[((i*stride_4) + (j*stride_5))])
+    for (j: int32, 0, n: int32) {
+      C[((i*stride) + (j*stride_3: int32))] = (A[((i*stride_1) + (j*stride_4: int32))]*B[((i*stride_2) + (j*stride_5: int32))])
     }
   }
 }
@@ -415,14 +415,14 @@ methods to schedule every stage.</p>
 <p class="sphx-glr-script-out">Out:</p>
 <div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>@main = primfn(A_1: handle, B_1: handle) -&gt; ()
   attr = {&quot;from_legacy_te_schedule&quot;: True, &quot;global_symbol&quot;: &quot;main&quot;, &quot;tir.noalias&quot;: True}
-  buffers = {B: Buffer(B_2: Pointer(float32), float32, [m: int32], [stride: int32], type=&quot;auto&quot;),
-             A: Buffer(A_2: Pointer(float32), float32, [m], [stride_1: int32], type=&quot;auto&quot;)}
+  buffers = {B: Buffer(B_2: Pointer(float32), float32, [(stride: int32*m: int32)], [], type=&quot;auto&quot;),
+             A: Buffer(A_2: Pointer(float32), float32, [(stride_1: int32*m)], [], type=&quot;auto&quot;)}
   buffer_map = {A_1: A, B_1: B} {
   for (i.outer: int32, 0, floordiv((m + 31), 32)) {
     for (i.inner: int32, 0, 32) {
       if @tir.likely((((i.outer*32) + i.inner) &lt; m), dtype=bool) {
         let cse_var_1: int32 = ((i.outer*32) + i.inner)
-        B_2[(cse_var_1*stride)] = ((float32*)A_2[(cse_var_1*stride_1)]*2f32)
+        B[(cse_var_1*stride)] = (A[(cse_var_1*stride_1)]*2f32)
       }
     }
   }
@@ -442,13 +442,13 @@ contrary with <code class="code docutils literal notranslate"><span class="pre">
 <p class="sphx-glr-script-out">Out:</p>
 <div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>@main = primfn(A_1: handle, B_1: handle) -&gt; ()
   attr = {&quot;from_legacy_te_schedule&quot;: True, &quot;global_symbol&quot;: &quot;main&quot;, &quot;tir.noalias&quot;: True}
-  buffers = {B: Buffer(B_2: Pointer(float32), float32, [m: int32], [stride: int32], type=&quot;auto&quot;),
-             A: Buffer(A_2: Pointer(float32), float32, [m], [stride_1: int32], type=&quot;auto&quot;)}
+  buffers = {B: Buffer(B_2: Pointer(float32), float32, [(stride: int32*m: int32)], [], type=&quot;auto&quot;),
+             A: Buffer(A_2: Pointer(float32), float32, [(stride_1: int32*m)], [], type=&quot;auto&quot;)}
   buffer_map = {A_1: A, B_1: B} {
   for (i.outer: int32, 0, 32) {
     for (i.inner: int32, 0, floordiv((m + 31), 32)) {
       if @tir.likely(((i.inner + (i.outer*floordiv((m + 31), 32))) &lt; m), dtype=bool) {
-        B_2[((i.inner + (i.outer*floordiv((m + 31), 32)))*stride)] = (float32*)A_2[((i.inner + (i.outer*floordiv((m + 31), 32)))*stride_1)]
+        B[((i.inner + (i.outer*floordiv((m + 31), 32)))*stride)] = A[((i.inner + (i.outer*floordiv((m + 31), 32)))*stride_1)]
       }
     }
   }
@@ -471,18 +471,18 @@ axes.</p>
 <p class="sphx-glr-script-out">Out:</p>
 <div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>@main = primfn(A_1: handle, B_1: handle) -&gt; ()
   attr = {&quot;from_legacy_te_schedule&quot;: True, &quot;global_symbol&quot;: &quot;main&quot;, &quot;tir.noalias&quot;: True}
-  buffers = {B: Buffer(B_2: Pointer(float32), float32, [m: int32, n: int32], [stride: int32, stride_1: int32], type=&quot;auto&quot;),
-             A: Buffer(A_2: Pointer(float32), float32, [m, n], [stride_2: int32, stride_3: int32], type=&quot;auto&quot;)}
+  buffers = {B: Buffer(B_2: Pointer(float32), float32, [(stride: int32*m: int32)], [], type=&quot;auto&quot;),
+             A: Buffer(A_2: Pointer(float32), float32, [(stride_1: int32*m)], [], type=&quot;auto&quot;)}
   buffer_map = {A_1: A, B_1: B} {
   for (i.outer: int32, 0, floordiv((m + 9), 10)) {
-    for (j.outer: int32, 0, floordiv((n + 4), 5)) {
+    for (j.outer: int32, 0, floordiv((n: int32 + 4), 5)) {
       for (i.inner: int32, 0, 10) {
         if @tir.likely((((i.outer*10) + i.inner) &lt; m), dtype=bool) {
           for (j.inner: int32, 0, 5) {
             if @tir.likely((((j.outer*5) + j.inner) &lt; n), dtype=bool) {
               let cse_var_2: int32 = ((j.outer*5) + j.inner)
               let cse_var_1: int32 = ((i.outer*10) + i.inner)
-              B_2[((cse_var_1*stride) + (cse_var_2*stride_1))] = (float32*)A_2[((cse_var_1*stride_2) + (cse_var_2*stride_3))]
+              B[((cse_var_1*stride) + (cse_var_2*stride_2: int32))] = A[((cse_var_1*stride_1) + (cse_var_2*stride_3: int32))]
             }
           }
         }
@@ -510,17 +510,17 @@ axes.</p>
 <p class="sphx-glr-script-out">Out:</p>
 <div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>@main = primfn(A_1: handle, B_1: handle) -&gt; ()
   attr = {&quot;from_legacy_te_schedule&quot;: True, &quot;global_symbol&quot;: &quot;main&quot;, &quot;tir.noalias&quot;: True}
-  buffers = {B: Buffer(B_2: Pointer(float32), float32, [m: int32, n: int32], [stride: int32, stride_1: int32], type=&quot;auto&quot;),
-             A: Buffer(A_2: Pointer(float32), float32, [m, n], [stride_2: int32, stride_3: int32], type=&quot;auto&quot;)}
+  buffers = {B: Buffer(B_2: Pointer(float32), float32, [(stride: int32*m: int32)], [], type=&quot;auto&quot;),
+             A: Buffer(A_2: Pointer(float32), float32, [(stride_1: int32*m)], [], type=&quot;auto&quot;)}
   buffer_map = {A_1: A, B_1: B} {
   for (i.outer: int32, 0, floordiv((m + 9), 10)) {
-    for (j.outer: int32, 0, floordiv((n + 4), 5)) {
+    for (j.outer: int32, 0, floordiv((n: int32 + 4), 5)) {
       for (i.inner.j.inner.fused: int32, 0, 50) {
         if @tir.likely((((i.outer*10) + floordiv(i.inner.j.inner.fused, 5)) &lt; m), dtype=bool) {
           if @tir.likely((((j.outer*5) + floormod(i.inner.j.inner.fused, 5)) &lt; n), dtype=bool) {
             let cse_var_2: int32 = ((j.outer*5) + floormod(i.inner.j.inner.fused, 5))
             let cse_var_1: int32 = ((i.outer*10) + floordiv(i.inner.j.inner.fused, 5))
-            B_2[((cse_var_1*stride) + (cse_var_2*stride_1))] = (float32*)A_2[((cse_var_1*stride_2) + (cse_var_2*stride_3))]
+            B[((cse_var_1*stride) + (cse_var_2*stride_2: int32))] = A[((cse_var_1*stride_1) + (cse_var_2*stride_3: int32))]
           }
         }
       }
@@ -547,18 +547,18 @@ axes.</p>
 <p class="sphx-glr-script-out">Out:</p>
 <div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>@main = primfn(A_1: handle, B_1: handle) -&gt; ()
   attr = {&quot;from_legacy_te_schedule&quot;: True, &quot;global_symbol&quot;: &quot;main&quot;, &quot;tir.noalias&quot;: True}
-  buffers = {B: Buffer(B_2: Pointer(float32), float32, [m: int32, n: int32], [stride: int32, stride_1: int32], type=&quot;auto&quot;),
-             A: Buffer(A_2: Pointer(float32), float32, [m, n], [stride_2: int32, stride_3: int32], type=&quot;auto&quot;)}
+  buffers = {B: Buffer(B_2: Pointer(float32), float32, [(stride: int32*m: int32)], [], type=&quot;auto&quot;),
+             A: Buffer(A_2: Pointer(float32), float32, [(stride_1: int32*m)], [], type=&quot;auto&quot;)}
   buffer_map = {A_1: A, B_1: B} {
   for (i.inner: int32, 0, 10) {
-    for (j.outer: int32, 0, floordiv((n + 4), 5)) {
+    for (j.outer: int32, 0, floordiv((n: int32 + 4), 5)) {
       for (i.outer: int32, 0, floordiv((m + 9), 10)) {
         if @tir.likely((((i.outer*10) + i.inner) &lt; m), dtype=bool) {
           for (j.inner: int32, 0, 5) {
             if @tir.likely((((j.outer*5) + j.inner) &lt; n), dtype=bool) {
               let cse_var_2: int32 = ((j.outer*5) + j.inner)
               let cse_var_1: int32 = ((i.outer*10) + i.inner)
-              B_2[((cse_var_1*stride) + (cse_var_2*stride_1))] = (float32*)A_2[((cse_var_1*stride_2) + (cse_var_2*stride_3))]
+              B[((cse_var_1*stride) + (cse_var_2*stride_2: int32))] = A[((cse_var_1*stride_1) + (cse_var_2*stride_3: int32))]
             }
           }
         }
@@ -586,13 +586,13 @@ in gpu programming.</p>
 <p class="sphx-glr-script-out">Out:</p>
 <div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>@main = primfn(A_1: handle, B_1: handle) -&gt; ()
   attr = {&quot;from_legacy_te_schedule&quot;: True, &quot;global_symbol&quot;: &quot;main&quot;, &quot;tir.noalias&quot;: True}
-  buffers = {B: Buffer(B_2: Pointer(float32), float32, [n: int32], [stride: int32], type=&quot;auto&quot;),
-             A: Buffer(A_2: Pointer(float32), float32, [n], [stride_1: int32], type=&quot;auto&quot;)}
+  buffers = {B: Buffer(B_2: Pointer(float32), float32, [(stride: int32*n: int32)], [], type=&quot;auto&quot;),
+             A: Buffer(A_2: Pointer(float32), float32, [(stride_1: int32*n)], [], type=&quot;auto&quot;)}
   buffer_map = {A_1: A, B_1: B} {
   attr [IterVar(blockIdx.x: int32, (nullptr), &quot;ThreadIndex&quot;, &quot;blockIdx.x&quot;)] &quot;thread_extent&quot; = floordiv((n + 63), 64);
   attr [IterVar(threadIdx.x: int32, (nullptr), &quot;ThreadIndex&quot;, &quot;threadIdx.x&quot;)] &quot;thread_extent&quot; = 64;
   if @tir.likely((((blockIdx.x*64) + threadIdx.x) &lt; n), dtype=bool) {
-    B_2[(((blockIdx.x*64) + threadIdx.x)*stride)] = ((float32*)A_2[(((blockIdx.x*64) + threadIdx.x)*stride_1)]*2f32)
+    B[(((blockIdx.x*64) + threadIdx.x)*stride)] = (A[(((blockIdx.x*64) + threadIdx.x)*stride_1)]*2f32)
   }
 }
 </pre></div>
@@ -613,15 +613,15 @@ tensors at the root separately by default.</p>
 <p class="sphx-glr-script-out">Out:</p>
 <div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>@main = primfn(A_1: handle, B_1: handle, C_1: handle) -&gt; ()
   attr = {&quot;from_legacy_te_schedule&quot;: True, &quot;global_symbol&quot;: &quot;main&quot;, &quot;tir.noalias&quot;: True}
-  buffers = {C: Buffer(C_2: Pointer(float32), float32, [m: int32], [stride: int32], type=&quot;auto&quot;),
-             A: Buffer(A_2: Pointer(float32), float32, [m], [stride_1: int32], type=&quot;auto&quot;),
-             B: Buffer(B_2: Pointer(float32), float32, [m], [stride_2: int32], type=&quot;auto&quot;)}
+  buffers = {C: Buffer(C_2: Pointer(float32), float32, [(stride: int32*m: int32)], [], type=&quot;auto&quot;),
+             A: Buffer(A_2: Pointer(float32), float32, [(stride_1: int32*m)], [], type=&quot;auto&quot;),
+             B: Buffer(B_2: Pointer(float32), float32, [(stride_2: int32*m)], [], type=&quot;auto&quot;)}
   buffer_map = {A_1: A, B_1: B, C_1: C} {
   for (i: int32, 0, m) {
-    B_2[(i*stride_2)] = ((float32*)A_2[(i*stride_1)] + 1f32)
+    B[(i*stride_2)] = (A[(i*stride_1)] + 1f32)
   }
   for (i_1: int32, 0, m) {
-    C_2[(i_1*stride)] = ((float32*)B_2[(i_1*stride_2)]*2f32)
+    C[(i_1*stride)] = (B[(i_1*stride_2)]*2f32)
   }
 }
 </pre></div>
@@ -640,13 +640,13 @@ of computation of <cite>C</cite>.</p>
 <p class="sphx-glr-script-out">Out:</p>
 <div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>@main = primfn(A_1: handle, B_1: handle, C_1: handle) -&gt; ()
   attr = {&quot;from_legacy_te_schedule&quot;: True, &quot;global_symbol&quot;: &quot;main&quot;, &quot;tir.noalias&quot;: True}
-  buffers = {C: Buffer(C_2: Pointer(float32), float32, [m: int32], [stride: int32], type=&quot;auto&quot;),
-             A: Buffer(A_2: Pointer(float32), float32, [m], [stride_1: int32], type=&quot;auto&quot;),
-             B: Buffer(B_2: Pointer(float32), float32, [m], [stride_2: int32], type=&quot;auto&quot;)}
+  buffers = {C: Buffer(C_2: Pointer(float32), float32, [(stride: int32*m: int32)], [], type=&quot;auto&quot;),
+             A: Buffer(A_2: Pointer(float32), float32, [(stride_1: int32*m)], [], type=&quot;auto&quot;),
+             B: Buffer(B_2: Pointer(float32), float32, [(stride_2: int32*m)], [], type=&quot;auto&quot;)}
   buffer_map = {A_1: A, B_1: B, C_1: C} {
   for (i: int32, 0, m) {
-    B_2[(i*stride_2)] = ((float32*)A_2[(i*stride_1)] + 1f32)
-    C_2[(i*stride)] = ((float32*)B_2[(i*stride_2)]*2f32)
+    B[(i*stride_2)] = (A[(i*stride_1)] + 1f32)
+    C[(i*stride)] = (B[(i*stride_2)]*2f32)
   }
 }
 </pre></div>
@@ -669,12 +669,12 @@ tensor is required.</p>
 <p class="sphx-glr-script-out">Out:</p>
 <div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>@main = primfn(A_1: handle, B_1: handle, C_1: handle) -&gt; ()
   attr = {&quot;from_legacy_te_schedule&quot;: True, &quot;global_symbol&quot;: &quot;main&quot;, &quot;tir.noalias&quot;: True}
-  buffers = {C: Buffer(C_2: Pointer(float32), float32, [m: int32], [stride: int32], type=&quot;auto&quot;),
-             A: Buffer(A_2: Pointer(float32), float32, [m], [stride_1: int32], type=&quot;auto&quot;),
-             B: Buffer(B_2: Pointer(float32), float32, [m], [stride_2: int32], type=&quot;auto&quot;)}
+  buffers = {C: Buffer(C_2: Pointer(float32), float32, [(stride: int32*m: int32)], [], type=&quot;auto&quot;),
+             A: Buffer(A_2: Pointer(float32), float32, [(stride_1: int32*m)], [], type=&quot;auto&quot;),
+             B: Buffer(B_2: Pointer(float32), float32, [(stride_2: int32*m)], [], type=&quot;auto&quot;)}
   buffer_map = {A_1: A, B_1: B, C_1: C} {
   for (i: int32, 0, m) {
-    C_2[(i*stride)] = (((float32*)A_2[(i*stride_1)] + 1f32)*2f32)
+    C[(i*stride)] = ((A[(i*stride_1)] + 1f32)*2f32)
   }
 }
 </pre></div>
@@ -696,15 +696,15 @@ tensor is required.</p>
 <p class="sphx-glr-script-out">Out:</p>
 <div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>@main = primfn(A_1: handle, B_1: handle, C_1: handle) -&gt; ()
   attr = {&quot;from_legacy_te_schedule&quot;: True, &quot;global_symbol&quot;: &quot;main&quot;, &quot;tir.noalias&quot;: True}
-  buffers = {C: Buffer(C_2: Pointer(float32), float32, [m: int32], [stride: int32], type=&quot;auto&quot;),
-             A: Buffer(A_2: Pointer(float32), float32, [m], [stride_1: int32], type=&quot;auto&quot;),
-             B: Buffer(B_2: Pointer(float32), float32, [m], [stride_2: int32], type=&quot;auto&quot;)}
+  buffers = {C: Buffer(C_2: Pointer(float32), float32, [(stride: int32*m: int32)], [], type=&quot;auto&quot;),
+             A: Buffer(A_2: Pointer(float32), float32, [(stride_1: int32*m)], [], type=&quot;auto&quot;),
+             B: Buffer(B_2: Pointer(float32), float32, [(stride_2: int32*m)], [], type=&quot;auto&quot;)}
   buffer_map = {A_1: A, B_1: B, C_1: C} {
   for (i: int32, 0, m) {
-    B_2[(i*stride_2)] = ((float32*)A_2[(i*stride_1)] + 1f32)
+    B[(i*stride_2)] = (A[(i*stride_1)] + 1f32)
   }
   for (i_1: int32, 0, m) {
-    C_2[(i_1*stride)] = ((float32*)B_2[(i_1*stride_2)]*2f32)
+    C[(i_1*stride)] = (B[(i_1*stride_2)]*2f32)
   }
 }
 </pre></div>

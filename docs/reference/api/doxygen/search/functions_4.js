@@ -5,7 +5,7 @@ var searchData=
   ['datatypepattern',['DataTypePattern',['../classtvm_1_1relay_1_1DataTypePattern.html#a1af68239730a8b75bfb35cfce320b653',1,'tvm::relay::DataTypePattern']]],
   ['deadcodeelimination',['DeadCodeElimination',['../namespacetvm_1_1relay_1_1transform.html#a441963a144dae58b7633d0a674cf20cc',1,'tvm::relay::transform']]],
   ['debugverify',['DebugVerify',['../classtvm_1_1tir_1_1ScheduleStateNode.html#a7ebf3759af136021c4549596ebfc468f',1,'tvm::tir::ScheduleStateNode']]],
-  ['decl_5fbuffer',['decl_buffer',['../namespacetvm_1_1tir.html#ac7393ac4f101eb16077bbf78eb3e518b',1,'tvm::tir']]],
+  ['decl_5fbuffer',['decl_buffer',['../namespacetvm_1_1tir.html#a65cc94726eb40752523b952f500d00ec',1,'tvm::tir']]],
   ['decomposereduction',['DecomposeReduction',['../classtvm_1_1tir_1_1ScheduleNode.html#a134eb33f96d69623a024c9c466183a00',1,'tvm::tir::ScheduleNode']]],
   ['decoratedevicescope',['DecorateDeviceScope',['../namespacetvm_1_1tir_1_1transform.html#a6648d0a1c613e7e0f5e231059c3c22c6',1,'tvm::tir::transform']]],
   ['decref',['DecRef',['../classtvm_1_1runtime_1_1Object.html#a70fb5361147634605d6595bb89381f03',1,'tvm::runtime::Object']]],

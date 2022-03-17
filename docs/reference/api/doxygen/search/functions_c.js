@@ -70,6 +70,7 @@ var searchData=
   ['lowerschedule',['LowerSchedule',['../namespacetvm.html#a42e6cbabbb4e45f9126be5e8c77e2a86',1,'tvm::LowerSchedule(te::Schedule sch, const Array&lt; te::Tensor &gt; &amp;args, const std::string &amp;name, const std::unordered_map&lt; te::Tensor, tir::Buffer &gt; &amp;binds, bool simple_mode=false)'],['../namespacetvm.html#a1ba9d8f0c6cd7bf13fced4073703d480',1,'tvm::LowerSchedule(te::Schedule sch, const Array&lt; ObjectRef &gt; &amp;args, const std::string &amp;name, const std::unordered_map&lt; te::Tensor, tir::Buffer &gt; &amp;binds, bool simple_mode=false)']]],
   ['lowerthreadallreduce',['LowerThreadAllreduce',['../namespacetvm_1_1tir_1_1transform.html#a16d42050efec51126d5b90eb2f60171f',1,'tvm::tir::transform']]],
   ['lowertvmbuiltin',['LowerTVMBuiltin',['../namespacetvm_1_1tir_1_1transform.html#a8b8e7806d1a6e21b66123b3a4e255caf',1,'tvm::tir::transform']]],
+  ['lowervtcmalloc',['LowerVtcmAlloc',['../namespacetvm_1_1tir_1_1transform.html#a12ede8aa0409b3812b88c83a6e55e32c',1,'tvm::tir::transform']]],
   ['lowerwarpmemory',['LowerWarpMemory',['../namespacetvm_1_1tir_1_1transform.html#ad5a726d95328c4e85c0c717c52aff4f2',1,'tvm::tir::transform']]],
   ['lrn',['lrn',['../namespacetvm_1_1topi_1_1nn.html#ac3d8de9144f915a5dd27dcb70c0abdd4',1,'tvm::topi::nn']]],
   ['lt',['LT',['../classtvm_1_1tir_1_1LT.html#a686057f1bad28a075f2fa35b7b0c85a8',1,'tvm::tir::LT']]]

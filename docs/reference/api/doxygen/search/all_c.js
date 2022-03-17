@@ -177,6 +177,8 @@ var searchData=
   ['kspatial',['kSpatial',['../namespacetvm_1_1auto__scheduler.html#a369a062b966070cea45c763bd9d2196da83fe4465949392cd595c66cd0992bf4f',1,'tvm::auto_scheduler']]],
   ['kspecial',['kSpecial',['../namespacetvm_1_1auto__scheduler.html#a369a062b966070cea45c763bd9d2196da1f0d5fe7d41b5fec009974b34c8ba95e',1,'tvm::auto_scheduler']]],
   ['kspecialcallarg',['kSpecialCallArg',['../namespacetvm_1_1tir.html#a8f4a86b205145696c0555fd02bd37f46ac272fc9675a2a5836ff877d54427642b',1,'tvm::tir']]],
+  ['kspecifyonecoreperthread',['kSpecifyOneCorePerThread',['../classtvm_1_1runtime_1_1threading_1_1ThreadGroup.html#a5230a4c2d7f6c2f73f3d5fb00e9f6acdadd6af652fd79e62a24aef513b1bfc1e8',1,'tvm::runtime::threading::ThreadGroup']]],
+  ['kspecifythreadshareallcore',['kSpecifyThreadShareAllCore',['../classtvm_1_1runtime_1_1threading_1_1ThreadGroup.html#a5230a4c2d7f6c2f73f3d5fb00e9f6acdafe5dd7f2ee95e3be4dff1b09476a4734',1,'tvm::runtime::threading::ThreadGroup']]],
   ['kstartsessioninit',['kStartSessionInit',['../namespacetvm_1_1runtime_1_1micro__rpc.html#a07b2902f093d341cd67bd16738037a85a4688df2693e535260bdb16cf216cb04a',1,'tvm::runtime::micro_rpc']]],
   ['kstartsessionreply',['kStartSessionReply',['../namespacetvm_1_1runtime_1_1micro__rpc.html#a07b2902f093d341cd67bd16738037a85aecde5f9fac62cb1805e6600ef41a76d8',1,'tvm::runtime::micro_rpc']]],
   ['kstaticindexend',['kStaticIndexEnd',['../structtvm_1_1runtime_1_1TypeIndex.html#aed93c7318efc8052201d4c404b21a40da4551e7a3e4de3461648733bdfdefdbc4',1,'tvm::runtime::TypeIndex']]],

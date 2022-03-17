@@ -4,7 +4,7 @@ var searchData=
   ['einsum',['einsum',['../namespacetvm_1_1topi.html#af32230999c38eb624e8ea21ee6877eef',1,'tvm::topi']]],
   ['element_5fof',['element_of',['../classtvm_1_1runtime_1_1DataType.html#a2fe08e37ac1a1c09b10251313582990d',1,'tvm::runtime::DataType']]],
   ['elementwisematch',['ElementWiseMatch',['../classtvm_1_1auto__scheduler_1_1AccessAnalyzer.html#a252a0005deefc376b4a90703e375f2c6',1,'tvm::auto_scheduler::AccessAnalyzer']]],
-  ['elemoffset',['ElemOffset',['../classtvm_1_1tir_1_1BufferNode.html#afd392a603cde4ff9a13f23a83860135b',1,'tvm::tir::BufferNode']]],
+  ['elemoffset',['ElemOffset',['../classtvm_1_1tir_1_1BufferNode.html#ae6964ae55ed11dfe43721a82656c023d',1,'tvm::tir::BufferNode']]],
   ['elemwise_5fsum',['elemwise_sum',['../namespacetvm_1_1topi.html#a94c9e58d3a7e9f9a477962897c9df1d7',1,'tvm::topi']]],
   ['eliminatecommonsubexpr',['EliminateCommonSubexpr',['../namespacetvm_1_1relay_1_1transform.html#adf21ade01969835b155241d277a94d1c',1,'tvm::relay::transform']]],
   ['emit',['Emit',['../classtvm_1_1DiagnosticContext.html#a13cd654944714a1daa28cb3775211fd8',1,'tvm::DiagnosticContext']]],
