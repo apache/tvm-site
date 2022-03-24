@@ -556,6 +556,9 @@
 <tr class="row-even"><td><p><a class="reference internal" href="#tvm.tir.Schedule" title="tvm.tir.Schedule"><code class="xref py py-obj docutils literal notranslate"><span class="pre">Schedule</span></code></a>(mod, *[, seed, debug_mask, ...])</p></td>
 <td><p>The user-facing schedule class</p></td>
 </tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#tvm.tir.BufferType" title="tvm.tir.BufferType"><code class="xref py py-obj docutils literal notranslate"><span class="pre">BufferType</span></code></a>(value)</p></td>
+<td><p>Type of buffer in access regions of a block</p></td>
+</tr>
 </tbody>
 </table>
 <p><strong>Functions:</strong></p>
@@ -4209,7 +4212,10 @@ preserve the semantics of computation. Some example of schedules:
 <tr class="row-even"><td><p><a class="reference internal" href="#tvm.tir.Schedule.unannotate" title="tvm.tir.Schedule.unannotate"><code class="xref py py-obj docutils literal notranslate"><span class="pre">unannotate</span></code></a>(block_or_loop, ann_key)</p></td>
 <td><p>Unannotate a block/loop's annotation with key ann_key</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#tvm.tir.Schedule.enter_postproc" title="tvm.tir.Schedule.enter_postproc"><code class="xref py py-obj docutils literal notranslate"><span class="pre">enter_postproc</span></code></a>()</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#tvm.tir.Schedule.transform_layout" title="tvm.tir.Schedule.transform_layout"><code class="xref py py-obj docutils literal notranslate"><span class="pre">transform_layout</span></code></a>(block, buffer_index, ...)</p></td>
+<td><p>Apply a transformation represented by IndexMap to buffer :param block_rv: The block that accesses the target buffer :type block_rv: BlockRV :param buffer_index: The index of the buffer in block's read or write region :type buffer_index: int :param buffer_type: Type of the buffer, READ or WRITE.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#tvm.tir.Schedule.enter_postproc" title="tvm.tir.Schedule.enter_postproc"><code class="xref py py-obj docutils literal notranslate"><span class="pre">enter_postproc</span></code></a>()</p></td>
 <td><p>A no-op that marks the start of postprocessing phase of scheduling</p></td>
 </tr>
 </tbody>
@@ -5846,6 +5852,60 @@ block are divisible by the subspace represented by the loops starting at the giv
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="tvm.tir.Schedule.transform_layout">
+<span class="sig-name descname"><span class="pre">transform_layout</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">block</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">tvm.tir.schedule.schedule.BlockRV</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">buffer_index</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">buffer_type</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference internal" href="#tvm.tir.BufferType" title="tvm.tir.schedule.schedule.BufferType"><span class="pre">tvm.tir.schedule.schedule.BufferType</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">index_map</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">tvm.tir.function.IndexMap</span><span class="p"><span class="pre">,</span> </span><span class="pre">Callable</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.10)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#tvm.tir.Schedule.transform_layout" title="Permalink to this definition">¶</a></dt>
+<dd><p>Apply a transformation represented by IndexMap to buffer
+:param block_rv: The block that accesses the target buffer
+:type block_rv: BlockRV
+:param buffer_index: The index of the buffer in block’s read or write region
+:type buffer_index: int
+:param buffer_type: Type of the buffer, READ or WRITE.
+:type buffer_type: BufferType
+:param index_map: The transformation to apply
+:type index_map: Union[IndexMap, Callable]</p>
+<p class="rubric">Examples</p>
+<p>Before transform_layout, in TensorIR, the IR is:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nd">@T.prim_func</span>
+<span class="k">def</span> <span class="nf">before_transform_layout</span><span class="p">(</span><span class="n">a</span><span class="p">:</span> <span class="n">T</span><span class="o">.</span><span class="n">handle</span><span class="p">,</span> <span class="n">c</span><span class="p">:</span> <span class="n">T</span><span class="o">.</span><span class="n">handle</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="bp">None</span><span class="p">:</span>
+    <span class="n">A</span> <span class="o">=</span> <span class="n">T</span><span class="o">.</span><span class="n">match_buffer</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="p">(</span><span class="mi">128</span><span class="p">,</span> <span class="mi">128</span><span class="p">),</span> <span class="s2">&quot;float32&quot;</span><span class="p">)</span>
+    <span class="n">B</span> <span class="o">=</span> <span class="n">T</span><span class="o">.</span><span class="n">alloc_buffer</span><span class="p">((</span><span class="mi">128</span><span class="p">,</span> <span class="mi">128</span><span class="p">),</span> <span class="s2">&quot;float32&quot;</span><span class="p">)</span>
+    <span class="n">C</span> <span class="o">=</span> <span class="n">T</span><span class="o">.</span><span class="n">match_buffer</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="p">(</span><span class="mi">128</span><span class="p">,</span> <span class="mi">128</span><span class="p">),</span> <span class="s2">&quot;float32&quot;</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">j</span> <span class="ow">in</span> <span class="n">T</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="mi">128</span><span class="p">,</span> <span class="mi">128</span><span class="p">):</span>
+        <span class="k">with</span> <span class="n">T</span><span class="o">.</span><span class="n">block</span><span class="p">(</span><span class="s2">&quot;B&quot;</span><span class="p">):</span>
+            <span class="n">vi</span><span class="p">,</span> <span class="n">vj</span> <span class="o">=</span> <span class="n">T</span><span class="o">.</span><span class="n">axis</span><span class="o">.</span><span class="n">remap</span><span class="p">(</span><span class="s2">&quot;SS&quot;</span><span class="p">,</span> <span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">])</span>
+            <span class="n">B</span><span class="p">[</span><span class="n">vi</span><span class="p">,</span> <span class="n">vj</span><span class="p">]</span> <span class="o">=</span> <span class="n">A</span><span class="p">[</span><span class="n">vi</span><span class="p">,</span> <span class="n">vj</span><span class="p">]</span> <span class="o">*</span> <span class="mf">2.0</span>
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">j</span> <span class="ow">in</span> <span class="n">T</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="mi">128</span><span class="p">,</span> <span class="mi">128</span><span class="p">):</span>
+        <span class="k">with</span> <span class="n">T</span><span class="o">.</span><span class="n">block</span><span class="p">(</span><span class="s2">&quot;C&quot;</span><span class="p">):</span>
+            <span class="n">vi</span><span class="p">,</span> <span class="n">vj</span> <span class="o">=</span> <span class="n">T</span><span class="o">.</span><span class="n">axis</span><span class="o">.</span><span class="n">remap</span><span class="p">(</span><span class="s2">&quot;SS&quot;</span><span class="p">,</span> <span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">])</span>
+            <span class="n">C</span><span class="p">[</span><span class="n">vi</span><span class="p">,</span> <span class="n">vj</span><span class="p">]</span> <span class="o">=</span> <span class="n">B</span><span class="p">[</span><span class="n">vi</span><span class="p">,</span> <span class="n">vj</span><span class="p">]</span> <span class="o">+</span> <span class="mf">1.0</span>
+</pre></div>
+</div>
+<p>Create the schedule and do transform_layout:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">sch</span> <span class="o">=</span> <span class="n">tir</span><span class="o">.</span><span class="n">Schedule</span><span class="p">(</span><span class="n">before_storage_align</span><span class="p">)</span>
+<span class="n">sch</span><span class="o">.</span><span class="n">transform_layout</span><span class="p">(</span><span class="n">sch</span><span class="o">.</span><span class="n">get_block</span><span class="p">(</span><span class="s2">&quot;B&quot;</span><span class="p">),</span> <span class="n">buffer_index</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">BufferType</span><span class="o">.</span><span class="n">WRITE</span><span class="p">,</span>
+                     <span class="n">index_map</span><span class="o">=</span><span class="k">lambda</span> <span class="n">m</span><span class="p">,</span> <span class="n">n</span><span class="p">:</span> <span class="p">(</span><span class="n">m</span> <span class="o">//</span> <span class="mi">16</span><span class="p">,</span> <span class="n">n</span> <span class="o">//</span> <span class="mi">16</span><span class="p">,</span> <span class="n">m</span> <span class="o">%</span> <span class="mi">16</span><span class="p">,</span> <span class="n">n</span> <span class="o">%</span> <span class="mi">16</span><span class="p">))</span>
+<span class="k">print</span><span class="p">(</span><span class="n">sch</span><span class="o">.</span><span class="n">mod</span><span class="p">[</span><span class="s2">&quot;main&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">script</span><span class="p">())</span>
+</pre></div>
+</div>
+<p>After applying transform_layout, the IR becomes:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nd">@T.prim_func</span>
+<span class="k">def</span> <span class="nf">two_elementwise_transformed_intermediate_buffer</span><span class="p">(</span><span class="n">a</span><span class="p">:</span> <span class="n">T</span><span class="o">.</span><span class="n">handle</span><span class="p">,</span> <span class="n">c</span><span class="p">:</span> <span class="n">T</span><span class="o">.</span><span class="n">handle</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="bp">None</span><span class="p">:</span>
+    <span class="n">A</span> <span class="o">=</span> <span class="n">T</span><span class="o">.</span><span class="n">match_buffer</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="p">(</span><span class="mi">128</span><span class="p">,</span> <span class="mi">128</span><span class="p">),</span> <span class="s2">&quot;float32&quot;</span><span class="p">)</span>
+    <span class="n">B</span> <span class="o">=</span> <span class="n">T</span><span class="o">.</span><span class="n">alloc_buffer</span><span class="p">((</span><span class="mi">8</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">16</span><span class="p">,</span> <span class="mi">16</span><span class="p">),</span> <span class="s2">&quot;float32&quot;</span><span class="p">)</span>
+    <span class="n">C</span> <span class="o">=</span> <span class="n">T</span><span class="o">.</span><span class="n">match_buffer</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="p">(</span><span class="mi">128</span><span class="p">,</span> <span class="mi">128</span><span class="p">),</span> <span class="s2">&quot;float32&quot;</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">j</span> <span class="ow">in</span> <span class="n">T</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="mi">128</span><span class="p">,</span> <span class="mi">128</span><span class="p">):</span>
+        <span class="k">with</span> <span class="n">T</span><span class="o">.</span><span class="n">block</span><span class="p">(</span><span class="s2">&quot;B&quot;</span><span class="p">):</span>
+            <span class="n">vi</span><span class="p">,</span> <span class="n">vj</span> <span class="o">=</span> <span class="n">T</span><span class="o">.</span><span class="n">axis</span><span class="o">.</span><span class="n">remap</span><span class="p">(</span><span class="s2">&quot;SS&quot;</span><span class="p">,</span> <span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">])</span>
+            <span class="n">B</span><span class="p">[</span><span class="n">vi</span> <span class="o">//</span> <span class="mi">16</span><span class="p">,</span> <span class="n">vj</span> <span class="o">//</span> <span class="mi">16</span><span class="p">,</span> <span class="n">vi</span> <span class="o">%</span> <span class="mi">16</span><span class="p">,</span> <span class="n">vj</span> <span class="o">%</span> <span class="mi">16</span><span class="p">]</span> <span class="o">=</span> <span class="n">A</span><span class="p">[</span><span class="n">vi</span><span class="p">,</span> <span class="n">vj</span><span class="p">]</span> <span class="o">*</span> <span class="mf">2.0</span>
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">j</span> <span class="ow">in</span> <span class="n">T</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="mi">128</span><span class="p">,</span> <span class="mi">128</span><span class="p">):</span>
+        <span class="k">with</span> <span class="n">T</span><span class="o">.</span><span class="n">block</span><span class="p">(</span><span class="s2">&quot;C&quot;</span><span class="p">):</span>
+            <span class="n">vi</span><span class="p">,</span> <span class="n">vj</span> <span class="o">=</span> <span class="n">T</span><span class="o">.</span><span class="n">axis</span><span class="o">.</span><span class="n">remap</span><span class="p">(</span><span class="s2">&quot;SS&quot;</span><span class="p">,</span> <span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">])</span>
+            <span class="n">C</span><span class="p">[</span><span class="n">vi</span><span class="p">,</span> <span class="n">vj</span><span class="p">]</span> <span class="o">=</span> <span class="n">B</span><span class="p">[</span><span class="n">vi</span> <span class="o">//</span> <span class="mi">16</span><span class="p">,</span> <span class="n">vj</span> <span class="o">//</span> <span class="mi">16</span><span class="p">,</span> <span class="n">vi</span> <span class="o">%</span> <span class="mi">16</span><span class="p">,</span> <span class="n">vj</span> <span class="o">%</span> <span class="mi">16</span><span class="p">]</span> <span class="o">+</span> <span class="mf">1.0</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="tvm.tir.Schedule.enter_postproc">
 <span class="sig-name descname"><span class="pre">enter_postproc</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.10)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#tvm.tir.Schedule.enter_postproc" title="Permalink to this definition">¶</a></dt>
 <dd><p>A no-op that marks the start of postprocessing phase of scheduling</p>
@@ -5857,6 +5917,12 @@ block are divisible by the subspace represented by the loops starting at the giv
 <dt class="sig sig-object py" id="tvm.tir.ScheduleError">
 <em class="property"><span class="pre">exception</span> </em><span class="sig-prename descclassname"><span class="pre">tvm.tir.</span></span><span class="sig-name descname"><span class="pre">ScheduleError</span></span><a class="headerlink" href="#tvm.tir.ScheduleError" title="Permalink to this definition">¶</a></dt>
 <dd><p>Error that happens during TensorIR scheduling.</p>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="tvm.tir.BufferType">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">tvm.tir.</span></span><span class="sig-name descname"><span class="pre">BufferType</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#tvm.tir.BufferType" title="Permalink to this definition">¶</a></dt>
+<dd><p>Type of buffer in access regions of a block</p>
 </dd></dl>
 
 </div>
