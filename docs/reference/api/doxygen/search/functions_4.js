@@ -34,7 +34,7 @@ var searchData=
   ['detectbufferaccesslca',['DetectBufferAccessLCA',['../namespacetvm_1_1tir.html#abbd3ced524b506f532aa1d8ae36dadf3',1,'tvm::tir']]],
   ['detectclipbound',['DetectClipBound',['../namespacetvm_1_1arith.html#a739616342876c2633b87ed16c649bc91',1,'tvm::arith']]],
   ['detectfeature',['DetectFeature',['../namespacetvm_1_1relay.html#a62b651084b386991221bc32c020cbef5',1,'tvm::relay::DetectFeature(const RelayExpr &amp;expr)'],['../namespacetvm_1_1relay.html#a81978c82e1130854e575ccabc152ad70',1,'tvm::relay::DetectFeature(const IRModule &amp;mod)'],['../namespacetvm_1_1relay.html#a191d5425083368521d49cc49cef65aba',1,'tvm::relay::DetectFeature(const Expr &amp;expr, const IRModule &amp;mod)']]],
-  ['detectitermap',['DetectIterMap',['../namespacetvm_1_1arith.html#aededb94795b43959bb4c0b07d5f77d2a',1,'tvm::arith']]],
+  ['detectitermap',['DetectIterMap',['../namespacetvm_1_1arith.html#a60ff187f559dba2d570d6a96f2fced15',1,'tvm::arith']]],
   ['detectlinearequation',['DetectLinearEquation',['../namespacetvm_1_1arith.html#a87a12ee0854469b04329a961ef261559',1,'tvm::arith']]],
   ['device_5ftype',['device_type',['../classtvm_1_1VirtualDeviceNode.html#a5e3f67045652bc27b937acf1ddc677a7',1,'tvm::VirtualDeviceNode']]],
   ['devicecopy',['DeviceCopy',['../structtvm_1_1runtime_1_1vm_1_1Instruction.html#ad38748aeb7650b185d8548e491aa9da6',1,'tvm::runtime::vm::Instruction']]],
