@@ -31,5 +31,6 @@ var searchData=
   ['num_5fshape',['num_shape',['../structTVMTensorInfo.html#a06914e1f39997fd01fec5c6b8103b9ac',1,'TVMTensorInfo']]],
   ['num_5ftask',['num_task',['../structTVMParallelGroupEnv.html#a6ff807972a918ee61dfc158abce825f6',1,'TVMParallelGroupEnv']]],
   ['num_5fthreads',['num_threads',['../classtvm_1_1meta__schedule_1_1TuneContextNode.html#aa7136d896f4145357ebb1b7639a25d65',1,'tvm::meta_schedule::TuneContextNode']]],
+  ['num_5ftrials_5falready',['num_trials_already',['../classtvm_1_1meta__schedule_1_1TaskSchedulerNode.html#a246e130e3928c57199f98dc3ce674d79',1,'tvm::meta_schedule::TaskSchedulerNode']]],
   ['number',['number',['../classtvm_1_1auto__scheduler_1_1ProgramRunnerNode.html#a92333af32d2e22aec749eaad4ba3d18b',1,'tvm::auto_scheduler::ProgramRunnerNode']]]
 ];
