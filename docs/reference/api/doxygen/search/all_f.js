@@ -76,5 +76,6 @@ var searchData=
   ['num_5fthreads',['num_threads',['../classtvm_1_1meta__schedule_1_1TuneContextNode.html#aa7136d896f4145357ebb1b7639a25d65',1,'tvm::meta_schedule::TuneContextNode']]],
   ['num_5ftrials_5falready',['num_trials_already',['../classtvm_1_1meta__schedule_1_1TaskSchedulerNode.html#a246e130e3928c57199f98dc3ce674d79',1,'tvm::meta_schedule::TaskSchedulerNode']]],
   ['number',['number',['../classtvm_1_1auto__scheduler_1_1ProgramRunnerNode.html#a92333af32d2e22aec749eaad4ba3d18b',1,'tvm::auto_scheduler::ProgramRunnerNode']]],
-  ['numpyeinsumshape',['NumpyEinsumShape',['../namespacetvm_1_1topi.html#abc85c139664cb45e0f83fe0acdbf67d0',1,'tvm::topi']]]
+  ['numpyeinsumshape',['NumpyEinsumShape',['../namespacetvm_1_1topi.html#abc85c139664cb45e0f83fe0acdbf67d0',1,'tvm::topi']]],
+  ['numthreads',['NumThreads',['../namespacetvm_1_1runtime_1_1threading.html#a162b7229faf9c4193bbfd99bf95443e2',1,'tvm::runtime::threading']]]
 ];
