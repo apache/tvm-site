@@ -47,6 +47,7 @@ var searchData=
   ['rewrite_5fonce',['rewrite_once',['../classtvm_1_1relay_1_1DFPatternCallbackNode.html#a6e4c091ba92fee08251d29633da9b8b8',1,'tvm::relay::DFPatternCallbackNode']]],
   ['rewrite_5fsimplify',['rewrite_simplify',['../classtvm_1_1arith_1_1Analyzer.html#acc86c6e8c04cb0de4ff9d78e769924b2',1,'tvm::arith::Analyzer']]],
   ['rhs',['rhs',['../classtvm_1_1relay_1_1ClauseNode.html#a93217eeea15c1f7c1a659da3da86d3bd',1,'tvm::relay::ClauseNode::rhs()'],['../classtvm_1_1tir_1_1CommReducerNode.html#a2902b0d55dd823febc6941fae9f32337',1,'tvm::tir::CommReducerNode::rhs()']]],
+  ['rhs_5faxis',['rhs_axis',['../structtvm_1_1relay_1_1qnn_1_1BroadcastAttrs.html#afd0dadf19b60022c3c8cc0b0f9b6c27a',1,'tvm::relay::qnn::BroadcastAttrs']]],
   ['rhs_5fbegin',['rhs_begin',['../structtvm_1_1relay_1_1ReshapeLikeAttrs.html#a8f25936511569c3ea754e9d065ccff81',1,'tvm::relay::ReshapeLikeAttrs']]],
   ['rhs_5fend',['rhs_end',['../structtvm_1_1relay_1_1ReshapeLikeAttrs.html#a6d8d5503c7880be0e179c0f54972afad',1,'tvm::relay::ReshapeLikeAttrs']]],
   ['right',['right',['../structtvm_1_1relay_1_1SearchSortedAttrs.html#a97bbdca17a8d0657b76b892fa3b7777a',1,'tvm::relay::SearchSortedAttrs::right()'],['../classtvm_1_1relay_1_1AltPatternNode.html#a01262756211205f8764d07f2372c5d36',1,'tvm::relay::AltPatternNode::right()']]],

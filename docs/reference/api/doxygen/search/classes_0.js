@@ -144,6 +144,7 @@ var searchData=
   ['attrsnode_3c_20binaryconv2dattrs_20_3e',['AttrsNode&lt; BinaryConv2DAttrs &gt;',['../classtvm_1_1AttrsNode.html',1,'tvm']]],
   ['attrsnode_3c_20binarydenseattrs_20_3e',['AttrsNode&lt; BinaryDenseAttrs &gt;',['../classtvm_1_1AttrsNode.html',1,'tvm']]],
   ['attrsnode_3c_20bitpackattrs_20_3e',['AttrsNode&lt; BitPackAttrs &gt;',['../classtvm_1_1AttrsNode.html',1,'tvm']]],
+  ['attrsnode_3c_20broadcastattrs_20_3e',['AttrsNode&lt; BroadcastAttrs &gt;',['../classtvm_1_1AttrsNode.html',1,'tvm']]],
   ['attrsnode_3c_20callloweredattrs_20_3e',['AttrsNode&lt; CallLoweredAttrs &gt;',['../classtvm_1_1AttrsNode.html',1,'tvm']]],
   ['attrsnode_3c_20castattrs_20_3e',['AttrsNode&lt; CastAttrs &gt;',['../classtvm_1_1AttrsNode.html',1,'tvm']]],
   ['attrsnode_3c_20casthintattrs_20_3e',['AttrsNode&lt; CastHintAttrs &gt;',['../classtvm_1_1AttrsNode.html',1,'tvm']]],
