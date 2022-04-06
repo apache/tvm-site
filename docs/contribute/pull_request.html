@@ -45,8 +45,8 @@
     <script type="text/javascript" src="../_static/js/tlcpack_theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="Git Usage Tips" href="git_howto.html" />
-    <link rel="prev" title="Error Handling Guide" href="error_handling.html" /> 
+    <link rel="next" title="Code Reviews" href="code_review.html" />
+    <link rel="prev" title="TVM Community Guidelines" href="community.html" /> 
 </head>
 
 <body class="wy-body-for-nav">
@@ -199,23 +199,25 @@
 <li class="toctree-l1"><a class="reference internal" href="../install/index.html">Installing TVM</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="index.html">Contributor Guide</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="community.html">TVM Community Guidelines</a></li>
-<li class="toctree-l2"><a class="reference internal" href="code_review.html">Perform Code Reviews</a></li>
-<li class="toctree-l2"><a class="reference internal" href="committer_guide.html">Committer Guide</a></li>
-<li class="toctree-l2"><a class="reference internal" href="document.html">Write Documentation for TVM</a></li>
-<li class="toctree-l2"><a class="reference internal" href="code_guide.html">Code Guide and Tips</a></li>
-<li class="toctree-l2"><a class="reference internal" href="error_handling.html">Error Handling Guide</a></li>
 <li class="toctree-l2 current"><a class="current reference internal" href="#">Submit a Pull Request</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#guidelines">Guidelines</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#ci-environment">CI Environment</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#testing">Testing</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#c">C++</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#python">Python</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#docker-recommended">Docker (recommended)</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#c-local">C++ (local)</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#python-local">Python (local)</a></li>
 </ul>
 </li>
 </ul>
 </li>
+<li class="toctree-l2"><a class="reference internal" href="code_review.html">Code Reviews</a></li>
+<li class="toctree-l2"><a class="reference internal" href="committer_guide.html">Committer Guide</a></li>
+<li class="toctree-l2"><a class="reference internal" href="document.html">Documentation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="code_guide.html">Code Guide and Tips</a></li>
 <li class="toctree-l2"><a class="reference internal" href="git_howto.html">Git Usage Tips</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ci.html">Using TVM’s CI</a></li>
-<li class="toctree-l2"><a class="reference internal" href="release_process.html">Apache TVM Release Process</a></li>
+<li class="toctree-l2"><a class="reference internal" href="release_process.html">Release Process</a></li>
+<li class="toctree-l2"><a class="reference internal" href="error_handling.html">Error Handling Guide</a></li>
 </ul>
 </li>
 </ul>
@@ -324,39 +326,58 @@
             
   <div class="section" id="submit-a-pull-request">
 <h1>Submit a Pull Request<a class="headerlink" href="#submit-a-pull-request" title="Permalink to this headline">¶</a></h1>
-<p>This is a quick guide to submit a pull request, please also refer to the detailed guidelines.</p>
+<div class="contents local topic" id="contents">
+<ul class="simple">
+<li><p><a class="reference internal" href="#guidelines" id="id1">Guidelines</a></p></li>
+<li><p><a class="reference internal" href="#ci-environment" id="id2">CI Environment</a></p></li>
+<li><p><a class="reference internal" href="#testing" id="id3">Testing</a></p>
 <ul>
-<li><p>Before submit, please rebase your code on the most recent version of main, you can do it by</p>
+<li><p><a class="reference internal" href="#docker-recommended" id="id4">Docker (recommended)</a></p></li>
+<li><p><a class="reference internal" href="#c-local" id="id5">C++ (local)</a></p></li>
+<li><p><a class="reference internal" href="#python-local" id="id6">Python (local)</a></p></li>
+</ul>
+</li>
+</ul>
+</div>
+<div class="section" id="guidelines">
+<h2><a class="toc-backref" href="#id1">Guidelines</a><a class="headerlink" href="#guidelines" title="Permalink to this headline">¶</a></h2>
+<ul>
+<li><p>We recommend authors send well scoped PRs that are easy to review and revert in case there is a problem. As such, authors should avoid merging multiple unrelated changes into a single PR</p></li>
+<li><p>Before you submit a PR, please rebase your code on the most recent version of <code class="docutils literal notranslate"><span class="pre">main</span></code>, you can do it by
+running</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>git remote add upstream <span class="o">[</span>url to tvm repo<span class="o">]</span>
 git fetch upstream
 git rebase upstream/main
 </pre></div>
 </div>
 </li>
-<li><p>Make sure code style check pass by typing the following command, and all the existing test-cases pass.</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Run all lint steps.</span>
+<li><p>Make sure code passes lint checks</p>
+<blockquote>
+<div><div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># While the lint commands used should be identical to those run in CI, this command reproduces</span>
+<span class="c1"># the CI lint procedure exactly (typically helpful for debugging lint script errors or</span>
+<span class="c1"># to avoid installing tools manually)</span>
+python tests/scripts/ci.py lint
+
+<span class="c1"># Run all lint steps.</span>
 docker/lint.sh
 
 <span class="c1"># To run steps individually, specify their step names on the command-line. An incorrectly</span>
 <span class="c1"># spelled step name causes the tool to print all available steps.</span>
 docker/lint.sh &lt;step_name&gt; ...
-
-<span class="c1"># While the lint commands used should be identical to those run in CI, this command reproduces</span>
-<span class="c1"># the CI lint procedure exactly (typically helpful for debugging lint script errors).</span>
-docker/bash.sh ci_lint ./tests/scripts/task_lint.sh
 </pre></div>
 </div>
-<p>When the clang-format lint check fails, run git-clang-format as follows to automatically reformat
+<p>If the clang-format lint check fails, run git-clang-format as follows to automatically reformat
 your code:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># Run clang-format check for all the files that changed since upstream/main</span>
 docker/bash.sh ci_lint ./tests/lint/git-clang-format.sh upstream/main
 </pre></div>
 </div>
+</div></blockquote>
 </li>
 <li><p>Add test-cases to cover the new features or bugfix the patch introduces.</p></li>
-<li><p>Document the code you wrote, see more at <a class="reference internal" href="document.html#doc-guide"><span class="std std-ref">Write Documentation for TVM</span></a></p></li>
-<li><p>Send the pull request and fix the problems reported by automatic checks.</p></li>
-<li><p>Request code reviews from other contributors and improves your patch according to feedbacks.</p>
+<li><p>Document the code you wrote, see more at <a class="reference internal" href="document.html#doc-guide"><span class="std std-ref">Documentation</span></a></p></li>
+<li><p><a class="reference external" href="https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/creating-a-pull-request">Create a pull request</a> and fix the problems reported by CI checks.</p></li>
+<li><p>Request code reviews from other contributors and improve your patch according to their reviews by <code class="docutils literal notranslate"><span class="pre">&#64;</span></code>-ing them in your pull request. Tags in PR titles will automatically tag subscribed users, so make sure to put relevant topics in your PR titles (e.g. <code class="docutils literal notranslate"><span class="pre">[microTVM]</span> <span class="pre">a</span> <span class="pre">cool</span> <span class="pre">change</span></code> and not <code class="docutils literal notranslate"><span class="pre">a</span> <span class="pre">cool</span> <span class="pre">change</span> <span class="pre">for</span> <span class="pre">microTVM</span></code>).</p>
 <ul class="simple">
 <li><p>To get your code reviewed quickly, we encourage you to help review others’ code so they can do the favor in return.</p></li>
 <li><p>Code review is a shepherding process that helps to improve contributor’s code quality.
@@ -365,36 +386,50 @@ We highly value patches that can get in without extensive reviews.</p></li>
 <li><p>The detailed guidelines and summarizes useful lessons.</p></li>
 </ul>
 </li>
-<li><p>The patch can be merged after the reviewers approve the pull request.</p></li>
-</ul>
-<div class="section" id="ci-environment">
-<h2>CI Environment<a class="headerlink" href="#ci-environment" title="Permalink to this headline">¶</a></h2>
-<p>We use docker container to create stable CI environments
-that can be deployed to multiple machines.
-Because we want a relatively stable CI environment and make use of pre-cached image,
-all of the CI images are built and maintained by committers.</p>
-<p>Upgrade of CI images can cause problems and need fixes to accommodate the new env.
-Here is the protocol to update CI image:</p>
-<ul class="simple">
-<li><p>Send PR to upgrade build script in the repo
-- Can be done by a contributor, the following steps need committership.</p></li>
-<li><p>Build the new docker image</p></li>
-<li><p>Tag the docker image with a new version and push to tvmai</p></li>
-<li><p>Update the version(most of the time increase the minor version) in the Jenkinsfile, send a PR.</p></li>
-<li><p>Fix any issues wrt to the new image versions in the PR.</p></li>
-<li><p>Merge the PR and now we are in new version.</p></li>
-<li><p>Tag the new version as the latest.</p></li>
-<li><p>Periodically cleanup the old versions on local workers</p></li>
+<li><p>The PR can be merged after the reviewers approve the pull request.</p></li>
 </ul>
 </div>
+<div class="section" id="ci-environment">
+<h2><a class="toc-backref" href="#id2">CI Environment</a><a class="headerlink" href="#ci-environment" title="Permalink to this headline">¶</a></h2>
+<p>We use Docker images to create stable CI environments that can be deployed to multiple machines.
+Follow the steps in <a class="reference external" href="https://github.com/apache/tvm/issues/new?assignees=&amp;labels=&amp;template=ci-image.md&amp;title=%5BCI+Image%5D+">this issue template</a>
+to update a CI Docker image.</p>
+</div>
 <div class="section" id="testing">
-<span id="pr-testing"></span><h2>Testing<a class="headerlink" href="#testing" title="Permalink to this headline">¶</a></h2>
+<span id="pr-testing"></span><h2><a class="toc-backref" href="#id3">Testing</a><a class="headerlink" href="#testing" title="Permalink to this headline">¶</a></h2>
 <p>Even though we have hooks to run unit tests automatically for each pull request, it’s always recommended to run unit tests
 locally beforehand to reduce reviewers’ burden and speedup review process.</p>
+<div class="section" id="docker-recommended">
+<h3><a class="toc-backref" href="#id4">Docker (recommended)</a><a class="headerlink" href="#docker-recommended" title="Permalink to this headline">¶</a></h3>
+<p><code class="docutils literal notranslate"><span class="pre">tests/scripts/ci.py</span></code> replicates the CI environment locally and provides a user-friendly interface.
+The same Docker images and scripts used in CI are used directly to run tests. It also deposits builds
+in different folders so you can maintain multiple test environments without rebuilding from scratch
+each time (e.g. you can test a change in CPU and i386 while retaining incremental rebuilds).</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># see all available platforms</span>
+python tests/scripts/ci.py --help
+python tests/scripts/ci.py cpu --help
+
+<span class="c1"># run the CPU build in the ci_cpu docker container (build will be left in</span>
+<span class="c1"># the build-cpu/ folder)</span>
+<span class="c1"># note: the CPU and GPU Docker images are quite large and may take some</span>
+<span class="c1"># time to download on their first use</span>
+python tests/scripts/ci.py cpu
+
+<span class="c1"># run the CPU build in the ci_cpu docker container and then run unittests</span>
+python tests/scripts/ci.py cpu --unittest
+
+<span class="c1"># quickly iterate by running a specific test and skipping the rebuild each time</span>
+python tests/scripts/ci.py cpu --skip-build --tests tests/python/unittest/test_tir_transform_inject_rolling_buffer.py::test_upscale
+
+<span class="c1"># run the CPU build and drop into a shell in the container</span>
+python tests/scripts/ci.py cpu --interactive
+</pre></div>
+</div>
+</div>
+<div class="section" id="c-local">
+<h3><a class="toc-backref" href="#id5">C++ (local)</a><a class="headerlink" href="#c-local" title="Permalink to this headline">¶</a></h3>
 <p>Running the C++ tests requires installation of gtest, following the instructions in
 <a class="reference internal" href="../install/from_source.html#install-from-source-cpp-tests"><span class="std std-ref">Enable C++ Tests</span></a></p>
-<div class="section" id="c">
-<h3>C++<a class="headerlink" href="#c" title="Permalink to this headline">¶</a></h3>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># assume you are in tvm source root</span>
 <span class="nv">TVM_ROOT</span><span class="o">=</span><span class="sb">`</span><span class="nb">pwd</span><span class="sb">`</span>
 
@@ -402,8 +437,8 @@ locally beforehand to reduce reviewers’ burden and speedup review process.</p>
 </pre></div>
 </div>
 </div>
-<div class="section" id="python">
-<h3>Python<a class="headerlink" href="#python" title="Permalink to this headline">¶</a></h3>
+<div class="section" id="python-local">
+<h3><a class="toc-backref" href="#id6">Python (local)</a><a class="headerlink" href="#python-local" title="Permalink to this headline">¶</a></h3>
 <p>Necessary dependencies:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip install --user pytest Cython synr
 </pre></div>
@@ -443,10 +478,10 @@ rm -rf python/tvm/*.pyc python/tvm/*/*.pyc python/tvm/*/*/*.pyc
 
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="git_howto.html" class="btn btn-neutral float-right" title="Git Usage Tips" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+        <a href="code_review.html" class="btn btn-neutral float-right" title="Code Reviews" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
-        <a href="error_handling.html" class="btn btn-neutral float-left" title="Error Handling Guide" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+        <a href="community.html" class="btn btn-neutral float-left" title="TVM Community Guidelines" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
       
     </div>
 
