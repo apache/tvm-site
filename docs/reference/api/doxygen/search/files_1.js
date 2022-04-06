@@ -10,5 +10,6 @@ var searchData=
   ['buffer_2eh',['buffer.h',['../buffer_8h.html',1,'']]],
   ['builder_2eh',['builder.h',['../builder_8h.html',1,'']]],
   ['builtin_2eh',['builtin.h',['../builtin_8h.html',1,'']]],
+  ['builtin_5ffp16_2eh',['builtin_fp16.h',['../builtin__fp16_8h.html',1,'']]],
   ['bytecode_2eh',['bytecode.h',['../bytecode_8h.html',1,'']]]
 ];
