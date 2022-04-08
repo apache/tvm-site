@@ -270,7 +270,7 @@ var searchData=
   ['cublas_2eh',['cublas.h',['../cublas_8h.html',1,'']]],
   ['cublas_5fbatch_5fmatmul',['cublas_batch_matmul',['../namespacetvm_1_1topi_1_1contrib.html#a73b932a26374350f8a1b75b092c92091',1,'tvm::topi::contrib']]],
   ['cublas_5fmatmul',['cublas_matmul',['../namespacetvm_1_1topi_1_1contrib.html#a68c8492ea536608724ef6267b0785054',1,'tvm::topi::contrib']]],
-  ['current',['Current',['../classtvm_1_1transform_1_1PassContext.html#a4d21045965f6e5ea9338a1e8111af5fc',1,'tvm::transform::PassContext::Current()'],['../classtvm_1_1meta__schedule_1_1MetaScheduleContext.html#a2a17f285e278c19d2ad3dfa3f79ce3ec',1,'tvm::meta_schedule::MetaScheduleContext::Current()'],['../classtvm_1_1Target.html#abed5e5cfb5d36e70ea5eaadef9fb63b2',1,'tvm::Target::Current()'],['../classtvm_1_1te_1_1SpecializedCondition.html#a5da12dcea3337e0caf59ffda33dd824a',1,'tvm::te::SpecializedCondition::Current()']]],
+  ['current',['Current',['../classtvm_1_1transform_1_1PassContext.html#a4d21045965f6e5ea9338a1e8111af5fc',1,'tvm::transform::PassContext::Current()'],['../classtvm_1_1meta__schedule_1_1ApplyHistoryBest.html#a01e1c6ca238eb14268ee62c5b7ae9285',1,'tvm::meta_schedule::ApplyHistoryBest::Current()'],['../classtvm_1_1Target.html#abed5e5cfb5d36e70ea5eaadef9fb63b2',1,'tvm::Target::Current()'],['../classtvm_1_1te_1_1SpecializedCondition.html#a5da12dcea3337e0caf59ffda33dd824a',1,'tvm::te::SpecializedCondition::Current()']]],
   ['current_5fcompute_5fdag',['current_compute_dag',['../classtvm_1_1auto__scheduler_1_1StateNode.html#a84416c45e06875f255e3c7b092f17404',1,'tvm::auto_scheduler::StateNode']]],
   ['customdatatypeslowerer',['CustomDatatypesLowerer',['../classtvm_1_1tir_1_1BufferLoadNode.html#a46452c76ddea6c63353f8101e3462238',1,'tvm::tir::BufferLoadNode']]]
 ];

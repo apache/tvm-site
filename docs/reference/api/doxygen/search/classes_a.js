@@ -49,8 +49,6 @@ var searchData=
   ['metadataarraynode',['MetadataArrayNode',['../classtvm_1_1runtime_1_1metadata_1_1MetadataArrayNode.html',1,'tvm::runtime::metadata']]],
   ['metadatabase',['MetadataBase',['../classtvm_1_1runtime_1_1metadata_1_1MetadataBase.html',1,'tvm::runtime::metadata']]],
   ['metadatabasenode',['MetadataBaseNode',['../classtvm_1_1runtime_1_1metadata_1_1MetadataBaseNode.html',1,'tvm::runtime::metadata']]],
-  ['metaschedulecontext',['MetaScheduleContext',['../classtvm_1_1meta__schedule_1_1MetaScheduleContext.html',1,'tvm::meta_schedule']]],
-  ['metaschedulecontextnode',['MetaScheduleContextNode',['../classtvm_1_1meta__schedule_1_1MetaScheduleContextNode.html',1,'tvm::meta_schedule']]],
   ['metriccollector',['MetricCollector',['../classtvm_1_1runtime_1_1profiling_1_1MetricCollector.html',1,'tvm::runtime::profiling']]],
   ['metriccollectornode',['MetricCollectorNode',['../classtvm_1_1runtime_1_1profiling_1_1MetricCollectorNode.html',1,'tvm::runtime::profiling']]],
   ['min',['Min',['../classtvm_1_1tir_1_1Min.html',1,'tvm::tir']]],

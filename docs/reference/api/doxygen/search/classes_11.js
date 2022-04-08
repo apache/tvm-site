@@ -25,7 +25,7 @@ var searchData=
   ['tensorintrin',['TensorIntrin',['../classtvm_1_1te_1_1TensorIntrin.html',1,'tvm::te::TensorIntrin'],['../classtvm_1_1tir_1_1TensorIntrin.html',1,'tvm::tir::TensorIntrin']]],
   ['tensorintrincall',['TensorIntrinCall',['../classtvm_1_1te_1_1TensorIntrinCall.html',1,'tvm::te']]],
   ['tensorintrincallnode',['TensorIntrinCallNode',['../classtvm_1_1te_1_1TensorIntrinCallNode.html',1,'tvm::te']]],
-  ['tensorintrinnode',['TensorIntrinNode',['../classtvm_1_1tir_1_1TensorIntrinNode.html',1,'tvm::tir::TensorIntrinNode'],['../classtvm_1_1te_1_1TensorIntrinNode.html',1,'tvm::te::TensorIntrinNode']]],
+  ['tensorintrinnode',['TensorIntrinNode',['../classtvm_1_1te_1_1TensorIntrinNode.html',1,'tvm::te::TensorIntrinNode'],['../classtvm_1_1tir_1_1TensorIntrinNode.html',1,'tvm::tir::TensorIntrinNode']]],
   ['tensornode',['TensorNode',['../classtvm_1_1te_1_1TensorNode.html',1,'tvm::te']]],
   ['tensortype',['TensorType',['../classtvm_1_1TensorType.html',1,'tvm']]],
   ['tensortypenode',['TensorTypeNode',['../classtvm_1_1TensorTypeNode.html',1,'tvm']]],
