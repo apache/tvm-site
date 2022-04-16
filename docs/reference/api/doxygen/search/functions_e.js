@@ -15,6 +15,7 @@ var searchData=
   ['neg',['neg',['../namespacetvm.html#a5cd85b156fb31f75f91c8a5c012f8a66',1,'tvm']]],
   ['negative',['negative',['../namespacetvm_1_1topi.html#af6b3e60333fce92bcf0930e45683a8f6',1,'tvm::topi']]],
   ['new',['New',['../classtvm_1_1runtime_1_1SimpleObjAllocator_1_1Handler.html#afedd0ba3dc8dc82c7566bb9120a7c56d',1,'tvm::runtime::SimpleObjAllocator::Handler::New()'],['../classtvm_1_1runtime_1_1SimpleObjAllocator_1_1ArrayHandler.html#a310471cff82c5d0836f65ec7f199e621',1,'tvm::runtime::SimpleObjAllocator::ArrayHandler::New()']]],
+  ['newfromdltensor',['NewFromDLTensor',['../classtvm_1_1runtime_1_1NDArray.html#afb6060bb96dad082c1deca26e6b58ae2',1,'tvm::runtime::NDArray']]],
   ['nextafter',['nextafter',['../namespacetvm.html#a96d86ba91e4855c84879ba886465cacf',1,'tvm']]],
   ['nexttaskid',['NextTaskId',['../classtvm_1_1meta__schedule_1_1TaskSchedulerNode.html#a079e2964ca86b5c32564140efa3e5626',1,'tvm::meta_schedule::TaskSchedulerNode::NextTaskId()'],['../classtvm_1_1meta__schedule_1_1PyTaskSchedulerNode.html#a23752f62706ef3f0bfac98fb203e5062',1,'tvm::meta_schedule::PyTaskSchedulerNode::NextTaskId()']]],
   ['nll_5floss',['nll_loss',['../namespacetvm_1_1topi.html#aeb1547800d4b7625326a176ca1dec6e0',1,'tvm::topi']]],
