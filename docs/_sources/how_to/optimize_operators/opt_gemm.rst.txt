@@ -118,8 +118,8 @@ Then we write a baseline implementation, the simplest way to write a matrix mult
 
  .. code-block:: none
 
-    Numpy running time: 0.018430
-    Baseline: 3.375561
+    Numpy running time: 0.018365
+    Baseline: 3.229079
 
 
 
@@ -147,7 +147,8 @@ Here is the generated IR using our baseline schedule.
       buffers = {A: Buffer(A_2: Pointer(float32), float32, [1048576], []),
                  B: Buffer(B_2: Pointer(float32), float32, [1048576], []),
                  C: Buffer(C_2: Pointer(float32), float32, [1048576], [])}
-      buffer_map = {A_1: A, B_1: B, C_1: C} {
+      buffer_map = {A_1: A, B_1: B, C_1: C}
+      preflattened_buffer_map = {A_1: A_3: Buffer(A_2, float32, [1024, 1024], []), B_1: B_3: Buffer(B_2, float32, [1024, 1024], []), C_1: C_3: Buffer(C_2, float32, [1024, 1024], [])} {
       for (m: int32, 0, 1024) {
         for (n: int32, 0, 1024) {
           C[((m*1024) + n)] = 0f32
@@ -209,7 +210,7 @@ fill 32 * 32 * sizeof(float) which is 4KB in the cache whose total size is 32KB 
 
  .. code-block:: none
 
-    Opt1: 0.298173
+    Opt1: 0.297376
 
 
 
@@ -236,7 +237,8 @@ Here is the generated IR after blocking.
       buffers = {A: Buffer(A_2: Pointer(float32), float32, [1048576], []),
                  B: Buffer(B_2: Pointer(float32), float32, [1048576], []),
                  C: Buffer(C_2: Pointer(float32), float32, [1048576], [])}
-      buffer_map = {A_1: A, B_1: B, C_1: C} {
+      buffer_map = {A_1: A, B_1: B, C_1: C}
+      preflattened_buffer_map = {A_1: A_3: Buffer(A_2, float32, [1024, 1024], []), B_1: B_3: Buffer(B_2, float32, [1024, 1024], []), C_1: C_3: Buffer(C_2, float32, [1024, 1024], [])} {
       for (m.outer: int32, 0, 32) {
         for (n.outer: int32, 0, 32) {
           for (m.inner.init: int32, 0, 32) {
@@ -307,7 +309,7 @@ In this tutorial, we chose to vectorize the inner loop row data since it is cach
 
  .. code-block:: none
 
-    Opt2: 0.332877
+    Opt2: 0.332503
 
 
 
@@ -334,7 +336,8 @@ Here is the generated IR after vectorization.
       buffers = {A: Buffer(A_2: Pointer(float32), float32, [1048576], []),
                  B: Buffer(B_2: Pointer(float32), float32, [1048576], []),
                  C: Buffer(C_2: Pointer(float32), float32, [1048576], [])}
-      buffer_map = {A_1: A, B_1: B, C_1: C} {
+      buffer_map = {A_1: A, B_1: B, C_1: C}
+      preflattened_buffer_map = {A_1: A_3: Buffer(A_2, float32, [1024, 1024], []), B_1: B_3: Buffer(B_2, float32, [1024, 1024], []), C_1: C_3: Buffer(C_2, float32, [1024, 1024], [])} {
       for (m.outer: int32, 0, 32) {
         for (n.outer: int32, 0, 32) {
           for (m.inner.init: int32, 0, 32) {
@@ -398,7 +401,7 @@ the access pattern for A matrix is more cache friendly.
 
  .. code-block:: none
 
-    Opt3: 0.115643
+    Opt3: 0.115873
 
 
 
@@ -425,7 +428,8 @@ Here is the generated IR after loop permutation.
       buffers = {A: Buffer(A_2: Pointer(float32), float32, [1048576], []),
                  B: Buffer(B_2: Pointer(float32), float32, [1048576], []),
                  C: Buffer(C_2: Pointer(float32), float32, [1048576], [])}
-      buffer_map = {A_1: A, B_1: B, C_1: C} {
+      buffer_map = {A_1: A, B_1: B, C_1: C}
+      preflattened_buffer_map = {A_1: A_3: Buffer(A_2, float32, [1024, 1024], []), B_1: B_3: Buffer(B_2, float32, [1024, 1024], []), C_1: C_3: Buffer(C_2, float32, [1024, 1024], [])} {
       for (m.outer: int32, 0, 32) {
         for (n.outer: int32, 0, 32) {
           for (m.inner.init: int32, 0, 32) {
@@ -516,7 +520,7 @@ flattening.
 
  .. code-block:: none
 
-    Opt4: 0.110562
+    Opt4: 0.110546
 
 
 
@@ -543,7 +547,8 @@ Here is the generated IR after array packing.
       buffers = {A: Buffer(A_2: Pointer(float32), float32, [1048576], []),
                  B: Buffer(B_2: Pointer(float32), float32, [1048576], []),
                  C: Buffer(C_2: Pointer(float32), float32, [1048576], [])}
-      buffer_map = {A_1: A, B_1: B, C_1: C} {
+      buffer_map = {A_1: A, B_1: B, C_1: C}
+      preflattened_buffer_map = {A_1: A_3: Buffer(A_2, float32, [1024, 1024], []), B_1: B_3: Buffer(B_2, float32, [1024, 1024], []), C_1: C_3: Buffer(C_2, float32, [1024, 1024], [])} {
       allocate(packedB: Pointer(global float32x32), float32x32, [32768]), storage_scope = global {
         for (bigN: int32, 0, 32) "parallel" {
           for (k: int32, 0, 1024) {
@@ -633,7 +638,7 @@ write to C when all the block results are ready.
 
  .. code-block:: none
 
-    Opt5: 0.111146
+    Opt5: 0.110159
 
 
 
@@ -660,7 +665,8 @@ Here is the generated IR after blocking.
       buffers = {A: Buffer(A_2: Pointer(float32), float32, [1048576], []),
                  B: Buffer(B_2: Pointer(float32), float32, [1048576], []),
                  C: Buffer(C_2: Pointer(float32), float32, [1048576], [])}
-      buffer_map = {A_1: A, B_1: B, C_1: C} {
+      buffer_map = {A_1: A, B_1: B, C_1: C}
+      preflattened_buffer_map = {A_1: A_3: Buffer(A_2, float32, [1024, 1024], []), B_1: B_3: Buffer(B_2, float32, [1024, 1024], []), C_1: C_3: Buffer(C_2, float32, [1024, 1024], [])} {
       allocate(packedB: Pointer(global float32x32), float32x32, [32768]), storage_scope = global;
       allocate(C.global: Pointer(global float32), float32, [1024]), storage_scope = global {
         for (bigN: int32, 0, 32) "parallel" {
@@ -753,7 +759,7 @@ Futhermore, we can also utilize multi-core processors to do the thread-level par
 
  .. code-block:: none
 
-    Opt6: 0.144741
+    Opt6: 0.144547
 
 
 
@@ -780,7 +786,8 @@ Here is the generated IR after parallelization.
       buffers = {A: Buffer(A_2: Pointer(float32), float32, [1048576], []),
                  B: Buffer(B_2: Pointer(float32), float32, [1048576], []),
                  C: Buffer(C_2: Pointer(float32), float32, [1048576], [])}
-      buffer_map = {A_1: A, B_1: B, C_1: C} {
+      buffer_map = {A_1: A, B_1: B, C_1: C}
+      preflattened_buffer_map = {A_1: A_3: Buffer(A_2, float32, [1024, 1024], []), B_1: B_3: Buffer(B_2, float32, [1024, 1024], []), C_1: C_3: Buffer(C_2, float32, [1024, 1024], [])} {
       allocate(packedB: Pointer(global float32x32), float32x32, [32768]), storage_scope = global {
         for (bigN: int32, 0, 32) "parallel" {
           for (k: int32, 0, 1024) {

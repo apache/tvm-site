@@ -68,11 +68,12 @@ together in the next schedule procedure.
                  A1: Buffer(A1_2: Pointer(float32), float32, [(stride_1: int32*m)], [], type="auto"),
                  B: Buffer(B_4: Pointer(float32), float32, [(stride_2: int32*m)], [], type="auto"),
                  B_1: Buffer(B_5: Pointer(float32), float32, [(stride_3: int32*m)], [], type="auto")}
-      buffer_map = {A0_1: A0, A1_1: A1, B_2: B, B_3: B_1} {
+      buffer_map = {A0_1: A0, A1_1: A1, B_2: B, B_3: B_1}
+      preflattened_buffer_map = {A0_1: A0_3: Buffer(A0_2, float32, [m, n: int32], [stride, stride_4: int32], type="auto"), A1_1: A1_3: Buffer(A1_2, float32, [m, n], [stride_1, stride_5: int32], type="auto"), B_2: B_6: Buffer(B_4, float32, [m, n], [stride_2, stride_6: int32], type="auto"), B_3: B_7: Buffer(B_5, float32, [m, n], [stride_3, stride_7: int32], type="auto")} {
       for (i: int32, 0, m) {
-        for (j: int32, 0, n: int32) {
-          B[((i*stride_2) + (j*stride_4: int32))] = (A0[((i*stride) + (j*stride_5: int32))] + 2f32)
-          B_1[((i*stride_3) + (j*stride_6: int32))] = (A1[((i*stride_1) + (j*stride_7: int32))]*3f32)
+        for (j: int32, 0, n) {
+          B[((i*stride_2) + (j*stride_6))] = (A0[((i*stride) + (j*stride_4))] + 2f32)
+          B_1[((i*stride_3) + (j*stride_7))] = (A1[((i*stride_1) + (j*stride_5))]*3f32)
         }
       }
     }
@@ -139,13 +140,14 @@ with :py:func:`te.comm_reducer` as below:
                  val: Buffer(val_2: Pointer(int32), int32, [(stride_1: int32*m)], [], type="auto"),
                  T: Buffer(T_4: Pointer(int32), int32, [(stride_2: int32*m)], [], type="auto"),
                  T_1: Buffer(T_5: Pointer(int32), int32, [(stride_3: int32*m)], [], type="auto")}
-      buffer_map = {idx_1: idx, val_1: val, T_2: T, T_3: T_1} {
+      buffer_map = {idx_1: idx, val_1: val, T_2: T, T_3: T_1}
+      preflattened_buffer_map = {idx_1: idx_3: Buffer(idx_2, int32, [m, n: int32], [stride, stride_4: int32], type="auto"), val_1: val_3: Buffer(val_2, int32, [m, n], [stride_1, stride_5: int32], type="auto"), T_2: T_6: Buffer(T_4, int32, [m], [stride_2], type="auto"), T_3: T_7: Buffer(T_5, int32, [m], [stride_3], type="auto")} {
       for (i: int32, 0, m) {
         T[(i*stride_2)] = -1
         T_1[(i*stride_3)] = -2147483648
-        for (k: int32, 0, n: int32) {
-          T[(i*stride_2)] = @tir.if_then_else((val[((i*stride_1) + (k*stride_4: int32))] <= T_1[(i*stride_3)]), T[(i*stride_2)], idx[((i*stride) + (k*stride_5: int32))], dtype=int32)
-          T_1[(i*stride_3)] = @tir.if_then_else((val[((i*stride_1) + (k*stride_4))] <= T_1[(i*stride_3)]), T_1[(i*stride_3)], val[((i*stride_1) + (k*stride_4))], dtype=int32)
+        for (k: int32, 0, n) {
+          T[(i*stride_2)] = @tir.if_then_else((val[((i*stride_1) + (k*stride_5))] <= T_1[(i*stride_3)]), T[(i*stride_2)], idx[((i*stride) + (k*stride_4))], dtype=int32)
+          T_1[(i*stride_3)] = @tir.if_then_else((val[((i*stride_1) + (k*stride_5))] <= T_1[(i*stride_3)]), T_1[(i*stride_3)], val[((i*stride_1) + (k*stride_5))], dtype=int32)
         }
       }
     }
@@ -196,16 +198,17 @@ in terms of operation.
       buffers = {A0: Buffer(A0_2: Pointer(float32), float32, [(stride: int32*m: int32)], [], type="auto"),
                  A1: Buffer(A1_2: Pointer(float32), float32, [(stride_1: int32*m)], [], type="auto"),
                  C: Buffer(C_2: Pointer(float32), float32, [(stride_2: int32*m)], [], type="auto")}
-      buffer_map = {A0_1: A0, A1_1: A1, C_1: C} {
-      allocate(B.v0: Pointer(global float32), float32, [n: int32]), storage_scope = global;
+      buffer_map = {A0_1: A0, A1_1: A1, C_1: C}
+      preflattened_buffer_map = {A0_1: A0_3: Buffer(A0_2, float32, [m, n: int32], [stride, stride_3: int32], type="auto"), A1_1: A1_3: Buffer(A1_2, float32, [m, n], [stride_1, stride_4: int32], type="auto"), C_1: C_3: Buffer(C_2, float32, [m, n], [stride_2, stride_5: int32], type="auto")} {
+      allocate(B.v0: Pointer(global float32), float32, [n]), storage_scope = global;
       allocate(B.v1: Pointer(global float32), float32, [n]), storage_scope = global;
       for (i: int32, 0, m) {
         for (j: int32, 0, n) {
-          B.v0_1: Buffer(B.v0, float32, [n], [])[j] = (A0[((i*stride) + (j*stride_3: int32))] + 2f32)
+          B.v0_1: Buffer(B.v0, float32, [n], [])[j] = (A0[((i*stride) + (j*stride_3))] + 2f32)
           B.v1_1: Buffer(B.v1, float32, [n], [])[j] = (A0[((i*stride) + (j*stride_3))]*3f32)
         }
         for (j_1: int32, 0, n) {
-          C[((i*stride_2) + (j_1*stride_4: int32))] = (A1[((i*stride_1) + (j_1*stride_5: int32))] + B.v0_1[j_1])
+          C[((i*stride_2) + (j_1*stride_5))] = (A1[((i*stride_1) + (j_1*stride_4))] + B.v0_1[j_1])
         }
       }
     }

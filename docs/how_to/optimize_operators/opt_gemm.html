@@ -431,8 +431,8 @@ Then we write a baseline implementation, the simplest way to write a matrix mult
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Numpy running time: 0.018430
-Baseline: 3.375561
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Numpy running time: 0.018365
+Baseline: 3.229079
 </pre></div>
 </div>
 <p>In TVM, we can always inspect lower level IR to debug or optimize our schedule.
@@ -446,7 +446,8 @@ Here is the generated IR using our baseline schedule.</p>
   buffers = {A: Buffer(A_2: Pointer(float32), float32, [1048576], []),
              B: Buffer(B_2: Pointer(float32), float32, [1048576], []),
              C: Buffer(C_2: Pointer(float32), float32, [1048576], [])}
-  buffer_map = {A_1: A, B_1: B, C_1: C} {
+  buffer_map = {A_1: A, B_1: B, C_1: C}
+  preflattened_buffer_map = {A_1: A_3: Buffer(A_2, float32, [1024, 1024], []), B_1: B_3: Buffer(B_2, float32, [1024, 1024], []), C_1: C_3: Buffer(C_2, float32, [1024, 1024], [])} {
   for (m: int32, 0, 1024) {
     for (n: int32, 0, 1024) {
       C[((m*1024) + n)] = 0f32
@@ -493,7 +494,7 @@ fill 32 * 32 * sizeof(float) which is 4KB in the cache whose total size is 32KB 
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Opt1: 0.298173
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Opt1: 0.297376
 </pre></div>
 </div>
 <p>Here is the generated IR after blocking.</p>
@@ -506,7 +507,8 @@ fill 32 * 32 * sizeof(float) which is 4KB in the cache whose total size is 32KB 
   buffers = {A: Buffer(A_2: Pointer(float32), float32, [1048576], []),
              B: Buffer(B_2: Pointer(float32), float32, [1048576], []),
              C: Buffer(C_2: Pointer(float32), float32, [1048576], [])}
-  buffer_map = {A_1: A, B_1: B, C_1: C} {
+  buffer_map = {A_1: A, B_1: B, C_1: C}
+  preflattened_buffer_map = {A_1: A_3: Buffer(A_2, float32, [1024, 1024], []), B_1: B_3: Buffer(B_2, float32, [1024, 1024], []), C_1: C_3: Buffer(C_2, float32, [1024, 1024], [])} {
   for (m.outer: int32, 0, 32) {
     for (n.outer: int32, 0, 32) {
       for (m.inner.init: int32, 0, 32) {
@@ -561,7 +563,7 @@ vastly.</p>
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Opt2: 0.332877
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Opt2: 0.332503
 </pre></div>
 </div>
 <p>Here is the generated IR after vectorization.</p>
@@ -574,7 +576,8 @@ vastly.</p>
   buffers = {A: Buffer(A_2: Pointer(float32), float32, [1048576], []),
              B: Buffer(B_2: Pointer(float32), float32, [1048576], []),
              C: Buffer(C_2: Pointer(float32), float32, [1048576], [])}
-  buffer_map = {A_1: A, B_1: B, C_1: C} {
+  buffer_map = {A_1: A, B_1: B, C_1: C}
+  preflattened_buffer_map = {A_1: A_3: Buffer(A_2, float32, [1024, 1024], []), B_1: B_3: Buffer(B_2, float32, [1024, 1024], []), C_1: C_3: Buffer(C_2, float32, [1024, 1024], [])} {
   for (m.outer: int32, 0, 32) {
     for (n.outer: int32, 0, 32) {
       for (m.inner.init: int32, 0, 32) {
@@ -623,7 +626,7 @@ the access pattern for A matrix is more cache friendly.</p>
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Opt3: 0.115643
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Opt3: 0.115873
 </pre></div>
 </div>
 <p>Here is the generated IR after loop permutation.</p>
@@ -636,7 +639,8 @@ the access pattern for A matrix is more cache friendly.</p>
   buffers = {A: Buffer(A_2: Pointer(float32), float32, [1048576], []),
              B: Buffer(B_2: Pointer(float32), float32, [1048576], []),
              C: Buffer(C_2: Pointer(float32), float32, [1048576], [])}
-  buffer_map = {A_1: A, B_1: B, C_1: C} {
+  buffer_map = {A_1: A, B_1: B, C_1: C}
+  preflattened_buffer_map = {A_1: A_3: Buffer(A_2, float32, [1024, 1024], []), B_1: B_3: Buffer(B_2, float32, [1024, 1024], []), C_1: C_3: Buffer(C_2, float32, [1024, 1024], [])} {
   for (m.outer: int32, 0, 32) {
     for (n.outer: int32, 0, 32) {
       for (m.inner.init: int32, 0, 32) {
@@ -707,7 +711,7 @@ flattening.</p>
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Opt4: 0.110562
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Opt4: 0.110546
 </pre></div>
 </div>
 <p>Here is the generated IR after array packing.</p>
@@ -720,7 +724,8 @@ flattening.</p>
   buffers = {A: Buffer(A_2: Pointer(float32), float32, [1048576], []),
              B: Buffer(B_2: Pointer(float32), float32, [1048576], []),
              C: Buffer(C_2: Pointer(float32), float32, [1048576], [])}
-  buffer_map = {A_1: A, B_1: B, C_1: C} {
+  buffer_map = {A_1: A, B_1: B, C_1: C}
+  preflattened_buffer_map = {A_1: A_3: Buffer(A_2, float32, [1024, 1024], []), B_1: B_3: Buffer(B_2, float32, [1024, 1024], []), C_1: C_3: Buffer(C_2, float32, [1024, 1024], [])} {
   allocate(packedB: Pointer(global float32x32), float32x32, [32768]), storage_scope = global {
     for (bigN: int32, 0, 32) &quot;parallel&quot; {
       for (k: int32, 0, 1024) {
@@ -794,7 +799,7 @@ write to C when all the block results are ready.</p>
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Opt5: 0.111146
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Opt5: 0.110159
 </pre></div>
 </div>
 <p>Here is the generated IR after blocking.</p>
@@ -807,7 +812,8 @@ write to C when all the block results are ready.</p>
   buffers = {A: Buffer(A_2: Pointer(float32), float32, [1048576], []),
              B: Buffer(B_2: Pointer(float32), float32, [1048576], []),
              C: Buffer(C_2: Pointer(float32), float32, [1048576], [])}
-  buffer_map = {A_1: A, B_1: B, C_1: C} {
+  buffer_map = {A_1: A, B_1: B, C_1: C}
+  preflattened_buffer_map = {A_1: A_3: Buffer(A_2, float32, [1024, 1024], []), B_1: B_3: Buffer(B_2, float32, [1024, 1024], []), C_1: C_3: Buffer(C_2, float32, [1024, 1024], [])} {
   allocate(packedB: Pointer(global float32x32), float32x32, [32768]), storage_scope = global;
   allocate(C.global: Pointer(global float32), float32, [1024]), storage_scope = global {
     for (bigN: int32, 0, 32) &quot;parallel&quot; {
@@ -885,7 +891,7 @@ write to C when all the block results are ready.</p>
 </pre></div>
 </div>
 <p class="sphx-glr-script-out">Out:</p>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Opt6: 0.144741
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Opt6: 0.144547
 </pre></div>
 </div>
 <p>Here is the generated IR after parallelization.</p>
@@ -898,7 +904,8 @@ write to C when all the block results are ready.</p>
   buffers = {A: Buffer(A_2: Pointer(float32), float32, [1048576], []),
              B: Buffer(B_2: Pointer(float32), float32, [1048576], []),
              C: Buffer(C_2: Pointer(float32), float32, [1048576], [])}
-  buffer_map = {A_1: A, B_1: B, C_1: C} {
+  buffer_map = {A_1: A, B_1: B, C_1: C}
+  preflattened_buffer_map = {A_1: A_3: Buffer(A_2, float32, [1024, 1024], []), B_1: B_3: Buffer(B_2, float32, [1024, 1024], []), C_1: C_3: Buffer(C_2, float32, [1024, 1024], [])} {
   allocate(packedB: Pointer(global float32x32), float32x32, [32768]), storage_scope = global {
     for (bigN: int32, 0, 32) &quot;parallel&quot; {
       for (k: int32, 0, 1024) {

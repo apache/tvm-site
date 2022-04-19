@@ -244,7 +244,7 @@ helper function to run a profile of the TVM generated code.
  .. code-block:: none
 
     Numpy running time: 0.000008
-    naive: 0.000009
+    naive: 0.000006
 
 
 
@@ -300,7 +300,8 @@ return a readable C-style statement.
       buffers = {A: Buffer(A_2: Pointer(float32), float32, [(stride: int32*n: int32)], [], type="auto"),
                  B: Buffer(B_2: Pointer(float32), float32, [(stride_1: int32*n)], [], type="auto"),
                  C: Buffer(C_2: Pointer(float32), float32, [(stride_2: int32*n)], [], type="auto")}
-      buffer_map = {A_1: A, B_1: B, C_1: C} {
+      buffer_map = {A_1: A, B_1: B, C_1: C}
+      preflattened_buffer_map = {A_1: A_3: Buffer(A_2, float32, [n], [stride], type="auto"), B_1: B_3: Buffer(B_2, float32, [n], [stride_1], type="auto"), C_1: C_3: Buffer(C_2, float32, [n], [stride_2], type="auto")} {
       for (i: int32, 0, n) "parallel" {
         C[(i*stride_2)] = (A[(i*stride)] + B[(i*stride_1)])
       }
@@ -334,7 +335,7 @@ compile and run this new schedule with the parallel operation applied:
 
  .. code-block:: none
 
-    parallel: 0.000007
+    parallel: 0.000006
 
 
 
@@ -393,7 +394,8 @@ factor to be the number of threads on your CPU.
       buffers = {A: Buffer(A_2: Pointer(float32), float32, [(stride: int32*n: int32)], [], type="auto"),
                  B: Buffer(B_2: Pointer(float32), float32, [(stride_1: int32*n)], [], type="auto"),
                  C: Buffer(C_2: Pointer(float32), float32, [(stride_2: int32*n)], [], type="auto")}
-      buffer_map = {A_1: A, B_1: B, C_1: C} {
+      buffer_map = {A_1: A, B_1: B, C_1: C}
+      preflattened_buffer_map = {A_1: A_3: Buffer(A_2, float32, [n], [stride], type="auto"), B_1: B_3: Buffer(B_2, float32, [n], [stride_1], type="auto"), C_1: C_3: Buffer(C_2, float32, [n], [stride_2], type="auto")} {
       for (i.outer: int32, 0, floordiv((n + 3), 4)) "parallel" {
         for (i.inner.s: int32, 0, 4) {
           if @tir.likely((((i.outer*4) + i.inner.s) < n), dtype=bool) {
@@ -436,10 +438,10 @@ We can now compare the different schedules
  .. code-block:: none
 
                 Operator                  Timing             Performance
-                   numpy    8.27923999622726e-06                     1.0
-                   naive              9.3814e-06      1.1331233306770885
-                parallel    7.118699999999999e-06     0.8598252983660211
-                  vector             2.46427e-05      2.9764446991788316
+                   numpy    7.637990000830541e-06                    1.0
+                   naive              5.9264e-06      0.7759109398356864
+                parallel    6.0421999999999995e-06    0.7910719966042089
+                  vector    2.4539100000000004e-05     3.212769327706853
 
 
 
@@ -828,7 +830,7 @@ matrix multiplication.
 
  .. code-block:: none
 
-    Numpy running time: 0.018651
+    Numpy running time: 0.017853
 
 
 
@@ -884,7 +886,7 @@ optimizations.
 
  .. code-block:: none
 
-    none: 3.381535
+    none: 3.225161
 
 
 
@@ -914,7 +916,8 @@ nested loops over the indices of the A and B matrices.
       buffers = {A: Buffer(A_2: Pointer(float32), float32, [1048576], []),
                  B: Buffer(B_2: Pointer(float32), float32, [1048576], []),
                  C: Buffer(C_2: Pointer(float32), float32, [1048576], [])}
-      buffer_map = {A_1: A, B_1: B, C_1: C} {
+      buffer_map = {A_1: A, B_1: B, C_1: C}
+      preflattened_buffer_map = {A_1: A_3: Buffer(A_2, float32, [1024, 1024], []), B_1: B_3: Buffer(B_2, float32, [1024, 1024], []), C_1: C_3: Buffer(C_2, float32, [1024, 1024], [])} {
       for (x: int32, 0, 1024) {
         for (y: int32, 0, 1024) {
           C[((x*1024) + y)] = 0f32
@@ -982,7 +985,7 @@ schedule.
 
  .. code-block:: none
 
-    blocking: 0.313930
+    blocking: 0.296543
 
 
 
@@ -1011,7 +1014,8 @@ internal representation and compare it to the original:
       buffers = {A: Buffer(A_2: Pointer(float32), float32, [1048576], []),
                  B: Buffer(B_2: Pointer(float32), float32, [1048576], []),
                  C: Buffer(C_2: Pointer(float32), float32, [1048576], [])}
-      buffer_map = {A_1: A, B_1: B, C_1: C} {
+      buffer_map = {A_1: A, B_1: B, C_1: C}
+      preflattened_buffer_map = {A_1: A_3: Buffer(A_2, float32, [1024, 1024], []), B_1: B_3: Buffer(B_2, float32, [1024, 1024], []), C_1: C_3: Buffer(C_2, float32, [1024, 1024], [])} {
       for (x.outer: int32, 0, 32) {
         for (y.outer: int32, 0, 32) {
           for (x.inner.init: int32, 0, 32) {
@@ -1073,13 +1077,14 @@ already cache friendly from our previous optimizations.
 
  .. code-block:: none
 
-    vectorization: 0.352854
+    vectorization: 0.332291
     @main = primfn(A_1: handle, B_1: handle, C_1: handle) -> ()
       attr = {"from_legacy_te_schedule": True, "global_symbol": "main", "tir.noalias": True}
       buffers = {A: Buffer(A_2: Pointer(float32), float32, [1048576], []),
                  B: Buffer(B_2: Pointer(float32), float32, [1048576], []),
                  C: Buffer(C_2: Pointer(float32), float32, [1048576], [])}
-      buffer_map = {A_1: A, B_1: B, C_1: C} {
+      buffer_map = {A_1: A, B_1: B, C_1: C}
+      preflattened_buffer_map = {A_1: A_3: Buffer(A_2, float32, [1024, 1024], []), B_1: B_3: Buffer(B_2, float32, [1024, 1024], []), C_1: C_3: Buffer(C_2, float32, [1024, 1024], [])} {
       for (x.outer: int32, 0, 32) {
         for (y.outer: int32, 0, 32) {
           for (x.inner.init: int32, 0, 32) {
@@ -1144,13 +1149,14 @@ more cache friendly.
 
  .. code-block:: none
 
-    loop permutation: 0.115093
+    loop permutation: 0.114367
     @main = primfn(A_1: handle, B_1: handle, C_1: handle) -> ()
       attr = {"from_legacy_te_schedule": True, "global_symbol": "main", "tir.noalias": True}
       buffers = {A: Buffer(A_2: Pointer(float32), float32, [1048576], []),
                  B: Buffer(B_2: Pointer(float32), float32, [1048576], []),
                  C: Buffer(C_2: Pointer(float32), float32, [1048576], [])}
-      buffer_map = {A_1: A, B_1: B, C_1: C} {
+      buffer_map = {A_1: A, B_1: B, C_1: C}
+      preflattened_buffer_map = {A_1: A_3: Buffer(A_2, float32, [1024, 1024], []), B_1: B_3: Buffer(B_2, float32, [1024, 1024], []), C_1: C_3: Buffer(C_2, float32, [1024, 1024], [])} {
       for (x.outer: int32, 0, 32) {
         for (y.outer: int32, 0, 32) {
           for (x.inner.init: int32, 0, 32) {
@@ -1240,13 +1246,14 @@ optimized schedule.
 
  .. code-block:: none
 
-    array packing: 0.108554
+    array packing: 0.108610
     @main = primfn(A_1: handle, B_1: handle, C_1: handle) -> ()
       attr = {"from_legacy_te_schedule": True, "global_symbol": "main", "tir.noalias": True}
       buffers = {A: Buffer(A_2: Pointer(float32), float32, [1048576], []),
                  B: Buffer(B_2: Pointer(float32), float32, [1048576], []),
                  C: Buffer(C_2: Pointer(float32), float32, [1048576], [])}
-      buffer_map = {A_1: A, B_1: B, C_1: C} {
+      buffer_map = {A_1: A, B_1: B, C_1: C}
+      preflattened_buffer_map = {A_1: A_3: Buffer(A_2, float32, [1024, 1024], []), B_1: B_3: Buffer(B_2, float32, [1024, 1024], []), C_1: C_3: Buffer(C_2, float32, [1024, 1024], [])} {
       allocate(packedB: Pointer(global float32x32), float32x32, [32768]), storage_scope = global {
         for (x: int32, 0, 32) "parallel" {
           for (y: int32, 0, 1024) {
@@ -1330,13 +1337,14 @@ to `C` when all the block results are ready.
 
  .. code-block:: none
 
-    block caching: 0.110687
+    block caching: 0.110443
     @main = primfn(A_1: handle, B_1: handle, C_1: handle) -> ()
       attr = {"from_legacy_te_schedule": True, "global_symbol": "main", "tir.noalias": True}
       buffers = {A: Buffer(A_2: Pointer(float32), float32, [1048576], []),
                  B: Buffer(B_2: Pointer(float32), float32, [1048576], []),
                  C: Buffer(C_2: Pointer(float32), float32, [1048576], [])}
-      buffer_map = {A_1: A, B_1: B, C_1: C} {
+      buffer_map = {A_1: A, B_1: B, C_1: C}
+      preflattened_buffer_map = {A_1: A_3: Buffer(A_2, float32, [1024, 1024], []), B_1: B_3: Buffer(B_2, float32, [1024, 1024], []), C_1: C_3: Buffer(C_2, float32, [1024, 1024], [])} {
       allocate(packedB: Pointer(global float32x32), float32x32, [32768]), storage_scope = global;
       allocate(C.global: Pointer(global float32), float32, [1024]), storage_scope = global {
         for (x: int32, 0, 32) "parallel" {
@@ -1413,13 +1421,14 @@ of thread-level parallelization.
 
  .. code-block:: none
 
-    parallelization: 0.144376
+    parallelization: 0.143884
     @main = primfn(A_1: handle, B_1: handle, C_1: handle) -> ()
       attr = {"from_legacy_te_schedule": True, "global_symbol": "main", "tir.noalias": True}
       buffers = {A: Buffer(A_2: Pointer(float32), float32, [1048576], []),
                  B: Buffer(B_2: Pointer(float32), float32, [1048576], []),
                  C: Buffer(C_2: Pointer(float32), float32, [1048576], [])}
-      buffer_map = {A_1: A, B_1: B, C_1: C} {
+      buffer_map = {A_1: A, B_1: B, C_1: C}
+      preflattened_buffer_map = {A_1: A_3: Buffer(A_2, float32, [1024, 1024], []), B_1: B_3: Buffer(B_2, float32, [1024, 1024], []), C_1: C_3: Buffer(C_2, float32, [1024, 1024], [])} {
       allocate(packedB: Pointer(global float32x32), float32x32, [32768]), storage_scope = global {
         for (x: int32, 0, 32) "parallel" {
           for (y: int32, 0, 1024) {
@@ -1491,13 +1500,13 @@ working, we can compare the results.
  .. code-block:: none
 
                 Operator                  Timing             Performance
-                    none            3.3815347441                     1.0
-                blocking            0.3139304634     0.09283668131688916
-           vectorization            0.3528536255     0.10434718321781208
-        loop permutation             0.115093128     0.03403576680701301
-           array packing     0.10855377510000001    0.032101925106462786
-           block caching            0.1106868518     0.03273272646188926
-         parallelization            0.1443757226     0.04269532432038512
+                    none            3.2251605124                     1.0
+                blocking            0.2965433649     0.09194685466346837
+           vectorization            0.3322912538     0.10303091970846617
+        loop permutation            0.1143672077      0.0354609351256424
+           array packing     0.10861045030000001    0.033675982910747485
+           block caching            0.1104433493     0.03424429540029736
+         parallelization     0.14388388829999998     0.04461293871942173
 
 
 
@@ -1530,11 +1539,6 @@ Upcoming tutorials expand on the matrix multiplication example, and show how
 you can build generic templates of the matrix multiplication and other
 operations with tunable parameters that allows you to automatically optimize
 the computation for specific platforms.
-
-
-.. rst-class:: sphx-glr-timing
-
-   **Total running time of the script:** ( 1 minutes  0.832 seconds)
 
 
 .. _sphx_glr_download_tutorial_tensor_expr_get_started.py:

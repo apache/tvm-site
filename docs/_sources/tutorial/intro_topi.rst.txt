@@ -78,12 +78,13 @@ and to examine the IR code in human readable format, we can do
     @main = primfn(A_1: handle) -> ()
       attr = {"from_legacy_te_schedule": True, "global_symbol": "main", "tir.noalias": True}
       buffers = {A: Buffer(A_2: Pointer(float32), float32, [(stride: int32*n: int32)], [], type="auto")}
-      buffer_map = {A_1: A} {
+      buffer_map = {A_1: A}
+      preflattened_buffer_map = {A_1: A_3: Buffer(A_2, float32, [n, m: int32], [stride, stride_1: int32], type="auto")} {
       allocate(B: Pointer(global float32), float32, [n]), storage_scope = global;
       for (i: int32, 0, n) {
         B_1: Buffer(B, float32, [n], [])[i] = 0f32
-        for (k: int32, 0, m: int32) {
-          B_1[i] = (B_1[i] + A[((i*stride) + (k*stride_1: int32))])
+        for (k: int32, 0, m) {
+          B_1[i] = (B_1[i] + A[((i*stride) + (k*stride_1))])
         }
       }
     }
@@ -117,12 +118,13 @@ Fortunately, we can replace those two lines with simple :code:`topi.sum` much li
     @main = primfn(A_1: handle) -> ()
       attr = {"from_legacy_te_schedule": True, "global_symbol": "main", "tir.noalias": True}
       buffers = {A: Buffer(A_2: Pointer(float32), float32, [(stride: int32*n: int32)], [], type="auto")}
-      buffer_map = {A_1: A} {
+      buffer_map = {A_1: A}
+      preflattened_buffer_map = {A_1: A_3: Buffer(A_2, float32, [n, m: int32], [stride, stride_1: int32], type="auto")} {
       allocate(A_red: Pointer(global float32), float32, [n]), storage_scope = global;
       for (ax0: int32, 0, n) {
         A_red_1: Buffer(A_red, float32, [n], [])[ax0] = 0f32
-        for (k1: int32, 0, m: int32) {
-          A_red_1[ax0] = (A_red_1[ax0] + A[((ax0*stride) + (k1*stride_1: int32))])
+        for (k1: int32, 0, m) {
+          A_red_1[ax0] = (A_red_1[ax0] + A[((ax0*stride) + (k1*stride_1))])
         }
       }
     }
@@ -189,7 +191,8 @@ we can schedule the following series of operations ending with :code:`topi.sum` 
       attr = {"from_legacy_te_schedule": True, "global_symbol": "main", "tir.noalias": True}
       buffers = {a: Buffer(a_2: Pointer(float32), float32, [10000], []),
                  b: Buffer(b_2: Pointer(float32), float32, [100], [])}
-      buffer_map = {a_1: a, b_1: b} {
+      buffer_map = {a_1: a, b_1: b}
+      preflattened_buffer_map = {a_1: a_3: Buffer(a_2, float32, [100, 10, 10], []), b_1: b_3: Buffer(b_2, float32, [10, 10], [])} {
       allocate(T_divide_red: Pointer(global float32), float32, [1]), storage_scope = global;
       attr [IterVar(threadIdx.x: int32, [0:1024], "ThreadIndex", "threadIdx.x")] "thread_extent" = 1024;
       allocate(T_divide_red.rf: Pointer(local float32), float32, [1]), storage_scope = local;
@@ -230,7 +233,7 @@ As you can see, scheduled stages of computation have been accumulated and we can
 
  .. code-block:: none
 
-    [stage(a, placeholder(a, 0x23844aa0)), stage(b, placeholder(b, 0xece7d60)), stage(T_add, compute(T_add, body=[(a[ax0, ax1, ax2] + b[ax1, ax2])], axis=[iter_var(ax0, range(min=0, ext=100)), iter_var(ax1, range(min=0, ext=10)), iter_var(ax2, range(min=0, ext=10))], reduce_axis=[], tag=broadcast, attrs={})), stage(T_multiply, compute(T_multiply, body=[(a[ax0, ax1, ax2]*b[ax1, ax2])], axis=[iter_var(ax0, range(min=0, ext=100)), iter_var(ax1, range(min=0, ext=10)), iter_var(ax2, range(min=0, ext=10))], reduce_axis=[], tag=broadcast, attrs={})), stage(T_elemwise_sum, compute(T_elemwise_sum, body=[(T_add[ax0, ax1, ax2] + T_multiply[ax0, ax1, ax2])], axis=[iter_var(ax0, range(min=0, ext=100)), iter_var(ax1, range(min=0, ext=10)), iter_var(ax2, range(min=0, ext=10))], reduce_axis=[], tag=elemwise, attrs={})), stage(T_divide, compute(T_divide, body=[(T_elemwise_sum[ax0, ax1, ax2]/2f)], axis=[iter_var(ax0, range(min=0, ext=100)), iter_var(ax1, range(min=0, ext=10)), iter_var(ax2, range(min=0, ext=10))], reduce_axis=[], tag=elemwise, attrs={})), stage(T_divide_red.rf, compute(T_divide_red.rf, body=[reduce(combiner=comm_reducer(result=[(x + y)], lhs=[x], rhs=[y], identity_element=[0f]), source=[T_divide[floordiv(floordiv((k0.k1.fused.k2.fused.inner + (k0.k1.fused.k2.fused.outer*1024)), 10), 10), floormod(floordiv((k0.k1.fused.k2.fused.inner + (k0.k1.fused.k2.fused.outer*1024)), 10), 10), floormod((k0.k1.fused.k2.fused.inner + (k0.k1.fused.k2.fused.outer*1024)), 10)]], init=[], axis=[iter_var(k0.k1.fused.k2.fused.outer, range(min=0, ext=10))], where=tir.likely((((floordiv(floordiv((k0.k1.fused.k2.fused.inner + (k0.k1.fused.k2.fused.outer*1024)), 10), 10) < 100) && (floordiv((k0.k1.fused.k2.fused.inner + (k0.k1.fused.k2.fused.outer*1024)), 10) < 1000)) && ((k0.k1.fused.k2.fused.inner + (k0.k1.fused.k2.fused.outer*1024)) < 10000))), value_index=0)], axis=[iter_var(k0.k1.fused.k2.fused.inner, range(min=0, ext=1024))], reduce_axis=[iter_var(k0.k1.fused.k2.fused.outer, range(min=0, ext=10))], tag=, attrs={})), stage(T_divide_red, compute(T_divide_red.repl, body=[reduce(combiner=comm_reducer(result=[(x + y)], lhs=[x], rhs=[y], identity_element=[0f]), source=[T_divide_red.rf[k0.k1.fused.k2.fused.inner.v]], init=[], axis=[iter_var(k0.k1.fused.k2.fused.inner.v, range(min=0, ext=1024))], where=(bool)1, value_index=0)], axis=[], reduce_axis=[iter_var(k0.k1.fused.k2.fused.inner.v, range(min=0, ext=1024))], tag=, attrs={}))]
+    [stage(a, placeholder(a, 0x10b34360)), stage(b, placeholder(b, 0xf410720)), stage(T_add, compute(T_add, body=[(a[ax0, ax1, ax2] + b[ax1, ax2])], axis=[iter_var(ax0, range(min=0, ext=100)), iter_var(ax1, range(min=0, ext=10)), iter_var(ax2, range(min=0, ext=10))], reduce_axis=[], tag=broadcast, attrs={})), stage(T_multiply, compute(T_multiply, body=[(a[ax0, ax1, ax2]*b[ax1, ax2])], axis=[iter_var(ax0, range(min=0, ext=100)), iter_var(ax1, range(min=0, ext=10)), iter_var(ax2, range(min=0, ext=10))], reduce_axis=[], tag=broadcast, attrs={})), stage(T_elemwise_sum, compute(T_elemwise_sum, body=[(T_add[ax0, ax1, ax2] + T_multiply[ax0, ax1, ax2])], axis=[iter_var(ax0, range(min=0, ext=100)), iter_var(ax1, range(min=0, ext=10)), iter_var(ax2, range(min=0, ext=10))], reduce_axis=[], tag=elemwise, attrs={})), stage(T_divide, compute(T_divide, body=[(T_elemwise_sum[ax0, ax1, ax2]/2f)], axis=[iter_var(ax0, range(min=0, ext=100)), iter_var(ax1, range(min=0, ext=10)), iter_var(ax2, range(min=0, ext=10))], reduce_axis=[], tag=elemwise, attrs={})), stage(T_divide_red.rf, compute(T_divide_red.rf, body=[reduce(combiner=comm_reducer(result=[(x + y)], lhs=[x], rhs=[y], identity_element=[0f]), source=[T_divide[floordiv(floordiv((k0.k1.fused.k2.fused.inner + (k0.k1.fused.k2.fused.outer*1024)), 10), 10), floormod(floordiv((k0.k1.fused.k2.fused.inner + (k0.k1.fused.k2.fused.outer*1024)), 10), 10), floormod((k0.k1.fused.k2.fused.inner + (k0.k1.fused.k2.fused.outer*1024)), 10)]], init=[], axis=[iter_var(k0.k1.fused.k2.fused.outer, range(min=0, ext=10))], where=tir.likely((((floordiv(floordiv((k0.k1.fused.k2.fused.inner + (k0.k1.fused.k2.fused.outer*1024)), 10), 10) < 100) && (floordiv((k0.k1.fused.k2.fused.inner + (k0.k1.fused.k2.fused.outer*1024)), 10) < 1000)) && ((k0.k1.fused.k2.fused.inner + (k0.k1.fused.k2.fused.outer*1024)) < 10000))), value_index=0)], axis=[iter_var(k0.k1.fused.k2.fused.inner, range(min=0, ext=1024))], reduce_axis=[iter_var(k0.k1.fused.k2.fused.outer, range(min=0, ext=10))], tag=, attrs={})), stage(T_divide_red, compute(T_divide_red.repl, body=[reduce(combiner=comm_reducer(result=[(x + y)], lhs=[x], rhs=[y], identity_element=[0f]), source=[T_divide_red.rf[k0.k1.fused.k2.fused.inner.v]], init=[], axis=[iter_var(k0.k1.fused.k2.fused.inner.v, range(min=0, ext=1024))], where=(bool)1, value_index=0)], axis=[], reduce_axis=[iter_var(k0.k1.fused.k2.fused.inner.v, range(min=0, ext=1024))], tag=, attrs={}))]
 
 
 
@@ -282,7 +285,8 @@ TOPI also provides common neural nets operations such as _softmax_ with optimize
     @main = primfn(tarray_1: handle) -> ()
       attr = {"from_legacy_te_schedule": True, "global_symbol": "main", "tir.noalias": True}
       buffers = {tarray: Buffer(tarray_2: Pointer(float32), float32, [262144], [])}
-      buffer_map = {tarray_1: tarray} {
+      buffer_map = {tarray_1: tarray}
+      preflattened_buffer_map = {tarray_1: tarray_3: Buffer(tarray_2, float32, [512, 512], [])} {
       allocate(T_softmax_norm: Pointer(global float32x4), float32x4, [65536]), storage_scope = global;
       attr [IterVar(blockIdx.x: int32, (nullptr), "ThreadIndex", "blockIdx.x")] "thread_extent" = 512;
       allocate(normal_reduce_temp0: Pointer(local float32), float32, [1]), storage_scope = local;
@@ -359,7 +363,8 @@ We can fuse :code:`topi.nn.conv2d` and :code:`topi.nn.relu` together.
       attr = {"from_legacy_te_schedule": True, "global_symbol": "main", "tir.noalias": True}
       buffers = {placeholder: Buffer(placeholder_4: Pointer(float32), float32, [150528], []),
                  placeholder_1: Buffer(placeholder_5: Pointer(float32), float32, [750], [])}
-      buffer_map = {placeholder_2: placeholder, placeholder_3: placeholder_1} {
+      buffer_map = {placeholder_2: placeholder, placeholder_3: placeholder_1}
+      preflattened_buffer_map = {placeholder_2: placeholder_6: Buffer(placeholder_4, float32, [1, 3, 224, 224], []), placeholder_3: placeholder_7: Buffer(placeholder_5, float32, [10, 3, 5, 5], [])} {
       allocate(compute: Pointer(global float32), float32, [501760]), storage_scope = global;
       attr [IterVar(blockIdx.z: int32, (nullptr), "ThreadIndex", "blockIdx.z")] "thread_extent" = 5;
       allocate(conv2d_nchw: Pointer(local float32), float32, [14]), storage_scope = local;
