@@ -258,6 +258,7 @@ var searchData=
   ['tvm_5finst_5fkind_5fregister_5fvar_5fdef',['TVM_INST_KIND_REGISTER_VAR_DEF',['../instruction_8h.html#a013bf2d8c6153ab1ed207f9639cfffd2',1,'instruction.h']]],
   ['tvm_5fload_5fmatrix_5fsync',['tvm_load_matrix_sync',['../namespacetvm_1_1tir_1_1builtin.html#a93b4dd000c31a1d35f493786380d108d',1,'tvm::tir::builtin']]],
   ['tvm_5flookup_5flinked_5fparam',['tvm_lookup_linked_param',['../namespacetvm_1_1runtime_1_1symbol.html#a209395ae8f4fe3b2a46e2b4a205e4772',1,'tvm::runtime::symbol']]],
+  ['tvm_5fmap_5ffail_5fif_5fchanged',['TVM_MAP_FAIL_IF_CHANGED',['../map_8h.html#a06c210bfb319f0bf0e436f4542e40369',1,'map.h']]],
   ['tvm_5fmetadata_5fversion',['TVM_METADATA_VERSION',['../metadata_8h.html#a700f5dfbc1a51a0186d4c5a298ea3fd6',1,'metadata.h']]],
   ['tvm_5fmicro_5fruntime_5fapi_5fapi',['TVM_MICRO_RUNTIME_API_API',['../microtvm__runtime_8h.html#a82bcf22ac3cc35341edf8624944d2b6e',1,'microtvm_runtime.h']]],
   ['tvm_5fmma_5fsync',['tvm_mma_sync',['../namespacetvm_1_1tir_1_1builtin.html#a0cbd267877168afd5bbea35f0e5d70fe',1,'tvm::tir::builtin']]],
