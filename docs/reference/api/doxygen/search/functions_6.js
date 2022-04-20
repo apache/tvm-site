@@ -23,6 +23,7 @@ var searchData=
   ['finishmessage',['FinishMessage',['../classtvm_1_1runtime_1_1micro__rpc_1_1Session.html#ae51f50c0eb8743fc4c4f3e58400a9ab1',1,'tvm::runtime::micro_rpc::Session']]],
   ['finishpacket',['FinishPacket',['../classtvm_1_1runtime_1_1micro__rpc_1_1Framer.html#a57f562abcde6b689ef046a06b325d80f',1,'tvm::runtime::micro_rpc::Framer']]],
   ['flatten',['Flatten',['../classtvm_1_1tir_1_1SeqStmt.html#af3c486ea5fe09de5f257d88f7d92684b',1,'tvm::tir::SeqStmt::Flatten()'],['../namespacetvm_1_1topi_1_1nn.html#a6a553de73860c1a295d6ee566a3916b4',1,'tvm::topi::nn::flatten()']]],
+  ['flattenatrousconv',['FlattenAtrousConv',['../namespacetvm_1_1relay_1_1transform.html#af719f05ee653ea465589a38747b35e22',1,'tvm::relay::transform']]],
   ['flattenbuffer',['FlattenBuffer',['../namespacetvm_1_1tir_1_1transform.html#a3acf607d0e759472ac47845b7206f276',1,'tvm::tir::transform']]],
   ['flattener',['Flattener',['../classtvm_1_1tir_1_1SeqStmt_1_1Flattener.html#a0486472a502952e60fee47e4be1a0b7b',1,'tvm::tir::SeqStmt::Flattener']]],
   ['flattentupletype',['FlattenTupleType',['../namespacetvm_1_1relay.html#a91168c24ecbf1cbf719d2ba28841da5c',1,'tvm::relay']]],
