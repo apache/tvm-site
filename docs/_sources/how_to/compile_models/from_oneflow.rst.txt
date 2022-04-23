@@ -1,0 +1,311 @@
+.. note::
+    :class: sphx-glr-download-link-note
+
+    Click :ref:`here <sphx_glr_download_how_to_compile_models_from_oneflow.py>` to download the full example code
+.. rst-class:: sphx-glr-example-title
+
+.. _sphx_glr_how_to_compile_models_from_oneflow.py:
+
+
+Compile OneFlow Models
+======================
+**Author**: `Xiaoyu Zhang <https://github.com/BBuf/>`_
+
+This article is an introductory tutorial to deploy OneFlow models with Relay.
+
+For us to begin with, OneFlow package should be installed.
+
+A quick solution is to install via pip
+
+.. code-block:: bash
+
+    pip install flowvision==0.1.0
+    python3 -m pip install -f https://release.oneflow.info oneflow==0.7.0+cpu
+
+or please refer to official site:
+https://github.com/Oneflow-Inc/oneflow
+
+Currently, TVM supports OneFlow 0.7.0. Other versions may be unstable.
+
+
+.. code-block:: default
+
+    import os, math
+    from matplotlib import pyplot as plt
+    import numpy as np
+    from PIL import Image
+
+    # oneflow imports
+    import flowvision
+    import oneflow as flow
+    import oneflow.nn as nn
+
+    import tvm
+    from tvm import relay
+    from tvm.contrib.download import download_testdata
+
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    /usr/local/lib/python3.7/dist-packages/flowvision/transforms/functional_pil.py:193: DeprecationWarning: BILINEAR is deprecated and will be removed in Pillow 10 (2023-07-01). Use Resampling.BILINEAR instead.
+      def resize(img, size, interpolation=Image.BILINEAR):
+    /usr/local/lib/python3.7/dist-packages/flowvision/transforms/functional.py:65: DeprecationWarning: NEAREST is deprecated and will be removed in Pillow 10 (2023-07-01). Use Resampling.NEAREST or Dither.NONE instead.
+      Image.NEAREST: "nearest",
+    /usr/local/lib/python3.7/dist-packages/flowvision/transforms/functional.py:66: DeprecationWarning: BILINEAR is deprecated and will be removed in Pillow 10 (2023-07-01). Use Resampling.BILINEAR instead.
+      Image.BILINEAR: "bilinear",
+    /usr/local/lib/python3.7/dist-packages/flowvision/transforms/functional.py:67: DeprecationWarning: BICUBIC is deprecated and will be removed in Pillow 10 (2023-07-01). Use Resampling.BICUBIC instead.
+      Image.BICUBIC: "bicubic",
+    /usr/local/lib/python3.7/dist-packages/flowvision/transforms/functional.py:68: DeprecationWarning: BOX is deprecated and will be removed in Pillow 10 (2023-07-01). Use Resampling.BOX instead.
+      Image.BOX: "box",
+    /usr/local/lib/python3.7/dist-packages/flowvision/transforms/functional.py:69: DeprecationWarning: HAMMING is deprecated and will be removed in Pillow 10 (2023-07-01). Use Resampling.HAMMING instead.
+      Image.HAMMING: "hamming",
+    /usr/local/lib/python3.7/dist-packages/flowvision/transforms/functional.py:70: DeprecationWarning: LANCZOS is deprecated and will be removed in Pillow 10 (2023-07-01). Use Resampling.LANCZOS instead.
+      Image.LANCZOS: "lanczos",
+    /usr/local/lib/python3.7/dist-packages/flowvision/data/auto_augment.py:28: DeprecationWarning: BILINEAR is deprecated and will be removed in Pillow 10 (2023-07-01). Use Resampling.BILINEAR instead.
+      _RANDOM_INTERPOLATION = (Image.BILINEAR, Image.BICUBIC)
+    /usr/local/lib/python3.7/dist-packages/flowvision/data/auto_augment.py:28: DeprecationWarning: BICUBIC is deprecated and will be removed in Pillow 10 (2023-07-01). Use Resampling.BICUBIC instead.
+      _RANDOM_INTERPOLATION = (Image.BILINEAR, Image.BICUBIC)
+
+
+
+Load a pretrained OneFlow model and save model
+----------------------------------------------
+
+
+.. code-block:: default
+
+    model_name = "resnet18"
+    model = getattr(flowvision.models, model_name)(pretrained=True)
+    model = model.eval()
+
+    model_dir = "resnet18_model"
+    if not os.path.exists(model_dir):
+        flow.save(model.state_dict(), model_dir)
+
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    Downloading: "https://oneflow-public.oss-cn-beijing.aliyuncs.com/model_zoo/flowvision/classification/ResNet/resnet18.zip" to /workspace/.oneflow/flowvision_cache/resnet18.zip
+      0%|          | 0.00/41.5M [00:00<?, ?B/s]      0%|          | 16.0k/41.5M [00:00<08:23, 86.3kB/s]      0%|          | 48.0k/41.5M [00:00<05:20, 135kB/s]       0%|          | 104k/41.5M [00:00<03:28, 208kB/s]       0%|          | 208k/41.5M [00:00<02:07, 339kB/s]      1%|          | 288k/41.5M [00:00<01:38, 437kB/s]      1%|          | 416k/41.5M [00:00<01:08, 633kB/s]      1%|1         | 528k/41.5M [00:01<00:57, 744kB/s]      2%|1         | 672k/41.5M [00:01<00:46, 911kB/s]      2%|1         | 792k/41.5M [00:01<00:44, 957kB/s]      2%|2         | 936k/41.5M [00:01<00:40, 1.06MB/s]      2%|2         | 1.03M/41.5M [00:01<00:40, 1.06MB/s]      3%|2         | 1.19M/41.5M [00:01<00:35, 1.19MB/s]      3%|3         | 1.31M/41.5M [00:01<00:35, 1.17MB/s]      4%|3         | 1.48M/41.5M [00:01<00:31, 1.31MB/s]      4%|3         | 1.61M/41.5M [00:01<00:32, 1.28MB/s]      5%|4         | 1.91M/41.5M [00:02<00:30, 1.38MB/s]      5%|5         | 2.23M/41.5M [00:02<00:24, 1.70MB/s]      6%|5         | 2.41M/41.5M [00:02<00:23, 1.72MB/s]      6%|6         | 2.58M/41.5M [00:02<00:27, 1.47MB/s]      7%|6         | 2.77M/41.5M [00:02<00:25, 1.57MB/s]      7%|7         | 2.92M/41.5M [00:02<00:26, 1.52MB/s]      8%|7         | 3.12M/41.5M [00:02<00:24, 1.66MB/s]      8%|7         | 3.29M/41.5M [00:03<00:24, 1.64MB/s]      9%|8         | 3.68M/41.5M [00:03<00:21, 1.81MB/s]     10%|9         | 4.09M/41.5M [00:03<00:20, 1.92MB/s]     11%|#         | 4.52M/41.5M [00:03<00:19, 2.03MB/s]     12%|#1        | 4.96M/41.5M [00:03<00:16, 2.35MB/s]     13%|#2        | 5.23M/41.5M [00:03<00:17, 2.23MB/s]     13%|#3        | 5.45M/41.5M [00:04<00:17, 2.12MB/s]     14%|#4        | 5.92M/41.5M [00:04<00:14, 2.50MB/s]     15%|#4        | 6.21M/41.5M [00:04<00:14, 2.60MB/s]     16%|#5        | 6.47M/41.5M [00:04<00:16, 2.26MB/s]     16%|#6        | 6.74M/41.5M [00:04<00:15, 2.39MB/s]     17%|#6        | 6.98M/41.5M [00:04<00:15, 2.33MB/s]     18%|#7        | 7.30M/41.5M [00:04<00:14, 2.54MB/s]     18%|#8        | 7.55M/41.5M [00:04<00:14, 2.47MB/s]     19%|#8        | 7.88M/41.5M [00:05<00:13, 2.70MB/s]     20%|#9        | 8.14M/41.5M [00:05<00:13, 2.67MB/s]     20%|##        | 8.46M/41.5M [00:05<00:12, 2.86MB/s]     21%|##1       | 8.74M/41.5M [00:05<00:12, 2.79MB/s]     22%|##1       | 9.09M/41.5M [00:05<00:11, 2.93MB/s]     23%|##2       | 9.37M/41.5M [00:05<00:12, 2.80MB/s]     23%|##3       | 9.73M/41.5M [00:05<00:10, 3.05MB/s]     24%|##4       | 10.0M/41.5M [00:05<00:11, 2.96MB/s]     25%|##5       | 10.4M/41.5M [00:05<00:10, 3.23MB/s]     26%|##5       | 10.7M/41.5M [00:06<00:10, 3.17MB/s]     27%|##6       | 11.1M/41.5M [00:06<00:09, 3.38MB/s]     28%|##7       | 11.5M/41.5M [00:06<00:09, 3.32MB/s]     29%|##8       | 11.9M/41.5M [00:06<00:08, 3.56MB/s]     29%|##9       | 12.2M/41.5M [00:06<00:08, 3.55MB/s]     31%|###       | 12.7M/41.5M [00:06<00:08, 3.72MB/s]     31%|###1      | 13.0M/41.5M [00:06<00:08, 3.66MB/s]     32%|###2      | 13.5M/41.5M [00:06<00:07, 3.85MB/s]     33%|###3      | 13.8M/41.5M [00:06<00:07, 3.75MB/s]     34%|###4      | 14.3M/41.5M [00:06<00:07, 4.00MB/s]     35%|###5      | 14.7M/41.5M [00:07<00:07, 3.88MB/s]     37%|###6      | 15.2M/41.5M [00:07<00:06, 4.22MB/s]     38%|###7      | 15.6M/41.5M [00:07<00:06, 4.14MB/s]     39%|###8      | 16.1M/41.5M [00:07<00:05, 4.51MB/s]     40%|###9      | 16.6M/41.5M [00:07<00:05, 4.38MB/s]     41%|####1     | 17.1M/41.5M [00:07<00:05, 4.69MB/s]     42%|####2     | 17.6M/41.5M [00:07<00:05, 4.58MB/s]     44%|####3     | 18.1M/41.5M [00:07<00:05, 4.80MB/s]     45%|####4     | 18.6M/41.5M [00:07<00:05, 4.58MB/s]     46%|####6     | 19.2M/41.5M [00:08<00:04, 4.97MB/s]     47%|####7     | 19.7M/41.5M [00:08<00:04, 4.96MB/s]     49%|####8     | 20.3M/41.5M [00:08<00:04, 5.38MB/s]     50%|#####     | 20.8M/41.5M [00:08<00:04, 5.38MB/s]     52%|#####1    | 21.5M/41.5M [00:08<00:03, 5.81MB/s]     53%|#####3    | 22.1M/41.5M [00:08<00:03, 5.79MB/s]     55%|#####4    | 22.7M/41.5M [00:08<00:03, 6.08MB/s]     56%|#####6    | 23.3M/41.5M [00:08<00:03, 6.05MB/s]     58%|#####7    | 24.0M/41.5M [00:08<00:02, 6.29MB/s]     59%|#####9    | 24.6M/41.5M [00:09<00:02, 6.26MB/s]     61%|######1   | 25.3M/41.5M [00:09<00:02, 6.55MB/s]     63%|######2   | 26.0M/41.5M [00:09<00:02, 6.51MB/s]     64%|######4   | 26.8M/41.5M [00:09<00:02, 6.90MB/s]     66%|######6   | 27.4M/41.5M [00:09<00:02, 6.79MB/s]     68%|######8   | 28.2M/41.5M [00:09<00:01, 7.25MB/s]     70%|######9   | 28.9M/41.5M [00:09<00:01, 7.14MB/s]     72%|#######2  | 29.9M/41.5M [00:09<00:01, 8.09MB/s]     74%|#######3  | 30.7M/41.5M [00:09<00:01, 8.05MB/s]     76%|#######5  | 31.5M/41.5M [00:09<00:01, 8.18MB/s]     78%|#######7  | 32.3M/41.5M [00:10<00:01, 7.88MB/s]     80%|#######9  | 33.1M/41.5M [00:10<00:01, 7.88MB/s]     81%|########1 | 33.8M/41.5M [00:10<00:01, 7.53MB/s]     84%|########3 | 34.7M/41.5M [00:10<00:00, 7.60MB/s]     86%|########5 | 35.5M/41.5M [00:10<00:00, 7.87MB/s]     87%|########7 | 36.3M/41.5M [00:10<00:00, 6.91MB/s]     91%|######### | 37.6M/41.5M [00:10<00:00, 8.30MB/s]     93%|#########2| 38.4M/41.5M [00:10<00:00, 8.34MB/s]     95%|#########4| 39.2M/41.5M [00:11<00:00, 6.81MB/s]     97%|#########7| 40.4M/41.5M [00:11<00:00, 8.06MB/s]     99%|#########9| 41.2M/41.5M [00:11<00:00, 8.05MB/s]    100%|##########| 41.5M/41.5M [00:11<00:00, 3.84MB/s]
+
+
+
+Load a test image
+-----------------
+Classic cat example!
+
+
+.. code-block:: default
+
+    from PIL import Image
+
+    img_url = "https://github.com/dmlc/mxnet.js/blob/main/data/cat.png?raw=true"
+    img_path = download_testdata(img_url, "cat.png", module="data")
+    img = Image.open(img_path).resize((224, 224))
+
+    # Preprocess the image and convert to tensor
+    from flowvision import transforms
+
+    my_preprocess = transforms.Compose(
+        [
+            transforms.Resize(256),
+            transforms.CenterCrop(224),
+            transforms.ToTensor(),
+            transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
+        ]
+    )
+    img = my_preprocess(img)
+    img = np.expand_dims(img.numpy(), 0)
+
+
+
+
+
+
+
+Import the graph to Relay
+-------------------------
+Convert OneFlow graph to Relay graph. The input name can be arbitrary.
+
+
+.. code-block:: default
+
+    class Graph(flow.nn.Graph):
+        def __init__(self, module):
+            super().__init__()
+            self.m = module
+
+        def build(self, x):
+            out = self.m(x)
+            return out
+
+
+    graph = Graph(model)
+    _ = graph._compile(flow.randn(1, 3, 224, 224))
+
+    mod, params = relay.frontend.from_oneflow(graph, model_dir)
+
+
+
+
+
+
+
+Relay Build
+-----------
+Compile the graph to llvm target with given input specification.
+
+
+.. code-block:: default
+
+    target = tvm.target.Target("llvm", host="llvm")
+    dev = tvm.cpu(0)
+    with tvm.transform.PassContext(opt_level=3):
+        lib = relay.build(mod, target=target, params=params)
+
+
+
+
+
+
+
+Execute the portable graph on TVM
+---------------------------------
+Now we can try deploying the compiled model on target.
+
+
+.. code-block:: default
+
+    target = "cuda"
+    with tvm.transform.PassContext(opt_level=10):
+        intrp = relay.build_module.create_executor("graph", mod, tvm.cuda(0), target)
+
+    print(type(img))
+    print(img.shape)
+    tvm_output = intrp.evaluate()(tvm.nd.array(img.astype("float32")), **params)
+
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    <class 'numpy.ndarray'>
+    (1, 3, 224, 224)
+
+
+
+Look up synset name
+-------------------
+Look up prediction top 1 index in 1000 class synset.
+
+
+.. code-block:: default
+
+    synset_url = "".join(
+        [
+            "https://raw.githubusercontent.com/Cadene/",
+            "pretrained-models.pytorch/master/data/",
+            "imagenet_synsets.txt",
+        ]
+    )
+    synset_name = "imagenet_synsets.txt"
+    synset_path = download_testdata(synset_url, synset_name, module="data")
+    with open(synset_path) as f:
+        synsets = f.readlines()
+
+    synsets = [x.strip() for x in synsets]
+    splits = [line.split(" ") for line in synsets]
+    key_to_classname = {spl[0]: " ".join(spl[1:]) for spl in splits}
+
+    class_url = "".join(
+        [
+            "https://raw.githubusercontent.com/Cadene/",
+            "pretrained-models.pytorch/master/data/",
+            "imagenet_classes.txt",
+        ]
+    )
+    class_name = "imagenet_classes.txt"
+    class_path = download_testdata(class_url, class_name, module="data")
+    with open(class_path) as f:
+        class_id_to_key = f.readlines()
+
+    class_id_to_key = [x.strip() for x in class_id_to_key]
+
+    # Get top-1 result for TVM
+    top1_tvm = np.argmax(tvm_output.numpy()[0])
+    tvm_class_key = class_id_to_key[top1_tvm]
+
+    # Convert input to OneFlow variable and get OneFlow result for comparison
+    with flow.no_grad():
+        torch_img = flow.from_numpy(img)
+        output = model(torch_img)
+
+        # Get top-1 result for OneFlow
+        top_oneflow = np.argmax(output.numpy())
+        oneflow_class_key = class_id_to_key[top_oneflow]
+
+    print("Relay top-1 id: {}, class name: {}".format(top1_tvm, key_to_classname[tvm_class_key]))
+    print(
+        "OneFlow top-1 id: {}, class name: {}".format(top_oneflow, key_to_classname[oneflow_class_key])
+    )
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ Out:
+
+ .. code-block:: none
+
+    Relay top-1 id: 281, class name: tabby, tabby cat
+    OneFlow top-1 id: 281, class name: tabby, tabby cat
+
+
+
+
+.. _sphx_glr_download_how_to_compile_models_from_oneflow.py:
+
+
+.. only :: html
+
+ .. container:: sphx-glr-footer
+    :class: sphx-glr-footer-example
+
+
+
+  .. container:: sphx-glr-download
+
+     :download:`Download Python source code: from_oneflow.py <from_oneflow.py>`
+
+
+
+  .. container:: sphx-glr-download
+
+     :download:`Download Jupyter notebook: from_oneflow.ipynb <from_oneflow.ipynb>`
+
+
+.. only:: html
+
+ .. rst-class:: sphx-glr-signature
+
+    `Gallery generated by Sphinx-Gallery <https://sphinx-gallery.github.io>`_
