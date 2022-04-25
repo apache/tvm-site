@@ -7298,7 +7298,7 @@ or [batch, in_depth*scale, in_height*scale, in_width*scale, channel]</p>
 <td><p>Common code to get the pad option</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#tvm.topi.image.grid_sample" title="tvm.topi.image.grid_sample"><code class="xref py py-obj docutils literal notranslate"><span class="pre">grid_sample</span></code></a>(data, grid[, method, layout, ...])</p></td>
-<td><p>Applies bilinear sampling to input feature map.</p></td>
+<td><p>Applies grid sampling to input feature map.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#tvm.topi.image.nchw_pack_layout" title="tvm.topi.image.nchw_pack_layout"><code class="xref py py-obj docutils literal notranslate"><span class="pre">nchw_pack_layout</span></code></a>(layout_info)</p></td>
 <td><p>Check whether the layout type is NCHWinic</p></td>
@@ -7498,31 +7498,47 @@ or [num_boxes, crop_height, crop_width, channel]</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="tvm.topi.image.grid_sample">
-<span class="sig-prename descclassname"><span class="pre">tvm.topi.image.</span></span><span class="sig-name descname"><span class="pre">grid_sample</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">grid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">method</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'bilinear'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">layout</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'NCHW'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">padding_mode</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'zeros'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#tvm.topi.image.grid_sample" title="Permalink to this definition">¶</a></dt>
-<dd><p>Applies bilinear sampling to input feature map.</p>
-<p>Given <span class="math notranslate nohighlight">\(data\)</span> and <span class="math notranslate nohighlight">\(grid\)</span>, assuming NCHW layout, then the output is computed by</p>
+<span class="sig-prename descclassname"><span class="pre">tvm.topi.image.</span></span><span class="sig-name descname"><span class="pre">grid_sample</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">grid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">method</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'bilinear'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">layout</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'NCHW'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">padding_mode</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'zeros'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">align_corners</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#tvm.topi.image.grid_sample" title="Permalink to this definition">¶</a></dt>
+<dd><p>Applies grid sampling to input feature map.</p>
+<p>Given <span class="math notranslate nohighlight">\(data\)</span> and <span class="math notranslate nohighlight">\(grid\)</span>, then for 4-D the output is computed by</p>
 <div class="math notranslate nohighlight">
 \[x_{src} = grid[batch, 0, y_{dst}, x_{dst}] \
 y_{src} = grid[batch, 1, y_{dst}, x_{dst}] \
-output[batch, channel, y_{dst}, x_{dst}] = G(data[batch, channel, y_{src}, x_{src})\]</div>
+output[batch, channel, y_{dst}, x_{dst}] = G(data[batch, channel, y_{src}, x_{src}])\]</div>
 <p><span class="math notranslate nohighlight">\(x_{dst}\)</span>, <span class="math notranslate nohighlight">\(y_{dst}\)</span> enumerate all spatial locations in <span class="math notranslate nohighlight">\(output\)</span>, and
-<span class="math notranslate nohighlight">\(G()\)</span> denotes the interpolation method.
-The out-boundary points will be padded with zeros if the padding_mode is “zeros”.
-The shape of the output will be
-(data.shape[0], data.shape[1], grid.shape[2], grid.shape[3]).</p>
+<span class="math notranslate nohighlight">\(G()\)</span> denotes the interpolation function.</p>
+<p>The out-boundary points will be padded with zeros if padding_mode is “zeros”, or
+border pixel value if padding_mode is “border”, or
+inner pixel value if padding_mode is “reflection”.</p>
+<p>The left-top corner (-1, -1) and right-bottom corner (1, 1) in grid will be map to
+(0, 0) and (h - 1, w - 1) of data if align_corners is “True”, or
+(-0.5, -0.5) and (h + 0.5, w + 0.5) of data if align_corners is “False”.</p>
+<p>The shape of the output will be
+4-D (data.shape[0], data.shape[1], grid.shape[2], grid.shape[3]), or
+5-D (data.shape[0], data.shape[1], grid.shape[2], grid.shape[3], grid.shape[4]).</p>
 <p>The operator assumes that <span class="math notranslate nohighlight">\(grid\)</span> has been normalized to [-1, 1].</p>
 <p>grid_sample often cooperates with affine_grid which generates sampling grids for grid_sample.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters</dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>data</strong> (<em>tvm.Tensor</em>) – 4-D with shape [batch, in_channel, in_height, in_width]</p></li>
-<li><p><strong>grid</strong> (<em>tvm.Tensor</em>) – 4-D with shape [batch, 2, out_height, out_width]</p></li>
-<li><p><strong>method</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – The interpolation method. Only ‘bilinear’ is supported.</p></li>
+<li><p><strong>data</strong> (<em>tvm.Tensor</em>) – 4-D with shape [batch, in_channel, in_height, in_width], or
+5-D with shape [batch, in_channel, in_depth, in_height, in_width]</p></li>
+<li><p><strong>grid</strong> (<em>tvm.Tensor</em>) – 4-D with shape [batch, 2, out_height, out_width], or
+5-D with shape [batch, 3, out_depth, out_height, out_width]</p></li>
+<li><p><strong>method</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – The interpolation method, 4-D “nearest”, “bilinear”, “bicubic” and
+5-D “nearest”, “bilinear”(“trilinear”) are supported.</p></li>
 <li><p><strong>layout</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – The layout of input data and the output.</p></li>
+<li><p><strong>padding_mode</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a>) – The padding mode for outside grid values, “zeros”, “border”, “reflection” are supported.</p></li>
+<li><p><strong>align_corners</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><em>bool</em></a>) – Geometrically, we consider the pixels of the input as squares rather than points.
+If set to “True”, the extrema (“-1” and “1”) are considered as referring
+to the center points of the input corner pixels. If set to “False”, they
+are instead considered as referring to the corner points of the input corner
+pixels, making the sampling more resolution agnostic.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns</dt>
-<dd class="field-even"><p><strong>Output</strong> – 4-D with shape [batch, in_channel, out_height, out_width]</p>
+<dd class="field-even"><p><strong>Output</strong> – 4-D with shape [batch, in_channel, out_height, out_width], or
+5-D with shape [batch, in_channel, out_depth, out_height, out_width]</p>
 </dd>
 <dt class="field-odd">Return type</dt>
 <dd class="field-odd"><p>tvm.Tensor</p>

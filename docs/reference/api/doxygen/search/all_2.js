@@ -46,7 +46,7 @@ var searchData=
   ['after_5fids',['after_ids',['../classtvm_1_1auto__scheduler_1_1ReorderStepNode.html#a7ebdbb44a67f53a07d2f62c2ff5368b6',1,'tvm::auto_scheduler::ReorderStepNode']]],
   ['algorithm_2eh',['algorithm.h',['../algorithm_8h.html',1,'']]],
   ['algorithms_2eh',['algorithms.h',['../algorithms_8h.html',1,'']]],
-  ['align_5fcorners',['align_corners',['../structtvm_1_1relay_1_1UpSamplingAttrs.html#a21fae218544c3215862fd5c7a4b4e4d9',1,'tvm::relay::UpSamplingAttrs']]],
+  ['align_5fcorners',['align_corners',['../structtvm_1_1relay_1_1GridSampleAttrs.html#a529d4b973c43fc878b40da71d50e95ad',1,'tvm::relay::GridSampleAttrs::align_corners()'],['../structtvm_1_1relay_1_1UpSamplingAttrs.html#a21fae218544c3215862fd5c7a4b4e4d9',1,'tvm::relay::UpSamplingAttrs::align_corners()']]],
   ['alignment',['alignment',['../structtvm_1_1runtime_1_1vm_1_1Instruction.html#a8d2b2e37051d12d60e6ae614d49de509',1,'tvm::runtime::vm::Instruction::alignment()'],['../structtvm_1_1tir_1_1usmp_1_1BufferInfoNode.html#a6e91011d58b455653041b56a99f8b671',1,'tvm::tir::usmp::BufferInfoNode::alignment()']]],
   ['all',['All',['../classtvm_1_1relay_1_1FeatureSet.html#abbedfbde4f544c66e6129181b3c29c2a',1,'tvm::relay::FeatureSet::All()'],['../namespacetvm.html#adeeaff4fb29f75a9da8ff4d67723c693',1,'tvm::all()'],['../namespacetvm_1_1topi_1_1nn.html#a93ec4d667dc49c109a0ccb16f6c6d05b',1,'tvm::topi::nn::all()'],['../namespacetvm_1_1topi.html#ad299ebf7fc4294a1e8391fbfe268dfa5',1,'tvm::topi::all()']]],
   ['all_5fcost',['all_cost',['../classtvm_1_1auto__scheduler_1_1MeasureResultNode.html#abc6b1d7555990a6f8a845688cad6b4f4',1,'tvm::auto_scheduler::MeasureResultNode']]],
