@@ -25,6 +25,7 @@ var searchData=
   ['memory_5fscope',['memory_scope',['../classtvm_1_1VirtualDeviceNode.html#aa064c0bfcde20d10249291199908bf15',1,'tvm::VirtualDeviceNode']]],
   ['message',['message',['../classtvm_1_1DiagnosticNode.html#a6cb3da3e81e6d6dce39a046c18f55f04',1,'tvm::DiagnosticNode::message()'],['../classtvm_1_1tir_1_1AssertStmtNode.html#a42ff732b4df33bddf74f9a92669cebb9',1,'tvm::tir::AssertStmtNode::message()']]],
   ['message_5ftype',['message_type',['../structtvm_1_1runtime_1_1micro__rpc_1_1SessionHeader.html#a6361d74689ff447ee5b072255e9f3d64',1,'tvm::runtime::micro_rpc::SessionHeader']]],
+  ['meta_5fschedule_5fauto_5ftensorize',['meta_schedule_auto_tensorize',['../namespacetvm_1_1tir_1_1attr.html#a16f0de00900235f9c158f20f345604a4',1,'tvm::tir::attr']]],
   ['meta_5fschedule_5fcooperative_5ffetch',['meta_schedule_cooperative_fetch',['../namespacetvm_1_1tir_1_1attr.html#a82bba3064a40ce62c958db4b120471a7',1,'tvm::tir::attr']]],
   ['meta_5fschedule_5fparallel',['meta_schedule_parallel',['../namespacetvm_1_1tir_1_1attr.html#afdc8510abcf9d0c3b3dd9f30046b5c0f',1,'tvm::tir::attr']]],
   ['meta_5fschedule_5frandom_5fcompute_5fproducer',['meta_schedule_random_compute_producer',['../namespacetvm_1_1tir_1_1attr.html#a350918383cf7d7c9a95114ab7fda7781',1,'tvm::tir::attr']]],
