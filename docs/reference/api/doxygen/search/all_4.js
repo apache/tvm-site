@@ -247,6 +247,7 @@ var searchData=
   ['create',['Create',['../classtvm_1_1transform_1_1PassContext.html#aabfad8965c2f4e7b6e4b0812652ddfd2',1,'tvm::transform::PassContext::Create()'],['../classtvm_1_1relay_1_1Executor.html#a40d1e25dda59f1d3bb24317c8cf9aac9',1,'tvm::relay::Executor::Create()'],['../classtvm_1_1relay_1_1Runtime.html#a7f9d3ecff6d137acf0537a495a6e25a9',1,'tvm::relay::Runtime::Create()']]],
   ['create_5fgroup',['create_group',['../classtvm_1_1te_1_1Schedule.html#a638e7b946df3b5d2e2cde3acc0201da0',1,'tvm::te::Schedule']]],
   ['create_5fschedule',['create_schedule',['../namespacetvm_1_1te.html#a485034766309df280239e0994913b34b',1,'tvm::te']]],
+  ['createallocatesforio',['CreateAllocatesForIO',['../namespacetvm_1_1tir_1_1usmp_1_1transform.html#ad1751f300f05f2448d280b98c48b65a1',1,'tvm::tir::usmp::transform']]],
   ['createarraybufferinfo',['CreateArrayBufferInfo',['../namespacetvm_1_1tir_1_1usmp.html#a99eb04efa8e77b6759ccfb3ae7c4b5c8',1,'tvm::tir::usmp']]],
   ['createfromrange',['CreateFromRange',['../classtvm_1_1runtime_1_1MapNode.html#a6b54c7503c17ee3bb7eadcd1ac0ed009',1,'tvm::runtime::MapNode']]],
   ['createfunctionpass',['CreateFunctionPass',['../namespacetvm_1_1relay_1_1transform.html#a2101aa797e69d398012ef94b63db51da',1,'tvm::relay::transform']]],

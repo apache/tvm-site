@@ -56,6 +56,7 @@ var searchData=
   ['getglobalvar',['GetGlobalVar',['../classtvm_1_1IRModuleNode.html#a18354400214e8695aac9625e587c5fad',1,'tvm::IRModuleNode']]],
   ['getglobalvars',['GetGlobalVars',['../classtvm_1_1IRModuleNode.html#a16ed1c2bfd82c1042d429fde05201cc4',1,'tvm::IRModuleNode']]],
   ['gethost',['GetHost',['../classtvm_1_1TargetNode.html#a94129658128c764ddd0e2255a490be05',1,'tvm::TargetNode']]],
+  ['getiopoolallocations',['GetIOPoolAllocations',['../namespacetvm_1_1tir_1_1usmp.html#af09b2e5d53a727e24e1322834b71b67f',1,'tvm::tir::usmp']]],
   ['getkeys',['GetKeys',['../classtvm_1_1TargetNode.html#abd05b2c258974b13af1192c911ccb12b',1,'tvm::TargetNode']]],
   ['getlib',['GetLib',['../classtvm_1_1runtime_1_1vm_1_1Executable.html#aabfeb049c4a50df7b204b34f56b31567',1,'tvm::runtime::vm::Executable']]],
   ['getlibs',['GetLibs',['../classtvm_1_1TargetNode.html#a1bd600905c1a4469726184adbc9087b0',1,'tvm::TargetNode']]],
