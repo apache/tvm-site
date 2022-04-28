@@ -5,7 +5,7 @@ var searchData=
   ['a_5fmin',['a_min',['../structtvm_1_1relay_1_1ClipAttrs.html#a8a9a5b34513d0e9b46cae1ac436c6917',1,'tvm::relay::ClipAttrs']]],
   ['abs',['abs',['../namespacetvm.html#ab2a3c98ef29937defd6accb9b171a940',1,'tvm::abs()'],['../namespacetvm_1_1topi.html#a91313bc00e3b96717f8420181f789300',1,'tvm::topi::abs()']]],
   ['access_5fanalyzer',['access_analyzer',['../classtvm_1_1auto__scheduler_1_1ComputeDAGNode.html#a5a8b2184133c91f2b0324836bb4d3d0c',1,'tvm::auto_scheduler::ComputeDAGNode']]],
-  ['access_5fptr',['access_ptr',['../classtvm_1_1tir_1_1Buffer.html#a8601743c09727d7bebc4f809b0fa5913',1,'tvm::tir::Buffer']]],
+  ['access_5fptr',['access_ptr',['../classtvm_1_1tir_1_1Buffer.html#af8d609b577a51efcb726f22fcc265e4d',1,'tvm::tir::Buffer']]],
   ['accessanalyzer',['AccessAnalyzer',['../classtvm_1_1auto__scheduler_1_1AccessAnalyzer.html',1,'tvm::auto_scheduler::AccessAnalyzer'],['../classtvm_1_1auto__scheduler_1_1AccessAnalyzer.html#a48823af5ccb91fd98c001763333cf810',1,'tvm::auto_scheduler::AccessAnalyzer::AccessAnalyzer()']]],
   ['accessanalyzernode',['AccessAnalyzerNode',['../classtvm_1_1auto__scheduler_1_1AccessAnalyzerNode.html',1,'tvm::auto_scheduler']]],
   ['acos',['acos',['../namespacetvm.html#aa8e1cc91eb14b427e3018836d82e15e6',1,'tvm::acos()'],['../namespacetvm_1_1topi.html#a472208fa01448c0ed649bec218eed7f9',1,'tvm::topi::acos()']]],
