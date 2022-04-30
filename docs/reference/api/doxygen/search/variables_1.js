@@ -20,6 +20,7 @@ var searchData=
   ['allocation_5fsize',['allocation_size',['../structtvm_1_1runtime_1_1vm_1_1Instruction.html#a4f907889caa7c348a3a2dea88e89b827',1,'tvm::runtime::vm::Instruction']]],
   ['allocators_5f',['allocators_',['../classtvm_1_1runtime_1_1vm_1_1VirtualMachine.html#a0ef00d527a1c03221030c5fec2ad519d',1,'tvm::runtime::vm::VirtualMachine']]],
   ['allow_5fcopy_5fon_5fwrite_5f',['allow_copy_on_write_',['../classtvm_1_1tir_1_1StmtMutator.html#a620e6041832441d25ee4f4d65921231f',1,'tvm::tir::StmtMutator']]],
+  ['allowzero',['allowzero',['../structtvm_1_1relay_1_1ReshapeAttrs.html#a53162b9a7f6232a8d599f58ffafce930',1,'tvm::relay::ReshapeAttrs']]],
   ['alpha',['alpha',['../structtvm_1_1relay_1_1LeakyReluAttrs.html#a78576f4cbcc1139b98c4fc00b99d0e07',1,'tvm::relay::LeakyReluAttrs::alpha()'],['../structtvm_1_1relay_1_1LRNAttrs.html#a76f869f2e2c27773e73744ac05bd3d1e',1,'tvm::relay::LRNAttrs::alpha()']]],
   ['always_5funroll_5finner',['always_unroll_inner',['../structtvm_1_1auto__scheduler_1_1SearchPolicyKey.html#a71838ac1b909b52ffcf083a98ff4eddc',1,'tvm::auto_scheduler::SearchPolicyKey']]],
   ['annotation',['annotation',['../classtvm_1_1auto__scheduler_1_1IteratorNode.html#ac37155c7dbf930ce7bd9de34cdc6c1af',1,'tvm::auto_scheduler::IteratorNode::annotation()'],['../classtvm_1_1auto__scheduler_1_1AnnotationStepNode.html#a7b255ca54942d929a2a1a2feb8ebf910',1,'tvm::auto_scheduler::AnnotationStepNode::annotation()']]],

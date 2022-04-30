@@ -79,6 +79,7 @@ var searchData=
   ['alloctensorreg',['AllocTensorReg',['../structtvm_1_1runtime_1_1vm_1_1Instruction.html#af67759dc5ab3f0285b0b3ad30edca6da',1,'tvm::runtime::vm::Instruction::AllocTensorReg()'],['../namespacetvm_1_1runtime_1_1vm.html#a8d8d95ce8d629c7213f2f595917870ecac8086b44868c71384cfec25bf1f1a6e6',1,'tvm::runtime::vm::AllocTensorReg()']]],
   ['allocworkspace',['AllocWorkspace',['../classtvm_1_1runtime_1_1DeviceAPI.html#abaa7af17b1662dd0907cc5ade826c281',1,'tvm::runtime::DeviceAPI']]],
   ['allow_5fcopy_5fon_5fwrite_5f',['allow_copy_on_write_',['../classtvm_1_1tir_1_1StmtMutator.html#a620e6041832441d25ee4f4d65921231f',1,'tvm::tir::StmtMutator']]],
+  ['allowzero',['allowzero',['../structtvm_1_1relay_1_1ReshapeAttrs.html#a53162b9a7f6232a8d599f58ffafce930',1,'tvm::relay::ReshapeAttrs']]],
   ['alltypevars',['AllTypeVars',['../namespacetvm_1_1relay.html#ae67484a25663dfe2f87cbad53075abbf',1,'tvm::relay::AllTypeVars(const Expr &amp;expr, const IRModule &amp;mod)'],['../namespacetvm_1_1relay.html#ad24361b252cdb636192641e6801f2666',1,'tvm::relay::AllTypeVars(const Type &amp;t, const IRModule &amp;mod)']]],
   ['allvars',['AllVars',['../namespacetvm_1_1relay.html#a6b1e94cf8d97514fe4a9493a0dec1559',1,'tvm::relay']]],
   ['alpha',['alpha',['../structtvm_1_1relay_1_1LeakyReluAttrs.html#a78576f4cbcc1139b98c4fc00b99d0e07',1,'tvm::relay::LeakyReluAttrs::alpha()'],['../structtvm_1_1relay_1_1LRNAttrs.html#a76f869f2e2c27773e73744ac05bd3d1e',1,'tvm::relay::LRNAttrs::alpha()']]],
