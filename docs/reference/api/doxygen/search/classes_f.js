@@ -27,7 +27,7 @@ var searchData=
   ['refvalueobj',['RefValueObj',['../structtvm_1_1relay_1_1RefValueObj.html',1,'tvm::relay']]],
   ['refwrite',['RefWrite',['../classtvm_1_1relay_1_1RefWrite.html',1,'tvm::relay']]],
   ['refwritenode',['RefWriteNode',['../classtvm_1_1relay_1_1RefWriteNode.html',1,'tvm::relay']]],
-  ['registry',['Registry',['../classtvm_1_1ReflectionVTable_1_1Registry.html',1,'tvm::ReflectionVTable::Registry'],['../classtvm_1_1runtime_1_1Registry.html',1,'tvm::runtime::Registry']]],
+  ['registry',['Registry',['../classtvm_1_1runtime_1_1Registry.html',1,'tvm::runtime::Registry'],['../classtvm_1_1ReflectionVTable_1_1Registry.html',1,'tvm::ReflectionVTable::Registry']]],
   ['relayexpr',['RelayExpr',['../classtvm_1_1RelayExpr.html',1,'tvm']]],
   ['relayexprnode',['RelayExprNode',['../classtvm_1_1RelayExprNode.html',1,'tvm']]],
   ['relaynode',['RelayNode',['../classtvm_1_1relay_1_1RelayNode.html',1,'tvm::relay']]],

@@ -16,8 +16,6 @@ var searchData=
   ['letstmt',['LetStmt',['../classtvm_1_1tir_1_1LetStmt.html',1,'tvm::tir']]],
   ['letstmtnode',['LetStmtNode',['../classtvm_1_1tir_1_1LetStmtNode.html',1,'tvm::tir']]],
   ['linearcongruentialengine',['LinearCongruentialEngine',['../classtvm_1_1support_1_1LinearCongruentialEngine.html',1,'tvm::support']]],
-  ['linkedparam',['LinkedParam',['../classtvm_1_1LinkedParam.html',1,'tvm']]],
-  ['linkedparamnode',['LinkedParamNode',['../classtvm_1_1LinkedParamNode.html',1,'tvm']]],
   ['load',['Load',['../classtvm_1_1tir_1_1Load.html',1,'tvm::tir']]],
   ['loadnode',['LoadNode',['../classtvm_1_1tir_1_1LoadNode.html',1,'tvm::tir']]],
   ['localbuilder',['LocalBuilder',['../classtvm_1_1auto__scheduler_1_1LocalBuilder.html',1,'tvm::auto_scheduler']]],
