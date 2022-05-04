@@ -5,6 +5,7 @@ var searchData=
   ['range',['range',['../classtvm_1_1auto__scheduler_1_1IteratorNode.html#a2751c3164971b3154ffc506e3aebaf91',1,'tvm::auto_scheduler::IteratorNode']]],
   ['ranges',['ranges',['../classtvm_1_1arith_1_1IntConstraintsNode.html#ab23d4d806766c88b0df69dbfb5ebd63c',1,'tvm::arith::IntConstraintsNode']]],
   ['rate',['rate',['../structtvm_1_1relay_1_1DropoutAttrs.html#a0b5a52c24a1be53dbb122a1df9fe22af',1,'tvm::relay::DropoutAttrs']]],
+  ['ratio',['ratio',['../classtvm_1_1runtime_1_1profiling_1_1RatioNode.html#ab7a6874e67a1b663463f59ba3ede162c',1,'tvm::runtime::profiling::RatioNode']]],
   ['ratios',['ratios',['../structtvm_1_1relay_1_1MultiBoxPriorAttrs.html#af674c8ba5ac7021827987bca3e1e4b1a',1,'tvm::relay::MultiBoxPriorAttrs::ratios()'],['../structtvm_1_1relay_1_1ProposalAttrs.html#ad209fd15e12d634ae07ac05b63d54850',1,'tvm::relay::ProposalAttrs::ratios()']]],
   ['read_5fbandwidth_5fbytes_5fper_5fcycle',['read_bandwidth_bytes_per_cycle',['../structtvm_1_1PoolInfoNode.html#a0bdcda7767b88b67bf43320d8012b682',1,'tvm::PoolInfoNode']]],
   ['read_5fby',['read_by',['../classtvm_1_1auto__scheduler_1_1AccessAnalyzerNode.html#a6f42c7270313500162a8fb668fd45349',1,'tvm::auto_scheduler::AccessAnalyzerNode']]],

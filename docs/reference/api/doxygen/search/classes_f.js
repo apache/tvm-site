@@ -6,6 +6,7 @@ var searchData=
   ['randommodelnode',['RandomModelNode',['../classtvm_1_1auto__scheduler_1_1RandomModelNode.html',1,'tvm::auto_scheduler']]],
   ['range',['Range',['../classtvm_1_1Range.html',1,'tvm']]],
   ['rangenode',['RangeNode',['../classtvm_1_1RangeNode.html',1,'tvm']]],
+  ['rationode',['RatioNode',['../classtvm_1_1runtime_1_1profiling_1_1RatioNode.html',1,'tvm::runtime::profiling']]],
   ['rebase',['Rebase',['../classtvm_1_1te_1_1Rebase.html',1,'tvm::te']]],
   ['rebasenode',['RebaseNode',['../classtvm_1_1te_1_1RebaseNode.html',1,'tvm::te']]],
   ['recclosure',['RecClosure',['../classtvm_1_1relay_1_1RecClosure.html',1,'tvm::relay']]],
