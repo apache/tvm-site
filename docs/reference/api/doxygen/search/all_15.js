@@ -179,7 +179,7 @@ var searchData=
   ['tshapedatadependent',['TShapeDataDependent',['../namespacetvm_1_1relay.html#a75edb2b00671af1cf3274a5975ecba77',1,'tvm::relay']]],
   ['tune',['Tune',['../classtvm_1_1meta__schedule_1_1TaskSchedulerNode.html#a6afc0825cebf6568ca40f14b476bd15e',1,'tvm::meta_schedule::TaskSchedulerNode::Tune()'],['../classtvm_1_1meta__schedule_1_1PyTaskSchedulerNode.html#ab71542e78c03616575946029e2c20f83',1,'tvm::meta_schedule::PyTaskSchedulerNode::Tune()']]],
   ['tune_5fcontext_2eh',['tune_context.h',['../tune__context_8h.html',1,'']]],
-  ['tunecontext',['TuneContext',['../classtvm_1_1meta__schedule_1_1TuneContext.html',1,'tvm::meta_schedule::TuneContext'],['../classtvm_1_1meta__schedule_1_1TuneContext.html#abf45a66e499760860fda10f041f08264',1,'tvm::meta_schedule::TuneContext::TuneContext()']]],
+  ['tunecontext',['TuneContext',['../classtvm_1_1meta__schedule_1_1TuneContext.html',1,'tvm::meta_schedule::TuneContext'],['../classtvm_1_1meta__schedule_1_1TuneContext.html#ad8e8494f1accde858b7c8b42c85b6175',1,'tvm::meta_schedule::TuneContext::TuneContext()']]],
   ['tunecontextnode',['TuneContextNode',['../classtvm_1_1meta__schedule_1_1TuneContextNode.html',1,'tvm::meta_schedule']]],
   ['tuningoptions',['TuningOptions',['../classtvm_1_1auto__scheduler_1_1TuningOptions.html',1,'tvm::auto_scheduler::TuningOptions'],['../classtvm_1_1auto__scheduler_1_1TuningOptions.html#ac869d3a3e888c77677b62d064fec0f6e',1,'tvm::auto_scheduler::TuningOptions::TuningOptions()']]],
   ['tuningoptionsnode',['TuningOptionsNode',['../classtvm_1_1auto__scheduler_1_1TuningOptionsNode.html',1,'tvm::auto_scheduler']]],

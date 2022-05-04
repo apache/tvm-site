@@ -109,7 +109,7 @@ var searchData=
   ['pyschedulerule',['PyScheduleRule',['../classtvm_1_1meta__schedule_1_1ScheduleRule.html#a85c97c5518ed29d168499ed79f47b8c0',1,'tvm::meta_schedule::ScheduleRule']]],
   ['pysearchstrategy',['PySearchStrategy',['../classtvm_1_1meta__schedule_1_1SearchStrategy.html#a95eb75dce8960913ed0d390ba38c612f',1,'tvm::meta_schedule::SearchStrategy']]],
   ['pyspacegenerator',['PySpaceGenerator',['../classtvm_1_1meta__schedule_1_1SpaceGenerator.html#af77ab4f9cb68cdb712b5b61995ffbc83',1,'tvm::meta_schedule::SpaceGenerator']]],
-  ['pytaskscheduler',['PyTaskScheduler',['../classtvm_1_1meta__schedule_1_1TaskScheduler.html#a4207e39d6dbb5c2b5db7b60e9ff1f408',1,'tvm::meta_schedule::TaskScheduler']]],
+  ['pytaskscheduler',['PyTaskScheduler',['../classtvm_1_1meta__schedule_1_1TaskScheduler.html#a06366c04bd5cda14ac92ceb8b007cdcf',1,'tvm::meta_schedule::TaskScheduler']]],
   ['pythonbasedmeasurecallback',['PythonBasedMeasureCallback',['../classtvm_1_1auto__scheduler_1_1PythonBasedMeasureCallback.html#a38db53470ab1e264f708e39429555f6f',1,'tvm::auto_scheduler::PythonBasedMeasureCallback']]],
   ['pythonbasedmodel',['PythonBasedModel',['../classtvm_1_1auto__scheduler_1_1PythonBasedModel.html#a71f2459b8b36261180c608e0d2acaeae',1,'tvm::auto_scheduler::PythonBasedModel']]]
 ];
