@@ -1,6 +1,5 @@
 var searchData=
 [
-  ['targetmap',['TargetMap',['../namespacetvm.html#ab8a1f05408d27b16d67fe0c558fd6d9f',1,'tvm']]],
   ['tcalleffectkind',['TCallEffectKind',['../namespacetvm_1_1tir.html#a651e82a046f157a7d286b0985b3edb84',1,'tvm::tir']]],
   ['tensortype',['TensorType',['../namespacetvm_1_1relay.html#a52c13723bba53f4953dfd10c34d480f8',1,'tvm::relay']]],
   ['tensortypenode',['TensorTypeNode',['../namespacetvm_1_1relay.html#acfeff91bc774a278a2e9f6103a04387d',1,'tvm::relay']]],
