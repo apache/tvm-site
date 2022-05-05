@@ -188,8 +188,6 @@ var searchData=
   ['isestablished',['IsEstablished',['../classtvm_1_1runtime_1_1micro__rpc_1_1Session.html#af2493a81535b82cc0a98439421a11dcf',1,'tvm::runtime::micro_rpc::Session']]],
   ['iseverything',['IsEverything',['../classtvm_1_1arith_1_1IntSet.html#a7754207d93bf25efdd733829ddfa8a7e',1,'tvm::arith::IntSet']]],
   ['isexpr',['IsExpr',['../namespacetvm_1_1relay.html#a61dc962beca310c25ef857e51fb3553c',1,'tvm::relay']]],
-  ['isexternalcodegen',['IsExternalCodegen',['../classtvm_1_1Target.html#a4e4aca0d3516a0998b55d043e12cd832',1,'tvm::Target']]],
-  ['isexternalcodegenfor',['IsExternalCodegenFor',['../classtvm_1_1Target.html#acc8e9cae4385eb160ca79b1ddf8a7510',1,'tvm::Target']]],
   ['isfinite',['isfinite',['../namespacetvm.html#a096aa20c0df975d089231b2c6fda2e61',1,'tvm::isfinite()'],['../namespacetvm_1_1topi.html#aaa52f4a921ac110066390deeb052dfac',1,'tvm::topi::isfinite()']]],
   ['isfullyconstrained',['IsFullyConstrained',['../classtvm_1_1VirtualDeviceNode.html#ae3c848e08b56105cdb046907ccbfc59c',1,'tvm::VirtualDeviceNode']]],
   ['isfullyunconstrained',['IsFullyUnconstrained',['../classtvm_1_1VirtualDeviceNode.html#acbae67e35fb5348e30101ae23073ad52',1,'tvm::VirtualDeviceNode']]],

@@ -8,6 +8,7 @@ var searchData=
   ['layout_5ftransforms',['layout_transforms',['../classtvm_1_1te_1_1StageNode.html#a99d637a0da3b9f5d688f62410c884bea',1,'tvm::te::StageNode::layout_transforms()'],['../namespacetvm_1_1tir_1_1attr.html#ace6dc58c76a20757b54c5afd76bdbf53',1,'tvm::tir::attr::layout_transforms()']]],
   ['leaf_5fiter_5fvars',['leaf_iter_vars',['../classtvm_1_1te_1_1StageNode.html#a80162bcc647f01efa9ab97da3ca57410',1,'tvm::te::StageNode']]],
   ['left',['left',['../classtvm_1_1relay_1_1AltPatternNode.html#a02ffb32a51710af5bf595069c2dd7a33',1,'tvm::relay::AltPatternNode']]],
+  ['legacy_5ftarget_5fmap',['legacy_target_map',['../classtvm_1_1CompilationConfigNode.html#aea9de8943ac60347359e749067f6bae8',1,'tvm::CompilationConfigNode']]],
   ['lengths',['lengths',['../classtvm_1_1auto__scheduler_1_1SplitStepNode.html#aac7336b4924fc50da9178c271f1cb2ed',1,'tvm::auto_scheduler::SplitStepNode']]],
   ['level',['level',['../classtvm_1_1auto__scheduler_1_1FollowFusedSplitStepNode.html#a9967fa04ce3db64cac7bf636b994fc0a',1,'tvm::auto_scheduler::FollowFusedSplitStepNode::level()'],['../classtvm_1_1DiagnosticNode.html#ac7cfbfb2effb1a19a1802c71d5e47939',1,'tvm::DiagnosticNode::level()'],['../classtvm_1_1DiagnosticBuilder.html#aaa261651b73b9156793bfce29dfaa26f',1,'tvm::DiagnosticBuilder::level()']]],
   ['lhs',['lhs',['../classtvm_1_1relay_1_1ClauseNode.html#a85479b56eab2bb3255248a8b0fcd23f8',1,'tvm::relay::ClauseNode::lhs()'],['../classtvm_1_1tir_1_1CommReducerNode.html#a3fc76ed5cf3a73c803ce1c74dedf7429',1,'tvm::tir::CommReducerNode::lhs()']]],

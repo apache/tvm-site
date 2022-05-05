@@ -40,7 +40,6 @@ var searchData=
   ['kinvaliddevicetype',['kInvalidDeviceType',['../namespacetvm.html#ab3c85920678b8ba5d925d386b66c0261',1,'tvm']]],
   ['kinvalidnonce',['kInvalidNonce',['../classtvm_1_1runtime_1_1micro__rpc_1_1Session.html#afc446d6776b086bf75ca68777d11022f',1,'tvm::runtime::micro_rpc::Session']]],
   ['kisentryfunc',['kIsEntryFunc',['../namespacetvm_1_1tir_1_1attr.html#a489d0cebd2820025bc3d6c5a9011cdd4',1,'tvm::tir::attr']]],
-  ['kisexternalcodegen',['kIsExternalCodegen',['../namespacetvm_1_1attr.html#a17f834882ba3cd00890329433e8e81dd',1,'tvm::attr']]],
   ['kisglobalfunc',['kIsGlobalFunc',['../namespacetvm_1_1tir_1_1attr.html#a3166c6d41ff1816ab01e398be07bac20',1,'tvm::tir::attr']]],
   ['kmatmul',['kMatMul',['../namespacetvm_1_1topi.html#aa9f70e7392653f38da6ff53f5f554f98',1,'tvm::topi']]],
   ['kmaxstackalloca',['kMaxStackAlloca',['../namespacetvm_1_1runtime.html#a2f6f769f6dbbbb24929b7c9f91a48c90',1,'tvm::runtime']]],
