@@ -1,7 +1,6 @@
 var searchData=
 [
   ['map',['Map',['../classtvm_1_1runtime_1_1Map.html',1,'tvm::runtime']]],
-  ['map_3c_20integer_2c_20target_20_3e',['Map&lt; Integer, Target &gt;',['../classtvm_1_1runtime_1_1Map.html',1,'tvm::runtime']]],
   ['map_3c_20tvm_3a_3aglobaltypevar_2c_20tvm_3a_3atypedata_20_3e',['Map&lt; tvm::GlobalTypeVar, tvm::TypeData &gt;',['../classtvm_1_1runtime_1_1Map.html',1,'tvm::runtime']]],
   ['map_3c_20tvm_3a_3aglobalvar_2c_20tvm_3a_3abasefunc_20_3e',['Map&lt; tvm::GlobalVar, tvm::BaseFunc &gt;',['../classtvm_1_1runtime_1_1Map.html',1,'tvm::runtime']]],
   ['map_3c_20tvm_3a_3ameta_5fschedule_3a_3amutator_2c_20tvm_3a_3afloatimm_20_3e',['Map&lt; tvm::meta_schedule::Mutator, tvm::FloatImm &gt;',['../classtvm_1_1runtime_1_1Map.html',1,'tvm::runtime']]],
