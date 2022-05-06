@@ -535,13 +535,16 @@
 <col style="width: 90%" />
 </colgroup>
 <tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="#tvm.relay.transform.ChangeBatch" title="tvm.relay.transform.ChangeBatch"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ChangeBatch</span></code></a>(data[, batch_size])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#tvm.relay.transform.FlexibleShapeDispatch" title="tvm.relay.transform.FlexibleShapeDispatch"><code class="xref py py-obj docutils literal notranslate"><span class="pre">FlexibleShapeDispatch</span></code></a>(buckets[, axis, ...])</p></td>
+<td><p>Enable inference of multiple shaped inputs in one module.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#tvm.relay.transform.ChangeBatch" title="tvm.relay.transform.ChangeBatch"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ChangeBatch</span></code></a>(data[, batch_size])</p></td>
 <td><p>Change the batch size.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#tvm.relay.transform.FunctionPass" title="tvm.relay.transform.FunctionPass"><code class="xref py py-obj docutils literal notranslate"><span class="pre">FunctionPass</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#tvm.relay.transform.FunctionPass" title="tvm.relay.transform.FunctionPass"><code class="xref py py-obj docutils literal notranslate"><span class="pre">FunctionPass</span></code></a></p></td>
 <td><p>A pass that works on each tvm.relay.Function in a module.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#tvm.relay.transform.LayoutConfig" title="tvm.relay.transform.LayoutConfig"><code class="xref py py-obj docutils literal notranslate"><span class="pre">LayoutConfig</span></code></a>([skip_layers])</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#tvm.relay.transform.LayoutConfig" title="tvm.relay.transform.LayoutConfig"><code class="xref py py-obj docutils literal notranslate"><span class="pre">LayoutConfig</span></code></a>([skip_layers])</p></td>
 <td><p>A structure for customizing the ConvertLayout pass.</p></td>
 </tr>
 </tbody>
@@ -576,6 +579,57 @@ allowed and indicate starting at the last layer.</p></li>
 </dd>
 <dt class="field-odd">Return type</dt>
 <dd class="field-odd"><p>tvm.relay.Expr, tvm.relay.Function, or <a class="reference internal" href="../ir.html#tvm.ir.IRModule" title="tvm.ir.IRModule">tvm.ir.IRModule</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="tvm.relay.transform.FlexibleShapeDispatch">
+<em class="property"><span class="pre">class</span> </em><span class="sig-prename descclassname"><span class="pre">tvm.relay.transform.</span></span><span class="sig-name descname"><span class="pre">FlexibleShapeDispatch</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">buckets</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">axis</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">auto_pad</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pad_value</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_indices</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">affects_output</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#tvm.relay.transform.FlexibleShapeDispatch" title="Permalink to this definition">¶</a></dt>
+<dd><p>Enable inference of multiple shaped inputs in one module.</p>
+<p>This transformation adds a handler around a module that
+checks input shapes and dispatches to a subgraph specialized
+to handle the specific shapes of that input. If no exactly matching
+subgraph is available, the input will be run using full dynamism.
+For best performance, specify all the sizes the module will
+be likely to see using the buckets argument.</p>
+<p>By default, this pass will dispatch shapes that exactly match one
+of the buckets to a corresponding subgraph. All non-matching shapes
+use the same fully dynamic fallback. This can be detrimental to performance
+for those non-matching shapes. Setting auto_pad to True causes this
+pass to round-up the shape of non-matching inputs to the closest
+bucket. This allows them to use the tuned kernels of bucket shapes
+which can improve performance.</p>
+<p>Models that have multiple inputs sharing a dynamic axis, which
+is common for batch size or sequence length dynamism, are supported
+through the input_indices argument.</p>
+<p>Many types of dynamism such as batching affect both the input and output
+shape, however this is not always the case. If the output shape
+is independent of the input, the affects_output argument of this
+pass must be set to False.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>buckets</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.10)"><em>list</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a><em>]</em>) – The sizes of the input dimension that should be explicitly handled.
+Each value in buckets will have a corresponding subgraph constructed to
+handle it.</p></li>
+<li><p><strong>axis</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a>) – The dimension of the input that should be made flexible. This will
+most often be used for the batch dimension.</p></li>
+<li><p><strong>auto_pad</strong> (<em>Optional</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><em>bool</em></a><em>]</em>) – If True, then padding will be inserted to values that don’t match one of
+the provided buckets.</p></li>
+<li><p><strong>pad_value</strong> (<em>Optional</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.10)"><em>float</em></a><em>]</em>) – When auto_pad is true, padding will be done with this value.</p></li>
+<li><p><strong>input_indices</strong> (<em>Optional</em><em>[</em><em>List</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.10)"><em>int</em></a><em>]</em><em>]</em>) – Which inputs should be dispatched dynamically, provided by index. All inputs
+must share the same dynamic axis.</p></li>
+<li><p><strong>affects_output</strong> (<em>Optional</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><em>bool</em></a><em>]</em>) – Whether the change in input shape has a corresponding effect on the output shape.
+Batching for example effects both the input and output whereas changing sequence
+length in an NLP model typically does not.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>ret</strong> – A pass that can be applied to a module to add flexible shape handling.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference internal" href="#tvm.relay.transform.FlexibleShapeDispatch" title="tvm.relay.transform.FlexibleShapeDispatch">FlexibleShapeDispatch</a></p>
 </dd>
 </dl>
 </dd></dl>
