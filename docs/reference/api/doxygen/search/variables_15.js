@@ -4,6 +4,7 @@ var searchData=
   ['weight',['weight',['../classtvm_1_1meta__schedule_1_1ExtractedTaskNode.html#a772dcab249a2add6801c3100729c15ad',1,'tvm::meta_schedule::ExtractedTaskNode']]],
   ['weight_5fbits',['weight_bits',['../structtvm_1_1relay_1_1BinaryConv2DAttrs.html#a70aa926aba4fc774c15786358315141a',1,'tvm::relay::BinaryConv2DAttrs::weight_bits()'],['../structtvm_1_1relay_1_1BinaryDenseAttrs.html#a6647c2d9d1d3108c6f552ff4271f2625',1,'tvm::relay::BinaryDenseAttrs::weight_bits()']]],
   ['weight_5flayout',['weight_layout',['../structtvm_1_1relay_1_1DensePackAttrs.html#a7f12601cad15b4a65de4ce1bc4dd929c',1,'tvm::relay::DensePackAttrs']]],
+  ['win_5flength',['win_length',['../structtvm_1_1relay_1_1StftAttrs.html#a371e50533789d167cef0933e0cee3838',1,'tvm::relay::StftAttrs']]],
   ['window_5fshape',['window_shape',['../structtvm_1_1relay_1_1SlidingWindowAttrs.html#a8e12fafa989faf9bf986ee40626326c2',1,'tvm::relay::SlidingWindowAttrs']]],
   ['workload',['workload',['../classtvm_1_1meta__schedule_1_1TuningRecordNode.html#a42c87f1ec62dae6806c3fe9629c5e7f0',1,'tvm::meta_schedule::TuningRecordNode']]],
   ['workload_5fkey',['workload_key',['../classtvm_1_1auto__scheduler_1_1SearchTaskNode.html#a20045d677ba2bc5c5ce461e78543b3e2',1,'tvm::auto_scheduler::SearchTaskNode']]],

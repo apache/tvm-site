@@ -243,6 +243,7 @@ var searchData=
   ['attrsnode_3c_20splitattrs_20_3e',['AttrsNode&lt; SplitAttrs &gt;',['../classtvm_1_1AttrsNode.html',1,'tvm']]],
   ['attrsnode_3c_20squeezeattrs_20_3e',['AttrsNode&lt; SqueezeAttrs &gt;',['../classtvm_1_1AttrsNode.html',1,'tvm']]],
   ['attrsnode_3c_20stackattrs_20_3e',['AttrsNode&lt; StackAttrs &gt;',['../classtvm_1_1AttrsNode.html',1,'tvm']]],
+  ['attrsnode_3c_20stftattrs_20_3e',['AttrsNode&lt; StftAttrs &gt;',['../classtvm_1_1AttrsNode.html',1,'tvm']]],
   ['attrsnode_3c_20stridedsliceattrs_20_3e',['AttrsNode&lt; StridedSliceAttrs &gt;',['../classtvm_1_1AttrsNode.html',1,'tvm']]],
   ['attrsnode_3c_20subpixelattrs_20_3e',['AttrsNode&lt; SubPixelAttrs &gt;',['../classtvm_1_1AttrsNode.html',1,'tvm']]],
   ['attrsnode_3c_20takeattrs_20_3e',['AttrsNode&lt; TakeAttrs &gt;',['../classtvm_1_1AttrsNode.html',1,'tvm']]],

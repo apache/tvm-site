@@ -33,7 +33,7 @@ var searchData=
   ['page_5fallocator_2eh',['page_allocator.h',['../page__allocator_8h.html',1,'']]],
   ['pagememorymanagercreate',['PageMemoryManagerCreate',['../page__allocator_8h.html#a720dbc7474ac13b93fafb974cfc20bc7',1,'page_allocator.h']]],
   ['papi_2eh',['papi.h',['../papi_8h.html',1,'']]],
-  ['parallel',['Parallel',['../classtvm_1_1tir_1_1ScheduleNode.html#a553dc17c0b49b175cd16881c81b6c789',1,'tvm::tir::ScheduleNode::Parallel()'],['../classtvm_1_1auto__scheduler_1_1State.html#a2376f0180bc5b5dd4b456f2a75d4a366',1,'tvm::auto_scheduler::State::parallel()'],['../classtvm_1_1te_1_1Stage.html#a60a6be10a1a96cb594c1399efabafef3',1,'tvm::te::Stage::parallel()']]],
+  ['parallel',['parallel',['../classtvm_1_1auto__scheduler_1_1State.html#a2376f0180bc5b5dd4b456f2a75d4a366',1,'tvm::auto_scheduler::State::parallel()'],['../classtvm_1_1te_1_1Stage.html#a60a6be10a1a96cb594c1399efabafef3',1,'tvm::te::Stage::parallel()'],['../classtvm_1_1tir_1_1ScheduleNode.html#a553dc17c0b49b175cd16881c81b6c789',1,'tvm::tir::ScheduleNode::Parallel()']]],
   ['parallel_5ffor',['parallel_for',['../namespacetvm_1_1support.html#a8bf1225e8bb1db575578ca2d645fb23c',1,'tvm::support']]],
   ['parallel_5ffor_2eh',['parallel_for.h',['../parallel__for_8h.html',1,'']]],
   ['parallel_5ffor_5fdynamic',['parallel_for_dynamic',['../namespacetvm_1_1support.html#afe4271363c794f1644ce7af5c2266530',1,'tvm::support']]],
