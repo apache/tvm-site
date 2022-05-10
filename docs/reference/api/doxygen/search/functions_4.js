@@ -1,6 +1,6 @@
 var searchData=
 [
-  ['data',['data',['../classtvm_1_1runtime_1_1ShapeTuple.html#a0dd7bc3ff59edfc5e64df0d9e38fd7d5',1,'tvm::runtime::ShapeTuple::data()'],['../classtvm_1_1runtime_1_1String.html#a5f82ed0ef356225883e118eb76392cd5',1,'tvm::runtime::String::data()']]],
+  ['data',['data',['../classtvm_1_1runtime_1_1ShapeTuple.html#a0dd7bc3ff59edfc5e64df0d9e38fd7d5',1,'tvm::runtime::ShapeTuple::data()'],['../classtvm_1_1runtime_1_1String.html#a5f82ed0ef356225883e118eb76392cd5',1,'tvm::runtime::String::data()'],['../classtvm_1_1runtime_1_1metadata_1_1MetadataNode.html#ae0d24237f06c9a39abd8aa7d19122a19',1,'tvm::runtime::metadata::MetadataNode::data()'],['../classtvm_1_1runtime_1_1metadata_1_1TensorInfoNode.html#ac7e7dc8bf39bea5f51d34758f0edd30f',1,'tvm::runtime::metadata::TensorInfoNode::data()']]],
   ['datatype',['DataType',['../classtvm_1_1runtime_1_1DataType.html#a6db427a47b8d503b10cd2aee6a39d3a9',1,'tvm::runtime::DataType::DataType()'],['../classtvm_1_1runtime_1_1DataType.html#aa27f63a2395ce1ac52e4d7740a31383b',1,'tvm::runtime::DataType::DataType(DLDataType dtype)'],['../classtvm_1_1runtime_1_1DataType.html#a58d36fef8d6b5fb39b01dccd79ff1db4',1,'tvm::runtime::DataType::DataType(int code, int bits, int lanes)'],['../classtvm_1_1runtime_1_1NDArray.html#a87d9cadd0c232324c101f7ed231aa193',1,'tvm::runtime::NDArray::DataType()']]],
   ['datatypepattern',['DataTypePattern',['../classtvm_1_1relay_1_1DataTypePattern.html#a1af68239730a8b75bfb35cfce320b653',1,'tvm::relay::DataTypePattern']]],
   ['deadcodeelimination',['DeadCodeElimination',['../namespacetvm_1_1relay_1_1transform.html#a441963a144dae58b7633d0a674cf20cc',1,'tvm::relay::transform']]],
@@ -64,7 +64,7 @@ var searchData=
   ['double_5fbuffer',['double_buffer',['../classtvm_1_1te_1_1Stage.html#a0cdea4d4b25b730c44d86e6c57505000',1,'tvm::te::Stage']]],
   ['downcast',['Downcast',['../namespacetvm_1_1runtime.html#a756a222aed384e208f32d35d3412c918',1,'tvm::runtime']]],
   ['downcastnocheck',['DowncastNoCheck',['../classtvm_1_1runtime_1_1ObjectRef.html#acd04bb22a6861e9952c344ee8547411f',1,'tvm::runtime::ObjectRef']]],
-  ['dtype',['dtype',['../classtvm_1_1PrimExpr.html#a18a8a0fef87b74b18fc254f49465cc56',1,'tvm::PrimExpr']]],
+  ['dtype',['dtype',['../classtvm_1_1PrimExpr.html#a18a8a0fef87b74b18fc254f49465cc56',1,'tvm::PrimExpr::dtype()'],['../classtvm_1_1runtime_1_1metadata_1_1TensorInfoNode.html#a456b1c53ac5f7e60ff77c0a1478f3aef',1,'tvm::runtime::metadata::TensorInfoNode::dtype()']]],
   ['dump',['Dump',['../namespacetvm.html#a410120ad997c7470798b98a1c48ee3e6',1,'tvm::Dump(const runtime::ObjectRef &amp;node)'],['../namespacetvm.html#a4909861f9bc606426c65c65da4da3734',1,'tvm::Dump(const runtime::Object *node)']]],
   ['durationnode',['DurationNode',['../classtvm_1_1runtime_1_1profiling_1_1DurationNode.html#a6049eb36d6d7878fbe1b00a15049f887',1,'tvm::runtime::profiling::DurationNode']]],
   ['dyn_5ftile',['dyn_tile',['../namespacetvm_1_1topi.html#a5efc5887d91eb272e31c10f4e014a034',1,'tvm::topi']]],
