@@ -68,7 +68,7 @@ var searchData=
   ['spacegenerator',['SpaceGenerator',['../classtvm_1_1meta__schedule_1_1SpaceGenerator.html',1,'tvm::meta_schedule']]],
   ['spacegeneratornode',['SpaceGeneratorNode',['../classtvm_1_1meta__schedule_1_1SpaceGeneratorNode.html',1,'tvm::meta_schedule']]],
   ['spacetobatchndattrs',['SpaceToBatchNDAttrs',['../structtvm_1_1relay_1_1SpaceToBatchNDAttrs.html',1,'tvm::relay']]],
-  ['span',['Span',['../classtvm_1_1support_1_1Span.html',1,'tvm::support::Span&lt; T, W &gt;'],['../classtvm_1_1Span.html',1,'tvm::Span']]],
+  ['span',['Span',['../classtvm_1_1Span.html',1,'tvm::Span'],['../classtvm_1_1support_1_1Span.html',1,'tvm::support::Span&lt; T, W &gt;']]],
   ['spannode',['SpanNode',['../classtvm_1_1SpanNode.html',1,'tvm']]],
   ['sparseconv2dattrs',['SparseConv2DAttrs',['../structtvm_1_1relay_1_1SparseConv2DAttrs.html',1,'tvm::relay']]],
   ['sparsedenseattrs',['SparseDenseAttrs',['../structtvm_1_1relay_1_1SparseDenseAttrs.html',1,'tvm::relay']]],
