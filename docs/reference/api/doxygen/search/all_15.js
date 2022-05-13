@@ -288,6 +288,7 @@ var searchData=
   ['tvm_5fruntime_5fheader_5fonly',['TVM_RUNTIME_HEADER_ONLY',['../packed__func_8h.html#a50e8d21ff57c58c35bc4cc9310e64273',1,'packed_func.h']]],
   ['tvm_5fruntime_5fregister_5fvar_5fdef',['TVM_RUNTIME_REGISTER_VAR_DEF',['../runtime_8h.html#af8e75590a4116ea35a37322634ef803e',1,'runtime.h']]],
   ['tvm_5fset_5fdevice',['tvm_set_device',['../namespacetvm_1_1runtime_1_1symbol.html#aaad9cf8f51a55b2ec5b19854d692bd21',1,'tvm::runtime::symbol']]],
+  ['tvm_5fssize_5ft',['tvm_ssize_t',['../c__runtime__api_8h.html#ac292ff415f8389d3789d4a7f6bc23b11',1,'c_runtime_api.h']]],
   ['tvm_5fstack_5falloca',['tvm_stack_alloca',['../namespacetvm_1_1tir_1_1builtin.html#a15c5e0e0478e0ebff91690f60992cf3f',1,'tvm::tir::builtin']]],
   ['tvm_5fstack_5fmake_5farray',['tvm_stack_make_array',['../namespacetvm_1_1tir_1_1builtin.html#a28f99e6dd767482765b854ee9fc71f2c',1,'tvm::tir::builtin']]],
   ['tvm_5fstack_5fmake_5fshape',['tvm_stack_make_shape',['../namespacetvm_1_1tir_1_1builtin.html#abd540cb73407771ecfb4f78722ce5a1b',1,'tvm::tir::builtin']]],

@@ -19,6 +19,7 @@ var searchData=
   ['tvm_5ffunction_5findex_5ft',['tvm_function_index_t',['../func__registry_8h.html#a1d8ab7ca0c7903c699f805e8e9aa395a',1,'func_registry.h']]],
   ['tvm_5findex_5ft',['tvm_index_t',['../c__runtime__api_8h.html#ace8007daffd9f2c6d954c24d870bfcc4',1,'c_runtime_api.h']]],
   ['tvm_5fmodule_5findex_5ft',['tvm_module_index_t',['../func__registry_8h.html#a42d7461ea18444226216141298f1c24c',1,'func_registry.h']]],
+  ['tvm_5fssize_5ft',['tvm_ssize_t',['../c__runtime__api_8h.html#ac292ff415f8389d3789d4a7f6bc23b11',1,'c_runtime_api.h']]],
   ['tvmaotexecutor',['TVMAotExecutor',['../aot__executor_8h.html#ad090188290895a09067753e79d57077b',1,'aot_executor.h']]],
   ['tvmargs',['TVMArgs',['../classtvm_1_1BaseAttrsNode.html#a257561dad74174cbdc08f6725a45d8ac',1,'tvm::BaseAttrsNode::TVMArgs()'],['../crt_2packed__func_8h.html#ad869d7c5618f982f6841399c216a234c',1,'TVMArgs():&#160;packed_func.h']]],
   ['tvmarrayhandle',['TVMArrayHandle',['../c__runtime__api_8h.html#a73ca58cb32f4a4adf71d274dc1e27be4',1,'c_runtime_api.h']]],
