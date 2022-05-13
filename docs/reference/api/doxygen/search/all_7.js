@@ -138,7 +138,7 @@ var searchData=
   ['fmatch',['fMatch',['../namespacetvm_1_1relay.html#a926750aeda977340aa82bceac863fc9ea53a8eba57c4a3abd37b4c96fb98bf61b',1,'tvm::relay']]],
   ['fnexttaskid',['FNextTaskId',['../classtvm_1_1meta__schedule_1_1PyTaskSchedulerNode.html#aea910ba4ad650db1fbfdd6bc7892ab0c',1,'tvm::meta_schedule::PyTaskSchedulerNode']]],
   ['fnotifyrunnerresults',['FNotifyRunnerResults',['../classtvm_1_1meta__schedule_1_1PySearchStrategyNode.html#a802c0ead40a90b4bf5c0962a8d4bbdee',1,'tvm::meta_schedule::PySearchStrategyNode']]],
-  ['foldconstant',['FoldConstant',['../namespacetvm_1_1relay_1_1transform.html#a41656c71a440f1f9c9eae0aa409d2b22',1,'tvm::relay::transform']]],
+  ['foldconstant',['FoldConstant',['../namespacetvm_1_1relay_1_1transform.html#a0d6983a69fe1e802a7878279e265de37',1,'tvm::relay::transform']]],
   ['foldl',['foldl',['../namespacetvm_1_1tir.html#a6454dd89e85fc29a7e3b8620df90a6f6',1,'tvm::tir']]],
   ['foldscaleaxis',['FoldScaleAxis',['../namespacetvm_1_1relay_1_1transform.html#a73946a29efe8cf6f186a681296c8e943',1,'tvm::relay::transform']]],
   ['follow_5ffused_5fsplit',['follow_fused_split',['../classtvm_1_1auto__scheduler_1_1State.html#a26d72cbcaa97f157076e98ed30a9f477',1,'tvm::auto_scheduler::State']]],

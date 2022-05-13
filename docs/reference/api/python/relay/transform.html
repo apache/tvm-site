@@ -421,10 +421,10 @@
 <tr class="row-odd"><td><p><a class="reference internal" href="#tvm.relay.transform.FlattenAtrousConv" title="tvm.relay.transform.FlattenAtrousConv"><code class="xref py py-obj docutils literal notranslate"><span class="pre">FlattenAtrousConv</span></code></a>()</p></td>
 <td><p>The purpose of this pass is to find a sequence of space_to_batch_nd-conv2d-batch_to_space_nd operations:</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#tvm.relay.transform.FoldConstant" title="tvm.relay.transform.FoldConstant"><code class="xref py py-obj docutils literal notranslate"><span class="pre">FoldConstant</span></code></a>()</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#tvm.relay.transform.FoldConstant" title="tvm.relay.transform.FoldConstant"><code class="xref py py-obj docutils literal notranslate"><span class="pre">FoldConstant</span></code></a>([fold_qnn])</p></td>
 <td><p>Fold the constant expressions in a Relay program.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#tvm.relay.transform.FoldConstantExpr" title="tvm.relay.transform.FoldConstantExpr"><code class="xref py py-obj docutils literal notranslate"><span class="pre">FoldConstantExpr</span></code></a>(expr, mod)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#tvm.relay.transform.FoldConstantExpr" title="tvm.relay.transform.FoldConstantExpr"><code class="xref py py-obj docutils literal notranslate"><span class="pre">FoldConstantExpr</span></code></a>(expr, mod[, fold_qnn])</p></td>
 <td><p>Fold the constant expressions in a Relay program.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#tvm.relay.transform.FoldExplicitPadding" title="tvm.relay.transform.FoldExplicitPadding"><code class="xref py py-obj docutils literal notranslate"><span class="pre">FoldExplicitPadding</span></code></a>()</p></td>
@@ -1152,26 +1152,36 @@ recalculated “padding” parameters.</p>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="tvm.relay.transform.FoldConstant">
-<span class="sig-prename descclassname"><span class="pre">tvm.relay.transform.</span></span><span class="sig-name descname"><span class="pre">FoldConstant</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tvm.relay.transform.FoldConstant" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">tvm.relay.transform.</span></span><span class="sig-name descname"><span class="pre">FoldConstant</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">fold_qnn</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#tvm.relay.transform.FoldConstant" title="Permalink to this definition">¶</a></dt>
 <dd><p>Fold the constant expressions in a Relay program.</p>
+<p>Because of backward compatibility reason it skips QNN primitives from folding by default.
+There are some transformation passes like FakeQuantizationToInteger, which requires to keep QNN
+primitives for constant subgraphs. Uncontrolled constant folding of QNN primitives may break
+applicability of FakeQuantizationToInteger. We suggest to use FoldConstant pass with none
+default fold_qnn=True value only when all other QNN sensitive passes were already applied.</p>
 <dl class="field-list simple">
-<dt class="field-odd">Returns</dt>
-<dd class="field-odd"><p><strong>ret</strong> – The registered pass for constant folding.</p>
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>fold_qnn</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><em>bool</em></a>) – Whether to fold constants for QNN operations.</p>
 </dd>
-<dt class="field-even">Return type</dt>
-<dd class="field-even"><p><a class="reference internal" href="../ir.html#tvm.transform.Pass" title="tvm.transform.Pass">tvm.transform.Pass</a></p>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>ret</strong> – The registered pass for constant folding.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference internal" href="../ir.html#tvm.transform.Pass" title="tvm.transform.Pass">tvm.transform.Pass</a></p>
 </dd>
 </dl>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py" id="tvm.relay.transform.FoldConstantExpr">
-<span class="sig-prename descclassname"><span class="pre">tvm.relay.transform.</span></span><span class="sig-name descname"><span class="pre">FoldConstantExpr</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">expr</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mod</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#tvm.relay.transform.FoldConstantExpr" title="Permalink to this definition">¶</a></dt>
+<span class="sig-prename descclassname"><span class="pre">tvm.relay.transform.</span></span><span class="sig-name descname"><span class="pre">FoldConstantExpr</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">expr</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mod</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fold_qnn</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#tvm.relay.transform.FoldConstantExpr" title="Permalink to this definition">¶</a></dt>
 <dd><p>Fold the constant expressions in a Relay program.
 :param expr: The expression to fold
 :type expr: Expr
 :param mod: The module the expr lives in (for global calls)
-:type mod: IRModule</p>
+:type mod: IRModule
+:param fold_qnn: Whether to fold constants for QNN operations.
+:type fold_qnn: bool</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns</dt>
 <dd class="field-odd"><p><strong>new_expr</strong> – The expr after Constant Folding</p>
