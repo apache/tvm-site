@@ -95,7 +95,7 @@ var searchData=
   ['is_5fzero',['is_zero',['../namespacetvm_1_1tir.html#a48bad3db162b334837716bf8e7ba9285',1,'tvm::tir']]],
   ['isaffineblockbinding',['IsAffineBlockBinding',['../classtvm_1_1tir_1_1ScheduleStateNode.html#a2e164c9d5115e29d038a8efdc7c98d1a',1,'tvm::tir::ScheduleStateNode']]],
   ['isconstant',['IsConstant',['../namespacetvm_1_1relay.html#a3d18041cd1c616c25de9c73a39c976c6',1,'tvm::relay']]],
-  ['iscontiguous',['IsContiguous',['../classtvm_1_1runtime_1_1NDArray.html#a1c9d84d35af95d1c29fc5c9c2ced84c8',1,'tvm::runtime::NDArray::IsContiguous()'],['../namespacetvm_1_1runtime.html#adb2ed1227b418f5846d43d3234b52391',1,'tvm::runtime::IsContiguous()']]],
+  ['iscontiguous',['IsContiguous',['../classtvm_1_1runtime_1_1NDArray.html#a1c9d84d35af95d1c29fc5c9c2ced84c8',1,'tvm::runtime::NDArray']]],
   ['isdsoexportable',['IsDSOExportable',['../classtvm_1_1runtime_1_1ModuleNode.html#adc9c1b47c527f9fa2835ed3662c7d198',1,'tvm::runtime::ModuleNode']]],
   ['isestablished',['IsEstablished',['../classtvm_1_1runtime_1_1micro__rpc_1_1Session.html#af2493a81535b82cc0a98439421a11dcf',1,'tvm::runtime::micro_rpc::Session']]],
   ['iseverything',['IsEverything',['../classtvm_1_1arith_1_1IntSet.html#a7754207d93bf25efdd733829ddfa8a7e',1,'tvm::arith::IntSet']]],

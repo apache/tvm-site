@@ -3,6 +3,7 @@ var searchData=
   ['a',['a',['../classtvm_1_1tir_1_1BinaryOpNode.html#adbbd197d65ab43acfc1ffdfd0f2b75ab',1,'tvm::tir::BinaryOpNode::a()'],['../classtvm_1_1tir_1_1CmpOpNode.html#a977090c87be81b9cf78e4dd68a657665',1,'tvm::tir::CmpOpNode::a()'],['../classtvm_1_1tir_1_1AndNode.html#a4a9b2cf4384567cf6719a4766a679738',1,'tvm::tir::AndNode::a()'],['../classtvm_1_1tir_1_1OrNode.html#a61302dc15e752bbde390bdba6c5de3a8',1,'tvm::tir::OrNode::a()'],['../classtvm_1_1tir_1_1NotNode.html#a2216c35efead7567a99c13750df5cd6e',1,'tvm::tir::NotNode::a()']]],
   ['a_5fmax',['a_max',['../structtvm_1_1relay_1_1ClipAttrs.html#af469a6f2f29cca8b0780e3feb7ed0502',1,'tvm::relay::ClipAttrs']]],
   ['a_5fmin',['a_min',['../structtvm_1_1relay_1_1ClipAttrs.html#a8a9a5b34513d0e9b46cae1ac436c6917',1,'tvm::relay::ClipAttrs']]],
+  ['abilityofzerocopyfordltensor',['AbilityOfZeroCopyForDLTensor',['../classtvm_1_1runtime_1_1NDArray.html#ae0cc8db43ff078f6b0d8054447110ac2',1,'tvm::runtime::NDArray']]],
   ['abs',['abs',['../namespacetvm.html#ab2a3c98ef29937defd6accb9b171a940',1,'tvm::abs()'],['../namespacetvm_1_1topi.html#a91313bc00e3b96717f8420181f789300',1,'tvm::topi::abs()']]],
   ['access_5fanalyzer',['access_analyzer',['../classtvm_1_1auto__scheduler_1_1ComputeDAGNode.html#a5a8b2184133c91f2b0324836bb4d3d0c',1,'tvm::auto_scheduler::ComputeDAGNode']]],
   ['access_5fptr',['access_ptr',['../classtvm_1_1tir_1_1Buffer.html#af8d609b577a51efcb726f22fcc265e4d',1,'tvm::tir::Buffer']]],
