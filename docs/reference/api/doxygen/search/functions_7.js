@@ -93,6 +93,7 @@ var searchData=
   ['gettargetproperty',['GetTargetProperty',['../classtvm_1_1runtime_1_1DeviceAPI.html#a8967810939aa24e17c37599c5014e50f',1,'tvm::runtime::DeviceAPI']]],
   ['gettopk',['GetTopK',['../classtvm_1_1meta__schedule_1_1DatabaseNode.html#a27a9519109fd970572be75bc277a1fb2',1,'tvm::meta_schedule::DatabaseNode::GetTopK()'],['../classtvm_1_1meta__schedule_1_1PyDatabaseNode.html#adebe3a6bfb55e5ce0807b97f12a6c39e',1,'tvm::meta_schedule::PyDatabaseNode::GetTopK()']]],
   ['gettype',['GetType',['../namespacetvm.html#a48fb9755f38ffcfcd03592a47ffbbd14',1,'tvm']]],
+  ['gettypefromruntimedatatype',['GetTypeFromRuntimeDataType',['../namespacetvm.html#a5a8143fd484af0da57222d6ff0da6323',1,'tvm']]],
   ['gettypekey',['GetTypeKey',['../classtvm_1_1runtime_1_1Object.html#a4d951e51832081b85875669eac90e940',1,'tvm::runtime::Object']]],
   ['gettypekeyhash',['GetTypeKeyHash',['../classtvm_1_1runtime_1_1Object.html#a5693cbadcc1168b96db7b1cc5c200b86',1,'tvm::runtime::Object']]],
   ['getvectorbytes',['GetVectorBytes',['../namespacetvm_1_1runtime.html#ad01a53416152b68029d67190c3709d25',1,'tvm::runtime']]],
