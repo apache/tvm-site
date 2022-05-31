@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['devicecopy',['DeviceCopy',['../namespacetvm_1_1runtime_1_1vm.html#a8d8d95ce8d629c7213f2f595917870ecaf695012a8c440065a5e913a682e77b5c',1,'tvm::runtime::vm']]]
+  ['bijective',['Bijective',['../namespacetvm_1_1arith.html#a243b60bbe2d3852099eb65454b240c63add09a1312b40f018ee4714799cdb0c81',1,'tvm::arith']]]
 ];

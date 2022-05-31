@@ -37,6 +37,7 @@ var searchData=
   ['bias_5fadd',['bias_add',['../namespacetvm_1_1topi_1_1nn.html#a258f660698c476e2ac7e7f78b32ad6ba',1,'tvm::topi::nn']]],
   ['bias_5fadd_2eh',['bias_add.h',['../bias__add_8h.html',1,'']]],
   ['biasaddattrs',['BiasAddAttrs',['../structtvm_1_1relay_1_1BiasAddAttrs.html',1,'tvm::relay']]],
+  ['bijective',['Bijective',['../namespacetvm_1_1arith.html#a243b60bbe2d3852099eb65454b240c63add09a1312b40f018ee4714799cdb0c81',1,'tvm::arith']]],
   ['bijectivelayout',['BijectiveLayout',['../classtvm_1_1tir_1_1BijectiveLayout.html',1,'tvm::tir::BijectiveLayout'],['../classtvm_1_1tir_1_1BijectiveLayout.html#a39f754ef4c60c084fb1d0379fbc264c6',1,'tvm::tir::BijectiveLayout::BijectiveLayout()']]],
   ['bijectivelayoutnode',['BijectiveLayoutNode',['../classtvm_1_1tir_1_1BijectiveLayoutNode.html',1,'tvm::tir']]],
   ['binarize_5fpack',['binarize_pack',['../namespacetvm_1_1topi_1_1nn.html#abaa4e2bba6a3d3db3eaca614fdf5bbea',1,'tvm::topi::nn']]],

@@ -102,8 +102,11 @@ var menudata={children:[
 {text:"s",url:"namespacemembers_enum.html#index_s"},
 {text:"t",url:"namespacemembers_enum.html#index_t"}]},
 {text:"Enumerator",url:"namespacemembers_eval.html",children:[
+{text:"b",url:"namespacemembers_eval.html#index_b"},
 {text:"f",url:"namespacemembers_eval.html#index_f"},
-{text:"k",url:"namespacemembers_eval.html#index_k"}]}]}]},
+{text:"k",url:"namespacemembers_eval.html#index_k"},
+{text:"n",url:"namespacemembers_eval.html#index_n"},
+{text:"s",url:"namespacemembers_eval.html#index_s"}]}]}]},
 {text:"Classes",url:"annotated.html",children:[
 {text:"Class List",url:"annotated.html"},
 {text:"Class Index",url:"classes.html"},

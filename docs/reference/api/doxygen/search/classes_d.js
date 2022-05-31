@@ -11,7 +11,6 @@ var searchData=
   ['packedfuncvalueconverter_3c_3a_3atvm_3a_3aruntime_3a_3astring_20_3e',['PackedFuncValueConverter&lt;::tvm::runtime::String &gt;',['../structtvm_1_1runtime_1_1PackedFuncValueConverter_3_1_1tvm_1_1runtime_1_1String_01_4.html',1,'tvm::runtime']]],
   ['packetfieldsizebytes',['PacketFieldSizeBytes',['../classtvm_1_1runtime_1_1micro__rpc_1_1PacketFieldSizeBytes.html',1,'tvm::runtime::micro_rpc']]],
   ['padattrs',['PadAttrs',['../structtvm_1_1relay_1_1PadAttrs.html',1,'tvm::relay']]],
-  ['paddeditermapresult',['PaddedIterMapResult',['../structtvm_1_1arith_1_1PaddedIterMapResult.html',1,'tvm::arith']]],
   ['pass',['Pass',['../classtvm_1_1transform_1_1Pass.html',1,'tvm::transform']]],
   ['passcontext',['PassContext',['../classtvm_1_1transform_1_1PassContext.html',1,'tvm::transform']]],
   ['passcontextnode',['PassContextNode',['../classtvm_1_1transform_1_1PassContextNode.html',1,'tvm::transform']]],
