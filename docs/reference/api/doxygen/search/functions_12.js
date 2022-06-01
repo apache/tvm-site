@@ -36,7 +36,7 @@ var searchData=
   ['reinterpret',['reinterpret',['../namespacetvm_1_1tir_1_1builtin.html#a7b555bc5cca2f5e7b26c1037bc0001ce',1,'tvm::tir::builtin::reinterpret()'],['../namespacetvm.html#a34084606675cd2c73c6b0f10e1618280',1,'tvm::reinterpret()'],['../namespacetvm_1_1topi.html#a25239505894bdae140e53f4abc146f92',1,'tvm::topi::reinterpret()']]],
   ['relayreftype',['RelayRefType',['../classtvm_1_1RelayRefType.html#a36d7d0022c0bd3218269356bd368b9fd',1,'tvm::RelayRefType']]],
   ['relayreftypenode',['RelayRefTypeNode',['../classtvm_1_1RelayRefTypeNode.html#a23840592da71d366e7f7dbaaf42d906d',1,'tvm::RelayRefTypeNode']]],
-  ['relaytotirtargethook',['RelayToTIRTargetHook',['../namespacetvm_1_1relay_1_1transform.html#a91ba08c6a7a2c99c82bf72dfc6be77e1',1,'tvm::relay::transform']]],
+  ['relaytotirtargethook',['RelayToTIRTargetHook',['../namespacetvm_1_1relay_1_1transform.html#a153ef0a87fd83343b4855b78e376bd66',1,'tvm::relay::transform']]],
   ['relu',['relu',['../namespacetvm_1_1topi.html#ae99fdff7b3aaceb091b636b8dadd4f5e',1,'tvm::topi']]],
   ['remapthreadaxis',['RemapThreadAxis',['../namespacetvm_1_1tir_1_1transform.html#a25b5de58d543c6786325d87eaad83692',1,'tvm::tir::transform']]],
   ['remove',['Remove',['../classtvm_1_1IRModuleNode.html#a1350c7d68665605f9c4f10850f4a90b9',1,'tvm::IRModuleNode::Remove()'],['../classtvm_1_1runtime_1_1Registry.html#aad89aa915515019c59364b7b569c4648',1,'tvm::runtime::Registry::Remove()']]],
