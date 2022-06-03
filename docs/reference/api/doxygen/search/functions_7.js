@@ -102,7 +102,7 @@ var searchData=
   ['global',['Global',['../classtvm_1_1ReflectionVTable.html#acf555f668f940322ab7b3dea1a45bd95',1,'tvm::ReflectionVTable::Global()'],['../classtvm_1_1runtime_1_1vm_1_1MemoryManager.html#a5718753d0065b717c3f37ed0d16c42b2',1,'tvm::runtime::vm::MemoryManager::Global()']]],
   ['global_5fpool',['global_pool',['../namespacetvm_1_1topi_1_1nn.html#af2bcf6bad18e028ce14ef854974629c0',1,'tvm::topi::nn']]],
   ['globaltypevar',['GlobalTypeVar',['../classtvm_1_1GlobalTypeVar.html#a323a2269c3ab4edf67796d5d51fc5ebf',1,'tvm::GlobalTypeVar']]],
-  ['globalvar',['GlobalVar',['../classtvm_1_1GlobalVar.html#ad5862eee9305d61724f8ae7d43a9230d',1,'tvm::GlobalVar']]],
+  ['globalvar',['GlobalVar',['../classtvm_1_1GlobalVar.html#a09f3b31e7ddde86012b7e92fe1986e4d',1,'tvm::GlobalVar']]],
   ['goto',['Goto',['../structtvm_1_1runtime_1_1vm_1_1Instruction.html#a40b49fe5c05c5fe5f7a5c5c01bf651c8',1,'tvm::runtime::vm::Instruction']]],
   ['gradient',['Gradient',['../namespacetvm_1_1te.html#a0de1399717049f2b3582f0344b267d56',1,'tvm::te']]],
   ['gradientbased',['GradientBased',['../classtvm_1_1meta__schedule_1_1TaskScheduler.html#a2d889bee3692995fd5a2876bfdb946a4',1,'tvm::meta_schedule::TaskScheduler']]],

@@ -81,7 +81,7 @@ var searchData=
   ['kexecutor',['kExecutor',['../namespacetvm_1_1attr.html#a688274c1d1bdf64c3a44c373c58ab06d',1,'tvm::attr']]],
   ['kexist',['kExist',['../namespacetvm_1_1runtime.html#a46fef1ca0ccc05473e9bb0a8c6b66619afae6abc73ecd8ccc7f556da2f56e40eb',1,'tvm::runtime']]],
   ['kexprannotation',['kExprAnnotation',['../namespacetvm_1_1tir.html#a8f4a86b205145696c0555fd02bd37f46a52c0b756f9ae7d0091ceb863a70e960b',1,'tvm::tir']]],
-  ['kexternalsymbol',['kExternalSymbol',['../namespacetvm_1_1relay_1_1attr.html#ae61f67fa7105e9ef262770ccc840cdb4',1,'tvm::relay::attr']]],
+  ['kextern',['kExtern',['../namespacetvm_1_1relay_1_1attr.html#a6a9fb19174e7077b75478119469fed8d',1,'tvm::relay::attr']]],
   ['key',['key',['../classtvm_1_1auto__scheduler_1_1RPCRunnerNode.html#ad249e4a70344d09e0eb513e92e690619',1,'tvm::auto_scheduler::RPCRunnerNode']]],
   ['key_5f',['key_',['../structtvm_1_1detail_1_1AttrInitEntry.html#a5ed0b852e3229c1c1e0b8c924c53479e',1,'tvm::detail::AttrInitEntry::key_()'],['../classtvm_1_1detail_1_1AttrExistVisitor.html#a42cfd0949c298dea06fb2c4fb39e188d',1,'tvm::detail::AttrExistVisitor::key_()']]],
   ['key_5ftype',['key_type',['../classtvm_1_1runtime_1_1MapNode.html#a26ef1b067ec33d0bcd86b72afc6bf608',1,'tvm::runtime::MapNode::key_type()'],['../classtvm_1_1runtime_1_1Map.html#a4375820aee7e1c0581c3b0ab3fb383fb',1,'tvm::runtime::Map::key_type()']]],
