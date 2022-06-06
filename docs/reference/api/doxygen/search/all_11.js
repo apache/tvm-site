@@ -202,7 +202,7 @@ var searchData=
   ['producerstore',['ProducerStore',['../classtvm_1_1tir_1_1ProducerStore.html',1,'tvm::tir::ProducerStore'],['../classtvm_1_1tir_1_1ProducerStore.html#ac096ddee9fde9a4f5e447041da1abb5a',1,'tvm::tir::ProducerStore::ProducerStore()']]],
   ['producerstorenode',['ProducerStoreNode',['../classtvm_1_1tir_1_1ProducerStoreNode.html',1,'tvm::tir']]],
   ['profilefunction',['ProfileFunction',['../namespacetvm_1_1runtime_1_1profiling.html#a213f5d3fec6828976d6eaf847a9018e4',1,'tvm::runtime::profiling']]],
-  ['profiler',['Profiler',['../classtvm_1_1runtime_1_1profiling_1_1Profiler.html',1,'tvm::runtime::profiling::Profiler'],['../classtvm_1_1runtime_1_1profiling_1_1Profiler.html#a6b63db5f5167093b4eae156c88f54ff1',1,'tvm::runtime::profiling::Profiler::Profiler()']]],
+  ['profiler',['Profiler',['../classtvm_1_1runtime_1_1profiling_1_1Profiler.html',1,'tvm::runtime::profiling::Profiler'],['../classtvm_1_1runtime_1_1profiling_1_1Profiler.html#ac3724ea2398c80b66ebd6105a7ccceb8',1,'tvm::runtime::profiling::Profiler::Profiler()']]],
   ['profiling_2eh',['profiling.h',['../profiling_8h.html',1,'']]],
   ['programbuilder',['ProgramBuilder',['../classtvm_1_1auto__scheduler_1_1ProgramBuilder.html',1,'tvm::auto_scheduler']]],
   ['programbuildernode',['ProgramBuilderNode',['../classtvm_1_1auto__scheduler_1_1ProgramBuilderNode.html',1,'tvm::auto_scheduler']]],
