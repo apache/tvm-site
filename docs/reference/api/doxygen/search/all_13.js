@@ -207,7 +207,7 @@ var searchData=
   ['round_5fup_5fto_5fbyte_5falignment',['round_up_to_byte_alignment',['../classtvm_1_1tir_1_1usmp_1_1algo_1_1GreedyBase.html#a3581ab0723c1ab1e74cf479c7c81a803',1,'tvm::tir::usmp::algo::GreedyBase']]],
   ['rounding',['rounding',['../structtvm_1_1relay_1_1qnn_1_1RequantizeAttrs.html#ae786b4706ed872d99ad26d6c42467f87',1,'tvm::relay::qnn::RequantizeAttrs']]],
   ['rounding_5fmethod',['rounding_method',['../structtvm_1_1relay_1_1Resize1DAttrs.html#a1133dc610787d50cc164dc9ed6319f0c',1,'tvm::relay::Resize1DAttrs::rounding_method()'],['../structtvm_1_1relay_1_1Resize2DAttrs.html#a08b8f79180e71137f2990c7123580d7a',1,'tvm::relay::Resize2DAttrs::rounding_method()'],['../structtvm_1_1relay_1_1Resize3DAttrs.html#a6e15ec45b5788ebaf2101e14e7a366fb',1,'tvm::relay::Resize3DAttrs::rounding_method()']]],
-  ['roundrobin',['RoundRobin',['../classtvm_1_1meta__schedule_1_1TaskScheduler.html#adc37ee4209d129b8329292bd3c4da1af',1,'tvm::meta_schedule::TaskScheduler']]],
+  ['roundrobin',['RoundRobin',['../classtvm_1_1meta__schedule_1_1TaskScheduler.html#a084b8b6743f0d63938c1bb8de37df6a1',1,'tvm::meta_schedule::TaskScheduler']]],
   ['rpcrunner',['RPCRunner',['../classtvm_1_1auto__scheduler_1_1RPCRunner.html',1,'tvm::auto_scheduler::RPCRunner'],['../classtvm_1_1auto__scheduler_1_1RPCRunner.html#a58f9c976e0b95dba69cf50b6fc284dca',1,'tvm::auto_scheduler::RPCRunner::RPCRunner()']]],
   ['rpcrunnernode',['RPCRunnerNode',['../classtvm_1_1auto__scheduler_1_1RPCRunnerNode.html',1,'tvm::auto_scheduler']]],
   ['rpcwrappedfunc',['RPCWrappedFunc',['../classtvm_1_1runtime_1_1NDArray_1_1Container.html#a6ccaf80c7bc6037e59b208845b20db11',1,'tvm::runtime::NDArray::Container']]],

@@ -9,7 +9,7 @@ var searchData=
   ['packimportstollvm',['PackImportsToLLVM',['../namespacetvm_1_1codegen.html#ab2cd2a65bac4b26427a8ca0abe4e0bd6',1,'tvm::codegen']]],
   ['pad',['Pad',['../namespacetvm_1_1topi.html#a97c798d0a0ec20a95d351618b83d5121',1,'tvm::topi::Pad(const Array&lt; PrimExpr &gt; shape, int odim)'],['../namespacetvm_1_1topi.html#a3305d377f96cd20c23032eeada2756d5',1,'tvm::topi::pad(const tvm::te::Tensor &amp;t, const tvm::Array&lt; tvm::PrimExpr &gt; &amp;pad_before, tvm::Array&lt; tvm::PrimExpr &gt; pad_after=tvm::Array&lt; tvm::PrimExpr &gt;(), PrimExpr pad_value=PrimExpr(), std::string name=&quot;T_pad&quot;, std::string tag=kElementWise, std::string pad_mode=&quot;constant&quot;, const Array&lt; PrimExpr &gt; *dyn_output_shape=nullptr)']]],
   ['pagememorymanagercreate',['PageMemoryManagerCreate',['../page__allocator_8h.html#a720dbc7474ac13b93fafb974cfc20bc7',1,'page_allocator.h']]],
-  ['parallel',['parallel',['../classtvm_1_1auto__scheduler_1_1State.html#a2376f0180bc5b5dd4b456f2a75d4a366',1,'tvm::auto_scheduler::State::parallel()'],['../classtvm_1_1te_1_1Stage.html#a60a6be10a1a96cb594c1399efabafef3',1,'tvm::te::Stage::parallel()'],['../classtvm_1_1tir_1_1ScheduleNode.html#a553dc17c0b49b175cd16881c81b6c789',1,'tvm::tir::ScheduleNode::Parallel()']]],
+  ['parallel',['Parallel',['../classtvm_1_1tir_1_1ScheduleNode.html#a553dc17c0b49b175cd16881c81b6c789',1,'tvm::tir::ScheduleNode::Parallel()'],['../classtvm_1_1auto__scheduler_1_1State.html#a2376f0180bc5b5dd4b456f2a75d4a366',1,'tvm::auto_scheduler::State::parallel()'],['../classtvm_1_1te_1_1Stage.html#a60a6be10a1a96cb594c1399efabafef3',1,'tvm::te::Stage::parallel()']]],
   ['parallel_5ffor',['parallel_for',['../namespacetvm_1_1support.html#a8bf1225e8bb1db575578ca2d645fb23c',1,'tvm::support']]],
   ['parallel_5ffor_5fdynamic',['parallel_for_dynamic',['../namespacetvm_1_1support.html#afe4271363c794f1644ce7af5c2266530',1,'tvm::support']]],
   ['parallelizevectorizeunroll',['ParallelizeVectorizeUnroll',['../classtvm_1_1meta__schedule_1_1ScheduleRule.html#a0ef9b604081db7a8bf960f3fbfd3a804',1,'tvm::meta_schedule::ScheduleRule']]],
@@ -73,7 +73,7 @@ var searchData=
   ['prelu',['prelu',['../namespacetvm_1_1topi.html#a315c34bbe2bf1be4c778acae08c906fc',1,'tvm::topi']]],
   ['preordervisit',['PreOrderVisit',['../namespacetvm_1_1tir.html#a982b5f74aafaa506a146ec8bed07b3f5',1,'tvm::tir']]],
   ['prettyprint',['PrettyPrint',['../namespacetvm.html#a60c4359254ce7ac364bb97a8bfc13803',1,'tvm']]],
-  ['pretuning',['PreTuning',['../classtvm_1_1meta__schedule_1_1SearchStrategyNode.html#abd1485c82a7df42a54904de7822f0fbf',1,'tvm::meta_schedule::SearchStrategyNode::PreTuning()'],['../classtvm_1_1meta__schedule_1_1PySearchStrategyNode.html#aedcd9c6cc9d8d2a0da10b345ff5d5a61',1,'tvm::meta_schedule::PySearchStrategyNode::PreTuning()']]],
+  ['pretuning',['PreTuning',['../classtvm_1_1meta__schedule_1_1SearchStrategyNode.html#ad88e1545e88dc1934c25f4b417077aff',1,'tvm::meta_schedule::SearchStrategyNode::PreTuning()'],['../classtvm_1_1meta__schedule_1_1PySearchStrategyNode.html#a53127523582ffdb12f40c9433a577adf',1,'tvm::meta_schedule::PySearchStrategyNode::PreTuning()']]],
   ['primexpr',['PrimExpr',['../classtvm_1_1PrimExpr.html#a7f0ca30e951608a0b36a77a66d4d19e0',1,'tvm::PrimExpr::PrimExpr(int32_t value)'],['../classtvm_1_1PrimExpr.html#a756d3f8b17b019560946524951ae6118',1,'tvm::PrimExpr::PrimExpr(float value)']]],
   ['primfunc',['PrimFunc',['../classtvm_1_1tir_1_1PrimFunc.html#ab01a529fafaf9fabdfca170605f7b0f8',1,'tvm::tir::PrimFunc']]],
   ['primtype',['PrimType',['../classtvm_1_1PrimType.html#a09f20c21115c93112848ee1aa91a02a4',1,'tvm::PrimType']]],
@@ -113,7 +113,7 @@ var searchData=
   ['pyschedulerule',['PyScheduleRule',['../classtvm_1_1meta__schedule_1_1ScheduleRule.html#a85c97c5518ed29d168499ed79f47b8c0',1,'tvm::meta_schedule::ScheduleRule']]],
   ['pysearchstrategy',['PySearchStrategy',['../classtvm_1_1meta__schedule_1_1SearchStrategy.html#a95eb75dce8960913ed0d390ba38c612f',1,'tvm::meta_schedule::SearchStrategy']]],
   ['pyspacegenerator',['PySpaceGenerator',['../classtvm_1_1meta__schedule_1_1SpaceGenerator.html#af77ab4f9cb68cdb712b5b61995ffbc83',1,'tvm::meta_schedule::SpaceGenerator']]],
-  ['pytaskscheduler',['PyTaskScheduler',['../classtvm_1_1meta__schedule_1_1TaskScheduler.html#a06366c04bd5cda14ac92ceb8b007cdcf',1,'tvm::meta_schedule::TaskScheduler']]],
+  ['pytaskscheduler',['PyTaskScheduler',['../classtvm_1_1meta__schedule_1_1TaskScheduler.html#a81ba808d521f750ab3703873fbc801b5',1,'tvm::meta_schedule::TaskScheduler']]],
   ['pythonbasedmeasurecallback',['PythonBasedMeasureCallback',['../classtvm_1_1auto__scheduler_1_1PythonBasedMeasureCallback.html#a38db53470ab1e264f708e39429555f6f',1,'tvm::auto_scheduler::PythonBasedMeasureCallback']]],
   ['pythonbasedmodel',['PythonBasedModel',['../classtvm_1_1auto__scheduler_1_1PythonBasedModel.html#a71f2459b8b36261180c608e0d2acaeae',1,'tvm::auto_scheduler::PythonBasedModel']]]
 ];

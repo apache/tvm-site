@@ -35,6 +35,7 @@ var searchData=
   ['optional_3c_20tvm_3a_3ainteger_20_3e',['Optional&lt; tvm::Integer &gt;',['../classtvm_1_1runtime_1_1Optional.html',1,'tvm::runtime']]],
   ['optional_3c_20tvm_3a_3airmodule_20_3e',['Optional&lt; tvm::IRModule &gt;',['../classtvm_1_1runtime_1_1Optional.html',1,'tvm::runtime']]],
   ['optional_3c_20tvm_3a_3ameta_5fschedule_3a_3acostmodel_20_3e',['Optional&lt; tvm::meta_schedule::CostModel &gt;',['../classtvm_1_1runtime_1_1Optional.html',1,'tvm::runtime']]],
+  ['optional_3c_20tvm_3a_3ameta_5fschedule_3a_3adatabase_20_3e',['Optional&lt; tvm::meta_schedule::Database &gt;',['../classtvm_1_1runtime_1_1Optional.html',1,'tvm::runtime']]],
   ['optional_3c_20tvm_3a_3ameta_5fschedule_3a_3asearchstrategy_20_3e',['Optional&lt; tvm::meta_schedule::SearchStrategy &gt;',['../classtvm_1_1runtime_1_1Optional.html',1,'tvm::runtime']]],
   ['optional_3c_20tvm_3a_3ameta_5fschedule_3a_3aspacegenerator_20_3e',['Optional&lt; tvm::meta_schedule::SpaceGenerator &gt;',['../classtvm_1_1runtime_1_1Optional.html',1,'tvm::runtime']]],
   ['optional_3c_20tvm_3a_3aprimexpr_20_3e',['Optional&lt; tvm::PrimExpr &gt;',['../classtvm_1_1runtime_1_1Optional.html',1,'tvm::runtime']]],

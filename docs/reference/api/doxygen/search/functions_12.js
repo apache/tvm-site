@@ -98,7 +98,7 @@ var searchData=
   ['rootmark',['RootMark',['../classtvm_1_1tir_1_1StmtSRef.html#a755ffc34c02e5af0129c7d2eedc1cfb5',1,'tvm::tir::StmtSRef']]],
   ['round',['round',['../namespacetvm.html#a54d9c399c82d7f384ee93f235496ab64',1,'tvm::round()'],['../namespacetvm_1_1topi.html#a11030c7cd076210bf364c6f70846de78',1,'tvm::topi::round()']]],
   ['round_5fup_5fto_5fbyte_5falignment',['round_up_to_byte_alignment',['../classtvm_1_1tir_1_1usmp_1_1algo_1_1GreedyBase.html#a3581ab0723c1ab1e74cf479c7c81a803',1,'tvm::tir::usmp::algo::GreedyBase']]],
-  ['roundrobin',['RoundRobin',['../classtvm_1_1meta__schedule_1_1TaskScheduler.html#adc37ee4209d129b8329292bd3c4da1af',1,'tvm::meta_schedule::TaskScheduler']]],
+  ['roundrobin',['RoundRobin',['../classtvm_1_1meta__schedule_1_1TaskScheduler.html#a084b8b6743f0d63938c1bb8de37df6a1',1,'tvm::meta_schedule::TaskScheduler']]],
   ['rpcrunner',['RPCRunner',['../classtvm_1_1auto__scheduler_1_1RPCRunner.html#a58f9c976e0b95dba69cf50b6fc284dca',1,'tvm::auto_scheduler::RPCRunner']]],
   ['rr_5fpartitioner',['rr_partitioner',['../namespacetvm_1_1support.html#a4dcfaef2dd891a956d23298c943a3fba',1,'tvm::support']]],
   ['rsqrt',['rsqrt',['../namespacetvm.html#a5196b8d7b5d5453e624ab22d0fefb652',1,'tvm::rsqrt()'],['../namespacetvm_1_1topi.html#a87781e08068ff16cbae1356a32331cdc',1,'tvm::topi::rsqrt()']]],

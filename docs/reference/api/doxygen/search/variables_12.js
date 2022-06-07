@@ -11,7 +11,6 @@ var searchData=
   ['task',['task',['../classtvm_1_1auto__scheduler_1_1MeasureInputNode.html#a317754c1f83425e8e8e7ee5fa2746da4',1,'tvm::auto_scheduler::MeasureInputNode']]],
   ['task_5finput_5fnames',['task_input_names',['../classtvm_1_1auto__scheduler_1_1SearchTaskNode.html#a910e7713ef04a1e5e125ed195968202e',1,'tvm::auto_scheduler::SearchTaskNode']]],
   ['task_5fname',['task_name',['../classtvm_1_1meta__schedule_1_1ExtractedTaskNode.html#a92f0cdb010a27536d1c96a8a3f0d0237',1,'tvm::meta_schedule::ExtractedTaskNode::task_name()'],['../classtvm_1_1meta__schedule_1_1TuneContextNode.html#a5cd36a027a0a4b1840bf3884948c6298',1,'tvm::meta_schedule::TuneContextNode::task_name()']]],
-  ['task_5fscheduler',['task_scheduler',['../classtvm_1_1meta__schedule_1_1TuneContextNode.html#a4107f4a73646a16829baea2a7eeddbd4',1,'tvm::meta_schedule::TuneContextNode']]],
   ['tasks',['tasks',['../classtvm_1_1meta__schedule_1_1TaskSchedulerNode.html#a70a2be68e991f43d42e53b76a584f547',1,'tvm::meta_schedule::TaskSchedulerNode']]],
   ['tcodes',['tcodes',['../structTVMArgs.html#a029da77fa4c55b57f3953291072c7bda',1,'TVMArgs']]],
   ['tensor',['tensor',['../structtvm_1_1runtime_1_1vm_1_1Instruction.html#a22de469ea5521ba12e14f1e8181bae56',1,'tvm::runtime::vm::Instruction']]],

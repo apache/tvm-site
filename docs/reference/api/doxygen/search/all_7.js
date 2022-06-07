@@ -169,7 +169,7 @@ var searchData=
   ['forwardshape',['ForwardShape',['../classtvm_1_1tir_1_1BijectiveLayout.html#a3dcf99010d7056b1e57e839b1afa2f98',1,'tvm::tir::BijectiveLayout']]],
   ['fposttuning',['FPostTuning',['../classtvm_1_1meta__schedule_1_1PySearchStrategyNode.html#ad4730dca4fcd0cfbd73fc6c9ed11fe4a',1,'tvm::meta_schedule::PySearchStrategyNode']]],
   ['fpredict',['FPredict',['../classtvm_1_1meta__schedule_1_1PyCostModelNode.html#ac5640a7bb280e0f29c342577709bafda',1,'tvm::meta_schedule::PyCostModelNode']]],
-  ['fpretuning',['FPreTuning',['../classtvm_1_1meta__schedule_1_1PySearchStrategyNode.html#a62a1fce99946955bdb2116cd01a61b9c',1,'tvm::meta_schedule::PySearchStrategyNode']]],
+  ['fpretuning',['FPreTuning',['../classtvm_1_1meta__schedule_1_1PySearchStrategyNode.html#a528df580fe251d7fe9eec1e68f8d2385',1,'tvm::meta_schedule::PySearchStrategyNode']]],
   ['fprimalgradient',['FPrimalGradient',['../namespacetvm_1_1relay.html#a9abada45a4f21ae750c1caba923f1059',1,'tvm::relay']]],
   ['fragment_5flayout',['fragment_layout',['../namespacetvm_1_1tir_1_1attr.html#a9b33cc65f756817e691b49782ee103bd',1,'tvm::tir::attr']]],
   ['fragment_5fshape',['fragment_shape',['../namespacetvm_1_1tir_1_1attr.html#a93d76d80fd7252d66991dc650693c0ef',1,'tvm::tir::attr']]],
