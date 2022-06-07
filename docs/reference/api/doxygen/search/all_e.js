@@ -85,6 +85,7 @@ var searchData=
   ['measure_2eh',['measure.h',['../measure_8h.html',1,'']]],
   ['measure_5fcallback_2eh',['measure_callback.h',['../measure__callback_8h.html',1,'']]],
   ['measure_5fcallbacks',['measure_callbacks',['../classtvm_1_1auto__scheduler_1_1TuningOptionsNode.html#a3ba0915aabeb33a6adbcdceb4e6a43b9',1,'tvm::auto_scheduler::TuningOptionsNode::measure_callbacks()'],['../classtvm_1_1meta__schedule_1_1TaskSchedulerNode.html#aa8e6efd489ccdc6f81495da417da842a',1,'tvm::meta_schedule::TaskSchedulerNode::measure_callbacks()']]],
+  ['measure_5fcandidate_2eh',['measure_candidate.h',['../measure__candidate_8h.html',1,'']]],
   ['measure_5fcandidates',['measure_candidates',['../classtvm_1_1meta__schedule_1_1TuneContextNode.html#a85697ab529d4e1aab8b76f051544c638',1,'tvm::meta_schedule::TuneContextNode']]],
   ['measure_5frecord_2eh',['measure_record.h',['../measure__record_8h.html',1,'']]],
   ['measurecallback',['MeasureCallback',['../classtvm_1_1meta__schedule_1_1MeasureCallback.html',1,'tvm::meta_schedule::MeasureCallback'],['../classtvm_1_1auto__scheduler_1_1MeasureCallback.html',1,'tvm::auto_scheduler::MeasureCallback']]],
