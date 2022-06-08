@@ -66,7 +66,7 @@ var searchData=
   ['tune',['Tune',['../classtvm_1_1meta__schedule_1_1TaskSchedulerNode.html#a6afc0825cebf6568ca40f14b476bd15e',1,'tvm::meta_schedule::TaskSchedulerNode::Tune()'],['../classtvm_1_1meta__schedule_1_1PyTaskSchedulerNode.html#ab71542e78c03616575946029e2c20f83',1,'tvm::meta_schedule::PyTaskSchedulerNode::Tune()']]],
   ['tunecontext',['TuneContext',['../classtvm_1_1meta__schedule_1_1TuneContext.html#ad8e8494f1accde858b7c8b42c85b6175',1,'tvm::meta_schedule::TuneContext']]],
   ['tuningoptions',['TuningOptions',['../classtvm_1_1auto__scheduler_1_1TuningOptions.html#ac869d3a3e888c77677b62d064fec0f6e',1,'tvm::auto_scheduler::TuningOptions']]],
-  ['tuningrecord',['TuningRecord',['../classtvm_1_1meta__schedule_1_1TuningRecord.html#a8495d5cbf2d11eaca3a5c1f6a25e5ea7',1,'tvm::meta_schedule::TuningRecord']]],
+  ['tuningrecord',['TuningRecord',['../classtvm_1_1meta__schedule_1_1TuningRecord.html#aa4699af50f91bda306e6c199766c4757',1,'tvm::meta_schedule::TuningRecord']]],
   ['tuple',['Tuple',['../classtvm_1_1relay_1_1Tuple.html#a284e236318986fd385a02aa68bd3e938',1,'tvm::relay::Tuple::Tuple()'],['../classtvm_1_1runtime_1_1ADT.html#a871e902541f0a7e550e74ae0c621994c',1,'tvm::runtime::ADT::Tuple()']]],
   ['tupleaffinetype',['TupleAffineType',['../classtvm_1_1TupleAffineType.html#afced247570984fed7386c147d02efb79',1,'tvm::TupleAffineType']]],
   ['tuplegetitem',['TupleGetItem',['../classtvm_1_1relay_1_1TupleGetItem.html#a744f50341d00e504ae4d677723433b7c',1,'tvm::relay::TupleGetItem']]],
