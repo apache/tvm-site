@@ -95,6 +95,7 @@ var searchData=
   ['and',['And',['../classtvm_1_1tir_1_1And.html',1,'tvm::tir::And'],['../classtvm_1_1tir_1_1And.html#a9be7f24a210bc595b34a999bc071b6d9',1,'tvm::tir::And::And()']]],
   ['andnode',['AndNode',['../classtvm_1_1tir_1_1AndNode.html',1,'tvm::tir']]],
   ['annotate',['Annotate',['../classtvm_1_1tir_1_1ScheduleNode.html#aa57e90d92de36571a7d3b1c3677e6367',1,'tvm::tir::ScheduleNode::Annotate(const LoopRV &amp;loop_rv, const String &amp;ann_key, const ObjectRef &amp;ann_val)=0'],['../classtvm_1_1tir_1_1ScheduleNode.html#a7eafc8f0a4962114332a6a34289ff80e',1,'tvm::tir::ScheduleNode::Annotate(const BlockRV &amp;block_rv, const String &amp;ann_key, const ObjectRef &amp;ann_val)=0']]],
+  ['annotateentryfunc',['AnnotateEntryFunc',['../namespacetvm_1_1tir_1_1transform.html#a776c657ccb30ff327c5dd0d6940a836a',1,'tvm::tir::transform']]],
   ['annotatespans',['AnnotateSpans',['../namespacetvm_1_1parser.html#aae21e0014c5fba6a9797a6a016979ec7',1,'tvm::parser']]],
   ['annotation',['annotation',['../classtvm_1_1auto__scheduler_1_1IteratorNode.html#ac37155c7dbf930ce7bd9de34cdc6c1af',1,'tvm::auto_scheduler::IteratorNode::annotation()'],['../classtvm_1_1auto__scheduler_1_1AnnotationStepNode.html#a7b255ca54942d929a2a1a2feb8ebf910',1,'tvm::auto_scheduler::AnnotationStepNode::annotation()']]],
   ['annotation_2eh',['annotation.h',['../annotation_8h.html',1,'']]],

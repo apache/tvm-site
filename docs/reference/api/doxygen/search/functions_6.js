@@ -16,6 +16,7 @@ var searchData=
   ['ffidatafromhandle',['FFIDataFromHandle',['../classtvm_1_1runtime_1_1NDArray.html#ab76ba9c638e1d6db8d6f0ba8c4d38670',1,'tvm::runtime::NDArray']]],
   ['ffidecref',['FFIDecRef',['../classtvm_1_1runtime_1_1NDArray.html#ade0e2757904f4f5ba5c667ae01793a47',1,'tvm::runtime::NDArray']]],
   ['ffigethandle',['FFIGetHandle',['../classtvm_1_1runtime_1_1NDArray.html#a141e032d848c60f8261046304bdc8c4c',1,'tvm::runtime::NDArray']]],
+  ['filter',['Filter',['../namespacetvm_1_1tir_1_1transform.html#a70bda35bb43e9420c8115bb1ec977811',1,'tvm::tir::transform']]],
   ['find',['find',['../classtvm_1_1runtime_1_1MapNode.html#a9733900c9d9d1af5687b7ba32ef7f5e9',1,'tvm::runtime::MapNode::find()'],['../classtvm_1_1runtime_1_1SmallMapNode.html#aeb11bbd3d8a715fa95e4e4c213902061',1,'tvm::runtime::SmallMapNode::find()'],['../classtvm_1_1runtime_1_1DenseMapNode.html#a65deca60bf7d1b512b0f42b26dbdb882',1,'tvm::runtime::DenseMapNode::find()'],['../classtvm_1_1runtime_1_1Map.html#abce8c6206f11edfd3c493b843d52685f',1,'tvm::runtime::Map::find()']]],
   ['find_5fdepth_5fheight_5fwidth',['find_depth_height_width',['../namespacetvm_1_1topi_1_1nn.html#ab03974ee6b2d02a4619de1a4d0b42891',1,'tvm::topi::nn']]],
   ['find_5fheight_5fwidth',['find_height_width',['../namespacetvm_1_1topi_1_1nn.html#aec3b2a3e902d0d9c1f89d04ee8b3bcac',1,'tvm::topi::nn']]],
