@@ -194,6 +194,8 @@ var searchData=
   ['tvmpackedfunc_5finitmodulefunc',['TVMPackedFunc_InitModuleFunc',['../crt_2packed__func_8h.html#a65f35e3b3f521d105d7aa71347135efd',1,'packed_func.h']]],
   ['tvmpackedfunc_5fsetargs',['TVMPackedFunc_SetArgs',['../crt_2packed__func_8h.html#af145c1c723cc05360ab7b66bcf6f435e',1,'packed_func.h']]],
   ['tvmplatformabort',['TVMPlatformAbort',['../platform_8h.html#a47980e4ea2182978f94ca87cc15ca0c8',1,'platform.h']]],
+  ['tvmplatformaftermeasurement',['TVMPlatformAfterMeasurement',['../platform_8h.html#a20e1528da0256cd8be25c91ea76a5f7b',1,'platform.h']]],
+  ['tvmplatformbeforemeasurement',['TVMPlatformBeforeMeasurement',['../platform_8h.html#afd94474b764a8526d53fd6230ce4b475',1,'platform.h']]],
   ['tvmplatformformatmessage',['TVMPlatformFormatMessage',['../platform_8h.html#a6dfecb024ace62e724817f90b6407285',1,'platform.h']]],
   ['tvmplatformgeneraterandom',['TVMPlatformGenerateRandom',['../platform_8h.html#a92f8606f31e9b8ccaf02024bd4dbeb0e',1,'platform.h']]],
   ['tvmplatformmemoryallocate',['TVMPlatformMemoryAllocate',['../platform_8h.html#a133959eaf3ec68c568bdb71fcb94ddcb',1,'platform.h']]],
