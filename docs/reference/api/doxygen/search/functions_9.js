@@ -34,6 +34,7 @@ var searchData=
   ['injectcopyintrin',['InjectCopyIntrin',['../namespacetvm_1_1tir_1_1transform.html#ae70d9af70526908167101609baaf4142',1,'tvm::tir::transform']]],
   ['injectdoublebuffer',['InjectDoubleBuffer',['../namespacetvm_1_1tir_1_1transform.html#a55f70a1b3cfc63c52b462fba772b8370',1,'tvm::tir::transform']]],
   ['injectprefetch',['InjectPrefetch',['../namespacetvm_1_1tir_1_1transform.html#a20aa23d8985679d2e09685729c644f0f',1,'tvm::tir::transform']]],
+  ['injectptxasynccopy',['InjectPTXAsyncCopy',['../namespacetvm_1_1tir_1_1transform.html#ac804d5f6bd95449af8d09f26b804db4a',1,'tvm::tir::transform']]],
   ['injectsoftwarepipeline',['InjectSoftwarePipeline',['../namespacetvm_1_1tir_1_1transform.html#a1b90f3ff7f983452fb3a4f7181043ae8',1,'tvm::tir::transform']]],
   ['injectvirtualthread',['InjectVirtualThread',['../namespacetvm_1_1tir_1_1transform.html#a37ade618ab7572f92bd37f69049966c7',1,'tvm::tir::transform']]],
   ['inline',['Inline',['../namespacetvm_1_1relay_1_1transform.html#aba5e588279a3b19a119c9aa28c364bbe',1,'tvm::relay::transform']]],
