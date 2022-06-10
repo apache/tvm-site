@@ -98,7 +98,7 @@ var searchData=
   ['setvalue_3c_20uint64_5ft_20_3e',['SetValue&lt; uint64_t &gt;',['../namespacetvm_1_1detail.html#acb3382242cbf538f64edae13e4ec5a84',1,'tvm::detail']]],
   ['shallowcopy',['ShallowCopy',['../classtvm_1_1IRModuleNode.html#a86bbdc4b857ce5958a2b5f29e1d6fcb6',1,'tvm::IRModuleNode']]],
   ['shallowcopyirmodule',['ShallowCopyIRModule',['../classtvm_1_1IRModule.html#aea8b821cf92cf525bd87bf15f5d31889',1,'tvm::IRModule']]],
-  ['shape',['Shape',['../classtvm_1_1runtime_1_1NDArray.html#ad273c7bc59b73fb026fd64fc764cbebc',1,'tvm::runtime::NDArray::Shape()'],['../classtvm_1_1runtime_1_1metadata_1_1TensorInfoNode.html#a5ddcd966b82c4df89084dbdf92d3108e',1,'tvm::runtime::metadata::TensorInfoNode::shape()'],['../namespacetvm_1_1topi.html#af30c02f3a3f37c7963b3af60fb9c72a1',1,'tvm::topi::shape()']]],
+  ['shape',['shape',['../classtvm_1_1runtime_1_1metadata_1_1TensorInfoNode.html#a5ddcd966b82c4df89084dbdf92d3108e',1,'tvm::runtime::metadata::TensorInfoNode::shape()'],['../classtvm_1_1runtime_1_1NDArray.html#ad273c7bc59b73fb026fd64fc764cbebc',1,'tvm::runtime::NDArray::Shape()'],['../namespacetvm_1_1topi.html#af30c02f3a3f37c7963b3af60fb9c72a1',1,'tvm::topi::shape()']]],
   ['shapediv',['shapediv',['../namespacetvm.html#a15f25703cfce73c75cb4cd33c74ea8f0',1,'tvm']]],
   ['shapeindex',['ShapeIndex',['../classtvm_1_1runtime_1_1DataType.html#a04f0e069017af3f0da47bc0c1fd80916',1,'tvm::runtime::DataType']]],
   ['shapeof',['ShapeOf',['../structtvm_1_1runtime_1_1vm_1_1Instruction.html#a5f278c637580946bc06b020f5852e44a',1,'tvm::runtime::vm::Instruction']]],
