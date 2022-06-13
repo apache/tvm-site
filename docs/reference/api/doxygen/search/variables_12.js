@@ -30,6 +30,7 @@ var searchData=
   ['timer',['timer',['../structtvm_1_1runtime_1_1profiling_1_1CallFrame.html#a2315e3b8fa996924b42df643d07d86ee',1,'tvm::runtime::profiling::CallFrame']]],
   ['timestamp',['timestamp',['../classtvm_1_1auto__scheduler_1_1MeasureResultNode.html#a8b19513d8b082d04eba41a9f353beee0',1,'tvm::auto_scheduler::MeasureResultNode']]],
   ['top_5fk',['top_k',['../structtvm_1_1relay_1_1NonMaximumSuppressionAttrs.html#ad9e2e281399a290410757e948784b93a',1,'tvm::relay::NonMaximumSuppressionAttrs']]],
+  ['total_5ftimer',['total_timer',['../classtvm_1_1meta__schedule_1_1ProfilerNode.html#a97841f5cf4d1cf688fb38715507865ad',1,'tvm::meta_schedule::ProfilerNode']]],
   ['trace',['trace',['../classtvm_1_1meta__schedule_1_1TuningRecordNode.html#a8cc2d64f796593a1a774eef259f17b29',1,'tvm::meta_schedule::TuningRecordNode']]],
   ['transform_5fsteps',['transform_steps',['../classtvm_1_1auto__scheduler_1_1StateNode.html#a980f03e5744ed104cf231219a4895d5e',1,'tvm::auto_scheduler::StateNode']]],
   ['transformed_5fvariables',['transformed_variables',['../classtvm_1_1te_1_1TransformNode.html#a034d22228133e50074502bfe1f495935',1,'tvm::te::TransformNode']]],

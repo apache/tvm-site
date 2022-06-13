@@ -11,5 +11,6 @@ var searchData=
   ['platform_2eh',['platform.h',['../platform_8h.html',1,'']]],
   ['pooling_2eh',['pooling.h',['../cuda_2pooling_8h.html',1,'(Global Namespace)'],['../nn_2pooling_8h.html',1,'(Global Namespace)'],['../rocm_2pooling_8h.html',1,'(Global Namespace)']]],
   ['postproc_2eh',['postproc.h',['../postproc_8h.html',1,'']]],
+  ['profiler_2eh',['profiler.h',['../profiler_8h.html',1,'']]],
   ['profiling_2eh',['profiling.h',['../profiling_8h.html',1,'']]]
 ];

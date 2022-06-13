@@ -76,6 +76,7 @@ var searchData=
   ['start',['start',['../structtvm_1_1relay_1_1ArangeAttrs.html#ae8ae5bc1551b406a4f52395af343c2ce',1,'tvm::relay::ArangeAttrs']]],
   ['state',['state',['../classtvm_1_1auto__scheduler_1_1MeasureInputNode.html#afb23aaf6133189687d2541ec6e1352f4',1,'tvm::auto_scheduler::MeasureInputNode']]],
   ['state_5fplaceholder',['state_placeholder',['../classtvm_1_1te_1_1ScanOpNode.html#a69105f6a84dd4fb912a16bfaa68aebf6',1,'tvm::te::ScanOpNode']]],
+  ['stats_5fsec',['stats_sec',['../classtvm_1_1meta__schedule_1_1ProfilerNode.html#a9834a7a0c59d77c24d29918b93f7220a',1,'tvm::meta_schedule::ProfilerNode']]],
   ['step',['step',['../structtvm_1_1relay_1_1ArangeAttrs.html#aabe51ead537f676d53ffedf91b16ae66',1,'tvm::relay::ArangeAttrs']]],
   ['steps',['steps',['../structtvm_1_1relay_1_1MultiBoxPriorAttrs.html#a312f6999492eb61bf20593a4f30acd35',1,'tvm::relay::MultiBoxPriorAttrs']]],
   ['stmt',['stmt',['../classtvm_1_1tir_1_1StmtSRefNode.html#acf4e832651882cfbc33e3d5930159791',1,'tvm::tir::StmtSRefNode']]],

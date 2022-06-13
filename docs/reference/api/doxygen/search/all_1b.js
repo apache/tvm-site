@@ -34,6 +34,7 @@ var searchData=
   ['_7erunnernode',['~RunnerNode',['../classtvm_1_1meta__schedule_1_1RunnerNode.html#ad3a2825f1071efb5e2bcb13f9176b87a',1,'tvm::meta_schedule::RunnerNode']]],
   ['_7eschedulenode',['~ScheduleNode',['../classtvm_1_1tir_1_1ScheduleNode.html#ae637f126412479ed9bec05fd55376f7f',1,'tvm::tir::ScheduleNode']]],
   ['_7eschedulerulenode',['~ScheduleRuleNode',['../classtvm_1_1meta__schedule_1_1ScheduleRuleNode.html#a7fd6347b3ebddd6d81a095cb813d3e0f',1,'tvm::meta_schedule::ScheduleRuleNode']]],
+  ['_7escopedtimer',['~ScopedTimer',['../classtvm_1_1meta__schedule_1_1ScopedTimer.html#a419d438328a81a96b4579141a3cf83ca',1,'tvm::meta_schedule::ScopedTimer']]],
   ['_7esearchstrategynode',['~SearchStrategyNode',['../classtvm_1_1meta__schedule_1_1SearchStrategyNode.html#a8a800fd3e933ca85aa66425073d313f6',1,'tvm::meta_schedule::SearchStrategyNode']]],
   ['_7esmallmapnode',['~SmallMapNode',['../classtvm_1_1runtime_1_1SmallMapNode.html#a4522e8ec885e2a483cd4887bd5a0fee4',1,'tvm::runtime::SmallMapNode']]],
   ['_7espacegeneratornode',['~SpaceGeneratorNode',['../classtvm_1_1meta__schedule_1_1SpaceGeneratorNode.html#a2d3e7bbb9b5ed420be3b7b611808ea8b',1,'tvm::meta_schedule::SpaceGeneratorNode']]],
