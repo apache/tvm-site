@@ -19,7 +19,10 @@
   <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
   <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
   <link rel="stylesheet" href="../../../_static/css/theme.css" type="text/css" />
-  <link rel="stylesheet" href="../../../_static/gallery.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/sg_gallery.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/sg_gallery-binder.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/sg_gallery-dataframe.css" type="text/css" />
+  <link rel="stylesheet" href="../../../_static/sg_gallery-rendered-html.css" type="text/css" />
   <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
   <link rel="stylesheet" href="../../../_static/css/tlcpack_theme.css" type="text/css" />
 
@@ -532,7 +535,10 @@
 <tr class="row-even"><td><p><a class="reference internal" href="#tvm.te.create_prim_func" title="tvm.te.create_prim_func"><code class="xref py py-obj docutils literal notranslate"><span class="pre">create_prim_func</span></code></a>(ops)</p></td>
 <td><p>Create a TensorIR PrimFunc from tensor expression</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#tvm.te.gradient" title="tvm.te.gradient"><code class="xref py py-obj docutils literal notranslate"><span class="pre">gradient</span></code></a>(output, inputs[, head])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#tvm.te.extern_primfunc" title="tvm.te.extern_primfunc"><code class="xref py py-obj docutils literal notranslate"><span class="pre">extern_primfunc</span></code></a>(input_tensors, primfunc, ...)</p></td>
+<td><p>Compute tensors via a schedulable TIR PrimFunc</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#tvm.te.gradient" title="tvm.te.gradient"><code class="xref py py-obj docutils literal notranslate"><span class="pre">gradient</span></code></a>(output, inputs[, head])</p></td>
 <td><p>Perform reverse-mode automatic differentiation.</p></td>
 </tr>
 </tbody>
@@ -2798,6 +2804,44 @@ The generated function looks like:</p>
 <dd class="field-even"><p><a class="reference internal" href="tir.html#tvm.tir.PrimFunc" title="tvm.tir.PrimFunc">tir.PrimFunc</a></p>
 </dd>
 </dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="tvm.te.extern_primfunc">
+<span class="sig-prename descclassname"><span class="pre">tvm.te.</span></span><span class="sig-name descname"><span class="pre">extern_primfunc</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_tensors</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#tvm.te.Tensor" title="tvm.te.tensor.Tensor"><span class="pre">tvm.te.tensor.Tensor</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">primfunc</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference internal" href="tir.html#tvm.tir.PrimFunc" title="tvm.tir.function.PrimFunc"><span class="pre">tvm.tir.function.PrimFunc</span></a></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#tvm.te.extern_primfunc" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute tensors via a schedulable TIR PrimFunc</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>input_tensors</strong> (<em>list of Tensor</em>) – Input tensors that map to the corresponding primfunc input params.</p></li>
+<li><p><strong>primfunc</strong> (<a class="reference internal" href="tir.html#tvm.tir.PrimFunc" title="tvm.tir.PrimFunc"><em>PrimFunc</em></a>) – The TIR PrimFunc</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>tensor</strong> – The created tensor or tuple of tensors if it contains multiple outputs.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference internal" href="#tvm.te.Tensor" title="tvm.te.Tensor">Tensor</a> or list of Tensors</p>
+</dd>
+</dl>
+<p class="rubric">Example</p>
+<p>In the code below, a TVMScript defined TIR PrimFunc is inlined into
+a TE ExternOp. Applying te.create_prim_func on this</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">A</span> <span class="o">=</span> <span class="n">te</span><span class="o">.</span><span class="n">placeholder</span><span class="p">((</span><span class="mi">128</span><span class="p">,</span> <span class="mi">128</span><span class="p">),</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;A&quot;</span><span class="p">)</span>
+<span class="n">B</span> <span class="o">=</span> <span class="n">te</span><span class="o">.</span><span class="n">placeholder</span><span class="p">((</span><span class="mi">128</span><span class="p">,</span> <span class="mi">128</span><span class="p">),</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;B&quot;</span><span class="p">)</span>
+
+<span class="nd">@T</span><span class="o">.</span><span class="n">prim_func</span>
+<span class="k">def</span> <span class="nf">before_split</span><span class="p">(</span><span class="n">a</span><span class="p">:</span> <span class="n">T</span><span class="o">.</span><span class="n">handle</span><span class="p">,</span> <span class="n">b</span><span class="p">:</span> <span class="n">T</span><span class="o">.</span><span class="n">handle</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="n">A</span> <span class="o">=</span> <span class="n">T</span><span class="o">.</span><span class="n">match_buffer</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="p">(</span><span class="mi">128</span><span class="p">,</span> <span class="mi">128</span><span class="p">))</span>
+    <span class="n">B</span> <span class="o">=</span> <span class="n">T</span><span class="o">.</span><span class="n">match_buffer</span><span class="p">(</span><span class="n">b</span><span class="p">,</span> <span class="p">(</span><span class="mi">128</span><span class="p">,</span> <span class="mi">128</span><span class="p">))</span>
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">j</span> <span class="ow">in</span> <span class="n">T</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="mi">128</span><span class="p">,</span> <span class="mi">128</span><span class="p">):</span>
+        <span class="k">with</span> <span class="n">T</span><span class="o">.</span><span class="n">block</span><span class="p">(</span><span class="s2">&quot;B&quot;</span><span class="p">):</span>
+            <span class="n">vi</span><span class="p">,</span> <span class="n">vj</span> <span class="o">=</span> <span class="n">T</span><span class="o">.</span><span class="n">axis</span><span class="o">.</span><span class="n">remap</span><span class="p">(</span><span class="s2">&quot;SS&quot;</span><span class="p">,</span> <span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">])</span>
+            <span class="n">B</span><span class="p">[</span><span class="n">vi</span><span class="p">,</span> <span class="n">vj</span><span class="p">]</span> <span class="o">=</span> <span class="n">A</span><span class="p">[</span><span class="n">vi</span><span class="p">,</span> <span class="n">vj</span><span class="p">]</span> <span class="o">*</span> <span class="mf">2.0</span>
+
+<span class="n">C</span> <span class="o">=</span> <span class="n">te</span><span class="o">.</span><span class="n">extern_primfunc</span><span class="p">([</span><span class="n">A</span><span class="p">,</span> <span class="n">B</span><span class="p">],</span> <span class="n">func</span><span class="p">)</span>
+</pre></div>
+</div>
 </dd></dl>
 
 <dl class="py class">
