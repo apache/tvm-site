@@ -40,6 +40,8 @@ var searchData=
   ['default_5fschedule',['default_schedule',['../namespacetvm_1_1topi_1_1generic.html#ae10c7793be021c3da437aeb2f79d8d2e',1,'tvm::topi::generic::default_schedule()'],['../namespacetvm_1_1topi_1_1x86.html#a8df4b07cd29b24d5c1323df91892fad4',1,'tvm::topi::x86::default_schedule()']]],
   ['default_5fschedule_5fauto_5finline',['default_schedule_auto_inline',['../namespacetvm_1_1topi_1_1generic.html#a1b7888cf36fa1da754ec65303a2dbbfb',1,'tvm::topi::generic::default_schedule_auto_inline()'],['../namespacetvm_1_1topi_1_1x86.html#af70d13cc92e434e9bce17cf76f4ef4f8',1,'tvm::topi::x86::default_schedule_auto_inline()']]],
   ['defaultindextype',['DefaultIndexType',['../classtvm_1_1tir_1_1BufferNode.html#ac24a0bfa4f80776086c7eadaf98ba5b3',1,'tvm::tir::BufferNode']]],
+  ['defaulttaskfilter',['DefaultTaskFilter',['../namespacetvm_1_1meta__schedule.html#acf183ea5bb3b23ecacf0282288390b02',1,'tvm::meta_schedule']]],
+  ['defaulttaskfilterallowextern',['DefaultTaskFilterAllowExtern',['../namespacetvm_1_1meta__schedule.html#a0e8137392aa14c76011c2f313d1a02c0',1,'tvm::meta_schedule']]],
   ['defaulttimer',['DefaultTimer',['../namespacetvm_1_1runtime.html#ab69f2cbb94a9c579ee870ca7f186cf10',1,'tvm::runtime']]],
   ['defequal',['DefEqual',['../classtvm_1_1SEqualReducer.html#a62ba4c55928d4886853f9c33f4147340',1,'tvm::SEqualReducer']]],
   ['defhash',['DefHash',['../classtvm_1_1SHashReducer.html#a74260485bd50d1bfa52ded457a6a7777',1,'tvm::SHashReducer']]],
