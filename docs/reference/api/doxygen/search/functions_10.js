@@ -104,7 +104,7 @@ var searchData=
   ['pushframe',['PushFrame',['../classtvm_1_1runtime_1_1vm_1_1VirtualMachine.html#a05f2bc216da23c035522d5dde356a920',1,'tvm::runtime::vm::VirtualMachine']]],
   ['pybuilder',['PyBuilder',['../classtvm_1_1meta__schedule_1_1Builder.html#a91fe7e36ba1e213e65b59f05a685e89f',1,'tvm::meta_schedule::Builder']]],
   ['pycostmodel',['PyCostModel',['../classtvm_1_1meta__schedule_1_1CostModel.html#aa824ead03b1c61470daee67989ba4967',1,'tvm::meta_schedule::CostModel']]],
-  ['pydatabase',['PyDatabase',['../classtvm_1_1meta__schedule_1_1Database.html#a9c152a6d89c789adf13047d50d57aa49',1,'tvm::meta_schedule::Database']]],
+  ['pydatabase',['PyDatabase',['../classtvm_1_1meta__schedule_1_1Database.html#ae81f559342e4628ea1bffce6db36e547',1,'tvm::meta_schedule::Database']]],
   ['pyfeatureextractor',['PyFeatureExtractor',['../classtvm_1_1meta__schedule_1_1FeatureExtractor.html#ac4b355e78ec150c5d067f78638f2da82',1,'tvm::meta_schedule::FeatureExtractor']]],
   ['pymeasurecallback',['PyMeasureCallback',['../classtvm_1_1meta__schedule_1_1MeasureCallback.html#a5b45496d9c58b1d5aa5fe47a37f542f3',1,'tvm::meta_schedule::MeasureCallback']]],
   ['pymutator',['PyMutator',['../classtvm_1_1meta__schedule_1_1Mutator.html#abe71c5097f4221c45091b86e5ecec259',1,'tvm::meta_schedule::Mutator']]],

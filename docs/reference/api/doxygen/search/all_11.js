@@ -227,7 +227,7 @@ var searchData=
   ['pybuildernode',['PyBuilderNode',['../classtvm_1_1meta__schedule_1_1PyBuilderNode.html',1,'tvm::meta_schedule']]],
   ['pycostmodel',['PyCostModel',['../classtvm_1_1meta__schedule_1_1CostModel.html#aa824ead03b1c61470daee67989ba4967',1,'tvm::meta_schedule::CostModel']]],
   ['pycostmodelnode',['PyCostModelNode',['../classtvm_1_1meta__schedule_1_1PyCostModelNode.html',1,'tvm::meta_schedule']]],
-  ['pydatabase',['PyDatabase',['../classtvm_1_1meta__schedule_1_1Database.html#a9c152a6d89c789adf13047d50d57aa49',1,'tvm::meta_schedule::Database']]],
+  ['pydatabase',['PyDatabase',['../classtvm_1_1meta__schedule_1_1Database.html#ae81f559342e4628ea1bffce6db36e547',1,'tvm::meta_schedule::Database']]],
   ['pydatabasenode',['PyDatabaseNode',['../classtvm_1_1meta__schedule_1_1PyDatabaseNode.html',1,'tvm::meta_schedule']]],
   ['pyfeatureextractor',['PyFeatureExtractor',['../classtvm_1_1meta__schedule_1_1FeatureExtractor.html#ac4b355e78ec150c5d067f78638f2da82',1,'tvm::meta_schedule::FeatureExtractor']]],
   ['pyfeatureextractornode',['PyFeatureExtractorNode',['../classtvm_1_1meta__schedule_1_1PyFeatureExtractorNode.html',1,'tvm::meta_schedule']]],

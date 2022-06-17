@@ -14,6 +14,7 @@ var searchData=
   ['f_5fextract_5ffrom',['f_extract_from',['../classtvm_1_1meta__schedule_1_1PyFeatureExtractorNode.html#ab994b701cd02fef4ebb9fecca29f23be',1,'tvm::meta_schedule::PyFeatureExtractorNode']]],
   ['f_5fgenerate_5fdesign_5fspace',['f_generate_design_space',['../classtvm_1_1meta__schedule_1_1PySpaceGeneratorNode.html#a941c64f01b6bb0b6fb87c2619af9d1e2',1,'tvm::meta_schedule::PySpaceGeneratorNode']]],
   ['f_5fgenerate_5fmeasure_5fcandidates',['f_generate_measure_candidates',['../classtvm_1_1meta__schedule_1_1PySearchStrategyNode.html#a5fdfb43b58d50fc34d8c515c9c9b7398',1,'tvm::meta_schedule::PySearchStrategyNode']]],
+  ['f_5fget_5fall_5ftuning_5frecords',['f_get_all_tuning_records',['../classtvm_1_1meta__schedule_1_1PyDatabaseNode.html#aafdd0874be052072521b2aa8a6c56d5f',1,'tvm::meta_schedule::PyDatabaseNode']]],
   ['f_5fget_5ftop_5fk',['f_get_top_k',['../classtvm_1_1meta__schedule_1_1PyDatabaseNode.html#a52fb1116090619e95fb6b28352308eed',1,'tvm::meta_schedule::PyDatabaseNode']]],
   ['f_5fhas_5fworkload',['f_has_workload',['../classtvm_1_1meta__schedule_1_1PyDatabaseNode.html#add146bf1e2006f72ed1534b2004bcb06',1,'tvm::meta_schedule::PyDatabaseNode']]],
   ['f_5finitialize_5ftask',['f_initialize_task',['../classtvm_1_1meta__schedule_1_1PyTaskSchedulerNode.html#a15dcbf2ff4c0fc6e57cf15ef02783c75',1,'tvm::meta_schedule::PyTaskSchedulerNode']]],
