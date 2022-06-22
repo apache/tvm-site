@@ -70,7 +70,7 @@ var searchData=
   ['convgemmweighttransformattrs',['ConvGemmWeightTransformAttrs',['../structtvm_1_1relay_1_1ConvGemmWeightTransformAttrs.html',1,'tvm::relay']]],
   ['convwinogradweighttransformattrs',['ConvWinogradWeightTransformAttrs',['../structtvm_1_1relay_1_1ConvWinogradWeightTransformAttrs.html',1,'tvm::relay']]],
   ['correlationattrs',['CorrelationAttrs',['../structtvm_1_1relay_1_1CorrelationAttrs.html',1,'tvm::relay']]],
-  ['costmodel',['CostModel',['../classtvm_1_1auto__scheduler_1_1CostModel.html',1,'tvm::auto_scheduler::CostModel'],['../classtvm_1_1meta__schedule_1_1CostModel.html',1,'tvm::meta_schedule::CostModel']]],
+  ['costmodel',['CostModel',['../classtvm_1_1meta__schedule_1_1CostModel.html',1,'tvm::meta_schedule::CostModel'],['../classtvm_1_1auto__scheduler_1_1CostModel.html',1,'tvm::auto_scheduler::CostModel']]],
   ['costmodelnode',['CostModelNode',['../classtvm_1_1meta__schedule_1_1CostModelNode.html',1,'tvm::meta_schedule::CostModelNode'],['../classtvm_1_1auto__scheduler_1_1CostModelNode.html',1,'tvm::auto_scheduler::CostModelNode']]],
   ['countnode',['CountNode',['../classtvm_1_1runtime_1_1profiling_1_1CountNode.html',1,'tvm::runtime::profiling']]],
   ['cropandresizeattrs',['CropAndResizeAttrs',['../structtvm_1_1relay_1_1CropAndResizeAttrs.html',1,'tvm::relay']]]
