@@ -11,7 +11,6 @@ var searchData=
   ['map_3c_20tvm_3a_3aruntime_3a_3astring_2c_20tvm_3a_3aruntime_3a_3aobjectref_20_3e',['Map&lt; tvm::runtime::String, tvm::runtime::ObjectRef &gt;',['../classtvm_1_1runtime_1_1Map.html',1,'tvm::runtime']]],
   ['map_3c_20tvm_3a_3asourcename_2c_20tvm_3a_3aparser_3a_3asource_20_3e',['Map&lt; tvm::SourceName, tvm::parser::Source &gt;',['../classtvm_1_1runtime_1_1Map.html',1,'tvm::runtime']]],
   ['map_3c_20tvm_3a_3atarget_2c_20tvm_3a_3ainteger_20_3e',['Map&lt; tvm::Target, tvm::Integer &gt;',['../classtvm_1_1runtime_1_1Map.html',1,'tvm::runtime']]],
-  ['map_3c_20tvm_3a_3atarget_2c_20tvm_3a_3aruntime_3a_3astring_20_3e',['Map&lt; tvm::Target, tvm::runtime::String &gt;',['../classtvm_1_1runtime_1_1Map.html',1,'tvm::runtime']]],
   ['map_3c_20tvm_3a_3ate_3a_3aoperation_2c_20tvm_3a_3ate_3a_3astage_20_3e',['Map&lt; tvm::te::Operation, tvm::te::Stage &gt;',['../classtvm_1_1runtime_1_1Map.html',1,'tvm::runtime']]],
   ['map_3c_20tvm_3a_3atir_3a_3ainstruction_2c_20tvm_3a_3aruntime_3a_3aobjectref_20_3e',['Map&lt; tvm::tir::Instruction, tvm::runtime::ObjectRef &gt;',['../classtvm_1_1runtime_1_1Map.html',1,'tvm::runtime']]],
   ['map_3c_20tvm_3a_3atir_3a_3aitervar_2c_20tvm_3a_3ate_3a_3aitervarattr_20_3e',['Map&lt; tvm::tir::IterVar, tvm::te::IterVarAttr &gt;',['../classtvm_1_1runtime_1_1Map.html',1,'tvm::runtime']]],

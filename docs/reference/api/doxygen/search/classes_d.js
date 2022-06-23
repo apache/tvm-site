@@ -44,6 +44,8 @@ var searchData=
   ['poolallocationnode',['PoolAllocationNode',['../structtvm_1_1tir_1_1usmp_1_1PoolAllocationNode.html',1,'tvm::tir::usmp']]],
   ['poolinfo',['PoolInfo',['../classtvm_1_1PoolInfo.html',1,'tvm']]],
   ['poolinfonode',['PoolInfoNode',['../structtvm_1_1PoolInfoNode.html',1,'tvm']]],
+  ['poolinfoproperties',['PoolInfoProperties',['../classtvm_1_1PoolInfoProperties.html',1,'tvm']]],
+  ['poolinfopropertiesnode',['PoolInfoPropertiesNode',['../structtvm_1_1PoolInfoPropertiesNode.html',1,'tvm']]],
   ['postproc',['Postproc',['../classtvm_1_1meta__schedule_1_1Postproc.html',1,'tvm::meta_schedule']]],
   ['postprocnode',['PostprocNode',['../classtvm_1_1meta__schedule_1_1PostprocNode.html',1,'tvm::meta_schedule']]],
   ['pragmastep',['PragmaStep',['../classtvm_1_1auto__scheduler_1_1PragmaStep.html',1,'tvm::auto_scheduler']]],

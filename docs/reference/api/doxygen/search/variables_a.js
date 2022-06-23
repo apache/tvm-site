@@ -11,6 +11,7 @@ var searchData=
   ['kcommreduceidx',['kCommReduceIdx',['../namespacetvm_1_1topi.html#a938350880b154670bea57cd9ce69d490',1,'tvm::topi']]],
   ['kcompiler',['kCompiler',['../namespacetvm_1_1relay_1_1attr.html#a0cc8498ce2c4e0ffd3b2814f65799148',1,'tvm::relay::attr']]],
   ['kcomposite',['kComposite',['../namespacetvm_1_1relay_1_1attr.html#a04f8f1b117293d37651f8c81135802a2',1,'tvm::relay::attr']]],
+  ['kconstantmemorypools',['kConstantMemoryPools',['../namespacetvm_1_1attr.html#a0baac5edeb8047d3aea7fc8f19850f40',1,'tvm::attr']]],
   ['kconstantsarray',['kConstantsArray',['../namespacetvm_1_1attr.html#a1ac39fea6c7e421626da08495d6c6281',1,'tvm::attr']]],
   ['kconv2dhwcn',['kConv2dHWCN',['../namespacetvm_1_1topi.html#a8c924d6d8fc010283ca60928c23101f1',1,'tvm::topi']]],
   ['kconv2dnchw',['kConv2dNCHW',['../namespacetvm_1_1topi.html#a2fd97432407bc468930e459a9826ce95',1,'tvm::topi']]],

@@ -40,6 +40,7 @@ var searchData=
   ['kcomposite',['kComposite',['../namespacetvm_1_1relay_1_1attr.html#a04f8f1b117293d37651f8c81135802a2',1,'tvm::relay::attr']]],
   ['kcompute',['kCompute',['../namespacetvm_1_1auto__scheduler.html#af6533a065c0157391331e89a0e95f35aa2ab5a8274f707e48941d2905af48f19a',1,'tvm::auto_scheduler']]],
   ['kcomputeversion',['kComputeVersion',['../namespacetvm_1_1runtime.html#a46fef1ca0ccc05473e9bb0a8c6b66619ad7ba910261fb30889f38c93be3fff05b',1,'tvm::runtime']]],
+  ['kconstantmemorypools',['kConstantMemoryPools',['../namespacetvm_1_1attr.html#a0baac5edeb8047d3aea7fc8f19850f40',1,'tvm::attr']]],
   ['kconstantsarray',['kConstantsArray',['../namespacetvm_1_1attr.html#a1ac39fea6c7e421626da08495d6c6281',1,'tvm::attr']]],
   ['kconstraint',['kConstraint',['../namespacetvm.html#acd267f8d7f55da6ac681239831963279a9496d61badd19161ce92108f06903606',1,'tvm']]],
   ['kcontroljump',['kControlJump',['../namespacetvm_1_1tir.html#a8f4a86b205145696c0555fd02bd37f46a2ded73cfb5a05bf0e37b284e42769c9c',1,'tvm::tir']]],

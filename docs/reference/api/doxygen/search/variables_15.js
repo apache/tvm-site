@@ -9,8 +9,9 @@ var searchData=
   ['workload',['workload',['../classtvm_1_1meta__schedule_1_1TuningRecordNode.html#a42c87f1ec62dae6806c3fe9629c5e7f0',1,'tvm::meta_schedule::TuningRecordNode']]],
   ['workload_5fkey',['workload_key',['../classtvm_1_1auto__scheduler_1_1SearchTaskNode.html#a20045d677ba2bc5c5ce461e78543b3e2',1,'tvm::auto_scheduler::SearchTaskNode']]],
   ['workspace',['workspace',['../structtvm__workspace__t.html#a055e864e765ebbd2d7e07dfa8396724d',1,'tvm_workspace_t']]],
+  ['workspace_5fpools',['workspace_pools',['../structTVMMetadata.html#a93b534e45b8235bdd991e68eaefa286a',1,'TVMMetadata']]],
   ['workspace_5fsize',['workspace_size',['../structtvm__workspace__t.html#ad9ee1136995f30faaf17fbc45e87ee6d',1,'tvm_workspace_t']]],
-  ['write_5fbandwidth_5fbytes_5fper_5fcycle',['write_bandwidth_bytes_per_cycle',['../structtvm_1_1PoolInfoNode.html#a234ad11ae914b5e938c52a593da20411',1,'tvm::PoolInfoNode']]],
-  ['write_5flatency_5fcycles',['write_latency_cycles',['../structtvm_1_1PoolInfoNode.html#a444e2db8569e8bae01871b6749b83d31',1,'tvm::PoolInfoNode']]],
+  ['write_5fbandwidth_5fbytes_5fper_5fcycle',['write_bandwidth_bytes_per_cycle',['../structtvm_1_1PoolInfoNode.html#a234ad11ae914b5e938c52a593da20411',1,'tvm::PoolInfoNode::write_bandwidth_bytes_per_cycle()'],['../structtvm_1_1PoolInfoPropertiesNode.html#a6657e03988a672588c9b4faafd1b20db',1,'tvm::PoolInfoPropertiesNode::write_bandwidth_bytes_per_cycle()']]],
+  ['write_5flatency_5fcycles',['write_latency_cycles',['../structtvm_1_1PoolInfoNode.html#a444e2db8569e8bae01871b6749b83d31',1,'tvm::PoolInfoNode::write_latency_cycles()'],['../structtvm_1_1PoolInfoPropertiesNode.html#a2c16994823dcc1b203a20250bdb2e663',1,'tvm::PoolInfoPropertiesNode::write_latency_cycles()']]],
   ['writes',['writes',['../classtvm_1_1tir_1_1BlockNode.html#a7025783637b84afdb3317940ebbe5825',1,'tvm::tir::BlockNode']]]
 ];

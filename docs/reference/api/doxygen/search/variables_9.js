@@ -39,7 +39,7 @@ var searchData=
   ['irmod_5fstorage_5fidx',['irmod_storage_idx',['../classtvm_1_1tir_1_1AllocateConstNode.html#a13983d7ae23271c7fed4794de0110c96',1,'tvm::tir::AllocateConstNode']]],
   ['is_5fascend',['is_ascend',['../structtvm_1_1relay_1_1ArgsortAttrs.html#a97f3acf400fafc612854c955a88673ea',1,'tvm::relay::ArgsortAttrs::is_ascend()'],['../structtvm_1_1relay_1_1TopKAttrs.html#ae2ccec6187706f54757242e1839bb2d1',1,'tvm::relay::TopKAttrs::is_ascend()']]],
   ['is_5finput',['is_input',['../structtvm_1_1relay_1_1ShapeFuncAttrs.html#a1697a5a1b9e17876dd1a3db8a31264a5',1,'tvm::relay::ShapeFuncAttrs']]],
-  ['is_5finternal',['is_internal',['../structtvm_1_1PoolInfoNode.html#aca54706b36e3df4d44b992b88a1830b8',1,'tvm::PoolInfoNode']]],
+  ['is_5finternal',['is_internal',['../structtvm_1_1PoolInfoNode.html#aca54706b36e3df4d44b992b88a1830b8',1,'tvm::PoolInfoNode::is_internal()'],['../structtvm_1_1PoolInfoPropertiesNode.html#ab7bc2c2185036596da7336888a54fb65',1,'tvm::PoolInfoPropertiesNode::is_internal()']]],
   ['is_5fmultiply',['is_multiply',['../structtvm_1_1relay_1_1CorrelationAttrs.html#aff24797202623253394eb46870aaa192',1,'tvm::relay::CorrelationAttrs']]],
   ['is_5foutput',['is_output',['../classtvm_1_1auto__scheduler_1_1AccessAnalyzerNode.html#a99f270b8b0d0beb3367ea53215cc7440',1,'tvm::auto_scheduler::AccessAnalyzerNode::is_output()'],['../classtvm_1_1te_1_1StageNode.html#af5cc9e6c2276cf8abde8f437f8bdbda4',1,'tvm::te::StageNode::is_output()']]],
   ['is_5fpure',['is_pure',['../classtvm_1_1tir_1_1InstructionKindNode.html#ae4f8ea92043029f1eb1956df091f91d6',1,'tvm::tir::InstructionKindNode']]],

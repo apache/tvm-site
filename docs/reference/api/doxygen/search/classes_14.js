@@ -11,5 +11,7 @@ var searchData=
   ['workloadnode',['WorkloadNode',['../classtvm_1_1meta__schedule_1_1WorkloadNode.html',1,'tvm::meta_schedule']]],
   ['workspacememorypools',['WorkspaceMemoryPools',['../classtvm_1_1WorkspaceMemoryPools.html',1,'tvm']]],
   ['workspacememorypoolsnode',['WorkspaceMemoryPoolsNode',['../structtvm_1_1WorkspaceMemoryPoolsNode.html',1,'tvm']]],
+  ['workspacepoolinfo',['WorkspacePoolInfo',['../classtvm_1_1WorkspacePoolInfo.html',1,'tvm']]],
+  ['workspacepoolinfonode',['WorkspacePoolInfoNode',['../structtvm_1_1WorkspacePoolInfoNode.html',1,'tvm']]],
   ['writestream',['WriteStream',['../classtvm_1_1runtime_1_1micro__rpc_1_1WriteStream.html',1,'tvm::runtime::micro_rpc']]]
 ];

@@ -138,7 +138,7 @@ var searchData=
   ['buildresultnode',['BuildResultNode',['../classtvm_1_1auto__scheduler_1_1BuildResultNode.html',1,'tvm::auto_scheduler']]],
   ['builtin_2eh',['builtin.h',['../builtin_8h.html',1,'']]],
   ['builtin_5ffp16_2eh',['builtin_fp16.h',['../builtin__fp16_8h.html',1,'']]],
-  ['byte_5foffset',['byte_offset',['../structtvm_1_1tir_1_1usmp_1_1PoolAllocationNode.html#a50746d43c1d14584dc8cc1f2b4c31bd7',1,'tvm::tir::usmp::PoolAllocationNode']]],
+  ['byte_5foffset',['byte_offset',['../structtvm_1_1ConstantInfoNode.html#aee05018f7cb5b755afd13839a68d5ad4',1,'tvm::ConstantInfoNode::byte_offset()'],['../structTVMConstantInfo.html#a57b19b1213066a009cb6d5227de17af7',1,'TVMConstantInfo::byte_offset()'],['../structtvm_1_1tir_1_1usmp_1_1PoolAllocationNode.html#a50746d43c1d14584dc8cc1f2b4c31bd7',1,'tvm::tir::usmp::PoolAllocationNode::byte_offset()'],['../classtvm_1_1runtime_1_1metadata_1_1ConstantInfoMetadataNode.html#a9210f8966fd9cf6cb07a723ed2834b0d',1,'tvm::runtime::metadata::ConstantInfoMetadataNode::byte_offset()']]],
   ['bytecode_2eh',['bytecode.h',['../bytecode_8h.html',1,'']]],
   ['bytes',['bytes',['../classtvm_1_1runtime_1_1DataType.html#a3c195fd818d2eb645f9aa0ab826ba09c',1,'tvm::runtime::DataType']]],
   ['bytesneeded',['BytesNeeded',['../classtvm_1_1runtime_1_1micro__rpc_1_1Unframer.html#ae802a84056f8968d2fcd3b803a01c75f',1,'tvm::runtime::micro_rpc::Unframer']]]
