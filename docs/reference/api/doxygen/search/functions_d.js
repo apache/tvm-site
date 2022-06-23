@@ -49,6 +49,7 @@ var searchData=
   ['metadataarray',['MetadataArray',['../classtvm_1_1runtime_1_1metadata_1_1MetadataArray.html#a3cbc9ba7a9824b0883fdf41fc618a6ce',1,'tvm::runtime::metadata::MetadataArray']]],
   ['metadataarraynode',['MetadataArrayNode',['../classtvm_1_1runtime_1_1metadata_1_1MetadataArrayNode.html#a6cbf55589a406b5f7db5262d7b838c34',1,'tvm::runtime::metadata::MetadataArrayNode']]],
   ['metadatanode',['MetadataNode',['../classtvm_1_1runtime_1_1metadata_1_1MetadataNode.html#a30ec8e29d72334f4988d5c56b4e3252b',1,'tvm::runtime::metadata::MetadataNode']]],
+  ['metaschedulelayoutrewrite',['MetaScheduleLayoutRewrite',['../namespacetvm_1_1relay_1_1transform.html#ab6ad9422e60b1e2c7b211dfd3209959f',1,'tvm::relay::transform']]],
   ['microtvmrpcserverinit',['MicroTVMRpcServerInit',['../microtvm__rpc__server_8h.html#a41af24898cb2f55e348151c40a68d909',1,'microtvm_rpc_server.h']]],
   ['microtvmrpcserverloop',['MicroTVMRpcServerLoop',['../microtvm__rpc__server_8h.html#aff5af419d92b9408810a9c6a42399a63',1,'microtvm_rpc_server.h']]],
   ['microtvmruntimecreate',['MicroTVMRuntimeCreate',['../microtvm__runtime_8h.html#add1a2dd09ee4fa51a7c37d222dc4976a',1,'microtvm_runtime.h']]],
