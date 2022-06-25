@@ -15,6 +15,7 @@ var searchData=
   ['hasworkload',['HasWorkload',['../classtvm_1_1meta__schedule_1_1DatabaseNode.html#a04b2ddf6acb509d5cc848c8636f9619d',1,'tvm::meta_schedule::DatabaseNode::HasWorkload()'],['../classtvm_1_1meta__schedule_1_1PyDatabaseNode.html#a38195f2c3aea9ae4890477393ab2c624',1,'tvm::meta_schedule::PyDatabaseNode::HasWorkload()']]],
   ['help',['Help',['../classtvm_1_1Diagnostic.html#a472c748d4c008bf6508b4a6f0ec88057',1,'tvm::Diagnostic']]],
   ['hillclimb',['HillClimb',['../namespacetvm_1_1tir_1_1usmp_1_1algo.html#ad7f4265f15be71c0db15d9fff4272148',1,'tvm::tir::usmp::algo']]],
+  ['hoistexpression',['HoistExpression',['../namespacetvm_1_1tir_1_1transform.html#aabd207977177c1d1dc097445cc44339b',1,'tvm::tir::transform']]],
   ['hoistifthenelse',['HoistIfThenElse',['../namespacetvm_1_1tir_1_1transform.html#acd2b8fdd84785388630e2d52a6e3cc54',1,'tvm::tir::transform']]],
   ['hostmodulepassmanager',['HostModulePassManager',['../namespacetvm.html#a0e48ca039d0eb66e13bdece8f8f55a1b',1,'tvm']]],
   ['hybridop',['HybridOp',['../classtvm_1_1te_1_1HybridOp.html#aec098921853139c0fe6dcddc8e7da99e',1,'tvm::te::HybridOp']]],

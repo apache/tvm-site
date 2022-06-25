@@ -25,6 +25,7 @@ var searchData=
   ['help',['Help',['../classtvm_1_1Diagnostic.html#a472c748d4c008bf6508b4a6f0ec88057',1,'tvm::Diagnostic']]],
   ['hillclimb',['HillClimb',['../namespacetvm_1_1tir_1_1usmp_1_1algo.html#ad7f4265f15be71c0db15d9fff4272148',1,'tvm::tir::usmp::algo']]],
   ['hit_5fcount_5f',['hit_count_',['../classtvm_1_1detail_1_1AttrInitVisitor.html#a40694e8ade57b3e5167ec74404188f9e',1,'tvm::detail::AttrInitVisitor']]],
+  ['hoistexpression',['HoistExpression',['../namespacetvm_1_1tir_1_1transform.html#aabd207977177c1d1dc097445cc44339b',1,'tvm::tir::transform']]],
   ['hoistifthenelse',['HoistIfThenElse',['../namespacetvm_1_1tir_1_1transform.html#acd2b8fdd84785388630e2d52a6e3cc54',1,'tvm::tir::transform']]],
   ['hop_5flength',['hop_length',['../structtvm_1_1relay_1_1StftAttrs.html#a3e8859ad642f543fe5455214b12333eb',1,'tvm::relay::StftAttrs']]],
   ['host',['host',['../classtvm_1_1auto__scheduler_1_1RPCRunnerNode.html#a2202fad592241807a3e14e39bb8b2532',1,'tvm::auto_scheduler::RPCRunnerNode::host()'],['../classtvm_1_1TargetNode.html#abdeae1bf6e037771b1b931f26dba15c6',1,'tvm::TargetNode::host()']]],
