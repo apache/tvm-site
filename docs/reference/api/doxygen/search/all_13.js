@@ -177,7 +177,7 @@ var searchData=
   ['rewriteannotatedops',['RewriteAnnotatedOps',['../namespacetvm_1_1relay_1_1transform.html#a03b053f3d99d5c420ddc8492e6b987bf',1,'tvm::relay::transform::RewriteAnnotatedOps()'],['../namespacetvm_1_1relay.html#a7917e50fbb560a15995e8a617d65d1ab',1,'tvm::relay::RewriteAnnotatedOps()']]],
   ['rewritecooperativefetch',['RewriteCooperativeFetch',['../classtvm_1_1meta__schedule_1_1Postproc.html#a8a8e8e047dcdcf89ad9d96eed47c293a',1,'tvm::meta_schedule::Postproc']]],
   ['rewriteforpretransformed',['RewriteForPreTransformed',['../namespacetvm_1_1auto__scheduler.html#a3e9480be0119338696abbe9c80193b9eabe8f9c447aade4de06bdb3332885303d',1,'tvm::auto_scheduler']]],
-  ['rewritelayout',['RewriteLayout',['../classtvm_1_1auto__scheduler_1_1ComputeDAG.html#ae36f2943628beb48fbf9b473bb350253',1,'tvm::auto_scheduler::ComputeDAG']]],
+  ['rewritelayout',['RewriteLayout',['../classtvm_1_1auto__scheduler_1_1ComputeDAG.html#ae36f2943628beb48fbf9b473bb350253',1,'tvm::auto_scheduler::ComputeDAG::RewriteLayout()'],['../classtvm_1_1meta__schedule_1_1Postproc.html#a855ed7567cf6af092d19b59ceea52426',1,'tvm::meta_schedule::Postproc::RewriteLayout()']]],
   ['rewriteparallelvectorizeunroll',['RewriteParallelVectorizeUnroll',['../classtvm_1_1meta__schedule_1_1Postproc.html#ad9ba0ccb7c8c2340ce64d8b0cb4d141c',1,'tvm::meta_schedule::Postproc']]],
   ['rewritepatterns',['RewritePatterns',['../namespacetvm_1_1relay.html#ad9fd478e0f590938f8eb15e1bc45dbec',1,'tvm::relay']]],
   ['rewritereductionblock',['RewriteReductionBlock',['../classtvm_1_1meta__schedule_1_1Postproc.html#a08348595d8c50afe0167a986e034d616',1,'tvm::meta_schedule::Postproc']]],
