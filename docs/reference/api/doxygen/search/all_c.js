@@ -273,6 +273,7 @@ var searchData=
   ['kunrolled',['kUnrolled',['../namespacetvm_1_1tir.html#add7d0a6b1dd91f0c3c5dd2f4cf64358ea37ab325f4c3ab1d2a905cbfe546bc403',1,'tvm::tir::kUnrolled()'],['../namespacetvm_1_1tir.html#add7d0a6b1dd91f0c3c5dd2f4cf64358ea1bc8dc9347e62b074ae6ba7c20bcee16',1,'tvm::tir::kUnrolled()']]],
   ['kupdatestate',['kUpdateState',['../namespacetvm_1_1tir.html#a8f4a86b205145696c0555fd02bd37f46af5cd553beea158407e669139955fffe0',1,'tvm::tir']]],
   ['kusmpalgorithmoption',['kUSMPAlgorithmOption',['../namespacetvm.html#ad4b5803c3423c0b15a3df281dd636212',1,'tvm']]],
+  ['kusmpcustomalgorithmoption',['kUSMPCustomAlgorithmOption',['../namespacetvm.html#ab819383741066f8c47972354f89ddd0b',1,'tvm']]],
   ['kusmpenableoption',['kUSMPEnableOption',['../namespacetvm.html#adb1d2ec4c6dde078fb6849479be21759',1,'tvm']]],
   ['kusmpuseworkspaceio',['kUSMPUseWorkspaceIO',['../namespacetvm.html#a42ee9d0672e323515afbef908e8fe458',1,'tvm']]],
   ['kvariabledimensions',['kVariableDimensions',['../namespacetvm_1_1relay.html#adab76fedc831b249d1c80d69c4a620a3a1a3550732b0caf3981198af2c1373542',1,'tvm::relay']]],

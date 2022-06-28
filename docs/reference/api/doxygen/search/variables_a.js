@@ -64,6 +64,7 @@ var searchData=
   ['ktempallocaalignment',['kTempAllocaAlignment',['../namespacetvm_1_1runtime.html#a8f5819cabea098a1818cf7cda40fdb1f',1,'tvm::runtime']]],
   ['ktvmndarraymagic',['kTVMNDArrayMagic',['../namespacetvm_1_1runtime.html#acf4599f17bfe79ae1fe8afc1af053b43',1,'tvm::runtime']]],
   ['kusmpalgorithmoption',['kUSMPAlgorithmOption',['../namespacetvm.html#ad4b5803c3423c0b15a3df281dd636212',1,'tvm']]],
+  ['kusmpcustomalgorithmoption',['kUSMPCustomAlgorithmOption',['../namespacetvm.html#ab819383741066f8c47972354f89ddd0b',1,'tvm']]],
   ['kusmpenableoption',['kUSMPEnableOption',['../namespacetvm.html#adb1d2ec4c6dde078fb6849479be21759',1,'tvm']]],
   ['kusmpuseworkspaceio',['kUSMPUseWorkspaceIO',['../namespacetvm.html#a42ee9d0672e323515afbef908e8fe458',1,'tvm']]],
   ['kversion',['kVersion',['../classtvm_1_1runtime_1_1micro__rpc_1_1Session.html#aba29fe6e0aa5946f495a1f7b8482a0e9',1,'tvm::runtime::micro_rpc::Session']]],
