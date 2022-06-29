@@ -34,6 +34,7 @@ var searchData=
   ['canprovenonpositive',['CanProveNonPositive',['../classtvm_1_1arith_1_1IntSet.html#a64f8769ce292fe5874f34ef1db0773c0',1,'tvm::arith::IntSet']]],
   ['canprovepositive',['CanProvePositive',['../classtvm_1_1arith_1_1IntSet.html#aada3359d831943ed78a4e52eb39d01f8',1,'tvm::arith::IntSet']]],
   ['capacity',['capacity',['../classtvm_1_1runtime_1_1Array.html#a420e3711ae1cdfc044e4f90b600e76cd',1,'tvm::runtime::Array']]],
+  ['capturepostdfsindexinspans',['CapturePostDfsIndexInSpans',['../namespacetvm_1_1relay_1_1transform.html#a0d850ee9bfb41de42cf3a2bb25586528',1,'tvm::relay::transform']]],
   ['cast',['Cast',['../classtvm_1_1tir_1_1Cast.html#ab4861ae553a79f9c78ed822c52396111',1,'tvm::tir::Cast::Cast()'],['../namespacetvm.html#a4bfb789a86d95f6241b50fd26f269c28',1,'tvm::cast()'],['../namespacetvm_1_1topi.html#a7da4c96db87c1459a2b097b87afd811f',1,'tvm::topi::cast()']]],
   ['ceil',['ceil',['../namespacetvm.html#a5e4738caa6bcd0259af64b25e25dfd93',1,'tvm::ceil()'],['../namespacetvm_1_1topi.html#a058e1d1fac459ba3694b881f52c1e574',1,'tvm::topi::ceil()']]],
   ['ceildiv',['ceildiv',['../namespacetvm.html#a0d36aeede9c8e2fa2973807edf2b9f4b',1,'tvm']]],
