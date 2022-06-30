@@ -49,7 +49,20 @@ abstraction automatically, but some of them cannot be simply applied due to TVM 
 All the experiment results mentioned below, are executed on 2015's 15' MacBook equipped with
 Intel i7-4770HQ CPU. The cache line size should be 64 bytes for all the x86 CPUs.
 
-.. GENERATED FROM PYTHON SOURCE LINES 52-57
+.. GENERATED FROM PYTHON SOURCE LINES 50-52
+
+.. code-block:: default
+
+
+
+
+
+
+
+
+
+
+.. GENERATED FROM PYTHON SOURCE LINES 58-63
 
 Preparation and Baseline
 ------------------------
@@ -57,7 +70,7 @@ In this tutorial, we will demo how to use TVM to optimize matrix multiplication.
 Before actually demonstrating, we first define these variables.
 Then we write a baseline implementation, the simplest way to write a matrix multiplication in TVM.
 
-.. GENERATED FROM PYTHON SOURCE LINES 57-118
+.. GENERATED FROM PYTHON SOURCE LINES 63-124
 
 .. code-block:: default
 
@@ -130,18 +143,18 @@ Then we write a baseline implementation, the simplest way to write a matrix mult
 
  .. code-block:: none
 
-    Numpy running time: 0.019613
-    Baseline: 3.402437
+    Numpy running time: 0.018728
+    Baseline: 3.411026
 
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 119-121
+.. GENERATED FROM PYTHON SOURCE LINES 125-127
 
 In TVM, we can always inspect lower level IR to debug or optimize our schedule.
 Here is the generated IR using our baseline schedule.
 
-.. GENERATED FROM PYTHON SOURCE LINES 121-124
+.. GENERATED FROM PYTHON SOURCE LINES 127-130
 
 .. code-block:: default
 
@@ -180,7 +193,7 @@ Here is the generated IR using our baseline schedule.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 125-131
+.. GENERATED FROM PYTHON SOURCE LINES 131-137
 
 Blocking
 --------
@@ -189,7 +202,7 @@ block by block. The memory access inside the block is a small neighbourhood whic
 memory locality. In this tutorial, I picked up 32 as the blocking factor. So the block will
 fill 32 * 32 * sizeof(float) which is 4KB in the cache whose total size is 32KB (L1 data cache)
 
-.. GENERATED FROM PYTHON SOURCE LINES 131-156
+.. GENERATED FROM PYTHON SOURCE LINES 137-162
 
 .. code-block:: default
 
@@ -226,16 +239,16 @@ fill 32 * 32 * sizeof(float) which is 4KB in the cache whose total size is 32KB 
 
  .. code-block:: none
 
-    Opt1: 0.312701
+    Opt1: 0.297716
 
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 157-158
+.. GENERATED FROM PYTHON SOURCE LINES 163-164
 
 Here is the generated IR after blocking.
 
-.. GENERATED FROM PYTHON SOURCE LINES 158-161
+.. GENERATED FROM PYTHON SOURCE LINES 164-167
 
 .. code-block:: default
 
@@ -285,7 +298,7 @@ Here is the generated IR after blocking.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 162-170
+.. GENERATED FROM PYTHON SOURCE LINES 168-176
 
 Vectorization
 -------------
@@ -296,7 +309,7 @@ vastly.
 
 In this tutorial, we chose to vectorize the inner loop row data since it is cache friendly.
 
-.. GENERATED FROM PYTHON SOURCE LINES 170-191
+.. GENERATED FROM PYTHON SOURCE LINES 176-197
 
 .. code-block:: default
 
@@ -329,16 +342,16 @@ In this tutorial, we chose to vectorize the inner loop row data since it is cach
 
  .. code-block:: none
 
-    Opt2: 0.340155
+    Opt2: 0.334084
 
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 192-193
+.. GENERATED FROM PYTHON SOURCE LINES 198-199
 
 Here is the generated IR after vectorization.
 
-.. GENERATED FROM PYTHON SOURCE LINES 193-196
+.. GENERATED FROM PYTHON SOURCE LINES 199-202
 
 .. code-block:: default
 
@@ -384,7 +397,7 @@ Here is the generated IR after vectorization.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 197-203
+.. GENERATED FROM PYTHON SOURCE LINES 203-209
 
 Loop Permutation
 ----------------
@@ -393,7 +406,7 @@ Next we will look at the access pattern of A. In current schedule, A is accessed
 which is not cache friendly. If we change the nested loop order of ki and inner axes mi,
 the access pattern for A matrix is more cache friendly.
 
-.. GENERATED FROM PYTHON SOURCE LINES 203-223
+.. GENERATED FROM PYTHON SOURCE LINES 209-229
 
 .. code-block:: default
 
@@ -425,16 +438,16 @@ the access pattern for A matrix is more cache friendly.
 
  .. code-block:: none
 
-    Opt3: 0.132955
+    Opt3: 0.118797
 
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 224-225
+.. GENERATED FROM PYTHON SOURCE LINES 230-231
 
 Here is the generated IR after loop permutation.
 
-.. GENERATED FROM PYTHON SOURCE LINES 225-228
+.. GENERATED FROM PYTHON SOURCE LINES 231-234
 
 .. code-block:: default
 
@@ -480,7 +493,7 @@ Here is the generated IR after loop permutation.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 229-239
+.. GENERATED FROM PYTHON SOURCE LINES 235-245
 
 Array Packing
 -------------
@@ -493,7 +506,7 @@ dimensional memory.
 
 NOTE: This figure is a general illustration of how array packing works.
 
-.. GENERATED FROM PYTHON SOURCE LINES 242-249
+.. GENERATED FROM PYTHON SOURCE LINES 248-255
 
 We can use array packing to address the access pattern for B. Observe the array access pattern of
 B after flattening which is not sequential as we iterate over the K dimension. We can reorder B
@@ -503,7 +516,7 @@ bigN (N/bn) and littleN (bn) --- and the new dimensions [N/bn][K][bn] match the 
 from outer to inner loops (no, ko, ki, ni) resulting in a sequential access pattern for B after
 flattening.
 
-.. GENERATED FROM PYTHON SOURCE LINES 249-284
+.. GENERATED FROM PYTHON SOURCE LINES 255-290
 
 .. code-block:: default
 
@@ -550,16 +563,16 @@ flattening.
 
  .. code-block:: none
 
-    Opt4: 0.111434
+    Opt4: 0.110474
 
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 285-286
+.. GENERATED FROM PYTHON SOURCE LINES 291-292
 
 Here is the generated IR after array packing.
 
-.. GENERATED FROM PYTHON SOURCE LINES 286-289
+.. GENERATED FROM PYTHON SOURCE LINES 292-295
 
 .. code-block:: default
 
@@ -612,7 +625,7 @@ Here is the generated IR after array packing.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 290-296
+.. GENERATED FROM PYTHON SOURCE LINES 296-302
 
 Write cache for blocks
 ----------------------
@@ -621,7 +634,7 @@ is not sequential. So we can use a sequential cache array to hold the block resu
 write to C when all the block results are ready.
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 296-335
+.. GENERATED FROM PYTHON SOURCE LINES 302-341
 
 .. code-block:: default
 
@@ -672,16 +685,16 @@ write to C when all the block results are ready.
 
  .. code-block:: none
 
-    Opt5: 0.113246
+    Opt5: 0.111212
 
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 336-337
+.. GENERATED FROM PYTHON SOURCE LINES 342-343
 
 Here is the generated IR after blocking.
 
-.. GENERATED FROM PYTHON SOURCE LINES 337-340
+.. GENERATED FROM PYTHON SOURCE LINES 343-346
 
 .. code-block:: default
 
@@ -744,13 +757,13 @@ Here is the generated IR after blocking.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 341-344
+.. GENERATED FROM PYTHON SOURCE LINES 347-350
 
 Parallel
 --------
 Futhermore, we can also utilize multi-core processors to do the thread-level parallelization.
 
-.. GENERATED FROM PYTHON SOURCE LINES 344-379
+.. GENERATED FROM PYTHON SOURCE LINES 350-385
 
 .. code-block:: default
 
@@ -797,16 +810,16 @@ Futhermore, we can also utilize multi-core processors to do the thread-level par
 
  .. code-block:: none
 
-    Opt6: 0.148467
+    Opt6: 0.145143
 
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 380-381
+.. GENERATED FROM PYTHON SOURCE LINES 386-387
 
 Here is the generated IR after parallelization.
 
-.. GENERATED FROM PYTHON SOURCE LINES 381-384
+.. GENERATED FROM PYTHON SOURCE LINES 387-390
 
 .. code-block:: default
 
@@ -869,7 +882,7 @@ Here is the generated IR after parallelization.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 387-394
+.. GENERATED FROM PYTHON SOURCE LINES 393-400
 
 Summary
 -------

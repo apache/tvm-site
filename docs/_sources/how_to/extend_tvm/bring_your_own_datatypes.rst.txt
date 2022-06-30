@@ -54,14 +54,27 @@ If you would like to try this with your own datatype library, first bring the li
 
     ctypes.CDLL('my-datatype-lib.so', ctypes.RTLD_GLOBAL)
 
-.. GENERATED FROM PYTHON SOURCE LINES 56-60
+.. GENERATED FROM PYTHON SOURCE LINES 54-56
+
+.. code-block:: default
+
+
+
+
+
+
+
+
+
+
+.. GENERATED FROM PYTHON SOURCE LINES 62-66
 
 A Simple TVM Program
 --------------------
 
 We'll begin by writing a simple program in TVM; afterwards, we will re-write it to use custom datatypes.
 
-.. GENERATED FROM PYTHON SOURCE LINES 60-70
+.. GENERATED FROM PYTHON SOURCE LINES 66-76
 
 .. code-block:: default
 
@@ -82,11 +95,11 @@ We'll begin by writing a simple program in TVM; afterwards, we will re-write it 
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 71-72
+.. GENERATED FROM PYTHON SOURCE LINES 77-78
 
 Now, we create random inputs to feed into this program using numpy:
 
-.. GENERATED FROM PYTHON SOURCE LINES 72-82
+.. GENERATED FROM PYTHON SOURCE LINES 78-88
 
 .. code-block:: default
 
@@ -114,11 +127,11 @@ Now, we create random inputs to feed into this program using numpy:
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 83-84
+.. GENERATED FROM PYTHON SOURCE LINES 89-90
 
 Finally, we're ready to run the program:
 
-.. GENERATED FROM PYTHON SOURCE LINES 84-88
+.. GENERATED FROM PYTHON SOURCE LINES 90-94
 
 .. code-block:: default
 
@@ -141,7 +154,7 @@ Finally, we're ready to run the program:
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 89-97
+.. GENERATED FROM PYTHON SOURCE LINES 95-103
 
 Adding Custom Datatypes
 -----------------------
@@ -152,7 +165,7 @@ We use the same input variables ``x`` and ``y`` as above, but before adding ``x 
 Note how we specify the custom datatype: we indicate it using the special ``custom[...]`` syntax.
 Additionally, note the "32" after the datatype: this is the bitwidth of the custom datatype. This tells TVM that each instance of ``myfloat`` is 32 bits wide.
 
-.. GENERATED FROM PYTHON SOURCE LINES 97-108
+.. GENERATED FROM PYTHON SOURCE LINES 103-114
 
 .. code-block:: default
 
@@ -174,13 +187,13 @@ Additionally, note the "32" after the datatype: this is the bitwidth of the cust
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 109-112
+.. GENERATED FROM PYTHON SOURCE LINES 115-118
 
 Trying to generate this program throws an error from TVM.
 TVM does not know how to handle any custom datatype out of the box!
 We first have to register the custom type with TVM, giving it a name and a type code:
 
-.. GENERATED FROM PYTHON SOURCE LINES 112-115
+.. GENERATED FROM PYTHON SOURCE LINES 118-121
 
 .. code-block:: default
 
@@ -194,13 +207,13 @@ We first have to register the custom type with TVM, giving it a name and a type 
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 116-119
+.. GENERATED FROM PYTHON SOURCE LINES 122-125
 
 Note that the type code, 150, is currently chosen manually by the user.
 See ``TVMTypeCode::kCustomBegin`` in `include/tvm/runtime/c_runtime_api.h <https://github.com/apache/tvm/blob/main/include/tvm/runtime/data_type.h>`_.
 Now we can generate our program again:
 
-.. GENERATED FROM PYTHON SOURCE LINES 119-128
+.. GENERATED FROM PYTHON SOURCE LINES 125-134
 
 .. code-block:: default
 
@@ -220,11 +233,11 @@ Now we can generate our program again:
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 129-130
+.. GENERATED FROM PYTHON SOURCE LINES 135-136
 
 Now we have a Relay program that uses myfloat!
 
-.. GENERATED FROM PYTHON SOURCE LINES 130-132
+.. GENERATED FROM PYTHON SOURCE LINES 136-138
 
 .. code-block:: default
 
@@ -248,11 +261,11 @@ Now we have a Relay program that uses myfloat!
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 133-134
+.. GENERATED FROM PYTHON SOURCE LINES 139-140
 
 Now that we can express our program without errors, let's try running it!
 
-.. GENERATED FROM PYTHON SOURCE LINES 134-142
+.. GENERATED FROM PYTHON SOURCE LINES 140-148
 
 .. code-block:: default
 
@@ -277,7 +290,7 @@ Now that we can express our program without errors, let's try running it!
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 143-152
+.. GENERATED FROM PYTHON SOURCE LINES 149-158
 
 Now, trying to compile this program throws an error.
 Let's dissect this error.
@@ -289,7 +302,7 @@ We have not told TVM how to lower ``Cast`` operations for our custom datatypes; 
 
 To fix this error, we simply need to specify a lowering function:
 
-.. GENERATED FROM PYTHON SOURCE LINES 152-165
+.. GENERATED FROM PYTHON SOURCE LINES 158-171
 
 .. code-block:: default
 
@@ -313,7 +326,7 @@ To fix this error, we simply need to specify a lowering function:
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 166-177
+.. GENERATED FROM PYTHON SOURCE LINES 172-183
 
 The ``register_op(...)`` call takes a lowering function, and a number of parameters which specify exactly the operation which should be lowered with the provided lowering function.
 In this case, the arguments we pass specify that this lowering function is for lowering a ``Cast`` from ``float`` to ``myfloat`` for target ``"llvm"``.
@@ -327,7 +340,7 @@ which does just this: given a dictionary, it replaces the given operation with a
 It additionally removes usages of the custom datatype by storing the custom datatype in an opaque ``uint`` of the appropriate width; in our case, a ``uint32_t``.
 For more information, see `the source code <https://github.com/apache/tvm/blob/main/python/tvm/target/datatype.py>`_.
 
-.. GENERATED FROM PYTHON SOURCE LINES 177-187
+.. GENERATED FROM PYTHON SOURCE LINES 183-193
 
 .. code-block:: default
 
@@ -354,7 +367,7 @@ For more information, see `the source code <https://github.com/apache/tvm/blob/m
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 188-194
+.. GENERATED FROM PYTHON SOURCE LINES 194-200
 
 This new error tells us that the ``Add`` lowering function is not found, which is good news, as it's no longer complaining about the ``Cast``!
 We know what to do from here: we just need to register the lowering functions for the other operations in our program.
@@ -363,7 +376,7 @@ Note that for ``Add``, ``create_lower_func`` takes in a dict where the key is an
 For ``Cast`` operations, we require a 2-tuple to specify the ``src_bit_length`` and the ``dest_bit_length``,
 while for all other operations, the bit length is the same between the operands so we only require one integer to specify ``bit_length``.
 
-.. GENERATED FROM PYTHON SOURCE LINES 194-220
+.. GENERATED FROM PYTHON SOURCE LINES 200-226
 
 .. code-block:: default
 
@@ -412,7 +425,7 @@ while for all other operations, the bit length is the same between the operands 
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 221-230
+.. GENERATED FROM PYTHON SOURCE LINES 227-236
 
 Running Models With Custom Datatypes
 ------------------------------------
@@ -424,7 +437,7 @@ In this alpha state of the Bring Your Own Datatypes framework, we have not imple
 
 First let us define two helper functions to get the mobilenet model and a cat image.
 
-.. GENERATED FROM PYTHON SOURCE LINES 230-257
+.. GENERATED FROM PYTHON SOURCE LINES 236-263
 
 .. code-block:: default
 
@@ -463,16 +476,16 @@ First let us define two helper functions to get the mobilenet model and a cat im
 
  .. code-block:: none
 
-    Downloading /workspace/.mxnet/models/mobilenet0.25-9f83e440.zip84b0f19d-62cd-41c0-806f-32091aecde94 from https://apache-mxnet.s3-accelerate.dualstack.amazonaws.com/gluon/models/mobilenet0.25-9f83e440.zip...
+    Downloading /workspace/.mxnet/models/mobilenet0.25-9f83e440.zip25d0ef2f-99f9-45bf-9c19-c8a7631be593 from https://apache-mxnet.s3-accelerate.dualstack.amazonaws.com/gluon/models/mobilenet0.25-9f83e440.zip...
 
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 258-259
+.. GENERATED FROM PYTHON SOURCE LINES 264-265
 
 It's easy to execute MobileNet with native TVM:
 
-.. GENERATED FROM PYTHON SOURCE LINES 259-266
+.. GENERATED FROM PYTHON SOURCE LINES 265-272
 
 .. code-block:: default
 
@@ -499,11 +512,11 @@ It's easy to execute MobileNet with native TVM:
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 267-268
+.. GENERATED FROM PYTHON SOURCE LINES 273-274
 
 Now, we would like to change the model to use myfloat internally. To do so, we need to convert the network. To do this, we first define a function which will help us convert tensors:
 
-.. GENERATED FROM PYTHON SOURCE LINES 268-278
+.. GENERATED FROM PYTHON SOURCE LINES 274-284
 
 .. code-block:: default
 
@@ -524,11 +537,11 @@ Now, we would like to change the model to use myfloat internally. To do so, we n
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 279-280
+.. GENERATED FROM PYTHON SOURCE LINES 285-286
 
 Now, to actually convert the entire network, we have written `a pass in Relay <https://github.com/gussmith23/tvm/blob/ea174c01c54a2529e19ca71e125f5884e728da6e/python/tvm/relay/frontend/change_datatype.py#L21>`_ which simply converts all nodes within the model to use the new datatype.
 
-.. GENERATED FROM PYTHON SOURCE LINES 280-315
+.. GENERATED FROM PYTHON SOURCE LINES 286-321
 
 .. code-block:: default
 
@@ -582,14 +595,14 @@ Now, to actually convert the entire network, we have written `a pass in Relay <h
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 316-320
+.. GENERATED FROM PYTHON SOURCE LINES 322-326
 
 When we attempt to run the model, we get a familiar error telling us that more functions need to be registered for myfloat.
 
 Because this is a neural network, many more operations are required.
 Here, we register all the needed functions:
 
-.. GENERATED FROM PYTHON SOURCE LINES 320-388
+.. GENERATED FROM PYTHON SOURCE LINES 326-394
 
 .. code-block:: default
 
@@ -668,7 +681,7 @@ Here, we register all the needed functions:
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 389-398
+.. GENERATED FROM PYTHON SOURCE LINES 395-404
 
 Note we are making use of two new functions: ``register_min_func`` and ``create_min_lower_func``.
 
@@ -680,7 +693,7 @@ where the minimum representable custom datatype value is implemented using calls
 
 Now we can finally run the model:
 
-.. GENERATED FROM PYTHON SOURCE LINES 398-409
+.. GENERATED FROM PYTHON SOURCE LINES 404-415
 
 .. code-block:: default
 
