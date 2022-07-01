@@ -92,7 +92,7 @@ var searchData=
   ['peek',['Peek',['../classtvm_1_1runtime_1_1micro__rpc_1_1FrameBuffer.html#aefdbe684e811791635e77b026b2ca11c',1,'tvm::runtime::micro_rpc::FrameBuffer']]],
   ['percent',['percent',['../classtvm_1_1runtime_1_1profiling_1_1PercentNode.html#a6852f14d052d8b23ad4058d149ec2a46',1,'tvm::runtime::profiling::PercentNode']]],
   ['percentnode',['PercentNode',['../classtvm_1_1runtime_1_1profiling_1_1PercentNode.html',1,'tvm::runtime::profiling::PercentNode'],['../classtvm_1_1runtime_1_1profiling_1_1PercentNode.html#a45d51732fbde990710ac13c294225e39',1,'tvm::runtime::profiling::PercentNode::PercentNode()']]],
-  ['perstorefeature',['PerStoreFeature',['../classtvm_1_1meta__schedule_1_1FeatureExtractor.html#a70128f6b43830ee2a9a421efec900ba1',1,'tvm::meta_schedule::FeatureExtractor']]],
+  ['perstorefeature',['PerStoreFeature',['../classtvm_1_1meta__schedule_1_1FeatureExtractor.html#abbfc563425a975e026f2daf3bbfa86ee',1,'tvm::meta_schedule::FeatureExtractor']]],
   ['pipeline_5fexec_5fscope',['pipeline_exec_scope',['../namespacetvm_1_1tir_1_1attr.html#aee14d4d24b86179fd19938a02bc15512',1,'tvm::tir::attr']]],
   ['pipeline_5fstage_5fscope',['pipeline_stage_scope',['../namespacetvm_1_1tir_1_1attr.html#a19ecbf068afc115a2282e533c0fe518d',1,'tvm::tir::attr']]],
   ['placeholder',['placeholder',['../namespacetvm_1_1te.html#a15a1cc6f7146730ec1f03210c81a8a3c',1,'tvm::te']]],
