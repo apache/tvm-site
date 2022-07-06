@@ -132,6 +132,7 @@ var searchData=
   ['intset',['IntSet',['../classtvm_1_1arith_1_1IntSet.html',1,'tvm::arith']]],
   ['intsetanalyzer',['IntSetAnalyzer',['../classtvm_1_1arith_1_1IntSetAnalyzer.html',1,'tvm::arith']]],
   ['intsetnode',['IntSetNode',['../classtvm_1_1arith_1_1IntSetNode.html',1,'tvm::arith']]],
+  ['intvalue',['IntValue',['../classtvm_1_1Integer.html#abae4eff906166502c2a982e8a121d81d',1,'tvm::Integer']]],
   ['invalid_5fto_5fbottom',['invalid_to_bottom',['../structtvm_1_1relay_1_1NonMaximumSuppressionAttrs.html#a51ab0634c017ed9a2fbf8706f22365dc',1,'tvm::relay::NonMaximumSuppressionAttrs']]],
   ['invalidatecache',['InvalidateCache',['../classtvm_1_1te_1_1ScheduleNode.html#a2b6a92ec4b1c295604b55ff8e8c365e7',1,'tvm::te::ScheduleNode']]],
   ['inverse',['Inverse',['../classtvm_1_1tir_1_1IndexMap.html#a5363f3897623b7854aed24b2fd657f5a',1,'tvm::tir::IndexMap']]],

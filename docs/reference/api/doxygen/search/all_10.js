@@ -50,7 +50,7 @@ var searchData=
   ['operator_20dltensor_20_2a',['operator DLTensor *',['../classtvm_1_1runtime_1_1TVMPODValue__.html#a457f0ad064c071b6c529eeee6f33512a',1,'tvm::runtime::TVMPODValue_']]],
   ['operator_20double',['operator double',['../classtvm_1_1runtime_1_1TVMPODValue__.html#a0276f88ed76fb4cbeeaf2f793c3eb7b3',1,'tvm::runtime::TVMPODValue_']]],
   ['operator_20int',['operator int',['../classtvm_1_1runtime_1_1TVMPODValue__.html#aeeed550000aa09fe5a4b464e332a675b',1,'tvm::runtime::TVMPODValue_']]],
-  ['operator_20int64_5ft',['operator int64_t',['../classtvm_1_1Integer.html#a3bf69693ad7a5e3cdcffff50d15880bc',1,'tvm::Integer::operator int64_t()'],['../classtvm_1_1runtime_1_1TVMPODValue__.html#a072af1d06a1a857cd78d7ea29de4d390',1,'tvm::runtime::TVMPODValue_::operator int64_t()']]],
+  ['operator_20int64_5ft',['operator int64_t',['../classtvm_1_1runtime_1_1TVMPODValue__.html#a072af1d06a1a857cd78d7ea29de4d390',1,'tvm::runtime::TVMPODValue_']]],
   ['operator_20iterator_5fbase_3c_20const_5fw_20_3e',['operator iterator_base&lt; const_W &gt;',['../classtvm_1_1support_1_1Span_1_1iterator__base.html#a7982df7e9df2a70029c52b12649002b5',1,'tvm::support::Span::iterator_base']]],
   ['operator_20module',['operator Module',['../classtvm_1_1runtime_1_1TVMPODValue__.html#af927044f748a6a6c366f0157aa1d003c',1,'tvm::runtime::TVMPODValue_']]],
   ['operator_20ndarray',['operator NDArray',['../classtvm_1_1runtime_1_1TVMPODValue__.html#a2ed2d9aae541d442a4b508fac17ddd8b',1,'tvm::runtime::TVMPODValue_']]],

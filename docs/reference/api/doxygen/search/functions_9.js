@@ -59,6 +59,7 @@ var searchData=
   ['interval',['Interval',['../classtvm_1_1arith_1_1IntSet.html#a9bda3a95bb39d117736ef232f7cec9d9',1,'tvm::arith::IntSet']]],
   ['intgroupbounds',['IntGroupBounds',['../classtvm_1_1arith_1_1IntGroupBounds.html#a7f2fbfd39f1fc030b13056cf28d7c17c',1,'tvm::arith::IntGroupBounds']]],
   ['intimm',['IntImm',['../classtvm_1_1IntImm.html#ad37f61019092f5201cf9e0500b75afe2',1,'tvm::IntImm']]],
+  ['intvalue',['IntValue',['../classtvm_1_1Integer.html#abae4eff906166502c2a982e8a121d81d',1,'tvm::Integer']]],
   ['invalidatecache',['InvalidateCache',['../classtvm_1_1te_1_1ScheduleNode.html#a2b6a92ec4b1c295604b55ff8e8c365e7',1,'tvm::te::ScheduleNode']]],
   ['inverse',['Inverse',['../classtvm_1_1tir_1_1IndexMap.html#a5363f3897623b7854aed24b2fd657f5a',1,'tvm::tir::IndexMap']]],
   ['inverseaffineitermap',['InverseAffineIterMap',['../namespacetvm_1_1arith.html#ae8e8be2bde49ccbe7025f4d7a730e694',1,'tvm::arith']]],
