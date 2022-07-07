@@ -40,6 +40,8 @@ var searchData=
   ['dilation2dattrs',['Dilation2DAttrs',['../structtvm_1_1relay_1_1Dilation2DAttrs.html',1,'tvm::relay']]],
   ['div',['Div',['../classtvm_1_1tir_1_1Div.html',1,'tvm::tir']]],
   ['divnode',['DivNode',['../classtvm_1_1tir_1_1DivNode.html',1,'tvm::tir']]],
+  ['doc',['Doc',['../classtvm_1_1script_1_1printer_1_1Doc.html',1,'tvm::script::printer']]],
+  ['docnode',['DocNode',['../classtvm_1_1script_1_1printer_1_1DocNode.html',1,'tvm::script::printer']]],
   ['dominatorpattern',['DominatorPattern',['../classtvm_1_1relay_1_1DominatorPattern.html',1,'tvm::relay']]],
   ['dominatorpatternnode',['DominatorPatternNode',['../classtvm_1_1relay_1_1DominatorPatternNode.html',1,'tvm::relay']]],
   ['dropoutattrs',['DropoutAttrs',['../structtvm_1_1relay_1_1DropoutAttrs.html',1,'tvm::relay']]],

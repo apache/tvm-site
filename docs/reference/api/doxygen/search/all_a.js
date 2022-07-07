@@ -109,7 +109,7 @@ var searchData=
   ['instrumentexitpasscontext',['InstrumentExitPassContext',['../classtvm_1_1transform_1_1PassContext.html#ac1d55abd5c8b0e28c6f3c034a5f9989d',1,'tvm::transform::PassContext']]],
   ['instruments',['instruments',['../classtvm_1_1transform_1_1PassContextNode.html#ad97d8e72dafca7c444e567cc8501cad1',1,'tvm::transform::PassContextNode']]],
   ['insts',['insts',['../classtvm_1_1tir_1_1TraceNode.html#ad6c859ed32b1e2ae076355eda37df0a2',1,'tvm::tir::TraceNode']]],
-  ['int',['Int',['../classtvm_1_1runtime_1_1DataType.html#ab45f13dd70d982d9f977c79b6f7fac98',1,'tvm::runtime::DataType']]],
+  ['int',['Int',['../classtvm_1_1runtime_1_1DataType.html#ab45f13dd70d982d9f977c79b6f7fac98',1,'tvm::runtime::DataType::Int()'],['../classtvm_1_1script_1_1printer_1_1LiteralDoc.html#aef8f0dc113d6fc3fd0225c5846ddf74f',1,'tvm::script::printer::LiteralDoc::Int()']]],
   ['int_5fset',['int_set',['../classtvm_1_1arith_1_1Analyzer.html#a0d054ea2ea5b7e99f0883c00672ec831',1,'tvm::arith::Analyzer']]],
   ['int_5fset_2eh',['int_set.h',['../int__set_8h.html',1,'']]],
   ['int_5fsolver_2eh',['int_solver.h',['../int__solver_8h.html',1,'']]],

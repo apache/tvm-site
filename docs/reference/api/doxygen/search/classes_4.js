@@ -15,6 +15,8 @@ var searchData=
   ['executorregentry',['ExecutorRegEntry',['../classtvm_1_1relay_1_1ExecutorRegEntry.html',1,'tvm::relay']]],
   ['expanddimsattrs',['ExpandDimsAttrs',['../structtvm_1_1relay_1_1ExpandDimsAttrs.html',1,'tvm::relay']]],
   ['exprdeepequal',['ExprDeepEqual',['../structtvm_1_1tir_1_1ExprDeepEqual.html',1,'tvm::tir']]],
+  ['exprdoc',['ExprDoc',['../classtvm_1_1script_1_1printer_1_1ExprDoc.html',1,'tvm::script::printer']]],
+  ['exprdocnode',['ExprDocNode',['../classtvm_1_1script_1_1printer_1_1ExprDocNode.html',1,'tvm::script::printer']]],
   ['exprfunctor',['ExprFunctor',['../classtvm_1_1relay_1_1ExprFunctor.html',1,'tvm::relay::ExprFunctor&lt; FType &gt;'],['../classtvm_1_1tir_1_1ExprFunctor.html',1,'tvm::tir::ExprFunctor&lt; FType &gt;']]],
   ['exprfunctor_3c_20expr_28const_20expr_20_26_29_3e',['ExprFunctor&lt; Expr(const Expr &amp;)&gt;',['../classtvm_1_1relay_1_1ExprFunctor.html',1,'tvm::relay']]],
   ['exprfunctor_3c_20primexpr_28const_20primexpr_20_26_29_3e',['ExprFunctor&lt; PrimExpr(const PrimExpr &amp;)&gt;',['../classtvm_1_1tir_1_1ExprFunctor.html',1,'tvm::tir']]],

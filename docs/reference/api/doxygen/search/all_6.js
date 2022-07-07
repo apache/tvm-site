@@ -92,6 +92,8 @@ var searchData=
   ['expr_5ffunctor_5fdefault',['EXPR_FUNCTOR_DEFAULT',['../relay_2expr__functor_8h.html#a510edf612f00aa97a59ef1973d8caf2d',1,'EXPR_FUNCTOR_DEFAULT():&#160;expr_functor.h'],['../tir_2expr__functor_8h.html#a510edf612f00aa97a59ef1973d8caf2d',1,'EXPR_FUNCTOR_DEFAULT():&#160;expr_functor.h']]],
   ['expr_5frewriter_5frewrite_5fdefault',['EXPR_REWRITER_REWRITE_DEFAULT',['../relay_2expr__functor_8h.html#ab484355bac5a7a136e0cecc1a4244fb3',1,'expr_functor.h']]],
   ['exprdeepequal',['ExprDeepEqual',['../structtvm_1_1tir_1_1ExprDeepEqual.html',1,'tvm::tir']]],
+  ['exprdoc',['ExprDoc',['../classtvm_1_1script_1_1printer_1_1ExprDoc.html',1,'tvm::script::printer::ExprDoc'],['../classtvm_1_1script_1_1printer_1_1ExprDoc.html#ac5eb04f9e694f614cfacda6ac80c6e33',1,'tvm::script::printer::ExprDoc::ExprDoc()']]],
+  ['exprdocnode',['ExprDocNode',['../classtvm_1_1script_1_1printer_1_1ExprDocNode.html',1,'tvm::script::printer']]],
   ['exprfunctor',['ExprFunctor',['../classtvm_1_1relay_1_1ExprFunctor.html',1,'tvm::relay::ExprFunctor&lt; FType &gt;'],['../classtvm_1_1tir_1_1ExprFunctor.html',1,'tvm::tir::ExprFunctor&lt; FType &gt;']]],
   ['exprfunctor_3c_20expr_28const_20expr_20_26_29_3e',['ExprFunctor&lt; Expr(const Expr &amp;)&gt;',['../classtvm_1_1relay_1_1ExprFunctor.html',1,'tvm::relay']]],
   ['exprfunctor_3c_20primexpr_28const_20primexpr_20_26_29_3e',['ExprFunctor&lt; PrimExpr(const PrimExpr &amp;)&gt;',['../classtvm_1_1tir_1_1ExprFunctor.html',1,'tvm::tir']]],
