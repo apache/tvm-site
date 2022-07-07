@@ -65,6 +65,7 @@ var searchData=
   ['fconstructor',['fConstructor',['../namespacetvm_1_1relay.html#a926750aeda977340aa82bceac863fc9eaff71be930d862c312a5ae263e71167a2',1,'tvm::relay']]],
   ['fcreate',['FCreate',['../classtvm_1_1ReflectionVTable.html#ace851a8ec710f6c8ac75d202d62665f2',1,'tvm::ReflectionVTable']]],
   ['fdeleter',['FDeleter',['../classtvm_1_1runtime_1_1Object.html#a9e84841ca982bff376a978ade0132631',1,'tvm::runtime::Object']]],
+  ['fdirectdispatch',['FDirectDispatch',['../classtvm_1_1meta__schedule_1_1ApplyHistoryBestNode.html#a9bbc7dec5e9aebe7a5886be13b07d922',1,'tvm::meta_schedule::ApplyHistoryBestNode']]],
   ['fdone',['FDone',['../classtvm_1_1meta__schedule_1_1RunnerFutureNode.html#af5ff9cf0ddf9dcd5d097e597f1ffe1eb',1,'tvm::meta_schedule::RunnerFutureNode::FDone()'],['../classtvm_1_1meta__schedule_1_1RunnerFuture.html#ab43e5b1fbda5108422ff1757628ec94d',1,'tvm::meta_schedule::RunnerFuture::FDone()']]],
   ['feature',['Feature',['../namespacetvm_1_1relay.html#a926750aeda977340aa82bceac863fc9e',1,'tvm::relay']]],
   ['feature_2eh',['feature.h',['../auto__scheduler_2feature_8h.html',1,'(Global Namespace)'],['../relay_2feature_8h.html',1,'(Global Namespace)']]],

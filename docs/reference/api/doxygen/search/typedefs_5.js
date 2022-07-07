@@ -12,6 +12,7 @@ var searchData=
   ['fcompute',['FCompute',['../namespacetvm_1_1te.html#a70f96c736806f87f5f795aba19ecc9d2',1,'tvm::te']]],
   ['fcreate',['FCreate',['../classtvm_1_1ReflectionVTable.html#ace851a8ec710f6c8ac75d202d62665f2',1,'tvm::ReflectionVTable']]],
   ['fdeleter',['FDeleter',['../classtvm_1_1runtime_1_1Object.html#a9e84841ca982bff376a978ade0132631',1,'tvm::runtime::Object']]],
+  ['fdirectdispatch',['FDirectDispatch',['../classtvm_1_1meta__schedule_1_1ApplyHistoryBestNode.html#a9bbc7dec5e9aebe7a5886be13b07d922',1,'tvm::meta_schedule::ApplyHistoryBestNode']]],
   ['fdone',['FDone',['../classtvm_1_1meta__schedule_1_1RunnerFutureNode.html#af5ff9cf0ddf9dcd5d097e597f1ffe1eb',1,'tvm::meta_schedule::RunnerFutureNode::FDone()'],['../classtvm_1_1meta__schedule_1_1RunnerFuture.html#ab43e5b1fbda5108422ff1757628ec94d',1,'tvm::meta_schedule::RunnerFuture::FDone()']]],
   ['fextractfrom',['FExtractFrom',['../classtvm_1_1meta__schedule_1_1PyFeatureExtractorNode.html#a2c3241bd5c792cb6dab4347891bfd6be',1,'tvm::meta_schedule::PyFeatureExtractorNode']]],
   ['fforwardrewrite',['FForwardRewrite',['../namespacetvm_1_1relay.html#afa27c5a3fe1590a9ffa3877f9b09de45',1,'tvm::relay']]],
