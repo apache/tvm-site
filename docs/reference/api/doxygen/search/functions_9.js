@@ -118,6 +118,7 @@ var searchData=
   ['ispointertype',['IsPointerType',['../namespacetvm_1_1tir.html#a48cd6ae7623f42cddbb05cc008c33711',1,'tvm::tir']]],
   ['ispostproc',['IsPostproc',['../classtvm_1_1tir_1_1InstructionKindNode.html#a7a380bbd0bbe59d000007de8fa230847',1,'tvm::tir::InstructionKindNode']]],
   ['ispragmakey',['IsPragmaKey',['../namespacetvm_1_1tir_1_1attr.html#a385e883a7cecc309d063786e5fdf2c4b',1,'tvm::tir::attr']]],
+  ['isprefixof',['IsPrefixOf',['../classtvm_1_1ObjectPathNode.html#a2d6c8d51293f8b1c3aa7149f4ce31396',1,'tvm::ObjectPathNode']]],
   ['isprimal',['IsPrimal',['../classtvm_1_1tir_1_1LayoutAxis.html#a4a8e9b07fbdfccc187ea41141b373ebe',1,'tvm::tir::LayoutAxis']]],
   ['isprimitiveop',['IsPrimitiveOp',['../classtvm_1_1OpNode.html#a3ba51353d63c4674eac080a3560a4412',1,'tvm::OpNode::IsPrimitiveOp()'],['../namespacetvm.html#a8259e23409eda017c6bde908e050b670',1,'tvm::IsPrimitiveOp()']]],
   ['isregioncoveredconsumer',['IsRegionCoveredConsumer',['../classtvm_1_1tir_1_1ScheduleStateNode.html#a9596efdecacb172c531a53b1f21717ad',1,'tvm::tir::ScheduleStateNode']]],

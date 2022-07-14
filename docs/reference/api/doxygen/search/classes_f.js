@@ -55,6 +55,8 @@ var searchData=
   ['rfactorstepnode',['RfactorStepNode',['../classtvm_1_1auto__scheduler_1_1RfactorStepNode.html',1,'tvm::auto_scheduler']]],
   ['roialignattrs',['ROIAlignAttrs',['../structtvm_1_1relay_1_1ROIAlignAttrs.html',1,'tvm::relay']]],
   ['roipoolattrs',['ROIPoolAttrs',['../structtvm_1_1relay_1_1ROIPoolAttrs.html',1,'tvm::relay']]],
+  ['rootpath',['RootPath',['../classtvm_1_1RootPath.html',1,'tvm']]],
+  ['rootpathnode',['RootPathNode',['../classtvm_1_1RootPathNode.html',1,'tvm']]],
   ['rpcrunner',['RPCRunner',['../classtvm_1_1auto__scheduler_1_1RPCRunner.html',1,'tvm::auto_scheduler']]],
   ['rpcrunnernode',['RPCRunnerNode',['../classtvm_1_1auto__scheduler_1_1RPCRunnerNode.html',1,'tvm::auto_scheduler']]],
   ['runner',['Runner',['../classtvm_1_1meta__schedule_1_1Runner.html',1,'tvm::meta_schedule']]],

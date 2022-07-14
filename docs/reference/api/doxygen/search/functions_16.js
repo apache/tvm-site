@@ -8,7 +8,7 @@ var searchData=
   ['vector',['Vector',['../classtvm_1_1arith_1_1IntSet.html#a29b6f1e60f4b328fcfabc514e0c10f17',1,'tvm::arith::IntSet']]],
   ['vectorcombine',['vectorcombine',['../namespacetvm_1_1tir_1_1builtin.html#a30dff65bc2c142b57fae7f60e378ff43',1,'tvm::tir::builtin']]],
   ['vectorhigh',['vectorhigh',['../namespacetvm_1_1tir_1_1builtin.html#a45bf65ca7ca01d2016e0b609117d7e25',1,'tvm::tir::builtin']]],
-  ['vectorize',['vectorize',['../classtvm_1_1auto__scheduler_1_1State.html#a97b8a21210d63bea241dbab085d89b53',1,'tvm::auto_scheduler::State::vectorize()'],['../classtvm_1_1te_1_1Stage.html#a44d33e3920106e75dc7c68272f880812',1,'tvm::te::Stage::vectorize()'],['../classtvm_1_1tir_1_1ScheduleNode.html#ab4a8cd91959ceab22855ec338978bcee',1,'tvm::tir::ScheduleNode::Vectorize()']]],
+  ['vectorize',['Vectorize',['../classtvm_1_1tir_1_1ScheduleNode.html#ab4a8cd91959ceab22855ec338978bcee',1,'tvm::tir::ScheduleNode::Vectorize()'],['../classtvm_1_1auto__scheduler_1_1State.html#a97b8a21210d63bea241dbab085d89b53',1,'tvm::auto_scheduler::State::vectorize()'],['../classtvm_1_1te_1_1Stage.html#a44d33e3920106e75dc7c68272f880812',1,'tvm::te::Stage::vectorize()']]],
   ['vectorizeloop',['VectorizeLoop',['../namespacetvm_1_1tir_1_1transform.html#af3cecb50a8b8fc8021f6a87bc27587da',1,'tvm::tir::transform']]],
   ['vectorjacobianproduct',['VectorJacobianProduct',['../namespacetvm_1_1te.html#a547183f5a311af53ab598faba423fd64',1,'tvm::te']]],
   ['vectorlow',['vectorlow',['../namespacetvm_1_1tir_1_1builtin.html#a7ed64a9fb0a7f575fc63e1e0395e96a6',1,'tvm::tir::builtin']]],
