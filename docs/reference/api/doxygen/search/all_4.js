@@ -43,6 +43,7 @@ var searchData=
   ['canonicalizecast',['CanonicalizeCast',['../namespacetvm_1_1relay_1_1transform.html#a93bbf7ab3f612d4f38a6832d6b53b4fd',1,'tvm::relay::transform']]],
   ['canonicalizeops',['CanonicalizeOps',['../namespacetvm_1_1relay_1_1transform.html#adcddf150ca7da40e20408928421b0086',1,'tvm::relay::transform']]],
   ['canonicalsimplifier',['CanonicalSimplifier',['../classtvm_1_1arith_1_1CanonicalSimplifier.html',1,'tvm::arith::CanonicalSimplifier'],['../classtvm_1_1arith_1_1RewriteSimplifier.html#abd092d074e3063da6d7bb0c67115a33f',1,'tvm::arith::RewriteSimplifier::CanonicalSimplifier()']]],
+  ['canonicaltarget',['CanonicalTarget',['../classtvm_1_1CompilationConfigNode.html#a3b2bc6e1481c8fd7dce9d66652993955',1,'tvm::CompilationConfigNode']]],
   ['canonicalvirtualdevice',['CanonicalVirtualDevice',['../classtvm_1_1CompilationConfigNode.html#a91de372f958bbe17e7c170f6abccc2a4',1,'tvm::CompilationConfigNode']]],
   ['canprove',['CanProve',['../classtvm_1_1arith_1_1Analyzer.html#af84b3978b1df3b2680fb47818e5dc30d',1,'tvm::arith::Analyzer']]],
   ['canproveequal',['CanProveEqual',['../classtvm_1_1arith_1_1Analyzer.html#a5b4350d33e93a9e6bb7f26e4c6569703',1,'tvm::arith::Analyzer']]],
