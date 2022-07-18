@@ -90,7 +90,7 @@ var searchData=
   ['measure_5fcandidate_2eh',['measure_candidate.h',['../measure__candidate_8h.html',1,'']]],
   ['measure_5fcandidates',['measure_candidates',['../classtvm_1_1meta__schedule_1_1TuneContextNode.html#a85697ab529d4e1aab8b76f051544c638',1,'tvm::meta_schedule::TuneContextNode']]],
   ['measure_5frecord_2eh',['measure_record.h',['../measure__record_8h.html',1,'']]],
-  ['measurecallback',['MeasureCallback',['../classtvm_1_1meta__schedule_1_1MeasureCallback.html',1,'tvm::meta_schedule::MeasureCallback'],['../classtvm_1_1auto__scheduler_1_1MeasureCallback.html',1,'tvm::auto_scheduler::MeasureCallback']]],
+  ['measurecallback',['MeasureCallback',['../classtvm_1_1auto__scheduler_1_1MeasureCallback.html',1,'tvm::auto_scheduler::MeasureCallback'],['../classtvm_1_1meta__schedule_1_1MeasureCallback.html',1,'tvm::meta_schedule::MeasureCallback']]],
   ['measurecallbacknode',['MeasureCallbackNode',['../classtvm_1_1meta__schedule_1_1MeasureCallbackNode.html',1,'tvm::meta_schedule::MeasureCallbackNode'],['../classtvm_1_1auto__scheduler_1_1MeasureCallbackNode.html',1,'tvm::auto_scheduler::MeasureCallbackNode']]],
   ['measurecandidate',['MeasureCandidate',['../classtvm_1_1meta__schedule_1_1MeasureCandidate.html',1,'tvm::meta_schedule::MeasureCandidate'],['../classtvm_1_1meta__schedule_1_1MeasureCandidate.html#a76d9f7a93cc12fee81d48024bb0b8a39',1,'tvm::meta_schedule::MeasureCandidate::MeasureCandidate()']]],
   ['measurecandidatenode',['MeasureCandidateNode',['../classtvm_1_1meta__schedule_1_1MeasureCandidateNode.html',1,'tvm::meta_schedule']]],

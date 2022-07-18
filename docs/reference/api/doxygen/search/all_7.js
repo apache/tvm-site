@@ -237,6 +237,7 @@ var searchData=
   ['ftvmrelaytotir',['FTVMRelayToTIR',['../namespacetvm.html#a3b1103f53a837ff14dc583e1c0b6b898',1,'tvm']]],
   ['ftvmschedule',['FTVMSchedule',['../namespacetvm_1_1relay.html#aff3d3515294c3128bb63a75c5d30f596',1,'tvm::relay']]],
   ['ftvmstrategy',['FTVMStrategy',['../namespacetvm_1_1relay.html#a2eb2ad4e7a83e0a28e2ad073d7bf9305',1,'tvm::relay']]],
+  ['ftvmtargetparser',['FTVMTargetParser',['../namespacetvm.html#a069e7a9aa20098c3406c6fbcf29092b3',1,'tvm']]],
   ['ftvmtirtoruntime',['FTVMTIRToRuntime',['../namespacetvm.html#ade89c3d682d83c2e14ec9337084541e3',1,'tvm']]],
   ['ftype',['FType',['../classtvm_1_1ReprPrinter.html#aee843a9a8b4885f5797843bed6467415',1,'tvm::ReprPrinter']]],
   ['full',['full',['../namespacetvm_1_1topi.html#a5c22ce14da6f5589de129861bb06da78',1,'tvm::topi']]],
