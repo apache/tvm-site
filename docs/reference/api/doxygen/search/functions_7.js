@@ -45,6 +45,7 @@ var searchData=
   ['getdiagctx',['GetDiagCtx',['../classtvm_1_1TypeReporterNode.html#a444ce49236145637d9ce24eb9f4a3745',1,'tvm::TypeReporterNode']]],
   ['getdirectproducers',['GetDirectProducers',['../classtvm_1_1auto__scheduler_1_1AccessAnalyzer.html#abc0f5fa7abb2326388149f48dc994cd8',1,'tvm::auto_scheduler::AccessAnalyzer']]],
   ['getexprrefcount',['GetExprRefCount',['../namespacetvm_1_1relay.html#a2d10acef75390fa6d1a5e64a379c5036',1,'tvm::relay']]],
+  ['getfeature',['GetFeature',['../classtvm_1_1TargetNode.html#a7735df0c36621e5c9045a882991a4b32',1,'tvm::TargetNode::GetFeature(const std::string &amp;feature_key, Optional&lt; TObjectRef &gt; default_value=Optional&lt; TObjectRef &gt;(nullptr)) const'],['../classtvm_1_1TargetNode.html#aa4f6c3e10daa0e968360e258029a9860',1,'tvm::TargetNode::GetFeature(const std::string &amp;attr_key, TObjectRef default_value) const']]],
   ['getfield',['GetField',['../structtvm_1_1runtime_1_1vm_1_1Instruction.html#a538ae141008bb7bcfd9513f9d3e2a54b',1,'tvm::runtime::vm::Instruction']]],
   ['getflattenedbuffer',['GetFlattenedBuffer',['../classtvm_1_1tir_1_1Buffer.html#af8019f3bee7e534132d94c525c12c67b',1,'tvm::tir::Buffer']]],
   ['getformat',['GetFormat',['../classtvm_1_1runtime_1_1ModuleNode.html#a8277ec02dc6e63cc1baf466b6021860b',1,'tvm::runtime::ModuleNode']]],

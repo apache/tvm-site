@@ -74,6 +74,7 @@ var searchData=
   ['feature_5fstride',['feature_stride',['../structtvm_1_1relay_1_1ProposalAttrs.html#a7d64e565f89cc66c40253d7fe3c74fad',1,'tvm::relay::ProposalAttrs']]],
   ['featureextractor',['FeatureExtractor',['../classtvm_1_1meta__schedule_1_1FeatureExtractor.html',1,'tvm::meta_schedule']]],
   ['featureextractornode',['FeatureExtractorNode',['../classtvm_1_1meta__schedule_1_1FeatureExtractorNode.html',1,'tvm::meta_schedule']]],
+  ['features',['features',['../classtvm_1_1TargetNode.html#a998369eed05aa80140564c2f29742d46',1,'tvm::TargetNode']]],
   ['featureset',['FeatureSet',['../classtvm_1_1relay_1_1FeatureSet.html',1,'tvm::relay::FeatureSet'],['../classtvm_1_1relay_1_1FeatureSet.html#a268c7544d97aeb7ef3ac19778c23b577',1,'tvm::relay::FeatureSet::FeatureSet(const FeatureSet &amp;)=default'],['../classtvm_1_1relay_1_1FeatureSet.html#a7fe9317883438c23defc65d12532387a',1,'tvm::relay::FeatureSet::FeatureSet(Feature ft)'],['../classtvm_1_1relay_1_1FeatureSet.html#a2b85e65f7b1de12a3ae87b8201427d51',1,'tvm::relay::FeatureSet::FeatureSet(const tvm::Array&lt; tvm::Integer &gt; &amp;ft)']]],
   ['fexec',['fexec',['../structTVMPackedFunc.html#a849631252851ec94b7970e6d2e16861e',1,'TVMPackedFunc']]],
   ['fextractfrom',['FExtractFrom',['../classtvm_1_1meta__schedule_1_1PyFeatureExtractorNode.html#a2c3241bd5c792cb6dab4347891bfd6be',1,'tvm::meta_schedule::PyFeatureExtractorNode']]],

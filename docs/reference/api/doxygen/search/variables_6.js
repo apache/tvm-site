@@ -42,6 +42,7 @@ var searchData=
   ['fcompute',['fcompute',['../classtvm_1_1relay_1_1OpImplementationNode.html#abfdaa2a28cce000f920ef0c0cfed7e31',1,'tvm::relay::OpImplementationNode']]],
   ['feature_5fcount',['feature_count',['../namespacetvm_1_1relay.html#ac3a576d7d192ce78bafb169c9aa882d1',1,'tvm::relay']]],
   ['feature_5fstride',['feature_stride',['../structtvm_1_1relay_1_1ProposalAttrs.html#a7d64e565f89cc66c40253d7fe3c74fad',1,'tvm::relay::ProposalAttrs']]],
+  ['features',['features',['../classtvm_1_1TargetNode.html#a998369eed05aa80140564c2f29742d46',1,'tvm::TargetNode']]],
   ['fexec',['fexec',['../structTVMPackedFunc.html#a849631252851ec94b7970e6d2e16861e',1,'TVMPackedFunc']]],
   ['fib_5fshift_5f',['fib_shift_',['../classtvm_1_1runtime_1_1DenseMapNode.html#af7555a75a5dbdf2f1c1af3fd240e54e7',1,'tvm::runtime::DenseMapNode']]],
   ['field_5findex',['field_index',['../structtvm_1_1runtime_1_1vm_1_1Instruction.html#a623d715b7b22a5fa853e8d000a6f1ecd',1,'tvm::runtime::vm::Instruction']]],
