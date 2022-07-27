@@ -36,6 +36,8 @@ var searchData=
   ['diagnosticrenderernode',['DiagnosticRendererNode',['../classtvm_1_1DiagnosticRendererNode.html',1,'tvm']]],
   ['dictattrs',['DictAttrs',['../classtvm_1_1DictAttrs.html',1,'tvm']]],
   ['dictattrsnode',['DictAttrsNode',['../classtvm_1_1DictAttrsNode.html',1,'tvm']]],
+  ['dictdoc',['DictDoc',['../classtvm_1_1script_1_1printer_1_1DictDoc.html',1,'tvm::script::printer']]],
+  ['dictdocnode',['DictDocNode',['../classtvm_1_1script_1_1printer_1_1DictDocNode.html',1,'tvm::script::printer']]],
   ['dilateattrs',['DilateAttrs',['../structtvm_1_1relay_1_1DilateAttrs.html',1,'tvm::relay']]],
   ['dilation2dattrs',['Dilation2DAttrs',['../structtvm_1_1relay_1_1Dilation2DAttrs.html',1,'tvm::relay']]],
   ['div',['Div',['../classtvm_1_1tir_1_1Div.html',1,'tvm::tir']]],

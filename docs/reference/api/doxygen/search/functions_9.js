@@ -1,6 +1,7 @@
 var searchData=
 [
   ['id',['Id',['../classtvm_1_1relay_1_1Id.html#a3448f7c12dde98c58cda1ea224321555',1,'tvm::relay::Id']]],
+  ['iddoc',['IdDoc',['../classtvm_1_1script_1_1printer_1_1IdDoc.html#a8d883540a2700214446bee494f971397',1,'tvm::script::printer::IdDoc']]],
   ['identity',['identity',['../namespacetvm_1_1topi.html#aa86493f01692ff5ecfdb2d202306854c',1,'tvm::topi']]],
   ['if',['If',['../classtvm_1_1relay_1_1If.html#a40156998dec90d0e908cf32c65200ec7',1,'tvm::relay::If::If()'],['../structtvm_1_1runtime_1_1vm_1_1Instruction.html#ae7a1eb87c8f583a606e89a0ad22af38b',1,'tvm::runtime::vm::Instruction::If()']]],
   ['if_5fthen_5felse',['if_then_else',['../namespacetvm_1_1tir_1_1builtin.html#ae741e67259cd4b844a8934f2e2704adc',1,'tvm::tir::builtin::if_then_else()'],['../namespacetvm.html#a353217978feabae3575560bf1586885f',1,'tvm::if_then_else()']]],
@@ -13,6 +14,7 @@ var searchData=
   ['incompletetype',['IncompleteType',['../classtvm_1_1IncompleteType.html#ab43269e517f2e962ccb8f510c4f5fd3a',1,'tvm::IncompleteType']]],
   ['incref',['IncRef',['../classtvm_1_1runtime_1_1Object.html#ac9e5eed7719e322117bde996a171e33a',1,'tvm::runtime::Object']]],
   ['indexdiv',['indexdiv',['../namespacetvm.html#a8f30aa0685ca52f846843e76a1ad1dc7',1,'tvm::indexdiv(PrimExpr a, PrimExpr b, Span span=Span())'],['../namespacetvm.html#a8e795784bc91d7d0ad50df1d6a849b56',1,'tvm::indexdiv(const PrimExpr &amp;a, int b, Span span=Span())'],['../namespacetvm.html#a2fde20cf177fe6aaf6f89f9ca46c9c25',1,'tvm::indexdiv(int a, const PrimExpr &amp;b, Span span=Span())']]],
+  ['indexdoc',['IndexDoc',['../classtvm_1_1script_1_1printer_1_1IndexDoc.html#aa1e81527b6b421a47e84d2cd20d54af4',1,'tvm::script::printer::IndexDoc']]],
   ['indexmap',['IndexMap',['../classtvm_1_1tir_1_1IndexMap.html#a9df0ec5bfe18acc2c1fc6b0e5ae230ce',1,'tvm::tir::IndexMap']]],
   ['indexmapnode',['IndexMapNode',['../classtvm_1_1tir_1_1IndexMapNode.html#a9a554e4cd7c4bd7ac6e07fd49896833e',1,'tvm::tir::IndexMapNode']]],
   ['indexmod',['indexmod',['../namespacetvm.html#ada5ad8338d3144221d8f16380e6c4855',1,'tvm::indexmod(PrimExpr a, PrimExpr b, Span span=Span())'],['../namespacetvm.html#a78b6faac00e9a823e9bcf14e1e02f1f2',1,'tvm::indexmod(const PrimExpr &amp;a, int b, Span span=Span())'],['../namespacetvm.html#a048a29e36fa055771713480f3f4ecdf4',1,'tvm::indexmod(int a, const PrimExpr &amp;b, Span span=Span())']]],

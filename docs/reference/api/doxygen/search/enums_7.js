@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['layoutrewriteoption',['LayoutRewriteOption',['../namespacetvm_1_1auto__scheduler.html#a3e9480be0119338696abbe9c80193b9e',1,'tvm::auto_scheduler']]]
+  ['kind',['Kind',['../classtvm_1_1script_1_1printer_1_1OperationDocNode.html#ab096bbea749ee994d75230cd8136afc2',1,'tvm::script::printer::OperationDocNode']]]
 ];

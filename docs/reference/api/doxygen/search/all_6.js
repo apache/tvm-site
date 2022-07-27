@@ -8,6 +8,7 @@ var searchData=
   ['elem_5foffset',['elem_offset',['../classtvm_1_1tir_1_1BufferNode.html#a92b84a76c975399a028b61e4b99ac87b',1,'tvm::tir::BufferNode']]],
   ['element_5fof',['element_of',['../classtvm_1_1runtime_1_1DataType.html#a2fe08e37ac1a1c09b10251313582990d',1,'tvm::runtime::DataType']]],
   ['element_5ftype',['element_type',['../classtvm_1_1PointerTypeNode.html#a3ce20495711da0c9f83f02df466ae8a0',1,'tvm::PointerTypeNode']]],
+  ['elements',['elements',['../classtvm_1_1script_1_1printer_1_1TupleDocNode.html#a06eb9b7f49f298978f33012b6d44ddb8',1,'tvm::script::printer::TupleDocNode::elements()'],['../classtvm_1_1script_1_1printer_1_1ListDocNode.html#a4b5e2a6863460473dca71c989ee3fb8c',1,'tvm::script::printer::ListDocNode::elements()']]],
   ['elementwisematch',['ElementWiseMatch',['../classtvm_1_1auto__scheduler_1_1AccessAnalyzer.html#a252a0005deefc376b4a90703e375f2c6',1,'tvm::auto_scheduler::AccessAnalyzer']]],
   ['elemoffset',['ElemOffset',['../classtvm_1_1tir_1_1BufferNode.html#ae6964ae55ed11dfe43721a82656c023d',1,'tvm::tir::BufferNode']]],
   ['elemwise_2eh',['elemwise.h',['../elemwise_8h.html',1,'']]],

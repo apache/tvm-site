@@ -1,5 +1,6 @@
 var searchData=
 [
-  ['opcode',['Opcode',['../namespacetvm_1_1runtime_1_1vm.html#a8d8d95ce8d629c7213f2f595917870ec',1,'tvm::runtime::vm']]],
-  ['oppatternkind',['OpPatternKind',['../namespacetvm_1_1relay.html#ab5f4d382bf1bee69c3e484ea6c837578',1,'tvm::relay']]]
+  ['measureerrorno',['MeasureErrorNO',['../namespacetvm_1_1auto__scheduler.html#acd2b9ff22c8ef2f009aef57f80926b9a',1,'tvm::auto_scheduler']]],
+  ['messagetype',['MessageType',['../namespacetvm_1_1runtime_1_1micro__rpc.html#a07b2902f093d341cd67bd16738037a85',1,'tvm::runtime::micro_rpc']]],
+  ['metadatakind',['MetadataKind',['../namespacetvm_1_1runtime_1_1metadata.html#a6edfc2b47c55d18f94867a18a7b02fb7',1,'tvm::runtime::metadata']]]
 ];
