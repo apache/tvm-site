@@ -68,6 +68,7 @@ var searchData=
   ['lowerintrin',['LowerIntrin',['../namespacetvm_1_1tir_1_1transform.html#a0979c9d3bf0e64205f16aa00d331c6b5',1,'tvm::tir::transform']]],
   ['lowermatchbuffer',['LowerMatchBuffer',['../namespacetvm_1_1tir_1_1transform.html#aaf7277fb8101861053cc697a9d3aba1e',1,'tvm::tir::transform']]],
   ['lowermodule',['LowerModule',['../namespacetvm.html#aaf9aab7ccbc380414b237a9ce58c9869',1,'tvm']]],
+  ['loweropaqueblock',['LowerOpaqueBlock',['../namespacetvm_1_1tir_1_1transform.html#a5a0c80e759e67633f417edf99e2cc9f4',1,'tvm::tir::transform']]],
   ['lowerprimfunc',['LowerPrimFunc',['../namespacetvm.html#ac22649049328c5f3704e3592e6ffd6c5',1,'tvm']]],
   ['lowerschedule',['LowerSchedule',['../namespacetvm.html#a42e6cbabbb4e45f9126be5e8c77e2a86',1,'tvm::LowerSchedule(te::Schedule sch, const Array&lt; te::Tensor &gt; &amp;args, const std::string &amp;name, const std::unordered_map&lt; te::Tensor, tir::Buffer &gt; &amp;binds, bool simple_mode=false)'],['../namespacetvm.html#a1ba9d8f0c6cd7bf13fced4073703d480',1,'tvm::LowerSchedule(te::Schedule sch, const Array&lt; ObjectRef &gt; &amp;args, const std::string &amp;name, const std::unordered_map&lt; te::Tensor, tir::Buffer &gt; &amp;binds, bool simple_mode=false)']]],
   ['lowerthreadallreduce',['LowerThreadAllreduce',['../namespacetvm_1_1tir_1_1transform.html#a16d42050efec51126d5b90eb2f60171f',1,'tvm::tir::transform']]],
