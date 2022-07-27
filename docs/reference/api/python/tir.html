@@ -4517,6 +4517,12 @@ preserve the semantics of computation. Some example of schedules:
 <tr class="row-even"><td><p><a class="reference internal" href="#tvm.tir.Schedule.set_axis_separator" title="tvm.tir.Schedule.set_axis_separator"><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_axis_separator</span></code></a>(block, buffer, ...)</p></td>
 <td><p>Set the axis separator of a buffer, where the buffer is specified by a block and a read or write index.</p></td>
 </tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#tvm.tir.Schedule.decompose_padding" title="tvm.tir.Schedule.decompose_padding"><code class="xref py py-obj docutils literal notranslate"><span class="pre">decompose_padding</span></code></a>(block, loop)</p></td>
+<td><p>Decompose a block of padding computation pattern into two separate blocks.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#tvm.tir.Schedule.can_decompose_padding" title="tvm.tir.Schedule.can_decompose_padding"><code class="xref py py-obj docutils literal notranslate"><span class="pre">can_decompose_padding</span></code></a>(block, loop)</p></td>
+<td><p>Check whether the block match padding pattern and can be decomposed.</p></td>
+</tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#tvm.tir.Schedule.enter_postproc" title="tvm.tir.Schedule.enter_postproc"><code class="xref py py-obj docutils literal notranslate"><span class="pre">enter_postproc</span></code></a>()</p></td>
 <td><p>A no-op that marks the start of postprocessing phase of scheduling</p></td>
 </tr>
@@ -6470,6 +6476,73 @@ reads/writes of the block.</p>
             <span class="n">C</span><span class="p">[</span><span class="n">vi</span><span class="p">,</span> <span class="n">vj</span><span class="p">]</span> <span class="o">=</span> <span class="n">B</span><span class="p">[</span><span class="n">vi</span><span class="p">,</span> <span class="n">vj</span><span class="p">]</span> <span class="o">+</span> <span class="n">T</span><span class="o">.</span><span class="n">float32</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
 </pre></div>
 </div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="tvm.tir.Schedule.decompose_padding">
+<span class="sig-name descname"><span class="pre">decompose_padding</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">block</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">tvm.tir.schedule.schedule.BlockRV</span><span class="p"><span class="pre">,</span> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">loop</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">tvm.tir.schedule.schedule.LoopRV</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">tvm.tir.schedule.schedule.BlockRV</span></span></span><a class="headerlink" href="#tvm.tir.Schedule.decompose_padding" title="Permalink to this definition">¶</a></dt>
+<dd><p>Decompose a block of padding computation pattern into two separate blocks.</p>
+<ol class="loweralpha simple">
+<li><p>The block which fill const pad values into full write region;</p></li>
+<li><p>The block which fill in-bound values into region where pad predicate is true.</p></li>
+</ol>
+<p>The pad value filling block is inserted right before the given loop.</p>
+<p>The schedule primitive requires:</p>
+<ol class="arabic simple">
+<li><p>The input block is a complete block.</p></li>
+<li><p>The input loop is the ancestor of the block.</p></li>
+<li><p>The input block is a block which match padding pattern.</p></li>
+</ol>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>block</strong> (<em>Union</em><em>[</em><em>BlockRV</em><em>, </em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><em>str</em></a><em>]</em>) – The padding block to be decomposed.</p></li>
+<li><p><strong>loop</strong> (<em>LoopRV</em>) – The loop above which the pad value filling block is inserted before.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>pad_value_block</strong> – The block filling const pad values.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>BlockRV</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<p>Before decompose-padding, in TensorIR, the IR is:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nd">@T</span><span class="o">.</span><span class="n">prim_func</span>
+<span class="k">def</span> <span class="nf">before_decompose</span><span class="p">(</span><span class="n">x</span><span class="p">:</span> <span class="n">T</span><span class="o">.</span><span class="n">Buffer</span><span class="p">[</span><span class="mi">128</span><span class="p">,</span> <span class="s2">&quot;int32&quot;</span><span class="p">],</span> <span class="n">y</span><span class="p">:</span> <span class="n">T</span><span class="o">.</span><span class="n">Buffer</span><span class="p">[</span><span class="mi">140</span><span class="p">,</span> <span class="s2">&quot;int32&quot;</span><span class="p">]):</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">140</span><span class="p">):</span>
+        <span class="k">with</span> <span class="n">T</span><span class="o">.</span><span class="n">block</span><span class="p">(</span><span class="s2">&quot;block&quot;</span><span class="p">):</span>
+            <span class="n">vi</span> <span class="o">=</span> <span class="n">T</span><span class="o">.</span><span class="n">axis</span><span class="o">.</span><span class="n">remap</span><span class="p">(</span><span class="s2">&quot;S&quot;</span><span class="p">,</span> <span class="p">[</span><span class="n">i</span><span class="p">])</span>
+            <span class="n">y</span><span class="p">[</span><span class="n">vi</span><span class="p">]</span> <span class="o">=</span> <span class="n">T</span><span class="o">.</span><span class="n">if_then_else</span><span class="p">(</span><span class="n">vi</span> <span class="o">&gt;=</span> <span class="mi">6</span> <span class="ow">and</span> <span class="n">vi</span> <span class="o">&lt;</span> <span class="mi">134</span><span class="p">,</span> <span class="n">x</span><span class="p">[</span><span class="n">vi</span> <span class="o">-</span> <span class="mi">6</span><span class="p">],</span> <span class="mi">0</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="s2">&quot;int32&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Create the schedule and do decompose-padding with specified loop:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">sch</span> <span class="o">=</span> <span class="n">tir</span><span class="o">.</span><span class="n">Schedule</span><span class="p">(</span><span class="n">before_decompose</span><span class="p">,</span> <span class="n">debug_mask</span><span class="o">=</span><span class="s2">&quot;all&quot;</span><span class="p">)</span>
+<span class="n">block</span> <span class="o">=</span> <span class="n">sch</span><span class="o">.</span><span class="n">get_block</span><span class="p">(</span><span class="s2">&quot;block&quot;</span><span class="p">)</span>
+<span class="n">sch</span><span class="o">.</span><span class="n">decompose_padding</span><span class="p">(</span><span class="n">block</span><span class="p">,</span> <span class="n">sch</span><span class="o">.</span><span class="n">get_loops</span><span class="p">(</span><span class="n">block</span><span class="p">)[</span><span class="mi">0</span><span class="p">])</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">sch</span><span class="o">.</span><span class="n">mod</span><span class="p">[</span><span class="s2">&quot;main].script())</span>
+</pre></div>
+</div>
+<p>After applying decompose-padding, the IR becomes:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nd">@T</span><span class="o">.</span><span class="n">prim_func</span>
+<span class="k">def</span> <span class="nf">after_decompose</span><span class="p">(</span><span class="n">x</span><span class="p">:</span> <span class="n">T</span><span class="o">.</span><span class="n">Buffer</span><span class="p">[</span><span class="mi">128</span><span class="p">,</span> <span class="s2">&quot;int32&quot;</span><span class="p">],</span> <span class="n">y</span><span class="p">:</span> <span class="n">T</span><span class="o">.</span><span class="n">Buffer</span><span class="p">[</span><span class="mi">140</span><span class="p">,</span> <span class="s2">&quot;int32&quot;</span><span class="p">]):</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">T</span><span class="o">.</span><span class="n">serial</span><span class="p">(</span><span class="mi">140</span><span class="p">):</span>
+        <span class="k">with</span> <span class="n">T</span><span class="o">.</span><span class="n">block</span><span class="p">(</span><span class="s2">&quot;block_pad_const&quot;</span><span class="p">):</span>
+            <span class="n">vi</span> <span class="o">=</span> <span class="n">T</span><span class="o">.</span><span class="n">axis</span><span class="o">.</span><span class="n">spatial</span><span class="p">(</span><span class="mi">140</span><span class="p">,</span> <span class="n">i</span><span class="p">)</span>
+            <span class="n">y</span><span class="p">[</span><span class="n">vi</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">T</span><span class="o">.</span><span class="n">serial</span><span class="p">(</span><span class="mi">128</span><span class="p">):</span>
+        <span class="k">with</span> <span class="n">T</span><span class="o">.</span><span class="n">block</span><span class="p">(</span><span class="s2">&quot;block&quot;</span><span class="p">):</span>
+            <span class="n">vi</span> <span class="o">=</span> <span class="n">T</span><span class="o">.</span><span class="n">axis</span><span class="o">.</span><span class="n">spatial</span><span class="p">(</span><span class="mi">128</span><span class="p">,</span> <span class="n">i</span><span class="p">)</span>
+            <span class="n">y</span><span class="p">[</span><span class="n">vi</span> <span class="o">+</span> <span class="mi">6</span><span class="p">]</span> <span class="o">=</span> <span class="n">x</span><span class="p">[</span><span class="n">vi</span><span class="p">]</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="tvm.tir.Schedule.can_decompose_padding">
+<span class="sig-name descname"><span class="pre">can_decompose_padding</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">block</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Union</span><span class="p"><span class="pre">[</span></span><span class="pre">tvm.tir.schedule.schedule.BlockRV</span><span class="p"><span class="pre">,</span> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.10)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">loop</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">tvm.tir.schedule.schedule.LoopRV</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.10)"><span class="pre">bool</span></a></span></span><a class="headerlink" href="#tvm.tir.Schedule.can_decompose_padding" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check whether the block match padding pattern and can be decomposed.</p>
 </dd></dl>
 
 <dl class="py method">

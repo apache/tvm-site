@@ -6,6 +6,7 @@ var searchData=
   ['deadcodeelimination',['DeadCodeElimination',['../namespacetvm_1_1relay_1_1transform.html#a441963a144dae58b7633d0a674cf20cc',1,'tvm::relay::transform']]],
   ['debugverify',['DebugVerify',['../classtvm_1_1tir_1_1ScheduleStateNode.html#a7ebf3759af136021c4549596ebfc468f',1,'tvm::tir::ScheduleStateNode']]],
   ['decl_5fbuffer',['decl_buffer',['../namespacetvm_1_1tir.html#a65cc94726eb40752523b952f500d00ec',1,'tvm::tir']]],
+  ['decomposepadding',['DecomposePadding',['../classtvm_1_1tir_1_1ScheduleNode.html#af7ef928082afe7f45b417f3e130792e8',1,'tvm::tir::ScheduleNode']]],
   ['decomposereduction',['DecomposeReduction',['../classtvm_1_1tir_1_1ScheduleNode.html#a134eb33f96d69623a024c9c466183a00',1,'tvm::tir::ScheduleNode']]],
   ['decoratedevicescope',['DecorateDeviceScope',['../namespacetvm_1_1tir_1_1transform.html#a6648d0a1c613e7e0f5e231059c3c22c6',1,'tvm::tir::transform']]],
   ['decref',['DecRef',['../classtvm_1_1runtime_1_1Object.html#a70fb5361147634605d6595bb89381f03',1,'tvm::runtime::Object']]],
