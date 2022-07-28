@@ -48,6 +48,7 @@ var searchData=
   ['sizes',['sizes',['../structtvm_1_1relay_1_1MultiBoxPriorAttrs.html#ad6d089344fa741021584222ffa70a451',1,'tvm::relay::MultiBoxPriorAttrs']]],
   ['slice_5fmode',['slice_mode',['../structtvm_1_1relay_1_1StridedSliceAttrs.html#ab3a282ef18dc4fa3a69917bfbcddce55',1,'tvm::relay::StridedSliceAttrs']]],
   ['slots_5f',['slots_',['../classtvm_1_1runtime_1_1MapNode.html#ab7ea406f099e235de4944fa94c43812e',1,'tvm::runtime::MapNode']]],
+  ['software_5fpipeline_5fasync_5fstages',['software_pipeline_async_stages',['../namespacetvm_1_1tir_1_1attr.html#a7ff3ec02ce6acef9dd5c20f1aacc19bc',1,'tvm::tir::attr']]],
   ['software_5fpipeline_5forder',['software_pipeline_order',['../namespacetvm_1_1tir_1_1attr.html#a064b547bf5b0579f9b42906c6a9c581d',1,'tvm::tir::attr']]],
   ['software_5fpipeline_5fstage',['software_pipeline_stage',['../namespacetvm_1_1tir_1_1attr.html#a2e695603b89f78f4a481817dbaf7a082',1,'tvm::tir::attr']]],
   ['sorted',['sorted',['../structtvm_1_1relay_1_1UniqueAttrs.html#aef434799646533ec9d796393ba01db44',1,'tvm::relay::UniqueAttrs']]],
