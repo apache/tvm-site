@@ -12,6 +12,7 @@ var searchData=
   ['debug_5ffunc',['debug_func',['../structtvm_1_1relay_1_1DebugAttrs.html#aa57fc666a9674bdd94ad8e5ac4da18f7',1,'tvm::relay::DebugAttrs']]],
   ['debug_5fmask',['debug_mask',['../classtvm_1_1tir_1_1ScheduleStateNode.html#a33ab5d3859aaf065c35e561d17b3ca48',1,'tvm::tir::ScheduleStateNode']]],
   ['decisions',['decisions',['../classtvm_1_1tir_1_1TraceNode.html#a28bd8da64eaa35b0150c3b2a08a0e9e4',1,'tvm::tir::TraceNode']]],
+  ['decorators',['decorators',['../classtvm_1_1script_1_1printer_1_1FunctionDocNode.html#a5bfd7179298fe5bcbc9527af2b3b98e0',1,'tvm::script::printer::FunctionDocNode::decorators()'],['../classtvm_1_1script_1_1printer_1_1ClassDocNode.html#a253cf698eba7d39b7345553e646bc8b9',1,'tvm::script::printer::ClassDocNode::decorators()']]],
   ['default_5fkeys',['default_keys',['../classtvm_1_1TargetKindNode.html#aa62e049ba158730d9ab88e4c0b173de9',1,'tvm::TargetKindNode']]],
   ['default_5fmax_5fcontinuous_5ferror',['DEFAULT_MAX_CONTINUOUS_ERROR',['../classtvm_1_1auto__scheduler_1_1ProgramMeasurerNode.html#a6600d5b819e6c7e9ef3f6c32c355e3db',1,'tvm::auto_scheduler::ProgramMeasurerNode']]],
   ['default_5fprimitive_5fvirtual_5fdevice',['default_primitive_virtual_device',['../classtvm_1_1CompilationConfigNode.html#abe4569cf32c57b710be99b50e7118876',1,'tvm::CompilationConfigNode']]],

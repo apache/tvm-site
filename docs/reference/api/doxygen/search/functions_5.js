@@ -50,6 +50,7 @@ var searchData=
   ['export',['Export',['../classtvm_1_1TargetNode.html#af313f5aedbe162374d424358d34d3c7e',1,'tvm::TargetNode']]],
   ['exprdoc',['ExprDoc',['../classtvm_1_1script_1_1printer_1_1ExprDoc.html#ac5eb04f9e694f614cfacda6ac80c6e33',1,'tvm::script::printer::ExprDoc']]],
   ['exprpattern',['ExprPattern',['../classtvm_1_1relay_1_1ExprPattern.html#a7a67b6d0ef6de34e597875f280086bef',1,'tvm::relay::ExprPattern']]],
+  ['exprstmtdoc',['ExprStmtDoc',['../classtvm_1_1script_1_1printer_1_1ExprStmtDoc.html#a70066789e457d5574274f17808acfe52',1,'tvm::script::printer::ExprStmtDoc']]],
   ['externop',['ExternOp',['../classtvm_1_1te_1_1ExternOp.html#ab851798912152054fdb230f7176fda8a',1,'tvm::te::ExternOp']]],
   ['externopnode',['ExternOpNode',['../classtvm_1_1te_1_1ExternOpNode.html#aa2781af3e0414490286d62ed05722e7c',1,'tvm::te::ExternOpNode']]],
   ['extractbufferinfo',['ExtractBufferInfo',['../namespacetvm_1_1tir_1_1usmp.html#a4cdc4bc9b24f043b0f45952efd25f10f',1,'tvm::tir::usmp']]],

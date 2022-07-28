@@ -32,6 +32,7 @@ var searchData=
   ['decomposepadding',['DecomposePadding',['../classtvm_1_1tir_1_1ScheduleNode.html#af7ef928082afe7f45b417f3e130792e8',1,'tvm::tir::ScheduleNode']]],
   ['decomposereduction',['DecomposeReduction',['../classtvm_1_1tir_1_1ScheduleNode.html#a134eb33f96d69623a024c9c466183a00',1,'tvm::tir::ScheduleNode']]],
   ['decoratedevicescope',['DecorateDeviceScope',['../namespacetvm_1_1tir_1_1transform.html#a6648d0a1c613e7e0f5e231059c3c22c6',1,'tvm::tir::transform']]],
+  ['decorators',['decorators',['../classtvm_1_1script_1_1printer_1_1FunctionDocNode.html#a5bfd7179298fe5bcbc9527af2b3b98e0',1,'tvm::script::printer::FunctionDocNode::decorators()'],['../classtvm_1_1script_1_1printer_1_1ClassDocNode.html#a253cf698eba7d39b7345553e646bc8b9',1,'tvm::script::printer::ClassDocNode::decorators()']]],
   ['decref',['DecRef',['../classtvm_1_1runtime_1_1Object.html#a70fb5361147634605d6595bb89381f03',1,'tvm::runtime::Object']]],
   ['deducebound',['DeduceBound',['../namespacetvm_1_1arith.html#af0860828b70ea8ff0d2f7c036c37afd5',1,'tvm::arith::DeduceBound(PrimExpr v, PrimExpr cond, const Map&lt; Var, IntSet &gt; &amp;hint_map, const Map&lt; Var, IntSet &gt; &amp;relax_map)'],['../namespacetvm_1_1arith.html#a3658d391f2333f405abdd54a9f174c9f',1,'tvm::arith::DeduceBound(PrimExpr v, PrimExpr cond, const std::unordered_map&lt; const VarNode *, IntSet &gt; &amp;hint_map, const std::unordered_map&lt; const VarNode *, IntSet &gt; &amp;relax_map)']]],
   ['dedup',['DeDup',['../namespacetvm_1_1relay.html#a1ecbcbe35c7abd82b9eabf94f6b797d2',1,'tvm::relay']]],
