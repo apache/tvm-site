@@ -121,7 +121,9 @@ and run the model all using `tvmc micro` command.
 #
 # To generate a Zephyr project we use TVM Micro subcommand ``create``. We pass the MLF format and the path
 # for the project to ``create`` subcommand along with project options. Project options for each
-# platform (Zephyr/Arduino) are defined in their Project API server file. To generate Zephyr project, run:
+# platform (Zephyr/Arduino) are defined in their Project API server file. To build
+# Zephyr project for a different Zephyr board, change ``zephyr_board`` project option.
+# To generate Zephyr project, run:
 #
 # .. code-block:: bash
 #
@@ -153,11 +155,9 @@ and run the model all using `tvmc micro` command.
 #
 #	  tvmc micro build \
 #	      project \
-#	      zephyr \
-#	      --project-option zephyr_board=qemu_x86
+#	      zephyr
 #
-# This will build the project in ``project`` directory and generates binary files under ``project/build``. To build
-# Zephyr project for a different Zephyr board, change ``zephyr_board`` project option.
+# This will build the project in ``project`` directory and generates binary files under ``project/build``.
 #
 # Next, we flash the Zephyr binary file to Zephyr device. For ``qemu_x86`` Zephyr board this step does not
 # actually perform any action since QEMU will be used, however you need this step for physical hardware.
@@ -166,8 +166,7 @@ and run the model all using `tvmc micro` command.
 #
 #	  tvmc micro flash \
 #	      project \
-#	      zephyr \
-#	      --project-option zephyr_board=qemu_x86
+#	      zephyr
 #
 
 ############################################################
@@ -185,7 +184,6 @@ and run the model all using `tvmc micro` command.
 #	  tvmc run \
 #	      --device micro \
 #	      project \
-#	      --project-option zephyr_board=qemu_x86 \
 #	      --fill-mode ones \
 #	      --print-top 4
 #
