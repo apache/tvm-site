@@ -163,7 +163,7 @@ var searchData=
   ['return_5fcounts',['return_counts',['../structtvm_1_1relay_1_1UniqueAttrs.html#a5ada31d79efbeb340a0cd7d5ca7c1afb',1,'tvm::relay::UniqueAttrs']]],
   ['return_5findices',['return_indices',['../structtvm_1_1relay_1_1NonMaximumSuppressionAttrs.html#a595087194062b5cce8a36479fa82716b',1,'tvm::relay::NonMaximumSuppressionAttrs']]],
   ['return_5fregister_5f',['return_register_',['../classtvm_1_1runtime_1_1vm_1_1VirtualMachine.html#afd0505002da7e7f86f82b2f3325ff127',1,'tvm::runtime::vm::VirtualMachine']]],
-  ['return_5ftype',['return_type',['../classtvm_1_1script_1_1printer_1_1FunctionDocNode.html#af76cc754a708203aa52348dce5b43b7b',1,'tvm::script::printer::FunctionDocNode']]],
+  ['return_5ftype',['return_type',['../classtvm_1_1script_1_1printer_1_1FunctionDocNode.html#a4df963355e51d3604a23b916715831d9',1,'tvm::script::printer::FunctionDocNode']]],
   ['returndoc',['ReturnDoc',['../classtvm_1_1script_1_1printer_1_1ReturnDoc.html',1,'tvm::script::printer::ReturnDoc'],['../classtvm_1_1script_1_1printer_1_1ReturnDoc.html#afcf99665a7639d31b82c6cacc498a49d',1,'tvm::script::printer::ReturnDoc::ReturnDoc()']]],
   ['returndocnode',['ReturnDocNode',['../classtvm_1_1script_1_1printer_1_1ReturnDocNode.html',1,'tvm::script::printer']]],
   ['reverse_5fiterator',['reverse_iterator',['../classtvm_1_1runtime_1_1Array.html#a4886f1509998e380f032896a5afb27b9',1,'tvm::runtime::Array']]],
