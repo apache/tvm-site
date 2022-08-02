@@ -32,7 +32,7 @@ var searchData=
   ['updatescopeblockinfo',['UpdateScopeBlockInfo',['../classtvm_1_1tir_1_1ScheduleStateNode.html#abac7984938cf7013b6cedf3e018972f3',1,'tvm::tir::ScheduleStateNode']]],
   ['updatestagetoaxesmap',['UpdateStageToAxesMap',['../namespacetvm_1_1auto__scheduler.html#af721042ba0b561f387dbcc5d2fe3b5b0',1,'tvm::auto_scheduler']]],
   ['updatetypedef',['UpdateTypeDef',['../classtvm_1_1IRModuleNode.html#a63b73181faaa31a95e8d71e1cf5b80b2',1,'tvm::IRModuleNode']]],
-  ['upper',['upper',['../classtvm_1_1arith_1_1IntGroupBoundsNode.html#a0473d6f99a005affcbb47c63d6094b9b',1,'tvm::arith::IntGroupBoundsNode']]],
+  ['upper',['upper',['../classtvm_1_1arith_1_1IntGroupBoundsNode.html#a0473d6f99a005affcbb47c63d6094b9b',1,'tvm::arith::IntGroupBoundsNode::upper()'],['../structtvm_1_1relay_1_1TriluAttrs.html#a756c8f48263f01a7aae18948d3db5211',1,'tvm::relay::TriluAttrs::upper()']]],
   ['upsampling3dattrs',['UpSampling3DAttrs',['../structtvm_1_1relay_1_1UpSampling3DAttrs.html',1,'tvm::relay']]],
   ['upsamplingattrs',['UpSamplingAttrs',['../structtvm_1_1relay_1_1UpSamplingAttrs.html',1,'tvm::relay']]],
   ['use_5fcount',['use_count',['../classtvm_1_1runtime_1_1NDArray.html#aa1e7d2346052e198b409966eb67be92b',1,'tvm::runtime::NDArray::use_count()'],['../classtvm_1_1runtime_1_1ObjectPtr.html#a7e9be91964e9a50d32d85280eabff23a',1,'tvm::runtime::ObjectPtr::use_count()'],['../classtvm_1_1runtime_1_1ObjectRef.html#a0ae0da21d247cd87ea94fe3777c4405e',1,'tvm::runtime::ObjectRef::use_count()']]],

@@ -270,6 +270,7 @@ var searchData=
   ['attrsnode_3c_20tileattrs_20_3e',['AttrsNode&lt; TileAttrs &gt;',['../classtvm_1_1AttrsNode.html',1,'tvm']]],
   ['attrsnode_3c_20topkattrs_20_3e',['AttrsNode&lt; TopKAttrs &gt;',['../classtvm_1_1AttrsNode.html',1,'tvm']]],
   ['attrsnode_3c_20transposeattrs_20_3e',['AttrsNode&lt; TransposeAttrs &gt;',['../classtvm_1_1AttrsNode.html',1,'tvm']]],
+  ['attrsnode_3c_20triluattrs_20_3e',['AttrsNode&lt; TriluAttrs &gt;',['../classtvm_1_1AttrsNode.html',1,'tvm']]],
   ['attrsnode_3c_20uniformattrs_20_3e',['AttrsNode&lt; UniformAttrs &gt;',['../classtvm_1_1AttrsNode.html',1,'tvm']]],
   ['attrsnode_3c_20uniqueattrs_20_3e',['AttrsNode&lt; UniqueAttrs &gt;',['../classtvm_1_1AttrsNode.html',1,'tvm']]],
   ['attrsnode_3c_20upsampling3dattrs_20_3e',['AttrsNode&lt; UpSampling3DAttrs &gt;',['../classtvm_1_1AttrsNode.html',1,'tvm']]],

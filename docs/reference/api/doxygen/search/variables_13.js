@@ -6,5 +6,5 @@ var searchData=
   ['units',['units',['../structtvm_1_1relay_1_1BinaryDenseAttrs.html#a5373b2f2aac19653ae21aec74c69cdb0',1,'tvm::relay::BinaryDenseAttrs::units()'],['../structtvm_1_1relay_1_1MatmulAttrs.html#a5893df9ad99c6717c4e6cb440d60c6a1',1,'tvm::relay::MatmulAttrs::units()'],['../structtvm_1_1relay_1_1DenseAttrs.html#a497487f7ccced8c7492a5ed03f78fa8f',1,'tvm::relay::DenseAttrs::units()'],['../structtvm_1_1relay_1_1DensePackAttrs.html#aa0096c26c832166de13881a032ba3fbf',1,'tvm::relay::DensePackAttrs::units()']]],
   ['update',['update',['../classtvm_1_1te_1_1ScanOpNode.html#ace2bf7e43cd4197324ec6363626fc60a',1,'tvm::te::ScanOpNode']]],
   ['update_5ffunc',['update_func',['../classtvm_1_1auto__scheduler_1_1PythonBasedModelNode.html#ade9364c152a36501d4f24fa4f0111519',1,'tvm::auto_scheduler::PythonBasedModelNode']]],
-  ['upper',['upper',['../classtvm_1_1arith_1_1IntGroupBoundsNode.html#a0473d6f99a005affcbb47c63d6094b9b',1,'tvm::arith::IntGroupBoundsNode']]]
+  ['upper',['upper',['../classtvm_1_1arith_1_1IntGroupBoundsNode.html#a0473d6f99a005affcbb47c63d6094b9b',1,'tvm::arith::IntGroupBoundsNode::upper()'],['../structtvm_1_1relay_1_1TriluAttrs.html#a756c8f48263f01a7aae18948d3db5211',1,'tvm::relay::TriluAttrs::upper()']]]
 ];
