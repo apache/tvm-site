@@ -20,6 +20,7 @@ var searchData=
   ['defaulttaskfilterallowextern',['DefaultTaskFilterAllowExtern',['../namespacetvm_1_1meta__schedule.html#a0e8137392aa14c76011c2f313d1a02c0',1,'tvm::meta_schedule']]],
   ['defaulttimer',['DefaultTimer',['../namespacetvm_1_1runtime.html#ab69f2cbb94a9c579ee870ca7f186cf10',1,'tvm::runtime']]],
   ['defequal',['DefEqual',['../classtvm_1_1SEqualReducer.html#a62ba4c55928d4886853f9c33f4147340',1,'tvm::SEqualReducer']]],
+  ['deferfail',['DeferFail',['../classtvm_1_1SEqualReducer_1_1Handler.html#aa59c1a7a863c81f2a903795b1a96f986',1,'tvm::SEqualReducer::Handler']]],
   ['defhash',['DefHash',['../classtvm_1_1SHashReducer.html#a74260485bd50d1bfa52ded457a6a7777',1,'tvm::SHashReducer']]],
   ['defined',['defined',['../classtvm_1_1runtime_1_1ObjectRef.html#a17d8d5ad92691f9e18e3e0ae8ef69e4f',1,'tvm::runtime::ObjectRef']]],
   ['defuseops',['DefuseOps',['../namespacetvm_1_1relay_1_1transform.html#a8f3eee7092f7e3e58e1c76f4498e32e7',1,'tvm::relay::transform']]],

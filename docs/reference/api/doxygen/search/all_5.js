@@ -48,6 +48,7 @@ var searchData=
   ['defaulttaskfilterallowextern',['DefaultTaskFilterAllowExtern',['../namespacetvm_1_1meta__schedule.html#a0e8137392aa14c76011c2f313d1a02c0',1,'tvm::meta_schedule']]],
   ['defaulttimer',['DefaultTimer',['../namespacetvm_1_1runtime.html#ab69f2cbb94a9c579ee870ca7f186cf10',1,'tvm::runtime']]],
   ['defequal',['DefEqual',['../classtvm_1_1SEqualReducer.html#a62ba4c55928d4886853f9c33f4147340',1,'tvm::SEqualReducer']]],
+  ['deferfail',['DeferFail',['../classtvm_1_1SEqualReducer_1_1Handler.html#aa59c1a7a863c81f2a903795b1a96f986',1,'tvm::SEqualReducer::Handler']]],
   ['defhash',['DefHash',['../classtvm_1_1SHashReducer.html#a74260485bd50d1bfa52ded457a6a7777',1,'tvm::SHashReducer']]],
   ['define_5foverload_5fslice_5fbinary_5fop',['DEFINE_OVERLOAD_SLICE_BINARY_OP',['../tensor_8h.html#ae0fd4dc106013194f57e4db8454083e7',1,'tensor.h']]],
   ['define_5foverload_5fslice_5funary_5fop',['DEFINE_OVERLOAD_SLICE_UNARY_OP',['../tensor_8h.html#a2a32e5f31a6c0d80884b4aa9822dbbac',1,'tensor.h']]],
