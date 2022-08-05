@@ -90,7 +90,7 @@ var searchData=
   ['stackattrs',['StackAttrs',['../structtvm_1_1relay_1_1StackAttrs.html',1,'tvm::relay']]],
   ['stage',['Stage',['../classtvm_1_1te_1_1Stage.html',1,'tvm::te::Stage'],['../classtvm_1_1auto__scheduler_1_1Stage.html',1,'tvm::auto_scheduler::Stage']]],
   ['stageattributes',['StageAttributes',['../structtvm_1_1auto__scheduler_1_1StageAttributes.html',1,'tvm::auto_scheduler']]],
-  ['stagenode',['StageNode',['../classtvm_1_1auto__scheduler_1_1StageNode.html',1,'tvm::auto_scheduler::StageNode'],['../classtvm_1_1te_1_1StageNode.html',1,'tvm::te::StageNode']]],
+  ['stagenode',['StageNode',['../classtvm_1_1te_1_1StageNode.html',1,'tvm::te::StageNode'],['../classtvm_1_1auto__scheduler_1_1StageNode.html',1,'tvm::auto_scheduler::StageNode']]],
   ['state',['State',['../classtvm_1_1auto__scheduler_1_1State.html',1,'tvm::auto_scheduler']]],
   ['statenode',['StateNode',['../classtvm_1_1auto__scheduler_1_1StateNode.html',1,'tvm::auto_scheduler']]],
   ['step',['Step',['../classtvm_1_1auto__scheduler_1_1Step.html',1,'tvm::auto_scheduler']]],
