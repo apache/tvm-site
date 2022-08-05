@@ -240,6 +240,7 @@ var searchData=
   ['assignpoolinfo',['AssignPoolInfo',['../namespacetvm_1_1tir_1_1usmp_1_1transform.html#a1b12a47b959ac6298f1e3df40ed48458',1,'tvm::tir::usmp::transform']]],
   ['assignstmtpoolallocations',['AssignStmtPoolAllocations',['../namespacetvm_1_1tir_1_1usmp.html#a4933c94607060c1ce922d43c30ad0c59',1,'tvm::tir::usmp']]],
   ['assigntypedlambda',['AssignTypedLambda',['../classtvm_1_1runtime_1_1TypedPackedFunc_3_01R_07Args_8_8_8_08_4.html#a11985d7fdcf9ac60ff34faef89382284',1,'tvm::runtime::TypedPackedFunc&lt; R(Args...)&gt;::AssignTypedLambda(FType flambda, std::string name)'],['../classtvm_1_1runtime_1_1TypedPackedFunc_3_01R_07Args_8_8_8_08_4.html#a617bb54ee3fbe9704131229efd0d903c',1,'tvm::runtime::TypedPackedFunc&lt; R(Args...)&gt;::AssignTypedLambda(FType flambda)']]],
+  ['assume',['assume',['../namespacetvm_1_1tir_1_1builtin.html#a0b3d8f41abba4b7dd4a9af8ec2f9acba',1,'tvm::tir::builtin']]],
   ['astable',['AsTable',['../classtvm_1_1runtime_1_1profiling_1_1ReportNode.html#a0e4562c552d973853fb01d7bc501d591',1,'tvm::runtime::profiling::ReportNode']]],
   ['astext',['AsText',['../namespacetvm.html#ad0e4314dd85303aa5e10d452e4c9db54',1,'tvm']]],
   ['async_5fcommit_5fqueue_5fscope',['async_commit_queue_scope',['../namespacetvm_1_1tir_1_1attr.html#a5f02d8d6218ac28f5a4cee86173c9131',1,'tvm::tir::attr']]],
