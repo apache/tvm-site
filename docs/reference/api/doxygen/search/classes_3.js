@@ -8,6 +8,8 @@ var searchData=
   ['datatypepattern',['DataTypePattern',['../classtvm_1_1relay_1_1DataTypePattern.html',1,'tvm::relay']]],
   ['datatypepatternnode',['DataTypePatternNode',['../classtvm_1_1relay_1_1DataTypePatternNode.html',1,'tvm::relay']]],
   ['debugattrs',['DebugAttrs',['../structtvm_1_1relay_1_1DebugAttrs.html',1,'tvm::relay']]],
+  ['declbuffer',['DeclBuffer',['../classtvm_1_1tir_1_1DeclBuffer.html',1,'tvm::tir']]],
+  ['declbuffernode',['DeclBufferNode',['../classtvm_1_1tir_1_1DeclBufferNode.html',1,'tvm::tir']]],
   ['deformableconv2dattrs',['DeformableConv2DAttrs',['../structtvm_1_1relay_1_1DeformableConv2DAttrs.html',1,'tvm::relay']]],
   ['denseattrs',['DenseAttrs',['../structtvm_1_1relay_1_1DenseAttrs.html',1,'tvm::relay']]],
   ['densemapnode',['DenseMapNode',['../classtvm_1_1runtime_1_1DenseMapNode.html',1,'tvm::runtime']]],
