@@ -75,6 +75,7 @@ var searchData=
   ['mulnode',['MulNode',['../classtvm_1_1tir_1_1MulNode.html',1,'tvm::tir']]],
   ['multiboxpriorattrs',['MultiBoxPriorAttrs',['../structtvm_1_1relay_1_1MultiBoxPriorAttrs.html',1,'tvm::relay']]],
   ['multiboxtransformlocattrs',['MultiBoxTransformLocAttrs',['../structtvm_1_1relay_1_1MultiBoxTransformLocAttrs.html',1,'tvm::relay']]],
+  ['multinomialattrs',['MultinomialAttrs',['../structtvm_1_1relay_1_1MultinomialAttrs.html',1,'tvm::relay']]],
   ['mutator',['Mutator',['../classtvm_1_1meta__schedule_1_1Mutator.html',1,'tvm::meta_schedule']]],
   ['mutatornode',['MutatorNode',['../classtvm_1_1meta__schedule_1_1MutatorNode.html',1,'tvm::meta_schedule']]]
 ];

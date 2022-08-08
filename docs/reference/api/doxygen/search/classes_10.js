@@ -88,7 +88,7 @@ var searchData=
   ['splitstepnode',['SplitStepNode',['../classtvm_1_1auto__scheduler_1_1SplitStepNode.html',1,'tvm::auto_scheduler']]],
   ['squeezeattrs',['SqueezeAttrs',['../structtvm_1_1relay_1_1SqueezeAttrs.html',1,'tvm::relay']]],
   ['stackattrs',['StackAttrs',['../structtvm_1_1relay_1_1StackAttrs.html',1,'tvm::relay']]],
-  ['stage',['Stage',['../classtvm_1_1auto__scheduler_1_1Stage.html',1,'tvm::auto_scheduler::Stage'],['../classtvm_1_1te_1_1Stage.html',1,'tvm::te::Stage']]],
+  ['stage',['Stage',['../classtvm_1_1te_1_1Stage.html',1,'tvm::te::Stage'],['../classtvm_1_1auto__scheduler_1_1Stage.html',1,'tvm::auto_scheduler::Stage']]],
   ['stageattributes',['StageAttributes',['../structtvm_1_1auto__scheduler_1_1StageAttributes.html',1,'tvm::auto_scheduler']]],
   ['stagenode',['StageNode',['../classtvm_1_1te_1_1StageNode.html',1,'tvm::te::StageNode'],['../classtvm_1_1auto__scheduler_1_1StageNode.html',1,'tvm::auto_scheduler::StageNode']]],
   ['state',['State',['../classtvm_1_1auto__scheduler_1_1State.html',1,'tvm::auto_scheduler']]],
