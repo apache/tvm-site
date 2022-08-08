@@ -46,6 +46,7 @@ var searchData=
   ['removenoop',['RemoveNoOp',['../namespacetvm_1_1tir_1_1transform.html#a8aad1159425e29be796562b2ec629b10',1,'tvm::tir::transform']]],
   ['removerpcsessionmask',['RemoveRPCSessionMask',['../namespacetvm_1_1runtime.html#af32398517b6b915361c5716f8e32c16f',1,'tvm::runtime']]],
   ['removerv',['RemoveRV',['../classtvm_1_1tir_1_1ScheduleNode.html#a70d353bb52f6fa29fedeb90a6ff872d5',1,'tvm::tir::ScheduleNode::RemoveRV(const BlockRV &amp;block_rv)=0'],['../classtvm_1_1tir_1_1ScheduleNode.html#a7c44d4f4ea662291ccb9d79383b6fefe',1,'tvm::tir::ScheduleNode::RemoveRV(const LoopRV &amp;loop_rv)=0'],['../classtvm_1_1tir_1_1ScheduleNode.html#a00fcf343d2bc8f36f170c04e5e29d2dc',1,'tvm::tir::ScheduleNode::RemoveRV(const ExprRV &amp;expr_rv)=0']]],
+  ['removestandalonereshapes',['RemoveStandaloneReshapes',['../namespacetvm_1_1relay_1_1transform.html#abf8753e6152a3ce13488eea22827cac9',1,'tvm::relay::transform']]],
   ['removeunusedfunctions',['RemoveUnusedFunctions',['../namespacetvm_1_1relay_1_1transform.html#afbbf5f3e5ffb775fafb9c48473dbfa24',1,'tvm::relay::transform']]],
   ['removeweightlayoutrewriteblock',['RemoveWeightLayoutRewriteBlock',['../namespacetvm_1_1tir_1_1transform.html#a3751bb39f2b5fe3b9ef20fd57db828e5',1,'tvm::tir::transform']]],
   ['rend',['rend',['../classtvm_1_1runtime_1_1Array.html#a1dda4b706346d1299cea059957e9ee70',1,'tvm::runtime::Array']]],

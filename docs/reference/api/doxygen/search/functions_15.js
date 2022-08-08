@@ -3,7 +3,7 @@ var searchData=
   ['uint',['UInt',['../classtvm_1_1runtime_1_1DataType.html#ad1cf4571ee1a22c188c66ee2e6e6c042',1,'tvm::runtime::DataType']]],
   ['unannotate',['Unannotate',['../classtvm_1_1tir_1_1ScheduleNode.html#a45cd553c09ec836dfcbff81379647f07',1,'tvm::tir::ScheduleNode::Unannotate(const LoopRV &amp;loop_rv, const String &amp;ann_key)=0'],['../classtvm_1_1tir_1_1ScheduleNode.html#a7c310bca5d1583e61a3f27052a1dd5d0',1,'tvm::tir::ScheduleNode::Unannotate(const BlockRV &amp;block_rv, const String &amp;ann_key)=0']]],
   ['uncps',['UnCPS',['../namespacetvm_1_1relay.html#a1677d450d58078811f52fd70d67db515',1,'tvm::relay']]],
-  ['undef',['Undef',['../classtvm_1_1tir_1_1Layout.html#a1c7bdf466d341ad61aba104db318ee0e',1,'tvm::tir::Layout']]],
+  ['undef',['Undef',['../classtvm_1_1tir_1_1Layout.html#a1c7bdf466d341ad61aba104db318ee0e',1,'tvm::tir::Layout::Undef()'],['../namespacetvm_1_1tir_1_1builtin.html#a77a72a2e21fe0ea2118479924b4fb877',1,'tvm::tir::builtin::undef()']]],
   ['undefinedvars',['UndefinedVars',['../namespacetvm_1_1tir.html#ae110e02855d8bc12eb8b6f92ed391844',1,'tvm::tir::UndefinedVars(const Stmt &amp;stmt, const Array&lt; Var &gt; &amp;defs)'],['../namespacetvm_1_1tir.html#a99de316b20c7af2e8b4f06773ee69a5a',1,'tvm::tir::UndefinedVars(const PrimExpr &amp;expr)']]],
   ['unframer',['Unframer',['../classtvm_1_1runtime_1_1micro__rpc_1_1Unframer.html#a58d68e70d1819a706669c9934dd07639',1,'tvm::runtime::micro_rpc::Unframer']]],
   ['unifiedstaticmemoryplanner',['UnifiedStaticMemoryPlanner',['../namespacetvm_1_1tir_1_1transform.html#aca44076eb1085d664877596a8b8587d4',1,'tvm::tir::transform']]],
