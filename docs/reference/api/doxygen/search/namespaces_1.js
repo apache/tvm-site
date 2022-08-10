@@ -8,7 +8,7 @@ var searchData=
   ['codegen',['codegen',['../namespacetvm_1_1codegen.html',1,'tvm']]],
   ['contrib',['contrib',['../namespacetvm_1_1runtime_1_1contrib.html',1,'tvm::runtime::contrib'],['../namespacetvm_1_1topi_1_1contrib.html',1,'tvm::topi::contrib']]],
   ['cuda',['cuda',['../namespacetvm_1_1topi_1_1cuda.html',1,'tvm::topi']]],
-  ['detail',['detail',['../namespacetvm_1_1detail.html',1,'tvm']]],
+  ['detail',['detail',['../namespacetvm_1_1detail.html',1,'tvm::detail'],['../namespacetvm_1_1script_1_1printer_1_1detail.html',1,'tvm::script::printer::detail']]],
   ['generic',['generic',['../namespacetvm_1_1topi_1_1generic.html',1,'tvm::topi']]],
   ['instrument',['instrument',['../namespacetvm_1_1instrument.html',1,'tvm']]],
   ['meta_5fschedule',['meta_schedule',['../namespacetvm_1_1meta__schedule.html',1,'tvm']]],

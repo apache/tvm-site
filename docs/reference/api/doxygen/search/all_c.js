@@ -58,6 +58,7 @@ var searchData=
   ['kcustombegin',['kCustomBegin',['../classtvm_1_1runtime_1_1DataType.html#a3c9ce1627be2550f656cd37b6c698c7da92916e0b7138b26e222f4b85618bd5b4',1,'tvm::runtime::DataType']]],
   ['kdatapar',['kDataPar',['../namespacetvm_1_1tir.html#add7d0a6b1dd91f0c3c5dd2f4cf64358ea943fcb20375772edb59ea948f6cc9422',1,'tvm::tir']]],
   ['kdefault',['kDefault',['../namespacetvm_1_1tir.html#a9ac05a14db42ca73da1d3945e7ce2fd1a4500370408bf0077c86a795cbe9dbf39',1,'tvm::tir::kDefault()'],['../namespacetvm.html#a85e4536ea4e1c8d3d48c61135f0a8ff0a6867faeaa475fda467e48267db2bb8a8',1,'tvm::kDefault()']]],
+  ['kdefaultdispatchtoken',['kDefaultDispatchToken',['../namespacetvm_1_1script_1_1printer.html#a236ba2b9c23dc35e181a7c4883dda0b3',1,'tvm::script::printer']]],
   ['kdefaultworkspacealignment',['kDefaultWorkspaceAlignment',['../namespacetvm_1_1runtime.html#a551bab1e24e2e794f8ccd4446b63a7af',1,'tvm::runtime']]],
   ['kdepthwiseconv2dbackinputnhwc',['kDepthwiseConv2dBackInputNHWC',['../namespacetvm_1_1topi.html#aad71825e552f8805698db11912c017b6',1,'tvm::topi']]],
   ['kdepthwiseconv2dbackweightnhwc',['kDepthwiseConv2dBackWeightNHWC',['../namespacetvm_1_1topi.html#a969830c2a564f886efdd2ab7555028f8',1,'tvm::topi']]],
