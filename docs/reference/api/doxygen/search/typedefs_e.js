@@ -1,5 +1,6 @@
 var searchData=
 [
+  ['targetfeatures',['TargetFeatures',['../namespacetvm.html#ace51b98f2d1eed6026fff207a3065749',1,'tvm']]],
   ['targetjson',['TargetJSON',['../namespacetvm.html#ad27a76489f3ede07b5d3f0dd3f97d93c',1,'tvm']]],
   ['tcalleffectkind',['TCallEffectKind',['../namespacetvm_1_1tir.html#a651e82a046f157a7d286b0985b3edb84',1,'tvm::tir']]],
   ['tensortype',['TensorType',['../namespacetvm_1_1relay.html#a52c13723bba53f4953dfd10c34d480f8',1,'tvm::relay']]],

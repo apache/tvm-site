@@ -45,6 +45,7 @@ var searchData=
   ['target_5fparser',['target_parser',['../classtvm_1_1TargetKindNode.html#a713525ca63d41aacadec9db01d28f59f',1,'tvm::TargetKindNode']]],
   ['target_5fshape',['target_shape',['../structtvm_1_1relay_1_1AffineGridAttrs.html#a3e8a722c28015e4fa002da324fc6d5b3',1,'tvm::relay::AffineGridAttrs']]],
   ['target_5fstage_5fid',['target_stage_id',['../classtvm_1_1auto__scheduler_1_1ComputeAtStepNode.html#ad3c69aebb4b821c8e975ce0c58dc8bbb',1,'tvm::auto_scheduler::ComputeAtStepNode']]],
+  ['targetfeatures',['TargetFeatures',['../namespacetvm.html#ace51b98f2d1eed6026fff207a3065749',1,'tvm']]],
   ['targetinternal',['TargetInternal',['../classtvm_1_1TargetNode.html#a7924ccb2fdea6074cca1978c062fb034',1,'tvm::TargetNode::TargetInternal()'],['../classtvm_1_1Target.html#a7924ccb2fdea6074cca1978c062fb034',1,'tvm::Target::TargetInternal()'],['../classtvm_1_1TargetKindNode.html#a7924ccb2fdea6074cca1978c062fb034',1,'tvm::TargetKindNode::TargetInternal()'],['../classtvm_1_1TargetKind.html#a7924ccb2fdea6074cca1978c062fb034',1,'tvm::TargetKind::TargetInternal()']]],
   ['targetjson',['TargetJSON',['../namespacetvm.html#ad27a76489f3ede07b5d3f0dd3f97d93c',1,'tvm']]],
   ['targetkind',['TargetKind',['../classtvm_1_1TargetKind.html',1,'tvm::TargetKind'],['../classtvm_1_1TargetKindRegEntry.html#a75150485a300a03a22d9edad8619cc25',1,'tvm::TargetKindRegEntry::TargetKind()'],['../classtvm_1_1TargetKind.html#ae811f35863758fb8d1340b14df5cd5fb',1,'tvm::TargetKind::TargetKind()']]],
