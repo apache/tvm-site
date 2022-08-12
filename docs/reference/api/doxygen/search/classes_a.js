@@ -51,6 +51,8 @@ var searchData=
   ['metadataarraynode',['MetadataArrayNode',['../classtvm_1_1runtime_1_1metadata_1_1MetadataArrayNode.html',1,'tvm::runtime::metadata']]],
   ['metadatabase',['MetadataBase',['../classtvm_1_1runtime_1_1metadata_1_1MetadataBase.html',1,'tvm::runtime::metadata']]],
   ['metadatabasenode',['MetadataBaseNode',['../classtvm_1_1runtime_1_1metadata_1_1MetadataBaseNode.html',1,'tvm::runtime::metadata']]],
+  ['metadataframe',['MetadataFrame',['../classtvm_1_1script_1_1printer_1_1MetadataFrame.html',1,'tvm::script::printer']]],
+  ['metadataframenode',['MetadataFrameNode',['../classtvm_1_1script_1_1printer_1_1MetadataFrameNode.html',1,'tvm::script::printer']]],
   ['metadatanode',['MetadataNode',['../classtvm_1_1runtime_1_1metadata_1_1MetadataNode.html',1,'tvm::runtime::metadata']]],
   ['metaschedulelayouttransformattrs',['MetaScheduleLayoutTransformAttrs',['../structtvm_1_1relay_1_1MetaScheduleLayoutTransformAttrs.html',1,'tvm::relay']]],
   ['metriccollector',['MetricCollector',['../classtvm_1_1runtime_1_1profiling_1_1MetricCollector.html',1,'tvm::runtime::profiling']]],

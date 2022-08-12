@@ -51,6 +51,7 @@ var searchData=
   ['metadata',['Metadata',['../classtvm_1_1runtime_1_1metadata_1_1Metadata.html#a27735af93ebc35d49585dd7bba5ac099',1,'tvm::runtime::metadata::Metadata']]],
   ['metadataarray',['MetadataArray',['../classtvm_1_1runtime_1_1metadata_1_1MetadataArray.html#a3cbc9ba7a9824b0883fdf41fc618a6ce',1,'tvm::runtime::metadata::MetadataArray']]],
   ['metadataarraynode',['MetadataArrayNode',['../classtvm_1_1runtime_1_1metadata_1_1MetadataArrayNode.html#a6cbf55589a406b5f7db5262d7b838c34',1,'tvm::runtime::metadata::MetadataArrayNode']]],
+  ['metadataframe',['MetadataFrame',['../classtvm_1_1script_1_1printer_1_1MetadataFrame.html#a151d6ceefa292776ead1d172cd4100d3',1,'tvm::script::printer::MetadataFrame']]],
   ['metadatanode',['MetadataNode',['../classtvm_1_1runtime_1_1metadata_1_1MetadataNode.html#a30ec8e29d72334f4988d5c56b4e3252b',1,'tvm::runtime::metadata::MetadataNode']]],
   ['metaschedulelayoutrewrite',['MetaScheduleLayoutRewrite',['../namespacetvm_1_1relay_1_1transform.html#ab6ad9422e60b1e2c7b211dfd3209959f',1,'tvm::relay::transform']]],
   ['microtvmrpcserverinit',['MicroTVMRpcServerInit',['../microtvm__rpc__server_8h.html#a41af24898cb2f55e348151c40a68d909',1,'microtvm_rpc_server.h']]],

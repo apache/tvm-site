@@ -19,6 +19,8 @@ var searchData=
   ['_7eexprfunctor',['~ExprFunctor',['../classtvm_1_1relay_1_1ExprFunctor_3_01R_07const_01Expr_01_6n_00_01Args_8_8_8_08_4.html#ae79b1dffcf943b65cc439b8a9f4697a2',1,'tvm::relay::ExprFunctor&lt; R(const Expr &amp;n, Args...)&gt;::~ExprFunctor()'],['../classtvm_1_1tir_1_1ExprFunctor_3_01R_07const_01PrimExpr_01_6n_00_01Args_8_8_8_08_4.html#a463951999eb3aa125880d5b6aa1f9191',1,'tvm::tir::ExprFunctor&lt; R(const PrimExpr &amp;n, Args...)&gt;::~ExprFunctor()']]],
   ['_7eexprrewriter',['~ExprRewriter',['../classtvm_1_1relay_1_1ExprRewriter.html#adb911620f3da201d0c28e8b5f6421210',1,'tvm::relay::ExprRewriter']]],
   ['_7efeatureextractornode',['~FeatureExtractorNode',['../classtvm_1_1meta__schedule_1_1FeatureExtractorNode.html#a8770cce78f5e5f6ee14bf5e3e12988f4',1,'tvm::meta_schedule::FeatureExtractorNode']]],
+  ['_7eframe',['~Frame',['../classtvm_1_1script_1_1printer_1_1Frame.html#a33536abbf65eda4b50988ee9349e61ae',1,'tvm::script::printer::Frame']]],
+  ['_7eframenode',['~FrameNode',['../classtvm_1_1script_1_1printer_1_1FrameNode.html#afec47fe4d24a62a89be3840164d3b27d',1,'tvm::script::printer::FrameNode']]],
   ['_7einplacearraybase',['~InplaceArrayBase',['../classtvm_1_1runtime_1_1InplaceArrayBase.html#ad1cf3446de62c7aba99235f2843f839f',1,'tvm::runtime::InplaceArrayBase']]],
   ['_7einstruction',['~Instruction',['../structtvm_1_1runtime_1_1vm_1_1Instruction.html#aff9f0ab6000156b24ef3631caf5972bd',1,'tvm::runtime::vm::Instruction']]],
   ['_7elet',['~Let',['../classtvm_1_1relay_1_1Let.html#a120792e57bc08f1da8c78aa3b7fcf0d4',1,'tvm::relay::Let']]],
