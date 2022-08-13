@@ -136,6 +136,7 @@ var searchData=
   ['istuplegetitem',['IsTupleGetItem',['../namespacetvm_1_1relay.html#a48710b93ea41c2d528b042010bd12b7b',1,'tvm::relay']]],
   ['isvalidplacement',['IsValidPlacement',['../classtvm_1_1tir_1_1usmp_1_1algo_1_1GreedyBase.html#a48a1bdc94c70a008640b9a015e785729',1,'tvm::tir::usmp::algo::GreedyBase']]],
   ['isvar',['IsVar',['../namespacetvm_1_1relay.html#a87ffafe11fe1e83a7fa2e066c1090d16',1,'tvm::relay']]],
+  ['isvardefined',['IsVarDefined',['../classtvm_1_1script_1_1printer_1_1VarTableNode.html#a313beb2575c9f803a1a324f5d1e9dac9',1,'tvm::script::printer::VarTableNode']]],
   ['isvoidtype',['IsVoidType',['../namespacetvm.html#a196edb73fc9f13d965b8de1c9287a2db',1,'tvm']]],
   ['iswildcard',['IsWildcard',['../namespacetvm_1_1relay.html#a5c78c2a253dbcaf1f8d326e059d95a18',1,'tvm::relay']]],
   ['iteradapter',['IterAdapter',['../classtvm_1_1runtime_1_1IterAdapter.html#abd170b9025d87892f41780c2a4d8bbfc',1,'tvm::runtime::IterAdapter']]],
