@@ -1,6 +1,7 @@
 var searchData=
 [
   ['manager_5fctx',['manager_ctx',['../classtvm_1_1runtime_1_1NDArray_1_1ContainerBase.html#a56d07e60df973dcf2b99ef6a204bb184',1,'tvm::runtime::NDArray::ContainerBase']]],
+  ['manifest_5fshared_5fmemory_5flocal_5fstage',['manifest_shared_memory_local_stage',['../namespacetvm_1_1tir_1_1attr.html#a1a992522880c3206e3c5ca39f2524906',1,'tvm::tir::attr']]],
   ['map_5f',['map_',['../classtvm_1_1AttrRegistryMap.html#a09551a76dd955d6d497a4ba80c43ba25',1,'tvm::AttrRegistryMap']]],
   ['mask_5fvalue',['mask_value',['../structtvm_1_1relay_1_1SequenceMaskAttrs.html#a89976b047aa6fa83747077ed0260a5aa',1,'tvm::relay::SequenceMaskAttrs']]],
   ['match_5fbuffers',['match_buffers',['../classtvm_1_1tir_1_1BlockNode.html#a559127f111637f9a04b2584c47e28e44',1,'tvm::tir::BlockNode']]],
