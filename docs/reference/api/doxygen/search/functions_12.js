@@ -28,7 +28,7 @@ var searchData=
   ['refvalue',['RefValue',['../classtvm_1_1relay_1_1RefValue.html#a00145f9fe1eaf86bfecdbf3c2aac0b0c',1,'tvm::relay::RefValue']]],
   ['refvalueobj',['RefValueObj',['../structtvm_1_1relay_1_1RefValueObj.html#ab78c67945509950f453e51c6f9ddeb96',1,'tvm::relay::RefValueObj']]],
   ['refwrite',['RefWrite',['../classtvm_1_1relay_1_1RefWrite.html#ab6d1e69a58b59c18535ca3624ea1c89f',1,'tvm::relay::RefWrite']]],
-  ['register',['Register',['../classtvm_1_1ReflectionVTable.html#a775a9d85f429302c05e06ddc64eb9456',1,'tvm::ReflectionVTable::Register()'],['../classtvm_1_1runtime_1_1Registry.html#a227ffef03991cd50224d5d31257a475a',1,'tvm::runtime::Registry::Register()'],['../classtvm_1_1tir_1_1TensorIntrin.html#a8810ffa628acd57f68e427d5135ee436',1,'tvm::tir::TensorIntrin::Register()']]],
+  ['register',['Register',['../classtvm_1_1ReflectionVTable.html#a775a9d85f429302c05e06ddc64eb9456',1,'tvm::ReflectionVTable::Register()'],['../classtvm_1_1runtime_1_1Registry.html#a227ffef03991cd50224d5d31257a475a',1,'tvm::runtime::Registry::Register()'],['../classtvm_1_1tir_1_1TensorIntrin.html#ab7d377d5e592ad6784972cd9f097dedf',1,'tvm::tir::TensorIntrin::Register()']]],
   ['register_5ffunc',['register_func',['../classtvm_1_1GenericFunc.html#a2a5ef71cd38881b0ef73efa8f0b5fdc8',1,'tvm::GenericFunc']]],
   ['registerconfigoption',['RegisterConfigOption',['../classtvm_1_1transform_1_1PassContext.html#a6f1d1040cc97320414b4690203f87919',1,'tvm::transform::PassContext']]],
   ['registergenericfunc',['RegisterGenericFunc',['../classtvm_1_1GenericFunc.html#a909acecbf2f34f847a34e587a4570dce',1,'tvm::GenericFunc']]],

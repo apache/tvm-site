@@ -75,7 +75,7 @@ var searchData=
   ['region',['region',['../classtvm_1_1tir_1_1BufferRegionNode.html#ae5713a8e3be26e0814ae53b573d8efd2',1,'tvm::tir::BufferRegionNode::region()'],['../namespacetvm_1_1tir.html#a8277e2a3d81a80a4776705673df51e0a',1,'tvm::tir::Region()']]],
   ['region_5fcover',['region_cover',['../structtvm_1_1tir_1_1BlockInfo.html#acad11c72a22380e65695be584f294d4e',1,'tvm::tir::BlockInfo']]],
   ['regions',['regions',['../classtvm_1_1te_1_1TensorIntrinCallNode.html#a4c934a6d85bf27b3263ad0d79fb17144',1,'tvm::te::TensorIntrinCallNode']]],
-  ['register',['Register',['../classtvm_1_1ReflectionVTable.html#a775a9d85f429302c05e06ddc64eb9456',1,'tvm::ReflectionVTable::Register()'],['../classtvm_1_1runtime_1_1Registry.html#a227ffef03991cd50224d5d31257a475a',1,'tvm::runtime::Registry::Register()'],['../classtvm_1_1tir_1_1TensorIntrin.html#a8810ffa628acd57f68e427d5135ee436',1,'tvm::tir::TensorIntrin::Register()']]],
+  ['register',['Register',['../classtvm_1_1ReflectionVTable.html#a775a9d85f429302c05e06ddc64eb9456',1,'tvm::ReflectionVTable::Register()'],['../classtvm_1_1runtime_1_1Registry.html#a227ffef03991cd50224d5d31257a475a',1,'tvm::runtime::Registry::Register()'],['../classtvm_1_1tir_1_1TensorIntrin.html#ab7d377d5e592ad6784972cd9f097dedf',1,'tvm::tir::TensorIntrin::Register()']]],
   ['register_5ffile',['register_file',['../structtvm_1_1runtime_1_1vm_1_1VMFrame.html#a583dcf6c0ed3f3d2916679382c7a0775',1,'tvm::runtime::vm::VMFrame']]],
   ['register_5ffile_5fsize',['register_file_size',['../structtvm_1_1runtime_1_1vm_1_1VMFunction.html#a5b910095e5c2826cf57793afb4f2078a',1,'tvm::runtime::vm::VMFunction']]],
   ['register_5ffunc',['register_func',['../classtvm_1_1GenericFunc.html#a2a5ef71cd38881b0ef73efa8f0b5fdc8',1,'tvm::GenericFunc']]],
