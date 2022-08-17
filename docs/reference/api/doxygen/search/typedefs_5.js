@@ -65,7 +65,7 @@ var searchData=
   ['ftvmstrategy',['FTVMStrategy',['../namespacetvm_1_1relay.html#a2eb2ad4e7a83e0a28e2ad073d7bf9305',1,'tvm::relay']]],
   ['ftvmtargetparser',['FTVMTargetParser',['../namespacetvm.html#a069e7a9aa20098c3406c6fbcf29092b3',1,'tvm']]],
   ['ftvmtirtoruntime',['FTVMTIRToRuntime',['../namespacetvm.html#ade89c3d682d83c2e14ec9337084541e3',1,'tvm']]],
-  ['ftype',['FType',['../classtvm_1_1ReprPrinter.html#aee843a9a8b4885f5797843bed6467415',1,'tvm::ReprPrinter']]],
+  ['ftype',['FType',['../classtvm_1_1ReprPrinter.html#aee843a9a8b4885f5797843bed6467415',1,'tvm::ReprPrinter::FType()'],['../classtvm_1_1script_1_1printer_1_1IRDocsifier.html#a28fb3ee300e6f3ae41c5185798bef2b2',1,'tvm::script::printer::IRDocsifier::FType()']]],
   ['functype',['FuncType',['../namespacetvm_1_1relay.html#aa475de90506d48a1bb04ef6d1bd99bfb',1,'tvm::relay']]],
   ['functypenode',['FuncTypeNode',['../namespacetvm_1_1relay.html#ab551714015417af28d5ca2b47722997e',1,'tvm::relay']]],
   ['fupdate',['FUpdate',['../classtvm_1_1meta__schedule_1_1PyCostModelNode.html#a3587a71c7cad0a8403b7e89ef81839d6',1,'tvm::meta_schedule::PyCostModelNode']]],

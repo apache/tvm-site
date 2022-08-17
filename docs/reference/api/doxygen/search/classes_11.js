@@ -22,7 +22,7 @@ var searchData=
   ['tensordom',['TensorDom',['../structtvm_1_1te_1_1TensorDom.html',1,'tvm::te']]],
   ['tensorinfo',['TensorInfo',['../classtvm_1_1meta__schedule_1_1TensorInfo.html',1,'tvm::meta_schedule::TensorInfo'],['../classtvm_1_1runtime_1_1metadata_1_1TensorInfo.html',1,'tvm::runtime::metadata::TensorInfo']]],
   ['tensorinfonode',['TensorInfoNode',['../classtvm_1_1meta__schedule_1_1TensorInfoNode.html',1,'tvm::meta_schedule::TensorInfoNode'],['../classtvm_1_1runtime_1_1metadata_1_1TensorInfoNode.html',1,'tvm::runtime::metadata::TensorInfoNode']]],
-  ['tensorintrin',['TensorIntrin',['../classtvm_1_1tir_1_1TensorIntrin.html',1,'tvm::tir::TensorIntrin'],['../classtvm_1_1te_1_1TensorIntrin.html',1,'tvm::te::TensorIntrin']]],
+  ['tensorintrin',['TensorIntrin',['../classtvm_1_1te_1_1TensorIntrin.html',1,'tvm::te::TensorIntrin'],['../classtvm_1_1tir_1_1TensorIntrin.html',1,'tvm::tir::TensorIntrin']]],
   ['tensorintrincall',['TensorIntrinCall',['../classtvm_1_1te_1_1TensorIntrinCall.html',1,'tvm::te']]],
   ['tensorintrincallnode',['TensorIntrinCallNode',['../classtvm_1_1te_1_1TensorIntrinCallNode.html',1,'tvm::te']]],
   ['tensorintrinnode',['TensorIntrinNode',['../classtvm_1_1te_1_1TensorIntrinNode.html',1,'tvm::te::TensorIntrinNode'],['../classtvm_1_1tir_1_1TensorIntrinNode.html',1,'tvm::tir::TensorIntrinNode']]],

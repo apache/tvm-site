@@ -145,6 +145,7 @@ var searchData=
   ['disabled_5fpass',['disabled_pass',['../classtvm_1_1transform_1_1PassContextNode.html#ad42fa984f8ff1dad24cc77d0a39e96a0',1,'tvm::transform::PassContextNode']]],
   ['disallowdynamicloop',['DisallowDynamicLoop',['../classtvm_1_1meta__schedule_1_1Postproc.html#af3d76d03f0c508b985f7050f0e18732d',1,'tvm::meta_schedule::Postproc']]],
   ['dispatch_5fdict_5f',['dispatch_dict_',['../classtvm_1_1GenericFuncNode.html#af9c722adc3fc97ade2c64c7e140462ea',1,'tvm::GenericFuncNode']]],
+  ['dispatch_5ftokens',['dispatch_tokens',['../classtvm_1_1script_1_1printer_1_1IRDocsifierNode.html#a4f761637ee382f3755cb199563edbe2c',1,'tvm::script::printer::IRDocsifierNode']]],
   ['dispatched',['dispatched',['../classtvm_1_1meta__schedule_1_1ExtractedTaskNode.html#a89729717843a9ea91a4535bafee8b14f',1,'tvm::meta_schedule::ExtractedTaskNode']]],
   ['dispatchtable',['DispatchTable',['../namespacetvm_1_1script_1_1printer.html#ab9739153b156e4bb274ff3be6f4490b0',1,'tvm::script::printer']]],
   ['dispatchvisitexpr',['DispatchVisitExpr',['../classtvm_1_1relay_1_1MixedModeMutator.html#abf42e17fa95968153e0cff75c6280918',1,'tvm::relay::MixedModeMutator']]],

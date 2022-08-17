@@ -36,6 +36,7 @@ var searchData=
   ['inverse_5ftransformation',['inverse_transformation',['../classtvm_1_1te_1_1TransformNode.html#a53a5dc162fe1e4a3a51be454ce03bba2',1,'tvm::te::TransformNode']]],
   ['invoke_5fargs_5fregisters',['invoke_args_registers',['../structtvm_1_1runtime_1_1vm_1_1Instruction.html#a6fc678bca0e215303087981a79f23b7f',1,'tvm::runtime::vm::Instruction']]],
   ['iou_5floss',['iou_loss',['../structtvm_1_1relay_1_1ProposalAttrs.html#a0f8dbb0dfdc411a67254588e4ccf0f65',1,'tvm::relay::ProposalAttrs']]],
+  ['ir_5fprefix',['ir_prefix',['../classtvm_1_1script_1_1printer_1_1IRDocsifierNode.html#adccf933a99d410b630f223ac1afe548f',1,'tvm::script::printer::IRDocsifierNode']]],
   ['irmod_5fstorage_5fidx',['irmod_storage_idx',['../classtvm_1_1tir_1_1AllocateConstNode.html#a13983d7ae23271c7fed4794de0110c96',1,'tvm::tir::AllocateConstNode']]],
   ['is_5fascend',['is_ascend',['../structtvm_1_1relay_1_1ArgsortAttrs.html#a97f3acf400fafc612854c955a88673ea',1,'tvm::relay::ArgsortAttrs::is_ascend()'],['../structtvm_1_1relay_1_1TopKAttrs.html#ae2ccec6187706f54757242e1839bb2d1',1,'tvm::relay::TopKAttrs::is_ascend()']]],
   ['is_5finput',['is_input',['../structtvm_1_1relay_1_1ShapeFuncAttrs.html#a1697a5a1b9e17876dd1a3db8a31264a5',1,'tvm::relay::ShapeFuncAttrs']]],

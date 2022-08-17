@@ -40,6 +40,7 @@ var searchData=
   ['dim_5falign_5foffset',['dim_align_offset',['../classtvm_1_1te_1_1IterVarAttrNode.html#aa75bbe1b6c521352553752261a1b6f50',1,'tvm::te::IterVarAttrNode']]],
   ['disabled_5fpass',['disabled_pass',['../classtvm_1_1transform_1_1PassContextNode.html#ad42fa984f8ff1dad24cc77d0a39e96a0',1,'tvm::transform::PassContextNode']]],
   ['dispatch_5fdict_5f',['dispatch_dict_',['../classtvm_1_1GenericFuncNode.html#af9c722adc3fc97ade2c64c7e140462ea',1,'tvm::GenericFuncNode']]],
+  ['dispatch_5ftokens',['dispatch_tokens',['../classtvm_1_1script_1_1printer_1_1IRDocsifierNode.html#a4f761637ee382f3755cb199563edbe2c',1,'tvm::script::printer::IRDocsifierNode']]],
   ['dispatched',['dispatched',['../classtvm_1_1meta__schedule_1_1ExtractedTaskNode.html#a89729717843a9ea91a4535bafee8b14f',1,'tvm::meta_schedule::ExtractedTaskNode']]],
   ['dl_5ftensor',['dl_tensor',['../classtvm_1_1runtime_1_1NDArray_1_1ContainerBase.html#a1063a9d01075d5b7b0e8fa31d4d72e0b',1,'tvm::runtime::NDArray::ContainerBase']]],
   ['dltype',['dltype',['../structTVMGraphExecutorGraphAttr.html#af3ed0db451f21fc34f34d1c345f209ee',1,'TVMGraphExecutorGraphAttr']]],

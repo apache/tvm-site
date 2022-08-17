@@ -82,6 +82,7 @@ var searchData=
   ['array_3c_20tvm_3a_3ascript_3a_3aprinter_3a_3aassigndoc_20_3e',['Array&lt; tvm::script::printer::AssignDoc &gt;',['../classtvm_1_1runtime_1_1Array.html',1,'tvm::runtime']]],
   ['array_3c_20tvm_3a_3ascript_3a_3aprinter_3a_3adoc_20_3e',['Array&lt; tvm::script::printer::Doc &gt;',['../classtvm_1_1runtime_1_1Array.html',1,'tvm::runtime']]],
   ['array_3c_20tvm_3a_3ascript_3a_3aprinter_3a_3aexprdoc_20_3e',['Array&lt; tvm::script::printer::ExprDoc &gt;',['../classtvm_1_1runtime_1_1Array.html',1,'tvm::runtime']]],
+  ['array_3c_20tvm_3a_3ascript_3a_3aprinter_3a_3aframe_20_3e',['Array&lt; tvm::script::printer::Frame &gt;',['../classtvm_1_1runtime_1_1Array.html',1,'tvm::runtime']]],
   ['array_3c_20tvm_3a_3ascript_3a_3aprinter_3a_3aiddoc_20_3e',['Array&lt; tvm::script::printer::IdDoc &gt;',['../classtvm_1_1runtime_1_1Array.html',1,'tvm::runtime']]],
   ['array_3c_20tvm_3a_3ascript_3a_3aprinter_3a_3astmtdoc_20_3e',['Array&lt; tvm::script::printer::StmtDoc &gt;',['../classtvm_1_1runtime_1_1Array.html',1,'tvm::runtime']]],
   ['array_3c_20tvm_3a_3atarget_20_3e',['Array&lt; tvm::Target &gt;',['../classtvm_1_1runtime_1_1Array.html',1,'tvm::runtime']]],
