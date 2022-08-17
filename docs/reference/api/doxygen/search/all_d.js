@@ -87,6 +87,7 @@ var searchData=
   ['localrunnernode',['LocalRunnerNode',['../classtvm_1_1auto__scheduler_1_1LocalRunnerNode.html',1,'tvm::auto_scheduler']]],
   ['log',['log',['../namespacetvm.html#ae39f72b12020a4f7ad6b16b66ffdfe1f',1,'tvm::log()'],['../namespacetvm_1_1topi.html#a524b8bb4fe7a02478ea617911cf467ab',1,'tvm::topi::log()']]],
   ['log10',['log10',['../namespacetvm.html#a16a5aa0300233b6c5fbcc61c424eee30',1,'tvm::log10()'],['../namespacetvm_1_1topi.html#aa4595c96c60e3706f30f24d33d53a09c',1,'tvm::topi::log10()']]],
+  ['log1p',['log1p',['../namespacetvm.html#a2cc4aceb274161870cfd06afacda5ca1',1,'tvm']]],
   ['log2',['log2',['../namespacetvm.html#ac1b3a94a13d11c02d7e79cad2638e74a',1,'tvm::log2()'],['../namespacetvm_1_1topi.html#aaceb4adcd60aafeae114358c8880605f',1,'tvm::topi::log2()']]],
   ['log_5fsoftmax',['log_softmax',['../namespacetvm_1_1topi_1_1nn.html#ac0e20b6b30ec8296c1f037866d3bf772',1,'tvm::topi::nn']]],
   ['logging_5ffunc',['logging_func',['../classtvm_1_1meta__schedule_1_1ApplyHistoryBestNode.html#a928dee9281dff37dffb2a06bb3343ceb',1,'tvm::meta_schedule::ApplyHistoryBestNode::logging_func()'],['../classtvm_1_1meta__schedule_1_1TaskSchedulerNode.html#a07a1fd8f9f93808ae7474a53a7ee534d',1,'tvm::meta_schedule::TaskSchedulerNode::logging_func()'],['../classtvm_1_1meta__schedule_1_1TuneContextNode.html#a4ede62a091db49ae8e67d84cfba1e859',1,'tvm::meta_schedule::TuneContextNode::logging_func()']]],
