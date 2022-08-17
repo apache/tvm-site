@@ -338,8 +338,6 @@ var searchData=
   ['tvm_5fthrow_5flast_5ferror',['tvm_throw_last_error',['../namespacetvm_1_1tir_1_1builtin.html#a92624d2aa5c435cd7a0ea8efb698a115',1,'tvm::tir::builtin']]],
   ['tvm_5ftuple',['tvm_tuple',['../namespacetvm_1_1tir_1_1builtin.html#ab424ca353ceedd88a95fc37eeb9628a9',1,'tvm::tir::builtin']]],
   ['tvm_5ftype_5ffunctor_5fdispatch',['TVM_TYPE_FUNCTOR_DISPATCH',['../type__functor_8h.html#afaa114a04d18cd3f8f11995628692d74',1,'type_functor.h']]],
-  ['tvm_5fuse_5fcxx14_5fstring_5fview_5fhash',['TVM_USE_CXX14_STRING_VIEW_HASH',['../string_8h.html#a6407a1cc4df1e6d995286b6d00f98bff',1,'string.h']]],
-  ['tvm_5fuse_5fcxx17_5fstring_5fview_5fhash',['TVM_USE_CXX17_STRING_VIEW_HASH',['../string_8h.html#a08f8776a8d5e0590a2ffc7adb0932909',1,'string.h']]],
   ['tvm_5fversion',['TVM_VERSION',['../c__runtime__api_8h.html#a429515e9851601ec44c8ed421521ab6d',1,'c_runtime_api.h']]],
   ['tvm_5fwarp_5factivemask',['tvm_warp_activemask',['../namespacetvm_1_1tir_1_1builtin.html#afc4086a245ded9076de226ae802ced32',1,'tvm::tir::builtin']]],
   ['tvm_5fwarp_5fshuffle',['tvm_warp_shuffle',['../namespacetvm_1_1tir_1_1builtin.html#aca44a85c87273dfab1731421f4edd2bf',1,'tvm::tir::builtin']]],
