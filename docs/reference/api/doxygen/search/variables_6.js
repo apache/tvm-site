@@ -56,7 +56,7 @@ var searchData=
   ['forward_5ftransformation',['forward_transformation',['../classtvm_1_1te_1_1TransformNode.html#a2480d6a3523a2b84f4482697b9cc7d91',1,'tvm::te::TransformNode']]],
   ['fragment_5flayout',['fragment_layout',['../namespacetvm_1_1tir_1_1attr.html#a9b33cc65f756817e691b49782ee103bd',1,'tvm::tir::attr']]],
   ['fragment_5fshape',['fragment_shape',['../namespacetvm_1_1tir_1_1attr.html#a93d76d80fd7252d66991dc650693c0ef',1,'tvm::tir::attr']]],
-  ['frames',['frames',['../classtvm_1_1script_1_1printer_1_1IRDocsifierNode.html#a9a7d03d50540d3dd488a80975839f17d',1,'tvm::script::printer::IRDocsifierNode']]],
+  ['frames',['frames',['../classtvm_1_1script_1_1ir__builder_1_1IRBuilderNode.html#af189985143a48d9ab31addfe3734b877',1,'tvm::script::ir_builder::IRBuilderNode::frames()'],['../classtvm_1_1script_1_1printer_1_1IRDocsifierNode.html#a9a7d03d50540d3dd488a80975839f17d',1,'tvm::script::printer::IRDocsifierNode::frames()']]],
   ['frames_5f',['frames_',['../classtvm_1_1runtime_1_1vm_1_1VirtualMachine.html#a4a268dec17fdd0942fe7dce78974783f',1,'tvm::runtime::vm::VirtualMachine']]],
   ['free',['Free',['../structMemoryManagerInterface.html#af3f3f69ae8896ce0632a59cbe7632c91',1,'MemoryManagerInterface']]],
   ['free_5fvars',['free_vars',['../structtvm_1_1runtime_1_1vm_1_1Instruction.html#a720b762553a301b526d66042afcd5ca3',1,'tvm::runtime::vm::Instruction::free_vars()'],['../classtvm_1_1runtime_1_1vm_1_1VMClosureObj.html#ab16d6772f7b61f37b47ee7aa30aaa4cd',1,'tvm::runtime::vm::VMClosureObj::free_vars()']]],

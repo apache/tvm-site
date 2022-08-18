@@ -4,7 +4,7 @@ var searchData=
   ['call',['Call',['../structTVMPackedFunc.html#a8d30f9231108fec5e01b06f1c49d0681',1,'TVMPackedFunc']]],
   ['callable_5f',['callable_',['../classtvm_1_1runtime_1_1PackedFuncSubObj.html#a969aa766a25d7e9091e08b3a8e1ea974',1,'tvm::runtime::PackedFuncSubObj']]],
   ['callback_5ffunc',['callback_func',['../classtvm_1_1auto__scheduler_1_1PythonBasedMeasureCallbackNode.html#ad5ca2368cd2735e14aa30921cc28716c',1,'tvm::auto_scheduler::PythonBasedMeasureCallbackNode']]],
-  ['callbacks',['callbacks',['../classtvm_1_1auto__scheduler_1_1ProgramMeasurerNode.html#a9454dd321ce373cb2434f10d392db345',1,'tvm::auto_scheduler::ProgramMeasurerNode']]],
+  ['callbacks',['callbacks',['../classtvm_1_1auto__scheduler_1_1ProgramMeasurerNode.html#a9454dd321ce373cb2434f10d392db345',1,'tvm::auto_scheduler::ProgramMeasurerNode::callbacks()'],['../classtvm_1_1script_1_1ir__builder_1_1IRBuilderFrameNode.html#aa21f554fdcf6ab78c55cb54cdc69c0c2',1,'tvm::script::ir_builder::IRBuilderFrameNode::callbacks()']]],
   ['callee',['callee',['../classtvm_1_1script_1_1printer_1_1CallDocNode.html#afd99b131a9accf85284b528203e71413',1,'tvm::script::printer::CallDocNode']]],
   ['caller_5freturn_5fregister',['caller_return_register',['../structtvm_1_1runtime_1_1vm_1_1VMFrame.html#a2f6c425a89ee6872ead9bc71ab87fdd1',1,'tvm::runtime::vm::VMFrame']]],
   ['calls',['calls',['../classtvm_1_1runtime_1_1profiling_1_1ReportNode.html#a260723c8cfdf288106cc7195da2b30a0',1,'tvm::runtime::profiling::ReportNode']]],

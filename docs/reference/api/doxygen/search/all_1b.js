@@ -23,6 +23,8 @@ var searchData=
   ['_7eframenode',['~FrameNode',['../classtvm_1_1script_1_1printer_1_1FrameNode.html#afec47fe4d24a62a89be3840164d3b27d',1,'tvm::script::printer::FrameNode']]],
   ['_7einplacearraybase',['~InplaceArrayBase',['../classtvm_1_1runtime_1_1InplaceArrayBase.html#ad1cf3446de62c7aba99235f2843f839f',1,'tvm::runtime::InplaceArrayBase']]],
   ['_7einstruction',['~Instruction',['../structtvm_1_1runtime_1_1vm_1_1Instruction.html#aff9f0ab6000156b24ef3631caf5972bd',1,'tvm::runtime::vm::Instruction']]],
+  ['_7eirbuilderframe',['~IRBuilderFrame',['../classtvm_1_1script_1_1ir__builder_1_1IRBuilderFrame.html#ae9333580d4c7e8211eae6e27080ba0bb',1,'tvm::script::ir_builder::IRBuilderFrame']]],
+  ['_7eirbuilderframenode',['~IRBuilderFrameNode',['../classtvm_1_1script_1_1ir__builder_1_1IRBuilderFrameNode.html#a8e61799eac4e806aef5a87d07943883d',1,'tvm::script::ir_builder::IRBuilderFrameNode']]],
   ['_7elet',['~Let',['../classtvm_1_1relay_1_1Let.html#a120792e57bc08f1da8c78aa3b7fcf0d4',1,'tvm::relay::Let']]],
   ['_7emeasurecallbacknode',['~MeasureCallbackNode',['../classtvm_1_1meta__schedule_1_1MeasureCallbackNode.html#ace03428649a595cf3e7c7b4a516366d7',1,'tvm::meta_schedule::MeasureCallbackNode']]],
   ['_7emetriccollectornode',['~MetricCollectorNode',['../classtvm_1_1runtime_1_1profiling_1_1MetricCollectorNode.html#aeb383df9354bf396426a17857a1bb84a',1,'tvm::runtime::profiling::MetricCollectorNode']]],

@@ -1,5 +1,6 @@
 var searchData=
 [
+  ['namer',['Namer',['../classtvm_1_1script_1_1ir__builder_1_1details_1_1Namer.html',1,'tvm::script::ir_builder::details']]],
   ['namesupply',['NameSupply',['../classtvm_1_1NameSupply.html',1,'tvm']]],
   ['namesupplynode',['NameSupplyNode',['../classtvm_1_1NameSupplyNode.html',1,'tvm']]],
   ['ndarray',['NDArray',['../classtvm_1_1runtime_1_1NDArray.html',1,'tvm::runtime']]],
