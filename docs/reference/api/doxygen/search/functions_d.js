@@ -45,6 +45,7 @@ var searchData=
   ['measureinput',['MeasureInput',['../classtvm_1_1auto__scheduler_1_1MeasureInput.html#aeba14979d93b0302ede5668b168098af',1,'tvm::auto_scheduler::MeasureInput']]],
   ['measureresult',['MeasureResult',['../classtvm_1_1auto__scheduler_1_1MeasureResult.html#a5023e3b9ad54d569fa7435aade73fd7d',1,'tvm::auto_scheduler::MeasureResult']]],
   ['mem_5fcopy',['mem_copy',['../namespacetvm_1_1tir_1_1builtin.html#a0aee850e8e98b29fbcc8f269f5136e92',1,'tvm::tir::builtin']]],
+  ['memorydatabase',['MemoryDatabase',['../classtvm_1_1meta__schedule_1_1Database.html#ad1c38592f69cc782314f4e1450230ace',1,'tvm::meta_schedule::Database']]],
   ['merge',['Merge',['../classtvm_1_1Span.html#ae8e7ed175f50096b7dd2bccd12998e21',1,'tvm::Span::Merge()'],['../namespacetvm_1_1runtime.html#aff337677f23f7d665960f553fb52ab86',1,'tvm::runtime::Merge()']]],
   ['mergedynamicsharedmemoryallocations',['MergeDynamicSharedMemoryAllocations',['../namespacetvm_1_1tir_1_1transform.html#a070137dbab05c63d4af6b77c25868a66',1,'tvm::tir::transform']]],
   ['meshgrid',['meshgrid',['../namespacetvm_1_1topi.html#a453f9f5a35a9852a086ce0228ee22164',1,'tvm::topi']]],

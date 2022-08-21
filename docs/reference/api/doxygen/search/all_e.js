@@ -115,6 +115,7 @@ var searchData=
   ['memory_5fpools_2eh',['memory_pools.h',['../memory__pools_8h.html',1,'']]],
   ['memory_5fpressure',['memory_pressure',['../structtvm_1_1tir_1_1usmp_1_1BufferInfoAnalysisNode.html#ae1ba470754329214107d1ec5e276c2b0',1,'tvm::tir::usmp::BufferInfoAnalysisNode']]],
   ['memory_5fscope',['memory_scope',['../classtvm_1_1VirtualDeviceNode.html#aa064c0bfcde20d10249291199908bf15',1,'tvm::VirtualDeviceNode']]],
+  ['memorydatabase',['MemoryDatabase',['../classtvm_1_1meta__schedule_1_1Database.html#ad1c38592f69cc782314f4e1450230ace',1,'tvm::meta_schedule::Database']]],
   ['memoryinfo',['MemoryInfo',['../classtvm_1_1MemoryInfo.html',1,'tvm']]],
   ['memoryinfonode',['MemoryInfoNode',['../classtvm_1_1MemoryInfoNode.html',1,'tvm']]],
   ['memorymanager',['MemoryManager',['../classtvm_1_1runtime_1_1vm_1_1MemoryManager.html',1,'tvm::runtime::vm']]],
