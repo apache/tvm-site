@@ -381,9 +381,13 @@
 </li>
 <li><p><a class="reference internal" href="#dealing-with-flakiness" id="id11">Dealing with Flakiness</a></p></li>
 <li><p><a class="reference internal" href="#skipping-ci" id="id12">Skipping CI</a></p></li>
-<li><p><a class="reference internal" href="#docker-images" id="id13">Docker Images</a></p></li>
-<li><p><a class="reference internal" href="#ci-docker-staging" id="id14"><code class="docutils literal notranslate"><span class="pre">ci-docker-staging</span></code></a></p></li>
-<li><p><a class="reference internal" href="#ci-monitoring-rotation" id="id15">CI Monitoring Rotation</a></p></li>
+<li><p><a class="reference internal" href="#docker-images" id="id13">Docker Images</a></p>
+<ul>
+<li><p><a class="reference internal" href="#adding-a-new-docker-image" id="id14">Adding a new Docker image</a></p></li>
+</ul>
+</li>
+<li><p><a class="reference internal" href="#ci-docker-staging" id="id15"><code class="docutils literal notranslate"><span class="pre">ci-docker-staging</span></code></a></p></li>
+<li><p><a class="reference internal" href="#ci-monitoring-rotation" id="id16">CI Monitoring Rotation</a></p></li>
 </ul>
 </li>
 </ul>
@@ -505,9 +509,33 @@ files are built nightly in Jenkins via the <a class="reference external" href="h
 The images for these containers are hosted in the <a class="reference external" href="https://hub.docker.com/u/tlcpack">tlcpack Docker Hub</a>
 and referenced in the <a class="reference external" href="https://github.com/apache/tvm/tree/main/Jenkinsfile.j2">Jenkinsfile.j2</a>. These can be inspected and run
 locally via standard Docker commands.</p>
+<div class="section" id="adding-a-new-docker-image">
+<h4><a class="toc-backref" href="#id14">Adding a new Docker image</a><a class="headerlink" href="#adding-a-new-docker-image" title="Permalink to this headline">¶</a></h4>
+<p>New docker images can be added to test TVM on a variety of platforms. Here are the steps for adding
+a new CI image:</p>
+<ol class="arabic">
+<li><p>Define the <code class="docutils literal notranslate"><span class="pre">docker/Dockerfile.ci_foo</span></code> and associated scripts in <code class="docutils literal notranslate"><span class="pre">docker/install</span></code>. Create a PR containing only these changes (no <code class="docutils literal notranslate"><span class="pre">Jenkinsfile</span></code> changes).</p>
+<p>Example: <a class="reference external" href="https://github.com/apache/tvm/pull/12230/files">https://github.com/apache/tvm/pull/12230/files</a></p>
+</li>
+<li><p>A committer verifies the image builds locally and then reviews/approves this PR.</p></li>
+<li><p>A committer creates the ci-foo repos in <a class="reference external" href="https://hub.docker.com/u/tlcpack">https://hub.docker.com/u/tlcpack</a> and <a class="reference external" href="https://hub.docker.com/u/tlcpackstaging">https://hub.docker.com/u/tlcpackstaging</a>.</p></li>
+<li><p>Create a PR to create an ECR repo for the image in tlcpack/ci: <a class="reference external" href="https://github.com/tlc-pack/ci/pull/46/files">https://github.com/tlc-pack/ci/pull/46/files</a></p></li>
+<li><p>A committer creates and gets merged a PR to add the image to the <code class="docutils literal notranslate"><span class="pre">Jenkinsfile</span></code></p>
+<blockquote>
+<div><p>Example: <a class="reference external" href="https://github.com/apache/tvm/pull/12369/files">https://github.com/apache/tvm/pull/12369/files</a>.</p>
+<p><strong>NOTE</strong>: The PR must be opened from a branch in apache/tvm, not from a branch in a forked repo.</p>
+</div></blockquote>
+</li>
+<li><p>A committer adds this image to the daily docker rebuild/validation run in tlcpack.</p>
+<blockquote>
+<div><p>Example: <a class="reference external" href="https://github.com/tlc-pack/tlcpack/pull/131">https://github.com/tlc-pack/tlcpack/pull/131</a></p>
+</div></blockquote>
+</li>
+</ol>
+</div>
 </div>
 <div class="section" id="ci-docker-staging">
-<h3><a class="toc-backref" href="#id14"><code class="docutils literal notranslate"><span class="pre">ci-docker-staging</span></code></a><a class="headerlink" href="#ci-docker-staging" title="Permalink to this headline">¶</a></h3>
+<h3><a class="toc-backref" href="#id15"><code class="docutils literal notranslate"><span class="pre">ci-docker-staging</span></code></a><a class="headerlink" href="#ci-docker-staging" title="Permalink to this headline">¶</a></h3>
 <p>The <a class="reference external" href="https://github.com/apache/tvm/tree/ci-docker-staging">ci-docker-staging</a>
 branch is typically used to test updates to Docker images and <code class="docutils literal notranslate"><span class="pre">Jenkinsfile</span></code> changes. When
 running a build for a normal PR from a forked repository, Jenkins uses the code
@@ -519,7 +547,7 @@ to &#64; a <a class="reference external" href="https://github.com/apache/tvm/tre
 and ask them to push your PR as a branch to test the changes.</p>
 </div>
 <div class="section" id="ci-monitoring-rotation">
-<h3><a class="toc-backref" href="#id15">CI Monitoring Rotation</a><a class="headerlink" href="#ci-monitoring-rotation" title="Permalink to this headline">¶</a></h3>
+<h3><a class="toc-backref" href="#id16">CI Monitoring Rotation</a><a class="headerlink" href="#ci-monitoring-rotation" title="Permalink to this headline">¶</a></h3>
 <p>Some tests are also flaky and occasionally fail for reasons unrelated to the PR. The
 <a class="reference external" href="https://github.com/apache/tvm/wiki/CI-Monitoring-Runbook">CI monitoring rotation</a> watches for these failures and
 disables tests as necessary. It is the responsibility of those who wrote the test to ultimately fix
