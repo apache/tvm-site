@@ -56,6 +56,8 @@ var searchData=
   ['errors',['errors',['../classtvm_1_1arith_1_1IterMapResultNode.html#aac82f4892c7c4722fe6418c4f44ae3f4',1,'tvm::arith::IterMapResultNode']]],
   ['escape',['Escape',['../namespacetvm_1_1runtime_1_1micro__rpc.html#ae62577b404cccb2018ca8576b1f75bb6',1,'tvm::runtime::micro_rpc']]],
   ['estimateregionlowerbound',['EstimateRegionLowerBound',['../namespacetvm_1_1arith.html#a31262f87a37f9f847ace3c5c8e81dcf5',1,'tvm::arith']]],
+  ['estimateregionstrictbound',['EstimateRegionStrictBound',['../namespacetvm_1_1arith.html#a82bd85ab31c2ecf2108971c801bb528e',1,'tvm::arith']]],
+  ['estimateregionupperbound',['EstimateRegionUpperBound',['../namespacetvm_1_1arith.html#adddc8a8fb2a3cf1b824de6dfe9b706a2',1,'tvm::arith']]],
   ['estimatetirflops',['EstimateTIRFlops',['../namespacetvm_1_1tir.html#a1674ab4f532cf0bd0a96a12165105d82',1,'tvm::tir::EstimateTIRFlops(const Stmt &amp;stmt)'],['../namespacetvm_1_1tir.html#ac0bc659ab2088eef1e5ec2dbe139e3f9',1,'tvm::tir::EstimateTIRFlops(const IRModule &amp;mod)']]],
   ['etaexpand',['EtaExpand',['../namespacetvm_1_1relay_1_1transform.html#a6e515696ecc9ff4222af99fef361de4e',1,'tvm::relay::transform']]],
   ['eval',['Eval',['../namespacetvm_1_1relay.html#ae87c7a3eb9be1113b92a7102806ab627',1,'tvm::relay']]],
