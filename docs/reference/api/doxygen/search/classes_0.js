@@ -31,8 +31,6 @@ var searchData=
   ['annotationstepnode',['AnnotationStepNode',['../classtvm_1_1auto__scheduler_1_1AnnotationStepNode.html',1,'tvm::auto_scheduler']]],
   ['any',['Any',['../classtvm_1_1tir_1_1Any.html',1,'tvm::tir']]],
   ['anynode',['AnyNode',['../classtvm_1_1tir_1_1AnyNode.html',1,'tvm::tir']]],
-  ['applyhistorybest',['ApplyHistoryBest',['../classtvm_1_1meta__schedule_1_1ApplyHistoryBest.html',1,'tvm::meta_schedule']]],
-  ['applyhistorybestnode',['ApplyHistoryBestNode',['../classtvm_1_1meta__schedule_1_1ApplyHistoryBestNode.html',1,'tvm::meta_schedule']]],
   ['arangeattrs',['ArangeAttrs',['../structtvm_1_1relay_1_1ArangeAttrs.html',1,'tvm::relay']]],
   ['arginfo',['ArgInfo',['../classtvm_1_1meta__schedule_1_1ArgInfo.html',1,'tvm::meta_schedule']]],
   ['arginfonode',['ArgInfoNode',['../classtvm_1_1meta__schedule_1_1ArgInfoNode.html',1,'tvm::meta_schedule']]],

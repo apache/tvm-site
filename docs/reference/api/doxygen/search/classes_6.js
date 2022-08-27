@@ -10,7 +10,7 @@ var searchData=
   ['globalpool2dattrs',['GlobalPool2DAttrs',['../structtvm_1_1relay_1_1GlobalPool2DAttrs.html',1,'tvm::relay']]],
   ['globaltypevar',['GlobalTypeVar',['../classtvm_1_1GlobalTypeVar.html',1,'tvm']]],
   ['globaltypevarnode',['GlobalTypeVarNode',['../classtvm_1_1GlobalTypeVarNode.html',1,'tvm']]],
-  ['globalvar',['GlobalVar',['../classtvm_1_1GlobalVar.html',1,'tvm::GlobalVar'],['../classGlobalVar.html',1,'GlobalVar']]],
+  ['globalvar',['GlobalVar',['../classGlobalVar.html',1,'GlobalVar'],['../classtvm_1_1GlobalVar.html',1,'tvm::GlobalVar']]],
   ['globalvarnode',['GlobalVarNode',['../classtvm_1_1GlobalVarNode.html',1,'tvm']]],
   ['globalvarsupply',['GlobalVarSupply',['../classtvm_1_1GlobalVarSupply.html',1,'tvm']]],
   ['globalvarsupplynode',['GlobalVarSupplyNode',['../classtvm_1_1GlobalVarSupplyNode.html',1,'tvm']]],
