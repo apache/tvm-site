@@ -77,6 +77,7 @@ var searchData=
   ['loadfromfile',['LoadFromFile',['../classtvm_1_1runtime_1_1Module.html#a1927112ff253c1a6150238257cc9d5dd',1,'tvm::runtime::Module']]],
   ['loadjson',['LoadJSON',['../namespacetvm.html#afa0a9bdf3997ef4fad45b19fb1a655cd',1,'tvm']]],
   ['loadlateboundconstantsfromfile',['LoadLateBoundConstantsFromFile',['../classtvm_1_1runtime_1_1vm_1_1Executable.html#a09a77db67e7e8a01be05f844d3f3dd53',1,'tvm::runtime::vm::Executable']]],
+  ['loadlateboundconstantsfrommap',['LoadLateBoundConstantsFromMap',['../classtvm_1_1runtime_1_1vm_1_1Executable.html#aa1e52496153fc99ed66db7ca54e1a3fc',1,'tvm::runtime::vm::Executable']]],
   ['loadlateboundconstantsfromstream',['LoadLateBoundConstantsFromStream',['../classtvm_1_1runtime_1_1vm_1_1Executable.html#a2c01fd2724008842e2fff9b7cf6eab33',1,'tvm::runtime::vm::Executable']]],
   ['loadnode',['LoadNode',['../classtvm_1_1tir_1_1LoadNode.html',1,'tvm::tir']]],
   ['loadscalarint',['LoadScalarInt',['../classtvm_1_1runtime_1_1vm_1_1VirtualMachine.html#a27fc0a1ece314cdd8478a5f68cdd3954',1,'tvm::runtime::vm::VirtualMachine']]],
