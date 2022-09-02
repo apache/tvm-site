@@ -142,6 +142,7 @@ var searchData=
   ['optional_3c_20tvm_3a_3atir_3a_3astmt_20_3e',['Optional&lt; tvm::tir::Stmt &gt;',['../classtvm_1_1runtime_1_1Optional.html',1,'tvm::runtime']]],
   ['optional_5fhomogeneous_5ftarget',['optional_homogeneous_target',['../classtvm_1_1CompilationConfigNode.html#ac29775462c7f70a3711221871fbd3453',1,'tvm::CompilationConfigNode']]],
   ['or',['Or',['../classtvm_1_1tir_1_1Or.html',1,'tvm::tir::Or'],['../classtvm_1_1tir_1_1Or.html#ab0b68884ed84d03d3af7c95da2fcf81e',1,'tvm::tir::Or::Or()']]],
+  ['ordereduniondatabase',['OrderedUnionDatabase',['../classtvm_1_1meta__schedule_1_1Database.html#ae4f6e0e951be446d2ab836eb8a9bcc83',1,'tvm::meta_schedule::Database']]],
   ['orig_5fiters',['orig_iters',['../classtvm_1_1auto__scheduler_1_1IteratorNode.html#aff59a8e6a213079e43469c9d751fc607',1,'tvm::auto_scheduler::IteratorNode']]],
   ['origin_5fop',['origin_op',['../classtvm_1_1te_1_1StageNode.html#a3e7c2fb80404a12a9e843fcb38accd78',1,'tvm::te::StageNode']]],
   ['original_5fvariables',['original_variables',['../classtvm_1_1te_1_1TransformNode.html#abc94c207521c4841843edd028aefcaeb',1,'tvm::te::TransformNode']]],
