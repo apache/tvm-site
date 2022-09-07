@@ -69,7 +69,7 @@ var searchData=
   ['func_5fname',['func_name',['../structTVMOpParam.html#abd9df291c3f6a23f4352a1bc2b6a7293',1,'TVMOpParam']]],
   ['funcs',['funcs',['../structTVMFuncRegistry.html#a25badb00e205aaa5c317bd61a4b88d96',1,'TVMFuncRegistry']]],
   ['function',['function',['../classtvm_1_1relay_1_1DFPatternCallbackNode.html#a878e6e49af2466c49ffd9fcfe7f609fa',1,'tvm::relay::DFPatternCallbackNode']]],
-  ['functions',['functions',['../classtvm_1_1IRModuleNode.html#a88423026ad43fa60158bc9a647704d93',1,'tvm::IRModuleNode::functions()'],['../classtvm_1_1runtime_1_1vm_1_1Executable.html#af7d75150b6a98a7766a552d7e7e34a11',1,'tvm::runtime::vm::Executable::functions()']]],
+  ['functions',['functions',['../classtvm_1_1IRModuleNode.html#a88423026ad43fa60158bc9a647704d93',1,'tvm::IRModuleNode::functions()'],['../classtvm_1_1runtime_1_1vm_1_1Executable.html#af7d75150b6a98a7766a552d7e7e34a11',1,'tvm::runtime::vm::Executable::functions()'],['../classtvm_1_1script_1_1ir__builder_1_1IRModuleFrameNode.html#a3b13febd5e64ea6c313c8ed746a69cdf',1,'tvm::script::ir_builder::IRModuleFrameNode::functions()']]],
   ['fused',['fused',['../classtvm_1_1te_1_1FuseNode.html#ad5abaac8d77c9c88ec374ae91d68cb88',1,'tvm::te::FuseNode']]],
   ['fused_5fids',['fused_ids',['../classtvm_1_1auto__scheduler_1_1FuseStepNode.html#a19c1a7b47f59a4f004a2dd9f354835eb',1,'tvm::auto_scheduler::FuseStepNode']]]
 ];

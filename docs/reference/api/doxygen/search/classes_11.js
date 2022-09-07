@@ -77,7 +77,7 @@ var searchData=
   ['tupletypenode',['TupleTypeNode',['../classtvm_1_1TupleTypeNode.html',1,'tvm']]],
   ['tvm_5fworkspace_5ft',['tvm_workspace_t',['../structtvm__workspace__t.html',1,'']]],
   ['tvmaotexecutor',['TVMAotExecutor',['../structTVMAotExecutor.html',1,'']]],
-  ['tvmargs',['TVMArgs',['../classtvm_1_1runtime_1_1TVMArgs.html',1,'tvm::runtime::TVMArgs'],['../structTVMArgs.html',1,'TVMArgs']]],
+  ['tvmargs',['TVMArgs',['../structTVMArgs.html',1,'TVMArgs'],['../classtvm_1_1runtime_1_1TVMArgs.html',1,'tvm::runtime::TVMArgs']]],
   ['tvmargssetter',['TVMArgsSetter',['../classtvm_1_1runtime_1_1TVMArgsSetter.html',1,'tvm::runtime']]],
   ['tvmargvalue',['TVMArgValue',['../classtvm_1_1runtime_1_1TVMArgValue.html',1,'tvm::runtime']]],
   ['tvmbytearray',['TVMByteArray',['../structTVMByteArray.html',1,'']]],
