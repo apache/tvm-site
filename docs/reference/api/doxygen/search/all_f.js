@@ -34,6 +34,7 @@ var searchData=
   ['newshape',['newshape',['../structtvm_1_1relay_1_1ReshapeAttrs.html#a9bca32c3acff2ed8fd6bc63a50f82051',1,'tvm::relay::ReshapeAttrs::newshape()'],['../structtvm_1_1relay_1_1ReshapeTensorAttrs.html#aaacd1ab5124b54316a9e1f3ef5a5ec3c',1,'tvm::relay::ReshapeTensorAttrs::newshape()'],['../structtvm_1_1runtime_1_1vm_1_1Instruction.html#a5602ccf14b6bd90e33a38c6ab82b0b57',1,'tvm::runtime::vm::Instruction::newshape()']]],
   ['next_5falloc',['next_alloc',['../structtvm__workspace__t.html#a5da9eaf15149d785a9b537f7c9e3945b',1,'tvm_workspace_t']]],
   ['nextafter',['nextafter',['../namespacetvm.html#a96d86ba91e4855c84879ba886465cacf',1,'tvm']]],
+  ['nextprobelocation',['NextProbeLocation',['../classtvm_1_1runtime_1_1DenseMapNode.html#ae0d84465db325f1e36e702d2b6232ad0',1,'tvm::runtime::DenseMapNode']]],
   ['nexttaskid',['NextTaskId',['../classtvm_1_1meta__schedule_1_1TaskSchedulerNode.html#a079e2964ca86b5c32564140efa3e5626',1,'tvm::meta_schedule::TaskSchedulerNode::NextTaskId()'],['../classtvm_1_1meta__schedule_1_1PyTaskSchedulerNode.html#a23752f62706ef3f0bfac98fb203e5062',1,'tvm::meta_schedule::PyTaskSchedulerNode::NextTaskId()']]],
   ['nll_5floss',['nll_loss',['../namespacetvm_1_1topi.html#aeb1547800d4b7625326a176ca1dec6e0',1,'tvm::topi']]],
   ['nlllossattrs',['NLLLossAttrs',['../structtvm_1_1relay_1_1NLLLossAttrs.html',1,'tvm::relay']]],
