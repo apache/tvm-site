@@ -126,7 +126,7 @@ var searchData=
   ['global_5fmap',['global_map',['../classtvm_1_1runtime_1_1vm_1_1Executable.html#a9a808f0c63ae0d65ad8d625e3a7cb749',1,'tvm::runtime::vm::Executable']]],
   ['global_5fpool',['global_pool',['../namespacetvm_1_1topi_1_1nn.html#af2bcf6bad18e028ce14ef854974629c0',1,'tvm::topi::nn']]],
   ['global_5fvar_5fsupply_2eh',['global_var_supply.h',['../global__var__supply_8h.html',1,'']]],
-  ['global_5fvars',['global_vars',['../classtvm_1_1script_1_1ir__builder_1_1IRModuleFrameNode.html#a8e9ef178971149d32df82eff0aae6bc6',1,'tvm::script::ir_builder::IRModuleFrameNode']]],
+  ['global_5fvars',['global_vars',['../classtvm_1_1script_1_1ir__builder_1_1ir_1_1IRModuleFrameNode.html#a80ced8edb1d3b2b836ffec226a8a63d3',1,'tvm::script::ir_builder::ir::IRModuleFrameNode']]],
   ['globalpool2dattrs',['GlobalPool2DAttrs',['../structtvm_1_1relay_1_1GlobalPool2DAttrs.html',1,'tvm::relay']]],
   ['globaltypevar',['GlobalTypeVar',['../classtvm_1_1GlobalTypeVar.html',1,'tvm::GlobalTypeVar'],['../classtvm_1_1GlobalTypeVar.html#a323a2269c3ab4edf67796d5d51fc5ebf',1,'tvm::GlobalTypeVar::GlobalTypeVar()'],['../namespacetvm_1_1relay.html#a2235e350f9cd1eac3aa0177034976043',1,'tvm::relay::GlobalTypeVar()']]],
   ['globaltypevarnode',['GlobalTypeVarNode',['../classtvm_1_1GlobalTypeVarNode.html',1,'tvm::GlobalTypeVarNode'],['../namespacetvm_1_1relay.html#a9a10e2305e3a50dd00e07b043b93b5e8',1,'tvm::relay::GlobalTypeVarNode()']]],

@@ -53,6 +53,7 @@ var searchData=
   ['optional_3c_20tvm_3a_3aruntime_3a_3aarray_3c_20tvm_3a_3ameta_5fschedule_3a_3ameasurecandidate_20_3e_20_3e',['Optional&lt; tvm::runtime::Array&lt; tvm::meta_schedule::MeasureCandidate &gt; &gt;',['../classtvm_1_1runtime_1_1Optional.html',1,'tvm::runtime']]],
   ['optional_3c_20tvm_3a_3aruntime_3a_3aarray_3c_20tvm_3a_3ameta_5fschedule_3a_3arunnerfuture_20_3e_20_3e',['Optional&lt; tvm::runtime::Array&lt; tvm::meta_schedule::RunnerFuture &gt; &gt;',['../classtvm_1_1runtime_1_1Optional.html',1,'tvm::runtime']]],
   ['optional_3c_20tvm_3a_3aruntime_3a_3amap_3c_20tvm_3a_3aruntime_3a_3astring_2c_20tvm_3a_3aruntime_3a_3andarray_20_3e_20_3e',['Optional&lt; tvm::runtime::Map&lt; tvm::runtime::String, tvm::runtime::NDArray &gt; &gt;',['../classtvm_1_1runtime_1_1Optional.html',1,'tvm::runtime']]],
+  ['optional_3c_20tvm_3a_3aruntime_3a_3amap_3c_20tvm_3a_3aruntime_3a_3astring_2c_20tvm_3a_3aruntime_3a_3aobjectref_20_3e_20_3e',['Optional&lt; tvm::runtime::Map&lt; tvm::runtime::String, tvm::runtime::ObjectRef &gt; &gt;',['../classtvm_1_1runtime_1_1Optional.html',1,'tvm::runtime']]],
   ['optional_3c_20tvm_3a_3aruntime_3a_3andarray_20_3e',['Optional&lt; tvm::runtime::NDArray &gt;',['../classtvm_1_1runtime_1_1Optional.html',1,'tvm::runtime']]],
   ['optional_3c_20tvm_3a_3aruntime_3a_3aobjectref_20_3e',['Optional&lt; tvm::runtime::ObjectRef &gt;',['../classtvm_1_1runtime_1_1Optional.html',1,'tvm::runtime']]],
   ['optional_3c_20tvm_3a_3aruntime_3a_3astring_20_3e',['Optional&lt; tvm::runtime::String &gt;',['../classtvm_1_1runtime_1_1Optional.html',1,'tvm::runtime']]],
@@ -60,6 +61,7 @@ var searchData=
   ['optional_3c_20tvm_3a_3atarget_20_3e',['Optional&lt; tvm::Target &gt;',['../classtvm_1_1runtime_1_1Optional.html',1,'tvm::runtime']]],
   ['optional_3c_20tvm_3a_3atir_3a_3aitervar_20_3e',['Optional&lt; tvm::tir::IterVar &gt;',['../classtvm_1_1runtime_1_1Optional.html',1,'tvm::runtime']]],
   ['optional_3c_20tvm_3a_3atir_3a_3astmt_20_3e',['Optional&lt; tvm::tir::Stmt &gt;',['../classtvm_1_1runtime_1_1Optional.html',1,'tvm::runtime']]],
+  ['optional_3c_20tvm_3a_3atype_20_3e',['Optional&lt; tvm::Type &gt;',['../classtvm_1_1runtime_1_1Optional.html',1,'tvm::runtime']]],
   ['or',['Or',['../classtvm_1_1tir_1_1Or.html',1,'tvm::tir']]],
   ['ornode',['OrNode',['../classtvm_1_1tir_1_1OrNode.html',1,'tvm::tir']]]
 ];

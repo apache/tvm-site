@@ -58,6 +58,8 @@ var searchData=
   ['primexpr',['PrimExpr',['../classtvm_1_1PrimExpr.html',1,'tvm']]],
   ['primexprnode',['PrimExprNode',['../classtvm_1_1PrimExprNode.html',1,'tvm']]],
   ['primfunc',['PrimFunc',['../classtvm_1_1tir_1_1PrimFunc.html',1,'tvm::tir']]],
+  ['primfuncframe',['PrimFuncFrame',['../classtvm_1_1script_1_1ir__builder_1_1tir_1_1PrimFuncFrame.html',1,'tvm::script::ir_builder::tir']]],
+  ['primfuncframenode',['PrimFuncFrameNode',['../classtvm_1_1script_1_1ir__builder_1_1tir_1_1PrimFuncFrameNode.html',1,'tvm::script::ir_builder::tir']]],
   ['primfuncnode',['PrimFuncNode',['../classtvm_1_1tir_1_1PrimFuncNode.html',1,'tvm::tir']]],
   ['primtype',['PrimType',['../classtvm_1_1PrimType.html',1,'tvm']]],
   ['primtypenode',['PrimTypeNode',['../classtvm_1_1PrimTypeNode.html',1,'tvm']]],
