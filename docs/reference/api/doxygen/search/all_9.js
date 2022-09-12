@@ -2,7 +2,7 @@ var searchData=
 [
   ['hand_5fthreaded',['hand_threaded',['../namespacetvm_1_1tir_1_1attr.html#a0d026645d3f86d9cc2e693fa232fddec',1,'tvm::tir::attr']]],
   ['handle',['Handle',['../classtvm_1_1runtime_1_1DataType.html#aebad9f7235dd20af649fb5c2113797b8',1,'tvm::runtime::DataType']]],
-  ['handler',['Handler',['../classtvm_1_1runtime_1_1SimpleObjAllocator_1_1Handler.html',1,'tvm::runtime::SimpleObjAllocator::Handler&lt; T &gt;'],['../classtvm_1_1SEqualReducer_1_1Handler.html',1,'tvm::SEqualReducer::Handler'],['../classtvm_1_1SHashReducer_1_1Handler.html',1,'tvm::SHashReducer::Handler']]],
+  ['handler',['Handler',['../classtvm_1_1runtime_1_1SimpleObjAllocator_1_1Handler.html',1,'tvm::runtime::SimpleObjAllocator::Handler&lt; T &gt;'],['../classtvm_1_1SHashReducer_1_1Handler.html',1,'tvm::SHashReducer::Handler'],['../classtvm_1_1SEqualReducer_1_1Handler.html',1,'tvm::SEqualReducer::Handler']]],
   ['handler_3c_20dldatatype_20_3e',['Handler&lt; DLDataType &gt;',['../structdmlc_1_1serializer_1_1Handler_3_01DLDataType_01_4.html',1,'dmlc::serializer']]],
   ['handler_3c_20dldevice_20_3e',['Handler&lt; DLDevice &gt;',['../structdmlc_1_1serializer_1_1Handler_3_01DLDevice_01_4.html',1,'dmlc::serializer']]],
   ['hardware_5fparams',['hardware_params',['../classtvm_1_1auto__scheduler_1_1SearchTaskNode.html#a8f71d815c5608317a1cdba5b4303df12',1,'tvm::auto_scheduler::SearchTaskNode']]],
@@ -33,6 +33,8 @@ var searchData=
   ['host_5ftarget',['host_target',['../classtvm_1_1CompilationConfigNode.html#aad59e791b8292600a3d86ae182a85269',1,'tvm::CompilationConfigNode']]],
   ['host_5fvirtual_5fdevice',['host_virtual_device',['../classtvm_1_1CompilationConfigNode.html#a2b5e8ebdb467811b76acae96e2cd3d3a',1,'tvm::CompilationConfigNode']]],
   ['hostmodulepassmanager',['HostModulePassManager',['../namespacetvm.html#a0e48ca039d0eb66e13bdece8f8f55a1b',1,'tvm']]],
+  ['hwio_5fat',['hwio_at',['../namespacetvm_1_1runtime_1_1hexagon.html#a89f01963dc2c318f429bfdf8d2801183',1,'tvm::runtime::hexagon']]],
+  ['hwio_5fto_5fsm_5f16b',['hwio_to_sm_16b',['../namespacetvm_1_1runtime_1_1hexagon.html#ac639f86272fb116ce2a054eda433fd69',1,'tvm::runtime::hexagon']]],
   ['hybridop',['HybridOp',['../classtvm_1_1te_1_1HybridOp.html',1,'tvm::te::HybridOp'],['../classtvm_1_1te_1_1HybridOp.html#aec098921853139c0fe6dcddc8e7da99e',1,'tvm::te::HybridOp::HybridOp()']]],
   ['hybridopnode',['HybridOpNode',['../classtvm_1_1te_1_1HybridOpNode.html',1,'tvm::te::HybridOpNode'],['../classtvm_1_1te_1_1HybridOpNode.html#a27ebcb81f18ef107b2853efcfb035ad8',1,'tvm::te::HybridOpNode::HybridOpNode()']]],
   ['hypot',['hypot',['../namespacetvm.html#a28e456d33229a628a312110db8d45b44',1,'tvm']]]

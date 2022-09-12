@@ -179,6 +179,8 @@ var searchData=
   ['prelu',['prelu',['../namespacetvm_1_1topi.html#a315c34bbe2bf1be4c778acae08c906fc',1,'tvm::topi']]],
   ['preluattrs',['PReluAttrs',['../structtvm_1_1relay_1_1PReluAttrs.html',1,'tvm::relay']]],
   ['preordervisit',['PreOrderVisit',['../namespacetvm_1_1tir.html#a982b5f74aafaa506a146ec8bed07b3f5',1,'tvm::tir']]],
+  ['prepare_5fhwio',['prepare_hwio',['../namespacetvm_1_1runtime_1_1hexagon.html#a4bf7e818d926bb0f612cb35310258693',1,'tvm::runtime::hexagon']]],
+  ['prepare_5fnhwc',['prepare_nhwc',['../namespacetvm_1_1runtime_1_1hexagon.html#a37822d9bcefcf7b5be93ffa6a10991d9',1,'tvm::runtime::hexagon']]],
   ['preprocessor',['preprocessor',['../classtvm_1_1TargetKindNode.html#a47f02c66d0f972befdfb29ec592ecba0',1,'tvm::TargetKindNode']]],
   ['prettyprint',['PrettyPrint',['../namespacetvm.html#a60c4359254ce7ac364bb97a8bfc13803',1,'tvm']]],
   ['pretuning',['PreTuning',['../classtvm_1_1meta__schedule_1_1SearchStrategyNode.html#ad88e1545e88dc1934c25f4b417077aff',1,'tvm::meta_schedule::SearchStrategyNode::PreTuning()'],['../classtvm_1_1meta__schedule_1_1PySearchStrategyNode.html#a53127523582ffdb12f40c9433a577adf',1,'tvm::meta_schedule::PySearchStrategyNode::PreTuning()']]],

@@ -34,6 +34,8 @@ var searchData=
   ['tile',['tile',['../classtvm_1_1te_1_1Stage.html#a7a42ba3166c506fcacf596ac13553b67',1,'tvm::te::Stage::tile()'],['../namespacetvm_1_1topi.html#a46fb3ad8c3324ee094fb356ebc07245f',1,'tvm::topi::tile()']]],
   ['timedscope',['TimedScope',['../classtvm_1_1meta__schedule_1_1Profiler.html#a1d1dec276ea195395fc88dc0a140e6e5',1,'tvm::meta_schedule::Profiler']]],
   ['tirframe',['TIRFrame',['../classtvm_1_1script_1_1ir__builder_1_1tir_1_1TIRFrame.html#a70e34dbed98c143d552dff607368d8a6',1,'tvm::script::ir_builder::tir::TIRFrame']]],
+  ['to_5fptr',['to_ptr',['../namespacetvm_1_1runtime_1_1hexagon.html#a0fa6f9ffe6f4900b131937f701cd064f',1,'tvm::runtime::hexagon']]],
+  ['to_5fuint',['to_uint',['../namespacetvm_1_1runtime_1_1hexagon.html#aa77dab88def3f157f50bb0b7db967486',1,'tvm::runtime::hexagon']]],
   ['toanormalform',['ToANormalForm',['../namespacetvm_1_1relay_1_1transform.html#a8cb03cf00b2ddf25f183ab837cde713c',1,'tvm::relay::transform::ToANormalForm()'],['../namespacetvm_1_1relay_1_1transform.html#a256d361d98e061197dd5d9d1d457fb19',1,'tvm::relay::transform::ToANormalForm(const Expr &amp;expr)']]],
   ['tobasicblocknormalform',['ToBasicBlockNormalForm',['../namespacetvm_1_1relay_1_1transform.html#a6185cc89297d9216551db7a3816d5180',1,'tvm::relay::transform']]],
   ['tocps',['ToCPS',['../namespacetvm_1_1relay_1_1transform.html#ad90e4d6ac08b62ef553755e759d398fa',1,'tvm::relay::transform::ToCPS()'],['../namespacetvm_1_1relay.html#ab9548d99857f7698f4fe64d056dcd46a',1,'tvm::relay::ToCPS()']]],
