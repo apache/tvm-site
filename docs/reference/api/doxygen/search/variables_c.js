@@ -4,7 +4,7 @@ var searchData=
   ['manifest_5fshared_5fmemory_5flocal_5fstage',['manifest_shared_memory_local_stage',['../namespacetvm_1_1tir_1_1attr.html#a1a992522880c3206e3c5ca39f2524906',1,'tvm::tir::attr']]],
   ['map_5f',['map_',['../classtvm_1_1AttrRegistryMap.html#a09551a76dd955d6d497a4ba80c43ba25',1,'tvm::AttrRegistryMap']]],
   ['mask_5fvalue',['mask_value',['../structtvm_1_1relay_1_1SequenceMaskAttrs.html#a89976b047aa6fa83747077ed0260a5aa',1,'tvm::relay::SequenceMaskAttrs']]],
-  ['match_5fbuffers',['match_buffers',['../classtvm_1_1tir_1_1BlockNode.html#a559127f111637f9a04b2584c47e28e44',1,'tvm::tir::BlockNode']]],
+  ['match_5fbuffers',['match_buffers',['../classtvm_1_1script_1_1ir__builder_1_1tir_1_1BlockFrameNode.html#ab209415990e9837330fef0a7b3025206',1,'tvm::script::ir_builder::tir::BlockFrameNode::match_buffers()'],['../classtvm_1_1tir_1_1BlockNode.html#a559127f111637f9a04b2584c47e28e44',1,'tvm::tir::BlockNode::match_buffers()']]],
   ['max_5fcontinuous_5ferror',['max_continuous_error',['../classtvm_1_1auto__scheduler_1_1ProgramMeasurerNode.html#abdc38da91bcdf77be765c1e3d5af3648',1,'tvm::auto_scheduler::ProgramMeasurerNode']]],
   ['max_5fdisplacement',['max_displacement',['../structtvm_1_1relay_1_1CorrelationAttrs.html#ad1d16e2ba537736c8baee2553e1e32bf',1,'tvm::relay::CorrelationAttrs']]],
   ['max_5ffunctions',['max_functions',['../structTVMMutableFuncRegistry.html#a41745f8e0f73f8e4fb2074f5b154b49c',1,'TVMMutableFuncRegistry']]],

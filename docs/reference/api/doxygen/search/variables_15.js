@@ -14,5 +14,5 @@ var searchData=
   ['workspace_5fsize',['workspace_size',['../structtvm__workspace__t.html#ad9ee1136995f30faaf17fbc45e87ee6d',1,'tvm_workspace_t']]],
   ['write_5fbandwidth_5fbytes_5fper_5fcycle',['write_bandwidth_bytes_per_cycle',['../structtvm_1_1PoolInfoNode.html#a234ad11ae914b5e938c52a593da20411',1,'tvm::PoolInfoNode::write_bandwidth_bytes_per_cycle()'],['../structtvm_1_1PoolInfoPropertiesNode.html#a6657e03988a672588c9b4faafd1b20db',1,'tvm::PoolInfoPropertiesNode::write_bandwidth_bytes_per_cycle()']]],
   ['write_5flatency_5fcycles',['write_latency_cycles',['../structtvm_1_1PoolInfoNode.html#a444e2db8569e8bae01871b6749b83d31',1,'tvm::PoolInfoNode::write_latency_cycles()'],['../structtvm_1_1PoolInfoPropertiesNode.html#a2c16994823dcc1b203a20250bdb2e663',1,'tvm::PoolInfoPropertiesNode::write_latency_cycles()']]],
-  ['writes',['writes',['../classtvm_1_1tir_1_1BlockNode.html#a7025783637b84afdb3317940ebbe5825',1,'tvm::tir::BlockNode']]]
+  ['writes',['writes',['../classtvm_1_1script_1_1ir__builder_1_1tir_1_1BlockFrameNode.html#a7b20426af86520e62d9828ad73bf2410',1,'tvm::script::ir_builder::tir::BlockFrameNode::writes()'],['../classtvm_1_1tir_1_1BlockNode.html#a7025783637b84afdb3317940ebbe5825',1,'tvm::tir::BlockNode::writes()']]]
 ];
