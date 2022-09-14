@@ -96,7 +96,7 @@ var searchData=
   ['vmclosureobj',['VMClosureObj',['../classtvm_1_1runtime_1_1vm_1_1VMClosureObj.html',1,'tvm::runtime::vm']]],
   ['vmframe',['VMFrame',['../structtvm_1_1runtime_1_1vm_1_1VMFrame.html',1,'tvm::runtime::vm::VMFrame'],['../structtvm_1_1runtime_1_1vm_1_1VMFrame.html#a8f8c990ee4fa7cb7472f5440f2ca3bde',1,'tvm::runtime::vm::VMFrame::VMFrame()']]],
   ['vmfunction',['VMFunction',['../structtvm_1_1runtime_1_1vm_1_1VMFunction.html',1,'tvm::runtime::vm::VMFunction'],['../structtvm_1_1runtime_1_1vm_1_1VMFunction.html#aea763069fe1dd6849ce0d1ec336931e0',1,'tvm::runtime::vm::VMFunction::VMFunction(std::string name, std::vector&lt; std::string &gt; params, std::vector&lt; Instruction &gt; instructions, Index register_file_size, std::vector&lt; Index &gt; param_device_indexes)'],['../structtvm_1_1runtime_1_1vm_1_1VMFunction.html#af9d2bdcf19642c21bc4909b9e9b6196d',1,'tvm::runtime::vm::VMFunction::VMFunction()=default']]],
-  ['void',['Void',['../classtvm_1_1runtime_1_1DataType.html#ab8dc0832aff8fd7421884c0fe20a3bfd',1,'tvm::runtime::DataType']]],
+  ['void',['Void',['../classtvm_1_1runtime_1_1DataType.html#ab8dc0832aff8fd7421884c0fe20a3bfd',1,'tvm::runtime::DataType::Void()'],['../namespacetvm_1_1script_1_1ir__builder_1_1tir.html#afbc8756e7d3f4322e8e4506f6a0698a5',1,'tvm::script::ir_builder::tir::Void()']]],
   ['voidtype',['VoidType',['../namespacetvm.html#a27df956aaa2e5e25005e0f9dc1638a08',1,'tvm']]],
   ['volatile_5fscope',['volatile_scope',['../namespacetvm_1_1tir_1_1attr.html#a14c2370f3a08792a6aaf70d7a3c773e4',1,'tvm::tir::attr']]],
   ['vstore',['vstore',['../classtvm_1_1tir_1_1Buffer.html#a1b79026ddcc4d828f0ef4356064d394c',1,'tvm::tir::Buffer']]],

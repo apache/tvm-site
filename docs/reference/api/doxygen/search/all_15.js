@@ -343,6 +343,7 @@ var searchData=
   ['tvm_5fthread_5fallreduce',['tvm_thread_allreduce',['../namespacetvm_1_1tir_1_1builtin.html#aa1d19e758595200998a4e1ea39767b6b',1,'tvm::tir::builtin']]],
   ['tvm_5fthread_5fcontext',['tvm_thread_context',['../namespacetvm_1_1tir_1_1builtin.html#a6be181be34fba13d129aadc6c9a23f73',1,'tvm::tir::builtin']]],
   ['tvm_5fthrow_5flast_5ferror',['tvm_throw_last_error',['../namespacetvm_1_1tir_1_1builtin.html#a92624d2aa5c435cd7a0ea8efb698a115',1,'tvm::tir::builtin']]],
+  ['tvm_5ftir_5fir_5fbuilder_5fdef_5fdtype_5fcast',['TVM_TIR_IR_BUILDER_DEF_DTYPE_CAST',['../tir_2ir_8h.html#a411d701e2f5c55c20f1471c339b2866d',1,'ir.h']]],
   ['tvm_5ftuple',['tvm_tuple',['../namespacetvm_1_1tir_1_1builtin.html#ab424ca353ceedd88a95fc37eeb9628a9',1,'tvm::tir::builtin']]],
   ['tvm_5ftype_5ffunctor_5fdispatch',['TVM_TYPE_FUNCTOR_DISPATCH',['../type__functor_8h.html#afaa114a04d18cd3f8f11995628692d74',1,'type_functor.h']]],
   ['tvm_5fversion',['TVM_VERSION',['../c__runtime__api_8h.html#a429515e9851601ec44c8ed421521ab6d',1,'c_runtime_api.h']]],

@@ -70,6 +70,7 @@ var searchData=
   ['tvm_5fstringize_5fdetail',['TVM_STRINGIZE_DETAIL',['../registry_8h.html#a013dedecd9c6f457ed4ecc475fbdbd50',1,'registry.h']]],
   ['tvm_5ftarget_5fkind_5fregister_5fvar_5fdef',['TVM_TARGET_KIND_REGISTER_VAR_DEF',['../target__kind_8h.html#a2341708a81fcee611c3c5a156596522c',1,'target_kind.h']]],
   ['tvm_5ftarget_5ftag_5fregister_5fvar_5fdef',['TVM_TARGET_TAG_REGISTER_VAR_DEF',['../tag_8h.html#a58fe38cda73eab8c7c4938b464782dcf',1,'tag.h']]],
+  ['tvm_5ftir_5fir_5fbuilder_5fdef_5fdtype_5fcast',['TVM_TIR_IR_BUILDER_DEF_DTYPE_CAST',['../tir_2ir_8h.html#a411d701e2f5c55c20f1471c339b2866d',1,'ir.h']]],
   ['tvm_5ftype_5ffunctor_5fdispatch',['TVM_TYPE_FUNCTOR_DISPATCH',['../type__functor_8h.html#afaa114a04d18cd3f8f11995628692d74',1,'type_functor.h']]],
   ['tvm_5fversion',['TVM_VERSION',['../c__runtime__api_8h.html#a429515e9851601ec44c8ed421521ab6d',1,'c_runtime_api.h']]],
   ['tvm_5fweak',['TVM_WEAK',['../c__runtime__api_8h.html#a4d6bcd569c115f7ae4ddc455b14ca395',1,'c_runtime_api.h']]],

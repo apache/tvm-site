@@ -1,6 +1,10 @@
 var searchData=
 [
   ['uint',['UInt',['../classtvm_1_1runtime_1_1DataType.html#ad1cf4571ee1a22c188c66ee2e6e6c042',1,'tvm::runtime::DataType']]],
+  ['uint16',['UInt16',['../namespacetvm_1_1script_1_1ir__builder_1_1tir.html#ac18cfb33b4b074bebb62a0022e3fddd9',1,'tvm::script::ir_builder::tir']]],
+  ['uint32',['UInt32',['../namespacetvm_1_1script_1_1ir__builder_1_1tir.html#aa7dab1502059beec51115d2fc80d7467',1,'tvm::script::ir_builder::tir']]],
+  ['uint64',['UInt64',['../namespacetvm_1_1script_1_1ir__builder_1_1tir.html#addcd399b813b5989ff7c45a50b9a0925',1,'tvm::script::ir_builder::tir']]],
+  ['uint8',['UInt8',['../namespacetvm_1_1script_1_1ir__builder_1_1tir.html#a79bce011a3c96be3481e02fa595026e0',1,'tvm::script::ir_builder::tir']]],
   ['unannotate',['Unannotate',['../classtvm_1_1tir_1_1ScheduleNode.html#a45cd553c09ec836dfcbff81379647f07',1,'tvm::tir::ScheduleNode::Unannotate(const LoopRV &amp;loop_rv, const String &amp;ann_key)=0'],['../classtvm_1_1tir_1_1ScheduleNode.html#a7c310bca5d1583e61a3f27052a1dd5d0',1,'tvm::tir::ScheduleNode::Unannotate(const BlockRV &amp;block_rv, const String &amp;ann_key)=0']]],
   ['unbiased',['unbiased',['../structtvm_1_1relay_1_1VarianceAttrs.html#a7de5da9ca0327074013e5c1ed7e9a5ed',1,'tvm::relay::VarianceAttrs']]],
   ['uncps',['UnCPS',['../namespacetvm_1_1relay.html#a1677d450d58078811f52fd70d67db515',1,'tvm::relay']]],

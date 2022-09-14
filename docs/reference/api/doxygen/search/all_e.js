@@ -62,6 +62,7 @@ var searchData=
   ['mask_5fvalue',['mask_value',['../structtvm_1_1relay_1_1SequenceMaskAttrs.html#a89976b047aa6fa83747077ed0260a5aa',1,'tvm::relay::SequenceMaskAttrs']]],
   ['match',['Match',['../classtvm_1_1relay_1_1Match.html',1,'tvm::relay::Match'],['../classtvm_1_1relay_1_1Match.html#ac3cb51d8469d3d90cdf3bfed79db0989',1,'tvm::relay::Match::Match()']]],
   ['match_5fbuffers',['match_buffers',['../classtvm_1_1script_1_1ir__builder_1_1tir_1_1BlockFrameNode.html#ab209415990e9837330fef0a7b3025206',1,'tvm::script::ir_builder::tir::BlockFrameNode::match_buffers()'],['../classtvm_1_1tir_1_1BlockNode.html#a559127f111637f9a04b2584c47e28e44',1,'tvm::tir::BlockNode::match_buffers()']]],
+  ['matchbuffer',['MatchBuffer',['../namespacetvm_1_1script_1_1ir__builder_1_1tir.html#aeed7efeb604129dd83dc6862fd857992',1,'tvm::script::ir_builder::tir']]],
   ['matchbufferregion',['MatchBufferRegion',['../classtvm_1_1tir_1_1MatchBufferRegion.html',1,'tvm::tir::MatchBufferRegion'],['../classtvm_1_1tir_1_1MatchBufferRegion.html#a0502c7419a2b11e5da4f31a4db23bffe',1,'tvm::tir::MatchBufferRegion::MatchBufferRegion()']]],
   ['matchbufferregionnode',['MatchBufferRegionNode',['../classtvm_1_1tir_1_1MatchBufferRegionNode.html',1,'tvm::tir']]],
   ['matchnode',['MatchNode',['../classtvm_1_1relay_1_1MatchNode.html',1,'tvm::relay']]],

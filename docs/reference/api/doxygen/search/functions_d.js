@@ -30,6 +30,7 @@ var searchData=
   ['mapvaluepathnode',['MapValuePathNode',['../classtvm_1_1MapValuePathNode.html#af9e0c40a725c015e71f755b086a852ff',1,'tvm::MapValuePathNode']]],
   ['markgraphnode',['MarkGraphNode',['../classtvm_1_1SEqualReducer_1_1Handler.html#a919cf7532dbf7dc7a4e97260e02bc947',1,'tvm::SEqualReducer::Handler::MarkGraphNode()'],['../classtvm_1_1SHashReducer_1_1Handler.html#a8f9a489881fc55552f13a58313a863cf',1,'tvm::SHashReducer::Handler::MarkGraphNode()']]],
   ['match',['Match',['../classtvm_1_1relay_1_1Match.html#ac3cb51d8469d3d90cdf3bfed79db0989',1,'tvm::relay::Match']]],
+  ['matchbuffer',['MatchBuffer',['../namespacetvm_1_1script_1_1ir__builder_1_1tir.html#aeed7efeb604129dd83dc6862fd857992',1,'tvm::script::ir_builder::tir']]],
   ['matchbufferregion',['MatchBufferRegion',['../classtvm_1_1tir_1_1MatchBufferRegion.html#a0502c7419a2b11e5da4f31a4db23bffe',1,'tvm::tir::MatchBufferRegion']]],
   ['matchpattern',['MatchPattern',['../namespacetvm_1_1relay.html#a8e5c12794d464d6e4543b9e5c68d8707',1,'tvm::relay']]],
   ['matchrange',['MatchRange',['../classtvm_1_1arith_1_1IntSet.html#a2f2999336fbba4f436b66bdddce5c57a',1,'tvm::arith::IntSet']]],
