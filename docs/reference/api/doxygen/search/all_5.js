@@ -170,6 +170,7 @@ var searchData=
   ['domaintouched',['DomainTouched',['../namespacetvm_1_1arith.html#a7641fa29ca6d8941f2696aacccf23998',1,'tvm::arith']]],
   ['dominatorpattern',['DominatorPattern',['../classtvm_1_1relay_1_1DominatorPattern.html',1,'tvm::relay::DominatorPattern'],['../classtvm_1_1relay_1_1DominatorPattern.html#a93adeab95ffcd91ce587b1624f4dedc1',1,'tvm::relay::DominatorPattern::DominatorPattern()']]],
   ['dominatorpatternnode',['DominatorPatternNode',['../classtvm_1_1relay_1_1DominatorPatternNode.html',1,'tvm::relay']]],
+  ['doms',['doms',['../classtvm_1_1script_1_1ir__builder_1_1tir_1_1ForFrameNode.html#aa8de31bdab2c33ab57092700126ef01a',1,'tvm::script::ir_builder::tir::ForFrameNode']]],
   ['done',['Done',['../classtvm_1_1meta__schedule_1_1RunnerFutureNode.html#aa914653065720dde403d16a1a004d6b6',1,'tvm::meta_schedule::RunnerFutureNode']]],
   ['double_5fbuffer',['double_buffer',['../classtvm_1_1te_1_1StageNode.html#af5cb8c43f82eac4021fd06ab7c475f82',1,'tvm::te::StageNode::double_buffer()'],['../classtvm_1_1te_1_1Stage.html#a0cdea4d4b25b730c44d86e6c57505000',1,'tvm::te::Stage::double_buffer()']]],
   ['double_5fbuffer_5fscope',['double_buffer_scope',['../namespacetvm_1_1tir_1_1attr.html#a9231fc0afe37a8d46a90a1c5fdf522bb',1,'tvm::tir::attr']]],

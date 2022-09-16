@@ -4,6 +4,7 @@ var searchData=
   ['arith',['arith',['../namespacetvm_1_1arith.html',1,'tvm']]],
   ['attr',['attr',['../namespacetvm_1_1attr.html',1,'tvm::attr'],['../namespacetvm_1_1relay_1_1attr.html',1,'tvm::relay::attr'],['../namespacetvm_1_1tir_1_1attr.html',1,'tvm::tir::attr']]],
   ['auto_5fscheduler',['auto_scheduler',['../namespacetvm_1_1auto__scheduler.html',1,'tvm']]],
+  ['axis',['axis',['../namespacetvm_1_1script_1_1ir__builder_1_1tir_1_1axis.html',1,'tvm::script::ir_builder::tir']]],
   ['builtin',['builtin',['../namespacetvm_1_1tir_1_1builtin.html',1,'tvm::tir']]],
   ['codegen',['codegen',['../namespacetvm_1_1codegen.html',1,'tvm']]],
   ['contrib',['contrib',['../namespacetvm_1_1runtime_1_1contrib.html',1,'tvm::runtime::contrib'],['../namespacetvm_1_1topi_1_1contrib.html',1,'tvm::topi::contrib']]],

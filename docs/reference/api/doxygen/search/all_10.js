@@ -40,6 +40,7 @@ var searchData=
   ['op_5fattrs',['op_attrs',['../classtvm_1_1runtime_1_1vm_1_1Executable.html#a046296d33c6bf556b47e85407b5f6c0a',1,'tvm::runtime::vm::Executable']]],
   ['op_5fstrategy_2eh',['op_strategy.h',['../op__strategy_8h.html',1,'']]],
   ['op_5ftype',['op_type',['../classtvm_1_1auto__scheduler_1_1StageNode.html#aa755940d0219a373832011f43bc79c2f',1,'tvm::auto_scheduler::StageNode::op_type()'],['../classtvm_1_1OpNode.html#adff89c1e3f0aa6798a97fc4461293f7c',1,'tvm::OpNode::op_type()']]],
+  ['opaque',['Opaque',['../namespacetvm_1_1script_1_1ir__builder_1_1tir_1_1axis.html#a4b4302a36eb7e031f20b0501ad4d47d5',1,'tvm::script::ir_builder::tir::axis']]],
   ['opattrmap',['OpAttrMap',['../classtvm_1_1OpAttrMap.html',1,'tvm']]],
   ['opcode',['Opcode',['../namespacetvm_1_1runtime_1_1vm.html#a8d8d95ce8d629c7213f2f595917870ec',1,'tvm::runtime::vm']]],
   ['operands',['operands',['../classtvm_1_1script_1_1printer_1_1OperationDocNode.html#a5cf20bfaa5aee424f69882287ba646b0',1,'tvm::script::printer::OperationDocNode']]],

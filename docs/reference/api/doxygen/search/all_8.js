@@ -146,6 +146,7 @@ var searchData=
   ['greedybase',['GreedyBase',['../classtvm_1_1tir_1_1usmp_1_1algo_1_1GreedyBase.html',1,'tvm::tir::usmp::algo::GreedyBase'],['../classtvm_1_1tir_1_1usmp_1_1algo_1_1GreedyBase.html#a95d49572c346fb536671fc1923f39c2a',1,'tvm::tir::usmp::algo::GreedyBase::GreedyBase()']]],
   ['greedybyconflicts',['GreedyByConflicts',['../namespacetvm_1_1tir_1_1usmp_1_1algo.html#a868e8374bf03e930ba222ce83df0e635',1,'tvm::tir::usmp::algo']]],
   ['greedybysize',['GreedyBySize',['../namespacetvm_1_1tir_1_1usmp_1_1algo.html#a555ea55a25777eed2c077e51b57b7b35',1,'tvm::tir::usmp::algo']]],
+  ['grid',['Grid',['../namespacetvm_1_1script_1_1ir__builder_1_1tir.html#a0e2f9aeceb779e5186af2e9b55fbabca',1,'tvm::script::ir_builder::tir']]],
   ['gridsampleattrs',['GridSampleAttrs',['../structtvm_1_1relay_1_1GridSampleAttrs.html',1,'tvm::relay']]],
   ['group',['group',['../classtvm_1_1te_1_1StageNode.html#a02935c5eeeaa3ae794e971d449b5e377',1,'tvm::te::StageNode']]],
   ['group_5fconv2d_5fngchw',['group_conv2d_ngchw',['../namespacetvm_1_1topi.html#a4c2a0e74a45381e899f9ff788365eff0',1,'tvm::topi']]],
