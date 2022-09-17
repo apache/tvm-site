@@ -36,6 +36,7 @@ var searchData=
   ['allocateconst',['AllocateConst',['../classtvm_1_1tir_1_1AllocateConst.html#ac7cde2c6f98d30492596fd401425e8bc',1,'tvm::tir::AllocateConst']]],
   ['allocatedpoolinfo',['AllocatedPoolInfo',['../classtvm_1_1tir_1_1usmp_1_1AllocatedPoolInfo.html#a2d36e5c43a7db2937075f7ed34d28b30',1,'tvm::tir::usmp::AllocatedPoolInfo']]],
   ['allocator',['Allocator',['../classtvm_1_1runtime_1_1vm_1_1Allocator.html#a886b349d5ffaf9270437758c7bbb30c3',1,'tvm::runtime::vm::Allocator']]],
+  ['allocbuffer',['AllocBuffer',['../namespacetvm_1_1script_1_1ir__builder_1_1tir.html#a62a57ebae9d35dc7aeb63949eeb42080',1,'tvm::script::ir_builder::tir']]],
   ['allocclosure',['AllocClosure',['../structtvm_1_1runtime_1_1vm_1_1Instruction.html#af8d06b58af58444b96df0a932b5e4168',1,'tvm::runtime::vm::Instruction']]],
   ['allocdataspace',['AllocDataSpace',['../classtvm_1_1runtime_1_1DeviceAPI.html#aec4e7122407ce3139a182ef90c2fbb0d',1,'tvm::runtime::DeviceAPI::AllocDataSpace(Device dev, size_t nbytes, size_t alignment, DLDataType type_hint)=0'],['../classtvm_1_1runtime_1_1DeviceAPI.html#a4f22cd9924162590332d8afb1a3ae99f',1,'tvm::runtime::DeviceAPI::AllocDataSpace(Device dev, int ndim, const int64_t *shape, DLDataType dtype, Optional&lt; String &gt; mem_scope=NullOpt)']]],
   ['allocndarray',['AllocNDArray',['../classtvm_1_1runtime_1_1vm_1_1StorageObj.html#ad9cf20ef51430bec5bfa3c98f05f815e',1,'tvm::runtime::vm::StorageObj']]],

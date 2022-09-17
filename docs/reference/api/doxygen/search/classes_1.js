@@ -33,6 +33,8 @@ var searchData=
   ['blockframe',['BlockFrame',['../classtvm_1_1script_1_1ir__builder_1_1tir_1_1BlockFrame.html',1,'tvm::script::ir_builder::tir']]],
   ['blockframenode',['BlockFrameNode',['../classtvm_1_1script_1_1ir__builder_1_1tir_1_1BlockFrameNode.html',1,'tvm::script::ir_builder::tir']]],
   ['blockinfo',['BlockInfo',['../structtvm_1_1tir_1_1BlockInfo.html',1,'tvm::tir']]],
+  ['blockinitframe',['BlockInitFrame',['../classtvm_1_1script_1_1ir__builder_1_1tir_1_1BlockInitFrame.html',1,'tvm::script::ir_builder::tir']]],
+  ['blockinitframenode',['BlockInitFrameNode',['../classtvm_1_1script_1_1ir__builder_1_1tir_1_1BlockInitFrameNode.html',1,'tvm::script::ir_builder::tir']]],
   ['blocknode',['BlockNode',['../classtvm_1_1tir_1_1BlockNode.html',1,'tvm::tir']]],
   ['blockrealize',['BlockRealize',['../classtvm_1_1tir_1_1BlockRealize.html',1,'tvm::tir']]],
   ['blockrealizenode',['BlockRealizeNode',['../classtvm_1_1tir_1_1BlockRealizeNode.html',1,'tvm::tir']]],

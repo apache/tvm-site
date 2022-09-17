@@ -13,6 +13,7 @@ var searchData=
   ['readmeasurerecord',['ReadMeasureRecord',['../namespacetvm_1_1auto__scheduler.html#a2d254ece2b7462cda8b0871749810841',1,'tvm::auto_scheduler']]],
   ['readnext',['ReadNext',['../classtvm_1_1auto__scheduler_1_1RecordReaderNode.html#a5c336433a578430972bd5bfdc5677a4a',1,'tvm::auto_scheduler::RecordReaderNode']]],
   ['readregister',['ReadRegister',['../classtvm_1_1runtime_1_1vm_1_1VirtualMachine.html#a3caf2fbd01a9160d7a68982df566d2d4',1,'tvm::runtime::vm::VirtualMachine']]],
+  ['reads',['Reads',['../namespacetvm_1_1script_1_1ir__builder_1_1tir.html#abd510372ad7140fa5b627c50251cd6c3',1,'tvm::script::ir_builder::tir']]],
   ['realize',['Realize',['../classtvm_1_1relay_1_1TempExprNode.html#a96ae81e7b4eac7ff967ff14b43aaba87',1,'tvm::relay::TempExprNode']]],
   ['rebase',['Rebase',['../classtvm_1_1te_1_1Rebase.html#a9d58c0171fa9ebd37c42c78f40bdb1a7',1,'tvm::te::Rebase']]],
   ['recclosure',['RecClosure',['../classtvm_1_1relay_1_1RecClosure.html#ad00197077c4b1f91211cdef2d79f01d1',1,'tvm::relay::RecClosure']]],
