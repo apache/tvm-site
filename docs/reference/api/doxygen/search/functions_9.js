@@ -16,7 +16,7 @@ var searchData=
   ['incref',['IncRef',['../classtvm_1_1runtime_1_1Object.html#ac9e5eed7719e322117bde996a171e33a',1,'tvm::runtime::Object']]],
   ['indexdiv',['indexdiv',['../namespacetvm.html#a8f30aa0685ca52f846843e76a1ad1dc7',1,'tvm::indexdiv(PrimExpr a, PrimExpr b, Span span=Span())'],['../namespacetvm.html#a8e795784bc91d7d0ad50df1d6a849b56',1,'tvm::indexdiv(const PrimExpr &amp;a, int b, Span span=Span())'],['../namespacetvm.html#a2fde20cf177fe6aaf6f89f9ca46c9c25',1,'tvm::indexdiv(int a, const PrimExpr &amp;b, Span span=Span())']]],
   ['indexdoc',['IndexDoc',['../classtvm_1_1script_1_1printer_1_1IndexDoc.html#aa1e81527b6b421a47e84d2cd20d54af4',1,'tvm::script::printer::IndexDoc']]],
-  ['indexmap',['IndexMap',['../classtvm_1_1tir_1_1IndexMap.html#a9df0ec5bfe18acc2c1fc6b0e5ae230ce',1,'tvm::tir::IndexMap']]],
+  ['indexmap',['IndexMap',['../classtvm_1_1tir_1_1IndexMap.html#ad5e9b47f643784ef58cad26a5f4e3202',1,'tvm::tir::IndexMap']]],
   ['indexmapnode',['IndexMapNode',['../classtvm_1_1tir_1_1IndexMapNode.html#a9a554e4cd7c4bd7ac6e07fd49896833e',1,'tvm::tir::IndexMapNode']]],
   ['indexmod',['indexmod',['../namespacetvm.html#ada5ad8338d3144221d8f16380e6c4855',1,'tvm::indexmod(PrimExpr a, PrimExpr b, Span span=Span())'],['../namespacetvm.html#a78b6faac00e9a823e9bcf14e1e02f1f2',1,'tvm::indexmod(const PrimExpr &amp;a, int b, Span span=Span())'],['../namespacetvm.html#a048a29e36fa055771713480f3f4ecdf4',1,'tvm::indexmod(int a, const PrimExpr &amp;b, Span span=Span())']]],
   ['indexof',['IndexOf',['../classtvm_1_1tir_1_1Layout.html#a772258f23824fe6488bc3a8ce8ff1b80',1,'tvm::tir::Layout']]],
