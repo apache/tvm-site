@@ -32,7 +32,7 @@ var searchData=
   ['flattenbuffer',['FlattenBuffer',['../namespacetvm_1_1tir_1_1transform.html#a3acf607d0e759472ac47845b7206f276',1,'tvm::tir::transform']]],
   ['flattener',['Flattener',['../classtvm_1_1tir_1_1SeqStmt_1_1Flattener.html#a0486472a502952e60fee47e4be1a0b7b',1,'tvm::tir::SeqStmt::Flattener']]],
   ['flattentupletype',['FlattenTupleType',['../namespacetvm_1_1relay.html#a91168c24ecbf1cbf719d2ba28841da5c',1,'tvm::relay']]],
-  ['float',['Float',['../classtvm_1_1runtime_1_1DataType.html#a237a714a6a16e14aa01fa4ac52426551',1,'tvm::runtime::DataType::Float()'],['../classtvm_1_1script_1_1printer_1_1LiteralDoc.html#aad7a2c38982b0a9d5f874eaf3e4676ba',1,'tvm::script::printer::LiteralDoc::Float()']]],
+  ['float',['Float',['../classtvm_1_1runtime_1_1DataType.html#a237a714a6a16e14aa01fa4ac52426551',1,'tvm::runtime::DataType::Float()'],['../classtvm_1_1script_1_1printer_1_1LiteralDoc.html#aad7a2c38982b0a9d5f874eaf3e4676ba',1,'tvm::script::printer::LiteralDoc::Float(double v)'],['../classtvm_1_1script_1_1printer_1_1LiteralDoc.html#aaac1b8da6460cf763b0820d9ec1a848a',1,'tvm::script::printer::LiteralDoc::Float(const TracedObject&lt; FloatImm &gt; &amp;v)']]],
   ['float16',['Float16',['../namespacetvm_1_1script_1_1ir__builder_1_1tir.html#aaf6b6dcbbd344633ac7549017151b1f4',1,'tvm::script::ir_builder::tir']]],
   ['float32',['Float32',['../namespacetvm_1_1script_1_1ir__builder_1_1tir.html#a8878f384c4a2861add3f43da4aa7e080',1,'tvm::script::ir_builder::tir']]],
   ['float64',['Float64',['../namespacetvm_1_1script_1_1ir__builder_1_1tir.html#a6ff858a2cfb49c10fc00ae68a1728086',1,'tvm::script::ir_builder::tir']]],

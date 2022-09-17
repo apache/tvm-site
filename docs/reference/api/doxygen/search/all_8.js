@@ -119,7 +119,7 @@ var searchData=
   ['gettypekey',['GetTypeKey',['../classtvm_1_1runtime_1_1Object.html#a4d951e51832081b85875669eac90e940',1,'tvm::runtime::Object']]],
   ['gettypekeyhash',['GetTypeKeyHash',['../classtvm_1_1runtime_1_1Object.html#a5693cbadcc1168b96db7b1cc5c200b86',1,'tvm::runtime::Object']]],
   ['getvalidcountsattrs',['GetValidCountsAttrs',['../structtvm_1_1relay_1_1GetValidCountsAttrs.html',1,'tvm::relay']]],
-  ['getvardoc',['GetVarDoc',['../classtvm_1_1script_1_1printer_1_1VarTableNode.html#a2fa65668c9589c8d061738f902506717',1,'tvm::script::printer::VarTableNode']]],
+  ['getvardoc',['GetVarDoc',['../classtvm_1_1script_1_1printer_1_1VarTableNode.html#a2fa65668c9589c8d061738f902506717',1,'tvm::script::printer::VarTableNode::GetVarDoc(const ObjectRef &amp;obj, const ObjectPath &amp;object_path) const'],['../classtvm_1_1script_1_1printer_1_1VarTableNode.html#afb76ecf5bd4103f38ec8e3c426f2c63b',1,'tvm::script::printer::VarTableNode::GetVarDoc(const TracedObject&lt; TObjectRef &gt; obj) const']]],
   ['getvectorbytes',['GetVectorBytes',['../namespacetvm_1_1runtime.html#ad01a53416152b68029d67190c3709d25',1,'tvm::runtime']]],
   ['getvirtualdevices',['GetVirtualDevices',['../classtvm_1_1runtime_1_1vm_1_1Executable.html#a2f0abfbed7ce24b365470c70db023ad3',1,'tvm::runtime::vm::Executable']]],
   ['getvmfunctionwithname',['GetVMFunctionWithName',['../classtvm_1_1runtime_1_1vm_1_1Executable.html#af9c500be684a1a1dd0b69576827e9e34',1,'tvm::runtime::vm::Executable']]],

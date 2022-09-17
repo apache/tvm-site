@@ -9,7 +9,7 @@ var searchData=
   ['codegen',['codegen',['../namespacetvm_1_1codegen.html',1,'tvm']]],
   ['contrib',['contrib',['../namespacetvm_1_1runtime_1_1contrib.html',1,'tvm::runtime::contrib'],['../namespacetvm_1_1topi_1_1contrib.html',1,'tvm::topi::contrib']]],
   ['cuda',['cuda',['../namespacetvm_1_1topi_1_1cuda.html',1,'tvm::topi']]],
-  ['detail',['detail',['../namespacetvm_1_1detail.html',1,'tvm::detail'],['../namespacetvm_1_1script_1_1printer_1_1detail.html',1,'tvm::script::printer::detail']]],
+  ['detail',['detail',['../namespacetvm_1_1detail.html',1,'tvm']]],
   ['details',['details',['../namespacetvm_1_1script_1_1ir__builder_1_1details.html',1,'tvm::script::ir_builder']]],
   ['generic',['generic',['../namespacetvm_1_1topi_1_1generic.html',1,'tvm::topi']]],
   ['hexagon',['hexagon',['../namespacetvm_1_1runtime_1_1hexagon.html',1,'tvm::runtime']]],

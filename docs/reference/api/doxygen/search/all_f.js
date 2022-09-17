@@ -48,7 +48,7 @@ var searchData=
   ['node_2eh',['node.h',['../node_8h.html',1,'']]],
   ['nodefunctor',['NodeFunctor',['../classtvm_1_1NodeFunctor.html',1,'tvm']]],
   ['nodefunctor_3c_20r_28const_20objectref_20_26n_2c_20args_2e_2e_2e_29_3e',['NodeFunctor&lt; R(const ObjectRef &amp;n, Args...)&gt;',['../classtvm_1_1NodeFunctor_3_01R_07const_01ObjectRef_01_6n_00_01Args_8_8_8_08_4.html',1,'tvm']]],
-  ['none',['None',['../classtvm_1_1script_1_1printer_1_1LiteralDoc.html#ad7b614de314ca220044ccfd78e4a9640',1,'tvm::script::printer::LiteralDoc']]],
+  ['none',['None',['../classtvm_1_1script_1_1printer_1_1LiteralDoc.html#ad7b614de314ca220044ccfd78e4a9640',1,'tvm::script::printer::LiteralDoc::None()'],['../classtvm_1_1script_1_1printer_1_1LiteralDoc.html#ae012f4a108e71a31035ace5499a15e29',1,'tvm::script::printer::LiteralDoc::None(ObjectPath object_path)']]],
   ['nonmaximumsuppressionattrs',['NonMaximumSuppressionAttrs',['../structtvm_1_1relay_1_1NonMaximumSuppressionAttrs.html',1,'tvm::relay']]],
   ['nonsurjectiveinverse',['NonSurjectiveInverse',['../classtvm_1_1tir_1_1IndexMap.html#a85bd2f88a27665c60e3a9f3ca2aeb1e0',1,'tvm::tir::IndexMap']]],
   ['norewrite',['NoRewrite',['../namespacetvm_1_1auto__scheduler.html#a3e9480be0119338696abbe9c80193b9eaa6dd7ceb983e075b3efc829b61add2ac',1,'tvm::auto_scheduler']]],
