@@ -96,7 +96,7 @@ var searchData=
   ['asobjectref',['AsObjectRef',['../classtvm_1_1runtime_1_1TVMPODValue__.html#a289a65bf255e3d192c60d7b5a8dcf097',1,'tvm::runtime::TVMPODValue_']]],
   ['asoptimizablefunctionnode',['AsOptimizableFunctionNode',['../namespacetvm_1_1relay.html#a7d286e9f10a08e644c9f047816d0f625',1,'tvm::relay']]],
   ['aspython',['AsPython',['../classtvm_1_1tir_1_1TraceNode.html#aa2d4cc1a9e3fab96ba4bb88ffb0144bc',1,'tvm::tir::TraceNode']]],
-  ['assert',['Assert',['../classtvm_1_1TypeReporterNode.html#a45f573e694c0d74b655564d8250e99be',1,'tvm::TypeReporterNode']]],
+  ['assert',['Assert',['../classtvm_1_1TypeReporterNode.html#a45f573e694c0d74b655564d8250e99be',1,'tvm::TypeReporterNode::Assert()'],['../namespacetvm_1_1script_1_1ir__builder_1_1tir.html#ae0a76329b1dea3a1a59189c64994e836',1,'tvm::script::ir_builder::tir::Assert()']]],
   ['assertdoc',['AssertDoc',['../classtvm_1_1script_1_1printer_1_1AssertDoc.html#aa783a8bf4deca5000a014054dc503501',1,'tvm::script::printer::AssertDoc']]],
   ['asserteq',['AssertEQ',['../classtvm_1_1TypeReporterNode.html#aeea573240a4b4a3c73f63724ea1120aa',1,'tvm::TypeReporterNode']]],
   ['assertstmt',['AssertStmt',['../classtvm_1_1tir_1_1AssertStmt.html#ac8526781398ea6bf47dc6f38fdc9bb61',1,'tvm::tir::AssertStmt']]],
