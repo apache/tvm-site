@@ -7,6 +7,8 @@ var searchData=
   ['if',['If',['../classtvm_1_1relay_1_1If.html',1,'tvm::relay']]],
   ['ifdoc',['IfDoc',['../classtvm_1_1script_1_1printer_1_1IfDoc.html',1,'tvm::script::printer']]],
   ['ifdocnode',['IfDocNode',['../classtvm_1_1script_1_1printer_1_1IfDocNode.html',1,'tvm::script::printer']]],
+  ['ifframe',['IfFrame',['../classtvm_1_1script_1_1ir__builder_1_1tir_1_1IfFrame.html',1,'tvm::script::ir_builder::tir']]],
+  ['ifframenode',['IfFrameNode',['../classtvm_1_1script_1_1ir__builder_1_1tir_1_1IfFrameNode.html',1,'tvm::script::ir_builder::tir']]],
   ['ifnode',['IfNode',['../classtvm_1_1relay_1_1IfNode.html',1,'tvm::relay']]],
   ['ifpattern',['IfPattern',['../classtvm_1_1relay_1_1IfPattern.html',1,'tvm::relay']]],
   ['ifpatternnode',['IfPatternNode',['../classtvm_1_1relay_1_1IfPatternNode.html',1,'tvm::relay']]],

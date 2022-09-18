@@ -9,6 +9,8 @@ var searchData=
   ['datatypepatternnode',['DataTypePatternNode',['../classtvm_1_1relay_1_1DataTypePatternNode.html',1,'tvm::relay']]],
   ['debugattrs',['DebugAttrs',['../structtvm_1_1relay_1_1DebugAttrs.html',1,'tvm::relay']]],
   ['declbuffer',['DeclBuffer',['../classtvm_1_1tir_1_1DeclBuffer.html',1,'tvm::tir']]],
+  ['declbufferframe',['DeclBufferFrame',['../classtvm_1_1script_1_1ir__builder_1_1tir_1_1DeclBufferFrame.html',1,'tvm::script::ir_builder::tir']]],
+  ['declbufferframenode',['DeclBufferFrameNode',['../classtvm_1_1script_1_1ir__builder_1_1tir_1_1DeclBufferFrameNode.html',1,'tvm::script::ir_builder::tir']]],
   ['declbuffernode',['DeclBufferNode',['../classtvm_1_1tir_1_1DeclBufferNode.html',1,'tvm::tir']]],
   ['deformableconv2dattrs',['DeformableConv2DAttrs',['../structtvm_1_1relay_1_1DeformableConv2DAttrs.html',1,'tvm::relay']]],
   ['denseattrs',['DenseAttrs',['../structtvm_1_1relay_1_1DenseAttrs.html',1,'tvm::relay']]],

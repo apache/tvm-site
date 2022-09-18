@@ -7,7 +7,7 @@ var searchData=
   ['deblockize_5fhwc_5f16b',['deblockize_hwc_16b',['../namespacetvm_1_1runtime_1_1hexagon.html#a1aa4a450b31e5faca452ba5806d978a3',1,'tvm::runtime::hexagon']]],
   ['debugverify',['DebugVerify',['../classtvm_1_1tir_1_1ScheduleStateNode.html#a7ebf3759af136021c4549596ebfc468f',1,'tvm::tir::ScheduleStateNode']]],
   ['decl_5fbuffer',['decl_buffer',['../namespacetvm_1_1tir.html#a65cc94726eb40752523b952f500d00ec',1,'tvm::tir']]],
-  ['declbuffer',['DeclBuffer',['../classtvm_1_1tir_1_1DeclBuffer.html#a45dacd8c131761c6b8275f3da994e653',1,'tvm::tir::DeclBuffer']]],
+  ['declbuffer',['DeclBuffer',['../classtvm_1_1tir_1_1DeclBuffer.html#a45dacd8c131761c6b8275f3da994e653',1,'tvm::tir::DeclBuffer::DeclBuffer()'],['../namespacetvm_1_1script_1_1ir__builder_1_1tir.html#a6e77b67c895c432fe7f69cc2d19b2cf2',1,'tvm::script::ir_builder::tir::DeclBuffer()']]],
   ['decomposepadding',['DecomposePadding',['../classtvm_1_1tir_1_1ScheduleNode.html#af7ef928082afe7f45b417f3e130792e8',1,'tvm::tir::ScheduleNode']]],
   ['decomposereduction',['DecomposeReduction',['../classtvm_1_1tir_1_1ScheduleNode.html#a134eb33f96d69623a024c9c466183a00',1,'tvm::tir::ScheduleNode']]],
   ['decoratedevicescope',['DecorateDeviceScope',['../namespacetvm_1_1tir_1_1transform.html#a6648d0a1c613e7e0f5e231059c3c22c6',1,'tvm::tir::transform']]],
