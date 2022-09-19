@@ -68,7 +68,7 @@ var searchData=
   ['transform',['Transform',['../classtvm_1_1te_1_1Transform.html#a51422cc2290f6b87fe61edb0db691125',1,'tvm::te::Transform']]],
   ['transform_5flayout',['transform_layout',['../classtvm_1_1te_1_1Stage.html#acec77eca6c9a4f1738a7c119d7ac2c2c',1,'tvm::te::Stage']]],
   ['transformblocklayout',['TransformBlockLayout',['../classtvm_1_1tir_1_1ScheduleNode.html#a998b22e37ef63a697a984c8ebcc39ca2',1,'tvm::tir::ScheduleNode']]],
-  ['transformlayout',['TransformLayout',['../classtvm_1_1tir_1_1ScheduleNode.html#a63d45b3109e1dbebcdd4d4f2223b395c',1,'tvm::tir::ScheduleNode']]],
+  ['transformlayout',['TransformLayout',['../classtvm_1_1tir_1_1ScheduleNode.html#a55848f8f7a3293731cc4f4ed3832e901',1,'tvm::tir::ScheduleNode']]],
   ['transpose',['transpose',['../namespacetvm_1_1topi.html#a1488ee98fd053e8b01b481f720df77fa',1,'tvm::topi']]],
   ['traverseafterreduce',['TraverseAfterReduce',['../namespacetvm_1_1topi_1_1cuda.html#a9009672dab261008d66d4e59d896935f',1,'tvm::topi::cuda']]],
   ['traversebeforereduce',['TraverseBeforeReduce',['../namespacetvm_1_1topi_1_1cuda.html#a9d51320c5b9bd9147018689b1b5f1279',1,'tvm::topi::cuda']]],
