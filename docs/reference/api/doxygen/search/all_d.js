@@ -114,6 +114,7 @@ var searchData=
   ['looprvnode',['LoopRVNode',['../classtvm_1_1tir_1_1LoopRVNode.html',1,'tvm::tir']]],
   ['lower',['lower',['../classtvm_1_1arith_1_1IntGroupBoundsNode.html#a7b5b1f7ca84cba2efd2415a6d9313a31',1,'tvm::arith::IntGroupBoundsNode']]],
   ['lower_5ffactor',['lower_factor',['../classtvm_1_1arith_1_1IterSplitExprNode.html#a21dc15af4502a5106f831082463c0f40',1,'tvm::arith::IterSplitExprNode']]],
+  ['lowerasyncdma',['LowerAsyncDMA',['../namespacetvm_1_1tir_1_1transform.html#af77f0ca4f873cb6220bba4504e347705',1,'tvm::tir::transform']]],
   ['lowercrossthreadreduction',['LowerCrossThreadReduction',['../namespacetvm_1_1tir_1_1transform.html#a641a33aa6ac3ec146be1196a091af5d5',1,'tvm::tir::transform']]],
   ['lowercustomdatatypes',['LowerCustomDatatypes',['../namespacetvm_1_1tir_1_1transform.html#a0d6b2682a93ca4136ed4fa6d8fa7bc2f',1,'tvm::tir::transform']]],
   ['lowerdevicestorageaccessinfo',['LowerDeviceStorageAccessInfo',['../namespacetvm_1_1tir_1_1transform.html#a53b7a3b7552ad5fa7b49e90470aff02b',1,'tvm::tir::transform']]],

@@ -160,6 +160,8 @@ var searchData=
   ['dldatatypecode2str',['DLDataTypeCode2Str',['../namespacetvm_1_1runtime.html#af9303c49b737675bdab034c4032dcc48',1,'tvm::runtime']]],
   ['dltype',['dltype',['../structTVMGraphExecutorGraphAttr.html#af3ed0db451f21fc34f34d1c345f209ee',1,'TVMGraphExecutorGraphAttr']]],
   ['dltype_5fcount',['dltype_count',['../structTVMGraphExecutorGraphAttr.html#a2627b1e80d464ef00b195b3032d6864b',1,'TVMGraphExecutorGraphAttr']]],
+  ['dma_5fcopy',['dma_copy',['../namespacetvm_1_1tir_1_1builtin.html#afd453e860a10562ac2692473edde6707',1,'tvm::tir::builtin']]],
+  ['dma_5fwait',['dma_wait',['../namespacetvm_1_1tir_1_1builtin.html#a13aefe6686345fee7d4a1633dd059806',1,'tvm::tir::builtin']]],
   ['dmlc',['dmlc',['../namespacedmlc.html',1,'']]],
   ['doc',['Doc',['../classtvm_1_1script_1_1printer_1_1Doc.html',1,'tvm::script::printer::Doc'],['../classtvm_1_1script_1_1printer_1_1Doc.html#accbc6699956d0166032a97e80ad3880d',1,'tvm::script::printer::Doc::Doc()']]],
   ['doc_2eh',['doc.h',['../doc_8h.html',1,'']]],
