@@ -5,7 +5,7 @@ var searchData=
   ['where',['Where',['../namespacetvm_1_1script_1_1ir__builder_1_1tir.html#a454a28cc9ed56389b7b09b5b45a3097e',1,'tvm::script::ir_builder::tir::Where()'],['../namespacetvm_1_1topi.html#af011847b6e7f72f1bec25eee05c80590',1,'tvm::topi::where()']]],
   ['while',['While',['../classtvm_1_1tir_1_1While.html#a5e1bf25f5caab0218e2224f19140351b',1,'tvm::tir::While::While()'],['../namespacetvm_1_1script_1_1ir__builder_1_1tir.html#a6df09cb19f1e26c3fa0e1e0251c3c0bb',1,'tvm::script::ir_builder::tir::While()']]],
   ['whiledoc',['WhileDoc',['../classtvm_1_1script_1_1printer_1_1WhileDoc.html#ac7a684d98115b7cda3ae6f7ab4df01a0',1,'tvm::script::printer::WhileDoc']]],
-  ['with',['With',['../classtvm_1_1With.html#a19fcda1557550b2a5f2e942f08bd38f2',1,'tvm::With']]],
+  ['with',['With',['../classtvm_1_1With.html#a19fcda1557550b2a5f2e942f08bd38f2',1,'tvm::With::With(Args &amp;&amp;... args)'],['../classtvm_1_1With.html#a9704ce4379a8f1475670abd6f937f24c',1,'tvm::With::With(const With &amp;other)=delete'],['../classtvm_1_1With.html#a30223d74db8edd8200bc5586b5d4ca2f',1,'tvm::With::With(With &amp;&amp;other)=delete']]],
   ['with_5fbits',['with_bits',['../classtvm_1_1runtime_1_1DataType.html#a5c4bad19b3ffd663af52bd0b91003af4',1,'tvm::runtime::DataType']]],
   ['with_5flanes',['with_lanes',['../classtvm_1_1runtime_1_1DataType.html#a98623590042dd19a08958f2469369552',1,'tvm::runtime::DataType']]],
   ['withattr',['WithAttr',['../namespacetvm.html#a2acb6435cb5299a480bfb81d3d9ce37c',1,'tvm']]],

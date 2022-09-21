@@ -18,7 +18,7 @@ var searchData=
   ['wildcardpatternnode',['WildcardPatternNode',['../classtvm_1_1relay_1_1WildcardPatternNode.html',1,'tvm::relay']]],
   ['win_5flength',['win_length',['../structtvm_1_1relay_1_1StftAttrs.html#a371e50533789d167cef0933e0cee3838',1,'tvm::relay::StftAttrs']]],
   ['window_5fshape',['window_shape',['../structtvm_1_1relay_1_1SlidingWindowAttrs.html#a8e12fafa989faf9bf986ee40626326c2',1,'tvm::relay::SlidingWindowAttrs']]],
-  ['with',['With',['../classtvm_1_1With.html',1,'tvm::With&lt; ContextType &gt;'],['../classtvm_1_1ContextManager.html#ad24c3ba1e10681e4fe99e6bc996cf196',1,'tvm::ContextManager::With()'],['../classtvm_1_1With.html#a19fcda1557550b2a5f2e942f08bd38f2',1,'tvm::With::With()']]],
+  ['with',['With',['../classtvm_1_1With.html',1,'tvm::With&lt; ContextType &gt;'],['../classtvm_1_1ContextManager.html#ad24c3ba1e10681e4fe99e6bc996cf196',1,'tvm::ContextManager::With()'],['../classtvm_1_1With.html#a19fcda1557550b2a5f2e942f08bd38f2',1,'tvm::With::With(Args &amp;&amp;... args)'],['../classtvm_1_1With.html#a9704ce4379a8f1475670abd6f937f24c',1,'tvm::With::With(const With &amp;other)=delete'],['../classtvm_1_1With.html#a30223d74db8edd8200bc5586b5d4ca2f',1,'tvm::With::With(With &amp;&amp;other)=delete']]],
   ['with_2eh',['with.h',['../with_8h.html',1,'']]],
   ['with_3c_20constraintcontext_20_3e',['With&lt; ConstraintContext &gt;',['../classtvm_1_1arith_1_1ConstraintContext.html#acf0da349a64c42ae689d9459ae09f0e3',1,'tvm::arith::ConstraintContext']]],
   ['with_3c_20passcontext_20_3e',['With&lt; PassContext &gt;',['../classtvm_1_1transform_1_1PassContext.html#a5f399608a6da56a5c91ea6ead8489f69',1,'tvm::transform::PassContext']]],
