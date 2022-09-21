@@ -9,7 +9,7 @@ var searchData=
   ['offsetof',['OffsetOf',['../classtvm_1_1tir_1_1Buffer.html#a249445cb7bdb3f75dabf59778ba4f0b0',1,'tvm::tir::Buffer']]],
   ['one_5fhot',['one_hot',['../namespacetvm_1_1topi.html#a3cf4e56cbd8144b9029672b7c5ebd161',1,'tvm::topi']]],
   ['oobchecker',['OOBChecker',['../namespacetvm_1_1tir_1_1transform.html#aea27d24b6e7852652d258268d8537b66',1,'tvm::tir::transform']]],
-  ['op',['Op',['../classtvm_1_1Op.html#afde3bc925d4d4c7ea09d4da50fc32c66',1,'tvm::Op::Op()'],['../classtvm_1_1Op.html#abaafec14f5f05cc8bd3cdbf99eeb53d5',1,'tvm::Op::Op(ObjectPtr&lt; Object &gt; n)'],['../classtvm_1_1OpRegEntry.html#acaeedc636f8a0a85edd1e217a51b83d9',1,'tvm::OpRegEntry::op()']]],
+  ['op',['op',['../classtvm_1_1OpRegEntry.html#acaeedc636f8a0a85edd1e217a51b83d9',1,'tvm::OpRegEntry::op()'],['../classtvm_1_1Op.html#afde3bc925d4d4c7ea09d4da50fc32c66',1,'tvm::Op::Op()'],['../classtvm_1_1Op.html#abaafec14f5f05cc8bd3cdbf99eeb53d5',1,'tvm::Op::Op(ObjectPtr&lt; Object &gt; n)']]],
   ['opaque',['Opaque',['../namespacetvm_1_1script_1_1ir__builder_1_1tir_1_1axis.html#a4b4302a36eb7e031f20b0501ad4d47d5',1,'tvm::script::ir_builder::tir::axis']]],
   ['operation',['Operation',['../classtvm_1_1te_1_1Operation.html#a7bc69f793cb5cbc99bf20fed8617d487',1,'tvm::te::Operation::Operation()'],['../classtvm_1_1te_1_1Operation.html#a261c64004b4c8712e97f90cb04e135d1',1,'tvm::te::Operation::Operation(ObjectPtr&lt; Object &gt; n)']]],
   ['operationdoc',['OperationDoc',['../classtvm_1_1script_1_1printer_1_1OperationDoc.html#a9a1eed0552ade7664a5a6f2aee73436a',1,'tvm::script::printer::OperationDoc']]],
