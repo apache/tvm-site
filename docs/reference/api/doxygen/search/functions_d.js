@@ -17,7 +17,6 @@ var searchData=
   ['makeslice',['MakeSlice',['../classtvm_1_1tir_1_1Buffer.html#a9c3841e4217f94824df6e92a785655d5',1,'tvm::tir::Buffer']]],
   ['makestrideview',['MakeStrideView',['../classtvm_1_1tir_1_1Buffer.html#a65a2f6105673663048a9a9f8dd1a6787',1,'tvm::tir::Buffer']]],
   ['maketraced',['MakeTraced',['../namespacetvm.html#a4a3da5d5a1bdeed1fcda51a65a976ea7',1,'tvm::MakeTraced(const RefT &amp;object)'],['../namespacetvm.html#ab18f74701522ce685d90d6c7136b8d1d',1,'tvm::MakeTraced(const RefT &amp;object, ObjectPath path)']]],
-  ['maketuplesumreducer',['MakeTupleSumReducer',['../namespacetvm_1_1topi.html#a12a94f9c1103f5e05fb9819e7176bf4c',1,'tvm::topi']]],
   ['makeunpackedapi',['MakeUnpackedAPI',['../namespacetvm_1_1tir_1_1transform.html#a1903620176fa71b005fd7c58656d7139',1,'tvm::tir::transform']]],
   ['manifestalloc',['ManifestAlloc',['../namespacetvm_1_1relay_1_1transform.html#a473c64deec00aaf5636cc12f844b1e42',1,'tvm::relay::transform']]],
   ['manifestlifetimes',['ManifestLifetimes',['../namespacetvm_1_1relay_1_1transform.html#a0a8228f5fdbc269477d7456aadcc7c3d',1,'tvm::relay::transform']]],
