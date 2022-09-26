@@ -21,7 +21,7 @@ var searchData=
   ['scale_5fshift_5fnhwc',['scale_shift_nhwc',['../namespacetvm_1_1topi_1_1nn.html#acaf3bc4e89fc55b8444d2550d25f4f22',1,'tvm::topi::nn']]],
   ['scale_5fw',['scale_w',['../structtvm_1_1relay_1_1UpSamplingAttrs.html#af6c8568dcaaf3106502660a74b5847dd',1,'tvm::relay::UpSamplingAttrs::scale_w()'],['../structtvm_1_1relay_1_1UpSampling3DAttrs.html#a270613b4109d2b24766b7bfbac2539c1',1,'tvm::relay::UpSampling3DAttrs::scale_w()']]],
   ['scales',['scales',['../structtvm_1_1relay_1_1ProposalAttrs.html#a0fbb2676833987768b1062753e2df1a3',1,'tvm::relay::ProposalAttrs']]],
-  ['scan',['scan',['../namespacetvm_1_1te.html#a2211520c227ed5ec6fe220076a495eea',1,'tvm::te::scan()'],['../namespacetvm_1_1script_1_1ir__builder_1_1tir_1_1axis.html#a9c92d0b33d1cf1e8c9a57eefc7b4430f',1,'tvm::script::ir_builder::tir::axis::Scan()']]],
+  ['scan',['Scan',['../namespacetvm_1_1script_1_1ir__builder_1_1tir_1_1axis.html#a9c92d0b33d1cf1e8c9a57eefc7b4430f',1,'tvm::script::ir_builder::tir::axis::Scan()'],['../namespacetvm_1_1te.html#a2211520c227ed5ec6fe220076a495eea',1,'tvm::te::scan()']]],
   ['scan_5faxis',['scan_axis',['../classtvm_1_1te_1_1ScanOpNode.html#a9c67e6383696efbba8e1ff9bd7470c8a',1,'tvm::te::ScanOpNode']]],
   ['scan_5finit_5fscope',['scan_init_scope',['../namespacetvm_1_1tir_1_1attr.html#af18e3a9ba11d436e02b55e420647b22b',1,'tvm::tir::attr']]],
   ['scan_5fupdate_5fscope',['scan_update_scope',['../namespacetvm_1_1tir_1_1attr.html#a84f5d42e968fd8f4cdd7a4aac7ba2137',1,'tvm::tir::attr']]],
