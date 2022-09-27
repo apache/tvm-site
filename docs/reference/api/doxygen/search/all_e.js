@@ -11,7 +11,7 @@ var searchData=
   ['makecommreducer',['MakeCommReducer',['../namespacetvm_1_1topi.html#a1d3988f52c26cc29967cefa057b79372',1,'tvm::topi']]],
   ['makeconstscalar',['MakeConstScalar',['../namespacetvm_1_1tir.html#a0db485654cd60d43962f532a1b16026c',1,'tvm::tir::MakeConstScalar(DataType t, ValueType value, Span span=Span())'],['../namespacetvm_1_1tir.html#a79fc1666a383e629654ca5f8d2cdf9f4',1,'tvm::tir::MakeConstScalar(DataType t, bool value, Span span)']]],
   ['makedefaultschedule',['MakeDefaultSchedule',['../namespacetvm_1_1topi_1_1x86.html#a7740a46043b6c5514806684970e215b2',1,'tvm::topi::x86']]],
-  ['makepackedapi',['MakePackedAPI',['../namespacetvm_1_1tir_1_1transform.html#abaf9c953f28d23408872beef5aa33af7',1,'tvm::tir::transform']]],
+  ['makepackedapi',['MakePackedAPI',['../namespacetvm_1_1tir_1_1transform.html#a38be3df8947fea34192c61bfed1c6eec',1,'tvm::tir::transform']]],
   ['makereduceaxes',['MakeReduceAxes',['../namespacetvm_1_1topi.html#a86c0ad6fe6717f649f3fba88a3dc4b29',1,'tvm::topi']]],
   ['makereducetargetshape',['MakeReduceTargetShape',['../namespacetvm_1_1topi.html#ad58b3ba5122294bd1eb045b5792c3976',1,'tvm::topi']]],
   ['makeslice',['MakeSlice',['../classtvm_1_1tir_1_1Buffer.html#a9c3841e4217f94824df6e92a785655d5',1,'tvm::tir::Buffer']]],
