@@ -8873,6 +8873,23 @@ intrinsic function calls.</p>
 <dt class="sig sig-object py" id="tvm.tir.transform.MakePackedAPI">
 <span class="sig-prename descclassname"><span class="pre">tvm.tir.transform.</span></span><span class="sig-name descname"><span class="pre">MakePackedAPI</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tvm.tir.transform.MakePackedAPI" title="Permalink to this definition">¶</a></dt>
 <dd><p>Transform the PrimFuncs in the module to a packed func API.</p>
+<p>Prior to this pass, the PrimFunc may have Buffer arguments defined
+in the <cite>PrimFuncNode::buffer_map</cite>.  This pass consumes the
+<cite>buffer_map</cite>, using it to generate <cite>TVMArgs</cite> and <cite>TVMRetValue*</cite>
+arguments that implement the <cite>PackedFunc</cite> API.</p>
+<p>For static shapes, the <cite>BufferNode::shape</cite>, <cite>BufferNode::strides</cite>,
+and <cite>BufferNode::elem_offset</cite> member variables are used to
+generate runtime checks on the corresponding member variables in
+the user-provided <cite>DLTensor*</cite> or <cite>tvm.nd.array</cite> argument.  (e.g. A
+PrimFunc that accepts a buffer of shape <cite>[16,32]</cite> validates that
+the <cite>DLTensor::shape</cite> array is <cite>[16,32]</cite>.)</p>
+<p>For dynamic Buffers, in which one or more of these <cite>BufferNode</cite> member
+variables use <cite>tir.Var</cite> that are not defined by other PrimFunc
+parameters, these are instead used to define the variables based on
+the corresponding <cite>DLTensor</cite> members.  (e.g. A PrimFunc that accepts a
+buffer of shape <cite>[tir.Var(“n”), tir.Var(“m”)]</cite>, when passed a
+<cite>DLTensor</cite> of shape <cite>[16,32]</cite>, will define <cite>n = 16</cite> and <cite>n=32</cite>, based
+on the argument’s shape.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns</dt>
 <dd class="field-odd"><p><strong>fpass</strong> – The result pass</p>
@@ -8887,6 +8904,14 @@ intrinsic function calls.</p>
 <dt class="sig sig-object py" id="tvm.tir.transform.MakeUnpackedAPI">
 <span class="sig-prename descclassname"><span class="pre">tvm.tir.transform.</span></span><span class="sig-name descname"><span class="pre">MakeUnpackedAPI</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tvm.tir.transform.MakeUnpackedAPI" title="Permalink to this definition">¶</a></dt>
 <dd><p>Transform the PrimFuncs in the module to a C API compatible with internal calls.</p>
+<p>Prior to this pass, the PrimFunc may have Buffer arguments defined in
+the <cite>PrimFuncNode::buffer_map</cite>.  This pass consumes the <cite>buffer_map</cite>,
+using it to generate <cite>T*</cite> arguments (e.g. <cite>float32*</cite>) that can be
+directly called by a C API.</p>
+<p>For static shapes, no runtime validation is performed to confirm that
+the argument buffer’s shape matches the expected shape.  For dynamic
+shapes, <cite>MakeUnpackedAPI</cite> requires that the dynamic parameters be
+passed as separate <cite>tir.Var</cite> parameters.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns</dt>
 <dd class="field-odd"><p><strong>fpass</strong> – The result pass</p>
