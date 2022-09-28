@@ -42,6 +42,5 @@ var searchData=
   ['num_5fschedulable_5fdims',['num_schedulable_dims',['../classtvm_1_1te_1_1BaseComputeOpNode.html#afff057b90df28567ab7b2ba19a05b17c',1,'tvm::te::BaseComputeOpNode::num_schedulable_dims()'],['../classtvm_1_1te_1_1ComputeOpNode.html#adafbc09da5da3629aef87a8e5145bdec',1,'tvm::te::ComputeOpNode::num_schedulable_dims()'],['../classtvm_1_1te_1_1TensorComputeOpNode.html#a028a9ae8d9d27abd972b85248c9e3160',1,'tvm::te::TensorComputeOpNode::num_schedulable_dims()']]],
   ['num_5fshape',['num_shape',['../classtvm_1_1runtime_1_1metadata_1_1TensorInfoNode.html#a76aebd7390d27be91e5b7bad9e664c5d',1,'tvm::runtime::metadata::TensorInfoNode']]],
   ['num_5fworkspace_5fpools',['num_workspace_pools',['../classtvm_1_1runtime_1_1metadata_1_1MetadataNode.html#ab326239b06335a91b7daf2b513cde991',1,'tvm::runtime::metadata::MetadataNode']]],
-  ['numpyeinsumshape',['NumpyEinsumShape',['../namespacetvm_1_1topi.html#abc85c139664cb45e0f83fe0acdbf67d0',1,'tvm::topi']]],
   ['numthreads',['NumThreads',['../namespacetvm_1_1runtime_1_1threading.html#a162b7229faf9c4193bbfd99bf95443e2',1,'tvm::runtime::threading']]]
 ];

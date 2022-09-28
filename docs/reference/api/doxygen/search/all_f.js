@@ -92,6 +92,5 @@ var searchData=
   ['num_5ftrials_5falready',['num_trials_already',['../classtvm_1_1meta__schedule_1_1TaskSchedulerNode.html#a246e130e3928c57199f98dc3ce674d79',1,'tvm::meta_schedule::TaskSchedulerNode']]],
   ['num_5fworkspace_5fpools',['num_workspace_pools',['../structTVMMetadata.html#aa24c0848e54241c983784e143363d1ca',1,'TVMMetadata::num_workspace_pools()'],['../classtvm_1_1runtime_1_1metadata_1_1MetadataNode.html#ab326239b06335a91b7daf2b513cde991',1,'tvm::runtime::metadata::MetadataNode::num_workspace_pools()']]],
   ['number',['number',['../classtvm_1_1auto__scheduler_1_1ProgramRunnerNode.html#a92333af32d2e22aec749eaad4ba3d18b',1,'tvm::auto_scheduler::ProgramRunnerNode']]],
-  ['numpyeinsumshape',['NumpyEinsumShape',['../namespacetvm_1_1topi.html#abc85c139664cb45e0f83fe0acdbf67d0',1,'tvm::topi']]],
   ['numthreads',['NumThreads',['../namespacetvm_1_1runtime_1_1threading.html#a162b7229faf9c4193bbfd99bf95443e2',1,'tvm::runtime::threading']]]
 ];
