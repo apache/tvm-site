@@ -1,7 +1,6 @@
 var searchData=
 [
   ['early_5fstopping',['early_stopping',['../classtvm_1_1auto__scheduler_1_1TuningOptionsNode.html#a4b1cbc19fcc80c2564b24c56f6cf9504',1,'tvm::auto_scheduler::TuningOptionsNode']]],
-  ['echostatistics',['EchoStatistics',['../classtvm_1_1meta__schedule_1_1MeasureCallback.html#a41ca27e093a3ee5487b82599e53c7ee3',1,'tvm::meta_schedule::MeasureCallback']]],
   ['einsum',['einsum',['../namespacetvm_1_1topi.html#af32230999c38eb624e8ea21ee6877eef',1,'tvm::topi']]],
   ['einsum_2eh',['einsum.h',['../einsum_8h.html',1,'']]],
   ['einsumattrs',['EinsumAttrs',['../structtvm_1_1relay_1_1EinsumAttrs.html',1,'tvm::relay']]],
@@ -73,7 +72,7 @@ var searchData=
   ['evaluate',['Evaluate',['../classtvm_1_1tir_1_1Evaluate.html',1,'tvm::tir::Evaluate'],['../classtvm_1_1tir_1_1Evaluate.html#abf75c5d934947831065f9cd668fa84ad',1,'tvm::tir::Evaluate::Evaluate(PrimExpr value, Span span=Span())'],['../classtvm_1_1tir_1_1Evaluate.html#a3b7fb8cd8d3260eb76b3c6f0e68219b7',1,'tvm::tir::Evaluate::Evaluate(int value, Span span=Span())'],['../namespacetvm_1_1script_1_1ir__builder_1_1tir.html#a101850df27120c29355e6215b9b2b525',1,'tvm::script::ir_builder::tir::Evaluate()']]],
   ['evaluatenode',['EvaluateNode',['../classtvm_1_1tir_1_1EvaluateNode.html',1,'tvm::tir']]],
   ['everything',['Everything',['../classtvm_1_1arith_1_1IntSet.html#ae53fdd0ee6775e59aa8194c89afa1d86',1,'tvm::arith::IntSet']]],
-  ['evolutionarysearch',['EvolutionarySearch',['../classtvm_1_1meta__schedule_1_1SearchStrategy.html#a6f025befb847c4c913c3a29066546575',1,'tvm::meta_schedule::SearchStrategy']]],
+  ['evolutionarysearch',['EvolutionarySearch',['../classtvm_1_1meta__schedule_1_1SearchStrategy.html#a438e963f5b271d0a3536735b886d609f',1,'tvm::meta_schedule::SearchStrategy']]],
   ['exclude',['exclude',['../structtvm_1_1relay_1_1ReduceAttrs.html#ada05c6d2e36245d832449aa2479d3ab2',1,'tvm::relay::ReduceAttrs::exclude()'],['../structtvm_1_1relay_1_1ArgReduceAttrs.html#ae656b3262845e56fad4abb02be5c99a9',1,'tvm::relay::ArgReduceAttrs::exclude()'],['../structtvm_1_1relay_1_1VarianceAttrs.html#a10029f70d1f38da8c9cc415a76fe9807',1,'tvm::relay::VarianceAttrs::exclude()']]],
   ['exclusive',['exclusive',['../structtvm_1_1relay_1_1ScanopAttrs.html#a6b2c89d7d63014af16d16d1eb0453c42',1,'tvm::relay::ScanopAttrs']]],
   ['exec_5f',['exec_',['../classtvm_1_1runtime_1_1vm_1_1VirtualMachine.html#a619aa7ba254da546fb5beadb9749f674',1,'tvm::runtime::vm::VirtualMachine']]],

@@ -69,7 +69,7 @@ var searchData=
   ['producerrealizenode',['ProducerRealizeNode',['../classtvm_1_1tir_1_1ProducerRealizeNode.html',1,'tvm::tir']]],
   ['producerstore',['ProducerStore',['../classtvm_1_1tir_1_1ProducerStore.html',1,'tvm::tir']]],
   ['producerstorenode',['ProducerStoreNode',['../classtvm_1_1tir_1_1ProducerStoreNode.html',1,'tvm::tir']]],
-  ['profiler',['Profiler',['../classtvm_1_1runtime_1_1profiling_1_1Profiler.html',1,'tvm::runtime::profiling::Profiler'],['../classtvm_1_1meta__schedule_1_1Profiler.html',1,'tvm::meta_schedule::Profiler']]],
+  ['profiler',['Profiler',['../classtvm_1_1meta__schedule_1_1Profiler.html',1,'tvm::meta_schedule::Profiler'],['../classtvm_1_1runtime_1_1profiling_1_1Profiler.html',1,'tvm::runtime::profiling::Profiler']]],
   ['profilernode',['ProfilerNode',['../classtvm_1_1meta__schedule_1_1ProfilerNode.html',1,'tvm::meta_schedule']]],
   ['programbuilder',['ProgramBuilder',['../classtvm_1_1auto__scheduler_1_1ProgramBuilder.html',1,'tvm::auto_scheduler']]],
   ['programbuildernode',['ProgramBuilderNode',['../classtvm_1_1auto__scheduler_1_1ProgramBuilderNode.html',1,'tvm::auto_scheduler']]],

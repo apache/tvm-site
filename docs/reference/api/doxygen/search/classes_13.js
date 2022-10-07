@@ -7,7 +7,7 @@ var searchData=
   ['vardefframe',['VarDefFrame',['../classtvm_1_1script_1_1printer_1_1VarDefFrame.html',1,'tvm::script::printer']]],
   ['vardefframenode',['VarDefFrameNode',['../classtvm_1_1script_1_1printer_1_1VarDefFrameNode.html',1,'tvm::script::printer']]],
   ['varianceattrs',['VarianceAttrs',['../structtvm_1_1relay_1_1VarianceAttrs.html',1,'tvm::relay']]],
-  ['varnode',['VarNode',['../classtvm_1_1tir_1_1VarNode.html',1,'tvm::tir::VarNode'],['../classtvm_1_1relay_1_1VarNode.html',1,'tvm::relay::VarNode']]],
+  ['varnode',['VarNode',['../classtvm_1_1relay_1_1VarNode.html',1,'tvm::relay::VarNode'],['../classtvm_1_1tir_1_1VarNode.html',1,'tvm::tir::VarNode']]],
   ['varpattern',['VarPattern',['../classtvm_1_1relay_1_1VarPattern.html',1,'tvm::relay']]],
   ['varpatternnode',['VarPatternNode',['../classtvm_1_1relay_1_1VarPatternNode.html',1,'tvm::relay']]],
   ['vartable',['VarTable',['../classtvm_1_1script_1_1printer_1_1VarTable.html',1,'tvm::script::printer']]],

@@ -4,7 +4,6 @@ var searchData=
   ['map_3c_20k_2c_20v_20_3e',['Map&lt; K, V &gt;',['../classtvm_1_1runtime_1_1Map.html',1,'tvm::runtime']]],
   ['map_3c_20tvm_3a_3aglobaltypevar_2c_20tvm_3a_3atypedata_20_3e',['Map&lt; tvm::GlobalTypeVar, tvm::TypeData &gt;',['../classtvm_1_1runtime_1_1Map.html',1,'tvm::runtime']]],
   ['map_3c_20tvm_3a_3aglobalvar_2c_20tvm_3a_3abasefunc_20_3e',['Map&lt; tvm::GlobalVar, tvm::BaseFunc &gt;',['../classtvm_1_1runtime_1_1Map.html',1,'tvm::runtime']]],
-  ['map_3c_20tvm_3a_3ameta_5fschedule_3a_3amutator_2c_20tvm_3a_3afloatimm_20_3e',['Map&lt; tvm::meta_schedule::Mutator, tvm::FloatImm &gt;',['../classtvm_1_1runtime_1_1Map.html',1,'tvm::runtime']]],
   ['map_3c_20tvm_3a_3arelay_3a_3avar_2c_20tvm_3a_3aruntime_3a_3aobjectref_20_3e',['Map&lt; tvm::relay::Var, tvm::runtime::ObjectRef &gt;',['../classtvm_1_1runtime_1_1Map.html',1,'tvm::runtime']]],
   ['map_3c_20tvm_3a_3aruntime_3a_3astring_2c_20tvm_3a_3aglobaltypevar_20_3e',['Map&lt; tvm::runtime::String, tvm::GlobalTypeVar &gt;',['../classtvm_1_1runtime_1_1Map.html',1,'tvm::runtime']]],
   ['map_3c_20tvm_3a_3aruntime_3a_3astring_2c_20tvm_3a_3aglobalvar_20_3e',['Map&lt; tvm::runtime::String, tvm::GlobalVar &gt;',['../classtvm_1_1runtime_1_1Map.html',1,'tvm::runtime']]],
