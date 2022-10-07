@@ -38,6 +38,7 @@ var searchData=
   ['trace',['trace',['../classtvm_1_1meta__schedule_1_1TuningRecordNode.html#a8cc2d64f796593a1a774eef259f17b29',1,'tvm::meta_schedule::TuningRecordNode']]],
   ['transform_5fsteps',['transform_steps',['../classtvm_1_1auto__scheduler_1_1StateNode.html#a980f03e5744ed104cf231219a4895d5e',1,'tvm::auto_scheduler::StateNode']]],
   ['transformed_5fvariables',['transformed_variables',['../classtvm_1_1te_1_1TransformNode.html#a034d22228133e50074502bfe1f495935',1,'tvm::te::TransformNode']]],
+  ['transitive_5fcomparisons',['transitive_comparisons',['../classtvm_1_1arith_1_1Analyzer.html#a23e266bcb0d9b5ca6cc01c691271db72',1,'tvm::arith::Analyzer']]],
   ['transpose_5fa',['transpose_a',['../structtvm_1_1relay_1_1MatmulAttrs.html#a397aa1573fc7e0bc13930390298a22fc',1,'tvm::relay::MatmulAttrs::transpose_a()'],['../structtvm_1_1relay_1_1BatchMatmulAttrs.html#aea3a5e93559981fc31122615d677d831',1,'tvm::relay::BatchMatmulAttrs::transpose_a()']]],
   ['transpose_5fb',['transpose_b',['../structtvm_1_1relay_1_1MatmulAttrs.html#afd2c250d27a093cd4afbdb6d6fa7e370',1,'tvm::relay::MatmulAttrs::transpose_b()'],['../structtvm_1_1relay_1_1BatchMatmulAttrs.html#a05710acb6565be899d567f642a26639a',1,'tvm::relay::BatchMatmulAttrs::transpose_b()']]],
   ['true_5fbranch',['true_branch',['../classtvm_1_1relay_1_1IfPatternNode.html#ad292c855acc88167ab25acd200c01d48',1,'tvm::relay::IfPatternNode::true_branch()'],['../classtvm_1_1relay_1_1IfNode.html#abbda9637de8fac5d227ef7c305e5f34e',1,'tvm::relay::IfNode::true_branch()']]],
