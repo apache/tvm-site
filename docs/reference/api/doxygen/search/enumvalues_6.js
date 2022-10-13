@@ -40,6 +40,7 @@ var searchData=
   ['kcomputeversion',['kComputeVersion',['../namespacetvm_1_1runtime.html#a46fef1ca0ccc05473e9bb0a8c6b66619ad7ba910261fb30889f38c93be3fff05b',1,'tvm::runtime']]],
   ['kconstraint',['kConstraint',['../namespacetvm.html#acd267f8d7f55da6ac681239831963279a9496d61badd19161ce92108f06903606',1,'tvm']]],
   ['kcontroljump',['kControlJump',['../namespacetvm_1_1tir.html#a8f4a86b205145696c0555fd02bd37f46a2ded73cfb5a05bf0e37b284e42769c9c',1,'tvm::tir']]],
+  ['kconvertbooleantoandofors',['kConvertBooleanToAndOfOrs',['../classtvm_1_1arith_1_1RewriteSimplifier.html#a6705af5099418b968ded40d79102ad4eafd77a96599dad627a7c1d88292aa578e',1,'tvm::arith::RewriteSimplifier']]],
   ['kcpackedfunc',['kCPackedFunc',['../namespacetvm.html#a85e4536ea4e1c8d3d48c61135f0a8ff0ae7694043e4825265becdb58550b4e443',1,'tvm']]],
   ['kcustombegin',['kCustomBegin',['../classtvm_1_1runtime_1_1DataType.html#a3c9ce1627be2550f656cd37b6c698c7da92916e0b7138b26e222f4b85618bd5b4',1,'tvm::runtime::DataType']]],
   ['kdatapar',['kDataPar',['../namespacetvm_1_1tir.html#add7d0a6b1dd91f0c3c5dd2f4cf64358ea943fcb20375772edb59ea948f6cc9422',1,'tvm::tir']]],

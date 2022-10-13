@@ -54,6 +54,7 @@ var searchData=
   ['kcontroljump',['kControlJump',['../namespacetvm_1_1tir.html#a8f4a86b205145696c0555fd02bd37f46a2ded73cfb5a05bf0e37b284e42769c9c',1,'tvm::tir']]],
   ['kconv2dhwcn',['kConv2dHWCN',['../namespacetvm_1_1topi.html#a8c924d6d8fc010283ca60928c23101f1',1,'tvm::topi']]],
   ['kconv2dnchw',['kConv2dNCHW',['../namespacetvm_1_1topi.html#a2fd97432407bc468930e459a9826ce95',1,'tvm::topi']]],
+  ['kconvertbooleantoandofors',['kConvertBooleanToAndOfOrs',['../classtvm_1_1arith_1_1RewriteSimplifier.html#a6705af5099418b968ded40d79102ad4eafd77a96599dad627a7c1d88292aa578e',1,'tvm::arith::RewriteSimplifier']]],
   ['kcpackedfunc',['kCPackedFunc',['../namespacetvm.html#a85e4536ea4e1c8d3d48c61135f0a8ff0ae7694043e4825265becdb58550b4e443',1,'tvm']]],
   ['kcrc',['kCrc',['../classtvm_1_1runtime_1_1micro__rpc_1_1PacketFieldSizeBytes.html#a0451ac7e42968a63b89b59987d6e2242',1,'tvm::runtime::micro_rpc::PacketFieldSizeBytes']]],
   ['kcustombegin',['kCustomBegin',['../classtvm_1_1runtime_1_1DataType.html#a3c9ce1627be2550f656cd37b6c698c7da92916e0b7138b26e222f4b85618bd5b4',1,'tvm::runtime::DataType']]],
