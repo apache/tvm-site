@@ -5,6 +5,7 @@ var searchData=
   ['dataproducer',['DataProducer',['../classtvm_1_1tir_1_1DataProducer.html',1,'tvm::tir']]],
   ['dataproducernode',['DataProducerNode',['../classtvm_1_1tir_1_1DataProducerNode.html',1,'tvm::tir']]],
   ['datatype',['DataType',['../classtvm_1_1runtime_1_1DataType.html',1,'tvm::runtime']]],
+  ['datatypelegalizer',['DataTypeLegalizer',['../classtvm_1_1tir_1_1DataTypeLegalizer.html',1,'tvm::tir']]],
   ['datatypepattern',['DataTypePattern',['../classtvm_1_1relay_1_1DataTypePattern.html',1,'tvm::relay']]],
   ['datatypepatternnode',['DataTypePatternNode',['../classtvm_1_1relay_1_1DataTypePatternNode.html',1,'tvm::relay']]],
   ['debugattrs',['DebugAttrs',['../structtvm_1_1relay_1_1DebugAttrs.html',1,'tvm::relay']]],

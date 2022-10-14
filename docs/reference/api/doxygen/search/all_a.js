@@ -297,5 +297,6 @@ var searchData=
   ['itervarrelation',['IterVarRelation',['../classtvm_1_1te_1_1IterVarRelation.html',1,'tvm::te::IterVarRelation'],['../classtvm_1_1te_1_1IterVarRelation.html#a4b50caede957f1cb50587ce15a87109f',1,'tvm::te::IterVarRelation::IterVarRelation()'],['../classtvm_1_1te_1_1IterVarRelation.html#a3e611ee0870d9a542b8deb79575dbf66',1,'tvm::te::IterVarRelation::IterVarRelation(ObjectPtr&lt; Object &gt; n)']]],
   ['itervarrelationnode',['IterVarRelationNode',['../classtvm_1_1te_1_1IterVarRelationNode.html',1,'tvm::te']]],
   ['itervartype',['IterVarType',['../namespacetvm_1_1tir.html#add7d0a6b1dd91f0c3c5dd2f4cf64358e',1,'tvm::tir']]],
-  ['itervartype2string',['IterVarType2String',['../namespacetvm_1_1tir.html#afc0fdee9fc81462318d59dbe64c8df26',1,'tvm::tir']]]
+  ['itervartype2string',['IterVarType2String',['../namespacetvm_1_1tir.html#afc0fdee9fc81462318d59dbe64c8df26',1,'tvm::tir']]],
+  ['ivmap_5f',['ivmap_',['../classtvm_1_1tir_1_1DataTypeLegalizer.html#a4b60203572648ecb12a2aa72a552318d',1,'tvm::tir::DataTypeLegalizer']]]
 ];

@@ -59,5 +59,6 @@ var searchData=
   ['iter_5fvar_5fattrs',['iter_var_attrs',['../classtvm_1_1te_1_1StageNode.html#a1d1f5c5e99f0c0c5d09a497b5c05443f',1,'tvm::te::StageNode']]],
   ['iter_5fvars',['iter_vars',['../classtvm_1_1script_1_1ir__builder_1_1tir_1_1BlockFrameNode.html#a6acc03aba41508448cd5066fe29ba3a6',1,'tvm::script::ir_builder::tir::BlockFrameNode::iter_vars()'],['../classtvm_1_1tir_1_1BlockNode.html#a6b8137ceada1d1b5d123961bab56a055',1,'tvm::tir::BlockNode::iter_vars()']]],
   ['iteratorannotationstring',['IteratorAnnotationString',['../namespacetvm_1_1auto__scheduler.html#a8eade4c9463a2502919ec5d2fdbd5b64',1,'tvm::auto_scheduler']]],
-  ['iters',['iters',['../classtvm_1_1auto__scheduler_1_1StageNode.html#a65304957db6f84d8d7c90ad553453bb9',1,'tvm::auto_scheduler::StageNode']]]
+  ['iters',['iters',['../classtvm_1_1auto__scheduler_1_1StageNode.html#a65304957db6f84d8d7c90ad553453bb9',1,'tvm::auto_scheduler::StageNode']]],
+  ['ivmap_5f',['ivmap_',['../classtvm_1_1tir_1_1DataTypeLegalizer.html#a4b60203572648ecb12a2aa72a552318d',1,'tvm::tir::DataTypeLegalizer']]]
 ];
