@@ -88,6 +88,7 @@ var searchData=
   ['printinfoandsetinputargs',['PrintInfoAndSetInputArgs',['../classtvm_1_1runtime_1_1vm_1_1VirtualMachine.html#ac2ca0dc6162002d400e56ccc4c41fb9c',1,'tvm::runtime::vm::VirtualMachine']]],
   ['printir',['PrintIR',['../namespacetvm_1_1transform.html#a8cca5b98fb5d34e66444343786d85529',1,'tvm::transform']]],
   ['printstepsaspython',['PrintStepsAsPython',['../classtvm_1_1auto__scheduler_1_1ComputeDAG.html#ace0f0f385d5d3179dd5dc0a1f35990b4',1,'tvm::auto_scheduler::ComputeDAG']]],
+  ['printtuningstatistics',['PrintTuningStatistics',['../classtvm_1_1meta__schedule_1_1TaskSchedulerNode.html#af9a0fe462e50601c81e1d8ce352e9cea',1,'tvm::meta_schedule::TaskSchedulerNode']]],
   ['prod',['prod',['../namespacetvm.html#a32a87ae9eacafb2b5b71b28bcc9ef35e',1,'tvm::prod()'],['../namespacetvm_1_1topi.html#a4bc269a40cbdbac3b8b764950820dc8c',1,'tvm::topi::prod()']]],
   ['prodop',['ProdOp',['../namespacetvm_1_1topi.html#af62dd10dd04c1fbf820581b14498de6e',1,'tvm::topi']]],
   ['producerload',['ProducerLoad',['../classtvm_1_1tir_1_1ProducerLoad.html#a207ebf130561d77355a199908ac7754c',1,'tvm::tir::ProducerLoad']]],
