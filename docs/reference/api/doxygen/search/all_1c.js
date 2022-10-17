@@ -8,7 +8,7 @@ var searchData=
   ['_7ebuildernode',['~BuilderNode',['../classtvm_1_1meta__schedule_1_1BuilderNode.html#a7215cd095b70a5514388f5d38b3a3cca',1,'tvm::meta_schedule::BuilderNode']]],
   ['_7ecall',['~Call',['../classtvm_1_1relay_1_1Call.html#a7f8ec713d9a52791976b410c4891a274',1,'tvm::relay::Call']]],
   ['_7ecostmodelnode',['~CostModelNode',['../classtvm_1_1auto__scheduler_1_1CostModelNode.html#a07f6d00123f61259f40df87937d3dfc6',1,'tvm::auto_scheduler::CostModelNode::~CostModelNode()'],['../classtvm_1_1meta__schedule_1_1CostModelNode.html#a9f5fea7f128a8d38c1e050b677833df1',1,'tvm::meta_schedule::CostModelNode::~CostModelNode()']]],
-  ['_7edatabasenode',['~DatabaseNode',['../classtvm_1_1meta__schedule_1_1DatabaseNode.html#a776359f44ac6b51e337d4a1efc3f04a9',1,'tvm::meta_schedule::DatabaseNode']]],
+  ['_7edatabasenode',['~DatabaseNode',['../classtvm_1_1meta__schedule_1_1DatabaseNode.html#a48707424816f7ad0fd6f59a7111d9a09',1,'tvm::meta_schedule::DatabaseNode']]],
   ['_7edataproducernode',['~DataProducerNode',['../classtvm_1_1tir_1_1DataProducerNode.html#aeb887c35d09af934251932b0120f9dfa',1,'tvm::tir::DataProducerNode']]],
   ['_7edensemapnode',['~DenseMapNode',['../classtvm_1_1runtime_1_1DenseMapNode.html#ac3b9b13f9e074e20afe3bbd68cce35f3',1,'tvm::runtime::DenseMapNode']]],
   ['_7edeviceapi',['~DeviceAPI',['../classtvm_1_1runtime_1_1DeviceAPI.html#af3fe69d9823d7c67c86ecf247d894f27',1,'tvm::runtime::DeviceAPI']]],

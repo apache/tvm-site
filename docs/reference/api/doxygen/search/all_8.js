@@ -82,6 +82,7 @@ var searchData=
   ['getloops',['GetLoops',['../classtvm_1_1tir_1_1ScheduleNode.html#a232186c0db6176db56df4cc30dd11829',1,'tvm::tir::ScheduleNode']]],
   ['getmemoryinfo',['GetMemoryInfo',['../namespacetvm.html#a6e525343df6fbd739a45b291cb0dfb4f',1,'tvm']]],
   ['getmodule',['GetModule',['../classtvm_1_1TypeReporterNode.html#aff8186cce55fcfd0823b7b135b7db1e8',1,'tvm::TypeReporterNode']]],
+  ['getmoduleequality',['GetModuleEquality',['../classtvm_1_1meta__schedule_1_1DatabaseNode.html#a491ad91dbd0a811712c5013bade724cb',1,'tvm::meta_schedule::DatabaseNode']]],
   ['getnamehint',['GetNameHint',['../classtvm_1_1te_1_1TensorNode.html#a2983812b2f5d7ad2061d2098fa49e203',1,'tvm::te::TensorNode::GetNameHint()'],['../classtvm_1_1tir_1_1DataProducerNode.html#adf3ea8c7fd0d3112eb86840aff324b10',1,'tvm::tir::DataProducerNode::GetNameHint()']]],
   ['getnumcommonouteriterator',['GetNumCommonOuterIterator',['../classtvm_1_1auto__scheduler_1_1AccessAnalyzer.html#a675448c82238847090057386a9b99a4f',1,'tvm::auto_scheduler::AccessAnalyzer']]],
   ['getobjectpathrepr',['GetObjectPathRepr',['../classtvm_1_1ObjectPathNode.html#a102e76694cc17b2c855ecbae4212cd6c',1,'tvm::ObjectPathNode']]],

@@ -12,7 +12,7 @@ var searchData=
   ['database',['Database',['../classtvm_1_1meta__schedule_1_1Database.html',1,'tvm::meta_schedule']]],
   ['database_2eh',['database.h',['../database_8h.html',1,'']]],
   ['database_5f',['database_',['../classtvm_1_1meta__schedule_1_1TaskSchedulerNode.html#af0668d2e6974fff979474d9941f97a96',1,'tvm::meta_schedule::TaskSchedulerNode']]],
-  ['databasenode',['DatabaseNode',['../classtvm_1_1meta__schedule_1_1DatabaseNode.html',1,'tvm::meta_schedule']]],
+  ['databasenode',['DatabaseNode',['../classtvm_1_1meta__schedule_1_1DatabaseNode.html',1,'tvm::meta_schedule::DatabaseNode'],['../classtvm_1_1meta__schedule_1_1DatabaseNode.html#adfd6210675fcb9dd7778d77b8ce56782',1,'tvm::meta_schedule::DatabaseNode::DatabaseNode()']]],
   ['dataflow_5fmatcher_2eh',['dataflow_matcher.h',['../dataflow__matcher_8h.html',1,'']]],
   ['dataflow_5fpattern_2eh',['dataflow_pattern.h',['../dataflow__pattern_8h.html',1,'']]],
   ['dataflow_5fpattern_5ffunctor_2eh',['dataflow_pattern_functor.h',['../dataflow__pattern__functor_8h.html',1,'']]],
