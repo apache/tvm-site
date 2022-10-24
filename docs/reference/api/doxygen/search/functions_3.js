@@ -9,6 +9,7 @@ var searchData=
   ['cachewrite',['CacheWrite',['../classtvm_1_1tir_1_1ScheduleNode.html#a22ce23b6475acf7ce2fe9c1ab5292568',1,'tvm::tir::ScheduleNode']]],
   ['cachewritestep',['CacheWriteStep',['../classtvm_1_1auto__scheduler_1_1CacheWriteStep.html#ad2c24762f35f7f9ebe85d7c03cba1c8e',1,'tvm::auto_scheduler::CacheWriteStep::CacheWriteStep(int stage_id, String scope_name)'],['../classtvm_1_1auto__scheduler_1_1CacheWriteStep.html#a371ff5005c7312db88088f35f11dabcb',1,'tvm::auto_scheduler::CacheWriteStep::CacheWriteStep(dmlc::JSONReader *reader)']]],
   ['calculate_5fnum_5fweight_5fchunks',['calculate_num_weight_chunks',['../namespacetvm_1_1runtime_1_1hexagon.html#aeb015ac131aff76434e7672f49de7814',1,'tvm::runtime::hexagon']]],
+  ['calculateconstantbytes',['CalculateConstantBytes',['../namespacetvm_1_1tir.html#a7314714e14035c9b1096737920c689ee',1,'tvm::tir']]],
   ['calculateexprcomplexity',['CalculateExprComplexity',['../namespacetvm_1_1tir.html#accfaeb3b1ce8601eab8d9b575d66f025',1,'tvm::tir']]],
   ['calculateextentssize',['CalculateExtentsSize',['../namespacetvm_1_1tir_1_1usmp.html#ad2424e3662cdcad9a18b496ba42ca10d',1,'tvm::tir::usmp::CalculateExtentsSize(const AllocateNode *op)'],['../namespacetvm_1_1tir_1_1usmp.html#a1529c901d8116a3ff0331a38b8e0e076',1,'tvm::tir::usmp::CalculateExtentsSize(const AllocateConstNode *op)']]],
   ['calculatemoduleworkspacesize',['CalculateModuleWorkspaceSize',['../namespacetvm_1_1tir_1_1usmp.html#a40a26630428319adf281826355d3e56f',1,'tvm::tir::usmp']]],
