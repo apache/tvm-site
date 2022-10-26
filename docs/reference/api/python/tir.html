@@ -9522,25 +9522,28 @@ Will lower to scalar loop when it is turned off.</p>
 <tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">expr_deep_equal</span></code>(lhs, rhs)</p></td>
 <td><p>Deeply compare two nested expressions.</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_block_access_region</span></code>(block, buffer_var_map)</p></td>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">find_anchor_block</span></code>(mod)</p></td>
+<td><p>Find the &quot;anchor block&quot; of the given module.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_block_access_region</span></code>(block, buffer_var_map)</p></td>
 <td><p>Detect which regions of tensors in this block are read or written to.</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_block_read_write_region</span></code>(block, ...)</p></td>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_block_read_write_region</span></code>(block, ...)</p></td>
 <td><p>Auto detect the block read/write region according to its body stmt.</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_prim_func_arg_and_result_memory_constraints</span></code>(...)</p></td>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_prim_func_arg_and_result_memory_constraints</span></code>(...)</p></td>
 <td><p>Returns the memory (aka storage) scope constraints for all the arguments and result of func.</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">verify_gpu_code</span></code>(func, constraints)</p></td>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">verify_gpu_code</span></code>(func, constraints)</p></td>
 <td><p>Verify if module contains illegal host side direct memory access.</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">verify_memory</span></code>(func)</p></td>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">verify_memory</span></code>(func)</p></td>
 <td><p>Verify if func contains illegal host side direct memory access.</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">verify_ssa</span></code>(func)</p></td>
+<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">verify_ssa</span></code>(func)</p></td>
 <td><p>Verify if the func is in SSA form.</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">verify_well_formed</span></code>(func[, assert_mode])</p></td>
+<tr class="row-odd"><td><p><code class="xref py py-obj docutils literal notranslate"><span class="pre">verify_well_formed</span></code>(func[, assert_mode])</p></td>
 <td><p>Verify if the given TIR is well-formed. The verification includes:</p></td>
 </tr>
 </tbody>
@@ -10327,6 +10330,32 @@ the structural remapping.</p>
 <p class="admonition-title">See also</p>
 <p><a class="reference internal" href="ir.html#tvm.ir.structural_equal" title="tvm.ir.structural_equal"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tvm.ir.structural_equal</span></code></a></p>
 </div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-prename descclassname"><span class="pre">tvm.tir.analysis.</span></span><span class="sig-name descname"><span class="pre">find_anchor_block</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mod</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference internal" href="ir.html#tvm.ir.IRModule" title="tvm.ir.module.IRModule"><span class="pre">tvm.ir.module.IRModule</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#tvm.tir.Block" title="tvm.tir.stmt.Block"><span class="pre">tvm.tir.stmt.Block</span></a></span></span></dt>
+<dd><p>Find the “anchor block” of the given module.</p>
+<p>We define the anchor block to be the block with (1) an init statement and (2) having
+the biggest flops count. The latter condition is only used when there are multiple blocks
+with an init statement.</p>
+<p>For example, if the input module is conv2d + fused spatial blocks, conv2d is the anchor block.
+The input module may not contain more than one such block. For example, a module having
+two conv2d is not allowed as an input.</p>
+<p>However, a module created from winograd convolution has multiple blocks with an init statement
+(input transform, batched GEMM, and output transform). We use the second condition, the flops
+count, to determine that the batched GEMM block is the anchor block.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><p><strong>mod</strong> (<a class="reference internal" href="ir.html#tvm.ir.IRModule" title="tvm.ir.IRModule"><em>tvm.ir.IRModule</em></a>) – The input TIR module.</p>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>anchor_block</strong> – The anchor block if found, None otherwise.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p><a class="reference internal" href="#tvm.tir.Block" title="tvm.tir.Block">Block</a></p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py function">
