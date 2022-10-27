@@ -206,6 +206,7 @@ var searchData=
   ['attrsnode_3c_20expanddimsattrs_20_3e',['AttrsNode&lt; ExpandDimsAttrs &gt;',['../classtvm_1_1AttrsNode.html',1,'tvm']]],
   ['attrsnode_3c_20fifobufferattrs_20_3e',['AttrsNode&lt; FIFOBufferAttrs &gt;',['../classtvm_1_1AttrsNode.html',1,'tvm']]],
   ['attrsnode_3c_20fixedpointmultiplyattrs_20_3e',['AttrsNode&lt; FixedPointMultiplyAttrs &gt;',['../classtvm_1_1AttrsNode.html',1,'tvm']]],
+  ['attrsnode_3c_20fixedpointmultiplyperaxisattrs_20_3e',['AttrsNode&lt; FixedPointMultiplyPerAxisAttrs &gt;',['../classtvm_1_1AttrsNode.html',1,'tvm']]],
   ['attrsnode_3c_20gatherattrs_20_3e',['AttrsNode&lt; GatherAttrs &gt;',['../classtvm_1_1AttrsNode.html',1,'tvm']]],
   ['attrsnode_3c_20gatherndattrs_20_3e',['AttrsNode&lt; GatherNDAttrs &gt;',['../classtvm_1_1AttrsNode.html',1,'tvm']]],
   ['attrsnode_3c_20getvalidcountsattrs_20_3e',['AttrsNode&lt; GetValidCountsAttrs &gt;',['../classtvm_1_1AttrsNode.html',1,'tvm']]],

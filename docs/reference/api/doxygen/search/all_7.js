@@ -122,6 +122,7 @@ var searchData=
   ['finstructionattrsasjson',['FInstructionAttrsAsJSON',['../namespacetvm_1_1tir.html#aaf9b06965f943fddf71ac8140938ebf2',1,'tvm::tir']]],
   ['finstructionattrsfromjson',['FInstructionAttrsFromJSON',['../namespacetvm_1_1tir.html#a608b54f31c0d65032f3949f752f5431d',1,'tvm::tir']]],
   ['fixedpointmultiplyattrs',['FixedPointMultiplyAttrs',['../structtvm_1_1relay_1_1FixedPointMultiplyAttrs.html',1,'tvm::relay']]],
+  ['fixedpointmultiplyperaxisattrs',['FixedPointMultiplyPerAxisAttrs',['../structtvm_1_1relay_1_1FixedPointMultiplyPerAxisAttrs.html',1,'tvm::relay']]],
   ['fjoinrunningtask',['FJoinRunningTask',['../classtvm_1_1meta__schedule_1_1PyTaskSchedulerNode.html#aaf6b817361ce20db3f6802007532c2e7',1,'tvm::meta_schedule::PyTaskSchedulerNode']]],
   ['flatten',['Flatten',['../classtvm_1_1tir_1_1SeqStmt.html#af3c486ea5fe09de5f257d88f7d92684b',1,'tvm::tir::SeqStmt::Flatten()'],['../namespacetvm_1_1topi_1_1nn.html#a6a553de73860c1a295d6ee566a3916b4',1,'tvm::topi::nn::flatten()']]],
   ['flatten_2eh',['flatten.h',['../flatten_8h.html',1,'']]],
