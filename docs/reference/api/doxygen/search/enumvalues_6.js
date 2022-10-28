@@ -4,6 +4,7 @@ var searchData=
   ['kadthandle',['kAdtHandle',['../namespacetvm.html#acd267f8d7f55da6ac681239831963279ab6bf8f8bef54e7ebbc8d9f804e94421e',1,'tvm']]],
   ['kand',['kAnd',['../classtvm_1_1script_1_1printer_1_1OperationDocNode.html#ab096bbea749ee994d75230cd8136afc2a5c61096a81b3e5cbbde4f43b14c8f0d9',1,'tvm::script::printer::OperationDocNode']]],
   ['kapiversion',['kApiVersion',['../namespacetvm_1_1runtime.html#a46fef1ca0ccc05473e9bb0a8c6b66619a69fe0643750b0c49e8b8aefb1cada337',1,'tvm::runtime']]],
+  ['kapplyconstraintstobooleanbranches',['kApplyConstraintsToBooleanBranches',['../classtvm_1_1arith_1_1RewriteSimplifier.html#a6705af5099418b968ded40d79102ad4ea254331b07f4bdf970d7f28f480da637b',1,'tvm::arith::RewriteSimplifier']]],
   ['karraddr',['kArrAddr',['../namespacetvm_1_1tir_1_1builtin.html#ad3b90c881b67ebe8e8fe68f14143bb1ca0b8af30aa268164148d5bfe1d8c2ba54',1,'tvm::tir::builtin']]],
   ['karrbyteoffset',['kArrByteOffset',['../namespacetvm_1_1tir_1_1builtin.html#ad3b90c881b67ebe8e8fe68f14143bb1cafdb925cdf50f17a2b96c7ac4faefa1fb',1,'tvm::tir::builtin']]],
   ['karrdata',['kArrData',['../namespacetvm_1_1tir_1_1builtin.html#ad3b90c881b67ebe8e8fe68f14143bb1ca9076fb1a58386bac2e0f1fdae9cab844',1,'tvm::tir::builtin']]],
