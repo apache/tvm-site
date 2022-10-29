@@ -7,7 +7,7 @@ var searchData=
   ['if_5fthen_5felse',['if_then_else',['../namespacetvm_1_1tir_1_1builtin.html#ae741e67259cd4b844a8934f2e2704adc',1,'tvm::tir::builtin::if_then_else()'],['../namespacetvm.html#a353217978feabae3575560bf1586885f',1,'tvm::if_then_else()']]],
   ['ifdoc',['IfDoc',['../classtvm_1_1script_1_1printer_1_1IfDoc.html#a630ac3b2c38c6248168d7869b66a5af8',1,'tvm::script::printer::IfDoc']]],
   ['ifpattern',['IfPattern',['../classtvm_1_1relay_1_1IfPattern.html#ab7d8657e247768a70804a86d5a44d1a1',1,'tvm::relay::IfPattern']]],
-  ['ifthenelse',['IfThenElse',['../classtvm_1_1tir_1_1IfThenElse.html#a57ecc0e036e0281fbf65ee97c7e54249',1,'tvm::tir::IfThenElse']]],
+  ['ifthenelse',['IfThenElse',['../classtvm_1_1tir_1_1IfThenElse.html#a1bdf6f4834b51dc4673e82ff1b21a4dd',1,'tvm::tir::IfThenElse']]],
   ['implementsfunction',['ImplementsFunction',['../classtvm_1_1runtime_1_1ModuleNode.html#a722ffdb3de3e1150b382c895af7dcb34',1,'tvm::runtime::ModuleNode']]],
   ['import',['Import',['../classtvm_1_1IRModuleNode.html#a5e21563666240e1deb1f92807d910268',1,'tvm::IRModuleNode::Import()'],['../classtvm_1_1runtime_1_1Module.html#afb5a6c9b0e0a541245958456ebe39260',1,'tvm::runtime::Module::Import()'],['../classtvm_1_1runtime_1_1ModuleNode.html#a79b98521b484d1c672b7ce2ae2aed2b5',1,'tvm::runtime::ModuleNode::Import()']]],
   ['importfromstd',['ImportFromStd',['../classtvm_1_1IRModuleNode.html#ad4267e40c959ea60f138b26d3276db88',1,'tvm::IRModuleNode']]],

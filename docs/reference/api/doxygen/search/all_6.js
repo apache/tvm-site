@@ -16,7 +16,7 @@ var searchData=
   ['eliminatecommonsubexpr',['EliminateCommonSubexpr',['../namespacetvm_1_1relay_1_1transform.html#adf21ade01969835b155241d277a94d1c',1,'tvm::relay::transform']]],
   ['else',['Else',['../namespacetvm_1_1script_1_1ir__builder_1_1tir.html#a40266d085b36fddf20d38abd0cdb9616',1,'tvm::script::ir_builder::tir']]],
   ['else_5fbranch',['else_branch',['../classtvm_1_1script_1_1printer_1_1IfDocNode.html#a8433d901c80f64cc87f5c36b7f21bb00',1,'tvm::script::printer::IfDocNode']]],
-  ['else_5fcase',['else_case',['../classtvm_1_1tir_1_1IfThenElseNode.html#a301cd38fe44e590852d34849df59ce21',1,'tvm::tir::IfThenElseNode']]],
+  ['else_5fcase',['else_case',['../classtvm_1_1tir_1_1IfThenElseNode.html#a6d897641f264441b64f9e7247a8bb504',1,'tvm::tir::IfThenElseNode']]],
   ['else_5fstmts',['else_stmts',['../classtvm_1_1script_1_1ir__builder_1_1tir_1_1IfFrameNode.html#a2c51e70d48b3667763282543e985223c',1,'tvm::script::ir_builder::tir::IfFrameNode']]],
   ['elseframe',['ElseFrame',['../classtvm_1_1script_1_1ir__builder_1_1tir_1_1ElseFrame.html',1,'tvm::script::ir_builder::tir']]],
   ['elseframenode',['ElseFrameNode',['../classtvm_1_1script_1_1ir__builder_1_1tir_1_1ElseFrameNode.html',1,'tvm::script::ir_builder::tir']]],
