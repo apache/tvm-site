@@ -408,6 +408,7 @@ var searchData=
   ['tvmdeviceallocdataspacewithscope',['TVMDeviceAllocDataSpaceWithScope',['../c__runtime__api_8h.html#a54212f093a2fc24a5fd7c3fecf29813a',1,'c_runtime_api.h']]],
   ['tvmdevicecopydatafromto',['TVMDeviceCopyDataFromTo',['../c__runtime__api_8h.html#aa588ee4bed71a4e7cb1f08ae8c46568f',1,'c_runtime_api.h']]],
   ['tvmdeviceexttype',['TVMDeviceExtType',['../c__runtime__api_8h.html#a57cbccb14c35a0e62dbc1b911188fcef',1,'c_runtime_api.h']]],
+  ['tvmdeviceexttype_5fend',['TVMDeviceExtType_End',['../c__runtime__api_8h.html#a57cbccb14c35a0e62dbc1b911188fcefa474961a2b52fee7b33e529015162e884',1,'c_runtime_api.h']]],
   ['tvmdevicefreedataspace',['TVMDeviceFreeDataSpace',['../c__runtime__api_8h.html#a05c7535a79c99bddaf9e3aebde6013e6',1,'c_runtime_api.h']]],
   ['tvmdlmanagedtensorcalldeleter',['TVMDLManagedTensorCallDeleter',['../c__runtime__api_8h.html#a6483791fc218022e690b6e0d81a095b0',1,'c_runtime_api.h']]],
   ['tvmextensionfuncdeclarer',['TVMExtensionFuncDeclarer',['../c__runtime__api_8h.html#a3980ab80477e57fc6045c12ea8b9e48d',1,'c_runtime_api.h']]],
