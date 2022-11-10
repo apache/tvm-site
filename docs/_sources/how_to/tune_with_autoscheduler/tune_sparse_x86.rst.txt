@@ -386,26 +386,30 @@ layout transformation, parallelization, vectorization, unrolling, and operator f
                  placeholder_4: Buffer(placeholder_14: Pointer(float32), float32, [65536], []),
                  compute: Buffer(compute_2: Pointer(float32), float32, [65536], [])}
       buffer_map = {placeholder_5: placeholder, placeholder_6: placeholder_1, placeholder_7: placeholder_2, placeholder_8: placeholder_3, placeholder_9: placeholder_4, compute_1: compute}
-      preflattened_buffer_map = {placeholder_5: placeholder_15: Buffer(placeholder_10, float32, [128, 256], []), placeholder_6: placeholder_16: Buffer(placeholder_11, float32, [4916, 16, 1], []), placeholder_7: placeholder_17: Buffer(placeholder_12, int32, [4916], []), compute_1: compute_3: Buffer(compute_2, float32, [128, 512], []), placeholder_8: placeholder_18: Buffer(placeholder_13, int32, [33], []), placeholder_9: placeholder_19: Buffer(placeholder_14, float32, [128, 512], [])} {
-      for (i0.outer.i1.outer.fused: int32, 0, 512) "parallel" {
-        allocate(compute_4: Pointer(global float32), float32, [128]), storage_scope = global {
-          for (i.outer.inner: int32, 0, 8) {
-            for (j.init: int32, 0, 16) {
-              compute_5: Buffer(compute_4, float32, [128], [])[((i.outer.inner*16) + j.init)] = 0f32
+      preflattened_buffer_map = {placeholder_6: placeholder_15: Buffer(placeholder_11, float32, [4916, 16, 1], []), placeholder_8: placeholder_16: Buffer(placeholder_13, int32, [33], []), placeholder_9: placeholder_17: Buffer(placeholder_14, float32, [128, 512], []), compute_1: compute_3: Buffer(compute_2, float32, [128, 512], []), placeholder_7: placeholder_18: Buffer(placeholder_12, int32, [4916], []), placeholder_5: placeholder_19: Buffer(placeholder_10, float32, [128, 256], [])} {
+      for (i0.outer: int32, 0, 8) "parallel" {
+        allocate(compute_4: Pointer(global float32), float32, [256]), storage_scope = global;
+        for (i1.outer: int32, 0, 64) {
+          for (i.outer.inner: int32, 0, 2) {
+            for (i.inner.init: int32, 0, 8) {
+              for (j.init: int32, 0, 16) {
+                compute_5: Buffer(compute_4, float32, [256], [])[(((i.outer.inner*128) + (i.inner.init*16)) + j.init)] = 0f32
+              }
             }
-            for (elem_idx: int32, 0, let cse_var_1: int32 = floormod(i0.outer.i1.outer.fused, 32) in (placeholder_3[(cse_var_1 + 1)] - placeholder_3[cse_var_1])) {
-              for (j: int32, 0, 16) {
-                let cse_var_2: int32 = floormod(i0.outer.i1.outer.fused, 32)
-                if @tir.likely((elem_idx < (placeholder_3[(cse_var_2 + 1)] - placeholder_3[cse_var_2])), dtype=bool) {
-                  let cse_var_3: int32 = ((i.outer.inner*16) + j)
-                  compute_5[cse_var_3] = (compute_5[cse_var_3] + (placeholder_1[(((placeholder_3[cse_var_2]*16) + (elem_idx*16)) + j)]*max(placeholder[(((floordiv(i0.outer.i1.outer.fused, 32)*2048) + (i.outer.inner*256)) + placeholder_2[(placeholder_3[cse_var_2] + elem_idx)])], 0f32)))
+            for (elem_idx: int32, 0, let cse_var_1: int32 = floordiv(i1.outer, 2) in (placeholder_3[(cse_var_1 + 1)] - placeholder_3[cse_var_1])) {
+              for (i.inner: int32, 0, 8) {
+                for (j: int32, 0, 16) {
+                  let cse_var_3: int32 = floordiv(i1.outer, 2)
+                  let cse_var_2: int32 = (((i.outer.inner*128) + (i.inner*16)) + j)
+                  compute_5[cse_var_2] = (compute_5[cse_var_2] + (placeholder_1[(((placeholder_3[cse_var_3]*16) + (elem_idx*16)) + j)]*max(placeholder[((((i0.outer*4096) + (i.outer.inner*2048)) + (i.inner*256)) + placeholder_2[(placeholder_3[cse_var_3] + elem_idx)])], 0f32)))
                 }
               }
             }
           }
-          for (i0.inner: int32, 0, 8) {
-            let cse_var_4: int32 = (((floordiv(i0.outer.i1.outer.fused, 32)*4096) + (i0.inner*512)) + (floormod(i0.outer.i1.outer.fused, 32)*16))
-            compute[ramp(cse_var_4, 1, 16)] = max((compute_5[ramp((i0.inner*16), 1, 16)] + placeholder_4[ramp(cse_var_4, 1, 16)]), broadcast(0f32, 16))
+          for (i0.inner: int32, 0, 16) {
+            let cse_var_5: int32 = (i1.outer*8)
+            let cse_var_4: int32 = (((i0.outer*8192) + (i0.inner*512)) + cse_var_5)
+            compute[ramp(cse_var_4, 1, 8)] = max((compute_5[ramp((((i0.inner*16) + cse_var_5) - (floordiv(i1.outer, 2)*16)), 1, 8)] + placeholder_4[ramp(cse_var_4, 1, 8)]), broadcast(0f32, 8))
           }
         }
       }
@@ -461,7 +465,7 @@ We build the binary and check its correctness and performance.
 
  .. code-block:: none
 
-    Execution time of this operator: 1.925 ms
+    Execution time of this operator: 3.044 ms
 
 
 
