@@ -33,7 +33,7 @@ var searchData=
   ['alloc',['Alloc',['../classtvm_1_1runtime_1_1vm_1_1Allocator.html#a3a899be8f5f1878b02222638b916ce19',1,'tvm::runtime::vm::Allocator']]],
   ['allocadt',['AllocADT',['../structtvm_1_1runtime_1_1vm_1_1Instruction.html#aa3abb881f27ea29f0fb2eed670130a6f',1,'tvm::runtime::vm::Instruction']]],
   ['allocate',['Allocate',['../classtvm_1_1tir_1_1Allocate.html#a625c432c3d7bf5544be146c2829abb88',1,'tvm::tir::Allocate::Allocate()'],['../namespacetvm_1_1script_1_1ir__builder_1_1tir.html#aa9787864f45dc62b7c3b6833003f96ea',1,'tvm::script::ir_builder::tir::Allocate()']]],
-  ['allocateconst',['AllocateConst',['../classtvm_1_1tir_1_1AllocateConst.html#ac7cde2c6f98d30492596fd401425e8bc',1,'tvm::tir::AllocateConst::AllocateConst()'],['../namespacetvm_1_1script_1_1ir__builder_1_1tir.html#acc2998389db5bc4d1d62610e908e5581',1,'tvm::script::ir_builder::tir::AllocateConst()']]],
+  ['allocateconst',['AllocateConst',['../classtvm_1_1tir_1_1AllocateConst.html#ac7cde2c6f98d30492596fd401425e8bc',1,'tvm::tir::AllocateConst::AllocateConst()'],['../namespacetvm_1_1script_1_1ir__builder_1_1tir.html#a83286f6aa614fd519daa19573df13885',1,'tvm::script::ir_builder::tir::AllocateConst()']]],
   ['allocatedpoolinfo',['AllocatedPoolInfo',['../classtvm_1_1tir_1_1usmp_1_1AllocatedPoolInfo.html#a2d36e5c43a7db2937075f7ed34d28b30',1,'tvm::tir::usmp::AllocatedPoolInfo']]],
   ['allocator',['Allocator',['../classtvm_1_1runtime_1_1vm_1_1Allocator.html#a886b349d5ffaf9270437758c7bbb30c3',1,'tvm::runtime::vm::Allocator']]],
   ['allocbuffer',['AllocBuffer',['../namespacetvm_1_1script_1_1ir__builder_1_1tir.html#a62a57ebae9d35dc7aeb63949eeb42080',1,'tvm::script::ir_builder::tir']]],
