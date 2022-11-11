@@ -86,6 +86,7 @@ var searchData=
   ['injectsoftwarepipeline',['InjectSoftwarePipeline',['../namespacetvm_1_1tir_1_1transform.html#a1b90f3ff7f983452fb3a4f7181043ae8',1,'tvm::tir::transform']]],
   ['injectvirtualthread',['InjectVirtualThread',['../namespacetvm_1_1tir_1_1transform.html#a37ade618ab7572f92bd37f69049966c7',1,'tvm::tir::transform']]],
   ['inline',['Inline',['../namespacetvm_1_1relay_1_1transform.html#aba5e588279a3b19a119c9aa28c364bbe',1,'tvm::relay::transform']]],
+  ['inlineconstantscalars',['InlineConstantScalars',['../classtvm_1_1meta__schedule_1_1ScheduleRule.html#a56d48f7fce5c1c7a913688361787e854',1,'tvm::meta_schedule::ScheduleRule']]],
   ['inlinemark',['InlineMark',['../classtvm_1_1tir_1_1StmtSRef.html#a20ae0e36408213db9574c4121ef17837',1,'tvm::tir::StmtSRef']]],
   ['inner',['inner',['../classtvm_1_1te_1_1SplitNode.html#a54baaf3b5697606521b164b5db7bb8ba',1,'tvm::te::SplitNode::inner()'],['../classtvm_1_1te_1_1FuseNode.html#a5a867854c20179cd32b19fb1eab90616',1,'tvm::te::FuseNode::inner()']]],
   ['inner_5fto_5fouter',['inner_to_outer',['../classtvm_1_1auto__scheduler_1_1SplitStepNode.html#a7e5756f039f7d76120e82e6e2cea4c53',1,'tvm::auto_scheduler::SplitStepNode']]],
