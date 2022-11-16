@@ -434,14 +434,13 @@ Before doing anything, let us print out the IR code of default schedule.</p>
 </div>
 <div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>@main = primfn(A_1: handle, B_1: handle) -&gt; ()
   attr = {&quot;from_legacy_te_schedule&quot;: True, &quot;global_symbol&quot;: &quot;main&quot;, &quot;tir.noalias&quot;: True}
-  buffers = {A: Buffer(A_2: Pointer(float32), float32, [(stride: int32*n: int32)], [], type=&quot;auto&quot;),
-             B: Buffer(B_2: Pointer(float32), float32, [(stride_1: int32*n)], [], type=&quot;auto&quot;)}
-  buffer_map = {A_1: A, B_1: B}
-  preflattened_buffer_map = {A_1: A_3: Buffer(A_2, float32, [n, m: int32], [stride, stride_2: int32], type=&quot;auto&quot;), B_1: B_3: Buffer(B_2, float32, [n], [stride_1], type=&quot;auto&quot;)} {
+  buffers = {A: Buffer(A_2: Pointer(float32), float32, [n: int32, m: int32], [stride: int32, stride_1: int32], type=&quot;auto&quot;),
+             B: Buffer(B_2: Pointer(float32), float32, [n], [stride_2: int32], type=&quot;auto&quot;)}
+  buffer_map = {A_1: A, B_1: B} {
   for (i: int32, 0, n) {
-    B[(i*stride_1)] = 0f32
+    B_3: Buffer(B_2, float32, [(stride_2*n)], [], type=&quot;auto&quot;)[(i*stride_2)] = 0f32
     for (k: int32, 0, m) {
-      B[(i*stride_1)] = (B[(i*stride_1)] + A[((i*stride) + (k*stride_2))])
+      B_3[(i*stride_2)] = (B_3[(i*stride_2)] + A_3: Buffer(A_2, float32, [(stride*n)], [], type=&quot;auto&quot;)[((i*stride) + (k*stride_1))])
     }
   }
 }
@@ -458,21 +457,20 @@ axis by different factors. The result is a nested reduction.</p>
 </div>
 <div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>@main = primfn(A_1: handle, B_1: handle) -&gt; ()
   attr = {&quot;from_legacy_te_schedule&quot;: True, &quot;global_symbol&quot;: &quot;main&quot;, &quot;tir.noalias&quot;: True}
-  buffers = {A: Buffer(A_2: Pointer(float32), float32, [(stride: int32*n: int32)], [], type=&quot;auto&quot;),
-             B: Buffer(B_2: Pointer(float32), float32, [(stride_1: int32*n)], [], type=&quot;auto&quot;)}
-  buffer_map = {A_1: A, B_1: B}
-  preflattened_buffer_map = {A_1: A_3: Buffer(A_2, float32, [n, m: int32], [stride, stride_2: int32], type=&quot;auto&quot;), B_1: B_3: Buffer(B_2, float32, [n], [stride_1], type=&quot;auto&quot;)} {
+  buffers = {A: Buffer(A_2: Pointer(float32), float32, [n: int32, m: int32], [stride: int32, stride_1: int32], type=&quot;auto&quot;),
+             B: Buffer(B_2: Pointer(float32), float32, [n], [stride_2: int32], type=&quot;auto&quot;)}
+  buffer_map = {A_1: A, B_1: B} {
   for (i.outer: int32, 0, floordiv((n + 31), 32)) {
     for (i.inner: int32, 0, 32) {
       if @tir.likely((((i.outer*32) + i.inner) &lt; n), dtype=bool) {
-        B[(((i.outer*32) + i.inner)*stride_1)] = 0f32
+        B_3: Buffer(B_2, float32, [(stride_2*n)], [], type=&quot;auto&quot;)[(((i.outer*32) + i.inner)*stride_2)] = 0f32
       }
       if @tir.likely((((i.outer*32) + i.inner) &lt; n), dtype=bool) {
         for (k.outer: int32, 0, floordiv((m + 15), 16)) {
           for (k.inner: int32, 0, 16) {
             if @tir.likely((((k.outer*16) + k.inner) &lt; m), dtype=bool) {
               let cse_var_1: int32 = ((i.outer*32) + i.inner)
-              B[(cse_var_1*stride_1)] = (B[(cse_var_1*stride_1)] + A[((cse_var_1*stride) + (((k.outer*16) + k.inner)*stride_2))])
+              B_3[(cse_var_1*stride_2)] = (B_3[(cse_var_1*stride_2)] + A_3: Buffer(A_2, float32, [(stride*n)], [], type=&quot;auto&quot;)[((cse_var_1*stride) + (((k.outer*16) + k.inner)*stride_1))])
             }
           }
         }
@@ -490,20 +488,19 @@ axis by different factors. The result is a nested reduction.</p>
 </div>
 <div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>@main = primfn(A_1: handle, B_1: handle) -&gt; ()
   attr = {&quot;from_legacy_te_schedule&quot;: True, &quot;global_symbol&quot;: &quot;main&quot;, &quot;tir.noalias&quot;: True}
-  buffers = {A: Buffer(A_2: Pointer(float32), float32, [(stride: int32*n: int32)], [], type=&quot;auto&quot;),
-             B: Buffer(B_2: Pointer(float32), float32, [(stride_1: int32*n)], [], type=&quot;auto&quot;)}
-  buffer_map = {A_1: A, B_1: B}
-  preflattened_buffer_map = {A_1: A_3: Buffer(A_2, float32, [n, m: int32], [stride, stride_2: int32], type=&quot;auto&quot;), B_1: B_3: Buffer(B_2, float32, [n], [stride_1], type=&quot;auto&quot;)} {
+  buffers = {A: Buffer(A_2: Pointer(float32), float32, [n: int32, m: int32], [stride: int32, stride_1: int32], type=&quot;auto&quot;),
+             B: Buffer(B_2: Pointer(float32), float32, [n], [stride_2: int32], type=&quot;auto&quot;)}
+  buffer_map = {A_1: A, B_1: B} {
   attr [IterVar(blockIdx.x: int32, (nullptr), &quot;ThreadIndex&quot;, &quot;blockIdx.x&quot;)] &quot;thread_extent&quot; = floordiv((n + 31), 32);
   attr [IterVar(threadIdx.x: int32, (nullptr), &quot;ThreadIndex&quot;, &quot;threadIdx.x&quot;)] &quot;thread_extent&quot; = 32 {
     if @tir.likely((((blockIdx.x*32) + threadIdx.x) &lt; n), dtype=bool) {
-      B[(((blockIdx.x*32) + threadIdx.x)*stride_1)] = 0f32
+      B_3: Buffer(B_2, float32, [(stride_2*n)], [], type=&quot;auto&quot;)[(((blockIdx.x*32) + threadIdx.x)*stride_2)] = 0f32
     }
     for (k.outer: int32, 0, floordiv((m + 15), 16)) {
       for (k.inner: int32, 0, 16) {
         if @tir.likely((((blockIdx.x*32) + threadIdx.x) &lt; n), dtype=bool) {
           if @tir.likely((((k.outer*16) + k.inner) &lt; m), dtype=bool) {
-            B[(((blockIdx.x*32) + threadIdx.x)*stride_1)] = (B[(((blockIdx.x*32) + threadIdx.x)*stride_1)] + A[((((blockIdx.x*32) + threadIdx.x)*stride) + (((k.outer*16) + k.inner)*stride_2))])
+            B_3[(((blockIdx.x*32) + threadIdx.x)*stride_2)] = (B_3[(((blockIdx.x*32) + threadIdx.x)*stride_2)] + A_3: Buffer(A_2, float32, [(stride*n)], [], type=&quot;auto&quot;)[((((blockIdx.x*32) + threadIdx.x)*stride) + (((k.outer*16) + k.inner)*stride_1))])
           }
         }
       }
@@ -530,25 +527,24 @@ result B.rf. The factored dimension becomes the first dimension of B.rf.</p>
 </div>
 <div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>@main = primfn(A_1: handle, B_1: handle) -&gt; ()
   attr = {&quot;from_legacy_te_schedule&quot;: True, &quot;global_symbol&quot;: &quot;main&quot;, &quot;tir.noalias&quot;: True}
-  buffers = {A: Buffer(A_2: Pointer(float32), float32, [(stride: int32*n: int32)], [], type=&quot;auto&quot;),
-             B: Buffer(B_2: Pointer(float32), float32, [(stride_1: int32*n)], [], type=&quot;auto&quot;)}
-  buffer_map = {A_1: A, B_1: B}
-  preflattened_buffer_map = {A_1: A_3: Buffer(A_2, float32, [n, m: int32], [stride, stride_2: int32], type=&quot;auto&quot;), B_1: B_3: Buffer(B_2, float32, [n], [stride_1], type=&quot;auto&quot;)} {
+  buffers = {A: Buffer(A_2: Pointer(float32), float32, [n: int32, m: int32], [stride: int32, stride_1: int32], type=&quot;auto&quot;),
+             B: Buffer(B_2: Pointer(float32), float32, [n], [stride_2: int32], type=&quot;auto&quot;)}
+  buffer_map = {A_1: A, B_1: B} {
   allocate(B.rf: Pointer(global float32), float32, [(n*16)]), storage_scope = global {
     for (k.inner: int32, 0, 16) {
       for (i: int32, 0, n) {
         B.rf_1: Buffer(B.rf, float32, [(16*n)], [])[((k.inner*n) + i)] = 0f32
         for (k.outer: int32, 0, floordiv((m + 15), 16)) {
           if @tir.likely((((k.outer*16) + k.inner) &lt; m), dtype=bool) {
-            B.rf_1[((k.inner*n) + i)] = (B.rf_1[((k.inner*n) + i)] + A[((i*stride) + (((k.outer*16) + k.inner)*stride_2))])
+            B.rf_1[((k.inner*n) + i)] = (B.rf_1[((k.inner*n) + i)] + A_3: Buffer(A_2, float32, [(stride*n)], [], type=&quot;auto&quot;)[((i*stride) + (((k.outer*16) + k.inner)*stride_1))])
           }
         }
       }
     }
     for (ax0: int32, 0, n) {
-      B[(ax0*stride_1)] = 0f32
+      B_3: Buffer(B_2, float32, [(stride_2*n)], [], type=&quot;auto&quot;)[(ax0*stride_2)] = 0f32
       for (k.inner.v: int32, 0, 16) {
-        B[(ax0*stride_1)] = (B[(ax0*stride_1)] + B.rf_1[((k.inner.v*n) + ax0)])
+        B_3[(ax0*stride_2)] = (B_3[(ax0*stride_2)] + B.rf_1[((k.inner.v*n) + ax0)])
       }
     }
   }
@@ -675,17 +671,16 @@ Here is an example for 2D convolution with filter size = [3, 3] and strides = [1
 </div>
 <div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>@main = primfn(Input_1: handle, Filter_1: handle, Output_1: handle) -&gt; ()
   attr = {&quot;from_legacy_te_schedule&quot;: True, &quot;global_symbol&quot;: &quot;main&quot;, &quot;tir.noalias&quot;: True}
-  buffers = {Input: Buffer(Input_2: Pointer(float32), float32, [(stride: int32*n: int32)], [], type=&quot;auto&quot;),
-             Filter: Buffer(Filter_2: Pointer(float32), float32, [9], []),
-             Output: Buffer(Output_2: Pointer(float32), float32, [((n - 2)*(n - 2))], [])}
-  buffer_map = {Input_1: Input, Filter_1: Filter, Output_1: Output}
-  preflattened_buffer_map = {Input_1: Input_3: Buffer(Input_2, float32, [n, n], [stride, stride_1: int32], type=&quot;auto&quot;), Filter_1: Filter_3: Buffer(Filter_2, float32, [3, 3], []), Output_1: Output_3: Buffer(Output_2, float32, [(n - 2), (n - 2)], [])} {
+  buffers = {Input: Buffer(Input_2: Pointer(float32), float32, [n: int32, n], [stride: int32, stride_1: int32], type=&quot;auto&quot;),
+             Filter: Buffer(Filter_2: Pointer(float32), float32, [3, 3], []),
+             Output: Buffer(Output_2: Pointer(float32), float32, [(n - 2), (n - 2)], [])}
+  buffer_map = {Input_1: Input, Filter_1: Filter, Output_1: Output} {
   for (i: int32, 0, (n - 2)) {
     for (j: int32, 0, (n - 2)) {
-      Output[((i*(n - 2)) + j)] = 0f32
+      Output_3: Buffer(Output_2, float32, [((n - 2)*(n - 2))], [])[((i*(n - 2)) + j)] = 0f32
       for (di: int32, 0, 3) {
         for (dj: int32, 0, 3) {
-          Output[((i*(n - 2)) + j)] = (Output[((i*(n - 2)) + j)] + (Input[(((i + di)*stride) + ((j + dj)*stride_1))]*Filter[((di*3) + dj)]))
+          Output_3[((i*(n - 2)) + j)] = (Output_3[((i*(n - 2)) + j)] + (Input_3: Buffer(Input_2, float32, [(stride*n)], [], type=&quot;auto&quot;)[(((i + di)*stride) + ((j + dj)*stride_1))]*Filter_3: Buffer(Filter_2, float32, [9], [])[((di*3) + dj)]))
         }
       }
     }

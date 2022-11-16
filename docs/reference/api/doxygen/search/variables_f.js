@@ -55,7 +55,6 @@ var searchData=
   ['prefetch_5foffset',['prefetch_offset',['../classtvm_1_1te_1_1IterVarAttrNode.html#a2a4a8e201e6caefeecffd4a7647866fd',1,'tvm::te::IterVarAttrNode']]],
   ['prefetch_5fscope',['prefetch_scope',['../namespacetvm_1_1tir_1_1attr.html#ac95fbd1c09a60b10c7a5d07f6c4b68a6',1,'tvm::tir::attr']]],
   ['prefix_5f',['prefix_',['../classtvm_1_1NameSupplyNode.html#aa14405ac3611e27389632477779fb6ad',1,'tvm::NameSupplyNode']]],
-  ['preflattened_5fbuffer_5fmap',['preflattened_buffer_map',['../classtvm_1_1script_1_1ir__builder_1_1tir_1_1PrimFuncFrameNode.html#afb98c531e14362a920bebf1cb0c1bac1',1,'tvm::script::ir_builder::tir::PrimFuncFrameNode::preflattened_buffer_map()'],['../classtvm_1_1tir_1_1PrimFuncNode.html#abf5f197a2cef15f3f1fecafa09358ffc',1,'tvm::tir::PrimFuncNode::preflattened_buffer_map()']]],
   ['preprocessor',['preprocessor',['../classtvm_1_1TargetKindNode.html#a47f02c66d0f972befdfb29ec592ecba0',1,'tvm::TargetKindNode']]],
   ['preresult_5fop_5findex_5f',['preresult_op_index_',['../classtvm_1_1runtime_1_1vm_1_1VirtualMachine.html#a37b4a705186bf76cb9aa5168dcbc3651',1,'tvm::runtime::vm::VirtualMachine']]],
   ['primitive_5fmap',['primitive_map',['../classtvm_1_1runtime_1_1vm_1_1Executable.html#ab5a31e8670a4f20564abc48610a90e8c',1,'tvm::runtime::vm::Executable']]],

@@ -203,6 +203,13 @@ trials, we can load the best schedule from the log file and apply it.
 
 
 
+.. rst-class:: sphx-glr-script-out
+
+ .. code-block:: none
+
+
+    *E
+
 
 
 
@@ -234,18 +241,17 @@ operator fusion.
     Lowered TIR:
     @main = primfn(A_1: handle, B_1: handle, C_1: handle, out_1: handle) -> ()
       attr = {"from_legacy_te_schedule": True, "global_symbol": "main", "tir.noalias": True}
-      buffers = {A: Buffer(A_2: Pointer(float32), float32, [1048576], []),
-                 B: Buffer(B_2: Pointer(float32), float32, [1048576], []),
-                 C: Buffer(C_2: Pointer(float32), float32, [1048576], []),
-                 out: Buffer(out_2: Pointer(float32), float32, [1048576], [])}
-      buffer_map = {A_1: A, B_1: B, C_1: C, out_1: out}
-      preflattened_buffer_map = {A_1: A_3: Buffer(A_2, float32, [1024, 1024], []), B_1: B_3: Buffer(B_2, float32, [1024, 1024], []), C_1: C_3: Buffer(C_2, float32, [1024, 1024], []), out_1: out_3: Buffer(out_2, float32, [1024, 1024], [])} {
+      buffers = {A: Buffer(A_2: Pointer(float32), float32, [1024, 1024], []),
+                 B: Buffer(B_2: Pointer(float32), float32, [1024, 1024], []),
+                 C: Buffer(C_2: Pointer(float32), float32, [1024, 1024], []),
+                 out: Buffer(out_2: Pointer(float32), float32, [1024, 1024], [])}
+      buffer_map = {A_1: A, B_1: B, C_1: C, out_1: out} {
       allocate(auto_scheduler_layout_transform: Pointer(global float32), float32, [1048576]), storage_scope = global {
         for (ax0.ax1.fused.ax2.fused: int32, 0, 128) "parallel" {
           for (ax4: int32, 0, 256) {
             for (ax6: int32, 0, 4) {
               for (ax7: int32, 0, 8) {
-                auto_scheduler_layout_transform_1: Buffer(auto_scheduler_layout_transform, float32, [1048576], [])[((((ax0.ax1.fused.ax2.fused*8192) + (ax4*32)) + (ax6*8)) + ax7)] = B[((((ax4*4096) + (ax6*1024)) + (ax0.ax1.fused.ax2.fused*8)) + ax7)]
+                auto_scheduler_layout_transform_1: Buffer(auto_scheduler_layout_transform, float32, [1048576], [])[((((ax0.ax1.fused.ax2.fused*8192) + (ax4*32)) + (ax6*8)) + ax7)] = B_3: Buffer(B_2, float32, [1048576], [])[((((ax4*4096) + (ax6*1024)) + (ax0.ax1.fused.ax2.fused*8)) + ax7)]
               }
             }
           }
@@ -262,16 +268,16 @@ operator fusion.
                 let cse_var_2: int32 = (((floormod(i.outer.outer.j.outer.outer.fused, 128)*8192) + (k.outer*32)) + (k.inner*8))
                 let cse_var_1: int32 = ((((floordiv(i.outer.outer.j.outer.outer.fused, 128)*8192) + (i.outer.inner*4096)) + (k.outer*4)) + k.inner)
                  {
-                  matmul_1[0] = (matmul_1[0] + (broadcast(A[cse_var_1], 8)*auto_scheduler_layout_transform_1[ramp(cse_var_2, 1, 8)]))
-                  matmul_1[1] = (matmul_1[1] + (broadcast(A[(cse_var_1 + 1024)], 8)*auto_scheduler_layout_transform_1[ramp(cse_var_2, 1, 8)]))
-                  matmul_1[2] = (matmul_1[2] + (broadcast(A[(cse_var_1 + 2048)], 8)*auto_scheduler_layout_transform_1[ramp(cse_var_2, 1, 8)]))
-                  matmul_1[3] = (matmul_1[3] + (broadcast(A[(cse_var_1 + 3072)], 8)*auto_scheduler_layout_transform_1[ramp(cse_var_2, 1, 8)]))
+                  matmul_1[0] = (matmul_1[0] + (broadcast(A_3: Buffer(A_2, float32, [1048576], [])[cse_var_1], 8)*auto_scheduler_layout_transform_1[ramp(cse_var_2, 1, 8)]))
+                  matmul_1[1] = (matmul_1[1] + (broadcast(A_3[(cse_var_1 + 1024)], 8)*auto_scheduler_layout_transform_1[ramp(cse_var_2, 1, 8)]))
+                  matmul_1[2] = (matmul_1[2] + (broadcast(A_3[(cse_var_1 + 2048)], 8)*auto_scheduler_layout_transform_1[ramp(cse_var_2, 1, 8)]))
+                  matmul_1[3] = (matmul_1[3] + (broadcast(A_3[(cse_var_1 + 3072)], 8)*auto_scheduler_layout_transform_1[ramp(cse_var_2, 1, 8)]))
                 }
               }
             }
             for (i.inner: int32, 0, 4) {
               let cse_var_3: int32 = ((((floordiv(i.outer.outer.j.outer.outer.fused, 128)*8192) + (i.outer.inner*4096)) + (i.inner*1024)) + (floormod(i.outer.outer.j.outer.outer.fused, 128)*8))
-              out[ramp(cse_var_3, 1, 8)] = (matmul_1[i.inner] + C[ramp(cse_var_3, 1, 8)])
+              out_3: Buffer(out_2, float32, [1048576], [])[ramp(cse_var_3, 1, 8)] = (matmul_1[i.inner] + C_3: Buffer(C_2, float32, [1048576], [])[ramp(cse_var_3, 1, 8)])
             }
           }
         }
@@ -326,7 +332,7 @@ We build the binary and check its correctness and performance.
 
  .. code-block:: none
 
-    Execution time of this operator: 95.039 ms
+    Execution time of this operator: 94.882 ms
 
 
 
@@ -444,7 +450,7 @@ operations.
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** ( 1 minutes  12.406 seconds)
+   **Total running time of the script:** ( 1 minutes  33.236 seconds)
 
 
 .. _sphx_glr_download_tutorial_auto_scheduler_matmul_x86.py:
