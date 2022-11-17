@@ -112,7 +112,6 @@ var searchData=
   ['measureinputnode',['MeasureInputNode',['../classtvm_1_1auto__scheduler_1_1MeasureInputNode.html',1,'tvm::auto_scheduler']]],
   ['measureresult',['MeasureResult',['../classtvm_1_1auto__scheduler_1_1MeasureResult.html',1,'tvm::auto_scheduler::MeasureResult'],['../classtvm_1_1auto__scheduler_1_1MeasureResult.html#a5023e3b9ad54d569fa7435aade73fd7d',1,'tvm::auto_scheduler::MeasureResult::MeasureResult()']]],
   ['measureresultnode',['MeasureResultNode',['../classtvm_1_1auto__scheduler_1_1MeasureResultNode.html',1,'tvm::auto_scheduler']]],
-  ['mem_5fcopy',['mem_copy',['../namespacetvm_1_1tir_1_1builtin.html#a0aee850e8e98b29fbcc8f269f5136e92',1,'tvm::tir::builtin']]],
   ['memo_5f',['memo_',['../classtvm_1_1relay_1_1ExprMutator.html#a605c320fa66c769991738380bc8a69c8',1,'tvm::relay::ExprMutator']]],
   ['memory_2eh',['memory.h',['../relay_2attrs_2memory_8h.html',1,'(Global Namespace)'],['../runtime_2memory_8h.html',1,'(Global Namespace)']]],
   ['memory_5fmanager_2eh',['memory_manager.h',['../memory__manager_8h.html',1,'']]],
