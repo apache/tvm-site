@@ -102,6 +102,7 @@ var searchData=
   ['getproducers',['GetProducers',['../classtvm_1_1auto__scheduler_1_1AccessAnalyzer.html#afd9ac7e6a478defa01270225c4a38e40',1,'tvm::auto_scheduler::AccessAnalyzer::GetProducers()'],['../classtvm_1_1tir_1_1ScheduleNode.html#a448d3e3fdd1ba180485bcae68ca528bb',1,'tvm::tir::ScheduleNode::GetProducers()']]],
   ['getrealaxis',['GetRealAxis',['../namespacetvm_1_1topi.html#aa45cdc15f72e867eff29c74b2dffd185',1,'tvm::topi']]],
   ['getref',['GetRef',['../classtvm_1_1runtime_1_1ObjectPtr.html#a4365e69ddcc4d8c13904852391b99268',1,'tvm::runtime::ObjectPtr::GetRef()'],['../namespacetvm_1_1runtime.html#aa4a97de4fefd23aa5942c6a545544a05',1,'tvm::runtime::GetRef(const ObjectType *ptr)'],['../namespacetvm_1_1runtime.html#af63300957592e8991c18c54703123ef7',1,'tvm::runtime::GetRef(const ObjType *ptr)']]],
+  ['getremappedbuffer',['GetRemappedBuffer',['../classtvm_1_1tir_1_1IndexDataTypeRewriter.html#a358fc1ab37a0825b449b0abf400b5d08',1,'tvm::tir::IndexDataTypeRewriter']]],
   ['getreprbytes',['GetReprBytes',['../classtvm_1_1ReflectionVTable.html#a4d88425f8540876007a3b6491d90bf65',1,'tvm::ReflectionVTable']]],
   ['getrpcsessionindex',['GetRPCSessionIndex',['../namespacetvm_1_1runtime.html#a8d284249899038cca33c40d97eefa1e3',1,'tvm::runtime']]],
   ['getruntimedatatype',['GetRuntimeDataType',['../namespacetvm.html#a0447e9aa45f6cab707f6dc9f9281b3f5',1,'tvm']]],

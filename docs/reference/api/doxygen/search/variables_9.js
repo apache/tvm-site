@@ -40,6 +40,8 @@ var searchData=
   ['ir_5fprefix',['ir_prefix',['../classtvm_1_1script_1_1printer_1_1IRDocsifierNode.html#adccf933a99d410b630f223ac1afe548f',1,'tvm::script::printer::IRDocsifierNode']]],
   ['irmod_5fstorage_5fidx',['irmod_storage_idx',['../classtvm_1_1tir_1_1AllocateConstNode.html#a13983d7ae23271c7fed4794de0110c96',1,'tvm::tir::AllocateConstNode']]],
   ['is_5fascend',['is_ascend',['../structtvm_1_1relay_1_1ArgsortAttrs.html#a97f3acf400fafc612854c955a88673ea',1,'tvm::relay::ArgsortAttrs::is_ascend()'],['../structtvm_1_1relay_1_1TopKAttrs.html#ae2ccec6187706f54757242e1839bb2d1',1,'tvm::relay::TopKAttrs::is_ascend()']]],
+  ['is_5fcondition_5f',['is_condition_',['../classtvm_1_1tir_1_1IndexDataTypeRewriter.html#a734cbb5c4096dc0970a9e29bff1445ea',1,'tvm::tir::IndexDataTypeRewriter']]],
+  ['is_5fenabled_5f',['is_enabled_',['../classtvm_1_1tir_1_1IndexDataTypeRewriter.html#a56fc45d85bdc5ed5c0c22ea938cb8c20',1,'tvm::tir::IndexDataTypeRewriter']]],
   ['is_5finput',['is_input',['../structtvm_1_1relay_1_1ShapeFuncAttrs.html#a1697a5a1b9e17876dd1a3db8a31264a5',1,'tvm::relay::ShapeFuncAttrs']]],
   ['is_5finternal',['is_internal',['../structtvm_1_1PoolInfoNode.html#aca54706b36e3df4d44b992b88a1830b8',1,'tvm::PoolInfoNode::is_internal()'],['../structtvm_1_1PoolInfoPropertiesNode.html#ab7bc2c2185036596da7336888a54fb65',1,'tvm::PoolInfoPropertiesNode::is_internal()']]],
   ['is_5flshift_5frequired',['is_lshift_required',['../structtvm_1_1relay_1_1FixedPointMultiplyPerAxisAttrs.html#a301de2d8ca519d1c3eb2c7a8ae3a0be7',1,'tvm::relay::FixedPointMultiplyPerAxisAttrs']]],

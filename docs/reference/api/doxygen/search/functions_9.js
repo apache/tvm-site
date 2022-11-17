@@ -14,6 +14,7 @@ var searchData=
   ['imports',['imports',['../classtvm_1_1runtime_1_1ModuleNode.html#a12d5336240ba02a581bbb8a628a8cdb9',1,'tvm::runtime::ModuleNode::imports()'],['../classtvm_1_1IRModuleNode.html#a9326e9d54337b4425f9b12d5dc370cb6',1,'tvm::IRModuleNode::Imports()']]],
   ['incompletetype',['IncompleteType',['../classtvm_1_1IncompleteType.html#ab43269e517f2e962ccb8f510c4f5fd3a',1,'tvm::IncompleteType']]],
   ['incref',['IncRef',['../classtvm_1_1runtime_1_1Object.html#ac9e5eed7719e322117bde996a171e33a',1,'tvm::runtime::Object']]],
+  ['indexdatatypenormalizer',['IndexDataTypeNormalizer',['../classtvm_1_1tir_1_1IndexDataTypeNormalizer.html#a8e7b466e60cb41a6355b1a93af9b488d',1,'tvm::tir::IndexDataTypeNormalizer']]],
   ['indexdiv',['indexdiv',['../namespacetvm.html#a8f30aa0685ca52f846843e76a1ad1dc7',1,'tvm::indexdiv(PrimExpr a, PrimExpr b, Span span=Span())'],['../namespacetvm.html#a8e795784bc91d7d0ad50df1d6a849b56',1,'tvm::indexdiv(const PrimExpr &amp;a, int b, Span span=Span())'],['../namespacetvm.html#a2fde20cf177fe6aaf6f89f9ca46c9c25',1,'tvm::indexdiv(int a, const PrimExpr &amp;b, Span span=Span())']]],
   ['indexdoc',['IndexDoc',['../classtvm_1_1script_1_1printer_1_1IndexDoc.html#aa1e81527b6b421a47e84d2cd20d54af4',1,'tvm::script::printer::IndexDoc']]],
   ['indexmap',['IndexMap',['../classtvm_1_1tir_1_1IndexMap.html#ad5e9b47f643784ef58cad26a5f4e3202',1,'tvm::tir::IndexMap']]],

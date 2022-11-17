@@ -1,5 +1,6 @@
 var searchData=
 [
+  ['parent',['Parent',['../classtvm_1_1tir_1_1IndexDataTypeRewriter.html#a0e7deada1e51a604e4f7bc6c8a115955',1,'tvm::tir::IndexDataTypeRewriter::Parent()'],['../classtvm_1_1tir_1_1IndexDataTypeNormalizer.html#a8d04a64a80c9fbdd28c7cb9e00c02120',1,'tvm::tir::IndexDataTypeNormalizer::Parent()']]],
   ['partialsolvedinequalities',['PartialSolvedInequalities',['../namespacetvm_1_1arith.html#adf7450490c4a53f62bab4463cdb5e9c8',1,'tvm::arith']]],
   ['partitionerfunctype',['PartitionerFuncType',['../namespacetvm_1_1support.html#a34824d8de8374a4144dc4754ccafdd74',1,'tvm::support']]],
   ['pass',['Pass',['../namespacetvm_1_1relay_1_1transform.html#afa666ade112e9955059095d695238a9a',1,'tvm::relay::transform::Pass()'],['../namespacetvm_1_1tir_1_1usmp_1_1transform.html#a901e9d4d9288aacc08b1bc7cde535f56',1,'tvm::tir::usmp::transform::Pass()']]],
