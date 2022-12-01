@@ -50,6 +50,7 @@ var searchData=
   ['verifygpucode',['VerifyGPUCode',['../classtvm_1_1meta__schedule_1_1Postproc.html#a7106b1742068c45966d6be5f4b8394aa',1,'tvm::meta_schedule::Postproc::VerifyGPUCode()'],['../namespacetvm_1_1tir.html#a53dfcb6ef7e178a83fda0bbb5dddcb39',1,'tvm::tir::VerifyGPUCode()'],['../namespacetvm_1_1tir_1_1transform.html#a70a059926c2ea81dcf437eff35f05e3e',1,'tvm::tir::transform::VerifyGPUCode()']]],
   ['verifymemory',['VerifyMemory',['../namespacetvm_1_1tir.html#ac69bcf127843e5e671379e44ab47ca27',1,'tvm::tir::VerifyMemory()'],['../namespacetvm_1_1tir_1_1transform.html#a32d0b0ed966cf019d5e607bc90f284af',1,'tvm::tir::transform::VerifyMemory()']]],
   ['verifyssa',['VerifySSA',['../namespacetvm_1_1tir.html#a3b38edd60b6ff952cefb74842a8ae826',1,'tvm::tir::VerifySSA()'],['../namespacetvm_1_1tir_1_1transform.html#ac51a104ab4d2c60a4f6ed0e827efab18',1,'tvm::tir::transform::VerifySSA()']]],
+  ['verifyvtcmlimit',['VerifyVTCMLimit',['../namespacetvm_1_1tir_1_1transform.html#aee836ad2372e1eac4a51f30f3f03f32c',1,'tvm::tir::transform']]],
   ['verifywellformed',['VerifyWellFormed',['../namespacetvm_1_1tir.html#aee3d251f82ef3a0f446ea23f8980d84e',1,'tvm::tir']]],
   ['version',['version',['../structTVMMetadata.html#ade3312efd4c0e5beaf390959621b2f52',1,'TVMMetadata::version()'],['../classtvm_1_1runtime_1_1metadata_1_1MetadataNode.html#a894ca3986db9874b364ea83982e54f21',1,'tvm::runtime::metadata::MetadataNode::version()']]],
   ['vid',['vid',['../classtvm_1_1relay_1_1VarNode.html#af191a8eedf3575d626771c9c820ddb63',1,'tvm::relay::VarNode']]],
