@@ -12,7 +12,6 @@ var searchData=
   ['detail',['detail',['../namespacetvm_1_1detail.html',1,'tvm']]],
   ['details',['details',['../namespacetvm_1_1script_1_1ir__builder_1_1details.html',1,'tvm::script::ir_builder']]],
   ['generic',['generic',['../namespacetvm_1_1topi_1_1generic.html',1,'tvm::topi']]],
-  ['hexagon',['hexagon',['../namespacetvm_1_1runtime_1_1hexagon.html',1,'tvm::runtime']]],
   ['instrument',['instrument',['../namespacetvm_1_1instrument.html',1,'tvm']]],
   ['ir',['ir',['../namespacetvm_1_1script_1_1ir__builder_1_1ir.html',1,'tvm::script::ir_builder']]],
   ['ir_5fbuilder',['ir_builder',['../namespacetvm_1_1script_1_1ir__builder.html',1,'tvm::script']]],

@@ -46,7 +46,6 @@ var searchData=
   ['getcustomtyperegistered',['GetCustomTypeRegistered',['../namespacetvm_1_1runtime.html#a1b8eedadc5a269b2f9614ce69a9932e7',1,'tvm::runtime']]],
   ['getdataptr',['GetDataPtr',['../classtvm_1_1runtime_1_1ObjectRef.html#aed593996e4076632450de8fde776707c',1,'tvm::runtime::ObjectRef']]],
   ['getdatasize',['GetDataSize',['../namespacetvm_1_1runtime.html#a59940b6d63dd4c5175c0fe875047c1cf',1,'tvm::runtime']]],
-  ['getdataspace',['GetDataSpace',['../classtvm_1_1runtime_1_1hexagon_1_1SDLTensor.html#a9982fe8aea253a41a354d2e979928403',1,'tvm::runtime::hexagon::SDLTensor']]],
   ['getdatatype',['GetDataType',['../classtvm_1_1te_1_1TensorNode.html#a2601a8951d0cf798f435e8f922a051dd',1,'tvm::te::TensorNode::GetDataType()'],['../classtvm_1_1tir_1_1DataProducerNode.html#a2cfae87e1a95ac4a95093d4485770d62',1,'tvm::tir::DataProducerNode::GetDataType()']]],
   ['getdecision',['GetDecision',['../classtvm_1_1tir_1_1TraceNode.html#a990ca3627ea7610bdaa19a0f1d934c09',1,'tvm::tir::TraceNode']]],
   ['getdefaulthardwareparams',['GetDefaultHardwareParams',['../classtvm_1_1auto__scheduler_1_1HardwareParamsNode.html#a3cfb6a112cdba2a35afeaea9132ef620',1,'tvm::auto_scheduler::HardwareParamsNode']]],

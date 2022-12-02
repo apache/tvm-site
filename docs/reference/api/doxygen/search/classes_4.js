@@ -33,7 +33,7 @@ var searchData=
   ['exprrewriter',['ExprRewriter',['../classtvm_1_1relay_1_1ExprRewriter.html',1,'tvm::relay']]],
   ['exprstmtdoc',['ExprStmtDoc',['../classtvm_1_1script_1_1printer_1_1ExprStmtDoc.html',1,'tvm::script::printer']]],
   ['exprstmtdocnode',['ExprStmtDocNode',['../classtvm_1_1script_1_1printer_1_1ExprStmtDocNode.html',1,'tvm::script::printer']]],
-  ['exprvisitor',['ExprVisitor',['../classtvm_1_1relay_1_1ExprVisitor.html',1,'tvm::relay::ExprVisitor'],['../classtvm_1_1tir_1_1ExprVisitor.html',1,'tvm::tir::ExprVisitor']]],
+  ['exprvisitor',['ExprVisitor',['../classtvm_1_1tir_1_1ExprVisitor.html',1,'tvm::tir::ExprVisitor'],['../classtvm_1_1relay_1_1ExprVisitor.html',1,'tvm::relay::ExprVisitor']]],
   ['externop',['ExternOp',['../classtvm_1_1te_1_1ExternOp.html',1,'tvm::te']]],
   ['externopnode',['ExternOpNode',['../classtvm_1_1te_1_1ExternOpNode.html',1,'tvm::te']]],
   ['extractedtask',['ExtractedTask',['../classtvm_1_1meta__schedule_1_1ExtractedTask.html',1,'tvm::meta_schedule']]],

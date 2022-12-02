@@ -25,7 +25,6 @@ var searchData=
   ['datatypepattern',['DataTypePattern',['../classtvm_1_1relay_1_1DataTypePattern.html',1,'tvm::relay::DataTypePattern'],['../classtvm_1_1relay_1_1DataTypePattern.html#a1af68239730a8b75bfb35cfce320b653',1,'tvm::relay::DataTypePattern::DataTypePattern()']]],
   ['datatypepatternnode',['DataTypePatternNode',['../classtvm_1_1relay_1_1DataTypePatternNode.html',1,'tvm::relay']]],
   ['deadcodeelimination',['DeadCodeElimination',['../namespacetvm_1_1relay_1_1transform.html#a441963a144dae58b7633d0a674cf20cc',1,'tvm::relay::transform']]],
-  ['deblockize_5fhwc_5f16b',['deblockize_hwc_16b',['../namespacetvm_1_1runtime_1_1hexagon.html#a1aa4a450b31e5faca452ba5806d978a3',1,'tvm::runtime::hexagon']]],
   ['debug_2eh',['debug.h',['../relay_2attrs_2debug_8h.html',1,'(Global Namespace)'],['../runtime_2debug_8h.html',1,'(Global Namespace)']]],
   ['debug_5ffunc',['debug_func',['../structtvm_1_1relay_1_1DebugAttrs.html#aa57fc666a9674bdd94ad8e5ac4da18f7',1,'tvm::relay::DebugAttrs']]],
   ['debug_5fmask',['debug_mask',['../classtvm_1_1tir_1_1ScheduleStateNode.html#a33ab5d3859aaf065c35e561d17b3ca48',1,'tvm::tir::ScheduleStateNode']]],
