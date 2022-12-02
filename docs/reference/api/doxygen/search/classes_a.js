@@ -37,7 +37,7 @@ var searchData=
   ['maxpool2dattrs',['MaxPool2DAttrs',['../structtvm_1_1relay_1_1MaxPool2DAttrs.html',1,'tvm::relay']]],
   ['maxpool3dattrs',['MaxPool3DAttrs',['../structtvm_1_1relay_1_1MaxPool3DAttrs.html',1,'tvm::relay']]],
   ['measurecallback',['MeasureCallback',['../classtvm_1_1meta__schedule_1_1MeasureCallback.html',1,'tvm::meta_schedule::MeasureCallback'],['../classtvm_1_1auto__scheduler_1_1MeasureCallback.html',1,'tvm::auto_scheduler::MeasureCallback']]],
-  ['measurecallbacknode',['MeasureCallbackNode',['../classtvm_1_1meta__schedule_1_1MeasureCallbackNode.html',1,'tvm::meta_schedule::MeasureCallbackNode'],['../classtvm_1_1auto__scheduler_1_1MeasureCallbackNode.html',1,'tvm::auto_scheduler::MeasureCallbackNode']]],
+  ['measurecallbacknode',['MeasureCallbackNode',['../classtvm_1_1auto__scheduler_1_1MeasureCallbackNode.html',1,'tvm::auto_scheduler::MeasureCallbackNode'],['../classtvm_1_1meta__schedule_1_1MeasureCallbackNode.html',1,'tvm::meta_schedule::MeasureCallbackNode']]],
   ['measurecandidate',['MeasureCandidate',['../classtvm_1_1meta__schedule_1_1MeasureCandidate.html',1,'tvm::meta_schedule']]],
   ['measurecandidatenode',['MeasureCandidateNode',['../classtvm_1_1meta__schedule_1_1MeasureCandidateNode.html',1,'tvm::meta_schedule']]],
   ['measureinput',['MeasureInput',['../classtvm_1_1auto__scheduler_1_1MeasureInput.html',1,'tvm::auto_scheduler']]],

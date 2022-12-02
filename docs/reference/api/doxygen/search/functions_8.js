@@ -19,6 +19,8 @@ var searchData=
   ['hoistexpression',['HoistExpression',['../namespacetvm_1_1tir_1_1transform.html#aabd207977177c1d1dc097445cc44339b',1,'tvm::tir::transform']]],
   ['hoistifthenelse',['HoistIfThenElse',['../namespacetvm_1_1tir_1_1transform.html#acd2b8fdd84785388630e2d52a6e3cc54',1,'tvm::tir::transform']]],
   ['hostmodulepassmanager',['HostModulePassManager',['../namespacetvm.html#a0e48ca039d0eb66e13bdece8f8f55a1b',1,'tvm']]],
+  ['hwio_5fat',['hwio_at',['../namespacetvm_1_1runtime_1_1hexagon.html#a89f01963dc2c318f429bfdf8d2801183',1,'tvm::runtime::hexagon']]],
+  ['hwio_5fto_5fsm_5f16b',['hwio_to_sm_16b',['../namespacetvm_1_1runtime_1_1hexagon.html#ac639f86272fb116ce2a054eda433fd69',1,'tvm::runtime::hexagon']]],
   ['hybridop',['HybridOp',['../classtvm_1_1te_1_1HybridOp.html#aec098921853139c0fe6dcddc8e7da99e',1,'tvm::te::HybridOp']]],
   ['hybridopnode',['HybridOpNode',['../classtvm_1_1te_1_1HybridOpNode.html#a27ebcb81f18ef107b2853efcfb035ad8',1,'tvm::te::HybridOpNode']]],
   ['hypot',['hypot',['../namespacetvm.html#a28e456d33229a628a312110db8d45b44',1,'tvm']]]
