@@ -40,9 +40,3 @@ $(window).scroll(function() {
   }
 });
 
-// Remove empty code blocks
-document.querySelectorAll("div.highlight > pre").forEach(p => {
-  if (p.innerText.trim() === "") {
-      p.parentNode.removeChild(p);
-  }
-})
