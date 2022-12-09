@@ -27,7 +27,7 @@ var searchData=
   ['block',['Block',['../classtvm_1_1tir_1_1Block.html#a1f9f0c0a927c0b1f828ddd2d741c7743',1,'tvm::tir::Block::Block()'],['../namespacetvm_1_1script_1_1ir__builder_1_1tir.html#adc2577c94264faea08d1a40bd6691088',1,'tvm::script::ir_builder::tir::Block()']]],
   ['blockattrs',['BlockAttrs',['../namespacetvm_1_1script_1_1ir__builder_1_1tir.html#ac547caf48dbfd8f4b8072dcb2c3af683',1,'tvm::script::ir_builder::tir']]],
   ['blockinfo',['BlockInfo',['../structtvm_1_1tir_1_1BlockInfo.html#a41dd8c062eb43ab169ed59d27c37741e',1,'tvm::tir::BlockInfo::BlockInfo()=default'],['../structtvm_1_1tir_1_1BlockInfo.html#aef19b9090d9f28f9e15eb48332be564c',1,'tvm::tir::BlockInfo::BlockInfo(BlockScope scope, bool affine_binding=false, bool region_cover=false)']]],
-  ['blockize',['Blockize',['../classtvm_1_1tir_1_1ScheduleNode.html#a7727373ee151745661a07980587b4375',1,'tvm::tir::ScheduleNode']]],
+  ['blockize',['Blockize',['../classtvm_1_1tir_1_1ScheduleNode.html#ad519f290c705afd441eaf683c4e24693',1,'tvm::tir::ScheduleNode']]],
   ['blockrealize',['BlockRealize',['../classtvm_1_1tir_1_1BlockRealize.html#a61275db1425a89bc09042601139b4882',1,'tvm::tir::BlockRealize']]],
   ['blockrv',['BlockRV',['../classtvm_1_1tir_1_1BlockRV.html#a16d0fddd0faa2b62fea6c22d2895bd3e',1,'tvm::tir::BlockRV']]],
   ['blockscope',['BlockScope',['../classtvm_1_1tir_1_1BlockScope.html#a6178e756a3b76b6bb8d124f58846da72',1,'tvm::tir::BlockScope::BlockScope()'],['../classtvm_1_1tir_1_1BlockScope.html#a6f82fccdfd633aafbdf9604c6d31c62e',1,'tvm::tir::BlockScope::BlockScope(const Array&lt; StmtSRef &gt; &amp;child_block_srefs)']]],

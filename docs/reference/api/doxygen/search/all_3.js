@@ -80,7 +80,7 @@ var searchData=
   ['blockinfo',['BlockInfo',['../structtvm_1_1tir_1_1BlockInfo.html',1,'tvm::tir::BlockInfo'],['../structtvm_1_1tir_1_1BlockInfo.html#a41dd8c062eb43ab169ed59d27c37741e',1,'tvm::tir::BlockInfo::BlockInfo()=default'],['../structtvm_1_1tir_1_1BlockInfo.html#aef19b9090d9f28f9e15eb48332be564c',1,'tvm::tir::BlockInfo::BlockInfo(BlockScope scope, bool affine_binding=false, bool region_cover=false)']]],
   ['blockinitframe',['BlockInitFrame',['../classtvm_1_1script_1_1ir__builder_1_1tir_1_1BlockInitFrame.html',1,'tvm::script::ir_builder::tir']]],
   ['blockinitframenode',['BlockInitFrameNode',['../classtvm_1_1script_1_1ir__builder_1_1tir_1_1BlockInitFrameNode.html',1,'tvm::script::ir_builder::tir']]],
-  ['blockize',['Blockize',['../classtvm_1_1tir_1_1ScheduleNode.html#a7727373ee151745661a07980587b4375',1,'tvm::tir::ScheduleNode']]],
+  ['blockize',['Blockize',['../classtvm_1_1tir_1_1ScheduleNode.html#ad519f290c705afd441eaf683c4e24693',1,'tvm::tir::ScheduleNode']]],
   ['blocknode',['BlockNode',['../classtvm_1_1tir_1_1BlockNode.html',1,'tvm::tir']]],
   ['blockrealize',['BlockRealize',['../classtvm_1_1tir_1_1BlockRealize.html',1,'tvm::tir::BlockRealize'],['../classtvm_1_1tir_1_1BlockRealize.html#a61275db1425a89bc09042601139b4882',1,'tvm::tir::BlockRealize::BlockRealize()']]],
   ['blockrealizenode',['BlockRealizeNode',['../classtvm_1_1tir_1_1BlockRealizeNode.html',1,'tvm::tir']]],
