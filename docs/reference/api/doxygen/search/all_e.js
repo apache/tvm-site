@@ -48,7 +48,6 @@ var searchData=
   ['map_3c_20tvm_3a_3atir_3a_3avar_2c_20tvm_3a_3arange_20_3e',['Map&lt; tvm::tir::Var, tvm::Range &gt;',['../classtvm_1_1runtime_1_1Map.html',1,'tvm::runtime']]],
   ['map_3c_20tvm_3a_3atir_3a_3avar_2c_20tvm_3a_3atir_3a_3abuffer_20_3e',['Map&lt; tvm::tir::Var, tvm::tir::Buffer &gt;',['../classtvm_1_1runtime_1_1Map.html',1,'tvm::runtime']]],
   ['map_3c_20tvm_3a_3atir_3a_3avar_2c_20tvm_3a_3atir_3a_3aitervar_20_3e',['Map&lt; tvm::tir::Var, tvm::tir::IterVar &gt;',['../classtvm_1_1runtime_1_1Map.html',1,'tvm::runtime']]],
-  ['map_3c_20tvm_3a_3atir_3a_3avar_2c_20tvm_3a_3atir_3a_3avar_20_3e',['Map&lt; tvm::tir::Var, tvm::tir::Var &gt;',['../classtvm_1_1runtime_1_1Map.html',1,'tvm::runtime']]],
   ['map_5f',['map_',['../classtvm_1_1AttrRegistryMap.html#a09551a76dd955d6d497a4ba80c43ba25',1,'tvm::AttrRegistryMap']]],
   ['mapindices',['MapIndices',['../classtvm_1_1tir_1_1IndexMapNode.html#adb104f1dce0cc935e74fbe12ec30b7d6',1,'tvm::tir::IndexMapNode']]],
   ['mapiter',['MapIter',['../classtvm_1_1TracedMapIterator.html#a77ff78d807d9ab3c0badff7cdc2e5452',1,'tvm::TracedMapIterator']]],

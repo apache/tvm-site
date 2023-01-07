@@ -21,7 +21,6 @@ var searchData=
   ['map_3c_20tvm_3a_3atir_3a_3avar_2c_20tvm_3a_3arange_20_3e',['Map&lt; tvm::tir::Var, tvm::Range &gt;',['../classtvm_1_1runtime_1_1Map.html',1,'tvm::runtime']]],
   ['map_3c_20tvm_3a_3atir_3a_3avar_2c_20tvm_3a_3atir_3a_3abuffer_20_3e',['Map&lt; tvm::tir::Var, tvm::tir::Buffer &gt;',['../classtvm_1_1runtime_1_1Map.html',1,'tvm::runtime']]],
   ['map_3c_20tvm_3a_3atir_3a_3avar_2c_20tvm_3a_3atir_3a_3aitervar_20_3e',['Map&lt; tvm::tir::Var, tvm::tir::IterVar &gt;',['../classtvm_1_1runtime_1_1Map.html',1,'tvm::runtime']]],
-  ['map_3c_20tvm_3a_3atir_3a_3avar_2c_20tvm_3a_3atir_3a_3avar_20_3e',['Map&lt; tvm::tir::Var, tvm::tir::Var &gt;',['../classtvm_1_1runtime_1_1Map.html',1,'tvm::runtime']]],
   ['mapnode',['MapNode',['../classtvm_1_1runtime_1_1MapNode.html',1,'tvm::runtime']]],
   ['mapvaluepath',['MapValuePath',['../classtvm_1_1MapValuePath.html',1,'tvm']]],
   ['mapvaluepathnode',['MapValuePathNode',['../classtvm_1_1MapValuePathNode.html',1,'tvm']]],
