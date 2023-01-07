@@ -244,6 +244,10 @@
 <li class="toctree-l2"><a class="reference internal" href="../tune_with_autoscheduler/index.html">Use AutoScheduler for Template-Free Scheduling</a></li>
 <li class="toctree-l2 current"><a class="reference internal" href="index.html">Work With microTVM</a><ul class="current">
 <li class="toctree-l3 current"><a class="current reference internal" href="#">microTVM Host-Driven AoT</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#install-microtvm-python-dependencies">Install microTVM Python dependencies</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#install-zephyr">Install Zephyr</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#install-cmsis-nn">Install CMSIS-NN</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#import-python-dependencies">Import Python dependencies</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#import-a-tflite-model">Import a TFLite model</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#defining-the-target">Defining the target</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#compile-the-model">Compile the model</a></li>
@@ -377,8 +381,9 @@
             
   <div class="sphx-glr-download-link-note admonition note">
 <p class="admonition-title">Note</p>
-<p>Click <a class="reference internal" href="#sphx-glr-download-how-to-work-with-microtvm-micro-aot-py"><span class="std std-ref">here</span></a>
-to download the full example code</p>
+<p>This tutorial can be used interactively with Google Colab! You can also click
+<a class="reference internal" href="#sphx-glr-download-how-to-work-with-microtvm-micro-aot-py"><span class="std std-ref">here</span></a> to run the Jupyter notebook locally.</p>
+<a class="reference external image-reference" href="https://colab.research.google.com/github/apache/tvm-site/blob/asf-site/docs/_downloads/c00933f3fbcf90c4f584d54607b33805/micro_aot.ipynb"><img alt="https://raw.githubusercontent.com/apache/web-data/main/images/utilities/colab_button.svg" class="align-center" src="https://raw.githubusercontent.com/apache/web-data/main/images/utilities/colab_button.svg" width="300px" /></a>
 </div>
 <div class="sphx-glr-example-title section" id="microtvm-host-driven-aot">
 <span id="tutorial-micro-aot"></span><span id="sphx-glr-how-to-work-with-microtvm-micro-aot-py"></span><h1>microTVM Host-Driven AoT<a class="headerlink" href="#microtvm-host-driven-aot" title="Permalink to this headline">¶</a></h1>
@@ -390,16 +395,88 @@ a TFLite model. AoTExecutor reduces the overhead of parsing graph at runtime
 compared to GraphExecutor. Also, we can have better memory management using ahead
 of time compilation. This tutorial can be executed on a x86 CPU using C runtime (CRT)
 or on Zephyr platform on a microcontroller/board supported by Zephyr.</p>
+<div class="section" id="install-microtvm-python-dependencies">
+<h2>Install microTVM Python dependencies<a class="headerlink" href="#install-microtvm-python-dependencies" title="Permalink to this headline">¶</a></h2>
+<p>TVM does not include a package for Python serial communication, so
+we must install one before using microTVM. We will also need TFLite
+to load models.</p>
+<blockquote>
+<div><div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>%%shell
+pip install <span class="nv">pyserial</span><span class="o">==</span><span class="m">3</span>.5 <span class="nv">tflite</span><span class="o">==</span><span class="m">2</span>.1
+</pre></div>
+</div>
+</div></blockquote>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">os</span>
+
+<span class="c1"># By default, this tutorial runs on x86 CPU using TVM&#39;s C runtime. If you would like</span>
+<span class="c1"># to run on real Zephyr hardware, you must export the `TVM_MICRO_USE_HW` environment</span>
+<span class="c1"># variable. Otherwise (if you are using the C runtime), you can skip installing</span>
+<span class="c1"># Zephyr and CMSIS-NN. It takes ~20 minutes to install both of them.</span>
+<a href="https://docs.python.org/3/library/functions.html#bool" title="builtins.bool" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">use_physical_hw</span></a> <span class="o">=</span> <span class="nb">bool</span><span class="p">(</span><a href="https://docs.python.org/3/library/os.html#os.getenv" title="os.getenv" class="sphx-glr-backref-module-os sphx-glr-backref-type-py-function"><span class="n">os</span><span class="o">.</span><span class="n">getenv</span></a><span class="p">(</span><span class="s2">&quot;TVM_MICRO_USE_HW&quot;</span><span class="p">))</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="install-zephyr">
+<h2>Install Zephyr<a class="headerlink" href="#install-zephyr" title="Permalink to this headline">¶</a></h2>
+<blockquote>
+<div><div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>%%shell
+<span class="c1"># Install west and ninja</span>
+python3 -m pip install west
+apt-get install -y ninja-build
+
+<span class="c1"># Install ZephyrProject</span>
+<span class="nv">ZEPHYR_PROJECT_PATH</span><span class="o">=</span><span class="s2">&quot;/content/zephyrproject&quot;</span>
+<span class="nb">export</span> <span class="nv">ZEPHYR_BASE</span><span class="o">=</span><span class="si">${</span><span class="nv">ZEPHYR_PROJECT_PATH</span><span class="si">}</span>/zephyr
+west init <span class="si">${</span><span class="nv">ZEPHYR_PROJECT_PATH</span><span class="si">}</span>
+<span class="nb">cd</span> <span class="si">${</span><span class="nv">ZEPHYR_BASE</span><span class="si">}</span>
+git checkout v2.7-branch
+<span class="nb">cd</span> ..
+west update
+west zephyr-export
+chmod -R o+w <span class="si">${</span><span class="nv">ZEPHYR_PROJECT_PATH</span><span class="si">}</span>
+
+<span class="c1"># Install Zephyr SDK</span>
+<span class="nv">ZEPHYR_SDK_VERSION</span><span class="o">=</span><span class="m">0</span>.13.2
+<span class="nv">ZEPHYR_SDK_FILE</span><span class="o">=</span><span class="s2">&quot;/content/zephyr-sdk-linux-setup.run&quot;</span>
+wget --no-verbose -O <span class="nv">$ZEPHYR_SDK_FILE</span> <span class="se">\</span>
+    https://github.com/zephyrproject-rtos/sdk-ng/releases/download/v<span class="si">${</span><span class="nv">ZEPHYR_SDK_VERSION</span><span class="si">}</span>/zephyr-sdk-<span class="si">${</span><span class="nv">ZEPHYR_SDK_VERSION</span><span class="si">}</span>-linux-x86_64-setup.run
+chmod +x <span class="nv">$ZEPHYR_SDK_FILE</span>
+<span class="s2">&quot;</span><span class="nv">$ZEPHYR_SDK_FILE</span><span class="s2">&quot;</span> -- -d /content/zephyr-sdk --quiet
+
+<span class="c1"># Install python dependencies</span>
+python3 -m pip install -r <span class="s2">&quot;</span><span class="si">${</span><span class="nv">ZEPHYR_BASE</span><span class="si">}</span><span class="s2">/scripts/requirements.txt&quot;</span>
+</pre></div>
+</div>
+</div></blockquote>
+</div>
+<div class="section" id="install-cmsis-nn">
+<h2>Install CMSIS-NN<a class="headerlink" href="#install-cmsis-nn" title="Permalink to this headline">¶</a></h2>
+<blockquote>
+<div><div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>%%shell
+<span class="nv">CMSIS_SHA</span><span class="o">=</span><span class="s2">&quot;51263182d16c92649a48144ba56c0945f9fce60e&quot;</span>
+<span class="nv">CMSIS_URL</span><span class="o">=</span><span class="s2">&quot;http://github.com/ARM-software/CMSIS_5/archive/</span><span class="si">${</span><span class="nv">CMSIS_SHA</span><span class="si">}</span><span class="s2">.tar.gz&quot;</span>
+<span class="nb">export</span> <span class="nv">CMSIS_PATH</span><span class="o">=</span>/content/cmsis
+<span class="nv">DOWNLOAD_PATH</span><span class="o">=</span><span class="s2">&quot;/content/</span><span class="si">${</span><span class="nv">CMSIS_SHA</span><span class="si">}</span><span class="s2">.tar.gz&quot;</span>
+mkdir <span class="si">${</span><span class="nv">CMSIS_PATH</span><span class="si">}</span>
+wget <span class="si">${</span><span class="nv">CMSIS_URL</span><span class="si">}</span> -O <span class="s2">&quot;</span><span class="si">${</span><span class="nv">DOWNLOAD_PATH</span><span class="si">}</span><span class="s2">&quot;</span>
+tar -xf <span class="s2">&quot;</span><span class="si">${</span><span class="nv">DOWNLOAD_PATH</span><span class="si">}</span><span class="s2">&quot;</span> -C <span class="si">${</span><span class="nv">CMSIS_PATH</span><span class="si">}</span> --strip-components<span class="o">=</span><span class="m">1</span>
+rm <span class="si">${</span><span class="nv">DOWNLOAD_PATH</span><span class="si">}</span>
+</pre></div>
+</div>
+</div></blockquote>
+</div>
+<div class="section" id="import-python-dependencies">
+<h2>Import Python dependencies<a class="headerlink" href="#import-python-dependencies" title="Permalink to this headline">¶</a></h2>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">import</span> <span class="nn">pathlib</span>
 <span class="kn">import</span> <span class="nn">json</span>
-<span class="kn">import</span> <span class="nn">os</span>
 
 <span class="kn">import</span> <span class="nn">tvm</span>
 <span class="kn">from</span> <span class="nn">tvm</span> <span class="kn">import</span> <span class="n">relay</span>
 <span class="kn">from</span> <span class="nn">tvm.relay.backend</span> <span class="kn">import</span> <span class="n">Executor</span><span class="p">,</span> <span class="n">Runtime</span>
 <span class="kn">from</span> <span class="nn">tvm.contrib.download</span> <span class="kn">import</span> <span class="n">download_testdata</span>
 </pre></div>
+</div>
 </div>
 <div class="section" id="import-a-tflite-model">
 <h2>Import a TFLite model<a class="headerlink" href="#import-a-tflite-model" title="Permalink to this headline">¶</a></h2>
@@ -408,8 +485,7 @@ This model is originally from <a class="reference external" href="https://github
 To test this model, we use samples from <a class="reference external" href="https://ai.googleblog.com/2017/08/launching-speech-commands-dataset.html">KWS dataset provided by Google</a>.</p>
 <p><strong>Note:</strong> By default this tutorial runs on x86 CPU using CRT, if you would like to run on Zephyr platform
 you need to export <cite>TVM_MICRO_USE_HW</cite> environment variable.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><a href="https://docs.python.org/3/library/functions.html#bool" title="builtins.bool" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">use_physical_hw</span></a> <span class="o">=</span> <span class="nb">bool</span><span class="p">(</span><a href="https://docs.python.org/3/library/os.html#os.getenv" title="os.getenv" class="sphx-glr-backref-module-os sphx-glr-backref-type-py-function"><span class="n">os</span><span class="o">.</span><span class="n">getenv</span></a><span class="p">(</span><span class="s2">&quot;TVM_MICRO_USE_HW&quot;</span><span class="p">))</span>
-<a href="https://docs.python.org/3/library/stdtypes.html#str" title="builtins.str" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">MODEL_URL</span></a> <span class="o">=</span> <span class="s2">&quot;https://github.com/tlc-pack/web-data/raw/main/testdata/microTVM/model/keyword_spotting_quant.tflite&quot;</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><a href="https://docs.python.org/3/library/stdtypes.html#str" title="builtins.str" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">MODEL_URL</span></a> <span class="o">=</span> <span class="s2">&quot;https://github.com/tlc-pack/web-data/raw/main/testdata/microTVM/model/keyword_spotting_quant.tflite&quot;</span>
 <a href="https://docs.python.org/3/library/stdtypes.html#str" title="builtins.str" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">MODEL_PATH</span></a> <span class="o">=</span> <span class="n">download_testdata</span><span class="p">(</span><a href="https://docs.python.org/3/library/stdtypes.html#str" title="builtins.str" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">MODEL_URL</span></a><span class="p">,</span> <span class="s2">&quot;keyword_spotting_quant.tflite&quot;</span><span class="p">,</span> <span class="n">module</span><span class="o">=</span><span class="s2">&quot;model&quot;</span><span class="p">)</span>
 <a href="https://docs.python.org/3/library/stdtypes.html#str" title="builtins.str" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">SAMPLE_URL</span></a> <span class="o">=</span> <span class="s2">&quot;https://github.com/tlc-pack/web-data/raw/main/testdata/microTVM/data/keyword_spotting_int8_6.pyc.npy&quot;</span>
 <a href="https://docs.python.org/3/library/stdtypes.html#str" title="builtins.str" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">SAMPLE_PATH</span></a> <span class="o">=</span> <span class="n">download_testdata</span><span class="p">(</span><a href="https://docs.python.org/3/library/stdtypes.html#str" title="builtins.str" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">SAMPLE_URL</span></a><span class="p">,</span> <span class="s2">&quot;keyword_spotting_int8_6.pyc.npy&quot;</span><span class="p">,</span> <span class="n">module</span><span class="o">=</span><span class="s2">&quot;data&quot;</span><span class="p">)</span>
@@ -486,6 +562,8 @@ respectively.</p>
         <span class="s2">&quot;board&quot;</span><span class="p">:</span> <span class="n">BOARD</span><span class="p">,</span>
         <span class="s2">&quot;serial_number&quot;</span><span class="p">:</span> <span class="n">SERIAL</span><span class="p">,</span>
         <span class="s2">&quot;config_main_stack_size&quot;</span><span class="p">:</span> <span class="mi">4096</span><span class="p">,</span>
+        <span class="s2">&quot;cmsis_path&quot;</span><span class="p">:</span> <a href="https://docs.python.org/3/library/os.html#os.getenv" title="os.getenv" class="sphx-glr-backref-module-os sphx-glr-backref-type-py-function"><span class="n">os</span><span class="o">.</span><span class="n">getenv</span></a><span class="p">(</span><span class="s2">&quot;CMSIS_PATH&quot;</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="s2">&quot;/content/cmsis&quot;</span><span class="p">),</span>
+        <span class="s2">&quot;zephyr_base&quot;</span><span class="p">:</span> <a href="https://docs.python.org/3/library/os.html#os.getenv" title="os.getenv" class="sphx-glr-backref-module-os sphx-glr-backref-type-py-function"><span class="n">os</span><span class="o">.</span><span class="n">getenv</span></a><span class="p">(</span><span class="s2">&quot;ZEPHYR_BASE&quot;</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="s2">&quot;/content/zephyrproject/zephyr&quot;</span><span class="p">),</span>
     <span class="p">}</span>
 
 <a href="../../reference/api/python/contrib.html#tvm.contrib.utils.TempDirectory" title="tvm.contrib.utils.TempDirectory" class="sphx-glr-backref-module-tvm-contrib-utils sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">temp_dir</span></a> <span class="o">=</span> <a href="../../reference/api/python/contrib.html#tvm.contrib.utils.tempdir" title="tvm.contrib.utils.tempdir" class="sphx-glr-backref-module-tvm-contrib-utils sphx-glr-backref-type-py-function"><span class="n">tvm</span><span class="o">.</span><span class="n">contrib</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">tempdir</span></a><span class="p">()</span>

@@ -245,13 +245,10 @@
 <li class="toctree-l2 current"><a class="reference internal" href="index.html">Work With microTVM</a><ul class="current">
 <li class="toctree-l3"><a class="reference internal" href="micro_aot.html">microTVM Host-Driven AoT</a></li>
 <li class="toctree-l3 current"><a class="current reference internal" href="#">Autotuning with microTVM</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#defining-the-model">Defining the model</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#defining-the-target">Defining the target</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#extracting-tuning-tasks">Extracting tuning tasks</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#configuring-microtvm">Configuring microTVM</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#run-autotuning">Run Autotuning</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#timing-the-untuned-program">Timing the untuned program</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#timing-the-tuned-program">Timing the tuned program</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#install-microtvm-python-dependencies">Install microTVM Python dependencies</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#install-zephyr">Install Zephyr</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#install-cmsis-nn">Install CMSIS-NN</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#import-python-dependencies">Import Python dependencies</a></li>
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="micro_ethosu.html">Running TVM on bare metal Arm(R) Cortex(R)-M55 CPU and Ethos(TM)-U55 NPU with CMSIS-NN</a></li>
@@ -379,8 +376,9 @@
             
   <div class="sphx-glr-download-link-note admonition note">
 <p class="admonition-title">Note</p>
-<p>Click <a class="reference internal" href="#sphx-glr-download-how-to-work-with-microtvm-micro-autotune-py"><span class="std std-ref">here</span></a>
-to download the full example code</p>
+<p>This tutorial can be used interactively with Google Colab! You can also click
+<a class="reference internal" href="#sphx-glr-download-how-to-work-with-microtvm-micro-autotune-py"><span class="std std-ref">here</span></a> to run the Jupyter notebook locally.</p>
+<a class="reference external image-reference" href="https://colab.research.google.com/github/apache/tvm-site/blob/asf-site/docs/_downloads/f83ba3df2d52f9b54cf141114359481a/micro_autotune.ipynb"><img alt="https://raw.githubusercontent.com/apache/web-data/main/images/utilities/colab_button.svg" class="align-center" src="https://raw.githubusercontent.com/apache/web-data/main/images/utilities/colab_button.svg" width="300px" /></a>
 </div>
 <div class="sphx-glr-example-title section" id="autotuning-with-microtvm">
 <span id="tutorial-micro-autotune"></span><span id="sphx-glr-how-to-work-with-microtvm-micro-autotune-py"></span><h1>Autotuning with microTVM<a class="headerlink" href="#autotuning-with-microtvm" title="Permalink to this headline">¶</a></h1>
@@ -388,19 +386,86 @@ to download the full example code</p>
 <a class="reference external" href="https://github.com/areusch">Andrew Reusch</a>,
 <a class="reference external" href="https://github.com/mehrdadh">Mehrdad Hessar</a></p>
 <p>This tutorial explains how to autotune a model using the C runtime.</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">os</span>
-<span class="kn">import</span> <span class="nn">json</span>
+<div class="section" id="install-microtvm-python-dependencies">
+<h2>Install microTVM Python dependencies<a class="headerlink" href="#install-microtvm-python-dependencies" title="Permalink to this headline">¶</a></h2>
+<p>TVM does not include a package for Python serial communication, so
+we must install one before using microTVM. We will also need TFLite
+to load models.</p>
+<blockquote>
+<div><div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>%%shell
+pip install <span class="nv">pyserial</span><span class="o">==</span><span class="m">3</span>.5 <span class="nv">tflite</span><span class="o">==</span><span class="m">2</span>.1
+</pre></div>
+</div>
+</div></blockquote>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># You can skip the following two sections (installing Zephyr and CMSIS-NN) if the following flag is False.</span>
+<span class="c1"># Installing Zephyr takes ~20 min.</span>
+<span class="kn">import</span> <span class="nn">os</span>
+
+<a href="https://docs.python.org/3/library/functions.html#bool" title="builtins.bool" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">use_physical_hw</span></a> <span class="o">=</span> <span class="nb">bool</span><span class="p">(</span><a href="https://docs.python.org/3/library/os.html#os.getenv" title="os.getenv" class="sphx-glr-backref-module-os sphx-glr-backref-type-py-function"><span class="n">os</span><span class="o">.</span><span class="n">getenv</span></a><span class="p">(</span><span class="s2">&quot;TVM_MICRO_USE_HW&quot;</span><span class="p">))</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="install-zephyr">
+<h2>Install Zephyr<a class="headerlink" href="#install-zephyr" title="Permalink to this headline">¶</a></h2>
+<blockquote>
+<div><div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>%%shell
+<span class="c1"># Install west and ninja</span>
+python3 -m pip install west
+apt-get install -y ninja-build
+
+<span class="c1"># Install ZephyrProject</span>
+<span class="nv">ZEPHYR_PROJECT_PATH</span><span class="o">=</span><span class="s2">&quot;/content/zephyrproject&quot;</span>
+<span class="nb">export</span> <span class="nv">ZEPHYR_BASE</span><span class="o">=</span><span class="si">${</span><span class="nv">ZEPHYR_PROJECT_PATH</span><span class="si">}</span>/zephyr
+west init <span class="si">${</span><span class="nv">ZEPHYR_PROJECT_PATH</span><span class="si">}</span>
+<span class="nb">cd</span> <span class="si">${</span><span class="nv">ZEPHYR_BASE</span><span class="si">}</span>
+git checkout v2.7-branch
+<span class="nb">cd</span> ..
+west update
+west zephyr-export
+chmod -R o+w <span class="si">${</span><span class="nv">ZEPHYR_PROJECT_PATH</span><span class="si">}</span>
+
+<span class="c1"># Install Zephyr SDK</span>
+<span class="nv">ZEPHYR_SDK_VERSION</span><span class="o">=</span><span class="m">0</span>.13.2
+<span class="nv">ZEPHYR_SDK_FILE</span><span class="o">=</span><span class="s2">&quot;/content/zephyr-sdk-linux-setup.run&quot;</span>
+wget --no-verbose -O <span class="nv">$ZEPHYR_SDK_FILE</span> <span class="se">\</span>
+    https://github.com/zephyrproject-rtos/sdk-ng/releases/download/v<span class="si">${</span><span class="nv">ZEPHYR_SDK_VERSION</span><span class="si">}</span>/zephyr-sdk-<span class="si">${</span><span class="nv">ZEPHYR_SDK_VERSION</span><span class="si">}</span>-linux-x86_64-setup.run
+chmod +x <span class="nv">$ZEPHYR_SDK_FILE</span>
+<span class="s2">&quot;</span><span class="nv">$ZEPHYR_SDK_FILE</span><span class="s2">&quot;</span> -- -d /content/zephyr-sdk --quiet
+
+<span class="c1"># Install python dependencies</span>
+python3 -m pip install -r <span class="s2">&quot;</span><span class="si">${</span><span class="nv">ZEPHYR_BASE</span><span class="si">}</span><span class="s2">/scripts/requirements.txt&quot;</span>
+</pre></div>
+</div>
+</div></blockquote>
+</div>
+<div class="section" id="install-cmsis-nn">
+<h2>Install CMSIS-NN<a class="headerlink" href="#install-cmsis-nn" title="Permalink to this headline">¶</a></h2>
+<blockquote>
+<div><div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>%%shell
+<span class="nv">CMSIS_SHA</span><span class="o">=</span><span class="s2">&quot;51263182d16c92649a48144ba56c0945f9fce60e&quot;</span>
+<span class="nv">CMSIS_URL</span><span class="o">=</span><span class="s2">&quot;http://github.com/ARM-software/CMSIS_5/archive/</span><span class="si">${</span><span class="nv">CMSIS_SHA</span><span class="si">}</span><span class="s2">.tar.gz&quot;</span>
+<span class="nb">export</span> <span class="nv">CMSIS_PATH</span><span class="o">=</span>/content/cmsis
+<span class="nv">DOWNLOAD_PATH</span><span class="o">=</span><span class="s2">&quot;/content/</span><span class="si">${</span><span class="nv">CMSIS_SHA</span><span class="si">}</span><span class="s2">.tar.gz&quot;</span>
+mkdir <span class="si">${</span><span class="nv">CMSIS_PATH</span><span class="si">}</span>
+wget <span class="si">${</span><span class="nv">CMSIS_URL</span><span class="si">}</span> -O <span class="s2">&quot;</span><span class="si">${</span><span class="nv">DOWNLOAD_PATH</span><span class="si">}</span><span class="s2">&quot;</span>
+tar -xf <span class="s2">&quot;</span><span class="si">${</span><span class="nv">DOWNLOAD_PATH</span><span class="si">}</span><span class="s2">&quot;</span> -C <span class="si">${</span><span class="nv">CMSIS_PATH</span><span class="si">}</span> --strip-components<span class="o">=</span><span class="m">1</span>
+rm <span class="si">${</span><span class="nv">DOWNLOAD_PATH</span><span class="si">}</span>
+</pre></div>
+</div>
+</div></blockquote>
+</div>
+<div class="section" id="import-python-dependencies">
+<h2>Import Python dependencies<a class="headerlink" href="#import-python-dependencies" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">json</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">import</span> <span class="nn">pathlib</span>
 
 <span class="kn">import</span> <span class="nn">tvm</span>
 <span class="kn">from</span> <span class="nn">tvm.relay.backend</span> <span class="kn">import</span> <span class="n">Runtime</span>
-
-<a href="https://docs.python.org/3/library/functions.html#bool" title="builtins.bool" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">use_physical_hw</span></a> <span class="o">=</span> <span class="nb">bool</span><span class="p">(</span><a href="https://docs.python.org/3/library/os.html#os.getenv" title="os.getenv" class="sphx-glr-backref-module-os sphx-glr-backref-type-py-function"><span class="n">os</span><span class="o">.</span><span class="n">getenv</span></a><span class="p">(</span><span class="s2">&quot;TVM_MICRO_USE_HW&quot;</span><span class="p">))</span>
 </pre></div>
 </div>
 <div class="section" id="defining-the-model">
-<h2>Defining the model<a class="headerlink" href="#defining-the-model" title="Permalink to this headline">¶</a></h2>
+<h3>Defining the model<a class="headerlink" href="#defining-the-model" title="Permalink to this headline">¶</a></h3>
 <blockquote>
 <div><p>To begin with, define a model in Relay to be executed on-device. Then create an IRModule from relay model and
 fill parameters with random numbers.</p>
@@ -432,7 +497,7 @@ fill parameters with random numbers.</p>
 </div>
 </div>
 <div class="section" id="defining-the-target">
-<h2>Defining the target<a class="headerlink" href="#defining-the-target" title="Permalink to this headline">¶</a></h2>
+<h3>Defining the target<a class="headerlink" href="#defining-the-target" title="Permalink to this headline">¶</a></h3>
 <blockquote>
 <div><p>Now we define the TVM target that describes the execution environment. This looks very similar
 to target definitions from other microTVM tutorials. Alongside this we pick the C Runtime to code
@@ -461,7 +526,7 @@ this tutorial.</p>
 </div>
 </div>
 <div class="section" id="extracting-tuning-tasks">
-<h2>Extracting tuning tasks<a class="headerlink" href="#extracting-tuning-tasks" title="Permalink to this headline">¶</a></h2>
+<h3>Extracting tuning tasks<a class="headerlink" href="#extracting-tuning-tasks" title="Permalink to this headline">¶</a></h3>
 <blockquote>
 <div><p>Not all operators in the Relay program printed above can be tuned. Some are so trivial that only
 a single implementation is defined; others don’t make sense as tuning tasks. Using
@@ -477,7 +542,7 @@ transformation passes; we’ll apply the same configuration later on during auto
 </div>
 </div>
 <div class="section" id="configuring-microtvm">
-<h2>Configuring microTVM<a class="headerlink" href="#configuring-microtvm" title="Permalink to this headline">¶</a></h2>
+<h3>Configuring microTVM<a class="headerlink" href="#configuring-microtvm" title="Permalink to this headline">¶</a></h3>
 <blockquote>
 <div><p>Before autotuning, we need to define a module loader and then pass that to
 a <cite>tvm.autotvm.LocalBuilder</cite>. Then we create a <cite>tvm.autotvm.LocalRunner</cite> and use
@@ -526,7 +591,7 @@ choose other options by choosing from <cite>PLATFORM</cite> list.</p>
 </div>
 </div>
 <div class="section" id="run-autotuning">
-<h2>Run Autotuning<a class="headerlink" href="#run-autotuning" title="Permalink to this headline">¶</a></h2>
+<h3>Run Autotuning<a class="headerlink" href="#run-autotuning" title="Permalink to this headline">¶</a></h3>
 <blockquote>
 <div><p>Now we can run autotuning separately on each extracted task on microTVM device.</p>
 </div></blockquote>
@@ -550,7 +615,7 @@ choose other options by choosing from <cite>PLATFORM</cite> list.</p>
 </div>
 </div>
 <div class="section" id="timing-the-untuned-program">
-<h2>Timing the untuned program<a class="headerlink" href="#timing-the-untuned-program" title="Permalink to this headline">¶</a></h2>
+<h3>Timing the untuned program<a class="headerlink" href="#timing-the-untuned-program" title="Permalink to this headline">¶</a></h3>
 <blockquote>
 <div><p>For comparison, let’s compile and run the graph without imposing any autotuning schedules. TVM
 will select a randomly-tuned implementation for each operator, which should not perform as well as
@@ -598,15 +663,15 @@ the tuned operator.</p>
 <div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>########## Build without Autotuning ##########
 Node Name                                     Ops                                           Time(us)  Time(%)  Shape              Inputs  Outputs  Measurements(us)
 ---------                                     ---                                           --------  -------  -----              ------  -------  ----------------
-tvmgen_default_fused_nn_contrib_conv2d_NCHWc  tvmgen_default_fused_nn_contrib_conv2d_NCHWc  311.0     98.732   (1, 2, 10, 10, 3)  2       1        [311.0]
-tvmgen_default_fused_layout_transform_1       tvmgen_default_fused_layout_transform_1       3.021     0.959    (1, 6, 10, 10)     1       1        [3.021]
-tvmgen_default_fused_layout_transform         tvmgen_default_fused_layout_transform         0.972     0.309    (1, 1, 10, 10, 3)  1       1        [0.972]
-Total_time                                    -                                             314.993   -        -                  -       -        -
+tvmgen_default_fused_nn_contrib_conv2d_NCHWc  tvmgen_default_fused_nn_contrib_conv2d_NCHWc  312.1     98.695   (1, 2, 10, 10, 3)  2       1        [312.1]
+tvmgen_default_fused_layout_transform_1       tvmgen_default_fused_layout_transform_1       3.148     0.995    (1, 6, 10, 10)     1       1        [3.148]
+tvmgen_default_fused_layout_transform         tvmgen_default_fused_layout_transform         0.978     0.309    (1, 1, 10, 10, 3)  1       1        [0.978]
+Total_time                                    -                                             316.226   -        -                  -       -        -
 </pre></div>
 </div>
 </div>
 <div class="section" id="timing-the-tuned-program">
-<h2>Timing the tuned program<a class="headerlink" href="#timing-the-tuned-program" title="Permalink to this headline">¶</a></h2>
+<h3>Timing the tuned program<a class="headerlink" href="#timing-the-tuned-program" title="Permalink to this headline">¶</a></h3>
 <blockquote>
 <div><p>Once autotuning completes, you can time execution of the entire program using the Debug Runtime:</p>
 </div></blockquote>
@@ -653,10 +718,10 @@ Total_time                                    -                                 
 <div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>########## Build with Autotuning ##########
 Node Name                                     Ops                                           Time(us)  Time(%)  Shape              Inputs  Outputs  Measurements(us)
 ---------                                     ---                                           --------  -------  -----              ------  -------  ----------------
-tvmgen_default_fused_nn_contrib_conv2d_NCHWc  tvmgen_default_fused_nn_contrib_conv2d_NCHWc  137.6     98.091   (1, 6, 10, 10, 1)  2       1        [137.6]
-tvmgen_default_fused_layout_transform_1       tvmgen_default_fused_layout_transform_1       1.821     1.298    (1, 6, 10, 10)     1       1        [1.821]
-tvmgen_default_fused_layout_transform         tvmgen_default_fused_layout_transform         0.858     0.611    (1, 3, 10, 10, 1)  1       1        [0.858]
-Total_time                                    -                                             140.278   -        -                  -       -        -
+tvmgen_default_fused_nn_contrib_conv2d_NCHWc  tvmgen_default_fused_nn_contrib_conv2d_NCHWc  103.3     97.519   (1, 6, 10, 10, 1)  2       1        [103.3]
+tvmgen_default_fused_layout_transform_1       tvmgen_default_fused_layout_transform_1       1.775     1.676    (1, 6, 10, 10)     1       1        [1.775]
+tvmgen_default_fused_layout_transform         tvmgen_default_fused_layout_transform         0.853     0.805    (1, 3, 10, 10, 1)  1       1        [0.853]
+Total_time                                    -                                             105.928   -        -                  -       -        -
 </pre></div>
 </div>
 <div class="sphx-glr-footer sphx-glr-footer-example docutils container" id="sphx-glr-download-how-to-work-with-microtvm-micro-autotune-py">
@@ -668,6 +733,7 @@ Total_time                                    -                                 
 </div>
 </div>
 <p class="sphx-glr-signature"><a class="reference external" href="https://sphinx-gallery.github.io">Gallery generated by Sphinx-Gallery</a></p>
+</div>
 </div>
 </div>
 
