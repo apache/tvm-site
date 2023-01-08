@@ -10,5 +10,6 @@ var searchData=
   ['interpreter_2eh',['interpreter.h',['../interpreter_8h.html',1,'']]],
   ['ir_2eh',['ir.h',['../ir_2ir_8h.html',1,'(Global Namespace)'],['../tir_2ir_8h.html',1,'(Global Namespace)']]],
   ['ir_5fdocsifier_2eh',['ir_docsifier.h',['../ir__docsifier_8h.html',1,'']]],
+  ['ir_5fdocsifier_5ffunctor_2eh',['ir_docsifier_functor.h',['../ir__docsifier__functor_8h.html',1,'']]],
   ['iter_5faffine_5fmap_2eh',['iter_affine_map.h',['../iter__affine__map_8h.html',1,'']]]
 ];

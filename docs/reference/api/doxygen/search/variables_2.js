@@ -26,6 +26,7 @@ var searchData=
   ['buffer_5fbind_5fscope',['buffer_bind_scope',['../namespacetvm_1_1tir_1_1attr.html#a0497d7cff1d672920c2fbd4d92869e62',1,'tvm::tir::attr']]],
   ['buffer_5fbound',['buffer_bound',['../namespacetvm_1_1tir_1_1attr.html#ac76fd8d0227265617e2f2bb8402d1e19',1,'tvm::tir::attr']]],
   ['buffer_5fdim_5falign',['buffer_dim_align',['../namespacetvm_1_1tir_1_1attr.html#a0ff3c4642eebe20842b1c26e98288a5d',1,'tvm::tir::attr']]],
+  ['buffer_5fdtype',['buffer_dtype',['../structtvm_1_1script_1_1printer_1_1Default.html#a557158a1c35ccf973a33a3d3bd2a3461',1,'tvm::script::printer::Default']]],
   ['buffer_5finfo_5fstmts',['buffer_info_stmts',['../structtvm_1_1tir_1_1usmp_1_1BufferInfoAnalysisNode.html#a71a0e484d5df7b61c9f5c12fe61c590b',1,'tvm::tir::usmp::BufferInfoAnalysisNode']]],
   ['buffer_5fmap',['buffer_map',['../classtvm_1_1script_1_1ir__builder_1_1tir_1_1PrimFuncFrameNode.html#a2d4040abf60871f7dce6d5e2fc2572c5',1,'tvm::script::ir_builder::tir::PrimFuncFrameNode::buffer_map()'],['../classtvm_1_1tir_1_1PrimFuncNode.html#aeb1f162516e09122852496f2a945d100',1,'tvm::tir::PrimFuncNode::buffer_map()']]],
   ['buffer_5fremap_5f',['buffer_remap_',['../classtvm_1_1tir_1_1IndexDataTypeRewriter.html#a8ee3de0fbd707b0062c32c0511d53904',1,'tvm::tir::IndexDataTypeRewriter']]],

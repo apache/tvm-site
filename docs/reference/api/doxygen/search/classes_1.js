@@ -46,7 +46,7 @@ var searchData=
   ['broadcast',['Broadcast',['../classtvm_1_1tir_1_1Broadcast.html',1,'tvm::tir']]],
   ['broadcastattrs',['BroadcastAttrs',['../structtvm_1_1relay_1_1qnn_1_1BroadcastAttrs.html',1,'tvm::relay::qnn']]],
   ['broadcastnode',['BroadcastNode',['../classtvm_1_1tir_1_1BroadcastNode.html',1,'tvm::tir']]],
-  ['buffer',['Buffer',['../classtvm_1_1tir_1_1Buffer.html',1,'tvm::tir::Buffer'],['../structtvm_1_1runtime_1_1vm_1_1Buffer.html',1,'tvm::runtime::vm::Buffer']]],
+  ['buffer',['Buffer',['../structtvm_1_1runtime_1_1vm_1_1Buffer.html',1,'tvm::runtime::vm::Buffer'],['../classtvm_1_1tir_1_1Buffer.html',1,'tvm::tir::Buffer']]],
   ['bufferinfo',['BufferInfo',['../classtvm_1_1tir_1_1usmp_1_1BufferInfo.html',1,'tvm::tir::usmp']]],
   ['bufferinfoanalysis',['BufferInfoAnalysis',['../classtvm_1_1tir_1_1usmp_1_1BufferInfoAnalysis.html',1,'tvm::tir::usmp']]],
   ['bufferinfoanalysisnode',['BufferInfoAnalysisNode',['../structtvm_1_1tir_1_1usmp_1_1BufferInfoAnalysisNode.html',1,'tvm::tir::usmp']]],

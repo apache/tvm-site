@@ -13,8 +13,6 @@ var searchData=
   ['thread_5fbind_2eh',['thread_bind.h',['../thread__bind_8h.html',1,'']]],
   ['threading_5fbackend_2eh',['threading_backend.h',['../threading__backend_8h.html',1,'']]],
   ['trace_2eh',['trace.h',['../trace_8h.html',1,'']]],
-  ['traced_5fobject_2eh',['traced_object.h',['../traced__object_8h.html',1,'']]],
-  ['traced_5fobject_5ffunctor_2eh',['traced_object_functor.h',['../traced__object__functor_8h.html',1,'']]],
   ['transform_2eh',['transform.h',['../ir_2transform_8h.html',1,'(Global Namespace)'],['../relay_2attrs_2transform_8h.html',1,'(Global Namespace)'],['../relay_2qnn_2transform_8h.html',1,'(Global Namespace)'],['../relay_2transform_8h.html',1,'(Global Namespace)'],['../tir_2transform_8h.html',1,'(Global Namespace)'],['../tir_2usmp_2transform_8h.html',1,'(Global Namespace)'],['../topi_2transform_8h.html',1,'(Global Namespace)']]],
   ['transform_5fstep_2eh',['transform_step.h',['../transform__step_8h.html',1,'']]],
   ['tune_5fcontext_2eh',['tune_context.h',['../tune__context_8h.html',1,'']]],

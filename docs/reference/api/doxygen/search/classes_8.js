@@ -61,6 +61,7 @@ var searchData=
   ['irbuilderframenode',['IRBuilderFrameNode',['../classtvm_1_1script_1_1ir__builder_1_1IRBuilderFrameNode.html',1,'tvm::script::ir_builder']]],
   ['irbuildernode',['IRBuilderNode',['../classtvm_1_1script_1_1ir__builder_1_1IRBuilderNode.html',1,'tvm::script::ir_builder']]],
   ['irdocsifier',['IRDocsifier',['../classtvm_1_1script_1_1printer_1_1IRDocsifier.html',1,'tvm::script::printer']]],
+  ['irdocsifierfunctor',['IRDocsifierFunctor',['../classtvm_1_1script_1_1printer_1_1IRDocsifierFunctor.html',1,'tvm::script::printer']]],
   ['irdocsifiernode',['IRDocsifierNode',['../classtvm_1_1script_1_1printer_1_1IRDocsifierNode.html',1,'tvm::script::printer']]],
   ['irmodule',['IRModule',['../classtvm_1_1IRModule.html',1,'tvm']]],
   ['irmoduleframe',['IRModuleFrame',['../classtvm_1_1script_1_1ir__builder_1_1ir_1_1IRModuleFrame.html',1,'tvm::script::ir_builder::ir']]],

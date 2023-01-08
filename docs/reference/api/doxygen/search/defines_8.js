@@ -74,6 +74,7 @@ var searchData=
   ['tvm_5ftir_5fir_5fbuilder_5fdef_5fdtype_5fcast_5flanes',['TVM_TIR_IR_BUILDER_DEF_DTYPE_CAST_LANES',['../tir_2ir_8h.html#af4333f8d928fe3c9e799afd516d0f04c',1,'ir.h']]],
   ['tvm_5ftir_5fir_5fbuilder_5fdef_5fdtype_5fcast_5fsizes',['TVM_TIR_IR_BUILDER_DEF_DTYPE_CAST_SIZES',['../tir_2ir_8h.html#a492f0c9cc3b778f85c7827e7e719e9c9',1,'ir.h']]],
   ['tvm_5ftir_5fir_5fbuilder_5fdef_5fdtype_5fcast_5fsizes_5flanes',['TVM_TIR_IR_BUILDER_DEF_DTYPE_CAST_SIZES_LANES',['../tir_2ir_8h.html#a9410989688d1a84ad2d088103f988b26',1,'ir.h']]],
+  ['tvm_5ftir_5fregister_5fop',['TVM_TIR_REGISTER_OP',['../tir_2op_8h.html#a27947eef4b3043099d3c5e5f5bfe13f4',1,'op.h']]],
   ['tvm_5ftype_5ffunctor_5fdispatch',['TVM_TYPE_FUNCTOR_DISPATCH',['../type__functor_8h.html#afaa114a04d18cd3f8f11995628692d74',1,'type_functor.h']]],
   ['tvm_5fversion',['TVM_VERSION',['../c__runtime__api_8h.html#a429515e9851601ec44c8ed421521ab6d',1,'c_runtime_api.h']]],
   ['tvm_5fweak',['TVM_WEAK',['../c__runtime__api_8h.html#a4d6bcd569c115f7ae4ddc455b14ca395',1,'c_runtime_api.h']]],

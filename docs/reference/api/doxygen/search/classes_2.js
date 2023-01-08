@@ -70,7 +70,6 @@ var searchData=
   ['constructorvalueobj',['ConstructorValueObj',['../structtvm_1_1relay_1_1ConstructorValueObj.html',1,'tvm::relay']]],
   ['container',['Container',['../classtvm_1_1runtime_1_1NDArray_1_1Container.html',1,'tvm::runtime::NDArray']]],
   ['containerbase',['ContainerBase',['../classtvm_1_1runtime_1_1NDArray_1_1ContainerBase.html',1,'tvm::runtime::NDArray']]],
-  ['contextmanager',['ContextManager',['../classtvm_1_1ContextManager.html',1,'tvm']]],
   ['conv1dattrs',['Conv1DAttrs',['../structtvm_1_1relay_1_1Conv1DAttrs.html',1,'tvm::relay']]],
   ['conv1dtransposeattrs',['Conv1DTransposeAttrs',['../structtvm_1_1relay_1_1Conv1DTransposeAttrs.html',1,'tvm::relay']]],
   ['conv2dattrs',['Conv2DAttrs',['../structtvm_1_1relay_1_1Conv2DAttrs.html',1,'tvm::relay']]],

@@ -15,6 +15,5 @@ var searchData=
   ['diagnostic_2eh',['diagnostic.h',['../diagnostic_8h.html',1,'']]],
   ['dilate_2eh',['dilate.h',['../dilate_8h.html',1,'']]],
   ['doc_2eh',['doc.h',['../doc_8h.html',1,'']]],
-  ['doc_5fprinter_2eh',['doc_printer.h',['../doc__printer_8h.html',1,'']]],
   ['driver_5fapi_2eh',['driver_api.h',['../driver__api_8h.html',1,'']]]
 ];
