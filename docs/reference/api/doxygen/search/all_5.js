@@ -153,6 +153,7 @@ var searchData=
   ['dim_5falign_5ffactor',['dim_align_factor',['../classtvm_1_1te_1_1IterVarAttrNode.html#a8d3c51e9b50ef1d3e10453b3210d187a',1,'tvm::te::IterVarAttrNode']]],
   ['dim_5falign_5foffset',['dim_align_offset',['../classtvm_1_1te_1_1IterVarAttrNode.html#aa75bbe1b6c521352553752261a1b6f50',1,'tvm::te::IterVarAttrNode']]],
   ['disabled_5fpass',['disabled_pass',['../classtvm_1_1transform_1_1PassContextNode.html#ad42fa984f8ff1dad24cc77d0a39e96a0',1,'tvm::transform::PassContextNode']]],
+  ['disallowasyncstridedmemcopy',['DisallowAsyncStridedMemCopy',['../classtvm_1_1meta__schedule_1_1Postproc.html#a91f7ba380cf0f400d8a3fced900f8522',1,'tvm::meta_schedule::Postproc']]],
   ['disallowdynamicloop',['DisallowDynamicLoop',['../classtvm_1_1meta__schedule_1_1Postproc.html#af3d76d03f0c508b985f7050f0e18732d',1,'tvm::meta_schedule::Postproc']]],
   ['dispatch_5fdict_5f',['dispatch_dict_',['../classtvm_1_1GenericFuncNode.html#af9c722adc3fc97ade2c64c7e140462ea',1,'tvm::GenericFuncNode']]],
   ['dispatch_5ftokens',['dispatch_tokens',['../classtvm_1_1script_1_1printer_1_1IRDocsifierNode.html#a4f761637ee382f3755cb199563edbe2c',1,'tvm::script::printer::IRDocsifierNode']]],

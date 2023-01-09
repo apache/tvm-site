@@ -61,6 +61,7 @@ var searchData=
   ['dictattrs',['DictAttrs',['../classtvm_1_1DictAttrs.html#a3999d7e2b942c8f9993f6d51cb8f3ded',1,'tvm::DictAttrs']]],
   ['dictdoc',['DictDoc',['../classtvm_1_1script_1_1printer_1_1DictDoc.html#a8cedc24d34db6c6a185912bb41df562d',1,'tvm::script::printer::DictDoc::DictDoc()'],['../classtvm_1_1script_1_1printer_1_1DictDoc.html#a60961545e317ab265c56f2c905db88b9',1,'tvm::script::printer::DictDoc::DictDoc(Array&lt; ExprDoc &gt; keys, Array&lt; ExprDoc &gt; values)']]],
   ['dilate',['dilate',['../namespacetvm_1_1topi_1_1nn.html#af210f30ef7afb28cd369dacc8f05be68',1,'tvm::topi::nn']]],
+  ['disallowasyncstridedmemcopy',['DisallowAsyncStridedMemCopy',['../classtvm_1_1meta__schedule_1_1Postproc.html#a91f7ba380cf0f400d8a3fced900f8522',1,'tvm::meta_schedule::Postproc']]],
   ['disallowdynamicloop',['DisallowDynamicLoop',['../classtvm_1_1meta__schedule_1_1Postproc.html#af3d76d03f0c508b985f7050f0e18732d',1,'tvm::meta_schedule::Postproc']]],
   ['dispatchsequalreduce',['DispatchSEqualReduce',['../classtvm_1_1SEqualHandlerDefault.html#a6a556567cb39505c52976be6dfbde76f',1,'tvm::SEqualHandlerDefault']]],
   ['dispatchshash',['DispatchSHash',['../classtvm_1_1SHashHandlerDefault.html#a96efffbad7a9d06bfff5df973a5c6c86',1,'tvm::SHashHandlerDefault']]],
