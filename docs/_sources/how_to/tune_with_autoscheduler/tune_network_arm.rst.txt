@@ -347,7 +347,16 @@ The task scheduler will just optimize this objective.
     T_add(ax0, ax1, ax2, ax3) = (output_unpack[ax0, ax1, ax2, ax3] + p2[ax0, 0, 0, ax3])
     T_relu(ax0, ax1, ax2, ax3) = max(T_add[ax0, ax1, ax2, ax3], 0f)
 
-    ========== Task 1  (workload key: ["b638843f28bb2f041953d2a091167e8b", [1, 14, 14, 256], [1, 1, 256, 512], [1, 1, 1, 512], [1, 14, 14, 512]]) ==========
+    ========== Task 1  (workload key: ["52ea56a3ba2b8548ac83748ee8a69093", [1, 28, 28, 256], [3, 3, 256, 1], [1, 1, 1, 256], [1, 28, 28, 256]]) ==========
+    p0 = PLACEHOLDER [1, 28, 28, 256]
+    data_pad(i0, i1, i2, i3) = tir.if_then_else(((((i1 >= 1) && (i1 < 29)) && (i2 >= 1)) && (i2 < 29)), p0[i0, (i1 - 1), (i2 - 1), i3], 0f)
+    p1 = PLACEHOLDER [3, 3, 256, 1]
+    depthwise_conv2d_nhwc_output(n, h, w, c) += (data_pad[n, (h + reduce_h), (w + reduce_w), c]*p1[reduce_h, reduce_w, c, 0])
+    p2 = PLACEHOLDER [1, 1, 1, 256]
+    T_add(ax0, ax1, ax2, ax3) = (depthwise_conv2d_nhwc_output[ax0, ax1, ax2, ax3] + p2[ax0, 0, 0, ax3])
+    T_relu(ax0, ax1, ax2, ax3) = max(T_add[ax0, ax1, ax2, ax3], 0f)
+
+    ========== Task 2  (workload key: ["b638843f28bb2f041953d2a091167e8b", [1, 14, 14, 256], [1, 1, 256, 512], [1, 1, 1, 512], [1, 14, 14, 512]]) ==========
     p0 = PLACEHOLDER [1, 14, 14, 256]
     PadInput(i0, i1, i2, i3) = p0[i0, i1, i2, i3]
     data_vec(n, oho, owo, ohi, owi, ic) = PadInput[n, (oho + ohi), (owo + owi), ic]
@@ -357,15 +366,6 @@ The task scheduler will just optimize this objective.
     output_unpack(n, oho, owo, oc) = conv[n, oho, owo, oc, 0, 0, 0]
     p2 = PLACEHOLDER [1, 1, 1, 512]
     T_add(ax0, ax1, ax2, ax3) = (output_unpack[ax0, ax1, ax2, ax3] + p2[ax0, 0, 0, ax3])
-    T_relu(ax0, ax1, ax2, ax3) = max(T_add[ax0, ax1, ax2, ax3], 0f)
-
-    ========== Task 2  (workload key: ["52ea56a3ba2b8548ac83748ee8a69093", [1, 28, 28, 256], [3, 3, 256, 1], [1, 1, 1, 256], [1, 28, 28, 256]]) ==========
-    p0 = PLACEHOLDER [1, 28, 28, 256]
-    data_pad(i0, i1, i2, i3) = tir.if_then_else(((((i1 >= 1) && (i1 < 29)) && (i2 >= 1)) && (i2 < 29)), p0[i0, (i1 - 1), (i2 - 1), i3], 0f)
-    p1 = PLACEHOLDER [3, 3, 256, 1]
-    depthwise_conv2d_nhwc_output(n, h, w, c) += (data_pad[n, (h + reduce_h), (w + reduce_w), c]*p1[reduce_h, reduce_w, c, 0])
-    p2 = PLACEHOLDER [1, 1, 1, 256]
-    T_add(ax0, ax1, ax2, ax3) = (depthwise_conv2d_nhwc_output[ax0, ax1, ax2, ax3] + p2[ax0, 0, 0, ax3])
     T_relu(ax0, ax1, ax2, ax3) = max(T_add[ax0, ax1, ax2, ax3], 0f)
 
     ========== Task 3  (workload key: ["b638843f28bb2f041953d2a091167e8b", [1, 28, 28, 128], [1, 1, 128, 256], [1, 1, 1, 256], [1, 28, 28, 256]]) ==========
@@ -404,16 +404,13 @@ The task scheduler will just optimize this objective.
     T_add(ax0, ax1, ax2, ax3) = (output_unpack[ax0, ax1, ax2, ax3] + p2[ax0, 0, 0, ax3])
     T_relu(ax0, ax1, ax2, ax3) = max(T_add[ax0, ax1, ax2, ax3], 0f)
 
-    ========== Task 7  (workload key: ["b638843f28bb2f041953d2a091167e8b", [1, 56, 56, 128], [1, 1, 128, 128], [1, 1, 1, 128], [1, 56, 56, 128]]) ==========
+    ========== Task 7  (workload key: ["f439cb5bb83bb6be4824f8b51c68bdb9", [1, 56, 56, 128], [3, 3, 128, 1], [1, 1, 1, 128], [1, 28, 28, 128]]) ==========
     p0 = PLACEHOLDER [1, 56, 56, 128]
-    PadInput(i0, i1, i2, i3) = p0[i0, i1, i2, i3]
-    data_vec(n, oho, owo, ohi, owi, ic) = PadInput[n, (oho + ohi), (owo + owi), ic]
-    p1 = PLACEHOLDER [1, 1, 128, 128]
-    kernel_vec(oco, kh, kw, ic, oci) = p1[kh, kw, ic, (oco + oci)]
-    conv(n, oho, owo, oco, ohi, owi, oci) += (data_vec[n, oho, owo, (ohi + kh), (owi + kw), ic]*kernel_vec[oco, kh, kw, ic, oci])
-    output_unpack(n, oho, owo, oc) = conv[n, oho, owo, oc, 0, 0, 0]
+    data_pad(i0, i1, i2, i3) = tir.if_then_else(((((i1 >= 1) && (i1 < 57)) && (i2 >= 1)) && (i2 < 57)), p0[i0, (i1 - 1), (i2 - 1), i3], 0f)
+    p1 = PLACEHOLDER [3, 3, 128, 1]
+    depthwise_conv2d_nhwc_output(n, h, w, c) += (data_pad[n, ((2*h) + reduce_h), ((w*2) + reduce_w), c]*p1[reduce_h, reduce_w, c, 0])
     p2 = PLACEHOLDER [1, 1, 1, 128]
-    T_add(ax0, ax1, ax2, ax3) = (output_unpack[ax0, ax1, ax2, ax3] + p2[ax0, 0, 0, ax3])
+    T_add(ax0, ax1, ax2, ax3) = (depthwise_conv2d_nhwc_output[ax0, ax1, ax2, ax3] + p2[ax0, 0, 0, ax3])
     T_relu(ax0, ax1, ax2, ax3) = max(T_add[ax0, ax1, ax2, ax3], 0f)
 
     ========== Task 8  (workload key: ["52ea56a3ba2b8548ac83748ee8a69093", [1, 7, 7, 1024], [3, 3, 1024, 1], [1, 1, 1, 1024], [1, 7, 7, 1024]]) ==========
@@ -467,13 +464,16 @@ The task scheduler will just optimize this objective.
     T_add(ax0, ax1, ax2, ax3) = (output_unpack[ax0, ax1, ax2, ax3] + p2[ax0, 0, 0, ax3])
     T_relu(ax0, ax1, ax2, ax3) = max(T_add[ax0, ax1, ax2, ax3], 0f)
 
-    ========== Task 13  (workload key: ["f439cb5bb83bb6be4824f8b51c68bdb9", [1, 112, 112, 64], [3, 3, 64, 1], [1, 1, 1, 64], [1, 56, 56, 64]]) ==========
-    p0 = PLACEHOLDER [1, 112, 112, 64]
-    data_pad(i0, i1, i2, i3) = tir.if_then_else(((((i1 >= 1) && (i1 < 113)) && (i2 >= 1)) && (i2 < 113)), p0[i0, (i1 - 1), (i2 - 1), i3], 0f)
-    p1 = PLACEHOLDER [3, 3, 64, 1]
-    depthwise_conv2d_nhwc_output(n, h, w, c) += (data_pad[n, ((2*h) + reduce_h), ((w*2) + reduce_w), c]*p1[reduce_h, reduce_w, c, 0])
-    p2 = PLACEHOLDER [1, 1, 1, 64]
-    T_add(ax0, ax1, ax2, ax3) = (depthwise_conv2d_nhwc_output[ax0, ax1, ax2, ax3] + p2[ax0, 0, 0, ax3])
+    ========== Task 13  (workload key: ["b638843f28bb2f041953d2a091167e8b", [1, 56, 56, 128], [1, 1, 128, 128], [1, 1, 1, 128], [1, 56, 56, 128]]) ==========
+    p0 = PLACEHOLDER [1, 56, 56, 128]
+    PadInput(i0, i1, i2, i3) = p0[i0, i1, i2, i3]
+    data_vec(n, oho, owo, ohi, owi, ic) = PadInput[n, (oho + ohi), (owo + owi), ic]
+    p1 = PLACEHOLDER [1, 1, 128, 128]
+    kernel_vec(oco, kh, kw, ic, oci) = p1[kh, kw, ic, (oco + oci)]
+    conv(n, oho, owo, oco, ohi, owi, oci) += (data_vec[n, oho, owo, (ohi + kh), (owi + kw), ic]*kernel_vec[oco, kh, kw, ic, oci])
+    output_unpack(n, oho, owo, oc) = conv[n, oho, owo, oc, 0, 0, 0]
+    p2 = PLACEHOLDER [1, 1, 1, 128]
+    T_add(ax0, ax1, ax2, ax3) = (output_unpack[ax0, ax1, ax2, ax3] + p2[ax0, 0, 0, ax3])
     T_relu(ax0, ax1, ax2, ax3) = max(T_add[ax0, ax1, ax2, ax3], 0f)
 
     ========== Task 14  (workload key: ["52ea56a3ba2b8548ac83748ee8a69093", [1, 112, 112, 32], [3, 3, 32, 1], [1, 1, 1, 32], [1, 112, 112, 32]]) ==========
@@ -485,12 +485,12 @@ The task scheduler will just optimize this objective.
     T_add(ax0, ax1, ax2, ax3) = (depthwise_conv2d_nhwc_output[ax0, ax1, ax2, ax3] + p2[ax0, 0, 0, ax3])
     T_relu(ax0, ax1, ax2, ax3) = max(T_add[ax0, ax1, ax2, ax3], 0f)
 
-    ========== Task 15  (workload key: ["f439cb5bb83bb6be4824f8b51c68bdb9", [1, 56, 56, 128], [3, 3, 128, 1], [1, 1, 1, 128], [1, 28, 28, 128]]) ==========
-    p0 = PLACEHOLDER [1, 56, 56, 128]
-    data_pad(i0, i1, i2, i3) = tir.if_then_else(((((i1 >= 1) && (i1 < 57)) && (i2 >= 1)) && (i2 < 57)), p0[i0, (i1 - 1), (i2 - 1), i3], 0f)
-    p1 = PLACEHOLDER [3, 3, 128, 1]
+    ========== Task 15  (workload key: ["f439cb5bb83bb6be4824f8b51c68bdb9", [1, 112, 112, 64], [3, 3, 64, 1], [1, 1, 1, 64], [1, 56, 56, 64]]) ==========
+    p0 = PLACEHOLDER [1, 112, 112, 64]
+    data_pad(i0, i1, i2, i3) = tir.if_then_else(((((i1 >= 1) && (i1 < 113)) && (i2 >= 1)) && (i2 < 113)), p0[i0, (i1 - 1), (i2 - 1), i3], 0f)
+    p1 = PLACEHOLDER [3, 3, 64, 1]
     depthwise_conv2d_nhwc_output(n, h, w, c) += (data_pad[n, ((2*h) + reduce_h), ((w*2) + reduce_w), c]*p1[reduce_h, reduce_w, c, 0])
-    p2 = PLACEHOLDER [1, 1, 1, 128]
+    p2 = PLACEHOLDER [1, 1, 1, 64]
     T_add(ax0, ax1, ax2, ax3) = (depthwise_conv2d_nhwc_output[ax0, ax1, ax2, ax3] + p2[ax0, 0, 0, ax3])
     T_relu(ax0, ax1, ax2, ax3) = max(T_add[ax0, ax1, ax2, ax3], 0f)
 
@@ -508,13 +508,16 @@ The task scheduler will just optimize this objective.
     T_add(ax0, ax1, ax2, ax3) = (T_multiply[ax0, ax1, ax2, ax3] + p3[ax0, ax1, 0, 0])
     T_relu(ax0, ax1, ax2, ax3) = max(T_add[ax0, ax1, ax2, ax3], 0f)
 
-    ========== Task 17  (workload key: ["52ea56a3ba2b8548ac83748ee8a69093", [1, 56, 56, 128], [3, 3, 128, 1], [1, 1, 1, 128], [1, 56, 56, 128]]) ==========
-    p0 = PLACEHOLDER [1, 56, 56, 128]
-    data_pad(i0, i1, i2, i3) = tir.if_then_else(((((i1 >= 1) && (i1 < 57)) && (i2 >= 1)) && (i2 < 57)), p0[i0, (i1 - 1), (i2 - 1), i3], 0f)
-    p1 = PLACEHOLDER [3, 3, 128, 1]
-    depthwise_conv2d_nhwc_output(n, h, w, c) += (data_pad[n, (h + reduce_h), (w + reduce_w), c]*p1[reduce_h, reduce_w, c, 0])
-    p2 = PLACEHOLDER [1, 1, 1, 128]
-    T_add(ax0, ax1, ax2, ax3) = (depthwise_conv2d_nhwc_output[ax0, ax1, ax2, ax3] + p2[ax0, 0, 0, ax3])
+    ========== Task 17  (workload key: ["b638843f28bb2f041953d2a091167e8b", [1, 14, 14, 512], [1, 1, 512, 512], [1, 1, 1, 512], [1, 14, 14, 512]]) ==========
+    p0 = PLACEHOLDER [1, 14, 14, 512]
+    PadInput(i0, i1, i2, i3) = p0[i0, i1, i2, i3]
+    data_vec(n, oho, owo, ohi, owi, ic) = PadInput[n, (oho + ohi), (owo + owi), ic]
+    p1 = PLACEHOLDER [1, 1, 512, 512]
+    kernel_vec(oco, kh, kw, ic, oci) = p1[kh, kw, ic, (oco + oci)]
+    conv(n, oho, owo, oco, ohi, owi, oci) += (data_vec[n, oho, owo, (ohi + kh), (owi + kw), ic]*kernel_vec[oco, kh, kw, ic, oci])
+    output_unpack(n, oho, owo, oc) = conv[n, oho, owo, oc, 0, 0, 0]
+    p2 = PLACEHOLDER [1, 1, 1, 512]
+    T_add(ax0, ax1, ax2, ax3) = (output_unpack[ax0, ax1, ax2, ax3] + p2[ax0, 0, 0, ax3])
     T_relu(ax0, ax1, ax2, ax3) = max(T_add[ax0, ax1, ax2, ax3], 0f)
 
     ========== Task 18  (workload key: ["00a059b856ac30ac172b6252254479a6", [1, 1024], [1000, 1024], [1, 1000], [1, 1000]]) ==========
@@ -533,16 +536,13 @@ The task scheduler will just optimize this objective.
     T_add(ax0, ax1, ax2, ax3) = (depthwise_conv2d_nhwc_output[ax0, ax1, ax2, ax3] + p2[ax0, 0, 0, ax3])
     T_relu(ax0, ax1, ax2, ax3) = max(T_add[ax0, ax1, ax2, ax3], 0f)
 
-    ========== Task 20  (workload key: ["b638843f28bb2f041953d2a091167e8b", [1, 14, 14, 512], [1, 1, 512, 512], [1, 1, 1, 512], [1, 14, 14, 512]]) ==========
-    p0 = PLACEHOLDER [1, 14, 14, 512]
-    PadInput(i0, i1, i2, i3) = p0[i0, i1, i2, i3]
-    data_vec(n, oho, owo, ohi, owi, ic) = PadInput[n, (oho + ohi), (owo + owi), ic]
-    p1 = PLACEHOLDER [1, 1, 512, 512]
-    kernel_vec(oco, kh, kw, ic, oci) = p1[kh, kw, ic, (oco + oci)]
-    conv(n, oho, owo, oco, ohi, owi, oci) += (data_vec[n, oho, owo, (ohi + kh), (owi + kw), ic]*kernel_vec[oco, kh, kw, ic, oci])
-    output_unpack(n, oho, owo, oc) = conv[n, oho, owo, oc, 0, 0, 0]
-    p2 = PLACEHOLDER [1, 1, 1, 512]
-    T_add(ax0, ax1, ax2, ax3) = (output_unpack[ax0, ax1, ax2, ax3] + p2[ax0, 0, 0, ax3])
+    ========== Task 20  (workload key: ["52ea56a3ba2b8548ac83748ee8a69093", [1, 56, 56, 128], [3, 3, 128, 1], [1, 1, 1, 128], [1, 56, 56, 128]]) ==========
+    p0 = PLACEHOLDER [1, 56, 56, 128]
+    data_pad(i0, i1, i2, i3) = tir.if_then_else(((((i1 >= 1) && (i1 < 57)) && (i2 >= 1)) && (i2 < 57)), p0[i0, (i1 - 1), (i2 - 1), i3], 0f)
+    p1 = PLACEHOLDER [3, 3, 128, 1]
+    depthwise_conv2d_nhwc_output(n, h, w, c) += (data_pad[n, (h + reduce_h), (w + reduce_w), c]*p1[reduce_h, reduce_w, c, 0])
+    p2 = PLACEHOLDER [1, 1, 1, 128]
+    T_add(ax0, ax1, ax2, ax3) = (depthwise_conv2d_nhwc_output[ax0, ax1, ax2, ax3] + p2[ax0, 0, 0, ax3])
     T_relu(ax0, ax1, ax2, ax3) = max(T_add[ax0, ax1, ax2, ax3], 0f)
 
     ========== Task 21  (workload key: ["b638843f28bb2f041953d2a091167e8b", [1, 112, 112, 32], [1, 1, 32, 64], [1, 1, 1, 64], [1, 112, 112, 64]]) ==========
