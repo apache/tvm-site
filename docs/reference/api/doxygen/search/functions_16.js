@@ -13,6 +13,7 @@ var searchData=
   ['vectorizeloop',['VectorizeLoop',['../namespacetvm_1_1tir_1_1transform.html#af3cecb50a8b8fc8021f6a87bc27587da',1,'tvm::tir::transform']]],
   ['vectorjacobianproduct',['VectorJacobianProduct',['../namespacetvm_1_1te.html#a547183f5a311af53ab598faba423fd64',1,'tvm::te']]],
   ['vectorlow',['vectorlow',['../namespacetvm_1_1tir_1_1builtin.html#a7ed64a9fb0a7f575fc63e1e0395e96a6',1,'tvm::tir::builtin']]],
+  ['verboseexpr',['VerboseExpr',['../structtvm_1_1script_1_1printer_1_1Default.html#a2073f2f2ad1203129debf505af5af5c4',1,'tvm::script::printer::Default']]],
   ['verifycompactbuffer',['VerifyCompactBuffer',['../namespacetvm_1_1te.html#a576f41e1cec5d799b31bf67328d130f8',1,'tvm::te']]],
   ['verifygpucode',['VerifyGPUCode',['../classtvm_1_1meta__schedule_1_1Postproc.html#a7106b1742068c45966d6be5f4b8394aa',1,'tvm::meta_schedule::Postproc::VerifyGPUCode()'],['../namespacetvm_1_1tir.html#a53dfcb6ef7e178a83fda0bbb5dddcb39',1,'tvm::tir::VerifyGPUCode()'],['../namespacetvm_1_1tir_1_1transform.html#a70a059926c2ea81dcf437eff35f05e3e',1,'tvm::tir::transform::VerifyGPUCode()']]],
   ['verifymemory',['VerifyMemory',['../namespacetvm_1_1tir.html#ac69bcf127843e5e671379e44ab47ca27',1,'tvm::tir::VerifyMemory()'],['../namespacetvm_1_1tir_1_1transform.html#a32d0b0ed966cf019d5e607bc90f284af',1,'tvm::tir::transform::VerifyMemory()']]],

@@ -21,6 +21,7 @@ var searchData=
   ['vector_5funit_5fbytes',['vector_unit_bytes',['../classtvm_1_1auto__scheduler_1_1HardwareParamsNode.html#a6f2dd9161fdb3233417a9912c8854434',1,'tvm::auto_scheduler::HardwareParamsNode']]],
   ['vectors',['vectors',['../classtvm_1_1tir_1_1ShuffleNode.html#aa444b61cf671ef31060535c61746ab6c',1,'tvm::tir::ShuffleNode']]],
   ['verbose',['verbose',['../classtvm_1_1auto__scheduler_1_1TuningOptionsNode.html#ab5804969081fc4f1e1330b3e55da692f',1,'tvm::auto_scheduler::TuningOptionsNode::verbose()'],['../classtvm_1_1auto__scheduler_1_1ProgramMeasurerNode.html#a59dc00655b6e7fb37d49249555369d6f',1,'tvm::auto_scheduler::ProgramMeasurerNode::verbose()'],['../classtvm_1_1auto__scheduler_1_1SearchPolicyNode.html#a626eea16092d3c1a7d86497ee712f064',1,'tvm::auto_scheduler::SearchPolicyNode::verbose()']]],
+  ['verbose_5fexpr',['verbose_expr',['../structtvm_1_1script_1_1printer_1_1Default.html#ad5cabacf57ef0ad9b5a6287ef1e0df0f',1,'tvm::script::printer::Default']]],
   ['version',['version',['../structTVMMetadata.html#ade3312efd4c0e5beaf390959621b2f52',1,'TVMMetadata']]],
   ['vid',['vid',['../classtvm_1_1relay_1_1VarNode.html#af191a8eedf3575d626771c9c820ddb63',1,'tvm::relay::VarNode']]],
   ['virtual_5fdevice',['virtual_device',['../structtvm_1_1relay_1_1AllocStorageAttrs.html#afdf3a337a2f431b6243a646a3d6ef158',1,'tvm::relay::AllocStorageAttrs::virtual_device()'],['../structtvm_1_1relay_1_1OnDeviceAttrs.html#ad65024d20dad91bc92ce3c6c5ed507d2',1,'tvm::relay::OnDeviceAttrs::virtual_device()']]],
