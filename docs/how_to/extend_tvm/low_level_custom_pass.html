@@ -414,16 +414,19 @@ our customized lowering pass to manipulate the IR directly instead of using sche
 <span class="nb">print</span><span class="p">(</span><span class="n">ir</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>@main = primfn(a_1: handle, b_1: handle, c_1: handle) -&gt; ()
-  attr = {&quot;from_legacy_te_schedule&quot;: True, &quot;global_symbol&quot;: &quot;main&quot;, &quot;tir.noalias&quot;: True}
-  buffers = {a: Buffer(a_2: Pointer(float32), float32, [128], []),
-             b: Buffer(b_2: Pointer(float32), float32, [128], []),
-             c: Buffer(c_2: Pointer(float32), float32, [128], [])}
-  buffer_map = {a_1: a, b_1: b, c_1: c} {
-  for (i: int32, 0, 128) {
-    c_3: Buffer(c_2, float32, [128], [])[i] = (a_3: Buffer(a_2, float32, [128], [])[i] + b_3: Buffer(b_2, float32, [128], [])[i])
-  }
-}
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>@I.ir_module
+class Module:
+    @T.prim_func
+    def main(a: T.handle, b: T.handle, c: T.handle):
+        T.func_attr({&quot;from_legacy_te_schedule&quot;: True, &quot;global_symbol&quot;: &quot;main&quot;, &quot;tir.noalias&quot;: True})
+        a_1 = T.match_buffer(a, (128,))
+        b_1 = T.match_buffer(b, (128,))
+        c_1 = T.match_buffer(c, (128,))
+        for i in range(128):
+            c_2 = T.buffer_decl((128,), data=c_1.data)
+            a_2 = T.buffer_decl((128,), data=a_1.data)
+            b_2 = T.buffer_decl((128,), data=b_1.data)
+            c_2[i] = a_2[i] + b_2[i]
 </pre></div>
 </div>
 </div>
@@ -522,17 +525,20 @@ called after each phase is done.</p>
     <span class="nb">print</span><span class="p">(</span><a href="../../reference/api/python/driver.html#tvm.lower" title="tvm.lower" class="sphx-glr-backref-module-tvm sphx-glr-backref-type-py-function"><span class="n">tvm</span><span class="o">.</span><span class="n">lower</span></a><span class="p">(</span><a href="../../reference/api/python/te.html#tvm.te.Schedule" title="tvm.te.Schedule" class="sphx-glr-backref-module-tvm-te sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">sch</span></a><span class="p">,</span> <span class="p">[</span><a href="../../reference/api/python/te.html#tvm.te.Tensor" title="tvm.te.Tensor" class="sphx-glr-backref-module-tvm-te sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">a</span></a><span class="p">,</span> <a href="../../reference/api/python/te.html#tvm.te.Tensor" title="tvm.te.Tensor" class="sphx-glr-backref-module-tvm-te sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">b</span></a><span class="p">,</span> <a href="../../reference/api/python/te.html#tvm.te.Tensor" title="tvm.te.Tensor" class="sphx-glr-backref-module-tvm-te sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">c</span></a><span class="p">]))</span>
 </pre></div>
 </div>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>@main = primfn(a_1: handle, b_1: handle, c_1: handle) -&gt; ()
-  attr = {&quot;from_legacy_te_schedule&quot;: True, &quot;global_symbol&quot;: &quot;main&quot;, &quot;tir.noalias&quot;: True}
-  buffers = {a: Buffer(a_2: Pointer(float32), float32, [128], []),
-             b: Buffer(b_2: Pointer(float32), float32, [128], []),
-             c: Buffer(c_2: Pointer(float32), float32, [128], [])}
-  buffer_map = {a_1: a, b_1: b, c_1: c} {
-  for (i.outer: int32, 0, 16) {
-    let cse_var_1: int32 = (i.outer*8)
-    c_3: Buffer(c_2, float32, [128], [])[ramp(cse_var_1, 1, 8)] = (a_3: Buffer(a_2, float32, [128], [])[ramp(cse_var_1, 1, 8)] + b_3: Buffer(b_2, float32, [128], [])[ramp(cse_var_1, 1, 8)])
-  }
-}
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>@I.ir_module
+class Module:
+    @T.prim_func
+    def main(a: T.handle, b: T.handle, c: T.handle):
+        T.func_attr({&quot;from_legacy_te_schedule&quot;: True, &quot;global_symbol&quot;: &quot;main&quot;, &quot;tir.noalias&quot;: True})
+        a_1 = T.match_buffer(a, (128,))
+        b_1 = T.match_buffer(b, (128,))
+        c_1 = T.match_buffer(c, (128,))
+        for i_outer in range(16):
+            cse_var_1: T.int32 = i_outer * 8
+            c_2 = T.buffer_decl((128,), data=c_1.data)
+            a_2 = T.buffer_decl((128,), data=a_1.data)
+            b_2 = T.buffer_decl((128,), data=b_1.data)
+            c_2[cse_var_1:cse_var_1 + 8] = a_2[cse_var_1:cse_var_1 + 8] + b_2[cse_var_1:cse_var_1 + 8]
 </pre></div>
 </div>
 </div>

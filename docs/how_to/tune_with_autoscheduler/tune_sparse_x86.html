@@ -624,42 +624,36 @@ layout transformation, parallelization, vectorization, unrolling, and operator f
 </pre></div>
 </div>
 <div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Lowered TIR:
-@main = primfn(placeholder_5: handle, placeholder_6: handle, placeholder_7: handle, placeholder_8: handle, placeholder_9: handle, compute_1: handle) -&gt; ()
-  attr = {&quot;from_legacy_te_schedule&quot;: True, &quot;global_symbol&quot;: &quot;main&quot;, &quot;tir.noalias&quot;: True}
-  buffers = {placeholder: Buffer(placeholder_10: Pointer(float32), float32, [128, 256], []),
-             placeholder_1: Buffer(placeholder_11: Pointer(float32), float32, [4916, 16, 1], []),
-             placeholder_2: Buffer(placeholder_12: Pointer(int32), int32, [4916], []),
-             placeholder_3: Buffer(placeholder_13: Pointer(int32), int32, [33], []),
-             placeholder_4: Buffer(placeholder_14: Pointer(float32), float32, [128, 512], []),
-             compute: Buffer(compute_2: Pointer(float32), float32, [128, 512], [])}
-  buffer_map = {placeholder_5: placeholder, placeholder_6: placeholder_1, placeholder_7: placeholder_2, placeholder_8: placeholder_3, placeholder_9: placeholder_4, compute_1: compute} {
-  for (i0.outer.i1.outer.fused: int32, 0, 128) &quot;parallel&quot; {
-    allocate(compute_3: Pointer(global float32), float32, [1024]), storage_scope = global {
-      for (i.outer.inner: int32, 0, 16) {
-        for (i.inner.init: int32, 0, 4) {
-          for (j.init: int32, 0, 16) {
-            compute_4: Buffer(compute_3, float32, [1024], [])[(((i.outer.inner*64) + (i.inner.init*16)) + j.init)] = 0f32
-          }
-        }
-        for (elem_idx: int32, 0, let cse_var_1: int32 = floordiv(floormod(i0.outer.i1.outer.fused, 64), 2) in (placeholder_15: Buffer(placeholder_13, int32, [33], [])[(cse_var_1 + 1)] - placeholder_15[cse_var_1])) {
-          for (i.inner: int32, 0, 4) {
-            for (j: int32, 0, 16) {
-              let cse_var_3: int32 = floordiv(floormod(i0.outer.i1.outer.fused, 64), 2)
-              let cse_var_2: int32 = (((i.outer.inner*64) + (i.inner*16)) + j)
-              compute_4[cse_var_2] = (compute_4[cse_var_2] + (placeholder_16: Buffer(placeholder_11, float32, [78656], [])[(((placeholder_15[cse_var_3]*16) + (elem_idx*16)) + j)]*max(placeholder_17: Buffer(placeholder_10, float32, [32768], [])[((((floordiv(i0.outer.i1.outer.fused, 64)*16384) + (i.outer.inner*1024)) + (i.inner*256)) + placeholder_18: Buffer(placeholder_12, int32, [4916], [])[(placeholder_15[cse_var_3] + elem_idx)])], 0f32)))
-            }
-          }
-        }
-      }
-      for (i0.inner: int32, 0, 64) {
-        let cse_var_5: int32 = floormod(i0.outer.i1.outer.fused, 64)
-        let cse_var_6: int32 = (cse_var_5*8)
-        let cse_var_4: int32 = (((floordiv(i0.outer.i1.outer.fused, 64)*32768) + (i0.inner*512)) + cse_var_6)
-        compute_5: Buffer(compute_2, float32, [65536], [])[ramp(cse_var_4, 1, 8)] = max((compute_4[ramp((((i0.inner*16) + cse_var_6) - (floordiv(cse_var_5, 2)*16)), 1, 8)] + placeholder_19: Buffer(placeholder_14, float32, [65536], [])[ramp(cse_var_4, 1, 8)]), broadcast(0f32, 8))
-      }
-    }
-  }
-}
+@I.ir_module
+class Module:
+    @T.prim_func
+    def main(placeholder: T.handle, placeholder_1: T.handle, placeholder_2: T.handle, placeholder_3: T.handle, placeholder_4: T.handle, compute: T.handle):
+        T.func_attr({&quot;from_legacy_te_schedule&quot;: True, &quot;global_symbol&quot;: &quot;main&quot;, &quot;tir.noalias&quot;: True})
+        placeholder_5 = T.match_buffer(placeholder, (128, 256))
+        placeholder_6 = T.match_buffer(placeholder_1, (4916, 16, 1))
+        placeholder_7 = T.match_buffer(placeholder_2, (4916,), &quot;int32&quot;)
+        placeholder_8 = T.match_buffer(placeholder_3, (33,), &quot;int32&quot;)
+        placeholder_9 = T.match_buffer(placeholder_4, (128, 512))
+        compute_1 = T.match_buffer(compute, (128, 512))
+        for i0_outer_i1_outer_fused in T.parallel(32):
+            compute_2 = T.allocate([2048], &quot;float32&quot;, &quot;global&quot;)
+            compute_3 = T.buffer_decl((2048,), data=compute_2)
+            for i_outer_inner in range(4):
+                for i_inner_init, j_init in T.grid(32, 16):
+                    compute_3[i_outer_inner * 512 + i_inner_init * 16 + j_init] = T.float32(0)
+                for elem_idx, i_inner, j in T.grid(placeholder_10[i0_outer_i1_outer_fused + 1] - placeholder_10[i0_outer_i1_outer_fused], 32, 16):
+                    placeholder_10 = T.buffer_decl((33,), &quot;int32&quot;, data=placeholder_8.data)
+                    if T.likely(elem_idx &lt; placeholder_10[i0_outer_i1_outer_fused + 1] - placeholder_10[i0_outer_i1_outer_fused]):
+                        placeholder_11 = T.buffer_decl((78656,), data=placeholder_6.data)
+                        placeholder_12 = T.buffer_decl((32768,), data=placeholder_5.data)
+                        placeholder_13 = T.buffer_decl((4916,), &quot;int32&quot;, data=placeholder_7.data)
+                        cse_var_1: T.int32 = i_outer_inner * 512 + i_inner * 16 + j
+                        compute_3[cse_var_1] = compute_3[cse_var_1] + placeholder_11[placeholder_10[i0_outer_i1_outer_fused] * 16 + elem_idx * 16 + j] * T.max(placeholder_12[i_outer_inner * 8192 + i_inner * 256 + placeholder_13[placeholder_10[i0_outer_i1_outer_fused] + elem_idx]], T.float32(0))
+            for i0_inner in range(128):
+                cse_var_2: T.int32 = i0_inner * 512 + i0_outer_i1_outer_fused * 16
+                compute_4 = T.buffer_decl((65536,), data=compute_1.data)
+                placeholder_10 = T.buffer_decl((65536,), data=placeholder_9.data)
+                compute_4[cse_var_2:cse_var_2 + 16] = T.max(compute_3[i0_inner * 16:i0_inner * 16 + 16] + placeholder_10[cse_var_2:cse_var_2 + 16], T.Broadcast(T.float32(0), 16))
 </pre></div>
 </div>
 </div>
@@ -693,7 +687,7 @@ layout transformation, parallelization, vectorization, unrolling, and operator f
 <span class="p">)</span>
 </pre></div>
 </div>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Execution time of this operator: 2.954 ms
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Execution time of this operator: 1.642 ms
 </pre></div>
 </div>
 <div class="admonition note">

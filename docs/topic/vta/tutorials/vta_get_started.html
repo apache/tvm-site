@@ -577,40 +577,34 @@ primitives.</p>
 <span class="nb">print</span><span class="p">(</span><a href="../../../reference/api/python/driver.html#tvm.lower" title="tvm.lower" class="sphx-glr-backref-module-tvm sphx-glr-backref-type-py-function"><span class="n">tvm</span><span class="o">.</span><span class="n">lower</span></a><span class="p">(</span><a href="../../../reference/api/python/te.html#tvm.te.Schedule" title="tvm.te.Schedule" class="sphx-glr-backref-module-tvm-te sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">s</span></a><span class="p">,</span> <span class="p">[</span><a href="../../../reference/api/python/te.html#tvm.te.Tensor" title="tvm.te.Tensor" class="sphx-glr-backref-module-tvm-te sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">A</span></a><span class="p">,</span> <a href="../../../reference/api/python/te.html#tvm.te.Tensor" title="tvm.te.Tensor" class="sphx-glr-backref-module-tvm-te sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">B</span></a><span class="p">,</span> <a href="../../../reference/api/python/te.html#tvm.te.Tensor" title="tvm.te.Tensor" class="sphx-glr-backref-module-tvm-te sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">C</span></a><span class="p">],</span> <span class="n">simple_mode</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span>
 </pre></div>
 </div>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>@main = primfn(A_1: handle, B_1: handle, C_1: handle) -&gt; ()
-  attr = {&quot;from_legacy_te_schedule&quot;: True, &quot;global_symbol&quot;: &quot;main&quot;, &quot;tir.noalias&quot;: True}
-  buffers = {A: Buffer(A_2: Pointer(int32), int32, [1, 64, 1, 16], []),
-             B: Buffer(B_2: Pointer(int32), int32, [1, 64, 1, 16], []),
-             C: Buffer(C_2: Pointer(int8), int8, [1, 64, 1, 16], [])}
-  buffer_map = {A_1: A, B_1: B, C_1: C} {
-  allocate(A_buf: Pointer(global int32), int32, [1024]), storage_scope = global;
-  allocate(B_buf: Pointer(global int32), int32, [1024]), storage_scope = global {
-    for (i1: int32, 0, 64) {
-      for (i3: int32, 0, 16) {
-        let cse_var_1: int32 = ((i1*16) + i3)
-        A_buf_1: Buffer(A_buf, int32, [1024], [])[cse_var_1] = A_3: Buffer(A_2, int32, [1024], [])[cse_var_1]
-      }
-    }
-    for (i1_1: int32, 0, 64) {
-      for (i3_1: int32, 0, 16) {
-        let cse_var_2: int32 = ((i1_1*16) + i3_1)
-        B_buf_1: Buffer(B_buf, int32, [1024], [])[cse_var_2] = B_3: Buffer(B_2, int32, [1024], [])[cse_var_2]
-      }
-    }
-    for (i1_2: int32, 0, 64) {
-      for (i3_2: int32, 0, 16) {
-        let cse_var_3: int32 = ((i1_2*16) + i3_2)
-        A_buf_2: Buffer(A_buf, int32, [1024], [])[cse_var_3] = (A_buf_1[cse_var_3] + B_buf_1[cse_var_3])
-      }
-    }
-    for (i1_3: int32, 0, 64) {
-      for (i3_3: int32, 0, 16) {
-        let cse_var_4: int32 = ((i1_3*16) + i3_3)
-        C_3: Buffer(C_2, int8, [1024], [])[cse_var_4] = cast(int8, A_buf_2[cse_var_4])
-      }
-    }
-  }
-}
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>@I.ir_module
+class Module:
+    @T.prim_func
+    def main(A: T.handle, B: T.handle, C: T.handle):
+        T.func_attr({&quot;from_legacy_te_schedule&quot;: True, &quot;global_symbol&quot;: &quot;main&quot;, &quot;tir.noalias&quot;: True})
+        A_1 = T.match_buffer(A, (1, 64, 1, 16), &quot;int32&quot;)
+        B_1 = T.match_buffer(B, (1, 64, 1, 16), &quot;int32&quot;)
+        C_1 = T.match_buffer(C, (1, 64, 1, 16), &quot;int8&quot;)
+        A_buf = T.allocate([1024], &quot;int32&quot;, &quot;global&quot;)
+        B_buf = T.allocate([1024], &quot;int32&quot;, &quot;global&quot;)
+        A_buf_1 = T.buffer_decl((1024,), &quot;int32&quot;, data=A_buf)
+        for i1, i3 in T.grid(64, 16):
+            cse_var_1: T.int32 = i1 * 16 + i3
+            A_2 = T.buffer_decl((1024,), &quot;int32&quot;, data=A_1.data)
+            A_buf_1[cse_var_1] = A_2[cse_var_1]
+        B_buf_1 = T.buffer_decl((1024,), &quot;int32&quot;, data=B_buf)
+        for i1, i3 in T.grid(64, 16):
+            cse_var_2: T.int32 = i1 * 16 + i3
+            B_2 = T.buffer_decl((1024,), &quot;int32&quot;, data=B_1.data)
+            B_buf_1[cse_var_2] = B_2[cse_var_2]
+        A_buf_2 = T.buffer_decl((1024,), &quot;int32&quot;, data=A_buf)
+        for i1, i3 in T.grid(64, 16):
+            cse_var_3: T.int32 = i1 * 16 + i3
+            A_buf_2[cse_var_3] = A_buf_1[cse_var_3] + B_buf_1[cse_var_3]
+        for i1, i3 in T.grid(64, 16):
+            cse_var_4: T.int32 = i1 * 16 + i3
+            C_2 = T.buffer_decl((1024,), &quot;int8&quot;, data=C_1.data)
+            C_2[cse_var_4] = T.Cast(&quot;int8&quot;, A_buf_2[cse_var_4])
 </pre></div>
 </div>
 <p>Although this schedule makes sense, it won’t compile to VTA.
@@ -673,28 +667,27 @@ with an <code class="code docutils literal notranslate"><span class="pre">env.al
 <span class="nb">print</span><span class="p">(</span><span class="n">vta</span><span class="o">.</span><span class="n">lower</span><span class="p">(</span><a href="../../../reference/api/python/te.html#tvm.te.Schedule" title="tvm.te.Schedule" class="sphx-glr-backref-module-tvm-te sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">s</span></a><span class="p">,</span> <span class="p">[</span><a href="../../../reference/api/python/te.html#tvm.te.Tensor" title="tvm.te.Tensor" class="sphx-glr-backref-module-tvm-te sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">A</span></a><span class="p">,</span> <a href="../../../reference/api/python/te.html#tvm.te.Tensor" title="tvm.te.Tensor" class="sphx-glr-backref-module-tvm-te sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">B</span></a><span class="p">,</span> <a href="../../../reference/api/python/te.html#tvm.te.Tensor" title="tvm.te.Tensor" class="sphx-glr-backref-module-tvm-te sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">C</span></a><span class="p">],</span> <span class="n">simple_mode</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span>
 </pre></div>
 </div>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>@main = primfn(A_1: handle, B_1: handle, C_1: handle) -&gt; ()
-  attr = {&quot;from_legacy_te_schedule&quot;: True, &quot;global_symbol&quot;: &quot;main&quot;, &quot;tir.noalias&quot;: True}
-  buffers = {A: Buffer(A_2: Pointer(int32), int32, [1, 64, 1, 16], []),
-             B: Buffer(B_2: Pointer(int32), int32, [1, 64, 1, 16], []),
-             C: Buffer(C_2: Pointer(int8), int8, [1, 64, 1, 16], [])}
-  buffer_map = {A_1: A, B_1: B, C_1: C} {
-  attr [IterVar(vta: int32, (nullptr), &quot;ThreadIndex&quot;, &quot;vta&quot;)] &quot;coproc_scope&quot; = 2 {
-    @tir.call_extern(&quot;VTALoadBuffer2D&quot;, @tir.tvm_thread_context(@tir.vta.command_handle(, dtype=handle), dtype=handle), A_2, 0, 64, 1, 64, 0, 0, 0, 0, 0, 3, dtype=int32)
-    @tir.call_extern(&quot;VTALoadBuffer2D&quot;, @tir.tvm_thread_context(@tir.vta.command_handle(, dtype=handle), dtype=handle), B_2, 0, 64, 1, 64, 0, 0, 0, 0, 64, 3, dtype=int32)
-    attr [IterVar(vta, (nullptr), &quot;ThreadIndex&quot;, &quot;vta&quot;)] &quot;coproc_uop_scope&quot; = &quot;VTAPushALUOp&quot; {
-      @tir.call_extern(&quot;VTAUopLoopBegin&quot;, 64, 1, 1, 0, dtype=int32)
-      @tir.vta.uop_push(1, 0, 0, 64, 0, 2, 0, 0, dtype=int32)
-      @tir.call_extern(&quot;VTAUopLoopEnd&quot;, dtype=int32)
-    }
-    @tir.vta.coproc_dep_push(2, 3, dtype=int32)
-  }
-  attr [IterVar(vta, (nullptr), &quot;ThreadIndex&quot;, &quot;vta&quot;)] &quot;coproc_scope&quot; = 3 {
-    @tir.vta.coproc_dep_pop(2, 3, dtype=int32)
-    @tir.call_extern(&quot;VTAStoreBuffer2D&quot;, @tir.tvm_thread_context(@tir.vta.command_handle(, dtype=handle), dtype=handle), 0, 4, C_2, 0, 64, 1, 64, dtype=int32)
-  }
-  @tir.vta.coproc_sync(, dtype=int32)
-}
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>@I.ir_module
+class Module:
+    @T.prim_func
+    def main(A: T.handle, B: T.handle, C: T.handle):
+        T.func_attr({&quot;from_legacy_te_schedule&quot;: True, &quot;global_symbol&quot;: &quot;main&quot;, &quot;tir.noalias&quot;: True})
+        A_1 = T.match_buffer(A, (1, 64, 1, 16), &quot;int32&quot;)
+        B_1 = T.match_buffer(B, (1, 64, 1, 16), &quot;int32&quot;)
+        C_1 = T.match_buffer(C, (1, 64, 1, 16), &quot;int8&quot;)
+        vta = T.var(&quot;int32&quot;)
+        with T.attr(T.iter_var(vta, None, &quot;ThreadIndex&quot;, &quot;vta&quot;), &quot;coproc_scope&quot;, 2):
+            T.call_extern(&quot;int32&quot;, &quot;VTALoadBuffer2D&quot;, T.tvm_thread_context(T.tir.vta.command_handle()), A_1.data, 0, 64, 1, 64, 0, 0, 0, 0, 0, 3)
+            T.call_extern(&quot;int32&quot;, &quot;VTALoadBuffer2D&quot;, T.tvm_thread_context(T.tir.vta.command_handle()), B_1.data, 0, 64, 1, 64, 0, 0, 0, 0, 64, 3)
+            with T.attr(T.iter_var(vta, None, &quot;ThreadIndex&quot;, &quot;vta&quot;), &quot;coproc_uop_scope&quot;, &quot;VTAPushALUOp&quot;):
+                T.call_extern(&quot;int32&quot;, &quot;VTAUopLoopBegin&quot;, 64, 1, 1, 0)
+                T.tir.vta.uop_push(1, 0, 0, 64, 0, 2, 0, 0)
+                T.call_extern(&quot;int32&quot;, &quot;VTAUopLoopEnd&quot;)
+            T.tir.vta.coproc_dep_push(2, 3)
+        with T.attr(T.iter_var(vta, None, &quot;ThreadIndex&quot;, &quot;vta&quot;), &quot;coproc_scope&quot;, 3):
+            T.tir.vta.coproc_dep_pop(2, 3)
+            T.call_extern(&quot;int32&quot;, &quot;VTAStoreBuffer2D&quot;, T.tvm_thread_context(T.tir.vta.command_handle()), 0, 4, C_1.data, 0, 64, 1, 64)
+        T.tir.vta.coproc_sync()
 </pre></div>
 </div>
 <p>This concludes the scheduling portion of this tutorial.</p>

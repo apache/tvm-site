@@ -134,8 +134,8 @@ Then we write a baseline implementation, the simplest way to write a matrix mult
 
  .. code-block:: none
 
-    Numpy running time: 0.017961
-    Baseline: 3.258530
+    Numpy running time: 0.018406
+    Baseline: 3.286550
 
 
 
@@ -160,25 +160,23 @@ Here is the generated IR using our baseline schedule.
 
  .. code-block:: none
 
-    @main = primfn(A_1: handle, B_1: handle, C_1: handle) -> ()
-      attr = {"from_legacy_te_schedule": True, "global_symbol": "main", "tir.noalias": True}
-      buffers = {A: Buffer(A_2: Pointer(float32), float32, [1024, 1024], []),
-                 B: Buffer(B_2: Pointer(float32), float32, [1024, 1024], []),
-                 C: Buffer(C_2: Pointer(float32), float32, [1024, 1024], [])}
-      buffer_map = {A_1: A, B_1: B, C_1: C} {
-      for (m: int32, 0, 1024) {
-        for (n: int32, 0, 1024) {
-          C_3: Buffer(C_2, float32, [1048576], [])[((m*1024) + n)] = 0f32
-          for (k: int32, 0, 1024) {
-            let cse_var_2: int32 = (m*1024)
-            let cse_var_1: int32 = (cse_var_2 + n)
-            C_3[cse_var_1] = (C_3[cse_var_1] + (A_3: Buffer(A_2, float32, [1048576], [])[(cse_var_2 + k)]*B_3: Buffer(B_2, float32, [1048576], [])[((k*1024) + n)]))
-          }
-        }
-      }
-    }
-
-
+    @I.ir_module
+    class Module:
+        @T.prim_func
+        def main(A: T.handle, B: T.handle, C: T.handle):
+            T.func_attr({"from_legacy_te_schedule": True, "global_symbol": "main", "tir.noalias": True})
+            A_1 = T.match_buffer(A, (1024, 1024))
+            B_1 = T.match_buffer(B, (1024, 1024))
+            C_1 = T.match_buffer(C, (1024, 1024))
+            for m, n in T.grid(1024, 1024):
+                C_2 = T.buffer_decl((1048576,), data=C_1.data)
+                C_2[m * 1024 + n] = T.float32(0)
+                for k in range(1024):
+                    cse_var_2: T.int32 = m * 1024
+                    cse_var_1: T.int32 = cse_var_2 + n
+                    A_2 = T.buffer_decl((1048576,), data=A_1.data)
+                    B_2 = T.buffer_decl((1048576,), data=B_1.data)
+                    C_2[cse_var_1] = C_2[cse_var_1] + A_2[cse_var_2 + k] * B_2[k * 1024 + n]
 
 
 
@@ -229,7 +227,7 @@ fill 32 * 32 * sizeof(float) which is 4KB in the cache whose total size is 32KB 
 
  .. code-block:: none
 
-    Opt1: 0.299520
+    Opt1: 0.298701
 
 
 
@@ -253,36 +251,25 @@ Here is the generated IR after blocking.
 
  .. code-block:: none
 
-    @main = primfn(A_1: handle, B_1: handle, C_1: handle) -> ()
-      attr = {"from_legacy_te_schedule": True, "global_symbol": "main", "tir.noalias": True}
-      buffers = {A: Buffer(A_2: Pointer(float32), float32, [1024, 1024], []),
-                 B: Buffer(B_2: Pointer(float32), float32, [1024, 1024], []),
-                 C: Buffer(C_2: Pointer(float32), float32, [1024, 1024], [])}
-      buffer_map = {A_1: A, B_1: B, C_1: C} {
-      for (m.outer: int32, 0, 32) {
-        for (n.outer: int32, 0, 32) {
-          for (m.inner.init: int32, 0, 32) {
-            for (n.inner.init: int32, 0, 32) {
-              C_3: Buffer(C_2, float32, [1048576], [])[((((m.outer*32768) + (m.inner.init*1024)) + (n.outer*32)) + n.inner.init)] = 0f32
-            }
-          }
-          for (k.outer: int32, 0, 256) {
-            for (k.inner: int32, 0, 4) {
-              for (m.inner: int32, 0, 32) {
-                for (n.inner: int32, 0, 32) {
-                  let cse_var_3: int32 = (n.outer*32)
-                  let cse_var_2: int32 = ((m.outer*32768) + (m.inner*1024))
-                  let cse_var_1: int32 = ((cse_var_2 + cse_var_3) + n.inner)
-                  C_3[cse_var_1] = (C_3[cse_var_1] + (A_3: Buffer(A_2, float32, [1048576], [])[((cse_var_2 + (k.outer*4)) + k.inner)]*B_3: Buffer(B_2, float32, [1048576], [])[((((k.outer*4096) + (k.inner*1024)) + cse_var_3) + n.inner)]))
-                }
-              }
-            }
-          }
-        }
-      }
-    }
-
-
+    @I.ir_module
+    class Module:
+        @T.prim_func
+        def main(A: T.handle, B: T.handle, C: T.handle):
+            T.func_attr({"from_legacy_te_schedule": True, "global_symbol": "main", "tir.noalias": True})
+            A_1 = T.match_buffer(A, (1024, 1024))
+            B_1 = T.match_buffer(B, (1024, 1024))
+            C_1 = T.match_buffer(C, (1024, 1024))
+            for m_outer, n_outer in T.grid(32, 32):
+                C_2 = T.buffer_decl((1048576,), data=C_1.data)
+                for m_inner_init, n_inner_init in T.grid(32, 32):
+                    C_2[m_outer * 32768 + m_inner_init * 1024 + n_outer * 32 + n_inner_init] = T.float32(0)
+                for k_outer, k_inner, m_inner, n_inner in T.grid(256, 4, 32, 32):
+                    cse_var_3: T.int32 = n_outer * 32
+                    cse_var_2: T.int32 = m_outer * 32768 + m_inner * 1024
+                    cse_var_1: T.int32 = cse_var_2 + cse_var_3 + n_inner
+                    A_2 = T.buffer_decl((1048576,), data=A_1.data)
+                    B_2 = T.buffer_decl((1048576,), data=B_1.data)
+                    C_2[cse_var_1] = C_2[cse_var_1] + A_2[cse_var_2 + k_outer * 4 + k_inner] * B_2[k_outer * 4096 + k_inner * 1024 + cse_var_3 + n_inner]
 
 
 
@@ -331,7 +318,7 @@ In this tutorial, we chose to vectorize the inner loop row data since it is cach
 
  .. code-block:: none
 
-    Opt2: 0.336287
+    Opt2: 0.334528
 
 
 
@@ -355,32 +342,25 @@ Here is the generated IR after vectorization.
 
  .. code-block:: none
 
-    @main = primfn(A_1: handle, B_1: handle, C_1: handle) -> ()
-      attr = {"from_legacy_te_schedule": True, "global_symbol": "main", "tir.noalias": True}
-      buffers = {A: Buffer(A_2: Pointer(float32), float32, [1024, 1024], []),
-                 B: Buffer(B_2: Pointer(float32), float32, [1024, 1024], []),
-                 C: Buffer(C_2: Pointer(float32), float32, [1024, 1024], [])}
-      buffer_map = {A_1: A, B_1: B, C_1: C} {
-      for (m.outer: int32, 0, 32) {
-        for (n.outer: int32, 0, 32) {
-          for (m.inner.init: int32, 0, 32) {
-            C_3: Buffer(C_2, float32, [1048576], [])[ramp((((m.outer*32768) + (m.inner.init*1024)) + (n.outer*32)), 1, 32)] = broadcast(0f32, 32)
-          }
-          for (k.outer: int32, 0, 256) {
-            for (k.inner: int32, 0, 4) {
-              for (m.inner: int32, 0, 32) {
-                let cse_var_3: int32 = (n.outer*32)
-                let cse_var_2: int32 = ((m.outer*32768) + (m.inner*1024))
-                let cse_var_1: int32 = (cse_var_2 + cse_var_3)
-                C_3[ramp(cse_var_1, 1, 32)] = (C_3[ramp(cse_var_1, 1, 32)] + (broadcast(A_3: Buffer(A_2, float32, [1048576], [])[((cse_var_2 + (k.outer*4)) + k.inner)], 32)*B_3: Buffer(B_2, float32, [1048576], [])[ramp((((k.outer*4096) + (k.inner*1024)) + cse_var_3), 1, 32)]))
-              }
-            }
-          }
-        }
-      }
-    }
-
-
+    @I.ir_module
+    class Module:
+        @T.prim_func
+        def main(A: T.handle, B: T.handle, C: T.handle):
+            T.func_attr({"from_legacy_te_schedule": True, "global_symbol": "main", "tir.noalias": True})
+            A_1 = T.match_buffer(A, (1024, 1024))
+            B_1 = T.match_buffer(B, (1024, 1024))
+            C_1 = T.match_buffer(C, (1024, 1024))
+            for m_outer, n_outer in T.grid(32, 32):
+                C_2 = T.buffer_decl((1048576,), data=C_1.data)
+                for m_inner_init in range(32):
+                    C_2[m_outer * 32768 + m_inner_init * 1024 + n_outer * 32:m_outer * 32768 + m_inner_init * 1024 + n_outer * 32 + 32] = T.Broadcast(T.float32(0), 32)
+                for k_outer, k_inner, m_inner in T.grid(256, 4, 32):
+                    cse_var_3: T.int32 = n_outer * 32
+                    cse_var_2: T.int32 = m_outer * 32768 + m_inner * 1024
+                    cse_var_1: T.int32 = cse_var_2 + cse_var_3
+                    A_2 = T.buffer_decl((1048576,), data=A_1.data)
+                    B_2 = T.buffer_decl((1048576,), data=B_1.data)
+                    C_2[cse_var_1:cse_var_1 + 32] = C_2[cse_var_1:cse_var_1 + 32] + T.Broadcast(A_2[cse_var_2 + k_outer * 4 + k_inner], 32) * B_2[k_outer * 4096 + k_inner * 1024 + cse_var_3:k_outer * 4096 + k_inner * 1024 + cse_var_3 + 32]
 
 
 
@@ -426,7 +406,7 @@ the access pattern for A matrix is more cache friendly.
 
  .. code-block:: none
 
-    Opt3: 0.116361
+    Opt3: 0.112976
 
 
 
@@ -450,32 +430,25 @@ Here is the generated IR after loop permutation.
 
  .. code-block:: none
 
-    @main = primfn(A_1: handle, B_1: handle, C_1: handle) -> ()
-      attr = {"from_legacy_te_schedule": True, "global_symbol": "main", "tir.noalias": True}
-      buffers = {A: Buffer(A_2: Pointer(float32), float32, [1024, 1024], []),
-                 B: Buffer(B_2: Pointer(float32), float32, [1024, 1024], []),
-                 C: Buffer(C_2: Pointer(float32), float32, [1024, 1024], [])}
-      buffer_map = {A_1: A, B_1: B, C_1: C} {
-      for (m.outer: int32, 0, 32) {
-        for (n.outer: int32, 0, 32) {
-          for (m.inner.init: int32, 0, 32) {
-            C_3: Buffer(C_2, float32, [1048576], [])[ramp((((m.outer*32768) + (m.inner.init*1024)) + (n.outer*32)), 1, 32)] = broadcast(0f32, 32)
-          }
-          for (k.outer: int32, 0, 256) {
-            for (m.inner: int32, 0, 32) {
-              for (k.inner: int32, 0, 4) {
-                let cse_var_3: int32 = (n.outer*32)
-                let cse_var_2: int32 = ((m.outer*32768) + (m.inner*1024))
-                let cse_var_1: int32 = (cse_var_2 + cse_var_3)
-                C_3[ramp(cse_var_1, 1, 32)] = (C_3[ramp(cse_var_1, 1, 32)] + (broadcast(A_3: Buffer(A_2, float32, [1048576], [])[((cse_var_2 + (k.outer*4)) + k.inner)], 32)*B_3: Buffer(B_2, float32, [1048576], [])[ramp((((k.outer*4096) + (k.inner*1024)) + cse_var_3), 1, 32)]))
-              }
-            }
-          }
-        }
-      }
-    }
-
-
+    @I.ir_module
+    class Module:
+        @T.prim_func
+        def main(A: T.handle, B: T.handle, C: T.handle):
+            T.func_attr({"from_legacy_te_schedule": True, "global_symbol": "main", "tir.noalias": True})
+            A_1 = T.match_buffer(A, (1024, 1024))
+            B_1 = T.match_buffer(B, (1024, 1024))
+            C_1 = T.match_buffer(C, (1024, 1024))
+            for m_outer, n_outer in T.grid(32, 32):
+                C_2 = T.buffer_decl((1048576,), data=C_1.data)
+                for m_inner_init in range(32):
+                    C_2[m_outer * 32768 + m_inner_init * 1024 + n_outer * 32:m_outer * 32768 + m_inner_init * 1024 + n_outer * 32 + 32] = T.Broadcast(T.float32(0), 32)
+                for k_outer, m_inner, k_inner in T.grid(256, 32, 4):
+                    cse_var_3: T.int32 = n_outer * 32
+                    cse_var_2: T.int32 = m_outer * 32768 + m_inner * 1024
+                    cse_var_1: T.int32 = cse_var_2 + cse_var_3
+                    A_2 = T.buffer_decl((1048576,), data=A_1.data)
+                    B_2 = T.buffer_decl((1048576,), data=B_1.data)
+                    C_2[cse_var_1:cse_var_1 + 32] = C_2[cse_var_1:cse_var_1 + 32] + T.Broadcast(A_2[cse_var_2 + k_outer * 4 + k_inner], 32) * B_2[k_outer * 4096 + k_inner * 1024 + cse_var_3:k_outer * 4096 + k_inner * 1024 + cse_var_3 + 32]
 
 
 
@@ -550,7 +523,7 @@ flattening.
 
  .. code-block:: none
 
-    Opt4: 0.109872
+    Opt4: 0.108978
 
 
 
@@ -574,39 +547,30 @@ Here is the generated IR after array packing.
 
  .. code-block:: none
 
-    @main = primfn(A_1: handle, B_1: handle, C_1: handle) -> ()
-      attr = {"from_legacy_te_schedule": True, "global_symbol": "main", "tir.noalias": True}
-      buffers = {A: Buffer(A_2: Pointer(float32), float32, [1024, 1024], []),
-                 B: Buffer(B_2: Pointer(float32), float32, [1024, 1024], []),
-                 C: Buffer(C_2: Pointer(float32), float32, [1024, 1024], [])}
-      buffer_map = {A_1: A, B_1: B, C_1: C} {
-      allocate(packedB: Pointer(global float32x32), float32x32, [32768]), storage_scope = global {
-        for (bigN: int32, 0, 32) "parallel" {
-          for (k: int32, 0, 1024) {
-            packedB_1: Buffer(packedB, float32x32, [32768], [])[((bigN*1024) + k)] = B_3: Buffer(B_2, float32, [1048576], [])[ramp(((k*1024) + (bigN*32)), 1, 32)]
-          }
-        }
-        for (m.outer: int32, 0, 32) {
-          for (n.outer: int32, 0, 32) {
-            for (m.inner.init: int32, 0, 32) {
-              C_3: Buffer(C_2, float32, [1048576], [])[ramp((((m.outer*32768) + (m.inner.init*1024)) + (n.outer*32)), 1, 32)] = broadcast(0f32, 32)
-            }
-            for (k.outer: int32, 0, 256) {
-              for (m.inner: int32, 0, 32) {
-                for (k.inner: int32, 0, 4) {
-                  let cse_var_3: int32 = ((m.outer*32768) + (m.inner*1024))
-                  let cse_var_2: int32 = (k.outer*4)
-                  let cse_var_1: int32 = (cse_var_3 + (n.outer*32))
-                  C_3[ramp(cse_var_1, 1, 32)] = (C_3[ramp(cse_var_1, 1, 32)] + (broadcast(A_3: Buffer(A_2, float32, [1048576], [])[((cse_var_3 + cse_var_2) + k.inner)], 32)*packedB_1[(((n.outer*1024) + cse_var_2) + k.inner)]))
-                }
-              }
-            }
-          }
-        }
-      }
-    }
-
-
+    @I.ir_module
+    class Module:
+        @T.prim_func
+        def main(A: T.handle, B: T.handle, C: T.handle):
+            T.func_attr({"from_legacy_te_schedule": True, "global_symbol": "main", "tir.noalias": True})
+            A_1 = T.match_buffer(A, (1024, 1024))
+            B_1 = T.match_buffer(B, (1024, 1024))
+            C_1 = T.match_buffer(C, (1024, 1024))
+            packedB = T.allocate([32768], "float32x32", "global")
+            packedB_1 = T.buffer_decl((32768,), "float32x32", data=packedB)
+            for bigN in T.parallel(32):
+                for k in range(1024):
+                    B_2 = T.buffer_decl((1048576,), data=B_1.data)
+                    packedB_1[bigN * 1024 + k] = B_2[k * 1024 + bigN * 32:k * 1024 + bigN * 32 + 32]
+            for m_outer, n_outer in T.grid(32, 32):
+                C_2 = T.buffer_decl((1048576,), data=C_1.data)
+                for m_inner_init in range(32):
+                    C_2[m_outer * 32768 + m_inner_init * 1024 + n_outer * 32:m_outer * 32768 + m_inner_init * 1024 + n_outer * 32 + 32] = T.Broadcast(T.float32(0), 32)
+                for k_outer, m_inner, k_inner in T.grid(256, 32, 4):
+                    cse_var_3: T.int32 = m_outer * 32768 + m_inner * 1024
+                    cse_var_2: T.int32 = k_outer * 4
+                    cse_var_1: T.int32 = cse_var_3 + n_outer * 32
+                    A_2 = T.buffer_decl((1048576,), data=A_1.data)
+                    C_2[cse_var_1:cse_var_1 + 32] = C_2[cse_var_1:cse_var_1 + 32] + T.Broadcast(A_2[cse_var_3 + cse_var_2 + k_inner], 32) * packedB_1[n_outer * 1024 + cse_var_2 + k_inner]
 
 
 
@@ -671,7 +635,7 @@ write to C when all the block results are ready.
 
  .. code-block:: none
 
-    Opt5: 0.110848
+    Opt5: 0.111004
 
 
 
@@ -695,49 +659,38 @@ Here is the generated IR after blocking.
 
  .. code-block:: none
 
-    @main = primfn(A_1: handle, B_1: handle, C_1: handle) -> ()
-      attr = {"from_legacy_te_schedule": True, "global_symbol": "main", "tir.noalias": True}
-      buffers = {A: Buffer(A_2: Pointer(float32), float32, [1024, 1024], []),
-                 B: Buffer(B_2: Pointer(float32), float32, [1024, 1024], []),
-                 C: Buffer(C_2: Pointer(float32), float32, [1024, 1024], [])}
-      buffer_map = {A_1: A, B_1: B, C_1: C} {
-      allocate(packedB: Pointer(global float32x32), float32x32, [32768]), storage_scope = global;
-      allocate(C.global: Pointer(global float32), float32, [1024]), storage_scope = global {
-        for (bigN: int32, 0, 32) "parallel" {
-          for (k: int32, 0, 1024) {
-            packedB_1: Buffer(packedB, float32x32, [32768], [])[((bigN*1024) + k)] = B_3: Buffer(B_2, float32, [1048576], [])[ramp(((k*1024) + (bigN*32)), 1, 32)]
-          }
-        }
-        for (m.outer: int32, 0, 32) {
-          for (n.outer: int32, 0, 32) {
-            for (m.c.init: int32, 0, 32) {
-              C.global_1: Buffer(C.global, float32, [1024], [])[ramp((m.c.init*32), 1, 32)] = broadcast(0f32, 32)
-            }
-            for (k.outer: int32, 0, 256) {
-              for (m.c: int32, 0, 32) {
-                let cse_var_4: int32 = (k.outer*4)
-                let cse_var_3: int32 = (m.c*32)
-                let cse_var_2: int32 = ((n.outer*1024) + cse_var_4)
-                let cse_var_1: int32 = (((m.outer*32768) + (m.c*1024)) + cse_var_4)
-                 {
-                  C.global_1[ramp(cse_var_3, 1, 32)] = (C.global_1[ramp(cse_var_3, 1, 32)] + (broadcast(A_3: Buffer(A_2, float32, [1048576], [])[cse_var_1], 32)*packedB_1[cse_var_2]))
-                  C.global_1[ramp(cse_var_3, 1, 32)] = (C.global_1[ramp(cse_var_3, 1, 32)] + (broadcast(A_3[(cse_var_1 + 1)], 32)*packedB_1[(cse_var_2 + 1)]))
-                  C.global_1[ramp(cse_var_3, 1, 32)] = (C.global_1[ramp(cse_var_3, 1, 32)] + (broadcast(A_3[(cse_var_1 + 2)], 32)*packedB_1[(cse_var_2 + 2)]))
-                  C.global_1[ramp(cse_var_3, 1, 32)] = (C.global_1[ramp(cse_var_3, 1, 32)] + (broadcast(A_3[(cse_var_1 + 3)], 32)*packedB_1[(cse_var_2 + 3)]))
-                }
-              }
-            }
-            for (m.inner: int32, 0, 32) {
-              for (n.inner: int32, 0, 32) {
-                C_3: Buffer(C_2, float32, [1048576], [])[((((m.outer*32768) + (m.inner*1024)) + (n.outer*32)) + n.inner)] = C.global_1[((m.inner*32) + n.inner)]
-              }
-            }
-          }
-        }
-      }
-    }
-
-
+    @I.ir_module
+    class Module:
+        @T.prim_func
+        def main(A: T.handle, B: T.handle, C: T.handle):
+            T.func_attr({"from_legacy_te_schedule": True, "global_symbol": "main", "tir.noalias": True})
+            A_1 = T.match_buffer(A, (1024, 1024))
+            B_1 = T.match_buffer(B, (1024, 1024))
+            C_1 = T.match_buffer(C, (1024, 1024))
+            packedB = T.allocate([32768], "float32x32", "global")
+            C_global = T.allocate([1024], "float32", "global")
+            packedB_1 = T.buffer_decl((32768,), "float32x32", data=packedB)
+            for bigN in T.parallel(32):
+                for k in range(1024):
+                    B_2 = T.buffer_decl((1048576,), data=B_1.data)
+                    packedB_1[bigN * 1024 + k] = B_2[k * 1024 + bigN * 32:k * 1024 + bigN * 32 + 32]
+            for m_outer, n_outer in T.grid(32, 32):
+                C_global_1 = T.buffer_decl((1024,), data=C_global)
+                for m_c_init in range(32):
+                    C_global_1[m_c_init * 32:m_c_init * 32 + 32] = T.Broadcast(T.float32(0), 32)
+                for k_outer, m_c in T.grid(256, 32):
+                    cse_var_4: T.int32 = k_outer * 4
+                    cse_var_3: T.int32 = m_c * 32
+                    cse_var_2: T.int32 = n_outer * 1024 + cse_var_4
+                    cse_var_1: T.int32 = m_outer * 32768 + m_c * 1024 + cse_var_4
+                    A_2 = T.buffer_decl((1048576,), data=A_1.data)
+                    C_global_1[cse_var_3:cse_var_3 + 32] = C_global_1[cse_var_3:cse_var_3 + 32] + T.Broadcast(A_2[cse_var_1], 32) * packedB_1[cse_var_2]
+                    C_global_1[cse_var_3:cse_var_3 + 32] = C_global_1[cse_var_3:cse_var_3 + 32] + T.Broadcast(A_2[cse_var_1 + 1], 32) * packedB_1[cse_var_2 + 1]
+                    C_global_1[cse_var_3:cse_var_3 + 32] = C_global_1[cse_var_3:cse_var_3 + 32] + T.Broadcast(A_2[cse_var_1 + 2], 32) * packedB_1[cse_var_2 + 2]
+                    C_global_1[cse_var_3:cse_var_3 + 32] = C_global_1[cse_var_3:cse_var_3 + 32] + T.Broadcast(A_2[cse_var_1 + 3], 32) * packedB_1[cse_var_2 + 3]
+                for m_inner, n_inner in T.grid(32, 32):
+                    C_2 = T.buffer_decl((1048576,), data=C_1.data)
+                    C_2[m_outer * 32768 + m_inner * 1024 + n_outer * 32 + n_inner] = C_global_1[m_inner * 32 + n_inner]
 
 
 
@@ -795,7 +748,7 @@ Furthermore, we can also utilize multi-core processors to do the thread-level pa
 
  .. code-block:: none
 
-    Opt6: 0.146714
+    Opt6: 0.146827
 
 
 
@@ -819,49 +772,39 @@ Here is the generated IR after parallelization.
 
  .. code-block:: none
 
-    @main = primfn(A_1: handle, B_1: handle, C_1: handle) -> ()
-      attr = {"from_legacy_te_schedule": True, "global_symbol": "main", "tir.noalias": True}
-      buffers = {A: Buffer(A_2: Pointer(float32), float32, [1024, 1024], []),
-                 B: Buffer(B_2: Pointer(float32), float32, [1024, 1024], []),
-                 C: Buffer(C_2: Pointer(float32), float32, [1024, 1024], [])}
-      buffer_map = {A_1: A, B_1: B, C_1: C} {
-      allocate(packedB: Pointer(global float32x32), float32x32, [32768]), storage_scope = global {
-        for (bigN: int32, 0, 32) "parallel" {
-          for (k: int32, 0, 1024) {
-            packedB_1: Buffer(packedB, float32x32, [32768], [])[((bigN*1024) + k)] = B_3: Buffer(B_2, float32, [1048576], [])[ramp(((k*1024) + (bigN*32)), 1, 32)]
-          }
-        }
-        for (m.outer: int32, 0, 32) "parallel" {
-          allocate(C.global: Pointer(global float32), float32, [1024]), storage_scope = global;
-          for (n.outer: int32, 0, 32) {
-            for (m.c.init: int32, 0, 32) {
-              C.global_1: Buffer(C.global, float32, [1024], [])[ramp((m.c.init*32), 1, 32)] = broadcast(0f32, 32)
-            }
-            for (k.outer: int32, 0, 256) {
-              for (m.c: int32, 0, 32) {
-                let cse_var_4: int32 = (k.outer*4)
-                let cse_var_3: int32 = (m.c*32)
-                let cse_var_2: int32 = ((n.outer*1024) + cse_var_4)
-                let cse_var_1: int32 = (((m.outer*32768) + (m.c*1024)) + cse_var_4)
-                 {
-                  C.global_1[ramp(cse_var_3, 1, 32)] = (C.global_1[ramp(cse_var_3, 1, 32)] + (broadcast(A_3: Buffer(A_2, float32, [1048576], [])[cse_var_1], 32)*packedB_1[cse_var_2]))
-                  C.global_1[ramp(cse_var_3, 1, 32)] = (C.global_1[ramp(cse_var_3, 1, 32)] + (broadcast(A_3[(cse_var_1 + 1)], 32)*packedB_1[(cse_var_2 + 1)]))
-                  C.global_1[ramp(cse_var_3, 1, 32)] = (C.global_1[ramp(cse_var_3, 1, 32)] + (broadcast(A_3[(cse_var_1 + 2)], 32)*packedB_1[(cse_var_2 + 2)]))
-                  C.global_1[ramp(cse_var_3, 1, 32)] = (C.global_1[ramp(cse_var_3, 1, 32)] + (broadcast(A_3[(cse_var_1 + 3)], 32)*packedB_1[(cse_var_2 + 3)]))
-                }
-              }
-            }
-            for (m.inner: int32, 0, 32) {
-              for (n.inner: int32, 0, 32) {
-                C_3: Buffer(C_2, float32, [1048576], [])[((((m.outer*32768) + (m.inner*1024)) + (n.outer*32)) + n.inner)] = C.global_1[((m.inner*32) + n.inner)]
-              }
-            }
-          }
-        }
-      }
-    }
-
-
+    @I.ir_module
+    class Module:
+        @T.prim_func
+        def main(A: T.handle, B: T.handle, C: T.handle):
+            T.func_attr({"from_legacy_te_schedule": True, "global_symbol": "main", "tir.noalias": True})
+            A_1 = T.match_buffer(A, (1024, 1024))
+            B_1 = T.match_buffer(B, (1024, 1024))
+            C_1 = T.match_buffer(C, (1024, 1024))
+            packedB = T.allocate([32768], "float32x32", "global")
+            packedB_1 = T.buffer_decl((32768,), "float32x32", data=packedB)
+            for bigN in T.parallel(32):
+                for k in range(1024):
+                    B_2 = T.buffer_decl((1048576,), data=B_1.data)
+                    packedB_1[bigN * 1024 + k] = B_2[k * 1024 + bigN * 32:k * 1024 + bigN * 32 + 32]
+            for m_outer in T.parallel(32):
+                C_global = T.allocate([1024], "float32", "global")
+                for n_outer in range(32):
+                    C_global_1 = T.buffer_decl((1024,), data=C_global)
+                    for m_c_init in range(32):
+                        C_global_1[m_c_init * 32:m_c_init * 32 + 32] = T.Broadcast(T.float32(0), 32)
+                    for k_outer, m_c in T.grid(256, 32):
+                        cse_var_4: T.int32 = k_outer * 4
+                        cse_var_3: T.int32 = m_c * 32
+                        cse_var_2: T.int32 = n_outer * 1024 + cse_var_4
+                        cse_var_1: T.int32 = m_outer * 32768 + m_c * 1024 + cse_var_4
+                        A_2 = T.buffer_decl((1048576,), data=A_1.data)
+                        C_global_1[cse_var_3:cse_var_3 + 32] = C_global_1[cse_var_3:cse_var_3 + 32] + T.Broadcast(A_2[cse_var_1], 32) * packedB_1[cse_var_2]
+                        C_global_1[cse_var_3:cse_var_3 + 32] = C_global_1[cse_var_3:cse_var_3 + 32] + T.Broadcast(A_2[cse_var_1 + 1], 32) * packedB_1[cse_var_2 + 1]
+                        C_global_1[cse_var_3:cse_var_3 + 32] = C_global_1[cse_var_3:cse_var_3 + 32] + T.Broadcast(A_2[cse_var_1 + 2], 32) * packedB_1[cse_var_2 + 2]
+                        C_global_1[cse_var_3:cse_var_3 + 32] = C_global_1[cse_var_3:cse_var_3 + 32] + T.Broadcast(A_2[cse_var_1 + 3], 32) * packedB_1[cse_var_2 + 3]
+                    for m_inner, n_inner in T.grid(32, 32):
+                        C_2 = T.buffer_decl((1048576,), data=C_1.data)
+                        C_2[m_outer * 32768 + m_inner * 1024 + n_outer * 32 + n_inner] = C_global_1[m_inner * 32 + n_inner]
 
 
 

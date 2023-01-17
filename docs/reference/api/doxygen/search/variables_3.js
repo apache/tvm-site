@@ -58,6 +58,7 @@ var searchData=
   ['constrain_5fresult',['constrain_result',['../structtvm_1_1relay_1_1OnDeviceAttrs.html#a219e14dc39b3d3d302e6b3d8b59167e1',1,'tvm::relay::OnDeviceAttrs']]],
   ['constructor',['constructor',['../classtvm_1_1relay_1_1PatternConstructorNode.html#a4ad38292de4758a711a01982ebf78f54',1,'tvm::relay::PatternConstructorNode::constructor()'],['../structtvm_1_1relay_1_1ConstructorValueObj.html#a8a8374bec3445e7225ec5ee3fcdb5b6e',1,'tvm::relay::ConstructorValueObj::constructor()']]],
   ['constructor_5ftag',['constructor_tag',['../structtvm_1_1runtime_1_1vm_1_1Instruction.html#a7349fa2a2e70149d4af08289c539150f',1,'tvm::runtime::vm::Instruction']]],
+  ['constructor_5ftag_5fmap_5f',['constructor_tag_map_',['../classtvm_1_1IRModuleNode.html#a8bc4d7da196a212e7181a0f9afecd1c9',1,'tvm::IRModuleNode']]],
   ['constructors',['constructors',['../classtvm_1_1TypeDataNode.html#a4b8e6e09856e514b91586223d48fd117',1,'tvm::TypeDataNode']]],
   ['convolution_5falgorithm',['convolution_algorithm',['../structtvm_1_1relay_1_1Conv2DWinogradNNPACKWeightTransformAttrs.html#a77b19e3aa880cd4476b261523aa6e9de',1,'tvm::relay::Conv2DWinogradNNPACKWeightTransformAttrs']]],
   ['cooldown_5finterval',['cooldown_interval',['../classtvm_1_1auto__scheduler_1_1ProgramRunnerNode.html#a50c477ae09d4dd362bd8c71c0c1c7893',1,'tvm::auto_scheduler::ProgramRunnerNode']]],

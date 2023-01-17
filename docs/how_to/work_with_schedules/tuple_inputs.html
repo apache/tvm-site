@@ -411,20 +411,32 @@ together in the next schedule procedure.</p>
 <span class="nb">print</span><span class="p">(</span><a href="../../reference/api/python/driver.html#tvm.lower" title="tvm.lower" class="sphx-glr-backref-module-tvm sphx-glr-backref-type-py-function"><span class="n">tvm</span><span class="o">.</span><span class="n">lower</span></a><span class="p">(</span><a href="../../reference/api/python/te.html#tvm.te.Schedule" title="tvm.te.Schedule" class="sphx-glr-backref-module-tvm-te sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">s</span></a><span class="p">,</span> <span class="p">[</span><a href="../../reference/api/python/te.html#tvm.te.Tensor" title="tvm.te.Tensor" class="sphx-glr-backref-module-tvm-te sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">A0</span></a><span class="p">,</span> <a href="../../reference/api/python/te.html#tvm.te.Tensor" title="tvm.te.Tensor" class="sphx-glr-backref-module-tvm-te sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">A1</span></a><span class="p">,</span> <a href="../../reference/api/python/te.html#tvm.te.Tensor" title="tvm.te.Tensor" class="sphx-glr-backref-module-tvm-te sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">B0</span></a><span class="p">,</span> <a href="../../reference/api/python/te.html#tvm.te.Tensor" title="tvm.te.Tensor" class="sphx-glr-backref-module-tvm-te sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">B1</span></a><span class="p">],</span> <span class="n">simple_mode</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span>
 </pre></div>
 </div>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>@main = primfn(A0_1: handle, A1_1: handle, B_2: handle, B_3: handle) -&gt; ()
-  attr = {&quot;from_legacy_te_schedule&quot;: True, &quot;global_symbol&quot;: &quot;main&quot;, &quot;tir.noalias&quot;: True}
-  buffers = {A0: Buffer(A0_2: Pointer(float32), float32, [m: int32, n: int32], [stride: int32, stride_1: int32], type=&quot;auto&quot;),
-             A1: Buffer(A1_2: Pointer(float32), float32, [m, n], [stride_2: int32, stride_3: int32], type=&quot;auto&quot;),
-             B: Buffer(B_4: Pointer(float32), float32, [m, n], [stride_4: int32, stride_5: int32], type=&quot;auto&quot;),
-             B_1: Buffer(B_5: Pointer(float32), float32, [m, n], [stride_6: int32, stride_7: int32], type=&quot;auto&quot;)}
-  buffer_map = {A0_1: A0, A1_1: A1, B_2: B, B_3: B_1} {
-  for (i: int32, 0, m) {
-    for (j: int32, 0, n) {
-      B_6: Buffer(B_4, float32, [(stride_4*m)], [], type=&quot;auto&quot;)[((i*stride_4) + (j*stride_5))] = (A0_3: Buffer(A0_2, float32, [(stride*m)], [], type=&quot;auto&quot;)[((i*stride) + (j*stride_1))] + 2f32)
-      B_7: Buffer(B_5, float32, [(stride_6*m)], [], type=&quot;auto&quot;)[((i*stride_6) + (j*stride_7))] = (A1_3: Buffer(A1_2, float32, [(stride_2*m)], [], type=&quot;auto&quot;)[((i*stride_2) + (j*stride_3))]*3f32)
-    }
-  }
-}
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>@I.ir_module
+class Module:
+    @T.prim_func
+    def main(A0: T.handle, A1: T.handle, B: T.handle, B_1: T.handle):
+        T.func_attr({&quot;from_legacy_te_schedule&quot;: True, &quot;global_symbol&quot;: &quot;main&quot;, &quot;tir.noalias&quot;: True})
+        m = T.var(&quot;int32&quot;)
+        n = T.var(&quot;int32&quot;)
+        stride = T.var(&quot;int32&quot;)
+        stride_1 = T.var(&quot;int32&quot;)
+        A0_1 = T.match_buffer(A0, (m, n), strides=(stride, stride_1), type=&quot;auto&quot;)
+        stride_2 = T.var(&quot;int32&quot;)
+        stride_3 = T.var(&quot;int32&quot;)
+        A1_1 = T.match_buffer(A1, (m, n), strides=(stride_2, stride_3), type=&quot;auto&quot;)
+        stride_4 = T.var(&quot;int32&quot;)
+        stride_5 = T.var(&quot;int32&quot;)
+        B_2 = T.match_buffer(B, (m, n), strides=(stride_4, stride_5), type=&quot;auto&quot;)
+        stride_6 = T.var(&quot;int32&quot;)
+        stride_7 = T.var(&quot;int32&quot;)
+        B_3 = T.match_buffer(B_1, (m, n), strides=(stride_6, stride_7), type=&quot;auto&quot;)
+        for i, j in T.grid(m, n):
+            B_4 = T.buffer_decl((stride_4 * m,), data=B_2.data, type=&quot;auto&quot;)
+            A0_2 = T.buffer_decl((stride * m,), data=A0_1.data, type=&quot;auto&quot;)
+            B_4[i * stride_4 + j * stride_5] = A0_2[i * stride + j * stride_1] + T.float32(2)
+            B_5 = T.buffer_decl((stride_6 * m,), data=B_3.data, type=&quot;auto&quot;)
+            A1_2 = T.buffer_decl((stride_2 * m,), data=A1_1.data, type=&quot;auto&quot;)
+            B_5[i * stride_6 + j * stride_7] = A1_2[i * stride_2 + j * stride_3] * T.float32(3)
 </pre></div>
 </div>
 </div>
@@ -464,22 +476,33 @@ with <code class="xref py py-func docutils literal notranslate"><span class="pre
 <span class="nb">print</span><span class="p">(</span><a href="../../reference/api/python/driver.html#tvm.lower" title="tvm.lower" class="sphx-glr-backref-module-tvm sphx-glr-backref-type-py-function"><span class="n">tvm</span><span class="o">.</span><span class="n">lower</span></a><span class="p">(</span><a href="../../reference/api/python/te.html#tvm.te.Schedule" title="tvm.te.Schedule" class="sphx-glr-backref-module-tvm-te sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">s</span></a><span class="p">,</span> <span class="p">[</span><a href="../../reference/api/python/te.html#tvm.te.Tensor" title="tvm.te.Tensor" class="sphx-glr-backref-module-tvm-te sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">idx</span></a><span class="p">,</span> <a href="../../reference/api/python/te.html#tvm.te.Tensor" title="tvm.te.Tensor" class="sphx-glr-backref-module-tvm-te sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">val</span></a><span class="p">,</span> <a href="../../reference/api/python/te.html#tvm.te.Tensor" title="tvm.te.Tensor" class="sphx-glr-backref-module-tvm-te sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">T0</span></a><span class="p">,</span> <a href="../../reference/api/python/te.html#tvm.te.Tensor" title="tvm.te.Tensor" class="sphx-glr-backref-module-tvm-te sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">T1</span></a><span class="p">],</span> <span class="n">simple_mode</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span>
 </pre></div>
 </div>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>@main = primfn(idx_1: handle, val_1: handle, T_2: handle, T_3: handle) -&gt; ()
-  attr = {&quot;from_legacy_te_schedule&quot;: True, &quot;global_symbol&quot;: &quot;main&quot;, &quot;tir.noalias&quot;: True}
-  buffers = {idx: Buffer(idx_2: Pointer(int32), int32, [m: int32, n: int32], [stride: int32, stride_1: int32], type=&quot;auto&quot;),
-             val: Buffer(val_2: Pointer(int32), int32, [m, n], [stride_2: int32, stride_3: int32], type=&quot;auto&quot;),
-             T: Buffer(T_4: Pointer(int32), int32, [m], [stride_4: int32], type=&quot;auto&quot;),
-             T_1: Buffer(T_5: Pointer(int32), int32, [m], [stride_5: int32], type=&quot;auto&quot;)}
-  buffer_map = {idx_1: idx, val_1: val, T_2: T, T_3: T_1} {
-  for (i: int32, 0, m) {
-    T_6: Buffer(T_4, int32, [(stride_4*m)], [], type=&quot;auto&quot;)[(i*stride_4)] = -1
-    T_7: Buffer(T_5, int32, [(stride_5*m)], [], type=&quot;auto&quot;)[(i*stride_5)] = -2147483648
-    for (k: int32, 0, n) {
-      T_6[(i*stride_4)] = @tir.if_then_else((val_3: Buffer(val_2, int32, [(stride_2*m)], [], type=&quot;auto&quot;)[((i*stride_2) + (k*stride_3))] &lt;= T_7[(i*stride_5)]), T_6[(i*stride_4)], idx_3: Buffer(idx_2, int32, [(stride*m)], [], type=&quot;auto&quot;)[((i*stride) + (k*stride_1))], dtype=int32)
-      T_7[(i*stride_5)] = @tir.if_then_else((val_3[((i*stride_2) + (k*stride_3))] &lt;= T_7[(i*stride_5)]), T_7[(i*stride_5)], val_3[((i*stride_2) + (k*stride_3))], dtype=int32)
-    }
-  }
-}
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>@I.ir_module
+class Module:
+    @T.prim_func
+    def main(idx: T.handle, val: T.handle, T: T.handle, T_1: T.handle):
+        T.func_attr({&quot;from_legacy_te_schedule&quot;: True, &quot;global_symbol&quot;: &quot;main&quot;, &quot;tir.noalias&quot;: True})
+        m = T.var(&quot;int32&quot;)
+        n = T.var(&quot;int32&quot;)
+        stride = T.var(&quot;int32&quot;)
+        stride_1 = T.var(&quot;int32&quot;)
+        idx_1 = T.match_buffer(idx, (m, n), &quot;int32&quot;, strides=(stride, stride_1), type=&quot;auto&quot;)
+        stride_2 = T.var(&quot;int32&quot;)
+        stride_3 = T.var(&quot;int32&quot;)
+        val_1 = T.match_buffer(val, (m, n), &quot;int32&quot;, strides=(stride_2, stride_3), type=&quot;auto&quot;)
+        stride_4 = T.var(&quot;int32&quot;)
+        T_2 = T.match_buffer(T, (m,), &quot;int32&quot;, strides=(stride_4,), type=&quot;auto&quot;)
+        stride_5 = T.var(&quot;int32&quot;)
+        T_3 = T.match_buffer(T_1, (m,), &quot;int32&quot;, strides=(stride_5,), type=&quot;auto&quot;)
+        for i in range(m):
+            T_4 = T.buffer_decl((stride_4 * m,), &quot;int32&quot;, data=T_2.data, type=&quot;auto&quot;)
+            T_4[i * stride_4] = -1
+            T_5 = T.buffer_decl((stride_5 * m,), &quot;int32&quot;, data=T_3.data, type=&quot;auto&quot;)
+            T_5[i * stride_5] = -2147483648
+            for k in range(n):
+                val_2 = T.buffer_decl((stride_2 * m,), &quot;int32&quot;, data=val_1.data, type=&quot;auto&quot;)
+                idx_2 = T.buffer_decl((stride * m,), &quot;int32&quot;, data=idx_1.data, type=&quot;auto&quot;)
+                T_4[i * stride_4] = T.if_then_else(val_2[i * stride_2 + k * stride_3] &lt;= T_5[i * stride_5], T_4[i * stride_4], idx_2[i * stride + k * stride_1])
+                T_5[i * stride_5] = T.if_then_else(val_2[i * stride_2 + k * stride_3] &lt;= T_5[i * stride_5], T_5[i * stride_5], val_2[i * stride_2 + k * stride_3])
 </pre></div>
 </div>
 <div class="admonition note">
@@ -506,24 +529,35 @@ in terms of operation.</p>
 <span class="nb">print</span><span class="p">(</span><a href="../../reference/api/python/driver.html#tvm.lower" title="tvm.lower" class="sphx-glr-backref-module-tvm sphx-glr-backref-type-py-function"><span class="n">tvm</span><span class="o">.</span><span class="n">lower</span></a><span class="p">(</span><a href="../../reference/api/python/te.html#tvm.te.Schedule" title="tvm.te.Schedule" class="sphx-glr-backref-module-tvm-te sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">s</span></a><span class="p">,</span> <span class="p">[</span><a href="../../reference/api/python/te.html#tvm.te.Tensor" title="tvm.te.Tensor" class="sphx-glr-backref-module-tvm-te sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">A0</span></a><span class="p">,</span> <a href="../../reference/api/python/te.html#tvm.te.Tensor" title="tvm.te.Tensor" class="sphx-glr-backref-module-tvm-te sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">A1</span></a><span class="p">,</span> <a href="../../reference/api/python/te.html#tvm.te.Tensor" title="tvm.te.Tensor" class="sphx-glr-backref-module-tvm-te sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">C</span></a><span class="p">],</span> <span class="n">simple_mode</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span>
 </pre></div>
 </div>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>@main = primfn(A0_1: handle, A1_1: handle, C_1: handle) -&gt; ()
-  attr = {&quot;from_legacy_te_schedule&quot;: True, &quot;global_symbol&quot;: &quot;main&quot;, &quot;tir.noalias&quot;: True}
-  buffers = {A0: Buffer(A0_2: Pointer(float32), float32, [m: int32, n: int32], [stride: int32, stride_1: int32], type=&quot;auto&quot;),
-             A1: Buffer(A1_2: Pointer(float32), float32, [m, n], [stride_2: int32, stride_3: int32], type=&quot;auto&quot;),
-             C: Buffer(C_2: Pointer(float32), float32, [m, n], [stride_4: int32, stride_5: int32], type=&quot;auto&quot;)}
-  buffer_map = {A0_1: A0, A1_1: A1, C_1: C} {
-  allocate(B.v0: Pointer(global float32), float32, [n]), storage_scope = global;
-  allocate(B.v1: Pointer(global float32), float32, [n]), storage_scope = global;
-  for (i: int32, 0, m) {
-    for (j: int32, 0, n) {
-      B.v0_1: Buffer(B.v0, float32, [n], [])[j] = (A0_3: Buffer(A0_2, float32, [(stride*m)], [], type=&quot;auto&quot;)[((i*stride) + (j*stride_1))] + 2f32)
-      B.v1_1: Buffer(B.v1, float32, [n], [])[j] = (A0_3[((i*stride) + (j*stride_1))]*3f32)
-    }
-    for (j_1: int32, 0, n) {
-      C_3: Buffer(C_2, float32, [(stride_4*m)], [], type=&quot;auto&quot;)[((i*stride_4) + (j_1*stride_5))] = (A1_3: Buffer(A1_2, float32, [(stride_2*m)], [], type=&quot;auto&quot;)[((i*stride_2) + (j_1*stride_3))] + B.v0_1[j_1])
-    }
-  }
-}
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>@I.ir_module
+class Module:
+    @T.prim_func
+    def main(A0: T.handle, A1: T.handle, C: T.handle):
+        T.func_attr({&quot;from_legacy_te_schedule&quot;: True, &quot;global_symbol&quot;: &quot;main&quot;, &quot;tir.noalias&quot;: True})
+        m = T.var(&quot;int32&quot;)
+        n = T.var(&quot;int32&quot;)
+        stride = T.var(&quot;int32&quot;)
+        stride_1 = T.var(&quot;int32&quot;)
+        A0_1 = T.match_buffer(A0, (m, n), strides=(stride, stride_1), type=&quot;auto&quot;)
+        stride_2 = T.var(&quot;int32&quot;)
+        stride_3 = T.var(&quot;int32&quot;)
+        A1_1 = T.match_buffer(A1, (m, n), strides=(stride_2, stride_3), type=&quot;auto&quot;)
+        stride_4 = T.var(&quot;int32&quot;)
+        stride_5 = T.var(&quot;int32&quot;)
+        C_1 = T.match_buffer(C, (m, n), strides=(stride_4, stride_5), type=&quot;auto&quot;)
+        B_v0 = T.allocate([n], &quot;float32&quot;, &quot;global&quot;)
+        B_v1 = T.allocate([n], &quot;float32&quot;, &quot;global&quot;)
+        for i in range(m):
+            B_v0_1 = T.buffer_decl((n,), data=B_v0)
+            for j in range(n):
+                A0_2 = T.buffer_decl((stride * m,), data=A0_1.data, type=&quot;auto&quot;)
+                B_v0_1[j] = A0_2[i * stride + j * stride_1] + T.float32(2)
+                B_v1_1 = T.buffer_decl((n,), data=B_v1)
+                B_v1_1[j] = A0_2[i * stride + j * stride_1] * T.float32(3)
+            for j in range(n):
+                C_2 = T.buffer_decl((stride_4 * m,), data=C_1.data, type=&quot;auto&quot;)
+                A1_2 = T.buffer_decl((stride_2 * m,), data=A1_1.data, type=&quot;auto&quot;)
+                C_2[i * stride_4 + j * stride_5] = A1_2[i * stride_2 + j * stride_3] + B_v0_1[j]
 </pre></div>
 </div>
 </div>

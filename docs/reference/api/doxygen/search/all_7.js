@@ -285,7 +285,7 @@ var searchData=
   ['ftvmstrategy',['FTVMStrategy',['../namespacetvm_1_1relay.html#a2eb2ad4e7a83e0a28e2ad073d7bf9305',1,'tvm::relay']]],
   ['ftvmtargetparser',['FTVMTargetParser',['../namespacetvm.html#a069e7a9aa20098c3406c6fbcf29092b3',1,'tvm']]],
   ['ftvmtirtoruntime',['FTVMTIRToRuntime',['../namespacetvm.html#ade89c3d682d83c2e14ec9337084541e3',1,'tvm']]],
-  ['ftype',['FType',['../classtvm_1_1ReprPrinter.html#aee843a9a8b4885f5797843bed6467415',1,'tvm::ReprPrinter::FType()'],['../classtvm_1_1script_1_1ir__builder_1_1details_1_1Namer.html#a6d99df0b1482a3905c2fb00dcec37234',1,'tvm::script::ir_builder::details::Namer::FType()'],['../classtvm_1_1script_1_1printer_1_1IRDocsifier.html#a9cc512daa8deeb2970fd792cefc220fc',1,'tvm::script::printer::IRDocsifier::FType()']]],
+  ['ftype',['FType',['../classtvm_1_1ReprPrinter.html#aee843a9a8b4885f5797843bed6467415',1,'tvm::ReprPrinter::FType()'],['../classtvm_1_1ReprLegacyPrinter.html#a335493fde819a84bcae40888604e66f2',1,'tvm::ReprLegacyPrinter::FType()'],['../classtvm_1_1script_1_1ir__builder_1_1details_1_1Namer.html#a6d99df0b1482a3905c2fb00dcec37234',1,'tvm::script::ir_builder::details::Namer::FType()'],['../classtvm_1_1script_1_1printer_1_1IRDocsifier.html#a9cc512daa8deeb2970fd792cefc220fc',1,'tvm::script::printer::IRDocsifier::FType()']]],
   ['full',['full',['../namespacetvm_1_1topi.html#a5c22ce14da6f5589de129861bb06da78',1,'tvm::topi']]],
   ['full_5flike',['full_like',['../namespacetvm_1_1topi.html#aec68ce461f0a1965c27912b9ddb90aa2',1,'tvm::topi']]],
   ['fullregion',['FullRegion',['../classtvm_1_1tir_1_1BufferRegion.html#a0c9f939c7652464107aeb7e0c613ee99',1,'tvm::tir::BufferRegion']]],

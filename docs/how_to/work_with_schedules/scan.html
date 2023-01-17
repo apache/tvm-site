@@ -437,25 +437,33 @@ To split on the time iteration, user can schedule on scan_op.scan_axis instead.<
 <span class="nb">print</span><span class="p">(</span><a href="../../reference/api/python/driver.html#tvm.lower" title="tvm.lower" class="sphx-glr-backref-module-tvm sphx-glr-backref-type-py-function"><span class="n">tvm</span><span class="o">.</span><span class="n">lower</span></a><span class="p">(</span><a href="../../reference/api/python/te.html#tvm.te.Schedule" title="tvm.te.Schedule" class="sphx-glr-backref-module-tvm-te sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">s</span></a><span class="p">,</span> <span class="p">[</span><a href="../../reference/api/python/te.html#tvm.te.Tensor" title="tvm.te.Tensor" class="sphx-glr-backref-module-tvm-te sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">X</span></a><span class="p">,</span> <a href="../../reference/api/python/te.html#tvm.te.Tensor" title="tvm.te.Tensor" class="sphx-glr-backref-module-tvm-te sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">s_scan</span></a><span class="p">],</span> <span class="n">simple_mode</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span>
 </pre></div>
 </div>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>@main = primfn(X_1: handle, scan_1: handle) -&gt; ()
-  attr = {&quot;from_legacy_te_schedule&quot;: True, &quot;global_symbol&quot;: &quot;main&quot;, &quot;tir.noalias&quot;: True}
-  buffers = {X: Buffer(X_2: Pointer(float32), float32, [m: int32, n: int32], [stride: int32, stride_1: int32], type=&quot;auto&quot;),
-             scan: Buffer(scan_2: Pointer(float32), float32, [m, n], [stride_2: int32, stride_3: int32], type=&quot;auto&quot;)}
-  buffer_map = {X_1: X, scan_1: scan} {
-  attr [IterVar(blockIdx.x: int32, (nullptr), &quot;ThreadIndex&quot;, &quot;blockIdx.x&quot;)] &quot;thread_extent&quot; = floordiv((n + 255), 256);
-  attr [IterVar(threadIdx.x: int32, (nullptr), &quot;ThreadIndex&quot;, &quot;threadIdx.x&quot;)] &quot;thread_extent&quot; = 256;
-  if @tir.likely((((blockIdx.x*256) + threadIdx.x) &lt; n), dtype=bool) {
-    scan_3: Buffer(scan_2, float32, [(stride_2*m)], [], type=&quot;auto&quot;)[(((blockIdx.x*256) + threadIdx.x)*stride_3)] = X_3: Buffer(X_2, float32, [(stride*m)], [], type=&quot;auto&quot;)[(((blockIdx.x*256) + threadIdx.x)*stride_1)]
-  }
-  for (scan.idx: int32, 0, (m - 1)) {
-    attr [IterVar(blockIdx.x, (nullptr), &quot;ThreadIndex&quot;, &quot;blockIdx.x&quot;)] &quot;thread_extent&quot; = floordiv((n + 255), 256);
-    attr [IterVar(threadIdx.x, (nullptr), &quot;ThreadIndex&quot;, &quot;threadIdx.x&quot;)] &quot;thread_extent&quot; = 256;
-    if @tir.likely((((blockIdx.x*256) + threadIdx.x) &lt; n), dtype=bool) {
-      let cse_var_1: int32 = (scan.idx + 1)
-      scan_3[((cse_var_1*stride_2) + (((blockIdx.x*256) + threadIdx.x)*stride_3))] = (scan_3[((scan.idx*stride_2) + (((blockIdx.x*256) + threadIdx.x)*stride_3))] + X_3[((cse_var_1*stride) + (((blockIdx.x*256) + threadIdx.x)*stride_1))])
-    }
-  }
-}
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>@I.ir_module
+class Module:
+    @T.prim_func
+    def main(X: T.handle, scan: T.handle):
+        T.func_attr({&quot;from_legacy_te_schedule&quot;: True, &quot;global_symbol&quot;: &quot;main&quot;, &quot;tir.noalias&quot;: True})
+        m = T.var(&quot;int32&quot;)
+        n = T.var(&quot;int32&quot;)
+        stride = T.var(&quot;int32&quot;)
+        stride_1 = T.var(&quot;int32&quot;)
+        X_1 = T.match_buffer(X, (m, n), strides=(stride, stride_1), type=&quot;auto&quot;)
+        stride_2 = T.var(&quot;int32&quot;)
+        stride_3 = T.var(&quot;int32&quot;)
+        scan_1 = T.match_buffer(scan, (m, n), strides=(stride_2, stride_3), type=&quot;auto&quot;)
+        blockIdx_x = T.env_thread(&quot;blockIdx.x&quot;)
+        threadIdx_x = T.env_thread(&quot;threadIdx.x&quot;)
+        scan_2 = T.buffer_decl((stride_2 * m,), data=scan_1.data, type=&quot;auto&quot;)
+        X_2 = T.buffer_decl((stride * m,), data=X_1.data, type=&quot;auto&quot;)
+        with T.launch_thread(blockIdx_x, (n + 255) // 256):
+            T.launch_thread(threadIdx_x, 256)
+            if T.likely(blockIdx_x * 256 + threadIdx_x &lt; n):
+                scan_2[(blockIdx_x * 256 + threadIdx_x) * stride_3] = X_2[(blockIdx_x * 256 + threadIdx_x) * stride_1]
+        for scan_idx in range(m - 1):
+            T.launch_thread(blockIdx_x, (n + 255) // 256)
+            T.launch_thread(threadIdx_x, 256)
+            if T.likely(blockIdx_x * 256 + threadIdx_x &lt; n):
+                cse_var_1: T.int32 = scan_idx + 1
+                scan_2[cse_var_1 * stride_2 + (blockIdx_x * 256 + threadIdx_x) * stride_3] = scan_2[scan_idx * stride_2 + (blockIdx_x * 256 + threadIdx_x) * stride_3] + X_2[cse_var_1 * stride + (blockIdx_x * 256 + threadIdx_x) * stride_1]
 </pre></div>
 </div>
 </div>
@@ -501,33 +509,34 @@ the body of scan to be compute_at locations outside the scan loop.</p>
 <span class="nb">print</span><span class="p">(</span><a href="../../reference/api/python/driver.html#tvm.lower" title="tvm.lower" class="sphx-glr-backref-module-tvm sphx-glr-backref-type-py-function"><span class="n">tvm</span><span class="o">.</span><span class="n">lower</span></a><span class="p">(</span><a href="../../reference/api/python/te.html#tvm.te.Schedule" title="tvm.te.Schedule" class="sphx-glr-backref-module-tvm-te sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">s</span></a><span class="p">,</span> <span class="p">[</span><a href="../../reference/api/python/te.html#tvm.te.Tensor" title="tvm.te.Tensor" class="sphx-glr-backref-module-tvm-te sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">X</span></a><span class="p">,</span> <a href="../../reference/api/python/te.html#tvm.te.Tensor" title="tvm.te.Tensor" class="sphx-glr-backref-module-tvm-te sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">s_scan</span></a><span class="p">],</span> <span class="n">simple_mode</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span>
 </pre></div>
 </div>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>@main = primfn(X_1: handle, scan_1: handle) -&gt; ()
-  attr = {&quot;from_legacy_te_schedule&quot;: True, &quot;global_symbol&quot;: &quot;main&quot;, &quot;tir.noalias&quot;: True}
-  buffers = {X: Buffer(X_2: Pointer(float32), float32, [m: int32, n: int32], [stride: int32, stride_1: int32], type=&quot;auto&quot;),
-             scan: Buffer(scan_2: Pointer(float32), float32, [m, n], [stride_2: int32, stride_3: int32], type=&quot;auto&quot;)}
-  buffer_map = {X_1: X, scan_1: scan} {
-  allocate(s1: Pointer(global float32), float32, [32]), storage_scope = global {
-    for (i: int32, 0, n) {
-      scan_3: Buffer(scan_2, float32, [(stride_2*m)], [], type=&quot;auto&quot;)[(i*stride_3)] = X_3: Buffer(X_2, float32, [(stride*m)], [], type=&quot;auto&quot;)[(i*stride_1)]
-    }
-    for (scan.idx: int32, 0, (m - 1)) {
-      for (i.outer: int32, 0, floordiv((n + 31), 32)) {
-        for (i_1: int32, 0, 32) {
-          if @tir.likely((((i.outer*32) + i_1) &lt; n), dtype=bool) {
-            s1_1: Buffer(s1, float32, [32], [])[i_1] = (scan_3[((scan.idx*stride_2) + (((i.outer*32) + i_1)*stride_3))]*2f32)
-          }
-        }
-        for (i.inner: int32, 0, 32) {
-          if @tir.likely((((i.outer*32) + i.inner) &lt; n), dtype=bool) {
-            let cse_var_2: int32 = (scan.idx + 1)
-            let cse_var_1: int32 = ((i.outer*32) + i.inner)
-            scan_3[((cse_var_2*stride_2) + (cse_var_1*stride_3))] = (s1_1[i.inner] + X_3[((cse_var_2*stride) + (cse_var_1*stride_1))])
-          }
-        }
-      }
-    }
-  }
-}
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>@I.ir_module
+class Module:
+    @T.prim_func
+    def main(X: T.handle, scan: T.handle):
+        T.func_attr({&quot;from_legacy_te_schedule&quot;: True, &quot;global_symbol&quot;: &quot;main&quot;, &quot;tir.noalias&quot;: True})
+        m = T.var(&quot;int32&quot;)
+        n = T.var(&quot;int32&quot;)
+        stride = T.var(&quot;int32&quot;)
+        stride_1 = T.var(&quot;int32&quot;)
+        X_1 = T.match_buffer(X, (m, n), strides=(stride, stride_1), type=&quot;auto&quot;)
+        stride_2 = T.var(&quot;int32&quot;)
+        stride_3 = T.var(&quot;int32&quot;)
+        scan_1 = T.match_buffer(scan, (m, n), strides=(stride_2, stride_3), type=&quot;auto&quot;)
+        s1 = T.allocate([32], &quot;float32&quot;, &quot;global&quot;)
+        scan_2 = T.buffer_decl((stride_2 * m,), data=scan_1.data, type=&quot;auto&quot;)
+        X_2 = T.buffer_decl((stride * m,), data=X_1.data, type=&quot;auto&quot;)
+        for i in range(n):
+            scan_2[i * stride_3] = X_2[i * stride_1]
+        for scan_idx, i_outer in T.grid(m - 1, (n + 31) // 32):
+            s1_1 = T.buffer_decl((32,), data=s1)
+            for i in range(32):
+                if T.likely(i_outer * 32 + i &lt; n):
+                    s1_1[i] = scan_2[scan_idx * stride_2 + (i_outer * 32 + i) * stride_3] * T.float32(2)
+            for i_inner in range(32):
+                if T.likely(i_outer * 32 + i_inner &lt; n):
+                    cse_var_2: T.int32 = scan_idx + 1
+                    cse_var_1: T.int32 = i_outer * 32 + i_inner
+                    scan_2[cse_var_2 * stride_2 + cse_var_1 * stride_3] = s1_1[i_inner] + X_2[cse_var_2 * stride + cse_var_1 * stride_1]
 </pre></div>
 </div>
 </div>
@@ -553,28 +562,36 @@ The following example demonstrates how we can build recurrence with two states.<
 <span class="nb">print</span><span class="p">(</span><a href="../../reference/api/python/driver.html#tvm.lower" title="tvm.lower" class="sphx-glr-backref-module-tvm sphx-glr-backref-type-py-function"><span class="n">tvm</span><span class="o">.</span><span class="n">lower</span></a><span class="p">(</span><a href="../../reference/api/python/te.html#tvm.te.Schedule" title="tvm.te.Schedule" class="sphx-glr-backref-module-tvm-te sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">s</span></a><span class="p">,</span> <span class="p">[</span><a href="../../reference/api/python/te.html#tvm.te.Tensor" title="tvm.te.Tensor" class="sphx-glr-backref-module-tvm-te sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">X</span></a><span class="p">,</span> <a href="../../reference/api/python/te.html#tvm.te.Tensor" title="tvm.te.Tensor" class="sphx-glr-backref-module-tvm-te sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">s_scan1</span></a><span class="p">,</span> <a href="../../reference/api/python/te.html#tvm.te.Tensor" title="tvm.te.Tensor" class="sphx-glr-backref-module-tvm-te sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">s_scan2</span></a><span class="p">],</span> <span class="n">simple_mode</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span>
 </pre></div>
 </div>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>@main = primfn(X_1: handle, scan_2: handle, scan_3: handle) -&gt; ()
-  attr = {&quot;from_legacy_te_schedule&quot;: True, &quot;global_symbol&quot;: &quot;main&quot;, &quot;tir.noalias&quot;: True}
-  buffers = {X: Buffer(X_2: Pointer(float32), float32, [m: int32, n: int32], [stride: int32, stride_1: int32], type=&quot;auto&quot;),
-             scan: Buffer(scan_4: Pointer(float32), float32, [m, n], [stride_2: int32, stride_3: int32], type=&quot;auto&quot;),
-             scan_1: Buffer(scan_5: Pointer(float32), float32, [m, l: int32], [stride_4: int32, stride_5: int32], type=&quot;auto&quot;)}
-  buffer_map = {X_1: X, scan_2: scan, scan_3: scan_1} {
-  for (i: int32, 0, n) {
-    scan_6: Buffer(scan_4, float32, [(stride_2*m)], [], type=&quot;auto&quot;)[(i*stride_3)] = X_3: Buffer(X_2, float32, [(stride*m)], [], type=&quot;auto&quot;)[(i*stride_1)]
-  }
-  for (i_1: int32, 0, l) {
-    scan_7: Buffer(scan_5, float32, [(stride_4*m)], [], type=&quot;auto&quot;)[(i_1*stride_5)] = 0f32
-  }
-  for (scan.idx: int32, 0, (m - 1)) {
-    for (i_2: int32, 0, n) {
-      let cse_var_1: int32 = (scan.idx + 1)
-      scan_6[((cse_var_1*stride_2) + (i_2*stride_3))] = (scan_6[((scan.idx*stride_2) + (i_2*stride_3))] + X_3[((cse_var_1*stride) + (i_2*stride_1))])
-    }
-    for (i_3: int32, 0, l) {
-      scan_7[(((scan.idx + 1)*stride_4) + (i_3*stride_5))] = (scan_7[((scan.idx*stride_4) + (i_3*stride_5))] + scan_6[(scan.idx*stride_2)])
-    }
-  }
-}
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>@I.ir_module
+class Module:
+    @T.prim_func
+    def main(X: T.handle, scan: T.handle, scan_1: T.handle):
+        T.func_attr({&quot;from_legacy_te_schedule&quot;: True, &quot;global_symbol&quot;: &quot;main&quot;, &quot;tir.noalias&quot;: True})
+        m = T.var(&quot;int32&quot;)
+        n = T.var(&quot;int32&quot;)
+        stride = T.var(&quot;int32&quot;)
+        stride_1 = T.var(&quot;int32&quot;)
+        X_1 = T.match_buffer(X, (m, n), strides=(stride, stride_1), type=&quot;auto&quot;)
+        stride_2 = T.var(&quot;int32&quot;)
+        stride_3 = T.var(&quot;int32&quot;)
+        scan_2 = T.match_buffer(scan, (m, n), strides=(stride_2, stride_3), type=&quot;auto&quot;)
+        l = T.var(&quot;int32&quot;)
+        stride_4 = T.var(&quot;int32&quot;)
+        stride_5 = T.var(&quot;int32&quot;)
+        scan_3 = T.match_buffer(scan_1, (m, l), strides=(stride_4, stride_5), type=&quot;auto&quot;)
+        scan_4 = T.buffer_decl((stride_2 * m,), data=scan_2.data, type=&quot;auto&quot;)
+        X_2 = T.buffer_decl((stride * m,), data=X_1.data, type=&quot;auto&quot;)
+        for i in range(n):
+            scan_4[i * stride_3] = X_2[i * stride_1]
+        scan_5 = T.buffer_decl((stride_4 * m,), data=scan_3.data, type=&quot;auto&quot;)
+        for i in range(l):
+            scan_5[i * stride_5] = T.float32(0)
+        for scan_idx in range(m - 1):
+            for i in range(n):
+                cse_var_1: T.int32 = scan_idx + 1
+                scan_4[cse_var_1 * stride_2 + i * stride_3] = scan_4[scan_idx * stride_2 + i * stride_3] + X_2[cse_var_1 * stride + i * stride_1]
+            for i in range(l):
+                scan_5[(scan_idx + 1) * stride_4 + i * stride_5] = scan_5[scan_idx * stride_4 + i * stride_5] + scan_4[scan_idx * stride_2]
 </pre></div>
 </div>
 </div>
