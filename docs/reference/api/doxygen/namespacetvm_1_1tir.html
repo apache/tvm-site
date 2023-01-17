@@ -791,6 +791,7 @@ Functions</h2></td></tr>
 <tr class="memitem:abb777c4f4d61883c0cbdf9116458b70d"><td class="memTemplItemLeft" align="right" valign="top">std::unordered_map&lt; K, V &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacetvm_1_1tir.html#abb777c4f4d61883c0cbdf9116458b70d">as_unordered_map</a> (const <a class="el" href="classtvm_1_1runtime_1_1Map.html">Map</a>&lt; K, V &gt; &amp;dmap)</td></tr>
 <tr class="separator:abb777c4f4d61883c0cbdf9116458b70d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a69b6f1b0014dc6e7dd390cff746e9782"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classtvm_1_1tir_1_1PrimFunc.html">PrimFunc</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacetvm_1_1tir.html#a69b6f1b0014dc6e7dd390cff746e9782">Specialize</a> (<a class="el" href="classtvm_1_1tir_1_1PrimFunc.html">PrimFunc</a> func, const <a class="el" href="classtvm_1_1runtime_1_1Map.html">Map</a>&lt; <a class="el" href="classtvm_1_1tir_1_1Var.html">Var</a>, <a class="el" href="classtvm_1_1runtime_1_1ObjectRef.html">ObjectRef</a> &gt; &amp;param_map)</td></tr>
+<tr class="memdesc:a69b6f1b0014dc6e7dd390cff746e9782"><td class="mdescLeft">&#160;</td><td class="mdescRight">Specialize parameters of <a class="el" href="classtvm_1_1tir_1_1PrimFunc.html" title="Managed reference to PrimFuncNode. ">PrimFunc</a>.  <a href="#a69b6f1b0014dc6e7dd390cff746e9782">More...</a><br /></td></tr>
 <tr class="separator:a69b6f1b0014dc6e7dd390cff746e9782"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a48cd6ae7623f42cddbb05cc008c33711"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacetvm_1_1tir.html#a48cd6ae7623f42cddbb05cc008c33711">IsPointerType</a> (const <a class="el" href="classtvm_1_1Type.html">Type</a> &amp;type, const <a class="el" href="namespacetvm.html#a41918af1a1dc386388639a9d3ad06c5d">DataType</a> &amp;element_type)</td></tr>
 <tr class="memdesc:a48cd6ae7623f42cddbb05cc008c33711"><td class="mdescLeft">&#160;</td><td class="mdescRight">Check if type is a pointer to a runtime element type.  <a href="#a48cd6ae7623f42cddbb05cc008c33711">More...</a><br /></td></tr>
@@ -3093,6 +3094,18 @@ template&lt;&gt; </div>
       </table>
 </div><div class="memdoc">
 
+<p>Specialize parameters of <a class="el" href="classtvm_1_1tir_1_1PrimFunc.html" title="Managed reference to PrimFuncNode. ">PrimFunc</a>. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">func</td><td>The <a class="el" href="classtvm_1_1tir_1_1PrimFunc.html" title="Managed reference to PrimFuncNode. ">PrimFunc</a> to be specialized. </td></tr>
+    <tr><td class="paramname">param_map</td><td>The mapping from function params to the instance. </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>The new function with parameter specialized. </dd></dl>
+<dl class="section note"><dt>Note</dt><dd>We can define a Meta TIR function with symbolic shape:</dd></dl>
+<div class="fragment"><div class="line">@T.prim_func</div><div class="line"><span class="keyword">def </span>mem_copy(a: T.handle, b: T.handle, m: T.int32, n: T.int32) -&gt; <span class="keywordtype">None</span>:</div><div class="line">    A = T.match_buffer(a, (m, n), <span class="stringliteral">&quot;float32&quot;</span>)</div><div class="line">    B = T.match_buffer(b, (m, n), <span class="stringliteral">&quot;float32&quot;</span>)</div><div class="line">    <span class="keywordflow">for</span> i, j <span class="keywordflow">in</span> T.grid(m, n):</div><div class="line">        with T.block():</div><div class="line">            vi, vj = T.axis.remap(<span class="stringliteral">&quot;SS&quot;</span>, [i, j])</div><div class="line">            B[vi, vj] = A[vi, vj]</div></div><!-- fragment --><p>Then we can make it specialized with given shapes or buffers.</p>
+<div class="fragment"><div class="line">a, _, m, n = mem_copy.params</div><div class="line">func = mem_copy.specialize({a: tir.decl_buffer((16, 16))})</div><div class="line"><span class="comment"># or</span></div><div class="line">func = mem_copy.specialize({n: 16, m: 16})</div></div><!-- fragment --><div class="fragment"><div class="line">@T.prim_func</div><div class="line"><span class="keyword">def </span>mem_copy_16_16(a: T.handle, b: T.handle) -&gt; <span class="keywordtype">None</span>:</div><div class="line">    A = T.match_buffer(a, (16, 16), <span class="stringliteral">&quot;float32&quot;</span>)</div><div class="line">    B = T.match_buffer(b, (16, 16), <span class="stringliteral">&quot;float32&quot;</span>)</div><div class="line">    <span class="keywordflow">for</span> i, j <span class="keywordflow">in</span> T.grid(16, 16):</div><div class="line">        with T.block():</div><div class="line">            vi, vj = T.axis.remap(<span class="stringliteral">&quot;SS&quot;</span>, [i, j])</div><div class="line">            B[vi, vj] = A[vi, vj]</div></div><!-- fragment --> 
 </div>
 </div>
 <a id="a34ae87f765e4d8230e3572428cdbe3e1"></a>
