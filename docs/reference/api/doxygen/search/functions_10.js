@@ -73,7 +73,7 @@ var searchData=
   ['preloadmeasuredstates',['PreloadMeasuredStates',['../classtvm_1_1auto__scheduler_1_1PreloadMeasuredStates.html#a67daf1ccd25a208fdf8d001f9a31d86b',1,'tvm::auto_scheduler::PreloadMeasuredStates::PreloadMeasuredStates()'],['../classtvm_1_1auto__scheduler_1_1SearchPolicyNode.html#abc2529d0b1cd485876e48037dd19dde1',1,'tvm::auto_scheduler::SearchPolicyNode::PreloadMeasuredStates()']]],
   ['prelu',['prelu',['../namespacetvm_1_1topi.html#a315c34bbe2bf1be4c778acae08c906fc',1,'tvm::topi']]],
   ['preordervisit',['PreOrderVisit',['../namespacetvm_1_1tir.html#a982b5f74aafaa506a146ec8bed07b3f5',1,'tvm::tir']]],
-  ['prettyprint',['PrettyPrint',['../namespacetvm.html#a60c4359254ce7ac364bb97a8bfc13803',1,'tvm']]],
+  ['prettyprint',['PrettyPrint',['../namespacetvm_1_1relay.html#a3b98dc5e89534ce68b4be3b9c7ceafaf',1,'tvm::relay']]],
   ['pretuning',['PreTuning',['../classtvm_1_1meta__schedule_1_1SearchStrategyNode.html#a39e0b263ee316310a3fcd85d3532763b',1,'tvm::meta_schedule::SearchStrategyNode::PreTuning()'],['../classtvm_1_1meta__schedule_1_1PySearchStrategyNode.html#a148e4d901f8e362307abfe03fb659a57',1,'tvm::meta_schedule::PySearchStrategyNode::PreTuning()']]],
   ['primexpr',['PrimExpr',['../classtvm_1_1PrimExpr.html#a7f0ca30e951608a0b36a77a66d4d19e0',1,'tvm::PrimExpr::PrimExpr(int32_t value)'],['../classtvm_1_1PrimExpr.html#a756d3f8b17b019560946524951ae6118',1,'tvm::PrimExpr::PrimExpr(float value)']]],
   ['primfunc',['PrimFunc',['../classtvm_1_1tir_1_1PrimFunc.html#ae45eed6cc7af5f9806be4709e87d1420',1,'tvm::tir::PrimFunc::PrimFunc()'],['../namespacetvm_1_1script_1_1ir__builder_1_1tir.html#a713fe9c5ed9b44e16b7e5f9a23622543',1,'tvm::script::ir_builder::tir::PrimFunc()']]],
