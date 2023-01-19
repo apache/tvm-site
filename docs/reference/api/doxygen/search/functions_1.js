@@ -53,7 +53,7 @@ var searchData=
   ['and',['And',['../classtvm_1_1tir_1_1And.html#a9be7f24a210bc595b34a999bc071b6d9',1,'tvm::tir::And']]],
   ['annotate',['Annotate',['../classtvm_1_1tir_1_1ScheduleNode.html#aa57e90d92de36571a7d3b1c3677e6367',1,'tvm::tir::ScheduleNode::Annotate(const LoopRV &amp;loop_rv, const String &amp;ann_key, const ObjectRef &amp;ann_val)=0'],['../classtvm_1_1tir_1_1ScheduleNode.html#a7eafc8f0a4962114332a6a34289ff80e',1,'tvm::tir::ScheduleNode::Annotate(const BlockRV &amp;block_rv, const String &amp;ann_key, const ObjectRef &amp;ann_val)=0']]],
   ['annotateentryfunc',['AnnotateEntryFunc',['../namespacetvm_1_1tir_1_1transform.html#a776c657ccb30ff327c5dd0d6940a836a',1,'tvm::tir::transform']]],
-  ['annotatememoryscope',['AnnotateMemoryScope',['../namespacetvm_1_1relay_1_1transform.html#a3d884f0646c7737a515c0430fb9674fa',1,'tvm::relay::transform']]],
+  ['annotatememoryscope',['AnnotateMemoryScope',['../namespacetvm_1_1relay_1_1transform.html#a971fc90bf1386bbbfc5466b4618746cb',1,'tvm::relay::transform']]],
   ['annotatespans',['AnnotateSpans',['../namespacetvm_1_1parser.html#aae21e0014c5fba6a9797a6a016979ec7',1,'tvm::parser']]],
   ['annotateusedmemory',['AnnotateUsedMemory',['../namespacetvm_1_1relay_1_1transform.html#a6adb5ecf3c0fbe3c91d37e90795d91de',1,'tvm::relay::transform']]],
   ['annotationstep',['AnnotationStep',['../classtvm_1_1auto__scheduler_1_1AnnotationStep.html#af7ca625164b2721bb6fdd9db78f5a9c7',1,'tvm::auto_scheduler::AnnotationStep::AnnotationStep(int stage_id, int iter_id, IteratorAnnotation ann)'],['../classtvm_1_1auto__scheduler_1_1AnnotationStep.html#a1a6366d63eb64424a1995dc7b8f40a3b',1,'tvm::auto_scheduler::AnnotationStep::AnnotationStep(dmlc::JSONReader *reader)']]],
