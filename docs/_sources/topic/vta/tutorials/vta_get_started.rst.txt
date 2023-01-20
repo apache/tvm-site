@@ -355,31 +355,28 @@ After we construct the schedule, by default the schedule computes
     @I.ir_module
     class Module:
         @T.prim_func
-        def main(A: T.handle, B: T.handle, C: T.handle):
+        def main(A: T.Buffer((1, 64, 1, 16), "int32"), B: T.Buffer((1, 64, 1, 16), "int32"), C: T.Buffer((1, 64, 1, 16), "int8")):
             T.func_attr({"from_legacy_te_schedule": True, "global_symbol": "main", "tir.noalias": True})
-            A_1 = T.match_buffer(A, (1, 64, 1, 16), "int32")
-            B_1 = T.match_buffer(B, (1, 64, 1, 16), "int32")
-            C_1 = T.match_buffer(C, (1, 64, 1, 16), "int8")
             A_buf = T.allocate([1024], "int32", "global")
             B_buf = T.allocate([1024], "int32", "global")
             A_buf_1 = T.buffer_decl((1024,), "int32", data=A_buf)
             for i1, i3 in T.grid(64, 16):
                 cse_var_1: T.int32 = i1 * 16 + i3
-                A_2 = T.buffer_decl((1024,), "int32", data=A_1.data)
-                A_buf_1[cse_var_1] = A_2[cse_var_1]
+                A_1 = T.buffer_decl((1024,), "int32", data=A.data)
+                A_buf_1[cse_var_1] = A_1[cse_var_1]
             B_buf_1 = T.buffer_decl((1024,), "int32", data=B_buf)
             for i1, i3 in T.grid(64, 16):
                 cse_var_2: T.int32 = i1 * 16 + i3
-                B_2 = T.buffer_decl((1024,), "int32", data=B_1.data)
-                B_buf_1[cse_var_2] = B_2[cse_var_2]
+                B_1 = T.buffer_decl((1024,), "int32", data=B.data)
+                B_buf_1[cse_var_2] = B_1[cse_var_2]
             A_buf_2 = T.buffer_decl((1024,), "int32", data=A_buf)
             for i1, i3 in T.grid(64, 16):
                 cse_var_3: T.int32 = i1 * 16 + i3
                 A_buf_2[cse_var_3] = A_buf_1[cse_var_3] + B_buf_1[cse_var_3]
             for i1, i3 in T.grid(64, 16):
                 cse_var_4: T.int32 = i1 * 16 + i3
-                C_2 = T.buffer_decl((1024,), "int8", data=C_1.data)
-                C_2[cse_var_4] = T.Cast("int8", A_buf_2[cse_var_4])
+                C_1 = T.buffer_decl((1024,), "int8", data=C.data)
+                C_1[cse_var_4] = T.Cast("int8", A_buf_2[cse_var_4])
 
 
 
@@ -490,15 +487,12 @@ with an :code:`env.alu` pragma.
     @I.ir_module
     class Module:
         @T.prim_func
-        def main(A: T.handle, B: T.handle, C: T.handle):
+        def main(A: T.Buffer((1, 64, 1, 16), "int32"), B: T.Buffer((1, 64, 1, 16), "int32"), C: T.Buffer((1, 64, 1, 16), "int8")):
             T.func_attr({"from_legacy_te_schedule": True, "global_symbol": "main", "tir.noalias": True})
-            A_1 = T.match_buffer(A, (1, 64, 1, 16), "int32")
-            B_1 = T.match_buffer(B, (1, 64, 1, 16), "int32")
-            C_1 = T.match_buffer(C, (1, 64, 1, 16), "int8")
             vta = T.var("int32")
             with T.attr(T.iter_var(vta, None, "ThreadIndex", "vta"), "coproc_scope", 2):
-                T.call_extern("int32", "VTALoadBuffer2D", T.tvm_thread_context(T.tir.vta.command_handle()), A_1.data, 0, 64, 1, 64, 0, 0, 0, 0, 0, 3)
-                T.call_extern("int32", "VTALoadBuffer2D", T.tvm_thread_context(T.tir.vta.command_handle()), B_1.data, 0, 64, 1, 64, 0, 0, 0, 0, 64, 3)
+                T.call_extern("int32", "VTALoadBuffer2D", T.tvm_thread_context(T.tir.vta.command_handle()), A.data, 0, 64, 1, 64, 0, 0, 0, 0, 0, 3)
+                T.call_extern("int32", "VTALoadBuffer2D", T.tvm_thread_context(T.tir.vta.command_handle()), B.data, 0, 64, 1, 64, 0, 0, 0, 0, 64, 3)
                 with T.attr(T.iter_var(vta, None, "ThreadIndex", "vta"), "coproc_uop_scope", "VTAPushALUOp"):
                     T.call_extern("int32", "VTAUopLoopBegin", 64, 1, 1, 0)
                     T.tir.vta.uop_push(1, 0, 0, 64, 0, 2, 0, 0)
@@ -506,7 +500,7 @@ with an :code:`env.alu` pragma.
                 T.tir.vta.coproc_dep_push(2, 3)
             with T.attr(T.iter_var(vta, None, "ThreadIndex", "vta"), "coproc_scope", 3):
                 T.tir.vta.coproc_dep_pop(2, 3)
-                T.call_extern("int32", "VTAStoreBuffer2D", T.tvm_thread_context(T.tir.vta.command_handle()), 0, 4, C_1.data, 0, 64, 1, 64)
+                T.call_extern("int32", "VTAStoreBuffer2D", T.tvm_thread_context(T.tir.vta.command_handle()), 0, 4, C.data, 0, 64, 1, 64)
             T.tir.vta.coproc_sync()
 
 

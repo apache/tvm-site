@@ -349,24 +349,21 @@ After we construct the schedule, by default the schedule computes
     @I.ir_module
     class Module:
         @T.prim_func
-        def main(A: T.handle, B: T.handle, C: T.handle):
+        def main(A: T.Buffer((1, 16, 1, 16), "int8"), B: T.Buffer((16, 16, 16, 16), "int8"), C: T.Buffer((1, 16, 1, 16), "int8")):
             T.func_attr({"from_legacy_te_schedule": True, "global_symbol": "main", "tir.noalias": True})
-            A_1 = T.match_buffer(A, (1, 16, 1, 16), "int8")
-            B_1 = T.match_buffer(B, (16, 16, 16, 16), "int8")
-            C_1 = T.match_buffer(C, (1, 16, 1, 16), "int8")
             A_buf = T.allocate([256], "int8", "global")
             B_buf = T.allocate([65536], "int8", "global")
             C_buf = T.allocate([256], "int32", "global")
             A_buf_1 = T.buffer_decl((256,), "int8", data=A_buf)
             for i1, i3 in T.grid(16, 16):
                 cse_var_1: T.int32 = i1 * 16 + i3
-                A_2 = T.buffer_decl((256,), "int8", data=A_1.data)
-                A_buf_1[cse_var_1] = A_2[cse_var_1]
+                A_1 = T.buffer_decl((256,), "int8", data=A.data)
+                A_buf_1[cse_var_1] = A_1[cse_var_1]
             B_buf_1 = T.buffer_decl((65536,), "int8", data=B_buf)
             for i0, i1, i2, i3 in T.grid(16, 16, 16, 16):
                 cse_var_2: T.int32 = i0 * 4096 + i1 * 256 + i2 * 16 + i3
-                B_2 = T.buffer_decl((65536,), "int8", data=B_1.data)
-                B_buf_1[cse_var_2] = B_2[cse_var_2]
+                B_1 = T.buffer_decl((65536,), "int8", data=B.data)
+                B_buf_1[cse_var_2] = B_1[cse_var_2]
             C_buf_1 = T.buffer_decl((256,), "int32", data=C_buf)
             for co, ci in T.grid(16, 16):
                 C_buf_1[co * 16 + ci] = 0
@@ -375,8 +372,8 @@ After we construct the schedule, by default the schedule computes
                     C_buf_1[cse_var_3] = C_buf_1[cse_var_3] + T.Cast("int32", A_buf_1[ko * 16 + ki]) * T.Cast("int32", B_buf_1[co * 4096 + ko * 256 + ci * 16 + ki])
             for i1, i3 in T.grid(16, 16):
                 cse_var_4: T.int32 = i1 * 16 + i3
-                C_2 = T.buffer_decl((256,), "int8", data=C_1.data)
-                C_2[cse_var_4] = T.Cast("int8", C_buf_1[cse_var_4])
+                C_1 = T.buffer_decl((256,), "int8", data=C.data)
+                C_1[cse_var_4] = T.Cast("int8", C_buf_1[cse_var_4])
 
 
 
@@ -497,11 +494,8 @@ moving the copy operations into the matrix multiplication loop.
     @I.ir_module
     class Module:
         @T.prim_func
-        def main(A: T.handle, B: T.handle, C: T.handle):
+        def main(A: T.Buffer((1, 16, 1, 16), "int8"), B: T.Buffer((16, 16, 16, 16), "int8"), C: T.Buffer((1, 16, 1, 16), "int8")):
             T.func_attr({"from_legacy_te_schedule": True, "global_symbol": "main", "tir.noalias": True})
-            A_1 = T.match_buffer(A, (1, 16, 1, 16), "int8")
-            B_1 = T.match_buffer(B, (16, 16, 16, 16), "int8")
-            C_1 = T.match_buffer(C, (1, 16, 1, 16), "int8")
             C_buf = T.allocate([256], "int32", "local.acc_buffer")
             A_buf = T.allocate([16], "int8", "local.inp_buffer")
             B_buf = T.allocate([16], "int8", "local.wgt_buffer")
@@ -513,14 +507,14 @@ moving the copy operations into the matrix multiplication loop.
                     A_buf_1 = T.buffer_decl((16,), "int8", data=A_buf, scope="local.inp_buffer", align=16)
                     with T.attr(T.iter_var(i0, None, "DataPar", ""), "pragma_dma_copy", 1):
                         for i3 in range(16):
-                            A_2 = T.buffer_decl((256,), "int8", data=A_1.data)
-                            A_buf_1[i3] = A_2[ko * 16 + i3]
+                            A_1 = T.buffer_decl((256,), "int8", data=A.data)
+                            A_buf_1[i3] = A_1[ko * 16 + i3]
                     i0_1 = T.var("int32")
                     B_buf_1 = T.buffer_decl((16,), "int8", data=B_buf, scope="local.wgt_buffer", align=256)
                     with T.attr(T.iter_var(i0_1, None, "DataPar", ""), "pragma_dma_copy", 1):
                         for i3 in range(16):
-                            B_2 = T.buffer_decl((65536,), "int8", data=B_1.data)
-                            B_buf_1[i3] = B_2[co * 4096 + ko * 256 + ci * 16 + i3]
+                            B_1 = T.buffer_decl((65536,), "int8", data=B.data)
+                            B_buf_1[i3] = B_1[co * 4096 + ko * 256 + ci * 16 + i3]
                     for ki in range(16):
                         cse_var_1: T.int32 = co * 16 + ci
                         C_buf_1[cse_var_1] = C_buf_1[cse_var_1] + T.Cast("int32", A_buf_1[ki]) * T.Cast("int32", B_buf_1[ki])
@@ -528,8 +522,8 @@ moving the copy operations into the matrix multiplication loop.
             T.attr(T.iter_var(i0, None, "DataPar", ""), "pragma_dma_copy", 1)
             for i1, i3 in T.grid(16, 16):
                 cse_var_2: T.int32 = i1 * 16 + i3
-                C_2 = T.buffer_decl((256,), "int8", data=C_1.data)
-                C_2[cse_var_2] = T.Cast("int8", C_buf_1[cse_var_2])
+                C_1 = T.buffer_decl((256,), "int8", data=C.data)
+                C_1[cse_var_2] = T.Cast("int8", C_buf_1[cse_var_2])
 
 
 
@@ -580,11 +574,8 @@ by the VTA runtime JIT compiler.
     @I.ir_module
     class Module:
         @T.prim_func
-        def main(A: T.handle, B: T.handle, C: T.handle):
+        def main(A: T.Buffer((1, 16, 1, 16), "int8"), B: T.Buffer((16, 16, 16, 16), "int8"), C: T.Buffer((1, 16, 1, 16), "int8")):
             T.func_attr({"from_legacy_te_schedule": True, "global_symbol": "main", "tir.noalias": True})
-            A_1 = T.match_buffer(A, (1, 16, 1, 16), "int8")
-            B_1 = T.match_buffer(B, (16, 16, 16, 16), "int8")
-            C_1 = T.match_buffer(C, (1, 16, 1, 16), "int8")
             vta = T.var("int32")
             with T.attr(T.iter_var(vta, None, "ThreadIndex", "vta"), "coproc_scope", 2):
                 with T.attr(T.iter_var(vta, None, "ThreadIndex", "vta"), "coproc_uop_scope", "VTAPushGEMMOp"):
@@ -595,8 +586,8 @@ by the VTA runtime JIT compiler.
             for ko in range(16):
                 with T.attr(T.iter_var(vta, None, "ThreadIndex", "vta"), "coproc_scope", 1):
                     T.tir.vta.coproc_dep_pop(2, 1)
-                    T.call_extern("int32", "VTALoadBuffer2D", T.tvm_thread_context(T.tir.vta.command_handle()), A_1.data, ko, 1, 1, 1, 0, 0, 0, 0, 0, 2)
-                    T.call_extern("int32", "VTALoadBuffer2D", T.tvm_thread_context(T.tir.vta.command_handle()), B_1.data, ko, 1, 16, 16, 0, 0, 0, 0, 0, 1)
+                    T.call_extern("int32", "VTALoadBuffer2D", T.tvm_thread_context(T.tir.vta.command_handle()), A.data, ko, 1, 1, 1, 0, 0, 0, 0, 0, 2)
+                    T.call_extern("int32", "VTALoadBuffer2D", T.tvm_thread_context(T.tir.vta.command_handle()), B.data, ko, 1, 16, 16, 0, 0, 0, 0, 0, 1)
                     T.tir.vta.coproc_dep_push(1, 2)
                 T.attr(T.iter_var(vta, None, "ThreadIndex", "vta"), "coproc_scope", 2)
                 T.tir.vta.coproc_dep_pop(1, 2)
@@ -609,7 +600,7 @@ by the VTA runtime JIT compiler.
             T.tir.vta.coproc_dep_pop(2, 1)
             with T.attr(T.iter_var(vta, None, "ThreadIndex", "vta"), "coproc_scope", 3):
                 T.tir.vta.coproc_dep_pop(2, 3)
-                T.call_extern("int32", "VTAStoreBuffer2D", T.tvm_thread_context(T.tir.vta.command_handle()), 0, 4, C_1.data, 0, 16, 1, 16)
+                T.call_extern("int32", "VTAStoreBuffer2D", T.tvm_thread_context(T.tir.vta.command_handle()), 0, 4, C.data, 0, 16, 1, 16)
             T.tir.vta.coproc_sync()
 
 
