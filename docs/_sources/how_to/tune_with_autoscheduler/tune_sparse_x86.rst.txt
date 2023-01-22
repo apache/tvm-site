@@ -389,9 +389,9 @@ layout transformation, parallelization, vectorization, unrolling, and operator f
             for i0_outer_i1_outer_fused in T.parallel(16):
                 compute_1 = T.allocate([4096], "float32", "global")
                 compute_2 = T.buffer_decl((4096,), data=compute_1)
-                for i_outer_inner, nb_j_inner in T.grid(16, 2):
-                    for i_inner_init in range(8):
-                        cse_var_1: T.int32 = i_outer_inner * 256 + i_inner_init * 32 + nb_j_inner * 16
+                for i_outer_inner, nb_j_inner in T.grid(2, 2):
+                    for i_inner_init in range(64):
+                        cse_var_1: T.int32 = i_outer_inner * 2048 + i_inner_init * 32 + nb_j_inner * 16
                         compute_2[cse_var_1] = T.float32(0)
                         compute_2[cse_var_1 + 1] = T.float32(0)
                         compute_2[cse_var_1 + 2] = T.float32(0)
@@ -408,13 +408,13 @@ layout transformation, parallelization, vectorization, unrolling, and operator f
                         compute_2[cse_var_1 + 13] = T.float32(0)
                         compute_2[cse_var_1 + 14] = T.float32(0)
                         compute_2[cse_var_1 + 15] = T.float32(0)
-                    for elem_idx, i_inner in T.grid(T.let(cse_var_2, i0_outer_i1_outer_fused * 2 + nb_j_inner, placeholder_5[cse_var_2 + 1] - placeholder_5[cse_var_2]), 8):
+                    for elem_idx, i_inner in T.grid(T.let(cse_var_2, i0_outer_i1_outer_fused * 2 + nb_j_inner, placeholder_5[cse_var_2 + 1] - placeholder_5[cse_var_2]), 64):
                         cse_var_2 = T.var("int32")
                         placeholder_5 = T.buffer_decl((33,), "int32", data=placeholder_3.data)
                         cse_var_21: T.int32 = elem_idx * 16
                         cse_var_20: T.int32 = i0_outer_i1_outer_fused * 2 + nb_j_inner
-                        cse_var_19: T.int32 = i_outer_inner * 2048 + i_inner * 256
-                        cse_var_18: T.int32 = i_outer_inner * 256 + i_inner * 32 + nb_j_inner * 16
+                        cse_var_19: T.int32 = i_outer_inner * 16384 + i_inner * 256
+                        cse_var_18: T.int32 = i_outer_inner * 2048 + i_inner * 32 + nb_j_inner * 16
                         cse_var_17: T.int32 = cse_var_18 + 9
                         cse_var_16: T.int32 = cse_var_18 + 8
                         cse_var_15: T.int32 = cse_var_18 + 7
@@ -449,11 +449,11 @@ layout transformation, parallelization, vectorization, unrolling, and operator f
                         compute_2[cse_var_7] = compute_2[cse_var_7] + placeholder_6[placeholder_5[cse_var_20] * 16 + cse_var_21 + 13] * T.max(placeholder_7[cse_var_19 + placeholder_8[placeholder_5[cse_var_20] + elem_idx]], T.float32(0))
                         compute_2[cse_var_8] = compute_2[cse_var_8] + placeholder_6[placeholder_5[cse_var_20] * 16 + cse_var_21 + 14] * T.max(placeholder_7[cse_var_19 + placeholder_8[placeholder_5[cse_var_20] + elem_idx]], T.float32(0))
                         compute_2[cse_var_9] = compute_2[cse_var_9] + placeholder_6[placeholder_5[cse_var_20] * 16 + cse_var_21 + 15] * T.max(placeholder_7[cse_var_19 + placeholder_8[placeholder_5[cse_var_20] + elem_idx]], T.float32(0))
-                for i0_inner, i1_inner in T.grid(128, 32):
-                    cse_var_22: T.int32 = i0_inner * 512 + i0_outer_i1_outer_fused * 32 + i1_inner
+                for i0_inner in range(128):
+                    cse_var_22: T.int32 = i0_inner * 512 + i0_outer_i1_outer_fused * 32
                     compute_3 = T.buffer_decl((65536,), data=compute.data)
                     placeholder_5 = T.buffer_decl((65536,), data=placeholder_4.data)
-                    compute_3[cse_var_22] = T.max(compute_2[i0_inner * 32 + i1_inner] + placeholder_5[cse_var_22], T.float32(0))
+                    compute_3[cse_var_22:cse_var_22 + 32] = T.max(compute_2[i0_inner * 32:i0_inner * 32 + 32] + placeholder_5[cse_var_22:cse_var_22 + 32], T.Broadcast(T.float32(0), 32))
 
 
 
@@ -503,7 +503,7 @@ We build the binary and check its correctness and performance.
 
  .. code-block:: none
 
-    Execution time of this operator: 1.841 ms
+    Execution time of this operator: 1.858 ms
 
 
 
