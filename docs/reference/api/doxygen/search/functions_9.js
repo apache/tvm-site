@@ -57,7 +57,7 @@ var searchData=
   ['instrumententerpasscontext',['InstrumentEnterPassContext',['../classtvm_1_1transform_1_1PassContext.html#ab3c18519fc14cab0e9fa98311e6a361f',1,'tvm::transform::PassContext']]],
   ['instrumentexitpasscontext',['InstrumentExitPassContext',['../classtvm_1_1transform_1_1PassContext.html#ac1d55abd5c8b0e28c6f3c034a5f9989d',1,'tvm::transform::PassContext']]],
   ['instrumentprofileintrinsics',['InstrumentProfileIntrinsics',['../namespacetvm_1_1tir_1_1transform.html#a2ac039d4db9a6821d8a3e0b0191e7e20',1,'tvm::tir::transform']]],
-  ['int',['Int',['../classtvm_1_1runtime_1_1DataType.html#ab45f13dd70d982d9f977c79b6f7fac98',1,'tvm::runtime::DataType::Int()'],['../classtvm_1_1script_1_1printer_1_1LiteralDoc.html#aea849aacf9a86be23f9d3e51d7ed77b0',1,'tvm::script::printer::LiteralDoc::Int()']]],
+  ['int',['Int',['../classtvm_1_1runtime_1_1DataType.html#ab45f13dd70d982d9f977c79b6f7fac98',1,'tvm::runtime::DataType::Int()'],['../classtvm_1_1script_1_1printer_1_1LiteralDoc.html#a3b88804f3208f2a7abc8641ee978776e',1,'tvm::script::printer::LiteralDoc::Int()']]],
   ['int16',['Int16',['../namespacetvm_1_1script_1_1ir__builder_1_1tir.html#a71a8950ee36a0cc96b08f6a38a67beb8',1,'tvm::script::ir_builder::tir']]],
   ['int16x16',['Int16x16',['../namespacetvm_1_1script_1_1ir__builder_1_1tir.html#a384760861c5679c8f3228fb069c4525b',1,'tvm::script::ir_builder::tir']]],
   ['int16x32',['Int16x32',['../namespacetvm_1_1script_1_1ir__builder_1_1tir.html#a535df06d8e6eec52c711be076ca919da',1,'tvm::script::ir_builder::tir']]],

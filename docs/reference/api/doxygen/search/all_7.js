@@ -135,7 +135,7 @@ var searchData=
   ['flet',['fLet',['../namespacetvm_1_1relay.html#a926750aeda977340aa82bceac863fc9ea07ce432e7b4b4c044af03e4dbd210ba4',1,'tvm::relay']]],
   ['fletrec',['fLetRec',['../namespacetvm_1_1relay.html#a926750aeda977340aa82bceac863fc9eaff508e399703958af46f99ee8eb7d1a5',1,'tvm::relay']]],
   ['fload',['FLoad',['../classtvm_1_1meta__schedule_1_1PyCostModelNode.html#ada268142aad958ddd7f9e3e9c6644a49',1,'tvm::meta_schedule::PyCostModelNode']]],
-  ['float',['Float',['../classtvm_1_1runtime_1_1DataType.html#a237a714a6a16e14aa01fa4ac52426551',1,'tvm::runtime::DataType::Float()'],['../classtvm_1_1script_1_1printer_1_1LiteralDoc.html#aad7a2c38982b0a9d5f874eaf3e4676ba',1,'tvm::script::printer::LiteralDoc::Float()']]],
+  ['float',['Float',['../classtvm_1_1runtime_1_1DataType.html#a237a714a6a16e14aa01fa4ac52426551',1,'tvm::runtime::DataType::Float()'],['../classtvm_1_1script_1_1printer_1_1LiteralDoc.html#a1a90c18a43f22d5c2eefe5be0c48b91b',1,'tvm::script::printer::LiteralDoc::Float()']]],
   ['float16',['Float16',['../namespacetvm_1_1script_1_1ir__builder_1_1tir.html#aaf6b6dcbbd344633ac7549017151b1f4',1,'tvm::script::ir_builder::tir']]],
   ['float16x16',['Float16x16',['../namespacetvm_1_1script_1_1ir__builder_1_1tir.html#af233b18ee0522a900568b14b6f9ef8d6',1,'tvm::script::ir_builder::tir']]],
   ['float16x32',['Float16x32',['../namespacetvm_1_1script_1_1ir__builder_1_1tir.html#ad5311856f8b8b4df884170d8c4c513c8',1,'tvm::script::ir_builder::tir']]],
