@@ -39,7 +39,6 @@ var searchData=
   ['broadcast_5fto',['broadcast_to',['../namespacetvm_1_1topi.html#a545c1404478aba2e2a44c77438da9fd5',1,'tvm::topi']]],
   ['buffer',['Buffer',['../classtvm_1_1tir_1_1Buffer.html#a96bc724486ee74cf7e1379a257b48ab7',1,'tvm::tir::Buffer']]],
   ['bufferdecl',['BufferDecl',['../namespacetvm_1_1script_1_1ir__builder_1_1tir.html#a3a79fe9790be33b4a309756b29a6e7f8',1,'tvm::script::ir_builder::tir']]],
-  ['bufferdtype',['BufferDType',['../structtvm_1_1script_1_1printer_1_1Default.html#aeb46889ba1076b05c635abeb8db8a8b3',1,'tvm::script::printer::Default']]],
   ['bufferinfo',['BufferInfo',['../classtvm_1_1tir_1_1usmp_1_1BufferInfo.html#a74e46605b35826079bc0c6b07125e918',1,'tvm::tir::usmp::BufferInfo']]],
   ['bufferinfoanalysis',['BufferInfoAnalysis',['../classtvm_1_1tir_1_1usmp_1_1BufferInfoAnalysis.html#a3e3ef785c00a36fef0b1f0872c949d5a',1,'tvm::tir::usmp::BufferInfoAnalysis']]],
   ['bufferload',['BufferLoad',['../classtvm_1_1tir_1_1BufferLoad.html#a5f1d2fe0e7ee0ebd1dbed005aa11f79f',1,'tvm::tir::BufferLoad']]],

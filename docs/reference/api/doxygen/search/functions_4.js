@@ -77,7 +77,7 @@ var searchData=
   ['dma_5fwait',['dma_wait',['../namespacetvm_1_1tir_1_1builtin.html#a13aefe6686345fee7d4a1633dd059806',1,'tvm::tir::builtin']]],
   ['doc',['Doc',['../classtvm_1_1script_1_1printer_1_1Doc.html#accbc6699956d0166032a97e80ad3880d',1,'tvm::script::printer::Doc']]],
   ['docommreduce',['DoCommReduce',['../namespacetvm_1_1topi.html#ab7fb7a9f1651970c4ba04a48acdb695f',1,'tvm::topi']]],
-  ['doctopythonscript',['DocToPythonScript',['../namespacetvm_1_1script_1_1printer.html#a64e928b0c57bd2b2d5f7c6c999c6ba7c',1,'tvm::script::printer']]],
+  ['doctopythonscript',['DocToPythonScript',['../namespacetvm_1_1script_1_1printer.html#aa9be42449c87b18e7fdd05d1e1cc8c33',1,'tvm::script::printer']]],
   ['domaintouched',['DomainTouched',['../namespacetvm_1_1arith.html#a7641fa29ca6d8941f2696aacccf23998',1,'tvm::arith']]],
   ['dominatorpattern',['DominatorPattern',['../classtvm_1_1relay_1_1DominatorPattern.html#a93adeab95ffcd91ce587b1624f4dedc1',1,'tvm::relay::DominatorPattern']]],
   ['done',['Done',['../classtvm_1_1meta__schedule_1_1RunnerFutureNode.html#aa914653065720dde403d16a1a004d6b6',1,'tvm::meta_schedule::RunnerFutureNode']]],

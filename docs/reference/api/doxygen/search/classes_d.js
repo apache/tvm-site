@@ -63,6 +63,8 @@ var searchData=
   ['primfuncnode',['PrimFuncNode',['../classtvm_1_1tir_1_1PrimFuncNode.html',1,'tvm::tir']]],
   ['primtype',['PrimType',['../classtvm_1_1PrimType.html',1,'tvm']]],
   ['primtypenode',['PrimTypeNode',['../classtvm_1_1PrimTypeNode.html',1,'tvm']]],
+  ['printerconfig',['PrinterConfig',['../classtvm_1_1PrinterConfig.html',1,'tvm']]],
+  ['printerconfignode',['PrinterConfigNode',['../classtvm_1_1PrinterConfigNode.html',1,'tvm']]],
   ['producerload',['ProducerLoad',['../classtvm_1_1tir_1_1ProducerLoad.html',1,'tvm::tir']]],
   ['producerloadnode',['ProducerLoadNode',['../classtvm_1_1tir_1_1ProducerLoadNode.html',1,'tvm::tir']]],
   ['producerrealize',['ProducerRealize',['../classtvm_1_1tir_1_1ProducerRealize.html',1,'tvm::tir']]],

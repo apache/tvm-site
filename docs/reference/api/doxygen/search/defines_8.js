@@ -43,6 +43,7 @@ var searchData=
   ['tvm_5fmetadata_5fversion',['TVM_METADATA_VERSION',['../metadata_8h.html#a700f5dfbc1a51a0186d4c5a298ea3fd6',1,'metadata.h']]],
   ['tvm_5fmicro_5fruntime_5fapi_5fapi',['TVM_MICRO_RUNTIME_API_API',['../microtvm__runtime_8h.html#a82bcf22ac3cc35341edf8624944d2b6e',1,'microtvm_runtime.h']]],
   ['tvm_5fobject_5fatomic_5fref_5fcounter',['TVM_OBJECT_ATOMIC_REF_COUNTER',['../object_8h.html#a5f80f888f69ef72c51ba04cac65d033c',1,'object.h']]],
+  ['tvm_5fobject_5fenable_5fscript_5fprinter',['TVM_OBJECT_ENABLE_SCRIPT_PRINTER',['../script__printer_8h.html#aeb27774525547e9a0656235a3506bbed',1,'script_printer.h']]],
   ['tvm_5fobject_5freg_5fvar_5fdef',['TVM_OBJECT_REG_VAR_DEF',['../object_8h.html#ac63db332fce1a32738566c8880f0d425',1,'object.h']]],
   ['tvm_5fop_5fregister_5fvar_5fdef',['TVM_OP_REGISTER_VAR_DEF',['../ir_2op_8h.html#ab5474fc13be62edade1979771c0c2a49',1,'op.h']]],
   ['tvm_5fpass_5fctx_5fconfig_5fvar_5fdef',['TVM_PASS_CTX_CONFIG_VAR_DEF',['../ir_2transform_8h.html#af18caf4263a1f9e5f8f300c4aae5e094',1,'transform.h']]],
