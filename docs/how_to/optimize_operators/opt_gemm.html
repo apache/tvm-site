@@ -472,8 +472,8 @@ Then we write a baseline implementation, the simplest way to write a matrix mult
 <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Baseline: </span><span class="si">%f</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">evaluator</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">c</span><span class="p">)</span><span class="o">.</span><span class="n">mean</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Numpy running time: 0.018434
-Baseline: 3.361249
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Numpy running time: 0.017826
+Baseline: 3.292331
 </pre></div>
 </div>
 <p>In TVM, we can always inspect lower level IR to debug or optimize our schedule.
@@ -487,13 +487,13 @@ class Module:
     def main(A: T.Buffer((1024, 1024), &quot;float32&quot;), B: T.Buffer((1024, 1024), &quot;float32&quot;), C: T.Buffer((1024, 1024), &quot;float32&quot;)):
         T.func_attr({&quot;from_legacy_te_schedule&quot;: True, &quot;global_symbol&quot;: &quot;main&quot;, &quot;tir.noalias&quot;: True})
         for m, n in T.grid(1024, 1024):
-            C_1 = T.buffer_decl((1048576,), data=C.data)
+            C_1 = T.Buffer((1048576,), data=C.data)
             C_1[m * 1024 + n] = T.float32(0)
             for k in range(1024):
                 cse_var_2: T.int32 = m * 1024
                 cse_var_1: T.int32 = cse_var_2 + n
-                A_1 = T.buffer_decl((1048576,), data=A.data)
-                B_1 = T.buffer_decl((1048576,), data=B.data)
+                A_1 = T.Buffer((1048576,), data=A.data)
+                B_1 = T.Buffer((1048576,), data=B.data)
                 C_1[cse_var_1] = C_1[cse_var_1] + A_1[cse_var_2 + k] * B_1[k * 1024 + n]
 </pre></div>
 </div>
@@ -529,7 +529,7 @@ fill 32 * 32 * sizeof(float) which is 4KB in the cache whose total size is 32KB 
 <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Opt1: </span><span class="si">%f</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">evaluator</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">c</span><span class="p">)</span><span class="o">.</span><span class="n">mean</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Opt1: 0.299705
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Opt1: 0.305006
 </pre></div>
 </div>
 <p>Here is the generated IR after blocking.</p>
@@ -542,15 +542,15 @@ class Module:
     def main(A: T.Buffer((1024, 1024), &quot;float32&quot;), B: T.Buffer((1024, 1024), &quot;float32&quot;), C: T.Buffer((1024, 1024), &quot;float32&quot;)):
         T.func_attr({&quot;from_legacy_te_schedule&quot;: True, &quot;global_symbol&quot;: &quot;main&quot;, &quot;tir.noalias&quot;: True})
         for m_outer, n_outer in T.grid(32, 32):
-            C_1 = T.buffer_decl((1048576,), data=C.data)
+            C_1 = T.Buffer((1048576,), data=C.data)
             for m_inner_init, n_inner_init in T.grid(32, 32):
                 C_1[m_outer * 32768 + m_inner_init * 1024 + n_outer * 32 + n_inner_init] = T.float32(0)
             for k_outer, k_inner, m_inner, n_inner in T.grid(256, 4, 32, 32):
                 cse_var_3: T.int32 = n_outer * 32
                 cse_var_2: T.int32 = m_outer * 32768 + m_inner * 1024
                 cse_var_1: T.int32 = cse_var_2 + cse_var_3 + n_inner
-                A_1 = T.buffer_decl((1048576,), data=A.data)
-                B_1 = T.buffer_decl((1048576,), data=B.data)
+                A_1 = T.Buffer((1048576,), data=A.data)
+                B_1 = T.Buffer((1048576,), data=B.data)
                 C_1[cse_var_1] = C_1[cse_var_1] + A_1[cse_var_2 + k_outer * 4 + k_inner] * B_1[k_outer * 4096 + k_inner * 1024 + cse_var_3 + n_inner]
 </pre></div>
 </div>
@@ -583,7 +583,7 @@ vastly.</p>
 <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Opt2: </span><span class="si">%f</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">evaluator</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">c</span><span class="p">)</span><span class="o">.</span><span class="n">mean</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Opt2: 0.331980
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Opt2: 0.339556
 </pre></div>
 </div>
 <p>Here is the generated IR after vectorization.</p>
@@ -596,15 +596,15 @@ class Module:
     def main(A: T.Buffer((1024, 1024), &quot;float32&quot;), B: T.Buffer((1024, 1024), &quot;float32&quot;), C: T.Buffer((1024, 1024), &quot;float32&quot;)):
         T.func_attr({&quot;from_legacy_te_schedule&quot;: True, &quot;global_symbol&quot;: &quot;main&quot;, &quot;tir.noalias&quot;: True})
         for m_outer, n_outer in T.grid(32, 32):
-            C_1 = T.buffer_decl((1048576,), data=C.data)
+            C_1 = T.Buffer((1048576,), data=C.data)
             for m_inner_init in range(32):
                 C_1[m_outer * 32768 + m_inner_init * 1024 + n_outer * 32:m_outer * 32768 + m_inner_init * 1024 + n_outer * 32 + 32] = T.Broadcast(T.float32(0), 32)
             for k_outer, k_inner, m_inner in T.grid(256, 4, 32):
                 cse_var_3: T.int32 = n_outer * 32
                 cse_var_2: T.int32 = m_outer * 32768 + m_inner * 1024
                 cse_var_1: T.int32 = cse_var_2 + cse_var_3
-                A_1 = T.buffer_decl((1048576,), data=A.data)
-                B_1 = T.buffer_decl((1048576,), data=B.data)
+                A_1 = T.Buffer((1048576,), data=A.data)
+                B_1 = T.Buffer((1048576,), data=B.data)
                 C_1[cse_var_1:cse_var_1 + 32] = C_1[cse_var_1:cse_var_1 + 32] + T.Broadcast(A_1[cse_var_2 + k_outer * 4 + k_inner], 32) * B_1[k_outer * 4096 + k_inner * 1024 + cse_var_3:k_outer * 4096 + k_inner * 1024 + cse_var_3 + 32]
 </pre></div>
 </div>
@@ -635,7 +635,7 @@ the access pattern for A matrix is more cache friendly.</p>
 <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Opt3: </span><span class="si">%f</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">evaluator</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">c</span><span class="p">)</span><span class="o">.</span><span class="n">mean</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Opt3: 0.116784
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Opt3: 0.116267
 </pre></div>
 </div>
 <p>Here is the generated IR after loop permutation.</p>
@@ -648,15 +648,15 @@ class Module:
     def main(A: T.Buffer((1024, 1024), &quot;float32&quot;), B: T.Buffer((1024, 1024), &quot;float32&quot;), C: T.Buffer((1024, 1024), &quot;float32&quot;)):
         T.func_attr({&quot;from_legacy_te_schedule&quot;: True, &quot;global_symbol&quot;: &quot;main&quot;, &quot;tir.noalias&quot;: True})
         for m_outer, n_outer in T.grid(32, 32):
-            C_1 = T.buffer_decl((1048576,), data=C.data)
+            C_1 = T.Buffer((1048576,), data=C.data)
             for m_inner_init in range(32):
                 C_1[m_outer * 32768 + m_inner_init * 1024 + n_outer * 32:m_outer * 32768 + m_inner_init * 1024 + n_outer * 32 + 32] = T.Broadcast(T.float32(0), 32)
             for k_outer, m_inner, k_inner in T.grid(256, 32, 4):
                 cse_var_3: T.int32 = n_outer * 32
                 cse_var_2: T.int32 = m_outer * 32768 + m_inner * 1024
                 cse_var_1: T.int32 = cse_var_2 + cse_var_3
-                A_1 = T.buffer_decl((1048576,), data=A.data)
-                B_1 = T.buffer_decl((1048576,), data=B.data)
+                A_1 = T.Buffer((1048576,), data=A.data)
+                B_1 = T.Buffer((1048576,), data=B.data)
                 C_1[cse_var_1:cse_var_1 + 32] = C_1[cse_var_1:cse_var_1 + 32] + T.Broadcast(A_1[cse_var_2 + k_outer * 4 + k_inner], 32) * B_1[k_outer * 4096 + k_inner * 1024 + cse_var_3:k_outer * 4096 + k_inner * 1024 + cse_var_3 + 32]
 </pre></div>
 </div>
@@ -709,7 +709,7 @@ flattening.</p>
 <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Opt4: </span><span class="si">%f</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">evaluator</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">c</span><span class="p">)</span><span class="o">.</span><span class="n">mean</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Opt4: 0.109793
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Opt4: 0.108496
 </pre></div>
 </div>
 <p>Here is the generated IR after array packing.</p>
@@ -722,20 +722,20 @@ class Module:
     def main(A: T.Buffer((1024, 1024), &quot;float32&quot;), B: T.Buffer((1024, 1024), &quot;float32&quot;), C: T.Buffer((1024, 1024), &quot;float32&quot;)):
         T.func_attr({&quot;from_legacy_te_schedule&quot;: True, &quot;global_symbol&quot;: &quot;main&quot;, &quot;tir.noalias&quot;: True})
         packedB = T.allocate([32768], &quot;float32x32&quot;, &quot;global&quot;)
-        packedB_1 = T.buffer_decl((32768,), &quot;float32x32&quot;, data=packedB)
+        packedB_1 = T.Buffer((32768,), &quot;float32x32&quot;, data=packedB)
         for bigN in T.parallel(32):
             for k in range(1024):
-                B_1 = T.buffer_decl((1048576,), data=B.data)
+                B_1 = T.Buffer((1048576,), data=B.data)
                 packedB_1[bigN * 1024 + k] = B_1[k * 1024 + bigN * 32:k * 1024 + bigN * 32 + 32]
         for m_outer, n_outer in T.grid(32, 32):
-            C_1 = T.buffer_decl((1048576,), data=C.data)
+            C_1 = T.Buffer((1048576,), data=C.data)
             for m_inner_init in range(32):
                 C_1[m_outer * 32768 + m_inner_init * 1024 + n_outer * 32:m_outer * 32768 + m_inner_init * 1024 + n_outer * 32 + 32] = T.Broadcast(T.float32(0), 32)
             for k_outer, m_inner, k_inner in T.grid(256, 32, 4):
                 cse_var_3: T.int32 = m_outer * 32768 + m_inner * 1024
                 cse_var_2: T.int32 = k_outer * 4
                 cse_var_1: T.int32 = cse_var_3 + n_outer * 32
-                A_1 = T.buffer_decl((1048576,), data=A.data)
+                A_1 = T.Buffer((1048576,), data=A.data)
                 C_1[cse_var_1:cse_var_1 + 32] = C_1[cse_var_1:cse_var_1 + 32] + T.Broadcast(A_1[cse_var_3 + cse_var_2 + k_inner], 32) * packedB_1[n_outer * 1024 + cse_var_2 + k_inner]
 </pre></div>
 </div>
@@ -784,7 +784,7 @@ write to C when all the block results are ready.</p>
 <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Opt5: </span><span class="si">%f</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">evaluator</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">c</span><span class="p">)</span><span class="o">.</span><span class="n">mean</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Opt5: 0.111122
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Opt5: 0.111046
 </pre></div>
 </div>
 <p>Here is the generated IR after blocking.</p>
@@ -798,13 +798,13 @@ class Module:
         T.func_attr({&quot;from_legacy_te_schedule&quot;: True, &quot;global_symbol&quot;: &quot;main&quot;, &quot;tir.noalias&quot;: True})
         packedB = T.allocate([32768], &quot;float32x32&quot;, &quot;global&quot;)
         C_global = T.allocate([1024], &quot;float32&quot;, &quot;global&quot;)
-        packedB_1 = T.buffer_decl((32768,), &quot;float32x32&quot;, data=packedB)
+        packedB_1 = T.Buffer((32768,), &quot;float32x32&quot;, data=packedB)
         for bigN in T.parallel(32):
             for k in range(1024):
-                B_1 = T.buffer_decl((1048576,), data=B.data)
+                B_1 = T.Buffer((1048576,), data=B.data)
                 packedB_1[bigN * 1024 + k] = B_1[k * 1024 + bigN * 32:k * 1024 + bigN * 32 + 32]
         for m_outer, n_outer in T.grid(32, 32):
-            C_global_1 = T.buffer_decl((1024,), data=C_global)
+            C_global_1 = T.Buffer((1024,), data=C_global)
             for m_c_init in range(32):
                 C_global_1[m_c_init * 32:m_c_init * 32 + 32] = T.Broadcast(T.float32(0), 32)
             for k_outer, m_c in T.grid(256, 32):
@@ -812,13 +812,13 @@ class Module:
                 cse_var_3: T.int32 = m_c * 32
                 cse_var_2: T.int32 = n_outer * 1024 + cse_var_4
                 cse_var_1: T.int32 = m_outer * 32768 + m_c * 1024 + cse_var_4
-                A_1 = T.buffer_decl((1048576,), data=A.data)
+                A_1 = T.Buffer((1048576,), data=A.data)
                 C_global_1[cse_var_3:cse_var_3 + 32] = C_global_1[cse_var_3:cse_var_3 + 32] + T.Broadcast(A_1[cse_var_1], 32) * packedB_1[cse_var_2]
                 C_global_1[cse_var_3:cse_var_3 + 32] = C_global_1[cse_var_3:cse_var_3 + 32] + T.Broadcast(A_1[cse_var_1 + 1], 32) * packedB_1[cse_var_2 + 1]
                 C_global_1[cse_var_3:cse_var_3 + 32] = C_global_1[cse_var_3:cse_var_3 + 32] + T.Broadcast(A_1[cse_var_1 + 2], 32) * packedB_1[cse_var_2 + 2]
                 C_global_1[cse_var_3:cse_var_3 + 32] = C_global_1[cse_var_3:cse_var_3 + 32] + T.Broadcast(A_1[cse_var_1 + 3], 32) * packedB_1[cse_var_2 + 3]
             for m_inner, n_inner in T.grid(32, 32):
-                C_1 = T.buffer_decl((1048576,), data=C.data)
+                C_1 = T.Buffer((1048576,), data=C.data)
                 C_1[m_outer * 32768 + m_inner * 1024 + n_outer * 32 + n_inner] = C_global_1[m_inner * 32 + n_inner]
 </pre></div>
 </div>
@@ -861,7 +861,7 @@ class Module:
 <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Opt6: </span><span class="si">%f</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">opt6_time</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Opt6: 0.148684
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Opt6: 0.147583
 </pre></div>
 </div>
 <p>Here is the generated IR after parallelization.</p>
@@ -874,15 +874,15 @@ class Module:
     def main(A: T.Buffer((1024, 1024), &quot;float32&quot;), B: T.Buffer((1024, 1024), &quot;float32&quot;), C: T.Buffer((1024, 1024), &quot;float32&quot;)):
         T.func_attr({&quot;from_legacy_te_schedule&quot;: True, &quot;global_symbol&quot;: &quot;main&quot;, &quot;tir.noalias&quot;: True})
         packedB = T.allocate([32768], &quot;float32x32&quot;, &quot;global&quot;)
-        packedB_1 = T.buffer_decl((32768,), &quot;float32x32&quot;, data=packedB)
+        packedB_1 = T.Buffer((32768,), &quot;float32x32&quot;, data=packedB)
         for bigN in T.parallel(32):
             for k in range(1024):
-                B_1 = T.buffer_decl((1048576,), data=B.data)
+                B_1 = T.Buffer((1048576,), data=B.data)
                 packedB_1[bigN * 1024 + k] = B_1[k * 1024 + bigN * 32:k * 1024 + bigN * 32 + 32]
         for m_outer in T.parallel(32):
             C_global = T.allocate([1024], &quot;float32&quot;, &quot;global&quot;)
             for n_outer in range(32):
-                C_global_1 = T.buffer_decl((1024,), data=C_global)
+                C_global_1 = T.Buffer((1024,), data=C_global)
                 for m_c_init in range(32):
                     C_global_1[m_c_init * 32:m_c_init * 32 + 32] = T.Broadcast(T.float32(0), 32)
                 for k_outer, m_c in T.grid(256, 32):
@@ -890,13 +890,13 @@ class Module:
                     cse_var_3: T.int32 = m_c * 32
                     cse_var_2: T.int32 = n_outer * 1024 + cse_var_4
                     cse_var_1: T.int32 = m_outer * 32768 + m_c * 1024 + cse_var_4
-                    A_1 = T.buffer_decl((1048576,), data=A.data)
+                    A_1 = T.Buffer((1048576,), data=A.data)
                     C_global_1[cse_var_3:cse_var_3 + 32] = C_global_1[cse_var_3:cse_var_3 + 32] + T.Broadcast(A_1[cse_var_1], 32) * packedB_1[cse_var_2]
                     C_global_1[cse_var_3:cse_var_3 + 32] = C_global_1[cse_var_3:cse_var_3 + 32] + T.Broadcast(A_1[cse_var_1 + 1], 32) * packedB_1[cse_var_2 + 1]
                     C_global_1[cse_var_3:cse_var_3 + 32] = C_global_1[cse_var_3:cse_var_3 + 32] + T.Broadcast(A_1[cse_var_1 + 2], 32) * packedB_1[cse_var_2 + 2]
                     C_global_1[cse_var_3:cse_var_3 + 32] = C_global_1[cse_var_3:cse_var_3 + 32] + T.Broadcast(A_1[cse_var_1 + 3], 32) * packedB_1[cse_var_2 + 3]
                 for m_inner, n_inner in T.grid(32, 32):
-                    C_1 = T.buffer_decl((1048576,), data=C.data)
+                    C_1 = T.Buffer((1048576,), data=C.data)
                     C_1[m_outer * 32768 + m_inner * 1024 + n_outer * 32 + n_inner] = C_global_1[m_inner * 32 + n_inner]
 </pre></div>
 </div>

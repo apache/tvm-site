@@ -137,8 +137,8 @@ To split on the time iteration, user can schedule on scan_op.scan_axis instead.
             scan_1 = T.match_buffer(scan, (m, n), strides=(stride_2, stride_3), type="auto")
             blockIdx_x = T.env_thread("blockIdx.x")
             threadIdx_x = T.env_thread("threadIdx.x")
-            scan_2 = T.buffer_decl((stride_2 * m,), data=scan_1.data, type="auto")
-            X_2 = T.buffer_decl((stride * m,), data=X_1.data, type="auto")
+            scan_2 = T.Buffer((stride_2 * m,), data=scan_1.data, type="auto")
+            X_2 = T.Buffer((stride * m,), data=X_1.data, type="auto")
             with T.launch_thread(blockIdx_x, (n + 255) // 256):
                 T.launch_thread(threadIdx_x, 256)
                 if T.likely(blockIdx_x * 256 + threadIdx_x < n):
@@ -252,12 +252,12 @@ the body of scan to be compute_at locations outside the scan loop.
             stride_3 = T.var("int32")
             scan_1 = T.match_buffer(scan, (m, n), strides=(stride_2, stride_3), type="auto")
             s1 = T.allocate([32], "float32", "global")
-            scan_2 = T.buffer_decl((stride_2 * m,), data=scan_1.data, type="auto")
-            X_2 = T.buffer_decl((stride * m,), data=X_1.data, type="auto")
+            scan_2 = T.Buffer((stride_2 * m,), data=scan_1.data, type="auto")
+            X_2 = T.Buffer((stride * m,), data=X_1.data, type="auto")
             for i in range(n):
                 scan_2[i * stride_3] = X_2[i * stride_1]
             for scan_idx, i_outer in T.grid(m - 1, (n + 31) // 32):
-                s1_1 = T.buffer_decl((32,), data=s1)
+                s1_1 = T.Buffer((32,), data=s1)
                 for i in range(32):
                     if T.likely(i_outer * 32 + i < n):
                         s1_1[i] = scan_2[scan_idx * stride_2 + (i_outer * 32 + i) * stride_3] * T.float32(2)
@@ -324,11 +324,11 @@ The following example demonstrates how we can build recurrence with two states.
             stride_4 = T.var("int32")
             stride_5 = T.var("int32")
             scan_3 = T.match_buffer(scan_1, (m, l), strides=(stride_4, stride_5), type="auto")
-            scan_4 = T.buffer_decl((stride_2 * m,), data=scan_2.data, type="auto")
-            X_2 = T.buffer_decl((stride * m,), data=X_1.data, type="auto")
+            scan_4 = T.Buffer((stride_2 * m,), data=scan_2.data, type="auto")
+            X_2 = T.Buffer((stride * m,), data=X_1.data, type="auto")
             for i in range(n):
                 scan_4[i * stride_3] = X_2[i * stride_1]
-            scan_5 = T.buffer_decl((stride_4 * m,), data=scan_3.data, type="auto")
+            scan_5 = T.Buffer((stride_4 * m,), data=scan_3.data, type="auto")
             for i in range(l):
                 scan_5[i * stride_5] = T.float32(0)
             for scan_idx in range(m - 1):

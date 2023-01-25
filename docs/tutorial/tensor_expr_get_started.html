@@ -589,9 +589,9 @@ class Module:
         stride_2 = T.var(&quot;int32&quot;)
         C_1 = T.match_buffer(C, (n,), strides=(stride_2,), type=&quot;auto&quot;)
         for i in T.parallel(n):
-            C_2 = T.buffer_decl((stride_2 * n,), data=C_1.data, type=&quot;auto&quot;)
-            A_2 = T.buffer_decl((stride * n,), data=A_1.data, type=&quot;auto&quot;)
-            B_2 = T.buffer_decl((stride_1 * n,), data=B_1.data, type=&quot;auto&quot;)
+            C_2 = T.Buffer((stride_2 * n,), data=C_1.data, type=&quot;auto&quot;)
+            A_2 = T.Buffer((stride * n,), data=A_1.data, type=&quot;auto&quot;)
+            B_2 = T.Buffer((stride_1 * n,), data=B_1.data, type=&quot;auto&quot;)
             C_2[i * stride_2] = A_2[i * stride] + B_2[i * stride_1]
 </pre></div>
 </div>
@@ -605,7 +605,7 @@ compile and run this new schedule with the parallel operation applied:</p>
 <span class="n">evaluate_addition</span><span class="p">(</span><span class="n">fadd_parallel</span><span class="p">,</span> <a href="../reference/api/python/target.html#tvm.target.Target" title="tvm.target.Target" class="sphx-glr-backref-module-tvm-target sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">tgt</span></a><span class="p">,</span> <span class="s2">&quot;parallel&quot;</span><span class="p">,</span> <a href="https://docs.python.org/3/library/stdtypes.html#list" title="builtins.list" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">log</span></a><span class="o">=</span><a href="https://docs.python.org/3/library/stdtypes.html#list" title="builtins.list" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">log</span></a><span class="p">)</span>
 </pre></div>
 </div>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>parallel: 0.000007
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>parallel: 0.000008
 </pre></div>
 </div>
 </div>
@@ -660,9 +660,9 @@ class Module:
         for i_outer in T.parallel((n + 3) // 4):
             for i_inner_s in range(4):
                 if T.likely(i_outer * 4 + i_inner_s &lt; n):
-                    C_2 = T.buffer_decl((stride_2 * n,), data=C_1.data, type=&quot;auto&quot;)
-                    A_2 = T.buffer_decl((stride * n,), data=A_1.data, type=&quot;auto&quot;)
-                    B_2 = T.buffer_decl((stride_1 * n,), data=B_1.data, type=&quot;auto&quot;)
+                    C_2 = T.Buffer((stride_2 * n,), data=C_1.data, type=&quot;auto&quot;)
+                    A_2 = T.Buffer((stride * n,), data=A_1.data, type=&quot;auto&quot;)
+                    B_2 = T.Buffer((stride_1 * n,), data=B_1.data, type=&quot;auto&quot;)
                     cse_var_1: T.int32 = i_outer * 4 + i_inner_s
                     C_2[cse_var_1 * stride_2] = A_2[cse_var_1 * stride] + B_2[cse_var_1 * stride_1]
 </pre></div>
@@ -681,10 +681,10 @@ class Module:
 </pre></div>
 </div>
 <div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Operator                  Timing             Performance
-   numpy    6.961799999771756e-06                    1.0
-   naive              6.7059e-06      0.9632422649630633
-parallel              6.9788e-06      1.0024418972433569
-  vector             2.47169e-05      3.5503605390574777
+   numpy    7.395259999611881e-06                    1.0
+   naive    6.6756999999999995e-06    0.9026998375108318
+parallel              8.1278e-06      1.0990553409111463
+  vector             2.46142e-05       3.328375202669251
 </pre></div>
 </div>
 <div class="admonition-code-specialization admonition">
@@ -1000,7 +1000,7 @@ matrix multiplication.</p>
 <span class="n">answer</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">a</span><span class="o">.</span><span class="n">numpy</span><span class="p">(),</span> <span class="n">b</span><span class="o">.</span><span class="n">numpy</span><span class="p">())</span>
 </pre></div>
 </div>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Numpy running time: 0.018194
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Numpy running time: 0.018198
 </pre></div>
 </div>
 <p>Now we write a basic matrix multiplication using TVM TE and verify that it
@@ -1041,7 +1041,7 @@ optimizations.</p>
 <span class="n">evaluate_operation</span><span class="p">(</span><a href="../reference/api/python/te.html#tvm.te.Schedule" title="tvm.te.Schedule" class="sphx-glr-backref-module-tvm-te sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">s</span></a><span class="p">,</span> <span class="p">[</span><a href="../reference/api/python/te.html#tvm.te.Tensor" title="tvm.te.Tensor" class="sphx-glr-backref-module-tvm-te sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">A</span></a><span class="p">,</span> <a href="../reference/api/python/te.html#tvm.te.Tensor" title="tvm.te.Tensor" class="sphx-glr-backref-module-tvm-te sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">B</span></a><span class="p">,</span> <a href="../reference/api/python/te.html#tvm.te.Tensor" title="tvm.te.Tensor" class="sphx-glr-backref-module-tvm-te sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">C</span></a><span class="p">],</span> <a href="../reference/api/python/target.html#tvm.target.Target" title="tvm.target.Target" class="sphx-glr-backref-module-tvm-target sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">target</span></a><span class="o">=</span><a href="../reference/api/python/target.html#tvm.target.Target" title="tvm.target.Target" class="sphx-glr-backref-module-tvm-target sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">target</span></a><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;mmult&quot;</span><span class="p">,</span> <span class="n">optimization</span><span class="o">=</span><span class="s2">&quot;none&quot;</span><span class="p">,</span> <a href="https://docs.python.org/3/library/stdtypes.html#list" title="builtins.list" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">log</span></a><span class="o">=</span><a href="https://docs.python.org/3/library/stdtypes.html#list" title="builtins.list" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">log</span></a><span class="p">)</span>
 </pre></div>
 </div>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>none: 3.403757
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>none: 3.427090
 </pre></div>
 </div>
 <p>Let’s take a look at the intermediate representation of the operator and
@@ -1057,13 +1057,13 @@ class Module:
     def main(A: T.Buffer((1024, 1024), &quot;float32&quot;), B: T.Buffer((1024, 1024), &quot;float32&quot;), C: T.Buffer((1024, 1024), &quot;float32&quot;)):
         T.func_attr({&quot;from_legacy_te_schedule&quot;: True, &quot;global_symbol&quot;: &quot;main&quot;, &quot;tir.noalias&quot;: True})
         for x, y in T.grid(1024, 1024):
-            C_1 = T.buffer_decl((1048576,), data=C.data)
+            C_1 = T.Buffer((1048576,), data=C.data)
             C_1[x * 1024 + y] = T.float32(0)
             for k in range(1024):
                 cse_var_2: T.int32 = x * 1024
                 cse_var_1: T.int32 = cse_var_2 + y
-                A_1 = T.buffer_decl((1048576,), data=A.data)
-                B_1 = T.buffer_decl((1048576,), data=B.data)
+                A_1 = T.Buffer((1048576,), data=A.data)
+                B_1 = T.Buffer((1048576,), data=B.data)
                 C_1[cse_var_1] = C_1[cse_var_1] + A_1[cse_var_2 + k] * B_1[k * 1024 + y]
 </pre></div>
 </div>
@@ -1102,7 +1102,7 @@ schedule.</p>
 <span class="n">evaluate_operation</span><span class="p">(</span><a href="../reference/api/python/te.html#tvm.te.Schedule" title="tvm.te.Schedule" class="sphx-glr-backref-module-tvm-te sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">s</span></a><span class="p">,</span> <span class="p">[</span><a href="../reference/api/python/te.html#tvm.te.Tensor" title="tvm.te.Tensor" class="sphx-glr-backref-module-tvm-te sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">A</span></a><span class="p">,</span> <a href="../reference/api/python/te.html#tvm.te.Tensor" title="tvm.te.Tensor" class="sphx-glr-backref-module-tvm-te sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">B</span></a><span class="p">,</span> <a href="../reference/api/python/te.html#tvm.te.Tensor" title="tvm.te.Tensor" class="sphx-glr-backref-module-tvm-te sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">C</span></a><span class="p">],</span> <a href="../reference/api/python/target.html#tvm.target.Target" title="tvm.target.Target" class="sphx-glr-backref-module-tvm-target sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">target</span></a><span class="o">=</span><a href="../reference/api/python/target.html#tvm.target.Target" title="tvm.target.Target" class="sphx-glr-backref-module-tvm-target sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">target</span></a><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;mmult&quot;</span><span class="p">,</span> <span class="n">optimization</span><span class="o">=</span><span class="s2">&quot;blocking&quot;</span><span class="p">,</span> <a href="https://docs.python.org/3/library/stdtypes.html#list" title="builtins.list" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">log</span></a><span class="o">=</span><a href="https://docs.python.org/3/library/stdtypes.html#list" title="builtins.list" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">log</span></a><span class="p">)</span>
 </pre></div>
 </div>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>blocking: 0.309327
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>blocking: 0.299261
 </pre></div>
 </div>
 <p>By reordering the computation to take advantage of caching, you should see a
@@ -1117,15 +1117,15 @@ class Module:
     def main(A: T.Buffer((1024, 1024), &quot;float32&quot;), B: T.Buffer((1024, 1024), &quot;float32&quot;), C: T.Buffer((1024, 1024), &quot;float32&quot;)):
         T.func_attr({&quot;from_legacy_te_schedule&quot;: True, &quot;global_symbol&quot;: &quot;main&quot;, &quot;tir.noalias&quot;: True})
         for x_outer, y_outer in T.grid(32, 32):
-            C_1 = T.buffer_decl((1048576,), data=C.data)
+            C_1 = T.Buffer((1048576,), data=C.data)
             for x_inner_init, y_inner_init in T.grid(32, 32):
                 C_1[x_outer * 32768 + x_inner_init * 1024 + y_outer * 32 + y_inner_init] = T.float32(0)
             for k_outer, k_inner, x_inner, y_inner in T.grid(256, 4, 32, 32):
                 cse_var_3: T.int32 = y_outer * 32
                 cse_var_2: T.int32 = x_outer * 32768 + x_inner * 1024
                 cse_var_1: T.int32 = cse_var_2 + cse_var_3 + y_inner
-                A_1 = T.buffer_decl((1048576,), data=A.data)
-                B_1 = T.buffer_decl((1048576,), data=B.data)
+                A_1 = T.Buffer((1048576,), data=A.data)
+                B_1 = T.Buffer((1048576,), data=B.data)
                 C_1[cse_var_1] = C_1[cse_var_1] + A_1[cse_var_2 + k_outer * 4 + k_inner] * B_1[k_outer * 4096 + k_inner * 1024 + cse_var_3 + y_inner]
 </pre></div>
 </div>
@@ -1148,22 +1148,22 @@ already cache friendly from our previous optimizations.</p>
 <span class="nb">print</span><span class="p">(</span><a href="../reference/api/python/driver.html#tvm.lower" title="tvm.lower" class="sphx-glr-backref-module-tvm sphx-glr-backref-type-py-function"><span class="n">tvm</span><span class="o">.</span><span class="n">lower</span></a><span class="p">(</span><a href="../reference/api/python/te.html#tvm.te.Schedule" title="tvm.te.Schedule" class="sphx-glr-backref-module-tvm-te sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">s</span></a><span class="p">,</span> <span class="p">[</span><a href="../reference/api/python/te.html#tvm.te.Tensor" title="tvm.te.Tensor" class="sphx-glr-backref-module-tvm-te sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">A</span></a><span class="p">,</span> <a href="../reference/api/python/te.html#tvm.te.Tensor" title="tvm.te.Tensor" class="sphx-glr-backref-module-tvm-te sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">B</span></a><span class="p">,</span> <a href="../reference/api/python/te.html#tvm.te.Tensor" title="tvm.te.Tensor" class="sphx-glr-backref-module-tvm-te sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">C</span></a><span class="p">],</span> <span class="n">simple_mode</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span>
 </pre></div>
 </div>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>vectorization: 0.346741
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>vectorization: 0.333722
 @I.ir_module
 class Module:
     @T.prim_func
     def main(A: T.Buffer((1024, 1024), &quot;float32&quot;), B: T.Buffer((1024, 1024), &quot;float32&quot;), C: T.Buffer((1024, 1024), &quot;float32&quot;)):
         T.func_attr({&quot;from_legacy_te_schedule&quot;: True, &quot;global_symbol&quot;: &quot;main&quot;, &quot;tir.noalias&quot;: True})
         for x_outer, y_outer in T.grid(32, 32):
-            C_1 = T.buffer_decl((1048576,), data=C.data)
+            C_1 = T.Buffer((1048576,), data=C.data)
             for x_inner_init in range(32):
                 C_1[x_outer * 32768 + x_inner_init * 1024 + y_outer * 32:x_outer * 32768 + x_inner_init * 1024 + y_outer * 32 + 32] = T.Broadcast(T.float32(0), 32)
             for k_outer, k_inner, x_inner in T.grid(256, 4, 32):
                 cse_var_3: T.int32 = y_outer * 32
                 cse_var_2: T.int32 = x_outer * 32768 + x_inner * 1024
                 cse_var_1: T.int32 = cse_var_2 + cse_var_3
-                A_1 = T.buffer_decl((1048576,), data=A.data)
-                B_1 = T.buffer_decl((1048576,), data=B.data)
+                A_1 = T.Buffer((1048576,), data=A.data)
+                B_1 = T.Buffer((1048576,), data=B.data)
                 C_1[cse_var_1:cse_var_1 + 32] = C_1[cse_var_1:cse_var_1 + 32] + T.Broadcast(A_1[cse_var_2 + k_outer * 4 + k_inner], 32) * B_1[k_outer * 4096 + k_inner * 1024 + cse_var_3:k_outer * 4096 + k_inner * 1024 + cse_var_3 + 32]
 </pre></div>
 </div>
@@ -1194,22 +1194,22 @@ more cache friendly.</p>
 <span class="nb">print</span><span class="p">(</span><a href="../reference/api/python/driver.html#tvm.lower" title="tvm.lower" class="sphx-glr-backref-module-tvm sphx-glr-backref-type-py-function"><span class="n">tvm</span><span class="o">.</span><span class="n">lower</span></a><span class="p">(</span><a href="../reference/api/python/te.html#tvm.te.Schedule" title="tvm.te.Schedule" class="sphx-glr-backref-module-tvm-te sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">s</span></a><span class="p">,</span> <span class="p">[</span><a href="../reference/api/python/te.html#tvm.te.Tensor" title="tvm.te.Tensor" class="sphx-glr-backref-module-tvm-te sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">A</span></a><span class="p">,</span> <a href="../reference/api/python/te.html#tvm.te.Tensor" title="tvm.te.Tensor" class="sphx-glr-backref-module-tvm-te sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">B</span></a><span class="p">,</span> <a href="../reference/api/python/te.html#tvm.te.Tensor" title="tvm.te.Tensor" class="sphx-glr-backref-module-tvm-te sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">C</span></a><span class="p">],</span> <span class="n">simple_mode</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span>
 </pre></div>
 </div>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>loop permutation: 0.115432
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>loop permutation: 0.121460
 @I.ir_module
 class Module:
     @T.prim_func
     def main(A: T.Buffer((1024, 1024), &quot;float32&quot;), B: T.Buffer((1024, 1024), &quot;float32&quot;), C: T.Buffer((1024, 1024), &quot;float32&quot;)):
         T.func_attr({&quot;from_legacy_te_schedule&quot;: True, &quot;global_symbol&quot;: &quot;main&quot;, &quot;tir.noalias&quot;: True})
         for x_outer, y_outer in T.grid(32, 32):
-            C_1 = T.buffer_decl((1048576,), data=C.data)
+            C_1 = T.Buffer((1048576,), data=C.data)
             for x_inner_init in range(32):
                 C_1[x_outer * 32768 + x_inner_init * 1024 + y_outer * 32:x_outer * 32768 + x_inner_init * 1024 + y_outer * 32 + 32] = T.Broadcast(T.float32(0), 32)
             for k_outer, x_inner, k_inner in T.grid(256, 32, 4):
                 cse_var_3: T.int32 = y_outer * 32
                 cse_var_2: T.int32 = x_outer * 32768 + x_inner * 1024
                 cse_var_1: T.int32 = cse_var_2 + cse_var_3
-                A_1 = T.buffer_decl((1048576,), data=A.data)
-                B_1 = T.buffer_decl((1048576,), data=B.data)
+                A_1 = T.Buffer((1048576,), data=A.data)
+                B_1 = T.Buffer((1048576,), data=B.data)
                 C_1[cse_var_1:cse_var_1 + 32] = C_1[cse_var_1:cse_var_1 + 32] + T.Broadcast(A_1[cse_var_2 + k_outer * 4 + k_inner], 32) * B_1[k_outer * 4096 + k_inner * 1024 + cse_var_3:k_outer * 4096 + k_inner * 1024 + cse_var_3 + 32]
 </pre></div>
 </div>
@@ -1261,27 +1261,27 @@ optimized schedule.</p>
 <span class="nb">print</span><span class="p">(</span><a href="../reference/api/python/driver.html#tvm.lower" title="tvm.lower" class="sphx-glr-backref-module-tvm sphx-glr-backref-type-py-function"><span class="n">tvm</span><span class="o">.</span><span class="n">lower</span></a><span class="p">(</span><a href="../reference/api/python/te.html#tvm.te.Schedule" title="tvm.te.Schedule" class="sphx-glr-backref-module-tvm-te sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">s</span></a><span class="p">,</span> <span class="p">[</span><a href="../reference/api/python/te.html#tvm.te.Tensor" title="tvm.te.Tensor" class="sphx-glr-backref-module-tvm-te sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">A</span></a><span class="p">,</span> <a href="../reference/api/python/te.html#tvm.te.Tensor" title="tvm.te.Tensor" class="sphx-glr-backref-module-tvm-te sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">B</span></a><span class="p">,</span> <a href="../reference/api/python/te.html#tvm.te.Tensor" title="tvm.te.Tensor" class="sphx-glr-backref-module-tvm-te sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">C</span></a><span class="p">],</span> <span class="n">simple_mode</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span>
 </pre></div>
 </div>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>array packing: 0.109241
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>array packing: 0.109399
 @I.ir_module
 class Module:
     @T.prim_func
     def main(A: T.Buffer((1024, 1024), &quot;float32&quot;), B: T.Buffer((1024, 1024), &quot;float32&quot;), C: T.Buffer((1024, 1024), &quot;float32&quot;)):
         T.func_attr({&quot;from_legacy_te_schedule&quot;: True, &quot;global_symbol&quot;: &quot;main&quot;, &quot;tir.noalias&quot;: True})
         packedB = T.allocate([32768], &quot;float32x32&quot;, &quot;global&quot;)
-        packedB_1 = T.buffer_decl((32768,), &quot;float32x32&quot;, data=packedB)
+        packedB_1 = T.Buffer((32768,), &quot;float32x32&quot;, data=packedB)
         for x in T.parallel(32):
             for y in range(1024):
-                B_1 = T.buffer_decl((1048576,), data=B.data)
+                B_1 = T.Buffer((1048576,), data=B.data)
                 packedB_1[x * 1024 + y] = B_1[y * 1024 + x * 32:y * 1024 + x * 32 + 32]
         for x_outer, y_outer in T.grid(32, 32):
-            C_1 = T.buffer_decl((1048576,), data=C.data)
+            C_1 = T.Buffer((1048576,), data=C.data)
             for x_inner_init in range(32):
                 C_1[x_outer * 32768 + x_inner_init * 1024 + y_outer * 32:x_outer * 32768 + x_inner_init * 1024 + y_outer * 32 + 32] = T.Broadcast(T.float32(0), 32)
             for k_outer, x_inner, k_inner in T.grid(256, 32, 4):
                 cse_var_3: T.int32 = x_outer * 32768 + x_inner * 1024
                 cse_var_2: T.int32 = k_outer * 4
                 cse_var_1: T.int32 = cse_var_3 + y_outer * 32
-                A_1 = T.buffer_decl((1048576,), data=A.data)
+                A_1 = T.Buffer((1048576,), data=A.data)
                 C_1[cse_var_1:cse_var_1 + 32] = C_1[cse_var_1:cse_var_1 + 32] + T.Broadcast(A_1[cse_var_3 + cse_var_2 + k_inner], 32) * packedB_1[y_outer * 1024 + cse_var_2 + k_inner]
 </pre></div>
 </div>
@@ -1324,7 +1324,7 @@ to `C</cite> when all the block results are ready.</p>
 <span class="nb">print</span><span class="p">(</span><a href="../reference/api/python/driver.html#tvm.lower" title="tvm.lower" class="sphx-glr-backref-module-tvm sphx-glr-backref-type-py-function"><span class="n">tvm</span><span class="o">.</span><span class="n">lower</span></a><span class="p">(</span><a href="../reference/api/python/te.html#tvm.te.Schedule" title="tvm.te.Schedule" class="sphx-glr-backref-module-tvm-te sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">s</span></a><span class="p">,</span> <span class="p">[</span><a href="../reference/api/python/te.html#tvm.te.Tensor" title="tvm.te.Tensor" class="sphx-glr-backref-module-tvm-te sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">A</span></a><span class="p">,</span> <a href="../reference/api/python/te.html#tvm.te.Tensor" title="tvm.te.Tensor" class="sphx-glr-backref-module-tvm-te sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">B</span></a><span class="p">,</span> <a href="../reference/api/python/te.html#tvm.te.Tensor" title="tvm.te.Tensor" class="sphx-glr-backref-module-tvm-te sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">C</span></a><span class="p">],</span> <span class="n">simple_mode</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span>
 </pre></div>
 </div>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>block caching: 0.111459
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>block caching: 0.110710
 @I.ir_module
 class Module:
     @T.prim_func
@@ -1332,13 +1332,13 @@ class Module:
         T.func_attr({&quot;from_legacy_te_schedule&quot;: True, &quot;global_symbol&quot;: &quot;main&quot;, &quot;tir.noalias&quot;: True})
         packedB = T.allocate([32768], &quot;float32x32&quot;, &quot;global&quot;)
         C_global = T.allocate([1024], &quot;float32&quot;, &quot;global&quot;)
-        packedB_1 = T.buffer_decl((32768,), &quot;float32x32&quot;, data=packedB)
+        packedB_1 = T.Buffer((32768,), &quot;float32x32&quot;, data=packedB)
         for x in T.parallel(32):
             for y in range(1024):
-                B_1 = T.buffer_decl((1048576,), data=B.data)
+                B_1 = T.Buffer((1048576,), data=B.data)
                 packedB_1[x * 1024 + y] = B_1[y * 1024 + x * 32:y * 1024 + x * 32 + 32]
         for x_outer, y_outer in T.grid(32, 32):
-            C_global_1 = T.buffer_decl((1024,), data=C_global)
+            C_global_1 = T.Buffer((1024,), data=C_global)
             for x_c_init in range(32):
                 C_global_1[x_c_init * 32:x_c_init * 32 + 32] = T.Broadcast(T.float32(0), 32)
             for k_outer, x_c in T.grid(256, 32):
@@ -1346,13 +1346,13 @@ class Module:
                 cse_var_3: T.int32 = x_c * 32
                 cse_var_2: T.int32 = y_outer * 1024 + cse_var_4
                 cse_var_1: T.int32 = x_outer * 32768 + x_c * 1024 + cse_var_4
-                A_1 = T.buffer_decl((1048576,), data=A.data)
+                A_1 = T.Buffer((1048576,), data=A.data)
                 C_global_1[cse_var_3:cse_var_3 + 32] = C_global_1[cse_var_3:cse_var_3 + 32] + T.Broadcast(A_1[cse_var_1], 32) * packedB_1[cse_var_2]
                 C_global_1[cse_var_3:cse_var_3 + 32] = C_global_1[cse_var_3:cse_var_3 + 32] + T.Broadcast(A_1[cse_var_1 + 1], 32) * packedB_1[cse_var_2 + 1]
                 C_global_1[cse_var_3:cse_var_3 + 32] = C_global_1[cse_var_3:cse_var_3 + 32] + T.Broadcast(A_1[cse_var_1 + 2], 32) * packedB_1[cse_var_2 + 2]
                 C_global_1[cse_var_3:cse_var_3 + 32] = C_global_1[cse_var_3:cse_var_3 + 32] + T.Broadcast(A_1[cse_var_1 + 3], 32) * packedB_1[cse_var_2 + 3]
             for x_inner, y_inner in T.grid(32, 32):
-                C_1 = T.buffer_decl((1048576,), data=C.data)
+                C_1 = T.Buffer((1048576,), data=C.data)
                 C_1[x_outer * 32768 + x_inner * 1024 + y_outer * 32 + y_inner] = C_global_1[x_inner * 32 + y_inner]
 </pre></div>
 </div>
@@ -1378,22 +1378,22 @@ of thread-level parallelization.</p>
 <span class="nb">print</span><span class="p">(</span><a href="../reference/api/python/driver.html#tvm.lower" title="tvm.lower" class="sphx-glr-backref-module-tvm sphx-glr-backref-type-py-function"><span class="n">tvm</span><span class="o">.</span><span class="n">lower</span></a><span class="p">(</span><a href="../reference/api/python/te.html#tvm.te.Schedule" title="tvm.te.Schedule" class="sphx-glr-backref-module-tvm-te sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">s</span></a><span class="p">,</span> <span class="p">[</span><a href="../reference/api/python/te.html#tvm.te.Tensor" title="tvm.te.Tensor" class="sphx-glr-backref-module-tvm-te sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">A</span></a><span class="p">,</span> <a href="../reference/api/python/te.html#tvm.te.Tensor" title="tvm.te.Tensor" class="sphx-glr-backref-module-tvm-te sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">B</span></a><span class="p">,</span> <a href="../reference/api/python/te.html#tvm.te.Tensor" title="tvm.te.Tensor" class="sphx-glr-backref-module-tvm-te sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">C</span></a><span class="p">],</span> <span class="n">simple_mode</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span>
 </pre></div>
 </div>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>parallelization: 0.145881
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>parallelization: 0.144952
 @I.ir_module
 class Module:
     @T.prim_func
     def main(A: T.Buffer((1024, 1024), &quot;float32&quot;), B: T.Buffer((1024, 1024), &quot;float32&quot;), C: T.Buffer((1024, 1024), &quot;float32&quot;)):
         T.func_attr({&quot;from_legacy_te_schedule&quot;: True, &quot;global_symbol&quot;: &quot;main&quot;, &quot;tir.noalias&quot;: True})
         packedB = T.allocate([32768], &quot;float32x32&quot;, &quot;global&quot;)
-        packedB_1 = T.buffer_decl((32768,), &quot;float32x32&quot;, data=packedB)
+        packedB_1 = T.Buffer((32768,), &quot;float32x32&quot;, data=packedB)
         for x in T.parallel(32):
             for y in range(1024):
-                B_1 = T.buffer_decl((1048576,), data=B.data)
+                B_1 = T.Buffer((1048576,), data=B.data)
                 packedB_1[x * 1024 + y] = B_1[y * 1024 + x * 32:y * 1024 + x * 32 + 32]
         for x_outer in T.parallel(32):
             C_global = T.allocate([1024], &quot;float32&quot;, &quot;global&quot;)
             for y_outer in range(32):
-                C_global_1 = T.buffer_decl((1024,), data=C_global)
+                C_global_1 = T.Buffer((1024,), data=C_global)
                 for x_c_init in range(32):
                     C_global_1[x_c_init * 32:x_c_init * 32 + 32] = T.Broadcast(T.float32(0), 32)
                 for k_outer, x_c in T.grid(256, 32):
@@ -1401,13 +1401,13 @@ class Module:
                     cse_var_3: T.int32 = x_c * 32
                     cse_var_2: T.int32 = y_outer * 1024 + cse_var_4
                     cse_var_1: T.int32 = x_outer * 32768 + x_c * 1024 + cse_var_4
-                    A_1 = T.buffer_decl((1048576,), data=A.data)
+                    A_1 = T.Buffer((1048576,), data=A.data)
                     C_global_1[cse_var_3:cse_var_3 + 32] = C_global_1[cse_var_3:cse_var_3 + 32] + T.Broadcast(A_1[cse_var_1], 32) * packedB_1[cse_var_2]
                     C_global_1[cse_var_3:cse_var_3 + 32] = C_global_1[cse_var_3:cse_var_3 + 32] + T.Broadcast(A_1[cse_var_1 + 1], 32) * packedB_1[cse_var_2 + 1]
                     C_global_1[cse_var_3:cse_var_3 + 32] = C_global_1[cse_var_3:cse_var_3 + 32] + T.Broadcast(A_1[cse_var_1 + 2], 32) * packedB_1[cse_var_2 + 2]
                     C_global_1[cse_var_3:cse_var_3 + 32] = C_global_1[cse_var_3:cse_var_3 + 32] + T.Broadcast(A_1[cse_var_1 + 3], 32) * packedB_1[cse_var_2 + 3]
                 for x_inner, y_inner in T.grid(32, 32):
-                    C_1 = T.buffer_decl((1048576,), data=C.data)
+                    C_1 = T.Buffer((1048576,), data=C.data)
                     C_1[x_outer * 32768 + x_inner * 1024 + y_outer * 32 + y_inner] = C_global_1[x_inner * 32 + y_inner]
 </pre></div>
 </div>
@@ -1428,13 +1428,13 @@ working, we can compare the results.</p>
 </pre></div>
 </div>
 <div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>        Operator                  Timing             Performance
-            none      3.4037571257000003                     1.0
-        blocking            0.3093271071      0.0908781372103291
-   vectorization            0.3467412628     0.10187015406649817
-loop permutation            0.1154315736    0.033912987718317564
-   array packing            0.1092409875     0.03209423688757876
-   block caching            0.1114586662     0.03274577535466134
- parallelization     0.14588090139999998     0.04285878692651986
+            none            3.4270900767                     1.0
+        blocking            0.2992614526     0.08732231890682128
+   vectorization            0.3337221303     0.09737769443788485
+loop permutation             0.121459927     0.03544112476814607
+   array packing     0.10939925399999999    0.031921907960278155
+   block caching              0.11071008     0.03230439746906347
+ parallelization            0.1449524867    0.042296083107210614
 </pre></div>
 </div>
 <p>Note that the outputs on the web page reflect the running times on a
@@ -1466,7 +1466,7 @@ is</p>
 you can build generic templates of the matrix multiplication and other
 operations with tunable parameters that allows you to automatically optimize
 the computation for specific platforms.</p>
-<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 1 minutes  1.072 seconds)</p>
+<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 1 minutes  1.140 seconds)</p>
 <div class="sphx-glr-footer sphx-glr-footer-example docutils container" id="sphx-glr-download-tutorial-tensor-expr-get-started-py">
 <div class="sphx-glr-download sphx-glr-download-python docutils container">
 <p><a class="reference download internal" download="" href="../_downloads/40a01cffb015a67aaec0fad7e27cf80d/tensor_expr_get_started.py"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">tensor_expr_get_started.py</span></code></a></p>
