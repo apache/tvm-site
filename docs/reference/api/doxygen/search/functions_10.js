@@ -17,7 +17,7 @@ var searchData=
   ['parentnode',['ParentNode',['../classtvm_1_1ObjectPathNode.html#a4a06a6588b427640e2f775a6307ccab5',1,'tvm::ObjectPathNode']]],
   ['parse_5fauto_5fscheduler_5flayout',['parse_auto_scheduler_layout',['../namespacetvm_1_1topi.html#a6fec3a88d419cd018cf1041cf3d99204',1,'tvm::topi']]],
   ['parsecustomdatatype',['ParseCustomDatatype',['../namespacetvm_1_1runtime.html#ac6d167947285dff3c780bd5d01ace9b9',1,'tvm::runtime']]],
-  ['parsemodule',['ParseModule',['../namespacetvm_1_1parser.html#a6d1ba1bd4ba87b4400f2ec545f264336',1,'tvm::parser']]],
+  ['parsemodule',['ParseModule',['../namespacetvm_1_1relay.html#ac0b61f2cb4c1b03b204b216615647b6d',1,'tvm::relay']]],
   ['partialeval',['PartialEval',['../namespacetvm_1_1relay_1_1transform.html#aa270d98da5518969e005c7e30d6eb6fe',1,'tvm::relay::transform']]],
   ['partitiongraph',['PartitionGraph',['../namespacetvm_1_1relay_1_1transform.html#aac0bfdaf6d09b360602243c81abe05a1',1,'tvm::relay::transform']]],
   ['partitionpattern',['PartitionPattern',['../namespacetvm_1_1relay.html#a48108863604dc310eb3184b13b42a92a',1,'tvm::relay']]],

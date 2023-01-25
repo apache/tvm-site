@@ -14,7 +14,7 @@ var searchData=
   ['softmax_2eh',['softmax.h',['../cuda_2softmax_8h.html',1,'(Global Namespace)'],['../nn_2softmax_8h.html',1,'(Global Namespace)'],['../rocm_2softmax_8h.html',1,'(Global Namespace)']]],
   ['source_5fmap_2eh',['source_map.h',['../source__map_8h.html',1,'']]],
   ['space_5fgenerator_2eh',['space_generator.h',['../space__generator_8h.html',1,'']]],
-  ['span_2eh',['span.h',['../ir_2span_8h.html',1,'(Global Namespace)'],['../support_2span_8h.html',1,'(Global Namespace)']]],
+  ['span_2eh',['span.h',['../span_8h.html',1,'']]],
   ['stack_5fallocator_2eh',['stack_allocator.h',['../stack__allocator_8h.html',1,'']]],
   ['state_2eh',['state.h',['../state_8h.html',1,'']]],
   ['stmt_2eh',['stmt.h',['../stmt_8h.html',1,'']]],

@@ -66,7 +66,7 @@ var searchData=
   ['getlateboundconstants',['GetLateBoundConstants',['../classtvm_1_1runtime_1_1vm_1_1Executable.html#ad0dd5c8b70a9c2aff7e0a0517de53e0c',1,'tvm::runtime::vm::Executable']]],
   ['getlib',['GetLib',['../classtvm_1_1runtime_1_1vm_1_1Executable.html#aabfeb049c4a50df7b204b34f56b31567',1,'tvm::runtime::vm::Executable']]],
   ['getlibs',['GetLibs',['../classtvm_1_1TargetNode.html#a1bd600905c1a4469726184adbc9087b0',1,'tvm::TargetNode']]],
-  ['getline',['GetLine',['../classtvm_1_1parser_1_1Source.html#a5b1d51f8eac2d6cacb8b771f3f63d24a',1,'tvm::parser::Source']]],
+  ['getline',['GetLine',['../classtvm_1_1Source.html#abcac00cf8e53b5c346aa3956f0566411',1,'tvm::Source']]],
   ['getloops',['GetLoops',['../classtvm_1_1tir_1_1ScheduleNode.html#a232186c0db6176db56df4cc30dd11829',1,'tvm::tir::ScheduleNode']]],
   ['getmemoryinfo',['GetMemoryInfo',['../namespacetvm.html#a6e525343df6fbd739a45b291cb0dfb4f',1,'tvm']]],
   ['getmodule',['GetModule',['../classtvm_1_1TypeReporterNode.html#aff8186cce55fcfd0823b7b135b7db1e8',1,'tvm::TypeReporterNode']]],

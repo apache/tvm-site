@@ -20,7 +20,6 @@ var searchData=
   ['metadata',['metadata',['../namespacetvm_1_1runtime_1_1metadata.html',1,'tvm::runtime']]],
   ['micro_5frpc',['micro_rpc',['../namespacetvm_1_1runtime_1_1micro__rpc.html',1,'tvm::runtime']]],
   ['nn',['nn',['../namespacetvm_1_1topi_1_1nn.html',1,'tvm::topi']]],
-  ['parser',['parser',['../namespacetvm_1_1parser.html',1,'tvm']]],
   ['printer',['printer',['../namespacetvm_1_1script_1_1printer.html',1,'tvm::script']]],
   ['profiling',['profiling',['../namespacetvm_1_1runtime_1_1profiling.html',1,'tvm::runtime']]],
   ['qnn',['qnn',['../namespacetvm_1_1relay_1_1qnn.html',1,'tvm::relay']]],
