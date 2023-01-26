@@ -632,26 +632,25 @@ class Module:
     @T.prim_func
     def main(placeholder: T.Buffer((128, 256), &quot;float32&quot;), placeholder_1: T.Buffer((4916, 16, 1), &quot;float32&quot;), placeholder_2: T.Buffer((4916,), &quot;int32&quot;), placeholder_3: T.Buffer((33,), &quot;int32&quot;), placeholder_4: T.Buffer((128, 512), &quot;float32&quot;), compute: T.Buffer((128, 512), &quot;float32&quot;)):
         T.func_attr({&quot;from_legacy_te_schedule&quot;: True, &quot;global_symbol&quot;: &quot;main&quot;, &quot;tir.noalias&quot;: True})
-        for i0_outer_i1_outer_fused in T.parallel(1024):
-            compute_1 = T.allocate([64], &quot;float32&quot;, &quot;global&quot;)
-            compute_2 = T.Buffer((64,), data=compute_1)
-            for i_inner_init, j_init in T.grid(4, 16):
-                compute_2[i_inner_init * 16 + j_init] = T.float32(0)
-            for elem_idx, i_inner, j in T.grid(T.let(cse_var_1, i0_outer_i1_outer_fused % 32, placeholder_5[cse_var_1 + 1] - placeholder_5[cse_var_1]), 4, 16):
-                cse_var_1 = T.var(&quot;int32&quot;)
-                placeholder_5 = T.Buffer((33,), &quot;int32&quot;, data=placeholder_3.data)
-                cse_var_2: T.int32 = i0_outer_i1_outer_fused % 32
-                if T.likely(elem_idx &lt; placeholder_5[cse_var_2 + 1] - placeholder_5[cse_var_2]):
-                    placeholder_6 = T.Buffer((78656,), data=placeholder_1.data)
-                    placeholder_7 = T.Buffer((32768,), data=placeholder.data)
-                    placeholder_8 = T.Buffer((4916,), &quot;int32&quot;, data=placeholder_2.data)
-                    cse_var_3: T.int32 = i_inner * 16 + j
-                    compute_2[cse_var_3] = compute_2[cse_var_3] + placeholder_6[placeholder_5[cse_var_2] * 16 + elem_idx * 16 + j] * T.max(placeholder_7[i0_outer_i1_outer_fused // 32 * 1024 + i_inner * 256 + placeholder_8[placeholder_5[cse_var_2] + elem_idx]], T.float32(0))
-            for i0_inner in range(4):
-                cse_var_4: T.int32 = i0_outer_i1_outer_fused // 32 * 2048 + i0_inner * 512 + i0_outer_i1_outer_fused % 32 * 16
-                compute_3 = T.Buffer((65536,), data=compute.data)
-                placeholder_5 = T.Buffer((65536,), data=placeholder_4.data)
-                compute_3[cse_var_4:cse_var_4 + 16] = T.max(compute_2[i0_inner * 16:i0_inner * 16 + 16] + placeholder_5[cse_var_4:cse_var_4 + 16], T.Broadcast(T.float32(0), 16))
+        for i0_outer in T.parallel(8):
+            compute_1 = T.allocate([256], &quot;float32&quot;, &quot;global&quot;)
+            for i1_outer in range(32):
+                compute_2 = T.Buffer((256,), data=compute_1)
+                for i_inner_init, j_init in T.grid(16, 16):
+                    compute_2[i_inner_init * 16 + j_init] = T.float32(0)
+                for elem_idx, i_inner, j in T.grid(placeholder_5[i1_outer + 1] - placeholder_5[i1_outer], 16, 16):
+                    placeholder_5 = T.Buffer((33,), &quot;int32&quot;, data=placeholder_3.data)
+                    if T.likely(elem_idx &lt; placeholder_5[i1_outer + 1] - placeholder_5[i1_outer]):
+                        placeholder_6 = T.Buffer((78656,), data=placeholder_1.data)
+                        placeholder_7 = T.Buffer((32768,), data=placeholder.data)
+                        placeholder_8 = T.Buffer((4916,), &quot;int32&quot;, data=placeholder_2.data)
+                        cse_var_1: T.int32 = i_inner * 16 + j
+                        compute_2[cse_var_1] = compute_2[cse_var_1] + placeholder_6[placeholder_5[i1_outer] * 16 + elem_idx * 16 + j] * T.max(placeholder_7[i0_outer * 4096 + i_inner * 256 + placeholder_8[placeholder_5[i1_outer] + elem_idx]], T.float32(0))
+                for i0_inner in range(16):
+                    cse_var_2: T.int32 = i0_outer * 8192 + i0_inner * 512 + i1_outer * 16
+                    compute_3 = T.Buffer((65536,), data=compute.data)
+                    placeholder_5 = T.Buffer((65536,), data=placeholder_4.data)
+                    compute_3[cse_var_2:cse_var_2 + 16] = T.max(compute_2[i0_inner * 16:i0_inner * 16 + 16] + placeholder_5[cse_var_2:cse_var_2 + 16], T.Broadcast(T.float32(0), 16))
 </pre></div>
 </div>
 </div>
@@ -685,7 +684,7 @@ class Module:
 <span class="p">)</span>
 </pre></div>
 </div>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Execution time of this operator: 1.344 ms
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Execution time of this operator: 1.522 ms
 </pre></div>
 </div>
 <div class="admonition note">
