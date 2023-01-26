@@ -64,6 +64,7 @@ var searchData=
   ['combineparallelbatchmatmul',['CombineParallelBatchMatmul',['../namespacetvm_1_1relay_1_1transform.html#aa97a0ec61929f58aefff5da83a73e1cd',1,'tvm::relay::transform']]],
   ['combineparallelconv2d',['CombineParallelConv2D',['../namespacetvm_1_1relay_1_1transform.html#a3b8f4cbf0bd699d2ca0ab92c534c867d',1,'tvm::relay::transform']]],
   ['combineparalleldense',['CombineParallelDense',['../namespacetvm_1_1relay_1_1transform.html#a61517368427f429e784b4b128cb6351d',1,'tvm::relay::transform']]],
+  ['commentdoc',['CommentDoc',['../classtvm_1_1script_1_1printer_1_1CommentDoc.html#a1aa26f57bb5aea15db1b111392720290',1,'tvm::script::printer::CommentDoc']]],
   ['committuningrecord',['CommitTuningRecord',['../classtvm_1_1meta__schedule_1_1DatabaseNode.html#a391ebf6b8bd4d6a1e564ad807f336fd4',1,'tvm::meta_schedule::DatabaseNode::CommitTuningRecord()'],['../classtvm_1_1meta__schedule_1_1PyDatabaseNode.html#a00614b22bd1cae147dc0d83cdd071187',1,'tvm::meta_schedule::PyDatabaseNode::CommitTuningRecord()']]],
   ['commitworkload',['CommitWorkload',['../classtvm_1_1meta__schedule_1_1DatabaseNode.html#a833752c0069eb976028425751df6e9ac',1,'tvm::meta_schedule::DatabaseNode::CommitWorkload()'],['../classtvm_1_1meta__schedule_1_1PyDatabaseNode.html#a12d64aa44d3d2ab37a6600d17be3e708',1,'tvm::meta_schedule::PyDatabaseNode::CommitWorkload()']]],
   ['commonsubexprelimtir',['CommonSubexprElimTIR',['../namespacetvm_1_1tir_1_1transform.html#a82c5b1caff09436701fb9b9e7f672571',1,'tvm::tir::transform']]],
