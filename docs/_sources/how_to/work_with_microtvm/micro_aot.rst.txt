@@ -22,10 +22,10 @@
 .. _sphx_glr_how_to_work_with_microtvm_micro_aot.py:
 
 
-.. _tutorial-micro-AoT:
+.. _tutorial-micro-aot:
 
-microTVM Host-Driven AoT
-===========================
+3. microTVM Ahead-of-Time (AOT) Compilation
+===========================================
 **Authors**:
 `Mehrdad Hessar <https://github.com/mehrdadh>`_,
 `Alan MacDonald <https://github.com/alanmacd>`_
@@ -73,7 +73,7 @@ Import Python dependencies
 -------------------------------
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 56-65
+.. GENERATED FROM PYTHON SOURCE LINES 56-66
 
 .. code-block:: default
 
@@ -83,6 +83,7 @@ Import Python dependencies
 
     import tvm
     from tvm import relay
+    import tvm.micro.testing
     from tvm.relay.backend import Executor, Runtime
     from tvm.contrib.download import download_testdata
 
@@ -93,7 +94,7 @@ Import Python dependencies
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 66-76
+.. GENERATED FROM PYTHON SOURCE LINES 67-77
 
 Import a TFLite model
 ---------------------
@@ -106,7 +107,7 @@ To test this model, we use samples from `KWS dataset provided by Google <https:/
 you need to export `TVM_MICRO_USE_HW` environment variable.
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 76-97
+.. GENERATED FROM PYTHON SOURCE LINES 77-98
 
 .. code-block:: default
 
@@ -138,7 +139,7 @@ you need to export `TVM_MICRO_USE_HW` environment variable.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 98-108
+.. GENERATED FROM PYTHON SOURCE LINES 99-108
 
 Defining the target
 -------------------
@@ -147,11 +148,10 @@ Now we need to define the target, runtime and executor. In this tutorial, we foc
 using AOT host driven executor. We use the host micro target which is for running a model
 on x86 CPU using CRT runtime or running a model with Zephyr platform on qemu_x86 simulator
 board. In the case of a physical microcontroller, we get the target model for the physical
-board (E.g. nucleo_l4r5zi) and pass it to `tvm.target.target.micro` to create a full
-micro target.
+board (E.g. nucleo_l4r5zi) and change `BOARD` to supported Zephyr board.
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 108-127
+.. GENERATED FROM PYTHON SOURCE LINES 108-124
 
 .. code-block:: default
 
@@ -161,18 +161,15 @@ micro target.
 
     # Simulate a microcontroller on the host machine. Uses the main() from `src/runtime/crt/host/main.cc`.
     # To use physical hardware, replace "host" with something matching your hardware.
-    TARGET = tvm.target.target.micro("host")
+    TARGET = tvm.micro.testing.get_target("crt")
 
     # Use the AOT executor rather than graph or vm executors. Don't use unpacked API or C calling style.
     EXECUTOR = Executor("aot")
 
     if use_physical_hw:
-        boards_file = pathlib.Path(tvm.micro.get_microtvm_template_projects("zephyr")) / "boards.json"
-        with open(boards_file) as f:
-            boards = json.load(f)
         BOARD = os.getenv("TVM_MICRO_BOARD", default="nucleo_l4r5zi")
         SERIAL = os.getenv("TVM_MICRO_SERIAL", default=None)
-        TARGET = tvm.target.target.micro(boards[BOARD]["model"])
+        TARGET = tvm.micro.testing.get_target("zephyr", BOARD)
 
 
 
@@ -181,7 +178,7 @@ micro target.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 128-133
+.. GENERATED FROM PYTHON SOURCE LINES 125-130
 
 Compile the model
 -----------------
@@ -189,7 +186,7 @@ Compile the model
 Now, we compile the model for the target:
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 133-138
+.. GENERATED FROM PYTHON SOURCE LINES 130-135
 
 .. code-block:: default
 
@@ -205,7 +202,7 @@ Now, we compile the model for the target:
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 139-147
+.. GENERATED FROM PYTHON SOURCE LINES 136-144
 
 Create a microTVM project
 -------------------------
@@ -216,7 +213,7 @@ CRT and Zephyr microTVM template projects which are used for x86 CPU and Zephyr 
 respectively.
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 147-166
+.. GENERATED FROM PYTHON SOURCE LINES 144-163
 
 .. code-block:: default
 
@@ -246,7 +243,7 @@ respectively.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 167-175
+.. GENERATED FROM PYTHON SOURCE LINES 164-172
 
 Build, flash and execute the model
 ----------------------------------
@@ -257,7 +254,7 @@ Next, we define the labels for the model output and execute the model with a
 sample with expected value of 6 (label: left).
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 175-199
+.. GENERATED FROM PYTHON SOURCE LINES 172-196
 
 .. code-block:: default
 

@@ -22,9 +22,9 @@
 .. _sphx_glr_how_to_work_with_microtvm_micro_tflite.py:
 
 
-.. _microTVM-with-TFLite:
+.. _tutorial_micro_tflite:
 
-microTVM with TFLite Models
+2. microTVM TFLite Tutorial
 ===========================
 **Author**: `Tom Gall <https://github.com/tom-gall>`_
 
@@ -68,7 +68,7 @@ Import Python dependencies
 -------------------------------
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 51-68
+.. GENERATED FROM PYTHON SOURCE LINES 51-73
 
 .. code-block:: default
 
@@ -79,11 +79,16 @@ Import Python dependencies
     import numpy as np
 
     import tvm
+    import tvm.micro
+    import tvm.micro.testing
     from tvm import relay
     import tvm.contrib.utils
+    from tvm.micro import export_model_library_format
     from tvm.contrib.download import download_testdata
 
-    model_url = "https://people.linaro.org/~tom.gall/sine_model.tflite"
+    model_url = (
+        "https://github.com/tlc-pack/web-data/raw/main/testdata/microTVM/model/sine_model.tflite"
+    )
     model_file = "sine_model.tflite"
     model_path = download_testdata(model_url, model_file, module="data")
 
@@ -96,11 +101,11 @@ Import Python dependencies
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 69-70
+.. GENERATED FROM PYTHON SOURCE LINES 74-75
 
 Using the buffer, transform into a tflite model python object
 
-.. GENERATED FROM PYTHON SOURCE LINES 70-79
+.. GENERATED FROM PYTHON SOURCE LINES 75-84
 
 .. code-block:: default
 
@@ -120,11 +125,11 @@ Using the buffer, transform into a tflite model python object
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 80-81
+.. GENERATED FROM PYTHON SOURCE LINES 85-86
 
 Print out the version of the model
 
-.. GENERATED FROM PYTHON SOURCE LINES 81-84
+.. GENERATED FROM PYTHON SOURCE LINES 86-89
 
 .. code-block:: default
 
@@ -144,7 +149,7 @@ Print out the version of the model
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 85-93
+.. GENERATED FROM PYTHON SOURCE LINES 90-98
 
 Parse the python model object to convert it into a relay module
 and weights.
@@ -155,7 +160,7 @@ If you are unsure what that might be, this can be discovered by using
 the ``visualize.py`` script within the Tensorflow project.
 See `How do I inspect a .tflite file? <https://www.tensorflow.org/lite/guide/faq>`_
 
-.. GENERATED FROM PYTHON SOURCE LINES 93-102
+.. GENERATED FROM PYTHON SOURCE LINES 98-107
 
 .. code-block:: default
 
@@ -175,51 +180,39 @@ See `How do I inspect a .tflite file? <https://www.tensorflow.org/lite/guide/faq
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 103-112
+.. GENERATED FROM PYTHON SOURCE LINES 108-117
 
 Defining the target
 -------------------
 
 Now we create a build config for relay, turning off two options and then calling relay.build which
 will result in a C source file for the selected TARGET. When running on a simulated target of the
-same architecture as the host (where this Python script is executed) choose "host" below for the
+same architecture as the host (where this Python script is executed) choose "crt" below for the
 TARGET, the C Runtime as the RUNTIME and a proper board/VM to run it (Zephyr will create the right
 QEMU VM based on BOARD. In the example below the x86 arch is selected and a x86 VM is picked up accordingly:
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 112-142
+.. GENERATED FROM PYTHON SOURCE LINES 117-135
 
 .. code-block:: default
 
     RUNTIME = tvm.relay.backend.Runtime("crt", {"system-lib": True})
-    TARGET = tvm.target.target.micro("host")
+    TARGET = tvm.micro.testing.get_target("crt")
 
-    #
-    # Compiling for physical hardware
-    #  When running on physical hardware, choose a TARGET and a BOARD that describe the hardware. The
-    #  STM32F746 Nucleo target and board is chosen in the example below. Another option would be to
-    #  choose the STM32F746 Discovery board instead. Since that board has the same MCU as the Nucleo
-    #  board but a couple of wirings and configs differ, it's necessary to select the "stm32f746g_disco"
-    #  board to generated the right firmware image.
-    #
+    # When running on physical hardware, choose a TARGET and a BOARD that describe the hardware. The
+    # STM32L4R5ZI Nucleo target and board is chosen in the example below. You could change the testing
+    # board by simply exporting `TVM_MICRO_BOARD` variable with a different Zephyr supported board.
 
     if use_physical_hw:
-        boards_file = pathlib.Path(tvm.micro.get_microtvm_template_projects("zephyr")) / "boards.json"
-        with open(boards_file) as f:
-            boards = json.load(f)
         BOARD = os.getenv("TVM_MICRO_BOARD", default="nucleo_l4r5zi")
         SERIAL = os.getenv("TVM_MICRO_SERIAL", default=None)
-        TARGET = tvm.target.target.micro(boards[BOARD]["model"])
+        TARGET = tvm.micro.testing.get_target("zephyr", BOARD)
 
+    # For some boards, Zephyr runs them emulated by default, using QEMU. For example, below is the
+    # TARGET and BOARD used to build a microTVM firmware for the mps2-an521 board.
     #
-    #  For some boards, Zephyr runs them emulated by default, using QEMU. For example, below is the
-    #  TARGET and BOARD used to build a microTVM firmware for the mps2-an521 board. Since that board
-    #  runs emulated by default on Zephyr the suffix "-qemu" is added to the board name to inform
-    #  microTVM that the QEMU transporter must be used to communicate with the board. If the board name
-    #  already has the prefix "qemu_", like "qemu_x86", then it's not necessary to add that suffix.
-    #
-    #  TARGET = tvm.target.target.micro("mps2_an521")
-    #  BOARD = "mps2_an521-qemu"
+    # `mps2_an521 = "mps2_an521"`
+    # `TARGET = tvm.micro.testing.get_target("zephyr", BOARD)`
 
 
 
@@ -228,27 +221,41 @@ QEMU VM based on BOARD. In the example below the x86 arch is selected and a x86 
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 143-144
+.. GENERATED FROM PYTHON SOURCE LINES 136-138
 
-Now, compile the model for the target:
+Now, compile the model for the target. If you do not specify Executor,
+by default it uses GraphExecutor.
 
-.. GENERATED FROM PYTHON SOURCE LINES 144-233
+.. GENERATED FROM PYTHON SOURCE LINES 138-143
 
 .. code-block:: default
 
 
-    with tvm.transform.PassContext(
-        opt_level=3, config={"tir.disable_vectorize": True}, disabled_pass=["AlterOpLayout"]
-    ):
+    with tvm.transform.PassContext(opt_level=3, config={"tir.disable_vectorize": True}):
         module = relay.build(mod, target=TARGET, runtime=RUNTIME, params=params)
 
 
-    # Inspecting the compilation output
-    # ---------------------------------
-    #
-    # The compilation process has produced some C code implementing the operators in this graph. We
-    # can inspect it by printing the CSourceModule contents (for the purposes of this tutorial, let's
-    # just print the first 10 lines):
+
+
+
+
+
+
+
+.. GENERATED FROM PYTHON SOURCE LINES 144-151
+
+Inspecting the compilation output
+---------------------------------
+
+The compilation process has produced some C code implementing the operators in this graph. We
+can inspect it by printing the CSourceModule contents (for the purposes of this tutorial, let's
+just print the first 10 lines):
+
+
+.. GENERATED FROM PYTHON SOURCE LINES 151-163
+
+.. code-block:: default
+
 
     c_source_module = module.get_lib().imported_modules[0]
     assert c_source_module.type_key == "c", "tutorial is broken"
@@ -259,70 +266,6 @@ Now, compile the model for the target:
         l.startswith("TVM_DLL int32_t tvmgen_default_") for l in first_few_lines
     ), f"tutorial is broken: {first_few_lines!r}"
     print("\n".join(first_few_lines))
-
-
-    # Compiling the generated code
-    # ----------------------------
-    #
-    # Now we need to incorporate the generated C code into a project that allows us to run inference on the
-    # device. The simplest way to do this is to integrate it yourself, using microTVM's standard output format
-    # (:doc:`Model Library Format` </dev/model_library_format>`). This is a tarball with a standard layout:
-
-    # Get a temporary path where we can store the tarball (since this is running as a tutorial).
-
-    fd, model_library_format_tar_path = tempfile.mkstemp()
-    os.close(fd)
-    os.unlink(model_library_format_tar_path)
-    tvm.micro.export_model_library_format(module, model_library_format_tar_path)
-
-    with tarfile.open(model_library_format_tar_path, "r:*") as tar_f:
-        print("\n".join(f" - {m.name}" for m in tar_f.getmembers()))
-
-    # Cleanup for tutorial:
-    os.unlink(model_library_format_tar_path)
-
-
-    # TVM also provides a standard way for embedded platforms to automatically generate a standalone
-    # project, compile and flash it to a target, and communicate with it using the standard TVM RPC
-    # protocol. The Model Library Format serves as the model input to this process. When embedded
-    # platforms provide such an integration, they can be used directly by TVM for both host-driven
-    # inference and autotuning . This integration is provided by the
-    # `microTVM Project API` <https://github.com/apache/tvm-rfcs/blob/main/rfcs/0008-microtvm-project-api.md>_,
-    #
-    # Embedded platforms need to provide a Template Project containing a microTVM API Server (typically,
-    # this lives in a file ``microtvm_api_server.py`` in the root directory). Let's use the example ``host``
-    # project in this tutorial, which simulates the device using a POSIX subprocess and pipes:
-
-    template_project_path = pathlib.Path(tvm.micro.get_microtvm_template_projects("crt"))
-    project_options = {}  # You can use options to provide platform-specific options through TVM.
-
-    # Compiling for physical hardware (or an emulated board, like the mps_an521)
-    # --------------------------------------------------------------------------
-    #  For physical hardware, you can try out the Zephyr platform by using a different template project
-    #  and options:
-    #
-
-    if use_physical_hw:
-        template_project_path = pathlib.Path(tvm.micro.get_microtvm_template_projects("zephyr"))
-        project_options = {
-            "project_type": "host_driven",
-            "board": BOARD,
-            "serial_number": SERIAL,
-            "config_main_stack_size": 4096,
-            "zephyr_base": os.getenv("ZEPHYR_BASE", default="/content/zephyrproject/zephyr"),
-        }
-
-    # Create a temporary directory
-
-    temp_dir = tvm.contrib.utils.tempdir()
-    generated_project_dir = temp_dir / "generated-project"
-    generated_project = tvm.micro.generate_project(
-        template_project_path, module, generated_project_dir, project_options
-    )
-
-    # Build and flash the project
-    generated_project.build()
-    generated_project.flash()
 
 
 
@@ -342,7 +285,81 @@ Now, compile the model for the target:
     #ifdef __cplusplus
     extern "C"
     #endif
-    TVM_DLL int32_t tvmgen_default_fused_nn_dense_add(void* args, int32_t* arg_type_ids, int32_t num_args, void* out_ret_value, int32_t* out_ret_tcode, void* resource_handle) {
+    TVM_DLL int32_t tvmgen_default_fused_nn_contrib_dense_pack_add(void* args, int32_t* arg_type_ids, int32_t num_args, void* out_ret_value, int32_t* out_ret_tcode, void* resource_handle) {
+
+
+
+
+.. GENERATED FROM PYTHON SOURCE LINES 164-170
+
+Compiling the generated code
+----------------------------
+
+Now we need to incorporate the generated C code into a project that allows us to run inference on the
+device. The simplest way to do this is to integrate it yourself, using microTVM's standard output format
+model library format. This is a tarball with a standard layout.
+
+.. GENERATED FROM PYTHON SOURCE LINES 170-219
+
+.. code-block:: default
+
+
+    # Get a temporary path where we can store the tarball (since this is running as a tutorial).
+
+    temp_dir = tvm.contrib.utils.tempdir()
+    model_tar_path = temp_dir / "model.tar"
+    export_model_library_format(module, model_tar_path)
+
+    with tarfile.open(model_tar_path, "r:*") as tar_f:
+        print("\n".join(f" - {m.name}" for m in tar_f.getmembers()))
+
+    # TVM also provides a standard way for embedded platforms to automatically generate a standalone
+    # project, compile and flash it to a target, and communicate with it using the standard TVM RPC
+    # protocol. The Model Library Format serves as the model input to this process. When embedded
+    # platforms provide such an integration, they can be used directly by TVM for both host-driven
+    # inference and autotuning . This integration is provided by the
+    # `microTVM Project API` <https://github.com/apache/tvm-rfcs/blob/main/rfcs/0008-microtvm-project-api.md>_,
+    #
+    # Embedded platforms need to provide a Template Project containing a microTVM API Server (typically,
+    # this lives in a file ``microtvm_api_server.py`` in the root directory). Let's use the example ``host``
+    # project in this tutorial, which simulates the device using a POSIX subprocess and pipes:
+
+    template_project_path = pathlib.Path(tvm.micro.get_microtvm_template_projects("crt"))
+    project_options = {}  # You can use options to provide platform-specific options through TVM.
+
+    #  For physical hardware, you can try out the Zephyr platform by using a different template project
+    #  and options:
+
+    if use_physical_hw:
+        template_project_path = pathlib.Path(tvm.micro.get_microtvm_template_projects("zephyr"))
+        project_options = {
+            "project_type": "host_driven",
+            "board": BOARD,
+            "serial_number": SERIAL,
+            "config_main_stack_size": 4096,
+            "zephyr_base": os.getenv("ZEPHYR_BASE", default="/content/zephyrproject/zephyr"),
+        }
+
+    # Create a temporary directory
+    temp_dir = tvm.contrib.utils.tempdir()
+    generated_project_dir = temp_dir / "generated-project"
+    generated_project = tvm.micro.generate_project(
+        template_project_path, module, generated_project_dir, project_options
+    )
+
+    # Build and flash the project
+    generated_project.build()
+    generated_project.flash()
+
+
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ .. code-block:: none
+
      - .
      - ./codegen
      - ./codegen/host
@@ -361,14 +378,14 @@ Now, compile the model for the target:
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 234-238
+.. GENERATED FROM PYTHON SOURCE LINES 220-224
 
 Next, establish a session with the simulated device and run the
 computation. The `with session` line would typically flash an attached
 microcontroller, but in this tutorial, it simply launches a subprocess
 to stand in for an attached microcontroller.
 
-.. GENERATED FROM PYTHON SOURCE LINES 238-255
+.. GENERATED FROM PYTHON SOURCE LINES 224-241
 
 .. code-block:: default
 
