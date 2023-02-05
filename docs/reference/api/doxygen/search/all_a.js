@@ -258,6 +258,7 @@ var searchData=
   ['isexpr',['IsExpr',['../namespacetvm_1_1relay.html#a61dc962beca310c25ef857e51fb3553c',1,'tvm::relay']]],
   ['isexternalcodegen',['IsExternalCodegen',['../classtvm_1_1Target.html#a4e4aca0d3516a0998b55d043e12cd832',1,'tvm::Target']]],
   ['isexternalcodegenfor',['IsExternalCodegenFor',['../classtvm_1_1Target.html#acc8e9cae4385eb160ca79b1ddf8a7510',1,'tvm::Target']]],
+  ['isfaildeferralenabled',['IsFailDeferralEnabled',['../classtvm_1_1SEqualReducer_1_1Handler.html#a76f03c6be7e3c24808ba4a72285952d9',1,'tvm::SEqualReducer::Handler::IsFailDeferralEnabled()'],['../classtvm_1_1SEqualHandlerDefault.html#a0a6bf7984baa7682d1dbc635d4d78f31',1,'tvm::SEqualHandlerDefault::IsFailDeferralEnabled()']]],
   ['isfinite',['isfinite',['../namespacetvm.html#a096aa20c0df975d089231b2c6fda2e61',1,'tvm::isfinite()'],['../namespacetvm_1_1topi.html#aaa52f4a921ac110066390deeb052dfac',1,'tvm::topi::isfinite()']]],
   ['isfullyconstrained',['IsFullyConstrained',['../classtvm_1_1VirtualDeviceNode.html#ae3c848e08b56105cdb046907ccbfc59c',1,'tvm::VirtualDeviceNode']]],
   ['isfullyunconstrained',['IsFullyUnconstrained',['../classtvm_1_1VirtualDeviceNode.html#acbae67e35fb5348e30101ae23073ad52',1,'tvm::VirtualDeviceNode']]],
