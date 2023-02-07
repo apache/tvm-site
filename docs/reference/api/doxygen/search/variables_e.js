@@ -1,6 +1,8 @@
 var searchData=
 [
   ['obj2info',['obj2info',['../classtvm_1_1script_1_1printer_1_1IRDocsifierNode.html#a5ce74fda8a1c8dbcdf47537540c2219f',1,'tvm::script::printer::IRDocsifierNode']]],
+  ['obj_5fto_5fannotate',['obj_to_annotate',['../classtvm_1_1PrinterConfigNode.html#abd7af285839fe88e48b6ff879d19bfed',1,'tvm::PrinterConfigNode']]],
+  ['obj_5fto_5funderline',['obj_to_underline',['../classtvm_1_1PrinterConfigNode.html#a76b205891ecf851435a83513a514e1d3',1,'tvm::PrinterConfigNode']]],
   ['object',['object',['../structtvm_1_1runtime_1_1vm_1_1Instruction.html#a0ac4dada6519d071a819cc897cb15cf1',1,'tvm::runtime::vm::Instruction']]],
   ['offset',['offset',['../classtvm_1_1auto__scheduler_1_1StorageAlignStepNode.html#a364fe1c876d030fb049ec3bee88d0ab6',1,'tvm::auto_scheduler::StorageAlignStepNode::offset()'],['../structtvm_1_1runtime_1_1vm_1_1Instruction.html#a0a335ae91c7fd20f47bb6581dc3c620c',1,'tvm::runtime::vm::Instruction::offset()']]],
   ['offset_5ffactor',['offset_factor',['../classtvm_1_1tir_1_1BufferNode.html#aa89852936d3a026cea1470c4c7f27488',1,'tvm::tir::BufferNode']]],

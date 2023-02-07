@@ -44,7 +44,6 @@ var searchData=
   ['optional_3c_20tvm_3a_3ameta_5fschedule_3a_3adatabase_20_3e',['Optional&lt; tvm::meta_schedule::Database &gt;',['../classtvm_1_1runtime_1_1Optional.html',1,'tvm::runtime']]],
   ['optional_3c_20tvm_3a_3ameta_5fschedule_3a_3asearchstrategy_20_3e',['Optional&lt; tvm::meta_schedule::SearchStrategy &gt;',['../classtvm_1_1runtime_1_1Optional.html',1,'tvm::runtime']]],
   ['optional_3c_20tvm_3a_3ameta_5fschedule_3a_3aspacegenerator_20_3e',['Optional&lt; tvm::meta_schedule::SpaceGenerator &gt;',['../classtvm_1_1runtime_1_1Optional.html',1,'tvm::runtime']]],
-  ['optional_3c_20tvm_3a_3aobjectpath_20_3e',['Optional&lt; tvm::ObjectPath &gt;',['../classtvm_1_1runtime_1_1Optional.html',1,'tvm::runtime']]],
   ['optional_3c_20tvm_3a_3aprimexpr_20_3e',['Optional&lt; tvm::PrimExpr &gt;',['../classtvm_1_1runtime_1_1Optional.html',1,'tvm::runtime']]],
   ['optional_3c_20tvm_3a_3aruntime_3a_3aarray_3c_20tvm_3a_3aauto_5fscheduler_3a_3ameasurecallback_20_3e_20_3e',['Optional&lt; tvm::runtime::Array&lt; tvm::auto_scheduler::MeasureCallback &gt; &gt;',['../classtvm_1_1runtime_1_1Optional.html',1,'tvm::runtime']]],
   ['optional_3c_20tvm_3a_3aruntime_3a_3aarray_3c_20tvm_3a_3afloatimm_20_3e_20_3e',['Optional&lt; tvm::runtime::Array&lt; tvm::FloatImm &gt; &gt;',['../classtvm_1_1runtime_1_1Optional.html',1,'tvm::runtime']]],

@@ -6,7 +6,7 @@ var searchData=
   ['var',['Var',['../classtvm_1_1tir_1_1Var.html',1,'tvm::tir::Var'],['../classtvm_1_1relay_1_1Var.html',1,'tvm::relay::Var']]],
   ['variableinfo',['VariableInfo',['../structtvm_1_1script_1_1printer_1_1IRDocsifierNode_1_1VariableInfo.html',1,'tvm::script::printer::IRDocsifierNode']]],
   ['varianceattrs',['VarianceAttrs',['../structtvm_1_1relay_1_1VarianceAttrs.html',1,'tvm::relay']]],
-  ['varnode',['VarNode',['../classtvm_1_1relay_1_1VarNode.html',1,'tvm::relay::VarNode'],['../classtvm_1_1tir_1_1VarNode.html',1,'tvm::tir::VarNode']]],
+  ['varnode',['VarNode',['../classtvm_1_1tir_1_1VarNode.html',1,'tvm::tir::VarNode'],['../classtvm_1_1relay_1_1VarNode.html',1,'tvm::relay::VarNode']]],
   ['varpattern',['VarPattern',['../classtvm_1_1relay_1_1VarPattern.html',1,'tvm::relay']]],
   ['varpatternnode',['VarPatternNode',['../classtvm_1_1relay_1_1VarPatternNode.html',1,'tvm::relay']]],
   ['virtualdevice',['VirtualDevice',['../classtvm_1_1VirtualDevice.html',1,'tvm']]],

@@ -1,6 +1,8 @@
 var searchData=
 [
   ['obj2info',['obj2info',['../classtvm_1_1script_1_1printer_1_1IRDocsifierNode.html#a5ce74fda8a1c8dbcdf47537540c2219f',1,'tvm::script::printer::IRDocsifierNode']]],
+  ['obj_5fto_5fannotate',['obj_to_annotate',['../classtvm_1_1PrinterConfigNode.html#abd7af285839fe88e48b6ff879d19bfed',1,'tvm::PrinterConfigNode']]],
+  ['obj_5fto_5funderline',['obj_to_underline',['../classtvm_1_1PrinterConfigNode.html#a76b205891ecf851435a83513a514e1d3',1,'tvm::PrinterConfigNode']]],
   ['objallocatorbase',['ObjAllocatorBase',['../classtvm_1_1runtime_1_1ObjAllocatorBase.html',1,'tvm::runtime::ObjAllocatorBase&lt; Derived &gt;'],['../classtvm_1_1runtime_1_1Object.html#a8fae619f3bd1a2b2f7273d8d6525032a',1,'tvm::runtime::Object::ObjAllocatorBase()'],['../classtvm_1_1runtime_1_1ObjectPtr.html#a8fae619f3bd1a2b2f7273d8d6525032a',1,'tvm::runtime::ObjectPtr::ObjAllocatorBase()']]],
   ['objallocatorbase_3c_20simpleobjallocator_20_3e',['ObjAllocatorBase&lt; SimpleObjAllocator &gt;',['../classtvm_1_1runtime_1_1ObjAllocatorBase.html',1,'tvm::runtime']]],
   ['object',['Object',['../classtvm_1_1runtime_1_1Object.html',1,'tvm::runtime::Object'],['../classtvm_1_1runtime_1_1ObjectPtr.html#a0720b5f434e636e22a3ed34f847eec57',1,'tvm::runtime::ObjectPtr::Object()'],['../classtvm_1_1runtime_1_1Object.html#a133436a9ec5c4a768b94102bf95a660b',1,'tvm::runtime::Object::Object()'],['../classtvm_1_1runtime_1_1Object.html#ab7968feb6ad38ecaffc320e13819d826',1,'tvm::runtime::Object::Object(const Object &amp;other)'],['../classtvm_1_1runtime_1_1Object.html#aa1612f69ea5b4225d4cda759cd517323',1,'tvm::runtime::Object::Object(Object &amp;&amp;other)'],['../structtvm_1_1runtime_1_1vm_1_1Instruction.html#a0ac4dada6519d071a819cc897cb15cf1',1,'tvm::runtime::vm::Instruction::object()']]],
@@ -125,7 +127,6 @@ var searchData=
   ['optional_3c_20tvm_3a_3ameta_5fschedule_3a_3adatabase_20_3e',['Optional&lt; tvm::meta_schedule::Database &gt;',['../classtvm_1_1runtime_1_1Optional.html',1,'tvm::runtime']]],
   ['optional_3c_20tvm_3a_3ameta_5fschedule_3a_3asearchstrategy_20_3e',['Optional&lt; tvm::meta_schedule::SearchStrategy &gt;',['../classtvm_1_1runtime_1_1Optional.html',1,'tvm::runtime']]],
   ['optional_3c_20tvm_3a_3ameta_5fschedule_3a_3aspacegenerator_20_3e',['Optional&lt; tvm::meta_schedule::SpaceGenerator &gt;',['../classtvm_1_1runtime_1_1Optional.html',1,'tvm::runtime']]],
-  ['optional_3c_20tvm_3a_3aobjectpath_20_3e',['Optional&lt; tvm::ObjectPath &gt;',['../classtvm_1_1runtime_1_1Optional.html',1,'tvm::runtime']]],
   ['optional_3c_20tvm_3a_3aprimexpr_20_3e',['Optional&lt; tvm::PrimExpr &gt;',['../classtvm_1_1runtime_1_1Optional.html',1,'tvm::runtime']]],
   ['optional_3c_20tvm_3a_3aruntime_3a_3aarray_3c_20tvm_3a_3aauto_5fscheduler_3a_3ameasurecallback_20_3e_20_3e',['Optional&lt; tvm::runtime::Array&lt; tvm::auto_scheduler::MeasureCallback &gt; &gt;',['../classtvm_1_1runtime_1_1Optional.html',1,'tvm::runtime']]],
   ['optional_3c_20tvm_3a_3aruntime_3a_3aarray_3c_20tvm_3a_3afloatimm_20_3e_20_3e',['Optional&lt; tvm::runtime::Array&lt; tvm::FloatImm &gt; &gt;',['../classtvm_1_1runtime_1_1Optional.html',1,'tvm::runtime']]],

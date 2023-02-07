@@ -25,7 +25,7 @@ var searchData=
   ['variables',['variables',['../classtvm_1_1arith_1_1IntConstraintsNode.html#adecd62b78ba2a3fc57778088ff641cf6',1,'tvm::arith::IntConstraintsNode']]],
   ['varianceattrs',['VarianceAttrs',['../structtvm_1_1relay_1_1VarianceAttrs.html',1,'tvm::relay']]],
   ['variances',['variances',['../structtvm_1_1relay_1_1MultiBoxTransformLocAttrs.html#a77bebc24e0c21245de2620593c2c2272',1,'tvm::relay::MultiBoxTransformLocAttrs']]],
-  ['varnode',['VarNode',['../classtvm_1_1relay_1_1VarNode.html',1,'tvm::relay::VarNode'],['../classtvm_1_1tir_1_1VarNode.html',1,'tvm::tir::VarNode']]],
+  ['varnode',['VarNode',['../classtvm_1_1tir_1_1VarNode.html',1,'tvm::tir::VarNode'],['../classtvm_1_1relay_1_1VarNode.html',1,'tvm::relay::VarNode']]],
   ['varpattern',['VarPattern',['../classtvm_1_1relay_1_1VarPattern.html',1,'tvm::relay::VarPattern'],['../classtvm_1_1relay_1_1VarPattern.html#a2319d6842d099992581ce8f867c9bc29',1,'tvm::relay::VarPattern::VarPattern()']]],
   ['varpatternnode',['VarPatternNode',['../classtvm_1_1relay_1_1VarPatternNode.html',1,'tvm::relay']]],
   ['vars',['vars',['../classtvm_1_1script_1_1ir__builder_1_1tir_1_1ForFrameNode.html#aae5623ede55058002bf9ac8257c2b7fd',1,'tvm::script::ir_builder::tir::ForFrameNode']]],
