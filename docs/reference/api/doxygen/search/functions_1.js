@@ -18,6 +18,7 @@ var searchData=
   ['adddispatchtoken',['AddDispatchToken',['../classtvm_1_1script_1_1printer_1_1FrameNode.html#af401e4fea5f6d7dffb9df87a15128350',1,'tvm::script::printer::FrameNode']]],
   ['addexitcallback',['AddExitCallback',['../classtvm_1_1script_1_1printer_1_1FrameNode.html#a719603ac48e31bf4ee68a36b5716413c',1,'tvm::script::printer::FrameNode']]],
   ['addimplementation',['AddImplementation',['../classtvm_1_1relay_1_1OpSpecialization.html#ac76d48fb032a2e732a4309dc0ce7a636',1,'tvm::relay::OpSpecialization::AddImplementation()'],['../classtvm_1_1relay_1_1OpStrategy.html#a3d389c44571d9b3e5a6135f22b8a7bf3',1,'tvm::relay::OpStrategy::AddImplementation()']]],
+  ['addmetadata',['AddMetadata',['../classtvm_1_1script_1_1printer_1_1IRDocsifierNode.html#a6caf3ae8ad6e900c10e4c198a3bfa1e9',1,'tvm::script::printer::IRDocsifierNode']]],
   ['address_5fof',['address_of',['../namespacetvm_1_1tir_1_1builtin.html#a700b7018f2c1f1fba8b4e28f264d8bbb',1,'tvm::tir::builtin']]],
   ['addressof',['AddressOf',['../classtvm_1_1runtime_1_1InplaceArrayBase.html#a2a0235e3e9b03abffc3839d14e1b7342',1,'tvm::runtime::InplaceArrayBase']]],
   ['addrfactor',['AddRFactor',['../classtvm_1_1meta__schedule_1_1ScheduleRule.html#ac88a36846b8653f9ad41218a44bec110',1,'tvm::meta_schedule::ScheduleRule']]],

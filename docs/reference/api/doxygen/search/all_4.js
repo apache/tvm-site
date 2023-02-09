@@ -46,6 +46,7 @@ var searchData=
   ['calls',['calls',['../classtvm_1_1runtime_1_1profiling_1_1ReportNode.html#a260723c8cfdf288106cc7195da2b30a0',1,'tvm::runtime::profiling::ReportNode']]],
   ['can_5fdispatch',['can_dispatch',['../classtvm_1_1NodeFunctor_3_01R_07const_01ObjectRef_01_6n_00_01Args_8_8_8_08_4.html#aa60aa2dc83ba65dd430d4df41034362b',1,'tvm::NodeFunctor&lt; R(const ObjectRef &amp;n, Args...)&gt;']]],
   ['canconvertfrom',['CanConvertFrom',['../classtvm_1_1runtime_1_1String.html#a2ee7733b1c8092383ffab8c67bf8cb20',1,'tvm::runtime::String']]],
+  ['candispatch',['CanDispatch',['../classtvm_1_1ReprLegacyPrinter.html#a235fd606e078defba830d9dab6442239',1,'tvm::ReprLegacyPrinter']]],
   ['canonical_5fsimplify',['canonical_simplify',['../classtvm_1_1arith_1_1Analyzer.html#a6cdf29adeceaa20b8c3dd7c26b92cd00',1,'tvm::arith::Analyzer']]],
   ['canonicalizecast',['CanonicalizeCast',['../namespacetvm_1_1relay_1_1transform.html#a93bbf7ab3f612d4f38a6832d6b53b4fd',1,'tvm::relay::transform']]],
   ['canonicalizeops',['CanonicalizeOps',['../namespacetvm_1_1relay_1_1transform.html#adcddf150ca7da40e20408928421b0086',1,'tvm::relay::transform']]],

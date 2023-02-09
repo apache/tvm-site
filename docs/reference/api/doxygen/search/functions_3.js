@@ -27,6 +27,7 @@ var searchData=
   ['callpattern',['CallPattern',['../classtvm_1_1relay_1_1CallPattern.html#afb3037d0393989a1952ef92b126654d6',1,'tvm::relay::CallPattern']]],
   ['can_5fdispatch',['can_dispatch',['../classtvm_1_1NodeFunctor_3_01R_07const_01ObjectRef_01_6n_00_01Args_8_8_8_08_4.html#aa60aa2dc83ba65dd430d4df41034362b',1,'tvm::NodeFunctor&lt; R(const ObjectRef &amp;n, Args...)&gt;']]],
   ['canconvertfrom',['CanConvertFrom',['../classtvm_1_1runtime_1_1String.html#a2ee7733b1c8092383ffab8c67bf8cb20',1,'tvm::runtime::String']]],
+  ['candispatch',['CanDispatch',['../classtvm_1_1ReprLegacyPrinter.html#a235fd606e078defba830d9dab6442239',1,'tvm::ReprLegacyPrinter']]],
   ['canonicalizecast',['CanonicalizeCast',['../namespacetvm_1_1relay_1_1transform.html#a93bbf7ab3f612d4f38a6832d6b53b4fd',1,'tvm::relay::transform']]],
   ['canonicalizeops',['CanonicalizeOps',['../namespacetvm_1_1relay_1_1transform.html#adcddf150ca7da40e20408928421b0086',1,'tvm::relay::transform']]],
   ['canonicaltarget',['CanonicalTarget',['../classtvm_1_1CompilationConfigNode.html#a3b2bc6e1481c8fd7dce9d66652993955',1,'tvm::CompilationConfigNode']]],
