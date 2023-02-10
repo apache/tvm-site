@@ -244,36 +244,469 @@ cooperative fetching, unrolling and operator fusion.
         def main(data: T.Buffer((1, 512, 7, 7), "float32"), kernel: T.Buffer((512, 512, 3, 3), "float32"), bias: T.Buffer((1, 512, 1, 1), "float32"), compute: T.Buffer((1, 512, 7, 7), "float32")):
             T.func_attr({"from_legacy_te_schedule": True, "global_symbol": "main", "tir.noalias": True})
             blockIdx_x = T.env_thread("blockIdx.x")
-            T.launch_thread(blockIdx_x, 32)
-            conv2d_nchw = T.allocate([2], "float32", "local")
-            pad_temp_shared = T.allocate([648], "float32", "shared")
-            kernel_shared = T.allocate([1152], "float32", "shared")
+            T.launch_thread(blockIdx_x, 16)
+            conv2d_nchw = T.allocate([8], "float32", "local")
+            pad_temp_shared = T.allocate([784], "float32", "shared")
+            kernel_shared = T.allocate([512], "float32", "shared")
             threadIdx_x = T.env_thread("threadIdx.x")
-            T.launch_thread(threadIdx_x, 392)
-            conv2d_nchw_1 = T.Buffer((2,), data=conv2d_nchw, scope="local", align=8)
-            for ff_inner_init in range(2):
-                conv2d_nchw_1[ff_inner_init] = T.float32(0)
-            for rc_outer_outer in range(64):
-                pad_temp_shared_1 = T.Buffer((648,), data=pad_temp_shared, scope="shared")
-                for ax0_ax1_fused_ax2_fused_ax3_fused_outer_outer in range(2):
-                    threadIdx_x_1 = T.env_thread("threadIdx.x")
-                    T.launch_thread(threadIdx_x_1, 392)
-                    if T.likely(ax0_ax1_fused_ax2_fused_ax3_fused_outer_outer * 49 + threadIdx_x_1 // 8 < 81):
-                        data_1 = T.Buffer((25088,), data=data.data)
-                        pad_temp_shared_1[ax0_ax1_fused_ax2_fused_ax3_fused_outer_outer * 392 + threadIdx_x_1] = T.if_then_else(9 <= (ax0_ax1_fused_ax2_fused_ax3_fused_outer_outer * 68 + threadIdx_x_1) % 81 and (ax0_ax1_fused_ax2_fused_ax3_fused_outer_outer * 68 + threadIdx_x_1) % 81 < 72 and 1 <= (ax0_ax1_fused_ax2_fused_ax3_fused_outer_outer * 5 + threadIdx_x_1) % 9 and (ax0_ax1_fused_ax2_fused_ax3_fused_outer_outer * 5 + threadIdx_x_1) % 9 < 8, data_1[rc_outer_outer * 392 + (ax0_ax1_fused_ax2_fused_ax3_fused_outer_outer * 392 + threadIdx_x_1) // 81 * 49 + (ax0_ax1_fused_ax2_fused_ax3_fused_outer_outer * 68 + threadIdx_x_1) % 81 // 9 * 7 + (ax0_ax1_fused_ax2_fused_ax3_fused_outer_outer * 5 + threadIdx_x_1) % 9 - 8], T.float32(0))
-                kernel_shared_1 = T.Buffer((1152,), data=kernel_shared, scope="shared")
-                for ax0_ax1_fused_ax2_fused_ax3_fused_outer_outer in range(3):
-                    threadIdx_x_1 = T.env_thread("threadIdx.x")
-                    T.launch_thread(threadIdx_x_1, 392)
-                    if T.likely(ax0_ax1_fused_ax2_fused_ax3_fused_outer_outer * 49 + threadIdx_x_1 // 8 < 144):
-                        kernel_1 = T.Buffer((2359296,), data=kernel.data)
-                        kernel_shared_1[ax0_ax1_fused_ax2_fused_ax3_fused_outer_outer * 392 + threadIdx_x_1] = kernel_1[blockIdx_x * 73728 + (ax0_ax1_fused_ax2_fused_ax3_fused_outer_outer * 49 + threadIdx_x_1 // 8) // 9 * 4608 + rc_outer_outer * 72 + (ax0_ax1_fused_ax2_fused_ax3_fused_outer_outer * 32 + threadIdx_x_1) % 72 // 3 * 3 + (ax0_ax1_fused_ax2_fused_ax3_fused_outer_outer * 2 + threadIdx_x_1) % 3]
-                for rc_outer_inner, ry_outer_inner, rx_inner, ff_inner in T.grid(8, 3, 3, 2):
-                    conv2d_nchw_1[ff_inner] = conv2d_nchw_1[ff_inner] + pad_temp_shared_1[rc_outer_inner * 81 + threadIdx_x % 49 // 7 * 9 + ry_outer_inner * 9 + rx_inner + threadIdx_x % 7] * kernel_shared_1[threadIdx_x // 49 * 144 + ff_inner * 72 + rc_outer_inner * 9 + ry_outer_inner * 3 + rx_inner]
-            for i1_inner in range(2):
-                compute_1 = T.Buffer((25088,), data=compute.data)
-                bias_1 = T.Buffer((512,), data=bias.data)
-                compute_1[blockIdx_x * 784 + threadIdx_x // 49 * 98 + i1_inner * 49 + threadIdx_x % 49] = T.max(conv2d_nchw_1[i1_inner] + bias_1[blockIdx_x * 16 + threadIdx_x // 49 * 2 + i1_inner], T.float32(0))
+            T.launch_thread(threadIdx_x, 196)
+            conv2d_nchw_1 = T.Buffer((1,), data=conv2d_nchw, scope="local", align=4)
+            conv2d_nchw_1[0] = T.float32(0)
+            conv2d_nchw_1[1] = T.float32(0)
+            conv2d_nchw_1[2] = T.float32(0)
+            conv2d_nchw_1[3] = T.float32(0)
+            conv2d_nchw_1[4] = T.float32(0)
+            conv2d_nchw_1[5] = T.float32(0)
+            conv2d_nchw_1[6] = T.float32(0)
+            conv2d_nchw_1[7] = T.float32(0)
+            for rc_outer_outer, ry_outer_outer in T.grid(32, 3):
+                cse_var_2: T.int32 = rc_outer_outer * 144
+                cse_var_1: T.int32 = ry_outer_outer * 3
+                threadIdx_x_1 = T.env_thread("threadIdx.x")
+                pad_temp_shared_1 = T.Buffer((784,), data=pad_temp_shared, scope="shared")
+                data_1 = T.Buffer((25088,), data=data.data)
+                with T.launch_thread(threadIdx_x_1, 196):
+                    pad_temp_shared_1[threadIdx_x_1] = T.if_then_else(1 <= threadIdx_x_1 % 49 // 7 + ry_outer_outer and threadIdx_x_1 % 49 // 7 + ry_outer_outer < 8 and 1 <= threadIdx_x_1 % 7, data_1[rc_outer_outer * 784 + ry_outer_outer * 7 + threadIdx_x_1 - 8], T.float32(0))
+                with T.launch_thread(threadIdx_x_1, 196):
+                    pad_temp_shared_1[threadIdx_x_1 + 196] = T.if_then_else(1 <= threadIdx_x_1 % 49 // 7 + ry_outer_outer and threadIdx_x_1 % 49 // 7 + ry_outer_outer < 8 and 1 <= threadIdx_x_1 % 7, data_1[rc_outer_outer * 784 + ry_outer_outer * 7 + threadIdx_x_1 + 188], T.float32(0))
+                with T.launch_thread(threadIdx_x_1, 196):
+                    pad_temp_shared_1[threadIdx_x_1 + 392] = T.if_then_else(1 <= threadIdx_x_1 % 49 // 7 + ry_outer_outer and threadIdx_x_1 % 49 // 7 + ry_outer_outer < 8 and 1 <= threadIdx_x_1 % 7, data_1[rc_outer_outer * 784 + ry_outer_outer * 7 + threadIdx_x_1 + 384], T.float32(0))
+                with T.launch_thread(threadIdx_x_1, 196):
+                    pad_temp_shared_1[threadIdx_x_1 + 588] = T.if_then_else(1 <= threadIdx_x_1 % 49 // 7 + ry_outer_outer and threadIdx_x_1 % 49 // 7 + ry_outer_outer < 8 and 1 <= threadIdx_x_1 % 7, data_1[rc_outer_outer * 784 + ry_outer_outer * 7 + threadIdx_x_1 + 580], T.float32(0))
+                threadIdx_x_2 = T.env_thread("threadIdx.x")
+                kernel_shared_1 = T.Buffer((512,), data=kernel_shared, scope="shared")
+                kernel_1 = T.Buffer((2359296,), data=kernel.data)
+                with T.launch_thread(threadIdx_x_2, 196):
+                    kernel_shared_1[threadIdx_x_2] = kernel_1[blockIdx_x * 147456 + threadIdx_x_2 // 16 * 4608 + cse_var_2 + threadIdx_x_2 % 16 * 9 + cse_var_1]
+                with T.launch_thread(threadIdx_x_2, 196):
+                    kernel_shared_1[threadIdx_x_2 + 196] = kernel_1[blockIdx_x * 147456 + (threadIdx_x_2 + 196) // 16 * 4608 + cse_var_2 + (threadIdx_x_2 + 4) % 16 * 9 + cse_var_1]
+                with T.launch_thread(threadIdx_x_2, 196):
+                    if T.likely(threadIdx_x_2 < 120):
+                        kernel_shared_1[threadIdx_x_2 + 392] = kernel_1[blockIdx_x * 147456 + (threadIdx_x_2 + 392) // 16 * 4608 + cse_var_2 + (threadIdx_x_2 + 8) % 16 * 9 + cse_var_1]
+                conv2d_nchw_1[0] = conv2d_nchw_1[0] + pad_temp_shared_1[threadIdx_x % 49] * kernel_shared_1[threadIdx_x // 49 * 16]
+                conv2d_nchw_1[1] = conv2d_nchw_1[1] + pad_temp_shared_1[threadIdx_x % 49] * kernel_shared_1[threadIdx_x // 49 * 16 + 64]
+                conv2d_nchw_1[2] = conv2d_nchw_1[2] + pad_temp_shared_1[threadIdx_x % 49] * kernel_shared_1[threadIdx_x // 49 * 16 + 128]
+                conv2d_nchw_1[3] = conv2d_nchw_1[3] + pad_temp_shared_1[threadIdx_x % 49] * kernel_shared_1[threadIdx_x // 49 * 16 + 192]
+                conv2d_nchw_1[4] = conv2d_nchw_1[4] + pad_temp_shared_1[threadIdx_x % 49] * kernel_shared_1[threadIdx_x // 49 * 16 + 256]
+                conv2d_nchw_1[5] = conv2d_nchw_1[5] + pad_temp_shared_1[threadIdx_x % 49] * kernel_shared_1[threadIdx_x // 49 * 16 + 320]
+                conv2d_nchw_1[6] = conv2d_nchw_1[6] + pad_temp_shared_1[threadIdx_x % 49] * kernel_shared_1[threadIdx_x // 49 * 16 + 384]
+                conv2d_nchw_1[7] = conv2d_nchw_1[7] + pad_temp_shared_1[threadIdx_x % 49] * kernel_shared_1[threadIdx_x // 49 * 16 + 448]
+                conv2d_nchw_1[0] = conv2d_nchw_1[0] + pad_temp_shared_1[threadIdx_x % 49 + 49] * kernel_shared_1[threadIdx_x // 49 * 16 + 1]
+                conv2d_nchw_1[1] = conv2d_nchw_1[1] + pad_temp_shared_1[threadIdx_x % 49 + 49] * kernel_shared_1[threadIdx_x // 49 * 16 + 65]
+                conv2d_nchw_1[2] = conv2d_nchw_1[2] + pad_temp_shared_1[threadIdx_x % 49 + 49] * kernel_shared_1[threadIdx_x // 49 * 16 + 129]
+                conv2d_nchw_1[3] = conv2d_nchw_1[3] + pad_temp_shared_1[threadIdx_x % 49 + 49] * kernel_shared_1[threadIdx_x // 49 * 16 + 193]
+                conv2d_nchw_1[4] = conv2d_nchw_1[4] + pad_temp_shared_1[threadIdx_x % 49 + 49] * kernel_shared_1[threadIdx_x // 49 * 16 + 257]
+                conv2d_nchw_1[5] = conv2d_nchw_1[5] + pad_temp_shared_1[threadIdx_x % 49 + 49] * kernel_shared_1[threadIdx_x // 49 * 16 + 321]
+                conv2d_nchw_1[6] = conv2d_nchw_1[6] + pad_temp_shared_1[threadIdx_x % 49 + 49] * kernel_shared_1[threadIdx_x // 49 * 16 + 385]
+                conv2d_nchw_1[7] = conv2d_nchw_1[7] + pad_temp_shared_1[threadIdx_x % 49 + 49] * kernel_shared_1[threadIdx_x // 49 * 16 + 449]
+                conv2d_nchw_1[0] = conv2d_nchw_1[0] + pad_temp_shared_1[threadIdx_x % 49 + 98] * kernel_shared_1[threadIdx_x // 49 * 16 + 2]
+                conv2d_nchw_1[1] = conv2d_nchw_1[1] + pad_temp_shared_1[threadIdx_x % 49 + 98] * kernel_shared_1[threadIdx_x // 49 * 16 + 66]
+                conv2d_nchw_1[2] = conv2d_nchw_1[2] + pad_temp_shared_1[threadIdx_x % 49 + 98] * kernel_shared_1[threadIdx_x // 49 * 16 + 130]
+                conv2d_nchw_1[3] = conv2d_nchw_1[3] + pad_temp_shared_1[threadIdx_x % 49 + 98] * kernel_shared_1[threadIdx_x // 49 * 16 + 194]
+                conv2d_nchw_1[4] = conv2d_nchw_1[4] + pad_temp_shared_1[threadIdx_x % 49 + 98] * kernel_shared_1[threadIdx_x // 49 * 16 + 258]
+                conv2d_nchw_1[5] = conv2d_nchw_1[5] + pad_temp_shared_1[threadIdx_x % 49 + 98] * kernel_shared_1[threadIdx_x // 49 * 16 + 322]
+                conv2d_nchw_1[6] = conv2d_nchw_1[6] + pad_temp_shared_1[threadIdx_x % 49 + 98] * kernel_shared_1[threadIdx_x // 49 * 16 + 386]
+                conv2d_nchw_1[7] = conv2d_nchw_1[7] + pad_temp_shared_1[threadIdx_x % 49 + 98] * kernel_shared_1[threadIdx_x // 49 * 16 + 450]
+                conv2d_nchw_1[0] = conv2d_nchw_1[0] + pad_temp_shared_1[threadIdx_x % 49 + 147] * kernel_shared_1[threadIdx_x // 49 * 16 + 3]
+                conv2d_nchw_1[1] = conv2d_nchw_1[1] + pad_temp_shared_1[threadIdx_x % 49 + 147] * kernel_shared_1[threadIdx_x // 49 * 16 + 67]
+                conv2d_nchw_1[2] = conv2d_nchw_1[2] + pad_temp_shared_1[threadIdx_x % 49 + 147] * kernel_shared_1[threadIdx_x // 49 * 16 + 131]
+                conv2d_nchw_1[3] = conv2d_nchw_1[3] + pad_temp_shared_1[threadIdx_x % 49 + 147] * kernel_shared_1[threadIdx_x // 49 * 16 + 195]
+                conv2d_nchw_1[4] = conv2d_nchw_1[4] + pad_temp_shared_1[threadIdx_x % 49 + 147] * kernel_shared_1[threadIdx_x // 49 * 16 + 259]
+                conv2d_nchw_1[5] = conv2d_nchw_1[5] + pad_temp_shared_1[threadIdx_x % 49 + 147] * kernel_shared_1[threadIdx_x // 49 * 16 + 323]
+                conv2d_nchw_1[6] = conv2d_nchw_1[6] + pad_temp_shared_1[threadIdx_x % 49 + 147] * kernel_shared_1[threadIdx_x // 49 * 16 + 387]
+                conv2d_nchw_1[7] = conv2d_nchw_1[7] + pad_temp_shared_1[threadIdx_x % 49 + 147] * kernel_shared_1[threadIdx_x // 49 * 16 + 451]
+                conv2d_nchw_1[0] = conv2d_nchw_1[0] + pad_temp_shared_1[threadIdx_x % 49 + 196] * kernel_shared_1[threadIdx_x // 49 * 16 + 4]
+                conv2d_nchw_1[1] = conv2d_nchw_1[1] + pad_temp_shared_1[threadIdx_x % 49 + 196] * kernel_shared_1[threadIdx_x // 49 * 16 + 68]
+                conv2d_nchw_1[2] = conv2d_nchw_1[2] + pad_temp_shared_1[threadIdx_x % 49 + 196] * kernel_shared_1[threadIdx_x // 49 * 16 + 132]
+                conv2d_nchw_1[3] = conv2d_nchw_1[3] + pad_temp_shared_1[threadIdx_x % 49 + 196] * kernel_shared_1[threadIdx_x // 49 * 16 + 196]
+                conv2d_nchw_1[4] = conv2d_nchw_1[4] + pad_temp_shared_1[threadIdx_x % 49 + 196] * kernel_shared_1[threadIdx_x // 49 * 16 + 260]
+                conv2d_nchw_1[5] = conv2d_nchw_1[5] + pad_temp_shared_1[threadIdx_x % 49 + 196] * kernel_shared_1[threadIdx_x // 49 * 16 + 324]
+                conv2d_nchw_1[6] = conv2d_nchw_1[6] + pad_temp_shared_1[threadIdx_x % 49 + 196] * kernel_shared_1[threadIdx_x // 49 * 16 + 388]
+                conv2d_nchw_1[7] = conv2d_nchw_1[7] + pad_temp_shared_1[threadIdx_x % 49 + 196] * kernel_shared_1[threadIdx_x // 49 * 16 + 452]
+                conv2d_nchw_1[0] = conv2d_nchw_1[0] + pad_temp_shared_1[threadIdx_x % 49 + 245] * kernel_shared_1[threadIdx_x // 49 * 16 + 5]
+                conv2d_nchw_1[1] = conv2d_nchw_1[1] + pad_temp_shared_1[threadIdx_x % 49 + 245] * kernel_shared_1[threadIdx_x // 49 * 16 + 69]
+                conv2d_nchw_1[2] = conv2d_nchw_1[2] + pad_temp_shared_1[threadIdx_x % 49 + 245] * kernel_shared_1[threadIdx_x // 49 * 16 + 133]
+                conv2d_nchw_1[3] = conv2d_nchw_1[3] + pad_temp_shared_1[threadIdx_x % 49 + 245] * kernel_shared_1[threadIdx_x // 49 * 16 + 197]
+                conv2d_nchw_1[4] = conv2d_nchw_1[4] + pad_temp_shared_1[threadIdx_x % 49 + 245] * kernel_shared_1[threadIdx_x // 49 * 16 + 261]
+                conv2d_nchw_1[5] = conv2d_nchw_1[5] + pad_temp_shared_1[threadIdx_x % 49 + 245] * kernel_shared_1[threadIdx_x // 49 * 16 + 325]
+                conv2d_nchw_1[6] = conv2d_nchw_1[6] + pad_temp_shared_1[threadIdx_x % 49 + 245] * kernel_shared_1[threadIdx_x // 49 * 16 + 389]
+                conv2d_nchw_1[7] = conv2d_nchw_1[7] + pad_temp_shared_1[threadIdx_x % 49 + 245] * kernel_shared_1[threadIdx_x // 49 * 16 + 453]
+                conv2d_nchw_1[0] = conv2d_nchw_1[0] + pad_temp_shared_1[threadIdx_x % 49 + 294] * kernel_shared_1[threadIdx_x // 49 * 16 + 6]
+                conv2d_nchw_1[1] = conv2d_nchw_1[1] + pad_temp_shared_1[threadIdx_x % 49 + 294] * kernel_shared_1[threadIdx_x // 49 * 16 + 70]
+                conv2d_nchw_1[2] = conv2d_nchw_1[2] + pad_temp_shared_1[threadIdx_x % 49 + 294] * kernel_shared_1[threadIdx_x // 49 * 16 + 134]
+                conv2d_nchw_1[3] = conv2d_nchw_1[3] + pad_temp_shared_1[threadIdx_x % 49 + 294] * kernel_shared_1[threadIdx_x // 49 * 16 + 198]
+                conv2d_nchw_1[4] = conv2d_nchw_1[4] + pad_temp_shared_1[threadIdx_x % 49 + 294] * kernel_shared_1[threadIdx_x // 49 * 16 + 262]
+                conv2d_nchw_1[5] = conv2d_nchw_1[5] + pad_temp_shared_1[threadIdx_x % 49 + 294] * kernel_shared_1[threadIdx_x // 49 * 16 + 326]
+                conv2d_nchw_1[6] = conv2d_nchw_1[6] + pad_temp_shared_1[threadIdx_x % 49 + 294] * kernel_shared_1[threadIdx_x // 49 * 16 + 390]
+                conv2d_nchw_1[7] = conv2d_nchw_1[7] + pad_temp_shared_1[threadIdx_x % 49 + 294] * kernel_shared_1[threadIdx_x // 49 * 16 + 454]
+                conv2d_nchw_1[0] = conv2d_nchw_1[0] + pad_temp_shared_1[threadIdx_x % 49 + 343] * kernel_shared_1[threadIdx_x // 49 * 16 + 7]
+                conv2d_nchw_1[1] = conv2d_nchw_1[1] + pad_temp_shared_1[threadIdx_x % 49 + 343] * kernel_shared_1[threadIdx_x // 49 * 16 + 71]
+                conv2d_nchw_1[2] = conv2d_nchw_1[2] + pad_temp_shared_1[threadIdx_x % 49 + 343] * kernel_shared_1[threadIdx_x // 49 * 16 + 135]
+                conv2d_nchw_1[3] = conv2d_nchw_1[3] + pad_temp_shared_1[threadIdx_x % 49 + 343] * kernel_shared_1[threadIdx_x // 49 * 16 + 199]
+                conv2d_nchw_1[4] = conv2d_nchw_1[4] + pad_temp_shared_1[threadIdx_x % 49 + 343] * kernel_shared_1[threadIdx_x // 49 * 16 + 263]
+                conv2d_nchw_1[5] = conv2d_nchw_1[5] + pad_temp_shared_1[threadIdx_x % 49 + 343] * kernel_shared_1[threadIdx_x // 49 * 16 + 327]
+                conv2d_nchw_1[6] = conv2d_nchw_1[6] + pad_temp_shared_1[threadIdx_x % 49 + 343] * kernel_shared_1[threadIdx_x // 49 * 16 + 391]
+                conv2d_nchw_1[7] = conv2d_nchw_1[7] + pad_temp_shared_1[threadIdx_x % 49 + 343] * kernel_shared_1[threadIdx_x // 49 * 16 + 455]
+                conv2d_nchw_1[0] = conv2d_nchw_1[0] + pad_temp_shared_1[threadIdx_x % 49 + 392] * kernel_shared_1[threadIdx_x // 49 * 16 + 8]
+                conv2d_nchw_1[1] = conv2d_nchw_1[1] + pad_temp_shared_1[threadIdx_x % 49 + 392] * kernel_shared_1[threadIdx_x // 49 * 16 + 72]
+                conv2d_nchw_1[2] = conv2d_nchw_1[2] + pad_temp_shared_1[threadIdx_x % 49 + 392] * kernel_shared_1[threadIdx_x // 49 * 16 + 136]
+                conv2d_nchw_1[3] = conv2d_nchw_1[3] + pad_temp_shared_1[threadIdx_x % 49 + 392] * kernel_shared_1[threadIdx_x // 49 * 16 + 200]
+                conv2d_nchw_1[4] = conv2d_nchw_1[4] + pad_temp_shared_1[threadIdx_x % 49 + 392] * kernel_shared_1[threadIdx_x // 49 * 16 + 264]
+                conv2d_nchw_1[5] = conv2d_nchw_1[5] + pad_temp_shared_1[threadIdx_x % 49 + 392] * kernel_shared_1[threadIdx_x // 49 * 16 + 328]
+                conv2d_nchw_1[6] = conv2d_nchw_1[6] + pad_temp_shared_1[threadIdx_x % 49 + 392] * kernel_shared_1[threadIdx_x // 49 * 16 + 392]
+                conv2d_nchw_1[7] = conv2d_nchw_1[7] + pad_temp_shared_1[threadIdx_x % 49 + 392] * kernel_shared_1[threadIdx_x // 49 * 16 + 456]
+                conv2d_nchw_1[0] = conv2d_nchw_1[0] + pad_temp_shared_1[threadIdx_x % 49 + 441] * kernel_shared_1[threadIdx_x // 49 * 16 + 9]
+                conv2d_nchw_1[1] = conv2d_nchw_1[1] + pad_temp_shared_1[threadIdx_x % 49 + 441] * kernel_shared_1[threadIdx_x // 49 * 16 + 73]
+                conv2d_nchw_1[2] = conv2d_nchw_1[2] + pad_temp_shared_1[threadIdx_x % 49 + 441] * kernel_shared_1[threadIdx_x // 49 * 16 + 137]
+                conv2d_nchw_1[3] = conv2d_nchw_1[3] + pad_temp_shared_1[threadIdx_x % 49 + 441] * kernel_shared_1[threadIdx_x // 49 * 16 + 201]
+                conv2d_nchw_1[4] = conv2d_nchw_1[4] + pad_temp_shared_1[threadIdx_x % 49 + 441] * kernel_shared_1[threadIdx_x // 49 * 16 + 265]
+                conv2d_nchw_1[5] = conv2d_nchw_1[5] + pad_temp_shared_1[threadIdx_x % 49 + 441] * kernel_shared_1[threadIdx_x // 49 * 16 + 329]
+                conv2d_nchw_1[6] = conv2d_nchw_1[6] + pad_temp_shared_1[threadIdx_x % 49 + 441] * kernel_shared_1[threadIdx_x // 49 * 16 + 393]
+                conv2d_nchw_1[7] = conv2d_nchw_1[7] + pad_temp_shared_1[threadIdx_x % 49 + 441] * kernel_shared_1[threadIdx_x // 49 * 16 + 457]
+                conv2d_nchw_1[0] = conv2d_nchw_1[0] + pad_temp_shared_1[threadIdx_x % 49 + 490] * kernel_shared_1[threadIdx_x // 49 * 16 + 10]
+                conv2d_nchw_1[1] = conv2d_nchw_1[1] + pad_temp_shared_1[threadIdx_x % 49 + 490] * kernel_shared_1[threadIdx_x // 49 * 16 + 74]
+                conv2d_nchw_1[2] = conv2d_nchw_1[2] + pad_temp_shared_1[threadIdx_x % 49 + 490] * kernel_shared_1[threadIdx_x // 49 * 16 + 138]
+                conv2d_nchw_1[3] = conv2d_nchw_1[3] + pad_temp_shared_1[threadIdx_x % 49 + 490] * kernel_shared_1[threadIdx_x // 49 * 16 + 202]
+                conv2d_nchw_1[4] = conv2d_nchw_1[4] + pad_temp_shared_1[threadIdx_x % 49 + 490] * kernel_shared_1[threadIdx_x // 49 * 16 + 266]
+                conv2d_nchw_1[5] = conv2d_nchw_1[5] + pad_temp_shared_1[threadIdx_x % 49 + 490] * kernel_shared_1[threadIdx_x // 49 * 16 + 330]
+                conv2d_nchw_1[6] = conv2d_nchw_1[6] + pad_temp_shared_1[threadIdx_x % 49 + 490] * kernel_shared_1[threadIdx_x // 49 * 16 + 394]
+                conv2d_nchw_1[7] = conv2d_nchw_1[7] + pad_temp_shared_1[threadIdx_x % 49 + 490] * kernel_shared_1[threadIdx_x // 49 * 16 + 458]
+                conv2d_nchw_1[0] = conv2d_nchw_1[0] + pad_temp_shared_1[threadIdx_x % 49 + 539] * kernel_shared_1[threadIdx_x // 49 * 16 + 11]
+                conv2d_nchw_1[1] = conv2d_nchw_1[1] + pad_temp_shared_1[threadIdx_x % 49 + 539] * kernel_shared_1[threadIdx_x // 49 * 16 + 75]
+                conv2d_nchw_1[2] = conv2d_nchw_1[2] + pad_temp_shared_1[threadIdx_x % 49 + 539] * kernel_shared_1[threadIdx_x // 49 * 16 + 139]
+                conv2d_nchw_1[3] = conv2d_nchw_1[3] + pad_temp_shared_1[threadIdx_x % 49 + 539] * kernel_shared_1[threadIdx_x // 49 * 16 + 203]
+                conv2d_nchw_1[4] = conv2d_nchw_1[4] + pad_temp_shared_1[threadIdx_x % 49 + 539] * kernel_shared_1[threadIdx_x // 49 * 16 + 267]
+                conv2d_nchw_1[5] = conv2d_nchw_1[5] + pad_temp_shared_1[threadIdx_x % 49 + 539] * kernel_shared_1[threadIdx_x // 49 * 16 + 331]
+                conv2d_nchw_1[6] = conv2d_nchw_1[6] + pad_temp_shared_1[threadIdx_x % 49 + 539] * kernel_shared_1[threadIdx_x // 49 * 16 + 395]
+                conv2d_nchw_1[7] = conv2d_nchw_1[7] + pad_temp_shared_1[threadIdx_x % 49 + 539] * kernel_shared_1[threadIdx_x // 49 * 16 + 459]
+                conv2d_nchw_1[0] = conv2d_nchw_1[0] + pad_temp_shared_1[threadIdx_x % 49 + 588] * kernel_shared_1[threadIdx_x // 49 * 16 + 12]
+                conv2d_nchw_1[1] = conv2d_nchw_1[1] + pad_temp_shared_1[threadIdx_x % 49 + 588] * kernel_shared_1[threadIdx_x // 49 * 16 + 76]
+                conv2d_nchw_1[2] = conv2d_nchw_1[2] + pad_temp_shared_1[threadIdx_x % 49 + 588] * kernel_shared_1[threadIdx_x // 49 * 16 + 140]
+                conv2d_nchw_1[3] = conv2d_nchw_1[3] + pad_temp_shared_1[threadIdx_x % 49 + 588] * kernel_shared_1[threadIdx_x // 49 * 16 + 204]
+                conv2d_nchw_1[4] = conv2d_nchw_1[4] + pad_temp_shared_1[threadIdx_x % 49 + 588] * kernel_shared_1[threadIdx_x // 49 * 16 + 268]
+                conv2d_nchw_1[5] = conv2d_nchw_1[5] + pad_temp_shared_1[threadIdx_x % 49 + 588] * kernel_shared_1[threadIdx_x // 49 * 16 + 332]
+                conv2d_nchw_1[6] = conv2d_nchw_1[6] + pad_temp_shared_1[threadIdx_x % 49 + 588] * kernel_shared_1[threadIdx_x // 49 * 16 + 396]
+                conv2d_nchw_1[7] = conv2d_nchw_1[7] + pad_temp_shared_1[threadIdx_x % 49 + 588] * kernel_shared_1[threadIdx_x // 49 * 16 + 460]
+                conv2d_nchw_1[0] = conv2d_nchw_1[0] + pad_temp_shared_1[threadIdx_x % 49 + 637] * kernel_shared_1[threadIdx_x // 49 * 16 + 13]
+                conv2d_nchw_1[1] = conv2d_nchw_1[1] + pad_temp_shared_1[threadIdx_x % 49 + 637] * kernel_shared_1[threadIdx_x // 49 * 16 + 77]
+                conv2d_nchw_1[2] = conv2d_nchw_1[2] + pad_temp_shared_1[threadIdx_x % 49 + 637] * kernel_shared_1[threadIdx_x // 49 * 16 + 141]
+                conv2d_nchw_1[3] = conv2d_nchw_1[3] + pad_temp_shared_1[threadIdx_x % 49 + 637] * kernel_shared_1[threadIdx_x // 49 * 16 + 205]
+                conv2d_nchw_1[4] = conv2d_nchw_1[4] + pad_temp_shared_1[threadIdx_x % 49 + 637] * kernel_shared_1[threadIdx_x // 49 * 16 + 269]
+                conv2d_nchw_1[5] = conv2d_nchw_1[5] + pad_temp_shared_1[threadIdx_x % 49 + 637] * kernel_shared_1[threadIdx_x // 49 * 16 + 333]
+                conv2d_nchw_1[6] = conv2d_nchw_1[6] + pad_temp_shared_1[threadIdx_x % 49 + 637] * kernel_shared_1[threadIdx_x // 49 * 16 + 397]
+                conv2d_nchw_1[7] = conv2d_nchw_1[7] + pad_temp_shared_1[threadIdx_x % 49 + 637] * kernel_shared_1[threadIdx_x // 49 * 16 + 461]
+                conv2d_nchw_1[0] = conv2d_nchw_1[0] + pad_temp_shared_1[threadIdx_x % 49 + 686] * kernel_shared_1[threadIdx_x // 49 * 16 + 14]
+                conv2d_nchw_1[1] = conv2d_nchw_1[1] + pad_temp_shared_1[threadIdx_x % 49 + 686] * kernel_shared_1[threadIdx_x // 49 * 16 + 78]
+                conv2d_nchw_1[2] = conv2d_nchw_1[2] + pad_temp_shared_1[threadIdx_x % 49 + 686] * kernel_shared_1[threadIdx_x // 49 * 16 + 142]
+                conv2d_nchw_1[3] = conv2d_nchw_1[3] + pad_temp_shared_1[threadIdx_x % 49 + 686] * kernel_shared_1[threadIdx_x // 49 * 16 + 206]
+                conv2d_nchw_1[4] = conv2d_nchw_1[4] + pad_temp_shared_1[threadIdx_x % 49 + 686] * kernel_shared_1[threadIdx_x // 49 * 16 + 270]
+                conv2d_nchw_1[5] = conv2d_nchw_1[5] + pad_temp_shared_1[threadIdx_x % 49 + 686] * kernel_shared_1[threadIdx_x // 49 * 16 + 334]
+                conv2d_nchw_1[6] = conv2d_nchw_1[6] + pad_temp_shared_1[threadIdx_x % 49 + 686] * kernel_shared_1[threadIdx_x // 49 * 16 + 398]
+                conv2d_nchw_1[7] = conv2d_nchw_1[7] + pad_temp_shared_1[threadIdx_x % 49 + 686] * kernel_shared_1[threadIdx_x // 49 * 16 + 462]
+                conv2d_nchw_1[0] = conv2d_nchw_1[0] + pad_temp_shared_1[threadIdx_x % 49 + 735] * kernel_shared_1[threadIdx_x // 49 * 16 + 15]
+                conv2d_nchw_1[1] = conv2d_nchw_1[1] + pad_temp_shared_1[threadIdx_x % 49 + 735] * kernel_shared_1[threadIdx_x // 49 * 16 + 79]
+                conv2d_nchw_1[2] = conv2d_nchw_1[2] + pad_temp_shared_1[threadIdx_x % 49 + 735] * kernel_shared_1[threadIdx_x // 49 * 16 + 143]
+                conv2d_nchw_1[3] = conv2d_nchw_1[3] + pad_temp_shared_1[threadIdx_x % 49 + 735] * kernel_shared_1[threadIdx_x // 49 * 16 + 207]
+                conv2d_nchw_1[4] = conv2d_nchw_1[4] + pad_temp_shared_1[threadIdx_x % 49 + 735] * kernel_shared_1[threadIdx_x // 49 * 16 + 271]
+                conv2d_nchw_1[5] = conv2d_nchw_1[5] + pad_temp_shared_1[threadIdx_x % 49 + 735] * kernel_shared_1[threadIdx_x // 49 * 16 + 335]
+                conv2d_nchw_1[6] = conv2d_nchw_1[6] + pad_temp_shared_1[threadIdx_x % 49 + 735] * kernel_shared_1[threadIdx_x // 49 * 16 + 399]
+                conv2d_nchw_1[7] = conv2d_nchw_1[7] + pad_temp_shared_1[threadIdx_x % 49 + 735] * kernel_shared_1[threadIdx_x // 49 * 16 + 463]
+                with T.launch_thread(threadIdx_x_1, 196):
+                    pad_temp_shared_1[threadIdx_x_1] = T.if_then_else(1 <= threadIdx_x_1 % 49 // 7 + ry_outer_outer and threadIdx_x_1 % 49 // 7 + ry_outer_outer < 8, data_1[rc_outer_outer * 784 + ry_outer_outer * 7 + threadIdx_x_1 - 7], T.float32(0))
+                with T.launch_thread(threadIdx_x_1, 196):
+                    pad_temp_shared_1[threadIdx_x_1 + 196] = T.if_then_else(1 <= threadIdx_x_1 % 49 // 7 + ry_outer_outer and threadIdx_x_1 % 49 // 7 + ry_outer_outer < 8, data_1[rc_outer_outer * 784 + ry_outer_outer * 7 + threadIdx_x_1 + 189], T.float32(0))
+                with T.launch_thread(threadIdx_x_1, 196):
+                    pad_temp_shared_1[threadIdx_x_1 + 392] = T.if_then_else(1 <= threadIdx_x_1 % 49 // 7 + ry_outer_outer and threadIdx_x_1 % 49 // 7 + ry_outer_outer < 8, data_1[rc_outer_outer * 784 + ry_outer_outer * 7 + threadIdx_x_1 + 385], T.float32(0))
+                with T.launch_thread(threadIdx_x_1, 196):
+                    pad_temp_shared_1[threadIdx_x_1 + 588] = T.if_then_else(1 <= threadIdx_x_1 % 49 // 7 + ry_outer_outer and threadIdx_x_1 % 49 // 7 + ry_outer_outer < 8, data_1[rc_outer_outer * 784 + ry_outer_outer * 7 + threadIdx_x_1 + 581], T.float32(0))
+                with T.launch_thread(threadIdx_x_2, 196):
+                    kernel_shared_1[threadIdx_x_2] = kernel_1[blockIdx_x * 147456 + threadIdx_x_2 // 16 * 4608 + cse_var_2 + threadIdx_x_2 % 16 * 9 + cse_var_1 + 1]
+                with T.launch_thread(threadIdx_x_2, 196):
+                    kernel_shared_1[threadIdx_x_2 + 196] = kernel_1[blockIdx_x * 147456 + (threadIdx_x_2 + 196) // 16 * 4608 + cse_var_2 + (threadIdx_x_2 + 4) % 16 * 9 + cse_var_1 + 1]
+                with T.launch_thread(threadIdx_x_2, 196):
+                    if T.likely(threadIdx_x_2 < 120):
+                        kernel_shared_1[threadIdx_x_2 + 392] = kernel_1[blockIdx_x * 147456 + (threadIdx_x_2 + 392) // 16 * 4608 + cse_var_2 + (threadIdx_x_2 + 8) % 16 * 9 + cse_var_1 + 1]
+                conv2d_nchw_1[0] = conv2d_nchw_1[0] + pad_temp_shared_1[threadIdx_x % 49] * kernel_shared_1[threadIdx_x // 49 * 16]
+                conv2d_nchw_1[1] = conv2d_nchw_1[1] + pad_temp_shared_1[threadIdx_x % 49] * kernel_shared_1[threadIdx_x // 49 * 16 + 64]
+                conv2d_nchw_1[2] = conv2d_nchw_1[2] + pad_temp_shared_1[threadIdx_x % 49] * kernel_shared_1[threadIdx_x // 49 * 16 + 128]
+                conv2d_nchw_1[3] = conv2d_nchw_1[3] + pad_temp_shared_1[threadIdx_x % 49] * kernel_shared_1[threadIdx_x // 49 * 16 + 192]
+                conv2d_nchw_1[4] = conv2d_nchw_1[4] + pad_temp_shared_1[threadIdx_x % 49] * kernel_shared_1[threadIdx_x // 49 * 16 + 256]
+                conv2d_nchw_1[5] = conv2d_nchw_1[5] + pad_temp_shared_1[threadIdx_x % 49] * kernel_shared_1[threadIdx_x // 49 * 16 + 320]
+                conv2d_nchw_1[6] = conv2d_nchw_1[6] + pad_temp_shared_1[threadIdx_x % 49] * kernel_shared_1[threadIdx_x // 49 * 16 + 384]
+                conv2d_nchw_1[7] = conv2d_nchw_1[7] + pad_temp_shared_1[threadIdx_x % 49] * kernel_shared_1[threadIdx_x // 49 * 16 + 448]
+                conv2d_nchw_1[0] = conv2d_nchw_1[0] + pad_temp_shared_1[threadIdx_x % 49 + 49] * kernel_shared_1[threadIdx_x // 49 * 16 + 1]
+                conv2d_nchw_1[1] = conv2d_nchw_1[1] + pad_temp_shared_1[threadIdx_x % 49 + 49] * kernel_shared_1[threadIdx_x // 49 * 16 + 65]
+                conv2d_nchw_1[2] = conv2d_nchw_1[2] + pad_temp_shared_1[threadIdx_x % 49 + 49] * kernel_shared_1[threadIdx_x // 49 * 16 + 129]
+                conv2d_nchw_1[3] = conv2d_nchw_1[3] + pad_temp_shared_1[threadIdx_x % 49 + 49] * kernel_shared_1[threadIdx_x // 49 * 16 + 193]
+                conv2d_nchw_1[4] = conv2d_nchw_1[4] + pad_temp_shared_1[threadIdx_x % 49 + 49] * kernel_shared_1[threadIdx_x // 49 * 16 + 257]
+                conv2d_nchw_1[5] = conv2d_nchw_1[5] + pad_temp_shared_1[threadIdx_x % 49 + 49] * kernel_shared_1[threadIdx_x // 49 * 16 + 321]
+                conv2d_nchw_1[6] = conv2d_nchw_1[6] + pad_temp_shared_1[threadIdx_x % 49 + 49] * kernel_shared_1[threadIdx_x // 49 * 16 + 385]
+                conv2d_nchw_1[7] = conv2d_nchw_1[7] + pad_temp_shared_1[threadIdx_x % 49 + 49] * kernel_shared_1[threadIdx_x // 49 * 16 + 449]
+                conv2d_nchw_1[0] = conv2d_nchw_1[0] + pad_temp_shared_1[threadIdx_x % 49 + 98] * kernel_shared_1[threadIdx_x // 49 * 16 + 2]
+                conv2d_nchw_1[1] = conv2d_nchw_1[1] + pad_temp_shared_1[threadIdx_x % 49 + 98] * kernel_shared_1[threadIdx_x // 49 * 16 + 66]
+                conv2d_nchw_1[2] = conv2d_nchw_1[2] + pad_temp_shared_1[threadIdx_x % 49 + 98] * kernel_shared_1[threadIdx_x // 49 * 16 + 130]
+                conv2d_nchw_1[3] = conv2d_nchw_1[3] + pad_temp_shared_1[threadIdx_x % 49 + 98] * kernel_shared_1[threadIdx_x // 49 * 16 + 194]
+                conv2d_nchw_1[4] = conv2d_nchw_1[4] + pad_temp_shared_1[threadIdx_x % 49 + 98] * kernel_shared_1[threadIdx_x // 49 * 16 + 258]
+                conv2d_nchw_1[5] = conv2d_nchw_1[5] + pad_temp_shared_1[threadIdx_x % 49 + 98] * kernel_shared_1[threadIdx_x // 49 * 16 + 322]
+                conv2d_nchw_1[6] = conv2d_nchw_1[6] + pad_temp_shared_1[threadIdx_x % 49 + 98] * kernel_shared_1[threadIdx_x // 49 * 16 + 386]
+                conv2d_nchw_1[7] = conv2d_nchw_1[7] + pad_temp_shared_1[threadIdx_x % 49 + 98] * kernel_shared_1[threadIdx_x // 49 * 16 + 450]
+                conv2d_nchw_1[0] = conv2d_nchw_1[0] + pad_temp_shared_1[threadIdx_x % 49 + 147] * kernel_shared_1[threadIdx_x // 49 * 16 + 3]
+                conv2d_nchw_1[1] = conv2d_nchw_1[1] + pad_temp_shared_1[threadIdx_x % 49 + 147] * kernel_shared_1[threadIdx_x // 49 * 16 + 67]
+                conv2d_nchw_1[2] = conv2d_nchw_1[2] + pad_temp_shared_1[threadIdx_x % 49 + 147] * kernel_shared_1[threadIdx_x // 49 * 16 + 131]
+                conv2d_nchw_1[3] = conv2d_nchw_1[3] + pad_temp_shared_1[threadIdx_x % 49 + 147] * kernel_shared_1[threadIdx_x // 49 * 16 + 195]
+                conv2d_nchw_1[4] = conv2d_nchw_1[4] + pad_temp_shared_1[threadIdx_x % 49 + 147] * kernel_shared_1[threadIdx_x // 49 * 16 + 259]
+                conv2d_nchw_1[5] = conv2d_nchw_1[5] + pad_temp_shared_1[threadIdx_x % 49 + 147] * kernel_shared_1[threadIdx_x // 49 * 16 + 323]
+                conv2d_nchw_1[6] = conv2d_nchw_1[6] + pad_temp_shared_1[threadIdx_x % 49 + 147] * kernel_shared_1[threadIdx_x // 49 * 16 + 387]
+                conv2d_nchw_1[7] = conv2d_nchw_1[7] + pad_temp_shared_1[threadIdx_x % 49 + 147] * kernel_shared_1[threadIdx_x // 49 * 16 + 451]
+                conv2d_nchw_1[0] = conv2d_nchw_1[0] + pad_temp_shared_1[threadIdx_x % 49 + 196] * kernel_shared_1[threadIdx_x // 49 * 16 + 4]
+                conv2d_nchw_1[1] = conv2d_nchw_1[1] + pad_temp_shared_1[threadIdx_x % 49 + 196] * kernel_shared_1[threadIdx_x // 49 * 16 + 68]
+                conv2d_nchw_1[2] = conv2d_nchw_1[2] + pad_temp_shared_1[threadIdx_x % 49 + 196] * kernel_shared_1[threadIdx_x // 49 * 16 + 132]
+                conv2d_nchw_1[3] = conv2d_nchw_1[3] + pad_temp_shared_1[threadIdx_x % 49 + 196] * kernel_shared_1[threadIdx_x // 49 * 16 + 196]
+                conv2d_nchw_1[4] = conv2d_nchw_1[4] + pad_temp_shared_1[threadIdx_x % 49 + 196] * kernel_shared_1[threadIdx_x // 49 * 16 + 260]
+                conv2d_nchw_1[5] = conv2d_nchw_1[5] + pad_temp_shared_1[threadIdx_x % 49 + 196] * kernel_shared_1[threadIdx_x // 49 * 16 + 324]
+                conv2d_nchw_1[6] = conv2d_nchw_1[6] + pad_temp_shared_1[threadIdx_x % 49 + 196] * kernel_shared_1[threadIdx_x // 49 * 16 + 388]
+                conv2d_nchw_1[7] = conv2d_nchw_1[7] + pad_temp_shared_1[threadIdx_x % 49 + 196] * kernel_shared_1[threadIdx_x // 49 * 16 + 452]
+                conv2d_nchw_1[0] = conv2d_nchw_1[0] + pad_temp_shared_1[threadIdx_x % 49 + 245] * kernel_shared_1[threadIdx_x // 49 * 16 + 5]
+                conv2d_nchw_1[1] = conv2d_nchw_1[1] + pad_temp_shared_1[threadIdx_x % 49 + 245] * kernel_shared_1[threadIdx_x // 49 * 16 + 69]
+                conv2d_nchw_1[2] = conv2d_nchw_1[2] + pad_temp_shared_1[threadIdx_x % 49 + 245] * kernel_shared_1[threadIdx_x // 49 * 16 + 133]
+                conv2d_nchw_1[3] = conv2d_nchw_1[3] + pad_temp_shared_1[threadIdx_x % 49 + 245] * kernel_shared_1[threadIdx_x // 49 * 16 + 197]
+                conv2d_nchw_1[4] = conv2d_nchw_1[4] + pad_temp_shared_1[threadIdx_x % 49 + 245] * kernel_shared_1[threadIdx_x // 49 * 16 + 261]
+                conv2d_nchw_1[5] = conv2d_nchw_1[5] + pad_temp_shared_1[threadIdx_x % 49 + 245] * kernel_shared_1[threadIdx_x // 49 * 16 + 325]
+                conv2d_nchw_1[6] = conv2d_nchw_1[6] + pad_temp_shared_1[threadIdx_x % 49 + 245] * kernel_shared_1[threadIdx_x // 49 * 16 + 389]
+                conv2d_nchw_1[7] = conv2d_nchw_1[7] + pad_temp_shared_1[threadIdx_x % 49 + 245] * kernel_shared_1[threadIdx_x // 49 * 16 + 453]
+                conv2d_nchw_1[0] = conv2d_nchw_1[0] + pad_temp_shared_1[threadIdx_x % 49 + 294] * kernel_shared_1[threadIdx_x // 49 * 16 + 6]
+                conv2d_nchw_1[1] = conv2d_nchw_1[1] + pad_temp_shared_1[threadIdx_x % 49 + 294] * kernel_shared_1[threadIdx_x // 49 * 16 + 70]
+                conv2d_nchw_1[2] = conv2d_nchw_1[2] + pad_temp_shared_1[threadIdx_x % 49 + 294] * kernel_shared_1[threadIdx_x // 49 * 16 + 134]
+                conv2d_nchw_1[3] = conv2d_nchw_1[3] + pad_temp_shared_1[threadIdx_x % 49 + 294] * kernel_shared_1[threadIdx_x // 49 * 16 + 198]
+                conv2d_nchw_1[4] = conv2d_nchw_1[4] + pad_temp_shared_1[threadIdx_x % 49 + 294] * kernel_shared_1[threadIdx_x // 49 * 16 + 262]
+                conv2d_nchw_1[5] = conv2d_nchw_1[5] + pad_temp_shared_1[threadIdx_x % 49 + 294] * kernel_shared_1[threadIdx_x // 49 * 16 + 326]
+                conv2d_nchw_1[6] = conv2d_nchw_1[6] + pad_temp_shared_1[threadIdx_x % 49 + 294] * kernel_shared_1[threadIdx_x // 49 * 16 + 390]
+                conv2d_nchw_1[7] = conv2d_nchw_1[7] + pad_temp_shared_1[threadIdx_x % 49 + 294] * kernel_shared_1[threadIdx_x // 49 * 16 + 454]
+                conv2d_nchw_1[0] = conv2d_nchw_1[0] + pad_temp_shared_1[threadIdx_x % 49 + 343] * kernel_shared_1[threadIdx_x // 49 * 16 + 7]
+                conv2d_nchw_1[1] = conv2d_nchw_1[1] + pad_temp_shared_1[threadIdx_x % 49 + 343] * kernel_shared_1[threadIdx_x // 49 * 16 + 71]
+                conv2d_nchw_1[2] = conv2d_nchw_1[2] + pad_temp_shared_1[threadIdx_x % 49 + 343] * kernel_shared_1[threadIdx_x // 49 * 16 + 135]
+                conv2d_nchw_1[3] = conv2d_nchw_1[3] + pad_temp_shared_1[threadIdx_x % 49 + 343] * kernel_shared_1[threadIdx_x // 49 * 16 + 199]
+                conv2d_nchw_1[4] = conv2d_nchw_1[4] + pad_temp_shared_1[threadIdx_x % 49 + 343] * kernel_shared_1[threadIdx_x // 49 * 16 + 263]
+                conv2d_nchw_1[5] = conv2d_nchw_1[5] + pad_temp_shared_1[threadIdx_x % 49 + 343] * kernel_shared_1[threadIdx_x // 49 * 16 + 327]
+                conv2d_nchw_1[6] = conv2d_nchw_1[6] + pad_temp_shared_1[threadIdx_x % 49 + 343] * kernel_shared_1[threadIdx_x // 49 * 16 + 391]
+                conv2d_nchw_1[7] = conv2d_nchw_1[7] + pad_temp_shared_1[threadIdx_x % 49 + 343] * kernel_shared_1[threadIdx_x // 49 * 16 + 455]
+                conv2d_nchw_1[0] = conv2d_nchw_1[0] + pad_temp_shared_1[threadIdx_x % 49 + 392] * kernel_shared_1[threadIdx_x // 49 * 16 + 8]
+                conv2d_nchw_1[1] = conv2d_nchw_1[1] + pad_temp_shared_1[threadIdx_x % 49 + 392] * kernel_shared_1[threadIdx_x // 49 * 16 + 72]
+                conv2d_nchw_1[2] = conv2d_nchw_1[2] + pad_temp_shared_1[threadIdx_x % 49 + 392] * kernel_shared_1[threadIdx_x // 49 * 16 + 136]
+                conv2d_nchw_1[3] = conv2d_nchw_1[3] + pad_temp_shared_1[threadIdx_x % 49 + 392] * kernel_shared_1[threadIdx_x // 49 * 16 + 200]
+                conv2d_nchw_1[4] = conv2d_nchw_1[4] + pad_temp_shared_1[threadIdx_x % 49 + 392] * kernel_shared_1[threadIdx_x // 49 * 16 + 264]
+                conv2d_nchw_1[5] = conv2d_nchw_1[5] + pad_temp_shared_1[threadIdx_x % 49 + 392] * kernel_shared_1[threadIdx_x // 49 * 16 + 328]
+                conv2d_nchw_1[6] = conv2d_nchw_1[6] + pad_temp_shared_1[threadIdx_x % 49 + 392] * kernel_shared_1[threadIdx_x // 49 * 16 + 392]
+                conv2d_nchw_1[7] = conv2d_nchw_1[7] + pad_temp_shared_1[threadIdx_x % 49 + 392] * kernel_shared_1[threadIdx_x // 49 * 16 + 456]
+                conv2d_nchw_1[0] = conv2d_nchw_1[0] + pad_temp_shared_1[threadIdx_x % 49 + 441] * kernel_shared_1[threadIdx_x // 49 * 16 + 9]
+                conv2d_nchw_1[1] = conv2d_nchw_1[1] + pad_temp_shared_1[threadIdx_x % 49 + 441] * kernel_shared_1[threadIdx_x // 49 * 16 + 73]
+                conv2d_nchw_1[2] = conv2d_nchw_1[2] + pad_temp_shared_1[threadIdx_x % 49 + 441] * kernel_shared_1[threadIdx_x // 49 * 16 + 137]
+                conv2d_nchw_1[3] = conv2d_nchw_1[3] + pad_temp_shared_1[threadIdx_x % 49 + 441] * kernel_shared_1[threadIdx_x // 49 * 16 + 201]
+                conv2d_nchw_1[4] = conv2d_nchw_1[4] + pad_temp_shared_1[threadIdx_x % 49 + 441] * kernel_shared_1[threadIdx_x // 49 * 16 + 265]
+                conv2d_nchw_1[5] = conv2d_nchw_1[5] + pad_temp_shared_1[threadIdx_x % 49 + 441] * kernel_shared_1[threadIdx_x // 49 * 16 + 329]
+                conv2d_nchw_1[6] = conv2d_nchw_1[6] + pad_temp_shared_1[threadIdx_x % 49 + 441] * kernel_shared_1[threadIdx_x // 49 * 16 + 393]
+                conv2d_nchw_1[7] = conv2d_nchw_1[7] + pad_temp_shared_1[threadIdx_x % 49 + 441] * kernel_shared_1[threadIdx_x // 49 * 16 + 457]
+                conv2d_nchw_1[0] = conv2d_nchw_1[0] + pad_temp_shared_1[threadIdx_x % 49 + 490] * kernel_shared_1[threadIdx_x // 49 * 16 + 10]
+                conv2d_nchw_1[1] = conv2d_nchw_1[1] + pad_temp_shared_1[threadIdx_x % 49 + 490] * kernel_shared_1[threadIdx_x // 49 * 16 + 74]
+                conv2d_nchw_1[2] = conv2d_nchw_1[2] + pad_temp_shared_1[threadIdx_x % 49 + 490] * kernel_shared_1[threadIdx_x // 49 * 16 + 138]
+                conv2d_nchw_1[3] = conv2d_nchw_1[3] + pad_temp_shared_1[threadIdx_x % 49 + 490] * kernel_shared_1[threadIdx_x // 49 * 16 + 202]
+                conv2d_nchw_1[4] = conv2d_nchw_1[4] + pad_temp_shared_1[threadIdx_x % 49 + 490] * kernel_shared_1[threadIdx_x // 49 * 16 + 266]
+                conv2d_nchw_1[5] = conv2d_nchw_1[5] + pad_temp_shared_1[threadIdx_x % 49 + 490] * kernel_shared_1[threadIdx_x // 49 * 16 + 330]
+                conv2d_nchw_1[6] = conv2d_nchw_1[6] + pad_temp_shared_1[threadIdx_x % 49 + 490] * kernel_shared_1[threadIdx_x // 49 * 16 + 394]
+                conv2d_nchw_1[7] = conv2d_nchw_1[7] + pad_temp_shared_1[threadIdx_x % 49 + 490] * kernel_shared_1[threadIdx_x // 49 * 16 + 458]
+                conv2d_nchw_1[0] = conv2d_nchw_1[0] + pad_temp_shared_1[threadIdx_x % 49 + 539] * kernel_shared_1[threadIdx_x // 49 * 16 + 11]
+                conv2d_nchw_1[1] = conv2d_nchw_1[1] + pad_temp_shared_1[threadIdx_x % 49 + 539] * kernel_shared_1[threadIdx_x // 49 * 16 + 75]
+                conv2d_nchw_1[2] = conv2d_nchw_1[2] + pad_temp_shared_1[threadIdx_x % 49 + 539] * kernel_shared_1[threadIdx_x // 49 * 16 + 139]
+                conv2d_nchw_1[3] = conv2d_nchw_1[3] + pad_temp_shared_1[threadIdx_x % 49 + 539] * kernel_shared_1[threadIdx_x // 49 * 16 + 203]
+                conv2d_nchw_1[4] = conv2d_nchw_1[4] + pad_temp_shared_1[threadIdx_x % 49 + 539] * kernel_shared_1[threadIdx_x // 49 * 16 + 267]
+                conv2d_nchw_1[5] = conv2d_nchw_1[5] + pad_temp_shared_1[threadIdx_x % 49 + 539] * kernel_shared_1[threadIdx_x // 49 * 16 + 331]
+                conv2d_nchw_1[6] = conv2d_nchw_1[6] + pad_temp_shared_1[threadIdx_x % 49 + 539] * kernel_shared_1[threadIdx_x // 49 * 16 + 395]
+                conv2d_nchw_1[7] = conv2d_nchw_1[7] + pad_temp_shared_1[threadIdx_x % 49 + 539] * kernel_shared_1[threadIdx_x // 49 * 16 + 459]
+                conv2d_nchw_1[0] = conv2d_nchw_1[0] + pad_temp_shared_1[threadIdx_x % 49 + 588] * kernel_shared_1[threadIdx_x // 49 * 16 + 12]
+                conv2d_nchw_1[1] = conv2d_nchw_1[1] + pad_temp_shared_1[threadIdx_x % 49 + 588] * kernel_shared_1[threadIdx_x // 49 * 16 + 76]
+                conv2d_nchw_1[2] = conv2d_nchw_1[2] + pad_temp_shared_1[threadIdx_x % 49 + 588] * kernel_shared_1[threadIdx_x // 49 * 16 + 140]
+                conv2d_nchw_1[3] = conv2d_nchw_1[3] + pad_temp_shared_1[threadIdx_x % 49 + 588] * kernel_shared_1[threadIdx_x // 49 * 16 + 204]
+                conv2d_nchw_1[4] = conv2d_nchw_1[4] + pad_temp_shared_1[threadIdx_x % 49 + 588] * kernel_shared_1[threadIdx_x // 49 * 16 + 268]
+                conv2d_nchw_1[5] = conv2d_nchw_1[5] + pad_temp_shared_1[threadIdx_x % 49 + 588] * kernel_shared_1[threadIdx_x // 49 * 16 + 332]
+                conv2d_nchw_1[6] = conv2d_nchw_1[6] + pad_temp_shared_1[threadIdx_x % 49 + 588] * kernel_shared_1[threadIdx_x // 49 * 16 + 396]
+                conv2d_nchw_1[7] = conv2d_nchw_1[7] + pad_temp_shared_1[threadIdx_x % 49 + 588] * kernel_shared_1[threadIdx_x // 49 * 16 + 460]
+                conv2d_nchw_1[0] = conv2d_nchw_1[0] + pad_temp_shared_1[threadIdx_x % 49 + 637] * kernel_shared_1[threadIdx_x // 49 * 16 + 13]
+                conv2d_nchw_1[1] = conv2d_nchw_1[1] + pad_temp_shared_1[threadIdx_x % 49 + 637] * kernel_shared_1[threadIdx_x // 49 * 16 + 77]
+                conv2d_nchw_1[2] = conv2d_nchw_1[2] + pad_temp_shared_1[threadIdx_x % 49 + 637] * kernel_shared_1[threadIdx_x // 49 * 16 + 141]
+                conv2d_nchw_1[3] = conv2d_nchw_1[3] + pad_temp_shared_1[threadIdx_x % 49 + 637] * kernel_shared_1[threadIdx_x // 49 * 16 + 205]
+                conv2d_nchw_1[4] = conv2d_nchw_1[4] + pad_temp_shared_1[threadIdx_x % 49 + 637] * kernel_shared_1[threadIdx_x // 49 * 16 + 269]
+                conv2d_nchw_1[5] = conv2d_nchw_1[5] + pad_temp_shared_1[threadIdx_x % 49 + 637] * kernel_shared_1[threadIdx_x // 49 * 16 + 333]
+                conv2d_nchw_1[6] = conv2d_nchw_1[6] + pad_temp_shared_1[threadIdx_x % 49 + 637] * kernel_shared_1[threadIdx_x // 49 * 16 + 397]
+                conv2d_nchw_1[7] = conv2d_nchw_1[7] + pad_temp_shared_1[threadIdx_x % 49 + 637] * kernel_shared_1[threadIdx_x // 49 * 16 + 461]
+                conv2d_nchw_1[0] = conv2d_nchw_1[0] + pad_temp_shared_1[threadIdx_x % 49 + 686] * kernel_shared_1[threadIdx_x // 49 * 16 + 14]
+                conv2d_nchw_1[1] = conv2d_nchw_1[1] + pad_temp_shared_1[threadIdx_x % 49 + 686] * kernel_shared_1[threadIdx_x // 49 * 16 + 78]
+                conv2d_nchw_1[2] = conv2d_nchw_1[2] + pad_temp_shared_1[threadIdx_x % 49 + 686] * kernel_shared_1[threadIdx_x // 49 * 16 + 142]
+                conv2d_nchw_1[3] = conv2d_nchw_1[3] + pad_temp_shared_1[threadIdx_x % 49 + 686] * kernel_shared_1[threadIdx_x // 49 * 16 + 206]
+                conv2d_nchw_1[4] = conv2d_nchw_1[4] + pad_temp_shared_1[threadIdx_x % 49 + 686] * kernel_shared_1[threadIdx_x // 49 * 16 + 270]
+                conv2d_nchw_1[5] = conv2d_nchw_1[5] + pad_temp_shared_1[threadIdx_x % 49 + 686] * kernel_shared_1[threadIdx_x // 49 * 16 + 334]
+                conv2d_nchw_1[6] = conv2d_nchw_1[6] + pad_temp_shared_1[threadIdx_x % 49 + 686] * kernel_shared_1[threadIdx_x // 49 * 16 + 398]
+                conv2d_nchw_1[7] = conv2d_nchw_1[7] + pad_temp_shared_1[threadIdx_x % 49 + 686] * kernel_shared_1[threadIdx_x // 49 * 16 + 462]
+                conv2d_nchw_1[0] = conv2d_nchw_1[0] + pad_temp_shared_1[threadIdx_x % 49 + 735] * kernel_shared_1[threadIdx_x // 49 * 16 + 15]
+                conv2d_nchw_1[1] = conv2d_nchw_1[1] + pad_temp_shared_1[threadIdx_x % 49 + 735] * kernel_shared_1[threadIdx_x // 49 * 16 + 79]
+                conv2d_nchw_1[2] = conv2d_nchw_1[2] + pad_temp_shared_1[threadIdx_x % 49 + 735] * kernel_shared_1[threadIdx_x // 49 * 16 + 143]
+                conv2d_nchw_1[3] = conv2d_nchw_1[3] + pad_temp_shared_1[threadIdx_x % 49 + 735] * kernel_shared_1[threadIdx_x // 49 * 16 + 207]
+                conv2d_nchw_1[4] = conv2d_nchw_1[4] + pad_temp_shared_1[threadIdx_x % 49 + 735] * kernel_shared_1[threadIdx_x // 49 * 16 + 271]
+                conv2d_nchw_1[5] = conv2d_nchw_1[5] + pad_temp_shared_1[threadIdx_x % 49 + 735] * kernel_shared_1[threadIdx_x // 49 * 16 + 335]
+                conv2d_nchw_1[6] = conv2d_nchw_1[6] + pad_temp_shared_1[threadIdx_x % 49 + 735] * kernel_shared_1[threadIdx_x // 49 * 16 + 399]
+                conv2d_nchw_1[7] = conv2d_nchw_1[7] + pad_temp_shared_1[threadIdx_x % 49 + 735] * kernel_shared_1[threadIdx_x // 49 * 16 + 463]
+                with T.launch_thread(threadIdx_x_1, 196):
+                    pad_temp_shared_1[threadIdx_x_1] = T.if_then_else(1 <= threadIdx_x_1 % 49 // 7 + ry_outer_outer and threadIdx_x_1 % 49 // 7 + ry_outer_outer < 8 and threadIdx_x_1 % 7 < 6, data_1[rc_outer_outer * 784 + ry_outer_outer * 7 + threadIdx_x_1 - 6], T.float32(0))
+                with T.launch_thread(threadIdx_x_1, 196):
+                    pad_temp_shared_1[threadIdx_x_1 + 196] = T.if_then_else(1 <= threadIdx_x_1 % 49 // 7 + ry_outer_outer and threadIdx_x_1 % 49 // 7 + ry_outer_outer < 8 and threadIdx_x_1 % 7 < 6, data_1[rc_outer_outer * 784 + ry_outer_outer * 7 + threadIdx_x_1 + 190], T.float32(0))
+                with T.launch_thread(threadIdx_x_1, 196):
+                    pad_temp_shared_1[threadIdx_x_1 + 392] = T.if_then_else(1 <= threadIdx_x_1 % 49 // 7 + ry_outer_outer and threadIdx_x_1 % 49 // 7 + ry_outer_outer < 8 and threadIdx_x_1 % 7 < 6, data_1[rc_outer_outer * 784 + ry_outer_outer * 7 + threadIdx_x_1 + 386], T.float32(0))
+                with T.launch_thread(threadIdx_x_1, 196):
+                    pad_temp_shared_1[threadIdx_x_1 + 588] = T.if_then_else(1 <= threadIdx_x_1 % 49 // 7 + ry_outer_outer and threadIdx_x_1 % 49 // 7 + ry_outer_outer < 8 and threadIdx_x_1 % 7 < 6, data_1[rc_outer_outer * 784 + ry_outer_outer * 7 + threadIdx_x_1 + 582], T.float32(0))
+                with T.launch_thread(threadIdx_x_2, 196):
+                    kernel_shared_1[threadIdx_x_2] = kernel_1[blockIdx_x * 147456 + threadIdx_x_2 // 16 * 4608 + cse_var_2 + threadIdx_x_2 % 16 * 9 + cse_var_1 + 2]
+                with T.launch_thread(threadIdx_x_2, 196):
+                    kernel_shared_1[threadIdx_x_2 + 196] = kernel_1[blockIdx_x * 147456 + (threadIdx_x_2 + 196) // 16 * 4608 + cse_var_2 + (threadIdx_x_2 + 4) % 16 * 9 + cse_var_1 + 2]
+                with T.launch_thread(threadIdx_x_2, 196):
+                    if T.likely(threadIdx_x_2 < 120):
+                        kernel_shared_1[threadIdx_x_2 + 392] = kernel_1[blockIdx_x * 147456 + (threadIdx_x_2 + 392) // 16 * 4608 + cse_var_2 + (threadIdx_x_2 + 8) % 16 * 9 + cse_var_1 + 2]
+                conv2d_nchw_1[0] = conv2d_nchw_1[0] + pad_temp_shared_1[threadIdx_x % 49] * kernel_shared_1[threadIdx_x // 49 * 16]
+                conv2d_nchw_1[1] = conv2d_nchw_1[1] + pad_temp_shared_1[threadIdx_x % 49] * kernel_shared_1[threadIdx_x // 49 * 16 + 64]
+                conv2d_nchw_1[2] = conv2d_nchw_1[2] + pad_temp_shared_1[threadIdx_x % 49] * kernel_shared_1[threadIdx_x // 49 * 16 + 128]
+                conv2d_nchw_1[3] = conv2d_nchw_1[3] + pad_temp_shared_1[threadIdx_x % 49] * kernel_shared_1[threadIdx_x // 49 * 16 + 192]
+                conv2d_nchw_1[4] = conv2d_nchw_1[4] + pad_temp_shared_1[threadIdx_x % 49] * kernel_shared_1[threadIdx_x // 49 * 16 + 256]
+                conv2d_nchw_1[5] = conv2d_nchw_1[5] + pad_temp_shared_1[threadIdx_x % 49] * kernel_shared_1[threadIdx_x // 49 * 16 + 320]
+                conv2d_nchw_1[6] = conv2d_nchw_1[6] + pad_temp_shared_1[threadIdx_x % 49] * kernel_shared_1[threadIdx_x // 49 * 16 + 384]
+                conv2d_nchw_1[7] = conv2d_nchw_1[7] + pad_temp_shared_1[threadIdx_x % 49] * kernel_shared_1[threadIdx_x // 49 * 16 + 448]
+                conv2d_nchw_1[0] = conv2d_nchw_1[0] + pad_temp_shared_1[threadIdx_x % 49 + 49] * kernel_shared_1[threadIdx_x // 49 * 16 + 1]
+                conv2d_nchw_1[1] = conv2d_nchw_1[1] + pad_temp_shared_1[threadIdx_x % 49 + 49] * kernel_shared_1[threadIdx_x // 49 * 16 + 65]
+                conv2d_nchw_1[2] = conv2d_nchw_1[2] + pad_temp_shared_1[threadIdx_x % 49 + 49] * kernel_shared_1[threadIdx_x // 49 * 16 + 129]
+                conv2d_nchw_1[3] = conv2d_nchw_1[3] + pad_temp_shared_1[threadIdx_x % 49 + 49] * kernel_shared_1[threadIdx_x // 49 * 16 + 193]
+                conv2d_nchw_1[4] = conv2d_nchw_1[4] + pad_temp_shared_1[threadIdx_x % 49 + 49] * kernel_shared_1[threadIdx_x // 49 * 16 + 257]
+                conv2d_nchw_1[5] = conv2d_nchw_1[5] + pad_temp_shared_1[threadIdx_x % 49 + 49] * kernel_shared_1[threadIdx_x // 49 * 16 + 321]
+                conv2d_nchw_1[6] = conv2d_nchw_1[6] + pad_temp_shared_1[threadIdx_x % 49 + 49] * kernel_shared_1[threadIdx_x // 49 * 16 + 385]
+                conv2d_nchw_1[7] = conv2d_nchw_1[7] + pad_temp_shared_1[threadIdx_x % 49 + 49] * kernel_shared_1[threadIdx_x // 49 * 16 + 449]
+                conv2d_nchw_1[0] = conv2d_nchw_1[0] + pad_temp_shared_1[threadIdx_x % 49 + 98] * kernel_shared_1[threadIdx_x // 49 * 16 + 2]
+                conv2d_nchw_1[1] = conv2d_nchw_1[1] + pad_temp_shared_1[threadIdx_x % 49 + 98] * kernel_shared_1[threadIdx_x // 49 * 16 + 66]
+                conv2d_nchw_1[2] = conv2d_nchw_1[2] + pad_temp_shared_1[threadIdx_x % 49 + 98] * kernel_shared_1[threadIdx_x // 49 * 16 + 130]
+                conv2d_nchw_1[3] = conv2d_nchw_1[3] + pad_temp_shared_1[threadIdx_x % 49 + 98] * kernel_shared_1[threadIdx_x // 49 * 16 + 194]
+                conv2d_nchw_1[4] = conv2d_nchw_1[4] + pad_temp_shared_1[threadIdx_x % 49 + 98] * kernel_shared_1[threadIdx_x // 49 * 16 + 258]
+                conv2d_nchw_1[5] = conv2d_nchw_1[5] + pad_temp_shared_1[threadIdx_x % 49 + 98] * kernel_shared_1[threadIdx_x // 49 * 16 + 322]
+                conv2d_nchw_1[6] = conv2d_nchw_1[6] + pad_temp_shared_1[threadIdx_x % 49 + 98] * kernel_shared_1[threadIdx_x // 49 * 16 + 386]
+                conv2d_nchw_1[7] = conv2d_nchw_1[7] + pad_temp_shared_1[threadIdx_x % 49 + 98] * kernel_shared_1[threadIdx_x // 49 * 16 + 450]
+                conv2d_nchw_1[0] = conv2d_nchw_1[0] + pad_temp_shared_1[threadIdx_x % 49 + 147] * kernel_shared_1[threadIdx_x // 49 * 16 + 3]
+                conv2d_nchw_1[1] = conv2d_nchw_1[1] + pad_temp_shared_1[threadIdx_x % 49 + 147] * kernel_shared_1[threadIdx_x // 49 * 16 + 67]
+                conv2d_nchw_1[2] = conv2d_nchw_1[2] + pad_temp_shared_1[threadIdx_x % 49 + 147] * kernel_shared_1[threadIdx_x // 49 * 16 + 131]
+                conv2d_nchw_1[3] = conv2d_nchw_1[3] + pad_temp_shared_1[threadIdx_x % 49 + 147] * kernel_shared_1[threadIdx_x // 49 * 16 + 195]
+                conv2d_nchw_1[4] = conv2d_nchw_1[4] + pad_temp_shared_1[threadIdx_x % 49 + 147] * kernel_shared_1[threadIdx_x // 49 * 16 + 259]
+                conv2d_nchw_1[5] = conv2d_nchw_1[5] + pad_temp_shared_1[threadIdx_x % 49 + 147] * kernel_shared_1[threadIdx_x // 49 * 16 + 323]
+                conv2d_nchw_1[6] = conv2d_nchw_1[6] + pad_temp_shared_1[threadIdx_x % 49 + 147] * kernel_shared_1[threadIdx_x // 49 * 16 + 387]
+                conv2d_nchw_1[7] = conv2d_nchw_1[7] + pad_temp_shared_1[threadIdx_x % 49 + 147] * kernel_shared_1[threadIdx_x // 49 * 16 + 451]
+                conv2d_nchw_1[0] = conv2d_nchw_1[0] + pad_temp_shared_1[threadIdx_x % 49 + 196] * kernel_shared_1[threadIdx_x // 49 * 16 + 4]
+                conv2d_nchw_1[1] = conv2d_nchw_1[1] + pad_temp_shared_1[threadIdx_x % 49 + 196] * kernel_shared_1[threadIdx_x // 49 * 16 + 68]
+                conv2d_nchw_1[2] = conv2d_nchw_1[2] + pad_temp_shared_1[threadIdx_x % 49 + 196] * kernel_shared_1[threadIdx_x // 49 * 16 + 132]
+                conv2d_nchw_1[3] = conv2d_nchw_1[3] + pad_temp_shared_1[threadIdx_x % 49 + 196] * kernel_shared_1[threadIdx_x // 49 * 16 + 196]
+                conv2d_nchw_1[4] = conv2d_nchw_1[4] + pad_temp_shared_1[threadIdx_x % 49 + 196] * kernel_shared_1[threadIdx_x // 49 * 16 + 260]
+                conv2d_nchw_1[5] = conv2d_nchw_1[5] + pad_temp_shared_1[threadIdx_x % 49 + 196] * kernel_shared_1[threadIdx_x // 49 * 16 + 324]
+                conv2d_nchw_1[6] = conv2d_nchw_1[6] + pad_temp_shared_1[threadIdx_x % 49 + 196] * kernel_shared_1[threadIdx_x // 49 * 16 + 388]
+                conv2d_nchw_1[7] = conv2d_nchw_1[7] + pad_temp_shared_1[threadIdx_x % 49 + 196] * kernel_shared_1[threadIdx_x // 49 * 16 + 452]
+                conv2d_nchw_1[0] = conv2d_nchw_1[0] + pad_temp_shared_1[threadIdx_x % 49 + 245] * kernel_shared_1[threadIdx_x // 49 * 16 + 5]
+                conv2d_nchw_1[1] = conv2d_nchw_1[1] + pad_temp_shared_1[threadIdx_x % 49 + 245] * kernel_shared_1[threadIdx_x // 49 * 16 + 69]
+                conv2d_nchw_1[2] = conv2d_nchw_1[2] + pad_temp_shared_1[threadIdx_x % 49 + 245] * kernel_shared_1[threadIdx_x // 49 * 16 + 133]
+                conv2d_nchw_1[3] = conv2d_nchw_1[3] + pad_temp_shared_1[threadIdx_x % 49 + 245] * kernel_shared_1[threadIdx_x // 49 * 16 + 197]
+                conv2d_nchw_1[4] = conv2d_nchw_1[4] + pad_temp_shared_1[threadIdx_x % 49 + 245] * kernel_shared_1[threadIdx_x // 49 * 16 + 261]
+                conv2d_nchw_1[5] = conv2d_nchw_1[5] + pad_temp_shared_1[threadIdx_x % 49 + 245] * kernel_shared_1[threadIdx_x // 49 * 16 + 325]
+                conv2d_nchw_1[6] = conv2d_nchw_1[6] + pad_temp_shared_1[threadIdx_x % 49 + 245] * kernel_shared_1[threadIdx_x // 49 * 16 + 389]
+                conv2d_nchw_1[7] = conv2d_nchw_1[7] + pad_temp_shared_1[threadIdx_x % 49 + 245] * kernel_shared_1[threadIdx_x // 49 * 16 + 453]
+                conv2d_nchw_1[0] = conv2d_nchw_1[0] + pad_temp_shared_1[threadIdx_x % 49 + 294] * kernel_shared_1[threadIdx_x // 49 * 16 + 6]
+                conv2d_nchw_1[1] = conv2d_nchw_1[1] + pad_temp_shared_1[threadIdx_x % 49 + 294] * kernel_shared_1[threadIdx_x // 49 * 16 + 70]
+                conv2d_nchw_1[2] = conv2d_nchw_1[2] + pad_temp_shared_1[threadIdx_x % 49 + 294] * kernel_shared_1[threadIdx_x // 49 * 16 + 134]
+                conv2d_nchw_1[3] = conv2d_nchw_1[3] + pad_temp_shared_1[threadIdx_x % 49 + 294] * kernel_shared_1[threadIdx_x // 49 * 16 + 198]
+                conv2d_nchw_1[4] = conv2d_nchw_1[4] + pad_temp_shared_1[threadIdx_x % 49 + 294] * kernel_shared_1[threadIdx_x // 49 * 16 + 262]
+                conv2d_nchw_1[5] = conv2d_nchw_1[5] + pad_temp_shared_1[threadIdx_x % 49 + 294] * kernel_shared_1[threadIdx_x // 49 * 16 + 326]
+                conv2d_nchw_1[6] = conv2d_nchw_1[6] + pad_temp_shared_1[threadIdx_x % 49 + 294] * kernel_shared_1[threadIdx_x // 49 * 16 + 390]
+                conv2d_nchw_1[7] = conv2d_nchw_1[7] + pad_temp_shared_1[threadIdx_x % 49 + 294] * kernel_shared_1[threadIdx_x // 49 * 16 + 454]
+                conv2d_nchw_1[0] = conv2d_nchw_1[0] + pad_temp_shared_1[threadIdx_x % 49 + 343] * kernel_shared_1[threadIdx_x // 49 * 16 + 7]
+                conv2d_nchw_1[1] = conv2d_nchw_1[1] + pad_temp_shared_1[threadIdx_x % 49 + 343] * kernel_shared_1[threadIdx_x // 49 * 16 + 71]
+                conv2d_nchw_1[2] = conv2d_nchw_1[2] + pad_temp_shared_1[threadIdx_x % 49 + 343] * kernel_shared_1[threadIdx_x // 49 * 16 + 135]
+                conv2d_nchw_1[3] = conv2d_nchw_1[3] + pad_temp_shared_1[threadIdx_x % 49 + 343] * kernel_shared_1[threadIdx_x // 49 * 16 + 199]
+                conv2d_nchw_1[4] = conv2d_nchw_1[4] + pad_temp_shared_1[threadIdx_x % 49 + 343] * kernel_shared_1[threadIdx_x // 49 * 16 + 263]
+                conv2d_nchw_1[5] = conv2d_nchw_1[5] + pad_temp_shared_1[threadIdx_x % 49 + 343] * kernel_shared_1[threadIdx_x // 49 * 16 + 327]
+                conv2d_nchw_1[6] = conv2d_nchw_1[6] + pad_temp_shared_1[threadIdx_x % 49 + 343] * kernel_shared_1[threadIdx_x // 49 * 16 + 391]
+                conv2d_nchw_1[7] = conv2d_nchw_1[7] + pad_temp_shared_1[threadIdx_x % 49 + 343] * kernel_shared_1[threadIdx_x // 49 * 16 + 455]
+                conv2d_nchw_1[0] = conv2d_nchw_1[0] + pad_temp_shared_1[threadIdx_x % 49 + 392] * kernel_shared_1[threadIdx_x // 49 * 16 + 8]
+                conv2d_nchw_1[1] = conv2d_nchw_1[1] + pad_temp_shared_1[threadIdx_x % 49 + 392] * kernel_shared_1[threadIdx_x // 49 * 16 + 72]
+                conv2d_nchw_1[2] = conv2d_nchw_1[2] + pad_temp_shared_1[threadIdx_x % 49 + 392] * kernel_shared_1[threadIdx_x // 49 * 16 + 136]
+                conv2d_nchw_1[3] = conv2d_nchw_1[3] + pad_temp_shared_1[threadIdx_x % 49 + 392] * kernel_shared_1[threadIdx_x // 49 * 16 + 200]
+                conv2d_nchw_1[4] = conv2d_nchw_1[4] + pad_temp_shared_1[threadIdx_x % 49 + 392] * kernel_shared_1[threadIdx_x // 49 * 16 + 264]
+                conv2d_nchw_1[5] = conv2d_nchw_1[5] + pad_temp_shared_1[threadIdx_x % 49 + 392] * kernel_shared_1[threadIdx_x // 49 * 16 + 328]
+                conv2d_nchw_1[6] = conv2d_nchw_1[6] + pad_temp_shared_1[threadIdx_x % 49 + 392] * kernel_shared_1[threadIdx_x // 49 * 16 + 392]
+                conv2d_nchw_1[7] = conv2d_nchw_1[7] + pad_temp_shared_1[threadIdx_x % 49 + 392] * kernel_shared_1[threadIdx_x // 49 * 16 + 456]
+                conv2d_nchw_1[0] = conv2d_nchw_1[0] + pad_temp_shared_1[threadIdx_x % 49 + 441] * kernel_shared_1[threadIdx_x // 49 * 16 + 9]
+                conv2d_nchw_1[1] = conv2d_nchw_1[1] + pad_temp_shared_1[threadIdx_x % 49 + 441] * kernel_shared_1[threadIdx_x // 49 * 16 + 73]
+                conv2d_nchw_1[2] = conv2d_nchw_1[2] + pad_temp_shared_1[threadIdx_x % 49 + 441] * kernel_shared_1[threadIdx_x // 49 * 16 + 137]
+                conv2d_nchw_1[3] = conv2d_nchw_1[3] + pad_temp_shared_1[threadIdx_x % 49 + 441] * kernel_shared_1[threadIdx_x // 49 * 16 + 201]
+                conv2d_nchw_1[4] = conv2d_nchw_1[4] + pad_temp_shared_1[threadIdx_x % 49 + 441] * kernel_shared_1[threadIdx_x // 49 * 16 + 265]
+                conv2d_nchw_1[5] = conv2d_nchw_1[5] + pad_temp_shared_1[threadIdx_x % 49 + 441] * kernel_shared_1[threadIdx_x // 49 * 16 + 329]
+                conv2d_nchw_1[6] = conv2d_nchw_1[6] + pad_temp_shared_1[threadIdx_x % 49 + 441] * kernel_shared_1[threadIdx_x // 49 * 16 + 393]
+                conv2d_nchw_1[7] = conv2d_nchw_1[7] + pad_temp_shared_1[threadIdx_x % 49 + 441] * kernel_shared_1[threadIdx_x // 49 * 16 + 457]
+                conv2d_nchw_1[0] = conv2d_nchw_1[0] + pad_temp_shared_1[threadIdx_x % 49 + 490] * kernel_shared_1[threadIdx_x // 49 * 16 + 10]
+                conv2d_nchw_1[1] = conv2d_nchw_1[1] + pad_temp_shared_1[threadIdx_x % 49 + 490] * kernel_shared_1[threadIdx_x // 49 * 16 + 74]
+                conv2d_nchw_1[2] = conv2d_nchw_1[2] + pad_temp_shared_1[threadIdx_x % 49 + 490] * kernel_shared_1[threadIdx_x // 49 * 16 + 138]
+                conv2d_nchw_1[3] = conv2d_nchw_1[3] + pad_temp_shared_1[threadIdx_x % 49 + 490] * kernel_shared_1[threadIdx_x // 49 * 16 + 202]
+                conv2d_nchw_1[4] = conv2d_nchw_1[4] + pad_temp_shared_1[threadIdx_x % 49 + 490] * kernel_shared_1[threadIdx_x // 49 * 16 + 266]
+                conv2d_nchw_1[5] = conv2d_nchw_1[5] + pad_temp_shared_1[threadIdx_x % 49 + 490] * kernel_shared_1[threadIdx_x // 49 * 16 + 330]
+                conv2d_nchw_1[6] = conv2d_nchw_1[6] + pad_temp_shared_1[threadIdx_x % 49 + 490] * kernel_shared_1[threadIdx_x // 49 * 16 + 394]
+                conv2d_nchw_1[7] = conv2d_nchw_1[7] + pad_temp_shared_1[threadIdx_x % 49 + 490] * kernel_shared_1[threadIdx_x // 49 * 16 + 458]
+                conv2d_nchw_1[0] = conv2d_nchw_1[0] + pad_temp_shared_1[threadIdx_x % 49 + 539] * kernel_shared_1[threadIdx_x // 49 * 16 + 11]
+                conv2d_nchw_1[1] = conv2d_nchw_1[1] + pad_temp_shared_1[threadIdx_x % 49 + 539] * kernel_shared_1[threadIdx_x // 49 * 16 + 75]
+                conv2d_nchw_1[2] = conv2d_nchw_1[2] + pad_temp_shared_1[threadIdx_x % 49 + 539] * kernel_shared_1[threadIdx_x // 49 * 16 + 139]
+                conv2d_nchw_1[3] = conv2d_nchw_1[3] + pad_temp_shared_1[threadIdx_x % 49 + 539] * kernel_shared_1[threadIdx_x // 49 * 16 + 203]
+                conv2d_nchw_1[4] = conv2d_nchw_1[4] + pad_temp_shared_1[threadIdx_x % 49 + 539] * kernel_shared_1[threadIdx_x // 49 * 16 + 267]
+                conv2d_nchw_1[5] = conv2d_nchw_1[5] + pad_temp_shared_1[threadIdx_x % 49 + 539] * kernel_shared_1[threadIdx_x // 49 * 16 + 331]
+                conv2d_nchw_1[6] = conv2d_nchw_1[6] + pad_temp_shared_1[threadIdx_x % 49 + 539] * kernel_shared_1[threadIdx_x // 49 * 16 + 395]
+                conv2d_nchw_1[7] = conv2d_nchw_1[7] + pad_temp_shared_1[threadIdx_x % 49 + 539] * kernel_shared_1[threadIdx_x // 49 * 16 + 459]
+                conv2d_nchw_1[0] = conv2d_nchw_1[0] + pad_temp_shared_1[threadIdx_x % 49 + 588] * kernel_shared_1[threadIdx_x // 49 * 16 + 12]
+                conv2d_nchw_1[1] = conv2d_nchw_1[1] + pad_temp_shared_1[threadIdx_x % 49 + 588] * kernel_shared_1[threadIdx_x // 49 * 16 + 76]
+                conv2d_nchw_1[2] = conv2d_nchw_1[2] + pad_temp_shared_1[threadIdx_x % 49 + 588] * kernel_shared_1[threadIdx_x // 49 * 16 + 140]
+                conv2d_nchw_1[3] = conv2d_nchw_1[3] + pad_temp_shared_1[threadIdx_x % 49 + 588] * kernel_shared_1[threadIdx_x // 49 * 16 + 204]
+                conv2d_nchw_1[4] = conv2d_nchw_1[4] + pad_temp_shared_1[threadIdx_x % 49 + 588] * kernel_shared_1[threadIdx_x // 49 * 16 + 268]
+                conv2d_nchw_1[5] = conv2d_nchw_1[5] + pad_temp_shared_1[threadIdx_x % 49 + 588] * kernel_shared_1[threadIdx_x // 49 * 16 + 332]
+                conv2d_nchw_1[6] = conv2d_nchw_1[6] + pad_temp_shared_1[threadIdx_x % 49 + 588] * kernel_shared_1[threadIdx_x // 49 * 16 + 396]
+                conv2d_nchw_1[7] = conv2d_nchw_1[7] + pad_temp_shared_1[threadIdx_x % 49 + 588] * kernel_shared_1[threadIdx_x // 49 * 16 + 460]
+                conv2d_nchw_1[0] = conv2d_nchw_1[0] + pad_temp_shared_1[threadIdx_x % 49 + 637] * kernel_shared_1[threadIdx_x // 49 * 16 + 13]
+                conv2d_nchw_1[1] = conv2d_nchw_1[1] + pad_temp_shared_1[threadIdx_x % 49 + 637] * kernel_shared_1[threadIdx_x // 49 * 16 + 77]
+                conv2d_nchw_1[2] = conv2d_nchw_1[2] + pad_temp_shared_1[threadIdx_x % 49 + 637] * kernel_shared_1[threadIdx_x // 49 * 16 + 141]
+                conv2d_nchw_1[3] = conv2d_nchw_1[3] + pad_temp_shared_1[threadIdx_x % 49 + 637] * kernel_shared_1[threadIdx_x // 49 * 16 + 205]
+                conv2d_nchw_1[4] = conv2d_nchw_1[4] + pad_temp_shared_1[threadIdx_x % 49 + 637] * kernel_shared_1[threadIdx_x // 49 * 16 + 269]
+                conv2d_nchw_1[5] = conv2d_nchw_1[5] + pad_temp_shared_1[threadIdx_x % 49 + 637] * kernel_shared_1[threadIdx_x // 49 * 16 + 333]
+                conv2d_nchw_1[6] = conv2d_nchw_1[6] + pad_temp_shared_1[threadIdx_x % 49 + 637] * kernel_shared_1[threadIdx_x // 49 * 16 + 397]
+                conv2d_nchw_1[7] = conv2d_nchw_1[7] + pad_temp_shared_1[threadIdx_x % 49 + 637] * kernel_shared_1[threadIdx_x // 49 * 16 + 461]
+                conv2d_nchw_1[0] = conv2d_nchw_1[0] + pad_temp_shared_1[threadIdx_x % 49 + 686] * kernel_shared_1[threadIdx_x // 49 * 16 + 14]
+                conv2d_nchw_1[1] = conv2d_nchw_1[1] + pad_temp_shared_1[threadIdx_x % 49 + 686] * kernel_shared_1[threadIdx_x // 49 * 16 + 78]
+                conv2d_nchw_1[2] = conv2d_nchw_1[2] + pad_temp_shared_1[threadIdx_x % 49 + 686] * kernel_shared_1[threadIdx_x // 49 * 16 + 142]
+                conv2d_nchw_1[3] = conv2d_nchw_1[3] + pad_temp_shared_1[threadIdx_x % 49 + 686] * kernel_shared_1[threadIdx_x // 49 * 16 + 206]
+                conv2d_nchw_1[4] = conv2d_nchw_1[4] + pad_temp_shared_1[threadIdx_x % 49 + 686] * kernel_shared_1[threadIdx_x // 49 * 16 + 270]
+                conv2d_nchw_1[5] = conv2d_nchw_1[5] + pad_temp_shared_1[threadIdx_x % 49 + 686] * kernel_shared_1[threadIdx_x // 49 * 16 + 334]
+                conv2d_nchw_1[6] = conv2d_nchw_1[6] + pad_temp_shared_1[threadIdx_x % 49 + 686] * kernel_shared_1[threadIdx_x // 49 * 16 + 398]
+                conv2d_nchw_1[7] = conv2d_nchw_1[7] + pad_temp_shared_1[threadIdx_x % 49 + 686] * kernel_shared_1[threadIdx_x // 49 * 16 + 462]
+                conv2d_nchw_1[0] = conv2d_nchw_1[0] + pad_temp_shared_1[threadIdx_x % 49 + 735] * kernel_shared_1[threadIdx_x // 49 * 16 + 15]
+                conv2d_nchw_1[1] = conv2d_nchw_1[1] + pad_temp_shared_1[threadIdx_x % 49 + 735] * kernel_shared_1[threadIdx_x // 49 * 16 + 79]
+                conv2d_nchw_1[2] = conv2d_nchw_1[2] + pad_temp_shared_1[threadIdx_x % 49 + 735] * kernel_shared_1[threadIdx_x // 49 * 16 + 143]
+                conv2d_nchw_1[3] = conv2d_nchw_1[3] + pad_temp_shared_1[threadIdx_x % 49 + 735] * kernel_shared_1[threadIdx_x // 49 * 16 + 207]
+                conv2d_nchw_1[4] = conv2d_nchw_1[4] + pad_temp_shared_1[threadIdx_x % 49 + 735] * kernel_shared_1[threadIdx_x // 49 * 16 + 271]
+                conv2d_nchw_1[5] = conv2d_nchw_1[5] + pad_temp_shared_1[threadIdx_x % 49 + 735] * kernel_shared_1[threadIdx_x // 49 * 16 + 335]
+                conv2d_nchw_1[6] = conv2d_nchw_1[6] + pad_temp_shared_1[threadIdx_x % 49 + 735] * kernel_shared_1[threadIdx_x // 49 * 16 + 399]
+                conv2d_nchw_1[7] = conv2d_nchw_1[7] + pad_temp_shared_1[threadIdx_x % 49 + 735] * kernel_shared_1[threadIdx_x // 49 * 16 + 463]
+            compute_1 = T.Buffer((25088,), data=compute.data)
+            bias_1 = T.Buffer((512,), data=bias.data)
+            compute_1[blockIdx_x * 1568 + threadIdx_x] = T.max(conv2d_nchw_1[0] + bias_1[blockIdx_x * 32 + threadIdx_x // 49], T.float32(0))
+            compute_1[blockIdx_x * 1568 + threadIdx_x + 196] = T.max(conv2d_nchw_1[1] + bias_1[blockIdx_x * 32 + threadIdx_x // 49 + 4], T.float32(0))
+            compute_1[blockIdx_x * 1568 + threadIdx_x + 392] = T.max(conv2d_nchw_1[2] + bias_1[blockIdx_x * 32 + threadIdx_x // 49 + 8], T.float32(0))
+            compute_1[blockIdx_x * 1568 + threadIdx_x + 588] = T.max(conv2d_nchw_1[3] + bias_1[blockIdx_x * 32 + threadIdx_x // 49 + 12], T.float32(0))
+            compute_1[blockIdx_x * 1568 + threadIdx_x + 784] = T.max(conv2d_nchw_1[4] + bias_1[blockIdx_x * 32 + threadIdx_x // 49 + 16], T.float32(0))
+            compute_1[blockIdx_x * 1568 + threadIdx_x + 980] = T.max(conv2d_nchw_1[5] + bias_1[blockIdx_x * 32 + threadIdx_x // 49 + 20], T.float32(0))
+            compute_1[blockIdx_x * 1568 + threadIdx_x + 1176] = T.max(conv2d_nchw_1[6] + bias_1[blockIdx_x * 32 + threadIdx_x // 49 + 24], T.float32(0))
+            compute_1[blockIdx_x * 1568 + threadIdx_x + 1372] = T.max(conv2d_nchw_1[7] + bias_1[blockIdx_x * 32 + threadIdx_x // 49 + 28], T.float32(0))
 
 
 
@@ -323,7 +756,7 @@ We build the binary and check its correctness and performance.
 
  .. code-block:: none
 
-    Execution time of this operator: 0.283 ms
+    Execution time of this operator: 0.239 ms
 
 
 
@@ -371,10 +804,10 @@ They can be used for debugging and learning the behavior of the auto-scheduler.
     conv2d_nchw_nn_o_o_i, conv2d_nchw_nn_o_i = s[conv2d_nchw].split(conv2d_nchw_nn_o_i, factor=1)
     conv2d_nchw_nn_o_o_o_i, conv2d_nchw_nn_o_o_i = s[conv2d_nchw].split(conv2d_nchw_nn_o_o_i, factor=1)
     conv2d_nchw_nn_o_o_o_o, conv2d_nchw_nn_o_o_o_i = s[conv2d_nchw].split(conv2d_nchw_nn_o_o_o_i, factor=1)
-    conv2d_nchw_ff_o_i, conv2d_nchw_ff_i = s[conv2d_nchw].split(conv2d_nchw_ff, factor=2)
+    conv2d_nchw_ff_o_i, conv2d_nchw_ff_i = s[conv2d_nchw].split(conv2d_nchw_ff, factor=1)
     conv2d_nchw_ff_o_o_i, conv2d_nchw_ff_o_i = s[conv2d_nchw].split(conv2d_nchw_ff_o_i, factor=1)
-    conv2d_nchw_ff_o_o_o_i, conv2d_nchw_ff_o_o_i = s[conv2d_nchw].split(conv2d_nchw_ff_o_o_i, factor=8)
-    conv2d_nchw_ff_o_o_o_o, conv2d_nchw_ff_o_o_o_i = s[conv2d_nchw].split(conv2d_nchw_ff_o_o_o_i, factor=1)
+    conv2d_nchw_ff_o_o_o_i, conv2d_nchw_ff_o_o_i = s[conv2d_nchw].split(conv2d_nchw_ff_o_o_i, factor=4)
+    conv2d_nchw_ff_o_o_o_o, conv2d_nchw_ff_o_o_o_i = s[conv2d_nchw].split(conv2d_nchw_ff_o_o_o_i, factor=8)
     conv2d_nchw_yy_o_i, conv2d_nchw_yy_i = s[conv2d_nchw].split(conv2d_nchw_yy, factor=1)
     conv2d_nchw_yy_o_o_i, conv2d_nchw_yy_o_i = s[conv2d_nchw].split(conv2d_nchw_yy_o_i, factor=1)
     conv2d_nchw_yy_o_o_o_i, conv2d_nchw_yy_o_o_i = s[conv2d_nchw].split(conv2d_nchw_yy_o_o_i, factor=7)
@@ -384,18 +817,18 @@ They can be used for debugging and learning the behavior of the auto-scheduler.
     conv2d_nchw_xx_o_o_o_i, conv2d_nchw_xx_o_o_i = s[conv2d_nchw].split(conv2d_nchw_xx_o_o_i, factor=7)
     conv2d_nchw_xx_o_o_o_o, conv2d_nchw_xx_o_o_o_i = s[conv2d_nchw].split(conv2d_nchw_xx_o_o_o_i, factor=1)
     conv2d_nchw_rc_o_i, conv2d_nchw_rc_i = s[conv2d_nchw].split(conv2d_nchw_rc, factor=1)
-    conv2d_nchw_rc_o_o, conv2d_nchw_rc_o_i = s[conv2d_nchw].split(conv2d_nchw_rc_o_i, factor=8)
+    conv2d_nchw_rc_o_o, conv2d_nchw_rc_o_i = s[conv2d_nchw].split(conv2d_nchw_rc_o_i, factor=16)
     conv2d_nchw_ry_o_i, conv2d_nchw_ry_i = s[conv2d_nchw].split(conv2d_nchw_ry, factor=1)
-    conv2d_nchw_ry_o_o, conv2d_nchw_ry_o_i = s[conv2d_nchw].split(conv2d_nchw_ry_o_i, factor=3)
-    conv2d_nchw_rx_o_i, conv2d_nchw_rx_i = s[conv2d_nchw].split(conv2d_nchw_rx, factor=3)
+    conv2d_nchw_ry_o_o, conv2d_nchw_ry_o_i = s[conv2d_nchw].split(conv2d_nchw_ry_o_i, factor=1)
+    conv2d_nchw_rx_o_i, conv2d_nchw_rx_i = s[conv2d_nchw].split(conv2d_nchw_rx, factor=1)
     conv2d_nchw_rx_o_o, conv2d_nchw_rx_o_i = s[conv2d_nchw].split(conv2d_nchw_rx_o_i, factor=1)
     s[conv2d_nchw].reorder(conv2d_nchw_nn_o_o_o_o, conv2d_nchw_ff_o_o_o_o, conv2d_nchw_yy_o_o_o_o, conv2d_nchw_xx_o_o_o_o, conv2d_nchw_nn_o_o_o_i, conv2d_nchw_ff_o_o_o_i, conv2d_nchw_yy_o_o_o_i, conv2d_nchw_xx_o_o_o_i, conv2d_nchw_nn_o_o_i, conv2d_nchw_ff_o_o_i, conv2d_nchw_yy_o_o_i, conv2d_nchw_xx_o_o_i, conv2d_nchw_rc_o_o, conv2d_nchw_ry_o_o, conv2d_nchw_rx_o_o, conv2d_nchw_rc_o_i, conv2d_nchw_ry_o_i, conv2d_nchw_rx_o_i, conv2d_nchw_nn_o_i, conv2d_nchw_ff_o_i, conv2d_nchw_yy_o_i, conv2d_nchw_xx_o_i, conv2d_nchw_rc_i, conv2d_nchw_ry_i, conv2d_nchw_rx_i, conv2d_nchw_nn_i, conv2d_nchw_ff_i, conv2d_nchw_yy_i, conv2d_nchw_xx_i)
     compute_i0_o_i, compute_i0_i = s[compute].split(compute_i0, factor=1)
     compute_i0_o_o_i, compute_i0_o_i = s[compute].split(compute_i0_o_i, factor=1)
     compute_i0_o_o_o, compute_i0_o_o_i = s[compute].split(compute_i0_o_o_i, factor=1)
-    compute_i1_o_i, compute_i1_i = s[compute].split(compute_i1, factor=2)
-    compute_i1_o_o_i, compute_i1_o_i = s[compute].split(compute_i1_o_i, factor=8)
-    compute_i1_o_o_o, compute_i1_o_o_i = s[compute].split(compute_i1_o_o_i, factor=1)
+    compute_i1_o_i, compute_i1_i = s[compute].split(compute_i1, factor=1)
+    compute_i1_o_o_i, compute_i1_o_i = s[compute].split(compute_i1_o_i, factor=4)
+    compute_i1_o_o_o, compute_i1_o_o_i = s[compute].split(compute_i1_o_o_i, factor=8)
     compute_i2_o_i, compute_i2_i = s[compute].split(compute_i2, factor=1)
     compute_i2_o_o_i, compute_i2_o_i = s[compute].split(compute_i2_o_i, factor=7)
     compute_i2_o_o_o, compute_i2_o_o_i = s[compute].split(compute_i2_o_o_i, factor=1)
@@ -420,14 +853,14 @@ They can be used for debugging and learning the behavior of the auto-scheduler.
     kernel_shared_ax0_ax1_fused_ax2_fused_ax3_fused = s[kernel_shared].fuse(kernel_shared_ax0, kernel_shared_ax1, kernel_shared_ax2, kernel_shared_ax3)
     kernel_shared_ax0_ax1_fused_ax2_fused_ax3_fused_o, kernel_shared_ax0_ax1_fused_ax2_fused_ax3_fused_i = s[kernel_shared].split(kernel_shared_ax0_ax1_fused_ax2_fused_ax3_fused, factor=1)
     s[kernel_shared].vectorize(kernel_shared_ax0_ax1_fused_ax2_fused_ax3_fused_i)
-    kernel_shared_ax0_ax1_fused_ax2_fused_ax3_fused_o_o, kernel_shared_ax0_ax1_fused_ax2_fused_ax3_fused_o_i = s[kernel_shared].split(kernel_shared_ax0_ax1_fused_ax2_fused_ax3_fused_o, factor=392)
+    kernel_shared_ax0_ax1_fused_ax2_fused_ax3_fused_o_o, kernel_shared_ax0_ax1_fused_ax2_fused_ax3_fused_o_i = s[kernel_shared].split(kernel_shared_ax0_ax1_fused_ax2_fused_ax3_fused_o, factor=196)
     s[kernel_shared].bind(kernel_shared_ax0_ax1_fused_ax2_fused_ax3_fused_o_i, te.thread_axis("threadIdx.x"))
     pad_temp_shared_ax0_ax1_fused_ax2_fused_ax3_fused = s[pad_temp_shared].fuse(pad_temp_shared_ax0, pad_temp_shared_ax1, pad_temp_shared_ax2, pad_temp_shared_ax3)
     pad_temp_shared_ax0_ax1_fused_ax2_fused_ax3_fused_o, pad_temp_shared_ax0_ax1_fused_ax2_fused_ax3_fused_i = s[pad_temp_shared].split(pad_temp_shared_ax0_ax1_fused_ax2_fused_ax3_fused, factor=1)
     s[pad_temp_shared].vectorize(pad_temp_shared_ax0_ax1_fused_ax2_fused_ax3_fused_i)
-    pad_temp_shared_ax0_ax1_fused_ax2_fused_ax3_fused_o_o, pad_temp_shared_ax0_ax1_fused_ax2_fused_ax3_fused_o_i = s[pad_temp_shared].split(pad_temp_shared_ax0_ax1_fused_ax2_fused_ax3_fused_o, factor=392)
+    pad_temp_shared_ax0_ax1_fused_ax2_fused_ax3_fused_o_o, pad_temp_shared_ax0_ax1_fused_ax2_fused_ax3_fused_o_i = s[pad_temp_shared].split(pad_temp_shared_ax0_ax1_fused_ax2_fused_ax3_fused_o, factor=196)
     s[pad_temp_shared].bind(pad_temp_shared_ax0_ax1_fused_ax2_fused_ax3_fused_o_i, te.thread_axis("threadIdx.x"))
-    s[conv2d_nchw].pragma(conv2d_nchw_nn_o_o_o_o, "auto_unroll_max_step", 0)
+    s[conv2d_nchw].pragma(conv2d_nchw_nn_o_o_o_o, "auto_unroll_max_step", 1024)
     s[conv2d_nchw].pragma(conv2d_nchw_nn_o_o_o_o, "unroll_explicit", True)
 
     CUDA source code:
@@ -445,39 +878,447 @@ They can be used for debugging and learning the behavior of the auto-scheduler.
       #define int64_t long long
       #define uint64_t unsigned long long
     #endif
-    extern "C" __global__ void __launch_bounds__(392) default_function_kernel0(float* __restrict__ data, float* __restrict__ kernel, float* __restrict__ compute, float* __restrict__ bias) {
-      float conv2d_nchw[2];
-      __shared__ float pad_temp_shared[648];
-      __shared__ float kernel_shared[1152];
-      for (int ff_inner_init = 0; ff_inner_init < 2; ++ff_inner_init) {
-        conv2d_nchw[ff_inner_init] = 0.000000e+00f;
-      }
-      for (int rc_outer_outer = 0; rc_outer_outer < 64; ++rc_outer_outer) {
-        __syncthreads();
-        for (int ax0_ax1_fused_ax2_fused_ax3_fused_outer_outer = 0; ax0_ax1_fused_ax2_fused_ax3_fused_outer_outer < 2; ++ax0_ax1_fused_ax2_fused_ax3_fused_outer_outer) {
-          if (((ax0_ax1_fused_ax2_fused_ax3_fused_outer_outer * 49) + (((int)threadIdx.x) >> 3)) < 81) {
-            pad_temp_shared[((ax0_ax1_fused_ax2_fused_ax3_fused_outer_outer * 392) + ((int)threadIdx.x))] = (((((9 <= (((ax0_ax1_fused_ax2_fused_ax3_fused_outer_outer * 68) + ((int)threadIdx.x)) % 81)) && ((((ax0_ax1_fused_ax2_fused_ax3_fused_outer_outer * 68) + ((int)threadIdx.x)) % 81) < 72)) && (1 <= (((ax0_ax1_fused_ax2_fused_ax3_fused_outer_outer * 5) + ((int)threadIdx.x)) % 9))) && ((((ax0_ax1_fused_ax2_fused_ax3_fused_outer_outer * 5) + ((int)threadIdx.x)) % 9) < 8)) ? data[(((((rc_outer_outer * 392) + ((((ax0_ax1_fused_ax2_fused_ax3_fused_outer_outer * 392) + ((int)threadIdx.x)) / 81) * 49)) + (((((ax0_ax1_fused_ax2_fused_ax3_fused_outer_outer * 68) + ((int)threadIdx.x)) % 81) / 9) * 7)) + (((ax0_ax1_fused_ax2_fused_ax3_fused_outer_outer * 5) + ((int)threadIdx.x)) % 9)) - 8)] : 0.000000e+00f);
+    extern "C" __global__ void __launch_bounds__(196) default_function_kernel0(float* __restrict__ data, float* __restrict__ kernel, float* __restrict__ compute, float* __restrict__ bias) {
+      float conv2d_nchw[8];
+      __shared__ float pad_temp_shared[784];
+      __shared__ float kernel_shared[512];
+      conv2d_nchw[0] = 0.000000e+00f;
+      conv2d_nchw[1] = 0.000000e+00f;
+      conv2d_nchw[2] = 0.000000e+00f;
+      conv2d_nchw[3] = 0.000000e+00f;
+      conv2d_nchw[4] = 0.000000e+00f;
+      conv2d_nchw[5] = 0.000000e+00f;
+      conv2d_nchw[6] = 0.000000e+00f;
+      conv2d_nchw[7] = 0.000000e+00f;
+      for (int rc_outer_outer = 0; rc_outer_outer < 32; ++rc_outer_outer) {
+        for (int ry_outer_outer = 0; ry_outer_outer < 3; ++ry_outer_outer) {
+          __syncthreads();
+          pad_temp_shared[((int)threadIdx.x)] = ((((1 <= (((((int)threadIdx.x) % 49) / 7) + ry_outer_outer)) && ((((((int)threadIdx.x) % 49) / 7) + ry_outer_outer) < 8)) && (1 <= (((int)threadIdx.x) % 7))) ? data[((((rc_outer_outer * 784) + (ry_outer_outer * 7)) + ((int)threadIdx.x)) - 8)] : 0.000000e+00f);
+          pad_temp_shared[(((int)threadIdx.x) + 196)] = ((((1 <= (((((int)threadIdx.x) % 49) / 7) + ry_outer_outer)) && ((((((int)threadIdx.x) % 49) / 7) + ry_outer_outer) < 8)) && (1 <= (((int)threadIdx.x) % 7))) ? data[((((rc_outer_outer * 784) + (ry_outer_outer * 7)) + ((int)threadIdx.x)) + 188)] : 0.000000e+00f);
+          pad_temp_shared[(((int)threadIdx.x) + 392)] = ((((1 <= (((((int)threadIdx.x) % 49) / 7) + ry_outer_outer)) && ((((((int)threadIdx.x) % 49) / 7) + ry_outer_outer) < 8)) && (1 <= (((int)threadIdx.x) % 7))) ? data[((((rc_outer_outer * 784) + (ry_outer_outer * 7)) + ((int)threadIdx.x)) + 384)] : 0.000000e+00f);
+          pad_temp_shared[(((int)threadIdx.x) + 588)] = ((((1 <= (((((int)threadIdx.x) % 49) / 7) + ry_outer_outer)) && ((((((int)threadIdx.x) % 49) / 7) + ry_outer_outer) < 8)) && (1 <= (((int)threadIdx.x) % 7))) ? data[((((rc_outer_outer * 784) + (ry_outer_outer * 7)) + ((int)threadIdx.x)) + 580)] : 0.000000e+00f);
+          kernel_shared[((int)threadIdx.x)] = kernel[(((((((int)blockIdx.x) * 147456) + ((((int)threadIdx.x) >> 4) * 4608)) + (rc_outer_outer * 144)) + ((((int)threadIdx.x) & 15) * 9)) + (ry_outer_outer * 3))];
+          kernel_shared[(((int)threadIdx.x) + 196)] = kernel[(((((((int)blockIdx.x) * 147456) + (((((int)threadIdx.x) + 196) >> 4) * 4608)) + (rc_outer_outer * 144)) + (((((int)threadIdx.x) + 4) & 15) * 9)) + (ry_outer_outer * 3))];
+          if (((int)threadIdx.x) < 120) {
+            kernel_shared[(((int)threadIdx.x) + 392)] = kernel[(((((((int)blockIdx.x) * 147456) + (((((int)threadIdx.x) + 392) >> 4) * 4608)) + (rc_outer_outer * 144)) + (((((int)threadIdx.x) + 8) & 15) * 9)) + (ry_outer_outer * 3))];
           }
-        }
-        for (int ax0_ax1_fused_ax2_fused_ax3_fused_outer_outer_1 = 0; ax0_ax1_fused_ax2_fused_ax3_fused_outer_outer_1 < 3; ++ax0_ax1_fused_ax2_fused_ax3_fused_outer_outer_1) {
-          if (((ax0_ax1_fused_ax2_fused_ax3_fused_outer_outer_1 * 49) + (((int)threadIdx.x) >> 3)) < 144) {
-            kernel_shared[((ax0_ax1_fused_ax2_fused_ax3_fused_outer_outer_1 * 392) + ((int)threadIdx.x))] = kernel[(((((((int)blockIdx.x) * 73728) + ((((ax0_ax1_fused_ax2_fused_ax3_fused_outer_outer_1 * 49) + (((int)threadIdx.x) >> 3)) / 9) * 4608)) + (rc_outer_outer * 72)) + (((((ax0_ax1_fused_ax2_fused_ax3_fused_outer_outer_1 * 32) + ((int)threadIdx.x)) % 72) / 3) * 3)) + (((ax0_ax1_fused_ax2_fused_ax3_fused_outer_outer_1 * 2) + ((int)threadIdx.x)) % 3))];
+          __syncthreads();
+          conv2d_nchw[0] = (conv2d_nchw[0] + (pad_temp_shared[(((int)threadIdx.x) % 49)] * kernel_shared[((((int)threadIdx.x) / 49) * 16)]));
+          conv2d_nchw[1] = (conv2d_nchw[1] + (pad_temp_shared[(((int)threadIdx.x) % 49)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 64)]));
+          conv2d_nchw[2] = (conv2d_nchw[2] + (pad_temp_shared[(((int)threadIdx.x) % 49)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 128)]));
+          conv2d_nchw[3] = (conv2d_nchw[3] + (pad_temp_shared[(((int)threadIdx.x) % 49)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 192)]));
+          conv2d_nchw[4] = (conv2d_nchw[4] + (pad_temp_shared[(((int)threadIdx.x) % 49)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 256)]));
+          conv2d_nchw[5] = (conv2d_nchw[5] + (pad_temp_shared[(((int)threadIdx.x) % 49)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 320)]));
+          conv2d_nchw[6] = (conv2d_nchw[6] + (pad_temp_shared[(((int)threadIdx.x) % 49)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 384)]));
+          conv2d_nchw[7] = (conv2d_nchw[7] + (pad_temp_shared[(((int)threadIdx.x) % 49)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 448)]));
+          conv2d_nchw[0] = (conv2d_nchw[0] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 49)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 1)]));
+          conv2d_nchw[1] = (conv2d_nchw[1] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 49)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 65)]));
+          conv2d_nchw[2] = (conv2d_nchw[2] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 49)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 129)]));
+          conv2d_nchw[3] = (conv2d_nchw[3] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 49)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 193)]));
+          conv2d_nchw[4] = (conv2d_nchw[4] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 49)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 257)]));
+          conv2d_nchw[5] = (conv2d_nchw[5] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 49)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 321)]));
+          conv2d_nchw[6] = (conv2d_nchw[6] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 49)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 385)]));
+          conv2d_nchw[7] = (conv2d_nchw[7] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 49)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 449)]));
+          conv2d_nchw[0] = (conv2d_nchw[0] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 98)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 2)]));
+          conv2d_nchw[1] = (conv2d_nchw[1] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 98)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 66)]));
+          conv2d_nchw[2] = (conv2d_nchw[2] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 98)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 130)]));
+          conv2d_nchw[3] = (conv2d_nchw[3] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 98)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 194)]));
+          conv2d_nchw[4] = (conv2d_nchw[4] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 98)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 258)]));
+          conv2d_nchw[5] = (conv2d_nchw[5] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 98)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 322)]));
+          conv2d_nchw[6] = (conv2d_nchw[6] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 98)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 386)]));
+          conv2d_nchw[7] = (conv2d_nchw[7] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 98)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 450)]));
+          conv2d_nchw[0] = (conv2d_nchw[0] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 147)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 3)]));
+          conv2d_nchw[1] = (conv2d_nchw[1] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 147)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 67)]));
+          conv2d_nchw[2] = (conv2d_nchw[2] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 147)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 131)]));
+          conv2d_nchw[3] = (conv2d_nchw[3] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 147)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 195)]));
+          conv2d_nchw[4] = (conv2d_nchw[4] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 147)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 259)]));
+          conv2d_nchw[5] = (conv2d_nchw[5] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 147)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 323)]));
+          conv2d_nchw[6] = (conv2d_nchw[6] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 147)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 387)]));
+          conv2d_nchw[7] = (conv2d_nchw[7] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 147)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 451)]));
+          conv2d_nchw[0] = (conv2d_nchw[0] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 196)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 4)]));
+          conv2d_nchw[1] = (conv2d_nchw[1] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 196)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 68)]));
+          conv2d_nchw[2] = (conv2d_nchw[2] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 196)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 132)]));
+          conv2d_nchw[3] = (conv2d_nchw[3] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 196)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 196)]));
+          conv2d_nchw[4] = (conv2d_nchw[4] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 196)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 260)]));
+          conv2d_nchw[5] = (conv2d_nchw[5] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 196)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 324)]));
+          conv2d_nchw[6] = (conv2d_nchw[6] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 196)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 388)]));
+          conv2d_nchw[7] = (conv2d_nchw[7] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 196)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 452)]));
+          conv2d_nchw[0] = (conv2d_nchw[0] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 245)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 5)]));
+          conv2d_nchw[1] = (conv2d_nchw[1] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 245)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 69)]));
+          conv2d_nchw[2] = (conv2d_nchw[2] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 245)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 133)]));
+          conv2d_nchw[3] = (conv2d_nchw[3] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 245)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 197)]));
+          conv2d_nchw[4] = (conv2d_nchw[4] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 245)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 261)]));
+          conv2d_nchw[5] = (conv2d_nchw[5] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 245)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 325)]));
+          conv2d_nchw[6] = (conv2d_nchw[6] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 245)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 389)]));
+          conv2d_nchw[7] = (conv2d_nchw[7] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 245)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 453)]));
+          conv2d_nchw[0] = (conv2d_nchw[0] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 294)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 6)]));
+          conv2d_nchw[1] = (conv2d_nchw[1] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 294)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 70)]));
+          conv2d_nchw[2] = (conv2d_nchw[2] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 294)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 134)]));
+          conv2d_nchw[3] = (conv2d_nchw[3] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 294)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 198)]));
+          conv2d_nchw[4] = (conv2d_nchw[4] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 294)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 262)]));
+          conv2d_nchw[5] = (conv2d_nchw[5] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 294)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 326)]));
+          conv2d_nchw[6] = (conv2d_nchw[6] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 294)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 390)]));
+          conv2d_nchw[7] = (conv2d_nchw[7] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 294)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 454)]));
+          conv2d_nchw[0] = (conv2d_nchw[0] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 343)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 7)]));
+          conv2d_nchw[1] = (conv2d_nchw[1] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 343)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 71)]));
+          conv2d_nchw[2] = (conv2d_nchw[2] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 343)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 135)]));
+          conv2d_nchw[3] = (conv2d_nchw[3] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 343)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 199)]));
+          conv2d_nchw[4] = (conv2d_nchw[4] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 343)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 263)]));
+          conv2d_nchw[5] = (conv2d_nchw[5] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 343)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 327)]));
+          conv2d_nchw[6] = (conv2d_nchw[6] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 343)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 391)]));
+          conv2d_nchw[7] = (conv2d_nchw[7] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 343)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 455)]));
+          conv2d_nchw[0] = (conv2d_nchw[0] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 392)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 8)]));
+          conv2d_nchw[1] = (conv2d_nchw[1] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 392)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 72)]));
+          conv2d_nchw[2] = (conv2d_nchw[2] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 392)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 136)]));
+          conv2d_nchw[3] = (conv2d_nchw[3] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 392)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 200)]));
+          conv2d_nchw[4] = (conv2d_nchw[4] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 392)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 264)]));
+          conv2d_nchw[5] = (conv2d_nchw[5] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 392)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 328)]));
+          conv2d_nchw[6] = (conv2d_nchw[6] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 392)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 392)]));
+          conv2d_nchw[7] = (conv2d_nchw[7] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 392)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 456)]));
+          conv2d_nchw[0] = (conv2d_nchw[0] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 441)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 9)]));
+          conv2d_nchw[1] = (conv2d_nchw[1] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 441)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 73)]));
+          conv2d_nchw[2] = (conv2d_nchw[2] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 441)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 137)]));
+          conv2d_nchw[3] = (conv2d_nchw[3] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 441)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 201)]));
+          conv2d_nchw[4] = (conv2d_nchw[4] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 441)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 265)]));
+          conv2d_nchw[5] = (conv2d_nchw[5] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 441)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 329)]));
+          conv2d_nchw[6] = (conv2d_nchw[6] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 441)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 393)]));
+          conv2d_nchw[7] = (conv2d_nchw[7] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 441)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 457)]));
+          conv2d_nchw[0] = (conv2d_nchw[0] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 490)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 10)]));
+          conv2d_nchw[1] = (conv2d_nchw[1] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 490)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 74)]));
+          conv2d_nchw[2] = (conv2d_nchw[2] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 490)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 138)]));
+          conv2d_nchw[3] = (conv2d_nchw[3] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 490)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 202)]));
+          conv2d_nchw[4] = (conv2d_nchw[4] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 490)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 266)]));
+          conv2d_nchw[5] = (conv2d_nchw[5] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 490)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 330)]));
+          conv2d_nchw[6] = (conv2d_nchw[6] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 490)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 394)]));
+          conv2d_nchw[7] = (conv2d_nchw[7] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 490)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 458)]));
+          conv2d_nchw[0] = (conv2d_nchw[0] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 539)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 11)]));
+          conv2d_nchw[1] = (conv2d_nchw[1] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 539)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 75)]));
+          conv2d_nchw[2] = (conv2d_nchw[2] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 539)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 139)]));
+          conv2d_nchw[3] = (conv2d_nchw[3] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 539)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 203)]));
+          conv2d_nchw[4] = (conv2d_nchw[4] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 539)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 267)]));
+          conv2d_nchw[5] = (conv2d_nchw[5] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 539)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 331)]));
+          conv2d_nchw[6] = (conv2d_nchw[6] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 539)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 395)]));
+          conv2d_nchw[7] = (conv2d_nchw[7] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 539)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 459)]));
+          conv2d_nchw[0] = (conv2d_nchw[0] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 588)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 12)]));
+          conv2d_nchw[1] = (conv2d_nchw[1] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 588)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 76)]));
+          conv2d_nchw[2] = (conv2d_nchw[2] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 588)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 140)]));
+          conv2d_nchw[3] = (conv2d_nchw[3] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 588)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 204)]));
+          conv2d_nchw[4] = (conv2d_nchw[4] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 588)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 268)]));
+          conv2d_nchw[5] = (conv2d_nchw[5] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 588)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 332)]));
+          conv2d_nchw[6] = (conv2d_nchw[6] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 588)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 396)]));
+          conv2d_nchw[7] = (conv2d_nchw[7] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 588)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 460)]));
+          conv2d_nchw[0] = (conv2d_nchw[0] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 637)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 13)]));
+          conv2d_nchw[1] = (conv2d_nchw[1] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 637)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 77)]));
+          conv2d_nchw[2] = (conv2d_nchw[2] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 637)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 141)]));
+          conv2d_nchw[3] = (conv2d_nchw[3] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 637)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 205)]));
+          conv2d_nchw[4] = (conv2d_nchw[4] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 637)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 269)]));
+          conv2d_nchw[5] = (conv2d_nchw[5] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 637)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 333)]));
+          conv2d_nchw[6] = (conv2d_nchw[6] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 637)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 397)]));
+          conv2d_nchw[7] = (conv2d_nchw[7] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 637)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 461)]));
+          conv2d_nchw[0] = (conv2d_nchw[0] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 686)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 14)]));
+          conv2d_nchw[1] = (conv2d_nchw[1] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 686)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 78)]));
+          conv2d_nchw[2] = (conv2d_nchw[2] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 686)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 142)]));
+          conv2d_nchw[3] = (conv2d_nchw[3] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 686)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 206)]));
+          conv2d_nchw[4] = (conv2d_nchw[4] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 686)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 270)]));
+          conv2d_nchw[5] = (conv2d_nchw[5] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 686)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 334)]));
+          conv2d_nchw[6] = (conv2d_nchw[6] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 686)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 398)]));
+          conv2d_nchw[7] = (conv2d_nchw[7] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 686)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 462)]));
+          conv2d_nchw[0] = (conv2d_nchw[0] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 735)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 15)]));
+          conv2d_nchw[1] = (conv2d_nchw[1] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 735)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 79)]));
+          conv2d_nchw[2] = (conv2d_nchw[2] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 735)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 143)]));
+          conv2d_nchw[3] = (conv2d_nchw[3] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 735)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 207)]));
+          conv2d_nchw[4] = (conv2d_nchw[4] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 735)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 271)]));
+          conv2d_nchw[5] = (conv2d_nchw[5] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 735)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 335)]));
+          conv2d_nchw[6] = (conv2d_nchw[6] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 735)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 399)]));
+          conv2d_nchw[7] = (conv2d_nchw[7] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 735)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 463)]));
+          __syncthreads();
+          pad_temp_shared[((int)threadIdx.x)] = (((1 <= (((((int)threadIdx.x) % 49) / 7) + ry_outer_outer)) && ((((((int)threadIdx.x) % 49) / 7) + ry_outer_outer) < 8)) ? data[((((rc_outer_outer * 784) + (ry_outer_outer * 7)) + ((int)threadIdx.x)) - 7)] : 0.000000e+00f);
+          pad_temp_shared[(((int)threadIdx.x) + 196)] = (((1 <= (((((int)threadIdx.x) % 49) / 7) + ry_outer_outer)) && ((((((int)threadIdx.x) % 49) / 7) + ry_outer_outer) < 8)) ? data[((((rc_outer_outer * 784) + (ry_outer_outer * 7)) + ((int)threadIdx.x)) + 189)] : 0.000000e+00f);
+          pad_temp_shared[(((int)threadIdx.x) + 392)] = (((1 <= (((((int)threadIdx.x) % 49) / 7) + ry_outer_outer)) && ((((((int)threadIdx.x) % 49) / 7) + ry_outer_outer) < 8)) ? data[((((rc_outer_outer * 784) + (ry_outer_outer * 7)) + ((int)threadIdx.x)) + 385)] : 0.000000e+00f);
+          pad_temp_shared[(((int)threadIdx.x) + 588)] = (((1 <= (((((int)threadIdx.x) % 49) / 7) + ry_outer_outer)) && ((((((int)threadIdx.x) % 49) / 7) + ry_outer_outer) < 8)) ? data[((((rc_outer_outer * 784) + (ry_outer_outer * 7)) + ((int)threadIdx.x)) + 581)] : 0.000000e+00f);
+          kernel_shared[((int)threadIdx.x)] = kernel[((((((((int)blockIdx.x) * 147456) + ((((int)threadIdx.x) >> 4) * 4608)) + (rc_outer_outer * 144)) + ((((int)threadIdx.x) & 15) * 9)) + (ry_outer_outer * 3)) + 1)];
+          kernel_shared[(((int)threadIdx.x) + 196)] = kernel[((((((((int)blockIdx.x) * 147456) + (((((int)threadIdx.x) + 196) >> 4) * 4608)) + (rc_outer_outer * 144)) + (((((int)threadIdx.x) + 4) & 15) * 9)) + (ry_outer_outer * 3)) + 1)];
+          if (((int)threadIdx.x) < 120) {
+            kernel_shared[(((int)threadIdx.x) + 392)] = kernel[((((((((int)blockIdx.x) * 147456) + (((((int)threadIdx.x) + 392) >> 4) * 4608)) + (rc_outer_outer * 144)) + (((((int)threadIdx.x) + 8) & 15) * 9)) + (ry_outer_outer * 3)) + 1)];
           }
-        }
-        __syncthreads();
-        for (int rc_outer_inner = 0; rc_outer_inner < 8; ++rc_outer_inner) {
-          for (int ry_outer_inner = 0; ry_outer_inner < 3; ++ry_outer_inner) {
-            for (int rx_inner = 0; rx_inner < 3; ++rx_inner) {
-              for (int ff_inner = 0; ff_inner < 2; ++ff_inner) {
-                conv2d_nchw[ff_inner] = (conv2d_nchw[ff_inner] + (pad_temp_shared[(((((rc_outer_inner * 81) + (((((int)threadIdx.x) % 49) / 7) * 9)) + (ry_outer_inner * 9)) + rx_inner) + (((int)threadIdx.x) % 7))] * kernel_shared[((((((((int)threadIdx.x) / 49) * 144) + (ff_inner * 72)) + (rc_outer_inner * 9)) + (ry_outer_inner * 3)) + rx_inner)]));
-              }
-            }
+          __syncthreads();
+          conv2d_nchw[0] = (conv2d_nchw[0] + (pad_temp_shared[(((int)threadIdx.x) % 49)] * kernel_shared[((((int)threadIdx.x) / 49) * 16)]));
+          conv2d_nchw[1] = (conv2d_nchw[1] + (pad_temp_shared[(((int)threadIdx.x) % 49)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 64)]));
+          conv2d_nchw[2] = (conv2d_nchw[2] + (pad_temp_shared[(((int)threadIdx.x) % 49)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 128)]));
+          conv2d_nchw[3] = (conv2d_nchw[3] + (pad_temp_shared[(((int)threadIdx.x) % 49)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 192)]));
+          conv2d_nchw[4] = (conv2d_nchw[4] + (pad_temp_shared[(((int)threadIdx.x) % 49)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 256)]));
+          conv2d_nchw[5] = (conv2d_nchw[5] + (pad_temp_shared[(((int)threadIdx.x) % 49)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 320)]));
+          conv2d_nchw[6] = (conv2d_nchw[6] + (pad_temp_shared[(((int)threadIdx.x) % 49)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 384)]));
+          conv2d_nchw[7] = (conv2d_nchw[7] + (pad_temp_shared[(((int)threadIdx.x) % 49)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 448)]));
+          conv2d_nchw[0] = (conv2d_nchw[0] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 49)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 1)]));
+          conv2d_nchw[1] = (conv2d_nchw[1] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 49)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 65)]));
+          conv2d_nchw[2] = (conv2d_nchw[2] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 49)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 129)]));
+          conv2d_nchw[3] = (conv2d_nchw[3] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 49)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 193)]));
+          conv2d_nchw[4] = (conv2d_nchw[4] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 49)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 257)]));
+          conv2d_nchw[5] = (conv2d_nchw[5] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 49)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 321)]));
+          conv2d_nchw[6] = (conv2d_nchw[6] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 49)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 385)]));
+          conv2d_nchw[7] = (conv2d_nchw[7] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 49)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 449)]));
+          conv2d_nchw[0] = (conv2d_nchw[0] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 98)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 2)]));
+          conv2d_nchw[1] = (conv2d_nchw[1] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 98)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 66)]));
+          conv2d_nchw[2] = (conv2d_nchw[2] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 98)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 130)]));
+          conv2d_nchw[3] = (conv2d_nchw[3] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 98)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 194)]));
+          conv2d_nchw[4] = (conv2d_nchw[4] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 98)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 258)]));
+          conv2d_nchw[5] = (conv2d_nchw[5] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 98)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 322)]));
+          conv2d_nchw[6] = (conv2d_nchw[6] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 98)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 386)]));
+          conv2d_nchw[7] = (conv2d_nchw[7] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 98)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 450)]));
+          conv2d_nchw[0] = (conv2d_nchw[0] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 147)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 3)]));
+          conv2d_nchw[1] = (conv2d_nchw[1] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 147)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 67)]));
+          conv2d_nchw[2] = (conv2d_nchw[2] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 147)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 131)]));
+          conv2d_nchw[3] = (conv2d_nchw[3] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 147)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 195)]));
+          conv2d_nchw[4] = (conv2d_nchw[4] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 147)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 259)]));
+          conv2d_nchw[5] = (conv2d_nchw[5] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 147)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 323)]));
+          conv2d_nchw[6] = (conv2d_nchw[6] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 147)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 387)]));
+          conv2d_nchw[7] = (conv2d_nchw[7] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 147)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 451)]));
+          conv2d_nchw[0] = (conv2d_nchw[0] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 196)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 4)]));
+          conv2d_nchw[1] = (conv2d_nchw[1] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 196)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 68)]));
+          conv2d_nchw[2] = (conv2d_nchw[2] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 196)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 132)]));
+          conv2d_nchw[3] = (conv2d_nchw[3] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 196)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 196)]));
+          conv2d_nchw[4] = (conv2d_nchw[4] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 196)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 260)]));
+          conv2d_nchw[5] = (conv2d_nchw[5] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 196)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 324)]));
+          conv2d_nchw[6] = (conv2d_nchw[6] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 196)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 388)]));
+          conv2d_nchw[7] = (conv2d_nchw[7] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 196)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 452)]));
+          conv2d_nchw[0] = (conv2d_nchw[0] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 245)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 5)]));
+          conv2d_nchw[1] = (conv2d_nchw[1] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 245)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 69)]));
+          conv2d_nchw[2] = (conv2d_nchw[2] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 245)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 133)]));
+          conv2d_nchw[3] = (conv2d_nchw[3] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 245)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 197)]));
+          conv2d_nchw[4] = (conv2d_nchw[4] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 245)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 261)]));
+          conv2d_nchw[5] = (conv2d_nchw[5] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 245)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 325)]));
+          conv2d_nchw[6] = (conv2d_nchw[6] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 245)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 389)]));
+          conv2d_nchw[7] = (conv2d_nchw[7] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 245)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 453)]));
+          conv2d_nchw[0] = (conv2d_nchw[0] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 294)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 6)]));
+          conv2d_nchw[1] = (conv2d_nchw[1] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 294)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 70)]));
+          conv2d_nchw[2] = (conv2d_nchw[2] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 294)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 134)]));
+          conv2d_nchw[3] = (conv2d_nchw[3] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 294)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 198)]));
+          conv2d_nchw[4] = (conv2d_nchw[4] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 294)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 262)]));
+          conv2d_nchw[5] = (conv2d_nchw[5] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 294)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 326)]));
+          conv2d_nchw[6] = (conv2d_nchw[6] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 294)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 390)]));
+          conv2d_nchw[7] = (conv2d_nchw[7] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 294)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 454)]));
+          conv2d_nchw[0] = (conv2d_nchw[0] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 343)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 7)]));
+          conv2d_nchw[1] = (conv2d_nchw[1] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 343)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 71)]));
+          conv2d_nchw[2] = (conv2d_nchw[2] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 343)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 135)]));
+          conv2d_nchw[3] = (conv2d_nchw[3] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 343)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 199)]));
+          conv2d_nchw[4] = (conv2d_nchw[4] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 343)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 263)]));
+          conv2d_nchw[5] = (conv2d_nchw[5] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 343)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 327)]));
+          conv2d_nchw[6] = (conv2d_nchw[6] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 343)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 391)]));
+          conv2d_nchw[7] = (conv2d_nchw[7] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 343)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 455)]));
+          conv2d_nchw[0] = (conv2d_nchw[0] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 392)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 8)]));
+          conv2d_nchw[1] = (conv2d_nchw[1] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 392)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 72)]));
+          conv2d_nchw[2] = (conv2d_nchw[2] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 392)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 136)]));
+          conv2d_nchw[3] = (conv2d_nchw[3] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 392)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 200)]));
+          conv2d_nchw[4] = (conv2d_nchw[4] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 392)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 264)]));
+          conv2d_nchw[5] = (conv2d_nchw[5] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 392)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 328)]));
+          conv2d_nchw[6] = (conv2d_nchw[6] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 392)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 392)]));
+          conv2d_nchw[7] = (conv2d_nchw[7] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 392)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 456)]));
+          conv2d_nchw[0] = (conv2d_nchw[0] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 441)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 9)]));
+          conv2d_nchw[1] = (conv2d_nchw[1] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 441)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 73)]));
+          conv2d_nchw[2] = (conv2d_nchw[2] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 441)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 137)]));
+          conv2d_nchw[3] = (conv2d_nchw[3] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 441)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 201)]));
+          conv2d_nchw[4] = (conv2d_nchw[4] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 441)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 265)]));
+          conv2d_nchw[5] = (conv2d_nchw[5] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 441)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 329)]));
+          conv2d_nchw[6] = (conv2d_nchw[6] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 441)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 393)]));
+          conv2d_nchw[7] = (conv2d_nchw[7] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 441)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 457)]));
+          conv2d_nchw[0] = (conv2d_nchw[0] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 490)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 10)]));
+          conv2d_nchw[1] = (conv2d_nchw[1] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 490)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 74)]));
+          conv2d_nchw[2] = (conv2d_nchw[2] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 490)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 138)]));
+          conv2d_nchw[3] = (conv2d_nchw[3] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 490)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 202)]));
+          conv2d_nchw[4] = (conv2d_nchw[4] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 490)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 266)]));
+          conv2d_nchw[5] = (conv2d_nchw[5] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 490)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 330)]));
+          conv2d_nchw[6] = (conv2d_nchw[6] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 490)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 394)]));
+          conv2d_nchw[7] = (conv2d_nchw[7] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 490)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 458)]));
+          conv2d_nchw[0] = (conv2d_nchw[0] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 539)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 11)]));
+          conv2d_nchw[1] = (conv2d_nchw[1] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 539)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 75)]));
+          conv2d_nchw[2] = (conv2d_nchw[2] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 539)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 139)]));
+          conv2d_nchw[3] = (conv2d_nchw[3] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 539)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 203)]));
+          conv2d_nchw[4] = (conv2d_nchw[4] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 539)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 267)]));
+          conv2d_nchw[5] = (conv2d_nchw[5] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 539)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 331)]));
+          conv2d_nchw[6] = (conv2d_nchw[6] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 539)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 395)]));
+          conv2d_nchw[7] = (conv2d_nchw[7] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 539)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 459)]));
+          conv2d_nchw[0] = (conv2d_nchw[0] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 588)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 12)]));
+          conv2d_nchw[1] = (conv2d_nchw[1] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 588)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 76)]));
+          conv2d_nchw[2] = (conv2d_nchw[2] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 588)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 140)]));
+          conv2d_nchw[3] = (conv2d_nchw[3] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 588)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 204)]));
+          conv2d_nchw[4] = (conv2d_nchw[4] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 588)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 268)]));
+          conv2d_nchw[5] = (conv2d_nchw[5] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 588)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 332)]));
+          conv2d_nchw[6] = (conv2d_nchw[6] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 588)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 396)]));
+          conv2d_nchw[7] = (conv2d_nchw[7] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 588)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 460)]));
+          conv2d_nchw[0] = (conv2d_nchw[0] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 637)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 13)]));
+          conv2d_nchw[1] = (conv2d_nchw[1] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 637)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 77)]));
+          conv2d_nchw[2] = (conv2d_nchw[2] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 637)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 141)]));
+          conv2d_nchw[3] = (conv2d_nchw[3] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 637)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 205)]));
+          conv2d_nchw[4] = (conv2d_nchw[4] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 637)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 269)]));
+          conv2d_nchw[5] = (conv2d_nchw[5] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 637)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 333)]));
+          conv2d_nchw[6] = (conv2d_nchw[6] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 637)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 397)]));
+          conv2d_nchw[7] = (conv2d_nchw[7] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 637)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 461)]));
+          conv2d_nchw[0] = (conv2d_nchw[0] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 686)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 14)]));
+          conv2d_nchw[1] = (conv2d_nchw[1] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 686)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 78)]));
+          conv2d_nchw[2] = (conv2d_nchw[2] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 686)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 142)]));
+          conv2d_nchw[3] = (conv2d_nchw[3] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 686)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 206)]));
+          conv2d_nchw[4] = (conv2d_nchw[4] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 686)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 270)]));
+          conv2d_nchw[5] = (conv2d_nchw[5] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 686)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 334)]));
+          conv2d_nchw[6] = (conv2d_nchw[6] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 686)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 398)]));
+          conv2d_nchw[7] = (conv2d_nchw[7] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 686)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 462)]));
+          conv2d_nchw[0] = (conv2d_nchw[0] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 735)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 15)]));
+          conv2d_nchw[1] = (conv2d_nchw[1] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 735)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 79)]));
+          conv2d_nchw[2] = (conv2d_nchw[2] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 735)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 143)]));
+          conv2d_nchw[3] = (conv2d_nchw[3] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 735)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 207)]));
+          conv2d_nchw[4] = (conv2d_nchw[4] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 735)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 271)]));
+          conv2d_nchw[5] = (conv2d_nchw[5] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 735)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 335)]));
+          conv2d_nchw[6] = (conv2d_nchw[6] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 735)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 399)]));
+          conv2d_nchw[7] = (conv2d_nchw[7] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 735)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 463)]));
+          __syncthreads();
+          pad_temp_shared[((int)threadIdx.x)] = ((((1 <= (((((int)threadIdx.x) % 49) / 7) + ry_outer_outer)) && ((((((int)threadIdx.x) % 49) / 7) + ry_outer_outer) < 8)) && ((((int)threadIdx.x) % 7) < 6)) ? data[((((rc_outer_outer * 784) + (ry_outer_outer * 7)) + ((int)threadIdx.x)) - 6)] : 0.000000e+00f);
+          pad_temp_shared[(((int)threadIdx.x) + 196)] = ((((1 <= (((((int)threadIdx.x) % 49) / 7) + ry_outer_outer)) && ((((((int)threadIdx.x) % 49) / 7) + ry_outer_outer) < 8)) && ((((int)threadIdx.x) % 7) < 6)) ? data[((((rc_outer_outer * 784) + (ry_outer_outer * 7)) + ((int)threadIdx.x)) + 190)] : 0.000000e+00f);
+          pad_temp_shared[(((int)threadIdx.x) + 392)] = ((((1 <= (((((int)threadIdx.x) % 49) / 7) + ry_outer_outer)) && ((((((int)threadIdx.x) % 49) / 7) + ry_outer_outer) < 8)) && ((((int)threadIdx.x) % 7) < 6)) ? data[((((rc_outer_outer * 784) + (ry_outer_outer * 7)) + ((int)threadIdx.x)) + 386)] : 0.000000e+00f);
+          pad_temp_shared[(((int)threadIdx.x) + 588)] = ((((1 <= (((((int)threadIdx.x) % 49) / 7) + ry_outer_outer)) && ((((((int)threadIdx.x) % 49) / 7) + ry_outer_outer) < 8)) && ((((int)threadIdx.x) % 7) < 6)) ? data[((((rc_outer_outer * 784) + (ry_outer_outer * 7)) + ((int)threadIdx.x)) + 582)] : 0.000000e+00f);
+          kernel_shared[((int)threadIdx.x)] = kernel[((((((((int)blockIdx.x) * 147456) + ((((int)threadIdx.x) >> 4) * 4608)) + (rc_outer_outer * 144)) + ((((int)threadIdx.x) & 15) * 9)) + (ry_outer_outer * 3)) + 2)];
+          kernel_shared[(((int)threadIdx.x) + 196)] = kernel[((((((((int)blockIdx.x) * 147456) + (((((int)threadIdx.x) + 196) >> 4) * 4608)) + (rc_outer_outer * 144)) + (((((int)threadIdx.x) + 4) & 15) * 9)) + (ry_outer_outer * 3)) + 2)];
+          if (((int)threadIdx.x) < 120) {
+            kernel_shared[(((int)threadIdx.x) + 392)] = kernel[((((((((int)blockIdx.x) * 147456) + (((((int)threadIdx.x) + 392) >> 4) * 4608)) + (rc_outer_outer * 144)) + (((((int)threadIdx.x) + 8) & 15) * 9)) + (ry_outer_outer * 3)) + 2)];
           }
+          __syncthreads();
+          conv2d_nchw[0] = (conv2d_nchw[0] + (pad_temp_shared[(((int)threadIdx.x) % 49)] * kernel_shared[((((int)threadIdx.x) / 49) * 16)]));
+          conv2d_nchw[1] = (conv2d_nchw[1] + (pad_temp_shared[(((int)threadIdx.x) % 49)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 64)]));
+          conv2d_nchw[2] = (conv2d_nchw[2] + (pad_temp_shared[(((int)threadIdx.x) % 49)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 128)]));
+          conv2d_nchw[3] = (conv2d_nchw[3] + (pad_temp_shared[(((int)threadIdx.x) % 49)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 192)]));
+          conv2d_nchw[4] = (conv2d_nchw[4] + (pad_temp_shared[(((int)threadIdx.x) % 49)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 256)]));
+          conv2d_nchw[5] = (conv2d_nchw[5] + (pad_temp_shared[(((int)threadIdx.x) % 49)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 320)]));
+          conv2d_nchw[6] = (conv2d_nchw[6] + (pad_temp_shared[(((int)threadIdx.x) % 49)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 384)]));
+          conv2d_nchw[7] = (conv2d_nchw[7] + (pad_temp_shared[(((int)threadIdx.x) % 49)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 448)]));
+          conv2d_nchw[0] = (conv2d_nchw[0] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 49)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 1)]));
+          conv2d_nchw[1] = (conv2d_nchw[1] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 49)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 65)]));
+          conv2d_nchw[2] = (conv2d_nchw[2] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 49)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 129)]));
+          conv2d_nchw[3] = (conv2d_nchw[3] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 49)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 193)]));
+          conv2d_nchw[4] = (conv2d_nchw[4] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 49)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 257)]));
+          conv2d_nchw[5] = (conv2d_nchw[5] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 49)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 321)]));
+          conv2d_nchw[6] = (conv2d_nchw[6] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 49)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 385)]));
+          conv2d_nchw[7] = (conv2d_nchw[7] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 49)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 449)]));
+          conv2d_nchw[0] = (conv2d_nchw[0] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 98)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 2)]));
+          conv2d_nchw[1] = (conv2d_nchw[1] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 98)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 66)]));
+          conv2d_nchw[2] = (conv2d_nchw[2] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 98)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 130)]));
+          conv2d_nchw[3] = (conv2d_nchw[3] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 98)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 194)]));
+          conv2d_nchw[4] = (conv2d_nchw[4] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 98)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 258)]));
+          conv2d_nchw[5] = (conv2d_nchw[5] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 98)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 322)]));
+          conv2d_nchw[6] = (conv2d_nchw[6] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 98)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 386)]));
+          conv2d_nchw[7] = (conv2d_nchw[7] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 98)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 450)]));
+          conv2d_nchw[0] = (conv2d_nchw[0] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 147)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 3)]));
+          conv2d_nchw[1] = (conv2d_nchw[1] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 147)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 67)]));
+          conv2d_nchw[2] = (conv2d_nchw[2] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 147)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 131)]));
+          conv2d_nchw[3] = (conv2d_nchw[3] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 147)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 195)]));
+          conv2d_nchw[4] = (conv2d_nchw[4] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 147)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 259)]));
+          conv2d_nchw[5] = (conv2d_nchw[5] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 147)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 323)]));
+          conv2d_nchw[6] = (conv2d_nchw[6] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 147)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 387)]));
+          conv2d_nchw[7] = (conv2d_nchw[7] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 147)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 451)]));
+          conv2d_nchw[0] = (conv2d_nchw[0] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 196)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 4)]));
+          conv2d_nchw[1] = (conv2d_nchw[1] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 196)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 68)]));
+          conv2d_nchw[2] = (conv2d_nchw[2] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 196)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 132)]));
+          conv2d_nchw[3] = (conv2d_nchw[3] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 196)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 196)]));
+          conv2d_nchw[4] = (conv2d_nchw[4] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 196)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 260)]));
+          conv2d_nchw[5] = (conv2d_nchw[5] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 196)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 324)]));
+          conv2d_nchw[6] = (conv2d_nchw[6] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 196)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 388)]));
+          conv2d_nchw[7] = (conv2d_nchw[7] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 196)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 452)]));
+          conv2d_nchw[0] = (conv2d_nchw[0] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 245)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 5)]));
+          conv2d_nchw[1] = (conv2d_nchw[1] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 245)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 69)]));
+          conv2d_nchw[2] = (conv2d_nchw[2] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 245)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 133)]));
+          conv2d_nchw[3] = (conv2d_nchw[3] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 245)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 197)]));
+          conv2d_nchw[4] = (conv2d_nchw[4] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 245)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 261)]));
+          conv2d_nchw[5] = (conv2d_nchw[5] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 245)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 325)]));
+          conv2d_nchw[6] = (conv2d_nchw[6] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 245)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 389)]));
+          conv2d_nchw[7] = (conv2d_nchw[7] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 245)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 453)]));
+          conv2d_nchw[0] = (conv2d_nchw[0] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 294)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 6)]));
+          conv2d_nchw[1] = (conv2d_nchw[1] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 294)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 70)]));
+          conv2d_nchw[2] = (conv2d_nchw[2] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 294)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 134)]));
+          conv2d_nchw[3] = (conv2d_nchw[3] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 294)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 198)]));
+          conv2d_nchw[4] = (conv2d_nchw[4] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 294)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 262)]));
+          conv2d_nchw[5] = (conv2d_nchw[5] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 294)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 326)]));
+          conv2d_nchw[6] = (conv2d_nchw[6] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 294)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 390)]));
+          conv2d_nchw[7] = (conv2d_nchw[7] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 294)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 454)]));
+          conv2d_nchw[0] = (conv2d_nchw[0] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 343)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 7)]));
+          conv2d_nchw[1] = (conv2d_nchw[1] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 343)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 71)]));
+          conv2d_nchw[2] = (conv2d_nchw[2] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 343)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 135)]));
+          conv2d_nchw[3] = (conv2d_nchw[3] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 343)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 199)]));
+          conv2d_nchw[4] = (conv2d_nchw[4] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 343)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 263)]));
+          conv2d_nchw[5] = (conv2d_nchw[5] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 343)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 327)]));
+          conv2d_nchw[6] = (conv2d_nchw[6] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 343)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 391)]));
+          conv2d_nchw[7] = (conv2d_nchw[7] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 343)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 455)]));
+          conv2d_nchw[0] = (conv2d_nchw[0] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 392)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 8)]));
+          conv2d_nchw[1] = (conv2d_nchw[1] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 392)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 72)]));
+          conv2d_nchw[2] = (conv2d_nchw[2] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 392)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 136)]));
+          conv2d_nchw[3] = (conv2d_nchw[3] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 392)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 200)]));
+          conv2d_nchw[4] = (conv2d_nchw[4] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 392)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 264)]));
+          conv2d_nchw[5] = (conv2d_nchw[5] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 392)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 328)]));
+          conv2d_nchw[6] = (conv2d_nchw[6] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 392)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 392)]));
+          conv2d_nchw[7] = (conv2d_nchw[7] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 392)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 456)]));
+          conv2d_nchw[0] = (conv2d_nchw[0] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 441)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 9)]));
+          conv2d_nchw[1] = (conv2d_nchw[1] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 441)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 73)]));
+          conv2d_nchw[2] = (conv2d_nchw[2] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 441)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 137)]));
+          conv2d_nchw[3] = (conv2d_nchw[3] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 441)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 201)]));
+          conv2d_nchw[4] = (conv2d_nchw[4] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 441)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 265)]));
+          conv2d_nchw[5] = (conv2d_nchw[5] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 441)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 329)]));
+          conv2d_nchw[6] = (conv2d_nchw[6] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 441)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 393)]));
+          conv2d_nchw[7] = (conv2d_nchw[7] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 441)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 457)]));
+          conv2d_nchw[0] = (conv2d_nchw[0] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 490)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 10)]));
+          conv2d_nchw[1] = (conv2d_nchw[1] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 490)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 74)]));
+          conv2d_nchw[2] = (conv2d_nchw[2] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 490)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 138)]));
+          conv2d_nchw[3] = (conv2d_nchw[3] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 490)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 202)]));
+          conv2d_nchw[4] = (conv2d_nchw[4] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 490)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 266)]));
+          conv2d_nchw[5] = (conv2d_nchw[5] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 490)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 330)]));
+          conv2d_nchw[6] = (conv2d_nchw[6] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 490)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 394)]));
+          conv2d_nchw[7] = (conv2d_nchw[7] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 490)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 458)]));
+          conv2d_nchw[0] = (conv2d_nchw[0] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 539)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 11)]));
+          conv2d_nchw[1] = (conv2d_nchw[1] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 539)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 75)]));
+          conv2d_nchw[2] = (conv2d_nchw[2] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 539)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 139)]));
+          conv2d_nchw[3] = (conv2d_nchw[3] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 539)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 203)]));
+          conv2d_nchw[4] = (conv2d_nchw[4] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 539)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 267)]));
+          conv2d_nchw[5] = (conv2d_nchw[5] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 539)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 331)]));
+          conv2d_nchw[6] = (conv2d_nchw[6] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 539)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 395)]));
+          conv2d_nchw[7] = (conv2d_nchw[7] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 539)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 459)]));
+          conv2d_nchw[0] = (conv2d_nchw[0] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 588)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 12)]));
+          conv2d_nchw[1] = (conv2d_nchw[1] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 588)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 76)]));
+          conv2d_nchw[2] = (conv2d_nchw[2] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 588)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 140)]));
+          conv2d_nchw[3] = (conv2d_nchw[3] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 588)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 204)]));
+          conv2d_nchw[4] = (conv2d_nchw[4] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 588)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 268)]));
+          conv2d_nchw[5] = (conv2d_nchw[5] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 588)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 332)]));
+          conv2d_nchw[6] = (conv2d_nchw[6] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 588)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 396)]));
+          conv2d_nchw[7] = (conv2d_nchw[7] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 588)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 460)]));
+          conv2d_nchw[0] = (conv2d_nchw[0] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 637)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 13)]));
+          conv2d_nchw[1] = (conv2d_nchw[1] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 637)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 77)]));
+          conv2d_nchw[2] = (conv2d_nchw[2] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 637)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 141)]));
+          conv2d_nchw[3] = (conv2d_nchw[3] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 637)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 205)]));
+          conv2d_nchw[4] = (conv2d_nchw[4] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 637)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 269)]));
+          conv2d_nchw[5] = (conv2d_nchw[5] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 637)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 333)]));
+          conv2d_nchw[6] = (conv2d_nchw[6] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 637)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 397)]));
+          conv2d_nchw[7] = (conv2d_nchw[7] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 637)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 461)]));
+          conv2d_nchw[0] = (conv2d_nchw[0] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 686)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 14)]));
+          conv2d_nchw[1] = (conv2d_nchw[1] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 686)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 78)]));
+          conv2d_nchw[2] = (conv2d_nchw[2] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 686)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 142)]));
+          conv2d_nchw[3] = (conv2d_nchw[3] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 686)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 206)]));
+          conv2d_nchw[4] = (conv2d_nchw[4] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 686)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 270)]));
+          conv2d_nchw[5] = (conv2d_nchw[5] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 686)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 334)]));
+          conv2d_nchw[6] = (conv2d_nchw[6] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 686)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 398)]));
+          conv2d_nchw[7] = (conv2d_nchw[7] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 686)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 462)]));
+          conv2d_nchw[0] = (conv2d_nchw[0] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 735)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 15)]));
+          conv2d_nchw[1] = (conv2d_nchw[1] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 735)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 79)]));
+          conv2d_nchw[2] = (conv2d_nchw[2] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 735)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 143)]));
+          conv2d_nchw[3] = (conv2d_nchw[3] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 735)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 207)]));
+          conv2d_nchw[4] = (conv2d_nchw[4] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 735)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 271)]));
+          conv2d_nchw[5] = (conv2d_nchw[5] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 735)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 335)]));
+          conv2d_nchw[6] = (conv2d_nchw[6] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 735)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 399)]));
+          conv2d_nchw[7] = (conv2d_nchw[7] + (pad_temp_shared[((((int)threadIdx.x) % 49) + 735)] * kernel_shared[(((((int)threadIdx.x) / 49) * 16) + 463)]));
         }
       }
-      for (int i1_inner = 0; i1_inner < 2; ++i1_inner) {
-        compute[((((((int)blockIdx.x) * 784) + ((((int)threadIdx.x) / 49) * 98)) + (i1_inner * 49)) + (((int)threadIdx.x) % 49))] = max((conv2d_nchw[i1_inner] + bias[(((((int)blockIdx.x) * 16) + ((((int)threadIdx.x) / 49) * 2)) + i1_inner)]), 0.000000e+00f);
-      }
+      compute[((((int)blockIdx.x) * 1568) + ((int)threadIdx.x))] = max((conv2d_nchw[0] + bias[((((int)blockIdx.x) * 32) + (((int)threadIdx.x) / 49))]), 0.000000e+00f);
+      compute[(((((int)blockIdx.x) * 1568) + ((int)threadIdx.x)) + 196)] = max((conv2d_nchw[1] + bias[(((((int)blockIdx.x) * 32) + (((int)threadIdx.x) / 49)) + 4)]), 0.000000e+00f);
+      compute[(((((int)blockIdx.x) * 1568) + ((int)threadIdx.x)) + 392)] = max((conv2d_nchw[2] + bias[(((((int)blockIdx.x) * 32) + (((int)threadIdx.x) / 49)) + 8)]), 0.000000e+00f);
+      compute[(((((int)blockIdx.x) * 1568) + ((int)threadIdx.x)) + 588)] = max((conv2d_nchw[3] + bias[(((((int)blockIdx.x) * 32) + (((int)threadIdx.x) / 49)) + 12)]), 0.000000e+00f);
+      compute[(((((int)blockIdx.x) * 1568) + ((int)threadIdx.x)) + 784)] = max((conv2d_nchw[4] + bias[(((((int)blockIdx.x) * 32) + (((int)threadIdx.x) / 49)) + 16)]), 0.000000e+00f);
+      compute[(((((int)blockIdx.x) * 1568) + ((int)threadIdx.x)) + 980)] = max((conv2d_nchw[5] + bias[(((((int)blockIdx.x) * 32) + (((int)threadIdx.x) / 49)) + 20)]), 0.000000e+00f);
+      compute[(((((int)blockIdx.x) * 1568) + ((int)threadIdx.x)) + 1176)] = max((conv2d_nchw[6] + bias[(((((int)blockIdx.x) * 32) + (((int)threadIdx.x) / 49)) + 24)]), 0.000000e+00f);
+      compute[(((((int)blockIdx.x) * 1568) + ((int)threadIdx.x)) + 1372)] = max((conv2d_nchw[7] + bias[(((((int)blockIdx.x) * 32) + (((int)threadIdx.x) / 49)) + 28)]), 0.000000e+00f);
     }
 
 
@@ -538,7 +1379,7 @@ In the example below we resume the status and do more 5 trials.
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** ( 5 minutes  59.942 seconds)
+   **Total running time of the script:** ( 6 minutes  4.151 seconds)
 
 
 .. _sphx_glr_download_how_to_tune_with_autoscheduler_tune_conv2d_layer_cuda.py:
