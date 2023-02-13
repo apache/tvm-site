@@ -57,7 +57,7 @@ var searchData=
   ['virtual_5fdevice_5fid',['virtual_device_id',['../classtvm_1_1VirtualDeviceNode.html#a8c2753fddb9ab42794a9419785e9cffd',1,'tvm::VirtualDeviceNode']]],
   ['virtual_5fdevices',['virtual_devices',['../classtvm_1_1runtime_1_1vm_1_1Executable.html#aae6b6508e423538a82c23a1724c87877',1,'tvm::runtime::vm::Executable']]],
   ['virtual_5fthread',['virtual_thread',['../namespacetvm_1_1tir_1_1attr.html#a464533c1560ace5e0b5071ba6902482e',1,'tvm::tir::attr']]],
-  ['virtualdevice',['VirtualDevice',['../classtvm_1_1VirtualDevice.html',1,'tvm::VirtualDevice'],['../classtvm_1_1VirtualDeviceNode.html#ae4d7f111e3a45058026a3ffb156a4790',1,'tvm::VirtualDeviceNode::VirtualDevice()'],['../classtvm_1_1VirtualDevice.html#a3fc9e14cd829c1f44b3b2da4f6c1b47f',1,'tvm::VirtualDevice::VirtualDevice()']]],
+  ['virtualdevice',['VirtualDevice',['../classtvm_1_1VirtualDevice.html',1,'tvm::VirtualDevice'],['../classtvm_1_1VirtualDeviceNode.html#ae4d7f111e3a45058026a3ffb156a4790',1,'tvm::VirtualDeviceNode::VirtualDevice()'],['../classtvm_1_1VirtualDevice.html#a03e58702dfa668daec15ffd172385571',1,'tvm::VirtualDevice::VirtualDevice()']]],
   ['virtualdevicecache',['VirtualDeviceCache',['../classtvm_1_1VirtualDeviceCache.html',1,'tvm::VirtualDeviceCache'],['../classtvm_1_1VirtualDevice.html#a4e08dee8d23f7eb0224a08e4e85e835e',1,'tvm::VirtualDevice::VirtualDeviceCache()']]],
   ['virtualdevicenode',['VirtualDeviceNode',['../classtvm_1_1VirtualDeviceNode.html',1,'tvm']]],
   ['virtualmachine',['VirtualMachine',['../classtvm_1_1runtime_1_1vm_1_1VirtualMachine.html',1,'tvm::runtime::vm::VirtualMachine'],['../classtvm_1_1runtime_1_1vm_1_1VirtualMachine.html#a6edbbbb71000617f644232de37d53338',1,'tvm::runtime::vm::VirtualMachine::VirtualMachine()']]],

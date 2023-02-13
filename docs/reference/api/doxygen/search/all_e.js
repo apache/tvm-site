@@ -1,6 +1,6 @@
 var searchData=
 [
-  ['make',['Make',['../classtvm_1_1VirtualDeviceCache.html#ad55204c5eafe437584fee63aa4fea85c',1,'tvm::VirtualDeviceCache']]],
+  ['make',['Make',['../classtvm_1_1VirtualDeviceCache.html#a9ae939e5cb436bb066eb1cf4c3dffd02',1,'tvm::VirtualDeviceCache']]],
   ['make_5fconst',['make_const',['../namespacetvm_1_1tir.html#a1a071208bbbab6b220cf46f5cdccdd86',1,'tvm::tir']]],
   ['make_5finplace_5farray',['make_inplace_array',['../classtvm_1_1runtime_1_1ObjAllocatorBase.html#aa2c8f953920f24e7071384670b1e674e',1,'tvm::runtime::ObjAllocatorBase']]],
   ['make_5finplace_5farray_5fobject',['make_inplace_array_object',['../namespacetvm_1_1runtime.html#a0537c9d197068a02c26cd702ab42f6ff',1,'tvm::runtime']]],
