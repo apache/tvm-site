@@ -208,6 +208,7 @@ var searchData=
   ['tvmplatformbeforemeasurement',['TVMPlatformBeforeMeasurement',['../platform_8h.html#afd94474b764a8526d53fd6230ce4b475',1,'platform.h']]],
   ['tvmplatformformatmessage',['TVMPlatformFormatMessage',['../platform_8h.html#a6dfecb024ace62e724817f90b6407285',1,'platform.h']]],
   ['tvmplatformgeneraterandom',['TVMPlatformGenerateRandom',['../platform_8h.html#a92f8606f31e9b8ccaf02024bd4dbeb0e',1,'platform.h']]],
+  ['tvmplatforminitialize',['TVMPlatformInitialize',['../platform_8h.html#a77204d888fc5e68c74b8bdf1e91bada2',1,'platform.h']]],
   ['tvmplatformmemoryallocate',['TVMPlatformMemoryAllocate',['../platform_8h.html#a133959eaf3ec68c568bdb71fcb94ddcb',1,'platform.h']]],
   ['tvmplatformmemoryfree',['TVMPlatformMemoryFree',['../platform_8h.html#a890631daad5b14e3c9fd34b94e41eaed',1,'platform.h']]],
   ['tvmplatformtimerstart',['TVMPlatformTimerStart',['../platform_8h.html#a1accf5aa6941b2f22e69b2f1870a1be6',1,'platform.h']]],

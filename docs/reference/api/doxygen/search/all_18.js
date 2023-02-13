@@ -7,7 +7,7 @@ var searchData=
   ['weight_5fbits',['weight_bits',['../structtvm_1_1relay_1_1BinaryConv2DAttrs.html#a70aa926aba4fc774c15786358315141a',1,'tvm::relay::BinaryConv2DAttrs::weight_bits()'],['../structtvm_1_1relay_1_1BinaryDenseAttrs.html#a6647c2d9d1d3108c6f552ff4271f2625',1,'tvm::relay::BinaryDenseAttrs::weight_bits()']]],
   ['weight_5flayout',['weight_layout',['../structtvm_1_1relay_1_1DensePackAttrs.html#a7f12601cad15b4a65de4ce1bc4dd929c',1,'tvm::relay::DensePackAttrs']]],
   ['wellformed',['WellFormed',['../namespacetvm_1_1relay.html#a4e4cdd4e3db74bf68b315d5730890ca8',1,'tvm::relay']]],
-  ['where',['where',['../namespacetvm_1_1topi.html#af011847b6e7f72f1bec25eee05c80590',1,'tvm::topi::where()'],['../namespacetvm_1_1script_1_1ir__builder_1_1tir.html#a454a28cc9ed56389b7b09b5b45a3097e',1,'tvm::script::ir_builder::tir::Where()']]],
+  ['where',['Where',['../namespacetvm_1_1script_1_1ir__builder_1_1tir.html#a454a28cc9ed56389b7b09b5b45a3097e',1,'tvm::script::ir_builder::tir::Where()'],['../namespacetvm_1_1topi.html#af011847b6e7f72f1bec25eee05c80590',1,'tvm::topi::where()']]],
   ['while',['While',['../classtvm_1_1tir_1_1While.html',1,'tvm::tir::While'],['../classtvm_1_1tir_1_1While.html#a5e1bf25f5caab0218e2224f19140351b',1,'tvm::tir::While::While()'],['../namespacetvm_1_1script_1_1ir__builder_1_1tir.html#a6df09cb19f1e26c3fa0e1e0251c3c0bb',1,'tvm::script::ir_builder::tir::While()']]],
   ['whiledoc',['WhileDoc',['../classtvm_1_1script_1_1printer_1_1WhileDoc.html',1,'tvm::script::printer::WhileDoc'],['../classtvm_1_1script_1_1printer_1_1WhileDoc.html#ac7a684d98115b7cda3ae6f7ab4df01a0',1,'tvm::script::printer::WhileDoc::WhileDoc()']]],
   ['whiledocnode',['WhileDocNode',['../classtvm_1_1script_1_1printer_1_1WhileDocNode.html',1,'tvm::script::printer']]],
