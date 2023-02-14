@@ -14,7 +14,7 @@ var searchData=
   ['hastype',['HasType',['../classtvm_1_1relay_1_1DFPattern.html#a234aef0269ba34aaeb53ac87779f398b',1,'tvm::relay::DFPattern']]],
   ['hasupperbound',['HasUpperBound',['../classtvm_1_1arith_1_1IntSet.html#a6d65b455e6c0f9d67f76f10cb864c7f1',1,'tvm::arith::IntSet']]],
   ['hasworkload',['HasWorkload',['../classtvm_1_1meta__schedule_1_1DatabaseNode.html#a04b2ddf6acb509d5cc848c8636f9619d',1,'tvm::meta_schedule::DatabaseNode::HasWorkload()'],['../classtvm_1_1meta__schedule_1_1PyDatabaseNode.html#a38195f2c3aea9ae4890477393ab2c624',1,'tvm::meta_schedule::PyDatabaseNode::HasWorkload()']]],
-  ['help',['Help',['../classtvm_1_1Diagnostic.html#a472c748d4c008bf6508b4a6f0ec88057',1,'tvm::Diagnostic']]],
+  ['help',['Help',['../classtvm_1_1Diagnostic.html#a472c748d4c008bf6508b4a6f0ec88057',1,'tvm::Diagnostic::Help(Span span)'],['../classtvm_1_1Diagnostic.html#a76672eb119f3044e523535e12cf19f78',1,'tvm::Diagnostic::Help(ObjectRef loc)'],['../classtvm_1_1Diagnostic.html#aa2a954a2381bb9fe14b3e1797646693a',1,'tvm::Diagnostic::Help(const Object *loc)']]],
   ['hillclimb',['HillClimb',['../namespacetvm_1_1tir_1_1usmp_1_1algo.html#ad7f4265f15be71c0db15d9fff4272148',1,'tvm::tir::usmp::algo']]],
   ['hoistexpression',['HoistExpression',['../namespacetvm_1_1tir_1_1transform.html#aabd207977177c1d1dc097445cc44339b',1,'tvm::tir::transform']]],
   ['hoistifthenelse',['HoistIfThenElse',['../namespacetvm_1_1tir_1_1transform.html#acd2b8fdd84785388630e2d52a6e3cc54',1,'tvm::tir::transform']]],

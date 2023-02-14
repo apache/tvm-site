@@ -1,6 +1,6 @@
 var searchData=
 [
-  ['warning',['Warning',['../classtvm_1_1Diagnostic.html#a407ef56844eec306451c1ce2ca9f248c',1,'tvm::Diagnostic']]],
+  ['warning',['Warning',['../classtvm_1_1Diagnostic.html#a407ef56844eec306451c1ce2ca9f248c',1,'tvm::Diagnostic::Warning(Span span)'],['../classtvm_1_1Diagnostic.html#a940518945b82302c8c47fb2a4bb352fd',1,'tvm::Diagnostic::Warning(ObjectRef loc)'],['../classtvm_1_1Diagnostic.html#a468619ccf507ab10cf47830c6eb37e03',1,'tvm::Diagnostic::Warning(const Object *loc)']]],
   ['warp_5fexecution',['warp_execution',['../namespacetvm_1_1tir_1_1attr.html#a350f417c4c3ed61f4578c5e5cb72d667',1,'tvm::tir::attr']]],
   ['warp_5fsize',['warp_size',['../classtvm_1_1auto__scheduler_1_1HardwareParamsNode.html#a8d96a297de313e00c00d2d26b3e1cc95',1,'tvm::auto_scheduler::HardwareParamsNode']]],
   ['weight',['weight',['../classtvm_1_1meta__schedule_1_1ExtractedTaskNode.html#a772dcab249a2add6801c3100729c15ad',1,'tvm::meta_schedule::ExtractedTaskNode']]],

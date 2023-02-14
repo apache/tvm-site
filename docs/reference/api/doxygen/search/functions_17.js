@@ -1,6 +1,6 @@
 var searchData=
 [
-  ['warning',['Warning',['../classtvm_1_1Diagnostic.html#a407ef56844eec306451c1ce2ca9f248c',1,'tvm::Diagnostic']]],
+  ['warning',['Warning',['../classtvm_1_1Diagnostic.html#a407ef56844eec306451c1ce2ca9f248c',1,'tvm::Diagnostic::Warning(Span span)'],['../classtvm_1_1Diagnostic.html#a940518945b82302c8c47fb2a4bb352fd',1,'tvm::Diagnostic::Warning(ObjectRef loc)'],['../classtvm_1_1Diagnostic.html#a468619ccf507ab10cf47830c6eb37e03',1,'tvm::Diagnostic::Warning(const Object *loc)']]],
   ['wellformed',['WellFormed',['../namespacetvm_1_1relay.html#a4e4cdd4e3db74bf68b315d5730890ca8',1,'tvm::relay']]],
   ['where',['Where',['../namespacetvm_1_1script_1_1ir__builder_1_1tir.html#a454a28cc9ed56389b7b09b5b45a3097e',1,'tvm::script::ir_builder::tir::Where()'],['../namespacetvm_1_1topi.html#af011847b6e7f72f1bec25eee05c80590',1,'tvm::topi::where()']]],
   ['while',['While',['../classtvm_1_1tir_1_1While.html#a5e1bf25f5caab0218e2224f19140351b',1,'tvm::tir::While::While()'],['../namespacetvm_1_1script_1_1ir__builder_1_1tir.html#a6df09cb19f1e26c3fa0e1e0251c3c0bb',1,'tvm::script::ir_builder::tir::While()']]],
