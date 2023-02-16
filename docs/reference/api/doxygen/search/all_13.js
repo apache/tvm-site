@@ -57,7 +57,7 @@ var searchData=
   ['reduce_5fupdate',['reduce_update',['../classtvm_1_1te_1_1TensorIntrinNode.html#a8d4a891a69aec271eca1c57b16030755',1,'tvm::te::TensorIntrinNode']]],
   ['reduceattrs',['ReduceAttrs',['../structtvm_1_1relay_1_1ReduceAttrs.html',1,'tvm::relay']]],
   ['reducenode',['ReduceNode',['../classtvm_1_1tir_1_1ReduceNode.html',1,'tvm::tir']]],
-  ['reduction',['reduction',['../structtvm_1_1relay_1_1NLLLossAttrs.html#a45d62f7da0c849f0737a3d73ac4ba975',1,'tvm::relay::NLLLossAttrs']]],
+  ['reduction',['reduction',['../structtvm_1_1relay_1_1NLLLossAttrs.html#a45d62f7da0c849f0737a3d73ac4ba975',1,'tvm::relay::NLLLossAttrs::reduction()'],['../structtvm_1_1relay_1_1ScatterElementsAttrs.html#a7117d5569f809ba9b9496bc41ba94119',1,'tvm::relay::ScatterElementsAttrs::reduction()']]],
   ['reduction_2eh',['reduction.h',['../cuda_2reduction_8h.html',1,'(Global Namespace)'],['../reduction_8h.html',1,'(Global Namespace)'],['../rocm_2reduction_8h.html',1,'(Global Namespace)']]],
   ['ref',['ref',['../classtvm_1_1relay_1_1RefReadNode.html#ae61d2b27d1102f26f2300aad1ae168a7',1,'tvm::relay::RefReadNode::ref()'],['../classtvm_1_1relay_1_1RefWriteNode.html#a5db6e4ad0056f5d15ffc69f6b7bdd68a',1,'tvm::relay::RefWriteNode::ref()']]],
   ['ref_5fcounter_5f',['ref_counter_',['../classtvm_1_1runtime_1_1Object.html#a0d492efee331e2239a093f4b2017c10f',1,'tvm::runtime::Object']]],
