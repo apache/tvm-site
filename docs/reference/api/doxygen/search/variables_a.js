@@ -46,6 +46,7 @@ var searchData=
   ['kisentryfunc',['kIsEntryFunc',['../namespacetvm_1_1tir_1_1attr.html#a489d0cebd2820025bc3d6c5a9011cdd4',1,'tvm::tir::attr']]],
   ['kisexternalcodegen',['kIsExternalCodegen',['../namespacetvm_1_1attr.html#a17f834882ba3cd00890329433e8e81dd',1,'tvm::attr']]],
   ['kisglobalfunc',['kIsGlobalFunc',['../namespacetvm_1_1tir_1_1attr.html#a3166c6d41ff1816ab01e398be07bac20',1,'tvm::tir::attr']]],
+  ['kishostfunc',['kIsHostFunc',['../namespacetvm_1_1tir_1_1attr.html#ab91a41e0c0292462e91affae45b12db5',1,'tvm::tir::attr']]],
   ['kmatmul',['kMatMul',['../namespacetvm_1_1topi.html#aa9f70e7392653f38da6ff53f5f554f98',1,'tvm::topi']]],
   ['kmaxstackalloca',['kMaxStackAlloca',['../namespacetvm_1_1runtime.html#a2f6f769f6dbbbb24929b7c9f91a48c90',1,'tvm::runtime']]],
   ['kmodulename',['kModuleName',['../namespacetvm_1_1attr.html#a5a2d23031351ba22f800d41a0e06d562',1,'tvm::attr']]],

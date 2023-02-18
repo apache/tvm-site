@@ -131,6 +131,7 @@ var searchData=
   ['kisentryfunc',['kIsEntryFunc',['../namespacetvm_1_1tir_1_1attr.html#a489d0cebd2820025bc3d6c5a9011cdd4',1,'tvm::tir::attr']]],
   ['kisexternalcodegen',['kIsExternalCodegen',['../namespacetvm_1_1attr.html#a17f834882ba3cd00890329433e8e81dd',1,'tvm::attr']]],
   ['kisglobalfunc',['kIsGlobalFunc',['../namespacetvm_1_1tir_1_1attr.html#a3166c6d41ff1816ab01e398be07bac20',1,'tvm::tir::attr']]],
+  ['kishostfunc',['kIsHostFunc',['../namespacetvm_1_1tir_1_1attr.html#ab91a41e0c0292462e91affae45b12db5',1,'tvm::tir::attr']]],
   ['kiter',['kIter',['../namespacetvm_1_1auto__scheduler.html#ab75208ecc6a00ca7f86af04b3cc5657fa8db9b1354688d96ec52c71f2b290165c',1,'tvm::auto_scheduler']]],
   ['kle',['kLE',['../namespacetvm_1_1arith.html#a1d555a0cc363f669a49fad7e5f7d69d0a1893df55d7fc768f2336fdcb7c7b9c37',1,'tvm::arith']]],
   ['klittle',['kLittle',['../classtvm_1_1runtime_1_1threading_1_1ThreadGroup.html#a5230a4c2d7f6c2f73f3d5fb00e9f6acda618cfa7040dff793381df4c9e6c13b73',1,'tvm::runtime::threading::ThreadGroup']]],
