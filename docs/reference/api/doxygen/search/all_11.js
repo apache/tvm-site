@@ -230,6 +230,7 @@ var searchData=
   ['ptr',['ptr',['../classtvm_1_1runtime_1_1TVMPODValue__.html#ae11428ea0edc6ed08b0c33418052986c',1,'tvm::runtime::TVMPODValue_']]],
   ['ptx_5fcommit_5fgroup',['ptx_commit_group',['../namespacetvm_1_1tir_1_1builtin.html#a21346695611f032cadc3fad6615fe63b',1,'tvm::tir::builtin']]],
   ['ptx_5fcp_5fasync',['ptx_cp_async',['../namespacetvm_1_1tir_1_1builtin.html#a7eaa1b0b7d7cb550f6a7eaf5efe8d493',1,'tvm::tir::builtin']]],
+  ['ptx_5fldg32',['ptx_ldg32',['../namespacetvm_1_1tir_1_1builtin.html#a7ad7a674824bd65f49a6ae2dc3f6c533',1,'tvm::tir::builtin']]],
   ['ptx_5fldmatrix',['ptx_ldmatrix',['../namespacetvm_1_1tir_1_1builtin.html#ae79143f4df15683d7ee25c0b958e2189',1,'tvm::tir::builtin']]],
   ['ptx_5fmma',['ptx_mma',['../namespacetvm_1_1tir_1_1builtin.html#ad99599849e8572bcd46e22636f908fca',1,'tvm::tir::builtin']]],
   ['ptx_5fmma_5fsp',['ptx_mma_sp',['../namespacetvm_1_1tir_1_1builtin.html#a3343bb32988cda13d3050e8fc2a75a78',1,'tvm::tir::builtin']]],
