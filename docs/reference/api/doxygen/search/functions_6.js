@@ -4,7 +4,7 @@ var searchData=
   ['fast_5ferf',['fast_erf',['../namespacetvm_1_1topi.html#a6f8a25c0d0744858977bc1b9551989eb',1,'tvm::topi']]],
   ['fast_5ferf_5ffloat16',['fast_erf_float16',['../namespacetvm_1_1topi.html#a4435c7d12111817c485ebe9d2a6d608b',1,'tvm::topi']]],
   ['fast_5ferf_5ffloat32',['fast_erf_float32',['../namespacetvm_1_1topi.html#a188f69f0e65e2efb4914e458db50b3d8',1,'tvm::topi']]],
-  ['fast_5ferf_5ffloat_5fexpr',['fast_erf_float_expr',['../namespacetvm_1_1topi.html#afca75634a931062fde8ff09a049cdab1',1,'tvm::topi']]],
+  ['fast_5ferf_5ffloat_5fexpr',['fast_erf_float_expr',['../namespacetvm.html#afe37ad3331487ba271c75b973a59bb47',1,'tvm']]],
   ['fast_5fexp',['fast_exp',['../namespacetvm_1_1topi.html#aeed8d820017900935cc70877f7e327c2',1,'tvm::topi']]],
   ['fast_5fexp_5ffloat32',['fast_exp_float32',['../namespacetvm_1_1topi.html#afe4e534c675187a847bfe7a4dc61584e',1,'tvm::topi']]],
   ['fast_5ftanh',['fast_tanh',['../namespacetvm_1_1topi.html#a65fc2713d408fe0a75ff1e3fea62f7f2',1,'tvm::topi']]],
