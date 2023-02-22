@@ -168,6 +168,7 @@ var searchData=
   ['isstrictlyinlineable',['IsStrictlyInlineable',['../classtvm_1_1auto__scheduler_1_1AccessAnalyzer.html#ac4128aeeb6110e9e539b2d40c5708206',1,'tvm::auto_scheduler::AccessAnalyzer']]],
   ['istuple',['IsTuple',['../namespacetvm_1_1relay.html#a3834130d66634d032f8e9bffafbe09ad',1,'tvm::relay']]],
   ['istuplegetitem',['IsTupleGetItem',['../namespacetvm_1_1relay.html#a48710b93ea41c2d528b042010bd12b7b',1,'tvm::relay']]],
+  ['isvalid',['IsValid',['../classtvm_1_1meta__schedule_1_1TuningRecordNode.html#ad08109cffbc9fb0bcee6a18405599b9d',1,'tvm::meta_schedule::TuningRecordNode']]],
   ['isvalidplacement',['IsValidPlacement',['../classtvm_1_1tir_1_1usmp_1_1algo_1_1GreedyBase.html#a48a1bdc94c70a008640b9a015e785729',1,'tvm::tir::usmp::algo::GreedyBase']]],
   ['isvar',['IsVar',['../namespacetvm_1_1relay.html#a87ffafe11fe1e83a7fa2e066c1090d16',1,'tvm::relay']]],
   ['isvardefined',['IsVarDefined',['../classtvm_1_1script_1_1printer_1_1IRDocsifierNode.html#a972f145d5a6c7e8f63f009e63ea76af0',1,'tvm::script::printer::IRDocsifierNode']]],
