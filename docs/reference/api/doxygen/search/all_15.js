@@ -358,6 +358,7 @@ var searchData=
   ['tvmaotexecutor',['TVMAotExecutor',['../structTVMAotExecutor.html',1,'TVMAotExecutor'],['../aot__executor_8h.html#ad090188290895a09067753e79d57077b',1,'TVMAotExecutor():&#160;aot_executor.h']]],
   ['tvmaotexecutor_5fcreate',['TVMAotExecutor_Create',['../aot__executor_8h.html#ab663a086fc2c4f6df166625a9ac83ee1',1,'aot_executor.h']]],
   ['tvmaotexecutor_5fgetinputindex',['TVMAotExecutor_GetInputIndex',['../aot__executor_8h.html#ad3b4f9b4d0b73d9c1b7e42d77076ffdb',1,'aot_executor.h']]],
+  ['tvmaotexecutor_5fgetinputname',['TVMAotExecutor_GetInputName',['../aot__executor_8h.html#a4abe6dddc4ab30eec136b68160fb3f73',1,'aot_executor.h']]],
   ['tvmaotexecutor_5fgetnuminputs',['TVMAotExecutor_GetNumInputs',['../aot__executor_8h.html#a84924c70598933ebb941961f77cdd977',1,'aot_executor.h']]],
   ['tvmaotexecutor_5fgetnumoutputs',['TVMAotExecutor_GetNumOutputs',['../aot__executor_8h.html#a7f42e0f9479896def33b3427f9a97518',1,'aot_executor.h']]],
   ['tvmaotexecutor_5frelease',['TVMAotExecutor_Release',['../aot__executor_8h.html#a15512a380d3f9cbd9c24ad9289f1dfd6',1,'aot_executor.h']]],
