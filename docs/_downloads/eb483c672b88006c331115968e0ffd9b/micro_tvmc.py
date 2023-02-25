@@ -1,3 +1,4 @@
+#!/bin/bash
 # Licensed to the Apache Software Foundation (ASF) under one
 # or more contributor license agreements.  See the NOTICE file
 # distributed with this work for additional information
@@ -14,6 +15,7 @@
 # KIND, either express or implied.  See the License for the
 # specific language governing permissions and limitations
 # under the License.
+
 
 """
 .. _tutorial-micro-cli-tool:
@@ -53,14 +55,14 @@ You need to install python and Zephyr dependencies before processing with this t
 #
 # .. code-block:: bash
 #
-#	  tvmc --help
+# 	  tvmc --help
 #
 # To compile a model for microtvm we use ``tvmc compile`` subcommand. The output of this command
 # is used in next steps with ``tvmc micro`` subcommands. You can check the availability of TVMC Micro using:
 #
 # .. code-block:: bash
 #
-#	  tvmc micro --help
+# 	  tvmc micro --help
 #
 #
 # The main tasks that you can perform using ``tvmc micro`` are ``create``, ``build`` and ``flash``.
@@ -79,7 +81,7 @@ You need to install python and Zephyr dependencies before processing with this t
 #
 # .. code-block:: bash
 #
-#	  wget https://github.com/tensorflow/tflite-micro/raw/main/tensorflow/lite/micro/examples/magic_wand/magic_wand.tflite
+# 	  wget https://github.com/tensorflow/tflite-micro/raw/main/tensorflow/lite/micro/examples/magic_wand/magic_wand.tflite
 #
 
 ############################################################
@@ -94,16 +96,16 @@ You need to install python and Zephyr dependencies before processing with this t
 #
 # .. code-block:: bash
 #
-#	  tvmc compile magic_wand.tflite \
-#	      --target='c -keys=cpu -model=host' \
-#	      --runtime=crt \
-#	      --runtime-crt-system-lib 1 \
-#	      --executor='graph' \
-#	      --executor-graph-link-params 0 \
-#	      --output model.tar \
-#	      --output-format mlf \
-#	      --pass-config tir.disable_vectorize=1 \
-#	      --disabled-pass=AlterOpLayout
+# 	  tvmc compile magic_wand.tflite \
+# 	      --target='c -keys=cpu -model=host' \
+# 	      --runtime=crt \
+# 	      --runtime-crt-system-lib 1 \
+# 	      --executor='graph' \
+# 	      --executor-graph-link-params 0 \
+# 	      --output model.tar \
+# 	      --output-format mlf \
+# 	      --pass-config tir.disable_vectorize=1 \
+# 	      --disabled-pass=AlterOpLayout
 #
 # This will generate a ``model.tar`` file which contains TVM compiler output files. To run this command for
 # a different Zephyr device, you need to update ``target``. For instance, for ``nrf5340dk_nrf5340_cpuapp`` board
@@ -123,11 +125,11 @@ You need to install python and Zephyr dependencies before processing with this t
 #
 # .. code-block:: bash
 #
-#	  tvmc micro create \
-#	      project \
-#	      model.tar \
-#	      zephyr \
-#	      --project-option project_type=host_driven zephyr_board=qemu_x86
+# 	  tvmc micro create \
+# 	      project \
+# 	      model.tar \
+# 	      zephyr \
+# 	      --project-option project_type=host_driven board=qemu_x86
 #
 # This will generate a ``Host-Driven`` Zephyr project for ``qemu_x86`` Zephyr board. In Host-Driven template project,
 # the Graph Executor will run on host and perform the model execution on Zephyr device by issuing commands to the
@@ -149,9 +151,9 @@ You need to install python and Zephyr dependencies before processing with this t
 #
 # .. code-block:: bash
 #
-#	  tvmc micro build \
-#	      project \
-#	      zephyr
+# 	  tvmc micro build \
+# 	      project \
+# 	      zephyr
 #
 # This will build the project in ``project`` directory and generates binary files under ``project/build``.
 #
@@ -160,9 +162,9 @@ You need to install python and Zephyr dependencies before processing with this t
 #
 # .. code-block:: bash
 #
-#	  tvmc micro flash \
-#	      project \
-#	      zephyr
+# 	  tvmc micro flash \
+# 	      project \
+# 	      zephyr
 #
 
 ############################################################
@@ -177,11 +179,11 @@ You need to install python and Zephyr dependencies before processing with this t
 #
 # .. code-block:: bash
 #
-#	  tvmc run \
-#	      --device micro \
-#	      project \
-#	      --fill-mode ones \
-#	      --print-top 4
+# 	  tvmc run \
+# 	      --device micro \
+# 	      project \
+# 	      --fill-mode ones \
+# 	      --print-top 4
 #
 
 ############################################################
