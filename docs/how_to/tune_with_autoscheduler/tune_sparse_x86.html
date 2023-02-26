@@ -632,11 +632,11 @@ class Module:
     @T.prim_func
     def main(placeholder: T.Buffer((128, 256), &quot;float32&quot;), placeholder_1: T.Buffer((4916, 16, 1), &quot;float32&quot;), placeholder_2: T.Buffer((4916,), &quot;int32&quot;), placeholder_3: T.Buffer((33,), &quot;int32&quot;), placeholder_4: T.Buffer((128, 512), &quot;float32&quot;), compute: T.Buffer((128, 512), &quot;float32&quot;)):
         T.func_attr({&quot;from_legacy_te_schedule&quot;: True, &quot;global_symbol&quot;: &quot;main&quot;, &quot;tir.noalias&quot;: True})
-        for i0_outer_i1_outer_fused in T.parallel(128):
-            compute_1 = T.allocate([512], &quot;float32&quot;, &quot;global&quot;)
-            compute_2 = T.Buffer((512,), data=compute_1)
+        for i0_outer_i1_outer_fused in T.parallel(32):
+            compute_1 = T.allocate([2048], &quot;float32&quot;, &quot;global&quot;)
+            compute_2 = T.Buffer((2048,), data=compute_1)
             for nb_j_inner in range(2):
-                for i_inner_init in range(16):
+                for i_inner_init in range(64):
                     cse_var_1: T.int32 = i_inner_init * 32 + nb_j_inner * 16
                     compute_2[cse_var_1] = T.float32(0)
                     compute_2[cse_var_1 + 1] = T.float32(0)
@@ -654,13 +654,13 @@ class Module:
                     compute_2[cse_var_1 + 13] = T.float32(0)
                     compute_2[cse_var_1 + 14] = T.float32(0)
                     compute_2[cse_var_1 + 15] = T.float32(0)
-                for elem_idx, i_inner in T.grid(T.let(cse_var_2, i0_outer_i1_outer_fused % 16 * 2 + nb_j_inner, placeholder_5[cse_var_2 + 1] - placeholder_5[cse_var_2]), 16):
+                for elem_idx, i_inner in T.grid(T.let(cse_var_2, i0_outer_i1_outer_fused % 16 * 2 + nb_j_inner, placeholder_5[cse_var_2 + 1] - placeholder_5[cse_var_2]), 64):
                     cse_var_2 = T.int32()
                     placeholder_5 = T.Buffer((33,), &quot;int32&quot;, data=placeholder_3.data)
                     cse_var_21: T.int32 = elem_idx * 16
                     cse_var_20: T.int32 = i_inner * 32 + nb_j_inner * 16
                     cse_var_19: T.int32 = i0_outer_i1_outer_fused % 16 * 2 + nb_j_inner
-                    cse_var_18: T.int32 = i0_outer_i1_outer_fused // 16 * 4096 + i_inner * 256
+                    cse_var_18: T.int32 = i0_outer_i1_outer_fused // 16 * 16384 + i_inner * 256
                     cse_var_17: T.int32 = cse_var_20 + 9
                     cse_var_16: T.int32 = cse_var_20 + 8
                     cse_var_15: T.int32 = cse_var_20 + 7
@@ -695,11 +695,11 @@ class Module:
                     compute_2[cse_var_7] = compute_2[cse_var_7] + placeholder_6[placeholder_5[cse_var_19] * 16 + cse_var_21 + 13] * T.max(placeholder_7[cse_var_18 + placeholder_8[placeholder_5[cse_var_19] + elem_idx]], T.float32(0))
                     compute_2[cse_var_8] = compute_2[cse_var_8] + placeholder_6[placeholder_5[cse_var_19] * 16 + cse_var_21 + 14] * T.max(placeholder_7[cse_var_18 + placeholder_8[placeholder_5[cse_var_19] + elem_idx]], T.float32(0))
                     compute_2[cse_var_9] = compute_2[cse_var_9] + placeholder_6[placeholder_5[cse_var_19] * 16 + cse_var_21 + 15] * T.max(placeholder_7[cse_var_18 + placeholder_8[placeholder_5[cse_var_19] + elem_idx]], T.float32(0))
-            for i0_inner in range(16):
-                cse_var_22: T.int32 = i0_outer_i1_outer_fused // 16 * 8192 + i0_inner * 512 + i0_outer_i1_outer_fused % 16 * 32
+            for i0_inner, i1_inner in T.grid(64, 32):
+                cse_var_22: T.int32 = i0_outer_i1_outer_fused // 16 * 32768 + i0_inner * 512 + i0_outer_i1_outer_fused % 16 * 32 + i1_inner
                 compute_3 = T.Buffer((65536,), data=compute.data)
                 placeholder_5 = T.Buffer((65536,), data=placeholder_4.data)
-                compute_3[cse_var_22:cse_var_22 + 32] = T.max(compute_2[i0_inner * 32:i0_inner * 32 + 32] + placeholder_5[cse_var_22:cse_var_22 + 32], T.Broadcast(T.float32(0), 32))
+                compute_3[cse_var_22] = T.max(compute_2[i0_inner * 32 + i1_inner] + placeholder_5[cse_var_22], T.float32(0))
 </pre></div>
 </div>
 </div>
@@ -733,7 +733,7 @@ class Module:
 <span class="p">)</span>
 </pre></div>
 </div>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Execution time of this operator: 1.671 ms
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Execution time of this operator: 1.928 ms
 </pre></div>
 </div>
 <div class="admonition note">
