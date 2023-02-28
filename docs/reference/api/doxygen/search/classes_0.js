@@ -254,7 +254,6 @@ var searchData=
   ['attrsnode_3c_20roialignattrs_20_3e',['AttrsNode&lt; ROIAlignAttrs &gt;',['../classtvm_1_1AttrsNode.html',1,'tvm']]],
   ['attrsnode_3c_20roipoolattrs_20_3e',['AttrsNode&lt; ROIPoolAttrs &gt;',['../classtvm_1_1AttrsNode.html',1,'tvm']]],
   ['attrsnode_3c_20scanopattrs_20_3e',['AttrsNode&lt; ScanopAttrs &gt;',['../classtvm_1_1AttrsNode.html',1,'tvm']]],
-  ['attrsnode_3c_20scatterattrs_20_3e',['AttrsNode&lt; ScatterAttrs &gt;',['../classtvm_1_1AttrsNode.html',1,'tvm']]],
   ['attrsnode_3c_20scatterelementsattrs_20_3e',['AttrsNode&lt; ScatterElementsAttrs &gt;',['../classtvm_1_1AttrsNode.html',1,'tvm']]],
   ['attrsnode_3c_20scatterndattrs_20_3e',['AttrsNode&lt; ScatterNDAttrs &gt;',['../classtvm_1_1AttrsNode.html',1,'tvm']]],
   ['attrsnode_3c_20searchsortedattrs_20_3e',['AttrsNode&lt; SearchSortedAttrs &gt;',['../classtvm_1_1AttrsNode.html',1,'tvm']]],
