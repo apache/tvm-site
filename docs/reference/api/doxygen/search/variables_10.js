@@ -30,7 +30,6 @@ var searchData=
   ['register_5ffile_5fsize',['register_file_size',['../structtvm_1_1runtime_1_1vm_1_1VMFunction.html#a5b910095e5c2826cf57793afb4f2078a',1,'tvm::runtime::vm::VMFunction']]],
   ['registry',['registry',['../structTVMMutableFuncRegistry.html#acc1fcd6554c627c1bf3b3c00e1120e9b',1,'TVMMutableFuncRegistry::registry()'],['../structTVMModule.html#a6db21005b9e983207b341e65af4c4ab7',1,'TVMModule::registry()']]],
   ['relations',['relations',['../classtvm_1_1arith_1_1IntConstraintsNode.html#a078c29fba655311710227460312e78b5',1,'tvm::arith::IntConstraintsNode::relations()'],['../classtvm_1_1te_1_1StageNode.html#ad1c0f8dc1f0f406a2abcd05fdad8fad5',1,'tvm::te::StageNode::relations()']]],
-  ['relax_5fprefix',['relax_prefix',['../classtvm_1_1PrinterConfigNode.html#ab16ceb4c8fb205dbd8493273cedd5326',1,'tvm::PrinterConfigNode']]],
   ['remaining_5ftasks_5f',['remaining_tasks_',['../classtvm_1_1meta__schedule_1_1TaskSchedulerNode.html#a11935a9326ac14e4e0c41fbb38c9fccf',1,'tvm::meta_schedule::TaskSchedulerNode']]],
   ['renderer',['renderer',['../classtvm_1_1DiagnosticRendererNode.html#a8cb2c50460583e5eeee486cf044adfbe',1,'tvm::DiagnosticRendererNode::renderer()'],['../classtvm_1_1DiagnosticContextNode.html#aea5532b73702d459a53ee0c358607284',1,'tvm::DiagnosticContextNode::renderer()']]],
   ['repeat',['repeat',['../classtvm_1_1auto__scheduler_1_1ProgramRunnerNode.html#a8d5523fcffda00fccd916fbebb4be00a',1,'tvm::auto_scheduler::ProgramRunnerNode']]],
