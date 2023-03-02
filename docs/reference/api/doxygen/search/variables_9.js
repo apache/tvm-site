@@ -36,6 +36,7 @@ var searchData=
   ['int_5fset',['int_set',['../classtvm_1_1arith_1_1Analyzer.html#a0d054ea2ea5b7e99f0883c00672ec831',1,'tvm::arith::Analyzer']]],
   ['intrin',['intrin',['../classtvm_1_1te_1_1TensorComputeOpNode.html#a29ad49d26c788d93489e0398be6804fd',1,'tvm::te::TensorComputeOpNode::intrin()'],['../classtvm_1_1te_1_1TensorIntrinCallNode.html#adf0605632cdbe20556abffee3aa3850e',1,'tvm::te::TensorIntrinCallNode::intrin()']]],
   ['invalid_5fto_5fbottom',['invalid_to_bottom',['../structtvm_1_1relay_1_1NonMaximumSuppressionAttrs.html#a51ab0634c017ed9a2fbf8706f22365dc',1,'tvm::relay::NonMaximumSuppressionAttrs']]],
+  ['inverse',['inverse',['../structtvm_1_1relay_1_1DFTAttrs.html#a51fa18ceac3ad908a2f9fdf8ebbe512f',1,'tvm::relay::DFTAttrs']]],
   ['inverse_5findex_5fmap',['inverse_index_map',['../classtvm_1_1tir_1_1IndexMapNode.html#a5cef05e7862cde95e178fcc5a756b07d',1,'tvm::tir::IndexMapNode']]],
   ['inverse_5ftransformation',['inverse_transformation',['../classtvm_1_1te_1_1TransformNode.html#a53a5dc162fe1e4a3a51be454ce03bba2',1,'tvm::te::TransformNode']]],
   ['invoke_5fargs_5fregisters',['invoke_args_registers',['../structtvm_1_1runtime_1_1vm_1_1Instruction.html#a6fc678bca0e215303087981a79f23b7f',1,'tvm::runtime::vm::Instruction']]],

@@ -32,6 +32,7 @@ var searchData=
   ['dfpatternfunctor_3c_20void_28const_20dfpattern_20_26_29_3e',['DFPatternFunctor&lt; void(const DFPattern &amp;)&gt;',['../classtvm_1_1relay_1_1DFPatternFunctor.html',1,'tvm::relay']]],
   ['dfpatternnode',['DFPatternNode',['../classtvm_1_1relay_1_1DFPatternNode.html',1,'tvm::relay']]],
   ['dfpatternvisitor',['DFPatternVisitor',['../classtvm_1_1relay_1_1DFPatternVisitor.html',1,'tvm::relay']]],
+  ['dftattrs',['DFTAttrs',['../structtvm_1_1relay_1_1DFTAttrs.html',1,'tvm::relay']]],
   ['diagnostic',['Diagnostic',['../classtvm_1_1Diagnostic.html',1,'tvm']]],
   ['diagnosticbuilder',['DiagnosticBuilder',['../classtvm_1_1DiagnosticBuilder.html',1,'tvm']]],
   ['diagnosticcontext',['DiagnosticContext',['../classtvm_1_1DiagnosticContext.html',1,'tvm']]],

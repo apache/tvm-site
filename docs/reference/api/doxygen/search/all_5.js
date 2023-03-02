@@ -128,6 +128,7 @@ var searchData=
   ['dfpatternfunctor_3c_20void_28const_20dfpattern_20_26_29_3e',['DFPatternFunctor&lt; void(const DFPattern &amp;)&gt;',['../classtvm_1_1relay_1_1DFPatternFunctor.html',1,'tvm::relay']]],
   ['dfpatternnode',['DFPatternNode',['../classtvm_1_1relay_1_1DFPatternNode.html',1,'tvm::relay']]],
   ['dfpatternvisitor',['DFPatternVisitor',['../classtvm_1_1relay_1_1DFPatternVisitor.html',1,'tvm::relay']]],
+  ['dftattrs',['DFTAttrs',['../structtvm_1_1relay_1_1DFTAttrs.html',1,'tvm::relay']]],
   ['diag_5fctx',['diag_ctx',['../classtvm_1_1transform_1_1PassContextNode.html#aa7bfc5ab1cf83d43a9b9bf4f1e62dd8c',1,'tvm::transform::PassContextNode']]],
   ['diagnostic',['Diagnostic',['../classtvm_1_1Diagnostic.html',1,'tvm::Diagnostic'],['../classtvm_1_1DiagnosticBuilder.html#a0c7318521607159dc55357ce2fec661b',1,'tvm::DiagnosticBuilder::Diagnostic()'],['../classtvm_1_1Diagnostic.html#a3e841d675315f73ce32ffa5c81dd9c26',1,'tvm::Diagnostic::Diagnostic()']]],
   ['diagnostic_2eh',['diagnostic.h',['../diagnostic_8h.html',1,'']]],

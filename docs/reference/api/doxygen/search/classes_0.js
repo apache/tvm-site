@@ -197,6 +197,7 @@ var searchData=
   ['attrsnode_3c_20densepackattrs_20_3e',['AttrsNode&lt; DensePackAttrs &gt;',['../classtvm_1_1AttrsNode.html',1,'tvm']]],
   ['attrsnode_3c_20dequantizeattrs_20_3e',['AttrsNode&lt; DequantizeAttrs &gt;',['../classtvm_1_1AttrsNode.html',1,'tvm']]],
   ['attrsnode_3c_20devicecopyattrs_20_3e',['AttrsNode&lt; DeviceCopyAttrs &gt;',['../classtvm_1_1AttrsNode.html',1,'tvm']]],
+  ['attrsnode_3c_20dftattrs_20_3e',['AttrsNode&lt; DFTAttrs &gt;',['../classtvm_1_1AttrsNode.html',1,'tvm']]],
   ['attrsnode_3c_20dilateattrs_20_3e',['AttrsNode&lt; DilateAttrs &gt;',['../classtvm_1_1AttrsNode.html',1,'tvm']]],
   ['attrsnode_3c_20dilation2dattrs_20_3e',['AttrsNode&lt; Dilation2DAttrs &gt;',['../classtvm_1_1AttrsNode.html',1,'tvm']]],
   ['attrsnode_3c_20dropoutattrs_20_3e',['AttrsNode&lt; DropoutAttrs &gt;',['../classtvm_1_1AttrsNode.html',1,'tvm']]],

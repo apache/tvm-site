@@ -183,7 +183,7 @@ var searchData=
   ['startmessage',['StartMessage',['../classtvm_1_1runtime_1_1micro__rpc_1_1Session.html#acd512b977c6dd888f90c4fd6d2b9500f',1,'tvm::runtime::micro_rpc::Session']]],
   ['startpacket',['StartPacket',['../classtvm_1_1runtime_1_1micro__rpc_1_1Framer.html#ade10d3bd3a26e3b7af881ae134e9a998',1,'tvm::runtime::micro_rpc::Framer']]],
   ['startsession',['StartSession',['../classtvm_1_1runtime_1_1micro__rpc_1_1Session.html#a15d3f9ecb8b22bf2d330f6f0a16c5239',1,'tvm::runtime::micro_rpc::Session']]],
-  ['state',['state',['../classtvm_1_1tir_1_1ScheduleNode.html#abb3612c2598fa2d3ee0e6e3fc3de8a26',1,'tvm::tir::ScheduleNode::state()'],['../classtvm_1_1auto__scheduler_1_1State.html#a9e8198b1f51b42cfbbee4b9f42160749',1,'tvm::auto_scheduler::State::State()']]],
+  ['state',['State',['../classtvm_1_1auto__scheduler_1_1State.html#a9e8198b1f51b42cfbbee4b9f42160749',1,'tvm::auto_scheduler::State::State()'],['../classtvm_1_1tir_1_1ScheduleNode.html#abb3612c2598fa2d3ee0e6e3fc3de8a26',1,'tvm::tir::ScheduleNode::state()']]],
   ['stats',['Stats',['../classtvm_1_1runtime_1_1vm_1_1Executable.html#a5445bd71aa14ec97552fa099dc3bd787',1,'tvm::runtime::vm::Executable']]],
   ['stepapplytoschedule',['StepApplyToSchedule',['../namespacetvm_1_1auto__scheduler.html#ac58f7548a94b92f801b2b9a6f65bd785',1,'tvm::auto_scheduler']]],
   ['stepapplytostate',['StepApplyToState',['../namespacetvm_1_1auto__scheduler.html#a6909bc5a99d1cc8372201e9392717832',1,'tvm::auto_scheduler']]],
