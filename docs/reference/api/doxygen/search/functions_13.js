@@ -134,6 +134,7 @@ var searchData=
   ['simplified',['Simplified',['../classtvm_1_1tir_1_1TraceNode.html#abc2556f52aedab72ecd38a5c0ab0b7da',1,'tvm::tir::TraceNode']]],
   ['simplify',['Simplify',['../classtvm_1_1arith_1_1Analyzer.html#a9b440f852f12ad0a4d8ed5ed97054425',1,'tvm::arith::Analyzer::Simplify()'],['../namespacetvm_1_1tir_1_1transform.html#a817801e8c9488f712804d2d0b821acf0',1,'tvm::tir::transform::Simplify()']]],
   ['simplifyexpr',['SimplifyExpr',['../namespacetvm_1_1relay_1_1transform.html#a42d4de119382b9457742433bc7109ffe',1,'tvm::relay::transform']]],
+  ['simplifyexprpostalterop',['SimplifyExprPostAlterOp',['../namespacetvm_1_1relay_1_1transform.html#a5d53204853b9d77afcda3d83756a11aa',1,'tvm::relay::transform']]],
   ['simplifyinference',['SimplifyInference',['../namespacetvm_1_1relay_1_1transform.html#add13a2ad7b216ad4683141bbbb4f6943',1,'tvm::relay::transform']]],
   ['sin',['sin',['../namespacetvm.html#a532ceddde4b8c713b0b1d7e737fcf5fb',1,'tvm::sin()'],['../namespacetvm_1_1topi.html#ae1d58f6cabd998f16f74cd1b1dc6f5a6',1,'tvm::topi::sin()']]],
   ['singlepoint',['SinglePoint',['../classtvm_1_1arith_1_1IntSet.html#a58aeb0d34656b1b43ac2532e4dfa12ed',1,'tvm::arith::IntSet']]],

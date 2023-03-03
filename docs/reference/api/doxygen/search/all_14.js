@@ -223,6 +223,7 @@ var searchData=
   ['simplify',['Simplify',['../classtvm_1_1arith_1_1Analyzer.html#a9b440f852f12ad0a4d8ed5ed97054425',1,'tvm::arith::Analyzer::Simplify()'],['../namespacetvm_1_1tir_1_1transform.html#a817801e8c9488f712804d2d0b821acf0',1,'tvm::tir::transform::Simplify()']]],
   ['simplify_5fconst_5ftensor_5findices',['simplify_const_tensor_indices',['../structtvm_1_1auto__scheduler_1_1SearchPolicyKey.html#a51408f2c5791a7bc90a32be3f8b06055',1,'tvm::auto_scheduler::SearchPolicyKey']]],
   ['simplifyexpr',['SimplifyExpr',['../namespacetvm_1_1relay_1_1transform.html#a42d4de119382b9457742433bc7109ffe',1,'tvm::relay::transform']]],
+  ['simplifyexprpostalterop',['SimplifyExprPostAlterOp',['../namespacetvm_1_1relay_1_1transform.html#a5d53204853b9d77afcda3d83756a11aa',1,'tvm::relay::transform']]],
   ['simplifyinference',['SimplifyInference',['../namespacetvm_1_1relay_1_1transform.html#add13a2ad7b216ad4683141bbbb4f6943',1,'tvm::relay::transform']]],
   ['simulatedquantizeattrs',['SimulatedQuantizeAttrs',['../structtvm_1_1relay_1_1qnn_1_1SimulatedQuantizeAttrs.html',1,'tvm::relay::qnn']]],
   ['sin',['sin',['../namespacetvm.html#a532ceddde4b8c713b0b1d7e737fcf5fb',1,'tvm::sin()'],['../namespacetvm_1_1topi.html#ae1d58f6cabd998f16f74cd1b1dc6f5a6',1,'tvm::topi::sin()']]],
