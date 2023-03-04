@@ -43,6 +43,7 @@ var searchData=
   ['measureinputnode',['MeasureInputNode',['../classtvm_1_1auto__scheduler_1_1MeasureInputNode.html',1,'tvm::auto_scheduler']]],
   ['measureresult',['MeasureResult',['../classtvm_1_1auto__scheduler_1_1MeasureResult.html',1,'tvm::auto_scheduler']]],
   ['measureresultnode',['MeasureResultNode',['../classtvm_1_1auto__scheduler_1_1MeasureResultNode.html',1,'tvm::auto_scheduler']]],
+  ['memcpydetails',['MemCpyDetails',['../structtvm_1_1tir_1_1MemCpyDetails.html',1,'tvm::tir']]],
   ['memoryinfo',['MemoryInfo',['../classtvm_1_1MemoryInfo.html',1,'tvm']]],
   ['memoryinfonode',['MemoryInfoNode',['../classtvm_1_1MemoryInfoNode.html',1,'tvm']]],
   ['memorymanager',['MemoryManager',['../classtvm_1_1runtime_1_1vm_1_1MemoryManager.html',1,'tvm::runtime::vm']]],
