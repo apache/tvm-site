@@ -237,8 +237,7 @@ we can schedule the following series of operations ending with :code:`topi.sum` 
         def main(a: T.Buffer((100, 10, 10), "float32"), b: T.Buffer((10, 10), "float32")):
             T.func_attr({"from_legacy_te_schedule": True, "global_symbol": "main", "tir.noalias": True})
             T_divide_red = T.allocate([1], "float32", "global")
-            threadIdx_x = T.env_thread("threadIdx.x")
-            T.launch_thread(threadIdx_x, 1024)
+            threadIdx_x = T.launch_thread("threadIdx.x", 1024)
             T_divide_red_rf = T.allocate([1], "float32", "local")
             reduce_temp0 = T.allocate([1], "float32", "local")
             T_divide_red_rf_1 = T.Buffer((1,), data=T_divide_red_rf, scope="local", align=4)
@@ -277,7 +276,7 @@ As you can see, scheduled stages of computation have been accumulated and we can
 
  .. code-block:: none
 
-    [stage(a, placeholder(a, 0x7cf46f0)), stage(b, placeholder(b, 0x1d3701a0)), stage(T_add, compute(T_add, body=[a[ax0, ax1, ax2] + b[ax1, ax2]], axis=[T.iter_var(ax0, T.Range(0, 100), "DataPar", ""), T.iter_var(ax1, T.Range(0, 10), "DataPar", ""), T.iter_var(ax2, T.Range(0, 10), "DataPar", "")], reduce_axis=[], tag=broadcast, attrs={})), stage(T_multiply, compute(T_multiply, body=[a[ax0, ax1, ax2] * b[ax1, ax2]], axis=[T.iter_var(ax0, T.Range(0, 100), "DataPar", ""), T.iter_var(ax1, T.Range(0, 10), "DataPar", ""), T.iter_var(ax2, T.Range(0, 10), "DataPar", "")], reduce_axis=[], tag=broadcast, attrs={})), stage(T_elemwise_sum, compute(T_elemwise_sum, body=[T_add[ax0, ax1, ax2] + T_multiply[ax0, ax1, ax2]], axis=[T.iter_var(ax0, T.Range(0, 100), "DataPar", ""), T.iter_var(ax1, T.Range(0, 10), "DataPar", ""), T.iter_var(ax2, T.Range(0, 10), "DataPar", "")], reduce_axis=[], tag=elemwise, attrs={})), stage(T_divide, compute(T_divide, body=[T_elemwise_sum[ax0, ax1, ax2] / T.float32(2)], axis=[T.iter_var(ax0, T.Range(0, 100), "DataPar", ""), T.iter_var(ax1, T.Range(0, 10), "DataPar", ""), T.iter_var(ax2, T.Range(0, 10), "DataPar", "")], reduce_axis=[], tag=elemwise, attrs={})), stage(T_divide_red.rf, compute(T_divide_red.rf, body=[T.reduce(T.comm_reducer(lambda x, y: x + y, [T.float32(0)]), source=[T_divide[(k0_k1_fused_k2_fused_inner + k0_k1_fused_k2_fused_outer * 1024) // 10 // 10, (k0_k1_fused_k2_fused_inner + k0_k1_fused_k2_fused_outer * 1024) // 10 % 10, (k0_k1_fused_k2_fused_inner + k0_k1_fused_k2_fused_outer * 1024) % 10]], init=[], axis=[T.iter_var(k0_k1_fused_k2_fused_outer, T.Range(0, 10), "CommReduce", "")], condition=T.likely((k0_k1_fused_k2_fused_inner + k0_k1_fused_k2_fused_outer * 1024) // 10 // 10 < 100 and (k0_k1_fused_k2_fused_inner + k0_k1_fused_k2_fused_outer * 1024) // 10 < 1000 and k0_k1_fused_k2_fused_inner + k0_k1_fused_k2_fused_outer * 1024 < 10000), value_index=0)], axis=[T.iter_var(k0_k1_fused_k2_fused_inner, T.Range(0, 1024), "DataPar", "")], reduce_axis=[T.iter_var(k0_k1_fused_k2_fused_outer, T.Range(0, 10), "CommReduce", "")], tag=, attrs={})), stage(T_divide_red, compute(T_divide_red.repl, body=[T.reduce(T.comm_reducer(lambda x, y: x + y, [T.float32(0)]), source=[T_divide_red.rf[k0_k1_fused_k2_fused_inner_v]], init=[], axis=[T.iter_var(k0_k1_fused_k2_fused_inner_v, T.Range(0, 1024), "CommReduce", "")], condition=True, value_index=0)], axis=[], reduce_axis=[T.iter_var(k0_k1_fused_k2_fused_inner_v, T.Range(0, 1024), "CommReduce", "")], tag=, attrs={}))]
+    [stage(a, placeholder(a, 0x258585a0)), stage(b, placeholder(b, 0xae13f40)), stage(T_add, compute(T_add, body=[a[ax0, ax1, ax2] + b[ax1, ax2]], axis=[T.iter_var(ax0, T.Range(0, 100), "DataPar", ""), T.iter_var(ax1, T.Range(0, 10), "DataPar", ""), T.iter_var(ax2, T.Range(0, 10), "DataPar", "")], reduce_axis=[], tag=broadcast, attrs={})), stage(T_multiply, compute(T_multiply, body=[a[ax0, ax1, ax2] * b[ax1, ax2]], axis=[T.iter_var(ax0, T.Range(0, 100), "DataPar", ""), T.iter_var(ax1, T.Range(0, 10), "DataPar", ""), T.iter_var(ax2, T.Range(0, 10), "DataPar", "")], reduce_axis=[], tag=broadcast, attrs={})), stage(T_elemwise_sum, compute(T_elemwise_sum, body=[T_add[ax0, ax1, ax2] + T_multiply[ax0, ax1, ax2]], axis=[T.iter_var(ax0, T.Range(0, 100), "DataPar", ""), T.iter_var(ax1, T.Range(0, 10), "DataPar", ""), T.iter_var(ax2, T.Range(0, 10), "DataPar", "")], reduce_axis=[], tag=elemwise, attrs={})), stage(T_divide, compute(T_divide, body=[T_elemwise_sum[ax0, ax1, ax2] / T.float32(2)], axis=[T.iter_var(ax0, T.Range(0, 100), "DataPar", ""), T.iter_var(ax1, T.Range(0, 10), "DataPar", ""), T.iter_var(ax2, T.Range(0, 10), "DataPar", "")], reduce_axis=[], tag=elemwise, attrs={})), stage(T_divide_red.rf, compute(T_divide_red.rf, body=[T.reduce(T.comm_reducer(lambda x, y: x + y, [T.float32(0)]), source=[T_divide[(k0_k1_fused_k2_fused_inner + k0_k1_fused_k2_fused_outer * 1024) // 10 // 10, (k0_k1_fused_k2_fused_inner + k0_k1_fused_k2_fused_outer * 1024) // 10 % 10, (k0_k1_fused_k2_fused_inner + k0_k1_fused_k2_fused_outer * 1024) % 10]], init=[], axis=[T.iter_var(k0_k1_fused_k2_fused_outer, T.Range(0, 10), "CommReduce", "")], condition=T.likely((k0_k1_fused_k2_fused_inner + k0_k1_fused_k2_fused_outer * 1024) // 10 // 10 < 100 and (k0_k1_fused_k2_fused_inner + k0_k1_fused_k2_fused_outer * 1024) // 10 < 1000 and k0_k1_fused_k2_fused_inner + k0_k1_fused_k2_fused_outer * 1024 < 10000), value_index=0)], axis=[T.iter_var(k0_k1_fused_k2_fused_inner, T.Range(0, 1024), "DataPar", "")], reduce_axis=[T.iter_var(k0_k1_fused_k2_fused_outer, T.Range(0, 10), "CommReduce", "")], tag=, attrs={})), stage(T_divide_red, compute(T_divide_red.repl, body=[T.reduce(T.comm_reducer(lambda x, y: x + y, [T.float32(0)]), source=[T_divide_red.rf[k0_k1_fused_k2_fused_inner_v]], init=[], axis=[T.iter_var(k0_k1_fused_k2_fused_inner_v, T.Range(0, 1024), "CommReduce", "")], condition=True, value_index=0)], axis=[], reduce_axis=[T.iter_var(k0_k1_fused_k2_fused_inner_v, T.Range(0, 1024), "CommReduce", "")], tag=, attrs={}))]
 
 
 
@@ -341,8 +340,7 @@ TOPI also provides common neural nets operations such as _softmax_ with optimize
         def main(tarray: T.Buffer((512, 512), "float32")):
             T.func_attr({"from_legacy_te_schedule": True, "global_symbol": "main", "tir.noalias": True})
             T_softmax_norm = T.allocate([65536], "float32x4", "global")
-            blockIdx_x = T.env_thread("blockIdx.x")
-            T.launch_thread(blockIdx_x, 512)
+            blockIdx_x = T.launch_thread("blockIdx.x", 512)
             normal_reduce_temp0 = T.allocate([1], "float32", "local")
             reduce_temp0 = T.allocate([1], "float32", "local")
             T_softmax_exp = T.allocate([512], "float32", "warp")
@@ -424,21 +422,15 @@ We can fuse :code:`topi.nn.conv2d` and :code:`topi.nn.relu` together.
         def main(placeholder: T.Buffer((1, 3, 224, 224), "float32"), placeholder_1: T.Buffer((10, 3, 5, 5), "float32")):
             T.func_attr({"from_legacy_te_schedule": True, "global_symbol": "main", "tir.noalias": True})
             compute = T.allocate([501760], "float32", "global")
-            blockIdx_z = T.env_thread("blockIdx.z")
-            T.launch_thread(blockIdx_z, 5)
+            blockIdx_z = T.launch_thread("blockIdx.z", 5)
             conv2d_nchw = T.allocate([14], "float32", "local")
             pad_temp_shared = T.allocate([112], "float32", "shared")
             placeholder_shared = T.allocate([2], "float32", "shared")
-            blockIdx_y = T.env_thread("blockIdx.y")
-            T.launch_thread(blockIdx_y, 224)
-            blockIdx_x = T.env_thread("blockIdx.x")
-            T.launch_thread(blockIdx_x, 2)
-            threadIdx_z = T.env_thread("threadIdx.z")
-            T.launch_thread(threadIdx_z, 1)
-            threadIdx_y = T.env_thread("threadIdx.y")
-            T.launch_thread(threadIdx_y, 1)
-            threadIdx_x = T.env_thread("threadIdx.x")
-            T.launch_thread(threadIdx_x, 16)
+            blockIdx_y = T.launch_thread("blockIdx.y", 224)
+            blockIdx_x = T.launch_thread("blockIdx.x", 2)
+            threadIdx_z = T.launch_thread("threadIdx.z", 1)
+            threadIdx_y = T.launch_thread("threadIdx.y", 1)
+            threadIdx_x = T.launch_thread("threadIdx.x", 16)
             conv2d_nchw_1 = T.Buffer((4,), data=conv2d_nchw, scope="local", align=8)
             conv2d_nchw_1[0] = T.float32(0)
             conv2d_nchw_1[2] = T.float32(0)
