@@ -446,19 +446,15 @@ class Module:
     @T.prim_func
     def main(A: T.handle, B: T.handle):
         T.func_attr({&quot;from_legacy_te_schedule&quot;: True, &quot;global_symbol&quot;: &quot;main&quot;, &quot;tir.noalias&quot;: True})
-        n = T.int32()
-        m = T.int32()
-        stride = T.int32()
-        stride_1 = T.int32()
-        A_1 = T.match_buffer(A, (n, m), strides=(stride, stride_1), type=&quot;auto&quot;)
-        stride_2 = T.int32()
-        B_1 = T.match_buffer(B, (n,), strides=(stride_2,), type=&quot;auto&quot;)
+        n, m = T.int32(), T.int32()
+        A_1 = T.match_buffer(A, (n, m), strides=(&quot;stride&quot;, &quot;stride&quot;), buffer_type=&quot;auto&quot;)
+        B_1 = T.match_buffer(B, (n,), strides=(&quot;stride&quot;,), buffer_type=&quot;auto&quot;)
         for i in range(n):
-            B_2 = T.Buffer((stride_2 * n,), data=B_1.data, type=&quot;auto&quot;)
-            B_2[i * stride_2] = T.float32(0)
+            B_2 = T.Buffer((B_1.strides[0] * n,), data=B_1.data, buffer_type=&quot;auto&quot;)
+            B_2[i * B_1.strides[0]] = T.float32(0)
             for k in range(m):
-                A_2 = T.Buffer((stride * n,), data=A_1.data, type=&quot;auto&quot;)
-                B_2[i * stride_2] = B_2[i * stride_2] + A_2[i * stride + k * stride_1]
+                A_2 = T.Buffer((A_1.strides[0] * n,), data=A_1.data, buffer_type=&quot;auto&quot;)
+                B_2[i * B_1.strides[0]] = B_2[i * B_1.strides[0]] + A_2[i * A_1.strides[0] + k * A_1.strides[1]]
 </pre></div>
 </div>
 <p>You can find that the IR code is quite like the C code.
@@ -478,23 +474,19 @@ class Module:
     @T.prim_func
     def main(A: T.handle, B: T.handle):
         T.func_attr({&quot;from_legacy_te_schedule&quot;: True, &quot;global_symbol&quot;: &quot;main&quot;, &quot;tir.noalias&quot;: True})
-        n = T.int32()
-        m = T.int32()
-        stride = T.int32()
-        stride_1 = T.int32()
-        A_1 = T.match_buffer(A, (n, m), strides=(stride, stride_1), type=&quot;auto&quot;)
-        stride_2 = T.int32()
-        B_1 = T.match_buffer(B, (n,), strides=(stride_2,), type=&quot;auto&quot;)
+        n, m = T.int32(), T.int32()
+        A_1 = T.match_buffer(A, (n, m), strides=(&quot;stride&quot;, &quot;stride&quot;), buffer_type=&quot;auto&quot;)
+        B_1 = T.match_buffer(B, (n,), strides=(&quot;stride&quot;,), buffer_type=&quot;auto&quot;)
         for i_outer, i_inner in T.grid((n + 31) // 32, 32):
-            B_2 = T.Buffer((stride_2 * n,), data=B_1.data, type=&quot;auto&quot;)
+            B_2 = T.Buffer((B_1.strides[0] * n,), data=B_1.data, buffer_type=&quot;auto&quot;)
             if T.likely(i_outer * 32 + i_inner &lt; n):
-                B_2[(i_outer * 32 + i_inner) * stride_2] = T.float32(0)
+                B_2[(i_outer * 32 + i_inner) * B_1.strides[0]] = T.float32(0)
             if T.likely(i_outer * 32 + i_inner &lt; n):
                 for k_outer, k_inner in T.grid((m + 15) // 16, 16):
                     if T.likely(k_outer * 16 + k_inner &lt; m):
-                        A_2 = T.Buffer((stride * n,), data=A_1.data, type=&quot;auto&quot;)
+                        A_2 = T.Buffer((A_1.strides[0] * n,), data=A_1.data, buffer_type=&quot;auto&quot;)
                         cse_var_1: T.int32 = i_outer * 32 + i_inner
-                        B_2[cse_var_1 * stride_2] = B_2[cse_var_1 * stride_2] + A_2[cse_var_1 * stride + (k_outer * 16 + k_inner) * stride_1]
+                        B_2[cse_var_1 * B_1.strides[0]] = B_2[cse_var_1 * B_1.strides[0]] + A_2[cse_var_1 * A_1.strides[0] + (k_outer * 16 + k_inner) * A_1.strides[1]]
 </pre></div>
 </div>
 <p>If we are building a GPU kernel, we can bind the rows of B to GPU threads.</p>
@@ -511,23 +503,19 @@ class Module:
     @T.prim_func
     def main(A: T.handle, B: T.handle):
         T.func_attr({&quot;from_legacy_te_schedule&quot;: True, &quot;global_symbol&quot;: &quot;main&quot;, &quot;tir.noalias&quot;: True})
-        n = T.int32()
-        m = T.int32()
-        stride = T.int32()
-        stride_1 = T.int32()
-        A_1 = T.match_buffer(A, (n, m), strides=(stride, stride_1), type=&quot;auto&quot;)
-        stride_2 = T.int32()
-        B_1 = T.match_buffer(B, (n,), strides=(stride_2,), type=&quot;auto&quot;)
+        n, m = T.int32(), T.int32()
+        A_1 = T.match_buffer(A, (n, m), strides=(&quot;stride&quot;, &quot;stride&quot;), buffer_type=&quot;auto&quot;)
+        B_1 = T.match_buffer(B, (n,), strides=(&quot;stride&quot;,), buffer_type=&quot;auto&quot;)
         blockIdx_x = T.launch_thread(&quot;blockIdx.x&quot;, (n + 31) // 32)
         threadIdx_x = T.launch_thread(&quot;threadIdx.x&quot;, 32)
-        B_2 = T.Buffer((stride_2 * n,), data=B_1.data, type=&quot;auto&quot;)
+        B_2 = T.Buffer((B_1.strides[0] * n,), data=B_1.data, buffer_type=&quot;auto&quot;)
         if T.likely(blockIdx_x * 32 + threadIdx_x &lt; n):
-            B_2[(blockIdx_x * 32 + threadIdx_x) * stride_2] = T.float32(0)
+            B_2[(blockIdx_x * 32 + threadIdx_x) * B_1.strides[0]] = T.float32(0)
         for k_outer, k_inner in T.grid((m + 15) // 16, 16):
             if T.likely(blockIdx_x * 32 + threadIdx_x &lt; n):
                 if T.likely(k_outer * 16 + k_inner &lt; m):
-                    A_2 = T.Buffer((stride * n,), data=A_1.data, type=&quot;auto&quot;)
-                    B_2[(blockIdx_x * 32 + threadIdx_x) * stride_2] = B_2[(blockIdx_x * 32 + threadIdx_x) * stride_2] + A_2[(blockIdx_x * 32 + threadIdx_x) * stride + (k_outer * 16 + k_inner) * stride_1]
+                    A_2 = T.Buffer((A_1.strides[0] * n,), data=A_1.data, buffer_type=&quot;auto&quot;)
+                    B_2[(blockIdx_x * 32 + threadIdx_x) * B_1.strides[0]] = B_2[(blockIdx_x * 32 + threadIdx_x) * B_1.strides[0]] + A_2[(blockIdx_x * 32 + threadIdx_x) * A_1.strides[0] + (k_outer * 16 + k_inner) * A_1.strides[1]]
 </pre></div>
 </div>
 </div>
@@ -554,26 +542,22 @@ class Module:
     @T.prim_func
     def main(A: T.handle, B: T.handle):
         T.func_attr({&quot;from_legacy_te_schedule&quot;: True, &quot;global_symbol&quot;: &quot;main&quot;, &quot;tir.noalias&quot;: True})
-        n = T.int32()
-        m = T.int32()
-        stride = T.int32()
-        stride_1 = T.int32()
-        A_1 = T.match_buffer(A, (n, m), strides=(stride, stride_1), type=&quot;auto&quot;)
-        stride_2 = T.int32()
-        B_1 = T.match_buffer(B, (n,), strides=(stride_2,), type=&quot;auto&quot;)
+        n, m = T.int32(), T.int32()
+        A_1 = T.match_buffer(A, (n, m), strides=(&quot;stride&quot;, &quot;stride&quot;), buffer_type=&quot;auto&quot;)
+        B_1 = T.match_buffer(B, (n,), strides=(&quot;stride&quot;,), buffer_type=&quot;auto&quot;)
         B_rf = T.allocate([n * 16], &quot;float32&quot;, &quot;global&quot;)
         B_rf_1 = T.Buffer((16 * n,), data=B_rf)
         for k_inner, i in T.grid(16, n):
             B_rf_1[k_inner * n + i] = T.float32(0)
             for k_outer in range((m + 15) // 16):
                 if T.likely(k_outer * 16 + k_inner &lt; m):
-                    A_2 = T.Buffer((stride * n,), data=A_1.data, type=&quot;auto&quot;)
-                    B_rf_1[k_inner * n + i] = B_rf_1[k_inner * n + i] + A_2[i * stride + (k_outer * 16 + k_inner) * stride_1]
+                    A_2 = T.Buffer((A_1.strides[0] * n,), data=A_1.data, buffer_type=&quot;auto&quot;)
+                    B_rf_1[k_inner * n + i] = B_rf_1[k_inner * n + i] + A_2[i * A_1.strides[0] + (k_outer * 16 + k_inner) * A_1.strides[1]]
         for ax0 in range(n):
-            B_2 = T.Buffer((stride_2 * n,), data=B_1.data, type=&quot;auto&quot;)
-            B_2[ax0 * stride_2] = T.float32(0)
+            B_2 = T.Buffer((B_1.strides[0] * n,), data=B_1.data, buffer_type=&quot;auto&quot;)
+            B_2[ax0 * B_1.strides[0]] = T.float32(0)
             for k_inner_v in range(16):
-                B_2[ax0 * stride_2] = B_2[ax0 * stride_2] + B_rf_1[k_inner_v * n + ax0]
+                B_2[ax0 * B_1.strides[0]] = B_2[ax0 * B_1.strides[0]] + B_rf_1[k_inner_v * n + ax0]
 </pre></div>
 </div>
 <p>The scheduled operator of B also get rewritten to be sum over
@@ -703,17 +687,15 @@ class Module:
     def main(Input: T.handle, Filter: T.Buffer((3, 3), &quot;float32&quot;), Output: T.handle):
         T.func_attr({&quot;from_legacy_te_schedule&quot;: True, &quot;global_symbol&quot;: &quot;main&quot;, &quot;tir.noalias&quot;: True})
         n = T.int32()
-        stride = T.int32()
-        stride_1 = T.int32()
-        Input_1 = T.match_buffer(Input, (n, n), strides=(stride, stride_1), type=&quot;auto&quot;)
+        Input_1 = T.match_buffer(Input, (n, n), strides=(&quot;stride&quot;, &quot;stride&quot;), buffer_type=&quot;auto&quot;)
         Output_1 = T.match_buffer(Output, (n - 2, n - 2))
         for i, j in T.grid(n - 2, n - 2):
             Output_2 = T.Buffer(((n - 2) * (n - 2),), data=Output_1.data)
             Output_2[i * (n - 2) + j] = T.float32(0)
             for di, dj in T.grid(3, 3):
-                Input_2 = T.Buffer((stride * n,), data=Input_1.data, type=&quot;auto&quot;)
+                Input_2 = T.Buffer((Input_1.strides[0] * n,), data=Input_1.data, buffer_type=&quot;auto&quot;)
                 Filter_1 = T.Buffer((9,), data=Filter.data)
-                Output_2[i * (n - 2) + j] = Output_2[i * (n - 2) + j] + Input_2[(i + di) * stride + (j + dj) * stride_1] * Filter_1[di * 3 + dj]
+                Output_2[i * (n - 2) + j] = Output_2[i * (n - 2) + j] + Input_2[(i + di) * Input_1.strides[0] + (j + dj) * Input_1.strides[1]] * Filter_1[di * 3 + dj]
 </pre></div>
 </div>
 </div>

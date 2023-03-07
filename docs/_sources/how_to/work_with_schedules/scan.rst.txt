@@ -130,28 +130,23 @@ To split on the time iteration, user can schedule on scan_op.scan_axis instead.
         @T.prim_func
         def main(X: T.handle, scan: T.handle):
             T.func_attr({"from_legacy_te_schedule": True, "global_symbol": "main", "tir.noalias": True})
-            m = T.int32()
-            n = T.int32()
-            stride = T.int32()
-            stride_1 = T.int32()
-            X_1 = T.match_buffer(X, (m, n), strides=(stride, stride_1), type="auto")
-            stride_2 = T.int32()
-            stride_3 = T.int32()
-            scan_1 = T.match_buffer(scan, (m, n), strides=(stride_2, stride_3), type="auto")
+            m, n = T.int32(), T.int32()
+            X_1 = T.match_buffer(X, (m, n), strides=("stride", "stride"), buffer_type="auto")
+            scan_1 = T.match_buffer(scan, (m, n), strides=("stride", "stride"), buffer_type="auto")
             blockIdx_x = T.env_thread("blockIdx.x")
             threadIdx_x = T.env_thread("threadIdx.x")
-            scan_2 = T.Buffer((stride_2 * m,), data=scan_1.data, type="auto")
-            X_2 = T.Buffer((stride * m,), data=X_1.data, type="auto")
+            scan_2 = T.Buffer((scan_1.strides[0] * m,), data=scan_1.data, buffer_type="auto")
+            X_2 = T.Buffer((X_1.strides[0] * m,), data=X_1.data, buffer_type="auto")
             with T.launch_thread(blockIdx_x, (n + 255) // 256):
                 T.launch_thread(threadIdx_x, 256)
                 if T.likely(blockIdx_x * 256 + threadIdx_x < n):
-                    scan_2[(blockIdx_x * 256 + threadIdx_x) * stride_3] = X_2[(blockIdx_x * 256 + threadIdx_x) * stride_1]
+                    scan_2[(blockIdx_x * 256 + threadIdx_x) * scan_1.strides[1]] = X_2[(blockIdx_x * 256 + threadIdx_x) * X_1.strides[1]]
             for scan_idx in range(m - 1):
                 T.launch_thread(blockIdx_x, (n + 255) // 256)
                 T.launch_thread(threadIdx_x, 256)
                 if T.likely(blockIdx_x * 256 + threadIdx_x < n):
                     cse_var_1: T.int32 = scan_idx + 1
-                    scan_2[cse_var_1 * stride_2 + (blockIdx_x * 256 + threadIdx_x) * stride_3] = scan_2[scan_idx * stride_2 + (blockIdx_x * 256 + threadIdx_x) * stride_3] + X_2[cse_var_1 * stride + (blockIdx_x * 256 + threadIdx_x) * stride_1]
+                    scan_2[cse_var_1 * scan_1.strides[0] + (blockIdx_x * 256 + threadIdx_x) * scan_1.strides[1]] = scan_2[scan_idx * scan_1.strides[0] + (blockIdx_x * 256 + threadIdx_x) * scan_1.strides[1]] + X_2[cse_var_1 * X_1.strides[0] + (blockIdx_x * 256 + threadIdx_x) * X_1.strides[1]]
 
 
 
@@ -249,29 +244,24 @@ the body of scan to be compute_at locations outside the scan loop.
         @T.prim_func
         def main(X: T.handle, scan: T.handle):
             T.func_attr({"from_legacy_te_schedule": True, "global_symbol": "main", "tir.noalias": True})
-            m = T.int32()
-            n = T.int32()
-            stride = T.int32()
-            stride_1 = T.int32()
-            X_1 = T.match_buffer(X, (m, n), strides=(stride, stride_1), type="auto")
-            stride_2 = T.int32()
-            stride_3 = T.int32()
-            scan_1 = T.match_buffer(scan, (m, n), strides=(stride_2, stride_3), type="auto")
+            m, n = T.int32(), T.int32()
+            X_1 = T.match_buffer(X, (m, n), strides=("stride", "stride"), buffer_type="auto")
+            scan_1 = T.match_buffer(scan, (m, n), strides=("stride", "stride"), buffer_type="auto")
             s1 = T.allocate([32], "float32", "global")
-            scan_2 = T.Buffer((stride_2 * m,), data=scan_1.data, type="auto")
-            X_2 = T.Buffer((stride * m,), data=X_1.data, type="auto")
+            scan_2 = T.Buffer((scan_1.strides[0] * m,), data=scan_1.data, buffer_type="auto")
+            X_2 = T.Buffer((X_1.strides[0] * m,), data=X_1.data, buffer_type="auto")
             for i in range(n):
-                scan_2[i * stride_3] = X_2[i * stride_1]
+                scan_2[i * scan_1.strides[1]] = X_2[i * X_1.strides[1]]
             for scan_idx, i_outer in T.grid(m - 1, (n + 31) // 32):
                 s1_1 = T.Buffer((32,), data=s1)
                 for i in range(32):
                     if T.likely(i_outer * 32 + i < n):
-                        s1_1[i] = scan_2[scan_idx * stride_2 + (i_outer * 32 + i) * stride_3] * T.float32(2)
+                        s1_1[i] = scan_2[scan_idx * scan_1.strides[0] + (i_outer * 32 + i) * scan_1.strides[1]] * T.float32(2)
                 for i_inner in range(32):
                     if T.likely(i_outer * 32 + i_inner < n):
                         cse_var_2: T.int32 = scan_idx + 1
                         cse_var_1: T.int32 = i_outer * 32 + i_inner
-                        scan_2[cse_var_2 * stride_2 + cse_var_1 * stride_3] = s1_1[i_inner] + X_2[cse_var_2 * stride + cse_var_1 * stride_1]
+                        scan_2[cse_var_2 * scan_1.strides[0] + cse_var_1 * scan_1.strides[1]] = s1_1[i_inner] + X_2[cse_var_2 * X_1.strides[0] + cse_var_1 * X_1.strides[1]]
 
 
 
@@ -321,31 +311,24 @@ The following example demonstrates how we can build recurrence with two states.
         @T.prim_func
         def main(X: T.handle, scan: T.handle, scan_1: T.handle):
             T.func_attr({"from_legacy_te_schedule": True, "global_symbol": "main", "tir.noalias": True})
-            m = T.int32()
-            n = T.int32()
-            stride = T.int32()
-            stride_1 = T.int32()
-            X_1 = T.match_buffer(X, (m, n), strides=(stride, stride_1), type="auto")
-            stride_2 = T.int32()
-            stride_3 = T.int32()
-            scan_2 = T.match_buffer(scan, (m, n), strides=(stride_2, stride_3), type="auto")
+            m, n = T.int32(), T.int32()
+            X_1 = T.match_buffer(X, (m, n), strides=("stride", "stride"), buffer_type="auto")
+            scan_2 = T.match_buffer(scan, (m, n), strides=("stride", "stride"), buffer_type="auto")
             l = T.int32()
-            stride_4 = T.int32()
-            stride_5 = T.int32()
-            scan_3 = T.match_buffer(scan_1, (m, l), strides=(stride_4, stride_5), type="auto")
-            scan_4 = T.Buffer((stride_2 * m,), data=scan_2.data, type="auto")
-            X_2 = T.Buffer((stride * m,), data=X_1.data, type="auto")
+            scan_3 = T.match_buffer(scan_1, (m, l), strides=("stride", "stride"), buffer_type="auto")
+            scan_4 = T.Buffer((scan_2.strides[0] * m,), data=scan_2.data, buffer_type="auto")
+            X_2 = T.Buffer((X_1.strides[0] * m,), data=X_1.data, buffer_type="auto")
             for i in range(n):
-                scan_4[i * stride_3] = X_2[i * stride_1]
-            scan_5 = T.Buffer((stride_4 * m,), data=scan_3.data, type="auto")
+                scan_4[i * scan_2.strides[1]] = X_2[i * X_1.strides[1]]
+            scan_5 = T.Buffer((scan_3.strides[0] * m,), data=scan_3.data, buffer_type="auto")
             for i in range(l):
-                scan_5[i * stride_5] = T.float32(0)
+                scan_5[i * scan_3.strides[1]] = T.float32(0)
             for scan_idx in range(m - 1):
                 for i in range(n):
                     cse_var_1: T.int32 = scan_idx + 1
-                    scan_4[cse_var_1 * stride_2 + i * stride_3] = scan_4[scan_idx * stride_2 + i * stride_3] + X_2[cse_var_1 * stride + i * stride_1]
+                    scan_4[cse_var_1 * scan_2.strides[0] + i * scan_2.strides[1]] = scan_4[scan_idx * scan_2.strides[0] + i * scan_2.strides[1]] + X_2[cse_var_1 * X_1.strides[0] + i * X_1.strides[1]]
                 for i in range(l):
-                    scan_5[(scan_idx + 1) * stride_4 + i * stride_5] = scan_5[scan_idx * stride_4 + i * stride_5] + scan_4[scan_idx * stride_2]
+                    scan_5[(scan_idx + 1) * scan_3.strides[0] + i * scan_3.strides[1]] = scan_5[scan_idx * scan_3.strides[0] + i * scan_3.strides[1]] + scan_4[scan_idx * scan_2.strides[0]]
 
 
 

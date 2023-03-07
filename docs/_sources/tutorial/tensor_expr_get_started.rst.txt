@@ -286,7 +286,7 @@ helper function to run a profile of the TVM generated code.
  .. code-block:: none
 
     Numpy running time: 0.000007
-    naive: 0.000009
+    naive: 0.000007
 
 
 
@@ -352,17 +352,14 @@ return a readable C-style statement.
         def main(A: T.handle, B: T.handle, C: T.handle):
             T.func_attr({"from_legacy_te_schedule": True, "global_symbol": "main", "tir.noalias": True})
             n = T.int32()
-            stride = T.int32()
-            A_1 = T.match_buffer(A, (n,), strides=(stride,), type="auto")
-            stride_1 = T.int32()
-            B_1 = T.match_buffer(B, (n,), strides=(stride_1,), type="auto")
-            stride_2 = T.int32()
-            C_1 = T.match_buffer(C, (n,), strides=(stride_2,), type="auto")
+            A_1 = T.match_buffer(A, (n,), strides=("stride",), buffer_type="auto")
+            B_1 = T.match_buffer(B, (n,), strides=("stride",), buffer_type="auto")
+            C_1 = T.match_buffer(C, (n,), strides=("stride",), buffer_type="auto")
             for i in T.parallel(n):
-                C_2 = T.Buffer((stride_2 * n,), data=C_1.data, type="auto")
-                A_2 = T.Buffer((stride * n,), data=A_1.data, type="auto")
-                B_2 = T.Buffer((stride_1 * n,), data=B_1.data, type="auto")
-                C_2[i * stride_2] = A_2[i * stride] + B_2[i * stride_1]
+                C_2 = T.Buffer((C_1.strides[0] * n,), data=C_1.data, buffer_type="auto")
+                A_2 = T.Buffer((A_1.strides[0] * n,), data=A_1.data, buffer_type="auto")
+                B_2 = T.Buffer((B_1.strides[0] * n,), data=B_1.data, buffer_type="auto")
+                C_2[i * C_1.strides[0]] = A_2[i * A_1.strides[0]] + B_2[i * B_1.strides[0]]
 
 
 
@@ -392,7 +389,7 @@ compile and run this new schedule with the parallel operation applied:
 
  .. code-block:: none
 
-    parallel: 0.000008
+    parallel: 0.000007
 
 
 
@@ -457,20 +454,17 @@ factor to be the number of threads on your CPU.
         def main(A: T.handle, B: T.handle, C: T.handle):
             T.func_attr({"from_legacy_te_schedule": True, "global_symbol": "main", "tir.noalias": True})
             n = T.int32()
-            stride = T.int32()
-            A_1 = T.match_buffer(A, (n,), strides=(stride,), type="auto")
-            stride_1 = T.int32()
-            B_1 = T.match_buffer(B, (n,), strides=(stride_1,), type="auto")
-            stride_2 = T.int32()
-            C_1 = T.match_buffer(C, (n,), strides=(stride_2,), type="auto")
+            A_1 = T.match_buffer(A, (n,), strides=("stride",), buffer_type="auto")
+            B_1 = T.match_buffer(B, (n,), strides=("stride",), buffer_type="auto")
+            C_1 = T.match_buffer(C, (n,), strides=("stride",), buffer_type="auto")
             for i_outer in T.parallel((n + 3) // 4):
                 for i_inner_s in range(4):
                     if T.likely(i_outer * 4 + i_inner_s < n):
-                        C_2 = T.Buffer((stride_2 * n,), data=C_1.data, type="auto")
-                        A_2 = T.Buffer((stride * n,), data=A_1.data, type="auto")
-                        B_2 = T.Buffer((stride_1 * n,), data=B_1.data, type="auto")
+                        C_2 = T.Buffer((C_1.strides[0] * n,), data=C_1.data, buffer_type="auto")
+                        A_2 = T.Buffer((A_1.strides[0] * n,), data=A_1.data, buffer_type="auto")
+                        B_2 = T.Buffer((B_1.strides[0] * n,), data=B_1.data, buffer_type="auto")
                         cse_var_1: T.int32 = i_outer * 4 + i_inner_s
-                        C_2[cse_var_1 * stride_2] = A_2[cse_var_1 * stride] + B_2[cse_var_1 * stride_1]
+                        C_2[cse_var_1 * C_1.strides[0]] = A_2[cse_var_1 * A_1.strides[0]] + B_2[cse_var_1 * B_1.strides[0]]
 
 
 
@@ -504,10 +498,10 @@ We can now compare the different schedules
  .. code-block:: none
 
                 Operator                  Timing             Performance
-                   numpy    6.909430001087458e-06                    1.0
-                   naive              8.8043e-06      1.2742440401906254
-                parallel    8.139599999999999e-06      1.178042182744297
-                  vector              2.4748e-05       3.581771578278523
+                   numpy    7.30580999970698e-06                     1.0
+                   naive    6.718100000000001e-06     0.9195558056217515
+                parallel    6.9827999999999994e-06    0.9557872433419516
+                  vector    2.4598999999999996e-05     3.367046227726509
 
 
 
@@ -928,7 +922,7 @@ matrix multiplication.
 
  .. code-block:: none
 
-    Numpy running time: 0.018482
+    Numpy running time: 0.017932
 
 
 
@@ -986,7 +980,7 @@ optimizations.
 
  .. code-block:: none
 
-    none: 3.483497
+    none: 3.442657
 
 
 
@@ -1086,7 +1080,7 @@ schedule.
 
  .. code-block:: none
 
-    blocking: 0.297663
+    blocking: 0.311380
 
 
 
@@ -1170,7 +1164,7 @@ already cache friendly from our previous optimizations.
 
  .. code-block:: none
 
-    vectorization: 0.331825
+    vectorization: 0.342195
     # from tvm.script import ir as I
     # from tvm.script import tir as T
 
@@ -1236,7 +1230,7 @@ more cache friendly.
 
  .. code-block:: none
 
-    loop permutation: 0.119324
+    loop permutation: 0.113988
     # from tvm.script import ir as I
     # from tvm.script import tir as T
 
@@ -1327,7 +1321,7 @@ optimized schedule.
 
  .. code-block:: none
 
-    array packing: 0.109529
+    array packing: 0.108309
     # from tvm.script import ir as I
     # from tvm.script import tir as T
 
@@ -1410,7 +1404,7 @@ to `C` when all the block results are ready.
 
  .. code-block:: none
 
-    block caching: 0.110533
+    block caching: 0.114843
     # from tvm.script import ir as I
     # from tvm.script import tir as T
 
@@ -1484,7 +1478,7 @@ of thread-level parallelization.
 
  .. code-block:: none
 
-    parallelization: 0.146427
+    parallelization: 0.151671
     # from tvm.script import ir as I
     # from tvm.script import tir as T
 
@@ -1554,13 +1548,13 @@ working, we can compare the results.
  .. code-block:: none
 
                 Operator                  Timing             Performance
-                    none      3.4834968335999994                     1.0
-                blocking            0.2976625712     0.08544935891110955
-           vectorization            0.3318251297     0.09525633165484386
-        loop permutation            0.1193244511     0.03425421546219259
-           array packing     0.10952888350000001     0.03144222278129876
-           block caching            0.1105331386     0.03173051214912981
-         parallelization            0.1464266149     0.04203437577081885
+                    none      3.4426574368000002                     1.0
+                blocking            0.3113803763       0.090447679450045
+           vectorization     0.34219474380000003     0.09939842987052322
+        loop permutation     0.11398771529999999     0.03311038562290217
+           array packing            0.1083091191     0.03146090515490699
+           block caching            0.1148425324    0.033358687150339246
+         parallelization            0.1516714699     0.04405650945072851
 
 
 
@@ -1602,7 +1596,7 @@ the computation for specific platforms.
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** ( 1 minutes  1.844 seconds)
+   **Total running time of the script:** ( 1 minutes  1.598 seconds)
 
 
 .. _sphx_glr_download_tutorial_tensor_expr_get_started.py:
