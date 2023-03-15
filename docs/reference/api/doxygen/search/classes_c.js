@@ -36,6 +36,7 @@ var searchData=
   ['opstrategy',['OpStrategy',['../classtvm_1_1relay_1_1OpStrategy.html',1,'tvm::relay']]],
   ['opstrategynode',['OpStrategyNode',['../classtvm_1_1relay_1_1OpStrategyNode.html',1,'tvm::relay']]],
   ['optional',['Optional',['../classtvm_1_1runtime_1_1Optional.html',1,'tvm::runtime']]],
+  ['optional_3c_20tvm_3a_3abool_20_3e',['Optional&lt; tvm::Bool &gt;',['../classtvm_1_1runtime_1_1Optional.html',1,'tvm::runtime']]],
   ['optional_3c_20tvm_3a_3adiagnosticcontext_20_3e',['Optional&lt; tvm::DiagnosticContext &gt;',['../classtvm_1_1runtime_1_1Optional.html',1,'tvm::runtime']]],
   ['optional_3c_20tvm_3a_3afloatimm_20_3e',['Optional&lt; tvm::FloatImm &gt;',['../classtvm_1_1runtime_1_1Optional.html',1,'tvm::runtime']]],
   ['optional_3c_20tvm_3a_3ainteger_20_3e',['Optional&lt; tvm::Integer &gt;',['../classtvm_1_1runtime_1_1Optional.html',1,'tvm::runtime']]],

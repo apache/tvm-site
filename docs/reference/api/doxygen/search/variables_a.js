@@ -24,6 +24,7 @@ var searchData=
   ['kdepthwiseconv2dnhwc',['kDepthwiseConv2dNHWC',['../namespacetvm_1_1topi.html#a9094c3c432410ef2675444ecf8e06bfe',1,'tvm::topi']]],
   ['kdevicethreadaxis',['kDeviceThreadAxis',['../namespacetvm_1_1tir_1_1attr.html#a4933845b75cf4f08fb66f55fdd94986f',1,'tvm::tir::attr']]],
   ['kdeviceusedynsharedmemory',['kDeviceUseDynSharedMemory',['../namespacetvm_1_1tir_1_1attr.html#a6644dc9ce51ba96b0364f7f891dcad9a',1,'tvm::tir::attr']]],
+  ['keep_5fschedule_5frecord',['keep_schedule_record',['../classtvm_1_1te_1_1ScheduleNode.html#ab27491f6d746b79bf94d9736566224c6',1,'tvm::te::ScheduleNode']]],
   ['keepdims',['keepdims',['../structtvm_1_1relay_1_1ReduceAttrs.html#afa8f7f2b60bcb5c44f6cd3338d80143a',1,'tvm::relay::ReduceAttrs::keepdims()'],['../structtvm_1_1relay_1_1ArgReduceAttrs.html#a69a41c9cc211fe0a503ac89485517f35',1,'tvm::relay::ArgReduceAttrs::keepdims()'],['../structtvm_1_1relay_1_1VarianceAttrs.html#a35d1aaaa1f07c395f999eafb5a4ae60d',1,'tvm::relay::VarianceAttrs::keepdims()']]],
   ['keinsum',['kEinsum',['../namespacetvm_1_1topi.html#a6b33f2b888123f3ccd7191feeaedb93b',1,'tvm::topi']]],
   ['kelementwise',['kElementWise',['../namespacetvm_1_1topi.html#a0250c4095f19ae8a22ed85bc4ce5a40d',1,'tvm::topi']]],

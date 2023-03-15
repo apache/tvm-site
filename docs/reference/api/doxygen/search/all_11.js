@@ -189,6 +189,7 @@ var searchData=
   ['primfuncframenode',['PrimFuncFrameNode',['../classtvm_1_1script_1_1ir__builder_1_1tir_1_1PrimFuncFrameNode.html',1,'tvm::script::ir_builder::tir']]],
   ['primfuncnode',['PrimFuncNode',['../classtvm_1_1tir_1_1PrimFuncNode.html',1,'tvm::tir']]],
   ['primitive_5fmap',['primitive_map',['../classtvm_1_1runtime_1_1vm_1_1Executable.html#ab5a31e8670a4f20564abc48610a90e8c',1,'tvm::runtime::vm::Executable']]],
+  ['primitive_5frecord',['primitive_record',['../classtvm_1_1te_1_1ScheduleNode.html#aeddb87ac8fb45a6059e8ebb9659003f2',1,'tvm::te::ScheduleNode']]],
   ['primitive_5ftargets',['primitive_targets',['../classtvm_1_1CompilationConfigNode.html#aaf237580f1684eaf97e1852c6b69ecbd',1,'tvm::CompilationConfigNode']]],
   ['primtype',['PrimType',['../classtvm_1_1PrimType.html',1,'tvm::PrimType'],['../classtvm_1_1PrimType.html#a09f20c21115c93112848ee1aa91a02a4',1,'tvm::PrimType::PrimType()']]],
   ['primtypenode',['PrimTypeNode',['../classtvm_1_1PrimTypeNode.html',1,'tvm']]],

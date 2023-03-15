@@ -300,7 +300,7 @@ var searchData=
   ['funcname',['FuncName',['../namespacetvm_1_1script_1_1ir__builder_1_1tir.html#a6abb6566a443b59385ec26213336f1c0',1,'tvm::script::ir_builder::tir']]],
   ['funcret',['FuncRet',['../namespacetvm_1_1script_1_1ir__builder_1_1tir.html#a4d377c370c4d836034937d558f6fba11',1,'tvm::script::ir_builder::tir']]],
   ['funcs',['funcs',['../structTVMFuncRegistry.html#a25badb00e205aaa5c317bd61a4b88d96',1,'TVMFuncRegistry']]],
-  ['function',['Function',['../classtvm_1_1relay_1_1Function.html',1,'tvm::relay::Function'],['../classtvm_1_1relay_1_1Function.html#a11ee77c0df8aa1c2c072c7cf613b9238',1,'tvm::relay::Function::Function()'],['../classtvm_1_1relay_1_1DFPatternCallbackNode.html#a878e6e49af2466c49ffd9fcfe7f609fa',1,'tvm::relay::DFPatternCallbackNode::function()']]],
+  ['function',['Function',['../classtvm_1_1relay_1_1Function.html',1,'tvm::relay::Function'],['../classtvm_1_1relay_1_1DFPatternCallbackNode.html#a878e6e49af2466c49ffd9fcfe7f609fa',1,'tvm::relay::DFPatternCallbackNode::function()'],['../classtvm_1_1relay_1_1Function.html#a11ee77c0df8aa1c2c072c7cf613b9238',1,'tvm::relay::Function::Function()']]],
   ['function_2eh',['function.h',['../ir_2function_8h.html',1,'(Global Namespace)'],['../relay_2function_8h.html',1,'(Global Namespace)'],['../tir_2function_8h.html',1,'(Global Namespace)']]],
   ['functiondoc',['FunctionDoc',['../classtvm_1_1script_1_1printer_1_1FunctionDoc.html',1,'tvm::script::printer::FunctionDoc'],['../classtvm_1_1script_1_1printer_1_1FunctionDoc.html#ac7ed2ed1c4c3cf89ff1b9bd58583c79d',1,'tvm::script::printer::FunctionDoc::FunctionDoc()']]],
   ['functiondocnode',['FunctionDocNode',['../classtvm_1_1script_1_1printer_1_1FunctionDocNode.html',1,'tvm::script::printer']]],

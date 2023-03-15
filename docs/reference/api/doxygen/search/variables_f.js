@@ -60,6 +60,7 @@ var searchData=
   ['preprocessor',['preprocessor',['../classtvm_1_1TargetKindNode.html#a47f02c66d0f972befdfb29ec592ecba0',1,'tvm::TargetKindNode']]],
   ['preresult_5fop_5findex_5f',['preresult_op_index_',['../classtvm_1_1runtime_1_1vm_1_1VirtualMachine.html#a37b4a705186bf76cb9aa5168dcbc3651',1,'tvm::runtime::vm::VirtualMachine']]],
   ['primitive_5fmap',['primitive_map',['../classtvm_1_1runtime_1_1vm_1_1Executable.html#ab5a31e8670a4f20564abc48610a90e8c',1,'tvm::runtime::vm::Executable']]],
+  ['primitive_5frecord',['primitive_record',['../classtvm_1_1te_1_1ScheduleNode.html#aeddb87ac8fb45a6059e8ebb9659003f2',1,'tvm::te::ScheduleNode']]],
   ['primitive_5ftargets',['primitive_targets',['../classtvm_1_1CompilationConfigNode.html#aaf237580f1684eaf97e1852c6b69ecbd',1,'tvm::CompilationConfigNode']]],
   ['print_5fline_5fnumbers',['print_line_numbers',['../classtvm_1_1PrinterConfigNode.html#a326fadb110a4356ccd783ed0e0b26733',1,'tvm::PrinterConfigNode']]],
   ['priority',['priority',['../classtvm_1_1auto__scheduler_1_1RPCRunnerNode.html#ad5c143b5ce09e135fb8c318d3c0042b9',1,'tvm::auto_scheduler::RPCRunnerNode']]],

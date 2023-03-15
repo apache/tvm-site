@@ -15,6 +15,7 @@ var searchData=
   ['sch',['sch',['../classtvm_1_1meta__schedule_1_1MeasureCandidateNode.html#a09ca07d9214f494e04ea57972109c6d6',1,'tvm::meta_schedule::MeasureCandidateNode']]],
   ['sch_5frules',['sch_rules',['../classtvm_1_1meta__schedule_1_1SpaceGeneratorNode.html#a13d999ca33bcf255fb66cb466137a402',1,'tvm::meta_schedule::SpaceGeneratorNode']]],
   ['schedulable_5fndim',['schedulable_ndim',['../classtvm_1_1te_1_1TensorComputeOpNode.html#af9fbd1dbdccbfbef35a87137b6a1bee6',1,'tvm::te::TensorComputeOpNode']]],
+  ['schedule_5frecord',['schedule_record',['../classtvm_1_1te_1_1ScheduleNode.html#a52983b1afd658ec3b885b3b076c6203d',1,'tvm::te::ScheduleNode']]],
   ['scope',['scope',['../classtvm_1_1te_1_1StageNode.html#a55acf027a39738cd1ddd063b27086038',1,'tvm::te::StageNode::scope()'],['../structtvm_1_1tir_1_1BlockInfo.html#a26f43b05e354b8e860a365c4c98c6f11',1,'tvm::tir::BlockInfo::scope()']]],
   ['scope_5fname',['scope_name',['../classtvm_1_1auto__scheduler_1_1CacheReadStepNode.html#a3acb0811d66ee113a91c7c3501bbf01a',1,'tvm::auto_scheduler::CacheReadStepNode::scope_name()'],['../classtvm_1_1auto__scheduler_1_1CacheWriteStepNode.html#ae296d4462c2def1263a95a4c57ce9514',1,'tvm::auto_scheduler::CacheWriteStepNode::scope_name()']]],
   ['score_5findex',['score_index',['../structtvm_1_1relay_1_1GetValidCountsAttrs.html#ac1f6c8ed8f47f543c20501af98cff87b',1,'tvm::relay::GetValidCountsAttrs::score_index()'],['../structtvm_1_1relay_1_1NonMaximumSuppressionAttrs.html#aef590e963d5af653e09e6327808c4723',1,'tvm::relay::NonMaximumSuppressionAttrs::score_index()']]],

@@ -78,6 +78,7 @@ var searchData=
   ['kdlsdaccel',['kDLSDAccel',['../c__runtime__api_8h.html#a57cbccb14c35a0e62dbc1b911188fcefacdc33f5efa9ddabe89e886c28d1ff65b',1,'c_runtime_api.h']]],
   ['kdriverversion',['kDriverVersion',['../namespacetvm_1_1runtime.html#a46fef1ca0ccc05473e9bb0a8c6b66619a100cda550bad77fbaf993566c022bdf9',1,'tvm::runtime']]],
   ['kdynamic',['kDynamic',['../structtvm_1_1runtime_1_1TypeIndex.html#aed93c7318efc8052201d4c404b21a40da83fed6b80a5bcb3247430922fd85ea47',1,'tvm::runtime::TypeIndex']]],
+  ['keep_5fschedule_5frecord',['keep_schedule_record',['../classtvm_1_1te_1_1ScheduleNode.html#ab27491f6d746b79bf94d9736566224c6',1,'tvm::te::ScheduleNode']]],
   ['keepdims',['keepdims',['../structtvm_1_1relay_1_1ReduceAttrs.html#afa8f7f2b60bcb5c44f6cd3338d80143a',1,'tvm::relay::ReduceAttrs::keepdims()'],['../structtvm_1_1relay_1_1ArgReduceAttrs.html#a69a41c9cc211fe0a503ac89485517f35',1,'tvm::relay::ArgReduceAttrs::keepdims()'],['../structtvm_1_1relay_1_1VarianceAttrs.html#a35d1aaaa1f07c395f999eafb5a4ae60d',1,'tvm::relay::VarianceAttrs::keepdims()']]],
   ['keinsum',['kEinsum',['../namespacetvm_1_1topi.html#a6b33f2b888123f3ccd7191feeaedb93b',1,'tvm::topi']]],
   ['kelementwise',['kElementWise',['../namespacetvm_1_1topi.html#a0250c4095f19ae8a22ed85bc4ce5a40d',1,'tvm::topi']]],
