@@ -177,7 +177,7 @@ var searchData=
   ['intvalue',['IntValue',['../classtvm_1_1Integer.html#abae4eff906166502c2a982e8a121d81d',1,'tvm::Integer']]],
   ['invalid_5fto_5fbottom',['invalid_to_bottom',['../structtvm_1_1relay_1_1NonMaximumSuppressionAttrs.html#a51ab0634c017ed9a2fbf8706f22365dc',1,'tvm::relay::NonMaximumSuppressionAttrs']]],
   ['invalidatecache',['InvalidateCache',['../classtvm_1_1te_1_1ScheduleNode.html#a2b6a92ec4b1c295604b55ff8e8c365e7',1,'tvm::te::ScheduleNode']]],
-  ['inverse',['inverse',['../structtvm_1_1relay_1_1DFTAttrs.html#a51fa18ceac3ad908a2f9fdf8ebbe512f',1,'tvm::relay::DFTAttrs::inverse()'],['../classtvm_1_1tir_1_1IndexMap.html#a5363f3897623b7854aed24b2fd657f5a',1,'tvm::tir::IndexMap::Inverse()']]],
+  ['inverse',['Inverse',['../classtvm_1_1tir_1_1IndexMap.html#a5363f3897623b7854aed24b2fd657f5a',1,'tvm::tir::IndexMap::Inverse()'],['../structtvm_1_1relay_1_1DFTAttrs.html#a51fa18ceac3ad908a2f9fdf8ebbe512f',1,'tvm::relay::DFTAttrs::inverse()']]],
   ['inverse_5findex_5fmap',['inverse_index_map',['../classtvm_1_1tir_1_1IndexMapNode.html#a5cef05e7862cde95e178fcc5a756b07d',1,'tvm::tir::IndexMapNode']]],
   ['inverse_5ftransformation',['inverse_transformation',['../classtvm_1_1te_1_1TransformNode.html#a53a5dc162fe1e4a3a51be454ce03bba2',1,'tvm::te::TransformNode']]],
   ['inverseaffineitermap',['InverseAffineIterMap',['../namespacetvm_1_1arith.html#ae8e8be2bde49ccbe7025f4d7a730e694',1,'tvm::arith']]],
