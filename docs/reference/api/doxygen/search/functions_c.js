@@ -68,6 +68,7 @@ var searchData=
   ['looppartition',['LoopPartition',['../namespacetvm_1_1tir_1_1transform.html#a17b0910c03b6f2d462448fa2725c1f5e',1,'tvm::tir::transform']]],
   ['looprv',['LoopRV',['../classtvm_1_1tir_1_1LoopRV.html#ad47c4e83701875b84c9efd36ee3dc323',1,'tvm::tir::LoopRV']]],
   ['lowerasyncdma',['LowerAsyncDMA',['../namespacetvm_1_1tir_1_1transform.html#af77f0ca4f873cb6220bba4504e347705',1,'tvm::tir::transform']]],
+  ['lowerautocopy',['LowerAutoCopy',['../namespacetvm_1_1tir_1_1transform.html#a47710621db083ca74f38702fdd66a316',1,'tvm::tir::transform']]],
   ['lowercrossthreadreduction',['LowerCrossThreadReduction',['../namespacetvm_1_1tir_1_1transform.html#a641a33aa6ac3ec146be1196a091af5d5',1,'tvm::tir::transform']]],
   ['lowercustomdatatypes',['LowerCustomDatatypes',['../namespacetvm_1_1tir_1_1transform.html#a0d6b2682a93ca4136ed4fa6d8fa7bc2f',1,'tvm::tir::transform']]],
   ['lowerdevicestorageaccessinfo',['LowerDeviceStorageAccessInfo',['../namespacetvm_1_1tir_1_1transform.html#a53b7a3b7552ad5fa7b49e90470aff02b',1,'tvm::tir::transform']]],

@@ -455,6 +455,7 @@ var searchData=
   ['attrswithdefaultvalues',['AttrsWithDefaultValues',['../namespacetvm.html#a2e3193a20ee748b08d5a528275859dbe',1,'tvm']]],
   ['attrtriggernondefaultentry',['AttrTriggerNonDefaultEntry',['../structtvm_1_1detail_1_1AttrTriggerNonDefaultEntry.html',1,'tvm::detail::AttrTriggerNonDefaultEntry&lt; T &gt;'],['../structtvm_1_1detail_1_1AttrTriggerNonDefaultEntry.html#a572356cfd8d20c258b03f7a5c62d3909',1,'tvm::detail::AttrTriggerNonDefaultEntry::AttrTriggerNonDefaultEntry()']]],
   ['attrvisitor',['AttrVisitor',['../classtvm_1_1AttrVisitor.html',1,'tvm']]],
+  ['auto_5fcopy',['auto_copy',['../namespacetvm_1_1tir_1_1attr.html#a54930cf29f25fa3d67b0f983858fa467',1,'tvm::tir::attr']]],
   ['auto_5fschedule_2eh',['auto_schedule.h',['../auto__schedule_8h.html',1,'']]],
   ['auto_5fscheduler_5flayout_5ftransform',['auto_scheduler_layout_transform',['../namespacetvm_1_1topi.html#a8e10f74deef4f22a9dc4b0a0b4370b08',1,'tvm::topi']]],
   ['auto_5fscheduler_5flog_5fversion',['AUTO_SCHEDULER_LOG_VERSION',['../namespacetvm_1_1auto__scheduler.html#a04029f3b293fba232218203167b2ef63',1,'tvm::auto_scheduler']]],
