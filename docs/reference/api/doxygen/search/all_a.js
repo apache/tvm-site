@@ -242,6 +242,8 @@ var searchData=
   ['is_5fstrictly_5finlineable',['is_strictly_inlineable',['../classtvm_1_1auto__scheduler_1_1AccessAnalyzerNode.html#ad70984d9ab1380470bcfba14834120bc',1,'tvm::auto_scheduler::AccessAnalyzerNode']]],
   ['is_5fsubset_5fof',['is_subset_of',['../classtvm_1_1relay_1_1FeatureSet.html#a54d9ce3fb753feebed54a3d3839f9777',1,'tvm::relay::FeatureSet']]],
   ['is_5fterminated',['is_terminated',['../classtvm_1_1meta__schedule_1_1TaskRecordNode.html#a1c47bb3d7b475f9d1b0404933e4c6084',1,'tvm::meta_schedule::TaskRecordNode']]],
+  ['is_5ftvm_5farray',['is_tvm_array',['../namespacetvm_1_1runtime.html#a046f48c6c26b7e59951fd144cf89ce7e',1,'tvm::runtime']]],
+  ['is_5ftvm_5farray_3c_20array_3c_20t_20_3e_20_3e',['is_tvm_array&lt; Array&lt; T &gt; &gt;',['../namespacetvm_1_1runtime.html#a11573f379e5d0f328e1bb86760677788',1,'tvm::runtime']]],
   ['is_5fuint',['is_uint',['../classtvm_1_1runtime_1_1DataType.html#a0de5803abe309ca66c23adb15c565afb',1,'tvm::runtime::DataType']]],
   ['is_5fvalid_5fiterator',['is_valid_iterator',['../structtvm_1_1runtime_1_1is__valid__iterator.html',1,'tvm::runtime']]],
   ['is_5fvalid_5fiterator_3c_20optional_3c_20t_20_3e_2c_20itertype_20_3e',['is_valid_iterator&lt; Optional&lt; T &gt;, IterType &gt;',['../structtvm_1_1runtime_1_1is__valid__iterator_3_01Optional_3_01T_01_4_00_01IterType_01_4.html',1,'tvm::runtime']]],
