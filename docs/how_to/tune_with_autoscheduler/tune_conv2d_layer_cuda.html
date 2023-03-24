@@ -510,34 +510,205 @@ class Module:
     @T.prim_func
     def main(data: T.Buffer((1, 512, 7, 7), &quot;float32&quot;), kernel: T.Buffer((512, 512, 3, 3), &quot;float32&quot;), bias: T.Buffer((1, 512, 1, 1), &quot;float32&quot;), compute: T.Buffer((1, 512, 7, 7), &quot;float32&quot;)):
         T.func_attr({&quot;from_legacy_te_schedule&quot;: T.bool(True), &quot;global_symbol&quot;: &quot;main&quot;, &quot;tir.noalias&quot;: T.bool(True)})
-        blockIdx_x = T.launch_thread(&quot;blockIdx.x&quot;, 112)
-        conv2d_nchw = T.allocate([4], &quot;float32&quot;, &quot;local&quot;)
-        pad_temp_shared = T.allocate([84], &quot;float32&quot;, &quot;shared&quot;)
-        kernel_shared = T.allocate([384], &quot;float32&quot;, &quot;shared&quot;)
+        blockIdx_x = T.launch_thread(&quot;blockIdx.x&quot;, 32)
+        conv2d_nchw = T.allocate([14], &quot;float32&quot;, &quot;local&quot;)
+        pad_temp_shared = T.allocate([3136], &quot;float32&quot;, &quot;shared&quot;)
+        kernel_shared = T.allocate([1024], &quot;float32&quot;, &quot;shared&quot;)
         threadIdx_x = T.launch_thread(&quot;threadIdx.x&quot;, 56)
-        conv2d_nchw_1 = T.Buffer((4,), data=conv2d_nchw, scope=&quot;local&quot;, align=16)
-        for ff_outer_inner_init, ff_inner_init in T.grid(2, 2):
-            conv2d_nchw_1[ff_outer_inner_init * 2 + ff_inner_init] = T.float32(0)
-        for rc_outer_outer, rx_outer_outer in T.grid(128, 3):
-            pad_temp_shared_1 = T.Buffer((84,), data=pad_temp_shared, scope=&quot;shared&quot;)
-            for ax0_ax1_fused_ax2_fused_ax3_fused_outer_outer in range(2):
-                threadIdx_x_1 = T.launch_thread(&quot;threadIdx.x&quot;, 56)
-                if T.likely(ax0_ax1_fused_ax2_fused_ax3_fused_outer_outer * 2 + threadIdx_x_1 // 28 &lt; 3):
-                    data_1 = T.Buffer((25088,), data=data.data)
-                    pad_temp_shared_1[ax0_ax1_fused_ax2_fused_ax3_fused_outer_outer * 56 + threadIdx_x_1] = T.if_then_else(1 &lt;= blockIdx_x % 7 + (ax0_ax1_fused_ax2_fused_ax3_fused_outer_outer * 2 + threadIdx_x_1 // 7) % 3 and blockIdx_x % 7 + (ax0_ax1_fused_ax2_fused_ax3_fused_outer_outer * 2 + threadIdx_x_1 // 7) % 3 &lt; 8 and 1 &lt;= rx_outer_outer + threadIdx_x_1 % 7 and rx_outer_outer + threadIdx_x_1 % 7 &lt; 8, data_1[rc_outer_outer * 196 + (ax0_ax1_fused_ax2_fused_ax3_fused_outer_outer * 8 + threadIdx_x_1 // 7) // 3 * 49 + blockIdx_x % 7 * 7 + (ax0_ax1_fused_ax2_fused_ax3_fused_outer_outer * 2 + threadIdx_x_1 // 7) % 3 * 7 + rx_outer_outer + threadIdx_x_1 % 7 - 8], T.float32(0))
-            kernel_shared_1 = T.Buffer((384,), data=kernel_shared, scope=&quot;shared&quot;)
-            for ax0_ax1_fused_ax2_fused_ax3_fused_outer_outer in range(7):
-                threadIdx_x_1 = T.launch_thread(&quot;threadIdx.x&quot;, 56)
-                if T.likely(ax0_ax1_fused_ax2_fused_ax3_fused_outer_outer * 7 + threadIdx_x_1 // 8 &lt; 48):
-                    kernel_1 = T.Buffer((2359296,), data=kernel.data)
-                    kernel_shared_1[(ax0_ax1_fused_ax2_fused_ax3_fused_outer_outer * 14 + threadIdx_x_1 // 4) // 3 * 12 + (ax0_ax1_fused_ax2_fused_ax3_fused_outer_outer * 8 + threadIdx_x_1) % 12 // 3 * 3 + (ax0_ax1_fused_ax2_fused_ax3_fused_outer_outer * 2 + threadIdx_x_1) % 3] = kernel_1[blockIdx_x // 7 * 147456 + (ax0_ax1_fused_ax2_fused_ax3_fused_outer_outer * 14 + threadIdx_x_1 // 4) // 3 * 4608 + rc_outer_outer * 36 + (ax0_ax1_fused_ax2_fused_ax3_fused_outer_outer * 8 + threadIdx_x_1) % 12 // 3 * 9 + (ax0_ax1_fused_ax2_fused_ax3_fused_outer_outer * 2 + threadIdx_x_1) % 3 * 3 + rx_outer_outer]
-            for rc_outer_inner, ff_outer_inner, rc_inner, ry_inner, ff_inner in T.grid(2, 2, 2, 3, 2):
-                cse_var_1: T.int32 = ff_outer_inner * 2 + ff_inner
-                conv2d_nchw_1[cse_var_1] = conv2d_nchw_1[cse_var_1] + pad_temp_shared_1[rc_outer_inner * 42 + rc_inner * 21 + ry_inner * 7 + threadIdx_x % 7] * kernel_shared_1[threadIdx_x // 7 * 48 + ff_outer_inner * 24 + ff_inner * 12 + rc_outer_inner * 6 + rc_inner * 3 + ry_inner]
-        for i1_inner in range(4):
+        conv2d_nchw_1 = T.Buffer((14,), data=conv2d_nchw, scope=&quot;local&quot;, align=32)
+        conv2d_nchw_1[0] = T.float32(0)
+        conv2d_nchw_1[1] = T.float32(0)
+        conv2d_nchw_1[2] = T.float32(0)
+        conv2d_nchw_1[3] = T.float32(0)
+        conv2d_nchw_1[4] = T.float32(0)
+        conv2d_nchw_1[5] = T.float32(0)
+        conv2d_nchw_1[6] = T.float32(0)
+        conv2d_nchw_1[7] = T.float32(0)
+        conv2d_nchw_1[8] = T.float32(0)
+        conv2d_nchw_1[9] = T.float32(0)
+        conv2d_nchw_1[10] = T.float32(0)
+        conv2d_nchw_1[11] = T.float32(0)
+        conv2d_nchw_1[12] = T.float32(0)
+        conv2d_nchw_1[13] = T.float32(0)
+        for rc_outer_outer, ry_outer_outer, rx_outer_outer in T.grid(8, 3, 3):
+            cse_var_2: T.int32 = rc_outer_outer * 576
+            cse_var_1: T.int32 = ry_outer_outer * 3
+            threadIdx_x_1 = T.env_thread(&quot;threadIdx.x&quot;)
+            pad_temp_shared_1 = T.Buffer((3136,), data=pad_temp_shared, scope=&quot;shared&quot;)
+            data_1 = T.Buffer((25088,), data=data.data)
+            with T.launch_thread(threadIdx_x_1, 56):
+                pad_temp_shared_1[threadIdx_x_1] = T.if_then_else(1 &lt;= threadIdx_x_1 % 49 // 7 + ry_outer_outer and threadIdx_x_1 % 49 // 7 + ry_outer_outer &lt; 8 and 1 &lt;= rx_outer_outer + threadIdx_x_1 % 7 and rx_outer_outer + threadIdx_x_1 % 7 &lt; 8, data_1[rc_outer_outer * 3136 + ry_outer_outer * 7 + threadIdx_x_1 + rx_outer_outer - 8], T.float32(0))
+            with T.launch_thread(threadIdx_x_1, 56):
+                pad_temp_shared_1[threadIdx_x_1 + 56] = T.if_then_else(1 &lt;= ry_outer_outer + (threadIdx_x_1 // 7 + 1) % 7 and ry_outer_outer + (threadIdx_x_1 // 7 + 1) % 7 &lt; 8 and 1 &lt;= rx_outer_outer + threadIdx_x_1 % 7 and rx_outer_outer + threadIdx_x_1 % 7 &lt; 8, data_1[rc_outer_outer * 3136 + ry_outer_outer * 7 + threadIdx_x_1 + rx_outer_outer + 48], T.float32(0))
+            with T.launch_thread(threadIdx_x_1, 56):
+                pad_temp_shared_1[threadIdx_x_1 + 112] = T.if_then_else(1 &lt;= ry_outer_outer + (threadIdx_x_1 // 7 + 2) % 7 and ry_outer_outer + (threadIdx_x_1 // 7 + 2) % 7 &lt; 8 and 1 &lt;= rx_outer_outer + threadIdx_x_1 % 7 and rx_outer_outer + threadIdx_x_1 % 7 &lt; 8, data_1[rc_outer_outer * 3136 + ry_outer_outer * 7 + threadIdx_x_1 + rx_outer_outer + 104], T.float32(0))
+            with T.launch_thread(threadIdx_x_1, 56):
+                pad_temp_shared_1[threadIdx_x_1 + 168] = T.if_then_else(1 &lt;= ry_outer_outer + (threadIdx_x_1 // 7 + 3) % 7 and ry_outer_outer + (threadIdx_x_1 // 7 + 3) % 7 &lt; 8 and 1 &lt;= rx_outer_outer + threadIdx_x_1 % 7 and rx_outer_outer + threadIdx_x_1 % 7 &lt; 8, data_1[rc_outer_outer * 3136 + ry_outer_outer * 7 + threadIdx_x_1 + rx_outer_outer + 160], T.float32(0))
+            with T.launch_thread(threadIdx_x_1, 56):
+                pad_temp_shared_1[threadIdx_x_1 + 224] = T.if_then_else(1 &lt;= ry_outer_outer + (threadIdx_x_1 // 7 + 4) % 7 and ry_outer_outer + (threadIdx_x_1 // 7 + 4) % 7 &lt; 8 and 1 &lt;= rx_outer_outer + threadIdx_x_1 % 7 and rx_outer_outer + threadIdx_x_1 % 7 &lt; 8, data_1[rc_outer_outer * 3136 + ry_outer_outer * 7 + threadIdx_x_1 + rx_outer_outer + 216], T.float32(0))
+            with T.launch_thread(threadIdx_x_1, 56):
+                pad_temp_shared_1[threadIdx_x_1 + 280] = T.if_then_else(1 &lt;= ry_outer_outer + (threadIdx_x_1 // 7 + 5) % 7 and ry_outer_outer + (threadIdx_x_1 // 7 + 5) % 7 &lt; 8 and 1 &lt;= rx_outer_outer + threadIdx_x_1 % 7 and rx_outer_outer + threadIdx_x_1 % 7 &lt; 8, data_1[rc_outer_outer * 3136 + ry_outer_outer * 7 + threadIdx_x_1 + rx_outer_outer + 272], T.float32(0))
+            with T.launch_thread(threadIdx_x_1, 56):
+                pad_temp_shared_1[threadIdx_x_1 + 336] = T.if_then_else(1 &lt;= ry_outer_outer + (threadIdx_x_1 // 7 + 6) % 7 and ry_outer_outer + (threadIdx_x_1 // 7 + 6) % 7 &lt; 8 and 1 &lt;= rx_outer_outer + threadIdx_x_1 % 7 and rx_outer_outer + threadIdx_x_1 % 7 &lt; 8, data_1[rc_outer_outer * 3136 + ry_outer_outer * 7 + threadIdx_x_1 + rx_outer_outer + 328], T.float32(0))
+            with T.launch_thread(threadIdx_x_1, 56):
+                pad_temp_shared_1[threadIdx_x_1 + 392] = T.if_then_else(1 &lt;= threadIdx_x_1 % 49 // 7 + ry_outer_outer and threadIdx_x_1 % 49 // 7 + ry_outer_outer &lt; 8 and 1 &lt;= rx_outer_outer + threadIdx_x_1 % 7 and rx_outer_outer + threadIdx_x_1 % 7 &lt; 8, data_1[rc_outer_outer * 3136 + ry_outer_outer * 7 + threadIdx_x_1 + rx_outer_outer + 384], T.float32(0))
+            with T.launch_thread(threadIdx_x_1, 56):
+                pad_temp_shared_1[threadIdx_x_1 + 448] = T.if_then_else(1 &lt;= ry_outer_outer + (threadIdx_x_1 // 7 + 1) % 7 and ry_outer_outer + (threadIdx_x_1 // 7 + 1) % 7 &lt; 8 and 1 &lt;= rx_outer_outer + threadIdx_x_1 % 7 and rx_outer_outer + threadIdx_x_1 % 7 &lt; 8, data_1[rc_outer_outer * 3136 + ry_outer_outer * 7 + threadIdx_x_1 + rx_outer_outer + 440], T.float32(0))
+            with T.launch_thread(threadIdx_x_1, 56):
+                pad_temp_shared_1[threadIdx_x_1 + 504] = T.if_then_else(1 &lt;= ry_outer_outer + (threadIdx_x_1 // 7 + 2) % 7 and ry_outer_outer + (threadIdx_x_1 // 7 + 2) % 7 &lt; 8 and 1 &lt;= rx_outer_outer + threadIdx_x_1 % 7 and rx_outer_outer + threadIdx_x_1 % 7 &lt; 8, data_1[rc_outer_outer * 3136 + ry_outer_outer * 7 + threadIdx_x_1 + rx_outer_outer + 496], T.float32(0))
+            with T.launch_thread(threadIdx_x_1, 56):
+                pad_temp_shared_1[threadIdx_x_1 + 560] = T.if_then_else(1 &lt;= ry_outer_outer + (threadIdx_x_1 // 7 + 3) % 7 and ry_outer_outer + (threadIdx_x_1 // 7 + 3) % 7 &lt; 8 and 1 &lt;= rx_outer_outer + threadIdx_x_1 % 7 and rx_outer_outer + threadIdx_x_1 % 7 &lt; 8, data_1[rc_outer_outer * 3136 + ry_outer_outer * 7 + threadIdx_x_1 + rx_outer_outer + 552], T.float32(0))
+            with T.launch_thread(threadIdx_x_1, 56):
+                pad_temp_shared_1[threadIdx_x_1 + 616] = T.if_then_else(1 &lt;= ry_outer_outer + (threadIdx_x_1 // 7 + 4) % 7 and ry_outer_outer + (threadIdx_x_1 // 7 + 4) % 7 &lt; 8 and 1 &lt;= rx_outer_outer + threadIdx_x_1 % 7 and rx_outer_outer + threadIdx_x_1 % 7 &lt; 8, data_1[rc_outer_outer * 3136 + ry_outer_outer * 7 + threadIdx_x_1 + rx_outer_outer + 608], T.float32(0))
+            with T.launch_thread(threadIdx_x_1, 56):
+                pad_temp_shared_1[threadIdx_x_1 + 672] = T.if_then_else(1 &lt;= ry_outer_outer + (threadIdx_x_1 // 7 + 5) % 7 and ry_outer_outer + (threadIdx_x_1 // 7 + 5) % 7 &lt; 8 and 1 &lt;= rx_outer_outer + threadIdx_x_1 % 7 and rx_outer_outer + threadIdx_x_1 % 7 &lt; 8, data_1[rc_outer_outer * 3136 + ry_outer_outer * 7 + threadIdx_x_1 + rx_outer_outer + 664], T.float32(0))
+            with T.launch_thread(threadIdx_x_1, 56):
+                pad_temp_shared_1[threadIdx_x_1 + 728] = T.if_then_else(1 &lt;= ry_outer_outer + (threadIdx_x_1 // 7 + 6) % 7 and ry_outer_outer + (threadIdx_x_1 // 7 + 6) % 7 &lt; 8 and 1 &lt;= rx_outer_outer + threadIdx_x_1 % 7 and rx_outer_outer + threadIdx_x_1 % 7 &lt; 8, data_1[rc_outer_outer * 3136 + ry_outer_outer * 7 + threadIdx_x_1 + rx_outer_outer + 720], T.float32(0))
+            with T.launch_thread(threadIdx_x_1, 56):
+                pad_temp_shared_1[threadIdx_x_1 + 784] = T.if_then_else(1 &lt;= threadIdx_x_1 % 49 // 7 + ry_outer_outer and threadIdx_x_1 % 49 // 7 + ry_outer_outer &lt; 8 and 1 &lt;= rx_outer_outer + threadIdx_x_1 % 7 and rx_outer_outer + threadIdx_x_1 % 7 &lt; 8, data_1[rc_outer_outer * 3136 + ry_outer_outer * 7 + threadIdx_x_1 + rx_outer_outer + 776], T.float32(0))
+            with T.launch_thread(threadIdx_x_1, 56):
+                pad_temp_shared_1[threadIdx_x_1 + 840] = T.if_then_else(1 &lt;= ry_outer_outer + (threadIdx_x_1 // 7 + 1) % 7 and ry_outer_outer + (threadIdx_x_1 // 7 + 1) % 7 &lt; 8 and 1 &lt;= rx_outer_outer + threadIdx_x_1 % 7 and rx_outer_outer + threadIdx_x_1 % 7 &lt; 8, data_1[rc_outer_outer * 3136 + ry_outer_outer * 7 + threadIdx_x_1 + rx_outer_outer + 832], T.float32(0))
+            with T.launch_thread(threadIdx_x_1, 56):
+                pad_temp_shared_1[threadIdx_x_1 + 896] = T.if_then_else(1 &lt;= ry_outer_outer + (threadIdx_x_1 // 7 + 2) % 7 and ry_outer_outer + (threadIdx_x_1 // 7 + 2) % 7 &lt; 8 and 1 &lt;= rx_outer_outer + threadIdx_x_1 % 7 and rx_outer_outer + threadIdx_x_1 % 7 &lt; 8, data_1[rc_outer_outer * 3136 + ry_outer_outer * 7 + threadIdx_x_1 + rx_outer_outer + 888], T.float32(0))
+            with T.launch_thread(threadIdx_x_1, 56):
+                pad_temp_shared_1[threadIdx_x_1 + 952] = T.if_then_else(1 &lt;= ry_outer_outer + (threadIdx_x_1 // 7 + 3) % 7 and ry_outer_outer + (threadIdx_x_1 // 7 + 3) % 7 &lt; 8 and 1 &lt;= rx_outer_outer + threadIdx_x_1 % 7 and rx_outer_outer + threadIdx_x_1 % 7 &lt; 8, data_1[rc_outer_outer * 3136 + ry_outer_outer * 7 + threadIdx_x_1 + rx_outer_outer + 944], T.float32(0))
+            with T.launch_thread(threadIdx_x_1, 56):
+                pad_temp_shared_1[threadIdx_x_1 + 1008] = T.if_then_else(1 &lt;= ry_outer_outer + (threadIdx_x_1 // 7 + 4) % 7 and ry_outer_outer + (threadIdx_x_1 // 7 + 4) % 7 &lt; 8 and 1 &lt;= rx_outer_outer + threadIdx_x_1 % 7 and rx_outer_outer + threadIdx_x_1 % 7 &lt; 8, data_1[rc_outer_outer * 3136 + ry_outer_outer * 7 + threadIdx_x_1 + rx_outer_outer + 1000], T.float32(0))
+            with T.launch_thread(threadIdx_x_1, 56):
+                pad_temp_shared_1[threadIdx_x_1 + 1064] = T.if_then_else(1 &lt;= ry_outer_outer + (threadIdx_x_1 // 7 + 5) % 7 and ry_outer_outer + (threadIdx_x_1 // 7 + 5) % 7 &lt; 8 and 1 &lt;= rx_outer_outer + threadIdx_x_1 % 7 and rx_outer_outer + threadIdx_x_1 % 7 &lt; 8, data_1[rc_outer_outer * 3136 + ry_outer_outer * 7 + threadIdx_x_1 + rx_outer_outer + 1056], T.float32(0))
+            with T.launch_thread(threadIdx_x_1, 56):
+                pad_temp_shared_1[threadIdx_x_1 + 1120] = T.if_then_else(1 &lt;= ry_outer_outer + (threadIdx_x_1 // 7 + 6) % 7 and ry_outer_outer + (threadIdx_x_1 // 7 + 6) % 7 &lt; 8 and 1 &lt;= rx_outer_outer + threadIdx_x_1 % 7 and rx_outer_outer + threadIdx_x_1 % 7 &lt; 8, data_1[rc_outer_outer * 3136 + ry_outer_outer * 7 + threadIdx_x_1 + rx_outer_outer + 1112], T.float32(0))
+            with T.launch_thread(threadIdx_x_1, 56):
+                pad_temp_shared_1[threadIdx_x_1 + 1176] = T.if_then_else(1 &lt;= threadIdx_x_1 % 49 // 7 + ry_outer_outer and threadIdx_x_1 % 49 // 7 + ry_outer_outer &lt; 8 and 1 &lt;= rx_outer_outer + threadIdx_x_1 % 7 and rx_outer_outer + threadIdx_x_1 % 7 &lt; 8, data_1[rc_outer_outer * 3136 + ry_outer_outer * 7 + threadIdx_x_1 + rx_outer_outer + 1168], T.float32(0))
+            with T.launch_thread(threadIdx_x_1, 56):
+                pad_temp_shared_1[threadIdx_x_1 + 1232] = T.if_then_else(1 &lt;= ry_outer_outer + (threadIdx_x_1 // 7 + 1) % 7 and ry_outer_outer + (threadIdx_x_1 // 7 + 1) % 7 &lt; 8 and 1 &lt;= rx_outer_outer + threadIdx_x_1 % 7 and rx_outer_outer + threadIdx_x_1 % 7 &lt; 8, data_1[rc_outer_outer * 3136 + ry_outer_outer * 7 + threadIdx_x_1 + rx_outer_outer + 1224], T.float32(0))
+            with T.launch_thread(threadIdx_x_1, 56):
+                pad_temp_shared_1[threadIdx_x_1 + 1288] = T.if_then_else(1 &lt;= ry_outer_outer + (threadIdx_x_1 // 7 + 2) % 7 and ry_outer_outer + (threadIdx_x_1 // 7 + 2) % 7 &lt; 8 and 1 &lt;= rx_outer_outer + threadIdx_x_1 % 7 and rx_outer_outer + threadIdx_x_1 % 7 &lt; 8, data_1[rc_outer_outer * 3136 + ry_outer_outer * 7 + threadIdx_x_1 + rx_outer_outer + 1280], T.float32(0))
+            with T.launch_thread(threadIdx_x_1, 56):
+                pad_temp_shared_1[threadIdx_x_1 + 1344] = T.if_then_else(1 &lt;= ry_outer_outer + (threadIdx_x_1 // 7 + 3) % 7 and ry_outer_outer + (threadIdx_x_1 // 7 + 3) % 7 &lt; 8 and 1 &lt;= rx_outer_outer + threadIdx_x_1 % 7 and rx_outer_outer + threadIdx_x_1 % 7 &lt; 8, data_1[rc_outer_outer * 3136 + ry_outer_outer * 7 + threadIdx_x_1 + rx_outer_outer + 1336], T.float32(0))
+            with T.launch_thread(threadIdx_x_1, 56):
+                pad_temp_shared_1[threadIdx_x_1 + 1400] = T.if_then_else(1 &lt;= ry_outer_outer + (threadIdx_x_1 // 7 + 4) % 7 and ry_outer_outer + (threadIdx_x_1 // 7 + 4) % 7 &lt; 8 and 1 &lt;= rx_outer_outer + threadIdx_x_1 % 7 and rx_outer_outer + threadIdx_x_1 % 7 &lt; 8, data_1[rc_outer_outer * 3136 + ry_outer_outer * 7 + threadIdx_x_1 + rx_outer_outer + 1392], T.float32(0))
+            with T.launch_thread(threadIdx_x_1, 56):
+                pad_temp_shared_1[threadIdx_x_1 + 1456] = T.if_then_else(1 &lt;= ry_outer_outer + (threadIdx_x_1 // 7 + 5) % 7 and ry_outer_outer + (threadIdx_x_1 // 7 + 5) % 7 &lt; 8 and 1 &lt;= rx_outer_outer + threadIdx_x_1 % 7 and rx_outer_outer + threadIdx_x_1 % 7 &lt; 8, data_1[rc_outer_outer * 3136 + ry_outer_outer * 7 + threadIdx_x_1 + rx_outer_outer + 1448], T.float32(0))
+            with T.launch_thread(threadIdx_x_1, 56):
+                pad_temp_shared_1[threadIdx_x_1 + 1512] = T.if_then_else(1 &lt;= ry_outer_outer + (threadIdx_x_1 // 7 + 6) % 7 and ry_outer_outer + (threadIdx_x_1 // 7 + 6) % 7 &lt; 8 and 1 &lt;= rx_outer_outer + threadIdx_x_1 % 7 and rx_outer_outer + threadIdx_x_1 % 7 &lt; 8, data_1[rc_outer_outer * 3136 + ry_outer_outer * 7 + threadIdx_x_1 + rx_outer_outer + 1504], T.float32(0))
+            with T.launch_thread(threadIdx_x_1, 56):
+                pad_temp_shared_1[threadIdx_x_1 + 1568] = T.if_then_else(1 &lt;= threadIdx_x_1 % 49 // 7 + ry_outer_outer and threadIdx_x_1 % 49 // 7 + ry_outer_outer &lt; 8 and 1 &lt;= rx_outer_outer + threadIdx_x_1 % 7 and rx_outer_outer + threadIdx_x_1 % 7 &lt; 8, data_1[rc_outer_outer * 3136 + ry_outer_outer * 7 + threadIdx_x_1 + rx_outer_outer + 1560], T.float32(0))
+            with T.launch_thread(threadIdx_x_1, 56):
+                pad_temp_shared_1[threadIdx_x_1 + 1624] = T.if_then_else(1 &lt;= ry_outer_outer + (threadIdx_x_1 // 7 + 1) % 7 and ry_outer_outer + (threadIdx_x_1 // 7 + 1) % 7 &lt; 8 and 1 &lt;= rx_outer_outer + threadIdx_x_1 % 7 and rx_outer_outer + threadIdx_x_1 % 7 &lt; 8, data_1[rc_outer_outer * 3136 + ry_outer_outer * 7 + threadIdx_x_1 + rx_outer_outer + 1616], T.float32(0))
+            with T.launch_thread(threadIdx_x_1, 56):
+                pad_temp_shared_1[threadIdx_x_1 + 1680] = T.if_then_else(1 &lt;= ry_outer_outer + (threadIdx_x_1 // 7 + 2) % 7 and ry_outer_outer + (threadIdx_x_1 // 7 + 2) % 7 &lt; 8 and 1 &lt;= rx_outer_outer + threadIdx_x_1 % 7 and rx_outer_outer + threadIdx_x_1 % 7 &lt; 8, data_1[rc_outer_outer * 3136 + ry_outer_outer * 7 + threadIdx_x_1 + rx_outer_outer + 1672], T.float32(0))
+            with T.launch_thread(threadIdx_x_1, 56):
+                pad_temp_shared_1[threadIdx_x_1 + 1736] = T.if_then_else(1 &lt;= ry_outer_outer + (threadIdx_x_1 // 7 + 3) % 7 and ry_outer_outer + (threadIdx_x_1 // 7 + 3) % 7 &lt; 8 and 1 &lt;= rx_outer_outer + threadIdx_x_1 % 7 and rx_outer_outer + threadIdx_x_1 % 7 &lt; 8, data_1[rc_outer_outer * 3136 + ry_outer_outer * 7 + threadIdx_x_1 + rx_outer_outer + 1728], T.float32(0))
+            with T.launch_thread(threadIdx_x_1, 56):
+                pad_temp_shared_1[threadIdx_x_1 + 1792] = T.if_then_else(1 &lt;= ry_outer_outer + (threadIdx_x_1 // 7 + 4) % 7 and ry_outer_outer + (threadIdx_x_1 // 7 + 4) % 7 &lt; 8 and 1 &lt;= rx_outer_outer + threadIdx_x_1 % 7 and rx_outer_outer + threadIdx_x_1 % 7 &lt; 8, data_1[rc_outer_outer * 3136 + ry_outer_outer * 7 + threadIdx_x_1 + rx_outer_outer + 1784], T.float32(0))
+            with T.launch_thread(threadIdx_x_1, 56):
+                pad_temp_shared_1[threadIdx_x_1 + 1848] = T.if_then_else(1 &lt;= ry_outer_outer + (threadIdx_x_1 // 7 + 5) % 7 and ry_outer_outer + (threadIdx_x_1 // 7 + 5) % 7 &lt; 8 and 1 &lt;= rx_outer_outer + threadIdx_x_1 % 7 and rx_outer_outer + threadIdx_x_1 % 7 &lt; 8, data_1[rc_outer_outer * 3136 + ry_outer_outer * 7 + threadIdx_x_1 + rx_outer_outer + 1840], T.float32(0))
+            with T.launch_thread(threadIdx_x_1, 56):
+                pad_temp_shared_1[threadIdx_x_1 + 1904] = T.if_then_else(1 &lt;= ry_outer_outer + (threadIdx_x_1 // 7 + 6) % 7 and ry_outer_outer + (threadIdx_x_1 // 7 + 6) % 7 &lt; 8 and 1 &lt;= rx_outer_outer + threadIdx_x_1 % 7 and rx_outer_outer + threadIdx_x_1 % 7 &lt; 8, data_1[rc_outer_outer * 3136 + ry_outer_outer * 7 + threadIdx_x_1 + rx_outer_outer + 1896], T.float32(0))
+            with T.launch_thread(threadIdx_x_1, 56):
+                pad_temp_shared_1[threadIdx_x_1 + 1960] = T.if_then_else(1 &lt;= threadIdx_x_1 % 49 // 7 + ry_outer_outer and threadIdx_x_1 % 49 // 7 + ry_outer_outer &lt; 8 and 1 &lt;= rx_outer_outer + threadIdx_x_1 % 7 and rx_outer_outer + threadIdx_x_1 % 7 &lt; 8, data_1[rc_outer_outer * 3136 + ry_outer_outer * 7 + threadIdx_x_1 + rx_outer_outer + 1952], T.float32(0))
+            with T.launch_thread(threadIdx_x_1, 56):
+                pad_temp_shared_1[threadIdx_x_1 + 2016] = T.if_then_else(1 &lt;= ry_outer_outer + (threadIdx_x_1 // 7 + 1) % 7 and ry_outer_outer + (threadIdx_x_1 // 7 + 1) % 7 &lt; 8 and 1 &lt;= rx_outer_outer + threadIdx_x_1 % 7 and rx_outer_outer + threadIdx_x_1 % 7 &lt; 8, data_1[rc_outer_outer * 3136 + ry_outer_outer * 7 + threadIdx_x_1 + rx_outer_outer + 2008], T.float32(0))
+            with T.launch_thread(threadIdx_x_1, 56):
+                pad_temp_shared_1[threadIdx_x_1 + 2072] = T.if_then_else(1 &lt;= ry_outer_outer + (threadIdx_x_1 // 7 + 2) % 7 and ry_outer_outer + (threadIdx_x_1 // 7 + 2) % 7 &lt; 8 and 1 &lt;= rx_outer_outer + threadIdx_x_1 % 7 and rx_outer_outer + threadIdx_x_1 % 7 &lt; 8, data_1[rc_outer_outer * 3136 + ry_outer_outer * 7 + threadIdx_x_1 + rx_outer_outer + 2064], T.float32(0))
+            with T.launch_thread(threadIdx_x_1, 56):
+                pad_temp_shared_1[threadIdx_x_1 + 2128] = T.if_then_else(1 &lt;= ry_outer_outer + (threadIdx_x_1 // 7 + 3) % 7 and ry_outer_outer + (threadIdx_x_1 // 7 + 3) % 7 &lt; 8 and 1 &lt;= rx_outer_outer + threadIdx_x_1 % 7 and rx_outer_outer + threadIdx_x_1 % 7 &lt; 8, data_1[rc_outer_outer * 3136 + ry_outer_outer * 7 + threadIdx_x_1 + rx_outer_outer + 2120], T.float32(0))
+            with T.launch_thread(threadIdx_x_1, 56):
+                pad_temp_shared_1[threadIdx_x_1 + 2184] = T.if_then_else(1 &lt;= ry_outer_outer + (threadIdx_x_1 // 7 + 4) % 7 and ry_outer_outer + (threadIdx_x_1 // 7 + 4) % 7 &lt; 8 and 1 &lt;= rx_outer_outer + threadIdx_x_1 % 7 and rx_outer_outer + threadIdx_x_1 % 7 &lt; 8, data_1[rc_outer_outer * 3136 + ry_outer_outer * 7 + threadIdx_x_1 + rx_outer_outer + 2176], T.float32(0))
+            with T.launch_thread(threadIdx_x_1, 56):
+                pad_temp_shared_1[threadIdx_x_1 + 2240] = T.if_then_else(1 &lt;= ry_outer_outer + (threadIdx_x_1 // 7 + 5) % 7 and ry_outer_outer + (threadIdx_x_1 // 7 + 5) % 7 &lt; 8 and 1 &lt;= rx_outer_outer + threadIdx_x_1 % 7 and rx_outer_outer + threadIdx_x_1 % 7 &lt; 8, data_1[rc_outer_outer * 3136 + ry_outer_outer * 7 + threadIdx_x_1 + rx_outer_outer + 2232], T.float32(0))
+            with T.launch_thread(threadIdx_x_1, 56):
+                pad_temp_shared_1[threadIdx_x_1 + 2296] = T.if_then_else(1 &lt;= ry_outer_outer + (threadIdx_x_1 // 7 + 6) % 7 and ry_outer_outer + (threadIdx_x_1 // 7 + 6) % 7 &lt; 8 and 1 &lt;= rx_outer_outer + threadIdx_x_1 % 7 and rx_outer_outer + threadIdx_x_1 % 7 &lt; 8, data_1[rc_outer_outer * 3136 + ry_outer_outer * 7 + threadIdx_x_1 + rx_outer_outer + 2288], T.float32(0))
+            with T.launch_thread(threadIdx_x_1, 56):
+                pad_temp_shared_1[threadIdx_x_1 + 2352] = T.if_then_else(1 &lt;= threadIdx_x_1 % 49 // 7 + ry_outer_outer and threadIdx_x_1 % 49 // 7 + ry_outer_outer &lt; 8 and 1 &lt;= rx_outer_outer + threadIdx_x_1 % 7 and rx_outer_outer + threadIdx_x_1 % 7 &lt; 8, data_1[rc_outer_outer * 3136 + ry_outer_outer * 7 + threadIdx_x_1 + rx_outer_outer + 2344], T.float32(0))
+            with T.launch_thread(threadIdx_x_1, 56):
+                pad_temp_shared_1[threadIdx_x_1 + 2408] = T.if_then_else(1 &lt;= ry_outer_outer + (threadIdx_x_1 // 7 + 1) % 7 and ry_outer_outer + (threadIdx_x_1 // 7 + 1) % 7 &lt; 8 and 1 &lt;= rx_outer_outer + threadIdx_x_1 % 7 and rx_outer_outer + threadIdx_x_1 % 7 &lt; 8, data_1[rc_outer_outer * 3136 + ry_outer_outer * 7 + threadIdx_x_1 + rx_outer_outer + 2400], T.float32(0))
+            with T.launch_thread(threadIdx_x_1, 56):
+                pad_temp_shared_1[threadIdx_x_1 + 2464] = T.if_then_else(1 &lt;= ry_outer_outer + (threadIdx_x_1 // 7 + 2) % 7 and ry_outer_outer + (threadIdx_x_1 // 7 + 2) % 7 &lt; 8 and 1 &lt;= rx_outer_outer + threadIdx_x_1 % 7 and rx_outer_outer + threadIdx_x_1 % 7 &lt; 8, data_1[rc_outer_outer * 3136 + ry_outer_outer * 7 + threadIdx_x_1 + rx_outer_outer + 2456], T.float32(0))
+            with T.launch_thread(threadIdx_x_1, 56):
+                pad_temp_shared_1[threadIdx_x_1 + 2520] = T.if_then_else(1 &lt;= ry_outer_outer + (threadIdx_x_1 // 7 + 3) % 7 and ry_outer_outer + (threadIdx_x_1 // 7 + 3) % 7 &lt; 8 and 1 &lt;= rx_outer_outer + threadIdx_x_1 % 7 and rx_outer_outer + threadIdx_x_1 % 7 &lt; 8, data_1[rc_outer_outer * 3136 + ry_outer_outer * 7 + threadIdx_x_1 + rx_outer_outer + 2512], T.float32(0))
+            with T.launch_thread(threadIdx_x_1, 56):
+                pad_temp_shared_1[threadIdx_x_1 + 2576] = T.if_then_else(1 &lt;= ry_outer_outer + (threadIdx_x_1 // 7 + 4) % 7 and ry_outer_outer + (threadIdx_x_1 // 7 + 4) % 7 &lt; 8 and 1 &lt;= rx_outer_outer + threadIdx_x_1 % 7 and rx_outer_outer + threadIdx_x_1 % 7 &lt; 8, data_1[rc_outer_outer * 3136 + ry_outer_outer * 7 + threadIdx_x_1 + rx_outer_outer + 2568], T.float32(0))
+            with T.launch_thread(threadIdx_x_1, 56):
+                pad_temp_shared_1[threadIdx_x_1 + 2632] = T.if_then_else(1 &lt;= ry_outer_outer + (threadIdx_x_1 // 7 + 5) % 7 and ry_outer_outer + (threadIdx_x_1 // 7 + 5) % 7 &lt; 8 and 1 &lt;= rx_outer_outer + threadIdx_x_1 % 7 and rx_outer_outer + threadIdx_x_1 % 7 &lt; 8, data_1[rc_outer_outer * 3136 + ry_outer_outer * 7 + threadIdx_x_1 + rx_outer_outer + 2624], T.float32(0))
+            with T.launch_thread(threadIdx_x_1, 56):
+                pad_temp_shared_1[threadIdx_x_1 + 2688] = T.if_then_else(1 &lt;= ry_outer_outer + (threadIdx_x_1 // 7 + 6) % 7 and ry_outer_outer + (threadIdx_x_1 // 7 + 6) % 7 &lt; 8 and 1 &lt;= rx_outer_outer + threadIdx_x_1 % 7 and rx_outer_outer + threadIdx_x_1 % 7 &lt; 8, data_1[rc_outer_outer * 3136 + ry_outer_outer * 7 + threadIdx_x_1 + rx_outer_outer + 2680], T.float32(0))
+            with T.launch_thread(threadIdx_x_1, 56):
+                pad_temp_shared_1[threadIdx_x_1 + 2744] = T.if_then_else(1 &lt;= threadIdx_x_1 % 49 // 7 + ry_outer_outer and threadIdx_x_1 % 49 // 7 + ry_outer_outer &lt; 8 and 1 &lt;= rx_outer_outer + threadIdx_x_1 % 7 and rx_outer_outer + threadIdx_x_1 % 7 &lt; 8, data_1[rc_outer_outer * 3136 + ry_outer_outer * 7 + threadIdx_x_1 + rx_outer_outer + 2736], T.float32(0))
+            with T.launch_thread(threadIdx_x_1, 56):
+                pad_temp_shared_1[threadIdx_x_1 + 2800] = T.if_then_else(1 &lt;= ry_outer_outer + (threadIdx_x_1 // 7 + 1) % 7 and ry_outer_outer + (threadIdx_x_1 // 7 + 1) % 7 &lt; 8 and 1 &lt;= rx_outer_outer + threadIdx_x_1 % 7 and rx_outer_outer + threadIdx_x_1 % 7 &lt; 8, data_1[rc_outer_outer * 3136 + ry_outer_outer * 7 + threadIdx_x_1 + rx_outer_outer + 2792], T.float32(0))
+            with T.launch_thread(threadIdx_x_1, 56):
+                pad_temp_shared_1[threadIdx_x_1 + 2856] = T.if_then_else(1 &lt;= ry_outer_outer + (threadIdx_x_1 // 7 + 2) % 7 and ry_outer_outer + (threadIdx_x_1 // 7 + 2) % 7 &lt; 8 and 1 &lt;= rx_outer_outer + threadIdx_x_1 % 7 and rx_outer_outer + threadIdx_x_1 % 7 &lt; 8, data_1[rc_outer_outer * 3136 + ry_outer_outer * 7 + threadIdx_x_1 + rx_outer_outer + 2848], T.float32(0))
+            with T.launch_thread(threadIdx_x_1, 56):
+                pad_temp_shared_1[threadIdx_x_1 + 2912] = T.if_then_else(1 &lt;= ry_outer_outer + (threadIdx_x_1 // 7 + 3) % 7 and ry_outer_outer + (threadIdx_x_1 // 7 + 3) % 7 &lt; 8 and 1 &lt;= rx_outer_outer + threadIdx_x_1 % 7 and rx_outer_outer + threadIdx_x_1 % 7 &lt; 8, data_1[rc_outer_outer * 3136 + ry_outer_outer * 7 + threadIdx_x_1 + rx_outer_outer + 2904], T.float32(0))
+            with T.launch_thread(threadIdx_x_1, 56):
+                pad_temp_shared_1[threadIdx_x_1 + 2968] = T.if_then_else(1 &lt;= ry_outer_outer + (threadIdx_x_1 // 7 + 4) % 7 and ry_outer_outer + (threadIdx_x_1 // 7 + 4) % 7 &lt; 8 and 1 &lt;= rx_outer_outer + threadIdx_x_1 % 7 and rx_outer_outer + threadIdx_x_1 % 7 &lt; 8, data_1[rc_outer_outer * 3136 + ry_outer_outer * 7 + threadIdx_x_1 + rx_outer_outer + 2960], T.float32(0))
+            with T.launch_thread(threadIdx_x_1, 56):
+                pad_temp_shared_1[threadIdx_x_1 + 3024] = T.if_then_else(1 &lt;= ry_outer_outer + (threadIdx_x_1 // 7 + 5) % 7 and ry_outer_outer + (threadIdx_x_1 // 7 + 5) % 7 &lt; 8 and 1 &lt;= rx_outer_outer + threadIdx_x_1 % 7 and rx_outer_outer + threadIdx_x_1 % 7 &lt; 8, data_1[rc_outer_outer * 3136 + ry_outer_outer * 7 + threadIdx_x_1 + rx_outer_outer + 3016], T.float32(0))
+            with T.launch_thread(threadIdx_x_1, 56):
+                pad_temp_shared_1[threadIdx_x_1 + 3080] = T.if_then_else(1 &lt;= ry_outer_outer + (threadIdx_x_1 // 7 + 6) % 7 and ry_outer_outer + (threadIdx_x_1 // 7 + 6) % 7 &lt; 8 and 1 &lt;= rx_outer_outer + threadIdx_x_1 % 7 and rx_outer_outer + threadIdx_x_1 % 7 &lt; 8, data_1[rc_outer_outer * 3136 + ry_outer_outer * 7 + threadIdx_x_1 + rx_outer_outer + 3072], T.float32(0))
+            threadIdx_x_2 = T.env_thread(&quot;threadIdx.x&quot;)
+            kernel_shared_1 = T.Buffer((1024,), data=kernel_shared, scope=&quot;shared&quot;)
+            kernel_1 = T.Buffer((2359296,), data=kernel.data)
+            with T.launch_thread(threadIdx_x_2, 56):
+                kernel_shared_1[threadIdx_x_2] = kernel_1[blockIdx_x * 73728 + cse_var_2 + threadIdx_x_2 * 9 + cse_var_1 + rx_outer_outer]
+            with T.launch_thread(threadIdx_x_2, 56):
+                kernel_shared_1[threadIdx_x_2 + 56] = kernel_1[blockIdx_x * 73728 + (threadIdx_x_2 + 56) // 64 * 4608 + cse_var_2 + (threadIdx_x_2 + 56) % 64 * 9 + cse_var_1 + rx_outer_outer]
+            with T.launch_thread(threadIdx_x_2, 56):
+                kernel_shared_1[threadIdx_x_2 + 112] = kernel_1[blockIdx_x * 73728 + (threadIdx_x_2 + 112) // 64 * 4608 + cse_var_2 + (threadIdx_x_2 + 48) % 64 * 9 + cse_var_1 + rx_outer_outer]
+            with T.launch_thread(threadIdx_x_2, 56):
+                kernel_shared_1[threadIdx_x_2 + 168] = kernel_1[blockIdx_x * 73728 + (threadIdx_x_2 + 168) // 64 * 4608 + cse_var_2 + (threadIdx_x_2 + 40) % 64 * 9 + cse_var_1 + rx_outer_outer]
+            with T.launch_thread(threadIdx_x_2, 56):
+                kernel_shared_1[threadIdx_x_2 + 224] = kernel_1[blockIdx_x * 73728 + (threadIdx_x_2 + 224) // 64 * 4608 + cse_var_2 + (threadIdx_x_2 + 32) % 64 * 9 + cse_var_1 + rx_outer_outer]
+            with T.launch_thread(threadIdx_x_2, 56):
+                kernel_shared_1[threadIdx_x_2 + 280] = kernel_1[blockIdx_x * 73728 + (threadIdx_x_2 + 280) // 64 * 4608 + cse_var_2 + (threadIdx_x_2 + 24) % 64 * 9 + cse_var_1 + rx_outer_outer]
+            with T.launch_thread(threadIdx_x_2, 56):
+                kernel_shared_1[threadIdx_x_2 + 336] = kernel_1[blockIdx_x * 73728 + (threadIdx_x_2 + 336) // 64 * 4608 + cse_var_2 + (threadIdx_x_2 + 16) % 64 * 9 + cse_var_1 + rx_outer_outer]
+            with T.launch_thread(threadIdx_x_2, 56):
+                kernel_shared_1[threadIdx_x_2 + 392] = kernel_1[blockIdx_x * 73728 + (threadIdx_x_2 + 392) // 64 * 4608 + cse_var_2 + threadIdx_x_2 * 9 + cse_var_1 + rx_outer_outer + 72]
+            with T.launch_thread(threadIdx_x_2, 56):
+                kernel_shared_1[threadIdx_x_2 + 448] = kernel_1[blockIdx_x * 73728 + cse_var_2 + threadIdx_x_2 * 9 + cse_var_1 + rx_outer_outer + 32256]
+            with T.launch_thread(threadIdx_x_2, 56):
+                kernel_shared_1[threadIdx_x_2 + 504] = kernel_1[blockIdx_x * 73728 + (threadIdx_x_2 + 504) // 64 * 4608 + cse_var_2 + (threadIdx_x_2 + 56) % 64 * 9 + cse_var_1 + rx_outer_outer]
+            with T.launch_thread(threadIdx_x_2, 56):
+                kernel_shared_1[threadIdx_x_2 + 560] = kernel_1[blockIdx_x * 73728 + (threadIdx_x_2 + 560) // 64 * 4608 + cse_var_2 + (threadIdx_x_2 + 48) % 64 * 9 + cse_var_1 + rx_outer_outer]
+            with T.launch_thread(threadIdx_x_2, 56):
+                kernel_shared_1[threadIdx_x_2 + 616] = kernel_1[blockIdx_x * 73728 + (threadIdx_x_2 + 616) // 64 * 4608 + cse_var_2 + (threadIdx_x_2 + 40) % 64 * 9 + cse_var_1 + rx_outer_outer]
+            with T.launch_thread(threadIdx_x_2, 56):
+                kernel_shared_1[threadIdx_x_2 + 672] = kernel_1[blockIdx_x * 73728 + (threadIdx_x_2 + 672) // 64 * 4608 + cse_var_2 + (threadIdx_x_2 + 32) % 64 * 9 + cse_var_1 + rx_outer_outer]
+            with T.launch_thread(threadIdx_x_2, 56):
+                kernel_shared_1[threadIdx_x_2 + 728] = kernel_1[blockIdx_x * 73728 + (threadIdx_x_2 + 728) // 64 * 4608 + cse_var_2 + (threadIdx_x_2 + 24) % 64 * 9 + cse_var_1 + rx_outer_outer]
+            with T.launch_thread(threadIdx_x_2, 56):
+                kernel_shared_1[threadIdx_x_2 + 784] = kernel_1[blockIdx_x * 73728 + (threadIdx_x_2 + 784) // 64 * 4608 + cse_var_2 + (threadIdx_x_2 + 16) % 64 * 9 + cse_var_1 + rx_outer_outer]
+            with T.launch_thread(threadIdx_x_2, 56):
+                kernel_shared_1[threadIdx_x_2 + 840] = kernel_1[blockIdx_x * 73728 + (threadIdx_x_2 + 840) // 64 * 4608 + cse_var_2 + threadIdx_x_2 * 9 + cse_var_1 + rx_outer_outer + 72]
+            with T.launch_thread(threadIdx_x_2, 56):
+                kernel_shared_1[threadIdx_x_2 + 896] = kernel_1[blockIdx_x * 73728 + cse_var_2 + threadIdx_x_2 * 9 + cse_var_1 + rx_outer_outer + 64512]
+            with T.launch_thread(threadIdx_x_2, 56):
+                kernel_shared_1[threadIdx_x_2 + 952] = kernel_1[blockIdx_x * 73728 + (threadIdx_x_2 + 952) // 64 * 4608 + cse_var_2 + (threadIdx_x_2 + 56) % 64 * 9 + cse_var_1 + rx_outer_outer]
+            with T.launch_thread(threadIdx_x_2, 56):
+                if T.likely(threadIdx_x_2 &lt; 16):
+                    kernel_shared_1[threadIdx_x_2 + 1008] = kernel_1[blockIdx_x * 73728 + (threadIdx_x_2 + 1008) // 64 * 4608 + cse_var_2 + threadIdx_x_2 * 9 + cse_var_1 + rx_outer_outer + 432]
+            for rc_outer_inner, ff_outer_inner, rc_inner in T.grid(4, 2, 16):
+                cse_var_9: T.int32 = ff_outer_inner * 7
+                cse_var_8: T.int32 = cse_var_9 + 6
+                cse_var_7: T.int32 = cse_var_9 + 5
+                cse_var_6: T.int32 = cse_var_9 + 4
+                cse_var_5: T.int32 = cse_var_9 + 3
+                cse_var_4: T.int32 = cse_var_9 + 2
+                cse_var_3: T.int32 = cse_var_9 + 1
+                conv2d_nchw_1[cse_var_9] = conv2d_nchw_1[cse_var_9] + pad_temp_shared_1[rc_outer_inner * 784 + rc_inner * 49 + threadIdx_x % 7] * kernel_shared_1[threadIdx_x // 7 * 128 + ff_outer_inner * 64 + rc_outer_inner * 16 + rc_inner]
+                conv2d_nchw_1[cse_var_3] = conv2d_nchw_1[cse_var_3] + pad_temp_shared_1[rc_outer_inner * 784 + rc_inner * 49 + threadIdx_x % 7 + 7] * kernel_shared_1[threadIdx_x // 7 * 128 + ff_outer_inner * 64 + rc_outer_inner * 16 + rc_inner]
+                conv2d_nchw_1[cse_var_4] = conv2d_nchw_1[cse_var_4] + pad_temp_shared_1[rc_outer_inner * 784 + rc_inner * 49 + threadIdx_x % 7 + 14] * kernel_shared_1[threadIdx_x // 7 * 128 + ff_outer_inner * 64 + rc_outer_inner * 16 + rc_inner]
+                conv2d_nchw_1[cse_var_5] = conv2d_nchw_1[cse_var_5] + pad_temp_shared_1[rc_outer_inner * 784 + rc_inner * 49 + threadIdx_x % 7 + 21] * kernel_shared_1[threadIdx_x // 7 * 128 + ff_outer_inner * 64 + rc_outer_inner * 16 + rc_inner]
+                conv2d_nchw_1[cse_var_6] = conv2d_nchw_1[cse_var_6] + pad_temp_shared_1[rc_outer_inner * 784 + rc_inner * 49 + threadIdx_x % 7 + 28] * kernel_shared_1[threadIdx_x // 7 * 128 + ff_outer_inner * 64 + rc_outer_inner * 16 + rc_inner]
+                conv2d_nchw_1[cse_var_7] = conv2d_nchw_1[cse_var_7] + pad_temp_shared_1[rc_outer_inner * 784 + rc_inner * 49 + threadIdx_x % 7 + 35] * kernel_shared_1[threadIdx_x // 7 * 128 + ff_outer_inner * 64 + rc_outer_inner * 16 + rc_inner]
+                conv2d_nchw_1[cse_var_8] = conv2d_nchw_1[cse_var_8] + pad_temp_shared_1[rc_outer_inner * 784 + rc_inner * 49 + threadIdx_x % 7 + 42] * kernel_shared_1[threadIdx_x // 7 * 128 + ff_outer_inner * 64 + rc_outer_inner * 16 + rc_inner]
+        for i1_inner, i2_inner in T.grid(2, 7):
             compute_1 = T.Buffer((25088,), data=compute.data)
             bias_1 = T.Buffer((512,), data=bias.data)
-            compute_1[blockIdx_x // 7 * 1568 + threadIdx_x // 7 * 196 + i1_inner * 49 + blockIdx_x % 7 * 7 + threadIdx_x % 7] = T.max(conv2d_nchw_1[i1_inner] + bias_1[blockIdx_x // 7 * 32 + threadIdx_x // 7 * 4 + i1_inner], T.float32(0))
+            compute_1[blockIdx_x * 784 + threadIdx_x // 7 * 98 + i1_inner * 49 + i2_inner * 7 + threadIdx_x % 7] = T.max(conv2d_nchw_1[i1_inner * 7 + i2_inner] + bias_1[blockIdx_x * 16 + threadIdx_x // 7 * 2 + i1_inner], T.float32(0))
 </pre></div>
 </div>
 </div>
@@ -571,7 +742,7 @@ class Module:
 <span class="p">)</span>
 </pre></div>
 </div>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Execution time of this operator: 0.343 ms
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Execution time of this operator: 0.342 ms
 </pre></div>
 </div>
 </div>
@@ -600,11 +771,11 @@ conv2d_nchw_nn_o_i, conv2d_nchw_nn_i = s[conv2d_nchw].split(conv2d_nchw_nn, fact
 conv2d_nchw_nn_o_o_i, conv2d_nchw_nn_o_i = s[conv2d_nchw].split(conv2d_nchw_nn_o_i, factor=1)
 conv2d_nchw_nn_o_o_o_i, conv2d_nchw_nn_o_o_i = s[conv2d_nchw].split(conv2d_nchw_nn_o_o_i, factor=1)
 conv2d_nchw_nn_o_o_o_o, conv2d_nchw_nn_o_o_o_i = s[conv2d_nchw].split(conv2d_nchw_nn_o_o_o_i, factor=1)
-conv2d_nchw_ff_o_i, conv2d_nchw_ff_i = s[conv2d_nchw].split(conv2d_nchw_ff, factor=2)
+conv2d_nchw_ff_o_i, conv2d_nchw_ff_i = s[conv2d_nchw].split(conv2d_nchw_ff, factor=1)
 conv2d_nchw_ff_o_o_i, conv2d_nchw_ff_o_i = s[conv2d_nchw].split(conv2d_nchw_ff_o_i, factor=2)
 conv2d_nchw_ff_o_o_o_i, conv2d_nchw_ff_o_o_i = s[conv2d_nchw].split(conv2d_nchw_ff_o_o_i, factor=8)
 conv2d_nchw_ff_o_o_o_o, conv2d_nchw_ff_o_o_o_i = s[conv2d_nchw].split(conv2d_nchw_ff_o_o_o_i, factor=1)
-conv2d_nchw_yy_o_i, conv2d_nchw_yy_i = s[conv2d_nchw].split(conv2d_nchw_yy, factor=1)
+conv2d_nchw_yy_o_i, conv2d_nchw_yy_i = s[conv2d_nchw].split(conv2d_nchw_yy, factor=7)
 conv2d_nchw_yy_o_o_i, conv2d_nchw_yy_o_i = s[conv2d_nchw].split(conv2d_nchw_yy_o_i, factor=1)
 conv2d_nchw_yy_o_o_o_i, conv2d_nchw_yy_o_o_i = s[conv2d_nchw].split(conv2d_nchw_yy_o_o_i, factor=1)
 conv2d_nchw_yy_o_o_o_o, conv2d_nchw_yy_o_o_o_i = s[conv2d_nchw].split(conv2d_nchw_yy_o_o_o_i, factor=1)
@@ -612,9 +783,9 @@ conv2d_nchw_xx_o_i, conv2d_nchw_xx_i = s[conv2d_nchw].split(conv2d_nchw_xx, fact
 conv2d_nchw_xx_o_o_i, conv2d_nchw_xx_o_i = s[conv2d_nchw].split(conv2d_nchw_xx_o_i, factor=1)
 conv2d_nchw_xx_o_o_o_i, conv2d_nchw_xx_o_o_i = s[conv2d_nchw].split(conv2d_nchw_xx_o_o_i, factor=7)
 conv2d_nchw_xx_o_o_o_o, conv2d_nchw_xx_o_o_o_i = s[conv2d_nchw].split(conv2d_nchw_xx_o_o_o_i, factor=1)
-conv2d_nchw_rc_o_i, conv2d_nchw_rc_i = s[conv2d_nchw].split(conv2d_nchw_rc, factor=2)
-conv2d_nchw_rc_o_o, conv2d_nchw_rc_o_i = s[conv2d_nchw].split(conv2d_nchw_rc_o_i, factor=2)
-conv2d_nchw_ry_o_i, conv2d_nchw_ry_i = s[conv2d_nchw].split(conv2d_nchw_ry, factor=3)
+conv2d_nchw_rc_o_i, conv2d_nchw_rc_i = s[conv2d_nchw].split(conv2d_nchw_rc, factor=16)
+conv2d_nchw_rc_o_o, conv2d_nchw_rc_o_i = s[conv2d_nchw].split(conv2d_nchw_rc_o_i, factor=4)
+conv2d_nchw_ry_o_i, conv2d_nchw_ry_i = s[conv2d_nchw].split(conv2d_nchw_ry, factor=1)
 conv2d_nchw_ry_o_o, conv2d_nchw_ry_o_i = s[conv2d_nchw].split(conv2d_nchw_ry_o_i, factor=1)
 conv2d_nchw_rx_o_i, conv2d_nchw_rx_i = s[conv2d_nchw].split(conv2d_nchw_rx, factor=1)
 conv2d_nchw_rx_o_o, conv2d_nchw_rx_o_i = s[conv2d_nchw].split(conv2d_nchw_rx_o_i, factor=1)
@@ -622,10 +793,10 @@ s[conv2d_nchw].reorder(conv2d_nchw_nn_o_o_o_o, conv2d_nchw_ff_o_o_o_o, conv2d_nc
 compute_i0_o_i, compute_i0_i = s[compute].split(compute_i0, factor=1)
 compute_i0_o_o_i, compute_i0_o_i = s[compute].split(compute_i0_o_i, factor=1)
 compute_i0_o_o_o, compute_i0_o_o_i = s[compute].split(compute_i0_o_o_i, factor=1)
-compute_i1_o_i, compute_i1_i = s[compute].split(compute_i1, factor=4)
+compute_i1_o_i, compute_i1_i = s[compute].split(compute_i1, factor=2)
 compute_i1_o_o_i, compute_i1_o_i = s[compute].split(compute_i1_o_i, factor=8)
 compute_i1_o_o_o, compute_i1_o_o_i = s[compute].split(compute_i1_o_o_i, factor=1)
-compute_i2_o_i, compute_i2_i = s[compute].split(compute_i2, factor=1)
+compute_i2_o_i, compute_i2_i = s[compute].split(compute_i2, factor=7)
 compute_i2_o_o_i, compute_i2_o_i = s[compute].split(compute_i2_o_i, factor=1)
 compute_i2_o_o_o, compute_i2_o_o_i = s[compute].split(compute_i2_o_o_i, factor=1)
 compute_i3_o_i, compute_i3_i = s[compute].split(compute_i3, factor=1)
@@ -656,7 +827,7 @@ pad_temp_shared_ax0_ax1_fused_ax2_fused_ax3_fused_o, pad_temp_shared_ax0_ax1_fus
 s[pad_temp_shared].vectorize(pad_temp_shared_ax0_ax1_fused_ax2_fused_ax3_fused_i)
 pad_temp_shared_ax0_ax1_fused_ax2_fused_ax3_fused_o_o, pad_temp_shared_ax0_ax1_fused_ax2_fused_ax3_fused_o_i = s[pad_temp_shared].split(pad_temp_shared_ax0_ax1_fused_ax2_fused_ax3_fused_o, factor=56)
 s[pad_temp_shared].bind(pad_temp_shared_ax0_ax1_fused_ax2_fused_ax3_fused_o_i, te.thread_axis(&quot;threadIdx.x&quot;))
-s[conv2d_nchw].pragma(conv2d_nchw_nn_o_o_o_o, &quot;auto_unroll_max_step&quot;, 0)
+s[conv2d_nchw].pragma(conv2d_nchw_nn_o_o_o_o, &quot;auto_unroll_max_step&quot;, 64)
 s[conv2d_nchw].pragma(conv2d_nchw_nn_o_o_o_o, &quot;unroll_explicit&quot;, True)
 
 CUDA source code:
@@ -675,43 +846,125 @@ CUDA source code:
   #define uint64_t unsigned long long
 #endif
 extern &quot;C&quot; __global__ void __launch_bounds__(56) default_function_kernel0(float* __restrict__ data, float* __restrict__ kernel, float* __restrict__ compute, float* __restrict__ bias) {
-  float conv2d_nchw[4];
-  __shared__ float pad_temp_shared[84];
-  __shared__ float kernel_shared[384];
-  for (int ff_outer_inner_init = 0; ff_outer_inner_init &lt; 2; ++ff_outer_inner_init) {
-    for (int ff_inner_init = 0; ff_inner_init &lt; 2; ++ff_inner_init) {
-      conv2d_nchw[((ff_outer_inner_init * 2) + ff_inner_init)] = 0.000000e+00f;
-    }
-  }
-  for (int rc_outer_outer = 0; rc_outer_outer &lt; 128; ++rc_outer_outer) {
-    for (int rx_outer_outer = 0; rx_outer_outer &lt; 3; ++rx_outer_outer) {
-      __syncthreads();
-      for (int ax0_ax1_fused_ax2_fused_ax3_fused_outer_outer = 0; ax0_ax1_fused_ax2_fused_ax3_fused_outer_outer &lt; 2; ++ax0_ax1_fused_ax2_fused_ax3_fused_outer_outer) {
-        if (((ax0_ax1_fused_ax2_fused_ax3_fused_outer_outer * 2) + (((int)threadIdx.x) / 28)) &lt; 3) {
-          pad_temp_shared[((ax0_ax1_fused_ax2_fused_ax3_fused_outer_outer * 56) + ((int)threadIdx.x))] = (((((1 &lt;= ((((int)blockIdx.x) % 7) + (((ax0_ax1_fused_ax2_fused_ax3_fused_outer_outer * 2) + (((int)threadIdx.x) / 7)) % 3))) &amp;&amp; (((((int)blockIdx.x) % 7) + (((ax0_ax1_fused_ax2_fused_ax3_fused_outer_outer * 2) + (((int)threadIdx.x) / 7)) % 3)) &lt; 8)) &amp;&amp; (1 &lt;= (rx_outer_outer + (((int)threadIdx.x) % 7)))) &amp;&amp; ((rx_outer_outer + (((int)threadIdx.x) % 7)) &lt; 8)) ? data[(((((((rc_outer_outer * 196) + ((((ax0_ax1_fused_ax2_fused_ax3_fused_outer_outer * 8) + (((int)threadIdx.x) / 7)) / 3) * 49)) + ((((int)blockIdx.x) % 7) * 7)) + ((((ax0_ax1_fused_ax2_fused_ax3_fused_outer_outer * 2) + (((int)threadIdx.x) / 7)) % 3) * 7)) + rx_outer_outer) + (((int)threadIdx.x) % 7)) - 8)] : 0.000000e+00f);
+  float conv2d_nchw[14];
+  __shared__ float pad_temp_shared[3136];
+  __shared__ float kernel_shared[1024];
+  conv2d_nchw[0] = 0.000000e+00f;
+  conv2d_nchw[1] = 0.000000e+00f;
+  conv2d_nchw[2] = 0.000000e+00f;
+  conv2d_nchw[3] = 0.000000e+00f;
+  conv2d_nchw[4] = 0.000000e+00f;
+  conv2d_nchw[5] = 0.000000e+00f;
+  conv2d_nchw[6] = 0.000000e+00f;
+  conv2d_nchw[7] = 0.000000e+00f;
+  conv2d_nchw[8] = 0.000000e+00f;
+  conv2d_nchw[9] = 0.000000e+00f;
+  conv2d_nchw[10] = 0.000000e+00f;
+  conv2d_nchw[11] = 0.000000e+00f;
+  conv2d_nchw[12] = 0.000000e+00f;
+  conv2d_nchw[13] = 0.000000e+00f;
+  for (int rc_outer_outer = 0; rc_outer_outer &lt; 8; ++rc_outer_outer) {
+    for (int ry_outer_outer = 0; ry_outer_outer &lt; 3; ++ry_outer_outer) {
+      for (int rx_outer_outer = 0; rx_outer_outer &lt; 3; ++rx_outer_outer) {
+        __syncthreads();
+        pad_temp_shared[((int)threadIdx.x)] = (((((1 &lt;= (((((int)threadIdx.x) % 49) / 7) + ry_outer_outer)) &amp;&amp; ((((((int)threadIdx.x) % 49) / 7) + ry_outer_outer) &lt; 8)) &amp;&amp; (1 &lt;= (rx_outer_outer + (((int)threadIdx.x) % 7)))) &amp;&amp; ((rx_outer_outer + (((int)threadIdx.x) % 7)) &lt; 8)) ? data[(((((rc_outer_outer * 3136) + (ry_outer_outer * 7)) + ((int)threadIdx.x)) + rx_outer_outer) - 8)] : 0.000000e+00f);
+        pad_temp_shared[(((int)threadIdx.x) + 56)] = (((((1 &lt;= (ry_outer_outer + (((((int)threadIdx.x) / 7) + 1) % 7))) &amp;&amp; ((ry_outer_outer + (((((int)threadIdx.x) / 7) + 1) % 7)) &lt; 8)) &amp;&amp; (1 &lt;= (rx_outer_outer + (((int)threadIdx.x) % 7)))) &amp;&amp; ((rx_outer_outer + (((int)threadIdx.x) % 7)) &lt; 8)) ? data[(((((rc_outer_outer * 3136) + (ry_outer_outer * 7)) + ((int)threadIdx.x)) + rx_outer_outer) + 48)] : 0.000000e+00f);
+        pad_temp_shared[(((int)threadIdx.x) + 112)] = (((((1 &lt;= (ry_outer_outer + (((((int)threadIdx.x) / 7) + 2) % 7))) &amp;&amp; ((ry_outer_outer + (((((int)threadIdx.x) / 7) + 2) % 7)) &lt; 8)) &amp;&amp; (1 &lt;= (rx_outer_outer + (((int)threadIdx.x) % 7)))) &amp;&amp; ((rx_outer_outer + (((int)threadIdx.x) % 7)) &lt; 8)) ? data[(((((rc_outer_outer * 3136) + (ry_outer_outer * 7)) + ((int)threadIdx.x)) + rx_outer_outer) + 104)] : 0.000000e+00f);
+        pad_temp_shared[(((int)threadIdx.x) + 168)] = (((((1 &lt;= (ry_outer_outer + (((((int)threadIdx.x) / 7) + 3) % 7))) &amp;&amp; ((ry_outer_outer + (((((int)threadIdx.x) / 7) + 3) % 7)) &lt; 8)) &amp;&amp; (1 &lt;= (rx_outer_outer + (((int)threadIdx.x) % 7)))) &amp;&amp; ((rx_outer_outer + (((int)threadIdx.x) % 7)) &lt; 8)) ? data[(((((rc_outer_outer * 3136) + (ry_outer_outer * 7)) + ((int)threadIdx.x)) + rx_outer_outer) + 160)] : 0.000000e+00f);
+        pad_temp_shared[(((int)threadIdx.x) + 224)] = (((((1 &lt;= (ry_outer_outer + (((((int)threadIdx.x) / 7) + 4) % 7))) &amp;&amp; ((ry_outer_outer + (((((int)threadIdx.x) / 7) + 4) % 7)) &lt; 8)) &amp;&amp; (1 &lt;= (rx_outer_outer + (((int)threadIdx.x) % 7)))) &amp;&amp; ((rx_outer_outer + (((int)threadIdx.x) % 7)) &lt; 8)) ? data[(((((rc_outer_outer * 3136) + (ry_outer_outer * 7)) + ((int)threadIdx.x)) + rx_outer_outer) + 216)] : 0.000000e+00f);
+        pad_temp_shared[(((int)threadIdx.x) + 280)] = (((((1 &lt;= (ry_outer_outer + (((((int)threadIdx.x) / 7) + 5) % 7))) &amp;&amp; ((ry_outer_outer + (((((int)threadIdx.x) / 7) + 5) % 7)) &lt; 8)) &amp;&amp; (1 &lt;= (rx_outer_outer + (((int)threadIdx.x) % 7)))) &amp;&amp; ((rx_outer_outer + (((int)threadIdx.x) % 7)) &lt; 8)) ? data[(((((rc_outer_outer * 3136) + (ry_outer_outer * 7)) + ((int)threadIdx.x)) + rx_outer_outer) + 272)] : 0.000000e+00f);
+        pad_temp_shared[(((int)threadIdx.x) + 336)] = (((((1 &lt;= (ry_outer_outer + (((((int)threadIdx.x) / 7) + 6) % 7))) &amp;&amp; ((ry_outer_outer + (((((int)threadIdx.x) / 7) + 6) % 7)) &lt; 8)) &amp;&amp; (1 &lt;= (rx_outer_outer + (((int)threadIdx.x) % 7)))) &amp;&amp; ((rx_outer_outer + (((int)threadIdx.x) % 7)) &lt; 8)) ? data[(((((rc_outer_outer * 3136) + (ry_outer_outer * 7)) + ((int)threadIdx.x)) + rx_outer_outer) + 328)] : 0.000000e+00f);
+        pad_temp_shared[(((int)threadIdx.x) + 392)] = (((((1 &lt;= (((((int)threadIdx.x) % 49) / 7) + ry_outer_outer)) &amp;&amp; ((((((int)threadIdx.x) % 49) / 7) + ry_outer_outer) &lt; 8)) &amp;&amp; (1 &lt;= (rx_outer_outer + (((int)threadIdx.x) % 7)))) &amp;&amp; ((rx_outer_outer + (((int)threadIdx.x) % 7)) &lt; 8)) ? data[(((((rc_outer_outer * 3136) + (ry_outer_outer * 7)) + ((int)threadIdx.x)) + rx_outer_outer) + 384)] : 0.000000e+00f);
+        pad_temp_shared[(((int)threadIdx.x) + 448)] = (((((1 &lt;= (ry_outer_outer + (((((int)threadIdx.x) / 7) + 1) % 7))) &amp;&amp; ((ry_outer_outer + (((((int)threadIdx.x) / 7) + 1) % 7)) &lt; 8)) &amp;&amp; (1 &lt;= (rx_outer_outer + (((int)threadIdx.x) % 7)))) &amp;&amp; ((rx_outer_outer + (((int)threadIdx.x) % 7)) &lt; 8)) ? data[(((((rc_outer_outer * 3136) + (ry_outer_outer * 7)) + ((int)threadIdx.x)) + rx_outer_outer) + 440)] : 0.000000e+00f);
+        pad_temp_shared[(((int)threadIdx.x) + 504)] = (((((1 &lt;= (ry_outer_outer + (((((int)threadIdx.x) / 7) + 2) % 7))) &amp;&amp; ((ry_outer_outer + (((((int)threadIdx.x) / 7) + 2) % 7)) &lt; 8)) &amp;&amp; (1 &lt;= (rx_outer_outer + (((int)threadIdx.x) % 7)))) &amp;&amp; ((rx_outer_outer + (((int)threadIdx.x) % 7)) &lt; 8)) ? data[(((((rc_outer_outer * 3136) + (ry_outer_outer * 7)) + ((int)threadIdx.x)) + rx_outer_outer) + 496)] : 0.000000e+00f);
+        pad_temp_shared[(((int)threadIdx.x) + 560)] = (((((1 &lt;= (ry_outer_outer + (((((int)threadIdx.x) / 7) + 3) % 7))) &amp;&amp; ((ry_outer_outer + (((((int)threadIdx.x) / 7) + 3) % 7)) &lt; 8)) &amp;&amp; (1 &lt;= (rx_outer_outer + (((int)threadIdx.x) % 7)))) &amp;&amp; ((rx_outer_outer + (((int)threadIdx.x) % 7)) &lt; 8)) ? data[(((((rc_outer_outer * 3136) + (ry_outer_outer * 7)) + ((int)threadIdx.x)) + rx_outer_outer) + 552)] : 0.000000e+00f);
+        pad_temp_shared[(((int)threadIdx.x) + 616)] = (((((1 &lt;= (ry_outer_outer + (((((int)threadIdx.x) / 7) + 4) % 7))) &amp;&amp; ((ry_outer_outer + (((((int)threadIdx.x) / 7) + 4) % 7)) &lt; 8)) &amp;&amp; (1 &lt;= (rx_outer_outer + (((int)threadIdx.x) % 7)))) &amp;&amp; ((rx_outer_outer + (((int)threadIdx.x) % 7)) &lt; 8)) ? data[(((((rc_outer_outer * 3136) + (ry_outer_outer * 7)) + ((int)threadIdx.x)) + rx_outer_outer) + 608)] : 0.000000e+00f);
+        pad_temp_shared[(((int)threadIdx.x) + 672)] = (((((1 &lt;= (ry_outer_outer + (((((int)threadIdx.x) / 7) + 5) % 7))) &amp;&amp; ((ry_outer_outer + (((((int)threadIdx.x) / 7) + 5) % 7)) &lt; 8)) &amp;&amp; (1 &lt;= (rx_outer_outer + (((int)threadIdx.x) % 7)))) &amp;&amp; ((rx_outer_outer + (((int)threadIdx.x) % 7)) &lt; 8)) ? data[(((((rc_outer_outer * 3136) + (ry_outer_outer * 7)) + ((int)threadIdx.x)) + rx_outer_outer) + 664)] : 0.000000e+00f);
+        pad_temp_shared[(((int)threadIdx.x) + 728)] = (((((1 &lt;= (ry_outer_outer + (((((int)threadIdx.x) / 7) + 6) % 7))) &amp;&amp; ((ry_outer_outer + (((((int)threadIdx.x) / 7) + 6) % 7)) &lt; 8)) &amp;&amp; (1 &lt;= (rx_outer_outer + (((int)threadIdx.x) % 7)))) &amp;&amp; ((rx_outer_outer + (((int)threadIdx.x) % 7)) &lt; 8)) ? data[(((((rc_outer_outer * 3136) + (ry_outer_outer * 7)) + ((int)threadIdx.x)) + rx_outer_outer) + 720)] : 0.000000e+00f);
+        pad_temp_shared[(((int)threadIdx.x) + 784)] = (((((1 &lt;= (((((int)threadIdx.x) % 49) / 7) + ry_outer_outer)) &amp;&amp; ((((((int)threadIdx.x) % 49) / 7) + ry_outer_outer) &lt; 8)) &amp;&amp; (1 &lt;= (rx_outer_outer + (((int)threadIdx.x) % 7)))) &amp;&amp; ((rx_outer_outer + (((int)threadIdx.x) % 7)) &lt; 8)) ? data[(((((rc_outer_outer * 3136) + (ry_outer_outer * 7)) + ((int)threadIdx.x)) + rx_outer_outer) + 776)] : 0.000000e+00f);
+        pad_temp_shared[(((int)threadIdx.x) + 840)] = (((((1 &lt;= (ry_outer_outer + (((((int)threadIdx.x) / 7) + 1) % 7))) &amp;&amp; ((ry_outer_outer + (((((int)threadIdx.x) / 7) + 1) % 7)) &lt; 8)) &amp;&amp; (1 &lt;= (rx_outer_outer + (((int)threadIdx.x) % 7)))) &amp;&amp; ((rx_outer_outer + (((int)threadIdx.x) % 7)) &lt; 8)) ? data[(((((rc_outer_outer * 3136) + (ry_outer_outer * 7)) + ((int)threadIdx.x)) + rx_outer_outer) + 832)] : 0.000000e+00f);
+        pad_temp_shared[(((int)threadIdx.x) + 896)] = (((((1 &lt;= (ry_outer_outer + (((((int)threadIdx.x) / 7) + 2) % 7))) &amp;&amp; ((ry_outer_outer + (((((int)threadIdx.x) / 7) + 2) % 7)) &lt; 8)) &amp;&amp; (1 &lt;= (rx_outer_outer + (((int)threadIdx.x) % 7)))) &amp;&amp; ((rx_outer_outer + (((int)threadIdx.x) % 7)) &lt; 8)) ? data[(((((rc_outer_outer * 3136) + (ry_outer_outer * 7)) + ((int)threadIdx.x)) + rx_outer_outer) + 888)] : 0.000000e+00f);
+        pad_temp_shared[(((int)threadIdx.x) + 952)] = (((((1 &lt;= (ry_outer_outer + (((((int)threadIdx.x) / 7) + 3) % 7))) &amp;&amp; ((ry_outer_outer + (((((int)threadIdx.x) / 7) + 3) % 7)) &lt; 8)) &amp;&amp; (1 &lt;= (rx_outer_outer + (((int)threadIdx.x) % 7)))) &amp;&amp; ((rx_outer_outer + (((int)threadIdx.x) % 7)) &lt; 8)) ? data[(((((rc_outer_outer * 3136) + (ry_outer_outer * 7)) + ((int)threadIdx.x)) + rx_outer_outer) + 944)] : 0.000000e+00f);
+        pad_temp_shared[(((int)threadIdx.x) + 1008)] = (((((1 &lt;= (ry_outer_outer + (((((int)threadIdx.x) / 7) + 4) % 7))) &amp;&amp; ((ry_outer_outer + (((((int)threadIdx.x) / 7) + 4) % 7)) &lt; 8)) &amp;&amp; (1 &lt;= (rx_outer_outer + (((int)threadIdx.x) % 7)))) &amp;&amp; ((rx_outer_outer + (((int)threadIdx.x) % 7)) &lt; 8)) ? data[(((((rc_outer_outer * 3136) + (ry_outer_outer * 7)) + ((int)threadIdx.x)) + rx_outer_outer) + 1000)] : 0.000000e+00f);
+        pad_temp_shared[(((int)threadIdx.x) + 1064)] = (((((1 &lt;= (ry_outer_outer + (((((int)threadIdx.x) / 7) + 5) % 7))) &amp;&amp; ((ry_outer_outer + (((((int)threadIdx.x) / 7) + 5) % 7)) &lt; 8)) &amp;&amp; (1 &lt;= (rx_outer_outer + (((int)threadIdx.x) % 7)))) &amp;&amp; ((rx_outer_outer + (((int)threadIdx.x) % 7)) &lt; 8)) ? data[(((((rc_outer_outer * 3136) + (ry_outer_outer * 7)) + ((int)threadIdx.x)) + rx_outer_outer) + 1056)] : 0.000000e+00f);
+        pad_temp_shared[(((int)threadIdx.x) + 1120)] = (((((1 &lt;= (ry_outer_outer + (((((int)threadIdx.x) / 7) + 6) % 7))) &amp;&amp; ((ry_outer_outer + (((((int)threadIdx.x) / 7) + 6) % 7)) &lt; 8)) &amp;&amp; (1 &lt;= (rx_outer_outer + (((int)threadIdx.x) % 7)))) &amp;&amp; ((rx_outer_outer + (((int)threadIdx.x) % 7)) &lt; 8)) ? data[(((((rc_outer_outer * 3136) + (ry_outer_outer * 7)) + ((int)threadIdx.x)) + rx_outer_outer) + 1112)] : 0.000000e+00f);
+        pad_temp_shared[(((int)threadIdx.x) + 1176)] = (((((1 &lt;= (((((int)threadIdx.x) % 49) / 7) + ry_outer_outer)) &amp;&amp; ((((((int)threadIdx.x) % 49) / 7) + ry_outer_outer) &lt; 8)) &amp;&amp; (1 &lt;= (rx_outer_outer + (((int)threadIdx.x) % 7)))) &amp;&amp; ((rx_outer_outer + (((int)threadIdx.x) % 7)) &lt; 8)) ? data[(((((rc_outer_outer * 3136) + (ry_outer_outer * 7)) + ((int)threadIdx.x)) + rx_outer_outer) + 1168)] : 0.000000e+00f);
+        pad_temp_shared[(((int)threadIdx.x) + 1232)] = (((((1 &lt;= (ry_outer_outer + (((((int)threadIdx.x) / 7) + 1) % 7))) &amp;&amp; ((ry_outer_outer + (((((int)threadIdx.x) / 7) + 1) % 7)) &lt; 8)) &amp;&amp; (1 &lt;= (rx_outer_outer + (((int)threadIdx.x) % 7)))) &amp;&amp; ((rx_outer_outer + (((int)threadIdx.x) % 7)) &lt; 8)) ? data[(((((rc_outer_outer * 3136) + (ry_outer_outer * 7)) + ((int)threadIdx.x)) + rx_outer_outer) + 1224)] : 0.000000e+00f);
+        pad_temp_shared[(((int)threadIdx.x) + 1288)] = (((((1 &lt;= (ry_outer_outer + (((((int)threadIdx.x) / 7) + 2) % 7))) &amp;&amp; ((ry_outer_outer + (((((int)threadIdx.x) / 7) + 2) % 7)) &lt; 8)) &amp;&amp; (1 &lt;= (rx_outer_outer + (((int)threadIdx.x) % 7)))) &amp;&amp; ((rx_outer_outer + (((int)threadIdx.x) % 7)) &lt; 8)) ? data[(((((rc_outer_outer * 3136) + (ry_outer_outer * 7)) + ((int)threadIdx.x)) + rx_outer_outer) + 1280)] : 0.000000e+00f);
+        pad_temp_shared[(((int)threadIdx.x) + 1344)] = (((((1 &lt;= (ry_outer_outer + (((((int)threadIdx.x) / 7) + 3) % 7))) &amp;&amp; ((ry_outer_outer + (((((int)threadIdx.x) / 7) + 3) % 7)) &lt; 8)) &amp;&amp; (1 &lt;= (rx_outer_outer + (((int)threadIdx.x) % 7)))) &amp;&amp; ((rx_outer_outer + (((int)threadIdx.x) % 7)) &lt; 8)) ? data[(((((rc_outer_outer * 3136) + (ry_outer_outer * 7)) + ((int)threadIdx.x)) + rx_outer_outer) + 1336)] : 0.000000e+00f);
+        pad_temp_shared[(((int)threadIdx.x) + 1400)] = (((((1 &lt;= (ry_outer_outer + (((((int)threadIdx.x) / 7) + 4) % 7))) &amp;&amp; ((ry_outer_outer + (((((int)threadIdx.x) / 7) + 4) % 7)) &lt; 8)) &amp;&amp; (1 &lt;= (rx_outer_outer + (((int)threadIdx.x) % 7)))) &amp;&amp; ((rx_outer_outer + (((int)threadIdx.x) % 7)) &lt; 8)) ? data[(((((rc_outer_outer * 3136) + (ry_outer_outer * 7)) + ((int)threadIdx.x)) + rx_outer_outer) + 1392)] : 0.000000e+00f);
+        pad_temp_shared[(((int)threadIdx.x) + 1456)] = (((((1 &lt;= (ry_outer_outer + (((((int)threadIdx.x) / 7) + 5) % 7))) &amp;&amp; ((ry_outer_outer + (((((int)threadIdx.x) / 7) + 5) % 7)) &lt; 8)) &amp;&amp; (1 &lt;= (rx_outer_outer + (((int)threadIdx.x) % 7)))) &amp;&amp; ((rx_outer_outer + (((int)threadIdx.x) % 7)) &lt; 8)) ? data[(((((rc_outer_outer * 3136) + (ry_outer_outer * 7)) + ((int)threadIdx.x)) + rx_outer_outer) + 1448)] : 0.000000e+00f);
+        pad_temp_shared[(((int)threadIdx.x) + 1512)] = (((((1 &lt;= (ry_outer_outer + (((((int)threadIdx.x) / 7) + 6) % 7))) &amp;&amp; ((ry_outer_outer + (((((int)threadIdx.x) / 7) + 6) % 7)) &lt; 8)) &amp;&amp; (1 &lt;= (rx_outer_outer + (((int)threadIdx.x) % 7)))) &amp;&amp; ((rx_outer_outer + (((int)threadIdx.x) % 7)) &lt; 8)) ? data[(((((rc_outer_outer * 3136) + (ry_outer_outer * 7)) + ((int)threadIdx.x)) + rx_outer_outer) + 1504)] : 0.000000e+00f);
+        pad_temp_shared[(((int)threadIdx.x) + 1568)] = (((((1 &lt;= (((((int)threadIdx.x) % 49) / 7) + ry_outer_outer)) &amp;&amp; ((((((int)threadIdx.x) % 49) / 7) + ry_outer_outer) &lt; 8)) &amp;&amp; (1 &lt;= (rx_outer_outer + (((int)threadIdx.x) % 7)))) &amp;&amp; ((rx_outer_outer + (((int)threadIdx.x) % 7)) &lt; 8)) ? data[(((((rc_outer_outer * 3136) + (ry_outer_outer * 7)) + ((int)threadIdx.x)) + rx_outer_outer) + 1560)] : 0.000000e+00f);
+        pad_temp_shared[(((int)threadIdx.x) + 1624)] = (((((1 &lt;= (ry_outer_outer + (((((int)threadIdx.x) / 7) + 1) % 7))) &amp;&amp; ((ry_outer_outer + (((((int)threadIdx.x) / 7) + 1) % 7)) &lt; 8)) &amp;&amp; (1 &lt;= (rx_outer_outer + (((int)threadIdx.x) % 7)))) &amp;&amp; ((rx_outer_outer + (((int)threadIdx.x) % 7)) &lt; 8)) ? data[(((((rc_outer_outer * 3136) + (ry_outer_outer * 7)) + ((int)threadIdx.x)) + rx_outer_outer) + 1616)] : 0.000000e+00f);
+        pad_temp_shared[(((int)threadIdx.x) + 1680)] = (((((1 &lt;= (ry_outer_outer + (((((int)threadIdx.x) / 7) + 2) % 7))) &amp;&amp; ((ry_outer_outer + (((((int)threadIdx.x) / 7) + 2) % 7)) &lt; 8)) &amp;&amp; (1 &lt;= (rx_outer_outer + (((int)threadIdx.x) % 7)))) &amp;&amp; ((rx_outer_outer + (((int)threadIdx.x) % 7)) &lt; 8)) ? data[(((((rc_outer_outer * 3136) + (ry_outer_outer * 7)) + ((int)threadIdx.x)) + rx_outer_outer) + 1672)] : 0.000000e+00f);
+        pad_temp_shared[(((int)threadIdx.x) + 1736)] = (((((1 &lt;= (ry_outer_outer + (((((int)threadIdx.x) / 7) + 3) % 7))) &amp;&amp; ((ry_outer_outer + (((((int)threadIdx.x) / 7) + 3) % 7)) &lt; 8)) &amp;&amp; (1 &lt;= (rx_outer_outer + (((int)threadIdx.x) % 7)))) &amp;&amp; ((rx_outer_outer + (((int)threadIdx.x) % 7)) &lt; 8)) ? data[(((((rc_outer_outer * 3136) + (ry_outer_outer * 7)) + ((int)threadIdx.x)) + rx_outer_outer) + 1728)] : 0.000000e+00f);
+        pad_temp_shared[(((int)threadIdx.x) + 1792)] = (((((1 &lt;= (ry_outer_outer + (((((int)threadIdx.x) / 7) + 4) % 7))) &amp;&amp; ((ry_outer_outer + (((((int)threadIdx.x) / 7) + 4) % 7)) &lt; 8)) &amp;&amp; (1 &lt;= (rx_outer_outer + (((int)threadIdx.x) % 7)))) &amp;&amp; ((rx_outer_outer + (((int)threadIdx.x) % 7)) &lt; 8)) ? data[(((((rc_outer_outer * 3136) + (ry_outer_outer * 7)) + ((int)threadIdx.x)) + rx_outer_outer) + 1784)] : 0.000000e+00f);
+        pad_temp_shared[(((int)threadIdx.x) + 1848)] = (((((1 &lt;= (ry_outer_outer + (((((int)threadIdx.x) / 7) + 5) % 7))) &amp;&amp; ((ry_outer_outer + (((((int)threadIdx.x) / 7) + 5) % 7)) &lt; 8)) &amp;&amp; (1 &lt;= (rx_outer_outer + (((int)threadIdx.x) % 7)))) &amp;&amp; ((rx_outer_outer + (((int)threadIdx.x) % 7)) &lt; 8)) ? data[(((((rc_outer_outer * 3136) + (ry_outer_outer * 7)) + ((int)threadIdx.x)) + rx_outer_outer) + 1840)] : 0.000000e+00f);
+        pad_temp_shared[(((int)threadIdx.x) + 1904)] = (((((1 &lt;= (ry_outer_outer + (((((int)threadIdx.x) / 7) + 6) % 7))) &amp;&amp; ((ry_outer_outer + (((((int)threadIdx.x) / 7) + 6) % 7)) &lt; 8)) &amp;&amp; (1 &lt;= (rx_outer_outer + (((int)threadIdx.x) % 7)))) &amp;&amp; ((rx_outer_outer + (((int)threadIdx.x) % 7)) &lt; 8)) ? data[(((((rc_outer_outer * 3136) + (ry_outer_outer * 7)) + ((int)threadIdx.x)) + rx_outer_outer) + 1896)] : 0.000000e+00f);
+        pad_temp_shared[(((int)threadIdx.x) + 1960)] = (((((1 &lt;= (((((int)threadIdx.x) % 49) / 7) + ry_outer_outer)) &amp;&amp; ((((((int)threadIdx.x) % 49) / 7) + ry_outer_outer) &lt; 8)) &amp;&amp; (1 &lt;= (rx_outer_outer + (((int)threadIdx.x) % 7)))) &amp;&amp; ((rx_outer_outer + (((int)threadIdx.x) % 7)) &lt; 8)) ? data[(((((rc_outer_outer * 3136) + (ry_outer_outer * 7)) + ((int)threadIdx.x)) + rx_outer_outer) + 1952)] : 0.000000e+00f);
+        pad_temp_shared[(((int)threadIdx.x) + 2016)] = (((((1 &lt;= (ry_outer_outer + (((((int)threadIdx.x) / 7) + 1) % 7))) &amp;&amp; ((ry_outer_outer + (((((int)threadIdx.x) / 7) + 1) % 7)) &lt; 8)) &amp;&amp; (1 &lt;= (rx_outer_outer + (((int)threadIdx.x) % 7)))) &amp;&amp; ((rx_outer_outer + (((int)threadIdx.x) % 7)) &lt; 8)) ? data[(((((rc_outer_outer * 3136) + (ry_outer_outer * 7)) + ((int)threadIdx.x)) + rx_outer_outer) + 2008)] : 0.000000e+00f);
+        pad_temp_shared[(((int)threadIdx.x) + 2072)] = (((((1 &lt;= (ry_outer_outer + (((((int)threadIdx.x) / 7) + 2) % 7))) &amp;&amp; ((ry_outer_outer + (((((int)threadIdx.x) / 7) + 2) % 7)) &lt; 8)) &amp;&amp; (1 &lt;= (rx_outer_outer + (((int)threadIdx.x) % 7)))) &amp;&amp; ((rx_outer_outer + (((int)threadIdx.x) % 7)) &lt; 8)) ? data[(((((rc_outer_outer * 3136) + (ry_outer_outer * 7)) + ((int)threadIdx.x)) + rx_outer_outer) + 2064)] : 0.000000e+00f);
+        pad_temp_shared[(((int)threadIdx.x) + 2128)] = (((((1 &lt;= (ry_outer_outer + (((((int)threadIdx.x) / 7) + 3) % 7))) &amp;&amp; ((ry_outer_outer + (((((int)threadIdx.x) / 7) + 3) % 7)) &lt; 8)) &amp;&amp; (1 &lt;= (rx_outer_outer + (((int)threadIdx.x) % 7)))) &amp;&amp; ((rx_outer_outer + (((int)threadIdx.x) % 7)) &lt; 8)) ? data[(((((rc_outer_outer * 3136) + (ry_outer_outer * 7)) + ((int)threadIdx.x)) + rx_outer_outer) + 2120)] : 0.000000e+00f);
+        pad_temp_shared[(((int)threadIdx.x) + 2184)] = (((((1 &lt;= (ry_outer_outer + (((((int)threadIdx.x) / 7) + 4) % 7))) &amp;&amp; ((ry_outer_outer + (((((int)threadIdx.x) / 7) + 4) % 7)) &lt; 8)) &amp;&amp; (1 &lt;= (rx_outer_outer + (((int)threadIdx.x) % 7)))) &amp;&amp; ((rx_outer_outer + (((int)threadIdx.x) % 7)) &lt; 8)) ? data[(((((rc_outer_outer * 3136) + (ry_outer_outer * 7)) + ((int)threadIdx.x)) + rx_outer_outer) + 2176)] : 0.000000e+00f);
+        pad_temp_shared[(((int)threadIdx.x) + 2240)] = (((((1 &lt;= (ry_outer_outer + (((((int)threadIdx.x) / 7) + 5) % 7))) &amp;&amp; ((ry_outer_outer + (((((int)threadIdx.x) / 7) + 5) % 7)) &lt; 8)) &amp;&amp; (1 &lt;= (rx_outer_outer + (((int)threadIdx.x) % 7)))) &amp;&amp; ((rx_outer_outer + (((int)threadIdx.x) % 7)) &lt; 8)) ? data[(((((rc_outer_outer * 3136) + (ry_outer_outer * 7)) + ((int)threadIdx.x)) + rx_outer_outer) + 2232)] : 0.000000e+00f);
+        pad_temp_shared[(((int)threadIdx.x) + 2296)] = (((((1 &lt;= (ry_outer_outer + (((((int)threadIdx.x) / 7) + 6) % 7))) &amp;&amp; ((ry_outer_outer + (((((int)threadIdx.x) / 7) + 6) % 7)) &lt; 8)) &amp;&amp; (1 &lt;= (rx_outer_outer + (((int)threadIdx.x) % 7)))) &amp;&amp; ((rx_outer_outer + (((int)threadIdx.x) % 7)) &lt; 8)) ? data[(((((rc_outer_outer * 3136) + (ry_outer_outer * 7)) + ((int)threadIdx.x)) + rx_outer_outer) + 2288)] : 0.000000e+00f);
+        pad_temp_shared[(((int)threadIdx.x) + 2352)] = (((((1 &lt;= (((((int)threadIdx.x) % 49) / 7) + ry_outer_outer)) &amp;&amp; ((((((int)threadIdx.x) % 49) / 7) + ry_outer_outer) &lt; 8)) &amp;&amp; (1 &lt;= (rx_outer_outer + (((int)threadIdx.x) % 7)))) &amp;&amp; ((rx_outer_outer + (((int)threadIdx.x) % 7)) &lt; 8)) ? data[(((((rc_outer_outer * 3136) + (ry_outer_outer * 7)) + ((int)threadIdx.x)) + rx_outer_outer) + 2344)] : 0.000000e+00f);
+        pad_temp_shared[(((int)threadIdx.x) + 2408)] = (((((1 &lt;= (ry_outer_outer + (((((int)threadIdx.x) / 7) + 1) % 7))) &amp;&amp; ((ry_outer_outer + (((((int)threadIdx.x) / 7) + 1) % 7)) &lt; 8)) &amp;&amp; (1 &lt;= (rx_outer_outer + (((int)threadIdx.x) % 7)))) &amp;&amp; ((rx_outer_outer + (((int)threadIdx.x) % 7)) &lt; 8)) ? data[(((((rc_outer_outer * 3136) + (ry_outer_outer * 7)) + ((int)threadIdx.x)) + rx_outer_outer) + 2400)] : 0.000000e+00f);
+        pad_temp_shared[(((int)threadIdx.x) + 2464)] = (((((1 &lt;= (ry_outer_outer + (((((int)threadIdx.x) / 7) + 2) % 7))) &amp;&amp; ((ry_outer_outer + (((((int)threadIdx.x) / 7) + 2) % 7)) &lt; 8)) &amp;&amp; (1 &lt;= (rx_outer_outer + (((int)threadIdx.x) % 7)))) &amp;&amp; ((rx_outer_outer + (((int)threadIdx.x) % 7)) &lt; 8)) ? data[(((((rc_outer_outer * 3136) + (ry_outer_outer * 7)) + ((int)threadIdx.x)) + rx_outer_outer) + 2456)] : 0.000000e+00f);
+        pad_temp_shared[(((int)threadIdx.x) + 2520)] = (((((1 &lt;= (ry_outer_outer + (((((int)threadIdx.x) / 7) + 3) % 7))) &amp;&amp; ((ry_outer_outer + (((((int)threadIdx.x) / 7) + 3) % 7)) &lt; 8)) &amp;&amp; (1 &lt;= (rx_outer_outer + (((int)threadIdx.x) % 7)))) &amp;&amp; ((rx_outer_outer + (((int)threadIdx.x) % 7)) &lt; 8)) ? data[(((((rc_outer_outer * 3136) + (ry_outer_outer * 7)) + ((int)threadIdx.x)) + rx_outer_outer) + 2512)] : 0.000000e+00f);
+        pad_temp_shared[(((int)threadIdx.x) + 2576)] = (((((1 &lt;= (ry_outer_outer + (((((int)threadIdx.x) / 7) + 4) % 7))) &amp;&amp; ((ry_outer_outer + (((((int)threadIdx.x) / 7) + 4) % 7)) &lt; 8)) &amp;&amp; (1 &lt;= (rx_outer_outer + (((int)threadIdx.x) % 7)))) &amp;&amp; ((rx_outer_outer + (((int)threadIdx.x) % 7)) &lt; 8)) ? data[(((((rc_outer_outer * 3136) + (ry_outer_outer * 7)) + ((int)threadIdx.x)) + rx_outer_outer) + 2568)] : 0.000000e+00f);
+        pad_temp_shared[(((int)threadIdx.x) + 2632)] = (((((1 &lt;= (ry_outer_outer + (((((int)threadIdx.x) / 7) + 5) % 7))) &amp;&amp; ((ry_outer_outer + (((((int)threadIdx.x) / 7) + 5) % 7)) &lt; 8)) &amp;&amp; (1 &lt;= (rx_outer_outer + (((int)threadIdx.x) % 7)))) &amp;&amp; ((rx_outer_outer + (((int)threadIdx.x) % 7)) &lt; 8)) ? data[(((((rc_outer_outer * 3136) + (ry_outer_outer * 7)) + ((int)threadIdx.x)) + rx_outer_outer) + 2624)] : 0.000000e+00f);
+        pad_temp_shared[(((int)threadIdx.x) + 2688)] = (((((1 &lt;= (ry_outer_outer + (((((int)threadIdx.x) / 7) + 6) % 7))) &amp;&amp; ((ry_outer_outer + (((((int)threadIdx.x) / 7) + 6) % 7)) &lt; 8)) &amp;&amp; (1 &lt;= (rx_outer_outer + (((int)threadIdx.x) % 7)))) &amp;&amp; ((rx_outer_outer + (((int)threadIdx.x) % 7)) &lt; 8)) ? data[(((((rc_outer_outer * 3136) + (ry_outer_outer * 7)) + ((int)threadIdx.x)) + rx_outer_outer) + 2680)] : 0.000000e+00f);
+        pad_temp_shared[(((int)threadIdx.x) + 2744)] = (((((1 &lt;= (((((int)threadIdx.x) % 49) / 7) + ry_outer_outer)) &amp;&amp; ((((((int)threadIdx.x) % 49) / 7) + ry_outer_outer) &lt; 8)) &amp;&amp; (1 &lt;= (rx_outer_outer + (((int)threadIdx.x) % 7)))) &amp;&amp; ((rx_outer_outer + (((int)threadIdx.x) % 7)) &lt; 8)) ? data[(((((rc_outer_outer * 3136) + (ry_outer_outer * 7)) + ((int)threadIdx.x)) + rx_outer_outer) + 2736)] : 0.000000e+00f);
+        pad_temp_shared[(((int)threadIdx.x) + 2800)] = (((((1 &lt;= (ry_outer_outer + (((((int)threadIdx.x) / 7) + 1) % 7))) &amp;&amp; ((ry_outer_outer + (((((int)threadIdx.x) / 7) + 1) % 7)) &lt; 8)) &amp;&amp; (1 &lt;= (rx_outer_outer + (((int)threadIdx.x) % 7)))) &amp;&amp; ((rx_outer_outer + (((int)threadIdx.x) % 7)) &lt; 8)) ? data[(((((rc_outer_outer * 3136) + (ry_outer_outer * 7)) + ((int)threadIdx.x)) + rx_outer_outer) + 2792)] : 0.000000e+00f);
+        pad_temp_shared[(((int)threadIdx.x) + 2856)] = (((((1 &lt;= (ry_outer_outer + (((((int)threadIdx.x) / 7) + 2) % 7))) &amp;&amp; ((ry_outer_outer + (((((int)threadIdx.x) / 7) + 2) % 7)) &lt; 8)) &amp;&amp; (1 &lt;= (rx_outer_outer + (((int)threadIdx.x) % 7)))) &amp;&amp; ((rx_outer_outer + (((int)threadIdx.x) % 7)) &lt; 8)) ? data[(((((rc_outer_outer * 3136) + (ry_outer_outer * 7)) + ((int)threadIdx.x)) + rx_outer_outer) + 2848)] : 0.000000e+00f);
+        pad_temp_shared[(((int)threadIdx.x) + 2912)] = (((((1 &lt;= (ry_outer_outer + (((((int)threadIdx.x) / 7) + 3) % 7))) &amp;&amp; ((ry_outer_outer + (((((int)threadIdx.x) / 7) + 3) % 7)) &lt; 8)) &amp;&amp; (1 &lt;= (rx_outer_outer + (((int)threadIdx.x) % 7)))) &amp;&amp; ((rx_outer_outer + (((int)threadIdx.x) % 7)) &lt; 8)) ? data[(((((rc_outer_outer * 3136) + (ry_outer_outer * 7)) + ((int)threadIdx.x)) + rx_outer_outer) + 2904)] : 0.000000e+00f);
+        pad_temp_shared[(((int)threadIdx.x) + 2968)] = (((((1 &lt;= (ry_outer_outer + (((((int)threadIdx.x) / 7) + 4) % 7))) &amp;&amp; ((ry_outer_outer + (((((int)threadIdx.x) / 7) + 4) % 7)) &lt; 8)) &amp;&amp; (1 &lt;= (rx_outer_outer + (((int)threadIdx.x) % 7)))) &amp;&amp; ((rx_outer_outer + (((int)threadIdx.x) % 7)) &lt; 8)) ? data[(((((rc_outer_outer * 3136) + (ry_outer_outer * 7)) + ((int)threadIdx.x)) + rx_outer_outer) + 2960)] : 0.000000e+00f);
+        pad_temp_shared[(((int)threadIdx.x) + 3024)] = (((((1 &lt;= (ry_outer_outer + (((((int)threadIdx.x) / 7) + 5) % 7))) &amp;&amp; ((ry_outer_outer + (((((int)threadIdx.x) / 7) + 5) % 7)) &lt; 8)) &amp;&amp; (1 &lt;= (rx_outer_outer + (((int)threadIdx.x) % 7)))) &amp;&amp; ((rx_outer_outer + (((int)threadIdx.x) % 7)) &lt; 8)) ? data[(((((rc_outer_outer * 3136) + (ry_outer_outer * 7)) + ((int)threadIdx.x)) + rx_outer_outer) + 3016)] : 0.000000e+00f);
+        pad_temp_shared[(((int)threadIdx.x) + 3080)] = (((((1 &lt;= (ry_outer_outer + (((((int)threadIdx.x) / 7) + 6) % 7))) &amp;&amp; ((ry_outer_outer + (((((int)threadIdx.x) / 7) + 6) % 7)) &lt; 8)) &amp;&amp; (1 &lt;= (rx_outer_outer + (((int)threadIdx.x) % 7)))) &amp;&amp; ((rx_outer_outer + (((int)threadIdx.x) % 7)) &lt; 8)) ? data[(((((rc_outer_outer * 3136) + (ry_outer_outer * 7)) + ((int)threadIdx.x)) + rx_outer_outer) + 3072)] : 0.000000e+00f);
+        kernel_shared[((int)threadIdx.x)] = kernel[(((((((int)blockIdx.x) * 73728) + (rc_outer_outer * 576)) + (((int)threadIdx.x) * 9)) + (ry_outer_outer * 3)) + rx_outer_outer)];
+        kernel_shared[(((int)threadIdx.x) + 56)] = kernel[((((((((int)blockIdx.x) * 73728) + (((((int)threadIdx.x) + 56) &gt;&gt; 6) * 4608)) + (rc_outer_outer * 576)) + (((((int)threadIdx.x) + 56) &amp; 63) * 9)) + (ry_outer_outer * 3)) + rx_outer_outer)];
+        kernel_shared[(((int)threadIdx.x) + 112)] = kernel[((((((((int)blockIdx.x) * 73728) + (((((int)threadIdx.x) + 112) &gt;&gt; 6) * 4608)) + (rc_outer_outer * 576)) + (((((int)threadIdx.x) + 48) &amp; 63) * 9)) + (ry_outer_outer * 3)) + rx_outer_outer)];
+        kernel_shared[(((int)threadIdx.x) + 168)] = kernel[((((((((int)blockIdx.x) * 73728) + (((((int)threadIdx.x) + 168) &gt;&gt; 6) * 4608)) + (rc_outer_outer * 576)) + (((((int)threadIdx.x) + 40) &amp; 63) * 9)) + (ry_outer_outer * 3)) + rx_outer_outer)];
+        kernel_shared[(((int)threadIdx.x) + 224)] = kernel[((((((((int)blockIdx.x) * 73728) + (((((int)threadIdx.x) + 224) &gt;&gt; 6) * 4608)) + (rc_outer_outer * 576)) + (((((int)threadIdx.x) + 32) &amp; 63) * 9)) + (ry_outer_outer * 3)) + rx_outer_outer)];
+        kernel_shared[(((int)threadIdx.x) + 280)] = kernel[((((((((int)blockIdx.x) * 73728) + (((((int)threadIdx.x) + 280) &gt;&gt; 6) * 4608)) + (rc_outer_outer * 576)) + (((((int)threadIdx.x) + 24) &amp; 63) * 9)) + (ry_outer_outer * 3)) + rx_outer_outer)];
+        kernel_shared[(((int)threadIdx.x) + 336)] = kernel[((((((((int)blockIdx.x) * 73728) + (((((int)threadIdx.x) + 336) &gt;&gt; 6) * 4608)) + (rc_outer_outer * 576)) + (((((int)threadIdx.x) + 16) &amp; 63) * 9)) + (ry_outer_outer * 3)) + rx_outer_outer)];
+        kernel_shared[(((int)threadIdx.x) + 392)] = kernel[(((((((((int)blockIdx.x) * 73728) + (((((int)threadIdx.x) + 392) &gt;&gt; 6) * 4608)) + (rc_outer_outer * 576)) + (((int)threadIdx.x) * 9)) + (ry_outer_outer * 3)) + rx_outer_outer) + 72)];
+        kernel_shared[(((int)threadIdx.x) + 448)] = kernel[((((((((int)blockIdx.x) * 73728) + (rc_outer_outer * 576)) + (((int)threadIdx.x) * 9)) + (ry_outer_outer * 3)) + rx_outer_outer) + 32256)];
+        kernel_shared[(((int)threadIdx.x) + 504)] = kernel[((((((((int)blockIdx.x) * 73728) + (((((int)threadIdx.x) + 504) &gt;&gt; 6) * 4608)) + (rc_outer_outer * 576)) + (((((int)threadIdx.x) + 56) &amp; 63) * 9)) + (ry_outer_outer * 3)) + rx_outer_outer)];
+        kernel_shared[(((int)threadIdx.x) + 560)] = kernel[((((((((int)blockIdx.x) * 73728) + (((((int)threadIdx.x) + 560) &gt;&gt; 6) * 4608)) + (rc_outer_outer * 576)) + (((((int)threadIdx.x) + 48) &amp; 63) * 9)) + (ry_outer_outer * 3)) + rx_outer_outer)];
+        kernel_shared[(((int)threadIdx.x) + 616)] = kernel[((((((((int)blockIdx.x) * 73728) + (((((int)threadIdx.x) + 616) &gt;&gt; 6) * 4608)) + (rc_outer_outer * 576)) + (((((int)threadIdx.x) + 40) &amp; 63) * 9)) + (ry_outer_outer * 3)) + rx_outer_outer)];
+        kernel_shared[(((int)threadIdx.x) + 672)] = kernel[((((((((int)blockIdx.x) * 73728) + (((((int)threadIdx.x) + 672) &gt;&gt; 6) * 4608)) + (rc_outer_outer * 576)) + (((((int)threadIdx.x) + 32) &amp; 63) * 9)) + (ry_outer_outer * 3)) + rx_outer_outer)];
+        kernel_shared[(((int)threadIdx.x) + 728)] = kernel[((((((((int)blockIdx.x) * 73728) + (((((int)threadIdx.x) + 728) &gt;&gt; 6) * 4608)) + (rc_outer_outer * 576)) + (((((int)threadIdx.x) + 24) &amp; 63) * 9)) + (ry_outer_outer * 3)) + rx_outer_outer)];
+        kernel_shared[(((int)threadIdx.x) + 784)] = kernel[((((((((int)blockIdx.x) * 73728) + (((((int)threadIdx.x) + 784) &gt;&gt; 6) * 4608)) + (rc_outer_outer * 576)) + (((((int)threadIdx.x) + 16) &amp; 63) * 9)) + (ry_outer_outer * 3)) + rx_outer_outer)];
+        kernel_shared[(((int)threadIdx.x) + 840)] = kernel[(((((((((int)blockIdx.x) * 73728) + (((((int)threadIdx.x) + 840) &gt;&gt; 6) * 4608)) + (rc_outer_outer * 576)) + (((int)threadIdx.x) * 9)) + (ry_outer_outer * 3)) + rx_outer_outer) + 72)];
+        kernel_shared[(((int)threadIdx.x) + 896)] = kernel[((((((((int)blockIdx.x) * 73728) + (rc_outer_outer * 576)) + (((int)threadIdx.x) * 9)) + (ry_outer_outer * 3)) + rx_outer_outer) + 64512)];
+        kernel_shared[(((int)threadIdx.x) + 952)] = kernel[((((((((int)blockIdx.x) * 73728) + (((((int)threadIdx.x) + 952) &gt;&gt; 6) * 4608)) + (rc_outer_outer * 576)) + (((((int)threadIdx.x) + 56) &amp; 63) * 9)) + (ry_outer_outer * 3)) + rx_outer_outer)];
+        if (((int)threadIdx.x) &lt; 16) {
+          kernel_shared[(((int)threadIdx.x) + 1008)] = kernel[(((((((((int)blockIdx.x) * 73728) + (((((int)threadIdx.x) + 1008) &gt;&gt; 6) * 4608)) + (rc_outer_outer * 576)) + (((int)threadIdx.x) * 9)) + (ry_outer_outer * 3)) + rx_outer_outer) + 432)];
         }
-      }
-      for (int ax0_ax1_fused_ax2_fused_ax3_fused_outer_outer_1 = 0; ax0_ax1_fused_ax2_fused_ax3_fused_outer_outer_1 &lt; 7; ++ax0_ax1_fused_ax2_fused_ax3_fused_outer_outer_1) {
-        if (((ax0_ax1_fused_ax2_fused_ax3_fused_outer_outer_1 * 7) + (((int)threadIdx.x) &gt;&gt; 3)) &lt; 48) {
-          kernel_shared[((((((ax0_ax1_fused_ax2_fused_ax3_fused_outer_outer_1 * 14) + (((int)threadIdx.x) &gt;&gt; 2)) / 3) * 12) + (((((ax0_ax1_fused_ax2_fused_ax3_fused_outer_outer_1 * 8) + ((int)threadIdx.x)) % 12) / 3) * 3)) + (((ax0_ax1_fused_ax2_fused_ax3_fused_outer_outer_1 * 2) + ((int)threadIdx.x)) % 3))] = kernel[(((((((((int)blockIdx.x) / 7) * 147456) + ((((ax0_ax1_fused_ax2_fused_ax3_fused_outer_outer_1 * 14) + (((int)threadIdx.x) &gt;&gt; 2)) / 3) * 4608)) + (rc_outer_outer * 36)) + (((((ax0_ax1_fused_ax2_fused_ax3_fused_outer_outer_1 * 8) + ((int)threadIdx.x)) % 12) / 3) * 9)) + ((((ax0_ax1_fused_ax2_fused_ax3_fused_outer_outer_1 * 2) + ((int)threadIdx.x)) % 3) * 3)) + rx_outer_outer)];
-        }
-      }
-      __syncthreads();
-      for (int rc_outer_inner = 0; rc_outer_inner &lt; 2; ++rc_outer_inner) {
-        for (int ff_outer_inner = 0; ff_outer_inner &lt; 2; ++ff_outer_inner) {
-          for (int rc_inner = 0; rc_inner &lt; 2; ++rc_inner) {
-            for (int ry_inner = 0; ry_inner &lt; 3; ++ry_inner) {
-              for (int ff_inner = 0; ff_inner &lt; 2; ++ff_inner) {
-                conv2d_nchw[((ff_outer_inner * 2) + ff_inner)] = (conv2d_nchw[((ff_outer_inner * 2) + ff_inner)] + (pad_temp_shared[((((rc_outer_inner * 42) + (rc_inner * 21)) + (ry_inner * 7)) + (((int)threadIdx.x) % 7))] * kernel_shared[(((((((((int)threadIdx.x) / 7) * 48) + (ff_outer_inner * 24)) + (ff_inner * 12)) + (rc_outer_inner * 6)) + (rc_inner * 3)) + ry_inner)]));
-              }
+        __syncthreads();
+        for (int rc_outer_inner = 0; rc_outer_inner &lt; 4; ++rc_outer_inner) {
+          for (int ff_outer_inner = 0; ff_outer_inner &lt; 2; ++ff_outer_inner) {
+            for (int rc_inner = 0; rc_inner &lt; 16; ++rc_inner) {
+              conv2d_nchw[(ff_outer_inner * 7)] = (conv2d_nchw[(ff_outer_inner * 7)] + (pad_temp_shared[(((rc_outer_inner * 784) + (rc_inner * 49)) + (((int)threadIdx.x) % 7))] * kernel_shared[(((((((int)threadIdx.x) / 7) * 128) + (ff_outer_inner * 64)) + (rc_outer_inner * 16)) + rc_inner)]));
+              conv2d_nchw[((ff_outer_inner * 7) + 1)] = (conv2d_nchw[((ff_outer_inner * 7) + 1)] + (pad_temp_shared[((((rc_outer_inner * 784) + (rc_inner * 49)) + (((int)threadIdx.x) % 7)) + 7)] * kernel_shared[(((((((int)threadIdx.x) / 7) * 128) + (ff_outer_inner * 64)) + (rc_outer_inner * 16)) + rc_inner)]));
+              conv2d_nchw[((ff_outer_inner * 7) + 2)] = (conv2d_nchw[((ff_outer_inner * 7) + 2)] + (pad_temp_shared[((((rc_outer_inner * 784) + (rc_inner * 49)) + (((int)threadIdx.x) % 7)) + 14)] * kernel_shared[(((((((int)threadIdx.x) / 7) * 128) + (ff_outer_inner * 64)) + (rc_outer_inner * 16)) + rc_inner)]));
+              conv2d_nchw[((ff_outer_inner * 7) + 3)] = (conv2d_nchw[((ff_outer_inner * 7) + 3)] + (pad_temp_shared[((((rc_outer_inner * 784) + (rc_inner * 49)) + (((int)threadIdx.x) % 7)) + 21)] * kernel_shared[(((((((int)threadIdx.x) / 7) * 128) + (ff_outer_inner * 64)) + (rc_outer_inner * 16)) + rc_inner)]));
+              conv2d_nchw[((ff_outer_inner * 7) + 4)] = (conv2d_nchw[((ff_outer_inner * 7) + 4)] + (pad_temp_shared[((((rc_outer_inner * 784) + (rc_inner * 49)) + (((int)threadIdx.x) % 7)) + 28)] * kernel_shared[(((((((int)threadIdx.x) / 7) * 128) + (ff_outer_inner * 64)) + (rc_outer_inner * 16)) + rc_inner)]));
+              conv2d_nchw[((ff_outer_inner * 7) + 5)] = (conv2d_nchw[((ff_outer_inner * 7) + 5)] + (pad_temp_shared[((((rc_outer_inner * 784) + (rc_inner * 49)) + (((int)threadIdx.x) % 7)) + 35)] * kernel_shared[(((((((int)threadIdx.x) / 7) * 128) + (ff_outer_inner * 64)) + (rc_outer_inner * 16)) + rc_inner)]));
+              conv2d_nchw[((ff_outer_inner * 7) + 6)] = (conv2d_nchw[((ff_outer_inner * 7) + 6)] + (pad_temp_shared[((((rc_outer_inner * 784) + (rc_inner * 49)) + (((int)threadIdx.x) % 7)) + 42)] * kernel_shared[(((((((int)threadIdx.x) / 7) * 128) + (ff_outer_inner * 64)) + (rc_outer_inner * 16)) + rc_inner)]));
             }
           }
         }
       }
     }
   }
-  for (int i1_inner = 0; i1_inner &lt; 4; ++i1_inner) {
-    compute[((((((((int)blockIdx.x) / 7) * 1568) + ((((int)threadIdx.x) / 7) * 196)) + (i1_inner * 49)) + ((((int)blockIdx.x) % 7) * 7)) + (((int)threadIdx.x) % 7))] = max((conv2d_nchw[i1_inner] + bias[((((((int)blockIdx.x) / 7) * 32) + ((((int)threadIdx.x) / 7) * 4)) + i1_inner)]), 0.000000e+00f);
+  for (int i1_inner = 0; i1_inner &lt; 2; ++i1_inner) {
+    for (int i2_inner = 0; i2_inner &lt; 7; ++i2_inner) {
+      compute[(((((((int)blockIdx.x) * 784) + ((((int)threadIdx.x) / 7) * 98)) + (i1_inner * 49)) + (i2_inner * 7)) + (((int)threadIdx.x) % 7))] = max((conv2d_nchw[((i1_inner * 7) + i2_inner)] + bias[(((((int)blockIdx.x) * 16) + ((((int)threadIdx.x) / 7) * 2)) + i1_inner)]), 0.000000e+00f);
+    }
   }
 }
 </pre></div>
@@ -744,10 +997,9 @@ In the example below we resume the status and do more 5 trials.</p>
 </div>
 <div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Resume search:
 Get devices for measurement successfully!
-.T
 </pre></div>
 </div>
-<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 6 minutes  23.468 seconds)</p>
+<p class="sphx-glr-timing"><strong>Total running time of the script:</strong> ( 6 minutes  9.711 seconds)</p>
 <div class="sphx-glr-footer sphx-glr-footer-example docutils container" id="sphx-glr-download-how-to-tune-with-autoscheduler-tune-conv2d-layer-cuda-py">
 <div class="sphx-glr-download sphx-glr-download-python docutils container">
 <p><a class="reference download internal" download="" href="../../_downloads/e3e540f3b477c0c52d8eb73e674e8ffd/tune_conv2d_layer_cuda.py"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">tune_conv2d_layer_cuda.py</span></code></a></p>
