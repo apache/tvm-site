@@ -9,7 +9,7 @@ var searchData=
   ['launchthread',['LaunchThread',['../namespacetvm_1_1script_1_1ir__builder_1_1tir.html#a1b6a75a0308366b04fee2fe37a22a297',1,'tvm::script::ir_builder::tir::LaunchThread(Var var, PrimExpr extent)'],['../namespacetvm_1_1script_1_1ir__builder_1_1tir.html#a6816c03cbd3c8baf2e27b94c381ca5fe',1,'tvm::script::ir_builder::tir::LaunchThread(String thread_tag, PrimExpr extent)']]],
   ['layer_5fnorm',['layer_norm',['../namespacetvm_1_1topi_1_1nn.html#accc17ec14bd2ccc2c0e8055165ba69bd',1,'tvm::topi::nn']]],
   ['layout',['Layout',['../classtvm_1_1tir_1_1Layout.html#ace4d6c608f7148bb2c6aefe33b4e4ab5',1,'tvm::tir::Layout::Layout(const Array&lt; tir::IterVar &gt; &amp;axes)'],['../classtvm_1_1tir_1_1Layout.html#ac899b7c62ee68d8b882a119ba6854f88',1,'tvm::tir::Layout::Layout(const tvm::String &amp;name)'],['../classtvm_1_1tir_1_1Layout.html#a11a8465c3cc562e408a48a7f0fd324fd',1,'tvm::tir::Layout::Layout(const char *name)'],['../classtvm_1_1tir_1_1Layout.html#acd20f31024c5a15e8109c64109582028',1,'tvm::tir::Layout::Layout(const std::string &amp;name, DataType dtype=DataType::Int(32))']]],
-  ['layout_5ftransform',['layout_transform',['../namespacetvm_1_1topi.html#a8a41a08eee70607889b738946ed97873',1,'tvm::topi']]],
+  ['layout_5ftransform',['layout_transform',['../namespacetvm_1_1topi.html#a9a4108863737f5022a539a45d8ad59f0',1,'tvm::topi']]],
   ['lazygradientinit',['LazyGradientInit',['../namespacetvm_1_1relay_1_1transform.html#ab6e60251741cca1e811564b2f03a4a5d',1,'tvm::relay::transform']]],
   ['ldexp',['ldexp',['../namespacetvm.html#ac5347541411e75f59758a29596565f63',1,'tvm']]],
   ['le',['LE',['../classtvm_1_1tir_1_1LE.html#aa55713e8c1af53b5442602821c1da5fa',1,'tvm::tir::LE']]],

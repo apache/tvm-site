@@ -22,7 +22,7 @@ var searchData=
   ['layout_5ffree_5fbuffers',['layout_free_buffers',['../namespacetvm_1_1tir_1_1attr.html#a9cf212844cfa05381db84b0c470318e3',1,'tvm::tir::attr']]],
   ['layout_5ffree_5fplaceholders_5fkey',['layout_free_placeholders_key',['../classtvm_1_1auto__scheduler_1_1ComputeDAG.html#a173f178286d543c71feb0f8a06d0cb7b',1,'tvm::auto_scheduler::ComputeDAG']]],
   ['layout_5frewrite_5foption',['layout_rewrite_option',['../classtvm_1_1auto__scheduler_1_1SearchTaskNode.html#ad770dabf0716145fe86537b9107856aa',1,'tvm::auto_scheduler::SearchTaskNode']]],
-  ['layout_5ftransform',['layout_transform',['../namespacetvm_1_1topi.html#a8a41a08eee70607889b738946ed97873',1,'tvm::topi']]],
+  ['layout_5ftransform',['layout_transform',['../namespacetvm_1_1topi.html#a9a4108863737f5022a539a45d8ad59f0',1,'tvm::topi']]],
   ['layout_5ftransforms',['layout_transforms',['../classtvm_1_1te_1_1StageNode.html#a99d637a0da3b9f5d688f62410c884bea',1,'tvm::te::StageNode::layout_transforms()'],['../namespacetvm_1_1tir_1_1attr.html#ace6dc58c76a20757b54c5afd76bdbf53',1,'tvm::tir::attr::layout_transforms()']]],
   ['layoutaxis',['LayoutAxis',['../classtvm_1_1tir_1_1LayoutAxis.html',1,'tvm::tir']]],
   ['layoutnode',['LayoutNode',['../classtvm_1_1tir_1_1LayoutNode.html',1,'tvm::tir']]],
