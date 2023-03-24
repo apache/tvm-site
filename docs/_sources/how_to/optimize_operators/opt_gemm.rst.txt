@@ -134,8 +134,8 @@ Then we write a baseline implementation, the simplest way to write a matrix mult
 
  .. code-block:: none
 
-    Numpy running time: 0.017909
-    Baseline: 3.397584
+    Numpy running time: 0.019965
+    Baseline: 3.428153
 
 
 
@@ -167,7 +167,7 @@ Here is the generated IR using our baseline schedule.
     class Module:
         @T.prim_func
         def main(A: T.Buffer((1024, 1024), "float32"), B: T.Buffer((1024, 1024), "float32"), C: T.Buffer((1024, 1024), "float32")):
-            T.func_attr({"from_legacy_te_schedule": True, "global_symbol": "main", "tir.noalias": True})
+            T.func_attr({"from_legacy_te_schedule": T.bool(True), "global_symbol": "main", "tir.noalias": T.bool(True)})
             for m, n in T.grid(1024, 1024):
                 C_1 = T.Buffer((1048576,), data=C.data)
                 C_1[m * 1024 + n] = T.float32(0)
@@ -227,7 +227,7 @@ fill 32 * 32 * sizeof(float) which is 4KB in the cache whose total size is 32KB 
 
  .. code-block:: none
 
-    Opt1: 0.303157
+    Opt1: 0.321025
 
 
 
@@ -258,7 +258,7 @@ Here is the generated IR after blocking.
     class Module:
         @T.prim_func
         def main(A: T.Buffer((1024, 1024), "float32"), B: T.Buffer((1024, 1024), "float32"), C: T.Buffer((1024, 1024), "float32")):
-            T.func_attr({"from_legacy_te_schedule": True, "global_symbol": "main", "tir.noalias": True})
+            T.func_attr({"from_legacy_te_schedule": T.bool(True), "global_symbol": "main", "tir.noalias": T.bool(True)})
             for m_outer, n_outer in T.grid(32, 32):
                 C_1 = T.Buffer((1048576,), data=C.data)
                 for m_inner_init, n_inner_init in T.grid(32, 32):
@@ -318,7 +318,7 @@ In this tutorial, we chose to vectorize the inner loop row data since it is cach
 
  .. code-block:: none
 
-    Opt2: 0.331700
+    Opt2: 0.339893
 
 
 
@@ -349,7 +349,7 @@ Here is the generated IR after vectorization.
     class Module:
         @T.prim_func
         def main(A: T.Buffer((1024, 1024), "float32"), B: T.Buffer((1024, 1024), "float32"), C: T.Buffer((1024, 1024), "float32")):
-            T.func_attr({"from_legacy_te_schedule": True, "global_symbol": "main", "tir.noalias": True})
+            T.func_attr({"from_legacy_te_schedule": T.bool(True), "global_symbol": "main", "tir.noalias": T.bool(True)})
             for m_outer, n_outer in T.grid(32, 32):
                 C_1 = T.Buffer((1048576,), data=C.data)
                 for m_inner_init in range(32):
@@ -406,7 +406,7 @@ the access pattern for A matrix is more cache friendly.
 
  .. code-block:: none
 
-    Opt3: 0.124434
+    Opt3: 0.119380
 
 
 
@@ -437,7 +437,7 @@ Here is the generated IR after loop permutation.
     class Module:
         @T.prim_func
         def main(A: T.Buffer((1024, 1024), "float32"), B: T.Buffer((1024, 1024), "float32"), C: T.Buffer((1024, 1024), "float32")):
-            T.func_attr({"from_legacy_te_schedule": True, "global_symbol": "main", "tir.noalias": True})
+            T.func_attr({"from_legacy_te_schedule": T.bool(True), "global_symbol": "main", "tir.noalias": T.bool(True)})
             for m_outer, n_outer in T.grid(32, 32):
                 C_1 = T.Buffer((1048576,), data=C.data)
                 for m_inner_init in range(32):
@@ -523,7 +523,7 @@ flattening.
 
  .. code-block:: none
 
-    Opt4: 0.110773
+    Opt4: 0.110293
 
 
 
@@ -554,7 +554,7 @@ Here is the generated IR after array packing.
     class Module:
         @T.prim_func
         def main(A: T.Buffer((1024, 1024), "float32"), B: T.Buffer((1024, 1024), "float32"), C: T.Buffer((1024, 1024), "float32")):
-            T.func_attr({"from_legacy_te_schedule": True, "global_symbol": "main", "tir.noalias": True})
+            T.func_attr({"from_legacy_te_schedule": T.bool(True), "global_symbol": "main", "tir.noalias": T.bool(True)})
             packedB = T.allocate([32768], "float32x32", "global")
             packedB_1 = T.Buffer((32768,), "float32x32", data=packedB)
             for bigN in T.parallel(32):
@@ -635,7 +635,7 @@ write to C when all the block results are ready.
 
  .. code-block:: none
 
-    Opt5: 0.111581
+    Opt5: 0.115638
 
 
 
@@ -666,7 +666,7 @@ Here is the generated IR after blocking.
     class Module:
         @T.prim_func
         def main(A: T.Buffer((1024, 1024), "float32"), B: T.Buffer((1024, 1024), "float32"), C: T.Buffer((1024, 1024), "float32")):
-            T.func_attr({"from_legacy_te_schedule": True, "global_symbol": "main", "tir.noalias": True})
+            T.func_attr({"from_legacy_te_schedule": T.bool(True), "global_symbol": "main", "tir.noalias": T.bool(True)})
             packedB = T.allocate([32768], "float32x32", "global")
             C_global = T.allocate([1024], "float32", "global")
             packedB_1 = T.Buffer((32768,), "float32x32", data=packedB)
@@ -748,7 +748,7 @@ Furthermore, we can also utilize multi-core processors to do the thread-level pa
 
  .. code-block:: none
 
-    Opt6: 0.146901
+    Opt6: 0.151007
 
 
 
@@ -779,7 +779,7 @@ Here is the generated IR after parallelization.
     class Module:
         @T.prim_func
         def main(A: T.Buffer((1024, 1024), "float32"), B: T.Buffer((1024, 1024), "float32"), C: T.Buffer((1024, 1024), "float32")):
-            T.func_attr({"from_legacy_te_schedule": True, "global_symbol": "main", "tir.noalias": True})
+            T.func_attr({"from_legacy_te_schedule": T.bool(True), "global_symbol": "main", "tir.noalias": T.bool(True)})
             packedB = T.allocate([32768], "float32x32", "global")
             packedB_1 = T.Buffer((32768,), "float32x32", data=packedB)
             for bigN in T.parallel(32):
