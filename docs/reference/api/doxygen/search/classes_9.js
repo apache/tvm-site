@@ -26,8 +26,6 @@ var searchData=
   ['listdocnode',['ListDocNode',['../classtvm_1_1script_1_1printer_1_1ListDocNode.html',1,'tvm::script::printer']]],
   ['literaldoc',['LiteralDoc',['../classtvm_1_1script_1_1printer_1_1LiteralDoc.html',1,'tvm::script::printer']]],
   ['literaldocnode',['LiteralDocNode',['../classtvm_1_1script_1_1printer_1_1LiteralDocNode.html',1,'tvm::script::printer']]],
-  ['load',['Load',['../classtvm_1_1tir_1_1Load.html',1,'tvm::tir']]],
-  ['loadnode',['LoadNode',['../classtvm_1_1tir_1_1LoadNode.html',1,'tvm::tir']]],
   ['localbuilder',['LocalBuilder',['../classtvm_1_1auto__scheduler_1_1LocalBuilder.html',1,'tvm::auto_scheduler']]],
   ['localbuildernode',['LocalBuilderNode',['../classtvm_1_1auto__scheduler_1_1LocalBuilderNode.html',1,'tvm::auto_scheduler']]],
   ['localrunner',['LocalRunner',['../classtvm_1_1auto__scheduler_1_1LocalRunner.html',1,'tvm::auto_scheduler']]],
