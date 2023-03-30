@@ -51,6 +51,7 @@ var searchData=
   ['insert',['insert',['../classtvm_1_1runtime_1_1Array.html#a78b7d88d169c1305f5dac0818f34141f',1,'tvm::runtime::Array::insert(iterator position, const T &amp;val)'],['../classtvm_1_1runtime_1_1Array.html#ab07747919e590f2a5b80c5c2f9bde6ce',1,'tvm::runtime::Array::insert(iterator position, IterType first, IterType last)']]],
   ['insertmayberehash',['InsertMaybeReHash',['../classtvm_1_1runtime_1_1MapNode.html#a6c6d3b97ee1bb90279026329eb3a9756',1,'tvm::runtime::MapNode']]],
   ['installdebugspans',['InstallDebugSpans',['../namespacetvm_1_1tir_1_1transform.html#ad9d80850081bc06c1735ee1889b4db3e',1,'tvm::tir::transform']]],
+  ['instance_5fnorm',['instance_norm',['../namespacetvm_1_1topi_1_1nn.html#a5c783a35f56dbddbea0b69e2976e87c4',1,'tvm::topi::nn']]],
   ['instruction',['Instruction',['../structtvm_1_1runtime_1_1vm_1_1Instruction.html#afb6a19291861797375b04b07f174614b',1,'tvm::runtime::vm::Instruction::Instruction()'],['../structtvm_1_1runtime_1_1vm_1_1Instruction.html#a22bf3a1b6b92af774cf87893d091d5ce',1,'tvm::runtime::vm::Instruction::Instruction(const Instruction &amp;instr)'],['../classtvm_1_1tir_1_1Instruction.html#a63f2c9033f093ac82b584c3e4e7f65d6',1,'tvm::tir::Instruction::Instruction()']]],
   ['instrumentafterpass',['InstrumentAfterPass',['../classtvm_1_1transform_1_1PassContext.html#af65559e5156ded62507627c6911e6a2c',1,'tvm::transform::PassContext']]],
   ['instrumentbeforepass',['InstrumentBeforePass',['../classtvm_1_1transform_1_1PassContext.html#af57272bd0583173a3bf972409e3a663a',1,'tvm::transform::PassContext']]],

@@ -109,6 +109,8 @@ var searchData=
   ['insertmayberehash',['InsertMaybeReHash',['../classtvm_1_1runtime_1_1MapNode.html#a6c6d3b97ee1bb90279026329eb3a9756',1,'tvm::runtime::MapNode']]],
   ['inserttransformstage',['InsertTransformStage',['../namespacetvm_1_1auto__scheduler.html#a3e9480be0119338696abbe9c80193b9ead1b2f8d911ee3e5ccac3575f6037cdd3',1,'tvm::auto_scheduler']]],
   ['installdebugspans',['InstallDebugSpans',['../namespacetvm_1_1tir_1_1transform.html#ad9d80850081bc06c1735ee1889b4db3e',1,'tvm::tir::transform']]],
+  ['instance_5fnorm',['instance_norm',['../namespacetvm_1_1topi_1_1nn.html#a5c783a35f56dbddbea0b69e2976e87c4',1,'tvm::topi::nn']]],
+  ['instance_5fnorm_2eh',['instance_norm.h',['../instance__norm_8h.html',1,'']]],
   ['instancenormattrs',['InstanceNormAttrs',['../structtvm_1_1relay_1_1InstanceNormAttrs.html',1,'tvm::relay']]],
   ['instruction',['Instruction',['../classtvm_1_1tir_1_1Instruction.html',1,'tvm::tir::Instruction'],['../structtvm_1_1runtime_1_1vm_1_1Instruction.html',1,'tvm::runtime::vm::Instruction'],['../structtvm_1_1runtime_1_1vm_1_1Instruction.html#afb6a19291861797375b04b07f174614b',1,'tvm::runtime::vm::Instruction::Instruction()'],['../structtvm_1_1runtime_1_1vm_1_1Instruction.html#a22bf3a1b6b92af774cf87893d091d5ce',1,'tvm::runtime::vm::Instruction::Instruction(const Instruction &amp;instr)'],['../classtvm_1_1tir_1_1Instruction.html#a63f2c9033f093ac82b584c3e4e7f65d6',1,'tvm::tir::Instruction::Instruction()']]],
   ['instruction_2eh',['instruction.h',['../instruction_8h.html',1,'']]],
