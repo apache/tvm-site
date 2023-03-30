@@ -135,7 +135,7 @@ var searchData=
   ['isapplycustomrule',['IsApplyCustomRule',['../classtvm_1_1meta__schedule_1_1ScheduleRule.html#abebbe9b3c71f3c7f0346641e0b7e96ad',1,'tvm::meta_schedule::ScheduleRule']]],
   ['isconstant',['IsConstant',['../namespacetvm_1_1relay.html#a3d18041cd1c616c25de9c73a39c976c6',1,'tvm::relay']]],
   ['iscontiguous',['IsContiguous',['../classtvm_1_1runtime_1_1NDArray.html#a1c9d84d35af95d1c29fc5c9c2ced84c8',1,'tvm::runtime::NDArray']]],
-  ['isdsoexportable',['IsDSOExportable',['../classtvm_1_1runtime_1_1ModuleNode.html#adc9c1b47c527f9fa2835ed3662c7d198',1,'tvm::runtime::ModuleNode']]],
+  ['isdsoexportable',['IsDSOExportable',['../classtvm_1_1runtime_1_1ModuleNode.html#a9737aeb3403b70924744ce8fe2f104d8',1,'tvm::runtime::ModuleNode']]],
   ['isestablished',['IsEstablished',['../classtvm_1_1runtime_1_1micro__rpc_1_1Session.html#af2493a81535b82cc0a98439421a11dcf',1,'tvm::runtime::micro_rpc::Session']]],
   ['iseverything',['IsEverything',['../classtvm_1_1arith_1_1IntSet.html#a7754207d93bf25efdd733829ddfa8a7e',1,'tvm::arith::IntSet']]],
   ['isexpr',['IsExpr',['../namespacetvm_1_1relay.html#a61dc962beca310c25ef857e51fb3553c',1,'tvm::relay']]],
