@@ -389,26 +389,26 @@ layout transformation, parallelization, vectorization, unrolling, and operator f
         @T.prim_func
         def main(placeholder: T.Buffer((128, 256), "float32"), placeholder_1: T.Buffer((4916, 16, 1), "float32"), placeholder_2: T.Buffer((4916,), "int32"), placeholder_3: T.Buffer((33,), "int32"), placeholder_4: T.Buffer((128, 512), "float32"), compute: T.Buffer((128, 512), "float32")):
             T.func_attr({"from_legacy_te_schedule": T.bool(True), "global_symbol": "main", "tir.noalias": T.bool(True)})
-            for i0_outer_i1_outer_fused in T.parallel(256):
-                compute_1 = T.allocate([256], "float32", "global")
-                compute_2 = T.Buffer((256,), data=compute_1)
-                for i_outer_inner, nb_j_inner in T.grid(2, 2):
-                    for i_inner_init, j_init in T.grid(4, 16):
-                        compute_2[i_outer_inner * 128 + i_inner_init * 32 + nb_j_inner * 16 + j_init] = T.float32(0)
-                    for elem_idx, i_inner, j in T.grid(T.Let(placeholder_5[cse_var_1 + 1] - placeholder_5[cse_var_1], where={cse_var_1: i0_outer_i1_outer_fused % 16 * 2 + nb_j_inner}), 4, 16):
+            for i0_outer_i1_outer_fused in T.parallel(32):
+                compute_1 = T.allocate([2048], "float32", "global")
+                compute_2 = T.Buffer((2048,), data=compute_1)
+                for i_outer_inner, nb_j_inner in T.grid(4, 2):
+                    for i_inner_init, j_init in T.grid(16, 16):
+                        compute_2[i_outer_inner * 512 + i_inner_init * 32 + nb_j_inner * 16 + j_init] = T.float32(0)
+                    for elem_idx, i_inner, j in T.grid(T.Let(placeholder_5[cse_var_1 + 1] - placeholder_5[cse_var_1], where={cse_var_1: i0_outer_i1_outer_fused % 16 * 2 + nb_j_inner}), 16, 16):
                         cse_var_1 = T.int32()
                         placeholder_5 = T.Buffer((33,), "int32", data=placeholder_3.data)
                         cse_var_3: T.int32 = i0_outer_i1_outer_fused % 16 * 2 + nb_j_inner
-                        cse_var_2: T.int32 = i_outer_inner * 128 + i_inner * 32 + nb_j_inner * 16 + j
+                        cse_var_2: T.int32 = i_outer_inner * 512 + i_inner * 32 + nb_j_inner * 16 + j
                         placeholder_6 = T.Buffer((78656,), data=placeholder_1.data)
                         placeholder_7 = T.Buffer((32768,), data=placeholder.data)
                         placeholder_8 = T.Buffer((4916,), "int32", data=placeholder_2.data)
-                        compute_2[cse_var_2] = compute_2[cse_var_2] + placeholder_6[placeholder_5[cse_var_3] * 16 + elem_idx * 16 + j] * T.max(placeholder_7[i0_outer_i1_outer_fused // 16 * 2048 + i_outer_inner * 1024 + i_inner * 256 + placeholder_8[placeholder_5[cse_var_3] + elem_idx]], T.float32(0))
-                for i0_inner in range(8):
-                    cse_var_4: T.int32 = i0_outer_i1_outer_fused // 16 * 4096 + i0_inner * 512 + i0_outer_i1_outer_fused % 16 * 32
+                        compute_2[cse_var_2] = compute_2[cse_var_2] + placeholder_6[placeholder_5[cse_var_3] * 16 + elem_idx * 16 + j] * T.max(placeholder_7[i0_outer_i1_outer_fused // 16 * 16384 + i_outer_inner * 4096 + i_inner * 256 + placeholder_8[placeholder_5[cse_var_3] + elem_idx]], T.float32(0))
+                for i0_inner, i1_inner in T.grid(64, 32):
+                    cse_var_4: T.int32 = i0_outer_i1_outer_fused // 16 * 32768 + i0_inner * 512 + i0_outer_i1_outer_fused % 16 * 32 + i1_inner
                     compute_3 = T.Buffer((65536,), data=compute.data)
                     placeholder_5 = T.Buffer((65536,), data=placeholder_4.data)
-                    compute_3[cse_var_4:cse_var_4 + 32] = T.max(compute_2[i0_inner * 32:i0_inner * 32 + 32] + placeholder_5[cse_var_4:cse_var_4 + 32], T.Broadcast(T.float32(0), 32))
+                    compute_3[cse_var_4] = T.max(compute_2[i0_inner * 32 + i1_inner] + placeholder_5[cse_var_4], T.float32(0))
 
 
 
@@ -458,7 +458,7 @@ We build the binary and check its correctness and performance.
 
  .. code-block:: none
 
-    Execution time of this operator: 1.509 ms
+    Execution time of this operator: 1.519 ms
 
 
 
