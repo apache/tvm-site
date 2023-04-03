@@ -34,7 +34,7 @@ var searchData=
   ['vector_5funit_5fbytes',['vector_unit_bytes',['../classtvm_1_1auto__scheduler_1_1HardwareParamsNode.html#a6f2dd9161fdb3233417a9912c8854434',1,'tvm::auto_scheduler::HardwareParamsNode']]],
   ['vectorcombine',['vectorcombine',['../namespacetvm_1_1tir_1_1builtin.html#a30dff65bc2c142b57fae7f60e378ff43',1,'tvm::tir::builtin']]],
   ['vectorhigh',['vectorhigh',['../namespacetvm_1_1tir_1_1builtin.html#a45bf65ca7ca01d2016e0b609117d7e25',1,'tvm::tir::builtin']]],
-  ['vectorize',['vectorize',['../classtvm_1_1auto__scheduler_1_1State.html#a97b8a21210d63bea241dbab085d89b53',1,'tvm::auto_scheduler::State::vectorize()'],['../classtvm_1_1te_1_1Stage.html#a44d33e3920106e75dc7c68272f880812',1,'tvm::te::Stage::vectorize()'],['../classtvm_1_1tir_1_1ScheduleNode.html#ab4a8cd91959ceab22855ec338978bcee',1,'tvm::tir::ScheduleNode::Vectorize()']]],
+  ['vectorize',['Vectorize',['../classtvm_1_1tir_1_1ScheduleNode.html#ab4a8cd91959ceab22855ec338978bcee',1,'tvm::tir::ScheduleNode::Vectorize()'],['../classtvm_1_1auto__scheduler_1_1State.html#a97b8a21210d63bea241dbab085d89b53',1,'tvm::auto_scheduler::State::vectorize()'],['../classtvm_1_1te_1_1Stage.html#a44d33e3920106e75dc7c68272f880812',1,'tvm::te::Stage::vectorize()']]],
   ['vectorized',['Vectorized',['../namespacetvm_1_1script_1_1ir__builder_1_1tir.html#a2b3df6013772bdd23dfa872b81555272',1,'tvm::script::ir_builder::tir']]],
   ['vectorizeloop',['VectorizeLoop',['../namespacetvm_1_1tir_1_1transform.html#af3cecb50a8b8fc8021f6a87bc27587da',1,'tvm::tir::transform']]],
   ['vectorizer',['Vectorizer',['../classtvm_1_1tir_1_1BufferLoadNode.html#a842a72b9d02a9f8541b512478932fece',1,'tvm::tir::BufferLoadNode']]],
