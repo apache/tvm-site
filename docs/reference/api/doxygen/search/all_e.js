@@ -124,7 +124,7 @@ var searchData=
   ['memorymanager',['MemoryManager',['../classtvm_1_1runtime_1_1vm_1_1MemoryManager.html',1,'tvm::runtime::vm']]],
   ['memorymanagerinterface',['MemoryManagerInterface',['../structMemoryManagerInterface.html',1,'MemoryManagerInterface'],['../page__allocator_8h.html#a6abc29ca90e4cfe4b5714cbfba0a3ca6',1,'MemoryManagerInterface():&#160;page_allocator.h']]],
   ['memoryscope',['MemoryScope',['../namespacetvm.html#a8a6f73ead9c7ce068f6337ed16e8c53c',1,'tvm']]],
-  ['merge',['Merge',['../classtvm_1_1Span.html#ae8e7ed175f50096b7dd2bccd12998e21',1,'tvm::Span::Merge()'],['../namespacetvm_1_1runtime.html#aff337677f23f7d665960f553fb52ab86',1,'tvm::runtime::Merge()']]],
+  ['merge',['Merge',['../classtvm_1_1Span.html#ae8e7ed175f50096b7dd2bccd12998e21',1,'tvm::Span::Merge()'],['../classtvm_1_1tir_1_1ScheduleNode.html#a19b026c08dbd41a517544fac0866adec',1,'tvm::tir::ScheduleNode::Merge()'],['../namespacetvm_1_1runtime.html#aff337677f23f7d665960f553fb52ab86',1,'tvm::runtime::Merge()']]],
   ['mergedynamicsharedmemoryallocations',['MergeDynamicSharedMemoryAllocations',['../namespacetvm_1_1tir_1_1transform.html#a070137dbab05c63d4af6b77c25868a66',1,'tvm::tir::transform']]],
   ['meshgrid',['meshgrid',['../namespacetvm_1_1topi.html#a453f9f5a35a9852a086ce0228ee22164',1,'tvm::topi']]],
   ['meshgridattrs',['MeshgridAttrs',['../structtvm_1_1relay_1_1MeshgridAttrs.html',1,'tvm::relay']]],
