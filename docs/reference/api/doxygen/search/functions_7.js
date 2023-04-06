@@ -76,6 +76,7 @@ var searchData=
   ['getobjectptr',['GetObjectPtr',['../namespacetvm_1_1runtime.html#a46bcf7948293194c5b9c7db91da96381',1,'tvm::runtime::GetObjectPtr(ObjectType *ptr)'],['../namespacetvm_1_1runtime.html#ac2d903012aff56c2bd54ff66f48450c3',1,'tvm::runtime::GetObjectPtr(ObjType *ptr)']]],
   ['getorallocruntimetypeindex',['GetOrAllocRuntimeTypeIndex',['../classtvm_1_1runtime_1_1Object.html#a726972ff315c446192df94027ddea032',1,'tvm::runtime::Object']]],
   ['getorcreateallocator',['GetOrCreateAllocator',['../classtvm_1_1runtime_1_1vm_1_1MemoryManager.html#a2fb80fa184bac1a857b7fdbea49b6a34',1,'tvm::runtime::vm::MemoryManager']]],
+  ['getoutputblocks',['GetOutputBlocks',['../classtvm_1_1tir_1_1ScheduleNode.html#a97a6944e435ed71cbdddbd8b2f4415a4',1,'tvm::tir::ScheduleNode']]],
   ['getpacked',['GetPacked',['../classtvm_1_1GenericFunc.html#aaa87b9504f962cbe28c33a7a9583dd7d',1,'tvm::GenericFunc']]],
   ['getparent',['GetParent',['../classtvm_1_1ObjectPathNode.html#a37746d3a30829fbfbf17dab1eb435015',1,'tvm::ObjectPathNode']]],
   ['getperstorefeature',['GetPerStoreFeature',['../namespacetvm_1_1auto__scheduler.html#a4309309fa1674314212c4af67b3fb12d',1,'tvm::auto_scheduler']]],
