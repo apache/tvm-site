@@ -56,7 +56,7 @@ var searchData=
   ['totupletype',['ToTupleType',['../namespacetvm_1_1relay.html#ae6757a008816e31cce4109e8dfc2bc16',1,'tvm::relay']]],
   ['touchtask',['TouchTask',['../classtvm_1_1meta__schedule_1_1TaskSchedulerNode.html#af2471f9b70cc8bfd39c1e1f26310da85',1,'tvm::meta_schedule::TaskSchedulerNode']]],
   ['tovar',['ToVar',['../classtvm_1_1tir_1_1AnyNode.html#ae01ebbba2378afb6509a22de97f8fb30',1,'tvm::tir::AnyNode']]],
-  ['trace',['trace',['../classtvm_1_1tir_1_1ScheduleNode.html#a953bca4123b5a758adfdcd65634a5f3b',1,'tvm::tir::ScheduleNode::trace()'],['../classtvm_1_1tir_1_1Trace.html#a8e09abffd0b9b1afac7b832cf16c142d',1,'tvm::tir::Trace::Trace()'],['../classtvm_1_1tir_1_1Trace.html#af79bccf1bde25efea387bb1b82dacaa6',1,'tvm::tir::Trace::Trace(Array&lt; Instruction &gt; insts, Map&lt; Instruction, ObjectRef &gt; decisions)']]],
+  ['trace',['Trace',['../classtvm_1_1tir_1_1Trace.html#a8e09abffd0b9b1afac7b832cf16c142d',1,'tvm::tir::Trace::Trace()'],['../classtvm_1_1tir_1_1Trace.html#af79bccf1bde25efea387bb1b82dacaa6',1,'tvm::tir::Trace::Trace(Array&lt; Instruction &gt; insts, Map&lt; Instruction, ObjectRef &gt; decisions)'],['../classtvm_1_1tir_1_1ScheduleNode.html#a953bca4123b5a758adfdcd65634a5f3b',1,'tvm::tir::ScheduleNode::trace()']]],
   ['traced',['Traced',['../classtvm_1_1tir_1_1Schedule.html#a15eec0ab3d2caa651f68ad7c88ed31eb',1,'tvm::tir::Schedule']]],
   ['transform',['Transform',['../classtvm_1_1te_1_1Transform.html#a51422cc2290f6b87fe61edb0db691125',1,'tvm::te::Transform']]],
   ['transform_5flayout',['transform_layout',['../classtvm_1_1te_1_1Stage.html#acec77eca6c9a4f1738a7c119d7ac2c2c',1,'tvm::te::Stage']]],

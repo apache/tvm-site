@@ -147,6 +147,7 @@ var searchData=
   ['isfullyconstrained',['IsFullyConstrained',['../classtvm_1_1VirtualDeviceNode.html#ae3c848e08b56105cdb046907ccbfc59c',1,'tvm::VirtualDeviceNode']]],
   ['isfullyunconstrained',['IsFullyUnconstrained',['../classtvm_1_1VirtualDeviceNode.html#acbae67e35fb5348e30101ae23073ad52',1,'tvm::VirtualDeviceNode']]],
   ['isinf',['isinf',['../namespacetvm.html#ac06a47be8386f28b313903e174dfe151',1,'tvm::isinf()'],['../namespacetvm_1_1topi.html#a08b96a24b96a201fb5069337e22e7336',1,'tvm::topi::isinf()']]],
+  ['isinscope',['IsInScope',['../classtvm_1_1script_1_1ir__builder_1_1IRBuilder.html#aa6d010c0e56be5695f509eb65e764cb9',1,'tvm::script::ir_builder::IRBuilder']]],
   ['isinstance',['IsInstance',['../classtvm_1_1runtime_1_1Object.html#a90e90b3f4ba8a590baff78c75807bbc7',1,'tvm::runtime::Object']]],
   ['isnan',['isnan',['../namespacetvm_1_1tir_1_1builtin.html#a6f53be295396c301082696ca0c113501',1,'tvm::tir::builtin::isnan()'],['../namespacetvm.html#a4a6399430c10dccd79f64222cda011ed',1,'tvm::isnan()'],['../namespacetvm_1_1topi.html#a370ab951cbd2b3e1352e338c1e894070',1,'tvm::topi::isnan()']]],
   ['isnothing',['IsNothing',['../classtvm_1_1arith_1_1IntSet.html#a3fcf6daebff05753db5a0ebfb4c8e188',1,'tvm::arith::IntSet']]],
