@@ -244,6 +244,7 @@ var searchData=
   ['convertforloopstoserial',['ConvertForLoopsToSerial',['../namespacetvm_1_1tir_1_1transform.html#a106e04ba8c560e24a4b6c8c414184ec4',1,'tvm::tir::transform']]],
   ['convertlayout',['ConvertLayout',['../namespacetvm_1_1relay_1_1transform.html#a40b49e82dd73b05bfac14040ee2fbdee',1,'tvm::relay::transform']]],
   ['convertpoolallocationstooffsets',['ConvertPoolAllocationsToOffsets',['../namespacetvm_1_1tir_1_1usmp_1_1transform.html#a464c07ca7cea628a49aa8c90fa6359ef',1,'tvm::tir::usmp::transform']]],
+  ['convertssa',['ConvertSSA',['../namespacetvm_1_1tir_1_1transform.html#a78c4595056a7a397a88cce0d06975409',1,'tvm::tir::transform']]],
   ['converttoarrayofbufferinfo',['ConvertToArrayOfBufferInfo',['../namespacetvm_1_1tir_1_1usmp.html#a21ae43cbdb5b3d51a069db62f3ae9227',1,'tvm::tir::usmp']]],
   ['convgemmweighttransformattrs',['ConvGemmWeightTransformAttrs',['../structtvm_1_1relay_1_1ConvGemmWeightTransformAttrs.html',1,'tvm::relay']]],
   ['convolution_5falgorithm',['convolution_algorithm',['../structtvm_1_1relay_1_1Conv2DWinogradNNPACKWeightTransformAttrs.html#a77b19e3aa880cd4476b261523aa6e9de',1,'tvm::relay::Conv2DWinogradNNPACKWeightTransformAttrs']]],

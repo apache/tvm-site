@@ -124,6 +124,7 @@ var searchData=
   ['convertforloopstoserial',['ConvertForLoopsToSerial',['../namespacetvm_1_1tir_1_1transform.html#a106e04ba8c560e24a4b6c8c414184ec4',1,'tvm::tir::transform']]],
   ['convertlayout',['ConvertLayout',['../namespacetvm_1_1relay_1_1transform.html#a40b49e82dd73b05bfac14040ee2fbdee',1,'tvm::relay::transform']]],
   ['convertpoolallocationstooffsets',['ConvertPoolAllocationsToOffsets',['../namespacetvm_1_1tir_1_1usmp_1_1transform.html#a464c07ca7cea628a49aa8c90fa6359ef',1,'tvm::tir::usmp::transform']]],
+  ['convertssa',['ConvertSSA',['../namespacetvm_1_1tir_1_1transform.html#a78c4595056a7a397a88cce0d06975409',1,'tvm::tir::transform']]],
   ['converttoarrayofbufferinfo',['ConvertToArrayOfBufferInfo',['../namespacetvm_1_1tir_1_1usmp.html#a21ae43cbdb5b3d51a069db62f3ae9227',1,'tvm::tir::usmp']]],
   ['coprocsync',['CoProcSync',['../namespacetvm_1_1tir_1_1transform.html#aa234deedbe456bf561a1b90f2ed94206',1,'tvm::tir::transform']]],
   ['copy',['Copy',['../classtvm_1_1tir_1_1ScheduleNode.html#a70fbececf8717a961436a36ccc79c1d5',1,'tvm::tir::ScheduleNode::Copy()'],['../classtvm_1_1auto__scheduler_1_1MeasureInputNode.html#aa95a871b051e15e079038c51c83e35c2',1,'tvm::auto_scheduler::MeasureInputNode::copy()'],['../classtvm_1_1auto__scheduler_1_1MeasureResultNode.html#a78e416eabbaaf1d394b4e9f5c32703bf',1,'tvm::auto_scheduler::MeasureResultNode::copy()'],['../classtvm_1_1te_1_1Schedule.html#aa4f7b3b60661fb56dd80892260d31189',1,'tvm::te::Schedule::copy()']]],
