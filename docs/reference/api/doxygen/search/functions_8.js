@@ -1,6 +1,6 @@
 var searchData=
 [
-  ['handle',['Handle',['../classtvm_1_1runtime_1_1DataType.html#aebad9f7235dd20af649fb5c2113797b8',1,'tvm::runtime::DataType::Handle()'],['../namespacetvm_1_1script_1_1ir__builder_1_1tir.html#aaa2a6b8cd99890d0966ce5c83eb0ef77',1,'tvm::script::ir_builder::tir::Handle()']]],
+  ['handle',['Handle',['../classtvm_1_1runtime_1_1DataType.html#aebad9f7235dd20af649fb5c2113797b8',1,'tvm::runtime::DataType::Handle()'],['../namespacetvm_1_1script_1_1ir__builder_1_1tir.html#a2847211679cf8fa29f613ddcf60e58c5',1,'tvm::script::ir_builder::tir::Handle()']]],
   ['hardwareparams',['HardwareParams',['../classtvm_1_1auto__scheduler_1_1HardwareParams.html#a2902d3e603de5efd1e53ec6c0c4de641',1,'tvm::auto_scheduler::HardwareParams']]],
   ['hasattr',['HasAttr',['../classtvm_1_1relay_1_1DFPattern.html#ae84cd9edf8290ee8f15d01a86a12be4a',1,'tvm::relay::DFPattern']]],
   ['hasattrmap',['HasAttrMap',['../classtvm_1_1Op.html#aa6e0dd3175a9ac2687ec92c1c064fa2c',1,'tvm::Op']]],
