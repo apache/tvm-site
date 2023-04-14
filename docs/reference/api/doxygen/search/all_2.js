@@ -225,7 +225,7 @@ var searchData=
   ['arraynode',['ArrayNode',['../classtvm_1_1runtime_1_1ArrayNode.html',1,'tvm::runtime']]],
   ['arrayorint',['ArrayOrInt',['../namespacetvm_1_1topi.html#a31975e5cd1363db7e43a780e4a09b8f9',1,'tvm::topi']]],
   ['artifact_5fpath',['artifact_path',['../classtvm_1_1meta__schedule_1_1BuilderResultNode.html#a983cc8bd9acfdfdbafa27be4ba1909b2',1,'tvm::meta_schedule::BuilderResultNode::artifact_path()'],['../classtvm_1_1meta__schedule_1_1RunnerInputNode.html#aac63cc8e4abddd517917978a88130473',1,'tvm::meta_schedule::RunnerInputNode::artifact_path()']]],
-  ['as',['as',['../classtvm_1_1runtime_1_1ObjectRef.html#a2d76fa1fb628ff276a284e61123589c5',1,'tvm::runtime::ObjectRef']]],
+  ['as',['as',['../classtvm_1_1runtime_1_1ObjectRef.html#ada5c6dfe7d5ca76e6f0714c4ef922539',1,'tvm::runtime::ObjectRef::as() const'],['../classtvm_1_1runtime_1_1ObjectRef.html#a20fe0cf9df1a9e77e29e17985978751b',1,'tvm::runtime::ObjectRef::as() const']]],
   ['as_5fconst_5fint',['as_const_int',['../namespacetvm_1_1tir.html#acbe8f225faaf34c540194921a7ee6a66',1,'tvm::tir']]],
   ['as_5funordered_5fmap',['as_unordered_map',['../namespacetvm_1_1tir.html#abb777c4f4d61883c0cbdf9116458b70d',1,'tvm::tir']]],
   ['asconditions',['AsConditions',['../namespacetvm_1_1arith.html#aa4b593dc5d590eab7df2abdca7271b34',1,'tvm::arith']]],

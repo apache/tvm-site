@@ -5691,6 +5691,9 @@ preserve the semantics of computation. Some example of schedules:
 <tr class="row-odd"><td><p><a class="reference internal" href="#tvm.tir.Schedule.trace" title="tvm.tir.Schedule.trace"><code class="xref py py-obj docutils literal notranslate"><span class="pre">trace</span></code></a></p></td>
 <td><p>Returns the internally maintained trace of scheduling program execution</p></td>
 </tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#tvm.tir.Schedule.func_working_on" title="tvm.tir.Schedule.func_working_on"><code class="xref py py-obj docutils literal notranslate"><span class="pre">func_working_on</span></code></a></p></td>
+<td><p>Returns the GlobalVar of the func that the schedule is currently working on</p></td>
+</tr>
 </tbody>
 </table>
 <p><strong>Methods:</strong></p>
@@ -5883,6 +5886,12 @@ preserve the semantics of computation. Some example of schedules:
 <dt class="sig sig-object py" id="tvm.tir.Schedule.trace">
 <em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">trace</span></span><em class="property"><span class="pre">:</span> <span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><span class="pre">tvm.tir.schedule.trace.Trace</span><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#tvm.tir.Schedule.trace" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns the internally maintained trace of scheduling program execution</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="tvm.tir.Schedule.func_working_on">
+<em class="property"><span class="pre">property</span> </em><span class="sig-name descname"><span class="pre">func_working_on</span></span><em class="property"><span class="pre">:</span> <span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="ir.html#tvm.ir.GlobalVar" title="tvm.ir.expr.GlobalVar"><span class="pre">tvm.ir.expr.GlobalVar</span></a><span class="p"><span class="pre">]</span></span></em><a class="headerlink" href="#tvm.tir.Schedule.func_working_on" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the GlobalVar of the func that the schedule is currently working on</p>
 </dd></dl>
 
 <dl class="py method">
@@ -7748,7 +7757,7 @@ type conversion, please use with caution.</p>
 </dd>
 </dl>
 <p class="rubric">Examples</p>
-<p>Before set_dtype, in TensorIR, the IR is:</p>
+<p>Before unsafe_set_dtype, in TensorIR, the IR is:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nd">@T</span><span class="o">.</span><span class="n">prim_func</span>
 <span class="k">def</span> <span class="nf">before_set_dtype</span><span class="p">(</span>
     <span class="n">A</span><span class="p">:</span> <span class="n">T</span><span class="o">.</span><span class="n">Buffer</span><span class="p">((</span><span class="mi">128</span><span class="p">,</span> <span class="mi">128</span><span class="p">),</span> <span class="s2">&quot;float32&quot;</span><span class="p">),</span> <span class="n">C</span><span class="p">:</span> <span class="n">T</span><span class="o">.</span><span class="n">Buffer</span><span class="p">((</span><span class="mi">128</span><span class="p">,</span> <span class="mi">128</span><span class="p">),</span> <span class="s2">&quot;float32&quot;</span><span class="p">)</span>
@@ -7765,9 +7774,9 @@ type conversion, please use with caution.</p>
             <span class="n">C</span><span class="p">[</span><span class="n">vi</span><span class="p">,</span> <span class="n">vj</span><span class="p">]</span> <span class="o">=</span> <span class="n">B</span><span class="p">[</span><span class="n">vi</span><span class="p">,</span> <span class="n">vj</span><span class="p">]</span> <span class="o">+</span> <span class="mf">1.0</span>
 </pre></div>
 </div>
-<p>Create the schedule and do set_dtype:</p>
+<p>Create the schedule and do unsafe_set_dtype:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">sch</span> <span class="o">=</span> <span class="n">tir</span><span class="o">.</span><span class="n">Schedule</span><span class="p">(</span><span class="n">before_set_dtype</span><span class="p">)</span>
-<span class="n">sch</span><span class="o">.</span><span class="n">set_dtype</span><span class="p">(</span><span class="s2">&quot;B&quot;</span><span class="p">,</span> <span class="n">buffer_index</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="s2">&quot;float16&quot;</span><span class="p">)</span>
+<span class="n">sch</span><span class="o">.</span><span class="n">unsafe_set_dtype</span><span class="p">(</span><span class="s2">&quot;B&quot;</span><span class="p">,</span> <span class="n">buffer_index</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="s2">&quot;float16&quot;</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="n">sch</span><span class="o">.</span><span class="n">mod</span><span class="p">[</span><span class="s2">&quot;main&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">script</span><span class="p">())</span>
 </pre></div>
 </div>
@@ -7790,7 +7799,8 @@ type conversion, please use with caution.</p>
 </div>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p><cite>set_dtype</cite> requires the buffer to be an intermediate buffer defined via <cite>alloc_buffer</cite>.</p>
+<p><cite>unsafe_set_dtype</cite> requires the buffer to be an intermediate buffer defined via
+<cite>alloc_buffer</cite>.</p>
 </div>
 </dd></dl>
 

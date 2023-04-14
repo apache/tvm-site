@@ -85,7 +85,7 @@ var searchData=
   ['arrayindexpathnode',['ArrayIndexPathNode',['../classtvm_1_1ArrayIndexPathNode.html#ab4e89ecaf5a99c154b47603a0d94ec06',1,'tvm::ArrayIndexPathNode']]],
   ['arrayiterator',['ArrayIterator',['../classtvm_1_1runtime_1_1metadata_1_1ArrayIterator.html#adf1e3e2969deb955e49e6f93e373a11e',1,'tvm::runtime::metadata::ArrayIterator']]],
   ['arrayorint',['ArrayOrInt',['../namespacetvm_1_1topi.html#a31975e5cd1363db7e43a780e4a09b8f9',1,'tvm::topi']]],
-  ['as',['as',['../classtvm_1_1runtime_1_1ObjectRef.html#a2d76fa1fb628ff276a284e61123589c5',1,'tvm::runtime::ObjectRef']]],
+  ['as',['as',['../classtvm_1_1runtime_1_1ObjectRef.html#ada5c6dfe7d5ca76e6f0714c4ef922539',1,'tvm::runtime::ObjectRef::as() const'],['../classtvm_1_1runtime_1_1ObjectRef.html#a20fe0cf9df1a9e77e29e17985978751b',1,'tvm::runtime::ObjectRef::as() const']]],
   ['as_5fconst_5fint',['as_const_int',['../namespacetvm_1_1tir.html#acbe8f225faaf34c540194921a7ee6a66',1,'tvm::tir']]],
   ['as_5funordered_5fmap',['as_unordered_map',['../namespacetvm_1_1tir.html#abb777c4f4d61883c0cbdf9116458b70d',1,'tvm::tir']]],
   ['asconditions',['AsConditions',['../namespacetvm_1_1arith.html#aa4b593dc5d590eab7df2abdca7271b34',1,'tvm::arith']]],
