@@ -123,6 +123,7 @@ var searchData=
   ['getvectorbytes',['GetVectorBytes',['../namespacetvm_1_1runtime.html#ad01a53416152b68029d67190c3709d25',1,'tvm::runtime']]],
   ['getvirtualdevices',['GetVirtualDevices',['../classtvm_1_1runtime_1_1vm_1_1Executable.html#a2f0abfbed7ce24b365470c70db023ad3',1,'tvm::runtime::vm::Executable']]],
   ['getvmfunctionwithname',['GetVMFunctionWithName',['../classtvm_1_1runtime_1_1vm_1_1Executable.html#af9c500be684a1a1dd0b69576827e9e34',1,'tvm::runtime::vm::Executable']]],
+  ['getvtcmcompactionpasses',['GetVTCMCompactionPasses',['../namespacetvm_1_1tir.html#ac7e2398e902904f6d7b4a35aeb24a1ec',1,'tvm::tir']]],
   ['getwinogradproducerandinlineconst',['GetWinogradProducerAndInlineConst',['../namespacetvm_1_1meta__schedule.html#a1a137d2fc3f8ecbbd70a2a824fbf04d6',1,'tvm::meta_schedule']]],
   ['global',['Global',['../classtvm_1_1ReflectionVTable.html#acf555f668f940322ab7b3dea1a45bd95',1,'tvm::ReflectionVTable::Global()'],['../classtvm_1_1runtime_1_1vm_1_1MemoryManager.html#a5718753d0065b717c3f37ed0d16c42b2',1,'tvm::runtime::vm::MemoryManager::Global()']]],
   ['global_5fmap',['global_map',['../classtvm_1_1runtime_1_1vm_1_1Executable.html#a9a808f0c63ae0d65ad8d625e3a7cb749',1,'tvm::runtime::vm::Executable']]],
