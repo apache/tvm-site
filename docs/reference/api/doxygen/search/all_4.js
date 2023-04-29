@@ -138,7 +138,7 @@ var searchData=
   ['commreduceidx',['CommReduceIdx',['../namespacetvm_1_1topi.html#a50b46549c2a66bedd305f5e7db0d6d89',1,'tvm::topi']]],
   ['commreducer',['CommReducer',['../classtvm_1_1tir_1_1CommReducer.html',1,'tvm::tir::CommReducer'],['../classtvm_1_1tir_1_1CommReducer.html#a48f3eebf6a3148279ff796794df4c7c2',1,'tvm::tir::CommReducer::CommReducer()']]],
   ['commreducernode',['CommReducerNode',['../classtvm_1_1tir_1_1CommReducerNode.html',1,'tvm::tir']]],
-  ['compactbufferallocation',['CompactBufferAllocation',['../namespacetvm_1_1tir_1_1transform.html#ac6dbf3a491d01da405c1ce6d5944ee85',1,'tvm::tir::transform']]],
+  ['compactbufferallocation',['CompactBufferAllocation',['../namespacetvm_1_1tir_1_1transform.html#a1e2ad780d6302432ead7f8b5fbffc275',1,'tvm::tir::transform']]],
   ['compare',['compare',['../classtvm_1_1runtime_1_1String.html#ad3af61a0b16c6d8a4e6b1c2f6e8f4a44',1,'tvm::runtime::String::compare(const String &amp;other) const'],['../classtvm_1_1runtime_1_1String.html#abe6782ebaf76b9e3e1ef6ae21f5447c7',1,'tvm::runtime::String::compare(const std::string &amp;other) const'],['../classtvm_1_1runtime_1_1String.html#a03f9f2382fbbf611af6591ce1afb0dca',1,'tvm::runtime::String::compare(const char *other) const']]],
   ['compareresult',['CompareResult',['../namespacetvm_1_1arith.html#a1d555a0cc363f669a49fad7e5f7d69d0',1,'tvm::arith']]],
   ['compilation_5fconfig_2eh',['compilation_config.h',['../compilation__config_8h.html',1,'']]],
