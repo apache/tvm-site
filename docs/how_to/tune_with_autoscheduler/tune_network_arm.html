@@ -645,12 +645,17 @@ p2 = PLACEHOLDER [1, 1, 1, 1024]
 T_add(ax0, ax1, ax2, ax3) = (output_unpack[ax0, ax1, ax2, ax3] + p2[ax0, 0, 0, ax3])
 T_relu(ax0, ax1, ax2, ax3) = max(T_add[ax0, ax1, ax2, ax3], 0f)
 
-========== Task 2  (workload key: [&quot;00a059b856ac30ac172b6252254479a6&quot;, [1, 1024], [1000, 1024], [1, 1000], [1, 1000]]) ==========
-p0 = PLACEHOLDER [1, 1024]
-p1 = PLACEHOLDER [1000, 1024]
-T_matmul_NT(i, j) += (p0[i, k]*p1[j, k])
-p2 = PLACEHOLDER [1, 1000]
-T_add(ax0, ax1) = (T_matmul_NT[ax0, ax1] + p2[ax0, ax1])
+========== Task 2  (workload key: [&quot;7772522e7c2f91a91726fd4e6ce30ae8&quot;, [1, 14, 14, 512], [1, 1, 512, 512], [1, 1, 1, 512], [1, 14, 14, 512]]) ==========
+p0 = PLACEHOLDER [1, 14, 14, 512]
+PadInput(i0, i1, i2, i3) = p0[i0, i1, i2, i3]
+data_vec(n, oho, owo, ohi, owi, ic) = PadInput[n, (oho + ohi), (owo + owi), ic]
+p1 = PLACEHOLDER [1, 1, 512, 512]
+kernel_vec(oco, kh, kw, ic, oci) = p1[kh, kw, ic, ((oco*8) + oci)]
+conv(n, oho, owo, oco, ohi, owi, oci) += (data_vec[n, oho, owo, (ohi + kh), (owi + kw), ic]*kernel_vec[oco, kh, kw, ic, oci])
+output_unpack(n, oho, owo, oc) = conv[n, oho, owo, floordiv(oc, 8), 0, 0, floormod(oc, 8)]
+p2 = PLACEHOLDER [1, 1, 1, 512]
+T_add(ax0, ax1, ax2, ax3) = (output_unpack[ax0, ax1, ax2, ax3] + p2[ax0, 0, 0, ax3])
+T_relu(ax0, ax1, ax2, ax3) = max(T_add[ax0, ax1, ax2, ax3], 0f)
 
 ========== Task 3  (workload key: [&quot;8c53ca2904398da2889aa7508082d7bb&quot;, [1, 7, 7, 1024], [1, 1, 1, 1024]]) ==========
 p0 = PLACEHOLDER [1, 7, 7, 1024]
@@ -666,7 +671,14 @@ p2 = PLACEHOLDER [1, 1, 1, 256]
 T_add(ax0, ax1, ax2, ax3) = (depthwise_conv2d_nhwc_output[ax0, ax1, ax2, ax3] + p2[ax0, 0, 0, ax3])
 T_relu(ax0, ax1, ax2, ax3) = max(T_add[ax0, ax1, ax2, ax3], 0f)
 
-========== Task 5  (workload key: [&quot;72e8f07fd86080494f52d51b53788200&quot;, [1, 112, 112, 32], [1, 1, 32, 64], [1, 1, 1, 64], [1, 112, 112, 64]]) ==========
+========== Task 5  (workload key: [&quot;00a059b856ac30ac172b6252254479a6&quot;, [1, 1024], [1000, 1024], [1, 1000], [1, 1000]]) ==========
+p0 = PLACEHOLDER [1, 1024]
+p1 = PLACEHOLDER [1000, 1024]
+T_matmul_NT(i, j) += (p0[i, k]*p1[j, k])
+p2 = PLACEHOLDER [1, 1000]
+T_add(ax0, ax1) = (T_matmul_NT[ax0, ax1] + p2[ax0, ax1])
+
+========== Task 6  (workload key: [&quot;72e8f07fd86080494f52d51b53788200&quot;, [1, 112, 112, 32], [1, 1, 32, 64], [1, 1, 1, 64], [1, 112, 112, 64]]) ==========
 p0 = PLACEHOLDER [1, 112, 112, 32]
 PadInput(i0, i1, i2, i3) = p0[i0, i1, i2, i3]
 data_vec(n, oho, owo, ohi, owi, ic) = PadInput[n, (oho + ohi), ((owo*8) + owi), ic]
@@ -675,18 +687,6 @@ kernel_vec(oco, kh, kw, ic, oci) = p1[kh, kw, ic, ((oco*8) + oci)]
 conv(n, oho, owo, oco, ohi, owi, oci) += (data_vec[n, oho, owo, (ohi + kh), (owi + kw), ic]*kernel_vec[oco, kh, kw, ic, oci])
 output_unpack(n, oho, owo, oc) = conv[n, oho, floordiv(owo, 8), floordiv(oc, 8), 0, floormod(owo, 8), floormod(oc, 8)]
 p2 = PLACEHOLDER [1, 1, 1, 64]
-T_add(ax0, ax1, ax2, ax3) = (output_unpack[ax0, ax1, ax2, ax3] + p2[ax0, 0, 0, ax3])
-T_relu(ax0, ax1, ax2, ax3) = max(T_add[ax0, ax1, ax2, ax3], 0f)
-
-========== Task 6  (workload key: [&quot;7772522e7c2f91a91726fd4e6ce30ae8&quot;, [1, 14, 14, 512], [1, 1, 512, 512], [1, 1, 1, 512], [1, 14, 14, 512]]) ==========
-p0 = PLACEHOLDER [1, 14, 14, 512]
-PadInput(i0, i1, i2, i3) = p0[i0, i1, i2, i3]
-data_vec(n, oho, owo, ohi, owi, ic) = PadInput[n, (oho + ohi), (owo + owi), ic]
-p1 = PLACEHOLDER [1, 1, 512, 512]
-kernel_vec(oco, kh, kw, ic, oci) = p1[kh, kw, ic, ((oco*8) + oci)]
-conv(n, oho, owo, oco, ohi, owi, oci) += (data_vec[n, oho, owo, (ohi + kh), (owi + kw), ic]*kernel_vec[oco, kh, kw, ic, oci])
-output_unpack(n, oho, owo, oc) = conv[n, oho, owo, floordiv(oc, 8), 0, 0, floormod(oc, 8)]
-p2 = PLACEHOLDER [1, 1, 1, 512]
 T_add(ax0, ax1, ax2, ax3) = (output_unpack[ax0, ax1, ax2, ax3] + p2[ax0, 0, 0, ax3])
 T_relu(ax0, ax1, ax2, ax3) = max(T_add[ax0, ax1, ax2, ax3], 0f)
 
@@ -708,14 +708,7 @@ p2 = PLACEHOLDER [1, 1, 1, 512]
 T_add(ax0, ax1, ax2, ax3) = (depthwise_conv2d_nhwc_output[ax0, ax1, ax2, ax3] + p2[ax0, 0, 0, ax3])
 T_relu(ax0, ax1, ax2, ax3) = max(T_add[ax0, ax1, ax2, ax3], 0f)
 
-========== Task 9  (workload key: [&quot;7d79c516e212fe1d73f5dbb90eaca2cf&quot;, [1, 1000], [1, 1000]]) ==========
-p0 = PLACEHOLDER [1, 1000]
-T_softmax_maxelem(i0) max= p0[i0, k]
-T_softmax_exp(i0, i1) = tir.exp((p0[i0, i1] - T_softmax_maxelem[i0]))
-T_softmax_expsum(i0) += T_softmax_exp[i0, k]
-T_softmax_norm(i0, i1) = (T_softmax_exp[i0, i1]/T_softmax_expsum[i0])
-
-========== Task 10  (workload key: [&quot;52ea56a3ba2b8548ac83748ee8a69093&quot;, [1, 112, 112, 32], [3, 3, 32, 1], [1, 1, 1, 32], [1, 112, 112, 32]]) ==========
+========== Task 9  (workload key: [&quot;52ea56a3ba2b8548ac83748ee8a69093&quot;, [1, 112, 112, 32], [3, 3, 32, 1], [1, 1, 1, 32], [1, 112, 112, 32]]) ==========
 p0 = PLACEHOLDER [1, 112, 112, 32]
 data_pad(i0, i1, i2, i3) = tir.if_then_else(((((i1 &gt;= 1) &amp;&amp; (i1 &lt; 113)) &amp;&amp; (i2 &gt;= 1)) &amp;&amp; (i2 &lt; 113)), p0[i0, (i1 - 1), (i2 - 1), i3], 0f)
 p1 = PLACEHOLDER [3, 3, 32, 1]
@@ -724,7 +717,7 @@ p2 = PLACEHOLDER [1, 1, 1, 32]
 T_add(ax0, ax1, ax2, ax3) = (depthwise_conv2d_nhwc_output[ax0, ax1, ax2, ax3] + p2[ax0, 0, 0, ax3])
 T_relu(ax0, ax1, ax2, ax3) = max(T_add[ax0, ax1, ax2, ax3], 0f)
 
-========== Task 11  (workload key: [&quot;def7817dfce373e6e7159d33d17e4a09&quot;, [1, 28, 28, 128], [1, 1, 128, 256], [1, 1, 1, 256], [1, 28, 28, 256]]) ==========
+========== Task 10  (workload key: [&quot;def7817dfce373e6e7159d33d17e4a09&quot;, [1, 28, 28, 128], [1, 1, 128, 256], [1, 1, 1, 256], [1, 28, 28, 256]]) ==========
 p0 = PLACEHOLDER [1, 28, 28, 128]
 PadInput(i0, i1, i2, i3) = p0[i0, i1, i2, i3]
 data_vec(n, oho, owo, ohi, owi, ic) = PadInput[n, (oho + ohi), ((owo*4) + owi), ic]
@@ -736,7 +729,7 @@ p2 = PLACEHOLDER [1, 1, 1, 256]
 T_add(ax0, ax1, ax2, ax3) = (output_unpack[ax0, ax1, ax2, ax3] + p2[ax0, 0, 0, ax3])
 T_relu(ax0, ax1, ax2, ax3) = max(T_add[ax0, ax1, ax2, ax3], 0f)
 
-========== Task 12  (workload key: [&quot;f439cb5bb83bb6be4824f8b51c68bdb9&quot;, [1, 28, 28, 256], [3, 3, 256, 1], [1, 1, 1, 256], [1, 14, 14, 256]]) ==========
+========== Task 11  (workload key: [&quot;f439cb5bb83bb6be4824f8b51c68bdb9&quot;, [1, 28, 28, 256], [3, 3, 256, 1], [1, 1, 1, 256], [1, 14, 14, 256]]) ==========
 p0 = PLACEHOLDER [1, 28, 28, 256]
 data_pad(i0, i1, i2, i3) = tir.if_then_else(((((i1 &gt;= 1) &amp;&amp; (i1 &lt; 29)) &amp;&amp; (i2 &gt;= 1)) &amp;&amp; (i2 &lt; 29)), p0[i0, (i1 - 1), (i2 - 1), i3], 0f)
 p1 = PLACEHOLDER [3, 3, 256, 1]
@@ -744,6 +737,13 @@ depthwise_conv2d_nhwc_output(n, h, w, c) += (data_pad[n, ((2*h) + reduce_h), ((w
 p2 = PLACEHOLDER [1, 1, 1, 256]
 T_add(ax0, ax1, ax2, ax3) = (depthwise_conv2d_nhwc_output[ax0, ax1, ax2, ax3] + p2[ax0, 0, 0, ax3])
 T_relu(ax0, ax1, ax2, ax3) = max(T_add[ax0, ax1, ax2, ax3], 0f)
+
+========== Task 12  (workload key: [&quot;7d79c516e212fe1d73f5dbb90eaca2cf&quot;, [1, 1000], [1, 1000]]) ==========
+p0 = PLACEHOLDER [1, 1000]
+T_softmax_maxelem(i0) max= p0[i0, k]
+T_softmax_exp(i0, i1) = tir.exp((p0[i0, i1] - T_softmax_maxelem[i0]))
+T_softmax_expsum(i0) += T_softmax_exp[i0, k]
+T_softmax_norm(i0, i1) = (T_softmax_exp[i0, i1]/T_softmax_expsum[i0])
 
 ========== Task 13  (workload key: [&quot;72e8f07fd86080494f52d51b53788200&quot;, [1, 56, 56, 64], [1, 1, 64, 128], [1, 1, 1, 128], [1, 56, 56, 128]]) ==========
 p0 = PLACEHOLDER [1, 56, 56, 64]
@@ -822,16 +822,7 @@ p3 = PLACEHOLDER [1, 112, 1, 1]
 T_add(ax0, ax1, ax2, ax3) = (T_multiply[ax0, ax1, ax2, ax3] + p3[ax0, ax1, 0, 0])
 T_relu(ax0, ax1, ax2, ax3) = max(T_add[ax0, ax1, ax2, ax3], 0f)
 
-========== Task 20  (workload key: [&quot;52ea56a3ba2b8548ac83748ee8a69093&quot;, [1, 14, 14, 512], [3, 3, 512, 1], [1, 1, 1, 512], [1, 14, 14, 512]]) ==========
-p0 = PLACEHOLDER [1, 14, 14, 512]
-data_pad(i0, i1, i2, i3) = tir.if_then_else(((((i1 &gt;= 1) &amp;&amp; (i1 &lt; 15)) &amp;&amp; (i2 &gt;= 1)) &amp;&amp; (i2 &lt; 15)), p0[i0, (i1 - 1), (i2 - 1), i3], 0f)
-p1 = PLACEHOLDER [3, 3, 512, 1]
-depthwise_conv2d_nhwc_output(n, h, w, c) += (data_pad[n, (h + reduce_h), (w + reduce_w), c]*p1[reduce_h, reduce_w, c, 0])
-p2 = PLACEHOLDER [1, 1, 1, 512]
-T_add(ax0, ax1, ax2, ax3) = (depthwise_conv2d_nhwc_output[ax0, ax1, ax2, ax3] + p2[ax0, 0, 0, ax3])
-T_relu(ax0, ax1, ax2, ax3) = max(T_add[ax0, ax1, ax2, ax3], 0f)
-
-========== Task 21  (workload key: [&quot;def7817dfce373e6e7159d33d17e4a09&quot;, [1, 28, 28, 256], [1, 1, 256, 256], [1, 1, 1, 256], [1, 28, 28, 256]]) ==========
+========== Task 20  (workload key: [&quot;def7817dfce373e6e7159d33d17e4a09&quot;, [1, 28, 28, 256], [1, 1, 256, 256], [1, 1, 1, 256], [1, 28, 28, 256]]) ==========
 p0 = PLACEHOLDER [1, 28, 28, 256]
 PadInput(i0, i1, i2, i3) = p0[i0, i1, i2, i3]
 data_vec(n, oho, owo, ohi, owi, ic) = PadInput[n, (oho + ohi), ((owo*4) + owi), ic]
@@ -841,6 +832,15 @@ conv(n, oho, owo, oco, ohi, owi, oci) += (data_vec[n, oho, owo, (ohi + kh), (owi
 output_unpack(n, oho, owo, oc) = conv[n, oho, floordiv(owo, 4), floordiv(oc, 8), 0, floormod(owo, 4), floormod(oc, 8)]
 p2 = PLACEHOLDER [1, 1, 1, 256]
 T_add(ax0, ax1, ax2, ax3) = (output_unpack[ax0, ax1, ax2, ax3] + p2[ax0, 0, 0, ax3])
+T_relu(ax0, ax1, ax2, ax3) = max(T_add[ax0, ax1, ax2, ax3], 0f)
+
+========== Task 21  (workload key: [&quot;52ea56a3ba2b8548ac83748ee8a69093&quot;, [1, 14, 14, 512], [3, 3, 512, 1], [1, 1, 1, 512], [1, 14, 14, 512]]) ==========
+p0 = PLACEHOLDER [1, 14, 14, 512]
+data_pad(i0, i1, i2, i3) = tir.if_then_else(((((i1 &gt;= 1) &amp;&amp; (i1 &lt; 15)) &amp;&amp; (i2 &gt;= 1)) &amp;&amp; (i2 &lt; 15)), p0[i0, (i1 - 1), (i2 - 1), i3], 0f)
+p1 = PLACEHOLDER [3, 3, 512, 1]
+depthwise_conv2d_nhwc_output(n, h, w, c) += (data_pad[n, (h + reduce_h), (w + reduce_w), c]*p1[reduce_h, reduce_w, c, 0])
+p2 = PLACEHOLDER [1, 1, 1, 512]
+T_add(ax0, ax1, ax2, ax3) = (depthwise_conv2d_nhwc_output[ax0, ax1, ax2, ax3] + p2[ax0, 0, 0, ax3])
 T_relu(ax0, ax1, ax2, ax3) = max(T_add[ax0, ax1, ax2, ax3], 0f)
 </pre></div>
 </div>

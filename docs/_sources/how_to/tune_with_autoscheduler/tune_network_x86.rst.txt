@@ -315,13 +315,7 @@ The task scheduler will just optimize this objective.
     T_add(ax0, ax1, ax2, ax3) = (conv2d_nhwc[ax0, ax1, ax2, ax3] + p2[ax0, 0, 0, ax3])
     T_relu(ax0, ax1, ax2, ax3) = max(T_add[ax0, ax1, ax2, ax3], 0f)
 
-    ========== Task 11  (workload key: ["0fad1b42d0d33418e0a8d15d3bbad3c9", [1, 56, 56, 256], [1, 1, 256, 512], [1, 28, 28, 512]]) ==========
-    p0 = PLACEHOLDER [1, 56, 56, 256]
-    pad_temp(i0, i1, i2, i3) = p0[i0, i1, i2, i3]
-    p1 = PLACEHOLDER [1, 1, 256, 512]
-    conv2d_nhwc(nn, yy, xx, ff) += (pad_temp[nn, ((yy*2) + ry), ((xx*2) + rx), rc]*p1[ry, rx, rc, ff])
-
-    ========== Task 12  (workload key: ["76afb7bf408a1ffa0b8b7bc09d077dc3", [1, 28, 28, 128], [1, 1, 128, 512], [1, 28, 28, 512], [1, 1, 1, 512], [1, 28, 28, 512]]) ==========
+    ========== Task 11  (workload key: ["76afb7bf408a1ffa0b8b7bc09d077dc3", [1, 28, 28, 128], [1, 1, 128, 512], [1, 28, 28, 512], [1, 1, 1, 512], [1, 28, 28, 512]]) ==========
     p0 = PLACEHOLDER [1, 28, 28, 128]
     pad_temp(i0, i1, i2, i3) = p0[i0, i1, i2, i3]
     p1 = PLACEHOLDER [1, 1, 128, 512]
@@ -332,7 +326,20 @@ The task scheduler will just optimize this objective.
     T_add(ax0, ax1, ax2, ax3) = (T_add[ax0, ax1, ax2, ax3] + p3[ax0, 0, 0, ax3])
     T_relu(ax0, ax1, ax2, ax3) = max(T_add[ax0, ax1, ax2, ax3], 0f)
 
-    ========== Task 13  (workload key: ["3060808fc5c74e18b1276729071fbae0", [1, 14, 14, 256], [1, 1, 256, 1024], [1, 14, 14, 1024], [1, 14, 14, 1024]]) ==========
+    ========== Task 12  (workload key: ["0fad1b42d0d33418e0a8d15d3bbad3c9", [1, 56, 56, 256], [1, 1, 256, 512], [1, 28, 28, 512]]) ==========
+    p0 = PLACEHOLDER [1, 56, 56, 256]
+    pad_temp(i0, i1, i2, i3) = p0[i0, i1, i2, i3]
+    p1 = PLACEHOLDER [1, 1, 256, 512]
+    conv2d_nhwc(nn, yy, xx, ff) += (pad_temp[nn, ((yy*2) + ry), ((xx*2) + rx), rc]*p1[ry, rx, rc, ff])
+
+    ========== Task 13  (workload key: ["7d79c516e212fe1d73f5dbb90eaca2cf", [1, 1000], [1, 1000]]) ==========
+    p0 = PLACEHOLDER [1, 1000]
+    T_softmax_maxelem(i0) max= p0[i0, k]
+    T_softmax_exp(i0, i1) = tir.exp((p0[i0, i1] - T_softmax_maxelem[i0]))
+    T_softmax_expsum(i0) += T_softmax_exp[i0, k]
+    T_softmax_norm(i0, i1) = (T_softmax_exp[i0, i1]/T_softmax_expsum[i0])
+
+    ========== Task 14  (workload key: ["3060808fc5c74e18b1276729071fbae0", [1, 14, 14, 256], [1, 1, 256, 1024], [1, 14, 14, 1024], [1, 14, 14, 1024]]) ==========
     p0 = PLACEHOLDER [1, 14, 14, 256]
     pad_temp(i0, i1, i2, i3) = p0[i0, i1, i2, i3]
     p1 = PLACEHOLDER [1, 1, 256, 1024]
@@ -340,7 +347,24 @@ The task scheduler will just optimize this objective.
     p2 = PLACEHOLDER [1, 14, 14, 1024]
     T_add(ax0, ax1, ax2, ax3) = (conv2d_nhwc[ax0, ax1, ax2, ax3] + p2[ax0, ax1, ax2, ax3])
 
-    ========== Task 14  (workload key: ["6d628209072e3e3dd8f49359935acea6", [1, 7, 7, 2048], [1, 1, 2048, 512], [1, 1, 1, 512], [1, 7, 7, 512]]) ==========
+    ========== Task 15  (workload key: ["07f9fcad27bdd3233f86fe35a5185d33", [1, 224, 224, 3], [7, 7, 3, 64], [1, 1, 1, 64], [1, 112, 112, 64]]) ==========
+    p0 = PLACEHOLDER [1, 224, 224, 3]
+    pad_temp(i0, i1, i2, i3) = tir.if_then_else(((((i1 >= 3) && (i1 < 227)) && (i2 >= 3)) && (i2 < 227)), p0[i0, (i1 - 3), (i2 - 3), i3], 0f)
+    p1 = PLACEHOLDER [7, 7, 3, 64]
+    conv2d_nhwc(nn, yy, xx, ff) += (pad_temp[nn, ((yy*2) + ry), ((xx*2) + rx), rc]*p1[ry, rx, rc, ff])
+    p2 = PLACEHOLDER [1, 1, 1, 64]
+    T_add(ax0, ax1, ax2, ax3) = (conv2d_nhwc[ax0, ax1, ax2, ax3] + p2[ax0, 0, 0, ax3])
+    T_relu(ax0, ax1, ax2, ax3) = max(T_add[ax0, ax1, ax2, ax3], 0f)
+
+    ========== Task 16  (workload key: ["6d012ba18a086c11ee2b85c7324e16f2", [1, 112, 112, 64], [1, 1, 1, 64], [1, 56, 56, 64]]) ==========
+    p0 = PLACEHOLDER [1, 112, 112, 64]
+    pad_temp(ax0, ax1, ax2, ax3) = tir.if_then_else(((((ax1 >= 1) && (ax1 < 113)) && (ax2 >= 1)) && (ax2 < 113)), p0[ax0, (ax1 - 1), (ax2 - 1), ax3], -3.40282e+38f)
+    pool_max(ax0, ax1, ax2, ax3) max= pad_temp[ax0, ((ax1*2) + rv0), ((ax2*2) + rv1), ax3]
+    p1 = PLACEHOLDER [1, 1, 1, 64]
+    T_add(ax0, ax1, ax2, ax3) = (pool_max[ax0, ax1, ax2, ax3] + p1[ax0, 0, 0, ax3])
+    T_relu(ax0, ax1, ax2, ax3) = max(T_add[ax0, ax1, ax2, ax3], 0f)
+
+    ========== Task 17  (workload key: ["6d628209072e3e3dd8f49359935acea6", [1, 7, 7, 2048], [1, 1, 2048, 512], [1, 1, 1, 512], [1, 7, 7, 512]]) ==========
     p0 = PLACEHOLDER [1, 7, 7, 2048]
     pad_temp(i0, i1, i2, i3) = p0[i0, i1, i2, i3]
     p1 = PLACEHOLDER [1, 1, 2048, 512]
@@ -349,36 +373,12 @@ The task scheduler will just optimize this objective.
     T_add(ax0, ax1, ax2, ax3) = (conv2d_nhwc[ax0, ax1, ax2, ax3] + p2[ax0, 0, 0, ax3])
     T_relu(ax0, ax1, ax2, ax3) = max(T_add[ax0, ax1, ax2, ax3], 0f)
 
-    ========== Task 15  (workload key: ["6d012ba18a086c11ee2b85c7324e16f2", [1, 112, 112, 64], [1, 1, 1, 64], [1, 56, 56, 64]]) ==========
-    p0 = PLACEHOLDER [1, 112, 112, 64]
-    pad_temp(ax0, ax1, ax2, ax3) = tir.if_then_else(((((ax1 >= 1) && (ax1 < 113)) && (ax2 >= 1)) && (ax2 < 113)), p0[ax0, (ax1 - 1), (ax2 - 1), ax3], -3.40282e+38f)
-    pool_max(ax0, ax1, ax2, ax3) max= pad_temp[ax0, ((ax1*2) + rv0), ((ax2*2) + rv1), ax3]
-    p1 = PLACEHOLDER [1, 1, 1, 64]
-    T_add(ax0, ax1, ax2, ax3) = (pool_max[ax0, ax1, ax2, ax3] + p1[ax0, 0, 0, ax3])
-    T_relu(ax0, ax1, ax2, ax3) = max(T_add[ax0, ax1, ax2, ax3], 0f)
-
-    ========== Task 16  (workload key: ["7d79c516e212fe1d73f5dbb90eaca2cf", [1, 1000], [1, 1000]]) ==========
-    p0 = PLACEHOLDER [1, 1000]
-    T_softmax_maxelem(i0) max= p0[i0, k]
-    T_softmax_exp(i0, i1) = tir.exp((p0[i0, i1] - T_softmax_maxelem[i0]))
-    T_softmax_expsum(i0) += T_softmax_exp[i0, k]
-    T_softmax_norm(i0, i1) = (T_softmax_exp[i0, i1]/T_softmax_expsum[i0])
-
-    ========== Task 17  (workload key: ["6d628209072e3e3dd8f49359935acea6", [1, 14, 14, 1024], [1, 1, 1024, 256], [1, 1, 1, 256], [1, 14, 14, 256]]) ==========
+    ========== Task 18  (workload key: ["6d628209072e3e3dd8f49359935acea6", [1, 14, 14, 1024], [1, 1, 1024, 256], [1, 1, 1, 256], [1, 14, 14, 256]]) ==========
     p0 = PLACEHOLDER [1, 14, 14, 1024]
     pad_temp(i0, i1, i2, i3) = p0[i0, i1, i2, i3]
     p1 = PLACEHOLDER [1, 1, 1024, 256]
     conv2d_nhwc(nn, yy, xx, ff) += (pad_temp[nn, (yy + ry), (xx + rx), rc]*p1[ry, rx, rc, ff])
     p2 = PLACEHOLDER [1, 1, 1, 256]
-    T_add(ax0, ax1, ax2, ax3) = (conv2d_nhwc[ax0, ax1, ax2, ax3] + p2[ax0, 0, 0, ax3])
-    T_relu(ax0, ax1, ax2, ax3) = max(T_add[ax0, ax1, ax2, ax3], 0f)
-
-    ========== Task 18  (workload key: ["07f9fcad27bdd3233f86fe35a5185d33", [1, 224, 224, 3], [7, 7, 3, 64], [1, 1, 1, 64], [1, 112, 112, 64]]) ==========
-    p0 = PLACEHOLDER [1, 224, 224, 3]
-    pad_temp(i0, i1, i2, i3) = tir.if_then_else(((((i1 >= 3) && (i1 < 227)) && (i2 >= 3)) && (i2 < 227)), p0[i0, (i1 - 3), (i2 - 3), i3], 0f)
-    p1 = PLACEHOLDER [7, 7, 3, 64]
-    conv2d_nhwc(nn, yy, xx, ff) += (pad_temp[nn, ((yy*2) + ry), ((xx*2) + rx), rc]*p1[ry, rx, rc, ff])
-    p2 = PLACEHOLDER [1, 1, 1, 64]
     T_add(ax0, ax1, ax2, ax3) = (conv2d_nhwc[ax0, ax1, ax2, ax3] + p2[ax0, 0, 0, ax3])
     T_relu(ax0, ax1, ax2, ax3) = max(T_add[ax0, ax1, ax2, ax3], 0f)
 
@@ -419,19 +419,19 @@ The task scheduler will just optimize this objective.
     T_add(ax0, ax1, ax2, ax3) = (T_multiply[ax0, ax1, ax2, ax3] + p4[ax0, 0, 0, ax3])
     T_relu(ax0, ax1, ax2, ax3) = max(T_add[ax0, ax1, ax2, ax3], 0f)
 
-    ========== Task 22  (workload key: ["0fad1b42d0d33418e0a8d15d3bbad3c9", [1, 28, 28, 512], [1, 1, 512, 1024], [1, 14, 14, 1024]]) ==========
-    p0 = PLACEHOLDER [1, 28, 28, 512]
-    pad_temp(i0, i1, i2, i3) = p0[i0, i1, i2, i3]
-    p1 = PLACEHOLDER [1, 1, 512, 1024]
-    conv2d_nhwc(nn, yy, xx, ff) += (pad_temp[nn, ((yy*2) + ry), ((xx*2) + rx), rc]*p1[ry, rx, rc, ff])
-
-    ========== Task 23  (workload key: ["3060808fc5c74e18b1276729071fbae0", [1, 28, 28, 128], [1, 1, 128, 512], [1, 28, 28, 512], [1, 28, 28, 512]]) ==========
+    ========== Task 22  (workload key: ["3060808fc5c74e18b1276729071fbae0", [1, 28, 28, 128], [1, 1, 128, 512], [1, 28, 28, 512], [1, 28, 28, 512]]) ==========
     p0 = PLACEHOLDER [1, 28, 28, 128]
     pad_temp(i0, i1, i2, i3) = p0[i0, i1, i2, i3]
     p1 = PLACEHOLDER [1, 1, 128, 512]
     conv2d_nhwc(nn, yy, xx, ff) += (pad_temp[nn, (yy + ry), (xx + rx), rc]*p1[ry, rx, rc, ff])
     p2 = PLACEHOLDER [1, 28, 28, 512]
     T_add(ax0, ax1, ax2, ax3) = (conv2d_nhwc[ax0, ax1, ax2, ax3] + p2[ax0, ax1, ax2, ax3])
+
+    ========== Task 23  (workload key: ["0fad1b42d0d33418e0a8d15d3bbad3c9", [1, 28, 28, 512], [1, 1, 512, 1024], [1, 14, 14, 1024]]) ==========
+    p0 = PLACEHOLDER [1, 28, 28, 512]
+    pad_temp(i0, i1, i2, i3) = p0[i0, i1, i2, i3]
+    p1 = PLACEHOLDER [1, 1, 512, 1024]
+    conv2d_nhwc(nn, yy, xx, ff) += (pad_temp[nn, ((yy*2) + ry), ((xx*2) + rx), rc]*p1[ry, rx, rc, ff])
 
     ========== Task 24  (workload key: ["2beb39e9afe4c74822fffbcbb8533595", [1, 28, 28, 512], [1, 1, 512, 256], [1, 1, 1, 256], [1, 14, 14, 256]]) ==========
     p0 = PLACEHOLDER [1, 28, 28, 512]
@@ -666,7 +666,7 @@ so we can read the log file and load the best schedules.
     Evaluate inference time cost...
     Execution time summary:
      mean (ms)   median (ms)    max (ms)     min (ms)     std (ms)  
-      759.3670     754.6157     773.5405     749.9448     10.2020   
+      763.2007     761.9911     765.7506     761.8603      1.8038   
                
 
 
@@ -694,7 +694,7 @@ Other Tips
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** ( 1 minutes  45.482 seconds)
+   **Total running time of the script:** ( 1 minutes  30.756 seconds)
 
 
 .. _sphx_glr_download_how_to_tune_with_autoscheduler_tune_network_x86.py:
