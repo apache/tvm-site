@@ -9,7 +9,7 @@ var searchData=
   ['savedltensor_8501',['SaveDLTensor',['../namespacetvm_1_1runtime.html#a8fb37910dcd9bb6899e6a3a47f006514',1,'tvm::runtime']]],
   ['savejson_8502',['SaveJSON',['../namespacetvm.html#aad98af358976b1598430090b7db92823',1,'tvm']]],
   ['savetobinary_8503',['SaveToBinary',['../classtvm_1_1runtime_1_1vm_1_1Executable.html#a6fa56dfff8df1b3c353f076ee02935b0',1,'tvm::runtime::vm::Executable::SaveToBinary()'],['../classtvm_1_1runtime_1_1ModuleNode.html#acd613ea7faf2fc100d1e8b0fd80020c3',1,'tvm::runtime::ModuleNode::SaveToBinary()']]],
-  ['savetofile_8504',['SaveToFile',['../classtvm_1_1runtime_1_1vm_1_1Executable.html#a2c6bb4cf2bf909f663ede9b8625e9c0e',1,'tvm::runtime::vm::Executable::SaveToFile()'],['../classtvm_1_1runtime_1_1ModuleNode.html#ad06785ce4a9daf8602748f1b9cff5b90',1,'tvm::runtime::ModuleNode::SaveToFile()']]],
+  ['savetofile_8504',['SaveToFile',['../classtvm_1_1runtime_1_1vm_1_1Executable.html#aa8bb96a33b7e540b169b2994ae75a400',1,'tvm::runtime::vm::Executable::SaveToFile()'],['../classtvm_1_1runtime_1_1ModuleNode.html#a031fdd218e368bc96e119ccdabf482ee',1,'tvm::runtime::ModuleNode::SaveToFile()']]],
   ['scalar_8505',['Scalar',['../classtvm_1_1TensorType.html#ab3d79794f932115e9ad71d616648d05d',1,'tvm::TensorType']]],
   ['scale_5fshift_5fnchw_8506',['scale_shift_nchw',['../namespacetvm_1_1topi_1_1nn.html#a07b8a04f27f17af58dd9f18218cfe081',1,'tvm::topi::nn']]],
   ['scale_5fshift_5fnhwc_8507',['scale_shift_nhwc',['../namespacetvm_1_1topi_1_1nn.html#acaf3bc4e89fc55b8444d2550d25f4f22',1,'tvm::topi::nn']]],

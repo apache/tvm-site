@@ -31,7 +31,7 @@ var searchData=
   ['refvalue_8382',['RefValue',['../classtvm_1_1relay_1_1RefValue.html#a00145f9fe1eaf86bfecdbf3c2aac0b0c',1,'tvm::relay::RefValue']]],
   ['refvalueobj_8383',['RefValueObj',['../structtvm_1_1relay_1_1RefValueObj.html#ab78c67945509950f453e51c6f9ddeb96',1,'tvm::relay::RefValueObj']]],
   ['refwrite_8384',['RefWrite',['../classtvm_1_1relay_1_1RefWrite.html#ab6d1e69a58b59c18535ca3624ea1c89f',1,'tvm::relay::RefWrite']]],
-  ['register_8385',['Register',['../classtvm_1_1ReflectionVTable.html#a775a9d85f429302c05e06ddc64eb9456',1,'tvm::ReflectionVTable::Register()'],['../classtvm_1_1runtime_1_1Registry.html#a227ffef03991cd50224d5d31257a475a',1,'tvm::runtime::Registry::Register()'],['../classtvm_1_1tir_1_1TensorIntrin.html#ab7d377d5e592ad6784972cd9f097dedf',1,'tvm::tir::TensorIntrin::Register()']]],
+  ['register_8385',['Register',['../classtvm_1_1ReflectionVTable.html#a775a9d85f429302c05e06ddc64eb9456',1,'tvm::ReflectionVTable::Register()'],['../classtvm_1_1runtime_1_1Registry.html#a838a8aa1c2b4a444e92f5028a07aed2b',1,'tvm::runtime::Registry::Register()'],['../classtvm_1_1tir_1_1TensorIntrin.html#ab7d377d5e592ad6784972cd9f097dedf',1,'tvm::tir::TensorIntrin::Register()']]],
   ['register_5ffunc_8386',['register_func',['../classtvm_1_1GenericFunc.html#a2a5ef71cd38881b0ef73efa8f0b5fdc8',1,'tvm::GenericFunc']]],
   ['registerconfigoption_8387',['RegisterConfigOption',['../classtvm_1_1transform_1_1PassContext.html#a6f1d1040cc97320414b4690203f87919',1,'tvm::transform::PassContext']]],
   ['registergenericfunc_8388',['RegisterGenericFunc',['../classtvm_1_1GenericFunc.html#a909acecbf2f34f847a34e587a4570dce',1,'tvm::GenericFunc']]],
@@ -48,7 +48,7 @@ var searchData=
   ['relu_8399',['relu',['../namespacetvm_1_1topi.html#ae99fdff7b3aaceb091b636b8dadd4f5e',1,'tvm::topi']]],
   ['remap_8400',['Remap',['../namespacetvm_1_1script_1_1ir__builder_1_1tir_1_1axis.html#adaa90ddfa1661d0b59328e5b65a7a714',1,'tvm::script::ir_builder::tir::axis']]],
   ['remapthreadaxis_8401',['RemapThreadAxis',['../namespacetvm_1_1tir_1_1transform.html#a25b5de58d543c6786325d87eaad83692',1,'tvm::tir::transform']]],
-  ['remove_8402',['Remove',['../classtvm_1_1runtime_1_1Registry.html#aad89aa915515019c59364b7b569c4648',1,'tvm::runtime::Registry::Remove()'],['../classtvm_1_1IRModuleNode.html#a1350c7d68665605f9c4f10850f4a90b9',1,'tvm::IRModuleNode::Remove()']]],
+  ['remove_8402',['Remove',['../classtvm_1_1runtime_1_1Registry.html#a2500263465a20b0eea77fc298f25a849',1,'tvm::runtime::Registry::Remove()'],['../classtvm_1_1IRModuleNode.html#a1350c7d68665605f9c4f10850f4a90b9',1,'tvm::IRModuleNode::Remove()']]],
   ['remove_5fdispatch_8403',['remove_dispatch',['../classtvm_1_1script_1_1printer_1_1IRDocsifierFunctor.html#a2aa93f9f756c15e09e58b35470f8a7d2',1,'tvm::script::printer::IRDocsifierFunctor']]],
   ['remove_5ffallback_8404',['remove_fallback',['../classtvm_1_1script_1_1printer_1_1IRDocsifierFunctor.html#a82d3a3b7ef744706df18a4696677b94e',1,'tvm::script::printer::IRDocsifierFunctor']]],
   ['removebuildartifact_8405',['RemoveBuildArtifact',['../classtvm_1_1meta__schedule_1_1MeasureCallback.html#aefe7cc6f3c245794a1ad03b043c6eb4f',1,'tvm::meta_schedule::MeasureCallback']]],
@@ -138,7 +138,7 @@ var searchData=
   ['runnerinput_8489',['RunnerInput',['../classtvm_1_1meta__schedule_1_1RunnerInput.html#a46dcc62de7cbe021e381b8c0a5e6776f',1,'tvm::meta_schedule::RunnerInput']]],
   ['runnerresult_8490',['RunnerResult',['../classtvm_1_1meta__schedule_1_1RunnerResult.html#ad15dac65a62952e661aa5dc639d6a958',1,'tvm::meta_schedule::RunnerResult']]],
   ['runtime_8491',['Runtime',['../classtvm_1_1relay_1_1Runtime.html#a301dedc4aefb25ab3fd92cefcba975dd',1,'tvm::relay::Runtime']]],
-  ['runtimeenabled_8492',['RuntimeEnabled',['../namespacetvm_1_1runtime.html#abbea0c23882ae01431ac7fe6506b32a7',1,'tvm::runtime']]],
+  ['runtimeenabled_8492',['RuntimeEnabled',['../namespacetvm_1_1runtime.html#ae6d933eb1e7414afa9a9a62d22cd2522',1,'tvm::runtime']]],
   ['runtimeobject2string_8493',['RuntimeObject2String',['../namespacetvm_1_1runtime.html#a5e4682aef4c22170449389fa455ab434',1,'tvm::runtime']]],
   ['runtimetypeindex_8494',['RuntimeTypeIndex',['../classtvm_1_1runtime_1_1Object.html#ad94d79729ac85aa7c976e23d39066383',1,'tvm::runtime::Object']]]
 ];
