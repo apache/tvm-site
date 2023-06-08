@@ -76,7 +76,7 @@ var searchData=
   ['src_5fvirtual_5fdevice_10108',['src_virtual_device',['../structtvm_1_1relay_1_1DeviceCopyAttrs.html#aac5b2c76325a587bbefaa5af87b4138f',1,'tvm::relay::DeviceCopyAttrs']]],
   ['stage_5fid_10109',['stage_id',['../classtvm_1_1auto__scheduler_1_1StepNode.html#afcc7aaf263348f66139307affbfcee09',1,'tvm::auto_scheduler::StepNode']]],
   ['stage_5fmap_10110',['stage_map',['../classtvm_1_1te_1_1ScheduleNode.html#a612223aec2751cbd035a18c9e5453085',1,'tvm::te::ScheduleNode']]],
-  ['stage_5fpipeline_10111',['stage_pipeline',['../structtvm_1_1tir_1_1BlockInfo.html#a63e54dda904b3ec4f2b5f1a052fbd5a2',1,'tvm::tir::BlockInfo']]],
+  ['stage_5fpipeline_10111',['stage_pipeline',['../classtvm_1_1tir_1_1BlockScopeNode.html#ace2ff75b4be37feeccbc5e12b1c8d30e',1,'tvm::tir::BlockScopeNode']]],
   ['stage_5fto_5fattach_5fiter_10112',['stage_to_attach_iter',['../classtvm_1_1auto__scheduler_1_1AttachMapNode.html#ac5780da6b91313c1a5b1fc5379d043f8',1,'tvm::auto_scheduler::AttachMapNode']]],
   ['stages_10113',['stages',['../classtvm_1_1te_1_1ScheduleNode.html#ab5649969db603d6b7b4d155c0d09cdd5',1,'tvm::te::ScheduleNode::stages()'],['../classtvm_1_1auto__scheduler_1_1StateNode.html#a881e14990bf228ee3fddb3721c451b9e',1,'tvm::auto_scheduler::StateNode::stages()']]],
   ['start_10114',['start',['../classtvm_1_1script_1_1printer_1_1SliceDocNode.html#a16de0189a979a6cf9d8f14b39cb5fb54',1,'tvm::script::printer::SliceDocNode::start()'],['../structtvm_1_1relay_1_1ArangeAttrs.html#ae8ae5bc1551b406a4f52395af343c2ce',1,'tvm::relay::ArangeAttrs::start()']]],
