@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":["DeviceType"],"struct":["Device","UnsupportedDeviceError"]};

@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":["DiagnosticLevel"],"mod":["codespan"],"struct":["Diagnostic","DiagnosticBuilder","DiagnosticContext","DiagnosticContextNode","DiagnosticNode","DiagnosticRenderer","DiagnosticRendererNode"]};
