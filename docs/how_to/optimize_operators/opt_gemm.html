@@ -482,8 +482,8 @@ Then we write a baseline implementation, the simplest way to write a matrix mult
 <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Baseline: </span><span class="si">%f</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">evaluator</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">c</span><span class="p">)</span><span class="o">.</span><span class="n">mean</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Numpy running time: 0.018669
-Baseline: 3.446875
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Numpy running time: 0.019321
+Baseline: 3.462748
 </pre></div>
 </div>
 <p>In TVM, we can always inspect lower level IR to debug or optimize our schedule.
@@ -498,7 +498,7 @@ Here is the generated IR using our baseline schedule.</p>
 class Module:
     @T.prim_func
     def main(A: T.Buffer((1024, 1024), &quot;float32&quot;), B: T.Buffer((1024, 1024), &quot;float32&quot;), C: T.Buffer((1024, 1024), &quot;float32&quot;)):
-        T.func_attr({&quot;from_legacy_te_schedule&quot;: T.bool(True), &quot;global_symbol&quot;: &quot;main&quot;, &quot;tir.noalias&quot;: T.bool(True)})
+        T.func_attr({&quot;from_legacy_te_schedule&quot;: T.bool(True), &quot;tir.noalias&quot;: T.bool(True)})
         for m, n in T.grid(1024, 1024):
             C_1 = T.Buffer((1048576,), data=C.data)
             C_1[m * 1024 + n] = T.float32(0)
@@ -542,7 +542,7 @@ fill 32 * 32 * sizeof(float) which is 4KB in the cache whose total size is 32KB 
 <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Opt1: </span><span class="si">%f</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">evaluator</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">c</span><span class="p">)</span><span class="o">.</span><span class="n">mean</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Opt1: 0.310505
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Opt1: 0.316440
 </pre></div>
 </div>
 <p>Here is the generated IR after blocking.</p>
@@ -556,7 +556,7 @@ fill 32 * 32 * sizeof(float) which is 4KB in the cache whose total size is 32KB 
 class Module:
     @T.prim_func
     def main(A: T.Buffer((1024, 1024), &quot;float32&quot;), B: T.Buffer((1024, 1024), &quot;float32&quot;), C: T.Buffer((1024, 1024), &quot;float32&quot;)):
-        T.func_attr({&quot;from_legacy_te_schedule&quot;: T.bool(True), &quot;global_symbol&quot;: &quot;main&quot;, &quot;tir.noalias&quot;: T.bool(True)})
+        T.func_attr({&quot;from_legacy_te_schedule&quot;: T.bool(True), &quot;tir.noalias&quot;: T.bool(True)})
         for m_outer, n_outer in T.grid(32, 32):
             C_1 = T.Buffer((1048576,), data=C.data)
             for m_inner_init, n_inner_init in T.grid(32, 32):
@@ -599,7 +599,7 @@ vastly.</p>
 <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Opt2: </span><span class="si">%f</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">evaluator</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">c</span><span class="p">)</span><span class="o">.</span><span class="n">mean</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Opt2: 0.289689
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Opt2: 0.304398
 </pre></div>
 </div>
 <p>Here is the generated IR after vectorization.</p>
@@ -613,7 +613,7 @@ vastly.</p>
 class Module:
     @T.prim_func
     def main(A: T.Buffer((1024, 1024), &quot;float32&quot;), B: T.Buffer((1024, 1024), &quot;float32&quot;), C: T.Buffer((1024, 1024), &quot;float32&quot;)):
-        T.func_attr({&quot;from_legacy_te_schedule&quot;: T.bool(True), &quot;global_symbol&quot;: &quot;main&quot;, &quot;tir.noalias&quot;: T.bool(True)})
+        T.func_attr({&quot;from_legacy_te_schedule&quot;: T.bool(True), &quot;tir.noalias&quot;: T.bool(True)})
         for m_outer, n_outer in T.grid(32, 32):
             C_1 = T.Buffer((1048576,), data=C.data)
             for m_inner_init in range(32):
@@ -654,7 +654,7 @@ the access pattern for A matrix is more cache friendly.</p>
 <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Opt3: </span><span class="si">%f</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">evaluator</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">c</span><span class="p">)</span><span class="o">.</span><span class="n">mean</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Opt3: 0.114256
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Opt3: 0.117566
 </pre></div>
 </div>
 <p>Here is the generated IR after loop permutation.</p>
@@ -668,7 +668,7 @@ the access pattern for A matrix is more cache friendly.</p>
 class Module:
     @T.prim_func
     def main(A: T.Buffer((1024, 1024), &quot;float32&quot;), B: T.Buffer((1024, 1024), &quot;float32&quot;), C: T.Buffer((1024, 1024), &quot;float32&quot;)):
-        T.func_attr({&quot;from_legacy_te_schedule&quot;: T.bool(True), &quot;global_symbol&quot;: &quot;main&quot;, &quot;tir.noalias&quot;: T.bool(True)})
+        T.func_attr({&quot;from_legacy_te_schedule&quot;: T.bool(True), &quot;tir.noalias&quot;: T.bool(True)})
         for m_outer, n_outer in T.grid(32, 32):
             C_1 = T.Buffer((1048576,), data=C.data)
             for m_inner_init in range(32):
@@ -731,7 +731,7 @@ flattening.</p>
 <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Opt4: </span><span class="si">%f</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">evaluator</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">c</span><span class="p">)</span><span class="o">.</span><span class="n">mean</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Opt4: 0.106624
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Opt4: 0.105768
 </pre></div>
 </div>
 <p>Here is the generated IR after array packing.</p>
@@ -745,7 +745,7 @@ flattening.</p>
 class Module:
     @T.prim_func
     def main(A: T.Buffer((1024, 1024), &quot;float32&quot;), B: T.Buffer((1024, 1024), &quot;float32&quot;), C: T.Buffer((1024, 1024), &quot;float32&quot;)):
-        T.func_attr({&quot;from_legacy_te_schedule&quot;: T.bool(True), &quot;global_symbol&quot;: &quot;main&quot;, &quot;tir.noalias&quot;: T.bool(True)})
+        T.func_attr({&quot;from_legacy_te_schedule&quot;: T.bool(True), &quot;tir.noalias&quot;: T.bool(True)})
         packedB = T.allocate([32768], &quot;float32x32&quot;, &quot;global&quot;)
         packedB_1 = T.Buffer((32768,), &quot;float32x32&quot;, data=packedB)
         for bigN in T.parallel(32):
@@ -809,7 +809,7 @@ write to C when all the block results are ready.</p>
 <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Opt5: </span><span class="si">%f</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">evaluator</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">c</span><span class="p">)</span><span class="o">.</span><span class="n">mean</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Opt5: 0.112138
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Opt5: 0.111828
 </pre></div>
 </div>
 <p>Here is the generated IR after blocking.</p>
@@ -823,7 +823,7 @@ write to C when all the block results are ready.</p>
 class Module:
     @T.prim_func
     def main(A: T.Buffer((1024, 1024), &quot;float32&quot;), B: T.Buffer((1024, 1024), &quot;float32&quot;), C: T.Buffer((1024, 1024), &quot;float32&quot;)):
-        T.func_attr({&quot;from_legacy_te_schedule&quot;: T.bool(True), &quot;global_symbol&quot;: &quot;main&quot;, &quot;tir.noalias&quot;: T.bool(True)})
+        T.func_attr({&quot;from_legacy_te_schedule&quot;: T.bool(True), &quot;tir.noalias&quot;: T.bool(True)})
         packedB = T.allocate([32768], &quot;float32x32&quot;, &quot;global&quot;)
         C_global = T.allocate([1024], &quot;float32&quot;, &quot;global&quot;)
         packedB_1 = T.Buffer((32768,), &quot;float32x32&quot;, data=packedB)
@@ -889,7 +889,7 @@ class Module:
 <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Opt6: </span><span class="si">%f</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">opt6_time</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Opt6: 0.133126
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Opt6: 0.132968
 </pre></div>
 </div>
 <p>Here is the generated IR after parallelization.</p>
@@ -903,7 +903,7 @@ class Module:
 class Module:
     @T.prim_func
     def main(A: T.Buffer((1024, 1024), &quot;float32&quot;), B: T.Buffer((1024, 1024), &quot;float32&quot;), C: T.Buffer((1024, 1024), &quot;float32&quot;)):
-        T.func_attr({&quot;from_legacy_te_schedule&quot;: T.bool(True), &quot;global_symbol&quot;: &quot;main&quot;, &quot;tir.noalias&quot;: T.bool(True)})
+        T.func_attr({&quot;from_legacy_te_schedule&quot;: T.bool(True), &quot;tir.noalias&quot;: T.bool(True)})
         packedB = T.allocate([32768], &quot;float32x32&quot;, &quot;global&quot;)
         packedB_1 = T.Buffer((32768,), &quot;float32x32&quot;, data=packedB)
         for bigN in T.parallel(32):
