@@ -322,7 +322,7 @@ var searchData=
   ['split_4166',['Split',['../classtvm_1_1te_1_1Split.html',1,'tvm::te']]],
   ['split_5fby_5fnparts_4167',['split_by_nparts',['../classtvm_1_1te_1_1Stage.html#a51432f38d9ec4792a2525023179ae604',1,'tvm::te::Stage']]],
   ['split_5fsections_4168',['split_sections',['../namespacetvm_1_1topi.html#acc643e2ed166fa2ed82a95853e145619',1,'tvm::topi']]],
-  ['splitargs_4169',['SplitArgs',['../namespacetvm_1_1relay_1_1transform.html#a2425d757b896168a109498e8d34ba960',1,'tvm::relay::transform']]],
+  ['splitargs_4169',['SplitArgs',['../namespacetvm_1_1relay_1_1transform.html#af8503ba932c35107c023daf993d6e74c',1,'tvm::relay::transform']]],
   ['splitattrs_4170',['SplitAttrs',['../structtvm_1_1relay_1_1SplitAttrs.html',1,'tvm::relay']]],
   ['splithostdevice_4171',['SplitHostDevice',['../namespacetvm_1_1tir_1_1transform.html#a4ec5dffb2a177bfd7548be4d974cba71',1,'tvm::tir::transform']]],
   ['splitnode_4172',['SplitNode',['../classtvm_1_1te_1_1SplitNode.html',1,'tvm::te']]],
