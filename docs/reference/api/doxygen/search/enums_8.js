@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['layoutrewriteoption_10539',['LayoutRewriteOption',['../namespacetvm_1_1auto__scheduler.html#a3e9480be0119338696abbe9c80193b9e',1,'tvm::auto_scheduler']]]
+  ['layoutrewriteoption_10553',['LayoutRewriteOption',['../namespacetvm_1_1auto__scheduler.html#a3e9480be0119338696abbe9c80193b9e',1,'tvm::auto_scheduler']]]
 ];
