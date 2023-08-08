@@ -1,0 +1,1674 @@
+
+
+
+
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Auto-scheduling a Convolution Layer for GPU &mdash; tvm 0.13.0 documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/sg_gallery.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/sg_gallery-binder.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/sg_gallery-dataframe.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/sg_gallery-rendered-html.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/css/tlcpack_theme.css" type="text/css" />
+
+  
+  
+    <link rel="shortcut icon" href="../../_static/tvm-logo-square.png"/>
+  
+
+  
+  
+  
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+        <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+        <script src="../../_static/jquery.js"></script>
+        <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/doctools.js"></script>
+    
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+
+    
+    <script type="text/javascript" src="../../_static/js/tlcpack_theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="Auto-scheduling a Neural Network for x86 CPU" href="tune_network_x86.html" />
+    <link rel="prev" title="Use AutoScheduler for Template-Free Scheduling" href="index.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    
+<header class="header">
+    <div class="innercontainer">
+      <div class="headerInner d-flex justify-content-between align-items-center">
+          <div class="headerLogo">
+               <a href="https://tvm.apache.org/"><img src=https://tvm.apache.org/assets/images/logo.svg alt="logo"></a>
+          </div>
+
+          <div id="headMenu" class="headerNav">
+            <button type="button" id="closeHeadMenu" class="navCloseBtn"><img src="../../_static/img/close-icon.svg" alt="Close"></button>
+             <ul class="nav">
+                <li class="nav-item">
+                   <a class="nav-link" href=https://tvm.apache.org/community>Community</a>
+                </li>
+                <li class="nav-item">
+                   <a class="nav-link" href=https://tvm.apache.org/download>Download</a>
+                </li>
+                <li class="nav-item">
+                   <a class="nav-link" href=https://tvm.apache.org/vta>VTA</a>
+                </li>
+                <li class="nav-item">
+                   <a class="nav-link" href=https://tvm.apache.org/blog>Blog</a>
+                </li>
+                <li class="nav-item">
+                   <a class="nav-link" href=https://tvm.apache.org/docs>Docs</a>
+                </li>
+                <li class="nav-item">
+                   <a class="nav-link" href=https://tvmconf.org>Conference</a>
+                </li>
+                <li class="nav-item">
+                   <a class="nav-link" href=https://github.com/apache/tvm/>Github</a>
+                </li>
+             </ul>
+               <div class="responsivetlcdropdown">
+                 <button type="button" class="btn-link">
+                   ASF
+                 </button>
+                 <ul>
+                     <li>
+                       <a href=https://apache.org/>Apache Homepage</a>
+                     </li>
+                     <li>
+                       <a href=https://www.apache.org/licenses/>License</a>
+                     </li>
+                     <li>
+                       <a href=https://www.apache.org/foundation/sponsorship.html>Sponsorship</a>
+                     </li>
+                     <li>
+                       <a href=https://www.apache.org/security/>Security</a>
+                     </li>
+                     <li>
+                       <a href=https://www.apache.org/foundation/thanks.html>Thanks</a>
+                     </li>
+                     <li>
+                       <a href=https://www.apache.org/events/current-event>Events</a>
+                     </li>
+                 </ul>
+               </div>
+          </div>
+            <div class="responsiveMenuIcon">
+              <button type="button" id="menuBtn" class="btn-menu"><img src="../../_static/img/menu-icon.svg" alt="Menu Icon"></button>
+            </div>
+
+            <div class="tlcDropdown">
+              <div class="dropdown">
+                <button type="button" class="btn-link dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                  ASF
+                </button>
+                <div class="dropdown-menu dropdown-menu-right">
+                  <ul>
+                     <li>
+                       <a href=https://apache.org/>Apache Homepage</a>
+                     </li>
+                     <li>
+                       <a href=https://www.apache.org/licenses/>License</a>
+                     </li>
+                     <li>
+                       <a href=https://www.apache.org/foundation/sponsorship.html>Sponsorship</a>
+                     </li>
+                     <li>
+                       <a href=https://www.apache.org/security/>Security</a>
+                     </li>
+                     <li>
+                       <a href=https://www.apache.org/foundation/thanks.html>Thanks</a>
+                     </li>
+                     <li>
+                       <a href=https://www.apache.org/events/current-event>Events</a>
+                     </li>
+                  </ul>
+                </div>
+              </div>
+          </div>
+       </div>
+    </div>
+ </header>
+ 
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side fixed">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../index.html">
+          
+
+          
+            
+            <img src="../../_static/tvm-logo-small.png" class="logo" alt="Logo"/>
+          
+          </a>
+
+          
+            
+            
+              <input type="checkbox" class="version-toggle-box" hidden id="version-toggle">
+              <label for="version-toggle" class="version-toggle-label">
+                  <div tabindex="0" class="version version-selector version-selector-show">
+                    0.13.0 <span class="chevron versions-hidden"><svg fill="none" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg"><path d="m8 4 8 8-8 8" stroke="#000" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/></svg></span><span class="chevron versions-shown"><svg fill="none" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg"><path d="m4 8 8 8 8-8" stroke="#000" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"/></svg></span>
+                  </div>
+                </label>
+                <div class="version-details wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+                  <p class="caption" role="heading"><span class="caption-text">Versions</span></p>
+                  <ol style="text-align: left">
+                    
+                    
+                    
+                    
+                      <li><div class="version"><a style="font-size: 0.8em; padding: 4px" href="/">0.13.0 (main)</a></div></li>
+                    
+                    
+                    
+                    
+                      <li><div class="version"><a style="font-size: 0.8em; padding: 4px" href="v0.8.0/">v0.8.0</a></div></li>
+                    
+                    
+                    
+                    
+                      <li><div class="version"><a style="font-size: 0.8em; padding: 4px" href="v0.9.0/">v0.9.0</a></div></li>
+                    
+                    
+                    
+                    
+                      <li><div class="version"><a style="font-size: 0.8em; padding: 4px" href="v0.10.0/">v0.10.0</a></div></li>
+                    
+                    
+                    
+                    
+                      <li><div class="version"><a style="font-size: 0.8em; padding: 4px" href="v0.11.0/">v0.11.0</a></div></li>
+                    
+                    
+                    
+                    
+                      <li><div class="version"><a style="font-size: 0.8em; padding: 4px" href="v0.12.0/">v0.12.0</a></div></li>
+                    
+                  </ol>
+                </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption" role="heading"><span class="caption-text">Getting Started</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../install/index.html">Installing TVM</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../contribute/index.html">Contributor Guide</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../../tutorial/index.html">User Tutorial</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../index.html">How To Guides</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../compile_models/index.html">Compile Deep Learning Models</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../deploy/index.html">Deploy Models and Integrate TVM</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../work_with_relay/index.html">Work With Relay</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../work_with_schedules/index.html">Work With Tensor Expression and Schedules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../optimize_operators/index.html">Optimize Tensor Operators</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../tune_with_autotvm/index.html">Auto-Tune with Templates and AutoTVM</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="index.html">Use AutoScheduler for Template-Free Scheduling</a><ul class="current">
+<li class="toctree-l3 current"><a class="current reference internal" href="#">Auto-scheduling a Convolution Layer for GPU</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#define-the-computation">Define the computation</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#create-the-search-task">Create the search task</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#run-the-search">Run the search</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#check-correctness-and-evaluate-performance">Check correctness and evaluate performance</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#using-the-record-file">Using the record file</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="tune_network_x86.html">Auto-scheduling a Neural Network for x86 CPU</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tune_network_cuda.html">Auto-scheduling a Neural Network for NVIDIA GPU</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tune_network_arm.html">Auto-scheduling a Neural Network for ARM CPU</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tune_network_mali.html">Auto-scheduling a Neural Network for mali GPU</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tune_sparse_x86.html">Auto-scheduling Sparse Matrix Multiplication on CPU with Custom Sketch Rule</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="../work_with_microtvm/index.html">Work With microTVM</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../extend_tvm/index.html">Extend TVM</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../profile/index.html">Profile Models</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../errors.html">Handle TVM Errors</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../faq.html">Frequently Asked Questions</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Developer Guide</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../dev/tutorial/index.html">Developer Tutorial</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../dev/how_to/how_to.html">Developer How-To Guide</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Architecture  Guide</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../arch/index.html">Design and Architecture</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Topic Guides</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../topic/microtvm/index.html">microTVM: TVM on bare-metal</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../topic/vta/index.html">VTA: Versatile Tensor Accelerator</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Reference Guide</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../reference/langref/index.html">Language Reference</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../reference/api/python/index.html">Python API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../reference/api/links.html">Other APIs</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../reference/publications.html">Publications</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../genindex.html">Index</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+      
+      <nav class="wy-nav-top" aria-label="top navigation" data-toggle="wy-nav-top">
+        
+            <div class="togglemenu">
+
+            </div>
+            <div class="nav-content">
+              <!-- tvm -->
+              Table of Contents
+            </div>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html">Docs</a> <span class="br-arrow">></span></li>
+        
+          <li><a href="../index.html">How To Guides</a> <span class="br-arrow">></span></li>
+        
+          <li><a href="index.html">Use AutoScheduler for Template-Free Scheduling</a> <span class="br-arrow">></span></li>
+        
+      <li>Auto-scheduling a Convolution Layer for GPU</li>
+    
+    
+      
+      
+        
+      
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            
+              <a href="https://github.com/apache/tvm/edit/main/docs/how_to/tune_with_autoscheduler/tune_conv2d_layer_cuda.rst" class="fa fa-github"> Edit on GitHub</a>
+            
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="sphx-glr-download-link-note admonition note">
+<p class="admonition-title">Note</p>
+<p>This tutorial can be used interactively with Google Colab! You can also click
+<a class="reference internal" href="#sphx-glr-download-how-to-tune-with-autoscheduler-tune-conv2d-layer-cuda-py"><span class="std std-ref">here</span></a> to run the Jupyter notebook locally.</p>
+<a class="reference external image-reference" href="https://colab.research.google.com/github/apache/tvm-site/blob/asf-site/docs/_downloads/0.13.0/5f1f7bd7d90710fd404f7bcdc4965622/tune_conv2d_layer_cuda.ipynb"><img alt="https://raw.githubusercontent.com/tlc-pack/web-data/main/images/utilities/colab_button.svg" class="align-center" src="https://raw.githubusercontent.com/tlc-pack/web-data/main/images/utilities/colab_button.svg" width="300px" /></a>
+</div>
+<div class="sphx-glr-example-title section" id="auto-scheduling-a-convolution-layer-for-gpu">
+<span id="auto-scheduler-conv-gpu"></span><span id="sphx-glr-how-to-tune-with-autoscheduler-tune-conv2d-layer-cuda-py"></span><h1>Auto-scheduling a Convolution Layer for GPU<a class="headerlink" href="#auto-scheduling-a-convolution-layer-for-gpu" title="Permalink to this headline">¶</a></h1>
+<p><strong>Author</strong>: <a class="reference external" href="https://github.com/merrymercy">Lianmin Zheng</a>,             <a class="reference external" href="https://github.com/jcf94/">Chengfan Jia</a></p>
+<p>This is a tutorial on how to use the auto-scheduler for GPUs.</p>
+<p>Different from the template-based <a class="reference internal" href="../tune_with_autotvm/index.html#tutorials-autotvm-sec"><span class="std std-ref">autotvm</span></a> which relies on
+manual templates to define the search space, the auto-scheduler does not require any templates.
+Users only need to write the computation declaration without any schedule commands or templates.
+The auto-scheduler can automatically generate a large search space and
+find a good schedule in the space.</p>
+<p>We use a convolution layer as an example in this tutorial.</p>
+<p>Note that this tutorial will not run on Windows or recent versions of macOS. To
+get it to run, you will need to wrap the body of this tutorial in a <code class="code docutils literal notranslate"><span class="pre">if</span>
+<span class="pre">__name__</span> <span class="pre">==</span> <span class="pre">&quot;__main__&quot;:</span></code> block.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">os</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">import</span> <span class="nn">tvm</span>
+<span class="kn">from</span> <span class="nn">tvm</span> <span class="kn">import</span> <span class="n">te</span><span class="p">,</span> <span class="n">auto_scheduler</span><span class="p">,</span> <span class="n">topi</span>
+<span class="kn">from</span> <span class="nn">tvm.topi.testing</span> <span class="kn">import</span> <span class="n">conv2d_nchw_python</span>
+</pre></div>
+</div>
+<div class="section" id="define-the-computation">
+<h2>Define the computation<a class="headerlink" href="#define-the-computation" title="Permalink to this headline">¶</a></h2>
+<p>To begin with, let us define the computation of a convolution layer.
+The function should return the list of input/output tensors.
+From these tensors, the auto-scheduler can get the whole computational graph.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nd">@auto_scheduler</span><span class="o">.</span><span class="n">register_workload</span>
+<span class="k">def</span> <span class="nf">conv2d_layer</span><span class="p">(</span><a href="https://docs.python.org/3/library/functions.html#int" title="builtins.int" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">N</span></a><span class="p">,</span> <a href="https://docs.python.org/3/library/functions.html#int" title="builtins.int" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">H</span></a><span class="p">,</span> <a href="https://docs.python.org/3/library/functions.html#int" title="builtins.int" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">W</span></a><span class="p">,</span> <a href="https://docs.python.org/3/library/functions.html#int" title="builtins.int" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">CO</span></a><span class="p">,</span> <a href="https://docs.python.org/3/library/functions.html#int" title="builtins.int" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">CI</span></a><span class="p">,</span> <a href="https://docs.python.org/3/library/functions.html#int" title="builtins.int" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">KH</span></a><span class="p">,</span> <a href="https://docs.python.org/3/library/functions.html#int" title="builtins.int" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">KW</span></a><span class="p">,</span> <span class="n">stride</span><span class="p">,</span> <a href="https://docs.python.org/3/library/stdtypes.html#tuple" title="builtins.tuple" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">padding</span></a><span class="p">):</span>
+    <span class="n">data</span> <span class="o">=</span> <a href="../../reference/api/python/te.html#tvm.te.placeholder" title="tvm.te.placeholder" class="sphx-glr-backref-module-tvm-te sphx-glr-backref-type-py-function"><span class="n">te</span><span class="o">.</span><span class="n">placeholder</span></a><span class="p">((</span><a href="https://docs.python.org/3/library/functions.html#int" title="builtins.int" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">N</span></a><span class="p">,</span> <a href="https://docs.python.org/3/library/functions.html#int" title="builtins.int" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">CI</span></a><span class="p">,</span> <a href="https://docs.python.org/3/library/functions.html#int" title="builtins.int" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">H</span></a><span class="p">,</span> <a href="https://docs.python.org/3/library/functions.html#int" title="builtins.int" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">W</span></a><span class="p">),</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;data&quot;</span><span class="p">)</span>
+    <span class="n">kernel</span> <span class="o">=</span> <a href="../../reference/api/python/te.html#tvm.te.placeholder" title="tvm.te.placeholder" class="sphx-glr-backref-module-tvm-te sphx-glr-backref-type-py-function"><span class="n">te</span><span class="o">.</span><span class="n">placeholder</span></a><span class="p">((</span><a href="https://docs.python.org/3/library/functions.html#int" title="builtins.int" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">CO</span></a><span class="p">,</span> <a href="https://docs.python.org/3/library/functions.html#int" title="builtins.int" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">CI</span></a><span class="p">,</span> <a href="https://docs.python.org/3/library/functions.html#int" title="builtins.int" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">KH</span></a><span class="p">,</span> <a href="https://docs.python.org/3/library/functions.html#int" title="builtins.int" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">KW</span></a><span class="p">),</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;kernel&quot;</span><span class="p">)</span>
+    <span class="n">bias</span> <span class="o">=</span> <a href="../../reference/api/python/te.html#tvm.te.placeholder" title="tvm.te.placeholder" class="sphx-glr-backref-module-tvm-te sphx-glr-backref-type-py-function"><span class="n">te</span><span class="o">.</span><span class="n">placeholder</span></a><span class="p">((</span><span class="mi">1</span><span class="p">,</span> <a href="https://docs.python.org/3/library/functions.html#int" title="builtins.int" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">CO</span></a><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;bias&quot;</span><span class="p">)</span>
+    <span class="n">conv</span> <span class="o">=</span> <a href="../../reference/api/python/topi.html#tvm.topi.nn.conv2d_nchw" title="tvm.topi.nn.conv2d_nchw" class="sphx-glr-backref-module-tvm-topi-nn sphx-glr-backref-type-py-function"><span class="n">topi</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">conv2d_nchw</span></a><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">kernel</span><span class="p">,</span> <span class="n">stride</span><span class="p">,</span> <a href="https://docs.python.org/3/library/stdtypes.html#tuple" title="builtins.tuple" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">padding</span></a><span class="p">,</span> <span class="n">dilation</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">out_dtype</span><span class="o">=</span><span class="s2">&quot;float32&quot;</span><span class="p">)</span>
+    <span class="n">out</span> <span class="o">=</span> <a href="../../reference/api/python/topi.html#tvm.topi.nn.relu" title="tvm.topi.nn.relu" class="sphx-glr-backref-module-tvm-topi-nn sphx-glr-backref-type-py-function"><span class="n">topi</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">relu</span></a><span class="p">(</span><span class="n">conv</span> <span class="o">+</span> <span class="n">bias</span><span class="p">)</span>
+    <span class="k">return</span> <span class="p">[</span><span class="n">data</span><span class="p">,</span> <span class="n">kernel</span><span class="p">,</span> <span class="n">bias</span><span class="p">,</span> <span class="n">out</span><span class="p">]</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="create-the-search-task">
+<h2>Create the search task<a class="headerlink" href="#create-the-search-task" title="Permalink to this headline">¶</a></h2>
+<p>We then create a search task for the last convolution layer in the resnet.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><a href="../../reference/api/python/target.html#tvm.target.Target" title="tvm.target.Target" class="sphx-glr-backref-module-tvm-target sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">target</span></a> <span class="o">=</span> <a href="../../reference/api/python/target.html#tvm.target.Target" title="tvm.target.Target" class="sphx-glr-backref-module-tvm-target sphx-glr-backref-type-py-class"><span class="n">tvm</span><span class="o">.</span><span class="n">target</span><span class="o">.</span><span class="n">Target</span></a><span class="p">(</span><span class="s2">&quot;cuda&quot;</span><span class="p">)</span>
+
+<span class="c1"># Use the last layer in ResNet-50</span>
+<a href="https://docs.python.org/3/library/functions.html#int" title="builtins.int" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">N</span></a><span class="p">,</span> <a href="https://docs.python.org/3/library/functions.html#int" title="builtins.int" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">H</span></a><span class="p">,</span> <a href="https://docs.python.org/3/library/functions.html#int" title="builtins.int" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">W</span></a><span class="p">,</span> <a href="https://docs.python.org/3/library/functions.html#int" title="builtins.int" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">CO</span></a><span class="p">,</span> <a href="https://docs.python.org/3/library/functions.html#int" title="builtins.int" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">CI</span></a><span class="p">,</span> <a href="https://docs.python.org/3/library/functions.html#int" title="builtins.int" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">KH</span></a><span class="p">,</span> <a href="https://docs.python.org/3/library/functions.html#int" title="builtins.int" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">KW</span></a><span class="p">,</span> <a href="https://docs.python.org/3/library/stdtypes.html#tuple" title="builtins.tuple" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">strides</span></a><span class="p">,</span> <a href="https://docs.python.org/3/library/stdtypes.html#tuple" title="builtins.tuple" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">padding</span></a> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">512</span><span class="p">,</span> <span class="mi">512</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+<a href="../../reference/api/python/auto_scheduler.html#tvm.auto_scheduler.SearchTask" title="tvm.auto_scheduler.SearchTask" class="sphx-glr-backref-module-tvm-auto_scheduler sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">task</span></a> <span class="o">=</span> <a href="../../reference/api/python/auto_scheduler.html#tvm.auto_scheduler.SearchTask" title="tvm.auto_scheduler.SearchTask" class="sphx-glr-backref-module-tvm-auto_scheduler sphx-glr-backref-type-py-class"><span class="n">auto_scheduler</span><span class="o">.</span><span class="n">SearchTask</span></a><span class="p">(</span>
+    <span class="n">func</span><span class="o">=</span><span class="n">conv2d_layer</span><span class="p">,</span> <a href="../../reference/api/python/ir.html#tvm.ir.Array" title="tvm.ir.Array" class="sphx-glr-backref-module-tvm-ir sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">args</span></a><span class="o">=</span><span class="p">(</span><a href="https://docs.python.org/3/library/functions.html#int" title="builtins.int" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">N</span></a><span class="p">,</span> <a href="https://docs.python.org/3/library/functions.html#int" title="builtins.int" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">H</span></a><span class="p">,</span> <a href="https://docs.python.org/3/library/functions.html#int" title="builtins.int" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">W</span></a><span class="p">,</span> <a href="https://docs.python.org/3/library/functions.html#int" title="builtins.int" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">CO</span></a><span class="p">,</span> <a href="https://docs.python.org/3/library/functions.html#int" title="builtins.int" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">CI</span></a><span class="p">,</span> <a href="https://docs.python.org/3/library/functions.html#int" title="builtins.int" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">KH</span></a><span class="p">,</span> <a href="https://docs.python.org/3/library/functions.html#int" title="builtins.int" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">KW</span></a><span class="p">,</span> <a href="https://docs.python.org/3/library/stdtypes.html#tuple" title="builtins.tuple" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">strides</span></a><span class="p">,</span> <a href="https://docs.python.org/3/library/stdtypes.html#tuple" title="builtins.tuple" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">padding</span></a><span class="p">),</span> <a href="../../reference/api/python/target.html#tvm.target.Target" title="tvm.target.Target" class="sphx-glr-backref-module-tvm-target sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">target</span></a><span class="o">=</span><a href="../../reference/api/python/target.html#tvm.target.Target" title="tvm.target.Target" class="sphx-glr-backref-module-tvm-target sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">target</span></a>
+<span class="p">)</span>
+
+<span class="c1"># Inspect the computational graph</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Computational DAG:&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><a href="../../reference/api/python/auto_scheduler.html#tvm.auto_scheduler.ComputeDAG" title="tvm.auto_scheduler.ComputeDAG" class="sphx-glr-backref-module-tvm-auto_scheduler sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">task</span><span class="o">.</span><span class="n">compute_dag</span></a><span class="p">)</span>
+</pre></div>
+</div>
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Computational DAG:
+data = PLACEHOLDER [1, 512, 7, 7]
+pad_temp(i0, i1, i2, i3) = tir.if_then_else(((((i2 &gt;= 1) &amp;&amp; (i2 &lt; 8)) &amp;&amp; (i3 &gt;= 1)) &amp;&amp; (i3 &lt; 8)), data[i0, i1, (i2 - 1), (i3 - 1)], 0f)
+kernel = PLACEHOLDER [512, 512, 3, 3]
+conv2d_nchw(nn, ff, yy, xx) += (pad_temp[nn, rc, (yy + ry), (xx + rx)]*kernel[ff, rc, ry, rx])
+bias = PLACEHOLDER [1, 512, 1, 1]
+T_add(ax0, ax1, ax2, ax3) = (conv2d_nchw[ax0, ax1, ax2, ax3] + bias[ax0, ax1, 0, 0])
+compute(i0, i1, i2, i3) = max(T_add[i0, i1, i2, i3], 0f)
+</pre></div>
+</div>
+<p>Next, we set parameters for the auto-scheduler. These parameters
+mainly specify how we do the measurement during the search.</p>
+<ul class="simple">
+<li><p><code class="code docutils literal notranslate"><span class="pre">measure_ctx</span></code> launches a different process for measurement to
+provide isolation. It can protect the main process from GPU crashes
+during measurement and avoid other runtime conflicts.</p></li>
+<li><p><code class="code docutils literal notranslate"><span class="pre">min_repeat_ms</span></code> defines the minimum duration of one “repeat” in every measurement.
+This can warmup the GPU, which is necessary to get accurate measurement results.
+Typically, we recommend a value &gt;= 300 ms.</p></li>
+<li><p><code class="code docutils literal notranslate"><span class="pre">num_measure_trials</span></code> is the number of measurement trials we can use during the search.
+We only make 10 trials in this tutorial for a fast demonstration. In practice, 1000 is a
+good value for the search to converge. You can do more trials according to your time budget.</p></li>
+<li><p>In addition, we use <code class="code docutils literal notranslate"><span class="pre">RecordToFile</span></code> to dump measurement records into a file <cite>conv2d.json</cite>.
+The measurement records can be used to query the history best, resume the search,
+and do more analyses later.</p></li>
+<li><p>see <a class="reference internal" href="../../reference/api/python/auto_scheduler.html#tvm.auto_scheduler.TuningOptions" title="tvm.auto_scheduler.TuningOptions"><code class="xref any py py-class docutils literal notranslate"><span class="pre">auto_scheduler.TuningOptions</span></code></a>,
+<a class="reference internal" href="../../reference/api/python/auto_scheduler.html#tvm.auto_scheduler.LocalRPCMeasureContext" title="tvm.auto_scheduler.LocalRPCMeasureContext"><code class="xref any py py-class docutils literal notranslate"><span class="pre">auto_scheduler.LocalRPCMeasureContext</span></code></a> for more parameters.</p></li>
+</ul>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><a href="https://docs.python.org/3/library/stdtypes.html#str" title="builtins.str" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">log_file</span></a> <span class="o">=</span> <span class="s2">&quot;conv2d.json&quot;</span>
+<span class="n">measure_ctx</span> <span class="o">=</span> <a href="../../reference/api/python/auto_scheduler.html#tvm.auto_scheduler.LocalRPCMeasureContext" title="tvm.auto_scheduler.LocalRPCMeasureContext" class="sphx-glr-backref-module-tvm-auto_scheduler sphx-glr-backref-type-py-class"><span class="n">auto_scheduler</span><span class="o">.</span><span class="n">LocalRPCMeasureContext</span></a><span class="p">(</span><span class="n">min_repeat_ms</span><span class="o">=</span><span class="mi">300</span><span class="p">)</span>
+<a href="../../reference/api/python/auto_scheduler.html#tvm.auto_scheduler.TuningOptions" title="tvm.auto_scheduler.TuningOptions" class="sphx-glr-backref-module-tvm-auto_scheduler sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">tune_option</span></a> <span class="o">=</span> <a href="../../reference/api/python/auto_scheduler.html#tvm.auto_scheduler.TuningOptions" title="tvm.auto_scheduler.TuningOptions" class="sphx-glr-backref-module-tvm-auto_scheduler sphx-glr-backref-type-py-class"><span class="n">auto_scheduler</span><span class="o">.</span><span class="n">TuningOptions</span></a><span class="p">(</span>
+    <span class="n">num_measure_trials</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>  <span class="c1"># change this to 1000 to achieve the best performance</span>
+    <span class="n">runner</span><span class="o">=</span><span class="n">measure_ctx</span><span class="o">.</span><span class="n">runner</span><span class="p">,</span>
+    <span class="n">measure_callbacks</span><span class="o">=</span><span class="p">[</span><a href="../../reference/api/python/auto_scheduler.html#tvm.auto_scheduler.RecordToFile" title="tvm.auto_scheduler.RecordToFile" class="sphx-glr-backref-module-tvm-auto_scheduler sphx-glr-backref-type-py-class"><span class="n">auto_scheduler</span><span class="o">.</span><span class="n">RecordToFile</span></a><span class="p">(</span><a href="https://docs.python.org/3/library/stdtypes.html#str" title="builtins.str" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">log_file</span></a><span class="p">)],</span>
+    <span class="n">verbose</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Get devices for measurement successfully!
+</pre></div>
+</div>
+</div>
+<div class="section" id="run-the-search">
+<h2>Run the search<a class="headerlink" href="#run-the-search" title="Permalink to this headline">¶</a></h2>
+<p>Now we get all inputs ready. Pretty simple, isn’t it?
+We can kick off the search and let the auto-scheduler do its magic.
+After some measurement trials, we can load the best schedule from the log
+file and apply it.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Run auto-tuning (search)</span>
+<span class="c1"># We do not run the tuning in our webpage server since it takes too long.</span>
+<span class="c1"># Uncomment the following line to run it by yourself.</span>
+<span class="c1"># task.tune(tune_option)</span>
+<span class="c1"># Apply the best schedule</span>
+<a href="../../reference/api/python/te.html#tvm.te.Schedule" title="tvm.te.Schedule" class="sphx-glr-backref-module-tvm-te sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">sch</span></a><span class="p">,</span> <a href="../../reference/api/python/ir.html#tvm.ir.Array" title="tvm.ir.Array" class="sphx-glr-backref-module-tvm-ir sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">args</span></a> <span class="o">=</span> <a href="../../reference/api/python/auto_scheduler.html#tvm.auto_scheduler.SearchTask.apply_best" title="tvm.auto_scheduler.SearchTask.apply_best" class="sphx-glr-backref-module-tvm-auto_scheduler sphx-glr-backref-type-py-method"><span class="n">task</span><span class="o">.</span><span class="n">apply_best</span></a><span class="p">(</span><a href="https://docs.python.org/3/library/stdtypes.html#str" title="builtins.str" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">log_file</span></a><span class="p">)</span>
+
+<span class="c1"># Kill the measurement process</span>
+<span class="k">del</span> <span class="n">measure_ctx</span>
+</pre></div>
+</div>
+<p>We can lower the schedule to see the IR after auto-scheduling.
+The auto-scheduler correctly performs optimizations including multi-level tiling,
+cooperative fetching, unrolling and operator fusion.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Lowered TIR:&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><a href="../../reference/api/python/driver.html#tvm.lower" title="tvm.lower" class="sphx-glr-backref-module-tvm sphx-glr-backref-type-py-function"><span class="n">tvm</span><span class="o">.</span><span class="n">lower</span></a><span class="p">(</span><a href="../../reference/api/python/te.html#tvm.te.Schedule" title="tvm.te.Schedule" class="sphx-glr-backref-module-tvm-te sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">sch</span></a><span class="p">,</span> <a href="../../reference/api/python/ir.html#tvm.ir.Array" title="tvm.ir.Array" class="sphx-glr-backref-module-tvm-ir sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">args</span></a><span class="p">,</span> <span class="n">simple_mode</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span>
+</pre></div>
+</div>
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Lowered TIR:
+# from tvm.script import ir as I
+# from tvm.script import tir as T
+
+@I.ir_module
+class Module:
+    @T.prim_func
+    def main(data: T.Buffer((1, 512, 7, 7), &quot;float32&quot;), kernel: T.Buffer((512, 512, 3, 3), &quot;float32&quot;), bias: T.Buffer((1, 512, 1, 1), &quot;float32&quot;), compute: T.Buffer((1, 512, 7, 7), &quot;float32&quot;)):
+        T.func_attr({&quot;from_legacy_te_schedule&quot;: T.bool(True), &quot;global_symbol&quot;: &quot;main&quot;, &quot;tir.noalias&quot;: T.bool(True)})
+        blockIdx_x = T.launch_thread(&quot;blockIdx.x&quot;, 28)
+        conv2d_nchw = T.allocate([14], &quot;float32&quot;, &quot;local&quot;)
+        pad_temp_shared = T.allocate([72], &quot;float32&quot;, &quot;shared&quot;)
+        kernel_shared = T.allocate([3072], &quot;float32&quot;, &quot;shared&quot;)
+        threadIdx_x = T.launch_thread(&quot;threadIdx.x&quot;, 64)
+        conv2d_nchw_1 = T.Buffer((14,), data=conv2d_nchw, scope=&quot;local&quot;, align=32)
+        conv2d_nchw_1[0] = T.float32(0)
+        conv2d_nchw_1[1] = T.float32(0)
+        conv2d_nchw_1[2] = T.float32(0)
+        conv2d_nchw_1[3] = T.float32(0)
+        conv2d_nchw_1[4] = T.float32(0)
+        conv2d_nchw_1[5] = T.float32(0)
+        conv2d_nchw_1[6] = T.float32(0)
+        conv2d_nchw_1[7] = T.float32(0)
+        conv2d_nchw_1[8] = T.float32(0)
+        conv2d_nchw_1[9] = T.float32(0)
+        conv2d_nchw_1[10] = T.float32(0)
+        conv2d_nchw_1[11] = T.float32(0)
+        conv2d_nchw_1[12] = T.float32(0)
+        conv2d_nchw_1[13] = T.float32(0)
+        for rc_outer_outer, ry_outer_outer in T.grid(64, 3):
+            cse_var_2: T.int32 = rc_outer_outer * 72
+            cse_var_1: T.int32 = ry_outer_outer * 3
+            pad_temp_shared_1 = T.Buffer((72,), data=pad_temp_shared, scope=&quot;shared&quot;)
+            with T.launch_thread(&quot;threadIdx.x&quot;, 64) as threadIdx_x_1:
+                data_1 = T.Buffer((25088,), data=data.data)
+                if T.likely(threadIdx_x_1 &lt; 18):
+                    pad_temp_shared_1[threadIdx_x_1 * 4] = T.if_then_else(1 &lt;= ry_outer_outer + blockIdx_x % 7 and ry_outer_outer + blockIdx_x % 7 &lt; 8 and 1 &lt;= threadIdx_x_1 * 4 % 9 and threadIdx_x_1 * 4 % 9 &lt; 8, data_1[rc_outer_outer * 392 + threadIdx_x_1 * 4 // 9 * 49 + ry_outer_outer * 7 + blockIdx_x % 7 * 7 + threadIdx_x_1 * 4 % 9 - 8], T.float32(0))
+                if T.likely(threadIdx_x_1 &lt; 18):
+                    pad_temp_shared_1[threadIdx_x_1 * 4 + 1] = T.if_then_else(1 &lt;= ry_outer_outer + blockIdx_x % 7 and ry_outer_outer + blockIdx_x % 7 &lt; 8 and 1 &lt;= (threadIdx_x_1 * 4 + 1) % 9 and (threadIdx_x_1 * 4 + 1) % 9 &lt; 8, data_1[rc_outer_outer * 392 + (threadIdx_x_1 * 4 + 1) // 9 * 49 + ry_outer_outer * 7 + blockIdx_x % 7 * 7 + (threadIdx_x_1 * 4 + 1) % 9 - 8], T.float32(0))
+                if T.likely(threadIdx_x_1 &lt; 18):
+                    pad_temp_shared_1[threadIdx_x_1 * 4 + 2] = T.if_then_else(1 &lt;= ry_outer_outer + blockIdx_x % 7 and ry_outer_outer + blockIdx_x % 7 &lt; 8 and 1 &lt;= (threadIdx_x_1 * 4 + 2) % 9 and (threadIdx_x_1 * 4 + 2) % 9 &lt; 8, data_1[rc_outer_outer * 392 + (threadIdx_x_1 * 4 + 2) // 9 * 49 + ry_outer_outer * 7 + blockIdx_x % 7 * 7 + (threadIdx_x_1 * 4 + 2) % 9 - 8], T.float32(0))
+                if T.likely(threadIdx_x_1 &lt; 18):
+                    pad_temp_shared_1[threadIdx_x_1 * 4 + 3] = T.if_then_else(1 &lt;= ry_outer_outer + blockIdx_x % 7 and ry_outer_outer + blockIdx_x % 7 &lt; 8 and 1 &lt;= (threadIdx_x_1 * 4 + 3) % 9 and (threadIdx_x_1 * 4 + 3) % 9 &lt; 8, data_1[rc_outer_outer * 392 + (threadIdx_x_1 * 4 + 3) // 9 * 49 + ry_outer_outer * 7 + blockIdx_x % 7 * 7 + (threadIdx_x_1 * 4 + 3) % 9 - 8], T.float32(0))
+            threadIdx_x_1 = T.env_thread(&quot;threadIdx.x&quot;)
+            kernel_shared_1 = T.Buffer((3072,), data=kernel_shared, scope=&quot;shared&quot;)
+            kernel_1 = T.Buffer((2359296,), data=kernel.data)
+            with T.launch_thread(threadIdx_x_1, 64):
+                kernel_shared_1[threadIdx_x_1] = kernel_1[blockIdx_x // 7 * 589824 + threadIdx_x_1 // 24 * 4608 + cse_var_2 + threadIdx_x_1 % 24 // 3 * 9 + cse_var_1 + threadIdx_x_1 % 3]
+            with T.launch_thread(threadIdx_x_1, 64):
+                kernel_shared_1[(threadIdx_x_1 + 64) // 24 * 24 + (threadIdx_x_1 + 16) % 24 // 3 * 3 + (threadIdx_x_1 + 1) % 3] = kernel_1[blockIdx_x // 7 * 589824 + (threadIdx_x_1 + 64) // 24 * 4608 + cse_var_2 + (threadIdx_x_1 + 16) % 24 // 3 * 9 + cse_var_1 + (threadIdx_x_1 + 1) % 3]
+            with T.launch_thread(threadIdx_x_1, 64):
+                kernel_shared_1[(threadIdx_x_1 + 128) // 24 * 24 + (threadIdx_x_1 + 8) % 24 // 3 * 3 + (threadIdx_x_1 + 2) % 3] = kernel_1[blockIdx_x // 7 * 589824 + (threadIdx_x_1 + 128) // 24 * 4608 + cse_var_2 + (threadIdx_x_1 + 8) % 24 // 3 * 9 + cse_var_1 + (threadIdx_x_1 + 2) % 3]
+            with T.launch_thread(threadIdx_x_1, 64):
+                kernel_shared_1[threadIdx_x_1 + 192] = kernel_1[blockIdx_x // 7 * 589824 + threadIdx_x_1 // 24 * 4608 + cse_var_2 + threadIdx_x_1 % 24 // 3 * 9 + cse_var_1 + threadIdx_x_1 % 3 + 36864]
+            with T.launch_thread(threadIdx_x_1, 64):
+                kernel_shared_1[(threadIdx_x_1 + 256) // 24 * 24 + (threadIdx_x_1 + 16) % 24 // 3 * 3 + (threadIdx_x_1 + 1) % 3] = kernel_1[blockIdx_x // 7 * 589824 + (threadIdx_x_1 + 256) // 24 * 4608 + cse_var_2 + (threadIdx_x_1 + 16) % 24 // 3 * 9 + cse_var_1 + (threadIdx_x_1 + 1) % 3]
+            with T.launch_thread(threadIdx_x_1, 64):
+                kernel_shared_1[(threadIdx_x_1 + 320) // 24 * 24 + (threadIdx_x_1 + 8) % 24 // 3 * 3 + (threadIdx_x_1 + 2) % 3] = kernel_1[blockIdx_x // 7 * 589824 + (threadIdx_x_1 + 320) // 24 * 4608 + cse_var_2 + (threadIdx_x_1 + 8) % 24 // 3 * 9 + cse_var_1 + (threadIdx_x_1 + 2) % 3]
+            with T.launch_thread(threadIdx_x_1, 64):
+                kernel_shared_1[threadIdx_x_1 + 384] = kernel_1[blockIdx_x // 7 * 589824 + threadIdx_x_1 // 24 * 4608 + cse_var_2 + threadIdx_x_1 % 24 // 3 * 9 + cse_var_1 + threadIdx_x_1 % 3 + 73728]
+            with T.launch_thread(threadIdx_x_1, 64):
+                kernel_shared_1[(threadIdx_x_1 + 448) // 24 * 24 + (threadIdx_x_1 + 16) % 24 // 3 * 3 + (threadIdx_x_1 + 1) % 3] = kernel_1[blockIdx_x // 7 * 589824 + (threadIdx_x_1 + 448) // 24 * 4608 + cse_var_2 + (threadIdx_x_1 + 16) % 24 // 3 * 9 + cse_var_1 + (threadIdx_x_1 + 1) % 3]
+            with T.launch_thread(threadIdx_x_1, 64):
+                kernel_shared_1[(threadIdx_x_1 + 512) // 24 * 24 + (threadIdx_x_1 + 8) % 24 // 3 * 3 + (threadIdx_x_1 + 2) % 3] = kernel_1[blockIdx_x // 7 * 589824 + (threadIdx_x_1 + 512) // 24 * 4608 + cse_var_2 + (threadIdx_x_1 + 8) % 24 // 3 * 9 + cse_var_1 + (threadIdx_x_1 + 2) % 3]
+            with T.launch_thread(threadIdx_x_1, 64):
+                kernel_shared_1[threadIdx_x_1 + 576] = kernel_1[blockIdx_x // 7 * 589824 + threadIdx_x_1 // 24 * 4608 + cse_var_2 + threadIdx_x_1 % 24 // 3 * 9 + cse_var_1 + threadIdx_x_1 % 3 + 110592]
+            with T.launch_thread(threadIdx_x_1, 64):
+                kernel_shared_1[(threadIdx_x_1 + 640) // 24 * 24 + (threadIdx_x_1 + 16) % 24 // 3 * 3 + (threadIdx_x_1 + 1) % 3] = kernel_1[blockIdx_x // 7 * 589824 + (threadIdx_x_1 + 640) // 24 * 4608 + cse_var_2 + (threadIdx_x_1 + 16) % 24 // 3 * 9 + cse_var_1 + (threadIdx_x_1 + 1) % 3]
+            with T.launch_thread(threadIdx_x_1, 64):
+                kernel_shared_1[(threadIdx_x_1 + 704) // 24 * 24 + (threadIdx_x_1 + 8) % 24 // 3 * 3 + (threadIdx_x_1 + 2) % 3] = kernel_1[blockIdx_x // 7 * 589824 + (threadIdx_x_1 + 704) // 24 * 4608 + cse_var_2 + (threadIdx_x_1 + 8) % 24 // 3 * 9 + cse_var_1 + (threadIdx_x_1 + 2) % 3]
+            with T.launch_thread(threadIdx_x_1, 64):
+                kernel_shared_1[threadIdx_x_1 + 768] = kernel_1[blockIdx_x // 7 * 589824 + threadIdx_x_1 // 24 * 4608 + cse_var_2 + threadIdx_x_1 % 24 // 3 * 9 + cse_var_1 + threadIdx_x_1 % 3 + 147456]
+            with T.launch_thread(threadIdx_x_1, 64):
+                kernel_shared_1[(threadIdx_x_1 + 832) // 24 * 24 + (threadIdx_x_1 + 16) % 24 // 3 * 3 + (threadIdx_x_1 + 1) % 3] = kernel_1[blockIdx_x // 7 * 589824 + (threadIdx_x_1 + 832) // 24 * 4608 + cse_var_2 + (threadIdx_x_1 + 16) % 24 // 3 * 9 + cse_var_1 + (threadIdx_x_1 + 1) % 3]
+            with T.launch_thread(threadIdx_x_1, 64):
+                kernel_shared_1[(threadIdx_x_1 + 896) // 24 * 24 + (threadIdx_x_1 + 8) % 24 // 3 * 3 + (threadIdx_x_1 + 2) % 3] = kernel_1[blockIdx_x // 7 * 589824 + (threadIdx_x_1 + 896) // 24 * 4608 + cse_var_2 + (threadIdx_x_1 + 8) % 24 // 3 * 9 + cse_var_1 + (threadIdx_x_1 + 2) % 3]
+            with T.launch_thread(threadIdx_x_1, 64):
+                kernel_shared_1[threadIdx_x_1 + 960] = kernel_1[blockIdx_x // 7 * 589824 + threadIdx_x_1 // 24 * 4608 + cse_var_2 + threadIdx_x_1 % 24 // 3 * 9 + cse_var_1 + threadIdx_x_1 % 3 + 184320]
+            with T.launch_thread(threadIdx_x_1, 64):
+                kernel_shared_1[(threadIdx_x_1 + 1024) // 24 * 24 + (threadIdx_x_1 + 16) % 24 // 3 * 3 + (threadIdx_x_1 + 1) % 3] = kernel_1[blockIdx_x // 7 * 589824 + (threadIdx_x_1 + 1024) // 24 * 4608 + cse_var_2 + (threadIdx_x_1 + 16) % 24 // 3 * 9 + cse_var_1 + (threadIdx_x_1 + 1) % 3]
+            with T.launch_thread(threadIdx_x_1, 64):
+                kernel_shared_1[(threadIdx_x_1 + 1088) // 24 * 24 + (threadIdx_x_1 + 8) % 24 // 3 * 3 + (threadIdx_x_1 + 2) % 3] = kernel_1[blockIdx_x // 7 * 589824 + (threadIdx_x_1 + 1088) // 24 * 4608 + cse_var_2 + (threadIdx_x_1 + 8) % 24 // 3 * 9 + cse_var_1 + (threadIdx_x_1 + 2) % 3]
+            with T.launch_thread(threadIdx_x_1, 64):
+                kernel_shared_1[threadIdx_x_1 + 1152] = kernel_1[blockIdx_x // 7 * 589824 + threadIdx_x_1 // 24 * 4608 + cse_var_2 + threadIdx_x_1 % 24 // 3 * 9 + cse_var_1 + threadIdx_x_1 % 3 + 221184]
+            with T.launch_thread(threadIdx_x_1, 64):
+                kernel_shared_1[(threadIdx_x_1 + 1216) // 24 * 24 + (threadIdx_x_1 + 16) % 24 // 3 * 3 + (threadIdx_x_1 + 1) % 3] = kernel_1[blockIdx_x // 7 * 589824 + (threadIdx_x_1 + 1216) // 24 * 4608 + cse_var_2 + (threadIdx_x_1 + 16) % 24 // 3 * 9 + cse_var_1 + (threadIdx_x_1 + 1) % 3]
+            with T.launch_thread(threadIdx_x_1, 64):
+                kernel_shared_1[(threadIdx_x_1 + 1280) // 24 * 24 + (threadIdx_x_1 + 8) % 24 // 3 * 3 + (threadIdx_x_1 + 2) % 3] = kernel_1[blockIdx_x // 7 * 589824 + (threadIdx_x_1 + 1280) // 24 * 4608 + cse_var_2 + (threadIdx_x_1 + 8) % 24 // 3 * 9 + cse_var_1 + (threadIdx_x_1 + 2) % 3]
+            with T.launch_thread(threadIdx_x_1, 64):
+                kernel_shared_1[threadIdx_x_1 + 1344] = kernel_1[blockIdx_x // 7 * 589824 + threadIdx_x_1 // 24 * 4608 + cse_var_2 + threadIdx_x_1 % 24 // 3 * 9 + cse_var_1 + threadIdx_x_1 % 3 + 258048]
+            with T.launch_thread(threadIdx_x_1, 64):
+                kernel_shared_1[(threadIdx_x_1 + 1408) // 24 * 24 + (threadIdx_x_1 + 16) % 24 // 3 * 3 + (threadIdx_x_1 + 1) % 3] = kernel_1[blockIdx_x // 7 * 589824 + (threadIdx_x_1 + 1408) // 24 * 4608 + cse_var_2 + (threadIdx_x_1 + 16) % 24 // 3 * 9 + cse_var_1 + (threadIdx_x_1 + 1) % 3]
+            with T.launch_thread(threadIdx_x_1, 64):
+                kernel_shared_1[(threadIdx_x_1 + 1472) // 24 * 24 + (threadIdx_x_1 + 8) % 24 // 3 * 3 + (threadIdx_x_1 + 2) % 3] = kernel_1[blockIdx_x // 7 * 589824 + (threadIdx_x_1 + 1472) // 24 * 4608 + cse_var_2 + (threadIdx_x_1 + 8) % 24 // 3 * 9 + cse_var_1 + (threadIdx_x_1 + 2) % 3]
+            with T.launch_thread(threadIdx_x_1, 64):
+                kernel_shared_1[threadIdx_x_1 + 1536] = kernel_1[blockIdx_x // 7 * 589824 + threadIdx_x_1 // 24 * 4608 + cse_var_2 + threadIdx_x_1 % 24 // 3 * 9 + cse_var_1 + threadIdx_x_1 % 3 + 294912]
+            with T.launch_thread(threadIdx_x_1, 64):
+                kernel_shared_1[(threadIdx_x_1 + 1600) // 24 * 24 + (threadIdx_x_1 + 16) % 24 // 3 * 3 + (threadIdx_x_1 + 1) % 3] = kernel_1[blockIdx_x // 7 * 589824 + (threadIdx_x_1 + 1600) // 24 * 4608 + cse_var_2 + (threadIdx_x_1 + 16) % 24 // 3 * 9 + cse_var_1 + (threadIdx_x_1 + 1) % 3]
+            with T.launch_thread(threadIdx_x_1, 64):
+                kernel_shared_1[(threadIdx_x_1 + 1664) // 24 * 24 + (threadIdx_x_1 + 8) % 24 // 3 * 3 + (threadIdx_x_1 + 2) % 3] = kernel_1[blockIdx_x // 7 * 589824 + (threadIdx_x_1 + 1664) // 24 * 4608 + cse_var_2 + (threadIdx_x_1 + 8) % 24 // 3 * 9 + cse_var_1 + (threadIdx_x_1 + 2) % 3]
+            with T.launch_thread(threadIdx_x_1, 64):
+                kernel_shared_1[threadIdx_x_1 + 1728] = kernel_1[blockIdx_x // 7 * 589824 + threadIdx_x_1 // 24 * 4608 + cse_var_2 + threadIdx_x_1 % 24 // 3 * 9 + cse_var_1 + threadIdx_x_1 % 3 + 331776]
+            with T.launch_thread(threadIdx_x_1, 64):
+                kernel_shared_1[(threadIdx_x_1 + 1792) // 24 * 24 + (threadIdx_x_1 + 16) % 24 // 3 * 3 + (threadIdx_x_1 + 1) % 3] = kernel_1[blockIdx_x // 7 * 589824 + (threadIdx_x_1 + 1792) // 24 * 4608 + cse_var_2 + (threadIdx_x_1 + 16) % 24 // 3 * 9 + cse_var_1 + (threadIdx_x_1 + 1) % 3]
+            with T.launch_thread(threadIdx_x_1, 64):
+                kernel_shared_1[(threadIdx_x_1 + 1856) // 24 * 24 + (threadIdx_x_1 + 8) % 24 // 3 * 3 + (threadIdx_x_1 + 2) % 3] = kernel_1[blockIdx_x // 7 * 589824 + (threadIdx_x_1 + 1856) // 24 * 4608 + cse_var_2 + (threadIdx_x_1 + 8) % 24 // 3 * 9 + cse_var_1 + (threadIdx_x_1 + 2) % 3]
+            with T.launch_thread(threadIdx_x_1, 64):
+                kernel_shared_1[threadIdx_x_1 + 1920] = kernel_1[blockIdx_x // 7 * 589824 + threadIdx_x_1 // 24 * 4608 + cse_var_2 + threadIdx_x_1 % 24 // 3 * 9 + cse_var_1 + threadIdx_x_1 % 3 + 368640]
+            with T.launch_thread(threadIdx_x_1, 64):
+                kernel_shared_1[(threadIdx_x_1 + 1984) // 24 * 24 + (threadIdx_x_1 + 16) % 24 // 3 * 3 + (threadIdx_x_1 + 1) % 3] = kernel_1[blockIdx_x // 7 * 589824 + (threadIdx_x_1 + 1984) // 24 * 4608 + cse_var_2 + (threadIdx_x_1 + 16) % 24 // 3 * 9 + cse_var_1 + (threadIdx_x_1 + 1) % 3]
+            with T.launch_thread(threadIdx_x_1, 64):
+                kernel_shared_1[(threadIdx_x_1 + 2048) // 24 * 24 + (threadIdx_x_1 + 8) % 24 // 3 * 3 + (threadIdx_x_1 + 2) % 3] = kernel_1[blockIdx_x // 7 * 589824 + (threadIdx_x_1 + 2048) // 24 * 4608 + cse_var_2 + (threadIdx_x_1 + 8) % 24 // 3 * 9 + cse_var_1 + (threadIdx_x_1 + 2) % 3]
+            with T.launch_thread(threadIdx_x_1, 64):
+                kernel_shared_1[threadIdx_x_1 + 2112] = kernel_1[blockIdx_x // 7 * 589824 + threadIdx_x_1 // 24 * 4608 + cse_var_2 + threadIdx_x_1 % 24 // 3 * 9 + cse_var_1 + threadIdx_x_1 % 3 + 405504]
+            with T.launch_thread(threadIdx_x_1, 64):
+                kernel_shared_1[(threadIdx_x_1 + 2176) // 24 * 24 + (threadIdx_x_1 + 16) % 24 // 3 * 3 + (threadIdx_x_1 + 1) % 3] = kernel_1[blockIdx_x // 7 * 589824 + (threadIdx_x_1 + 2176) // 24 * 4608 + cse_var_2 + (threadIdx_x_1 + 16) % 24 // 3 * 9 + cse_var_1 + (threadIdx_x_1 + 1) % 3]
+            with T.launch_thread(threadIdx_x_1, 64):
+                kernel_shared_1[(threadIdx_x_1 + 2240) // 24 * 24 + (threadIdx_x_1 + 8) % 24 // 3 * 3 + (threadIdx_x_1 + 2) % 3] = kernel_1[blockIdx_x // 7 * 589824 + (threadIdx_x_1 + 2240) // 24 * 4608 + cse_var_2 + (threadIdx_x_1 + 8) % 24 // 3 * 9 + cse_var_1 + (threadIdx_x_1 + 2) % 3]
+            with T.launch_thread(threadIdx_x_1, 64):
+                kernel_shared_1[threadIdx_x_1 + 2304] = kernel_1[blockIdx_x // 7 * 589824 + threadIdx_x_1 // 24 * 4608 + cse_var_2 + threadIdx_x_1 % 24 // 3 * 9 + cse_var_1 + threadIdx_x_1 % 3 + 442368]
+            with T.launch_thread(threadIdx_x_1, 64):
+                kernel_shared_1[(threadIdx_x_1 + 2368) // 24 * 24 + (threadIdx_x_1 + 16) % 24 // 3 * 3 + (threadIdx_x_1 + 1) % 3] = kernel_1[blockIdx_x // 7 * 589824 + (threadIdx_x_1 + 2368) // 24 * 4608 + cse_var_2 + (threadIdx_x_1 + 16) % 24 // 3 * 9 + cse_var_1 + (threadIdx_x_1 + 1) % 3]
+            with T.launch_thread(threadIdx_x_1, 64):
+                kernel_shared_1[(threadIdx_x_1 + 2432) // 24 * 24 + (threadIdx_x_1 + 8) % 24 // 3 * 3 + (threadIdx_x_1 + 2) % 3] = kernel_1[blockIdx_x // 7 * 589824 + (threadIdx_x_1 + 2432) // 24 * 4608 + cse_var_2 + (threadIdx_x_1 + 8) % 24 // 3 * 9 + cse_var_1 + (threadIdx_x_1 + 2) % 3]
+            with T.launch_thread(threadIdx_x_1, 64):
+                kernel_shared_1[threadIdx_x_1 + 2496] = kernel_1[blockIdx_x // 7 * 589824 + threadIdx_x_1 // 24 * 4608 + cse_var_2 + threadIdx_x_1 % 24 // 3 * 9 + cse_var_1 + threadIdx_x_1 % 3 + 479232]
+            with T.launch_thread(threadIdx_x_1, 64):
+                kernel_shared_1[(threadIdx_x_1 + 2560) // 24 * 24 + (threadIdx_x_1 + 16) % 24 // 3 * 3 + (threadIdx_x_1 + 1) % 3] = kernel_1[blockIdx_x // 7 * 589824 + (threadIdx_x_1 + 2560) // 24 * 4608 + cse_var_2 + (threadIdx_x_1 + 16) % 24 // 3 * 9 + cse_var_1 + (threadIdx_x_1 + 1) % 3]
+            with T.launch_thread(threadIdx_x_1, 64):
+                kernel_shared_1[(threadIdx_x_1 + 2624) // 24 * 24 + (threadIdx_x_1 + 8) % 24 // 3 * 3 + (threadIdx_x_1 + 2) % 3] = kernel_1[blockIdx_x // 7 * 589824 + (threadIdx_x_1 + 2624) // 24 * 4608 + cse_var_2 + (threadIdx_x_1 + 8) % 24 // 3 * 9 + cse_var_1 + (threadIdx_x_1 + 2) % 3]
+            with T.launch_thread(threadIdx_x_1, 64):
+                kernel_shared_1[threadIdx_x_1 + 2688] = kernel_1[blockIdx_x // 7 * 589824 + threadIdx_x_1 // 24 * 4608 + cse_var_2 + threadIdx_x_1 % 24 // 3 * 9 + cse_var_1 + threadIdx_x_1 % 3 + 516096]
+            with T.launch_thread(threadIdx_x_1, 64):
+                kernel_shared_1[(threadIdx_x_1 + 2752) // 24 * 24 + (threadIdx_x_1 + 16) % 24 // 3 * 3 + (threadIdx_x_1 + 1) % 3] = kernel_1[blockIdx_x // 7 * 589824 + (threadIdx_x_1 + 2752) // 24 * 4608 + cse_var_2 + (threadIdx_x_1 + 16) % 24 // 3 * 9 + cse_var_1 + (threadIdx_x_1 + 1) % 3]
+            with T.launch_thread(threadIdx_x_1, 64):
+                kernel_shared_1[(threadIdx_x_1 + 2816) // 24 * 24 + (threadIdx_x_1 + 8) % 24 // 3 * 3 + (threadIdx_x_1 + 2) % 3] = kernel_1[blockIdx_x // 7 * 589824 + (threadIdx_x_1 + 2816) // 24 * 4608 + cse_var_2 + (threadIdx_x_1 + 8) % 24 // 3 * 9 + cse_var_1 + (threadIdx_x_1 + 2) % 3]
+            with T.launch_thread(threadIdx_x_1, 64):
+                kernel_shared_1[threadIdx_x_1 + 2880] = kernel_1[blockIdx_x // 7 * 589824 + threadIdx_x_1 // 24 * 4608 + cse_var_2 + threadIdx_x_1 % 24 // 3 * 9 + cse_var_1 + threadIdx_x_1 % 3 + 552960]
+            with T.launch_thread(threadIdx_x_1, 64):
+                kernel_shared_1[(threadIdx_x_1 + 2944) // 24 * 24 + (threadIdx_x_1 + 16) % 24 // 3 * 3 + (threadIdx_x_1 + 1) % 3] = kernel_1[blockIdx_x // 7 * 589824 + (threadIdx_x_1 + 2944) // 24 * 4608 + cse_var_2 + (threadIdx_x_1 + 16) % 24 // 3 * 9 + cse_var_1 + (threadIdx_x_1 + 1) % 3]
+            with T.launch_thread(threadIdx_x_1, 64):
+                kernel_shared_1[(threadIdx_x_1 + 3008) // 24 * 24 + (threadIdx_x_1 + 8) % 24 // 3 * 3 + (threadIdx_x_1 + 2) % 3] = kernel_1[blockIdx_x // 7 * 589824 + (threadIdx_x_1 + 3008) // 24 * 4608 + cse_var_2 + (threadIdx_x_1 + 8) % 24 // 3 * 9 + cse_var_1 + (threadIdx_x_1 + 2) % 3]
+            conv2d_nchw_1[0] = conv2d_nchw_1[0] + pad_temp_shared_1[0] * kernel_shared_1[threadIdx_x * 48]
+            conv2d_nchw_1[0] = conv2d_nchw_1[0] + pad_temp_shared_1[9] * kernel_shared_1[threadIdx_x * 48 + 3]
+            conv2d_nchw_1[1] = conv2d_nchw_1[1] + pad_temp_shared_1[1] * kernel_shared_1[threadIdx_x * 48]
+            conv2d_nchw_1[1] = conv2d_nchw_1[1] + pad_temp_shared_1[10] * kernel_shared_1[threadIdx_x * 48 + 3]
+            conv2d_nchw_1[2] = conv2d_nchw_1[2] + pad_temp_shared_1[2] * kernel_shared_1[threadIdx_x * 48]
+            conv2d_nchw_1[2] = conv2d_nchw_1[2] + pad_temp_shared_1[11] * kernel_shared_1[threadIdx_x * 48 + 3]
+            conv2d_nchw_1[3] = conv2d_nchw_1[3] + pad_temp_shared_1[3] * kernel_shared_1[threadIdx_x * 48]
+            conv2d_nchw_1[3] = conv2d_nchw_1[3] + pad_temp_shared_1[12] * kernel_shared_1[threadIdx_x * 48 + 3]
+            conv2d_nchw_1[4] = conv2d_nchw_1[4] + pad_temp_shared_1[4] * kernel_shared_1[threadIdx_x * 48]
+            conv2d_nchw_1[4] = conv2d_nchw_1[4] + pad_temp_shared_1[13] * kernel_shared_1[threadIdx_x * 48 + 3]
+            conv2d_nchw_1[5] = conv2d_nchw_1[5] + pad_temp_shared_1[5] * kernel_shared_1[threadIdx_x * 48]
+            conv2d_nchw_1[5] = conv2d_nchw_1[5] + pad_temp_shared_1[14] * kernel_shared_1[threadIdx_x * 48 + 3]
+            conv2d_nchw_1[6] = conv2d_nchw_1[6] + pad_temp_shared_1[6] * kernel_shared_1[threadIdx_x * 48]
+            conv2d_nchw_1[6] = conv2d_nchw_1[6] + pad_temp_shared_1[15] * kernel_shared_1[threadIdx_x * 48 + 3]
+            conv2d_nchw_1[7] = conv2d_nchw_1[7] + pad_temp_shared_1[0] * kernel_shared_1[threadIdx_x * 48 + 24]
+            conv2d_nchw_1[7] = conv2d_nchw_1[7] + pad_temp_shared_1[9] * kernel_shared_1[threadIdx_x * 48 + 27]
+            conv2d_nchw_1[8] = conv2d_nchw_1[8] + pad_temp_shared_1[1] * kernel_shared_1[threadIdx_x * 48 + 24]
+            conv2d_nchw_1[8] = conv2d_nchw_1[8] + pad_temp_shared_1[10] * kernel_shared_1[threadIdx_x * 48 + 27]
+            conv2d_nchw_1[9] = conv2d_nchw_1[9] + pad_temp_shared_1[2] * kernel_shared_1[threadIdx_x * 48 + 24]
+            conv2d_nchw_1[9] = conv2d_nchw_1[9] + pad_temp_shared_1[11] * kernel_shared_1[threadIdx_x * 48 + 27]
+            conv2d_nchw_1[10] = conv2d_nchw_1[10] + pad_temp_shared_1[3] * kernel_shared_1[threadIdx_x * 48 + 24]
+            conv2d_nchw_1[10] = conv2d_nchw_1[10] + pad_temp_shared_1[12] * kernel_shared_1[threadIdx_x * 48 + 27]
+            conv2d_nchw_1[11] = conv2d_nchw_1[11] + pad_temp_shared_1[4] * kernel_shared_1[threadIdx_x * 48 + 24]
+            conv2d_nchw_1[11] = conv2d_nchw_1[11] + pad_temp_shared_1[13] * kernel_shared_1[threadIdx_x * 48 + 27]
+            conv2d_nchw_1[12] = conv2d_nchw_1[12] + pad_temp_shared_1[5] * kernel_shared_1[threadIdx_x * 48 + 24]
+            conv2d_nchw_1[12] = conv2d_nchw_1[12] + pad_temp_shared_1[14] * kernel_shared_1[threadIdx_x * 48 + 27]
+            conv2d_nchw_1[13] = conv2d_nchw_1[13] + pad_temp_shared_1[6] * kernel_shared_1[threadIdx_x * 48 + 24]
+            conv2d_nchw_1[13] = conv2d_nchw_1[13] + pad_temp_shared_1[15] * kernel_shared_1[threadIdx_x * 48 + 27]
+            conv2d_nchw_1[0] = conv2d_nchw_1[0] + pad_temp_shared_1[1] * kernel_shared_1[threadIdx_x * 48 + 1]
+            conv2d_nchw_1[0] = conv2d_nchw_1[0] + pad_temp_shared_1[10] * kernel_shared_1[threadIdx_x * 48 + 4]
+            conv2d_nchw_1[1] = conv2d_nchw_1[1] + pad_temp_shared_1[2] * kernel_shared_1[threadIdx_x * 48 + 1]
+            conv2d_nchw_1[1] = conv2d_nchw_1[1] + pad_temp_shared_1[11] * kernel_shared_1[threadIdx_x * 48 + 4]
+            conv2d_nchw_1[2] = conv2d_nchw_1[2] + pad_temp_shared_1[3] * kernel_shared_1[threadIdx_x * 48 + 1]
+            conv2d_nchw_1[2] = conv2d_nchw_1[2] + pad_temp_shared_1[12] * kernel_shared_1[threadIdx_x * 48 + 4]
+            conv2d_nchw_1[3] = conv2d_nchw_1[3] + pad_temp_shared_1[4] * kernel_shared_1[threadIdx_x * 48 + 1]
+            conv2d_nchw_1[3] = conv2d_nchw_1[3] + pad_temp_shared_1[13] * kernel_shared_1[threadIdx_x * 48 + 4]
+            conv2d_nchw_1[4] = conv2d_nchw_1[4] + pad_temp_shared_1[5] * kernel_shared_1[threadIdx_x * 48 + 1]
+            conv2d_nchw_1[4] = conv2d_nchw_1[4] + pad_temp_shared_1[14] * kernel_shared_1[threadIdx_x * 48 + 4]
+            conv2d_nchw_1[5] = conv2d_nchw_1[5] + pad_temp_shared_1[6] * kernel_shared_1[threadIdx_x * 48 + 1]
+            conv2d_nchw_1[5] = conv2d_nchw_1[5] + pad_temp_shared_1[15] * kernel_shared_1[threadIdx_x * 48 + 4]
+            conv2d_nchw_1[6] = conv2d_nchw_1[6] + pad_temp_shared_1[7] * kernel_shared_1[threadIdx_x * 48 + 1]
+            conv2d_nchw_1[6] = conv2d_nchw_1[6] + pad_temp_shared_1[16] * kernel_shared_1[threadIdx_x * 48 + 4]
+            conv2d_nchw_1[7] = conv2d_nchw_1[7] + pad_temp_shared_1[1] * kernel_shared_1[threadIdx_x * 48 + 25]
+            conv2d_nchw_1[7] = conv2d_nchw_1[7] + pad_temp_shared_1[10] * kernel_shared_1[threadIdx_x * 48 + 28]
+            conv2d_nchw_1[8] = conv2d_nchw_1[8] + pad_temp_shared_1[2] * kernel_shared_1[threadIdx_x * 48 + 25]
+            conv2d_nchw_1[8] = conv2d_nchw_1[8] + pad_temp_shared_1[11] * kernel_shared_1[threadIdx_x * 48 + 28]
+            conv2d_nchw_1[9] = conv2d_nchw_1[9] + pad_temp_shared_1[3] * kernel_shared_1[threadIdx_x * 48 + 25]
+            conv2d_nchw_1[9] = conv2d_nchw_1[9] + pad_temp_shared_1[12] * kernel_shared_1[threadIdx_x * 48 + 28]
+            conv2d_nchw_1[10] = conv2d_nchw_1[10] + pad_temp_shared_1[4] * kernel_shared_1[threadIdx_x * 48 + 25]
+            conv2d_nchw_1[10] = conv2d_nchw_1[10] + pad_temp_shared_1[13] * kernel_shared_1[threadIdx_x * 48 + 28]
+            conv2d_nchw_1[11] = conv2d_nchw_1[11] + pad_temp_shared_1[5] * kernel_shared_1[threadIdx_x * 48 + 25]
+            conv2d_nchw_1[11] = conv2d_nchw_1[11] + pad_temp_shared_1[14] * kernel_shared_1[threadIdx_x * 48 + 28]
+            conv2d_nchw_1[12] = conv2d_nchw_1[12] + pad_temp_shared_1[6] * kernel_shared_1[threadIdx_x * 48 + 25]
+            conv2d_nchw_1[12] = conv2d_nchw_1[12] + pad_temp_shared_1[15] * kernel_shared_1[threadIdx_x * 48 + 28]
+            conv2d_nchw_1[13] = conv2d_nchw_1[13] + pad_temp_shared_1[7] * kernel_shared_1[threadIdx_x * 48 + 25]
+            conv2d_nchw_1[13] = conv2d_nchw_1[13] + pad_temp_shared_1[16] * kernel_shared_1[threadIdx_x * 48 + 28]
+            conv2d_nchw_1[0] = conv2d_nchw_1[0] + pad_temp_shared_1[2] * kernel_shared_1[threadIdx_x * 48 + 2]
+            conv2d_nchw_1[0] = conv2d_nchw_1[0] + pad_temp_shared_1[11] * kernel_shared_1[threadIdx_x * 48 + 5]
+            conv2d_nchw_1[1] = conv2d_nchw_1[1] + pad_temp_shared_1[3] * kernel_shared_1[threadIdx_x * 48 + 2]
+            conv2d_nchw_1[1] = conv2d_nchw_1[1] + pad_temp_shared_1[12] * kernel_shared_1[threadIdx_x * 48 + 5]
+            conv2d_nchw_1[2] = conv2d_nchw_1[2] + pad_temp_shared_1[4] * kernel_shared_1[threadIdx_x * 48 + 2]
+            conv2d_nchw_1[2] = conv2d_nchw_1[2] + pad_temp_shared_1[13] * kernel_shared_1[threadIdx_x * 48 + 5]
+            conv2d_nchw_1[3] = conv2d_nchw_1[3] + pad_temp_shared_1[5] * kernel_shared_1[threadIdx_x * 48 + 2]
+            conv2d_nchw_1[3] = conv2d_nchw_1[3] + pad_temp_shared_1[14] * kernel_shared_1[threadIdx_x * 48 + 5]
+            conv2d_nchw_1[4] = conv2d_nchw_1[4] + pad_temp_shared_1[6] * kernel_shared_1[threadIdx_x * 48 + 2]
+            conv2d_nchw_1[4] = conv2d_nchw_1[4] + pad_temp_shared_1[15] * kernel_shared_1[threadIdx_x * 48 + 5]
+            conv2d_nchw_1[5] = conv2d_nchw_1[5] + pad_temp_shared_1[7] * kernel_shared_1[threadIdx_x * 48 + 2]
+            conv2d_nchw_1[5] = conv2d_nchw_1[5] + pad_temp_shared_1[16] * kernel_shared_1[threadIdx_x * 48 + 5]
+            conv2d_nchw_1[6] = conv2d_nchw_1[6] + pad_temp_shared_1[8] * kernel_shared_1[threadIdx_x * 48 + 2]
+            conv2d_nchw_1[6] = conv2d_nchw_1[6] + pad_temp_shared_1[17] * kernel_shared_1[threadIdx_x * 48 + 5]
+            conv2d_nchw_1[7] = conv2d_nchw_1[7] + pad_temp_shared_1[2] * kernel_shared_1[threadIdx_x * 48 + 26]
+            conv2d_nchw_1[7] = conv2d_nchw_1[7] + pad_temp_shared_1[11] * kernel_shared_1[threadIdx_x * 48 + 29]
+            conv2d_nchw_1[8] = conv2d_nchw_1[8] + pad_temp_shared_1[3] * kernel_shared_1[threadIdx_x * 48 + 26]
+            conv2d_nchw_1[8] = conv2d_nchw_1[8] + pad_temp_shared_1[12] * kernel_shared_1[threadIdx_x * 48 + 29]
+            conv2d_nchw_1[9] = conv2d_nchw_1[9] + pad_temp_shared_1[4] * kernel_shared_1[threadIdx_x * 48 + 26]
+            conv2d_nchw_1[9] = conv2d_nchw_1[9] + pad_temp_shared_1[13] * kernel_shared_1[threadIdx_x * 48 + 29]
+            conv2d_nchw_1[10] = conv2d_nchw_1[10] + pad_temp_shared_1[5] * kernel_shared_1[threadIdx_x * 48 + 26]
+            conv2d_nchw_1[10] = conv2d_nchw_1[10] + pad_temp_shared_1[14] * kernel_shared_1[threadIdx_x * 48 + 29]
+            conv2d_nchw_1[11] = conv2d_nchw_1[11] + pad_temp_shared_1[6] * kernel_shared_1[threadIdx_x * 48 + 26]
+            conv2d_nchw_1[11] = conv2d_nchw_1[11] + pad_temp_shared_1[15] * kernel_shared_1[threadIdx_x * 48 + 29]
+            conv2d_nchw_1[12] = conv2d_nchw_1[12] + pad_temp_shared_1[7] * kernel_shared_1[threadIdx_x * 48 + 26]
+            conv2d_nchw_1[12] = conv2d_nchw_1[12] + pad_temp_shared_1[16] * kernel_shared_1[threadIdx_x * 48 + 29]
+            conv2d_nchw_1[13] = conv2d_nchw_1[13] + pad_temp_shared_1[8] * kernel_shared_1[threadIdx_x * 48 + 26]
+            conv2d_nchw_1[13] = conv2d_nchw_1[13] + pad_temp_shared_1[17] * kernel_shared_1[threadIdx_x * 48 + 29]
+            conv2d_nchw_1[0] = conv2d_nchw_1[0] + pad_temp_shared_1[18] * kernel_shared_1[threadIdx_x * 48 + 6]
+            conv2d_nchw_1[0] = conv2d_nchw_1[0] + pad_temp_shared_1[27] * kernel_shared_1[threadIdx_x * 48 + 9]
+            conv2d_nchw_1[1] = conv2d_nchw_1[1] + pad_temp_shared_1[19] * kernel_shared_1[threadIdx_x * 48 + 6]
+            conv2d_nchw_1[1] = conv2d_nchw_1[1] + pad_temp_shared_1[28] * kernel_shared_1[threadIdx_x * 48 + 9]
+            conv2d_nchw_1[2] = conv2d_nchw_1[2] + pad_temp_shared_1[20] * kernel_shared_1[threadIdx_x * 48 + 6]
+            conv2d_nchw_1[2] = conv2d_nchw_1[2] + pad_temp_shared_1[29] * kernel_shared_1[threadIdx_x * 48 + 9]
+            conv2d_nchw_1[3] = conv2d_nchw_1[3] + pad_temp_shared_1[21] * kernel_shared_1[threadIdx_x * 48 + 6]
+            conv2d_nchw_1[3] = conv2d_nchw_1[3] + pad_temp_shared_1[30] * kernel_shared_1[threadIdx_x * 48 + 9]
+            conv2d_nchw_1[4] = conv2d_nchw_1[4] + pad_temp_shared_1[22] * kernel_shared_1[threadIdx_x * 48 + 6]
+            conv2d_nchw_1[4] = conv2d_nchw_1[4] + pad_temp_shared_1[31] * kernel_shared_1[threadIdx_x * 48 + 9]
+            conv2d_nchw_1[5] = conv2d_nchw_1[5] + pad_temp_shared_1[23] * kernel_shared_1[threadIdx_x * 48 + 6]
+            conv2d_nchw_1[5] = conv2d_nchw_1[5] + pad_temp_shared_1[32] * kernel_shared_1[threadIdx_x * 48 + 9]
+            conv2d_nchw_1[6] = conv2d_nchw_1[6] + pad_temp_shared_1[24] * kernel_shared_1[threadIdx_x * 48 + 6]
+            conv2d_nchw_1[6] = conv2d_nchw_1[6] + pad_temp_shared_1[33] * kernel_shared_1[threadIdx_x * 48 + 9]
+            conv2d_nchw_1[7] = conv2d_nchw_1[7] + pad_temp_shared_1[18] * kernel_shared_1[threadIdx_x * 48 + 30]
+            conv2d_nchw_1[7] = conv2d_nchw_1[7] + pad_temp_shared_1[27] * kernel_shared_1[threadIdx_x * 48 + 33]
+            conv2d_nchw_1[8] = conv2d_nchw_1[8] + pad_temp_shared_1[19] * kernel_shared_1[threadIdx_x * 48 + 30]
+            conv2d_nchw_1[8] = conv2d_nchw_1[8] + pad_temp_shared_1[28] * kernel_shared_1[threadIdx_x * 48 + 33]
+            conv2d_nchw_1[9] = conv2d_nchw_1[9] + pad_temp_shared_1[20] * kernel_shared_1[threadIdx_x * 48 + 30]
+            conv2d_nchw_1[9] = conv2d_nchw_1[9] + pad_temp_shared_1[29] * kernel_shared_1[threadIdx_x * 48 + 33]
+            conv2d_nchw_1[10] = conv2d_nchw_1[10] + pad_temp_shared_1[21] * kernel_shared_1[threadIdx_x * 48 + 30]
+            conv2d_nchw_1[10] = conv2d_nchw_1[10] + pad_temp_shared_1[30] * kernel_shared_1[threadIdx_x * 48 + 33]
+            conv2d_nchw_1[11] = conv2d_nchw_1[11] + pad_temp_shared_1[22] * kernel_shared_1[threadIdx_x * 48 + 30]
+            conv2d_nchw_1[11] = conv2d_nchw_1[11] + pad_temp_shared_1[31] * kernel_shared_1[threadIdx_x * 48 + 33]
+            conv2d_nchw_1[12] = conv2d_nchw_1[12] + pad_temp_shared_1[23] * kernel_shared_1[threadIdx_x * 48 + 30]
+            conv2d_nchw_1[12] = conv2d_nchw_1[12] + pad_temp_shared_1[32] * kernel_shared_1[threadIdx_x * 48 + 33]
+            conv2d_nchw_1[13] = conv2d_nchw_1[13] + pad_temp_shared_1[24] * kernel_shared_1[threadIdx_x * 48 + 30]
+            conv2d_nchw_1[13] = conv2d_nchw_1[13] + pad_temp_shared_1[33] * kernel_shared_1[threadIdx_x * 48 + 33]
+            conv2d_nchw_1[0] = conv2d_nchw_1[0] + pad_temp_shared_1[19] * kernel_shared_1[threadIdx_x * 48 + 7]
+            conv2d_nchw_1[0] = conv2d_nchw_1[0] + pad_temp_shared_1[28] * kernel_shared_1[threadIdx_x * 48 + 10]
+            conv2d_nchw_1[1] = conv2d_nchw_1[1] + pad_temp_shared_1[20] * kernel_shared_1[threadIdx_x * 48 + 7]
+            conv2d_nchw_1[1] = conv2d_nchw_1[1] + pad_temp_shared_1[29] * kernel_shared_1[threadIdx_x * 48 + 10]
+            conv2d_nchw_1[2] = conv2d_nchw_1[2] + pad_temp_shared_1[21] * kernel_shared_1[threadIdx_x * 48 + 7]
+            conv2d_nchw_1[2] = conv2d_nchw_1[2] + pad_temp_shared_1[30] * kernel_shared_1[threadIdx_x * 48 + 10]
+            conv2d_nchw_1[3] = conv2d_nchw_1[3] + pad_temp_shared_1[22] * kernel_shared_1[threadIdx_x * 48 + 7]
+            conv2d_nchw_1[3] = conv2d_nchw_1[3] + pad_temp_shared_1[31] * kernel_shared_1[threadIdx_x * 48 + 10]
+            conv2d_nchw_1[4] = conv2d_nchw_1[4] + pad_temp_shared_1[23] * kernel_shared_1[threadIdx_x * 48 + 7]
+            conv2d_nchw_1[4] = conv2d_nchw_1[4] + pad_temp_shared_1[32] * kernel_shared_1[threadIdx_x * 48 + 10]
+            conv2d_nchw_1[5] = conv2d_nchw_1[5] + pad_temp_shared_1[24] * kernel_shared_1[threadIdx_x * 48 + 7]
+            conv2d_nchw_1[5] = conv2d_nchw_1[5] + pad_temp_shared_1[33] * kernel_shared_1[threadIdx_x * 48 + 10]
+            conv2d_nchw_1[6] = conv2d_nchw_1[6] + pad_temp_shared_1[25] * kernel_shared_1[threadIdx_x * 48 + 7]
+            conv2d_nchw_1[6] = conv2d_nchw_1[6] + pad_temp_shared_1[34] * kernel_shared_1[threadIdx_x * 48 + 10]
+            conv2d_nchw_1[7] = conv2d_nchw_1[7] + pad_temp_shared_1[19] * kernel_shared_1[threadIdx_x * 48 + 31]
+            conv2d_nchw_1[7] = conv2d_nchw_1[7] + pad_temp_shared_1[28] * kernel_shared_1[threadIdx_x * 48 + 34]
+            conv2d_nchw_1[8] = conv2d_nchw_1[8] + pad_temp_shared_1[20] * kernel_shared_1[threadIdx_x * 48 + 31]
+            conv2d_nchw_1[8] = conv2d_nchw_1[8] + pad_temp_shared_1[29] * kernel_shared_1[threadIdx_x * 48 + 34]
+            conv2d_nchw_1[9] = conv2d_nchw_1[9] + pad_temp_shared_1[21] * kernel_shared_1[threadIdx_x * 48 + 31]
+            conv2d_nchw_1[9] = conv2d_nchw_1[9] + pad_temp_shared_1[30] * kernel_shared_1[threadIdx_x * 48 + 34]
+            conv2d_nchw_1[10] = conv2d_nchw_1[10] + pad_temp_shared_1[22] * kernel_shared_1[threadIdx_x * 48 + 31]
+            conv2d_nchw_1[10] = conv2d_nchw_1[10] + pad_temp_shared_1[31] * kernel_shared_1[threadIdx_x * 48 + 34]
+            conv2d_nchw_1[11] = conv2d_nchw_1[11] + pad_temp_shared_1[23] * kernel_shared_1[threadIdx_x * 48 + 31]
+            conv2d_nchw_1[11] = conv2d_nchw_1[11] + pad_temp_shared_1[32] * kernel_shared_1[threadIdx_x * 48 + 34]
+            conv2d_nchw_1[12] = conv2d_nchw_1[12] + pad_temp_shared_1[24] * kernel_shared_1[threadIdx_x * 48 + 31]
+            conv2d_nchw_1[12] = conv2d_nchw_1[12] + pad_temp_shared_1[33] * kernel_shared_1[threadIdx_x * 48 + 34]
+            conv2d_nchw_1[13] = conv2d_nchw_1[13] + pad_temp_shared_1[25] * kernel_shared_1[threadIdx_x * 48 + 31]
+            conv2d_nchw_1[13] = conv2d_nchw_1[13] + pad_temp_shared_1[34] * kernel_shared_1[threadIdx_x * 48 + 34]
+            conv2d_nchw_1[0] = conv2d_nchw_1[0] + pad_temp_shared_1[20] * kernel_shared_1[threadIdx_x * 48 + 8]
+            conv2d_nchw_1[0] = conv2d_nchw_1[0] + pad_temp_shared_1[29] * kernel_shared_1[threadIdx_x * 48 + 11]
+            conv2d_nchw_1[1] = conv2d_nchw_1[1] + pad_temp_shared_1[21] * kernel_shared_1[threadIdx_x * 48 + 8]
+            conv2d_nchw_1[1] = conv2d_nchw_1[1] + pad_temp_shared_1[30] * kernel_shared_1[threadIdx_x * 48 + 11]
+            conv2d_nchw_1[2] = conv2d_nchw_1[2] + pad_temp_shared_1[22] * kernel_shared_1[threadIdx_x * 48 + 8]
+            conv2d_nchw_1[2] = conv2d_nchw_1[2] + pad_temp_shared_1[31] * kernel_shared_1[threadIdx_x * 48 + 11]
+            conv2d_nchw_1[3] = conv2d_nchw_1[3] + pad_temp_shared_1[23] * kernel_shared_1[threadIdx_x * 48 + 8]
+            conv2d_nchw_1[3] = conv2d_nchw_1[3] + pad_temp_shared_1[32] * kernel_shared_1[threadIdx_x * 48 + 11]
+            conv2d_nchw_1[4] = conv2d_nchw_1[4] + pad_temp_shared_1[24] * kernel_shared_1[threadIdx_x * 48 + 8]
+            conv2d_nchw_1[4] = conv2d_nchw_1[4] + pad_temp_shared_1[33] * kernel_shared_1[threadIdx_x * 48 + 11]
+            conv2d_nchw_1[5] = conv2d_nchw_1[5] + pad_temp_shared_1[25] * kernel_shared_1[threadIdx_x * 48 + 8]
+            conv2d_nchw_1[5] = conv2d_nchw_1[5] + pad_temp_shared_1[34] * kernel_shared_1[threadIdx_x * 48 + 11]
+            conv2d_nchw_1[6] = conv2d_nchw_1[6] + pad_temp_shared_1[26] * kernel_shared_1[threadIdx_x * 48 + 8]
+            conv2d_nchw_1[6] = conv2d_nchw_1[6] + pad_temp_shared_1[35] * kernel_shared_1[threadIdx_x * 48 + 11]
+            conv2d_nchw_1[7] = conv2d_nchw_1[7] + pad_temp_shared_1[20] * kernel_shared_1[threadIdx_x * 48 + 32]
+            conv2d_nchw_1[7] = conv2d_nchw_1[7] + pad_temp_shared_1[29] * kernel_shared_1[threadIdx_x * 48 + 35]
+            conv2d_nchw_1[8] = conv2d_nchw_1[8] + pad_temp_shared_1[21] * kernel_shared_1[threadIdx_x * 48 + 32]
+            conv2d_nchw_1[8] = conv2d_nchw_1[8] + pad_temp_shared_1[30] * kernel_shared_1[threadIdx_x * 48 + 35]
+            conv2d_nchw_1[9] = conv2d_nchw_1[9] + pad_temp_shared_1[22] * kernel_shared_1[threadIdx_x * 48 + 32]
+            conv2d_nchw_1[9] = conv2d_nchw_1[9] + pad_temp_shared_1[31] * kernel_shared_1[threadIdx_x * 48 + 35]
+            conv2d_nchw_1[10] = conv2d_nchw_1[10] + pad_temp_shared_1[23] * kernel_shared_1[threadIdx_x * 48 + 32]
+            conv2d_nchw_1[10] = conv2d_nchw_1[10] + pad_temp_shared_1[32] * kernel_shared_1[threadIdx_x * 48 + 35]
+            conv2d_nchw_1[11] = conv2d_nchw_1[11] + pad_temp_shared_1[24] * kernel_shared_1[threadIdx_x * 48 + 32]
+            conv2d_nchw_1[11] = conv2d_nchw_1[11] + pad_temp_shared_1[33] * kernel_shared_1[threadIdx_x * 48 + 35]
+            conv2d_nchw_1[12] = conv2d_nchw_1[12] + pad_temp_shared_1[25] * kernel_shared_1[threadIdx_x * 48 + 32]
+            conv2d_nchw_1[12] = conv2d_nchw_1[12] + pad_temp_shared_1[34] * kernel_shared_1[threadIdx_x * 48 + 35]
+            conv2d_nchw_1[13] = conv2d_nchw_1[13] + pad_temp_shared_1[26] * kernel_shared_1[threadIdx_x * 48 + 32]
+            conv2d_nchw_1[13] = conv2d_nchw_1[13] + pad_temp_shared_1[35] * kernel_shared_1[threadIdx_x * 48 + 35]
+            conv2d_nchw_1[0] = conv2d_nchw_1[0] + pad_temp_shared_1[36] * kernel_shared_1[threadIdx_x * 48 + 12]
+            conv2d_nchw_1[0] = conv2d_nchw_1[0] + pad_temp_shared_1[45] * kernel_shared_1[threadIdx_x * 48 + 15]
+            conv2d_nchw_1[1] = conv2d_nchw_1[1] + pad_temp_shared_1[37] * kernel_shared_1[threadIdx_x * 48 + 12]
+            conv2d_nchw_1[1] = conv2d_nchw_1[1] + pad_temp_shared_1[46] * kernel_shared_1[threadIdx_x * 48 + 15]
+            conv2d_nchw_1[2] = conv2d_nchw_1[2] + pad_temp_shared_1[38] * kernel_shared_1[threadIdx_x * 48 + 12]
+            conv2d_nchw_1[2] = conv2d_nchw_1[2] + pad_temp_shared_1[47] * kernel_shared_1[threadIdx_x * 48 + 15]
+            conv2d_nchw_1[3] = conv2d_nchw_1[3] + pad_temp_shared_1[39] * kernel_shared_1[threadIdx_x * 48 + 12]
+            conv2d_nchw_1[3] = conv2d_nchw_1[3] + pad_temp_shared_1[48] * kernel_shared_1[threadIdx_x * 48 + 15]
+            conv2d_nchw_1[4] = conv2d_nchw_1[4] + pad_temp_shared_1[40] * kernel_shared_1[threadIdx_x * 48 + 12]
+            conv2d_nchw_1[4] = conv2d_nchw_1[4] + pad_temp_shared_1[49] * kernel_shared_1[threadIdx_x * 48 + 15]
+            conv2d_nchw_1[5] = conv2d_nchw_1[5] + pad_temp_shared_1[41] * kernel_shared_1[threadIdx_x * 48 + 12]
+            conv2d_nchw_1[5] = conv2d_nchw_1[5] + pad_temp_shared_1[50] * kernel_shared_1[threadIdx_x * 48 + 15]
+            conv2d_nchw_1[6] = conv2d_nchw_1[6] + pad_temp_shared_1[42] * kernel_shared_1[threadIdx_x * 48 + 12]
+            conv2d_nchw_1[6] = conv2d_nchw_1[6] + pad_temp_shared_1[51] * kernel_shared_1[threadIdx_x * 48 + 15]
+            conv2d_nchw_1[7] = conv2d_nchw_1[7] + pad_temp_shared_1[36] * kernel_shared_1[threadIdx_x * 48 + 36]
+            conv2d_nchw_1[7] = conv2d_nchw_1[7] + pad_temp_shared_1[45] * kernel_shared_1[threadIdx_x * 48 + 39]
+            conv2d_nchw_1[8] = conv2d_nchw_1[8] + pad_temp_shared_1[37] * kernel_shared_1[threadIdx_x * 48 + 36]
+            conv2d_nchw_1[8] = conv2d_nchw_1[8] + pad_temp_shared_1[46] * kernel_shared_1[threadIdx_x * 48 + 39]
+            conv2d_nchw_1[9] = conv2d_nchw_1[9] + pad_temp_shared_1[38] * kernel_shared_1[threadIdx_x * 48 + 36]
+            conv2d_nchw_1[9] = conv2d_nchw_1[9] + pad_temp_shared_1[47] * kernel_shared_1[threadIdx_x * 48 + 39]
+            conv2d_nchw_1[10] = conv2d_nchw_1[10] + pad_temp_shared_1[39] * kernel_shared_1[threadIdx_x * 48 + 36]
+            conv2d_nchw_1[10] = conv2d_nchw_1[10] + pad_temp_shared_1[48] * kernel_shared_1[threadIdx_x * 48 + 39]
+            conv2d_nchw_1[11] = conv2d_nchw_1[11] + pad_temp_shared_1[40] * kernel_shared_1[threadIdx_x * 48 + 36]
+            conv2d_nchw_1[11] = conv2d_nchw_1[11] + pad_temp_shared_1[49] * kernel_shared_1[threadIdx_x * 48 + 39]
+            conv2d_nchw_1[12] = conv2d_nchw_1[12] + pad_temp_shared_1[41] * kernel_shared_1[threadIdx_x * 48 + 36]
+            conv2d_nchw_1[12] = conv2d_nchw_1[12] + pad_temp_shared_1[50] * kernel_shared_1[threadIdx_x * 48 + 39]
+            conv2d_nchw_1[13] = conv2d_nchw_1[13] + pad_temp_shared_1[42] * kernel_shared_1[threadIdx_x * 48 + 36]
+            conv2d_nchw_1[13] = conv2d_nchw_1[13] + pad_temp_shared_1[51] * kernel_shared_1[threadIdx_x * 48 + 39]
+            conv2d_nchw_1[0] = conv2d_nchw_1[0] + pad_temp_shared_1[37] * kernel_shared_1[threadIdx_x * 48 + 13]
+            conv2d_nchw_1[0] = conv2d_nchw_1[0] + pad_temp_shared_1[46] * kernel_shared_1[threadIdx_x * 48 + 16]
+            conv2d_nchw_1[1] = conv2d_nchw_1[1] + pad_temp_shared_1[38] * kernel_shared_1[threadIdx_x * 48 + 13]
+            conv2d_nchw_1[1] = conv2d_nchw_1[1] + pad_temp_shared_1[47] * kernel_shared_1[threadIdx_x * 48 + 16]
+            conv2d_nchw_1[2] = conv2d_nchw_1[2] + pad_temp_shared_1[39] * kernel_shared_1[threadIdx_x * 48 + 13]
+            conv2d_nchw_1[2] = conv2d_nchw_1[2] + pad_temp_shared_1[48] * kernel_shared_1[threadIdx_x * 48 + 16]
+            conv2d_nchw_1[3] = conv2d_nchw_1[3] + pad_temp_shared_1[40] * kernel_shared_1[threadIdx_x * 48 + 13]
+            conv2d_nchw_1[3] = conv2d_nchw_1[3] + pad_temp_shared_1[49] * kernel_shared_1[threadIdx_x * 48 + 16]
+            conv2d_nchw_1[4] = conv2d_nchw_1[4] + pad_temp_shared_1[41] * kernel_shared_1[threadIdx_x * 48 + 13]
+            conv2d_nchw_1[4] = conv2d_nchw_1[4] + pad_temp_shared_1[50] * kernel_shared_1[threadIdx_x * 48 + 16]
+            conv2d_nchw_1[5] = conv2d_nchw_1[5] + pad_temp_shared_1[42] * kernel_shared_1[threadIdx_x * 48 + 13]
+            conv2d_nchw_1[5] = conv2d_nchw_1[5] + pad_temp_shared_1[51] * kernel_shared_1[threadIdx_x * 48 + 16]
+            conv2d_nchw_1[6] = conv2d_nchw_1[6] + pad_temp_shared_1[43] * kernel_shared_1[threadIdx_x * 48 + 13]
+            conv2d_nchw_1[6] = conv2d_nchw_1[6] + pad_temp_shared_1[52] * kernel_shared_1[threadIdx_x * 48 + 16]
+            conv2d_nchw_1[7] = conv2d_nchw_1[7] + pad_temp_shared_1[37] * kernel_shared_1[threadIdx_x * 48 + 37]
+            conv2d_nchw_1[7] = conv2d_nchw_1[7] + pad_temp_shared_1[46] * kernel_shared_1[threadIdx_x * 48 + 40]
+            conv2d_nchw_1[8] = conv2d_nchw_1[8] + pad_temp_shared_1[38] * kernel_shared_1[threadIdx_x * 48 + 37]
+            conv2d_nchw_1[8] = conv2d_nchw_1[8] + pad_temp_shared_1[47] * kernel_shared_1[threadIdx_x * 48 + 40]
+            conv2d_nchw_1[9] = conv2d_nchw_1[9] + pad_temp_shared_1[39] * kernel_shared_1[threadIdx_x * 48 + 37]
+            conv2d_nchw_1[9] = conv2d_nchw_1[9] + pad_temp_shared_1[48] * kernel_shared_1[threadIdx_x * 48 + 40]
+            conv2d_nchw_1[10] = conv2d_nchw_1[10] + pad_temp_shared_1[40] * kernel_shared_1[threadIdx_x * 48 + 37]
+            conv2d_nchw_1[10] = conv2d_nchw_1[10] + pad_temp_shared_1[49] * kernel_shared_1[threadIdx_x * 48 + 40]
+            conv2d_nchw_1[11] = conv2d_nchw_1[11] + pad_temp_shared_1[41] * kernel_shared_1[threadIdx_x * 48 + 37]
+            conv2d_nchw_1[11] = conv2d_nchw_1[11] + pad_temp_shared_1[50] * kernel_shared_1[threadIdx_x * 48 + 40]
+            conv2d_nchw_1[12] = conv2d_nchw_1[12] + pad_temp_shared_1[42] * kernel_shared_1[threadIdx_x * 48 + 37]
+            conv2d_nchw_1[12] = conv2d_nchw_1[12] + pad_temp_shared_1[51] * kernel_shared_1[threadIdx_x * 48 + 40]
+            conv2d_nchw_1[13] = conv2d_nchw_1[13] + pad_temp_shared_1[43] * kernel_shared_1[threadIdx_x * 48 + 37]
+            conv2d_nchw_1[13] = conv2d_nchw_1[13] + pad_temp_shared_1[52] * kernel_shared_1[threadIdx_x * 48 + 40]
+            conv2d_nchw_1[0] = conv2d_nchw_1[0] + pad_temp_shared_1[38] * kernel_shared_1[threadIdx_x * 48 + 14]
+            conv2d_nchw_1[0] = conv2d_nchw_1[0] + pad_temp_shared_1[47] * kernel_shared_1[threadIdx_x * 48 + 17]
+            conv2d_nchw_1[1] = conv2d_nchw_1[1] + pad_temp_shared_1[39] * kernel_shared_1[threadIdx_x * 48 + 14]
+            conv2d_nchw_1[1] = conv2d_nchw_1[1] + pad_temp_shared_1[48] * kernel_shared_1[threadIdx_x * 48 + 17]
+            conv2d_nchw_1[2] = conv2d_nchw_1[2] + pad_temp_shared_1[40] * kernel_shared_1[threadIdx_x * 48 + 14]
+            conv2d_nchw_1[2] = conv2d_nchw_1[2] + pad_temp_shared_1[49] * kernel_shared_1[threadIdx_x * 48 + 17]
+            conv2d_nchw_1[3] = conv2d_nchw_1[3] + pad_temp_shared_1[41] * kernel_shared_1[threadIdx_x * 48 + 14]
+            conv2d_nchw_1[3] = conv2d_nchw_1[3] + pad_temp_shared_1[50] * kernel_shared_1[threadIdx_x * 48 + 17]
+            conv2d_nchw_1[4] = conv2d_nchw_1[4] + pad_temp_shared_1[42] * kernel_shared_1[threadIdx_x * 48 + 14]
+            conv2d_nchw_1[4] = conv2d_nchw_1[4] + pad_temp_shared_1[51] * kernel_shared_1[threadIdx_x * 48 + 17]
+            conv2d_nchw_1[5] = conv2d_nchw_1[5] + pad_temp_shared_1[43] * kernel_shared_1[threadIdx_x * 48 + 14]
+            conv2d_nchw_1[5] = conv2d_nchw_1[5] + pad_temp_shared_1[52] * kernel_shared_1[threadIdx_x * 48 + 17]
+            conv2d_nchw_1[6] = conv2d_nchw_1[6] + pad_temp_shared_1[44] * kernel_shared_1[threadIdx_x * 48 + 14]
+            conv2d_nchw_1[6] = conv2d_nchw_1[6] + pad_temp_shared_1[53] * kernel_shared_1[threadIdx_x * 48 + 17]
+            conv2d_nchw_1[7] = conv2d_nchw_1[7] + pad_temp_shared_1[38] * kernel_shared_1[threadIdx_x * 48 + 38]
+            conv2d_nchw_1[7] = conv2d_nchw_1[7] + pad_temp_shared_1[47] * kernel_shared_1[threadIdx_x * 48 + 41]
+            conv2d_nchw_1[8] = conv2d_nchw_1[8] + pad_temp_shared_1[39] * kernel_shared_1[threadIdx_x * 48 + 38]
+            conv2d_nchw_1[8] = conv2d_nchw_1[8] + pad_temp_shared_1[48] * kernel_shared_1[threadIdx_x * 48 + 41]
+            conv2d_nchw_1[9] = conv2d_nchw_1[9] + pad_temp_shared_1[40] * kernel_shared_1[threadIdx_x * 48 + 38]
+            conv2d_nchw_1[9] = conv2d_nchw_1[9] + pad_temp_shared_1[49] * kernel_shared_1[threadIdx_x * 48 + 41]
+            conv2d_nchw_1[10] = conv2d_nchw_1[10] + pad_temp_shared_1[41] * kernel_shared_1[threadIdx_x * 48 + 38]
+            conv2d_nchw_1[10] = conv2d_nchw_1[10] + pad_temp_shared_1[50] * kernel_shared_1[threadIdx_x * 48 + 41]
+            conv2d_nchw_1[11] = conv2d_nchw_1[11] + pad_temp_shared_1[42] * kernel_shared_1[threadIdx_x * 48 + 38]
+            conv2d_nchw_1[11] = conv2d_nchw_1[11] + pad_temp_shared_1[51] * kernel_shared_1[threadIdx_x * 48 + 41]
+            conv2d_nchw_1[12] = conv2d_nchw_1[12] + pad_temp_shared_1[43] * kernel_shared_1[threadIdx_x * 48 + 38]
+            conv2d_nchw_1[12] = conv2d_nchw_1[12] + pad_temp_shared_1[52] * kernel_shared_1[threadIdx_x * 48 + 41]
+            conv2d_nchw_1[13] = conv2d_nchw_1[13] + pad_temp_shared_1[44] * kernel_shared_1[threadIdx_x * 48 + 38]
+            conv2d_nchw_1[13] = conv2d_nchw_1[13] + pad_temp_shared_1[53] * kernel_shared_1[threadIdx_x * 48 + 41]
+            conv2d_nchw_1[0] = conv2d_nchw_1[0] + pad_temp_shared_1[54] * kernel_shared_1[threadIdx_x * 48 + 18]
+            conv2d_nchw_1[0] = conv2d_nchw_1[0] + pad_temp_shared_1[63] * kernel_shared_1[threadIdx_x * 48 + 21]
+            conv2d_nchw_1[1] = conv2d_nchw_1[1] + pad_temp_shared_1[55] * kernel_shared_1[threadIdx_x * 48 + 18]
+            conv2d_nchw_1[1] = conv2d_nchw_1[1] + pad_temp_shared_1[64] * kernel_shared_1[threadIdx_x * 48 + 21]
+            conv2d_nchw_1[2] = conv2d_nchw_1[2] + pad_temp_shared_1[56] * kernel_shared_1[threadIdx_x * 48 + 18]
+            conv2d_nchw_1[2] = conv2d_nchw_1[2] + pad_temp_shared_1[65] * kernel_shared_1[threadIdx_x * 48 + 21]
+            conv2d_nchw_1[3] = conv2d_nchw_1[3] + pad_temp_shared_1[57] * kernel_shared_1[threadIdx_x * 48 + 18]
+            conv2d_nchw_1[3] = conv2d_nchw_1[3] + pad_temp_shared_1[66] * kernel_shared_1[threadIdx_x * 48 + 21]
+            conv2d_nchw_1[4] = conv2d_nchw_1[4] + pad_temp_shared_1[58] * kernel_shared_1[threadIdx_x * 48 + 18]
+            conv2d_nchw_1[4] = conv2d_nchw_1[4] + pad_temp_shared_1[67] * kernel_shared_1[threadIdx_x * 48 + 21]
+            conv2d_nchw_1[5] = conv2d_nchw_1[5] + pad_temp_shared_1[59] * kernel_shared_1[threadIdx_x * 48 + 18]
+            conv2d_nchw_1[5] = conv2d_nchw_1[5] + pad_temp_shared_1[68] * kernel_shared_1[threadIdx_x * 48 + 21]
+            conv2d_nchw_1[6] = conv2d_nchw_1[6] + pad_temp_shared_1[60] * kernel_shared_1[threadIdx_x * 48 + 18]
+            conv2d_nchw_1[6] = conv2d_nchw_1[6] + pad_temp_shared_1[69] * kernel_shared_1[threadIdx_x * 48 + 21]
+            conv2d_nchw_1[7] = conv2d_nchw_1[7] + pad_temp_shared_1[54] * kernel_shared_1[threadIdx_x * 48 + 42]
+            conv2d_nchw_1[7] = conv2d_nchw_1[7] + pad_temp_shared_1[63] * kernel_shared_1[threadIdx_x * 48 + 45]
+            conv2d_nchw_1[8] = conv2d_nchw_1[8] + pad_temp_shared_1[55] * kernel_shared_1[threadIdx_x * 48 + 42]
+            conv2d_nchw_1[8] = conv2d_nchw_1[8] + pad_temp_shared_1[64] * kernel_shared_1[threadIdx_x * 48 + 45]
+            conv2d_nchw_1[9] = conv2d_nchw_1[9] + pad_temp_shared_1[56] * kernel_shared_1[threadIdx_x * 48 + 42]
+            conv2d_nchw_1[9] = conv2d_nchw_1[9] + pad_temp_shared_1[65] * kernel_shared_1[threadIdx_x * 48 + 45]
+            conv2d_nchw_1[10] = conv2d_nchw_1[10] + pad_temp_shared_1[57] * kernel_shared_1[threadIdx_x * 48 + 42]
+            conv2d_nchw_1[10] = conv2d_nchw_1[10] + pad_temp_shared_1[66] * kernel_shared_1[threadIdx_x * 48 + 45]
+            conv2d_nchw_1[11] = conv2d_nchw_1[11] + pad_temp_shared_1[58] * kernel_shared_1[threadIdx_x * 48 + 42]
+            conv2d_nchw_1[11] = conv2d_nchw_1[11] + pad_temp_shared_1[67] * kernel_shared_1[threadIdx_x * 48 + 45]
+            conv2d_nchw_1[12] = conv2d_nchw_1[12] + pad_temp_shared_1[59] * kernel_shared_1[threadIdx_x * 48 + 42]
+            conv2d_nchw_1[12] = conv2d_nchw_1[12] + pad_temp_shared_1[68] * kernel_shared_1[threadIdx_x * 48 + 45]
+            conv2d_nchw_1[13] = conv2d_nchw_1[13] + pad_temp_shared_1[60] * kernel_shared_1[threadIdx_x * 48 + 42]
+            conv2d_nchw_1[13] = conv2d_nchw_1[13] + pad_temp_shared_1[69] * kernel_shared_1[threadIdx_x * 48 + 45]
+            conv2d_nchw_1[0] = conv2d_nchw_1[0] + pad_temp_shared_1[55] * kernel_shared_1[threadIdx_x * 48 + 19]
+            conv2d_nchw_1[0] = conv2d_nchw_1[0] + pad_temp_shared_1[64] * kernel_shared_1[threadIdx_x * 48 + 22]
+            conv2d_nchw_1[1] = conv2d_nchw_1[1] + pad_temp_shared_1[56] * kernel_shared_1[threadIdx_x * 48 + 19]
+            conv2d_nchw_1[1] = conv2d_nchw_1[1] + pad_temp_shared_1[65] * kernel_shared_1[threadIdx_x * 48 + 22]
+            conv2d_nchw_1[2] = conv2d_nchw_1[2] + pad_temp_shared_1[57] * kernel_shared_1[threadIdx_x * 48 + 19]
+            conv2d_nchw_1[2] = conv2d_nchw_1[2] + pad_temp_shared_1[66] * kernel_shared_1[threadIdx_x * 48 + 22]
+            conv2d_nchw_1[3] = conv2d_nchw_1[3] + pad_temp_shared_1[58] * kernel_shared_1[threadIdx_x * 48 + 19]
+            conv2d_nchw_1[3] = conv2d_nchw_1[3] + pad_temp_shared_1[67] * kernel_shared_1[threadIdx_x * 48 + 22]
+            conv2d_nchw_1[4] = conv2d_nchw_1[4] + pad_temp_shared_1[59] * kernel_shared_1[threadIdx_x * 48 + 19]
+            conv2d_nchw_1[4] = conv2d_nchw_1[4] + pad_temp_shared_1[68] * kernel_shared_1[threadIdx_x * 48 + 22]
+            conv2d_nchw_1[5] = conv2d_nchw_1[5] + pad_temp_shared_1[60] * kernel_shared_1[threadIdx_x * 48 + 19]
+            conv2d_nchw_1[5] = conv2d_nchw_1[5] + pad_temp_shared_1[69] * kernel_shared_1[threadIdx_x * 48 + 22]
+            conv2d_nchw_1[6] = conv2d_nchw_1[6] + pad_temp_shared_1[61] * kernel_shared_1[threadIdx_x * 48 + 19]
+            conv2d_nchw_1[6] = conv2d_nchw_1[6] + pad_temp_shared_1[70] * kernel_shared_1[threadIdx_x * 48 + 22]
+            conv2d_nchw_1[7] = conv2d_nchw_1[7] + pad_temp_shared_1[55] * kernel_shared_1[threadIdx_x * 48 + 43]
+            conv2d_nchw_1[7] = conv2d_nchw_1[7] + pad_temp_shared_1[64] * kernel_shared_1[threadIdx_x * 48 + 46]
+            conv2d_nchw_1[8] = conv2d_nchw_1[8] + pad_temp_shared_1[56] * kernel_shared_1[threadIdx_x * 48 + 43]
+            conv2d_nchw_1[8] = conv2d_nchw_1[8] + pad_temp_shared_1[65] * kernel_shared_1[threadIdx_x * 48 + 46]
+            conv2d_nchw_1[9] = conv2d_nchw_1[9] + pad_temp_shared_1[57] * kernel_shared_1[threadIdx_x * 48 + 43]
+            conv2d_nchw_1[9] = conv2d_nchw_1[9] + pad_temp_shared_1[66] * kernel_shared_1[threadIdx_x * 48 + 46]
+            conv2d_nchw_1[10] = conv2d_nchw_1[10] + pad_temp_shared_1[58] * kernel_shared_1[threadIdx_x * 48 + 43]
+            conv2d_nchw_1[10] = conv2d_nchw_1[10] + pad_temp_shared_1[67] * kernel_shared_1[threadIdx_x * 48 + 46]
+            conv2d_nchw_1[11] = conv2d_nchw_1[11] + pad_temp_shared_1[59] * kernel_shared_1[threadIdx_x * 48 + 43]
+            conv2d_nchw_1[11] = conv2d_nchw_1[11] + pad_temp_shared_1[68] * kernel_shared_1[threadIdx_x * 48 + 46]
+            conv2d_nchw_1[12] = conv2d_nchw_1[12] + pad_temp_shared_1[60] * kernel_shared_1[threadIdx_x * 48 + 43]
+            conv2d_nchw_1[12] = conv2d_nchw_1[12] + pad_temp_shared_1[69] * kernel_shared_1[threadIdx_x * 48 + 46]
+            conv2d_nchw_1[13] = conv2d_nchw_1[13] + pad_temp_shared_1[61] * kernel_shared_1[threadIdx_x * 48 + 43]
+            conv2d_nchw_1[13] = conv2d_nchw_1[13] + pad_temp_shared_1[70] * kernel_shared_1[threadIdx_x * 48 + 46]
+            conv2d_nchw_1[0] = conv2d_nchw_1[0] + pad_temp_shared_1[56] * kernel_shared_1[threadIdx_x * 48 + 20]
+            conv2d_nchw_1[0] = conv2d_nchw_1[0] + pad_temp_shared_1[65] * kernel_shared_1[threadIdx_x * 48 + 23]
+            conv2d_nchw_1[1] = conv2d_nchw_1[1] + pad_temp_shared_1[57] * kernel_shared_1[threadIdx_x * 48 + 20]
+            conv2d_nchw_1[1] = conv2d_nchw_1[1] + pad_temp_shared_1[66] * kernel_shared_1[threadIdx_x * 48 + 23]
+            conv2d_nchw_1[2] = conv2d_nchw_1[2] + pad_temp_shared_1[58] * kernel_shared_1[threadIdx_x * 48 + 20]
+            conv2d_nchw_1[2] = conv2d_nchw_1[2] + pad_temp_shared_1[67] * kernel_shared_1[threadIdx_x * 48 + 23]
+            conv2d_nchw_1[3] = conv2d_nchw_1[3] + pad_temp_shared_1[59] * kernel_shared_1[threadIdx_x * 48 + 20]
+            conv2d_nchw_1[3] = conv2d_nchw_1[3] + pad_temp_shared_1[68] * kernel_shared_1[threadIdx_x * 48 + 23]
+            conv2d_nchw_1[4] = conv2d_nchw_1[4] + pad_temp_shared_1[60] * kernel_shared_1[threadIdx_x * 48 + 20]
+            conv2d_nchw_1[4] = conv2d_nchw_1[4] + pad_temp_shared_1[69] * kernel_shared_1[threadIdx_x * 48 + 23]
+            conv2d_nchw_1[5] = conv2d_nchw_1[5] + pad_temp_shared_1[61] * kernel_shared_1[threadIdx_x * 48 + 20]
+            conv2d_nchw_1[5] = conv2d_nchw_1[5] + pad_temp_shared_1[70] * kernel_shared_1[threadIdx_x * 48 + 23]
+            conv2d_nchw_1[6] = conv2d_nchw_1[6] + pad_temp_shared_1[62] * kernel_shared_1[threadIdx_x * 48 + 20]
+            conv2d_nchw_1[6] = conv2d_nchw_1[6] + pad_temp_shared_1[71] * kernel_shared_1[threadIdx_x * 48 + 23]
+            conv2d_nchw_1[7] = conv2d_nchw_1[7] + pad_temp_shared_1[56] * kernel_shared_1[threadIdx_x * 48 + 44]
+            conv2d_nchw_1[7] = conv2d_nchw_1[7] + pad_temp_shared_1[65] * kernel_shared_1[threadIdx_x * 48 + 47]
+            conv2d_nchw_1[8] = conv2d_nchw_1[8] + pad_temp_shared_1[57] * kernel_shared_1[threadIdx_x * 48 + 44]
+            conv2d_nchw_1[8] = conv2d_nchw_1[8] + pad_temp_shared_1[66] * kernel_shared_1[threadIdx_x * 48 + 47]
+            conv2d_nchw_1[9] = conv2d_nchw_1[9] + pad_temp_shared_1[58] * kernel_shared_1[threadIdx_x * 48 + 44]
+            conv2d_nchw_1[9] = conv2d_nchw_1[9] + pad_temp_shared_1[67] * kernel_shared_1[threadIdx_x * 48 + 47]
+            conv2d_nchw_1[10] = conv2d_nchw_1[10] + pad_temp_shared_1[59] * kernel_shared_1[threadIdx_x * 48 + 44]
+            conv2d_nchw_1[10] = conv2d_nchw_1[10] + pad_temp_shared_1[68] * kernel_shared_1[threadIdx_x * 48 + 47]
+            conv2d_nchw_1[11] = conv2d_nchw_1[11] + pad_temp_shared_1[60] * kernel_shared_1[threadIdx_x * 48 + 44]
+            conv2d_nchw_1[11] = conv2d_nchw_1[11] + pad_temp_shared_1[69] * kernel_shared_1[threadIdx_x * 48 + 47]
+            conv2d_nchw_1[12] = conv2d_nchw_1[12] + pad_temp_shared_1[61] * kernel_shared_1[threadIdx_x * 48 + 44]
+            conv2d_nchw_1[12] = conv2d_nchw_1[12] + pad_temp_shared_1[70] * kernel_shared_1[threadIdx_x * 48 + 47]
+            conv2d_nchw_1[13] = conv2d_nchw_1[13] + pad_temp_shared_1[62] * kernel_shared_1[threadIdx_x * 48 + 44]
+            conv2d_nchw_1[13] = conv2d_nchw_1[13] + pad_temp_shared_1[71] * kernel_shared_1[threadIdx_x * 48 + 47]
+        for i1_inner, i3_inner in T.grid(2, 7):
+            compute_1 = T.Buffer((25088,), data=compute.data)
+            bias_1 = T.Buffer((512,), data=bias.data)
+            compute_1[blockIdx_x // 7 * 6272 + threadIdx_x * 98 + i1_inner * 49 + blockIdx_x % 7 * 7 + i3_inner] = T.max(conv2d_nchw_1[i1_inner * 7 + i3_inner] + bias_1[blockIdx_x // 7 * 128 + threadIdx_x * 2 + i1_inner], T.float32(0))
+</pre></div>
+</div>
+</div>
+<div class="section" id="check-correctness-and-evaluate-performance">
+<h2>Check correctness and evaluate performance<a class="headerlink" href="#check-correctness-and-evaluate-performance" title="Permalink to this headline">¶</a></h2>
+<p>We build the binary and check its correctness and performance.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">func</span> <span class="o">=</span> <a href="../../reference/api/python/driver.html#tvm.build" title="tvm.build" class="sphx-glr-backref-module-tvm sphx-glr-backref-type-py-function"><span class="n">tvm</span><span class="o">.</span><span class="n">build</span></a><span class="p">(</span><a href="../../reference/api/python/te.html#tvm.te.Schedule" title="tvm.te.Schedule" class="sphx-glr-backref-module-tvm-te sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">sch</span></a><span class="p">,</span> <a href="../../reference/api/python/ir.html#tvm.ir.Array" title="tvm.ir.Array" class="sphx-glr-backref-module-tvm-ir sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">args</span></a><span class="p">,</span> <a href="../../reference/api/python/target.html#tvm.target.Target" title="tvm.target.Target" class="sphx-glr-backref-module-tvm-target sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">target</span></a><span class="p">)</span>
+
+<span class="c1"># Check correctness</span>
+<span class="n">data_np</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="p">(</span><a href="https://docs.python.org/3/library/functions.html#int" title="builtins.int" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">N</span></a><span class="p">,</span> <a href="https://docs.python.org/3/library/functions.html#int" title="builtins.int" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">CI</span></a><span class="p">,</span> <a href="https://docs.python.org/3/library/functions.html#int" title="builtins.int" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">H</span></a><span class="p">,</span> <a href="https://docs.python.org/3/library/functions.html#int" title="builtins.int" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">W</span></a><span class="p">))</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+<span class="n">weight_np</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="p">(</span><a href="https://docs.python.org/3/library/functions.html#int" title="builtins.int" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">CO</span></a><span class="p">,</span> <a href="https://docs.python.org/3/library/functions.html#int" title="builtins.int" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">CI</span></a><span class="p">,</span> <a href="https://docs.python.org/3/library/functions.html#int" title="builtins.int" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">KH</span></a><span class="p">,</span> <a href="https://docs.python.org/3/library/functions.html#int" title="builtins.int" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">KW</span></a><span class="p">))</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+<span class="n">bias_np</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">uniform</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <a href="https://docs.python.org/3/library/functions.html#int" title="builtins.int" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">CO</span></a><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+<span class="n">conv_np</span> <span class="o">=</span> <span class="n">conv2d_nchw_python</span><span class="p">(</span><span class="n">data_np</span><span class="p">,</span> <span class="n">weight_np</span><span class="p">,</span> <a href="https://docs.python.org/3/library/stdtypes.html#tuple" title="builtins.tuple" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">strides</span></a><span class="p">,</span> <a href="https://docs.python.org/3/library/stdtypes.html#tuple" title="builtins.tuple" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">padding</span></a><span class="p">)</span>
+<span class="n">out_np</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">maximum</span><span class="p">(</span><span class="n">conv_np</span> <span class="o">+</span> <span class="n">bias_np</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">)</span>
+
+<span class="n">dev</span> <span class="o">=</span> <span class="n">tvm</span><span class="o">.</span><span class="n">cuda</span><span class="p">()</span>
+<span class="n">data_tvm</span> <span class="o">=</span> <a href="../../reference/api/python/ndarray.html#tvm.nd.array" title="tvm.nd.array" class="sphx-glr-backref-module-tvm-nd sphx-glr-backref-type-py-function"><span class="n">tvm</span><span class="o">.</span><span class="n">nd</span><span class="o">.</span><span class="n">array</span></a><span class="p">(</span><span class="n">data_np</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">dev</span><span class="p">)</span>
+<span class="n">weight_tvm</span> <span class="o">=</span> <a href="../../reference/api/python/ndarray.html#tvm.nd.array" title="tvm.nd.array" class="sphx-glr-backref-module-tvm-nd sphx-glr-backref-type-py-function"><span class="n">tvm</span><span class="o">.</span><span class="n">nd</span><span class="o">.</span><span class="n">array</span></a><span class="p">(</span><span class="n">weight_np</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">dev</span><span class="p">)</span>
+<span class="n">bias_tvm</span> <span class="o">=</span> <a href="../../reference/api/python/ndarray.html#tvm.nd.array" title="tvm.nd.array" class="sphx-glr-backref-module-tvm-nd sphx-glr-backref-type-py-function"><span class="n">tvm</span><span class="o">.</span><span class="n">nd</span><span class="o">.</span><span class="n">array</span></a><span class="p">(</span><span class="n">bias_np</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">dev</span><span class="p">)</span>
+<span class="n">out_tvm</span> <span class="o">=</span> <a href="../../reference/api/python/ndarray.html#tvm.nd.empty" title="tvm.nd.empty" class="sphx-glr-backref-module-tvm-nd sphx-glr-backref-type-py-function"><span class="n">tvm</span><span class="o">.</span><span class="n">nd</span><span class="o">.</span><span class="n">empty</span></a><span class="p">(</span><a href="https://docs.python.org/3/library/stdtypes.html#tuple" title="builtins.tuple" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">out_np</span><span class="o">.</span><span class="n">shape</span></a><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">dev</span><span class="p">)</span>
+<span class="n">func</span><span class="p">(</span><span class="n">data_tvm</span><span class="p">,</span> <span class="n">weight_tvm</span><span class="p">,</span> <span class="n">bias_tvm</span><span class="p">,</span> <span class="n">out_tvm</span><span class="p">)</span>
+
+<span class="c1"># Check results</span>
+<span class="n">np</span><span class="o">.</span><span class="n">testing</span><span class="o">.</span><span class="n">assert_allclose</span><span class="p">(</span><span class="n">out_np</span><span class="p">,</span> <span class="n">out_tvm</span><span class="o">.</span><span class="n">numpy</span><span class="p">(),</span> <span class="n">rtol</span><span class="o">=</span><span class="mf">1e-3</span><span class="p">)</span>
+
+<span class="c1"># Evaluate execution time</span>
+<span class="n">evaluator</span> <span class="o">=</span> <a href="../../reference/api/python/runtime.html#tvm.runtime.Module.time_evaluator" title="tvm.runtime.Module.time_evaluator" class="sphx-glr-backref-module-tvm-runtime sphx-glr-backref-type-py-method"><span class="n">func</span><span class="o">.</span><span class="n">time_evaluator</span></a><span class="p">(</span><a href="https://docs.python.org/3/library/stdtypes.html#str" title="builtins.str" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">func</span><span class="o">.</span><span class="n">entry_name</span></a><span class="p">,</span> <span class="n">dev</span><span class="p">,</span> <span class="n">min_repeat_ms</span><span class="o">=</span><span class="mi">500</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span>
+    <span class="s2">&quot;Execution time of this operator: </span><span class="si">%.3f</span><span class="s2"> ms&quot;</span>
+    <span class="o">%</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">median</span><span class="p">(</span><span class="n">evaluator</span><span class="p">(</span><span class="n">data_tvm</span><span class="p">,</span> <span class="n">weight_tvm</span><span class="p">,</span> <span class="n">bias_tvm</span><span class="p">,</span> <span class="n">out_tvm</span><span class="p">)</span><span class="o">.</span><span class="n">results</span><span class="p">)</span> <span class="o">*</span> <span class="mi">1000</span><span class="p">)</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Execution time of this operator: 0.345 ms
+</pre></div>
+</div>
+</div>
+<div class="section" id="using-the-record-file">
+<h2>Using the record file<a class="headerlink" href="#using-the-record-file" title="Permalink to this headline">¶</a></h2>
+<p>During the search, all measurement records are dumped into the record
+file “conv2d.json”. The measurement records can be used to re-apply search results,
+resume the search, and perform other analyses.</p>
+<p>Here is an example where we load the best schedule from a file,
+print the equivalent python schedule API and CUDA source code.
+They can be used for debugging and learning the behavior of the auto-scheduler.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Equivalent python schedule:&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><a href="../../reference/api/python/auto_scheduler.html#tvm.auto_scheduler.SearchTask.print_best" title="tvm.auto_scheduler.SearchTask.print_best" class="sphx-glr-backref-module-tvm-auto_scheduler sphx-glr-backref-type-py-method"><span class="n">task</span><span class="o">.</span><span class="n">print_best</span></a><span class="p">(</span><a href="https://docs.python.org/3/library/stdtypes.html#str" title="builtins.str" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">log_file</span></a><span class="p">,</span> <span class="n">print_mode</span><span class="o">=</span><span class="s2">&quot;schedule&quot;</span><span class="p">))</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s2">&quot;CUDA source code:&quot;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><a href="../../reference/api/python/auto_scheduler.html#tvm.auto_scheduler.SearchTask.print_best" title="tvm.auto_scheduler.SearchTask.print_best" class="sphx-glr-backref-module-tvm-auto_scheduler sphx-glr-backref-type-py-method"><span class="n">task</span><span class="o">.</span><span class="n">print_best</span></a><span class="p">(</span><a href="https://docs.python.org/3/library/stdtypes.html#str" title="builtins.str" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">log_file</span></a><span class="p">,</span> <span class="n">print_mode</span><span class="o">=</span><span class="s2">&quot;cuda&quot;</span><span class="p">))</span>
+</pre></div>
+</div>
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Equivalent python schedule:
+pad_temp_i0, pad_temp_i1, pad_temp_i2, pad_temp_i3 = tuple(pad_temp.op.axis) + tuple(pad_temp.op.reduce_axis)
+conv2d_nchw_nn, conv2d_nchw_ff, conv2d_nchw_yy, conv2d_nchw_xx, conv2d_nchw_rc, conv2d_nchw_ry, conv2d_nchw_rx = tuple(conv2d_nchw.op.axis) + tuple(conv2d_nchw.op.reduce_axis)
+T_add_ax0, T_add_ax1, T_add_ax2, T_add_ax3 = tuple(T_add.op.axis) + tuple(T_add.op.reduce_axis)
+compute_i0, compute_i1, compute_i2, compute_i3 = tuple(compute.op.axis) + tuple(compute.op.reduce_axis)
+s[T_add].compute_inline()
+conv2d_nchw_nn_o_i, conv2d_nchw_nn_i = s[conv2d_nchw].split(conv2d_nchw_nn, factor=1)
+conv2d_nchw_nn_o_o_i, conv2d_nchw_nn_o_i = s[conv2d_nchw].split(conv2d_nchw_nn_o_i, factor=1)
+conv2d_nchw_nn_o_o_o_i, conv2d_nchw_nn_o_o_i = s[conv2d_nchw].split(conv2d_nchw_nn_o_o_i, factor=1)
+conv2d_nchw_nn_o_o_o_o, conv2d_nchw_nn_o_o_o_i = s[conv2d_nchw].split(conv2d_nchw_nn_o_o_o_i, factor=1)
+conv2d_nchw_ff_o_i, conv2d_nchw_ff_i = s[conv2d_nchw].split(conv2d_nchw_ff, factor=1)
+conv2d_nchw_ff_o_o_i, conv2d_nchw_ff_o_i = s[conv2d_nchw].split(conv2d_nchw_ff_o_i, factor=2)
+conv2d_nchw_ff_o_o_o_i, conv2d_nchw_ff_o_o_i = s[conv2d_nchw].split(conv2d_nchw_ff_o_o_i, factor=64)
+conv2d_nchw_ff_o_o_o_o, conv2d_nchw_ff_o_o_o_i = s[conv2d_nchw].split(conv2d_nchw_ff_o_o_o_i, factor=1)
+conv2d_nchw_yy_o_i, conv2d_nchw_yy_i = s[conv2d_nchw].split(conv2d_nchw_yy, factor=1)
+conv2d_nchw_yy_o_o_i, conv2d_nchw_yy_o_i = s[conv2d_nchw].split(conv2d_nchw_yy_o_i, factor=1)
+conv2d_nchw_yy_o_o_o_i, conv2d_nchw_yy_o_o_i = s[conv2d_nchw].split(conv2d_nchw_yy_o_o_i, factor=1)
+conv2d_nchw_yy_o_o_o_o, conv2d_nchw_yy_o_o_o_i = s[conv2d_nchw].split(conv2d_nchw_yy_o_o_o_i, factor=1)
+conv2d_nchw_xx_o_i, conv2d_nchw_xx_i = s[conv2d_nchw].split(conv2d_nchw_xx, factor=1)
+conv2d_nchw_xx_o_o_i, conv2d_nchw_xx_o_i = s[conv2d_nchw].split(conv2d_nchw_xx_o_i, factor=7)
+conv2d_nchw_xx_o_o_o_i, conv2d_nchw_xx_o_o_i = s[conv2d_nchw].split(conv2d_nchw_xx_o_o_i, factor=1)
+conv2d_nchw_xx_o_o_o_o, conv2d_nchw_xx_o_o_o_i = s[conv2d_nchw].split(conv2d_nchw_xx_o_o_o_i, factor=1)
+conv2d_nchw_rc_o_i, conv2d_nchw_rc_i = s[conv2d_nchw].split(conv2d_nchw_rc, factor=2)
+conv2d_nchw_rc_o_o, conv2d_nchw_rc_o_i = s[conv2d_nchw].split(conv2d_nchw_rc_o_i, factor=4)
+conv2d_nchw_ry_o_i, conv2d_nchw_ry_i = s[conv2d_nchw].split(conv2d_nchw_ry, factor=1)
+conv2d_nchw_ry_o_o, conv2d_nchw_ry_o_i = s[conv2d_nchw].split(conv2d_nchw_ry_o_i, factor=1)
+conv2d_nchw_rx_o_i, conv2d_nchw_rx_i = s[conv2d_nchw].split(conv2d_nchw_rx, factor=1)
+conv2d_nchw_rx_o_o, conv2d_nchw_rx_o_i = s[conv2d_nchw].split(conv2d_nchw_rx_o_i, factor=3)
+s[conv2d_nchw].reorder(conv2d_nchw_nn_o_o_o_o, conv2d_nchw_ff_o_o_o_o, conv2d_nchw_yy_o_o_o_o, conv2d_nchw_xx_o_o_o_o, conv2d_nchw_nn_o_o_o_i, conv2d_nchw_ff_o_o_o_i, conv2d_nchw_yy_o_o_o_i, conv2d_nchw_xx_o_o_o_i, conv2d_nchw_nn_o_o_i, conv2d_nchw_ff_o_o_i, conv2d_nchw_yy_o_o_i, conv2d_nchw_xx_o_o_i, conv2d_nchw_rc_o_o, conv2d_nchw_ry_o_o, conv2d_nchw_rx_o_o, conv2d_nchw_rc_o_i, conv2d_nchw_ry_o_i, conv2d_nchw_rx_o_i, conv2d_nchw_nn_o_i, conv2d_nchw_ff_o_i, conv2d_nchw_yy_o_i, conv2d_nchw_xx_o_i, conv2d_nchw_rc_i, conv2d_nchw_ry_i, conv2d_nchw_rx_i, conv2d_nchw_nn_i, conv2d_nchw_ff_i, conv2d_nchw_yy_i, conv2d_nchw_xx_i)
+compute_i0_o_i, compute_i0_i = s[compute].split(compute_i0, factor=1)
+compute_i0_o_o_i, compute_i0_o_i = s[compute].split(compute_i0_o_i, factor=1)
+compute_i0_o_o_o, compute_i0_o_o_i = s[compute].split(compute_i0_o_o_i, factor=1)
+compute_i1_o_i, compute_i1_i = s[compute].split(compute_i1, factor=2)
+compute_i1_o_o_i, compute_i1_o_i = s[compute].split(compute_i1_o_i, factor=64)
+compute_i1_o_o_o, compute_i1_o_o_i = s[compute].split(compute_i1_o_o_i, factor=1)
+compute_i2_o_i, compute_i2_i = s[compute].split(compute_i2, factor=1)
+compute_i2_o_o_i, compute_i2_o_i = s[compute].split(compute_i2_o_i, factor=1)
+compute_i2_o_o_o, compute_i2_o_o_i = s[compute].split(compute_i2_o_o_i, factor=1)
+compute_i3_o_i, compute_i3_i = s[compute].split(compute_i3, factor=7)
+compute_i3_o_o_i, compute_i3_o_i = s[compute].split(compute_i3_o_i, factor=1)
+compute_i3_o_o_o, compute_i3_o_o_i = s[compute].split(compute_i3_o_o_i, factor=1)
+s[compute].reorder(compute_i0_o_o_o, compute_i1_o_o_o, compute_i2_o_o_o, compute_i3_o_o_o, compute_i0_o_o_i, compute_i1_o_o_i, compute_i2_o_o_i, compute_i3_o_o_i, compute_i0_o_i, compute_i1_o_i, compute_i2_o_i, compute_i3_o_i, compute_i0_i, compute_i1_i, compute_i2_i, compute_i3_i)
+s[conv2d_nchw].compute_at(s[compute], compute_i3_o_i)
+kernel_shared = s.cache_read(kernel, &quot;shared&quot;, [conv2d_nchw])
+kernel_shared_ax0, kernel_shared_ax1, kernel_shared_ax2, kernel_shared_ax3 = tuple(kernel_shared.op.axis)
+s[kernel_shared].compute_at(s[conv2d_nchw], conv2d_nchw_rx_o_o)
+pad_temp_shared = s.cache_read(pad_temp, &quot;shared&quot;, [conv2d_nchw])
+pad_temp_shared_ax0, pad_temp_shared_ax1, pad_temp_shared_ax2, pad_temp_shared_ax3 = tuple(pad_temp_shared.op.axis)
+s[pad_temp_shared].compute_at(s[conv2d_nchw], conv2d_nchw_rx_o_o)
+s[pad_temp].compute_inline()
+compute_i0_o_o_o_i1_o_o_o_fused_i2_o_o_o_fused_i3_o_o_o_fused = s[compute].fuse(compute_i0_o_o_o, compute_i1_o_o_o, compute_i2_o_o_o, compute_i3_o_o_o)
+s[compute].bind(compute_i0_o_o_o_i1_o_o_o_fused_i2_o_o_o_fused_i3_o_o_o_fused, te.thread_axis(&quot;blockIdx.x&quot;))
+compute_i0_o_o_i_i1_o_o_i_fused_i2_o_o_i_fused_i3_o_o_i_fused = s[compute].fuse(compute_i0_o_o_i, compute_i1_o_o_i, compute_i2_o_o_i, compute_i3_o_o_i)
+s[compute].bind(compute_i0_o_o_i_i1_o_o_i_fused_i2_o_o_i_fused_i3_o_o_i_fused, te.thread_axis(&quot;vthread&quot;))
+compute_i0_o_i_i1_o_i_fused_i2_o_i_fused_i3_o_i_fused = s[compute].fuse(compute_i0_o_i, compute_i1_o_i, compute_i2_o_i, compute_i3_o_i)
+s[compute].bind(compute_i0_o_i_i1_o_i_fused_i2_o_i_fused_i3_o_i_fused, te.thread_axis(&quot;threadIdx.x&quot;))
+kernel_shared_ax0_ax1_fused_ax2_fused_ax3_fused = s[kernel_shared].fuse(kernel_shared_ax0, kernel_shared_ax1, kernel_shared_ax2, kernel_shared_ax3)
+kernel_shared_ax0_ax1_fused_ax2_fused_ax3_fused_o, kernel_shared_ax0_ax1_fused_ax2_fused_ax3_fused_i = s[kernel_shared].split(kernel_shared_ax0_ax1_fused_ax2_fused_ax3_fused, factor=1)
+s[kernel_shared].vectorize(kernel_shared_ax0_ax1_fused_ax2_fused_ax3_fused_i)
+kernel_shared_ax0_ax1_fused_ax2_fused_ax3_fused_o_o, kernel_shared_ax0_ax1_fused_ax2_fused_ax3_fused_o_i = s[kernel_shared].split(kernel_shared_ax0_ax1_fused_ax2_fused_ax3_fused_o, factor=64)
+s[kernel_shared].bind(kernel_shared_ax0_ax1_fused_ax2_fused_ax3_fused_o_i, te.thread_axis(&quot;threadIdx.x&quot;))
+pad_temp_shared_ax0_ax1_fused_ax2_fused_ax3_fused = s[pad_temp_shared].fuse(pad_temp_shared_ax0, pad_temp_shared_ax1, pad_temp_shared_ax2, pad_temp_shared_ax3)
+pad_temp_shared_ax0_ax1_fused_ax2_fused_ax3_fused_o, pad_temp_shared_ax0_ax1_fused_ax2_fused_ax3_fused_i = s[pad_temp_shared].split(pad_temp_shared_ax0_ax1_fused_ax2_fused_ax3_fused, factor=4)
+s[pad_temp_shared].vectorize(pad_temp_shared_ax0_ax1_fused_ax2_fused_ax3_fused_i)
+pad_temp_shared_ax0_ax1_fused_ax2_fused_ax3_fused_o_o, pad_temp_shared_ax0_ax1_fused_ax2_fused_ax3_fused_o_i = s[pad_temp_shared].split(pad_temp_shared_ax0_ax1_fused_ax2_fused_ax3_fused_o, factor=64)
+s[pad_temp_shared].bind(pad_temp_shared_ax0_ax1_fused_ax2_fused_ax3_fused_o_i, te.thread_axis(&quot;threadIdx.x&quot;))
+s[conv2d_nchw].pragma(conv2d_nchw_nn_o_o_o_o, &quot;auto_unroll_max_step&quot;, 512)
+s[conv2d_nchw].pragma(conv2d_nchw_nn_o_o_o_o, &quot;unroll_explicit&quot;, True)
+
+CUDA source code:
+
+#if (((__CUDACC_VER_MAJOR__ == 11) &amp;&amp; (__CUDACC_VER_MINOR__ &gt;= 4)) || \
+     (__CUDACC_VER_MAJOR__ &gt; 11))
+#define TVM_ENABLE_L2_PREFETCH 1
+#else
+#define TVM_ENABLE_L2_PREFETCH 0
+#endif
+
+#ifdef _WIN32
+  using uint = unsigned int;
+  using uchar = unsigned char;
+  using ushort = unsigned short;
+  using int64_t = long long;
+  using uint64_t = unsigned long long;
+#else
+  #define uint unsigned int
+  #define uchar unsigned char
+  #define ushort unsigned short
+  #define int64_t long long
+  #define uint64_t unsigned long long
+#endif
+extern &quot;C&quot; __global__ void __launch_bounds__(64) default_function_kernel(float* __restrict__ bias, float* __restrict__ compute, float* __restrict__ data, float* __restrict__ kernel) {
+  float conv2d_nchw[14];
+  __shared__ float pad_temp_shared[72];
+  __shared__ float kernel_shared[3072];
+  conv2d_nchw[0] = 0.000000e+00f;
+  conv2d_nchw[1] = 0.000000e+00f;
+  conv2d_nchw[2] = 0.000000e+00f;
+  conv2d_nchw[3] = 0.000000e+00f;
+  conv2d_nchw[4] = 0.000000e+00f;
+  conv2d_nchw[5] = 0.000000e+00f;
+  conv2d_nchw[6] = 0.000000e+00f;
+  conv2d_nchw[7] = 0.000000e+00f;
+  conv2d_nchw[8] = 0.000000e+00f;
+  conv2d_nchw[9] = 0.000000e+00f;
+  conv2d_nchw[10] = 0.000000e+00f;
+  conv2d_nchw[11] = 0.000000e+00f;
+  conv2d_nchw[12] = 0.000000e+00f;
+  conv2d_nchw[13] = 0.000000e+00f;
+  for (int rc_outer_outer = 0; rc_outer_outer &lt; 64; ++rc_outer_outer) {
+    for (int ry_outer_outer = 0; ry_outer_outer &lt; 3; ++ry_outer_outer) {
+      __syncthreads();
+      if (((int)threadIdx.x) &lt; 18) {
+        pad_temp_shared[(((int)threadIdx.x) * 4)] = (((((1 &lt;= (ry_outer_outer + (((int)blockIdx.x) % 7))) &amp;&amp; ((ry_outer_outer + (((int)blockIdx.x) % 7)) &lt; 8)) &amp;&amp; (1 &lt;= ((((int)threadIdx.x) * 4) % 9))) &amp;&amp; (((((int)threadIdx.x) * 4) % 9) &lt; 8)) ? data[((((((rc_outer_outer * 392) + (((((int)threadIdx.x) * 4) / 9) * 49)) + (ry_outer_outer * 7)) + ((((int)blockIdx.x) % 7) * 7)) + ((((int)threadIdx.x) * 4) % 9)) - 8)] : 0.000000e+00f);
+      }
+      if (((int)threadIdx.x) &lt; 18) {
+        pad_temp_shared[((((int)threadIdx.x) * 4) + 1)] = (((((1 &lt;= (ry_outer_outer + (((int)blockIdx.x) % 7))) &amp;&amp; ((ry_outer_outer + (((int)blockIdx.x) % 7)) &lt; 8)) &amp;&amp; (1 &lt;= (((((int)threadIdx.x) * 4) + 1) % 9))) &amp;&amp; ((((((int)threadIdx.x) * 4) + 1) % 9) &lt; 8)) ? data[((((((rc_outer_outer * 392) + ((((((int)threadIdx.x) * 4) + 1) / 9) * 49)) + (ry_outer_outer * 7)) + ((((int)blockIdx.x) % 7) * 7)) + (((((int)threadIdx.x) * 4) + 1) % 9)) - 8)] : 0.000000e+00f);
+      }
+      if (((int)threadIdx.x) &lt; 18) {
+        pad_temp_shared[((((int)threadIdx.x) * 4) + 2)] = (((((1 &lt;= (ry_outer_outer + (((int)blockIdx.x) % 7))) &amp;&amp; ((ry_outer_outer + (((int)blockIdx.x) % 7)) &lt; 8)) &amp;&amp; (1 &lt;= (((((int)threadIdx.x) * 4) + 2) % 9))) &amp;&amp; ((((((int)threadIdx.x) * 4) + 2) % 9) &lt; 8)) ? data[((((((rc_outer_outer * 392) + ((((((int)threadIdx.x) * 4) + 2) / 9) * 49)) + (ry_outer_outer * 7)) + ((((int)blockIdx.x) % 7) * 7)) + (((((int)threadIdx.x) * 4) + 2) % 9)) - 8)] : 0.000000e+00f);
+      }
+      if (((int)threadIdx.x) &lt; 18) {
+        pad_temp_shared[((((int)threadIdx.x) * 4) + 3)] = (((((1 &lt;= (ry_outer_outer + (((int)blockIdx.x) % 7))) &amp;&amp; ((ry_outer_outer + (((int)blockIdx.x) % 7)) &lt; 8)) &amp;&amp; (1 &lt;= (((((int)threadIdx.x) * 4) + 3) % 9))) &amp;&amp; ((((((int)threadIdx.x) * 4) + 3) % 9) &lt; 8)) ? data[((((((rc_outer_outer * 392) + ((((((int)threadIdx.x) * 4) + 3) / 9) * 49)) + (ry_outer_outer * 7)) + ((((int)blockIdx.x) % 7) * 7)) + (((((int)threadIdx.x) * 4) + 3) % 9)) - 8)] : 0.000000e+00f);
+      }
+      kernel_shared[((int)threadIdx.x)] = kernel[(((((((((int)blockIdx.x) / 7) * 589824) + ((((int)threadIdx.x) / 24) * 4608)) + (rc_outer_outer * 72)) + (((((int)threadIdx.x) % 24) / 3) * 9)) + (ry_outer_outer * 3)) + (((int)threadIdx.x) % 3))];
+      kernel_shared[(((((((int)threadIdx.x) + 64) / 24) * 24) + ((((((int)threadIdx.x) + 16) % 24) / 3) * 3)) + ((((int)threadIdx.x) + 1) % 3))] = kernel[(((((((((int)blockIdx.x) / 7) * 589824) + (((((int)threadIdx.x) + 64) / 24) * 4608)) + (rc_outer_outer * 72)) + ((((((int)threadIdx.x) + 16) % 24) / 3) * 9)) + (ry_outer_outer * 3)) + ((((int)threadIdx.x) + 1) % 3))];
+      kernel_shared[(((((((int)threadIdx.x) + 128) / 24) * 24) + ((((((int)threadIdx.x) + 8) % 24) / 3) * 3)) + ((((int)threadIdx.x) + 2) % 3))] = kernel[(((((((((int)blockIdx.x) / 7) * 589824) + (((((int)threadIdx.x) + 128) / 24) * 4608)) + (rc_outer_outer * 72)) + ((((((int)threadIdx.x) + 8) % 24) / 3) * 9)) + (ry_outer_outer * 3)) + ((((int)threadIdx.x) + 2) % 3))];
+      kernel_shared[(((int)threadIdx.x) + 192)] = kernel[((((((((((int)blockIdx.x) / 7) * 589824) + ((((int)threadIdx.x) / 24) * 4608)) + (rc_outer_outer * 72)) + (((((int)threadIdx.x) % 24) / 3) * 9)) + (ry_outer_outer * 3)) + (((int)threadIdx.x) % 3)) + 36864)];
+      kernel_shared[(((((((int)threadIdx.x) + 256) / 24) * 24) + ((((((int)threadIdx.x) + 16) % 24) / 3) * 3)) + ((((int)threadIdx.x) + 1) % 3))] = kernel[(((((((((int)blockIdx.x) / 7) * 589824) + (((((int)threadIdx.x) + 256) / 24) * 4608)) + (rc_outer_outer * 72)) + ((((((int)threadIdx.x) + 16) % 24) / 3) * 9)) + (ry_outer_outer * 3)) + ((((int)threadIdx.x) + 1) % 3))];
+      kernel_shared[(((((((int)threadIdx.x) + 320) / 24) * 24) + ((((((int)threadIdx.x) + 8) % 24) / 3) * 3)) + ((((int)threadIdx.x) + 2) % 3))] = kernel[(((((((((int)blockIdx.x) / 7) * 589824) + (((((int)threadIdx.x) + 320) / 24) * 4608)) + (rc_outer_outer * 72)) + ((((((int)threadIdx.x) + 8) % 24) / 3) * 9)) + (ry_outer_outer * 3)) + ((((int)threadIdx.x) + 2) % 3))];
+      kernel_shared[(((int)threadIdx.x) + 384)] = kernel[((((((((((int)blockIdx.x) / 7) * 589824) + ((((int)threadIdx.x) / 24) * 4608)) + (rc_outer_outer * 72)) + (((((int)threadIdx.x) % 24) / 3) * 9)) + (ry_outer_outer * 3)) + (((int)threadIdx.x) % 3)) + 73728)];
+      kernel_shared[(((((((int)threadIdx.x) + 448) / 24) * 24) + ((((((int)threadIdx.x) + 16) % 24) / 3) * 3)) + ((((int)threadIdx.x) + 1) % 3))] = kernel[(((((((((int)blockIdx.x) / 7) * 589824) + (((((int)threadIdx.x) + 448) / 24) * 4608)) + (rc_outer_outer * 72)) + ((((((int)threadIdx.x) + 16) % 24) / 3) * 9)) + (ry_outer_outer * 3)) + ((((int)threadIdx.x) + 1) % 3))];
+      kernel_shared[(((((((int)threadIdx.x) + 512) / 24) * 24) + ((((((int)threadIdx.x) + 8) % 24) / 3) * 3)) + ((((int)threadIdx.x) + 2) % 3))] = kernel[(((((((((int)blockIdx.x) / 7) * 589824) + (((((int)threadIdx.x) + 512) / 24) * 4608)) + (rc_outer_outer * 72)) + ((((((int)threadIdx.x) + 8) % 24) / 3) * 9)) + (ry_outer_outer * 3)) + ((((int)threadIdx.x) + 2) % 3))];
+      kernel_shared[(((int)threadIdx.x) + 576)] = kernel[((((((((((int)blockIdx.x) / 7) * 589824) + ((((int)threadIdx.x) / 24) * 4608)) + (rc_outer_outer * 72)) + (((((int)threadIdx.x) % 24) / 3) * 9)) + (ry_outer_outer * 3)) + (((int)threadIdx.x) % 3)) + 110592)];
+      kernel_shared[(((((((int)threadIdx.x) + 640) / 24) * 24) + ((((((int)threadIdx.x) + 16) % 24) / 3) * 3)) + ((((int)threadIdx.x) + 1) % 3))] = kernel[(((((((((int)blockIdx.x) / 7) * 589824) + (((((int)threadIdx.x) + 640) / 24) * 4608)) + (rc_outer_outer * 72)) + ((((((int)threadIdx.x) + 16) % 24) / 3) * 9)) + (ry_outer_outer * 3)) + ((((int)threadIdx.x) + 1) % 3))];
+      kernel_shared[(((((((int)threadIdx.x) + 704) / 24) * 24) + ((((((int)threadIdx.x) + 8) % 24) / 3) * 3)) + ((((int)threadIdx.x) + 2) % 3))] = kernel[(((((((((int)blockIdx.x) / 7) * 589824) + (((((int)threadIdx.x) + 704) / 24) * 4608)) + (rc_outer_outer * 72)) + ((((((int)threadIdx.x) + 8) % 24) / 3) * 9)) + (ry_outer_outer * 3)) + ((((int)threadIdx.x) + 2) % 3))];
+      kernel_shared[(((int)threadIdx.x) + 768)] = kernel[((((((((((int)blockIdx.x) / 7) * 589824) + ((((int)threadIdx.x) / 24) * 4608)) + (rc_outer_outer * 72)) + (((((int)threadIdx.x) % 24) / 3) * 9)) + (ry_outer_outer * 3)) + (((int)threadIdx.x) % 3)) + 147456)];
+      kernel_shared[(((((((int)threadIdx.x) + 832) / 24) * 24) + ((((((int)threadIdx.x) + 16) % 24) / 3) * 3)) + ((((int)threadIdx.x) + 1) % 3))] = kernel[(((((((((int)blockIdx.x) / 7) * 589824) + (((((int)threadIdx.x) + 832) / 24) * 4608)) + (rc_outer_outer * 72)) + ((((((int)threadIdx.x) + 16) % 24) / 3) * 9)) + (ry_outer_outer * 3)) + ((((int)threadIdx.x) + 1) % 3))];
+      kernel_shared[(((((((int)threadIdx.x) + 896) / 24) * 24) + ((((((int)threadIdx.x) + 8) % 24) / 3) * 3)) + ((((int)threadIdx.x) + 2) % 3))] = kernel[(((((((((int)blockIdx.x) / 7) * 589824) + (((((int)threadIdx.x) + 896) / 24) * 4608)) + (rc_outer_outer * 72)) + ((((((int)threadIdx.x) + 8) % 24) / 3) * 9)) + (ry_outer_outer * 3)) + ((((int)threadIdx.x) + 2) % 3))];
+      kernel_shared[(((int)threadIdx.x) + 960)] = kernel[((((((((((int)blockIdx.x) / 7) * 589824) + ((((int)threadIdx.x) / 24) * 4608)) + (rc_outer_outer * 72)) + (((((int)threadIdx.x) % 24) / 3) * 9)) + (ry_outer_outer * 3)) + (((int)threadIdx.x) % 3)) + 184320)];
+      kernel_shared[(((((((int)threadIdx.x) + 1024) / 24) * 24) + ((((((int)threadIdx.x) + 16) % 24) / 3) * 3)) + ((((int)threadIdx.x) + 1) % 3))] = kernel[(((((((((int)blockIdx.x) / 7) * 589824) + (((((int)threadIdx.x) + 1024) / 24) * 4608)) + (rc_outer_outer * 72)) + ((((((int)threadIdx.x) + 16) % 24) / 3) * 9)) + (ry_outer_outer * 3)) + ((((int)threadIdx.x) + 1) % 3))];
+      kernel_shared[(((((((int)threadIdx.x) + 1088) / 24) * 24) + ((((((int)threadIdx.x) + 8) % 24) / 3) * 3)) + ((((int)threadIdx.x) + 2) % 3))] = kernel[(((((((((int)blockIdx.x) / 7) * 589824) + (((((int)threadIdx.x) + 1088) / 24) * 4608)) + (rc_outer_outer * 72)) + ((((((int)threadIdx.x) + 8) % 24) / 3) * 9)) + (ry_outer_outer * 3)) + ((((int)threadIdx.x) + 2) % 3))];
+      kernel_shared[(((int)threadIdx.x) + 1152)] = kernel[((((((((((int)blockIdx.x) / 7) * 589824) + ((((int)threadIdx.x) / 24) * 4608)) + (rc_outer_outer * 72)) + (((((int)threadIdx.x) % 24) / 3) * 9)) + (ry_outer_outer * 3)) + (((int)threadIdx.x) % 3)) + 221184)];
+      kernel_shared[(((((((int)threadIdx.x) + 1216) / 24) * 24) + ((((((int)threadIdx.x) + 16) % 24) / 3) * 3)) + ((((int)threadIdx.x) + 1) % 3))] = kernel[(((((((((int)blockIdx.x) / 7) * 589824) + (((((int)threadIdx.x) + 1216) / 24) * 4608)) + (rc_outer_outer * 72)) + ((((((int)threadIdx.x) + 16) % 24) / 3) * 9)) + (ry_outer_outer * 3)) + ((((int)threadIdx.x) + 1) % 3))];
+      kernel_shared[(((((((int)threadIdx.x) + 1280) / 24) * 24) + ((((((int)threadIdx.x) + 8) % 24) / 3) * 3)) + ((((int)threadIdx.x) + 2) % 3))] = kernel[(((((((((int)blockIdx.x) / 7) * 589824) + (((((int)threadIdx.x) + 1280) / 24) * 4608)) + (rc_outer_outer * 72)) + ((((((int)threadIdx.x) + 8) % 24) / 3) * 9)) + (ry_outer_outer * 3)) + ((((int)threadIdx.x) + 2) % 3))];
+      kernel_shared[(((int)threadIdx.x) + 1344)] = kernel[((((((((((int)blockIdx.x) / 7) * 589824) + ((((int)threadIdx.x) / 24) * 4608)) + (rc_outer_outer * 72)) + (((((int)threadIdx.x) % 24) / 3) * 9)) + (ry_outer_outer * 3)) + (((int)threadIdx.x) % 3)) + 258048)];
+      kernel_shared[(((((((int)threadIdx.x) + 1408) / 24) * 24) + ((((((int)threadIdx.x) + 16) % 24) / 3) * 3)) + ((((int)threadIdx.x) + 1) % 3))] = kernel[(((((((((int)blockIdx.x) / 7) * 589824) + (((((int)threadIdx.x) + 1408) / 24) * 4608)) + (rc_outer_outer * 72)) + ((((((int)threadIdx.x) + 16) % 24) / 3) * 9)) + (ry_outer_outer * 3)) + ((((int)threadIdx.x) + 1) % 3))];
+      kernel_shared[(((((((int)threadIdx.x) + 1472) / 24) * 24) + ((((((int)threadIdx.x) + 8) % 24) / 3) * 3)) + ((((int)threadIdx.x) + 2) % 3))] = kernel[(((((((((int)blockIdx.x) / 7) * 589824) + (((((int)threadIdx.x) + 1472) / 24) * 4608)) + (rc_outer_outer * 72)) + ((((((int)threadIdx.x) + 8) % 24) / 3) * 9)) + (ry_outer_outer * 3)) + ((((int)threadIdx.x) + 2) % 3))];
+      kernel_shared[(((int)threadIdx.x) + 1536)] = kernel[((((((((((int)blockIdx.x) / 7) * 589824) + ((((int)threadIdx.x) / 24) * 4608)) + (rc_outer_outer * 72)) + (((((int)threadIdx.x) % 24) / 3) * 9)) + (ry_outer_outer * 3)) + (((int)threadIdx.x) % 3)) + 294912)];
+      kernel_shared[(((((((int)threadIdx.x) + 1600) / 24) * 24) + ((((((int)threadIdx.x) + 16) % 24) / 3) * 3)) + ((((int)threadIdx.x) + 1) % 3))] = kernel[(((((((((int)blockIdx.x) / 7) * 589824) + (((((int)threadIdx.x) + 1600) / 24) * 4608)) + (rc_outer_outer * 72)) + ((((((int)threadIdx.x) + 16) % 24) / 3) * 9)) + (ry_outer_outer * 3)) + ((((int)threadIdx.x) + 1) % 3))];
+      kernel_shared[(((((((int)threadIdx.x) + 1664) / 24) * 24) + ((((((int)threadIdx.x) + 8) % 24) / 3) * 3)) + ((((int)threadIdx.x) + 2) % 3))] = kernel[(((((((((int)blockIdx.x) / 7) * 589824) + (((((int)threadIdx.x) + 1664) / 24) * 4608)) + (rc_outer_outer * 72)) + ((((((int)threadIdx.x) + 8) % 24) / 3) * 9)) + (ry_outer_outer * 3)) + ((((int)threadIdx.x) + 2) % 3))];
+      kernel_shared[(((int)threadIdx.x) + 1728)] = kernel[((((((((((int)blockIdx.x) / 7) * 589824) + ((((int)threadIdx.x) / 24) * 4608)) + (rc_outer_outer * 72)) + (((((int)threadIdx.x) % 24) / 3) * 9)) + (ry_outer_outer * 3)) + (((int)threadIdx.x) % 3)) + 331776)];
+      kernel_shared[(((((((int)threadIdx.x) + 1792) / 24) * 24) + ((((((int)threadIdx.x) + 16) % 24) / 3) * 3)) + ((((int)threadIdx.x) + 1) % 3))] = kernel[(((((((((int)blockIdx.x) / 7) * 589824) + (((((int)threadIdx.x) + 1792) / 24) * 4608)) + (rc_outer_outer * 72)) + ((((((int)threadIdx.x) + 16) % 24) / 3) * 9)) + (ry_outer_outer * 3)) + ((((int)threadIdx.x) + 1) % 3))];
+      kernel_shared[(((((((int)threadIdx.x) + 1856) / 24) * 24) + ((((((int)threadIdx.x) + 8) % 24) / 3) * 3)) + ((((int)threadIdx.x) + 2) % 3))] = kernel[(((((((((int)blockIdx.x) / 7) * 589824) + (((((int)threadIdx.x) + 1856) / 24) * 4608)) + (rc_outer_outer * 72)) + ((((((int)threadIdx.x) + 8) % 24) / 3) * 9)) + (ry_outer_outer * 3)) + ((((int)threadIdx.x) + 2) % 3))];
+      kernel_shared[(((int)threadIdx.x) + 1920)] = kernel[((((((((((int)blockIdx.x) / 7) * 589824) + ((((int)threadIdx.x) / 24) * 4608)) + (rc_outer_outer * 72)) + (((((int)threadIdx.x) % 24) / 3) * 9)) + (ry_outer_outer * 3)) + (((int)threadIdx.x) % 3)) + 368640)];
+      kernel_shared[(((((((int)threadIdx.x) + 1984) / 24) * 24) + ((((((int)threadIdx.x) + 16) % 24) / 3) * 3)) + ((((int)threadIdx.x) + 1) % 3))] = kernel[(((((((((int)blockIdx.x) / 7) * 589824) + (((((int)threadIdx.x) + 1984) / 24) * 4608)) + (rc_outer_outer * 72)) + ((((((int)threadIdx.x) + 16) % 24) / 3) * 9)) + (ry_outer_outer * 3)) + ((((int)threadIdx.x) + 1) % 3))];
+      kernel_shared[(((((((int)threadIdx.x) + 2048) / 24) * 24) + ((((((int)threadIdx.x) + 8) % 24) / 3) * 3)) + ((((int)threadIdx.x) + 2) % 3))] = kernel[(((((((((int)blockIdx.x) / 7) * 589824) + (((((int)threadIdx.x) + 2048) / 24) * 4608)) + (rc_outer_outer * 72)) + ((((((int)threadIdx.x) + 8) % 24) / 3) * 9)) + (ry_outer_outer * 3)) + ((((int)threadIdx.x) + 2) % 3))];
+      kernel_shared[(((int)threadIdx.x) + 2112)] = kernel[((((((((((int)blockIdx.x) / 7) * 589824) + ((((int)threadIdx.x) / 24) * 4608)) + (rc_outer_outer * 72)) + (((((int)threadIdx.x) % 24) / 3) * 9)) + (ry_outer_outer * 3)) + (((int)threadIdx.x) % 3)) + 405504)];
+      kernel_shared[(((((((int)threadIdx.x) + 2176) / 24) * 24) + ((((((int)threadIdx.x) + 16) % 24) / 3) * 3)) + ((((int)threadIdx.x) + 1) % 3))] = kernel[(((((((((int)blockIdx.x) / 7) * 589824) + (((((int)threadIdx.x) + 2176) / 24) * 4608)) + (rc_outer_outer * 72)) + ((((((int)threadIdx.x) + 16) % 24) / 3) * 9)) + (ry_outer_outer * 3)) + ((((int)threadIdx.x) + 1) % 3))];
+      kernel_shared[(((((((int)threadIdx.x) + 2240) / 24) * 24) + ((((((int)threadIdx.x) + 8) % 24) / 3) * 3)) + ((((int)threadIdx.x) + 2) % 3))] = kernel[(((((((((int)blockIdx.x) / 7) * 589824) + (((((int)threadIdx.x) + 2240) / 24) * 4608)) + (rc_outer_outer * 72)) + ((((((int)threadIdx.x) + 8) % 24) / 3) * 9)) + (ry_outer_outer * 3)) + ((((int)threadIdx.x) + 2) % 3))];
+      kernel_shared[(((int)threadIdx.x) + 2304)] = kernel[((((((((((int)blockIdx.x) / 7) * 589824) + ((((int)threadIdx.x) / 24) * 4608)) + (rc_outer_outer * 72)) + (((((int)threadIdx.x) % 24) / 3) * 9)) + (ry_outer_outer * 3)) + (((int)threadIdx.x) % 3)) + 442368)];
+      kernel_shared[(((((((int)threadIdx.x) + 2368) / 24) * 24) + ((((((int)threadIdx.x) + 16) % 24) / 3) * 3)) + ((((int)threadIdx.x) + 1) % 3))] = kernel[(((((((((int)blockIdx.x) / 7) * 589824) + (((((int)threadIdx.x) + 2368) / 24) * 4608)) + (rc_outer_outer * 72)) + ((((((int)threadIdx.x) + 16) % 24) / 3) * 9)) + (ry_outer_outer * 3)) + ((((int)threadIdx.x) + 1) % 3))];
+      kernel_shared[(((((((int)threadIdx.x) + 2432) / 24) * 24) + ((((((int)threadIdx.x) + 8) % 24) / 3) * 3)) + ((((int)threadIdx.x) + 2) % 3))] = kernel[(((((((((int)blockIdx.x) / 7) * 589824) + (((((int)threadIdx.x) + 2432) / 24) * 4608)) + (rc_outer_outer * 72)) + ((((((int)threadIdx.x) + 8) % 24) / 3) * 9)) + (ry_outer_outer * 3)) + ((((int)threadIdx.x) + 2) % 3))];
+      kernel_shared[(((int)threadIdx.x) + 2496)] = kernel[((((((((((int)blockIdx.x) / 7) * 589824) + ((((int)threadIdx.x) / 24) * 4608)) + (rc_outer_outer * 72)) + (((((int)threadIdx.x) % 24) / 3) * 9)) + (ry_outer_outer * 3)) + (((int)threadIdx.x) % 3)) + 479232)];
+      kernel_shared[(((((((int)threadIdx.x) + 2560) / 24) * 24) + ((((((int)threadIdx.x) + 16) % 24) / 3) * 3)) + ((((int)threadIdx.x) + 1) % 3))] = kernel[(((((((((int)blockIdx.x) / 7) * 589824) + (((((int)threadIdx.x) + 2560) / 24) * 4608)) + (rc_outer_outer * 72)) + ((((((int)threadIdx.x) + 16) % 24) / 3) * 9)) + (ry_outer_outer * 3)) + ((((int)threadIdx.x) + 1) % 3))];
+      kernel_shared[(((((((int)threadIdx.x) + 2624) / 24) * 24) + ((((((int)threadIdx.x) + 8) % 24) / 3) * 3)) + ((((int)threadIdx.x) + 2) % 3))] = kernel[(((((((((int)blockIdx.x) / 7) * 589824) + (((((int)threadIdx.x) + 2624) / 24) * 4608)) + (rc_outer_outer * 72)) + ((((((int)threadIdx.x) + 8) % 24) / 3) * 9)) + (ry_outer_outer * 3)) + ((((int)threadIdx.x) + 2) % 3))];
+      kernel_shared[(((int)threadIdx.x) + 2688)] = kernel[((((((((((int)blockIdx.x) / 7) * 589824) + ((((int)threadIdx.x) / 24) * 4608)) + (rc_outer_outer * 72)) + (((((int)threadIdx.x) % 24) / 3) * 9)) + (ry_outer_outer * 3)) + (((int)threadIdx.x) % 3)) + 516096)];
+      kernel_shared[(((((((int)threadIdx.x) + 2752) / 24) * 24) + ((((((int)threadIdx.x) + 16) % 24) / 3) * 3)) + ((((int)threadIdx.x) + 1) % 3))] = kernel[(((((((((int)blockIdx.x) / 7) * 589824) + (((((int)threadIdx.x) + 2752) / 24) * 4608)) + (rc_outer_outer * 72)) + ((((((int)threadIdx.x) + 16) % 24) / 3) * 9)) + (ry_outer_outer * 3)) + ((((int)threadIdx.x) + 1) % 3))];
+      kernel_shared[(((((((int)threadIdx.x) + 2816) / 24) * 24) + ((((((int)threadIdx.x) + 8) % 24) / 3) * 3)) + ((((int)threadIdx.x) + 2) % 3))] = kernel[(((((((((int)blockIdx.x) / 7) * 589824) + (((((int)threadIdx.x) + 2816) / 24) * 4608)) + (rc_outer_outer * 72)) + ((((((int)threadIdx.x) + 8) % 24) / 3) * 9)) + (ry_outer_outer * 3)) + ((((int)threadIdx.x) + 2) % 3))];
+      kernel_shared[(((int)threadIdx.x) + 2880)] = kernel[((((((((((int)blockIdx.x) / 7) * 589824) + ((((int)threadIdx.x) / 24) * 4608)) + (rc_outer_outer * 72)) + (((((int)threadIdx.x) % 24) / 3) * 9)) + (ry_outer_outer * 3)) + (((int)threadIdx.x) % 3)) + 552960)];
+      kernel_shared[(((((((int)threadIdx.x) + 2944) / 24) * 24) + ((((((int)threadIdx.x) + 16) % 24) / 3) * 3)) + ((((int)threadIdx.x) + 1) % 3))] = kernel[(((((((((int)blockIdx.x) / 7) * 589824) + (((((int)threadIdx.x) + 2944) / 24) * 4608)) + (rc_outer_outer * 72)) + ((((((int)threadIdx.x) + 16) % 24) / 3) * 9)) + (ry_outer_outer * 3)) + ((((int)threadIdx.x) + 1) % 3))];
+      kernel_shared[(((((((int)threadIdx.x) + 3008) / 24) * 24) + ((((((int)threadIdx.x) + 8) % 24) / 3) * 3)) + ((((int)threadIdx.x) + 2) % 3))] = kernel[(((((((((int)blockIdx.x) / 7) * 589824) + (((((int)threadIdx.x) + 3008) / 24) * 4608)) + (rc_outer_outer * 72)) + ((((((int)threadIdx.x) + 8) % 24) / 3) * 9)) + (ry_outer_outer * 3)) + ((((int)threadIdx.x) + 2) % 3))];
+      __syncthreads();
+      conv2d_nchw[0] = (conv2d_nchw[0] + (pad_temp_shared[0] * kernel_shared[(((int)threadIdx.x) * 48)]));
+      conv2d_nchw[0] = (conv2d_nchw[0] + (pad_temp_shared[9] * kernel_shared[((((int)threadIdx.x) * 48) + 3)]));
+      conv2d_nchw[1] = (conv2d_nchw[1] + (pad_temp_shared[1] * kernel_shared[(((int)threadIdx.x) * 48)]));
+      conv2d_nchw[1] = (conv2d_nchw[1] + (pad_temp_shared[10] * kernel_shared[((((int)threadIdx.x) * 48) + 3)]));
+      conv2d_nchw[2] = (conv2d_nchw[2] + (pad_temp_shared[2] * kernel_shared[(((int)threadIdx.x) * 48)]));
+      conv2d_nchw[2] = (conv2d_nchw[2] + (pad_temp_shared[11] * kernel_shared[((((int)threadIdx.x) * 48) + 3)]));
+      conv2d_nchw[3] = (conv2d_nchw[3] + (pad_temp_shared[3] * kernel_shared[(((int)threadIdx.x) * 48)]));
+      conv2d_nchw[3] = (conv2d_nchw[3] + (pad_temp_shared[12] * kernel_shared[((((int)threadIdx.x) * 48) + 3)]));
+      conv2d_nchw[4] = (conv2d_nchw[4] + (pad_temp_shared[4] * kernel_shared[(((int)threadIdx.x) * 48)]));
+      conv2d_nchw[4] = (conv2d_nchw[4] + (pad_temp_shared[13] * kernel_shared[((((int)threadIdx.x) * 48) + 3)]));
+      conv2d_nchw[5] = (conv2d_nchw[5] + (pad_temp_shared[5] * kernel_shared[(((int)threadIdx.x) * 48)]));
+      conv2d_nchw[5] = (conv2d_nchw[5] + (pad_temp_shared[14] * kernel_shared[((((int)threadIdx.x) * 48) + 3)]));
+      conv2d_nchw[6] = (conv2d_nchw[6] + (pad_temp_shared[6] * kernel_shared[(((int)threadIdx.x) * 48)]));
+      conv2d_nchw[6] = (conv2d_nchw[6] + (pad_temp_shared[15] * kernel_shared[((((int)threadIdx.x) * 48) + 3)]));
+      conv2d_nchw[7] = (conv2d_nchw[7] + (pad_temp_shared[0] * kernel_shared[((((int)threadIdx.x) * 48) + 24)]));
+      conv2d_nchw[7] = (conv2d_nchw[7] + (pad_temp_shared[9] * kernel_shared[((((int)threadIdx.x) * 48) + 27)]));
+      conv2d_nchw[8] = (conv2d_nchw[8] + (pad_temp_shared[1] * kernel_shared[((((int)threadIdx.x) * 48) + 24)]));
+      conv2d_nchw[8] = (conv2d_nchw[8] + (pad_temp_shared[10] * kernel_shared[((((int)threadIdx.x) * 48) + 27)]));
+      conv2d_nchw[9] = (conv2d_nchw[9] + (pad_temp_shared[2] * kernel_shared[((((int)threadIdx.x) * 48) + 24)]));
+      conv2d_nchw[9] = (conv2d_nchw[9] + (pad_temp_shared[11] * kernel_shared[((((int)threadIdx.x) * 48) + 27)]));
+      conv2d_nchw[10] = (conv2d_nchw[10] + (pad_temp_shared[3] * kernel_shared[((((int)threadIdx.x) * 48) + 24)]));
+      conv2d_nchw[10] = (conv2d_nchw[10] + (pad_temp_shared[12] * kernel_shared[((((int)threadIdx.x) * 48) + 27)]));
+      conv2d_nchw[11] = (conv2d_nchw[11] + (pad_temp_shared[4] * kernel_shared[((((int)threadIdx.x) * 48) + 24)]));
+      conv2d_nchw[11] = (conv2d_nchw[11] + (pad_temp_shared[13] * kernel_shared[((((int)threadIdx.x) * 48) + 27)]));
+      conv2d_nchw[12] = (conv2d_nchw[12] + (pad_temp_shared[5] * kernel_shared[((((int)threadIdx.x) * 48) + 24)]));
+      conv2d_nchw[12] = (conv2d_nchw[12] + (pad_temp_shared[14] * kernel_shared[((((int)threadIdx.x) * 48) + 27)]));
+      conv2d_nchw[13] = (conv2d_nchw[13] + (pad_temp_shared[6] * kernel_shared[((((int)threadIdx.x) * 48) + 24)]));
+      conv2d_nchw[13] = (conv2d_nchw[13] + (pad_temp_shared[15] * kernel_shared[((((int)threadIdx.x) * 48) + 27)]));
+      conv2d_nchw[0] = (conv2d_nchw[0] + (pad_temp_shared[1] * kernel_shared[((((int)threadIdx.x) * 48) + 1)]));
+      conv2d_nchw[0] = (conv2d_nchw[0] + (pad_temp_shared[10] * kernel_shared[((((int)threadIdx.x) * 48) + 4)]));
+      conv2d_nchw[1] = (conv2d_nchw[1] + (pad_temp_shared[2] * kernel_shared[((((int)threadIdx.x) * 48) + 1)]));
+      conv2d_nchw[1] = (conv2d_nchw[1] + (pad_temp_shared[11] * kernel_shared[((((int)threadIdx.x) * 48) + 4)]));
+      conv2d_nchw[2] = (conv2d_nchw[2] + (pad_temp_shared[3] * kernel_shared[((((int)threadIdx.x) * 48) + 1)]));
+      conv2d_nchw[2] = (conv2d_nchw[2] + (pad_temp_shared[12] * kernel_shared[((((int)threadIdx.x) * 48) + 4)]));
+      conv2d_nchw[3] = (conv2d_nchw[3] + (pad_temp_shared[4] * kernel_shared[((((int)threadIdx.x) * 48) + 1)]));
+      conv2d_nchw[3] = (conv2d_nchw[3] + (pad_temp_shared[13] * kernel_shared[((((int)threadIdx.x) * 48) + 4)]));
+      conv2d_nchw[4] = (conv2d_nchw[4] + (pad_temp_shared[5] * kernel_shared[((((int)threadIdx.x) * 48) + 1)]));
+      conv2d_nchw[4] = (conv2d_nchw[4] + (pad_temp_shared[14] * kernel_shared[((((int)threadIdx.x) * 48) + 4)]));
+      conv2d_nchw[5] = (conv2d_nchw[5] + (pad_temp_shared[6] * kernel_shared[((((int)threadIdx.x) * 48) + 1)]));
+      conv2d_nchw[5] = (conv2d_nchw[5] + (pad_temp_shared[15] * kernel_shared[((((int)threadIdx.x) * 48) + 4)]));
+      conv2d_nchw[6] = (conv2d_nchw[6] + (pad_temp_shared[7] * kernel_shared[((((int)threadIdx.x) * 48) + 1)]));
+      conv2d_nchw[6] = (conv2d_nchw[6] + (pad_temp_shared[16] * kernel_shared[((((int)threadIdx.x) * 48) + 4)]));
+      conv2d_nchw[7] = (conv2d_nchw[7] + (pad_temp_shared[1] * kernel_shared[((((int)threadIdx.x) * 48) + 25)]));
+      conv2d_nchw[7] = (conv2d_nchw[7] + (pad_temp_shared[10] * kernel_shared[((((int)threadIdx.x) * 48) + 28)]));
+      conv2d_nchw[8] = (conv2d_nchw[8] + (pad_temp_shared[2] * kernel_shared[((((int)threadIdx.x) * 48) + 25)]));
+      conv2d_nchw[8] = (conv2d_nchw[8] + (pad_temp_shared[11] * kernel_shared[((((int)threadIdx.x) * 48) + 28)]));
+      conv2d_nchw[9] = (conv2d_nchw[9] + (pad_temp_shared[3] * kernel_shared[((((int)threadIdx.x) * 48) + 25)]));
+      conv2d_nchw[9] = (conv2d_nchw[9] + (pad_temp_shared[12] * kernel_shared[((((int)threadIdx.x) * 48) + 28)]));
+      conv2d_nchw[10] = (conv2d_nchw[10] + (pad_temp_shared[4] * kernel_shared[((((int)threadIdx.x) * 48) + 25)]));
+      conv2d_nchw[10] = (conv2d_nchw[10] + (pad_temp_shared[13] * kernel_shared[((((int)threadIdx.x) * 48) + 28)]));
+      conv2d_nchw[11] = (conv2d_nchw[11] + (pad_temp_shared[5] * kernel_shared[((((int)threadIdx.x) * 48) + 25)]));
+      conv2d_nchw[11] = (conv2d_nchw[11] + (pad_temp_shared[14] * kernel_shared[((((int)threadIdx.x) * 48) + 28)]));
+      conv2d_nchw[12] = (conv2d_nchw[12] + (pad_temp_shared[6] * kernel_shared[((((int)threadIdx.x) * 48) + 25)]));
+      conv2d_nchw[12] = (conv2d_nchw[12] + (pad_temp_shared[15] * kernel_shared[((((int)threadIdx.x) * 48) + 28)]));
+      conv2d_nchw[13] = (conv2d_nchw[13] + (pad_temp_shared[7] * kernel_shared[((((int)threadIdx.x) * 48) + 25)]));
+      conv2d_nchw[13] = (conv2d_nchw[13] + (pad_temp_shared[16] * kernel_shared[((((int)threadIdx.x) * 48) + 28)]));
+      conv2d_nchw[0] = (conv2d_nchw[0] + (pad_temp_shared[2] * kernel_shared[((((int)threadIdx.x) * 48) + 2)]));
+      conv2d_nchw[0] = (conv2d_nchw[0] + (pad_temp_shared[11] * kernel_shared[((((int)threadIdx.x) * 48) + 5)]));
+      conv2d_nchw[1] = (conv2d_nchw[1] + (pad_temp_shared[3] * kernel_shared[((((int)threadIdx.x) * 48) + 2)]));
+      conv2d_nchw[1] = (conv2d_nchw[1] + (pad_temp_shared[12] * kernel_shared[((((int)threadIdx.x) * 48) + 5)]));
+      conv2d_nchw[2] = (conv2d_nchw[2] + (pad_temp_shared[4] * kernel_shared[((((int)threadIdx.x) * 48) + 2)]));
+      conv2d_nchw[2] = (conv2d_nchw[2] + (pad_temp_shared[13] * kernel_shared[((((int)threadIdx.x) * 48) + 5)]));
+      conv2d_nchw[3] = (conv2d_nchw[3] + (pad_temp_shared[5] * kernel_shared[((((int)threadIdx.x) * 48) + 2)]));
+      conv2d_nchw[3] = (conv2d_nchw[3] + (pad_temp_shared[14] * kernel_shared[((((int)threadIdx.x) * 48) + 5)]));
+      conv2d_nchw[4] = (conv2d_nchw[4] + (pad_temp_shared[6] * kernel_shared[((((int)threadIdx.x) * 48) + 2)]));
+      conv2d_nchw[4] = (conv2d_nchw[4] + (pad_temp_shared[15] * kernel_shared[((((int)threadIdx.x) * 48) + 5)]));
+      conv2d_nchw[5] = (conv2d_nchw[5] + (pad_temp_shared[7] * kernel_shared[((((int)threadIdx.x) * 48) + 2)]));
+      conv2d_nchw[5] = (conv2d_nchw[5] + (pad_temp_shared[16] * kernel_shared[((((int)threadIdx.x) * 48) + 5)]));
+      conv2d_nchw[6] = (conv2d_nchw[6] + (pad_temp_shared[8] * kernel_shared[((((int)threadIdx.x) * 48) + 2)]));
+      conv2d_nchw[6] = (conv2d_nchw[6] + (pad_temp_shared[17] * kernel_shared[((((int)threadIdx.x) * 48) + 5)]));
+      conv2d_nchw[7] = (conv2d_nchw[7] + (pad_temp_shared[2] * kernel_shared[((((int)threadIdx.x) * 48) + 26)]));
+      conv2d_nchw[7] = (conv2d_nchw[7] + (pad_temp_shared[11] * kernel_shared[((((int)threadIdx.x) * 48) + 29)]));
+      conv2d_nchw[8] = (conv2d_nchw[8] + (pad_temp_shared[3] * kernel_shared[((((int)threadIdx.x) * 48) + 26)]));
+      conv2d_nchw[8] = (conv2d_nchw[8] + (pad_temp_shared[12] * kernel_shared[((((int)threadIdx.x) * 48) + 29)]));
+      conv2d_nchw[9] = (conv2d_nchw[9] + (pad_temp_shared[4] * kernel_shared[((((int)threadIdx.x) * 48) + 26)]));
+      conv2d_nchw[9] = (conv2d_nchw[9] + (pad_temp_shared[13] * kernel_shared[((((int)threadIdx.x) * 48) + 29)]));
+      conv2d_nchw[10] = (conv2d_nchw[10] + (pad_temp_shared[5] * kernel_shared[((((int)threadIdx.x) * 48) + 26)]));
+      conv2d_nchw[10] = (conv2d_nchw[10] + (pad_temp_shared[14] * kernel_shared[((((int)threadIdx.x) * 48) + 29)]));
+      conv2d_nchw[11] = (conv2d_nchw[11] + (pad_temp_shared[6] * kernel_shared[((((int)threadIdx.x) * 48) + 26)]));
+      conv2d_nchw[11] = (conv2d_nchw[11] + (pad_temp_shared[15] * kernel_shared[((((int)threadIdx.x) * 48) + 29)]));
+      conv2d_nchw[12] = (conv2d_nchw[12] + (pad_temp_shared[7] * kernel_shared[((((int)threadIdx.x) * 48) + 26)]));
+      conv2d_nchw[12] = (conv2d_nchw[12] + (pad_temp_shared[16] * kernel_shared[((((int)threadIdx.x) * 48) + 29)]));
+      conv2d_nchw[13] = (conv2d_nchw[13] + (pad_temp_shared[8] * kernel_shared[((((int)threadIdx.x) * 48) + 26)]));
+      conv2d_nchw[13] = (conv2d_nchw[13] + (pad_temp_shared[17] * kernel_shared[((((int)threadIdx.x) * 48) + 29)]));
+      conv2d_nchw[0] = (conv2d_nchw[0] + (pad_temp_shared[18] * kernel_shared[((((int)threadIdx.x) * 48) + 6)]));
+      conv2d_nchw[0] = (conv2d_nchw[0] + (pad_temp_shared[27] * kernel_shared[((((int)threadIdx.x) * 48) + 9)]));
+      conv2d_nchw[1] = (conv2d_nchw[1] + (pad_temp_shared[19] * kernel_shared[((((int)threadIdx.x) * 48) + 6)]));
+      conv2d_nchw[1] = (conv2d_nchw[1] + (pad_temp_shared[28] * kernel_shared[((((int)threadIdx.x) * 48) + 9)]));
+      conv2d_nchw[2] = (conv2d_nchw[2] + (pad_temp_shared[20] * kernel_shared[((((int)threadIdx.x) * 48) + 6)]));
+      conv2d_nchw[2] = (conv2d_nchw[2] + (pad_temp_shared[29] * kernel_shared[((((int)threadIdx.x) * 48) + 9)]));
+      conv2d_nchw[3] = (conv2d_nchw[3] + (pad_temp_shared[21] * kernel_shared[((((int)threadIdx.x) * 48) + 6)]));
+      conv2d_nchw[3] = (conv2d_nchw[3] + (pad_temp_shared[30] * kernel_shared[((((int)threadIdx.x) * 48) + 9)]));
+      conv2d_nchw[4] = (conv2d_nchw[4] + (pad_temp_shared[22] * kernel_shared[((((int)threadIdx.x) * 48) + 6)]));
+      conv2d_nchw[4] = (conv2d_nchw[4] + (pad_temp_shared[31] * kernel_shared[((((int)threadIdx.x) * 48) + 9)]));
+      conv2d_nchw[5] = (conv2d_nchw[5] + (pad_temp_shared[23] * kernel_shared[((((int)threadIdx.x) * 48) + 6)]));
+      conv2d_nchw[5] = (conv2d_nchw[5] + (pad_temp_shared[32] * kernel_shared[((((int)threadIdx.x) * 48) + 9)]));
+      conv2d_nchw[6] = (conv2d_nchw[6] + (pad_temp_shared[24] * kernel_shared[((((int)threadIdx.x) * 48) + 6)]));
+      conv2d_nchw[6] = (conv2d_nchw[6] + (pad_temp_shared[33] * kernel_shared[((((int)threadIdx.x) * 48) + 9)]));
+      conv2d_nchw[7] = (conv2d_nchw[7] + (pad_temp_shared[18] * kernel_shared[((((int)threadIdx.x) * 48) + 30)]));
+      conv2d_nchw[7] = (conv2d_nchw[7] + (pad_temp_shared[27] * kernel_shared[((((int)threadIdx.x) * 48) + 33)]));
+      conv2d_nchw[8] = (conv2d_nchw[8] + (pad_temp_shared[19] * kernel_shared[((((int)threadIdx.x) * 48) + 30)]));
+      conv2d_nchw[8] = (conv2d_nchw[8] + (pad_temp_shared[28] * kernel_shared[((((int)threadIdx.x) * 48) + 33)]));
+      conv2d_nchw[9] = (conv2d_nchw[9] + (pad_temp_shared[20] * kernel_shared[((((int)threadIdx.x) * 48) + 30)]));
+      conv2d_nchw[9] = (conv2d_nchw[9] + (pad_temp_shared[29] * kernel_shared[((((int)threadIdx.x) * 48) + 33)]));
+      conv2d_nchw[10] = (conv2d_nchw[10] + (pad_temp_shared[21] * kernel_shared[((((int)threadIdx.x) * 48) + 30)]));
+      conv2d_nchw[10] = (conv2d_nchw[10] + (pad_temp_shared[30] * kernel_shared[((((int)threadIdx.x) * 48) + 33)]));
+      conv2d_nchw[11] = (conv2d_nchw[11] + (pad_temp_shared[22] * kernel_shared[((((int)threadIdx.x) * 48) + 30)]));
+      conv2d_nchw[11] = (conv2d_nchw[11] + (pad_temp_shared[31] * kernel_shared[((((int)threadIdx.x) * 48) + 33)]));
+      conv2d_nchw[12] = (conv2d_nchw[12] + (pad_temp_shared[23] * kernel_shared[((((int)threadIdx.x) * 48) + 30)]));
+      conv2d_nchw[12] = (conv2d_nchw[12] + (pad_temp_shared[32] * kernel_shared[((((int)threadIdx.x) * 48) + 33)]));
+      conv2d_nchw[13] = (conv2d_nchw[13] + (pad_temp_shared[24] * kernel_shared[((((int)threadIdx.x) * 48) + 30)]));
+      conv2d_nchw[13] = (conv2d_nchw[13] + (pad_temp_shared[33] * kernel_shared[((((int)threadIdx.x) * 48) + 33)]));
+      conv2d_nchw[0] = (conv2d_nchw[0] + (pad_temp_shared[19] * kernel_shared[((((int)threadIdx.x) * 48) + 7)]));
+      conv2d_nchw[0] = (conv2d_nchw[0] + (pad_temp_shared[28] * kernel_shared[((((int)threadIdx.x) * 48) + 10)]));
+      conv2d_nchw[1] = (conv2d_nchw[1] + (pad_temp_shared[20] * kernel_shared[((((int)threadIdx.x) * 48) + 7)]));
+      conv2d_nchw[1] = (conv2d_nchw[1] + (pad_temp_shared[29] * kernel_shared[((((int)threadIdx.x) * 48) + 10)]));
+      conv2d_nchw[2] = (conv2d_nchw[2] + (pad_temp_shared[21] * kernel_shared[((((int)threadIdx.x) * 48) + 7)]));
+      conv2d_nchw[2] = (conv2d_nchw[2] + (pad_temp_shared[30] * kernel_shared[((((int)threadIdx.x) * 48) + 10)]));
+      conv2d_nchw[3] = (conv2d_nchw[3] + (pad_temp_shared[22] * kernel_shared[((((int)threadIdx.x) * 48) + 7)]));
+      conv2d_nchw[3] = (conv2d_nchw[3] + (pad_temp_shared[31] * kernel_shared[((((int)threadIdx.x) * 48) + 10)]));
+      conv2d_nchw[4] = (conv2d_nchw[4] + (pad_temp_shared[23] * kernel_shared[((((int)threadIdx.x) * 48) + 7)]));
+      conv2d_nchw[4] = (conv2d_nchw[4] + (pad_temp_shared[32] * kernel_shared[((((int)threadIdx.x) * 48) + 10)]));
+      conv2d_nchw[5] = (conv2d_nchw[5] + (pad_temp_shared[24] * kernel_shared[((((int)threadIdx.x) * 48) + 7)]));
+      conv2d_nchw[5] = (conv2d_nchw[5] + (pad_temp_shared[33] * kernel_shared[((((int)threadIdx.x) * 48) + 10)]));
+      conv2d_nchw[6] = (conv2d_nchw[6] + (pad_temp_shared[25] * kernel_shared[((((int)threadIdx.x) * 48) + 7)]));
+      conv2d_nchw[6] = (conv2d_nchw[6] + (pad_temp_shared[34] * kernel_shared[((((int)threadIdx.x) * 48) + 10)]));
+      conv2d_nchw[7] = (conv2d_nchw[7] + (pad_temp_shared[19] * kernel_shared[((((int)threadIdx.x) * 48) + 31)]));
+      conv2d_nchw[7] = (conv2d_nchw[7] + (pad_temp_shared[28] * kernel_shared[((((int)threadIdx.x) * 48) + 34)]));
+      conv2d_nchw[8] = (conv2d_nchw[8] + (pad_temp_shared[20] * kernel_shared[((((int)threadIdx.x) * 48) + 31)]));
+      conv2d_nchw[8] = (conv2d_nchw[8] + (pad_temp_shared[29] * kernel_shared[((((int)threadIdx.x) * 48) + 34)]));
+      conv2d_nchw[9] = (conv2d_nchw[9] + (pad_temp_shared[21] * kernel_shared[((((int)threadIdx.x) * 48) + 31)]));
+      conv2d_nchw[9] = (conv2d_nchw[9] + (pad_temp_shared[30] * kernel_shared[((((int)threadIdx.x) * 48) + 34)]));
+      conv2d_nchw[10] = (conv2d_nchw[10] + (pad_temp_shared[22] * kernel_shared[((((int)threadIdx.x) * 48) + 31)]));
+      conv2d_nchw[10] = (conv2d_nchw[10] + (pad_temp_shared[31] * kernel_shared[((((int)threadIdx.x) * 48) + 34)]));
+      conv2d_nchw[11] = (conv2d_nchw[11] + (pad_temp_shared[23] * kernel_shared[((((int)threadIdx.x) * 48) + 31)]));
+      conv2d_nchw[11] = (conv2d_nchw[11] + (pad_temp_shared[32] * kernel_shared[((((int)threadIdx.x) * 48) + 34)]));
+      conv2d_nchw[12] = (conv2d_nchw[12] + (pad_temp_shared[24] * kernel_shared[((((int)threadIdx.x) * 48) + 31)]));
+      conv2d_nchw[12] = (conv2d_nchw[12] + (pad_temp_shared[33] * kernel_shared[((((int)threadIdx.x) * 48) + 34)]));
+      conv2d_nchw[13] = (conv2d_nchw[13] + (pad_temp_shared[25] * kernel_shared[((((int)threadIdx.x) * 48) + 31)]));
+      conv2d_nchw[13] = (conv2d_nchw[13] + (pad_temp_shared[34] * kernel_shared[((((int)threadIdx.x) * 48) + 34)]));
+      conv2d_nchw[0] = (conv2d_nchw[0] + (pad_temp_shared[20] * kernel_shared[((((int)threadIdx.x) * 48) + 8)]));
+      conv2d_nchw[0] = (conv2d_nchw[0] + (pad_temp_shared[29] * kernel_shared[((((int)threadIdx.x) * 48) + 11)]));
+      conv2d_nchw[1] = (conv2d_nchw[1] + (pad_temp_shared[21] * kernel_shared[((((int)threadIdx.x) * 48) + 8)]));
+      conv2d_nchw[1] = (conv2d_nchw[1] + (pad_temp_shared[30] * kernel_shared[((((int)threadIdx.x) * 48) + 11)]));
+      conv2d_nchw[2] = (conv2d_nchw[2] + (pad_temp_shared[22] * kernel_shared[((((int)threadIdx.x) * 48) + 8)]));
+      conv2d_nchw[2] = (conv2d_nchw[2] + (pad_temp_shared[31] * kernel_shared[((((int)threadIdx.x) * 48) + 11)]));
+      conv2d_nchw[3] = (conv2d_nchw[3] + (pad_temp_shared[23] * kernel_shared[((((int)threadIdx.x) * 48) + 8)]));
+      conv2d_nchw[3] = (conv2d_nchw[3] + (pad_temp_shared[32] * kernel_shared[((((int)threadIdx.x) * 48) + 11)]));
+      conv2d_nchw[4] = (conv2d_nchw[4] + (pad_temp_shared[24] * kernel_shared[((((int)threadIdx.x) * 48) + 8)]));
+      conv2d_nchw[4] = (conv2d_nchw[4] + (pad_temp_shared[33] * kernel_shared[((((int)threadIdx.x) * 48) + 11)]));
+      conv2d_nchw[5] = (conv2d_nchw[5] + (pad_temp_shared[25] * kernel_shared[((((int)threadIdx.x) * 48) + 8)]));
+      conv2d_nchw[5] = (conv2d_nchw[5] + (pad_temp_shared[34] * kernel_shared[((((int)threadIdx.x) * 48) + 11)]));
+      conv2d_nchw[6] = (conv2d_nchw[6] + (pad_temp_shared[26] * kernel_shared[((((int)threadIdx.x) * 48) + 8)]));
+      conv2d_nchw[6] = (conv2d_nchw[6] + (pad_temp_shared[35] * kernel_shared[((((int)threadIdx.x) * 48) + 11)]));
+      conv2d_nchw[7] = (conv2d_nchw[7] + (pad_temp_shared[20] * kernel_shared[((((int)threadIdx.x) * 48) + 32)]));
+      conv2d_nchw[7] = (conv2d_nchw[7] + (pad_temp_shared[29] * kernel_shared[((((int)threadIdx.x) * 48) + 35)]));
+      conv2d_nchw[8] = (conv2d_nchw[8] + (pad_temp_shared[21] * kernel_shared[((((int)threadIdx.x) * 48) + 32)]));
+      conv2d_nchw[8] = (conv2d_nchw[8] + (pad_temp_shared[30] * kernel_shared[((((int)threadIdx.x) * 48) + 35)]));
+      conv2d_nchw[9] = (conv2d_nchw[9] + (pad_temp_shared[22] * kernel_shared[((((int)threadIdx.x) * 48) + 32)]));
+      conv2d_nchw[9] = (conv2d_nchw[9] + (pad_temp_shared[31] * kernel_shared[((((int)threadIdx.x) * 48) + 35)]));
+      conv2d_nchw[10] = (conv2d_nchw[10] + (pad_temp_shared[23] * kernel_shared[((((int)threadIdx.x) * 48) + 32)]));
+      conv2d_nchw[10] = (conv2d_nchw[10] + (pad_temp_shared[32] * kernel_shared[((((int)threadIdx.x) * 48) + 35)]));
+      conv2d_nchw[11] = (conv2d_nchw[11] + (pad_temp_shared[24] * kernel_shared[((((int)threadIdx.x) * 48) + 32)]));
+      conv2d_nchw[11] = (conv2d_nchw[11] + (pad_temp_shared[33] * kernel_shared[((((int)threadIdx.x) * 48) + 35)]));
+      conv2d_nchw[12] = (conv2d_nchw[12] + (pad_temp_shared[25] * kernel_shared[((((int)threadIdx.x) * 48) + 32)]));
+      conv2d_nchw[12] = (conv2d_nchw[12] + (pad_temp_shared[34] * kernel_shared[((((int)threadIdx.x) * 48) + 35)]));
+      conv2d_nchw[13] = (conv2d_nchw[13] + (pad_temp_shared[26] * kernel_shared[((((int)threadIdx.x) * 48) + 32)]));
+      conv2d_nchw[13] = (conv2d_nchw[13] + (pad_temp_shared[35] * kernel_shared[((((int)threadIdx.x) * 48) + 35)]));
+      conv2d_nchw[0] = (conv2d_nchw[0] + (pad_temp_shared[36] * kernel_shared[((((int)threadIdx.x) * 48) + 12)]));
+      conv2d_nchw[0] = (conv2d_nchw[0] + (pad_temp_shared[45] * kernel_shared[((((int)threadIdx.x) * 48) + 15)]));
+      conv2d_nchw[1] = (conv2d_nchw[1] + (pad_temp_shared[37] * kernel_shared[((((int)threadIdx.x) * 48) + 12)]));
+      conv2d_nchw[1] = (conv2d_nchw[1] + (pad_temp_shared[46] * kernel_shared[((((int)threadIdx.x) * 48) + 15)]));
+      conv2d_nchw[2] = (conv2d_nchw[2] + (pad_temp_shared[38] * kernel_shared[((((int)threadIdx.x) * 48) + 12)]));
+      conv2d_nchw[2] = (conv2d_nchw[2] + (pad_temp_shared[47] * kernel_shared[((((int)threadIdx.x) * 48) + 15)]));
+      conv2d_nchw[3] = (conv2d_nchw[3] + (pad_temp_shared[39] * kernel_shared[((((int)threadIdx.x) * 48) + 12)]));
+      conv2d_nchw[3] = (conv2d_nchw[3] + (pad_temp_shared[48] * kernel_shared[((((int)threadIdx.x) * 48) + 15)]));
+      conv2d_nchw[4] = (conv2d_nchw[4] + (pad_temp_shared[40] * kernel_shared[((((int)threadIdx.x) * 48) + 12)]));
+      conv2d_nchw[4] = (conv2d_nchw[4] + (pad_temp_shared[49] * kernel_shared[((((int)threadIdx.x) * 48) + 15)]));
+      conv2d_nchw[5] = (conv2d_nchw[5] + (pad_temp_shared[41] * kernel_shared[((((int)threadIdx.x) * 48) + 12)]));
+      conv2d_nchw[5] = (conv2d_nchw[5] + (pad_temp_shared[50] * kernel_shared[((((int)threadIdx.x) * 48) + 15)]));
+      conv2d_nchw[6] = (conv2d_nchw[6] + (pad_temp_shared[42] * kernel_shared[((((int)threadIdx.x) * 48) + 12)]));
+      conv2d_nchw[6] = (conv2d_nchw[6] + (pad_temp_shared[51] * kernel_shared[((((int)threadIdx.x) * 48) + 15)]));
+      conv2d_nchw[7] = (conv2d_nchw[7] + (pad_temp_shared[36] * kernel_shared[((((int)threadIdx.x) * 48) + 36)]));
+      conv2d_nchw[7] = (conv2d_nchw[7] + (pad_temp_shared[45] * kernel_shared[((((int)threadIdx.x) * 48) + 39)]));
+      conv2d_nchw[8] = (conv2d_nchw[8] + (pad_temp_shared[37] * kernel_shared[((((int)threadIdx.x) * 48) + 36)]));
+      conv2d_nchw[8] = (conv2d_nchw[8] + (pad_temp_shared[46] * kernel_shared[((((int)threadIdx.x) * 48) + 39)]));
+      conv2d_nchw[9] = (conv2d_nchw[9] + (pad_temp_shared[38] * kernel_shared[((((int)threadIdx.x) * 48) + 36)]));
+      conv2d_nchw[9] = (conv2d_nchw[9] + (pad_temp_shared[47] * kernel_shared[((((int)threadIdx.x) * 48) + 39)]));
+      conv2d_nchw[10] = (conv2d_nchw[10] + (pad_temp_shared[39] * kernel_shared[((((int)threadIdx.x) * 48) + 36)]));
+      conv2d_nchw[10] = (conv2d_nchw[10] + (pad_temp_shared[48] * kernel_shared[((((int)threadIdx.x) * 48) + 39)]));
+      conv2d_nchw[11] = (conv2d_nchw[11] + (pad_temp_shared[40] * kernel_shared[((((int)threadIdx.x) * 48) + 36)]));
+      conv2d_nchw[11] = (conv2d_nchw[11] + (pad_temp_shared[49] * kernel_shared[((((int)threadIdx.x) * 48) + 39)]));
+      conv2d_nchw[12] = (conv2d_nchw[12] + (pad_temp_shared[41] * kernel_shared[((((int)threadIdx.x) * 48) + 36)]));
+      conv2d_nchw[12] = (conv2d_nchw[12] + (pad_temp_shared[50] * kernel_shared[((((int)threadIdx.x) * 48) + 39)]));
+      conv2d_nchw[13] = (conv2d_nchw[13] + (pad_temp_shared[42] * kernel_shared[((((int)threadIdx.x) * 48) + 36)]));
+      conv2d_nchw[13] = (conv2d_nchw[13] + (pad_temp_shared[51] * kernel_shared[((((int)threadIdx.x) * 48) + 39)]));
+      conv2d_nchw[0] = (conv2d_nchw[0] + (pad_temp_shared[37] * kernel_shared[((((int)threadIdx.x) * 48) + 13)]));
+      conv2d_nchw[0] = (conv2d_nchw[0] + (pad_temp_shared[46] * kernel_shared[((((int)threadIdx.x) * 48) + 16)]));
+      conv2d_nchw[1] = (conv2d_nchw[1] + (pad_temp_shared[38] * kernel_shared[((((int)threadIdx.x) * 48) + 13)]));
+      conv2d_nchw[1] = (conv2d_nchw[1] + (pad_temp_shared[47] * kernel_shared[((((int)threadIdx.x) * 48) + 16)]));
+      conv2d_nchw[2] = (conv2d_nchw[2] + (pad_temp_shared[39] * kernel_shared[((((int)threadIdx.x) * 48) + 13)]));
+      conv2d_nchw[2] = (conv2d_nchw[2] + (pad_temp_shared[48] * kernel_shared[((((int)threadIdx.x) * 48) + 16)]));
+      conv2d_nchw[3] = (conv2d_nchw[3] + (pad_temp_shared[40] * kernel_shared[((((int)threadIdx.x) * 48) + 13)]));
+      conv2d_nchw[3] = (conv2d_nchw[3] + (pad_temp_shared[49] * kernel_shared[((((int)threadIdx.x) * 48) + 16)]));
+      conv2d_nchw[4] = (conv2d_nchw[4] + (pad_temp_shared[41] * kernel_shared[((((int)threadIdx.x) * 48) + 13)]));
+      conv2d_nchw[4] = (conv2d_nchw[4] + (pad_temp_shared[50] * kernel_shared[((((int)threadIdx.x) * 48) + 16)]));
+      conv2d_nchw[5] = (conv2d_nchw[5] + (pad_temp_shared[42] * kernel_shared[((((int)threadIdx.x) * 48) + 13)]));
+      conv2d_nchw[5] = (conv2d_nchw[5] + (pad_temp_shared[51] * kernel_shared[((((int)threadIdx.x) * 48) + 16)]));
+      conv2d_nchw[6] = (conv2d_nchw[6] + (pad_temp_shared[43] * kernel_shared[((((int)threadIdx.x) * 48) + 13)]));
+      conv2d_nchw[6] = (conv2d_nchw[6] + (pad_temp_shared[52] * kernel_shared[((((int)threadIdx.x) * 48) + 16)]));
+      conv2d_nchw[7] = (conv2d_nchw[7] + (pad_temp_shared[37] * kernel_shared[((((int)threadIdx.x) * 48) + 37)]));
+      conv2d_nchw[7] = (conv2d_nchw[7] + (pad_temp_shared[46] * kernel_shared[((((int)threadIdx.x) * 48) + 40)]));
+      conv2d_nchw[8] = (conv2d_nchw[8] + (pad_temp_shared[38] * kernel_shared[((((int)threadIdx.x) * 48) + 37)]));
+      conv2d_nchw[8] = (conv2d_nchw[8] + (pad_temp_shared[47] * kernel_shared[((((int)threadIdx.x) * 48) + 40)]));
+      conv2d_nchw[9] = (conv2d_nchw[9] + (pad_temp_shared[39] * kernel_shared[((((int)threadIdx.x) * 48) + 37)]));
+      conv2d_nchw[9] = (conv2d_nchw[9] + (pad_temp_shared[48] * kernel_shared[((((int)threadIdx.x) * 48) + 40)]));
+      conv2d_nchw[10] = (conv2d_nchw[10] + (pad_temp_shared[40] * kernel_shared[((((int)threadIdx.x) * 48) + 37)]));
+      conv2d_nchw[10] = (conv2d_nchw[10] + (pad_temp_shared[49] * kernel_shared[((((int)threadIdx.x) * 48) + 40)]));
+      conv2d_nchw[11] = (conv2d_nchw[11] + (pad_temp_shared[41] * kernel_shared[((((int)threadIdx.x) * 48) + 37)]));
+      conv2d_nchw[11] = (conv2d_nchw[11] + (pad_temp_shared[50] * kernel_shared[((((int)threadIdx.x) * 48) + 40)]));
+      conv2d_nchw[12] = (conv2d_nchw[12] + (pad_temp_shared[42] * kernel_shared[((((int)threadIdx.x) * 48) + 37)]));
+      conv2d_nchw[12] = (conv2d_nchw[12] + (pad_temp_shared[51] * kernel_shared[((((int)threadIdx.x) * 48) + 40)]));
+      conv2d_nchw[13] = (conv2d_nchw[13] + (pad_temp_shared[43] * kernel_shared[((((int)threadIdx.x) * 48) + 37)]));
+      conv2d_nchw[13] = (conv2d_nchw[13] + (pad_temp_shared[52] * kernel_shared[((((int)threadIdx.x) * 48) + 40)]));
+      conv2d_nchw[0] = (conv2d_nchw[0] + (pad_temp_shared[38] * kernel_shared[((((int)threadIdx.x) * 48) + 14)]));
+      conv2d_nchw[0] = (conv2d_nchw[0] + (pad_temp_shared[47] * kernel_shared[((((int)threadIdx.x) * 48) + 17)]));
+      conv2d_nchw[1] = (conv2d_nchw[1] + (pad_temp_shared[39] * kernel_shared[((((int)threadIdx.x) * 48) + 14)]));
+      conv2d_nchw[1] = (conv2d_nchw[1] + (pad_temp_shared[48] * kernel_shared[((((int)threadIdx.x) * 48) + 17)]));
+      conv2d_nchw[2] = (conv2d_nchw[2] + (pad_temp_shared[40] * kernel_shared[((((int)threadIdx.x) * 48) + 14)]));
+      conv2d_nchw[2] = (conv2d_nchw[2] + (pad_temp_shared[49] * kernel_shared[((((int)threadIdx.x) * 48) + 17)]));
+      conv2d_nchw[3] = (conv2d_nchw[3] + (pad_temp_shared[41] * kernel_shared[((((int)threadIdx.x) * 48) + 14)]));
+      conv2d_nchw[3] = (conv2d_nchw[3] + (pad_temp_shared[50] * kernel_shared[((((int)threadIdx.x) * 48) + 17)]));
+      conv2d_nchw[4] = (conv2d_nchw[4] + (pad_temp_shared[42] * kernel_shared[((((int)threadIdx.x) * 48) + 14)]));
+      conv2d_nchw[4] = (conv2d_nchw[4] + (pad_temp_shared[51] * kernel_shared[((((int)threadIdx.x) * 48) + 17)]));
+      conv2d_nchw[5] = (conv2d_nchw[5] + (pad_temp_shared[43] * kernel_shared[((((int)threadIdx.x) * 48) + 14)]));
+      conv2d_nchw[5] = (conv2d_nchw[5] + (pad_temp_shared[52] * kernel_shared[((((int)threadIdx.x) * 48) + 17)]));
+      conv2d_nchw[6] = (conv2d_nchw[6] + (pad_temp_shared[44] * kernel_shared[((((int)threadIdx.x) * 48) + 14)]));
+      conv2d_nchw[6] = (conv2d_nchw[6] + (pad_temp_shared[53] * kernel_shared[((((int)threadIdx.x) * 48) + 17)]));
+      conv2d_nchw[7] = (conv2d_nchw[7] + (pad_temp_shared[38] * kernel_shared[((((int)threadIdx.x) * 48) + 38)]));
+      conv2d_nchw[7] = (conv2d_nchw[7] + (pad_temp_shared[47] * kernel_shared[((((int)threadIdx.x) * 48) + 41)]));
+      conv2d_nchw[8] = (conv2d_nchw[8] + (pad_temp_shared[39] * kernel_shared[((((int)threadIdx.x) * 48) + 38)]));
+      conv2d_nchw[8] = (conv2d_nchw[8] + (pad_temp_shared[48] * kernel_shared[((((int)threadIdx.x) * 48) + 41)]));
+      conv2d_nchw[9] = (conv2d_nchw[9] + (pad_temp_shared[40] * kernel_shared[((((int)threadIdx.x) * 48) + 38)]));
+      conv2d_nchw[9] = (conv2d_nchw[9] + (pad_temp_shared[49] * kernel_shared[((((int)threadIdx.x) * 48) + 41)]));
+      conv2d_nchw[10] = (conv2d_nchw[10] + (pad_temp_shared[41] * kernel_shared[((((int)threadIdx.x) * 48) + 38)]));
+      conv2d_nchw[10] = (conv2d_nchw[10] + (pad_temp_shared[50] * kernel_shared[((((int)threadIdx.x) * 48) + 41)]));
+      conv2d_nchw[11] = (conv2d_nchw[11] + (pad_temp_shared[42] * kernel_shared[((((int)threadIdx.x) * 48) + 38)]));
+      conv2d_nchw[11] = (conv2d_nchw[11] + (pad_temp_shared[51] * kernel_shared[((((int)threadIdx.x) * 48) + 41)]));
+      conv2d_nchw[12] = (conv2d_nchw[12] + (pad_temp_shared[43] * kernel_shared[((((int)threadIdx.x) * 48) + 38)]));
+      conv2d_nchw[12] = (conv2d_nchw[12] + (pad_temp_shared[52] * kernel_shared[((((int)threadIdx.x) * 48) + 41)]));
+      conv2d_nchw[13] = (conv2d_nchw[13] + (pad_temp_shared[44] * kernel_shared[((((int)threadIdx.x) * 48) + 38)]));
+      conv2d_nchw[13] = (conv2d_nchw[13] + (pad_temp_shared[53] * kernel_shared[((((int)threadIdx.x) * 48) + 41)]));
+      conv2d_nchw[0] = (conv2d_nchw[0] + (pad_temp_shared[54] * kernel_shared[((((int)threadIdx.x) * 48) + 18)]));
+      conv2d_nchw[0] = (conv2d_nchw[0] + (pad_temp_shared[63] * kernel_shared[((((int)threadIdx.x) * 48) + 21)]));
+      conv2d_nchw[1] = (conv2d_nchw[1] + (pad_temp_shared[55] * kernel_shared[((((int)threadIdx.x) * 48) + 18)]));
+      conv2d_nchw[1] = (conv2d_nchw[1] + (pad_temp_shared[64] * kernel_shared[((((int)threadIdx.x) * 48) + 21)]));
+      conv2d_nchw[2] = (conv2d_nchw[2] + (pad_temp_shared[56] * kernel_shared[((((int)threadIdx.x) * 48) + 18)]));
+      conv2d_nchw[2] = (conv2d_nchw[2] + (pad_temp_shared[65] * kernel_shared[((((int)threadIdx.x) * 48) + 21)]));
+      conv2d_nchw[3] = (conv2d_nchw[3] + (pad_temp_shared[57] * kernel_shared[((((int)threadIdx.x) * 48) + 18)]));
+      conv2d_nchw[3] = (conv2d_nchw[3] + (pad_temp_shared[66] * kernel_shared[((((int)threadIdx.x) * 48) + 21)]));
+      conv2d_nchw[4] = (conv2d_nchw[4] + (pad_temp_shared[58] * kernel_shared[((((int)threadIdx.x) * 48) + 18)]));
+      conv2d_nchw[4] = (conv2d_nchw[4] + (pad_temp_shared[67] * kernel_shared[((((int)threadIdx.x) * 48) + 21)]));
+      conv2d_nchw[5] = (conv2d_nchw[5] + (pad_temp_shared[59] * kernel_shared[((((int)threadIdx.x) * 48) + 18)]));
+      conv2d_nchw[5] = (conv2d_nchw[5] + (pad_temp_shared[68] * kernel_shared[((((int)threadIdx.x) * 48) + 21)]));
+      conv2d_nchw[6] = (conv2d_nchw[6] + (pad_temp_shared[60] * kernel_shared[((((int)threadIdx.x) * 48) + 18)]));
+      conv2d_nchw[6] = (conv2d_nchw[6] + (pad_temp_shared[69] * kernel_shared[((((int)threadIdx.x) * 48) + 21)]));
+      conv2d_nchw[7] = (conv2d_nchw[7] + (pad_temp_shared[54] * kernel_shared[((((int)threadIdx.x) * 48) + 42)]));
+      conv2d_nchw[7] = (conv2d_nchw[7] + (pad_temp_shared[63] * kernel_shared[((((int)threadIdx.x) * 48) + 45)]));
+      conv2d_nchw[8] = (conv2d_nchw[8] + (pad_temp_shared[55] * kernel_shared[((((int)threadIdx.x) * 48) + 42)]));
+      conv2d_nchw[8] = (conv2d_nchw[8] + (pad_temp_shared[64] * kernel_shared[((((int)threadIdx.x) * 48) + 45)]));
+      conv2d_nchw[9] = (conv2d_nchw[9] + (pad_temp_shared[56] * kernel_shared[((((int)threadIdx.x) * 48) + 42)]));
+      conv2d_nchw[9] = (conv2d_nchw[9] + (pad_temp_shared[65] * kernel_shared[((((int)threadIdx.x) * 48) + 45)]));
+      conv2d_nchw[10] = (conv2d_nchw[10] + (pad_temp_shared[57] * kernel_shared[((((int)threadIdx.x) * 48) + 42)]));
+      conv2d_nchw[10] = (conv2d_nchw[10] + (pad_temp_shared[66] * kernel_shared[((((int)threadIdx.x) * 48) + 45)]));
+      conv2d_nchw[11] = (conv2d_nchw[11] + (pad_temp_shared[58] * kernel_shared[((((int)threadIdx.x) * 48) + 42)]));
+      conv2d_nchw[11] = (conv2d_nchw[11] + (pad_temp_shared[67] * kernel_shared[((((int)threadIdx.x) * 48) + 45)]));
+      conv2d_nchw[12] = (conv2d_nchw[12] + (pad_temp_shared[59] * kernel_shared[((((int)threadIdx.x) * 48) + 42)]));
+      conv2d_nchw[12] = (conv2d_nchw[12] + (pad_temp_shared[68] * kernel_shared[((((int)threadIdx.x) * 48) + 45)]));
+      conv2d_nchw[13] = (conv2d_nchw[13] + (pad_temp_shared[60] * kernel_shared[((((int)threadIdx.x) * 48) + 42)]));
+      conv2d_nchw[13] = (conv2d_nchw[13] + (pad_temp_shared[69] * kernel_shared[((((int)threadIdx.x) * 48) + 45)]));
+      conv2d_nchw[0] = (conv2d_nchw[0] + (pad_temp_shared[55] * kernel_shared[((((int)threadIdx.x) * 48) + 19)]));
+      conv2d_nchw[0] = (conv2d_nchw[0] + (pad_temp_shared[64] * kernel_shared[((((int)threadIdx.x) * 48) + 22)]));
+      conv2d_nchw[1] = (conv2d_nchw[1] + (pad_temp_shared[56] * kernel_shared[((((int)threadIdx.x) * 48) + 19)]));
+      conv2d_nchw[1] = (conv2d_nchw[1] + (pad_temp_shared[65] * kernel_shared[((((int)threadIdx.x) * 48) + 22)]));
+      conv2d_nchw[2] = (conv2d_nchw[2] + (pad_temp_shared[57] * kernel_shared[((((int)threadIdx.x) * 48) + 19)]));
+      conv2d_nchw[2] = (conv2d_nchw[2] + (pad_temp_shared[66] * kernel_shared[((((int)threadIdx.x) * 48) + 22)]));
+      conv2d_nchw[3] = (conv2d_nchw[3] + (pad_temp_shared[58] * kernel_shared[((((int)threadIdx.x) * 48) + 19)]));
+      conv2d_nchw[3] = (conv2d_nchw[3] + (pad_temp_shared[67] * kernel_shared[((((int)threadIdx.x) * 48) + 22)]));
+      conv2d_nchw[4] = (conv2d_nchw[4] + (pad_temp_shared[59] * kernel_shared[((((int)threadIdx.x) * 48) + 19)]));
+      conv2d_nchw[4] = (conv2d_nchw[4] + (pad_temp_shared[68] * kernel_shared[((((int)threadIdx.x) * 48) + 22)]));
+      conv2d_nchw[5] = (conv2d_nchw[5] + (pad_temp_shared[60] * kernel_shared[((((int)threadIdx.x) * 48) + 19)]));
+      conv2d_nchw[5] = (conv2d_nchw[5] + (pad_temp_shared[69] * kernel_shared[((((int)threadIdx.x) * 48) + 22)]));
+      conv2d_nchw[6] = (conv2d_nchw[6] + (pad_temp_shared[61] * kernel_shared[((((int)threadIdx.x) * 48) + 19)]));
+      conv2d_nchw[6] = (conv2d_nchw[6] + (pad_temp_shared[70] * kernel_shared[((((int)threadIdx.x) * 48) + 22)]));
+      conv2d_nchw[7] = (conv2d_nchw[7] + (pad_temp_shared[55] * kernel_shared[((((int)threadIdx.x) * 48) + 43)]));
+      conv2d_nchw[7] = (conv2d_nchw[7] + (pad_temp_shared[64] * kernel_shared[((((int)threadIdx.x) * 48) + 46)]));
+      conv2d_nchw[8] = (conv2d_nchw[8] + (pad_temp_shared[56] * kernel_shared[((((int)threadIdx.x) * 48) + 43)]));
+      conv2d_nchw[8] = (conv2d_nchw[8] + (pad_temp_shared[65] * kernel_shared[((((int)threadIdx.x) * 48) + 46)]));
+      conv2d_nchw[9] = (conv2d_nchw[9] + (pad_temp_shared[57] * kernel_shared[((((int)threadIdx.x) * 48) + 43)]));
+      conv2d_nchw[9] = (conv2d_nchw[9] + (pad_temp_shared[66] * kernel_shared[((((int)threadIdx.x) * 48) + 46)]));
+      conv2d_nchw[10] = (conv2d_nchw[10] + (pad_temp_shared[58] * kernel_shared[((((int)threadIdx.x) * 48) + 43)]));
+      conv2d_nchw[10] = (conv2d_nchw[10] + (pad_temp_shared[67] * kernel_shared[((((int)threadIdx.x) * 48) + 46)]));
+      conv2d_nchw[11] = (conv2d_nchw[11] + (pad_temp_shared[59] * kernel_shared[((((int)threadIdx.x) * 48) + 43)]));
+      conv2d_nchw[11] = (conv2d_nchw[11] + (pad_temp_shared[68] * kernel_shared[((((int)threadIdx.x) * 48) + 46)]));
+      conv2d_nchw[12] = (conv2d_nchw[12] + (pad_temp_shared[60] * kernel_shared[((((int)threadIdx.x) * 48) + 43)]));
+      conv2d_nchw[12] = (conv2d_nchw[12] + (pad_temp_shared[69] * kernel_shared[((((int)threadIdx.x) * 48) + 46)]));
+      conv2d_nchw[13] = (conv2d_nchw[13] + (pad_temp_shared[61] * kernel_shared[((((int)threadIdx.x) * 48) + 43)]));
+      conv2d_nchw[13] = (conv2d_nchw[13] + (pad_temp_shared[70] * kernel_shared[((((int)threadIdx.x) * 48) + 46)]));
+      conv2d_nchw[0] = (conv2d_nchw[0] + (pad_temp_shared[56] * kernel_shared[((((int)threadIdx.x) * 48) + 20)]));
+      conv2d_nchw[0] = (conv2d_nchw[0] + (pad_temp_shared[65] * kernel_shared[((((int)threadIdx.x) * 48) + 23)]));
+      conv2d_nchw[1] = (conv2d_nchw[1] + (pad_temp_shared[57] * kernel_shared[((((int)threadIdx.x) * 48) + 20)]));
+      conv2d_nchw[1] = (conv2d_nchw[1] + (pad_temp_shared[66] * kernel_shared[((((int)threadIdx.x) * 48) + 23)]));
+      conv2d_nchw[2] = (conv2d_nchw[2] + (pad_temp_shared[58] * kernel_shared[((((int)threadIdx.x) * 48) + 20)]));
+      conv2d_nchw[2] = (conv2d_nchw[2] + (pad_temp_shared[67] * kernel_shared[((((int)threadIdx.x) * 48) + 23)]));
+      conv2d_nchw[3] = (conv2d_nchw[3] + (pad_temp_shared[59] * kernel_shared[((((int)threadIdx.x) * 48) + 20)]));
+      conv2d_nchw[3] = (conv2d_nchw[3] + (pad_temp_shared[68] * kernel_shared[((((int)threadIdx.x) * 48) + 23)]));
+      conv2d_nchw[4] = (conv2d_nchw[4] + (pad_temp_shared[60] * kernel_shared[((((int)threadIdx.x) * 48) + 20)]));
+      conv2d_nchw[4] = (conv2d_nchw[4] + (pad_temp_shared[69] * kernel_shared[((((int)threadIdx.x) * 48) + 23)]));
+      conv2d_nchw[5] = (conv2d_nchw[5] + (pad_temp_shared[61] * kernel_shared[((((int)threadIdx.x) * 48) + 20)]));
+      conv2d_nchw[5] = (conv2d_nchw[5] + (pad_temp_shared[70] * kernel_shared[((((int)threadIdx.x) * 48) + 23)]));
+      conv2d_nchw[6] = (conv2d_nchw[6] + (pad_temp_shared[62] * kernel_shared[((((int)threadIdx.x) * 48) + 20)]));
+      conv2d_nchw[6] = (conv2d_nchw[6] + (pad_temp_shared[71] * kernel_shared[((((int)threadIdx.x) * 48) + 23)]));
+      conv2d_nchw[7] = (conv2d_nchw[7] + (pad_temp_shared[56] * kernel_shared[((((int)threadIdx.x) * 48) + 44)]));
+      conv2d_nchw[7] = (conv2d_nchw[7] + (pad_temp_shared[65] * kernel_shared[((((int)threadIdx.x) * 48) + 47)]));
+      conv2d_nchw[8] = (conv2d_nchw[8] + (pad_temp_shared[57] * kernel_shared[((((int)threadIdx.x) * 48) + 44)]));
+      conv2d_nchw[8] = (conv2d_nchw[8] + (pad_temp_shared[66] * kernel_shared[((((int)threadIdx.x) * 48) + 47)]));
+      conv2d_nchw[9] = (conv2d_nchw[9] + (pad_temp_shared[58] * kernel_shared[((((int)threadIdx.x) * 48) + 44)]));
+      conv2d_nchw[9] = (conv2d_nchw[9] + (pad_temp_shared[67] * kernel_shared[((((int)threadIdx.x) * 48) + 47)]));
+      conv2d_nchw[10] = (conv2d_nchw[10] + (pad_temp_shared[59] * kernel_shared[((((int)threadIdx.x) * 48) + 44)]));
+      conv2d_nchw[10] = (conv2d_nchw[10] + (pad_temp_shared[68] * kernel_shared[((((int)threadIdx.x) * 48) + 47)]));
+      conv2d_nchw[11] = (conv2d_nchw[11] + (pad_temp_shared[60] * kernel_shared[((((int)threadIdx.x) * 48) + 44)]));
+      conv2d_nchw[11] = (conv2d_nchw[11] + (pad_temp_shared[69] * kernel_shared[((((int)threadIdx.x) * 48) + 47)]));
+      conv2d_nchw[12] = (conv2d_nchw[12] + (pad_temp_shared[61] * kernel_shared[((((int)threadIdx.x) * 48) + 44)]));
+      conv2d_nchw[12] = (conv2d_nchw[12] + (pad_temp_shared[70] * kernel_shared[((((int)threadIdx.x) * 48) + 47)]));
+      conv2d_nchw[13] = (conv2d_nchw[13] + (pad_temp_shared[62] * kernel_shared[((((int)threadIdx.x) * 48) + 44)]));
+      conv2d_nchw[13] = (conv2d_nchw[13] + (pad_temp_shared[71] * kernel_shared[((((int)threadIdx.x) * 48) + 47)]));
+    }
+  }
+  for (int i1_inner = 0; i1_inner &lt; 2; ++i1_inner) {
+    for (int i3_inner = 0; i3_inner &lt; 7; ++i3_inner) {
+      compute[((((((((int)blockIdx.x) / 7) * 6272) + (((int)threadIdx.x) * 98)) + (i1_inner * 49)) + ((((int)blockIdx.x) % 7) * 7)) + i3_inner)] = max((conv2d_nchw[((i1_inner * 7) + i3_inner)] + bias[((((((int)blockIdx.x) / 7) * 128) + (((int)threadIdx.x) * 2)) + i1_inner)]), 0.000000e+00f);
+    }
+  }
+}
+</pre></div>
+</div>
+<p>A more complicated example is to resume the search.
+In this case, we need to create the search policy and cost model by ourselves
+and resume the status of search policy and cost model with the log file.
+In the example below we resume the status and do more 5 trials.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="k">def</span> <span class="nf">resume_search</span><span class="p">(</span><a href="../../reference/api/python/auto_scheduler.html#tvm.auto_scheduler.SearchTask" title="tvm.auto_scheduler.SearchTask" class="sphx-glr-backref-module-tvm-auto_scheduler sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">task</span></a><span class="p">,</span> <a href="https://docs.python.org/3/library/stdtypes.html#str" title="builtins.str" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">log_file</span></a><span class="p">):</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Resume search:&quot;</span><span class="p">)</span>
+    <span class="n">cost_model</span> <span class="o">=</span> <a href="../../reference/api/python/auto_scheduler.html#tvm.auto_scheduler.XGBModel" title="tvm.auto_scheduler.XGBModel" class="sphx-glr-backref-module-tvm-auto_scheduler sphx-glr-backref-type-py-class"><span class="n">auto_scheduler</span><span class="o">.</span><span class="n">XGBModel</span></a><span class="p">()</span>
+    <span class="n">cost_model</span><span class="o">.</span><span class="n">update_from_file</span><span class="p">(</span><a href="https://docs.python.org/3/library/stdtypes.html#str" title="builtins.str" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">log_file</span></a><span class="p">)</span>
+    <span class="n">search_policy</span> <span class="o">=</span> <a href="../../reference/api/python/auto_scheduler.html#tvm.auto_scheduler.SketchPolicy" title="tvm.auto_scheduler.SketchPolicy" class="sphx-glr-backref-module-tvm-auto_scheduler sphx-glr-backref-type-py-class"><span class="n">auto_scheduler</span><span class="o">.</span><span class="n">SketchPolicy</span></a><span class="p">(</span>
+        <a href="../../reference/api/python/auto_scheduler.html#tvm.auto_scheduler.SearchTask" title="tvm.auto_scheduler.SearchTask" class="sphx-glr-backref-module-tvm-auto_scheduler sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">task</span></a><span class="p">,</span> <span class="n">cost_model</span><span class="p">,</span> <span class="n">init_search_callbacks</span><span class="o">=</span><span class="p">[</span><a href="../../reference/api/python/auto_scheduler.html#tvm.auto_scheduler.PreloadMeasuredStates" title="tvm.auto_scheduler.PreloadMeasuredStates" class="sphx-glr-backref-module-tvm-auto_scheduler sphx-glr-backref-type-py-class"><span class="n">auto_scheduler</span><span class="o">.</span><span class="n">PreloadMeasuredStates</span></a><span class="p">(</span><a href="https://docs.python.org/3/library/stdtypes.html#str" title="builtins.str" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">log_file</span></a><span class="p">)]</span>
+    <span class="p">)</span>
+    <span class="n">measure_ctx</span> <span class="o">=</span> <a href="../../reference/api/python/auto_scheduler.html#tvm.auto_scheduler.LocalRPCMeasureContext" title="tvm.auto_scheduler.LocalRPCMeasureContext" class="sphx-glr-backref-module-tvm-auto_scheduler sphx-glr-backref-type-py-class"><span class="n">auto_scheduler</span><span class="o">.</span><span class="n">LocalRPCMeasureContext</span></a><span class="p">(</span><span class="n">min_repeat_ms</span><span class="o">=</span><span class="mi">300</span><span class="p">)</span>
+    <a href="../../reference/api/python/auto_scheduler.html#tvm.auto_scheduler.TuningOptions" title="tvm.auto_scheduler.TuningOptions" class="sphx-glr-backref-module-tvm-auto_scheduler sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">tune_option</span></a> <span class="o">=</span> <a href="../../reference/api/python/auto_scheduler.html#tvm.auto_scheduler.TuningOptions" title="tvm.auto_scheduler.TuningOptions" class="sphx-glr-backref-module-tvm-auto_scheduler sphx-glr-backref-type-py-class"><span class="n">auto_scheduler</span><span class="o">.</span><span class="n">TuningOptions</span></a><span class="p">(</span>
+        <span class="n">num_measure_trials</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span>
+        <span class="n">runner</span><span class="o">=</span><span class="n">measure_ctx</span><span class="o">.</span><span class="n">runner</span><span class="p">,</span>
+        <span class="n">measure_callbacks</span><span class="o">=</span><span class="p">[</span><a href="../../reference/api/python/auto_scheduler.html#tvm.auto_scheduler.RecordToFile" title="tvm.auto_scheduler.RecordToFile" class="sphx-glr-backref-module-tvm-auto_scheduler sphx-glr-backref-type-py-class"><span class="n">auto_scheduler</span><span class="o">.</span><span class="n">RecordToFile</span></a><span class="p">(</span><a href="https://docs.python.org/3/library/stdtypes.html#str" title="builtins.str" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">log_file</span></a><span class="p">)],</span>
+    <span class="p">)</span>
+    <a href="../../reference/api/python/auto_scheduler.html#tvm.auto_scheduler.SearchTask.tune" title="tvm.auto_scheduler.SearchTask.tune" class="sphx-glr-backref-module-tvm-auto_scheduler sphx-glr-backref-type-py-method"><span class="n">task</span><span class="o">.</span><span class="n">tune</span></a><span class="p">(</span><a href="../../reference/api/python/auto_scheduler.html#tvm.auto_scheduler.TuningOptions" title="tvm.auto_scheduler.TuningOptions" class="sphx-glr-backref-module-tvm-auto_scheduler sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">tune_option</span></a><span class="p">,</span> <span class="n">search_policy</span><span class="o">=</span><span class="n">search_policy</span><span class="p">)</span>
+
+    <span class="c1"># Kill the measurement process</span>
+    <span class="k">del</span> <span class="n">measure_ctx</span>
+
+
+<span class="c1"># We do not run the tuning in our webpage server since it takes too long.</span>
+<span class="c1"># Uncomment the following line to run it by yourself.</span>
+<span class="c1"># resume_search(task, log_file)</span>
+</pre></div>
+</div>
+<div class="sphx-glr-footer sphx-glr-footer-example docutils container" id="sphx-glr-download-how-to-tune-with-autoscheduler-tune-conv2d-layer-cuda-py">
+<div class="sphx-glr-download sphx-glr-download-python docutils container">
+<p><a class="reference download internal" download="" href="../../_downloads/e3e540f3b477c0c52d8eb73e674e8ffd/tune_conv2d_layer_cuda.py"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">tune_conv2d_layer_cuda.py</span></code></a></p>
+</div>
+<div class="sphx-glr-download sphx-glr-download-jupyter docutils container">
+<p><a class="reference download internal" download="" href="../../_downloads/5f1f7bd7d90710fd404f7bcdc4965622/tune_conv2d_layer_cuda.ipynb"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Jupyter</span> <span class="pre">notebook:</span> <span class="pre">tune_conv2d_layer_cuda.ipynb</span></code></a></p>
+</div>
+</div>
+<p class="sphx-glr-signature"><a class="reference external" href="https://sphinx-gallery.github.io">Gallery generated by Sphinx-Gallery</a></p>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          
+
+<footer>
+
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="tune_network_x86.html" class="btn btn-neutral float-right" title="Auto-scheduling a Neural Network for x86 CPU" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="index.html" class="btn btn-neutral float-left" title="Use AutoScheduler for Template-Free Scheduling" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
+
+<div id="button" class="backtop"><img src="../../_static/img/right.svg" alt="backtop"/> </div>
+<section class="footerSec">
+    <div class="footerHeader">
+      <div class="d-flex align-md-items-center justify-content-between flex-column flex-md-row">
+        <div class="copywrite d-flex align-items-center">
+          <h5 id="copy-right-info">© 2023 Apache Software Foundation | All rights reserved</h5>
+        </div>
+      </div>
+
+    </div>
+
+    <div>
+      <div class="footernote">Copyright © 2023 The Apache Software Foundation. Apache TVM, Apache, the Apache feather, and the Apache TVM project logo are either trademarks or registered trademarks of the Apache Software Foundation.</div>
+    </div>
+
+</section>
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+
+  </body>
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+    <!-- Theme Analytics -->
+    <script>
+    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+    })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+    ga('create', 'UA-75982049-2', 'auto');
+    ga('send', 'pageview');
+    </script>
+
+    
+   
+
+</body>
+</html>
