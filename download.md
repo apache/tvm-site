@@ -17,6 +17,7 @@ Choose your flavor of download from the following links:
 
 | Version | Source | PGP | SHA |
 | ------- | ------ | --- | --- |
+| 0.13.0   | [apache-tvm-src-v0.13.0.tar.gz](https://www.apache.org/dyn/closer.lua/tvm/tvm-v0.13.0/apache-tvm-src-v0.13.0.tar.gz) | [.asc](https://downloads.apache.org/tvm/tvm-v0.13.0/apache-tvm-src-v0.13.0.tar.gz.asc) | [.sha512](https://downloads.apache.org/tvm/tvm-v0.13.0/apache-tvm-src-v0.13.0.tar.gz.sha512) |
 | 0.12.0   | [apache-tvm-src-v0.12.0.tar.gz](https://www.apache.org/dyn/closer.lua/tvm/tvm-v0.12.0/apache-tvm-src-v0.12.0.tar.gz) | [.asc](https://downloads.apache.org/tvm/tvm-v0.12.0/apache-tvm-src-v0.12.0.tar.gz.asc) | [.sha512](https://downloads.apache.org/tvm/tvm-v0.12.0/apache-tvm-src-v0.12.0.tar.gz.sha512) |
 | 0.11.0   | [apache-tvm-src-v0.11.0.tar.gz](https://www.apache.org/dyn/closer.lua/tvm/tvm-v0.11.0/apache-tvm-src-v0.11.0.tar.gz) | [.asc](https://downloads.apache.org/tvm/tvm-v0.11.0/apache-tvm-src-v0.11.0.tar.gz.asc) | [.sha512](https://downloads.apache.org/tvm/tvm-v0.11.0/apache-tvm-src-v0.11.0.tar.gz.sha512) |
 | 0.10.0   | [apache-tvm-src-v0.10.0.tar.gz](https://www.apache.org/dyn/closer.lua/tvm/tvm-v0.10.0/apache-tvm-src-v0.10.0.tar.gz) | [.asc](https://downloads.apache.org/tvm/tvm-v0.10.0/apache-tvm-src-v0.10.0.tar.gz.asc) | [.sha512](https://downloads.apache.org/tvm/tvm-v0.10.0/apache-tvm-src-v0.10.0.tar.gz.sha512) |
