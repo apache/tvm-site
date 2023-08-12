@@ -60,14 +60,13 @@ var searchData=
   ['ftvmconvertoplayout_10409',['FTVMConvertOpLayout',['../namespacetvm_1_1relay.html#a8104bb3261fbc781381333ddef526a3f',1,'tvm::relay']]],
   ['ftvmlegalize_10410',['FTVMLegalize',['../namespacetvm_1_1relay.html#ac788c2310eb8aa5e2449dd8c9dfdf368',1,'tvm::relay']]],
   ['ftvmparallellambda_10411',['FTVMParallelLambda',['../c__backend__api_8h.html#ac1b48128210969500e27aad08a7fe51b',1,'c_backend_api.h']]],
-  ['ftvmrelaytotir_10412',['FTVMRelayToTIR',['../namespacetvm.html#a3b1103f53a837ff14dc583e1c0b6b898',1,'tvm']]],
+  ['ftvmrelaytotir_10412',['FTVMRelayToTIR',['../namespacetvm_1_1relay_1_1transform.html#a5b69ec2b55e779d8c3fb8ded6576aae9',1,'tvm::relay::transform']]],
   ['ftvmschedule_10413',['FTVMSchedule',['../namespacetvm_1_1relay.html#aff3d3515294c3128bb63a75c5d30f596',1,'tvm::relay']]],
   ['ftvmstrategy_10414',['FTVMStrategy',['../namespacetvm_1_1relay.html#a2eb2ad4e7a83e0a28e2ad073d7bf9305',1,'tvm::relay']]],
-  ['ftvmtargetparser_10415',['FTVMTargetParser',['../namespacetvm.html#a069e7a9aa20098c3406c6fbcf29092b3',1,'tvm']]],
-  ['ftvmtirtoruntime_10416',['FTVMTIRToRuntime',['../namespacetvm.html#ade89c3d682d83c2e14ec9337084541e3',1,'tvm']]],
-  ['ftype_10417',['FType',['../classtvm_1_1ReprPrinter.html#aee843a9a8b4885f5797843bed6467415',1,'tvm::ReprPrinter::FType()'],['../classtvm_1_1ReprLegacyPrinter.html#a335493fde819a84bcae40888604e66f2',1,'tvm::ReprLegacyPrinter::FType()'],['../classtvm_1_1TVMScriptPrinter.html#ab2a101e190f9ef724a5d5b6403db6f56',1,'tvm::TVMScriptPrinter::FType()'],['../classtvm_1_1relay_1_1DFPatternPrinter.html#ae4fc01c748852d54ad7a5c7f4307a9b4',1,'tvm::relay::DFPatternPrinter::FType()'],['../classtvm_1_1script_1_1ir__builder_1_1details_1_1Namer.html#a6d99df0b1482a3905c2fb00dcec37234',1,'tvm::script::ir_builder::details::Namer::FType()'],['../classtvm_1_1script_1_1printer_1_1IRDocsifier.html#a9cc512daa8deeb2970fd792cefc220fc',1,'tvm::script::printer::IRDocsifier::FType()']]],
-  ['functype_10418',['FuncType',['../namespacetvm_1_1relay.html#aa475de90506d48a1bb04ef6d1bd99bfb',1,'tvm::relay']]],
-  ['functypenode_10419',['FuncTypeNode',['../namespacetvm_1_1relay.html#ab551714015417af28d5ca2b47722997e',1,'tvm::relay']]],
-  ['fupdate_10420',['FUpdate',['../classtvm_1_1meta__schedule_1_1PyCostModelNode.html#a3587a71c7cad0a8403b7e89ef81839d6',1,'tvm::meta_schedule::PyCostModelNode']]],
-  ['fvisitattrs_10421',['FVisitAttrs',['../classtvm_1_1ReflectionVTable.html#a486eb682af89ac025c0db1f8f6045b95',1,'tvm::ReflectionVTable']]]
+  ['ftvmtargetparser_10415',['FTVMTargetParser',['../namespacetvm.html#a7a0864cb6804c1c37e4a44d35fd9e7e8',1,'tvm']]],
+  ['ftype_10416',['FType',['../classtvm_1_1ReprPrinter.html#aee843a9a8b4885f5797843bed6467415',1,'tvm::ReprPrinter::FType()'],['../classtvm_1_1ReprLegacyPrinter.html#a335493fde819a84bcae40888604e66f2',1,'tvm::ReprLegacyPrinter::FType()'],['../classtvm_1_1TVMScriptPrinter.html#ab2a101e190f9ef724a5d5b6403db6f56',1,'tvm::TVMScriptPrinter::FType()'],['../classtvm_1_1relay_1_1DFPatternPrinter.html#ae4fc01c748852d54ad7a5c7f4307a9b4',1,'tvm::relay::DFPatternPrinter::FType()'],['../classtvm_1_1script_1_1ir__builder_1_1details_1_1Namer.html#a6d99df0b1482a3905c2fb00dcec37234',1,'tvm::script::ir_builder::details::Namer::FType()'],['../classtvm_1_1script_1_1printer_1_1IRDocsifier.html#a9cc512daa8deeb2970fd792cefc220fc',1,'tvm::script::printer::IRDocsifier::FType()']]],
+  ['functype_10417',['FuncType',['../namespacetvm_1_1relay.html#aa475de90506d48a1bb04ef6d1bd99bfb',1,'tvm::relay']]],
+  ['functypenode_10418',['FuncTypeNode',['../namespacetvm_1_1relay.html#ab551714015417af28d5ca2b47722997e',1,'tvm::relay']]],
+  ['fupdate_10419',['FUpdate',['../classtvm_1_1meta__schedule_1_1PyCostModelNode.html#a3587a71c7cad0a8403b7e89ef81839d6',1,'tvm::meta_schedule::PyCostModelNode']]],
+  ['fvisitattrs_10420',['FVisitAttrs',['../classtvm_1_1ReflectionVTable.html#a486eb682af89ac025c0db1f8f6045b95',1,'tvm::ReflectionVTable']]]
 ];
