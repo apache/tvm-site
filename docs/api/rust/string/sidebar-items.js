@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"fn":["concat_str","main"]};
+window.SIDEBAR_ITEMS = {"fn":["main"]};

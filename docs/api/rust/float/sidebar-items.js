@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"fn":["main","sum"]};
+window.SIDEBAR_ITEMS = {"fn":["main"]};

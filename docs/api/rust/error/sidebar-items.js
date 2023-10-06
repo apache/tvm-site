@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"fn":["error","main"]};
+window.SIDEBAR_ITEMS = {"fn":["main"]};
