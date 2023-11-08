@@ -1,5 +1,5 @@
 var searchData=
 [
-  ['feature_10644',['Feature',['../namespacetvm_1_1relay.html#a926750aeda977340aa82bceac863fc9e',1,'tvm::relay']]],
-  ['forkind_10645',['ForKind',['../namespacetvm_1_1tir.html#a9f59694e9c3912cc5e80654ddbc1e40a',1,'tvm::tir']]]
+  ['feature_10647',['Feature',['../namespacetvm_1_1relay.html#a926750aeda977340aa82bceac863fc9e',1,'tvm::relay']]],
+  ['forkind_10648',['ForKind',['../namespacetvm_1_1tir.html#a9f59694e9c3912cc5e80654ddbc1e40a',1,'tvm::tir']]]
 ];
