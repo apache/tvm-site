@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"mod":["arith","attrs","diagnostics","expr","function","module","op","relay","source_map","span","tir","ty"]};

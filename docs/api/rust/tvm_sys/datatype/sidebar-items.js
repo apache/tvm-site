@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"enum":["ParseDataTypeError"],"struct":["DataType"]};

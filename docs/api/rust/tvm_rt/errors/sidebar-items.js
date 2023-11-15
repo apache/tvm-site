@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"enum":["Error","NDArrayError"],"struct":["FunctionNotFoundError","TypeMismatchError"]};

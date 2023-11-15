@@ -1,1 +1,0 @@
-window.ALL_CRATES = ["array","basics","compiler_ext","error","float","int","resnet","string","test_rt_nn","test_rt_tvm_basic","test_rt_tvm_dso","tvm","tvm_graph_rt","tvm_macros","tvm_rt","tvm_sys","tyck"];

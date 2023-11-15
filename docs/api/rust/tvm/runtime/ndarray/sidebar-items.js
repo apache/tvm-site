@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"struct":["NDArray","NDArrayContainer"],"trait":["Num32"]};

@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"enum":["ArgValue","RetValue"],"fn":["register","register_override","register_untyped"],"mod":["ffi"],"struct":["Function","RawArgs"],"trait":["ToFunction","Typed"],"type":["Result"]};

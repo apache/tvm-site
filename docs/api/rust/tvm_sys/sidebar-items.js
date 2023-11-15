@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"macro":["call_packed","try_downcast"],"mod":["array","byte_array","datatype","device","errors","ffi","packed_func","value"]};

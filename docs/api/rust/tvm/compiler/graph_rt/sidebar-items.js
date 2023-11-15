@@ -1,1 +1,0 @@
-window.SIDEBAR_ITEMS = {"enum":["Error"],"fn":["compile_from_disk","compile_module"],"struct":["CompilerConfig"]};
