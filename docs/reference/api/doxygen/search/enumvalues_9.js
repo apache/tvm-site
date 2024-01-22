@@ -1,5 +1,4 @@
 var searchData=
 [
-  ['nocheck_10988',['NoCheck',['../namespacetvm_1_1arith.html#a243b60bbe2d3852099eb65454b240c63a850e59cdf8cc0407bf13366b876a0def',1,'tvm::arith']]],
-  ['norewrite_10989',['NoRewrite',['../namespacetvm_1_1auto__scheduler.html#a3e9480be0119338696abbe9c80193b9eaa6dd7ceb983e075b3efc829b61add2ac',1,'tvm::auto_scheduler']]]
+  ['move_12464',['Move',['../namespacetvm_1_1runtime_1_1vm.html#a8d8d95ce8d629c7213f2f595917870eca6bc362dbf494c61ea117fe3c71ca48a5',1,'tvm::runtime::vm']]]
 ];

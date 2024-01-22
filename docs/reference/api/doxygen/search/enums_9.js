@@ -1,7 +1,9 @@
 var searchData=
 [
-  ['measureerrorno_10659',['MeasureErrorNO',['../namespacetvm_1_1auto__scheduler.html#acd2b9ff22c8ef2f009aef57f80926b9a',1,'tvm::auto_scheduler']]],
-  ['messagetype_10660',['MessageType',['../namespacetvm_1_1runtime_1_1micro__rpc.html#a07b2902f093d341cd67bd16738037a85',1,'tvm::runtime::micro_rpc']]],
-  ['metadatakind_10661',['MetadataKind',['../namespacetvm_1_1runtime_1_1metadata.html#a6edfc2b47c55d18f94867a18a7b02fb7',1,'tvm::runtime::metadata']]],
-  ['modulepropertymask_10662',['ModulePropertyMask',['../namespacetvm_1_1runtime.html#a6edb2235f96c34eaf0119834d293ca54',1,'tvm::runtime']]]
+  ['makeshapecode_12086',['MakeShapeCode',['../namespacetvm_1_1runtime_1_1relax__vm.html#a160eebee09cc711d1723aa82bcf73350',1,'tvm::runtime::relax_vm']]],
+  ['matchshapecode_12087',['MatchShapeCode',['../namespacetvm_1_1runtime_1_1relax__vm.html#a7e56596ed57faf39dc8a5f437d066246',1,'tvm::runtime::relax_vm']]],
+  ['measureerrorno_12088',['MeasureErrorNO',['../namespacetvm_1_1auto__scheduler.html#acd2b9ff22c8ef2f009aef57f80926b9a',1,'tvm::auto_scheduler']]],
+  ['messagetype_12089',['MessageType',['../namespacetvm_1_1runtime_1_1micro__rpc.html#a07b2902f093d341cd67bd16738037a85',1,'tvm::runtime::micro_rpc']]],
+  ['metadatakind_12090',['MetadataKind',['../namespacetvm_1_1runtime_1_1metadata.html#a6edfc2b47c55d18f94867a18a7b02fb7',1,'tvm::runtime::metadata']]],
+  ['modulepropertymask_12091',['ModulePropertyMask',['../namespacetvm_1_1runtime.html#a6edb2235f96c34eaf0119834d293ca54',1,'tvm::runtime']]]
 ];
