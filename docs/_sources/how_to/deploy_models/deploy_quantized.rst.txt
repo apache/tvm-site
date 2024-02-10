@@ -33,11 +33,14 @@ the quantization story in TVM can be found
 In this tutorial, we will import a GluonCV pre-trained model on ImageNet to
 Relay, quantize the Relay model and then perform the inference.
 
-.. GENERATED FROM PYTHON SOURCE LINES 29-45
+.. GENERATED FROM PYTHON SOURCE LINES 29-47
 
 .. code-block:: default
 
 
+    import logging
+    import os
+    import sys
 
     import tvm
     from tvm import te
@@ -45,8 +48,7 @@ Relay, quantize the Relay model and then perform the inference.
     import mxnet as mx
     from tvm.contrib.download import download_testdata
     from mxnet import gluon
-    import logging
-    import os
+
 
     batch_size = 1
     model_name = "resnet18_v1"
@@ -60,14 +62,14 @@ Relay, quantize the Relay model and then perform the inference.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 46-50
+.. GENERATED FROM PYTHON SOURCE LINES 48-52
 
 Prepare the Dataset
 -------------------
 We will demonstrate how to prepare the calibration dataset for quantization.
 We first download the validation set of ImageNet and pre-process the dataset.
 
-.. GENERATED FROM PYTHON SOURCE LINES 50-81
+.. GENERATED FROM PYTHON SOURCE LINES 52-83
 
 .. code-block:: default
 
@@ -109,13 +111,13 @@ We first download the validation set of ImageNet and pre-process the dataset.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 82-85
+.. GENERATED FROM PYTHON SOURCE LINES 84-87
 
 The calibration dataset should be an iterable object. We define the
 calibration dataset as a generator object in Python. In this tutorial, we
 only use a few samples for calibration.
 
-.. GENERATED FROM PYTHON SOURCE LINES 85-99
+.. GENERATED FROM PYTHON SOURCE LINES 87-101
 
 .. code-block:: default
 
@@ -140,13 +142,13 @@ only use a few samples for calibration.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 100-103
+.. GENERATED FROM PYTHON SOURCE LINES 102-105
 
 Import the model
 ----------------
 We use the Relay MxNet frontend to import a model from the Gluon model zoo.
 
-.. GENERATED FROM PYTHON SOURCE LINES 103-111
+.. GENERATED FROM PYTHON SOURCE LINES 105-113
 
 .. code-block:: default
 
@@ -165,7 +167,7 @@ We use the Relay MxNet frontend to import a model from the Gluon model zoo.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 112-133
+.. GENERATED FROM PYTHON SOURCE LINES 114-135
 
 Quantize the Model
 ------------------
@@ -189,7 +191,7 @@ distribution of activation before and after quantization.
 Alternatively, we can also use pre-defined global scales. This saves the time
 for calibration. But the accuracy might be impacted.
 
-.. GENERATED FROM PYTHON SOURCE LINES 133-145
+.. GENERATED FROM PYTHON SOURCE LINES 135-147
 
 .. code-block:: default
 
@@ -212,13 +214,13 @@ for calibration. But the accuracy might be impacted.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 146-149
+.. GENERATED FROM PYTHON SOURCE LINES 148-151
 
 Run Inference
 -------------
 We create a Relay VM to build and execute the model.
 
-.. GENERATED FROM PYTHON SOURCE LINES 149-167
+.. GENERATED FROM PYTHON SOURCE LINES 151-173
 
 .. code-block:: default
 
@@ -233,7 +235,11 @@ We create a Relay VM to build and execute the model.
 
 
     def main():
-        mod, params = get_model()
+        try:
+            mod, params = get_model()
+        except RuntimeError:
+            print("Downloads from mxnet no longer supported", file=sys.stderr)
+            return
         mod = quantize(mod, params, data_aware=True)
         run_inference(mod)
 
@@ -257,7 +263,7 @@ We create a Relay VM to build and execute the model.
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** ( 1 minutes  50.779 seconds)
+   **Total running time of the script:** ( 1 minutes  55.987 seconds)
 
 
 .. _sphx_glr_download_how_to_deploy_models_deploy_quantized.py:

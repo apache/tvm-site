@@ -50,11 +50,12 @@ Note that this tutorial will not run on Windows or recent versions of macOS. To
 get it to run, you will need to wrap the body of this tutorial in a :code:`if
 __name__ == "__main__":` block.
 
-.. GENERATED FROM PYTHON SOURCE LINES 47-57
+.. GENERATED FROM PYTHON SOURCE LINES 47-58
 
 .. code-block:: default
 
 
+    import sys
 
     import numpy as np
 
@@ -71,7 +72,7 @@ __name__ == "__main__":` block.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 58-70
+.. GENERATED FROM PYTHON SOURCE LINES 59-71
 
 Define a Network
 ----------------
@@ -86,7 +87,7 @@ We also implemented more optimizations for NHWC layout with the auto-scheduler.
 So it is recommended to convert your models to NHWC layout to use the auto-scheduler.
 You can use :ref:`ConvertLayout <convert-layout-usage>` pass to do the layout conversion in TVM.
 
-.. GENERATED FROM PYTHON SOURCE LINES 70-158
+.. GENERATED FROM PYTHON SOURCE LINES 71-159
 
 .. code-block:: default
 
@@ -185,7 +186,7 @@ You can use :ref:`ConvertLayout <convert-layout-usage>` pass to do the layout co
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 159-168
+.. GENERATED FROM PYTHON SOURCE LINES 160-169
 
 Extract Search Tasks
 --------------------
@@ -197,20 +198,25 @@ as :code:`sum(latency[t] * weight[t])`, where :code:`latency[t]` is the
 latency of a task and :code:`weight[t]` is the weight of the task.
 The task scheduler will just optimize this objective.
 
-.. GENERATED FROM PYTHON SOURCE LINES 168-185
+.. GENERATED FROM PYTHON SOURCE LINES 169-191
 
 .. code-block:: default
 
 
     # Extract tasks from the network
     print("Get model...")
-    mod, params, input_shape, output_shape = get_network(
-        network,
-        batch_size,
-        layout,
-        dtype=dtype,
-        use_sparse=use_sparse,
-    )
+    try:
+        mod, params, input_shape, output_shape = get_network(
+            network,
+            batch_size,
+            layout,
+            dtype=dtype,
+            use_sparse=use_sparse,
+        )
+    except RuntimeError:
+        print("Downloads from mxnet no longer supported", file=sys.stderr)
+        sys.exit(0)
+
     print("Extract tasks...")
     tasks, task_weights = auto_scheduler.extract_tasks(mod["main"], params, target)
 
@@ -490,7 +496,7 @@ The task scheduler will just optimize this objective.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 186-202
+.. GENERATED FROM PYTHON SOURCE LINES 192-208
 
 Begin Tuning
 ------------
@@ -509,7 +515,7 @@ Now, we set some options for tuning and launch the search tasks
   :any:`auto_scheduler.LocalRunner` for more parameters.
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 202-236
+.. GENERATED FROM PYTHON SOURCE LINES 208-242
 
 .. code-block:: default
 
@@ -554,7 +560,7 @@ Now, we set some options for tuning and launch the search tasks
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 237-295
+.. GENERATED FROM PYTHON SOURCE LINES 243-301
 
 .. note:: Explain the printed information during tuning
 
@@ -615,7 +621,7 @@ Now, we set some options for tuning and launch the search tasks
   errors are isolated from the main process.
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 297-303
+.. GENERATED FROM PYTHON SOURCE LINES 303-309
 
 .. note:: Terminate the tuning earlier
 
@@ -624,7 +630,7 @@ Now, we set some options for tuning and launch the search tasks
   you should be able to do the compilation (the secion below).
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 306-311
+.. GENERATED FROM PYTHON SOURCE LINES 312-317
 
 Compile and Evaluate
 --------------------
@@ -632,7 +638,7 @@ After auto-tuning, we can compile the network with the best schedules we found.
 All measurement records are dumped into the log file during auto-tuning,
 so we can read the log file and load the best schedules.
 
-.. GENERATED FROM PYTHON SOURCE LINES 311-329
+.. GENERATED FROM PYTHON SOURCE LINES 317-335
 
 .. code-block:: default
 
@@ -666,12 +672,12 @@ so we can read the log file and load the best schedules.
     Evaluate inference time cost...
     Execution time summary:
      mean (ms)   median (ms)    max (ms)     min (ms)     std (ms)  
-      755.1627     755.6316     755.9665     753.8900      0.9103                  
+      685.4055     686.2132     686.2450     683.7584      1.1648                  
 
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 330-346
+.. GENERATED FROM PYTHON SOURCE LINES 336-352
 
 Other Tips
 ----------
@@ -693,7 +699,7 @@ Other Tips
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** ( 1 minutes  32.462 seconds)
+   **Total running time of the script:** ( 1 minutes  25.661 seconds)
 
 
 .. _sphx_glr_download_how_to_tune_with_autoscheduler_tune_network_x86.py:
