@@ -85,7 +85,7 @@ We also implemented more optimizations for NHWC layout with the auto-scheduler.
 So it is recommended to convert your models to NHWC layout to use the auto-scheduler.
 You can use :ref:`ConvertLayout <convert-layout-usage>` pass to do the layout conversion in TVM.
 
-.. GENERATED FROM PYTHON SOURCE LINES 68-142
+.. GENERATED FROM PYTHON SOURCE LINES 68-128
 
 .. code-block:: default
 
@@ -138,20 +138,6 @@ You can use :ref:`ConvertLayout <convert-layout-usage>` pass to do the layout co
         elif name == "inception_v3":
             input_shape = (batch_size, 3, 299, 299) if layout == "NCHW" else (batch_size, 299, 299, 3)
             mod, params = relay.testing.inception_v3.get_workload(batch_size=batch_size, dtype=dtype)
-        elif name == "mxnet":
-            # an example for mxnet model
-            from mxnet.gluon.model_zoo.vision import get_model
-
-            assert layout == "NCHW"
-
-            block = get_model("resnet18_v1", pretrained=True)
-            mod, params = relay.frontend.from_mxnet(block, shape={"data": input_shape}, dtype=dtype)
-            net = mod["main"]
-            net = relay.Function(
-                net.params, relay.nn.softmax(net.body), None, net.type_params, net.attrs
-            )
-            mod = tvm.IRModule.from_expr(net)
-
         return mod, params, input_shape, output_shape
 
 
@@ -170,7 +156,7 @@ You can use :ref:`ConvertLayout <convert-layout-usage>` pass to do the layout co
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 143-152
+.. GENERATED FROM PYTHON SOURCE LINES 129-138
 
 Extract Search Tasks
 --------------------
@@ -182,18 +168,14 @@ as :code:`sum(latency[t] * weight[t])`, where :code:`latency[t]` is the
 latency of a task and :code:`weight[t]` is the weight of the task.
 The task scheduler will just optimize this objective.
 
-.. GENERATED FROM PYTHON SOURCE LINES 152-166
+.. GENERATED FROM PYTHON SOURCE LINES 138-148
 
 .. code-block:: default
 
 
     # Extract tasks from the network
     print("Extract tasks...")
-    try:
-        mod, params, input_shape, output_shape = get_network(network, batch_size, layout, dtype=dtype)
-    except RuntimeError:
-        print("Downloads from mxnet no longer supported", file=sys.stderr)
-        sys.exit(0)
+    mod, params, input_shape, output_shape = get_network(network, batch_size, layout, dtype=dtype)
     tasks, task_weights = auto_scheduler.extract_tasks(mod["main"], params, target)
 
     for idx, task in enumerate(tasks):
@@ -486,7 +468,7 @@ The task scheduler will just optimize this objective.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 167-189
+.. GENERATED FROM PYTHON SOURCE LINES 149-171
 
 Begin Tuning
 ------------
@@ -511,7 +493,7 @@ Now, we set some options for tuning and launch the search tasks
   :any:`auto_scheduler.LocalRPCMeasureContext` for more parameters.
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 189-211
+.. GENERATED FROM PYTHON SOURCE LINES 171-193
 
 .. code-block:: default
 
@@ -544,7 +526,7 @@ Now, we set some options for tuning and launch the search tasks
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 212-265
+.. GENERATED FROM PYTHON SOURCE LINES 194-247
 
 .. note:: Explain the printed information during tuning
 
@@ -600,7 +582,7 @@ Now, we set some options for tuning and launch the search tasks
   errors are isolated from the main process.
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 267-273
+.. GENERATED FROM PYTHON SOURCE LINES 249-255
 
 .. note:: Terminate the tuning earlier
 
@@ -609,7 +591,7 @@ Now, we set some options for tuning and launch the search tasks
   you should be able to do the compilation (the secion below).
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 276-281
+.. GENERATED FROM PYTHON SOURCE LINES 258-263
 
 Compile and Evaluate
 --------------------
@@ -617,7 +599,7 @@ After auto-tuning, we can compile the network with the best schedules we found.
 All measurement records are dumped into the log file during auto-tuning,
 so we can read the log file and load the best schedules.
 
-.. GENERATED FROM PYTHON SOURCE LINES 281-299
+.. GENERATED FROM PYTHON SOURCE LINES 263-281
 
 .. code-block:: default
 
@@ -651,12 +633,12 @@ so we can read the log file and load the best schedules.
     Evaluate inference time cost...
     Execution time summary:
      mean (ms)   median (ms)    max (ms)     min (ms)     std (ms)  
-       3.2944       3.2928       3.2999       3.2906       0.0039                  
+       3.1960       3.1960       3.1964       3.1956       0.0003                  
 
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 300-316
+.. GENERATED FROM PYTHON SOURCE LINES 282-298
 
 Other Tips
 ----------
@@ -678,7 +660,7 @@ Other Tips
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** ( 1 minutes  13.548 seconds)
+   **Total running time of the script:** ( 1 minutes  9.698 seconds)
 
 
 .. _sphx_glr_download_how_to_tune_with_autoscheduler_tune_network_cuda.py:

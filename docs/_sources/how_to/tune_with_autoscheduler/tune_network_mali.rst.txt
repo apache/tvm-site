@@ -88,7 +88,7 @@ We also implemented more optimizations for NHWC layout with the auto-scheduler.
 So it is recommended to convert your models to NHWC layout to use the auto-scheduler.
 You can use :ref:`ConvertLayout <convert-layout-usage>` pass to do the layout conversion in TVM.
 
-.. GENERATED FROM PYTHON SOURCE LINES 71-150
+.. GENERATED FROM PYTHON SOURCE LINES 71-137
 
 .. code-block:: default
 
@@ -141,19 +141,6 @@ You can use :ref:`ConvertLayout <convert-layout-usage>` pass to do the layout co
         elif name == "inception_v3":
             input_shape = (batch_size, 3, 299, 299) if layout == "NCHW" else (batch_size, 299, 299, 3)
             mod, params = relay.testing.inception_v3.get_workload(batch_size=batch_size, dtype=dtype)
-        elif name == "mxnet":
-            # an example for mxnet model
-            from mxnet.gluon.model_zoo.vision import get_model
-
-            assert layout == "NCHW"
-
-            block = get_model("resnet50_v1", pretrained=True)
-            mod, params = relay.frontend.from_mxnet(block, shape={"data": input_shape}, dtype=dtype)
-            net = mod["main"]
-            net = relay.Function(
-                net.params, relay.nn.softmax(net.body), None, net.type_params, net.attrs
-            )
-            mod = tvm.IRModule.from_expr(net)
 
         return mod, params, input_shape, output_shape
 
@@ -178,7 +165,7 @@ You can use :ref:`ConvertLayout <convert-layout-usage>` pass to do the layout co
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 151-156
+.. GENERATED FROM PYTHON SOURCE LINES 138-143
 
 Start an RPC Tracker and Register Devices to the Tracker
 --------------------------------------------------------
@@ -186,7 +173,7 @@ Please refer to the "Start RPC Tracker" and "Register Devices to RPC Tracker" se
 in this :ref:`tutorial <tutorials-autotvm-start-rpc-tracker>` to start an RPC tracker
 and register devices to the tracker.
 
-.. GENERATED FROM PYTHON SOURCE LINES 156-161
+.. GENERATED FROM PYTHON SOURCE LINES 143-148
 
 .. code-block:: default
 
@@ -202,7 +189,7 @@ and register devices to the tracker.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 162-171
+.. GENERATED FROM PYTHON SOURCE LINES 149-158
 
 Extract Search Tasks
 --------------------
@@ -214,18 +201,14 @@ as :code:`sum(latency[t] * weight[t])`, where :code:`latency[t]` is the
 latency of a task and :code:`weight[t]` is the weight of the task.
 The task scheduler will just optimize this objective.
 
-.. GENERATED FROM PYTHON SOURCE LINES 171-184
+.. GENERATED FROM PYTHON SOURCE LINES 158-167
 
 .. code-block:: default
 
 
     # Extract tasks from the network
     print("Extract tasks...")
-    try:
-        mod, params, input_shape, output_shape = get_network(network, batch_size, layout, dtype=dtype)
-    except RuntimeError:
-        print("Downloads from mxnet no longer supported", file=sys.stderr)
-        sys.exit(0)
+    mod, params, input_shape, output_shape = get_network(network, batch_size, layout, dtype=dtype)
     tasks, task_weights = auto_scheduler.extract_tasks(mod["main"], params, target)
 
     for idx, task in enumerate(tasks):
@@ -436,7 +419,7 @@ The task scheduler will just optimize this objective.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 185-211
+.. GENERATED FROM PYTHON SOURCE LINES 168-194
 
 .. note:: How to get the hardware parameters from remote device
 
@@ -465,7 +448,7 @@ The task scheduler will just optimize this objective.
    )
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 213-229
+.. GENERATED FROM PYTHON SOURCE LINES 196-212
 
 Tuning and Evaluate
 -------------------
@@ -484,7 +467,7 @@ Now, we set some options for tuning, launch the search tasks and evaluate the en
   :any:`auto_scheduler.LocalRunner` for more parameters.
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 229-282
+.. GENERATED FROM PYTHON SOURCE LINES 212-265
 
 .. code-block:: default
 
@@ -548,7 +531,7 @@ Now, we set some options for tuning, launch the search tasks and evaluate the en
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 283-341
+.. GENERATED FROM PYTHON SOURCE LINES 266-324
 
 .. note:: Explain the printed information during tuning
 
@@ -609,7 +592,7 @@ Now, we set some options for tuning, launch the search tasks and evaluate the en
   errors are isolated from the main process.
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 343-349
+.. GENERATED FROM PYTHON SOURCE LINES 326-332
 
 .. note:: Terminate the tuning earlier
 
@@ -618,7 +601,7 @@ Now, we set some options for tuning, launch the search tasks and evaluate the en
   you should be able to do the compilation (the secion below).
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 351-367
+.. GENERATED FROM PYTHON SOURCE LINES 334-350
 
 Other Tips
 ----------
