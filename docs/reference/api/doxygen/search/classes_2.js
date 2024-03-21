@@ -93,5 +93,7 @@ var searchData=
   ['costmodel_6571',['CostModel',['../classtvm_1_1auto__scheduler_1_1CostModel.html',1,'tvm::auto_scheduler::CostModel'],['../classtvm_1_1meta__schedule_1_1CostModel.html',1,'tvm::meta_schedule::CostModel']]],
   ['costmodelnode_6572',['CostModelNode',['../classtvm_1_1auto__scheduler_1_1CostModelNode.html',1,'tvm::auto_scheduler::CostModelNode'],['../classtvm_1_1meta__schedule_1_1CostModelNode.html',1,'tvm::meta_schedule::CostModelNode']]],
   ['countnode_6573',['CountNode',['../classtvm_1_1runtime_1_1profiling_1_1CountNode.html',1,'tvm::runtime::profiling']]],
-  ['cropandresizeattrs_6574',['CropAndResizeAttrs',['../structtvm_1_1relay_1_1CropAndResizeAttrs.html',1,'tvm::relay']]]
+  ['cropandresizeattrs_6574',['CropAndResizeAttrs',['../structtvm_1_1relay_1_1CropAndResizeAttrs.html',1,'tvm::relay']]],
+  ['cudaipcmemory_6575',['CUDAIPCMemory',['../classtvm_1_1runtime_1_1cuda__ipc_1_1CUDAIPCMemory.html',1,'tvm::runtime::cuda_ipc']]],
+  ['cudaipcmemoryobj_6576',['CUDAIPCMemoryObj',['../classtvm_1_1runtime_1_1cuda__ipc_1_1CUDAIPCMemoryObj.html',1,'tvm::runtime::cuda_ipc']]]
 ];

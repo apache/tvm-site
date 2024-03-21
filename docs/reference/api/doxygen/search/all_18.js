@@ -42,7 +42,7 @@ var searchData=
   ['withoutattr_5953',['WithoutAttr',['../namespacetvm.html#a7e2bc626db8be997b1562c79df3d9e11',1,'tvm']]],
   ['withouthost_5954',['WithoutHost',['../classtvm_1_1Target.html#a618e9c23c91e16ee60bb324d0c97091c',1,'tvm::Target']]],
   ['withstructinfo_5955',['WithStructInfo',['../classtvm_1_1relax_1_1ExprMutator.html#a3985949433f04660d1824d026466f37a',1,'tvm::relax::ExprMutator']]],
-  ['worker_5fid_5956',['worker_id',['../classtvm_1_1runtime_1_1DiscoWorker.html#a5a6414e30855435fa0e6c0e226867edd',1,'tvm::runtime::DiscoWorker']]],
+  ['worker_5fid_5956',['worker_id',['../classtvm_1_1runtime_1_1DiscoWorker.html#a5a6414e30855435fa0e6c0e226867edd',1,'tvm::runtime::DiscoWorker::worker_id()'],['../classtvm_1_1runtime_1_1cuda__ipc_1_1CUDAIPCMemoryObj.html#aee159316a5612aa8dbe42b9941e788b3',1,'tvm::runtime::cuda_ipc::CUDAIPCMemoryObj::worker_id()']]],
   ['worker_5fzero_5fdata_5957',['worker_zero_data',['../classtvm_1_1runtime_1_1DiscoWorker.html#ac4a5ec8d54ff321dbb960d442106773f',1,'tvm::runtime::DiscoWorker']]],
   ['workerid_5958',['WorkerId',['../namespacetvm_1_1runtime.html#a11d7c335ce64b50b3e6cee085d55c8fc',1,'tvm::runtime']]],
   ['workerzerodata_5959',['WorkerZeroData',['../classtvm_1_1runtime_1_1WorkerZeroData.html',1,'tvm::runtime']]],
