@@ -333,7 +333,7 @@ var searchData=
   ['create_5fschedule_1119',['create_schedule',['../namespacetvm_1_1te.html#a485034766309df280239e0994913b34b',1,'tvm::te']]],
   ['createallocatesforio_1120',['CreateAllocatesForIO',['../namespacetvm_1_1tir_1_1usmp_1_1transform.html#ad1751f300f05f2448d280b98c48b65a1',1,'tvm::tir::usmp::transform']]],
   ['createdataflowblockpass_1121',['CreateDataflowBlockPass',['../namespacetvm_1_1relax_1_1transform.html#a619a3e900288c40a35594c7c52d8d048',1,'tvm::relax::transform']]],
-  ['createempty_1122',['CreateEmpty',['../classtvm_1_1relax_1_1Function.html#af582150c86d2cb62e7940760fd2d25a9',1,'tvm::relax::Function']]],
+  ['createempty_1122',['CreateEmpty',['../classtvm_1_1relax_1_1Function.html#a850d32598c61c8001c88a5c5c29b76e3',1,'tvm::relax::Function']]],
   ['createfromrange_1123',['CreateFromRange',['../classtvm_1_1runtime_1_1MapNode.html#a6b54c7503c17ee3bb7eadcd1ac0ed009',1,'tvm::runtime::MapNode']]],
   ['createfunctionpass_1124',['CreateFunctionPass',['../namespacetvm_1_1relay_1_1transform.html#a250dc99cb28e2b3b080dd9befb2a3248',1,'tvm::relay::transform::CreateFunctionPass()'],['../namespacetvm_1_1relax_1_1transform.html#a191cb3046512f8c588f06e07b064e9db',1,'tvm::relax::transform::CreateFunctionPass()']]],
   ['createinitobject_1125',['CreateInitObject',['../classtvm_1_1ReflectionVTable.html#a4a07073de645894b19522d7da1ac708c',1,'tvm::ReflectionVTable']]],
