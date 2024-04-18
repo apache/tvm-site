@@ -359,7 +359,7 @@ var searchData=
   ['fused_5fids_2003',['fused_ids',['../classtvm_1_1auto__scheduler_1_1FuseStepNode.html#a19c1a7b47f59a4f004a2dd9f354835eb',1,'tvm::auto_scheduler::FuseStepNode']]],
   ['fusenode_2004',['FuseNode',['../classtvm_1_1te_1_1FuseNode.html',1,'tvm::te']]],
   ['fuseops_2005',['FuseOps',['../namespacetvm_1_1relay_1_1transform.html#a2a6be6024a96a84f7230faa2519f1a97',1,'tvm::relay::transform::FuseOps()'],['../namespacetvm_1_1relax_1_1transform.html#a7155cec2bad0e8e64bd78d1459843b88',1,'tvm::relax::transform::FuseOps(int fuse_opt_level=-1)']]],
-  ['fuseopsbypattern_2006',['FuseOpsByPattern',['../namespacetvm_1_1relax_1_1transform.html#a0ed6bf6bce3d55eb2cfdae7a1ac15d39',1,'tvm::relax::transform']]],
+  ['fuseopsbypattern_2006',['FuseOpsByPattern',['../namespacetvm_1_1relax_1_1transform.html#a73639cc09dc072ab9ffcae0f8e97ff6b',1,'tvm::relax::transform']]],
   ['fusestep_2007',['FuseStep',['../classtvm_1_1auto__scheduler_1_1FuseStep.html#a77c478295e170275d7d5da7345a03546',1,'tvm::auto_scheduler::FuseStep::FuseStep(int stage_id, const Array&lt; Integer &gt; &amp;fused_ids)'],['../classtvm_1_1auto__scheduler_1_1FuseStep.html#a345e30fc54e9782faa9b8744c9ed5d14',1,'tvm::auto_scheduler::FuseStep::FuseStep(dmlc::JSONReader *reader)'],['../classtvm_1_1auto__scheduler_1_1FuseStep.html',1,'tvm::auto_scheduler::FuseStep']]],
   ['fusestepnode_2008',['FuseStepNode',['../classtvm_1_1auto__scheduler_1_1FuseStepNode.html',1,'tvm::auto_scheduler']]],
   ['fusetir_2009',['FuseTIR',['../namespacetvm_1_1relax_1_1transform.html#a3feb81c5b5d9b4b907f3e2c72b0ac2d3',1,'tvm::relax::transform']]],
