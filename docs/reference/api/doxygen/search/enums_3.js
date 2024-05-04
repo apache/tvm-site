@@ -1,8 +1,8 @@
 var searchData=
 [
-  ['depkind_12184',['DepKind',['../namespacetvm_1_1tir.html#a82f5fe564edbe0dadbc4a56a82dfe12e',1,'tvm::tir']]],
-  ['deviceattrkind_12185',['DeviceAttrKind',['../namespacetvm_1_1runtime.html#a46fef1ca0ccc05473e9bb0a8c6b66619',1,'tvm::runtime']]],
-  ['diagnosticlevel_12186',['DiagnosticLevel',['../namespacetvm.html#a908c332516a33fdc106cd9ee2ebc2b9e',1,'tvm']]],
-  ['discoaction_12187',['DiscoAction',['../namespacetvm_1_1runtime.html#a4ba6565e739bed4d5078c2ff998deae8',1,'tvm::runtime']]],
-  ['divmode_12188',['DivMode',['../namespacetvm_1_1arith.html#ac6a38da661cd3681eb85abe1cd810422',1,'tvm::arith']]]
+  ['depkind_12185',['DepKind',['../namespacetvm_1_1tir.html#a82f5fe564edbe0dadbc4a56a82dfe12e',1,'tvm::tir']]],
+  ['deviceattrkind_12186',['DeviceAttrKind',['../namespacetvm_1_1runtime.html#a46fef1ca0ccc05473e9bb0a8c6b66619',1,'tvm::runtime']]],
+  ['diagnosticlevel_12187',['DiagnosticLevel',['../namespacetvm.html#a908c332516a33fdc106cd9ee2ebc2b9e',1,'tvm']]],
+  ['discoaction_12188',['DiscoAction',['../namespacetvm_1_1runtime.html#a4ba6565e739bed4d5078c2ff998deae8',1,'tvm::runtime']]],
+  ['divmode_12189',['DivMode',['../namespacetvm_1_1arith.html#ac6a38da661cd3681eb85abe1cd810422',1,'tvm::arith']]]
 ];
