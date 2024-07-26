@@ -1,7 +1,7 @@
 var searchData=
 [
-  ['any_11980',['Any',['../namespacetvm_1_1relay.html#abe473e7f103d7aa63b7b09fee09df932',1,'tvm::relay']]],
-  ['anynode_11981',['AnyNode',['../namespacetvm_1_1relay.html#a63c360628faf2eeb9de326634bc6e80e',1,'tvm::relay']]],
-  ['axisgroup_11982',['AxisGroup',['../namespacetvm_1_1relax_1_1distributed.html#a56b93fc9f726d6abaa0a0e7149ed915f',1,'tvm::relax::distributed']]],
-  ['axisshardingspec_11983',['AxisShardingSpec',['../namespacetvm_1_1relax_1_1distributed.html#a91f85ef8cbcb42c73af66d468edb2d86',1,'tvm::relax::distributed']]]
+  ['any_11979',['Any',['../namespacetvm_1_1relay.html#abe473e7f103d7aa63b7b09fee09df932',1,'tvm::relay']]],
+  ['anynode_11980',['AnyNode',['../namespacetvm_1_1relay.html#a63c360628faf2eeb9de326634bc6e80e',1,'tvm::relay']]],
+  ['axisgroup_11981',['AxisGroup',['../namespacetvm_1_1relax_1_1distributed.html#a56b93fc9f726d6abaa0a0e7149ed915f',1,'tvm::relax::distributed']]],
+  ['axisshardingspec_11982',['AxisShardingSpec',['../namespacetvm_1_1relax_1_1distributed.html#a91f85ef8cbcb42c73af66d468edb2d86',1,'tvm::relax::distributed']]]
 ];
