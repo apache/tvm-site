@@ -134,8 +134,8 @@ Then we write a baseline implementation, the simplest way to write a matrix mult
 
  .. code-block:: none
 
-    Numpy running time: 0.017942
-    Baseline: 3.436428
+    Numpy running time: 0.019547
+    Baseline: 3.487029
 
 
 
@@ -170,7 +170,7 @@ Here is the generated IR using our baseline schedule.
             T.func_attr({"from_legacy_te_schedule": T.bool(True), "tir.noalias": T.bool(True)})
             for m, n in T.grid(1024, 1024):
                 C_1 = T.Buffer((1048576,), data=C.data)
-                C_1[m * 1024 + n] = T.float32(0)
+                C_1[m * 1024 + n] = T.float32(0.0)
                 for k in range(1024):
                     cse_var_2: T.int32 = m * 1024
                     cse_var_1: T.int32 = cse_var_2 + n
@@ -227,7 +227,7 @@ fill 32 * 32 * sizeof(float) which is 4KB in the cache whose total size is 32KB 
 
  .. code-block:: none
 
-    Opt1: 0.289879
+    Opt1: 0.337950
 
 
 
@@ -262,7 +262,7 @@ Here is the generated IR after blocking.
             for m_outer, n_outer in T.grid(32, 32):
                 C_1 = T.Buffer((1048576,), data=C.data)
                 for m_inner_init, n_inner_init in T.grid(32, 32):
-                    C_1[m_outer * 32768 + m_inner_init * 1024 + n_outer * 32 + n_inner_init] = T.float32(0)
+                    C_1[m_outer * 32768 + m_inner_init * 1024 + n_outer * 32 + n_inner_init] = T.float32(0.0)
                 for k_outer, k_inner, m_inner, n_inner in T.grid(256, 4, 32, 32):
                     cse_var_3: T.int32 = n_outer * 32
                     cse_var_2: T.int32 = m_outer * 32768 + m_inner * 1024
@@ -318,7 +318,7 @@ In this tutorial, we chose to vectorize the inner loop row data since it is cach
 
  .. code-block:: none
 
-    Opt2: 0.271288
+    Opt2: 0.333483
 
 
 
@@ -353,7 +353,7 @@ Here is the generated IR after vectorization.
             for m_outer, n_outer in T.grid(32, 32):
                 C_1 = T.Buffer((1048576,), data=C.data)
                 for m_inner_init in range(32):
-                    C_1[m_outer * 32768 + m_inner_init * 1024 + n_outer * 32:m_outer * 32768 + m_inner_init * 1024 + n_outer * 32 + 32] = T.Broadcast(T.float32(0), 32)
+                    C_1[m_outer * 32768 + m_inner_init * 1024 + n_outer * 32:m_outer * 32768 + m_inner_init * 1024 + n_outer * 32 + 32] = T.Broadcast(T.float32(0.0), 32)
                 for k_outer, k_inner, m_inner in T.grid(256, 4, 32):
                     cse_var_3: T.int32 = n_outer * 32
                     cse_var_2: T.int32 = m_outer * 32768 + m_inner * 1024
@@ -406,7 +406,7 @@ the access pattern for A matrix is more cache friendly.
 
  .. code-block:: none
 
-    Opt3: 0.113566
+    Opt3: 0.128998
 
 
 
@@ -441,7 +441,7 @@ Here is the generated IR after loop permutation.
             for m_outer, n_outer in T.grid(32, 32):
                 C_1 = T.Buffer((1048576,), data=C.data)
                 for m_inner_init in range(32):
-                    C_1[m_outer * 32768 + m_inner_init * 1024 + n_outer * 32:m_outer * 32768 + m_inner_init * 1024 + n_outer * 32 + 32] = T.Broadcast(T.float32(0), 32)
+                    C_1[m_outer * 32768 + m_inner_init * 1024 + n_outer * 32:m_outer * 32768 + m_inner_init * 1024 + n_outer * 32 + 32] = T.Broadcast(T.float32(0.0), 32)
                 for k_outer, m_inner, k_inner in T.grid(256, 32, 4):
                     cse_var_3: T.int32 = n_outer * 32
                     cse_var_2: T.int32 = m_outer * 32768 + m_inner * 1024
@@ -523,7 +523,7 @@ flattening.
 
  .. code-block:: none
 
-    Opt4: 0.107315
+    Opt4: 0.109781
 
 
 
@@ -564,7 +564,7 @@ Here is the generated IR after array packing.
             for m_outer, n_outer in T.grid(32, 32):
                 C_1 = T.Buffer((1048576,), data=C.data)
                 for m_inner_init in range(32):
-                    C_1[m_outer * 32768 + m_inner_init * 1024 + n_outer * 32:m_outer * 32768 + m_inner_init * 1024 + n_outer * 32 + 32] = T.Broadcast(T.float32(0), 32)
+                    C_1[m_outer * 32768 + m_inner_init * 1024 + n_outer * 32:m_outer * 32768 + m_inner_init * 1024 + n_outer * 32 + 32] = T.Broadcast(T.float32(0.0), 32)
                 for k_outer, m_inner, k_inner in T.grid(256, 32, 4):
                     cse_var_3: T.int32 = m_outer * 32768 + m_inner * 1024
                     cse_var_2: T.int32 = k_outer * 4
@@ -635,7 +635,7 @@ write to C when all the block results are ready.
 
  .. code-block:: none
 
-    Opt5: 0.112163
+    Opt5: 0.115275
 
 
 
@@ -677,7 +677,7 @@ Here is the generated IR after blocking.
             for m_outer, n_outer in T.grid(32, 32):
                 C_global_1 = T.Buffer((1024,), data=C_global)
                 for m_c_init in range(32):
-                    C_global_1[m_c_init * 32:m_c_init * 32 + 32] = T.Broadcast(T.float32(0), 32)
+                    C_global_1[m_c_init * 32:m_c_init * 32 + 32] = T.Broadcast(T.float32(0.0), 32)
                 for k_outer, m_c in T.grid(256, 32):
                     cse_var_4: T.int32 = k_outer * 4
                     cse_var_3: T.int32 = m_c * 32
@@ -748,7 +748,7 @@ Furthermore, we can also utilize multi-core processors to do the thread-level pa
 
  .. code-block:: none
 
-    Opt6: 0.133809
+    Opt6: 0.137755
 
 
 
@@ -791,7 +791,7 @@ Here is the generated IR after parallelization.
                 for n_outer in range(32):
                     C_global_1 = T.Buffer((1024,), data=C_global)
                     for m_c_init in range(32):
-                        C_global_1[m_c_init * 32:m_c_init * 32 + 32] = T.Broadcast(T.float32(0), 32)
+                        C_global_1[m_c_init * 32:m_c_init * 32 + 32] = T.Broadcast(T.float32(0.0), 32)
                     for k_outer, m_c in T.grid(256, 32):
                         cse_var_4: T.int32 = k_outer * 4
                         cse_var_3: T.int32 = m_c * 32
