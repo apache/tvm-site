@@ -109,7 +109,7 @@ and to examine the IR code in human readable format, we can do
             B = T.allocate([n], "float32", "global")
             for i in range(n):
                 B_1 = T.Buffer((n,), data=B)
-                B_1[i] = T.float32(0.0)
+                B_1[i] = T.float32(0)
                 for k in range(m):
                     A_2 = T.Buffer((A_1.strides[0] * n,), data=A_1.data, buffer_type="auto")
                     B_1[i] = B_1[i] + A_2[i * A_1.strides[0] + k * A_1.strides[1]]
@@ -153,7 +153,7 @@ Fortunately, we can replace those two lines with simple :code:`topi.sum` much li
             A_red = T.allocate([n], "float32", "global")
             for ax0 in range(n):
                 A_red_1 = T.Buffer((n,), data=A_red)
-                A_red_1[ax0] = T.float32(0.0)
+                A_red_1[ax0] = T.float32(0)
                 for k1 in range(m):
                     A_2 = T.Buffer((A_1.strides[0] * n,), data=A_1.data, buffer_type="auto")
                     A_red_1[ax0] = A_red_1[ax0] + A_2[ax0 * A_1.strides[0] + k1 * A_1.strides[1]]
@@ -235,14 +235,14 @@ we can schedule the following series of operations ending with :code:`topi.sum` 
             T_divide_red_rf = T.allocate([1], "float32", "local")
             reduce_temp0 = T.allocate([1], "float32", "local")
             T_divide_red_rf_1 = T.Buffer((1,), data=T_divide_red_rf, scope="local", align=4)
-            T_divide_red_rf_1[0] = T.float32(0.0)
+            T_divide_red_rf_1[0] = T.float32(0)
             for k0_k1_fused_k2_fused_outer in range(10):
                 if T.likely(k0_k1_fused_k2_fused_outer * 64 + threadIdx_x // 16 < 625 and k0_k1_fused_k2_fused_outer * 64 + threadIdx_x // 16 < 625 and k0_k1_fused_k2_fused_outer * 64 + threadIdx_x // 16 < 625):
                     a_1 = T.Buffer((10000,), data=a.data)
                     b_1 = T.Buffer((100,), data=b.data)
                     T_divide_red_rf_1[0] = T_divide_red_rf_1[0] + (a_1[k0_k1_fused_k2_fused_outer * 1024 + threadIdx_x] + b_1[(k0_k1_fused_k2_fused_outer * 24 + threadIdx_x) % 100] + a_1[k0_k1_fused_k2_fused_outer * 1024 + threadIdx_x] * b_1[(k0_k1_fused_k2_fused_outer * 24 + threadIdx_x) % 100]) * T.float32(0.5)
             reduce_temp0_1 = T.Buffer((1,), data=reduce_temp0, scope="local")
-            with T.attr(T.comm_reducer(lambda x, y: x + y, [T.float32(0.0)]), "reduce_scope", T.reinterpret("handle", T.uint64(0))):
+            with T.attr(T.comm_reducer(lambda x, y: x + y, [T.float32(0)]), "reduce_scope", T.reinterpret("handle", T.uint64(0))):
                 T.tvm_thread_allreduce(T.uint32(1), T_divide_red_rf_1[0], T.bool(True), reduce_temp0_1[0], threadIdx_x)
             if threadIdx_x == 0:
                 T_divide_red_1 = T.Buffer((1,), data=T_divide_red, align=4)
@@ -270,7 +270,7 @@ As you can see, scheduled stages of computation have been accumulated and we can
 
  .. code-block:: none
 
-    [stage(a, placeholder(a, 0x220b0f00)), stage(b, placeholder(b, 0x220312e0)), stage(T_add, compute(T_add, body=[a[ax0, ax1, ax2] + b[ax1, ax2]], axis=[T.iter_var(ax0, T.Range(0, 100), "DataPar", ""), T.iter_var(ax1, T.Range(0, 10), "DataPar", ""), T.iter_var(ax2, T.Range(0, 10), "DataPar", "")], reduce_axis=[], tag=broadcast, attrs={})), stage(T_multiply, compute(T_multiply, body=[a[ax0, ax1, ax2] * b[ax1, ax2]], axis=[T.iter_var(ax0, T.Range(0, 100), "DataPar", ""), T.iter_var(ax1, T.Range(0, 10), "DataPar", ""), T.iter_var(ax2, T.Range(0, 10), "DataPar", "")], reduce_axis=[], tag=broadcast, attrs={})), stage(T_elemwise_sum, compute(T_elemwise_sum, body=[T_add[ax0, ax1, ax2] + T_multiply[ax0, ax1, ax2]], axis=[T.iter_var(ax0, T.Range(0, 100), "DataPar", ""), T.iter_var(ax1, T.Range(0, 10), "DataPar", ""), T.iter_var(ax2, T.Range(0, 10), "DataPar", "")], reduce_axis=[], tag=elemwise, attrs={})), stage(T_divide, compute(T_divide, body=[T_elemwise_sum[ax0, ax1, ax2] / T.float32(2.0)], axis=[T.iter_var(ax0, T.Range(0, 100), "DataPar", ""), T.iter_var(ax1, T.Range(0, 10), "DataPar", ""), T.iter_var(ax2, T.Range(0, 10), "DataPar", "")], reduce_axis=[], tag=elemwise, attrs={})), stage(T_divide_red.rf, compute(T_divide_red.rf, body=[T.reduce(T.comm_reducer(lambda x, y: x + y, [T.float32(0.0)]), source=[T_divide[(k0_k1_fused_k2_fused_inner + k0_k1_fused_k2_fused_outer * 1024) // 10 // 10, (k0_k1_fused_k2_fused_inner + k0_k1_fused_k2_fused_outer * 1024) // 10 % 10, (k0_k1_fused_k2_fused_inner + k0_k1_fused_k2_fused_outer * 1024) % 10]], init=[], axis=[T.iter_var(k0_k1_fused_k2_fused_outer, T.Range(0, 10), "CommReduce", "")], condition=T.likely((k0_k1_fused_k2_fused_inner + k0_k1_fused_k2_fused_outer * 1024) // 10 // 10 < 100 and (k0_k1_fused_k2_fused_inner + k0_k1_fused_k2_fused_outer * 1024) // 10 < 1000 and k0_k1_fused_k2_fused_inner + k0_k1_fused_k2_fused_outer * 1024 < 10000), value_index=0)], axis=[T.iter_var(k0_k1_fused_k2_fused_inner, T.Range(0, 1024), "DataPar", "")], reduce_axis=[T.iter_var(k0_k1_fused_k2_fused_outer, T.Range(0, 10), "CommReduce", "")], tag=, attrs={})), stage(T_divide_red, compute(T_divide_red.repl, body=[T.reduce(T.comm_reducer(lambda x, y: x + y, [T.float32(0.0)]), source=[T_divide_red.rf[k0_k1_fused_k2_fused_inner_v]], init=[], axis=[T.iter_var(k0_k1_fused_k2_fused_inner_v, T.Range(0, 1024), "CommReduce", "")], condition=T.bool(True), value_index=0)], axis=[], reduce_axis=[T.iter_var(k0_k1_fused_k2_fused_inner_v, T.Range(0, 1024), "CommReduce", "")], tag=, attrs={}))]
+    [stage(a, placeholder(a, 0xd2c6760)), stage(b, placeholder(b, 0x234dd4e0)), stage(T_add, compute(T_add, body=[a[ax0, ax1, ax2] + b[ax1, ax2]], axis=[T.iter_var(ax0, T.Range(0, 100), "DataPar", ""), T.iter_var(ax1, T.Range(0, 10), "DataPar", ""), T.iter_var(ax2, T.Range(0, 10), "DataPar", "")], reduce_axis=[], tag=broadcast, attrs={})), stage(T_multiply, compute(T_multiply, body=[a[ax0, ax1, ax2] * b[ax1, ax2]], axis=[T.iter_var(ax0, T.Range(0, 100), "DataPar", ""), T.iter_var(ax1, T.Range(0, 10), "DataPar", ""), T.iter_var(ax2, T.Range(0, 10), "DataPar", "")], reduce_axis=[], tag=broadcast, attrs={})), stage(T_elemwise_sum, compute(T_elemwise_sum, body=[T_add[ax0, ax1, ax2] + T_multiply[ax0, ax1, ax2]], axis=[T.iter_var(ax0, T.Range(0, 100), "DataPar", ""), T.iter_var(ax1, T.Range(0, 10), "DataPar", ""), T.iter_var(ax2, T.Range(0, 10), "DataPar", "")], reduce_axis=[], tag=elemwise, attrs={})), stage(T_divide, compute(T_divide, body=[T_elemwise_sum[ax0, ax1, ax2] / T.float32(2)], axis=[T.iter_var(ax0, T.Range(0, 100), "DataPar", ""), T.iter_var(ax1, T.Range(0, 10), "DataPar", ""), T.iter_var(ax2, T.Range(0, 10), "DataPar", "")], reduce_axis=[], tag=elemwise, attrs={})), stage(T_divide_red.rf, compute(T_divide_red.rf, body=[T.reduce(T.comm_reducer(lambda x, y: x + y, [T.float32(0)]), source=[T_divide[(k0_k1_fused_k2_fused_inner + k0_k1_fused_k2_fused_outer * 1024) // 10 // 10, (k0_k1_fused_k2_fused_inner + k0_k1_fused_k2_fused_outer * 1024) // 10 % 10, (k0_k1_fused_k2_fused_inner + k0_k1_fused_k2_fused_outer * 1024) % 10]], init=[], axis=[T.iter_var(k0_k1_fused_k2_fused_outer, T.Range(0, 10), "CommReduce", "")], condition=T.likely((k0_k1_fused_k2_fused_inner + k0_k1_fused_k2_fused_outer * 1024) // 10 // 10 < 100 and (k0_k1_fused_k2_fused_inner + k0_k1_fused_k2_fused_outer * 1024) // 10 < 1000 and k0_k1_fused_k2_fused_inner + k0_k1_fused_k2_fused_outer * 1024 < 10000), value_index=0)], axis=[T.iter_var(k0_k1_fused_k2_fused_inner, T.Range(0, 1024), "DataPar", "")], reduce_axis=[T.iter_var(k0_k1_fused_k2_fused_outer, T.Range(0, 10), "CommReduce", "")], tag=, attrs={})), stage(T_divide_red, compute(T_divide_red.repl, body=[T.reduce(T.comm_reducer(lambda x, y: x + y, [T.float32(0)]), source=[T_divide_red.rf[k0_k1_fused_k2_fused_inner_v]], init=[], axis=[T.iter_var(k0_k1_fused_k2_fused_inner_v, T.Range(0, 1024), "CommReduce", "")], condition=T.bool(True), value_index=0)], axis=[], reduce_axis=[T.iter_var(k0_k1_fused_k2_fused_inner_v, T.Range(0, 1024), "CommReduce", "")], tag=, attrs={}))]
 
 
 
@@ -344,11 +344,11 @@ TOPI also provides common neural nets operations such as _softmax_ with optimize
             T_softmax_exp_1 = T.Buffer((512,), data=T_softmax_exp, scope="warp")
             with T.launch_thread(threadIdx_x, 32):
                 normal_reduce_temp0_2 = T.Buffer((1,), data=normal_reduce_temp0, scope="local")
-                normal_reduce_temp0_2[0] = T.float32(-340282346638528859811704183484516925440.0)
+                normal_reduce_temp0_2[0] = T.float32(-3.4028234663852886e+38)
                 tarray_1 = T.Buffer((262144,), data=tarray.data)
                 for k_inner in range(16):
                     normal_reduce_temp0_2[0] = T.max(normal_reduce_temp0_2[0], tarray_1[blockIdx_x * 512 + threadIdx_x * 16 + k_inner])
-                with T.attr(T.comm_reducer(lambda x, y: T.max(x, y), [T.float32(-340282346638528859811704183484516925440.0)]), "reduce_scope", T.reinterpret("handle", T.uint64(0))):
+                with T.attr(T.comm_reducer(lambda x, y: T.max(x, y), [T.float32(-3.4028234663852886e+38)]), "reduce_scope", T.reinterpret("handle", T.uint64(0))):
                     reduce_temp0_2 = T.Buffer((1,), data=reduce_temp0, scope="local")
                     T.tvm_thread_allreduce(T.uint32(1), normal_reduce_temp0_2[0], T.bool(True), reduce_temp0_2[0], threadIdx_x)
                 for i1_inner_outer in range(4):
@@ -357,10 +357,10 @@ TOPI also provides common neural nets operations such as _softmax_ with optimize
                     T_softmax_exp_1[threadIdx_x * 16 + cse_var_1:threadIdx_x * 16 + cse_var_1 + 4] = T.exp(tarray_1[blockIdx_x * 512 + threadIdx_x * 16 + cse_var_1:blockIdx_x * 512 + threadIdx_x * 16 + cse_var_1 + 4] - T.Broadcast(reduce_temp0_2[0], 4))
             T.launch_thread(threadIdx_x, 32)
             normal_reduce_temp0_2 = T.Buffer((1,), data=normal_reduce_temp0_1, scope="local")
-            normal_reduce_temp0_2[0] = T.float32(0.0)
+            normal_reduce_temp0_2[0] = T.float32(0)
             for k_inner in range(16):
                 normal_reduce_temp0_2[0] = normal_reduce_temp0_2[0] + T_softmax_exp_1[threadIdx_x * 16 + k_inner]
-            with T.attr(T.comm_reducer(lambda x, y: x + y, [T.float32(0.0)]), "reduce_scope", T.reinterpret("handle", T.uint64(0))):
+            with T.attr(T.comm_reducer(lambda x, y: x + y, [T.float32(0)]), "reduce_scope", T.reinterpret("handle", T.uint64(0))):
                 reduce_temp0_2 = T.Buffer((1,), data=reduce_temp0_1, scope="local")
                 T.tvm_thread_allreduce(T.uint32(1), normal_reduce_temp0_2[0], T.bool(True), reduce_temp0_2[0], threadIdx_x)
             for i1_inner_outer in range(4):
@@ -426,20 +426,20 @@ We can fuse :code:`topi.nn.conv2d` and :code:`topi.nn.relu` together.
             threadIdx_y = T.launch_thread("threadIdx.y", 1)
             threadIdx_x = T.launch_thread("threadIdx.x", 16)
             conv2d_nchw_1 = T.Buffer((4,), data=conv2d_nchw, scope="local", align=8)
-            conv2d_nchw_1[0] = T.float32(0.0)
-            conv2d_nchw_1[2] = T.float32(0.0)
-            conv2d_nchw_1[4] = T.float32(0.0)
-            conv2d_nchw_1[6] = T.float32(0.0)
-            conv2d_nchw_1[8] = T.float32(0.0)
-            conv2d_nchw_1[10] = T.float32(0.0)
-            conv2d_nchw_1[12] = T.float32(0.0)
-            conv2d_nchw_1[1] = T.float32(0.0)
-            conv2d_nchw_1[3] = T.float32(0.0)
-            conv2d_nchw_1[5] = T.float32(0.0)
-            conv2d_nchw_1[7] = T.float32(0.0)
-            conv2d_nchw_1[9] = T.float32(0.0)
-            conv2d_nchw_1[11] = T.float32(0.0)
-            conv2d_nchw_1[13] = T.float32(0.0)
+            conv2d_nchw_1[0] = T.float32(0)
+            conv2d_nchw_1[2] = T.float32(0)
+            conv2d_nchw_1[4] = T.float32(0)
+            conv2d_nchw_1[6] = T.float32(0)
+            conv2d_nchw_1[8] = T.float32(0)
+            conv2d_nchw_1[10] = T.float32(0)
+            conv2d_nchw_1[12] = T.float32(0)
+            conv2d_nchw_1[1] = T.float32(0)
+            conv2d_nchw_1[3] = T.float32(0)
+            conv2d_nchw_1[5] = T.float32(0)
+            conv2d_nchw_1[7] = T.float32(0)
+            conv2d_nchw_1[9] = T.float32(0)
+            conv2d_nchw_1[11] = T.float32(0)
+            conv2d_nchw_1[13] = T.float32(0)
             for rc_outer, ry_outer in T.grid(3, 5):
                 threadIdx_x_1 = T.env_thread("threadIdx.x")
                 pad_temp_shared_1 = T.Buffer((112,), data=pad_temp_shared, scope="shared")
@@ -447,13 +447,13 @@ We can fuse :code:`topi.nn.conv2d` and :code:`topi.nn.relu` together.
                 with T.launch_thread("threadIdx.z", 1) as threadIdx_z_1:
                     threadIdx_y_1 = T.launch_thread("threadIdx.y", 1)
                     T.launch_thread(threadIdx_x_1, 16)
-                    pad_temp_shared_1[threadIdx_x_1 * 7] = T.if_then_else(2 <= blockIdx_y + ry_outer and blockIdx_y + ry_outer < 226 and 1 <= blockIdx_x * 56 + threadIdx_x_1 * 7 // 2, placeholder_2[rc_outer * 50176 + blockIdx_y * 224 + ry_outer * 224 + blockIdx_x * 112 + threadIdx_x_1 * 7 - 450], T.float32(0.0))
-                    pad_temp_shared_1[threadIdx_x_1 * 7 + 1] = T.if_then_else(2 <= blockIdx_y + ry_outer and blockIdx_y + ry_outer < 226 and 1 <= blockIdx_x * 56 + (threadIdx_x_1 * 7 + 1) // 2, placeholder_2[rc_outer * 50176 + blockIdx_y * 224 + ry_outer * 224 + blockIdx_x * 112 + threadIdx_x_1 * 7 - 449], T.float32(0.0))
-                    pad_temp_shared_1[threadIdx_x_1 * 7 + 2] = T.if_then_else(2 <= blockIdx_y + ry_outer and blockIdx_y + ry_outer < 226, placeholder_2[rc_outer * 50176 + blockIdx_y * 224 + ry_outer * 224 + blockIdx_x * 112 + threadIdx_x_1 * 7 - 448], T.float32(0.0))
-                    pad_temp_shared_1[threadIdx_x_1 * 7 + 3] = T.if_then_else(2 <= blockIdx_y + ry_outer and blockIdx_y + ry_outer < 226, placeholder_2[rc_outer * 50176 + blockIdx_y * 224 + ry_outer * 224 + blockIdx_x * 112 + threadIdx_x_1 * 7 - 447], T.float32(0.0))
-                    pad_temp_shared_1[threadIdx_x_1 * 7 + 4] = T.if_then_else(2 <= blockIdx_y + ry_outer and blockIdx_y + ry_outer < 226, placeholder_2[rc_outer * 50176 + blockIdx_y * 224 + ry_outer * 224 + blockIdx_x * 112 + threadIdx_x_1 * 7 - 446], T.float32(0.0))
-                    pad_temp_shared_1[threadIdx_x_1 * 7 + 5] = T.if_then_else(2 <= blockIdx_y + ry_outer and blockIdx_y + ry_outer < 226, placeholder_2[rc_outer * 50176 + blockIdx_y * 224 + ry_outer * 224 + blockIdx_x * 112 + threadIdx_x_1 * 7 - 445], T.float32(0.0))
-                    pad_temp_shared_1[threadIdx_x_1 * 7 + 6] = T.if_then_else(2 <= blockIdx_y + ry_outer and blockIdx_y + ry_outer < 226, placeholder_2[rc_outer * 50176 + blockIdx_y * 224 + ry_outer * 224 + blockIdx_x * 112 + threadIdx_x_1 * 7 - 444], T.float32(0.0))
+                    pad_temp_shared_1[threadIdx_x_1 * 7] = T.if_then_else(2 <= blockIdx_y + ry_outer and blockIdx_y + ry_outer < 226 and 1 <= blockIdx_x * 56 + threadIdx_x_1 * 7 // 2, placeholder_2[rc_outer * 50176 + blockIdx_y * 224 + ry_outer * 224 + blockIdx_x * 112 + threadIdx_x_1 * 7 - 450], T.float32(0))
+                    pad_temp_shared_1[threadIdx_x_1 * 7 + 1] = T.if_then_else(2 <= blockIdx_y + ry_outer and blockIdx_y + ry_outer < 226 and 1 <= blockIdx_x * 56 + (threadIdx_x_1 * 7 + 1) // 2, placeholder_2[rc_outer * 50176 + blockIdx_y * 224 + ry_outer * 224 + blockIdx_x * 112 + threadIdx_x_1 * 7 - 449], T.float32(0))
+                    pad_temp_shared_1[threadIdx_x_1 * 7 + 2] = T.if_then_else(2 <= blockIdx_y + ry_outer and blockIdx_y + ry_outer < 226, placeholder_2[rc_outer * 50176 + blockIdx_y * 224 + ry_outer * 224 + blockIdx_x * 112 + threadIdx_x_1 * 7 - 448], T.float32(0))
+                    pad_temp_shared_1[threadIdx_x_1 * 7 + 3] = T.if_then_else(2 <= blockIdx_y + ry_outer and blockIdx_y + ry_outer < 226, placeholder_2[rc_outer * 50176 + blockIdx_y * 224 + ry_outer * 224 + blockIdx_x * 112 + threadIdx_x_1 * 7 - 447], T.float32(0))
+                    pad_temp_shared_1[threadIdx_x_1 * 7 + 4] = T.if_then_else(2 <= blockIdx_y + ry_outer and blockIdx_y + ry_outer < 226, placeholder_2[rc_outer * 50176 + blockIdx_y * 224 + ry_outer * 224 + blockIdx_x * 112 + threadIdx_x_1 * 7 - 446], T.float32(0))
+                    pad_temp_shared_1[threadIdx_x_1 * 7 + 5] = T.if_then_else(2 <= blockIdx_y + ry_outer and blockIdx_y + ry_outer < 226, placeholder_2[rc_outer * 50176 + blockIdx_y * 224 + ry_outer * 224 + blockIdx_x * 112 + threadIdx_x_1 * 7 - 445], T.float32(0))
+                    pad_temp_shared_1[threadIdx_x_1 * 7 + 6] = T.if_then_else(2 <= blockIdx_y + ry_outer and blockIdx_y + ry_outer < 226, placeholder_2[rc_outer * 50176 + blockIdx_y * 224 + ry_outer * 224 + blockIdx_x * 112 + threadIdx_x_1 * 7 - 444], T.float32(0))
                 threadIdx_x_2 = T.env_thread("threadIdx.x")
                 placeholder_shared_1 = T.Buffer((2,), data=placeholder_shared, scope="shared", align=8)
                 placeholder_3 = T.Buffer((750,), data=placeholder_1.data)
@@ -481,13 +481,13 @@ We can fuse :code:`topi.nn.conv2d` and :code:`topi.nn.relu` together.
                 with T.launch_thread(threadIdx_z_1, 1):
                     T.launch_thread(threadIdx_y_1, 1)
                     T.launch_thread(threadIdx_x_1, 16)
-                    pad_temp_shared_1[threadIdx_x_1 * 7] = T.if_then_else(2 <= blockIdx_y + ry_outer and blockIdx_y + ry_outer < 226 and 1 <= blockIdx_x * 56 + (threadIdx_x_1 * 7 + 1) // 2, placeholder_2[rc_outer * 50176 + blockIdx_y * 224 + ry_outer * 224 + blockIdx_x * 112 + threadIdx_x_1 * 7 - 449], T.float32(0.0))
-                    pad_temp_shared_1[threadIdx_x_1 * 7 + 1] = T.if_then_else(2 <= blockIdx_y + ry_outer and blockIdx_y + ry_outer < 226, placeholder_2[rc_outer * 50176 + blockIdx_y * 224 + ry_outer * 224 + blockIdx_x * 112 + threadIdx_x_1 * 7 - 448], T.float32(0.0))
-                    pad_temp_shared_1[threadIdx_x_1 * 7 + 2] = T.if_then_else(2 <= blockIdx_y + ry_outer and blockIdx_y + ry_outer < 226, placeholder_2[rc_outer * 50176 + blockIdx_y * 224 + ry_outer * 224 + blockIdx_x * 112 + threadIdx_x_1 * 7 - 447], T.float32(0.0))
-                    pad_temp_shared_1[threadIdx_x_1 * 7 + 3] = T.if_then_else(2 <= blockIdx_y + ry_outer and blockIdx_y + ry_outer < 226, placeholder_2[rc_outer * 50176 + blockIdx_y * 224 + ry_outer * 224 + blockIdx_x * 112 + threadIdx_x_1 * 7 - 446], T.float32(0.0))
-                    pad_temp_shared_1[threadIdx_x_1 * 7 + 4] = T.if_then_else(2 <= blockIdx_y + ry_outer and blockIdx_y + ry_outer < 226, placeholder_2[rc_outer * 50176 + blockIdx_y * 224 + ry_outer * 224 + blockIdx_x * 112 + threadIdx_x_1 * 7 - 445], T.float32(0.0))
-                    pad_temp_shared_1[threadIdx_x_1 * 7 + 5] = T.if_then_else(2 <= blockIdx_y + ry_outer and blockIdx_y + ry_outer < 226, placeholder_2[rc_outer * 50176 + blockIdx_y * 224 + ry_outer * 224 + blockIdx_x * 112 + threadIdx_x_1 * 7 - 444], T.float32(0.0))
-                    pad_temp_shared_1[threadIdx_x_1 * 7 + 6] = T.if_then_else(2 <= blockIdx_y + ry_outer and blockIdx_y + ry_outer < 226, placeholder_2[rc_outer * 50176 + blockIdx_y * 224 + ry_outer * 224 + blockIdx_x * 112 + threadIdx_x_1 * 7 - 443], T.float32(0.0))
+                    pad_temp_shared_1[threadIdx_x_1 * 7] = T.if_then_else(2 <= blockIdx_y + ry_outer and blockIdx_y + ry_outer < 226 and 1 <= blockIdx_x * 56 + (threadIdx_x_1 * 7 + 1) // 2, placeholder_2[rc_outer * 50176 + blockIdx_y * 224 + ry_outer * 224 + blockIdx_x * 112 + threadIdx_x_1 * 7 - 449], T.float32(0))
+                    pad_temp_shared_1[threadIdx_x_1 * 7 + 1] = T.if_then_else(2 <= blockIdx_y + ry_outer and blockIdx_y + ry_outer < 226, placeholder_2[rc_outer * 50176 + blockIdx_y * 224 + ry_outer * 224 + blockIdx_x * 112 + threadIdx_x_1 * 7 - 448], T.float32(0))
+                    pad_temp_shared_1[threadIdx_x_1 * 7 + 2] = T.if_then_else(2 <= blockIdx_y + ry_outer and blockIdx_y + ry_outer < 226, placeholder_2[rc_outer * 50176 + blockIdx_y * 224 + ry_outer * 224 + blockIdx_x * 112 + threadIdx_x_1 * 7 - 447], T.float32(0))
+                    pad_temp_shared_1[threadIdx_x_1 * 7 + 3] = T.if_then_else(2 <= blockIdx_y + ry_outer and blockIdx_y + ry_outer < 226, placeholder_2[rc_outer * 50176 + blockIdx_y * 224 + ry_outer * 224 + blockIdx_x * 112 + threadIdx_x_1 * 7 - 446], T.float32(0))
+                    pad_temp_shared_1[threadIdx_x_1 * 7 + 4] = T.if_then_else(2 <= blockIdx_y + ry_outer and blockIdx_y + ry_outer < 226, placeholder_2[rc_outer * 50176 + blockIdx_y * 224 + ry_outer * 224 + blockIdx_x * 112 + threadIdx_x_1 * 7 - 445], T.float32(0))
+                    pad_temp_shared_1[threadIdx_x_1 * 7 + 5] = T.if_then_else(2 <= blockIdx_y + ry_outer and blockIdx_y + ry_outer < 226, placeholder_2[rc_outer * 50176 + blockIdx_y * 224 + ry_outer * 224 + blockIdx_x * 112 + threadIdx_x_1 * 7 - 444], T.float32(0))
+                    pad_temp_shared_1[threadIdx_x_1 * 7 + 6] = T.if_then_else(2 <= blockIdx_y + ry_outer and blockIdx_y + ry_outer < 226, placeholder_2[rc_outer * 50176 + blockIdx_y * 224 + ry_outer * 224 + blockIdx_x * 112 + threadIdx_x_1 * 7 - 443], T.float32(0))
                 threadIdx_z_2 = T.env_thread("threadIdx.z")
                 threadIdx_y_2 = T.env_thread("threadIdx.y")
                 with T.launch_thread(threadIdx_z_2, 1):
@@ -512,13 +512,13 @@ We can fuse :code:`topi.nn.conv2d` and :code:`topi.nn.relu` together.
                 with T.launch_thread(threadIdx_z_1, 1):
                     T.launch_thread(threadIdx_y_1, 1)
                     T.launch_thread(threadIdx_x_1, 16)
-                    pad_temp_shared_1[threadIdx_x_1 * 7] = T.if_then_else(2 <= blockIdx_y + ry_outer and blockIdx_y + ry_outer < 226, placeholder_2[rc_outer * 50176 + blockIdx_y * 224 + ry_outer * 224 + blockIdx_x * 112 + threadIdx_x_1 * 7 - 448], T.float32(0.0))
-                    pad_temp_shared_1[threadIdx_x_1 * 7 + 1] = T.if_then_else(2 <= blockIdx_y + ry_outer and blockIdx_y + ry_outer < 226, placeholder_2[rc_outer * 50176 + blockIdx_y * 224 + ry_outer * 224 + blockIdx_x * 112 + threadIdx_x_1 * 7 - 447], T.float32(0.0))
-                    pad_temp_shared_1[threadIdx_x_1 * 7 + 2] = T.if_then_else(2 <= blockIdx_y + ry_outer and blockIdx_y + ry_outer < 226, placeholder_2[rc_outer * 50176 + blockIdx_y * 224 + ry_outer * 224 + blockIdx_x * 112 + threadIdx_x_1 * 7 - 446], T.float32(0.0))
-                    pad_temp_shared_1[threadIdx_x_1 * 7 + 3] = T.if_then_else(2 <= blockIdx_y + ry_outer and blockIdx_y + ry_outer < 226, placeholder_2[rc_outer * 50176 + blockIdx_y * 224 + ry_outer * 224 + blockIdx_x * 112 + threadIdx_x_1 * 7 - 445], T.float32(0.0))
-                    pad_temp_shared_1[threadIdx_x_1 * 7 + 4] = T.if_then_else(2 <= blockIdx_y + ry_outer and blockIdx_y + ry_outer < 226, placeholder_2[rc_outer * 50176 + blockIdx_y * 224 + ry_outer * 224 + blockIdx_x * 112 + threadIdx_x_1 * 7 - 444], T.float32(0.0))
-                    pad_temp_shared_1[threadIdx_x_1 * 7 + 5] = T.if_then_else(2 <= blockIdx_y + ry_outer and blockIdx_y + ry_outer < 226, placeholder_2[rc_outer * 50176 + blockIdx_y * 224 + ry_outer * 224 + blockIdx_x * 112 + threadIdx_x_1 * 7 - 443], T.float32(0.0))
-                    pad_temp_shared_1[threadIdx_x_1 * 7 + 6] = T.if_then_else(2 <= blockIdx_y + ry_outer and blockIdx_y + ry_outer < 226, placeholder_2[rc_outer * 50176 + blockIdx_y * 224 + ry_outer * 224 + blockIdx_x * 112 + threadIdx_x_1 * 7 - 442], T.float32(0.0))
+                    pad_temp_shared_1[threadIdx_x_1 * 7] = T.if_then_else(2 <= blockIdx_y + ry_outer and blockIdx_y + ry_outer < 226, placeholder_2[rc_outer * 50176 + blockIdx_y * 224 + ry_outer * 224 + blockIdx_x * 112 + threadIdx_x_1 * 7 - 448], T.float32(0))
+                    pad_temp_shared_1[threadIdx_x_1 * 7 + 1] = T.if_then_else(2 <= blockIdx_y + ry_outer and blockIdx_y + ry_outer < 226, placeholder_2[rc_outer * 50176 + blockIdx_y * 224 + ry_outer * 224 + blockIdx_x * 112 + threadIdx_x_1 * 7 - 447], T.float32(0))
+                    pad_temp_shared_1[threadIdx_x_1 * 7 + 2] = T.if_then_else(2 <= blockIdx_y + ry_outer and blockIdx_y + ry_outer < 226, placeholder_2[rc_outer * 50176 + blockIdx_y * 224 + ry_outer * 224 + blockIdx_x * 112 + threadIdx_x_1 * 7 - 446], T.float32(0))
+                    pad_temp_shared_1[threadIdx_x_1 * 7 + 3] = T.if_then_else(2 <= blockIdx_y + ry_outer and blockIdx_y + ry_outer < 226, placeholder_2[rc_outer * 50176 + blockIdx_y * 224 + ry_outer * 224 + blockIdx_x * 112 + threadIdx_x_1 * 7 - 445], T.float32(0))
+                    pad_temp_shared_1[threadIdx_x_1 * 7 + 4] = T.if_then_else(2 <= blockIdx_y + ry_outer and blockIdx_y + ry_outer < 226, placeholder_2[rc_outer * 50176 + blockIdx_y * 224 + ry_outer * 224 + blockIdx_x * 112 + threadIdx_x_1 * 7 - 444], T.float32(0))
+                    pad_temp_shared_1[threadIdx_x_1 * 7 + 5] = T.if_then_else(2 <= blockIdx_y + ry_outer and blockIdx_y + ry_outer < 226, placeholder_2[rc_outer * 50176 + blockIdx_y * 224 + ry_outer * 224 + blockIdx_x * 112 + threadIdx_x_1 * 7 - 443], T.float32(0))
+                    pad_temp_shared_1[threadIdx_x_1 * 7 + 6] = T.if_then_else(2 <= blockIdx_y + ry_outer and blockIdx_y + ry_outer < 226, placeholder_2[rc_outer * 50176 + blockIdx_y * 224 + ry_outer * 224 + blockIdx_x * 112 + threadIdx_x_1 * 7 - 442], T.float32(0))
                 with T.launch_thread(threadIdx_z_2, 1):
                     T.launch_thread(threadIdx_y_2, 1)
                     T.launch_thread(threadIdx_x_2, 16)
@@ -541,13 +541,13 @@ We can fuse :code:`topi.nn.conv2d` and :code:`topi.nn.relu` together.
                 with T.launch_thread(threadIdx_z_1, 1):
                     T.launch_thread(threadIdx_y_1, 1)
                     T.launch_thread(threadIdx_x_1, 16)
-                    pad_temp_shared_1[threadIdx_x_1 * 7] = T.if_then_else(2 <= blockIdx_y + ry_outer and blockIdx_y + ry_outer < 226, placeholder_2[rc_outer * 50176 + blockIdx_y * 224 + ry_outer * 224 + blockIdx_x * 112 + threadIdx_x_1 * 7 - 447], T.float32(0.0))
-                    pad_temp_shared_1[threadIdx_x_1 * 7 + 1] = T.if_then_else(2 <= blockIdx_y + ry_outer and blockIdx_y + ry_outer < 226, placeholder_2[rc_outer * 50176 + blockIdx_y * 224 + ry_outer * 224 + blockIdx_x * 112 + threadIdx_x_1 * 7 - 446], T.float32(0.0))
-                    pad_temp_shared_1[threadIdx_x_1 * 7 + 2] = T.if_then_else(2 <= blockIdx_y + ry_outer and blockIdx_y + ry_outer < 226, placeholder_2[rc_outer * 50176 + blockIdx_y * 224 + ry_outer * 224 + blockIdx_x * 112 + threadIdx_x_1 * 7 - 445], T.float32(0.0))
-                    pad_temp_shared_1[threadIdx_x_1 * 7 + 3] = T.if_then_else(2 <= blockIdx_y + ry_outer and blockIdx_y + ry_outer < 226, placeholder_2[rc_outer * 50176 + blockIdx_y * 224 + ry_outer * 224 + blockIdx_x * 112 + threadIdx_x_1 * 7 - 444], T.float32(0.0))
-                    pad_temp_shared_1[threadIdx_x_1 * 7 + 4] = T.if_then_else(2 <= blockIdx_y + ry_outer and blockIdx_y + ry_outer < 226, placeholder_2[rc_outer * 50176 + blockIdx_y * 224 + ry_outer * 224 + blockIdx_x * 112 + threadIdx_x_1 * 7 - 443], T.float32(0.0))
-                    pad_temp_shared_1[threadIdx_x_1 * 7 + 5] = T.if_then_else(2 <= blockIdx_y + ry_outer and blockIdx_y + ry_outer < 226, placeholder_2[rc_outer * 50176 + blockIdx_y * 224 + ry_outer * 224 + blockIdx_x * 112 + threadIdx_x_1 * 7 - 442], T.float32(0.0))
-                    pad_temp_shared_1[threadIdx_x_1 * 7 + 6] = T.if_then_else(2 <= blockIdx_y + ry_outer and blockIdx_y + ry_outer < 226 and blockIdx_x * 16 + threadIdx_x_1 < 31, placeholder_2[rc_outer * 50176 + blockIdx_y * 224 + ry_outer * 224 + blockIdx_x * 112 + threadIdx_x_1 * 7 - 441], T.float32(0.0))
+                    pad_temp_shared_1[threadIdx_x_1 * 7] = T.if_then_else(2 <= blockIdx_y + ry_outer and blockIdx_y + ry_outer < 226, placeholder_2[rc_outer * 50176 + blockIdx_y * 224 + ry_outer * 224 + blockIdx_x * 112 + threadIdx_x_1 * 7 - 447], T.float32(0))
+                    pad_temp_shared_1[threadIdx_x_1 * 7 + 1] = T.if_then_else(2 <= blockIdx_y + ry_outer and blockIdx_y + ry_outer < 226, placeholder_2[rc_outer * 50176 + blockIdx_y * 224 + ry_outer * 224 + blockIdx_x * 112 + threadIdx_x_1 * 7 - 446], T.float32(0))
+                    pad_temp_shared_1[threadIdx_x_1 * 7 + 2] = T.if_then_else(2 <= blockIdx_y + ry_outer and blockIdx_y + ry_outer < 226, placeholder_2[rc_outer * 50176 + blockIdx_y * 224 + ry_outer * 224 + blockIdx_x * 112 + threadIdx_x_1 * 7 - 445], T.float32(0))
+                    pad_temp_shared_1[threadIdx_x_1 * 7 + 3] = T.if_then_else(2 <= blockIdx_y + ry_outer and blockIdx_y + ry_outer < 226, placeholder_2[rc_outer * 50176 + blockIdx_y * 224 + ry_outer * 224 + blockIdx_x * 112 + threadIdx_x_1 * 7 - 444], T.float32(0))
+                    pad_temp_shared_1[threadIdx_x_1 * 7 + 4] = T.if_then_else(2 <= blockIdx_y + ry_outer and blockIdx_y + ry_outer < 226, placeholder_2[rc_outer * 50176 + blockIdx_y * 224 + ry_outer * 224 + blockIdx_x * 112 + threadIdx_x_1 * 7 - 443], T.float32(0))
+                    pad_temp_shared_1[threadIdx_x_1 * 7 + 5] = T.if_then_else(2 <= blockIdx_y + ry_outer and blockIdx_y + ry_outer < 226, placeholder_2[rc_outer * 50176 + blockIdx_y * 224 + ry_outer * 224 + blockIdx_x * 112 + threadIdx_x_1 * 7 - 442], T.float32(0))
+                    pad_temp_shared_1[threadIdx_x_1 * 7 + 6] = T.if_then_else(2 <= blockIdx_y + ry_outer and blockIdx_y + ry_outer < 226 and blockIdx_x * 16 + threadIdx_x_1 < 31, placeholder_2[rc_outer * 50176 + blockIdx_y * 224 + ry_outer * 224 + blockIdx_x * 112 + threadIdx_x_1 * 7 - 441], T.float32(0))
                 with T.launch_thread(threadIdx_z_2, 1):
                     T.launch_thread(threadIdx_y_2, 1)
                     T.launch_thread(threadIdx_x_2, 16)
@@ -570,13 +570,13 @@ We can fuse :code:`topi.nn.conv2d` and :code:`topi.nn.relu` together.
                 with T.launch_thread(threadIdx_z_1, 1):
                     T.launch_thread(threadIdx_y_1, 1)
                     T.launch_thread(threadIdx_x_1, 16)
-                    pad_temp_shared_1[threadIdx_x_1 * 7] = T.if_then_else(2 <= blockIdx_y + ry_outer and blockIdx_y + ry_outer < 226, placeholder_2[rc_outer * 50176 + blockIdx_y * 224 + ry_outer * 224 + blockIdx_x * 112 + threadIdx_x_1 * 7 - 446], T.float32(0.0))
-                    pad_temp_shared_1[threadIdx_x_1 * 7 + 1] = T.if_then_else(2 <= blockIdx_y + ry_outer and blockIdx_y + ry_outer < 226, placeholder_2[rc_outer * 50176 + blockIdx_y * 224 + ry_outer * 224 + blockIdx_x * 112 + threadIdx_x_1 * 7 - 445], T.float32(0.0))
-                    pad_temp_shared_1[threadIdx_x_1 * 7 + 2] = T.if_then_else(2 <= blockIdx_y + ry_outer and blockIdx_y + ry_outer < 226, placeholder_2[rc_outer * 50176 + blockIdx_y * 224 + ry_outer * 224 + blockIdx_x * 112 + threadIdx_x_1 * 7 - 444], T.float32(0.0))
-                    pad_temp_shared_1[threadIdx_x_1 * 7 + 3] = T.if_then_else(2 <= blockIdx_y + ry_outer and blockIdx_y + ry_outer < 226, placeholder_2[rc_outer * 50176 + blockIdx_y * 224 + ry_outer * 224 + blockIdx_x * 112 + threadIdx_x_1 * 7 - 443], T.float32(0.0))
-                    pad_temp_shared_1[threadIdx_x_1 * 7 + 4] = T.if_then_else(2 <= blockIdx_y + ry_outer and blockIdx_y + ry_outer < 226, placeholder_2[rc_outer * 50176 + blockIdx_y * 224 + ry_outer * 224 + blockIdx_x * 112 + threadIdx_x_1 * 7 - 442], T.float32(0.0))
-                    pad_temp_shared_1[threadIdx_x_1 * 7 + 5] = T.if_then_else(2 <= blockIdx_y + ry_outer and blockIdx_y + ry_outer < 226 and blockIdx_x * 16 + threadIdx_x_1 < 31, placeholder_2[rc_outer * 50176 + blockIdx_y * 224 + ry_outer * 224 + blockIdx_x * 112 + threadIdx_x_1 * 7 - 441], T.float32(0.0))
-                    pad_temp_shared_1[threadIdx_x_1 * 7 + 6] = T.if_then_else(2 <= blockIdx_y + ry_outer and blockIdx_y + ry_outer < 226 and blockIdx_x * 112 + threadIdx_x_1 * 7 < 216, placeholder_2[rc_outer * 50176 + blockIdx_y * 224 + ry_outer * 224 + blockIdx_x * 112 + threadIdx_x_1 * 7 - 440], T.float32(0.0))
+                    pad_temp_shared_1[threadIdx_x_1 * 7] = T.if_then_else(2 <= blockIdx_y + ry_outer and blockIdx_y + ry_outer < 226, placeholder_2[rc_outer * 50176 + blockIdx_y * 224 + ry_outer * 224 + blockIdx_x * 112 + threadIdx_x_1 * 7 - 446], T.float32(0))
+                    pad_temp_shared_1[threadIdx_x_1 * 7 + 1] = T.if_then_else(2 <= blockIdx_y + ry_outer and blockIdx_y + ry_outer < 226, placeholder_2[rc_outer * 50176 + blockIdx_y * 224 + ry_outer * 224 + blockIdx_x * 112 + threadIdx_x_1 * 7 - 445], T.float32(0))
+                    pad_temp_shared_1[threadIdx_x_1 * 7 + 2] = T.if_then_else(2 <= blockIdx_y + ry_outer and blockIdx_y + ry_outer < 226, placeholder_2[rc_outer * 50176 + blockIdx_y * 224 + ry_outer * 224 + blockIdx_x * 112 + threadIdx_x_1 * 7 - 444], T.float32(0))
+                    pad_temp_shared_1[threadIdx_x_1 * 7 + 3] = T.if_then_else(2 <= blockIdx_y + ry_outer and blockIdx_y + ry_outer < 226, placeholder_2[rc_outer * 50176 + blockIdx_y * 224 + ry_outer * 224 + blockIdx_x * 112 + threadIdx_x_1 * 7 - 443], T.float32(0))
+                    pad_temp_shared_1[threadIdx_x_1 * 7 + 4] = T.if_then_else(2 <= blockIdx_y + ry_outer and blockIdx_y + ry_outer < 226, placeholder_2[rc_outer * 50176 + blockIdx_y * 224 + ry_outer * 224 + blockIdx_x * 112 + threadIdx_x_1 * 7 - 442], T.float32(0))
+                    pad_temp_shared_1[threadIdx_x_1 * 7 + 5] = T.if_then_else(2 <= blockIdx_y + ry_outer and blockIdx_y + ry_outer < 226 and blockIdx_x * 16 + threadIdx_x_1 < 31, placeholder_2[rc_outer * 50176 + blockIdx_y * 224 + ry_outer * 224 + blockIdx_x * 112 + threadIdx_x_1 * 7 - 441], T.float32(0))
+                    pad_temp_shared_1[threadIdx_x_1 * 7 + 6] = T.if_then_else(2 <= blockIdx_y + ry_outer and blockIdx_y + ry_outer < 226 and blockIdx_x * 112 + threadIdx_x_1 * 7 < 216, placeholder_2[rc_outer * 50176 + blockIdx_y * 224 + ry_outer * 224 + blockIdx_x * 112 + threadIdx_x_1 * 7 - 440], T.float32(0))
                 with T.launch_thread(threadIdx_z_2, 1):
                     T.launch_thread(threadIdx_y_2, 1)
                     T.launch_thread(threadIdx_x_2, 16)
@@ -597,20 +597,20 @@ We can fuse :code:`topi.nn.conv2d` and :code:`topi.nn.relu` together.
                 conv2d_nchw_1[11] = conv2d_nchw_1[11] + pad_temp_shared_1[threadIdx_x + 80] * placeholder_shared_1[1]
                 conv2d_nchw_1[13] = conv2d_nchw_1[13] + pad_temp_shared_1[threadIdx_x + 96] * placeholder_shared_1[1]
             compute_1 = T.Buffer((501760,), data=compute)
-            compute_1[blockIdx_z * 100352 + blockIdx_y * 224 + blockIdx_x * 112 + threadIdx_x] = T.max(conv2d_nchw_1[0], T.float32(0.0))
-            compute_1[blockIdx_z * 100352 + blockIdx_y * 224 + blockIdx_x * 112 + threadIdx_x + 16] = T.max(conv2d_nchw_1[2], T.float32(0.0))
-            compute_1[blockIdx_z * 100352 + blockIdx_y * 224 + blockIdx_x * 112 + threadIdx_x + 32] = T.max(conv2d_nchw_1[4], T.float32(0.0))
-            compute_1[blockIdx_z * 100352 + blockIdx_y * 224 + blockIdx_x * 112 + threadIdx_x + 48] = T.max(conv2d_nchw_1[6], T.float32(0.0))
-            compute_1[blockIdx_z * 100352 + blockIdx_y * 224 + blockIdx_x * 112 + threadIdx_x + 64] = T.max(conv2d_nchw_1[8], T.float32(0.0))
-            compute_1[blockIdx_z * 100352 + blockIdx_y * 224 + blockIdx_x * 112 + threadIdx_x + 80] = T.max(conv2d_nchw_1[10], T.float32(0.0))
-            compute_1[blockIdx_z * 100352 + blockIdx_y * 224 + blockIdx_x * 112 + threadIdx_x + 96] = T.max(conv2d_nchw_1[12], T.float32(0.0))
-            compute_1[blockIdx_z * 100352 + blockIdx_y * 224 + blockIdx_x * 112 + threadIdx_x + 50176] = T.max(conv2d_nchw_1[1], T.float32(0.0))
-            compute_1[blockIdx_z * 100352 + blockIdx_y * 224 + blockIdx_x * 112 + threadIdx_x + 50192] = T.max(conv2d_nchw_1[3], T.float32(0.0))
-            compute_1[blockIdx_z * 100352 + blockIdx_y * 224 + blockIdx_x * 112 + threadIdx_x + 50208] = T.max(conv2d_nchw_1[5], T.float32(0.0))
-            compute_1[blockIdx_z * 100352 + blockIdx_y * 224 + blockIdx_x * 112 + threadIdx_x + 50224] = T.max(conv2d_nchw_1[7], T.float32(0.0))
-            compute_1[blockIdx_z * 100352 + blockIdx_y * 224 + blockIdx_x * 112 + threadIdx_x + 50240] = T.max(conv2d_nchw_1[9], T.float32(0.0))
-            compute_1[blockIdx_z * 100352 + blockIdx_y * 224 + blockIdx_x * 112 + threadIdx_x + 50256] = T.max(conv2d_nchw_1[11], T.float32(0.0))
-            compute_1[blockIdx_z * 100352 + blockIdx_y * 224 + blockIdx_x * 112 + threadIdx_x + 50272] = T.max(conv2d_nchw_1[13], T.float32(0.0))
+            compute_1[blockIdx_z * 100352 + blockIdx_y * 224 + blockIdx_x * 112 + threadIdx_x] = T.max(conv2d_nchw_1[0], T.float32(0))
+            compute_1[blockIdx_z * 100352 + blockIdx_y * 224 + blockIdx_x * 112 + threadIdx_x + 16] = T.max(conv2d_nchw_1[2], T.float32(0))
+            compute_1[blockIdx_z * 100352 + blockIdx_y * 224 + blockIdx_x * 112 + threadIdx_x + 32] = T.max(conv2d_nchw_1[4], T.float32(0))
+            compute_1[blockIdx_z * 100352 + blockIdx_y * 224 + blockIdx_x * 112 + threadIdx_x + 48] = T.max(conv2d_nchw_1[6], T.float32(0))
+            compute_1[blockIdx_z * 100352 + blockIdx_y * 224 + blockIdx_x * 112 + threadIdx_x + 64] = T.max(conv2d_nchw_1[8], T.float32(0))
+            compute_1[blockIdx_z * 100352 + blockIdx_y * 224 + blockIdx_x * 112 + threadIdx_x + 80] = T.max(conv2d_nchw_1[10], T.float32(0))
+            compute_1[blockIdx_z * 100352 + blockIdx_y * 224 + blockIdx_x * 112 + threadIdx_x + 96] = T.max(conv2d_nchw_1[12], T.float32(0))
+            compute_1[blockIdx_z * 100352 + blockIdx_y * 224 + blockIdx_x * 112 + threadIdx_x + 50176] = T.max(conv2d_nchw_1[1], T.float32(0))
+            compute_1[blockIdx_z * 100352 + blockIdx_y * 224 + blockIdx_x * 112 + threadIdx_x + 50192] = T.max(conv2d_nchw_1[3], T.float32(0))
+            compute_1[blockIdx_z * 100352 + blockIdx_y * 224 + blockIdx_x * 112 + threadIdx_x + 50208] = T.max(conv2d_nchw_1[5], T.float32(0))
+            compute_1[blockIdx_z * 100352 + blockIdx_y * 224 + blockIdx_x * 112 + threadIdx_x + 50224] = T.max(conv2d_nchw_1[7], T.float32(0))
+            compute_1[blockIdx_z * 100352 + blockIdx_y * 224 + blockIdx_x * 112 + threadIdx_x + 50240] = T.max(conv2d_nchw_1[9], T.float32(0))
+            compute_1[blockIdx_z * 100352 + blockIdx_y * 224 + blockIdx_x * 112 + threadIdx_x + 50256] = T.max(conv2d_nchw_1[11], T.float32(0))
+            compute_1[blockIdx_z * 100352 + blockIdx_y * 224 + blockIdx_x * 112 + threadIdx_x + 50272] = T.max(conv2d_nchw_1[13], T.float32(0))
 
 
 

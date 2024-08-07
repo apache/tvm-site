@@ -476,7 +476,7 @@ class Module:
         B_1 = T.match_buffer(B, (n,), strides=(&quot;stride&quot;,), buffer_type=&quot;auto&quot;)
         for i in range(n):
             B_2 = T.Buffer((B_1.strides[0] * n,), data=B_1.data, buffer_type=&quot;auto&quot;)
-            B_2[i * B_1.strides[0]] = T.float32(0.0)
+            B_2[i * B_1.strides[0]] = T.float32(0)
             for k in range(m):
                 A_2 = T.Buffer((A_1.strides[0] * n,), data=A_1.data, buffer_type=&quot;auto&quot;)
                 B_2[i * B_1.strides[0]] = B_2[i * B_1.strides[0]] + A_2[i * A_1.strides[0] + k * A_1.strides[1]]
@@ -505,7 +505,7 @@ class Module:
         for i_outer, i_inner in T.grid((n + 31) // 32, 32):
             B_2 = T.Buffer((B_1.strides[0] * n,), data=B_1.data, buffer_type=&quot;auto&quot;)
             if T.likely(i_outer * 32 + i_inner &lt; n):
-                B_2[(i_outer * 32 + i_inner) * B_1.strides[0]] = T.float32(0.0)
+                B_2[(i_outer * 32 + i_inner) * B_1.strides[0]] = T.float32(0)
             if T.likely(i_outer * 32 + i_inner &lt; n):
                 for k_outer, k_inner in T.grid((m + 15) // 16, 16):
                     if T.likely(k_outer * 16 + k_inner &lt; m):
@@ -535,7 +535,7 @@ class Module:
         threadIdx_x = T.launch_thread(&quot;threadIdx.x&quot;, 32)
         B_2 = T.Buffer((B_1.strides[0] * n,), data=B_1.data, buffer_type=&quot;auto&quot;)
         if T.likely(blockIdx_x * 32 + threadIdx_x &lt; n):
-            B_2[(blockIdx_x * 32 + threadIdx_x) * B_1.strides[0]] = T.float32(0.0)
+            B_2[(blockIdx_x * 32 + threadIdx_x) * B_1.strides[0]] = T.float32(0)
         for k_outer, k_inner in T.grid((m + 15) // 16, 16):
             if T.likely(blockIdx_x * 32 + threadIdx_x &lt; n):
                 if T.likely(k_outer * 16 + k_inner &lt; m):
@@ -573,14 +573,14 @@ class Module:
         B_rf = T.allocate([n * 16], &quot;float32&quot;, &quot;global&quot;)
         B_rf_1 = T.Buffer((16 * n,), data=B_rf)
         for k_inner, i in T.grid(16, n):
-            B_rf_1[k_inner * n + i] = T.float32(0.0)
+            B_rf_1[k_inner * n + i] = T.float32(0)
             for k_outer in range((m + 15) // 16):
                 if T.likely(k_outer * 16 + k_inner &lt; m):
                     A_2 = T.Buffer((A_1.strides[0] * n,), data=A_1.data, buffer_type=&quot;auto&quot;)
                     B_rf_1[k_inner * n + i] = B_rf_1[k_inner * n + i] + A_2[i * A_1.strides[0] + (k_outer * 16 + k_inner) * A_1.strides[1]]
         for ax0 in range(n):
             B_2 = T.Buffer((B_1.strides[0] * n,), data=B_1.data, buffer_type=&quot;auto&quot;)
-            B_2[ax0 * B_1.strides[0]] = T.float32(0.0)
+            B_2[ax0 * B_1.strides[0]] = T.float32(0)
             for k_inner_v in range(16):
                 B_2[ax0 * B_1.strides[0]] = B_2[ax0 * B_1.strides[0]] + B_rf_1[k_inner_v * n + ax0]
 </pre></div>
@@ -590,7 +590,7 @@ the first axis of reduced result of B.f</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><a href="../../reference/api/python/te.html#tvm.te.Schedule" title="tvm.te.Schedule" class="sphx-glr-backref-module-tvm-te sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">s</span></a><span class="p">[</span><a href="../../reference/api/python/te.html#tvm.te.Tensor" title="tvm.te.Tensor" class="sphx-glr-backref-module-tvm-te sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">B</span></a><span class="p">]</span><span class="o">.</span><span class="n">op</span><span class="o">.</span><span class="n">body</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>[T.reduce(T.comm_reducer(lambda x, y: x + y, [T.float32(0.0)]), source=[B.rf[k_inner_v, ax0]], init=[], axis=[T.iter_var(k_inner_v, T.Range(0, 16), &quot;CommReduce&quot;, &quot;&quot;)], condition=T.bool(True), value_index=0)]
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>[T.reduce(T.comm_reducer(lambda x, y: x + y, [T.float32(0)]), source=[B.rf[k_inner_v, ax0]], init=[], axis=[T.iter_var(k_inner_v, T.Range(0, 16), &quot;CommReduce&quot;, &quot;&quot;)], condition=T.bool(True), value_index=0)]
 </pre></div>
 </div>
 </div>
@@ -724,7 +724,7 @@ class Module:
         Output_1 = T.match_buffer(Output, (n - 2, n - 2))
         for i, j in T.grid(n - 2, n - 2):
             Output_2 = T.Buffer(((n - 2) * (n - 2),), data=Output_1.data)
-            Output_2[i * (n - 2) + j] = T.float32(0.0)
+            Output_2[i * (n - 2) + j] = T.float32(0)
             for di, dj in T.grid(3, 3):
                 Input_2 = T.Buffer((Input_1.strides[0] * n,), data=Input_1.data, buffer_type=&quot;auto&quot;)
                 Filter_1 = T.Buffer((9,), data=Filter.data)

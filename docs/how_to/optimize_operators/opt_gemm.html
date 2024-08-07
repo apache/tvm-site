@@ -502,8 +502,8 @@ Then we write a baseline implementation, the simplest way to write a matrix mult
 <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Baseline: </span><span class="si">%f</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">evaluator</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">c</span><span class="p">)</span><span class="o">.</span><span class="n">mean</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Numpy running time: 0.019186
-Baseline: 3.491721
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Numpy running time: 0.019007
+Baseline: 3.532494
 </pre></div>
 </div>
 <p>In TVM, we can always inspect lower level IR to debug or optimize our schedule.
@@ -521,7 +521,7 @@ class Module:
         T.func_attr({&quot;from_legacy_te_schedule&quot;: T.bool(True), &quot;tir.noalias&quot;: T.bool(True)})
         for m, n in T.grid(1024, 1024):
             C_1 = T.Buffer((1048576,), data=C.data)
-            C_1[m * 1024 + n] = T.float32(0.0)
+            C_1[m * 1024 + n] = T.float32(0)
             for k in range(1024):
                 cse_var_2: T.int32 = m * 1024
                 cse_var_1: T.int32 = cse_var_2 + n
@@ -562,7 +562,7 @@ fill 32 * 32 * sizeof(float) which is 4KB in the cache whose total size is 32KB 
 <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Opt1: </span><span class="si">%f</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">evaluator</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">c</span><span class="p">)</span><span class="o">.</span><span class="n">mean</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Opt1: 0.336154
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Opt1: 0.314384
 </pre></div>
 </div>
 <p>Here is the generated IR after blocking.</p>
@@ -580,7 +580,7 @@ class Module:
         for m_outer, n_outer in T.grid(32, 32):
             C_1 = T.Buffer((1048576,), data=C.data)
             for m_inner_init, n_inner_init in T.grid(32, 32):
-                C_1[m_outer * 32768 + m_inner_init * 1024 + n_outer * 32 + n_inner_init] = T.float32(0.0)
+                C_1[m_outer * 32768 + m_inner_init * 1024 + n_outer * 32 + n_inner_init] = T.float32(0)
             for k_outer, k_inner, m_inner, n_inner in T.grid(256, 4, 32, 32):
                 cse_var_3: T.int32 = n_outer * 32
                 cse_var_2: T.int32 = m_outer * 32768 + m_inner * 1024
@@ -619,7 +619,7 @@ vastly.</p>
 <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Opt2: </span><span class="si">%f</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">evaluator</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">c</span><span class="p">)</span><span class="o">.</span><span class="n">mean</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Opt2: 0.322407
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Opt2: 0.301900
 </pre></div>
 </div>
 <p>Here is the generated IR after vectorization.</p>
@@ -637,7 +637,7 @@ class Module:
         for m_outer, n_outer in T.grid(32, 32):
             C_1 = T.Buffer((1048576,), data=C.data)
             for m_inner_init in range(32):
-                C_1[m_outer * 32768 + m_inner_init * 1024 + n_outer * 32:m_outer * 32768 + m_inner_init * 1024 + n_outer * 32 + 32] = T.Broadcast(T.float32(0.0), 32)
+                C_1[m_outer * 32768 + m_inner_init * 1024 + n_outer * 32:m_outer * 32768 + m_inner_init * 1024 + n_outer * 32 + 32] = T.Broadcast(T.float32(0), 32)
             for k_outer, k_inner, m_inner in T.grid(256, 4, 32):
                 cse_var_3: T.int32 = n_outer * 32
                 cse_var_2: T.int32 = m_outer * 32768 + m_inner * 1024
@@ -674,7 +674,7 @@ the access pattern for A matrix is more cache friendly.</p>
 <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Opt3: </span><span class="si">%f</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">evaluator</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">c</span><span class="p">)</span><span class="o">.</span><span class="n">mean</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Opt3: 0.128174
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Opt3: 0.116327
 </pre></div>
 </div>
 <p>Here is the generated IR after loop permutation.</p>
@@ -692,7 +692,7 @@ class Module:
         for m_outer, n_outer in T.grid(32, 32):
             C_1 = T.Buffer((1048576,), data=C.data)
             for m_inner_init in range(32):
-                C_1[m_outer * 32768 + m_inner_init * 1024 + n_outer * 32:m_outer * 32768 + m_inner_init * 1024 + n_outer * 32 + 32] = T.Broadcast(T.float32(0.0), 32)
+                C_1[m_outer * 32768 + m_inner_init * 1024 + n_outer * 32:m_outer * 32768 + m_inner_init * 1024 + n_outer * 32 + 32] = T.Broadcast(T.float32(0), 32)
             for k_outer, m_inner, k_inner in T.grid(256, 32, 4):
                 cse_var_3: T.int32 = n_outer * 32
                 cse_var_2: T.int32 = m_outer * 32768 + m_inner * 1024
@@ -751,7 +751,7 @@ flattening.</p>
 <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Opt4: </span><span class="si">%f</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">evaluator</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">c</span><span class="p">)</span><span class="o">.</span><span class="n">mean</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Opt4: 0.107883
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Opt4: 0.105943
 </pre></div>
 </div>
 <p>Here is the generated IR after array packing.</p>
@@ -775,7 +775,7 @@ class Module:
         for m_outer, n_outer in T.grid(32, 32):
             C_1 = T.Buffer((1048576,), data=C.data)
             for m_inner_init in range(32):
-                C_1[m_outer * 32768 + m_inner_init * 1024 + n_outer * 32:m_outer * 32768 + m_inner_init * 1024 + n_outer * 32 + 32] = T.Broadcast(T.float32(0.0), 32)
+                C_1[m_outer * 32768 + m_inner_init * 1024 + n_outer * 32:m_outer * 32768 + m_inner_init * 1024 + n_outer * 32 + 32] = T.Broadcast(T.float32(0), 32)
             for k_outer, m_inner, k_inner in T.grid(256, 32, 4):
                 cse_var_3: T.int32 = m_outer * 32768 + m_inner * 1024
                 cse_var_2: T.int32 = k_outer * 4
@@ -829,7 +829,7 @@ write to C when all the block results are ready.</p>
 <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Opt5: </span><span class="si">%f</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">evaluator</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">,</span> <span class="n">c</span><span class="p">)</span><span class="o">.</span><span class="n">mean</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Opt5: 0.112578
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Opt5: 0.111575
 </pre></div>
 </div>
 <p>Here is the generated IR after blocking.</p>
@@ -854,7 +854,7 @@ class Module:
         for m_outer, n_outer in T.grid(32, 32):
             C_global_1 = T.Buffer((1024,), data=C_global)
             for m_c_init in range(32):
-                C_global_1[m_c_init * 32:m_c_init * 32 + 32] = T.Broadcast(T.float32(0.0), 32)
+                C_global_1[m_c_init * 32:m_c_init * 32 + 32] = T.Broadcast(T.float32(0), 32)
             for k_outer, m_c in T.grid(256, 32):
                 cse_var_4: T.int32 = k_outer * 4
                 cse_var_3: T.int32 = m_c * 32
@@ -909,7 +909,7 @@ class Module:
 <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Opt6: </span><span class="si">%f</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">opt6_time</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Opt6: 0.135416
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Opt6: 0.134154
 </pre></div>
 </div>
 <p>Here is the generated IR after parallelization.</p>
@@ -935,7 +935,7 @@ class Module:
             for n_outer in range(32):
                 C_global_1 = T.Buffer((1024,), data=C_global)
                 for m_c_init in range(32):
-                    C_global_1[m_c_init * 32:m_c_init * 32 + 32] = T.Broadcast(T.float32(0.0), 32)
+                    C_global_1[m_c_init * 32:m_c_init * 32 + 32] = T.Broadcast(T.float32(0), 32)
                 for k_outer, m_c in T.grid(256, 32):
                     cse_var_4: T.int32 = k_outer * 4
                     cse_var_3: T.int32 = m_c * 32
