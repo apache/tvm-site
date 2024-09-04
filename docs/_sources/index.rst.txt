@@ -41,7 +41,20 @@ driving its costs down.
    :maxdepth: 1
    :caption: How To
 
-   how_to/index
+   how_to/tutorials/e2e_opt_model
+   how_to/tutorials/customize_opt
+   how_to/tutorials/optimize_llm
+   how_to/tutorials/cross_compilation_and_rpc
+   how_to/dev/index
+
+.. The Deep Dive content is comprehensive
+.. we maintain a ``maxdepth`` of 2 to display more information on the main page.
+
+.. toctree::
+   :maxdepth: 2
+   :caption: Deep Dive
+
+   deep_dive/tensor_ir/index
 
 .. toctree::
    :maxdepth: 1

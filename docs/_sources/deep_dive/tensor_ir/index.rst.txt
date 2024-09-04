@@ -15,10 +15,17 @@
     specific language governing permissions and limitations
     under the License.
 
-.. toctree::
-   :maxdepth: 1
+.. _tensor-ir:
 
-   tutorials/e2e_opt_model
-   tutorials/customize_opt
-   tutorials/cross_compilation_and_rpc
-   dev/index
+TensorIR
+========
+TensorIR is one of the core abstraction in Apache TVM Unity stack, which is used to
+represent and optimize the primitive tensor functions.
+
+.. toctree::
+    :maxdepth: 2
+
+    abstraction
+    learning
+    tutorials/creation
+    tutorials/transformation
