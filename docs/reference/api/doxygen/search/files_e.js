@@ -8,7 +8,7 @@ var searchData=
   ['reflection_2eh_8021',['reflection.h',['../reflection_8h.html',1,'']]],
   ['registry_2eh_8022',['registry.h',['../registry_8h.html',1,'']]],
   ['reorg_2eh_8023',['reorg.h',['../reorg_8h.html',1,'']]],
-  ['replace_5fglobal_5fvar_2eh_8024',['replace_global_var.h',['../replace__global__var_8h.html',1,'']]],
+  ['replace_5fglobal_5fvars_2eh_8024',['replace_global_vars.h',['../replace__global__vars_8h.html',1,'']]],
   ['repr_5fprinter_2eh_8025',['repr_printer.h',['../repr__printer_8h.html',1,'']]],
   ['rms_5fnorm_2eh_8026',['rms_norm.h',['../rms__norm_8h.html',1,'']]],
   ['rocblas_2eh_8027',['rocblas.h',['../rocblas_8h.html',1,'']]],
