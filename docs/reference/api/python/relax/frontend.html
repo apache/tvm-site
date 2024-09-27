@@ -3265,6 +3265,61 @@ parameters are treated as constant and folded directly into the graph.</p></li>
 <span id="tvm-relax-frontend-torch"></span><h2>tvm.relax.frontend.torch<a class="headerlink" href="#module-tvm.relax.frontend.torch" title="Permalink to this headline">¶</a></h2>
 <p>PyTorch Frontends for constructing Relax programs, with the model importers</p>
 <dl class="py function">
+<dt class="sig sig-object py" id="tvm.relax.frontend.torch.from_exported_program">
+<span class="sig-prename descclassname"><span class="pre">tvm.relax.frontend.torch.</span></span><span class="sig-name descname"><span class="pre">from_exported_program</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">exported_program</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">torch.export.exported_program.ExportedProgram</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">keep_params_as_input</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><span class="pre">bool</span></a></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">unwrap_unit_return_tuple</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><span class="pre">bool</span></a></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">no_bind_return_tuple</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><span class="pre">bool</span></a></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../ir.html#tvm.ir.IRModule" title="tvm.ir.module.IRModule"><span class="pre">tvm.ir.module.IRModule</span></a></span></span><a class="headerlink" href="#tvm.relax.frontend.torch.from_exported_program" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert a PyTorch ExportedProgram to a Relax program</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>exported_program</strong> (<em>torch.export.ExportedProgram</em>) – The PyTorch ExportedProgram to convert.</p></li>
+<li><p><strong>keep_params_as_input</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><em>bool</em></a>) – Whether to keep model parameters as input variables.</p></li>
+<li><p><strong>unwrap_unit_return_tuple</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><em>bool</em></a>) – A boolean flag indicating if to the return value when it is an unit tuple.
+When the return value is not a unit tuple, no unwrap will take place.</p></li>
+<li><p><strong>no_bind_return_tuple</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><em>bool</em></a>) – A boolean flag indicating whether to bind the return tuple as a relax var.
+If the flag is true and the return value is a tuple, it will not bind it to a var.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p><strong>output</strong> – The import result IRModule, with the function “main” containing the
+translated logic.</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>tvm.IRModule</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<p>Users can use the torch.export.export() to extract a torch.export.ExportedProgram
+from a PyTorch model. The following codes show how to convert a PyTorch model to
+a Relax program.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Import the importer.</span>
+<span class="kn">import</span> <span class="nn">tvm</span>
+<span class="kn">from</span> <span class="nn">tvm.relax.frontend.torch</span> <span class="kn">import</span> <span class="n">from_exported_program</span>
+<span class="kn">import</span> <span class="nn">torch</span>
+<span class="kn">from</span> <span class="nn">torch.export</span> <span class="kn">import</span> <span class="n">export</span>
+
+<span class="c1"># Define the module</span>
+<span class="k">class</span> <span class="nc">MyModule</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+    <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">linear</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="n">in_features</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">out_features</span><span class="o">=</span><span class="mi">7</span><span class="p">,</span> <span class="n">bias</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">input</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">linear</span><span class="p">(</span><span class="nb">input</span><span class="p">)</span>
+
+<span class="c1"># Instantiate the model and create the input info dict.</span>
+<span class="n">torch_model</span> <span class="o">=</span> <span class="n">MyModule</span><span class="p">()</span>
+
+<span class="c1"># Use torch.export.export() to convert the PyTorch model into ExportedProgram.</span>
+<span class="n">example_args</span> <span class="o">=</span> <span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="mi">128</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">float32</span><span class="p">),)</span>
+<span class="n">exported_program</span> <span class="o">=</span> <span class="n">export</span><span class="p">(</span><span class="n">torch_model</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="n">example_args</span><span class="p">)</span>
+
+<span class="c1"># Use the importer to import the ExportedProgram to Relax.</span>
+<span class="n">mod</span><span class="p">:</span> <span class="n">tvm</span><span class="o">.</span><span class="n">IRModule</span> <span class="o">=</span> <span class="n">from_exported_program</span><span class="p">(</span><span class="n">exported_program</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="py function">
 <dt class="sig sig-object py" id="tvm.relax.frontend.torch.from_fx">
 <span class="sig-prename descclassname"><span class="pre">tvm.relax.frontend.torch.</span></span><span class="sig-name descname"><span class="pre">from_fx</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_info</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><span class="pre">Tuple</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.12)"><span class="pre">int</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">,</span> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.12)"><span class="pre">str</span></a><span class="p"><span class="pre">]</span></span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">keep_params_as_input</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><span class="pre">bool</span></a></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">unwrap_unit_return_tuple</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><span class="pre">bool</span></a></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">no_bind_return_tuple</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.12)"><span class="pre">bool</span></a></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">custom_convert_map</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Optional</span><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.12)"><span class="pre">dict</span></a><span class="p"><span class="pre">]</span></span></span> <span class="o"><span class="pre">=</span></span> <span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../ir.html#tvm.ir.IRModule" title="tvm.ir.module.IRModule"><span class="pre">tvm.ir.module.IRModule</span></a></span></span><a class="headerlink" href="#tvm.relax.frontend.torch.from_fx" title="Permalink to this definition">¶</a></dt>
 <dd><p>Convert a PyTorch FX GraphModule to a Relax program</p>
