@@ -57,14 +57,15 @@ Create IRModule
 IRModules can be initialized in various ways. We demonstrate a few of them
 below.
 
-.. GENERATED FROM PYTHON SOURCE LINES 41-46
+.. GENERATED FROM PYTHON SOURCE LINES 41-47
 
 .. code-block:: default
 
 
     import torch
-    from torch import fx, nn
-    from tvm.relax.frontend.torch import from_fx
+    from torch import nn
+    from torch.export import export
+    from tvm.relax.frontend.torch import from_exported_program
 
 
 
@@ -73,7 +74,7 @@ below.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 47-53
+.. GENERATED FROM PYTHON SOURCE LINES 48-54
 
 Import from existing models
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -82,7 +83,7 @@ model. Apache TVM Unity accommodates imports from a range of frameworks,
 such as PyTorch and ONNX. This tutorial solely demonstrates the import process
 from PyTorch.
 
-.. GENERATED FROM PYTHON SOURCE LINES 53-82
+.. GENERATED FROM PYTHON SOURCE LINES 54-85
 
 .. code-block:: default
 
@@ -103,13 +104,15 @@ from PyTorch.
             return x
 
 
-    # Give the input shape and data type
-    input_info = [((1, 784), "float32")]
+    # Give an example argument to torch.export
+    example_args = (torch.randn(1, 784, dtype=torch.float32),)
 
     # Convert the model to IRModule
     with torch.no_grad():
-        torch_fx_model = fx.symbolic_trace(TorchModel())
-        mod_from_torch = from_fx(torch_fx_model, input_info, keep_params_as_input=True)
+        exported_program = export(TorchModel().eval(), example_args)
+        mod_from_torch = from_exported_program(
+            exported_program, keep_params_as_input=True, unwrap_unit_return_tuple=True
+        )
 
     mod_from_torch, params_from_torch = relax.frontend.detach_params(mod_from_torch)
     # Print the IRModule
@@ -129,16 +132,16 @@ from PyTorch.
     @I.ir_module
     class Module:
         @R.function
-        def main(inp_0: R.Tensor((1, 784), dtype="float32"), fc1_bias: R.Tensor((256,), dtype="float32"), fc1_weight: R.Tensor((256, 784), dtype="float32"), fc2_bias: R.Tensor((10,), dtype="float32"), fc2_weight: R.Tensor((10, 256), dtype="float32")) -> R.Tensor((1, 10), dtype="float32"):
+        def main(x: R.Tensor((1, 784), dtype="float32"), p_fc1_weight: R.Tensor((256, 784), dtype="float32"), p_fc1_bias: R.Tensor((256,), dtype="float32"), p_fc2_weight: R.Tensor((10, 256), dtype="float32"), p_fc2_bias: R.Tensor((10,), dtype="float32")) -> R.Tensor((1, 10), dtype="float32"):
             R.func_attr({"num_input": 1})
             with R.dataflow():
-                lv: R.Tensor((784, 256), dtype="float32") = R.permute_dims(fc1_weight, axes=None)
-                lv1: R.Tensor((1, 256), dtype="float32") = R.matmul(inp_0, lv, out_dtype="float32")
-                lv2: R.Tensor((1, 256), dtype="float32") = R.add(lv1, fc1_bias)
+                lv: R.Tensor((784, 256), dtype="float32") = R.permute_dims(p_fc1_weight, axes=None)
+                lv1: R.Tensor((1, 256), dtype="float32") = R.matmul(x, lv, out_dtype="float32")
+                lv2: R.Tensor((1, 256), dtype="float32") = R.add(lv1, p_fc1_bias)
                 lv3: R.Tensor((1, 256), dtype="float32") = R.nn.relu(lv2)
-                lv4: R.Tensor((256, 10), dtype="float32") = R.permute_dims(fc2_weight, axes=None)
+                lv4: R.Tensor((256, 10), dtype="float32") = R.permute_dims(p_fc2_weight, axes=None)
                 lv5: R.Tensor((1, 10), dtype="float32") = R.matmul(lv3, lv4, out_dtype="float32")
-                lv6: R.Tensor((1, 10), dtype="float32") = R.add(lv5, fc2_bias)
+                lv6: R.Tensor((1, 10), dtype="float32") = R.add(lv5, p_fc2_bias)
                 gv: R.Tensor((1, 10), dtype="float32") = lv6
                 R.output(gv)
             return gv
@@ -147,14 +150,14 @@ from PyTorch.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 83-87
+.. GENERATED FROM PYTHON SOURCE LINES 86-90
 
 Write with Relax NN Module
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 Apache TVM Unity also provides a set of PyTorch-liked APIs, to help users
 write the IRModule directly.
 
-.. GENERATED FROM PYTHON SOURCE LINES 87-110
+.. GENERATED FROM PYTHON SOURCE LINES 90-113
 
 .. code-block:: default
 
@@ -213,7 +216,7 @@ write the IRModule directly.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 111-116
+.. GENERATED FROM PYTHON SOURCE LINES 114-119
 
 Create via TVMScript
 ~~~~~~~~~~~~~~~~~~~~
@@ -221,7 +224,7 @@ TVMScript is a Python-based DSL for IRModules. We are able to
 directly output the IRModule in the TVMScript syntax, or alternatively,
 parse the TVMScript to obtain an IRModule.
 
-.. GENERATED FROM PYTHON SOURCE LINES 116-148
+.. GENERATED FROM PYTHON SOURCE LINES 119-151
 
 .. code-block:: default
 
@@ -289,13 +292,13 @@ parse the TVMScript to obtain an IRModule.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 149-152
+.. GENERATED FROM PYTHON SOURCE LINES 152-155
 
 Attributes of an IRModule
 -------------------------
 An IRModule is a collection of functions, indexed by GlobalVars.
 
-.. GENERATED FROM PYTHON SOURCE LINES 152-156
+.. GENERATED FROM PYTHON SOURCE LINES 155-159
 
 .. code-block:: default
 
@@ -316,12 +319,12 @@ An IRModule is a collection of functions, indexed by GlobalVars.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 157-159
+.. GENERATED FROM PYTHON SOURCE LINES 160-162
 
 We can access the functions in the IRModule by indexing with the GlobalVars
 or their names
 
-.. GENERATED FROM PYTHON SOURCE LINES 159-166
+.. GENERATED FROM PYTHON SOURCE LINES 162-169
 
 .. code-block:: default
 
@@ -343,16 +346,16 @@ or their names
     # from tvm.script import relax as R
 
     @R.function
-    def main(inp_0: R.Tensor((1, 784), dtype="float32"), fc1_bias: R.Tensor((256,), dtype="float32"), fc1_weight: R.Tensor((256, 784), dtype="float32"), fc2_bias: R.Tensor((10,), dtype="float32"), fc2_weight: R.Tensor((10, 256), dtype="float32")) -> R.Tensor((1, 10), dtype="float32"):
+    def main(x: R.Tensor((1, 784), dtype="float32"), p_fc1_weight: R.Tensor((256, 784), dtype="float32"), p_fc1_bias: R.Tensor((256,), dtype="float32"), p_fc2_weight: R.Tensor((10, 256), dtype="float32"), p_fc2_bias: R.Tensor((10,), dtype="float32")) -> R.Tensor((1, 10), dtype="float32"):
         R.func_attr({"num_input": 1})
         with R.dataflow():
-            lv: R.Tensor((784, 256), dtype="float32") = R.permute_dims(fc1_weight, axes=None)
-            lv1: R.Tensor((1, 256), dtype="float32") = R.matmul(inp_0, lv, out_dtype="float32")
-            lv2: R.Tensor((1, 256), dtype="float32") = R.add(lv1, fc1_bias)
+            lv: R.Tensor((784, 256), dtype="float32") = R.permute_dims(p_fc1_weight, axes=None)
+            lv1: R.Tensor((1, 256), dtype="float32") = R.matmul(x, lv, out_dtype="float32")
+            lv2: R.Tensor((1, 256), dtype="float32") = R.add(lv1, p_fc1_bias)
             lv3: R.Tensor((1, 256), dtype="float32") = R.nn.relu(lv2)
-            lv4: R.Tensor((256, 10), dtype="float32") = R.permute_dims(fc2_weight, axes=None)
+            lv4: R.Tensor((256, 10), dtype="float32") = R.permute_dims(p_fc2_weight, axes=None)
             lv5: R.Tensor((1, 10), dtype="float32") = R.matmul(lv3, lv4, out_dtype="float32")
-            lv6: R.Tensor((1, 10), dtype="float32") = R.add(lv5, fc2_bias)
+            lv6: R.Tensor((1, 10), dtype="float32") = R.add(lv5, p_fc2_bias)
             gv: R.Tensor((1, 10), dtype="float32") = lv6
             R.output(gv)
         return gv
@@ -360,7 +363,7 @@ or their names
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 167-177
+.. GENERATED FROM PYTHON SOURCE LINES 170-180
 
 Transformations on IRModules
 ----------------------------
@@ -373,13 +376,13 @@ In this getting started tutorial, we only demonstrate how to apply transformatio
 to an IRModule. For details of each transformation, please refer to the
 :ref:`Transformation API Reference <api-relax-transformation>`
 
-.. GENERATED FROM PYTHON SOURCE LINES 179-182
+.. GENERATED FROM PYTHON SOURCE LINES 182-185
 
 We first apply **LegalizeOps** transformation to the IRModule. This transformation
 will convert the Relax module into a mixed stage, with both Relax and TensorIR function
 within the same module. Meanwhile, the Relax operators will be converted into ``call_tir``.
 
-.. GENERATED FROM PYTHON SOURCE LINES 182-187
+.. GENERATED FROM PYTHON SOURCE LINES 185-190
 
 .. code-block:: default
 
@@ -403,39 +406,39 @@ within the same module. Meanwhile, the Relax operators will be converted into ``
     @I.ir_module
     class Module:
         @T.prim_func(private=True)
-        def add(lv1: T.Buffer((T.int64(1), T.int64(256)), "float32"), fc1_bias: T.Buffer((T.int64(256),), "float32"), T_add: T.Buffer((T.int64(1), T.int64(256)), "float32")):
+        def add(lv1: T.Buffer((T.int64(1), T.int64(256)), "float32"), p_fc1_bias: T.Buffer((T.int64(256),), "float32"), T_add: T.Buffer((T.int64(1), T.int64(256)), "float32")):
             T.func_attr({"tir.noalias": T.bool(True)})
             # with T.block("root"):
             for ax0, ax1 in T.grid(T.int64(1), T.int64(256)):
                 with T.block("T_add"):
                     v_ax0, v_ax1 = T.axis.remap("SS", [ax0, ax1])
-                    T.reads(lv1[v_ax0, v_ax1], fc1_bias[v_ax1])
+                    T.reads(lv1[v_ax0, v_ax1], p_fc1_bias[v_ax1])
                     T.writes(T_add[v_ax0, v_ax1])
-                    T_add[v_ax0, v_ax1] = lv1[v_ax0, v_ax1] + fc1_bias[v_ax1]
+                    T_add[v_ax0, v_ax1] = lv1[v_ax0, v_ax1] + p_fc1_bias[v_ax1]
 
         @T.prim_func(private=True)
-        def add1(lv5: T.Buffer((T.int64(1), T.int64(10)), "float32"), fc2_bias: T.Buffer((T.int64(10),), "float32"), T_add: T.Buffer((T.int64(1), T.int64(10)), "float32")):
+        def add1(lv5: T.Buffer((T.int64(1), T.int64(10)), "float32"), p_fc2_bias: T.Buffer((T.int64(10),), "float32"), T_add: T.Buffer((T.int64(1), T.int64(10)), "float32")):
             T.func_attr({"tir.noalias": T.bool(True)})
             # with T.block("root"):
             for ax0, ax1 in T.grid(T.int64(1), T.int64(10)):
                 with T.block("T_add"):
                     v_ax0, v_ax1 = T.axis.remap("SS", [ax0, ax1])
-                    T.reads(lv5[v_ax0, v_ax1], fc2_bias[v_ax1])
+                    T.reads(lv5[v_ax0, v_ax1], p_fc2_bias[v_ax1])
                     T.writes(T_add[v_ax0, v_ax1])
-                    T_add[v_ax0, v_ax1] = lv5[v_ax0, v_ax1] + fc2_bias[v_ax1]
+                    T_add[v_ax0, v_ax1] = lv5[v_ax0, v_ax1] + p_fc2_bias[v_ax1]
 
         @T.prim_func(private=True)
-        def matmul(inp_0: T.Buffer((T.int64(1), T.int64(784)), "float32"), lv: T.Buffer((T.int64(784), T.int64(256)), "float32"), matmul: T.Buffer((T.int64(1), T.int64(256)), "float32")):
+        def matmul(x: T.Buffer((T.int64(1), T.int64(784)), "float32"), lv: T.Buffer((T.int64(784), T.int64(256)), "float32"), matmul: T.Buffer((T.int64(1), T.int64(256)), "float32")):
             T.func_attr({"tir.noalias": T.bool(True)})
             # with T.block("root"):
             for i0, i1, k in T.grid(T.int64(1), T.int64(256), T.int64(784)):
                 with T.block("matmul"):
                     v_i0, v_i1, v_k = T.axis.remap("SSR", [i0, i1, k])
-                    T.reads(inp_0[v_i0, v_k], lv[v_k, v_i1])
+                    T.reads(x[v_i0, v_k], lv[v_k, v_i1])
                     T.writes(matmul[v_i0, v_i1])
                     with T.init():
                         matmul[v_i0, v_i1] = T.float32(0.0)
-                    matmul[v_i0, v_i1] = matmul[v_i0, v_i1] + inp_0[v_i0, v_k] * lv[v_k, v_i1]
+                    matmul[v_i0, v_i1] = matmul[v_i0, v_i1] + x[v_i0, v_k] * lv[v_k, v_i1]
 
         @T.prim_func(private=True)
         def matmul1(lv3: T.Buffer((T.int64(1), T.int64(256)), "float32"), lv4: T.Buffer((T.int64(256), T.int64(10)), "float32"), matmul: T.Buffer((T.int64(1), T.int64(10)), "float32")):
@@ -462,39 +465,39 @@ within the same module. Meanwhile, the Relax operators will be converted into ``
                     compute[v_i0, v_i1] = T.max(lv2[v_i0, v_i1], T.float32(0.0))
 
         @T.prim_func(private=True)
-        def transpose(fc1_weight: T.Buffer((T.int64(256), T.int64(784)), "float32"), T_transpose: T.Buffer((T.int64(784), T.int64(256)), "float32")):
+        def transpose(p_fc1_weight: T.Buffer((T.int64(256), T.int64(784)), "float32"), T_transpose: T.Buffer((T.int64(784), T.int64(256)), "float32")):
             T.func_attr({"tir.noalias": T.bool(True)})
             # with T.block("root"):
             for ax0, ax1 in T.grid(T.int64(784), T.int64(256)):
                 with T.block("T_transpose"):
                     v_ax0, v_ax1 = T.axis.remap("SS", [ax0, ax1])
-                    T.reads(fc1_weight[v_ax1, v_ax0])
+                    T.reads(p_fc1_weight[v_ax1, v_ax0])
                     T.writes(T_transpose[v_ax0, v_ax1])
-                    T_transpose[v_ax0, v_ax1] = fc1_weight[v_ax1, v_ax0]
+                    T_transpose[v_ax0, v_ax1] = p_fc1_weight[v_ax1, v_ax0]
 
         @T.prim_func(private=True)
-        def transpose1(fc2_weight: T.Buffer((T.int64(10), T.int64(256)), "float32"), T_transpose: T.Buffer((T.int64(256), T.int64(10)), "float32")):
+        def transpose1(p_fc2_weight: T.Buffer((T.int64(10), T.int64(256)), "float32"), T_transpose: T.Buffer((T.int64(256), T.int64(10)), "float32")):
             T.func_attr({"tir.noalias": T.bool(True)})
             # with T.block("root"):
             for ax0, ax1 in T.grid(T.int64(256), T.int64(10)):
                 with T.block("T_transpose"):
                     v_ax0, v_ax1 = T.axis.remap("SS", [ax0, ax1])
-                    T.reads(fc2_weight[v_ax1, v_ax0])
+                    T.reads(p_fc2_weight[v_ax1, v_ax0])
                     T.writes(T_transpose[v_ax0, v_ax1])
-                    T_transpose[v_ax0, v_ax1] = fc2_weight[v_ax1, v_ax0]
+                    T_transpose[v_ax0, v_ax1] = p_fc2_weight[v_ax1, v_ax0]
 
         @R.function
-        def main(inp_0: R.Tensor((1, 784), dtype="float32"), fc1_bias: R.Tensor((256,), dtype="float32"), fc1_weight: R.Tensor((256, 784), dtype="float32"), fc2_bias: R.Tensor((10,), dtype="float32"), fc2_weight: R.Tensor((10, 256), dtype="float32")) -> R.Tensor((1, 10), dtype="float32"):
+        def main(x: R.Tensor((1, 784), dtype="float32"), p_fc1_weight: R.Tensor((256, 784), dtype="float32"), p_fc1_bias: R.Tensor((256,), dtype="float32"), p_fc2_weight: R.Tensor((10, 256), dtype="float32"), p_fc2_bias: R.Tensor((10,), dtype="float32")) -> R.Tensor((1, 10), dtype="float32"):
             R.func_attr({"num_input": 1})
             cls = Module
             with R.dataflow():
-                lv = R.call_tir(cls.transpose, (fc1_weight,), out_sinfo=R.Tensor((784, 256), dtype="float32"))
-                lv1 = R.call_tir(cls.matmul, (inp_0, lv), out_sinfo=R.Tensor((1, 256), dtype="float32"))
-                lv2 = R.call_tir(cls.add, (lv1, fc1_bias), out_sinfo=R.Tensor((1, 256), dtype="float32"))
+                lv = R.call_tir(cls.transpose, (p_fc1_weight,), out_sinfo=R.Tensor((784, 256), dtype="float32"))
+                lv1 = R.call_tir(cls.matmul, (x, lv), out_sinfo=R.Tensor((1, 256), dtype="float32"))
+                lv2 = R.call_tir(cls.add, (lv1, p_fc1_bias), out_sinfo=R.Tensor((1, 256), dtype="float32"))
                 lv3 = R.call_tir(cls.relu, (lv2,), out_sinfo=R.Tensor((1, 256), dtype="float32"))
-                lv4 = R.call_tir(cls.transpose1, (fc2_weight,), out_sinfo=R.Tensor((256, 10), dtype="float32"))
+                lv4 = R.call_tir(cls.transpose1, (p_fc2_weight,), out_sinfo=R.Tensor((256, 10), dtype="float32"))
                 lv5 = R.call_tir(cls.matmul1, (lv3, lv4), out_sinfo=R.Tensor((1, 10), dtype="float32"))
-                lv6 = R.call_tir(cls.add1, (lv5, fc2_bias), out_sinfo=R.Tensor((1, 10), dtype="float32"))
+                lv6 = R.call_tir(cls.add1, (lv5, p_fc2_bias), out_sinfo=R.Tensor((1, 10), dtype="float32"))
                 gv: R.Tensor((1, 10), dtype="float32") = lv6
                 R.output(gv)
             return gv
@@ -503,12 +506,12 @@ within the same module. Meanwhile, the Relax operators will be converted into ``
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 188-190
+.. GENERATED FROM PYTHON SOURCE LINES 191-193
 
 After the transformation, there are much more functions inside the module. Let's print
 the global vars again.
 
-.. GENERATED FROM PYTHON SOURCE LINES 190-193
+.. GENERATED FROM PYTHON SOURCE LINES 193-196
 
 .. code-block:: default
 
@@ -528,7 +531,7 @@ the global vars again.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 194-216
+.. GENERATED FROM PYTHON SOURCE LINES 197-219
 
 Next, Apache TVM Unity provides a set of default transformation pipelines for users,
 to simplify the transformation process. We can then apply the default pipeline to the module.
@@ -553,7 +556,7 @@ The default **zero** pipeline contains very fundamental transformations, includi
   Every passes can be duplicated in the flow, since we ensure the passes can handle all legal
   IRModule inputs. This design can help users to construct their own pipeline.
 
-.. GENERATED FROM PYTHON SOURCE LINES 216-220
+.. GENERATED FROM PYTHON SOURCE LINES 219-223
 
 .. code-block:: default
 
@@ -576,7 +579,7 @@ The default **zero** pipeline contains very fundamental transformations, includi
     @I.ir_module
     class Module:
         @T.prim_func(private=True)
-        def fused_matmul1_add1(lv3: T.Buffer((T.int64(1), T.int64(256)), "float32"), lv4: T.Buffer((T.int64(256), T.int64(10)), "float32"), fc2_bias: T.Buffer((T.int64(10),), "float32"), T_add_intermediate: T.Buffer((T.int64(1), T.int64(10)), "float32")):
+        def fused_matmul1_add1(lv3: T.Buffer((T.int64(1), T.int64(256)), "float32"), lv4: T.Buffer((T.int64(256), T.int64(10)), "float32"), p_fc2_bias: T.Buffer((T.int64(10),), "float32"), T_add_intermediate: T.Buffer((T.int64(1), T.int64(10)), "float32")):
             T.func_attr({"tir.noalias": T.bool(True)})
             # with T.block("root"):
             matmul_intermediate = T.alloc_buffer((T.int64(1), T.int64(10)))
@@ -591,12 +594,12 @@ The default **zero** pipeline contains very fundamental transformations, includi
             for ax0, ax1 in T.grid(T.int64(1), T.int64(10)):
                 with T.block("T_add"):
                     v_ax0, v_ax1 = T.axis.remap("SS", [ax0, ax1])
-                    T.reads(matmul_intermediate[v_ax0, v_ax1], fc2_bias[v_ax1])
+                    T.reads(matmul_intermediate[v_ax0, v_ax1], p_fc2_bias[v_ax1])
                     T.writes(T_add_intermediate[v_ax0, v_ax1])
-                    T_add_intermediate[v_ax0, v_ax1] = matmul_intermediate[v_ax0, v_ax1] + fc2_bias[v_ax1]
+                    T_add_intermediate[v_ax0, v_ax1] = matmul_intermediate[v_ax0, v_ax1] + p_fc2_bias[v_ax1]
 
         @T.prim_func(private=True)
-        def fused_matmul_add_relu(inp_0: T.Buffer((T.int64(1), T.int64(784)), "float32"), lv: T.Buffer((T.int64(784), T.int64(256)), "float32"), fc1_bias: T.Buffer((T.int64(256),), "float32"), compute_intermediate: T.Buffer((T.int64(1), T.int64(256)), "float32")):
+        def fused_matmul_add_relu(x: T.Buffer((T.int64(1), T.int64(784)), "float32"), lv: T.Buffer((T.int64(784), T.int64(256)), "float32"), p_fc1_bias: T.Buffer((T.int64(256),), "float32"), compute_intermediate: T.Buffer((T.int64(1), T.int64(256)), "float32")):
             T.func_attr({"tir.noalias": T.bool(True)})
             # with T.block("root"):
             matmul_intermediate = T.alloc_buffer((T.int64(1), T.int64(256)))
@@ -604,17 +607,17 @@ The default **zero** pipeline contains very fundamental transformations, includi
             for i0, i1, k in T.grid(T.int64(1), T.int64(256), T.int64(784)):
                 with T.block("matmul"):
                     v_i0, v_i1, v_k = T.axis.remap("SSR", [i0, i1, k])
-                    T.reads(inp_0[v_i0, v_k], lv[v_k, v_i1])
+                    T.reads(x[v_i0, v_k], lv[v_k, v_i1])
                     T.writes(matmul_intermediate[v_i0, v_i1])
                     with T.init():
                         matmul_intermediate[v_i0, v_i1] = T.float32(0.0)
-                    matmul_intermediate[v_i0, v_i1] = matmul_intermediate[v_i0, v_i1] + inp_0[v_i0, v_k] * lv[v_k, v_i1]
+                    matmul_intermediate[v_i0, v_i1] = matmul_intermediate[v_i0, v_i1] + x[v_i0, v_k] * lv[v_k, v_i1]
             for ax0, ax1 in T.grid(T.int64(1), T.int64(256)):
                 with T.block("T_add"):
                     v_ax0, v_ax1 = T.axis.remap("SS", [ax0, ax1])
-                    T.reads(matmul_intermediate[v_ax0, v_ax1], fc1_bias[v_ax1])
+                    T.reads(matmul_intermediate[v_ax0, v_ax1], p_fc1_bias[v_ax1])
                     T.writes(T_add_intermediate[v_ax0, v_ax1])
-                    T_add_intermediate[v_ax0, v_ax1] = matmul_intermediate[v_ax0, v_ax1] + fc1_bias[v_ax1]
+                    T_add_intermediate[v_ax0, v_ax1] = matmul_intermediate[v_ax0, v_ax1] + p_fc1_bias[v_ax1]
             for i0, i1 in T.grid(T.int64(1), T.int64(256)):
                 with T.block("compute"):
                     v_i0, v_i1 = T.axis.remap("SS", [i0, i1])
@@ -623,36 +626,36 @@ The default **zero** pipeline contains very fundamental transformations, includi
                     compute_intermediate[v_i0, v_i1] = T.max(T_add_intermediate[v_i0, v_i1], T.float32(0.0))
 
         @T.prim_func(private=True)
-        def transpose(fc1_weight: T.Buffer((T.int64(256), T.int64(784)), "float32"), T_transpose: T.Buffer((T.int64(784), T.int64(256)), "float32")):
+        def transpose(p_fc1_weight: T.Buffer((T.int64(256), T.int64(784)), "float32"), T_transpose: T.Buffer((T.int64(784), T.int64(256)), "float32")):
             T.func_attr({"op_pattern": 2, "tir.noalias": T.bool(True)})
             # with T.block("root"):
             for ax0, ax1 in T.grid(T.int64(784), T.int64(256)):
                 with T.block("T_transpose"):
                     v_ax0, v_ax1 = T.axis.remap("SS", [ax0, ax1])
-                    T.reads(fc1_weight[v_ax1, v_ax0])
+                    T.reads(p_fc1_weight[v_ax1, v_ax0])
                     T.writes(T_transpose[v_ax0, v_ax1])
-                    T_transpose[v_ax0, v_ax1] = fc1_weight[v_ax1, v_ax0]
+                    T_transpose[v_ax0, v_ax1] = p_fc1_weight[v_ax1, v_ax0]
 
         @T.prim_func(private=True)
-        def transpose1(fc2_weight: T.Buffer((T.int64(10), T.int64(256)), "float32"), T_transpose: T.Buffer((T.int64(256), T.int64(10)), "float32")):
+        def transpose1(p_fc2_weight: T.Buffer((T.int64(10), T.int64(256)), "float32"), T_transpose: T.Buffer((T.int64(256), T.int64(10)), "float32")):
             T.func_attr({"op_pattern": 2, "tir.noalias": T.bool(True)})
             # with T.block("root"):
             for ax0, ax1 in T.grid(T.int64(256), T.int64(10)):
                 with T.block("T_transpose"):
                     v_ax0, v_ax1 = T.axis.remap("SS", [ax0, ax1])
-                    T.reads(fc2_weight[v_ax1, v_ax0])
+                    T.reads(p_fc2_weight[v_ax1, v_ax0])
                     T.writes(T_transpose[v_ax0, v_ax1])
-                    T_transpose[v_ax0, v_ax1] = fc2_weight[v_ax1, v_ax0]
+                    T_transpose[v_ax0, v_ax1] = p_fc2_weight[v_ax1, v_ax0]
 
         @R.function
-        def main(inp_0: R.Tensor((1, 784), dtype="float32"), fc1_bias: R.Tensor((256,), dtype="float32"), fc1_weight: R.Tensor((256, 784), dtype="float32"), fc2_bias: R.Tensor((10,), dtype="float32"), fc2_weight: R.Tensor((10, 256), dtype="float32")) -> R.Tensor((1, 10), dtype="float32"):
+        def main(x: R.Tensor((1, 784), dtype="float32"), p_fc1_weight: R.Tensor((256, 784), dtype="float32"), p_fc1_bias: R.Tensor((256,), dtype="float32"), p_fc2_weight: R.Tensor((10, 256), dtype="float32"), p_fc2_bias: R.Tensor((10,), dtype="float32")) -> R.Tensor((1, 10), dtype="float32"):
             R.func_attr({"num_input": 1})
             cls = Module
             with R.dataflow():
-                lv = R.call_tir(cls.transpose, (fc1_weight,), out_sinfo=R.Tensor((784, 256), dtype="float32"))
-                lv_1 = R.call_tir(cls.fused_matmul_add_relu, (inp_0, lv, fc1_bias), out_sinfo=R.Tensor((1, 256), dtype="float32"))
-                lv4 = R.call_tir(cls.transpose1, (fc2_weight,), out_sinfo=R.Tensor((256, 10), dtype="float32"))
-                gv = R.call_tir(cls.fused_matmul1_add1, (lv_1, lv4, fc2_bias), out_sinfo=R.Tensor((1, 10), dtype="float32"))
+                lv = R.call_tir(cls.transpose, (p_fc1_weight,), out_sinfo=R.Tensor((784, 256), dtype="float32"))
+                lv_1 = R.call_tir(cls.fused_matmul_add_relu, (x, lv, p_fc1_bias), out_sinfo=R.Tensor((1, 256), dtype="float32"))
+                lv4 = R.call_tir(cls.transpose1, (p_fc2_weight,), out_sinfo=R.Tensor((256, 10), dtype="float32"))
+                gv = R.call_tir(cls.fused_matmul1_add1, (lv_1, lv4, p_fc2_bias), out_sinfo=R.Tensor((1, 10), dtype="float32"))
                 R.output(gv)
             return gv
 
@@ -660,7 +663,7 @@ The default **zero** pipeline contains very fundamental transformations, includi
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 221-231
+.. GENERATED FROM PYTHON SOURCE LINES 224-234
 
 Deploy the IRModule Universally
 -------------------------------
@@ -673,7 +676,7 @@ Deploy on CPU
 ~~~~~~~~~~~~~
 We can deploy the IRModule on CPU by specifying the target as ``llvm``.
 
-.. GENERATED FROM PYTHON SOURCE LINES 231-241
+.. GENERATED FROM PYTHON SOURCE LINES 234-244
 
 .. code-block:: default
 
@@ -695,13 +698,13 @@ We can deploy the IRModule on CPU by specifying the target as ``llvm``.
 
  .. code-block:: none
 
-    [[ 0.13738811  0.348104   -0.00274354 -0.00108131  0.08392381 -0.04231838
-      -0.20667857 -0.14195362  0.09778593  0.01906578]]
+    [[ 0.07704955  0.22635555 -0.02108879  0.14885926 -0.22873458  0.067922
+       0.22715238  0.00922903  0.0203557  -0.12565452]]
 
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 242-251
+.. GENERATED FROM PYTHON SOURCE LINES 245-254
 
 Deploy on GPU
 ~~~~~~~~~~~~~
@@ -713,7 +716,7 @@ We use ``DLight`` to generate the GPU programs. In this tutorial, we won't go in
 the details of ``DLight``.
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 251-260
+.. GENERATED FROM PYTHON SOURCE LINES 254-263
 
 .. code-block:: default
 
@@ -733,11 +736,11 @@ the details of ``DLight``.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 261-262
+.. GENERATED FROM PYTHON SOURCE LINES 264-265
 
 Now we can compile the IRModule on GPU, the similar way as we did on CPU.
 
-.. GENERATED FROM PYTHON SOURCE LINES 262-275
+.. GENERATED FROM PYTHON SOURCE LINES 265-278
 
 .. code-block:: default
 
@@ -762,13 +765,13 @@ Now we can compile the IRModule on GPU, the similar way as we did on CPU.
 
  .. code-block:: none
 
-    [[ 0.1373881   0.348104   -0.00274353 -0.00108136  0.08392386 -0.04231836
-      -0.20667857 -0.14195365  0.09778594  0.01906574]]
+    [[ 0.07704955  0.22635555 -0.02108881  0.14885929 -0.22873458  0.06792203
+       0.22715238  0.00922902  0.02035576 -0.12565461]]
 
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 276-282
+.. GENERATED FROM PYTHON SOURCE LINES 279-285
 
 Deploy on Other Backends
 ~~~~~~~~~~~~~~~~~~~~~~~~
