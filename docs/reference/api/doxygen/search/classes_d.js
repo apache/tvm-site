@@ -27,7 +27,7 @@ var searchData=
   ['objecttypechecker_3c_20variant_3c_20onlyvariant_20_3e_20_3e_7154',['ObjectTypeChecker&lt; Variant&lt; OnlyVariant &gt; &gt;',['../structtvm_1_1runtime_1_1ObjectTypeChecker_3_01Variant_3_01OnlyVariant_01_4_01_4.html',1,'tvm::runtime']]],
   ['objecttypenode_7155',['ObjectTypeNode',['../classtvm_1_1relax_1_1ObjectTypeNode.html',1,'tvm::relax']]],
   ['ondeviceattrs_7156',['OnDeviceAttrs',['../structtvm_1_1relay_1_1OnDeviceAttrs.html',1,'tvm::relay']]],
-  ['onehotattrs_7157',['OneHotAttrs',['../structtvm_1_1relay_1_1OneHotAttrs.html',1,'tvm::relay']]],
+  ['onehotattrs_7157',['OneHotAttrs',['../structtvm_1_1relax_1_1OneHotAttrs.html',1,'tvm::relax::OneHotAttrs'],['../structtvm_1_1relay_1_1OneHotAttrs.html',1,'tvm::relay::OneHotAttrs']]],
   ['op_7158',['Op',['../classtvm_1_1Op.html',1,'tvm']]],
   ['opattrmap_7159',['OpAttrMap',['../classtvm_1_1OpAttrMap.html',1,'tvm']]],
   ['operation_7160',['Operation',['../classtvm_1_1te_1_1Operation.html',1,'tvm::te']]],
