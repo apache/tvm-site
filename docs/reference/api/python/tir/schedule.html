@@ -3614,6 +3614,91 @@ the issue).</p>
 </div>
 </dd></dl>
 
+<dl class="py method">
+<dt class="sig sig-object py" id="tvm.tir.schedule.Schedule.annotate_buffer_access">
+<span class="sig-name descname"><span class="pre">annotate_buffer_access</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">block</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference internal" href="#tvm.tir.schedule.BlockRV" title="tvm.tir.schedule.schedule.BlockRV"><span class="pre">tvm.tir.schedule.schedule.BlockRV</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">buffer_index</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><span class="pre">int</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">buf_type</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">gen_new_ranges</span></span><span class="p"><span class="pre">:</span></span> <span class="n"><span class="pre">Callable</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#tvm.tir.schedule.Schedule.annotate_buffer_access" title="Permalink to this definition">¶</a></dt>
+<dd><p>Annotate the read or write region of a block</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>block</strong> (<a class="reference internal" href="#tvm.tir.schedule.BlockRV" title="tvm.tir.schedule.BlockRV"><em>BlockRV</em></a>) – The block to be annotated</p></li>
+<li><p><strong>buffer_index</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a>) – The index of the buffer in block’s read or write region</p></li>
+<li><p><strong>buf_type</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a>) – The buffer type: “read” or “write”</p></li>
+<li><p><strong>gen_new_ranges</strong> (<em>Callable</em>) – A function that takes the block’s iter_vars and returns a
+Tuple[Union[PrimExpr, Tuple[PrimExpr, PrimExpr]], …]
+which defines the new read or write region for the buffer.
+Each element in the tuple can be:
+- A single PrimExpr representing the iter_var itself
+- A tuple of two PrimExprs representing the range (begin, end)</p></li>
+</ul>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<p>Annotate a 2D read region for a buffer.
+Before annotate_buffer_access, in TensorIR, the IR is:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nd">@T</span><span class="o">.</span><span class="n">prim_func</span>
+<span class="k">def</span> <span class="nf">before_annotate_buffer_access</span><span class="p">(</span>
+    <span class="n">A</span><span class="p">:</span> <span class="n">T</span><span class="o">.</span><span class="n">Buffer</span><span class="p">((</span><span class="mi">128</span><span class="p">,</span> <span class="mi">128</span><span class="p">),</span> <span class="s2">&quot;float32&quot;</span><span class="p">),</span>
+    <span class="n">C</span><span class="p">:</span> <span class="n">T</span><span class="o">.</span><span class="n">Buffer</span><span class="p">((</span><span class="mi">128</span><span class="p">,</span> <span class="mi">128</span><span class="p">),</span> <span class="s2">&quot;float32&quot;</span><span class="p">)</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="n">B</span> <span class="o">=</span> <span class="n">T</span><span class="o">.</span><span class="n">alloc_buffer</span><span class="p">((</span><span class="mi">128</span><span class="p">,</span> <span class="mi">128</span><span class="p">),</span> <span class="s2">&quot;float32&quot;</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">j</span> <span class="ow">in</span> <span class="n">T</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="mi">128</span><span class="p">,</span> <span class="mi">128</span><span class="p">):</span>
+        <span class="k">with</span> <span class="n">T</span><span class="o">.</span><span class="n">block</span><span class="p">(</span><span class="s2">&quot;B&quot;</span><span class="p">):</span>
+            <span class="n">vi</span><span class="p">,</span> <span class="n">vj</span> <span class="o">=</span> <span class="n">T</span><span class="o">.</span><span class="n">axis</span><span class="o">.</span><span class="n">remap</span><span class="p">(</span><span class="s2">&quot;SS&quot;</span><span class="p">,</span> <span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">])</span>
+            <span class="n">B</span><span class="p">[</span><span class="n">vi</span><span class="p">,</span> <span class="n">vj</span><span class="p">]</span> <span class="o">=</span> <span class="n">A</span><span class="p">[</span><span class="n">vi</span><span class="p">,</span> <span class="n">vj</span><span class="p">]</span> <span class="o">*</span> <span class="mf">2.0</span>
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">j</span> <span class="ow">in</span> <span class="n">T</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="mi">128</span><span class="p">,</span> <span class="mi">128</span><span class="p">):</span>
+        <span class="k">with</span> <span class="n">T</span><span class="o">.</span><span class="n">block</span><span class="p">(</span><span class="s2">&quot;C&quot;</span><span class="p">):</span>
+            <span class="n">vi</span><span class="p">,</span> <span class="n">vj</span> <span class="o">=</span> <span class="n">T</span><span class="o">.</span><span class="n">axis</span><span class="o">.</span><span class="n">remap</span><span class="p">(</span><span class="s2">&quot;SS&quot;</span><span class="p">,</span> <span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">])</span>
+            <span class="n">C</span><span class="p">[</span><span class="n">vi</span><span class="p">,</span> <span class="n">vj</span><span class="p">]</span> <span class="o">=</span> <span class="n">B</span><span class="p">[</span><span class="n">vi</span><span class="p">,</span> <span class="n">vj</span><span class="p">]</span> <span class="o">+</span> <span class="mf">1.0</span>
+</pre></div>
+</div>
+<p>Create the schedule and do annotate_buffer_access:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">sch</span> <span class="o">=</span> <span class="n">tir</span><span class="o">.</span><span class="n">Schedule</span><span class="p">(</span><span class="n">before_annotate_buffer_access</span><span class="p">)</span>
+<span class="n">block</span> <span class="o">=</span> <span class="n">sch</span><span class="o">.</span><span class="n">get_block</span><span class="p">(</span><span class="s2">&quot;B&quot;</span><span class="p">)</span>
+<span class="n">sch</span><span class="o">.</span><span class="n">annotate_buffer_access</span><span class="p">(</span><span class="n">block</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;read&quot;</span><span class="p">,</span>
+<span class="k">lambda</span> <span class="n">vi</span><span class="p">,</span> <span class="n">vj</span><span class="p">:</span> <span class="p">((</span><span class="n">vi</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="n">vi</span> <span class="o">+</span> <span class="mi">1</span><span class="p">),</span> <span class="p">(</span><span class="n">vj</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="n">vj</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)))</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">sch</span><span class="o">.</span><span class="n">mod</span><span class="p">[</span><span class="s2">&quot;main&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">script</span><span class="p">())</span>
+</pre></div>
+</div>
+<p>After applying annotate_buffer_access, the IR becomes:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nd">@T</span><span class="o">.</span><span class="n">prim_func</span>
+<span class="k">def</span> <span class="nf">after_annotate_buffer_access</span><span class="p">(</span>
+    <span class="n">A</span><span class="p">:</span> <span class="n">T</span><span class="o">.</span><span class="n">Buffer</span><span class="p">((</span><span class="mi">128</span><span class="p">,</span> <span class="mi">128</span><span class="p">),</span> <span class="s2">&quot;float32&quot;</span><span class="p">),</span>
+    <span class="n">C</span><span class="p">:</span> <span class="n">T</span><span class="o">.</span><span class="n">Buffer</span><span class="p">((</span><span class="mi">128</span><span class="p">,</span> <span class="mi">128</span><span class="p">),</span> <span class="s2">&quot;float32&quot;</span><span class="p">)</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="n">B</span> <span class="o">=</span> <span class="n">T</span><span class="o">.</span><span class="n">alloc_buffer</span><span class="p">((</span><span class="mi">128</span><span class="p">,</span> <span class="mi">128</span><span class="p">),</span> <span class="s2">&quot;float32&quot;</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">j</span> <span class="ow">in</span> <span class="n">T</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="mi">128</span><span class="p">,</span> <span class="mi">128</span><span class="p">):</span>
+        <span class="k">with</span> <span class="n">T</span><span class="o">.</span><span class="n">block</span><span class="p">(</span><span class="s2">&quot;B&quot;</span><span class="p">):</span>
+            <span class="n">vi</span><span class="p">,</span> <span class="n">vj</span> <span class="o">=</span> <span class="n">T</span><span class="o">.</span><span class="n">axis</span><span class="o">.</span><span class="n">remap</span><span class="p">(</span><span class="s2">&quot;SS&quot;</span><span class="p">,</span> <span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">])</span>
+            <span class="n">T</span><span class="o">.</span><span class="n">reads</span><span class="p">(</span><span class="n">A</span><span class="p">[</span><span class="n">vi</span> <span class="o">-</span> <span class="mi">1</span><span class="p">:</span><span class="n">vi</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">vj</span> <span class="o">-</span> <span class="mi">1</span><span class="p">:</span><span class="n">vj</span> <span class="o">+</span> <span class="mi">1</span><span class="p">])</span>
+            <span class="n">T</span><span class="o">.</span><span class="n">writes</span><span class="p">(</span><span class="n">B</span><span class="p">[</span><span class="n">vi</span><span class="p">,</span> <span class="n">vj</span><span class="p">])</span>
+            <span class="n">T</span><span class="o">.</span><span class="n">block_attr</span><span class="p">({</span><span class="s2">&quot;explicit_read_region&quot;</span><span class="p">:</span> <span class="mi">0</span><span class="p">})</span>
+            <span class="n">B</span><span class="p">[</span><span class="n">vi</span><span class="p">,</span> <span class="n">vj</span><span class="p">]</span> <span class="o">=</span> <span class="n">A</span><span class="p">[</span><span class="n">vi</span><span class="p">,</span> <span class="n">vj</span><span class="p">]</span> <span class="o">*</span> <span class="mf">2.0</span>
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">j</span> <span class="ow">in</span> <span class="n">T</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="mi">128</span><span class="p">,</span> <span class="mi">128</span><span class="p">):</span>
+        <span class="k">with</span> <span class="n">T</span><span class="o">.</span><span class="n">block</span><span class="p">(</span><span class="s2">&quot;C&quot;</span><span class="p">):</span>
+            <span class="n">vi</span><span class="p">,</span> <span class="n">vj</span> <span class="o">=</span> <span class="n">T</span><span class="o">.</span><span class="n">axis</span><span class="o">.</span><span class="n">remap</span><span class="p">(</span><span class="s2">&quot;SS&quot;</span><span class="p">,</span> <span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">])</span>
+            <span class="n">C</span><span class="p">[</span><span class="n">vi</span><span class="p">,</span> <span class="n">vj</span><span class="p">]</span> <span class="o">=</span> <span class="n">B</span><span class="p">[</span><span class="n">vi</span><span class="p">,</span> <span class="n">vj</span><span class="p">]</span> <span class="o">+</span> <span class="mf">1.0</span>
+</pre></div>
+</div>
+<p>This annotates the read region for buffer A (index 0) in block “B” to be
+[vi-1:vi+1, vj-1:vj+1] for each (vi, vj) in the block’s iteration domain.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>This function allows manual specification of read or write regions, which
+can be useful in cases where the compiler cannot accurately infer the
+access pattern, such as complex data-dependent accesses.
+It overrides the automatically inferred region for the specified buffer.
+The function adds an annotation to the block, indicating that an explicit
+region has been provided for the buffer at the given index. This annotation
+is used in the CompactBufferAllocation pass to respect the manually specified
+region instead of relying on automatic inference.</p>
+<p>Caution should be exercised when using this function, as incorrect annotations
+may lead to incorrect code generation or runtime errors. It’s crucial to
+ensure that the specified region covers all actual reads or writes performed
+by the block for the given buffer.</p>
+</div>
+</dd></dl>
+
 </dd></dl>
 
 <dl class="py exception">
