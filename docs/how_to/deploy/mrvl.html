@@ -482,12 +482,12 @@ integrated MLIP cn10ka processor, using only 4 tiles in the block.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">python3</span> <span class="o">-</span><span class="n">m</span> <span class="n">tvm</span><span class="o">.</span><span class="n">driver</span><span class="o">.</span><span class="n">tvmc</span> <span class="nb">compile</span> <span class="o">--</span><span class="n">target</span><span class="o">=</span><span class="s2">&quot;mrvl, llvm&quot;</span> \
     <span class="o">--</span><span class="n">target</span><span class="o">-</span><span class="n">llvm</span><span class="o">-</span><span class="n">mtriple</span><span class="o">=</span><span class="n">aarch64</span><span class="o">-</span><span class="n">linux</span><span class="o">-</span><span class="n">gnu</span> <span class="o">--</span><span class="n">target</span><span class="o">-</span><span class="n">llvm</span><span class="o">-</span><span class="n">mcpu</span><span class="o">=</span><span class="n">neoverse</span><span class="o">-</span><span class="n">n2</span> \
     <span class="o">--</span><span class="n">target</span><span class="o">-</span><span class="n">mrvl</span><span class="o">-</span><span class="n">num_tiles</span><span class="o">=</span><span class="mi">4</span> \
+    <span class="o">--</span><span class="n">target</span><span class="o">-</span><span class="n">mrvl</span><span class="o">-</span><span class="n">mattr</span><span class="o">=</span><span class="s2">&quot;hw -quantize=fp16 -wb_pin_ocm=1&quot;</span> \
     <span class="o">--</span><span class="n">cross</span><span class="o">-</span><span class="n">compiler</span> <span class="n">aarch64</span><span class="o">-</span><span class="n">linux</span><span class="o">-</span><span class="n">gnu</span><span class="o">-</span><span class="n">gcc</span> \
     <span class="o">--</span><span class="n">output</span> <span class="n">model</span><span class="o">.</span><span class="n">tar</span> \
     <span class="n">mnist</span><span class="o">-</span><span class="mf">12.</span><span class="n">onnx</span>
 </pre></div>
 </div>
-<p>The runtime support for hardware acceleration is a WIP, it will be added in future PR.</p>
 </div>
 <div class="section" id="tvmc-compiler-mrvl-specific-command-line-options">
 <h2>3.3. TVMC Compiler: mrvl specific Command Line Options<a class="headerlink" href="#tvmc-compiler-mrvl-specific-command-line-options" title="Permalink to this headline">¶</a></h2>
@@ -510,7 +510,7 @@ possible values = {cn10ka, cnf10kb}; defaults to cn10ka</p>
 </dl>
 </li>
 <li><dl>
-<dt>mattr:</dt><dd><p>Attributes for mrvl; possible values = {quantize, wb_pin_ocm}</p>
+<dt>mattr:</dt><dd><p>Attributes for mrvl; possible values = {quantize, wb_pin_ocm, run_mode}</p>
 <p>mattr specifies the data type, code generation options and optimizations.</p>
 <p><em>List of supported attributes are:</em></p>
 <p><strong>1. quantize</strong></p>
@@ -519,18 +519,24 @@ Default is fp16, int8 is WIP and full support will be added in a future PR.</p>
 <p><strong>2. wb_pin_ocm</strong></p>
 <p>Optimize runtime by preloading a model’s weights and bias into
 the on chip memory. Possible values = {0, 1}. Default is 0 (no preload)</p>
+<p><strong>3. run_mode</strong></p>
+<p>Specify whether to compile for the simulator or for the target hardware (Octeon).
+Possible values = {sim, hw}. Default is sim (software simulator).</p>
 </dd>
 </dl>
 </li>
 </ul>
 </div>
-<div class="section" id="compile-onnx-model-for-simulator-llvm-x86-64-target">
-<h2>4. Compile ONNX model for Simulator + LLVM / x86_64 target<a class="headerlink" href="#compile-onnx-model-for-simulator-llvm-x86-64-target" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="compile-onnx-model-using-the-tvmc-flow">
+<h2>4. Compile ONNX model using the TVMC flow<a class="headerlink" href="#compile-onnx-model-using-the-tvmc-flow" title="Permalink to this headline">¶</a></h2>
 <p>In the TVMC mrvl flow, the model is partitioned into Marvell and LLVM regions.
 Building each partitioned Marvell subgraph generates serialized nodes.json and
 const.json. Partitioned nodes.json is the representation of the model graph which is
 suitable for the Marvell compiler (mrvl-tmlc). The compiler compiles the model graph to
 generate the model binary with MLIP instructions.</p>
+</div>
+<div class="section" id="compile-and-run-onnx-model-for-simulator-llvm-x86-64-target">
+<h2>4.1 Compile and Run ONNX model for Simulator + LLVM / x86_64 target<a class="headerlink" href="#compile-and-run-onnx-model-for-simulator-llvm-x86-64-target" title="Permalink to this headline">¶</a></h2>
 <p><strong>Model Compilation for Simulator + LLVM / x86_64 target</strong></p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">python3</span> <span class="o">-</span><span class="n">m</span> <span class="n">tvm</span><span class="o">.</span><span class="n">driver</span><span class="o">.</span><span class="n">tvmc</span> <span class="nb">compile</span> <span class="o">--</span><span class="n">target</span><span class="o">=</span><span class="s2">&quot;mrvl, llvm&quot;</span> \
     <span class="o">--</span><span class="n">target</span><span class="o">-</span><span class="n">mrvl</span><span class="o">-</span><span class="n">num_tiles</span><span class="o">=</span><span class="mi">4</span> <span class="o">--</span><span class="n">output</span> <span class="n">model</span><span class="o">.</span><span class="n">tar</span> <span class="n">model</span><span class="o">.</span><span class="n">onnx</span>
@@ -539,6 +545,18 @@ generate the model binary with MLIP instructions.</p>
 <p><strong>Run TVM models on x86_64 host using MLIP Simulator</strong></p>
 <p>Generated model binary is simulated using Marvell’s MLIP Simulator(mrvl-mlsim).</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">python3</span> <span class="o">-</span><span class="n">m</span> <span class="n">tvm</span><span class="o">.</span><span class="n">driver</span><span class="o">.</span><span class="n">tvmc</span> <span class="n">run</span> <span class="o">--</span><span class="n">inputs</span> <span class="n">infer</span><span class="o">.</span><span class="n">npz</span> <span class="o">--</span><span class="n">outputs</span> <span class="n">predict</span><span class="o">.</span><span class="n">npz</span> <span class="n">model</span><span class="o">.</span><span class="n">tar</span> <span class="o">--</span><span class="n">number</span><span class="o">=</span><span class="mi">0</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="compile-and-run-onnx-model-for-octeon-target">
+<h2>4.2 Compile and Run ONNX model for Octeon target<a class="headerlink" href="#compile-and-run-onnx-model-for-octeon-target" title="Permalink to this headline">¶</a></h2>
+<p><strong>Model Compilation for Octeon target</strong></p>
+<p>Please refer to section 3.2 for the example command line.</p>
+<p><strong>Run TVM models on the Octeon Target</strong></p>
+<p>The cross compiled binary can be run on the target hardware using the tvmc run command.
+Alternatively, the RPC flow enables remote execution on the target device from your
+local machine: <a class="reference external" href="https://tvm.apache.org/docs/how_to/tutorials/cross_compilation_and_rpc.html">https://tvm.apache.org/docs/how_to/tutorials/cross_compilation_and_rpc.html</a></p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">python3</span> <span class="o">-</span><span class="n">m</span> <span class="n">tvm</span><span class="o">.</span><span class="n">driver</span><span class="o">.</span><span class="n">tvmc</span> <span class="n">run</span> <span class="o">--</span><span class="n">inputs</span> <span class="n">infer</span><span class="o">.</span><span class="n">npz</span> <span class="o">--</span><span class="n">outputs</span> <span class="n">predict</span><span class="o">.</span><span class="n">npz</span> <span class="n">model</span><span class="o">.</span><span class="n">tar</span>
 </pre></div>
 </div>
 </div>
