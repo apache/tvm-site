@@ -30,7 +30,7 @@ This is a short tutorial on how to use "Pipeline Executor" with Relay.
 
 .. GENERATED FROM PYTHON SOURCE LINES 24-35
 
-.. code-block:: default
+.. code-block:: Python
 
     import tvm
     from tvm import te
@@ -59,7 +59,7 @@ It consists of convolution, batch normalization, dense, and ReLU activation.
 
 .. GENERATED FROM PYTHON SOURCE LINES 40-66
 
-.. code-block:: default
+.. code-block:: Python
 
     def get_network():
         out_channels = 16
@@ -103,7 +103,7 @@ to split the graph.
 
 .. GENERATED FROM PYTHON SOURCE LINES 71-78
 
-.. code-block:: default
+.. code-block:: Python
 
     import inspect
     import os
@@ -125,7 +125,7 @@ Splitting the network into two subgraphs.
 
 .. GENERATED FROM PYTHON SOURCE LINES 80-82
 
-.. code-block:: default
+.. code-block:: Python
 
     split_config = [{"op_name": "nn.relu", "op_index": 0}]
     subgraphs = graph_split(net["main"], split_config, params)
@@ -142,7 +142,7 @@ The generated subgraphs should look something like below.
 
 .. GENERATED FROM PYTHON SOURCE LINES 84-105
 
-.. code-block:: default
+.. code-block:: Python
 
 
     """
@@ -185,7 +185,7 @@ Build the subgraph with cutlass target.
 
 .. GENERATED FROM PYTHON SOURCE LINES 108-133
 
-.. code-block:: default
+.. code-block:: Python
 
 
     cutlass = tvm.target.Target(
@@ -227,7 +227,7 @@ Set 'USE_PIPELINE_EXECUTOR' as ON, and set USE_CUTLASS' as ON  in cmake.
 
 .. GENERATED FROM PYTHON SOURCE LINES 137-139
 
-.. code-block:: default
+.. code-block:: Python
 
     from tvm.contrib import graph_executor, pipeline_executor, pipeline_executor_build
 
@@ -246,7 +246,7 @@ Use CUTLASS BYOC to build the second subgraph module.
 
 .. GENERATED FROM PYTHON SOURCE LINES 143-146
 
-.. code-block:: default
+.. code-block:: Python
 
     mod0, mod1 = subgraphs[0], subgraphs[1]
     # Use cutlass as the codegen.
@@ -264,7 +264,7 @@ Get the pipeline executor configuration object.
 
 .. GENERATED FROM PYTHON SOURCE LINES 148-149
 
-.. code-block:: default
+.. code-block:: Python
 
     pipe_config = pipeline_executor_build.PipelineConfig()
 
@@ -280,7 +280,7 @@ Set the compile target of the subgraph module.
 
 .. GENERATED FROM PYTHON SOURCE LINES 151-153
 
-.. code-block:: default
+.. code-block:: Python
 
     pipe_config[mod0].target = "llvm"
     pipe_config[mod0].dev = tvm.cpu(0)
@@ -297,7 +297,7 @@ Set the compile target of the second subgraph module as cuda.
 
 .. GENERATED FROM PYTHON SOURCE LINES 155-166
 
-.. code-block:: default
+.. code-block:: Python
 
     pipe_config[mod1].target = "cuda"
     pipe_config[mod1].dev = tvm.device("cuda", 0)
@@ -323,7 +323,7 @@ The pipeline configuration as below.
 
 .. GENERATED FROM PYTHON SOURCE LINES 168-180
 
-.. code-block:: default
+.. code-block:: Python
 
     """
     print(pipe_config)
@@ -357,7 +357,7 @@ Build the pipeline executor.
 
 .. GENERATED FROM PYTHON SOURCE LINES 183-185
 
-.. code-block:: default
+.. code-block:: Python
 
     with tvm.transform.PassContext(opt_level=3):
         pipeline_mod_factory = pipeline_executor_build.build(pipe_config)
@@ -374,7 +374,7 @@ Export the parameter configuration to a file.
 
 .. GENERATED FROM PYTHON SOURCE LINES 187-190
 
-.. code-block:: default
+.. code-block:: Python
 
     directory_path = tvm.contrib.utils.tempdir().temp_dir
     os.makedirs(directory_path, exist_ok=True)
@@ -393,7 +393,7 @@ Use the load function to create and initialize PipelineModule.
 
 .. GENERATED FROM PYTHON SOURCE LINES 193-195
 
-.. code-block:: default
+.. code-block:: Python
 
     pipeline_module = pipeline_executor.PipelineModule.load_library(config_file_name)
 
@@ -412,7 +412,7 @@ Allocate input data.
 
 .. GENERATED FROM PYTHON SOURCE LINES 199-201
 
-.. code-block:: default
+.. code-block:: Python
 
     data = np.random.uniform(-1, 1, size=data_shape).astype("float16")
     pipeline_module.set_input("data", tvm.nd.array(data))
@@ -430,7 +430,7 @@ or synchronously. In the following example, it is synchronous.
 
 .. GENERATED FROM PYTHON SOURCE LINES 204-206
 
-.. code-block:: default
+.. code-block:: Python
 
     pipeline_module.run()
     outputs = pipeline_module.get_output()
@@ -449,7 +449,7 @@ Run these two subgraphs in sequence with graph_executor to get the output.
 
 .. GENERATED FROM PYTHON SOURCE LINES 210-230
 
-.. code-block:: default
+.. code-block:: Python
 
     target = "llvm"
     dev0 = tvm.device(target, 0)
@@ -484,7 +484,7 @@ Verify the result.
 
 .. GENERATED FROM PYTHON SOURCE LINES 232-233
 
-.. code-block:: default
+.. code-block:: Python
 
     tvm.testing.assert_allclose(outputs[0].numpy(), out.numpy())
 
@@ -501,14 +501,17 @@ Verify the result.
 
   .. container:: sphx-glr-footer sphx-glr-footer-example
 
+    .. container:: sphx-glr-download sphx-glr-download-jupyter
+
+      :download:`Download Jupyter notebook: using_pipeline_executor.ipynb <using_pipeline_executor.ipynb>`
 
     .. container:: sphx-glr-download sphx-glr-download-python
 
       :download:`Download Python source code: using_pipeline_executor.py <using_pipeline_executor.py>`
 
-    .. container:: sphx-glr-download sphx-glr-download-jupyter
+    .. container:: sphx-glr-download sphx-glr-download-zip
 
-      :download:`Download Jupyter notebook: using_pipeline_executor.ipynb <using_pipeline_executor.ipynb>`
+      :download:`Download zipped: using_pipeline_executor.zip <using_pipeline_executor.zip>`
 
 
 .. only:: html
