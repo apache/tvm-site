@@ -1,8 +1,8 @@
 var searchData=
 [
-  ['affinitymode_11945',['AffinityMode',['../classtvm_1_1runtime_1_1threading_1_1ThreadGroup.html#a5230a4c2d7f6c2f73f3d5fb00e9f6acd',1,'tvm::runtime::threading::ThreadGroup']]],
-  ['allocatortype_11946',['AllocatorType',['../namespacetvm_1_1runtime_1_1memory.html#a902bbce5a86071aad9677b07d93b5518',1,'tvm::runtime::memory']]],
-  ['anycodegenstrategy_11947',['AnyCodegenStrategy',['../namespacetvm_1_1relay.html#adab76fedc831b249d1c80d69c4a620a3',1,'tvm::relay']]],
-  ['argkind_11948',['ArgKind',['../structtvm_1_1runtime_1_1relax__vm_1_1Instruction.html#ad01109b8e710fb8988eac9ed4bbed9e6',1,'tvm::runtime::relax_vm::Instruction']]],
-  ['attachtype_11949',['AttachType',['../namespacetvm_1_1te.html#a7693a274748dadfa2eaa35f5ce9008a5',1,'tvm::te']]]
+  ['affinitymode_11948',['AffinityMode',['../classtvm_1_1runtime_1_1threading_1_1ThreadGroup.html#a5230a4c2d7f6c2f73f3d5fb00e9f6acd',1,'tvm::runtime::threading::ThreadGroup']]],
+  ['allocatortype_11949',['AllocatorType',['../namespacetvm_1_1runtime_1_1memory.html#a902bbce5a86071aad9677b07d93b5518',1,'tvm::runtime::memory']]],
+  ['anycodegenstrategy_11950',['AnyCodegenStrategy',['../namespacetvm_1_1relay.html#adab76fedc831b249d1c80d69c4a620a3',1,'tvm::relay']]],
+  ['argkind_11951',['ArgKind',['../structtvm_1_1runtime_1_1relax__vm_1_1Instruction.html#ad01109b8e710fb8988eac9ed4bbed9e6',1,'tvm::runtime::relax_vm::Instruction']]],
+  ['attachtype_11952',['AttachType',['../namespacetvm_1_1te.html#a7693a274748dadfa2eaa35f5ce9008a5',1,'tvm::te']]]
 ];
