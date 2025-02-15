@@ -206,7 +206,6 @@
 <li class="toctree-l3"><a class="reference internal" href="runtime.html#runtime-specific-information">Runtime-Specific Information</a></li>
 <li class="toctree-l3"><a class="reference internal" href="debugger.html">Debugger</a></li>
 <li class="toctree-l3 current"><a class="current reference internal" href="#">Introduction to Module Serialization</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#module-export-example">Module Export Example</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#serialization">Serialization</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#under-the-hood-of-serialization-and-format-standard">Under the Hood of Serialization and Format Standard</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#deserialization">Deserialization</a></li>
@@ -333,38 +332,6 @@
 <p>When to deploy TVM runtime module, no matter whether it is CPU or GPU, TVM only needs one single dynamic
 shared library. The key is our unified module serialization mechanism. This document will introduce TVM module
 serialization format standard and implementation details.</p>
-<section id="module-export-example">
-<h2>Module Export Example<a class="headerlink" href="#module-export-example" title="Link to this heading"></a></h2>
-<p>Let us build one ResNet-18 workload for GPU as an example first.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">tvm</span> <span class="kn">import</span> <span class="n">relay</span>
-<span class="kn">from</span> <span class="nn">tvm.relay</span> <span class="kn">import</span> <span class="n">testing</span>
-<span class="kn">from</span> <span class="nn">tvm.contrib</span> <span class="kn">import</span> <span class="n">utils</span>
-<span class="kn">import</span> <span class="nn">tvm</span>
-
-<span class="c1"># Resnet18 workload</span>
-<span class="n">resnet18_mod</span><span class="p">,</span> <span class="n">resnet18_params</span> <span class="o">=</span> <span class="n">relay</span><span class="o">.</span><span class="n">testing</span><span class="o">.</span><span class="n">resnet</span><span class="o">.</span><span class="n">get_workload</span><span class="p">(</span><span class="n">num_layers</span><span class="o">=</span><span class="mi">18</span><span class="p">)</span>
-
-<span class="c1"># build</span>
-<span class="k">with</span> <span class="n">relay</span><span class="o">.</span><span class="n">build_config</span><span class="p">(</span><span class="n">opt_level</span><span class="o">=</span><span class="mi">3</span><span class="p">):</span>
-    <span class="n">_</span><span class="p">,</span> <span class="n">resnet18_lib</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">relay</span><span class="o">.</span><span class="n">build_module</span><span class="o">.</span><span class="n">build</span><span class="p">(</span><span class="n">resnet18_mod</span><span class="p">,</span> <span class="s2">&quot;cuda&quot;</span><span class="p">,</span> <span class="n">params</span><span class="o">=</span><span class="n">resnet18_params</span><span class="p">)</span>
-
-<span class="c1"># create one tempory directory</span>
-<span class="n">temp</span> <span class="o">=</span> <span class="n">utils</span><span class="o">.</span><span class="n">tempdir</span><span class="p">()</span>
-
-<span class="c1"># path lib</span>
-<span class="n">file_name</span> <span class="o">=</span> <span class="s2">&quot;deploy.so&quot;</span>
-<span class="n">path_lib</span> <span class="o">=</span> <span class="n">temp</span><span class="o">.</span><span class="n">relpath</span><span class="p">(</span><span class="n">file_name</span><span class="p">)</span>
-
-<span class="c1"># export library</span>
-<span class="n">resnet18_lib</span><span class="o">.</span><span class="n">export_library</span><span class="p">(</span><span class="n">path_lib</span><span class="p">)</span>
-
-<span class="c1"># load it back</span>
-<span class="n">loaded_lib</span> <span class="o">=</span> <span class="n">tvm</span><span class="o">.</span><span class="n">runtime</span><span class="o">.</span><span class="n">load_module</span><span class="p">(</span><span class="n">path_lib</span><span class="p">)</span>
-<span class="k">assert</span> <span class="n">loaded_lib</span><span class="o">.</span><span class="n">type_key</span> <span class="o">==</span> <span class="s2">&quot;library&quot;</span>
-<span class="k">assert</span> <span class="n">loaded_lib</span><span class="o">.</span><span class="n">imported_modules</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">type_key</span> <span class="o">==</span> <span class="s2">&quot;cuda&quot;</span>
-</pre></div>
-</div>
-</section>
 <section id="serialization">
 <h2>Serialization<a class="headerlink" href="#serialization" title="Link to this heading"></a></h2>
 <p>The entrance API is <code class="docutils literal notranslate"><span class="pre">export_library</span></code> of <code class="docutils literal notranslate"><span class="pre">tvm.module.Module</span></code>.
