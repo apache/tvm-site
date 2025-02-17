@@ -1,6 +1,6 @@
 var searchData=
 [
-  ['getobjectpathrepr_12353',['GetObjectPathRepr',['../classtvm_1_1ObjectPathNode.html#a102e76694cc17b2c855ecbae4212cd6c',1,'tvm::ObjectPathNode']]],
-  ['getobjectptr_12354',['GetObjectPtr',['../classtvm_1_1runtime_1_1ObjectPtr.html#a2d849c83a86bbe7e86022b3d6cfc5ee4',1,'tvm::runtime::ObjectPtr']]],
-  ['getref_12355',['GetRef',['../classtvm_1_1runtime_1_1ObjectPtr.html#a4365e69ddcc4d8c13904852391b99268',1,'tvm::runtime::ObjectPtr']]]
+  ['instructionkind_9757',['InstructionKind',['../classtvm_1_1tir_1_1InstructionKindRegEntry.html#ae2b430cbb7fae7f39152765fc947a1e9',1,'tvm::tir::InstructionKindRegEntry']]],
+  ['internal_9758',['Internal',['../classtvm_1_1transform_1_1PassContext.html#a8bde6eb35df6b3a9f53810e0bc79fdfd',1,'tvm::transform::PassContext::Internal()'],['../classtvm_1_1te_1_1SpecializedCondition.html#a8bde6eb35df6b3a9f53810e0bc79fdfd',1,'tvm::te::SpecializedCondition::Internal()']]],
+  ['irmodule_9759',['IRModule',['../classtvm_1_1IRModuleNode.html#a2b30d3e406c01bb6287d1d7514ecaf46',1,'tvm::IRModuleNode']]]
 ];

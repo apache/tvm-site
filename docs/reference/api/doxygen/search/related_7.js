@@ -1,7 +1,10 @@
 var searchData=
 [
-  ['instructionkind_12356',['InstructionKind',['../classtvm_1_1tir_1_1InstructionKindRegEntry.html#ae2b430cbb7fae7f39152765fc947a1e9',1,'tvm::tir::InstructionKindRegEntry']]],
-  ['internal_12357',['Internal',['../classtvm_1_1transform_1_1PassContext.html#a8bde6eb35df6b3a9f53810e0bc79fdfd',1,'tvm::transform::PassContext::Internal()'],['../classtvm_1_1te_1_1SpecializedCondition.html#a8bde6eb35df6b3a9f53810e0bc79fdfd',1,'tvm::te::SpecializedCondition::Internal()']]],
-  ['irmodule_12358',['IRModule',['../classtvm_1_1IRModuleNode.html#a2b30d3e406c01bb6287d1d7514ecaf46',1,'tvm::IRModuleNode']]],
-  ['isprimitiveop_12359',['IsPrimitiveOp',['../classtvm_1_1OpNode.html#aee9090e54dff3e72ed272b981e036ae6',1,'tvm::OpNode']]]
+  ['make_5fobject_9760',['make_object',['../classtvm_1_1runtime_1_1ArrayNode.html#a67cfa1fb4c787e0b6bfdbaa592a92f22',1,'tvm::runtime::ArrayNode']]],
+  ['manager_9761',['Manager',['../classtvm_1_1runtime_1_1Registry.html#a1fd6b9bc3f72bb2b64e602de3982929d',1,'tvm::runtime::Registry::Manager()'],['../classtvm_1_1GenericFunc.html#a1fd6b9bc3f72bb2b64e602de3982929d',1,'tvm::GenericFunc::Manager()']]],
+  ['map_9762',['Map',['../classtvm_1_1runtime_1_1MapNode.html#ad052dfd6b3b90d3e5e20ebf5544d550b',1,'tvm::runtime::MapNode::Map()'],['../classtvm_1_1runtime_1_1Map_1_1iterator.html#ad052dfd6b3b90d3e5e20ebf5544d550b',1,'tvm::runtime::Map::iterator::Map()']]],
+  ['mapnode_9763',['MapNode',['../classtvm_1_1runtime_1_1SmallMapNode.html#ab0425277cedf5598f463c24385a0e5a5',1,'tvm::runtime::SmallMapNode::MapNode()'],['../classtvm_1_1runtime_1_1DenseMapNode.html#ab0425277cedf5598f463c24385a0e5a5',1,'tvm::runtime::DenseMapNode::MapNode()']]],
+  ['module_9764',['Module',['../classtvm_1_1runtime_1_1ModuleNode.html#a21f639900c480510650969df9c74d17d',1,'tvm::runtime::ModuleNode']]],
+  ['moduleinternal_9765',['ModuleInternal',['../classtvm_1_1runtime_1_1ModuleNode.html#a2b490c1acecd166b5824e4e96f17c64e',1,'tvm::runtime::ModuleNode']]],
+  ['modulenode_9766',['ModuleNode',['../classtvm_1_1runtime_1_1Module.html#a908d19538a4fcadd6e93f39e4aa5292b',1,'tvm::runtime::Module']]]
 ];

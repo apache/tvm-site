@@ -1,10 +1,15 @@
 var searchData=
 [
-  ['make_5fobject_12361',['make_object',['../classtvm_1_1runtime_1_1ArrayNode.html#a67cfa1fb4c787e0b6bfdbaa592a92f22',1,'tvm::runtime::ArrayNode']]],
-  ['manager_12362',['Manager',['../classtvm_1_1runtime_1_1Registry.html#a1fd6b9bc3f72bb2b64e602de3982929d',1,'tvm::runtime::Registry::Manager()'],['../classtvm_1_1GenericFunc.html#a1fd6b9bc3f72bb2b64e602de3982929d',1,'tvm::GenericFunc::Manager()']]],
-  ['map_12363',['Map',['../classtvm_1_1runtime_1_1MapNode.html#ad052dfd6b3b90d3e5e20ebf5544d550b',1,'tvm::runtime::MapNode::Map()'],['../classtvm_1_1runtime_1_1Map_1_1iterator.html#ad052dfd6b3b90d3e5e20ebf5544d550b',1,'tvm::runtime::Map::iterator::Map()']]],
-  ['mapnode_12364',['MapNode',['../classtvm_1_1runtime_1_1SmallMapNode.html#ab0425277cedf5598f463c24385a0e5a5',1,'tvm::runtime::SmallMapNode::MapNode()'],['../classtvm_1_1runtime_1_1DenseMapNode.html#ab0425277cedf5598f463c24385a0e5a5',1,'tvm::runtime::DenseMapNode::MapNode()']]],
-  ['module_12365',['Module',['../classtvm_1_1runtime_1_1ModuleNode.html#a21f639900c480510650969df9c74d17d',1,'tvm::runtime::ModuleNode']]],
-  ['moduleinternal_12366',['ModuleInternal',['../classtvm_1_1runtime_1_1ModuleNode.html#a2b490c1acecd166b5824e4e96f17c64e',1,'tvm::runtime::ModuleNode']]],
-  ['modulenode_12367',['ModuleNode',['../classtvm_1_1runtime_1_1Module.html#a908d19538a4fcadd6e93f39e4aa5292b',1,'tvm::runtime::Module']]]
+  ['objallocatorbase_9768',['ObjAllocatorBase',['../classtvm_1_1runtime_1_1ObjectPtr.html#a8fae619f3bd1a2b2f7273d8d6525032a',1,'tvm::runtime::ObjectPtr::ObjAllocatorBase()'],['../classtvm_1_1runtime_1_1Object.html#a8fae619f3bd1a2b2f7273d8d6525032a',1,'tvm::runtime::Object::ObjAllocatorBase()']]],
+  ['object_9769',['Object',['../classtvm_1_1runtime_1_1ObjectPtr.html#a0720b5f434e636e22a3ed34f847eec57',1,'tvm::runtime::ObjectPtr']]],
+  ['objectinternal_9770',['ObjectInternal',['../classtvm_1_1runtime_1_1Object.html#a4a8e2a2ce9dc9267dc18ac8abfd8dd16',1,'tvm::runtime::Object::ObjectInternal()'],['../classtvm_1_1runtime_1_1ObjectRef.html#a4a8e2a2ce9dc9267dc18ac8abfd8dd16',1,'tvm::runtime::ObjectRef::ObjectInternal()']]],
+  ['objectpath_9771',['ObjectPath',['../classtvm_1_1ObjectPathNode.html#a8714f126861b816502889d8d7b8dcfae',1,'tvm::ObjectPathNode']]],
+  ['objectptr_9772',['ObjectPtr',['../classtvm_1_1runtime_1_1Object.html#a4193bb155125953e77ded93c0fb46965',1,'tvm::runtime::Object::ObjectPtr()'],['../classtvm_1_1runtime_1_1ObjectPtr.html#a4193bb155125953e77ded93c0fb46965',1,'tvm::runtime::ObjectPtr::ObjectPtr()']]],
+  ['objectptrhash_9773',['ObjectPtrHash',['../classtvm_1_1runtime_1_1ObjectPtr.html#ab1db3e3b77985946e4379d31829030a5',1,'tvm::runtime::ObjectPtr::ObjectPtrHash()'],['../classtvm_1_1runtime_1_1ObjectRef.html#ab1db3e3b77985946e4379d31829030a5',1,'tvm::runtime::ObjectRef::ObjectPtrHash()']]],
+  ['objectref_9774',['ObjectRef',['../classtvm_1_1runtime_1_1ObjectPtr.html#a5d7d1b555fd908e511caa42bd7ccfc71',1,'tvm::runtime::ObjectPtr']]],
+  ['onlyusedby_9775',['OnlyUsedBy',['../classtvm_1_1relax_1_1PatternSeq.html#ade577cee507218825a40a864634f6158',1,'tvm::relax::PatternSeq']]],
+  ['op_9776',['Op',['../classtvm_1_1OpAttrMap.html#a2c31e8a3c11caeb061d69db14ebb0e95',1,'tvm::OpAttrMap']]],
+  ['operator_2b_9777',['operator+',['../classtvm_1_1runtime_1_1String.html#a346acdf3143412eaab63e8f3664cd575',1,'tvm::runtime::String::operator+()'],['../classtvm_1_1runtime_1_1String.html#af71ae061ba27c966204712cf13558437',1,'tvm::runtime::String::operator+()'],['../classtvm_1_1runtime_1_1String.html#a4ed702c701164539de5ce6b332c45d07',1,'tvm::runtime::String::operator+()'],['../classtvm_1_1runtime_1_1String.html#a90015386d12dcad1a1150e0e3c6a0d8a',1,'tvm::runtime::String::operator+()'],['../classtvm_1_1runtime_1_1String.html#ae3cd285a0b3bcf7d5f1b89dba89035d1',1,'tvm::runtime::String::operator+()']]],
+  ['operator_3c_3c_9778',['operator&lt;&lt;',['../structtvm_1_1runtime_1_1relax__vm_1_1Instruction.html#aa3236d92c4a140acec567ed3821cb3f4',1,'tvm::runtime::relax_vm::Instruction::operator&lt;&lt;()'],['../classtvm_1_1tir_1_1LayoutAxis.html#a5f510601a3a63b5b192278a18347b6a7',1,'tvm::tir::LayoutAxis::operator&lt;&lt;()'],['../classtvm_1_1tir_1_1Layout.html#a4d0f3b738af6b70040980e1287282377',1,'tvm::tir::Layout::operator&lt;&lt;()']]],
+  ['opregentry_9779',['OpRegEntry',['../classtvm_1_1OpNode.html#a3b47320541c25e1edc0e89e77e978d5a',1,'tvm::OpNode::OpRegEntry()'],['../classtvm_1_1AttrRegistryMapContainerMap.html#a3b47320541c25e1edc0e89e77e978d5a',1,'tvm::AttrRegistryMapContainerMap::OpRegEntry()']]]
 ];

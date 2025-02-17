@@ -1,5 +1,4 @@
 var searchData=
 [
-  ['loadconst_12321',['LoadConst',['../namespacetvm_1_1runtime_1_1vm.html#a8d8d95ce8d629c7213f2f595917870eca68b393c7b4c9e1672b7a1a05161390f7',1,'tvm::runtime::vm']]],
-  ['loadconsti_12322',['LoadConsti',['../namespacetvm_1_1runtime_1_1vm.html#a8d8d95ce8d629c7213f2f595917870eca9558cee150d88040130f7b86d8d5dc58',1,'tvm::runtime::vm']]]
+  ['tvmdeviceexttype_5fend_9736',['TVMDeviceExtType_End',['../c__runtime__api_8h.html#a57cbccb14c35a0e62dbc1b911188fcefa474961a2b52fee7b33e529015162e884',1,'c_runtime_api.h']]]
 ];

@@ -1,14 +1,5 @@
 var searchData=
 [
-  ['sequential_11898',['Sequential',['../namespacetvm_1_1relay_1_1transform.html#a3ae923037d22b4640b450c06e6c1e33e',1,'tvm::relay::transform']]],
-  ['shape_11899',['Shape',['../namespacetvm_1_1relay.html#a4d64348ae2b75977e167109fb4af4409',1,'tvm::relay']]],
-  ['shardingspec_11900',['ShardingSpec',['../namespacetvm_1_1relax_1_1distributed.html#af83820b6820d475d9e64f6fe11e3b261',1,'tvm::relax::distributed']]],
-  ['sourcename_11901',['SourceName',['../namespacetvm_1_1relay.html#a14eacafcb803b0757e48654bb1bac655',1,'tvm::relay']]],
-  ['span_11902',['Span',['../namespacetvm_1_1relay.html#af40ca6124bc2e88f2323eeb79d326cc0',1,'tvm::relay']]],
-  ['spannode_11903',['SpanNode',['../namespacetvm_1_1relay.html#a7d0fa6578e97d0d64b08865f94f04827',1,'tvm::relay']]],
-  ['stagekey_11904',['StageKey',['../namespacetvm_1_1auto__scheduler.html#afc2e977e1bb9b11fc3b78758d997eb60',1,'tvm::auto_scheduler']]],
-  ['stagetoaxesmap_11905',['StageToAxesMap',['../namespacetvm_1_1auto__scheduler.html#a8f12e558fc4b8fbb990e7e204c06beeb',1,'tvm::auto_scheduler']]],
-  ['storagetype_11906',['StorageType',['../classtvm_1_1runtime_1_1SimpleObjAllocator_1_1Handler.html#ada6a65394767c674dbbfb5937ef51bd6',1,'tvm::runtime::SimpleObjAllocator::Handler::StorageType()'],['../classtvm_1_1runtime_1_1SimpleObjAllocator_1_1ArrayHandler.html#a67e86db3290b1d3bd4aca7e7a2faf187',1,'tvm::runtime::SimpleObjAllocator::ArrayHandler::StorageType()']]],
-  ['structinfoderivefunc_11907',['StructInfoDeriveFunc',['../namespacetvm_1_1relax.html#af30be57dbb36533467727929c21bd237',1,'tvm::relax']]],
-  ['subscript_11908',['Subscript',['../structtvm_1_1topi_1_1EinsumEquation.html#a4a0b81e8b69b43af5868a1617cfe30d3',1,'tvm::topi::EinsumEquation']]]
+  ['value_5ftype_9456',['value_type',['../classtvm_1_1runtime_1_1Array.html#a203f4dc8f7a37ac325f6d1e192d2f8c1',1,'tvm::runtime::Array::value_type()'],['../classtvm_1_1runtime_1_1IterAdapter.html#a1a2d3f6fa9436d7b5b125124c5c20faf',1,'tvm::runtime::IterAdapter::value_type()'],['../classtvm_1_1runtime_1_1ReverseIterAdapter.html#adbf346bfbc9caff697aa754216d14a7c',1,'tvm::runtime::ReverseIterAdapter::value_type()'],['../classtvm_1_1runtime_1_1MapNode_1_1iterator.html#af27376d48f56d42f28440536d1774405',1,'tvm::runtime::MapNode::iterator::value_type()'],['../classtvm_1_1runtime_1_1Map_1_1iterator.html#a6e1fd44c0112f97adb7db4090c224707',1,'tvm::runtime::Map::iterator::value_type()'],['../classtvm_1_1support_1_1Span.html#a20b937194ce155a3d75ee869b85f4ac3',1,'tvm::support::Span::value_type()'],['../classtvm_1_1support_1_1Span_1_1iterator__base.html#a5a9433a8a093bdf668d1fb69b1e61aed',1,'tvm::support::Span::iterator_base::value_type()']]],
+  ['vtype_9457',['VType',['../structtvm_1_1runtime_1_1PackedFuncValueConverter_3_01Variant_3_01VariantTypes_8_8_8_01_4_01_4.html#a68a2036b7db0ad3087d2881bb66a5678',1,'tvm::runtime::PackedFuncValueConverter&lt; Variant&lt; VariantTypes... &gt; &gt;']]]
 ];

@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['devicecopy_12023',['DeviceCopy',['../namespacetvm_1_1runtime_1_1vm.html#a8d8d95ce8d629c7213f2f595917870ecaf695012a8c440065a5e913a682e77b5c',1,'tvm::runtime::vm']]]
+  ['if_9504',['If',['../namespacetvm_1_1runtime_1_1relax__vm.html#ad66623de70a1c78143c899a7d6096087a786887572f6ef1c20f2d8177cb2f1639',1,'tvm::runtime::relax_vm']]]
 ];

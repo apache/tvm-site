@@ -1,1 +1,1 @@
-packageSearchIndex = [{"l":"All Packages","u":"allpackages-index.html"},{"l":"org.apache.tvm"},{"l":"org.apache.tvm.contrib"},{"l":"org.apache.tvm.rpc"}];updateSearchResults();
+packageSearchIndex = [{"l":"All Packages","u":"allpackages-index.html"},{"l":"org.apache.tvm"},{"l":"org.apache.tvm.rpc"}];updateSearchResults();

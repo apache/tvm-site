@@ -1,4 +1,6 @@
 var searchData=
 [
-  ['executor_12352',['Executor',['../classtvm_1_1relay_1_1ExecutorRegEntry.html#a763b2f90bc53f92d680a635fe28e858e',1,'tvm::relay::ExecutorRegEntry']]]
+  ['getobjectpathrepr_9754',['GetObjectPathRepr',['../classtvm_1_1ObjectPathNode.html#a102e76694cc17b2c855ecbae4212cd6c',1,'tvm::ObjectPathNode']]],
+  ['getobjectptr_9755',['GetObjectPtr',['../classtvm_1_1runtime_1_1ObjectPtr.html#a2d849c83a86bbe7e86022b3d6cfc5ee4',1,'tvm::runtime::ObjectPtr']]],
+  ['getref_9756',['GetRef',['../classtvm_1_1runtime_1_1ObjectPtr.html#aaec135163b6a99903e93f7bea51835e5',1,'tvm::runtime::ObjectPtr']]]
 ];

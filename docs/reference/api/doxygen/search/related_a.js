@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['ndarray_12368',['NDArray',['../classtvm_1_1runtime_1_1NDArray_1_1Container.html#ad41557e205cf8f4d6ef70b60587c37cb',1,'tvm::runtime::NDArray::Container']]]
+  ['profiler_9780',['Profiler',['../classtvm_1_1meta__schedule_1_1ScopedTimer.html#ad73e5645d5b7b84a00d4a5d07b8d8078',1,'tvm::meta_schedule::ScopedTimer']]]
 ];

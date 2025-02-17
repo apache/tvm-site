@@ -1,7 +1,6 @@
 var searchData=
 [
-  ['calleffectkind_11971',['CallEffectKind',['../namespacetvm_1_1tir.html#a8f4a86b205145696c0555fd02bd37f46',1,'tvm::tir']]],
-  ['callingconv_11972',['CallingConv',['../namespacetvm.html#a85e4536ea4e1c8d3d48c61135f0a8ff0',1,'tvm']]],
-  ['compareresult_11973',['CompareResult',['../namespacetvm_1_1arith.html#a1d555a0cc363f669a49fad7e5f7d69d0',1,'tvm::arith']]],
-  ['computeatkind_11974',['ComputeAtKind',['../namespacetvm_1_1auto__scheduler.html#ab75208ecc6a00ca7f86af04b3cc5657f',1,'tvm::auto_scheduler']]]
+  ['calleffectkind_9465',['CallEffectKind',['../namespacetvm_1_1tir.html#a8f4a86b205145696c0555fd02bd37f46',1,'tvm::tir']]],
+  ['callingconv_9466',['CallingConv',['../namespacetvm.html#a85e4536ea4e1c8d3d48c61135f0a8ff0',1,'tvm']]],
+  ['compareresult_9467',['CompareResult',['../namespacetvm_1_1arith.html#a1d555a0cc363f669a49fad7e5f7d69d0',1,'tvm::arith']]]
 ];
