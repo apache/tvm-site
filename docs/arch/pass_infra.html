@@ -476,7 +476,7 @@ optimization passes, e.g., function-level passes, module-level passes, and
 sequential passes.  Each subclass itself could act as a pass manager. For
 instance, they could collect the required passes and execute them or build
 a dependency graph based on the given metadata. The full definition of them
-can be found in <a class="reference external" href="https://github.com/apache/tvm/blob/main/src/relay/ir/transform.cc">src/relay/ir/transform.cc</a> and <a class="reference external" href="https://github.com/apache/tvm/blob/main/src/ir/transform.cc">src/ir/transform.cc</a>.</p>
+can be found in <a class="reference external" href="https://github.com/apache/tvm/blob/main/src/ir/transform.cc">src/ir/transform.cc</a>.</p>
 </section>
 <section id="module-level-passes">
 <h4>Module-Level Passes<a class="headerlink" href="#module-level-passes" title="Link to this heading"></a></h4>
@@ -540,11 +540,6 @@ of passes for execution.</p>
 <span class="p">};</span>
 </pre></div>
 </div>
-<p>Only a few passes currently in Relay are put in this group. For example,
-<code class="docutils literal notranslate"><span class="pre">FoldScaleAxis</span></code> requires to dispatch <code class="docutils literal notranslate"><span class="pre">ForwardFoldScaleAxis</span></code> and
-<code class="docutils literal notranslate"><span class="pre">BackwardFoldScaleAxis</span></code> internally. In addition, <code class="docutils literal notranslate"><span class="pre">BackwardFoldScaleAxis</span></code> is
-recommended to be fulfilled first. This pass, hence, is an ideal candidate for
-<code class="docutils literal notranslate"><span class="pre">SequentialPass</span></code>.</p>
 <p>The following code shows how individual passes in a sequential pass are invoked.
 Essentially, we sequentially execute each pass in a sequential pass using the
 order that they were appended to the pass list.</p>
@@ -577,7 +572,7 @@ packed function registry using the pass name. This is possible because every
 pass is registered with an API endpoint as we will show later.</p>
 <div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="n">Pass</span><span class="w"> </span><span class="nf">GetPass</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="o">&amp;</span><span class="w"> </span><span class="n">pass_name</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
 <span class="w">  </span><span class="k">using</span><span class="w"> </span><span class="n">tvm</span><span class="o">::</span><span class="n">runtime</span><span class="o">::</span><span class="n">Registry</span><span class="p">;</span>
-<span class="w">  </span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="w"> </span><span class="n">fpass_name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;relay._transform.&quot;</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">pass_name</span><span class="p">;</span>
+<span class="w">  </span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="w"> </span><span class="n">fpass_name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;relax.transform.&quot;</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">pass_name</span><span class="p">;</span>
 <span class="w">  </span><span class="k">const</span><span class="w"> </span><span class="k">auto</span><span class="o">*</span><span class="w"> </span><span class="n">f</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Registry</span><span class="o">::</span><span class="n">Get</span><span class="p">(</span><span class="n">fpass_name</span><span class="p">);</span>
 <span class="w">  </span><span class="n">ICHECK</span><span class="p">(</span><span class="n">f</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="k">nullptr</span><span class="p">)</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">&quot;Cannot find &quot;</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">fpass_name</span>
 <span class="w">                      </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">&quot;to create the pass &quot;</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">pass_name</span><span class="p">;</span>
@@ -615,8 +610,8 @@ favorably use Python APIs to create a specific pass object.</p>
 <p>We’ve covered the concept of different level of passes and the context used for
 compilation. It would be interesting to see how easily users can register
 a pass.  Let’s take const folding as an example. This pass has already been
-implemented to fold constants in a Relay function (found in
-<a class="reference external" href="https://github.com/apache/tvm/blob/main/src/relay/transforms/fold_constant.cc">src/relay/transforms/fold_constant.cc</a>).</p>
+implemented to fold constants in a Relax function (found in
+<a class="reference external" href="https://github.com/apache/tvm/blob/main/src/relax/transforms/fold_constant.cc">src/relax/transforms/fold_constant.cc</a>).</p>
 <p>An API was provided to perform the <code class="docutils literal notranslate"><span class="pre">Expr</span></code> to <code class="docutils literal notranslate"><span class="pre">Expr</span></code> transformation.</p>
 <div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="n">Expr</span><span class="w"> </span><span class="nf">FoldConstant</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="n">Expr</span><span class="o">&amp;</span><span class="w"> </span><span class="n">expr</span><span class="p">);</span>
 </pre></div>
@@ -629,27 +624,25 @@ invokes the <code class="docutils literal notranslate"><span class="pre">Expr</s
 indicates that no prerequisite is required for this pass. Otherwise, the pass
 developer has to identify and list them.</p>
 <p>Meanwhile, a pass API endpoint is registered with the name
-<code class="docutils literal notranslate"><span class="pre">relay._transform.FoldConstant</span></code>. This pass, therefore, becomes an entry in the
+<code class="docutils literal notranslate"><span class="pre">&quot;relax.transform.FoldConstant</span></code>. This pass, therefore, becomes an entry in the
 registry that can be accessed by both C++ (e.g. the <code class="docutils literal notranslate"><span class="pre">GetPass</span></code> above) and
 Python when needed.</p>
 <div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="k">namespace</span><span class="w"> </span><span class="nn">transform</span><span class="w"> </span><span class="p">{</span>
 
 <span class="n">Pass</span><span class="w"> </span><span class="nf">FoldConstant</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
 <span class="w">  </span><span class="n">runtime</span><span class="o">::</span><span class="n">TypedPackedFunc</span><span class="o">&lt;</span><span class="n">Function</span><span class="p">(</span><span class="n">Function</span><span class="p">,</span><span class="w"> </span><span class="n">IRModule</span><span class="p">,</span><span class="w"> </span><span class="n">PassContext</span><span class="p">)</span><span class="o">&gt;</span><span class="w"> </span><span class="n">pass_func</span><span class="w"> </span><span class="o">=</span>
-<span class="w">    </span><span class="p">[</span><span class="o">=</span><span class="p">](</span><span class="n">Function</span><span class="w"> </span><span class="n">f</span><span class="p">,</span><span class="w"> </span><span class="n">IRModule</span><span class="w"> </span><span class="n">m</span><span class="p">,</span><span class="w"> </span><span class="n">PassContext</span><span class="w"> </span><span class="n">pc</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
-<span class="w">      </span><span class="k">return</span><span class="w"> </span><span class="n">Downcast</span><span class="o">&lt;</span><span class="n">Function</span><span class="o">&gt;</span><span class="p">(</span><span class="n">FoldConstant</span><span class="p">(</span><span class="n">f</span><span class="p">));</span>
-<span class="w">  </span><span class="p">};</span>
-<span class="w">  </span><span class="k">return</span><span class="w"> </span><span class="n">CreateFunctionPass</span><span class="p">(</span><span class="n">pass_func</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;FoldConstant&quot;</span><span class="p">,</span><span class="w"> </span><span class="p">{});</span>
+<span class="w">      </span><span class="p">[</span><span class="o">=</span><span class="p">](</span><span class="n">Function</span><span class="w"> </span><span class="n">f</span><span class="p">,</span><span class="w"> </span><span class="n">IRModule</span><span class="w"> </span><span class="n">m</span><span class="p">,</span><span class="w"> </span><span class="n">PassContext</span><span class="w"> </span><span class="n">pc</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="k">return</span><span class="w"> </span><span class="n">ConstantFolder</span><span class="o">::</span><span class="n">Fold</span><span class="p">(</span><span class="n">f</span><span class="p">,</span><span class="w"> </span><span class="n">m</span><span class="p">);</span><span class="w"> </span><span class="p">};</span>
+<span class="w">  </span><span class="k">return</span><span class="w"> </span><span class="n">CreateFunctionPass</span><span class="p">(</span><span class="n">pass_func</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;FoldConstant&quot;</span><span class="p">,</span><span class="w"> </span><span class="p">{});</span>
 <span class="p">}</span>
 
-<span class="n">TVM_REGISTER_GLOBAL</span><span class="p">(</span><span class="s">&quot;relay._transform.FoldConstant&quot;</span><span class="p">)</span>
+<span class="n">TVM_REGISTER_GLOBAL</span><span class="p">(</span><span class="s">&quot;relax.transform.FoldConstant&quot;</span><span class="p">)</span>
 <span class="p">.</span><span class="n">set_body_typed</span><span class="p">(</span><span class="n">FoldConstant</span><span class="p">);</span>
 
 <span class="p">}</span><span class="w">  </span><span class="c1">// namespace transform</span>
 </pre></div>
 </div>
 <p>To allow other C++ modules to apply this pass, we declare a free function in
-<a class="reference external" href="https://github.com/apache/tvm/blob/main/include/tvm/relay/transform.h">include/tvm/relay/transform.h</a> as the following:</p>
+<a class="reference external" href="https://github.com/apache/tvm/blob/main/include/tvm/relax/transform.h">include/tvm/relax/transform.h</a> as the following:</p>
 <div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="n">TVM_DLL</span><span class="w"> </span><span class="n">Pass</span><span class="w"> </span><span class="n">FoldConstant</span><span class="p">();</span>
 </pre></div>
 </div>
@@ -795,7 +788,7 @@ with the <code class="docutils literal notranslate"><span class="pre">PassInstru
 <h3>Python Frontend<a class="headerlink" href="#python-frontend" title="Link to this heading"></a></h3>
 <p>Only some simple APIs are needed for the frontend side. For example, we can
 provide users the following APIs to create and execute a pass (full
-implementation is provided in <a class="reference external" href="https://github.com/apache/tvm/blob/main/python/tvm/relay/transform/transform.py">python/tvm/relay/transform/transform.py</a> and
+implementation is provided in <a class="reference external" href="https://github.com/apache/tvm/blob/main/python/tvm/relax/transform/transform.py">python/tvm/relax/transform/transform.py</a> and
 <a class="reference external" href="https://github.com/apache/tvm/blob/main/python/tvm/ir/transform.py">python/tvm/ir/transform.py</a>). The backend
 receives the information and decides which function it should use to create
 a Pass object.</p>
@@ -831,82 +824,6 @@ loop unrolling pass</p>
 </pre></div>
 </div>
 <p>Please refer to <a class="reference external" href="https://github.com/apache/tvm/blob/main/src/tir/transforms/unroll_loop.cc">src/tir/transforms/unroll_loop.cc</a> for more details.</p>
-</section>
-<section id="pass-objects">
-<h4>Pass Objects<a class="headerlink" href="#pass-objects" title="Link to this heading"></a></h4>
-<p><code class="docutils literal notranslate"><span class="pre">Pass</span></code> is the base class of all pass objects. All methods here are just simple
-wrappers that were implemented in the backend. They are defined for users to
-conveniently interact with the base class in Python. Only a <code class="docutils literal notranslate"><span class="pre">__call__</span></code> is
-defined in the pass base class to make the subclasses as callable objects so
-that they can be invoked easily (e.g., <code class="docutils literal notranslate"><span class="pre">pass_xx(arg)</span></code>) for execution.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nd">@register_relay_node</span>
-<span class="k">class</span><span class="w"> </span><span class="nc">Pass</span><span class="p">(</span><span class="n">RelayNode</span><span class="p">):</span>
-   <span class="k">def</span><span class="w"> </span><span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mod</span><span class="p">):</span>
-       <span class="k">return</span> <span class="n">_transform</span><span class="o">.</span><span class="n">RunPass</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mod</span><span class="p">)</span>
-</pre></div>
-</div>
-<p>Some auxiliary APIs are provided to enable easy creation of passes from
-the Python frontend and to let the pass infra control the execution. For
-example, <code class="docutils literal notranslate"><span class="pre">module_pass</span></code>, <code class="docutils literal notranslate"><span class="pre">function_pass</span></code>, and <code class="docutils literal notranslate"><span class="pre">sequential</span></code> are provided to
-users so that they can customize their own pass or pass pipeline.</p>
-<p>For all the passes that are implemented in the C++ backend, we provide
-corresponding Python APIs in <a class="reference external" href="https://github.com/apache/tvm/blob/main/python/tvm/ir/transform.py">python/tvm/ir/transform.py</a> and
-<a class="reference external" href="https://github.com/apache/tvm/blob/main/python/tvm/relay/transform/transform.py">python/tvm/relay/transform/transform.py</a>, respectively. For instance,
-const folding has a Python API like the following:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">FoldConstant</span><span class="p">():</span>
-    <span class="k">return</span> <span class="n">_transform</span><span class="o">.</span><span class="n">FoldConstant</span><span class="p">()</span>
-</pre></div>
-</div>
-<p>Users can build a pass through decoration like the following:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span> <span class="nd">@relay</span><span class="o">.</span><span class="n">transform</span><span class="o">.</span><span class="n">module_pass</span><span class="p">(</span><span class="n">opt_level</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
- <span class="k">def</span><span class="w"> </span><span class="nf">transform</span><span class="p">(</span><span class="n">mod</span><span class="p">,</span> <span class="n">ctx</span><span class="p">):</span>
-    <span class="n">tp</span> <span class="o">=</span> <span class="n">relay</span><span class="o">.</span><span class="n">TensorType</span><span class="p">((</span><span class="mi">10</span><span class="p">,),</span> <span class="s2">&quot;float32&quot;</span><span class="p">)</span>
-    <span class="n">x</span> <span class="o">=</span> <span class="n">relay</span><span class="o">.</span><span class="n">var</span><span class="p">(</span><span class="s2">&quot;x&quot;</span><span class="p">,</span> <span class="n">tp</span><span class="p">)</span>
-    <span class="n">gv</span> <span class="o">=</span> <span class="n">relay</span><span class="o">.</span><span class="n">GlobalVar</span><span class="p">(</span><span class="s2">&quot;abs&quot;</span><span class="p">)</span>
-    <span class="n">func</span> <span class="o">=</span> <span class="n">relay</span><span class="o">.</span><span class="n">Function</span><span class="p">([</span><span class="n">x</span><span class="p">],</span> <span class="n">relay</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">x</span><span class="p">))</span>
-    <span class="n">new_mod</span> <span class="o">=</span> <span class="n">tvm</span><span class="o">.</span><span class="n">IRModule</span><span class="p">({</span><span class="n">gv</span><span class="p">:</span> <span class="n">func</span><span class="p">})</span>
-    <span class="n">new_mod</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">mod</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">new_mod</span>
-
-<span class="n">module_pass</span> <span class="o">=</span> <span class="n">transform</span>
-<span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">module_pass</span><span class="p">,</span> <span class="n">transform</span><span class="o">.</span><span class="n">ModulePass</span><span class="p">)</span>
-<span class="k">assert</span> <span class="n">module_pass</span><span class="o">.</span><span class="n">info</span><span class="o">.</span><span class="n">opt_level</span> <span class="o">==</span> <span class="mi">2</span>
-</pre></div>
-</div>
-<p>The <code class="docutils literal notranslate"><span class="pre">transform</span></code> function here adds an <code class="docutils literal notranslate"><span class="pre">abs</span></code> function to the input module,
-but it could be any customized optimizations at the module level. After
-creating this <code class="docutils literal notranslate"><span class="pre">module_pass</span></code>, users can apply it on any Relay module. For
-example, we can build an empty module and apply this pass to add an <code class="docutils literal notranslate"><span class="pre">abs</span></code>
-function.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">mod</span> <span class="o">=</span> <span class="n">tvm</span><span class="o">.</span><span class="n">IRModule</span><span class="p">()</span>
-<span class="n">mod</span> <span class="o">=</span> <span class="n">module_pass</span><span class="p">(</span><span class="n">mod</span><span class="p">)</span>
-</pre></div>
-</div>
-<p>Correspondingly, we also offer such functionality for <code class="docutils literal notranslate"><span class="pre">function_pass</span></code>. For
-instance, an example function-level pass could be written as the following:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nd">@relay</span><span class="o">.</span><span class="n">transform</span><span class="o">.</span><span class="n">function_pass</span><span class="p">(</span><span class="n">opt_level</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
-<span class="k">class</span><span class="w"> </span><span class="nc">TestReplaceFunc</span><span class="p">:</span>
-   <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">new_func</span><span class="p">):</span>
-      <span class="bp">self</span><span class="o">.</span><span class="n">new_func</span> <span class="o">=</span> <span class="n">new_func</span>
-      <span class="k">def</span><span class="w"> </span><span class="nf">transform_function</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">func</span><span class="p">,</span> <span class="n">mod</span><span class="p">,</span> <span class="n">ctx</span><span class="p">):</span>
-         <span class="c1"># Just for demo purposes</span>
-         <span class="c1"># Transform func to new_func</span>
-         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">new_func</span>
-
-<span class="n">x</span> <span class="o">=</span> <span class="n">relay</span><span class="o">.</span><span class="n">var</span><span class="p">(</span><span class="s2">&quot;x&quot;</span><span class="p">,</span> <span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">20</span><span class="p">))</span>
-<span class="n">f1</span> <span class="o">=</span> <span class="n">relay</span><span class="o">.</span><span class="n">Function</span><span class="p">([</span><span class="n">x</span><span class="p">],</span> <span class="n">x</span><span class="p">)</span>
-<span class="n">f2</span> <span class="o">=</span> <span class="n">relay</span><span class="o">.</span><span class="n">Function</span><span class="p">([</span><span class="n">x</span><span class="p">],</span> <span class="n">relay</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">x</span><span class="p">))</span>
-<span class="c1"># fpass is now a special pass that replaces every</span>
-<span class="c1"># function to f1</span>
-<span class="n">fpass</span> <span class="o">=</span> <span class="n">TestReplaceFunc</span><span class="p">(</span><span class="n">f1</span><span class="p">)</span>
-<span class="c1"># Now every function in input_mod is replaced by f1</span>
-<span class="n">res_mod</span> <span class="o">=</span> <span class="n">fpass</span><span class="p">(</span><span class="n">input_mod</span><span class="p">)</span>
-</pre></div>
-</div>
-<p>Alternatively, users can also directly register a pass without using the
-decorators and then invoke it. For more examples about how to customize your own
-optimization pipeline and debug Relay and tir passes, please refer to the
-<a class="reference external" href="https://github.com/apache/tvm/blob/main/tutorials/dev/use_pass_infra.py">use pass infra</a> tutorial.</p>
 </section>
 <section id="pass-instrument-py-frontend">
 <span id="id2"></span><h4>Pass Instrument<a class="headerlink" href="#pass-instrument-py-frontend" title="Link to this heading"></a></h4>
