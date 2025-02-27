@@ -227,7 +227,7 @@ We perform optimizations on the different parts of the self-attention layer:
   kernel.
 - Attention: We leverage the horizontal fusion on attention and fuse the QKV projection and
 
-.. GENERATED FROM PYTHON SOURCE LINES 171-201
+.. GENERATED FROM PYTHON SOURCE LINES 171-203
 
 .. code-block:: Python
 
@@ -254,7 +254,9 @@ We perform optimizations on the different parts of the self-attention layer:
             qkv = op.reshape(qkv, (b, s, h_q + h_kv + h_kv, d))
             # Attention
             output = op.reshape(
-                paged_kv_cache.attention_with_fused_qkv(layer_id, qkv, self.num_q_heads),
+                paged_kv_cache.attention_with_fused_qkv(
+                    layer_id, qkv, self.num_q_heads, sm_scale=self.head_dim**-0.5
+                ),
                 (b, s, h_q * d),
             )
             # Output Projection
@@ -268,11 +270,11 @@ We perform optimizations on the different parts of the self-attention layer:
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 202-203
+.. GENERATED FROM PYTHON SOURCE LINES 204-205
 
 Finally, we define the model architecture with FFN and self-attention layers.
 
-.. GENERATED FROM PYTHON SOURCE LINES 203-348
+.. GENERATED FROM PYTHON SOURCE LINES 205-354
 
 .. code-block:: Python
 
@@ -361,6 +363,7 @@ Finally, we define the model architecture with FFN and self-attention layers.
             page_size: tir.Var,
         ) -> PagedKVCache:
             return TIRPagedKVCache(
+                attn_kind="mha",
                 max_batch_size=max_batch_size,
                 max_total_seq_len=max_total_seq_len,
                 prefill_chunk_size=prefill_chunk_size,
@@ -370,7 +373,10 @@ Finally, we define the model architecture with FFN and self-attention layers.
                 num_hidden_layers=self.num_hidden_layers,
                 num_attention_heads=self.num_attention_heads,
                 num_key_value_heads=self.num_key_value_heads,
-                head_dim=self.head_dim,
+                qk_head_dim=self.head_dim,
+                v_head_dim=self.head_dim,
+                mla_original_qk_head_dim=0,
+                mla_original_v_head_dim=0,
                 rope_mode=RopeMode.NORMAL,
                 rope_scale=1,
                 rope_theta=self.rope_theta,
@@ -428,14 +434,14 @@ Finally, we define the model architecture with FFN and self-attention layers.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 349-353
+.. GENERATED FROM PYTHON SOURCE LINES 355-359
 
 Export the model to Relax IRModule
 ----------------------------------
 After defining the model architecture, we can export the model to the Relax IRModule.
 For demonstration, we only show the part of the model architecture. and parameters.
 
-.. GENERATED FROM PYTHON SOURCE LINES 353-365
+.. GENERATED FROM PYTHON SOURCE LINES 359-371
 
 .. code-block:: Python
 
@@ -488,14 +494,14 @@ For demonstration, we only show the part of the model architecture. and paramete
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 366-370
+.. GENERATED FROM PYTHON SOURCE LINES 372-376
 
 Define Optimization Pipeline
 ----------------------------
 We define a series of optimization passes to optimize the model. The optimization pipeline
 is designed specifically for the LLMs.
 
-.. GENERATED FROM PYTHON SOURCE LINES 370-427
+.. GENERATED FROM PYTHON SOURCE LINES 376-433
 
 .. code-block:: Python
 
@@ -563,7 +569,7 @@ is designed specifically for the LLMs.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 428-439
+.. GENERATED FROM PYTHON SOURCE LINES 434-445
 
 Prepare the model weights
 -------------------------
@@ -577,7 +583,7 @@ and prepare the model parameters.
   are not available in the CI environment.
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 439-490
+.. GENERATED FROM PYTHON SOURCE LINES 445-496
 
 .. code-block:: Python
 
@@ -639,7 +645,7 @@ and prepare the model parameters.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 491-497
+.. GENERATED FROM PYTHON SOURCE LINES 497-503
 
 Deploy the compiled model
 -------------------------
@@ -648,7 +654,7 @@ The language models inference includes two steps: prefill and decode. The prefil
 used to process the input tokens and store the KVCache. The decode step is used to generate
 the token until the end token is generated.
 
-.. GENERATED FROM PYTHON SOURCE LINES 500-507
+.. GENERATED FROM PYTHON SOURCE LINES 506-513
 
 Tokenization
 ~~~~~~~~~~~~
@@ -658,7 +664,7 @@ to tokenize the input prompt and embed the tokens into the hidden states.
 Note that different models require different tokenization and prompt format, please refer to
 the model documentation for the correct tokenization and prompt format.
 
-.. GENERATED FROM PYTHON SOURCE LINES 507-522
+.. GENERATED FROM PYTHON SOURCE LINES 513-528
 
 .. code-block:: Python
 
@@ -684,7 +690,7 @@ the model documentation for the correct tokenization and prompt format.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 523-528
+.. GENERATED FROM PYTHON SOURCE LINES 529-534
 
 Create the KVCache
 ~~~~~~~~~~~~~~~~~~
@@ -692,7 +698,7 @@ Before starting the inference, we need to create the KVCache. The KVCache is use
 key and value tensors for the attention layer. Apache TVM provides a PagedKVCache to store the
 key and value tensors. We create the PagedKVCache with the specified parameters.
 
-.. GENERATED FROM PYTHON SOURCE LINES 528-538
+.. GENERATED FROM PYTHON SOURCE LINES 534-544
 
 .. code-block:: Python
 
@@ -713,14 +719,14 @@ key and value tensors. We create the PagedKVCache with the specified parameters.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 539-543
+.. GENERATED FROM PYTHON SOURCE LINES 545-549
 
 Embedding
 ~~~~~~~~~
 The next step is to embed the tokens into the hidden states. We use the `embed` function
 compiled in the Relax IRModule to embed the tokens into the hidden states.
 
-.. GENERATED FROM PYTHON SOURCE LINES 543-554
+.. GENERATED FROM PYTHON SOURCE LINES 549-560
 
 .. code-block:: Python
 
@@ -742,13 +748,13 @@ compiled in the Relax IRModule to embed the tokens into the hidden states.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 555-558
+.. GENERATED FROM PYTHON SOURCE LINES 561-564
 
 Prefill
 ~~~~~~~
 Before running the forward pass, we first get some help functions for preparation.
 
-.. GENERATED FROM PYTHON SOURCE LINES 558-563
+.. GENERATED FROM PYTHON SOURCE LINES 564-569
 
 .. code-block:: Python
 
@@ -764,13 +770,13 @@ Before running the forward pass, we first get some help functions for preparatio
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 564-567
+.. GENERATED FROM PYTHON SOURCE LINES 570-573
 
 As we are creating a new sequence, we need to call `add_sequence_func` to initialize
 the request. Additionally, we need to call `begin_forward_func` to start the forward pass,
 and `end_forward_func` to end the forward pass.
 
-.. GENERATED FROM PYTHON SOURCE LINES 567-576
+.. GENERATED FROM PYTHON SOURCE LINES 573-582
 
 .. code-block:: Python
 
@@ -790,7 +796,7 @@ and `end_forward_func` to end the forward pass.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 577-583
+.. GENERATED FROM PYTHON SOURCE LINES 583-589
 
 Now we have the output logits from the prefill step. The logits are used to generate the token
 via sampling. Let's sample the token from the logits.
@@ -799,7 +805,7 @@ In this tutorial, we simplify the sampling process and pick the token with the h
 probability. In practice, we should sample the token based on the probability distribution.
 Also, to make the tutorial concise, we execute the sample process on CPU.
 
-.. GENERATED FROM PYTHON SOURCE LINES 583-595
+.. GENERATED FROM PYTHON SOURCE LINES 589-601
 
 .. code-block:: Python
 
@@ -822,7 +828,7 @@ Also, to make the tutorial concise, we execute the sample process on CPU.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 596-601
+.. GENERATED FROM PYTHON SOURCE LINES 602-607
 
 Decode
 ~~~~~~
@@ -830,7 +836,7 @@ After the prefill step, we can start the decode step. The decode step is used to
 token until the end token is generated. We use the `decode` function compiled in the Relax
 IRModule to generate the token.
 
-.. GENERATED FROM PYTHON SOURCE LINES 601-616
+.. GENERATED FROM PYTHON SOURCE LINES 607-622
 
 .. code-block:: Python
 
