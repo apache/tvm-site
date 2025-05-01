@@ -1,6 +1,7 @@
 var searchData=
 [
-  ['unit_5fbits_8799',['unit_bits',['../classtvm_1_1MemoryInfoNode.html#a505c2f2dd0dd0c28a12b9113e2176a8d',1,'tvm::MemoryInfoNode']]],
-  ['update_8800',['update',['../classtvm_1_1te_1_1ScanOpNode.html#ace2bf7e43cd4197324ec6363626fc60a',1,'tvm::te::ScanOpNode']]],
-  ['upper_8801',['upper',['../classtvm_1_1arith_1_1IntGroupBoundsNode.html#a0473d6f99a005affcbb47c63d6094b9b',1,'tvm::arith::IntGroupBoundsNode']]]
+  ['unit_5fbits_8806',['unit_bits',['../classtvm_1_1MemoryInfoNode.html#a505c2f2dd0dd0c28a12b9113e2176a8d',1,'tvm::MemoryInfoNode']]],
+  ['update_8807',['update',['../classtvm_1_1te_1_1ScanOpNode.html#ace2bf7e43cd4197324ec6363626fc60a',1,'tvm::te::ScanOpNode']]],
+  ['upper_8808',['upper',['../classtvm_1_1arith_1_1IntGroupBoundsNode.html#a0473d6f99a005affcbb47c63d6094b9b',1,'tvm::arith::IntGroupBoundsNode']]],
+  ['upscale_5ffactor_8809',['upscale_factor',['../structtvm_1_1relax_1_1PixelShuffleAttrs.html#a4fd4d4aabcad7f80f6125f35cc8348f9',1,'tvm::relax::PixelShuffleAttrs']]]
 ];
