@@ -1,4 +1,5 @@
 var searchData=
 [
-  ['profiler_9326',['Profiler',['../classtvm_1_1meta__schedule_1_1ScopedTimer.html#ad73e5645d5b7b84a00d4a5d07b8d8078',1,'tvm::meta_schedule::ScopedTimer']]]
+  ['ffi_8612',['FFI',['../classtvm_1_1runtime_1_1SessionObj.html#a2c376e805541462f15c883a180495b0e',1,'tvm::runtime::SessionObj']]],
+  ['schedule_8613',['Schedule',['../classtvm_1_1tir_1_1ScheduleNode.html#aae5808dc2e987bf17ef42196457a654d',1,'tvm::tir::ScheduleNode']]]
 ];

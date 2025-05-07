@@ -1,6 +1,8 @@
 var searchData=
 [
-  ['inplacearraybase_3c_20smallmapnode_2c_20mapnode_3a_3akvtype_20_3e_9327',['InplaceArrayBase&lt; SmallMapNode, MapNode::KVType &gt;',['../classtvm_1_1runtime_1_1SmallMapNode.html#ac34d5957634812ed6f022af20a049c24',1,'tvm::runtime::SmallMapNode']]],
-  ['packedfuncvalueconverter_3c_20primexpr_20_3e_9328',['PackedFuncValueConverter&lt; PrimExpr &gt;',['../classtvm_1_1PrimExpr.html#ae839d1eaebf8cde84eb37772af36352c',1,'tvm::PrimExpr']]],
-  ['rpcwrappedfunc_9329',['RPCWrappedFunc',['../classtvm_1_1runtime_1_1NDArray_1_1Container.html#a6ccaf80c7bc6037e59b208845b20db11',1,'tvm::runtime::NDArray::Container']]]
+  ['targetinternal_8614',['TargetInternal',['../classtvm_1_1TargetNode.html#a7924ccb2fdea6074cca1978c062fb034',1,'tvm::TargetNode::TargetInternal()'],['../classtvm_1_1Target.html#a7924ccb2fdea6074cca1978c062fb034',1,'tvm::Target::TargetInternal()'],['../classtvm_1_1TargetKindNode.html#a7924ccb2fdea6074cca1978c062fb034',1,'tvm::TargetKindNode::TargetInternal()'],['../classtvm_1_1TargetKind.html#a7924ccb2fdea6074cca1978c062fb034',1,'tvm::TargetKind::TargetInternal()']]],
+  ['targetkind_8615',['TargetKind',['../classtvm_1_1TargetKindRegEntry.html#a75150485a300a03a22d9edad8619cc25',1,'tvm::TargetKindRegEntry']]],
+  ['targetkindregentry_8616',['TargetKindRegEntry',['../classtvm_1_1TargetKindNode.html#a737fff60e8ac6c7549b2f44097fffb48',1,'tvm::TargetKindNode::TargetKindRegEntry()'],['../classtvm_1_1TargetKind.html#a737fff60e8ac6c7549b2f44097fffb48',1,'tvm::TargetKind::TargetKindRegEntry()']]],
+  ['targettag_8617',['TargetTag',['../classtvm_1_1TargetTagRegEntry.html#a3674b5e98ceed5b98827394a3bf5d452',1,'tvm::TargetTagRegEntry']]],
+  ['targettagregentry_8618',['TargetTagRegEntry',['../classtvm_1_1TargetTagNode.html#a512632a5c1441a191697b6d42860e757',1,'tvm::TargetTagNode::TargetTagRegEntry()'],['../classtvm_1_1TargetTag.html#a512632a5c1441a191697b6d42860e757',1,'tvm::TargetTag::TargetTagRegEntry()']]]
 ];

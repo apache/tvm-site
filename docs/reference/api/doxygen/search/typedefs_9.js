@@ -1,5 +1,12 @@
 var searchData=
 [
-  ['mapped_5ftype_8956',['mapped_type',['../classtvm_1_1runtime_1_1MapNode.html#a49fbdf8758a6e4376c0c3ffcf573bc77',1,'tvm::runtime::MapNode::mapped_type()'],['../classtvm_1_1runtime_1_1Map.html#a80593f9746b11a51bf0e69033877aab8',1,'tvm::runtime::Map::mapped_type()']]],
-  ['memoryscope_8957',['MemoryScope',['../namespacetvm.html#a9f3357cc60dba3bfdfd5d00335a3b06f',1,'tvm']]]
+  ['packedfunc_8257',['PackedFunc',['../namespacetvm_1_1runtime.html#ab96bb5d61d5c422c1af80e95844e473b',1,'tvm::runtime']]],
+  ['parent_8258',['Parent',['../classtvm_1_1tir_1_1IndexDataTypeRewriter.html#a0e7deada1e51a604e4f7bc6c8a115955',1,'tvm::tir::IndexDataTypeRewriter::Parent()'],['../classtvm_1_1tir_1_1IndexDataTypeNormalizer.html#a8d04a64a80c9fbdd28c7cb9e00c02120',1,'tvm::tir::IndexDataTypeNormalizer::Parent()']]],
+  ['partialsolvedinequalities_8259',['PartialSolvedInequalities',['../namespacetvm_1_1arith.html#adf7450490c4a53f62bab4463cdb5e9c8',1,'tvm::arith']]],
+  ['partitionerfunctype_8260',['PartitionerFuncType',['../namespacetvm_1_1support.html#a34824d8de8374a4144dc4754ccafdd74',1,'tvm::support']]],
+  ['pass_8261',['Pass',['../namespacetvm_1_1relax_1_1distributed_1_1transform.html#a40ba6cc44b8cd397e0e1b9f7fac89edf',1,'tvm::relax::distributed::transform::Pass()'],['../namespacetvm_1_1relax_1_1transform.html#aa3d28b2e48b6d5708052909943dd3282',1,'tvm::relax::transform::Pass()']]],
+  ['passcontext_8262',['PassContext',['../namespacetvm_1_1relax_1_1distributed_1_1transform.html#a90a537a5f9e22c681a49c36f06c7a74e',1,'tvm::relax::distributed::transform::PassContext()'],['../namespacetvm_1_1relax_1_1transform.html#a8092572e45f7d7f90fd3270677ed9164',1,'tvm::relax::transform::PassContext()']]],
+  ['passinfo_8263',['PassInfo',['../namespacetvm_1_1relax_1_1distributed_1_1transform.html#a35b891343a5a75c35489bef136a601d3',1,'tvm::relax::distributed::transform::PassInfo()'],['../namespacetvm_1_1relax_1_1transform.html#a81cc1b2a0ef5efdeb2298358dacae905',1,'tvm::relax::transform::PassInfo()']]],
+  ['pathtracingdata_8264',['PathTracingData',['../classtvm_1_1SEqualReducer_1_1Handler.html#a3971c2653bf9bae74dd940cd80085aef',1,'tvm::SEqualReducer::Handler']]],
+  ['pointer_8265',['pointer',['../classtvm_1_1runtime_1_1IterAdapter.html#adc1b48d98f5d1780edadde8130287de4',1,'tvm::runtime::IterAdapter::pointer()'],['../classtvm_1_1runtime_1_1ReverseIterAdapter.html#ade7d41e23d7ac8a0d64e237dfcf958c6',1,'tvm::runtime::ReverseIterAdapter::pointer()'],['../classtvm_1_1support_1_1Span_1_1iterator__base.html#a3380246f532de231fcfbd1ffbcdf496e',1,'tvm::support::Span::iterator_base::pointer()']]]
 ];
