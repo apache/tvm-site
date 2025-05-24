@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['tvmdeviceexttype_5fend_8545',['TVMDeviceExtType_End',['../c__runtime__api_8h.html#a57cbccb14c35a0e62dbc1b911188fcefa474961a2b52fee7b33e529015162e884',1,'c_runtime_api.h']]]
+  ['tvmdeviceexttype_5fend_8340',['TVMDeviceExtType_End',['../namespacetvm_1_1runtime.html#a237ec21eda9c03c495db5ce0da0f849da988c9df9b3f4e94e793e3e6dce05bb9c',1,'tvm::runtime']]]
 ];
