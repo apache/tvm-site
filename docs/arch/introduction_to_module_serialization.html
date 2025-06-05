@@ -424,7 +424,7 @@ module import relationship when we load the exported library back as said
 before. The <code class="docutils literal notranslate"><span class="pre">import_tree_logic</span></code> is just to write <code class="docutils literal notranslate"><span class="pre">import_tree_row_ptr_</span></code>
 and <code class="docutils literal notranslate"><span class="pre">import_tree_child_indices_</span></code> into stream.</p>
 <p>After this step, we will pack it into a symbol
-<code class="docutils literal notranslate"><span class="pre">runtime::symbol::tvm_dev_mblob</span></code> that can be recovered in the dynamic
+<code class="docutils literal notranslate"><span class="pre">runtime::symbol::tvm_ffi_library_bin</span></code> that can be recovered in the dynamic
 library.</p>
 <p>Now, we complete the serialization part. As you have seen, we could
 support arbitrary modules to import ideally.</p>
@@ -437,19 +437,20 @@ is to call <code class="docutils literal notranslate"><span class="pre">_LoadFro
 according to the function logic, we will call <code class="docutils literal notranslate"><span class="pre">module.loadfile_so</span></code> in
 <code class="docutils literal notranslate"><span class="pre">dso_library.cc</span></code>. The key is here:</p>
 <div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="c1">// Load the imported modules</span>
-<span class="k">const</span><span class="w"> </span><span class="kt">char</span><span class="o">*</span><span class="w"> </span><span class="n">dev_mblob</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">reinterpret_cast</span><span class="o">&lt;</span><span class="k">const</span><span class="w"> </span><span class="kt">char</span><span class="o">*&gt;</span><span class="p">(</span><span class="n">lib</span><span class="o">-&gt;</span><span class="n">GetSymbol</span><span class="p">(</span><span class="n">runtime</span><span class="o">::</span><span class="n">symbol</span><span class="o">::</span><span class="n">tvm_dev_mblob</span><span class="p">));</span>
+<span class="k">const</span><span class="w"> </span><span class="kt">char</span><span class="o">*</span><span class="w"> </span><span class="n">library_bin</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">reinterpret_cast</span><span class="o">&lt;</span><span class="k">const</span><span class="w"> </span><span class="kt">char</span><span class="o">*&gt;</span><span class="p">(</span>
+<span class="w">   </span><span class="n">lib</span><span class="o">-&gt;</span><span class="n">GetSymbol</span><span class="p">(</span><span class="n">runtime</span><span class="o">::</span><span class="n">symbol</span><span class="o">::</span><span class="n">tvm_ffi_library_bin</span><span class="p">));</span>
 <span class="n">Module</span><span class="w"> </span><span class="n">root_mod</span><span class="p">;</span>
-<span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">dev_mblob</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="k">nullptr</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
-<span class="n">root_mod</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ProcessModuleBlob</span><span class="p">(</span><span class="n">dev_mblob</span><span class="p">,</span><span class="w"> </span><span class="n">lib</span><span class="p">);</span>
+<span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">library_bin</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="k">nullptr</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">   </span><span class="n">root_mod</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ProcessLibraryBin</span><span class="p">(</span><span class="n">library_bin</span><span class="p">,</span><span class="w"> </span><span class="n">lib</span><span class="p">);</span>
 <span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="p">{</span>
-<span class="c1">// Only have one single DSO Module</span>
-<span class="n">root_mod</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Module</span><span class="p">(</span><span class="n">n</span><span class="p">);</span>
+<span class="w">   </span><span class="c1">// Only have one single DSO Module</span>
+<span class="w">   </span><span class="n">root_mod</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Module</span><span class="p">(</span><span class="n">n</span><span class="p">);</span>
 <span class="p">}</span>
 </pre></div>
 </div>
 <p>As said before, we will pack the blob into the symbol
-<code class="docutils literal notranslate"><span class="pre">runtime::symbol::tvm_dev_mblob</span></code>. During deserialization part, we will
-inspect it. If we have <code class="docutils literal notranslate"><span class="pre">runtime::symbol::tvm_dev_mblob</span></code>, we will call <code class="docutils literal notranslate"><span class="pre">ProcessModuleBlob</span></code>,
+<code class="docutils literal notranslate"><span class="pre">runtime::symbol::tvm_ffi_library_bin</span></code>. During deserialization part, we will
+inspect it. If we have <code class="docutils literal notranslate"><span class="pre">runtime::symbol::tvm_ffi_library_bin</span></code>, we will call <code class="docutils literal notranslate"><span class="pre">ProcessLibraryBin</span></code>,
 whose logic like this:</p>
 <div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="n">READ</span><span class="p">(</span><span class="n">blob_size</span><span class="p">)</span>
 <span class="n">READ</span><span class="p">(</span><span class="n">blob_type_key</span><span class="p">)</span>
