@@ -5,6 +5,7 @@ set -u
 
 echo "Start to generate and deploy site ..."
 bundle exec jekyll b
+python3 scripts/download_3rdparty_embeds.py -v
 cp .gitignore .gitignore.bak
 cp .asf.yaml .asf.yaml.bak
 
