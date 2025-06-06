@@ -4,7 +4,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>TinyML - How TVM is Taming Tiny</title>
     <link rel="shortcut icon" href="/assets/images/favicon.ico">
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+    <link rel="stylesheet" href="../../../_static/downloads/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
     <link rel="stylesheet" href="/css/slick.css">
     <link rel="stylesheet" href="/css/slick-theme.css">
     <link rel="stylesheet" href="/css/custom.css">
@@ -167,19 +167,19 @@ A standard µTVM setup, where the host communicates with the device via JTAG.</p
 
 <p>Above, we have an <a href="https://www.st.com/en/microcontrollers-microprocessors/stm32f746zg.html">STM32F746ZG board</a>, housing an ARM Cortex-M7 processor, an ideal part for AI on the edge given it’s strong performance in a low power envelope. We use its USB-JTAG port to connect it to our desktop machine.  On the desktop, we run OpenOCD to open a JTAG connection with the device; in turn, OpenOCD allows µTVM to control the M7 processor using a device-agnostic TCP socket.  With this setup in place, we can run a CIFAR-10 classifier using TVM code that looks like this (full script <a href="https://github.com/areusch/microtvm-blogpost-eval/blob/master/python/micro_eval/bin/eval.py">here</a>):</p>
 
-<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">OPENOCD_SERVER_ADDR</span> <span class="o">=</span> <span class="s">'127.0.0.1'</span>
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">OPENOCD_SERVER_ADDR</span> <span class="o">=</span> <span class="sh">'</span><span class="s">127.0.0.1</span><span class="sh">'</span>
 <span class="n">OPENOCD_SERVER_PORT</span> <span class="o">=</span> <span class="mi">6666</span>
-<span class="n">TARGET</span> <span class="o">=</span> <span class="n">tvm</span><span class="p">.</span><span class="n">target</span><span class="p">.</span><span class="n">create</span><span class="p">(</span><span class="s">'c -device=micro_dev'</span><span class="p">)</span>
-<span class="n">DEV_CONFIG</span> <span class="o">=</span> <span class="n">stm32f746xx</span><span class="p">.</span><span class="n">default_config</span><span class="p">(</span><span class="n">OPENOCD_SERVER_ADDR</span><span class="p">,</span> <span class="n">OPENOCD_SERVER_PORT</span><span class="p">)</span>
+<span class="n">TARGET</span> <span class="o">=</span> <span class="n">tvm</span><span class="p">.</span><span class="n">target</span><span class="p">.</span><span class="nf">create</span><span class="p">(</span><span class="sh">'</span><span class="s">c -device=micro_dev</span><span class="sh">'</span><span class="p">)</span>
+<span class="n">DEV_CONFIG</span> <span class="o">=</span> <span class="n">stm32f746xx</span><span class="p">.</span><span class="nf">default_config</span><span class="p">(</span><span class="n">OPENOCD_SERVER_ADDR</span><span class="p">,</span> <span class="n">OPENOCD_SERVER_PORT</span><span class="p">)</span>
 
-<span class="n">module</span><span class="p">,</span> <span class="n">params</span> <span class="o">=</span> <span class="n">get_cifar10_cnn</span><span class="p">()</span>
-<span class="k">with</span> <span class="n">micro</span><span class="p">.</span><span class="n">Session</span><span class="p">(</span><span class="n">device_config</span><span class="p">)</span> <span class="k">as</span> <span class="n">sess</span><span class="p">:</span>
-	<span class="n">graph</span><span class="p">,</span> <span class="n">c_module</span><span class="p">,</span> <span class="n">params</span> <span class="o">=</span> <span class="n">relay</span><span class="p">.</span><span class="n">build</span><span class="p">(</span><span class="n">module</span><span class="p">[</span><span class="s">'main'</span><span class="p">],</span> <span class="n">target</span><span class="o">=</span><span class="n">TARGET</span><span class="p">,</span> <span class="n">params</span><span class="o">=</span><span class="n">params</span><span class="p">)</span>
-  <span class="n">micro_mod</span> <span class="o">=</span> <span class="n">micro</span><span class="p">.</span><span class="n">create_micro_mod</span><span class="p">(</span><span class="n">c_module</span><span class="p">,</span> <span class="n">DEV_CONFIG</span><span class="p">)</span>
-  <span class="n">graph_mod</span> <span class="o">=</span> <span class="n">graph_runtime</span><span class="p">.</span><span class="n">create</span><span class="p">(</span><span class="n">graph</span><span class="p">,</span> <span class="n">micro_mod</span><span class="p">,</span> <span class="n">ctx</span><span class="o">=</span><span class="n">tvm</span><span class="p">.</span><span class="n">micro_dev</span><span class="p">(</span><span class="mi">0</span><span class="p">))</span>
-  <span class="n">graph_mod</span><span class="p">.</span><span class="n">run</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">data_np</span><span class="p">)</span>
-  <span class="n">prediction</span> <span class="o">=</span> <span class="n">CIFAR10_CLASSES</span><span class="p">[</span><span class="n">np</span><span class="p">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">graph_mod</span><span class="p">.</span><span class="n">get_output</span><span class="p">(</span><span class="mi">0</span><span class="p">).</span><span class="n">asnumpy</span><span class="p">())]</span>
-  <span class="k">print</span><span class="p">(</span><span class="sa">f</span><span class="s">'prediction was </span><span class="si">{</span><span class="n">prediction</span><span class="si">}</span><span class="s">'</span><span class="p">)</span>
+<span class="n">module</span><span class="p">,</span> <span class="n">params</span> <span class="o">=</span> <span class="nf">get_cifar10_cnn</span><span class="p">()</span>
+<span class="k">with</span> <span class="n">micro</span><span class="p">.</span><span class="nc">Session</span><span class="p">(</span><span class="n">device_config</span><span class="p">)</span> <span class="k">as</span> <span class="n">sess</span><span class="p">:</span>
+	<span class="n">graph</span><span class="p">,</span> <span class="n">c_module</span><span class="p">,</span> <span class="n">params</span> <span class="o">=</span> <span class="n">relay</span><span class="p">.</span><span class="nf">build</span><span class="p">(</span><span class="n">module</span><span class="p">[</span><span class="sh">'</span><span class="s">main</span><span class="sh">'</span><span class="p">],</span> <span class="n">target</span><span class="o">=</span><span class="n">TARGET</span><span class="p">,</span> <span class="n">params</span><span class="o">=</span><span class="n">params</span><span class="p">)</span>
+  <span class="n">micro_mod</span> <span class="o">=</span> <span class="n">micro</span><span class="p">.</span><span class="nf">create_micro_mod</span><span class="p">(</span><span class="n">c_module</span><span class="p">,</span> <span class="n">DEV_CONFIG</span><span class="p">)</span>
+  <span class="n">graph_mod</span> <span class="o">=</span> <span class="n">graph_runtime</span><span class="p">.</span><span class="nf">create</span><span class="p">(</span><span class="n">graph</span><span class="p">,</span> <span class="n">micro_mod</span><span class="p">,</span> <span class="n">ctx</span><span class="o">=</span><span class="n">tvm</span><span class="p">.</span><span class="nf">micro_dev</span><span class="p">(</span><span class="mi">0</span><span class="p">))</span>
+  <span class="n">graph_mod</span><span class="p">.</span><span class="nf">run</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">data_np</span><span class="p">)</span>
+  <span class="n">prediction</span> <span class="o">=</span> <span class="n">CIFAR10_CLASSES</span><span class="p">[</span><span class="n">np</span><span class="p">.</span><span class="nf">argmax</span><span class="p">(</span><span class="n">graph_mod</span><span class="p">.</span><span class="nf">get_output</span><span class="p">(</span><span class="mi">0</span><span class="p">).</span><span class="nf">asnumpy</span><span class="p">())]</span>
+  <span class="nf">print</span><span class="p">(</span><span class="sa">f</span><span class="sh">'</span><span class="s">prediction was </span><span class="si">{</span><span class="n">prediction</span><span class="si">}</span><span class="sh">'</span><span class="p">)</span>
 </code></pre></div></div>
 
 <p>Below are the performance results of MicroTVM, compared with <a href="https://github.com/ARM-software/CMSIS_5/releases/tag/5.6.0">CMSIS-NN version 5.7.0</a> (commit <code class="language-plaintext highlighter-rouge">a65b7c9a</code>), a hand-optimized library of ML kernels.</p>
@@ -188,13 +188,13 @@ A standard µTVM setup, where the host communicates with the device via JTAG.</p
 
 <p>As we can see, the out-of-the-box performance isn’t great, but this is where <a href="https://dl.acm.org/doi/10.5555/3327144.3327258">AutoTVM</a> comes to the rescue.  We can write a schedule template for our device, do a round of autotuning, then achieve significantly better results.  To plug in our autotuned results, we only need to replace this line:</p>
 
-<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">graph</span><span class="p">,</span> <span class="n">c_module</span><span class="p">,</span> <span class="n">params</span> <span class="o">=</span> <span class="n">relay</span><span class="p">.</span><span class="n">build</span><span class="p">(</span><span class="n">module</span><span class="p">[</span><span class="s">'main'</span><span class="p">],</span> <span class="n">target</span><span class="o">=</span><span class="n">TARGET</span><span class="p">,</span> <span class="n">params</span><span class="o">=</span><span class="n">params</span><span class="p">)</span>
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">graph</span><span class="p">,</span> <span class="n">c_module</span><span class="p">,</span> <span class="n">params</span> <span class="o">=</span> <span class="n">relay</span><span class="p">.</span><span class="nf">build</span><span class="p">(</span><span class="n">module</span><span class="p">[</span><span class="sh">'</span><span class="s">main</span><span class="sh">'</span><span class="p">],</span> <span class="n">target</span><span class="o">=</span><span class="n">TARGET</span><span class="p">,</span> <span class="n">params</span><span class="o">=</span><span class="n">params</span><span class="p">)</span>
 </code></pre></div></div>
 
 <p>with these lines:</p>
 
-<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">with</span> <span class="n">TARGET</span><span class="p">,</span> <span class="n">autotvm</span><span class="p">.</span><span class="n">apply_history_best</span><span class="p">(</span><span class="n">TUNING_RESULTS_FILE</span><span class="p">):</span>
-  <span class="n">graph</span><span class="p">,</span> <span class="n">c_module</span><span class="p">,</span> <span class="n">params</span> <span class="o">=</span> <span class="n">relay</span><span class="p">.</span><span class="n">build</span><span class="p">(</span><span class="n">module</span><span class="p">[</span><span class="s">'main'</span><span class="p">],</span> <span class="n">target</span><span class="o">=</span><span class="n">TARGET</span><span class="p">,</span> <span class="n">params</span><span class="o">=</span><span class="n">params</span><span class="p">)</span>
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">with</span> <span class="n">TARGET</span><span class="p">,</span> <span class="n">autotvm</span><span class="p">.</span><span class="nf">apply_history_best</span><span class="p">(</span><span class="n">TUNING_RESULTS_FILE</span><span class="p">):</span>
+  <span class="n">graph</span><span class="p">,</span> <span class="n">c_module</span><span class="p">,</span> <span class="n">params</span> <span class="o">=</span> <span class="n">relay</span><span class="p">.</span><span class="nf">build</span><span class="p">(</span><span class="n">module</span><span class="p">[</span><span class="sh">'</span><span class="s">main</span><span class="sh">'</span><span class="p">],</span> <span class="n">target</span><span class="o">=</span><span class="n">TARGET</span><span class="p">,</span> <span class="n">params</span><span class="o">=</span><span class="n">params</span><span class="p">)</span>
 </code></pre></div></div>
 
 <p>And our results now look like this:</p>
@@ -220,20 +220,20 @@ The µTVM Device Memory Layout in RAM</p>
 <p>Most bare-metal devices have support for C and JTAG (a debugging protocol), so (1) and (2) usually come for free!  Furthermore, (3) and (4) are often very small asks.  Below are examples of (3) and (4) for STM32F746-series boards.</p>
 
 <div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">device_config</span> <span class="o">=</span> <span class="p">{</span>
-    <span class="s">'device_id'</span><span class="p">:</span> <span class="s">'arm.stm32f746xx'</span><span class="p">,</span>        <span class="c1"># unique identifier for the device
-</span>    <span class="s">'toolchain_prefix'</span><span class="p">:</span> <span class="s">'arm-none-eabi-'</span><span class="p">,</span>  <span class="c1"># prefix of each binary in the cross-compilation toolchain (e.g., arm-none-eabi-gcc)
-</span>    <span class="s">'base_addr'</span><span class="p">:</span> <span class="mh">0x20000000</span><span class="p">,</span>               <span class="c1"># first address of RAM
-</span>    <span class="s">'section_sizes'</span><span class="p">:</span> <span class="p">{</span>                     <span class="c1"># dictionary of desired section sizes in bytes
-</span>         <span class="s">'text'</span><span class="p">:</span> <span class="mi">18000</span><span class="p">,</span>
-         <span class="s">'rodata'</span><span class="p">:</span> <span class="mi">100</span><span class="p">,</span>
-         <span class="s">'data'</span><span class="p">:</span> <span class="mi">100</span><span class="p">,</span>
-         <span class="p">...</span>
+    <span class="sh">'</span><span class="s">device_id</span><span class="sh">'</span><span class="p">:</span> <span class="sh">'</span><span class="s">arm.stm32f746xx</span><span class="sh">'</span><span class="p">,</span>        <span class="c1"># unique identifier for the device
+</span>    <span class="sh">'</span><span class="s">toolchain_prefix</span><span class="sh">'</span><span class="p">:</span> <span class="sh">'</span><span class="s">arm-none-eabi-</span><span class="sh">'</span><span class="p">,</span>  <span class="c1"># prefix of each binary in the cross-compilation toolchain (e.g., arm-none-eabi-gcc)
+</span>    <span class="sh">'</span><span class="s">base_addr</span><span class="sh">'</span><span class="p">:</span> <span class="mh">0x20000000</span><span class="p">,</span>               <span class="c1"># first address of RAM
+</span>    <span class="sh">'</span><span class="s">section_sizes</span><span class="sh">'</span><span class="p">:</span> <span class="p">{</span>                     <span class="c1"># dictionary of desired section sizes in bytes
+</span>         <span class="sh">'</span><span class="s">text</span><span class="sh">'</span><span class="p">:</span> <span class="mi">18000</span><span class="p">,</span>
+         <span class="sh">'</span><span class="s">rodata</span><span class="sh">'</span><span class="p">:</span> <span class="mi">100</span><span class="p">,</span>
+         <span class="sh">'</span><span class="s">data</span><span class="sh">'</span><span class="p">:</span> <span class="mi">100</span><span class="p">,</span>
+         <span class="bp">...</span>
     <span class="p">},</span>
-    <span class="s">'word_size'</span><span class="p">:</span> <span class="mi">4</span><span class="p">,</span>                        <span class="c1"># device word size
-</span>    <span class="s">'thumb_mode'</span><span class="p">:</span> <span class="bp">True</span><span class="p">,</span>                    <span class="c1"># whether to use ARM's thumb ISA
-</span>    <span class="s">'comms_method'</span><span class="p">:</span> <span class="s">'openocd'</span><span class="p">,</span>             <span class="c1"># method of communication with the device
-</span>    <span class="s">'server_addr'</span><span class="p">:</span> <span class="s">'127.0.0.1'</span><span class="p">,</span>            <span class="c1"># OpenOCD server address (if 'comms_method' is 'openocd')
-</span>    <span class="s">'server_port'</span><span class="p">:</span> <span class="mi">6666</span><span class="p">,</span>                   <span class="c1"># OpenOCD server port (if 'comms_method' is 'openocd')
+    <span class="sh">'</span><span class="s">word_size</span><span class="sh">'</span><span class="p">:</span> <span class="mi">4</span><span class="p">,</span>                        <span class="c1"># device word size
+</span>    <span class="sh">'</span><span class="s">thumb_mode</span><span class="sh">'</span><span class="p">:</span> <span class="bp">True</span><span class="p">,</span>                    <span class="c1"># whether to use ARM's thumb ISA
+</span>    <span class="sh">'</span><span class="s">comms_method</span><span class="sh">'</span><span class="p">:</span> <span class="sh">'</span><span class="s">openocd</span><span class="sh">'</span><span class="p">,</span>             <span class="c1"># method of communication with the device
+</span>    <span class="sh">'</span><span class="s">server_addr</span><span class="sh">'</span><span class="p">:</span> <span class="sh">'</span><span class="s">127.0.0.1</span><span class="sh">'</span><span class="p">,</span>            <span class="c1"># OpenOCD server address (if 'comms_method' is 'openocd')
+</span>    <span class="sh">'</span><span class="s">server_port</span><span class="sh">'</span><span class="p">:</span> <span class="mi">6666</span><span class="p">,</span>                   <span class="c1"># OpenOCD server port (if 'comms_method' is 'openocd')
 </span><span class="p">}</span>
 </code></pre></div></div>
 
@@ -267,9 +267,9 @@ The µTVM Device Memory Layout in RAM</p>
 
 <p>Every piece of functionality in µTVM relies on having an open session with the target device.  If you’re familiar with TVM, you may have noticed a line of code that deviates from the norm in our first code snippet—-namely, this one:</p>
 
-<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="p">...</span>
-<span class="k">with</span> <span class="n">micro</span><span class="p">.</span><span class="n">Session</span><span class="p">(</span><span class="n">device_config</span><span class="p">)</span> <span class="k">as</span> <span class="n">sess</span><span class="p">:</span>
-	<span class="p">...</span>
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="bp">...</span>
+<span class="k">with</span> <span class="n">micro</span><span class="p">.</span><span class="nc">Session</span><span class="p">(</span><span class="n">device_config</span><span class="p">)</span> <span class="k">as</span> <span class="n">sess</span><span class="p">:</span>
+	<span class="bp">...</span>
 </code></pre></div></div>
 
 <p>Every line inside this <code class="language-plaintext highlighter-rouge">with</code> block can call functions in µTVM, with the context being the device specified by <code class="language-plaintext highlighter-rouge">device_config</code>.  This line is doing a number of things under the hood, so let’s unpack it.</p>
@@ -284,29 +284,29 @@ The µTVM Device Memory Layout in RAM</p>
 
 <p>Suppose we have a <code class="language-plaintext highlighter-rouge">micro.Session</code> open with our device and a TVM schedule that implements 2D convolution.  If we want to load it onto our microcontroller, we need it to emit C code.  To do so, we just need to set the <code class="language-plaintext highlighter-rouge">target</code> in either <code class="language-plaintext highlighter-rouge">tvm.build</code> or <code class="language-plaintext highlighter-rouge">relay.build</code>.  Example:</p>
 
-<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">graph</span><span class="p">,</span> <span class="n">c_module</span><span class="p">,</span> <span class="n">params</span> <span class="o">=</span> <span class="n">relay</span><span class="p">.</span><span class="n">build</span><span class="p">(</span><span class="n">module</span><span class="p">[</span><span class="s">'main'</span><span class="p">],</span> <span class="n">target</span><span class="o">=</span><span class="s">'c -device=micro_dev'</span><span class="p">,</span> <span class="n">params</span><span class="o">=</span><span class="n">params</span><span class="p">)</span>
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">graph</span><span class="p">,</span> <span class="n">c_module</span><span class="p">,</span> <span class="n">params</span> <span class="o">=</span> <span class="n">relay</span><span class="p">.</span><span class="nf">build</span><span class="p">(</span><span class="n">module</span><span class="p">[</span><span class="sh">'</span><span class="s">main</span><span class="sh">'</span><span class="p">],</span> <span class="n">target</span><span class="o">=</span><span class="sh">'</span><span class="s">c -device=micro_dev</span><span class="sh">'</span><span class="p">,</span> <span class="n">params</span><span class="o">=</span><span class="n">params</span><span class="p">)</span>
 </code></pre></div></div>
 
 <p>By setting the target like so, the build process runs through our C code generation backend.  However, the resulting C module still resides on the host machine.  In order to load it onto the device, we run it through one of the core functions in the µTVM infrastructure: <code class="language-plaintext highlighter-rouge">create_micro_mod</code>.  Example:</p>
 
-<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">micro_mod</span> <span class="o">=</span> <span class="n">micro</span><span class="p">.</span><span class="n">create_micro_mod</span><span class="p">(</span><span class="n">c_module</span><span class="p">,</span> <span class="n">DEV_CONFIG</span><span class="p">)</span>
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">micro_mod</span> <span class="o">=</span> <span class="n">micro</span><span class="p">.</span><span class="nf">create_micro_mod</span><span class="p">(</span><span class="n">c_module</span><span class="p">,</span> <span class="n">DEV_CONFIG</span><span class="p">)</span>
 </code></pre></div></div>
 
 <p>The line above cross-compiles the C source within the module, allocates room for the resulting binary (so it can coexist with the runtime in device memory), then sends each section of the binary to its allocated slot on the device.  Once the module binary is snug in device memory, function pointers within the binary are patched to give the module access to helper functions in the device runtime (e.g., for allocating scratchpads).</p>
 
 <p>Now, with our kernel loaded on the device, we can grab a remote handle to the convolution function like so:</p>
 
-<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">micro_func</span> <span class="o">=</span> <span class="n">micro_mod</span><span class="p">[</span><span class="s">'conv2d'</span><span class="p">]</span>
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">micro_func</span> <span class="o">=</span> <span class="n">micro_mod</span><span class="p">[</span><span class="sh">'</span><span class="s">conv2d</span><span class="sh">'</span><span class="p">]</span>
 </code></pre></div></div>
 
 <h2 id="tensor-loading">Tensor Loading</h2>
 
 <p>If we want to call an operator, we first need some tensors as arguments:</p>
 
-<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">data_np</span><span class="p">,</span> <span class="n">kernel_np</span> <span class="o">=</span> <span class="n">get_conv_inputs</span><span class="p">()</span>
-<span class="n">ctx</span> <span class="o">=</span> <span class="n">tvm</span><span class="p">.</span><span class="n">micro_dev</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
-<span class="n">data</span> <span class="o">=</span> <span class="n">tvm</span><span class="p">.</span><span class="n">nd</span><span class="p">.</span><span class="n">array</span><span class="p">(</span><span class="n">data_np</span><span class="p">,</span> <span class="n">ctx</span><span class="o">=</span><span class="n">ctx</span><span class="p">)</span>
-<span class="n">kernel</span> <span class="o">=</span> <span class="n">tvm</span><span class="p">.</span><span class="n">nd</span><span class="p">.</span><span class="n">array</span><span class="p">(</span><span class="n">kernel_np</span><span class="p">,</span> <span class="n">ctx</span><span class="o">=</span><span class="n">ctx</span><span class="p">)</span>
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">data_np</span><span class="p">,</span> <span class="n">kernel_np</span> <span class="o">=</span> <span class="nf">get_conv_inputs</span><span class="p">()</span>
+<span class="n">ctx</span> <span class="o">=</span> <span class="n">tvm</span><span class="p">.</span><span class="nf">micro_dev</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+<span class="n">data</span> <span class="o">=</span> <span class="n">tvm</span><span class="p">.</span><span class="n">nd</span><span class="p">.</span><span class="nf">array</span><span class="p">(</span><span class="n">data_np</span><span class="p">,</span> <span class="n">ctx</span><span class="o">=</span><span class="n">ctx</span><span class="p">)</span>
+<span class="n">kernel</span> <span class="o">=</span> <span class="n">tvm</span><span class="p">.</span><span class="n">nd</span><span class="p">.</span><span class="nf">array</span><span class="p">(</span><span class="n">kernel_np</span><span class="p">,</span> <span class="n">ctx</span><span class="o">=</span><span class="n">ctx</span><span class="p">)</span>
 </code></pre></div></div>
 
 <p>Based on its data type (e.g., <code class="language-plaintext highlighter-rouge">int8</code>, <code class="language-plaintext highlighter-rouge">float32</code>, etc.) and shape, each tensor’s size in bytes is calculated, and the host allocates a region of memory on the device’s heap.  The tensor’s data is then loaded into the allocated region.</p>
@@ -319,7 +319,7 @@ The µTVM Device Memory Layout in RAM</p>
 
 <p>When calling a function, both input and output tensors are passed as arguments, in what’s known as destination-passing style:</p>
 
-<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">conv2D</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">kernel</span><span class="p">,</span> <span class="n">output</span><span class="p">)</span>
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nf">conv2D</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">kernel</span><span class="p">,</span> <span class="n">output</span><span class="p">)</span>
 </code></pre></div></div>
 
 <p>Given that these tensors are already allocated on the device, we only need to send <em>metadata</em> to the device (device address, shape, and data type), so it knows which of its resident tensors to use.  The runtime representation of a function call includes this metadata, as well as the address of the function being called (shown below).  Before constructing this representation, the metadata needs to be serialized into the arguments section on the device that exists expressly for this purpose.</p>
@@ -461,9 +461,9 @@ Diagram from CMSIS-NN paper showing a 2x2 matrix multiplication microkernel</p>
 
 
 
-  <script src="https://code.jquery.com/jquery-2.2.0.min.js" type="text/javascript"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
-  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
+  <script src="../../../_static/downloads/jquery-2.2.0.min.js" type="text/javascript"></script>
+  <script src="../../../_static/downloads/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
+  <script src="../../../_static/downloads/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
   <!-- <script src="./assets/js/slick.js"></script> -->
   <script src="/assets/js/custome.js"></script>
   <script>
