@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['vminstrumentreturnkind_8102',['VMInstrumentReturnKind',['../namespacetvm_1_1runtime_1_1relax__vm.html#a8541ee07161b8c799b677ae68181ddaa',1,'tvm::runtime::relax_vm']]]
+  ['vminstrumentreturnkind_8103',['VMInstrumentReturnKind',['../namespacetvm_1_1runtime_1_1vm.html#ab77d7e22747dc37baa2fa538eab30210',1,'tvm::runtime::vm']]]
 ];
