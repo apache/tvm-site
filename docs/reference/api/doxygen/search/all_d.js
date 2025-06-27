@@ -76,7 +76,7 @@ var searchData=
   ['loadfromfile_2236',['LoadFromFile',['../classtvm_1_1runtime_1_1Module.html#a5ac749f5f83acad804d65aaecabe38af',1,'tvm::runtime::Module::LoadFromFile()'],['../classtvm_1_1runtime_1_1vm_1_1VMExecutable.html#aa9d28dd58d74e5fac4a10faa34a8ea57',1,'tvm::runtime::vm::VMExecutable::LoadFromFile()']]],
   ['loadfromstr_2237',['LoadFromStr',['../structtvm_1_1runtime_1_1vm_1_1NDArrayCacheMetadata.html#a8f0c7a041ece9ea105a01948e70dcb0d',1,'tvm::runtime::vm::NDArrayCacheMetadata']]],
   ['loadjson_2238',['LoadJSON',['../namespacetvm.html#a0f18f5fd178d6efab6764f2742d79234',1,'tvm']]],
-  ['loadvmmodule_2239',['LoadVMModule',['../namespacetvm_1_1runtime.html#a8be7ff3434b2a2d4365f36d94c1dc830',1,'tvm::runtime']]],
+  ['loadvmmodule_2239',['LoadVMModule',['../namespacetvm_1_1runtime.html#a83513e8fc35fd0d11f15635b3cbe02e1',1,'tvm::runtime']]],
   ['loc_2240',['loc',['../classtvm_1_1DiagnosticBuilder.html#af979750b621eaa753e42d4fd80c99ef6',1,'tvm::DiagnosticBuilder::loc()'],['../classtvm_1_1DiagnosticNode.html#a4deedfbf8ffaec502d6567bd77576d1f',1,'tvm::DiagnosticNode::loc()']]],
   ['local_5fresponse_5fnorm_2eh_2241',['local_response_norm.h',['../local__response__norm_8h.html',1,'']]],
   ['local_5fstage_2242',['local_stage',['../namespacetvm_1_1tir_1_1attr.html#af3c36a3dd1f599b1fc641784f3020796',1,'tvm::tir::attr']]],

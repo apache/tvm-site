@@ -41,7 +41,7 @@ var searchData=
   ['loadfromfile_6265',['LoadFromFile',['../classtvm_1_1runtime_1_1Module.html#a5ac749f5f83acad804d65aaecabe38af',1,'tvm::runtime::Module::LoadFromFile()'],['../classtvm_1_1runtime_1_1vm_1_1VMExecutable.html#aa9d28dd58d74e5fac4a10faa34a8ea57',1,'tvm::runtime::vm::VMExecutable::LoadFromFile()']]],
   ['loadfromstr_6266',['LoadFromStr',['../structtvm_1_1runtime_1_1vm_1_1NDArrayCacheMetadata.html#a8f0c7a041ece9ea105a01948e70dcb0d',1,'tvm::runtime::vm::NDArrayCacheMetadata']]],
   ['loadjson_6267',['LoadJSON',['../namespacetvm.html#a0f18f5fd178d6efab6764f2742d79234',1,'tvm']]],
-  ['loadvmmodule_6268',['LoadVMModule',['../namespacetvm_1_1runtime.html#a8be7ff3434b2a2d4365f36d94c1dc830',1,'tvm::runtime']]],
+  ['loadvmmodule_6268',['LoadVMModule',['../namespacetvm_1_1runtime.html#a83513e8fc35fd0d11f15635b3cbe02e1',1,'tvm::runtime']]],
   ['log_6269',['log',['../namespacetvm.html#ae39f72b12020a4f7ad6b16b66ffdfe1f',1,'tvm::log()'],['../namespacetvm_1_1topi.html#a524b8bb4fe7a02478ea617911cf467ab',1,'tvm::topi::log()']]],
   ['log10_6270',['log10',['../namespacetvm.html#a16a5aa0300233b6c5fbcc61c424eee30',1,'tvm::log10()'],['../namespacetvm_1_1topi.html#aa4595c96c60e3706f30f24d33d53a09c',1,'tvm::topi::log10()']]],
   ['log1p_6271',['log1p',['../namespacetvm.html#a2cc4aceb274161870cfd06afacda5ca1',1,'tvm']]],

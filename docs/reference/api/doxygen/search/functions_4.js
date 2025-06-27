@@ -78,7 +78,7 @@ var searchData=
   ['disallowasyncstridedmemcopy_5603',['DisallowAsyncStridedMemCopy',['../classtvm_1_1meta__schedule_1_1Postproc.html#a05460995a5129d39133fb864c7695e91',1,'tvm::meta_schedule::Postproc']]],
   ['disallowdynamicloop_5604',['DisallowDynamicLoop',['../classtvm_1_1meta__schedule_1_1Postproc.html#af3d76d03f0c508b985f7050f0e18732d',1,'tvm::meta_schedule::Postproc']]],
   ['discoaction2string_5605',['DiscoAction2String',['../namespacetvm_1_1runtime.html#a0c3703032b26941b2dc4a6660d7dcc14',1,'tvm::runtime']]],
-  ['discoemptyndarray_5606',['DiscoEmptyNDArray',['../namespacetvm_1_1runtime.html#a5c74df699070b31a226f490b6b83062f',1,'tvm::runtime']]],
+  ['discoemptyndarray_5606',['DiscoEmptyNDArray',['../namespacetvm_1_1runtime.html#abf3866e539c0480815d59f86372661be',1,'tvm::runtime']]],
   ['discoworker_5607',['DiscoWorker',['../classtvm_1_1runtime_1_1DiscoWorker.html#a089d3adcb982ccae8a8f760d2b52a080',1,'tvm::runtime::DiscoWorker']]],
   ['dispatchsequalreduce_5608',['DispatchSEqualReduce',['../classtvm_1_1SEqualHandlerDefault.html#a6a556567cb39505c52976be6dfbde76f',1,'tvm::SEqualHandlerDefault']]],
   ['dispatchshash_5609',['DispatchSHash',['../classtvm_1_1SHashHandlerDefault.html#a96efffbad7a9d06bfff5df973a5c6c86',1,'tvm::SHashHandlerDefault']]],

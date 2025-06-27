@@ -167,7 +167,7 @@ var searchData=
   ['discoaction_881',['DiscoAction',['../namespacetvm_1_1runtime.html#a4ba6565e739bed4d5078c2ff998deae8',1,'tvm::runtime']]],
   ['discoaction2string_882',['DiscoAction2String',['../namespacetvm_1_1runtime.html#a0c3703032b26941b2dc4a6660d7dcc14',1,'tvm::runtime']]],
   ['discochannel_883',['DiscoChannel',['../classtvm_1_1runtime_1_1DiscoChannel.html',1,'tvm::runtime']]],
-  ['discoemptyndarray_884',['DiscoEmptyNDArray',['../namespacetvm_1_1runtime.html#a5c74df699070b31a226f490b6b83062f',1,'tvm::runtime']]],
+  ['discoemptyndarray_884',['DiscoEmptyNDArray',['../namespacetvm_1_1runtime.html#abf3866e539c0480815d59f86372661be',1,'tvm::runtime']]],
   ['discoworker_885',['DiscoWorker',['../classtvm_1_1runtime_1_1DiscoWorker.html#a089d3adcb982ccae8a8f760d2b52a080',1,'tvm::runtime::DiscoWorker::DiscoWorker()'],['../classtvm_1_1runtime_1_1DiscoWorker.html',1,'tvm::runtime::DiscoWorker']]],
   ['dispatch_5ftokens_886',['dispatch_tokens',['../classtvm_1_1script_1_1printer_1_1IRDocsifierNode.html#a4f761637ee382f3755cb199563edbe2c',1,'tvm::script::printer::IRDocsifierNode']]],
   ['dispatched_887',['dispatched',['../classtvm_1_1meta__schedule_1_1ExtractedTaskNode.html#a89729717843a9ea91a4535bafee8b14f',1,'tvm::meta_schedule::ExtractedTaskNode']]],
