@@ -1,5 +1,5 @@
 var searchData=
 [
-  ['dmlc_4915',['dmlc',['../namespacedmlc.html',1,'']]],
-  ['serializer_4916',['serializer',['../namespacedmlc_1_1serializer.html',1,'dmlc']]]
+  ['dmlc_4852',['dmlc',['../namespacedmlc.html',1,'']]],
+  ['serializer_4853',['serializer',['../namespacedmlc_1_1serializer.html',1,'dmlc']]]
 ];

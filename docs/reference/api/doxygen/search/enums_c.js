@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['reducekind_7972',['ReduceKind',['../namespacetvm_1_1runtime.html#a9ebb65e06d120de112c54fdcd10c27d7',1,'tvm::runtime']]]
+  ['reducekind_7875',['ReduceKind',['../namespacetvm_1_1runtime.html#a9ebb65e06d120de112c54fdcd10c27d7',1,'tvm::runtime']]]
 ];
