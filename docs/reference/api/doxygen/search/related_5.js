@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['getobjectpathrepr_8114',['GetObjectPathRepr',['../classtvm_1_1ObjectPathNode.html#a102e76694cc17b2c855ecbae4212cd6c',1,'tvm::ObjectPathNode']]]
+  ['typetraits_8113',['TypeTraits',['../classtvm_1_1relax_1_1NestedMsg.html#a226b02d776a9df4928a712bc87af898a',1,'tvm::relax::NestedMsg']]]
 ];
