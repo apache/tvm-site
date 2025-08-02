@@ -132,7 +132,7 @@ var searchData=
   ['externopnode_1053',['ExternOpNode',['../classtvm_1_1te_1_1ExternOpNode.html#aa2781af3e0414490286d62ed05722e7c',1,'tvm::te::ExternOpNode::ExternOpNode()'],['../classtvm_1_1te_1_1ExternOpNode.html',1,'tvm::te::ExternOpNode']]],
   ['externuse_1054',['ExternUse',['../classtvm_1_1relax_1_1PatternContextNode.html#a2c27ca5386cb5d333c9b79d6d4e8c9c4',1,'tvm::relax::PatternContextNode']]],
   ['extra_5fcollectors_1055',['extra_collectors',['../structtvm_1_1runtime_1_1profiling_1_1CallFrame.html#a6df052f29c9c70ed46cf5c7a5cff11e1',1,'tvm::runtime::profiling::CallFrame']]],
-  ['extra_5fmetrics_1056',['extra_metrics',['../structtvm_1_1runtime_1_1profiling_1_1CallFrame.html#a436873f87bc5316bbab15e2811ff29d4',1,'tvm::runtime::profiling::CallFrame']]],
+  ['extra_5fmetrics_1056',['extra_metrics',['../structtvm_1_1runtime_1_1profiling_1_1CallFrame.html#ac9b48a0a529ef366903425471817dd34',1,'tvm::runtime::profiling::CallFrame']]],
   ['extracted_5ftask_2eh_1057',['extracted_task.h',['../extracted__task_8h.html',1,'']]],
   ['extractedtask_1058',['ExtractedTask',['../classtvm_1_1meta__schedule_1_1ExtractedTask.html#aec6734684edd3e09386ddd4a39d4ccb3',1,'tvm::meta_schedule::ExtractedTask::ExtractedTask()'],['../classtvm_1_1meta__schedule_1_1ExtractedTask.html',1,'tvm::meta_schedule::ExtractedTask']]],
   ['extractedtasknode_1059',['ExtractedTaskNode',['../classtvm_1_1meta__schedule_1_1ExtractedTaskNode.html',1,'tvm::meta_schedule']]],

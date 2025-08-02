@@ -27,6 +27,6 @@ var searchData=
   ['extents_7236',['extents',['../classtvm_1_1script_1_1ir__builder_1_1tir_1_1AllocateFrameNode.html#afb335072e6b0b10888ecdf81ec1d2462',1,'tvm::script::ir_builder::tir::AllocateFrameNode::extents()'],['../classtvm_1_1script_1_1ir__builder_1_1tir_1_1AllocateConstFrameNode.html#a5a66738edbc7b2f438ee4627e8ceca91',1,'tvm::script::ir_builder::tir::AllocateConstFrameNode::extents()'],['../classtvm_1_1tir_1_1AllocateNode.html#a0f6d59cffc5fda07450e0fdab6b66bcb',1,'tvm::tir::AllocateNode::extents()'],['../classtvm_1_1tir_1_1AllocateConstNode.html#a190232eb6f480dde8fcb7fa926413d69',1,'tvm::tir::AllocateConstNode::extents()']]],
   ['extern_5fscope_7237',['extern_scope',['../namespacetvm_1_1tir_1_1attr.html#a4bd38b620e1e9907216f3e583839dea3',1,'tvm::tir::attr']]],
   ['extra_5fcollectors_7238',['extra_collectors',['../structtvm_1_1runtime_1_1profiling_1_1CallFrame.html#a6df052f29c9c70ed46cf5c7a5cff11e1',1,'tvm::runtime::profiling::CallFrame']]],
-  ['extra_5fmetrics_7239',['extra_metrics',['../structtvm_1_1runtime_1_1profiling_1_1CallFrame.html#a436873f87bc5316bbab15e2811ff29d4',1,'tvm::runtime::profiling::CallFrame']]],
+  ['extra_5fmetrics_7239',['extra_metrics',['../structtvm_1_1runtime_1_1profiling_1_1CallFrame.html#ac9b48a0a529ef366903425471817dd34',1,'tvm::runtime::profiling::CallFrame']]],
   ['extrapolation_5fvalue_7240',['extrapolation_value',['../structtvm_1_1relax_1_1Resize2DAttrs.html#a505fafa1839ac6a43734eb9bcccb1d2f',1,'tvm::relax::Resize2DAttrs']]]
 ];
