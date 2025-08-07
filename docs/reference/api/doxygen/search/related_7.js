@@ -1,6 +1,6 @@
 var searchData=
 [
-  ['instructionkind_8095',['InstructionKind',['../classtvm_1_1tir_1_1InstructionKindRegEntry.html#ae2b430cbb7fae7f39152765fc947a1e9',1,'tvm::tir::InstructionKindRegEntry']]],
-  ['internal_8096',['Internal',['../classtvm_1_1transform_1_1PassContext.html#a8bde6eb35df6b3a9f53810e0bc79fdfd',1,'tvm::transform::PassContext']]],
-  ['irmodule_8097',['IRModule',['../classtvm_1_1IRModuleNode.html#a2b30d3e406c01bb6287d1d7514ecaf46',1,'tvm::IRModuleNode']]]
+  ['module_8020',['Module',['../classtvm_1_1runtime_1_1ModuleNode.html#a21f639900c480510650969df9c74d17d',1,'tvm::runtime::ModuleNode']]],
+  ['moduleinternal_8021',['ModuleInternal',['../classtvm_1_1runtime_1_1ModuleNode.html#a2b490c1acecd166b5824e4e96f17c64e',1,'tvm::runtime::ModuleNode']]],
+  ['modulenode_8022',['ModuleNode',['../classtvm_1_1runtime_1_1Module.html#a908d19538a4fcadd6e93f39e4aa5292b',1,'tvm::runtime::Module']]]
 ];
