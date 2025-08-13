@@ -1,5 +1,5 @@
 var searchData=
 [
-  ['ffi_8027',['FFI',['../classtvm_1_1runtime_1_1SessionObj.html#a2c376e805541462f15c883a180495b0e',1,'tvm::runtime::SessionObj']]],
-  ['schedule_8028',['Schedule',['../classtvm_1_1tir_1_1ScheduleNode.html#aae5808dc2e987bf17ef42196457a654d',1,'tvm::tir::ScheduleNode']]]
+  ['ffi_8026',['FFI',['../classtvm_1_1runtime_1_1SessionObj.html#a2c376e805541462f15c883a180495b0e',1,'tvm::runtime::SessionObj']]],
+  ['schedule_8027',['Schedule',['../classtvm_1_1tir_1_1ScheduleNode.html#aae5808dc2e987bf17ef42196457a654d',1,'tvm::tir::ScheduleNode']]]
 ];
