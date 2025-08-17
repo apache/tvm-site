@@ -9,7 +9,7 @@ var indexSectionsWithContent =
   6: "abcdefilmprst",
   7: "abcdefiklmoprstv",
   8: "bcgiknrst",
-  9: ":abcdfimopstuvw",
+  9: ":abcdfiopstuvw",
   10: "deilnprstv"
 };
 
