@@ -307,7 +307,7 @@ var searchData=
   ['tvmbackendrunonce_3565',['TVMBackendRunOnce',['../c__backend__api_8h.html#ae70bd3ee026eb55b438ada05b08f0ce8',1,'c_backend_api.h']]],
   ['tvmdeviceexttype_3566',['TVMDeviceExtType',['../namespacetvm_1_1runtime.html#a237ec21eda9c03c495db5ce0da0f849d',1,'tvm::runtime']]],
   ['tvmdeviceexttype_5fend_3567',['TVMDeviceExtType_End',['../namespacetvm_1_1runtime.html#a237ec21eda9c03c495db5ce0da0f849da988c9df9b3f4e94e793e3e6dce05bb9c',1,'tvm::runtime']]],
-  ['tvmffienvregistersystemlibsymbol_3568',['TVMFFIEnvRegisterSystemLibSymbol',['../c__backend__api_8h.html#aa77b4f87bcbca073fe54c02cad6d776c',1,'c_backend_api.h']]],
+  ['tvmffienvmodregistersystemlibsymbol_3568',['TVMFFIEnvModRegisterSystemLibSymbol',['../c__backend__api_8h.html#aad2a96c93ddd9d527678f3e8f1d4b1aa',1,'c_backend_api.h']]],
   ['tvmparallelgroupenv_3569',['TVMParallelGroupEnv',['../structTVMParallelGroupEnv.html',1,'']]],
   ['tvmscriptprinter_3570',['TVMScriptPrinter',['../classtvm_1_1TVMScriptPrinter.html',1,'tvm']]],
   ['tvmstreamhandle_3571',['TVMStreamHandle',['../device__api_8h.html#ab1d5f6b7945e1410602a8a057fda5757',1,'device_api.h']]],

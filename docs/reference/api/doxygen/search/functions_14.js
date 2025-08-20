@@ -124,7 +124,7 @@ var searchData=
   ['tvmbackendparallelbarrier_6712',['TVMBackendParallelBarrier',['../c__backend__api_8h.html#a2d54b04a58a58eb9ff43e33c320e60a7',1,'c_backend_api.h']]],
   ['tvmbackendparallellaunch_6713',['TVMBackendParallelLaunch',['../c__backend__api_8h.html#a6ff8662943d0f003d55d9046cd24daf8',1,'c_backend_api.h']]],
   ['tvmbackendrunonce_6714',['TVMBackendRunOnce',['../c__backend__api_8h.html#ae70bd3ee026eb55b438ada05b08f0ce8',1,'c_backend_api.h']]],
-  ['tvmffienvregistersystemlibsymbol_6715',['TVMFFIEnvRegisterSystemLibSymbol',['../c__backend__api_8h.html#aa77b4f87bcbca073fe54c02cad6d776c',1,'c_backend_api.h']]],
+  ['tvmffienvmodregistersystemlibsymbol_6715',['TVMFFIEnvModRegisterSystemLibSymbol',['../c__backend__api_8h.html#aad2a96c93ddd9d527678f3e8f1d4b1aa',1,'c_backend_api.h']]],
   ['type_6716',['type',['../classtvm_1_1runtime_1_1memory_1_1Allocator.html#a5690ce0a8e9e25bd8e5568173cc0b1bb',1,'tvm::runtime::memory::Allocator']]],
   ['typeannotation_6717',['TypeAnnotation',['../namespacetvm_1_1tir.html#abf355a4fdeb063b1adb4946cad5fca68',1,'tvm::tir']]],
   ['typedenvfunc_6718',['TypedEnvFunc',['../classtvm_1_1TypedEnvFunc_3_01R_07Args_8_8_8_08_4.html#a41a6b9014d0feeb628ca7edfd0d26f0b',1,'tvm::TypedEnvFunc&lt; R(Args...)&gt;::TypedEnvFunc()'],['../classtvm_1_1TypedEnvFunc_3_01R_07Args_8_8_8_08_4.html#a0d72a6fa7263821c14bcd37837998ed9',1,'tvm::TypedEnvFunc&lt; R(Args...)&gt;::TypedEnvFunc(ObjectPtr&lt; Object &gt; n)']]],
