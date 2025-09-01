@@ -14,12 +14,12 @@ title: "Apache TVM"
 * {:.aboutDetailsCol}
 #### About Apache TVM
 The vision of the Apache TVM Project is to host a diverse community of experts and practitioners
-in machine learning, compilers, and systems architecture to build an accessible, extensible, and
-automated open-source framework that optimizes current and emerging machine learning models for
+in machine learning, compilers, and systems architecture to build an accessible, flexible, and
+efficient open-source framework that optimizes current and emerging machine learning models for
 any hardware platform. TVM provides the following main features:
 
-    * Compilation of deep learning models into minimum deployable modules.
-    * Infrastructure to automatic generate and optimize models on more backend with better performance.
+    *  Python-first development that enables quick customization of machine learning compiler pipelines.
+    *  Universal deployment to bring models into minimum deployable modules.
 </div>
 </section>
 
@@ -38,23 +38,19 @@ any hardware platform. TVM provides the following main features:
 * {:.key-block}
 ![Run Everywhere](/assets/images/run.svg "run")
 ### Run Everywhere
-    CPUs, GPUs, browsers, microcontrollers, FPGAs and more.
+    From data center GPUs to edge environments.
 
-    {:.mt-0.mt-lg-3}
-    Automatically generate and optimize tensor operators on more backends.
 
 * {:.key-block}
 ![Flexibility](/assets/images/Flexibility.svg "Flexibility")
 ### Flexibility
-    Need support for block sparsity, quantization (1,2,4,8 bit integers, posit), random forests/classical ML, memory planning, MISRA-C compatibility, Python prototyping or all of the above?
-
-    {:.mt-0.mt-lg-3}
-    TVM’s flexible design enables all of these things and more.
+    Flexible design that enables easy customization of compilation pipelines.
 
 * {:.key-block}
 ![Ease of Use](/assets/images/use.svg "Ease of Use")
 ### Ease of Use
-Compilation of deep learning models in Keras, MXNet, PyTorch, Tensorflow, CoreML, DarkNet and more. Start using TVM with Python today, build out production stacks using C++, Rust, or Java the next day.
+    Easy to use python first compiler API that brings universal deployment.
+
 </div>
 
 </section>
@@ -71,10 +67,6 @@ Compilation of deep learning models in Keras, MXNet, PyTorch, Tensorflow, CoreML
 * {:.doc-link-block}
 ### Community
 [Join the TVM <br/> community](/community)
-
-* {:.doc-link-block}
-### Blog
-[Read more about TVM <br/> and our thinking](/blog)
 
 
 </div>
