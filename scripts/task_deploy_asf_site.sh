@@ -14,7 +14,7 @@ git fetch
 git checkout -B asf-site origin/asf-site
 
 # remove all existing files, excluding the docs and ffi
-git ls-files | grep -v -e ^docs -e ^ffi | xargs  rm -f
+git ls-files | grep -v -e ^docs -e ^ffi | xargs  rm -rf
 cp .gitignore.bak .gitignore
 cp .asf.yaml.bak .asf.yaml
 
