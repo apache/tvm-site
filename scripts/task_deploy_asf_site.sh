@@ -18,7 +18,13 @@ git ls-files | grep -v -e ^docs -e ^ffi | xargs  rm -rf
 cp .gitignore.bak .gitignore
 cp .asf.yaml.bak .asf.yaml
 
+if [ "$GITHUB_ACTIONS" = "true" ]; then
+  git config user.name tvm-bot
+  git config user.email 95660001+tvm-bot@users.noreply.github.com
+fi
+
 cp -rf _site/* .
+rm -rf _site
 DATE=`date`
 git add --all && git commit -am "Build at ${DATE}"
 git push origin asf-site

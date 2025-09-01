@@ -1,0 +1,60 @@
+name: Publish tvm-ffi docs
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build_wheels:
+    name: Build docs
+    runs-on: ubuntu-latest
+    steps:
+      - uses: astral-sh/setup-uv@v4
+
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+          path: tvm-site
+
+      - name: Checkout tvm
+        uses: actions/checkout@v4
+        with:
+          repository: apache/tvm
+          submodules: recursive
+          path: tvm
+
+      - name: Install wheel and requirements
+        working-directory: tvm/ffi
+        run: |
+          pip install .
+          pip install -r docs/requirements.txt
+          pip install linkify-it-py
+
+      - name: Build docs
+        working-directory: tvm/ffi/docs
+        run: |
+          make html
+          python ../../../tvm-site/scripts/download_3rdparty_embeds.py -v --path=_build/html
+
+      - name: Deploy docs
+        working-directory: tvm-site
+        run: |
+          git fetch
+          git checkout -B asf-site origin/asf-site
+          rm -rf ffi
+          cp -r ../tvm/ffi/docs/_build/html ffi
+          git config user.name tvm-bot
+          git config user.email 95660001+tvm-bot@users.noreply.github.com
+          git add -f ffi
+          git commit -m"deploying ffi docs" ffi
+          git status
+          for i in {1..3}; do
+            if git push origin asf-site; then
+              echo "Push successful"
+              break
+            else
+              echo "Push failed, retrying ($i)..."
+              sleep 2
+              git pull --rebase origin asf-site
+            fi
+          done
+
