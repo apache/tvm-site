@@ -1,0 +1,318 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Building a Cross-Framework Deep Learning Compiler via DLPack</title>
+    <link rel="shortcut icon" href="/assets/images/favicon.ico">
+    <link rel="stylesheet" href="../../../_static/downloads/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+    <link rel="stylesheet" href="/css/slick.css">
+    <link rel="stylesheet" href="/css/slick-theme.css">
+    <link rel="stylesheet" href="/css/custom.css">
+    
+</head>
+<body>
+
+    
+<div class="bannerPage">
+      <header class="header">
+      <div class="container">
+        <div class="headerInner d-flex justify-content-between align-items-center">
+          <div class="headerLogo">
+            <a href="/"><img src="/assets/images/logo.svg" alt="Logo"></a>
+          </div>
+          <div id="headMenu" class="headerNav">
+            <button type="button" id="closeHeadMenu" class="navCloseBtn"><img src="/assets/images/close-icon.svg"
+                alt="Close"></button>
+                <ul class="nav">
+    
+    <li class="nav-item">
+        <a class="nav-link" href="/community">Community</a>
+    </li>
+    
+    <li class="nav-item">
+        <a class="nav-link" href="/download">Download</a>
+    </li>
+    
+    <li class="nav-item">
+        <a class="nav-link" href="https://tvm.apache.org/docs/">Docs</a>
+    </li>
+    
+    <li class="nav-item">
+        <a class="nav-link" href="https://github.com/apache/tvm/">Github</a>
+    </li>
+    
+</ul>
+            <div class="responsiveasfdropdown">
+              <button type="button" class="btn-link">
+                ASF
+              </button>
+              <ul>
+    
+    <li>
+        <a href="https://www.apache.org/">Apache Homepage</a>
+    </li>
+    
+    <li>
+        <a href="https://www.apache.org/licenses/">License</a>
+    </li>
+    
+    <li>
+        <a href="https://www.apache.org/foundation/sponsorship.html">Sponsorship</a>
+    </li>
+    
+    <li>
+        <a href="https://tvm.apache.org/docs/reference/security.html">Security</a>
+    </li>
+    
+    <li>
+        <a href="https://www.apache.org/foundation/thanks.html">Thanks</a>
+    </li>
+    
+    <li>
+        <a href="https://www.apache.org/events/current-event">Events</a>
+    </li>
+    
+</ul>
+            </div>
+          </div>
+          <div class="responsiveMenuIcon">
+            <button type="button" id="menuBtn" class="btn-menu"><img src="/assets/images/menu-icon.svg"
+                alt="Menu Icon" /></button>
+          </div>
+          <div class="asfDropdown">
+            <div class="dropdown">
+              <button type="button" class="btn-link dropdown-toggle" data-toggle="dropdown" aria-haspopup="true"
+                aria-expanded="false">
+                ASF
+              </button>
+              <div class="dropdown-menu dropdown-menu-right">
+                <ul>
+    
+    <li>
+        <a href="https://www.apache.org/">Apache Homepage</a>
+    </li>
+    
+    <li>
+        <a href="https://www.apache.org/licenses/">License</a>
+    </li>
+    
+    <li>
+        <a href="https://www.apache.org/foundation/sponsorship.html">Sponsorship</a>
+    </li>
+    
+    <li>
+        <a href="https://tvm.apache.org/docs/reference/security.html">Security</a>
+    </li>
+    
+    <li>
+        <a href="https://www.apache.org/foundation/thanks.html">Thanks</a>
+    </li>
+    
+    <li>
+        <a href="https://www.apache.org/events/current-event">Events</a>
+    </li>
+    
+</ul>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </header>
+
+</div>
+
+
+<div class="container">
+<div class="content">
+  <div class="row">
+    <div class="span14 w-100">
+      <h1>Building a Cross-Framework Deep Learning Compiler via DLPack </h1>
+      <p class="post-meta">
+        <time datetime="2018-08-10T00:00:00+00:00" itemprop="datePublished">
+          Aug 10, 2018
+        </time>
+        
+        • <span itemprop="author" itemscope itemtype="http://schema.org/Person">
+          <span itemprop="name">Eddie Yan</span>
+        </span>
+        
+      </p>
+      <p class="post-meta">
+        </p>
+    </br>
+    <p>Deep learning frameworks such as Tensorflow, PyTorch, and ApacheMxNet provide a
+powerful toolbox for quickly prototyping and deploying deep learning models.
+Unfortunately, their ease-of-use has often come at the cost of fragmentation: it
+is only easy to use each framework in isolation. Vertical integration has made
+development streamlined for common use cases, but venturing off of the beaten
+path can be tricky.</p>
+
+<p>One scenario that is poorly supported is passing tensors
+<em>directly</em> from one framework to another in memory, without any data duplication
+or copies. Supporting such a use case would enable users to string together
+pipelines where certain operators are better supported in one framework (or
+faster) than another efficiently. A shared data representation between
+frameworks would also bridge this gap, and allow compiler stacks to target a
+single format when generating code for operators.</p>
+
+<p><a href="https://github.com/dmlc/dlpack">DLPack</a> is an intermediate in-memory
+representation standard for tensor data structures. With DLPack as a common
+representation, we can leverage TVM in scripts written for frameworks that
+traditionally could only rely on vendor-provided libraries. TVM packed functions
+can operate on DLPack tensors, providing wrappers bridging tensor data
+structures from frameworks such as PyTorch and MxNet <em>with zero-data-copy</em>.</p>
+
+<p>DLPack presents a simple, portable in-memory data structure:</p>
+<div class="language-c highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cm">/*!
+ * \brief Plain C Tensor object, does not manage memory.
+ */</span>
+<span class="k">typedef</span> <span class="k">struct</span> <span class="p">{</span>
+  <span class="cm">/*!
+   * \brief The opaque data pointer points to the allocated data.
+   *  This will be CUDA device pointer or cl_mem handle in OpenCL.
+   *  This pointer is always aligns to 256 bytes as in CUDA.
+   */</span>
+  <span class="kt">void</span><span class="o">*</span> <span class="n">data</span><span class="p">;</span>
+  <span class="cm">/*! \brief The device context of the tensor */</span>
+  <span class="n">DLContext</span> <span class="n">ctx</span><span class="p">;</span>
+  <span class="cm">/*! \brief Number of dimensions */</span>
+  <span class="kt">int</span> <span class="n">ndim</span><span class="p">;</span>
+  <span class="cm">/*! \brief The data type of the pointer*/</span>
+  <span class="n">DLDataType</span> <span class="n">dtype</span><span class="p">;</span>
+  <span class="cm">/*! \brief The shape of the tensor */</span>
+  <span class="kt">int64_t</span><span class="o">*</span> <span class="n">shape</span><span class="p">;</span>
+  <span class="cm">/*!
+   * \brief strides of the tensor,
+   *  can be NULL, indicating tensor is compact.
+   */</span>
+  <span class="kt">int64_t</span><span class="o">*</span> <span class="n">strides</span><span class="p">;</span>
+  <span class="cm">/*! \brief The offset in bytes to the beginning pointer to data */</span>
+  <span class="kt">uint64_t</span> <span class="n">byte_offset</span><span class="p">;</span>
+<span class="p">}</span> <span class="n">DLTensor</span><span class="p">;</span>
+</code></pre></div></div>
+
+<p>As an example, we declare and compile a matrix multiplication operator in TVM,
+and build a wrapper that uses the DLPack representation to allow this operator
+to support PyTorch tensors. We also repeat this demonstration with MxNet. This
+extension allows machine learning developers to quickly port research code to
+relatively unsupported hardware platforms without sacrificing performance.</p>
+
+<p>Illustration of how DLPack provides an intermediate wrapper that is shared
+between frameworks and TVM:</p>
+<p style="text-align: center"><img src="/images/pytorch-dlpack/dlpack.png" alt="image" width="65%" /><br />
+Figure 1</p>
+
+<p>First, we compute a reference output in PyTorch:</p>
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code>    <span class="kn">import</span> <span class="n">torch</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="nf">rand</span><span class="p">(</span><span class="mi">56</span><span class="p">,</span><span class="mi">56</span><span class="p">)</span>
+    <span class="n">y</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="nf">rand</span><span class="p">(</span><span class="mi">56</span><span class="p">,</span><span class="mi">56</span><span class="p">)</span>
+    <span class="n">z</span> <span class="o">=</span> <span class="n">x</span><span class="p">.</span><span class="nf">mm</span><span class="p">(</span><span class="n">y</span><span class="p">)</span>
+</code></pre></div></div>
+
+<p>We then define and build a TVM matrix multiplication operator, using the default
+schedule:</p>
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code>    <span class="n">n</span> <span class="o">=</span> <span class="n">tvm</span><span class="p">.</span><span class="nf">convert</span><span class="p">(</span><span class="mi">56</span><span class="p">)</span>
+    <span class="n">X</span> <span class="o">=</span> <span class="n">tvm</span><span class="p">.</span><span class="nf">placeholder</span><span class="p">((</span><span class="n">n</span><span class="p">,</span><span class="n">n</span><span class="p">),</span> <span class="n">name</span><span class="o">=</span><span class="sh">'</span><span class="s">X</span><span class="sh">'</span><span class="p">)</span>
+    <span class="n">Y</span> <span class="o">=</span> <span class="n">tvm</span><span class="p">.</span><span class="nf">placeholder</span><span class="p">((</span><span class="n">n</span><span class="p">,</span><span class="n">n</span><span class="p">),</span> <span class="n">name</span><span class="o">=</span><span class="sh">'</span><span class="s">Y</span><span class="sh">'</span><span class="p">)</span>
+
+    <span class="n">k</span> <span class="o">=</span> <span class="n">tvm</span><span class="p">.</span><span class="nf">reduce_axis</span><span class="p">((</span><span class="mi">0</span><span class="p">,</span> <span class="n">n</span><span class="p">),</span> <span class="n">name</span><span class="o">=</span><span class="sh">'</span><span class="s">k</span><span class="sh">'</span><span class="p">)</span>
+    <span class="n">Z</span> <span class="o">=</span> <span class="n">tvm</span><span class="p">.</span><span class="nf">compute</span><span class="p">((</span><span class="n">n</span><span class="p">,</span><span class="n">n</span><span class="p">),</span> <span class="k">lambda</span> <span class="n">i</span><span class="p">,</span><span class="n">j</span> <span class="p">:</span> <span class="n">tvm</span><span class="p">.</span><span class="nf">sum</span><span class="p">(</span><span class="n">X</span><span class="p">[</span><span class="n">i</span><span class="p">,</span><span class="n">k</span><span class="p">]</span><span class="o">*</span><span class="n">Y</span><span class="p">[</span><span class="n">k</span><span class="p">,</span><span class="n">j</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="n">k</span><span class="p">))</span>
+    <span class="n">s</span> <span class="o">=</span> <span class="n">tvm</span><span class="p">.</span><span class="nf">create_schedule</span><span class="p">(</span><span class="n">Z</span><span class="p">.</span><span class="n">op</span><span class="p">)</span>
+    <span class="n">fmm</span> <span class="o">=</span> <span class="n">tvm</span><span class="p">.</span><span class="nf">build</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="p">[</span><span class="n">X</span><span class="p">,</span> <span class="n">Y</span><span class="p">,</span> <span class="n">Z</span><span class="p">],</span> <span class="n">target_host</span><span class="o">=</span><span class="sh">'</span><span class="s">llvm</span><span class="sh">'</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="sh">'</span><span class="s">fmm</span><span class="sh">'</span><span class="p">)</span>
+</code></pre></div></div>
+<p>For brevity, we do not cover TVM’s large collection of scheduling primitives
+that we can use to optimize matrix multiplication. If you wish to make a custom
+GEMM operator run <em>fast</em> on your hardware device, a detailed tutorial can be
+found <a href="https://tvm.apache.org/docs//tutorials/optimize/opt_gemm.html">here</a>.</p>
+
+<p>We then convert the TVM function into one that supports PyTorch tensors:</p>
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code>    <span class="kn">from</span> <span class="n">tvm.contrib.dlpack</span> <span class="kn">import</span> <span class="n">to_pytorch_func</span>
+    <span class="c1"># fmm is the previously built TVM function (Python function)
+</span>    <span class="c1"># fmm is the wrapped TVM function (Python function)
+</span>    <span class="n">fmm_pytorch</span> <span class="o">=</span> <span class="nf">to_pytorch_func</span><span class="p">(</span><span class="n">fmm</span><span class="p">)</span>
+    <span class="n">z2</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="nf">empty</span><span class="p">(</span><span class="mi">56</span><span class="p">,</span><span class="mi">56</span><span class="p">)</span>
+    <span class="nf">fmm_pytorch</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z2</span><span class="p">)</span>
+    <span class="n">np</span><span class="p">.</span><span class="n">testing</span><span class="p">.</span><span class="nf">assert_allclose</span><span class="p">(</span><span class="n">z</span><span class="p">.</span><span class="nf">numpy</span><span class="p">(),</span> <span class="n">z2</span><span class="p">.</span><span class="nf">numpy</span><span class="p">())</span>
+</code></pre></div></div>
+<p>and verify that the results match.</p>
+
+<p>We can repeat the same example, but using MxNet instead:</p>
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code>    <span class="kn">import</span> <span class="n">mxnet</span>
+    <span class="kn">from</span> <span class="n">tvm.contrib.mxnet</span> <span class="kn">import</span> <span class="n">to_mxnet_func</span>
+    <span class="n">ctx</span> <span class="o">=</span> <span class="n">mxnet</span><span class="p">.</span><span class="nf">cpu</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="n">mxnet</span><span class="p">.</span><span class="n">nd</span><span class="p">.</span><span class="nf">uniform</span><span class="p">(</span><span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="mi">56</span><span class="p">,</span><span class="mi">56</span><span class="p">),</span> <span class="n">ctx</span><span class="o">=</span><span class="n">ctx</span><span class="p">)</span>
+    <span class="n">y</span> <span class="o">=</span> <span class="n">mxnet</span><span class="p">.</span><span class="n">nd</span><span class="p">.</span><span class="nf">uniform</span><span class="p">(</span><span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="mi">56</span><span class="p">,</span><span class="mi">56</span><span class="p">),</span> <span class="n">ctx</span><span class="o">=</span><span class="n">ctx</span><span class="p">)</span>
+    <span class="n">z</span> <span class="o">=</span> <span class="n">mxnet</span><span class="p">.</span><span class="n">nd</span><span class="p">.</span><span class="nf">empty</span><span class="p">(</span><span class="n">shape</span><span class="o">=</span><span class="p">(</span><span class="mi">56</span><span class="p">,</span><span class="mi">56</span><span class="p">),</span> <span class="n">ctx</span><span class="o">=</span><span class="n">ctx</span><span class="p">)</span>
+    <span class="n">f</span> <span class="o">=</span> <span class="n">tvm</span><span class="p">.</span><span class="nf">build</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="p">[</span><span class="n">X</span><span class="p">,</span> <span class="n">Y</span><span class="p">,</span> <span class="n">Z</span><span class="p">],</span> <span class="n">target_host</span><span class="o">=</span><span class="sh">'</span><span class="s">llvm</span><span class="sh">'</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="sh">'</span><span class="s">f</span><span class="sh">'</span><span class="p">)</span>
+    <span class="n">f_mxnet</span> <span class="o">=</span> <span class="nf">to_mxnet_func</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+    <span class="nf">f_mxnet</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">z</span><span class="p">)</span>
+    <span class="n">np</span><span class="p">.</span><span class="n">testing</span><span class="p">.</span><span class="nf">assert_allclose</span><span class="p">(</span><span class="n">z</span><span class="p">.</span><span class="nf">asnumpy</span><span class="p">(),</span> <span class="n">x</span><span class="p">.</span><span class="nf">asnumpy</span><span class="p">().</span><span class="nf">dot</span><span class="p">(</span><span class="n">y</span><span class="p">.</span><span class="nf">asnumpy</span><span class="p">()))</span>
+</code></pre></div></div>
+
+<h2 id="under-the-hood-of-the-pytorch-example">Under the hood of the PyTorch Example</h2>
+<p>As TVM provides <a href="https://github.com/apache/incubator-tvm/blob/main/include/tvm/runtime/c_runtime_api.h#L455">functions</a> to convert dlpack tensors to tvm <code class="language-plaintext highlighter-rouge">NDArray</code>s and
+vice-versa, so all that is needed is some syntactic sugar by wrapping functions.
+<code class="language-plaintext highlighter-rouge">convert_func</code> is a generic converter for frameworks using tensors with dlpack
+support, and can be used to implement convenient converters, such as
+<code class="language-plaintext highlighter-rouge">to_pytorch_func</code>.</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">convert_func</span><span class="p">(</span><span class="n">tvm_func</span><span class="p">,</span> <span class="n">tensor_type</span><span class="p">,</span> <span class="n">to_dlpack_func</span><span class="p">):</span>
+    <span class="k">assert</span> <span class="nf">callable</span><span class="p">(</span><span class="n">tvm_func</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_wrapper</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">):</span>
+        <span class="n">args</span> <span class="o">=</span> <span class="nf">tuple</span><span class="p">(</span><span class="n">ndarray</span><span class="p">.</span><span class="nf">from_dlpack</span><span class="p">(</span><span class="nf">to_dlpack_func</span><span class="p">(</span><span class="n">arg</span><span class="p">))</span>\
+            <span class="k">if</span> <span class="nf">isinstance</span><span class="p">(</span><span class="n">arg</span><span class="p">,</span> <span class="n">tensor_type</span><span class="p">)</span> <span class="k">else</span> <span class="n">arg</span> <span class="k">for</span> <span class="n">arg</span> <span class="ow">in</span> <span class="n">args</span><span class="p">)</span>
+        <span class="k">return</span> <span class="nf">tvm_func</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">_wrapper</span>
+
+<span class="k">def</span> <span class="nf">to_pytorch_func</span><span class="p">(</span><span class="n">tvm_func</span><span class="p">):</span>
+    <span class="kn">import</span> <span class="n">torch</span>
+    <span class="kn">import</span> <span class="n">torch.utils.dlpack</span>
+    <span class="k">return</span> <span class="nf">convert_func</span><span class="p">(</span><span class="n">tvm_func</span><span class="p">,</span> <span class="n">torch</span><span class="p">.</span><span class="n">Tensor</span><span class="p">,</span> <span class="n">torch</span><span class="p">.</span><span class="n">utils</span><span class="p">.</span><span class="n">dlpack</span><span class="p">.</span><span class="n">to_dlpack</span><span class="p">)</span>
+</code></pre></div></div>
+
+    </div>
+  </div>
+</div>
+</div>
+
+    
+
+
+
+
+  <script src="../../../_static/downloads/jquery-2.2.0.min.js" type="text/javascript"></script>
+  <script src="../../../_static/downloads/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
+  <script src="../../../_static/downloads/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
+  <!-- <script src="./assets/js/slick.js"></script> -->
+  <script src="/assets/js/custome.js"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'UA-75982049-2');
+  </script>
+</body>
+<section class="footerSec">
+  <div class="footerHeader">
+    <ul class="container d-flex align-md-items-center justify-content-between flex-column flex-md-row">
+      <li class="logo">
+
+        <p><a href="/"><img src="/assets/images/logo.svg" alt="logo" title="logo" /></a></p>
+      </li>
+      <li class="copywrite d-flex align-items-center">
+        <h5 id="apache-software-foundation--all-right-reserved">© 2024 Apache Software Foundation | All right reserved</h5>
+      </li>
+    </ul>
+
+  </div>
+
+  <ul class="container">
+    <li class="footernote">
+      Copyright © 2024 The Apache Software Foundation. Apache TVM, Apache, the Apache feather, and the Apache TVM project logo are either trademarks or registered trademarks of the Apache Software Foundation.</li>
+  </ul>
+
+</section>
+</html>

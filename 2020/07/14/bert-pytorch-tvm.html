@@ -1,0 +1,702 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bridging PyTorch and TVM</title>
+    <link rel="shortcut icon" href="/assets/images/favicon.ico">
+    <link rel="stylesheet" href="../../../_static/downloads/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+    <link rel="stylesheet" href="/css/slick.css">
+    <link rel="stylesheet" href="/css/slick-theme.css">
+    <link rel="stylesheet" href="/css/custom.css">
+    
+</head>
+<body>
+
+    
+<div class="bannerPage">
+      <header class="header">
+      <div class="container">
+        <div class="headerInner d-flex justify-content-between align-items-center">
+          <div class="headerLogo">
+            <a href="/"><img src="/assets/images/logo.svg" alt="Logo"></a>
+          </div>
+          <div id="headMenu" class="headerNav">
+            <button type="button" id="closeHeadMenu" class="navCloseBtn"><img src="/assets/images/close-icon.svg"
+                alt="Close"></button>
+                <ul class="nav">
+    
+    <li class="nav-item">
+        <a class="nav-link" href="/community">Community</a>
+    </li>
+    
+    <li class="nav-item">
+        <a class="nav-link" href="/download">Download</a>
+    </li>
+    
+    <li class="nav-item">
+        <a class="nav-link" href="https://tvm.apache.org/docs/">Docs</a>
+    </li>
+    
+    <li class="nav-item">
+        <a class="nav-link" href="https://github.com/apache/tvm/">Github</a>
+    </li>
+    
+</ul>
+            <div class="responsiveasfdropdown">
+              <button type="button" class="btn-link">
+                ASF
+              </button>
+              <ul>
+    
+    <li>
+        <a href="https://www.apache.org/">Apache Homepage</a>
+    </li>
+    
+    <li>
+        <a href="https://www.apache.org/licenses/">License</a>
+    </li>
+    
+    <li>
+        <a href="https://www.apache.org/foundation/sponsorship.html">Sponsorship</a>
+    </li>
+    
+    <li>
+        <a href="https://tvm.apache.org/docs/reference/security.html">Security</a>
+    </li>
+    
+    <li>
+        <a href="https://www.apache.org/foundation/thanks.html">Thanks</a>
+    </li>
+    
+    <li>
+        <a href="https://www.apache.org/events/current-event">Events</a>
+    </li>
+    
+</ul>
+            </div>
+          </div>
+          <div class="responsiveMenuIcon">
+            <button type="button" id="menuBtn" class="btn-menu"><img src="/assets/images/menu-icon.svg"
+                alt="Menu Icon" /></button>
+          </div>
+          <div class="asfDropdown">
+            <div class="dropdown">
+              <button type="button" class="btn-link dropdown-toggle" data-toggle="dropdown" aria-haspopup="true"
+                aria-expanded="false">
+                ASF
+              </button>
+              <div class="dropdown-menu dropdown-menu-right">
+                <ul>
+    
+    <li>
+        <a href="https://www.apache.org/">Apache Homepage</a>
+    </li>
+    
+    <li>
+        <a href="https://www.apache.org/licenses/">License</a>
+    </li>
+    
+    <li>
+        <a href="https://www.apache.org/foundation/sponsorship.html">Sponsorship</a>
+    </li>
+    
+    <li>
+        <a href="https://tvm.apache.org/docs/reference/security.html">Security</a>
+    </li>
+    
+    <li>
+        <a href="https://www.apache.org/foundation/thanks.html">Thanks</a>
+    </li>
+    
+    <li>
+        <a href="https://www.apache.org/events/current-event">Events</a>
+    </li>
+    
+</ul>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </header>
+
+</div>
+
+
+<div class="container">
+<div class="content">
+  <div class="row">
+    <div class="span14 w-100">
+      <h1>Bridging PyTorch and TVM </h1>
+      <p class="post-meta">
+        <time datetime="2020-07-14T00:00:00+00:00" itemprop="datePublished">
+          Jul 14, 2020
+        </time>
+        
+        • <span itemprop="author" itemscope itemtype="http://schema.org/Person">
+          <span itemprop="name">Thomas Viehmann, MathInf GmbH</span>
+        </span>
+        
+      </p>
+      <p class="post-meta">
+        </p>
+    </br>
+    
+<p>(A more code-heavy variant is crossposted on the more PyTorch affine <a href="https://lernapparat.de/transformers-pytorch-tvm/">Lernapparat</a>,
+ the Jupyter Notebook to follow along is on <a href="https://github.com/t-vi/pytorch-tvmisc/tree/master/transformers-pytorch-tvm/">github</a>.)</p>
+
+<p>Some of the most intriguing applications of Artificial Intelligence have been in Natural Language Processing.
+Models like BERT or GPT-2 and their variants can seemingly grasp enough of a text to continue it in a way that needs a second look to recognize as gibberish.</p>
+
+<p>These models belong to a class of neural network architectures called <em>Transformers</em>. One of the favourite libraries
+implementing them is the <a href="https://github.com/huggingface/transformers/">HuggingFace transformers library</a>.</p>
+
+<p>But, in contrast to convolutional models or LSTMs where we have heavily optimized implementations, this is not as much the case for transformers.
+So here we explore how TVM can fill the gap. We will do so in two steps:</p>
+
+<ul>
+  <li>First we look at BERT inference and tuning that on TVM.</li>
+  <li>Secondly, we start some more fundamental exploration of how one could use TVM for training in PyTorch.
+Given the experimental nature, we focus on feasibility more than on the performance in this part.</li>
+</ul>
+
+<h1 id="optimizing-bert-inference-with-tvm">Optimizing BERT Inference with TVM</h1>
+
+<p>So how do we get BERT from the transformer library to TVM?</p>
+
+<p>Helpfully, transformers supports tracing their model with the PyTorch JIT. We use their <a href="https://huggingface.co/transformers/torchscript.html">tutorial on it</a>,
+specifically the part until we have a traced model.</p>
+
+<p>The PyTorch traced model takes around 0.65-0.7 seconds for 100 runs on my AMD Radeon VII with the example inputs, which means 6.5-7ms per run.
+We can try to see if we can use TVM get faster. Let converting our model to TVM is a breeze:</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">shape_list</span> <span class="o">=</span> <span class="p">[(</span><span class="n">i</span><span class="p">.</span><span class="nf">debugName</span><span class="p">().</span><span class="nf">split</span><span class="p">(</span><span class="sh">'</span><span class="s">.</span><span class="sh">'</span><span class="p">)[</span><span class="mi">0</span><span class="p">],</span> <span class="n">i</span><span class="p">.</span><span class="nf">type</span><span class="p">().</span><span class="nf">sizes</span><span class="p">())</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span>  <span class="nf">list</span><span class="p">(</span><span class="n">traced_model</span><span class="p">.</span><span class="n">graph</span><span class="p">.</span><span class="nf">inputs</span><span class="p">())[</span><span class="mi">1</span><span class="p">:]]</span>
+
+<span class="n">mod_bert</span><span class="p">,</span> <span class="n">params_bert</span> <span class="o">=</span> <span class="n">tvm</span><span class="p">.</span><span class="n">relay</span><span class="p">.</span><span class="n">frontend</span><span class="p">.</span><span class="n">pytorch</span><span class="p">.</span><span class="nf">from_pytorch</span><span class="p">(</span><span class="n">traced_model</span><span class="p">,</span>
+                        <span class="n">shape_list</span><span class="p">,</span> <span class="n">default_dtype</span><span class="o">=</span><span class="sh">"</span><span class="s">float32</span><span class="sh">"</span><span class="p">)</span>
+</code></pre></div></div>
+
+<p>There will be a few warnings about not finding dtype information, but it goes well!
+We can now build and run it. Building follows the standard TVM recipe. We also convert the PyTorch (cpu) tensors to TVM arrays.</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">target</span> <span class="o">=</span> <span class="sh">'</span><span class="s">rocm -model=gfx906</span><span class="sh">'</span>  <span class="c1"># use what matches your GPU
+</span>
+<span class="n">target_host</span> <span class="o">=</span> <span class="sh">'</span><span class="s">llvm</span><span class="sh">'</span>
+<span class="n">ctx</span> <span class="o">=</span> <span class="n">tvm</span><span class="p">.</span><span class="nf">context</span><span class="p">(</span><span class="n">target</span><span class="p">)</span>
+
+<span class="n">tt_a</span> <span class="o">=</span> <span class="n">tvm</span><span class="p">.</span><span class="n">nd</span><span class="p">.</span><span class="nf">array</span><span class="p">(</span><span class="n">tokens_tensor</span><span class="p">.</span><span class="nf">numpy</span><span class="p">(),</span> <span class="n">ctx</span><span class="p">)</span>
+<span class="n">st_a</span> <span class="o">=</span> <span class="n">tvm</span><span class="p">.</span><span class="n">nd</span><span class="p">.</span><span class="nf">array</span><span class="p">(</span><span class="n">segments_tensors</span><span class="p">.</span><span class="nf">numpy</span><span class="p">(),</span> <span class="n">ctx</span><span class="p">)</span>
+</code></pre></div></div>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">tvm</span><span class="p">.</span><span class="n">relay</span><span class="p">.</span><span class="n">backend</span><span class="p">.</span><span class="n">compile_engine</span><span class="p">.</span><span class="nf">get</span><span class="p">().</span><span class="nf">clear</span><span class="p">()</span> <span class="c1"># just to be sure, see https://github.com/apache/incubator-tvm/pull/5724
+</span>
+<span class="k">with</span> <span class="n">tvm</span><span class="p">.</span><span class="n">transform</span><span class="p">.</span><span class="nc">PassContext</span><span class="p">(</span><span class="n">opt_level</span><span class="o">=</span><span class="mi">3</span><span class="p">):</span>
+        <span class="n">graph</span><span class="p">,</span> <span class="n">lib</span><span class="p">,</span> <span class="n">params</span> <span class="o">=</span> <span class="n">tvm</span><span class="p">.</span><span class="n">relay</span><span class="p">.</span><span class="nf">build</span><span class="p">(</span><span class="n">mod_bert</span><span class="p">,</span>
+                                     <span class="n">target</span><span class="o">=</span><span class="n">target</span><span class="p">,</span>
+                                     <span class="n">target_host</span><span class="o">=</span><span class="n">target_host</span><span class="p">,</span>
+                                     <span class="n">params</span><span class="o">=</span><span class="n">params_bert</span><span class="p">)</span>
+<span class="n">module</span> <span class="o">=</span> <span class="n">tvm</span><span class="p">.</span><span class="n">contrib</span><span class="p">.</span><span class="n">graph_runtime</span><span class="p">.</span><span class="nf">create</span><span class="p">(</span><span class="n">graph</span><span class="p">,</span> <span class="n">lib</span><span class="p">,</span> <span class="n">ctx</span><span class="p">)</span>
+</code></pre></div></div>
+
+<p>This will warn us a few times times:</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>    WARNING:autotvm:Cannot find config for ... batch_matmul.cuda .... A fallback configuration is used, which may bring great performance regression.
+</code></pre></div></div>
+
+<p>Uh oh, <em>may bring great performance regression</em>. Let us see.</p>
+
+<p>But first we run the model and see if the outputs match:</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code>    <span class="p">(</span><span class="mf">8.583069e-06</span><span class="p">,</span> <span class="mf">8.493662e-07</span><span class="p">)</span>
+</code></pre></div></div>
+
+<p>Looks good. Remember that we’re computing in float32, so $10^{-6}$ish is a good result.</p>
+
+<p>After building our model and setting the parameters, we time our model like this:</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">x</span><span class="p">():</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nf">range</span><span class="p">(</span><span class="mi">100</span><span class="p">):</span>
+        <span class="n">module</span><span class="p">.</span><span class="nf">run</span><span class="p">()</span>
+    <span class="n">ctx</span><span class="p">.</span><span class="nf">sync</span><span class="p">()</span>
+<span class="nf">x</span><span class="p">()</span>
+<span class="o">%</span><span class="n">timeit</span> <span class="nf">x</span><span class="p">()</span>
+</code></pre></div></div>
+
+<p>Ouch, it takes 6.65s per 100 runs, or 67ms per run of the model. That’s slow indeed. But the warning said that is was because it could not find (tuned) configurations. Let us then tune the tasks.</p>
+
+<p>Tuning does take half a day or so (I’m basically following the TVM tuning tutorial for ResNet tuning with autotvm.)</p>
+
+<p>After this, we can again build the model, this time with the new configuration. This time we should see no comments about missing configurations.
+Now it’s in the region of 6.5-7ms per run, similar to PyTorch. This is what we get from this very elementary optimization of our operators. We can push it a little further, though.</p>
+
+<p>To see how, let us dive deep into BERT modeling and TVM.</p>
+
+<p>If you don’t want to get the full details, do skip the next section and scroll down to <em>Results</em>. I should add that I would hope that this tuning part of the tutorial will obsolete itself in the sense that in some near future, you will get much better speed right out of the box or at least after some initial tuning. So if you don’t see a speedup between here and <em>Results</em>, that’s because I did my homework in submitting patches.</p>
+
+<h2 id="the-bert-model">The BERT model</h2>
+
+<p>Let us take a closer look at what’s going on in BERT.</p>
+
+<p>Like many deep learning models, BERT comes with a bit some prologue (vocabulary embeddings) and epilogue (pooling) and the bulk is organized into similar-looking blocks, here we have 12 <code class="language-plaintext highlighter-rouge">BertLayer</code> modules.
+The <code class="language-plaintext highlighter-rouge">attention_mask</code> is jsut to prevent BERT from looking at the answer when dealing with the question.</p>
+
+<p><img src="/images/bert-pytorch/bert_model.svg" alt="Bert Model" width="100%" /></p>
+
+<p>So let us zoom in and look at a BertLayer in detail, since that ultimately is what we need make fast.
+As we see in the net diagram, the main part of the <code class="language-plaintext highlighter-rouge">BertLayer</code> module is a submodule <code class="language-plaintext highlighter-rouge">BertSelfAttention</code>.</p>
+
+<p><img src="/images/bert-pytorch/bert_layer.svg" alt="BertLayer" width="100%" /></p>
+
+<p>Now the <code class="language-plaintext highlighter-rouge">BertSelfAttention</code> captures the famed self-attention mechanism that is the hallmark of transformer models. (I cannot recommend Sascha Rush’s <a href="http://nlp.seas.harvard.edu/2018/04/03/attention.html">Annotated Transformer</a> enough as a detailed walkthrough.)</p>
+
+<h2 id="putting-the-bertlayer-under-the-microscope">Putting the BertLayer under the Microscope</h2>
+
+<p>If we want go into details, we should want to run a BertLayer individually.
+We grab the inputs of a BertLayer (see the Notebook for how) and convert a single <code class="language-plaintext highlighter-rouge">BertLayer</code> to TVM as we did for the entire model.</p>
+
+<p>To look at the TVM module, we define a little visualization helper (loosely based on TVM <a href="https://github.com/apache/incubator-tvm/pull/4370">PR#4370</a>).</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="kn">import</span> <span class="n">graphviz</span>
+<span class="k">def</span> <span class="nf">visualize</span><span class="p">(</span><span class="n">expr</span><span class="p">,</span> <span class="n">collapse_small</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">node_attr_dict</span> <span class="o">=</span> <span class="p">{}):</span>
+    <span class="k">def</span> <span class="nf">collect_ops</span><span class="p">(</span><span class="n">node</span><span class="p">):</span>
+        <span class="n">ops</span> <span class="o">=</span> <span class="nf">set</span><span class="p">()</span>
+        <span class="k">def</span> <span class="nf">visitor</span><span class="p">(</span><span class="n">e</span><span class="p">):</span>
+            <span class="k">if</span> <span class="nf">isinstance</span><span class="p">(</span><span class="n">e</span><span class="p">,</span> <span class="n">tvm</span><span class="p">.</span><span class="n">ir</span><span class="p">.</span><span class="n">Op</span><span class="p">):</span>
+                <span class="n">ops</span><span class="p">.</span><span class="nf">add</span><span class="p">(</span><span class="n">e</span><span class="p">.</span><span class="n">name</span><span class="p">)</span>
+        <span class="n">tvm</span><span class="p">.</span><span class="n">relay</span><span class="p">.</span><span class="n">analysis</span><span class="p">.</span><span class="nf">post_order_visit</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="n">visitor</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">ops</span>
+
+    <span class="c1"># node_dict maps a Relay node to an index (node ID)
+</span>    <span class="k">def</span> <span class="nf">_traverse_expr</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="n">node_dict</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">node</span> <span class="ow">in</span> <span class="n">node_dict</span><span class="p">:</span>
+            <span class="k">return</span>
+        <span class="n">node_dict</span><span class="p">[</span><span class="n">node</span><span class="p">]</span> <span class="o">=</span> <span class="nf">len</span><span class="p">(</span><span class="n">node_dict</span><span class="p">)</span>
+
+    <span class="n">node_dict</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="n">tvm</span><span class="p">.</span><span class="n">relay</span><span class="p">.</span><span class="n">analysis</span><span class="p">.</span><span class="nf">post_order_visit</span><span class="p">(</span><span class="n">expr</span><span class="p">,</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="nf">_traverse_expr</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">node_dict</span><span class="p">))</span>
+
+    <span class="n">relayviz_nodes</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="n">dot</span> <span class="o">=</span> <span class="n">graphviz</span><span class="p">.</span><span class="nc">Digraph</span><span class="p">(</span><span class="nb">format</span><span class="o">=</span><span class="sh">'</span><span class="s">svg</span><span class="sh">'</span><span class="p">,</span> <span class="p">)</span>
+    <span class="n">dot</span><span class="p">.</span><span class="nf">attr</span><span class="p">(</span><span class="sh">'</span><span class="s">node</span><span class="sh">'</span><span class="p">,</span> <span class="n">shape</span> <span class="o">=</span> <span class="sh">'</span><span class="s">box</span><span class="sh">'</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">to_str</span><span class="p">(</span><span class="n">node</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nf">isinstance</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="n">tvm</span><span class="p">.</span><span class="n">relay</span><span class="p">.</span><span class="n">Constant</span><span class="p">):</span>
+            <span class="k">return</span> <span class="nf">repr</span><span class="p">(</span><span class="n">node</span><span class="p">).</span><span class="nf">lstrip</span><span class="p">(</span><span class="sh">'</span><span class="s">Constant(</span><span class="sh">'</span><span class="p">)[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="nc">NotImplementedError</span><span class="p">(</span><span class="sh">"</span><span class="s">to_str:</span><span class="sh">"</span> <span class="o">+</span> <span class="nf">repr</span><span class="p">(</span><span class="n">node</span><span class="p">))</span>
+
+    <span class="k">def</span> <span class="nf">is_small_const</span><span class="p">(</span><span class="n">c</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">collapse_small</span> <span class="ow">and</span> <span class="nf">isinstance</span><span class="p">(</span><span class="n">c</span><span class="p">,</span> <span class="n">tvm</span><span class="p">.</span><span class="n">relay</span><span class="p">.</span><span class="n">Constant</span><span class="p">)):</span>
+            <span class="k">return</span> <span class="bp">False</span>
+        <span class="k">if</span> <span class="nf">isinstance</span><span class="p">(</span><span class="n">c</span><span class="p">.</span><span class="n">data</span><span class="p">,</span> <span class="n">tvm</span><span class="p">.</span><span class="n">runtime</span><span class="p">.</span><span class="n">ndarray</span><span class="p">.</span><span class="n">NDArray</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">numpy</span><span class="p">.</span><span class="nf">prod</span><span class="p">(</span><span class="n">c</span><span class="p">.</span><span class="n">data</span><span class="p">.</span><span class="n">shape</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">10</span>
+        <span class="k">return</span> <span class="bp">True</span>
+
+    <span class="c1"># Sort by node ID
+</span>    <span class="k">for</span> <span class="n">node</span><span class="p">,</span> <span class="n">node_id</span> <span class="ow">in</span> <span class="nf">sorted</span><span class="p">(</span><span class="n">node_dict</span><span class="p">.</span><span class="nf">items</span><span class="p">(),</span> <span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="p">[</span><span class="mi">1</span><span class="p">]):</span>
+        <span class="k">if</span> <span class="nf">isinstance</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="n">tvm</span><span class="p">.</span><span class="n">relay</span><span class="p">.</span><span class="n">Function</span><span class="p">):</span>
+            <span class="n">dot</span><span class="p">.</span><span class="nf">node</span><span class="p">(</span><span class="nf">str</span><span class="p">(</span><span class="n">node_id</span><span class="p">),</span> <span class="sh">'</span><span class="s">Function</span><span class="sh">'</span><span class="p">,</span> <span class="o">**</span><span class="n">node_attr_dict</span><span class="p">.</span><span class="nf">get</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="p">{}))</span>
+            <span class="n">dot</span><span class="p">.</span><span class="nf">edge</span><span class="p">(</span><span class="nf">str</span><span class="p">(</span><span class="n">node_dict</span><span class="p">[</span><span class="n">node</span><span class="p">.</span><span class="n">body</span><span class="p">]),</span> <span class="nf">str</span><span class="p">(</span><span class="n">node_id</span><span class="p">))</span>
+        <span class="k">elif</span> <span class="nf">isinstance</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="n">tvm</span><span class="p">.</span><span class="n">relay</span><span class="p">.</span><span class="n">Var</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">node</span><span class="p">.</span><span class="n">type_annotation</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+                <span class="k">if</span> <span class="nf">hasattr</span><span class="p">(</span><span class="n">node</span><span class="p">.</span><span class="n">type_annotation</span><span class="p">,</span> <span class="sh">'</span><span class="s">shape</span><span class="sh">'</span><span class="p">):</span>
+                    <span class="n">shape</span> <span class="o">=</span> <span class="nf">tuple</span><span class="p">([</span><span class="nf">int</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">node</span><span class="p">.</span><span class="n">type_annotation</span><span class="p">.</span><span class="n">shape</span><span class="p">])</span>
+                    <span class="n">dtype</span> <span class="o">=</span> <span class="n">node</span><span class="p">.</span><span class="n">type_annotation</span><span class="p">.</span><span class="n">dtype</span>
+                    <span class="n">typstr</span> <span class="o">=</span> <span class="sh">'</span><span class="s">Tensor[{}, {}]</span><span class="sh">'</span><span class="p">.</span><span class="nf">format</span><span class="p">(</span><span class="n">shape</span><span class="p">,</span> <span class="n">dtype</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">typstr</span> <span class="o">=</span> <span class="nf">str</span><span class="p">(</span><span class="n">node</span><span class="p">.</span><span class="n">type_annotation</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">typstr</span> <span class="o">=</span> <span class="sh">'</span><span class="s">?</span><span class="sh">'</span>
+            <span class="n">d</span> <span class="o">=</span> <span class="nf">dict</span><span class="p">(</span><span class="n">shape</span> <span class="o">=</span> <span class="sh">'</span><span class="s">ellipse</span><span class="sh">'</span><span class="p">)</span>
+            <span class="n">d</span><span class="p">.</span><span class="nf">update</span><span class="p">(</span><span class="n">node_attr_dict</span><span class="p">.</span><span class="nf">get</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="p">{}))</span>
+            <span class="n">dot</span><span class="p">.</span><span class="nf">node</span><span class="p">(</span><span class="nf">str</span><span class="p">(</span><span class="n">node_id</span><span class="p">),</span>
+                     <span class="sh">'</span><span class="s">{}: {}</span><span class="sh">'</span><span class="p">.</span><span class="nf">format</span><span class="p">(</span>
+                         <span class="n">node</span><span class="p">.</span><span class="n">name_hint</span><span class="p">,</span> <span class="n">typstr</span>
+                     <span class="p">),</span> <span class="o">**</span><span class="n">d</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="nf">isinstance</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="n">tvm</span><span class="p">.</span><span class="n">relay</span><span class="p">.</span><span class="n">Tuple</span><span class="p">):</span>
+            <span class="n">dot</span><span class="p">.</span><span class="nf">node</span><span class="p">(</span><span class="nf">str</span><span class="p">(</span><span class="n">node_id</span><span class="p">),</span> <span class="sh">'</span><span class="s">Tuple[...])</span><span class="sh">'</span><span class="p">,</span> <span class="o">**</span><span class="n">node_attr_dict</span><span class="p">.</span><span class="nf">get</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="p">{}))</span>
+            <span class="k">for</span> <span class="n">field</span> <span class="ow">in</span> <span class="n">node</span><span class="p">.</span><span class="n">fields</span><span class="p">:</span>
+                <span class="n">dot</span><span class="p">.</span><span class="nf">edge</span><span class="p">(</span><span class="nf">str</span><span class="p">(</span><span class="n">node_dict</span><span class="p">[</span><span class="n">field</span><span class="p">]),</span> <span class="nf">str</span><span class="p">(</span><span class="n">node_id</span><span class="p">))</span>
+        <span class="k">elif</span> <span class="nf">isinstance</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="n">tvm</span><span class="p">.</span><span class="n">relay</span><span class="p">.</span><span class="n">Constant</span><span class="p">):</span>
+
+            <span class="k">if</span> <span class="ow">not</span> <span class="nf">is_small_const</span><span class="p">(</span><span class="n">node</span><span class="p">):</span> <span class="c1"># small consts are shown in ops
+</span>                <span class="n">dot</span><span class="p">.</span><span class="nf">node</span><span class="p">(</span><span class="nf">str</span><span class="p">(</span><span class="n">node_id</span><span class="p">),</span> <span class="sh">'</span><span class="s">Constant({}, {})</span><span class="sh">'</span><span class="p">.</span><span class="nf">format</span><span class="p">(</span><span class="n">node</span><span class="p">.</span><span class="n">data</span><span class="p">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">node</span><span class="p">.</span><span class="n">data</span><span class="p">.</span><span class="n">dtype</span><span class="p">),</span>
+                        <span class="o">**</span><span class="n">node_attr_dict</span><span class="p">.</span><span class="nf">get</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="p">{}))</span>
+        <span class="k">elif</span> <span class="nf">isinstance</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="n">tvm</span><span class="p">.</span><span class="n">relay</span><span class="p">.</span><span class="n">Call</span><span class="p">):</span>
+            <span class="n">args_with_edge</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="n">arg_str_list</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">arg</span> <span class="ow">in</span> <span class="n">node</span><span class="p">.</span><span class="n">args</span><span class="p">:</span>
+                <span class="k">if</span> <span class="nf">is_small_const</span><span class="p">(</span><span class="n">arg</span><span class="p">):</span>
+                    <span class="n">arg_str_list</span><span class="p">.</span><span class="nf">append</span><span class="p">(</span><span class="nf">to_str</span><span class="p">(</span><span class="n">arg</span><span class="p">))</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">arg_str_list</span><span class="p">.</span><span class="nf">append</span><span class="p">(</span><span class="sh">'</span><span class="s">·</span><span class="sh">'</span><span class="p">)</span>
+                    <span class="n">args_with_edge</span><span class="p">.</span><span class="nf">append</span><span class="p">(</span><span class="n">arg</span><span class="p">)</span>
+            <span class="n">arg_str</span> <span class="o">=</span> <span class="sh">'</span><span class="s">, </span><span class="sh">'</span><span class="p">.</span><span class="nf">join</span><span class="p">(</span><span class="n">arg_str_list</span><span class="p">)</span>
+            <span class="k">if</span> <span class="nf">isinstance</span><span class="p">(</span><span class="n">node</span><span class="p">.</span><span class="n">op</span><span class="p">,</span> <span class="n">tvm</span><span class="p">.</span><span class="n">ir</span><span class="p">.</span><span class="n">Op</span><span class="p">):</span>
+                <span class="n">name</span> <span class="o">=</span> <span class="n">node</span><span class="p">.</span><span class="n">op</span><span class="p">.</span><span class="n">name</span>
+                <span class="n">attrs</span> <span class="o">=</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span><span class="nf">getattr</span><span class="p">(</span><span class="n">node</span><span class="p">.</span><span class="n">attrs</span><span class="p">,</span> <span class="n">k</span><span class="p">)</span> <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">node</span><span class="p">.</span><span class="n">attrs</span><span class="p">.</span><span class="nf">keys</span><span class="p">()}</span> <span class="k">if</span> <span class="nf">hasattr</span><span class="p">(</span><span class="n">node</span><span class="p">.</span><span class="n">attrs</span><span class="p">,</span> <span class="sh">'</span><span class="s">keys</span><span class="sh">'</span><span class="p">)</span> <span class="k">else</span> <span class="p">{}</span>
+                <span class="c1">#attrs = inspect.getmembers(node.attrs)
+</span>                <span class="n">attr_str_list</span> <span class="o">=</span> <span class="p">[</span><span class="n">k</span><span class="o">+</span><span class="sh">'</span><span class="s">=</span><span class="sh">'</span><span class="o">+</span><span class="p">(</span><span class="nf">str</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="k">if</span> <span class="nf">len</span><span class="p">(</span><span class="nf">str</span><span class="p">(</span><span class="n">v</span><span class="p">))</span><span class="o">&lt;</span><span class="mi">20</span> <span class="k">else</span> <span class="sh">"</span><span class="s">...</span><span class="sh">"</span><span class="p">)</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">attrs</span><span class="p">.</span><span class="nf">items</span><span class="p">()]</span>
+                <span class="k">if</span> <span class="n">attr_str_list</span><span class="p">:</span>
+                    <span class="n">attr_str</span> <span class="o">=</span> <span class="sh">'</span><span class="s">| </span><span class="sh">'</span><span class="o">+</span> <span class="sh">'</span><span class="s">, </span><span class="sh">'</span><span class="p">.</span><span class="nf">join</span><span class="p">(</span><span class="n">attr_str_list</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">attr_str</span> <span class="o">=</span> <span class="sh">''</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">ops</span> <span class="o">=</span> <span class="nf">collect_ops</span><span class="p">(</span><span class="n">node</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">ops</span><span class="p">:</span>
+                    <span class="n">name</span> <span class="o">=</span> <span class="sh">'</span><span class="s">_</span><span class="sh">'</span><span class="p">.</span><span class="nf">join</span><span class="p">(</span><span class="n">ops</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">name</span> <span class="o">=</span> <span class="sh">'</span><span class="s">...</span><span class="sh">'</span>
+                <span class="n">attr_str</span> <span class="o">=</span> <span class="sh">''</span>
+            <span class="n">s</span> <span class="o">=</span> <span class="sa">f</span><span class="sh">'</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s">(</span><span class="si">{</span><span class="n">arg_str</span><span class="si">}{</span><span class="n">attr_str</span><span class="si">}</span><span class="s">)</span><span class="sh">'</span>
+            <span class="n">dot</span><span class="p">.</span><span class="nf">node</span><span class="p">(</span><span class="nf">str</span><span class="p">(</span><span class="n">node_id</span><span class="p">),</span> <span class="n">s</span><span class="p">,</span> <span class="o">**</span><span class="n">node_attr_dict</span><span class="p">.</span><span class="nf">get</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="p">{}))</span>
+            <span class="k">for</span> <span class="n">arg</span> <span class="ow">in</span> <span class="n">args_with_edge</span><span class="p">:</span>
+                <span class="n">dot</span><span class="p">.</span><span class="nf">edge</span><span class="p">(</span><span class="nf">str</span><span class="p">(</span><span class="n">node_dict</span><span class="p">[</span><span class="n">arg</span><span class="p">]),</span> <span class="nf">str</span><span class="p">(</span><span class="n">node_id</span><span class="p">))</span>
+        <span class="k">elif</span> <span class="nf">isinstance</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="n">tvm</span><span class="p">.</span><span class="n">ir</span><span class="p">.</span><span class="n">Op</span><span class="p">):</span>
+            <span class="c1"># dot.node(str(node_id), 'Op {}'.format(node.name))
+</span>            <span class="k">pass</span> <span class="c1"># covered in call
+</span>        <span class="k">elif</span> <span class="nf">isinstance</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="n">tvm</span><span class="p">.</span><span class="n">relay</span><span class="p">.</span><span class="n">TupleGetItem</span><span class="p">):</span>
+            <span class="n">dot</span><span class="p">.</span><span class="nf">node</span><span class="p">(</span><span class="nf">str</span><span class="p">(</span><span class="n">node_id</span><span class="p">),</span> <span class="sh">'</span><span class="s">TupleGetItem(idx={})</span><span class="sh">'</span><span class="p">.</span><span class="nf">format</span><span class="p">(</span><span class="n">node</span><span class="p">.</span><span class="n">index</span><span class="p">),</span> <span class="o">**</span><span class="n">node_attr_dict</span><span class="p">.</span><span class="nf">get</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="p">{}))</span>
+            <span class="n">dot</span><span class="p">.</span><span class="nf">edge</span><span class="p">(</span><span class="nf">str</span><span class="p">(</span><span class="n">node_dict</span><span class="p">[</span><span class="n">node</span><span class="p">.</span><span class="n">tuple_value</span><span class="p">]),</span> <span class="nf">str</span><span class="p">(</span><span class="n">node_id</span><span class="p">))</span>
+        <span class="k">elif</span> <span class="nf">isinstance</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="n">tvm</span><span class="p">.</span><span class="n">relay</span><span class="p">.</span><span class="n">Let</span><span class="p">):</span>
+            <span class="n">dot</span><span class="p">.</span><span class="nf">node</span><span class="p">(</span><span class="nf">str</span><span class="p">(</span><span class="n">node_id</span><span class="p">),</span> <span class="sh">'</span><span class="s">Let(XX)</span><span class="sh">'</span><span class="p">,</span> <span class="o">**</span><span class="n">node_attr_dict</span><span class="p">.</span><span class="nf">get</span><span class="p">(</span><span class="n">node</span><span class="p">,</span> <span class="p">{}))</span>
+            <span class="n">dot</span><span class="p">.</span><span class="nf">edge</span><span class="p">(</span><span class="nf">str</span><span class="p">(</span><span class="n">node_dict</span><span class="p">[</span><span class="n">node</span><span class="p">.</span><span class="n">value</span><span class="p">]),</span> <span class="nf">str</span><span class="p">(</span><span class="n">node_id</span><span class="p">))</span>
+            <span class="n">dot</span><span class="p">.</span><span class="nf">edge</span><span class="p">(</span><span class="nf">str</span><span class="p">(</span><span class="n">node_id</span><span class="p">),</span> <span class="nf">str</span><span class="p">(</span><span class="n">node_dict</span><span class="p">[</span><span class="n">node</span><span class="p">.</span><span class="n">var</span><span class="p">]))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="nc">RuntimeError</span><span class="p">(</span>
+                <span class="sh">'</span><span class="s">Unknown node type. node_id: {}, node: {}</span><span class="sh">'</span><span class="p">.</span><span class="nf">format</span><span class="p">(</span><span class="n">node_id</span><span class="p">,</span> <span class="nf">type</span><span class="p">(</span><span class="n">node</span><span class="p">)))</span>
+
+    <span class="k">return</span> <span class="n">dot</span>
+
+</code></pre></div></div>
+
+<p>Let’s run that on our main function. For some reason (well, to be fully general, probably) the PyTorch converter will convert <code class="language-plaintext highlighter-rouge">Linear</code> layers to <code class="language-plaintext highlighter-rouge">batch_matmul</code> rather than just <code class="language-plaintext highlighter-rouge">dense</code>. We’ll get back to this in a bit. As TVM’s <code class="language-plaintext highlighter-rouge">batch_matmul</code> has the contraction axis last on both operands (unlike PyTorch), there are quite a few transpose operations, too.</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="nf">visualize</span><span class="p">(</span><span class="n">mod</span><span class="p">[</span><span class="sh">'</span><span class="s">main</span><span class="sh">'</span><span class="p">])</span>
+</code></pre></div></div>
+
+<p><img src="/images/bert-pytorch/bert-tvm_49_0.svg" alt="svg" width="100%" /></p>
+
+<p>In addition to our named inputs, we see a number of unnamed (numbered) variables. These are the neural network parameters.</p>
+
+<p>Let us compile our model.</p>
+
+<p>Just like the full model, we can run and time our submodule after checking that it computes the same quantities.</p>
+
+<p>100 runs take 20.2ms. The back of the envelope calculation here is that with <code class="language-plaintext highlighter-rouge">BertLayer</code> in PyTorch we are spending about 0.2ms in this layer, so about 2.4ms on 12 layers - a not the majority but a sizeable part of the 6-7ms overall runtime. Let’s compare to TVM. (A good rule is to never optimize without measuring.)</p>
+
+<p>Similarly, TVM clocks in at 18.2ms for 100 runs. So here we are again roughly on par with PyTorch.</p>
+
+<p>One thing we see from the picture is that the input is reshaped three times. There is a TVM optimization pass call Common Subexpression Elimination (CSE) that combines the three reshapes.
+(A while ago, this did not succeed because it had distinct shape arguments, but this was since solved by the TVM developers in the dynamic to static conversion pass.)
+Also, the model parameters that are reshaped and transposed. Can we get rid of that, too?
+Yes. And for that we would first <em>bind</em> the parameters, i.e. put them into the model. Then the parameters have become constants instead of input nodes.
+With the <code class="language-plaintext highlighter-rouge">Foldconstant</code> pass, we can propagate the constants through the <code class="language-plaintext highlighter-rouge">transpose</code>s and <code class="language-plaintext highlighter-rouge">reshape</code>s to move them closer to the matmuls.</p>
+
+<p>After these three (which TVM will do when we compile a relay model), our model looks like this:</p>
+
+<p><img src="/images/bert-pytorch/bert-tvm_72_0.svg" alt="svg" width="100%" /></p>
+
+<p>And now comes an interesting trick. It is more efficient to merge the three batch matmuls with the same input into a single <code class="language-plaintext highlighter-rouge">batch_matmul</code>. We implemented a pass doing this in <a href="https://github.com/apache/incubator-tvm/pull/5791">TVM PR 5791</a>. So let’s call it and also have another constant-folding pass.</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">new_mod</span> <span class="o">=</span> <span class="n">tvm</span><span class="p">.</span><span class="n">relay</span><span class="p">.</span><span class="n">transform</span><span class="p">.</span><span class="nc">CombineParallelBatchMatmul</span><span class="p">()(</span><span class="n">new_mod</span><span class="p">)</span>
+<span class="n">new_mod</span> <span class="o">=</span> <span class="n">tvm</span><span class="p">.</span><span class="n">relay</span><span class="p">.</span><span class="n">transform</span><span class="p">.</span><span class="nc">FoldConstant</span><span class="p">()(</span><span class="n">new_mod</span><span class="p">)</span>
+<span class="nf">visualize</span><span class="p">(</span><span class="n">new_mod</span><span class="p">[</span><span class="sh">"</span><span class="s">main</span><span class="sh">"</span><span class="p">])</span>
+</code></pre></div></div>
+
+<p><img src="/images/bert-pytorch/bert-tvm_74_0.svg" alt="svg" width="100%" /></p>
+
+<p>Awesome. After checking that we still get the same result.
+We can time again: 25.2 ms for 100 runs. It’s a bit slow again because we need to tune for the new shapes.
+After tuning, we are at 12.6ms for 100 runs, so we went from about 0.2ms to about 0.13-0.15ms, a nice speedup.
+By our handwavy calculation, this should cut 0.6-0.8ms from the total runtime, or somewhere between 5%-10%. Let’s check.</p>
+
+<h2 id="results-on-the-overall-bert-model-after-optimization">Results on the overall BERT model after optimization</h2>
+
+<p>Let’s define a function combining the optimization passes from above and run it on the entire BERT model.
+We go through the same exercise as above.</p>
+
+<p>We get to 624ms for 100 runs. So yay, we went from 6.5-7ms in PyTorch to ~6.2ms in TVM. This is a 5%-10% speedup. Note that we have only taking a particular, not very large shape. A more serious analysis would consider more problem shapes.</p>
+
+<p>We could probably take it a bit further yet - e.g. fusing the additions after the batch matmul by handling the reshape, but we’ll leave it at this for now. Also we will benefit from further improvements to TVM, so it will be interesting to see how the benchmark improves over time. In particular, the upcoming Ansor tuning mechanism seems promising.</p>
+
+<h2 id="a-peek-under-the-hood">A peek under the hood</h2>
+
+<h3 id="comparing-implementation-of-models">Comparing implementation of models</h3>
+
+<p>As you can see, I have always compared PyTorch with TVM outputs to see if they’re good.
+Also, when I investigated some inner layer, I grabbed the inputs to that to convert and feed into the TVM model. I do believe that this is a very effective technique.</p>
+
+<p>Sometimes, however, it is difficult to assess whether a deviation between the results is from numerical accuracy or from an error somewhere.
+When I initially converted the model, the the <code class="language-plaintext highlighter-rouge">SelfAttention</code> submodule output was replicated by the TVM model to about 1e-6.
+However, the BertLayer conversion had something like 1-e3. I was not entirely clear whether that might be due to accumulated numerical errors or some material deviation somewhere.
+(This turned out to be the GELU activation, which was converted to FastGELU.)</p>
+
+<p>One of the things I like to do in this case is jump to double precision and check there. Numerical errors should get much smaller, while other deviations would remain of the same order.
+With the PyTorch frontend, you can trace the model converted to float64 on the PyTorch side if you pass <code class="language-plaintext highlighter-rouge">default_dtype="float64"</code> to the conversion function.</p>
+
+<p>Running the module and comparing to PyTorch should now have 1e-14 or so deviation.</p>
+
+<h3 id="improvements-in-tvm-to-facilitate-this-usecase">Improvements in TVM to facilitate this usecase</h3>
+
+<p>Before this worked as shown here, we had to close some gaps (but a recent git checkout will include all of them):</p>
+<ul>
+  <li>The TVM PyTorch converter did not support inputs other than fp32. We <a href="https://github.com/t-vi/tvm/tree/pytorch_frontend_type_fix">implemented improved conversion</a>, now also included in TVM upsteam.</li>
+  <li>The TVM schedule, i.e. the organization of the computation, of the workhorse operation, batch_matmul, was fixed and it was very slow (similar to running without a tuned schedule now). So we <a href="https://github.com/apache/incubator-tvm/pull/5752">implemented a tuneable schedule</a>.</li>
+  <li>The PyTorch converter produces batch matmul operations (it could probably also be changed to produce dense layers instead). But as we saw, one of the larger speed advantages is to combine Query Key and Value linear layers, so we implemented <a href="https://github.com/apache/incubator-tvm/pull/5791">fusing batch matmul operations</a>.</li>
+  <li>When comparing the computation results, we noticed that the <a href="https://pytorch.org/docs/master/generated/torch.nn.GELU.html">GELU</a> function was converted to its FastGELU variant. We fixed that. (There is a <em>fast math</em> optimization pass in TVM that does some replacement of the error function, though we didn’t check if it yields FastGELU for the GELU expressed with the error function.)</li>
+  <li>TVM was initially (and still is to a some extent) focussed on static shapes. Recently it experiments with dynamic operations. The dynamic reshape - taking an argument for the target shape - is an early of these experiments, but as seen above, it prevented the fusion of batch matmuls because the common subexpression elimination pass didn’t detect that it could merge the identical input reshaping. This has improved recently.</li>
+</ul>
+
+<h1 id="training-pytorch-models-with-tvm-computation">Training Pytorch models with TVM computation</h1>
+
+<p>In this second part we want see if we could use TVM while training BERT in PyTorch.
+Of course, this opens an entire new can of worms as we need to deal with autodifferentiation.
+While we stay with the theme from above and take <code class="language-plaintext highlighter-rouge">BertLayer</code> as the example, our methodology is representative of non-trivial modules in general.
+We will want to divert the computation during training to TVM.</p>
+
+<p>So the user can take a (traceable) module and do</p>
+<div class="language-plaintext highlighter-rouge"><div class="highlight"><pre class="highlight"><code>add_tvm_dispatch(module, sample_input)
+</code></pre></div></div>
+<p>and then if she calls module with inputs of the same shape as the sample_input, she’ll get the outputs computed by TVM (as PyTorch tensors, of course) and if not, it’ll just use the regular forward.</p>
+
+<p>The but so we already hinted at the bad news: In this part we will see how to do these things. We will not yet achieve a great speedup.</p>
+
+<p>But enough talk, let us dive right in!
+Again, we get our relay model with running a traced <code class="language-plaintext highlighter-rouge">BertLayer</code> from the transformer <code class="language-plaintext highlighter-rouge">Bert</code> model through <code class="language-plaintext highlighter-rouge">tvm.relay.frontend.from_pytorch</code>.</p>
+
+<p>One thing we’ll do in between is to move from a modular interface in PyTorch - with named parameters - to a functional
+interface (which is what TVM can do for us). The first thing we want to do for that is arrange for the function arguments to be in an order that we can work with - i.e. first the direct inputs to the module and then the parameters in the same order that PyTorch uses them. After this operation, our <code class="language-plaintext highlighter-rouge">BertLayer </code> in TVM looks like this:</p>
+
+<p><img src="/images/bert-pytorch/pytorch-tvm-training_20_0.svg" alt="svg" width="100%" /></p>
+
+<p>As in the BERT inference, we want to run some optimization passes.</p>
+
+<p>But we also have a few new transformations:</p>
+
+<ul>
+  <li>One particularity of the Autodifferentiation is that it’ll use a lot of <code class="language-plaintext highlighter-rouge">..._like</code> operations to broadcast or “unbroadcast” (summation is the dual of broadcasting w.r.t. autodifferentiation) things. But this means that you now have two tensor arguments, even if the latter doesn’t really need a gradient. <code class="language-plaintext highlighter-rouge">ZappLike</code> replaces those operations with the corresponding functions taking a shape parameter instead.</li>
+  <li>Another thing is the “rooting” of derivatives. TVM generates a tensors with all ones of the same shape as the return values of our function as the starting point for the chain rule. These are then multiplied to the derivatives of our operations. But multiplication with ones is not doing much, so we strike that. Similarly, TVM initializes the gradient of a variable (an input) to zeros of the same shape. If it isn’t used, the gradient will be zero, but if it is, the “real gradient” will be added to that zero. But adding zero can be eliminated as well. These are taken care off by ZeroZapp and OneZapp.</li>
+  <li>TVM doesn’t have a training variant for the <code class="language-plaintext highlighter-rouge">LayerNorm</code> (or <code class="language-plaintext highlighter-rouge">BatchNorm</code> or others). So we implement a pass to spell out the computation.</li>
+  <li>TVM also doesn’t have training dropout. Here the problem is somewhat harder to fix, as TVM doesn’t have random currently. We instead replace the dropout by a construct taking a random bernoulli draw (of 0/1 values) and mimicking dropout with that. The idea is that we’ll use PyTorch to generate this mask for us. This has the added benefit that (if we generate dropout masks in the same order as PyTorch) we’ll get the exact same result.</li>
+</ul>
+
+<p>As hinted at above, TVM’s gradient taking assumes that it is the last element in the computation (the ones-Tensors discussed above). This isn’t a good fit with PyTorch’s modular view which expects a <code class="language-plaintext highlighter-rouge">grad_out</code> for each output to be given. Happily, this is computationally equivalent to multiplying by grad out and summation, so we amend our function with that. We wish to be flexible, so we allow both functions returning a single tensor and those returning a tuple of tensors.</p>
+
+<p>With these modificaitons applied, our model looks like this:</p>
+
+<p><img src="/images/bert-pytorch/pytorch-tvm-training_25_0.svg" alt="svg" width="100%" /></p>
+
+<p>Finally we can take the grad. As we get a lot of <code class="language-plaintext highlighter-rouge">let</code> nodes, we bring it to normal form using the <code class="language-plaintext highlighter-rouge">ToGraphNormalForm</code> pass.
+TVM’s gradient-taking returns a function that has the same parameters as the original function (in our case amended with the <code class="language-plaintext highlighter-rouge">grad_out</code> and dropout) and then returns a tuple of the original return and a tuple containing gradients for all inputs.
+The first thing we do is to drop all the gradients for <code class="language-plaintext highlighter-rouge">grad_out</code> and <code class="language-plaintext highlighter-rouge">dropout</code> which we don’t need.
+Then we run our simplification passes.</p>
+
+<p>So this is the graph we have now for forward and backward:</p>
+
+<p><img src="/images/bert-pytorch/pytorch-tvm-training_31_0.svg" alt="svg" width="100%" /></p>
+
+<p>But in PyTorch, we first compute the forward and then the backwards, so we have to take out the saw and
+split our graph. One of the difficult problems is what to do with things computed for both forward and backward. It is a hard problem, related to the MinCut problem.</p>
+
+<p>Our extremal options could be:</p>
+<ul>
+  <li>One could only keep the inputs and recompute everything as needed.</li>
+  <li>If we had a salar output, we could compute the gradient and multiply with the derivative of the later layers on backward. (Loss functions might do that.) This does not, however, work for non-scalar tensor outputs.</li>
+</ul>
+
+<p>We’ll do the following: We compute the forward normally, but we keep all things that will be used in the backward. This is too much, unfortunately, and it is very likely the reason we don’t see an end to end speedup. We’ll discuss some potential heuristics below.</p>
+
+<p>We use a coloring here. First we color all nodes of the forward computation in red. Then we traverse the gradient calculation and then color the nodes it needs from the backward blue. This gives us a chance to show off the attribute support in our visualization.</p>
+
+<p>A bit of (PyTorch) terminology: When we have a function <em>Layer : x ↦ y</em> followed by some <em>Loss: y ↦ l ∈ ℝ</em>, the backward is <em>BackwardOfLayer : grad<code class="language-plaintext highlighter-rouge">_</code>out ↦ grad<code class="language-plaintext highlighter-rouge">_</code>in</em> with <em>grad<code class="language-plaintext highlighter-rouge">_</code>out = dl/dy</em> and *grad<code class="language-plaintext highlighter-rouge">_</code>in = dl/dx`.</p>
+
+<p><img src="/images/bert-pytorch/pytorch-tvm-training_34_0.svg" alt="svg" width="100%" /></p>
+
+<p>In order to split the function as described above, we collect the blue nodes as to capture - but constants will
+just be duplicated and inputs (<code class="language-plaintext highlighter-rouge">Var</code> nodes) need to be treated separately.
+Now we can split out the backward, replacing all the blue nodes with variables.</p>
+
+<p>Next we take the forward and amend it to also return the required intermediates. The forward then looks like this:</p>
+
+<p><img src="/images/bert-pytorch/pytorch-tvm-training_40_0.svg" alt="svg" width="100%" /></p>
+
+<p>TVM cannot return nested tuples, so we flatten the output in the function. Again we differentiate between tensor-valued functions and tuple valued ones (i.e. those returning potentially multiple tensors).</p>
+
+<p>And at last, we can let TVM do its magic and compile our functions, say to <code class="language-plaintext highlighter-rouge">gr_only_compiled_module</code>
+and <code class="language-plaintext highlighter-rouge">fw_and_cap_compiled_module</code>.
+Time to give it a spin. We define convenience functions to move tensors between PyTorch and TVM and get the model parameters as a TVM dictionary.</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">tensor_to_tvm</span><span class="p">(</span><span class="n">t</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">tvm</span><span class="p">.</span><span class="n">nd</span><span class="p">.</span><span class="nf">from_dlpack</span><span class="p">(</span><span class="n">torch</span><span class="p">.</span><span class="n">utils</span><span class="p">.</span><span class="n">dlpack</span><span class="p">.</span><span class="nf">to_dlpack</span><span class="p">(</span><span class="n">t</span><span class="p">))</span>
+<span class="k">def</span> <span class="nf">tensor_from_tvm</span><span class="p">(</span><span class="n">a</span><span class="p">):</span>
+    <span class="nf">return</span><span class="p">(</span><span class="n">torch</span><span class="p">.</span><span class="n">utils</span><span class="p">.</span><span class="n">dlpack</span><span class="p">.</span><span class="nf">from_dlpack</span><span class="p">(</span><span class="n">a</span><span class="p">.</span><span class="nf">to_dlpack</span><span class="p">()))</span>
+
+<span class="n">model_params_tvm</span> <span class="o">=</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="nf">tensor_to_tvm</span><span class="p">(</span><span class="n">v</span><span class="p">)</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">pytorch_model</span><span class="p">.</span><span class="nf">state_dict</span><span class="p">().</span><span class="nf">items</span><span class="p">()}</span>
+</code></pre></div></div>
+
+<p>Similarly, we get the inputs on the GPU in PyTorch and TVM.</p>
+
+<p>We need to deal with the dropout. It will turn out that our record of the three dropout random draws happens in the same order as the dropout in the model. We did a depth-first search on the computational graph to find them and if the values of the the dropout are connected in the graph rather than being on independent branches, this will be the order in which PyTorch draws the matrices, too. If not, good luck fiddeling with the order.</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">torch</span><span class="p">.</span><span class="nf">manual_seed</span><span class="p">(</span><span class="mi">12345</span><span class="p">)</span>
+<span class="n">drop_c</span> <span class="o">=</span> <span class="p">{}</span>
+<span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">dropout_info</span><span class="p">.</span><span class="nf">keys</span><span class="p">():</span> <span class="c1"># we don't know the order
+</span>    <span class="n">p</span><span class="p">,</span> <span class="n">typ</span> <span class="o">=</span> <span class="n">dropout_info</span><span class="p">[</span><span class="n">k</span><span class="p">]</span>
+    <span class="n">drop_c</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">nn</span><span class="p">.</span><span class="n">functional</span><span class="p">.</span><span class="nf">dropout</span><span class="p">(</span><span class="n">torch</span><span class="p">.</span><span class="nf">ones</span><span class="p">([</span><span class="nf">int</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">typ</span><span class="p">.</span><span class="n">shape</span><span class="p">],</span>
+                                              <span class="n">dtype</span><span class="o">=</span><span class="nf">getattr</span><span class="p">(</span><span class="n">torch</span><span class="p">,</span> <span class="n">typ</span><span class="p">.</span><span class="n">dtype</span><span class="p">),</span> <span class="n">device</span><span class="o">=</span><span class="sh">"</span><span class="s">cuda</span><span class="sh">"</span><span class="p">),</span> <span class="n">p</span><span class="o">=</span><span class="n">p</span><span class="p">)</span><span class="o">*</span><span class="p">(</span><span class="mi">1</span><span class="o">-</span><span class="n">p</span><span class="p">)</span>
+
+<span class="n">drop_tvm</span> <span class="o">=</span> <span class="p">{</span><span class="n">n</span><span class="p">:</span> <span class="nf">tensor_to_tvm</span><span class="p">(</span><span class="n">t</span><span class="p">)</span> <span class="k">for</span> <span class="n">n</span><span class="p">,</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">drop_c</span><span class="p">.</span><span class="nf">items</span><span class="p">()}</span>
+</code></pre></div></div>
+
+<p>Now we can run the forward.</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">fw_and_cap_compiled_module</span><span class="p">.</span><span class="nf">set_input</span><span class="p">(</span><span class="sh">'</span><span class="s">input</span><span class="sh">'</span><span class="p">,</span> <span class="n">inp_tvm</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+<span class="n">fw_and_cap_compiled_module</span><span class="p">.</span><span class="nf">set_input</span><span class="p">(</span><span class="sh">'</span><span class="s">attention_mask</span><span class="sh">'</span><span class="p">,</span> <span class="n">inp_tvm</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+<span class="n">fw_and_cap_compiled_module</span><span class="p">.</span><span class="nf">set_input</span><span class="p">(</span><span class="o">**</span><span class="n">model_params_tvm</span><span class="p">)</span>
+<span class="n">fw_and_cap_compiled_module</span><span class="p">.</span><span class="nf">set_input</span><span class="p">(</span><span class="o">**</span><span class="n">drop_tvm</span><span class="p">)</span>
+<span class="n">fw_and_cap_compiled_module</span><span class="p">.</span><span class="nf">run</span><span class="p">()</span>
+</code></pre></div></div>
+
+<p>And we can compare the output to PyTorch’s:</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">torch</span><span class="p">.</span><span class="nf">manual_seed</span><span class="p">(</span><span class="mi">12345</span><span class="p">)</span>
+<span class="n">pytorch_model</span><span class="p">.</span><span class="nf">train</span><span class="p">()</span>
+<span class="n">res</span> <span class="o">=</span> <span class="nf">pytorch_model</span><span class="p">(</span><span class="o">*</span><span class="n">inp_c</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+<span class="n">numpy</span><span class="p">.</span><span class="nf">abs</span><span class="p">(</span><span class="n">fw_and_cap_compiled_module</span><span class="p">.</span><span class="nf">get_output</span><span class="p">(</span><span class="mi">0</span><span class="p">).</span><span class="nf">asnumpy</span><span class="p">()</span><span class="o">-</span><span class="n">res</span><span class="p">.</span><span class="nf">detach</span><span class="p">().</span><span class="nf">cpu</span><span class="p">().</span><span class="nf">numpy</span><span class="p">()).</span><span class="nf">max</span><span class="p">()</span>
+</code></pre></div></div>
+
+<p>This gives <code class="language-plaintext highlighter-rouge">2.1457672e-06</code>.</p>
+
+<p>Supergood. Let’s also try the backward. We generate a <code class="language-plaintext highlighter-rouge">grad_out</code>, set all the variables and run the backward model and run the backward model</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">gr_out_c</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="nf">randn</span><span class="p">(</span><span class="n">res</span><span class="p">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="sh">"</span><span class="s">cuda</span><span class="sh">"</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">res</span><span class="p">.</span><span class="n">dtype</span><span class="p">)</span>
+</code></pre></div></div>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">num_captures</span> <span class="o">=</span> <span class="nf">len</span><span class="p">(</span><span class="n">capture_vars</span><span class="p">)</span>
+<span class="n">num_regular_outputs</span> <span class="o">=</span> <span class="nf">len</span><span class="p">(</span><span class="n">fw_and_cap_fn_flattened</span><span class="p">.</span><span class="n">body</span><span class="p">.</span><span class="n">fields</span><span class="p">)</span> <span class="o">-</span> <span class="n">num_captures</span>
+<span class="n">captured_values</span> <span class="o">=</span> <span class="p">{</span><span class="n">v</span><span class="p">.</span><span class="n">name_hint</span><span class="p">:</span> <span class="n">fw_and_cap_compiled_module</span><span class="p">.</span><span class="nf">get_output</span><span class="p">(</span><span class="n">num_regular_outputs</span> <span class="o">+</span> <span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="nf">enumerate</span><span class="p">(</span><span class="n">capture_vars</span><span class="p">)}</span>
+
+<span class="n">gr_only_compiled_module</span><span class="p">.</span><span class="nf">set_input</span><span class="p">(</span><span class="o">**</span><span class="n">drop_tvm</span><span class="p">)</span>
+<span class="n">gr_only_compiled_module</span><span class="p">.</span><span class="nf">set_input</span><span class="p">(</span><span class="o">**</span><span class="n">model_params_tvm</span><span class="p">)</span>
+<span class="n">gr_only_compiled_module</span><span class="p">.</span><span class="nf">set_input</span><span class="p">(</span><span class="o">**</span><span class="n">captured_values</span><span class="p">)</span>
+<span class="n">gr_only_compiled_module</span><span class="p">.</span><span class="nf">set_input</span><span class="p">(</span><span class="sh">'</span><span class="s">gr:out:0</span><span class="sh">'</span><span class="p">,</span> <span class="nf">tensor_to_tvm</span><span class="p">(</span><span class="n">gr_out_c</span><span class="p">))</span>
+<span class="n">gr_only_compiled_module</span><span class="p">.</span><span class="nf">run</span><span class="p">()</span>
+</code></pre></div></div>
+
+<p>On the PyTorch side, it is easiest to re-run the forward (remembering to reset the random seed) and get the grads.</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">torch</span><span class="p">.</span><span class="nf">manual_seed</span><span class="p">(</span><span class="mi">12345</span><span class="p">)</span>
+<span class="n">pytorch_model</span><span class="p">.</span><span class="nf">train</span><span class="p">()</span>
+<span class="n">inp_c_rq</span> <span class="o">=</span> <span class="p">[</span><span class="n">i</span><span class="p">.</span><span class="nf">requires_grad_</span><span class="p">()</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">inp_c</span><span class="p">]</span>
+<span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">pytorch_model</span><span class="p">.</span><span class="nf">parameters</span><span class="p">():</span>
+    <span class="n">p</span><span class="p">.</span><span class="nf">requires_grad_</span><span class="p">()</span>
+<span class="n">res</span> <span class="o">=</span> <span class="nf">pytorch_model</span><span class="p">(</span><span class="o">*</span><span class="n">inp_c_rq</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+<span class="n">grads_pt</span> <span class="o">=</span> <span class="n">torch</span><span class="p">.</span><span class="n">autograd</span><span class="p">.</span><span class="nf">grad</span><span class="p">(</span><span class="n">res</span><span class="p">,</span> <span class="n">inp_c_rq</span> <span class="o">+</span> <span class="nf">list</span><span class="p">(</span><span class="n">pytorch_model</span><span class="p">.</span><span class="nf">parameters</span><span class="p">()),</span> <span class="n">gr_out_c</span><span class="p">,</span> <span class="n">allow_unused</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span>
+
+</code></pre></div></div>
+
+<p>Did it work? It seems so:</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">g_pt</span> <span class="ow">in</span> <span class="nf">enumerate</span><span class="p">(</span><span class="n">grads_pt</span><span class="p">):</span>
+    <span class="nf">print</span><span class="p">(</span><span class="n">numpy</span><span class="p">.</span><span class="nf">abs</span><span class="p">(</span><span class="n">gr_only_compiled_module</span><span class="p">.</span><span class="nf">get_output</span><span class="p">(</span><span class="n">i</span><span class="p">).</span><span class="nf">asnumpy</span><span class="p">()</span> <span class="o">-</span> <span class="n">g_pt</span><span class="p">.</span><span class="nf">cpu</span><span class="p">().</span><span class="nf">numpy</span><span class="p">()).</span><span class="nf">max</span><span class="p">())</span>
+</code></pre></div></div>
+
+<p>gives us a list of numbers in the 1e-5ish range.</p>
+
+<p>But we wanted to get something running in PyTorch, right?</p>
+
+<p>Keeping with how PyTorch works, we first define an <code class="language-plaintext highlighter-rouge">autograd.Function</code> that the things we just did manually:</p>
+
+<p>In the <code class="language-plaintext highlighter-rouge">forward</code>:</p>
+
+<ul>
+  <li>Generate the dropout random values,</li>
+  <li>Run the forward,</li>
+  <li>Record the captures, inputs, and dropout values needed for backward.</li>
+</ul>
+
+<p>In the <code class="language-plaintext highlighter-rouge">backward</code>, run the backward and return the result (as PyTorch tensors).</p>
+
+<p>With that, we get a PyTorch autograd.Function calling into TVM (we would want a small wrapper for that.</p>
+
+<p>Now all we need to do to achive our goal of getting a method <code class="language-plaintext highlighter-rouge">add_tvm_dispatch(module, sample_inputs)</code> is
+to trace the module, create the TVM-based autograd function from it and then replace the forward that calls
+that (with the parameters) if applicable or falls back to the usual forward.
+Python’s unlimited dynamism makes that kind of hackery relatively easy.
+As all this it is not really TVM-related, we are sparing us that here (but you could check the
+<a href="https://lernapparat.de/transformers-pytorch-tvm/">companion post</a>.</p>
+
+<h2 id="performance">Performance</h2>
+
+<p>As I said in the beginning, we aren’t quite where we want to eventually be in terms of performance.
+After tuning the tasks (and on the not very realistic inference example from the HuggingFace BERT + PyTorch JIT tutorial)
+we run 100 iterations of the TVM-enabled BertLayer forward and backward similar to how we did it for the inference.
+One iteration takes 6.2ms going through TVM versus 1.3ms on PyTorch.</p>
+
+<p>So ran our model through TVM all right. But it’s not as fast as the usual method yet. Here is to opportunity!</p>
+
+<p>More seriously, we have two immediate paths to improve performance:</p>
+
+<ul>
+  <li>Find a better set of captured nodes.</li>
+  <li>Find optimizations on the TVM graph.</li>
+</ul>
+
+<p>In terms of heuristics for the former (remember that it quite likely NP hard, i.e. I believe it is, but I didn’t work out a formal proof),
+one would want to re-do cheap computation, most prominently point-wise computation (or maybe anything but matmul?). But that is for another day.</p>
+
+<p>I hope you enjoyed the tutorial, I look forward to your comments at <a href="mailto:tv@lernapparat.de">tv@lernapparat.de</a>.</p>
+
+<h1 id="acknowledgements">Acknowledgements</h1>
+
+<p>I had many interesting discussions with HugingFace people and Morgan Funtowicz in particular. Also the TVM contributors had many good comments during the review of the patches TVM and on the forums. The creation of this tutorial was sponsored by AMD.</p>
+
+<h1 id="author">Author</h1>
+
+<p><a href="https://lernapparat.de/">Thomas Viehmann</a> is the founder of <a href="https://mathinf.eu/">MathInf GmbH</a>, Munich, Germany, a boutique training and consultancy firm focusing on Machine Learning and PyTorch.
+He is a PyTorch core developer and co-authored <a href="https://www.manning.com/books/deep-learning-with-pytorch">Deep Learning with PyTorch</a>, which currently available as <a href="https://pytorch.org/deep-learning-with-pytorch">free download from the PyTorch website</a>.</p>
+
+    </div>
+  </div>
+</div>
+</div>
+
+    
+
+
+
+
+  <script src="../../../_static/downloads/jquery-2.2.0.min.js" type="text/javascript"></script>
+  <script src="../../../_static/downloads/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
+  <script src="../../../_static/downloads/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
+  <!-- <script src="./assets/js/slick.js"></script> -->
+  <script src="/assets/js/custome.js"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'UA-75982049-2');
+  </script>
+</body>
+<section class="footerSec">
+  <div class="footerHeader">
+    <ul class="container d-flex align-md-items-center justify-content-between flex-column flex-md-row">
+      <li class="logo">
+
+        <p><a href="/"><img src="/assets/images/logo.svg" alt="logo" title="logo" /></a></p>
+      </li>
+      <li class="copywrite d-flex align-items-center">
+        <h5 id="apache-software-foundation--all-right-reserved">© 2024 Apache Software Foundation | All right reserved</h5>
+      </li>
+    </ul>
+
+  </div>
+
+  <ul class="container">
+    <li class="footernote">
+      Copyright © 2024 The Apache Software Foundation. Apache TVM, Apache, the Apache feather, and the Apache TVM project logo are either trademarks or registered trademarks of the Apache Software Foundation.</li>
+  </ul>
+
+</section>
+</html>

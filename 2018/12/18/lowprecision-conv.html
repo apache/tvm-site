@@ -1,0 +1,340 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Automating Generation of Low Precision Deep Learning Operators</title>
+    <link rel="shortcut icon" href="/assets/images/favicon.ico">
+    <link rel="stylesheet" href="../../../_static/downloads/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+    <link rel="stylesheet" href="/css/slick.css">
+    <link rel="stylesheet" href="/css/slick-theme.css">
+    <link rel="stylesheet" href="/css/custom.css">
+    
+</head>
+<body>
+
+    
+<div class="bannerPage">
+      <header class="header">
+      <div class="container">
+        <div class="headerInner d-flex justify-content-between align-items-center">
+          <div class="headerLogo">
+            <a href="/"><img src="/assets/images/logo.svg" alt="Logo"></a>
+          </div>
+          <div id="headMenu" class="headerNav">
+            <button type="button" id="closeHeadMenu" class="navCloseBtn"><img src="/assets/images/close-icon.svg"
+                alt="Close"></button>
+                <ul class="nav">
+    
+    <li class="nav-item">
+        <a class="nav-link" href="/community">Community</a>
+    </li>
+    
+    <li class="nav-item">
+        <a class="nav-link" href="/download">Download</a>
+    </li>
+    
+    <li class="nav-item">
+        <a class="nav-link" href="https://tvm.apache.org/docs/">Docs</a>
+    </li>
+    
+    <li class="nav-item">
+        <a class="nav-link" href="https://github.com/apache/tvm/">Github</a>
+    </li>
+    
+</ul>
+            <div class="responsiveasfdropdown">
+              <button type="button" class="btn-link">
+                ASF
+              </button>
+              <ul>
+    
+    <li>
+        <a href="https://www.apache.org/">Apache Homepage</a>
+    </li>
+    
+    <li>
+        <a href="https://www.apache.org/licenses/">License</a>
+    </li>
+    
+    <li>
+        <a href="https://www.apache.org/foundation/sponsorship.html">Sponsorship</a>
+    </li>
+    
+    <li>
+        <a href="https://tvm.apache.org/docs/reference/security.html">Security</a>
+    </li>
+    
+    <li>
+        <a href="https://www.apache.org/foundation/thanks.html">Thanks</a>
+    </li>
+    
+    <li>
+        <a href="https://www.apache.org/events/current-event">Events</a>
+    </li>
+    
+</ul>
+            </div>
+          </div>
+          <div class="responsiveMenuIcon">
+            <button type="button" id="menuBtn" class="btn-menu"><img src="/assets/images/menu-icon.svg"
+                alt="Menu Icon" /></button>
+          </div>
+          <div class="asfDropdown">
+            <div class="dropdown">
+              <button type="button" class="btn-link dropdown-toggle" data-toggle="dropdown" aria-haspopup="true"
+                aria-expanded="false">
+                ASF
+              </button>
+              <div class="dropdown-menu dropdown-menu-right">
+                <ul>
+    
+    <li>
+        <a href="https://www.apache.org/">Apache Homepage</a>
+    </li>
+    
+    <li>
+        <a href="https://www.apache.org/licenses/">License</a>
+    </li>
+    
+    <li>
+        <a href="https://www.apache.org/foundation/sponsorship.html">Sponsorship</a>
+    </li>
+    
+    <li>
+        <a href="https://tvm.apache.org/docs/reference/security.html">Security</a>
+    </li>
+    
+    <li>
+        <a href="https://www.apache.org/foundation/thanks.html">Thanks</a>
+    </li>
+    
+    <li>
+        <a href="https://www.apache.org/events/current-event">Events</a>
+    </li>
+    
+</ul>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </header>
+
+</div>
+
+
+<div class="container">
+<div class="content">
+  <div class="row">
+    <div class="span14 w-100">
+      <h1>Automating Generation of Low Precision Deep Learning Operators </h1>
+      <p class="post-meta">
+        <time datetime="2018-12-18T00:00:00+00:00" itemprop="datePublished">
+          Dec 18, 2018
+        </time>
+        
+        • <span itemprop="author" itemscope itemtype="http://schema.org/Person">
+          <span itemprop="name">Meghan Cowan</span>
+        </span>
+        
+      </p>
+      <p class="post-meta">
+        </p>
+    </br>
+    <p>As deep learning models grow larger and more complex, deploying them on low powered phone and IoT
+devices becomes challenging because of their limited compute and energy budgets. A  recent  trend
+ in  deep  learning  is  the  use  of  extremely  quantized  models  that operate  on  inputs  and
+ weights  of  a  few  bits, with networks like XNOR-Net, DoReFa-Net, and HWGQ-Net making steady
+progress improving accuracy.</p>
+
+<p>An example of a low precision graph snippet is below. The low precision convolution takes in
+quantized data and bitpacks into the proper data layout for an efficient bitserial convolution.
+The output is in a higher precision and traditional deep learning layers such as batch normalization and ReLu are applied to it, before being re-quantized and sent through another low precision operator.</p>
+
+<p style="text-align: center"><img src="/images/low-precision/workflow.png" alt="image" width="50%" /></p>
+<center> Low precision convolution pipeline.</center>
+<p></p>
+
+<p>Theoretically,  low  precision operators use less operations than
+floating point operators, leading many to believe they can achieve up tremendous speedups.
+However, deep  learning frameworks  leverage  decades  of  engineering  work  through  low  level
+BLAS  and LAPACK libraries that are incredibly well optimized, and CPUs include intrinsic
+instructions to accelerate these tasks.  In  practice,  it  is  not  simple  to  develop low-level
+operators such as convolutions  that  are competitive  with  8-bit  quantized  or  even floating
+point operators.
+In  this  post  we  introduce  our  approach to automatically generating optimized
+low  precision  convolutions for  CPUs. We declare our low precision operators so that they compute
+on efficiently stored low precision inputs, and describe a schedule that describes a search space
+of implementation parameters. We rely on AutoTVM to quickly search the space and find optimized
+parameters for the particular convolution, precision, and backend.</p>
+
+<h2 id="bitserial-computation-background">Bitserial Computation Background</h2>
+
+<p>The  core  of  low  precision  models  is  the bitserial dot product that enables convolution and
+dense operators to be computed using only bitwise operations and popcount.
+ Typically, a dot product is computed by element wise multiplication of two vectors followed by
+ summing all the elements, like the simple example below. If all the data is binary, the input
+ vectors can be packed into single integer, and the dot product can be computed by  bitwise-anding
+ the packed inputs and counting the number of 1’s in the result using popcount.
+Note: Depending how the input data is quantized, bitwise-xnor may be used instead of bitwise-and.</p>
+
+<p style="text-align: center"><img src="/images/low-precision/binary-dotproduct.png" alt="image" width="50%" /></p>
+<center> Binary dot product.</center>
+<p></p>
+
+<p>Arbitrary precision dot products can be computed in this fashion by first separating input data
+into bitplanes. Once in this representation we can compute dotproduct by summing weighted binary
+dot products between the bitplanes of A and B. The number of binary dotproducts grows with the
+product of A and B’s precision, so this method is only practical for very low precision data.</p>
+
+<p style="text-align: center"><img src="/images/low-precision/bitserial-dotproduct.png" alt="image" width="50%" /></p>
+<center> Bitserial dot product.</center>
+<p></p>
+
+<h2 id="defining-operators-in-tvm">Defining Operators in TVM</h2>
+<p>Before the computation, input data needs to be bitpacked so that the bitplanes of the input data
+can be accessed and are packed into a supported datatype such as a uint8 or uint32. We provide
+a flexible bitpacking operator that takes arbitrary size input tensors and returns a bitpacked
+tensor where the user specifies which axis the bitplanes should be.</p>
+
+<p style="text-align: center"><img src="/images/low-precision/bitpack.png" alt="image" width="50%" /></p>
+<center> Different bitpacked layouts.</center>
+<p></p>
+
+<p>Once in this bitpacked format the low precision  convolution can be computed bitserially.
+For this demo, that data is packed along the input channel and the bitplanes are added to the
+innermost axis, and the data is packed into 32-bit integers. The bitserial convolution is computed
+similar to a normal convolution, but the bitwise-and (&amp;) replaces multiplication, and we use
+popcount to accumulate values in the packed data. The bitplane axes become additional reduction axes
+and compute the binary dot products between different bitplanes of the input and kernel.
+Finally, the output is computed in an unpacked format and in higher precision.</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">Input_bitpacked</span> <span class="o">=</span> <span class="nf">bitpack</span><span class="p">(</span><span class="n">Input</span><span class="p">,</span> <span class="n">activation_bits</span><span class="p">,</span> <span class="n">pack_axis</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">bit_axis</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">pack_type</span><span class="o">=</span><span class="err">’</span><span class="n">uint32</span><span class="err">’</span><span class="p">)</span>
+<span class="n">Weights_bitpacked</span> <span class="o">=</span> <span class="nf">bitpack</span><span class="p">(</span><span class="n">Filter</span><span class="p">,</span> <span class="n">weight_bits</span><span class="p">,</span> <span class="n">pack_axis</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">bit_axis</span><span class="o">=</span><span class="mi">4</span><span class="p">,</span> <span class="n">pack_type</span><span class="o">=</span><span class="err">’</span><span class="n">uint32</span><span class="err">’</span><span class="p">)</span>
+<span class="n">batch</span><span class="p">,</span> <span class="n">in_height</span><span class="p">,</span> <span class="n">in_width</span><span class="p">,</span> <span class="n">in_channel_q</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">Input_bitpacked</span><span class="p">.</span><span class="n">shape</span>
+<span class="n">kernel_h</span><span class="p">,</span> <span class="n">kernel_w</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">num_filter</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">Filter_bitpakced</span><span class="p">.</span><span class="n">shape</span>
+
+<span class="n">stride_h</span><span class="p">,</span> <span class="n">stride_w</span> <span class="o">=</span> <span class="n">stride</span>
+<span class="n">pad_top</span><span class="p">,</span> <span class="n">pad_left</span><span class="p">,</span> <span class="n">pad_down</span><span class="p">,</span> <span class="n">pad_right</span> <span class="o">=</span> <span class="nf">get_pad_tuple</span><span class="p">(</span><span class="n">padding</span><span class="p">,</span> <span class="p">(</span><span class="n">kernel_h</span><span class="p">,</span> <span class="n">kernel_w</span><span class="p">))</span>
+
+<span class="c1"># Computing the output shape
+</span><span class="n">out_channel</span> <span class="o">=</span> <span class="n">num_filter</span>
+<span class="n">out_height</span> <span class="o">=</span> <span class="nf">simplify</span><span class="p">((</span><span class="n">in_height</span> <span class="o">-</span> <span class="n">kernel_h</span> <span class="o">+</span> <span class="n">pad_top</span> <span class="o">+</span> <span class="n">pad_down</span><span class="p">)</span> <span class="o">//</span> <span class="n">stride_h</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+<span class="n">out_width</span> <span class="o">=</span> <span class="nf">simplify</span><span class="p">((</span><span class="n">in_width</span> <span class="o">-</span> <span class="n">kernel_w</span> <span class="o">+</span> <span class="n">pad_left</span> <span class="o">+</span> <span class="n">pad_right</span><span class="p">)</span> <span class="o">//</span> <span class="n">stride_w</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+<span class="n">pad_before</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="n">pad_top</span><span class="p">,</span> <span class="n">pad_left</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span>
+<span class="n">pad_after</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="n">pad_down</span><span class="p">,</span> <span class="n">pad_right</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span>
+<span class="n">Input_padded</span> <span class="o">=</span> <span class="nf">pad</span><span class="p">(</span><span class="n">Input_bitpacked</span><span class="p">,</span> <span class="n">pad_before</span><span class="p">,</span> <span class="n">pad_after</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="sh">"</span><span class="s">PaddedInput</span><span class="sh">"</span><span class="p">)</span>
+
+<span class="c1"># Treat the bitplane axes like additional reduction axes
+</span><span class="n">rc</span> <span class="o">=</span> <span class="n">tvm</span><span class="p">.</span><span class="nf">reduce_axis</span><span class="p">((</span><span class="mi">0</span><span class="p">,</span> <span class="n">in_channel_q</span><span class="p">),</span> <span class="n">name</span><span class="o">=</span><span class="sh">'</span><span class="s">rc</span><span class="sh">'</span><span class="p">)</span>
+<span class="n">ry</span> <span class="o">=</span> <span class="n">tvm</span><span class="p">.</span><span class="nf">reduce_axis</span><span class="p">((</span><span class="mi">0</span><span class="p">,</span> <span class="n">kernel_h</span><span class="p">),</span> <span class="n">name</span><span class="o">=</span><span class="sh">'</span><span class="s">ry</span><span class="sh">'</span><span class="p">)</span>
+<span class="n">rx</span> <span class="o">=</span> <span class="n">tvm</span><span class="p">.</span><span class="nf">reduce_axis</span><span class="p">((</span><span class="mi">0</span><span class="p">,</span> <span class="n">kernel_w</span><span class="p">),</span> <span class="n">name</span><span class="o">=</span><span class="sh">'</span><span class="s">rx</span><span class="sh">'</span><span class="p">)</span>
+<span class="n">ib</span> <span class="o">=</span> <span class="n">tvm</span><span class="p">.</span><span class="nf">reduce_axis</span><span class="p">((</span><span class="mi">0</span><span class="p">,</span> <span class="n">input_bits</span><span class="p">),</span> <span class="n">name</span><span class="o">=</span><span class="sh">'</span><span class="s">ib</span><span class="sh">'</span><span class="p">)</span>
+<span class="n">wb</span> <span class="o">=</span> <span class="n">tvm</span><span class="p">.</span><span class="nf">reduce_axis</span><span class="p">((</span><span class="mi">0</span><span class="p">,</span> <span class="n">weight_bits</span><span class="p">),</span> <span class="n">name</span><span class="o">=</span><span class="sh">'</span><span class="s">wb</span><span class="sh">'</span><span class="p">)</span>
+
+
+<span class="n">tvm</span><span class="p">.</span><span class="nf">compute</span><span class="p">((</span><span class="n">batch</span><span class="p">,</span> <span class="n">out_height</span><span class="p">,</span> <span class="n">out_width</span><span class="p">,</span> <span class="n">out_channel</span><span class="p">),</span> <span class="k">lambda</span> <span class="n">nn</span><span class="p">,</span> <span class="n">yy</span><span class="p">,</span> <span class="n">xx</span><span class="p">,</span> <span class="n">ff</span><span class="p">:</span>
+             <span class="n">tvm</span><span class="p">.</span><span class="nf">sum</span><span class="p">(</span><span class="n">tvm</span><span class="p">.</span><span class="nf">popcount</span><span class="p">(</span>
+               <span class="n">Input_padded</span><span class="p">[</span><span class="n">nn</span><span class="p">,</span> <span class="n">yy</span> <span class="o">*</span> <span class="n">stride_h</span> <span class="o">+</span> <span class="n">ry</span><span class="p">,</span> <span class="n">xx</span> <span class="o">*</span> <span class="n">stride_w</span> <span class="o">+</span> <span class="n">rx</span><span class="p">,</span> <span class="n">rc</span><span class="p">,</span> <span class="n">ib</span><span class="p">]</span> <span class="o">&amp;</span>
+               <span class="n">Weights_bitpacked</span><span class="p">[</span><span class="n">ry</span><span class="p">,</span> <span class="n">rx</span><span class="p">,</span> <span class="n">rc</span><span class="p">,</span> <span class="n">ff</span><span class="p">,</span> <span class="n">wb</span><span class="p">]))</span> <span class="o">&lt;&lt;</span> <span class="p">(</span><span class="n">ib</span><span class="o">+</span><span class="n">wb</span><span class="p">))).</span><span class="nf">astype</span><span class="p">(</span><span class="n">out_dtype</span><span class="p">),</span>
+               <span class="n">axis</span><span class="o">=</span><span class="p">[</span><span class="n">rc</span><span class="p">,</span> <span class="n">ry</span><span class="p">,</span> <span class="n">rx</span><span class="p">,</span> <span class="n">wb</span><span class="p">,</span> <span class="n">ib</span><span class="p">]))</span>
+
+</code></pre></div></div>
+
+<p>In our schedule we apply common optimizations like vectorization and memory tiling to provide better
+memory locality and take advantage of SIMD units. Some of these optimizations such as tiling,
+require parameters that need to be tuned to for the specific microarchitecture. We expose these
+parameters as knobs to TVM and use AutoTVM to automatically tune all the parameters simultaneously.</p>
+
+<p>Finally, we can craft small microkernels to replace the innermost loop(s) of computation and schedule
+ them using TVM’s tensorize primitive. Since, compilers often produce suboptimal code, people can
+ often write short assembly sequences that are more efficient. These microkernels often take advantage
+ of new intrinsics that are being introduced to help accelerate deep learning workloads and use
+ them clever ways to improve memory accesses or reduce the number instructions required.</p>
+
+<h2 id="results">Results</h2>
+
+<h3 id="raspberry-pi">Raspberry Pi</h3>
+<p>Convolution speedups on Raspberry Pi 3B compared to 16-bit integer TVM implementation.
+Workload are convolution layers from ResNet18.</p>
+
+<p style="text-align: center"><img src="/images/low-precision/rasp-conv.png" alt="image" width="50%" /></p>
+<center> Speedup of low precision convolutions on a Raspberry Pi compared to 16-bit TVM implementation.</center>
+<p></p>
+
+<p>2-bit activation, 1-bit weight convolution speedups on Raspberry Pi 3B compared to hand optimized implementation from <a href="https://arxiv.org/pdf/1712.02427.pdf">High performance ultra-low-precision convolutions
+on mobile devices.</a>.
+Workload are convolution layers from ResNet18.</p>
+
+<p style="text-align: center"><img src="/images/low-precision/rasp-conv-2.png" alt="image" width="50%" /></p>
+<center> Speedup of 2-bit weight 1-bit activation Raspberry Pi convolutions against a hand optimized implementation.</center>
+<p></p>
+
+<h3 id="x86">x86</h3>
+
+<p>Convolution speedups on x86 compared to a 32-bit floating point TVM implementation.
+Note: x86 doesn’t support a vectorized popcount for this microarchitecture, so speedups are lower.</p>
+<p style="text-align: center"><img src="/images/low-precision/x86-conv.png" alt="image" width="50%" /></p>
+<center> Speedup of x86 low precision convolutions compared to a 32-bit floating point TVM implementation.</center>
+<p></p>
+
+<h2 id="show-me-the-code">Show me the code</h2>
+
+<ul>
+  <li><a href="https://github.com/apache/incubator-tvm/blob/main/topi/python/topi/nn/bitserial_conv2d.py">TOPI bitserial convolution</a></li>
+  <li><a href="https://github.com/apache/incubator-tvm/blob/main/topi/python/topi/arm_cpu/bitserial_conv2d.py">TOPI ARM cpu bitserial convolution</a></li>
+</ul>
+
+<h2 id="references">References</h2>
+
+<ul>
+  <li>[1] <a href="https://arxiv.org/abs/1810.11066">Automating Generation of Low Precision Deep Learning Operators</a></li>
+  <li>[2] <a href="https://arxiv.org/abs/1603.05279">XNOR-Net</a></li>
+  <li>[3] <a href="https://arxiv.org/abs/1702.00953">HWGQ</a></li>
+  <li>[4] <a href="https://arxiv.org/abs/1606.06160">DoReFa</a></li>
+</ul>
+
+
+    </div>
+  </div>
+</div>
+</div>
+
+    
+
+
+
+
+  <script src="../../../_static/downloads/jquery-2.2.0.min.js" type="text/javascript"></script>
+  <script src="../../../_static/downloads/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
+  <script src="../../../_static/downloads/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
+  <!-- <script src="./assets/js/slick.js"></script> -->
+  <script src="/assets/js/custome.js"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'UA-75982049-2');
+  </script>
+</body>
+<section class="footerSec">
+  <div class="footerHeader">
+    <ul class="container d-flex align-md-items-center justify-content-between flex-column flex-md-row">
+      <li class="logo">
+
+        <p><a href="/"><img src="/assets/images/logo.svg" alt="logo" title="logo" /></a></p>
+      </li>
+      <li class="copywrite d-flex align-items-center">
+        <h5 id="apache-software-foundation--all-right-reserved">© 2024 Apache Software Foundation | All right reserved</h5>
+      </li>
+    </ul>
+
+  </div>
+
+  <ul class="container">
+    <li class="footernote">
+      Copyright © 2024 The Apache Software Foundation. Apache TVM, Apache, the Apache feather, and the Apache TVM project logo are either trademarks or registered trademarks of the Apache Software Foundation.</li>
+  </ul>
+
+</section>
+</html>

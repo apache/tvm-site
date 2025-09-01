@@ -1,0 +1,758 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Optimize Deep Learning GPU Operators with TVM: A Depthwise Convolution Example</title>
+    <link rel="shortcut icon" href="/assets/images/favicon.ico">
+    <link rel="stylesheet" href="../../../_static/downloads/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+    <link rel="stylesheet" href="/css/slick.css">
+    <link rel="stylesheet" href="/css/slick-theme.css">
+    <link rel="stylesheet" href="/css/custom.css">
+    
+</head>
+<body>
+
+    
+<div class="bannerPage">
+      <header class="header">
+      <div class="container">
+        <div class="headerInner d-flex justify-content-between align-items-center">
+          <div class="headerLogo">
+            <a href="/"><img src="/assets/images/logo.svg" alt="Logo"></a>
+          </div>
+          <div id="headMenu" class="headerNav">
+            <button type="button" id="closeHeadMenu" class="navCloseBtn"><img src="/assets/images/close-icon.svg"
+                alt="Close"></button>
+                <ul class="nav">
+    
+    <li class="nav-item">
+        <a class="nav-link" href="/community">Community</a>
+    </li>
+    
+    <li class="nav-item">
+        <a class="nav-link" href="/download">Download</a>
+    </li>
+    
+    <li class="nav-item">
+        <a class="nav-link" href="https://tvm.apache.org/docs/">Docs</a>
+    </li>
+    
+    <li class="nav-item">
+        <a class="nav-link" href="https://github.com/apache/tvm/">Github</a>
+    </li>
+    
+</ul>
+            <div class="responsiveasfdropdown">
+              <button type="button" class="btn-link">
+                ASF
+              </button>
+              <ul>
+    
+    <li>
+        <a href="https://www.apache.org/">Apache Homepage</a>
+    </li>
+    
+    <li>
+        <a href="https://www.apache.org/licenses/">License</a>
+    </li>
+    
+    <li>
+        <a href="https://www.apache.org/foundation/sponsorship.html">Sponsorship</a>
+    </li>
+    
+    <li>
+        <a href="https://tvm.apache.org/docs/reference/security.html">Security</a>
+    </li>
+    
+    <li>
+        <a href="https://www.apache.org/foundation/thanks.html">Thanks</a>
+    </li>
+    
+    <li>
+        <a href="https://www.apache.org/events/current-event">Events</a>
+    </li>
+    
+</ul>
+            </div>
+          </div>
+          <div class="responsiveMenuIcon">
+            <button type="button" id="menuBtn" class="btn-menu"><img src="/assets/images/menu-icon.svg"
+                alt="Menu Icon" /></button>
+          </div>
+          <div class="asfDropdown">
+            <div class="dropdown">
+              <button type="button" class="btn-link dropdown-toggle" data-toggle="dropdown" aria-haspopup="true"
+                aria-expanded="false">
+                ASF
+              </button>
+              <div class="dropdown-menu dropdown-menu-right">
+                <ul>
+    
+    <li>
+        <a href="https://www.apache.org/">Apache Homepage</a>
+    </li>
+    
+    <li>
+        <a href="https://www.apache.org/licenses/">License</a>
+    </li>
+    
+    <li>
+        <a href="https://www.apache.org/foundation/sponsorship.html">Sponsorship</a>
+    </li>
+    
+    <li>
+        <a href="https://tvm.apache.org/docs/reference/security.html">Security</a>
+    </li>
+    
+    <li>
+        <a href="https://www.apache.org/foundation/thanks.html">Thanks</a>
+    </li>
+    
+    <li>
+        <a href="https://www.apache.org/events/current-event">Events</a>
+    </li>
+    
+</ul>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </header>
+
+</div>
+
+
+<div class="container">
+<div class="content">
+  <div class="row">
+    <div class="span14 w-100">
+      <h1>Optimize Deep Learning GPU Operators with TVM: A Depthwise Convolution Example </h1>
+      <p class="post-meta">
+        <time datetime="2017-08-22T00:00:00+00:00" itemprop="datePublished">
+          Aug 22, 2017
+        </time>
+        
+        • <span itemprop="author" itemscope itemtype="http://schema.org/Person">
+          <span itemprop="name">Yuwei Hu</span>
+        </span>
+        
+      </p>
+      <p class="post-meta">
+        </p>
+    </br>
+    <p>Efficient deep learning operators are at the core of deep learning systems.
+Usually these operators are hard to optimize and require great efforts of HPC experts.
+<a href="https://github.com/dmlc/tvm">TVM</a>, an end to end tensor IR/DSL stack, makes this much easier.</p>
+
+<p>This blog teaches you how to write high-performance GPU operator kernels with the help of TVM.
+We use depthwise convolution (i.e. <a href="http://docs.tvmlang.org/api/python/topi.html#topi.nn.depthwise_conv2d_nchw">topi.nn.depthwise_conv2d_nchw</a>) as an example,
+and demonstrate how we can improve over the already hand optimized CUDA kernel in tensorflow.
+Our final version is 2x-4x faster than the optimized kernel in tf-1.2 under different workloads, and 3x-7x faster with operator fusion enabled.
+Below is the result tested on GTX1080, with filter size = [1, 256, 3, 3], stride = [1, 1], padding = ‘SAME’:</p>
+
+<p style="text-align: center"><img src="/images/depthconv_tutorial/tf_compare.png" alt="image" width="95%" /></p>
+
+<h2 id="introduction-to-depthwise-convolution">Introduction to Depthwise Convolution</h2>
+
+<p>Depthwise convolution is an important building block of modern architectures, such as Xception [1] and MobileNet [2].
+It’s an effective method to reduce the computation complexity of deep neural networks.</p>
+
+<p style="text-align: center"><img src="/images/depthconv_tutorial/conv_and_depthconv.png" alt="image" width="80%" /></p>
+
+<p style="text-align: center">source: <a href="http://machinethink.net/blog/googles-mobile-net-architecture-on-iphone/">http://machinethink.net/blog/googles-mobile-net-architecture-on-iphone/</a></p>
+
+<p>In TVM, depthwise convolution can be declared as:</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="c1"># padding stage
+</span><span class="n">PaddedInput</span> <span class="o">=</span> <span class="n">tvm</span><span class="p">.</span><span class="nf">compute</span><span class="p">(</span>
+    <span class="p">(</span><span class="n">batch</span><span class="p">,</span> <span class="n">in_channel</span><span class="p">,</span> <span class="n">height_after_pad</span><span class="p">,</span> <span class="n">width_after_pad</span><span class="p">),</span>
+    <span class="k">lambda</span> <span class="n">b</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">:</span> <span class="n">tvm</span><span class="p">.</span><span class="nf">select</span><span class="p">(</span>
+        <span class="n">tvm</span><span class="p">.</span><span class="nf">all</span><span class="p">(</span><span class="n">i</span> <span class="o">&gt;=</span> <span class="n">pad_top</span><span class="p">,</span> <span class="n">i</span> <span class="o">-</span> <span class="n">pad_top</span> <span class="o">&lt;</span> <span class="n">in_height</span><span class="p">,</span> <span class="n">j</span> <span class="o">&gt;=</span> <span class="n">pad_left</span><span class="p">,</span> <span class="n">j</span> <span class="o">-</span> <span class="n">pad_left</span> <span class="o">&lt;</span> <span class="n">in_width</span><span class="p">),</span>
+        <span class="n">Input</span><span class="p">[</span><span class="n">b</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="n">i</span> <span class="o">-</span> <span class="n">pad_top</span><span class="p">,</span> <span class="n">j</span> <span class="o">-</span> <span class="n">pad_left</span><span class="p">],</span> <span class="n">tvm</span><span class="p">.</span><span class="nf">const</span><span class="p">(</span><span class="mf">0.0</span><span class="p">)),</span>
+    <span class="n">name</span><span class="o">=</span><span class="sh">"</span><span class="s">PaddedInput</span><span class="sh">"</span><span class="p">)</span>
+<span class="c1"># depthconv stage
+</span><span class="n">di</span> <span class="o">=</span> <span class="n">tvm</span><span class="p">.</span><span class="nf">reduce_axis</span><span class="p">((</span><span class="mi">0</span><span class="p">,</span> <span class="n">filter_height</span><span class="p">),</span> <span class="n">name</span><span class="o">=</span><span class="sh">'</span><span class="s">di</span><span class="sh">'</span><span class="p">)</span>
+<span class="n">dj</span> <span class="o">=</span> <span class="n">tvm</span><span class="p">.</span><span class="nf">reduce_axis</span><span class="p">((</span><span class="mi">0</span><span class="p">,</span> <span class="n">filter_width</span><span class="p">),</span> <span class="n">name</span><span class="o">=</span><span class="sh">'</span><span class="s">dj</span><span class="sh">'</span><span class="p">)</span>
+<span class="n">Output</span> <span class="o">=</span> <span class="n">tvm</span><span class="p">.</span><span class="nf">compute</span><span class="p">(</span>
+    <span class="p">(</span><span class="n">batch</span><span class="p">,</span> <span class="n">out_channel</span><span class="p">,</span> <span class="n">out_height</span><span class="p">,</span> <span class="n">out_width</span><span class="p">),</span>
+    <span class="k">lambda</span> <span class="n">b</span><span class="p">,</span> <span class="n">c</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">:</span> <span class="n">tvm</span><span class="p">.</span><span class="nf">sum</span><span class="p">(</span>
+        <span class="n">PaddedInput</span><span class="p">[</span><span class="n">b</span><span class="p">,</span> <span class="n">c</span><span class="o">/</span><span class="n">channel_multiplier</span><span class="p">,</span> <span class="n">i</span><span class="o">*</span><span class="n">stride_h</span> <span class="o">+</span> <span class="n">di</span><span class="p">,</span> <span class="n">j</span><span class="o">*</span><span class="n">stride_w</span> <span class="o">+</span> <span class="n">dj</span><span class="p">]</span> <span class="o">*</span> <span class="n">Filter</span><span class="p">[</span><span class="n">c</span><span class="o">/</span><span class="n">channel_multiplier</span><span class="p">,</span> <span class="n">c</span><span class="o">%</span><span class="n">channel_multiplier</span><span class="p">,</span> <span class="n">di</span><span class="p">,</span> <span class="n">dj</span><span class="p">],</span>
+        <span class="n">axis</span><span class="o">=</span><span class="p">[</span><span class="n">di</span><span class="p">,</span> <span class="n">dj</span><span class="p">]),</span>
+    <span class="n">name</span><span class="o">=</span><span class="sh">'</span><span class="s">DepthwiseConv2d</span><span class="sh">'</span><span class="p">)</span>
+</code></pre></div></div>
+
+<h2 id="general-gpu-optimization-guidelines">General GPU Optimization Guidelines</h2>
+
+<p>This part briefly talks about three concepts we should know when optimizing CUDA code: data reuse, shared memory and bank conflicts.
+It would be great if you already know them, then you may skip this part.</p>
+
+<h3 id="data-reuse">Data Reuse</h3>
+<p>In modern computing architectures, the cost of loading data from memory is much higher than doing a single floating point computation [3].
+Because of that, we always want to reuse the input data after they are loaded into registers or shared memory (cache).</p>
+
+<p>There are two forms of data reuse in depthwise convolution: filter reuse and input reuse. Filter reuse happens as the filter slides over the input channel and computes multiple times.
+Input reuse is realized through tiling, let’s take 3x3 depthwise conv as an example:</p>
+
+<p style="text-align: center"><img src="/images/depthconv_tutorial/no_tiling.png" alt="image" width="70%" /></p>
+
+<p>Without tiling, each thread computes 1 output element and loads 3x3 input data. 16 threads together have 9x16 loads.</p>
+
+<p style="text-align: center"><img src="/images/depthconv_tutorial/tiling.png" alt="image" width="70%" /></p>
+
+<p>With tiling, each thread computes 2x2 output elements and loads 4x4 input data. 4 threads together have 16x4 loads.</p>
+
+<h3 id="shared-memory-and-bank-conflicts">Shared Memory and Bank Conflicts</h3>
+<p>Shared memory can be seen as cache in GPU. It is on-chip and much faster than global memory.</p>
+
+<p style="text-align: center"><img src="/images/depthconv_tutorial/GPU_memory_hierarchy.png" alt="image" width="256px" /></p>
+
+<p>Shared memory is allocated per block. It’s common practice to load data from global memory into shared memory, and then all threads in the block read data from shared memory.</p>
+
+<p>The size of shared memory is limited (usually 48K), so we must be cautious of shared memory overflow.
+Besides, too much shared memory allocated to one block limits the number of active blocks per multiprocessor.</p>
+
+<p>Another performance issue with shared memory is bank conflicts. Shared memory is divided into equally sized memory modules (banks) that can be accessed simultaneously,
+however, if multiple threads access the same memory bank (causing bank conflicts), the accesses will be serialized, thus decreasing the effective bandwidth.</p>
+
+<p>Shared memory banks are organized such that successive addresses are assigned to successive banks.
+To avoid bank conflicts, it’s better that successive threads access successive memory addresses, as illustrated below (each color represents one shared memory bank):</p>
+
+<p style="text-align: center"><img src="/images/depthconv_tutorial/bank_conflicts.png" alt="image" width="95%" /></p>
+
+<p>For more details on shared memory and bank conflicts, please refer to <a href="https://devblogs.nvidia.com/parallelforall/using-shared-memory-cuda-cc/">this Nvidia’s blog</a>.</p>
+
+<p>Ok, now let’s start optimizing depthwise convolution in TVM.</p>
+
+<h2 id="schedule-optimization">Schedule Optimization</h2>
+
+<h3 id="compute-paddedinput-inline-to-save-memory-allocation">Compute PaddedInput Inline to Save Memory Allocation</h3>
+<p>As we see from part 1, padding is declared explicitly as a separate stage. We compute it inline to avoid redundant memory allocation:</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">s</span> <span class="o">=</span> <span class="n">tvm</span><span class="p">.</span><span class="nf">create_schedule</span><span class="p">(</span><span class="n">Output</span><span class="p">.</span><span class="n">op</span><span class="p">)</span>
+<span class="n">s</span><span class="p">[</span><span class="n">PaddedInput</span><span class="p">].</span><span class="nf">compute_inline</span><span class="p">()</span>
+</code></pre></div></div>
+
+<h3 id="divide-one-large-channel-into-smaller-blocks">Divide One Large Channel into Smaller Blocks</h3>
+<p>One straightforward schedule for depthwise convolution is that one cuda block takes care of one input channel and corresponding filters, loading them into shared memory and then computing:</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">IS</span> <span class="o">=</span> <span class="n">s</span><span class="p">.</span><span class="nf">cache_read</span><span class="p">(</span><span class="n">PaddedInput</span><span class="p">,</span> <span class="sh">"</span><span class="s">shared</span><span class="sh">"</span><span class="p">,</span> <span class="p">[</span><span class="n">DepthwiseConv2d</span><span class="p">])</span>
+<span class="n">FS</span> <span class="o">=</span> <span class="n">s</span><span class="p">.</span><span class="nf">cache_read</span><span class="p">(</span><span class="n">Filter</span><span class="p">,</span> <span class="sh">"</span><span class="s">shared</span><span class="sh">"</span><span class="p">,</span> <span class="p">[</span><span class="n">DepthwiseConv2d</span><span class="p">])</span>
+<span class="n">block_y</span> <span class="o">=</span> <span class="n">tvm</span><span class="p">.</span><span class="nf">thread_axis</span><span class="p">(</span><span class="sh">"</span><span class="s">blockIdx.y</span><span class="sh">"</span><span class="p">)</span>
+<span class="n">block_x</span> <span class="o">=</span> <span class="n">tvm</span><span class="p">.</span><span class="nf">thread_axis</span><span class="p">(</span><span class="sh">"</span><span class="s">blockIdx.x</span><span class="sh">"</span><span class="p">)</span>
+<span class="c1"># bind the dimension of batch (N in NCHW) with block_y
+</span><span class="n">s</span><span class="p">[</span><span class="n">Output</span><span class="p">].</span><span class="nf">bind</span><span class="p">(</span><span class="n">Output</span><span class="p">.</span><span class="n">op</span><span class="p">.</span><span class="n">axis</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">block_y</span><span class="p">)</span>
+<span class="c1"># bind the dimension of channel (C in NCHW) with block_x
+</span><span class="n">s</span><span class="p">[</span><span class="n">Output</span><span class="p">].</span><span class="nf">bind</span><span class="p">(</span><span class="n">Output</span><span class="p">.</span><span class="n">op</span><span class="p">.</span><span class="n">axis</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">block_x</span><span class="p">)</span>
+</code></pre></div></div>
+
+<p>We test the average time cost of 1000 runs on GTX 1080, and compare with <a href="https://www.tensorflow.org/versions/r0.12/api_docs/python/nn/convolution#depthwise_conv2d">depthwise_conv2d in tensorflow</a>.
+Here is the result:</p>
+
+<table>
+  <thead>
+    <tr>
+      <th style="text-align: center">Input</th>
+      <th style="text-align: center">Filter</th>
+      <th style="text-align: center">stride</th>
+      <th style="text-align: center">tf-1.2 SAME pad (us)</th>
+      <th style="text-align: center">TVM SAME pad (us)</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td style="text-align: center">[1, 256, 21, 21]</td>
+      <td style="text-align: center">[256, 1, 3, 3]</td>
+      <td style="text-align: center">[1, 1]</td>
+      <td style="text-align: center">16.1</td>
+      <td style="text-align: center">9.1</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">[1, 256, 32, 32]</td>
+      <td style="text-align: center">[256, 1, 3, 3]</td>
+      <td style="text-align: center">[1, 1]</td>
+      <td style="text-align: center">34.8</td>
+      <td style="text-align: center">14.5</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">[1, 256, 64, 64]</td>
+      <td style="text-align: center">[256, 1, 3, 3]</td>
+      <td style="text-align: center">[1, 1]</td>
+      <td style="text-align: center">130.9</td>
+      <td style="text-align: center">98.9</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">[1, 256, 96, 96]</td>
+      <td style="text-align: center">[256, 1, 3, 3]</td>
+      <td style="text-align: center">[1, 1]</td>
+      <td style="text-align: center">251.6</td>
+      <td style="text-align: center">387.4</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>As we can see, this schedule performs well with small channel size like 21 x 21 or 32 x 32, however, its performance drops seriously as the channel size increases to larger than 64 x 64.
+One main reason is that too much shared memory allocated to one block limits the number of active blocks per multiprocessor.</p>
+
+<p>We modify the schedule to divide one large channel into smaller blocks. For example, one channel (64 x 64 or 96 x 96) is divided into blocks of 32 x 32,
+and one cuda block takes care of one 32 x 32 block:</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">blocking_h</span> <span class="o">=</span> <span class="mi">32</span>
+<span class="n">blocking_w</span> <span class="o">=</span> <span class="mi">32</span>
+<span class="c1"># split the dimension of height (H in NCHW)
+</span><span class="n">bx1</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">s</span><span class="p">[</span><span class="n">Output</span><span class="p">].</span><span class="nf">split</span><span class="p">(</span><span class="n">Output</span><span class="p">.</span><span class="n">op</span><span class="p">.</span><span class="n">axis</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="n">factor</span><span class="o">=</span><span class="n">blocking_h</span><span class="p">)</span>
+<span class="c1"># split the dimension of width (W in NCHW)
+</span><span class="n">bx2</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">s</span><span class="p">[</span><span class="n">Output</span><span class="p">].</span><span class="nf">split</span><span class="p">(</span><span class="n">Output</span><span class="p">.</span><span class="n">op</span><span class="p">.</span><span class="n">axis</span><span class="p">[</span><span class="mi">3</span><span class="p">],</span> <span class="n">factor</span><span class="o">=</span><span class="n">blocking_w</span><span class="p">)</span>
+<span class="c1"># assign one 32 x 32 block to one cuda block
+</span><span class="n">by</span> <span class="o">=</span> <span class="n">s</span><span class="p">[</span><span class="n">Output</span><span class="p">].</span><span class="nf">fuse</span><span class="p">(</span><span class="n">Output</span><span class="p">.</span><span class="n">op</span><span class="p">.</span><span class="n">axis</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">Output</span><span class="p">.</span><span class="n">op</span><span class="p">.</span><span class="n">axis</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+<span class="n">s</span><span class="p">[</span><span class="n">Output</span><span class="p">].</span><span class="nf">bind</span><span class="p">(</span><span class="n">by</span><span class="p">,</span> <span class="n">block_y</span><span class="p">)</span>
+<span class="n">bx</span> <span class="o">=</span> <span class="n">s</span><span class="p">[</span><span class="n">Output</span><span class="p">].</span><span class="nf">fuse</span><span class="p">(</span><span class="n">bx1</span><span class="p">,</span> <span class="n">bx2</span><span class="p">)</span>
+<span class="n">s</span><span class="p">[</span><span class="n">Output</span><span class="p">].</span><span class="nf">bind</span><span class="p">(</span><span class="n">bx</span><span class="p">,</span> <span class="n">block_x</span><span class="p">)</span>
+</code></pre></div></div>
+
+<p>Here is the new result:</p>
+
+<table>
+  <thead>
+    <tr>
+      <th style="text-align: center">Input</th>
+      <th style="text-align: center">[blocking_h, blocking_w]</th>
+      <th style="text-align: center">tf-1.2 SAME pad (us)</th>
+      <th style="text-align: center">TVM SAME pad (us)</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td style="text-align: center">[1, 256, 64, 64]</td>
+      <td style="text-align: center">[32, 32]</td>
+      <td style="text-align: center">130.9</td>
+      <td style="text-align: center">63.4</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">[1, 256, 96, 96]</td>
+      <td style="text-align: center">[32, 32]</td>
+      <td style="text-align: center">251.6</td>
+      <td style="text-align: center">132.5</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>Our blocking strategy works! For 64 x 64 channel size, it brings 1.6x acceleration (98.9us -&gt; 63.4us); for 96 x 96 channel size, it brings 2.9x acceleration (387.4us -&gt; 132.5us).</p>
+
+<h3 id="tuning-parameters-of-thread-numbers">Tuning Parameters of Thread Numbers</h3>
+
+<p>How to schedule the workload, say, 32x32 among the threads of one cuda block? Intuitively, it should be like this:</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">num_thread_y</span> <span class="o">=</span> <span class="mi">8</span>
+<span class="n">num_thread_x</span> <span class="o">=</span> <span class="mi">8</span>
+<span class="n">thread_y</span> <span class="o">=</span> <span class="n">tvm</span><span class="p">.</span><span class="nf">thread_axis</span><span class="p">((</span><span class="mi">0</span><span class="p">,</span> <span class="n">num_thread_y</span><span class="p">),</span> <span class="sh">"</span><span class="s">threadIdx.y</span><span class="sh">"</span><span class="p">)</span>
+<span class="n">thread_x</span> <span class="o">=</span> <span class="n">tvm</span><span class="p">.</span><span class="nf">thread_axis</span><span class="p">((</span><span class="mi">0</span><span class="p">,</span> <span class="n">num_thread_x</span><span class="p">),</span> <span class="sh">"</span><span class="s">threadIdx.x</span><span class="sh">"</span><span class="p">)</span>
+<span class="n">ty</span><span class="p">,</span> <span class="n">yi</span> <span class="o">=</span> <span class="n">s</span><span class="p">[</span><span class="n">Output</span><span class="p">].</span><span class="nf">split</span><span class="p">(</span><span class="n">h_dim</span><span class="p">,</span> <span class="n">nparts</span><span class="o">=</span><span class="n">num_thread_y</span><span class="p">)</span>
+<span class="n">tx</span><span class="p">,</span> <span class="n">xi</span> <span class="o">=</span> <span class="n">s</span><span class="p">[</span><span class="n">Output</span><span class="p">].</span><span class="nf">split</span><span class="p">(</span><span class="n">w_dim</span><span class="p">,</span> <span class="n">nparts</span><span class="o">=</span><span class="n">num_thread_x</span><span class="p">)</span>
+<span class="n">s</span><span class="p">[</span><span class="n">Output</span><span class="p">].</span><span class="nf">reorder</span><span class="p">(</span><span class="n">ty</span><span class="p">,</span> <span class="n">tx</span><span class="p">,</span> <span class="n">yi</span><span class="p">,</span> <span class="n">xi</span><span class="p">)</span>
+<span class="n">s</span><span class="p">[</span><span class="n">Output</span><span class="p">].</span><span class="nf">bind</span><span class="p">(</span><span class="n">ty</span><span class="p">,</span> <span class="n">thread_y</span><span class="p">)</span>
+<span class="n">s</span><span class="p">[</span><span class="n">Output</span><span class="p">].</span><span class="nf">bind</span><span class="p">(</span><span class="n">tx</span><span class="p">,</span> <span class="n">thread_x</span><span class="p">)</span>
+</code></pre></div></div>
+
+<p>There are two parameters in the schedule: <code class="language-plaintext highlighter-rouge">num_thread_y</code> and <code class="language-plaintext highlighter-rouge">num_thread_x</code>. How to determine the optimal combination of them? 
+Well, let’s first do some experiments. Below is the result with Filter = [256, 1, 3, 3] and stride = [1, 1]:</p>
+
+<table>
+  <thead>
+    <tr>
+      <th style="text-align: center">Case</th>
+      <th style="text-align: center">Input</th>
+      <th style="text-align: center">num_thread_y</th>
+      <th style="text-align: center">num_thread_x</th>
+      <th style="text-align: center">TVM SAME pad (us)</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td style="text-align: center">1</td>
+      <td style="text-align: center">[1, 256, 32, 32]</td>
+      <td style="text-align: center">8</td>
+      <td style="text-align: center">32</td>
+      <td style="text-align: center">9.7</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">2</td>
+      <td style="text-align: center">[1, 256, 32, 32]</td>
+      <td style="text-align: center">4</td>
+      <td style="text-align: center">32</td>
+      <td style="text-align: center">8.8</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">3</td>
+      <td style="text-align: center">[1, 256, 32, 32]</td>
+      <td style="text-align: center">1</td>
+      <td style="text-align: center">32</td>
+      <td style="text-align: center">17.7</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">4</td>
+      <td style="text-align: center">[1, 256, 32, 32]</td>
+      <td style="text-align: center">32</td>
+      <td style="text-align: center">1</td>
+      <td style="text-align: center">32.5</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>Many interesting observations from above results:</p>
+
+<ul>
+  <li>
+    <p>Case 2 is faster than case 1. In case 2, each thread computes a 8x1 tile in output, which corresponds to a 10x3 tile in input.
+It has better data reuse than case 1’s 4x1 tile.</p>
+  </li>
+  <li>
+    <p>Case 3 is slower than case 2. It’s because in case 3, the workload per thread is too large and leads to much cost of local memory read.</p>
+  </li>
+  <li>
+    <p>Case 4 is slower than case 3. It’s because <code class="language-plaintext highlighter-rouge">num_thread_x = 32</code> ensures no bank conflicts, while <code class="language-plaintext highlighter-rouge">num_thread_y = 32</code> doesn’t.</p>
+  </li>
+</ul>
+
+<p>To summarize what we learn from above observations:</p>
+
+<ul>
+  <li>Large tile is good for data reuse, but not good for local memory read.</li>
+  <li>The influence of <code class="language-plaintext highlighter-rouge">num_thread_y</code> and <code class="language-plaintext highlighter-rouge">num_thread_x</code> on bank conflicts is asymmetric.</li>
+  <li>To find the optimal combination of <code class="language-plaintext highlighter-rouge">num_thread_y</code> and <code class="language-plaintext highlighter-rouge">num_thread_x</code> is to achieve a balance of efficient shared memory access (avoid bank conflicts), data reuse, and local memory read.</li>
+</ul>
+
+<p>Pretty tricky. So, what exactly should we do to find the optimal combination? The answer is brute force search. 
+We can pass <code class="language-plaintext highlighter-rouge">num_thread_y</code> and <code class="language-plaintext highlighter-rouge">num_thread_x</code> as arguments to the schedule function, and try all possible combinations to find the optimal one. This can be done easily in TVM:</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">def</span> <span class="nf">schedule_depthwise_conv2d</span><span class="p">(...,</span> <span class="n">num_thread_y</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span> <span class="n">num_thread_x</span><span class="o">=</span><span class="mi">8</span><span class="p">):</span>
+    <span class="n">num_thread_y</span> <span class="o">=</span> <span class="n">num_thread_y</span>
+    <span class="n">num_thread_x</span> <span class="o">=</span> <span class="n">num_thread_x</span>
+    <span class="n">do_schedule_as_usual</span>
+    <span class="k">return</span> <span class="n">schedule</span>
+
+<span class="n">min_time_cost</span> <span class="o">=</span> <span class="n">inf</span>
+<span class="k">for</span> <span class="n">num_thread_y</span><span class="p">,</span> <span class="n">num_thread_x</span> <span class="ow">in</span> <span class="n">all_possible_combinations</span><span class="p">:</span>
+    <span class="n">schedule</span> <span class="o">=</span> <span class="nf">schedule_depthwise_conv2d</span><span class="p">(...,</span> <span class="n">num_thread_y</span><span class="o">=</span><span class="n">num_thread_y</span><span class="p">,</span> <span class="n">num_thread_x</span><span class="o">=</span><span class="n">num_thread_x</span><span class="p">)</span>
+    <span class="n">time_cost</span> <span class="o">=</span> <span class="nf">test_depthwise_conv2d</span><span class="p">(...,</span> <span class="n">schedule</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">time_cost</span> <span class="o">&lt;</span> <span class="n">min_time_cost</span><span class="p">:</span>
+        <span class="n">min_time_cost</span> <span class="o">=</span> <span class="n">time_cost</span>
+        <span class="n">optimal_combination</span> <span class="o">=</span> <span class="p">[</span><span class="n">num_thread_y</span><span class="p">,</span> <span class="n">num_thread_x</span><span class="p">]</span>
+</code></pre></div></div>
+
+<p>In fact, it can be seen as a simple auto scheduler.</p>
+
+<h3 id="vthread-and-strided-patterns">Vthread and Strided Patterns</h3>
+<p>Vthread (virtual thread) in TVM is introduced to support strided patterns. We can use it this way:</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">num_vthread_y</span> <span class="o">=</span> <span class="mi">2</span>
+<span class="n">num_vthread_x</span> <span class="o">=</span> <span class="mi">2</span>
+<span class="n">num_thread_y</span> <span class="o">=</span> <span class="mi">8</span>
+<span class="n">num_thread_x</span> <span class="o">=</span> <span class="mi">8</span>
+<span class="n">thread_vy</span> <span class="o">=</span> <span class="n">tvm</span><span class="p">.</span><span class="nf">thread_axis</span><span class="p">((</span><span class="mi">0</span><span class="p">,</span> <span class="n">num_vthread_y</span><span class="p">),</span> <span class="sh">"</span><span class="s">vthread</span><span class="sh">"</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="sh">"</span><span class="s">vy</span><span class="sh">"</span><span class="p">)</span>
+<span class="n">thread_vx</span> <span class="o">=</span> <span class="n">tvm</span><span class="p">.</span><span class="nf">thread_axis</span><span class="p">((</span><span class="mi">0</span><span class="p">,</span> <span class="n">num_vthread_x</span><span class="p">),</span> <span class="sh">"</span><span class="s">vthread</span><span class="sh">"</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="sh">"</span><span class="s">vx</span><span class="sh">"</span><span class="p">)</span>
+<span class="n">thread_y</span> <span class="o">=</span> <span class="n">tvm</span><span class="p">.</span><span class="nf">thread_axis</span><span class="p">((</span><span class="mi">0</span><span class="p">,</span> <span class="n">num_thread_y</span><span class="p">),</span> <span class="sh">"</span><span class="s">threadIdx.y</span><span class="sh">"</span><span class="p">)</span>
+<span class="n">thread_x</span> <span class="o">=</span> <span class="n">tvm</span><span class="p">.</span><span class="nf">thread_axis</span><span class="p">((</span><span class="mi">0</span><span class="p">,</span> <span class="n">num_thread_x</span><span class="p">),</span> <span class="sh">"</span><span class="s">threadIdx.x</span><span class="sh">"</span><span class="p">)</span>
+<span class="c1"># split the dimension of height (H in NCHW) twice
+</span><span class="n">tvy</span><span class="p">,</span> <span class="n">vyi</span> <span class="o">=</span> <span class="n">s</span><span class="p">[</span><span class="n">Output</span><span class="p">].</span><span class="nf">split</span><span class="p">(</span><span class="n">h_dim</span><span class="p">,</span> <span class="n">nparts</span><span class="o">=</span><span class="n">num_vthread_y</span><span class="p">)</span>
+<span class="n">ty</span><span class="p">,</span> <span class="n">yi</span> <span class="o">=</span> <span class="n">s</span><span class="p">[</span><span class="n">Output</span><span class="p">].</span><span class="nf">split</span><span class="p">(</span><span class="n">vyi</span><span class="p">,</span> <span class="n">nparts</span><span class="o">=</span><span class="n">num_thread_y</span><span class="p">)</span>
+<span class="c1"># split the dimension of width (W in NCHW) twice
+</span><span class="n">tvx</span><span class="p">,</span> <span class="n">vxi</span> <span class="o">=</span> <span class="n">s</span><span class="p">[</span><span class="n">Output</span><span class="p">].</span><span class="nf">split</span><span class="p">(</span><span class="n">w_dim</span><span class="p">,</span> <span class="n">nparts</span><span class="o">=</span><span class="n">num_vthread_x</span><span class="p">)</span>
+<span class="n">tx</span><span class="p">,</span> <span class="n">xi</span> <span class="o">=</span> <span class="n">s</span><span class="p">[</span><span class="n">Output</span><span class="p">].</span><span class="nf">split</span><span class="p">(</span><span class="n">vxi</span><span class="p">,</span> <span class="n">nparts</span><span class="o">=</span><span class="n">num_thread_x</span><span class="p">)</span>
+<span class="c1"># bind thread and vthread respectively
+</span><span class="n">s</span><span class="p">[</span><span class="n">Output</span><span class="p">].</span><span class="nf">bind</span><span class="p">(</span><span class="n">tvy</span><span class="p">,</span> <span class="n">thread_vy</span><span class="p">)</span>
+<span class="n">s</span><span class="p">[</span><span class="n">Output</span><span class="p">].</span><span class="nf">bind</span><span class="p">(</span><span class="n">tvx</span><span class="p">,</span> <span class="n">thread_vx</span><span class="p">)</span>
+<span class="n">s</span><span class="p">[</span><span class="n">Output</span><span class="p">].</span><span class="nf">bind</span><span class="p">(</span><span class="n">ty</span><span class="p">,</span> <span class="n">thread_y</span><span class="p">)</span>
+<span class="n">s</span><span class="p">[</span><span class="n">Output</span><span class="p">].</span><span class="nf">bind</span><span class="p">(</span><span class="n">tx</span><span class="p">,</span> <span class="n">thread_x</span><span class="p">)</span>
+<span class="n">s</span><span class="p">[</span><span class="n">Output</span><span class="p">].</span><span class="nf">reorder</span><span class="p">(</span><span class="n">tvy</span><span class="p">,</span> <span class="n">tvx</span><span class="p">,</span> <span class="n">ty</span><span class="p">,</span> <span class="n">tx</span><span class="p">,</span> <span class="n">yi</span><span class="p">,</span> <span class="n">xi</span><span class="p">)</span>
+</code></pre></div></div>
+
+<p>Let’s print the IR to see what vthread does:</p>
+
+<div class="language-c++ highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cm">/* Input = [1, 1, 32, 32], Filter = [1, 1, 3, 3], stride = [1, 1], padding = 'SAME' */</span>
+<span class="n">produce</span> <span class="n">DepthwiseConv2d</span> <span class="p">{</span>
+  <span class="c1">// attr [iter_var(blockIdx.y, , blockIdx.y)] thread_extent = 1</span>
+  <span class="c1">// attr [iter_var(blockIdx.x, , blockIdx.x)] thread_extent = 1</span>
+  <span class="c1">// attr [iter_var(threadIdx.y, Range(min=0, extent=8), threadIdx.y)] thread_extent = 8</span>
+  <span class="c1">// attr [iter_var(threadIdx.x, Range(min=0, extent=8), threadIdx.x)] thread_extent = 8</span>
+  <span class="k">for</span> <span class="p">(</span><span class="n">i</span><span class="p">.</span><span class="n">inner</span><span class="p">.</span><span class="n">inner</span><span class="p">.</span><span class="n">inner</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">for</span> <span class="p">(</span><span class="n">j</span><span class="p">.</span><span class="n">inner</span><span class="p">.</span><span class="n">inner</span><span class="p">.</span><span class="n">inner</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span> <span class="p">{</span>
+      <span class="n">DepthwiseConv2d</span><span class="p">[((((((((</span><span class="n">blockIdx</span><span class="p">.</span><span class="n">y</span> <span class="o">+</span> <span class="n">blockIdx</span><span class="p">.</span><span class="n">x</span><span class="p">)</span><span class="o">*</span><span class="mi">16</span><span class="p">)</span> <span class="o">+</span> <span class="n">threadIdx</span><span class="p">.</span><span class="n">y</span><span class="p">)</span><span class="o">*</span><span class="mi">32</span><span class="p">)</span> <span class="o">+</span> <span class="n">threadIdx</span><span class="p">.</span><span class="n">x</span><span class="p">)</span><span class="o">*</span><span class="mi">2</span><span class="p">)</span> <span class="o">+</span> <span class="p">(</span><span class="n">i</span><span class="p">.</span><span class="n">inner</span><span class="p">.</span><span class="n">inner</span><span class="p">.</span><span class="n">inner</span><span class="o">*</span><span class="mi">32</span><span class="p">))</span> <span class="o">+</span> <span class="n">j</span><span class="p">.</span><span class="n">inner</span><span class="p">.</span><span class="n">inner</span><span class="p">.</span><span class="n">inner</span><span class="p">)]</span> <span class="o">=</span> <span class="mf">0.000000f</span>
+      <span class="n">DepthwiseConv2d</span><span class="p">[(((((((((</span><span class="n">blockIdx</span><span class="p">.</span><span class="n">y</span> <span class="o">+</span> <span class="n">blockIdx</span><span class="p">.</span><span class="n">x</span><span class="p">)</span><span class="o">*</span><span class="mi">16</span><span class="p">)</span> <span class="o">+</span> <span class="n">threadIdx</span><span class="p">.</span><span class="n">y</span><span class="p">)</span><span class="o">*</span><span class="mi">32</span><span class="p">)</span> <span class="o">+</span> <span class="n">threadIdx</span><span class="p">.</span><span class="n">x</span><span class="p">)</span><span class="o">*</span><span class="mi">2</span><span class="p">)</span> <span class="o">+</span> <span class="p">(</span><span class="n">i</span><span class="p">.</span><span class="n">inner</span><span class="p">.</span><span class="n">inner</span><span class="p">.</span><span class="n">inner</span><span class="o">*</span><span class="mi">32</span><span class="p">))</span> <span class="o">+</span> <span class="n">j</span><span class="p">.</span><span class="n">inner</span><span class="p">.</span><span class="n">inner</span><span class="p">.</span><span class="n">inner</span><span class="p">)</span> <span class="o">+</span> <span class="mi">512</span><span class="p">)]</span> <span class="o">=</span> <span class="mf">0.000000f</span>
+      <span class="n">DepthwiseConv2d</span><span class="p">[(((((((((</span><span class="n">blockIdx</span><span class="p">.</span><span class="n">y</span> <span class="o">+</span> <span class="n">blockIdx</span><span class="p">.</span><span class="n">x</span><span class="p">)</span><span class="o">*</span><span class="mi">16</span><span class="p">)</span> <span class="o">+</span> <span class="n">threadIdx</span><span class="p">.</span><span class="n">y</span><span class="p">)</span><span class="o">*</span><span class="mi">32</span><span class="p">)</span> <span class="o">+</span> <span class="n">threadIdx</span><span class="p">.</span><span class="n">x</span><span class="p">)</span><span class="o">*</span><span class="mi">2</span><span class="p">)</span> <span class="o">+</span> <span class="p">(</span><span class="n">i</span><span class="p">.</span><span class="n">inner</span><span class="p">.</span><span class="n">inner</span><span class="p">.</span><span class="n">inner</span><span class="o">*</span><span class="mi">32</span><span class="p">))</span> <span class="o">+</span> <span class="n">j</span><span class="p">.</span><span class="n">inner</span><span class="p">.</span><span class="n">inner</span><span class="p">.</span><span class="n">inner</span><span class="p">)</span> <span class="o">+</span> <span class="mi">16</span><span class="p">)]</span> <span class="o">=</span> <span class="mf">0.000000f</span>
+      <span class="n">DepthwiseConv2d</span><span class="p">[(((((((((</span><span class="n">blockIdx</span><span class="p">.</span><span class="n">y</span> <span class="o">+</span> <span class="n">blockIdx</span><span class="p">.</span><span class="n">x</span><span class="p">)</span><span class="o">*</span><span class="mi">16</span><span class="p">)</span> <span class="o">+</span> <span class="n">threadIdx</span><span class="p">.</span><span class="n">y</span><span class="p">)</span><span class="o">*</span><span class="mi">32</span><span class="p">)</span> <span class="o">+</span> <span class="n">threadIdx</span><span class="p">.</span><span class="n">x</span><span class="p">)</span><span class="o">*</span><span class="mi">2</span><span class="p">)</span> <span class="o">+</span> <span class="p">(</span><span class="n">i</span><span class="p">.</span><span class="n">inner</span><span class="p">.</span><span class="n">inner</span><span class="p">.</span><span class="n">inner</span><span class="o">*</span><span class="mi">32</span><span class="p">))</span> <span class="o">+</span> <span class="n">j</span><span class="p">.</span><span class="n">inner</span><span class="p">.</span><span class="n">inner</span><span class="p">.</span><span class="n">inner</span><span class="p">)</span> <span class="o">+</span> <span class="mi">528</span><span class="p">)]</span> <span class="o">=</span> <span class="mf">0.000000f</span>
+      <span class="k">for</span> <span class="p">(</span><span class="n">di</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">for</span> <span class="p">(</span><span class="n">dj</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span> <span class="p">{</span>
+          <span class="n">DepthwiseConv2d</span><span class="p">[((((((((</span><span class="n">blockIdx</span><span class="p">.</span><span class="n">y</span> <span class="o">+</span> <span class="n">blockIdx</span><span class="p">.</span><span class="n">x</span><span class="p">)</span><span class="o">*</span><span class="mi">16</span><span class="p">)</span> <span class="o">+</span> <span class="n">threadIdx</span><span class="p">.</span><span class="n">y</span><span class="p">)</span><span class="o">*</span><span class="mi">32</span><span class="p">)</span> <span class="o">+</span> <span class="n">threadIdx</span><span class="p">.</span><span class="n">x</span><span class="p">)</span><span class="o">*</span><span class="mi">2</span><span class="p">)</span> <span class="o">+</span> <span class="p">(</span><span class="n">i</span><span class="p">.</span><span class="n">inner</span><span class="p">.</span><span class="n">inner</span><span class="p">.</span><span class="n">inner</span><span class="o">*</span><span class="mi">32</span><span class="p">))</span> <span class="o">+</span> <span class="n">j</span><span class="p">.</span><span class="n">inner</span><span class="p">.</span><span class="n">inner</span><span class="p">.</span><span class="n">inner</span><span class="p">)]</span> <span class="o">=</span> <span class="p">(</span><span class="n">DepthwiseConv2d</span><span class="p">[((((((((</span><span class="n">blockIdx</span><span class="p">.</span><span class="n">y</span> <span class="o">+</span> <span class="n">blockIdx</span><span class="p">.</span><span class="n">x</span><span class="p">)</span><span class="o">*</span><span class="mi">16</span><span class="p">)</span> <span class="o">+</span> <span class="n">threadIdx</span><span class="p">.</span><span class="n">y</span><span class="p">)</span><span class="o">*</span><span class="mi">32</span><span class="p">)</span> <span class="o">+</span> <span class="n">threadIdx</span><span class="p">.</span><span class="n">x</span><span class="p">)</span><span class="o">*</span><span class="mi">2</span><span class="p">)</span> <span class="o">+</span> <span class="p">(</span><span class="n">i</span><span class="p">.</span><span class="n">inner</span><span class="p">.</span><span class="n">inner</span><span class="p">.</span><span class="n">inner</span><span class="o">*</span><span class="mi">32</span><span class="p">))</span> <span class="o">+</span> <span class="n">j</span><span class="p">.</span><span class="n">inner</span><span class="p">.</span><span class="n">inner</span><span class="p">.</span><span class="n">inner</span><span class="p">)]</span> <span class="o">+</span> <span class="p">(</span><span class="n">tvm_if_then_else</span><span class="p">(((((((</span><span class="mi">1</span> <span class="o">-</span> <span class="n">di</span><span class="p">)</span> <span class="o">-</span> <span class="n">i</span><span class="p">.</span><span class="n">inner</span><span class="p">.</span><span class="n">inner</span><span class="p">.</span><span class="n">inner</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="p">(((</span><span class="n">blockIdx</span><span class="p">.</span><span class="n">x</span><span class="o">*</span><span class="mi">16</span><span class="p">)</span> <span class="o">+</span> <span class="n">threadIdx</span><span class="p">.</span><span class="n">y</span><span class="p">)</span><span class="o">*</span><span class="mi">2</span><span class="p">))</span> <span class="o">&amp;&amp;</span> <span class="p">((((</span><span class="n">blockIdx</span><span class="p">.</span><span class="n">x</span><span class="o">*</span><span class="mi">16</span><span class="p">)</span> <span class="o">+</span> <span class="n">threadIdx</span><span class="p">.</span><span class="n">y</span><span class="p">)</span><span class="o">*</span><span class="mi">2</span><span class="p">)</span> <span class="o">&lt;</span> <span class="p">((</span><span class="mi">33</span> <span class="o">-</span> <span class="n">di</span><span class="p">)</span> <span class="o">-</span> <span class="n">i</span><span class="p">.</span><span class="n">inner</span><span class="p">.</span><span class="n">inner</span><span class="p">.</span><span class="n">inner</span><span class="p">)))</span> <span class="o">&amp;&amp;</span> <span class="p">(((</span><span class="mi">1</span> <span class="o">-</span> <span class="n">dj</span><span class="p">)</span> <span class="o">-</span> <span class="n">j</span><span class="p">.</span><span class="n">inner</span><span class="p">.</span><span class="n">inner</span><span class="p">.</span><span class="n">inner</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="p">(</span><span class="n">threadIdx</span><span class="p">.</span><span class="n">x</span><span class="o">*</span><span class="mi">2</span><span class="p">)))</span> <span class="o">&amp;&amp;</span> <span class="p">((</span><span class="n">threadIdx</span><span class="p">.</span><span class="n">x</span><span class="o">*</span><span class="mi">2</span><span class="p">)</span> <span class="o">&lt;</span> <span class="p">((</span><span class="mi">33</span> <span class="o">-</span> <span class="n">dj</span><span class="p">)</span> <span class="o">-</span> <span class="n">j</span><span class="p">.</span><span class="n">inner</span><span class="p">.</span><span class="n">inner</span><span class="p">.</span><span class="n">inner</span><span class="p">))),</span> <span class="n">Input</span><span class="p">[(((((((((((</span><span class="n">blockIdx</span><span class="p">.</span><span class="n">y</span> <span class="o">+</span> <span class="n">blockIdx</span><span class="p">.</span><span class="n">x</span><span class="p">)</span><span class="o">*</span><span class="mi">16</span><span class="p">)</span> <span class="o">+</span> <span class="n">threadIdx</span><span class="p">.</span><span class="n">y</span><span class="p">)</span><span class="o">*</span><span class="mi">32</span><span class="p">)</span> <span class="o">+</span> <span class="n">threadIdx</span><span class="p">.</span><span class="n">x</span><span class="p">)</span><span class="o">*</span><span class="mi">2</span><span class="p">)</span> <span class="o">+</span> <span class="p">(</span><span class="n">i</span><span class="p">.</span><span class="n">inner</span><span class="p">.</span><span class="n">inner</span><span class="p">.</span><span class="n">inner</span><span class="o">*</span><span class="mi">32</span><span class="p">))</span> <span class="o">+</span> <span class="n">j</span><span class="p">.</span><span class="n">inner</span><span class="p">.</span><span class="n">inner</span><span class="p">.</span><span class="n">inner</span><span class="p">)</span> <span class="o">+</span> <span class="p">(</span><span class="n">di</span><span class="o">*</span><span class="mi">32</span><span class="p">))</span> <span class="o">+</span> <span class="n">dj</span><span class="p">)</span> <span class="o">+</span> <span class="o">-</span><span class="mi">33</span><span class="p">)],</span> <span class="mf">0.000000f</span><span class="p">)</span><span class="o">*</span><span class="n">Filter</span><span class="p">[((</span><span class="n">di</span><span class="o">*</span><span class="mi">3</span><span class="p">)</span> <span class="o">+</span> <span class="n">dj</span><span class="p">)]))</span>
+          <span class="n">DepthwiseConv2d</span><span class="p">[(((((((((</span><span class="n">blockIdx</span><span class="p">.</span><span class="n">y</span> <span class="o">+</span> <span class="n">blockIdx</span><span class="p">.</span><span class="n">x</span><span class="p">)</span><span class="o">*</span><span class="mi">16</span><span class="p">)</span> <span class="o">+</span> <span class="n">threadIdx</span><span class="p">.</span><span class="n">y</span><span class="p">)</span><span class="o">*</span><span class="mi">32</span><span class="p">)</span> <span class="o">+</span> <span class="n">threadIdx</span><span class="p">.</span><span class="n">x</span><span class="p">)</span><span class="o">*</span><span class="mi">2</span><span class="p">)</span> <span class="o">+</span> <span class="p">(</span><span class="n">i</span><span class="p">.</span><span class="n">inner</span><span class="p">.</span><span class="n">inner</span><span class="p">.</span><span class="n">inner</span><span class="o">*</span><span class="mi">32</span><span class="p">))</span> <span class="o">+</span> <span class="n">j</span><span class="p">.</span><span class="n">inner</span><span class="p">.</span><span class="n">inner</span><span class="p">.</span><span class="n">inner</span><span class="p">)</span> <span class="o">+</span> <span class="mi">512</span><span class="p">)]</span> <span class="o">=</span> <span class="p">(</span><span class="n">DepthwiseConv2d</span><span class="p">[(((((((((</span><span class="n">blockIdx</span><span class="p">.</span><span class="n">y</span> <span class="o">+</span> <span class="n">blockIdx</span><span class="p">.</span><span class="n">x</span><span class="p">)</span><span class="o">*</span><span class="mi">16</span><span class="p">)</span> <span class="o">+</span> <span class="n">threadIdx</span><span class="p">.</span><span class="n">y</span><span class="p">)</span><span class="o">*</span><span class="mi">32</span><span class="p">)</span> <span class="o">+</span> <span class="n">threadIdx</span><span class="p">.</span><span class="n">x</span><span class="p">)</span><span class="o">*</span><span class="mi">2</span><span class="p">)</span> <span class="o">+</span> <span class="p">(</span><span class="n">i</span><span class="p">.</span><span class="n">inner</span><span class="p">.</span><span class="n">inner</span><span class="p">.</span><span class="n">inner</span><span class="o">*</span><span class="mi">32</span><span class="p">))</span> <span class="o">+</span> <span class="n">j</span><span class="p">.</span><span class="n">inner</span><span class="p">.</span><span class="n">inner</span><span class="p">.</span><span class="n">inner</span><span class="p">)</span> <span class="o">+</span> <span class="mi">512</span><span class="p">)]</span> <span class="o">+</span> <span class="p">(</span><span class="n">tvm_if_then_else</span><span class="p">(((((((</span><span class="o">-</span><span class="mi">15</span> <span class="o">-</span> <span class="n">di</span><span class="p">)</span> <span class="o">-</span> <span class="n">i</span><span class="p">.</span><span class="n">inner</span><span class="p">.</span><span class="n">inner</span><span class="p">.</span><span class="n">inner</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="p">(((</span><span class="n">blockIdx</span><span class="p">.</span><span class="n">x</span><span class="o">*</span><span class="mi">16</span><span class="p">)</span> <span class="o">+</span> <span class="n">threadIdx</span><span class="p">.</span><span class="n">y</span><span class="p">)</span><span class="o">*</span><span class="mi">2</span><span class="p">))</span> <span class="o">&amp;&amp;</span> <span class="p">((((</span><span class="n">blockIdx</span><span class="p">.</span><span class="n">x</span><span class="o">*</span><span class="mi">16</span><span class="p">)</span> <span class="o">+</span> <span class="n">threadIdx</span><span class="p">.</span><span class="n">y</span><span class="p">)</span><span class="o">*</span><span class="mi">2</span><span class="p">)</span> <span class="o">&lt;</span> <span class="p">((</span><span class="mi">17</span> <span class="o">-</span> <span class="n">di</span><span class="p">)</span> <span class="o">-</span> <span class="n">i</span><span class="p">.</span><span class="n">inner</span><span class="p">.</span><span class="n">inner</span><span class="p">.</span><span class="n">inner</span><span class="p">)))</span> <span class="o">&amp;&amp;</span> <span class="p">(((</span><span class="mi">1</span> <span class="o">-</span> <span class="n">dj</span><span class="p">)</span> <span class="o">-</span> <span class="n">j</span><span class="p">.</span><span class="n">inner</span><span class="p">.</span><span class="n">inner</span><span class="p">.</span><span class="n">inner</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="p">(</span><span class="n">threadIdx</span><span class="p">.</span><span class="n">x</span><span class="o">*</span><span class="mi">2</span><span class="p">)))</span> <span class="o">&amp;&amp;</span> <span class="p">((</span><span class="n">threadIdx</span><span class="p">.</span><span class="n">x</span><span class="o">*</span><span class="mi">2</span><span class="p">)</span> <span class="o">&lt;</span> <span class="p">((</span><span class="mi">33</span> <span class="o">-</span> <span class="n">dj</span><span class="p">)</span> <span class="o">-</span> <span class="n">j</span><span class="p">.</span><span class="n">inner</span><span class="p">.</span><span class="n">inner</span><span class="p">.</span><span class="n">inner</span><span class="p">))),</span> <span class="n">Input</span><span class="p">[(((((((((((</span><span class="n">blockIdx</span><span class="p">.</span><span class="n">y</span> <span class="o">+</span> <span class="n">blockIdx</span><span class="p">.</span><span class="n">x</span><span class="p">)</span><span class="o">*</span><span class="mi">16</span><span class="p">)</span> <span class="o">+</span> <span class="n">threadIdx</span><span class="p">.</span><span class="n">y</span><span class="p">)</span><span class="o">*</span><span class="mi">32</span><span class="p">)</span> <span class="o">+</span> <span class="n">threadIdx</span><span class="p">.</span><span class="n">x</span><span class="p">)</span><span class="o">*</span><span class="mi">2</span><span class="p">)</span> <span class="o">+</span> <span class="p">(</span><span class="n">i</span><span class="p">.</span><span class="n">inner</span><span class="p">.</span><span class="n">inner</span><span class="p">.</span><span class="n">inner</span><span class="o">*</span><span class="mi">32</span><span class="p">))</span> <span class="o">+</span> <span class="n">j</span><span class="p">.</span><span class="n">inner</span><span class="p">.</span><span class="n">inner</span><span class="p">.</span><span class="n">inner</span><span class="p">)</span> <span class="o">+</span> <span class="p">(</span><span class="n">di</span><span class="o">*</span><span class="mi">32</span><span class="p">))</span> <span class="o">+</span> <span class="n">dj</span><span class="p">)</span> <span class="o">+</span> <span class="mi">479</span><span class="p">)],</span> <span class="mf">0.000000f</span><span class="p">)</span><span class="o">*</span><span class="n">Filter</span><span class="p">[((</span><span class="n">di</span><span class="o">*</span><span class="mi">3</span><span class="p">)</span> <span class="o">+</span> <span class="n">dj</span><span class="p">)]))</span>
+          <span class="n">DepthwiseConv2d</span><span class="p">[(((((((((</span><span class="n">blockIdx</span><span class="p">.</span><span class="n">y</span> <span class="o">+</span> <span class="n">blockIdx</span><span class="p">.</span><span class="n">x</span><span class="p">)</span><span class="o">*</span><span class="mi">16</span><span class="p">)</span> <span class="o">+</span> <span class="n">threadIdx</span><span class="p">.</span><span class="n">y</span><span class="p">)</span><span class="o">*</span><span class="mi">32</span><span class="p">)</span> <span class="o">+</span> <span class="n">threadIdx</span><span class="p">.</span><span class="n">x</span><span class="p">)</span><span class="o">*</span><span class="mi">2</span><span class="p">)</span> <span class="o">+</span> <span class="p">(</span><span class="n">i</span><span class="p">.</span><span class="n">inner</span><span class="p">.</span><span class="n">inner</span><span class="p">.</span><span class="n">inner</span><span class="o">*</span><span class="mi">32</span><span class="p">))</span> <span class="o">+</span> <span class="n">j</span><span class="p">.</span><span class="n">inner</span><span class="p">.</span><span class="n">inner</span><span class="p">.</span><span class="n">inner</span><span class="p">)</span> <span class="o">+</span> <span class="mi">16</span><span class="p">)]</span> <span class="o">=</span> <span class="p">(</span><span class="n">DepthwiseConv2d</span><span class="p">[(((((((((</span><span class="n">blockIdx</span><span class="p">.</span><span class="n">y</span> <span class="o">+</span> <span class="n">blockIdx</span><span class="p">.</span><span class="n">x</span><span class="p">)</span><span class="o">*</span><span class="mi">16</span><span class="p">)</span> <span class="o">+</span> <span class="n">threadIdx</span><span class="p">.</span><span class="n">y</span><span class="p">)</span><span class="o">*</span><span class="mi">32</span><span class="p">)</span> <span class="o">+</span> <span class="n">threadIdx</span><span class="p">.</span><span class="n">x</span><span class="p">)</span><span class="o">*</span><span class="mi">2</span><span class="p">)</span> <span class="o">+</span> <span class="p">(</span><span class="n">i</span><span class="p">.</span><span class="n">inner</span><span class="p">.</span><span class="n">inner</span><span class="p">.</span><span class="n">inner</span><span class="o">*</span><span class="mi">32</span><span class="p">))</span> <span class="o">+</span> <span class="n">j</span><span class="p">.</span><span class="n">inner</span><span class="p">.</span><span class="n">inner</span><span class="p">.</span><span class="n">inner</span><span class="p">)</span> <span class="o">+</span> <span class="mi">16</span><span class="p">)]</span> <span class="o">+</span> <span class="p">(</span><span class="n">tvm_if_then_else</span><span class="p">(((((((</span><span class="mi">1</span> <span class="o">-</span> <span class="n">di</span><span class="p">)</span> <span class="o">-</span> <span class="n">i</span><span class="p">.</span><span class="n">inner</span><span class="p">.</span><span class="n">inner</span><span class="p">.</span><span class="n">inner</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="p">(((</span><span class="n">blockIdx</span><span class="p">.</span><span class="n">x</span><span class="o">*</span><span class="mi">16</span><span class="p">)</span> <span class="o">+</span> <span class="n">threadIdx</span><span class="p">.</span><span class="n">y</span><span class="p">)</span><span class="o">*</span><span class="mi">2</span><span class="p">))</span> <span class="o">&amp;&amp;</span> <span class="p">((((</span><span class="n">blockIdx</span><span class="p">.</span><span class="n">x</span><span class="o">*</span><span class="mi">16</span><span class="p">)</span> <span class="o">+</span> <span class="n">threadIdx</span><span class="p">.</span><span class="n">y</span><span class="p">)</span><span class="o">*</span><span class="mi">2</span><span class="p">)</span> <span class="o">&lt;</span> <span class="p">((</span><span class="mi">33</span> <span class="o">-</span> <span class="n">di</span><span class="p">)</span> <span class="o">-</span> <span class="n">i</span><span class="p">.</span><span class="n">inner</span><span class="p">.</span><span class="n">inner</span><span class="p">.</span><span class="n">inner</span><span class="p">)))</span> <span class="o">&amp;&amp;</span> <span class="p">(((</span><span class="o">-</span><span class="mi">15</span> <span class="o">-</span> <span class="n">dj</span><span class="p">)</span> <span class="o">-</span> <span class="n">j</span><span class="p">.</span><span class="n">inner</span><span class="p">.</span><span class="n">inner</span><span class="p">.</span><span class="n">inner</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="p">(</span><span class="n">threadIdx</span><span class="p">.</span><span class="n">x</span><span class="o">*</span><span class="mi">2</span><span class="p">)))</span> <span class="o">&amp;&amp;</span> <span class="p">((</span><span class="n">threadIdx</span><span class="p">.</span><span class="n">x</span><span class="o">*</span><span class="mi">2</span><span class="p">)</span> <span class="o">&lt;</span> <span class="p">((</span><span class="mi">17</span> <span class="o">-</span> <span class="n">dj</span><span class="p">)</span> <span class="o">-</span> <span class="n">j</span><span class="p">.</span><span class="n">inner</span><span class="p">.</span><span class="n">inner</span><span class="p">.</span><span class="n">inner</span><span class="p">))),</span> <span class="n">Input</span><span class="p">[(((((((((((</span><span class="n">blockIdx</span><span class="p">.</span><span class="n">y</span> <span class="o">+</span> <span class="n">blockIdx</span><span class="p">.</span><span class="n">x</span><span class="p">)</span><span class="o">*</span><span class="mi">16</span><span class="p">)</span> <span class="o">+</span> <span class="n">threadIdx</span><span class="p">.</span><span class="n">y</span><span class="p">)</span><span class="o">*</span><span class="mi">32</span><span class="p">)</span> <span class="o">+</span> <span class="n">threadIdx</span><span class="p">.</span><span class="n">x</span><span class="p">)</span><span class="o">*</span><span class="mi">2</span><span class="p">)</span> <span class="o">+</span> <span class="p">(</span><span class="n">i</span><span class="p">.</span><span class="n">inner</span><span class="p">.</span><span class="n">inner</span><span class="p">.</span><span class="n">inner</span><span class="o">*</span><span class="mi">32</span><span class="p">))</span> <span class="o">+</span> <span class="n">j</span><span class="p">.</span><span class="n">inner</span><span class="p">.</span><span class="n">inner</span><span class="p">.</span><span class="n">inner</span><span class="p">)</span> <span class="o">+</span> <span class="p">(</span><span class="n">di</span><span class="o">*</span><span class="mi">32</span><span class="p">))</span> <span class="o">+</span> <span class="n">dj</span><span class="p">)</span> <span class="o">+</span> <span class="o">-</span><span class="mi">17</span><span class="p">)],</span> <span class="mf">0.000000f</span><span class="p">)</span><span class="o">*</span><span class="n">Filter</span><span class="p">[((</span><span class="n">di</span><span class="o">*</span><span class="mi">3</span><span class="p">)</span> <span class="o">+</span> <span class="n">dj</span><span class="p">)]))</span>
+          <span class="n">DepthwiseConv2d</span><span class="p">[(((((((((</span><span class="n">blockIdx</span><span class="p">.</span><span class="n">y</span> <span class="o">+</span> <span class="n">blockIdx</span><span class="p">.</span><span class="n">x</span><span class="p">)</span><span class="o">*</span><span class="mi">16</span><span class="p">)</span> <span class="o">+</span> <span class="n">threadIdx</span><span class="p">.</span><span class="n">y</span><span class="p">)</span><span class="o">*</span><span class="mi">32</span><span class="p">)</span> <span class="o">+</span> <span class="n">threadIdx</span><span class="p">.</span><span class="n">x</span><span class="p">)</span><span class="o">*</span><span class="mi">2</span><span class="p">)</span> <span class="o">+</span> <span class="p">(</span><span class="n">i</span><span class="p">.</span><span class="n">inner</span><span class="p">.</span><span class="n">inner</span><span class="p">.</span><span class="n">inner</span><span class="o">*</span><span class="mi">32</span><span class="p">))</span> <span class="o">+</span> <span class="n">j</span><span class="p">.</span><span class="n">inner</span><span class="p">.</span><span class="n">inner</span><span class="p">.</span><span class="n">inner</span><span class="p">)</span> <span class="o">+</span> <span class="mi">528</span><span class="p">)]</span> <span class="o">=</span> <span class="p">(</span><span class="n">DepthwiseConv2d</span><span class="p">[(((((((((</span><span class="n">blockIdx</span><span class="p">.</span><span class="n">y</span> <span class="o">+</span> <span class="n">blockIdx</span><span class="p">.</span><span class="n">x</span><span class="p">)</span><span class="o">*</span><span class="mi">16</span><span class="p">)</span> <span class="o">+</span> <span class="n">threadIdx</span><span class="p">.</span><span class="n">y</span><span class="p">)</span><span class="o">*</span><span class="mi">32</span><span class="p">)</span> <span class="o">+</span> <span class="n">threadIdx</span><span class="p">.</span><span class="n">x</span><span class="p">)</span><span class="o">*</span><span class="mi">2</span><span class="p">)</span> <span class="o">+</span> <span class="p">(</span><span class="n">i</span><span class="p">.</span><span class="n">inner</span><span class="p">.</span><span class="n">inner</span><span class="p">.</span><span class="n">inner</span><span class="o">*</span><span class="mi">32</span><span class="p">))</span> <span class="o">+</span> <span class="n">j</span><span class="p">.</span><span class="n">inner</span><span class="p">.</span><span class="n">inner</span><span class="p">.</span><span class="n">inner</span><span class="p">)</span> <span class="o">+</span> <span class="mi">528</span><span class="p">)]</span> <span class="o">+</span> <span class="p">(</span><span class="n">tvm_if_then_else</span><span class="p">(((((((</span><span class="o">-</span><span class="mi">15</span> <span class="o">-</span> <span class="n">di</span><span class="p">)</span> <span class="o">-</span> <span class="n">i</span><span class="p">.</span><span class="n">inner</span><span class="p">.</span><span class="n">inner</span><span class="p">.</span><span class="n">inner</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="p">(((</span><span class="n">blockIdx</span><span class="p">.</span><span class="n">x</span><span class="o">*</span><span class="mi">16</span><span class="p">)</span> <span class="o">+</span> <span class="n">threadIdx</span><span class="p">.</span><span class="n">y</span><span class="p">)</span><span class="o">*</span><span class="mi">2</span><span class="p">))</span> <span class="o">&amp;&amp;</span> <span class="p">((((</span><span class="n">blockIdx</span><span class="p">.</span><span class="n">x</span><span class="o">*</span><span class="mi">16</span><span class="p">)</span> <span class="o">+</span> <span class="n">threadIdx</span><span class="p">.</span><span class="n">y</span><span class="p">)</span><span class="o">*</span><span class="mi">2</span><span class="p">)</span> <span class="o">&lt;</span> <span class="p">((</span><span class="mi">17</span> <span class="o">-</span> <span class="n">di</span><span class="p">)</span> <span class="o">-</span> <span class="n">i</span><span class="p">.</span><span class="n">inner</span><span class="p">.</span><span class="n">inner</span><span class="p">.</span><span class="n">inner</span><span class="p">)))</span> <span class="o">&amp;&amp;</span> <span class="p">(((</span><span class="o">-</span><span class="mi">15</span> <span class="o">-</span> <span class="n">dj</span><span class="p">)</span> <span class="o">-</span> <span class="n">j</span><span class="p">.</span><span class="n">inner</span><span class="p">.</span><span class="n">inner</span><span class="p">.</span><span class="n">inner</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="p">(</span><span class="n">threadIdx</span><span class="p">.</span><span class="n">x</span><span class="o">*</span><span class="mi">2</span><span class="p">)))</span> <span class="o">&amp;&amp;</span> <span class="p">((</span><span class="n">threadIdx</span><span class="p">.</span><span class="n">x</span><span class="o">*</span><span class="mi">2</span><span class="p">)</span> <span class="o">&lt;</span> <span class="p">((</span><span class="mi">17</span> <span class="o">-</span> <span class="n">dj</span><span class="p">)</span> <span class="o">-</span> <span class="n">j</span><span class="p">.</span><span class="n">inner</span><span class="p">.</span><span class="n">inner</span><span class="p">.</span><span class="n">inner</span><span class="p">))),</span> <span class="n">Input</span><span class="p">[(((((((((((</span><span class="n">blockIdx</span><span class="p">.</span><span class="n">y</span> <span class="o">+</span> <span class="n">blockIdx</span><span class="p">.</span><span class="n">x</span><span class="p">)</span><span class="o">*</span><span class="mi">16</span><span class="p">)</span> <span class="o">+</span> <span class="n">threadIdx</span><span class="p">.</span><span class="n">y</span><span class="p">)</span><span class="o">*</span><span class="mi">32</span><span class="p">)</span> <span class="o">+</span> <span class="n">threadIdx</span><span class="p">.</span><span class="n">x</span><span class="p">)</span><span class="o">*</span><span class="mi">2</span><span class="p">)</span> <span class="o">+</span> <span class="p">(</span><span class="n">i</span><span class="p">.</span><span class="n">inner</span><span class="p">.</span><span class="n">inner</span><span class="p">.</span><span class="n">inner</span><span class="o">*</span><span class="mi">32</span><span class="p">))</span> <span class="o">+</span> <span class="n">j</span><span class="p">.</span><span class="n">inner</span><span class="p">.</span><span class="n">inner</span><span class="p">.</span><span class="n">inner</span><span class="p">)</span> <span class="o">+</span> <span class="p">(</span><span class="n">di</span><span class="o">*</span><span class="mi">32</span><span class="p">))</span> <span class="o">+</span> <span class="n">dj</span><span class="p">)</span> <span class="o">+</span> <span class="mi">495</span><span class="p">)],</span> <span class="mf">0.000000f</span><span class="p">)</span><span class="o">*</span><span class="n">Filter</span><span class="p">[((</span><span class="n">di</span><span class="o">*</span><span class="mi">3</span><span class="p">)</span> <span class="o">+</span> <span class="n">dj</span><span class="p">)]))</span>
+        <span class="p">}</span>
+      <span class="p">}</span>
+    <span class="p">}</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>Without vthread (just set to 1), the IR is:</p>
+
+<div class="language-c++ highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cm">/* Input = [1, 1, 32, 32], Filter = [1, 1, 3, 3], stride = [1, 1], padding = 'SAME' */</span>
+<span class="n">produce</span> <span class="n">DepthwiseConv2d</span> <span class="p">{</span>
+  <span class="c1">// attr [iter_var(blockIdx.y, , blockIdx.y)] thread_extent = 1</span>
+  <span class="c1">// attr [iter_var(blockIdx.x, , blockIdx.x)] thread_extent = 1</span>
+  <span class="c1">// attr [iter_var(threadIdx.y, Range(min=0, extent=8), threadIdx.y)] thread_extent = 8</span>
+  <span class="c1">// attr [iter_var(threadIdx.x, Range(min=0, extent=8), threadIdx.x)] thread_extent = 8</span>
+  <span class="k">for</span> <span class="p">(</span><span class="n">i</span><span class="p">.</span><span class="n">inner</span><span class="p">.</span><span class="n">inner</span><span class="p">.</span><span class="n">inner</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">for</span> <span class="p">(</span><span class="n">j</span><span class="p">.</span><span class="n">inner</span><span class="p">.</span><span class="n">inner</span><span class="p">.</span><span class="n">inner</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span> <span class="p">{</span>
+      <span class="n">DepthwiseConv2d</span><span class="p">[((((((((</span><span class="n">blockIdx</span><span class="p">.</span><span class="n">y</span> <span class="o">+</span> <span class="n">blockIdx</span><span class="p">.</span><span class="n">x</span><span class="p">)</span><span class="o">*</span><span class="mi">8</span><span class="p">)</span> <span class="o">+</span> <span class="n">threadIdx</span><span class="p">.</span><span class="n">y</span><span class="p">)</span><span class="o">*</span><span class="mi">32</span><span class="p">)</span> <span class="o">+</span> <span class="n">threadIdx</span><span class="p">.</span><span class="n">x</span><span class="p">)</span><span class="o">*</span><span class="mi">4</span><span class="p">)</span> <span class="o">+</span> <span class="p">(</span><span class="n">i</span><span class="p">.</span><span class="n">inner</span><span class="p">.</span><span class="n">inner</span><span class="p">.</span><span class="n">inner</span><span class="o">*</span><span class="mi">32</span><span class="p">))</span> <span class="o">+</span> <span class="n">j</span><span class="p">.</span><span class="n">inner</span><span class="p">.</span><span class="n">inner</span><span class="p">.</span><span class="n">inner</span><span class="p">)]</span> <span class="o">=</span> <span class="mf">0.000000f</span>
+      <span class="k">for</span> <span class="p">(</span><span class="n">di</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span> <span class="p">{</span>
+        <span class="k">for</span> <span class="p">(</span><span class="n">dj</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span> <span class="p">{</span>
+          <span class="n">DepthwiseConv2d</span><span class="p">[((((((((</span><span class="n">blockIdx</span><span class="p">.</span><span class="n">y</span> <span class="o">+</span> <span class="n">blockIdx</span><span class="p">.</span><span class="n">x</span><span class="p">)</span><span class="o">*</span><span class="mi">8</span><span class="p">)</span> <span class="o">+</span> <span class="n">threadIdx</span><span class="p">.</span><span class="n">y</span><span class="p">)</span><span class="o">*</span><span class="mi">32</span><span class="p">)</span> <span class="o">+</span> <span class="n">threadIdx</span><span class="p">.</span><span class="n">x</span><span class="p">)</span><span class="o">*</span><span class="mi">4</span><span class="p">)</span> <span class="o">+</span> <span class="p">(</span><span class="n">i</span><span class="p">.</span><span class="n">inner</span><span class="p">.</span><span class="n">inner</span><span class="p">.</span><span class="n">inner</span><span class="o">*</span><span class="mi">32</span><span class="p">))</span> <span class="o">+</span> <span class="n">j</span><span class="p">.</span><span class="n">inner</span><span class="p">.</span><span class="n">inner</span><span class="p">.</span><span class="n">inner</span><span class="p">)]</span> <span class="o">=</span> <span class="p">(</span><span class="n">DepthwiseConv2d</span><span class="p">[((((((((</span><span class="n">blockIdx</span><span class="p">.</span><span class="n">y</span> <span class="o">+</span> <span class="n">blockIdx</span><span class="p">.</span><span class="n">x</span><span class="p">)</span><span class="o">*</span><span class="mi">8</span><span class="p">)</span> <span class="o">+</span> <span class="n">threadIdx</span><span class="p">.</span><span class="n">y</span><span class="p">)</span><span class="o">*</span><span class="mi">32</span><span class="p">)</span> <span class="o">+</span> <span class="n">threadIdx</span><span class="p">.</span><span class="n">x</span><span class="p">)</span><span class="o">*</span><span class="mi">4</span><span class="p">)</span> <span class="o">+</span> <span class="p">(</span><span class="n">i</span><span class="p">.</span><span class="n">inner</span><span class="p">.</span><span class="n">inner</span><span class="p">.</span><span class="n">inner</span><span class="o">*</span><span class="mi">32</span><span class="p">))</span> <span class="o">+</span> <span class="n">j</span><span class="p">.</span><span class="n">inner</span><span class="p">.</span><span class="n">inner</span><span class="p">.</span><span class="n">inner</span><span class="p">)]</span> <span class="o">+</span> <span class="p">(</span><span class="n">tvm_if_then_else</span><span class="p">(((((((</span><span class="mi">1</span> <span class="o">-</span> <span class="n">di</span><span class="p">)</span> <span class="o">-</span> <span class="n">i</span><span class="p">.</span><span class="n">inner</span><span class="p">.</span><span class="n">inner</span><span class="p">.</span><span class="n">inner</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="p">(((</span><span class="n">blockIdx</span><span class="p">.</span><span class="n">x</span><span class="o">*</span><span class="mi">8</span><span class="p">)</span> <span class="o">+</span> <span class="n">threadIdx</span><span class="p">.</span><span class="n">y</span><span class="p">)</span><span class="o">*</span><span class="mi">4</span><span class="p">))</span> <span class="o">&amp;&amp;</span> <span class="p">((((</span><span class="n">blockIdx</span><span class="p">.</span><span class="n">x</span><span class="o">*</span><span class="mi">8</span><span class="p">)</span> <span class="o">+</span> <span class="n">threadIdx</span><span class="p">.</span><span class="n">y</span><span class="p">)</span><span class="o">*</span><span class="mi">4</span><span class="p">)</span> <span class="o">&lt;</span> <span class="p">((</span><span class="mi">33</span> <span class="o">-</span> <span class="n">di</span><span class="p">)</span> <span class="o">-</span> <span class="n">i</span><span class="p">.</span><span class="n">inner</span><span class="p">.</span><span class="n">inner</span><span class="p">.</span><span class="n">inner</span><span class="p">)))</span> <span class="o">&amp;&amp;</span> <span class="p">(((</span><span class="mi">1</span> <span class="o">-</span> <span class="n">dj</span><span class="p">)</span> <span class="o">-</span> <span class="n">j</span><span class="p">.</span><span class="n">inner</span><span class="p">.</span><span class="n">inner</span><span class="p">.</span><span class="n">inner</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="p">(</span><span class="n">threadIdx</span><span class="p">.</span><span class="n">x</span><span class="o">*</span><span class="mi">4</span><span class="p">)))</span> <span class="o">&amp;&amp;</span> <span class="p">((</span><span class="n">threadIdx</span><span class="p">.</span><span class="n">x</span><span class="o">*</span><span class="mi">4</span><span class="p">)</span> <span class="o">&lt;</span> <span class="p">((</span><span class="mi">33</span> <span class="o">-</span> <span class="n">dj</span><span class="p">)</span> <span class="o">-</span> <span class="n">j</span><span class="p">.</span><span class="n">inner</span><span class="p">.</span><span class="n">inner</span><span class="p">.</span><span class="n">inner</span><span class="p">))),</span> <span class="n">Input</span><span class="p">[(((((((((((</span><span class="n">blockIdx</span><span class="p">.</span><span class="n">y</span> <span class="o">+</span> <span class="n">blockIdx</span><span class="p">.</span><span class="n">x</span><span class="p">)</span><span class="o">*</span><span class="mi">8</span><span class="p">)</span> <span class="o">+</span> <span class="n">threadIdx</span><span class="p">.</span><span class="n">y</span><span class="p">)</span><span class="o">*</span><span class="mi">32</span><span class="p">)</span> <span class="o">+</span> <span class="n">threadIdx</span><span class="p">.</span><span class="n">x</span><span class="p">)</span><span class="o">*</span><span class="mi">4</span><span class="p">)</span> <span class="o">+</span> <span class="p">(</span><span class="n">i</span><span class="p">.</span><span class="n">inner</span><span class="p">.</span><span class="n">inner</span><span class="p">.</span><span class="n">inner</span><span class="o">*</span><span class="mi">32</span><span class="p">))</span> <span class="o">+</span> <span class="n">j</span><span class="p">.</span><span class="n">inner</span><span class="p">.</span><span class="n">inner</span><span class="p">.</span><span class="n">inner</span><span class="p">)</span> <span class="o">+</span> <span class="p">(</span><span class="n">di</span><span class="o">*</span><span class="mi">32</span><span class="p">))</span> <span class="o">+</span> <span class="n">dj</span><span class="p">)</span> <span class="o">+</span> <span class="o">-</span><span class="mi">33</span><span class="p">)],</span> <span class="mf">0.000000f</span><span class="p">)</span><span class="o">*</span><span class="n">Filter</span><span class="p">[((</span><span class="n">di</span><span class="o">*</span><span class="mi">3</span><span class="p">)</span> <span class="o">+</span> <span class="n">dj</span><span class="p">)]))</span>
+        <span class="p">}</span>
+      <span class="p">}</span>
+    <span class="p">}</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>As we can see, when <code class="language-plaintext highlighter-rouge">num_vthread_y = 2</code> and <code class="language-plaintext highlighter-rouge">num_vthread_x = 2</code>, the 32 x 32 channel is divided into four sub-channels of 16 x 16.
+Each thread computes four output elements at a time, one element in one sub-channel.</p>
+
+<p>Below is the result with Filter = [256, 1, 3, 3], stride = [1, 1], blocking_h = 32, blocking_w = 32:</p>
+
+<style>
+table th:nth-of-type(1) {
+    width: 120px;
+}
+table th:nth-of-type(2) {
+    width: 120px;
+}
+</style>
+
+<table>
+  <thead>
+    <tr>
+      <th style="text-align: center">Case</th>
+      <th style="text-align: center">Input</th>
+      <th style="text-align: center">num_thread_y, num_thread_x</th>
+      <th style="text-align: center">num_vthread_y, num_vthread_x</th>
+      <th style="text-align: center">TVM SAME pad (us)</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td style="text-align: center">1</td>
+      <td style="text-align: center">[1, 256, 96, 96]</td>
+      <td style="text-align: center">8, 8</td>
+      <td style="text-align: center">1, 1</td>
+      <td style="text-align: center">132.5</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">2</td>
+      <td style="text-align: center">[1, 256, 96, 96]</td>
+      <td style="text-align: center">8, 8</td>
+      <td style="text-align: center">1, 4</td>
+      <td style="text-align: center">103.1</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">3</td>
+      <td style="text-align: center">[1, 256, 96, 96]</td>
+      <td style="text-align: center">4, 32</td>
+      <td style="text-align: center">1, 1</td>
+      <td style="text-align: center">95.9</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">4</td>
+      <td style="text-align: center">[1, 256, 96, 96]</td>
+      <td style="text-align: center">8, 16</td>
+      <td style="text-align: center">1, 2</td>
+      <td style="text-align: center">90.9</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>Case 2 is faster than case 1. It’s because in case 2 <code class="language-plaintext highlighter-rouge">num_thread_x=8</code> and <code class="language-plaintext highlighter-rouge">num_vthread_x=4</code> together ensures that consecutive threads access consecutive memory addresses,
+thus avoiding bank conflicts, as illustrated below (each color represents one thread’s workload):</p>
+
+<p style="text-align: center"><img src="/images/depthconv_tutorial/vthread_and_strided_pattern.png" alt="image" width="90%" /></p>
+
+<p>In theory case 3 and 4 should be the same fast, since they have the same workload per thread, and both enjoy efficient shared memory access. Somehow case 4 is just a little faster.</p>
+
+<p>Still remember tensorflow’s speed? It’s 251.6us, and now TVM is 2.8x faster. 387.4 -&gt; 132.5 -&gt; 95.9 -&gt; 90.9, blocking helps the most; tuning thread numbers saves 37us;
+vthread saves additional 5us.</p>
+
+<p>In fact, TVM can be extremely faster than tensorflow with large kernel size or channel_multiplier (because of more filter reuse) :</p>
+
+<table>
+  <thead>
+    <tr>
+      <th style="text-align: center">Input</th>
+      <th style="text-align: center">Filter</th>
+      <th style="text-align: center">stride</th>
+      <th style="text-align: center">tf-1.2 SAME pad (us)</th>
+      <th style="text-align: center">TVM SAME pad (us)</th>
+      <th style="text-align: center">How faster is TVM</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td style="text-align: center">[1, 256, 96, 96]</td>
+      <td style="text-align: center">[256, 1, 3, 3]</td>
+      <td style="text-align: center">[1, 1]</td>
+      <td style="text-align: center">251.6</td>
+      <td style="text-align: center">90.9</td>
+      <td style="text-align: center">2.8x</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">[1, 256, 96, 96]</td>
+      <td style="text-align: center">[256, 1, 5, 5]</td>
+      <td style="text-align: center">[1, 1]</td>
+      <td style="text-align: center">597.6</td>
+      <td style="text-align: center">128.9</td>
+      <td style="text-align: center">4.6x</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">[1, 256, 96, 96]</td>
+      <td style="text-align: center">[256, 2, 3, 3]</td>
+      <td style="text-align: center">[1, 1]</td>
+      <td style="text-align: center">659.9</td>
+      <td style="text-align: center">143.7</td>
+      <td style="text-align: center">4.6x</td>
+    </tr>
+    <tr>
+      <td style="text-align: center">[1, 256, 96, 96]</td>
+      <td style="text-align: center">[256, 2, 5, 5]</td>
+      <td style="text-align: center">[1, 1]</td>
+      <td style="text-align: center">1203.9</td>
+      <td style="text-align: center">170.5</td>
+      <td style="text-align: center">7.1x</td>
+    </tr>
+  </tbody>
+</table>
+
+<h2 id="operator-fusion">Operator Fusion</h2>
+
+<p>One typical optimization we can do in deep learning is operator fusion, that computes multiple operators together in a single kernel without saving intermediate results back to global memory.
+TVM supports that out of the box.</p>
+
+<p>Consider a common pattern in neural networks: <code class="language-plaintext highlighter-rouge">depthwise_conv2d</code> + <code class="language-plaintext highlighter-rouge">scale_shift</code> + <code class="language-plaintext highlighter-rouge">relu</code>. We can fuse the three operators into one, by slightly modifying the original schedule:</p>
+
+<div class="language-python highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">DepthwiseConv2d</span> <span class="o">=</span> <span class="n">topi</span><span class="p">.</span><span class="n">nn</span><span class="p">.</span><span class="nf">depthwise_conv2d</span><span class="p">(</span><span class="n">Input</span><span class="p">,</span> <span class="n">Filter</span><span class="p">,</span> <span class="n">stride</span><span class="p">,</span> <span class="n">padding</span><span class="p">)</span>
+<span class="n">ScaleShift</span> <span class="o">=</span> <span class="n">topi</span><span class="p">.</span><span class="n">nn</span><span class="p">.</span><span class="nf">scale_shift</span><span class="p">(</span><span class="n">DepthwiseConv2d</span><span class="p">,</span> <span class="n">Scale</span><span class="p">,</span> <span class="n">Shift</span><span class="p">)</span>
+<span class="n">Relu</span> <span class="o">=</span> <span class="n">topi</span><span class="p">.</span><span class="n">nn</span><span class="p">.</span><span class="nf">relu</span><span class="p">(</span><span class="n">ScaleShift</span><span class="p">)</span>
+
+<span class="n">Output</span> <span class="o">=</span> <span class="n">Relu</span> <span class="c1"># is no longer DepthwiseConv2d
+</span><span class="n">s</span><span class="p">[</span><span class="n">ScaleShift</span><span class="p">].</span><span class="nf">compute_inline</span><span class="p">()</span> <span class="c1"># this line fuses ScaleShift, explicitly
+</span><span class="n">s</span><span class="p">[</span><span class="n">DepthwiseConv2d</span><span class="p">].</span><span class="nf">set_scope</span><span class="p">(</span><span class="sh">"</span><span class="s">local</span><span class="sh">"</span><span class="p">)</span> <span class="c1"># this line fuses DepthwiseConv2d, implicitly
+</span><span class="nf">schedule</span><span class="p">(</span><span class="n">Output</span><span class="p">)</span> <span class="c1"># schedule for Output the same way we schedule for DepthwiseConv2d as discussed above
+</span><span class="n">s</span><span class="p">[</span><span class="n">DepthwiseConv2d</span><span class="p">].</span><span class="nf">compute_at</span><span class="p">(</span><span class="n">s</span><span class="p">[</span><span class="n">Output</span><span class="p">],</span> <span class="n">tx</span><span class="p">)</span> <span class="c1"># tx is the inner most axis, bound to threadIdx.x
+</span></code></pre></div></div>
+
+<p>It generates IR like this:</p>
+
+<div class="language-c++ highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="cm">/* Input = [1, 1, 32, 32], Filter = [1, 1, 3, 3], stride = [1, 1], padding = 'SAME' */</span>
+<span class="n">produce</span> <span class="n">Relu</span> <span class="p">{</span>
+  <span class="c1">// attr [iter_var(blockIdx.y, , blockIdx.y)] thread_extent = 1</span>
+  <span class="c1">// attr [DepthwiseConv2d] storage_scope = "local"</span>
+  <span class="n">allocate</span> <span class="n">DepthwiseConv2d</span><span class="p">[</span><span class="n">float32</span> <span class="o">*</span> <span class="mi">1</span> <span class="o">*</span> <span class="mi">1</span> <span class="o">*</span> <span class="mi">4</span> <span class="o">*</span> <span class="mi">4</span><span class="p">]</span>
+  <span class="c1">// attr [iter_var(blockIdx.x, , blockIdx.x)] thread_extent = 1</span>
+  <span class="c1">// attr [iter_var(threadIdx.y, Range(min=0, extent=8), threadIdx.y)] thread_extent = 8</span>
+  <span class="c1">// attr [iter_var(threadIdx.x, Range(min=0, extent=8), threadIdx.x)] thread_extent = 8</span>
+  <span class="n">produce</span> <span class="n">DepthwiseConv2d</span> <span class="p">{</span>
+    <span class="k">for</span> <span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span> <span class="p">{</span>
+      <span class="k">for</span> <span class="p">(</span><span class="n">j</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span> <span class="p">{</span>
+        <span class="n">DepthwiseConv2d</span><span class="p">[((</span><span class="n">i</span><span class="o">*</span><span class="mi">4</span><span class="p">)</span> <span class="o">+</span> <span class="n">j</span><span class="p">)]</span> <span class="o">=</span> <span class="mf">0.000000f</span>
+        <span class="k">for</span> <span class="p">(</span><span class="n">di</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span> <span class="p">{</span>
+          <span class="k">for</span> <span class="p">(</span><span class="n">dj</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span> <span class="p">{</span>
+            <span class="n">DepthwiseConv2d</span><span class="p">[((</span><span class="n">i</span><span class="o">*</span><span class="mi">4</span><span class="p">)</span> <span class="o">+</span> <span class="n">j</span><span class="p">)]</span> <span class="o">=</span> <span class="p">(</span><span class="n">DepthwiseConv2d</span><span class="p">[((</span><span class="n">i</span><span class="o">*</span><span class="mi">4</span><span class="p">)</span> <span class="o">+</span> <span class="n">j</span><span class="p">)]</span> <span class="o">+</span> <span class="p">(</span><span class="n">tvm_if_then_else</span><span class="p">(((((((</span><span class="mi">1</span> <span class="o">-</span> <span class="n">di</span><span class="p">)</span> <span class="o">-</span> <span class="n">i</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="p">(((</span><span class="n">blockIdx</span><span class="p">.</span><span class="n">x</span><span class="o">*</span><span class="mi">8</span><span class="p">)</span> <span class="o">+</span> <span class="n">threadIdx</span><span class="p">.</span><span class="n">y</span><span class="p">)</span><span class="o">*</span><span class="mi">4</span><span class="p">))</span> <span class="o">&amp;&amp;</span> <span class="p">((((</span><span class="n">blockIdx</span><span class="p">.</span><span class="n">x</span><span class="o">*</span><span class="mi">8</span><span class="p">)</span> <span class="o">+</span> <span class="n">threadIdx</span><span class="p">.</span><span class="n">y</span><span class="p">)</span><span class="o">*</span><span class="mi">4</span><span class="p">)</span> <span class="o">&lt;</span> <span class="p">((</span><span class="mi">33</span> <span class="o">-</span> <span class="n">di</span><span class="p">)</span> <span class="o">-</span> <span class="n">i</span><span class="p">)))</span> <span class="o">&amp;&amp;</span> <span class="p">(((</span><span class="mi">1</span> <span class="o">-</span> <span class="n">dj</span><span class="p">)</span> <span class="o">-</span> <span class="n">j</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="p">(</span><span class="n">threadIdx</span><span class="p">.</span><span class="n">x</span><span class="o">*</span><span class="mi">4</span><span class="p">)))</span> <span class="o">&amp;&amp;</span> <span class="p">((</span><span class="n">threadIdx</span><span class="p">.</span><span class="n">x</span><span class="o">*</span><span class="mi">4</span><span class="p">)</span> <span class="o">&lt;</span> <span class="p">((</span><span class="mi">33</span> <span class="o">-</span> <span class="n">dj</span><span class="p">)</span> <span class="o">-</span> <span class="n">j</span><span class="p">))),</span> <span class="n">Input</span><span class="p">[(((((((((((</span><span class="n">blockIdx</span><span class="p">.</span><span class="n">y</span> <span class="o">+</span> <span class="n">blockIdx</span><span class="p">.</span><span class="n">x</span><span class="p">)</span><span class="o">*</span><span class="mi">8</span><span class="p">)</span> <span class="o">+</span> <span class="n">threadIdx</span><span class="p">.</span><span class="n">y</span><span class="p">)</span><span class="o">*</span><span class="mi">32</span><span class="p">)</span> <span class="o">+</span> <span class="n">threadIdx</span><span class="p">.</span><span class="n">x</span><span class="p">)</span><span class="o">*</span><span class="mi">4</span><span class="p">)</span> <span class="o">+</span> <span class="p">(</span><span class="n">i</span><span class="o">*</span><span class="mi">32</span><span class="p">))</span> <span class="o">+</span> <span class="n">j</span><span class="p">)</span> <span class="o">+</span> <span class="p">(</span><span class="n">di</span><span class="o">*</span><span class="mi">32</span><span class="p">))</span> <span class="o">+</span> <span class="n">dj</span><span class="p">)</span> <span class="o">+</span> <span class="o">-</span><span class="mi">33</span><span class="p">)],</span> <span class="mf">0.000000f</span><span class="p">)</span><span class="o">*</span><span class="n">Filter</span><span class="p">[((</span><span class="n">di</span><span class="o">*</span><span class="mi">3</span><span class="p">)</span> <span class="o">+</span> <span class="n">dj</span><span class="p">)]))</span>
+          <span class="p">}</span>
+        <span class="p">}</span>
+      <span class="p">}</span>
+    <span class="p">}</span>
+  <span class="p">}</span>
+  <span class="k">for</span> <span class="p">(</span><span class="n">i2</span><span class="p">.</span><span class="n">inner</span><span class="p">.</span><span class="n">inner</span><span class="p">.</span><span class="n">inner</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span> <span class="p">{</span>
+    <span class="k">for</span> <span class="p">(</span><span class="n">i3</span><span class="p">.</span><span class="n">inner</span><span class="p">.</span><span class="n">inner</span><span class="p">.</span><span class="n">inner</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span> <span class="p">{</span>
+      <span class="n">Relu</span><span class="p">[((((((((</span><span class="n">blockIdx</span><span class="p">.</span><span class="n">y</span> <span class="o">+</span> <span class="n">blockIdx</span><span class="p">.</span><span class="n">x</span><span class="p">)</span><span class="o">*</span><span class="mi">8</span><span class="p">)</span> <span class="o">+</span> <span class="n">threadIdx</span><span class="p">.</span><span class="n">y</span><span class="p">)</span><span class="o">*</span><span class="mi">32</span><span class="p">)</span> <span class="o">+</span> <span class="n">threadIdx</span><span class="p">.</span><span class="n">x</span><span class="p">)</span><span class="o">*</span><span class="mi">4</span><span class="p">)</span> <span class="o">+</span> <span class="p">(</span><span class="n">i2</span><span class="p">.</span><span class="n">inner</span><span class="p">.</span><span class="n">inner</span><span class="p">.</span><span class="n">inner</span><span class="o">*</span><span class="mi">32</span><span class="p">))</span> <span class="o">+</span> <span class="n">i3</span><span class="p">.</span><span class="n">inner</span><span class="p">.</span><span class="n">inner</span><span class="p">.</span><span class="n">inner</span><span class="p">)]</span> <span class="o">=</span> <span class="n">max</span><span class="p">(((</span><span class="n">DepthwiseConv2d</span><span class="p">[((</span><span class="n">i2</span><span class="p">.</span><span class="n">inner</span><span class="p">.</span><span class="n">inner</span><span class="p">.</span><span class="n">inner</span><span class="o">*</span><span class="mi">4</span><span class="p">)</span> <span class="o">+</span> <span class="n">i3</span><span class="p">.</span><span class="n">inner</span><span class="p">.</span><span class="n">inner</span><span class="p">.</span><span class="n">inner</span><span class="p">)]</span><span class="o">*</span><span class="n">Scale</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">+</span> <span class="n">Shift</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span> <span class="mf">0.000000f</span><span class="p">)</span>
+    <span class="p">}</span>
+  <span class="p">}</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>As we can see, each thread computes <code class="language-plaintext highlighter-rouge">scale_shift</code> and <code class="language-plaintext highlighter-rouge">relu</code> before writing the result of <code class="language-plaintext highlighter-rouge">depthwise_conv2d</code> to global memory. The fused operator is as fast as single <code class="language-plaintext highlighter-rouge">depthwise_conv2d</code>.
+Below is the result with Input = [1, 256, 96, 96], Filter = [256, 1, 3, 3], stride = [1, 1], padding = ‘SAME’:</p>
+
+<ul>
+  <li>tf-1.2 <code class="language-plaintext highlighter-rouge">depthwise_conv2d</code>: 251.6 us</li>
+  <li>tf-1.2 <code class="language-plaintext highlighter-rouge">depthwise_conv2d</code> + <code class="language-plaintext highlighter-rouge">scale_shift</code> + <code class="language-plaintext highlighter-rouge">relu</code> (separate): 419.9 us</li>
+  <li>TVM <code class="language-plaintext highlighter-rouge">depthwise_conv2d</code>: 90.9 us</li>
+  <li>TVM <code class="language-plaintext highlighter-rouge">depthwise_conv2d + scale_shift + relu</code> (fused): 91.5 us</li>
+</ul>
+
+<p>The advantage of operator fusion is obvious.</p>
+
+<p>This is not the end, TVM can do operator fusion in a smarter way. You may refer to <a href="https://github.com/dmlc/tvm/issues/215">this</a> and read the source code provided below.</p>
+
+<h2 id="show-me-the-code">Show me the code</h2>
+<ul>
+  <li>Declare: <a href="https://github.com/apache/incubator-tvm/blob/main/topi/python/topi/nn/depthwise_conv2d.py">https://github.com/apache/incubator-tvm/blob/main/topi/python/topi/nn/depthwise_conv2d.py</a></li>
+  <li>Schedule: <a href="https://github.com/apache/incubator-tvm/blob/main/topi/python/topi/cuda/depthwise_conv2d.py">https://github.com/apache/incubator-tvm/blob/main/topi/python/topi/cuda/depthwise_conv2d.py</a></li>
+  <li>Test: <a href="https://github.com/apache/incubator-tvm/blob/main/topi/recipe/conv/depthwise_conv2d_test.py">https://github.com/apache/incubator-tvm/blob/main/topi/recipe/conv/depthwise_conv2d_test.py</a></li>
+</ul>
+
+<h2 id="acknowledgements">Acknowledgements</h2>
+<p>The author has many thanks to Tianqi Chen for his helpful advice and inspiring discussion.</p>
+
+<h2 id="bio">Bio</h2>
+<p><a href="https://Huyuwei.github.io">Yuwei Hu</a> is an intern in <a href="http://tusimple.ai/">Tusimple</a>’s HPC group.
+He is experiencing a gap year after obtaining a bachelor’s degree in electrical engineering from Beihang University.</p>
+
+<h2 id="references">References</h2>
+<p>[1] <a href="https://arxiv.org/abs/1610.02357">Xception: Deep Learning with Depthwise Separable Convolutions</a></p>
+
+<p>[2] <a href="https://arxiv.org/abs/1704.04861">MobileNets: Efficient Convolutional Neural Networks for Mobile Vision Applications</a></p>
+
+<p>[3] <a href="http://norvig.com/21-days.html#answers">Approximate timing for various operations on a typical PC</a></p>
+
+    </div>
+  </div>
+</div>
+</div>
+
+    
+
+
+
+
+  <script src="../../../_static/downloads/jquery-2.2.0.min.js" type="text/javascript"></script>
+  <script src="../../../_static/downloads/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
+  <script src="../../../_static/downloads/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
+  <!-- <script src="./assets/js/slick.js"></script> -->
+  <script src="/assets/js/custome.js"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'UA-75982049-2');
+  </script>
+</body>
+<section class="footerSec">
+  <div class="footerHeader">
+    <ul class="container d-flex align-md-items-center justify-content-between flex-column flex-md-row">
+      <li class="logo">
+
+        <p><a href="/"><img src="/assets/images/logo.svg" alt="logo" title="logo" /></a></p>
+      </li>
+      <li class="copywrite d-flex align-items-center">
+        <h5 id="apache-software-foundation--all-right-reserved">© 2024 Apache Software Foundation | All right reserved</h5>
+      </li>
+    </ul>
+
+  </div>
+
+  <ul class="container">
+    <li class="footernote">
+      Copyright © 2024 The Apache Software Foundation. Apache TVM, Apache, the Apache feather, and the Apache TVM project logo are either trademarks or registered trademarks of the Apache Software Foundation.</li>
+  </ul>
+
+</section>
+</html>
