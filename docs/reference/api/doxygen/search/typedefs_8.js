@@ -1,6 +1,5 @@
 var searchData=
 [
-  ['key_5ftype',['key_type',['../classtvm_1_1runtime_1_1MapNode.html#a26ef1b067ec33d0bcd86b72afc6bf608',1,'tvm::runtime::MapNode::key_type()'],['../classtvm_1_1runtime_1_1Map.html#a4375820aee7e1c0581c3b0ab3fb383fb',1,'tvm::runtime::Map::key_type()']]],
-  ['kind',['Kind',['../namespacetvm_1_1relay.html#aa44e35e7d791c8dd53bb00ddb6411b38',1,'tvm::relay']]],
-  ['kvtype',['KVType',['../classtvm_1_1runtime_1_1MapNode.html#a4b03d8f363b6bcac8ff59cd40b2a9cca',1,'tvm::runtime::MapNode']]]
+  ['memfntype_7670',['MemFnType',['../structtvm_1_1runtime_1_1details_1_1ModuleVTableEntryHelper_3_01R_07T_1_1_5_08_07Args_8_8_8_08_01const_01_4.html#aa54e52aa476c35323b0e87254ada5c07',1,'tvm::runtime::details::ModuleVTableEntryHelper&lt; R(T::*)(Args...) const &gt;::MemFnType()'],['../structtvm_1_1runtime_1_1details_1_1ModuleVTableEntryHelper_3_01R_07T_1_1_5_08_07Args_8_8_8_08_4.html#a8bebfbf28720c4c7a997f1467ddbe24d',1,'tvm::runtime::details::ModuleVTableEntryHelper&lt; R(T::*)(Args...)&gt;::MemFnType()'],['../structtvm_1_1runtime_1_1details_1_1ModuleVTableEntryHelper_3_01void_07T_1_1_5_08_07Args_8_8_8_08_01const_01_4.html#a0df7f471a5c8b12fc70239b0d859e57a',1,'tvm::runtime::details::ModuleVTableEntryHelper&lt; void(T::*)(Args...) const &gt;::MemFnType()'],['../structtvm_1_1runtime_1_1details_1_1ModuleVTableEntryHelper_3_01void_07T_1_1_5_08_07Args_8_8_8_08_4.html#ae51a8f2baa1eb4a4e81f6d97fcde10a5',1,'tvm::runtime::details::ModuleVTableEntryHelper&lt; void(T::*)(Args...)&gt;::MemFnType()']]],
+  ['memoryscope_7671',['MemoryScope',['../namespacetvm.html#a9f3357cc60dba3bfdfd5d00335a3b06f',1,'tvm']]]
 ];

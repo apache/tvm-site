@@ -1,16 +1,12 @@
 var searchData=
 [
-  ['packed_5ffunc_2eh',['packed_func.h',['../crt_2packed__func_8h.html',1,'(Global Namespace)'],['../packed__func_8h.html',1,'(Global Namespace)']]],
-  ['pad_5futils_2eh',['pad_utils.h',['../pad__utils_8h.html',1,'']]],
-  ['page_5fallocator_2eh',['page_allocator.h',['../page__allocator_8h.html',1,'']]],
-  ['papi_2eh',['papi.h',['../papi_8h.html',1,'']]],
-  ['parallel_5ffor_2eh',['parallel_for.h',['../parallel__for_8h.html',1,'']]],
-  ['parser_2eh',['parser.h',['../parser_8h.html',1,'']]],
-  ['pattern_2eh',['pattern.h',['../pattern_8h.html',1,'']]],
-  ['pattern_5ffunctor_2eh',['pattern_functor.h',['../pattern__functor_8h.html',1,'']]],
-  ['platform_2eh',['platform.h',['../platform_8h.html',1,'']]],
-  ['pooling_2eh',['pooling.h',['../cuda_2pooling_8h.html',1,'(Global Namespace)'],['../nn_2pooling_8h.html',1,'(Global Namespace)'],['../rocm_2pooling_8h.html',1,'(Global Namespace)']]],
-  ['postproc_2eh',['postproc.h',['../postproc_8h.html',1,'']]],
-  ['profiler_2eh',['profiler.h',['../profiler_8h.html',1,'']]],
-  ['profiling_2eh',['profiling.h',['../profiling_8h.html',1,'']]]
+  ['packed_5ffunc_2eh_4896',['packed_func.h',['../packed__func_8h.html',1,'']]],
+  ['pad_5futils_2eh_4897',['pad_utils.h',['../pad__utils_8h.html',1,'']]],
+  ['papi_2eh_4898',['papi.h',['../papi_8h.html',1,'']]],
+  ['parallel_5ffor_2eh_4899',['parallel_for.h',['../parallel__for_8h.html',1,'']]],
+  ['pattern_2eh_4900',['pattern.h',['../pattern_8h.html',1,'']]],
+  ['pooling_2eh_4901',['pooling.h',['../pooling_8h.html',1,'']]],
+  ['postproc_2eh_4902',['postproc.h',['../postproc_8h.html',1,'']]],
+  ['profiler_2eh_4903',['profiler.h',['../profiler_8h.html',1,'']]],
+  ['profiling_2eh_4904',['profiling.h',['../profiling_8h.html',1,'']]]
 ];

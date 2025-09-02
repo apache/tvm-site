@@ -1,5 +1,4 @@
 var searchData=
 [
-  ['loadconst',['LoadConst',['../namespacetvm_1_1runtime_1_1vm.html#a8d8d95ce8d629c7213f2f595917870eca68b393c7b4c9e1672b7a1a05161390f7',1,'tvm::runtime::vm']]],
-  ['loadconsti',['LoadConsti',['../namespacetvm_1_1runtime_1_1vm.html#a8d8d95ce8d629c7213f2f595917870eca9558cee150d88040130f7b86d8d5dc58',1,'tvm::runtime::vm']]]
+  ['surjective_7954',['Surjective',['../namespacetvm_1_1arith.html#a243b60bbe2d3852099eb65454b240c63ae76680d0048f5c8d7160cac340cb53c9',1,'tvm::arith']]]
 ];

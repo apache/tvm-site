@@ -1,14 +1,21 @@
 var searchData=
 [
-  ['parent',['Parent',['../classtvm_1_1tir_1_1IndexDataTypeRewriter.html#a0e7deada1e51a604e4f7bc6c8a115955',1,'tvm::tir::IndexDataTypeRewriter::Parent()'],['../classtvm_1_1tir_1_1IndexDataTypeNormalizer.html#a8d04a64a80c9fbdd28c7cb9e00c02120',1,'tvm::tir::IndexDataTypeNormalizer::Parent()']]],
-  ['partialsolvedinequalities',['PartialSolvedInequalities',['../namespacetvm_1_1arith.html#adf7450490c4a53f62bab4463cdb5e9c8',1,'tvm::arith']]],
-  ['partitionerfunctype',['PartitionerFuncType',['../namespacetvm_1_1support.html#a34824d8de8374a4144dc4754ccafdd74',1,'tvm::support']]],
-  ['pass',['Pass',['../namespacetvm_1_1relay_1_1transform.html#afa666ade112e9955059095d695238a9a',1,'tvm::relay::transform::Pass()'],['../namespacetvm_1_1tir_1_1usmp_1_1transform.html#a901e9d4d9288aacc08b1bc7cde535f56',1,'tvm::tir::usmp::transform::Pass()']]],
-  ['passcontext',['PassContext',['../namespacetvm_1_1relay_1_1transform.html#a744a05f8bba3c2ac238ba4569d926184',1,'tvm::relay::transform']]],
-  ['passcontextnode',['PassContextNode',['../namespacetvm_1_1relay_1_1transform.html#a72900733e0d3510ae61a1c287c2ec125',1,'tvm::relay::transform']]],
-  ['passinfo',['PassInfo',['../namespacetvm_1_1relay_1_1transform.html#aa405b5f11938fb8c4fa2ca21926edc9d',1,'tvm::relay::transform']]],
-  ['passinfonode',['PassInfoNode',['../namespacetvm_1_1relay_1_1transform.html#aae88cd0ad69cf64c7e9caf0a0c8ebb45',1,'tvm::relay::transform']]],
-  ['passnode',['PassNode',['../namespacetvm_1_1relay_1_1transform.html#aa695a8dfc3d5b087018ddd4ef1eb2487',1,'tvm::relay::transform']]],
-  ['pathtracingdata',['PathTracingData',['../classtvm_1_1SEqualReducer_1_1Handler.html#a3971c2653bf9bae74dd940cd80085aef',1,'tvm::SEqualReducer::Handler']]],
-  ['pointer',['pointer',['../classtvm_1_1runtime_1_1IterAdapter.html#adc1b48d98f5d1780edadde8130287de4',1,'tvm::runtime::IterAdapter::pointer()'],['../classtvm_1_1runtime_1_1ReverseIterAdapter.html#ade7d41e23d7ac8a0d64e237dfcf958c6',1,'tvm::runtime::ReverseIterAdapter::pointer()'],['../classtvm_1_1runtime_1_1MapNode_1_1iterator.html#a0c38eac8fa87129d754972cd305a6a89',1,'tvm::runtime::MapNode::iterator::pointer()'],['../classtvm_1_1runtime_1_1Map_1_1iterator.html#a569d224e69ea0f65717e6dcb0dd53e5b',1,'tvm::runtime::Map::iterator::pointer()'],['../classtvm_1_1support_1_1Span_1_1iterator__base.html#a3380246f532de231fcfbd1ffbcdf496e',1,'tvm::support::Span::iterator_base::pointer()']]]
+  ['targetfeatures_7684',['TargetFeatures',['../namespacetvm.html#a78a634f35a1d8d97545aa9117570ebd8',1,'tvm']]],
+  ['targetjson_7685',['TargetJSON',['../namespacetvm.html#ab6827a60cfc12ce697d8c099947fe6a5',1,'tvm']]],
+  ['tcalleffectkind_7686',['TCallEffectKind',['../namespacetvm_1_1tir.html#a651e82a046f157a7d286b0985b3edb84',1,'tvm::tir']]],
+  ['tensortype_7687',['TensorType',['../namespacetvm_1_1relax.html#a06538b181df82292bdb5f73d6f21de94',1,'tvm::relax']]],
+  ['tensortypenode_7688',['TensorTypeNode',['../namespacetvm_1_1relax.html#aa23883a54f4c8a912ac3122b89aa06a9',1,'tvm::relax']]],
+  ['tglobalsymbol_7689',['TGlobalSymbol',['../namespacetvm_1_1tir.html#a0a81e48fe15eb305b96806e55e01a8c1',1,'tvm::tir']]],
+  ['thashcode_7690',['THashCode',['../classtvm_1_1meta__schedule_1_1Workload.html#a561f6589a2577bd7fa502284d4d22445',1,'tvm::meta_schedule::Workload::THashCode()'],['../classtvm_1_1meta__schedule_1_1WorkloadNode.html#aad19a5cb8e2c623e355ca5e2a98c4c18',1,'tvm::meta_schedule::WorkloadNode::THashCode()']]],
+  ['tirpattern_7691',['TIRPattern',['../namespacetvm_1_1relax.html#ae4609a7fed731069af110d2ba9965246',1,'tvm::relax']]],
+  ['tirvaraxis_7692',['TIRVarAxis',['../namespacetvm_1_1tir.html#adae6fba969a8ae541944301374b70927',1,'tvm::tir']]],
+  ['tparent_7693',['TParent',['../classtvm_1_1TargetKindAttrMap.html#a37eb6bfb0d881cf897147b17ff7d3265',1,'tvm::TargetKindAttrMap::TParent()'],['../classtvm_1_1OpAttrMap.html#a316480ca7450209650fc1a62f7ce4a14',1,'tvm::OpAttrMap::TParent()']]],
+  ['trandstate_7694',['TRandState',['../classtvm_1_1support_1_1LinearCongruentialEngine.html#a4d3a3a94a3f3d2dfab4b5ccb1a7e97de',1,'tvm::support::LinearCongruentialEngine::TRandState()'],['../classtvm_1_1meta__schedule_1_1TuneContext.html#af7fd90f18bece51fa3c212b73eca2f27',1,'tvm::meta_schedule::TuneContext::TRandState()'],['../classtvm_1_1meta__schedule_1_1TuneContextNode.html#aa184b0eb048b357df078c4ed5e0155e6',1,'tvm::meta_schedule::TuneContextNode::TRandState()']]],
+  ['tscriptdtypeprintlocation_7695',['TScriptDtypePrintLocation',['../namespacetvm_1_1tir.html#ae85a9723d52c53bd767ae70236358289',1,'tvm::tir']]],
+  ['tscriptprintername_7696',['TScriptPrinterName',['../namespacetvm_1_1tir.html#a617163e8161d114528cfc73199d0cc3c',1,'tvm::tir']]],
+  ['tself_7697',['TSelf',['../classtvm_1_1TypedEnvFunc_3_01R_07Args_8_8_8_08_4.html#a29adf4db79c99318db779a71f26acc0f',1,'tvm::TypedEnvFunc&lt; R(Args...)&gt;']]],
+  ['tvectorizable_7698',['TVectorizable',['../namespacetvm_1_1tir.html#a0c5d42cf669b8ceeb42aa13d95cb5262',1,'tvm::tir']]],
+  ['tvm_5findex_5ft_7699',['tvm_index_t',['../namespacetvm_1_1runtime.html#a953860c249ea5d75326dc8f2928491ea',1,'tvm::runtime']]],
+  ['tvmstreamhandle_7700',['TVMStreamHandle',['../device__api_8h.html#ab1d5f6b7945e1410602a8a057fda5757',1,'device_api.h']]],
+  ['type_7701',['type',['../structtvm_1_1detail_1_1is__specialized.html#a3ea7783c457d7ddc82100674292724f4',1,'tvm::detail::is_specialized::type()'],['../structtvm_1_1detail_1_1is__specialized_3_01Container_3_01Args_8_8_8_01_4_00_01Container_01_4.html#a8dee3a1604498d6bc64948f1c0d19dc2',1,'tvm::detail::is_specialized&lt; Container&lt; Args... &gt;, Container &gt;::type()']]]
 ];

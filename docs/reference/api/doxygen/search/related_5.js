@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['executor',['Executor',['../classtvm_1_1relay_1_1ExecutorRegEntry.html#a763b2f90bc53f92d680a635fe28e858e',1,'tvm::relay::ExecutorRegEntry']]]
+  ['typetraits_7969',['TypeTraits',['../classtvm_1_1relax_1_1NestedMsg.html#a226b02d776a9df4928a712bc87af898a',1,'tvm::relax::NestedMsg']]]
 ];

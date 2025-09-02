@@ -1,7 +1,7 @@
 var searchData=
 [
-  ['globaltypevar',['GlobalTypeVar',['../namespacetvm_1_1relay.html#a2235e350f9cd1eac3aa0177034976043',1,'tvm::relay']]],
-  ['globaltypevarnode',['GlobalTypeVarNode',['../namespacetvm_1_1relay.html#a9a10e2305e3a50dd00e07b043b93b5e8',1,'tvm::relay']]],
-  ['globalvar',['GlobalVar',['../namespacetvm_1_1relay.html#a81ac7c3d0824529fddce7849c9c66289',1,'tvm::relay']]],
-  ['globalvarnode',['GlobalVarNode',['../namespacetvm_1_1relay.html#afe7144195dbbc914183189444ef6a347',1,'tvm::relay']]]
+  ['index_7665',['Index',['../namespacetvm_1_1runtime_1_1vm.html#a1227d803d3d8f11b3d32a1372358f694',1,'tvm::runtime::vm']]],
+  ['intimmnode_7666',['IntImmNode',['../namespacetvm_1_1tir.html#ae8c7db788e840dc1c2ed1f365d5ea829',1,'tvm::tir']]],
+  ['inttuple_7667',['IntTuple',['../namespacetvm_1_1runtime.html#adc84b8d3a671ceb4f490cad57283d732',1,'tvm::runtime']]],
+  ['inttupleobj_7668',['IntTupleObj',['../namespacetvm_1_1runtime.html#adc7ddcf5d6725600b62b7783e4ac507e',1,'tvm::runtime']]]
 ];

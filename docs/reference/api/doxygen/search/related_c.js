@@ -1,4 +1,7 @@
 var searchData=
 [
-  ['profiler',['Profiler',['../classtvm_1_1meta__schedule_1_1ScopedTimer.html#ad73e5645d5b7b84a00d4a5d07b8d8078',1,'tvm::meta_schedule::ScopedTimer']]]
+  ['vectorizer_7986',['Vectorizer',['../classtvm_1_1tir_1_1BufferLoadNode.html#a842a72b9d02a9f8541b512478932fece',1,'tvm::tir::BufferLoadNode']]],
+  ['vectortyperewriter_7987',['VectorTypeRewriter',['../classtvm_1_1tir_1_1BufferLoadNode.html#a285a3b1d722a2877ffd9926cb93b7e7a',1,'tvm::tir::BufferLoadNode']]],
+  ['virtualdevice_7988',['VirtualDevice',['../classtvm_1_1VirtualDeviceNode.html#ae4d7f111e3a45058026a3ffb156a4790',1,'tvm::VirtualDeviceNode']]],
+  ['virtualdevicecache_7989',['VirtualDeviceCache',['../classtvm_1_1VirtualDevice.html#a4e08dee8d23f7eb0224a08e4e85e835e',1,'tvm::VirtualDevice']]]
 ];

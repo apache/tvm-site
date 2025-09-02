@@ -1,6 +1,6 @@
 var searchData=
 [
-  ['op',['Op',['../namespacetvm_1_1relay.html#a6c46d15e80f1a9916b8e9c264a185c98',1,'tvm::relay']]],
-  ['operationmap',['OperationMap',['../classtvm_1_1auto__scheduler_1_1AccessAnalyzerNode.html#ad1678244c48ee2916fdbf0c3d7132384',1,'tvm::auto_scheduler::AccessAnalyzerNode']]],
-  ['opnode',['OpNode',['../namespacetvm_1_1relay.html#ac9d4f2cf78a48659817a88d890e1d142',1,'tvm::relay']]]
+  ['shardingspec_7681',['ShardingSpec',['../namespacetvm_1_1relax_1_1distributed.html#af83820b6820d475d9e64f6fe11e3b261',1,'tvm::relax::distributed']]],
+  ['structinfoderivefunc_7682',['StructInfoDeriveFunc',['../namespacetvm_1_1relax.html#af30be57dbb36533467727929c21bd237',1,'tvm::relax']]],
+  ['subscript_7683',['Subscript',['../structtvm_1_1topi_1_1EinsumEquation.html#a4a0b81e8b69b43af5868a1617cfe30d3',1,'tvm::topi::EinsumEquation']]]
 ];
