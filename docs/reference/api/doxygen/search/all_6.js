@@ -33,7 +33,7 @@ var searchData=
   ['emitret_949',['EmitRet',['../classtvm_1_1relax_1_1ExecBuilderNode.html#af96b4fed77478bca9e3fb32700dd5ff0',1,'tvm::relax::ExecBuilderNode']]],
   ['emitted_5fvars_950',['emitted_vars',['../classtvm_1_1script_1_1ir__builder_1_1relax_1_1BlockFrameNode.html#acf7ea91b2dc91592859ed895bc525ea2',1,'tvm::script::ir_builder::relax::BlockFrameNode']]],
   ['emitvarbinding_951',['EmitVarBinding',['../namespacetvm_1_1script_1_1ir__builder_1_1relax.html#a434236dff60e9d0484855d38802702f9',1,'tvm::script::ir_builder::relax']]],
-  ['empty_952',['Empty',['../classtvm_1_1runtime_1_1NDArray.html#aea236bd56b906e81a10b041c74f7dcc8',1,'tvm::runtime::NDArray::Empty()'],['../classtvm_1_1runtime_1_1memory_1_1Allocator.html#a56724c7701b1ca598599e785ae636f50',1,'tvm::runtime::memory::Allocator::Empty()'],['../classtvm_1_1TupleType.html#af99baa239cc3c717979b2dfeefed75c2',1,'tvm::TupleType::Empty()']]],
+  ['empty_952',['Empty',['../classtvm_1_1runtime_1_1Tensor.html#a4a96fb98b48a2fd0830f66d2f8ae7a2a',1,'tvm::runtime::Tensor::Empty()'],['../classtvm_1_1runtime_1_1memory_1_1Allocator.html#a0a3cfd94ede155a33d182cfbfb7036bb',1,'tvm::runtime::memory::Allocator::Empty()'],['../classtvm_1_1TupleType.html#af99baa239cc3c717979b2dfeefed75c2',1,'tvm::TupleType::Empty()']]],
   ['enable_5fcheck_953',['enable_check',['../classtvm_1_1tir_1_1ScheduleStateNode.html#a862a5a440888321e3bcd998c88dc62a2',1,'tvm::tir::ScheduleStateNode']]],
   ['end_5fcolumn_954',['end_column',['../classtvm_1_1SpanNode.html#adfa91957e629c89d6a3efef536051496',1,'tvm::SpanNode']]],
   ['end_5findex_955',['end_index',['../namespacetvm_1_1topi_1_1nn.html#a8d244c196a5a481640cfc610fad3c7db',1,'tvm::topi::nn']]],
@@ -137,7 +137,7 @@ var searchData=
   ['extractedtask_1053',['ExtractedTask',['../classtvm_1_1meta__schedule_1_1ExtractedTask.html#aec6734684edd3e09386ddd4a39d4ccb3',1,'tvm::meta_schedule::ExtractedTask::ExtractedTask()'],['../classtvm_1_1meta__schedule_1_1ExtractedTask.html',1,'tvm::meta_schedule::ExtractedTask']]],
   ['extractedtasknode_1054',['ExtractedTaskNode',['../classtvm_1_1meta__schedule_1_1ExtractedTaskNode.html',1,'tvm::meta_schedule']]],
   ['extractelement_1055',['ExtractElement',['../classtvm_1_1tir_1_1Shuffle.html#aebe8e15b3820297dfa79a5e5e89fa40c',1,'tvm::tir::Shuffle']]],
-  ['extractfrom_1056',['ExtractFrom',['../classtvm_1_1meta__schedule_1_1PyFeatureExtractorNode.html#a18b184565623ceb9798bfdd56ec08453',1,'tvm::meta_schedule::PyFeatureExtractorNode::ExtractFrom()'],['../classtvm_1_1meta__schedule_1_1FeatureExtractorNode.html#ad4e9fdab79326a5bd98745007bb29635',1,'tvm::meta_schedule::FeatureExtractorNode::ExtractFrom()']]],
+  ['extractfrom_1056',['ExtractFrom',['../classtvm_1_1meta__schedule_1_1PyFeatureExtractorNode.html#a418d536435ce632b1b5e3bef7645a73c',1,'tvm::meta_schedule::PyFeatureExtractorNode::ExtractFrom()'],['../classtvm_1_1meta__schedule_1_1FeatureExtractorNode.html#a5dac983ee81896142ab93fce9eb197fd',1,'tvm::meta_schedule::FeatureExtractorNode::ExtractFrom()']]],
   ['extractmatchedexpr_1057',['ExtractMatchedExpr',['../namespacetvm_1_1relax.html#abbe0d042347db61e805fa3c33de3e282',1,'tvm::relax']]],
   ['extractprimfuncconstants_1058',['ExtractPrimFuncConstants',['../namespacetvm_1_1tir_1_1transform.html#ac148d43765be86c3778bd32a112698fd',1,'tvm::tir::transform']]],
   ['extrapolation_5fvalue_1059',['extrapolation_value',['../structtvm_1_1relax_1_1Resize2DAttrs.html#a505fafa1839ac6a43734eb9bcccb1d2f',1,'tvm::relax::Resize2DAttrs']]]
