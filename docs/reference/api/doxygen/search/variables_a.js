@@ -22,9 +22,9 @@ var searchData=
   ['keinsum_7230',['kEinsum',['../namespacetvm_1_1topi.html#a6b33f2b888123f3ccd7191feeaedb93b',1,'tvm::topi']]],
   ['kelementwise_7231',['kElementWise',['../namespacetvm_1_1topi.html#a0250c4095f19ae8a22ed85bc4ce5a40d',1,'tvm::topi']]],
   ['kellipsis_7232',['kEllipsis',['../structtvm_1_1topi_1_1EinsumEquation.html#a963f3d740f063a7c82f2e34f6214a04a',1,'tvm::topi::EinsumEquation']]],
-  ['kernel_5flayout_7233',['kernel_layout',['../structtvm_1_1relax_1_1Conv2DAttrs.html#a2bd7bc53bbb181c9eb613e1bfd19018e',1,'tvm::relax::Conv2DAttrs::kernel_layout()'],['../structtvm_1_1relax_1_1Conv3DAttrs.html#af20df7a7a5016043568adf7b0bc10586',1,'tvm::relax::Conv3DAttrs::kernel_layout()'],['../structtvm_1_1relax_1_1Conv1DTransposeAttrs.html#ac9e0a5871ef1ffa6a329a1b287e45e0a',1,'tvm::relax::Conv1DTransposeAttrs::kernel_layout()'],['../structtvm_1_1relax_1_1Conv1DAttrs.html#ae105b0fd0598cba83de477cf49ef8aa4',1,'tvm::relax::Conv1DAttrs::kernel_layout()'],['../structtvm_1_1relax_1_1Conv2DTransposeAttrs.html#a6bf3e09436ecf5649852f8c4059c0e58',1,'tvm::relax::Conv2DTransposeAttrs::kernel_layout()']]],
+  ['kernel_5flayout_7233',['kernel_layout',['../structtvm_1_1relax_1_1Conv2DAttrs.html#a5958b2a79298fe97a4629e74a33382c9',1,'tvm::relax::Conv2DAttrs::kernel_layout()'],['../structtvm_1_1relax_1_1Conv3DAttrs.html#a1246c9b97778ecf2719c9bc6d6c1813f',1,'tvm::relax::Conv3DAttrs::kernel_layout()'],['../structtvm_1_1relax_1_1Conv1DTransposeAttrs.html#af87b41a5579c12b0ad23cee8981727fa',1,'tvm::relax::Conv1DTransposeAttrs::kernel_layout()'],['../structtvm_1_1relax_1_1Conv1DAttrs.html#af70c6ca935a777db8340eb1baafa76a7',1,'tvm::relax::Conv1DAttrs::kernel_layout()'],['../structtvm_1_1relax_1_1Conv2DTransposeAttrs.html#a1494ddb3b45084220828e1ebbe62a998',1,'tvm::relax::Conv2DTransposeAttrs::kernel_layout()']]],
   ['kexternalmods_7234',['kExternalMods',['../namespacetvm_1_1attr.html#a8604338aa4e9293d10d427a00a2c9f13',1,'tvm::attr']]],
-  ['keys_7235',['keys',['../classtvm_1_1script_1_1printer_1_1DictDocNode.html#a74d56d2c98118826ae483f01fc80cad8',1,'tvm::script::printer::DictDocNode::keys()'],['../classtvm_1_1TargetNode.html#aec9e821b23172eb9460f46df0dc346fb',1,'tvm::TargetNode::keys()']]],
+  ['keys_7235',['keys',['../classtvm_1_1script_1_1printer_1_1DictDocNode.html#a30b541b91e929ad81ffbc648d034352f',1,'tvm::script::printer::DictDocNode::keys()'],['../classtvm_1_1TargetNode.html#a995d1698b89412e2ef8b8d030092affc',1,'tvm::TargetNode::keys()']]],
   ['kforcepure_7236',['kForcePure',['../namespacetvm_1_1relax_1_1attr.html#a3c1b82b46a7295dc8facebaf510161cf',1,'tvm::relax::attr']]],
   ['kglobalsymbol_7237',['kGlobalSymbol',['../namespacetvm_1_1attr.html#a7737d03caeeaeac61531ace9a91f7d74',1,'tvm::attr']]],
   ['kgroupconv2d_7238',['kGroupConv2d',['../namespacetvm_1_1topi.html#a8352661bace9139ad3a0d0ab8a01caf5',1,'tvm::topi']]],
@@ -60,7 +60,7 @@ var searchData=
   ['kvirtualdevice_7268',['kVirtualDevice',['../namespacetvm.html#a067221db210e0f758d352a6f1ba7d06b',1,'tvm']]],
   ['kvmregister_7269',['kVMRegister',['../structtvm_1_1runtime_1_1vm_1_1Instruction.html#a0207c883302789ca0d7f07298ee6b06c',1,'tvm::runtime::vm::Instruction']]],
   ['kvoidregister_7270',['kVoidRegister',['../structtvm_1_1runtime_1_1vm_1_1Instruction.html#a1fea6d84912768d49edd457438a5fb10',1,'tvm::runtime::vm::Instruction']]],
-  ['kwargs_5fkeys_7271',['kwargs_keys',['../classtvm_1_1script_1_1printer_1_1CallDocNode.html#a5a959af4b85068d5fb066f367e914e55',1,'tvm::script::printer::CallDocNode']]],
-  ['kwargs_5fvalues_7272',['kwargs_values',['../classtvm_1_1script_1_1printer_1_1CallDocNode.html#a2e02a9e2b7d03c975c0a7286219efa17',1,'tvm::script::printer::CallDocNode']]],
+  ['kwargs_5fkeys_7271',['kwargs_keys',['../classtvm_1_1script_1_1printer_1_1CallDocNode.html#a07656220036588c05049d0fee644d285',1,'tvm::script::printer::CallDocNode']]],
+  ['kwargs_5fvalues_7272',['kwargs_values',['../classtvm_1_1script_1_1printer_1_1CallDocNode.html#a08cc949d6b0f7b7d06076eb4c81906ba',1,'tvm::script::printer::CallDocNode']]],
   ['kworkspacesize_7273',['kWorkspaceSize',['../namespacetvm_1_1relax_1_1attr.html#a5cec8df1c786518ef9ab9148c1ee255b',1,'tvm::relax::attr']]]
 ];

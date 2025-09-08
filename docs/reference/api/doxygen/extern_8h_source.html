@@ -103,77 +103,79 @@ $(function() {
 <div class="line"><a name="l00036"></a><span class="lineno">   36</span>&#160; </div>
 <div class="line"><a name="l00037"></a><span class="lineno">   37</span>&#160;<span class="keyword">using namespace </span><a class="code" href="namespacetvm_1_1te.html">tvm::te</a>;</div>
 <div class="line"><a name="l00038"></a><span class="lineno">   38</span>&#160; </div>
-<div class="line"><a name="l00044"></a><span class="lineno">   44</span>&#160;<span class="keyword">using</span> FExtern = std::function&lt;PrimExpr(Array&lt;Buffer&gt;, Array&lt;Buffer&gt;)&gt;;</div>
+<div class="line"><a name="l00044"></a><span class="lineno">   44</span>&#160;<span class="keyword">using</span> FExtern = std::function&lt;PrimExpr(ffi::Array&lt;Buffer&gt;, ffi::Array&lt;Buffer&gt;)&gt;;</div>
 <div class="line"><a name="l00045"></a><span class="lineno">   45</span>&#160; </div>
-<div class="line"><a name="l00063"></a><span class="lineno">   63</span>&#160;<span class="keyword">inline</span> Array&lt;Tensor&gt; make_extern(<span class="keyword">const</span> Array&lt;Array&lt;PrimExpr&gt;&gt;&amp; out_shapes,</div>
-<div class="line"><a name="l00064"></a><span class="lineno">   64</span>&#160;                                 <span class="keyword">const</span> std::vector&lt;DataType&gt;&amp; out_types,</div>
-<div class="line"><a name="l00065"></a><span class="lineno">   65</span>&#160;                                 <span class="keyword">const</span> Array&lt;Tensor&gt;&amp; inputs, FExtern fextern, std::string name,</div>
-<div class="line"><a name="l00066"></a><span class="lineno">   66</span>&#160;                                 std::string tag, ::tvm::Map&lt;String, ffi::Any&gt; attrs) {</div>
-<div class="line"><a name="l00067"></a><span class="lineno">   67</span>&#160;  ICHECK_EQ(out_shapes.size(), out_types.size())</div>
-<div class="line"><a name="l00068"></a><span class="lineno">   68</span>&#160;      &lt;&lt; <span class="stringliteral">&quot;make_extern: out_shapes and out_types must have equal size&quot;</span>;</div>
-<div class="line"><a name="l00069"></a><span class="lineno">   69</span>&#160; </div>
-<div class="line"><a name="l00070"></a><span class="lineno">   70</span>&#160;  Array&lt;Buffer&gt; input_placeholders;</div>
-<div class="line"><a name="l00071"></a><span class="lineno">   71</span>&#160;  <span class="keywordflow">for</span> (<span class="keyword">auto</span> t : inputs) {</div>
-<div class="line"><a name="l00072"></a><span class="lineno">   72</span>&#160;    input_placeholders.push_back(<a class="code" href="namespacetvm_1_1tir.html#a6e45f15194006a766d53adc8adf45d21">tvm::tir::decl_buffer</a>(t-&gt;shape, t-&gt;dtype, t-&gt;op-&gt;name));</div>
-<div class="line"><a name="l00073"></a><span class="lineno">   73</span>&#160;  }</div>
-<div class="line"><a name="l00074"></a><span class="lineno">   74</span>&#160;  Array&lt;Buffer&gt; output_placeholders;</div>
-<div class="line"><a name="l00075"></a><span class="lineno">   75</span>&#160;  <span class="keywordflow">for</span> (<span class="keywordtype">size_t</span> i = 0; i &lt; out_shapes.size(); ++i) {</div>
-<div class="line"><a name="l00076"></a><span class="lineno">   76</span>&#160;    output_placeholders.push_back(<a class="code" href="namespacetvm_1_1tir.html#a6e45f15194006a766d53adc8adf45d21">tvm::tir::decl_buffer</a>(out_shapes[i], out_types[i], name));</div>
-<div class="line"><a name="l00077"></a><span class="lineno">   77</span>&#160;  }</div>
-<div class="line"><a name="l00078"></a><span class="lineno">   78</span>&#160; </div>
-<div class="line"><a name="l00079"></a><span class="lineno">   79</span>&#160;  <span class="keyword">auto</span> body = fextern(input_placeholders, output_placeholders);</div>
-<div class="line"><a name="l00080"></a><span class="lineno">   80</span>&#160;  <span class="keyword">auto</span> body_stmt = <a class="code" href="namespacetvm_1_1script_1_1ir__builder_1_1tir.html#a101850df27120c29355e6215b9b2b525">tvm::tir::Evaluate</a>(body);</div>
-<div class="line"><a name="l00081"></a><span class="lineno">   81</span>&#160; </div>
-<div class="line"><a name="l00082"></a><span class="lineno">   82</span>&#160;  <span class="keyword">auto</span> op = <a class="code" href="classtvm_1_1te_1_1ExternOp.html">ExternOp</a>(name, tag, attrs, inputs, input_placeholders, output_placeholders, body_stmt);</div>
-<div class="line"><a name="l00083"></a><span class="lineno">   83</span>&#160; </div>
-<div class="line"><a name="l00084"></a><span class="lineno">   84</span>&#160;  Array&lt;Tensor&gt; outputs;</div>
-<div class="line"><a name="l00085"></a><span class="lineno">   85</span>&#160;  <span class="keywordflow">for</span> (<span class="keywordtype">size_t</span> i = 0; i &lt; output_placeholders.size(); ++i) {</div>
-<div class="line"><a name="l00086"></a><span class="lineno">   86</span>&#160;    outputs.push_back(op.output(i));</div>
-<div class="line"><a name="l00087"></a><span class="lineno">   87</span>&#160;  }</div>
-<div class="line"><a name="l00088"></a><span class="lineno">   88</span>&#160;  <span class="keywordflow">return</span> outputs;</div>
-<div class="line"><a name="l00089"></a><span class="lineno">   89</span>&#160;}</div>
-<div class="line"><a name="l00090"></a><span class="lineno">   90</span>&#160; </div>
-<div class="line"><a name="l00099"></a><span class="lineno">   99</span>&#160;<span class="keyword">inline</span> PrimExpr pack_buffer(<a class="code" href="classtvm_1_1tir_1_1Buffer.html">Buffer</a> buf) {</div>
-<div class="line"><a name="l00100"></a><span class="lineno">  100</span>&#160;  ICHECK_GT(buf-&gt;shape.size(), 0) &lt;&lt; <span class="stringliteral">&quot;buf shape must have at least one element&quot;</span>;</div>
-<div class="line"><a name="l00101"></a><span class="lineno">  101</span>&#160;  <span class="keyword">auto</span> <a class="code" href="namespacetvm_1_1topi.html#af30c02f3a3f37c7963b3af60fb9c72a1">shape</a> =</div>
-<div class="line"><a name="l00102"></a><span class="lineno">  102</span>&#160;      <a class="code" href="classtvm_1_1tir_1_1Call.html">tvm::tir::Call</a>(<a class="code" href="classtvm_1_1runtime_1_1DataType.html#aebad9f7235dd20af649fb5c2113797b8">DataType::Handle</a>(), <a class="code" href="namespacetvm_1_1tir_1_1builtin.html#abd540cb73407771ecfb4f78722ce5a1b">tvm::tir::builtin::tvm_stack_make_shape</a>(), buf-&gt;shape);</div>
-<div class="line"><a name="l00103"></a><span class="lineno">  103</span>&#160;  PrimExpr strides;</div>
-<div class="line"><a name="l00104"></a><span class="lineno">  104</span>&#160;  <span class="keywordflow">if</span> (buf-&gt;strides.size() &gt; 0) {</div>
-<div class="line"><a name="l00105"></a><span class="lineno">  105</span>&#160;    strides =</div>
-<div class="line"><a name="l00106"></a><span class="lineno">  106</span>&#160;        <a class="code" href="classtvm_1_1tir_1_1Call.html">tvm::tir::Call</a>(<a class="code" href="classtvm_1_1runtime_1_1DataType.html#aebad9f7235dd20af649fb5c2113797b8">DataType::Handle</a>(), <a class="code" href="namespacetvm_1_1tir_1_1builtin.html#abd540cb73407771ecfb4f78722ce5a1b">tvm::tir::builtin::tvm_stack_make_shape</a>(), buf-&gt;strides);</div>
-<div class="line"><a name="l00107"></a><span class="lineno">  107</span>&#160;  } <span class="keywordflow">else</span> {</div>
-<div class="line"><a name="l00108"></a><span class="lineno">  108</span>&#160;    strides = 0;</div>
-<div class="line"><a name="l00109"></a><span class="lineno">  109</span>&#160;  }</div>
-<div class="line"><a name="l00110"></a><span class="lineno">  110</span>&#160;  Array&lt;PrimExpr&gt; pack_args{buf-&gt;data,</div>
-<div class="line"><a name="l00111"></a><span class="lineno">  111</span>&#160;                            <a class="code" href="namespacetvm_1_1topi.html#af30c02f3a3f37c7963b3af60fb9c72a1">shape</a>,</div>
-<div class="line"><a name="l00112"></a><span class="lineno">  112</span>&#160;                            strides,</div>
-<div class="line"><a name="l00113"></a><span class="lineno">  113</span>&#160;                            <a class="code" href="namespacetvm_1_1tir.html#a1a071208bbbab6b220cf46f5cdccdd86">make_const</a>(<a class="code" href="classtvm_1_1runtime_1_1DataType.html#ab45f13dd70d982d9f977c79b6f7fac98">DataType::Int</a>(32), <span class="keyword">static_cast&lt;</span>int64_t<span class="keyword">&gt;</span>(buf-&gt;shape.size())),</div>
-<div class="line"><a name="l00114"></a><span class="lineno">  114</span>&#160;                            <a class="code" href="namespacetvm_1_1tir.html#a1a071208bbbab6b220cf46f5cdccdd86">make_const</a>(buf-&gt;dtype, 0),</div>
-<div class="line"><a name="l00115"></a><span class="lineno">  115</span>&#160;                            buf-&gt;elem_offset};</div>
-<div class="line"><a name="l00116"></a><span class="lineno">  116</span>&#160;  <span class="keywordflow">return</span> <a class="code" href="classtvm_1_1tir_1_1Call.html">tvm::tir::Call</a>(<a class="code" href="classtvm_1_1runtime_1_1DataType.html#aebad9f7235dd20af649fb5c2113797b8">DataType::Handle</a>(), <a class="code" href="namespacetvm_1_1tir_1_1builtin.html#a28f99e6dd767482765b854ee9fc71f2c">tvm::tir::builtin::tvm_stack_make_array</a>(), pack_args);</div>
-<div class="line"><a name="l00117"></a><span class="lineno">  117</span>&#160;}</div>
-<div class="line"><a name="l00118"></a><span class="lineno">  118</span>&#160; </div>
-<div class="line"><a name="l00128"></a><span class="lineno">  128</span>&#160;<span class="keyword">inline</span> PrimExpr call_packed(Array&lt;PrimExpr&gt; args) {</div>
-<div class="line"><a name="l00129"></a><span class="lineno">  129</span>&#160;  <span class="keywordflow">return</span> <a class="code" href="classtvm_1_1tir_1_1Call.html">tvm::tir::Call</a>(<a class="code" href="classtvm_1_1runtime_1_1DataType.html#ab45f13dd70d982d9f977c79b6f7fac98">DataType::Int</a>(32), <a class="code" href="namespacetvm_1_1tir_1_1builtin.html#a2c13c6e4b2f92e17f357665f9f11736c">tvm::tir::builtin::tvm_call_packed</a>(), args);</div>
-<div class="line"><a name="l00130"></a><span class="lineno">  130</span>&#160;}</div>
-<div class="line"><a name="l00131"></a><span class="lineno">  131</span>&#160; </div>
-<div class="line"><a name="l00132"></a><span class="lineno">  132</span>&#160;}  <span class="comment">// namespace detail</span></div>
-<div class="line"><a name="l00133"></a><span class="lineno">  133</span>&#160;}  <span class="comment">// namespace topi</span></div>
-<div class="line"><a name="l00134"></a><span class="lineno">  134</span>&#160;}  <span class="comment">// namespace tvm</span></div>
-<div class="line"><a name="l00135"></a><span class="lineno">  135</span>&#160;<span class="preprocessor">#endif  </span><span class="comment">// TVM_TOPI_DETAIL_EXTERN_H_</span></div>
+<div class="line"><a name="l00063"></a><span class="lineno">   63</span>&#160;<span class="keyword">inline</span> ffi::Array&lt;Tensor&gt; make_extern(<span class="keyword">const</span> ffi::Array&lt;ffi::Array&lt;PrimExpr&gt;&gt;&amp; out_shapes,</div>
+<div class="line"><a name="l00064"></a><span class="lineno">   64</span>&#160;                                      <span class="keyword">const</span> std::vector&lt;DataType&gt;&amp; out_types,</div>
+<div class="line"><a name="l00065"></a><span class="lineno">   65</span>&#160;                                      <span class="keyword">const</span> ffi::Array&lt;Tensor&gt;&amp; inputs, FExtern fextern,</div>
+<div class="line"><a name="l00066"></a><span class="lineno">   66</span>&#160;                                      std::string name, std::string tag,</div>
+<div class="line"><a name="l00067"></a><span class="lineno">   67</span>&#160;                                      ::tvm::ffi::Map&lt;ffi::String, ffi::Any&gt; attrs) {</div>
+<div class="line"><a name="l00068"></a><span class="lineno">   68</span>&#160;  ICHECK_EQ(out_shapes.size(), out_types.size())</div>
+<div class="line"><a name="l00069"></a><span class="lineno">   69</span>&#160;      &lt;&lt; <span class="stringliteral">&quot;make_extern: out_shapes and out_types must have equal size&quot;</span>;</div>
+<div class="line"><a name="l00070"></a><span class="lineno">   70</span>&#160; </div>
+<div class="line"><a name="l00071"></a><span class="lineno">   71</span>&#160;  ffi::Array&lt;Buffer&gt; input_placeholders;</div>
+<div class="line"><a name="l00072"></a><span class="lineno">   72</span>&#160;  <span class="keywordflow">for</span> (<span class="keyword">auto</span> t : inputs) {</div>
+<div class="line"><a name="l00073"></a><span class="lineno">   73</span>&#160;    input_placeholders.push_back(<a class="code" href="namespacetvm_1_1tir.html#ae79e5c24dfb22cc60b4da7f2d37d6e04">tvm::tir::decl_buffer</a>(t-&gt;shape, t-&gt;dtype, t-&gt;op-&gt;name));</div>
+<div class="line"><a name="l00074"></a><span class="lineno">   74</span>&#160;  }</div>
+<div class="line"><a name="l00075"></a><span class="lineno">   75</span>&#160;  ffi::Array&lt;Buffer&gt; output_placeholders;</div>
+<div class="line"><a name="l00076"></a><span class="lineno">   76</span>&#160;  <span class="keywordflow">for</span> (<span class="keywordtype">size_t</span> i = 0; i &lt; out_shapes.size(); ++i) {</div>
+<div class="line"><a name="l00077"></a><span class="lineno">   77</span>&#160;    output_placeholders.push_back(<a class="code" href="namespacetvm_1_1tir.html#ae79e5c24dfb22cc60b4da7f2d37d6e04">tvm::tir::decl_buffer</a>(out_shapes[i], out_types[i], name));</div>
+<div class="line"><a name="l00078"></a><span class="lineno">   78</span>&#160;  }</div>
+<div class="line"><a name="l00079"></a><span class="lineno">   79</span>&#160; </div>
+<div class="line"><a name="l00080"></a><span class="lineno">   80</span>&#160;  <span class="keyword">auto</span> body = fextern(input_placeholders, output_placeholders);</div>
+<div class="line"><a name="l00081"></a><span class="lineno">   81</span>&#160;  <span class="keyword">auto</span> body_stmt = <a class="code" href="namespacetvm_1_1script_1_1ir__builder_1_1tir.html#a101850df27120c29355e6215b9b2b525">tvm::tir::Evaluate</a>(body);</div>
+<div class="line"><a name="l00082"></a><span class="lineno">   82</span>&#160; </div>
+<div class="line"><a name="l00083"></a><span class="lineno">   83</span>&#160;  <span class="keyword">auto</span> op = <a class="code" href="classtvm_1_1te_1_1ExternOp.html">ExternOp</a>(name, tag, attrs, inputs, input_placeholders, output_placeholders, body_stmt);</div>
+<div class="line"><a name="l00084"></a><span class="lineno">   84</span>&#160; </div>
+<div class="line"><a name="l00085"></a><span class="lineno">   85</span>&#160;  ffi::Array&lt;Tensor&gt; outputs;</div>
+<div class="line"><a name="l00086"></a><span class="lineno">   86</span>&#160;  <span class="keywordflow">for</span> (<span class="keywordtype">size_t</span> i = 0; i &lt; output_placeholders.size(); ++i) {</div>
+<div class="line"><a name="l00087"></a><span class="lineno">   87</span>&#160;    outputs.push_back(op.output(i));</div>
+<div class="line"><a name="l00088"></a><span class="lineno">   88</span>&#160;  }</div>
+<div class="line"><a name="l00089"></a><span class="lineno">   89</span>&#160;  <span class="keywordflow">return</span> outputs;</div>
+<div class="line"><a name="l00090"></a><span class="lineno">   90</span>&#160;}</div>
+<div class="line"><a name="l00091"></a><span class="lineno">   91</span>&#160; </div>
+<div class="line"><a name="l00100"></a><span class="lineno">  100</span>&#160;<span class="keyword">inline</span> PrimExpr pack_buffer(<a class="code" href="classtvm_1_1tir_1_1Buffer.html">Buffer</a> buf) {</div>
+<div class="line"><a name="l00101"></a><span class="lineno">  101</span>&#160;  ICHECK_GT(buf-&gt;shape.size(), 0) &lt;&lt; <span class="stringliteral">&quot;buf shape must have at least one element&quot;</span>;</div>
+<div class="line"><a name="l00102"></a><span class="lineno">  102</span>&#160;  <span class="keyword">auto</span> <a class="code" href="namespacetvm_1_1topi.html#af30c02f3a3f37c7963b3af60fb9c72a1">shape</a> =</div>
+<div class="line"><a name="l00103"></a><span class="lineno">  103</span>&#160;      <a class="code" href="classtvm_1_1tir_1_1Call.html">tvm::tir::Call</a>(<a class="code" href="classtvm_1_1runtime_1_1DataType.html#aebad9f7235dd20af649fb5c2113797b8">DataType::Handle</a>(), <a class="code" href="namespacetvm_1_1tir_1_1builtin.html#abd540cb73407771ecfb4f78722ce5a1b">tvm::tir::builtin::tvm_stack_make_shape</a>(), buf-&gt;shape);</div>
+<div class="line"><a name="l00104"></a><span class="lineno">  104</span>&#160;  PrimExpr strides;</div>
+<div class="line"><a name="l00105"></a><span class="lineno">  105</span>&#160;  <span class="keywordflow">if</span> (buf-&gt;strides.size() &gt; 0) {</div>
+<div class="line"><a name="l00106"></a><span class="lineno">  106</span>&#160;    strides =</div>
+<div class="line"><a name="l00107"></a><span class="lineno">  107</span>&#160;        <a class="code" href="classtvm_1_1tir_1_1Call.html">tvm::tir::Call</a>(<a class="code" href="classtvm_1_1runtime_1_1DataType.html#aebad9f7235dd20af649fb5c2113797b8">DataType::Handle</a>(), <a class="code" href="namespacetvm_1_1tir_1_1builtin.html#abd540cb73407771ecfb4f78722ce5a1b">tvm::tir::builtin::tvm_stack_make_shape</a>(), buf-&gt;strides);</div>
+<div class="line"><a name="l00108"></a><span class="lineno">  108</span>&#160;  } <span class="keywordflow">else</span> {</div>
+<div class="line"><a name="l00109"></a><span class="lineno">  109</span>&#160;    strides = 0;</div>
+<div class="line"><a name="l00110"></a><span class="lineno">  110</span>&#160;  }</div>
+<div class="line"><a name="l00111"></a><span class="lineno">  111</span>&#160;  ffi::Array&lt;PrimExpr&gt; pack_args{</div>
+<div class="line"><a name="l00112"></a><span class="lineno">  112</span>&#160;      buf-&gt;data,</div>
+<div class="line"><a name="l00113"></a><span class="lineno">  113</span>&#160;      <a class="code" href="namespacetvm_1_1topi.html#af30c02f3a3f37c7963b3af60fb9c72a1">shape</a>,</div>
+<div class="line"><a name="l00114"></a><span class="lineno">  114</span>&#160;      strides,</div>
+<div class="line"><a name="l00115"></a><span class="lineno">  115</span>&#160;      <a class="code" href="namespacetvm_1_1tir.html#a1a071208bbbab6b220cf46f5cdccdd86">make_const</a>(<a class="code" href="classtvm_1_1runtime_1_1DataType.html#ab45f13dd70d982d9f977c79b6f7fac98">DataType::Int</a>(32), <span class="keyword">static_cast&lt;</span>int64_t<span class="keyword">&gt;</span>(buf-&gt;shape.size())),</div>
+<div class="line"><a name="l00116"></a><span class="lineno">  116</span>&#160;      <a class="code" href="namespacetvm_1_1tir.html#a1a071208bbbab6b220cf46f5cdccdd86">make_const</a>(buf-&gt;dtype, 0),</div>
+<div class="line"><a name="l00117"></a><span class="lineno">  117</span>&#160;      buf-&gt;elem_offset};</div>
+<div class="line"><a name="l00118"></a><span class="lineno">  118</span>&#160;  <span class="keywordflow">return</span> <a class="code" href="classtvm_1_1tir_1_1Call.html">tvm::tir::Call</a>(<a class="code" href="classtvm_1_1runtime_1_1DataType.html#aebad9f7235dd20af649fb5c2113797b8">DataType::Handle</a>(), <a class="code" href="namespacetvm_1_1tir_1_1builtin.html#a28f99e6dd767482765b854ee9fc71f2c">tvm::tir::builtin::tvm_stack_make_array</a>(), pack_args);</div>
+<div class="line"><a name="l00119"></a><span class="lineno">  119</span>&#160;}</div>
+<div class="line"><a name="l00120"></a><span class="lineno">  120</span>&#160; </div>
+<div class="line"><a name="l00130"></a><span class="lineno">  130</span>&#160;<span class="keyword">inline</span> PrimExpr call_packed(ffi::Array&lt;PrimExpr&gt; args) {</div>
+<div class="line"><a name="l00131"></a><span class="lineno">  131</span>&#160;  <span class="keywordflow">return</span> <a class="code" href="classtvm_1_1tir_1_1Call.html">tvm::tir::Call</a>(<a class="code" href="classtvm_1_1runtime_1_1DataType.html#ab45f13dd70d982d9f977c79b6f7fac98">DataType::Int</a>(32), <a class="code" href="namespacetvm_1_1tir_1_1builtin.html#a2c13c6e4b2f92e17f357665f9f11736c">tvm::tir::builtin::tvm_call_packed</a>(), args);</div>
+<div class="line"><a name="l00132"></a><span class="lineno">  132</span>&#160;}</div>
+<div class="line"><a name="l00133"></a><span class="lineno">  133</span>&#160; </div>
+<div class="line"><a name="l00134"></a><span class="lineno">  134</span>&#160;}  <span class="comment">// namespace detail</span></div>
+<div class="line"><a name="l00135"></a><span class="lineno">  135</span>&#160;}  <span class="comment">// namespace topi</span></div>
+<div class="line"><a name="l00136"></a><span class="lineno">  136</span>&#160;}  <span class="comment">// namespace tvm</span></div>
+<div class="line"><a name="l00137"></a><span class="lineno">  137</span>&#160;<span class="preprocessor">#endif  </span><span class="comment">// TVM_TOPI_DETAIL_EXTERN_H_</span></div>
 <div class="ttc" id="aclasstvm_1_1runtime_1_1DataType_html_ab45f13dd70d982d9f977c79b6f7fac98"><div class="ttname"><a href="classtvm_1_1runtime_1_1DataType.html#ab45f13dd70d982d9f977c79b6f7fac98">tvm::runtime::DataType::Int</a></div><div class="ttdeci">static DataType Int(int bits, int lanes=1)</div><div class="ttdoc">Construct an int type.</div><div class="ttdef"><b>Definition:</b> data_type.h:274</div></div>
 <div class="ttc" id="aclasstvm_1_1runtime_1_1DataType_html_aebad9f7235dd20af649fb5c2113797b8"><div class="ttname"><a href="classtvm_1_1runtime_1_1DataType.html#aebad9f7235dd20af649fb5c2113797b8">tvm::runtime::DataType::Handle</a></div><div class="ttdeci">static DataType Handle(int bits=64, int lanes=1)</div><div class="ttdoc">Construct a handle type.</div><div class="ttdef"><b>Definition:</b> data_type.h:392</div></div>
-<div class="ttc" id="aclasstvm_1_1te_1_1ExternOp_html"><div class="ttname"><a href="classtvm_1_1te_1_1ExternOp.html">tvm::te::ExternOp</a></div><div class="ttdoc">Managed reference to ExternOpNode.</div><div class="ttdef"><b>Definition:</b> operation.h:304</div></div>
+<div class="ttc" id="aclasstvm_1_1te_1_1ExternOp_html"><div class="ttname"><a href="classtvm_1_1te_1_1ExternOp.html">tvm::te::ExternOp</a></div><div class="ttdoc">Managed reference to ExternOpNode.</div><div class="ttdef"><b>Definition:</b> operation.h:305</div></div>
 <div class="ttc" id="aclasstvm_1_1tir_1_1Buffer_html"><div class="ttname"><a href="classtvm_1_1tir_1_1Buffer.html">tvm::tir::Buffer</a></div><div class="ttdoc">Buffer is a symbolic n-darray structure. It is a composition of primitive symbolic types,...</div><div class="ttdef"><b>Definition:</b> buffer.h:157</div></div>
-<div class="ttc" id="aclasstvm_1_1tir_1_1Call_html"><div class="ttname"><a href="classtvm_1_1tir_1_1Call.html">tvm::tir::Call</a></div><div class="ttdoc">Managed reference to CallNode.</div><div class="ttdef"><b>Definition:</b> expr.h:764</div></div>
+<div class="ttc" id="aclasstvm_1_1tir_1_1Call_html"><div class="ttname"><a href="classtvm_1_1tir_1_1Call.html">tvm::tir::Call</a></div><div class="ttdoc">Managed reference to CallNode.</div><div class="ttdef"><b>Definition:</b> expr.h:765</div></div>
 <div class="ttc" id="anamespacetvm_1_1script_1_1ir__builder_1_1tir_html_a101850df27120c29355e6215b9b2b525"><div class="ttname"><a href="namespacetvm_1_1script_1_1ir__builder_1_1tir.html#a101850df27120c29355e6215b9b2b525">tvm::script::ir_builder::tir::Evaluate</a></div><div class="ttdeci">void Evaluate(PrimExpr value)</div><div class="ttdoc">Evaluate the input expression.</div></div>
 <div class="ttc" id="anamespacetvm_1_1te_html"><div class="ttname"><a href="namespacetvm_1_1te.html">tvm::te</a></div><div class="ttdoc">Tensor expression language DSL.</div><div class="ttdef"><b>Definition:</b> extracted_task.h:33</div></div>
 <div class="ttc" id="anamespacetvm_1_1tir_1_1builtin_html_a28f99e6dd767482765b854ee9fc71f2c"><div class="ttname"><a href="namespacetvm_1_1tir_1_1builtin.html#a28f99e6dd767482765b854ee9fc71f2c">tvm::tir::builtin::tvm_stack_make_array</a></div><div class="ttdeci">const Op &amp; tvm_stack_make_array()</div><div class="ttdoc">Allocate a Tensor(DLTensor) on stack, return the handle.</div></div>
 <div class="ttc" id="anamespacetvm_1_1tir_1_1builtin_html_a2c13c6e4b2f92e17f357665f9f11736c"><div class="ttname"><a href="namespacetvm_1_1tir_1_1builtin.html#a2c13c6e4b2f92e17f357665f9f11736c">tvm::tir::builtin::tvm_call_packed</a></div><div class="ttdeci">const Op &amp; tvm_call_packed()</div><div class="ttdoc">See pesudo code.</div></div>
 <div class="ttc" id="anamespacetvm_1_1tir_1_1builtin_html_abd540cb73407771ecfb4f78722ce5a1b"><div class="ttname"><a href="namespacetvm_1_1tir_1_1builtin.html#abd540cb73407771ecfb4f78722ce5a1b">tvm::tir::builtin::tvm_stack_make_shape</a></div><div class="ttdeci">const Op &amp; tvm_stack_make_shape()</div><div class="ttdoc">Allocate a shape tuple on stack, return the handle.</div></div>
 <div class="ttc" id="anamespacetvm_1_1tir_html_a1a071208bbbab6b220cf46f5cdccdd86"><div class="ttname"><a href="namespacetvm_1_1tir.html#a1a071208bbbab6b220cf46f5cdccdd86">tvm::tir::make_const</a></div><div class="ttdeci">PrimExpr make_const(DataType t, ValueType value, Span span=Span())</div><div class="ttdoc">Make a const value with certain data type.</div><div class="ttdef"><b>Definition:</b> op.h:980</div></div>
-<div class="ttc" id="anamespacetvm_1_1tir_html_a6e45f15194006a766d53adc8adf45d21"><div class="ttname"><a href="namespacetvm_1_1tir.html#a6e45f15194006a766d53adc8adf45d21">tvm::tir::decl_buffer</a></div><div class="ttdeci">Buffer decl_buffer(Array&lt; PrimExpr &gt; shape, DataType dtype=DataType::Float(32), String name=&quot;buffer&quot;, String storage_scope=&quot;&quot;, Optional&lt; Array&lt; IntImm &gt;&gt; axis_separators=std::nullopt, Span span=Span())</div><div class="ttdoc">Construct a new buffer given shape, and dtype.</div></div>
-<div class="ttc" id="anamespacetvm_1_1topi_html_af30c02f3a3f37c7963b3af60fb9c72a1"><div class="ttname"><a href="namespacetvm_1_1topi.html#af30c02f3a3f37c7963b3af60fb9c72a1">tvm::topi::shape</a></div><div class="ttdeci">Tensor shape(const Tensor &amp;src, DataType dtype, const std::string name=&quot;T_shape&quot;, const std::string tag=kInjective)</div><div class="ttdoc">Get the shape of input tensor.</div><div class="ttdef"><b>Definition:</b> transform.h:1945</div></div>
+<div class="ttc" id="anamespacetvm_1_1tir_html_ae79e5c24dfb22cc60b4da7f2d37d6e04"><div class="ttname"><a href="namespacetvm_1_1tir.html#ae79e5c24dfb22cc60b4da7f2d37d6e04">tvm::tir::decl_buffer</a></div><div class="ttdeci">Buffer decl_buffer(ffi::Array&lt; PrimExpr &gt; shape, DataType dtype=DataType::Float(32), ffi::String name=&quot;buffer&quot;, ffi::String storage_scope=&quot;&quot;, ffi::Optional&lt; ffi::Array&lt; IntImm &gt;&gt; axis_separators=std::nullopt, Span span=Span())</div><div class="ttdoc">Construct a new buffer given shape, and dtype.</div></div>
+<div class="ttc" id="anamespacetvm_1_1topi_html_af30c02f3a3f37c7963b3af60fb9c72a1"><div class="ttname"><a href="namespacetvm_1_1topi.html#af30c02f3a3f37c7963b3af60fb9c72a1">tvm::topi::shape</a></div><div class="ttdeci">Tensor shape(const Tensor &amp;src, DataType dtype, const std::string name=&quot;T_shape&quot;, const std::string tag=kInjective)</div><div class="ttdoc">Get the shape of input tensor.</div><div class="ttdef"><b>Definition:</b> transform.h:1960</div></div>
 <div class="ttc" id="anamespacetvm_html"><div class="ttname"><a href="namespacetvm.html">tvm</a></div><div class="ttdoc">Performance counters for profiling via the PAPI library.</div><div class="ttdef"><b>Definition:</b> analyzer.h:37</div></div>
 <div class="ttc" id="aoperation_8h_html"><div class="ttname"><a href="operation_8h.html">operation.h</a></div><div class="ttdoc">Operation node can generate one or multiple Tensors.</div></div>
 <div class="ttc" id="atir_2builtin_8h_html"><div class="ttname"><a href="tir_2builtin_8h.html">builtin.h</a></div><div class="ttdoc">TIR builtin intrinsics.</div></div>
