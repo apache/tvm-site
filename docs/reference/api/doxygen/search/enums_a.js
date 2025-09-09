@@ -1,5 +1,5 @@
 var searchData=
 [
-  ['opcode_7746',['Opcode',['../namespacetvm_1_1runtime_1_1vm.html#a8d8d95ce8d629c7213f2f595917870ec',1,'tvm::runtime::vm']]],
-  ['oppatternkind_7747',['OpPatternKind',['../namespacetvm_1_1relax.html#acffa9e980a7331f2eb89cce97f2e3575',1,'tvm::relax']]]
+  ['opcode_7738',['Opcode',['../namespacetvm_1_1runtime_1_1vm.html#a8d8d95ce8d629c7213f2f595917870ec',1,'tvm::runtime::vm']]],
+  ['oppatternkind_7739',['OpPatternKind',['../namespacetvm_1_1relax.html#acffa9e980a7331f2eb89cce97f2e3575',1,'tvm::relax']]]
 ];
