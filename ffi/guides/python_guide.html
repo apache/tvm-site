@@ -193,6 +193,10 @@
 <li class="toctree-l2"><a class="reference internal" href="../reference/python/generated/tvm_ffi.from_dlpack.html">tvm_ffi.from_dlpack</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../reference/python/generated/tvm_ffi.Array.html">tvm_ffi.Array</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../reference/python/generated/tvm_ffi.Map.html">tvm_ffi.Map</a></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../reference/python/cpp/index.html">tvm_ffi.cpp</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="../reference/python/cpp/generated/tvm_ffi.cpp.load_inline.html">tvm_ffi.cpp.load_inline</a></li>
+</ul>
+</details></li>
 </ul>
 </details></li>
 <li class="toctree-l1 has-children"><a class="reference internal" href="../reference/cpp/index.html">C++ API</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
@@ -586,6 +590,7 @@ document.write(`
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#tensor">Tensor</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#functions-and-callbacks">Functions and Callbacks</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#container-types">Container Types</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#inline-module">Inline Module</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#error-handling">Error Handling</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#advanced-register-your-own-object">Advanced: Register Your Own Object</a></li>
 </ul>
@@ -723,6 +728,46 @@ You can also register a Python callback as a global function.</p>
 </div>
 <p>When container values are returned from FFI functions, they are also stored in these
 types respectively.</p>
+</section>
+<section id="inline-module">
+<h2>Inline Module<a class="headerlink" href="#inline-module" title="Link to this heading">#</a></h2>
+<p>You can also load a <em>inline module</em> where the C++/CUDA code is directly embedded in the Python script and then compiled
+on the fly. For example, we can define a simple kernel that adds one to each element of an array as follows:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">torch</span>
+<span class="kn">from</span> <span class="nn">tvm_ffi</span> <span class="kn">import</span> <span class="n">Module</span>
+<span class="kn">import</span> <span class="nn">tvm_ffi.cpp</span>
+
+<span class="c1"># define the cpp source code</span>
+<span class="n">cpp_source</span> <span class="o">=</span> <span class="s1">&#39;&#39;&#39;</span>
+<span class="s1">     void add_one_cpu(tvm::ffi::Tensor x, tvm::ffi::Tensor y) {</span>
+<span class="s1">       // implementation of a library function</span>
+<span class="s1">       TVM_FFI_ICHECK(x-&gt;ndim == 1) &lt;&lt; &quot;x must be a 1D tensor&quot;;</span>
+<span class="s1">       DLDataType f32_dtype{kDLFloat, 32, 1};</span>
+<span class="s1">       TVM_FFI_ICHECK(x-&gt;dtype == f32_dtype) &lt;&lt; &quot;x must be a float tensor&quot;;</span>
+<span class="s1">       TVM_FFI_ICHECK(y-&gt;ndim == 1) &lt;&lt; &quot;y must be a 1D tensor&quot;;</span>
+<span class="s1">       TVM_FFI_ICHECK(y-&gt;dtype == f32_dtype) &lt;&lt; &quot;y must be a float tensor&quot;;</span>
+<span class="s1">       TVM_FFI_ICHECK(x-&gt;shape[0] == y-&gt;shape[0]) &lt;&lt; &quot;x and y must have the same shape&quot;;</span>
+<span class="s1">       for (int i = 0; i &lt; x-&gt;shape[0]; ++i) {</span>
+<span class="s1">         static_cast&lt;float*&gt;(y-&gt;data)[i] = static_cast&lt;float*&gt;(x-&gt;data)[i] + 1;</span>
+<span class="s1">       }</span>
+<span class="s1">     }</span>
+<span class="s1">&#39;&#39;&#39;</span>
+
+<span class="c1"># compile the cpp source code and load the module</span>
+<span class="n">mod</span><span class="p">:</span> <span class="n">Module</span> <span class="o">=</span> <span class="n">tvm_ffi</span><span class="o">.</span><span class="n">cpp</span><span class="o">.</span><span class="n">load_inline</span><span class="p">(</span>
+    <span class="n">name</span><span class="o">=</span><span class="s1">&#39;hello&#39;</span><span class="p">,</span> <span class="n">cpp_sources</span><span class="o">=</span><span class="n">cpp_source</span><span class="p">,</span> <span class="n">functions</span><span class="o">=</span><span class="s1">&#39;add_one_cpu&#39;</span>
+<span class="p">)</span>
+
+<span class="c1"># use the function from the loaded module to perform</span>
+<span class="n">x</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+<span class="n">y</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">empty_like</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+<span class="n">mod</span><span class="o">.</span><span class="n">add_one_cpu</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+<span class="n">torch</span><span class="o">.</span><span class="n">testing</span><span class="o">.</span><span class="n">assert_close</span><span class="p">(</span><span class="n">x</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The above code defines a C++ function <code class="docutils literal notranslate"><span class="pre">add_one_cpu</span></code> in Python script, compiles it on the fly and then loads the compiled
+<a class="reference internal" href="../reference/python/generated/tvm_ffi.Module.html#tvm_ffi.Module" title="tvm_ffi.Module"><code class="xref py py-class docutils literal notranslate"><span class="pre">tvm_ffi.Module</span></code></a> object via <a class="reference internal" href="../reference/python/cpp/generated/tvm_ffi.cpp.load_inline.html#tvm_ffi.cpp.load_inline" title="tvm_ffi.cpp.load_inline"><code class="xref py py-func docutils literal notranslate"><span class="pre">tvm_ffi.cpp.load_inline()</span></code></a>. You can then call the function <code class="docutils literal notranslate"><span class="pre">add_one_cpu</span></code>
+from the module as usual.</p>
 </section>
 <section id="error-handling">
 <h2>Error Handling<a class="headerlink" href="#error-handling" title="Link to this heading">#</a></h2>
@@ -870,6 +915,7 @@ on both the base class and the child class.</p>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#tensor">Tensor</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#functions-and-callbacks">Functions and Callbacks</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#container-types">Container Types</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#inline-module">Inline Module</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#error-handling">Error Handling</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#advanced-register-your-own-object">Advanced: Register Your Own Object</a></li>
 </ul>
