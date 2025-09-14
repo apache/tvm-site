@@ -35,6 +35,12 @@ Includes
 --------
 
 
+- ``atomic``
+
+- ``memory`` (:ref:`file_tvm_ffi_memory.h`)
+
+- ``string`` (:ref:`file_tvm_ffi_string.h`)
+
 - ``tvm/ffi/container/shape.h`` (:ref:`file_tvm_ffi_container_shape.h`)
 
 - ``tvm/ffi/dtype.h`` (:ref:`file_tvm_ffi_dtype.h`)

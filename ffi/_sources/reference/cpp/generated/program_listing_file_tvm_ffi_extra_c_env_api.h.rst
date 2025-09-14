@@ -44,11 +44,17 @@ Program Listing for File c_env_api.h
    // ----------------------------------------------------------------------------
    typedef void* TVMFFIStreamHandle;
    
-   TVM_FFI_DLL int TVMFFIEnvSetCurrentStream(int32_t device_type, int32_t device_id,
-                                             TVMFFIStreamHandle stream,
-                                             TVMFFIStreamHandle* opt_out_original_stream);
+   TVM_FFI_DLL int TVMFFIEnvSetStream(int32_t device_type, int32_t device_id,
+                                      TVMFFIStreamHandle stream,
+                                      TVMFFIStreamHandle* opt_out_original_stream);
    
-   TVM_FFI_DLL TVMFFIStreamHandle TVMFFIEnvGetCurrentStream(int32_t device_type, int32_t device_id);
+   TVM_FFI_DLL TVMFFIStreamHandle TVMFFIEnvGetStream(int32_t device_type, int32_t device_id);
+   
+   TVM_FFI_DLL int TVMFFIEnvSetTensorAllocator(DLPackTensorAllocator allocator,
+                                               int write_to_global_context,
+                                               DLPackTensorAllocator* opt_out_original_allocator);
+   
+   TVM_FFI_DLL DLPackTensorAllocator TVMFFIEnvGetTensorAllocator();
    
    TVM_FFI_DLL int TVMFFIEnvCheckSignals();
    

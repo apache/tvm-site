@@ -43,6 +43,21 @@ Program Listing for File c_api.h
    #include <dlpack/dlpack.h>
    #include <stdint.h>
    
+   /*
+    * \brief C-style Allocator that allocates memory for a DLPack tensor.
+    * \param prototype The prototype DLTensor to offer details about device and shape.
+    * \param out The output DLManagedTensorVersioned.
+    * \param error_ctx The context to set the error.
+    * \param SetError The function to set the error.
+    * \return 0 on success, -1 on failure.
+    *         call SetError(error_ctx, kind, message) to set the error kind and message.
+    * \note Error propagation via SetError.
+    */
+   typedef int (*DLPackTensorAllocator)(                                         //
+       DLTensor* prototype, DLManagedTensorVersioned** out, void* error_ctx,     //
+       void (*SetError)(void* error_ctx, const char* kind, const char* message)  //
+   );
+   
    // Macros to do weak linking
    #ifdef _MSC_VER
    #define TVM_FFI_WEAK __declspec(selectany)
@@ -259,6 +274,13 @@ Program Listing for File c_api.h
    
    TVM_FFI_DLL int TVMFFITensorToDLPackVersioned(TVMFFIObjectHandle from,
                                                  DLManagedTensorVersioned** out);
+   //---------------------------------------------------------------
+   // Section: string/bytes support APIs.
+   // These APIs are used to simplify the string/bytes construction
+   //---------------------------------------------------------------
+   TVM_FFI_DLL int TVMFFIStringFromByteArray(const TVMFFIByteArray* input, TVMFFIAny* out);
+   
+   TVM_FFI_DLL int TVMFFIBytesFromByteArray(const TVMFFIByteArray* input, TVMFFIAny* out);
    
    //---------------------------------------------------------------
    // Section: dtype string support APIs.

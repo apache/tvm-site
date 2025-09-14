@@ -37,7 +37,6 @@ Function and Module
 .. autosummary::
   :toctree: generated/
 
-
   Function
   Module
   register_global_func

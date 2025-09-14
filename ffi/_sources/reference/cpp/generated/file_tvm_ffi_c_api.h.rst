@@ -111,6 +111,8 @@ Functions
 
 - :ref:`exhale_function_c__api_8h_1a63149ed43a6ecffa2146f92914c0bc7b`
 
+- :ref:`exhale_function_c__api_8h_1aa2a81275b69ba0f61ce556df85517ef9`
+
 - :ref:`exhale_function_c__api_8h_1a1dd5584d94f6e00a18f4cfa003dfb93a`
 
 - :ref:`exhale_function_c__api_8h_1a44604b1d0db208ed82cbc7cf0fd0f47c`
@@ -159,6 +161,8 @@ Functions
 
 - :ref:`exhale_function_c__api_8h_1a724b0d386cf3d50c7d141ca37be19092`
 
+- :ref:`exhale_function_c__api_8h_1a5a7e3fe8a94e066bc1bf897fbf736651`
+
 - :ref:`exhale_function_c__api_8h_1af1b8a29eb3f9405982c344f5e572dd65`
 
 - :ref:`exhale_function_c__api_8h_1adaf9a5ab3d30bb3eca58b430f2592fc0`
@@ -194,6 +198,8 @@ Defines
 Typedefs
 --------
 
+
+- :ref:`exhale_typedef_c__api_8h_1a33ac61395cb135bb994c7b903dda283f`
 
 - :ref:`exhale_typedef_c__api_8h_1ae22f1a87cbaf7f744d9201948c05d2a5`
 

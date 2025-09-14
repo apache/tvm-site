@@ -20,4 +20,10 @@
 
    
    
+   .. rubric:: Attributes
+
+   .. autosummary::
+   
+      ~Function.release_gil
+   
    

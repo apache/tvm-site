@@ -48,7 +48,9 @@ Functions
 
 - :ref:`exhale_function_c__env__api_8h_1a0e01ad3ed44c0240f1b76dbed7014234`
 
-- :ref:`exhale_function_c__env__api_8h_1a243e0a1548f8b6f3c082ef52452c760b`
+- :ref:`exhale_function_c__env__api_8h_1a8ce2ba89ca1d010a084b4c36ed6b2965`
+
+- :ref:`exhale_function_c__env__api_8h_1afefb1d6ef65cc62b634accb048866831`
 
 - :ref:`exhale_function_c__env__api_8h_1abcbbccfc02c57418e757033afce42ece`
 
@@ -58,7 +60,9 @@ Functions
 
 - :ref:`exhale_function_c__env__api_8h_1a36c15024744584acceaf0233947f9505`
 
-- :ref:`exhale_function_c__env__api_8h_1aa6a83c29281abd1797ca2522c336884c`
+- :ref:`exhale_function_c__env__api_8h_1ae24b47945440d1c0aca13af13bdaf916`
+
+- :ref:`exhale_function_c__env__api_8h_1aa598916625a0384c4605510ea8474f19`
 
 
 Typedefs
