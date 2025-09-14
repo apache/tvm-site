@@ -25,14 +25,6 @@ Program Listing for File function.h
    TVM_FFI_DLL_EXPORT_TYPED_FUNC(SubOne, [](int x) {
      return x - 1;
    });
-   
-   // The following code will cause compilation error.
-   // Because the same Function and ExportName
-   // TVM_FFI_DLL_EXPORT_TYPED_FUNC(AddOne_, AddOne_);
-   
-   // The following code is OK, assuming the macro
-   // is in a different namespace from xyz
-   // TVM_FFI_DLL_EXPORT_TYPED_FUNC(AddOne_, xyz::AddOne_);
    /*
     * Licensed to the Apache Software Foundation (ASF) under one
     * or more contributor license agreements.  See the NOTICE file
