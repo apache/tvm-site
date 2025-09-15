@@ -35,43 +35,49 @@ following options:
   use {c:macro}`TVM_FFI_DLL_EXPORT_TYPED_FUNC` to expose the symbol.
 
 The following code snippet shows C code that corresponds to a
-function performing `add_one` under the ABI. It is reasonably straightforward for
+function performing `add_one_c` under the ABI. It is reasonably straightforward for
 low-level code generators to replicate this C logic.
+You can run this code as part of the [quick start example](https://github.com/apache/tvm-ffi/tree/dev/examples/quick_start).
 
 ```c
 #include <tvm/ffi/c_api.h>
 #include <tvm/ffi/extra/c_env_api.h>
 
 // Helper function to extract DLTensor from TVMFFIAny (can be inlined into generated code)
-int ReadDLTensorPtr(const TVMFFIAny *value, DLTensor* out) {
+int ReadDLTensorPtr(const TVMFFIAny *value, DLTensor** out) {
   if (value->type_index == kTVMFFIDLTensorPtr) {
-    *out = static_cast<DLTensor*>(value->v_ptr);
+    *out = (DLTensor*)(value->v_ptr);
     return 0;
   }
-  if (value->type_index == kTVMFFITensor) {
+  if (value->type_index != kTVMFFITensor) {
+    // Use TVMFFIErrorSetRaisedFromCStr to set an error which will
+    // be propagated to the caller
     TVMFFIErrorSetRaisedFromCStr("ValueError", "Expects a Tensor input");
     return -1;
   }
-  *out = reinterpret_cast<DLTensor*>(
-    reinterpret_cast<char*>(value->v_obj) + sizeof(TVMFFIObject));
+  *out = (DLTensor*)((char*)(value->v_obj) + sizeof(TVMFFIObject));
   return 0;
 }
 
 // FFI function implementing add_one operation
-int __tvm_ffi_add_one(
+int __tvm_ffi_add_one_c(
   void* handle, const TVMFFIAny* args, int32_t num_args, TVMFFIAny* result
 ) {
-  DLTensor *a, *b, *c;
+  DLTensor *x, *y;
   // Extract tensor arguments
-  if (ReadDLTensorPtr(&args[0], &a) == -1) return -1;
-  if (ReadDLTensorPtr(&args[1], &b) == -1) return -1;
-  if (ReadDLTensorPtr(&args[2], &c) == -1) return -1;
+  // return -1 for error, error is set through TVMFFIErrorSetRaisedFromCStr
+  if (ReadDLTensorPtr(&args[0], &x) == -1) return -1;
+  if (ReadDLTensorPtr(&args[1], &y) == -1) return -1;
 
   // Get current stream for device synchronization (e.g., CUDA)
-  void* stream = TVMFFIEnvGetStream(a->device.device_type, a->device.device_id);
+  // not needed for CPU, just keep here for demonstration purpose
+  void* stream = TVMFFIEnvGetStream(x->device.device_type, x->device.device_id);
 
-  // Generated computation code would follow here to perform the actual operation
-  // on tensors a, b, c and store result in c
+  // perform the actual operation
+  for (int i = 0; i < x->shape[0]; ++i) {
+    ((float*)(y->data))[i] = ((float*)(x->data))[i] + 1;
+  }
+  // return 0 for success run
   return 0;
 }
 ```
@@ -102,6 +108,58 @@ Op.call_tvm_ffi("my_func", *args)
 This approach provides a unified mechanism to call into any libraries and other DSLs
 that expose kernels following the FFI convention, enabling seamless interoperability
 with various kernel DSLs and libraries.
+
+
+## Runtime and State Management for Compilers
+
+While TVM FFI provides a standard ABI for compiler-generated kernels, many compilers and domain-specific languages 
+(DSLs) require their own **runtime** to manage states like dynamic shapes, workspace memory, or other 
+application-specific data. This runtime can be a separate shared library accessible to all kernels from a specific 
+compiler.
+
+### Recommended Approach for State Management
+
+The recommended approach for managing compiler-specific state is to define the state within a **separate shared library**. 
+This library exposes its functionality by registering functions as global `tvm::ffi::Function`s.
+
+Here's a breakdown of the process:
+
+1.  **Define a Global State**: Create a class or structure to hold your compiler's runtime state. A simple singleton pattern is often used for this.
+2.  **Register Global Functions**: Use the `TVM_FFI_STATIC_INIT_BLOCK()` macro to register a global function that returns a pointer to your state. For example:
+    ```c++
+    class GlobalState {
+      ... // your state variables here
+     public:
+       GlobalState* Global() {
+          static auto *inst = new GlobalState();
+          return inst;
+       }
+    };
+    TVM_FFI_STATIC_INIT_BLOCK() {
+      using refl = tvm::ffi::reflection;
+      refl.GlobalDef().def("mylang.get_global_state", []()-> void*{ return GlobalState::Global()});
+      // other runtime APIs can be registered here
+    }
+    ```
+    This method allows both C++ and Python to access the runtime state through a consistent API.
+3.  **Access State from Kernels**: Within your compiler-generated kernels, you can use
+    `GetGlobalRequired("mylang.get_global_state")` in C++ or the C equivalent
+    `TVMFFIGetGlobalFunction("mylang.get_global_state", ...)` to get the function and then call it to retrieve the state 
+    pointer.
+
+### Distributing the Runtime
+
+For a user to use a kernel from your compiler, they must have access to your runtime library. The preferred method is to 
+package the runtime shared library (e.g., `libmylang_runtime.so`) as part of a Python or C++ package. Users must install 
+and import this package before loading any kernels compiled by your system. 
+This approach ensures the state is shared among different kernels.
+
+### Common vs. Custom State
+
+It's important to distinguish between compiler-specific state and **common state** managed by TVM FFI. TVM FFI handles 
+common states like **streams** and **memory allocators** through environment functions (e.g., `TVMFFIEnvGetStream`), 
+allowing kernels to access these without managing their own. However, for any unique state required by your compiler, 
+the global function registration approach is the most suitable method.
 
 ## Advanced: Custom Modules
 

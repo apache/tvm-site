@@ -33,13 +33,14 @@
     <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
     <link rel="stylesheet" type="text/css" href="../_static/tabs.css?v=a5c4661c" />
     <link rel="stylesheet" type="text/css" href="../_static/collapsible-lists/css/tree_view.css?v=a885cde7" />
+    <link rel="stylesheet" type="text/css" href="../_static/custom.css?v=7dc9cd8e" />
   
   <!-- Pre-loaded scripts that we'll load fully later -->
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
   <script src="../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
 
-    <script src="../_static/documentation_options.js?v=ea38da81"></script>
+    <script src="../_static/documentation_options.js?v=fd4c5ae7"></script>
     <script src="../_static/doctools.js?v=9a2dae69"></script>
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -55,7 +56,7 @@
     <link rel="prev" title="Python Guide" href="python_guide.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-    <meta name="docbuild:last-update" content="Sep 14, 2025"/>
+    <meta name="docbuild:last-update" content="Sep 15, 2025"/>
   </head>
   
   
@@ -405,6 +406,7 @@
 <li class="toctree-l3"><a class="reference internal" href="../reference/cpp/generated/define_error_8h_1a8df4e0ff8a6195274c6f7c031a4f0db4.html">Define TVM_FFI_THROW</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../reference/cpp/generated/define_error_8h_1a386641a33bb14802830471a2442ddd7d.html">Define TVM_FFI_USE_LIBBACKTRACE</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../reference/cpp/generated/define_c__api_8h_1a01871644eed04162005df7faa5442f92.html">Define TVM_FFI_WEAK</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../reference/cpp/generated/typedef_c__api_8h_1aaf0312fff979b8a3c6bb6a02bcfb5859.html">Typedef DLManagedTensorVersioned</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../reference/cpp/generated/typedef_c__api_8h_1a33ac61395cb135bb994c7b903dda283f.html">Typedef DLPackTensorAllocator</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../reference/cpp/generated/typedef_memory_8h_1adc0f1a0edd38eafad95dfd485ea3f980.html">Typedef tvm::ffi::FObjectDeleter</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../reference/cpp/generated/typedef_json_8h_1aeb9cdccfbc28034e94e46f9f6bd8d92a.html">Typedef tvm::ffi::json::Array</a></li>
@@ -588,6 +590,12 @@ document.write(`
                 <ul class="visible nav section-nav flex-column">
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#kernel-language-compilers">Kernel Language Compilers</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#graph-compilers">Graph Compilers</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#runtime-and-state-management-for-compilers">Runtime and State Management for Compilers</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#recommended-approach-for-state-management">Recommended Approach for State Management</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#distributing-the-runtime">Distributing the Runtime</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#common-vs-custom-state">Common vs. Custom State</a></li>
+</ul>
+</li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#advanced-custom-modules">Advanced: Custom Modules</a><ul class="nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#enable-export-and-loading">Enable Export and Loading</a></li>
 </ul>
@@ -636,41 +644,47 @@ function.</p></li>
 use <a class="reference internal" href="../reference/cpp/generated/define_function_8h_1a01777f12f8f99771331d679a0c1d2ed4.html#c.TVM_FFI_DLL_EXPORT_TYPED_FUNC" title="TVM_FFI_DLL_EXPORT_TYPED_FUNC"><code class="xref c c-macro docutils literal notranslate"><span class="pre">TVM_FFI_DLL_EXPORT_TYPED_FUNC</span></code></a> to expose the symbol.</p></li>
 </ul>
 <p>The following code snippet shows C code that corresponds to a
-function performing <code class="docutils literal notranslate"><span class="pre">add_one</span></code> under the ABI. It is reasonably straightforward for
-low-level code generators to replicate this C logic.</p>
+function performing <code class="docutils literal notranslate"><span class="pre">add_one_c</span></code> under the ABI. It is reasonably straightforward for
+low-level code generators to replicate this C logic.
+You can run this code as part of the <a class="reference external" href="https://github.com/apache/tvm-ffi/tree/dev/examples/quick_start">quick start example</a>.</p>
 <div class="highlight-c notranslate"><div class="highlight"><pre><span></span><span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;tvm/ffi/c_api.h&gt;</span>
 <span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;tvm/ffi/extra/c_env_api.h&gt;</span>
 
 <span class="c1">// Helper function to extract DLTensor from TVMFFIAny (can be inlined into generated code)</span>
-<span class="kt">int</span><span class="w"> </span><span class="nf">ReadDLTensorPtr</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="n">TVMFFIAny</span><span class="w"> </span><span class="o">*</span><span class="n">value</span><span class="p">,</span><span class="w"> </span><span class="n">DLTensor</span><span class="o">*</span><span class="w"> </span><span class="n">out</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="kt">int</span><span class="w"> </span><span class="nf">ReadDLTensorPtr</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="n">TVMFFIAny</span><span class="w"> </span><span class="o">*</span><span class="n">value</span><span class="p">,</span><span class="w"> </span><span class="n">DLTensor</span><span class="o">**</span><span class="w"> </span><span class="n">out</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
 <span class="w">  </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">value</span><span class="o">-&gt;</span><span class="n">type_index</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">kTVMFFIDLTensorPtr</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
-<span class="w">    </span><span class="o">*</span><span class="n">out</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">static_cast</span><span class="o">&lt;</span><span class="n">DLTensor</span><span class="o">*&gt;</span><span class="p">(</span><span class="n">value</span><span class="o">-&gt;</span><span class="n">v_ptr</span><span class="p">);</span>
+<span class="w">    </span><span class="o">*</span><span class="n">out</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">DLTensor</span><span class="o">*</span><span class="p">)(</span><span class="n">value</span><span class="o">-&gt;</span><span class="n">v_ptr</span><span class="p">);</span>
 <span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
 <span class="w">  </span><span class="p">}</span>
-<span class="w">  </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">value</span><span class="o">-&gt;</span><span class="n">type_index</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">kTVMFFITensor</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">value</span><span class="o">-&gt;</span><span class="n">type_index</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="n">kTVMFFITensor</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="c1">// Use TVMFFIErrorSetRaisedFromCStr to set an error which will</span>
+<span class="w">    </span><span class="c1">// be propagated to the caller</span>
 <span class="w">    </span><span class="n">TVMFFIErrorSetRaisedFromCStr</span><span class="p">(</span><span class="s">&quot;ValueError&quot;</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;Expects a Tensor input&quot;</span><span class="p">);</span>
 <span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="mi">-1</span><span class="p">;</span>
 <span class="w">  </span><span class="p">}</span>
-<span class="w">  </span><span class="o">*</span><span class="n">out</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">reinterpret_cast</span><span class="o">&lt;</span><span class="n">DLTensor</span><span class="o">*&gt;</span><span class="p">(</span>
-<span class="w">    </span><span class="n">reinterpret_cast</span><span class="o">&lt;</span><span class="kt">char</span><span class="o">*&gt;</span><span class="p">(</span><span class="n">value</span><span class="o">-&gt;</span><span class="n">v_obj</span><span class="p">)</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="k">sizeof</span><span class="p">(</span><span class="n">TVMFFIObject</span><span class="p">));</span>
+<span class="w">  </span><span class="o">*</span><span class="n">out</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">(</span><span class="n">DLTensor</span><span class="o">*</span><span class="p">)((</span><span class="kt">char</span><span class="o">*</span><span class="p">)(</span><span class="n">value</span><span class="o">-&gt;</span><span class="n">v_obj</span><span class="p">)</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="k">sizeof</span><span class="p">(</span><span class="n">TVMFFIObject</span><span class="p">));</span>
 <span class="w">  </span><span class="k">return</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
 <span class="p">}</span>
 
 <span class="c1">// FFI function implementing add_one operation</span>
-<span class="kt">int</span><span class="w"> </span><span class="nf">__tvm_ffi_add_one</span><span class="p">(</span>
+<span class="kt">int</span><span class="w"> </span><span class="nf">__tvm_ffi_add_one_c</span><span class="p">(</span>
 <span class="w">  </span><span class="kt">void</span><span class="o">*</span><span class="w"> </span><span class="n">handle</span><span class="p">,</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="n">TVMFFIAny</span><span class="o">*</span><span class="w"> </span><span class="n">args</span><span class="p">,</span><span class="w"> </span><span class="kt">int32_t</span><span class="w"> </span><span class="n">num_args</span><span class="p">,</span><span class="w"> </span><span class="n">TVMFFIAny</span><span class="o">*</span><span class="w"> </span><span class="n">result</span>
 <span class="p">)</span><span class="w"> </span><span class="p">{</span>
-<span class="w">  </span><span class="n">DLTensor</span><span class="w"> </span><span class="o">*</span><span class="n">a</span><span class="p">,</span><span class="w"> </span><span class="o">*</span><span class="n">b</span><span class="p">,</span><span class="w"> </span><span class="o">*</span><span class="n">c</span><span class="p">;</span>
+<span class="w">  </span><span class="n">DLTensor</span><span class="w"> </span><span class="o">*</span><span class="n">x</span><span class="p">,</span><span class="w"> </span><span class="o">*</span><span class="n">y</span><span class="p">;</span>
 <span class="w">  </span><span class="c1">// Extract tensor arguments</span>
-<span class="w">  </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">ReadDLTensorPtr</span><span class="p">(</span><span class="o">&amp;</span><span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span><span class="w"> </span><span class="o">&amp;</span><span class="n">a</span><span class="p">)</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">-1</span><span class="p">)</span><span class="w"> </span><span class="k">return</span><span class="w"> </span><span class="mi">-1</span><span class="p">;</span>
-<span class="w">  </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">ReadDLTensorPtr</span><span class="p">(</span><span class="o">&amp;</span><span class="n">args</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span><span class="w"> </span><span class="o">&amp;</span><span class="n">b</span><span class="p">)</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">-1</span><span class="p">)</span><span class="w"> </span><span class="k">return</span><span class="w"> </span><span class="mi">-1</span><span class="p">;</span>
-<span class="w">  </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">ReadDLTensorPtr</span><span class="p">(</span><span class="o">&amp;</span><span class="n">args</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span><span class="w"> </span><span class="o">&amp;</span><span class="n">c</span><span class="p">)</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">-1</span><span class="p">)</span><span class="w"> </span><span class="k">return</span><span class="w"> </span><span class="mi">-1</span><span class="p">;</span>
+<span class="w">  </span><span class="c1">// return -1 for error, error is set through TVMFFIErrorSetRaisedFromCStr</span>
+<span class="w">  </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">ReadDLTensorPtr</span><span class="p">(</span><span class="o">&amp;</span><span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span><span class="w"> </span><span class="o">&amp;</span><span class="n">x</span><span class="p">)</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">-1</span><span class="p">)</span><span class="w"> </span><span class="k">return</span><span class="w"> </span><span class="mi">-1</span><span class="p">;</span>
+<span class="w">  </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">ReadDLTensorPtr</span><span class="p">(</span><span class="o">&amp;</span><span class="n">args</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span><span class="w"> </span><span class="o">&amp;</span><span class="n">y</span><span class="p">)</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">-1</span><span class="p">)</span><span class="w"> </span><span class="k">return</span><span class="w"> </span><span class="mi">-1</span><span class="p">;</span>
 
 <span class="w">  </span><span class="c1">// Get current stream for device synchronization (e.g., CUDA)</span>
-<span class="w">  </span><span class="kt">void</span><span class="o">*</span><span class="w"> </span><span class="n">stream</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">TVMFFIEnvGetStream</span><span class="p">(</span><span class="n">a</span><span class="o">-&gt;</span><span class="n">device</span><span class="p">.</span><span class="n">device_type</span><span class="p">,</span><span class="w"> </span><span class="n">a</span><span class="o">-&gt;</span><span class="n">device</span><span class="p">.</span><span class="n">device_id</span><span class="p">);</span>
+<span class="w">  </span><span class="c1">// not needed for CPU, just keep here for demonstration purpose</span>
+<span class="w">  </span><span class="kt">void</span><span class="o">*</span><span class="w"> </span><span class="n">stream</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">TVMFFIEnvGetStream</span><span class="p">(</span><span class="n">x</span><span class="o">-&gt;</span><span class="n">device</span><span class="p">.</span><span class="n">device_type</span><span class="p">,</span><span class="w"> </span><span class="n">x</span><span class="o">-&gt;</span><span class="n">device</span><span class="p">.</span><span class="n">device_id</span><span class="p">);</span>
 
-<span class="w">  </span><span class="c1">// Generated computation code would follow here to perform the actual operation</span>
-<span class="w">  </span><span class="c1">// on tensors a, b, c and store result in c</span>
+<span class="w">  </span><span class="c1">// perform the actual operation</span>
+<span class="w">  </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="n">x</span><span class="o">-&gt;</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">];</span><span class="w"> </span><span class="o">++</span><span class="n">i</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="p">((</span><span class="kt">float</span><span class="o">*</span><span class="p">)(</span><span class="n">y</span><span class="o">-&gt;</span><span class="n">data</span><span class="p">))[</span><span class="n">i</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">((</span><span class="kt">float</span><span class="o">*</span><span class="p">)(</span><span class="n">x</span><span class="o">-&gt;</span><span class="n">data</span><span class="p">))[</span><span class="n">i</span><span class="p">]</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="p">;</span>
+<span class="w">  </span><span class="p">}</span>
+<span class="w">  </span><span class="c1">// return 0 for success run</span>
 <span class="w">  </span><span class="k">return</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
 <span class="p">}</span>
 </pre></div>
@@ -706,6 +720,58 @@ direct calls into FFI functions:</p>
 <p>This approach provides a unified mechanism to call into any libraries and other DSLs
 that expose kernels following the FFI convention, enabling seamless interoperability
 with various kernel DSLs and libraries.</p>
+</section>
+<section id="runtime-and-state-management-for-compilers">
+<h2>Runtime and State Management for Compilers<a class="headerlink" href="#runtime-and-state-management-for-compilers" title="Link to this heading">#</a></h2>
+<p>While TVM FFI provides a standard ABI for compiler-generated kernels, many compilers and domain-specific languages
+(DSLs) require their own <strong>runtime</strong> to manage states like dynamic shapes, workspace memory, or other
+application-specific data. This runtime can be a separate shared library accessible to all kernels from a specific
+compiler.</p>
+<section id="recommended-approach-for-state-management">
+<h3>Recommended Approach for State Management<a class="headerlink" href="#recommended-approach-for-state-management" title="Link to this heading">#</a></h3>
+<p>The recommended approach for managing compiler-specific state is to define the state within a <strong>separate shared library</strong>.
+This library exposes its functionality by registering functions as global <code class="docutils literal notranslate"><span class="pre">tvm::ffi::Function</span></code>s.</p>
+<p>Here’s a breakdown of the process:</p>
+<ol class="arabic">
+<li><p><strong>Define a Global State</strong>: Create a class or structure to hold your compiler’s runtime state. A simple singleton pattern is often used for this.</p></li>
+<li><p><strong>Register Global Functions</strong>: Use the <code class="docutils literal notranslate"><span class="pre">TVM_FFI_STATIC_INIT_BLOCK()</span></code> macro to register a global function that returns a pointer to your state. For example:</p>
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="k">class</span><span class="w"> </span><span class="nc">GlobalState</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="p">...</span><span class="w"> </span><span class="c1">// your state variables here</span>
+<span class="w"> </span><span class="k">public</span><span class="o">:</span>
+<span class="w">   </span><span class="n">GlobalState</span><span class="o">*</span><span class="w"> </span><span class="n">Global</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="k">static</span><span class="w"> </span><span class="k">auto</span><span class="w"> </span><span class="o">*</span><span class="n">inst</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">new</span><span class="w"> </span><span class="n">GlobalState</span><span class="p">();</span>
+<span class="w">      </span><span class="k">return</span><span class="w"> </span><span class="n">inst</span><span class="p">;</span>
+<span class="w">   </span><span class="p">}</span>
+<span class="p">};</span>
+<span class="n">TVM_FFI_STATIC_INIT_BLOCK</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="k">using</span><span class="w"> </span><span class="n">refl</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">tvm</span><span class="o">::</span><span class="n">ffi</span><span class="o">::</span><span class="n">reflection</span><span class="p">;</span>
+<span class="w">  </span><span class="n">refl</span><span class="p">.</span><span class="n">GlobalDef</span><span class="p">().</span><span class="n">def</span><span class="p">(</span><span class="s">&quot;mylang.get_global_state&quot;</span><span class="p">,</span><span class="w"> </span><span class="p">[]()</span><span class="o">-&gt;</span><span class="w"> </span><span class="kt">void</span><span class="o">*</span><span class="p">{</span><span class="w"> </span><span class="k">return</span><span class="w"> </span><span class="n">GlobalState</span><span class="o">::</span><span class="n">Global</span><span class="p">()});</span>
+<span class="w">  </span><span class="c1">// other runtime APIs can be registered here</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>This method allows both C++ and Python to access the runtime state through a consistent API.</p>
+</li>
+<li><p><strong>Access State from Kernels</strong>: Within your compiler-generated kernels, you can use
+<code class="docutils literal notranslate"><span class="pre">GetGlobalRequired(&quot;mylang.get_global_state&quot;)</span></code> in C++ or the C equivalent
+<code class="docutils literal notranslate"><span class="pre">TVMFFIGetGlobalFunction(&quot;mylang.get_global_state&quot;,</span> <span class="pre">...)</span></code> to get the function and then call it to retrieve the state
+pointer.</p></li>
+</ol>
+</section>
+<section id="distributing-the-runtime">
+<h3>Distributing the Runtime<a class="headerlink" href="#distributing-the-runtime" title="Link to this heading">#</a></h3>
+<p>For a user to use a kernel from your compiler, they must have access to your runtime library. The preferred method is to
+package the runtime shared library (e.g., <code class="docutils literal notranslate"><span class="pre">libmylang_runtime.so</span></code>) as part of a Python or C++ package. Users must install
+and import this package before loading any kernels compiled by your system.
+This approach ensures the state is shared among different kernels.</p>
+</section>
+<section id="common-vs-custom-state">
+<h3>Common vs. Custom State<a class="headerlink" href="#common-vs-custom-state" title="Link to this heading">#</a></h3>
+<p>It’s important to distinguish between compiler-specific state and <strong>common state</strong> managed by TVM FFI. TVM FFI handles
+common states like <strong>streams</strong> and <strong>memory allocators</strong> through environment functions (e.g., <code class="docutils literal notranslate"><span class="pre">TVMFFIEnvGetStream</span></code>),
+allowing kernels to access these without managing their own. However, for any unique state required by your compiler,
+the global function registration approach is the most suitable method.</p>
+</section>
 </section>
 <section id="advanced-custom-modules">
 <h2>Advanced: Custom Modules<a class="headerlink" href="#advanced-custom-modules" title="Link to this heading">#</a></h2>
@@ -799,6 +865,12 @@ during loading, either by importing another runtime DLL, or embedding it in the 
     <ul class="visible nav section-nav flex-column">
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#kernel-language-compilers">Kernel Language Compilers</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#graph-compilers">Graph Compilers</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#runtime-and-state-management-for-compilers">Runtime and State Management for Compilers</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#recommended-approach-for-state-management">Recommended Approach for State Management</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#distributing-the-runtime">Distributing the Runtime</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#common-vs-custom-state">Common vs. Custom State</a></li>
+</ul>
+</li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#advanced-custom-modules">Advanced: Custom Modules</a><ul class="nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#enable-export-and-loading">Enable Export and Loading</a></li>
 </ul>
@@ -825,7 +897,7 @@ during loading, either by importing another runtime DLL, or embedding it in the 
   
   <div class="footer-item">
     <p class="last-updated">
-  Last updated on Sep 14, 2025.
+  Last updated on Sep 15, 2025.
   <br/>
 </p>
   </div>
