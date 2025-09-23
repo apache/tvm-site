@@ -141,7 +141,7 @@ var searchData=
   ['fortarget_5616',['ForTarget',['../classtvm_1_1VirtualDevice.html#afd61f3e9bdba41793aff8644836c2002',1,'tvm::VirtualDevice']]],
   ['forwardindex_5617',['ForwardIndex',['../classtvm_1_1tir_1_1BijectiveLayout.html#acd8600a78175961fca865969f2bb79a1',1,'tvm::tir::BijectiveLayout']]],
   ['forwardshape_5618',['ForwardShape',['../classtvm_1_1tir_1_1BijectiveLayout.html#ae11714dda7aa07e7bd13c22eea46d4bd',1,'tvm::tir::BijectiveLayout']]],
-  ['fp8computelegalize_5619',['FP8ComputeLegalize',['../namespacetvm_1_1tir_1_1transform.html#a9917cd6bac097fdc52b25aad86940a59',1,'tvm::tir::transform']]],
+  ['fp8computelegalize_5619',['FP8ComputeLegalize',['../namespacetvm_1_1tir_1_1transform.html#a92ca143dfb326d5b2f25442bfb506163',1,'tvm::tir::transform']]],
   ['fp8storagelegalize_5620',['FP8StorageLegalize',['../namespacetvm_1_1tir_1_1transform.html#a5c3e5d2c86754e19989125064122da0e',1,'tvm::tir::transform']]],
   ['frame_5621',['Frame',['../classtvm_1_1script_1_1printer_1_1Frame.html#a68e9e5bcdc7c033e026fcf2f5bc00c41',1,'tvm::script::printer::Frame']]],
   ['free_5622',['Free',['../classtvm_1_1runtime_1_1memory_1_1Allocator.html#a0532e931a439c2f7a2a281c42ab54473',1,'tvm::runtime::memory::Allocator']]],
