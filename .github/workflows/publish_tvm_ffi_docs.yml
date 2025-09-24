@@ -8,7 +8,11 @@ jobs:
     name: Build docs
     runs-on: ubuntu-latest
     steps:
-      - uses: astral-sh/setup-uv@v4
+      - name: Setup Python 3.13
+        uses: astral-sh/setup-uv@b75a909f75acd358c2196fb9a5f1299a9a8868a4 # v6.7.0
+        with:
+          python-version: 3.13
+          activate-environment: true
 
       - uses: actions/checkout@v4
         with:
@@ -26,21 +30,16 @@ jobs:
         run: |
           sudo apt install -y doxygen graphviz
 
-      - name: Install wheel and requirements
-        working-directory: tvm-ffi
-        run: |
-          pip install ".[docs]"
-
       - name: Build docs
-        working-directory: tvm-ffi/docs
+        working-directory: tvm-ffi/
         env:
           BUILD_CPP_DOCS: 1
         run: |
-          make html
-          python ../../tvm-site/scripts/download_3rdparty_embeds.py -v --path=_build/html
+          uv run --group docs sphinx-build -M html docs docs/_build
+          python ../tvm-site/scripts/download_3rdparty_embeds.py -v --path=_build/html
 
       - name: Deploy docs
-        working-directory: tvm-site
+        working-directory: tvm-site/
         run: |
           git fetch
           git checkout -B asf-site origin/asf-site
