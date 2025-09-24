@@ -39,7 +39,7 @@ Includes
 
 - ``tvm/ffi/any.h`` (:ref:`file_tvm_ffi_any.h`)
 
-- ``tvm/ffi/container/container_details.h``
+- ``tvm/ffi/container/container_details.h`` (:ref:`file_tvm_ffi_container_container_details.h`)
 
 - ``tvm/ffi/optional.h`` (:ref:`file_tvm_ffi_optional.h`)
 

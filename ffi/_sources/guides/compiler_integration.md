@@ -83,21 +83,23 @@ int __tvm_ffi_add_one_c(
 ```
 
 Some of the key takeaways include:
+
 - Prefix the symbol with `__tvm_ffi_`
 - Call {cpp:func}`TVMFFIEnvGetStream` to get the current environment stream
 - Use return value for error handling, set error via {cpp:func}`TVMFFIErrorSetRaisedFromCStr`.
 
 You can also check out the [ABI overview](../concepts/abi_overview.md) for a more complete guide.
 
-
 ## Graph Compilers
 
 Machine learning graph compilers take computational graphs and can integrate with TVM FFI through:
 
 - Supporting the `call_tvm_ffi` primitive that calls into `my_func` that follows the ABI:
-```python
-Op.call_tvm_ffi("my_func", *args)
-```
+
+  ```python
+  Op.call_tvm_ffi("my_func", *args)
+  ```
+
 - Using the module API to load the modules into context and run. Alternatively, look up
   global functions that are registered and invoke them.
 - For ahead-of-time compilation (AOT) with minimum runtime, the AOT compiler can generate
@@ -109,56 +111,57 @@ This approach provides a unified mechanism to call into any libraries and other 
 that expose kernels following the FFI convention, enabling seamless interoperability
 with various kernel DSLs and libraries.
 
-
 ## Runtime and State Management for Compilers
 
-While TVM FFI provides a standard ABI for compiler-generated kernels, many compilers and domain-specific languages 
-(DSLs) require their own **runtime** to manage states like dynamic shapes, workspace memory, or other 
-application-specific data. This runtime can be a separate shared library accessible to all kernels from a specific 
+While TVM FFI provides a standard ABI for compiler-generated kernels, many compilers and domain-specific languages
+(DSLs) require their own **runtime** to manage states like dynamic shapes, workspace memory, or other
+application-specific data. This runtime can be a separate shared library accessible to all kernels from a specific
 compiler.
 
 ### Recommended Approach for State Management
 
-The recommended approach for managing compiler-specific state is to define the state within a **separate shared library**. 
+The recommended approach for managing compiler-specific state is to define the state within a **separate shared library**.
 This library exposes its functionality by registering functions as global `tvm::ffi::Function`s.
 
 Here's a breakdown of the process:
 
-1.  **Define a Global State**: Create a class or structure to hold your compiler's runtime state. A simple singleton pattern is often used for this.
-2.  **Register Global Functions**: Use the `TVM_FFI_STATIC_INIT_BLOCK()` macro to register a global function that returns a pointer to your state. For example:
-    ```c++
-    class GlobalState {
-      ... // your state variables here
-     public:
-       GlobalState* Global() {
-          static auto *inst = new GlobalState();
-          return inst;
-       }
-    };
-    TVM_FFI_STATIC_INIT_BLOCK() {
-      using refl = tvm::ffi::reflection;
-      refl.GlobalDef().def("mylang.get_global_state", []()-> void*{ return GlobalState::Global()});
-      // other runtime APIs can be registered here
-    }
-    ```
-    This method allows both C++ and Python to access the runtime state through a consistent API.
-3.  **Access State from Kernels**: Within your compiler-generated kernels, you can use
+1. **Define a Global State**: Create a class or structure to hold your compiler's runtime state. A simple singleton pattern is often used for this.
+2. **Register Global Functions**: Use the `TVM_FFI_STATIC_INIT_BLOCK()` macro to register a global function that returns a pointer to your state. For example:
+
+   ```c++
+   class GlobalState {
+     ... // your state variables here
+    public:
+      GlobalState* Global() {
+         static auto *inst = new GlobalState();
+         return inst;
+      }
+   };
+   TVM_FFI_STATIC_INIT_BLOCK() {
+     using refl = tvm::ffi::reflection;
+     refl.GlobalDef().def("mylang.get_global_state", []()-> void*{ return GlobalState::Global()});
+     // other runtime APIs can be registered here
+   }
+   ```
+
+   This method allows both C++ and Python to access the runtime state through a consistent API.
+3. **Access State from Kernels**: Within your compiler-generated kernels, you can use
     `GetGlobalRequired("mylang.get_global_state")` in C++ or the C equivalent
-    `TVMFFIGetGlobalFunction("mylang.get_global_state", ...)` to get the function and then call it to retrieve the state 
+    `TVMFFIGetGlobalFunction("mylang.get_global_state", ...)` to get the function and then call it to retrieve the state
     pointer.
 
 ### Distributing the Runtime
 
-For a user to use a kernel from your compiler, they must have access to your runtime library. The preferred method is to 
-package the runtime shared library (e.g., `libmylang_runtime.so`) as part of a Python or C++ package. Users must install 
-and import this package before loading any kernels compiled by your system. 
+For a user to use a kernel from your compiler, they must have access to your runtime library. The preferred method is to
+package the runtime shared library (e.g., `libmylang_runtime.so`) as part of a Python or C++ package. Users must install
+and import this package before loading any kernels compiled by your system.
 This approach ensures the state is shared among different kernels.
 
 ### Common vs. Custom State
 
-It's important to distinguish between compiler-specific state and **common state** managed by TVM FFI. TVM FFI handles 
-common states like **streams** and **memory allocators** through environment functions (e.g., `TVMFFIEnvGetStream`), 
-allowing kernels to access these without managing their own. However, for any unique state required by your compiler, 
+It's important to distinguish between compiler-specific state and **common state** managed by TVM FFI. TVM FFI handles
+common states like **streams** and **memory allocators** through environment functions (e.g., `TVMFFIEnvGetStream`),
+allowing kernels to access these without managing their own. However, for any unique state required by your compiler,
 the global function registration approach is the most suitable method.
 
 ## Advanced: Custom Modules
@@ -196,4 +199,3 @@ the overall import relations from `<import_tree>` and return the final composed 
 As long as the compiler generates the `__tvm_ffi__library_bin` in the above format, {py:func}`tvm_ffi.load_module` will correctly
 handle the loading and recover the original module. Note that we will need the custom module class definition to be available
 during loading, either by importing another runtime DLL, or embedding it in the generated library.
-

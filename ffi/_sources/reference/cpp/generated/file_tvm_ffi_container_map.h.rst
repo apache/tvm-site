@@ -43,7 +43,7 @@ Includes
 
 - ``tvm/ffi/any.h`` (:ref:`file_tvm_ffi_any.h`)
 
-- ``tvm/ffi/container/container_details.h``
+- ``tvm/ffi/container/container_details.h`` (:ref:`file_tvm_ffi_container_container_details.h`)
 
 - ``tvm/ffi/memory.h`` (:ref:`file_tvm_ffi_memory.h`)
 
@@ -103,8 +103,6 @@ Classes
 Functions
 ---------
 
-
-- :ref:`exhale_function_map_8h_1a233f4d26f186067413afd5f7c8f98ed5`
 
 - :ref:`exhale_function_map_8h_1a611844db41026b7a95846dd316b435af`
 

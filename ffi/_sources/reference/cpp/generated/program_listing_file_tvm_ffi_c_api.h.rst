@@ -172,29 +172,41 @@ Program Listing for File c_api.h
      int32_t type_index;
      uint32_t weak_ref_count;
      uint64_t strong_ref_count;
+   #if !defined(TVM_FFI_DOXYGEN_MODE)
      union {
+   #endif
        void (*deleter)(void* self, int flags);
        int64_t __ensure_align;
+   #if !defined(TVM_FFI_DOXYGEN_MODE)
      };
+   #endif
    } TVMFFIObject;
    
    typedef struct {
      int32_t type_index;
+   #if !defined(TVM_FFI_DOXYGEN_MODE)
      union {  // 4 bytes
+   #endif
        uint32_t zero_padding;
        uint32_t small_str_len;
+   #if !defined(TVM_FFI_DOXYGEN_MODE)
      };
-     union {                  // 8 bytes
-       int64_t v_int64;       // integers
-       double v_float64;      // floating-point numbers
-       void* v_ptr;           // typeless pointers
-       const char* v_c_str;   // raw C-string
-       TVMFFIObject* v_obj;   // ref counted objects
-       DLDataType v_dtype;    // data type
-       DLDevice v_device;     // device
-       char v_bytes[8];       // small string
-       uint64_t v_uint64;     // uint64 repr mainly used for hashing
+   #endif
+   #if !defined(TVM_FFI_DOXYGEN_MODE)
+     union {  // 8 bytes
+   #endif
+       int64_t v_int64;
+       double v_float64;
+       void* v_ptr;
+       const char* v_c_str;
+       TVMFFIObject* v_obj;
+       DLDataType v_dtype;
+       DLDevice v_device;
+       char v_bytes[8];
+       uint64_t v_uint64;
+   #if !defined(TVM_FFI_DOXYGEN_MODE)
      };
+   #endif
    } TVMFFIAny;
    
    typedef struct {
@@ -207,11 +219,25 @@ Program Listing for File c_api.h
      size_t size;
    } TVMFFIShapeCell;
    
+   #ifdef __cplusplus
+   enum TVMFFIBacktraceUpdateMode : int32_t {
+   #else
+   typedef enum {
+   #endif
+     kTVMFFIBacktraceUpdateModeReplace = 0,
+     kTVMFFIBacktraceUpdateModeAppend = 1,
+   #ifdef __cplusplus
+   };
+   #else
+   } TVMFFIBacktraceUpdateMode;
+   #endif
+   
    typedef struct {
      TVMFFIByteArray kind;
      TVMFFIByteArray message;
-     TVMFFIByteArray traceback;
-     void (*update_traceback)(TVMFFIObjectHandle self, const TVMFFIByteArray* traceback);
+     TVMFFIByteArray backtrace;
+     void (*update_backtrace)(TVMFFIObjectHandle self, const TVMFFIByteArray* backtrace,
+                              int32_t update_mode);
    } TVMFFIErrorCell;
    
    typedef int (*TVMFFISafeCallType)(void* handle, const TVMFFIAny* args, int32_t num_args,
@@ -256,9 +282,8 @@ Program Listing for File c_api.h
    
    TVM_FFI_DLL void TVMFFIErrorSetRaisedFromCStr(const char* kind, const char* message);
    
-   TVM_FFI_DLL TVMFFIObjectHandle TVMFFIErrorCreate(const TVMFFIByteArray* kind,
-                                                    const TVMFFIByteArray* message,
-                                                    const TVMFFIByteArray* traceback);
+   TVM_FFI_DLL int TVMFFIErrorCreate(const TVMFFIByteArray* kind, const TVMFFIByteArray* message,
+                                     const TVMFFIByteArray* backtrace, TVMFFIObjectHandle* out);
    
    //------------------------------------------------------------
    // Section: DLPack support APIs
@@ -417,7 +442,7 @@ Program Listing for File c_api.h
    // These are function are being called in startup or exit time
    // so exception handling do not apply
    //------------------------------------------------------------
-   TVM_FFI_DLL const TVMFFIByteArray* TVMFFITraceback(const char* filename, int lineno,
+   TVM_FFI_DLL const TVMFFIByteArray* TVMFFIBacktrace(const char* filename, int lineno,
                                                       const char* func, int cross_ffi_boundary);
    
    TVM_FFI_DLL int32_t TVMFFITypeGetOrAllocIndex(const TVMFFIByteArray* type_key,

@@ -67,6 +67,8 @@ Included By
 
 - :ref:`file_tvm_ffi_function.h`
 
+- :ref:`file_tvm_ffi_function_details.h`
+
 - :ref:`file_tvm_ffi_reflection_access_path.h`
 
 - :ref:`file_tvm_ffi_reflection_accessor.h`

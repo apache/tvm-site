@@ -76,7 +76,7 @@ Program Listing for File registry.h
    };
    
    template <typename Class, typename T>
-   TVM_FFI_INLINE int64_t GetFieldByteOffsetToObject(T Class::*field_ptr) {
+   TVM_FFI_INLINE int64_t GetFieldByteOffsetToObject(T Class::* field_ptr) {
      int64_t field_offset_to_class =
          reinterpret_cast<int64_t>(&(static_cast<Class*>(nullptr)->*field_ptr));
      return field_offset_to_class - details::ObjectUnsafe::GetObjectOffsetToSubclass<Class>();
@@ -238,13 +238,13 @@ Program Listing for File registry.h
      }
    
      template <typename T, typename BaseClass, typename... Extra>
-     TVM_FFI_INLINE ObjectDef& def_ro(const char* name, T BaseClass::*field_ptr, Extra&&... extra) {
+     TVM_FFI_INLINE ObjectDef& def_ro(const char* name, T BaseClass::* field_ptr, Extra&&... extra) {
        RegisterField(name, field_ptr, false, std::forward<Extra>(extra)...);
        return *this;
      }
    
      template <typename T, typename BaseClass, typename... Extra>
-     TVM_FFI_INLINE ObjectDef& def_rw(const char* name, T BaseClass::*field_ptr, Extra&&... extra) {
+     TVM_FFI_INLINE ObjectDef& def_rw(const char* name, T BaseClass::* field_ptr, Extra&&... extra) {
        static_assert(Class::_type_mutable, "Only mutable classes are supported for writable fields");
        RegisterField(name, field_ptr, true, std::forward<Extra>(extra)...);
        return *this;
@@ -281,7 +281,7 @@ Program Listing for File registry.h
      }
    
      template <typename T, typename BaseClass, typename... ExtraArgs>
-     void RegisterField(const char* name, T BaseClass::*field_ptr, bool writable,
+     void RegisterField(const char* name, T BaseClass::* field_ptr, bool writable,
                         ExtraArgs&&... extra_args) {
        static_assert(std::is_base_of_v<BaseClass, Class>, "BaseClass must be a base class of Class");
        TVMFFIFieldInfo info;
@@ -366,6 +366,16 @@ Program Listing for File registry.h
      AnyView any_view(nullptr);
      TVM_FFI_CHECK_SAFE_CALL(TVMFFITypeRegisterAttr(kTVMFFINone, &name_array,
                                                     reinterpret_cast<const TVMFFIAny*>(&any_view)));
+   }
+   
+   template <typename T, typename... Args>
+   inline ObjectRef init(Args&&... args) {
+     if constexpr (std::is_base_of_v<Object, T>) {
+       return ObjectRef(ffi::make_object<T>(std::forward<Args>(args)...));
+     } else {
+       using U = typename T::ContainerType;
+       return ObjectRef(ffi::make_object<U>(std::forward<Args>(args)...));
+     }
    }
    
    }  // namespace reflection

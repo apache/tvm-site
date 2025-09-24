@@ -68,6 +68,9 @@ Program Listing for File dtype.h
        case kDLBfloat: {
          return "bfloat";
        }
+       case kDLBool: {
+         return "bool";
+       }
        case kDLFloat8_e3m4: {
          return "float8_e3m4";
        }

@@ -13,7 +13,7 @@ Base Types
 **********
 
 - ``public tvm::ffi::Object`` (:ref:`exhale_class_classtvm_1_1ffi_1_1Object`)
-- ``public details::InplaceArrayBase< ArrayObj, TVMFFIAny >``
+- ``public tvm::ffi::details::InplaceArrayBase< ArrayObj, TVMFFIAny >``
 
 
 Class Documentation

@@ -42,6 +42,8 @@ Included By
 
 - :ref:`file_tvm_ffi_any.h`
 
+- :ref:`file_tvm_ffi_base_details.h`
+
 - :ref:`file_tvm_ffi_error.h`
 
 - :ref:`file_tvm_ffi_extra_base.h`
@@ -49,6 +51,8 @@ Included By
 - :ref:`file_tvm_ffi_extra_c_env_api.h`
 
 - :ref:`file_tvm_ffi_function.h`
+
+- :ref:`file_tvm_ffi_function_details.h`
 
 - :ref:`file_tvm_ffi_object.h`
 
@@ -96,6 +100,8 @@ Enums
 -----
 
 
+- :ref:`exhale_enum_c__api_8h_1ad6a441d28d4a6406418489609e975a19`
+
 - :ref:`exhale_enum_c__api_8h_1ad5a608f648c4f86cafdc8dc09f870bc5`
 
 - :ref:`exhale_enum_c__api_8h_1a8eb3fb55f6ec3c46b6e57740af4ca58a`
@@ -111,6 +117,8 @@ Functions
 
 - :ref:`exhale_function_c__api_8h_1a63149ed43a6ecffa2146f92914c0bc7b`
 
+- :ref:`exhale_function_c__api_8h_1ac0e2d59d3a8ba7f2b32eac47b1c6fc5d`
+
 - :ref:`exhale_function_c__api_8h_1aa2a81275b69ba0f61ce556df85517ef9`
 
 - :ref:`exhale_function_c__api_8h_1a1dd5584d94f6e00a18f4cfa003dfb93a`
@@ -121,7 +129,7 @@ Functions
 
 - :ref:`exhale_function_c__api_8h_1a762fc5c881dc5f66066eb45b65a5781f`
 
-- :ref:`exhale_function_c__api_8h_1a0c7ff7aa89a0dca2f1ce492137b4ed5b`
+- :ref:`exhale_function_c__api_8h_1a3479c144d165e717d1464b7b4df84897`
 
 - :ref:`exhale_function_c__api_8h_1a0ee6d2da9a72749561838bf503f62f93`
 
@@ -172,8 +180,6 @@ Functions
 - :ref:`exhale_function_c__api_8h_1adec9f8a8f0683caeb9dd194d9a3c62d5`
 
 - :ref:`exhale_function_c__api_8h_1a1162f2cbaf1a7628a03ed9488cff858b`
-
-- :ref:`exhale_function_c__api_8h_1a2191a9a8c1f165e72fabde53ed919165`
 
 - :ref:`exhale_function_c__api_8h_1a3f859b60d99c85f43fce8226c69f3c5e`
 

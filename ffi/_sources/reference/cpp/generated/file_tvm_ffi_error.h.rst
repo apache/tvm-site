@@ -30,6 +30,8 @@ Includes
 --------
 
 
+- ``cstring``
+
 - ``iostream``
 
 - ``memory`` (:ref:`file_tvm_ffi_memory.h`)
@@ -40,7 +42,7 @@ Includes
 
 - ``string_view``
 
-- ``tvm/ffi/base_details.h``
+- ``tvm/ffi/base_details.h`` (:ref:`file_tvm_ffi_base_details.h`)
 
 - ``tvm/ffi/c_api.h`` (:ref:`file_tvm_ffi_c_api.h`)
 
@@ -49,6 +51,8 @@ Includes
 - ``tvm/ffi/object.h`` (:ref:`file_tvm_ffi_object.h`)
 
 - ``utility``
+
+- ``vector``
 
 
 
@@ -63,6 +67,8 @@ Included By
 - :ref:`file_tvm_ffi_dtype.h`
 
 - :ref:`file_tvm_ffi_function.h`
+
+- :ref:`file_tvm_ffi_function_details.h`
 
 - :ref:`file_tvm_ffi_optional.h`
 

@@ -78,9 +78,9 @@ Functions
 ---------
 
 
-- :ref:`exhale_function_tensor_8h_1aec30888d07076fa5f78d95d0f9145626`
-
 - :ref:`exhale_function_tensor_8h_1a226723176642cde5996498e7da6a6368`
+
+- :ref:`exhale_function_tensor_8h_1aec30888d07076fa5f78d95d0f9145626`
 
 - :ref:`exhale_function_tensor_8h_1aa79cf4e1e3873d8947050b3cee41153a`
 

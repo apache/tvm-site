@@ -27,12 +27,12 @@ Let us first get started by build and run the example. The example will show us:
 - How to load and run tvm-ffi based library from python
 - How to load and run tvm-ffi based library from c++
 
-
 Before starting, ensure you have:
 
 - TVM FFI installed following [installation](./install.md)
 - C++ compiler with C++17 support
 - CMake 3.18 or later
+- (Optional) Ninja build system (the quick-start uses Ninja for fast incremental builds)
 - (Optional) CUDA toolkit for GPU examples
 - (Optional) PyTorch for checking torch integrations
 
@@ -45,21 +45,31 @@ cd tvm-ffi
 
 The examples are now in the example folder, you can quickly build
 the example using the following command.
+
 ```bash
 cd examples/quick_start
-cmake -B build -S .
-cmake --build build
+
+# with ninja or omit -G Ninja to use default generator
+cmake --fresh -G Ninja -B build -S .
+cmake --build build --parallel
 ```
 
 After the build finishes, you can run the python examples by
-```
+
+```bash
 python run_example.py
 ```
 
 You can also run the c++ example
 
+```bash
+./build/run_example
 ```
-./build/example
+
+If the CUDA toolkit is available, the GPU demo binary is built alongside the CPU sample:
+
+```bash
+./build/run_example_cuda
 ```
 
 ## Walk through the Example
@@ -68,13 +78,14 @@ Now we have quickly try things out. Let us now walk through the details of the e
 Specifically, in this example, we create a simple "add one" operation that adds 1 to each element of an input
 tensor and expose that function as TVM FFI compatible function. The key file structures are as follows:
 
-```
+```text
 examples/quick_start/
 ├── src/
 │   ├── add_one_cpu.cc      # CPU implementation
 │   ├── add_one_c.c         # A low-level C based implementation
 │   ├── add_one_cuda.cu     # CUDA implementation
-│   └── run_example.cc      # C++ usage example
+│   ├── run_example.cc      # C++ usage example
+│   └── run_example_cuda.cc # C++ with CUDA kernel usage example
 ├── run_example.py          # Python usage example
 ├── run_example.sh          # Build and run script
 └── CMakeLists.txt          # Build configuration
@@ -113,6 +124,7 @@ TVM_FFI_DLL_EXPORT_TYPED_FUNC(add_one_cpu, tvm_ffi_example::AddOne);
 ```
 
 **Key Points:**
+
 - Functions take `tvm::ffi::Tensor` parameters for cross-language compatibility
 - The `TVM_FFI_DLL_EXPORT_TYPED_FUNC` macro exposes the function with a given name
 
@@ -140,10 +152,10 @@ TVM_FFI_DLL_EXPORT_TYPED_FUNC(add_one_cuda, tvm_ffi_example::AddOneCUDA);
 ```
 
 **Key Points:**
+
 - We use `TVMFFIEnvGetStream` to obtain the current stream from the environement
 - When invoking ffi Function from python end with PyTorch tensor as argument,
   the stream will be populated with torch's current stream.
-
 
 ### Working with PyTorch
 
@@ -255,6 +267,7 @@ int __tvm_ffi_add_one_c(
   return 0;  // Success
 }
 ```
+
 To compile this code, you need to add {py:func}`tvm_ffi.libinfo.find_include_paths` to your include
 path and link the shared library that can be found through {py:func}`tvm_ffi.libinfo.find_libtvm_ffi`.
 We also provide command line tools to link, so you can compile with the following command:
@@ -266,6 +279,7 @@ gcc -shared -fPIC `tvm-ffi-config --cflags`  \
 ```
 
 The main takeaway points are:
+
 - Function symbols follow name `int __tvm_ffi_<name>`
 - The function follows signaure of `TVMFFISafeCallType`
 - Use `TVMFFIAny` to handle dynamic argument types
@@ -279,4 +293,3 @@ The main takeaway points are:
 - **ffi::Tensor** is a universal tensor structure that enables zero-copy exchange of array data
 - **Module loading** is provided by tvm ffi APIs in multiple languages.
 - **C ABI** is provided for easy low-level integration
-
