@@ -70,7 +70,7 @@ var searchData=
   ['shallowcopy_6505',['ShallowCopy',['../classtvm_1_1IRModuleNode.html#a86bbdc4b857ce5958a2b5f29e1d6fcb6',1,'tvm::IRModuleNode']]],
   ['shallowcopyirmodule_6506',['ShallowCopyIRModule',['../classtvm_1_1IRModule.html#aea8b821cf92cf525bd87bf15f5d31889',1,'tvm::IRModule']]],
   ['shape_6507',['shape',['../namespacetvm_1_1topi.html#af30c02f3a3f37c7963b3af60fb9c72a1',1,'tvm::topi']]],
-  ['shape_6508',['Shape',['../classtvm_1_1runtime_1_1Tensor.html#a9422716ebe6a363e2972466cabf79807',1,'tvm::runtime::Tensor']]],
+  ['shape_6508',['Shape',['../classtvm_1_1runtime_1_1Tensor.html#a7b43e49a8a9ef4575da2cada8d727fe8',1,'tvm::runtime::Tensor']]],
   ['shapediv_6509',['shapediv',['../namespacetvm.html#a15f25703cfce73c75cb4cd33c74ea8f0',1,'tvm']]],
   ['shapeexpr_6510',['ShapeExpr',['../classtvm_1_1relax_1_1ShapeExpr.html#a55bb152f099edbecd424ac5eaac375df',1,'tvm::relax::ShapeExpr']]],
   ['shapeindex_6511',['ShapeIndex',['../classtvm_1_1runtime_1_1DataType.html#a04f0e069017af3f0da47bc0c1fd80916',1,'tvm::runtime::DataType']]],
