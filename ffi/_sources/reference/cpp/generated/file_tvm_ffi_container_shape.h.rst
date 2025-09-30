@@ -77,3 +77,5 @@ Classes
 
 - :ref:`exhale_class_classtvm_1_1ffi_1_1ShapeObj`
 
+- :ref:`exhale_class_classtvm_1_1ffi_1_1ShapeView`
+

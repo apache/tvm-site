@@ -169,9 +169,9 @@ Program Listing for File c_api.h
    #endif
    
    typedef struct {
+     uint64_t combined_ref_count;
      int32_t type_index;
-     uint32_t weak_ref_count;
-     uint64_t strong_ref_count;
+     uint32_t __padding;
    #if !defined(TVM_FFI_DOXYGEN_MODE)
      union {
    #endif
@@ -245,6 +245,7 @@ Program Listing for File c_api.h
    
    typedef struct {
      TVMFFISafeCallType safe_call;
+     void* cpp_call;
    } TVMFFIFunctionCell;
    
    typedef struct {
@@ -403,7 +404,7 @@ Program Listing for File c_api.h
      int32_t type_index;
      int32_t type_depth;
      TVMFFIByteArray type_key;
-     const struct TVMFFITypeInfo** type_acenstors;
+     const struct TVMFFITypeInfo** type_ancestors;
      // The following fields are used for reflection
      uint64_t type_key_hash;
      int32_t num_fields;

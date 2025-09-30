@@ -44,6 +44,49 @@ Program Listing for File shape.h
    namespace tvm {
    namespace ffi {
    
+   class ShapeView {
+    public:
+     ShapeView() : cell_{nullptr, 0} {}
+     ShapeView(const ShapeView& other) = default;
+     ShapeView& operator=(const ShapeView& other) = default;
+     ShapeView(ShapeView&& other) = default;
+     ShapeView& operator=(ShapeView&& other) = default;
+     ShapeView(const int64_t* data, size_t size) : cell_{data, size} {}
+     ShapeView(const std::initializer_list<int64_t>& other) : cell_{other.begin(), other.size()} {}
+     const int64_t* data() const { return cell_.data; }
+     size_t size() const { return cell_.size; }
+   
+     int64_t Product() const {
+       int64_t product = 1;
+       for (size_t i = 0; i < cell_.size; ++i) {
+         product *= cell_.data[i];
+       }
+       return product;
+     }
+   
+     int64_t operator[](size_t idx) const { return cell_.data[idx]; }
+   
+     const int64_t* begin() const { return cell_.data; }
+   
+     const int64_t* end() const { return cell_.data + cell_.size; }
+   
+     bool empty() const { return size() == 0; }
+   
+     int64_t front() const { return this->at(0); }
+   
+     int64_t back() const { return this->at(this->size() - 1); }
+   
+     int64_t at(size_t idx) const {
+       if (idx >= this->size()) {
+         TVM_FFI_THROW(IndexError) << "indexing " << idx << " on a Shape of size " << this->size();
+       }
+       return cell_.data[idx];
+     }
+   
+    private:
+     TVMFFIShapeCell cell_;
+   };
+   
    class ShapeObj : public Object, public TVMFFIShapeCell {
     public:
      using index_type = int64_t;
@@ -96,14 +139,18 @@ Program Listing for File shape.h
      return p;
    }
    
-   TVM_FFI_INLINE ObjectPtr<ShapeObj> MakeStridesFromShape(const int64_t* data, int64_t ndim) {
-     int64_t* strides_data;
-     ObjectPtr<ShapeObj> strides = details::MakeEmptyShape(ndim, &strides_data);
+   TVM_FFI_INLINE void FillStridesFromShape(ShapeView shape, int64_t* out_strides) {
      int64_t stride = 1;
-     for (int i = ndim - 1; i >= 0; --i) {
-       strides_data[i] = stride;
-       stride *= data[i];
+     for (int64_t i = static_cast<int64_t>(shape.size()) - 1; i >= 0; --i) {
+       out_strides[i] = stride;
+       stride *= shape[i];
      }
+   }
+   
+   TVM_FFI_INLINE ObjectPtr<ShapeObj> MakeStridesFromShape(ShapeView shape) {
+     int64_t* strides_data;
+     ObjectPtr<ShapeObj> strides = details::MakeEmptyShape(shape.size(), &strides_data);
+     FillStridesFromShape(shape, strides_data);
      return strides;
    }
    
@@ -126,22 +173,26 @@ Program Listing for File shape.h
      Shape(std::vector<int64_t> other)  // NOLINT(*)
          : ObjectRef(make_object<details::ShapeObjStdImpl>(std::move(other))) {}
    
-     static Shape StridesFromShape(const int64_t* data, int64_t ndim) {
-       return Shape(details::MakeStridesFromShape(data, ndim));
+     Shape(ShapeView other) : Shape(other.begin(), other.end()) {}  // NOLINT(*)
+   
+     static Shape StridesFromShape(ShapeView shape) {
+       return Shape(details::MakeStridesFromShape(shape));
      }
+   
+     operator ShapeView() const { return ShapeView(data(), size()); }  // NOLINT(*)
    
      const int64_t* data() const { return get()->data; }
    
      size_t size() const { return get()->size; }
    
-     int64_t operator[](size_t idx) const {
+     int64_t operator[](size_t idx) const { return this->data()[idx]; }
+   
+     int64_t at(size_t idx) const {
        if (idx >= this->size()) {
          TVM_FFI_THROW(IndexError) << "indexing " << idx << " on a Shape of size " << this->size();
        }
-       return this->data()[idx];
+       return this->operator[](idx);
      }
-   
-     int64_t at(size_t idx) const { return this->operator[](idx); }
    
      bool empty() const { return size() == 0; }
    

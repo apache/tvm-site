@@ -109,6 +109,8 @@ Defines
 
 - :ref:`exhale_define_error_8h_1a7205bbaef1c45e57f939af6deefb6449`
 
+- :ref:`exhale_define_error_8h_1ad4674e1cb9c051f47127e5331a4bcadc`
+
 - :ref:`exhale_define_error_8h_1a64c939463f90816ffc2b70bc89ea3e43`
 
 - :ref:`exhale_define_error_8h_1a6c01470f76c6437edf93ac668ea6242a`

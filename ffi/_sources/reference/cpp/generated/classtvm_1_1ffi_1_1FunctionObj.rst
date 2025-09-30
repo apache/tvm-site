@@ -16,14 +16,6 @@ Base Types
 - ``public TVMFFIFunctionCell`` (:ref:`exhale_struct_structTVMFFIFunctionCell`)
 
 
-Derived Types
-*************
-
-- ``public tvm::ffi::details::ExternCFunctionObjImpl``
-- ``public tvm::ffi::details::FunctionObjImpl< TCallable >``
-- ``public tvm::ffi::details::ImportedFunctionObjImpl``
-
-
 Class Documentation
 -------------------
 

@@ -33,13 +33,13 @@ Program Listing for File memory.h
    
    #include <tvm/ffi/object.h>
    
+   #include <cstddef>
    #include <cstdlib>
    #include <type_traits>
    #include <utility>
    
    namespace tvm {
    namespace ffi {
-   
    typedef void (*FObjectDeleter)(void* obj, int flags);
    
    // Detail implementations after this
@@ -52,6 +52,43 @@ Program Listing for File memory.h
    // - Thread-local object pools: one pool per size and alignment requirement.
    // - Can specialize by type of object to give the specific allocator to each object.
    namespace details {
+   
+   template <size_t align>
+   TVM_FFI_INLINE void* AlignedAlloc(size_t size) {
+     static_assert(align != 0 && (align & (align - 1)) == 0, "align must be a power of 2");
+   #ifdef _MSC_VER
+     // MSVC have to use _aligned_malloc
+     if (void* ptr = _aligned_malloc(size, align)) {
+       return ptr;
+     }
+     throw std::bad_alloc();
+   #else
+     if constexpr (align <= alignof(std::max_align_t)) {
+       // malloc guarantees alignment of std::max_align_t
+       if (void* ptr = std::malloc(size)) {
+         return ptr;
+       }
+       throw std::bad_alloc();
+     } else {
+       void* ptr;
+       // for other alignments, use posix_memalign
+       if (posix_memalign(&ptr, align, size) != 0) {
+         throw std::bad_alloc();
+       }
+       return ptr;
+     }
+   #endif
+   }
+   
+   TVM_FFI_INLINE void AlignedFree(void* data) {
+   #ifdef _MSC_VER
+     // MSVC have to use _aligned_free
+     _aligned_free(data);
+   #else
+     std::free(data);
+   #endif
+   }
+   
    template <typename Derived>
    class ObjAllocatorBase {
     public:
@@ -61,8 +98,7 @@ Program Listing for File memory.h
        static_assert(std::is_base_of<Object, T>::value, "make can only be used to create Object");
        T* ptr = Handler::New(static_cast<Derived*>(this), std::forward<Args>(args)...);
        TVMFFIObject* ffi_ptr = details::ObjectUnsafe::GetHeader(ptr);
-       ffi_ptr->strong_ref_count = 1;
-       ffi_ptr->weak_ref_count = 1;
+       ffi_ptr->combined_ref_count = kCombinedRefCountBothOne;
        ffi_ptr->type_index = T::RuntimeTypeIndex();
        ffi_ptr->deleter = Handler::Deleter();
        return details::ObjectUnsafe::ObjectPtrFromOwned<T>(ptr);
@@ -76,8 +112,7 @@ Program Listing for File memory.h
        ArrayType* ptr =
            Handler::New(static_cast<Derived*>(this), num_elems, std::forward<Args>(args)...);
        TVMFFIObject* ffi_ptr = details::ObjectUnsafe::GetHeader(ptr);
-       ffi_ptr->strong_ref_count = 1;
-       ffi_ptr->weak_ref_count = 1;
+       ffi_ptr->combined_ref_count = kCombinedRefCountBothOne;
        ffi_ptr->type_index = ArrayType::RuntimeTypeIndex();
        ffi_ptr->deleter = Handler::Deleter();
        return details::ObjectUnsafe::ObjectPtrFromOwned<ArrayType>(ptr);
@@ -90,10 +125,6 @@ Program Listing for File memory.h
      template <typename T>
      class Handler {
       public:
-       struct alignas(T) StorageType {
-         char data[sizeof(T)];
-       };
-   
        template <typename... Args>
        static T* New(SimpleObjAllocator*, Args&&... args) {
          // NOTE: the first argument is not needed for SimpleObjAllocator
@@ -109,7 +140,7 @@ Program Listing for File memory.h
          // class with non-virtual destructor.
          // We are fine here as we captured the right deleter during construction.
          // This is also the right way to get storage type for an object pool.
-         StorageType* data = new StorageType();
+         void* data = AlignedAlloc<alignof(T)>(sizeof(T));
          new (data) T(std::forward<Args>(args)...);
          return reinterpret_cast<T*>(data);
        }
@@ -128,7 +159,7 @@ Program Listing for File memory.h
            tptr->T::~T();
          }
          if (flags & kTVMFFIObjectDeleterFlagBitMaskWeak) {
-           delete reinterpret_cast<StorageType*>(tptr);
+           AlignedFree(static_cast<void*>(tptr));
          }
        }
      };
@@ -137,12 +168,6 @@ Program Listing for File memory.h
      template <typename ArrayType, typename ElemType>
      class ArrayHandler {
       public:
-       using StorageType = typename std::aligned_storage<sizeof(ArrayType), alignof(ArrayType)>::type;
-       // for now only support elements that aligns with array header.
-       static_assert(alignof(ArrayType) % alignof(ElemType) == 0 &&
-                         sizeof(ArrayType) % alignof(ElemType) == 0,
-                     "element alignment constraint");
-   
        template <typename... Args>
        static ArrayType* New(SimpleObjAllocator*, size_t num_elems, Args&&... args) {
          // NOTE: the first argument is not needed for ArrayObjAllocator
@@ -157,10 +182,17 @@ Program Listing for File memory.h
          // class with non-virtual destructor.
          // We are fine here as we captured the right deleter during construction.
          // This is also the right way to get storage type for an object pool.
-         size_t unit = sizeof(StorageType);
-         size_t requested_size = num_elems * sizeof(ElemType) + sizeof(ArrayType);
-         size_t num_storage_slots = (requested_size + unit - 1) / unit;
-         StorageType* data = new StorageType[num_storage_slots];
+   
+         // for now only support elements that aligns with array header.
+         static_assert(
+             alignof(ArrayType) % alignof(ElemType) == 0 && sizeof(ArrayType) % alignof(ElemType) == 0,
+             "element alignment constraint");
+         size_t size = sizeof(ArrayType) + sizeof(ElemType) * num_elems;
+         // round up to the nearest multiple of align
+         constexpr size_t align = alignof(ArrayType);
+         // C++ standard always guarantees that alignof operator returns a power of 2
+         size_t aligned_size = (size + (align - 1)) & ~(align - 1);
+         void* data = AlignedAlloc<align>(aligned_size);
          new (data) ArrayType(std::forward<Args>(args)...);
          return reinterpret_cast<ArrayType*>(data);
        }
@@ -179,8 +211,7 @@ Program Listing for File memory.h
            tptr->ArrayType::~ArrayType();
          }
          if (flags & kTVMFFIObjectDeleterFlagBitMaskWeak) {
-           StorageType* p = reinterpret_cast<StorageType*>(tptr);
-           delete[] p;
+           AlignedFree(static_cast<void*>(tptr));
          }
        }
      };

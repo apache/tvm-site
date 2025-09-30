@@ -35,6 +35,8 @@ Includes
 --------
 
 
+- ``cstddef``
+
 - ``cstdlib``
 
 - ``tvm/ffi/object.h`` (:ref:`file_tvm_ffi_object.h`)
