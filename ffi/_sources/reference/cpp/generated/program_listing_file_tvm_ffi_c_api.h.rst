@@ -365,7 +365,7 @@ Program Listing for File c_api.h
    typedef struct {
      TVMFFIByteArray name;
      TVMFFIByteArray doc;
-     TVMFFIByteArray type_schema;
+     TVMFFIByteArray metadata;
      int64_t flags;
      int64_t size;
      int64_t alignment;
@@ -379,7 +379,10 @@ Program Listing for File c_api.h
    typedef struct {
      TVMFFIByteArray name;
      TVMFFIByteArray doc;
-     TVMFFIByteArray type_schema;
+     // Rationale: We separate the docstring from the metadata since docstrings
+     // can be unstructured and sometimes large, while metadata can be focused
+     // on storing structured information.
+     TVMFFIByteArray metadata;
      int64_t flags;
      TVMFFIAny method;
    } TVMFFIMethodInfo;

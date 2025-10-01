@@ -100,6 +100,7 @@ Program Listing for File memory.h
        TVMFFIObject* ffi_ptr = details::ObjectUnsafe::GetHeader(ptr);
        ffi_ptr->combined_ref_count = kCombinedRefCountBothOne;
        ffi_ptr->type_index = T::RuntimeTypeIndex();
+       ffi_ptr->__padding = 0;
        ffi_ptr->deleter = Handler::Deleter();
        return details::ObjectUnsafe::ObjectPtrFromOwned<T>(ptr);
      }
@@ -114,6 +115,7 @@ Program Listing for File memory.h
        TVMFFIObject* ffi_ptr = details::ObjectUnsafe::GetHeader(ptr);
        ffi_ptr->combined_ref_count = kCombinedRefCountBothOne;
        ffi_ptr->type_index = ArrayType::RuntimeTypeIndex();
+       ffi_ptr->__padding = 0;
        ffi_ptr->deleter = Handler::Deleter();
        return details::ObjectUnsafe::ObjectPtrFromOwned<ArrayType>(ptr);
      }

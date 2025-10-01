@@ -57,6 +57,7 @@ Program Listing for File object.h
      static constexpr const char* kTVMFFIOpaquePtr = "void*";
      static constexpr const char* kTVMFFIDataType = "DataType";
      static constexpr const char* kTVMFFIDevice = "Device";
+     static constexpr const char* kTVMFFIDLTensorPtr = "DLTensor*";
      static constexpr const char* kTVMFFIRawStr = "const char*";
      static constexpr const char* kTVMFFIByteArrayPtr = "TVMFFIByteArray*";
      static constexpr const char* kTVMFFIObjectRValueRef = "ObjectRValueRef";

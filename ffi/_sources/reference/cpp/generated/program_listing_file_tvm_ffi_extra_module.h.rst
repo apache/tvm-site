@@ -48,6 +48,10 @@ Program Listing for File module.h
      virtual int GetPropertyMask() const { return 0b000; }
      virtual Optional<Function> GetFunction(const String& name) = 0;
      virtual bool ImplementsFunction(const String& name) { return GetFunction(name).defined(); }
+     virtual Optional<String> GetFunctionDoc(const String& name) { return std::nullopt; }
+     // Rationale: We separate the docstring from the metadata since docstrings
+     // can be unstructured and sometimes large, while metadata can be focused
+     // on storing structured information.
      virtual Optional<String> GetFunctionMetadata(const String& name) { return std::nullopt; }
      virtual void WriteToFile(const String& file_name, const String& format) const {
        TVM_FFI_THROW(RuntimeError) << "Module[" << kind() << "] does not support WriteToFile";
@@ -62,6 +66,7 @@ Program Listing for File module.h
      virtual void ClearImports();
      Optional<Function> GetFunction(const String& name, bool query_imports);
      bool ImplementsFunction(const String& name, bool query_imports);
+     Optional<String> GetFunctionDoc(const String& name, bool query_imports);
      Optional<String> GetFunctionMetadata(const String& name, bool query_imports);
      const Array<Any>& imports() const { return this->imports_; }
    

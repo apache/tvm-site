@@ -73,6 +73,8 @@ Classes
 
 - :ref:`exhale_class_classtvm_1_1ffi_1_1TensorObj`
 
+- :ref:`exhale_class_classtvm_1_1ffi_1_1TensorView`
+
 
 Functions
 ---------

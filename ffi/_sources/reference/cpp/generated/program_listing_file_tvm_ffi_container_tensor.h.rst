@@ -200,7 +200,7 @@ Program Listing for File tensor.h
      }
      ShapeView strides() const {
        const TensorObj* obj = get();
-       TVM_FFI_ICHECK(obj->strides != nullptr);
+       TVM_FFI_ICHECK(obj->strides != nullptr || obj->ndim == 0);
        return ShapeView(obj->strides, obj->ndim);
      }
    
@@ -254,7 +254,7 @@ Program Listing for File tensor.h
          throw ffi::Error(error_context.kind, error_context.message,
                           TVMFFIBacktrace(__FILE__, __LINE__, __func__, 0));
        }
-       if (tensor->dl_tensor.strides != nullptr) {
+       if (tensor->dl_tensor.strides != nullptr || tensor->dl_tensor.ndim == 0) {
          return Tensor(make_object<details::TensorObjFromDLPack<DLManagedTensorVersioned>>(
              tensor, /*extra_strides_at_tail=*/false));
        } else {
@@ -273,7 +273,7 @@ Program Listing for File tensor.h
        if (require_contiguous && !ffi::IsContiguous(tensor->dl_tensor)) {
          TVM_FFI_THROW(RuntimeError) << "FromDLPack: Tensor is not contiguous.";
        }
-       if (tensor->dl_tensor.strides != nullptr) {
+       if (tensor->dl_tensor.strides != nullptr || tensor->dl_tensor.ndim == 0) {
          return Tensor(make_object<details::TensorObjFromDLPack<DLManagedTensor>>(
              tensor, /*extra_strides_at_tail=*/false));
        } else {
@@ -295,7 +295,7 @@ Program Listing for File tensor.h
        if (tensor->flags & DLPACK_FLAG_BITMASK_IS_SUBBYTE_TYPE_PADDED) {
          TVM_FFI_THROW(RuntimeError) << "Subbyte type padded is not yet supported";
        }
-       if (tensor->dl_tensor.strides != nullptr) {
+       if (tensor->dl_tensor.strides != nullptr || tensor->dl_tensor.ndim == 0) {
          return Tensor(make_object<details::TensorObjFromDLPack<DLManagedTensorVersioned>>(
              tensor, /*extra_strides_at_tail=*/false));
        } else {
@@ -314,6 +314,87 @@ Program Listing for File tensor.h
    
     protected:
      TensorObj* get_mutable() const { return const_cast<TensorObj*>(get()); }
+   };
+   
+   class TensorView {
+    public:
+     TensorView(const Tensor& tensor) {  // NOLINT(*)
+       TVM_FFI_ICHECK(tensor.defined());
+       tensor_ = *tensor.operator->();
+     }  // NOLINT(*)
+     TensorView(const DLTensor* tensor) {  // NOLINT(*)
+       TVM_FFI_ICHECK(tensor != nullptr);
+       tensor_ = *tensor;
+     }
+     TensorView(const TensorView& tensor) = default;
+     TensorView(TensorView&& tensor) = default;
+     TensorView& operator=(const TensorView& tensor) = default;
+     TensorView& operator=(TensorView&& tensor) = default;
+     TensorView& operator=(const Tensor& tensor) {
+       TVM_FFI_ICHECK(tensor.defined());
+       tensor_ = *tensor.operator->();
+       return *this;
+     }
+   
+     // explicitly delete move constructor
+     TensorView(Tensor&& tensor) = delete;  // NOLINT(*)
+     // delete move assignment operator from owned tensor
+     TensorView& operator=(Tensor&& tensor) = delete;
+     const DLTensor* operator->() const { return &tensor_; }
+   
+     ShapeView shape() const { return ShapeView(tensor_.shape, tensor_.ndim); }
+   
+     ShapeView strides() const {
+       TVM_FFI_ICHECK(tensor_.strides != nullptr || tensor_.ndim == 0);
+       return ShapeView(tensor_.strides, tensor_.ndim);
+     }
+   
+     void* data_ptr() const { return tensor_.data; }
+   
+     int32_t ndim() const { return tensor_.ndim; }
+   
+     int64_t numel() const { return this->shape().Product(); }
+   
+     DLDataType dtype() const { return tensor_.dtype; }
+   
+     bool IsContiguous() const { return tvm::ffi::IsContiguous(tensor_); }
+   
+    private:
+     DLTensor tensor_;
+   };
+   
+   // TensorView type, allow implicit casting from DLTensor*
+   // NOTE: we deliberately do not support MoveToAny and MoveFromAny since it does not retain ownership
+   template <>
+   struct TypeTraits<TensorView> : public TypeTraitsBase {
+     static constexpr bool storage_enabled = false;
+     static constexpr int32_t field_static_type_index = TypeIndex::kTVMFFIDLTensorPtr;
+   
+     TVM_FFI_INLINE static void CopyToAnyView(const TensorView& src, TVMFFIAny* result) {
+       result->type_index = TypeIndex::kTVMFFIDLTensorPtr;
+       result->zero_padding = 0;
+       TVM_FFI_CLEAR_PTR_PADDING_IN_FFI_ANY(result);
+       result->v_ptr = const_cast<DLTensor*>(src.operator->());
+     }
+   
+     TVM_FFI_INLINE static bool CheckAnyStrict(const TVMFFIAny* src) {
+       return src->type_index == TypeIndex::kTVMFFIDLTensorPtr;
+     }
+   
+     TVM_FFI_INLINE static TensorView CopyFromAnyViewAfterCheck(const TVMFFIAny* src) {
+       return TensorView(static_cast<DLTensor*>(src->v_ptr));
+     }
+   
+     TVM_FFI_INLINE static std::optional<TensorView> TryCastFromAnyView(const TVMFFIAny* src) {
+       if (src->type_index == TypeIndex::kTVMFFIDLTensorPtr) {
+         return TensorView(static_cast<DLTensor*>(src->v_ptr));
+       } else if (src->type_index == TypeIndex::kTVMFFITensor) {
+         return TensorView(TVMFFITensorGetDLTensorPtr(src->v_obj));
+       }
+       return std::nullopt;
+     }
+   
+     TVM_FFI_INLINE static std::string TypeStr() { return StaticTypeKey::kTVMFFIDLTensorPtr; }
    };
    
    }  // namespace ffi
