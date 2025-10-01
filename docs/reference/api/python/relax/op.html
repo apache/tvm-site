@@ -361,6 +361,7 @@
 <li class="toctree-l4"><a class="reference internal" href="#tvm.relax.op.tan"><code class="docutils literal notranslate"><span class="pre">tan()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#tvm.relax.op.tanh"><code class="docutils literal notranslate"><span class="pre">tanh()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#tvm.relax.op.trunc"><code class="docutils literal notranslate"><span class="pre">trunc()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#tvm.relax.op.all_class_non_max_suppression"><code class="docutils literal notranslate"><span class="pre">all_class_non_max_suppression()</span></code></a></li>
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="#module-tvm.relax.op.nn">tvm.relax.op.nn</a><ul>
@@ -492,6 +493,7 @@
 <li class="toctree-l4"><a class="reference internal" href="#tvm.relax.op.op_attrs.HintOnDeviceAttrs"><code class="docutils literal notranslate"><span class="pre">HintOnDeviceAttrs</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#tvm.relax.op.op_attrs.ScatterCollectiveAttrs"><code class="docutils literal notranslate"><span class="pre">ScatterCollectiveAttrs</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#tvm.relax.op.op_attrs.AttentionAttrs"><code class="docutils literal notranslate"><span class="pre">AttentionAttrs</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#tvm.relax.op.op_attrs.AllClassNonMaximumSuppressionAttrs"><code class="docutils literal notranslate"><span class="pre">AllClassNonMaximumSuppressionAttrs</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#tvm.relax.op.op_attrs.Conv1DAttrs"><code class="docutils literal notranslate"><span class="pre">Conv1DAttrs</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#tvm.relax.op.op_attrs.Conv1DTransposeAttrs"><code class="docutils literal notranslate"><span class="pre">Conv1DTransposeAttrs</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#tvm.relax.op.op_attrs.Pool1DAttrs"><code class="docutils literal notranslate"><span class="pre">Pool1DAttrs</span></code></a></li>
@@ -4063,6 +4065,51 @@ Returns elementwise result of <span class="math notranslate nohighlight">\(x1 * 
 </dl>
 </dd></dl>
 
+<dl class="py function">
+<dt class="sig sig-object py" id="tvm.relax.op.all_class_non_max_suppression">
+<span class="sig-prename descclassname"><span class="pre">tvm.relax.op.</span></span><span class="sig-name descname"><span class="pre">all_class_non_max_suppression</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">boxes</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scores</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_output_boxes_per_class</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">iou_threshold</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">score_threshold</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_format</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'onnx'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#tvm.relax.op.all_class_non_max_suppression" title="Link to this definition"></a></dt>
+<dd><p>Non-maximum suppression operator for object detection, corresponding to ONNX
+NonMaxSuppression and TensorFlow combined_non_max_suppression.
+NMS is performed for each class separately.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>boxes</strong> (<em>relax.Expr</em>) – 3-D tensor with shape (batch_size, num_boxes, 4)</p></li>
+<li><p><strong>scores</strong> (<em>relax.Expr</em>) – 3-D tensor with shape (batch_size, num_classes, num_boxes)</p></li>
+<li><p><strong>max_output_boxes_per_class</strong> (<em>relax.Expr</em>) – The maxinum number of output selected boxes per class</p></li>
+<li><p><strong>iou_threshold</strong> (<em>relax.Expr</em>) – IoU test threshold</p></li>
+<li><p><strong>score_threshold</strong> (<em>relax.Expr</em>) – Score threshold to filter out low score boxes early</p></li>
+<li><p><strong>output_format</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a><em>, </em><em>optional</em>) – “onnx” or “tensorflow”, see below.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><p><strong>out</strong> – If <cite>output_format</cite> is “onnx”, the output is two tensors. The first is <cite>indices</cite> of size
+<cite>(batch_size * num_class* num_boxes , 3)</cite> and the second is a scalar tensor
+<cite>num_total_detection</cite> of shape <cite>(1,)</cite> representing the total number of selected
+boxes. The three values in <cite>indices</cite> encode batch, class, and box indices.
+Rows of <cite>indices</cite> are ordered such that selected boxes from batch 0, class 0 come
+first, in descending of scores, followed by boxes from batch 0, class 1 etc. Out of
+<cite>batch_size * num_class* num_boxes</cite> rows of indices, only the first <cite>num_total_detection</cite>
+rows are valid.</p>
+<p>TODO: Implement true dynamic output shapes to match ONNX Runtime behavior exactly.
+This would eliminate the need for manual trimming and improve memory efficiency.
+If <cite>output_format</cite> is “tensorflow”, the output is three tensors, the first
+is <cite>indices</cite> of size <cite>(batch_size, num_class * num_boxes , 2)</cite>, the second is <cite>scores</cite> of
+size <cite>(batch_size, num_class * num_boxes)</cite>, and the third is <cite>num_total_detection</cite> of size
+<cite>(batch_size,)</cite> representing the total number of selected boxes per batch. The two values
+in <cite>indices</cite> encode class and box indices. Of num_class * num_boxes boxes in <cite>indices</cite> at
+batch b, only the first <cite>num_total_detection[b]</cite> entries are valid. The second axis of
+<cite>indices</cite> and <cite>scores</cite> are sorted within each class by box scores, but not across classes.
+So the box indices and scores for the class 0 come first in a sorted order, followed by
+the class 1 etc.</p>
+</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>relax.Expr</p>
+</dd>
+</dl>
+</dd></dl>
+
 </section>
 <section id="module-tvm.relax.op.nn">
 <span id="tvm-relax-op-nn"></span><h2>tvm.relax.op.nn<a class="headerlink" href="#module-tvm.relax.op.nn" title="Link to this heading"></a></h2>
@@ -7010,6 +7057,18 @@ the offset of <cite>data</cite>.</p></li>
 <dt class="sig sig-object py" id="tvm.relax.op.op_attrs.AttentionAttrs.window_size">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">window_size</span></span><a class="headerlink" href="#tvm.relax.op.op_attrs.AttentionAttrs.window_size" title="Link to this definition"></a></dt>
 <dd><p>The size of the window for sliding-window attention.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="tvm.relax.op.op_attrs.AllClassNonMaximumSuppressionAttrs">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">tvm.relax.op.op_attrs.</span></span><span class="sig-name descname"><span class="pre">AllClassNonMaximumSuppressionAttrs</span></span><a class="headerlink" href="#tvm.relax.op.op_attrs.AllClassNonMaximumSuppressionAttrs" title="Link to this definition"></a></dt>
+<dd><p>Attributes for vision.all_class_non_max_suppression</p>
+<dl class="py property">
+<dt class="sig sig-object py" id="tvm.relax.op.op_attrs.AllClassNonMaximumSuppressionAttrs.output_format">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">output_format</span></span><a class="headerlink" href="#tvm.relax.op.op_attrs.AllClassNonMaximumSuppressionAttrs.output_format" title="Link to this definition"></a></dt>
+<dd><p>Output format, onnx or tensorflow. Returns outputs in a way that can be easily consumed by each frontend.</p>
 </dd></dl>
 
 </dd></dl>
