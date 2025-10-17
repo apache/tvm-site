@@ -39,7 +39,7 @@ Table of Contents
    :maxdepth: 1
    :caption: Get Started
 
-   get_started/quick_start.md
+   get_started/quickstart.rst
 
 .. toctree::
    :maxdepth: 1
