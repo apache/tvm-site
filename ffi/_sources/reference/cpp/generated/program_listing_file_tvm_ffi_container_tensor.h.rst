@@ -46,6 +46,8 @@ Program Listing for File tensor.h
    namespace tvm {
    namespace ffi {
    
+   class Tensor;
+   
    inline bool IsDirectAddressDevice(const DLDevice& device) {
      return device.device_type <= kDLCUDAHost || device.device_type == kDLCUDAManaged ||
             device.device_type == kDLROCM || device.device_type == kDLROCMHost;

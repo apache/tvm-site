@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="generator" content="Docutils 0.18.1: http://docutils.sourceforge.net/" />
 
-    <title>Packaging &#8212; tvm-ffi</title>
+    <title>Python Binding and Packaging &#8212; tvm-ffi</title>
   
   
   
@@ -166,7 +166,7 @@
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">Guides</span></p>
 <ul class="current nav bd-sidenav">
-<li class="toctree-l1 current active"><a class="current reference internal" href="#">Packaging</a></li>
+<li class="toctree-l1 current active"><a class="current reference internal" href="#">Python Binding and Packaging</a></li>
 <li class="toctree-l1"><a class="reference internal" href="cpp_guide.html">C++ Guide</a></li>
 <li class="toctree-l1"><a class="reference internal" href="python_guide.html">Python Guide</a></li>
 <li class="toctree-l1"><a class="reference internal" href="stable_c_abi.html">Stable C ABI</a></li>
@@ -517,7 +517,7 @@
       
       
       
-      <li><a href="../_sources/guides/packaging.md" target="_blank"
+      <li><a href="../_sources/guides/python_packaging.md" target="_blank"
    class="btn btn-sm btn-download-source-button dropdown-item"
    title="Download source file"
    data-bs-placement="left" data-bs-toggle="tooltip"
@@ -601,7 +601,7 @@ document.write(`
               
 
 <div id="jb-print-docs-body" class="onlyprint">
-    <h1>Packaging</h1>
+    <h1>Python Binding and Packaging</h1>
     <!-- Table of contents -->
     <div id="print-main-content">
         <div id="jb-print-toc">
@@ -611,11 +611,19 @@ document.write(`
             </div>
             <nav aria-label="Page">
                 <ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#build-and-run-the-example">Build and Run the Example</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#setup-pyproject-toml">Setup pyproject.toml</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#setup-cmakelists-txt">Setup CMakeLists.txt</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#exposing-c-functions">Exposing C++ Functions</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#library-loading-in-python">Library Loading in Python</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#directly-using-exported-library">Directly using Exported Library</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#pybind11-and-nanobind-style-usage">Pybind11 and Nanobind style Usage</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#relations-to-existing-solutions">Relations to Existing Solutions</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#mix-with-existing-solutions">Mix with Existing Solutions</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#example-project-walk-through">Example Project Walk Through</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#setup-pyproject-toml">Setup pyproject.toml</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#setup-cmakelists-txt">Setup CMakeLists.txt</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#exposing-c-functions">Exposing C++ Functions</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#library-loading-in-python">Library Loading in Python</a></li>
+</ul>
+</li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#build-and-use-the-package">Build and Use the Package</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#wheel-auditing">Wheel Auditing</a></li>
 </ul>
@@ -643,27 +651,195 @@ document.write(`
 <!--- KIND, either express or implied.  See the License for the -->
 <!--- specific language governing permissions and limitations -->
 <!--- under the License. -->
-<section class="tex2jax_ignore mathjax_ignore" id="packaging">
-<h1>Packaging<a class="headerlink" href="#packaging" title="Link to this heading">#</a></h1>
-<p>This guide explains how to package a tvm-ffi-based library into a Python ABI-agnostic wheel.
-It demonstrates both source-level builds (for cross-compilation) and builds based on pre-shipped shared libraries.
+<section class="tex2jax_ignore mathjax_ignore" id="python-binding-and-packaging">
+<h1>Python Binding and Packaging<a class="headerlink" href="#python-binding-and-packaging" title="Link to this heading">#</a></h1>
+<p>This guide explains how to leverage tvm-ffi to expose C++ functions into Python and package them into a wheel.
 At a high level, packaging with tvm-ffi offers several benefits:</p>
 <ul class="simple">
-<li><p><strong>ABI-agnostic wheels</strong>: Works across different Python versions with minimal dependency.</p></li>
-<li><p><strong>Universally deployable</strong>: Build once with tvm-ffi and ship to different environments, including Python and non-Python environments.</p></li>
+<li><p><strong>Ship one wheel</strong> that can be used across Python versions, including free-threaded Python.</p></li>
+<li><p><strong>Multi-language access</strong> to functions from Python, C++, Rust and other languages that connect to the ABI.</p></li>
+<li><p><strong>ML Systems Interop</strong> with ML frameworks, DSLs, and libraries while maintaining minimal dependency.</p></li>
 </ul>
-<p>While this guide shows how to build a wheel package, the resulting <code class="docutils literal notranslate"><span class="pre">my_ffi_extension.so</span></code> is agnostic
-to Python, comes with minimal dependencies, and can be used in other deployment scenarios.</p>
-<section id="build-and-run-the-example">
-<h2>Build and Run the Example<a class="headerlink" href="#build-and-run-the-example" title="Link to this heading">#</a></h2>
-<p>Let’s start by building and running the example.
+<section id="directly-using-exported-library">
+<h2>Directly using Exported Library<a class="headerlink" href="#directly-using-exported-library" title="Link to this heading">#</a></h2>
+<p>If you just need to expose a simple set of functions,
+you can declare an exported symbol in C++:</p>
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="c1">// Compiles to mylib.so</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;tvm/ffi/function.h&gt;</span>
+
+<span class="kt">int</span><span class="w"> </span><span class="nf">add_one</span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">x</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="k">return</span><span class="w"> </span><span class="n">x</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="p">;</span>
+<span class="p">}</span>
+
+<span class="n">TVM_FFI_DLL_EXPORT_TYPED_FUNC</span><span class="p">(</span><span class="n">add_one</span><span class="p">,</span><span class="w"> </span><span class="n">add_one</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>You then load the exported function in your Python project via <a class="reference internal" href="../reference/python/generated/tvm_ffi.load_module.html#tvm_ffi.load_module" title="tvm_ffi.load_module"><code class="xref py py-func docutils literal notranslate"><span class="pre">tvm_ffi.load_module()</span></code></a>.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># In your __init__.py</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">tvm_ffi</span>
+
+<span class="n">_LIB</span> <span class="o">=</span> <span class="n">tvm_ffi</span><span class="o">.</span><span class="n">load_module</span><span class="p">(</span><span class="s2">&quot;/path/to/mlib.so&quot;</span><span class="p">)</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">add_one</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Expose mylib.add_one&quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">_LIB</span><span class="o">.</span><span class="n">add_one</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>This approach is like using <a class="reference external" href="https://docs.python.org/3.12/library/ctypes.html#module-ctypes" title="(in Python v3.12)"><code class="xref py py-mod docutils literal notranslate"><span class="pre">ctypes</span></code></a> to load and run DLLs, except we have more powerful features:</p>
+<ul class="simple">
+<li><p>We can pass in and return a richer set of data types such as <a class="reference internal" href="../reference/python/generated/tvm_ffi.Tensor.html#tvm_ffi.Tensor" title="tvm_ffi.Tensor"><code class="xref py py-class docutils literal notranslate"><span class="pre">tvm_ffi.Tensor</span></code></a> and strings.</p></li>
+<li><p><a class="reference internal" href="../reference/python/generated/tvm_ffi.Function.html#tvm_ffi.Function" title="tvm_ffi.Function"><code class="xref py py-class docutils literal notranslate"><span class="pre">tvm_ffi.Function</span></code></a> enables natural callbacks to Python lambdas or other languages.</p></li>
+<li><p>Exceptions are propagated naturally across language boundaries.</p></li>
+</ul>
+</section>
+<section id="pybind11-and-nanobind-style-usage">
+<h2>Pybind11 and Nanobind style Usage<a class="headerlink" href="#pybind11-and-nanobind-style-usage" title="Link to this heading">#</a></h2>
+<p>For advanced use cases where users may wish to register global functions or custom object types,
+we also provide a pybind11/nanobind style API to register functions and custom objects.</p>
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;tvm/ffi/error.h&gt;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;tvm/ffi/reflection/registry.h&gt;</span>
+
+<span class="k">namespace</span><span class="w"> </span><span class="nn">my_ffi_extension</span><span class="w"> </span><span class="p">{</span>
+
+<span class="k">namespace</span><span class="w"> </span><span class="nn">ffi</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nn">tvm</span><span class="o">::</span><span class="nn">ffi</span><span class="p">;</span>
+
+<span class="cm">/*!</span>
+<span class="cm"> * \brief Example of a custom object that is exposed to the FFI library</span>
+<span class="cm"> */</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">IntPairObj</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="k">public</span><span class="w"> </span><span class="n">ffi</span><span class="o">::</span><span class="n">Object</span><span class="w"> </span><span class="p">{</span>
+<span class="w"> </span><span class="k">public</span><span class="o">:</span>
+<span class="w">  </span><span class="kt">int64_t</span><span class="w"> </span><span class="n">a</span><span class="p">;</span>
+<span class="w">  </span><span class="kt">int64_t</span><span class="w"> </span><span class="n">b</span><span class="p">;</span>
+
+<span class="w">  </span><span class="n">IntPairObj</span><span class="p">()</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">default</span><span class="p">;</span>
+<span class="w">  </span><span class="n">IntPairObj</span><span class="p">(</span><span class="kt">int64_t</span><span class="w"> </span><span class="n">a</span><span class="p">,</span><span class="w"> </span><span class="kt">int64_t</span><span class="w"> </span><span class="n">b</span><span class="p">)</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">a</span><span class="p">(</span><span class="n">a</span><span class="p">),</span><span class="w"> </span><span class="n">b</span><span class="p">(</span><span class="n">b</span><span class="p">)</span><span class="w"> </span><span class="p">{}</span>
+
+<span class="w">  </span><span class="kt">int64_t</span><span class="w"> </span><span class="n">GetFirst</span><span class="p">()</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="k">return</span><span class="w"> </span><span class="k">this</span><span class="o">-&gt;</span><span class="n">a</span><span class="p">;</span><span class="w"> </span><span class="p">}</span>
+
+<span class="w">  </span><span class="c1">// Required: declare type information</span>
+<span class="w">  </span><span class="n">TVM_FFI_DECLARE_OBJECT_INFO_FINAL</span><span class="p">(</span><span class="s">&quot;my_ffi_extension.IntPair&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">IntPairObj</span><span class="p">,</span><span class="w"> </span><span class="n">ffi</span><span class="o">::</span><span class="n">Object</span><span class="p">);</span>
+<span class="p">};</span>
+
+<span class="cm">/*!</span>
+<span class="cm"> * \brief Defines an explicit reference to IntPairObj</span>
+<span class="cm"> *</span>
+<span class="cm"> * A reference wrapper serves as a reference-counted pointer to the object.</span>
+<span class="cm"> * You can use obj-&gt;field to access the fields of the object.</span>
+<span class="cm"> */</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">IntPair</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="k">public</span><span class="w"> </span><span class="n">tvm</span><span class="o">::</span><span class="n">ffi</span><span class="o">::</span><span class="n">ObjectRef</span><span class="w"> </span><span class="p">{</span>
+<span class="w"> </span><span class="k">public</span><span class="o">:</span>
+<span class="w">  </span><span class="c1">// Constructor</span>
+<span class="w">  </span><span class="k">explicit</span><span class="w"> </span><span class="n">IntPair</span><span class="p">(</span><span class="kt">int64_t</span><span class="w"> </span><span class="n">a</span><span class="p">,</span><span class="w"> </span><span class="kt">int64_t</span><span class="w"> </span><span class="n">b</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">data_</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">tvm</span><span class="o">::</span><span class="n">ffi</span><span class="o">::</span><span class="n">make_object</span><span class="o">&lt;</span><span class="n">IntPairObj</span><span class="o">&gt;</span><span class="p">(</span><span class="n">a</span><span class="p">,</span><span class="w"> </span><span class="n">b</span><span class="p">);</span>
+<span class="w">  </span><span class="p">}</span>
+
+<span class="w">  </span><span class="c1">// Required: define object reference methods</span>
+<span class="w">  </span><span class="n">TVM_FFI_DEFINE_OBJECT_REF_METHODS_NULLABLE</span><span class="p">(</span><span class="n">IntPair</span><span class="p">,</span><span class="w"> </span><span class="n">tvm</span><span class="o">::</span><span class="n">ffi</span><span class="o">::</span><span class="n">ObjectRef</span><span class="p">,</span><span class="w"> </span><span class="n">IntPairObj</span><span class="p">);</span>
+<span class="p">};</span>
+
+<span class="kt">void</span><span class="w"> </span><span class="nf">RaiseError</span><span class="p">(</span><span class="n">ffi</span><span class="o">::</span><span class="n">String</span><span class="w"> </span><span class="n">msg</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">TVM_FFI_THROW</span><span class="p">(</span><span class="n">RuntimeError</span><span class="p">)</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">msg</span><span class="p">;</span><span class="w"> </span><span class="p">}</span>
+
+<span class="n">TVM_FFI_STATIC_INIT_BLOCK</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="k">namespace</span><span class="w"> </span><span class="nn">refl</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nn">tvm</span><span class="o">::</span><span class="nn">ffi</span><span class="o">::</span><span class="nn">reflection</span><span class="p">;</span>
+<span class="w">  </span><span class="n">refl</span><span class="o">::</span><span class="n">GlobalDef</span><span class="p">()</span>
+<span class="w">    </span><span class="p">.</span><span class="n">def</span><span class="p">(</span><span class="s">&quot;my_ffi_extension.raise_error&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">RaiseError</span><span class="p">);</span>
+<span class="w">  </span><span class="c1">// register object definition</span>
+<span class="w">  </span><span class="n">refl</span><span class="o">::</span><span class="n">ObjectDef</span><span class="o">&lt;</span><span class="n">IntPairObj</span><span class="o">&gt;</span><span class="p">()</span>
+<span class="w">      </span><span class="p">.</span><span class="n">def</span><span class="p">(</span><span class="n">refl</span><span class="o">::</span><span class="n">init</span><span class="o">&lt;</span><span class="kt">int64_t</span><span class="p">,</span><span class="w"> </span><span class="kt">int64_t</span><span class="o">&gt;</span><span class="p">())</span>
+<span class="w">       </span><span class="c1">// Example static method that returns the second element of the pair</span>
+<span class="w">      </span><span class="p">.</span><span class="n">def_static</span><span class="p">(</span><span class="s">&quot;static_get_second&quot;</span><span class="p">,</span><span class="w"> </span><span class="p">[](</span><span class="n">IntPair</span><span class="w"> </span><span class="n">pair</span><span class="p">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="kt">int64_t</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="k">return</span><span class="w"> </span><span class="n">pair</span><span class="o">-&gt;</span><span class="n">b</span><span class="p">;</span><span class="w"> </span><span class="p">})</span>
+<span class="w">      </span><span class="c1">// Example to bind an instance method</span>
+<span class="w">      </span><span class="p">.</span><span class="n">def</span><span class="p">(</span><span class="s">&quot;get_first&quot;</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">IntPairObj</span><span class="o">::</span><span class="n">GetFirst</span><span class="p">)</span>
+<span class="w">      </span><span class="p">.</span><span class="n">def_ro</span><span class="p">(</span><span class="s">&quot;a&quot;</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">IntPairObj</span><span class="o">::</span><span class="n">a</span><span class="p">)</span>
+<span class="w">      </span><span class="p">.</span><span class="n">def_ro</span><span class="p">(</span><span class="s">&quot;b&quot;</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">IntPairObj</span><span class="o">::</span><span class="n">b</span><span class="p">);</span>
+<span class="p">}</span>
+<span class="p">}</span><span class="w">  </span><span class="c1">// namespace my_ffi_extension</span>
+</pre></div>
+</div>
+<p>Then these functions and objects can be accessed from Python as long as the library is loaded.
+You can use <a class="reference internal" href="../reference/python/generated/tvm_ffi.load_module.html#tvm_ffi.load_module" title="tvm_ffi.load_module"><code class="xref py py-func docutils literal notranslate"><span class="pre">tvm_ffi.load_module()</span></code></a> or simply use <a class="reference external" href="https://docs.python.org/3.12/library/ctypes.html#ctypes.CDLL" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">ctypes.CDLL</span></code></a>. Then you can access
+the function through <a class="reference internal" href="../reference/python/generated/tvm_ffi.get_global_func.html#tvm_ffi.get_global_func" title="tvm_ffi.get_global_func"><code class="xref py py-func docutils literal notranslate"><span class="pre">tvm_ffi.get_global_func()</span></code></a> or <a class="reference internal" href="../reference/python/generated/tvm_ffi.init_ffi_api.html#tvm_ffi.init_ffi_api" title="tvm_ffi.init_ffi_api"><code class="xref py py-func docutils literal notranslate"><span class="pre">tvm_ffi.init_ffi_api()</span></code></a>.
+We also allow direct exposure of object via <a class="reference internal" href="../reference/python/generated/tvm_ffi.register_object.html#tvm_ffi.register_object" title="tvm_ffi.register_object"><code class="xref py py-func docutils literal notranslate"><span class="pre">tvm_ffi.register_object()</span></code></a>.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># __init__.py</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">tvm_ffi</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">raise_error</span><span class="p">(</span><span class="n">msg</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Wrap raise error function.&quot;&quot;&quot;</span>
+    <span class="c1"># Usually we reorganize these functions into a _ffi_api.py and load once</span>
+    <span class="n">func</span> <span class="o">=</span> <span class="n">tvm_ffi</span><span class="o">.</span><span class="n">get_global_func</span><span class="p">(</span><span class="s2">&quot;my_ffi_extension.raise_error&quot;</span><span class="p">)</span>
+    <span class="n">func</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+
+
+<span class="nd">@tvm_ffi</span><span class="o">.</span><span class="n">register_object</span><span class="p">(</span><span class="s2">&quot;my_ffi_extension.IntPair&quot;</span><span class="p">)</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">IntPair</span><span class="p">(</span><span class="n">tvm_ffi</span><span class="o">.</span><span class="n">Object</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;IntPair object.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">a</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">b</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Construct the object.&quot;&quot;&quot;</span>
+        <span class="c1"># __ffi_init__ call into the refl::init&lt;&gt; registered</span>
+        <span class="c1"># in the static initialization block of the extension library</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__ffi_init__</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">run_example</span><span class="p">():</span>
+    <span class="n">pair</span> <span class="o">=</span> <span class="n">IntPair</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+    <span class="c1"># prints 1</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">pair</span><span class="o">.</span><span class="n">get_first</span><span class="p">())</span>
+    <span class="c1"># prints 2</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">IntPair</span><span class="o">.</span><span class="n">static_get_second</span><span class="p">(</span><span class="n">pair</span><span class="p">))</span>
+    <span class="c1"># Raises a RuntimeError(&quot;error happens&quot;)</span>
+    <span class="n">raise_error</span><span class="p">(</span><span class="s2">&quot;error happens&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<section id="relations-to-existing-solutions">
+<h3>Relations to Existing Solutions<a class="headerlink" href="#relations-to-existing-solutions" title="Link to this heading">#</a></h3>
+<p>Most current binding systems focus on creating one-to-one bindings
+that take a source language and bind to an existing target language runtime and ABI.
+We deliberately take a more decoupled approach here:</p>
+<ul class="simple">
+<li><p>Build stable, minimal ABI convention that is agnostic to the target language.</p></li>
+<li><p>Create bindings to connect the source and target language to the ABI.</p></li>
+</ul>
+<p>The focus of this project is the ABI itself which we believe can help the overall ecosystem.
+We also anticipate there are possibilities for existing binding generators to also target the tvm-ffi ABI.</p>
+<p><strong>Design philosophy</strong>. We have the following design philosophies focusing on ML systems.</p>
+<ul class="simple">
+<li><p>FFI and cross-language interop should be first-class citizens in ML systems rather than an add-on.</p></li>
+<li><p>Enable multi-environment support in both source and target languages.</p></li>
+<li><p>The same ABI should be minimal and targetable by DSL compilers.</p></li>
+</ul>
+<p>Of course, there is always a tradeoff. It is by design impossible to support arbitrary advanced language features
+in the target language, as different programming languages have their own design considerations.
+We do believe it is possible to build a universal, effective, and minimal ABI for machine learning
+system use cases. Based on the above design philosophies, we focus our cross-language
+interaction interface through the FFI ABI for machine learning systems.</p>
+<p>So if you are building projects related to machine learning compilers, runtimes,
+libraries, frameworks, DSLs, or generally scientific computing, we encourage you
+to try it out. The extension mechanism can likely support features in other domains as well
+and we welcome you to try it out as well.</p>
+</section>
+<section id="mix-with-existing-solutions">
+<h3>Mix with Existing Solutions<a class="headerlink" href="#mix-with-existing-solutions" title="Link to this heading">#</a></h3>
+<p>Because the global registry mechanism only relies on the code being linked,
+you can also partially use tvm-ffi-based registration together with pybind11/nanobind in your project.
+Just add the related code, link to <code class="docutils literal notranslate"><span class="pre">libtvm_ffi</span></code> and make sure you <code class="docutils literal notranslate"><span class="pre">import</span> <span class="pre">tvm_ffi</span></code> before importing
+your module to ensure related symbols are available.
+This approach may help to quickly leverage some of the cross-language features we have.
+It also provides more powerful interaction with the host Python language, but of course the tradeoff
+is that the final library will now also depend on the Python ABI.</p>
+</section>
+</section>
+<section id="example-project-walk-through">
+<h2>Example Project Walk Through<a class="headerlink" href="#example-project-walk-through" title="Link to this heading">#</a></h2>
+<p>To get hands-on experience with the packaging flow,
+you can try out an example project in our folder.
 First, obtain a copy of the tvm-ffi source code.</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>git<span class="w"> </span>clone<span class="w"> </span>https://github.com/apache/tvm-ffi<span class="w"> </span>--recursive
 <span class="nb">cd</span><span class="w"> </span>tvm-ffi
 </pre></div>
 </div>
 <p>The examples are now in the examples folder. You can quickly build
-and install the example using the following command.</p>
+and install the example using the following commands.</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">cd</span><span class="w"> </span>examples/packaging
 pip<span class="w"> </span>install<span class="w"> </span>-v<span class="w"> </span>.
 </pre></div>
@@ -706,9 +882,8 @@ pip<span class="w"> </span>install<span class="w"> </span>-v<span class="w"> </s
 </div>
 <p>We use scikit-build-core for building the wheel. Make sure you add tvm-ffi as a build-system requirement.
 Importantly, we should set <code class="docutils literal notranslate"><span class="pre">wheel.py-api</span></code> to <code class="docutils literal notranslate"><span class="pre">py3</span></code> to indicate it is ABI-generic.</p>
-</section>
 <section id="setup-cmakelists-txt">
-<h2>Setup CMakeLists.txt<a class="headerlink" href="#setup-cmakelists-txt" title="Link to this heading">#</a></h2>
+<h3>Setup CMakeLists.txt<a class="headerlink" href="#setup-cmakelists-txt" title="Link to this heading">#</a></h3>
 <p>The CMakeLists.txt handles the build and linking of the project.
 There are two ways you can build with tvm-ffi:</p>
 <ul class="simple">
@@ -752,7 +927,7 @@ you do not need to ship libtvm_ffi.so in your package even if you build tvm-ffi 
 The built objects are only used to supply the linking information.</p>
 </section>
 <section id="exposing-c-functions">
-<h2>Exposing C++ Functions<a class="headerlink" href="#exposing-c-functions" title="Link to this heading">#</a></h2>
+<h3>Exposing C++ Functions<a class="headerlink" href="#exposing-c-functions" title="Link to this heading">#</a></h3>
 <p>The C++ implementation is defined in <code class="docutils literal notranslate"><span class="pre">src/extension.cc</span></code>.
 There are two ways one can expose a function in C++ to the FFI library.
 First, <code class="docutils literal notranslate"><span class="pre">TVM_FFI_DLL_EXPORT_TYPED_FUNC</span></code> can be used to expose the function directly as a C symbol that follows the tvm-ffi ABI,
@@ -785,7 +960,7 @@ and is expected to stay throughout the lifetime of the program.</p>
 loaded (such as JIT scenarios) so they won’t be exposed to the global function table.</p>
 </section>
 <section id="library-loading-in-python">
-<h2>Library Loading in Python<a class="headerlink" href="#library-loading-in-python" title="Link to this heading">#</a></h2>
+<h3>Library Loading in Python<a class="headerlink" href="#library-loading-in-python" title="Link to this heading">#</a></h3>
 <p>The base module handles loading the compiled extension:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">tvm_ffi</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
@@ -834,6 +1009,7 @@ with <code class="docutils literal notranslate"><span class="pre">my_ffi_extensi
     <span class="k">return</span> <span class="n">_ffi_api</span><span class="o">.</span><span class="n">raise_error</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
 </pre></div>
 </div>
+</section>
 </section>
 <section id="build-and-use-the-package">
 <h2>Build and Use the Package<a class="headerlink" href="#build-and-use-the-package" title="Link to this heading">#</a></h2>
@@ -923,11 +1099,19 @@ across language boundaries:</p>
   </div>
   <nav class="bd-toc-nav page-toc">
     <ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#build-and-run-the-example">Build and Run the Example</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#setup-pyproject-toml">Setup pyproject.toml</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#setup-cmakelists-txt">Setup CMakeLists.txt</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#exposing-c-functions">Exposing C++ Functions</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#library-loading-in-python">Library Loading in Python</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#directly-using-exported-library">Directly using Exported Library</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#pybind11-and-nanobind-style-usage">Pybind11 and Nanobind style Usage</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#relations-to-existing-solutions">Relations to Existing Solutions</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#mix-with-existing-solutions">Mix with Existing Solutions</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#example-project-walk-through">Example Project Walk Through</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#setup-pyproject-toml">Setup pyproject.toml</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#setup-cmakelists-txt">Setup CMakeLists.txt</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#exposing-c-functions">Exposing C++ Functions</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#library-loading-in-python">Library Loading in Python</a></li>
+</ul>
+</li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#build-and-use-the-package">Build and Use the Package</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#wheel-auditing">Wheel Auditing</a></li>
 </ul>
