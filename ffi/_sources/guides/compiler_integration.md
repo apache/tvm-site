@@ -50,7 +50,7 @@ int ReadDLTensorPtr(const TVMFFIAny *value, DLTensor** out) {
     return 0;
   }
   if (value->type_index != kTVMFFITensor) {
-    // Use TVMFFIErrorSetRaisedFromCStr to set an error which will
+    // Use TVMFFIErrorSetRaisedFromCStr / TVMFFIErrorSetRaisedFromCStrParts to set an error which will
     // be propagated to the caller
     TVMFFIErrorSetRaisedFromCStr("ValueError", "Expects a Tensor input");
     return -1;
@@ -86,7 +86,8 @@ Some of the key takeaways include:
 
 - Prefix the symbol with `__tvm_ffi_`
 - Call {cpp:func}`TVMFFIEnvGetStream` to get the current environment stream
-- Use return value for error handling, set error via {cpp:func}`TVMFFIErrorSetRaisedFromCStr`.
+- Use return value for error handling, set error via {cpp:func}`TVMFFIErrorSetRaisedFromCStr`
+  or {cpp:func}`TVMFFIErrorSetRaisedFromCStrParts`.
 
 You can also check out the [ABI overview](../concepts/abi_overview.md) for a more complete guide.
 

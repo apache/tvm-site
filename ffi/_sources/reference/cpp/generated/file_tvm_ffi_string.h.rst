@@ -39,7 +39,7 @@ Includes
 
 - ``cstring``
 
-- ``initializer_list``
+- ``sstream``
 
 - ``string`` (:ref:`file_tvm_ffi_string.h`)
 
@@ -54,8 +54,6 @@ Includes
 - ``tvm/ffi/object.h`` (:ref:`file_tvm_ffi_object.h`)
 
 - ``tvm/ffi/type_traits.h`` (:ref:`file_tvm_ffi_type_traits.h`)
-
-- ``type_traits`` (:ref:`file_tvm_ffi_type_traits.h`)
 
 - ``utility``
 
@@ -74,6 +72,8 @@ Included By
 - :ref:`file_tvm_ffi_optional.h`
 
 - :ref:`file_tvm_ffi_reflection_creator.h`
+
+- :ref:`file_tvm_ffi_reflection_registry.h`
 
 
 
@@ -99,6 +99,8 @@ Classes
 Functions
 ---------
 
+
+- :ref:`exhale_function_string_8h_1aa190eed2516ff9a633009cc62f660502`
 
 - :ref:`exhale_function_string_8h_1ad045700080c053c50d68cde298b2b4b2`
 

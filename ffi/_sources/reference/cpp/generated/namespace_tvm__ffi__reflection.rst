@@ -22,7 +22,13 @@ Classes
 -------
 
 
-- :ref:`exhale_struct_structtvm_1_1ffi_1_1reflection_1_1FieldInfoTrait`
+- :ref:`exhale_struct_structtvm_1_1ffi_1_1reflection_1_1FieldInfoBuilder`
+
+- :ref:`exhale_struct_structtvm_1_1ffi_1_1reflection_1_1InfoTrait`
+
+- :ref:`exhale_struct_structtvm_1_1ffi_1_1reflection_1_1init`
+
+- :ref:`exhale_struct_structtvm_1_1ffi_1_1reflection_1_1MethodInfoBuilder`
 
 - :ref:`exhale_class_classtvm_1_1ffi_1_1reflection_1_1AccessPath`
 
@@ -41,6 +47,8 @@ Classes
 - :ref:`exhale_class_classtvm_1_1ffi_1_1reflection_1_1FieldSetter`
 
 - :ref:`exhale_class_classtvm_1_1ffi_1_1reflection_1_1GlobalDef`
+
+- :ref:`exhale_class_classtvm_1_1ffi_1_1reflection_1_1Metadata`
 
 - :ref:`exhale_class_classtvm_1_1ffi_1_1reflection_1_1ObjectCreator`
 
@@ -76,11 +84,11 @@ Functions
 
 - :ref:`exhale_function_namespacetvm_1_1ffi_1_1reflection_1ac902a725008e348254ee7a2d07c8a95a`
 
-- :ref:`exhale_function_namespacetvm_1_1ffi_1_1reflection_1a3991af7fd0ab178c10456ebf0fb0f6e4`
-
 
 Typedefs
 --------
 
+
+- :ref:`exhale_typedef_namespacetvm_1_1ffi_1_1reflection_1a96513314d45b43eada132d9b96653d9a`
 
 - :ref:`exhale_typedef_namespacetvm_1_1ffi_1_1reflection_1a32b044a71a094de492867144ca299c15`

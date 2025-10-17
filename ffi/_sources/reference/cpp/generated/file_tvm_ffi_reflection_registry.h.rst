@@ -35,17 +35,33 @@ Includes
 --------
 
 
+- ``iterator``
+
+- ``optional`` (:ref:`file_tvm_ffi_optional.h`)
+
+- ``sstream``
+
 - ``string`` (:ref:`file_tvm_ffi_string.h`)
 
 - ``tvm/ffi/any.h`` (:ref:`file_tvm_ffi_any.h`)
 
 - ``tvm/ffi/c_api.h`` (:ref:`file_tvm_ffi_c_api.h`)
 
+- ``tvm/ffi/container/map.h`` (:ref:`file_tvm_ffi_container_map.h`)
+
+- ``tvm/ffi/container/variant.h`` (:ref:`file_tvm_ffi_container_variant.h`)
+
 - ``tvm/ffi/function.h`` (:ref:`file_tvm_ffi_function.h`)
+
+- ``tvm/ffi/optional.h`` (:ref:`file_tvm_ffi_optional.h`)
+
+- ``tvm/ffi/string.h`` (:ref:`file_tvm_ffi_string.h`)
 
 - ``tvm/ffi/type_traits.h`` (:ref:`file_tvm_ffi_type_traits.h`)
 
 - ``utility``
+
+- ``vector``
 
 
 
@@ -73,13 +89,21 @@ Classes
 -------
 
 
-- :ref:`exhale_struct_structtvm_1_1ffi_1_1reflection_1_1FieldInfoTrait`
+- :ref:`exhale_struct_structtvm_1_1ffi_1_1reflection_1_1FieldInfoBuilder`
+
+- :ref:`exhale_struct_structtvm_1_1ffi_1_1reflection_1_1InfoTrait`
+
+- :ref:`exhale_struct_structtvm_1_1ffi_1_1reflection_1_1init`
+
+- :ref:`exhale_struct_structtvm_1_1ffi_1_1reflection_1_1MethodInfoBuilder`
 
 - :ref:`exhale_class_classtvm_1_1ffi_1_1reflection_1_1AttachFieldFlag`
 
 - :ref:`exhale_class_classtvm_1_1ffi_1_1reflection_1_1DefaultValue`
 
 - :ref:`exhale_class_classtvm_1_1ffi_1_1reflection_1_1GlobalDef`
+
+- :ref:`exhale_class_classtvm_1_1ffi_1_1reflection_1_1Metadata`
 
 - :ref:`exhale_class_classtvm_1_1ffi_1_1reflection_1_1ObjectDef`
 
@@ -94,5 +118,10 @@ Functions
 
 - :ref:`exhale_function_namespacetvm_1_1ffi_1_1reflection_1a6b1f837cf822ded72a31f343ce987f4c`
 
-- :ref:`exhale_function_namespacetvm_1_1ffi_1_1reflection_1a3991af7fd0ab178c10456ebf0fb0f6e4`
+
+Typedefs
+--------
+
+
+- :ref:`exhale_typedef_namespacetvm_1_1ffi_1_1reflection_1a96513314d45b43eada132d9b96653d9a`
 

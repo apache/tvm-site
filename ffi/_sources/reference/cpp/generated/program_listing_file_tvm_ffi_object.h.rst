@@ -63,6 +63,7 @@ Program Listing for File object.h
      static constexpr const char* kTVMFFIObjectRValueRef = "ObjectRValueRef";
      static constexpr const char* kTVMFFISmallStr = "ffi.SmallStr";
      static constexpr const char* kTVMFFISmallBytes = "ffi.SmallBytes";
+     static constexpr const char* kTVMFFIError = "ffi.Error";
      static constexpr const char* kTVMFFIBytes = "ffi.Bytes";
      static constexpr const char* kTVMFFIStr = "ffi.String";
      static constexpr const char* kTVMFFIShape = "ffi.Shape";
@@ -101,7 +102,9 @@ Program Listing for File object.h
     public:
      Object() {
        header_.combined_ref_count = 0;
-       header_.deleter = nullptr;
+       header_.type_index = 0;
+       header_.__padding = 0;
+       header_.__ensure_align = 0;
      }
      template <typename TargetType>
      bool IsInstance() const {
@@ -156,7 +159,9 @@ Program Listing for File object.h
      // The following functions are provided by macro
      // TVM_FFI_DECLARE_OBJECT_INFO and TVM_FFI_DECLARE_OBJECT_INFO_FINAL
      static int32_t RuntimeTypeIndex() { return TypeIndex::kTVMFFIObject; }
-     static int32_t _GetOrAllocRuntimeTypeIndex() { return TypeIndex::kTVMFFIObject; }
+     static int32_t _GetOrAllocRuntimeTypeIndex() {  // NOLINT(bugprone-reserved-identifier)
+       return TypeIndex::kTVMFFIObject;
+     }
    
     private:
      // exposing detailed constants to here
@@ -309,15 +314,14 @@ Program Listing for File object.h
    template <typename T>
    class ObjectPtr {
     public:
-     ObjectPtr() {}
+     ObjectPtr() = default;
      ObjectPtr(std::nullptr_t) {}  // NOLINT(*)
      ObjectPtr(const ObjectPtr<T>& other)  // NOLINT(*)
          : ObjectPtr(other.data_) {}
      template <typename U>
      ObjectPtr(const ObjectPtr<U>& other)  // NOLINT(*)
          : ObjectPtr(other.data_) {
-       static_assert(std::is_base_of<T, U>::value,
-                     "can only assign of child class ObjectPtr to parent");
+       static_assert(std::is_base_of_v<T, U>, "can only assign of child class ObjectPtr to parent");
      }
      ObjectPtr(ObjectPtr<T>&& other)  // NOLINT(*)
          : data_(other.data_) {
@@ -326,8 +330,7 @@ Program Listing for File object.h
      template <typename Y>
      ObjectPtr(ObjectPtr<Y>&& other)  // NOLINT(*)
          : data_(other.data_) {
-       static_assert(std::is_base_of<T, Y>::value,
-                     "can only assign of child class ObjectPtr to parent");
+       static_assert(std::is_base_of_v<T, Y>, "can only assign of child class ObjectPtr to parent");
        other.data_ = nullptr;
      }
      ~ObjectPtr() { this->reset(); }
@@ -385,7 +388,7 @@ Program Listing for File object.h
    template <typename T>
    class WeakObjectPtr {
     public:
-     WeakObjectPtr() {}
+     WeakObjectPtr() = default;
      WeakObjectPtr(std::nullptr_t) {}  // NOLINT(*)
      WeakObjectPtr(const WeakObjectPtr<T>& other)  // NOLINT(*)
          : WeakObjectPtr(other.data_) {}
@@ -395,14 +398,12 @@ Program Listing for File object.h
      template <typename U>
      WeakObjectPtr(const WeakObjectPtr<U>& other)  // NOLINT(*)
          : WeakObjectPtr(other.data_) {
-       static_assert(std::is_base_of<T, U>::value,
-                     "can only assign of child class ObjectPtr to parent");
+       static_assert(std::is_base_of_v<T, U>, "can only assign of child class ObjectPtr to parent");
      }
      template <typename U>
      WeakObjectPtr(const ObjectPtr<U>& other)  // NOLINT(*)
          : WeakObjectPtr(other.data_) {
-       static_assert(std::is_base_of<T, U>::value,
-                     "can only assign of child class ObjectPtr to parent");
+       static_assert(std::is_base_of_v<T, U>, "can only assign of child class ObjectPtr to parent");
      }
      WeakObjectPtr(WeakObjectPtr<T>&& other)  // NOLINT(*)
          : data_(other.data_) {
@@ -411,8 +412,7 @@ Program Listing for File object.h
      template <typename Y>
      WeakObjectPtr(WeakObjectPtr<Y>&& other)  // NOLINT(*)
          : data_(other.data_) {
-       static_assert(std::is_base_of<T, Y>::value,
-                     "can only assign of child class ObjectPtr to parent");
+       static_assert(std::is_base_of_v<T, Y>, "can only assign of child class ObjectPtr to parent");
        other.data_ = nullptr;
      }
      ~WeakObjectPtr() { this->reset(); }
@@ -474,10 +474,14 @@ Program Listing for File object.h
     public:
      ObjectRef() = default;
      ObjectRef(const ObjectRef& other) = default;
-     ObjectRef(ObjectRef&& other) = default;
+     ObjectRef(ObjectRef&& other) noexcept : data_(std::move(other.data_)) { other.data_ = nullptr; }
      ObjectRef& operator=(const ObjectRef& other) = default;
-     ObjectRef& operator=(ObjectRef&& other) = default;
-     explicit ObjectRef(ObjectPtr<Object> data) : data_(data) {}
+     ObjectRef& operator=(ObjectRef&& other) noexcept {
+       data_ = std::move(other.data_);
+       other.data_ = nullptr;
+       return *this;
+     }
+     explicit ObjectRef(ObjectPtr<Object> data) : data_(std::move(data)) {}
      explicit ObjectRef(UnsafeInit) : data_(nullptr) {}
      bool same_as(const ObjectRef& other) const { return data_ == other.data_; }
      bool operator==(const ObjectRef& other) const { return data_ == other.data_; }
@@ -561,7 +565,7 @@ Program Listing for File object.h
      TVM_FFI_INLINE bool operator()(const Variant<V...>& a, const Variant<V...>& b) const;
    };
    
-   #define TVM_FFI_REGISTER_STATIC_TYPE_INFO(TypeName, ParentType)                               \
+   #define TVM_FFI_DECLARE_OBJECT_INFO_STATIC(TypeKey, TypeName, ParentType)                     \
      static constexpr int32_t _type_depth = ParentType::_type_depth + 1;                         \
      static int32_t _GetOrAllocRuntimeTypeIndex() {                                              \
        static_assert(!ParentType::_type_final, "ParentType marked as final");                    \
@@ -570,17 +574,13 @@ Program Listing for File object.h
                      "Need to set _type_child_slots when parent specifies it.");                 \
        TVMFFIByteArray type_key{TypeName::_type_key,                                             \
                                 std::char_traits<char>::length(TypeName::_type_key)};            \
-       static int32_t tindex = TVMFFITypeGetOrAllocIndex(                                        \
+       static int32_t tindex [[maybe_unused]] = TVMFFITypeGetOrAllocIndex(                       \
            &type_key, TypeName::_type_index, TypeName::_type_depth, TypeName::_type_child_slots, \
            TypeName::_type_child_slots_can_overflow, ParentType::_GetOrAllocRuntimeTypeIndex()); \
-       return tindex;                                                                            \
+       return TypeName::_type_index;                                                             \
      }                                                                                           \
-     static inline int32_t _register_type_index = _GetOrAllocRuntimeTypeIndex()
-   
-   #define TVM_FFI_DECLARE_OBJECT_INFO_STATIC(TypeKey, TypeName, ParentType) \
-     static constexpr const char* _type_key = TypeKey;                       \
-     static int32_t RuntimeTypeIndex() { return TypeName::_type_index; }     \
-     TVM_FFI_REGISTER_STATIC_TYPE_INFO(TypeName, ParentType)
+     static int32_t RuntimeTypeIndex() { return TypeName::_type_index; }                         \
+     static constexpr const char* _type_key = TypeKey
    
    #define TVM_FFI_DECLARE_OBJECT_INFO_PREDEFINED_TYPE_KEY(TypeName, ParentType)                 \
      static constexpr int32_t _type_depth = ParentType::_type_depth + 1;                         \
@@ -596,8 +596,7 @@ Program Listing for File object.h
            TypeName::_type_child_slots_can_overflow, ParentType::_GetOrAllocRuntimeTypeIndex()); \
        return tindex;                                                                            \
      }                                                                                           \
-     static int32_t RuntimeTypeIndex() { return _GetOrAllocRuntimeTypeIndex(); }                 \
-     static inline int32_t _type_index = _GetOrAllocRuntimeTypeIndex()
+     static int32_t RuntimeTypeIndex() { return _GetOrAllocRuntimeTypeIndex(); }
    
    #define TVM_FFI_DECLARE_OBJECT_INFO(TypeKey, TypeName, ParentType) \
      static constexpr const char* _type_key = TypeKey;                \
@@ -608,24 +607,28 @@ Program Listing for File object.h
      static const constexpr bool _type_final [[maybe_unused]] = true;       \
      TVM_FFI_DECLARE_OBJECT_INFO(TypeKey, TypeName, ParentType)
    
-   #define TVM_FFI_DEFINE_OBJECT_REF_METHODS_NULLABLE(TypeName, ParentType, ObjectName)               \
-     TypeName() = default;                                                                            \
-     explicit TypeName(::tvm::ffi::ObjectPtr<ObjectName> n) : ParentType(n) {}                        \
-     explicit TypeName(::tvm::ffi::UnsafeInit tag) : ParentType(tag) {}                               \
-     TVM_FFI_DEFINE_DEFAULT_COPY_MOVE_AND_ASSIGN(TypeName)                                            \
-     using __PtrType = std::conditional_t<ObjectName::_type_mutable, ObjectName*, const ObjectName*>; \
-     __PtrType operator->() const { return static_cast<__PtrType>(data_.get()); }                     \
-     __PtrType get() const { return static_cast<__PtrType>(data_.get()); }                            \
-     [[maybe_unused]] static constexpr bool _type_is_nullable = true;                                 \
+   #define TVM_FFI_DEFINE_OBJECT_REF_METHODS_NULLABLE(TypeName, ParentType, ObjectName)         \
+     TypeName() = default;                                                                      \
+     explicit TypeName(::tvm::ffi::ObjectPtr<ObjectName> n) : ParentType(std::move(n)) {}       \
+     explicit TypeName(::tvm::ffi::UnsafeInit tag) : ParentType(tag) {}                         \
+     TVM_FFI_DEFINE_DEFAULT_COPY_MOVE_AND_ASSIGN(TypeName)                                      \
+     using __PtrType = std::conditional_t<(ObjectName::_type_mutable),                          \
+                                          ObjectName*, /* NOLINT(bugprone-macro-parentheses) */ \
+                                          const ObjectName*>;                                   \
+     __PtrType operator->() const { return static_cast<__PtrType>(data_.get()); }               \
+     __PtrType get() const { return static_cast<__PtrType>(data_.get()); }                      \
+     [[maybe_unused]] static constexpr bool _type_is_nullable = true;                           \
      using ContainerType = ObjectName
    
-   #define TVM_FFI_DEFINE_OBJECT_REF_METHODS_NOTNULLABLE(TypeName, ParentType, ObjectName)            \
-     explicit TypeName(::tvm::ffi::UnsafeInit tag) : ParentType(tag) {}                               \
-     TVM_FFI_DEFINE_DEFAULT_COPY_MOVE_AND_ASSIGN(TypeName)                                            \
-     using __PtrType = std::conditional_t<ObjectName::_type_mutable, ObjectName*, const ObjectName*>; \
-     __PtrType operator->() const { return static_cast<__PtrType>(data_.get()); }                     \
-     __PtrType get() const { return static_cast<__PtrType>(data_.get()); }                            \
-     [[maybe_unused]] static constexpr bool _type_is_nullable = false;                                \
+   #define TVM_FFI_DEFINE_OBJECT_REF_METHODS_NOTNULLABLE(TypeName, ParentType, ObjectName)      \
+     explicit TypeName(::tvm::ffi::UnsafeInit tag) : ParentType(tag) {}                         \
+     TVM_FFI_DEFINE_DEFAULT_COPY_MOVE_AND_ASSIGN(TypeName)                                      \
+     using __PtrType = std::conditional_t<(ObjectName::_type_mutable),                          \
+                                          ObjectName*, /* NOLINT(bugprone-macro-parentheses) */ \
+                                          const ObjectName*>;                                   \
+     __PtrType operator->() const { return static_cast<__PtrType>(data_.get()); }               \
+     __PtrType get() const { return static_cast<__PtrType>(data_.get()); }                      \
+     [[maybe_unused]] static constexpr bool _type_is_nullable = false;                          \
      using ContainerType = ObjectName
    
    namespace details {
@@ -634,7 +637,7 @@ Program Listing for File object.h
    TVM_FFI_INLINE bool IsObjectInstance(int32_t object_type_index) {
      static_assert(std::is_base_of_v<Object, TargetType>);
      // Everything is a subclass of object.
-     if constexpr (std::is_same<TargetType, Object>::value) {
+     if constexpr (std::is_same_v<TargetType, Object>) {
        return true;
      } else if constexpr (TargetType::_type_final) {
        // if the target type is a final type

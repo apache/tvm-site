@@ -93,7 +93,7 @@ Program Listing for File function.h
    
    class FunctionObj : public Object, public TVMFFIFunctionCell {
     public:
-     typedef void (*FCall)(const FunctionObj*, const AnyView*, int32_t, Any*);
+     using FCall = void (*)(const FunctionObj*, const AnyView*, int32_t, Any*);
      using TVMFFIFunctionCell::cpp_call;
      using TVMFFIFunctionCell::safe_call;
      TVM_FFI_INLINE void CallPacked(const AnyView* args, int32_t num_args, Any* result) const {
@@ -123,9 +123,9 @@ Program Listing for File function.h
    template <typename TCallable>
    class FunctionObjImpl : public FunctionObj {
     public:
-     using TStorage = typename std::remove_cv<typename std::remove_reference<TCallable>::type>::type;
+     using TStorage = std::remove_cv_t<std::remove_reference_t<TCallable>>;
      using TSelf = FunctionObjImpl<TCallable>;
-     explicit FunctionObjImpl(TCallable callable) : callable_(callable) {
+     explicit FunctionObjImpl(TCallable callable) : callable_(std::move(callable)) {
        this->safe_call = SafeCall;
        this->cpp_call = reinterpret_cast<void*>(CppCall);
      }
@@ -231,7 +231,7 @@ Program Listing for File function.h
      explicit Function(TCallable packed_call) {
        *this = FromPacked(packed_call);
      }
-     template <typename TCallable>
+     template <typename TCallable>  // // NOLINTNEXTLINE(performance-unnecessary-value-param)
      static Function FromPacked(TCallable packed_call) {
        static_assert(
            std::is_convertible_v<TCallable, std::function<void(const AnyView*, int32_t, Any*)>> ||
@@ -239,12 +239,11 @@ Program Listing for File function.h
            "tvm::ffi::Function::FromPacked requires input function signature to match packed func "
            "format");
        if constexpr (std::is_convertible_v<TCallable, std::function<void(PackedArgs args, Any*)>>) {
-         auto wrapped_call = [packed_call](const AnyView* args, int32_t num_args,
-                                           Any* rv) mutable -> void {
-           PackedArgs args_pack(args, num_args);
-           packed_call(args_pack, rv);
-         };
-         return FromPackedInternal(wrapped_call);
+         return FromPackedInternal(
+             [packed_call](const AnyView* args, int32_t num_args, Any* rv) mutable -> void {
+               PackedArgs args_pack(args, num_args);
+               packed_call(args_pack, rv);
+             });
        } else {
          return FromPackedInternal(packed_call);
        }
@@ -303,7 +302,9 @@ Program Listing for File function.h
      static Function GetGlobalRequired(const char* name) {
        return GetGlobalRequired(std::string_view(name));
      }
-     static void SetGlobal(std::string_view name, Function func, bool override = false) {
+     static void SetGlobal(std::string_view name,
+                           Function func,  // NOLINT(performance-unnecessary-value-param)
+                           bool override = false) {
        TVMFFIByteArray name_arr{name.data(), name.size()};
        TVM_FFI_CHECK_SAFE_CALL(
            TVMFFIFunctionSetGlobal(&name_arr, details::ObjectUnsafe::GetHeader(func.get()), override));
@@ -313,6 +314,7 @@ Program Listing for File function.h
            GetGlobalRequired("ffi.FunctionListGlobalNamesFunctor")().cast<Function>();
        std::vector<String> names;
        int len = fname_functor(-1).cast<int>();
+       names.reserve(len);
        for (int i = 0; i < len; ++i) {
          names.push_back(fname_functor(i).cast<String>());
        }
@@ -325,21 +327,35 @@ Program Listing for File function.h
      template <typename TCallable>
      static Function FromTyped(TCallable callable) {
        using FuncInfo = details::FunctionInfo<TCallable>;
-       auto call_packed = [callable](const AnyView* args, int32_t num_args, Any* rv) mutable -> void {
+       auto call_packed = [callable = std::move(callable)](const AnyView* args, int32_t num_args,
+                                                           Any* rv) mutable -> void {
          details::unpack_call<typename FuncInfo::RetType>(
              std::make_index_sequence<FuncInfo::num_args>{}, nullptr, callable, args, num_args, rv);
        };
-       return FromPackedInternal(call_packed);
+       return FromPackedInternal(std::move(call_packed));
      }
      template <typename TCallable>
      static Function FromTyped(TCallable callable, std::string name) {
        using FuncInfo = details::FunctionInfo<TCallable>;
-       auto call_packed = [callable, name](const AnyView* args, int32_t num_args,
-                                           Any* rv) mutable -> void {
+       auto call_packed = [callable = std::move(callable), name = std::move(name)](
+                              const AnyView* args, int32_t num_args, Any* rv) mutable -> void {
          details::unpack_call<typename FuncInfo::RetType>(
              std::make_index_sequence<FuncInfo::num_args>{}, &name, callable, args, num_args, rv);
        };
-       return FromPackedInternal(call_packed);
+       return FromPackedInternal(std::move(call_packed));
+     }
+   
+     template <typename... Args>
+     TVM_FFI_INLINE static Any InvokeExternC(void* handle, TVMFFISafeCallType safe_call,
+                                             Args&&... args) {
+       const int kNumArgs = sizeof...(Args);
+       const int kArraySize = kNumArgs > 0 ? kNumArgs : 1;
+       AnyView args_pack[kArraySize];
+       PackedArgs::Fill(args_pack, std::forward<Args>(args)...);
+       Any result;
+       TVM_FFI_CHECK_SAFE_CALL(safe_call(handle, reinterpret_cast<const TVMFFIAny*>(args_pack),
+                                         kNumArgs, reinterpret_cast<TVMFFIAny*>(&result)));
+       return result;
      }
      template <typename... Args>
      TVM_FFI_INLINE Any operator()(Args&&... args) const {
@@ -370,7 +386,8 @@ Program Listing for File function.h
      static Function FromPackedInternal(TCallable packed_call) {
        using ObjType = typename details::FunctionObjImpl<TCallable>;
        Function func;
-       func.data_ = make_object<ObjType>(std::forward<TCallable>(packed_call));
+       func.data_ = make_object<ObjType>(
+           std::forward<TCallable>(packed_call));  // NOLINT(bugprone-chained-comparison)
        return func;
      }
    };
@@ -382,22 +399,21 @@ Program Listing for File function.h
    class TypedFunction<R(Args...)> {
     public:
      using TSelf = TypedFunction<R(Args...)>;
-     TypedFunction() {}
+     TypedFunction() = default;
      TypedFunction(std::nullptr_t null) {}  // NOLINT(*)
      TypedFunction(Function packed) : packed_(packed) {}  // NOLINT(*)
-     template <typename FLambda, typename = typename std::enable_if<std::is_convertible<
-                                     FLambda, std::function<R(Args...)>>::value>::type>
+     template <typename FLambda,
+               typename = std::enable_if_t<std::is_convertible_v<FLambda, std::function<R(Args...)>>>>
      TypedFunction(FLambda typed_lambda, std::string name) {  // NOLINT(*)
        packed_ = Function::FromTyped(typed_lambda, name);
      }
-     template <typename FLambda, typename = typename std::enable_if<std::is_convertible<
-                                     FLambda, std::function<R(Args...)>>::value>::type>
+     template <typename FLambda,
+               typename = std::enable_if_t<std::is_convertible_v<FLambda, std::function<R(Args...)>>>>
      TypedFunction(const FLambda& typed_lambda) {  // NOLINT(*)
        packed_ = Function::FromTyped(typed_lambda);
      }
-     template <typename FLambda, typename = typename std::enable_if<
-                                     std::is_convertible<FLambda,
-                                                         std::function<R(Args...)>>::value>::type>
+     template <typename FLambda,
+               typename = std::enable_if_t<std::is_convertible_v<FLambda, std::function<R(Args...)>>>>
      TSelf& operator=(FLambda typed_lambda) {  // NOLINT(*)
        packed_ = Function::FromTyped(typed_lambda);
        return *this;
@@ -406,7 +422,7 @@ Program Listing for File function.h
        packed_ = std::move(packed);
        return *this;
      }
-     TVM_FFI_INLINE R operator()(Args... args) const {
+     TVM_FFI_INLINE R operator()(Args... args) const {  // NOLINT(performance-unnecessary-value-param)
        if constexpr (std::is_same_v<R, void>) {
          packed_(std::forward<Args>(args)...);
        } else {
@@ -418,11 +434,12 @@ Program Listing for File function.h
          }
        }
      }
-     operator Function() const { return packed(); }
+     operator Function() const { return packed(); }  // NOLINT(google-explicit-constructor)
      const Function& packed() const& { return packed_; }
      constexpr Function&& packed() && { return std::move(packed_); }
      bool operator==(std::nullptr_t null) const { return packed_ == nullptr; }
      bool operator!=(std::nullptr_t null) const { return packed_ != nullptr; }
+     static std::string TypeSchema() { return details::FuncFunctorImpl<R, Args...>::TypeSchema(); }
    
     private:
      Function packed_;
@@ -440,7 +457,8 @@ Program Listing for File function.h
      }
    
      TVM_FFI_INLINE static void MoveToAny(TypedFunction<FType> src, TVMFFIAny* result) {
-       TypeTraits<Function>::MoveToAny(std::move(src.packed()), result);
+       // Move from rvalue to trigger TypedFunction rvalue packed() overload
+       TypeTraits<Function>::MoveToAny(std::move(src).packed(), result);
      }
    
      TVM_FFI_INLINE static bool CheckAnyStrict(const TVMFFIAny* src) {
@@ -462,6 +480,7 @@ Program Listing for File function.h
      }
    
      TVM_FFI_INLINE static std::string TypeStr() { return details::FunctionInfo<FType>::Sig(); }
+     TVM_FFI_INLINE static std::string TypeSchema() { return TypedFunction<FType>::TypeSchema(); }
    };
    
    inline int32_t TypeKeyToIndex(std::string_view type_key) {

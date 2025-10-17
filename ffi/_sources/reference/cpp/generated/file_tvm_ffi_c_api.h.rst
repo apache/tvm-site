@@ -139,6 +139,8 @@ Functions
 
 - :ref:`exhale_function_c__api_8h_1aedd89f80f73d54dd5904d943dd0690c6`
 
+- :ref:`exhale_function_c__api_8h_1a56ce10d1e6fc2d34a1a496bdace4af33`
+
 - :ref:`exhale_function_c__api_8h_1a1ac76d88e0d79843403ce2e0239d7fe2`
 
 - :ref:`exhale_function_c__api_8h_1a4ce84fc667040bba425664c78b5f2c69`
@@ -204,10 +206,6 @@ Defines
 Typedefs
 --------
 
-
-- :ref:`exhale_typedef_c__api_8h_1aaf0312fff979b8a3c6bb6a02bcfb5859`
-
-- :ref:`exhale_typedef_c__api_8h_1a33ac61395cb135bb994c7b903dda283f`
 
 - :ref:`exhale_typedef_c__api_8h_1ae22f1a87cbaf7f744d9201948c05d2a5`
 

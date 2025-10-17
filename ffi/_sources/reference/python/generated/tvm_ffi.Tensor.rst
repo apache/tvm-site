@@ -27,5 +27,6 @@
       ~Tensor.device
       ~Tensor.dtype
       ~Tensor.shape
+      ~Tensor.strides
    
    

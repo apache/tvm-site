@@ -146,9 +146,9 @@ Functions
 ---------
 
 
-- :ref:`exhale_function_base64_8h_1acb849cdb1d9b9620be10bbcda0257afa`
-
 - :ref:`exhale_function_base64_8h_1ae1d4736f7dc56b224acd303ba7bf7a45`
+
+- :ref:`exhale_function_base64_8h_1acb849cdb1d9b9620be10bbcda0257afa`
 
 - :ref:`exhale_function_base64_8h_1aa5b2a4531449585b9f079cb170a79f0b`
 
@@ -160,11 +160,17 @@ Functions
 
 - :ref:`exhale_function_dtype_8h_1a94787950883e5a7e97b764ddd342afc3`
 
+- :ref:`exhale_function_string_8h_1aa190eed2516ff9a633009cc62f660502`
+
 - :ref:`exhale_function_serialization_8h_1a56baa5d1ca415dbdebf19ac1f54bd5b7`
 
-- :ref:`exhale_function_tensor_8h_1aec30888d07076fa5f78d95d0f9145626`
-
 - :ref:`exhale_function_tensor_8h_1a226723176642cde5996498e7da6a6368`
+
+- :ref:`exhale_function_tensor_8h_1a011d0a2dcbe5702156124d7a7223b3dd`
+
+- :ref:`exhale_function_tensor_8h_1a65b3a61c540c72d9410150a3a7a76dde`
+
+- :ref:`exhale_function_tensor_8h_1a71e4a492b5a03a19a95087771a7e9ed1`
 
 - :ref:`exhale_function_cast_8h_1a4dba749dd934d8a7891ad126a8fdcc1f`
 
@@ -199,7 +205,7 @@ Typedefs
 --------
 
 
-- :ref:`exhale_typedef_memory_8h_1adc0f1a0edd38eafad95dfd485ea3f980`
+- :ref:`exhale_typedef_memory_8h_1a65bf625279df21dec5c8097264415113`
 
 - :ref:`exhale_typedef_object_8h_1a7ba296d84188e5970ba854332a1f04a6`
 

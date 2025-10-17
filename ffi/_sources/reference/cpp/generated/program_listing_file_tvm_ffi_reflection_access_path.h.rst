@@ -39,6 +39,7 @@ Program Listing for File access_path.h
    #include <tvm/ffi/error.h>
    #include <tvm/ffi/reflection/registry.h>
    
+   #include <cstdint>
    #include <vector>
    
    namespace tvm {
@@ -65,7 +66,7 @@ Program Listing for File access_path.h
    
      // default constructor to enable auto-serialization
      AccessStepObj() = default;
-     AccessStepObj(AccessKind kind, Any key) : kind(kind), key(key) {}
+     AccessStepObj(AccessKind kind, Any key) : kind(kind), key(std::move(key)) {}
    
      inline bool StepEqual(const AccessStep& other) const;
    
@@ -75,12 +76,15 @@ Program Listing for File access_path.h
    
    class AccessStep : public ObjectRef {
     public:
-     AccessStep(AccessKind kind, Any key) : ObjectRef(make_object<AccessStepObj>(kind, key)) {}
+     AccessStep(AccessKind kind, Any key)
+         : ObjectRef(make_object<AccessStepObj>(kind, std::move(key))) {}
    
-     static AccessStep Attr(String field_name) { return AccessStep(AccessKind::kAttr, field_name); }
+     static AccessStep Attr(String field_name) {
+       return AccessStep(AccessKind::kAttr, std::move(field_name));
+     }
    
      static AccessStep AttrMissing(String field_name) {
-       return AccessStep(AccessKind::kAttrMissing, field_name);
+       return AccessStep(AccessKind::kAttrMissing, std::move(field_name));
      }
    
      static AccessStep ArrayItem(int64_t index) { return AccessStep(AccessKind::kArrayItem, index); }
@@ -89,10 +93,10 @@ Program Listing for File access_path.h
        return AccessStep(AccessKind::kArrayItemMissing, index);
      }
    
-     static AccessStep MapItem(Any key) { return AccessStep(AccessKind::kMapItem, key); }
+     static AccessStep MapItem(Any key) { return AccessStep(AccessKind::kMapItem, std::move(key)); }
    
      static AccessStep MapItemMissing(Any key = nullptr) {
-       return AccessStep(AccessKind::kMapItemMissing, key);
+       return AccessStep(AccessKind::kMapItemMissing, std::move(key));
      }
    
      TVM_FFI_DEFINE_OBJECT_REF_METHODS_NOTNULLABLE(AccessStep, ObjectRef, AccessStepObj);
@@ -114,7 +118,7 @@ Program Listing for File access_path.h
      // default constructor to enable auto-serialization
      AccessPathObj() = default;
      AccessPathObj(Optional<ObjectRef> parent, Optional<AccessStep> step, int32_t depth)
-         : parent(parent), step(step), depth(depth) {}
+         : parent(std::move(parent)), step(std::move(step)), depth(depth) {}
    
      inline Optional<AccessPath> GetParent() const;
    
@@ -175,7 +179,7 @@ Program Listing for File access_path.h
        }
        return path;
      }
-     static AccessPath FromSteps(Array<AccessStep> steps) {
+     static AccessPath FromSteps(const Array<AccessStep>& steps) {
        AccessPath path = AccessPath::Root();
        for (AccessStep step : steps) {
          path = path->Extend(step);
@@ -191,7 +195,7 @@ Program Listing for File access_path.h
    
     private:
      friend class AccessPathObj;
-     explicit AccessPath(ObjectPtr<AccessPathObj> ptr) : ObjectRef(ptr) {}
+     explicit AccessPath(ObjectPtr<AccessPathObj> ptr) : ObjectRef(std::move(ptr)) {}
    };
    
    using AccessPathPair = Tuple<AccessPath, AccessPath>;
@@ -204,15 +208,16 @@ Program Listing for File access_path.h
    }
    
    inline AccessPath AccessPathObj::Extend(AccessStep step) const {
-     return AccessPath(make_object<AccessPathObj>(GetRef<AccessPath>(this), step, this->depth + 1));
+     return AccessPath(
+         make_object<AccessPathObj>(GetRef<AccessPath>(this), std::move(step), this->depth + 1));
    }
    
    inline AccessPath AccessPathObj::Attr(String field_name) const {
-     return this->Extend(AccessStep::Attr(field_name));
+     return this->Extend(AccessStep::Attr(std::move(field_name)));
    }
    
    inline AccessPath AccessPathObj::AttrMissing(String field_name) const {
-     return this->Extend(AccessStep::AttrMissing(field_name));
+     return this->Extend(AccessStep::AttrMissing(std::move(field_name)));
    }
    
    inline AccessPath AccessPathObj::ArrayItem(int64_t index) const {
@@ -224,11 +229,11 @@ Program Listing for File access_path.h
    }
    
    inline AccessPath AccessPathObj::MapItem(Any key) const {
-     return this->Extend(AccessStep::MapItem(key));
+     return this->Extend(AccessStep::MapItem(std::move(key)));
    }
    
    inline AccessPath AccessPathObj::MapItemMissing(Any key) const {
-     return this->Extend(AccessStep::MapItemMissing(key));
+     return this->Extend(AccessStep::MapItemMissing(std::move(key)));
    }
    
    inline Array<AccessStep> AccessPathObj::ToSteps() const {

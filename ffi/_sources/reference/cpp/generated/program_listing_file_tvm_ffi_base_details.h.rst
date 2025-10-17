@@ -47,6 +47,10 @@ Program Listing for File base_details.h
    #endif
    
    #include <windows.h>
+   #if (defined(_M_ARM64) || defined(_ARM64_) || defined(_M_ARM64EC)) && \
+       !defined(_InlineInterlockedAdd64)
+   #define _InlineInterlockedAdd64 InterlockedAdd64
+   #endif
    
    #ifdef ERROR
    #undef ERROR
@@ -117,11 +121,11 @@ Program Listing for File base_details.h
     * \brief Define the default copy/move constructor and assign operator
     * \param TypeName The class typename.
     */
-   #define TVM_FFI_DEFINE_DEFAULT_COPY_MOVE_AND_ASSIGN(TypeName) \
-     TypeName(const TypeName& other) = default;                  \
-     TypeName(TypeName&& other) = default;                       \
-     TypeName& operator=(const TypeName& other) = default;       \
-     TypeName& operator=(TypeName&& other) = default;
+   #define TVM_FFI_DEFINE_DEFAULT_COPY_MOVE_AND_ASSIGN(TypeName)                                    \
+     TypeName(const TypeName& other) = default;            /* NOLINT(bugprone-macro-parentheses) */ \
+     TypeName(TypeName&& other) noexcept = default;        /* NOLINT(bugprone-macro-parentheses) */ \
+     TypeName& operator=(const TypeName& other) = default; /* NOLINT(bugprone-macro-parentheses) */ \
+     TypeName& operator=(TypeName&& other) noexcept = default; /* NOLINT(bugprone-macro-parentheses)*/
    
    #define TVM_FFI_LOG_EXCEPTION_CALL_BEGIN() \
      try {                                    \
@@ -134,9 +138,9 @@ Program Listing for File base_details.h
        exit(-1);                                                                             \
      }
    
-   #define TVM_FFI_CLEAR_PTR_PADDING_IN_FFI_ANY(result)                    \
-     if constexpr (sizeof((result)->v_obj) != sizeof((result)->v_int64)) { \
-       (result)->v_int64 = 0;                                              \
+   #define TVM_FFI_CLEAR_PTR_PADDING_IN_FFI_ANY(result) \
+     if constexpr (sizeof(void*) != sizeof(int64_t)) {  \
+       (result)->v_int64 = 0;                           \
      }
    
    namespace tvm {
@@ -156,7 +160,7 @@ Program Listing for File base_details.h
      for_each_dispatcher::run(std::index_sequence_for<Args...>{}, f, std::forward<Args>(args)...);
    }
    
-   template <typename T, std::enable_if_t<std::is_convertible<T, uint64_t>::value, bool> = true>
+   template <typename T, std::enable_if_t<std::is_convertible_v<T, uint64_t>, bool> = true>
    TVM_FFI_INLINE uint64_t StableHashCombine(uint64_t key, const T& value) {
      // XXX: do not use std::hash in this function. This hash must be stable
      // across different platforms and std::hash is implementation dependent.
@@ -179,12 +183,14 @@ Program Listing for File base_details.h
        // if alignment requirement is met, directly use load
        if (reinterpret_cast<uintptr_t>(it) % 8 == 0) {
          for (; it + 8 <= end; it += 8) {
+           // NOLINTNEXTLINE(clang-analyzer-security.ArrayBound)
            u.b = *reinterpret_cast<const uint64_t*>(it);
            result = (result * kMultiplier + u.b) % kMod;
          }
        } else {
          // unaligned version
          for (; it + 8 <= end; it += 8) {
+           // NOLINTNEXTLINE(clang-analyzer-security.ArrayBound)
            u.a[0] = it[0];
            u.a[1] = it[1];
            u.a[2] = it[2];
@@ -230,8 +236,6 @@ Program Listing for File base_details.h
        }
        if (it + 1 <= end) {
          a[0] = it[0];
-         it += 1;
-         a += 1;
        }
        if constexpr (!TVM_FFI_IO_NO_ENDIAN_SWAP) {
          std::swap(u.a[0], u.a[7]);
@@ -252,6 +256,11 @@ Program Listing for File base_details.h
      }
      return StableHashBytes(reinterpret_cast<const void*>(data), sizeof(data->v_uint64));
    }
+   
+   template <typename T>
+   struct TypeSchemaImpl;
+   template <typename T>
+   using TypeSchema = TypeSchemaImpl<std::remove_const_t<std::remove_reference_t<T>>>;
    
    }  // namespace details
    }  // namespace ffi

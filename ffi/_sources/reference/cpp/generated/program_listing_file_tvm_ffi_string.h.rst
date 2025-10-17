@@ -40,10 +40,9 @@ Program Listing for File string.h
    
    #include <cstddef>
    #include <cstring>
-   #include <initializer_list>
+   #include <sstream>
    #include <string>
    #include <string_view>
-   #include <type_traits>
    #include <utility>
    
    // Note: We place string in tvm/ffi instead of tvm/ffi/container
@@ -51,6 +50,16 @@ Program Listing for File string.h
    // core component for return string handling.
    // The following dependency relation holds
    // any -> string -> object
+   
+   #ifdef _MSC_VER
+   #define TVM_FFI_SNPRINTF _snprintf_s
+   #pragma warning(push)
+   #pragma warning(disable : 4244)
+   #pragma warning(disable : 4127)
+   #pragma warning(disable : 4702)
+   #else
+   #define TVM_FFI_SNPRINTF snprintf
+   #endif
    
    namespace tvm {
    namespace ffi {
@@ -76,7 +85,7 @@ Program Listing for File string.h
    template <typename Base>
    class BytesObjStdImpl : public Base {
     public:
-     explicit BytesObjStdImpl(std::string other) : data_{other} {
+     explicit BytesObjStdImpl(std::string other) : data_{std::move(other)} {
        this->data = data_.data();
        this->size = data_.size();
      }
@@ -115,7 +124,7 @@ Program Listing for File string.h
        return *this;
      }
    
-     BytesBaseCell& operator=(BytesBaseCell&& other) {
+     BytesBaseCell& operator=(BytesBaseCell&& other) noexcept {
        BytesBaseCell(std::move(other)).swap(*this);  // NOLINT(*)
        return *this;
      }
@@ -138,6 +147,7 @@ Program Listing for File string.h
        if (data_.type_index < TypeIndex::kTVMFFIStaticObjectBegin) {
          return data_.v_bytes;
        } else {
+         // NOLINTNEXTLINE(clang-analyzer-security.ArrayBound)
          return TVMFFIBytesGetByteArrayPtr(data_.v_obj)->data;
        }
      }
@@ -146,6 +156,7 @@ Program Listing for File string.h
        if (data_.type_index < TypeIndex::kTVMFFIStaticObjectBegin) {
          return data_.small_str_len;
        } else {
+         // NOLINTNEXTLINE(clang-analyzer-security.ArrayBound)
          return TVMFFIBytesGetByteArrayPtr(data_.v_obj)->size;
        }
      }
@@ -243,7 +254,9 @@ Program Listing for File string.h
      }
      size_t size() const { return data_.size(); }
      const char* data() const { return data_.data(); }
-     operator std::string() const { return std::string{data(), size()}; }
+     operator std::string() const {  // NOLINT(google-explicit-constructor)
+       return std::string{data(), size()};
+     }
    
      static int memncmp(const char* lhs, const char* rhs, size_t lhs_count, size_t rhs_count) {
        if (lhs == rhs && lhs_count == rhs_count) return 0;
@@ -272,7 +285,7 @@ Program Listing for File string.h
      // internal backing cell
      details::BytesBaseCell data_;
      // create a new String from TVMFFIAny, must keep private
-     explicit Bytes(details::BytesBaseCell data) : data_(data) {}
+     explicit Bytes(details::BytesBaseCell data) : data_(std::move(data)) {}
      char* InitSpaceForSize(size_t size) {
        return data_.InitSpaceForSize<details::BytesObj>(size, TypeIndex::kTVMFFISmallBytes,
                                                         TypeIndex::kTVMFFIBytes);
@@ -375,7 +388,9 @@ Program Listing for File string.h
        }
      }
    
-     operator std::string() const { return std::string{data(), size()}; }
+     operator std::string() const {  // NOLINT(google-explicit-constructor)
+       return std::string{data(), size()};
+     }
    
     private:
      template <typename, typename>
@@ -385,7 +400,7 @@ Program Listing for File string.h
      // internal backing cell
      details::BytesBaseCell data_;
      // create a new String from TVMFFIAny, must keep private
-     explicit String(details::BytesBaseCell data) : data_(data) {}
+     explicit String(details::BytesBaseCell data) : data_(std::move(data)) {}
      char* InitSpaceForSize(size_t size) {
        return data_.InitSpaceForSize<details::StringObj>(size, TypeIndex::kTVMFFISmallStr,
                                                          TypeIndex::kTVMFFIStr);
@@ -409,6 +424,7 @@ Program Listing for File string.h
        char* dest_data = ret.InitSpaceForSize(lhs_size + rhs_size);
        std::memcpy(dest_data, lhs, lhs_size);
        std::memcpy(dest_data + lhs_size, rhs, rhs_size);
+       // NOLINTNEXTLINE(clang-analyzer-security.ArrayBound)
        dest_data[lhs_size + rhs_size] = '\0';
    #if (__GNUC__) && !(__clang__)
    #pragma GCC diagnostic pop
@@ -422,6 +438,45 @@ Program Listing for File string.h
      friend String operator+(const String& lhs, const char* rhs);
      friend String operator+(const char* lhs, const String& rhs);
    };
+   
+   inline String EscapeString(const String& value) {
+     std::ostringstream oss;
+     oss << '"';
+     const char* data = value.data();
+     const size_t size = value.size();
+     for (size_t i = 0; i < size; ++i) {
+       switch (data[i]) {
+   #define TVM_FFI_ESCAPE_CHAR(pattern, val) \
+     case pattern:                           \
+       oss << (val);                         \
+       break
+         TVM_FFI_ESCAPE_CHAR('\"', "\\\"");
+         TVM_FFI_ESCAPE_CHAR('\\', "\\\\");
+         TVM_FFI_ESCAPE_CHAR('/', "\\/");
+         TVM_FFI_ESCAPE_CHAR('\b', "\\b");
+         TVM_FFI_ESCAPE_CHAR('\f', "\\f");
+         TVM_FFI_ESCAPE_CHAR('\n', "\\n");
+         TVM_FFI_ESCAPE_CHAR('\r', "\\r");
+         TVM_FFI_ESCAPE_CHAR('\t', "\\t");
+   #undef TVM_FFI_ESCAPE_CHAR
+         default: {
+           uint8_t u8_val = static_cast<uint8_t>(data[i]);
+           // this is a control character, print as \uXXXX
+           if (u8_val < 0x20 || u8_val == 0x7f) {
+             char buffer[8];
+             int size = TVM_FFI_SNPRINTF(buffer, sizeof(buffer), "\\u%04x",
+                                         static_cast<int32_t>(data[i]) & 0xff);
+             oss.write(buffer, size);
+           } else {
+             oss << data[i];
+           }
+           break;
+         }
+       }
+     }
+     oss << '"';
+     return String(oss.str());
+   }
    
    TVM_FFI_INLINE std::string_view ToStringView(TVMFFIByteArray str) {
      return std::string_view(str.data, str.size);
@@ -469,6 +524,9 @@ Program Listing for File string.h
      }
    
      TVM_FFI_INLINE static std::string TypeStr() { return "bytes"; }
+     TVM_FFI_INLINE static std::string TypeSchema() {
+       return R"({"type":")" + std::string(StaticTypeKey::kTVMFFIBytes) + R"("})";
+     }
    };
    
    template <>
@@ -512,6 +570,9 @@ Program Listing for File string.h
      }
    
      TVM_FFI_INLINE static std::string TypeStr() { return "str"; }
+     TVM_FFI_INLINE static std::string TypeSchema() {
+       return R"({"type":")" + std::string(StaticTypeKey::kTVMFFIStr) + R"("})";
+     }
    };
    
    // const char*, requirement: not nullable, do not retain ownership
@@ -556,6 +617,7 @@ Program Listing for File string.h
      }
    
      TVM_FFI_INLINE static std::string TypeStr() { return "const char*"; }
+     TVM_FFI_INLINE static std::string TypeSchema() { return R"({"type":"const char*"})"; }
    };
    
    // TVMFFIByteArray, requirement: not nullable, do not retain ownership
@@ -584,6 +646,9 @@ Program Listing for File string.h
      }
    
      TVM_FFI_INLINE static std::string TypeStr() { return StaticTypeKey::kTVMFFIByteArrayPtr; }
+     TVM_FFI_INLINE static std::string TypeSchema() {
+       return R"({"type":")" + std::string(StaticTypeKey::kTVMFFIByteArrayPtr) + R"("})";
+     }
    };
    
    template <>
@@ -604,6 +669,7 @@ Program Listing for File string.h
      }
    
      TVM_FFI_INLINE static std::string TypeStr() { return "std::string"; }
+     TVM_FFI_INLINE static std::string TypeSchema() { return R"({"type":"std::string"})"; }
    
      TVM_FFI_INLINE static std::string ConvertFallbackValue(const char* src) {
        return std::string(src);
@@ -613,10 +679,12 @@ Program Listing for File string.h
        return std::string(src->data, src->size);
      }
    
+     // NOLINTNEXTLINE(performance-unnecessary-value-param)
      TVM_FFI_INLINE static std::string ConvertFallbackValue(Bytes src) {
        return src.operator std::string();
      }
    
+     // NOLINTNEXTLINE(performance-unnecessary-value-param)
      TVM_FFI_INLINE static std::string ConvertFallbackValue(String src) {
        return src.operator std::string();
      }
@@ -743,7 +811,7 @@ Program Listing for File string.h
    inline bool operator!=(const char* lhs, const String& rhs) { return rhs.compare(lhs) != 0; }
    
    inline std::ostream& operator<<(std::ostream& out, const String& input) {
-     out.write(input.data(), input.size());
+     out.write(input.data(), static_cast<std::streamsize>(input.size()));
      return out;
    }
    }  // namespace ffi

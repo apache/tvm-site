@@ -69,8 +69,9 @@ Program Listing for File variant.h
     protected:
      template <typename T>
      explicit VariantBase(const T& other) : ObjectRef(other) {}
-     template <typename T>
-     explicit VariantBase(T&& other) : ObjectRef(std::move(other)) {}
+     template <typename T,
+               typename = std::enable_if_t<!std::is_same_v<std::decay_t<T>, VariantBase<true>>>>
+     explicit VariantBase(T&& other) : ObjectRef(std::forward<T>(other)) {}
      explicit VariantBase(UnsafeInit tag) : ObjectRef(tag) {}
      explicit VariantBase(Any other)
          : ObjectRef(details::AnyUnsafe::MoveFromAnyAfterCheck<ObjectRef>(std::move(other))) {}
@@ -112,14 +113,14 @@ Program Listing for File variant.h
      using enable_if_variant_contains_t = std::enable_if_t<variant_contains_v<T>>;
    
      Variant(const Variant<V...>& other) : TParent(other.data_) {}
-     Variant(Variant<V...>&& other) : TParent(std::move(other.data_)) {}
+     Variant(Variant<V...>&& other) noexcept : TParent(std::move(other.data_)) {}
    
      TVM_FFI_INLINE Variant& operator=(const Variant<V...>& other) {
        this->SetData(other.data_);
        return *this;
      }
    
-     TVM_FFI_INLINE Variant& operator=(Variant<V...>&& other) {
+     TVM_FFI_INLINE Variant& operator=(Variant<V...>&& other) noexcept {
        this->SetData(std::move(other.data_));
        return *this;
      }
@@ -198,7 +199,7 @@ Program Listing for File variant.h
      }
    
      TVM_FFI_INLINE static Variant<V...> MoveFromAnyAfterCheck(TVMFFIAny* src) {
-       return Variant<V...>(details::AnyUnsafe::MoveTVMFFIAnyToAny(std::move(*src)));
+       return Variant<V...>(details::AnyUnsafe::MoveTVMFFIAnyToAny(src));
      }
    
      TVM_FFI_INLINE static std::optional<Variant<V...>> TryCastFromAnyView(const TVMFFIAny* src) {
@@ -222,6 +223,14 @@ Program Listing for File variant.h
      }
    
      TVM_FFI_INLINE static std::string TypeStr() { return details::ContainerTypeStr<V...>("Variant"); }
+     TVM_FFI_INLINE static std::string TypeSchema() {
+       std::ostringstream oss;
+       oss << R"({"type":"Variant","args":[)";
+       const char* sep = "";
+       ((oss << sep << details::TypeSchema<V>::v(), sep = ","), ...);
+       oss << "]}";
+       return oss.str();
+     }
    };
    
    template <typename... V>

@@ -35,6 +35,8 @@ Includes
 --------
 
 
+- ``cstdint``
+
 - ``tvm/ffi/container/array.h`` (:ref:`file_tvm_ffi_container_array.h`)
 
 - ``tvm/ffi/container/map.h`` (:ref:`file_tvm_ffi_container_map.h`)

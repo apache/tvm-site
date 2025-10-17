@@ -38,6 +38,7 @@ Program Listing for File dtype.h
    #include <tvm/ffi/string.h>
    #include <tvm/ffi/type_traits.h>
    
+   #include <cstdint>
    #include <string>
    
    namespace tvm {
@@ -171,6 +172,9 @@ Program Listing for File dtype.h
      }
    
      TVM_FFI_INLINE static std::string TypeStr() { return ffi::StaticTypeKey::kTVMFFIDataType; }
+     TVM_FFI_INLINE static std::string TypeSchema() {
+       return R"({"type":")" + std::string(ffi::StaticTypeKey::kTVMFFIDataType) + R"("})";
+     }
    };
    }  // namespace ffi
    }  // namespace tvm

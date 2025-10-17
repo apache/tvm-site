@@ -65,20 +65,20 @@ Program Listing for File optional.h
     public:
      // default constructors.
      Optional() = default;
+     // NOLINTBEGIN(google-explicit-constructor)
      Optional(const Optional<T>& other) : data_(other.data_) {}
-     Optional(Optional<T>&& other) : data_(std::move(other.data_)) {}
-     Optional(std::optional<T> other) : data_(std::move(other)) {}  // NOLINT(*)
-     Optional(std::nullopt_t) {}                                    // NOLINT(*)
-     // normal value handling.
-     Optional(T other)  // NOLINT(*)
-         : data_(std::move(other)) {}
+     Optional(Optional<T>&& other) noexcept : data_(std::move(other.data_)) {}
+     Optional(std::optional<T> other) : data_(std::move(other)) {}
+     Optional(std::nullopt_t) {}
+     Optional(T other) : data_(std::move(other)) {}
+     // NOLINTEND(google-explicit-constructor)
    
      TVM_FFI_INLINE Optional<T>& operator=(const Optional<T>& other) {
        data_ = other.data_;
        return *this;
      }
    
-     TVM_FFI_INLINE Optional<T>& operator=(Optional<T>&& other) {
+     TVM_FFI_INLINE Optional<T>& operator=(Optional<T>&& other) noexcept {
        data_ = std::move(other.data_);
        return *this;
      }
@@ -129,8 +129,10 @@ Program Listing for File optional.h
        return data_ != other;
      }
    
+     // NOLINTBEGIN(bugprone-unchecked-optional-access)
      TVM_FFI_INLINE T&& operator*() && noexcept { return *std::move(data_); }
      TVM_FFI_INLINE const T& operator*() const& noexcept { return *data_; }
+     // NOLINTEND(bugprone-unchecked-optional-access)
    
     private:
      std::optional<T> data_;
@@ -142,12 +144,12 @@ Program Listing for File optional.h
     public:
      // default constructors.
      Optional() = default;
+     // NOLINTBEGIN(google-explicit-constructor)
      Optional(const Optional<T>& other) : data_(other.data_) {}
      Optional(Optional<T>&& other) : data_(std::move(other.data_)) {}
-     Optional(std::nullopt_t) {}  // NOLINT(*)
-     // normal value handling.
-     Optional(T other)  // NOLINT(*)
-         : data_(std::move(other)) {}
+     Optional(std::nullopt_t) {}
+     Optional(T other) : data_(std::move(other)) {}
+     // NOLINTEND(google-explicit-constructor)
    
      TVM_FFI_INLINE Optional<T>& operator=(const Optional<T>& other) {
        data_ = other.data_;
@@ -245,21 +247,18 @@ Program Listing for File optional.h
     public:
      using ContainerType = typename T::ContainerType;
      Optional() = default;
-     Optional(const Optional<T>& other) : ObjectRef(other.data_) {}
-     Optional(Optional<T>&& other) : ObjectRef(std::move(other.data_)) {}
+     // NOLINTBEGIN(google-explicit-constructor)
+     Optional(const Optional<T>& other) : ObjectRef(other) {}
+     Optional(Optional<T>&& other) noexcept : ObjectRef(std::move(other)) {}
      explicit Optional(ffi::UnsafeInit tag) : ObjectRef(tag) {}
-     // nullopt hanlding
-     Optional(std::nullopt_t) {}  // NOLINT(*)
-   
-     // handle conversion from std::optional<T>
-     Optional(std::optional<T> other) {  // NOLINT(*)
+     Optional(std::nullopt_t) {}
+     Optional(std::optional<T> other) {
        if (other.has_value()) {
          *this = *std::move(other);
        }
      }
-     // normal value handling.
-     Optional(T other)  // NOLINT(*)
-         : ObjectRef(std::move(other)) {}
+     Optional(T other) : ObjectRef(std::move(other)) {}
+     // NOLINTEND(google-explicit-constructor)
    
      TVM_FFI_INLINE Optional<T>& operator=(T other) {
        ObjectRef::operator=(std::move(other));

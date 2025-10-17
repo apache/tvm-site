@@ -35,6 +35,8 @@ Includes
 --------
 
 
+- ``cstdint``
+
 - ``dlpack/dlpack.h``
 
 - ``string`` (:ref:`file_tvm_ffi_string.h`)

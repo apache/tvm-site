@@ -49,14 +49,15 @@ Program Listing for File tuple.h
      Tuple() : ObjectRef(MakeDefaultTupleNode()) {}
      explicit Tuple(UnsafeInit tag) : ObjectRef(tag) {}
      Tuple(const Tuple<Types...>& other) : ObjectRef(other) {}
-     Tuple(Tuple<Types...>&& other) : ObjectRef(std::move(other)) {}
+     Tuple(Tuple<Types...>&& other) noexcept : ObjectRef(std::move(other)) {}
      template <typename... UTypes,
                typename = std::enable_if_t<(details::type_contains_v<Types, UTypes> && ...), int>>
-     Tuple(const Tuple<UTypes...>& other) : ObjectRef(other) {}
+     Tuple(const Tuple<UTypes...>& other) : ObjectRef(other) {}  // NOLINT(google-explicit-constructor)
    
      template <typename... UTypes,
                typename = std::enable_if_t<(details::type_contains_v<Types, UTypes> && ...), int>>
-     Tuple(Tuple<UTypes...>&& other) : ObjectRef(std::move(other)) {}
+     Tuple(Tuple<UTypes...>&& other)  // NOLINT(google-explicit-constructor)
+         : ObjectRef(std::move(other)) {}
    
      template <typename... UTypes, typename = std::enable_if_t<
                                        sizeof...(Types) == sizeof...(UTypes) &&
@@ -69,7 +70,7 @@ Program Listing for File tuple.h
        return *this;
      }
    
-     TVM_FFI_INLINE Tuple& operator=(Tuple<Types...>&& other) {
+     TVM_FFI_INLINE Tuple& operator=(Tuple<Types...>&& other) noexcept {
        data_ = std::move(other.data_);
        return *this;
      }
@@ -201,8 +202,7 @@ Program Listing for File tuple.h
        return true;
      }
    
-     TVM_FFI_INLINE static std::optional<Tuple<Types...>> TryCastFromAnyView(const TVMFFIAny* src  //
-     ) {
+     TVM_FFI_INLINE static std::optional<Tuple<Types...>> TryCastFromAnyView(const TVMFFIAny* src) {
        if (src->type_index != TypeIndex::kTVMFFIArray) return std::nullopt;
        const ArrayObj* n = reinterpret_cast<const ArrayObj*>(src->v_obj);
        if (n->size() != sizeof...(Types)) return std::nullopt;
@@ -238,6 +238,14 @@ Program Listing for File tuple.h
    
      TVM_FFI_INLINE static std::string TypeStr() {
        return details::ContainerTypeStr<Types...>("Tuple");
+     }
+     TVM_FFI_INLINE static std::string TypeSchema() {
+       std::ostringstream oss;
+       oss << R"({"type":"Tuple","args":[)";
+       const char* sep = "";
+       ((oss << sep << details::TypeSchema<Types>::v(), sep = ","), ...);
+       oss << "]}";
+       return oss.str();
      }
    };
    

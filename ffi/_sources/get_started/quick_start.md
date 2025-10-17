@@ -29,7 +29,7 @@ Let us first get started by build and run the example. The example will show us:
 
 Before starting, ensure you have:
 
-- TVM FFI installed following [installation](./install.md)
+- TVM FFI installed
 - C++ compiler with C++17 support
 - CMake 3.18 or later
 - (Optional) Ninja build system (the quick-start uses Ninja for fast incremental builds)
@@ -105,16 +105,16 @@ namespace ffi = tvm::ffi;
 
 void AddOne(ffi::TensorView x, ffi::TensorView y) {
   // Validate inputs
-  TVM_FFI_ICHECK(x->ndim == 1) << "x must be a 1D tensor";
+  TVM_FFI_ICHECK(x.ndim() == 1) << "x must be a 1D tensor";
   DLDataType f32_dtype{kDLFloat, 32, 1};
-  TVM_FFI_ICHECK(x->dtype == f32_dtype) << "x must be a float tensor";
-  TVM_FFI_ICHECK(y->ndim == 1) << "y must be a 1D tensor";
-  TVM_FFI_ICHECK(y->dtype == f32_dtype) << "y must be a float tensor";
-  TVM_FFI_ICHECK(x->shape[0] == y->shape[0]) << "x and y must have the same shape";
+  TVM_FFI_ICHECK(x.dtype() == f32_dtype) << "x must be a float tensor";
+  TVM_FFI_ICHECK(y.ndim() == 1) << "y must be a 1D tensor";
+  TVM_FFI_ICHECK(y.dtype() == f32_dtype) << "y must be a float tensor";
+  TVM_FFI_ICHECK(x.size(0) == y.size(0)) << "x and y must have the same shape";
 
   // Perform the computation
-  for (int i = 0; i < x->shape[0]; ++i) {
-    static_cast<float*>(y->data)[i] = static_cast<float*>(x->data)[i] + 1;
+  for (int i = 0; i < x.size(0); ++i) {
+    static_cast<float*>(y.data_ptr())[i] = static_cast<float*>(x.data_ptr())[i] + 1;
   }
 }
 
@@ -135,17 +135,17 @@ void AddOneCUDA(ffi::TensorView x, ffi::TensorView y) {
   // Validation (same as CPU version)
   // ...
 
-  int64_t n = x->shape[0];
+  int64_t n = x.size(0);
   int64_t nthread_per_block = 256;
   int64_t nblock = (n + nthread_per_block - 1) / nthread_per_block;
 
   // Get current CUDA stream from environment
   cudaStream_t stream = static_cast<cudaStream_t>(
-      TVMFFIEnvGetStream(x->device.device_type, x->device.device_id));
+      TVMFFIEnvGetStream(x.device().device_type, x.device().device_id));
 
   // Launch kernel
   AddOneKernel<<<nblock, nthread_per_block, 0, stream>>>(
-      static_cast<float*>(x->data), static_cast<float*>(y->data), n);
+      static_cast<float*>(x.data_ptr()), static_cast<float*>(y.data_ptr()), n);
 }
 
 TVM_FFI_DLL_EXPORT_TYPED_FUNC(add_one_cuda, tvm_ffi_example::AddOneCUDA);

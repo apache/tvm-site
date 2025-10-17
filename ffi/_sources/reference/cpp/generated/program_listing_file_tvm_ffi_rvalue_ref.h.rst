@@ -118,6 +118,14 @@ Program Listing for File rvalue_ref.h
      TVM_FFI_INLINE static std::string TypeStr() {
        return "RValueRef<" + TypeTraits<TObjRef>::TypeStr() + ">";
      }
+   
+     TVM_FFI_INLINE static std::string TypeSchema() {
+       std::ostringstream oss;
+       oss << R"({"type":")" << StaticTypeKey::kTVMFFIObjectRValueRef << R"(","args":[)";
+       oss << TypeTraits<TObjRef>::TypeSchema();
+       oss << "]}";
+       return oss.str();
+     }
    };
    }  // namespace ffi
    }  // namespace tvm

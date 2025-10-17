@@ -12,7 +12,7 @@ Inheritance Relationships
 Base Type
 *********
 
-- ``public tvm::ffi::reflection::FieldInfoTrait`` (:ref:`exhale_struct_structtvm_1_1ffi_1_1reflection_1_1FieldInfoTrait`)
+- ``public tvm::ffi::reflection::InfoTrait`` (:ref:`exhale_struct_structtvm_1_1ffi_1_1reflection_1_1InfoTrait`)
 
 
 Class Documentation

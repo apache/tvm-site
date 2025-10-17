@@ -28,6 +28,7 @@ Program Listing for File c_env_api.h
     * specific language governing permissions and limitations
     * under the License.
     */
+   // NOLINTBEGIN(modernize-use-using)
    #ifndef TVM_FFI_EXTRA_C_ENV_API_H_
    #define TVM_FFI_EXTRA_C_ENV_API_H_
    
@@ -50,11 +51,13 @@ Program Listing for File c_env_api.h
    
    TVM_FFI_DLL TVMFFIStreamHandle TVMFFIEnvGetStream(int32_t device_type, int32_t device_id);
    
-   TVM_FFI_DLL int TVMFFIEnvSetTensorAllocator(DLPackTensorAllocator allocator,
-                                               int write_to_global_context,
-                                               DLPackTensorAllocator* opt_out_original_allocator);
+   TVM_FFI_DLL int TVMFFIEnvSetDLPackManagedTensorAllocator(
+       DLPackManagedTensorAllocator allocator, int write_to_global_context,
+       DLPackManagedTensorAllocator* opt_out_original_allocator);
    
-   TVM_FFI_DLL DLPackTensorAllocator TVMFFIEnvGetTensorAllocator();
+   TVM_FFI_DLL DLPackManagedTensorAllocator TVMFFIEnvGetDLPackManagedTensorAllocator();
+   
+   TVM_FFI_DLL int TVMFFIEnvTensorAlloc(DLTensor* prototype, TVMFFIObjectHandle* out);
    
    TVM_FFI_DLL int TVMFFIEnvCheckSignals();
    
@@ -74,3 +77,4 @@ Program Listing for File c_env_api.h
    }  // extern "C"
    #endif
    #endif  // TVM_FFI_EXTRA_C_ENV_API_H_
+   // NOLINTEND(modernize-use-using)

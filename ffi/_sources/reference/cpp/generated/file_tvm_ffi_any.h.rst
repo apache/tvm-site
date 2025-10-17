@@ -55,6 +55,8 @@ Included By
 
 - :ref:`file_tvm_ffi_container_array.h`
 
+- :ref:`file_tvm_ffi_container_container_details.h`
+
 - :ref:`file_tvm_ffi_container_map.h`
 
 - :ref:`file_tvm_ffi_container_variant.h`

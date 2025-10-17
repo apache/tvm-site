@@ -32,6 +32,7 @@ Program Listing for File container_details.h
    #ifndef TVM_FFI_CONTAINER_CONTAINER_DETAILS_H_
    #define TVM_FFI_CONTAINER_CONTAINER_DETAILS_H_
    
+   #include <tvm/ffi/any.h>
    #include <tvm/ffi/memory.h>
    #include <tvm/ffi/object.h>
    
@@ -63,7 +64,7 @@ Program Listing for File container_details.h
      }
    
      ~InplaceArrayBase() {
-       if constexpr (!(std::is_standard_layout<ElemType>::value && std::is_trivial<ElemType>::value)) {
+       if constexpr (!(std::is_standard_layout_v<ElemType> && std::is_trivial_v<ElemType>)) {
          size_t size = Self()->GetSize();
          for (size_t i = 0; i < size; ++i) {
            ElemType* fp = reinterpret_cast<ElemType*>(AddressOf(i));
@@ -71,6 +72,10 @@ Program Listing for File container_details.h
          }
        }
      }
+   
+    private:
+     InplaceArrayBase() = default;
+     friend ArrayType;
    
     protected:
      template <typename... Args>
@@ -140,8 +145,8 @@ Program Listing for File container_details.h
      }
    
      template <typename T = IterAdapter>
-     typename std::enable_if<std::is_same<iterator_category, std::random_access_iterator_tag>::value,
-                             typename T::difference_type>::type inline
+     inline std::enable_if_t<std::is_same_v<iterator_category, std::random_access_iterator_tag>,
+                             typename T::difference_type>
      operator-(const IterAdapter& rhs) const {
        return iter_ - rhs.iter_;
      }
@@ -187,8 +192,8 @@ Program Listing for File container_details.h
      }
    
      template <typename T = ReverseIterAdapter>
-     typename std::enable_if<std::is_same<iterator_category, std::random_access_iterator_tag>::value,
-                             typename T::difference_type>::type inline
+     inline std::enable_if_t<std::is_same_v<iterator_category, std::random_access_iterator_tag>,
+                             typename T::difference_type>
      operator-(const ReverseIterAdapter& rhs) const {
        return rhs.iter_ - iter_;
      }

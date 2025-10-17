@@ -82,7 +82,6 @@ Program Listing for File function_details.h
    #ifndef _MSC_VER
      static constexpr bool unpacked_supported = (ArgSupported<Args> && ...) && (RetSupported<R>);
    #endif
-   
      TVM_FFI_INLINE static std::string Sig() {
        using IdxSeq = std::make_index_sequence<sizeof...(Args)>;
        std::ostringstream ss;
@@ -90,6 +89,14 @@ Program Listing for File function_details.h
        Arg2Str<std::tuple<Args...>>::Run(ss, IdxSeq{});
        ss << ") -> " << Type2Str<R>::v();
        return ss.str();
+     }
+     TVM_FFI_INLINE static std::string TypeSchema() {
+       std::ostringstream oss;
+       oss << R"({"type":")" << StaticTypeKey::kTVMFFIFunction << R"(","args":[)";
+       oss << details::TypeSchema<R>::v();
+       ((oss << "," << details::TypeSchema<Args>::v()), ...);
+       oss << "]}";
+       return oss.str();
      }
    };
    
@@ -101,15 +108,29 @@ Program Listing for File function_details.h
    template <typename T, typename R, typename... Args>
    struct FunctionInfoHelper<R (T::*)(Args...) const> : FuncFunctorImpl<R, Args...> {};
    
-   template <typename T>
+   template <typename T, typename = void>
    struct FunctionInfo : FunctionInfoHelper<decltype(&T::operator())> {};
-   
    template <typename R, typename... Args>
-   struct FunctionInfo<R(Args...)> : FuncFunctorImpl<R, Args...> {};
+   struct FunctionInfo<R(Args...), void> : FuncFunctorImpl<R, Args...> {};
    template <typename R, typename... Args>
-   struct FunctionInfo<R (*)(Args...)> : FuncFunctorImpl<R, Args...> {};
+   struct FunctionInfo<R (*)(Args...), void> : FuncFunctorImpl<R, Args...> {};
+   // Support pointer-to-member functions used in reflection (e.g. &Class::method)
+   template <typename Class, typename R, typename... Args>
+   struct FunctionInfo<R (Class::*)(Args...), std::enable_if_t<std::is_base_of_v<Object, Class>>>
+       : FuncFunctorImpl<R, Class*, Args...> {};
+   template <typename Class, typename R, typename... Args>
+   struct FunctionInfo<R (Class::*)(Args...) const, std::enable_if_t<std::is_base_of_v<Object, Class>>>
+       : FuncFunctorImpl<R, const Class*, Args...> {};
    
-   typedef std::string (*FGetFuncSignature)();
+   template <typename Class, typename R, typename... Args>
+   struct FunctionInfo<R (Class::*)(Args...), std::enable_if_t<std::is_base_of_v<ObjectRef, Class>>>
+       : FuncFunctorImpl<R, Class, Args...> {};
+   template <typename Class, typename R, typename... Args>
+   struct FunctionInfo<R (Class::*)(Args...) const,
+                       std::enable_if_t<std::is_base_of_v<ObjectRef, Class>>>
+       : FuncFunctorImpl<R, const Class, Args...> {};
+   
+   using FGetFuncSignature = std::string (*)();
    
    class ArgValueWithContext {
     public:
@@ -118,7 +139,7 @@ Program Listing for File function_details.h
          : args_(args), arg_index_(arg_index), optional_name_(optional_name), f_sig_(f_sig) {}
    
      template <typename Type>
-     TVM_FFI_INLINE operator Type() {
+     TVM_FFI_INLINE operator Type() {  // NOLINT(google-explicit-constructor)
        using TypeWithoutCR = std::remove_const_t<std::remove_reference_t<Type>>;
    
        if constexpr (std::is_same_v<TypeWithoutCR, AnyView>) {
@@ -185,6 +206,36 @@ Program Listing for File function_details.h
    TVM_FFI_INLINE static void SetSafeCallRaised(const Error& error) {
      TVMFFIErrorSetRaised(details::ObjectUnsafe::TVMFFIObjectPtrFromObjectRef(error));
    }
+   
+   template <typename T>
+   struct TypeSchemaImpl {
+     static std::string v() {
+       using U = std::remove_const_t<std::remove_reference_t<T>>;
+       return TypeTraits<U>::TypeSchema();
+     }
+   };
+   
+   template <>
+   struct TypeSchemaImpl<void> {
+     static std::string v() {
+       return R"({"type":")" + std::string(StaticTypeKey::kTVMFFINone) + R"("})";
+     }
+   };
+   
+   template <>
+   struct TypeSchemaImpl<Any> {
+     static std::string v() {
+       return R"({"type":")" + std::string(StaticTypeKey::kTVMFFIAny) + R"("})";
+     }
+   };
+   
+   template <>
+   struct TypeSchemaImpl<AnyView> {
+     static std::string v() {
+       return R"({"type":")" + std::string(StaticTypeKey::kTVMFFIAny) + R"("})";
+     }
+   };
+   
    }  // namespace details
    }  // namespace ffi
    }  // namespace tvm

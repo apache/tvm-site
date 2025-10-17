@@ -75,12 +75,12 @@ Program Listing for File any.h
      // constructors from any view
      AnyView(const AnyView&) = default;
      AnyView& operator=(const AnyView&) = default;
-     AnyView(AnyView&& other) : data_(other.data_) {
+     AnyView(AnyView&& other) noexcept : data_(other.data_) {
        other.data_.type_index = TypeIndex::kTVMFFINone;
        other.data_.zero_padding = 0;
        other.data_.v_int64 = 0;
      }
-     TVM_FFI_INLINE AnyView& operator=(AnyView&& other) {
+     TVM_FFI_INLINE AnyView& operator=(AnyView&& other) noexcept {
        // copy-and-swap idiom
        AnyView(std::move(other)).swap(*this);  // NOLINT(*)
        return *this;
@@ -195,7 +195,7 @@ Program Listing for File any.h
          details::ObjectUnsafe::IncRefObjectHandle(data_.v_obj);
        }
      }
-     Any(Any&& other) : data_(other.data_) {
+     Any(Any&& other) noexcept : data_(other.data_) {
        other.data_.type_index = TypeIndex::kTVMFFINone;
        other.data_.zero_padding = 0;
        other.data_.v_int64 = 0;
@@ -205,7 +205,7 @@ Program Listing for File any.h
        Any(other).swap(*this);  // NOLINT(*)
        return *this;
      }
-     TVM_FFI_INLINE Any& operator=(Any&& other) {
+     TVM_FFI_INLINE Any& operator=(Any&& other) noexcept {
        // copy-and-swap idiom
        Any(std::move(other)).swap(*this);  // NOLINT(*)
        return *this;
@@ -218,7 +218,9 @@ Program Listing for File any.h
        Any(other).swap(*this);  // NOLINT(*)
        return *this;
      }
-     operator AnyView() const { return AnyView::CopyFromTVMFFIAny(data_); }
+     operator AnyView() const {  // NOLINT(google-explicit-constructor)
+       return AnyView::CopyFromTVMFFIAny(data_);
+     }
      template <typename T, typename = std::enable_if_t<TypeTraits<T>::convert_enabled>>
      Any(T other) {  // NOLINT(*)
        TypeTraits<T>::MoveToAny(std::move(other), &data_);
@@ -373,12 +375,12 @@ Program Listing for File any.h
        return result;
      }
    
-     TVM_FFI_INLINE static Any MoveTVMFFIAnyToAny(TVMFFIAny&& data) {
+     TVM_FFI_INLINE static Any MoveTVMFFIAnyToAny(TVMFFIAny* data) {
        Any any;
-       any.data_ = data;
-       data.type_index = TypeIndex::kTVMFFINone;
-       data.zero_padding = 0;
-       data.v_int64 = 0;
+       any.data_ = *data;
+       data->type_index = TypeIndex::kTVMFFINone;
+       data->zero_padding = 0;
+       data->v_int64 = 0;
        return any;
      }
    

@@ -50,7 +50,8 @@ Program Listing for File endian.h
    #else
    #if defined(__APPLE__) || defined(_WIN32)
    #define TVM_FFI_LITTLE_ENDIAN 1
-   #elif defined(__GLIBC__) || defined(__GNU_LIBRARY__) || defined(__ANDROID__) || defined(__RISCV__)
+   #elif defined(__GLIBC__) || defined(__GNU_LIBRARY__) || defined(__ANDROID__) || \
+       defined(__RISCV__) || defined(__MUSL__)
    #include <endian.h>
    #define TVM_FFI_LITTLE_ENDIAN (__BYTE_ORDER == __LITTLE_ENDIAN)
    #elif defined(__FreeBSD__) || defined(__OpenBSD__)

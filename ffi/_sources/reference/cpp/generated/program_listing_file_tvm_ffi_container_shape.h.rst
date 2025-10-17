@@ -107,7 +107,7 @@ Program Listing for File shape.h
    
    class ShapeObjStdImpl : public ShapeObj {
     public:
-     explicit ShapeObjStdImpl(std::vector<int64_t> other) : data_{other} {
+     explicit ShapeObjStdImpl(std::vector<int64_t> other) : data_{std::move(other)} {
        this->data = data_.data();
        this->size = static_cast<size_t>(data_.size());
      }
@@ -209,7 +209,7 @@ Program Listing for File shape.h
      TVM_FFI_DEFINE_OBJECT_REF_METHODS_NOTNULLABLE(Shape, ObjectRef, ShapeObj);
    
     private:
-     explicit Shape(ObjectPtr<ShapeObj> ptr) : ObjectRef(ptr) {}
+     explicit Shape(ObjectPtr<ShapeObj> ptr) : ObjectRef(std::move(ptr)) {}
    };
    
    inline std::ostream& operator<<(std::ostream& os, const Shape& shape) {
@@ -232,7 +232,9 @@ Program Listing for File shape.h
    template <>
    struct TypeTraits<Shape> : public ObjectRefWithFallbackTraitsBase<Shape, Array<int64_t>> {
      static constexpr int32_t field_static_type_index = TypeIndex::kTVMFFIShape;
-     TVM_FFI_INLINE static Shape ConvertFallbackValue(Array<int64_t> src) { return Shape(src); }
+     TVM_FFI_INLINE static Shape ConvertFallbackValue(Array<int64_t> src) {
+       return Shape(std::move(src));
+     }
    };
    
    }  // namespace ffi

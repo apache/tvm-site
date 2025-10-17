@@ -40,7 +40,7 @@ Program Listing for File memory.h
    
    namespace tvm {
    namespace ffi {
-   typedef void (*FObjectDeleter)(void* obj, int flags);
+   using FObjectDeleter = void (*)(void* obj, int flags);
    
    // Detail implementations after this
    //
@@ -95,7 +95,7 @@ Program Listing for File memory.h
      template <typename T, typename... Args>
      ObjectPtr<T> make_object(Args&&... args) {
        using Handler = typename Derived::template Handler<T>;
-       static_assert(std::is_base_of<Object, T>::value, "make can only be used to create Object");
+       static_assert(std::is_base_of_v<Object, T>, "make can only be used to create Object");
        T* ptr = Handler::New(static_cast<Derived*>(this), std::forward<Args>(args)...);
        TVMFFIObject* ffi_ptr = details::ObjectUnsafe::GetHeader(ptr);
        ffi_ptr->combined_ref_count = kCombinedRefCountBothOne;
@@ -108,7 +108,7 @@ Program Listing for File memory.h
      template <typename ArrayType, typename ElemType, typename... Args>
      ObjectPtr<ArrayType> make_inplace_array(size_t num_elems, Args&&... args) {
        using Handler = typename Derived::template ArrayHandler<ArrayType, ElemType>;
-       static_assert(std::is_base_of<Object, ArrayType>::value,
+       static_assert(std::is_base_of_v<Object, ArrayType>,
                      "make_inplace_array can only be used to create Object");
        ArrayType* ptr =
            Handler::New(static_cast<Derived*>(this), num_elems, std::forward<Args>(args)...);
@@ -119,6 +119,10 @@ Program Listing for File memory.h
        ffi_ptr->deleter = Handler::Deleter();
        return details::ObjectUnsafe::ObjectPtrFromOwned<ArrayType>(ptr);
      }
+   
+    private:
+     ObjAllocatorBase() = default;
+     friend Derived;
    };
    
    // Simple allocator that uses new/delete.

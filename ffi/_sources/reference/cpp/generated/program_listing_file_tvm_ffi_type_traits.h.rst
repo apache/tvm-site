@@ -127,12 +127,15 @@ Program Listing for File type_traits.h
      }
    
      TVM_FFI_INLINE static std::string TypeStr() { return StaticTypeKey::kTVMFFINone; }
+     TVM_FFI_INLINE static std::string TypeSchema() {
+       return R"({"type":")" + std::string(StaticTypeKey::kTVMFFINone) + R"("})";
+     }
    };
    
    class StrictBool {
     public:
-     StrictBool(bool value) : value_(value) {}  // NOLINT(*)
-     operator bool() const { return value_; }
+     StrictBool(bool value) : value_(value) {}  // NOLINT(google-explicit-constructor)
+     operator bool() const { return value_; }  // NOLINT(google-explicit-constructor)
    
     private:
      bool value_;
@@ -173,6 +176,9 @@ Program Listing for File type_traits.h
      }
    
      TVM_FFI_INLINE static std::string TypeStr() { return StaticTypeKey::kTVMFFIBool; }
+     TVM_FFI_INLINE static std::string TypeSchema() {
+       return R"({"type":")" + std::string(StaticTypeKey::kTVMFFIBool) + R"("})";
+     }
    };
    
    // Bool type, allow implicit casting from int
@@ -209,6 +215,9 @@ Program Listing for File type_traits.h
      }
    
      TVM_FFI_INLINE static std::string TypeStr() { return StaticTypeKey::kTVMFFIBool; }
+     TVM_FFI_INLINE static std::string TypeSchema() {
+       return R"({"type":")" + std::string(StaticTypeKey::kTVMFFIBool) + R"("})";
+     }
    };
    
    // Integer POD values
@@ -246,13 +255,25 @@ Program Listing for File type_traits.h
      }
    
      TVM_FFI_INLINE static std::string TypeStr() { return StaticTypeKey::kTVMFFIInt; }
+     TVM_FFI_INLINE static std::string TypeSchema() {
+       return R"({"type":")" + std::string(StaticTypeKey::kTVMFFIInt) + R"("})";
+     }
    };
+   
+   
+   // trait to check if a type is an integeral enum
+   // note that we need this trait so we can confirm underlying_type_t is an integral type
+   // to avoid potential undefined behavior
+   template <typename T, bool = std::is_enum_v<T>>
+   constexpr bool is_integeral_enum_v = false;
+   
+   template <typename T>
+   constexpr bool is_integeral_enum_v<T, true> = std::is_integral_v<std::underlying_type_t<T>>;
+   
    
    // Enum Integer POD values
    template <typename IntEnum>
-   struct TypeTraits<IntEnum, std::enable_if_t<std::is_enum_v<IntEnum> &&
-                                               std::is_integral_v<std::underlying_type_t<IntEnum>>>>
-       : public TypeTraitsBase {
+   struct TypeTraits<IntEnum, std::enable_if_t<is_integeral_enum_v<IntEnum>>> : public TypeTraitsBase {
      static constexpr int32_t field_static_type_index = TypeIndex::kTVMFFIInt;
    
      TVM_FFI_INLINE static void CopyToAnyView(const IntEnum& src, TVMFFIAny* result) {
@@ -287,6 +308,9 @@ Program Listing for File type_traits.h
      }
    
      TVM_FFI_INLINE static std::string TypeStr() { return StaticTypeKey::kTVMFFIInt; }
+     TVM_FFI_INLINE static std::string TypeSchema() {
+       return R"({"type":")" + std::string(StaticTypeKey::kTVMFFIInt) + R"("})";
+     }
    };
    
    // Float POD values
@@ -328,6 +352,9 @@ Program Listing for File type_traits.h
      }
    
      TVM_FFI_INLINE static std::string TypeStr() { return StaticTypeKey::kTVMFFIFloat; }
+     TVM_FFI_INLINE static std::string TypeSchema() {
+       return R"({"type":")" + std::string(StaticTypeKey::kTVMFFIFloat) + R"("})";
+     }
    };
    
    // void*
@@ -367,6 +394,9 @@ Program Listing for File type_traits.h
      }
    
      TVM_FFI_INLINE static std::string TypeStr() { return StaticTypeKey::kTVMFFIOpaquePtr; }
+     TVM_FFI_INLINE static std::string TypeSchema() {
+       return R"({"type":")" + std::string(StaticTypeKey::kTVMFFIOpaquePtr) + R"("})";
+     }
    };
    
    // Device
@@ -407,6 +437,9 @@ Program Listing for File type_traits.h
      }
    
      TVM_FFI_INLINE static std::string TypeStr() { return StaticTypeKey::kTVMFFIDevice; }
+     TVM_FFI_INLINE static std::string TypeSchema() {
+       return R"({"type":")" + std::string(StaticTypeKey::kTVMFFIDevice) + R"("})";
+     }
    };
    
    // DLTensor*, requirement: not nullable, do not retain ownership
@@ -450,6 +483,7 @@ Program Listing for File type_traits.h
      }
    
      TVM_FFI_INLINE static std::string TypeStr() { return "DLTensor*"; }
+     TVM_FFI_INLINE static std::string TypeSchema() { return R"({"type":"DLTensor*"})"; }
    };
    
    // Traits for ObjectRef, None to ObjectRef will always fail.
@@ -535,6 +569,9 @@ Program Listing for File type_traits.h
      }
    
      TVM_FFI_INLINE static std::string TypeStr() { return ContainerType::_type_key; }
+     TVM_FFI_INLINE static std::string TypeSchema() {
+       return R"({"type":")" + std::string(ContainerType::_type_key) + R"("})";
+     }
    };
    
    template <typename TObjRef>
@@ -570,7 +607,7 @@ Program Listing for File type_traits.h
    struct ObjectRefWithFallbackTraitsBase : public ObjectRefTypeTraitsBase<ObjectRefType> {
      TVM_FFI_INLINE static std::optional<ObjectRefType> TryCastFromAnyView(const TVMFFIAny* src) {
        if (auto opt_obj = ObjectRefTypeTraitsBase<ObjectRefType>::TryCastFromAnyView(src)) {
-         return *opt_obj;
+         return opt_obj;
        }
        // apply fallback types in TryCastFromAnyView
        return TryFallbackTypes<FallbackTypes...>(src);
@@ -636,6 +673,9 @@ Program Listing for File type_traits.h
      }
    
      TVM_FFI_INLINE static std::string TypeStr() { return TObject::_type_key; }
+     TVM_FFI_INLINE static std::string TypeSchema() {
+       return R"({"type":")" + std::string(TObject::_type_key) + R"("})";
+     }
    };
    
    template <typename T>
@@ -696,6 +736,9 @@ Program Listing for File type_traits.h
    
      TVM_FFI_INLINE static std::string TypeStr() {
        return "Optional<" + TypeTraits<T>::TypeStr() + ">";
+     }
+     TVM_FFI_INLINE static std::string TypeSchema() {
+       return R"({"type":"Optional","args":[)" + details::TypeSchema<T>::v() + "]}";
      }
    };
    }  // namespace ffi

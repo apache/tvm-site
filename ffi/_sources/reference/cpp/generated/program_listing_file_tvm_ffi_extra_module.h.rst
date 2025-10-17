@@ -36,6 +36,8 @@ Program Listing for File module.h
    #include <tvm/ffi/extra/base.h>
    #include <tvm/ffi/function.h>
    
+   #include <cstdint>
+   
    namespace tvm {
    namespace ffi {
    
@@ -61,7 +63,7 @@ Program Listing for File module.h
        TVM_FFI_THROW(RuntimeError) << "Module[" << kind() << "] does not support SaveToBytes";
        TVM_FFI_UNREACHABLE();
      }
-     virtual String InspectSource(const String& format = "") const { return String(); }
+     virtual String InspectSource(const String& format) const { return String(); }
      virtual void ImportModule(const Module& other);
      virtual void ClearImports();
      Optional<Function> GetFunction(const String& name, bool query_imports);
@@ -93,7 +95,9 @@ Program Listing for File module.h
        kRunnable = 0b010,
        kCompilationExportable = 0b100
      };
-     explicit Module(ObjectPtr<ModuleObj> ptr) : ObjectRef(ptr) { TVM_FFI_ICHECK(ptr != nullptr); }
+     explicit Module(const ObjectPtr<ModuleObj>& ptr) : ObjectRef(ptr) {
+       TVM_FFI_ICHECK(ptr != nullptr);
+     }
      TVM_FFI_EXTRA_CXX_API static Module LoadFromFile(const String& file_name);
      TVM_FFI_EXTRA_CXX_API static void VisitContextSymbols(
          const ffi::TypedFunction<void(String, void*)>& callback);

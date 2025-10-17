@@ -397,7 +397,9 @@ File "src/extension.cc", line 45, in void my_ffi_extension::RaiseError(tvm::ffi:
 We provide C++ object `ffi::Error` that can be throwed as exception in c++ environment. When we encounter
 the C ABI boundary, we will catch the error and call `TVMFFIErrorSetRaised` to propagate the error
 to the caller safely.
-`TVMFFIErrorSetRaisedFromCStr` is a convenient method to set error directly from C string and can be useful in compiler backend construction to implement features such as assert.
+`TVMFFIErrorSetRaisedFromCStr` is a convenient method to set error directly from C string and can be useful in compiler
+backend construction to implement features such as assert.
+We also provide `TVMFFIErrorSetRaisedFromCStrParts` to concat reusable parts in the error message.
 
 **Rationales:** The error object contains minimal but sufficient information to reconstruct structured
 error in python side. We opt-for thread-local error state as it simplifies overall support.

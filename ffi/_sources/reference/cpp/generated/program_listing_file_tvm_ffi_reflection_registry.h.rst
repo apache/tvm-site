@@ -33,21 +33,79 @@ Program Listing for File registry.h
    
    #include <tvm/ffi/any.h>
    #include <tvm/ffi/c_api.h>
+   #include <tvm/ffi/container/map.h>
+   #include <tvm/ffi/container/variant.h>
    #include <tvm/ffi/function.h>
+   #include <tvm/ffi/optional.h>
+   #include <tvm/ffi/string.h>
    #include <tvm/ffi/type_traits.h>
    
+   #include <iterator>
+   #include <optional>
+   #include <sstream>
    #include <string>
    #include <utility>
+   #include <vector>
    
    namespace tvm {
    namespace ffi {
    namespace reflection {
+   using _MetadataType = std::vector<std::pair<String, Any>>;  // NOLINT(bugprone-reserved-identifier)
+   struct FieldInfoBuilder : public TVMFFIFieldInfo {
+     _MetadataType metadata_;
+   };
+   struct MethodInfoBuilder : public TVMFFIMethodInfo {
+     _MetadataType metadata_;
+   };
    
-   struct FieldInfoTrait {};
+   struct InfoTrait {};
    
-   class DefaultValue : public FieldInfoTrait {
+   class Metadata : public InfoTrait {
     public:
-     explicit DefaultValue(Any value) : value_(value) {}
+     Metadata(std::initializer_list<std::pair<String, Any>> dict) : dict_(dict) {}
+     inline void Apply(FieldInfoBuilder* info) const { this->Apply(&info->metadata_); }
+     inline void Apply(MethodInfoBuilder* info) const { this->Apply(&info->metadata_); }
+   
+    private:
+     friend class GlobalDef;
+     template <typename T>
+     friend class ObjectDef;
+     inline void Apply(_MetadataType* out) const {
+       std::copy(std::make_move_iterator(dict_.begin()), std::make_move_iterator(dict_.end()),
+                 std::back_inserter(*out));
+     }
+     static std::string ToJSON(const _MetadataType& metadata) {
+       using ::tvm::ffi::details::StringObj;
+       std::ostringstream os;
+       os << "{";
+       bool first = true;
+       for (const auto& [key, value] : metadata) {
+         if (!first) {
+           os << ",";
+         }
+         os << "\"" << key << "\":";
+         if (std::optional<int> v = value.as<int>()) {
+           os << *v;
+         } else if (std::optional<bool> v = value.as<bool>()) {
+           os << (*v ? "true" : "false");
+         } else if (std::optional<String> v = value.as<String>()) {
+           String escaped = EscapeString(*v);
+           os << escaped.c_str();
+         } else {
+           TVM_FFI_LOG_AND_THROW(TypeError) << "Metadata can be only int, bool or string, but on key `"
+                                            << key << "`, the type is " << value.GetTypeKey();
+         }
+         first = false;
+       }
+       os << "}";
+       return os.str();
+     }
+   
+     std::vector<std::pair<String, Any>> dict_;
+   };
+   class DefaultValue : public InfoTrait {
+    public:
+     explicit DefaultValue(Any value) : value_(std::move(value)) {}
    
      TVM_FFI_INLINE void Apply(TVMFFIFieldInfo* info) const {
        info->default_value = AnyView(value_).CopyToTVMFFIAny();
@@ -58,7 +116,7 @@ Program Listing for File registry.h
      Any value_;
    };
    
-   class AttachFieldFlag : public FieldInfoTrait {
+   class AttachFieldFlag : public InfoTrait {
     public:
      explicit AttachFieldFlag(int32_t flag) : flag_(flag) {}
    
@@ -119,8 +177,8 @@ Program Listing for File registry.h
      }
    
      template <typename T>
-     TVM_FFI_INLINE static void ApplyFieldInfoTrait(TVMFFIFieldInfo* info, const T& value) {
-       if constexpr (std::is_base_of_v<FieldInfoTrait, std::decay_t<T>>) {
+     TVM_FFI_INLINE static void ApplyFieldInfoTrait(FieldInfoBuilder* info, const T& value) {
+       if constexpr (std::is_base_of_v<InfoTrait, std::decay_t<T>>) {
          value.Apply(info);
        }
        if constexpr (std::is_same_v<std::decay_t<T>, char*>) {
@@ -129,7 +187,10 @@ Program Listing for File registry.h
      }
    
      template <typename T>
-     TVM_FFI_INLINE static void ApplyMethodInfoTrait(TVMFFIMethodInfo* info, const T& value) {
+     TVM_FFI_INLINE static void ApplyMethodInfoTrait(MethodInfoBuilder* info, const T& value) {
+       if constexpr (std::is_base_of_v<InfoTrait, std::decay_t<T>>) {
+         value.Apply(info);
+       }
        if constexpr (std::is_same_v<std::decay_t<T>, char*>) {
          info->doc = TVMFFIByteArray{value, std::char_traits<char>::length(value)};
        }
@@ -151,7 +212,7 @@ Program Listing for File registry.h
            // call method pointer
            return (target.*func)(std::forward<Args>(params)...);
          };
-         return ffi::Function::FromTyped(fwrap, name);
+         return ffi::Function::FromTyped(fwrap, std::move(name));
        }
    
        if constexpr (std::is_base_of_v<Object, Class>) {
@@ -159,7 +220,7 @@ Program Listing for File registry.h
            // call method pointer
            return (const_cast<Class*>(target)->*func)(std::forward<Args>(params)...);
          };
-         return ffi::Function::FromTyped(fwrap, name);
+         return ffi::Function::FromTyped(fwrap, std::move(name));
        }
      }
    
@@ -172,7 +233,7 @@ Program Listing for File registry.h
            // call method pointer
            return (target.*func)(std::forward<Args>(params)...);
          };
-         return ffi::Function::FromTyped(fwrap, name);
+         return ffi::Function::FromTyped(fwrap, std::move(name));
        }
    
        if constexpr (std::is_base_of_v<Object, Class>) {
@@ -180,13 +241,13 @@ Program Listing for File registry.h
            // call method pointer
            return (target->*func)(std::forward<Args>(params)...);
          };
-         return ffi::Function::FromTyped(fwrap, name);
+         return ffi::Function::FromTyped(fwrap, std::move(name));
        }
      }
    
      template <typename Func>
      TVM_FFI_INLINE static Function GetMethod(std::string name, Func&& func) {
-       return ffi::Function::FromTyped(std::forward<Func>(func), name);
+       return ffi::Function::FromTyped(std::forward<Func>(func), std::move(name));
      }
    };
    
@@ -194,37 +255,55 @@ Program Listing for File registry.h
     public:
      template <typename Func, typename... Extra>
      GlobalDef& def(const char* name, Func&& func, Extra&&... extra) {
+       using FuncInfo = details::FunctionInfo<std::decay_t<Func>>;
        RegisterFunc(name, ffi::Function::FromTyped(std::forward<Func>(func), std::string(name)),
-                    std::forward<Extra>(extra)...);
+                    FuncInfo::TypeSchema(), std::forward<Extra>(extra)...);
        return *this;
      }
    
      template <typename Func, typename... Extra>
      GlobalDef& def_packed(const char* name, Func func, Extra&&... extra) {
-       RegisterFunc(name, ffi::Function::FromPacked(func), std::forward<Extra>(extra)...);
+       RegisterFunc(name, ffi::Function::FromPacked(func), details::TypeSchemaImpl<Function>::v(),
+                    std::forward<Extra>(extra)...);
        return *this;
      }
    
      template <typename Func, typename... Extra>
      GlobalDef& def_method(const char* name, Func&& func, Extra&&... extra) {
+       using FuncInfo = details::FunctionInfo<std::decay_t<Func>>;
        RegisterFunc(name, GetMethod(std::string(name), std::forward<Func>(func)),
-                    std::forward<Extra>(extra)...);
+                    FuncInfo::TypeSchema(), std::forward<Extra>(extra)...);
        return *this;
      }
    
     private:
-     template <typename... Extra>
-     void RegisterFunc(const char* name, ffi::Function func, Extra&&... extra) {
-       TVMFFIMethodInfo info;
+     template <typename... Extra>  // NOLINTNEXTLINE(performance-unnecessary-value-param)
+     void RegisterFunc(const char* name, ffi::Function func, String type_schema, Extra&&... extra) {
+       MethodInfoBuilder info;
        info.name = TVMFFIByteArray{name, std::char_traits<char>::length(name)};
        info.doc = TVMFFIByteArray{nullptr, 0};
-       info.metadata = TVMFFIByteArray{nullptr, 0};
        info.flags = 0;
-       // obtain the method function
        info.method = AnyView(func).CopyToTVMFFIAny();
-       // apply method info traits
+       info.metadata_.emplace_back("type_schema", type_schema);
        ((ApplyMethodInfoTrait(&info, std::forward<Extra>(extra)), ...));
+       std::string metadata_str = Metadata::ToJSON(info.metadata_);
+       info.metadata = TVMFFIByteArray{metadata_str.c_str(), metadata_str.size()};
        TVM_FFI_CHECK_SAFE_CALL(TVMFFIFunctionSetGlobalFromMethodInfo(&info, 0));
+     }
+   };
+   
+   template <typename... Args>
+   struct init {
+     // Allow ObjectDef to access the execute function
+     template <typename Class>
+     friend class ObjectDef;
+   
+     constexpr init() noexcept = default;
+   
+    private:
+     template <typename Class>
+     static inline ObjectRef execute(Args&&... args) {
+       return ObjectRef(ffi::make_object<Class>(std::forward<Args>(args)...));
      }
    };
    
@@ -262,6 +341,13 @@ Program Listing for File registry.h
        return *this;
      }
    
+     template <typename... Args, typename... Extra>
+     TVM_FFI_INLINE ObjectDef& def([[maybe_unused]] init<Args...> init_func, Extra&&... extra) {
+       RegisterMethod(kInitMethodName, true, &init<Args...>::template execute<Class>,
+                      std::forward<Extra>(extra)...);
+       return *this;
+     }
+   
     private:
      template <typename... ExtraArgs>
      void RegisterExtraInfo(ExtraArgs&&... extra_args) {
@@ -284,7 +370,7 @@ Program Listing for File registry.h
      void RegisterField(const char* name, T BaseClass::* field_ptr, bool writable,
                         ExtraArgs&&... extra_args) {
        static_assert(std::is_base_of_v<BaseClass, Class>, "BaseClass must be a base class of Class");
-       TVMFFIFieldInfo info;
+       FieldInfoBuilder info;
        info.name = TVMFFIByteArray{name, std::char_traits<char>::length(name)};
        info.field_static_type_index = TypeToFieldStaticTypeIndex<T>::value;
        // store byte offset and setter, getter
@@ -301,20 +387,22 @@ Program Listing for File registry.h
        // initialize default value to nullptr
        info.default_value = AnyView(nullptr).CopyToTVMFFIAny();
        info.doc = TVMFFIByteArray{nullptr, 0};
-       info.metadata = TVMFFIByteArray{nullptr, 0};
+       info.metadata_.emplace_back("type_schema", details::TypeSchema<T>::v());
        // apply field info traits
        ((ApplyFieldInfoTrait(&info, std::forward<ExtraArgs>(extra_args)), ...));
        // call register
+       std::string metadata_str = Metadata::ToJSON(info.metadata_);
+       info.metadata = TVMFFIByteArray{metadata_str.c_str(), metadata_str.size()};
        TVM_FFI_CHECK_SAFE_CALL(TVMFFITypeRegisterField(type_index_, &info));
      }
    
      // register a method
      template <typename Func, typename... Extra>
      void RegisterMethod(const char* name, bool is_static, Func&& func, Extra&&... extra) {
-       TVMFFIMethodInfo info;
+       using FuncInfo = details::FunctionInfo<std::decay_t<Func>>;
+       MethodInfoBuilder info;
        info.name = TVMFFIByteArray{name, std::char_traits<char>::length(name)};
        info.doc = TVMFFIByteArray{nullptr, 0};
-       info.metadata = TVMFFIByteArray{nullptr, 0};
        info.flags = 0;
        if (is_static) {
          info.flags |= kTVMFFIFieldFlagBitMaskIsStaticMethod;
@@ -322,13 +410,17 @@ Program Listing for File registry.h
        // obtain the method function
        Function method = GetMethod(std::string(type_key_) + "." + name, std::forward<Func>(func));
        info.method = AnyView(method).CopyToTVMFFIAny();
+       info.metadata_.emplace_back("type_schema", FuncInfo::TypeSchema());
        // apply method info traits
        ((ApplyMethodInfoTrait(&info, std::forward<Extra>(extra)), ...));
+       std::string metadata_str = Metadata::ToJSON(info.metadata_);
+       info.metadata = TVMFFIByteArray{metadata_str.c_str(), metadata_str.size()};
        TVM_FFI_CHECK_SAFE_CALL(TVMFFITypeRegisterMethod(type_index_, &info));
      }
    
      int32_t type_index_;
      const char* type_key_;
+     static constexpr const char* kInitMethodName = "__ffi_init__";
    };
    
    template <typename Class, typename = std::enable_if_t<std::is_base_of_v<Object, Class>>>
@@ -366,16 +458,6 @@ Program Listing for File registry.h
      AnyView any_view(nullptr);
      TVM_FFI_CHECK_SAFE_CALL(TVMFFITypeRegisterAttr(kTVMFFINone, &name_array,
                                                     reinterpret_cast<const TVMFFIAny*>(&any_view)));
-   }
-   
-   template <typename T, typename... Args>
-   inline ObjectRef init(Args&&... args) {
-     if constexpr (std::is_base_of_v<Object, T>) {
-       return ObjectRef(ffi::make_object<T>(std::forward<Args>(args)...));
-     } else {
-       using U = typename T::ContainerType;
-       return ObjectRef(ffi::make_object<U>(std::forward<Args>(args)...));
-     }
    }
    
    }  // namespace reflection

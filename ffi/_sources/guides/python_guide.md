@@ -153,14 +153,14 @@ import tvm_ffi.cpp
 cpp_source = '''
      void add_one_cpu(tvm::ffi::TensorView x, tvm::ffi::TensorView y) {
        // implementation of a library function
-       TVM_FFI_ICHECK(x->ndim == 1) << "x must be a 1D tensor";
+       TVM_FFI_ICHECK(x.ndim() == 1) << "x must be a 1D tensor";
        DLDataType f32_dtype{kDLFloat, 32, 1};
-       TVM_FFI_ICHECK(x->dtype == f32_dtype) << "x must be a float tensor";
-       TVM_FFI_ICHECK(y->ndim == 1) << "y must be a 1D tensor";
-       TVM_FFI_ICHECK(y->dtype == f32_dtype) << "y must be a float tensor";
-       TVM_FFI_ICHECK(x->shape[0] == y->shape[0]) << "x and y must have the same shape";
-       for (int i = 0; i < x->shape[0]; ++i) {
-         static_cast<float*>(y->data)[i] = static_cast<float*>(x->data)[i] + 1;
+       TVM_FFI_ICHECK(x.dtype() == f32_dtype) << "x must be a float tensor";
+       TVM_FFI_ICHECK(y.ndim() == 1) << "y must be a 1D tensor";
+       TVM_FFI_ICHECK(y.dtype() == f32_dtype) << "y must be a float tensor";
+       TVM_FFI_ICHECK(x.size(0) == y.size(0)) << "x and y must have the same shape";
+       for (int i = 0; i < x.size(0); ++i) {
+         static_cast<float*>(y.data_ptr())[i] = static_cast<float*>(x.data_ptr())[i] + 1;
        }
      }
 '''
@@ -235,7 +235,7 @@ public:
   TestIntPairObj(int64_t a, int64_t b) : a(a), b(b) {}
 
   // Required: declare type information
-TVM_FFI_DECLARE_OBJECT_INFO_FINAL("testing.TestIntPair", TestIntPairObj, tvm::ffi::Object);
+  TVM_FFI_DECLARE_OBJECT_INFO_FINAL("testing.TestIntPair", TestIntPairObj, tvm::ffi::Object);
 };
 
 // Step 2: Define the reference wrapper (user-facing interface)
@@ -253,13 +253,11 @@ public:
 TVM_FFI_STATIC_INIT_BLOCK() {
   namespace refl = tvm::ffi::reflection;
   // register the object into the system
-  // register field accessors and a global static function `__create__` as ffi::Function
+  // register field accessors and a global static function `__ffi_init__` as ffi::Function
   refl::ObjectDef<TestIntPairObj>()
+    .def(refl::init<int64_t, int64_t>())
     .def_ro("a", &TestIntPairObj::a)
-    .def_ro("b", &TestIntPairObj::b)
-    .def_static("__create__", [](int64_t a, int64_t b) -> TestIntPair {
-      return TestIntPair(a, b);
-    });
+    .def_ro("b", &TestIntPairObj::b);
 }
 ```
 
@@ -274,7 +272,7 @@ class TestIntPair(tvm_ffi.Object):
     def __init__(self, a, b):
         # This is a special method to call an FFI function whose return
         # value exactly initializes the object handle of the object
-        self.__init_handle_by_constructor__(TestIntPair.__create__, a, b)
+        self.__ffi_init__(a, b)
 
 test_int_pair = TestIntPair(1, 2)
 # We can access the fields by name

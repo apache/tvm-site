@@ -32,7 +32,7 @@ Program Listing for File c_api.h
     * specific language governing permissions and limitations
     * under the License.
     */
-   
+   // NOLINTBEGIN(modernize-use-using,bugprone-reserved-identifier,modernize-deprecated-headers)
    /*
     * \file tvm/ffi/c_api.h
     * \brief This file defines the C convention of the FFI convention
@@ -75,24 +75,6 @@ Program Listing for File c_api.h
    #ifdef __cplusplus
    extern "C" {
    #endif
-   
-   // TODO(tqchen): remove this once dlpack.h is updated
-   typedef struct DLManagedTensorVersioned DLManagedTensorVersioned;
-   
-   /*
-    * \brief C-style Allocator that allocates memory for a DLPack tensor.
-    * \param prototype The prototype DLTensor to offer details about device and shape.
-    * \param out The output DLManagedTensorVersioned.
-    * \param error_ctx The context to set the error.
-    * \param SetError The function to set the error.
-    * \return 0 on success, -1 on failure.
-    *         call SetError(error_ctx, kind, message) to set the error kind and message.
-    * \note Error propagation via SetError.
-    */
-   typedef int (*DLPackTensorAllocator)(                                         //
-       DLTensor* prototype, DLManagedTensorVersioned** out, void* error_ctx,     //
-       void (*SetError)(void* error_ctx, const char* kind, const char* message)  //
-   );
    
    #ifdef __cplusplus
    enum TVMFFITypeIndex : int32_t {
@@ -282,6 +264,9 @@ Program Listing for File c_api.h
    TVM_FFI_DLL void TVMFFIErrorSetRaised(TVMFFIObjectHandle error);
    
    TVM_FFI_DLL void TVMFFIErrorSetRaisedFromCStr(const char* kind, const char* message);
+   
+   TVM_FFI_DLL void TVMFFIErrorSetRaisedFromCStrParts(const char* kind, const char** message_parts,
+                                                      int32_t num_parts);
    
    TVM_FFI_DLL int TVMFFIErrorCreate(const TVMFFIByteArray* kind, const TVMFFIByteArray* message,
                                      const TVMFFIByteArray* backtrace, TVMFFIObjectHandle* out);
@@ -509,3 +494,4 @@ Program Listing for File c_api.h
    }
    #endif  // __cplusplus
    #endif  // TVM_FFI_C_API_H_
+   // NOLINTEND(modernize-use-using,bugprone-reserved-identifier,modernize-deprecated-headers)
