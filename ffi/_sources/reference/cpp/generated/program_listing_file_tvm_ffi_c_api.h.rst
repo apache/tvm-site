@@ -72,9 +72,19 @@ Program Listing for File c_api.h
    #define TVM_FFI_DLL_EXPORT __attribute__((visibility("default")))
    #endif
    
+   #define TVM_FFI_VERSION_MAJOR 0
+   #define TVM_FFI_VERSION_MINOR 1
+   #define TVM_FFI_VERSION_PATCH 0
+   
    #ifdef __cplusplus
    extern "C" {
    #endif
+   
+   typedef struct {
+     uint32_t major;
+     uint32_t minor;
+     uint32_t patch;
+   } TVMFFIVersion;
    
    #ifdef __cplusplus
    enum TVMFFITypeIndex : int32_t {
@@ -233,6 +243,11 @@ Program Listing for File c_api.h
    typedef struct {
      void* handle;
    } TVMFFIOpaqueObjectCell;
+   
+   //-----------------------------------------------------------------------
+   // Section: Version API
+   //-----------------------------------------------------------------------
+   TVM_FFI_DLL void TVMFFIGetVersion(TVMFFIVersion* out_version);
    
    //------------------------------------------------------------
    // Section: Basic object API

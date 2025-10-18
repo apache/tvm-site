@@ -95,6 +95,8 @@ Classes
 
 - :ref:`exhale_struct_structTVMFFITypeMetadata`
 
+- :ref:`exhale_struct_structTVMFFIVersion`
+
 
 Enums
 -----
@@ -157,6 +159,8 @@ Functions
 
 - :ref:`exhale_function_c__api_8h_1afee5a803e22f9baf5ee2ff1f0ace6429`
 
+- :ref:`exhale_function_c__api_8h_1a145f2694254410fd4814541e2cde99c1`
+
 - :ref:`exhale_function_c__api_8h_1a6415c088928d62af8749f3dc57dcf23b`
 
 - :ref:`exhale_function_c__api_8h_1aba50ba2cee84b1ef7a718211ab349031`
@@ -199,6 +203,12 @@ Functions
 Defines
 -------
 
+
+- :ref:`exhale_define_c__api_8h_1a4241f838270253b885e1de02534bc273`
+
+- :ref:`exhale_define_c__api_8h_1a717daddad98d127813ba8ff5a715e929`
+
+- :ref:`exhale_define_c__api_8h_1a42634cb2690dce4d9af6c2a402fc903c`
 
 - :ref:`exhale_define_c__api_8h_1a01871644eed04162005df7faa5442f92`
 
