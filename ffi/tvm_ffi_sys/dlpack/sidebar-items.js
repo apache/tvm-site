@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"enum":["DLDataTypeCode","DLDeviceType"],"struct":["DLDataType","DLDevice","DLTensor"]};

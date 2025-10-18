@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"fn":["TVMFFIEnvCheckSignals","TVMFFIEnvGetDLPackManagedTensorAllocator","TVMFFIEnvGetStream","TVMFFIEnvModLookupFromImports","TVMFFIEnvModRegisterContextSymbol","TVMFFIEnvModRegisterSystemLibSymbol","TVMFFIEnvRegisterCAPI","TVMFFIEnvSetDLPackManagedTensorAllocator","TVMFFIEnvSetStream"],"type":["DLPackManagedTensorAllocator","TVMFFIStreamHandle"]};
