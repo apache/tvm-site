@@ -220,9 +220,15 @@ Program Listing for File tensor.h
        return ShapeView(obj->strides, obj->ndim);
      }
    
-     int64_t size(size_t idx) const { return get()->shape[idx]; }
+     int64_t size(int64_t idx) const {
+       const TensorObj* ptr = get();
+       return ptr->shape[idx >= 0 ? idx : (ptr->ndim + idx)];
+     }
    
-     int64_t stride(size_t idx) const { return get()->strides[idx]; }
+     int64_t stride(int64_t idx) const {
+       const TensorObj* ptr = get();
+       return ptr->strides[idx >= 0 ? idx : (ptr->ndim + idx)];
+     }
    
      int64_t numel() const { return this->shape().Product(); }
      uint64_t byte_offset() const { return get()->byte_offset; }
@@ -298,6 +304,11 @@ Program Listing for File tensor.h
      [[maybe_unused]] static constexpr bool _type_is_nullable = true;
      using ContainerType = TensorObj;
    
+     // the following code are convenient APIs redirections created to provide aten-style api
+     inline int32_t dim() { return ndim(); }
+     inline ShapeView sizes() const { return shape(); }
+     inline bool is_contiguous() const { return IsContiguous(); }
+   
     protected:
      const TensorObj* get() const { return static_cast<const TensorObj*>(ObjectRef::get()); }
      TensorObj* get_mutable() const { return const_cast<TensorObj*>(get()); }
@@ -340,13 +351,18 @@ Program Listing for File tensor.h
        return ShapeView(tensor_.strides, tensor_.ndim);
      }
    
-     int64_t size(size_t idx) const { return tensor_.shape[idx]; }
+     int64_t size(int64_t idx) const { return tensor_.shape[idx >= 0 ? idx : tensor_.ndim + idx]; }
    
-     int64_t stride(size_t idx) const { return tensor_.strides[idx]; }
+     int64_t stride(int64_t idx) const { return tensor_.strides[idx >= 0 ? idx : tensor_.ndim + idx]; }
    
      uint64_t byte_offset() const { return tensor_.byte_offset; }
    
      bool IsContiguous() const { return tvm::ffi::IsContiguous(tensor_); }
+   
+     // the following code are convenient APIs redirections created to provide aten-style api
+     inline int32_t dim() { return ndim(); }
+     inline ShapeView sizes() const { return shape(); }
+     inline bool is_contiguous() const { return IsContiguous(); }
    
     private:
      DLTensor tensor_;

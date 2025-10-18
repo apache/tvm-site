@@ -60,7 +60,7 @@
     <link rel="prev" title="Apache TVM FFI Documentation" href="../index.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-    <meta name="docbuild:last-update" content="Oct 17, 2025"/>
+    <meta name="docbuild:last-update" content="Oct 18, 2025"/>
   </head>
   
   
@@ -640,12 +640,13 @@ document.write(`
   <section id="quick-start">
 <h1>Quick Start<a class="headerlink" href="#quick-start" title="Link to this heading">#</a></h1>
 <p>This guide walks through shipping a minimal <code class="docutils literal notranslate"><span class="pre">add_one</span></code> function that computes
-<code class="docutils literal notranslate"><span class="pre">y</span> <span class="pre">=</span> <span class="pre">x</span> <span class="pre">+</span> <span class="pre">1</span></code> in C++ and CUDA.</p>
-<p>TVM-FFI’s Open ABI and FFI makes it possible to <strong>build once, ship everywhere</strong>. That said,
-a single shared library works across:</p>
+<code class="docutils literal notranslate"><span class="pre">y</span> <span class="pre">=</span> <span class="pre">x</span> <span class="pre">+</span> <span class="pre">1</span></code> in C++ and CUDA.
+TVM-FFI’s Open ABI and FFI make it possible to <strong>ship one library</strong> for multiple frameworks and languages.
+We can build a single shared library that works across:</p>
 <ul class="simple">
 <li><p><strong>ML frameworks</strong>, e.g. PyTorch, JAX, NumPy, CuPy, etc., and</p></li>
 <li><p><strong>languages</strong>, e.g. C++, Python, Rust, etc.</p></li>
+<li><p><strong>Python ABI versions</strong>, e.g. ship one wheel to support multiple Python versions, including free-threaded Python.</p></li>
 </ul>
 <div class="hint admonition" id="prerequisite">
 <p class="admonition-title">Prerequisite</p>
@@ -653,7 +654,7 @@ a single shared library works across:</p>
 <li><p>Python: 3.9 or newer</p></li>
 <li><p>Compiler: C++17-capable toolchain (GCC/Clang/MSVC)</p></li>
 <li><p>Optional ML frameworks for testing: NumPy, PyTorch, JAX, CuPy</p></li>
-<li><p>CUDA: Any modern version if you want to try the CUDA part</p></li>
+<li><p>CUDA: Any modern version (if you want to try the CUDA part)</p></li>
 <li><p>TVM-FFI installed via</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip<span class="w"> </span>install<span class="w"> </span>--reinstall<span class="w"> </span>--upgrade<span class="w"> </span>apache-tvm-ffi
 </pre></div>
@@ -667,7 +668,7 @@ a single shared library works across:</p>
 <span id="sec-cpp-source-code"></span><h3>Source Code<a class="headerlink" href="#source-code" title="Link to this heading">#</a></h3>
 <p>Suppose we implement a C++ function <code class="docutils literal notranslate"><span class="pre">AddOne</span></code> that performs elementwise <code class="docutils literal notranslate"><span class="pre">y</span> <span class="pre">=</span> <span class="pre">x</span> <span class="pre">+</span> <span class="pre">1</span></code> for a 1-D <code class="docutils literal notranslate"><span class="pre">float32</span></code> vector. The source code (C++, CUDA) is:</p>
 <div class="sphinx-tabs docutils container">
-<div aria-label="Tabbed content" class="closeable" role="tablist"><button aria-controls="panel-0-Qysr" aria-selected="true" class="sphinx-tabs-tab group-tab" id="tab-0-Qysr" name="Qysr" role="tab" tabindex="0">C++</button><button aria-controls="panel-0-Q1VEQQ==" aria-selected="false" class="sphinx-tabs-tab group-tab" id="tab-0-Q1VEQQ==" name="Q1VEQQ==" role="tab" tabindex="-1">CUDA</button></div><div aria-labelledby="tab-0-Qysr" class="sphinx-tabs-panel group-tab" id="panel-0-Qysr" name="Qysr" role="tabpanel" tabindex="0"><div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="c1">// File: main.cc</span>
+<div aria-label="Tabbed content" class="closeable" role="tablist"><button aria-controls="panel-0-Qysr" aria-selected="true" class="sphinx-tabs-tab group-tab" id="tab-0-Qysr" name="Qysr" role="tab" tabindex="0">C++</button><button aria-controls="panel-0-Q1VEQQ==" aria-selected="false" class="sphinx-tabs-tab group-tab" id="tab-0-Q1VEQQ==" name="Q1VEQQ==" role="tab" tabindex="-1">CUDA</button></div><div aria-labelledby="tab-0-Qysr" class="sphinx-tabs-panel group-tab" id="panel-0-Qysr" name="Qysr" role="tabpanel" tabindex="0"><div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="c1">// File: add_one_cpu.cc</span>
 <span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;tvm/ffi/container/tensor.h&gt;</span>
 <span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;tvm/ffi/function.h&gt;</span>
 
@@ -683,7 +684,7 @@ a single shared library works across:</p>
 <span class="w">  </span><span class="p">}</span>
 <span class="p">}</span>
 
-<span class="hll"><span class="n">TVM_FFI_DLL_EXPORT_TYPED_FUNC</span><span class="p">(</span><span class="n">add_one</span><span class="p">,</span><span class="w"> </span><span class="n">tvm_ffi_example_cpp</span><span class="o">::</span><span class="n">AddOne</span><span class="p">);</span>
+<span class="hll"><span class="n">TVM_FFI_DLL_EXPORT_TYPED_FUNC</span><span class="p">(</span><span class="n">add_one_cpu</span><span class="p">,</span><span class="w"> </span><span class="n">tvm_ffi_example_cpp</span><span class="o">::</span><span class="n">AddOne</span><span class="p">);</span>
 </span><span class="p">}</span>
 </pre></div>
 </div>
@@ -712,123 +713,154 @@ a single shared library works across:</p>
 </span><span class="w">  </span><span class="n">AddOneKernel</span><span class="o">&lt;&lt;&lt;</span><span class="n">blocks</span><span class="p">,</span><span class="w"> </span><span class="n">threads</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">,</span><span class="w"> </span><span class="n">stream</span><span class="o">&gt;&gt;&gt;</span><span class="p">(</span><span class="n">x_data</span><span class="p">,</span><span class="w"> </span><span class="n">y_data</span><span class="p">,</span><span class="w"> </span><span class="n">n</span><span class="p">);</span>
 <span class="p">}</span>
 
-<span class="hll"><span class="n">TVM_FFI_DLL_EXPORT_TYPED_FUNC</span><span class="p">(</span><span class="n">add_one</span><span class="p">,</span><span class="w"> </span><span class="n">tvm_ffi_example_cuda</span><span class="o">::</span><span class="n">AddOne</span><span class="p">);</span>
+<span class="hll"><span class="n">TVM_FFI_DLL_EXPORT_TYPED_FUNC</span><span class="p">(</span><span class="n">add_one_cuda</span><span class="p">,</span><span class="w"> </span><span class="n">tvm_ffi_example_cuda</span><span class="o">::</span><span class="n">AddOne</span><span class="p">);</span>
 </span><span class="p">}</span>
 </pre></div>
 </div>
 </div></div>
-<p>Macro <a class="reference internal" href="../reference/cpp/generated/define_function_8h_1a01777f12f8f99771331d679a0c1d2ed4.html#c.TVM_FFI_DLL_EXPORT_TYPED_FUNC" title="TVM_FFI_DLL_EXPORT_TYPED_FUNC"><code class="xref c c-macro docutils literal notranslate"><span class="pre">TVM_FFI_DLL_EXPORT_TYPED_FUNC</span></code></a> exports the C++ function <code class="docutils literal notranslate"><span class="pre">AddOne</span></code> with public name <code class="docutils literal notranslate"><span class="pre">add_one</span></code> in the resulting library.
-TVM-FFI looks it up at runtime to make the function available across languages.</p>
-<p>Class <a class="reference internal" href="../reference/cpp/generated/classtvm_1_1ffi_1_1TensorView.html#_CPPv4N3tvm3ffi10TensorViewE" title="tvm::ffi::TensorView"><code class="xref cpp cpp-class docutils literal notranslate"><span class="pre">tvm::ffi::TensorView</span></code></a> allows zero-copy interop with tensors from different ML frameworks:</p>
+<p>The macro <a class="reference internal" href="../reference/cpp/generated/define_function_8h_1a01777f12f8f99771331d679a0c1d2ed4.html#c.TVM_FFI_DLL_EXPORT_TYPED_FUNC" title="TVM_FFI_DLL_EXPORT_TYPED_FUNC"><code class="xref c c-macro docutils literal notranslate"><span class="pre">TVM_FFI_DLL_EXPORT_TYPED_FUNC</span></code></a> exports the C++ function <code class="docutils literal notranslate"><span class="pre">AddOne</span></code>
+as a TVM FFI compatible symbol with the name <code class="docutils literal notranslate"><span class="pre">add_one_cpu</span></code> or <code class="docutils literal notranslate"><span class="pre">add_one_cuda</span></code> in the resulting library.</p>
+<p>The class <a class="reference internal" href="../reference/cpp/generated/classtvm_1_1ffi_1_1TensorView.html#_CPPv4N3tvm3ffi10TensorViewE" title="tvm::ffi::TensorView"><code class="xref cpp cpp-class docutils literal notranslate"><span class="pre">tvm::ffi::TensorView</span></code></a> allows zero-copy interop with tensors from different ML frameworks:</p>
 <ul class="simple">
 <li><p>NumPy, CuPy,</p></li>
 <li><p>PyTorch, JAX, or</p></li>
 <li><p>any array type that supports the standard <a class="reference external" href="https://data-apis.org/array-api/2024.12/design_topics/data_interchange.html">DLPack protocol</a>.</p></li>
 </ul>
-<p>Finally, <a class="reference internal" href="../reference/cpp/generated/function_c__env__api_8h_1a8ce2ba89ca1d010a084b4c36ed6b2965.html#_CPPv418TVMFFIEnvGetStream7int32_t7int32_t" title="TVMFFIEnvGetStream"><code class="xref cpp cpp-func docutils literal notranslate"><span class="pre">TVMFFIEnvGetStream()</span></code></a> used in CUDA code makes it possible to launch a kernel on caller’s stream.</p>
+<p>Finally, <a class="reference internal" href="../reference/cpp/generated/function_c__env__api_8h_1a8ce2ba89ca1d010a084b4c36ed6b2965.html#_CPPv418TVMFFIEnvGetStream7int32_t7int32_t" title="TVMFFIEnvGetStream"><code class="xref cpp cpp-func docutils literal notranslate"><span class="pre">TVMFFIEnvGetStream()</span></code></a> can be used in the CUDA code to launch a kernel on the caller’s stream.</p>
 </section>
 <section id="compile-with-tvm-ffi">
 <span id="sec-cpp-compile-with-tvm-ffi"></span><h3>Compile with TVM-FFI<a class="headerlink" href="#compile-with-tvm-ffi" title="Link to this heading">#</a></h3>
-<p><strong>Raw command.</strong> Basic command to compile the source code can be as concise as below:</p>
+<p><strong>Raw command.</strong> We can use the following minimal commands to compile the source code:</p>
 <div class="sphinx-tabs docutils container">
-<div aria-label="Tabbed content" class="closeable" role="tablist"><button aria-controls="panel-1-Qysr" aria-selected="true" class="sphinx-tabs-tab group-tab" id="tab-1-Qysr" name="Qysr" role="tab" tabindex="0">C++</button><button aria-controls="panel-1-Q1VEQQ==" aria-selected="false" class="sphinx-tabs-tab group-tab" id="tab-1-Q1VEQQ==" name="Q1VEQQ==" role="tab" tabindex="-1">CUDA</button></div><div aria-labelledby="tab-1-Qysr" class="sphinx-tabs-panel group-tab" id="panel-1-Qysr" name="Qysr" role="tabpanel" tabindex="0"><div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>g++<span class="w"> </span>-shared<span class="w"> </span>-O3<span class="w"> </span>main.cc<span class="w">                   </span><span class="se">\</span>
+<div aria-label="Tabbed content" class="closeable" role="tablist"><button aria-controls="panel-1-Qysr" aria-selected="true" class="sphinx-tabs-tab group-tab" id="tab-1-Qysr" name="Qysr" role="tab" tabindex="0">C++</button><button aria-controls="panel-1-Q1VEQQ==" aria-selected="false" class="sphinx-tabs-tab group-tab" id="tab-1-Q1VEQQ==" name="Q1VEQQ==" role="tab" tabindex="-1">CUDA</button></div><div aria-labelledby="tab-1-Qysr" class="sphinx-tabs-panel group-tab" id="panel-1-Qysr" name="Qysr" role="tabpanel" tabindex="0"><div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>g++<span class="w"> </span>-shared<span class="w"> </span>-O3<span class="w"> </span>add_one_cpu.cc<span class="w">                   </span><span class="se">\</span>
 <span class="w">    </span>-fPIC<span class="w"> </span>-fvisibility<span class="o">=</span>hidden<span class="w">             </span><span class="se">\</span>
 <span class="w">    </span><span class="sb">`</span>tvm-ffi-config<span class="w"> </span>--cxxflags<span class="sb">`</span><span class="w">           </span><span class="se">\</span>
 <span class="w">    </span><span class="sb">`</span>tvm-ffi-config<span class="w"> </span>--ldflags<span class="sb">`</span><span class="w">            </span><span class="se">\</span>
 <span class="w">    </span><span class="sb">`</span>tvm-ffi-config<span class="w"> </span>--libs<span class="sb">`</span><span class="w">               </span><span class="se">\</span>
-<span class="w">    </span>-o<span class="w"> </span>libmain.so
+<span class="w">    </span>-o<span class="w"> </span>add_one_cpu.so
 </pre></div>
 </div>
-</div><div aria-labelledby="tab-1-Q1VEQQ==" class="sphinx-tabs-panel group-tab" hidden="true" id="panel-1-Q1VEQQ==" name="Q1VEQQ==" role="tabpanel" tabindex="0"><div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>nvcc<span class="w"> </span>-shared<span class="w"> </span>-O3<span class="w"> </span>main.cu<span class="w">                  </span><span class="se">\</span>
+</div><div aria-labelledby="tab-1-Q1VEQQ==" class="sphinx-tabs-panel group-tab" hidden="true" id="panel-1-Q1VEQQ==" name="Q1VEQQ==" role="tabpanel" tabindex="0"><div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>nvcc<span class="w"> </span>-shared<span class="w"> </span>-O3<span class="w"> </span>add_one_cuda.cu<span class="w">                  </span><span class="se">\</span>
 <span class="w">  </span>--compiler-options<span class="w"> </span>-fPIC<span class="w">                </span><span class="se">\</span>
 <span class="w">  </span>--compiler-options<span class="w"> </span>-fvisibility<span class="o">=</span>hidden<span class="w">  </span><span class="se">\</span>
 <span class="w">  </span><span class="sb">`</span>tvm-ffi-config<span class="w"> </span>--cxxflags<span class="sb">`</span><span class="w">             </span><span class="se">\</span>
 <span class="w">  </span><span class="sb">`</span>tvm-ffi-config<span class="w"> </span>--ldflags<span class="sb">`</span><span class="w">              </span><span class="se">\</span>
 <span class="w">  </span><span class="sb">`</span>tvm-ffi-config<span class="w"> </span>--libs<span class="sb">`</span><span class="w">                 </span><span class="se">\</span>
-<span class="w">  </span>-o<span class="w"> </span>libmain.so
+<span class="w">  </span>-o<span class="w"> </span>add_one_cuda.so
 </pre></div>
 </div>
 </div></div>
-<p>This produces a shared library <code class="docutils literal notranslate"><span class="pre">libmain.so</span></code>. TVM-FFI automatically embeds the metadata needed to call the function across language and framework boundaries.</p>
-<p><strong>CMake.</strong> As the preferred approach to build across platforms, CMake relies on CMake package <code class="docutils literal notranslate"><span class="pre">tvm_ffi</span></code>, which can be found via <code class="docutils literal notranslate"><span class="pre">tvm-ffi-config</span> <span class="pre">--cmakedir</span></code>.</p>
+<p>This step produces a shared library <code class="docutils literal notranslate"><span class="pre">add_one_cpu.so</span></code> and <code class="docutils literal notranslate"><span class="pre">add_one_cuda.so</span></code> that can be used across languages and frameworks.</p>
+<p><strong>CMake.</strong> As the preferred approach for building across platforms,
+CMake relies on the CMake package <code class="docutils literal notranslate"><span class="pre">tvm_ffi</span></code>, which can be found via <code class="docutils literal notranslate"><span class="pre">tvm-ffi-config</span> <span class="pre">--cmakedir</span></code>.</p>
 <div class="sphinx-tabs docutils container">
-<div aria-label="Tabbed content" class="closeable" role="tablist"><button aria-controls="panel-2-Qysr" aria-selected="true" class="sphinx-tabs-tab group-tab" id="tab-2-Qysr" name="Qysr" role="tab" tabindex="0">C++</button><button aria-controls="panel-2-Q1VEQQ==" aria-selected="false" class="sphinx-tabs-tab group-tab" id="tab-2-Q1VEQQ==" name="Q1VEQQ==" role="tab" tabindex="-1">CUDA</button></div><div aria-labelledby="tab-2-Qysr" class="sphinx-tabs-panel group-tab" id="panel-2-Qysr" name="Qysr" role="tabpanel" tabindex="0"><div class="highlight-cmake notranslate"><div class="highlight"><pre><span></span><span class="c"># Run `tvm-ffi-config --cmakedir` to find tvm-ffi targets</span>
-<span class="nb">find_package</span><span class="p">(</span><span class="s">Python</span><span class="w"> </span><span class="s">COMPONENTS</span><span class="w"> </span><span class="s">Interpreter</span><span class="w"> </span><span class="s">REQUIRED</span><span class="p">)</span>
+<div aria-label="Tabbed content" class="closeable" role="tablist"><button aria-controls="panel-2-Qysr" aria-selected="true" class="sphinx-tabs-tab group-tab" id="tab-2-Qysr" name="Qysr" role="tab" tabindex="0">C++</button><button aria-controls="panel-2-Q1VEQQ==" aria-selected="false" class="sphinx-tabs-tab group-tab" id="tab-2-Q1VEQQ==" name="Q1VEQQ==" role="tab" tabindex="-1">CUDA</button></div><div aria-labelledby="tab-2-Qysr" class="sphinx-tabs-panel group-tab" id="panel-2-Qysr" name="Qysr" role="tabpanel" tabindex="0"><div class="highlight-cmake notranslate"><div class="highlight"><pre><span></span><span class="nb">find_package</span><span class="p">(</span><span class="s">Python</span><span class="w"> </span><span class="s">COMPONENTS</span><span class="w"> </span><span class="s">Interpreter</span><span class="w"> </span><span class="s">REQUIRED</span><span class="p">)</span>
+<span class="c"># Run `tvm_ffi.config --cmakedir` to find tvm-ffi targets</span>
 <span class="nb">execute_process</span><span class="p">(</span>
-<span class="w">  </span><span class="s">COMMAND</span><span class="w"> </span><span class="s2">&quot;${Python_EXECUTABLE}&quot;</span><span class="w"> </span><span class="s">-m</span><span class="w"> </span><span class="s">tvm-ffi-config</span><span class="w"> </span><span class="s">--cmakedir</span>
+<span class="w">  </span><span class="s">COMMAND</span><span class="w"> </span><span class="s2">&quot;${Python_EXECUTABLE}&quot;</span><span class="w"> </span><span class="s">-m</span><span class="w"> </span><span class="s">tvm_ffi.config</span><span class="w"> </span><span class="s">--cmakedir</span>
 <span class="w">  </span><span class="s">OUTPUT_STRIP_TRAILING_WHITESPACE</span>
 <span class="w">  </span><span class="s">OUTPUT_VARIABLE</span><span class="w"> </span><span class="s">tvm_ffi_ROOT</span>
 <span class="p">)</span>
 <span class="nb">find_package</span><span class="p">(</span><span class="s">tvm_ffi</span><span class="w"> </span><span class="s">CONFIG</span><span class="w"> </span><span class="s">REQUIRED</span><span class="p">)</span>
-<span class="c"># Create C++ target `add_one_cpp`</span>
-<span class="nb">add_library</span><span class="p">(</span><span class="s">add_one_cpp</span><span class="w"> </span><span class="s">SHARED</span><span class="w"> </span><span class="s">main.cc</span><span class="p">)</span>
-<span class="nb">target_link_libraries</span><span class="p">(</span><span class="s">add_one_cpp</span><span class="w"> </span><span class="s">PRIVATE</span><span class="w"> </span><span class="s">tvm_ffi_header</span><span class="p">)</span>
-<span class="nb">target_link_libraries</span><span class="p">(</span><span class="s">add_one_cpp</span><span class="w"> </span><span class="s">PRIVATE</span><span class="w"> </span><span class="s">tvm_ffi_shared</span><span class="p">)</span>
+<span class="c"># Create C++ target `add_one_cpu`</span>
+<span class="nb">add_library</span><span class="p">(</span><span class="s">add_one_cpu</span><span class="w"> </span><span class="s">SHARED</span><span class="w"> </span><span class="s">add_one_cpu.cc</span><span class="p">)</span>
+<span class="nb">target_link_libraries</span><span class="p">(</span><span class="s">add_one_cpu</span><span class="w"> </span><span class="s">PRIVATE</span><span class="w"> </span><span class="s">tvm_ffi_header</span><span class="p">)</span>
+<span class="nb">target_link_libraries</span><span class="p">(</span><span class="s">add_one_cpu</span><span class="w"> </span><span class="s">PRIVATE</span><span class="w"> </span><span class="s">tvm_ffi_shared</span><span class="p">)</span>
+<span class="c"># show as add_one_cpu.so</span>
+<span class="nb">set_target_properties</span><span class="p">(</span><span class="s">add_one_cpu</span><span class="w"> </span><span class="s">PROPERTIES</span><span class="w"> </span><span class="s">PREFIX</span><span class="w"> </span><span class="s2">&quot;&quot;</span><span class="w"> </span><span class="s">SUFFIX</span><span class="w"> </span><span class="s2">&quot;.so&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
-</div><div aria-labelledby="tab-2-Q1VEQQ==" class="sphinx-tabs-panel group-tab" hidden="true" id="panel-2-Q1VEQQ==" name="Q1VEQQ==" role="tabpanel" tabindex="0"><div class="highlight-cmake notranslate"><div class="highlight"><pre><span></span><span class="c"># Run `tvm-ffi-config --cmakedir` to find tvm-ffi targets</span>
-<span class="nb">find_package</span><span class="p">(</span><span class="s">Python</span><span class="w"> </span><span class="s">COMPONENTS</span><span class="w"> </span><span class="s">Interpreter</span><span class="w"> </span><span class="s">REQUIRED</span><span class="p">)</span>
+</div><div aria-labelledby="tab-2-Q1VEQQ==" class="sphinx-tabs-panel group-tab" hidden="true" id="panel-2-Q1VEQQ==" name="Q1VEQQ==" role="tabpanel" tabindex="0"><div class="highlight-cmake notranslate"><div class="highlight"><pre><span></span><span class="nb">find_package</span><span class="p">(</span><span class="s">Python</span><span class="w"> </span><span class="s">COMPONENTS</span><span class="w"> </span><span class="s">Interpreter</span><span class="w"> </span><span class="s">REQUIRED</span><span class="p">)</span>
+<span class="c"># Run `tvm_ffi.config --cmakedir` to find tvm-ffi targets</span>
 <span class="nb">execute_process</span><span class="p">(</span>
-<span class="w">  </span><span class="s">COMMAND</span><span class="w"> </span><span class="s2">&quot;${Python_EXECUTABLE}&quot;</span><span class="w"> </span><span class="s">-m</span><span class="w"> </span><span class="s">tvm-ffi-config</span><span class="w"> </span><span class="s">--cmakedir</span>
+<span class="w">  </span><span class="s">COMMAND</span><span class="w"> </span><span class="s2">&quot;${Python_EXECUTABLE}&quot;</span><span class="w"> </span><span class="s">-m</span><span class="w"> </span><span class="s">tvm_ffi.config</span><span class="w"> </span><span class="s">--cmakedir</span>
 <span class="w">  </span><span class="s">OUTPUT_STRIP_TRAILING_WHITESPACE</span>
 <span class="w">  </span><span class="s">OUTPUT_VARIABLE</span><span class="w"> </span><span class="s">tvm_ffi_ROOT</span>
 <span class="p">)</span>
 <span class="nb">find_package</span><span class="p">(</span><span class="s">tvm_ffi</span><span class="w"> </span><span class="s">CONFIG</span><span class="w"> </span><span class="s">REQUIRED</span><span class="p">)</span>
 <span class="c"># Create C++ target `add_one_cuda`</span>
 <span class="nb">enable_language</span><span class="p">(</span><span class="s">CUDA</span><span class="p">)</span>
-<span class="nb">add_library</span><span class="p">(</span><span class="s">add_one_cuda</span><span class="w"> </span><span class="s">SHARED</span><span class="w"> </span><span class="s">main.cu</span><span class="p">)</span>
+<span class="nb">add_library</span><span class="p">(</span><span class="s">add_one_cuda</span><span class="w"> </span><span class="s">SHARED</span><span class="w"> </span><span class="s">add_one_cuda.cu</span><span class="p">)</span>
 <span class="nb">target_link_libraries</span><span class="p">(</span><span class="s">add_one_cuda</span><span class="w"> </span><span class="s">PRIVATE</span><span class="w"> </span><span class="s">tvm_ffi_header</span><span class="p">)</span>
 <span class="nb">target_link_libraries</span><span class="p">(</span><span class="s">add_one_cuda</span><span class="w"> </span><span class="s">PRIVATE</span><span class="w"> </span><span class="s">tvm_ffi_shared</span><span class="p">)</span>
+<span class="c"># show as add_one_cuda.so</span>
+<span class="nb">set_target_properties</span><span class="p">(</span><span class="s">add_one_cuda</span><span class="w"> </span><span class="s">PROPERTIES</span><span class="w"> </span><span class="s">PREFIX</span><span class="w"> </span><span class="s2">&quot;&quot;</span><span class="w"> </span><span class="s">SUFFIX</span><span class="w"> </span><span class="s2">&quot;.so&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
 </div></div>
 <div class="admonition hint">
 <p class="admonition-title">Hint</p>
-<p>For a single-file C++/CUDA, a convenient method <a class="reference internal" href="../reference/python/cpp/generated/tvm_ffi.cpp.load_inline.html#tvm_ffi.cpp.load_inline" title="tvm_ffi.cpp.load_inline"><code class="xref py py-func docutils literal notranslate"><span class="pre">tvm_ffi.cpp.load_inline()</span></code></a>
-is provided to minimize boilerplate code in compilation, linking and loading.</p>
+<p>For a single-file C++/CUDA project, a convenient method <a class="reference internal" href="../reference/python/cpp/generated/tvm_ffi.cpp.load_inline.html#tvm_ffi.cpp.load_inline" title="tvm_ffi.cpp.load_inline"><code class="xref py py-func docutils literal notranslate"><span class="pre">tvm_ffi.cpp.load_inline()</span></code></a>
+is provided to minimize boilerplate code in compilation, linking, and loading.</p>
 </div>
-<p>Note that <code class="docutils literal notranslate"><span class="pre">libmain.so</span></code> is neutral and agnostic to:</p>
+<p>The resulting <code class="docutils literal notranslate"><span class="pre">add_one_cpu.so</span></code> and <code class="docutils literal notranslate"><span class="pre">add_one_cuda.so</span></code> are minimal libraries that are agnostic to:</p>
 <ul class="simple">
 <li><p>Python version/ABI, because it is pure C++ and not compiled or linked against Python</p></li>
 <li><p>C++ ABI, because TVM-FFI interacts with the artifact only via stable C APIs</p></li>
-<li><p>Frontend languages, which can be C++, Rust, Python, TypeScript, etc.</p></li>
+<li><p>Languages, which can be C++, Rust or Python.</p></li>
 </ul>
 </section>
 </section>
 <section id="ship-across-ml-frameworks">
 <span id="sec-use-across-framework"></span><h2>Ship Across ML Frameworks<a class="headerlink" href="#ship-across-ml-frameworks" title="Link to this heading">#</a></h2>
-<p>TVM FFI’s Python package provides <a class="reference internal" href="../reference/python/generated/tvm_ffi.load_module.html#tvm_ffi.load_module" title="tvm_ffi.load_module"><code class="xref py py-func docutils literal notranslate"><span class="pre">tvm_ffi.load_module()</span></code></a>, which loads either C++ or CUDA’s <code class="docutils literal notranslate"><span class="pre">libmain.so</span></code> into <a class="reference internal" href="../reference/python/generated/tvm_ffi.Module.html#tvm_ffi.Module" title="tvm_ffi.Module"><code class="xref py py-class docutils literal notranslate"><span class="pre">tvm_ffi.Module</span></code></a>.</p>
+<p>TVM-FFI’s Python package provides <a class="reference internal" href="../reference/python/generated/tvm_ffi.load_module.html#tvm_ffi.load_module" title="tvm_ffi.load_module"><code class="xref py py-func docutils literal notranslate"><span class="pre">tvm_ffi.load_module()</span></code></a>, which can load either
+the <code class="docutils literal notranslate"><span class="pre">add_one_cpu.so</span></code> or <code class="docutils literal notranslate"><span class="pre">add_one_cuda.so</span></code> into <a class="reference internal" href="../reference/python/generated/tvm_ffi.Module.html#tvm_ffi.Module" title="tvm_ffi.Module"><code class="xref py py-class docutils literal notranslate"><span class="pre">tvm_ffi.Module</span></code></a>.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">tvm_ffi</span>
-<span class="n">mod</span>  <span class="p">:</span> <span class="n">tvm_ffi</span><span class="o">.</span><span class="n">Module</span>   <span class="o">=</span> <span class="n">tvm_ffi</span><span class="o">.</span><span class="n">load_module</span><span class="p">(</span><span class="s2">&quot;libmain.so&quot;</span><span class="p">)</span>
-<span class="n">func</span> <span class="p">:</span> <span class="n">tvm_ffi</span><span class="o">.</span><span class="n">Function</span> <span class="o">=</span> <span class="n">mod</span><span class="o">.</span><span class="n">add_one</span>
+<span class="n">mod</span>  <span class="p">:</span> <span class="n">tvm_ffi</span><span class="o">.</span><span class="n">Module</span>   <span class="o">=</span> <span class="n">tvm_ffi</span><span class="o">.</span><span class="n">load_module</span><span class="p">(</span><span class="s2">&quot;add_one_cpu.so&quot;</span><span class="p">)</span>
+<span class="n">func</span> <span class="p">:</span> <span class="n">tvm_ffi</span><span class="o">.</span><span class="n">Function</span> <span class="o">=</span> <span class="n">mod</span><span class="o">.</span><span class="n">add_one_cpu</span>
 </pre></div>
 </div>
-<p><code class="docutils literal notranslate"><span class="pre">mod[&quot;add_one&quot;]</span></code> retrieves a callable <a class="reference internal" href="../reference/python/generated/tvm_ffi.Function.html#tvm_ffi.Function" title="tvm_ffi.Function"><code class="xref py py-class docutils literal notranslate"><span class="pre">tvm_ffi.Function</span></code></a> that accepts tensors from host frameworks directly, which can be zero-copy incorporated in all popular ML frameworks. This process is done seamlessly without any boilerplate code, and with ultra low latency.</p>
+<p><code class="docutils literal notranslate"><span class="pre">mod.add_one_cpu</span></code> retrieves a callable <a class="reference internal" href="../reference/python/generated/tvm_ffi.Function.html#tvm_ffi.Function" title="tvm_ffi.Function"><code class="xref py py-class docutils literal notranslate"><span class="pre">tvm_ffi.Function</span></code></a> that accepts tensors from host frameworks
+directly, which can be zero-copy incorporated into all popular ML frameworks. This process is done seamlessly
+without any boilerplate code and with extremely low latency.
+We can then use these functions in the following ways:</p>
 <div class="sd-tab-set docutils">
 <input checked="checked" id="sd-tab-item-0" name="sd-tab-set-0" type="radio">
 <label class="sd-tab-label" for="sd-tab-item-0">
-PyTorch (C++/CUDA)</label><div class="sd-tab-content docutils">
+PyTorch</label><div class="sd-tab-content docutils">
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">torch</span>
-<span class="n">device</span> <span class="o">=</span> <span class="s2">&quot;cpu&quot;</span> <span class="c1"># or &quot;cuda&quot;</span>
+<span class="c1"># cpu also works by changing the module to add_one_cpu.so and device to &quot;cpu&quot;</span>
+<span class="n">mod</span> <span class="o">=</span> <span class="n">tvm_ffi</span><span class="o">.</span><span class="n">load_module</span><span class="p">(</span><span class="s2">&quot;add_one_cuda.so&quot;</span><span class="p">)</span>
+<span class="n">device</span> <span class="o">=</span> <span class="s2">&quot;cuda&quot;</span>
 <span class="n">x</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">tensor</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">float32</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="n">device</span><span class="p">)</span>
 <span class="n">y</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">empty_like</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
-<span class="n">func</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+<span class="n">mod</span><span class="o">.</span><span class="n">add_one_cuda</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="n">y</span><span class="p">)</span>
 </pre></div>
 </div>
 </div>
 <input id="sd-tab-item-1" name="sd-tab-set-0" type="radio">
 <label class="sd-tab-label" for="sd-tab-item-1">
-JAX (C++/CUDA)</label><div class="sd-tab-content docutils">
-<p>Upcoming. See <a class="reference external" href="https://github.com/nvidia/jax-tvm-ffi">jax-tvm-ffi</a> for preview.</p>
+JAX</label><div class="sd-tab-content docutils">
+<p>Support via <a class="reference external" href="https://github.com/nvidia/jax-tvm-ffi">jax-tvm-ffi</a></p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">jax</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">jax.numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">jnp</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">jax_tvm_ffi</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">tvm_ffi</span>
+
+<span class="n">mod</span> <span class="o">=</span> <span class="n">tvm_ffi</span><span class="o">.</span><span class="n">load_module</span><span class="p">(</span><span class="s2">&quot;add_one_cuda.so&quot;</span><span class="p">)</span>
+
+<span class="c1"># Register the function with JAX</span>
+<span class="n">jax_tvm_ffi</span><span class="o">.</span><span class="n">register_ffi_target</span><span class="p">(</span><span class="s2">&quot;add_one_cuda&quot;</span><span class="p">,</span> <span class="n">mod</span><span class="o">.</span><span class="n">add_one_cuda</span><span class="p">,</span> <span class="n">platform</span><span class="o">=</span><span class="s2">&quot;cuda&quot;</span><span class="p">)</span>
+<span class="n">x</span> <span class="o">=</span> <span class="n">jnp</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">2.0</span><span class="p">,</span> <span class="mf">3.0</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">jnp</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
+<span class="n">y</span> <span class="o">=</span> <span class="n">jax</span><span class="o">.</span><span class="n">ffi</span><span class="o">.</span><span class="n">ffi_call</span><span class="p">(</span>
+    <span class="s2">&quot;add_one_cuda&quot;</span><span class="p">,</span>
+    <span class="n">jax</span><span class="o">.</span><span class="n">ShapeDtypeStruct</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="n">x</span><span class="o">.</span><span class="n">dtype</span><span class="p">),</span>
+    <span class="n">vmap_method</span><span class="o">=</span><span class="s2">&quot;broadcast_all&quot;</span><span class="p">,</span>
+<span class="p">)(</span><span class="n">x</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">y</span><span class="p">)</span>
+</pre></div>
+</div>
 </div>
 <input id="sd-tab-item-2" name="sd-tab-set-0" type="radio">
 <label class="sd-tab-label" for="sd-tab-item-2">
-NumPy (C++)</label><div class="sd-tab-content docutils">
+NumPy (CPU)</label><div class="sd-tab-content docutils">
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+
+<span class="n">mod</span> <span class="o">=</span> <span class="n">tvm_ffi</span><span class="o">.</span><span class="n">load_module</span><span class="p">(</span><span class="s2">&quot;add_one_cpu.so&quot;</span><span class="p">)</span>
 <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
 <span class="n">y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty_like</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
-<span class="n">func</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+<span class="n">mod</span><span class="o">.</span><span class="n">add_one_cpu</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="n">y</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -837,9 +869,11 @@ NumPy (C++)</label><div class="sd-tab-content docutils">
 <label class="sd-tab-label" for="sd-tab-item-3">
 CuPy (CUDA)</label><div class="sd-tab-content docutils">
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">cupy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">cp</span>
+
+<span class="n">mod</span> <span class="o">=</span> <span class="n">tvm_ffi</span><span class="o">.</span><span class="n">load_module</span><span class="p">(</span><span class="s2">&quot;add_one_cuda.so&quot;</span><span class="p">)</span>
 <span class="n">x</span> <span class="o">=</span> <span class="n">cp</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">],</span> <span class="n">dtype</span><span class="o">=</span><span class="n">cp</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span>
 <span class="n">y</span> <span class="o">=</span> <span class="n">cp</span><span class="o">.</span><span class="n">empty_like</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
-<span class="n">func</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+<span class="n">mod</span><span class="o">.</span><span class="n">add_one_cuda</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="n">y</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -849,48 +883,109 @@ CuPy (CUDA)</label><div class="sd-tab-content docutils">
 <section id="ship-across-languages">
 <h2>Ship Across Languages<a class="headerlink" href="#ship-across-languages" title="Link to this heading">#</a></h2>
 <p>TVM-FFI’s core loading mechanism is ABI stable and works across language boundaries.
-That said, a single artifact can be loaded in every language TVM-FFI supports,
-without having to recompile different artifact targeting different ABIs or languages.</p>
+A single artifact can be loaded in every language TVM-FFI supports,
+without having to recompile different artifacts targeting different ABIs or languages.</p>
 <section id="python">
 <h3>Python<a class="headerlink" href="#python" title="Link to this heading">#</a></h3>
-<p>As shown in the <a class="reference internal" href="#sec-use-across-framework"><span class="std std-ref">previous section</span></a>, <a class="reference internal" href="../reference/python/generated/tvm_ffi.load_module.html#tvm_ffi.load_module" title="tvm_ffi.load_module"><code class="xref py py-func docutils literal notranslate"><span class="pre">tvm_ffi.load_module()</span></code></a> loads a language- and framework-neutral <code class="docutils literal notranslate"><span class="pre">libmain.so</span></code> and supports incorporating it into all Python frameworks that implements the standard <a class="reference external" href="https://data-apis.org/array-api/2024.12/design_topics/data_interchange.html">DLPack protocol</a>.</p>
+<p>As shown in the <a class="reference internal" href="#sec-use-across-framework"><span class="std std-ref">previous section</span></a>, <a class="reference internal" href="../reference/python/generated/tvm_ffi.load_module.html#tvm_ffi.load_module" title="tvm_ffi.load_module"><code class="xref py py-func docutils literal notranslate"><span class="pre">tvm_ffi.load_module()</span></code></a> loads a language-
+and framework-independent <code class="docutils literal notranslate"><span class="pre">add_one_cpu.so</span></code> or <code class="docutils literal notranslate"><span class="pre">add_one_cuda.so</span></code> and can be used to incorporate it into all Python
+array frameworks that implement the standard <a class="reference external" href="https://data-apis.org/array-api/2024.12/design_topics/data_interchange.html">DLPack protocol</a>.</p>
 </section>
 <section id="c">
 <h3>C++<a class="headerlink" href="#c" title="Link to this heading">#</a></h3>
-<p>TVM-FFI’s C++ API <a class="reference internal" href="../reference/cpp/generated/classtvm_1_1ffi_1_1Module.html#_CPPv4N3tvm3ffi6Module12LoadFromFileERK6String" title="tvm::ffi::Module::LoadFromFile"><code class="xref cpp cpp-func docutils literal notranslate"><span class="pre">tvm::ffi::Module::LoadFromFile()</span></code></a> loads <code class="docutils literal notranslate"><span class="pre">libmain.so</span></code> and can be used directly in C/C++ with no Python dependency. Note that it is also ABI stable and can be used without having to worry about C++ compilers and ABIs.</p>
-<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="c1">// File: test_load.cc</span>
+<p>TVM-FFI’s C++ API <a class="reference internal" href="../reference/cpp/generated/classtvm_1_1ffi_1_1Module.html#_CPPv4N3tvm3ffi6Module12LoadFromFileERK6String" title="tvm::ffi::Module::LoadFromFile"><code class="xref cpp cpp-func docutils literal notranslate"><span class="pre">tvm::ffi::Module::LoadFromFile()</span></code></a> loads <code class="docutils literal notranslate"><span class="pre">add_one_cpu.so</span></code> or <code class="docutils literal notranslate"><span class="pre">add_one_cuda.so</span></code> and
+can be used directly in C/C++ with no Python dependency.</p>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="c1">// File: run_example.cc</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;tvm/ffi/container/tensor.h&gt;</span>
 <span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;tvm/ffi/extra/module.h&gt;</span>
 
+<span class="k">namespace</span><span class="w"> </span><span class="nn">ffi</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nn">tvm</span><span class="o">::</span><span class="nn">ffi</span><span class="p">;</span>
+<span class="k">struct</span><span class="w"> </span><span class="nc">CPUNDAlloc</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="kt">void</span><span class="w"> </span><span class="nf">AllocData</span><span class="p">(</span><span class="n">DLTensor</span><span class="o">*</span><span class="w"> </span><span class="n">tensor</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">tensor</span><span class="o">-&gt;</span><span class="n">data</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">malloc</span><span class="p">(</span><span class="n">ffi</span><span class="o">::</span><span class="n">GetDataSize</span><span class="p">(</span><span class="o">*</span><span class="n">tensor</span><span class="p">));</span><span class="w"> </span><span class="p">}</span>
+<span class="w">  </span><span class="kt">void</span><span class="w"> </span><span class="nf">FreeData</span><span class="p">(</span><span class="n">DLTensor</span><span class="o">*</span><span class="w"> </span><span class="n">tensor</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">free</span><span class="p">(</span><span class="n">tensor</span><span class="o">-&gt;</span><span class="n">data</span><span class="p">);</span><span class="w"> </span><span class="p">}</span>
+<span class="p">};</span>
+
+<span class="kr">inline</span><span class="w"> </span><span class="n">ffi</span><span class="o">::</span><span class="n">Tensor</span><span class="w"> </span><span class="nf">Empty</span><span class="p">(</span><span class="n">ffi</span><span class="o">::</span><span class="n">Shape</span><span class="w"> </span><span class="n">shape</span><span class="p">,</span><span class="w"> </span><span class="n">DLDataType</span><span class="w"> </span><span class="n">dtype</span><span class="p">,</span><span class="w"> </span><span class="n">DLDevice</span><span class="w"> </span><span class="n">device</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="k">return</span><span class="w"> </span><span class="n">ffi</span><span class="o">::</span><span class="n">Tensor</span><span class="o">::</span><span class="n">FromNDAlloc</span><span class="p">(</span><span class="n">CPUNDAlloc</span><span class="p">(),</span><span class="w"> </span><span class="n">shape</span><span class="p">,</span><span class="w"> </span><span class="n">dtype</span><span class="p">,</span><span class="w"> </span><span class="n">device</span><span class="p">);</span>
+<span class="p">}</span>
+
 <span class="kt">int</span><span class="w"> </span><span class="nf">main</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
-<span class="w">  </span><span class="k">namespace</span><span class="w"> </span><span class="nn">ffi</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nn">tvm</span><span class="o">::</span><span class="nn">ffi</span><span class="p">;</span>
-<span class="w">  </span><span class="n">ffi</span><span class="o">::</span><span class="n">Module</span><span class="w">   </span><span class="n">mod</span><span class="w">  </span><span class="o">=</span><span class="w"> </span><span class="n">ffi</span><span class="o">::</span><span class="n">Module</span><span class="o">::</span><span class="n">LoadFromFile</span><span class="p">(</span><span class="s">&quot;libmain.so&quot;</span><span class="p">);</span>
-<span class="w">  </span><span class="n">ffi</span><span class="o">::</span><span class="n">Function</span><span class="w"> </span><span class="n">func</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">mod</span><span class="o">-&gt;</span><span class="n">GetFunction</span><span class="p">(</span><span class="s">&quot;add_one&quot;</span><span class="p">).</span><span class="n">value</span><span class="p">();</span>
+<span class="w">  </span><span class="c1">// load the module</span>
+<span class="w">  </span><span class="n">ffi</span><span class="o">::</span><span class="n">Module</span><span class="w"> </span><span class="n">mod</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ffi</span><span class="o">::</span><span class="n">Module</span><span class="o">::</span><span class="n">LoadFromFile</span><span class="p">(</span><span class="s">&quot;add_one_cpu.so&quot;</span><span class="p">);</span>
+
+<span class="w">  </span><span class="c1">// create an Tensor, alternatively, one can directly pass in a DLTensor*</span>
+<span class="w">  </span><span class="n">ffi</span><span class="o">::</span><span class="n">Tensor</span><span class="w"> </span><span class="n">x</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Empty</span><span class="p">({</span><span class="mi">5</span><span class="p">},</span><span class="w"> </span><span class="n">DLDataType</span><span class="p">({</span><span class="n">kDLFloat</span><span class="p">,</span><span class="w"> </span><span class="mi">32</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">}),</span><span class="w"> </span><span class="n">DLDevice</span><span class="p">({</span><span class="n">kDLCPU</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">}));</span>
+<span class="w">  </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="mi">5</span><span class="p">;</span><span class="w"> </span><span class="o">++</span><span class="n">i</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="k">reinterpret_cast</span><span class="o">&lt;</span><span class="kt">float</span><span class="o">*&gt;</span><span class="p">(</span><span class="n">x</span><span class="p">.</span><span class="n">data_ptr</span><span class="p">())[</span><span class="n">i</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">static_cast</span><span class="o">&lt;</span><span class="kt">float</span><span class="o">&gt;</span><span class="p">(</span><span class="n">i</span><span class="p">);</span>
+<span class="w">  </span><span class="p">}</span>
+
+<span class="w">  </span><span class="n">ffi</span><span class="o">::</span><span class="n">Function</span><span class="w"> </span><span class="n">add_one_cpu</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">mod</span><span class="o">-&gt;</span><span class="n">GetFunction</span><span class="p">(</span><span class="s">&quot;add_one_cpu&quot;</span><span class="p">).</span><span class="n">value</span><span class="p">();</span>
+<span class="w">  </span><span class="n">add_one_cpu</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="w"> </span><span class="n">x</span><span class="p">);</span>
+
+<span class="w">  </span><span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">&quot;x after add_one_cpu(x, x)&quot;</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
+<span class="w">  </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span><span class="w"> </span><span class="n">i</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="mi">5</span><span class="p">;</span><span class="w"> </span><span class="o">++</span><span class="n">i</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="k">reinterpret_cast</span><span class="o">&lt;</span><span class="kt">float</span><span class="o">*&gt;</span><span class="p">(</span><span class="n">x</span><span class="p">.</span><span class="n">data_ptr</span><span class="p">())[</span><span class="n">i</span><span class="p">]</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">&quot; &quot;</span><span class="p">;</span>
+<span class="w">  </span><span class="p">}</span>
+<span class="w">  </span><span class="n">std</span><span class="o">::</span><span class="n">cout</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">endl</span><span class="p">;</span>
 <span class="w">  </span><span class="k">return</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
 <span class="p">}</span>
 </pre></div>
 </div>
 <p>Compile it with:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>g++<span class="w"> </span>-fvisibility<span class="o">=</span>hidden<span class="w"> </span>-O3<span class="w">               </span><span class="se">\</span>
-<span class="w">    </span>test_load.cc<span class="w">                          </span><span class="se">\</span>
+<span class="w">    </span>run_example.cc<span class="w">                        </span><span class="se">\</span>
 <span class="w">    </span><span class="sb">`</span>tvm-ffi-config<span class="w"> </span>--cxxflags<span class="sb">`</span><span class="w">           </span><span class="se">\</span>
 <span class="w">    </span><span class="sb">`</span>tvm-ffi-config<span class="w"> </span>--ldflags<span class="sb">`</span><span class="w">            </span><span class="se">\</span>
 <span class="w">    </span><span class="sb">`</span>tvm-ffi-config<span class="w"> </span>--libs<span class="sb">`</span><span class="w">               </span><span class="se">\</span>
 <span class="w">    </span>-Wl,-rpath,<span class="sb">`</span>tvm-ffi-config<span class="w"> </span>--libdir<span class="sb">`</span><span class="w">  </span><span class="se">\</span>
-<span class="w">    </span>-o<span class="w"> </span>test_load
+<span class="w">    </span>-o<span class="w"> </span>run_example
 
-./test_load
+./run_example
 </pre></div>
+</div>
+<div class="admonition hint">
+<p class="admonition-title">Hint</p>
+<p>Sometimes it may be desirable to directly bundle the exported module into the same binary as the main program.
+In such cases, we can use <a class="reference internal" href="../reference/cpp/generated/classtvm_1_1ffi_1_1Function.html#_CPPv4N3tvm3ffi8Function11FromExternCEPv18TVMFFISafeCallTypePFvPvE" title="tvm::ffi::Function::FromExternC"><code class="xref cpp cpp-func docutils literal notranslate"><span class="pre">tvm::ffi::Function::FromExternC()</span></code></a> to create a
+<a class="reference internal" href="../reference/cpp/generated/classtvm_1_1ffi_1_1Function.html#_CPPv4N3tvm3ffi8FunctionE" title="tvm::ffi::Function"><code class="xref cpp cpp-class docutils literal notranslate"><span class="pre">tvm::ffi::Function</span></code></a> from the exported symbol, or directly use
+<a class="reference internal" href="../reference/cpp/generated/classtvm_1_1ffi_1_1Function.html#_CPPv4IDpEN3tvm3ffi8Function13InvokeExternCE3AnyPv18TVMFFISafeCallTypeDpRR4Args" title="tvm::ffi::Function::InvokeExternC"><code class="xref cpp cpp-func docutils literal notranslate"><span class="pre">tvm::ffi::Function::InvokeExternC()</span></code></a> to invoke the function. This feature can be useful
+when the exported module is generated by another DSL compiler matching the ABI.</p>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="c1">// File: test_bundle.cc, link with libmain.o</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;tvm/ffi/function.h&gt;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;tvm/ffi/container/tensor.h&gt;</span>
+
+<span class="c1">// declare reference to the exported symbol</span>
+<span class="k">extern</span><span class="w"> </span><span class="s">&quot;C&quot;</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="n">__tvm_ffi_add_one</span><span class="p">(</span><span class="kt">void</span><span class="o">*</span><span class="p">,</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="n">TVMFFIAny</span><span class="o">*</span><span class="p">,</span><span class="w"> </span><span class="kt">int32_t</span><span class="p">,</span><span class="w"> </span><span class="n">TVMFFIAny</span><span class="o">*</span><span class="p">);</span>
+
+<span class="k">namespace</span><span class="w"> </span><span class="nn">ffi</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nn">tvm</span><span class="o">::</span><span class="nn">ffi</span><span class="p">;</span>
+
+<span class="kt">int</span><span class="w"> </span><span class="nf">bundle_add_one</span><span class="p">(</span><span class="n">ffi</span><span class="o">::</span><span class="n">TensorView</span><span class="w"> </span><span class="n">x</span><span class="p">,</span><span class="w"> </span><span class="n">ffi</span><span class="o">::</span><span class="n">TensorView</span><span class="w"> </span><span class="n">y</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="kt">void</span><span class="o">*</span><span class="w"> </span><span class="n">closure_handle</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">nullptr</span><span class="p">;</span>
+<span class="w">  </span><span class="n">ffi</span><span class="o">::</span><span class="n">Function</span><span class="o">::</span><span class="n">InvokeExternC</span><span class="p">(</span><span class="n">closure_handle</span><span class="p">,</span><span class="w"> </span><span class="n">__tvm_ffi_add_one</span><span class="p">,</span><span class="w"> </span><span class="n">x</span><span class="p">,</span><span class="w"> </span><span class="n">y</span><span class="p">);</span>
+<span class="w">  </span><span class="k">return</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+<span class="p">}</span>
+</pre></div>
+</div>
 </div>
 </section>
 <section id="rust">
 <h3>Rust<a class="headerlink" href="#rust" title="Link to this heading">#</a></h3>
-<p>TVM-FFI’s Rust API <code class="docutils literal notranslate"><span class="pre">tvm_ffi::Module::load_from_file</span></code> loads <code class="docutils literal notranslate"><span class="pre">libmain.so</span></code>, and then retrieves a function <code class="docutils literal notranslate"><span class="pre">add_one</span></code> from it. This procedure is strictly identical to C++ and Python:</p>
-<div class="highlight-rust notranslate"><div class="highlight"><pre><span></span><span class="k">fn</span><span class="w"> </span><span class="nf">load_add_one</span><span class="p">()</span><span class="w"> </span><span class="p">-&gt;</span><span class="w"> </span><span class="nb">Result</span><span class="o">&lt;</span><span class="n">tvm_ffi</span><span class="p">::</span><span class="n">Function</span><span class="o">&gt;</span><span class="w"> </span><span class="p">{</span>
-<span class="w">    </span><span class="kd">let</span><span class="w"> </span><span class="n">module</span><span class="p">:</span><span class="w"> </span><span class="nc">tvm_ffi</span><span class="p">::</span><span class="n">Module</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">tvm_ffi</span><span class="p">::</span><span class="n">Module</span><span class="p">::</span><span class="n">load_from_file</span><span class="p">(</span><span class="s">&quot;libmain.so&quot;</span><span class="p">)</span><span class="o">?</span><span class="p">;</span>
-<span class="w">    </span><span class="kd">let</span><span class="w"> </span><span class="n">result</span><span class="p">:</span><span class="w"> </span><span class="nc">tvm_ffi</span><span class="p">::</span><span class="n">Function</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">module</span><span class="p">.</span><span class="n">get_function</span><span class="p">(</span><span class="s">&quot;add_one&quot;</span><span class="p">)</span><span class="o">?</span><span class="p">;</span>
-<span class="w">    </span><span class="nb">Ok</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
+<p>TVM-FFI’s Rust API <code class="docutils literal notranslate"><span class="pre">tvm_ffi::Module::load_from_file</span></code> loads <code class="docutils literal notranslate"><span class="pre">add_one_cpu.so</span></code> or <code class="docutils literal notranslate"><span class="pre">add_one_cuda.so</span></code> and
+then retrieves a function <code class="docutils literal notranslate"><span class="pre">add_one_cpu</span></code> or <code class="docutils literal notranslate"><span class="pre">add_one_cuda</span></code> from it.
+This procedure is identical to those in C++ and Python:</p>
+<div class="highlight-rust notranslate"><div class="highlight"><pre><span></span><span class="k">fn</span><span class="w"> </span><span class="nf">run_add_one</span><span class="p">(</span><span class="n">x</span><span class="p">:</span><span class="w"> </span><span class="kp">&amp;</span><span class="nc">Tensor</span><span class="p">,</span><span class="w"> </span><span class="n">y</span><span class="p">:</span><span class="w"> </span><span class="kp">&amp;</span><span class="nc">Tensor</span><span class="p">)</span><span class="w"> </span><span class="p">-&gt;</span><span class="w"> </span><span class="nb">Result</span><span class="o">&lt;</span><span class="p">()</span><span class="o">&gt;</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="kd">let</span><span class="w"> </span><span class="n">module</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">tvm_ffi</span><span class="p">::</span><span class="n">Module</span><span class="p">::</span><span class="n">load_from_file</span><span class="p">(</span><span class="s">&quot;add_one_cpu.so&quot;</span><span class="p">)</span><span class="o">?</span><span class="p">;</span>
+<span class="w">    </span><span class="kd">let</span><span class="w"> </span><span class="k">fn</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">module</span><span class="p">.</span><span class="n">get_function</span><span class="p">(</span><span class="s">&quot;add_one_cpu&quot;</span><span class="p">)</span><span class="o">?</span><span class="p">;</span>
+<span class="w">    </span><span class="kd">let</span><span class="w"> </span><span class="n">typed_fn</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">into_typed_fn</span><span class="o">!</span><span class="p">(</span><span class="k">fn</span><span class="p">,</span><span class="w"> </span><span class="nb">Fn</span><span class="p">(</span><span class="o">&amp;</span><span class="n">Tensor</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">Tensor</span><span class="p">)</span><span class="w"> </span><span class="p">-&gt;</span><span class="w"> </span><span class="nb">Result</span><span class="o">&lt;</span><span class="p">()</span><span class="o">&gt;</span><span class="p">);</span>
+<span class="w">    </span><span class="n">typed_fn</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="w"> </span><span class="n">y</span><span class="p">)</span><span class="o">?</span><span class="p">;</span>
+<span class="w">    </span><span class="nb">Ok</span><span class="p">(())</span>
 <span class="p">}</span>
 </pre></div>
+</div>
+<div class="admonition hint">
+<p class="admonition-title">Hint</p>
+<p>We can also use the Rust API to target the TVM FFI ABI. This means we can use Rust to write the function
+implementation and export to Python/C++ in the same fashion.</p>
 </div>
 </section>
 </section>
@@ -899,7 +994,7 @@ without having to recompile different artifact targeting different ABIs or langu
 <ul class="simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">OSError:</span> <span class="pre">cannot</span> <span class="pre">open</span> <span class="pre">shared</span> <span class="pre">object</span> <span class="pre">file</span></code>: Add an rpath (Linux/macOS) or ensure the DLL is on <code class="docutils literal notranslate"><span class="pre">PATH</span></code> (Windows). Example run-path: <code class="docutils literal notranslate"><span class="pre">-Wl,-rpath,`tvm-ffi-config</span> <span class="pre">--libdir`</span></code>.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">undefined</span> <span class="pre">symbol:</span> <span class="pre">__tvm_ffi_add_one</span></code>: Ensure you used <code class="docutils literal notranslate"><span class="pre">TVM_FFI_DLL_EXPORT_TYPED_FUNC</span></code> and compiled with default symbol visibility (<code class="docutils literal notranslate"><span class="pre">-fvisibility=hidden</span></code> is fine; the macro ensures export).</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">CUDA</span> <span class="pre">error:</span> <span class="pre">invalid</span> <span class="pre">device</span> <span class="pre">function</span></code>: Rebuild with the right <code class="docutils literal notranslate"><span class="pre">-arch=sm_XX</span></code> for your GPU, or include multiple <code class="docutils literal notranslate"><span class="pre">-gencode</span></code> entries.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">CUDA</span> <span class="pre">error:</span> <span class="pre">invalid</span> <span class="pre">device</span> <span class="pre">function</span></code>: Rebuild with the correct <code class="docutils literal notranslate"><span class="pre">-arch=sm_XX</span></code> for your GPU, or include multiple <code class="docutils literal notranslate"><span class="pre">-gencode</span></code> entries.</p></li>
 </ul>
 </section>
 </section>
@@ -984,7 +1079,7 @@ without having to recompile different artifact targeting different ABIs or langu
   
   <div class="footer-item">
     <p class="last-updated">
-  Last updated on Oct 17, 2025.
+  Last updated on Oct 18, 2025.
   <br/>
 </p>
   </div>
