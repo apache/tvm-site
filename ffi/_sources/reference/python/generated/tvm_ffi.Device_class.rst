@@ -13,6 +13,7 @@
 
    .. autosummary::
    
+      ~Device.__device_type_name__
       ~Device.__init__
       ~Device.dlpack_device_type
    

@@ -13,6 +13,8 @@
 
    .. autosummary::
    
+      ~Tensor.__dlpack__
+      ~Tensor.__dlpack_device__
       ~Tensor.__init__
       ~Tensor.same_as
    

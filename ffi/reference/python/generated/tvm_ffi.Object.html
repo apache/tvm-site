@@ -183,12 +183,12 @@
 <li class="toctree-l1 current active has-children"><a class="reference internal" href="../index.html">Python API</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
 <li class="toctree-l2 current active"><a class="current reference internal" href="#">tvm_ffi.Object</a></li>
 <li class="toctree-l2"><a class="reference internal" href="tvm_ffi.Tensor.html">tvm_ffi.Tensor</a></li>
-<li class="toctree-l2"><a class="reference internal" href="tvm_ffi.Shape.html">tvm_ffi.Shape</a></li>
-<li class="toctree-l2"><a class="reference internal" href="tvm_ffi.Device_class.html">tvm_ffi.Device</a></li>
 <li class="toctree-l2"><a class="reference internal" href="tvm_ffi.from_dlpack.html">tvm_ffi.from_dlpack</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tvm_ffi.Shape.html">tvm_ffi.Shape</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tvm_ffi.dtype.html">tvm_ffi.dtype</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tvm_ffi.Device_class.html">tvm_ffi.Device</a></li>
 <li class="toctree-l2"><a class="reference internal" href="tvm_ffi.DLDeviceType.html">tvm_ffi.DLDeviceType</a></li>
 <li class="toctree-l2"><a class="reference internal" href="tvm_ffi.device_function.html">tvm_ffi.device</a></li>
-<li class="toctree-l2"><a class="reference internal" href="tvm_ffi.dtype.html">tvm_ffi.dtype</a></li>
 <li class="toctree-l2"><a class="reference internal" href="tvm_ffi.Function.html">tvm_ffi.Function</a></li>
 <li class="toctree-l2"><a class="reference internal" href="tvm_ffi.Module.html">tvm_ffi.Module</a></li>
 <li class="toctree-l2"><a class="reference internal" href="tvm_ffi.system_lib.html">tvm_ffi.system_lib</a></li>
@@ -641,6 +641,28 @@ document.write(`
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">tvm_ffi.</span></span><span class="sig-name descname"><span class="pre">Object</span></span><a class="headerlink" href="#tvm_ffi.Object" title="Link to this definition">#</a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/3.12/library/functions.html#object" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
 <p>Base class of all TVM FFI objects.</p>
+<p>This is the root Python type for objects backed by the TVM FFI
+runtime. Each instance references a handle to a C++ runtime
+object. Python subclasses typically correspond to C++ runtime
+types and are registered via <code class="docutils literal notranslate"><span class="pre">tvm_ffi.register_object</span></code>.</p>
+<p class="rubric">Notes</p>
+<ul class="simple">
+<li><p>Equality of two <code class="docutils literal notranslate"><span class="pre">Object</span></code> instances uses underlying handle
+identity unless an overridden implementation is provided on the
+concrete type. Use <a class="reference internal" href="#tvm_ffi.Object.same_as" title="tvm_ffi.Object.same_as"><code class="xref py py-meth docutils literal notranslate"><span class="pre">same_as()</span></code></a> to check whether two
+references point to the same underlying object.</p></li>
+<li><p>Most users interact with subclasses (e.g. <a class="reference internal" href="tvm_ffi.Tensor.html#tvm_ffi.Tensor" title="tvm_ffi.Tensor"><code class="xref py py-class docutils literal notranslate"><span class="pre">Tensor</span></code></a>,
+<a class="reference internal" href="tvm_ffi.Function.html#tvm_ffi.Function" title="tvm_ffi.Function"><code class="xref py py-class docutils literal notranslate"><span class="pre">Function</span></code></a>) rather than <code class="docutils literal notranslate"><span class="pre">Object</span></code> directly.</p></li>
+</ul>
+<p class="rubric">Examples</p>
+<p>Constructing objects is typically performed by Python wrappers that
+call into registered constructors on the FFI side.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Acquire a testing object constructed through FFI</span>
+<span class="n">obj</span> <span class="o">=</span> <span class="n">tvm_ffi</span><span class="o">.</span><span class="n">testing</span><span class="o">.</span><span class="n">create_object</span><span class="p">(</span><span class="s2">&quot;testing.TestObjectBase&quot;</span><span class="p">,</span> <span class="n">v_i64</span><span class="o">=</span><span class="mi">12</span><span class="p">)</span>
+<span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">tvm_ffi</span><span class="o">.</span><span class="n">Object</span><span class="p">)</span>
+<span class="k">assert</span> <span class="n">obj</span><span class="o">.</span><span class="n">same_as</span><span class="p">(</span><span class="n">obj</span><span class="p">)</span>
+</pre></div>
+</div>
 <dl class="py method">
 <dt class="sig sig-object py" id="tvm_ffi.Object.__init__">
 <span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tvm_ffi.Object.__init__" title="Link to this definition">#</a></dt>
@@ -653,7 +675,7 @@ document.write(`
 <td><p></p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#tvm_ffi.Object.same_as" title="tvm_ffi.Object.same_as"><code class="xref py py-obj docutils literal notranslate"><span class="pre">same_as</span></code></a>(other)</p></td>
-<td><p>Check object identity.</p></td>
+<td><p>Return <code class="docutils literal notranslate"><span class="pre">True</span></code> if both references point to the same object.</p></td>
 </tr>
 </tbody>
 </table>
@@ -661,15 +683,28 @@ document.write(`
 <dl class="py method">
 <dt class="sig sig-object py" id="tvm_ffi.Object.same_as">
 <span class="sig-name descname"><span class="pre">same_as</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">other</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#tvm_ffi.Object.same_as" title="Link to this definition">#</a></dt>
-<dd><p>Check object identity.</p>
+<dd><p>Return <code class="docutils literal notranslate"><span class="pre">True</span></code> if both references point to the same object.</p>
+<p>This checks identity of the underlying FFI handle rather than
+performing a structural, value-based comparison.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>other</strong> (<a class="reference external" href="https://docs.python.org/3.12/library/functions.html#object" title="(in Python v3.12)"><em>object</em></a>) – The other object to compare against.</p>
+<dd class="field-odd"><p><strong>other</strong> (<a class="reference external" href="https://docs.python.org/3.12/library/functions.html#object" title="(in Python v3.12)"><em>object</em></a>) – The object to compare against.</p>
 </dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p><strong>result</strong> (<em>bool</em>) – The comparison result.</p>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><span class="sphinx_autodoc_typehints-type"><a class="reference external" href="https://docs.python.org/3.12/library/functions.html#bool" title="(in Python v3.12)"><code class="xref py py-class docutils literal notranslate"><span class="pre">bool</span></code></a></span></p>
+</dd>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p><em>bool</em></p>
 </dd>
 </dl>
+<p class="rubric">Examples</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">x</span> <span class="o">=</span> <span class="n">tvm_ffi</span><span class="o">.</span><span class="n">testing</span><span class="o">.</span><span class="n">create_object</span><span class="p">(</span><span class="s2">&quot;testing.TestObjectBase&quot;</span><span class="p">)</span>
+<span class="n">y</span> <span class="o">=</span> <span class="n">x</span>
+<span class="n">z</span> <span class="o">=</span> <span class="n">tvm_ffi</span><span class="o">.</span><span class="n">testing</span><span class="o">.</span><span class="n">create_object</span><span class="p">(</span><span class="s2">&quot;testing.TestObjectBase&quot;</span><span class="p">)</span>
+<span class="k">assert</span> <span class="n">x</span><span class="o">.</span><span class="n">same_as</span><span class="p">(</span><span class="n">y</span><span class="p">)</span>
+<span class="k">assert</span> <span class="ow">not</span> <span class="n">x</span><span class="o">.</span><span class="n">same_as</span><span class="p">(</span><span class="n">z</span><span class="p">)</span>
+</pre></div>
+</div>
 </dd></dl>
 
 </dd></dl>
