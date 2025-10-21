@@ -1,4 +1,119 @@
-<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="4.4.1">Jekyll</generator><link href="/feed.xml" rel="self" type="application/atom+xml" /><link href="/" rel="alternate" type="text/html" /><updated>2025-10-18T12:53:03+00:00</updated><id>/feed.xml</id><title type="html">TVM</title><author><name>{&quot;name&quot; =&gt; nil}</name></author><entry><title type="html">Apache TVM Unity: a vision for the ML software &amp;amp; hardware ecosystem in 2022</title><link href="/2021/12/15/tvm-unity" rel="alternate" type="text/html" title="Apache TVM Unity: a vision for the ML software &amp;amp; hardware ecosystem in 2022" /><published>2021-12-15T00:00:00+00:00</published><updated>2021-12-15T00:00:00+00:00</updated><id>/2021/12/15/tvm-unity</id><content type="html" xml:base="/2021/12/15/tvm-unity"><![CDATA[<p>Apache TVM Unity is a roadmap for the TVM ecosystem in 2022. We see a broader shift coming in the way that machine learning system stacks optimize for flexibility and agility in the face of a rapidly changing hardware landscape. TVM will evolve to break down the boundaries that constrain the ways current ML systems adapt to rapid changes in ML models and the accelerators that implement them.</p>
+<?xml version="1.0" encoding="utf-8"?><feed xmlns="http://www.w3.org/2005/Atom" ><generator uri="https://jekyllrb.com/" version="4.4.1">Jekyll</generator><link href="/feed.xml" rel="self" type="application/atom+xml" /><link href="/" rel="alternate" type="text/html" /><updated>2025-10-21T18:41:46+00:00</updated><id>/feed.xml</id><title type="html">TVM</title><author><name>{&quot;name&quot; =&gt; nil}</name></author><entry><title type="html">Building an Open ABI and FFI for ML Systems</title><link href="/2025/10/21/tvm-ffi" rel="alternate" type="text/html" title="Building an Open ABI and FFI for ML Systems" /><published>2025-10-21T00:00:00+00:00</published><updated>2025-10-21T00:00:00+00:00</updated><id>/2025/10/21/tvm-ffi</id><content type="html" xml:base="/2025/10/21/tvm-ffi"><![CDATA[<p>We are currently living in an exciting era for AI, where machine learning systems and infrastructures are crucial for training and deploying efficient AI models. The modern machine learning systems landscape comes rich with diverse components, including popular ML frameworks and array libraries like JAX, PyTorch, and CuPy. It also includes specialized libraries such as FlashAttention, FlashInfer and cuDNN. Furthermore, there’s a growing trend of ML compilers and domain-specific languages (DSLs) operating at both graph and kernel levels, encompassing tools like Torch Inductor, OpenAI Triton, TileLang, Mojo, Triton,, cuteDSL, Helion, Hidet and more. Finally, we start to see intriguing developments of coding agents starting to be able to generate kernels that can be integrated into the ML systems.</p>
+
+<p>The exciting growth of the ecosystem is the reason for the fast pace of innovation in AI today. However, it also presents a significant challenge: <strong>interoperability</strong>. Many of those components need to integrate with each other. For example, libraries such as FlashInfer, cuDNN needs to be integrated into PyTorch, JAX, TensorRT’s runtime system, each may come with different interface requirements. ML compilers and DSLs also usually expose Python JIT binding support, while also need to bring separate ahead of time compilation to specific exposure to non-python environments such as automotives and mobile. The emergence of coding agents makes it even more fun, as each agent is their own mini code generator that needs to interface with various deployment scenarios. As of now, the ecosystems address the challenges by creating numerous specific bindings each DSL, libraries to deployment environments (python/torch/jax/TensorRT etc).</p>
+
+<p><img src="/images/tvm-ffi/interop-challenge.png" alt="image" style="width: 70%; margin: auto; display: block;" /></p>
+
+<p>The the core of these interoperability challenges are the <strong>Application Binary Interface (ABI)</strong> and the <strong>Foreign Function Interface (FFI)</strong>. <strong>ABI</strong> defines how data structures are stored in memory and precisely what occurs when a function is called. For instance, the way torch stores Tensors may be different from say cupy/numpy, so we cannot directly pass a torch.Tensor pointer and its treatment as a cupy.NDArray. The very nature of machine learning applications usually mandates cross language interop (one specific example is python and extensions). Each ML compiler DSL can be viewed as its own language requiring runtime bindings to Python and other deployment environments. As the ML system ecosystem thrives and each DSL component excels at their particular focus and complements each other, bringing FFI as a first-class citizen would be extremely valuable.</p>
+
+<p>All of the above observations call for a <strong>need for ABI and FFI for the ML systems</strong> use-cases. Looking at the state today, luckily, we do have something to start with – the C ABI, which every programming language speaks and remains stable over time. Unfortunately, C only focuses on low-level data types such as int, float and raw pointers. On the other end of the spectrum, we know that python is something that must gain first-class support, but also there is still a need for different-language deployment for scenarios like automotive and mobile. While it may sound ambitious for all kinds of languages, DSLs, and runtimes to work together, there is some hope, because we are focusing on a specialized domain – machine learning. We know that the key data structures and values being passed around are primary Tensors sitting on GPUs. We can take a minimalist approach by focusing on ML cases and build portable ways to exchange GPU Tensors and functions that operate on these data structures.</p>
+
+<p>This post introduces TVM FFI, an <strong>open ABI and FFI for machine learning systems</strong>. The project evolved from multiple years of ABI calling conventions design iterations in the Apache TVM project. We find that the design can be made generic, independent from the choice of compiler/language and should benefit the ML systems community. As a result, we brought into a minimal library built from the ground up with a clear intention to become an open, standalone library that can be shared and evolved together by the machine learning systems community. It also draws collective wisdoms of the ML System community, including past development insights of many developers from numpy, PyTorch, JAX, Caffe, mxnet, XGBoost, cuPy and more. It contains the following key elements:</p>
+
+<ul>
+  <li><strong>Stable, minimal C ABI</strong> designed for kernels, DSLs, and runtime extensibility.</li>
+  <li><strong>Zero-copy interop</strong> across PyTorch, JAX, and CuPy using <a href="https://data-apis.org/array-api/2024.12/design_topics/data_interchange.html">DLPack protocol</a>.</li>
+  <li><strong>Compact value and call convention</strong> covering common data types for ultra low-overhead ML applications.</li>
+  <li><strong>Multi-language support out of the box:</strong> Python, C++, and Rust (with a path towards more languages).</li>
+</ul>
+
+<p><img src="/images/tvm-ffi/tvm-ffi.png" alt="image" style="width: 70%; margin: auto; display: block;" /></p>
+
+<p>Importantly, the goal of the project is not to create another framework or language. Instead it aims to get the ML system components to do their magic, and enables them to amplify each other more organically.</p>
+
+<h2 id="technical-design"><strong>Technical Design</strong></h2>
+
+<p>To start with, we need a mechanism to store the values that are passing across machine learning frameworks. It achieves this using a core data structure called TVMFFIAny. It is a 16 bytes C structure that follows the design principle of tagged-union</p>
+
+<p><img src="/images/tvm-ffi/tvmffiany.png" alt="image" style="width: 50%; margin: auto; display: block;" /></p>
+
+<p>The objects in TVMFFIObject are managed as intrusive pointers, where TVMFFIObject itself contains the header of the pointer that helps to manage type information and deletion. This design allows us to use the same type_index mechanism that allows for the future growth and recognition of new kinds of objects within the FFI, ensuring extensibility. The standalone deleter ensures objects can be safely allocated by one source or language and deleted in another place.</p>
+
+<p><img src="/images/tvm-ffi/tvmffiobject.png" alt="image" style="width: 50%; margin: auto; display: block;" /></p>
+
+<p>We provide first-class support for owned and unowned Tensor support that adopts DLPack DLTensor layout. Thanks to the collective efforts from the ML system ecosystems, we can leverage DLPack for first class support and bring in tensors/arrays from PyTorch, NumPy, JAX. We also provide support for common data types such as string, array, and map. Generally, these values cover most common machine learning system use cases we know of. The type_index mechanism still leaves room for registering objects with dynamic type index at runtime based on a string type key, enabling us to bring in more object types if needed.</p>
+
+<p>As discussed in the overview, we need to consider foreign function calls as first class citizens. We adopt a single standard C function as follows:</p>
+
+<p><img src="/images/tvm-ffi/safecall.png" alt="image" style="width: 50%; margin: auto; display: block;" /></p>
+
+<p>The handle contains the pointer to the function object itself, allowing us to support closures. args and num_args describe the input arguments and results store the return value. When args and results contain heap-managed objects, we expect the caller to own args and results.</p>
+
+<p>We call this approach a packed function, as it provides a single signature to represent all functions in a “type-erased” way. It saves the need to declare and JIT shim for each FFI function call while maintaining reasonable efficiency. This mechanism enables the following scenarios</p>
+
+<ul>
+  <li><strong>Calling from Dynamic Languages (e.g., Python):</strong> we provide a tvm_ffi binding that prepares the args based on dynamically examining Python arguments passed in.</li>
+  <li><strong>Calling from Static Languages (e.g., C++):</strong> For static languages, we can leverage C++ templates to directly instantiate the arguments on the stack, saving the need for dynamic examination</li>
+  <li><strong>Dynamic language Callbacks:</strong> the signature enables us to easily bring dynamic language (Python) callbacks as ffi::Function, as we can take each argument and convert to the dynamic values.</li>
+</ul>
+
+<p><strong>Efficiency</strong> In practice, we find this approach is sufficient for machine learning focused workloads. For example, we can get to <strong>0.4 us</strong>  level overhead for Python/C++ calls, which is already very close to the limit (for reference, each python c extension call is at least <strong>0.1us</strong>), and much faster than most ML system python eager use cases which are usually above 1-2 us level. When both sides of calls are static languages, the overhead will go down to tens of nanoseconds. As a side note, although we did not find it is necessary, the signature still leaves room for link time optimization (LTO), when both sides are static languages with a known symbol and linked into a single binary when we inline the callee into caller side and the stack argument memory passing into register passing.</p>
+
+<p>We support first class Function objects that allow us to also pass function/closures from different places around, enabling cool usages such as quick python callback for prototyping, and dynamic Functor creation for driver-based kernel launching.</p>
+
+<p><strong>Error handling</strong> Because the function ABI is based on C, we need a method to propagate errors. A non-zero return value of TVMFFISafeCallType indicates an error. We provide a thread-local storage (TLS) based C API to set and fetch errors, and we also build library bindings to automatically translate exceptions. For example, the macro</p>
+
+<p><img src="/images/tvm-ffi/safecall.png" alt="image" style="width: 50%; margin: auto; display: block;" /></p>
+
+<p>will raise an exception that translates into a TypeError in Python. We also preserve and propagate tracebacks across FFI boundaries whenever possible. The TLS-based API is a simple yet effective convention for DSL compilers and libraries to leverage for efficient error propagation.</p>
+
+<p><strong>First-class GPU Support for PyTorch</strong> We provide first-class support for torch.Tensors, it will automatically zero-copy transfer to an FFI Tensor. We also provide a minimal stream context so that the stream is carried over from the PyTorch Stream context. In short, calling a function would serve like a normal PyTorch functions when passing in torch Tensor arguments.</p>
+
+<h2 id="ship-one-wheel">Ship One Wheel</h2>
+
+<p>TVM FFI provides a minimal pip package that includes libtvm_ffi, which handles essential registration and context management. The package consists of a C++ library that automatically manages function types built upon the C ABI, and a Python library for interacting with this convention.
+Because we defined a stable ABI for ML systems, kernel libraries, the compiled library is agnostic to <strong>Python ABI and PyTorch versions,</strong> and can work across multiple python versions (including free-threaded python). This allows us to <strong>ship one wheel(library)</strong> for multiple frameworks and python environments, and greatly simplifies the deployment.</p>
+
+<p><img src="/images/tvm-ffi/shiponewheel.png" alt="image" style="width: 70%; margin: auto; display: block;" /></p>
+
+<p>The above figure shows how it works in practice, most libraries only need to ship <code class="language-plaintext highlighter-rouge">mylib.so</code> that links to the ABI, then the particular python version specific apache-tvm-ffi package will handle the bridge to specific Python version. The same mechanism also works for non-python inference engines. There are many ways to build a library that targets the tvm-ffi ABI. The following example shows how can we do that in cuda</p>
+
+<p><img src="/images/tvm-ffi/cuda_export.png" alt="image" style="width: 50%; margin: auto; display: block;" /></p>
+
+<p>Once we compiled this library into mylib, then it can be loaded back into Python or any other runtime that works with TVM FFI.</p>
+
+<p><img src="/images/tvm-ffi/load_pytorch.png" alt="image" style="width: 50%; margin: auto; display: block;" /></p>
+
+<p>Notably, this same function can be loaded from other runtimes and languages that  interfaces with the tvm-ffi. For example, the same example contains a C++ loading  </p>
+
+<p><img src="/images/tvm-ffi/load_cpp.png" alt="image" style="width: 50%; margin: auto; display: block;" /></p>
+
+<p>The ABI is designed <strong>with the needs of DSL compilers in mind.</strong> Because the ABI is minimal, we can readily target it in C (or any of low-level compiler IRs such as LLVM IR, or MLIR LLVM dialect).
+Once DSL integrates with the ABI, we can leverage the same flow to load back and run the library as normal torch functions. Additionally, we can also support JIT mechanisms to the same ABI. </p>
+
+<p><img src="/images/tvm-ffi/mydsl.png" alt="image" style="width: 40%; margin: auto; display: block;" /></p>
+
+<p>As we can see, the common open ABI foundation offers numerous opportunities for ML systems to interoperate. We anticipate that this solution can significantly benefit various aspects of ML systems and AI infrastructure:</p>
+
+<ul>
+  <li><strong>Kernel libraries</strong>: Ship a single package to support multiple frameworks, Python versions, and different languages.</li>
+  <li><strong>Kernel DSLs</strong>:  a reusable ABI for JIT and AOT kernel exposure frameworks and runtimes.</li>
+  <li><strong>Frameworks and runtimes</strong>: Offer a uniform interop with ABI-compliant libraries and DSLs.</li>
+  <li><strong>ML infrastructure</strong>: Enable out-of-the-box interoperability for Python, C++, and Rust.</li>
+  <li><strong>Coding agents</strong>: Establish a unified mechanism for shipping generated code in production.</li>
+</ul>
+
+<p>Currently, the tvm-ffi package offers out-of-the-box support for frameworks like PyTorch, JAX, and CuPy. We are also collaborating with machine learning system builders to develop solutions based on it. For instance, FlashInfer now ships with tvm-ffi, and active work is underway to enable more DSL libraries, agent solutions, and inference runtimes.
+This project also is an important step for Apache TVM itself, as we will start to
+provide neutral and modular infrastructure pieces that can be useful broadly to
+the machine learning system ecosystems.</p>
+
+<h2 id="links">Links</h2>
+
+<p>TVM FFI is an open convention that is independent from a specific compiler or framework.
+We welcome contributions and encourage the ML systems community to collaborate on improving the open ABI.
+Please checkout the following resources:</p>
+
+<ul>
+  <li>Github: <a href="https://github.com/apache/tvm-ffi/">https://github.com/apache/tvm-ffi/</a></li>
+  <li><a href="https://tvm.apache.org/ffi/get_started/quickstart.html">Quick start examples</a></li>
+</ul>
+
+<h2 id="acknowledgement">Acknowledgement</h2>
+
+<p>The project draws collective wisdoms of the Machine Learning System community and python open source ecosystem, including past development insights of many developers from numpy, PyTorch, JAX, Caffe, mxnet, XGBoost, cuPy, pybind11, nanobind and more.</p>
+
+<p>We would specifically like to thank the PyTorch team, JAX team, CUDA python team,  cuteDSL team,  cuTile team,  Apache TVM community,  XGBoost team, TiLang team, Triton distributed team, FlashInfer team,  SGLang community,  TensorRT-LLM community, the vLLM community, for their their insightful feedbacks.</p>]]></content><author><name>Apache TVM FFI Community</name></author><summary type="html"><![CDATA[We are currently living in an exciting era for AI, where machine learning systems and infrastructures are crucial for training and deploying efficient AI models. The modern machine learning systems landscape comes rich with diverse components, including popular ML frameworks and array libraries like JAX, PyTorch, and CuPy. It also includes specialized libraries such as FlashAttention, FlashInfer and cuDNN. Furthermore, there’s a growing trend of ML compilers and domain-specific languages (DSLs) operating at both graph and kernel levels, encompassing tools like Torch Inductor, OpenAI Triton, TileLang, Mojo, Triton,, cuteDSL, Helion, Hidet and more. Finally, we start to see intriguing developments of coding agents starting to be able to generate kernels that can be integrated into the ML systems.]]></summary></entry><entry><title type="html">Apache TVM Unity: a vision for the ML software &amp;amp; hardware ecosystem in 2022</title><link href="/2021/12/15/tvm-unity" rel="alternate" type="text/html" title="Apache TVM Unity: a vision for the ML software &amp;amp; hardware ecosystem in 2022" /><published>2021-12-15T00:00:00+00:00</published><updated>2021-12-15T00:00:00+00:00</updated><id>/2021/12/15/tvm-unity</id><content type="html" xml:base="/2021/12/15/tvm-unity"><![CDATA[<p>Apache TVM Unity is a roadmap for the TVM ecosystem in 2022. We see a broader shift coming in the way that machine learning system stacks optimize for flexibility and agility in the face of a rapidly changing hardware landscape. TVM will evolve to break down the boundaries that constrain the ways current ML systems adapt to rapid changes in ML models and the accelerators that implement them.</p>
 
 <h2 id="boundaries-in-the-modern-ml-system-stack">Boundaries in the Modern ML System Stack</h2>
 
@@ -2093,18 +2208,4 @@ We show that automatic optimization in TVM makes it easy and flexible to support
 </ul>
 
 <h1 id="bio--acknowledgement">Bio &amp; Acknowledgement</h1>
-<p><a href="https://wuwei.io/">Wuwei Lin</a> is an undergraduate student at SJTU. He is currently an intern at TuSimple. The author has many thanks to <a href="https://homes.cs.washington.edu/~tqchen/">Tianqi Chen</a> and <a href="https://homes.cs.washington.edu/~eqy/">Eddie Yan</a> for their reviews.</p>]]></content><author><name>Wuwei Lin</name></author><summary type="html"><![CDATA[Deep learning has been successfully applied to a variety of tasks. On real-time scenarios such as inference on autonomous vehicles, the inference speed of the model is critical. Network quantization is an effective approach to accelerating deep learning models. In quantized models, both data and model parameters are represented with low precision data types such as int8 and float16. The lowered data bandwidth reduces the inference time and memory/storage requirements, as well as the power consumption. Meanwhile, under proper quantization schemes, we can minimize the accuracy drops of the quantized models. Therefore, quantized models are of particular interests of researchers and developers as it makes large models suitable to deploy on diverse devices, such as GPU, CPU and mobile devices.]]></summary></entry><entry><title type="html">TVM Deep Learning Compiler Joins Apache Software Foundation</title><link href="/2019/03/18/tvm-apache-announcement" rel="alternate" type="text/html" title="TVM Deep Learning Compiler Joins Apache Software Foundation" /><published>2019-03-18T00:00:00+00:00</published><updated>2019-03-18T00:00:00+00:00</updated><id>/2019/03/18/tvm-apache-announcement</id><content type="html" xml:base="/2019/03/18/tvm-apache-announcement"><![CDATA[<p>There is an increasing need to bring machine learning to a wide diversity of hardware devices. Current frameworks rely on vendor-specific operator libraries and optimize for a narrow range of server-class GPUs. Deploying workloads to new platforms – such as mobile phones, embedded devices, and accelerators (e.g., FPGAs, ASICs) – requires significant manual effort.</p>
-
-<p>TVM is an open source deep learning compiler stack that closes the gap between the productivity-focused deep learning frameworks, and the performance- or efficiency-oriented hardware backends. Today, we are glad to announce that the TVM community has decided to move on to Apache incubator, and becomes an Apache(incubating) project.</p>
-
-<p style="text-align: center"><img src="/images/main/tvm-stack.png" alt="image" width="70%" /></p>
-
-<p>TVM stack began as a research project at the <a href="https://sampl.cs.washington.edu/">SAMPL group</a> of Paul G. Allen School of Computer Science &amp; Engineering, University of Washington. The project uses the loop-level IR and several optimizations from the <a href="http://halide-lang.org/">Halide project</a>, in addition to <a href="https://tvm.apache.org/about">a full deep learning compiler stack</a> to support machine learning workloads for diverse hardware backends.</p>
-
-<p>Since its introduction, the project was driven by an open source community involving multiple industry and academic institutions. Currently, the TVM stack includes a high-level differentiable programming IR for high-level optimization, a machine learning driven program optimizer and VTA – a fully open sourced deep learning accelerator. The community brings innovations from machine learning, compiler systems, programming languages, and computer architecture to build a full-stack open source deep learning compiler system. The project has been used in production in <a href="https://sampl.cs.washington.edu/tvmconf/#about-tvmconf">several major companies</a>.</p>
-
-<p>Besides the technical innovations, the community adopts an open, welcoming and neutral policy. The project is run by committers who are elected purely based on their merit of the contributions to the project. Besides the contributors from UW SAMPL, the community now has nearly 200 contributors that come from Amazon Web Services (AWS), Qualcomm, Facebook, Google, Huawei, AMD, Microsoft, Cornell University, University of California, Berkeley, and more.        The community successfully organized the first developer conference last December which attracted more than 180 attendees from all around the world. Moving forward to the Apache, we will continue to exercise this principle in an effort to bring deep learning compilation to everyone.</p>
-
-<p>We would like to take this chance to thank the Allen School for supporting the SAMPL team that gave birth to the TVM project. We would also like to thank the Halide project which provided the basis for TVM’s loop-level IR and initial code generation. We would like to thank our Apache incubator mentors for introducing the project to Apache and providing useful guidance. Finally, we would like to thank the TVM community and all of the organizations, as listed above, that supported the developers of TVM.</p>
-
-<p>See also the <a href="https://news.cs.washington.edu/2019/03/18/allen-schools-tvm-deep-learning-compiler-framework-transitions-to-apache/">Allen School news about the transition here</a>, <a href="https://sampl.cs.washington.edu/tvmconf/#about-tvmconf">TVM conference program slides and recordings</a>, and <a href="https://tvm.apache.org/docs//contribute/community.html">our community guideline here</a>. Follow us on Twitter: <a href="https://twitter.com/ApacheTVM">@ApacheTVM</a>.</p>]]></content><author><name>TVM Community</name></author><summary type="html"><![CDATA[There is an increasing need to bring machine learning to a wide diversity of hardware devices. Current frameworks rely on vendor-specific operator libraries and optimize for a narrow range of server-class GPUs. Deploying workloads to new platforms – such as mobile phones, embedded devices, and accelerators (e.g., FPGAs, ASICs) – requires significant manual effort.]]></summary></entry></feed>
+<p><a href="https://wuwei.io/">Wuwei Lin</a> is an undergraduate student at SJTU. He is currently an intern at TuSimple. The author has many thanks to <a href="https://homes.cs.washington.edu/~tqchen/">Tianqi Chen</a> and <a href="https://homes.cs.washington.edu/~eqy/">Eddie Yan</a> for their reviews.</p>]]></content><author><name>Wuwei Lin</name></author><summary type="html"><![CDATA[Deep learning has been successfully applied to a variety of tasks. On real-time scenarios such as inference on autonomous vehicles, the inference speed of the model is critical. Network quantization is an effective approach to accelerating deep learning models. In quantized models, both data and model parameters are represented with low precision data types such as int8 and float16. The lowered data bandwidth reduces the inference time and memory/storage requirements, as well as the power consumption. Meanwhile, under proper quantization schemes, we can minimize the accuracy drops of the quantized models. Therefore, quantized models are of particular interests of researchers and developers as it makes large models suitable to deploy on diverse devices, such as GPU, CPU and mobile devices.]]></summary></entry></feed>
