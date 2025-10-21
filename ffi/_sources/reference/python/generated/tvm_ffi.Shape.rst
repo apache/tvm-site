@@ -9,14 +9,6 @@
    .. automethod:: __init__
 
    
-   .. rubric:: Methods
-
-   .. autosummary::
-   
-      ~Shape.__init__
-      ~Shape.count
-      ~Shape.index
-   
    
 
    

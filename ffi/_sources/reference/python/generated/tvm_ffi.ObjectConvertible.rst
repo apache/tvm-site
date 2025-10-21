@@ -13,7 +13,6 @@
 
    .. autosummary::
    
-      ~ObjectConvertible.__init__
       ~ObjectConvertible.asobject
    
    

@@ -13,7 +13,7 @@
 
    .. autosummary::
    
-      ~Object.__init__
+      ~Object.__ffi_init__
       ~Object.same_as
    
    

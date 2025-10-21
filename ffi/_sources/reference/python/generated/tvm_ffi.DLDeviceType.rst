@@ -13,13 +13,6 @@
 
    .. autosummary::
    
-      ~DLDeviceType.conjugate
-      ~DLDeviceType.bit_length
-      ~DLDeviceType.bit_count
-      ~DLDeviceType.to_bytes
-      ~DLDeviceType.from_bytes
-      ~DLDeviceType.as_integer_ratio
-      ~DLDeviceType.is_integer
       ~DLDeviceType.__init__
    
    
@@ -30,10 +23,6 @@
 
    .. autosummary::
    
-      ~DLDeviceType.real
-      ~DLDeviceType.imag
-      ~DLDeviceType.numerator
-      ~DLDeviceType.denominator
       ~DLDeviceType.kDLCPU
       ~DLDeviceType.kDLCUDA
       ~DLDeviceType.kDLCUDAHost

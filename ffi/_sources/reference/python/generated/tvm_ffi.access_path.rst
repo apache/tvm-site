@@ -4,15 +4,6 @@
 .. automodule:: tvm_ffi.access_path
 
    
-   
-   
-
-   
-   
-   
-
-   
-   
    .. rubric:: Classes
 
    .. autosummary::
@@ -21,11 +12,3 @@
       AccessPath
       AccessStep
    
-   
-
-   
-   
-   
-
-
-

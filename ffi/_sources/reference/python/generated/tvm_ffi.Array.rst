@@ -13,6 +13,7 @@
 
    .. autosummary::
    
+      ~Array.__ffi_init__
       ~Array.__init__
       ~Array.count
       ~Array.index

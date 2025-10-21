@@ -13,6 +13,7 @@
 
    .. autosummary::
    
+      ~Map.__ffi_init__
       ~Map.__init__
       ~Map.get
       ~Map.items

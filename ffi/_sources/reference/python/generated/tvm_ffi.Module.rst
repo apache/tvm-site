@@ -13,6 +13,7 @@
 
    .. autosummary::
    
+      ~Module.__ffi_init__
       ~Module.__init__
       ~Module.clear_imports
       ~Module.get_function
