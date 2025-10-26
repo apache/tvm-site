@@ -74,7 +74,7 @@ Program Listing for File c_api.h
    
    #define TVM_FFI_VERSION_MAJOR 0
    #define TVM_FFI_VERSION_MINOR 1
-   #define TVM_FFI_VERSION_PATCH 0
+   #define TVM_FFI_VERSION_PATCH 1
    
    #ifdef __cplusplus
    extern "C" {
