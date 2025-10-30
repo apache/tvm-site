@@ -168,6 +168,7 @@ Program Listing for File base_details.h
    }
    
    TVM_FFI_INLINE uint64_t StableHashBytes(const void* data_ptr, size_t size) {
+     // NOLINTBEGIN(clang-analyzer-security.ArrayBound)
      const char* data = reinterpret_cast<const char*>(data_ptr);
      const constexpr uint64_t kMultiplier = 1099511628211ULL;
      const constexpr uint64_t kMod = 2147483647ULL;
@@ -183,14 +184,12 @@ Program Listing for File base_details.h
        // if alignment requirement is met, directly use load
        if (reinterpret_cast<uintptr_t>(it) % 8 == 0) {
          for (; it + 8 <= end; it += 8) {
-           // NOLINTNEXTLINE(clang-analyzer-security.ArrayBound)
            u.b = *reinterpret_cast<const uint64_t*>(it);
            result = (result * kMultiplier + u.b) % kMod;
          }
        } else {
          // unaligned version
          for (; it + 8 <= end; it += 8) {
-           // NOLINTNEXTLINE(clang-analyzer-security.ArrayBound)
            u.a[0] = it[0];
            u.a[1] = it[1];
            u.a[2] = it[2];
@@ -245,6 +244,7 @@ Program Listing for File base_details.h
        }
        result = (result * kMultiplier + u.b) % kMod;
      }
+     // NOLINTEND(clang-analyzer-security.ArrayBound)
      return result;
    }
    

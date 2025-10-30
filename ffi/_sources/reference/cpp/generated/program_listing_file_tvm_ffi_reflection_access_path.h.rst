@@ -171,7 +171,7 @@ Program Listing for File access_path.h
    
    class AccessPath : public ObjectRef {
     public:
-     template <typename Iter>
+     template <typename Iter>  // NOLINTNEXTLINE(performance-unnecessary-value-param)
      static AccessPath FromSteps(Iter begin, Iter end) {
        AccessPath path = AccessPath::Root();
        for (Iter it = begin; it != end; ++it) {
