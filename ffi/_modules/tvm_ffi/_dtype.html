@@ -39,7 +39,7 @@
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
   <script src="../../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
 
-    <script src="../../_static/documentation_options.js?v=6059a104"></script>
+    <script src="../../_static/documentation_options.js?v=78d19e59"></script>
     <script src="../../_static/doctools.js?v=9bcbadda"></script>
     <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -212,10 +212,14 @@ window.addEventListener("load", () => mermaid.run());
 <li class="toctree-l2"><a class="reference internal" href="../../reference/python/generated/tvm_ffi.StreamContext.html">tvm_ffi.StreamContext</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../reference/python/generated/tvm_ffi.use_torch_stream.html">tvm_ffi.use_torch_stream</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../reference/python/generated/tvm_ffi.use_raw_stream.html">tvm_ffi.use_raw_stream</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../reference/python/generated/tvm_ffi.get_raw_stream.html">tvm_ffi.get_raw_stream</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../reference/python/cpp/generated/tvm_ffi.cpp.load_inline.html">tvm_ffi.cpp.load_inline</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../reference/python/cpp/generated/tvm_ffi.cpp.build_inline.html">tvm_ffi.cpp.build_inline</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../reference/python/generated/tvm_ffi.serialization.html">tvm_ffi.serialization</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../reference/python/generated/tvm_ffi.access_path.html">tvm_ffi.access_path</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../reference/python/generated/tvm_ffi.serialization.from_json_graph_str.html">tvm_ffi.serialization.from_json_graph_str</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../reference/python/generated/tvm_ffi.serialization.to_json_graph_str.html">tvm_ffi.serialization.to_json_graph_str</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../reference/python/generated/tvm_ffi.access_path.AccessKind.html">tvm_ffi.access_path.AccessKind</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../reference/python/generated/tvm_ffi.access_path.AccessPath.html">tvm_ffi.access_path.AccessPath</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../reference/python/generated/tvm_ffi.access_path.AccessStep.html">tvm_ffi.access_path.AccessStep</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../reference/python/generated/tvm_ffi.convert.html">tvm_ffi.convert</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../reference/python/generated/tvm_ffi.ObjectConvertible.html">tvm_ffi.ObjectConvertible</a></li>
 </ul>
@@ -596,7 +600,7 @@ document.write(`
 <span class="c1"># KIND, either express or implied.  See the License for the</span>
 <span class="c1"># specific language governing permissions and limitations</span>
 <span class="c1"># under the License.</span>
-<span class="sd">&quot;&quot;&quot;dtype class.&quot;&quot;&quot;</span>
+<span class="sd">&quot;&quot;&quot;Lightweight ``dtype`` wrapper for TVM FFI.&quot;&quot;&quot;</span>
 
 <span class="c1"># pylint: disable=invalid-name</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
@@ -631,11 +635,35 @@ document.write(`
 <div class="viewcode-block" id="dtype">
 <a class="viewcode-back" href="../../reference/python/generated/tvm_ffi.dtype.html#tvm_ffi.dtype">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">dtype</span><span class="p">(</span><span class="nb">str</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;TVM FFI dtype class.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Lightweight ``dtype`` in TVM FFI.</span>
+
+<span class="sd">    ``dtype`` behaves like a Python ``str`` but also carries an internal FFI</span>
+<span class="sd">    representation. You can construct it from strings, NumPy/ML dtypes, or</span>
+<span class="sd">    via :py:meth:`from_dlpack_data_type`.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
 <span class="sd">    dtype_str</span>
+<span class="sd">        The string representation of the dtype.</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    .. code-block:: python</span>
+
+<span class="sd">        import tvm_ffi</span>
+
+<span class="sd">        # Create from string</span>
+<span class="sd">        f32 = tvm_ffi.dtype(&quot;float32&quot;)</span>
+<span class="sd">        assert f32.bits == 32</span>
+<span class="sd">        assert f32.itemsize == 4</span>
+
+<span class="sd">        # Adjust lanes to create vector types</span>
+<span class="sd">        v4f32 = f32.with_lanes(4)</span>
+<span class="sd">        assert v4f32 == &quot;float32x4&quot;</span>
+
+<span class="sd">        # Round-trip from a DLPack (code, bits, lanes) triple</span>
+<span class="sd">        f16 = tvm_ffi.dtype.from_dlpack_data_type((2, 16, 1))</span>
+<span class="sd">        assert f16 == &quot;float16&quot;</span>
 
 <span class="sd">    Note</span>
 <span class="sd">    ----</span>
@@ -664,11 +692,31 @@ document.write(`
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
 <span class="sd">        dltype_data_type</span>
-<span class="sd">            The DLPack data type tuple (type_code, bits, lanes).</span>
+<span class="sd">            The DLPack data type tuple ``(type_code, bits, lanes)``.</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
-<span class="sd">        The created dtype.</span>
+<span class="sd">        dtype</span>
+<span class="sd">            The created dtype.</span>
+
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        .. code-block:: python</span>
+
+<span class="sd">            import tvm_ffi</span>
+
+<span class="sd">            # Create float16 and int8 directly from DLPack triples</span>
+<span class="sd">            f16 = tvm_ffi.dtype.from_dlpack_data_type((2, 16, 1))</span>
+<span class="sd">            i8 = tvm_ffi.dtype.from_dlpack_data_type((0, 8, 1))</span>
+<span class="sd">            assert f16 == &quot;float16&quot;</span>
+<span class="sd">            assert i8 == &quot;int8&quot;</span>
+
+<span class="sd">        See Also</span>
+<span class="sd">        --------</span>
+<span class="sd">        :py:class:`tvm_ffi.dtype`</span>
+<span class="sd">            User-facing dtype wrapper.</span>
+<span class="sd">        :py:meth:`tvm_ffi.dtype.with_lanes`</span>
+<span class="sd">            Create vector dtypes from a scalar base.</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">cdtype</span> <span class="o">=</span> <span class="n">core</span><span class="o">.</span><span class="n">_create_dtype_from_tuple</span><span class="p">(</span>
@@ -693,12 +741,28 @@ document.write(`
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
 <span class="sd">        lanes</span>
-<span class="sd">            The number of lanes.</span>
+<span class="sd">            The number of lanes for the resulting vector type.</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
 <span class="sd">        dtype</span>
 <span class="sd">            The new dtype with the given number of lanes.</span>
+
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        .. code-block:: python</span>
+
+<span class="sd">            import tvm_ffi</span>
+
+<span class="sd">            f32 = tvm_ffi.dtype(&quot;float32&quot;)</span>
+<span class="sd">            v4f32 = f32.with_lanes(4)</span>
+<span class="sd">            assert v4f32 == &quot;float32x4&quot;</span>
+<span class="sd">            assert v4f32.bits == f32.bits and v4f32.lanes == 4</span>
+
+<span class="sd">        See Also</span>
+<span class="sd">        --------</span>
+<span class="sd">        :py:meth:`tvm_ffi.dtype.from_dlpack_data_type`</span>
+<span class="sd">            Construct from a DLPack ``(code, bits, lanes)`` triple.</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">cdtype</span> <span class="o">=</span> <span class="n">core</span><span class="o">.</span><span class="n">_create_dtype_from_tuple</span><span class="p">(</span>
@@ -714,18 +778,105 @@ document.write(`
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">itemsize</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Size of one element in bytes.</span>
+
+<span class="sd">        The size is computed as ``bits * lanes // 8``. When the number of</span>
+<span class="sd">        lanes is greater than 1, the ``itemsize`` represents the byte size</span>
+<span class="sd">        of the vector element.</span>
+
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        .. code-block:: python</span>
+
+<span class="sd">            import tvm_ffi</span>
+
+<span class="sd">            assert tvm_ffi.dtype(&quot;float32&quot;).itemsize == 4</span>
+<span class="sd">            assert tvm_ffi.dtype(&quot;float32&quot;).with_lanes(4).itemsize == 16</span>
+
+<span class="sd">        See Also</span>
+<span class="sd">        --------</span>
+<span class="sd">        :py:attr:`tvm_ffi.dtype.bits`</span>
+<span class="sd">            Bit width of the scalar base type.</span>
+<span class="sd">        :py:attr:`tvm_ffi.dtype.lanes`</span>
+<span class="sd">            Number of lanes for vector types.</span>
+<span class="sd">        :py:meth:`tvm_ffi.dtype.with_lanes`</span>
+<span class="sd">            Create a vector dtype from a scalar base.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_tvm_ffi_dtype</span><span class="o">.</span><span class="n">itemsize</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">type_code</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Integer DLDataTypeCode of the scalar base type.</span>
+
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        .. code-block:: python</span>
+
+<span class="sd">            import tvm_ffi</span>
+
+<span class="sd">            f32 = tvm_ffi.dtype(&quot;float32&quot;)</span>
+<span class="sd">            # The type code is an integer following DLPack conventions</span>
+<span class="sd">            assert isinstance(f32.type_code, int)</span>
+<span class="sd">            # Consistent with constructing from an explicit (code, bits, lanes)</span>
+<span class="sd">            assert f32.type_code == tvm_ffi.dtype.from_dlpack_data_type((2, 32, 1)).type_code</span>
+
+<span class="sd">        See Also</span>
+<span class="sd">        --------</span>
+<span class="sd">        :py:meth:`tvm_ffi.dtype.from_dlpack_data_type`</span>
+<span class="sd">            Construct a dtype from a DLPack ``(code, bits, lanes)`` triple.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_tvm_ffi_dtype</span><span class="o">.</span><span class="n">type_code</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">bits</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Number of bits of the scalar base type.</span>
+
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        .. code-block:: python</span>
+
+<span class="sd">            import tvm_ffi</span>
+
+<span class="sd">            assert tvm_ffi.dtype(&quot;int8&quot;).bits == 8</span>
+<span class="sd">            v4f32 = tvm_ffi.dtype(&quot;float32&quot;).with_lanes(4)</span>
+<span class="sd">            assert v4f32.bits == 32  # per-lane bit width</span>
+
+<span class="sd">        See Also</span>
+<span class="sd">        --------</span>
+<span class="sd">        :py:attr:`tvm_ffi.dtype.itemsize`</span>
+<span class="sd">            Byte size accounting for lanes.</span>
+<span class="sd">        :py:attr:`tvm_ffi.dtype.lanes`</span>
+<span class="sd">            Number of lanes for vector types.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_tvm_ffi_dtype</span><span class="o">.</span><span class="n">bits</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">lanes</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Number of lanes (for vector types).</span>
+
+<span class="sd">        Returns ``1`` for scalar dtypes and the lane count for vector dtypes</span>
+<span class="sd">        created via :py:meth:`tvm_ffi.dtype.with_lanes`.</span>
+
+<span class="sd">        Examples</span>
+<span class="sd">        --------</span>
+<span class="sd">        .. code-block:: python</span>
+
+<span class="sd">            import tvm_ffi</span>
+
+<span class="sd">            assert tvm_ffi.dtype(&quot;float32&quot;).lanes == 1</span>
+<span class="sd">            assert tvm_ffi.dtype(&quot;float32&quot;).with_lanes(4).lanes == 4</span>
+
+<span class="sd">        See Also</span>
+<span class="sd">        --------</span>
+<span class="sd">        :py:meth:`tvm_ffi.dtype.with_lanes`</span>
+<span class="sd">            Create a vector dtype from a scalar base.</span>
+<span class="sd">        :py:attr:`tvm_ffi.dtype.itemsize`</span>
+<span class="sd">            Byte size accounting for lanes.</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_tvm_ffi_dtype</span><span class="o">.</span><span class="n">lanes</span></div>
 
 

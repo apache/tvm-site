@@ -39,7 +39,7 @@
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
   <script src="../../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
 
-    <script src="../../_static/documentation_options.js?v=6059a104"></script>
+    <script src="../../_static/documentation_options.js?v=78d19e59"></script>
     <script src="../../_static/doctools.js?v=9bcbadda"></script>
     <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -212,10 +212,14 @@ window.addEventListener("load", () => mermaid.run());
 <li class="toctree-l2"><a class="reference internal" href="../../reference/python/generated/tvm_ffi.StreamContext.html">tvm_ffi.StreamContext</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../reference/python/generated/tvm_ffi.use_torch_stream.html">tvm_ffi.use_torch_stream</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../reference/python/generated/tvm_ffi.use_raw_stream.html">tvm_ffi.use_raw_stream</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../reference/python/generated/tvm_ffi.get_raw_stream.html">tvm_ffi.get_raw_stream</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../reference/python/cpp/generated/tvm_ffi.cpp.load_inline.html">tvm_ffi.cpp.load_inline</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../reference/python/cpp/generated/tvm_ffi.cpp.build_inline.html">tvm_ffi.cpp.build_inline</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../reference/python/generated/tvm_ffi.serialization.html">tvm_ffi.serialization</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../reference/python/generated/tvm_ffi.access_path.html">tvm_ffi.access_path</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../reference/python/generated/tvm_ffi.serialization.from_json_graph_str.html">tvm_ffi.serialization.from_json_graph_str</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../reference/python/generated/tvm_ffi.serialization.to_json_graph_str.html">tvm_ffi.serialization.to_json_graph_str</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../reference/python/generated/tvm_ffi.access_path.AccessKind.html">tvm_ffi.access_path.AccessKind</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../reference/python/generated/tvm_ffi.access_path.AccessPath.html">tvm_ffi.access_path.AccessPath</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../reference/python/generated/tvm_ffi.access_path.AccessStep.html">tvm_ffi.access_path.AccessStep</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../reference/python/generated/tvm_ffi.convert.html">tvm_ffi.convert</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../reference/python/generated/tvm_ffi.ObjectConvertible.html">tvm_ffi.ObjectConvertible</a></li>
 </ul>
@@ -619,12 +623,13 @@ document.write(`
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
 <span class="sd">    type_key</span>
-<span class="sd">        The type key of the node</span>
+<span class="sd">        The type key of the node. It requires ``type_key`` to be registered already</span>
+<span class="sd">        on the C++ side. If not specified, the class name will be used.</span>
 
 <span class="sd">    Examples</span>
 <span class="sd">    --------</span>
-<span class="sd">    The following code registers MyObject</span>
-<span class="sd">    using type key &quot;test.MyObject&quot;</span>
+<span class="sd">    The following code registers MyObject using type key &quot;test.MyObject&quot;, if the</span>
+<span class="sd">    type key is already registered on the C++ side.</span>
 
 <span class="sd">    .. code-block:: python</span>
 
@@ -755,7 +760,20 @@ document.write(`
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
 <span class="sd">    func</span>
-<span class="sd">        The function to be returned, None if function is missing.</span>
+<span class="sd">        The function to be returned, ``None`` if function is missing.</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    .. code-block:: python</span>
+
+<span class="sd">        import tvm_ffi</span>
+
+<span class="sd">        @tvm_ffi.register_global_func(&quot;demo.echo&quot;)</span>
+<span class="sd">        def echo(x):</span>
+<span class="sd">            return x</span>
+
+<span class="sd">        f = tvm_ffi.get_global_func(&quot;demo.echo&quot;)</span>
+<span class="sd">        assert f(123) == 123</span>
 
 <span class="sd">    See Also</span>
 <span class="sd">    --------</span>
@@ -788,7 +806,26 @@ document.write(`
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
 <span class="sd">    name</span>
-<span class="sd">        The name of the global function</span>
+<span class="sd">        The name of the global function.</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    .. code-block:: python</span>
+
+<span class="sd">        import tvm_ffi</span>
+
+<span class="sd">        @tvm_ffi.register_global_func(&quot;my.temp&quot;)</span>
+<span class="sd">        def temp():</span>
+<span class="sd">            return 42</span>
+
+<span class="sd">        assert tvm_ffi.get_global_func(&quot;my.temp&quot;, allow_missing=True) is not None</span>
+<span class="sd">        tvm_ffi.remove_global_func(&quot;my.temp&quot;)</span>
+<span class="sd">        assert tvm_ffi.get_global_func(&quot;my.temp&quot;, allow_missing=True) is None</span>
+
+<span class="sd">    See Also</span>
+<span class="sd">    --------</span>
+<span class="sd">    :py:func:`tvm_ffi.register_global_func`</span>
+<span class="sd">    :py:func:`tvm_ffi.get_global_func`</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">get_global_func</span><span class="p">(</span><span class="s2">&quot;ffi.FunctionRemoveGlobal&quot;</span><span class="p">)(</span><span class="n">name</span><span class="p">)</span></div>
@@ -798,17 +835,34 @@ document.write(`
 <div class="viewcode-block" id="get_global_func_metadata">
 <a class="viewcode-back" href="../../reference/python/generated/tvm_ffi.get_global_func_metadata.html#tvm_ffi.get_global_func_metadata">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">get_global_func_metadata</span><span class="p">(</span><span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Get the type schema string of a global function by name.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Get metadata (including type schema) for a global function.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
 <span class="sd">    name</span>
-<span class="sd">        The name of the global function</span>
+<span class="sd">        The name of the global function.</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
 <span class="sd">    metadata</span>
-<span class="sd">        The metadata of the function</span>
+<span class="sd">        A dictionary containing function metadata. The ``type_schema`` field</span>
+<span class="sd">        encodes the callable signature.</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    .. code-block:: python</span>
+
+<span class="sd">        import tvm_ffi</span>
+
+<span class="sd">        meta = tvm_ffi.get_global_func_metadata(&quot;testing.add_one&quot;)</span>
+<span class="sd">        print(meta)</span>
+
+<span class="sd">    See Also</span>
+<span class="sd">    --------</span>
+<span class="sd">    :py:func:`tvm_ffi.get_global_func`</span>
+<span class="sd">        Retrieve a callable for an existing global function.</span>
+<span class="sd">    :py:func:`tvm_ffi.register_global_func`</span>
+<span class="sd">        Register a Python callable as a global FFI function.</span>
 
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">get_global_func</span><span class="p">(</span><span class="s2">&quot;ffi.GetGlobalFuncMetadata&quot;</span><span class="p">)(</span><span class="n">name</span><span class="p">))</span></div>

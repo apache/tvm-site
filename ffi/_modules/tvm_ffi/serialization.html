@@ -39,7 +39,7 @@
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
   <script src="../../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
 
-    <script src="../../_static/documentation_options.js?v=6059a104"></script>
+    <script src="../../_static/documentation_options.js?v=78d19e59"></script>
     <script src="../../_static/doctools.js?v=9bcbadda"></script>
     <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -212,10 +212,14 @@ window.addEventListener("load", () => mermaid.run());
 <li class="toctree-l2"><a class="reference internal" href="../../reference/python/generated/tvm_ffi.StreamContext.html">tvm_ffi.StreamContext</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../reference/python/generated/tvm_ffi.use_torch_stream.html">tvm_ffi.use_torch_stream</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../reference/python/generated/tvm_ffi.use_raw_stream.html">tvm_ffi.use_raw_stream</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../reference/python/generated/tvm_ffi.get_raw_stream.html">tvm_ffi.get_raw_stream</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../reference/python/cpp/generated/tvm_ffi.cpp.load_inline.html">tvm_ffi.cpp.load_inline</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../reference/python/cpp/generated/tvm_ffi.cpp.build_inline.html">tvm_ffi.cpp.build_inline</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../reference/python/generated/tvm_ffi.serialization.html">tvm_ffi.serialization</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../../reference/python/generated/tvm_ffi.access_path.html">tvm_ffi.access_path</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../reference/python/generated/tvm_ffi.serialization.from_json_graph_str.html">tvm_ffi.serialization.from_json_graph_str</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../reference/python/generated/tvm_ffi.serialization.to_json_graph_str.html">tvm_ffi.serialization.to_json_graph_str</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../reference/python/generated/tvm_ffi.access_path.AccessKind.html">tvm_ffi.access_path.AccessKind</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../reference/python/generated/tvm_ffi.access_path.AccessPath.html">tvm_ffi.access_path.AccessPath</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../reference/python/generated/tvm_ffi.access_path.AccessStep.html">tvm_ffi.access_path.AccessStep</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../reference/python/generated/tvm_ffi.convert.html">tvm_ffi.convert</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../reference/python/generated/tvm_ffi.ObjectConvertible.html">tvm_ffi.ObjectConvertible</a></li>
 </ul>
@@ -596,7 +600,12 @@ document.write(`
 <span class="c1"># KIND, either express or implied.  See the License for the</span>
 <span class="c1"># specific language governing permissions and limitations</span>
 <span class="c1"># under the License.</span>
-<span class="sd">&quot;&quot;&quot;Serialization related utilities to enable some object can be pickled.&quot;&quot;&quot;</span>
+<span class="sd">&quot;&quot;&quot;Utilities for serializing and deserializing FFI object graphs.</span>
+
+<span class="sd">These helpers produce a stable JSON graph representation that preserves</span>
+<span class="sd">object identity and references. It is useful for debugging and for</span>
+<span class="sd">lightweight persistence when pickling is not available.</span>
+<span class="sd">&quot;&quot;&quot;</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
 
@@ -606,13 +615,13 @@ document.write(`
 
 
 <div class="viewcode-block" id="to_json_graph_str">
-<a class="viewcode-back" href="../../reference/python/generated/tvm_ffi.serialization.html#tvm_ffi.serialization.to_json_graph_str">[docs]</a>
+<a class="viewcode-back" href="../../reference/python/generated/tvm_ffi.serialization.to_json_graph_str.html#tvm_ffi.serialization.to_json_graph_str">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">to_json_graph_str</span><span class="p">(</span><span class="n">obj</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span> <span class="n">metadata</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Dump an object to a JSON graph string.</span>
 
-<span class="sd">    The JSON graph string is a string representation of of the object</span>
-<span class="sd">    graph includes the reference information of same objects, which can</span>
-<span class="sd">    be used for serialization and debugging.</span>
+<span class="sd">    The JSON graph is a textual representation of the object graph that</span>
+<span class="sd">    preserves shared references. It can be used for debugging or simple</span>
+<span class="sd">    persistence.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -627,18 +636,29 @@ document.write(`
 <span class="sd">    json_str</span>
 <span class="sd">        The JSON graph string.</span>
 
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    .. code-block:: python</span>
+
+<span class="sd">        import tvm_ffi</span>
+
+<span class="sd">        a = tvm_ffi.convert([1, 2, 3])</span>
+<span class="sd">        s = tvm_ffi.serialization.to_json_graph_str(a)</span>
+<span class="sd">        b = tvm_ffi.serialization.from_json_graph_str(s)</span>
+<span class="sd">        assert list(b) == [1, 2, 3]</span>
+
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="n">_ffi_api</span><span class="o">.</span><span class="n">ToJSONGraphString</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">metadata</span><span class="p">)</span></div>
 
 
 
 <div class="viewcode-block" id="from_json_graph_str">
-<a class="viewcode-back" href="../../reference/python/generated/tvm_ffi.serialization.html#tvm_ffi.serialization.from_json_graph_str">[docs]</a>
+<a class="viewcode-back" href="../../reference/python/generated/tvm_ffi.serialization.from_json_graph_str.html#tvm_ffi.serialization.from_json_graph_str">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">from_json_graph_str</span><span class="p">(</span><span class="n">json_str</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Load an object from a JSON graph string.</span>
 
-<span class="sd">    The JSON graph string is a string representation of of the object</span>
-<span class="sd">    graph that also includes the reference information.</span>
+<span class="sd">    The JSON graph string is produced by :py:func:`to_json_graph_str` and</span>
+<span class="sd">    can be converted back into the corresponding FFI-backed objects.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
