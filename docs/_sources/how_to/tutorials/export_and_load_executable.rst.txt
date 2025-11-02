@@ -80,7 +80,7 @@ We start with a small PyTorch MLP so the example remains lightweight. The
 model is exported to a :py:class:`torch.export.ExportedProgram` and then
 translated into a Relax ``IRModule``.
 
-.. GENERATED FROM PYTHON SOURCE LINES 63-111
+.. GENERATED FROM PYTHON SOURCE LINES 63-108
 
 .. code-block:: Python
 
@@ -113,9 +113,6 @@ translated into a Relax ``IRModule``.
     else:  # pragma: no cover
         TorchMLP = None  # type: ignore[misc, assignment]
 
-    if not RUN_EXAMPLE:
-        print("Skip model conversion because PyTorch is unavailable or we are in CI.")
-
     if RUN_EXAMPLE:
         torch_model = TorchMLP().eval()
         example_args = (torch.randn(1, 1, 28, 28, dtype=torch.float32),)
@@ -136,16 +133,10 @@ translated into a Relax ``IRModule``.
 
 
 
-.. rst-class:: sphx-glr-script-out
-
- .. code-block:: none
-
-    Skip model conversion because PyTorch is unavailable or we are in CI.
 
 
 
-
-.. GENERATED FROM PYTHON SOURCE LINES 112-117
+.. GENERATED FROM PYTHON SOURCE LINES 109-114
 
 Build and Export with ``export_library``
 -------------------------------------------
@@ -153,7 +144,7 @@ We build for ``llvm`` to generate CPU code and then export the resulting
 executable. Passing ``workspace_dir`` keeps the intermediate packaging files,
 which is useful to inspect what was produced.
 
-.. GENERATED FROM PYTHON SOURCE LINES 117-154
+.. GENERATED FROM PYTHON SOURCE LINES 114-151
 
 .. code-block:: Python
 
@@ -169,7 +160,7 @@ which is useful to inspect what was produced.
             built_mod = pipeline(mod)
 
         # Build without params - we'll pass them at runtime
-        executable = relax.build(built_mod, target=TARGET)
+        executable = tvm.compile(built_mod, target=TARGET)
 
         library_path = ARTIFACT_DIR / "mlp_cpu.so"
         executable.export_library(str(library_path), workspace_dir=str(ARTIFACT_DIR))
@@ -201,7 +192,7 @@ which is useful to inspect what was produced.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 155-160
+.. GENERATED FROM PYTHON SOURCE LINES 152-157
 
 Load the Exported Library and Run It
 ------------------------------------
@@ -209,7 +200,7 @@ Once the shared object is produced, we can reload it back into the TVM runtime
 on any machine with a compatible instruction set. The Relax VM consumes the
 runtime module directly.
 
-.. GENERATED FROM PYTHON SOURCE LINES 160-188
+.. GENERATED FROM PYTHON SOURCE LINES 157-188
 
 .. code-block:: Python
 
@@ -232,7 +223,10 @@ runtime module directly.
         # TVM returns Array objects for tuple outputs, access via indexing.
         # For models imported from PyTorch, outputs are typically tuples (even for single outputs).
         # For ONNX models, outputs may be a single Tensor directly.
-        result_tensor = tvm_output[0] if isinstance(tvm_output, (tuple, list)) else tvm_output
+        if isinstance(tvm_output, tvm.ir.Array) and len(tvm_output) > 0:
+            result_tensor = tvm_output[0]
+        else:
+            result_tensor = tvm_output
 
         print("VM output shape:", result_tensor.shape)
         print("VM output type:", type(tvm_output), "->", type(result_tensor))
@@ -278,7 +272,7 @@ on other machines or in standalone scripts.
     #
     #    mod = from_exported_program(exported_program, keep_params_as_input=False)
     #    # Parameters are now embedded as constants in the module
-    #    executable = relax.build(built_mod, target=TARGET)
+    #    executable = tvm.compile(built_mod, target=TARGET)
     #    # Runtime: vm["main"](input)  # No need to pass params!
     #
     # This creates a single-file deployment (only the ``.so`` is needed), but you
@@ -294,7 +288,7 @@ on other machines or in standalone scripts.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 222-304
+.. GENERATED FROM PYTHON SOURCE LINES 222-307
 
 Loading and Running the Exported Model
 -----------------------------------------------------------
@@ -339,7 +333,10 @@ Complete script:
 
    # Step 6: Extract result (output may be tuple or single Tensor)
    # PyTorch models typically return tuples, ONNX models may return a single Tensor
-   result = output[0] if isinstance(output, (tuple, list)) else output
+   if isinstance(tvm_output, tvm.ir.Array) and len(tvm_output) > 0:
+       result_tensor = tvm_output[0]
+   else:
+       result_tensor = tvm_output
 
    print("Prediction shape:", result.shape)
    print("Predicted class:", np.argmax(result.numpy()))
@@ -379,7 +376,7 @@ Adjust the paths as needed for your deployment. For GPU deployment, ensure the
 target machine has compatible CUDA drivers and the model was compiled for the
 same GPU architecture.
 
-.. GENERATED FROM PYTHON SOURCE LINES 307-352
+.. GENERATED FROM PYTHON SOURCE LINES 310-355
 
 Deploying to Remote Devices
 ---------------------------
@@ -409,7 +406,7 @@ Quick example for ARM deployment workflow:
 
    # Step 1: Cross-compile for ARM target (on local machine)
    TARGET = tvm.target.Target("llvm -mtriple=aarch64-linux-gnu")
-   executable = relax.build(built_mod, target=TARGET)
+   executable = tvm.compile(built_mod, target=TARGET)
    executable.export_library("mlp_arm.so")
 
    # Step 2: Connect to remote device RPC server
@@ -427,7 +424,7 @@ Quick example for ARM deployment workflow:
 The key difference is using an ARM target triple during compilation and
 uploading files via RPC instead of copying them directly.
 
-.. GENERATED FROM PYTHON SOURCE LINES 355-376
+.. GENERATED FROM PYTHON SOURCE LINES 358-379
 
 FAQ
 ---
