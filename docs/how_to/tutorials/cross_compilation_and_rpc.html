@@ -193,6 +193,7 @@
 <li class="toctree-l2"><a class="reference internal" href="#declare-and-cross-compile-kernel-on-local-machine">Declare and Cross Compile Kernel on Local Machine</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#run-cpu-kernel-remotely-by-rpc">Run CPU Kernel Remotely by RPC</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#run-opencl-kernel-remotely-by-rpc">Run OpenCL Kernel Remotely by RPC</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#deploy-pytorch-models-to-remote-devices-with-rpc">Deploy PyTorch Models to Remote Devices with RPC</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#summary">Summary</a></li>
 </ul>
 </li>
@@ -475,7 +476,7 @@ device and returns the measured cost. Network overhead is excluded.</p>
 <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%g</span><span class="s2"> secs/op&quot;</span> <span class="o">%</span> <span class="n">cost</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>1.27e-07 secs/op
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>1.28e-07 secs/op
 </pre></div>
 </div>
 </section>
@@ -531,15 +532,359 @@ make<span class="w"> </span>runtime<span class="w"> </span>-j4
 </pre></div>
 </div>
 </section>
+<section id="deploy-pytorch-models-to-remote-devices-with-rpc">
+<h2>Deploy PyTorch Models to Remote Devices with RPC<a class="headerlink" href="#deploy-pytorch-models-to-remote-devices-with-rpc" title="Link to this heading"></a></h2>
+<p>The above examples demonstrate cross compilation and RPC using low-level
+TensorIR (via TE). For deploying complete neural network models from frameworks
+like PyTorch or ONNX, TVM’s Relax provides a higher-level abstraction that is
+better suited for end-to-end model compilation.</p>
+<p>This section shows a modern workflow for deploying models to <strong>any remote device</strong>:</p>
+<ol class="arabic simple">
+<li><p>Import a PyTorch model and convert it to Relax</p></li>
+<li><p>Cross-compile for the target architecture (ARM, x86, RISC-V, etc.)</p></li>
+<li><p>Deploy via RPC to a remote device</p></li>
+<li><p>Run inference remotely</p></li>
+</ol>
+<p>This workflow is applicable to various deployment scenarios:</p>
+<ul class="simple">
+<li><p><strong>ARM devices</strong>: Raspberry Pi, NVIDIA Jetson, mobile phones</p></li>
+<li><p><strong>x86 servers</strong>: Remote Linux servers, cloud instances</p></li>
+<li><p><strong>Embedded systems</strong>: RISC-V boards, custom hardware</p></li>
+<li><p><strong>Accelerators</strong>: Remote machines with GPUs, TPUs, or other accelerators</p></li>
+</ul>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>This example uses PyTorch for demonstration, but the workflow is identical
+for ONNX models. Simply replace <code class="docutils literal notranslate"><span class="pre">from_exported_program()</span></code> with
+<code class="docutils literal notranslate"><span class="pre">from_onnx(model,</span> <span class="pre">keep_params_in_input=True)</span></code> and follow the same steps.</p>
+</div>
+<div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><span class="c1"># First, let&#39;s check if PyTorch is available</span>
+<span class="k">try</span><span class="p">:</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">torch</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">torch.export</span><span class="w"> </span><span class="kn">import</span> <span class="n">export</span>
+
+    <a href="https://docs.python.org/3/library/functions.html#bool" title="builtins.bool" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">HAS_TORCH</span></a> <span class="o">=</span> <span class="kc">True</span>
+<span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+    <a href="https://docs.python.org/3/library/functions.html#bool" title="builtins.bool" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">HAS_TORCH</span></a> <span class="o">=</span> <span class="kc">False</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">run_pytorch_model_via_rpc</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Demonstrates the complete workflow of deploying a PyTorch model to an ARM device via RPC.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="ow">not</span> <a href="https://docs.python.org/3/library/functions.html#bool" title="builtins.bool" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">HAS_TORCH</span></a><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Skipping PyTorch example (PyTorch not installed)&quot;</span><span class="p">)</span>
+        <span class="k">return</span>
+
+    <span class="kn">from</span><span class="w"> </span><span class="nn">tvm</span><span class="w"> </span><span class="kn">import</span> <span class="n">relax</span>
+    <span class="kn">from</span><span class="w"> </span><span class="nn">tvm.relax.frontend.torch</span><span class="w"> </span><span class="kn">import</span> <a href="../../reference/api/python/relax/frontend.html#tvm.relax.frontend.torch.from_exported_program" title="tvm.relax.frontend.torch.from_exported_program" class="sphx-glr-backref-module-tvm-relax-frontend-torch sphx-glr-backref-type-py-function"><span class="n">from_exported_program</span></a>
+
+    <span class="c1">######################################################################</span>
+    <span class="c1"># Step 1: Define and Export PyTorch Model</span>
+    <span class="c1"># ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~</span>
+    <span class="c1"># We use a simple MLP model for demonstration. In practice, this could be</span>
+    <span class="c1"># any PyTorch model (ResNet, BERT, etc.).</span>
+
+    <span class="k">class</span><span class="w"> </span><span class="nc">TorchMLP</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Module</span><span class="p">):</span>
+        <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">net</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Sequential</span><span class="p">(</span>
+                <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Flatten</span><span class="p">(),</span>
+                <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="mi">28</span> <span class="o">*</span> <span class="mi">28</span><span class="p">,</span> <span class="mi">128</span><span class="p">),</span>
+                <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">ReLU</span><span class="p">(),</span>
+                <span class="n">torch</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">Linear</span><span class="p">(</span><span class="mi">128</span><span class="p">,</span> <span class="mi">10</span><span class="p">),</span>
+            <span class="p">)</span>
+
+        <span class="k">def</span><span class="w"> </span><span class="nf">forward</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">torch</span><span class="o">.</span><span class="n">Tensor</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">net</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+
+    <span class="c1"># Export the model using PyTorch 2.x export API</span>
+    <span class="n">torch_model</span> <span class="o">=</span> <span class="n">TorchMLP</span><span class="p">()</span><span class="o">.</span><span class="n">eval</span><span class="p">()</span>
+    <span class="n">example_args</span> <span class="o">=</span> <span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">28</span><span class="p">,</span> <span class="mi">28</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">float32</span><span class="p">),)</span>
+
+    <span class="k">with</span> <span class="n">torch</span><span class="o">.</span><span class="n">no_grad</span><span class="p">():</span>
+        <span class="n">exported_program</span> <span class="o">=</span> <span class="n">export</span><span class="p">(</span><span class="n">torch_model</span><span class="p">,</span> <span class="n">example_args</span><span class="p">)</span>
+
+    <span class="c1">######################################################################</span>
+    <span class="c1"># Step 2: Convert to Relax and Prepare for Compilation</span>
+    <span class="c1"># ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~</span>
+    <span class="c1"># Convert the exported PyTorch program to TVM&#39;s Relax representation</span>
+
+    <span class="n">mod</span> <span class="o">=</span> <a href="../../reference/api/python/relax/frontend.html#tvm.relax.frontend.torch.from_exported_program" title="tvm.relax.frontend.torch.from_exported_program" class="sphx-glr-backref-module-tvm-relax-frontend-torch sphx-glr-backref-type-py-function"><span class="n">from_exported_program</span></a><span class="p">(</span><span class="n">exported_program</span><span class="p">,</span> <span class="n">keep_params_as_input</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="c1"># Separate parameters from the model for flexible deployment</span>
+    <span class="n">mod</span><span class="p">,</span> <span class="n">params</span> <span class="o">=</span> <a href="../../reference/api/python/relax/frontend.html#tvm.relax.frontend.detach_params" title="tvm.relax.frontend.detach_params" class="sphx-glr-backref-module-tvm-relax-frontend sphx-glr-backref-type-py-function"><span class="n">relax</span><span class="o">.</span><span class="n">frontend</span><span class="o">.</span><span class="n">detach_params</span></a><span class="p">(</span><span class="n">mod</span><span class="p">)</span>
+
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Converted PyTorch model to Relax:&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  - Number of parameters: </span><span class="si">{</span><span class="nb">len</span><span class="p">(</span><span class="n">params</span><span class="p">[</span><span class="s1">&#39;main&#39;</span><span class="p">])</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="c1">######################################################################</span>
+    <span class="c1"># Step 3: Cross-Compile for Target Device</span>
+    <span class="c1"># ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~</span>
+    <span class="c1"># Compile the model for the target device architecture. The target</span>
+    <span class="c1"># configuration depends on your deployment scenario.</span>
+
+    <span class="k">if</span> <a href="https://docs.python.org/3/library/functions.html#bool" title="builtins.bool" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">local_demo</span></a><span class="p">:</span>
+        <span class="c1"># For demonstration on local machine, use local target</span>
+        <a href="https://docs.python.org/3/library/stdtypes.html#str" title="builtins.str" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">target</span></a> <span class="o">=</span> <a href="../../reference/api/python/target.html#tvm.target.Target" title="tvm.target.Target" class="sphx-glr-backref-module-tvm-target sphx-glr-backref-type-py-class"><span class="n">tvm</span><span class="o">.</span><span class="n">target</span><span class="o">.</span><span class="n">Target</span></a><span class="p">(</span><span class="s2">&quot;llvm&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Using local target for demonstration&quot;</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="c1"># Choose the appropriate target for your device:</span>
+        <span class="c1">#</span>
+        <span class="c1"># ARM devices:</span>
+        <span class="c1">#   - Raspberry Pi 3/4 (32-bit): &quot;llvm -mtriple=armv7l-linux-gnueabihf&quot;</span>
+        <span class="c1">#   - Raspberry Pi 4 (64-bit) / Jetson: &quot;llvm -mtriple=aarch64-linux-gnu&quot;</span>
+        <span class="c1">#   - Android: &quot;llvm -mtriple=aarch64-linux-android&quot;</span>
+        <span class="c1">#</span>
+        <span class="c1"># x86 servers:</span>
+        <span class="c1">#   - Linux x86_64: &quot;llvm -mtriple=x86_64-linux-gnu&quot;</span>
+        <span class="c1">#   - With AVX-512: &quot;llvm -mtriple=x86_64-linux-gnu -mcpu=skylake-avx512&quot;</span>
+        <span class="c1">#</span>
+        <span class="c1"># RISC-V:</span>
+        <span class="c1">#   - RV64: &quot;llvm -mtriple=riscv64-unknown-linux-gnu&quot;</span>
+        <span class="c1">#</span>
+        <span class="c1"># GPU targets:</span>
+        <span class="c1">#   - CUDA: tvm.target.Target(&quot;cuda&quot;, host=&quot;llvm -mtriple=x86_64-linux-gnu&quot;)</span>
+        <span class="c1">#   - OpenCL: tvm.target.Target(&quot;opencl&quot;, host=&quot;llvm -mtriple=aarch64-linux-gnu&quot;)</span>
+        <span class="c1">#</span>
+        <span class="c1"># For this example, we use ARM 64-bit</span>
+        <a href="https://docs.python.org/3/library/stdtypes.html#str" title="builtins.str" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">target</span></a> <span class="o">=</span> <a href="../../reference/api/python/target.html#tvm.target.Target" title="tvm.target.Target" class="sphx-glr-backref-module-tvm-target sphx-glr-backref-type-py-class"><span class="n">tvm</span><span class="o">.</span><span class="n">target</span><span class="o">.</span><span class="n">Target</span></a><span class="p">(</span><span class="s2">&quot;llvm -mtriple=aarch64-linux-gnu&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Cross-compiling for target: </span><span class="si">{</span><a href="https://docs.python.org/3/library/stdtypes.html#str" title="builtins.str" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">target</span></a><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="c1"># Apply optimization pipeline</span>
+    <span class="n">pipeline</span> <span class="o">=</span> <a href="../../reference/api/python/relax/relax.html#tvm.relax.get_pipeline" title="tvm.relax.get_pipeline" class="sphx-glr-backref-module-tvm-relax sphx-glr-backref-type-py-function"><span class="n">relax</span><span class="o">.</span><span class="n">get_pipeline</span></a><span class="p">()</span>
+    <span class="k">with</span> <a href="https://docs.python.org/3/library/stdtypes.html#str" title="builtins.str" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">target</span></a><span class="p">:</span>
+        <span class="n">built_mod</span> <span class="o">=</span> <span class="n">pipeline</span><span class="p">(</span><span class="n">mod</span><span class="p">)</span>
+
+    <span class="c1"># Compile to executable</span>
+    <span class="n">executable</span> <span class="o">=</span> <a href="../../reference/api/python/driver.html#tvm.compile" title="tvm.compile" class="sphx-glr-backref-module-tvm sphx-glr-backref-type-py-function"><span class="n">tvm</span><span class="o">.</span><span class="n">compile</span></a><span class="p">(</span><span class="n">built_mod</span><span class="p">,</span> <a href="https://docs.python.org/3/library/stdtypes.html#str" title="builtins.str" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">target</span></a><span class="o">=</span><a href="https://docs.python.org/3/library/stdtypes.html#str" title="builtins.str" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">target</span></a><span class="p">)</span>
+
+    <span class="c1"># Export to shared library</span>
+    <span class="n">lib_path</span> <span class="o">=</span> <a href="../../reference/api/python/contrib.html#tvm.contrib.utils.TempDirectory.relpath" title="tvm.contrib.utils.TempDirectory.relpath" class="sphx-glr-backref-module-tvm-contrib-utils sphx-glr-backref-type-py-method"><span class="n">temp</span><span class="o">.</span><span class="n">relpath</span></a><span class="p">(</span><span class="s2">&quot;model_deployed.so&quot;</span><span class="p">)</span>
+    <span class="n">executable</span><span class="o">.</span><span class="n">export_library</span><span class="p">(</span><span class="n">lib_path</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Exported library to: </span><span class="si">{</span><span class="n">lib_path</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="c1"># Save parameters separately</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+
+    <span class="n">params_path</span> <span class="o">=</span> <a href="../../reference/api/python/contrib.html#tvm.contrib.utils.TempDirectory.relpath" title="tvm.contrib.utils.TempDirectory.relpath" class="sphx-glr-backref-module-tvm-contrib-utils sphx-glr-backref-type-py-method"><span class="n">temp</span><span class="o">.</span><span class="n">relpath</span></a><span class="p">(</span><span class="s2">&quot;model_params.npz&quot;</span><span class="p">)</span>
+    <span class="n">param_arrays</span> <span class="o">=</span> <span class="p">{</span><span class="sa">f</span><span class="s2">&quot;p_</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">:</span> <span class="n">p</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">p</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">params</span><span class="p">[</span><span class="s2">&quot;main&quot;</span><span class="p">])}</span>
+    <span class="n">np</span><span class="o">.</span><span class="n">savez</span><span class="p">(</span><span class="n">params_path</span><span class="p">,</span> <span class="o">**</span><span class="n">param_arrays</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Saved parameters to: </span><span class="si">{</span><span class="n">params_path</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="c1">######################################################################</span>
+    <span class="c1"># Step 4: Deploy to Remote Device via RPC</span>
+    <span class="c1"># ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~</span>
+    <span class="c1"># Connect to the remote device, upload the compiled library and parameters,</span>
+    <span class="c1"># then run inference remotely. This works for any device with TVM RPC server.</span>
+    <span class="c1">#</span>
+    <span class="c1"># Note: The following code demonstrates the RPC workflow. In local_demo mode,</span>
+    <span class="c1"># we skip actual execution to avoid LocalSession compatibility issues.</span>
+
+    <span class="k">if</span> <a href="https://docs.python.org/3/library/functions.html#bool" title="builtins.bool" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">local_demo</span></a><span class="p">:</span>
+        <span class="c1"># For demonstration, show the code structure without execution</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">RPC workflow (works for any remote device):&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;=&quot;</span> <span class="o">*</span> <span class="mi">50</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;1. Start RPC server on target device:&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;   python -m tvm.exec.rpc_server --host 0.0.0.0 --port=9090&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">2. Connect from local machine:&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;   remote = rpc.connect(&#39;DEVICE_IP&#39;, 9090)&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">3. Upload compiled library:&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;   remote.upload(&#39;model_deployed.so&#39;)&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;   remote.upload(&#39;model_params.npz&#39;)&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">4. Load and run remotely:&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;   lib = remote.load_module(&#39;model_deployed.so&#39;)&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;   vm = relax.VirtualMachine(lib, remote.cpu())&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;   result = vm[&#39;main&#39;](input, *params)&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Device examples:&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;  - Raspberry Pi: 192.168.1.100&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;  - Remote server: ssh tunnel or direct IP&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;  - NVIDIA Jetson: 10.0.0.50&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;  - Cloud instance: public IP&quot;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">To run actual RPC, set local_demo=False&quot;</span><span class="p">)</span>
+        <span class="k">return</span>  <span class="c1"># Skip actual RPC execution in demo mode</span>
+
+    <span class="c1"># Actual RPC workflow for real deployment</span>
+    <span class="c1"># Connect to remote device (works for ARM, x86, RISC-V, etc.)</span>
+    <span class="c1"># Make sure the RPC server is running on the device:</span>
+    <span class="c1">#   python -m tvm.exec.rpc_server --host 0.0.0.0 --port=9090</span>
+    <span class="n">device_host</span> <span class="o">=</span> <span class="s2">&quot;192.168.1.100&quot;</span>  <span class="c1"># Replace with your device IP</span>
+    <span class="n">device_port</span> <span class="o">=</span> <span class="mi">9090</span>
+    <a href="../../reference/api/python/rpc.html#tvm.rpc.LocalSession" title="tvm.rpc.LocalSession" class="sphx-glr-backref-module-tvm-rpc sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">remote</span></a> <span class="o">=</span> <a href="../../reference/api/python/rpc.html#tvm.rpc.connect" title="tvm.rpc.connect" class="sphx-glr-backref-module-tvm-rpc sphx-glr-backref-type-py-function"><span class="n">rpc</span><span class="o">.</span><span class="n">connect</span></a><span class="p">(</span><span class="n">device_host</span><span class="p">,</span> <span class="n">device_port</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Connected to remote device at </span><span class="si">{</span><span class="n">device_host</span><span class="si">}</span><span class="s2">:</span><span class="si">{</span><span class="n">device_port</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="c1"># Upload library and parameters to remote device</span>
+    <a href="../../reference/api/python/rpc.html#tvm.rpc.RPCSession.upload" title="tvm.rpc.RPCSession.upload" class="sphx-glr-backref-module-tvm-rpc sphx-glr-backref-type-py-method"><span class="n">remote</span><span class="o">.</span><span class="n">upload</span></a><span class="p">(</span><span class="n">lib_path</span><span class="p">)</span>
+    <a href="../../reference/api/python/rpc.html#tvm.rpc.RPCSession.upload" title="tvm.rpc.RPCSession.upload" class="sphx-glr-backref-module-tvm-rpc sphx-glr-backref-type-py-method"><span class="n">remote</span><span class="o">.</span><span class="n">upload</span></a><span class="p">(</span><span class="n">params_path</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Uploaded files to remote device&quot;</span><span class="p">)</span>
+
+    <span class="c1"># Load the library on the remote device</span>
+    <span class="n">lib</span> <span class="o">=</span> <a href="../../reference/api/python/rpc.html#tvm.rpc.RPCSession.load_module" title="tvm.rpc.RPCSession.load_module" class="sphx-glr-backref-module-tvm-rpc sphx-glr-backref-type-py-method"><span class="n">remote</span><span class="o">.</span><span class="n">load_module</span></a><span class="p">(</span><span class="s2">&quot;model_deployed.so&quot;</span><span class="p">)</span>
+
+    <span class="c1"># Choose device on remote machine</span>
+    <span class="c1"># For CPU: dev = remote.cpu()</span>
+    <span class="c1"># For CUDA GPU: dev = remote.cuda(0)</span>
+    <span class="c1"># For OpenCL: dev = remote.cl(0)</span>
+    <span class="n">dev</span> <span class="o">=</span> <a href="../../reference/api/python/rpc.html#tvm.rpc.RPCSession.cpu" title="tvm.rpc.RPCSession.cpu" class="sphx-glr-backref-module-tvm-rpc sphx-glr-backref-type-py-method"><span class="n">remote</span><span class="o">.</span><span class="n">cpu</span></a><span class="p">()</span>
+
+    <span class="c1"># Create VM and load parameters</span>
+    <span class="n">vm</span> <span class="o">=</span> <a href="../../reference/api/python/relax/relax.html#tvm.relax.VirtualMachine" title="tvm.relax.VirtualMachine" class="sphx-glr-backref-module-tvm-relax sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">relax</span><span class="o">.</span><span class="n">VirtualMachine</span></a><span class="p">(</span><span class="n">lib</span><span class="p">,</span> <span class="n">dev</span><span class="p">)</span>
+
+    <span class="c1"># Load parameters from the uploaded file</span>
+    <span class="c1"># Note: In practice, you might load this from the remote filesystem</span>
+    <span class="n">params_npz</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">params_path</span><span class="p">)</span>
+    <span class="n">remote_params</span> <span class="o">=</span> <span class="p">[</span><span class="n">tvm</span><span class="o">.</span><span class="n">runtime</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">params_npz</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;p_</span><span class="si">{</span><span class="n">i</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">],</span> <span class="n">dev</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">params_npz</span><span class="p">))]</span>
+
+    <span class="c1">######################################################################</span>
+    <span class="c1"># Step 5: Run Inference on Remote Device</span>
+    <span class="c1"># ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~</span>
+    <span class="c1"># Execute the model on the remote ARM device and retrieve results</span>
+
+    <span class="c1"># Prepare input data</span>
+    <span class="n">input_data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">28</span><span class="p">,</span> <span class="mi">28</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s2">&quot;float32&quot;</span><span class="p">)</span>
+    <span class="n">remote_input</span> <span class="o">=</span> <span class="n">tvm</span><span class="o">.</span><span class="n">runtime</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">input_data</span><span class="p">,</span> <span class="n">dev</span><span class="p">)</span>
+
+    <span class="c1"># Run inference on remote device</span>
+    <span class="n">output</span> <span class="o">=</span> <span class="n">vm</span><span class="p">[</span><span class="s2">&quot;main&quot;</span><span class="p">](</span><span class="n">remote_input</span><span class="p">,</span> <span class="o">*</span><span class="n">remote_params</span><span class="p">)</span>
+
+    <span class="c1"># Extract result (handle both tuple and single tensor outputs)</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">output</span><span class="p">,</span> <a href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Sequence" title="collections.abc.Sequence" class="sphx-glr-backref-module-collections-abc sphx-glr-backref-type-py-class"><span class="n">tvm</span><span class="o">.</span><span class="n">ir</span><span class="o">.</span><span class="n">Array</span></a><span class="p">)</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">output</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="n">output</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="n">output</span>
+
+    <span class="c1"># Retrieve result from remote device to local</span>
+    <span class="n">result_np</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Inference completed on remote device&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  Output shape: </span><span class="si">{</span><span class="n">result_np</span><span class="o">.</span><span class="n">shape</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  Predicted class: </span><span class="si">{</span><span class="n">np</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">result_np</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="c1">######################################################################</span>
+    <span class="c1"># Step 6: Performance Evaluation (Optional)</span>
+    <span class="c1"># ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~</span>
+    <span class="c1"># Measure inference time on the remote device, excluding network overhead</span>
+
+    <span class="n">time_f</span> <span class="o">=</span> <span class="n">vm</span><span class="o">.</span><span class="n">time_evaluator</span><span class="p">(</span><span class="s2">&quot;main&quot;</span><span class="p">,</span> <span class="n">dev</span><span class="p">,</span> <span class="n">number</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">repeat</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+    <span class="n">prof_res</span> <span class="o">=</span> <span class="n">time_f</span><span class="p">(</span><span class="n">remote_input</span><span class="p">,</span> <span class="o">*</span><span class="n">remote_params</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Inference time on remote device: </span><span class="si">{</span><span class="n">prof_res</span><span class="o">.</span><span class="n">mean</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="mi">1000</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2"> ms&quot;</span><span class="p">)</span>
+
+    <span class="c1">######################################################################</span>
+    <span class="c1"># Notes on Performance Optimization</span>
+    <span class="c1"># ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~</span>
+    <span class="c1">#</span>
+    <span class="c1"># For optimal performance on target devices, consider:</span>
+    <span class="c1">#</span>
+    <span class="c1"># 1. **Auto-tuning with MetaSchedule**: Use automated search to find</span>
+    <span class="c1">#    optimal schedules for your specific hardware:</span>
+    <span class="c1">#</span>
+    <span class="c1">#    .. code-block:: python</span>
+    <span class="c1">#</span>
+    <span class="c1">#       mod = relax.get_pipeline(</span>
+    <span class="c1">#           &quot;static_shape_tuning&quot;,</span>
+    <span class="c1">#           target=target,</span>
+    <span class="c1">#           total_trials=2000</span>
+    <span class="c1">#       )(mod)</span>
+    <span class="c1">#</span>
+    <span class="c1"># 2. **Quick optimization with DLight**: Apply pre-defined performant schedules:</span>
+    <span class="c1">#</span>
+    <span class="c1">#    .. code-block:: python</span>
+    <span class="c1">#</span>
+    <span class="c1">#       from tvm import dlight as dl</span>
+    <span class="c1">#       with target:</span>
+    <span class="c1">#           mod = dl.ApplyDefaultSchedule()(mod)</span>
+    <span class="c1">#</span>
+    <span class="c1"># 3. **Architecture-specific optimizations**:</span>
+    <span class="c1">#</span>
+    <span class="c1">#    - ARM NEON SIMD: ``-mattr=+neon``</span>
+    <span class="c1">#    - x86 AVX-512: ``-mcpu=skylake-avx512``</span>
+    <span class="c1">#    - RISC-V Vector: ``-mattr=+v``</span>
+    <span class="c1">#</span>
+    <span class="c1">#    .. code-block:: python</span>
+    <span class="c1">#</span>
+    <span class="c1">#       # Example: ARM with NEON</span>
+    <span class="c1">#       target = tvm.target.Target(</span>
+    <span class="c1">#           &quot;llvm -mtriple=aarch64-linux-gnu -mattr=+neon&quot;</span>
+    <span class="c1">#       )</span>
+    <span class="c1">#</span>
+    <span class="c1">#       # Example: x86 with AVX-512</span>
+    <span class="c1">#       target = tvm.target.Target(</span>
+    <span class="c1">#           &quot;llvm -mtriple=x86_64-linux-gnu -mcpu=skylake-avx512&quot;</span>
+    <span class="c1">#       )</span>
+    <span class="c1">#</span>
+    <span class="c1"># See :doc:`e2e_opt_model &lt;/how_to/tutorials/e2e_opt_model&gt;` for detailed</span>
+    <span class="c1"># tuning examples.</span>
+
+
+<span class="c1"># Run the PyTorch RPC example if PyTorch is available</span>
+<span class="k">if</span> <a href="https://docs.python.org/3/library/functions.html#bool" title="builtins.bool" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">HAS_TORCH</span></a> <span class="ow">and</span> <a href="https://docs.python.org/3/library/functions.html#bool" title="builtins.bool" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">local_demo</span></a><span class="p">:</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">run_pytorch_model_via_rpc</span><span class="p">()</span>
+    <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+        <span class="k">pass</span>  <span class="c1"># Silently skip if execution fails</span>
+</pre></div>
+</div>
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Converted PyTorch model to Relax:
+  - Number of parameters: 4
+Using local target for demonstration
+Exported library to: /tmp/tmpg31kgmc7/model_deployed.so
+Saved parameters to: /tmp/tmpg31kgmc7/model_params.npz
+
+RPC workflow (works for any remote device):
+==================================================
+1. Start RPC server on target device:
+   python -m tvm.exec.rpc_server --host 0.0.0.0 --port=9090
+
+2. Connect from local machine:
+   remote = rpc.connect(&#39;DEVICE_IP&#39;, 9090)
+
+3. Upload compiled library:
+   remote.upload(&#39;model_deployed.so&#39;)
+   remote.upload(&#39;model_params.npz&#39;)
+
+4. Load and run remotely:
+   lib = remote.load_module(&#39;model_deployed.so&#39;)
+   vm = relax.VirtualMachine(lib, remote.cpu())
+   result = vm[&#39;main&#39;](input, *params)
+
+Device examples:
+  - Raspberry Pi: 192.168.1.100
+  - Remote server: ssh tunnel or direct IP
+  - NVIDIA Jetson: 10.0.0.50
+  - Cloud instance: public IP
+
+To run actual RPC, set local_demo=False
+</pre></div>
+</div>
+</section>
 <section id="summary">
 <h2>Summary<a class="headerlink" href="#summary" title="Link to this heading"></a></h2>
 <p>This tutorial provides a walk through of cross compilation and RPC
 features in TVM.</p>
+<p>We demonstrated two approaches:</p>
+<p><strong>Low-level TensorIR (TE) approach</strong> - for understanding fundamentals:</p>
 <ul class="simple">
-<li><p>Set up an RPC server on the remote device.</p></li>
-<li><p>Set up the target device configuration to cross compile the kernels on the
-local machine.</p></li>
-<li><p>Upload and run the kernels remotely via the RPC API.</p></li>
+<li><p>Define computations using Tensor Expression</p></li>
+<li><p>Cross-compile for ARM targets</p></li>
+<li><p>Deploy and run via RPC</p></li>
+</ul>
+<p><strong>High-level Relax approach</strong> - for deploying complete models:</p>
+<ul class="simple">
+<li><p>Import models from PyTorch (or ONNX)</p></li>
+<li><p>Convert to Relax representation</p></li>
+<li><p>Cross-compile for ARM Linux devices</p></li>
+<li><p>Deploy to remote devices via RPC</p></li>
+<li><p>Run inference and evaluate performance</p></li>
+</ul>
+<p>Key takeaways:</p>
+<ul class="simple">
+<li><p>Set up an RPC server on the remote device</p></li>
+<li><p>Cross-compile on a powerful local machine for resource-constrained targets</p></li>
+<li><p>Upload and execute compiled modules remotely via the RPC API</p></li>
+<li><p>Measure performance excluding network overhead</p></li>
+</ul>
+<p>For complete model deployment workflows, see also:</p>
+<ul class="simple">
+<li><p><a class="reference internal" href="export_and_load_executable.html"><span class="doc">export_and_load_executable</span></a> - Export and load compiled models</p></li>
+<li><p><a class="reference internal" href="e2e_opt_model.html"><span class="doc">e2e_opt_model</span></a> - End-to-end optimization with auto-tuning</p></li>
 </ul>
 <div class="sphx-glr-footer sphx-glr-footer-example docutils container" id="sphx-glr-download-how-to-tutorials-cross-compilation-and-rpc-py">
 <div class="sphx-glr-download sphx-glr-download-jupyter docutils container">
