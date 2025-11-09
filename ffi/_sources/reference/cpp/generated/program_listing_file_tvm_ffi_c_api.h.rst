@@ -75,7 +75,7 @@ Program Listing for File c_api.h
    // NOLINTBEGIN(modernize-macro-to-enum)
    #define TVM_FFI_VERSION_MAJOR 0
    #define TVM_FFI_VERSION_MINOR 1
-   #define TVM_FFI_VERSION_PATCH 1
+   #define TVM_FFI_VERSION_PATCH 2
    // NOLINTEND(modernize-macro-to-enum)
    
    #ifdef __cplusplus
@@ -130,12 +130,12 @@ Program Listing for File c_api.h
      kTVMFFIShape = 69,
      kTVMFFITensor = 70,
      kTVMFFIArray = 71,
-     //----------------------------------------------------------------
-     // more complex objects
-     //----------------------------------------------------------------
      kTVMFFIMap = 72,
      kTVMFFIModule = 73,
      kTVMFFIOpaquePyObject = 74,
+     //----------------------------------------------------------------
+     // more complex objects
+     //----------------------------------------------------------------
      kTVMFFIStaticObjectEnd,
      // [Section] Dynamic Boxed: [kTVMFFIDynObjectBegin, +oo)
      kTVMFFIDynObjectBegin = 128

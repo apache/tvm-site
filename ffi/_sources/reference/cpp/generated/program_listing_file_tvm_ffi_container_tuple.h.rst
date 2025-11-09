@@ -34,8 +34,10 @@ Program Listing for File tuple.h
    
    #include <tvm/ffi/container/array.h>
    
+   #include <cstddef>
    #include <string>
    #include <tuple>
+   #include <type_traits>
    #include <utility>
    
    namespace tvm {
@@ -90,11 +92,23 @@ Program Listing for File tuple.h
      }
    
      template <size_t I>
-     auto get() const {
+     auto get() const& {
        static_assert(I < sizeof...(Types), "Tuple index out of bounds");
        using ReturnType = std::tuple_element_t<I, std::tuple<Types...>>;
        const Any* ptr = GetArrayObj()->begin() + I;
        return details::AnyUnsafe::CopyFromAnyViewAfterCheck<ReturnType>(*ptr);
+     }
+   
+     template <size_t I>
+     auto get() && {
+       if (!this->unique()) {
+         // fallback to const& version if not unique
+         return std::as_const(*this).template get<I>();
+       }
+       static_assert(I < sizeof...(Types), "Tuple index out of bounds");
+       using ReturnType = std::tuple_element_t<I, std::tuple<Types...>>;
+       Any* ptr = GetArrayObj()->MutableBegin() + I;
+       return details::AnyUnsafe::MoveFromAnyAfterCheck<ReturnType>(std::move(*ptr));
      }
    
      template <size_t I, typename U>
@@ -254,6 +268,37 @@ Program Listing for File tuple.h
    inline constexpr bool type_contains_v<Tuple<T...>, Tuple<U...>> = (type_contains_v<T, U> && ...);
    }  // namespace details
    
+   
+   
+   template <std::size_t I, typename... Types>
+   inline constexpr auto get(const Tuple<Types...>& t)
+       -> std::tuple_element_t<I, std::tuple<Types...>> {
+     return t.template get<I>();
+   }
+   
+   template <std::size_t I, typename... Types>
+   inline constexpr auto get(Tuple<Types...>&& t) -> std::tuple_element_t<I, std::tuple<Types...>> {
+     return std::move(t).template get<I>();
+   }
+   
+   template <typename... UTypes>
+   Tuple(UTypes&&...) -> Tuple<std::remove_cv_t<std::remove_reference_t<UTypes>>...>;
+   
+   
    }  // namespace ffi
    }  // namespace tvm
+   
+   namespace std {
+   
+   template <typename... Types>
+   struct tuple_size<::tvm::ffi::Tuple<Types...>>
+       : public std::integral_constant<size_t, sizeof...(Types)> {};
+   
+   template <size_t I, typename... Types>
+   struct tuple_element<I, ::tvm::ffi::Tuple<Types...>> {
+     using type = std::tuple_element_t<I, std::tuple<Types...>>;
+   };
+   
+   }  // namespace std
+   
    #endif  // TVM_FFI_CONTAINER_TUPLE_H_

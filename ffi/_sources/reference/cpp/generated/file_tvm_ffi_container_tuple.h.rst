@@ -35,11 +35,15 @@ Includes
 --------
 
 
+- ``cstddef``
+
 - ``string`` (:ref:`file_tvm_ffi_string.h`)
 
 - ``tuple`` (:ref:`file_tvm_ffi_container_tuple.h`)
 
 - ``tvm/ffi/container/array.h`` (:ref:`file_tvm_ffi_container_array.h`)
+
+- ``type_traits`` (:ref:`file_tvm_ffi_type_traits.h`)
 
 - ``utility``
 

@@ -159,13 +159,16 @@ Program Listing for File error.h
        obj->update_backtrace(obj, backtrace_str, update_mode);
      }
    
-     const char* what() const noexcept(true) override {
-       thread_local std::string what_data;
+     std::string FullMessage() const {
        ErrorObj* obj = static_cast<ErrorObj*>(data_.get());
-       what_data = (std::string("Traceback (most recent call last):\n") +
-                    TracebackMostRecentCallLast() + std::string(obj->kind.data, obj->kind.size) +
-                    std::string(": ") + std::string(obj->message.data, obj->message.size) + '\n');
-       return what_data.c_str();
+       return (std::string("Traceback (most recent call last):\n") + TracebackMostRecentCallLast() +
+               std::string(obj->kind.data, obj->kind.size) + std::string(": ") +
+               std::string(obj->message.data, obj->message.size) + '\n');
+     }
+   
+     const char* what() const noexcept(true) override {
+       ErrorObj* obj = static_cast<ErrorObj*>(data_.get());
+       return obj->message.data;
      }
    
      TVM_FFI_DEFINE_OBJECT_REF_METHODS_NOTNULLABLE(Error, ObjectRef, ErrorObj);
@@ -193,7 +196,7 @@ Program Listing for File error.h
      [[noreturn]] ~ErrorBuilder() noexcept(false) {
        ::tvm::ffi::Error error(std::move(kind_), stream_.str(), std::move(backtrace_));
        if (log_before_throw_) {
-         std::cerr << error.what();
+         std::cerr << error.FullMessage();
        }
        throw error;
      }
