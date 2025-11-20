@@ -62,10 +62,17 @@ Program Listing for File function_details.h
    };
    
    template <typename T>
+   static constexpr bool ArgTypeSupported =
+       (!std::is_reference_v<T>) ||
+       (std::is_const_v<std::remove_reference_t<T>> && std::is_lvalue_reference_v<T>) ||
+       (!std::is_const_v<std::remove_reference_t<T>> && std::is_rvalue_reference_v<T>);
+   
+   template <typename T>
    static constexpr bool ArgSupported =
-       (std::is_same_v<std::remove_const_t<std::remove_reference_t<T>>, Any> ||
-        std::is_same_v<std::remove_const_t<std::remove_reference_t<T>>, AnyView> ||
-        TypeTraitsNoCR<T>::convert_enabled);
+       (ArgTypeSupported<T> &&
+        (std::is_same_v<std::remove_const_t<std::remove_reference_t<T>>, Any> ||
+         std::is_same_v<std::remove_const_t<std::remove_reference_t<T>>, AnyView> ||
+         TypeTraitsNoCR<T>::convert_enabled));
    
    // NOTE: return type can only support non-reference managed returns
    template <typename T>
@@ -134,22 +141,22 @@ Program Listing for File function_details.h
    
    using FGetFuncSignature = std::string (*)();
    
+   template <typename Type>
    class ArgValueWithContext {
     public:
+     using TypeWithoutCR = std::remove_const_t<std::remove_reference_t<Type>>;
+   
      TVM_FFI_INLINE ArgValueWithContext(const AnyView* args, int32_t arg_index,
                                         const std::string* optional_name, FGetFuncSignature f_sig)
          : args_(args), arg_index_(arg_index), optional_name_(optional_name), f_sig_(f_sig) {}
    
-     template <typename Type>
-     TVM_FFI_INLINE operator Type() {  // NOLINT(google-explicit-constructor)
-       using TypeWithoutCR = std::remove_const_t<std::remove_reference_t<Type>>;
-   
+     TVM_FFI_INLINE operator TypeWithoutCR() {  // NOLINT(google-explicit-constructor)
        if constexpr (std::is_same_v<TypeWithoutCR, AnyView>) {
          return args_[arg_index_];
        } else if constexpr (std::is_same_v<TypeWithoutCR, Any>) {
          return Any(args_[arg_index_]);
        } else {
-         std::optional<TypeWithoutCR> opt = args_[arg_index_].try_cast<TypeWithoutCR>();
+         std::optional<TypeWithoutCR> opt = args_[arg_index_].template try_cast<TypeWithoutCR>();
          if (!opt.has_value()) {
            TVMFFIAny any_data = args_[arg_index_].CopyToTVMFFIAny();
            TVM_FFI_THROW(TypeError) << "Mismatched type on argument #" << arg_index_
@@ -176,6 +183,7 @@ Program Listing for File function_details.h
                                    const F& f, [[maybe_unused]] const AnyView* args,
                                    [[maybe_unused]] int32_t num_args, [[maybe_unused]] Any* rv) {
      using FuncInfo = FunctionInfo<F>;
+     using PackedArgs = typename FuncInfo::ArgType;
      FGetFuncSignature f_sig = FuncInfo::Sig;
    
      // somehow MSVC does not support the static constexpr member in this case, function is fine
@@ -191,9 +199,10 @@ Program Listing for File function_details.h
      }
      // use index sequence to do recursive-less unpacking
      if constexpr (std::is_same_v<R, void>) {
-       f(ArgValueWithContext(args, Is, optional_name, f_sig)...);
+       f(ArgValueWithContext<std::tuple_element_t<Is, PackedArgs>>{args, Is, optional_name, f_sig}...);
      } else {
-       *rv = R(f(ArgValueWithContext(args, Is, optional_name, f_sig)...));
+       *rv = R(f(ArgValueWithContext<std::tuple_element_t<Is, PackedArgs>>{args, Is, optional_name,
+                                                                           f_sig}...));
      }
    }
    

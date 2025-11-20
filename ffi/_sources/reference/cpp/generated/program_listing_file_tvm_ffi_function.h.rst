@@ -54,6 +54,7 @@ Program Listing for File function.h
    
    #include <functional>
    #include <string>
+   #include <type_traits>
    #include <utility>
    #include <vector>
    
@@ -123,9 +124,16 @@ Program Listing for File function.h
    template <typename TCallable>
    class FunctionObjImpl : public FunctionObj {
     public:
-     using TStorage = std::remove_cv_t<std::remove_reference_t<TCallable>>;
+     static_assert(std::is_same_v<TCallable, std::remove_cv_t<std::remove_reference_t<TCallable>>>,
+                   "TCallable of FunctionObjImpl cannot be const or reference type");
+   
      using TSelf = FunctionObjImpl<TCallable>;
-     explicit FunctionObjImpl(TCallable callable) : callable_(std::move(callable)) {
+   
+     explicit FunctionObjImpl(TCallable&& callable) : callable_(std::move(callable)) {
+       this->safe_call = SafeCall;
+       this->cpp_call = reinterpret_cast<void*>(CppCall);
+     }
+     explicit FunctionObjImpl(const TCallable& callable) : callable_(callable) {
        this->safe_call = SafeCall;
        this->cpp_call = reinterpret_cast<void*>(CppCall);
      }
@@ -145,7 +153,7 @@ Program Listing for File function.h
        TVM_FFI_SAFE_CALL_END();
      }
    
-     mutable TStorage callable_;
+     mutable TCallable callable_;
    };
    
    class ExternCFunctionObjNullHandleImpl : public FunctionObj {
@@ -227,12 +235,13 @@ Program Listing for File function.h
    class Function : public ObjectRef {
     public:
      Function(std::nullptr_t) : ObjectRef(nullptr) {}  // NOLINT(*)
-     template <typename TCallable>
-     explicit Function(TCallable packed_call) {
-       *this = FromPacked(packed_call);
+     template <typename TCallable,
+               typename = std::enable_if_t<!std::is_same_v<std::decay_t<TCallable>, Function>>>
+     explicit Function(TCallable&& packed_call) {
+       *this = FromPacked(std::forward<TCallable>(packed_call));
      }
-     template <typename TCallable>  // // NOLINTNEXTLINE(performance-unnecessary-value-param)
-     static Function FromPacked(TCallable packed_call) {
+     template <typename TCallable>
+     static Function FromPacked(TCallable&& packed_call) {
        static_assert(
            std::is_convertible_v<TCallable, std::function<void(const AnyView*, int32_t, Any*)>> ||
                std::is_convertible_v<TCallable, std::function<void(PackedArgs args, Any*)>>,
@@ -240,12 +249,12 @@ Program Listing for File function.h
            "format");
        if constexpr (std::is_convertible_v<TCallable, std::function<void(PackedArgs args, Any*)>>) {
          return FromPackedInternal(
-             [packed_call](const AnyView* args, int32_t num_args, Any* rv) mutable -> void {
-               PackedArgs args_pack(args, num_args);
-               packed_call(args_pack, rv);
+             [packed_call = std::forward<TCallable>(packed_call)](
+                 const AnyView* args, int32_t num_args, Any* rv) mutable -> void {
+               packed_call(PackedArgs{args, num_args}, rv);
              });
        } else {
-         return FromPackedInternal(packed_call);
+         return FromPackedInternal(std::forward<TCallable>(packed_call));
        }
      }
    
@@ -325,19 +334,21 @@ Program Listing for File function.h
        fremove(name);
      }
      template <typename TCallable>
-     static Function FromTyped(TCallable callable) {
-       using FuncInfo = details::FunctionInfo<TCallable>;
-       auto call_packed = [callable = std::move(callable)](const AnyView* args, int32_t num_args,
-                                                           Any* rv) mutable -> void {
+     static Function FromTyped(TCallable&& callable) {
+       using FuncInfo = details::FunctionInfo<std::decay_t<TCallable>>;
+       // Callable is always captured by value here to avoid possible dangling reference
+       auto call_packed = [callable = std::forward<TCallable>(callable)](
+                              const AnyView* args, int32_t num_args, Any* rv) mutable -> void {
          details::unpack_call<typename FuncInfo::RetType>(
              std::make_index_sequence<FuncInfo::num_args>{}, nullptr, callable, args, num_args, rv);
        };
        return FromPackedInternal(std::move(call_packed));
      }
      template <typename TCallable>
-     static Function FromTyped(TCallable callable, std::string name) {
-       using FuncInfo = details::FunctionInfo<TCallable>;
-       auto call_packed = [callable = std::move(callable), name = std::move(name)](
+     static Function FromTyped(TCallable&& callable, std::string name) {
+       using FuncInfo = details::FunctionInfo<std::decay_t<TCallable>>;
+       // Callable is always captured by value here to avoid possible dangling reference
+       auto call_packed = [callable = std::forward<TCallable>(callable), name = std::move(name)](
                               const AnyView* args, int32_t num_args, Any* rv) mutable -> void {
          details::unpack_call<typename FuncInfo::RetType>(
              std::make_index_sequence<FuncInfo::num_args>{}, &name, callable, args, num_args, rv);
@@ -383,11 +394,11 @@ Program Listing for File function.h
    
     private:
      template <typename TCallable>
-     static Function FromPackedInternal(TCallable packed_call) {
-       using ObjType = typename details::FunctionObjImpl<TCallable>;
+     static Function FromPackedInternal(TCallable&& packed_call) {
+       // We must make TCallable a value type (decay_t) that can hold the callable object
+       using ObjType = typename details::FunctionObjImpl<std::decay_t<TCallable>>;
        Function func;
-       func.data_ = make_object<ObjType>(
-           std::forward<TCallable>(packed_call));  // NOLINT(bugprone-chained-comparison)
+       func.data_ = make_object<ObjType>(std::forward<TCallable>(packed_call));
        return func;
      }
    };
@@ -401,21 +412,23 @@ Program Listing for File function.h
      using TSelf = TypedFunction<R(Args...)>;
      TypedFunction() = default;
      TypedFunction(std::nullptr_t null) {}  // NOLINT(*)
-     TypedFunction(Function packed) : packed_(packed) {}  // NOLINT(*)
+     TypedFunction(Function packed) : packed_(std::move(packed)) {}  // NOLINT(*)
      template <typename FLambda,
                typename = std::enable_if_t<std::is_convertible_v<FLambda, std::function<R(Args...)>>>>
-     TypedFunction(FLambda typed_lambda, std::string name) {  // NOLINT(*)
-       packed_ = Function::FromTyped(typed_lambda, name);
+     TypedFunction(FLambda&& typed_lambda, std::string name) {
+       packed_ = Function::FromTyped(std::forward<FLambda>(typed_lambda), std::move(name));
      }
      template <typename FLambda,
-               typename = std::enable_if_t<std::is_convertible_v<FLambda, std::function<R(Args...)>>>>
-     TypedFunction(const FLambda& typed_lambda) {  // NOLINT(*)
-       packed_ = Function::FromTyped(typed_lambda);
+               typename = std::enable_if_t<std::is_convertible_v<FLambda, std::function<R(Args...)>> &&
+                                           !std::is_same_v<std::decay_t<FLambda>, TSelf>>>
+     TypedFunction(FLambda&& typed_lambda) {  // NOLINT(google-explicit-constructor)
+       packed_ = Function::FromTyped(std::forward<FLambda>(typed_lambda));
      }
      template <typename FLambda,
-               typename = std::enable_if_t<std::is_convertible_v<FLambda, std::function<R(Args...)>>>>
-     TSelf& operator=(FLambda typed_lambda) {  // NOLINT(*)
-       packed_ = Function::FromTyped(typed_lambda);
+               typename = std::enable_if_t<std::is_convertible_v<FLambda, std::function<R(Args...)>> &&
+                                           !std::is_same_v<std::decay_t<FLambda>, TSelf>>>
+     TSelf& operator=(FLambda&& typed_lambda) {
+       packed_ = Function::FromTyped(std::forward<FLambda>(typed_lambda));
        return *this;
      }
      TSelf& operator=(Function packed) {

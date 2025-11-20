@@ -49,6 +49,8 @@ Includes
 
 - ``tvm/ffi/function_details.h`` (:ref:`file_tvm_ffi_function_details.h`)
 
+- ``type_traits`` (:ref:`file_tvm_ffi_type_traits.h`)
+
 - ``utility``
 
 - ``vector``
