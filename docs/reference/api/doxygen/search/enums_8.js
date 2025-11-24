@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['linkagetype_7773',['LinkageType',['../namespacetvm.html#aee9f3322da6fdb9d0d120167beb329cc',1,'tvm']]]
+  ['linkagetype_7778',['LinkageType',['../namespacetvm.html#aee9f3322da6fdb9d0d120167beb329cc',1,'tvm']]]
 ];
