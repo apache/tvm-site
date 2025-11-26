@@ -139,7 +139,7 @@ var searchData=
   ['printerconfig_2682',['PrinterConfig',['../classtvm_1_1PrinterConfig.html#a88eace319f00dd1778469afd6bc23ba0',1,'tvm::PrinterConfig::PrinterConfig()'],['../classtvm_1_1PrinterConfig.html',1,'tvm::PrinterConfig']]],
   ['printerconfignode_2683',['PrinterConfigNode',['../classtvm_1_1PrinterConfigNode.html',1,'tvm']]],
   ['printindent_2684',['PrintIndent',['../classtvm_1_1ReprPrinter.html#a9c5941e7c4e24c9880dbd340cc226bf4',1,'tvm::ReprPrinter']]],
-  ['printir_2685',['PrintIR',['../namespacetvm_1_1transform.html#a49db40ef5552385e581c67388e462975',1,'tvm::transform']]],
+  ['printir_2685',['PrintIR',['../namespacetvm_1_1transform.html#a324e27bc383f41e3bc2bc1438ec2db87',1,'tvm::transform']]],
   ['printtuningstatistics_2686',['PrintTuningStatistics',['../classtvm_1_1meta__schedule_1_1TaskSchedulerNode.html#af9a0fe462e50601c81e1d8ce352e9cea',1,'tvm::meta_schedule::TaskSchedulerNode']]],
   ['processsession_2687',['ProcessSession',['../classtvm_1_1runtime_1_1Session.html#a74e56ceb310d82e52565b29ddae0333d',1,'tvm::runtime::Session']]],
   ['prod_2688',['prod',['../namespacetvm.html#a98105f9d423ff92d335b01bd576d2533',1,'tvm::prod()'],['../namespacetvm_1_1topi.html#ab505d29efc39058f53d468d698b73455',1,'tvm::topi::prod(const Tensor &amp;data, const ffi::Optional&lt; ffi::Array&lt; Integer &gt;&gt; &amp;axis, bool keepdims=false, bool atleast1d=false)']]],
