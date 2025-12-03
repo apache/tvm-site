@@ -66,6 +66,12 @@ Included By
 
 - :ref:`file_tvm_ffi_dtype.h`
 
+- :ref:`file_tvm_ffi_extra_cuda_base.h`
+
+- :ref:`file_tvm_ffi_extra_cuda_cubin_launcher.h`
+
+- :ref:`file_tvm_ffi_extra_stl.h`
+
 - :ref:`file_tvm_ffi_function.h`
 
 - :ref:`file_tvm_ffi_function_details.h`

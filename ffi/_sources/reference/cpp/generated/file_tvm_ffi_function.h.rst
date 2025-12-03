@@ -37,6 +37,8 @@ Includes
 
 - ``functional``
 
+- ``sstream``
+
 - ``string`` (:ref:`file_tvm_ffi_string.h`)
 
 - ``tvm/ffi/any.h`` (:ref:`file_tvm_ffi_any.h`)
@@ -64,6 +66,8 @@ Included By
 - :ref:`file_tvm_ffi_dtype.h`
 
 - :ref:`file_tvm_ffi_extra_module.h`
+
+- :ref:`file_tvm_ffi_extra_stl.h`
 
 - :ref:`file_tvm_ffi_reflection_accessor.h`
 
@@ -109,7 +113,11 @@ Defines
 
 - :ref:`exhale_define_function_8h_1a14328d95ccda4b1691b9874645aef4bd`
 
+- :ref:`exhale_define_function_8h_1a78c6d17c063fba9ca07175f150838046`
+
 - :ref:`exhale_define_function_8h_1a01777f12f8f99771331d679a0c1d2ed4`
+
+- :ref:`exhale_define_function_8h_1af84cdf62b6c193275db7e63e3bffc8bd`
 
 - :ref:`exhale_define_function_8h_1a10bd932564c8e71a3978a061fbb82360`
 

@@ -17,6 +17,8 @@
       ~Module.__init__
       ~Module.clear_imports
       ~Module.get_function
+      ~Module.get_function_doc
+      ~Module.get_function_metadata
       ~Module.get_property_mask
       ~Module.get_write_formats
       ~Module.implements_function

@@ -75,6 +75,8 @@ Included By
 
 - :ref:`file_tvm_ffi_extra_module.h`
 
+- :ref:`file_tvm_ffi_extra_stl.h`
+
 - :ref:`file_tvm_ffi_reflection_access_path.h`
 
 

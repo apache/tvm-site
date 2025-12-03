@@ -58,6 +58,8 @@ Included By
 
 - :ref:`file_tvm_ffi_dtype.h`
 
+- :ref:`file_tvm_ffi_extra_stl.h`
+
 - :ref:`file_tvm_ffi_reflection_accessor.h`
 
 - :ref:`file_tvm_ffi_reflection_registry.h`

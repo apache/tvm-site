@@ -204,6 +204,7 @@ Program Listing for File function_details.h
        *rv = R(f(ArgValueWithContext<std::tuple_element_t<Is, PackedArgs>>{args, Is, optional_name,
                                                                            f_sig}...));
      }
+     // NOLINTNEXTLINE(clang-analyzer-cplusplus.NewDeleteLeaks
    }
    
    TVM_FFI_INLINE static Error MoveFromSafeCallRaised() {

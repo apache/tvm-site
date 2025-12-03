@@ -157,6 +157,9 @@ Program Listing for File map.h
      // Reference class
      template <typename, typename, typename>
      friend class Map;
+   
+     template <typename, typename>
+     friend struct TypeTraits;
    };
    
    class SmallMapObj : public MapObj,

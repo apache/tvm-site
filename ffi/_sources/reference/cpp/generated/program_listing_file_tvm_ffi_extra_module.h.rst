@@ -115,6 +115,7 @@ Program Listing for File module.h
    constexpr const char* tvm_ffi_library_ctx = "__tvm_ffi__library_ctx";
    constexpr const char* tvm_ffi_library_bin = "__tvm_ffi__library_bin";
    constexpr const char* tvm_ffi_metadata_prefix = "__tvm_ffi__metadata_";
+   constexpr const char* tvm_ffi_doc_prefix = "__tvm_ffi__doc_";
    }  // namespace symbol
    }  // namespace ffi
    }  // namespace tvm

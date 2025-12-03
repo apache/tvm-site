@@ -31,6 +31,11 @@ Directories
 .. toctree::
    :maxdepth: 5
 
+   dir_tvm_ffi_extra_cuda.rst
+
+.. toctree::
+   :maxdepth: 5
+
    dir_tvm_ffi_reflection.rst
 
 Files
@@ -61,6 +66,11 @@ Files
    :maxdepth: 5
 
    file_tvm_ffi_extra_base.h.rst
+
+.. toctree::
+   :maxdepth: 5
+
+   file_tvm_ffi_extra_cuda_base.h.rst
 
 .. toctree::
    :maxdepth: 5
@@ -96,6 +106,16 @@ Files
    :maxdepth: 5
 
    file_tvm_ffi_reflection_creator.h.rst
+
+.. toctree::
+   :maxdepth: 5
+
+   file_tvm_ffi_extra_cuda_cubin_launcher.h.rst
+
+.. toctree::
+   :maxdepth: 5
+
+   file_tvm_ffi_extra_cuda_device_guard.h.rst
 
 .. toctree::
    :maxdepth: 5
@@ -171,6 +191,11 @@ Files
    :maxdepth: 5
 
    file_tvm_ffi_container_shape.h.rst
+
+.. toctree::
+   :maxdepth: 5
+
+   file_tvm_ffi_extra_stl.h.rst
 
 .. toctree::
    :maxdepth: 5

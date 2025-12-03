@@ -12,6 +12,11 @@ Directory extra
 
 *Directory path:* ``tvm/ffi/extra``
 
+Subdirectories
+--------------
+
+- :ref:`dir_tvm_ffi_extra_cuda`
+
 
 Files
 -----
@@ -22,6 +27,7 @@ Files
 - :ref:`file_tvm_ffi_extra_json.h`
 - :ref:`file_tvm_ffi_extra_module.h`
 - :ref:`file_tvm_ffi_extra_serialization.h`
+- :ref:`file_tvm_ffi_extra_stl.h`
 - :ref:`file_tvm_ffi_extra_structural_equal.h`
 - :ref:`file_tvm_ffi_extra_structural_hash.h`
 

@@ -32,11 +32,15 @@ Classes
 
 - :ref:`exhale_struct_structtvm_1_1ffi_1_1AnyHash`
 
+- :ref:`exhale_struct_structtvm_1_1ffi_1_1CUDADeviceGuard`
+
 - :ref:`exhale_struct_structtvm_1_1ffi_1_1DenseMapObj_1_1Block`
 
 - :ref:`exhale_struct_structtvm_1_1ffi_1_1DenseMapObj_1_1ItemType`
 
 - :ref:`exhale_struct_structtvm_1_1ffi_1_1DenseMapObj_1_1ListNode`
+
+- :ref:`exhale_struct_structtvm_1_1ffi_1_1dim3`
 
 - :ref:`exhale_struct_structtvm_1_1ffi_1_1EnvErrorAlreadySet`
 
@@ -71,6 +75,10 @@ Classes
 - :ref:`exhale_class_classtvm_1_1ffi_1_1ArrayObj`
 
 - :ref:`exhale_class_classtvm_1_1ffi_1_1Bytes`
+
+- :ref:`exhale_class_classtvm_1_1ffi_1_1CubinKernel`
+
+- :ref:`exhale_class_classtvm_1_1ffi_1_1CubinModule`
 
 - :ref:`exhale_class_classtvm_1_1ffi_1_1DenseMapObj`
 
@@ -164,13 +172,13 @@ Functions
 
 - :ref:`exhale_function_serialization_8h_1a56baa5d1ca415dbdebf19ac1f54bd5b7`
 
+- :ref:`exhale_function_tensor_8h_1a71e4a492b5a03a19a95087771a7e9ed1`
+
 - :ref:`exhale_function_tensor_8h_1a65b3a61c540c72d9410150a3a7a76dde`
 
 - :ref:`exhale_function_tensor_8h_1a011d0a2dcbe5702156124d7a7223b3dd`
 
 - :ref:`exhale_function_tensor_8h_1a226723176642cde5996498e7da6a6368`
-
-- :ref:`exhale_function_tensor_8h_1a71e4a492b5a03a19a95087771a7e9ed1`
 
 - :ref:`exhale_function_cast_8h_1a4dba749dd934d8a7891ad126a8fdcc1f`
 

@@ -38,7 +38,7 @@
 <link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
   <script src="_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
 
-    <script src="_static/documentation_options.js?v=20154ed1"></script>
+    <script src="_static/documentation_options.js?v=5f86a092"></script>
     <script src="_static/doctools.js?v=9bcbadda"></script>
     <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/clipboard.min.js?v=a7894cd8"></script>
@@ -54,22 +54,47 @@
     <script src="_static/downloads/d3.min.js"></script>
     <script type="module">import mermaid from "_static/downloads/mermaid.esm.min.mjs";
 
-const style = document.createElement('style');
-style.textContent = `.mermaid-container {
-    position: relative !important;
-    display: inline-block;
+const defaultStyle = document.createElement('style');
+defaultStyle.textContent = `pre.mermaid {
+    /* Same as .mermaid-container > pre */
+    display: block;
     width: 100%;
 }
 
+pre.mermaid > svg {
+    /* Same as .mermaid-container > pre > svg */
+    height: 500px;
+    width: 100%;
+    max-width: 100% !important;
+}
+`;
+document.head.appendChild(defaultStyle);
+
+const fullscreenStyle = document.createElement('style');
+fullscreenStyle.textContent = `.mermaid-container {
+    display: flex;
+    flex-direction: row;
+    width: 100%;
+}
+
+.mermaid-container > pre {
+    display: block;
+    width: 100%;
+}
+
+.mermaid-container > pre > svg {
+    height: 500px;
+    width: 100%;
+    max-width: 100% !important;
+}
+
 .mermaid-fullscreen-btn {
-    position: absolute !important;
     width: 28px;
     height: 28px;
     background: rgba(255, 255, 255, 0.95);
     border: 1px solid rgba(0, 0, 0, 0.3);
     border-radius: 4px;
     cursor: pointer;
-    z-index: 100;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -104,7 +129,7 @@ style.textContent = `.mermaid-container {
     position: fixed !important;
     top: 0 !important;
     left: 0 !important;
-    width: 100vw;
+    width: 95vw;
     height: 100vh;
     background: rgba(255, 255, 255, 0.98);
     z-index: 9999;
@@ -122,7 +147,7 @@ style.textContent = `.mermaid-container {
     justify-content: center;
 }
 
-.mermaid-fullscreen-content {
+.mermaid-container-fullscreen {
     position: relative;
     width: 95vw;
     height: 90vh;
@@ -138,12 +163,12 @@ style.textContent = `.mermaid-container {
     justify-content: center;
 }
 
-.mermaid-fullscreen-content.dark-theme {
+.mermaid-container-fullscreen.dark-theme {
     background: #1a1a1a;
     box-shadow: 0 10px 40px rgba(0, 0, 0, 0.8);
 }
 
-.mermaid-fullscreen-content .mermaid {
+.mermaid-container-fullscreen pre.mermaid {
     width: 100%;
     height: 100%;
     display: flex;
@@ -151,11 +176,9 @@ style.textContent = `.mermaid-container {
     justify-content: center;
 }
 
-.mermaid-fullscreen-content .mermaid svg {
-    width: 100%;
-    height: auto;
-    max-width: 100%;
-    max-height: 85vh;
+.mermaid-container-fullscreen .mermaid svg {
+    height: 100% !important;
+    width: 100% !important;
     cursor: grab;
 }
 
@@ -199,9 +222,8 @@ style.textContent = `.mermaid-container {
 
 .mermaid-fullscreen-modal .mermaid-fullscreen-btn {
     display: none !important;
-}
-`;
-document.head.appendChild(style);
+}`;
+document.head.appendChild(fullscreenStyle);
 
 // Detect if page has dark background
 const isDarkTheme = () => {
@@ -217,19 +239,44 @@ const isDarkTheme = () => {
     return false;
 };
 
-const initFullscreen = async () => {
+const load = async () => {
     await mermaid.run();
 
     const all_mermaids = document.querySelectorAll(".mermaid");
     const mermaids_processed = document.querySelectorAll(".mermaid[data-processed='true']");
 
-    if(all_mermaids.length !== mermaids_processed.length) {
+    if ("False" === "True") {
+        const mermaids_to_add_zoom = -1 === -1 ? all_mermaids.length : -1;
+        if(mermaids_to_add_zoom > 0) {
+            var svgs = d3.selectAll("");
+            if(all_mermaids.length !== mermaids_processed.length) {
+                setTimeout(load, 200);
+                return;
+            } else if(svgs.size() !== mermaids_to_add_zoom) {
+                setTimeout(load, 200);
+                return;
+            } else {
+                svgs.each(function() {
+                    var svg = d3.select(this);
+                    svg.html("<g class='wrapper'>" + svg.html() + "</g>");
+                    var inner = svg.select("g");
+                    var zoom = d3.zoom().on("zoom", function(event) {
+                        inner.attr("transform", event.transform);
+                    });
+                    svg.call(zoom);
+                });
+            }
+        }
+    } else if(all_mermaids.length !== mermaids_processed.length) {
         // Wait for mermaid to process all diagrams
-        setTimeout(initFullscreen, 200);
+        setTimeout(load, 200);
         return;
     }
 
     const darkTheme = isDarkTheme();
+
+    // Stop here if not adding fullscreen capability
+    if ("True" !== "True") return;
 
     const modal = document.createElement('div');
     modal.className = 'mermaid-fullscreen-modal' + (darkTheme ? ' dark-theme' : '');
@@ -238,17 +285,20 @@ const initFullscreen = async () => {
     modal.setAttribute('aria-label', 'Fullscreen diagram viewer');
     modal.innerHTML = `
         <button class="mermaid-fullscreen-close${darkTheme ? ' dark-theme' : ''}" aria-label="Close fullscreen">✕</button>
-        <div class="mermaid-fullscreen-content${darkTheme ? ' dark-theme' : ''}"></div>
+        <div class="mermaid-container-fullscreen${darkTheme ? ' dark-theme' : ''}"></div>
     `;
     document.body.appendChild(modal);
 
-    const modalContent = modal.querySelector('.mermaid-fullscreen-content');
+    const modalContent = modal.querySelector('.mermaid-container-fullscreen');
     const closeBtn = modal.querySelector('.mermaid-fullscreen-close');
+
+    let previousScrollOffset = [window.scrollX, window.scrollY];
 
     const closeModal = () => {
         modal.classList.remove('active');
         modalContent.innerHTML = '';
-        document.body.style.overflow = '';
+        document.body.style.overflow = ''
+        window.scrollTo({left: previousScrollOffset[0], top: previousScrollOffset[1], behavior: 'instant'});
     };
 
     closeBtn.addEventListener('click', closeModal);
@@ -278,6 +328,7 @@ const initFullscreen = async () => {
         fullscreenBtn.className = 'mermaid-fullscreen-btn' + (darkTheme ? ' dark-theme' : '');
         fullscreenBtn.setAttribute('aria-label', 'View diagram in fullscreen');
         fullscreenBtn.textContent = '⛶';
+        fullscreenBtn.style.opacity = '50%';
 
         // Calculate dynamic position based on diagram's margin and padding
         const diagramStyle = window.getComputedStyle(mermaidDiv);
@@ -289,6 +340,7 @@ const initFullscreen = async () => {
         fullscreenBtn.style.right = `${marginRight + paddingRight + 4}px`;
 
         fullscreenBtn.addEventListener('click', () => {
+            previousScrollOffset = [window.scroll, window.scrollY];
             const clone = mermaidDiv.cloneNode(true);
             modalContent.innerHTML = '';
             modalContent.appendChild(clone);
@@ -300,7 +352,22 @@ const initFullscreen = async () => {
                 svg.style.width = '100%';
                 svg.style.height = 'auto';
                 svg.style.maxWidth = '100%';
-                svg.style.display = 'block';
+                svg.style.sdisplay = 'block';
+
+                if ("False" === "True") {
+                    setTimeout(() => {
+                        const g = svg.querySelector('g');
+                        if (g) {
+                            var svgD3 = d3.select(svg);
+                            svgD3.html("<g class='wrapper'>" + svgD3.html() + "</g>");
+                            var inner = svgD3.select("g");
+                            var zoom = d3.zoom().on("zoom", function(event) {
+                                inner.attr("transform", event.transform);
+                            });
+                            svgD3.call(zoom);
+                        }
+                    }, 100);
+                }
             }
 
             modal.classList.add('active');
@@ -344,7 +411,7 @@ const initFullscreen = async () => {
     });
 };
 
-window.addEventListener("load", initFullscreen);
+window.addEventListener("load", load);
 </script>
     <script>DOCUMENTATION_OPTIONS.pagename = 'search';</script>
   <script src="_static/searchtools.js"></script>
@@ -355,7 +422,7 @@ window.addEventListener("load", initFullscreen);
     <link rel="search" title="Search" href="#" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-    <meta name="docbuild:last-update" content="Nov 20, 2025"/>
+    <meta name="docbuild:last-update" content="Dec 03, 2025"/>
   </head>
   
   
@@ -471,6 +538,7 @@ window.addEventListener("load", initFullscreen);
 <li class="toctree-l1"><a class="reference internal" href="guides/cpp_guide.html">C++ Guide</a></li>
 <li class="toctree-l1"><a class="reference internal" href="guides/python_guide.html">Python Guide</a></li>
 <li class="toctree-l1"><a class="reference internal" href="guides/rust_guide.html">Rust Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="guides/cubin_launcher.html">CUBIN Launcher Guide</a></li>
 <li class="toctree-l1"><a class="reference internal" href="guides/compiler_integration.html">Compiler Integration</a></li>
 <li class="toctree-l1"><a class="reference internal" href="guides/build_from_source.html">Build from Source</a></li>
 <li class="toctree-l1"><a class="reference internal" href="guides/kernel_library_guide.html">Kernel Library Guide</a></li>
@@ -511,6 +579,7 @@ window.addEventListener("load", initFullscreen);
 <li class="toctree-l2"><a class="reference internal" href="reference/python/cpp/generated/tvm_ffi.cpp.build_inline.html">tvm_ffi.cpp.build_inline</a></li>
 <li class="toctree-l2"><a class="reference internal" href="reference/python/cpp/generated/tvm_ffi.cpp.load.html">tvm_ffi.cpp.load</a></li>
 <li class="toctree-l2"><a class="reference internal" href="reference/python/cpp/generated/tvm_ffi.cpp.build.html">tvm_ffi.cpp.build</a></li>
+<li class="toctree-l2"><a class="reference internal" href="reference/python/cpp/generated/tvm_ffi.cpp.nvrtc.nvrtc_compile.html">tvm_ffi.cpp.nvrtc.nvrtc_compile</a></li>
 <li class="toctree-l2"><a class="reference internal" href="reference/python/generated/tvm_ffi.serialization.from_json_graph_str.html">tvm_ffi.serialization.from_json_graph_str</a></li>
 <li class="toctree-l2"><a class="reference internal" href="reference/python/generated/tvm_ffi.serialization.to_json_graph_str.html">tvm_ffi.serialization.to_json_graph_str</a></li>
 <li class="toctree-l2"><a class="reference internal" href="reference/python/generated/tvm_ffi.access_path.AccessKind.html">tvm_ffi.access_path.AccessKind</a></li>
@@ -529,9 +598,11 @@ window.addEventListener("load", initFullscreen);
 <li class="toctree-l3"><a class="reference internal" href="reference/cpp/generated/namespace_tvm__ffi__symbol.html">Namespace tvm::ffi::symbol</a></li>
 <li class="toctree-l3"><a class="reference internal" href="reference/cpp/generated/structtvm_1_1ffi_1_1AnyEqual.html">Struct AnyEqual</a></li>
 <li class="toctree-l3"><a class="reference internal" href="reference/cpp/generated/structtvm_1_1ffi_1_1AnyHash.html">Struct AnyHash</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reference/cpp/generated/structtvm_1_1ffi_1_1CUDADeviceGuard.html">Struct CUDADeviceGuard</a></li>
 <li class="toctree-l3"><a class="reference internal" href="reference/cpp/generated/structtvm_1_1ffi_1_1DenseMapObj_1_1Block.html">Struct DenseMapObj::Block</a></li>
 <li class="toctree-l3"><a class="reference internal" href="reference/cpp/generated/structtvm_1_1ffi_1_1DenseMapObj_1_1ItemType.html">Struct DenseMapObj::ItemType</a></li>
 <li class="toctree-l3"><a class="reference internal" href="reference/cpp/generated/structtvm_1_1ffi_1_1DenseMapObj_1_1ListNode.html">Struct DenseMapObj::ListNode</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reference/cpp/generated/structtvm_1_1ffi_1_1dim3.html">Struct dim3</a></li>
 <li class="toctree-l3"><a class="reference internal" href="reference/cpp/generated/structtvm_1_1ffi_1_1EnvErrorAlreadySet.html">Struct EnvErrorAlreadySet</a></li>
 <li class="toctree-l3"><a class="reference internal" href="reference/cpp/generated/structtvm_1_1ffi_1_1FallbackOnlyTraitsBase.html">Template Struct FallbackOnlyTraitsBase</a></li>
 <li class="toctree-l3"><a class="reference internal" href="reference/cpp/generated/structtvm_1_1ffi_1_1is__valid__iterator.html">Template Struct is_valid_iterator</a></li>
@@ -566,6 +637,8 @@ window.addEventListener("load", initFullscreen);
 <li class="toctree-l3"><a class="reference internal" href="reference/cpp/generated/classtvm_1_1ffi_1_1Array.html">Template Class Array</a></li>
 <li class="toctree-l3"><a class="reference internal" href="reference/cpp/generated/classtvm_1_1ffi_1_1ArrayObj.html">Class ArrayObj</a></li>
 <li class="toctree-l3"><a class="reference internal" href="reference/cpp/generated/classtvm_1_1ffi_1_1Bytes.html">Class Bytes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reference/cpp/generated/classtvm_1_1ffi_1_1CubinKernel.html">Class CubinKernel</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reference/cpp/generated/classtvm_1_1ffi_1_1CubinModule.html">Class CubinModule</a></li>
 <li class="toctree-l3"><a class="reference internal" href="reference/cpp/generated/classtvm_1_1ffi_1_1DenseMapObj.html">Class DenseMapObj</a></li>
 <li class="toctree-l3"><a class="reference internal" href="reference/cpp/generated/classtvm_1_1ffi_1_1Error.html">Class Error</a></li>
 <li class="toctree-l3"><a class="reference internal" href="reference/cpp/generated/classtvm_1_1ffi_1_1ErrorObj.html">Class ErrorObj</a></li>
@@ -706,6 +779,7 @@ window.addEventListener("load", initFullscreen);
 <li class="toctree-l3"><a class="reference internal" href="reference/cpp/generated/function_c__api_8h_1aeee9dab8873b5b2f327f4dfe50f802ab.html">Function TVMFFITypeRegisterMetadata</a></li>
 <li class="toctree-l3"><a class="reference internal" href="reference/cpp/generated/function_c__api_8h_1a4e8b3caff4da72205ec1ac9a811748e5.html">Function TVMFFITypeRegisterMethod</a></li>
 <li class="toctree-l3"><a class="reference internal" href="reference/cpp/generated/variable_array_8h_1a3bbf4c2bf19b72b026ad9e19a23143d5.html">Variable tvm::ffi::is_valid_iterator_v</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reference/cpp/generated/variable_module_8h_1a5a3a8ad10620c05ded5876f8e607e0eb.html">Variable tvm::ffi::symbol::tvm_ffi_doc_prefix</a></li>
 <li class="toctree-l3"><a class="reference internal" href="reference/cpp/generated/variable_module_8h_1aae0405c7615139afd4f68b72a862cffe.html">Variable tvm::ffi::symbol::tvm_ffi_library_bin</a></li>
 <li class="toctree-l3"><a class="reference internal" href="reference/cpp/generated/variable_module_8h_1a76f8a8fd1e38fd98cc501623d959ee58.html">Variable tvm::ffi::symbol::tvm_ffi_library_ctx</a></li>
 <li class="toctree-l3"><a class="reference internal" href="reference/cpp/generated/variable_module_8h_1ad9c186f1359987cef9278993037b3f66.html">Variable tvm::ffi::symbol::tvm_ffi_main</a></li>
@@ -714,6 +788,7 @@ window.addEventListener("load", initFullscreen);
 <li class="toctree-l3"><a class="reference internal" href="reference/cpp/generated/define_error_8h_1a288653475dd42db1c715a11ab2972578.html">Define TVM_FFI_ALWAYS_LOG_BEFORE_THROW</a></li>
 <li class="toctree-l3"><a class="reference internal" href="reference/cpp/generated/define_error_8h_1a7205bbaef1c45e57f939af6deefb6449.html">Define TVM_FFI_BACKTRACE_ON_SEGFAULT</a></li>
 <li class="toctree-l3"><a class="reference internal" href="reference/cpp/generated/define_error_8h_1ad4674e1cb9c051f47127e5331a4bcadc.html">Define TVM_FFI_CHECK</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reference/cpp/generated/define_cuda_2base_8h_1a8b7e871d0d7206eacc60705f11827ee1.html">Define TVM_FFI_CHECK_CUDA_ERROR</a></li>
 <li class="toctree-l3"><a class="reference internal" href="reference/cpp/generated/define_error_8h_1a64c939463f90816ffc2b70bc89ea3e43.html">Define TVM_FFI_CHECK_FUNC</a></li>
 <li class="toctree-l3"><a class="reference internal" href="reference/cpp/generated/define_function_8h_1a14328d95ccda4b1691b9874645aef4bd.html">Define TVM_FFI_CHECK_SAFE_CALL</a></li>
 <li class="toctree-l3"><a class="reference internal" href="reference/cpp/generated/define_object_8h_1a438ff7ee1fc503216d35e156081280c0.html">Define TVM_FFI_DECLARE_OBJECT_INFO</a></li>
@@ -722,7 +797,11 @@ window.addEventListener("load", initFullscreen);
 <li class="toctree-l3"><a class="reference internal" href="reference/cpp/generated/define_object_8h_1a6ad2a76d53c8c695743f7a275c8c0523.html">Define TVM_FFI_DECLARE_OBJECT_INFO_STATIC</a></li>
 <li class="toctree-l3"><a class="reference internal" href="reference/cpp/generated/define_object_8h_1a4ac33631a9b51877808ec7edf010f0d2.html">Define TVM_FFI_DEFINE_OBJECT_REF_METHODS_NOTNULLABLE</a></li>
 <li class="toctree-l3"><a class="reference internal" href="reference/cpp/generated/define_object_8h_1a0fc0cc2d8f4318bc41a896c117e8a15c.html">Define TVM_FFI_DEFINE_OBJECT_REF_METHODS_NULLABLE</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reference/cpp/generated/define_function_8h_1a78c6d17c063fba9ca07175f150838046.html">Define TVM_FFI_DLL_EXPORT_INCLUDE_METADATA</a></li>
 <li class="toctree-l3"><a class="reference internal" href="reference/cpp/generated/define_function_8h_1a01777f12f8f99771331d679a0c1d2ed4.html">Define TVM_FFI_DLL_EXPORT_TYPED_FUNC</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reference/cpp/generated/define_function_8h_1af84cdf62b6c193275db7e63e3bffc8bd.html">Define TVM_FFI_DLL_EXPORT_TYPED_FUNC_DOC</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reference/cpp/generated/define_cubin__launcher_8h_1a99736a44462543179cb434ebd4512ade.html">Define TVM_FFI_EMBED_CUBIN</a></li>
+<li class="toctree-l3"><a class="reference internal" href="reference/cpp/generated/define_cubin__launcher_8h_1ae8d64fa1cc7db9d38632e32054df72fc.html">Define TVM_FFI_EMBED_CUBIN_GET_KERNEL</a></li>
 <li class="toctree-l3"><a class="reference internal" href="reference/cpp/generated/define_error_8h_1a6c01470f76c6437edf93ac668ea6242a.html">Define TVM_FFI_ICHECK</a></li>
 <li class="toctree-l3"><a class="reference internal" href="reference/cpp/generated/define_error_8h_1a83986fc775d68d4abcc209c2f67dde6e.html">Define TVM_FFI_ICHECK_BINARY_OP</a></li>
 <li class="toctree-l3"><a class="reference internal" href="reference/cpp/generated/define_error_8h_1a394ec1781a34c49e29d47db5c3dfad9c.html">Define TVM_FFI_ICHECK_EQ</a></li>
@@ -935,7 +1014,7 @@ By Apache TVM FFI contributors
   
   <div class="footer-item">
     <p class="last-updated">
-  Last updated on Nov 20, 2025.
+  Last updated on Dec 03, 2025.
   <br/>
 </p>
   </div>

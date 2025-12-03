@@ -75,7 +75,7 @@ Program Listing for File c_api.h
    // NOLINTBEGIN(modernize-macro-to-enum)
    #define TVM_FFI_VERSION_MAJOR 0
    #define TVM_FFI_VERSION_MINOR 1
-   #define TVM_FFI_VERSION_PATCH 3
+   #define TVM_FFI_VERSION_PATCH 5
    // NOLINTEND(modernize-macro-to-enum)
    
    #ifdef __cplusplus

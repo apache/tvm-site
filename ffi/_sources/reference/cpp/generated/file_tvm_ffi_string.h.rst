@@ -69,6 +69,8 @@ Included By
 
 - :ref:`file_tvm_ffi_extra_base64.h`
 
+- :ref:`file_tvm_ffi_extra_cuda_cubin_launcher.h`
+
 - :ref:`file_tvm_ffi_optional.h`
 
 - :ref:`file_tvm_ffi_reflection_creator.h`
