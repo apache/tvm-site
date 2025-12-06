@@ -328,8 +328,8 @@ PyTorch.</p>
 <div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Downloading: &quot;https://download.pytorch.org/models/resnet18-f37072fd.pth&quot; to /workspace/.cache/torch/hub/checkpoints/resnet18-f37072fd.pth
 
   0%|          | 0.00/44.7M [00:00&lt;?, ?B/s]
- 56%|█████▋    | 25.1M/44.7M [00:00&lt;00:00, 263MB/s]
-100%|██████████| 44.7M/44.7M [00:00&lt;00:00, 292MB/s]
+ 50%|█████     | 22.5M/44.7M [00:00&lt;00:00, 236MB/s]
+100%|██████████| 44.7M/44.7M [00:00&lt;00:00, 255MB/s]
 </pre></div>
 </div>
 </section>
@@ -384,12 +384,37 @@ transformation can be combined as an optimization pipeline via <code class="docu
 <p>In this tutorial, we focus on the end-to-end optimization of the model via auto-tuning. We
 leverage MetaSchedule to tune the model and store the tuning logs to the database. We also
 apply the database to the model to get the best performance.</p>
-<div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><a href="https://docs.python.org/3/library/functions.html#int" title="builtins.int" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">TOTAL_TRIALS</span></a> <span class="o">=</span> <span class="mi">8000</span>  <span class="c1"># Change to 20000 for better performance if needed</span>
+<p>The ResNet18 model will be divided into 20 independent tuning tasks during compilation.
+To ensure each task receives adequate tuning resources in one iteration while providing
+early feedback:</p>
+<ul class="simple">
+<li><p>To quickly observe tuning progress, each task is allocated a maximum of 16 trials per
+iteration (controlled by <code class="docutils literal notranslate"><span class="pre">MAX_TRIALS_PER_TASK=16</span></code>). We should set <code class="docutils literal notranslate"><span class="pre">TOTAL_TRIALS</span></code>
+to at least <code class="docutils literal notranslate"><span class="pre">320</span> <span class="pre">(20</span> <span class="pre">tasks</span> <span class="pre">*</span> <span class="pre">16</span> <span class="pre">trials)</span></code> ensures every task receives one full iteration
+of tuning. We set it to 512 in our configuration to allow for several more iterations,
+aiming to explore a wider parameter space and potentially achieve better performance.</p></li>
+<li><p>If <code class="docutils literal notranslate"><span class="pre">MAX_TRIALS_PER_TASK</span> <span class="pre">==</span> <span class="pre">None</span></code>, the system defaults to <code class="docutils literal notranslate"><span class="pre">TOTAL_TRIALS</span></code> trials per
+task per iteration. An insufficient <code class="docutils literal notranslate"><span class="pre">TOTAL_TRIALS</span></code> setting may lead to undersubscribed
+tuning, potentially skipping some tasks entirely. Explicitly setting both parameters
+avoids this issue and provides deterministic resource allocation across all tasks.</p></li>
+</ul>
+<p>Note: These parameter settings are optimized for quick tutorial demonstration. For production
+deployments requiring higher performance, we recommend adjusting both <code class="docutils literal notranslate"><span class="pre">MAX_TRIALS_PER_TASK</span></code>
+and <code class="docutils literal notranslate"><span class="pre">TOTAL_TRIALS</span></code> to larger values. This allows more extensive search space exploration
+and typically yields better performance outcomes.</p>
+<div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><a href="https://docs.python.org/3/library/functions.html#int" title="builtins.int" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">TOTAL_TRIALS</span></a> <span class="o">=</span> <span class="mi">512</span>  <span class="c1"># Change to 20000 for better performance if needed</span>
+<a href="https://docs.python.org/3/library/functions.html#int" title="builtins.int" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">MAX_TRIALS_PER_TASK</span></a> <span class="o">=</span> <span class="mi">16</span>  <span class="c1"># Change to more trials per task for better performance if needed</span>
 <a href="../../reference/api/python/target.html#tvm.target.Target" title="tvm.target.Target" class="sphx-glr-backref-module-tvm-target sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">target</span></a> <span class="o">=</span> <a href="../../reference/api/python/target.html#tvm.target.Target" title="tvm.target.Target" class="sphx-glr-backref-module-tvm-target sphx-glr-backref-type-py-class"><span class="n">tvm</span><span class="o">.</span><span class="n">target</span><span class="o">.</span><span class="n">Target</span></a><span class="p">(</span><span class="s2">&quot;nvidia/geforce-rtx-3090-ti&quot;</span><span class="p">)</span>  <span class="c1"># Change to your target device</span>
 <a href="https://docs.python.org/3/library/stdtypes.html#str" title="builtins.str" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">work_dir</span></a> <span class="o">=</span> <span class="s2">&quot;tuning_logs&quot;</span>
 
 <span class="k">if</span> <span class="ow">not</span> <a href="https://docs.python.org/3/library/functions.html#bool" title="builtins.bool" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">IS_IN_CI</span></a><span class="p">:</span>
-    <span class="n">mod</span> <span class="o">=</span> <a href="../../reference/api/python/relax/relax.html#tvm.relax.get_pipeline" title="tvm.relax.get_pipeline" class="sphx-glr-backref-module-tvm-relax sphx-glr-backref-type-py-function"><span class="n">relax</span><span class="o">.</span><span class="n">get_pipeline</span></a><span class="p">(</span><span class="s2">&quot;static_shape_tuning&quot;</span><span class="p">,</span> <a href="../../reference/api/python/target.html#tvm.target.Target" title="tvm.target.Target" class="sphx-glr-backref-module-tvm-target sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">target</span></a><span class="o">=</span><a href="../../reference/api/python/target.html#tvm.target.Target" title="tvm.target.Target" class="sphx-glr-backref-module-tvm-target sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">target</span></a><span class="p">,</span> <span class="n">total_trials</span><span class="o">=</span><a href="https://docs.python.org/3/library/functions.html#int" title="builtins.int" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">TOTAL_TRIALS</span></a><span class="p">)(</span><span class="n">mod</span><span class="p">)</span>
+    <span class="n">mod</span> <span class="o">=</span> <a href="../../reference/api/python/relax/relax.html#tvm.relax.get_pipeline" title="tvm.relax.get_pipeline" class="sphx-glr-backref-module-tvm-relax sphx-glr-backref-type-py-function"><span class="n">relax</span><span class="o">.</span><span class="n">get_pipeline</span></a><span class="p">(</span>
+        <span class="s2">&quot;static_shape_tuning&quot;</span><span class="p">,</span>
+        <a href="../../reference/api/python/target.html#tvm.target.Target" title="tvm.target.Target" class="sphx-glr-backref-module-tvm-target sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">target</span></a><span class="o">=</span><a href="../../reference/api/python/target.html#tvm.target.Target" title="tvm.target.Target" class="sphx-glr-backref-module-tvm-target sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">target</span></a><span class="p">,</span>
+        <a href="https://docs.python.org/3/library/stdtypes.html#str" title="builtins.str" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">work_dir</span></a><span class="o">=</span><a href="https://docs.python.org/3/library/stdtypes.html#str" title="builtins.str" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">work_dir</span></a><span class="p">,</span>
+        <span class="n">total_trials</span><span class="o">=</span><a href="https://docs.python.org/3/library/functions.html#int" title="builtins.int" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">TOTAL_TRIALS</span></a><span class="p">,</span>
+        <span class="n">max_trials_per_task</span><span class="o">=</span><a href="https://docs.python.org/3/library/functions.html#int" title="builtins.int" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">MAX_TRIALS_PER_TASK</span></a><span class="p">,</span>
+    <span class="p">)(</span><span class="n">mod</span><span class="p">)</span>
 
     <span class="c1"># Only show the main function</span>
     <span class="n">mod</span><span class="p">[</span><span class="s2">&quot;main&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
