@@ -40,6 +40,12 @@ Choose your flavor of download from the following links:
 
 | Version | Source | PGP | SHA |
 | ------- | ------ | --- | --- |
+| 0.1.4   | [apache-tvm-ffi-src-v0.1.4.tar.gz](https://www.apache.org/dyn/closer.lua/tvm/tvm-ffi-v0.1.4//apache-tvm-ffi-src-v0.1.4.tar.gz) | [.asc](https://downloads.apache.org/tvm/tvm-ffi-v0.1.4/apache-tvm-ffi-src-v0.1.4.tar.gz.asc) | [.sha512](https://downloads.apache.org/tvm/tvm-ffi-v0.1.4/apache-tvm-ffi-src-v0.1.4.tar.gz.sha512) |
+| 0.1.3   | [apache-tvm-ffi-src-v0.1.3.tar.gz](https://www.apache.org/dyn/closer.lua/tvm/tvm-ffi-v0.1.3//apache-tvm-ffi-src-v0.1.3.tar.gz) | [.asc](https://downloads.apache.org/tvm/tvm-ffi-v0.1.3/apache-tvm-ffi-src-v0.1.3.tar.gz.asc) | [.sha512](https://downloads.apache.org/tvm/tvm-ffi-v0.1.3/apache-tvm-ffi-src-v0.1.3.tar.gz.sha512) |
+| 0.1.2   | [apache-tvm-ffi-src-v0.1.2.tar.gz](https://www.apache.org/dyn/closer.lua/tvm/tvm-ffi-v0.1.2//apache-tvm-ffi-src-v0.1.2.tar.gz) | [.asc](https://downloads.apache.org/tvm/tvm-ffi-v0.1.2/apache-tvm-ffi-src-v0.1.2.tar.gz.asc) | [.sha512](https://downloads.apache.org/tvm/tvm-ffi-v0.1.2/apache-tvm-ffi-src-v0.1.2.tar.gz.sha512) |
+| 0.1.0   | [apache-tvm-ffi-src-v0.1.0.tar.gz](https://www.apache.org/dyn/closer.lua/tvm/tvm-ffi-v0.1.0//apache-tvm-ffi-src-v0.1.0.tar.gz) | [.asc](https://downloads.apache.org/tvm/tvm-ffi-v0.1.0/apache-tvm-ffi-src-v0.1.0.tar.gz.asc) | [.sha512](https://downloads.apache.org/tvm/tvm-ffi-v0.1.0/apache-tvm-ffi-src-v0.1.0.tar.gz.sha512) |
+| 0.1.0   | [apache-tvm-ffi-src-v0.1.2.tar.gz](https://www.apache.org/dyn/closer.lua/tvm/tvm-ffi-v0.1.0//apache-tvm-ffi-src-v0.1.0.tar.gz) | [.asc](https://downloads.apache.org/tvm/tvm-ffi-v0.1.0/apache-tvm-ffi-src-v0.1.0.tar.gz.asc) | [.sha512](https://downloads.apache.org/tvm/tvm-ffi-v0.1.0/apache-tvm-ffi-src-v0.1.0.tar.gz.sha512) |
+| 0.1.1   | [apache-tvm-ffi-src-v0.1.1.tar.gz](https://www.apache.org/dyn/closer.lua/tvm/tvm-ffi-v0.1.1//apache-tvm-ffi-src-v0.1.1.tar.gz) | [.asc](https://downloads.apache.org/tvm/tvm-ffi-v0.1.1/apache-tvm-ffi-src-v0.1.1.tar.gz.asc) | [.sha512](https://downloads.apache.org/tvm/tvm-ffi-v0.1.1/apache-tvm-ffi-src-v0.1.1.tar.gz.sha512) |
 | 0.1.0   | [apache-tvm-ffi-src-v0.1.0.tar.gz](https://www.apache.org/dyn/closer.lua/tvm/tvm-ffi-v0.1.0//apache-tvm-ffi-src-v0.1.0.tar.gz) | [.asc](https://downloads.apache.org/tvm/tvm-ffi-v0.1.0/apache-tvm-ffi-src-v0.1.0.tar.gz.asc) | [.sha512](https://downloads.apache.org/tvm/tvm-ffi-v0.1.0/apache-tvm-ffi-src-v0.1.0.tar.gz.sha512) |
 
 
