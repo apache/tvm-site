@@ -75,7 +75,7 @@ Program Listing for File c_api.h
    // NOLINTBEGIN(modernize-macro-to-enum)
    #define TVM_FFI_VERSION_MAJOR 0
    #define TVM_FFI_VERSION_MINOR 1
-   #define TVM_FFI_VERSION_PATCH 5
+   #define TVM_FFI_VERSION_PATCH 6
    // NOLINTEND(modernize-macro-to-enum)
    
    #ifdef __cplusplus
@@ -303,6 +303,9 @@ Program Listing for File c_api.h
    
    TVM_FFI_DLL int TVMFFITensorToDLPackVersioned(TVMFFIObjectHandle from,
                                                  DLManagedTensorVersioned** out);
+   
+   TVM_FFI_DLL int TVMFFITensorCreateUnsafeView(TVMFFIObjectHandle source, const DLTensor* prototype,
+                                                TVMFFIObjectHandle* out);
    //---------------------------------------------------------------
    // Section: string/bytes support APIs.
    // These APIs are used to simplify the string/bytes construction
@@ -459,6 +462,12 @@ Program Listing for File c_api.h
    
    TVM_FFI_DLL const TVMFFITypeInfo* TVMFFIGetTypeInfo(int32_t type_index);
    
+   // ----------------------------------------------------------------------------
+   // Static handle initialization and deinitialization API
+   // ----------------------------------------------------------------------------
+   TVM_FFI_DLL int TVMFFIHandleInitOnce(void** handle_addr, int (*init_func)(void** result));
+   
+   TVM_FFI_DLL int TVMFFIHandleDeinitOnce(void** handle_addr, int (*deinit_func)(void* handle));
    #ifdef __cplusplus
    }  // TVM_FFI_EXTERN_C
    #endif

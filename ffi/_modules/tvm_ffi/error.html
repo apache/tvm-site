@@ -39,7 +39,7 @@
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
   <script src="../../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
 
-    <script src="../../_static/documentation_options.js?v=5f86a092"></script>
+    <script src="../../_static/documentation_options.js?v=ba39426c"></script>
     <script src="../../_static/doctools.js?v=9bcbadda"></script>
     <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -420,7 +420,7 @@ window.addEventListener("load", load);
     <link rel="search" title="Search" href="../../search.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-    <meta name="docbuild:last-update" content="Dec 03, 2025"/>
+    <meta name="docbuild:last-update" content="Dec 12, 2025"/>
   </head>
   
   
@@ -757,6 +757,8 @@ window.addEventListener("load", load);
 <li class="toctree-l3"><a class="reference internal" href="../../reference/cpp/generated/function_c__api_8h_1a53c5ec2971806966ed96a6add32b5238.html">Function TVMFFIGetTypeAttrColumn</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../reference/cpp/generated/function_c__api_8h_1afee5a803e22f9baf5ee2ff1f0ace6429.html">Function TVMFFIGetTypeInfo</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../reference/cpp/generated/function_c__api_8h_1a145f2694254410fd4814541e2cde99c1.html">Function TVMFFIGetVersion</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../reference/cpp/generated/function_c__api_8h_1ab31a093c3633c793dc2b4ffed0825c31.html">Function TVMFFIHandleDeinitOnce</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../reference/cpp/generated/function_c__api_8h_1ab15b1e535d645969fde869a5e515a885.html">Function TVMFFIHandleInitOnce</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../reference/cpp/generated/function_c__api_8h_1a6415c088928d62af8749f3dc57dcf23b.html">Function TVMFFIObjectCreateOpaque</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../reference/cpp/generated/function_c__api_8h_1aba50ba2cee84b1ef7a718211ab349031.html">Function TVMFFIObjectDecRef</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../reference/cpp/generated/function_c__api_8h_1a31a317a32bfa641180eed1bfb3d5cf01.html">Function TVMFFIObjectGetTypeIndex</a></li>
@@ -765,6 +767,7 @@ window.addEventListener("load", load);
 <li class="toctree-l3"><a class="reference internal" href="../../reference/cpp/generated/function_c__api_8h_1a74c26efdd74840abc3e1581c73a38bfa.html">Function TVMFFIShapeGetCellPtr</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../reference/cpp/generated/function_c__api_8h_1a724b0d386cf3d50c7d141ca37be19092.html">Function TVMFFISmallBytesGetContentByteArray</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../reference/cpp/generated/function_c__api_8h_1a5a7e3fe8a94e066bc1bf897fbf736651.html">Function TVMFFIStringFromByteArray</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../reference/cpp/generated/function_c__api_8h_1a1a617dd18aa7dd47aa51a984611b67a1.html">Function TVMFFITensorCreateUnsafeView</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../reference/cpp/generated/function_c__api_8h_1af1b8a29eb3f9405982c344f5e572dd65.html">Function TVMFFITensorFromDLPack</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../reference/cpp/generated/function_c__api_8h_1adaf9a5ab3d30bb3eca58b430f2592fc0.html">Function TVMFFITensorFromDLPackVersioned</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../reference/cpp/generated/function_c__api_8h_1ab691fd5bc4442c631c1f70985a962f50.html">Function TVMFFITensorGetDLTensorPtr</a></li>
@@ -1080,8 +1083,18 @@ document.write(`
 <span class="sd">            The new traceback with the appended frame.</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">frame</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_create_frame</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">lineno</span><span class="p">,</span> <span class="n">func</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">types</span><span class="o">.</span><span class="n">TracebackType</span><span class="p">(</span><span class="n">tb</span><span class="p">,</span> <span class="n">frame</span><span class="p">,</span> <span class="n">frame</span><span class="o">.</span><span class="n">f_lasti</span><span class="p">,</span> <span class="n">lineno</span><span class="p">)</span>
+
+        <span class="c1"># This approach avoids binding the created frame object to a local variable</span>
+        <span class="c1"># in `append_traceback`, which would create a reference cycle. By using a</span>
+        <span class="c1"># nested function, the frame object is a temporary that is not held by</span>
+        <span class="c1"># the locals of `append_traceback`. See the diagram in `_with_append_backtrace`</span>
+        <span class="c1"># and PR #327 for more details.</span>
+        <span class="k">def</span><span class="w"> </span><span class="nf">create</span><span class="p">(</span>
+            <span class="n">tb</span><span class="p">:</span> <span class="n">types</span><span class="o">.</span><span class="n">TracebackType</span> <span class="o">|</span> <span class="kc">None</span><span class="p">,</span> <span class="n">frame</span><span class="p">:</span> <span class="n">types</span><span class="o">.</span><span class="n">FrameType</span><span class="p">,</span> <span class="n">lineno</span><span class="p">:</span> <span class="nb">int</span>
+        <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">types</span><span class="o">.</span><span class="n">TracebackType</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">types</span><span class="o">.</span><span class="n">TracebackType</span><span class="p">(</span><span class="n">tb</span><span class="p">,</span> <span class="n">frame</span><span class="p">,</span> <span class="n">frame</span><span class="o">.</span><span class="n">f_lasti</span><span class="p">,</span> <span class="n">lineno</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">create</span><span class="p">(</span><span class="n">tb</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_create_frame</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">lineno</span><span class="p">,</span> <span class="n">func</span><span class="p">),</span> <span class="n">lineno</span><span class="p">)</span>
 
 
 <span class="n">_TRACEBACK_MANAGER</span> <span class="o">=</span> <span class="n">TracebackManager</span><span class="p">()</span>
@@ -1089,10 +1102,47 @@ document.write(`
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_with_append_backtrace</span><span class="p">(</span><span class="n">py_error</span><span class="p">:</span> <span class="ne">BaseException</span><span class="p">,</span> <span class="n">backtrace</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="ne">BaseException</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Append the backtrace to the py_error and return it.&quot;&quot;&quot;</span>
+    <span class="c1"># We manually delete py_error and tb to avoid reference cycle, making it faster to gc the locals inside the frame</span>
+    <span class="c1"># please see pull request #327 for more details</span>
+    <span class="c1">#</span>
+    <span class="c1"># Memory Cycle Diagram:</span>
+    <span class="c1">#</span>
+    <span class="c1">#         [Stack Frames]                            [Heap Objects]</span>
+    <span class="c1">#     +-------------------+</span>
+    <span class="c1">#     | outside functions | -----------------------&gt; [ Tensor ]</span>
+    <span class="c1">#     +-------------------+                   (Held by cycle, slow to free)</span>
+    <span class="c1">#             ^</span>
+    <span class="c1">#             | f_back</span>
+    <span class="c1">#     +-------------------+  locals      py_error</span>
+    <span class="c1">#     | py_error (this)   | -----+--------------&gt; [ BaseException ]</span>
+    <span class="c1">#     +-------------------+      |                       |</span>
+    <span class="c1">#             ^                  |                       | (with_traceback)</span>
+    <span class="c1">#             | f_back           |                       v</span>
+    <span class="c1">#     +-------------------+      +--------------&gt; [ Traceback Obj ]</span>
+    <span class="c1">#     | append_traceback  |                   tb         |</span>
+    <span class="c1">#     +-------------------+                              |</span>
+    <span class="c1">#             ^                                          |</span>
+    <span class="c1">#             | f_back                                   |</span>
+    <span class="c1">#     +-------------------+                              |</span>
+    <span class="c1">#     | _create_frame     |                              |</span>
+    <span class="c1">#     +-------------------+                              |</span>
+    <span class="c1">#             ^                                          |</span>
+    <span class="c1">#             | f_back                                   |</span>
+    <span class="c1">#     +-------------------+                              |</span>
+    <span class="c1">#     | _get_frame        | &lt;----------------------------+</span>
+    <span class="c1">#     +-------------------+      (Cycle closes here)</span>
     <span class="n">tb</span> <span class="o">=</span> <span class="n">py_error</span><span class="o">.</span><span class="n">__traceback__</span>
-    <span class="k">for</span> <span class="n">filename</span><span class="p">,</span> <span class="n">lineno</span><span class="p">,</span> <span class="n">func</span> <span class="ow">in</span> <span class="n">_parse_backtrace</span><span class="p">(</span><span class="n">backtrace</span><span class="p">):</span>
-        <span class="n">tb</span> <span class="o">=</span> <span class="n">_TRACEBACK_MANAGER</span><span class="o">.</span><span class="n">append_traceback</span><span class="p">(</span><span class="n">tb</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">lineno</span><span class="p">,</span> <span class="n">func</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">py_error</span><span class="o">.</span><span class="n">with_traceback</span><span class="p">(</span><span class="n">tb</span><span class="p">)</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">filename</span><span class="p">,</span> <span class="n">lineno</span><span class="p">,</span> <span class="n">func</span> <span class="ow">in</span> <span class="n">_parse_backtrace</span><span class="p">(</span><span class="n">backtrace</span><span class="p">):</span>
+            <span class="n">tb</span> <span class="o">=</span> <span class="n">_TRACEBACK_MANAGER</span><span class="o">.</span><span class="n">append_traceback</span><span class="p">(</span><span class="n">tb</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">lineno</span><span class="p">,</span> <span class="n">func</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">py_error</span><span class="o">.</span><span class="n">with_traceback</span><span class="p">(</span><span class="n">tb</span><span class="p">)</span>
+    <span class="k">finally</span><span class="p">:</span>
+        <span class="c1"># We explicitly break the reference cycle here. The `finally` block is</span>
+        <span class="c1"># executed just before the function returns, after the `return` expression</span>
+        <span class="c1"># in the `try` block has been evaluated. Deleting `py_error` and `tb`</span>
+        <span class="c1"># here ensures they are not held by this function&#39;s frame&#39;s locals,</span>
+        <span class="c1"># which resolves the cycle.</span>
+        <span class="k">del</span> <span class="n">py_error</span><span class="p">,</span> <span class="n">tb</span>
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_traceback_to_backtrace_str</span><span class="p">(</span><span class="n">tb</span><span class="p">:</span> <span class="n">types</span><span class="o">.</span><span class="n">TracebackType</span> <span class="o">|</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
@@ -1141,10 +1191,12 @@ document.write(`
 
 <span class="sd">        import tvm_ffi</span>
 
+
 <span class="sd">        # Register a custom Python exception so tvm_ffi.Error maps to it</span>
 <span class="sd">        @tvm_ffi.error.register_error</span>
 <span class="sd">        class MyError(RuntimeError):</span>
 <span class="sd">            pass</span>
+
 
 <span class="sd">        # Convert a Python exception to an FFI Error and back</span>
 <span class="sd">        ffi_err = tvm_ffi.convert(MyError(&quot;boom&quot;))</span>
@@ -1217,7 +1269,7 @@ By Apache TVM FFI contributors
   
   <div class="footer-item">
     <p class="last-updated">
-  Last updated on Dec 03, 2025.
+  Last updated on Dec 12, 2025.
   <br/>
 </p>
   </div>

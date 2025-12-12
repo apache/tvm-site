@@ -40,6 +40,7 @@ Program Listing for File tensor.h
    
    #include <atomic>
    #include <memory>
+   #include <optional>
    #include <string>
    #include <utility>
    
@@ -147,7 +148,7 @@ Program Listing for File tensor.h
      template <typename... ExtraArgs>
      TensorObjFromNDAlloc(TNDAlloc alloc, ffi::ShapeView shape, DLDataType dtype, DLDevice device,
                           ExtraArgs&&... extra_args)
-         : alloc_(alloc) {
+         : alloc_(std::move(alloc)) {
        this->device = device;
        this->ndim = static_cast<int>(shape.size());
        this->dtype = dtype;
@@ -157,6 +158,19 @@ Program Listing for File tensor.h
        this->strides = this->shape + shape.size();
        std::copy(shape.begin(), shape.end(), this->shape);
        details::FillStridesFromShape(shape, this->strides);
+       // call allocator to alloc data
+       alloc_.AllocData(static_cast<DLTensor*>(this), std::forward<ExtraArgs>(extra_args)...);
+     }
+   
+     template <typename... ExtraArgs>
+     TensorObjFromNDAlloc(TNDAlloc alloc, const DLTensor& prototype, ExtraArgs&&... extra_args)
+         : alloc_(std::move(alloc)) {
+       *static_cast<DLTensor*>(this) = prototype;
+       this->shape = reinterpret_cast<int64_t*>(reinterpret_cast<char*>(this) + sizeof(Self));
+       this->strides = this->shape + prototype.ndim;
+       TVM_FFI_ICHECK_NOTNULL(prototype.strides);
+       std::copy(prototype.shape, prototype.shape + prototype.ndim, this->shape);
+       std::copy(prototype.strides, prototype.strides + prototype.ndim, this->strides);
        // call allocator to alloc data
        alloc_.AllocData(static_cast<DLTensor*>(this), std::forward<ExtraArgs>(extra_args)...);
      }
@@ -234,6 +248,32 @@ Program Listing for File tensor.h
      uint64_t byte_offset() const { return get()->byte_offset; }
      bool IsContiguous() const { return tvm::ffi::IsContiguous(*get()); }
      bool IsAligned(size_t alignment) const { return tvm::ffi::IsAligned(*get(), alignment); }
+   
+     Tensor as_strided(ShapeView shape, ShapeView strides,
+                       std::optional<int64_t> element_offset = std::nullopt) const {
+       DLTensor prototype;
+       prototype = *static_cast<const DLTensor*>(get());
+       prototype.shape = const_cast<int64_t*>(shape.data());
+       prototype.ndim = static_cast<int>(shape.size());
+       prototype.strides = const_cast<int64_t*>(strides.data());
+       int64_t elem_offset_as_i64 = element_offset.value_or(0);
+   
+       TVM_FFI_ICHECK_GE(elem_offset_as_i64, 0);
+       prototype.byte_offset += GetDataSize(static_cast<size_t>(elem_offset_as_i64), prototype.dtype);
+   
+       if (prototype.byte_offset != 0 && IsDirectAddressDevice(prototype.device)) {
+         // If the device supports direct address, we can just add the byte offset to the data pointer.
+         prototype.data =
+             reinterpret_cast<void*>(reinterpret_cast<char*>(prototype.data) + prototype.byte_offset);
+         prototype.byte_offset = 0;
+       }
+   
+       TVMFFIObjectHandle out;
+       Object* obj_handle = const_cast<TensorObj*>(get());
+       TVM_FFI_CHECK_SAFE_CALL(TVMFFITensorCreateUnsafeView(obj_handle, &prototype, &out));
+       return Tensor(
+           details::ObjectUnsafe::ObjectPtrFromOwned<TensorObj>(static_cast<TVMFFIObject*>(out)));
+     }
      template <typename TNDAlloc, typename... ExtraArgs>
      static Tensor FromNDAlloc(TNDAlloc alloc, ffi::ShapeView shape, DLDataType dtype, DLDevice device,
                                ExtraArgs&&... extra_args) {
@@ -242,6 +282,25 @@ Program Listing for File tensor.h
        return Tensor(make_inplace_array_object<details::TensorObjFromNDAlloc<TNDAlloc>, int64_t>(
            num_extra_i64_at_tail, alloc, shape, dtype, device,
            std::forward<ExtraArgs>(extra_args)...));
+     }
+   
+     template <typename TNDAlloc, typename... ExtraArgs>
+     static Tensor FromNDAllocStrided(TNDAlloc alloc, ffi::ShapeView shape, ffi::ShapeView strides,
+                                      DLDataType dtype, DLDevice device, ExtraArgs&&... extra_args) {
+       TVM_FFI_CHECK(shape.size() == strides.size(), ValueError)
+           << "shape and strides must have the same size.";
+       // inplace alloc shape and strides after data structure (as a result why multiply 2)
+       size_t num_extra_i64_at_tail = shape.size() * 2;
+       DLTensor prototype;
+       prototype.data = nullptr;
+       prototype.device = device;
+       prototype.dtype = dtype;
+       prototype.shape = const_cast<int64_t*>(shape.data());
+       prototype.ndim = static_cast<int>(shape.size());
+       prototype.strides = const_cast<int64_t*>(strides.data());
+       prototype.byte_offset = 0;
+       return Tensor(make_inplace_array_object<details::TensorObjFromNDAlloc<TNDAlloc>, int64_t>(
+           num_extra_i64_at_tail, alloc, prototype, std::forward<ExtraArgs>(extra_args)...));
      }
      static Tensor FromEnvAlloc(int (*env_alloc)(DLTensor*, TVMFFIObjectHandle*), ffi::ShapeView shape,
                                 DLDataType dtype, DLDevice device) {
@@ -360,9 +419,27 @@ Program Listing for File tensor.h
      bool IsContiguous() const { return tvm::ffi::IsContiguous(tensor_); }
    
      // the following code are convenient APIs redirections created to provide aten-style api
-     inline int32_t dim() { return ndim(); }
-     inline ShapeView sizes() const { return shape(); }
-     inline bool is_contiguous() const { return IsContiguous(); }
+     int32_t dim() const { return ndim(); }
+     ShapeView sizes() const { return shape(); }
+     bool is_contiguous() const { return IsContiguous(); }
+     TensorView as_strided(ShapeView shape, ShapeView strides,
+                           std::optional<int64_t> element_offset = std::nullopt) const {
+       DLTensor prototype = tensor_;
+       prototype.shape = const_cast<int64_t*>(shape.data());
+       prototype.ndim = static_cast<int>(shape.size());
+       prototype.strides = const_cast<int64_t*>(strides.data());
+       TVM_FFI_ICHECK_EQ(shape.size(), strides.size());
+       int64_t elem_offset_as_i64 = element_offset.value_or(0);
+       TVM_FFI_ICHECK_GE(elem_offset_as_i64, 0);
+       prototype.byte_offset += GetDataSize(static_cast<size_t>(elem_offset_as_i64), prototype.dtype);
+       if (prototype.byte_offset != 0 && IsDirectAddressDevice(prototype.device)) {
+         // If the device supports direct address, we can just add the byte offset to the data pointer.
+         prototype.data =
+             reinterpret_cast<void*>(reinterpret_cast<char*>(prototype.data) + prototype.byte_offset);
+         prototype.byte_offset = 0;
+       }
+       return TensorView(&prototype);
+     }
    
     private:
      DLTensor tensor_;
