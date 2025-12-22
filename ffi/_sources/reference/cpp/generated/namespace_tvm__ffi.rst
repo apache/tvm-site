@@ -154,9 +154,9 @@ Functions
 ---------
 
 
-- :ref:`exhale_function_base64_8h_1acb849cdb1d9b9620be10bbcda0257afa`
-
 - :ref:`exhale_function_base64_8h_1ae1d4736f7dc56b224acd303ba7bf7a45`
+
+- :ref:`exhale_function_base64_8h_1acb849cdb1d9b9620be10bbcda0257afa`
 
 - :ref:`exhale_function_base64_8h_1a279b4ba2f4c7ea16291ef24b73e43963`
 
