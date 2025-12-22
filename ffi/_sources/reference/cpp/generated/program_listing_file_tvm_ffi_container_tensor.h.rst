@@ -38,8 +38,6 @@ Program Listing for File tensor.h
    #include <tvm/ffi/error.h>
    #include <tvm/ffi/type_traits.h>
    
-   #include <atomic>
-   #include <memory>
    #include <optional>
    #include <string>
    #include <utility>

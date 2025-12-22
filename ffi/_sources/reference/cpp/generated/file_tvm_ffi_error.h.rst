@@ -40,8 +40,6 @@ Includes
 
 - ``string`` (:ref:`file_tvm_ffi_string.h`)
 
-- ``string_view``
-
 - ``tvm/ffi/base_details.h`` (:ref:`file_tvm_ffi_base_details.h`)
 
 - ``tvm/ffi/c_api.h`` (:ref:`file_tvm_ffi_c_api.h`)

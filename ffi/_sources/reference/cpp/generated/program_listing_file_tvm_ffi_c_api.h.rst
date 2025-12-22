@@ -10,10 +10,6 @@ Program Listing for File c_api.h
 
 .. code-block:: cpp
 
-   v0 = AddNode(x, 1)
-   v1 = AddNode(x, 1)
-   v2 = AddNode(v0, v0)
-   v3 = AddNode(v1, v0)
    /*
     * Licensed to the Apache Software Foundation (ASF) under one
     * or more contributor license agreements.  See the NOTICE file
@@ -75,7 +71,7 @@ Program Listing for File c_api.h
    // NOLINTBEGIN(modernize-macro-to-enum)
    #define TVM_FFI_VERSION_MAJOR 0
    #define TVM_FFI_VERSION_MINOR 1
-   #define TVM_FFI_VERSION_PATCH 6
+   #define TVM_FFI_VERSION_PATCH 7
    // NOLINTEND(modernize-macro-to-enum)
    
    #ifdef __cplusplus

@@ -10,8 +10,6 @@ Program Listing for File error.h
 
 .. code-block:: cpp
 
-     TVM_FFI_THROW(RuntimeError) << "error message";
-   }
    /*
     * Licensed to the Apache Software Foundation (ASF) under one
     * or more contributor license agreements.  See the NOTICE file
@@ -48,7 +46,6 @@ Program Listing for File error.h
    #include <memory>
    #include <sstream>
    #include <string>
-   #include <string_view>
    #include <utility>
    #include <vector>
    

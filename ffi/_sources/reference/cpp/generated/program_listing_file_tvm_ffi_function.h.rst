@@ -10,40 +10,6 @@ Program Listing for File function.h
 
 .. code-block:: cpp
 
-     TVM_FFI_SAFE_CALL_BEGIN();
-     // c++ code region here
-     TVM_FFI_SAFE_CALL_END();
-   }
-   TVM_FFI_CHECK_SAFE_CALL(TVMFFITypeKeyToIndex(&type_key_arr, &type_index));
-     return x + 1;
-   }
-   
-   // Expose the function as "AddOne"
-   TVM_FFI_DLL_EXPORT_TYPED_FUNC(AddOne, AddOne_);
-   
-   // Expose the function as "SubOne"
-   TVM_FFI_DLL_EXPORT_TYPED_FUNC(SubOne, [](int x) {
-     return x - 1;
-   });
-     return a + b;
-   }
-   
-   TVM_FFI_DLL_EXPORT_TYPED_FUNC(add, Add);
-   TVM_FFI_DLL_EXPORT_TYPED_FUNC_DOC(
-       add,
-       R"(Add two integers and return the sum.
-   
-   Parameters
-   ----------
-   a : int
-       First integer
-   b : int
-       Second integer
-   
-   Returns
-   -------
-   result : int
-       Sum of a and b)");
    /*
     * Licensed to the Apache Software Foundation (ASF) under one
     * or more contributor license agreements.  See the NOTICE file
@@ -76,7 +42,6 @@ Program Listing for File function.h
    #include <tvm/ffi/function_details.h>
    
    #include <functional>
-   #include <sstream>
    #include <string>
    #include <type_traits>
    #include <utility>

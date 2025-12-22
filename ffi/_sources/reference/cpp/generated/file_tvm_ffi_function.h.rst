@@ -37,8 +37,6 @@ Includes
 
 - ``functional``
 
-- ``sstream``
-
 - ``string`` (:ref:`file_tvm_ffi_string.h`)
 
 - ``tvm/ffi/any.h`` (:ref:`file_tvm_ffi_any.h`)

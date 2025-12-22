@@ -90,15 +90,7 @@ Program Listing for File base_details.h
    #if defined(__GNUC__)
    // gcc and clang and attribute constructor
    #define TVM_FFI_STATIC_INIT_BLOCK_DEF_(FnName) __attribute__((constructor)) static void FnName()
-   /*
-    * \brief Macro that defines a block that will be called during static initialization.
-    *
-    * \code
-    * TVM_FFI_STATIC_INIT_BLOCK() {
-    *   RegisterFunctions();
-    * }
-    * \endcode
-    */
+   
    #define TVM_FFI_STATIC_INIT_BLOCK() \
      TVM_FFI_STATIC_INIT_BLOCK_DEF_(TVM_FFI_STR_CONCAT(__TVMFFIStaticInitFunc, __COUNTER__))
    
