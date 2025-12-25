@@ -2483,15 +2483,41 @@ allowed in the statement.</p></li>
 <p>It requires:
 1) The reduction block is a complete reduction block
 2) The epilogue block only reads from the reduction block’s output
-3) The epilogue performs a simple addition: output = reduction_result + bias</p>
+3) The epilogue matches one of the supported patterns:</p>
+<blockquote>
+<div><ul class="simple">
+<li><p>Bias: <code class="docutils literal notranslate"><span class="pre">output</span> <span class="pre">=</span> <span class="pre">reduction_result</span> <span class="pre">+</span> <span class="pre">bias</span></code></p></li>
+<li><p>BiasReLU: <code class="docutils literal notranslate"><span class="pre">output</span> <span class="pre">=</span> <span class="pre">max(reduction_result</span> <span class="pre">+</span> <span class="pre">bias,</span> <span class="pre">0)</span></code></p></li>
+<li><p>Clipping: <code class="docutils literal notranslate"><span class="pre">output</span> <span class="pre">=</span> <span class="pre">min(max(reduction_result,</span> <span class="pre">lower),</span> <span class="pre">upper)</span></code>
+or their commutative variants</p></li>
+</ul>
+</div></blockquote>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p><strong>Semantic Change for Non-Linear Epilogues (BiasReLU, Clipping):</strong></p>
+<p>For non-linear epilogues (BiasReLU and Clipping), fusion changes the
+computation semantics from post-reduction application to per-iteration
+application. This can lead to different numerical results.</p>
+<p><strong>Example with Clipping to [-5, 5] and inputs [6, -2]:</strong></p>
+<ul class="simple">
+<li><p><strong>Post-reduction clipping</strong> (original): <code class="docutils literal notranslate"><span class="pre">clip(sum([6,</span> <span class="pre">-2]))</span> <span class="pre">=</span> <span class="pre">clip(4)</span> <span class="pre">=</span> <span class="pre">4</span></code></p></li>
+<li><p><strong>Per-iteration clipping</strong> (fused): <code class="docutils literal notranslate"><span class="pre">acc=0</span> <span class="pre">→</span> <span class="pre">clip(0+6)=5</span> <span class="pre">→</span> <span class="pre">clip(5+(-2))=3</span></code></p></li>
+</ul>
+<p>The fused version applies clipping at each reduction iteration, which
+may be an intended optimization for some models but can cause unexpected
+correctness issues if users are not aware of this behavior.</p>
+<p>For linear epilogues (Bias), fusion preserves exact numerical equivalence.</p>
+</div>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>reduction_block</strong> (<em>Union</em><em>[</em><a class="reference internal" href="#tvm.tir.schedule.BlockRV" title="tvm.tir.schedule.BlockRV"><em>BlockRV</em></a><em>, </em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>]</em>) – The reduction block (e.g., matmul)</p></li>
-<li><p><strong>epilogue_block</strong> (<em>Union</em><em>[</em><a class="reference internal" href="#tvm.tir.schedule.BlockRV" title="tvm.tir.schedule.BlockRV"><em>BlockRV</em></a><em>, </em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>]</em>) – The epilogue block to be fused (e.g., bias add)</p></li>
+<li><p><strong>epilogue_block</strong> (<em>Union</em><em>[</em><a class="reference internal" href="#tvm.tir.schedule.BlockRV" title="tvm.tir.schedule.BlockRV"><em>BlockRV</em></a><em>, </em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>]</em>) – The epilogue block to be fused (e.g., bias add, ReLU, clipping)</p></li>
 </ul>
 </dd>
 </dl>
+<p class="rubric">Examples</p>
+<p>See <code class="xref py py-func docutils literal notranslate"><span class="pre">test_tir_schedule_fuse_reduction_epilogue()</span></code> for examples.</p>
 </dd></dl>
 
 <dl class="py method">
