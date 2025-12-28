@@ -54,6 +54,8 @@ Classes
 
 - :ref:`exhale_class_classtvm_1_1ffi_1_1reflection_1_1ObjectDef`
 
+- :ref:`exhale_class_classtvm_1_1ffi_1_1reflection_1_1OverloadObjectDef`
+
 - :ref:`exhale_class_classtvm_1_1ffi_1_1reflection_1_1TypeAttrColumn`
 
 - :ref:`exhale_class_classtvm_1_1ffi_1_1reflection_1_1TypeAttrDef`

@@ -35,6 +35,10 @@ Program Listing for File function.h
    #define TVM_FFI_DLL_EXPORT_INCLUDE_METADATA 0
    #endif
    
+   #if TVM_FFI_DLL_EXPORT_INCLUDE_METADATA
+   #include <sstream>
+   #endif  // TVM_FFI_DLL_EXPORT_INCLUDE_METADATA
+   
    #include <tvm/ffi/any.h>
    #include <tvm/ffi/base_details.h>
    #include <tvm/ffi/c_api.h>
@@ -42,7 +46,9 @@ Program Listing for File function.h
    #include <tvm/ffi/function_details.h>
    
    #include <functional>
+   #include <optional>
    #include <string>
+   #include <tuple>
    #include <type_traits>
    #include <utility>
    #include <vector>
@@ -118,14 +124,16 @@ Program Listing for File function.h
    
      using TSelf = FunctionObjImpl<TCallable>;
    
-     explicit FunctionObjImpl(TCallable&& callable) : callable_(std::move(callable)) {
+     template <typename... Args>
+     explicit FunctionObjImpl(Args&&... args) : callable_(std::forward<Args>(args)...) {
        this->safe_call = SafeCall;
        this->cpp_call = reinterpret_cast<void*>(CppCall);
      }
-     explicit FunctionObjImpl(const TCallable& callable) : callable_(callable) {
-       this->safe_call = SafeCall;
-       this->cpp_call = reinterpret_cast<void*>(CppCall);
-     }
+   
+     FunctionObjImpl(const FunctionObjImpl&) = delete;
+     FunctionObjImpl& operator=(const FunctionObjImpl&) = delete;
+   
+     TCallable* GetCallable() { return &callable_; }
    
     private:
      // implementation of call
@@ -245,6 +253,19 @@ Program Listing for File function.h
        } else {
          return FromPackedInternal(std::forward<TCallable>(packed_call));
        }
+     }
+   
+     template <typename TCallable, typename... Args>
+     static auto FromPackedInplace(Args&&... args) {
+       // We must ensure TCallable is a value type (decay_t) that can hold the callable object
+       static_assert(std::is_same_v<TCallable, std::decay_t<TCallable>>);
+       static_assert(std::is_invocable_v<TCallable, const AnyView*, int32_t, Any*>);
+       using ObjType = details::FunctionObjImpl<TCallable>;
+       Function func;
+       auto obj_ptr = make_object<ObjType>(std::forward<Args>(args)...);
+       auto* call_ptr = obj_ptr->GetCallable();
+       func.data_ = std::move(obj_ptr);
+       return std::make_tuple(std::move(func), call_ptr);
      }
    
      static Function FromExternC(void* self, TVMFFISafeCallType safe_call,

@@ -17,6 +17,8 @@ Namespaces
 ----------
 
 
+- :ref:`namespace_tvm__ffi__cuda_api`
+
 - :ref:`namespace_tvm__ffi__json`
 
 - :ref:`namespace_tvm__ffi__reflection`
@@ -154,9 +156,9 @@ Functions
 ---------
 
 
-- :ref:`exhale_function_base64_8h_1ae1d4736f7dc56b224acd303ba7bf7a45`
-
 - :ref:`exhale_function_base64_8h_1acb849cdb1d9b9620be10bbcda0257afa`
+
+- :ref:`exhale_function_base64_8h_1ae1d4736f7dc56b224acd303ba7bf7a45`
 
 - :ref:`exhale_function_base64_8h_1a279b4ba2f4c7ea16291ef24b73e43963`
 
@@ -192,9 +194,9 @@ Functions
 
 - :ref:`exhale_function_memory_8h_1a801e8ecc2e3adbc1dac52c714e7cef11`
 
-- :ref:`exhale_function_array_8h_1a3b56317c7cfb2760cf6c09c303840967`
-
 - :ref:`exhale_function_memory_8h_1a8892f2a3cad8dbc51930c464f2ab863b`
+
+- :ref:`exhale_function_array_8h_1a3b56317c7cfb2760cf6c09c303840967`
 
 - :ref:`exhale_function_map_8h_1a611844db41026b7a95846dd316b435af`
 

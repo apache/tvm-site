@@ -37,7 +37,11 @@ Includes
 
 - ``functional``
 
+- ``optional`` (:ref:`file_tvm_ffi_optional.h`)
+
 - ``string`` (:ref:`file_tvm_ffi_string.h`)
+
+- ``tuple`` (:ref:`file_tvm_ffi_container_tuple.h`)
 
 - ``tvm/ffi/any.h`` (:ref:`file_tvm_ffi_any.h`)
 
@@ -68,6 +72,8 @@ Included By
 - :ref:`file_tvm_ffi_extra_stl.h`
 
 - :ref:`file_tvm_ffi_reflection_accessor.h`
+
+- :ref:`file_tvm_ffi_reflection_overload.h`
 
 - :ref:`file_tvm_ffi_reflection_registry.h`
 

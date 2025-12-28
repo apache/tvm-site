@@ -12,6 +12,11 @@ Directory cuda
 
 *Directory path:* ``tvm/ffi/extra/cuda``
 
+Subdirectories
+--------------
+
+- :ref:`dir_tvm_ffi_extra_cuda_internal`
+
 
 Files
 -----

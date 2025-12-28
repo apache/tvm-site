@@ -3,7 +3,7 @@
 Struct dim3
 ===========
 
-- Defined in :ref:`file_tvm_ffi_extra_cuda_cubin_launcher.h`
+- Defined in :ref:`file_tvm_ffi_extra_cuda_base.h`
 
 
 Struct Documentation

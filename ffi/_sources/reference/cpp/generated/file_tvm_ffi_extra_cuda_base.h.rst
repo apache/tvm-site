@@ -31,14 +31,6 @@ Definition (``tvm/ffi/extra/cuda/base.h``)
 
 
 
-Includes
---------
-
-
-- ``cuda_runtime.h``
-
-- ``tvm/ffi/error.h`` (:ref:`file_tvm_ffi_error.h`)
-
 
 
 Included By
@@ -48,6 +40,8 @@ Included By
 - :ref:`file_tvm_ffi_extra_cuda_cubin_launcher.h`
 
 - :ref:`file_tvm_ffi_extra_cuda_device_guard.h`
+
+- :ref:`file_tvm_ffi_extra_cuda_internal_unified_api.h`
 
 
 
@@ -61,9 +55,9 @@ Namespaces
 - :ref:`namespace_tvm__ffi`
 
 
-Defines
+Classes
 -------
 
 
-- :ref:`exhale_define_cuda_2base_8h_1a8b7e871d0d7206eacc60705f11827ee1`
+- :ref:`exhale_struct_structtvm_1_1ffi_1_1dim3`
 

@@ -53,6 +53,8 @@ Includes
 
 - ``cstring``
 
+- ``cuda.h``
+
 - ``cuda_runtime.h``
 
 - ``tvm/ffi/error.h`` (:ref:`file_tvm_ffi_error.h`)
@@ -60,6 +62,8 @@ Includes
 - ``tvm/ffi/extra/c_env_api.h`` (:ref:`file_tvm_ffi_extra_c_env_api.h`)
 
 - ``tvm/ffi/extra/cuda/base.h`` (:ref:`file_tvm_ffi_extra_cuda_base.h`)
+
+- ``tvm/ffi/extra/cuda/internal/unified_api.h`` (:ref:`file_tvm_ffi_extra_cuda_internal_unified_api.h`)
 
 - ``tvm/ffi/string.h`` (:ref:`file_tvm_ffi_string.h`)
 
@@ -81,8 +85,6 @@ Classes
 -------
 
 
-- :ref:`exhale_struct_structtvm_1_1ffi_1_1dim3`
-
 - :ref:`exhale_class_classtvm_1_1ffi_1_1CubinKernel`
 
 - :ref:`exhale_class_classtvm_1_1ffi_1_1CubinModule`
@@ -93,6 +95,8 @@ Defines
 
 
 - :ref:`exhale_define_cubin__launcher_8h_1a99736a44462543179cb434ebd4512ade`
+
+- :ref:`exhale_define_cubin__launcher_8h_1a55832b50e83cf39108f1e306f031433d`
 
 - :ref:`exhale_define_cubin__launcher_8h_1ae8d64fa1cc7db9d38632e32054df72fc`
 

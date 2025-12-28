@@ -53,11 +53,15 @@ Includes
 
 - ``tvm/ffi/function.h`` (:ref:`file_tvm_ffi_function.h`)
 
+- ``tvm/ffi/function_details.h`` (:ref:`file_tvm_ffi_function_details.h`)
+
 - ``tvm/ffi/optional.h`` (:ref:`file_tvm_ffi_optional.h`)
 
 - ``tvm/ffi/string.h`` (:ref:`file_tvm_ffi_string.h`)
 
 - ``tvm/ffi/type_traits.h`` (:ref:`file_tvm_ffi_type_traits.h`)
+
+- ``type_traits`` (:ref:`file_tvm_ffi_type_traits.h`)
 
 - ``utility``
 
@@ -70,6 +74,8 @@ Included By
 
 
 - :ref:`file_tvm_ffi_reflection_access_path.h`
+
+- :ref:`file_tvm_ffi_reflection_overload.h`
 
 
 
