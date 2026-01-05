@@ -130,6 +130,11 @@ Files
 .. toctree::
    :maxdepth: 5
 
+   file_tvm_ffi_extra_dtype.h.rst
+
+.. toctree::
+   :maxdepth: 5
+
    file_tvm_ffi_endian.h.rst
 
 .. toctree::
@@ -231,6 +236,11 @@ Files
    :maxdepth: 5
 
    file_tvm_ffi_container_tuple.h.rst
+
+.. toctree::
+   :maxdepth: 5
+
+   file_tvm_ffi_tvm_ffi.h.rst
 
 .. toctree::
    :maxdepth: 5

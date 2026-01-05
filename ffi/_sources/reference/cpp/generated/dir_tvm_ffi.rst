@@ -37,6 +37,7 @@ Files
 - :ref:`file_tvm_ffi_optional.h`
 - :ref:`file_tvm_ffi_rvalue_ref.h`
 - :ref:`file_tvm_ffi_string.h`
+- :ref:`file_tvm_ffi_tvm_ffi.h`
 - :ref:`file_tvm_ffi_type_traits.h`
 
 

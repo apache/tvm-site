@@ -234,12 +234,22 @@ Program Listing for File tensor.h
    
      int64_t size(int64_t idx) const {
        const TensorObj* ptr = get();
-       return ptr->shape[idx >= 0 ? idx : (ptr->ndim + idx)];
+       int64_t adjusted_idx = idx >= 0 ? idx : (ptr->ndim + idx);
+       if (adjusted_idx < 0 || adjusted_idx >= ptr->ndim) {
+         TVM_FFI_THROW(IndexError) << "Index " << idx << " out of bounds for tensor with " << ptr->ndim
+                                   << " dimensions";
+       }
+       return ptr->shape[adjusted_idx];
      }
    
      int64_t stride(int64_t idx) const {
        const TensorObj* ptr = get();
-       return ptr->strides[idx >= 0 ? idx : (ptr->ndim + idx)];
+       int64_t adjusted_idx = idx >= 0 ? idx : (ptr->ndim + idx);
+       if (adjusted_idx < 0 || adjusted_idx >= ptr->ndim) {
+         TVM_FFI_THROW(IndexError) << "Index " << idx << " out of bounds for tensor with " << ptr->ndim
+                                   << " dimensions";
+       }
+       return ptr->strides[adjusted_idx];
      }
    
      int64_t numel() const { return this->shape().Product(); }
@@ -408,9 +418,23 @@ Program Listing for File tensor.h
        return ShapeView(tensor_.strides, tensor_.ndim);
      }
    
-     int64_t size(int64_t idx) const { return tensor_.shape[idx >= 0 ? idx : tensor_.ndim + idx]; }
+     int64_t size(int64_t idx) const {
+       int64_t adjusted_idx = idx >= 0 ? idx : (tensor_.ndim + idx);
+       if (adjusted_idx < 0 || adjusted_idx >= tensor_.ndim) {
+         TVM_FFI_THROW(IndexError) << "Index " << idx << " out of bounds for tensor with "
+                                   << tensor_.ndim << " dimensions";
+       }
+       return tensor_.shape[adjusted_idx];
+     }
    
-     int64_t stride(int64_t idx) const { return tensor_.strides[idx >= 0 ? idx : tensor_.ndim + idx]; }
+     int64_t stride(int64_t idx) const {
+       int64_t adjusted_idx = idx >= 0 ? idx : (tensor_.ndim + idx);
+       if (adjusted_idx < 0 || adjusted_idx >= tensor_.ndim) {
+         TVM_FFI_THROW(IndexError) << "Index " << idx << " out of bounds for tensor with "
+                                   << tensor_.ndim << " dimensions";
+       }
+       return tensor_.strides[adjusted_idx];
+     }
    
      uint64_t byte_offset() const { return tensor_.byte_offset; }
    

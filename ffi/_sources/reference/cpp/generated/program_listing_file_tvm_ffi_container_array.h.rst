@@ -64,7 +64,7 @@ Program Listing for File array.h
      const Any& at(int64_t i) const { return this->operator[](i); }
    
      const Any& operator[](int64_t i) const {
-       if (i >= size_) {
+       if (i < 0 || i >= size_) {
          TVM_FFI_THROW(IndexError) << "Index " << i << " out of bounds " << size_;
        }
        return static_cast<Any*>(data_)[i];
@@ -77,7 +77,7 @@ Program Listing for File array.h
      void clear() { ShrinkBy(size_); }
    
      void SetItem(int64_t i, Any item) {
-       if (i >= size_) {
+       if (i < 0 || i >= size_) {
          TVM_FFI_THROW(IndexError) << "Index " << i << " out of bounds " << size_;
        }
        static_cast<Any*>(data_)[i] = std::move(item);

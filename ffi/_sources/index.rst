@@ -59,12 +59,14 @@ Table of Contents
    :caption: Concepts
 
    concepts/abi_overview.md
+   concepts/tensor.rst
 
 .. toctree::
    :maxdepth: 1
    :caption: Packaging
 
    packaging/python_packaging.rst
+   packaging/cpp_tooling.rst
    packaging/cpp_packaging.md
 
 .. toctree::

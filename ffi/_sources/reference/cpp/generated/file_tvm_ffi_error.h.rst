@@ -80,6 +80,8 @@ Included By
 
 - :ref:`file_tvm_ffi_string.h`
 
+- :ref:`file_tvm_ffi_tvm_ffi.h`
+
 - :ref:`file_tvm_ffi_type_traits.h`
 
 
