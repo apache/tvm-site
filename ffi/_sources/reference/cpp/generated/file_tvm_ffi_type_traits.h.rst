@@ -30,6 +30,8 @@ Includes
 --------
 
 
+- ``limits``
+
 - ``string`` (:ref:`file_tvm_ffi_string.h`)
 
 - ``tvm/ffi/base_details.h`` (:ref:`file_tvm_ffi_base_details.h`)

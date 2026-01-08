@@ -388,6 +388,24 @@ Program Listing for File string.h
        }
      }
    
+     static constexpr size_t npos = static_cast<size_t>(-1);
+   
+     size_t find(const String& str, size_t pos = 0) const { return find(str.data(), pos, str.size()); }
+   
+     size_t find(const char* str, size_t pos = 0) const { return find(str, pos, std::strlen(str)); }
+   
+     size_t find(const char* str, size_t pos, size_t count) const {
+       return std::string_view(data(), size()).find(std::string_view(str, count), pos);
+     }
+   
+     String substr(size_t pos = 0, size_t count = npos) const {
+       if (pos > size()) {
+         throw std::out_of_range("tvm::String substr index out of bounds");
+       }
+       size_t rcount = std::min(count, size() - pos);
+       return String(data() + pos, rcount);
+     }
+   
      operator std::string() const {  // NOLINT(google-explicit-constructor)
        return std::string{data(), size()};
      }

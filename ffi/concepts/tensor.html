@@ -40,7 +40,7 @@
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
   <script src="../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
 
-    <script src="../_static/documentation_options.js?v=692f76eb"></script>
+    <script src="../_static/documentation_options.js?v=a91a4bef"></script>
     <script src="../_static/doctools.js?v=9bcbadda"></script>
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -55,10 +55,10 @@
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="Python Packaging" href="../packaging/python_packaging.html" />
-    <link rel="prev" title="ABI Overview" href="abi_overview.html" />
+    <link rel="prev" title="Any and AnyView" href="any.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-    <meta name="docbuild:last-update" content="Jan 05, 2026"/>
+    <meta name="docbuild:last-update" content="Jan 08, 2026"/>
   </head>
   
   
@@ -177,6 +177,7 @@
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">Concepts</span></p>
 <ul class="current nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="abi_overview.html">ABI Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="any.html">Any and AnyView</a></li>
 <li class="toctree-l1 current active"><a class="current reference internal" href="#">Tensor and DLPack</a></li>
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">Packaging</span></p>
@@ -677,11 +678,18 @@ document.write(`
             <nav aria-label="Page">
                 <ul class="visible nav section-nav flex-column">
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#glossary">Glossary</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#common-usage">Common Usage</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#kernel-signatures">Kernel Signatures</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#pytorch-interop">PyTorch Interop</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#c-allocation">C++ Allocation</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#c-stream-handling">C++ Stream Handling</a></li>
+</ul>
+</li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#tensor-classes">Tensor Classes</a><ul class="visible nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#dlpack-tensors">DLPack Tensors</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#tvm-ffi-tensors">TVM-FFI Tensors</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#tensor-layouts">Tensor Layouts</a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#what-tensor-is-not">What Tensor is not</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#what-tensor-is-not">What Tensor Is Not</a></li>
 </ul>
 </li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#conversion-between-tvmffiany">Conversion between <code class="xref cpp cpp-class docutils literal notranslate"><span class="pre">TVMFFIAny</span></code></a><ul class="visible nav section-nav flex-column">
@@ -689,13 +697,6 @@ document.write(`
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#to-owning-tensor">To Owning Tensor</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#from-owning-tensor">From Owning Tensor</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#from-non-owning-tensor">From Non-Owning Tensor</a></li>
-</ul>
-</li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#tensor-apis">Tensor APIs</a><ul class="visible nav section-nav flex-column">
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#c-apis">C++ APIs</a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#python-apis">Python APIs</a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#allocation-in-c">Allocation in C++</a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#stream-handling-in-c">Stream Handling in C++</a></li>
 </ul>
 </li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#further-reading">Further Reading</a></li>
@@ -728,9 +729,9 @@ they provide safer and more convenient abstractions over raw DLPack structs.</p>
 </div>
 <p>This tutorial is organized as follows:</p>
 <ul class="simple">
-<li><p><strong>Tensor Classes</strong>: introduces what tensor types are provided, and which one you should use.</p></li>
+<li><p><strong>Common Usage</strong>: the most important tensor APIs, including allocation and stream handling.</p></li>
+<li><p><strong>Tensor Classes</strong>: what tensor types are provided and which one you should use.</p></li>
 <li><p><strong>Conversion between TVMFFIAny</strong>: how tensors flow across ABI boundaries.</p></li>
-<li><p><strong>Tensor APIs</strong>: the most important tensor APIs you will use, including allocation and stream handling.</p></li>
 </ul>
 <section id="glossary">
 <h2>Glossary<a class="headerlink" href="#glossary" title="Link to this heading">#</a></h2>
@@ -754,10 +755,163 @@ mechanism. This establishes a contract between producer and consumer about when 
 <code class="docutils literal notranslate"><span class="pre">T*</span></code> (raw pointer) vs. <code class="docutils literal notranslate"><span class="pre">std::shared_ptr&lt;T&gt;</span></code> (reference-counted pointer) in C++.</p>
 </div>
 </section>
+<section id="common-usage">
+<h2>Common Usage<a class="headerlink" href="#common-usage" title="Link to this heading">#</a></h2>
+<p>This section introduces the most important APIs for day-to-day use in C++ and Python.</p>
+<section id="kernel-signatures">
+<h3>Kernel Signatures<a class="headerlink" href="#kernel-signatures" title="Link to this heading">#</a></h3>
+<p>A typical kernel implementation accepts <a class="reference internal" href="../reference/cpp/generated/classtvm_1_1ffi_1_1TensorView.html#_CPPv4N3tvm3ffi10TensorViewE" title="tvm::ffi::TensorView"><code class="xref cpp cpp-class docutils literal notranslate"><span class="pre">TensorView</span></code></a> parameters,
+validates metadata (dtype, shape, device), and then accesses the data pointer for computation:</p>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;tvm/ffi/tvm_ffi.h&gt;</span>
+
+<span class="kt">void</span><span class="w"> </span><span class="nf">MyKernel</span><span class="p">(</span><span class="n">tvm</span><span class="o">::</span><span class="n">ffi</span><span class="o">::</span><span class="n">TensorView</span><span class="w"> </span><span class="n">input</span><span class="p">,</span><span class="w"> </span><span class="n">tvm</span><span class="o">::</span><span class="n">ffi</span><span class="o">::</span><span class="n">TensorView</span><span class="w"> </span><span class="n">output</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="c1">// Validate dtype &amp; device</span>
+<span class="w">  </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">input</span><span class="p">.</span><span class="n">dtype</span><span class="p">()</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="n">DLDataType</span><span class="p">{</span><span class="n">kDLFloat</span><span class="p">,</span><span class="w"> </span><span class="mi">32</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">})</span>
+<span class="w">    </span><span class="n">TVM_FFI_THROW</span><span class="p">(</span><span class="n">TypeError</span><span class="p">)</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">&quot;Expect float32 input, but got &quot;</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">input</span><span class="p">.</span><span class="n">dtype</span><span class="p">();</span>
+<span class="w">  </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">input</span><span class="p">.</span><span class="n">device</span><span class="p">()</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="n">DLDevice</span><span class="p">{</span><span class="n">kDLCUDA</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">})</span>
+<span class="w">    </span><span class="n">TVM_FFI_THROW</span><span class="p">(</span><span class="n">ValueError</span><span class="p">)</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">&quot;Expect input on CUDA:0, but got &quot;</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">input</span><span class="p">.</span><span class="n">device</span><span class="p">();</span>
+<span class="w">  </span><span class="c1">// Access data pointer</span>
+<span class="w">  </span><span class="kt">float</span><span class="o">*</span><span class="w"> </span><span class="n">input_data_ptr</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">static_cast</span><span class="o">&lt;</span><span class="kt">float</span><span class="o">*&gt;</span><span class="p">(</span><span class="n">input</span><span class="p">.</span><span class="n">data_ptr</span><span class="p">());</span>
+<span class="w">  </span><span class="kt">float</span><span class="o">*</span><span class="w"> </span><span class="n">output_data_ptr</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">static_cast</span><span class="o">&lt;</span><span class="kt">float</span><span class="o">*&gt;</span><span class="p">(</span><span class="n">output</span><span class="p">.</span><span class="n">data_ptr</span><span class="p">());</span>
+<span class="w">  </span><span class="n">Kernel</span><span class="o">&lt;&lt;&lt;</span><span class="p">...</span><span class="o">&gt;&gt;&gt;</span><span class="p">(...,</span><span class="w"> </span><span class="n">input_data_ptr</span><span class="p">,</span><span class="w"> </span><span class="n">output_data_ptr</span><span class="p">,</span><span class="w"> </span><span class="p">...);</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>On the C++ side, the following APIs are available to query a tensor’s metadata:</p>
+<blockquote>
+<div><dl class="simple">
+<dt><a class="reference internal" href="../reference/cpp/generated/classtvm_1_1ffi_1_1TensorView.html#_CPPv4NK3tvm3ffi10TensorView5shapeEv" title="tvm::ffi::TensorView::shape"><code class="xref cpp cpp-func docutils literal notranslate"><span class="pre">TensorView::shape()</span></code></a> and <a class="reference internal" href="../reference/cpp/generated/classtvm_1_1ffi_1_1Tensor.html#_CPPv4NK3tvm3ffi6Tensor5shapeEv" title="tvm::ffi::Tensor::shape"><code class="xref cpp cpp-func docutils literal notranslate"><span class="pre">Tensor::shape()</span></code></a></dt><dd><p>shape array</p>
+</dd>
+<dt><a class="reference internal" href="../reference/cpp/generated/classtvm_1_1ffi_1_1TensorView.html#_CPPv4NK3tvm3ffi10TensorView5dtypeEv" title="tvm::ffi::TensorView::dtype"><code class="xref cpp cpp-func docutils literal notranslate"><span class="pre">TensorView::dtype()</span></code></a> and <a class="reference internal" href="../reference/cpp/generated/classtvm_1_1ffi_1_1Tensor.html#_CPPv4NK3tvm3ffi6Tensor5dtypeEv" title="tvm::ffi::Tensor::dtype"><code class="xref cpp cpp-func docutils literal notranslate"><span class="pre">Tensor::dtype()</span></code></a></dt><dd><p>element data type</p>
+</dd>
+<dt><a class="reference internal" href="../reference/cpp/generated/classtvm_1_1ffi_1_1TensorView.html#_CPPv4NK3tvm3ffi10TensorView8data_ptrEv" title="tvm::ffi::TensorView::data_ptr"><code class="xref cpp cpp-func docutils literal notranslate"><span class="pre">TensorView::data_ptr()</span></code></a> and <a class="reference internal" href="../reference/cpp/generated/classtvm_1_1ffi_1_1Tensor.html#_CPPv4NK3tvm3ffi6Tensor8data_ptrEv" title="tvm::ffi::Tensor::data_ptr"><code class="xref cpp cpp-func docutils literal notranslate"><span class="pre">Tensor::data_ptr()</span></code></a></dt><dd><p>base pointer to the tensor’s data</p>
+</dd>
+<dt><a class="reference internal" href="../reference/cpp/generated/classtvm_1_1ffi_1_1TensorView.html#_CPPv4NK3tvm3ffi10TensorView6deviceEv" title="tvm::ffi::TensorView::device"><code class="xref cpp cpp-func docutils literal notranslate"><span class="pre">TensorView::device()</span></code></a> and <a class="reference internal" href="../reference/cpp/generated/classtvm_1_1ffi_1_1Tensor.html#_CPPv4NK3tvm3ffi6Tensor6deviceEv" title="tvm::ffi::Tensor::device"><code class="xref cpp cpp-func docutils literal notranslate"><span class="pre">Tensor::device()</span></code></a></dt><dd><p>device type and id</p>
+</dd>
+<dt><a class="reference internal" href="../reference/cpp/generated/classtvm_1_1ffi_1_1TensorView.html#_CPPv4NK3tvm3ffi10TensorView11byte_offsetEv" title="tvm::ffi::TensorView::byte_offset"><code class="xref cpp cpp-func docutils literal notranslate"><span class="pre">TensorView::byte_offset()</span></code></a> and <a class="reference internal" href="../reference/cpp/generated/classtvm_1_1ffi_1_1Tensor.html#_CPPv4NK3tvm3ffi6Tensor11byte_offsetEv" title="tvm::ffi::Tensor::byte_offset"><code class="xref cpp cpp-func docutils literal notranslate"><span class="pre">Tensor::byte_offset()</span></code></a></dt><dd><p>byte offset to the first element</p>
+</dd>
+<dt><a class="reference internal" href="../reference/cpp/generated/classtvm_1_1ffi_1_1TensorView.html#_CPPv4NK3tvm3ffi10TensorView4ndimEv" title="tvm::ffi::TensorView::ndim"><code class="xref cpp cpp-func docutils literal notranslate"><span class="pre">TensorView::ndim()</span></code></a> and <a class="reference internal" href="../reference/cpp/generated/classtvm_1_1ffi_1_1Tensor.html#_CPPv4NK3tvm3ffi6Tensor4ndimEv" title="tvm::ffi::Tensor::ndim"><code class="xref cpp cpp-func docutils literal notranslate"><span class="pre">Tensor::ndim()</span></code></a></dt><dd><p>number of dimensions (<a class="reference internal" href="../reference/cpp/generated/classtvm_1_1ffi_1_1ShapeView.html#_CPPv4NK3tvm3ffi9ShapeView4sizeEv" title="tvm::ffi::ShapeView::size"><code class="xref cpp cpp-func docutils literal notranslate"><span class="pre">ShapeView::size</span></code></a>)</p>
+</dd>
+<dt><a class="reference internal" href="../reference/cpp/generated/classtvm_1_1ffi_1_1TensorView.html#_CPPv4NK3tvm3ffi10TensorView5numelEv" title="tvm::ffi::TensorView::numel"><code class="xref cpp cpp-func docutils literal notranslate"><span class="pre">TensorView::numel()</span></code></a> and <a class="reference internal" href="../reference/cpp/generated/classtvm_1_1ffi_1_1Tensor.html#_CPPv4NK3tvm3ffi6Tensor5numelEv" title="tvm::ffi::Tensor::numel"><code class="xref cpp cpp-func docutils literal notranslate"><span class="pre">Tensor::numel()</span></code></a></dt><dd><p>total number of elements (<a class="reference internal" href="../reference/cpp/generated/classtvm_1_1ffi_1_1ShapeView.html#_CPPv4NK3tvm3ffi9ShapeView7ProductEv" title="tvm::ffi::ShapeView::Product"><code class="xref cpp cpp-func docutils literal notranslate"><span class="pre">ShapeView::Product</span></code></a>)</p>
+</dd>
+</dl>
+</div></blockquote>
+</section>
+<section id="pytorch-interop">
+<h3>PyTorch Interop<a class="headerlink" href="#pytorch-interop" title="Link to this heading">#</a></h3>
+<p>On the Python side, <a class="reference internal" href="../reference/python/generated/tvm_ffi.Tensor.html#tvm_ffi.Tensor" title="tvm_ffi.Tensor"><code class="xref py py-class docutils literal notranslate"><span class="pre">tvm_ffi.Tensor</span></code></a> is a managed n-dimensional array that:</p>
+<ul class="simple">
+<li><p>can be created via <a class="reference internal" href="../reference/python/generated/tvm_ffi.from_dlpack.html#tvm_ffi.from_dlpack" title="tvm_ffi.from_dlpack"><code class="xref py py-func docutils literal notranslate"><span class="pre">tvm_ffi.from_dlpack(ext_tensor,</span> <span class="pre">...)</span></code></a> to import tensors from external frameworks, e.g., <a class="reference internal" href="../get_started/quickstart.html#ship-to-pytorch"><span class="std std-ref">PyTorch</span></a>, <a class="reference internal" href="../get_started/quickstart.html#ship-to-jax"><span class="std std-ref">JAX</span></a>, <a class="reference internal" href="../get_started/quickstart.html#ship-to-numpy"><span class="std std-ref">NumPy/CuPy</span></a>;</p></li>
+<li><p>implements the DLPack protocol so it can be passed back to frameworks without copying, e.g., <a class="reference external" href="https://docs.pytorch.org/docs/stable/generated/torch.from_dlpack.html#torch.from_dlpack" title="(in PyTorch v2.9)"><code class="xref py py-func docutils literal notranslate"><span class="pre">torch.from_dlpack()</span></code></a>.</p></li>
+</ul>
+<p>The following example demonstrates a typical round-trip pattern:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">tvm_ffi</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">torch</span>
+
+<span class="n">x_torch</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">1024</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="s2">&quot;cuda&quot;</span><span class="p">)</span>
+<span class="n">x_tvm_ffi</span> <span class="o">=</span> <span class="n">tvm_ffi</span><span class="o">.</span><span class="n">from_dlpack</span><span class="p">(</span><span class="n">x_torch</span><span class="p">,</span> <span class="n">require_contiguous</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">x_torch_again</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">from_dlpack</span><span class="p">(</span><span class="n">x_tvm_ffi</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>In this example, <a class="reference internal" href="../reference/python/generated/tvm_ffi.from_dlpack.html#tvm_ffi.from_dlpack" title="tvm_ffi.from_dlpack"><code class="xref py py-func docutils literal notranslate"><span class="pre">tvm_ffi.from_dlpack()</span></code></a> creates <code class="docutils literal notranslate"><span class="pre">x_tvm_ffi</span></code>, which views the same memory as <code class="docutils literal notranslate"><span class="pre">x_torch</span></code>.
+Similarly, <a class="reference external" href="https://docs.pytorch.org/docs/stable/generated/torch.from_dlpack.html#torch.from_dlpack" title="(in PyTorch v2.9)"><code class="xref py py-func docutils literal notranslate"><span class="pre">torch.from_dlpack()</span></code></a> creates <code class="docutils literal notranslate"><span class="pre">x_torch_again</span></code>, which shares the underlying buffer with both
+<code class="docutils literal notranslate"><span class="pre">x_tvm_ffi</span></code> and <code class="docutils literal notranslate"><span class="pre">x_torch</span></code>. No data is copied in either direction.</p>
+</section>
+<section id="c-allocation">
+<h3>C++ Allocation<a class="headerlink" href="#c-allocation" title="Link to this heading">#</a></h3>
+<p>TVM-FFI is not a kernel library and is not linked to any specific device memory allocator or runtime.
+However, it provides standardized allocation entry points for kernel library developers by interfacing
+with the surrounding framework’s allocator—for example, using PyTorch’s allocator when running inside
+a PyTorch environment.</p>
+<p><strong>Env Allocator.</strong> Use <a class="reference internal" href="../reference/cpp/generated/classtvm_1_1ffi_1_1Tensor.html#_CPPv4N3tvm3ffi6Tensor12FromEnvAllocEPFiP8DLTensorP18TVMFFIObjectHandleEN3ffi9ShapeViewE10DLDataType8DLDevice" title="tvm::ffi::Tensor::FromEnvAlloc"><code class="xref cpp cpp-func docutils literal notranslate"><span class="pre">Tensor::FromEnvAlloc()</span></code></a> along with C API
+<a class="reference internal" href="../reference/cpp/generated/function_c__env__api_8h_1a683191d48d3fdebc98b68f3b717baf6a.html#_CPPv420TVMFFIEnvTensorAllocP8DLTensorP18TVMFFIObjectHandle" title="TVMFFIEnvTensorAlloc"><code class="xref cpp cpp-func docutils literal notranslate"><span class="pre">TVMFFIEnvTensorAlloc()</span></code></a> to allocate a tensor using the framework’s allocator.</p>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="n">Tensor</span><span class="w"> </span><span class="n">tensor</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Tensor</span><span class="o">::</span><span class="n">FromEnvAlloc</span><span class="p">(</span>
+<span class="w">  </span><span class="n">TVMFFIEnvTensorAlloc</span><span class="p">,</span>
+<span class="w">  </span><span class="cm">/*shape=*/</span><span class="p">{</span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="mi">3</span><span class="p">},</span>
+<span class="w">  </span><span class="cm">/*dtype=*/</span><span class="n">DLDataType</span><span class="p">({</span><span class="n">kDLFloat</span><span class="p">,</span><span class="w"> </span><span class="mi">32</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">}),</span>
+<span class="w">  </span><span class="cm">/*device=*/</span><span class="n">DLDevice</span><span class="p">({</span><span class="n">kDLCPU</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">})</span>
+<span class="p">);</span>
+</pre></div>
+</div>
+<p>In a PyTorch environment, this is equivalent to <a class="reference external" href="https://docs.pytorch.org/docs/stable/generated/torch.empty.html#torch.empty" title="(in PyTorch v2.9)"><code class="xref py py-func docutils literal notranslate"><span class="pre">torch.empty()</span></code></a>.</p>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>While allocation APIs are available, it is generally <strong>recommended</strong> to avoid allocating tensors
+inside kernels. Instead, prefer pre-allocating outputs and passing them as
+<a class="reference internal" href="../reference/cpp/generated/classtvm_1_1ffi_1_1TensorView.html#_CPPv4N3tvm3ffi10TensorViewE" title="tvm::ffi::TensorView"><code class="xref cpp cpp-class docutils literal notranslate"><span class="pre">tvm::ffi::TensorView</span></code></a> parameters. This approach:</p>
+<ul class="simple">
+<li><p>avoids memory fragmentation and performance pitfalls,</p></li>
+<li><p>prevents CUDA graph incompatibilities on GPU, and</p></li>
+<li><p>allows the outer framework to control allocation policy (pools, device strategies, etc.).</p></li>
+</ul>
+</div>
+<p><strong>Custom Allocator.</strong> Use <a class="reference internal" href="../reference/cpp/generated/classtvm_1_1ffi_1_1Tensor.html#_CPPv4I0DpEN3tvm3ffi6Tensor11FromNDAllocE6Tensor8TNDAllocN3ffi9ShapeViewE10DLDataType8DLDeviceDpRR9ExtraArgs" title="tvm::ffi::Tensor::FromNDAlloc"><code class="xref cpp cpp-func docutils literal notranslate"><span class="pre">Tensor::FromNDAlloc(custom_alloc,</span> <span class="pre">...)</span></code></a>,
+or its advanced variant <a class="reference internal" href="../reference/cpp/generated/classtvm_1_1ffi_1_1Tensor.html#_CPPv4I0DpEN3tvm3ffi6Tensor18FromNDAllocStridedE6Tensor8TNDAllocN3ffi9ShapeViewEN3ffi9ShapeViewE10DLDataType8DLDeviceDpRR9ExtraArgs" title="tvm::ffi::Tensor::FromNDAllocStrided"><code class="xref cpp cpp-func docutils literal notranslate"><span class="pre">Tensor::FromNDAllocStrided(custom_alloc,</span> <span class="pre">...)</span></code></a>,
+to allocate a tensor with a user-provided allocation callback.</p>
+<p>The following example uses <code class="docutils literal notranslate"><span class="pre">cudaMalloc</span></code>/<code class="docutils literal notranslate"><span class="pre">cudaFree</span></code> as custom allocators for GPU tensors:</p>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="k">struct</span><span class="w"> </span><span class="nc">CUDANDAlloc</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="kt">void</span><span class="w"> </span><span class="nf">AllocData</span><span class="p">(</span><span class="n">DLTensor</span><span class="o">*</span><span class="w"> </span><span class="n">tensor</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="kt">size_t</span><span class="w"> </span><span class="n">data_size</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ffi</span><span class="o">::</span><span class="n">GetDataSize</span><span class="p">(</span><span class="o">*</span><span class="n">tensor</span><span class="p">);</span>
+<span class="w">    </span><span class="kt">void</span><span class="o">*</span><span class="w"> </span><span class="n">ptr</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">nullptr</span><span class="p">;</span>
+<span class="w">    </span><span class="n">cudaError_t</span><span class="w"> </span><span class="n">err</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">cudaMalloc</span><span class="p">(</span><span class="o">&amp;</span><span class="n">ptr</span><span class="p">,</span><span class="w"> </span><span class="n">data_size</span><span class="p">);</span>
+<span class="w">    </span><span class="n">TVM_FFI_ICHECK_EQ</span><span class="p">(</span><span class="n">err</span><span class="p">,</span><span class="w"> </span><span class="n">cudaSuccess</span><span class="p">)</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">&quot;cudaMalloc failed: &quot;</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">cudaGetErrorString</span><span class="p">(</span><span class="n">err</span><span class="p">);</span>
+<span class="w">    </span><span class="n">tensor</span><span class="o">-&gt;</span><span class="n">data</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ptr</span><span class="p">;</span>
+<span class="w">  </span><span class="p">}</span>
+
+<span class="w">  </span><span class="kt">void</span><span class="w"> </span><span class="nf">FreeData</span><span class="p">(</span><span class="n">DLTensor</span><span class="o">*</span><span class="w"> </span><span class="n">tensor</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">tensor</span><span class="o">-&gt;</span><span class="n">data</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="k">nullptr</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="n">cudaError_t</span><span class="w"> </span><span class="n">err</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">cudaFree</span><span class="p">(</span><span class="n">tensor</span><span class="o">-&gt;</span><span class="n">data</span><span class="p">);</span>
+<span class="w">      </span><span class="n">TVM_FFI_ICHECK_EQ</span><span class="p">(</span><span class="n">err</span><span class="p">,</span><span class="w"> </span><span class="n">cudaSuccess</span><span class="p">)</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">&quot;cudaFree failed: &quot;</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">cudaGetErrorString</span><span class="p">(</span><span class="n">err</span><span class="p">);</span>
+<span class="w">      </span><span class="n">tensor</span><span class="o">-&gt;</span><span class="n">data</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">nullptr</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">  </span><span class="p">}</span>
+<span class="p">};</span>
+
+<span class="n">ffi</span><span class="o">::</span><span class="n">Tensor</span><span class="w"> </span><span class="n">cuda_tensor</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ffi</span><span class="o">::</span><span class="n">Tensor</span><span class="o">::</span><span class="n">FromNDAlloc</span><span class="p">(</span>
+<span class="w">  </span><span class="n">CUDANDAlloc</span><span class="p">(),</span>
+<span class="w">  </span><span class="cm">/*shape=*/</span><span class="p">{</span><span class="mi">3</span><span class="p">,</span><span class="w"> </span><span class="mi">4</span><span class="p">,</span><span class="w"> </span><span class="mi">5</span><span class="p">},</span>
+<span class="w">  </span><span class="cm">/*dtype=*/</span><span class="n">DLDataType</span><span class="p">({</span><span class="n">kDLFloat</span><span class="p">,</span><span class="w"> </span><span class="mi">32</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">}),</span>
+<span class="w">  </span><span class="cm">/*device=*/</span><span class="n">DLDevice</span><span class="p">({</span><span class="n">kDLCUDA</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">})</span>
+<span class="p">);</span>
+</pre></div>
+</div>
+</section>
+<section id="c-stream-handling">
+<h3>C++ Stream Handling<a class="headerlink" href="#c-stream-handling" title="Link to this heading">#</a></h3>
+<p>Stream context is essential for GPU kernel execution. While CUDA does not have a global context for
+default streams, frameworks like PyTorch maintain a “current stream” per device
+(<a class="reference external" href="https://docs.pytorch.org/docs/stable/generated/torch.cuda.current_stream.html#torch.cuda.current_stream" title="(in PyTorch v2.9)"><code class="xref py py-func docutils literal notranslate"><span class="pre">torch.cuda.current_stream()</span></code></a>), and kernel libraries must read this stream from the embedding environment.</p>
+<p>As a hardware-agnostic abstraction layer, TVM-FFI is not linked to any specific stream management library.
+However, to ensure GPU kernels launch on the correct stream, it provides standardized APIs to obtain the
+stream context from the host framework (e.g., PyTorch).</p>
+<p><strong>Obtain Stream Context.</strong> Use the C API <a class="reference internal" href="../reference/cpp/generated/function_c__env__api_8h_1a8ce2ba89ca1d010a084b4c36ed6b2965.html#_CPPv418TVMFFIEnvGetStream7int32_t7int32_t" title="TVMFFIEnvGetStream"><code class="xref cpp cpp-func docutils literal notranslate"><span class="pre">TVMFFIEnvGetStream()</span></code></a> to obtain the current stream for a given device:</p>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="kt">void</span><span class="w"> </span><span class="nf">func</span><span class="p">(</span><span class="n">ffi</span><span class="o">::</span><span class="n">TensorView</span><span class="w"> </span><span class="n">input</span><span class="p">,</span><span class="w"> </span><span class="p">...)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="n">ffi</span><span class="o">::</span><span class="n">DLDevice</span><span class="w"> </span><span class="n">device</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">input</span><span class="p">.</span><span class="n">device</span><span class="p">();</span>
+<span class="w">  </span><span class="n">cudaStream_t</span><span class="w"> </span><span class="n">stream</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">reinterpret_cast</span><span class="o">&lt;</span><span class="n">cudaStream_t</span><span class="o">&gt;</span><span class="p">(</span>
+<span class="w">      </span><span class="n">TVMFFIEnvGetStream</span><span class="p">(</span><span class="n">device</span><span class="p">.</span><span class="n">device_type</span><span class="p">,</span><span class="w"> </span><span class="n">device</span><span class="p">.</span><span class="n">device_id</span><span class="p">));</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p>This is equivalent to the following PyTorch C++ code:</p>
+<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="kt">void</span><span class="w"> </span><span class="nf">func</span><span class="p">(</span><span class="n">at</span><span class="o">::</span><span class="n">Tensor</span><span class="w"> </span><span class="n">input</span><span class="p">,</span><span class="w"> </span><span class="p">...)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="n">c10</span><span class="o">::</span><span class="n">Device</span><span class="w"> </span><span class="n">device</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">input</span><span class="p">.</span><span class="n">device</span><span class="p">();</span>
+<span class="w">  </span><span class="n">cudaStream_t</span><span class="w"> </span><span class="n">stream</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">reinterpret_cast</span><span class="o">&lt;</span><span class="n">cudaStream_t</span><span class="o">&gt;</span><span class="p">(</span>
+<span class="w">      </span><span class="n">c10</span><span class="o">::</span><span class="n">cuda</span><span class="o">::</span><span class="n">getCurrentCUDAStream</span><span class="p">(</span><span class="n">device</span><span class="p">.</span><span class="n">index</span><span class="p">()).</span><span class="n">stream</span><span class="p">());</span>
+<span class="p">}</span>
+</pre></div>
+</div>
+<p><strong>Auto-Update Stream Context.</strong> When converting framework tensors via <a class="reference internal" href="../reference/python/generated/tvm_ffi.from_dlpack.html#tvm_ffi.from_dlpack" title="tvm_ffi.from_dlpack"><code class="xref py py-func docutils literal notranslate"><span class="pre">tvm_ffi.from_dlpack()</span></code></a>,
+TVM-FFI automatically updates the stream context to match the device of the converted tensor.
+For example, when converting a PyTorch tensor on <code class="docutils literal notranslate"><span class="pre">torch.device('cuda:3')</span></code>, TVM-FFI automatically
+captures the stream from <code class="xref py py-func docutils literal notranslate"><span class="pre">torch.cuda.current_stream(device='cuda:3')()</span></code>.</p>
+<p><strong>Set Stream Context.</strong> Use <a class="reference internal" href="../reference/python/generated/tvm_ffi.use_torch_stream.html#tvm_ffi.use_torch_stream" title="tvm_ffi.use_torch_stream"><code class="xref py py-func docutils literal notranslate"><span class="pre">tvm_ffi.use_torch_stream()</span></code></a> or <a class="reference internal" href="../reference/python/generated/tvm_ffi.use_raw_stream.html#tvm_ffi.use_raw_stream" title="tvm_ffi.use_raw_stream"><code class="xref py py-func docutils literal notranslate"><span class="pre">tvm_ffi.use_raw_stream()</span></code></a>
+to manually set the stream context when automatic detection is insufficient.</p>
+</section>
+</section>
 <section id="tensor-classes">
 <h2>Tensor Classes<a class="headerlink" href="#tensor-classes" title="Link to this heading">#</a></h2>
-<p>This section defines each tensor type you will encounter in the TVM-FFI C++ API and explains the
-<em>intended</em> usage. Exact C layout details are covered later in <a class="reference internal" href="#layout-and-conversion"><span class="std std-ref">Tensor Layouts</span></a>.</p>
+<p>This section defines each tensor type in the TVM-FFI C++ API and explains its intended usage.
+Exact C layout details are covered in <a class="reference internal" href="#layout-and-conversion"><span class="std std-ref">Tensor Layouts</span></a>.</p>
 <div class="admonition tip">
 <p class="admonition-title">Tip</p>
 <p>On the Python side, only <a class="reference internal" href="../reference/python/generated/tvm_ffi.Tensor.html#tvm_ffi.Tensor" title="tvm_ffi.Tensor"><code class="xref py py-class docutils literal notranslate"><span class="pre">tvm_ffi.Tensor</span></code></a> exists. It strictly follows DLPack semantics for interop and can be converted to PyTorch via <a class="reference external" href="https://docs.pytorch.org/docs/stable/generated/torch.from_dlpack.html#torch.from_dlpack" title="(in PyTorch v2.9)"><code class="xref py py-func docutils literal notranslate"><span class="pre">torch.from_dlpack()</span></code></a>.</p>
@@ -838,21 +992,21 @@ has an extra TVM-FFI object header, making it reference-countable via the standa
 </ul>
 </section>
 <section id="what-tensor-is-not">
-<h3>What Tensor is not<a class="headerlink" href="#what-tensor-is-not" title="Link to this heading">#</a></h3>
-<p>TVM-FFI is not a tensor library. While it presents a unified representation for tensors,
-it does not provide any of the following:</p>
+<h3>What Tensor Is Not<a class="headerlink" href="#what-tensor-is-not" title="Link to this heading">#</a></h3>
+<p>TVM-FFI is not a tensor library. While it provides a unified representation for tensors,
+it does not include:</p>
 <ul class="simple">
-<li><p>kernels, such as vector addition, matrix multiplication;</p></li>
-<li><p>host-device copy or synchronization primitives;</p></li>
-<li><p>advanced indexing or slicing;</p></li>
+<li><p>kernels (e.g., vector addition, matrix multiplication),</p></li>
+<li><p>host-device copy or synchronization primitives,</p></li>
+<li><p>advanced indexing or slicing, or</p></li>
 <li><p>automatic differentiation or computational graph support.</p></li>
 </ul>
 </section>
 </section>
 <section id="conversion-between-tvmffiany">
 <h2>Conversion between <a class="reference internal" href="../reference/cpp/generated/structTVMFFIAny.html#_CPPv49TVMFFIAny" title="TVMFFIAny"><code class="xref cpp cpp-class docutils literal notranslate"><span class="pre">TVMFFIAny</span></code></a><a class="headerlink" href="#conversion-between-tvmffiany" title="Link to this heading">#</a></h2>
-<p>At the stable C ABI boundary, TVM-FFI passes values using an “Any-like” carrier, often referred
-to as <a class="reference internal" href="../reference/cpp/generated/classtvm_1_1ffi_1_1Any.html#_CPPv4N3tvm3ffi3AnyE" title="tvm::ffi::Any"><code class="xref cpp cpp-class docutils literal notranslate"><span class="pre">Any</span></code></a> (owning) or <a class="reference internal" href="../reference/cpp/generated/classtvm_1_1ffi_1_1AnyView.html#_CPPv4N3tvm3ffi7AnyViewE" title="tvm::ffi::AnyView"><code class="xref cpp cpp-class docutils literal notranslate"><span class="pre">AnyView</span></code></a> (non-owning).
+<p>At the stable C ABI boundary, TVM-FFI passes values using an “Any-like” carrier—either
+<a class="reference internal" href="../reference/cpp/generated/classtvm_1_1ffi_1_1Any.html#_CPPv4N3tvm3ffi3AnyE" title="tvm::ffi::Any"><code class="xref cpp cpp-class docutils literal notranslate"><span class="pre">Any</span></code></a> (owning) or <a class="reference internal" href="../reference/cpp/generated/classtvm_1_1ffi_1_1AnyView.html#_CPPv4N3tvm3ffi7AnyViewE" title="tvm::ffi::AnyView"><code class="xref cpp cpp-class docutils literal notranslate"><span class="pre">AnyView</span></code></a> (non-owning).
 These are 128-bit tagged unions derived from <a class="reference internal" href="../reference/cpp/generated/structTVMFFIAny.html#_CPPv49TVMFFIAny" title="TVMFFIAny"><code class="xref cpp cpp-class docutils literal notranslate"><span class="pre">TVMFFIAny</span></code></a> that contain:</p>
 <ul class="simple">
 <li><p>a <a class="reference internal" href="../reference/cpp/generated/structTVMFFIAny.html#_CPPv4N9TVMFFIAny10type_indexE" title="TVMFFIAny::type_index"><code class="xref cpp cpp-member docutils literal notranslate"><span class="pre">type_index</span></code></a> that indicates the type of the payload, and</p></li>
@@ -971,148 +1125,6 @@ It sets the type index to <a class="reference internal" href="../reference/cpp/g
 </div>
 </section>
 </section>
-<section id="tensor-apis">
-<h2>Tensor APIs<a class="headerlink" href="#tensor-apis" title="Link to this heading">#</a></h2>
-<p>This section introduces the most important APIs you will use in C++ and Python. It intentionally
-focuses on introductory, day-to-day methods.</p>
-<section id="c-apis">
-<h3>C++ APIs<a class="headerlink" href="#c-apis" title="Link to this heading">#</a></h3>
-<p><strong>Common pattern</strong>. A typical kernel implementation includes accepting a <a class="reference internal" href="../reference/cpp/generated/classtvm_1_1ffi_1_1TensorView.html#_CPPv4N3tvm3ffi10TensorViewE" title="tvm::ffi::TensorView"><code class="xref cpp cpp-class docutils literal notranslate"><span class="pre">TensorView</span></code></a> parameter,
-validating its metadata (dtype, shape, device), and then accessing its data pointer for computation.</p>
-<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="kt">void</span><span class="w"> </span><span class="nf">MyKernel</span><span class="p">(</span><span class="n">tvm</span><span class="o">::</span><span class="n">ffi</span><span class="o">::</span><span class="n">TensorView</span><span class="w"> </span><span class="n">input</span><span class="p">,</span><span class="w"> </span><span class="n">tvm</span><span class="o">::</span><span class="n">ffi</span><span class="o">::</span><span class="n">TensorView</span><span class="w"> </span><span class="n">output</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
-<span class="w">  </span><span class="c1">// Validate dtype &amp; device</span>
-<span class="w">  </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">input</span><span class="p">.</span><span class="n">dtype</span><span class="p">()</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="n">DLDataType</span><span class="p">{</span><span class="n">kDLFloat</span><span class="p">,</span><span class="w"> </span><span class="mi">32</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">})</span>
-<span class="w">    </span><span class="n">TVM_FFI_THROW</span><span class="p">(</span><span class="n">TypeError</span><span class="p">)</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">&quot;Expect float32 input, but got &quot;</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">input</span><span class="p">.</span><span class="n">dtype</span><span class="p">();</span>
-<span class="w">  </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">input</span><span class="p">.</span><span class="n">device</span><span class="p">()</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="n">DLDevice</span><span class="p">{</span><span class="n">kDLCUDA</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">})</span>
-<span class="w">    </span><span class="n">TVM_FFI_THROW</span><span class="p">(</span><span class="n">ValueError</span><span class="p">)</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">&quot;Expect input on CUDA:0, but got &quot;</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">input</span><span class="p">.</span><span class="n">device</span><span class="p">();</span>
-<span class="w">  </span><span class="c1">// Access data pointer</span>
-<span class="w">  </span><span class="kt">float</span><span class="o">*</span><span class="w"> </span><span class="n">input_data_ptr</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">static_cast</span><span class="o">&lt;</span><span class="kt">float</span><span class="o">*&gt;</span><span class="p">(</span><span class="n">input</span><span class="p">.</span><span class="n">data_ptr</span><span class="p">());</span>
-<span class="w">  </span><span class="kt">float</span><span class="o">*</span><span class="w"> </span><span class="n">output_data_ptr</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">static_cast</span><span class="o">&lt;</span><span class="kt">float</span><span class="o">*&gt;</span><span class="p">(</span><span class="n">output</span><span class="p">.</span><span class="n">data_ptr</span><span class="p">());</span>
-<span class="w">  </span><span class="n">Kernel</span><span class="o">&lt;&lt;&lt;</span><span class="p">...</span><span class="o">&gt;&gt;&gt;</span><span class="p">(...,</span><span class="w"> </span><span class="n">input_data_ptr</span><span class="p">,</span><span class="w"> </span><span class="n">output_data_ptr</span><span class="p">,</span><span class="w"> </span><span class="p">...);</span>
-<span class="p">}</span>
-</pre></div>
-</div>
-<p><strong>Metadata APIs</strong>. The example above uses metadata APIs for querying tensor shapes, data types, device information, data pointers, etc. Common ones include:</p>
-<blockquote>
-<div><dl class="simple">
-<dt><a class="reference internal" href="../reference/cpp/generated/classtvm_1_1ffi_1_1TensorView.html#_CPPv4NK3tvm3ffi10TensorView5shapeEv" title="tvm::ffi::TensorView::shape"><code class="xref cpp cpp-func docutils literal notranslate"><span class="pre">TensorView::shape()</span></code></a> and <a class="reference internal" href="../reference/cpp/generated/classtvm_1_1ffi_1_1Tensor.html#_CPPv4NK3tvm3ffi6Tensor5shapeEv" title="tvm::ffi::Tensor::shape"><code class="xref cpp cpp-func docutils literal notranslate"><span class="pre">Tensor::shape()</span></code></a></dt><dd><p>shape array</p>
-</dd>
-<dt><a class="reference internal" href="../reference/cpp/generated/classtvm_1_1ffi_1_1TensorView.html#_CPPv4NK3tvm3ffi10TensorView5dtypeEv" title="tvm::ffi::TensorView::dtype"><code class="xref cpp cpp-func docutils literal notranslate"><span class="pre">TensorView::dtype()</span></code></a> and <a class="reference internal" href="../reference/cpp/generated/classtvm_1_1ffi_1_1Tensor.html#_CPPv4NK3tvm3ffi6Tensor5dtypeEv" title="tvm::ffi::Tensor::dtype"><code class="xref cpp cpp-func docutils literal notranslate"><span class="pre">Tensor::dtype()</span></code></a></dt><dd><p>element data type</p>
-</dd>
-<dt><a class="reference internal" href="../reference/cpp/generated/classtvm_1_1ffi_1_1TensorView.html#_CPPv4NK3tvm3ffi10TensorView8data_ptrEv" title="tvm::ffi::TensorView::data_ptr"><code class="xref cpp cpp-func docutils literal notranslate"><span class="pre">TensorView::data_ptr()</span></code></a> and <a class="reference internal" href="../reference/cpp/generated/classtvm_1_1ffi_1_1Tensor.html#_CPPv4NK3tvm3ffi6Tensor8data_ptrEv" title="tvm::ffi::Tensor::data_ptr"><code class="xref cpp cpp-func docutils literal notranslate"><span class="pre">Tensor::data_ptr()</span></code></a></dt><dd><p>base pointer to the tensor’s data</p>
-</dd>
-<dt><a class="reference internal" href="../reference/cpp/generated/classtvm_1_1ffi_1_1TensorView.html#_CPPv4NK3tvm3ffi10TensorView6deviceEv" title="tvm::ffi::TensorView::device"><code class="xref cpp cpp-func docutils literal notranslate"><span class="pre">TensorView::device()</span></code></a> and <a class="reference internal" href="../reference/cpp/generated/classtvm_1_1ffi_1_1Tensor.html#_CPPv4NK3tvm3ffi6Tensor6deviceEv" title="tvm::ffi::Tensor::device"><code class="xref cpp cpp-func docutils literal notranslate"><span class="pre">Tensor::device()</span></code></a></dt><dd><p>device type and id</p>
-</dd>
-<dt><a class="reference internal" href="../reference/cpp/generated/classtvm_1_1ffi_1_1TensorView.html#_CPPv4NK3tvm3ffi10TensorView11byte_offsetEv" title="tvm::ffi::TensorView::byte_offset"><code class="xref cpp cpp-func docutils literal notranslate"><span class="pre">TensorView::byte_offset()</span></code></a> and <a class="reference internal" href="../reference/cpp/generated/classtvm_1_1ffi_1_1Tensor.html#_CPPv4NK3tvm3ffi6Tensor11byte_offsetEv" title="tvm::ffi::Tensor::byte_offset"><code class="xref cpp cpp-func docutils literal notranslate"><span class="pre">Tensor::byte_offset()</span></code></a></dt><dd><p>byte offset to the first element</p>
-</dd>
-<dt><a class="reference internal" href="../reference/cpp/generated/classtvm_1_1ffi_1_1TensorView.html#_CPPv4NK3tvm3ffi10TensorView4ndimEv" title="tvm::ffi::TensorView::ndim"><code class="xref cpp cpp-func docutils literal notranslate"><span class="pre">TensorView::ndim()</span></code></a> and <a class="reference internal" href="../reference/cpp/generated/classtvm_1_1ffi_1_1Tensor.html#_CPPv4NK3tvm3ffi6Tensor4ndimEv" title="tvm::ffi::Tensor::ndim"><code class="xref cpp cpp-func docutils literal notranslate"><span class="pre">Tensor::ndim()</span></code></a></dt><dd><p>number of dimensions (<a class="reference internal" href="../reference/cpp/generated/classtvm_1_1ffi_1_1ShapeView.html#_CPPv4NK3tvm3ffi9ShapeView4sizeEv" title="tvm::ffi::ShapeView::size"><code class="xref cpp cpp-func docutils literal notranslate"><span class="pre">ShapeView::size</span></code></a>)</p>
-</dd>
-<dt><a class="reference internal" href="../reference/cpp/generated/classtvm_1_1ffi_1_1TensorView.html#_CPPv4NK3tvm3ffi10TensorView5numelEv" title="tvm::ffi::TensorView::numel"><code class="xref cpp cpp-func docutils literal notranslate"><span class="pre">TensorView::numel()</span></code></a> and <a class="reference internal" href="../reference/cpp/generated/classtvm_1_1ffi_1_1Tensor.html#_CPPv4NK3tvm3ffi6Tensor5numelEv" title="tvm::ffi::Tensor::numel"><code class="xref cpp cpp-func docutils literal notranslate"><span class="pre">Tensor::numel()</span></code></a></dt><dd><p>total number of elements (<a class="reference internal" href="../reference/cpp/generated/classtvm_1_1ffi_1_1ShapeView.html#_CPPv4NK3tvm3ffi9ShapeView7ProductEv" title="tvm::ffi::ShapeView::Product"><code class="xref cpp cpp-func docutils literal notranslate"><span class="pre">ShapeView::Product</span></code></a>)</p>
-</dd>
-</dl>
-</div></blockquote>
-</section>
-<section id="python-apis">
-<h3>Python APIs<a class="headerlink" href="#python-apis" title="Link to this heading">#</a></h3>
-<p>The Python-facing <a class="reference internal" href="../reference/python/generated/tvm_ffi.Tensor.html#tvm_ffi.Tensor" title="tvm_ffi.Tensor"><code class="xref py py-class docutils literal notranslate"><span class="pre">tvm_ffi.Tensor</span></code></a> is a managed n-dimensional array that:</p>
-<ul class="simple">
-<li><p>Can be created via <a class="reference internal" href="../reference/python/generated/tvm_ffi.from_dlpack.html#tvm_ffi.from_dlpack" title="tvm_ffi.from_dlpack"><code class="xref py py-func docutils literal notranslate"><span class="pre">tvm_ffi.from_dlpack(ext_tensor,</span> <span class="pre">...)</span></code></a> to import tensors from external frameworks, e.g. <a class="reference internal" href="../get_started/quickstart.html#ship-to-pytorch"><span class="std std-ref">PyTorch</span></a>, <a class="reference internal" href="../get_started/quickstart.html#ship-to-jax"><span class="std std-ref">JAX</span></a>, <a class="reference internal" href="../get_started/quickstart.html#ship-to-numpy"><span class="std std-ref">NumPy/CuPy</span></a>.</p></li>
-<li><p>Implements the DLPack protocol so it can be passed back to frameworks without copying, e.g. <a class="reference external" href="https://docs.pytorch.org/docs/stable/generated/torch.from_dlpack.html#torch.from_dlpack" title="(in PyTorch v2.9)"><code class="xref py py-func docutils literal notranslate"><span class="pre">torch.from_dlpack()</span></code></a>.</p></li>
-</ul>
-<p>Typical import pattern:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">tvm_ffi</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">torch</span>
-
-<span class="n">x</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">1024</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="s2">&quot;cuda&quot;</span><span class="p">)</span>
-<span class="n">t</span> <span class="o">=</span> <span class="n">tvm_ffi</span><span class="o">.</span><span class="n">from_dlpack</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">require_contiguous</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-
-<span class="c1"># t is a tvm_ffi.Tensor that views the same memory.</span>
-<span class="c1"># You can pass t into TVM-FFI-exposed functions.</span>
-</pre></div>
-</div>
-</section>
-<section id="allocation-in-c">
-<h3>Allocation in C++<a class="headerlink" href="#allocation-in-c" title="Link to this heading">#</a></h3>
-<p>TVM-FFI is not a kernel library per se and is not linked to any specific device memory allocator or runtime.
-However, for kernel library developers, it provides standardized allocation entry points by
-interfacing with the surrounding framework’s allocator. For example, it uses PyTorch’s allocator when running inside
-a PyTorch environment.</p>
-<p><strong>Env Allocator.</strong> Use <a class="reference internal" href="../reference/cpp/generated/classtvm_1_1ffi_1_1Tensor.html#_CPPv4N3tvm3ffi6Tensor12FromEnvAllocEPFiP8DLTensorP18TVMFFIObjectHandleEN3ffi9ShapeViewE10DLDataType8DLDevice" title="tvm::ffi::Tensor::FromEnvAlloc"><code class="xref cpp cpp-func docutils literal notranslate"><span class="pre">Tensor::FromEnvAlloc()</span></code></a> along with C API
-<a class="reference internal" href="../reference/cpp/generated/function_c__env__api_8h_1a683191d48d3fdebc98b68f3b717baf6a.html#_CPPv420TVMFFIEnvTensorAllocP8DLTensorP18TVMFFIObjectHandle" title="TVMFFIEnvTensorAlloc"><code class="xref cpp cpp-func docutils literal notranslate"><span class="pre">TVMFFIEnvTensorAlloc()</span></code></a> to allocate a tensor using the framework’s allocator.</p>
-<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="n">Tensor</span><span class="w"> </span><span class="n">tensor</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">Tensor</span><span class="o">::</span><span class="n">FromEnvAlloc</span><span class="p">(</span>
-<span class="w">  </span><span class="n">TVMFFIEnvTensorAlloc</span><span class="p">,</span>
-<span class="w">  </span><span class="cm">/*shape=*/</span><span class="p">{</span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="mi">3</span><span class="p">},</span>
-<span class="w">  </span><span class="cm">/*dtype=*/</span><span class="n">DLDataType</span><span class="p">({</span><span class="n">kDLFloat</span><span class="p">,</span><span class="w"> </span><span class="mi">32</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">}),</span>
-<span class="w">  </span><span class="cm">/*device=*/</span><span class="n">DLDevice</span><span class="p">({</span><span class="n">kDLCPU</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">})</span>
-<span class="p">);</span>
-</pre></div>
-</div>
-<p>In a PyTorch environment, this is equivalent to <a class="reference external" href="https://docs.pytorch.org/docs/stable/generated/torch.empty.html#torch.empty" title="(in PyTorch v2.9)"><code class="xref py py-func docutils literal notranslate"><span class="pre">torch.empty()</span></code></a>.</p>
-<div class="admonition warning">
-<p class="admonition-title">Warning</p>
-<p>While allocation APIs are available, it is generally <strong>recommended</strong> to avoid allocating tensors inside kernels.
-Instead, prefer pre-allocating outputs and passing them in as <a class="reference internal" href="../reference/cpp/generated/classtvm_1_1ffi_1_1TensorView.html#_CPPv4N3tvm3ffi10TensorViewE" title="tvm::ffi::TensorView"><code class="xref cpp cpp-class docutils literal notranslate"><span class="pre">tvm::ffi::TensorView</span></code></a> parameters.
-Reasons include:</p>
-<ul class="simple">
-<li><p>Avoiding fragmentation and performance pitfalls;</p></li>
-<li><p>Avoiding cudagraph incompatibilities on GPU;</p></li>
-<li><p>Allowing the outer framework to control allocation policy (pools, device strategies, etc.).</p></li>
-</ul>
-</div>
-<p><strong>Custom Allocator.</strong> Use <a class="reference internal" href="../reference/cpp/generated/classtvm_1_1ffi_1_1Tensor.html#_CPPv4I0DpEN3tvm3ffi6Tensor11FromNDAllocE6Tensor8TNDAllocN3ffi9ShapeViewE10DLDataType8DLDeviceDpRR9ExtraArgs" title="tvm::ffi::Tensor::FromNDAlloc"><code class="xref cpp cpp-func docutils literal notranslate"><span class="pre">Tensor::FromNDAlloc(custom_alloc,</span> <span class="pre">...)</span></code></a>,
-or its advanced variant <a class="reference internal" href="../reference/cpp/generated/classtvm_1_1ffi_1_1Tensor.html#_CPPv4I0DpEN3tvm3ffi6Tensor18FromNDAllocStridedE6Tensor8TNDAllocN3ffi9ShapeViewEN3ffi9ShapeViewE10DLDataType8DLDeviceDpRR9ExtraArgs" title="tvm::ffi::Tensor::FromNDAllocStrided"><code class="xref cpp cpp-func docutils literal notranslate"><span class="pre">Tensor::FromNDAllocStrided(custom_alloc,</span> <span class="pre">...)</span></code></a>,
-to allocate a tensor with user-provided allocation callback.</p>
-<p>Below is an example that uses <code class="docutils literal notranslate"><span class="pre">cudaMalloc</span></code>/<code class="docutils literal notranslate"><span class="pre">cudaFree</span></code> as custom allocators for GPU tensors.</p>
-<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="k">struct</span><span class="w"> </span><span class="nc">CUDANDAlloc</span><span class="w"> </span><span class="p">{</span>
-<span class="w">  </span><span class="kt">void</span><span class="w"> </span><span class="nf">AllocData</span><span class="p">(</span><span class="n">DLTensor</span><span class="o">*</span><span class="w"> </span><span class="n">tensor</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
-<span class="w">    </span><span class="kt">size_t</span><span class="w"> </span><span class="n">data_size</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ffi</span><span class="o">::</span><span class="n">GetDataSize</span><span class="p">(</span><span class="o">*</span><span class="n">tensor</span><span class="p">);</span>
-<span class="w">    </span><span class="kt">void</span><span class="o">*</span><span class="w"> </span><span class="n">ptr</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">nullptr</span><span class="p">;</span>
-<span class="w">    </span><span class="n">cudaError_t</span><span class="w"> </span><span class="n">err</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">cudaMalloc</span><span class="p">(</span><span class="o">&amp;</span><span class="n">ptr</span><span class="p">,</span><span class="w"> </span><span class="n">data_size</span><span class="p">);</span>
-<span class="w">    </span><span class="n">TVM_FFI_ICHECK_EQ</span><span class="p">(</span><span class="n">err</span><span class="p">,</span><span class="w"> </span><span class="n">cudaSuccess</span><span class="p">)</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">&quot;cudaMalloc failed: &quot;</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">cudaGetErrorString</span><span class="p">(</span><span class="n">err</span><span class="p">);</span>
-<span class="w">    </span><span class="n">tensor</span><span class="o">-&gt;</span><span class="n">data</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ptr</span><span class="p">;</span>
-<span class="w">  </span><span class="p">}</span>
-
-<span class="w">  </span><span class="kt">void</span><span class="w"> </span><span class="nf">FreeData</span><span class="p">(</span><span class="n">DLTensor</span><span class="o">*</span><span class="w"> </span><span class="n">tensor</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
-<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">tensor</span><span class="o">-&gt;</span><span class="n">data</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="k">nullptr</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
-<span class="w">      </span><span class="n">cudaError_t</span><span class="w"> </span><span class="n">err</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">cudaFree</span><span class="p">(</span><span class="n">tensor</span><span class="o">-&gt;</span><span class="n">data</span><span class="p">);</span>
-<span class="w">      </span><span class="n">TVM_FFI_ICHECK_EQ</span><span class="p">(</span><span class="n">err</span><span class="p">,</span><span class="w"> </span><span class="n">cudaSuccess</span><span class="p">)</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">&quot;cudaFree failed: &quot;</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">cudaGetErrorString</span><span class="p">(</span><span class="n">err</span><span class="p">);</span>
-<span class="w">      </span><span class="n">tensor</span><span class="o">-&gt;</span><span class="n">data</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">nullptr</span><span class="p">;</span>
-<span class="w">    </span><span class="p">}</span>
-<span class="w">  </span><span class="p">}</span>
-<span class="p">};</span>
-
-<span class="n">ffi</span><span class="o">::</span><span class="n">Tensor</span><span class="w"> </span><span class="n">cuda_tensor</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ffi</span><span class="o">::</span><span class="n">Tensor</span><span class="o">::</span><span class="n">FromNDAlloc</span><span class="p">(</span>
-<span class="w">  </span><span class="n">CUDANDAlloc</span><span class="p">(),</span>
-<span class="w">  </span><span class="cm">/*shape=*/</span><span class="p">{</span><span class="mi">3</span><span class="p">,</span><span class="w"> </span><span class="mi">4</span><span class="p">,</span><span class="w"> </span><span class="mi">5</span><span class="p">},</span>
-<span class="w">  </span><span class="cm">/*dtype=*/</span><span class="n">DLDataType</span><span class="p">({</span><span class="n">kDLFloat</span><span class="p">,</span><span class="w"> </span><span class="mi">32</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">}),</span>
-<span class="w">  </span><span class="cm">/*device=*/</span><span class="n">DLDevice</span><span class="p">({</span><span class="n">kDLCUDA</span><span class="p">,</span><span class="w"> </span><span class="mi">0</span><span class="p">})</span>
-<span class="p">);</span>
-</pre></div>
-</div>
-</section>
-<section id="stream-handling-in-c">
-<h3>Stream Handling in C++<a class="headerlink" href="#stream-handling-in-c" title="Link to this heading">#</a></h3>
-<p>Besides tensors, stream context is another key concept in a kernel library, especially for kernel execution. While CUDA does not have a global context for default streams, frameworks like PyTorch maintain a “current stream” per device (<a class="reference external" href="https://docs.pytorch.org/docs/stable/generated/torch.cuda.current_stream.html#torch.cuda.current_stream" title="(in PyTorch v2.9)"><code class="xref py py-func docutils literal notranslate"><span class="pre">torch.cuda.current_stream()</span></code></a>), and kernel libraries must read the current stream from the embedding environment.</p>
-<p>As a hardware-agnostic abstraction layer, TVM-FFI is not linked to any specific stream management library, but to ensure GPU kernels launch on the correct stream, it provides standardized APIs to obtain stream context from the upper framework (e.g. PyTorch).</p>
-<p><strong>Obtain Stream Context.</strong> Use C API <a class="reference internal" href="../reference/cpp/generated/function_c__env__api_8h_1a8ce2ba89ca1d010a084b4c36ed6b2965.html#_CPPv418TVMFFIEnvGetStream7int32_t7int32_t" title="TVMFFIEnvGetStream"><code class="xref cpp cpp-func docutils literal notranslate"><span class="pre">TVMFFIEnvGetStream()</span></code></a> to obtain the current stream for a given device.</p>
-<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="kt">void</span><span class="w"> </span><span class="nf">func</span><span class="p">(</span><span class="n">ffi</span><span class="o">::</span><span class="n">TensorView</span><span class="w"> </span><span class="n">input</span><span class="p">,</span><span class="w"> </span><span class="p">...)</span><span class="w"> </span><span class="p">{</span>
-<span class="w">  </span><span class="n">ffi</span><span class="o">::</span><span class="n">DLDevice</span><span class="w"> </span><span class="n">device</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">input</span><span class="p">.</span><span class="n">device</span><span class="p">();</span>
-<span class="w">  </span><span class="n">cudaStream_t</span><span class="w"> </span><span class="n">stream</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">reinterpret_cast</span><span class="o">&lt;</span><span class="n">cudaStream_t</span><span class="o">&gt;</span><span class="p">(</span><span class="n">TVMFFIEnvGetStream</span><span class="p">(</span><span class="n">device</span><span class="p">.</span><span class="n">device_type</span><span class="p">,</span><span class="w"> </span><span class="n">device</span><span class="p">.</span><span class="n">device_id</span><span class="p">));</span>
-<span class="p">}</span>
-</pre></div>
-</div>
-<p>which is equivalent to:</p>
-<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="kt">void</span><span class="w"> </span><span class="nf">func</span><span class="p">(</span><span class="n">at</span><span class="o">::</span><span class="n">Tensor</span><span class="w"> </span><span class="n">input</span><span class="p">,</span><span class="w"> </span><span class="p">...)</span><span class="w"> </span><span class="p">{</span>
-<span class="w">  </span><span class="n">c10</span><span class="o">::</span><span class="n">Device</span><span class="w"> </span><span class="n">device</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">input</span><span class="p">.</span><span class="n">device</span><span class="p">();</span>
-<span class="w">  </span><span class="n">cudaStream_t</span><span class="w"> </span><span class="n">stream</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">reinterpret_cast</span><span class="o">&lt;</span><span class="n">cudaStream_t</span><span class="o">&gt;</span><span class="p">(</span><span class="n">c10</span><span class="o">::</span><span class="n">cuda</span><span class="o">::</span><span class="n">getCurrentCUDAStream</span><span class="p">(</span><span class="n">device</span><span class="p">.</span><span class="n">index</span><span class="p">()).</span><span class="n">stream</span><span class="p">());</span>
-<span class="p">}</span>
-</pre></div>
-</div>
-<p><strong>Auto-Update Stream Context.</strong> When converting framework tensors as mentioned above, TVM-FFI automatically updates the stream context to match the device of the converted tensors.</p>
-<p>For example, when converting a PyTorch tensor at <code class="docutils literal notranslate"><span class="pre">torch.device('cuda:3')</span></code>, TVM-FFI automatically sets the stream context to <code class="xref py py-func docutils literal notranslate"><span class="pre">torch.cuda.current_stream(device='cuda:3')()</span></code>.</p>
-<p><strong>Set Stream Context.</strong> <a class="reference internal" href="../reference/python/generated/tvm_ffi.use_torch_stream.html#tvm_ffi.use_torch_stream" title="tvm_ffi.use_torch_stream"><code class="xref py py-func docutils literal notranslate"><span class="pre">tvm_ffi.use_torch_stream()</span></code></a> and <a class="reference internal" href="../reference/python/generated/tvm_ffi.use_raw_stream.html#tvm_ffi.use_raw_stream" title="tvm_ffi.use_raw_stream"><code class="xref py py-func docutils literal notranslate"><span class="pre">tvm_ffi.use_raw_stream()</span></code></a> are provided to manually update the stream context when the automatic update is insufficient.</p>
-</section>
-</section>
 <section id="further-reading">
 <h2>Further Reading<a class="headerlink" href="#further-reading" title="Link to this heading">#</a></h2>
 <ul class="simple">
@@ -1139,12 +1151,12 @@ and <a class="reference internal" href="abi_overview.html"><span class="doc">ABI
                   
 <div class="prev-next-area">
     <a class="left-prev"
-       href="abi_overview.html"
+       href="any.html"
        title="previous page">
       <i class="fa-solid fa-angle-left"></i>
       <div class="prev-next-info">
         <p class="prev-next-subtitle">previous</p>
-        <p class="prev-next-title">ABI Overview</p>
+        <p class="prev-next-title">Any and AnyView</p>
       </div>
     </a>
     <a class="right-next"
@@ -1173,11 +1185,18 @@ and <a class="reference internal" href="abi_overview.html"><span class="doc">ABI
   <nav class="bd-toc-nav page-toc">
     <ul class="visible nav section-nav flex-column">
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#glossary">Glossary</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#common-usage">Common Usage</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#kernel-signatures">Kernel Signatures</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#pytorch-interop">PyTorch Interop</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#c-allocation">C++ Allocation</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#c-stream-handling">C++ Stream Handling</a></li>
+</ul>
+</li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#tensor-classes">Tensor Classes</a><ul class="visible nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#dlpack-tensors">DLPack Tensors</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#tvm-ffi-tensors">TVM-FFI Tensors</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#tensor-layouts">Tensor Layouts</a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#what-tensor-is-not">What Tensor is not</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#what-tensor-is-not">What Tensor Is Not</a></li>
 </ul>
 </li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#conversion-between-tvmffiany">Conversion between <code class="xref cpp cpp-class docutils literal notranslate"><span class="pre">TVMFFIAny</span></code></a><ul class="visible nav section-nav flex-column">
@@ -1185,13 +1204,6 @@ and <a class="reference internal" href="abi_overview.html"><span class="doc">ABI
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#to-owning-tensor">To Owning Tensor</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#from-owning-tensor">From Owning Tensor</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#from-non-owning-tensor">From Non-Owning Tensor</a></li>
-</ul>
-</li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#tensor-apis">Tensor APIs</a><ul class="visible nav section-nav flex-column">
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#c-apis">C++ APIs</a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#python-apis">Python APIs</a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#allocation-in-c">Allocation in C++</a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#stream-handling-in-c">Stream Handling in C++</a></li>
 </ul>
 </li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#further-reading">Further Reading</a></li>
@@ -1221,7 +1233,7 @@ By Apache TVM FFI contributors
   
   <div class="footer-item">
     <p class="last-updated">
-  Last updated on Jan 05, 2026.
+  Last updated on Jan 08, 2026.
   <br/>
 </p>
   </div>
