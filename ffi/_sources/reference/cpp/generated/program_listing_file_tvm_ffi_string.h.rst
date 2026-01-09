@@ -406,6 +406,34 @@ Program Listing for File string.h
        return String(data() + pos, rcount);
      }
    
+     bool starts_with(const String& prefix) const { return starts_with(prefix.data(), prefix.size()); }
+   
+     bool starts_with(std::string_view prefix) const {
+       return starts_with(prefix.data(), prefix.size());
+     }
+   
+     bool starts_with(const char* prefix) const { return starts_with(prefix, std::strlen(prefix)); }
+   
+     bool starts_with(const char* prefix, size_t count) const {
+       if (count > size()) {
+         return false;
+       }
+       return std::memcmp(data(), prefix, count) == 0;
+     }
+   
+     bool ends_with(const String& suffix) const { return ends_with(suffix.data(), suffix.size()); }
+   
+     bool ends_with(std::string_view suffix) const { return ends_with(suffix.data(), suffix.size()); }
+   
+     bool ends_with(const char* suffix) const { return ends_with(suffix, std::strlen(suffix)); }
+   
+     bool ends_with(const char* suffix, size_t count) const {
+       if (count > size()) {
+         return false;
+       }
+       return std::memcmp(data() + size() - count, suffix, count) == 0;
+     }
+   
      operator std::string() const {  // NOLINT(google-explicit-constructor)
        return std::string{data(), size()};
      }
