@@ -44,6 +44,8 @@ Program Listing for File type_traits.h
    namespace tvm {
    namespace ffi {
    
+   class Any;
+   
    template <typename, typename = void>
    struct TypeTraits {
      static constexpr bool convert_enabled = false;

@@ -109,10 +109,6 @@ Program Listing for File base_details.h
                                     TVM_FFI_STR_CONCAT(__TVMFFIStaticInitReg, __COUNTER__))
    #endif
    
-   /*
-    * \brief Define the default copy/move constructor and assign operator
-    * \param TypeName The class typename.
-    */
    #define TVM_FFI_DEFINE_DEFAULT_COPY_MOVE_AND_ASSIGN(TypeName)                                    \
      TypeName(const TypeName& other) = default;            /* NOLINT(bugprone-macro-parentheses) */ \
      TypeName(TypeName&& other) noexcept = default;        /* NOLINT(bugprone-macro-parentheses) */ \
