@@ -194,9 +194,9 @@ Functions
 
 - :ref:`exhale_function_memory_8h_1a801e8ecc2e3adbc1dac52c714e7cef11`
 
-- :ref:`exhale_function_memory_8h_1a8892f2a3cad8dbc51930c464f2ab863b`
-
 - :ref:`exhale_function_array_8h_1a3b56317c7cfb2760cf6c09c303840967`
+
+- :ref:`exhale_function_memory_8h_1a8892f2a3cad8dbc51930c464f2ab863b`
 
 - :ref:`exhale_function_map_8h_1a611844db41026b7a95846dd316b435af`
 

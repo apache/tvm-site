@@ -36,6 +36,8 @@ Includes
 
 - ``memory`` (:ref:`file_tvm_ffi_memory.h`)
 
+- ``optional`` (:ref:`file_tvm_ffi_optional.h`)
+
 - ``sstream``
 
 - ``string`` (:ref:`file_tvm_ffi_string.h`)
@@ -63,6 +65,8 @@ Included By
 - :ref:`file_tvm_ffi_container_tensor.h`
 
 - :ref:`file_tvm_ffi_dtype.h`
+
+- :ref:`file_tvm_ffi_extra_cuda_base.h`
 
 - :ref:`file_tvm_ffi_extra_cuda_cubin_launcher.h`
 

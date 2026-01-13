@@ -139,6 +139,8 @@ Functions
 
 - :ref:`exhale_function_c__api_8h_1a3479c144d165e717d1464b7b4df84897`
 
+- :ref:`exhale_function_c__api_8h_1a4152d18590b7967eca4a528cbe33a84e`
+
 - :ref:`exhale_function_c__api_8h_1a0ee6d2da9a72749561838bf503f62f93`
 
 - :ref:`exhale_function_c__api_8h_1a268d0b5dc89146020c09f77fa0eb8f67`

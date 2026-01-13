@@ -31,7 +31,7 @@ Program Listing for File cubin_launcher.h
    #ifndef TVM_FFI_EXTRA_CUDA_CUBIN_LAUNCHER_H_
    #define TVM_FFI_EXTRA_CUDA_CUBIN_LAUNCHER_H_
    
-   #include <cuda.h>
+   #include <cuda.h>  // NOLINT(clang-diagnostic-error)
    #include <cuda_runtime.h>
    #include <tvm/ffi/error.h>
    #include <tvm/ffi/extra/c_env_api.h>
@@ -78,15 +78,15 @@ Program Listing for File cubin_launcher.h
    class CubinModule {
     public:
      explicit CubinModule(const Bytes& bytes) {
-       TVM_FFI_CHECK_CUDA_ERROR(cuda_api::LoadLibrary(&library_, bytes.data()));
+       TVM_FFI_CHECK_CUBIN_LAUNCHER_CUDA_ERROR(cuda_api::LoadLibrary(&library_, bytes.data()));
      }
    
      explicit CubinModule(const char* code) {
-       TVM_FFI_CHECK_CUDA_ERROR(cuda_api::LoadLibrary(&library_, code));
+       TVM_FFI_CHECK_CUBIN_LAUNCHER_CUDA_ERROR(cuda_api::LoadLibrary(&library_, code));
      }
    
      explicit CubinModule(const unsigned char* code) {
-       TVM_FFI_CHECK_CUDA_ERROR(cuda_api::LoadLibrary(&library_, code));
+       TVM_FFI_CHECK_CUBIN_LAUNCHER_CUDA_ERROR(cuda_api::LoadLibrary(&library_, code));
      }
    
      ~CubinModule() {
@@ -127,7 +127,7 @@ Program Listing for File cubin_launcher.h
    class CubinKernel {
     public:
      CubinKernel(cuda_api::LibraryHandle library, const char* name) {
-       TVM_FFI_CHECK_CUDA_ERROR(cuda_api::GetKernel(&kernel_, library, name));
+       TVM_FFI_CHECK_CUBIN_LAUNCHER_CUDA_ERROR(cuda_api::GetKernel(&kernel_, library, name));
      }
    
      ~CubinKernel() = default;

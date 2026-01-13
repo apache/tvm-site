@@ -39,7 +39,7 @@
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
   <script src="../../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
 
-    <script src="../../_static/documentation_options.js?v=4f883a61"></script>
+    <script src="../../_static/documentation_options.js?v=46d77309"></script>
     <script src="../../_static/doctools.js?v=9bcbadda"></script>
     <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -49,14 +49,16 @@
     <script src="../../_static/collapsible-lists/js/CollapsibleLists.compressed.js?v=73120307"></script>
     <script src="../../_static/collapsible-lists/js/apply-collapsible-lists.js?v=660e4f45"></script>
     <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="../../_static/downloads/require.min.js"></script>
-    <script type="module" src="../../_static/downloads/mermaid.esm.min.mjs"></script>
-    <script type="module" src="../../_static/downloads/mermaid-layout-elk.esm.min.mjs"></script>
-    <script type="module">import mermaid from "../../_static/downloads/mermaid.esm.min.mjs";import elkLayouts from "../../_static/downloads/mermaid-layout-elk.esm.min.mjs";mermaid.registerLayoutLoaders(elkLayouts);mermaid.initialize({startOnLoad:false});</script>
     <script src="../../_static/downloads/d3.min.js"></script>
-    <script type="module">import mermaid from "../../_static/downloads/mermaid.esm.min.mjs";
+    <script type="module">import mermaid from "https://cdn.jsdelivr.net/npm/mermaid@11.12.1/dist/mermaid.esm.min.mjs";
 
-const defaultStyle = document.createElement('style');
-defaultStyle.textContent = `pre.mermaid {
+
+
+
+
+const initStyles = () => {
+    const defaultStyle = document.createElement('style');
+    defaultStyle.textContent = `pre.mermaid {
     /* Same as .mermaid-container > pre */
     display: block;
     width: 100%;
@@ -67,12 +69,11 @@ pre.mermaid > svg {
     height: 500px;
     width: 100%;
     max-width: 100% !important;
-}
-`;
-document.head.appendChild(defaultStyle);
+}`;
+    document.head.appendChild(defaultStyle);
 
-const fullscreenStyle = document.createElement('style');
-fullscreenStyle.textContent = `.mermaid-container {
+    const fullscreenStyle = document.createElement('style');
+    fullscreenStyle.textContent = `.mermaid-container {
     display: flex;
     flex-direction: row;
     width: 100%;
@@ -224,10 +225,32 @@ fullscreenStyle.textContent = `.mermaid-container {
 .mermaid-fullscreen-modal .mermaid-fullscreen-btn {
     display: none !important;
 }`;
-document.head.appendChild(fullscreenStyle);
+    document.head.appendChild(fullscreenStyle);
+}
 
 // Detect if page has dark background
 const isDarkTheme = () => {
+    // We use a set of heuristics:
+    // 1. Check for common dark mode classes or attributes
+    // 2. Check computed background color brightness
+    if (document.documentElement.classList.contains('dark') ||
+        document.documentElement.getAttribute('data-theme') === 'dark' ||
+        document.body.classList.contains('dark') ||
+        document.body.getAttribute('data-theme') === 'dark') {
+        // console.log("Dark theme detected via class/attribute");
+        return true;
+    }
+    if (document.documentElement.classList.contains('light') ||
+        document.documentElement.getAttribute('data-theme') === 'light' ||
+        document.body.classList.contains('light') ||
+        document.body.getAttribute('data-theme') === 'light') {
+        // console.log("Light theme detected via class/attribute");
+        return false;
+    }
+    if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        // console.log("Dark theme detected via prefers-color-scheme");
+        return true;
+    }
     const bgColor = window.getComputedStyle(document.body).backgroundColor;
     const match = bgColor.match(/rgb\((\d+),\s*(\d+),\s*(\d+)/);
     if (match) {
@@ -235,15 +258,45 @@ const isDarkTheme = () => {
         const g = parseInt(match[2]);
         const b = parseInt(match[3]);
         const brightness = (r * 299 + g * 587 + b * 114) / 1000;
+        // console.log("Background color brightness:", brightness);
         return brightness < 128;
     }
+    // console.log("No dark or light theme detected, defaulting to light theme");
     return false;
 };
 
-const load = async () => {
-    await mermaid.run();
+let darkTheme = isDarkTheme();
+let modal = null;
+let modalContent = null;
+let previousScrollOffset = [window.scrollX, window.scrollY];
 
-    const all_mermaids = document.querySelectorAll(".mermaid");
+const runMermaid = async (rerun) => {
+    console.log("Running mermaid diagrams, rerun =", rerun);
+    // clear all existing mermaid charts
+    let all_mermaids = document.querySelectorAll(".mermaid");
+
+    if (rerun) {
+        all_mermaids.forEach((el) => {
+            if(!el.hasAttribute("data-original-code")) {
+                // store original code
+                // console.log(`Storing original code for first run: `, el.innerHTML);
+                el.setAttribute('data-original-code', el.innerHTML);
+            }
+            if(el.getAttribute("data-processed") === "true") {
+                // remove and restore original
+                el.removeAttribute("data-processed");
+                // console.log(`Restoring original code for re-run: `, el.getAttribute('data-original-code'));
+                el.innerHTML = el.getAttribute('data-original-code');
+            } else {
+                // store original code
+                // console.log(`Storing original code for re-run: `, el.innerHTML);
+                el.setAttribute('data-original-code', el.innerHTML);
+            }
+        });
+        await mermaid.run();
+    }
+
+    all_mermaids = document.querySelectorAll(".mermaid");
     const mermaids_processed = document.querySelectorAll(".mermaid[data-processed='true']");
 
     if ("False" === "True") {
@@ -251,10 +304,10 @@ const load = async () => {
         if(mermaids_to_add_zoom > 0) {
             var svgs = d3.selectAll("");
             if(all_mermaids.length !== mermaids_processed.length) {
-                setTimeout(load, 200);
+                setTimeout(() => runMermaid(false), 200);
                 return;
             } else if(svgs.size() !== mermaids_to_add_zoom) {
-                setTimeout(load, 200);
+                setTimeout(() => runMermaid(false), 200);
                 return;
             } else {
                 svgs.each(function() {
@@ -270,16 +323,21 @@ const load = async () => {
         }
     } else if(all_mermaids.length !== mermaids_processed.length) {
         // Wait for mermaid to process all diagrams
-        setTimeout(load, 200);
+        setTimeout(() => runMermaid(false), 200);
         return;
     }
-
-    const darkTheme = isDarkTheme();
 
     // Stop here if not adding fullscreen capability
     if ("True" !== "True") return;
 
-    const modal = document.createElement('div');
+    if (modal !== null ) {
+        // Destroy existing modal
+        modal.remove();
+        modal = null;
+        modalContent = null;
+    }
+
+    modal = document.createElement('div');
     modal.className = 'mermaid-fullscreen-modal' + (darkTheme ? ' dark-theme' : '');
     modal.setAttribute('role', 'dialog');
     modal.setAttribute('aria-modal', 'true');
@@ -290,10 +348,8 @@ const load = async () => {
     `;
     document.body.appendChild(modal);
 
-    const modalContent = modal.querySelector('.mermaid-container-fullscreen');
+    modalContent = modal.querySelector('.mermaid-container-fullscreen');
     const closeBtn = modal.querySelector('.mermaid-fullscreen-close');
-
-    let previousScrollOffset = [window.scrollX, window.scrollY];
 
     const closeModal = () => {
         modal.classList.remove('active');
@@ -312,11 +368,14 @@ const load = async () => {
         }
     });
 
-    const allButtons = [];
-
     document.querySelectorAll('.mermaid').forEach((mermaidDiv) => {
         if (mermaidDiv.parentNode.classList.contains('mermaid-container') ||
             mermaidDiv.closest('.mermaid-fullscreen-modal')) {
+            // Already processed, adjust button class if needed
+            const existingBtn = mermaidDiv.parentNode.querySelector('.mermaid-fullscreen-btn');
+            if (existingBtn) {
+                existingBtn.className = 'mermaid-fullscreen-btn' + (darkTheme ? ' dark-theme' : '');
+            }
             return;
         }
 
@@ -374,53 +433,64 @@ const load = async () => {
             modal.classList.add('active');
             document.body.style.overflow = 'hidden';
         });
-
         container.appendChild(fullscreenBtn);
-        allButtons.push(fullscreenBtn);
-    });
-
-    // Update theme classes when theme changes
-    const updateTheme = () => {
-        const dark = isDarkTheme();
-        allButtons.forEach(btn => {
-            if (dark) {
-                btn.classList.add('dark-theme');
-            } else {
-                btn.classList.remove('dark-theme');
-            }
-        });
-        if (dark) {
-            modal.classList.add('dark-theme');
-            modalContent.classList.add('dark-theme');
-            closeBtn.classList.add('dark-theme');
-        } else {
-            modal.classList.remove('dark-theme');
-            modalContent.classList.remove('dark-theme');
-            closeBtn.classList.remove('dark-theme');
-        }
-    };
-
-    // Watch for theme changes
-    const observer = new MutationObserver(updateTheme);
-    observer.observe(document.documentElement, {
-        attributes: true,
-        attributeFilter: ['class', 'style', 'data-theme']
-    });
-    observer.observe(document.body, {
-        attributes: true,
-        attributeFilter: ['class', 'style']
     });
 };
 
-window.addEventListener("load", load);
-</script>
+const load = async () => {
+    initStyles();
+
+    await runMermaid(true);
+
+    const reRunIfThemeChanges = async () => {
+        const newDarkTheme = isDarkTheme();
+        if (newDarkTheme !== darkTheme) {
+            darkTheme = newDarkTheme;
+            console.log("Theme change detected, re-running mermaid with", darkTheme ? "dark" : "default", "theme");
+            await mermaid.initialize(
+                {...JSON.parse(
+                    `{"startOnLoad": false}`
+                ),
+                ...{ darkMode: darkTheme, theme: darkTheme ? 'dark' : 'default' },
+                }
+            );
+            await runMermaid(true);
+        }
+    };
+
+    // Update theme classes when theme changes
+    const themeObserver = new MutationObserver(reRunIfThemeChanges);
+    themeObserver.observe(document.documentElement, {
+        attributes: true,
+        attributeFilter: ['class', 'style', 'data-theme']
+    });
+    themeObserver.observe(document.body, {
+        attributes: true,
+        attributeFilter: ['class', 'style', 'data-theme']
+    });
+};
+
+
+
+
+
+console.log("Initializing mermaid with", darkTheme ? "dark" : "default", "theme");
+mermaid.initialize(
+    {...JSON.parse(
+        `{"startOnLoad": false}`
+    ),
+    ...{ darkMode: darkTheme, theme: darkTheme ? 'dark' : 'default' },
+    }
+);
+
+window.addEventListener("load", load);</script>
     <script>DOCUMENTATION_OPTIONS.pagename = '_modules/tvm_ffi/libinfo';</script>
     <link rel="icon" href="https://tvm.apache.org/images/logo/tvm-logo-square.png"/>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-    <meta name="docbuild:last-update" content="Jan 11, 2026"/>
+    <meta name="docbuild:last-update" content="Jan 13, 2026"/>
   </head>
   
   
@@ -544,7 +614,7 @@ window.addEventListener("load", load);
 <li class="toctree-l1"><a class="reference internal" href="../../concepts/any.html">Any and AnyView</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../concepts/object_and_class.html">Object and Class</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../concepts/tensor.html">Tensor and DLPack</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../concepts/func_module.html">Function, Exception and Module</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../concepts/func_module.html">Function and Module</a></li>
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">Packaging</span></p>
 <ul class="nav bd-sidenav">
@@ -764,6 +834,7 @@ window.addEventListener("load", load);
 <li class="toctree-l3"><a class="reference internal" href="../../reference/cpp/generated/function_c__env__api_8h_1ae24b47945440d1c0aca13af13bdaf916.html">Function TVMFFIEnvSetStream</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../reference/cpp/generated/function_c__env__api_8h_1a683191d48d3fdebc98b68f3b717baf6a.html">Function TVMFFIEnvTensorAlloc</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../reference/cpp/generated/function_c__api_8h_1a3479c144d165e717d1464b7b4df84897.html">Function TVMFFIErrorCreate</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../reference/cpp/generated/function_c__api_8h_1a4152d18590b7967eca4a528cbe33a84e.html">Function TVMFFIErrorCreateWithCauseAndExtraContext</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../reference/cpp/generated/function_c__api_8h_1a0ee6d2da9a72749561838bf503f62f93.html">Function TVMFFIErrorGetCellPtr</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../reference/cpp/generated/function_c__api_8h_1a268d0b5dc89146020c09f77fa0eb8f67.html">Function TVMFFIErrorMoveFromRaised</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../reference/cpp/generated/function_c__api_8h_1af108ca4da596c634b4cb9e82c8bec1ce.html">Function TVMFFIErrorSetRaised</a></li>
@@ -812,16 +883,15 @@ window.addEventListener("load", load);
 <li class="toctree-l3"><a class="reference internal" href="../../reference/cpp/generated/define_error_8h_1a288653475dd42db1c715a11ab2972578.html">Define TVM_FFI_ALWAYS_LOG_BEFORE_THROW</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../reference/cpp/generated/define_error_8h_1a7205bbaef1c45e57f939af6deefb6449.html">Define TVM_FFI_BACKTRACE_ON_SEGFAULT</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../reference/cpp/generated/define_error_8h_1ad4674e1cb9c051f47127e5331a4bcadc.html">Define TVM_FFI_CHECK</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../reference/cpp/generated/define_unified__api_8h_1a8b7e871d0d7206eacc60705f11827ee1.html">Define TVM_FFI_CHECK_CUDA_ERROR</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../reference/cpp/generated/define_unified__api_8h_1a6dcf7c0dec497922c66282f1162ee081.html">Define TVM_FFI_CHECK_CUBIN_LAUNCHER_CUDA_ERROR</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../reference/cpp/generated/define_cuda_2base_8h_1a8b7e871d0d7206eacc60705f11827ee1.html">Define TVM_FFI_CHECK_CUDA_ERROR</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../reference/cpp/generated/define_error_8h_1a64c939463f90816ffc2b70bc89ea3e43.html">Define TVM_FFI_CHECK_FUNC</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../reference/cpp/generated/define_function_8h_1a14328d95ccda4b1691b9874645aef4bd.html">Define TVM_FFI_CHECK_SAFE_CALL</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../reference/cpp/generated/define_base__details_8h_1ab8ba1b681559e45ffc90562cafd77778.html">Define TVM_FFI_CLEAR_PTR_PADDING_IN_FFI_ANY</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../reference/cpp/generated/define_unified__api_8h_1a9e03c2471638d2243c3c3b79d800efe1.html">Define TVM_FFI_CUBIN_LAUNCHER_USE_DRIVER_API</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../reference/cpp/generated/define_object_8h_1a438ff7ee1fc503216d35e156081280c0.html">Define TVM_FFI_DECLARE_OBJECT_INFO</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../reference/cpp/generated/define_object_8h_1ac593f4065568c8f61cf38d00d585befd.html">Define TVM_FFI_DECLARE_OBJECT_INFO_FINAL</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../reference/cpp/generated/define_object_8h_1a9d1c42071de0440f70c7bb5e0bd0f325.html">Define TVM_FFI_DECLARE_OBJECT_INFO_PREDEFINED_TYPE_KEY</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../reference/cpp/generated/define_object_8h_1a6ad2a76d53c8c695743f7a275c8c0523.html">Define TVM_FFI_DECLARE_OBJECT_INFO_STATIC</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../reference/cpp/generated/define_base__details_8h_1afab300084ff0fb7a60123ef4d70d1d70.html">Define TVM_FFI_DEFINE_DEFAULT_COPY_MOVE_AND_ASSIGN</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../reference/cpp/generated/define_object_8h_1a4ac33631a9b51877808ec7edf010f0d2.html">Define TVM_FFI_DEFINE_OBJECT_REF_METHODS_NOTNULLABLE</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../reference/cpp/generated/define_object_8h_1a0fc0cc2d8f4318bc41a896c117e8a15c.html">Define TVM_FFI_DEFINE_OBJECT_REF_METHODS_NULLABLE</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../reference/cpp/generated/define_function_8h_1a78c6d17c063fba9ca07175f150838046.html">Define TVM_FFI_DLL_EXPORT_INCLUDE_METADATA</a></li>
@@ -842,11 +912,8 @@ window.addEventListener("load", load);
 <li class="toctree-l3"><a class="reference internal" href="../../reference/cpp/generated/define_endian_8h_1a2ebd9542b313b3b45b2892f2b3d4f26d.html">Define TVM_FFI_IO_NO_ENDIAN_SWAP</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../reference/cpp/generated/define_endian_8h_1a912dbc7a68913612c723f877acaa8105.html">Define TVM_FFI_IO_USE_LITTLE_ENDIAN</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../reference/cpp/generated/define_error_8h_1a927d4ae2bbf7a08723643993e780f183.html">Define TVM_FFI_LOG_AND_THROW</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../reference/cpp/generated/define_base__details_8h_1a69dc837a7c41813934054947f34e1760.html">Define TVM_FFI_LOG_EXCEPTION_CALL_BEGIN</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../reference/cpp/generated/define_base__details_8h_1afbd6d8285dc677306e35a0261b0df4bb.html">Define TVM_FFI_LOG_EXCEPTION_CALL_END</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../reference/cpp/generated/define_function_8h_1a10bd932564c8e71a3978a061fbb82360.html">Define TVM_FFI_SAFE_CALL_BEGIN</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../reference/cpp/generated/define_function_8h_1ae3c016c4bf383aa205b4485edd7ca17c.html">Define TVM_FFI_SAFE_CALL_END</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../../reference/cpp/generated/define_base__details_8h_1ad96d0c78609aaf2660689e5408ddc40b.html">Define TVM_FFI_STATIC_INIT_BLOCK</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../reference/cpp/generated/define_error_8h_1a8df4e0ff8a6195274c6f7c031a4f0db4.html">Define TVM_FFI_THROW</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../reference/cpp/generated/define_error_8h_1a386641a33bb14802830471a2442ddd7d.html">Define TVM_FFI_USE_LIBBACKTRACE</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../../reference/cpp/generated/define_c__api_8h_1a4241f838270253b885e1de02534bc273.html">Define TVM_FFI_VERSION_MAJOR</a></li>
@@ -1376,7 +1443,7 @@ By Apache TVM FFI contributors
   
   <div class="footer-item">
     <p class="last-updated">
-  Last updated on Jan 11, 2026.
+  Last updated on Jan 13, 2026.
   <br/>
 </p>
   </div>

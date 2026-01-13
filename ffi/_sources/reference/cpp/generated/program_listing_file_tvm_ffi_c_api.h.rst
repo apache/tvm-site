@@ -71,7 +71,7 @@ Program Listing for File c_api.h
    // NOLINTBEGIN(modernize-macro-to-enum)
    #define TVM_FFI_VERSION_MAJOR 0
    #define TVM_FFI_VERSION_MINOR 1
-   #define TVM_FFI_VERSION_PATCH 8
+   #define TVM_FFI_VERSION_PATCH 9
    // NOLINTEND(modernize-macro-to-enum)
    
    #ifdef __cplusplus
@@ -84,6 +84,7 @@ Program Listing for File c_api.h
      uint32_t patch;
    } TVMFFIVersion;
    
+   // [TVMFFITypeIndex.begin]
    #ifdef __cplusplus
    enum TVMFFITypeIndex : int32_t {
    #else
@@ -140,6 +141,7 @@ Program Listing for File c_api.h
    #else
    } TVMFFITypeIndex;
    #endif
+   // [TVMFFITypeIndex.end]
    
    typedef void* TVMFFIObjectHandle;
    
@@ -158,6 +160,7 @@ Program Listing for File c_api.h
    } TVMFFIObjectDeleterFlagBitMask;
    #endif
    
+   // [TVMFFIObject.begin]
    typedef struct {
      uint64_t combined_ref_count;
      int32_t type_index;
@@ -171,7 +174,9 @@ Program Listing for File c_api.h
      };
    #endif
    } TVMFFIObject;
+   // [TVMFFIObject.end]
    
+   // [TVMFFIAny.begin]
    typedef struct {
      int32_t type_index;
    #if !defined(TVM_FFI_DOXYGEN_MODE)
@@ -198,7 +203,9 @@ Program Listing for File c_api.h
      };
    #endif
    } TVMFFIAny;
+   // [TVMFFIAny.end]
    
+   // [TVMFFIByteArray.begin]
    typedef struct {
      const char* data;
      size_t size;
@@ -208,6 +215,7 @@ Program Listing for File c_api.h
      const int64_t* data;
      size_t size;
    } TVMFFIShapeCell;
+   // [TVMFFIByteArray.end]
    
    #ifdef __cplusplus
    enum TVMFFIBacktraceUpdateMode : int32_t {
@@ -222,21 +230,29 @@ Program Listing for File c_api.h
    } TVMFFIBacktraceUpdateMode;
    #endif
    
+   // [TVMFFIErrorCell.begin]
    typedef struct {
      TVMFFIByteArray kind;
      TVMFFIByteArray message;
      TVMFFIByteArray backtrace;
      void (*update_backtrace)(TVMFFIObjectHandle self, const TVMFFIByteArray* backtrace,
                               int32_t update_mode);
+     TVMFFIObjectHandle cause_chain;
+     TVMFFIObjectHandle extra_context;
    } TVMFFIErrorCell;
+   // [TVMFFIErrorCell.end]
    
+   // [TVMFFISafeCallType.begin]
    typedef int (*TVMFFISafeCallType)(void* handle, const TVMFFIAny* args, int32_t num_args,
                                      TVMFFIAny* result);
+   // [TVMFFISafeCallType.end]
    
+   // [TVMFFIFunctionCell.begin]
    typedef struct {
      TVMFFISafeCallType safe_call;
      void* cpp_call;
    } TVMFFIFunctionCell;
+   // [TVMFFIFunctionCell.end]
    
    typedef struct {
      void* handle;
@@ -283,6 +299,10 @@ Program Listing for File c_api.h
    
    TVM_FFI_DLL int TVMFFIErrorCreate(const TVMFFIByteArray* kind, const TVMFFIByteArray* message,
                                      const TVMFFIByteArray* backtrace, TVMFFIObjectHandle* out);
+   
+   TVM_FFI_DLL int TVMFFIErrorCreateWithCauseAndExtraContext(
+       const TVMFFIByteArray* kind, const TVMFFIByteArray* message, const TVMFFIByteArray* backtrace,
+       TVMFFIObjectHandle cause_chain, TVMFFIObjectHandle extra_context, TVMFFIObjectHandle* out);
    
    //------------------------------------------------------------
    // Section: DLPack support APIs

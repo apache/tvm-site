@@ -31,8 +31,22 @@ Program Listing for File base.h
    #ifndef TVM_FFI_EXTRA_CUDA_BASE_H_
    #define TVM_FFI_EXTRA_CUDA_BASE_H_
    
+   #include <cuda_runtime.h>
+   #include <tvm/ffi/error.h>
+   
    namespace tvm {
    namespace ffi {
+   
+   #define TVM_FFI_CHECK_CUDA_ERROR(stmt)                                              \
+     do {                                                                              \
+       cudaError_t __err = (stmt);                                                     \
+       if (__err != cudaSuccess) {                                                     \
+         const char* __err_name = cudaGetErrorName(__err);                             \
+         const char* __err_str = cudaGetErrorString(__err);                            \
+         TVM_FFI_THROW(RuntimeError) << "CUDA Runtime Error: " << __err_name << " ("   \
+                                     << static_cast<int>(__err) << "): " << __err_str; \
+       }                                                                               \
+     } while (0)
    
    struct dim3 {
      unsigned int x;

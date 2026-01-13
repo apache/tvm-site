@@ -31,6 +31,14 @@ Definition (``tvm/ffi/extra/cuda/base.h``)
 
 
 
+Includes
+--------
+
+
+- ``cuda_runtime.h``
+
+- ``tvm/ffi/error.h`` (:ref:`file_tvm_ffi_error.h`)
+
 
 
 Included By
@@ -60,4 +68,11 @@ Classes
 
 
 - :ref:`exhale_struct_structtvm_1_1ffi_1_1dim3`
+
+
+Defines
+-------
+
+
+- :ref:`exhale_define_cuda_2base_8h_1a8b7e871d0d7206eacc60705f11827ee1`
 

@@ -44,6 +44,7 @@ Program Listing for File error.h
    #include <cstring>
    #include <iostream>
    #include <memory>
+   #include <optional>
    #include <sstream>
    #include <string>
    #include <utility>
@@ -68,6 +69,20 @@ Program Listing for File error.h
    
    class ErrorObj : public Object, public TVMFFIErrorCell {
     public:
+     ErrorObj() {
+       this->cause_chain = nullptr;
+       this->extra_context = nullptr;
+     }
+   
+     ~ErrorObj() {
+       if (this->cause_chain != nullptr) {
+         details::ObjectUnsafe::DecRefObjectHandle(this->cause_chain);
+       }
+       if (this->extra_context != nullptr) {
+         details::ObjectUnsafe::DecRefObjectHandle(this->extra_context);
+       }
+     }
+   
      static constexpr const int32_t _type_index = TypeIndex::kTVMFFIError;
      TVM_FFI_DECLARE_OBJECT_INFO_STATIC(StaticTypeKey::kTVMFFIError, ErrorObj, Object);
    };
@@ -112,6 +127,21 @@ Program Listing for File error.h
                                                      std::move(backtrace));
      }
    
+     Error(std::string kind, std::string message, std::string backtrace,
+           std::optional<Error> cause_chain, std::optional<ObjectRef> extra_context) {
+       ObjectPtr<ErrorObj> error_obj = make_object<details::ErrorObjFromStd>(
+           std::move(kind), std::move(message), std::move(backtrace));
+       if (cause_chain.has_value()) {
+         error_obj->cause_chain =
+             details::ObjectUnsafe::MoveObjectRefToTVMFFIObjectPtr(*std::move(cause_chain));
+       }
+       if (extra_context.has_value()) {
+         error_obj->extra_context =
+             details::ObjectUnsafe::MoveObjectRefToTVMFFIObjectPtr(*std::move(extra_context));
+       }
+       data_ = std::move(error_obj);
+     }
+   
      Error(std::string kind, std::string message, const TVMFFIByteArray* backtrace)
          : Error(std::move(kind), std::move(message), std::string(backtrace->data, backtrace->size)) {}
    
@@ -123,6 +153,28 @@ Program Listing for File error.h
      std::string message() const {
        ErrorObj* obj = static_cast<ErrorObj*>(data_.get());
        return std::string(obj->message.data, obj->message.size);
+     }
+   
+     std::optional<Error> cause_chain() const {
+       ErrorObj* obj = static_cast<ErrorObj*>(data_.get());
+       if (obj->cause_chain != nullptr) {
+         return details::ObjectUnsafe::ObjectRefFromObjectPtr<Error>(
+             details::ObjectUnsafe::ObjectPtrFromUnowned<ErrorObj>(
+                 static_cast<Object*>(obj->cause_chain)));
+       } else {
+         return std::nullopt;
+       }
+     }
+   
+     std::optional<ObjectRef> extra_context() const {
+       ErrorObj* obj = static_cast<ErrorObj*>(data_.get());
+       if (obj->extra_context != nullptr) {
+         return details::ObjectUnsafe::ObjectRefFromObjectPtr<ObjectRef>(
+             details::ObjectUnsafe::ObjectPtrFromUnowned<Object>(
+                 static_cast<Object*>(obj->extra_context)));
+       } else {
+         return std::nullopt;
+       }
      }
    
      std::string backtrace() const {

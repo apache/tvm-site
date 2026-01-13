@@ -89,7 +89,7 @@ Defines
 
 - :ref:`exhale_define_unified__api_8h_1a160bb722922e17fa17c938fcf8561732`
 
-- :ref:`exhale_define_unified__api_8h_1a8b7e871d0d7206eacc60705f11827ee1`
+- :ref:`exhale_define_unified__api_8h_1a6dcf7c0dec497922c66282f1162ee081`
 
 - :ref:`exhale_define_unified__api_8h_1a9e03c2471638d2243c3c3b79d800efe1`
 
