@@ -1,5 +1,5 @@
 var searchData=
 [
-  ['boundmaptype_7671',['BoundMapType',['../classtvm_1_1arith_1_1ConstIntBoundAnalyzer.html#a14736850005ba70395b09c2fb9113770',1,'tvm::arith::ConstIntBoundAnalyzer']]],
-  ['bufferaxis_7672',['BufferAxis',['../namespacetvm_1_1tir.html#a513e456de71660e7af137e15549998f1',1,'tvm::tir']]]
+  ['boundmaptype_7672',['BoundMapType',['../classtvm_1_1arith_1_1ConstIntBoundAnalyzer.html#a14736850005ba70395b09c2fb9113770',1,'tvm::arith::ConstIntBoundAnalyzer']]],
+  ['bufferaxis_7673',['BufferAxis',['../namespacetvm_1_1tir.html#a513e456de71660e7af137e15549998f1',1,'tvm::tir']]]
 ];

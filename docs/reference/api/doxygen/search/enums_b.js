@@ -1,6 +1,6 @@
 var searchData=
 [
-  ['placementspeckind_7806',['PlacementSpecKind',['../namespacetvm_1_1relax_1_1distributed.html#ace74b0da0d9500ab6811d67b1b98ca78',1,'tvm::relax::distributed']]],
-  ['pooltype_7807',['PoolType',['../namespacetvm_1_1topi_1_1nn.html#a3ffa0974d8cdcd5b8ca7afb3cfbaf53c',1,'tvm::topi::nn']]],
-  ['proofstrength_7808',['ProofStrength',['../namespacetvm_1_1arith.html#a038b0205b1c66d27c9dff7703e359339',1,'tvm::arith']]]
+  ['placementspeckind_7808',['PlacementSpecKind',['../namespacetvm_1_1relax_1_1distributed.html#ace74b0da0d9500ab6811d67b1b98ca78',1,'tvm::relax::distributed']]],
+  ['pooltype_7809',['PoolType',['../namespacetvm_1_1topi_1_1nn.html#a3ffa0974d8cdcd5b8ca7afb3cfbaf53c',1,'tvm::topi::nn']]],
+  ['proofstrength_7810',['ProofStrength',['../namespacetvm_1_1arith.html#a038b0205b1c66d27c9dff7703e359339',1,'tvm::arith']]]
 ];
