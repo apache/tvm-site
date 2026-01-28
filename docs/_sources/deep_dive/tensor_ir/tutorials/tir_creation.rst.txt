@@ -74,7 +74,7 @@ format of the ir_module and in TVMScript:
             for i in range(128):
                 for j in range(128):
                     for k in range(128):
-                        with T.block("Y"):
+                        with T.sblock("Y"):
                             vi = T.axis.spatial(128, i)
                             vj = T.axis.spatial(128, j)
                             vk = T.axis.reduce(128, k)
@@ -85,7 +85,7 @@ format of the ir_module and in TVMScript:
                             Y[vi, vj] = Y[vi, vj] + A[vi, vk] * B[vk, vj]
             for i in range(128):
                 for j in range(128):
-                    with T.block("C"):
+                    with T.sblock("C"):
                         vi = T.axis.spatial(128, i)
                         vj = T.axis.spatial(128, j)
                         T.reads(Y[vi, vj])
@@ -128,13 +128,13 @@ streamline the code:
         ):
             Y = T.alloc_buffer((128, 128), dtype="float32")
             for i, j, k in T.grid(128, 128, 128):
-                with T.block("Y"):
+                with T.sblock("Y"):
                     vi, vj, vk = T.axis.remap("SSR", [i, j, k])
                     with T.init():
                         Y[vi, vj] = T.float32(0)
                     Y[vi, vj] = Y[vi, vj] + A[vi, vk] * B[vk, vj]
             for i, j in T.grid(128, 128):
-                with T.block("C"):
+                with T.sblock("C"):
                     vi, vj = T.axis.remap("SS", [i, j])
                     C[vi, vj] = T.max(Y[vi, vj], T.float32(0))
 
@@ -199,13 +199,13 @@ be used to ascertain the shape and data type of a TensorIR.
         ):
             Y = T.alloc_buffer((M, N), dtype)
             for i, j, k in T.grid(M, N, K):
-                with T.block("Y"):
+                with T.sblock("Y"):
                     vi, vj, vk = T.axis.remap("SSR", [i, j, k])
                     with T.init():
                         Y[vi, vj] = T.cast(T.float32(0), dtype)
                     Y[vi, vj] = Y[vi, vj] + A[vi, vk] * B[vk, vj]
             for i, j in T.grid(M, N):
-                with T.block("C"):
+                with T.sblock("C"):
                     vi, vj = T.axis.remap("SS", [i, j])
                     C[vi, vj] = T.max(Y[vi, vj], T.cast(T.float32(0), dtype))
 
@@ -269,13 +269,13 @@ be used to ascertain the shape and data type of a TensorIR.
             C = T.match_buffer(c, [M, N], dtype)
             Y = T.alloc_buffer((M, N), dtype)
             for i, j, k in T.grid(M, N, K):
-                with T.block("Y"):
+                with T.sblock("Y"):
                     vi, vj, vk = T.axis.remap("SSR", [i, j, k])
                     with T.init():
                         Y[vi, vj] = T.cast(T.float32(0), dtype)
                     Y[vi, vj] = Y[vi, vj] + A[vi, vk] * B[vk, vj]
             for i, j in T.grid(M, N):
-                with T.block("C"):
+                with T.sblock("C"):
                     vi, vj = T.axis.remap("SS", [i, j])
                     C[vi, vj] = T.max(Y[vi, vj], T.cast(T.float32(0), dtype))
 
@@ -319,17 +319,17 @@ Now let's check the runtime dynamic shape inference:
 
  .. code-block:: none
 
-    [[0.94102025 0.9802991  0.71650803 0.90770537]
-     [0.26851422 0.29155475 0.23954846 0.24225484]
-     [1.2050314  0.9449645  1.6258419  1.6778569 ]
-     [1.266546   1.0065833  1.4148128  1.476331  ]]
-    [[29.29313  28.159803 29.310577 ... 28.741402 29.603825 33.96319 ]
-     [32.497948 31.912739 31.70491  ... 31.88659  32.619377 35.68556 ]
-     [31.784409 31.404852 32.073505 ... 32.927742 34.745808 36.23109 ]
+    [[1.0554758 1.1033988 1.9701262 1.4377599]
+     [1.025584  1.2953446 2.0098648 1.6306558]
+     [1.0037329 1.2826216 2.2140417 1.8100314]
+     [0.7138306 0.9227425 1.3477374 1.0986937]]
+    [[30.44304  31.17539  32.067955 ... 30.40066  31.204016 31.95298 ]
+     [30.94944  32.40943  31.55028  ... 30.164036 31.210566 30.570612]
+     [32.801136 30.738235 31.547735 ... 31.705196 28.59875  32.98267 ]
      ...
-     [33.618023 32.936256 33.673534 ... 32.40361  33.098537 37.075302]
-     [33.81231  32.51492  31.550303 ... 32.625458 34.271187 36.239388]
-     [32.260643 30.68189  31.657677 ... 31.896456 32.26127  34.803432]]
+     [32.956047 33.23737  32.912292 ... 30.26199  29.74612  32.743633]
+     [32.942257 34.2295   32.18895  ... 32.604576 32.11011  30.557291]
+     [33.787636 33.71487  33.8534   ... 32.444786 32.4468   33.79846 ]]
 
 
 
@@ -418,10 +418,10 @@ and one output parameter **C**.
         @T.prim_func
         def mm_relu(A: T.Buffer((128, 128), "float32"), B: T.Buffer((128, 128), "float32"), C: T.Buffer((128, 128), "float32")):
             T.func_attr({"tir.noalias": True})
-            # with T.block("root"):
+            # with T.sblock("root"):
             Y = T.alloc_buffer((128, 128))
             for i, j, k in T.grid(128, 128, 128):
-                with T.block("Y"):
+                with T.sblock("Y"):
                     v_i, v_j, v_k = T.axis.remap("SSR", [i, j, k])
                     T.reads(A[v_i, v_k], B[v_k, v_j])
                     T.writes(Y[v_i, v_j])
@@ -429,7 +429,7 @@ and one output parameter **C**.
                         Y[v_i, v_j] = T.float32(0.0)
                     Y[v_i, v_j] = Y[v_i, v_j] + A[v_i, v_k] * B[v_k, v_j]
             for i, j in T.grid(128, 128):
-                with T.block("C"):
+                with T.sblock("C"):
                     v_i, v_j = T.axis.remap("SS", [i, j])
                     T.reads(Y[v_i, v_j])
                     T.writes(C[v_i, v_j])
@@ -483,10 +483,10 @@ is that we need to specify the shape of the input tensors as symbolic variables.
             k = T.int32()
             B = T.match_buffer(var_B, (k, n))
             C = T.match_buffer(var_C, (m, n))
-            # with T.block("root"):
+            # with T.sblock("root"):
             Y = T.alloc_buffer((m, n))
             for i, j, k_1 in T.grid(m, n, k):
-                with T.block("Y"):
+                with T.sblock("Y"):
                     v_i, v_j, v_k = T.axis.remap("SSR", [i, j, k_1])
                     T.reads(A[v_i, v_k], B[v_k, v_j])
                     T.writes(Y[v_i, v_j])
@@ -494,7 +494,7 @@ is that we need to specify the shape of the input tensors as symbolic variables.
                         Y[v_i, v_j] = T.float32(0.0)
                     Y[v_i, v_j] = Y[v_i, v_j] + A[v_i, v_k] * B[v_k, v_j]
             for i, j in T.grid(m, n):
-                with T.block("C"):
+                with T.sblock("C"):
                     v_i, v_j = T.axis.remap("SS", [i, j])
                     T.reads(Y[v_i, v_j])
                     T.writes(C[v_i, v_j])

@@ -192,10 +192,21 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../how_to/dev/index.html">Development Guides</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Deep Dive</span></p>
-<ul>
+<ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="../../../arch/index.html">Design and Architecture</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../tensor_ir/index.html">TensorIR</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../index.html">Relax</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../index.html">Relax</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../abstraction.html">Graph Abstraction for ML Models</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../learning.html">Understand Relax Abstraction</a></li>
+<li class="toctree-l2"><a class="reference internal" href="relax_creation.html">Relax Creation</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Transformation</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#apply-transformations">Apply transformations</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#custom-passes">Custom Passes</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#summary">Summary</a></li>
+</ul>
+</li>
+</ul>
+</li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">API Reference</span></p>
 <ul>
@@ -377,9 +388,9 @@ class Module:
         n = T.int64()
         matmul = T.match_buffer(var_matmul, (n, T.int64(128)))
         T_add = T.match_buffer(var_T_add, (n, T.int64(128)))
-        # with T.block(&quot;root&quot;):
+        # with T.sblock(&quot;root&quot;):
         for ax0, ax1 in T.grid(n, T.int64(128)):
-            with T.block(&quot;T_add&quot;):
+            with T.sblock(&quot;T_add&quot;):
                 v_ax0, v_ax1 = T.axis.remap(&quot;SS&quot;, [ax0, ax1])
                 T.reads(matmul[v_ax0, v_ax1], fc1_bias[v_ax1])
                 T.writes(T_add[v_ax0, v_ax1])
@@ -391,9 +402,9 @@ class Module:
         n = T.int64()
         matmul1 = T.match_buffer(var_matmul1, (n, T.int64(10)))
         T_add = T.match_buffer(var_T_add, (n, T.int64(10)))
-        # with T.block(&quot;root&quot;):
+        # with T.sblock(&quot;root&quot;):
         for ax0, ax1 in T.grid(n, T.int64(10)):
-            with T.block(&quot;T_add&quot;):
+            with T.sblock(&quot;T_add&quot;):
                 v_ax0, v_ax1 = T.axis.remap(&quot;SS&quot;, [ax0, ax1])
                 T.reads(matmul1[v_ax0, v_ax1], fc2_bias[v_ax1])
                 T.writes(T_add[v_ax0, v_ax1])
@@ -405,9 +416,9 @@ class Module:
         n = T.int64()
         x = T.match_buffer(var_x, (n, T.int64(784)))
         matmul = T.match_buffer(var_matmul, (n, T.int64(128)))
-        # with T.block(&quot;root&quot;):
+        # with T.sblock(&quot;root&quot;):
         for i0, i1, k in T.grid(n, T.int64(128), T.int64(784)):
-            with T.block(&quot;matmul&quot;):
+            with T.sblock(&quot;matmul&quot;):
                 v_i0, v_i1, v_k = T.axis.remap(&quot;SSR&quot;, [i0, i1, k])
                 T.reads(x[v_i0, v_k], permute_dims[v_k, v_i1])
                 T.writes(matmul[v_i0, v_i1])
@@ -421,9 +432,9 @@ class Module:
         n = T.int64()
         relu = T.match_buffer(var_relu, (n, T.int64(128)))
         matmul = T.match_buffer(var_matmul, (n, T.int64(10)))
-        # with T.block(&quot;root&quot;):
+        # with T.sblock(&quot;root&quot;):
         for i0, i1, k in T.grid(n, T.int64(10), T.int64(128)):
-            with T.block(&quot;matmul&quot;):
+            with T.sblock(&quot;matmul&quot;):
                 v_i0, v_i1, v_k = T.axis.remap(&quot;SSR&quot;, [i0, i1, k])
                 T.reads(relu[v_i0, v_k], permute_dims1[v_k, v_i1])
                 T.writes(matmul[v_i0, v_i1])
@@ -437,9 +448,9 @@ class Module:
         n = T.int64()
         add = T.match_buffer(var_add, (n, T.int64(128)))
         compute = T.match_buffer(var_compute, (n, T.int64(128)))
-        # with T.block(&quot;root&quot;):
+        # with T.sblock(&quot;root&quot;):
         for i0, i1 in T.grid(n, T.int64(128)):
-            with T.block(&quot;compute&quot;):
+            with T.sblock(&quot;compute&quot;):
                 v_i0, v_i1 = T.axis.remap(&quot;SS&quot;, [i0, i1])
                 T.reads(add[v_i0, v_i1])
                 T.writes(compute[v_i0, v_i1])
@@ -448,9 +459,9 @@ class Module:
     @T.prim_func(private=True)
     def transpose(fc1_weight: T.Buffer((T.int64(128), T.int64(784)), &quot;float32&quot;), T_transpose: T.Buffer((T.int64(784), T.int64(128)), &quot;float32&quot;)):
         T.func_attr({&quot;tir.noalias&quot;: True})
-        # with T.block(&quot;root&quot;):
+        # with T.sblock(&quot;root&quot;):
         for ax0, ax1 in T.grid(T.int64(784), T.int64(128)):
-            with T.block(&quot;T_transpose&quot;):
+            with T.sblock(&quot;T_transpose&quot;):
                 v_ax0, v_ax1 = T.axis.remap(&quot;SS&quot;, [ax0, ax1])
                 T.reads(fc1_weight[v_ax1, v_ax0])
                 T.writes(T_transpose[v_ax0, v_ax1])
@@ -459,9 +470,9 @@ class Module:
     @T.prim_func(private=True)
     def transpose1(fc2_weight: T.Buffer((T.int64(10), T.int64(128)), &quot;float32&quot;), T_transpose: T.Buffer((T.int64(128), T.int64(10)), &quot;float32&quot;)):
         T.func_attr({&quot;tir.noalias&quot;: True})
-        # with T.block(&quot;root&quot;):
+        # with T.sblock(&quot;root&quot;):
         for ax0, ax1 in T.grid(T.int64(128), T.int64(10)):
-            with T.block(&quot;T_transpose&quot;):
+            with T.sblock(&quot;T_transpose&quot;):
                 v_ax0, v_ax1 = T.axis.remap(&quot;SS&quot;, [ax0, ax1])
                 T.reads(fc2_weight[v_ax1, v_ax0])
                 T.writes(T_transpose[v_ax0, v_ax1])
@@ -512,10 +523,10 @@ class Module:
         n = T.int64()
         relu = T.match_buffer(p_relu, (n, T.int64(128)))
         T_add_intermediate = T.match_buffer(p_output0, (n, T.int64(10)))
-        # with T.block(&quot;root&quot;):
+        # with T.sblock(&quot;root&quot;):
         matmul_intermediate = T.alloc_buffer((n, T.int64(10)))
         for i0, i1, k in T.grid(n, T.int64(10), T.int64(128)):
-            with T.block(&quot;matmul&quot;):
+            with T.sblock(&quot;matmul&quot;):
                 v_i0, v_i1, v_k = T.axis.remap(&quot;SSR&quot;, [i0, i1, k])
                 T.reads(relu[v_i0, v_k], permute_dims1[v_k, v_i1])
                 T.writes(matmul_intermediate[v_i0, v_i1])
@@ -523,7 +534,7 @@ class Module:
                     matmul_intermediate[v_i0, v_i1] = T.float32(0.0)
                 matmul_intermediate[v_i0, v_i1] = matmul_intermediate[v_i0, v_i1] + relu[v_i0, v_k] * permute_dims1[v_k, v_i1]
         for ax0, ax1 in T.grid(n, T.int64(10)):
-            with T.block(&quot;T_add&quot;):
+            with T.sblock(&quot;T_add&quot;):
                 v_ax0, v_ax1 = T.axis.remap(&quot;SS&quot;, [ax0, ax1])
                 T.reads(matmul_intermediate[v_ax0, v_ax1], fc2_bias[v_ax1])
                 T.writes(T_add_intermediate[v_ax0, v_ax1])
@@ -535,11 +546,11 @@ class Module:
         n = T.int64()
         x = T.match_buffer(p_x, (n, T.int64(784)))
         compute_intermediate = T.match_buffer(p_output0, (n, T.int64(128)))
-        # with T.block(&quot;root&quot;):
+        # with T.sblock(&quot;root&quot;):
         matmul_intermediate = T.alloc_buffer((n, T.int64(128)))
         T_add_intermediate = T.alloc_buffer((n, T.int64(128)))
         for i0, i1, k in T.grid(n, T.int64(128), T.int64(784)):
-            with T.block(&quot;matmul&quot;):
+            with T.sblock(&quot;matmul&quot;):
                 v_i0, v_i1, v_k = T.axis.remap(&quot;SSR&quot;, [i0, i1, k])
                 T.reads(x[v_i0, v_k], permute_dims[v_k, v_i1])
                 T.writes(matmul_intermediate[v_i0, v_i1])
@@ -547,13 +558,13 @@ class Module:
                     matmul_intermediate[v_i0, v_i1] = T.float32(0.0)
                 matmul_intermediate[v_i0, v_i1] = matmul_intermediate[v_i0, v_i1] + x[v_i0, v_k] * permute_dims[v_k, v_i1]
         for ax0, ax1 in T.grid(n, T.int64(128)):
-            with T.block(&quot;T_add&quot;):
+            with T.sblock(&quot;T_add&quot;):
                 v_ax0, v_ax1 = T.axis.remap(&quot;SS&quot;, [ax0, ax1])
                 T.reads(matmul_intermediate[v_ax0, v_ax1], fc1_bias[v_ax1])
                 T.writes(T_add_intermediate[v_ax0, v_ax1])
                 T_add_intermediate[v_ax0, v_ax1] = matmul_intermediate[v_ax0, v_ax1] + fc1_bias[v_ax1]
         for i0, i1 in T.grid(n, T.int64(128)):
-            with T.block(&quot;compute&quot;):
+            with T.sblock(&quot;compute&quot;):
                 v_i0, v_i1 = T.axis.remap(&quot;SS&quot;, [i0, i1])
                 T.reads(T_add_intermediate[v_i0, v_i1])
                 T.writes(compute_intermediate[v_i0, v_i1])
@@ -562,9 +573,9 @@ class Module:
     @T.prim_func(private=True)
     def transpose(fc1_weight: T.Buffer((T.int64(128), T.int64(784)), &quot;float32&quot;), T_transpose: T.Buffer((T.int64(784), T.int64(128)), &quot;float32&quot;)):
         T.func_attr({&quot;op_pattern&quot;: 2, &quot;tir.noalias&quot;: True})
-        # with T.block(&quot;root&quot;):
+        # with T.sblock(&quot;root&quot;):
         for ax0, ax1 in T.grid(T.int64(784), T.int64(128)):
-            with T.block(&quot;T_transpose&quot;):
+            with T.sblock(&quot;T_transpose&quot;):
                 v_ax0, v_ax1 = T.axis.remap(&quot;SS&quot;, [ax0, ax1])
                 T.reads(fc1_weight[v_ax1, v_ax0])
                 T.writes(T_transpose[v_ax0, v_ax1])
@@ -573,9 +584,9 @@ class Module:
     @T.prim_func(private=True)
     def transpose1(fc2_weight: T.Buffer((T.int64(10), T.int64(128)), &quot;float32&quot;), T_transpose: T.Buffer((T.int64(128), T.int64(10)), &quot;float32&quot;)):
         T.func_attr({&quot;op_pattern&quot;: 2, &quot;tir.noalias&quot;: True})
-        # with T.block(&quot;root&quot;):
+        # with T.sblock(&quot;root&quot;):
         for ax0, ax1 in T.grid(T.int64(128), T.int64(10)):
-            with T.block(&quot;T_transpose&quot;):
+            with T.sblock(&quot;T_transpose&quot;):
                 v_ax0, v_ax1 = T.axis.remap(&quot;SS&quot;, [ax0, ax1])
                 T.reads(fc2_weight[v_ax1, v_ax0])
                 T.writes(T_transpose[v_ax0, v_ax1])

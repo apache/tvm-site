@@ -192,10 +192,22 @@
 <li class="toctree-l1"><a class="reference internal" href="../../../how_to/dev/index.html">Development Guides</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Deep Dive</span></p>
-<ul>
+<ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="../../../arch/index.html">Design and Architecture</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../tensor_ir/index.html">TensorIR</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../index.html">Relax</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../index.html">Relax</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="../abstraction.html">Graph Abstraction for ML Models</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../learning.html">Understand Relax Abstraction</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">Relax Creation</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#create-relax-programs-using-tvmscript">Create Relax programs using TVMScript</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#create-relax-programs-using-nnmodule-api">Create Relax programs using NNModule API</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#create-relax-programs-using-block-builder-api">Create Relax programs using Block Builder API</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#summary">Summary</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="relax_transformation.html">Transformation</a></li>
+</ul>
+</li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">API Reference</span></p>
 <ul>
@@ -371,7 +383,7 @@ TensorIR functions in Relax function.</p>
         <span class="n">X</span> <span class="o">=</span> <span class="n">T</span><span class="o">.</span><span class="n">match_buffer</span><span class="p">(</span><a href="../../../reference/api/python/relax/relax.html#tvm.relax.Var" title="tvm.relax.Var" class="sphx-glr-backref-module-tvm-relax sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">x</span></a><span class="p">,</span> <span class="p">(</span><a href="../../../reference/api/python/tir/tir.html#tvm.tir.Var" title="tvm.tir.Var" class="sphx-glr-backref-module-tvm-tir sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">n</span></a><span class="p">,</span> <span class="n">m</span><span class="p">),</span> <span class="s2">&quot;float32&quot;</span><span class="p">)</span>
         <span class="n">Y</span> <span class="o">=</span> <span class="n">T</span><span class="o">.</span><span class="n">match_buffer</span><span class="p">(</span><span class="n">y</span><span class="p">,</span> <span class="p">(</span><a href="../../../reference/api/python/tir/tir.html#tvm.tir.Var" title="tvm.tir.Var" class="sphx-glr-backref-module-tvm-tir sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">n</span></a><span class="p">,</span> <span class="n">m</span><span class="p">),</span> <span class="s2">&quot;float32&quot;</span><span class="p">)</span>
         <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">j</span> <span class="ow">in</span> <span class="n">T</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><a href="../../../reference/api/python/tir/tir.html#tvm.tir.Var" title="tvm.tir.Var" class="sphx-glr-backref-module-tvm-tir sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">n</span></a><span class="p">,</span> <span class="n">m</span><span class="p">):</span>
-            <span class="k">with</span> <span class="n">T</span><span class="o">.</span><span class="n">block</span><span class="p">(</span><span class="s2">&quot;relu&quot;</span><span class="p">):</span>
+            <span class="k">with</span> <span class="n">T</span><span class="o">.</span><span class="n">sblock</span><span class="p">(</span><span class="s2">&quot;relu&quot;</span><span class="p">):</span>
                 <span class="n">vi</span><span class="p">,</span> <span class="n">vj</span> <span class="o">=</span> <span class="n">T</span><span class="o">.</span><span class="n">axis</span><span class="o">.</span><span class="n">remap</span><span class="p">(</span><span class="s2">&quot;SS&quot;</span><span class="p">,</span> <span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">])</span>
                 <span class="n">Y</span><span class="p">[</span><span class="n">vi</span><span class="p">,</span> <span class="n">vj</span><span class="p">]</span> <span class="o">=</span> <span class="n">T</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">X</span><span class="p">[</span><span class="n">vi</span><span class="p">,</span> <span class="n">vj</span><span class="p">],</span> <span class="n">T</span><span class="o">.</span><span class="n">float32</span><span class="p">(</span><span class="mi">0</span><span class="p">))</span>
 
@@ -407,9 +419,9 @@ class Module:
         n, m = T.int64(), T.int64()
         X = T.match_buffer(x, (n, m))
         Y = T.match_buffer(y, (n, m))
-        # with T.block(&quot;root&quot;):
+        # with T.sblock(&quot;root&quot;):
         for i, j in T.grid(n, m):
-            with T.block(&quot;relu&quot;):
+            with T.sblock(&quot;relu&quot;):
                 vi, vj = T.axis.remap(&quot;SS&quot;, [i, j])
                 T.reads(X[vi, vj])
                 T.writes(Y[vi, vj])
@@ -512,13 +524,13 @@ Tensor Expression(TE), TensorIR functions or other TVM packed functions.</p>
     <span class="n">B</span> <span class="o">=</span> <span class="n">T</span><span class="o">.</span><span class="n">match_buffer</span><span class="p">(</span><span class="n">b</span><span class="p">,</span> <span class="p">(</span><span class="n">N</span><span class="p">,),</span> <span class="s2">&quot;float32&quot;</span><span class="p">)</span>
     <span class="n">Z</span> <span class="o">=</span> <span class="n">T</span><span class="o">.</span><span class="n">match_buffer</span><span class="p">(</span><span class="n">z</span><span class="p">,</span> <span class="p">(</span><span class="n">M</span><span class="p">,</span> <span class="n">N</span><span class="p">),</span> <span class="s2">&quot;float32&quot;</span><span class="p">)</span>
     <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">,</span> <span class="n">k</span> <span class="ow">in</span> <span class="n">T</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="n">M</span><span class="p">,</span> <span class="n">N</span><span class="p">,</span> <span class="n">K</span><span class="p">):</span>
-        <span class="k">with</span> <span class="n">T</span><span class="o">.</span><span class="n">block</span><span class="p">(</span><span class="s2">&quot;linear&quot;</span><span class="p">):</span>
+        <span class="k">with</span> <span class="n">T</span><span class="o">.</span><span class="n">sblock</span><span class="p">(</span><span class="s2">&quot;linear&quot;</span><span class="p">):</span>
             <span class="n">vi</span><span class="p">,</span> <span class="n">vj</span><span class="p">,</span> <span class="n">vk</span> <span class="o">=</span> <span class="n">T</span><span class="o">.</span><span class="n">axis</span><span class="o">.</span><span class="n">remap</span><span class="p">(</span><span class="s2">&quot;SSR&quot;</span><span class="p">,</span> <span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">,</span> <span class="n">k</span><span class="p">])</span>
             <span class="k">with</span> <span class="n">T</span><span class="o">.</span><span class="n">init</span><span class="p">():</span>
                 <span class="n">Z</span><span class="p">[</span><span class="n">vi</span><span class="p">,</span> <span class="n">vj</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
             <span class="n">Z</span><span class="p">[</span><span class="n">vi</span><span class="p">,</span> <span class="n">vj</span><span class="p">]</span> <span class="o">=</span> <span class="n">Z</span><span class="p">[</span><span class="n">vi</span><span class="p">,</span> <span class="n">vj</span><span class="p">]</span> <span class="o">+</span> <span class="n">X</span><span class="p">[</span><span class="n">vi</span><span class="p">,</span> <span class="n">vk</span><span class="p">]</span> <span class="o">*</span> <span class="n">W</span><span class="p">[</span><span class="n">vj</span><span class="p">,</span> <span class="n">vk</span><span class="p">]</span>
     <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">j</span> <span class="ow">in</span> <span class="n">T</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="n">M</span><span class="p">,</span> <span class="n">N</span><span class="p">):</span>
-        <span class="k">with</span> <span class="n">T</span><span class="o">.</span><span class="n">block</span><span class="p">(</span><span class="s2">&quot;add&quot;</span><span class="p">):</span>
+        <span class="k">with</span> <span class="n">T</span><span class="o">.</span><span class="n">sblock</span><span class="p">(</span><span class="s2">&quot;add&quot;</span><span class="p">):</span>
             <span class="n">vi</span><span class="p">,</span> <span class="n">vj</span> <span class="o">=</span> <span class="n">T</span><span class="o">.</span><span class="n">axis</span><span class="o">.</span><span class="n">remap</span><span class="p">(</span><span class="s2">&quot;SS&quot;</span><span class="p">,</span> <span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">])</span>
             <span class="n">Z</span><span class="p">[</span><span class="n">vi</span><span class="p">,</span> <span class="n">vj</span><span class="p">]</span> <span class="o">=</span> <span class="n">Z</span><span class="p">[</span><span class="n">vi</span><span class="p">,</span> <span class="n">vj</span><span class="p">]</span> <span class="o">+</span> <span class="n">B</span><span class="p">[</span><span class="n">vj</span><span class="p">]</span>
 
@@ -567,9 +579,9 @@ class Module:
         n = T.int64()
         env_linear = T.match_buffer(var_env_linear, (n, T.int64(128)))
         compute = T.match_buffer(var_compute, (n, T.int64(128)))
-        # with T.block(&quot;root&quot;):
+        # with T.sblock(&quot;root&quot;):
         for i0, i1 in T.grid(n, T.int64(128)):
-            with T.block(&quot;compute&quot;):
+            with T.sblock(&quot;compute&quot;):
                 v_i0, v_i1 = T.axis.remap(&quot;SS&quot;, [i0, i1])
                 T.reads(env_linear[v_i0, v_i1])
                 T.writes(compute[v_i0, v_i1])
@@ -583,9 +595,9 @@ class Module:
         W = T.match_buffer(w, (N, K))
         B = T.match_buffer(b, (N,))
         Z = T.match_buffer(z, (M, N))
-        # with T.block(&quot;root&quot;):
+        # with T.sblock(&quot;root&quot;):
         for i, j, k in T.grid(M, N, K):
-            with T.block(&quot;linear&quot;):
+            with T.sblock(&quot;linear&quot;):
                 vi, vj, vk = T.axis.remap(&quot;SSR&quot;, [i, j, k])
                 T.reads(X[vi, vk], W[vj, vk])
                 T.writes(Z[vi, vj])
@@ -593,7 +605,7 @@ class Module:
                     Z[vi, vj] = T.float32(0.0)
                 Z[vi, vj] = Z[vi, vj] + X[vi, vk] * W[vj, vk]
         for i, j in T.grid(M, N):
-            with T.block(&quot;add&quot;):
+            with T.sblock(&quot;add&quot;):
                 vi, vj = T.axis.remap(&quot;SS&quot;, [i, j])
                 T.reads(Z[vi, vj], B[vj])
                 T.writes(Z[vi, vj])
@@ -700,9 +712,9 @@ class Module:
         v = T.int64()
         lv = T.match_buffer(var_lv, (v, T.int64(128)))
         compute = T.match_buffer(var_compute, (v, T.int64(128)))
-        # with T.block(&quot;root&quot;):
+        # with T.sblock(&quot;root&quot;):
         for i0, i1 in T.grid(v, T.int64(128)):
-            with T.block(&quot;compute&quot;):
+            with T.sblock(&quot;compute&quot;):
                 v_i0, v_i1 = T.axis.remap(&quot;SS&quot;, [i0, i1])
                 T.reads(lv[v_i0, v_i1])
                 T.writes(compute[v_i0, v_i1])
@@ -716,9 +728,9 @@ class Module:
         W = T.match_buffer(w, (N, K))
         B = T.match_buffer(b, (N,))
         Z = T.match_buffer(z, (M, N))
-        # with T.block(&quot;root&quot;):
+        # with T.sblock(&quot;root&quot;):
         for i, j, k in T.grid(M, N, K):
-            with T.block(&quot;linear&quot;):
+            with T.sblock(&quot;linear&quot;):
                 vi, vj, vk = T.axis.remap(&quot;SSR&quot;, [i, j, k])
                 T.reads(X[vi, vk], W[vj, vk])
                 T.writes(Z[vi, vj])
@@ -726,7 +738,7 @@ class Module:
                     Z[vi, vj] = T.float32(0.0)
                 Z[vi, vj] = Z[vi, vj] + X[vi, vk] * W[vj, vk]
         for i, j in T.grid(M, N):
-            with T.block(&quot;add&quot;):
+            with T.sblock(&quot;add&quot;):
                 vi, vj = T.axis.remap(&quot;SS&quot;, [i, j])
                 T.reads(Z[vi, vj], B[vj])
                 T.writes(Z[vi, vj])

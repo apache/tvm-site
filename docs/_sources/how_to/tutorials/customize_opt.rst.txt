@@ -318,19 +318,19 @@ it achieves a balance between performance and compilation time.
         @T.prim_func(private=True)
         def matmul(lv: T.Buffer((T.int64(1), T.int64(256)), "float32"), permute_dims1: T.Buffer((T.int64(256), T.int64(10)), "float32"), matmul: T.Buffer((T.int64(1), T.int64(10)), "float32")):
             T.func_attr({"op_pattern": 4, "tir.is_scheduled": True, "tir.noalias": True})
-            # with T.block("root"):
+            # with T.sblock("root"):
             matmul_rf_local = T.alloc_buffer((T.int64(16), T.int64(1), T.int64(10)), scope="local")
             for ax0_fused_0 in T.thread_binding(T.int64(1), thread="blockIdx.x"):
                 for ax0_fused_1 in T.thread_binding(T.int64(10), thread="threadIdx.x"):
                     for ax1_fused_1 in T.thread_binding(T.int64(16), thread="threadIdx.y"):
-                        with T.block("matmul_rf_init"):
+                        with T.sblock("matmul_rf_init"):
                             vax1_fused_1 = T.axis.spatial(T.int64(16), ax1_fused_1)
                             v0 = T.axis.spatial(T.int64(10), ax0_fused_0 * T.int64(10) + ax0_fused_1)
                             T.reads()
                             T.writes(matmul_rf_local[vax1_fused_1, T.int64(0), v0])
                             matmul_rf_local[vax1_fused_1, T.int64(0), v0] = T.float32(0.0)
                         for ax1_fused_0, u in T.grid(T.int64(16), 1):
-                            with T.block("matmul_rf_update"):
+                            with T.sblock("matmul_rf_update"):
                                 vax1_fused_1 = T.axis.spatial(T.int64(16), ax1_fused_1)
                                 v0 = T.axis.spatial(T.int64(10), ax0_fused_0 * T.int64(10) + ax0_fused_1)
                                 vax1_fused_0 = T.axis.reduce(T.int64(16), ax1_fused_0)
@@ -339,7 +339,7 @@ it achieves a balance between performance and compilation time.
                                 matmul_rf_local[vax1_fused_1, T.int64(0), v0] = matmul_rf_local[vax1_fused_1, T.int64(0), v0] + lv[T.int64(0), vax1_fused_0 * T.int64(16) + vax1_fused_1] * permute_dims1[vax1_fused_0 * T.int64(16) + vax1_fused_1, v0]
                 for ax1_fused in T.thread_binding(T.int64(10), thread="threadIdx.x"):
                     for ax0 in T.thread_binding(T.int64(16), thread="threadIdx.y"):
-                        with T.block("matmul"):
+                        with T.sblock("matmul"):
                             vax1_fused_1, v0 = T.axis.remap("RS", [ax0, ax1_fused])
                             T.reads(matmul_rf_local[vax1_fused_1, T.int64(0), v0])
                             T.writes(matmul[T.int64(0), v0])
@@ -350,10 +350,10 @@ it achieves a balance between performance and compilation time.
         @T.prim_func(private=True)
         def transpose(fc2_weight: T.Buffer((T.int64(10), T.int64(256)), "float32"), T_transpose: T.Buffer((T.int64(256), T.int64(10)), "float32")):
             T.func_attr({"op_pattern": 2, "tir.is_scheduled": True, "tir.noalias": True})
-            # with T.block("root"):
+            # with T.sblock("root"):
             for ax0_ax1_fused_0 in T.thread_binding(T.int64(3), thread="blockIdx.x"):
                 for ax0_ax1_fused_1 in T.thread_binding(T.int64(1024), thread="threadIdx.x"):
-                    with T.block("T_transpose"):
+                    with T.sblock("T_transpose"):
                         v0 = T.axis.spatial(T.int64(256), (ax0_ax1_fused_0 * T.int64(1024) + ax0_ax1_fused_1) // T.int64(10))
                         v1 = T.axis.spatial(T.int64(10), (ax0_ax1_fused_0 * T.int64(1024) + ax0_ax1_fused_1) % T.int64(10))
                         T.where(ax0_ax1_fused_0 * T.int64(1024) + ax0_ax1_fused_1 < T.int64(2560))
@@ -414,8 +414,8 @@ We can build and deploy the optimized model to the TVM runtime.
 
  .. code-block:: none
 
-    [[26109.111 25714.504 25630.404 26611.352 24408.395 25008.57  25974.104
-      25567.95  24456.805 26009.848]]
+    [[24957.668 27711.586 26452.57  26546.2   26221.006 26872.191 25651.965
+      25413.328 23575.717 24874.164]]
 
 
 

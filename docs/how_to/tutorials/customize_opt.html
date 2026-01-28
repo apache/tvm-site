@@ -529,19 +529,19 @@ class Module:
     @T.prim_func(private=True)
     def matmul(lv: T.Buffer((T.int64(1), T.int64(256)), &quot;float32&quot;), permute_dims1: T.Buffer((T.int64(256), T.int64(10)), &quot;float32&quot;), matmul: T.Buffer((T.int64(1), T.int64(10)), &quot;float32&quot;)):
         T.func_attr({&quot;op_pattern&quot;: 4, &quot;tir.is_scheduled&quot;: True, &quot;tir.noalias&quot;: True})
-        # with T.block(&quot;root&quot;):
+        # with T.sblock(&quot;root&quot;):
         matmul_rf_local = T.alloc_buffer((T.int64(16), T.int64(1), T.int64(10)), scope=&quot;local&quot;)
         for ax0_fused_0 in T.thread_binding(T.int64(1), thread=&quot;blockIdx.x&quot;):
             for ax0_fused_1 in T.thread_binding(T.int64(10), thread=&quot;threadIdx.x&quot;):
                 for ax1_fused_1 in T.thread_binding(T.int64(16), thread=&quot;threadIdx.y&quot;):
-                    with T.block(&quot;matmul_rf_init&quot;):
+                    with T.sblock(&quot;matmul_rf_init&quot;):
                         vax1_fused_1 = T.axis.spatial(T.int64(16), ax1_fused_1)
                         v0 = T.axis.spatial(T.int64(10), ax0_fused_0 * T.int64(10) + ax0_fused_1)
                         T.reads()
                         T.writes(matmul_rf_local[vax1_fused_1, T.int64(0), v0])
                         matmul_rf_local[vax1_fused_1, T.int64(0), v0] = T.float32(0.0)
                     for ax1_fused_0, u in T.grid(T.int64(16), 1):
-                        with T.block(&quot;matmul_rf_update&quot;):
+                        with T.sblock(&quot;matmul_rf_update&quot;):
                             vax1_fused_1 = T.axis.spatial(T.int64(16), ax1_fused_1)
                             v0 = T.axis.spatial(T.int64(10), ax0_fused_0 * T.int64(10) + ax0_fused_1)
                             vax1_fused_0 = T.axis.reduce(T.int64(16), ax1_fused_0)
@@ -550,7 +550,7 @@ class Module:
                             matmul_rf_local[vax1_fused_1, T.int64(0), v0] = matmul_rf_local[vax1_fused_1, T.int64(0), v0] + lv[T.int64(0), vax1_fused_0 * T.int64(16) + vax1_fused_1] * permute_dims1[vax1_fused_0 * T.int64(16) + vax1_fused_1, v0]
             for ax1_fused in T.thread_binding(T.int64(10), thread=&quot;threadIdx.x&quot;):
                 for ax0 in T.thread_binding(T.int64(16), thread=&quot;threadIdx.y&quot;):
-                    with T.block(&quot;matmul&quot;):
+                    with T.sblock(&quot;matmul&quot;):
                         vax1_fused_1, v0 = T.axis.remap(&quot;RS&quot;, [ax0, ax1_fused])
                         T.reads(matmul_rf_local[vax1_fused_1, T.int64(0), v0])
                         T.writes(matmul[T.int64(0), v0])
@@ -561,10 +561,10 @@ class Module:
     @T.prim_func(private=True)
     def transpose(fc2_weight: T.Buffer((T.int64(10), T.int64(256)), &quot;float32&quot;), T_transpose: T.Buffer((T.int64(256), T.int64(10)), &quot;float32&quot;)):
         T.func_attr({&quot;op_pattern&quot;: 2, &quot;tir.is_scheduled&quot;: True, &quot;tir.noalias&quot;: True})
-        # with T.block(&quot;root&quot;):
+        # with T.sblock(&quot;root&quot;):
         for ax0_ax1_fused_0 in T.thread_binding(T.int64(3), thread=&quot;blockIdx.x&quot;):
             for ax0_ax1_fused_1 in T.thread_binding(T.int64(1024), thread=&quot;threadIdx.x&quot;):
-                with T.block(&quot;T_transpose&quot;):
+                with T.sblock(&quot;T_transpose&quot;):
                     v0 = T.axis.spatial(T.int64(256), (ax0_ax1_fused_0 * T.int64(1024) + ax0_ax1_fused_1) // T.int64(10))
                     v1 = T.axis.spatial(T.int64(10), (ax0_ax1_fused_0 * T.int64(1024) + ax0_ax1_fused_1) % T.int64(10))
                     T.where(ax0_ax1_fused_0 * T.int64(1024) + ax0_ax1_fused_1 &lt; T.int64(2560))
@@ -598,16 +598,16 @@ pushing the performance to the limit. The current optimization may not be the be
 <p>We can build and deploy the optimized model to the TVM runtime.</p>
 <div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><a href="../../reference/api/python/relax/relax.html#tvm.relax.VMExecutable" title="tvm.relax.VMExecutable" class="sphx-glr-backref-module-tvm-relax sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">ex</span></a> <span class="o">=</span> <a href="../../reference/api/python/driver.html#tvm.compile" title="tvm.compile" class="sphx-glr-backref-module-tvm sphx-glr-backref-type-py-function"><span class="n">tvm</span><span class="o">.</span><span class="n">compile</span></a><span class="p">(</span><span class="n">mod</span><span class="p">,</span> <a href="../../reference/api/python/target.html#tvm.target.Target" title="tvm.target.Target" class="sphx-glr-backref-module-tvm-target sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">target</span></a><span class="o">=</span><span class="s2">&quot;cuda&quot;</span><span class="p">)</span>
 <span class="n">dev</span> <span class="o">=</span> <span class="n">tvm</span><span class="o">.</span><span class="n">device</span><span class="p">(</span><span class="s2">&quot;cuda&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
-<span class="n">vm</span> <span class="o">=</span> <a href="../../reference/api/python/relax/relax.html#tvm.relax.VirtualMachine" title="tvm.relax.VirtualMachine" class="sphx-glr-backref-module-tvm-relax sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">relax</span><span class="o">.</span><span class="n">VirtualMachine</span></a><span class="p">(</span><a href="../../reference/api/python/relax/relax.html#tvm.relax.VMExecutable" title="tvm.relax.VMExecutable" class="sphx-glr-backref-module-tvm-relax sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">ex</span></a><span class="p">,</span> <span class="n">dev</span><span class="p">)</span>
+<a href="../../reference/api/python/runtime/vm.html#tvm.runtime.vm.VirtualMachine" title="tvm.runtime.vm.VirtualMachine" class="sphx-glr-backref-module-tvm-runtime-vm sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">vm</span></a> <span class="o">=</span> <a href="../../reference/api/python/runtime/vm.html#tvm.runtime.vm.VirtualMachine" title="tvm.runtime.vm.VirtualMachine" class="sphx-glr-backref-module-tvm-runtime-vm sphx-glr-backref-type-py-class"><span class="n">relax</span><span class="o">.</span><span class="n">VirtualMachine</span></a><span class="p">(</span><a href="../../reference/api/python/relax/relax.html#tvm.relax.VMExecutable" title="tvm.relax.VMExecutable" class="sphx-glr-backref-module-tvm-relax sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">ex</span></a><span class="p">,</span> <span class="n">dev</span><span class="p">)</span>
 <span class="c1"># Need to allocate data and params on GPU device</span>
 <span class="n">data</span> <span class="o">=</span> <span class="n">tvm</span><span class="o">.</span><span class="n">runtime</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="o">*</span><a href="https://docs.python.org/3/library/stdtypes.html#tuple" title="builtins.tuple" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">input_shape</span></a><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s2">&quot;float32&quot;</span><span class="p">),</span> <span class="n">dev</span><span class="p">)</span>
 <a href="https://docs.python.org/3/library/stdtypes.html#list" title="builtins.list" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">gpu_params</span></a> <span class="o">=</span> <span class="p">[</span><span class="n">tvm</span><span class="o">.</span><span class="n">runtime</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="o">*</span><span class="n">p</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">p</span><span class="o">.</span><span class="n">dtype</span><span class="p">),</span> <span class="n">dev</span><span class="p">)</span> <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">p</span> <span class="ow">in</span> <a href="https://docs.python.org/3/library/stdtypes.html#list" title="builtins.list" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">params</span></a><span class="p">]</span>
-<span class="n">gpu_out</span> <span class="o">=</span> <span class="n">vm</span><span class="p">[</span><span class="s2">&quot;forward&quot;</span><span class="p">](</span><span class="n">data</span><span class="p">,</span> <span class="o">*</span><a href="https://docs.python.org/3/library/stdtypes.html#list" title="builtins.list" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">gpu_params</span></a><span class="p">)</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span>
+<span class="n">gpu_out</span> <span class="o">=</span> <a href="../../reference/api/python/runtime/vm.html#tvm.runtime.vm.VirtualMachine" title="tvm.runtime.vm.VirtualMachine" class="sphx-glr-backref-module-tvm-runtime-vm sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">vm</span></a><span class="p">[</span><span class="s2">&quot;forward&quot;</span><span class="p">](</span><span class="n">data</span><span class="p">,</span> <span class="o">*</span><a href="https://docs.python.org/3/library/stdtypes.html#list" title="builtins.list" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">gpu_params</span></a><span class="p">)</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span>
 <span class="nb">print</span><span class="p">(</span><span class="n">gpu_out</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>[[26109.111 25714.504 25630.404 26611.352 24408.395 25008.57  25974.104
-  25567.95  24456.805 26009.848]]
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>[[24957.668 27711.586 26452.57  26546.2   26221.006 26872.191 25651.965
+  25413.328 23575.717 24874.164]]
 </pre></div>
 </div>
 </section>
