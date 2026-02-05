@@ -24,14 +24,12 @@ Files
 -----
 
 - :ref:`file_tvm_ffi_any.h`
-- :ref:`file_tvm_ffi_base_details.h`
 - :ref:`file_tvm_ffi_c_api.h`
 - :ref:`file_tvm_ffi_cast.h`
 - :ref:`file_tvm_ffi_dtype.h`
 - :ref:`file_tvm_ffi_endian.h`
 - :ref:`file_tvm_ffi_error.h`
 - :ref:`file_tvm_ffi_function.h`
-- :ref:`file_tvm_ffi_function_details.h`
 - :ref:`file_tvm_ffi_memory.h`
 - :ref:`file_tvm_ffi_object.h`
 - :ref:`file_tvm_ffi_optional.h`

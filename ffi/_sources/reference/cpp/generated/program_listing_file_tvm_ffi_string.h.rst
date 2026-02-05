@@ -292,7 +292,9 @@ Program Listing for File string.h
      }
      void InitData(const char* data, size_t size) {
        char* dest_data = InitSpaceForSize(size);
-       std::memcpy(dest_data, data, size);
+       if (size > 0) {
+         std::memcpy(dest_data, data, size);
+       }
        // mainly to be compat with string
        dest_data[size] = '\0';
      }
@@ -453,7 +455,9 @@ Program Listing for File string.h
      }
      void InitData(const char* data, size_t size) {
        char* dest_data = InitSpaceForSize(size);
-       std::memcpy(dest_data, data, size);
+       if (size > 0) {
+         std::memcpy(dest_data, data, size);
+       }
        dest_data[size] = '\0';
      }
      static String Concat(const char* lhs, size_t lhs_size, const char* rhs, size_t rhs_size) {

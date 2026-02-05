@@ -1,2 +1,2 @@
-createSrcSidebar('[["tvm_ffi",["",[["collections",[],["mod.rs","shape.rs","tensor.rs"]],["extra",[],["mod.rs","module.rs"]]],["any.rs","derive.rs","device.rs","dtype.rs","error.rs","function.rs","function_internal.rs","lib.rs","macros.rs","object.rs","string.rs","type_traits.rs"]]],["tvm_ffi_macros",["",[],["lib.rs","object_macros.rs","utils.rs"]]],["tvm_ffi_sys",["",[],["c_api.rs","c_env_api.rs","dlpack.rs","lib.rs"]]]]');
-//{"start":19,"fragment_lengths":[263,68,73]}
+createSrcSidebar('[["tvm_ffi",["",[["collections",[],["array.rs","mod.rs","shape.rs","tensor.rs"]],["extra",[],["mod.rs","module.rs"]]],["any.rs","derive.rs","device.rs","dtype.rs","error.rs","function.rs","function_internal.rs","lib.rs","macros.rs","object.rs","string.rs","type_traits.rs"]]],["tvm_ffi_macros",["",[],["lib.rs","object_macros.rs","utils.rs"]]],["tvm_ffi_sys",["",[],["c_api.rs","c_env_api.rs","dlpack.rs","lib.rs"]]]]');
+//{"start":19,"fragment_lengths":[274,68,73]}

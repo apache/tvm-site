@@ -55,8 +55,6 @@ Included By
 
 - :ref:`file_tvm_ffi_container_array.h`
 
-- :ref:`file_tvm_ffi_container_container_details.h`
-
 - :ref:`file_tvm_ffi_container_map.h`
 
 - :ref:`file_tvm_ffi_container_variant.h`
@@ -68,8 +66,6 @@ Included By
 - :ref:`file_tvm_ffi_extra_structural_hash.h`
 
 - :ref:`file_tvm_ffi_function.h`
-
-- :ref:`file_tvm_ffi_function_details.h`
 
 - :ref:`file_tvm_ffi_reflection_access_path.h`
 

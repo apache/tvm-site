@@ -39,7 +39,7 @@ Includes
 
 - ``string`` (:ref:`file_tvm_ffi_string.h`)
 
-- ``tvm/ffi/base_details.h`` (:ref:`file_tvm_ffi_base_details.h`)
+- ``tvm/ffi/base_details.h``
 
 - ``tvm/ffi/c_api.h`` (:ref:`file_tvm_ffi_c_api.h`)
 
@@ -56,8 +56,6 @@ Included By
 - :ref:`file_tvm_ffi_cast.h`
 
 - :ref:`file_tvm_ffi_container_array.h`
-
-- :ref:`file_tvm_ffi_container_container_details.h`
 
 - :ref:`file_tvm_ffi_container_map.h`
 

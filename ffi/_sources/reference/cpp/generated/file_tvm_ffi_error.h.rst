@@ -42,7 +42,7 @@ Includes
 
 - ``string`` (:ref:`file_tvm_ffi_string.h`)
 
-- ``tvm/ffi/base_details.h`` (:ref:`file_tvm_ffi_base_details.h`)
+- ``tvm/ffi/base_details.h``
 
 - ``tvm/ffi/c_api.h`` (:ref:`file_tvm_ffi_c_api.h`)
 
@@ -70,13 +70,9 @@ Included By
 
 - :ref:`file_tvm_ffi_extra_cuda_cubin_launcher.h`
 
-- :ref:`file_tvm_ffi_extra_cuda_internal_unified_api.h`
-
 - :ref:`file_tvm_ffi_extra_stl.h`
 
 - :ref:`file_tvm_ffi_function.h`
-
-- :ref:`file_tvm_ffi_function_details.h`
 
 - :ref:`file_tvm_ffi_optional.h`
 
@@ -104,11 +100,16 @@ Classes
 -------
 
 
-- :ref:`exhale_struct_structtvm_1_1ffi_1_1EnvErrorAlreadySet`
-
 - :ref:`exhale_class_classtvm_1_1ffi_1_1Error`
 
 - :ref:`exhale_class_classtvm_1_1ffi_1_1ErrorObj`
+
+
+Functions
+---------
+
+
+- :ref:`exhale_function_error_8h_1af4cf9e94df0f183e9c5c0a3ccb05fda5`
 
 
 Defines

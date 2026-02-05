@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"mod":["shape","tensor"]};
+window.SIDEBAR_ITEMS = {"mod":["array","shape","tensor"]};

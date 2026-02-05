@@ -17,8 +17,6 @@ Namespaces
 ----------
 
 
-- :ref:`namespace_tvm__ffi__cuda_api`
-
 - :ref:`namespace_tvm__ffi__json`
 
 - :ref:`namespace_tvm__ffi__reflection`
@@ -43,8 +41,6 @@ Classes
 - :ref:`exhale_struct_structtvm_1_1ffi_1_1DenseMapObj_1_1ListNode`
 
 - :ref:`exhale_struct_structtvm_1_1ffi_1_1dim3`
-
-- :ref:`exhale_struct_structtvm_1_1ffi_1_1EnvErrorAlreadySet`
 
 - :ref:`exhale_struct_structtvm_1_1ffi_1_1FallbackOnlyTraitsBase`
 
@@ -169,6 +165,8 @@ Functions
 - :ref:`exhale_function_array_8h_1af5983fd2a31e79635307875b3a216472`
 
 - :ref:`exhale_function_dtype_8h_1a94787950883e5a7e97b764ddd342afc3`
+
+- :ref:`exhale_function_error_8h_1af4cf9e94df0f183e9c5c0a3ccb05fda5`
 
 - :ref:`exhale_function_string_8h_1aa190eed2516ff9a633009cc62f660502`
 

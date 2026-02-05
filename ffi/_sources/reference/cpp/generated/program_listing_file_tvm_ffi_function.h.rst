@@ -67,9 +67,6 @@ Program Listing for File function.h
        ::tvm::ffi::details::SetSafeCallRaised(err);                                               \
        return -1;                                                                                 \
      }                                                                                            \
-     catch (const ::tvm::ffi::EnvErrorAlreadySet&) {                                              \
-       return -2;                                                                                 \
-     }                                                                                            \
      catch (const std::exception& ex) {                                                           \
        ::tvm::ffi::details::SetSafeCallRaised(::tvm::ffi::Error("InternalError", ex.what(), "")); \
        return -1;                                                                                 \
@@ -80,9 +77,6 @@ Program Listing for File function.h
      {                                                        \
        int ret_code = (func);                                 \
        if (ret_code != 0) {                                   \
-         if (ret_code == -2) {                                \
-           throw ::tvm::ffi::EnvErrorAlreadySet();            \
-         }                                                    \
          throw ::tvm::ffi::details::MoveFromSafeCallRaised(); \
        }                                                      \
      }

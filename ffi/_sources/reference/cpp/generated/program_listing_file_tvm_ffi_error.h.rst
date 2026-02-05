@@ -65,8 +65,6 @@ Program Listing for File error.h
    namespace tvm {
    namespace ffi {
    
-   struct EnvErrorAlreadySet : public std::exception {};
-   
    class ErrorObj : public Object, public TVMFFIErrorCell {
     public:
      ErrorObj() {
@@ -222,6 +220,8 @@ Program Listing for File error.h
    
      TVM_FFI_DEFINE_OBJECT_REF_METHODS_NOTNULLABLE(Error, ObjectRef, ErrorObj);
    };
+   
+   inline Error EnvErrorAlreadySet() { return Error("EnvErrorAlreadySet", "", ""); }
    
    namespace details {
    

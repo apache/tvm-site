@@ -53,7 +53,7 @@ Includes
 
 - ``tvm/ffi/function.h`` (:ref:`file_tvm_ffi_function.h`)
 
-- ``tvm/ffi/function_details.h`` (:ref:`file_tvm_ffi_function_details.h`)
+- ``tvm/ffi/function_details.h``
 
 - ``tvm/ffi/optional.h`` (:ref:`file_tvm_ffi_optional.h`)
 

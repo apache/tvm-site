@@ -13,7 +13,7 @@ Base Types
 **********
 
 - ``public tvm::ffi::MapObj`` (:ref:`exhale_class_classtvm_1_1ffi_1_1MapObj`)
-- ``public tvm::ffi::details::InplaceArrayBase< SmallMapObj, MapObj::KVRawStorageType >``
+- ``public details::InplaceArrayBase< SmallMapObj, MapObj::KVRawStorageType >``
 
 
 Class Documentation

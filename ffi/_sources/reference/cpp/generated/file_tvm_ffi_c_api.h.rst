@@ -42,8 +42,6 @@ Included By
 
 - :ref:`file_tvm_ffi_any.h`
 
-- :ref:`file_tvm_ffi_base_details.h`
-
 - :ref:`file_tvm_ffi_error.h`
 
 - :ref:`file_tvm_ffi_extra_base.h`
@@ -53,8 +51,6 @@ Included By
 - :ref:`file_tvm_ffi_extra_stl.h`
 
 - :ref:`file_tvm_ffi_function.h`
-
-- :ref:`file_tvm_ffi_function_details.h`
 
 - :ref:`file_tvm_ffi_object.h`
 

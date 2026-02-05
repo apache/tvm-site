@@ -63,7 +63,7 @@ Includes
 
 - ``tvm/ffi/extra/cuda/base.h`` (:ref:`file_tvm_ffi_extra_cuda_base.h`)
 
-- ``tvm/ffi/extra/cuda/internal/unified_api.h`` (:ref:`file_tvm_ffi_extra_cuda_internal_unified_api.h`)
+- ``tvm/ffi/extra/cuda/internal/unified_api.h``
 
 - ``tvm/ffi/string.h`` (:ref:`file_tvm_ffi_string.h`)
 

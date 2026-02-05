@@ -65,7 +65,7 @@ Includes
 
 - ``tuple`` (:ref:`file_tvm_ffi_container_tuple.h`)
 
-- ``tvm/ffi/base_details.h`` (:ref:`file_tvm_ffi_base_details.h`)
+- ``tvm/ffi/base_details.h``
 
 - ``tvm/ffi/c_api.h`` (:ref:`file_tvm_ffi_c_api.h`)
 
