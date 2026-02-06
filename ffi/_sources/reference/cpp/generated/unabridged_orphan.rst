@@ -36,6 +36,11 @@ Directories
 .. toctree::
    :maxdepth: 5
 
+   dir_tvm_ffi_extra_cuda_internal.rst
+
+.. toctree::
+   :maxdepth: 5
+
    dir_tvm_ffi_reflection.rst
 
 Files
@@ -76,6 +81,11 @@ Files
    :maxdepth: 5
 
    file_tvm_ffi_extra_base64.h.rst
+
+.. toctree::
+   :maxdepth: 5
+
+   file_tvm_ffi_base_details.h.rst
 
 .. toctree::
    :maxdepth: 5
@@ -126,6 +136,11 @@ Files
    :maxdepth: 5
 
    file_tvm_ffi_error.h.rst
+
+.. toctree::
+   :maxdepth: 5
+
+   file_tvm_ffi_expected.h.rst
 
 .. toctree::
    :maxdepth: 5
@@ -226,6 +241,11 @@ Files
    :maxdepth: 5
 
    file_tvm_ffi_type_traits.h.rst
+
+.. toctree::
+   :maxdepth: 5
+
+   file_tvm_ffi_extra_cuda_internal_unified_api.h.rst
 
 .. toctree::
    :maxdepth: 5

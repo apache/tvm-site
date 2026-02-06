@@ -45,7 +45,7 @@ Includes
 
 - ``string_view``
 
-- ``tvm/ffi/base_details.h``
+- ``tvm/ffi/base_details.h`` (:ref:`file_tvm_ffi_base_details.h`)
 
 - ``tvm/ffi/error.h`` (:ref:`file_tvm_ffi_error.h`)
 

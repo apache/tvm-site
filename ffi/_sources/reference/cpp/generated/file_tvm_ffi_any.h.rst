@@ -59,6 +59,8 @@ Included By
 
 - :ref:`file_tvm_ffi_container_variant.h`
 
+- :ref:`file_tvm_ffi_expected.h`
+
 - :ref:`file_tvm_ffi_extra_json.h`
 
 - :ref:`file_tvm_ffi_extra_structural_equal.h`

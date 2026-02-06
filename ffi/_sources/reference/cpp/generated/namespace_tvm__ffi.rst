@@ -17,6 +17,8 @@ Namespaces
 ----------
 
 
+- :ref:`namespace_tvm__ffi__cuda_api`
+
 - :ref:`namespace_tvm__ffi__json`
 
 - :ref:`namespace_tvm__ffi__reflection`
@@ -84,6 +86,8 @@ Classes
 
 - :ref:`exhale_class_classtvm_1_1ffi_1_1ErrorObj`
 
+- :ref:`exhale_class_classtvm_1_1ffi_1_1Expected`
+
 - :ref:`exhale_class_classtvm_1_1ffi_1_1Function`
 
 - :ref:`exhale_class_classtvm_1_1ffi_1_1FunctionObj`
@@ -136,6 +140,8 @@ Classes
 
 - :ref:`exhale_class_classtvm_1_1ffi_1_1TypedFunction_3_01R_07Args_8_8_8_08_4`
 
+- :ref:`exhale_class_classtvm_1_1ffi_1_1Unexpected`
+
 - :ref:`exhale_class_classtvm_1_1ffi_1_1Variant`
 
 - :ref:`exhale_class_classtvm_1_1ffi_1_1WeakObjectPtr`
@@ -172,11 +178,11 @@ Functions
 
 - :ref:`exhale_function_serialization_8h_1a56baa5d1ca415dbdebf19ac1f54bd5b7`
 
-- :ref:`exhale_function_tensor_8h_1a65b3a61c540c72d9410150a3a7a76dde`
-
 - :ref:`exhale_function_tensor_8h_1a011d0a2dcbe5702156124d7a7223b3dd`
 
 - :ref:`exhale_function_tensor_8h_1a226723176642cde5996498e7da6a6368`
+
+- :ref:`exhale_function_tensor_8h_1a65b3a61c540c72d9410150a3a7a76dde`
 
 - :ref:`exhale_function_tensor_8h_1a71e4a492b5a03a19a95087771a7e9ed1`
 

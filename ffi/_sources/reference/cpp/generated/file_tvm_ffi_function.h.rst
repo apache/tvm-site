@@ -45,11 +45,13 @@ Includes
 
 - ``tvm/ffi/any.h`` (:ref:`file_tvm_ffi_any.h`)
 
-- ``tvm/ffi/base_details.h``
+- ``tvm/ffi/base_details.h`` (:ref:`file_tvm_ffi_base_details.h`)
 
 - ``tvm/ffi/c_api.h`` (:ref:`file_tvm_ffi_c_api.h`)
 
 - ``tvm/ffi/error.h`` (:ref:`file_tvm_ffi_error.h`)
+
+- ``tvm/ffi/expected.h`` (:ref:`file_tvm_ffi_expected.h`)
 
 - ``tvm/ffi/function_details.h``
 

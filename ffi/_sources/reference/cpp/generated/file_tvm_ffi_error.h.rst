@@ -42,7 +42,7 @@ Includes
 
 - ``string`` (:ref:`file_tvm_ffi_string.h`)
 
-- ``tvm/ffi/base_details.h``
+- ``tvm/ffi/base_details.h`` (:ref:`file_tvm_ffi_base_details.h`)
 
 - ``tvm/ffi/c_api.h`` (:ref:`file_tvm_ffi_c_api.h`)
 
@@ -66,9 +66,13 @@ Included By
 
 - :ref:`file_tvm_ffi_dtype.h`
 
+- :ref:`file_tvm_ffi_expected.h`
+
 - :ref:`file_tvm_ffi_extra_cuda_base.h`
 
 - :ref:`file_tvm_ffi_extra_cuda_cubin_launcher.h`
+
+- :ref:`file_tvm_ffi_extra_cuda_internal_unified_api.h`
 
 - :ref:`file_tvm_ffi_extra_stl.h`
 
