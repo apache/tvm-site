@@ -7,7 +7,7 @@ var searchData=
   ['handler_3c_20dldevice_20_3e_1519',['Handler&lt; DLDevice &gt;',['../structdmlc_1_1serializer_1_1Handler_3_01DLDevice_01_4.html',1,'dmlc::serializer']]],
   ['hasattr_1520',['HasAttr',['../classtvm_1_1relax_1_1DFPattern.html#a5ec24bab817dcd540c0db81c297c83ae',1,'tvm::relax::DFPattern']]],
   ['hasattrmap_1521',['HasAttrMap',['../classtvm_1_1Op.html#adea2c4c1cefc5da4896e0f7346c603f6',1,'tvm::Op']]],
-  ['hasblock_1522',['HasBlock',['../classtvm_1_1tir_1_1ScheduleNode.html#a1edd902293ea5360929994c74701442f',1,'tvm::tir::ScheduleNode']]],
+  ['hasblock_1522',['HasBlock',['../classtvm_1_1s__tir_1_1ScheduleNode.html#a4aab584558f03480a00e7a7ccb20c07d',1,'tvm::s_tir::ScheduleNode']]],
   ['hasdtype_1523',['HasDtype',['../classtvm_1_1relax_1_1DFPattern.html#a20eabb949f4504be1c103bc4db73e23e',1,'tvm::relax::DFPattern::HasDtype(const DataType &amp;dtype) const'],['../classtvm_1_1relax_1_1DFPattern.html#aef57e18f93cc317ba30efbd986a7df18',1,'tvm::relax::DFPattern::HasDtype(const std::string &amp;dtype) const']]],
   ['hasfunction_1524',['HasFunction',['../classtvm_1_1runtime_1_1vm_1_1VMExecutable.html#acc43eb1d86590b9ea017734740ea2394',1,'tvm::runtime::vm::VMExecutable']]],
   ['hashpodvalueinany_1525',['HashPODValueInAny',['../classtvm_1_1BaseValueHash.html#a36b97f9a2213e7852e5be4eed59c1c2b',1,'tvm::BaseValueHash']]],
