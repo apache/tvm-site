@@ -40,7 +40,7 @@
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
   <script src="../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
 
-    <script src="../_static/documentation_options.js?v=dacfa207"></script>
+    <script src="../_static/documentation_options.js?v=5b7ea8d4"></script>
     <script src="../_static/doctools.js?v=9bcbadda"></script>
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -58,7 +58,7 @@
     <link rel="prev" title="Tensor and DLPack" href="tensor.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-    <meta name="docbuild:last-update" content="Feb 06, 2026"/>
+    <meta name="docbuild:last-update" content="Feb 08, 2026"/>
   </head>
   
   
@@ -167,6 +167,7 @@
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">Guides</span></p>
 <ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../guides/export_func_cls.html">Export Functions and Classes</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../guides/kernel_library_guide.html">Kernel Library Guide</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../guides/compiler_integration.html">Compiler Integration</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../guides/cubin_launcher.html">CUBIN Launcher Guide</a></li>
@@ -701,6 +702,7 @@ document.write(`
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#modules">Modules</a><ul class="visible nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#shared-library">Shared Library</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#system-library">System Library</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#custom-modules">Custom Modules</a></li>
 </ul>
 </li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#further-reading">Further Reading</a></li>
@@ -1033,6 +1035,39 @@ a symbol during static initialization:</p>
 program lifetime. For dynamic loading with the ability to unload, use shared library modules instead.</p>
 </div>
 </section>
+<section id="custom-modules">
+<span id="sec-custom-modules"></span><h3>Custom Modules<a class="headerlink" href="#custom-modules" title="Link to this heading">#</a></h3>
+<p>While the standard shared library and system library modules cover most use
+cases, some scenarios require a <strong>custom module</strong> that wraps a platform-specific
+driver API — for example, using <code class="docutils literal notranslate"><span class="pre">cuModuleLoad</span></code> to load generated PTX code and
+expose each kernel as a <a class="reference internal" href="../reference/cpp/generated/classtvm_1_1ffi_1_1Function.html#_CPPv4N3tvm3ffi8FunctionE" title="tvm::ffi::Function"><code class="xref cpp cpp-class docutils literal notranslate"><span class="pre">tvm::ffi::Function</span></code></a>.</p>
+<p>To create a custom module, subclass <a class="reference internal" href="../reference/cpp/generated/classtvm_1_1ffi_1_1ModuleObj.html#_CPPv4N3tvm3ffi9ModuleObjE" title="tvm::ffi::ModuleObj"><code class="xref cpp cpp-class docutils literal notranslate"><span class="pre">tvm::ffi::ModuleObj</span></code></a> and
+implement the following:</p>
+<ul class="simple">
+<li><p><a class="reference internal" href="../reference/cpp/generated/classtvm_1_1ffi_1_1ModuleObj.html#_CPPv4NK3tvm3ffi9ModuleObj4kindEv" title="tvm::ffi::ModuleObj::kind"><code class="xref cpp cpp-func docutils literal notranslate"><span class="pre">kind()</span></code></a> — return a unique string identifying
+the module type (e.g., <code class="docutils literal notranslate"><span class="pre">&quot;cuda&quot;</span></code>).</p></li>
+<li><p><a class="reference internal" href="../reference/cpp/generated/classtvm_1_1ffi_1_1ModuleObj.html#_CPPv4NK3tvm3ffi9ModuleObj15GetPropertyMaskEv" title="tvm::ffi::ModuleObj::GetPropertyMask"><code class="xref cpp cpp-func docutils literal notranslate"><span class="pre">GetPropertyMask()</span></code></a> — return a bitmask
+indicating the module’s capabilities:</p>
+<ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">ffi::Module::kRunnable</span></code> if the module can execute functions.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">ffi::Module::kBinarySerializable</span></code> if the module supports
+serialization to and from bytes.</p></li>
+</ul>
+</li>
+<li><p><a class="reference internal" href="../reference/cpp/generated/classtvm_1_1ffi_1_1ModuleObj.html#_CPPv4N3tvm3ffi9ModuleObj11GetFunctionERK6String" title="tvm::ffi::ModuleObj::GetFunction"><code class="xref cpp cpp-func docutils literal notranslate"><span class="pre">GetFunction()</span></code></a> — look up a function by name
+within the module.</p></li>
+<li><p>If the module is serializable, override
+<a class="reference internal" href="../reference/cpp/generated/classtvm_1_1ffi_1_1ModuleObj.html#_CPPv4NK3tvm3ffi9ModuleObj11SaveToBytesEv" title="tvm::ffi::ModuleObj::SaveToBytes"><code class="xref cpp cpp-func docutils literal notranslate"><span class="pre">SaveToBytes()</span></code></a> and register a global function
+<code class="docutils literal notranslate"><span class="pre">ffi.Module.load_from_bytes.&lt;kind&gt;</span></code> so the module can be reconstructed from
+its serialized form.</p></li>
+</ul>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p><a class="reference internal" href="../guides/export_func_cls.html#export-embedded-binary-data"><span class="std std-ref">Embedded Binary Data</span></a> in the export guide describes
+the <code class="docutils literal notranslate"><span class="pre">__tvm_ffi__library_bin</span></code> binary layout used to serialize composite
+modules that contain custom sub-modules.</p>
+</div>
+</section>
 </section>
 <section id="further-reading">
 <h2>Further Reading<a class="headerlink" href="#further-reading" title="Link to this heading">#</a></h2>
@@ -1107,6 +1142,7 @@ program lifetime. For dynamic loading with the ability to unload, use shared lib
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#modules">Modules</a><ul class="visible nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#shared-library">Shared Library</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#system-library">System Library</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#custom-modules">Custom Modules</a></li>
 </ul>
 </li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#further-reading">Further Reading</a></li>
@@ -1136,7 +1172,7 @@ By Apache TVM FFI contributors
   
   <div class="footer-item">
     <p class="last-updated">
-  Last updated on Feb 06, 2026.
+  Last updated on Feb 08, 2026.
   <br/>
 </p>
   </div>

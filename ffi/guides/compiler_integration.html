@@ -40,7 +40,7 @@
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
   <script src="../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
 
-    <script src="../_static/documentation_options.js?v=dacfa207"></script>
+    <script src="../_static/documentation_options.js?v=5b7ea8d4"></script>
     <script src="../_static/doctools.js?v=9bcbadda"></script>
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -58,7 +58,7 @@
     <link rel="prev" title="Kernel Library Guide" href="kernel_library_guide.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-    <meta name="docbuild:last-update" content="Feb 06, 2026"/>
+    <meta name="docbuild:last-update" content="Feb 08, 2026"/>
   </head>
   
   
@@ -167,6 +167,7 @@
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">Guides</span></p>
 <ul class="current nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="export_func_cls.html">Export Functions and Classes</a></li>
 <li class="toctree-l1"><a class="reference internal" href="kernel_library_guide.html">Kernel Library Guide</a></li>
 <li class="toctree-l1 current active"><a class="current reference internal" href="#">Compiler Integration</a></li>
 <li class="toctree-l1"><a class="reference internal" href="cubin_launcher.html">CUBIN Launcher Guide</a></li>
@@ -693,10 +694,6 @@ document.write(`
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#common-vs-custom-state">Common vs. Custom State</a></li>
 </ul>
 </li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#advanced-custom-modules">Advanced: Custom Modules</a><ul class="visible nav section-nav flex-column">
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#enable-export-and-loading">Enable Export and Loading</a></li>
-</ul>
-</li>
 </ul>
             </nav>
         </div>
@@ -872,49 +869,12 @@ This approach ensures the state is shared among different kernels.</p>
 common states like <strong>streams</strong> and <strong>memory allocators</strong> through environment functions (e.g., <code class="docutils literal notranslate"><span class="pre">TVMFFIEnvGetStream</span></code>),
 allowing kernels to access these without managing their own. However, for any unique state required by your compiler,
 the global function registration approach is the most suitable method.</p>
-</section>
-</section>
-<section id="advanced-custom-modules">
-<h2>Advanced: Custom Modules<a class="headerlink" href="#advanced-custom-modules" title="Link to this heading">#</a></h2>
-<p>While the standard dynamic library module is sufficient for many use cases,
-sometimes it may be helpful to package a custom runtime module that wraps over a driver API.
-For example, using <code class="docutils literal notranslate"><span class="pre">cuModuleLoad</span></code> explicitly to load generated PTX code and expose it as an <a class="reference internal" href="../reference/cpp/generated/classtvm_1_1ffi_1_1Function.html#_CPPv4N3tvm3ffi8FunctionE" title="tvm::ffi::Function"><code class="xref cpp cpp-class docutils literal notranslate"><span class="pre">tvm::ffi::Function</span></code></a>.
-The <a class="reference internal" href="../reference/cpp/generated/classtvm_1_1ffi_1_1ModuleObj.html#_CPPv4N3tvm3ffi9ModuleObjE" title="tvm::ffi::ModuleObj"><code class="xref cpp cpp-class docutils literal notranslate"><span class="pre">tvm::ffi::ModuleObj</span></code></a> interface provides a way to support this need.
-Generally, the steps include subclassing the <a class="reference internal" href="../reference/cpp/generated/classtvm_1_1ffi_1_1ModuleObj.html#_CPPv4N3tvm3ffi9ModuleObjE" title="tvm::ffi::ModuleObj"><code class="xref cpp cpp-class docutils literal notranslate"><span class="pre">tvm::ffi::ModuleObj</span></code></a>:</p>
-<ul class="simple">
-<li><p>Provide a specific <a class="reference internal" href="../reference/cpp/generated/classtvm_1_1ffi_1_1ModuleObj.html#_CPPv4NK3tvm3ffi9ModuleObj4kindEv" title="tvm::ffi::ModuleObj::kind"><code class="xref cpp cpp-func docutils literal notranslate"><span class="pre">tvm::ffi::ModuleObj::kind()</span></code></a> string to identify the module type</p></li>
-<li><p>Override <a class="reference internal" href="../reference/cpp/generated/classtvm_1_1ffi_1_1ModuleObj.html#_CPPv4NK3tvm3ffi9ModuleObj15GetPropertyMaskEv" title="tvm::ffi::ModuleObj::GetPropertyMask"><code class="xref cpp cpp-func docutils literal notranslate"><span class="pre">tvm::ffi::ModuleObj::GetPropertyMask()</span></code></a> to indicate:</p>
-<ul>
-<li><p>The module is <code class="docutils literal notranslate"><span class="pre">ffi::Module::kRunnable</span></code> (executable)</p></li>
-<li><p>If binary serialization is supported, also add <code class="docutils literal notranslate"><span class="pre">ffi::Module::kBinarySerializable</span></code></p></li>
-</ul>
-</li>
-<li><p>Override <a class="reference internal" href="../reference/cpp/generated/classtvm_1_1ffi_1_1ModuleObj.html#_CPPv4N3tvm3ffi9ModuleObj11GetFunctionERK6String" title="tvm::ffi::ModuleObj::GetFunction"><code class="xref cpp cpp-func docutils literal notranslate"><span class="pre">tvm::ffi::ModuleObj::GetFunction()</span></code></a> to specify how functions loaded</p></li>
-<li><p>Register binary serialization/deserialization <a class="reference internal" href="../reference/cpp/generated/classtvm_1_1ffi_1_1ModuleObj.html#_CPPv4NK3tvm3ffi9ModuleObj11SaveToBytesEv" title="tvm::ffi::ModuleObj::SaveToBytes"><code class="xref cpp cpp-func docutils literal notranslate"><span class="pre">tvm::ffi::ModuleObj::SaveToBytes()</span></code></a> and register a global
-function <code class="docutils literal notranslate"><span class="pre">ffi.Module.load_from_bytes.&lt;kind&gt;</span></code></p></li>
-</ul>
-<section id="enable-export-and-loading">
-<h3>Enable Export and Loading<a class="headerlink" href="#enable-export-and-loading" title="Link to this heading">#</a></h3>
-<p>We also support export and loading of modules that import custom modules.
-We allow libraries to embed a binary symbol <code class="docutils literal notranslate"><span class="pre">__tvm_ffi__library_bin</span></code> in the following binary layout:</p>
-<ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">&lt;nbytes</span> <span class="pre">:</span> <span class="pre">u64&gt;</span> <span class="pre">&lt;import_tree&gt;</span> <span class="pre">&lt;key0:</span> <span class="pre">str&gt;</span> <span class="pre">[val0:</span> <span class="pre">bytes]</span> <span class="pre">&lt;key1:</span> <span class="pre">str&gt;</span> <span class="pre">[val1:</span> <span class="pre">bytes]</span> <span class="pre">...</span></code></p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">nbytes</span></code> indicates the total number of bytes following the nbytes header</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">&lt;import_tree&gt;</span></code> uses CSR sparse array format: <code class="docutils literal notranslate"><span class="pre">&lt;indptr:</span> <span class="pre">vec&lt;u64&gt;&gt;</span> <span class="pre">&lt;child_indices:</span> <span class="pre">vec&lt;u64&gt;&gt;</span></code>
-to store child indices of each node (each node is a Module instance)</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">&lt;key&gt;</span></code> stores the module kind, or can be <code class="docutils literal notranslate"><span class="pre">_lib</span></code>:</p>
-<ul>
-<li><p><code class="docutils literal notranslate"><span class="pre">_lib</span></code> indicates the module corresponds to the dynamic library itself</p></li>
-<li><p>For other cases, <code class="docutils literal notranslate"><span class="pre">val:</span> <span class="pre">bytes</span></code> contains the serialized bytes from the custom module</p></li>
-</ul>
-</li>
-<li><p>Both <code class="docutils literal notranslate"><span class="pre">bytes</span></code> and <code class="docutils literal notranslate"><span class="pre">str</span></code> are serialized as <code class="docutils literal notranslate"><span class="pre">&lt;size:</span> <span class="pre">u64&gt;</span> <span class="pre">&lt;content&gt;</span></code></p></li>
-</ul>
-<p>This information allows us to deserialize the custom modules by calling <code class="docutils literal notranslate"><span class="pre">ffi.Module.load_from_bytes.&lt;kind&gt;</span></code> and then reconstruct
-the overall import relations from <code class="docutils literal notranslate"><span class="pre">&lt;import_tree&gt;</span></code> and return the final composed modules back to the user.
-As long as the compiler generates the <code class="docutils literal notranslate"><span class="pre">__tvm_ffi__library_bin</span></code> in the above format, <a class="reference internal" href="../reference/python/generated/tvm_ffi.load_module.html#tvm_ffi.load_module" title="tvm_ffi.load_module"><code class="xref py py-func docutils literal notranslate"><span class="pre">tvm_ffi.load_module()</span></code></a> will correctly
-handle the loading and recover the original module. Note that we will need the custom module class definition to be available
-during loading, either by importing another runtime DLL, or embedding it in the generated library.</p>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p>For creating custom runtime modules that wrap platform-specific driver APIs
+(e.g., <code class="docutils literal notranslate"><span class="pre">cuModuleLoad</span></code> for PTX), see <a class="reference internal" href="../concepts/func_module.html#sec-custom-modules"><span class="std std-ref">Custom Modules</span></a> in
+<a class="reference internal" href="../concepts/func_module.html"><span class="doc">Function and Module</span></a>.</p>
+</div>
 </section>
 </section>
 </section>
@@ -972,10 +932,6 @@ during loading, either by importing another runtime DLL, or embedding it in the 
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#common-vs-custom-state">Common vs. Custom State</a></li>
 </ul>
 </li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#advanced-custom-modules">Advanced: Custom Modules</a><ul class="visible nav section-nav flex-column">
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#enable-export-and-loading">Enable Export and Loading</a></li>
-</ul>
-</li>
 </ul>
   </nav></div>
 
@@ -1002,7 +958,7 @@ By Apache TVM FFI contributors
   
   <div class="footer-item">
     <p class="last-updated">
-  Last updated on Feb 06, 2026.
+  Last updated on Feb 08, 2026.
   <br/>
 </p>
   </div>

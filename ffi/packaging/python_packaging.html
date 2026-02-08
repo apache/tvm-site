@@ -33,7 +33,6 @@
     <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
     <link rel="stylesheet" type="text/css" href="../_static/sphinx-design.min.css?v=95c83b7e" />
     <link rel="stylesheet" type="text/css" href="../_static/collapsible-lists/css/tree_view.css?v=a885cde7" />
-    <link rel="stylesheet" type="text/css" href="../_static/tabs.css?v=a5c4661c" />
     <link rel="stylesheet" type="text/css" href="../_static/custom.css?v=38aa6179" />
   
   <!-- Pre-loaded scripts that we'll load fully later -->
@@ -41,7 +40,7 @@
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
   <script src="../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
 
-    <script src="../_static/documentation_options.js?v=dacfa207"></script>
+    <script src="../_static/documentation_options.js?v=5b7ea8d4"></script>
     <script src="../_static/doctools.js?v=9bcbadda"></script>
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -51,7 +50,6 @@
     <script src="../_static/collapsible-lists/js/CollapsibleLists.compressed.js?v=73120307"></script>
     <script src="../_static/collapsible-lists/js/apply-collapsible-lists.js?v=660e4f45"></script>
     <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" src="../_static/downloads/require.min.js"></script>
-    <script src="../_static/tabs.js?v=3030b3cb"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = 'packaging/python_packaging';</script>
     <link rel="icon" href="https://tvm.apache.org/images/logo/tvm-logo-square.png"/>
     <link rel="index" title="Index" href="../genindex.html" />
@@ -60,7 +58,7 @@
     <link rel="prev" title="Exception Handling" href="../concepts/exception_handling.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-    <meta name="docbuild:last-update" content="Feb 06, 2026"/>
+    <meta name="docbuild:last-update" content="Feb 08, 2026"/>
   </head>
   
   
@@ -169,6 +167,7 @@
 </ul>
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">Guides</span></p>
 <ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../guides/export_func_cls.html">Export Functions and Classes</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../guides/kernel_library_guide.html">Kernel Library Guide</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../guides/compiler_integration.html">Compiler Integration</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../guides/cubin_launcher.html">CUBIN Launcher Guide</a></li>
@@ -694,12 +693,6 @@ document.write(`
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#load-the-library">Load the Library</a></li>
 </ul>
 </li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#export-c-to-python">Export C++ to Python</a><ul class="visible nav section-nav flex-column">
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#tvm-ffi-abi-recommended">TVM-FFI ABI (Recommended)</a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#global-function">Global Function</a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#class">Class</a></li>
-</ul>
-</li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#stub-generation">Stub Generation</a></li>
 </ul>
             </nav>
@@ -833,7 +826,7 @@ delvewheel<span class="w"> </span>repair<span class="w"> </span>--exclude<span c
 </div>
 </section>
 <section id="load-the-library">
-<h3>Load the Library<a class="headerlink" href="#load-the-library" title="Link to this heading">#</a></h3>
+<span id="sec-load-the-library"></span><h3>Load the Library<a class="headerlink" href="#load-the-library" title="Link to this heading">#</a></h3>
 <p>Once the wheel is installed, use <a class="reference internal" href="../reference/python/cpp/generated/tvm_ffi.libinfo.load_lib_module.html#tvm_ffi.libinfo.load_lib_module" title="tvm_ffi.libinfo.load_lib_module"><code class="xref py py-func docutils literal notranslate"><span class="pre">tvm_ffi.libinfo.load_lib_module()</span></code></a> to load
 the shared library:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">tvm_ffi.libinfo</span><span class="w"> </span><span class="kn">import</span> <span class="n">load_lib_module</span>
@@ -859,173 +852,9 @@ the platform-specific shared library filename:</p>
 </ul>
 </li>
 </ul>
-</section>
-</section>
-<section id="export-c-to-python">
-<h2>Export C++ to Python<a class="headerlink" href="#export-c-to-python" title="Link to this heading">#</a></h2>
-<p>Include the umbrella header to access the core TVM-FFI C++ API.</p>
-<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;tvm/ffi/tvm_ffi.h&gt;</span>
-</pre></div>
-</div>
-<p>TVM-FFI offers three ways to expose code:</p>
-<ul class="simple">
-<li><p>C symbols in the TVM-FFI ABI: export code as plain C symbols. This is the recommended way for
-most use cases because it keeps the boundary thin and works well with compiler codegen;</p></li>
-<li><p>Functions: expose functions via the global registry;</p></li>
-<li><p>Classes: register C++ classes derived from <a class="reference internal" href="../reference/cpp/generated/classtvm_1_1ffi_1_1Object.html#_CPPv4N3tvm3ffi6ObjectE" title="tvm::ffi::Object"><code class="xref cpp cpp-class docutils literal notranslate"><span class="pre">tvm::ffi::Object</span></code></a> as Python dataclasses.</p></li>
-</ul>
-<p>Metadata is captured automatically and later turned into Python type hints for LSP support.
-The examples below show C++ code and its Python usage. The “Python (Generated)” tab
-shows code produced by the stub generation tool (see <a class="reference internal" href="stubgen.html#sec-stubgen"><span class="std std-ref">Stub Generation</span></a>).</p>
-<section id="tvm-ffi-abi-recommended">
-<h3>TVM-FFI ABI (Recommended)<a class="headerlink" href="#tvm-ffi-abi-recommended" title="Link to this heading">#</a></h3>
-<p>If you prefer to export plain C symbols, TVM-FFI provides helpers to make them accessible
-from Python. This option keeps the boundary thin and works well with LLVM-based compilers where
-C symbols are easier to call.</p>
-<div class="sphinx-tabs docutils container">
-<div aria-label="Tabbed content" class="closeable" role="tablist"><button aria-controls="panel-0-Qysr" aria-selected="true" class="sphinx-tabs-tab group-tab" id="tab-0-Qysr" name="Qysr" role="tab" tabindex="0">C++</button><button aria-controls="panel-0-UHl0aG9uIChVc2VyKQ==" aria-selected="false" class="sphinx-tabs-tab group-tab" id="tab-0-UHl0aG9uIChVc2VyKQ==" name="UHl0aG9uIChVc2VyKQ==" role="tab" tabindex="-1">Python (User)</button><button aria-controls="panel-0-UHl0aG9uIChHZW5lcmF0ZWQp" aria-selected="false" class="sphinx-tabs-tab group-tab" id="tab-0-UHl0aG9uIChHZW5lcmF0ZWQp" name="UHl0aG9uIChHZW5lcmF0ZWQp" role="tab" tabindex="-1">Python (Generated)</button></div><div aria-labelledby="tab-0-Qysr" class="sphinx-tabs-panel group-tab" id="panel-0-Qysr" name="Qysr" role="tabpanel" tabindex="0"><p>Macro <a class="reference internal" href="../reference/cpp/generated/define_function_8h_1a01777f12f8f99771331d679a0c1d2ed4.html#c.TVM_FFI_DLL_EXPORT_TYPED_FUNC" title="TVM_FFI_DLL_EXPORT_TYPED_FUNC"><code class="xref c c-macro docutils literal notranslate"><span class="pre">TVM_FFI_DLL_EXPORT_TYPED_FUNC</span></code></a> exports the function <code class="docutils literal notranslate"><span class="pre">AddTwo</span></code> as
-a C symbol <code class="docutils literal notranslate"><span class="pre">__tvm_ffi_add_two</span></code> inside the shared library.</p>
-<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="k">static</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="nf">AddTwo</span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">x</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="k">return</span><span class="w"> </span><span class="n">x</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">2</span><span class="p">;</span><span class="w"> </span><span class="p">}</span>
-
-<span class="n">TVM_FFI_DLL_EXPORT_TYPED_FUNC</span><span class="p">(</span><span class="n">add_two</span><span class="p">,</span><span class="w"> </span><span class="n">AddTwo</span><span class="p">)</span>
-</pre></div>
-</div>
-</div><div aria-labelledby="tab-0-UHl0aG9uIChVc2VyKQ==" class="sphinx-tabs-panel group-tab" hidden="true" id="panel-0-UHl0aG9uIChVc2VyKQ==" name="UHl0aG9uIChVc2VyKQ==" role="tabpanel" tabindex="0"><p>Symbol <code class="docutils literal notranslate"><span class="pre">__tvm_ffi_add_two</span></code> is made available via <code class="docutils literal notranslate"><span class="pre">LIB.add_two</span></code> to users.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">my_ffi_extension</span>
-<span class="n">my_ffi_extension</span><span class="o">.</span><span class="n">LIB</span><span class="o">.</span><span class="n">add_two</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>  <span class="c1"># -&gt; 3</span>
-</pre></div>
-</div>
-</div><div aria-labelledby="tab-0-UHl0aG9uIChHZW5lcmF0ZWQp" class="sphinx-tabs-panel group-tab" hidden="true" id="panel-0-UHl0aG9uIChHZW5lcmF0ZWQp" name="UHl0aG9uIChHZW5lcmF0ZWQp" role="tabpanel" tabindex="0"><p>The shared library is loaded by <a class="reference internal" href="../reference/python/cpp/generated/tvm_ffi.libinfo.load_lib_module.html#tvm_ffi.libinfo.load_lib_module" title="tvm_ffi.libinfo.load_lib_module"><code class="xref py py-func docutils literal notranslate"><span class="pre">tvm_ffi.libinfo.load_lib_module()</span></code></a>.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># File: my_ffi_extension/_ffi_api.py</span>
-
-<span class="n">LIB</span> <span class="o">=</span> <span class="n">tvm_ffi</span><span class="o">.</span><span class="n">libinfo</span><span class="o">.</span><span class="n">load_lib_module</span><span class="p">(</span>
-  <span class="n">package</span><span class="o">=</span><span class="s2">&quot;my-ffi-extension&quot;</span><span class="p">,</span>
-  <span class="n">target_name</span><span class="o">=</span><span class="s2">&quot;my_ffi_extension&quot;</span><span class="p">,</span>
-<span class="p">)</span>
-</pre></div>
-</div>
-</div></div>
-</section>
-<section id="global-function">
-<h3>Global Function<a class="headerlink" href="#global-function" title="Link to this heading">#</a></h3>
-<p>This example registers a function in the global registry and then calls it from Python.
-The registry handles type translation, error handling, and metadata.</p>
-<div class="sphinx-tabs docutils container">
-<div aria-label="Tabbed content" class="closeable" role="tablist"><button aria-controls="panel-1-Qysr" aria-selected="true" class="sphinx-tabs-tab group-tab" id="tab-1-Qysr" name="Qysr" role="tab" tabindex="0">C++</button><button aria-controls="panel-1-UHl0aG9uIChVc2VyKQ==" aria-selected="false" class="sphinx-tabs-tab group-tab" id="tab-1-UHl0aG9uIChVc2VyKQ==" name="UHl0aG9uIChVc2VyKQ==" role="tab" tabindex="-1">Python (User)</button><button aria-controls="panel-1-UHl0aG9uIChHZW5lcmF0ZWQp" aria-selected="false" class="sphinx-tabs-tab group-tab" id="tab-1-UHl0aG9uIChHZW5lcmF0ZWQp" name="UHl0aG9uIChHZW5lcmF0ZWQp" role="tab" tabindex="-1">Python (Generated)</button></div><div aria-labelledby="tab-1-Qysr" class="sphinx-tabs-panel group-tab" id="panel-1-Qysr" name="Qysr" role="tabpanel" tabindex="0"><p>C++ function <code class="docutils literal notranslate"><span class="pre">AddOne</span></code> is registered with name <code class="docutils literal notranslate"><span class="pre">my_ffi_extension.add_one</span></code>
-in the global registry using <a class="reference internal" href="../reference/cpp/generated/classtvm_1_1ffi_1_1reflection_1_1GlobalDef.html#_CPPv4N3tvm3ffi10reflection9GlobalDefE" title="tvm::ffi::reflection::GlobalDef"><code class="xref cpp cpp-class docutils literal notranslate"><span class="pre">tvm::ffi::reflection::GlobalDef</span></code></a>.</p>
-<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="k">static</span><span class="w"> </span><span class="kt">int</span><span class="w"> </span><span class="nf">AddOne</span><span class="p">(</span><span class="kt">int</span><span class="w"> </span><span class="n">x</span><span class="p">)</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="k">return</span><span class="w"> </span><span class="n">x</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="p">;</span><span class="w"> </span><span class="p">}</span>
-
-<span class="n">TVM_FFI_STATIC_INIT_BLOCK</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
-<span class="w">  </span><span class="k">namespace</span><span class="w"> </span><span class="nn">refl</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nn">tvm</span><span class="o">::</span><span class="nn">ffi</span><span class="o">::</span><span class="nn">reflection</span><span class="p">;</span>
-<span class="w">  </span><span class="n">refl</span><span class="o">::</span><span class="n">GlobalDef</span><span class="p">()</span><span class="w">  </span><span class="c1">//</span>
-<span class="w">      </span><span class="p">.</span><span class="n">def</span><span class="p">(</span><span class="s">&quot;my_ffi_extension.add_one&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">AddOne</span><span class="p">);</span>
-<span class="p">}</span>
-</pre></div>
-</div>
-</div><div aria-labelledby="tab-1-UHl0aG9uIChVc2VyKQ==" class="sphinx-tabs-panel group-tab" hidden="true" id="panel-1-UHl0aG9uIChVc2VyKQ==" name="UHl0aG9uIChVc2VyKQ==" role="tabpanel" tabindex="0"><p>The global function is accessible after importing the extension,
-and the import path matches the registered name, i.e. <code class="docutils literal notranslate"><span class="pre">my_ffi_extension.add_one</span></code>.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">my_ffi_extension</span>
-
-<span class="n">my_ffi_extension</span><span class="o">.</span><span class="n">add_one</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>  <span class="c1"># -&gt; 4</span>
-</pre></div>
-</div>
-</div><div aria-labelledby="tab-1-UHl0aG9uIChHZW5lcmF0ZWQp" class="sphinx-tabs-panel group-tab" hidden="true" id="panel-1-UHl0aG9uIChHZW5lcmF0ZWQp" name="UHl0aG9uIChHZW5lcmF0ZWQp" role="tabpanel" tabindex="0"><p>Under the hood, the shared library is loaded by <a class="reference internal" href="../reference/python/generated/tvm_ffi.init_ffi_api.html#tvm_ffi.init_ffi_api" title="tvm_ffi.init_ffi_api"><code class="xref py py-func docutils literal notranslate"><span class="pre">tvm_ffi.init_ffi_api()</span></code></a>
-during package initialization.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># File: my_ffi_extension/_ffi_api.py</span>
-
-<span class="n">tvm_ffi</span><span class="o">.</span><span class="n">init_ffi_api</span><span class="p">(</span>
-  <span class="n">namespace</span><span class="o">=</span><span class="s2">&quot;my_ffi_extension&quot;</span><span class="p">,</span>
-  <span class="n">target_module_name</span><span class="o">=</span><span class="vm">__name__</span><span class="p">,</span>
-<span class="p">)</span>
-
-<span class="k">def</span><span class="w"> </span><span class="nf">add_one</span><span class="p">(</span><span class="n">x</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span> <span class="o">...</span>
-</pre></div>
-</div>
-</div></div>
-<div class="admonition note">
-<p class="admonition-title">Note</p>
-<p>Global functions can be retrieved via <a class="reference internal" href="../reference/python/generated/tvm_ffi.get_global_func.html#tvm_ffi.get_global_func" title="tvm_ffi.get_global_func"><code class="xref py py-func docutils literal notranslate"><span class="pre">tvm_ffi.get_global_func()</span></code></a> in Python, <a class="reference internal" href="../reference/cpp/generated/function_c__api_8h_1a3bf47f6e1229627902c80217d674ed29.html#_CPPv423TVMFFIFunctionGetGlobalPK15TVMFFIByteArrayP18TVMFFIObjectHandle" title="TVMFFIFunctionGetGlobal"><code class="xref cpp cpp-func docutils literal notranslate"><span class="pre">TVMFFIFunctionGetGlobal()</span></code></a> in C,
-or <a class="reference internal" href="../reference/cpp/generated/classtvm_1_1ffi_1_1Function.html#_CPPv4N3tvm3ffi8Function9GetGlobalENSt11string_viewE" title="tvm::ffi::Function::GetGlobal"><code class="xref cpp cpp-func docutils literal notranslate"><span class="pre">tvm::ffi::Function::GetGlobal()</span></code></a> in C++.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">func</span> <span class="o">=</span> <span class="n">tvm_ffi</span><span class="o">.</span><span class="n">get_global_func</span><span class="p">(</span><span class="s2">&quot;my_ffi_extension.add_one&quot;</span><span class="p">)</span>
-<span class="n">func</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>  <span class="c1"># -&gt; 4</span>
-</pre></div>
-</div>
-</div>
-</section>
-<section id="class">
-<h3>Class<a class="headerlink" href="#class" title="Link to this heading">#</a></h3>
-<p>Any class derived from <a class="reference internal" href="../reference/cpp/generated/classtvm_1_1ffi_1_1Object.html#_CPPv4N3tvm3ffi6ObjectE" title="tvm::ffi::Object"><code class="xref cpp cpp-class docutils literal notranslate"><span class="pre">tvm::ffi::Object</span></code></a> can be registered, exported, and
-instantiated from Python. The reflection helper <a class="reference internal" href="../reference/cpp/generated/classtvm_1_1ffi_1_1reflection_1_1ObjectDef.html#_CPPv4I0EN3tvm3ffi10reflection9ObjectDefE" title="tvm::ffi::reflection::ObjectDef"><code class="xref cpp cpp-class docutils literal notranslate"><span class="pre">tvm::ffi::reflection::ObjectDef</span></code></a>
-makes it easy to expose:</p>
-<ul class="simple">
-<li><p>Fields</p>
-<ul>
-<li><p>Immutable field via <a class="reference internal" href="../reference/cpp/generated/classtvm_1_1ffi_1_1reflection_1_1ObjectDef.html#_CPPv4I00DpEN3tvm3ffi10reflection9ObjectDef6def_roER9ObjectDefPKcM9BaseClass1TDpRR5Extra" title="tvm::ffi::reflection::ObjectDef::def_ro"><code class="xref cpp cpp-func docutils literal notranslate"><span class="pre">ObjectDef::def_ro</span></code></a>;</p></li>
-<li><p>Mutable field via <a class="reference internal" href="../reference/cpp/generated/classtvm_1_1ffi_1_1reflection_1_1ObjectDef.html#_CPPv4I00DpEN3tvm3ffi10reflection9ObjectDef6def_rwER9ObjectDefPKcM9BaseClass1TDpRR5Extra" title="tvm::ffi::reflection::ObjectDef::def_rw"><code class="xref cpp cpp-func docutils literal notranslate"><span class="pre">ObjectDef::def_rw</span></code></a>;</p></li>
-</ul>
-</li>
-<li><p>Methods</p>
-<ul>
-<li><p>Member method via <a class="reference internal" href="../reference/cpp/generated/classtvm_1_1ffi_1_1reflection_1_1ObjectDef.html#_CPPv4I0DpEN3tvm3ffi10reflection9ObjectDef3defER9ObjectDefPKcRR4FuncDpRR5Extra" title="tvm::ffi::reflection::ObjectDef::def"><code class="xref cpp cpp-func docutils literal notranslate"><span class="pre">ObjectDef::def</span></code></a>.</p></li>
-<li><p>Static method via <a class="reference internal" href="../reference/cpp/generated/classtvm_1_1ffi_1_1reflection_1_1ObjectDef.html#_CPPv4I0DpEN3tvm3ffi10reflection9ObjectDef10def_staticER9ObjectDefPKcRR4FuncDpRR5Extra" title="tvm::ffi::reflection::ObjectDef::def_static"><code class="xref cpp cpp-func docutils literal notranslate"><span class="pre">ObjectDef::def_static</span></code></a>;</p></li>
-<li><p>Constructors via <a class="reference internal" href="../reference/cpp/generated/structtvm_1_1ffi_1_1reflection_1_1init.html#_CPPv4IDpEN3tvm3ffi10reflection4initE" title="tvm::ffi::reflection::init"><code class="xref cpp cpp-class docutils literal notranslate"><span class="pre">tvm::ffi::reflection::init</span></code></a>.</p></li>
-</ul>
-</li>
-</ul>
-<div class="sphinx-tabs docutils container">
-<div aria-label="Tabbed content" class="closeable" role="tablist"><button aria-controls="panel-2-Qysr" aria-selected="true" class="sphinx-tabs-tab group-tab" id="tab-2-Qysr" name="Qysr" role="tab" tabindex="0">C++</button><button aria-controls="panel-2-UHl0aG9uIChVc2VyKQ==" aria-selected="false" class="sphinx-tabs-tab group-tab" id="tab-2-UHl0aG9uIChVc2VyKQ==" name="UHl0aG9uIChVc2VyKQ==" role="tab" tabindex="-1">Python (User)</button><button aria-controls="panel-2-UHl0aG9uIChHZW5lcmF0ZWQp" aria-selected="false" class="sphinx-tabs-tab group-tab" id="tab-2-UHl0aG9uIChHZW5lcmF0ZWQp" name="UHl0aG9uIChHZW5lcmF0ZWQp" role="tab" tabindex="-1">Python (Generated)</button></div><div aria-labelledby="tab-2-Qysr" class="sphinx-tabs-panel group-tab" id="panel-2-Qysr" name="Qysr" role="tabpanel" tabindex="0"><p>The example below defines a class <code class="docutils literal notranslate"><span class="pre">my_ffi_extension.IntPair</span></code> with</p>
-<ul class="simple">
-<li><p>two integer fields <code class="docutils literal notranslate"><span class="pre">a</span></code>, <code class="docutils literal notranslate"><span class="pre">b</span></code>,</p></li>
-<li><p>a constructor, and</p></li>
-<li><p>a method <code class="docutils literal notranslate"><span class="pre">Sum</span></code> that returns the sum of the two fields.</p></li>
-</ul>
-<div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="k">class</span><span class="w"> </span><span class="nc">IntPairObj</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="k">public</span><span class="w"> </span><span class="n">ffi</span><span class="o">::</span><span class="n">Object</span><span class="w"> </span><span class="p">{</span>
-<span class="w"> </span><span class="k">public</span><span class="o">:</span>
-<span class="w">  </span><span class="kt">int64_t</span><span class="w"> </span><span class="n">a</span><span class="p">;</span>
-<span class="w">  </span><span class="kt">int64_t</span><span class="w"> </span><span class="n">b</span><span class="p">;</span>
-
-<span class="w">  </span><span class="n">IntPairObj</span><span class="p">(</span><span class="kt">int64_t</span><span class="w"> </span><span class="n">a</span><span class="p">,</span><span class="w"> </span><span class="kt">int64_t</span><span class="w"> </span><span class="n">b</span><span class="p">)</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">a</span><span class="p">(</span><span class="n">a</span><span class="p">),</span><span class="w"> </span><span class="n">b</span><span class="p">(</span><span class="n">b</span><span class="p">)</span><span class="w"> </span><span class="p">{}</span>
-
-<span class="w">  </span><span class="kt">int64_t</span><span class="w"> </span><span class="n">Sum</span><span class="p">()</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="k">return</span><span class="w"> </span><span class="n">a</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">b</span><span class="p">;</span><span class="w"> </span><span class="p">}</span>
-
-<span class="w">  </span><span class="k">static</span><span class="w"> </span><span class="k">constexpr</span><span class="w"> </span><span class="kt">bool</span><span class="w"> </span><span class="n">_type_mutable</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">true</span><span class="p">;</span>
-<span class="w">  </span><span class="n">TVM_FFI_DECLARE_OBJECT_INFO_FINAL</span><span class="p">(</span>
-<span class="w">      </span><span class="cm">/*type_key=*/</span><span class="s">&quot;my_ffi_extension.IntPair&quot;</span><span class="p">,</span>
-<span class="w">      </span><span class="cm">/*class=*/</span><span class="n">IntPairObj</span><span class="p">,</span>
-<span class="w">      </span><span class="cm">/*parent_class=*/</span><span class="n">ffi</span><span class="o">::</span><span class="n">Object</span><span class="p">);</span>
-<span class="p">};</span>
-
-<span class="n">TVM_FFI_STATIC_INIT_BLOCK</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
-<span class="w">  </span><span class="k">namespace</span><span class="w"> </span><span class="nn">refl</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nn">tvm</span><span class="o">::</span><span class="nn">ffi</span><span class="o">::</span><span class="nn">reflection</span><span class="p">;</span>
-<span class="w">  </span><span class="n">refl</span><span class="o">::</span><span class="n">ObjectDef</span><span class="o">&lt;</span><span class="n">IntPairObj</span><span class="o">&gt;</span><span class="p">()</span>
-<span class="w">      </span><span class="p">.</span><span class="n">def</span><span class="p">(</span><span class="n">refl</span><span class="o">::</span><span class="n">init</span><span class="o">&lt;</span><span class="kt">int64_t</span><span class="p">,</span><span class="w"> </span><span class="kt">int64_t</span><span class="o">&gt;</span><span class="p">())</span>
-<span class="w">      </span><span class="p">.</span><span class="n">def_rw</span><span class="p">(</span><span class="s">&quot;a&quot;</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">IntPairObj</span><span class="o">::</span><span class="n">a</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;the first field&quot;</span><span class="p">)</span>
-<span class="w">      </span><span class="p">.</span><span class="n">def_rw</span><span class="p">(</span><span class="s">&quot;b&quot;</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">IntPairObj</span><span class="o">::</span><span class="n">b</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;the second field&quot;</span><span class="p">)</span>
-<span class="w">      </span><span class="p">.</span><span class="n">def</span><span class="p">(</span><span class="s">&quot;sum&quot;</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">IntPairObj</span><span class="o">::</span><span class="n">Sum</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;IntPairObj::Sum() method&quot;</span><span class="p">);</span>
-<span class="p">}</span>
-</pre></div>
-</div>
-</div><div aria-labelledby="tab-2-UHl0aG9uIChVc2VyKQ==" class="sphinx-tabs-panel group-tab" hidden="true" id="panel-2-UHl0aG9uIChVc2VyKQ==" name="UHl0aG9uIChVc2VyKQ==" role="tabpanel" tabindex="0"><p>The class is available immediately after importing the extension,
-with the import path matching the registered name, i.e. <code class="docutils literal notranslate"><span class="pre">my_ffi_extension.IntPair</span></code>.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">my_ffi_extension</span>
-
-<span class="n">pair</span> <span class="o">=</span> <span class="n">my_ffi_extension</span><span class="o">.</span><span class="n">IntPair</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
-<span class="n">pair</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span>  <span class="c1"># -&gt; 3</span>
-</pre></div>
-</div>
-</div><div aria-labelledby="tab-2-UHl0aG9uIChHZW5lcmF0ZWQp" class="sphinx-tabs-panel group-tab" hidden="true" id="panel-2-UHl0aG9uIChHZW5lcmF0ZWQp" name="UHl0aG9uIChHZW5lcmF0ZWQp" role="tabpanel" tabindex="0"><p>Type hints are generated for both fields and methods.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># File: my_ffi_extension/_ffi_api.py (auto generated)</span>
-
-<span class="nd">@tvm_ffi</span><span class="o">.</span><span class="n">register_object</span><span class="p">(</span><span class="s2">&quot;my_ffi_extension.IntPair&quot;</span><span class="p">)</span>
-<span class="k">class</span><span class="w"> </span><span class="nc">IntPair</span><span class="p">(</span><span class="n">tvm_ffi</span><span class="o">.</span><span class="n">Object</span><span class="p">):</span>
-    <span class="n">a</span><span class="p">:</span> <span class="nb">int</span>
-    <span class="n">b</span><span class="p">:</span> <span class="nb">int</span>
-
-    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">a</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">b</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span> <span class="o">...</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">sum</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span> <span class="o">...</span>
-</pre></div>
-</div>
-</div></div>
+<p>Once the library is loaded, functions and classes can be exported from C++ and
+called from Python. See <a class="reference internal" href="../guides/export_func_cls.html"><span class="doc">Export Functions and Classes</span></a> for the three export
+mechanisms (C symbols, global functions, and classes) with complete examples.</p>
 </section>
 </section>
 <section id="stub-generation">
@@ -1102,12 +931,6 @@ customization and command-line usage.</p>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#load-the-library">Load the Library</a></li>
 </ul>
 </li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#export-c-to-python">Export C++ to Python</a><ul class="visible nav section-nav flex-column">
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#tvm-ffi-abi-recommended">TVM-FFI ABI (Recommended)</a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#global-function">Global Function</a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#class">Class</a></li>
-</ul>
-</li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#stub-generation">Stub Generation</a></li>
 </ul>
   </nav></div>
@@ -1135,7 +958,7 @@ By Apache TVM FFI contributors
   
   <div class="footer-item">
     <p class="last-updated">
-  Last updated on Feb 06, 2026.
+  Last updated on Feb 08, 2026.
   <br/>
 </p>
   </div>

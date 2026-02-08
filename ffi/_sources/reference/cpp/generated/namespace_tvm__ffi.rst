@@ -162,9 +162,9 @@ Functions
 
 - :ref:`exhale_function_base64_8h_1ae1d4736f7dc56b224acd303ba7bf7a45`
 
-- :ref:`exhale_function_base64_8h_1a279b4ba2f4c7ea16291ef24b73e43963`
-
 - :ref:`exhale_function_base64_8h_1aa5b2a4531449585b9f079cb170a79f0b`
+
+- :ref:`exhale_function_base64_8h_1a279b4ba2f4c7ea16291ef24b73e43963`
 
 - :ref:`exhale_function_endian_8h_1ab4e0ed8000c632cd2c7cd089c0a0d1af`
 
@@ -178,11 +178,11 @@ Functions
 
 - :ref:`exhale_function_serialization_8h_1a56baa5d1ca415dbdebf19ac1f54bd5b7`
 
+- :ref:`exhale_function_tensor_8h_1a65b3a61c540c72d9410150a3a7a76dde`
+
 - :ref:`exhale_function_tensor_8h_1a011d0a2dcbe5702156124d7a7223b3dd`
 
 - :ref:`exhale_function_tensor_8h_1a226723176642cde5996498e7da6a6368`
-
-- :ref:`exhale_function_tensor_8h_1a65b3a61c540c72d9410150a3a7a76dde`
 
 - :ref:`exhale_function_tensor_8h_1a71e4a492b5a03a19a95087771a7e9ed1`
 
