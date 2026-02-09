@@ -54,7 +54,7 @@ pre-trained weight from Hugging Face but not the model architecture. We need to 
 model architecture by ourselves. Apache TVM prepares a PyTorch-liked API to construct the model
 architecture. We can use the API to construct the model architecture.
 
-.. GENERATED FROM PYTHON SOURCE LINES 56-73
+.. GENERATED FROM PYTHON SOURCE LINES 56-74
 
 .. code-block:: Python
 
@@ -68,7 +68,8 @@ architecture. We can use the API to construct the model architecture.
     from typing import List, Optional
 
     import tvm
-    from tvm import dlight, relax, te, tir
+    from tvm import relax, te, tir
+    from tvm.s_tir import dlight
     from tvm.relax import register_pipeline
     from tvm.relax.frontend import nn
     from tvm.relax.frontend.nn import Tensor, op
@@ -82,13 +83,13 @@ architecture. We can use the API to construct the model architecture.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 74-77
+.. GENERATED FROM PYTHON SOURCE LINES 75-78
 
 First, we need to define the model configuration. The configuration includes the key parameters
 of the model, such as hidden size, intermediate size, etc. Here for convenience, we define a
 constant config specially for the TinyLlama model.
 
-.. GENERATED FROM PYTHON SOURCE LINES 77-98
+.. GENERATED FROM PYTHON SOURCE LINES 78-99
 
 .. code-block:: Python
 
@@ -120,7 +121,7 @@ constant config specially for the TinyLlama model.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 99-105
+.. GENERATED FROM PYTHON SOURCE LINES 100-106
 
 Next, we define the RoPE mode of the Paged KV cache. The RoPE mode is used to apply the
 Relative Positional Encoding (RoPE) to the query and key tensors. The RoPE mode can be set to
@@ -129,7 +130,7 @@ the query and key tensors. If the RoPE mode is `NORMAL`, RoPE will be applied to
 before adding the key tensor to the cache. If the RoPE mode is `INLINE`, RoPE will be applied to
 the query and key tensors in the attention kernel on-the-fly.
 
-.. GENERATED FROM PYTHON SOURCE LINES 105-119
+.. GENERATED FROM PYTHON SOURCE LINES 106-120
 
 .. code-block:: Python
 
@@ -154,7 +155,7 @@ the query and key tensors in the attention kernel on-the-fly.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 120-139
+.. GENERATED FROM PYTHON SOURCE LINES 121-140
 
 Secondly, we define the model architecture. The model architecture consists of three parts:
 
@@ -176,7 +177,7 @@ The optimized implementation is:
   FFN(x) = down_proj(silu(gate_x) * up_x)
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 139-157
+.. GENERATED FROM PYTHON SOURCE LINES 140-158
 
 .. code-block:: Python
 
@@ -205,7 +206,7 @@ The optimized implementation is:
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 158-171
+.. GENERATED FROM PYTHON SOURCE LINES 159-172
 
 Then we define the self-attention layer. The self-attention layer consists of three parts:
 
@@ -221,7 +222,7 @@ We perform optimizations on the different parts of the self-attention layer:
   kernel.
 - Attention: We leverage the horizontal fusion on attention and fuse the QKV projection and
 
-.. GENERATED FROM PYTHON SOURCE LINES 171-203
+.. GENERATED FROM PYTHON SOURCE LINES 172-204
 
 .. code-block:: Python
 
@@ -264,11 +265,11 @@ We perform optimizations on the different parts of the self-attention layer:
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 204-205
+.. GENERATED FROM PYTHON SOURCE LINES 205-206
 
 Finally, we define the model architecture with FFN and self-attention layers.
 
-.. GENERATED FROM PYTHON SOURCE LINES 205-354
+.. GENERATED FROM PYTHON SOURCE LINES 206-355
 
 .. code-block:: Python
 
@@ -428,14 +429,14 @@ Finally, we define the model architecture with FFN and self-attention layers.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 355-359
+.. GENERATED FROM PYTHON SOURCE LINES 356-360
 
 Export the model to Relax IRModule
 ----------------------------------
 After defining the model architecture, we can export the model to the Relax IRModule.
 For demonstration, we only show the part of the model architecture. and parameters.
 
-.. GENERATED FROM PYTHON SOURCE LINES 359-371
+.. GENERATED FROM PYTHON SOURCE LINES 360-372
 
 .. code-block:: Python
 
@@ -488,14 +489,14 @@ For demonstration, we only show the part of the model architecture. and paramete
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 372-376
+.. GENERATED FROM PYTHON SOURCE LINES 373-377
 
 Define Optimization Pipeline
 ----------------------------
 We define a series of optimization passes to optimize the model. The optimization pipeline
 is designed specifically for the LLMs.
 
-.. GENERATED FROM PYTHON SOURCE LINES 376-433
+.. GENERATED FROM PYTHON SOURCE LINES 377-434
 
 .. code-block:: Python
 
@@ -563,7 +564,7 @@ is designed specifically for the LLMs.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 434-445
+.. GENERATED FROM PYTHON SOURCE LINES 435-446
 
 Prepare the model weights
 -------------------------
@@ -577,7 +578,7 @@ and prepare the model parameters.
   are not available in the CI environment.
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 445-496
+.. GENERATED FROM PYTHON SOURCE LINES 446-497
 
 .. code-block:: Python
 
@@ -639,7 +640,7 @@ and prepare the model parameters.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 497-503
+.. GENERATED FROM PYTHON SOURCE LINES 498-504
 
 Deploy the compiled model
 -------------------------
@@ -648,7 +649,7 @@ The language models inference includes two steps: prefill and decode. The prefil
 used to process the input tokens and store the KVCache. The decode step is used to generate
 the token until the end token is generated.
 
-.. GENERATED FROM PYTHON SOURCE LINES 506-513
+.. GENERATED FROM PYTHON SOURCE LINES 507-514
 
 Tokenization
 ~~~~~~~~~~~~
@@ -658,7 +659,7 @@ to tokenize the input prompt and embed the tokens into the hidden states.
 Note that different models require different tokenization and prompt format, please refer to
 the model documentation for the correct tokenization and prompt format.
 
-.. GENERATED FROM PYTHON SOURCE LINES 513-528
+.. GENERATED FROM PYTHON SOURCE LINES 514-529
 
 .. code-block:: Python
 
@@ -684,7 +685,7 @@ the model documentation for the correct tokenization and prompt format.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 529-534
+.. GENERATED FROM PYTHON SOURCE LINES 530-535
 
 Create the KVCache
 ~~~~~~~~~~~~~~~~~~
@@ -692,7 +693,7 @@ Before starting the inference, we need to create the KVCache. The KVCache is use
 key and value tensors for the attention layer. Apache TVM provides a PagedKVCache to store the
 key and value tensors. We create the PagedKVCache with the specified parameters.
 
-.. GENERATED FROM PYTHON SOURCE LINES 534-544
+.. GENERATED FROM PYTHON SOURCE LINES 535-545
 
 .. code-block:: Python
 
@@ -713,14 +714,14 @@ key and value tensors. We create the PagedKVCache with the specified parameters.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 545-549
+.. GENERATED FROM PYTHON SOURCE LINES 546-550
 
 Embedding
 ~~~~~~~~~
 The next step is to embed the tokens into the hidden states. We use the `embed` function
 compiled in the Relax IRModule to embed the tokens into the hidden states.
 
-.. GENERATED FROM PYTHON SOURCE LINES 549-560
+.. GENERATED FROM PYTHON SOURCE LINES 550-561
 
 .. code-block:: Python
 
@@ -742,13 +743,13 @@ compiled in the Relax IRModule to embed the tokens into the hidden states.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 561-564
+.. GENERATED FROM PYTHON SOURCE LINES 562-565
 
 Prefill
 ~~~~~~~
 Before running the forward pass, we first get some help functions for preparation.
 
-.. GENERATED FROM PYTHON SOURCE LINES 564-569
+.. GENERATED FROM PYTHON SOURCE LINES 565-570
 
 .. code-block:: Python
 
@@ -764,13 +765,13 @@ Before running the forward pass, we first get some help functions for preparatio
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 570-573
+.. GENERATED FROM PYTHON SOURCE LINES 571-574
 
 As we are creating a new sequence, we need to call `add_sequence_func` to initialize
 the request. Additionally, we need to call `begin_forward_func` to start the forward pass,
 and `end_forward_func` to end the forward pass.
 
-.. GENERATED FROM PYTHON SOURCE LINES 573-582
+.. GENERATED FROM PYTHON SOURCE LINES 574-583
 
 .. code-block:: Python
 
@@ -790,7 +791,7 @@ and `end_forward_func` to end the forward pass.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 583-589
+.. GENERATED FROM PYTHON SOURCE LINES 584-590
 
 Now we have the output logits from the prefill step. The logits are used to generate the token
 via sampling. Let's sample the token from the logits.
@@ -799,7 +800,7 @@ In this tutorial, we simplify the sampling process and pick the token with the h
 probability. In practice, we should sample the token based on the probability distribution.
 Also, to make the tutorial concise, we execute the sample process on CPU.
 
-.. GENERATED FROM PYTHON SOURCE LINES 589-601
+.. GENERATED FROM PYTHON SOURCE LINES 590-602
 
 .. code-block:: Python
 
@@ -822,7 +823,7 @@ Also, to make the tutorial concise, we execute the sample process on CPU.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 602-607
+.. GENERATED FROM PYTHON SOURCE LINES 603-608
 
 Decode
 ~~~~~~
@@ -830,7 +831,7 @@ After the prefill step, we can start the decode step. The decode step is used to
 token until the end token is generated. We use the `decode` function compiled in the Relax
 IRModule to generate the token.
 
-.. GENERATED FROM PYTHON SOURCE LINES 607-622
+.. GENERATED FROM PYTHON SOURCE LINES 608-623
 
 .. code-block:: Python
 
