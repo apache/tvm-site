@@ -152,14 +152,23 @@ operator. Here we demonstrate how to dispatch the CUBLAS library for certain pat
   the flexibility of the optimization pipeline. In real-world cases, we can import multiple
   patterns and dispatch them to different kernels.
 
-.. GENERATED FROM PYTHON SOURCE LINES 103-131
+.. GENERATED FROM PYTHON SOURCE LINES 103-140
 
 .. code-block:: Python
 
 
 
     # Import cublas pattern
-    import tvm.relax.backend.cuda.cublas as _cublas
+    try:
+        import tvm.relax.backend.cuda.cublas as _cublas
+    except ImportError as e:
+        raise ImportError(
+            "This tutorial requires TVM built with CUDA support.\n"
+            "If you hit missing 'tvm_ffi', try: pip install apache-tvm-ffi\n"
+            "Otherwise build TVM with CUDA enabled:\n"
+            "  https://tvm.apache.org/docs/install/from_source.html\n"
+            f"Original error: {e}"
+        ) from e
 
 
     # Define a new pass for CUBLAS dispatch
@@ -215,14 +224,14 @@ operator. Here we demonstrate how to dispatch the CUBLAS library for certain pat
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 132-136
+.. GENERATED FROM PYTHON SOURCE LINES 141-145
 
 After the dispatching pass, we can see that the first ``nn.Linear`` and ``nn.ReLU`` are fused
 and rewritten to a ``call_dps_packed`` function which call the CUBLAS library. Notably, the
 other part is not changed, which means we can selectively dispatch the optimization for
 certain computation.
 
-.. GENERATED FROM PYTHON SOURCE LINES 138-153
+.. GENERATED FROM PYTHON SOURCE LINES 147-162
 
 Auto Tuning
 ~~~~~~~~~~~
@@ -240,7 +249,7 @@ running the passes, we need to lowering relax operator into TensorIR functions v
   To save CI time and avoid flakiness, we skip the tuning process in CI environment.
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 153-169
+.. GENERATED FROM PYTHON SOURCE LINES 162-178
 
 .. code-block:: Python
 
@@ -267,7 +276,7 @@ running the passes, we need to lowering relax operator into TensorIR functions v
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 170-176
+.. GENERATED FROM PYTHON SOURCE LINES 179-185
 
 DLight Rules
 ~~~~~~~~~~~~
@@ -276,7 +285,7 @@ DLight rules are designed for fast compilation and **fair** performance. In some
 e.g. language model, DLight provides excellent performance, while for generic models,
 it achieves a balance between performance and compilation time.
 
-.. GENERATED FROM PYTHON SOURCE LINES 176-196
+.. GENERATED FROM PYTHON SOURCE LINES 185-205
 
 .. code-block:: Python
 
@@ -378,20 +387,20 @@ it achieves a balance between performance and compilation time.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 197-201
+.. GENERATED FROM PYTHON SOURCE LINES 206-210
 
 .. note::
 
   This tutorial focuses on the demonstration of the optimization pipeline, instead of
   pushing the performance to the limit. The current optimization may not be the best.
 
-.. GENERATED FROM PYTHON SOURCE LINES 204-207
+.. GENERATED FROM PYTHON SOURCE LINES 213-216
 
 Deploy the Optimized Model
 --------------------------
 We can build and deploy the optimized model to the TVM runtime.
 
-.. GENERATED FROM PYTHON SOURCE LINES 207-218
+.. GENERATED FROM PYTHON SOURCE LINES 216-227
 
 .. code-block:: Python
 
@@ -414,13 +423,13 @@ We can build and deploy the optimized model to the TVM runtime.
 
  .. code-block:: none
 
-    [[23433.25  26130.393 24159.5   25683.238 26021.346 24968.486 26137.613
-      25395.078 22603.098 23955.79 ]]
+    [[23335.05  24149.504 23765.203 24391.436 25033.844 24963.436 23928.504
+      25906.434 24803.107 25083.496]]
 
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 219-226
+.. GENERATED FROM PYTHON SOURCE LINES 228-235
 
 Summary
 -------
