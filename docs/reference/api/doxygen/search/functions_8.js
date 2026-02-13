@@ -20,7 +20,7 @@ var searchData=
   ['hasvoidstructinfo_5791',['HasVoidStructInfo',['../namespacetvm_1_1relax.html#ae0c3fe13cc8a1af27bcb32ddf15bbf1c',1,'tvm::relax']]],
   ['hasworkload_5792',['HasWorkload',['../classtvm_1_1s__tir_1_1meta__schedule_1_1PyDatabaseNode.html#a4cbab7e7297f69aac4ee61dbcce5a508',1,'tvm::s_tir::meta_schedule::PyDatabaseNode::HasWorkload()'],['../classtvm_1_1s__tir_1_1meta__schedule_1_1DatabaseNode.html#a3ab9ce2c2f51569ef4b36e40ee5756bf',1,'tvm::s_tir::meta_schedule::DatabaseNode::HasWorkload()']]],
   ['help_5793',['Help',['../classtvm_1_1Diagnostic.html#a472c748d4c008bf6508b4a6f0ec88057',1,'tvm::Diagnostic::Help(Span span)'],['../classtvm_1_1Diagnostic.html#a76672eb119f3044e523535e12cf19f78',1,'tvm::Diagnostic::Help(ObjectRef loc)'],['../classtvm_1_1Diagnostic.html#aa2a954a2381bb9fe14b3e1797646693a',1,'tvm::Diagnostic::Help(const Object *loc)']]],
-  ['hoistexpression_5794',['HoistExpression',['../namespacetvm_1_1tir_1_1transform.html#aabd207977177c1d1dc097445cc44339b',1,'tvm::tir::transform']]],
-  ['hoistifthenelse_5795',['HoistIfThenElse',['../namespacetvm_1_1tir_1_1transform.html#acd2b8fdd84785388630e2d52a6e3cc54',1,'tvm::tir::transform']]],
+  ['hoistexpression_5794',['HoistExpression',['../namespacetvm_1_1s__tir_1_1transform.html#a314cbfe0162cc1ffb4e392761694191d',1,'tvm::s_tir::transform::HoistExpression()'],['../namespacetvm_1_1tir_1_1transform.html#aabd207977177c1d1dc097445cc44339b',1,'tvm::tir::transform::HoistExpression()']]],
+  ['hoistifthenelse_5795',['HoistIfThenElse',['../namespacetvm_1_1s__tir_1_1transform.html#a037e97d08520c63791ded380c95ebb7a',1,'tvm::s_tir::transform::HoistIfThenElse()'],['../namespacetvm_1_1tir_1_1transform.html#acd2b8fdd84785388630e2d52a6e3cc54',1,'tvm::tir::transform::HoistIfThenElse()']]],
   ['hypot_5796',['hypot',['../namespacetvm.html#a28e456d33229a628a312110db8d45b44',1,'tvm']]]
 ];
