@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['quantizeattrs_4493',['QuantizeAttrs',['../structtvm_1_1relax_1_1QuantizeAttrs.html',1,'tvm::relax']]]
+  ['quantizeattrs_4473',['QuantizeAttrs',['../structtvm_1_1relax_1_1QuantizeAttrs.html',1,'tvm::relax']]]
 ];
