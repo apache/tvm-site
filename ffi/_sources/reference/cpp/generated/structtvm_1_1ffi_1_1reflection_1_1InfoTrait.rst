@@ -13,8 +13,10 @@ Derived Types
 *************
 
 - ``public tvm::ffi::reflection::AttachFieldFlag`` (:ref:`exhale_class_classtvm_1_1ffi_1_1reflection_1_1AttachFieldFlag`)
+- ``public tvm::ffi::reflection::DefaultFactory`` (:ref:`exhale_class_classtvm_1_1ffi_1_1reflection_1_1DefaultFactory`)
 - ``public tvm::ffi::reflection::DefaultValue`` (:ref:`exhale_class_classtvm_1_1ffi_1_1reflection_1_1DefaultValue`)
 - ``public tvm::ffi::reflection::Metadata`` (:ref:`exhale_class_classtvm_1_1ffi_1_1reflection_1_1Metadata`)
+- ``public tvm::ffi::reflection::Repr`` (:ref:`exhale_class_classtvm_1_1ffi_1_1reflection_1_1Repr`)
 
 
 Struct Documentation

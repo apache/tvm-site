@@ -71,7 +71,11 @@ Includes
 
 - ``tvm/ffi/container/array.h`` (:ref:`file_tvm_ffi_container_array.h`)
 
+- ``tvm/ffi/container/list.h`` (:ref:`file_tvm_ffi_container_list.h`)
+
 - ``tvm/ffi/container/map.h`` (:ref:`file_tvm_ffi_container_map.h`)
+
+- ``tvm/ffi/container/seq_base.h`` (:ref:`file_tvm_ffi_container_seq_base.h`)
 
 - ``tvm/ffi/error.h`` (:ref:`file_tvm_ffi_error.h`)
 

@@ -39,7 +39,7 @@
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
   <script src="../../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
 
-    <script src="../../_static/documentation_options.js?v=3a1e5d7d"></script>
+    <script src="../../_static/documentation_options.js?v=95fb53ea"></script>
     <script src="../../_static/doctools.js?v=9bcbadda"></script>
     <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -490,7 +490,7 @@ window.addEventListener("load", load);</script>
     <link rel="search" title="Search" href="../../search.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-    <meta name="docbuild:last-update" content="Feb 08, 2026"/>
+    <meta name="docbuild:last-update" content="Feb 22, 2026"/>
   </head>
   
   
@@ -613,6 +613,7 @@ window.addEventListener("load", load);</script>
 <ul class="nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="../../concepts/abi_overview.html">ABI Overview</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../concepts/any.html">Any and AnyView</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../concepts/containers.html">Containers</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../concepts/object_and_class.html">Object and Class</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../concepts/tensor.html">Tensor and DLPack</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../concepts/func_module.html">Function and Module</a></li>
@@ -814,6 +815,7 @@ document.write(`
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
 
+<span class="kn">import</span><span class="w"> </span><span class="nn">functools</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">sys</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">Literal</span><span class="p">,</span> <span class="n">Sequence</span><span class="p">,</span> <span class="n">TypeVar</span><span class="p">,</span> <span class="n">overload</span>
@@ -1149,23 +1151,98 @@ document.write(`
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">type_cls</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>  <span class="c1"># skip already defined attributes</span>
             <span class="nb">setattr</span><span class="p">(</span><span class="n">type_cls</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">field</span><span class="o">.</span><span class="n">as_property</span><span class="p">(</span><span class="n">type_cls</span><span class="p">))</span>
     <span class="n">has_c_init</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="n">has_shallow_copy</span> <span class="o">=</span> <span class="kc">False</span>
     <span class="k">for</span> <span class="n">method</span> <span class="ow">in</span> <span class="n">type_info</span><span class="o">.</span><span class="n">methods</span><span class="p">:</span>
         <span class="n">name</span> <span class="o">=</span> <span class="n">method</span><span class="o">.</span><span class="n">name</span>
         <span class="k">if</span> <span class="n">name</span> <span class="o">==</span> <span class="s2">&quot;__ffi_init__&quot;</span><span class="p">:</span>
             <span class="n">name</span> <span class="o">=</span> <span class="s2">&quot;__c_ffi_init__&quot;</span>
             <span class="n">has_c_init</span> <span class="o">=</span> <span class="kc">True</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">type_cls</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">name</span> <span class="o">==</span> <span class="s2">&quot;__ffi_shallow_copy__&quot;</span><span class="p">:</span>
+            <span class="n">has_shallow_copy</span> <span class="o">=</span> <span class="kc">True</span>
+            <span class="c1"># Always override: shallow copy is type-specific and must not be inherited</span>
+            <span class="nb">setattr</span><span class="p">(</span><span class="n">type_cls</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">method</span><span class="o">.</span><span class="n">as_callable</span><span class="p">(</span><span class="n">type_cls</span><span class="p">))</span>
+        <span class="k">elif</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">type_cls</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
             <span class="nb">setattr</span><span class="p">(</span><span class="n">type_cls</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">method</span><span class="o">.</span><span class="n">as_callable</span><span class="p">(</span><span class="n">type_cls</span><span class="p">))</span>
     <span class="k">if</span> <span class="s2">&quot;__init__&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">type_cls</span><span class="o">.</span><span class="vm">__dict__</span><span class="p">:</span>
         <span class="k">if</span> <span class="n">has_c_init</span><span class="p">:</span>
             <span class="nb">setattr</span><span class="p">(</span><span class="n">type_cls</span><span class="p">,</span> <span class="s2">&quot;__init__&quot;</span><span class="p">,</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">type_cls</span><span class="p">,</span> <span class="s2">&quot;__ffi_init__&quot;</span><span class="p">))</span>
         <span class="k">elif</span> <span class="ow">not</span> <span class="nb">issubclass</span><span class="p">(</span><span class="n">type_cls</span><span class="p">,</span> <span class="n">core</span><span class="o">.</span><span class="n">PyNativeObject</span><span class="p">):</span>
             <span class="nb">setattr</span><span class="p">(</span><span class="n">type_cls</span><span class="p">,</span> <span class="s2">&quot;__init__&quot;</span><span class="p">,</span> <span class="n">__init__invalid</span><span class="p">)</span>
+    <span class="n">is_container</span> <span class="o">=</span> <span class="n">type_info</span><span class="o">.</span><span class="n">type_key</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;ffi.Array&quot;</span><span class="p">,</span> <span class="s2">&quot;ffi.Map&quot;</span><span class="p">,</span> <span class="s2">&quot;ffi.List&quot;</span><span class="p">,</span> <span class="s2">&quot;ffi.Dict&quot;</span><span class="p">)</span>
+    <span class="n">_setup_copy_methods</span><span class="p">(</span><span class="n">type_cls</span><span class="p">,</span> <span class="n">has_shallow_copy</span><span class="p">,</span> <span class="n">is_container</span><span class="o">=</span><span class="n">is_container</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">type_cls</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_setup_copy_methods</span><span class="p">(</span>
+    <span class="n">type_cls</span><span class="p">:</span> <span class="nb">type</span><span class="p">,</span> <span class="n">has_shallow_copy</span><span class="p">:</span> <span class="nb">bool</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">is_container</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Set up __copy__, __deepcopy__, __replace__ based on copy support.&quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">has_shallow_copy</span><span class="p">:</span>
+        <span class="k">if</span> <span class="s2">&quot;__copy__&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">type_cls</span><span class="o">.</span><span class="vm">__dict__</span><span class="p">:</span>
+            <span class="nb">setattr</span><span class="p">(</span><span class="n">type_cls</span><span class="p">,</span> <span class="s2">&quot;__copy__&quot;</span><span class="p">,</span> <span class="n">_copy_supported</span><span class="p">)</span>
+        <span class="k">if</span> <span class="s2">&quot;__deepcopy__&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">type_cls</span><span class="o">.</span><span class="vm">__dict__</span><span class="p">:</span>
+            <span class="nb">setattr</span><span class="p">(</span><span class="n">type_cls</span><span class="p">,</span> <span class="s2">&quot;__deepcopy__&quot;</span><span class="p">,</span> <span class="n">_deepcopy_supported</span><span class="p">)</span>
+        <span class="k">if</span> <span class="s2">&quot;__replace__&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">type_cls</span><span class="o">.</span><span class="vm">__dict__</span><span class="p">:</span>
+            <span class="nb">setattr</span><span class="p">(</span><span class="n">type_cls</span><span class="p">,</span> <span class="s2">&quot;__replace__&quot;</span><span class="p">,</span> <span class="n">_replace_supported</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">if</span> <span class="s2">&quot;__copy__&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">type_cls</span><span class="o">.</span><span class="vm">__dict__</span><span class="p">:</span>
+            <span class="nb">setattr</span><span class="p">(</span><span class="n">type_cls</span><span class="p">,</span> <span class="s2">&quot;__copy__&quot;</span><span class="p">,</span> <span class="n">_copy_unsupported</span><span class="p">)</span>
+        <span class="k">if</span> <span class="s2">&quot;__deepcopy__&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">type_cls</span><span class="o">.</span><span class="vm">__dict__</span><span class="p">:</span>
+            <span class="c1"># Containers (Array, Map) support deepcopy via ffi.DeepCopy</span>
+            <span class="c1"># even without __ffi_shallow_copy__</span>
+            <span class="k">if</span> <span class="n">is_container</span><span class="p">:</span>
+                <span class="nb">setattr</span><span class="p">(</span><span class="n">type_cls</span><span class="p">,</span> <span class="s2">&quot;__deepcopy__&quot;</span><span class="p">,</span> <span class="n">_deepcopy_supported</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="nb">setattr</span><span class="p">(</span><span class="n">type_cls</span><span class="p">,</span> <span class="s2">&quot;__deepcopy__&quot;</span><span class="p">,</span> <span class="n">_deepcopy_unsupported</span><span class="p">)</span>
+        <span class="k">if</span> <span class="s2">&quot;__replace__&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">type_cls</span><span class="o">.</span><span class="vm">__dict__</span><span class="p">:</span>
+            <span class="nb">setattr</span><span class="p">(</span><span class="n">type_cls</span><span class="p">,</span> <span class="s2">&quot;__replace__&quot;</span><span class="p">,</span> <span class="n">_replace_unsupported</span><span class="p">)</span>
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">__init__invalid</span><span class="p">(</span><span class="bp">self</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
     <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;The __init__ method of this class is not implemented.&quot;</span><span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_copy_supported</span><span class="p">(</span><span class="bp">self</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
+    <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__ffi_shallow_copy__</span><span class="p">()</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_deepcopy_supported</span><span class="p">(</span><span class="bp">self</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span> <span class="n">memo</span><span class="p">:</span> <span class="n">Any</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
+    <span class="k">return</span> <span class="n">_get_deep_copy_func</span><span class="p">()(</span><span class="bp">self</span><span class="p">)</span>
+
+
+<span class="nd">@functools</span><span class="o">.</span><span class="n">lru_cache</span><span class="p">(</span><span class="n">maxsize</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">_get_deep_copy_func</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">core</span><span class="o">.</span><span class="n">Function</span><span class="p">:</span>
+    <span class="k">return</span> <span class="n">get_global_func</span><span class="p">(</span><span class="s2">&quot;ffi.DeepCopy&quot;</span><span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_replace_supported</span><span class="p">(</span><span class="bp">self</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">copy</span>  <span class="c1"># noqa: PLC0415</span>
+
+    <span class="n">obj</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="nb">setattr</span><span class="p">(</span><span class="n">obj</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">obj</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_copy_unsupported</span><span class="p">(</span><span class="bp">self</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
+    <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span>
+        <span class="sa">f</span><span class="s2">&quot;Type `</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">` does not support copy. &quot;</span>
+        <span class="sa">f</span><span class="s2">&quot;The underlying C++ type is not copy-constructible.&quot;</span>
+    <span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_deepcopy_unsupported</span><span class="p">(</span><span class="bp">self</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span> <span class="n">memo</span><span class="p">:</span> <span class="n">Any</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
+    <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span>
+        <span class="sa">f</span><span class="s2">&quot;Type `</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">` does not support deepcopy. &quot;</span>
+        <span class="sa">f</span><span class="s2">&quot;The underlying C++ type is not copy-constructible.&quot;</span>
+    <span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_replace_unsupported</span><span class="p">(</span><span class="bp">self</span><span class="p">:</span> <span class="n">Any</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">:</span> <span class="n">Any</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
+    <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span>
+        <span class="sa">f</span><span class="s2">&quot;Type `</span><span class="si">{</span><span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">` does not support replace. &quot;</span>
+        <span class="sa">f</span><span class="s2">&quot;The underlying C++ type is not copy-constructible.&quot;</span>
+    <span class="p">)</span>
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">get_registered_type_keys</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">Sequence</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
@@ -1230,7 +1307,7 @@ By Apache TVM FFI contributors
   
   <div class="footer-item">
     <p class="last-updated">
-  Last updated on Feb 08, 2026.
+  Last updated on Feb 22, 2026.
   <br/>
 </p>
   </div>

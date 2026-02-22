@@ -40,7 +40,7 @@
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
   <script src="../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
 
-    <script src="../_static/documentation_options.js?v=3a1e5d7d"></script>
+    <script src="../_static/documentation_options.js?v=95fb53ea"></script>
     <script src="../_static/doctools.js?v=9bcbadda"></script>
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -58,7 +58,7 @@
     <link rel="prev" title="Compiler Integration" href="compiler_integration.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-    <meta name="docbuild:last-update" content="Feb 08, 2026"/>
+    <meta name="docbuild:last-update" content="Feb 22, 2026"/>
   </head>
   
   
@@ -179,6 +179,7 @@
 <ul class="nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="../concepts/abi_overview.html">ABI Overview</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../concepts/any.html">Any and AnyView</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../concepts/containers.html">Containers</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../concepts/object_and_class.html">Object and Class</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../concepts/tensor.html">Tensor and DLPack</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../concepts/func_module.html">Function and Module</a></li>
@@ -639,7 +640,7 @@ document.write(`
 <p><strong>Step 1: Define and compile Triton kernel</strong></p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># Define the kernel dynamically</span>
 <span class="nd">@triton</span><span class="o">.</span><span class="n">jit</span>
-<span class="k">def</span><span class="w"> </span><span class="nf">square_kernel</span><span class="p">(</span><span class="n">X_ptr</span><span class="p">,</span> <span class="n">Y_ptr</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="n">BLOCK</span><span class="p">:</span> <span class="n">tl</span><span class="o">.</span><span class="n">constexpr</span> <span class="o">=</span> <span class="mi">1024</span><span class="p">):</span>  <span class="c1"># noqa</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">square_kernel</span><span class="p">(</span><span class="n">X_ptr</span><span class="p">,</span> <span class="n">Y_ptr</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="n">BLOCK</span><span class="p">:</span> <span class="n">tl</span><span class="o">.</span><span class="n">constexpr</span> <span class="o">=</span> <span class="mi">1024</span><span class="p">):</span>  <span class="c1"># noqa  # ty: ignore[invalid-parameter-default]</span>
     <span class="n">pid</span> <span class="o">=</span> <span class="n">tl</span><span class="o">.</span><span class="n">program_id</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
     <span class="n">start</span> <span class="o">=</span> <span class="n">pid</span> <span class="o">*</span> <span class="n">BLOCK</span>
     <span class="n">offsets</span> <span class="o">=</span> <span class="n">start</span> <span class="o">+</span> <span class="n">tl</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">BLOCK</span><span class="p">)</span>
@@ -651,13 +652,7 @@ document.write(`
 <span class="c1"># Trigger kernel compilation by doing a dummy call</span>
 <span class="n">x_dummy</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="mi">1024</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">float32</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="s2">&quot;cuda&quot;</span><span class="p">)</span>
 <span class="n">y_dummy</span> <span class="o">=</span> <span class="n">torch</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="mi">1024</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="n">torch</span><span class="o">.</span><span class="n">float32</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="s2">&quot;cuda&quot;</span><span class="p">)</span>
-<span class="n">square_kernel</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">](</span><span class="n">x_dummy</span><span class="p">,</span> <span class="n">y_dummy</span><span class="p">,</span> <span class="mi">1024</span><span class="p">)</span>
-
-<span class="c1"># Extract compiled CUBIN from the device cache</span>
-<span class="n">device_caches</span> <span class="o">=</span> <span class="n">square_kernel</span><span class="o">.</span><span class="n">device_caches</span>
-<span class="n">device_id</span> <span class="o">=</span> <span class="nb">next</span><span class="p">(</span><span class="nb">iter</span><span class="p">(</span><span class="n">device_caches</span><span class="o">.</span><span class="n">keys</span><span class="p">()))</span>
-<span class="n">cache_tuple</span> <span class="o">=</span> <span class="n">device_caches</span><span class="p">[</span><span class="n">device_id</span><span class="p">]</span>
-<span class="n">compiled_kernel</span> <span class="o">=</span> <span class="nb">next</span><span class="p">(</span><span class="nb">iter</span><span class="p">(</span><span class="n">cache_tuple</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">values</span><span class="p">()))</span>
+<span class="n">compiled_kernel</span> <span class="o">=</span> <span class="n">square_kernel</span><span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">](</span><span class="n">x_dummy</span><span class="p">,</span> <span class="n">y_dummy</span><span class="p">,</span> <span class="mi">1024</span><span class="p">)</span>
 
 <span class="c1"># Get CUBIN bytes</span>
 <span class="n">cubin_bytes</span> <span class="o">=</span> <span class="n">compiled_kernel</span><span class="o">.</span><span class="n">kernel</span>
@@ -1227,7 +1222,7 @@ By Apache TVM FFI contributors
   
   <div class="footer-item">
     <p class="last-updated">
-  Last updated on Feb 08, 2026.
+  Last updated on Feb 22, 2026.
   <br/>
 </p>
   </div>

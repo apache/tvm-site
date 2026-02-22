@@ -71,8 +71,10 @@ Program Listing for File object.h
      static constexpr const char* kTVMFFIObject = "ffi.Object";
      static constexpr const char* kTVMFFIFunction = "ffi.Function";
      static constexpr const char* kTVMFFIArray = "ffi.Array";
+     static constexpr const char* kTVMFFIList = "ffi.List";
      static constexpr const char* kTVMFFIMap = "ffi.Map";
      static constexpr const char* kTVMFFIModule = "ffi.Module";
+     static constexpr const char* kTVMFFIDict = "ffi.Dict";
      static constexpr const char* kTVMFFIOpaquePyObject = "ffi.OpaquePyObject";
    };
    

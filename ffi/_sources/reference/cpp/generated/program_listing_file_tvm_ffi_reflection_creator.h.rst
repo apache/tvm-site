@@ -71,7 +71,7 @@ Program Listing for File creator.h
            field_info->setter(field_addr, reinterpret_cast<const TVMFFIAny*>(&field_value));
            ++match_field_count;
          } else if (field_info->flags & kTVMFFIFieldFlagBitMaskHasDefault) {
-           field_info->setter(field_addr, &(field_info->default_value));
+           SetFieldToDefault(field_info, field_addr);
          } else {
            TVM_FFI_THROW(TypeError) << "Required field `"
                                     << String(field_info->name.data, field_info->name.size)

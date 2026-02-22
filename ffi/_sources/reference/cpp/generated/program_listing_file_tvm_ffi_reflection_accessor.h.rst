@@ -144,6 +144,17 @@ Program Listing for File accessor.h
      return AnyView::CopyFromTVMFFIAny(info->method).cast<Function>();
    }
    
+   inline void SetFieldToDefault(const TVMFFIFieldInfo* field_info, void* field_addr) {
+     if (field_info->flags & kTVMFFIFieldFlagBitMaskDefaultFromFactory) {
+       Function factory =
+           AnyView::CopyFromTVMFFIAny(field_info->default_value_or_factory).cast<Function>();
+       Any default_val = factory();
+       field_info->setter(field_addr, reinterpret_cast<const TVMFFIAny*>(&default_val));
+     } else {
+       field_info->setter(field_addr, &(field_info->default_value_or_factory));
+     }
+   }
+   
    template <typename Callback>
    inline void ForEachFieldInfo(const TypeInfo* type_info, Callback callback) {
      using ResultType = decltype(callback(type_info->fields));

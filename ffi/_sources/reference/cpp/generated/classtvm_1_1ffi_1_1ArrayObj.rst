@@ -9,11 +9,10 @@ Class ArrayObj
 Inheritance Relationships
 -------------------------
 
-Base Types
-**********
+Base Type
+*********
 
-- ``public tvm::ffi::Object`` (:ref:`exhale_class_classtvm_1_1ffi_1_1Object`)
-- ``public details::InplaceArrayBase< ArrayObj, TVMFFIAny >``
+- ``public tvm::ffi::SeqBaseObj`` (:ref:`exhale_class_classtvm_1_1ffi_1_1SeqBaseObj`)
 
 
 Class Documentation

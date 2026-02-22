@@ -54,6 +54,8 @@ Includes
 
 - ``tvm/ffi/container/container_details.h``
 
+- ``tvm/ffi/container/list.h`` (:ref:`file_tvm_ffi_container_list.h`)
+
 - ``tvm/ffi/container/map.h`` (:ref:`file_tvm_ffi_container_map.h`)
 
 - ``tvm/ffi/container/shape.h`` (:ref:`file_tvm_ffi_container_shape.h`)

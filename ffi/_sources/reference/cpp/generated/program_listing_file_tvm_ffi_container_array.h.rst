@@ -34,6 +34,7 @@ Program Listing for File array.h
    
    #include <tvm/ffi/any.h>
    #include <tvm/ffi/container/container_details.h>
+   #include <tvm/ffi/container/seq_base.h>
    #include <tvm/ffi/memory.h>
    #include <tvm/ffi/object.h>
    #include <tvm/ffi/optional.h>
@@ -47,44 +48,10 @@ Program Listing for File array.h
    namespace tvm {
    namespace ffi {
    
-   class ArrayObj : public Object, public details::InplaceArrayBase<ArrayObj, TVMFFIAny> {
+   class ArrayObj : public SeqBaseObj {
     public:
-     ~ArrayObj() {
-       Any* begin = MutableBegin();
-       for (int64_t i = 0; i < size_; ++i) {
-         (begin + i)->Any::~Any();
-       }
-       if (data_deleter_ != nullptr) {
-         data_deleter_(data_);
-       }
-     }
-   
-     size_t size() const { return this->size_; }
-   
-     const Any& at(int64_t i) const { return this->operator[](i); }
-   
-     const Any& operator[](int64_t i) const {
-       if (i < 0 || i >= size_) {
-         TVM_FFI_THROW(IndexError) << "Index " << i << " out of bounds " << size_;
-       }
-       return static_cast<Any*>(data_)[i];
-     }
-   
-     const Any* begin() const { return static_cast<Any*>(data_); }
-   
-     const Any* end() const { return begin() + size_; }
-   
-     void clear() { ShrinkBy(size_); }
-   
-     void SetItem(int64_t i, Any item) {
-       if (i < 0 || i >= size_) {
-         TVM_FFI_THROW(IndexError) << "Index " << i << " out of bounds " << size_;
-       }
-       static_cast<Any*>(data_)[i] = std::move(item);
-     }
-   
      static ObjectPtr<ArrayObj> CopyFrom(int64_t cap, ArrayObj* from) {
-       int64_t size = from->size_;
+       int64_t size = from->TVMFFISeqCell::size;
        if (size > cap) {
          TVM_FFI_THROW(ValueError) << "Not enough capacity";
        }
@@ -92,14 +59,14 @@ Program Listing for File array.h
        Any* write = p->MutableBegin();
        Any* read = from->MutableBegin();
        // To ensure exception safety, size is only incremented after the initialization succeeds
-       for (int64_t& i = p->size_ = 0; i < size; ++i) {
+       for (int64_t& i = p->TVMFFISeqCell::size = 0; i < size; ++i) {
          new (write++) Any(*read++);
        }
        return p;
      }
    
      static ObjectPtr<ArrayObj> MoveFrom(int64_t cap, ArrayObj* from) {
-       int64_t size = from->size_;
+       int64_t size = from->TVMFFISeqCell::size;
        if (size > cap) {
          TVM_FFI_THROW(RuntimeError) << "Not enough capacity";
        }
@@ -107,17 +74,17 @@ Program Listing for File array.h
        Any* write = p->MutableBegin();
        Any* read = from->MutableBegin();
        // To ensure exception safety, size is only incremented after the initialization succeeds
-       for (int64_t& i = p->size_ = 0; i < size; ++i) {
+       for (int64_t& i = p->TVMFFISeqCell::size = 0; i < size; ++i) {
          new (write++) Any(std::move(*read++));
        }
-       from->size_ = 0;
+       from->TVMFFISeqCell::size = 0;
        return p;
      }
    
      static ObjectPtr<ArrayObj> CreateRepeated(int64_t n, const Any& val) {
        ObjectPtr<ArrayObj> p = ArrayObj::Empty(n);
        Any* itr = p->MutableBegin();
-       for (int64_t& i = p->size_ = 0; i < n; ++i) {
+       for (int64_t& i = p->TVMFFISeqCell::size = 0; i < n; ++i) {
          new (itr++) Any(val);
        }
        return p;
@@ -128,23 +95,14 @@ Program Listing for File array.h
      TVM_FFI_DECLARE_OBJECT_INFO_STATIC(StaticTypeKey::kTVMFFIArray, ArrayObj, Object);
    
     private:
-     size_t GetSize() const { return this->size_; }
-   
-     Any* MutableBegin() const { return static_cast<Any*>(this->data_); }
-   
-     Any* MutableEnd() const { return MutableBegin() + size_; }
-   
-     template <typename... Args>
-     void EmplaceInit(size_t idx, Args&&... args) {
-       Any* itr = MutableBegin() + idx;
-       new (itr) Any(std::forward<Args>(args)...);
-     }
+     size_t GetSize() const { return TVMFFISeqCell::size; }
    
      static ObjectPtr<ArrayObj> Empty(int64_t n = kInitSize) {
        ObjectPtr<ArrayObj> p = make_inplace_array_object<ArrayObj, Any>(n);
-       p->capacity_ = n;
-       p->size_ = 0;
-       p->data_ = p->AddressOf(0);
+       p->TVMFFISeqCell::capacity = n;
+       p->TVMFFISeqCell::size = 0;
+       p->data = reinterpret_cast<char*>(p.get()) + sizeof(ArrayObj);
+       p->data_deleter = nullptr;
        return p;
      }
    
@@ -158,53 +116,9 @@ Program Listing for File array.h
        return this;
      }
    
-     ArrayObj* MoveElementsLeft(int64_t dst, int64_t src_begin, int64_t src_end) {
-       Any* from = MutableBegin() + src_begin;
-       Any* to = MutableBegin() + dst;
-       while (src_begin++ != src_end) {
-         *to++ = std::move(*from++);
-       }
-       return this;
-     }
-   
-     ArrayObj* MoveElementsRight(int64_t dst, int64_t src_begin, int64_t src_end) {
-       Any* from = MutableBegin() + src_end;
-       Any* to = MutableBegin() + (src_end - src_begin + dst);
-       while (src_begin++ != src_end) {
-         *--to = std::move(*--from);
-       }
-       return this;
-     }
-   
-     ArrayObj* EnlargeBy(int64_t delta, const Any& val = Any()) {
-       Any* itr = MutableEnd();
-       while (delta-- > 0) {
-         new (itr++) Any(val);
-         ++size_;
-       }
-       return this;
-     }
-   
-     ArrayObj* ShrinkBy(int64_t delta) {
-       Any* itr = MutableEnd();
-       while (delta-- > 0) {
-         (--itr)->Any::~Any();
-         --size_;
-       }
-       return this;
-     }
-   
-     void* data_;
-     int64_t size_;
-     int64_t capacity_;
-     void (*data_deleter_)(void*) = nullptr;
-   
      static constexpr int64_t kInitSize = 4;
    
      static constexpr int64_t kIncFactor = 2;
-   
-     // CRTP parent class
-     friend InplaceArrayBase<ArrayObj, Any>;
    
      // Reference class
      template <typename, typename>
@@ -324,51 +238,48 @@ Program Listing for File array.h
        if (p == nullptr) {
          TVM_FFI_THROW(IndexError) << "cannot index a null array";
        }
-       if (i < 0 || i >= p->size_) {
-         TVM_FFI_THROW(IndexError) << "indexing " << i << " on an array of size " << p->size_;
-       }
-       return details::AnyUnsafe::CopyFromAnyViewAfterCheck<T>(*(p->begin() + i));
+       return details::AnyUnsafe::CopyFromAnyViewAfterCheck<T>(p->at(i));
      }
    
      size_t size() const {
        ArrayObj* p = GetArrayObj();
-       return p == nullptr ? 0 : GetArrayObj()->size_;
+       return p == nullptr ? 0 : p->size();
      }
    
      size_t capacity() const {
        ArrayObj* p = GetArrayObj();
-       return p == nullptr ? 0 : GetArrayObj()->capacity_;
+       return p == nullptr ? 0 : p->SeqBaseObj::capacity();
      }
    
      bool empty() const { return size() == 0; }
    
-     const T front() const {
+     T front() const {
        ArrayObj* p = GetArrayObj();
-       if (p == nullptr || p->size_ == 0) {
-         TVM_FFI_THROW(IndexError) << "cannot index a empty array";
+       if (p == nullptr) {
+         TVM_FFI_THROW(IndexError) << "cannot index a null array";
        }
-       return details::AnyUnsafe::CopyFromAnyViewAfterCheck<T>(*(p->begin()));
+       return details::AnyUnsafe::CopyFromAnyViewAfterCheck<T>(p->front());
      }
    
-     const T back() const {
+     T back() const {
        ArrayObj* p = GetArrayObj();
-       if (p == nullptr || p->size_ == 0) {
-         TVM_FFI_THROW(IndexError) << "cannot index a empty array";
+       if (p == nullptr) {
+         TVM_FFI_THROW(IndexError) << "cannot index a null array";
        }
-       return details::AnyUnsafe::CopyFromAnyViewAfterCheck<T>(*(p->end() - 1));
+       return details::AnyUnsafe::CopyFromAnyViewAfterCheck<T>(p->back());
      }
    
     public:
      // mutation in std::vector, implements copy-on-write
      void push_back(const T& item) {
        ArrayObj* p = CopyOnWrite(1);
-       p->EmplaceInit(p->size_++, item);
+       p->EmplaceInit(p->TVMFFISeqCell::size++, item);
      }
    
      template <typename... Args>
      void emplace_back(Args&&... args) {
        ArrayObj* p = CopyOnWrite(1);
-       p->EmplaceInit(p->size_++, std::forward<Args>(args)...);
+       p->EmplaceInit(p->TVMFFISeqCell::size++, std::forward<Args>(args)...);
      }
    
      void insert(iterator position, const T& val) {
@@ -376,80 +287,45 @@ Program Listing for File array.h
          TVM_FFI_THROW(RuntimeError) << "cannot insert a null array";
        }
        int64_t idx = std::distance(begin(), position);
-       int64_t size = GetArrayObj()->size_;
-       auto addr = CopyOnWrite(1)                               //
-                       ->EnlargeBy(1)                           //
-                       ->MoveElementsRight(idx + 1, idx, size)  //
-                       ->MutableBegin();
-       new (addr + idx) Any(val);
+       CopyOnWrite(1)->insert(idx, Any(val));
      }
    
      template <typename IterType>
      void insert(iterator position, IterType first, IterType last) {
        static_assert(is_valid_iterator_v<T, IterType>,
                      "IterType cannot be inserted into a tvm::Array<T>");
-   
-       if (first == last) {
-         return;
-       }
+       if (first == last) return;
        if (data_ == nullptr) {
          TVM_FFI_THROW(RuntimeError) << "cannot insert a null array";
        }
        int64_t idx = std::distance(begin(), position);
-       int64_t size = GetArrayObj()->size_;
        int64_t numel = std::distance(first, last);
-       CopyOnWrite(numel)
-           ->EnlargeBy(numel)
-           ->MoveElementsRight(idx + numel, idx, size)
-           ->InitRange(idx, first, last);
+       CopyOnWrite(numel)->insert(idx, first, last);
      }
    
      void pop_back() {
        if (data_ == nullptr) {
          TVM_FFI_THROW(RuntimeError) << "cannot pop_back a null array";
        }
-       int64_t size = GetArrayObj()->size_;
-       if (size == 0) {
-         TVM_FFI_THROW(RuntimeError) << "cannot pop_back an empty array";
-       }
-       CopyOnWrite()->ShrinkBy(1);
+       CopyOnWrite()->pop_back();
      }
    
      void erase(iterator position) {
        if (data_ == nullptr) {
          TVM_FFI_THROW(RuntimeError) << "cannot erase a null array";
        }
-       int64_t st = std::distance(begin(), position);
-       int64_t size = GetArrayObj()->size_;
-       if (st < 0 || st >= size) {
-         TVM_FFI_THROW(RuntimeError) << "cannot erase at index " << st << ", because Array size is "
-                                     << size;
-       }
-       CopyOnWrite()                             //
-           ->MoveElementsLeft(st, st + 1, size)  //
-           ->ShrinkBy(1);
+       int64_t idx = std::distance(begin(), position);
+       CopyOnWrite()->erase(idx);
      }
    
      void erase(iterator first, iterator last) {
-       if (first == last) {
-         return;
-       }
+       if (first == last) return;
        if (data_ == nullptr) {
          TVM_FFI_THROW(RuntimeError) << "cannot erase a null array";
        }
-       int64_t size = GetArrayObj()->size_;
        int64_t st = std::distance(begin(), first);
        int64_t ed = std::distance(begin(), last);
-       if (st >= ed) {
-         TVM_FFI_THROW(IndexError) << "cannot erase array in range [" << st << ", " << ed << ")";
-       }
-       if (st < 0 || st > size || ed < 0 || ed > size) {
-         TVM_FFI_THROW(IndexError) << "cannot erase array in range [" << st << ", " << ed << ")"
-                                   << ", because array size is " << size;
-       }
-       CopyOnWrite()                         //
-           ->MoveElementsLeft(st, ed, size)  //
-           ->ShrinkBy(ed - st);
+       CopyOnWrite()->erase(st, ed);
      }
    
      void resize(int64_t n) {
@@ -460,16 +336,16 @@ Program Listing for File array.h
          SwitchContainer(n);
          return;
        }
-       int64_t size = GetArrayObj()->size_;
-       if (size < n) {
-         CopyOnWrite(n - size)->EnlargeBy(n - size);
-       } else if (size > n) {
-         CopyOnWrite()->ShrinkBy(size - n);
+       int64_t cur_size = GetArrayObj()->TVMFFISeqCell::size;
+       if (cur_size < n) {
+         CopyOnWrite(n - cur_size)->resize(n);
+       } else if (cur_size > n) {
+         CopyOnWrite()->resize(n);
        }
      }
    
      void reserve(int64_t n) {
-       if (data_ == nullptr || n > GetArrayObj()->capacity_) {
+       if (data_ == nullptr || n > static_cast<int64_t>(GetArrayObj()->SeqBaseObj::capacity())) {
          SwitchContainer(n);
        }
      }
@@ -513,13 +389,7 @@ Program Listing for File array.h
     public:
      // Array's own methods
    
-     void Set(int64_t i, T value) {
-       ArrayObj* p = this->CopyOnWrite();
-       if (i < 0 || i >= p->size_) {
-         TVM_FFI_THROW(IndexError) << "indexing " << i << " on an array of size " << p->size_;
-       }
-       *(p->MutableBegin() + i) = std::move(value);
-     }
+     void Set(int64_t i, T value) { CopyOnWrite()->SetItem(i, std::move(value)); }
    
      ArrayObj* GetArrayObj() const { return static_cast<ArrayObj*>(data_.get()); }
    
@@ -540,7 +410,7 @@ Program Listing for File array.h
          TVM_FFI_THROW(ValueError) << "cannot construct an Array of negative size";
        }
        ArrayObj* p = GetArrayObj();
-       if (p != nullptr && data_.unique() && p->capacity_ >= cap) {
+       if (p != nullptr && data_.unique() && p->TVMFFISeqCell::capacity >= cap) {
          // do not have to make new space
          p->clear();
        } else {
@@ -550,7 +420,7 @@ Program Listing for File array.h
        }
        // To ensure exception safety, size is only incremented after the initialization succeeds
        Any* itr = p->MutableBegin();
-       for (int64_t& i = p->size_ = 0; i < cap; ++i, ++first, ++itr) {
+       for (int64_t& i = p->TVMFFISeqCell::size = 0; i < cap; ++i, ++first, ++itr) {
          new (itr) Any(*first);
        }
      }
@@ -583,11 +453,11 @@ Program Listing for File array.h
          const int64_t kInitSize = ArrayObj::kInitSize;
          return SwitchContainer(std::max(kInitSize, reserve_extra));
        }
-       if (p->capacity_ >= p->size_ + reserve_extra) {
+       if (p->TVMFFISeqCell::capacity >= p->TVMFFISeqCell::size + reserve_extra) {
          return CopyOnWrite();
        }
-       int64_t cap = p->capacity_ * ArrayObj::kIncFactor;
-       cap = std::max(cap, p->size_ + reserve_extra);
+       int64_t cap = p->TVMFFISeqCell::capacity * ArrayObj::kIncFactor;
+       cap = std::max(cap, p->TVMFFISeqCell::size + reserve_extra);
        return SwitchContainer(cap);
      }
    
@@ -727,79 +597,16 @@ Program Listing for File array.h
    inline constexpr bool use_default_type_traits_v<Array<T>> = false;
    
    template <typename T>
-   struct TypeTraits<Array<T>> : public ObjectRefTypeTraitsBase<Array<T>> {
+   struct TypeTraits<Array<T>> : public SeqTypeTraitsBase<TypeTraits<Array<T>>, Array<T>, T> {
      static constexpr int32_t field_static_type_index = TypeIndex::kTVMFFIArray;
-     using ObjectRefTypeTraitsBase<Array<T>>::CopyFromAnyViewAfterCheck;
+     static constexpr int32_t kPrimaryTypeIndex = TypeIndex::kTVMFFIArray;
+     static constexpr int32_t kOtherTypeIndex = TypeIndex::kTVMFFIList;
+     static constexpr const char* kTypeName = "Array";
+     static constexpr const char* kStaticTypeKey = StaticTypeKey::kTVMFFIArray;
    
-     TVM_FFI_INLINE static std::string GetMismatchTypeInfo(const TVMFFIAny* src) {
-       if (src->type_index != TypeIndex::kTVMFFIArray) {
-         return TypeTraitsBase::GetMismatchTypeInfo(src);
-       }
-       if constexpr (!std::is_same_v<T, Any>) {
-         const ArrayObj* n = reinterpret_cast<const ArrayObj*>(src->v_obj);
-         for (size_t i = 0; i < n->size(); i++) {
-           const Any& any_v = (*n)[static_cast<int64_t>(i)];
-           // CheckAnyStrict is cheaper than try_cast<T>
-           if (details::AnyUnsafe::CheckAnyStrict<T>(any_v)) continue;
-           // try see if p is convertible to T
-           if (any_v.try_cast<T>()) continue;
-           // now report the accurate mismatch information
-           return "Array[index " + std::to_string(i) + ": " +
-                  details::AnyUnsafe::GetMismatchTypeInfo<T>(any_v) + "]";
-         }
-       }
-       TVM_FFI_THROW(InternalError) << "Cannot reach here";
-       TVM_FFI_UNREACHABLE();
-     }
-   
-     TVM_FFI_INLINE static bool CheckAnyStrict(const TVMFFIAny* src) {
-       if (src->type_index != TypeIndex::kTVMFFIArray) return false;
-       if constexpr (std::is_same_v<T, Any>) {
-         return true;
-       } else {
-         const ArrayObj* n = reinterpret_cast<const ArrayObj*>(src->v_obj);
-         for (const Any& any_v : *n) {
-           if (!details::AnyUnsafe::CheckAnyStrict<T>(any_v)) return false;
-         }
-         return true;
-       }
-     }
-   
-     TVM_FFI_INLINE static std::optional<Array<T>> TryCastFromAnyView(const TVMFFIAny* src) {
-       // try to run conversion.
-       if (src->type_index != TypeIndex::kTVMFFIArray) return std::nullopt;
-       if constexpr (!std::is_same_v<T, Any>) {
-         const ArrayObj* n = reinterpret_cast<const ArrayObj*>(src->v_obj);
-         bool storage_check = [&]() {
-           for (const Any& any_v : *n) {
-             if (!details::AnyUnsafe::CheckAnyStrict<T>(any_v)) return false;
-           }
-           return true;
-         }();
-         // fast path, if storage check passes, we can return the array directly.
-         if (storage_check) {
-           return CopyFromAnyViewAfterCheck(src);
-         }
-         // slow path, try to run a conversion to Array<T>
-         Array<T> result;
-         result.reserve(n->size());
-         for (const Any& any_v : *n) {
-           if (auto opt_v = any_v.try_cast<T>()) {
-             result.push_back(*std::move(opt_v));
-           } else {
-             return std::nullopt;
-           }
-         }
-         return result;
-       } else {
-         return CopyFromAnyViewAfterCheck(src);
-       }
-     }
-   
-     TVM_FFI_INLINE static std::string TypeStr() { return "Array<" + details::Type2Str<T>::v() + ">"; }
      TVM_FFI_INLINE static std::string TypeSchema() {
        std::ostringstream oss;
-       oss << R"({"type":")" << StaticTypeKey::kTVMFFIArray << R"(","args":[)";
+       oss << R"({"type":")" << kStaticTypeKey << R"(","args":[)";
        oss << details::TypeSchema<T>::v();
        oss << "]}";
        return oss.str();
@@ -813,4 +620,5 @@ Program Listing for File array.h
    
    }  // namespace ffi
    }  // namespace tvm
+   
    #endif  // TVM_FFI_CONTAINER_ARRAY_H_

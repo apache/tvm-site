@@ -40,7 +40,7 @@
 <link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
   <script src="../../../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
 
-    <script src="../../../_static/documentation_options.js?v=3a1e5d7d"></script>
+    <script src="../../../_static/documentation_options.js?v=95fb53ea"></script>
     <script src="../../../_static/doctools.js?v=9bcbadda"></script>
     <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -56,7 +56,7 @@
     <link rel="search" title="Search" href="../../../search.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-    <meta name="docbuild:last-update" content="Feb 08, 2026"/>
+    <meta name="docbuild:last-update" content="Feb 22, 2026"/>
   </head>
   
   
@@ -177,6 +177,7 @@
 <ul class="nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="../../../concepts/abi_overview.html">ABI Overview</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../concepts/any.html">Any and AnyView</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../concepts/containers.html">Containers</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../concepts/object_and_class.html">Object and Class</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../concepts/tensor.html">Tensor and DLPack</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../concepts/func_module.html">Function and Module</a></li>
@@ -542,6 +543,17 @@ document.write(`
 <span class="w">  </span><span class="k">return</span><span class="w"> </span><span class="n">AnyView</span><span class="o">::</span><span class="n">CopyFromTVMFFIAny</span><span class="p">(</span><span class="n">info</span><span class="o">-&gt;</span><span class="n">method</span><span class="p">).</span><span class="n">cast</span><span class="o">&lt;</span><span class="n">Function</span><span class="o">&gt;</span><span class="p">();</span>
 <span class="p">}</span>
 
+<span class="kr">inline</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">SetFieldToDefault</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="n">TVMFFIFieldInfo</span><span class="o">*</span><span class="w"> </span><span class="n">field_info</span><span class="p">,</span><span class="w"> </span><span class="kt">void</span><span class="o">*</span><span class="w"> </span><span class="n">field_addr</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">field_info</span><span class="o">-&gt;</span><span class="n">flags</span><span class="w"> </span><span class="o">&amp;</span><span class="w"> </span><span class="n">kTVMFFIFieldFlagBitMaskDefaultFromFactory</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">Function</span><span class="w"> </span><span class="n">factory</span><span class="w"> </span><span class="o">=</span>
+<span class="w">        </span><span class="n">AnyView</span><span class="o">::</span><span class="n">CopyFromTVMFFIAny</span><span class="p">(</span><span class="n">field_info</span><span class="o">-&gt;</span><span class="n">default_value_or_factory</span><span class="p">).</span><span class="n">cast</span><span class="o">&lt;</span><span class="n">Function</span><span class="o">&gt;</span><span class="p">();</span>
+<span class="w">    </span><span class="n">Any</span><span class="w"> </span><span class="n">default_val</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">factory</span><span class="p">();</span>
+<span class="w">    </span><span class="n">field_info</span><span class="o">-&gt;</span><span class="n">setter</span><span class="p">(</span><span class="n">field_addr</span><span class="p">,</span><span class="w"> </span><span class="k">reinterpret_cast</span><span class="o">&lt;</span><span class="k">const</span><span class="w"> </span><span class="n">TVMFFIAny</span><span class="o">*&gt;</span><span class="p">(</span><span class="o">&amp;</span><span class="n">default_val</span><span class="p">));</span>
+<span class="w">  </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">field_info</span><span class="o">-&gt;</span><span class="n">setter</span><span class="p">(</span><span class="n">field_addr</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="p">(</span><span class="n">field_info</span><span class="o">-&gt;</span><span class="n">default_value_or_factory</span><span class="p">));</span>
+<span class="w">  </span><span class="p">}</span>
+<span class="p">}</span>
+
 <span class="k">template</span><span class="w"> </span><span class="o">&lt;</span><span class="k">typename</span><span class="w"> </span><span class="nc">Callback</span><span class="o">&gt;</span>
 <span class="kr">inline</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="n">ForEachFieldInfo</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="n">TypeInfo</span><span class="o">*</span><span class="w"> </span><span class="n">type_info</span><span class="p">,</span><span class="w"> </span><span class="n">Callback</span><span class="w"> </span><span class="n">callback</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
 <span class="w">  </span><span class="k">using</span><span class="w"> </span><span class="n">ResultType</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">decltype</span><span class="p">(</span><span class="n">callback</span><span class="p">(</span><span class="n">type_info</span><span class="o">-&gt;</span><span class="n">fields</span><span class="p">));</span>
@@ -623,7 +635,7 @@ By Apache TVM FFI contributors
   
   <div class="footer-item">
     <p class="last-updated">
-  Last updated on Feb 08, 2026.
+  Last updated on Feb 22, 2026.
   <br/>
 </p>
   </div>

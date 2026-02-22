@@ -126,11 +126,41 @@ Defines
 
 - :ref:`exhale_define_error_8h_1ad4674e1cb9c051f47127e5331a4bcadc`
 
+- :ref:`exhale_define_error_8h_1af23d9224afd96bc1db250ab98d79ab45`
+
+- :ref:`exhale_define_error_8h_1a27374a2cd94c6211ce2b754bd87e3fa3`
+
 - :ref:`exhale_define_error_8h_1a64c939463f90816ffc2b70bc89ea3e43`
 
-- :ref:`exhale_define_error_8h_1a6c01470f76c6437edf93ac668ea6242a`
+- :ref:`exhale_define_error_8h_1af88efba89f134754f31e52c7024acda4`
 
-- :ref:`exhale_define_error_8h_1a83986fc775d68d4abcc209c2f67dde6e`
+- :ref:`exhale_define_error_8h_1a990e2467aea416d9b8b3a338df07cb32`
+
+- :ref:`exhale_define_error_8h_1a4e04117882ed9f1469ec36f7979ace27`
+
+- :ref:`exhale_define_error_8h_1aa7a5d2005aa58b2c7d9fa80c64f26e81`
+
+- :ref:`exhale_define_error_8h_1a16f0dbfb27520f4d044d82e32fd5bbec`
+
+- :ref:`exhale_define_error_8h_1aeec11597fea71f1db8072324fe6d8b92`
+
+- :ref:`exhale_define_error_8h_1a7d7a510c235963a0f1c7b7ab575c15fb`
+
+- :ref:`exhale_define_error_8h_1a0b440ab7013c78c61ab5dd5d8f27bd91`
+
+- :ref:`exhale_define_error_8h_1aca415693e572f4602ca4e3a961fcb1f1`
+
+- :ref:`exhale_define_error_8h_1aba8087204dace0473072f763f47ca943`
+
+- :ref:`exhale_define_error_8h_1a07c8a4b3cbde3471d290fdbc73e14b0c`
+
+- :ref:`exhale_define_error_8h_1aaab66d9de933f4134006b0ad3d29e74a`
+
+- :ref:`exhale_define_error_8h_1a34350f477b8479a26ec5a2683100bc04`
+
+- :ref:`exhale_define_error_8h_1a2bce4014203aa455160771f1e8e698e5`
+
+- :ref:`exhale_define_error_8h_1a6c01470f76c6437edf93ac668ea6242a`
 
 - :ref:`exhale_define_error_8h_1a394ec1781a34c49e29d47db5c3dfad9c`
 

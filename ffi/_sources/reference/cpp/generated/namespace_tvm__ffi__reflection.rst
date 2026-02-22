@@ -18,6 +18,13 @@ Reflection namespace.
 
 
 
+Namespaces
+----------
+
+
+- :ref:`namespace_tvm__ffi__reflection__type_attr`
+
+
 Classes
 -------
 
@@ -40,6 +47,8 @@ Classes
 
 - :ref:`exhale_class_classtvm_1_1ffi_1_1reflection_1_1AttachFieldFlag`
 
+- :ref:`exhale_class_classtvm_1_1ffi_1_1reflection_1_1DefaultFactory`
+
 - :ref:`exhale_class_classtvm_1_1ffi_1_1reflection_1_1DefaultValue`
 
 - :ref:`exhale_class_classtvm_1_1ffi_1_1reflection_1_1FieldGetter`
@@ -55,6 +64,8 @@ Classes
 - :ref:`exhale_class_classtvm_1_1ffi_1_1reflection_1_1ObjectDef`
 
 - :ref:`exhale_class_classtvm_1_1ffi_1_1reflection_1_1OverloadObjectDef`
+
+- :ref:`exhale_class_classtvm_1_1ffi_1_1reflection_1_1Repr`
 
 - :ref:`exhale_class_classtvm_1_1ffi_1_1reflection_1_1TypeAttrColumn`
 
@@ -85,6 +96,8 @@ Functions
 - :ref:`exhale_function_namespacetvm_1_1ffi_1_1reflection_1aba4d7fd771bea88a32803dda191b7044`
 
 - :ref:`exhale_function_namespacetvm_1_1ffi_1_1reflection_1ac902a725008e348254ee7a2d07c8a95a`
+
+- :ref:`exhale_function_namespacetvm_1_1ffi_1_1reflection_1a9321975ab375d35fcf6beb55f1d7d52a`
 
 
 Typedefs

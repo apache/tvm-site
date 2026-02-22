@@ -115,7 +115,17 @@ Files
 .. toctree::
    :maxdepth: 5
 
+   file_tvm_ffi_extra_deep_copy.h.rst
+
+.. toctree::
+   :maxdepth: 5
+
    file_tvm_ffi_extra_cuda_device_guard.h.rst
+
+.. toctree::
+   :maxdepth: 5
+
+   file_tvm_ffi_container_dict.h.rst
 
 .. toctree::
    :maxdepth: 5
@@ -155,7 +165,17 @@ Files
 .. toctree::
    :maxdepth: 5
 
+   file_tvm_ffi_container_list.h.rst
+
+.. toctree::
+   :maxdepth: 5
+
    file_tvm_ffi_container_map.h.rst
+
+.. toctree::
+   :maxdepth: 5
+
+   file_tvm_ffi_container_map_base.h.rst
 
 .. toctree::
    :maxdepth: 5
@@ -195,6 +215,11 @@ Files
 .. toctree::
    :maxdepth: 5
 
+   file_tvm_ffi_container_seq_base.h.rst
+
+.. toctree::
+   :maxdepth: 5
+
    file_tvm_ffi_extra_serialization.h.rst
 
 .. toctree::
@@ -221,6 +246,11 @@ Files
    :maxdepth: 5
 
    file_tvm_ffi_extra_structural_hash.h.rst
+
+.. toctree::
+   :maxdepth: 5
+
+   file_tvm_ffi_extra_structural_key.h.rst
 
 .. toctree::
    :maxdepth: 5

@@ -36,11 +36,11 @@ Classes
 
 - :ref:`exhale_struct_structtvm_1_1ffi_1_1CUDADeviceGuard`
 
-- :ref:`exhale_struct_structtvm_1_1ffi_1_1DenseMapObj_1_1Block`
+- :ref:`exhale_struct_structtvm_1_1ffi_1_1DenseMapBaseObj_1_1Block`
 
-- :ref:`exhale_struct_structtvm_1_1ffi_1_1DenseMapObj_1_1ItemType`
+- :ref:`exhale_struct_structtvm_1_1ffi_1_1DenseMapBaseObj_1_1ItemType`
 
-- :ref:`exhale_struct_structtvm_1_1ffi_1_1DenseMapObj_1_1ListNode`
+- :ref:`exhale_struct_structtvm_1_1ffi_1_1DenseMapBaseObj_1_1ListNode`
 
 - :ref:`exhale_struct_structtvm_1_1ffi_1_1dim3`
 
@@ -80,7 +80,11 @@ Classes
 
 - :ref:`exhale_class_classtvm_1_1ffi_1_1CubinModule`
 
-- :ref:`exhale_class_classtvm_1_1ffi_1_1DenseMapObj`
+- :ref:`exhale_class_classtvm_1_1ffi_1_1DenseMapBaseObj`
+
+- :ref:`exhale_class_classtvm_1_1ffi_1_1Dict`
+
+- :ref:`exhale_class_classtvm_1_1ffi_1_1DictObj`
 
 - :ref:`exhale_class_classtvm_1_1ffi_1_1Error`
 
@@ -92,7 +96,13 @@ Classes
 
 - :ref:`exhale_class_classtvm_1_1ffi_1_1FunctionObj`
 
+- :ref:`exhale_class_classtvm_1_1ffi_1_1List`
+
+- :ref:`exhale_class_classtvm_1_1ffi_1_1ListObj`
+
 - :ref:`exhale_class_classtvm_1_1ffi_1_1Map`
+
+- :ref:`exhale_class_classtvm_1_1ffi_1_1MapBaseObj`
 
 - :ref:`exhale_class_classtvm_1_1ffi_1_1MapObj`
 
@@ -112,13 +122,15 @@ Classes
 
 - :ref:`exhale_class_classtvm_1_1ffi_1_1RValueRef`
 
+- :ref:`exhale_class_classtvm_1_1ffi_1_1SeqBaseObj`
+
 - :ref:`exhale_class_classtvm_1_1ffi_1_1Shape`
 
 - :ref:`exhale_class_classtvm_1_1ffi_1_1ShapeObj`
 
 - :ref:`exhale_class_classtvm_1_1ffi_1_1ShapeView`
 
-- :ref:`exhale_class_classtvm_1_1ffi_1_1SmallMapObj`
+- :ref:`exhale_class_classtvm_1_1ffi_1_1SmallMapBaseObj`
 
 - :ref:`exhale_class_classtvm_1_1ffi_1_1StrictBool`
 
@@ -127,6 +139,10 @@ Classes
 - :ref:`exhale_class_classtvm_1_1ffi_1_1StructuralEqual`
 
 - :ref:`exhale_class_classtvm_1_1ffi_1_1StructuralHash`
+
+- :ref:`exhale_class_classtvm_1_1ffi_1_1StructuralKey`
+
+- :ref:`exhale_class_classtvm_1_1ffi_1_1StructuralKeyObj`
 
 - :ref:`exhale_class_classtvm_1_1ffi_1_1Tensor`
 
@@ -162,13 +178,15 @@ Functions
 
 - :ref:`exhale_function_base64_8h_1ae1d4736f7dc56b224acd303ba7bf7a45`
 
-- :ref:`exhale_function_base64_8h_1aa5b2a4531449585b9f079cb170a79f0b`
-
 - :ref:`exhale_function_base64_8h_1a279b4ba2f4c7ea16291ef24b73e43963`
+
+- :ref:`exhale_function_base64_8h_1aa5b2a4531449585b9f079cb170a79f0b`
 
 - :ref:`exhale_function_endian_8h_1ab4e0ed8000c632cd2c7cd089c0a0d1af`
 
 - :ref:`exhale_function_array_8h_1af5983fd2a31e79635307875b3a216472`
+
+- :ref:`exhale_function_deep__copy_8h_1ae661fadd13fbc7aef6e15cddba7607e8`
 
 - :ref:`exhale_function_dtype_8h_1a94787950883e5a7e97b764ddd342afc3`
 
@@ -198,9 +216,9 @@ Functions
 
 - :ref:`exhale_function_memory_8h_1a801e8ecc2e3adbc1dac52c714e7cef11`
 
-- :ref:`exhale_function_array_8h_1a3b56317c7cfb2760cf6c09c303840967`
-
 - :ref:`exhale_function_memory_8h_1a8892f2a3cad8dbc51930c464f2ab863b`
+
+- :ref:`exhale_function_array_8h_1a3b56317c7cfb2760cf6c09c303840967`
 
 - :ref:`exhale_function_map_8h_1a611844db41026b7a95846dd316b435af`
 

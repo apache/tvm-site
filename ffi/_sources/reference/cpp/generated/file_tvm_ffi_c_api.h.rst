@@ -91,6 +91,8 @@ Classes
 
 - :ref:`exhale_struct_structTVMFFIOpaqueObjectCell`
 
+- :ref:`exhale_struct_structTVMFFISeqCell`
+
 - :ref:`exhale_struct_structTVMFFIShapeCell`
 
 - :ref:`exhale_struct_structTVMFFITypeAttrColumn`

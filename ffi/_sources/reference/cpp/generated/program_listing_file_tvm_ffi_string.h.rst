@@ -469,6 +469,7 @@ Program Listing for File string.h
    #if (__GNUC__) && !(__clang__)
    #pragma GCC diagnostic push
    #pragma GCC diagnostic ignored "-Wstringop-overflow"
+   #pragma GCC diagnostic ignored "-Warray-bounds"
    #pragma GCC diagnostic ignored "-Wrestrict"
    #endif
        char* dest_data = ret.InitSpaceForSize(lhs_size + rhs_size);

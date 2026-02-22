@@ -130,6 +130,8 @@ Program Listing for File c_api.h
      kTVMFFIMap = 72,
      kTVMFFIModule = 73,
      kTVMFFIOpaquePyObject = 74,
+     kTVMFFIList = 75,
+     kTVMFFIDict = 76,
      //----------------------------------------------------------------
      // more complex objects
      //----------------------------------------------------------------
@@ -210,12 +212,29 @@ Program Listing for File c_api.h
      const char* data;
      size_t size;
    } TVMFFIByteArray;
+   // [TVMFFIByteArray.end]
    
    typedef struct {
      const int64_t* data;
      size_t size;
    } TVMFFIShapeCell;
-   // [TVMFFIByteArray.end]
+   
+   // [TVMFFISeqCell.begin]
+   #ifdef __cplusplus
+   struct TVMFFISeqCell {
+   #else
+   typedef struct {
+   #endif
+     void* data;
+     int64_t size;
+     int64_t capacity;
+     void (*data_deleter)(void*);
+   #ifdef __cplusplus
+   };
+   #else
+   } TVMFFISeqCell;
+   #endif
+   // [TVMFFISeqCell.end]
    
    #ifdef __cplusplus
    enum TVMFFIBacktraceUpdateMode : int32_t {
@@ -360,6 +379,8 @@ Program Listing for File c_api.h
      kTVMFFIFieldFlagBitMaskIsStaticMethod = 1 << 2,
      kTVMFFIFieldFlagBitMaskSEqHashIgnore = 1 << 3,
      kTVMFFIFieldFlagBitMaskSEqHashDef = 1 << 4,
+     kTVMFFIFieldFlagBitMaskDefaultFromFactory = 1 << 5,
+     kTVMFFIFieldFlagBitMaskReprOff = 1 << 6,
    #ifdef __cplusplus
    };
    #else
@@ -393,7 +414,7 @@ Program Listing for File c_api.h
      int64_t offset;
      TVMFFIFieldGetter getter;
      TVMFFIFieldSetter setter;
-     TVMFFIAny default_value;
+     TVMFFIAny default_value_or_factory;
      int32_t field_static_type_index;
    } TVMFFIFieldInfo;
    

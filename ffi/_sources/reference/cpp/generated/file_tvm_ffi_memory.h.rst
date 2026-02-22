@@ -53,7 +53,11 @@ Included By
 
 - :ref:`file_tvm_ffi_container_array.h`
 
+- :ref:`file_tvm_ffi_container_dict.h`
+
 - :ref:`file_tvm_ffi_container_map.h`
+
+- :ref:`file_tvm_ffi_container_map_base.h`
 
 - :ref:`file_tvm_ffi_error.h`
 

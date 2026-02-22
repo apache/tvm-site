@@ -95,7 +95,6 @@ Program Listing for File type_traits.h
    template <>
    struct TypeTraits<std::nullptr_t> : public TypeTraitsBase {
      static constexpr int32_t field_static_type_index = TypeIndex::kTVMFFINone;
-   
      TVM_FFI_INLINE static void CopyToAnyView(const std::nullptr_t&, TVMFFIAny* result) {
        result->type_index = TypeIndex::kTVMFFINone;
        result->zero_padding = 0;

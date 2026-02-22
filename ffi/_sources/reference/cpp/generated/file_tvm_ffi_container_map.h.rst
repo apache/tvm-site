@@ -10,7 +10,7 @@ File map.h
 
 
 
-Runtime Map container types. 
+Immutable Map container type. 
 
 
 
@@ -35,15 +35,11 @@ Includes
 --------
 
 
-- ``algorithm``
-
-- ``limits``
-
-- ``string`` (:ref:`file_tvm_ffi_string.h`)
-
 - ``tvm/ffi/any.h`` (:ref:`file_tvm_ffi_any.h`)
 
 - ``tvm/ffi/container/container_details.h``
+
+- ``tvm/ffi/container/map_base.h`` (:ref:`file_tvm_ffi_container_map_base.h`)
 
 - ``tvm/ffi/memory.h`` (:ref:`file_tvm_ffi_memory.h`)
 
@@ -51,11 +47,7 @@ Includes
 
 - ``tvm/ffi/optional.h`` (:ref:`file_tvm_ffi_optional.h`)
 
-- ``type_traits`` (:ref:`file_tvm_ffi_type_traits.h`)
-
 - ``unordered_map``
-
-- ``utility``
 
 
 
@@ -93,19 +85,9 @@ Classes
 -------
 
 
-- :ref:`exhale_struct_structtvm_1_1ffi_1_1DenseMapObj_1_1Block`
-
-- :ref:`exhale_struct_structtvm_1_1ffi_1_1DenseMapObj_1_1ItemType`
-
-- :ref:`exhale_struct_structtvm_1_1ffi_1_1DenseMapObj_1_1ListNode`
-
-- :ref:`exhale_class_classtvm_1_1ffi_1_1DenseMapObj`
-
 - :ref:`exhale_class_classtvm_1_1ffi_1_1Map`
 
 - :ref:`exhale_class_classtvm_1_1ffi_1_1MapObj`
-
-- :ref:`exhale_class_classtvm_1_1ffi_1_1SmallMapObj`
 
 
 Functions

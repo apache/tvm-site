@@ -112,12 +112,26 @@ Program Listing for File registry.h
      explicit DefaultValue(Any value) : value_(std::move(value)) {}
    
      TVM_FFI_INLINE void Apply(TVMFFIFieldInfo* info) const {
-       info->default_value = AnyView(value_).CopyToTVMFFIAny();
+       info->default_value_or_factory = AnyView(value_).CopyToTVMFFIAny();
        info->flags |= kTVMFFIFieldFlagBitMaskHasDefault;
      }
    
     private:
      Any value_;
+   };
+   
+   class DefaultFactory : public InfoTrait {
+    public:
+     explicit DefaultFactory(Function factory) : factory_(std::move(factory)) {}
+   
+     TVM_FFI_INLINE void Apply(TVMFFIFieldInfo* info) const {
+       info->default_value_or_factory = AnyView(factory_).CopyToTVMFFIAny();
+       info->flags |= kTVMFFIFieldFlagBitMaskHasDefault;
+       info->flags |= kTVMFFIFieldFlagBitMaskDefaultFromFactory;
+     }
+   
+    private:
+     Function factory_;
    };
    
    class AttachFieldFlag : public InfoTrait {
@@ -135,6 +149,20 @@ Program Listing for File registry.h
    
     private:
      int32_t flag_;
+   };
+   
+   class Repr : public InfoTrait {
+    public:
+     explicit Repr(bool show) : show_(show) {}
+   
+     TVM_FFI_INLINE void Apply(TVMFFIFieldInfo* info) const {
+       if (!show_) {
+         info->flags |= kTVMFFIFieldFlagBitMaskReprOff;
+       }
+     }
+   
+    private:
+     bool show_;
    };
    
    template <typename Class, typename T>
@@ -310,6 +338,12 @@ Program Listing for File registry.h
      }
    };
    
+   namespace type_attr {
+   inline constexpr const char* kInit = "__ffi_init__";
+   inline constexpr const char* kShallowCopy = "__ffi_shallow_copy__";
+   inline constexpr const char* kRepr = "__ffi_repr__";
+   }  // namespace type_attr
+   
    template <typename Class>
    class ObjectDef : public ReflectionDefBase {
     public:
@@ -317,6 +351,7 @@ Program Listing for File registry.h
      explicit ObjectDef(ExtraArgs&&... extra_args)
          : type_index_(Class::_GetOrAllocRuntimeTypeIndex()), type_key_(Class::_type_key) {
        RegisterExtraInfo(std::forward<ExtraArgs>(extra_args)...);
+       AutoRegisterCopy();
      }
    
      template <typename T, typename BaseClass, typename... Extra>
@@ -355,6 +390,24 @@ Program Listing for File registry.h
      template <typename T>
      friend class OverloadObjectDef;
    
+     static ObjectRef ShallowCopy(const Class* self) {
+       return ObjectRef(ffi::make_object<Class>(*self));
+     }
+   
+     void AutoRegisterCopy() {
+       if constexpr (std::is_copy_constructible_v<Class>) {
+         // Register __ffi_shallow_copy__ as an instance method
+         RegisterMethod(type_attr::kShallowCopy, false, &ObjectDef::ShallowCopy);
+         // Also register as a type attribute for generic deep copy lookup
+         Function copy_fn = GetMethod(std::string(type_key_) + "." + type_attr::kShallowCopy,
+                                      &ObjectDef::ShallowCopy);
+         TVMFFIByteArray attr_name = {type_attr::kShallowCopy,
+                                      std::char_traits<char>::length(type_attr::kShallowCopy)};
+         TVMFFIAny attr_value = AnyView(copy_fn).CopyToTVMFFIAny();
+         TVM_FFI_CHECK_SAFE_CALL(TVMFFITypeRegisterAttr(type_index_, &attr_name, &attr_value));
+       }
+     }
+   
      template <typename... ExtraArgs>
      void RegisterExtraInfo(ExtraArgs&&... extra_args) {
        TVMFFITypeMetadata info;
@@ -391,7 +444,7 @@ Program Listing for File registry.h
        info.getter = FieldGetter<T>;
        info.setter = FieldSetter<T>;
        // initialize default value to nullptr
-       info.default_value = AnyView(nullptr).CopyToTVMFFIAny();
+       info.default_value_or_factory = AnyView(nullptr).CopyToTVMFFIAny();
        info.doc = TVMFFIByteArray{nullptr, 0};
        info.metadata_.emplace_back("type_schema", details::TypeSchema<T>::v());
        // apply field info traits
@@ -427,7 +480,7 @@ Program Listing for File registry.h
    
      int32_t type_index_;
      const char* type_key_;
-     static constexpr const char* kInitMethodName = "__ffi_init__";
+     static constexpr const char* kInitMethodName = type_attr::kInit;
    };
    
    template <typename Class, typename = std::enable_if_t<std::is_base_of_v<Object, Class>>>

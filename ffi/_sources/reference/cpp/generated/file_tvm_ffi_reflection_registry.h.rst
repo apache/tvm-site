@@ -92,6 +92,8 @@ Namespaces
 
 - :ref:`namespace_tvm__ffi__reflection`
 
+- :ref:`namespace_tvm__ffi__reflection__type_attr`
+
 
 Classes
 -------
@@ -107,6 +109,8 @@ Classes
 
 - :ref:`exhale_class_classtvm_1_1ffi_1_1reflection_1_1AttachFieldFlag`
 
+- :ref:`exhale_class_classtvm_1_1ffi_1_1reflection_1_1DefaultFactory`
+
 - :ref:`exhale_class_classtvm_1_1ffi_1_1reflection_1_1DefaultValue`
 
 - :ref:`exhale_class_classtvm_1_1ffi_1_1reflection_1_1GlobalDef`
@@ -114,6 +118,8 @@ Classes
 - :ref:`exhale_class_classtvm_1_1ffi_1_1reflection_1_1Metadata`
 
 - :ref:`exhale_class_classtvm_1_1ffi_1_1reflection_1_1ObjectDef`
+
+- :ref:`exhale_class_classtvm_1_1ffi_1_1reflection_1_1Repr`
 
 - :ref:`exhale_class_classtvm_1_1ffi_1_1reflection_1_1TypeAttrDef`
 
@@ -132,4 +138,15 @@ Typedefs
 
 
 - :ref:`exhale_typedef_namespacetvm_1_1ffi_1_1reflection_1a96513314d45b43eada132d9b96653d9a`
+
+
+Variables
+---------
+
+
+- :ref:`exhale_variable_namespacetvm_1_1ffi_1_1reflection_1_1type__attr_1ae970768fd777e6c1dd312de67bfba39c`
+
+- :ref:`exhale_variable_namespacetvm_1_1ffi_1_1reflection_1_1type__attr_1ade6e6dd8a1abc985d20d7e855a30b7ea`
+
+- :ref:`exhale_variable_namespacetvm_1_1ffi_1_1reflection_1_1type__attr_1ac92fdfe731cfda2d51324cea574c7e08`
 
