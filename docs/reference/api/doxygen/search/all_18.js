@@ -1,7 +1,7 @@
 var searchData=
 [
   ['warning_3765',['Warning',['../classtvm_1_1Diagnostic.html#a468619ccf507ab10cf47830c6eb37e03',1,'tvm::Diagnostic::Warning(const Object *loc)'],['../classtvm_1_1Diagnostic.html#a940518945b82302c8c47fb2a4bb352fd',1,'tvm::Diagnostic::Warning(ObjectRef loc)'],['../classtvm_1_1Diagnostic.html#a407ef56844eec306451c1ce2ca9f248c',1,'tvm::Diagnostic::Warning(Span span)']]],
-  ['warp_5fexecution_3766',['warp_execution',['../namespacetvm_1_1tir_1_1attr.html#a350f417c4c3ed61f4578c5e5cb72d667',1,'tvm::tir::attr']]],
+  ['warp_5fexecution_3766',['warp_execution',['../namespacetvm_1_1s__tir_1_1attr.html#a87eabc037c5541fecf34904372e41d74',1,'tvm::s_tir::attr']]],
   ['weight_3767',['weight',['../classtvm_1_1s__tir_1_1meta__schedule_1_1ExtractedTaskNode.html#a6d6591e4744fbd0fc3825bc240194525',1,'tvm::s_tir::meta_schedule::ExtractedTaskNode']]],
   ['wellformed_3768',['WellFormed',['../namespacetvm_1_1relax.html#a73f71a11cfb52e59f09df83a984cc007',1,'tvm::relax']]],
   ['where_3769',['Where',['../namespacetvm_1_1script_1_1ir__builder_1_1tir.html#a454a28cc9ed56389b7b09b5b45a3097e',1,'tvm::script::ir_builder::tir']]],

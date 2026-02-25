@@ -126,7 +126,7 @@ var searchData=
   ['buffer_2eh_412',['buffer.h',['../buffer_8h.html',1,'']]],
   ['buffer_5fbind_5fscope_413',['buffer_bind_scope',['../namespacetvm_1_1tir_1_1attr.html#a0497d7cff1d672920c2fbd4d92869e62',1,'tvm::tir::attr']]],
   ['buffer_5fbound_414',['buffer_bound',['../namespacetvm_1_1tir_1_1attr.html#ac76fd8d0227265617e2f2bb8402d1e19',1,'tvm::tir::attr']]],
-  ['buffer_5fdim_5falign_415',['buffer_dim_align',['../namespacetvm_1_1tir_1_1attr.html#a0ff3c4642eebe20842b1c26e98288a5d',1,'tvm::tir::attr']]],
+  ['buffer_5fdim_5falign_415',['buffer_dim_align',['../namespacetvm_1_1s__tir_1_1attr.html#a575c421abfa1ab9a51c3ceeb35d6b483',1,'tvm::s_tir::attr']]],
   ['buffer_5fdtype_416',['buffer_dtype',['../classtvm_1_1PrinterConfigNode.html#aea1a1880a6566f3088af1e2c69ae2b05',1,'tvm::PrinterConfigNode']]],
   ['buffer_5fmap_417',['buffer_map',['../classtvm_1_1tir_1_1PrimFuncNode.html#aa721ccbf8fb117621ca403121f48a563',1,'tvm::tir::PrimFuncNode::buffer_map()'],['../classtvm_1_1script_1_1ir__builder_1_1tir_1_1PrimFuncFrameNode.html#a1e8ca1461c399da7bf3589c5e594c957',1,'tvm::script::ir_builder::tir::PrimFuncFrameNode::buffer_map()']]],
   ['buffer_5ftype_418',['buffer_type',['../classtvm_1_1tir_1_1BufferNode.html#a2ce595dfcf7a726c7e0f86a6942d2568',1,'tvm::tir::BufferNode']]],

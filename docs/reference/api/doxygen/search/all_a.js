@@ -165,7 +165,7 @@ var searchData=
   ['irmoduleframe_1689',['IRModuleFrame',['../classtvm_1_1script_1_1ir__builder_1_1ir_1_1IRModuleFrame.html#ac6d00c983472434ef1ba9c19f8ba47b8',1,'tvm::script::ir_builder::ir::IRModuleFrame::IRModuleFrame()'],['../classtvm_1_1script_1_1ir__builder_1_1ir_1_1IRModuleFrame.html',1,'tvm::script::ir_builder::ir::IRModuleFrame']]],
   ['irmoduleframenode_1690',['IRModuleFrameNode',['../classtvm_1_1script_1_1ir__builder_1_1ir_1_1IRModuleFrameNode.html',1,'tvm::script::ir_builder::ir']]],
   ['irmodulenode_1691',['IRModuleNode',['../classtvm_1_1IRModuleNode.html#a12962213bf292b6ebef70804f099eb8a',1,'tvm::IRModuleNode::IRModuleNode()'],['../classtvm_1_1IRModuleNode.html',1,'tvm::IRModuleNode']]],
-  ['irregular_5floop_5fmark_1692',['irregular_loop_mark',['../namespacetvm_1_1tir_1_1attr.html#acffdce9f2788a27f9fc87892f5c11931',1,'tvm::tir::attr']]],
+  ['irregular_5floop_5fmark_1692',['irregular_loop_mark',['../namespacetvm_1_1s__tir_1_1attr.html#ac89e0b3b635ae761fe978f9174dcc63a',1,'tvm::s_tir::attr']]],
   ['irtransform_1693',['IRTransform',['../namespacetvm_1_1tir.html#a7af9b88298a46f82b98e9263a73a16e4',1,'tvm::tir']]],
   ['is_5fbfloat_1694',['is_bfloat',['../classtvm_1_1runtime_1_1DataType.html#ab1f9e30adff82199a6cce19e96d549fb',1,'tvm::runtime::DataType']]],
   ['is_5fbfloat16_1695',['is_bfloat16',['../classtvm_1_1runtime_1_1DataType.html#acfe8fe9c3873fdec74c9a7b03161766f',1,'tvm::runtime::DataType']]],

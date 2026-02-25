@@ -15,7 +15,7 @@ var searchData=
   ['vars_7572',['vars',['../classtvm_1_1script_1_1ir__builder_1_1tir_1_1ForFrameNode.html#aba9a657d23f36207e8e1d5ed19b7e773',1,'tvm::script::ir_builder::tir::ForFrameNode']]],
   ['vdevice_7573',['vdevice',['../classtvm_1_1relax_1_1TensorStructInfoNode.html#a948914d63c4a1ca46f5ee1b5af688eb9',1,'tvm::relax::TensorStructInfoNode']]],
   ['vdevice_5fid_7574',['vdevice_id',['../classtvm_1_1VDeviceNode.html#a7e9283f6b2586c56228df3672d3571dc',1,'tvm::VDeviceNode']]],
-  ['vector_5fbytes_7575',['vector_bytes',['../namespacetvm_1_1tir_1_1attr.html#a7a5ec1a12abbc199795176f1da4f9fb9',1,'tvm::tir::attr']]],
+  ['vector_5fbytes_7575',['vector_bytes',['../namespacetvm_1_1s__tir_1_1attr.html#a0b4f1c2f0cb910c158d73c2dfb85e1d0',1,'tvm::s_tir::attr']]],
   ['vectors_7576',['vectors',['../classtvm_1_1tir_1_1ShuffleNode.html#a6761e7453aa0af788dad4cffd6be0c50',1,'tvm::tir::ShuffleNode']]],
   ['verbose_5fexpr_7577',['verbose_expr',['../classtvm_1_1PrinterConfigNode.html#a434403f4e4cb71c75a7be8cba4845901',1,'tvm::PrinterConfigNode']]],
   ['vid_7578',['vid',['../classtvm_1_1relax_1_1VarNode.html#a8f6e9fa46f2a936d2ffda15f7720eaff',1,'tvm::relax::VarNode']]],
