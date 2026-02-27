@@ -17,6 +17,8 @@ Functions
 ---------
 
 
+- :ref:`exhale_function_unified__api_8h_1a309be0e2b6f41e8f602d16931cc4ca38`
+
 - :ref:`exhale_function_unified__api_8h_1a8d6ac296b5142517449c57c387ec8c21`
 
 - :ref:`exhale_function_unified__api_8h_1afe299c48605bbb76772042acae7dc6de`
@@ -30,6 +32,8 @@ Functions
 - :ref:`exhale_function_unified__api_8h_1a9d158620f8ae2da73b9d5d53eb6151de`
 
 - :ref:`exhale_function_unified__api_8h_1a1d6ae21c397f551f1f2f12d5d7cdb88a`
+
+- :ref:`exhale_function_unified__api_8h_1aaf633b14f4acc686a2f0dc23f6b3367e`
 
 - :ref:`exhale_function_unified__api_8h_1a4d4f73e984897c9a4da2d0dccc11e1a1`
 

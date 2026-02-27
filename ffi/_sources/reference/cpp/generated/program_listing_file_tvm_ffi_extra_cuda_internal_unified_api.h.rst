@@ -200,6 +200,56 @@ Program Listing for File unified_api.h
    #endif
    }
    
+   inline ResultType LaunchKernelEx(KernelHandle kernel, void** args, const LaunchConfig& config) {
+   #if TVM_FFI_CUBIN_LAUNCHER_USE_DRIVER_API
+     return cuLaunchKernelEx(&config, reinterpret_cast<CUfunction>(kernel), args, nullptr);
+   #else
+     return cudaLaunchKernelExC(&config, reinterpret_cast<const void*>(kernel), args);
+   #endif
+   }
+   
+   inline ResultType ConstructLaunchConfig(KernelHandle kernel, StreamHandle stream,
+                                           uint32_t smem_size, tvm::ffi::dim3 grid,
+                                           tvm::ffi::dim3 block, int cluster_dim, LaunchConfig& config,
+                                           LaunchAttrType& attr) {
+   #if TVM_FFI_CUBIN_LAUNCHER_USE_DRIVER_API
+     config.gridDimX = grid.x;
+     config.gridDimY = grid.y;
+     config.gridDimZ = grid.z;
+     config.blockDimX = block.x;
+     config.blockDimY = block.y;
+     config.blockDimZ = block.z;
+     config.sharedMemBytes = smem_size;
+     config.hStream = stream;
+     config.numAttrs = 0;
+     config.attrs = nullptr;
+   
+     if (cluster_dim > 1) {
+       attr.id = CU_LAUNCH_ATTRIBUTE_CLUSTER_DIMENSION;
+       attr.value.clusterDim.x = static_cast<unsigned>(cluster_dim);
+       attr.value.clusterDim.y = 1;
+       attr.value.clusterDim.z = 1;
+       config.attrs = &attr;
+       config.numAttrs = 1;
+     }
+   #else
+     config.gridDim = {grid.x, grid.y, grid.z};
+     config.blockDim = {block.x, block.y, block.z};
+     config.dynamicSmemBytes = smem_size;
+     config.stream = stream;
+     config.numAttrs = 0;
+     config.attrs = nullptr;
+   
+     if (cluster_dim > 1) {
+       attr.id = cudaLaunchAttributeClusterDimension;
+       attr.val.clusterDim = {static_cast<unsigned>(cluster_dim), 1, 1};
+       config.attrs = &attr;
+       config.numAttrs = 1;
+     }
+   #endif
+     return kSuccess;
+   }
+   
    // Additional wrappers for device operations used in CubinLauncher
    inline ResultType GetDeviceCount(int* count) {
    #if TVM_FFI_CUBIN_LAUNCHER_USE_DRIVER_API

@@ -137,6 +137,10 @@ Program Listing for File cubin_launcher.h
        return cuda_api::LaunchKernel(kernel_, args, grid, block, stream, dyn_smem_bytes);
      }
    
+     cuda_api::ResultType LaunchEx(void** args, const cuda_api::LaunchConfig& config) {
+       return cuda_api::LaunchKernelEx(kernel_, args, config);
+     }
+   
      cuda_api::KernelHandle GetHandle() const { return kernel_; }
    
      // Non-copyable

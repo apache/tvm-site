@@ -438,7 +438,8 @@ Program Listing for File c_api.h
    
    typedef struct {
      const TVMFFIAny* data;
-     size_t size;
+     int32_t size;
+     int32_t begin_index;
    } TVMFFITypeAttrColumn;
    
    #ifdef __cplusplus
