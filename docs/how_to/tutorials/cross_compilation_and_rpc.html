@@ -472,7 +472,7 @@ device and returns the measured cost. Network overhead is excluded.</p>
 <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">cost</span><span class="si">:</span><span class="s2">g</span><span class="si">}</span><span class="s2"> secs/op&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>2.271e-07 secs/op
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>9.8e-08 secs/op
 </pre></div>
 </div>
 </section>
@@ -734,13 +734,20 @@ for ONNX models. Simply replace <code class="docutils literal notranslate"><span
     <span class="c1"># Step 5: Run Inference on Remote Device</span>
     <span class="c1"># ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~</span>
     <span class="c1"># Execute the model on the remote ARM device and retrieve results</span>
+    <span class="c1">#</span>
+    <span class="c1"># Note: When running VM over RPC, we use set_input() and invoke_stateful()</span>
+    <span class="c1"># instead of direct function call (vm[&quot;main&quot;](...)). This is because RPC</span>
+    <span class="c1"># transmits tensors as DLTensor*, while VM builtins expect ffi.Tensor.</span>
+    <span class="c1"># The set_input API handles this conversion internally.</span>
 
     <span class="c1"># Prepare input data</span>
     <span class="n">input_data</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">28</span><span class="p">,</span> <span class="mi">28</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s2">&quot;float32&quot;</span><span class="p">)</span>
     <span class="n">remote_input</span> <span class="o">=</span> <span class="n">tvm</span><span class="o">.</span><span class="n">runtime</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">input_data</span><span class="p">,</span> <span class="n">dev</span><span class="p">)</span>
 
-    <span class="c1"># Run inference on remote device</span>
-    <span class="n">output</span> <span class="o">=</span> <span class="n">vm</span><span class="p">[</span><span class="s2">&quot;main&quot;</span><span class="p">](</span><span class="n">remote_input</span><span class="p">,</span> <span class="o">*</span><span class="n">remote_params</span><span class="p">)</span>
+    <span class="c1"># Run inference using set_input + invoke_stateful for RPC compatibility</span>
+    <span class="n">vm</span><span class="o">.</span><span class="n">set_input</span><span class="p">(</span><span class="s2">&quot;main&quot;</span><span class="p">,</span> <span class="n">remote_input</span><span class="p">,</span> <span class="o">*</span><span class="n">remote_params</span><span class="p">)</span>
+    <span class="n">vm</span><span class="o">.</span><span class="n">invoke_stateful</span><span class="p">(</span><span class="s2">&quot;main&quot;</span><span class="p">)</span>
+    <span class="n">output</span> <span class="o">=</span> <span class="n">vm</span><span class="o">.</span><span class="n">get_outputs</span><span class="p">(</span><span class="s2">&quot;main&quot;</span><span class="p">)</span>
 
     <span class="c1"># Extract result (handle both tuple and single tensor outputs)</span>
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">output</span><span class="p">,</span> <a href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Sequence" title="collections.abc.Sequence" class="sphx-glr-backref-module-collections-abc sphx-glr-backref-type-py-class"><span class="n">tvm</span><span class="o">.</span><span class="n">ir</span><span class="o">.</span><span class="n">Array</span></a><span class="p">)</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">output</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
@@ -755,12 +762,21 @@ for ONNX models. Simply replace <code class="docutils literal notranslate"><span
     <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;  Predicted class: </span><span class="si">{</span><span class="n">np</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">result_np</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 
     <span class="c1">######################################################################</span>
+    <span class="c1"># Alternative: Direct Function Call (Local Only)</span>
+    <span class="c1"># ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~</span>
+    <span class="c1"># Note: The direct call syntax vm[&quot;main&quot;](input, *params) works for</span>
+    <span class="c1"># local execution but may fail over RPC due to type mismatch between</span>
+    <span class="c1"># DLTensor* (RPC) and ffi.Tensor (VM builtins). For RPC, always use</span>
+    <span class="c1"># the set_input + invoke_stateful pattern shown above.</span>
+
+    <span class="c1">######################################################################</span>
     <span class="c1"># Step 6: Performance Evaluation (Optional)</span>
     <span class="c1"># ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~</span>
     <span class="c1"># Measure inference time on the remote device, excluding network overhead</span>
+    <span class="c1"># Note: For RPC, use invoke_stateful with time_evaluator</span>
 
-    <span class="n">time_f</span> <span class="o">=</span> <span class="n">vm</span><span class="o">.</span><span class="n">time_evaluator</span><span class="p">(</span><span class="s2">&quot;main&quot;</span><span class="p">,</span> <span class="n">dev</span><span class="p">,</span> <span class="n">number</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">repeat</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
-    <span class="n">prof_res</span> <span class="o">=</span> <span class="n">time_f</span><span class="p">(</span><span class="n">remote_input</span><span class="p">,</span> <span class="o">*</span><span class="n">remote_params</span><span class="p">)</span>
+    <span class="n">time_f</span> <span class="o">=</span> <span class="n">vm</span><span class="o">.</span><span class="n">time_evaluator</span><span class="p">(</span><span class="s2">&quot;invoke_stateful&quot;</span><span class="p">,</span> <span class="n">dev</span><span class="p">,</span> <span class="n">number</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">repeat</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+    <span class="n">prof_res</span> <span class="o">=</span> <span class="n">time_f</span><span class="p">(</span><span class="s2">&quot;main&quot;</span><span class="p">)</span>
     <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Inference time on remote device: </span><span class="si">{</span><span class="n">prof_res</span><span class="o">.</span><span class="n">mean</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="mi">1000</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2"> ms&quot;</span><span class="p">)</span>
 
     <span class="c1">######################################################################</span>
@@ -823,8 +839,8 @@ for ONNX models. Simply replace <code class="docutils literal notranslate"><span
 Converted PyTorch model to Relax:
   - Number of parameters: 4
 Using local target for demonstration
-Exported library to: /tmp/tmprgpyal_9/model_deployed.so
-Saved parameters to: /tmp/tmprgpyal_9/model_params.npz
+Exported library to: /tmp/tmphwjrxhqk/model_deployed.so
+Saved parameters to: /tmp/tmphwjrxhqk/model_params.npz
 
 RPC workflow (works for any remote device):
 ==================================================
