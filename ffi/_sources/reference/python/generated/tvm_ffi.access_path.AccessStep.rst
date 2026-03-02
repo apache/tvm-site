@@ -14,7 +14,9 @@
    .. autosummary::
    
       ~AccessStep.__ffi_init__
-      ~AccessStep.__init__
+      ~AccessStep.__init_handle_by_constructor__
+      ~AccessStep.__move_handle_from__
+      ~AccessStep._move
       ~AccessStep.same_as
    
    

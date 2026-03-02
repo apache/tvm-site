@@ -40,7 +40,7 @@
 <link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
   <script src="../../../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
 
-    <script src="../../../_static/documentation_options.js?v=a365a014"></script>
+    <script src="../../../_static/documentation_options.js?v=fbb22fc1"></script>
     <script src="../../../_static/doctools.js?v=9bcbadda"></script>
     <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -56,7 +56,7 @@
     <link rel="search" title="Search" href="../../../search.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-    <meta name="docbuild:last-update" content="Feb 27, 2026"/>
+    <meta name="docbuild:last-update" content="Mar 02, 2026"/>
   </head>
   
   
@@ -166,6 +166,7 @@
 <p aria-level="2" class="caption" role="heading"><span class="caption-text">Guides</span></p>
 <ul class="nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="../../../guides/export_func_cls.html">Export Functions and Classes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../guides/dataclass_reflection.html">Dataclass-Style Reflection</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../guides/kernel_library_guide.html">Kernel Library Guide</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../guides/compiler_integration.html">Compiler Integration</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../../guides/cubin_launcher.html">CUBIN Launcher Guide</a></li>
@@ -437,6 +438,7 @@ document.write(`
 <span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;tvm/ffi/function.h&gt;</span>
 <span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;tvm/ffi/function_details.h&gt;</span>
 <span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;tvm/ffi/optional.h&gt;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;tvm/ffi/reflection/init.h&gt;</span>
 <span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;tvm/ffi/string.h&gt;</span>
 <span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;tvm/ffi/type_traits.h&gt;</span>
 
@@ -519,6 +521,10 @@ document.write(`
 <span class="w">  </span><span class="n">Any</span><span class="w"> </span><span class="n">value_</span><span class="p">;</span>
 <span class="p">};</span>
 
+<span class="k">class</span><span class="w"> </span><span class="nc">default_value</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="k">public</span><span class="w"> </span><span class="n">DefaultValue</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="k">using</span><span class="w"> </span><span class="n">DefaultValue</span><span class="o">::</span><span class="n">DefaultValue</span><span class="p">;</span>
+<span class="p">};</span>
+
 <span class="k">class</span><span class="w"> </span><span class="nc">DefaultFactory</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="k">public</span><span class="w"> </span><span class="n">InfoTrait</span><span class="w"> </span><span class="p">{</span>
 <span class="w"> </span><span class="k">public</span><span class="o">:</span>
 <span class="w">  </span><span class="k">explicit</span><span class="w"> </span><span class="n">DefaultFactory</span><span class="p">(</span><span class="n">Function</span><span class="w"> </span><span class="n">factory</span><span class="p">)</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">factory_</span><span class="p">(</span><span class="n">std</span><span class="o">::</span><span class="n">move</span><span class="p">(</span><span class="n">factory</span><span class="p">))</span><span class="w"> </span><span class="p">{}</span>
@@ -531,6 +537,10 @@ document.write(`
 
 <span class="w"> </span><span class="k">private</span><span class="o">:</span>
 <span class="w">  </span><span class="n">Function</span><span class="w"> </span><span class="n">factory_</span><span class="p">;</span>
+<span class="p">};</span>
+
+<span class="k">class</span><span class="w"> </span><span class="nc">default_factory</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="k">public</span><span class="w"> </span><span class="n">DefaultFactory</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="k">using</span><span class="w"> </span><span class="n">DefaultFactory</span><span class="o">::</span><span class="n">DefaultFactory</span><span class="p">;</span>
 <span class="p">};</span>
 
 <span class="k">class</span><span class="w"> </span><span class="nc">AttachFieldFlag</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="k">public</span><span class="w"> </span><span class="n">InfoTrait</span><span class="w"> </span><span class="p">{</span>
@@ -550,9 +560,9 @@ document.write(`
 <span class="w">  </span><span class="kt">int32_t</span><span class="w"> </span><span class="n">flag_</span><span class="p">;</span>
 <span class="p">};</span>
 
-<span class="k">class</span><span class="w"> </span><span class="nc">Repr</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="k">public</span><span class="w"> </span><span class="n">InfoTrait</span><span class="w"> </span><span class="p">{</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">repr</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="k">public</span><span class="w"> </span><span class="n">InfoTrait</span><span class="w"> </span><span class="p">{</span>
 <span class="w"> </span><span class="k">public</span><span class="o">:</span>
-<span class="w">  </span><span class="k">explicit</span><span class="w"> </span><span class="n">Repr</span><span class="p">(</span><span class="kt">bool</span><span class="w"> </span><span class="n">show</span><span class="p">)</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">show_</span><span class="p">(</span><span class="n">show</span><span class="p">)</span><span class="w"> </span><span class="p">{}</span>
+<span class="w">  </span><span class="k">explicit</span><span class="w"> </span><span class="n">repr</span><span class="p">(</span><span class="kt">bool</span><span class="w"> </span><span class="n">show</span><span class="p">)</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">show_</span><span class="p">(</span><span class="n">show</span><span class="p">)</span><span class="w"> </span><span class="p">{}</span>
 
 <span class="w">  </span><span class="n">TVM_FFI_INLINE</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="n">Apply</span><span class="p">(</span><span class="n">TVMFFIFieldInfo</span><span class="o">*</span><span class="w"> </span><span class="n">info</span><span class="p">)</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="p">{</span>
 <span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">show_</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
@@ -562,6 +572,52 @@ document.write(`
 
 <span class="w"> </span><span class="k">private</span><span class="o">:</span>
 <span class="w">  </span><span class="kt">bool</span><span class="w"> </span><span class="n">show_</span><span class="p">;</span>
+<span class="p">};</span>
+
+<span class="k">class</span><span class="w"> </span><span class="nc">compare</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="k">public</span><span class="w"> </span><span class="n">InfoTrait</span><span class="w"> </span><span class="p">{</span>
+<span class="w"> </span><span class="k">public</span><span class="o">:</span>
+<span class="w">  </span><span class="k">explicit</span><span class="w"> </span><span class="n">compare</span><span class="p">(</span><span class="kt">bool</span><span class="w"> </span><span class="n">include</span><span class="p">)</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">include_</span><span class="p">(</span><span class="n">include</span><span class="p">)</span><span class="w"> </span><span class="p">{}</span>
+
+<span class="w">  </span><span class="n">TVM_FFI_INLINE</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="n">Apply</span><span class="p">(</span><span class="n">TVMFFIFieldInfo</span><span class="o">*</span><span class="w"> </span><span class="n">info</span><span class="p">)</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">include_</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="n">info</span><span class="o">-&gt;</span><span class="n">flags</span><span class="w"> </span><span class="o">|=</span><span class="w"> </span><span class="n">kTVMFFIFieldFlagBitMaskCompareOff</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">  </span><span class="p">}</span>
+
+<span class="w"> </span><span class="k">private</span><span class="o">:</span>
+<span class="w">  </span><span class="kt">bool</span><span class="w"> </span><span class="n">include_</span><span class="p">;</span>
+<span class="p">};</span>
+
+<span class="k">class</span><span class="w"> </span><span class="nc">hash</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="k">public</span><span class="w"> </span><span class="n">InfoTrait</span><span class="w"> </span><span class="p">{</span>
+<span class="w"> </span><span class="k">public</span><span class="o">:</span>
+<span class="w">  </span><span class="k">explicit</span><span class="w"> </span><span class="n">hash</span><span class="p">(</span><span class="kt">bool</span><span class="w"> </span><span class="n">include</span><span class="p">)</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">include_</span><span class="p">(</span><span class="n">include</span><span class="p">)</span><span class="w"> </span><span class="p">{}</span>
+
+<span class="w">  </span><span class="n">TVM_FFI_INLINE</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="n">Apply</span><span class="p">(</span><span class="n">TVMFFIFieldInfo</span><span class="o">*</span><span class="w"> </span><span class="n">info</span><span class="p">)</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">include_</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="n">info</span><span class="o">-&gt;</span><span class="n">flags</span><span class="w"> </span><span class="o">|=</span><span class="w"> </span><span class="n">kTVMFFIFieldFlagBitMaskHashOff</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">  </span><span class="p">}</span>
+
+<span class="w"> </span><span class="k">private</span><span class="o">:</span>
+<span class="w">  </span><span class="kt">bool</span><span class="w"> </span><span class="n">include_</span><span class="p">;</span>
+<span class="p">};</span>
+
+<span class="c1">// Forward-declare `init` so that the deduction guide can reference it.</span>
+<span class="k">template</span><span class="w"> </span><span class="o">&lt;</span><span class="k">typename</span><span class="p">...</span><span class="w"> </span><span class="n">Args</span><span class="o">&gt;</span>
+<span class="k">struct</span><span class="w"> </span><span class="nc">init</span><span class="p">;</span>
+
+<span class="k">class</span><span class="w"> </span><span class="nc">kw_only</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="k">public</span><span class="w"> </span><span class="n">InfoTrait</span><span class="w"> </span><span class="p">{</span>
+<span class="w"> </span><span class="k">public</span><span class="o">:</span>
+<span class="w">  </span><span class="k">explicit</span><span class="w"> </span><span class="n">kw_only</span><span class="p">(</span><span class="kt">bool</span><span class="w"> </span><span class="n">is_kw_only</span><span class="p">)</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">kw_only_</span><span class="p">(</span><span class="n">is_kw_only</span><span class="p">)</span><span class="w"> </span><span class="p">{}</span>
+
+<span class="w">  </span><span class="n">TVM_FFI_INLINE</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="n">Apply</span><span class="p">(</span><span class="n">TVMFFIFieldInfo</span><span class="o">*</span><span class="w"> </span><span class="n">info</span><span class="p">)</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">kw_only_</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="n">info</span><span class="o">-&gt;</span><span class="n">flags</span><span class="w"> </span><span class="o">|=</span><span class="w"> </span><span class="n">kTVMFFIFieldFlagBitMaskKwOnly</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">  </span><span class="p">}</span>
+
+<span class="w"> </span><span class="k">private</span><span class="o">:</span>
+<span class="w">  </span><span class="kt">bool</span><span class="w"> </span><span class="n">kw_only_</span><span class="p">;</span>
 <span class="p">};</span>
 
 <span class="k">template</span><span class="w"> </span><span class="o">&lt;</span><span class="k">typename</span><span class="w"> </span><span class="nc">Class</span><span class="p">,</span><span class="w"> </span><span class="k">typename</span><span class="w"> </span><span class="nc">T</span><span class="o">&gt;</span>
@@ -737,10 +793,44 @@ document.write(`
 <span class="w">  </span><span class="p">}</span>
 <span class="p">};</span>
 
+<span class="k">template</span><span class="w"> </span><span class="o">&lt;&gt;</span>
+<span class="k">struct</span><span class="w"> </span><span class="nc">init</span><span class="o">&lt;&gt;</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="k">public</span><span class="w"> </span><span class="n">InfoTrait</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="c1">// Allow ObjectDef to access the execute function and include_ flag.</span>
+<span class="w">  </span><span class="k">template</span><span class="w"> </span><span class="o">&lt;</span><span class="k">typename</span><span class="w"> </span><span class="nc">Class</span><span class="o">&gt;</span>
+<span class="w">  </span><span class="k">friend</span><span class="w"> </span><span class="k">class</span><span class="w"> </span><span class="nc">ObjectDef</span><span class="p">;</span>
+<span class="w">  </span><span class="k">template</span><span class="w"> </span><span class="o">&lt;</span><span class="k">typename</span><span class="w"> </span><span class="nc">T</span><span class="o">&gt;</span>
+<span class="w">  </span><span class="k">friend</span><span class="w"> </span><span class="k">class</span><span class="w"> </span><span class="nc">OverloadObjectDef</span><span class="p">;</span>
+
+<span class="w">  </span><span class="k">constexpr</span><span class="w"> </span><span class="n">init</span><span class="p">()</span><span class="w"> </span><span class="k">noexcept</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">default</span><span class="p">;</span>
+
+<span class="w">  </span><span class="k">explicit</span><span class="w"> </span><span class="n">init</span><span class="p">(</span><span class="kt">bool</span><span class="w"> </span><span class="n">include</span><span class="p">)</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">include_</span><span class="p">(</span><span class="n">include</span><span class="p">)</span><span class="w"> </span><span class="p">{}</span>
+
+<span class="w">  </span><span class="n">TVM_FFI_INLINE</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="n">Apply</span><span class="p">(</span><span class="n">TVMFFIFieldInfo</span><span class="o">*</span><span class="w"> </span><span class="n">info</span><span class="p">)</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">include_</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="n">info</span><span class="o">-&gt;</span><span class="n">flags</span><span class="w"> </span><span class="o">|=</span><span class="w"> </span><span class="n">kTVMFFIFieldFlagBitMaskInitOff</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">  </span><span class="p">}</span>
+
+<span class="w"> </span><span class="k">private</span><span class="o">:</span>
+<span class="w">  </span><span class="kt">bool</span><span class="w"> </span><span class="n">include_</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">true</span><span class="p">;</span>
+
+<span class="w">  </span><span class="k">template</span><span class="w"> </span><span class="o">&lt;</span><span class="k">typename</span><span class="w"> </span><span class="nc">Class</span><span class="o">&gt;</span>
+<span class="w">  </span><span class="k">static</span><span class="w"> </span><span class="kr">inline</span><span class="w"> </span><span class="n">ObjectRef</span><span class="w"> </span><span class="n">execute</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">ObjectRef</span><span class="p">(</span><span class="n">ffi</span><span class="o">::</span><span class="n">make_object</span><span class="o">&lt;</span><span class="n">Class</span><span class="o">&gt;</span><span class="p">());</span>
+<span class="w">  </span><span class="p">}</span>
+<span class="p">};</span>
+
+<span class="cp">#if !defined(TVM_FFI_DOXYGEN_MODE)</span>
+<span class="n">init</span><span class="p">(</span><span class="kt">bool</span><span class="p">)</span><span class="w"> </span><span class="o">-&gt;</span><span class="w"> </span><span class="n">init</span><span class="o">&lt;&gt;</span><span class="p">;</span>
+<span class="cp">#endif</span>
+
 <span class="k">namespace</span><span class="w"> </span><span class="nn">type_attr</span><span class="w"> </span><span class="p">{</span>
 <span class="kr">inline</span><span class="w"> </span><span class="k">constexpr</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="kt">char</span><span class="o">*</span><span class="w"> </span><span class="n">kInit</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;__ffi_init__&quot;</span><span class="p">;</span>
 <span class="kr">inline</span><span class="w"> </span><span class="k">constexpr</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="kt">char</span><span class="o">*</span><span class="w"> </span><span class="n">kShallowCopy</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;__ffi_shallow_copy__&quot;</span><span class="p">;</span>
 <span class="kr">inline</span><span class="w"> </span><span class="k">constexpr</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="kt">char</span><span class="o">*</span><span class="w"> </span><span class="n">kRepr</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;__ffi_repr__&quot;</span><span class="p">;</span>
+<span class="kr">inline</span><span class="w"> </span><span class="k">constexpr</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="kt">char</span><span class="o">*</span><span class="w"> </span><span class="n">kHash</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;__ffi_hash__&quot;</span><span class="p">;</span>
+<span class="kr">inline</span><span class="w"> </span><span class="k">constexpr</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="kt">char</span><span class="o">*</span><span class="w"> </span><span class="n">kEq</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;__ffi_eq__&quot;</span><span class="p">;</span>
+<span class="kr">inline</span><span class="w"> </span><span class="k">constexpr</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="kt">char</span><span class="o">*</span><span class="w"> </span><span class="n">kCompare</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;__ffi_compare__&quot;</span><span class="p">;</span>
 <span class="p">}</span><span class="w">  </span><span class="c1">// namespace type_attr</span>
 
 <span class="k">template</span><span class="w"> </span><span class="o">&lt;</span><span class="k">typename</span><span class="w"> </span><span class="nc">Class</span><span class="o">&gt;</span>
@@ -749,8 +839,24 @@ document.write(`
 <span class="w">  </span><span class="k">template</span><span class="w"> </span><span class="o">&lt;</span><span class="k">typename</span><span class="p">...</span><span class="w"> </span><span class="n">ExtraArgs</span><span class="o">&gt;</span>
 <span class="w">  </span><span class="k">explicit</span><span class="w"> </span><span class="n">ObjectDef</span><span class="p">(</span><span class="n">ExtraArgs</span><span class="o">&amp;&amp;</span><span class="p">...</span><span class="w"> </span><span class="n">extra_args</span><span class="p">)</span>
 <span class="w">      </span><span class="o">:</span><span class="w"> </span><span class="n">type_index_</span><span class="p">(</span><span class="n">Class</span><span class="o">::</span><span class="n">_GetOrAllocRuntimeTypeIndex</span><span class="p">()),</span><span class="w"> </span><span class="n">type_key_</span><span class="p">(</span><span class="n">Class</span><span class="o">::</span><span class="n">_type_key</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="p">(</span><span class="n">MaybeSuppressAutoInit</span><span class="p">(</span><span class="n">extra_args</span><span class="p">),</span><span class="w"> </span><span class="p">...);</span>
 <span class="w">    </span><span class="n">RegisterExtraInfo</span><span class="p">(</span><span class="n">std</span><span class="o">::</span><span class="n">forward</span><span class="o">&lt;</span><span class="n">ExtraArgs</span><span class="o">&gt;</span><span class="p">(</span><span class="n">extra_args</span><span class="p">)...);</span>
 <span class="w">    </span><span class="n">AutoRegisterCopy</span><span class="p">();</span>
+<span class="w">  </span><span class="p">}</span>
+
+<span class="w">  </span><span class="n">ObjectDef</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="n">ObjectDef</span><span class="o">&amp;</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">delete</span><span class="p">;</span>
+<span class="w">  </span><span class="n">ObjectDef</span><span class="o">&amp;</span><span class="w"> </span><span class="k">operator</span><span class="o">=</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="n">ObjectDef</span><span class="o">&amp;</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">delete</span><span class="p">;</span>
+<span class="w">  </span><span class="n">ObjectDef</span><span class="p">(</span><span class="n">ObjectDef</span><span class="o">&amp;&amp;</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">delete</span><span class="p">;</span>
+<span class="w">  </span><span class="n">ObjectDef</span><span class="o">&amp;</span><span class="w"> </span><span class="k">operator</span><span class="o">=</span><span class="p">(</span><span class="n">ObjectDef</span><span class="o">&amp;&amp;</span><span class="p">)</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">delete</span><span class="p">;</span>
+
+<span class="w">  </span><span class="o">~</span><span class="n">ObjectDef</span><span class="p">()</span><span class="w"> </span><span class="k">noexcept</span><span class="p">(</span><span class="nb">false</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">has_explicit_init_</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="c1">// Only auto-register if the type has a default creator.</span>
+<span class="w">      </span><span class="k">const</span><span class="w"> </span><span class="n">TVMFFITypeInfo</span><span class="o">*</span><span class="w"> </span><span class="n">info</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">TVMFFIGetTypeInfo</span><span class="p">(</span><span class="n">type_index_</span><span class="p">);</span>
+<span class="w">      </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">info</span><span class="o">-&gt;</span><span class="n">metadata</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="k">nullptr</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="n">info</span><span class="o">-&gt;</span><span class="n">metadata</span><span class="o">-&gt;</span><span class="n">creator</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="k">nullptr</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">AutoRegisterInit</span><span class="p">();</span>
+<span class="w">      </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
 <span class="w">  </span><span class="p">}</span>
 
 <span class="w">  </span><span class="k">template</span><span class="w"> </span><span class="o">&lt;</span><span class="k">typename</span><span class="w"> </span><span class="nc">T</span><span class="p">,</span><span class="w"> </span><span class="k">typename</span><span class="w"> </span><span class="nc">BaseClass</span><span class="p">,</span><span class="w"> </span><span class="k">typename</span><span class="p">...</span><span class="w"> </span><span class="n">Extra</span><span class="o">&gt;</span>
@@ -780,6 +886,7 @@ document.write(`
 
 <span class="w">  </span><span class="k">template</span><span class="w"> </span><span class="o">&lt;</span><span class="k">typename</span><span class="p">...</span><span class="w"> </span><span class="n">Args</span><span class="p">,</span><span class="w"> </span><span class="k">typename</span><span class="p">...</span><span class="w"> </span><span class="n">Extra</span><span class="o">&gt;</span>
 <span class="w">  </span><span class="n">TVM_FFI_INLINE</span><span class="w"> </span><span class="n">ObjectDef</span><span class="o">&amp;</span><span class="w"> </span><span class="n">def</span><span class="p">([[</span><span class="n">maybe_unused</span><span class="p">]]</span><span class="w"> </span><span class="n">init</span><span class="o">&lt;</span><span class="n">Args</span><span class="p">...</span><span class="o">&gt;</span><span class="w"> </span><span class="n">init_func</span><span class="p">,</span><span class="w"> </span><span class="n">Extra</span><span class="o">&amp;&amp;</span><span class="p">...</span><span class="w"> </span><span class="n">extra</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">has_explicit_init_</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">true</span><span class="p">;</span>
 <span class="w">    </span><span class="n">RegisterMethod</span><span class="p">(</span><span class="n">kInitMethodName</span><span class="p">,</span><span class="w"> </span><span class="nb">true</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">init</span><span class="o">&lt;</span><span class="n">Args</span><span class="p">...</span><span class="o">&gt;::</span><span class="k">template</span><span class="w"> </span><span class="n">execute</span><span class="o">&lt;</span><span class="n">Class</span><span class="o">&gt;</span><span class="p">,</span>
 <span class="w">                   </span><span class="n">std</span><span class="o">::</span><span class="n">forward</span><span class="o">&lt;</span><span class="n">Extra</span><span class="o">&gt;</span><span class="p">(</span><span class="n">extra</span><span class="p">)...);</span>
 <span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="o">*</span><span class="k">this</span><span class="p">;</span>
@@ -789,11 +896,20 @@ document.write(`
 <span class="w">  </span><span class="k">template</span><span class="w"> </span><span class="o">&lt;</span><span class="k">typename</span><span class="w"> </span><span class="nc">T</span><span class="o">&gt;</span>
 <span class="w">  </span><span class="k">friend</span><span class="w"> </span><span class="k">class</span><span class="w"> </span><span class="nc">OverloadObjectDef</span><span class="p">;</span>
 
-<span class="w">  </span><span class="k">static</span><span class="w"> </span><span class="n">ObjectRef</span><span class="w"> </span><span class="nf">ShallowCopy</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="n">Class</span><span class="o">*</span><span class="w"> </span><span class="n">self</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="k">template</span><span class="w"> </span><span class="o">&lt;</span><span class="k">typename</span><span class="w"> </span><span class="nc">T</span><span class="o">&gt;</span>
+<span class="w">  </span><span class="kt">void</span><span class="w"> </span><span class="n">MaybeSuppressAutoInit</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="n">T</span><span class="o">&amp;</span><span class="w"> </span><span class="n">value</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="k">constexpr</span><span class="w"> </span><span class="p">(</span><span class="n">std</span><span class="o">::</span><span class="n">is_same_v</span><span class="o">&lt;</span><span class="n">std</span><span class="o">::</span><span class="n">decay_t</span><span class="o">&lt;</span><span class="n">T</span><span class="o">&gt;</span><span class="p">,</span><span class="w"> </span><span class="n">init</span><span class="o">&lt;&gt;&gt;</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">value</span><span class="p">.</span><span class="n">include_</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="n">has_explicit_init_</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">true</span><span class="p">;</span>
+<span class="w">      </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">  </span><span class="p">}</span>
+
+<span class="w">  </span><span class="k">static</span><span class="w"> </span><span class="n">ObjectRef</span><span class="w"> </span><span class="n">ShallowCopy</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="n">Class</span><span class="o">*</span><span class="w"> </span><span class="n">self</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
 <span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">ObjectRef</span><span class="p">(</span><span class="n">ffi</span><span class="o">::</span><span class="n">make_object</span><span class="o">&lt;</span><span class="n">Class</span><span class="o">&gt;</span><span class="p">(</span><span class="o">*</span><span class="n">self</span><span class="p">));</span>
 <span class="w">  </span><span class="p">}</span>
 
-<span class="w">  </span><span class="kt">void</span><span class="w"> </span><span class="nf">AutoRegisterCopy</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="kt">void</span><span class="w"> </span><span class="n">AutoRegisterCopy</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
 <span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="k">constexpr</span><span class="w"> </span><span class="p">(</span><span class="n">std</span><span class="o">::</span><span class="n">is_copy_constructible_v</span><span class="o">&lt;</span><span class="n">Class</span><span class="o">&gt;</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
 <span class="w">      </span><span class="c1">// Register __ffi_shallow_copy__ as an instance method</span>
 <span class="w">      </span><span class="n">RegisterMethod</span><span class="p">(</span><span class="n">type_attr</span><span class="o">::</span><span class="n">kShallowCopy</span><span class="p">,</span><span class="w"> </span><span class="nb">false</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">ObjectDef</span><span class="o">::</span><span class="n">ShallowCopy</span><span class="p">);</span>
@@ -877,8 +993,11 @@ document.write(`
 <span class="w">    </span><span class="n">TVM_FFI_CHECK_SAFE_CALL</span><span class="p">(</span><span class="n">TVMFFITypeRegisterMethod</span><span class="p">(</span><span class="n">type_index_</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">info</span><span class="p">));</span>
 <span class="w">  </span><span class="p">}</span>
 
+<span class="w">  </span><span class="kt">void</span><span class="w"> </span><span class="n">AutoRegisterInit</span><span class="p">()</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">RegisterAutoInit</span><span class="p">(</span><span class="n">type_index_</span><span class="p">);</span><span class="w"> </span><span class="p">}</span>
+
 <span class="w">  </span><span class="kt">int32_t</span><span class="w"> </span><span class="n">type_index_</span><span class="p">;</span>
 <span class="w">  </span><span class="k">const</span><span class="w"> </span><span class="kt">char</span><span class="o">*</span><span class="w"> </span><span class="n">type_key_</span><span class="p">;</span>
+<span class="w">  </span><span class="kt">bool</span><span class="w"> </span><span class="n">has_explicit_init_</span><span class="p">{</span><span class="nb">false</span><span class="p">};</span>
 <span class="w">  </span><span class="k">static</span><span class="w"> </span><span class="k">constexpr</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="kt">char</span><span class="o">*</span><span class="w"> </span><span class="n">kInitMethodName</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">type_attr</span><span class="o">::</span><span class="n">kInit</span><span class="p">;</span>
 <span class="p">};</span>
 
@@ -966,7 +1085,7 @@ By Apache TVM FFI contributors
   
   <div class="footer-item">
     <p class="last-updated">
-  Last updated on Feb 27, 2026.
+  Last updated on Mar 02, 2026.
   <br/>
 </p>
   </div>

@@ -1,6 +1,6 @@
-.. _exhale_class_classtvm_1_1ffi_1_1reflection_1_1Repr:
+.. _exhale_class_classtvm_1_1ffi_1_1reflection_1_1repr:
 
-Class Repr
+Class repr
 ==========
 
 - Defined in :ref:`file_tvm_ffi_reflection_registry.h`
@@ -19,7 +19,7 @@ Class Documentation
 -------------------
 
 
-.. doxygenclass:: tvm::ffi::reflection::Repr
+.. doxygenclass:: tvm::ffi::reflection::repr
    :project: tvm-ffi
    :members:
    :protected-members:

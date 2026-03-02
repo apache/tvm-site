@@ -1,10 +1,10 @@
 
-.. _program_listing_file_tvm_ffi_extra_deep_copy.h:
+.. _program_listing_file_tvm_ffi_extra_dataclass.h:
 
-Program Listing for File deep_copy.h
+Program Listing for File dataclass.h
 ====================================
 
-|exhale_lsh| :ref:`Return to documentation for file <file_tvm_ffi_extra_deep_copy.h>` (``tvm/ffi/extra/deep_copy.h``)
+|exhale_lsh| :ref:`Return to documentation for file <file_tvm_ffi_extra_dataclass.h>` (``tvm/ffi/extra/dataclass.h``)
 
 .. |exhale_lsh| unicode:: U+021B0 .. UPWARDS ARROW WITH TIP LEFTWARDS
 
@@ -28,17 +28,32 @@ Program Listing for File deep_copy.h
     * specific language governing permissions and limitations
     * under the License.
     */
-   #ifndef TVM_FFI_EXTRA_DEEP_COPY_H_
-   #define TVM_FFI_EXTRA_DEEP_COPY_H_
+   #ifndef TVM_FFI_EXTRA_DATACLASS_H_
+   #define TVM_FFI_EXTRA_DATACLASS_H_
    
    #include <tvm/ffi/any.h>
    #include <tvm/ffi/extra/base.h>
+   #include <tvm/ffi/string.h>
    
    namespace tvm {
    namespace ffi {
    
    TVM_FFI_EXTRA_CXX_API Any DeepCopy(const Any& value);
    
+   TVM_FFI_EXTRA_CXX_API String ReprPrint(const Any& value);
+   
+   TVM_FFI_EXTRA_CXX_API int64_t RecursiveHash(const Any& value);
+   
+   TVM_FFI_EXTRA_CXX_API bool RecursiveEq(const Any& lhs, const Any& rhs);
+   
+   TVM_FFI_EXTRA_CXX_API bool RecursiveLt(const Any& lhs, const Any& rhs);
+   
+   TVM_FFI_EXTRA_CXX_API bool RecursiveLe(const Any& lhs, const Any& rhs);
+   
+   TVM_FFI_EXTRA_CXX_API bool RecursiveGt(const Any& lhs, const Any& rhs);
+   
+   TVM_FFI_EXTRA_CXX_API bool RecursiveGe(const Any& lhs, const Any& rhs);
+   
    }  // namespace ffi
    }  // namespace tvm
-   #endif  // TVM_FFI_EXTRA_DEEP_COPY_H_
+   #endif  // TVM_FFI_EXTRA_DATACLASS_H_

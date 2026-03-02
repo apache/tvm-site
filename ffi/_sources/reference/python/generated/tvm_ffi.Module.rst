@@ -14,7 +14,9 @@
    .. autosummary::
    
       ~Module.__ffi_init__
-      ~Module.__init__
+      ~Module.__init_handle_by_constructor__
+      ~Module.__move_handle_from__
+      ~Module._move
       ~Module.clear_imports
       ~Module.get_function
       ~Module.get_function_doc

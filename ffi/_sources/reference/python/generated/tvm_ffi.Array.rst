@@ -15,6 +15,9 @@
    
       ~Array.__ffi_init__
       ~Array.__init__
+      ~Array.__init_handle_by_constructor__
+      ~Array.__move_handle_from__
+      ~Array._move
       ~Array.count
       ~Array.index
       ~Array.same_as

@@ -5,7 +5,7 @@ Namespace tvm::ffi::reflection::type_attr
 =========================================
 
 
-Well-known type attribute names used by the reflection system. 
+CTAD deduction guide: ``init(false)`` deduces to ``init<>``. 
 
 
 
@@ -17,10 +17,24 @@ Well-known type attribute names used by the reflection system.
 
 
 
+Detailed Description
+--------------------
+
+Well-known type attribute names used by the reflection system. 
+
+
+
+
 
 Variables
 ---------
 
+
+- :ref:`exhale_variable_namespacetvm_1_1ffi_1_1reflection_1_1type__attr_1abfb8210e9d25dea8ac19ae403e4d09f7`
+
+- :ref:`exhale_variable_namespacetvm_1_1ffi_1_1reflection_1_1type__attr_1a4e67838e846b587f2f82127c53b6ef86`
+
+- :ref:`exhale_variable_namespacetvm_1_1ffi_1_1reflection_1_1type__attr_1a8473fde721d924e9ffb48fc818f6b609`
 
 - :ref:`exhale_variable_namespacetvm_1_1ffi_1_1reflection_1_1type__attr_1ae970768fd777e6c1dd312de67bfba39c`
 

@@ -1,9 +1,9 @@
-.. _exhale_function_deep__copy_8h_1ae661fadd13fbc7aef6e15cddba7607e8:
+.. _exhale_function_dataclass_8h_1ae661fadd13fbc7aef6e15cddba7607e8:
 
 Function tvm::ffi::DeepCopy
 ===========================
 
-- Defined in :ref:`file_tvm_ffi_extra_deep_copy.h`
+- Defined in :ref:`file_tvm_ffi_extra_dataclass.h`
 
 
 Function Documentation

@@ -71,7 +71,7 @@ Program Listing for File c_api.h
    // NOLINTBEGIN(modernize-macro-to-enum)
    #define TVM_FFI_VERSION_MAJOR 0
    #define TVM_FFI_VERSION_MINOR 1
-   #define TVM_FFI_VERSION_PATCH 9
+   #define TVM_FFI_VERSION_PATCH 10
    // NOLINTEND(modernize-macro-to-enum)
    
    #ifdef __cplusplus
@@ -381,6 +381,10 @@ Program Listing for File c_api.h
      kTVMFFIFieldFlagBitMaskSEqHashDef = 1 << 4,
      kTVMFFIFieldFlagBitMaskDefaultFromFactory = 1 << 5,
      kTVMFFIFieldFlagBitMaskReprOff = 1 << 6,
+     kTVMFFIFieldFlagBitMaskCompareOff = 1 << 7,
+     kTVMFFIFieldFlagBitMaskHashOff = 1 << 8,
+     kTVMFFIFieldFlagBitMaskInitOff = 1 << 9,
+     kTVMFFIFieldFlagBitMaskKwOnly = 1 << 10,
    #ifdef __cplusplus
    };
    #else

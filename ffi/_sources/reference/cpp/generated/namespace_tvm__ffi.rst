@@ -178,15 +178,15 @@ Functions
 
 - :ref:`exhale_function_base64_8h_1ae1d4736f7dc56b224acd303ba7bf7a45`
 
-- :ref:`exhale_function_base64_8h_1a279b4ba2f4c7ea16291ef24b73e43963`
-
 - :ref:`exhale_function_base64_8h_1aa5b2a4531449585b9f079cb170a79f0b`
+
+- :ref:`exhale_function_base64_8h_1a279b4ba2f4c7ea16291ef24b73e43963`
 
 - :ref:`exhale_function_endian_8h_1ab4e0ed8000c632cd2c7cd089c0a0d1af`
 
 - :ref:`exhale_function_array_8h_1af5983fd2a31e79635307875b3a216472`
 
-- :ref:`exhale_function_deep__copy_8h_1ae661fadd13fbc7aef6e15cddba7607e8`
+- :ref:`exhale_function_dataclass_8h_1ae661fadd13fbc7aef6e15cddba7607e8`
 
 - :ref:`exhale_function_dtype_8h_1a94787950883e5a7e97b764ddd342afc3`
 
@@ -216,11 +216,25 @@ Functions
 
 - :ref:`exhale_function_memory_8h_1a801e8ecc2e3adbc1dac52c714e7cef11`
 
-- :ref:`exhale_function_memory_8h_1a8892f2a3cad8dbc51930c464f2ab863b`
-
 - :ref:`exhale_function_array_8h_1a3b56317c7cfb2760cf6c09c303840967`
 
+- :ref:`exhale_function_memory_8h_1a8892f2a3cad8dbc51930c464f2ab863b`
+
 - :ref:`exhale_function_map_8h_1a611844db41026b7a95846dd316b435af`
+
+- :ref:`exhale_function_dataclass_8h_1ac0c56b2059600296bc93a03d340d3637`
+
+- :ref:`exhale_function_dataclass_8h_1a2ca288baccb3a4e2305a4f0e20e43b54`
+
+- :ref:`exhale_function_dataclass_8h_1aa2c22b4f25336e2bc4326d08c6654080`
+
+- :ref:`exhale_function_dataclass_8h_1a0f53d4334768d5c1c11ace3013a40c48`
+
+- :ref:`exhale_function_dataclass_8h_1a35400e2a96bcc305d505add70359b77f`
+
+- :ref:`exhale_function_dataclass_8h_1a5a1645610efa2f94feb1b0653839eb7d`
+
+- :ref:`exhale_function_dataclass_8h_1af7642a00508a88b93e7103a109529a79`
 
 - :ref:`exhale_function_dtype_8h_1a8a71c64237efaa13a8d40dfacd6c3165`
 

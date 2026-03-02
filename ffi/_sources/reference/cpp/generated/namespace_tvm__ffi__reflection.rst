@@ -35,6 +35,8 @@ Classes
 
 - :ref:`exhale_struct_structtvm_1_1ffi_1_1reflection_1_1init`
 
+- :ref:`exhale_struct_structtvm_1_1ffi_1_1reflection_1_1init_3_4`
+
 - :ref:`exhale_struct_structtvm_1_1ffi_1_1reflection_1_1MethodInfoBuilder`
 
 - :ref:`exhale_class_classtvm_1_1ffi_1_1reflection_1_1AccessPath`
@@ -47,6 +49,10 @@ Classes
 
 - :ref:`exhale_class_classtvm_1_1ffi_1_1reflection_1_1AttachFieldFlag`
 
+- :ref:`exhale_class_classtvm_1_1ffi_1_1reflection_1_1compare`
+
+- :ref:`exhale_class_classtvm_1_1ffi_1_1reflection_1_1default__value`
+
 - :ref:`exhale_class_classtvm_1_1ffi_1_1reflection_1_1DefaultFactory`
 
 - :ref:`exhale_class_classtvm_1_1ffi_1_1reflection_1_1DefaultValue`
@@ -57,6 +63,10 @@ Classes
 
 - :ref:`exhale_class_classtvm_1_1ffi_1_1reflection_1_1GlobalDef`
 
+- :ref:`exhale_class_classtvm_1_1ffi_1_1reflection_1_1hash`
+
+- :ref:`exhale_class_classtvm_1_1ffi_1_1reflection_1_1kw__only`
+
 - :ref:`exhale_class_classtvm_1_1ffi_1_1reflection_1_1Metadata`
 
 - :ref:`exhale_class_classtvm_1_1ffi_1_1reflection_1_1ObjectCreator`
@@ -65,7 +75,7 @@ Classes
 
 - :ref:`exhale_class_classtvm_1_1ffi_1_1reflection_1_1OverloadObjectDef`
 
-- :ref:`exhale_class_classtvm_1_1ffi_1_1reflection_1_1Repr`
+- :ref:`exhale_class_classtvm_1_1ffi_1_1reflection_1_1repr`
 
 - :ref:`exhale_class_classtvm_1_1ffi_1_1reflection_1_1TypeAttrColumn`
 
@@ -96,6 +106,10 @@ Functions
 - :ref:`exhale_function_namespacetvm_1_1ffi_1_1reflection_1aba4d7fd771bea88a32803dda191b7044`
 
 - :ref:`exhale_function_namespacetvm_1_1ffi_1_1reflection_1ac902a725008e348254ee7a2d07c8a95a`
+
+- :ref:`exhale_function_namespacetvm_1_1ffi_1_1reflection_1a35937a4c6ae5b1e654f147556c8d52a2`
+
+- :ref:`exhale_function_namespacetvm_1_1ffi_1_1reflection_1a685dcae826153c38887521ab6eeb503b`
 
 - :ref:`exhale_function_namespacetvm_1_1ffi_1_1reflection_1a9321975ab375d35fcf6beb55f1d7d52a`
 

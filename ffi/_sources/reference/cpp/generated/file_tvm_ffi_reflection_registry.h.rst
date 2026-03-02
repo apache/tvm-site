@@ -57,6 +57,8 @@ Includes
 
 - ``tvm/ffi/optional.h`` (:ref:`file_tvm_ffi_optional.h`)
 
+- ``tvm/ffi/reflection/init.h`` (:ref:`file_tvm_ffi_reflection_init.h`)
+
 - ``tvm/ffi/string.h`` (:ref:`file_tvm_ffi_string.h`)
 
 - ``tvm/ffi/type_traits.h`` (:ref:`file_tvm_ffi_type_traits.h`)
@@ -105,9 +107,15 @@ Classes
 
 - :ref:`exhale_struct_structtvm_1_1ffi_1_1reflection_1_1init`
 
+- :ref:`exhale_struct_structtvm_1_1ffi_1_1reflection_1_1init_3_4`
+
 - :ref:`exhale_struct_structtvm_1_1ffi_1_1reflection_1_1MethodInfoBuilder`
 
 - :ref:`exhale_class_classtvm_1_1ffi_1_1reflection_1_1AttachFieldFlag`
+
+- :ref:`exhale_class_classtvm_1_1ffi_1_1reflection_1_1compare`
+
+- :ref:`exhale_class_classtvm_1_1ffi_1_1reflection_1_1default__value`
 
 - :ref:`exhale_class_classtvm_1_1ffi_1_1reflection_1_1DefaultFactory`
 
@@ -115,11 +123,15 @@ Classes
 
 - :ref:`exhale_class_classtvm_1_1ffi_1_1reflection_1_1GlobalDef`
 
+- :ref:`exhale_class_classtvm_1_1ffi_1_1reflection_1_1hash`
+
+- :ref:`exhale_class_classtvm_1_1ffi_1_1reflection_1_1kw__only`
+
 - :ref:`exhale_class_classtvm_1_1ffi_1_1reflection_1_1Metadata`
 
 - :ref:`exhale_class_classtvm_1_1ffi_1_1reflection_1_1ObjectDef`
 
-- :ref:`exhale_class_classtvm_1_1ffi_1_1reflection_1_1Repr`
+- :ref:`exhale_class_classtvm_1_1ffi_1_1reflection_1_1repr`
 
 - :ref:`exhale_class_classtvm_1_1ffi_1_1reflection_1_1TypeAttrDef`
 
@@ -143,6 +155,12 @@ Typedefs
 Variables
 ---------
 
+
+- :ref:`exhale_variable_namespacetvm_1_1ffi_1_1reflection_1_1type__attr_1abfb8210e9d25dea8ac19ae403e4d09f7`
+
+- :ref:`exhale_variable_namespacetvm_1_1ffi_1_1reflection_1_1type__attr_1a4e67838e846b587f2f82127c53b6ef86`
+
+- :ref:`exhale_variable_namespacetvm_1_1ffi_1_1reflection_1_1type__attr_1a8473fde721d924e9ffb48fc818f6b609`
 
 - :ref:`exhale_variable_namespacetvm_1_1ffi_1_1reflection_1_1type__attr_1ae970768fd777e6c1dd312de67bfba39c`
 

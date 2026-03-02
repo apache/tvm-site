@@ -37,6 +37,7 @@
       ~DLDeviceType.kDLOneAPI
       ~DLDeviceType.kDLWebGPU
       ~DLDeviceType.kDLHexagon
+      ~DLDeviceType.kDLMAIA
       ~DLDeviceType.kDLTrn
    
    

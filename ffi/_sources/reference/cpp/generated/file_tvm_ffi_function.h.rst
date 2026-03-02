@@ -75,6 +75,8 @@ Included By
 
 - :ref:`file_tvm_ffi_reflection_accessor.h`
 
+- :ref:`file_tvm_ffi_reflection_init.h`
+
 - :ref:`file_tvm_ffi_reflection_overload.h`
 
 - :ref:`file_tvm_ffi_reflection_registry.h`

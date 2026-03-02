@@ -15,6 +15,9 @@
    
       ~AccessPath.__ffi_init__
       ~AccessPath.__init__
+      ~AccessPath.__init_handle_by_constructor__
+      ~AccessPath.__move_handle_from__
+      ~AccessPath._move
       ~AccessPath.array_item
       ~AccessPath.array_item_missing
       ~AccessPath.attr

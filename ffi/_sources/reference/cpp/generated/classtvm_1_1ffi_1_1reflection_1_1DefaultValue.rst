@@ -15,6 +15,12 @@ Base Type
 - ``public tvm::ffi::reflection::InfoTrait`` (:ref:`exhale_struct_structtvm_1_1ffi_1_1reflection_1_1InfoTrait`)
 
 
+Derived Type
+************
+
+- ``public tvm::ffi::reflection::default_value`` (:ref:`exhale_class_classtvm_1_1ffi_1_1reflection_1_1default__value`)
+
+
 Class Documentation
 -------------------
 

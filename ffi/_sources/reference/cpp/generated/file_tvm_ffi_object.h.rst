@@ -75,6 +75,8 @@ Included By
 
 - :ref:`file_tvm_ffi_optional.h`
 
+- :ref:`file_tvm_ffi_reflection_init.h`
+
 - :ref:`file_tvm_ffi_rvalue_ref.h`
 
 - :ref:`file_tvm_ffi_string.h`

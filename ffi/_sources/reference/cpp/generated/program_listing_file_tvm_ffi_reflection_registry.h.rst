@@ -38,6 +38,7 @@ Program Listing for File registry.h
    #include <tvm/ffi/function.h>
    #include <tvm/ffi/function_details.h>
    #include <tvm/ffi/optional.h>
+   #include <tvm/ffi/reflection/init.h>
    #include <tvm/ffi/string.h>
    #include <tvm/ffi/type_traits.h>
    
@@ -120,6 +121,10 @@ Program Listing for File registry.h
      Any value_;
    };
    
+   class default_value : public DefaultValue {
+     using DefaultValue::DefaultValue;
+   };
+   
    class DefaultFactory : public InfoTrait {
     public:
      explicit DefaultFactory(Function factory) : factory_(std::move(factory)) {}
@@ -132,6 +137,10 @@ Program Listing for File registry.h
    
     private:
      Function factory_;
+   };
+   
+   class default_factory : public DefaultFactory {
+     using DefaultFactory::DefaultFactory;
    };
    
    class AttachFieldFlag : public InfoTrait {
@@ -151,9 +160,9 @@ Program Listing for File registry.h
      int32_t flag_;
    };
    
-   class Repr : public InfoTrait {
+   class repr : public InfoTrait {
     public:
-     explicit Repr(bool show) : show_(show) {}
+     explicit repr(bool show) : show_(show) {}
    
      TVM_FFI_INLINE void Apply(TVMFFIFieldInfo* info) const {
        if (!show_) {
@@ -163,6 +172,52 @@ Program Listing for File registry.h
    
     private:
      bool show_;
+   };
+   
+   class compare : public InfoTrait {
+    public:
+     explicit compare(bool include) : include_(include) {}
+   
+     TVM_FFI_INLINE void Apply(TVMFFIFieldInfo* info) const {
+       if (!include_) {
+         info->flags |= kTVMFFIFieldFlagBitMaskCompareOff;
+       }
+     }
+   
+    private:
+     bool include_;
+   };
+   
+   class hash : public InfoTrait {
+    public:
+     explicit hash(bool include) : include_(include) {}
+   
+     TVM_FFI_INLINE void Apply(TVMFFIFieldInfo* info) const {
+       if (!include_) {
+         info->flags |= kTVMFFIFieldFlagBitMaskHashOff;
+       }
+     }
+   
+    private:
+     bool include_;
+   };
+   
+   // Forward-declare `init` so that the deduction guide can reference it.
+   template <typename... Args>
+   struct init;
+   
+   class kw_only : public InfoTrait {
+    public:
+     explicit kw_only(bool is_kw_only) : kw_only_(is_kw_only) {}
+   
+     TVM_FFI_INLINE void Apply(TVMFFIFieldInfo* info) const {
+       if (kw_only_) {
+         info->flags |= kTVMFFIFieldFlagBitMaskKwOnly;
+       }
+     }
+   
+    private:
+     bool kw_only_;
    };
    
    template <typename Class, typename T>
@@ -338,10 +393,44 @@ Program Listing for File registry.h
      }
    };
    
+   template <>
+   struct init<> : public InfoTrait {
+     // Allow ObjectDef to access the execute function and include_ flag.
+     template <typename Class>
+     friend class ObjectDef;
+     template <typename T>
+     friend class OverloadObjectDef;
+   
+     constexpr init() noexcept = default;
+   
+     explicit init(bool include) : include_(include) {}
+   
+     TVM_FFI_INLINE void Apply(TVMFFIFieldInfo* info) const {
+       if (!include_) {
+         info->flags |= kTVMFFIFieldFlagBitMaskInitOff;
+       }
+     }
+   
+    private:
+     bool include_ = true;
+   
+     template <typename Class>
+     static inline ObjectRef execute() {
+       return ObjectRef(ffi::make_object<Class>());
+     }
+   };
+   
+   #if !defined(TVM_FFI_DOXYGEN_MODE)
+   init(bool) -> init<>;
+   #endif
+   
    namespace type_attr {
    inline constexpr const char* kInit = "__ffi_init__";
    inline constexpr const char* kShallowCopy = "__ffi_shallow_copy__";
    inline constexpr const char* kRepr = "__ffi_repr__";
+   inline constexpr const char* kHash = "__ffi_hash__";
+   inline constexpr const char* kEq = "__ffi_eq__";
+   inline constexpr const char* kCompare = "__ffi_compare__";
    }  // namespace type_attr
    
    template <typename Class>
@@ -350,8 +439,24 @@ Program Listing for File registry.h
      template <typename... ExtraArgs>
      explicit ObjectDef(ExtraArgs&&... extra_args)
          : type_index_(Class::_GetOrAllocRuntimeTypeIndex()), type_key_(Class::_type_key) {
+       (MaybeSuppressAutoInit(extra_args), ...);
        RegisterExtraInfo(std::forward<ExtraArgs>(extra_args)...);
        AutoRegisterCopy();
+     }
+   
+     ObjectDef(const ObjectDef&) = delete;
+     ObjectDef& operator=(const ObjectDef&) = delete;
+     ObjectDef(ObjectDef&&) = delete;
+     ObjectDef& operator=(ObjectDef&&) = delete;
+   
+     ~ObjectDef() noexcept(false) {
+       if (!has_explicit_init_) {
+         // Only auto-register if the type has a default creator.
+         const TVMFFITypeInfo* info = TVMFFIGetTypeInfo(type_index_);
+         if (info->metadata != nullptr && info->metadata->creator != nullptr) {
+           AutoRegisterInit();
+         }
+       }
      }
    
      template <typename T, typename BaseClass, typename... Extra>
@@ -381,6 +486,7 @@ Program Listing for File registry.h
    
      template <typename... Args, typename... Extra>
      TVM_FFI_INLINE ObjectDef& def([[maybe_unused]] init<Args...> init_func, Extra&&... extra) {
+       has_explicit_init_ = true;
        RegisterMethod(kInitMethodName, true, &init<Args...>::template execute<Class>,
                       std::forward<Extra>(extra)...);
        return *this;
@@ -389,6 +495,15 @@ Program Listing for File registry.h
     private:
      template <typename T>
      friend class OverloadObjectDef;
+   
+     template <typename T>
+     void MaybeSuppressAutoInit(const T& value) {
+       if constexpr (std::is_same_v<std::decay_t<T>, init<>>) {
+         if (!value.include_) {
+           has_explicit_init_ = true;
+         }
+       }
+     }
    
      static ObjectRef ShallowCopy(const Class* self) {
        return ObjectRef(ffi::make_object<Class>(*self));
@@ -478,8 +593,11 @@ Program Listing for File registry.h
        TVM_FFI_CHECK_SAFE_CALL(TVMFFITypeRegisterMethod(type_index_, &info));
      }
    
+     void AutoRegisterInit() { RegisterAutoInit(type_index_); }
+   
      int32_t type_index_;
      const char* type_key_;
+     bool has_explicit_init_{false};
      static constexpr const char* kInitMethodName = type_attr::kInit;
    };
    

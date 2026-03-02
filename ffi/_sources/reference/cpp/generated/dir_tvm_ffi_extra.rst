@@ -24,7 +24,7 @@ Files
 - :ref:`file_tvm_ffi_extra_base.h`
 - :ref:`file_tvm_ffi_extra_base64.h`
 - :ref:`file_tvm_ffi_extra_c_env_api.h`
-- :ref:`file_tvm_ffi_extra_deep_copy.h`
+- :ref:`file_tvm_ffi_extra_dataclass.h`
 - :ref:`file_tvm_ffi_extra_dtype.h`
 - :ref:`file_tvm_ffi_extra_json.h`
 - :ref:`file_tvm_ffi_extra_module.h`

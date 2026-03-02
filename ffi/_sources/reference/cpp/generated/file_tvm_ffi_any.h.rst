@@ -69,7 +69,7 @@ Included By
 
 - :ref:`file_tvm_ffi_expected.h`
 
-- :ref:`file_tvm_ffi_extra_deep_copy.h`
+- :ref:`file_tvm_ffi_extra_dataclass.h`
 
 - :ref:`file_tvm_ffi_extra_json.h`
 
@@ -86,6 +86,8 @@ Included By
 - :ref:`file_tvm_ffi_reflection_accessor.h`
 
 - :ref:`file_tvm_ffi_reflection_creator.h`
+
+- :ref:`file_tvm_ffi_reflection_init.h`
 
 - :ref:`file_tvm_ffi_reflection_overload.h`
 

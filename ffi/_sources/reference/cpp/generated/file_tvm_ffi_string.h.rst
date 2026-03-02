@@ -71,9 +71,13 @@ Included By
 
 - :ref:`file_tvm_ffi_extra_cuda_cubin_launcher.h`
 
+- :ref:`file_tvm_ffi_extra_dataclass.h`
+
 - :ref:`file_tvm_ffi_optional.h`
 
 - :ref:`file_tvm_ffi_reflection_creator.h`
+
+- :ref:`file_tvm_ffi_reflection_init.h`
 
 - :ref:`file_tvm_ffi_reflection_overload.h`
 
