@@ -35,7 +35,7 @@ the same functionality, and each implementation can result in different performa
 
 First, let's take a look at the implementation of ``mm_relu`` in the previous section:
 
-.. GENERATED FROM PYTHON SOURCE LINES 38-66
+.. GENERATED FROM PYTHON SOURCE LINES 38-69
 
 .. code-block:: Python
 
@@ -54,17 +54,20 @@ First, let's take a look at the implementation of ``mm_relu`` in the previous se
             C: T.Buffer((128, 128), "float32"),
         ):
             T.func_attr({"tir.noalias": True})
-            Y = T.alloc_buffer((128, 128))
-            for i, j, k in T.grid(128, 128, 128):
-                with T.sblock("Y"):
-                    vi, vj, vk = T.axis.remap("SSR", [i, j, k])
-                    with T.init():
-                        Y[vi, vj] = T.float32(0)
-                    Y[vi, vj] = Y[vi, vj] + A[vi, vk] * B[vk, vj]
-            for i, j in T.grid(128, 128):
-                with T.sblock("C"):
-                    vi, vj = T.axis.remap("SS", [i, j])
-                    C[vi, vj] = T.max(Y[vi, vj], T.float32(0))
+            with T.sblock("root"):
+                T.reads()
+                T.writes()
+                Y = T.sblock_alloc_buffer((128, 128))
+                for i, j, k in T.grid(128, 128, 128):
+                    with T.sblock("Y"):
+                        vi, vj, vk = T.axis.remap("SSR", [i, j, k])
+                        with T.init():
+                            Y[vi, vj] = T.float32(0)
+                        Y[vi, vj] = Y[vi, vj] + A[vi, vk] * B[vk, vj]
+                for i, j in T.grid(128, 128):
+                    with T.sblock("C"):
+                        vi, vj = T.axis.remap("SS", [i, j])
+                        C[vi, vj] = T.max(Y[vi, vj], T.float32(0))
 
 
 
@@ -74,12 +77,12 @@ First, let's take a look at the implementation of ``mm_relu`` in the previous se
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 67-69
+.. GENERATED FROM PYTHON SOURCE LINES 70-72
 
 Before we transform the function, let's first evaluate the performance of the
 original implementation.
 
-.. GENERATED FROM PYTHON SOURCE LINES 69-93
+.. GENERATED FROM PYTHON SOURCE LINES 72-96
 
 .. code-block:: Python
 
@@ -117,19 +120,19 @@ original implementation.
 
     Execution time summary:
      mean (ms)   median (ms)    max (ms)     min (ms)     std (ms)  
-       2.7878       2.7878       2.7878       2.7878       0.0000                  
+       2.4726       2.4726       2.4726       2.4726       0.0000                  
 
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 94-98
+.. GENERATED FROM PYTHON SOURCE LINES 97-101
 
 Initialization Schedule
 ***********************
 We initiate the process of code transformation by establishing a Schedule helper class,
 utilizing the provided **MyModule** as input.
 
-.. GENERATED FROM PYTHON SOURCE LINES 98-101
+.. GENERATED FROM PYTHON SOURCE LINES 101-104
 
 .. code-block:: Python
 
@@ -143,14 +146,14 @@ utilizing the provided **MyModule** as input.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 102-106
+.. GENERATED FROM PYTHON SOURCE LINES 105-109
 
 Loop Tiling
 ***********
 Subsequently, we execute the requisite operations to acquire a reference to
 block **Y** and its associated loops.
 
-.. GENERATED FROM PYTHON SOURCE LINES 106-110
+.. GENERATED FROM PYTHON SOURCE LINES 109-113
 
 .. code-block:: Python
 
@@ -165,7 +168,7 @@ block **Y** and its associated loops.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 111-116
+.. GENERATED FROM PYTHON SOURCE LINES 114-119
 
 We now proceed to execute the transformations. The initial modification involves
 splitting loop ``j`` into two separate loops, with the inner loop possessing a
@@ -173,7 +176,7 @@ length of 8. It is crucial to understand that the transformation process is proc
 thus, inadvertent execution of the block twice will yield an error stating the
 non-existence of variable ``j``.
 
-.. GENERATED FROM PYTHON SOURCE LINES 116-119
+.. GENERATED FROM PYTHON SOURCE LINES 119-122
 
 .. code-block:: Python
 
@@ -187,11 +190,11 @@ non-existence of variable ``j``.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 120-121
+.. GENERATED FROM PYTHON SOURCE LINES 123-124
 
 The outcome of the transformation can be examined, as it is retained within ``sch.mod``.
 
-.. GENERATED FROM PYTHON SOURCE LINES 121-124
+.. GENERATED FROM PYTHON SOURCE LINES 124-127
 
 .. code-block:: Python
 
@@ -215,7 +218,7 @@ The outcome of the transformation can be examined, as it is retained within ``sc
         def main(A: T.Buffer((128, 128), "float32"), B: T.Buffer((128, 128), "float32"), C: T.Buffer((128, 128), "float32")):
             T.func_attr({"tir.noalias": True})
             # with T.sblock("root"):
-            Y = T.alloc_buffer((128, 128))
+            Y = T.sblock_alloc_buffer((128, 128))
             for i, j_0, j_1, k in T.grid(128, 16, 8, 128):
                 with T.sblock("Y"):
                     vi = T.axis.spatial(128, i)
@@ -237,13 +240,13 @@ The outcome of the transformation can be examined, as it is retained within ``sc
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 125-128
+.. GENERATED FROM PYTHON SOURCE LINES 128-131
 
 Following the initial transformation phase, two supplementary loops, ``j_0`` and ``j_1``,
 have been generated with respective ranges of 16 and 8. The subsequent
 action involves reordering these two loops.
 
-.. GENERATED FROM PYTHON SOURCE LINES 128-133
+.. GENERATED FROM PYTHON SOURCE LINES 131-136
 
 .. code-block:: Python
 
@@ -269,7 +272,7 @@ action involves reordering these two loops.
         def main(A: T.Buffer((128, 128), "float32"), B: T.Buffer((128, 128), "float32"), C: T.Buffer((128, 128), "float32")):
             T.func_attr({"tir.noalias": True})
             # with T.sblock("root"):
-            Y = T.alloc_buffer((128, 128))
+            Y = T.sblock_alloc_buffer((128, 128))
             for i, j_0, k, j_1 in T.grid(128, 16, 128, 8):
                 with T.sblock("Y"):
                     vi = T.axis.spatial(128, i)
@@ -289,12 +292,12 @@ action involves reordering these two loops.
 
     Execution time summary:
      mean (ms)   median (ms)    max (ms)     min (ms)     std (ms)  
-       0.8693       0.8693       0.8693       0.8693       0.0000                  
+       0.8582       0.8582       0.8582       0.8582       0.0000                  
 
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 134-139
+.. GENERATED FROM PYTHON SOURCE LINES 137-142
 
 Leverage Localities
 *******************
@@ -302,7 +305,7 @@ Subsequently, we will execute two additional transformation steps to achieve a d
 variant. First, we employ a primitive known as **reverse_compute_at** to relocate block
 **C** to an inner loop of **Y**.
 
-.. GENERATED FROM PYTHON SOURCE LINES 139-144
+.. GENERATED FROM PYTHON SOURCE LINES 142-147
 
 .. code-block:: Python
 
@@ -328,7 +331,7 @@ variant. First, we employ a primitive known as **reverse_compute_at** to relocat
         def main(A: T.Buffer((128, 128), "float32"), B: T.Buffer((128, 128), "float32"), C: T.Buffer((128, 128), "float32")):
             T.func_attr({"tir.noalias": True})
             # with T.sblock("root"):
-            Y = T.alloc_buffer((128, 128))
+            Y = T.sblock_alloc_buffer((128, 128))
             for i, j_0 in T.grid(128, 16):
                 for k, j_1 in T.grid(128, 8):
                     with T.sblock("Y"):
@@ -352,7 +355,7 @@ variant. First, we employ a primitive known as **reverse_compute_at** to relocat
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 145-154
+.. GENERATED FROM PYTHON SOURCE LINES 148-157
 
 Rewrite Reduction
 *****************
@@ -364,7 +367,7 @@ synchronized.
 Following the loop transformations, we can segregate the initialization of Y's elements
 from the reduction update via the **decompose_reduction** primitive.
 
-.. GENERATED FROM PYTHON SOURCE LINES 154-159
+.. GENERATED FROM PYTHON SOURCE LINES 157-162
 
 .. code-block:: Python
 
@@ -390,7 +393,7 @@ from the reduction update via the **decompose_reduction** primitive.
         def main(A: T.Buffer((128, 128), "float32"), B: T.Buffer((128, 128), "float32"), C: T.Buffer((128, 128), "float32")):
             T.func_attr({"tir.noalias": True})
             # with T.sblock("root"):
-            Y = T.alloc_buffer((128, 128))
+            Y = T.sblock_alloc_buffer((128, 128))
             for i, j_0 in T.grid(128, 16):
                 for j_1_init in range(8):
                     with T.sblock("Y_init"):
@@ -417,12 +420,12 @@ from the reduction update via the **decompose_reduction** primitive.
 
     Execution time summary:
      mean (ms)   median (ms)    max (ms)     min (ms)     std (ms)  
-       0.3389       0.3389       0.3389       0.3389       0.0000                  
+       0.3631       0.3631       0.3631       0.3631       0.0000                  
 
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 160-168
+.. GENERATED FROM PYTHON SOURCE LINES 163-171
 
 Trace the Transformation
 ************************
@@ -433,7 +436,7 @@ history of the schedule.
 We've already see the schedule by printing ``sch.mod``. We can also print the history
 of the schedule by ``sch.trace``.
 
-.. GENERATED FROM PYTHON SOURCE LINES 168-171
+.. GENERATED FROM PYTHON SOURCE LINES 171-174
 
 .. code-block:: Python
 
@@ -462,11 +465,11 @@ of the schedule by ``sch.trace``.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 172-173
+.. GENERATED FROM PYTHON SOURCE LINES 175-176
 
 Alternatively, we can output the IRModule in conjunction with the historical trace.
 
-.. GENERATED FROM PYTHON SOURCE LINES 173-175
+.. GENERATED FROM PYTHON SOURCE LINES 176-178
 
 .. code-block:: Python
 
@@ -489,7 +492,7 @@ Alternatively, we can output the IRModule in conjunction with the historical tra
         def main(A: T.Buffer((128, 128), "float32"), B: T.Buffer((128, 128), "float32"), C: T.Buffer((128, 128), "float32")):
             T.func_attr({"tir.noalias": True})
             # with T.sblock("root"):
-            Y = T.alloc_buffer((128, 128))
+            Y = T.sblock_alloc_buffer((128, 128))
             for i, j_0 in T.grid(128, 16):
                 for j_1_init in range(8):
                     with T.sblock("Y_init"):
