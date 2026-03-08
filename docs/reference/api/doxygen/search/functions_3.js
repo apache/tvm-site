@@ -55,7 +55,7 @@ var searchData=
   ['commentdoc_5171',['CommentDoc',['../classtvm_1_1script_1_1printer_1_1CommentDoc.html#abf3bc35239822d3a9f81407d38b4c057',1,'tvm::script::printer::CommentDoc']]],
   ['committuningrecord_5172',['CommitTuningRecord',['../classtvm_1_1s__tir_1_1meta__schedule_1_1DatabaseNode.html#a0a471e0af2af803bd422b33f80987fb0',1,'tvm::s_tir::meta_schedule::DatabaseNode::CommitTuningRecord()'],['../classtvm_1_1s__tir_1_1meta__schedule_1_1PyDatabaseNode.html#a592d31637d5d19cdf1e7da2848c735ab',1,'tvm::s_tir::meta_schedule::PyDatabaseNode::CommitTuningRecord()']]],
   ['commitworkload_5173',['CommitWorkload',['../classtvm_1_1s__tir_1_1meta__schedule_1_1DatabaseNode.html#a7d8ed62244d696c7c593f5fba2e58178',1,'tvm::s_tir::meta_schedule::DatabaseNode::CommitWorkload()'],['../classtvm_1_1s__tir_1_1meta__schedule_1_1PyDatabaseNode.html#a3afb34ccce04bc6618f705476a3a0d86',1,'tvm::s_tir::meta_schedule::PyDatabaseNode::CommitWorkload()']]],
-  ['commonsubexprelimtir_5174',['CommonSubexprElimTIR',['../namespacetvm_1_1tir_1_1transform.html#a82c5b1caff09436701fb9b9e7f672571',1,'tvm::tir::transform']]],
+  ['commonsubexprelim_5174',['CommonSubexprElim',['../namespacetvm_1_1tir_1_1transform.html#a95ab97f5a1d909163593c4fd57180b10',1,'tvm::tir::transform']]],
   ['commreduce_5175',['CommReduce',['../namespacetvm_1_1topi.html#ae160f6890af53191bd093d3b64d168d7',1,'tvm::topi']]],
   ['commreduceidx_5176',['CommReduceIdx',['../namespacetvm_1_1topi.html#a8be9dc15f502c574623019de15dde79e',1,'tvm::topi']]],
   ['commreducer_5177',['CommReducer',['../classtvm_1_1tir_1_1CommReducer.html#a6a4dbed62fc17a60ab01511877fdf62a',1,'tvm::tir::CommReducer']]],
