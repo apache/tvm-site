@@ -339,11 +339,11 @@ passes is straightforward as the number of passes is small, but mature compilers
 will contain hundreds of individual passes. Often external users will want to
 have custom passes correctly scheduled without having to modify a single
 handcrafted pass order.</p>
-<p>Similarly, modern deep learning frameworks, such as Pytorch and MXNet
-Gluon, also have the tendency to enable pass-style layer construction
-scheme through <a class="reference external" href="https://pytorch.org/docs/stable/nn.html?highlight=sequential#torch.nn.Sequential">Sequential</a> and <a class="reference external" href="https://mxnet.apache.org/api/python/docs/api/gluon/block.html#gluon-block">Block</a>, respectively. With such constructs,
-these modern frameworks are able to conveniently add modules/layers to their
-containers and build up neural networks easily.</p>
+<p>Similarly, modern deep learning frameworks, such as PyTorch, also have
+the tendency to enable pass-style layer construction scheme through
+<a class="reference external" href="https://pytorch.org/docs/stable/nn.html?highlight=sequential#torch.nn.Sequential">Sequential</a>. With such constructs, these modern frameworks are able to
+conveniently add modules/layers to their containers and build up neural
+networks easily.</p>
 <p>The design of the TVM pass infra is largely inspired by the hierarchical
 pass manager used in LLVM and the block-style containers used in the popular
 deep learning frameworks. The major goals of the pass infra include:</p>
@@ -412,7 +412,7 @@ Python APIs to create a compilation pipeline using pass context.</p>
 <span class="w">  </span><span class="n">ffi</span><span class="o">::</span><span class="n">Array</span><span class="o">&lt;</span><span class="n">instrument</span><span class="o">::</span><span class="n">PassInstrument</span><span class="o">&gt;</span><span class="w"> </span><span class="n">instruments</span><span class="p">;</span>
 <span class="p">};</span>
 
-<span class="k">class</span><span class="w"> </span><span class="nc">PassContext</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="k">public</span><span class="w"> </span><span class="n">NodeRef</span><span class="w"> </span><span class="p">{</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">PassContext</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="k">public</span><span class="w"> </span><span class="n">ObjectRef</span><span class="w"> </span><span class="p">{</span>
 <span class="w"> </span><span class="k">public</span><span class="o">:</span>
 <span class="w">  </span><span class="n">TVM_DLL</span><span class="w"> </span><span class="k">static</span><span class="w"> </span><span class="n">PassContext</span><span class="w"> </span><span class="n">Create</span><span class="p">();</span>
 <span class="w">  </span><span class="n">TVM_DLL</span><span class="w"> </span><span class="k">static</span><span class="w"> </span><span class="n">PassContext</span><span class="w"> </span><span class="n">Current</span><span class="p">();</span>
@@ -438,7 +438,7 @@ Python APIs to create a compilation pipeline using pass context.</p>
 <span class="w">  </span><span class="cm">/*! \brief The current pass context. */</span>
 <span class="w">  </span><span class="n">std</span><span class="o">::</span><span class="n">stack</span><span class="o">&lt;</span><span class="n">PassContext</span><span class="o">&gt;</span><span class="w"> </span><span class="n">context_stack</span><span class="p">;</span>
 <span class="w">  </span><span class="n">PassContextThreadLocalEntry</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
-<span class="w">    </span><span class="n">default_context</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">PassContext</span><span class="p">(</span><span class="n">make_node</span><span class="o">&lt;</span><span class="n">PassContextNode</span><span class="o">&gt;</span><span class="p">());</span>
+<span class="w">    </span><span class="n">default_context</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">PassContext</span><span class="p">(</span><span class="n">ffi</span><span class="o">::</span><span class="n">make_object</span><span class="o">&lt;</span><span class="n">PassContextNode</span><span class="o">&gt;</span><span class="p">());</span>
 <span class="w">  </span><span class="p">}</span>
 <span class="p">};</span>
 </pre></div>
@@ -562,7 +562,6 @@ level is not less than the configured optimization level in the pass context.</p
 packed function registry using the pass name. This is possible because every
 pass is registered with an API endpoint as we will show later.</p>
 <div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="n">Pass</span><span class="w"> </span><span class="nf">GetPass</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="o">&amp;</span><span class="w"> </span><span class="n">pass_name</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
-<span class="w">  </span><span class="k">using</span><span class="w"> </span><span class="n">tvm</span><span class="o">::</span><span class="n">runtime</span><span class="o">::</span><span class="n">Registry</span><span class="p">;</span>
 <span class="w">  </span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="w"> </span><span class="n">fpass_name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;relax.transform.&quot;</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">pass_name</span><span class="p">;</span>
 <span class="w">  </span><span class="k">const</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">optional</span><span class="o">&lt;</span><span class="n">tvm</span><span class="o">::</span><span class="n">ffi</span><span class="o">::</span><span class="n">Function</span><span class="o">&gt;</span><span class="w"> </span><span class="n">f</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">tvm</span><span class="o">::</span><span class="n">ffi</span><span class="o">::</span><span class="n">Function</span><span class="o">::</span><span class="n">GetGlobal</span><span class="p">(</span><span class="n">fpass_name</span><span class="p">);</span>
 <span class="w">  </span><span class="n">TVM_FFI_ICHECK</span><span class="p">(</span><span class="n">f</span><span class="p">.</span><span class="n">has_value</span><span class="p">())</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">&quot;Cannot find &quot;</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="n">fpass_name</span>
@@ -602,7 +601,7 @@ favorably use Python APIs to create a specific pass object.</p>
 compilation. It would be interesting to see how easily users can register
 a pass.  Let’s take const folding as an example. This pass has already been
 implemented to fold constants in a Relax function (found in
-<a class="reference external" href="https://github.com/apache/tvm/blob/main/src/relax/transforms/fold_constant.cc">src/relax/transforms/fold_constant.cc</a>).</p>
+<a class="reference external" href="https://github.com/apache/tvm/blob/main/src/relax/transform/fold_constant.cc">src/relax/transform/fold_constant.cc</a>).</p>
 <p>An API was provided to perform the <code class="docutils literal notranslate"><span class="pre">Expr</span></code> to <code class="docutils literal notranslate"><span class="pre">Expr</span></code> transformation.</p>
 <div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="n">Expr</span><span class="w"> </span><span class="nf">FoldConstant</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="n">Expr</span><span class="o">&amp;</span><span class="w"> </span><span class="n">expr</span><span class="p">);</span>
 </pre></div>
@@ -656,7 +655,7 @@ or how a pass can transform the IR module.</p>
 of the <code class="docutils literal notranslate"><span class="pre">PassContext</span></code> instance.</p>
 <p><code class="docutils literal notranslate"><span class="pre">InstrumentExitPassContext</span></code> is called when leaving the scope of <code class="docutils literal notranslate"><span class="pre">PassContext</span></code>,
 or exceptions occur during the execution of passes.
-This method is also called when instruments is being overridden by <code class="docutils literal notranslate"><span class="pre">override_instruments</span></code> in <a class="reference internal" href="../reference/api/python/transform.html#tvm.transform.PassContext" title="tvm.transform.PassContext"><code class="xref py py-class docutils literal notranslate"><span class="pre">tvm.transform.PassContext</span></code></a>.
+This method is also called when instruments is being overridden by <code class="docutils literal notranslate"><span class="pre">override_instruments</span></code> in <code class="xref py py-class docutils literal notranslate"><span class="pre">tvm.transform.PassContext</span></code>.
 See <a class="reference internal" href="#pass-instrument-overriden"><span class="std std-ref">Override Instruments in Current PassContext</span></a>.</p>
 <p><code class="docutils literal notranslate"><span class="pre">InstrumentBeforePass</span></code> is called before execution.
 <code class="docutils literal notranslate"><span class="pre">InstrumentAfterPass</span></code> is called after execution if the pass should be run. The behavior is like:</p>
@@ -764,7 +763,7 @@ We rely on Python Context Manager or <code class="docutils literal notranslate">
 </li>
 <li><p>PrintIRBefore(TODO)</p>
 <ul>
-<li><p>Print the IR module before the pass transforms it. <a class="reference internal" href="../reference/api/python/transform.html#tvm.transform.PrintIR" title="tvm.transform.PrintIR"><code class="xref py py-func docutils literal notranslate"><span class="pre">tvm.transform.PrintIR()</span></code></a>
+<li><p>Print the IR module before the pass transforms it. <code class="xref py py-func docutils literal notranslate"><span class="pre">tvm.transform.PrintIR()</span></code>
 can also serve this purpose if we insert it around passes. However,
 with the <code class="docutils literal notranslate"><span class="pre">PassInstrument</span></code>, we don’t need to modify the sequence of passes.</p></li>
 </ul>
@@ -853,8 +852,8 @@ indicating whether or not the pass should be run.</p></li>
 </li>
 </ul>
 <p><code class="docutils literal notranslate"><span class="pre">PassInstrument</span></code> instances can be registered through <code class="docutils literal notranslate"><span class="pre">instruments</span></code> argument in
-<a class="reference internal" href="../reference/api/python/transform.html#tvm.transform.PassContext" title="tvm.transform.PassContext"><code class="xref py py-class docutils literal notranslate"><span class="pre">tvm.transform.PassContext</span></code></a>.</p>
-<p><a class="reference external" href="https://github.com/apache/tvm/blob/main/tutorials/dev/use_pass_instrument.py">use pass instrument</a> tutorial provides examples for how to implement <code class="docutils literal notranslate"><span class="pre">PassInstrument</span></code> with Python APIs.</p>
+<code class="xref py py-class docutils literal notranslate"><span class="pre">tvm.transform.PassContext</span></code>.</p>
+<p><a class="reference external" href="https://github.com/apache/tvm/blob/main/docs/how_to/dev/index.rst">use pass instrument</a> tutorial provides examples for how to implement <code class="docutils literal notranslate"><span class="pre">PassInstrument</span></code> with Python APIs.</p>
 </section>
 <section id="override-instruments-in-current-passcontext">
 <span id="pass-instrument-overriden"></span><h4>Override Instruments in Current PassContext<a class="headerlink" href="#override-instruments-in-current-passcontext" title="Link to this heading"></a></h4>
