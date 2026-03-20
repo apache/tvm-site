@@ -16,7 +16,7 @@
 .. _sphx_glr_deep_dive_tensor_ir_tutorials_tir_transformation.py:
 
 
-.. _tir-transform:
+.. _tirx-transform:
 
 Transformation
 --------------
@@ -25,7 +25,7 @@ transformations of primitive tensor functions.
 
 .. GENERATED FROM PYTHON SOURCE LINES 29-38
 
-In the :ref:`previous section <tir-learning>`, we have given an example of how to write
+In the :ref:`previous section <tirx-learning>`, we have given an example of how to write
 ``mm_relu`` using TensorIR. In practice, there can be multiple ways to implement
 the same functionality, and each implementation can result in different performance.
 
@@ -42,7 +42,7 @@ First, let's take a look at the implementation of ``mm_relu`` in the previous se
 
     import tvm
     from tvm.script import ir as I
-    from tvm.script import tir as T
+    from tvm.script import tirx as T
 
 
     @I.ir_module
@@ -53,7 +53,7 @@ First, let's take a look at the implementation of ``mm_relu`` in the previous se
             B: T.Buffer((128, 128), "float32"),
             C: T.Buffer((128, 128), "float32"),
         ):
-            T.func_attr({"tir.noalias": True})
+            T.func_attr({"tirx.noalias": True})
             with T.sblock("root"):
                 T.reads()
                 T.writes()
@@ -99,7 +99,7 @@ original implementation.
 
 
     def evaluate(mod: tvm.IRModule):
-        lib = tvm.tir.build(mod, target="llvm")
+        lib = tvm.tirx.build(mod, target="llvm")
         # check correctness
         lib(a_nd, b_nd, c_nd)
         np.testing.assert_allclose(c_nd.numpy(), c_np, rtol=1e-5)
@@ -120,7 +120,7 @@ original implementation.
 
     Execution time summary:
      mean (ms)   median (ms)    max (ms)     min (ms)     std (ms)  
-       2.5745       2.5745       2.5745       2.5745       0.0000                  
+       2.6354       2.6354       2.6354       2.6354       0.0000                  
 
 
 
@@ -210,13 +210,13 @@ The outcome of the transformation can be examined, as it is retained within ``sc
  .. code-block:: none
 
     # from tvm.script import ir as I
-    # from tvm.script import tir as T
+    # from tvm.script import tirx as T
 
     @I.ir_module
     class Module:
         @T.prim_func
         def main(A: T.Buffer((128, 128), "float32"), B: T.Buffer((128, 128), "float32"), C: T.Buffer((128, 128), "float32")):
-            T.func_attr({"tir.noalias": True})
+            T.func_attr({"tirx.noalias": True})
             # with T.sblock("root"):
             Y = T.sblock_alloc_buffer((128, 128))
             for i, j_0, j_1, k in T.grid(128, 16, 8, 128):
@@ -264,13 +264,13 @@ action involves reordering these two loops.
  .. code-block:: none
 
     # from tvm.script import ir as I
-    # from tvm.script import tir as T
+    # from tvm.script import tirx as T
 
     @I.ir_module
     class Module:
         @T.prim_func
         def main(A: T.Buffer((128, 128), "float32"), B: T.Buffer((128, 128), "float32"), C: T.Buffer((128, 128), "float32")):
-            T.func_attr({"tir.noalias": True})
+            T.func_attr({"tirx.noalias": True})
             # with T.sblock("root"):
             Y = T.sblock_alloc_buffer((128, 128))
             for i, j_0, k, j_1 in T.grid(128, 16, 128, 8):
@@ -292,7 +292,7 @@ action involves reordering these two loops.
 
     Execution time summary:
      mean (ms)   median (ms)    max (ms)     min (ms)     std (ms)  
-       0.8712       0.8712       0.8712       0.8712       0.0000                  
+       0.8616       0.8616       0.8616       0.8616       0.0000                  
 
 
 
@@ -323,13 +323,13 @@ variant. First, we employ a primitive known as **reverse_compute_at** to relocat
  .. code-block:: none
 
     # from tvm.script import ir as I
-    # from tvm.script import tir as T
+    # from tvm.script import tirx as T
 
     @I.ir_module
     class Module:
         @T.prim_func
         def main(A: T.Buffer((128, 128), "float32"), B: T.Buffer((128, 128), "float32"), C: T.Buffer((128, 128), "float32")):
-            T.func_attr({"tir.noalias": True})
+            T.func_attr({"tirx.noalias": True})
             # with T.sblock("root"):
             Y = T.sblock_alloc_buffer((128, 128))
             for i, j_0 in T.grid(128, 16):
@@ -385,13 +385,13 @@ from the reduction update via the **decompose_reduction** primitive.
  .. code-block:: none
 
     # from tvm.script import ir as I
-    # from tvm.script import tir as T
+    # from tvm.script import tirx as T
 
     @I.ir_module
     class Module:
         @T.prim_func
         def main(A: T.Buffer((128, 128), "float32"), B: T.Buffer((128, 128), "float32"), C: T.Buffer((128, 128), "float32")):
-            T.func_attr({"tir.noalias": True})
+            T.func_attr({"tirx.noalias": True})
             # with T.sblock("root"):
             Y = T.sblock_alloc_buffer((128, 128))
             for i, j_0 in T.grid(128, 16):
@@ -420,7 +420,7 @@ from the reduction update via the **decompose_reduction** primitive.
 
     Execution time summary:
      mean (ms)   median (ms)    max (ms)     min (ms)     std (ms)  
-       0.3542       0.3542       0.3542       0.3542       0.0000                  
+       0.3636       0.3636       0.3636       0.3636       0.0000                  
 
 
 
@@ -484,13 +484,13 @@ Alternatively, we can output the IRModule in conjunction with the historical tra
  .. code-block:: none
 
     # from tvm.script import ir as I
-    # from tvm.script import tir as T
+    # from tvm.script import tirx as T
 
     @I.ir_module
     class Module:
         @T.prim_func
         def main(A: T.Buffer((128, 128), "float32"), B: T.Buffer((128, 128), "float32"), C: T.Buffer((128, 128), "float32")):
-            T.func_attr({"tir.noalias": True})
+            T.func_attr({"tirx.noalias": True})
             # with T.sblock("root"):
             Y = T.sblock_alloc_buffer((128, 128))
             for i, j_0 in T.grid(128, 16):

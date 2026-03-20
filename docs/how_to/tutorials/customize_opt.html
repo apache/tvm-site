@@ -531,7 +531,7 @@ it achieves a balance between performance and compilation time.</p>
 </pre></div>
 </div>
 <div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span># from tvm.script import ir as I
-# from tvm.script import tir as T
+# from tvm.script import tirx as T
 # from tvm.script import relax as R
 
 @I.ir_module
@@ -539,7 +539,7 @@ class Module:
     I.module_attrs({&quot;external_mods&quot;: [metadata[&quot;ffi.Module&quot;][0]]})
     @T.prim_func(private=True)
     def matmul(lv: T.Buffer((T.int64(1), T.int64(256)), &quot;float32&quot;), permute_dims1: T.Buffer((T.int64(256), T.int64(10)), &quot;float32&quot;), matmul: T.Buffer((T.int64(1), T.int64(10)), &quot;float32&quot;)):
-        T.func_attr({&quot;op_pattern&quot;: 4, &quot;tir.is_scheduled&quot;: True, &quot;tir.noalias&quot;: True})
+        T.func_attr({&quot;op_pattern&quot;: 4, &quot;tirx.is_scheduled&quot;: True, &quot;tirx.noalias&quot;: True})
         # with T.sblock(&quot;root&quot;):
         matmul_rf_local = T.sblock_alloc_buffer((T.int64(16), T.int64(1), T.int64(10)), scope=&quot;local&quot;)
         for ax0_fused_0 in T.thread_binding(T.int64(1), thread=&quot;blockIdx.x&quot;):
@@ -571,7 +571,7 @@ class Module:
 
     @T.prim_func(private=True)
     def transpose(fc2_weight: T.Buffer((T.int64(10), T.int64(256)), &quot;float32&quot;), T_transpose: T.Buffer((T.int64(256), T.int64(10)), &quot;float32&quot;)):
-        T.func_attr({&quot;op_pattern&quot;: 2, &quot;tir.is_scheduled&quot;: True, &quot;tir.noalias&quot;: True})
+        T.func_attr({&quot;op_pattern&quot;: 2, &quot;tirx.is_scheduled&quot;: True, &quot;tirx.noalias&quot;: True})
         # with T.sblock(&quot;root&quot;):
         for ax0_ax1_fused_0 in T.thread_binding(T.int64(3), thread=&quot;blockIdx.x&quot;):
             for ax0_ax1_fused_1 in T.thread_binding(T.int64(1024), thread=&quot;threadIdx.x&quot;):
@@ -609,16 +609,16 @@ pushing the performance to the limit. The current optimization may not be the be
 <p>We can build and deploy the optimized model to the TVM runtime.</p>
 <div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><a href="../../reference/api/python/relax/relax.html#tvm.relax.VMExecutable" title="tvm.relax.VMExecutable" class="sphx-glr-backref-module-tvm-relax sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">ex</span></a> <span class="o">=</span> <a href="../../reference/api/python/driver.html#tvm.compile" title="tvm.compile" class="sphx-glr-backref-module-tvm sphx-glr-backref-type-py-function"><span class="n">tvm</span><span class="o">.</span><span class="n">compile</span></a><span class="p">(</span><span class="n">mod</span><span class="p">,</span> <a href="../../reference/api/python/target.html#tvm.target.Target" title="tvm.target.Target" class="sphx-glr-backref-module-tvm-target sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">target</span></a><span class="o">=</span><span class="s2">&quot;cuda&quot;</span><span class="p">)</span>
 <span class="n">dev</span> <span class="o">=</span> <span class="n">tvm</span><span class="o">.</span><span class="n">device</span><span class="p">(</span><span class="s2">&quot;cuda&quot;</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
-<span class="n">vm</span> <span class="o">=</span> <a href="../../reference/api/python/relax/relax.html#tvm.relax.VirtualMachine" title="tvm.relax.VirtualMachine" class="sphx-glr-backref-module-tvm-relax sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">relax</span><span class="o">.</span><span class="n">VirtualMachine</span></a><span class="p">(</span><a href="../../reference/api/python/relax/relax.html#tvm.relax.VMExecutable" title="tvm.relax.VMExecutable" class="sphx-glr-backref-module-tvm-relax sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">ex</span></a><span class="p">,</span> <span class="n">dev</span><span class="p">)</span>
+<a href="../../reference/api/python/runtime/vm.html#tvm.runtime.vm.VirtualMachine" title="tvm.runtime.vm.VirtualMachine" class="sphx-glr-backref-module-tvm-runtime-vm sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">vm</span></a> <span class="o">=</span> <a href="../../reference/api/python/runtime/vm.html#tvm.runtime.vm.VirtualMachine" title="tvm.runtime.vm.VirtualMachine" class="sphx-glr-backref-module-tvm-runtime-vm sphx-glr-backref-type-py-class"><span class="n">relax</span><span class="o">.</span><span class="n">VirtualMachine</span></a><span class="p">(</span><a href="../../reference/api/python/relax/relax.html#tvm.relax.VMExecutable" title="tvm.relax.VMExecutable" class="sphx-glr-backref-module-tvm-relax sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">ex</span></a><span class="p">,</span> <span class="n">dev</span><span class="p">)</span>
 <span class="c1"># Need to allocate data and params on GPU device</span>
 <span class="n">data</span> <span class="o">=</span> <span class="n">tvm</span><span class="o">.</span><span class="n">runtime</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="o">*</span><a href="https://docs.python.org/3/library/stdtypes.html#tuple" title="builtins.tuple" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">input_shape</span></a><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s2">&quot;float32&quot;</span><span class="p">),</span> <span class="n">dev</span><span class="p">)</span>
 <a href="https://docs.python.org/3/library/stdtypes.html#list" title="builtins.list" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">gpu_params</span></a> <span class="o">=</span> <span class="p">[</span><span class="n">tvm</span><span class="o">.</span><span class="n">runtime</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="o">*</span><span class="n">p</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">p</span><span class="o">.</span><span class="n">dtype</span><span class="p">),</span> <span class="n">dev</span><span class="p">)</span> <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">p</span> <span class="ow">in</span> <a href="https://docs.python.org/3/library/stdtypes.html#list" title="builtins.list" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">params</span></a><span class="p">]</span>
-<span class="n">gpu_out</span> <span class="o">=</span> <span class="n">vm</span><span class="p">[</span><span class="s2">&quot;forward&quot;</span><span class="p">](</span><span class="n">data</span><span class="p">,</span> <span class="o">*</span><a href="https://docs.python.org/3/library/stdtypes.html#list" title="builtins.list" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">gpu_params</span></a><span class="p">)</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span>
+<span class="n">gpu_out</span> <span class="o">=</span> <a href="../../reference/api/python/runtime/vm.html#tvm.runtime.vm.VirtualMachine" title="tvm.runtime.vm.VirtualMachine" class="sphx-glr-backref-module-tvm-runtime-vm sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">vm</span></a><span class="p">[</span><span class="s2">&quot;forward&quot;</span><span class="p">](</span><span class="n">data</span><span class="p">,</span> <span class="o">*</span><a href="https://docs.python.org/3/library/stdtypes.html#list" title="builtins.list" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">gpu_params</span></a><span class="p">)</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span>
 <span class="nb">print</span><span class="p">(</span><span class="n">gpu_out</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>[[24087.3   25695.55  25375.77  24660.48  25763.266 26560.2   25327.398
-  24687.656 24306.412 24470.805]]
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>[[24519.234 25630.207 24222.68  25598.777 25031.283 25768.512 26449.588
+  25225.363 24347.904 25107.566]]
 </pre></div>
 </div>
 </section>

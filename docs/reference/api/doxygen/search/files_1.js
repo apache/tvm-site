@@ -10,7 +10,7 @@ var searchData=
   ['broadcast_2eh_4774',['broadcast.h',['../broadcast_8h.html',1,'(Global Namespace)'],['../detail_2broadcast_8h.html',1,'(Global Namespace)']]],
   ['buffer_2eh_4775',['buffer.h',['../buffer_8h.html',1,'']]],
   ['builder_2eh_4776',['builder.h',['../builder_8h.html',1,'']]],
-  ['builtin_2eh_4777',['builtin.h',['../runtime_2disco_2builtin_8h.html',1,'(Global Namespace)'],['../runtime_2vm_2builtin_8h.html',1,'(Global Namespace)'],['../tir_2builtin_8h.html',1,'(Global Namespace)']]],
+  ['builtin_2eh_4777',['builtin.h',['../runtime_2disco_2builtin_8h.html',1,'(Global Namespace)'],['../runtime_2vm_2builtin_8h.html',1,'(Global Namespace)'],['../tirx_2builtin_8h.html',1,'(Global Namespace)']]],
   ['builtin_5ffp16_2eh_4778',['builtin_fp16.h',['../builtin__fp16_8h.html',1,'']]],
   ['bytecode_2eh_4779',['bytecode.h',['../bytecode_8h.html',1,'']]]
 ];

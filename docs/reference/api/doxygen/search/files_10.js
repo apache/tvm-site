@@ -12,7 +12,7 @@ var searchData=
   ['threading_5fbackend_2eh_4903',['threading_backend.h',['../threading__backend_8h.html',1,'']]],
   ['tir_5fpattern_2eh_4904',['tir_pattern.h',['../tir__pattern_8h.html',1,'']]],
   ['trace_2eh_4905',['trace.h',['../trace_8h.html',1,'']]],
-  ['transform_2eh_4906',['transform.h',['../relax_2backend_2adreno_2transform_8h.html',1,'(Global Namespace)'],['../topi_2transform_8h.html',1,'(Global Namespace)'],['../relax_2distributed_2transform_8h.html',1,'(Global Namespace)'],['../relax_2transform_8h.html',1,'(Global Namespace)'],['../s__tir_2backend_2adreno_2transform_8h.html',1,'(Global Namespace)'],['../s__tir_2transform_8h.html',1,'(Global Namespace)'],['../tir_2transform_8h.html',1,'(Global Namespace)'],['../ir_2transform_8h.html',1,'(Global Namespace)']]],
+  ['transform_2eh_4906',['transform.h',['../relax_2backend_2adreno_2transform_8h.html',1,'(Global Namespace)'],['../topi_2transform_8h.html',1,'(Global Namespace)'],['../relax_2distributed_2transform_8h.html',1,'(Global Namespace)'],['../relax_2transform_8h.html',1,'(Global Namespace)'],['../s__tir_2backend_2adreno_2transform_8h.html',1,'(Global Namespace)'],['../s__tir_2transform_8h.html',1,'(Global Namespace)'],['../tirx_2transform_8h.html',1,'(Global Namespace)'],['../ir_2transform_8h.html',1,'(Global Namespace)']]],
   ['tune_5fcontext_2eh_4907',['tune_context.h',['../tune__context_8h.html',1,'']]],
   ['type_2eh_4908',['type.h',['../relax_2type_8h.html',1,'(Global Namespace)'],['../ir_2type_8h.html',1,'(Global Namespace)']]],
   ['type_5ffunctor_2eh_4909',['type_functor.h',['../type__functor_8h.html',1,'']]]

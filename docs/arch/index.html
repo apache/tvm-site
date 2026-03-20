@@ -198,7 +198,7 @@
 <li class="toctree-l3"><a class="reference internal" href="#key-data-structures">Key data structures</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#transformations">Transformations</a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#relax-transformations">relax transformations</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#tir-transformations">tir transformations</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#tirx-transformations">tirx transformations</a></li>
 <li class="toctree-l4"><a class="reference internal" href="#cross-level-transformations">cross-level transformations</a></li>
 </ul>
 </li>
@@ -225,7 +225,7 @@
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="#tvm-relax">tvm/relax</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#tvm-tir">tvm/tir</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#tvm-tirx">tvm/tirx</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#tvm-arith">tvm/arith</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#tvm-te-and-tvm-topi">tvm/te and tvm/topi</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#tvm-s-tir-meta-schedule">tvm/s_tir/meta_schedule</a></li>
@@ -374,10 +374,10 @@ contains a collection of functions. Currently, we support two primary variants o
 <li><p><strong>relax::Function</strong> is a high-level functional program representation. A relax.Function represents high-level graph structure,
 usually corresponds to an end-to-end model or a sub-graph of the overall model. You can view a relax.Function as a computational
 graph with additional support for control-flow, and complex data structures.</p></li>
-<li><p><strong>tir::PrimFunc</strong> is a low-level program representation that contains elements including loop-nest choices, multi-dimensional load/store,
+<li><p><strong>tirx::PrimFunc</strong> is a low-level program representation that contains elements including loop-nest choices, multi-dimensional load/store,
 threading, and vector/tensor instructions. It is usually used to represent an operator program that executes a (possibly-fused) layer in a model.</p></li>
 </ul>
-<p>During the compilation and transformation, all relax operators are lowered to <code class="docutils literal notranslate"><span class="pre">tir::PrimFunc</span></code> or <code class="docutils literal notranslate"><span class="pre">TVM</span> <span class="pre">PackedFunc</span></code>, which can be executed directly
+<p>During the compilation and transformation, all relax operators are lowered to <code class="docutils literal notranslate"><span class="pre">tirx::PrimFunc</span></code> or <code class="docutils literal notranslate"><span class="pre">TVM</span> <span class="pre">PackedFunc</span></code>, which can be executed directly
 on the target device, while the calls to relax operators are lowered to calls to low-level functions (e.g. <code class="docutils literal notranslate"><span class="pre">R.call_tir</span></code> or <code class="docutils literal notranslate"><span class="pre">R.call_dps</span></code>).</p>
 </section>
 <section id="transformations">
@@ -392,15 +392,14 @@ on the target device, while the calls to relax operators are lowered to calls to
 <p>relax transformations contain a collection of passes that apply to relax functions. The optimizations include common graph-level
 optimizations such as constant folding and dead-code elimination for operators, and backend-specific optimizations such as library dispatch.</p>
 </section>
-<section id="tir-transformations">
-<h4>tir transformations<a class="headerlink" href="#tir-transformations" title="Link to this heading"></a></h4>
-<p>tir transformations contain a collection of passes that apply to tir functions. There are two major types of transformations:</p>
+<section id="tirx-transformations">
+<h4>tirx transformations<a class="headerlink" href="#tirx-transformations" title="Link to this heading"></a></h4>
 <ul class="simple">
 <li><p><strong>TensorIR schedule</strong>: TensorIR schedules are designed to optimize the TensorIR functions for a specific target, with user-guided instructions and control how the target code is generated.
-For CPU targets, TIR PrimFunc can generate valid code and execute on the target device without schedule but with very-low performance. However, for GPU targets, the schedule is essential
-for generating valid code with thread bindings. For more details, please refer to the <a class="reference internal" href="../deep_dive/tensor_ir/tutorials/tir_transformation.html#tir-transform"><span class="std std-ref">TensorIR Transformation</span></a> section. Additionally, we provides <code class="docutils literal notranslate"><span class="pre">MetaSchedule</span></code> to
+For CPU targets, tirx PrimFunc can generate valid code and execute on the target device without schedule but with very-low performance. However, for GPU targets, the schedule is essential
+for generating valid code with thread bindings. For more details, please refer to the <a class="reference internal" href="../deep_dive/tensor_ir/tutorials/tir_transformation.html#tirx-transform"><span class="std std-ref">TensorIR Transformation</span></a> section. Additionally, we provides <code class="docutils literal notranslate"><span class="pre">MetaSchedule</span></code> to
 automate the search of TensorIR schedule.</p></li>
-<li><p><strong>Lowering Passes</strong>: These passes usually perform after the schedule is applied, transforming a TIR PrimFunc into another functionally equivalent PrimFunc, but closer to the
+<li><p><strong>Lowering Passes</strong>: These passes usually perform after the schedule is applied, transforming a tirx PrimFunc into another functionally equivalent PrimFunc, but closer to the
 target-specific representation. For example, there are passes to flatten multi-dimensional access to one-dimensional pointer access, to expand the intrinsics into target-specific ones,
 and to decorate the function entry to meet the runtime calling convention.</p></li>
 </ul>
@@ -411,11 +410,11 @@ focus on optimizations that are not covered by them.</p>
 </section>
 <section id="cross-level-transformations">
 <h4>cross-level transformations<a class="headerlink" href="#cross-level-transformations" title="Link to this heading"></a></h4>
-<p>Apache TVM enables cross-level optimization of end-to-end models. As the IRModule includes both relax and tir functions, the cross-level transformations are designed to mutate
+<p>Apache TVM enables cross-level optimization of end-to-end models. As the IRModule includes both relax and tirx functions, the cross-level transformations are designed to mutate
 the IRModule by applying different transformations to these two types of functions.</p>
-<p>For example, <code class="docutils literal notranslate"><span class="pre">relax.LegalizeOps</span></code> pass mutates the IRModule by lowering relax operators, adding corresponding TIR PrimFunc into the IRModule, and replacing the relax operators
-with calls to the lowered TIR PrimFunc. Another example is operator fusion pipeline in relax (including <code class="docutils literal notranslate"><span class="pre">relax.FuseOps</span></code> and <code class="docutils literal notranslate"><span class="pre">relax.FuseTIR</span></code>), which fuses multiple consecutive tensor operations
-into one. Different from the previous implementations, relax fusion pipeline analyzes the pattern of TIR functions and detects the best fusion rules automatically rather
+<p>For example, <code class="docutils literal notranslate"><span class="pre">relax.LegalizeOps</span></code> pass mutates the IRModule by lowering relax operators, adding corresponding tirx PrimFunc into the IRModule, and replacing the relax operators
+with calls to the lowered tirx PrimFunc. Another example is operator fusion pipeline in relax (including <code class="docutils literal notranslate"><span class="pre">relax.FuseOps</span></code> and <code class="docutils literal notranslate"><span class="pre">relax.FuseTIR</span></code>), which fuses multiple consecutive tensor operations
+into one. Different from the previous implementations, relax fusion pipeline analyzes the pattern of tirx functions and detects the best fusion rules automatically rather
 than human-defined operator fusion patterns.</p>
 </section>
 </section>
@@ -468,12 +467,12 @@ following types: POD types(int, float), string, runtime.PackedFunc, runtime.Modu
 <h3>Summary and Discussions<a class="headerlink" href="#summary-and-discussions" title="Link to this heading"></a></h3>
 <p>In summary, the key data structures in the compilation flows are:</p>
 <ul class="simple">
-<li><p>IRModule: contains relax.Function and tir.PrimFunc</p></li>
+<li><p>IRModule: contains relax.Function and tirx.PrimFunc</p></li>
 <li><p>runtime.Module: contains runtime.PackedFunc</p></li>
 </ul>
 <p>Most parts of the compilation are transformations among the key data structures.</p>
 <ul class="simple">
-<li><p>relax/transform and tir/transform are deterministic rule-based transformations</p></li>
+<li><p>relax/transform and tirx/transform are deterministic rule-based transformations</p></li>
 <li><p>meta-schedule contains the search-based transformations</p></li>
 </ul>
 <p>Finally, the compilation flow example is only a typical use-case of the TVM stack.
@@ -523,9 +522,9 @@ for learning-based optimizations.</p>
 <p>The node module adds additional features on top of the <cite>runtime::Object</cite> for IR data structures.
 The main features include reflection, serialization, structural equivalence, and hashing.</p>
 <p>Thanks to the node module, we can directly access any field of the TVM’s IRNode by their name in Python.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">x</span> <span class="o">=</span> <span class="n">tvm</span><span class="o">.</span><span class="n">tir</span><span class="o">.</span><span class="n">Var</span><span class="p">(</span><span class="s2">&quot;x&quot;</span><span class="p">,</span> <span class="s2">&quot;int32&quot;</span><span class="p">)</span>
-<span class="n">y</span> <span class="o">=</span> <span class="n">tvm</span><span class="o">.</span><span class="n">tir</span><span class="o">.</span><span class="n">Add</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">x</span><span class="p">)</span>
-<span class="c1"># a and b are fields of a tir.Add node</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">x</span> <span class="o">=</span> <span class="n">tvm</span><span class="o">.</span><span class="n">tirx</span><span class="o">.</span><span class="n">Var</span><span class="p">(</span><span class="s2">&quot;x&quot;</span><span class="p">,</span> <span class="s2">&quot;int32&quot;</span><span class="p">)</span>
+<span class="n">y</span> <span class="o">=</span> <span class="n">tvm</span><span class="o">.</span><span class="n">tirx</span><span class="o">.</span><span class="n">Add</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">x</span><span class="p">)</span>
+<span class="c1"># a and b are fields of a tirx.Add node</span>
 <span class="c1"># we can directly use the field name to access the IR structures</span>
 <span class="k">assert</span> <span class="n">y</span><span class="o">.</span><span class="n">a</span> <span class="o">==</span> <span class="n">x</span>
 </pre></div>
@@ -536,22 +535,22 @@ The ability to save/store, and inspect an IR node provides a foundation for maki
 <section id="tvm-ir">
 <h2>tvm/ir<a class="headerlink" href="#tvm-ir" title="Link to this heading"></a></h2>
 <p>The <cite>tvm/ir</cite> folder contains the unified data structure and interfaces across all IR function variants.
-The components in <cite>tvm/ir</cite> are shared by <cite>tvm/relax</cite> and <cite>tvm/tir</cite>, notable ones include</p>
+The components in <cite>tvm/ir</cite> are shared by <cite>tvm/relax</cite> and <cite>tvm/tirx</cite>, notable ones include</p>
 <ul class="simple">
 <li><p>IRModule</p></li>
 <li><p>Type</p></li>
 <li><p>PassContext and Pass</p></li>
 <li><p>Op</p></li>
 </ul>
-<p>Different variants of functions(e.g. relax.Function and tir.PrimFunc) can co-exist in an IRModule.
+<p>Different variants of functions(e.g. relax.Function and tirx.PrimFunc) can co-exist in an IRModule.
 While these variants may not have the same content representation, they use the same data structure to represent types.
 As a consequence, we use the same data structure to represent function (type) signatures of these variants.
 The unified type system allows one function variant to call another function
 once we clearly define the calling convention. This opens doors for future cross-function-variant optimizations.</p>
 <p>We also provide a unified PassContext for configuring the pass behavior, and common composite passes to execute a pass pipeline.
 The following code snippet gives an example of PassContext configuration.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># configure the behavior of the tir.UnrollLoop pass</span>
-<span class="k">with</span> <span class="n">tvm</span><span class="o">.</span><span class="n">transform</span><span class="o">.</span><span class="n">PassContext</span><span class="p">(</span><span class="n">config</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;tir.UnrollLoop&quot;</span><span class="p">:</span> <span class="p">{</span> <span class="s2">&quot;auto_max_step&quot;</span><span class="p">:</span> <span class="mi">10</span> <span class="p">}}):</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># configure the behavior of the tirx.UnrollLoop pass</span>
+<span class="k">with</span> <span class="n">tvm</span><span class="o">.</span><span class="n">transform</span><span class="o">.</span><span class="n">PassContext</span><span class="p">(</span><span class="n">config</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;tirx.UnrollLoop&quot;</span><span class="p">:</span> <span class="p">{</span> <span class="s2">&quot;auto_max_step&quot;</span><span class="p">:</span> <span class="mi">10</span> <span class="p">}}):</span>
     <span class="c1"># code affected by the pass context</span>
 </pre></div>
 </div>
@@ -581,30 +580,30 @@ in the target and builtin information registered to each target id(cuda, opencl)
 Note that Relax usually works closely with the TensorIR IRModule, most of the transformations are applied on both Relax and TensorIR functions
 in the IRModule. Please refer to the <a class="reference internal" href="../deep_dive/relax/index.html#relax-deep-dive"><span class="std std-ref">Relax Deep Dive</span></a> for more details.</p>
 </section>
-<section id="tvm-tir">
-<h2>tvm/tir<a class="headerlink" href="#tvm-tir" title="Link to this heading"></a></h2>
-<p>TIR contains the definition of the low-level program representations. We use <cite>tir::PrimFunc</cite> to represent functions that can be transformed by TIR passes.
-Besides the IR data structures, the tir module also includes:</p>
+<section id="tvm-tirx">
+<h2>tvm/tirx<a class="headerlink" href="#tvm-tirx" title="Link to this heading"></a></h2>
+<p>tirx contains the definition of the low-level program representations. We use <cite>tirx::PrimFunc</cite> to represent functions that can be transformed by tirx passes.
+Besides the IR data structures, the tirx module also includes:</p>
 <ul class="simple">
-<li><p>A set of schedule primitives to control the generated code in <code class="docutils literal notranslate"><span class="pre">tir/schedule</span></code>.</p></li>
-<li><p>A set of builtin intrinsics in <code class="docutils literal notranslate"><span class="pre">tir/tensor_intrin</span></code>.</p></li>
-<li><p>A set of analysis passes to analyze the TIR functions in <code class="docutils literal notranslate"><span class="pre">tir/analysis</span></code>.</p></li>
-<li><p>A set of transformation passes to lower or optimize the TIR functions in <code class="docutils literal notranslate"><span class="pre">tir/transform</span></code>.</p></li>
+<li><p>A set of schedule primitives to control the generated code in <code class="docutils literal notranslate"><span class="pre">tirx/schedule</span></code>.</p></li>
+<li><p>A set of builtin intrinsics in <code class="docutils literal notranslate"><span class="pre">tirx/tensor_intrin</span></code>.</p></li>
+<li><p>A set of analysis passes to analyze the tirx functions in <code class="docutils literal notranslate"><span class="pre">tirx/analysis</span></code>.</p></li>
+<li><p>A set of transformation passes to lower or optimize the tirx functions in <code class="docutils literal notranslate"><span class="pre">tirx/transform</span></code>.</p></li>
 </ul>
 <p>Please refer to the <a class="reference internal" href="../deep_dive/tensor_ir/index.html#tensor-ir-deep-dive"><span class="std std-ref">TensorIR Deep Dive</span></a> for more details.</p>
 </section>
 <section id="tvm-arith">
 <h2>tvm/arith<a class="headerlink" href="#tvm-arith" title="Link to this heading"></a></h2>
-<p>This module is closely tied to the TIR. One of the key problems in the low-level code generation is the analysis of the indices’
+<p>This module is closely tied to tirx. One of the key problems in the low-level code generation is the analysis of the indices’
 arithmetic properties — the positiveness, variable bound, and the integer set that describes the iterator space. arith module provides
-a collection of tools that do (primarily integer) analysis. A TIR pass can use these analyses to simplify and optimize the code.</p>
+a collection of tools that do (primarily integer) analysis. A tirx pass can use these analyses to simplify and optimize the code.</p>
 </section>
 <section id="tvm-te-and-tvm-topi">
 <h2>tvm/te and tvm/topi<a class="headerlink" href="#tvm-te-and-tvm-topi" title="Link to this heading"></a></h2>
 <p>TE stands for Tensor Expression. TE is a domain-specific language (DSL) for describing tensor computations. Importantly, a tensor expression
-itself is not a self-contained function that can be stored into IRModule. We can use <code class="docutils literal notranslate"><span class="pre">te.create_prim_func</span></code> to convert a tensor expression to a <code class="docutils literal notranslate"><span class="pre">tir::PrimFunc</span></code>
+itself is not a self-contained function that can be stored into IRModule. We can use <code class="docutils literal notranslate"><span class="pre">te.create_prim_func</span></code> to convert a tensor expression to a <code class="docutils literal notranslate"><span class="pre">tirx::PrimFunc</span></code>
 and then integrate it into the IRModule.</p>
-<p>While possible to construct operators directly via TIR or tensor expressions (TE) for each use case, it is tedious to do so.
+<p>While possible to construct operators directly via tirx or tensor expressions (TE) for each use case, it is tedious to do so.
 <cite>topi</cite> (Tensor operator inventory) provides a set of pre-defined operators defined by numpy and found in common deep learning workloads.</p>
 </section>
 <section id="tvm-s-tir-meta-schedule">
@@ -614,7 +613,7 @@ and can be used to optimize TensorIR schedules. Note that MetaSchedule only work
 </section>
 <section id="tvm-dlight">
 <h2>tvm/dlight<a class="headerlink" href="#tvm-dlight" title="Link to this heading"></a></h2>
-<p>DLight is a set of pre-defined, easy-to-use, and performant TIR schedules. DLight aims:</p>
+<p>DLight is a set of pre-defined, easy-to-use, and performant tirx schedules. DLight aims:</p>
 <ul class="simple">
 <li><p>Fully support <strong>dynamic shape workloads</strong>.</p></li>
 <li><p><strong>Light weight</strong>. DLight schedules provides tuning-free schedule with reasonable performance.</p></li>

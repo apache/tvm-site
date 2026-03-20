@@ -1,10 +1,10 @@
 var searchData=
 [
-  ['var_4689',['Var',['../classtvm_1_1relax_1_1Var.html',1,'tvm::relax::Var'],['../classtvm_1_1tir_1_1Var.html',1,'tvm::tir::Var']]],
+  ['var_4689',['Var',['../classtvm_1_1relax_1_1Var.html',1,'tvm::relax::Var'],['../classtvm_1_1tirx_1_1Var.html',1,'tvm::tirx::Var']]],
   ['varbinding_4690',['VarBinding',['../classtvm_1_1relax_1_1VarBinding.html',1,'tvm::relax']]],
   ['varbindingnode_4691',['VarBindingNode',['../classtvm_1_1relax_1_1VarBindingNode.html',1,'tvm::relax']]],
   ['variableinfo_4692',['VariableInfo',['../structtvm_1_1script_1_1printer_1_1IRDocsifierNode_1_1VariableInfo.html',1,'tvm::script::printer::IRDocsifierNode']]],
-  ['varnode_4693',['VarNode',['../classtvm_1_1relax_1_1VarNode.html',1,'tvm::relax::VarNode'],['../classtvm_1_1tir_1_1VarNode.html',1,'tvm::tir::VarNode']]],
+  ['varnode_4693',['VarNode',['../classtvm_1_1relax_1_1VarNode.html',1,'tvm::relax::VarNode'],['../classtvm_1_1tirx_1_1VarNode.html',1,'tvm::tirx::VarNode']]],
   ['varpattern_4694',['VarPattern',['../classtvm_1_1relax_1_1VarPattern.html',1,'tvm::relax']]],
   ['varpatternnode_4695',['VarPatternNode',['../classtvm_1_1relax_1_1VarPatternNode.html',1,'tvm::relax']]],
   ['varusageinfo_4696',['VarUsageInfo',['../structtvm_1_1relax_1_1VarUsageInfo.html',1,'tvm::relax']]],

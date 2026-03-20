@@ -1,12 +1,12 @@
 var searchData=
 [
-  ['ramp_4455',['Ramp',['../classtvm_1_1tir_1_1Ramp.html',1,'tvm::tir']]],
-  ['rampnode_4456',['RampNode',['../classtvm_1_1tir_1_1RampNode.html',1,'tvm::tir']]],
+  ['ramp_4455',['Ramp',['../classtvm_1_1tirx_1_1Ramp.html',1,'tvm::tirx']]],
+  ['rampnode_4456',['RampNode',['../classtvm_1_1tirx_1_1RampNode.html',1,'tvm::tirx']]],
   ['range_4457',['Range',['../classtvm_1_1Range.html',1,'tvm']]],
   ['rangenode_4458',['RangeNode',['../classtvm_1_1RangeNode.html',1,'tvm']]],
   ['rationode_4459',['RatioNode',['../classtvm_1_1runtime_1_1profiling_1_1RatioNode.html',1,'tvm::runtime::profiling']]],
-  ['reduce_4460',['Reduce',['../classtvm_1_1tir_1_1Reduce.html',1,'tvm::tir']]],
-  ['reducenode_4461',['ReduceNode',['../classtvm_1_1tir_1_1ReduceNode.html',1,'tvm::tir']]],
+  ['reduce_4460',['Reduce',['../classtvm_1_1tirx_1_1Reduce.html',1,'tvm::tirx']]],
+  ['reducenode_4461',['ReduceNode',['../classtvm_1_1tirx_1_1ReduceNode.html',1,'tvm::tirx']]],
   ['relaxexpr_4462',['RelaxExpr',['../classtvm_1_1RelaxExpr.html',1,'tvm']]],
   ['relaxexprnode_4463',['RelaxExprNode',['../classtvm_1_1RelaxExprNode.html',1,'tvm']]],
   ['relaxframe_4464',['RelaxFrame',['../classtvm_1_1script_1_1ir__builder_1_1relax_1_1RelaxFrame.html',1,'tvm::script::ir_builder::relax']]],

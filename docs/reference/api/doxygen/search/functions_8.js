@@ -1,7 +1,7 @@
 var searchData=
 [
-  ['handle_5723',['Handle',['../namespacetvm_1_1script_1_1ir__builder_1_1tir.html#aa1f6fbee6be22d904bbea199597f6635',1,'tvm::script::ir_builder::tir::Handle()'],['../classtvm_1_1runtime_1_1DataType.html#aebad9f7235dd20af649fb5c2113797b8',1,'tvm::runtime::DataType::Handle()']]],
-  ['handle_5fadd_5fbyte_5foffset_5724',['handle_add_byte_offset',['../namespacetvm_1_1tir_1_1builtin.html#a17be9c7bf15e36cb3985e452027ad7df',1,'tvm::tir::builtin']]],
+  ['handle_5723',['Handle',['../namespacetvm_1_1script_1_1ir__builder_1_1tirx.html#ae111354c19ffd1f329e68a943abd8fd6',1,'tvm::script::ir_builder::tirx::Handle()'],['../classtvm_1_1runtime_1_1DataType.html#aebad9f7235dd20af649fb5c2113797b8',1,'tvm::runtime::DataType::Handle()']]],
+  ['handle_5fadd_5fbyte_5foffset_5724',['handle_add_byte_offset',['../namespacetvm_1_1tirx_1_1builtin.html#aa80062403274605c1cb9d7410e0b5e70',1,'tvm::tirx::builtin']]],
   ['hasattr_5725',['HasAttr',['../classtvm_1_1relax_1_1DFPattern.html#a5ec24bab817dcd540c0db81c297c83ae',1,'tvm::relax::DFPattern']]],
   ['hasattrmap_5726',['HasAttrMap',['../classtvm_1_1Op.html#adea2c4c1cefc5da4896e0f7346c603f6',1,'tvm::Op']]],
   ['hasblock_5727',['HasBlock',['../classtvm_1_1s__tir_1_1ScheduleNode.html#a4aab584558f03480a00e7a7ccb20c07d',1,'tvm::s_tir::ScheduleNode']]],
@@ -11,11 +11,11 @@ var searchData=
   ['haslowerbound_5731',['HasLowerBound',['../classtvm_1_1arith_1_1IntSet.html#a43fe07f824564cd2c9aab6f06a5a79c9',1,'tvm::arith::IntSet']]],
   ['hasnonzeroattr_5732',['HasNonzeroAttr',['../classtvm_1_1DictAttrs.html#a45e524ce0f8ae389341ec37e468d887d',1,'tvm::DictAttrs::HasNonzeroAttr()'],['../classtvm_1_1BaseFuncNode.html#a1fbf773665334f7d109c7c4c12d40d76',1,'tvm::BaseFuncNode::HasNonzeroAttr()'],['../classtvm_1_1IRModuleNode.html#a0051e1b8ec1d99cbade4dfaa511b3bcd',1,'tvm::IRModuleNode::HasNonzeroAttr()']]],
   ['hasoption_5733',['HasOption',['../classtvm_1_1ir_1_1ConfigSchema.html#a09eb874e14e351662339af51cbaf1260',1,'tvm::ir::ConfigSchema']]],
-  ['hasreshapepattern_5734',['HasReshapePattern',['../namespacetvm_1_1relax.html#a9a0625d588e3d480f49c80c7589fe5f6',1,'tvm::relax']]],
+  ['hasreshapepattern_5734',['HasReshapePattern',['../namespacetvm_1_1relax.html#af12a9b0e49464eb96298f9ea8ac30b17',1,'tvm::relax']]],
   ['hassameshapeas_5735',['HasSameShapeAs',['../classtvm_1_1relax_1_1DFPattern.html#a38905d1b7e0ab207b658afce9e50f838',1,'tvm::relax::DFPattern']]],
   ['hasshape_5736',['HasShape',['../classtvm_1_1relax_1_1DFPattern.html#a799e4dfc562fc7953c3fcfb710582b82',1,'tvm::relax::DFPattern']]],
   ['hasstructinfo_5737',['HasStructInfo',['../classtvm_1_1relax_1_1DFPattern.html#a72ffeedc398250202c2c8a296da3f709',1,'tvm::relax::DFPattern']]],
-  ['hastrivialstep_5738',['HasTrivialStep',['../classtvm_1_1tir_1_1ForNode.html#a95b7882d4bd0d10e8553a057656e3e64',1,'tvm::tir::ForNode']]],
+  ['hastrivialstep_5738',['HasTrivialStep',['../classtvm_1_1tirx_1_1ForNode.html#a68aaff9a4ae95dc6584ffc31aa62f0fe',1,'tvm::tirx::ForNode']]],
   ['hasupperbound_5739',['HasUpperBound',['../classtvm_1_1arith_1_1IntSet.html#a6d65b455e6c0f9d67f76f10cb864c7f1',1,'tvm::arith::IntSet']]],
   ['hasvoidstructinfo_5740',['HasVoidStructInfo',['../namespacetvm_1_1relax.html#ae0c3fe13cc8a1af27bcb32ddf15bbf1c',1,'tvm::relax']]],
   ['hasworkload_5741',['HasWorkload',['../classtvm_1_1s__tir_1_1meta__schedule_1_1PyDatabaseNode.html#a4cbab7e7297f69aac4ee61dbcce5a508',1,'tvm::s_tir::meta_schedule::PyDatabaseNode::HasWorkload()'],['../classtvm_1_1s__tir_1_1meta__schedule_1_1DatabaseNode.html#a3ab9ce2c2f51569ef4b36e40ee5756bf',1,'tvm::s_tir::meta_schedule::DatabaseNode::HasWorkload()']]],

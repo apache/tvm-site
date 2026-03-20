@@ -2,8 +2,8 @@ var searchData=
 [
   ['gatherelementsattrs_4215',['GatherElementsAttrs',['../structtvm_1_1relax_1_1GatherElementsAttrs.html',1,'tvm::relax']]],
   ['gatherndattrs_4216',['GatherNDAttrs',['../structtvm_1_1relax_1_1GatherNDAttrs.html',1,'tvm::relax']]],
-  ['ge_4217',['GE',['../classtvm_1_1tir_1_1GE.html',1,'tvm::tir']]],
-  ['genode_4218',['GENode',['../classtvm_1_1tir_1_1GENode.html',1,'tvm::tir']]],
+  ['ge_4217',['GE',['../classtvm_1_1tirx_1_1GE.html',1,'tvm::tirx']]],
+  ['genode_4218',['GENode',['../classtvm_1_1tirx_1_1GENode.html',1,'tvm::tirx']]],
   ['globalinfo_4219',['GlobalInfo',['../classtvm_1_1GlobalInfo.html',1,'tvm']]],
   ['globalinfonode_4220',['GlobalInfoNode',['../classtvm_1_1GlobalInfoNode.html',1,'tvm']]],
   ['globalvar_4221',['GlobalVar',['../classGlobalVar.html',1,'GlobalVar'],['../classtvm_1_1GlobalVar.html',1,'tvm::GlobalVar']]],
@@ -15,6 +15,6 @@ var searchData=
   ['globalvarsupplynode_4227',['GlobalVarSupplyNode',['../classtvm_1_1GlobalVarSupplyNode.html',1,'tvm']]],
   ['gridsampleattrs_4228',['GridSampleAttrs',['../structtvm_1_1relax_1_1GridSampleAttrs.html',1,'tvm::relax']]],
   ['groupnormattrs_4229',['GroupNormAttrs',['../structtvm_1_1relax_1_1GroupNormAttrs.html',1,'tvm::relax']]],
-  ['gt_4230',['GT',['../classtvm_1_1tir_1_1GT.html',1,'tvm::tir']]],
-  ['gtnode_4231',['GTNode',['../classtvm_1_1tir_1_1GTNode.html',1,'tvm::tir']]]
+  ['gt_4230',['GT',['../classtvm_1_1tirx_1_1GT.html',1,'tvm::tirx']]],
+  ['gtnode_4231',['GTNode',['../classtvm_1_1tirx_1_1GTNode.html',1,'tvm::tirx']]]
 ];
