@@ -385,6 +385,7 @@ Program Listing for File c_api.h
      kTVMFFIFieldFlagBitMaskHashOff = 1 << 8,
      kTVMFFIFieldFlagBitMaskInitOff = 1 << 9,
      kTVMFFIFieldFlagBitMaskKwOnly = 1 << 10,
+     kTVMFFIFieldFlagBitSetterIsFunctionObj = 1 << 11,
    #ifdef __cplusplus
    };
    #else
@@ -417,7 +418,7 @@ Program Listing for File c_api.h
      int64_t alignment;
      int64_t offset;
      TVMFFIFieldGetter getter;
-     TVMFFIFieldSetter setter;
+     void* setter;
      TVMFFIAny default_value_or_factory;
      int32_t field_static_type_index;
    } TVMFFIFieldInfo;

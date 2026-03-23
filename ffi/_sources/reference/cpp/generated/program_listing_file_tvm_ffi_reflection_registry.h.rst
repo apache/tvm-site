@@ -224,7 +224,8 @@ Program Listing for File registry.h
    TVM_FFI_INLINE int64_t GetFieldByteOffsetToObject(T Class::* field_ptr) {
      int64_t field_offset_to_class =
          reinterpret_cast<int64_t>(&(static_cast<Class*>(nullptr)->*field_ptr));
-     return field_offset_to_class - details::ObjectUnsafe::GetObjectOffsetToSubclass<Class>();
+     return field_offset_to_class -
+            ::tvm::ffi::details::ObjectUnsafe::GetObjectOffsetToSubclass<Class>();
    }
    
    class ReflectionDefBase {
@@ -232,7 +233,7 @@ Program Listing for File registry.h
      template <typename T>
      static int FieldGetter(void* field, TVMFFIAny* result) {
        TVM_FFI_SAFE_CALL_BEGIN();
-       *result = details::AnyUnsafe::MoveAnyToTVMFFIAny(Any(*reinterpret_cast<T*>(field)));
+       *result = ::tvm::ffi::details::AnyUnsafe::MoveAnyToTVMFFIAny(Any(*reinterpret_cast<T*>(field)));
        TVM_FFI_SAFE_CALL_END();
      }
    
@@ -251,7 +252,7 @@ Program Listing for File registry.h
      static int ObjectCreatorDefault(TVMFFIObjectHandle* result) {
        TVM_FFI_SAFE_CALL_BEGIN();
        ObjectPtr<T> obj = make_object<T>();
-       *result = details::ObjectUnsafe::MoveObjectPtrToTVMFFIObjectPtr(std::move(obj));
+       *result = ::tvm::ffi::details::ObjectUnsafe::MoveObjectPtrToTVMFFIObjectPtr(std::move(obj));
        TVM_FFI_SAFE_CALL_END();
      }
    
@@ -259,7 +260,7 @@ Program Listing for File registry.h
      static int ObjectCreatorUnsafeInit(TVMFFIObjectHandle* result) {
        TVM_FFI_SAFE_CALL_BEGIN();
        ObjectPtr<T> obj = make_object<T>(UnsafeInit{});
-       *result = details::ObjectUnsafe::MoveObjectPtrToTVMFFIObjectPtr(std::move(obj));
+       *result = ::tvm::ffi::details::ObjectUnsafe::MoveObjectPtrToTVMFFIObjectPtr(std::move(obj));
        TVM_FFI_SAFE_CALL_END();
      }
    
@@ -339,7 +340,7 @@ Program Listing for File registry.h
     public:
      template <typename Func, typename... Extra>
      GlobalDef& def(const char* name, Func&& func, Extra&&... extra) {
-       using FuncInfo = details::FunctionInfo<std::decay_t<Func>>;
+       using FuncInfo = ::tvm::ffi::details::FunctionInfo<std::decay_t<Func>>;
        RegisterFunc(name, ffi::Function::FromTyped(std::forward<Func>(func), std::string(name)),
                     FuncInfo::TypeSchema(), std::forward<Extra>(extra)...);
        return *this;
@@ -347,14 +348,14 @@ Program Listing for File registry.h
    
      template <typename Func, typename... Extra>
      GlobalDef& def_packed(const char* name, Func func, Extra&&... extra) {
-       RegisterFunc(name, ffi::Function::FromPacked(func), details::TypeSchemaImpl<Function>::v(),
-                    std::forward<Extra>(extra)...);
+       RegisterFunc(name, ffi::Function::FromPacked(func),
+                    ::tvm::ffi::details::TypeSchemaImpl<Function>::v(), std::forward<Extra>(extra)...);
        return *this;
      }
    
      template <typename Func, typename... Extra>
      GlobalDef& def_method(const char* name, Func&& func, Extra&&... extra) {
-       using FuncInfo = details::FunctionInfo<std::decay_t<Func>>;
+       using FuncInfo = ::tvm::ffi::details::FunctionInfo<std::decay_t<Func>>;
        RegisterFunc(name, GetMethod(std::string(name), std::forward<Func>(func)),
                     FuncInfo::TypeSchema(), std::forward<Extra>(extra)...);
        return *this;
@@ -431,6 +432,7 @@ Program Listing for File registry.h
    inline constexpr const char* kHash = "__ffi_hash__";
    inline constexpr const char* kEq = "__ffi_eq__";
    inline constexpr const char* kCompare = "__ffi_compare__";
+   inline constexpr const char* kConvert = "__ffi_convert__";
    }  // namespace type_attr
    
    template <typename Class>
@@ -557,11 +559,11 @@ Program Listing for File registry.h
          info.flags |= kTVMFFIFieldFlagBitMaskWritable;
        }
        info.getter = FieldGetter<T>;
-       info.setter = FieldSetter<T>;
+       info.setter = reinterpret_cast<void*>(FieldSetter<T>);
        // initialize default value to nullptr
        info.default_value_or_factory = AnyView(nullptr).CopyToTVMFFIAny();
        info.doc = TVMFFIByteArray{nullptr, 0};
-       info.metadata_.emplace_back("type_schema", details::TypeSchema<T>::v());
+       info.metadata_.emplace_back("type_schema", ::tvm::ffi::details::TypeSchema<T>::v());
        // apply field info traits
        ((ApplyFieldInfoTrait(&info, std::forward<ExtraArgs>(extra_args)), ...));
        // call register
@@ -573,7 +575,7 @@ Program Listing for File registry.h
      // register a method
      template <typename Func, typename... Extra>
      void RegisterMethod(const char* name, bool is_static, Func&& func, Extra&&... extra) {
-       using FuncInfo = details::FunctionInfo<std::decay_t<Func>>;
+       using FuncInfo = ::tvm::ffi::details::FunctionInfo<std::decay_t<Func>>;
        MethodInfoBuilder info;
        info.name = TVMFFIByteArray{name, std::char_traits<char>::length(name)};
        info.doc = TVMFFIByteArray{nullptr, 0};

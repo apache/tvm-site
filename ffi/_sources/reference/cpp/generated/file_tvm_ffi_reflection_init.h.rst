@@ -55,6 +55,8 @@ Includes
 
 - ``tvm/ffi/reflection/accessor.h`` (:ref:`file_tvm_ffi_reflection_accessor.h`)
 
+- ``tvm/ffi/reflection/creator.h`` (:ref:`file_tvm_ffi_reflection_creator.h`)
+
 - ``tvm/ffi/string.h`` (:ref:`file_tvm_ffi_string.h`)
 
 - ``unordered_map``

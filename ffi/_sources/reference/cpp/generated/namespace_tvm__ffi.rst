@@ -178,13 +178,15 @@ Functions
 
 - :ref:`exhale_function_base64_8h_1ae1d4736f7dc56b224acd303ba7bf7a45`
 
-- :ref:`exhale_function_base64_8h_1aa5b2a4531449585b9f079cb170a79f0b`
-
 - :ref:`exhale_function_base64_8h_1a279b4ba2f4c7ea16291ef24b73e43963`
+
+- :ref:`exhale_function_base64_8h_1aa5b2a4531449585b9f079cb170a79f0b`
 
 - :ref:`exhale_function_endian_8h_1ab4e0ed8000c632cd2c7cd089c0a0d1af`
 
 - :ref:`exhale_function_array_8h_1af5983fd2a31e79635307875b3a216472`
+
+- :ref:`exhale_function_creator_8h_1ad292023f85eb05de65c40b53a8126b0c`
 
 - :ref:`exhale_function_dataclass_8h_1ae661fadd13fbc7aef6e15cddba7607e8`
 
@@ -207,6 +209,8 @@ Functions
 - :ref:`exhale_function_cast_8h_1a4dba749dd934d8a7891ad126a8fdcc1f`
 
 - :ref:`exhale_function_cast_8h_1a3c5fed9bb23b4804b61037c8ac4874f1`
+
+- :ref:`exhale_function_creator_8h_1a9f39a70dd0c30ef28f11b745a6753222`
 
 - :ref:`exhale_function_tensor_8h_1aa79cf4e1e3873d8947050b3cee41153a`
 

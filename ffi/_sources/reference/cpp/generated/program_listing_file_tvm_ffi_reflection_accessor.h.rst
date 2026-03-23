@@ -57,6 +57,23 @@ Program Listing for File accessor.h
      TVM_FFI_UNREACHABLE();
    }
    
+   inline int CallFieldSetter(const TVMFFIFieldInfo* field_info, void* field_addr,
+                              const TVMFFIAny* value) {
+     if (!(field_info->flags & kTVMFFIFieldFlagBitSetterIsFunctionObj)) {
+       auto setter = reinterpret_cast<TVMFFIFieldSetter>(field_info->setter);
+       return setter(field_addr, value);
+     } else {
+       TVMFFIAny args[2]{};
+       args[0].type_index = kTVMFFIOpaquePtr;
+       args[0].v_ptr = field_addr;
+       args[1] = *value;
+       TVMFFIAny result{};
+       result.type_index = kTVMFFINone;
+       return TVMFFIFunctionCall(static_cast<TVMFFIObjectHandle>(field_info->setter), args, 2,
+                                 &result);
+     }
+   }
+   
    class FieldGetter {
     public:
      explicit FieldGetter(const TVMFFIFieldInfo* field_info) : field_info_(field_info) {}
@@ -89,8 +106,8 @@ Program Listing for File accessor.h
    
      void operator()(const Object* obj_ptr, AnyView value) const {
        const void* addr = reinterpret_cast<const char*>(obj_ptr) + field_info_->offset;
-       TVM_FFI_CHECK_SAFE_CALL(
-           field_info_->setter(const_cast<void*>(addr), reinterpret_cast<const TVMFFIAny*>(&value)));
+       TVM_FFI_CHECK_SAFE_CALL(CallFieldSetter(field_info_, const_cast<void*>(addr),
+                                               reinterpret_cast<const TVMFFIAny*>(&value)));
      }
    
      void operator()(const ObjectPtr<Object>& obj_ptr, AnyView value) const {
@@ -149,9 +166,9 @@ Program Listing for File accessor.h
        Function factory =
            AnyView::CopyFromTVMFFIAny(field_info->default_value_or_factory).cast<Function>();
        Any default_val = factory();
-       field_info->setter(field_addr, reinterpret_cast<const TVMFFIAny*>(&default_val));
+       CallFieldSetter(field_info, field_addr, reinterpret_cast<const TVMFFIAny*>(&default_val));
      } else {
-       field_info->setter(field_addr, &(field_info->default_value_or_factory));
+       CallFieldSetter(field_info, field_addr, &(field_info->default_value_or_factory));
      }
    }
    

@@ -31,13 +31,54 @@ Program Listing for File creator.h
    #ifndef TVM_FFI_REFLECTION_CREATOR_H_
    #define TVM_FFI_REFLECTION_CREATOR_H_
    
-   #include <tvm/ffi/any.h>
    #include <tvm/ffi/container/map.h>
+   #include <tvm/ffi/function.h>
    #include <tvm/ffi/reflection/accessor.h>
    #include <tvm/ffi/string.h>
    
    namespace tvm {
    namespace ffi {
+   inline ObjectPtr<Object> CreateEmptyObject(const TVMFFITypeInfo* type_info) {
+     // Fast path: native C++ creator
+     if (type_info->metadata != nullptr && type_info->metadata->creator != nullptr) {
+       TVMFFIObjectHandle handle;
+       TVM_FFI_CHECK_SAFE_CALL(type_info->metadata->creator(&handle));
+       return details::ObjectUnsafe::ObjectPtrFromOwned<Object>(static_cast<TVMFFIObject*>(handle));
+     }
+     // Fallback: __ffi_new__ type attr (Python-defined types)
+     constexpr TVMFFIByteArray kFFINewAttrName = {"__ffi_new__", 11};
+     const TVMFFITypeAttrColumn* column = TVMFFIGetTypeAttrColumn(&kFFINewAttrName);
+     if (column != nullptr) {
+       int32_t offset = type_info->type_index - column->begin_index;
+       if (offset >= 0 && offset < column->size) {
+         AnyView attr_view = AnyView::CopyFromTVMFFIAny(column->data[offset]);
+         if (auto opt_func = attr_view.try_cast<Function>()) {
+           ObjectRef obj_ref = (*opt_func)().cast<ObjectRef>();
+           return details::ObjectUnsafe::ObjectPtrFromObjectRef<Object>(std::move(obj_ref));
+         }
+       }
+     }
+     TVM_FFI_THROW(RuntimeError) << "Type `" << TypeIndexToTypeKey(type_info->type_index)
+                                 << "` does not support reflection creation"
+                                 << " (no native creator or __ffi_new__ type attr)";
+   }
+   
+   inline bool HasCreator(const TVMFFITypeInfo* type_info) {
+     if (type_info->metadata != nullptr && type_info->metadata->creator != nullptr) {
+       return true;
+     }
+     constexpr TVMFFIByteArray kFFINewAttrName = {"__ffi_new__", 11};
+     const TVMFFITypeAttrColumn* column = TVMFFIGetTypeAttrColumn(&kFFINewAttrName);
+     if (column != nullptr) {
+       int32_t offset = type_info->type_index - column->begin_index;
+       if (offset >= 0 && offset < column->size &&
+           column->data[offset].type_index == TypeIndex::kTVMFFIFunction) {
+         return true;
+       }
+     }
+     return false;
+   }
+   
    namespace reflection {
    class ObjectCreator {
     public:
@@ -45,30 +86,22 @@ Program Listing for File creator.h
          : ObjectCreator(TVMFFIGetTypeInfo(TypeKeyToIndex(type_key))) {}
    
      explicit ObjectCreator(const TVMFFITypeInfo* type_info) : type_info_(type_info) {
-       int32_t type_index = type_info->type_index;
-       if (type_info->metadata == nullptr) {
-         TVM_FFI_THROW(RuntimeError) << "Type `" << TypeIndexToTypeKey(type_index)
-                                     << "` does not have reflection registered";
-       }
-       if (type_info->metadata->creator == nullptr) {
-         TVM_FFI_THROW(RuntimeError) << "Type `" << TypeIndexToTypeKey(type_index)
+       if (!HasCreator(type_info)) {
+         TVM_FFI_THROW(RuntimeError) << "Type `" << TypeIndexToTypeKey(type_info->type_index)
                                      << "` does not support default constructor, "
                                      << "as a result cannot be created via reflection";
        }
      }
    
      Any operator()(const Map<String, Any>& fields) const {
-       TVMFFIObjectHandle handle;
-       TVM_FFI_CHECK_SAFE_CALL(type_info_->metadata->creator(&handle));
-       ObjectPtr<Object> ptr =
-           details::ObjectUnsafe::ObjectPtrFromOwned<Object>(static_cast<TVMFFIObject*>(handle));
+       ObjectPtr<Object> ptr = CreateEmptyObject(type_info_);
        size_t match_field_count = 0;
        ForEachFieldInfo(type_info_, [&](const TVMFFIFieldInfo* field_info) {
          String field_name(field_info->name);
          void* field_addr = reinterpret_cast<char*>(ptr.get()) + field_info->offset;
          if (fields.count(field_name) != 0) {
            Any field_value = fields[field_name];
-           field_info->setter(field_addr, reinterpret_cast<const TVMFFIAny*>(&field_value));
+           CallFieldSetter(field_info, field_addr, reinterpret_cast<const TVMFFIAny*>(&field_value));
            ++match_field_count;
          } else if (field_info->flags & kTVMFFIFieldFlagBitMaskHasDefault) {
            SetFieldToDefault(field_info, field_addr);
