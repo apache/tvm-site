@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['hintondeviceattrs_4237',['HintOnDeviceAttrs',['../structtvm_1_1relax_1_1HintOnDeviceAttrs.html',1,'tvm::relax']]]
+  ['hintondeviceattrs_4250',['HintOnDeviceAttrs',['../structtvm_1_1relax_1_1HintOnDeviceAttrs.html',1,'tvm::relax']]]
 ];
