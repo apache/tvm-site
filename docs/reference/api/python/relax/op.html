@@ -365,6 +365,7 @@
 <li class="toctree-l4"><a class="reference internal" href="#tvm.relax.op.tanh"><code class="docutils literal notranslate"><span class="pre">tanh()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#tvm.relax.op.trunc"><code class="docutils literal notranslate"><span class="pre">trunc()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#tvm.relax.op.all_class_non_max_suppression"><code class="docutils literal notranslate"><span class="pre">all_class_non_max_suppression()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#tvm.relax.op.multibox_transform_loc"><code class="docutils literal notranslate"><span class="pre">multibox_transform_loc()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#tvm.relax.op.roi_align"><code class="docutils literal notranslate"><span class="pre">roi_align()</span></code></a></li>
 </ul>
 </li>
@@ -503,6 +504,7 @@
 <li class="toctree-l4"><a class="reference internal" href="#tvm.relax.op.op_attrs.AttentionAttrs"><code class="docutils literal notranslate"><span class="pre">AttentionAttrs</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#tvm.relax.op.op_attrs.AllClassNonMaximumSuppressionAttrs"><code class="docutils literal notranslate"><span class="pre">AllClassNonMaximumSuppressionAttrs</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#tvm.relax.op.op_attrs.ROIAlignAttrs"><code class="docutils literal notranslate"><span class="pre">ROIAlignAttrs</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#tvm.relax.op.op_attrs.MultiboxTransformLocAttrs"><code class="docutils literal notranslate"><span class="pre">MultiboxTransformLocAttrs</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#tvm.relax.op.op_attrs.Conv1DAttrs"><code class="docutils literal notranslate"><span class="pre">Conv1DAttrs</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#tvm.relax.op.op_attrs.Conv1DTransposeAttrs"><code class="docutils literal notranslate"><span class="pre">Conv1DTransposeAttrs</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#tvm.relax.op.op_attrs.Pool1DAttrs"><code class="docutils literal notranslate"><span class="pre">Pool1DAttrs</span></code></a></li>
@@ -4161,6 +4163,50 @@ the class 1 etc.</p>
 </dd></dl>
 
 <dl class="py function">
+<dt class="sig sig-object py" id="tvm.relax.op.multibox_transform_loc">
+<span class="sig-prename descclassname"><span class="pre">tvm.relax.op.</span></span><span class="sig-name descname"><span class="pre">multibox_transform_loc</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">cls_pred</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">loc_pred</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">anchor</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">clip</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">threshold</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">variances</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(1.0,</span> <span class="pre">1.0,</span> <span class="pre">1.0,</span> <span class="pre">1.0)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">keep_background</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#tvm.relax.op.multibox_transform_loc" title="Link to this definition"></a></dt>
+<dd><p>SSD / TFLite-style decode: priors + offsets → boxes; logits → softmax scores.</p>
+<p>Box decode follows TFLite <code class="docutils literal notranslate"><span class="pre">DecodeCenterSizeBoxes</span></code>; expected tensor layout matches
+<code class="docutils literal notranslate"><span class="pre">tflite_frontend.convert_detection_postprocess</span></code> (loc reorder yxhw→xywh, anchor ltrb).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>cls_pred</strong> (<em>relax.Expr</em>) – <code class="docutils literal notranslate"><span class="pre">[B,</span> <span class="pre">C,</span> <span class="pre">N]</span></code> class logits (pre-softmax).</p></li>
+<li><p><strong>loc_pred</strong> (<em>relax.Expr</em>) – <code class="docutils literal notranslate"><span class="pre">[B,</span> <span class="pre">4*N]</span></code> per-anchor encodings as <code class="docutils literal notranslate"><span class="pre">(x,y,w,h)</span></code> after reorder (see above).</p></li>
+<li><p><strong>anchor</strong> (<em>relax.Expr</em>) – <code class="docutils literal notranslate"><span class="pre">[1,</span> <span class="pre">N,</span> <span class="pre">4]</span></code> priors: <code class="docutils literal notranslate"><span class="pre">(left,</span> <span class="pre">top,</span> <span class="pre">right,</span> <span class="pre">bottom)</span></code>.</p></li>
+<li><p><strong>clip</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a>) – If True, clip <code class="docutils literal notranslate"><span class="pre">ymin,xmin,ymax,xmax</span></code> to <code class="docutils literal notranslate"><span class="pre">[0,</span> <span class="pre">1]</span></code>.</p></li>
+<li><p><strong>threshold</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><em>float</em></a>) – After softmax, multiply scores by mask <code class="docutils literal notranslate"><span class="pre">(score</span> <span class="pre">&gt;=</span> <span class="pre">threshold)</span></code>.</p></li>
+<li><p><strong>variances</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)"><em>tuple</em></a><em> of </em><em>4 floats</em>) – <code class="docutils literal notranslate"><span class="pre">(x,y,w,h)</span></code> = TFLite <code class="docutils literal notranslate"><span class="pre">1/x_scale,</span> <span class="pre">1/y_scale,</span> <span class="pre">1/w_scale,</span> <span class="pre">1/h_scale</span></code>.
+Use magnitudes consistent with the model: very large <code class="docutils literal notranslate"><span class="pre">w</span></code>/<code class="docutils literal notranslate"><span class="pre">h</span></code> entries scale the
+encoded height/width terms inside <code class="docutils literal notranslate"><span class="pre">exp(...)</span></code> and can overflow in float32/float16.</p></li>
+<li><p><strong>keep_background</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a>) – If False, set output scores at class index 0 to zero.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>result</strong> – Tuple <code class="docutils literal notranslate"><span class="pre">(boxes,</span> <span class="pre">scores)</span></code>: <code class="docutils literal notranslate"><span class="pre">boxes</span></code> is <code class="docutils literal notranslate"><span class="pre">[B,</span> <span class="pre">N,</span> <span class="pre">4]</span></code> as <code class="docutils literal notranslate"><span class="pre">(ymin,xmin,ymax,xmax)</span></code>;
+<code class="docutils literal notranslate"><span class="pre">scores</span></code> is <code class="docutils literal notranslate"><span class="pre">[B,</span> <span class="pre">C,</span> <span class="pre">N]</span></code> softmax, post-processed like the implementation.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>relax.Expr</p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p><strong>Shape/dtype (checked in ``FInferStructInfo`` when static):</strong></p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">cls_pred</span></code>: 3-D; <code class="docutils literal notranslate"><span class="pre">loc_pred</span></code>: 2-D; <code class="docutils literal notranslate"><span class="pre">anchor</span></code>: 3-D.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">cls_pred</span></code>, <code class="docutils literal notranslate"><span class="pre">loc_pred</span></code>, <code class="docutils literal notranslate"><span class="pre">anchor</span></code> dtypes must match.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">N</span> <span class="pre">=</span> <span class="pre">cls_pred.shape[2]</span></code>; <code class="docutils literal notranslate"><span class="pre">loc_pred.shape[1]</span> <span class="pre">==</span> <span class="pre">4*N</span></code>; <code class="docutils literal notranslate"><span class="pre">anchor.shape</span> <span class="pre">==</span> <span class="pre">[1,N,4]</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">loc_pred.shape[1]</span></code> must be divisible by 4.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">cls_pred.shape[0]</span></code> must equal <code class="docutils literal notranslate"><span class="pre">loc_pred.shape[0]</span></code> (batch).</p></li>
+</ul>
+<p>If <code class="docutils literal notranslate"><span class="pre">cls_pred</span></code> has <strong>unknown</strong> shape, inference only returns generic rank-3 tensor
+struct info for the two outputs; it does <strong>not</strong> verify <code class="docutils literal notranslate"><span class="pre">4*N</span></code> vs <code class="docutils literal notranslate"><span class="pre">loc_pred</span></code> or
+<code class="docutils literal notranslate"><span class="pre">anchor.shape[1]</span></code> vs <code class="docutils literal notranslate"><span class="pre">N</span></code>, because <code class="docutils literal notranslate"><span class="pre">N</span></code> is not available statically. Other checks
+(ranks, dtypes, <code class="docutils literal notranslate"><span class="pre">loc_pred.shape[1]</span> <span class="pre">%</span> <span class="pre">4</span> <span class="pre">==</span> <span class="pre">0</span></code> when known, batch match when both batch
+axes are known, etc.) still run where applicable.</p>
+</dd></dl>
+
+<dl class="py function">
 <dt class="sig sig-object py" id="tvm.relax.op.roi_align">
 <span class="sig-prename descclassname"><span class="pre">tvm.relax.op.</span></span><span class="sig-name descname"><span class="pre">roi_align</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../ir.html#tvm.ir.RelaxExpr" title="tvm.ir.expr.RelaxExpr"><span class="pre">RelaxExpr</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">rois</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../ir.html#tvm.ir.RelaxExpr" title="tvm.ir.expr.RelaxExpr"><span class="pre">RelaxExpr</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">pooled_size</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)"><span class="pre">tuple</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><span class="pre">list</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">spatial_scale</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.14)"><span class="pre">float</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">sample_ratio</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">-1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">aligned</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">layout</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'NCHW'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mode</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'avg'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#tvm.relax.op.roi_align" title="Link to this definition"></a></dt>
 <dd><p>ROI Align operator.</p>
@@ -7282,6 +7328,44 @@ the offset of <cite>data</cite>.</p></li>
 <dt class="sig sig-object py" id="tvm.relax.op.op_attrs.ROIAlignAttrs.spatial_scale">
 <em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">spatial_scale</span></span><a class="headerlink" href="#tvm.relax.op.op_attrs.ROIAlignAttrs.spatial_scale" title="Link to this definition"></a></dt>
 <dd><p>Ratio of input feature map height (or width) to raw image height (or width).</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="tvm.relax.op.op_attrs.MultiboxTransformLocAttrs">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">tvm.relax.op.op_attrs.</span></span><span class="sig-name descname"><span class="pre">MultiboxTransformLocAttrs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">args</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><span class="pre">Any</span></a></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><span class="pre">Any</span></a></span></em><span class="sig-paren">)</span><a class="headerlink" href="#tvm.relax.op.op_attrs.MultiboxTransformLocAttrs" title="Link to this definition"></a></dt>
+<dd><p>Attributes for vision.multibox_transform_loc</p>
+<dl class="py property">
+<dt class="sig sig-object py" id="tvm.relax.op.op_attrs.MultiboxTransformLocAttrs.clip">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">clip</span></span><a class="headerlink" href="#tvm.relax.op.op_attrs.MultiboxTransformLocAttrs.clip" title="Link to this definition"></a></dt>
+<dd><p>Clip decoded ymin,xmin,ymax,xmax to [0,1].</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="tvm.relax.op.op_attrs.MultiboxTransformLocAttrs.keep_background">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">keep_background</span></span><a class="headerlink" href="#tvm.relax.op.op_attrs.MultiboxTransformLocAttrs.keep_background" title="Link to this definition"></a></dt>
+<dd><p>] to 0 (background class).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>If false, force output scores[</p>
+</dd>
+<dt class="field-even">Type<span class="colon">:</span></dt>
+<dd class="field-even"><p>,0,</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="tvm.relax.op.op_attrs.MultiboxTransformLocAttrs.threshold">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">threshold</span></span><a class="headerlink" href="#tvm.relax.op.op_attrs.MultiboxTransformLocAttrs.threshold" title="Link to this definition"></a></dt>
+<dd><p>After softmax, zero scores strictly below this value.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="tvm.relax.op.op_attrs.MultiboxTransformLocAttrs.variances">
+<em class="property"><span class="pre">property</span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">variances</span></span><a class="headerlink" href="#tvm.relax.op.op_attrs.MultiboxTransformLocAttrs.variances" title="Link to this definition"></a></dt>
+<dd><p>(x,y,w,h) scales = TFLite 1/x_scale,1/y_scale,1/w_scale,1/h_scale on encodings. Very large w/h scales can overflow exp in decode.</p>
 </dd></dl>
 
 </dd></dl>

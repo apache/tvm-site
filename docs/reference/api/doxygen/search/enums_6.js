@@ -1,5 +1,5 @@
 var searchData=
 [
-  ['itermaplevel_7711',['IterMapLevel',['../namespacetvm_1_1arith.html#a243b60bbe2d3852099eb65454b240c63',1,'tvm::arith']]],
-  ['itervartype_7712',['IterVarType',['../namespacetvm_1_1tirx.html#a2e645032f711e8478b4f676df4a38c2f',1,'tvm::tirx']]]
+  ['itermaplevel_7714',['IterMapLevel',['../namespacetvm_1_1arith.html#a243b60bbe2d3852099eb65454b240c63',1,'tvm::arith']]],
+  ['itervartype_7715',['IterVarType',['../namespacetvm_1_1tirx.html#a2e645032f711e8478b4f676df4a38c2f',1,'tvm::tirx']]]
 ];
