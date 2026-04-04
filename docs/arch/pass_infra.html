@@ -378,8 +378,9 @@ level it will be performed at, and/or the passes that are required.
 needs to be executed when running under a user-provided optimization level. The
 <code class="docutils literal notranslate"><span class="pre">required</span></code> field can be used by the pass infra to resolve pass dependencies.</p>
 <div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="k">class</span><span class="w"> </span><span class="nc">PassInfoNode</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="k">public</span><span class="w"> </span><span class="n">Object</span><span class="w"> </span><span class="p">{</span>
-<span class="w">  </span><span class="n">ffi</span><span class="o">::</span><span class="n">String</span><span class="w"> </span><span class="n">name</span><span class="p">;</span>
 <span class="w">  </span><span class="kt">int</span><span class="w"> </span><span class="n">opt_level</span><span class="p">;</span>
+<span class="w">  </span><span class="n">ffi</span><span class="o">::</span><span class="n">String</span><span class="w"> </span><span class="n">name</span><span class="p">;</span>
+<span class="w">  </span><span class="kt">bool</span><span class="w"> </span><span class="n">traceable</span><span class="p">;</span>
 <span class="w">  </span><span class="n">ffi</span><span class="o">::</span><span class="n">Array</span><span class="o">&lt;</span><span class="n">ffi</span><span class="o">::</span><span class="n">String</span><span class="o">&gt;</span><span class="w"> </span><span class="n">required</span><span class="p">;</span>
 <span class="p">};</span>
 </pre></div>
@@ -406,8 +407,8 @@ Python APIs to create a compilation pipeline using pass context.</p>
 <div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="k">class</span><span class="w"> </span><span class="nc">PassContextNode</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="k">public</span><span class="w"> </span><span class="n">Object</span><span class="w"> </span><span class="p">{</span>
 <span class="w"> </span><span class="k">public</span><span class="o">:</span>
 <span class="w">  </span><span class="kt">int</span><span class="w"> </span><span class="n">opt_level</span><span class="p">{</span><span class="mi">2</span><span class="p">};</span>
-<span class="w">  </span><span class="n">tvm</span><span class="o">::</span><span class="n">ffi</span><span class="o">::</span><span class="n">Array</span><span class="o">&lt;</span><span class="n">tvm</span><span class="o">::</span><span class="n">Expr</span><span class="o">&gt;</span><span class="w"> </span><span class="n">required_pass</span><span class="p">;</span>
-<span class="w">  </span><span class="n">tvm</span><span class="o">::</span><span class="n">ffi</span><span class="o">::</span><span class="n">Array</span><span class="o">&lt;</span><span class="n">tvm</span><span class="o">::</span><span class="n">Expr</span><span class="o">&gt;</span><span class="w"> </span><span class="n">disabled_pass</span><span class="p">;</span>
+<span class="w">  </span><span class="n">ffi</span><span class="o">::</span><span class="n">Array</span><span class="o">&lt;</span><span class="n">ffi</span><span class="o">::</span><span class="n">String</span><span class="o">&gt;</span><span class="w"> </span><span class="n">required_pass</span><span class="p">;</span>
+<span class="w">  </span><span class="n">ffi</span><span class="o">::</span><span class="n">Array</span><span class="o">&lt;</span><span class="n">ffi</span><span class="o">::</span><span class="n">String</span><span class="o">&gt;</span><span class="w"> </span><span class="n">disabled_pass</span><span class="p">;</span>
 <span class="w">  </span><span class="k">mutable</span><span class="w"> </span><span class="n">ffi</span><span class="o">::</span><span class="n">Optional</span><span class="o">&lt;</span><span class="n">DiagnosticContext</span><span class="o">&gt;</span><span class="w"> </span><span class="n">diag_ctx</span><span class="p">;</span>
 <span class="w">  </span><span class="n">ffi</span><span class="o">::</span><span class="n">Map</span><span class="o">&lt;</span><span class="n">ffi</span><span class="o">::</span><span class="n">String</span><span class="p">,</span><span class="w"> </span><span class="n">Any</span><span class="o">&gt;</span><span class="w"> </span><span class="n">config</span><span class="p">;</span>
 <span class="w">  </span><span class="n">ffi</span><span class="o">::</span><span class="n">Array</span><span class="o">&lt;</span><span class="n">instrument</span><span class="o">::</span><span class="n">PassInstrument</span><span class="o">&gt;</span><span class="w"> </span><span class="n">instruments</span><span class="p">;</span>
@@ -543,9 +544,7 @@ order that they were appended to the pass list.</p>
 <span class="w">    </span><span class="k">const</span><span class="w"> </span><span class="n">PassInfo</span><span class="o">&amp;</span><span class="w"> </span><span class="n">pass_info</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">pass</span><span class="o">-&gt;</span><span class="n">Info</span><span class="p">();</span>
 <span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">PassEnabled</span><span class="p">(</span><span class="n">pass_info</span><span class="p">))</span><span class="w">  </span><span class="k">continue</span><span class="p">;</span>
 <span class="w">    </span><span class="k">for</span><span class="w"> </span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="k">auto</span><span class="o">&amp;</span><span class="w"> </span><span class="n">it</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">pass_info</span><span class="o">-&gt;</span><span class="n">required</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
-<span class="w">      </span><span class="k">const</span><span class="w"> </span><span class="k">auto</span><span class="o">*</span><span class="w"> </span><span class="n">name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">it</span><span class="p">.</span><span class="n">as</span><span class="o">&lt;</span><span class="n">tvm</span><span class="o">::</span><span class="n">ir</span><span class="o">::</span><span class="n">StringImm</span><span class="o">&gt;</span><span class="p">();</span>
-<span class="w">      </span><span class="n">TVM_FFI_ICHECK</span><span class="p">(</span><span class="n">name</span><span class="p">);</span>
-<span class="w">      </span><span class="n">mod</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">GetPass</span><span class="p">(</span><span class="n">name</span><span class="o">-&gt;</span><span class="n">value</span><span class="p">)(</span><span class="n">mod</span><span class="p">,</span><span class="w"> </span><span class="n">pass_ctx</span><span class="p">);</span>
+<span class="w">      </span><span class="n">mod</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">GetPass</span><span class="p">(</span><span class="n">it</span><span class="p">)(</span><span class="n">std</span><span class="o">::</span><span class="n">move</span><span class="p">(</span><span class="n">mod</span><span class="p">),</span><span class="w"> </span><span class="n">pass_ctx</span><span class="p">);</span>
 <span class="w">    </span><span class="p">}</span>
 <span class="w">    </span><span class="n">mod</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">pass</span><span class="p">(</span><span class="n">mod</span><span class="p">,</span><span class="w"> </span><span class="n">pass_ctx</span><span class="p">);</span>
 <span class="w">  </span><span class="p">}</span>
@@ -578,19 +577,22 @@ favorably use Python APIs to create a specific pass object.</p>
 <span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">function</span><span class="o">&lt;</span><span class="n">Function</span><span class="p">(</span><span class="n">Function</span><span class="p">,</span><span class="w"> </span><span class="n">IRModule</span><span class="p">,</span><span class="w"> </span><span class="n">PassContext</span><span class="p">)</span><span class="o">&gt;</span><span class="w"> </span><span class="n">pass_func</span><span class="p">,</span>
 <span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">opt_level</span><span class="p">,</span>
 <span class="w">    </span><span class="n">ffi</span><span class="o">::</span><span class="n">String</span><span class="w"> </span><span class="n">name</span><span class="p">,</span>
-<span class="w">    </span><span class="n">ffi</span><span class="o">::</span><span class="n">Array</span><span class="o">&lt;</span><span class="n">ffi</span><span class="o">::</span><span class="n">String</span><span class="o">&gt;</span><span class="w"> </span><span class="n">required</span><span class="p">);</span>
+<span class="w">    </span><span class="n">ffi</span><span class="o">::</span><span class="n">Array</span><span class="o">&lt;</span><span class="n">ffi</span><span class="o">::</span><span class="n">String</span><span class="o">&gt;</span><span class="w"> </span><span class="n">required</span><span class="p">,</span>
+<span class="w">    </span><span class="kt">bool</span><span class="w"> </span><span class="n">traceable</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">false</span><span class="p">);</span>
 
 <span class="n">Pass</span><span class="w"> </span><span class="nf">CreatePrimFuncPass</span><span class="p">(</span>
 <span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">function</span><span class="o">&lt;</span><span class="n">PrimFunc</span><span class="p">(</span><span class="n">PrimFunc</span><span class="p">,</span><span class="w"> </span><span class="n">IRModule</span><span class="p">,</span><span class="w"> </span><span class="n">PassContext</span><span class="p">)</span><span class="o">&gt;</span><span class="w"> </span><span class="n">pass_func</span><span class="p">,</span>
 <span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">opt_level</span><span class="p">,</span>
 <span class="w">    </span><span class="n">ffi</span><span class="o">::</span><span class="n">String</span><span class="w"> </span><span class="n">name</span><span class="p">,</span>
-<span class="w">    </span><span class="n">ffi</span><span class="o">::</span><span class="n">Array</span><span class="o">&lt;</span><span class="n">ffi</span><span class="o">::</span><span class="n">String</span><span class="o">&gt;</span><span class="w"> </span><span class="n">required</span><span class="p">);</span>
+<span class="w">    </span><span class="n">ffi</span><span class="o">::</span><span class="n">Array</span><span class="o">&lt;</span><span class="n">ffi</span><span class="o">::</span><span class="n">String</span><span class="o">&gt;</span><span class="w"> </span><span class="n">required</span><span class="p">,</span>
+<span class="w">    </span><span class="kt">bool</span><span class="w"> </span><span class="n">traceable</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">false</span><span class="p">);</span>
 
 <span class="n">Pass</span><span class="w"> </span><span class="nf">CreateModulePass</span><span class="p">(</span>
 <span class="w">    </span><span class="n">std</span><span class="o">::</span><span class="n">function</span><span class="o">&lt;</span><span class="n">IRModule</span><span class="p">(</span><span class="n">IRModule</span><span class="p">,</span><span class="w"> </span><span class="n">PassContext</span><span class="p">)</span><span class="o">&gt;</span><span class="w"> </span><span class="n">pass_func</span><span class="p">,</span>
 <span class="w">    </span><span class="kt">int</span><span class="w"> </span><span class="n">opt_level</span><span class="p">,</span>
 <span class="w">    </span><span class="n">ffi</span><span class="o">::</span><span class="n">String</span><span class="w"> </span><span class="n">name</span><span class="p">,</span>
-<span class="w">    </span><span class="n">ffi</span><span class="o">::</span><span class="n">Array</span><span class="o">&lt;</span><span class="n">ffi</span><span class="o">::</span><span class="n">String</span><span class="o">&gt;</span><span class="w"> </span><span class="n">required</span><span class="p">);</span>
+<span class="w">    </span><span class="n">ffi</span><span class="o">::</span><span class="n">Array</span><span class="o">&lt;</span><span class="n">ffi</span><span class="o">::</span><span class="n">String</span><span class="o">&gt;</span><span class="w"> </span><span class="n">required</span><span class="p">,</span>
+<span class="w">    </span><span class="kt">bool</span><span class="w"> </span><span class="n">traceable</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">false</span><span class="p">);</span>
 
 <span class="n">Pass</span><span class="w"> </span><span class="nf">Sequential</span><span class="p">(</span><span class="n">tvm</span><span class="o">::</span><span class="n">ffi</span><span class="o">::</span><span class="n">Array</span><span class="o">&lt;</span><span class="n">Pass</span><span class="o">&gt;</span><span class="w"> </span><span class="n">passes</span><span class="p">,</span><span class="w"> </span><span class="n">PassInfo</span><span class="w"> </span><span class="n">pass_info</span><span class="p">);</span>
 </pre></div>
@@ -755,23 +757,31 @@ We rely on Python Context Manager or <code class="docutils literal notranslate">
 </section>
 <section id="built-in-instrument">
 <h4>Built-in Instrument<a class="headerlink" href="#built-in-instrument" title="Link to this heading"></a></h4>
-<p>There are several built-in instruments. Those marked with <em>TODO</em> are not implemented yet.</p>
+<p>There are several built-in instruments.</p>
 <ul class="simple">
 <li><p>PassTimingInstrument (see <a class="reference external" href="https://github.com/apache/tvm/blob/main/src/ir/instrument.cc">src/ir/instrument.cc</a>)</p>
 <ul>
 <li><p>Profile the execution time of passes.</p></li>
 </ul>
 </li>
-<li><p>PrintIRBefore(TODO)</p>
+<li><p>PrintBeforeAll (see <a class="reference external" href="https://github.com/apache/tvm/blob/main/python/tvm/ir/instrument.py">python/tvm/ir/instrument.py</a>)</p>
 <ul>
-<li><p>Print the IR module before the pass transforms it. <code class="xref py py-func docutils literal notranslate"><span class="pre">tvm.transform.PrintIR()</span></code>
-can also serve this purpose if we insert it around passes. However,
-with the <code class="docutils literal notranslate"><span class="pre">PassInstrument</span></code>, we don’t need to modify the sequence of passes.</p></li>
+<li><p>Print the IR module and pass info before each pass executes.</p></li>
 </ul>
 </li>
-<li><p>PrintAfter(TODO)</p>
+<li><p>PrintAfterAll (see <a class="reference external" href="https://github.com/apache/tvm/blob/main/python/tvm/ir/instrument.py">python/tvm/ir/instrument.py</a>)</p>
 <ul>
-<li><p>Print the IR module after the pass transforms it.</p></li>
+<li><p>Print the IR module and pass info after each pass executes.</p></li>
+</ul>
+</li>
+<li><p>PassPrintingInstrument (see <a class="reference external" href="https://github.com/apache/tvm/blob/main/python/tvm/ir/instrument.py">python/tvm/ir/instrument.py</a>)</p>
+<ul>
+<li><p>Selectively print the IR module before or after specific named passes.</p></li>
+</ul>
+</li>
+<li><p>DumpIR (see <a class="reference external" href="https://github.com/apache/tvm/blob/main/python/tvm/ir/instrument.py">python/tvm/ir/instrument.py</a>)</p>
+<ul>
+<li><p>Dump the IR module to files after each pass executes.</p></li>
 </ul>
 </li>
 </ul>
