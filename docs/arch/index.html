@@ -517,6 +517,23 @@ for learning-based optimizations.</p>
 <li class="toctree-l1"><a class="reference internal" href="device_target_interactions.html">Device/Target Interactions</a></li>
 </ul>
 </div>
+<p>Relax defines <em>what</em> to compute — it is a graph-level IR that describes the operators and dataflow
+of a model. The Relax Virtual Machine (VM) handles <em>how</em> to run it — it is the runtime component
+that executes the compiled result. During compilation, <code class="docutils literal notranslate"><span class="pre">tvm.compile()</span></code> invokes <code class="docutils literal notranslate"><span class="pre">VMCodeGen</span></code> to
+translate Relax functions into a compact bytecode representation. The resulting <code class="docutils literal notranslate"><span class="pre">VMExecutable</span></code>
+bundles the bytecode together with a constant pool and per-function metadata, and can be serialized
+to disk for deployment.</p>
+<p>The VM uses a register-based interpreter with an intentionally minimal instruction set — only four
+opcodes: <code class="docutils literal notranslate"><span class="pre">Call</span></code>, <code class="docutils literal notranslate"><span class="pre">Ret</span></code>, <code class="docutils literal notranslate"><span class="pre">Goto</span></code>, and <code class="docutils literal notranslate"><span class="pre">If</span></code>. The VM itself performs no mathematical computation;
+it only orchestrates control flow (function calls, conditional branches, loops). The actual
+compute-intensive work — matrix multiplications, convolutions, and other operators — is carried out
+by TIR functions that have been compiled down to native GPU/CPU kernels, or by external libraries
+such as cuBLAS and cuDNN. The VM dispatches to them through the PackedFunc mechanism. Internally the
+VM recognizes three function kinds: <em>PackedFunc</em> for external C/C++ functions, <em>VMFunc</em> for
+bytecode-interpreted Relax functions, and <em>VMTIRFunc</em> for compiled TIR kernels.</p>
+<p>On the Python side, users interact with the VM through <code class="docutils literal notranslate"><span class="pre">relax.VirtualMachine(executable,</span> <span class="pre">device)</span></code>,
+which provides both a direct invocation interface and a stateful set-input / invoke / get-output
+interface suitable for RPC-based remote execution.</p>
 </section>
 <section id="tvm-node">
 <h2>tvm/node<a class="headerlink" href="#tvm-node" title="Link to this heading"></a></h2>
