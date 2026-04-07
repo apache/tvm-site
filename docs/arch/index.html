@@ -184,6 +184,7 @@
 </ul>
 <p class="caption" role="heading"><span class="caption-text">How To</span></p>
 <ul>
+<li class="toctree-l1"><a class="reference internal" href="../how_to/tutorials/import_model.html">Importing Models from ML Frameworks</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../how_to/tutorials/e2e_opt_model.html">End-to-End Optimize Model</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../how_to/tutorials/customize_opt.html">Customize Optimization</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../how_to/tutorials/optimize_llm.html">Optimize Large Language Model</a></li>
@@ -534,6 +535,25 @@ bytecode-interpreted Relax functions, and <em>VMTIRFunc</em> for compiled TIR ke
 <p>On the Python side, users interact with the VM through <code class="docutils literal notranslate"><span class="pre">relax.VirtualMachine(executable,</span> <span class="pre">device)</span></code>,
 which provides both a direct invocation interface and a stateful set-input / invoke / get-output
 interface suitable for RPC-based remote execution.</p>
+<p>Disco is TVM’s distributed runtime for executing models across multiple devices. When a model is
+too large to fit on a single GPU, the <code class="docutils literal notranslate"><span class="pre">relax.distributed</span></code> module annotates how tensors should be
+partitioned and placed across a mesh of devices at compile time. Disco then takes over at runtime:
+it manages a group of workers, dispatches the compiled program to all of them simultaneously, and
+coordinates inter-device communication through collective operations such as allreduce, allgather,
+broadcast, and scatter.</p>
+<p>The central abstraction is the <code class="docutils literal notranslate"><span class="pre">Session</span></code>, which owns the workers and exposes a SPMD-style
+programming interface. Every object that lives on workers is represented by a <code class="docutils literal notranslate"><span class="pre">DRef</span></code> — a
+distributed reference that maps to a concrete value on each worker. When the controller invokes a
+<code class="docutils literal notranslate"><span class="pre">DPackedFunc</span></code> through the session, all workers execute the same PackedFunc call synchronously, each
+operating on its own local shard. Compiled VM modules can be loaded into a session as <code class="docutils literal notranslate"><span class="pre">DModule</span></code>
+objects and called in the same fashion. The session also provides collective primitives backed by
+NCCL or RCCL, so that workers can exchange partial results without routing data through the
+controller.</p>
+<p>Three session backends cover different deployment topologies. <code class="docutils literal notranslate"><span class="pre">ThreadedSession</span></code> spawns workers as
+threads within a single process — this is the most common choice for multi-GPU inference on a
+single machine. <code class="docutils literal notranslate"><span class="pre">ProcessSession</span></code> launches workers as separate OS processes connected by pipes,
+providing stronger isolation. <code class="docutils literal notranslate"><span class="pre">SocketSession</span></code> extends the model to multi-node clusters by
+connecting workers across machines via TCP sockets.</p>
 </section>
 <section id="tvm-node">
 <h2>tvm/node<a class="headerlink" href="#tvm-node" title="Link to this heading"></a></h2>
@@ -584,6 +604,21 @@ Developers can register new Ops as well as their additional attributes(e.g. whet
 <h2>tvm/target<a class="headerlink" href="#tvm-target" title="Link to this heading"></a></h2>
 <p>The target module contains all the code generators that translate an IRModule to a target runtime.Module.
 It also provides a common <cite>Target</cite> class that describes the target.</p>
+<p>Targets can be constructed from a registered tag, a configuration dictionary, or a tag with attribute overrides:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">tvm.target</span><span class="w"> </span><span class="kn">import</span> <span class="n">Target</span>
+
+<span class="c1"># From a registered tag</span>
+<span class="n">target</span> <span class="o">=</span> <span class="n">Target</span><span class="p">(</span><span class="s2">&quot;nvidia/nvidia-a100&quot;</span><span class="p">)</span>
+
+<span class="c1"># From a config dictionary</span>
+<span class="n">target</span> <span class="o">=</span> <span class="n">Target</span><span class="p">({</span><span class="s2">&quot;kind&quot;</span><span class="p">:</span> <span class="s2">&quot;cuda&quot;</span><span class="p">,</span> <span class="s2">&quot;arch&quot;</span><span class="p">:</span> <span class="s2">&quot;sm_80&quot;</span><span class="p">})</span>
+
+<span class="c1"># From a tag with attribute overrides</span>
+<span class="n">target</span> <span class="o">=</span> <span class="n">Target</span><span class="p">({</span><span class="s2">&quot;tag&quot;</span><span class="p">:</span> <span class="s2">&quot;nvidia/nvidia-a100&quot;</span><span class="p">,</span> <span class="s2">&quot;l2_cache_size_bytes&quot;</span><span class="p">:</span> <span class="mi">12345</span><span class="p">})</span>
+</pre></div>
+</div>
+<p>Use <code class="docutils literal notranslate"><span class="pre">Target.list_kinds()</span></code> to see all available target kinds, and <code class="docutils literal notranslate"><span class="pre">target.attrs</span></code> to inspect
+target attributes.</p>
 <p>The compilation pipeline can be customized according to the target by querying the attribute information
 in the target and builtin information registered to each target id(cuda, opencl).</p>
 <div class="toctree-wrapper compound">
