@@ -210,6 +210,10 @@
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Security Guide</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#reporting-security-issues">Reporting Security Issues</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#security-model">Security Model</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#security-advisories">Security Advisories</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#subroutine-cache-hash-collision">Subroutine Cache Hash Collision</a></li>
+</ul>
+</li>
 </ul>
 </li>
 </ul>
@@ -322,6 +326,30 @@ All of the TVM APIs are designed to be used by trusted users, for APIs that invo
 we expect users to put in only trusted URLs.</p>
 <p>RPC data exchange between the tracker, server and client are in plain-text.
 It is recommended to use them under trusted networking environment or encrypted channels.</p>
+</section>
+<section id="security-advisories">
+<h2>Security Advisories<a class="headerlink" href="#security-advisories" title="Link to this heading"></a></h2>
+<section id="subroutine-cache-hash-collision">
+<h3>Subroutine Cache Hash Collision<a class="headerlink" href="#subroutine-cache-hash-collision" title="Link to this heading"></a></h3>
+<p><code class="docutils literal notranslate"><span class="pre">SubroutineMixin._get_subroutine()</span></code> in <code class="docutils literal notranslate"><span class="pre">python/tvm/relax/frontend/nn/subroutine.py</span></code>
+used <code class="docutils literal notranslate"><span class="pre">ir.structural_hash</span></code> as the sole cache lookup key without a subsequent
+<code class="docutils literal notranslate"><span class="pre">structural_equal</span></code> verification. If two different <code class="docutils literal notranslate"><span class="pre">arg_sinfo</span></code> values produced the
+same 64-bit hash, the cache would return a previously compiled function with
+mismatched parameter shapes, leading to silently incorrect compiled output.</p>
+<p><strong>Severity</strong>: Low. The <code class="docutils literal notranslate"><span class="pre">structural_hash</span></code> function returns a 64-bit integer.
+A natural hash collision requires approximately 2^32 distinct inputs (birthday bound),
+making accidental collision extremely unlikely in normal compilation workflows.
+The issue is primarily a correctness defect rather than a practically exploitable
+security vulnerability.</p>
+<p><strong>Root Cause</strong>: The subroutine cache (<code class="docutils literal notranslate"><span class="pre">cls._gvar</span></code>) was keyed by
+<code class="docutils literal notranslate"><span class="pre">(structural_hash(arg_sinfo,</span> <span class="pre">map_free_vars=True),</span> <span class="pre">is_dataflow)</span></code>.
+A hash match was treated as proof of structural equality, skipping the necessary
+<code class="docutils literal notranslate"><span class="pre">structural_equal</span></code> check.</p>
+<p><strong>Fix</strong>: The cache now stores a list of <code class="docutils literal notranslate"><span class="pre">(arg_sinfo,</span> <span class="pre">result)</span></code> pairs per hash bucket.
+On lookup, each candidate is verified with <code class="docutils literal notranslate"><span class="pre">structural_equal</span></code> before returning.
+This follows the standard hash-table pattern: hash for bucket selection, equality
+for final verification.</p>
+</section>
 </section>
 </section>
 
