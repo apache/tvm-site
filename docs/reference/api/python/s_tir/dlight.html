@@ -203,10 +203,13 @@
 <li class="toctree-l1 current"><a class="reference internal" href="../index.html">Python API</a><ul class="current">
 <li class="toctree-l2"><a class="reference internal" href="../error.html">tvm.error</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../ir.html">tvm.ir</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../arith.html">tvm.arith</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../instrument.html">tvm.ir.instrument</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../transform.html">tvm.ir.transform</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../target.html">tvm.target</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../driver.html">tvm.driver</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../testing.html">tvm.testing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../exec.html">tvm.exec</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../runtime/runtime.html">tvm.runtime</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../runtime/vm.html">tvm.runtime.vm</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../runtime/disco.html">tvm.runtime.disco</a></li>
@@ -226,6 +229,7 @@
 <li class="toctree-l2"><a class="reference internal" href="../tirx/analysis.html">tvm.tirx.analysis</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../tirx/stmt_functor.html">tvm.tirx.stmt_functor</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../tirx/transform.html">tvm.tirx.transform</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../tirx/backend.html">tvm.tirx.backend</a></li>
 <li class="toctree-l2"><a class="reference internal" href="analysis.html">tvm.s_tir.analysis</a></li>
 <li class="toctree-l2"><a class="reference internal" href="schedule.html">tvm.s_tir.schedule</a></li>
 <li class="toctree-l2"><a class="reference internal" href="transform.html">tvm.s_tir.transform</a></li>
@@ -1003,6 +1007,52 @@ is not applicable to the given PrimFunc.</p>
 <dt class="sig sig-object py">
 <span class="sig-name descname"><span class="pre">sch_inner_reduction</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sch</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="schedule.html#tvm.s_tir.schedule.Schedule" title="tvm.s_tir.schedule.schedule.Schedule"><span class="pre">Schedule</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">target</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../target.html#tvm.target.Target" title="tvm.target.target.Target"><span class="pre">Target</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">block</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="schedule.html#tvm.s_tir.schedule.SBlockRV" title="tvm.s_tir.schedule.schedule.SBlockRV"><span class="pre">SBlockRV</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">vector_input_buffers</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><span class="pre">list</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="../tirx/tirx.html#tvm.tirx.Buffer" title="tvm.tirx.buffer.Buffer"><span class="pre">Buffer</span></a><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">epilogue_info</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="#tvm.s_tir.dlight.SBlockInfo" title="tvm.s_tir.dlight.analysis.common_analysis.SBlockInfo"><span class="pre">SBlockInfo</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span></em><span class="sig-paren">)</span></dt>
 <dd><p>Schedule the inner reduction block.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py">
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">tvm.s_tir.dlight.cpu.</span></span><span class="sig-name descname"><span class="pre">Reduction</span></span></dt>
+<dd><p>CPU reduction rule for softmax, layer norm, RMS norm, and similar operators.</p>
+<p>Targets patterns with a mix of reduction (SR) and injective (SS) blocks,
+where all blocks share the same leading spatial axes.
+Example: softmax = maxelem(SR) -&gt; exp(SS) -&gt; expsum(SR) -&gt; norm(SS).</p>
+<dl class="simple">
+<dt>Schedule strategy:</dt><dd><ol class="arabic simple">
+<li><p>Parallelize leading spatial axes (batch dimension).</p></li>
+<li><p>Move all blocks under the spatial loop via compute_at.</p></li>
+<li><p>Vectorize injective blocks (exp, delta, norm) on their inner axis.</p></li>
+<li><p>Split reduction inner axis to VLEN-sized chunks and annotate for
+LLVM unrolling, preventing harmful full-unroll by the backend.</p></li>
+</ol>
+</dd>
+</dl>
+<p>Note: vectorized reduction via rfactor is not used here because TVM’s
+rfactor primitive requires the reduction block to be the first child of
+its enclosing loop, which is incompatible with compute_at when multiple
+blocks share the same spatial loop. A follow-up using RVV reduction
+intrinsics (vfredmax/vfredusum) via tensorize can address this.</p>
+<dl class="py method">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">apply</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">func</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../tirx/tirx.html#tvm.tirx.PrimFunc" title="tvm.tirx.function.PrimFunc"><span class="pre">PrimFunc</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">target</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../target.html#tvm.target.Target" title="tvm.target.target.Target"><span class="pre">Target</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">_</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><span class="pre">bool</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="schedule.html#tvm.s_tir.schedule.Schedule" title="tvm.s_tir.schedule.schedule.Schedule"><span class="pre">Schedule</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><span class="pre">list</span></a><span class="p"><span class="pre">[</span></span><a class="reference internal" href="schedule.html#tvm.s_tir.schedule.Schedule" title="tvm.s_tir.schedule.schedule.Schedule"><span class="pre">Schedule</span></a><span class="p"><span class="pre">]</span></span></span></span></dt>
+<dd><p>Apply the ScheduleRule to the given PrimFunc.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>func</strong> (<a class="reference internal" href="../tirx/tirx.html#tvm.tirx.PrimFunc" title="tvm.tirx.PrimFunc"><em>tirx.PrimFunc</em></a>) – The PrimFunc to apply the ScheduleRule to.</p></li>
+<li><p><strong>target</strong> (<a class="reference internal" href="../target.html#tvm.target.Target" title="tvm.target.Target"><em>Target</em></a>) – The compilation target the schedule is supposed to be built for.</p></li>
+<li><p><strong>tunable</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a>) – Whether the schedule is allowed to contain tunable instructions.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>results</strong> – Either a Schedule, a list of Schedules, or None, where None means that the rule
+is not applicable to the given PrimFunc.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>Union[None, s_tir.Schedule, List[s_tir.Schedule]]</p>
+</dd>
+</dl>
 </dd></dl>
 
 </dd></dl>
