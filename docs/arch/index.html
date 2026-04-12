@@ -45,7 +45,7 @@
     <script type="text/javascript" src="../_static/js/tlcpack_theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="External Library Dispatch (BYOC)" href="external_library_dispatch.html" />
+    <link rel="next" title="Operator Fusion" href="fusion.html" />
     <link rel="prev" title="Handle TVM Errors" href="../errors.html" /> 
 </head>
 
@@ -217,6 +217,7 @@
 <li class="toctree-l3"><a class="reference internal" href="runtime.html#runtime-specific-information">Runtime-Specific Information</a></li>
 <li class="toctree-l3"><a class="reference internal" href="introduction_to_module_serialization.html">Introduction to Module Serialization</a></li>
 <li class="toctree-l3"><a class="reference internal" href="device_target_interactions.html">Device/Target Interactions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="relax_vm.html">Relax Virtual Machine</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="#tvm-node">tvm/node</a></li>
@@ -418,9 +419,15 @@ focus on optimizations that are not covered by them.</p>
 <p>Apache TVM enables cross-level optimization of end-to-end models. As the IRModule includes both Relax and TensorIR functions, the cross-level transformations are designed to mutate
 the IRModule by applying different transformations to these two types of functions.</p>
 <p>For example, <code class="docutils literal notranslate"><span class="pre">relax.LegalizeOps</span></code> pass mutates the IRModule by lowering relax operators, adding corresponding TensorIR PrimFunc into the IRModule, and replacing the relax operators
-with calls to the lowered TensorIR PrimFunc. Another example is operator fusion pipeline in relax (including <code class="docutils literal notranslate"><span class="pre">relax.FuseOps</span></code> and <code class="docutils literal notranslate"><span class="pre">relax.FuseTIR</span></code>), which fuses multiple consecutive tensor operations
-into one. Different from the previous implementations, relax fusion pipeline analyzes the pattern of TensorIR functions and detects the best fusion rules automatically rather
-than human-defined operator fusion patterns.</p>
+with calls to the lowered TensorIR PrimFunc. Another example is the operator fusion pipeline
+(<code class="docutils literal notranslate"><span class="pre">relax.FuseOps</span></code> + <code class="docutils literal notranslate"><span class="pre">relax.FuseTIR</span></code>), which fuses multiple consecutive tensor operations into a
+single kernel. See <a class="reference internal" href="fusion.html#fusion-arch"><span class="std std-ref">Operator Fusion</span></a> for a detailed explanation of the fusion algorithm, operator
+pattern classification, and pattern-based fusion for external backends.</p>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="fusion.html">Operator Fusion</a></li>
+</ul>
+</div>
 </section>
 </section>
 <section id="target-translation">
@@ -530,21 +537,17 @@ for learning-based optimizations.</p>
 </div>
 <p>Relax defines <em>what</em> to compute — it is a graph-level IR that describes the operators and dataflow
 of a model. The Relax Virtual Machine (VM) handles <em>how</em> to run it — it is the runtime component
-that executes the compiled result. During compilation, <code class="docutils literal notranslate"><span class="pre">tvm.compile()</span></code> invokes <code class="docutils literal notranslate"><span class="pre">VMCodeGen</span></code> to
-translate Relax functions into a compact bytecode representation. The resulting <code class="docutils literal notranslate"><span class="pre">VMExecutable</span></code>
-bundles the bytecode together with a constant pool and per-function metadata, and can be serialized
-to disk for deployment.</p>
-<p>The VM uses a register-based interpreter with an intentionally minimal instruction set — only four
-opcodes: <code class="docutils literal notranslate"><span class="pre">Call</span></code>, <code class="docutils literal notranslate"><span class="pre">Ret</span></code>, <code class="docutils literal notranslate"><span class="pre">Goto</span></code>, and <code class="docutils literal notranslate"><span class="pre">If</span></code>. The VM itself performs no mathematical computation;
-it only orchestrates control flow (function calls, conditional branches, loops). The actual
-compute-intensive work — matrix multiplications, convolutions, and other operators — is carried out
-by TIR functions that have been compiled down to native GPU/CPU kernels, or by external libraries
-such as cuBLAS and cuDNN. The VM dispatches to them through the PackedFunc mechanism. Internally the
-VM recognizes three function kinds: <em>PackedFunc</em> for external C/C++ functions, <em>VMFunc</em> for
-bytecode-interpreted Relax functions, and <em>VMTIRFunc</em> for compiled TIR kernels.</p>
-<p>On the Python side, users interact with the VM through <code class="docutils literal notranslate"><span class="pre">relax.VirtualMachine(executable,</span> <span class="pre">device)</span></code>,
-which provides both a direct invocation interface and a stateful set-input / invoke / get-output
-interface suitable for RPC-based remote execution.</p>
+that executes the compiled result. The VM uses a register-based interpreter with only four opcodes
+(<code class="docutils literal notranslate"><span class="pre">Call</span></code>, <code class="docutils literal notranslate"><span class="pre">Ret</span></code>, <code class="docutils literal notranslate"><span class="pre">Goto</span></code>, <code class="docutils literal notranslate"><span class="pre">If</span></code>) and performs no mathematical computation itself — it
+orchestrates control flow while dispatching actual work to compiled TIR kernels or external
+libraries.</p>
+<p>See <a class="reference internal" href="relax_vm.html#relax-vm-arch"><span class="std std-ref">Relax Virtual Machine</span></a> for the full architecture documentation, including the compilation
+pipeline, instruction set details, execution model, and Python interface.</p>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="relax_vm.html">Relax Virtual Machine</a></li>
+</ul>
+</div>
 <p>Disco is TVM’s distributed runtime for executing models across multiple devices. When a model is
 too large to fit on a single GPU, the <code class="docutils literal notranslate"><span class="pre">relax.distributed</span></code> module annotates how tensors should be
 partitioned and placed across a mesh of devices at compile time. Disco then takes over at runtime:
@@ -709,7 +712,7 @@ DLight not raise any error and switch to the next rule automatically.</p></li>
 
     <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
       
-        <a href="external_library_dispatch.html" class="btn btn-neutral float-right" title="External Library Dispatch (BYOC)" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+        <a href="fusion.html" class="btn btn-neutral float-right" title="Operator Fusion" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
       
       
         <a href="../errors.html" class="btn btn-neutral float-left" title="Handle TVM Errors" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
