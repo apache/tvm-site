@@ -216,8 +216,11 @@
 <li class="toctree-l3"><a class="reference internal" href="runtime.html">TVM Runtime System</a></li>
 <li class="toctree-l3"><a class="reference internal" href="runtime.html#runtime-specific-information">Runtime-Specific Information</a></li>
 <li class="toctree-l3"><a class="reference internal" href="introduction_to_module_serialization.html">Introduction to Module Serialization</a></li>
-<li class="toctree-l3"><a class="reference internal" href="device_target_interactions.html">Device/Target Interactions</a></li>
-<li class="toctree-l3"><a class="reference internal" href="relax_vm.html">Relax Virtual Machine</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#relax-virtual-machine">Relax Virtual Machine</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="relax_vm.html">Relax Virtual Machine</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="#disco-distributed-runtime">Disco: Distributed Runtime</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="#tvm-node">tvm/node</a></li>
@@ -234,8 +237,6 @@
 <li class="toctree-l2"><a class="reference internal" href="#tvm-s-tir">tvm/s_tir</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#tvm-arith">tvm/arith</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#tvm-te-and-tvm-topi">tvm/te and tvm/topi</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#tvm-s-tir-meta-schedule">tvm/s_tir/meta_schedule</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#tvm-s-tir-dlight">tvm/s_tir/dlight</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../deep_dive/tensor_ir/index.html">TensorIR</a></li>
@@ -384,7 +385,7 @@ graph with additional support for control-flow, and complex data structures.</p>
 threading, and vector/tensor instructions. It is usually used to represent an operator program that executes a (possibly-fused) layer in a model.</p></li>
 </ul>
 <p>During the compilation and transformation, all relax operators are lowered to <code class="docutils literal notranslate"><span class="pre">tirx::PrimFunc</span></code> or <code class="docutils literal notranslate"><span class="pre">TVM</span> <span class="pre">PackedFunc</span></code>, which can be executed directly
-on the target device, while the calls to relax operators are lowered to calls to low-level functions (e.g. <code class="docutils literal notranslate"><span class="pre">R.call_tir</span></code> or <code class="docutils literal notranslate"><span class="pre">R.call_dps</span></code>).</p>
+on the target device, while the calls to relax operators are lowered to calls to low-level functions (e.g. <code class="docutils literal notranslate"><span class="pre">R.call_tir</span></code> or <code class="docutils literal notranslate"><span class="pre">R.call_dps_packed</span></code>).</p>
 </section>
 <section id="transformations">
 <h3>Transformations<a class="headerlink" href="#transformations" title="Link to this heading"></a></h3>
@@ -465,19 +466,16 @@ a target’s vector length would change the vectorization behavior.</p>
 <p><code class="xref py py-class docutils literal notranslate"><span class="pre">tvm.runtime.PackedFunc</span></code> is a type-erased function interface for both the generated functions. A runtime.PackedFunc can take arguments and return values with the
 following types: POD types(int, float), string, runtime.PackedFunc, runtime.Module, runtime.Tensor, and other sub-classes of runtime.Object.</p>
 <p><code class="xref py py-class docutils literal notranslate"><span class="pre">tvm.runtime.Module</span></code> and <code class="xref py py-class docutils literal notranslate"><span class="pre">tvm.runtime.PackedFunc</span></code> are powerful mechanisms to modularize the runtime. For example, to get the above <cite>addone</cite> function on CUDA, we can use LLVM to generate the host-side code to compute the launching parameters(e.g. size of the thread groups) and then call into another PackedFunc from a CUDAModule that is backed by the CUDA driver API. The same mechanism can be used for OpenCL kernels.</p>
-<p>The above example only deals with a simple <cite>addone</cite> function. The code snippet below gives an example of an end-to-end model execution using the same interface:</p>
+<p>The above example only deals with a simple <cite>addone</cite> function. The code snippet below gives an example of an end-to-end model execution using the Relax Virtual Machine, which is built on the same runtime.Module and runtime.PackedFunc interface:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">tvm</span>
-<span class="c1"># Example runtime execution program in python, with types annotated</span>
-<span class="n">factory</span><span class="p">:</span> <span class="n">tvm</span><span class="o">.</span><span class="n">runtime</span><span class="o">.</span><span class="n">Module</span> <span class="o">=</span> <span class="n">tvm</span><span class="o">.</span><span class="n">runtime</span><span class="o">.</span><span class="n">load_module</span><span class="p">(</span><span class="s2">&quot;resnet18.so&quot;</span><span class="p">)</span>
-<span class="c1"># Create a stateful graph execution module for resnet18 on cuda(0)</span>
-<span class="n">gmod</span><span class="p">:</span> <span class="n">tvm</span><span class="o">.</span><span class="n">runtime</span><span class="o">.</span><span class="n">Module</span> <span class="o">=</span> <span class="n">factory</span><span class="p">[</span><span class="s2">&quot;resnet18&quot;</span><span class="p">](</span><span class="n">tvm</span><span class="o">.</span><span class="n">cuda</span><span class="p">(</span><span class="mi">0</span><span class="p">))</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">tvm</span><span class="w"> </span><span class="kn">import</span> <span class="n">relax</span>
+<span class="c1"># Load the compiled artifact</span>
+<span class="n">mod</span><span class="p">:</span> <span class="n">tvm</span><span class="o">.</span><span class="n">runtime</span><span class="o">.</span><span class="n">Module</span> <span class="o">=</span> <span class="n">tvm</span><span class="o">.</span><span class="n">runtime</span><span class="o">.</span><span class="n">load_module</span><span class="p">(</span><span class="s2">&quot;resnet18.so&quot;</span><span class="p">)</span>
+<span class="c1"># Create a VM instance on cuda(0)</span>
+<span class="n">vm</span> <span class="o">=</span> <span class="n">relax</span><span class="o">.</span><span class="n">VirtualMachine</span><span class="p">(</span><span class="n">mod</span><span class="p">,</span> <span class="n">tvm</span><span class="o">.</span><span class="n">cuda</span><span class="p">(</span><span class="mi">0</span><span class="p">))</span>
 <span class="n">data</span><span class="p">:</span> <span class="n">tvm</span><span class="o">.</span><span class="n">runtime</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">get_input_data</span><span class="p">()</span>
-<span class="c1"># set input</span>
-<span class="n">gmod</span><span class="p">[</span><span class="s2">&quot;set_input&quot;</span><span class="p">](</span><span class="mi">0</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
-<span class="c1"># execute the model</span>
-<span class="n">gmod</span><span class="p">[</span><span class="s2">&quot;run&quot;</span><span class="p">]()</span>
-<span class="c1"># get the output</span>
-<span class="n">result</span> <span class="o">=</span> <span class="n">gmod</span><span class="p">[</span><span class="s2">&quot;get_output&quot;</span><span class="p">](</span><span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span>
+<span class="c1"># Run the model — vm[&quot;main&quot;] returns a PackedFunc</span>
+<span class="n">result</span> <span class="o">=</span> <span class="n">vm</span><span class="p">[</span><span class="s2">&quot;main&quot;</span><span class="p">](</span><span class="n">data</span><span class="p">)</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span>
 </pre></div>
 </div>
 <p>The main take away is that runtime.Module and runtime.PackedFunc are sufficient to encapsulate both operator level programs (such as addone), as well as the end-to-end models.</p>
@@ -532,9 +530,10 @@ for learning-based optimizations.</p>
 <div class="toctree-wrapper compound">
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="introduction_to_module_serialization.html">Introduction to Module Serialization</a></li>
-<li class="toctree-l1"><a class="reference internal" href="device_target_interactions.html">Device/Target Interactions</a></li>
 </ul>
 </div>
+<section id="relax-virtual-machine">
+<h3>Relax Virtual Machine<a class="headerlink" href="#relax-virtual-machine" title="Link to this heading"></a></h3>
 <p>Relax defines <em>what</em> to compute — it is a graph-level IR that describes the operators and dataflow
 of a model. The Relax Virtual Machine (VM) handles <em>how</em> to run it — it is the runtime component
 that executes the compiled result. The VM uses a register-based interpreter with only four opcodes
@@ -548,6 +547,9 @@ pipeline, instruction set details, execution model, and Python interface.</p>
 <li class="toctree-l1"><a class="reference internal" href="relax_vm.html">Relax Virtual Machine</a></li>
 </ul>
 </div>
+</section>
+<section id="disco-distributed-runtime">
+<h3>Disco: Distributed Runtime<a class="headerlink" href="#disco-distributed-runtime" title="Link to this heading"></a></h3>
 <p>Disco is TVM’s distributed runtime for executing models across multiple devices. When a model is
 too large to fit on a single GPU, the <code class="docutils literal notranslate"><span class="pre">relax.distributed</span></code> module annotates how tensors should be
 partitioned and placed across a mesh of devices at compile time. Disco then takes over at runtime:
@@ -567,6 +569,7 @@ threads within a single process — this is the most common choice for multi-GPU
 single machine. <code class="docutils literal notranslate"><span class="pre">ProcessSession</span></code> launches workers as separate OS processes connected by pipes,
 providing stronger isolation. <code class="docutils literal notranslate"><span class="pre">SocketSession</span></code> extends the model to multi-node clusters by
 connecting workers across machines via TCP sockets.</p>
+</section>
 </section>
 <section id="tvm-node">
 <h2>tvm/node<a class="headerlink" href="#tvm-node" title="Link to this heading"></a></h2>
@@ -684,21 +687,6 @@ itself is not a self-contained function that can be stored into IRModule. We can
 and then integrate it into the IRModule.</p>
 <p>While possible to construct operators directly via TensorIR or tensor expressions (TE) for each use case, it is tedious to do so.
 <cite>topi</cite> (Tensor operator inventory) provides a set of pre-defined operators defined by numpy and found in common deep learning workloads.</p>
-</section>
-<section id="tvm-s-tir-meta-schedule">
-<h2>tvm/s_tir/meta_schedule<a class="headerlink" href="#tvm-s-tir-meta-schedule" title="Link to this heading"></a></h2>
-<p>MetaSchedule is a system for automated search-based program optimization,
-and can be used to optimize TensorIR schedules. Note that MetaSchedule only works with static-shape workloads.</p>
-</section>
-<section id="tvm-s-tir-dlight">
-<h2>tvm/s_tir/dlight<a class="headerlink" href="#tvm-s-tir-dlight" title="Link to this heading"></a></h2>
-<p>DLight is a set of pre-defined, easy-to-use, and performant s_tir schedules. DLight aims:</p>
-<ul class="simple">
-<li><p>Fully support <strong>dynamic shape workloads</strong>.</p></li>
-<li><p><strong>Light weight</strong>. DLight schedules provides tuning-free schedule with reasonable performance.</p></li>
-<li><p><strong>Robust</strong>. DLight schedules are designed to be robust and general-purpose for a single rule. And if the rule is not applicable,
-DLight not raise any error and switch to the next rule automatically.</p></li>
-</ul>
 </section>
 </section>
 
