@@ -16,6 +16,7 @@ Derived Types
 - ``public tvm::ffi::Map< tvm::ffi::String, tvm::ffi::Function >`` (:ref:`exhale_class_classtvm_1_1ffi_1_1Map`)
 - ``public tvm::ffi::Array< T, typename >`` (:ref:`exhale_class_classtvm_1_1ffi_1_1Array`)
 - ``public tvm::ffi::Dict< K, V, typename >`` (:ref:`exhale_class_classtvm_1_1ffi_1_1Dict`)
+- ``public tvm::ffi::Enum`` (:ref:`exhale_class_classtvm_1_1ffi_1_1Enum`)
 - ``public tvm::ffi::Error`` (:ref:`exhale_class_classtvm_1_1ffi_1_1Error`)
 - ``public tvm::ffi::Function`` (:ref:`exhale_class_classtvm_1_1ffi_1_1Function`)
 - ``public tvm::ffi::List< T, typename >`` (:ref:`exhale_class_classtvm_1_1ffi_1_1List`)

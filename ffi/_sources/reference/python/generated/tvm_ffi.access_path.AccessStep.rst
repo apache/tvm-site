@@ -13,10 +13,11 @@
 
    .. autosummary::
    
-      ~AccessStep.__ffi_init__
+      ~AccessStep.__init__
       ~AccessStep.__init_handle_by_constructor__
       ~AccessStep.__move_handle_from__
       ~AccessStep._move
+      ~AccessStep.is_
       ~AccessStep.same_as
    
    
@@ -27,6 +28,7 @@
 
    .. autosummary::
    
+      ~AccessStep.id_
       ~AccessStep.key
       ~AccessStep.kind
    

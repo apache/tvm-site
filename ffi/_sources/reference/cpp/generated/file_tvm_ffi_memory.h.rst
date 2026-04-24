@@ -61,6 +61,8 @@ Included By
 
 - :ref:`file_tvm_ffi_error.h`
 
+- :ref:`file_tvm_ffi_reflection_enum_def.h`
+
 - :ref:`file_tvm_ffi_string.h`
 
 - :ref:`file_tvm_ffi_tvm_ffi.h`

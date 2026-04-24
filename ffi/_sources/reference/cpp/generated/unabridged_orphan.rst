@@ -145,6 +145,16 @@ Files
 .. toctree::
    :maxdepth: 5
 
+   file_tvm_ffi_enum.h.rst
+
+.. toctree::
+   :maxdepth: 5
+
+   file_tvm_ffi_reflection_enum_def.h.rst
+
+.. toctree::
+   :maxdepth: 5
+
    file_tvm_ffi_error.h.rst
 
 .. toctree::
@@ -156,11 +166,6 @@ Files
    :maxdepth: 5
 
    file_tvm_ffi_function.h.rst
-
-.. toctree::
-   :maxdepth: 5
-
-   file_tvm_ffi_reflection_init.h.rst
 
 .. toctree::
    :maxdepth: 5
@@ -286,3 +291,12 @@ Files
    :maxdepth: 5
 
    file_tvm_ffi_container_variant.h.rst
+
+Pages
+*****
+
+
+.. toctree::
+   :maxdepth: 5
+
+   page_deprecated.rst

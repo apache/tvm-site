@@ -3,7 +3,7 @@
 Variable tvm::ffi::reflection::type_attr::kCompare
 ==================================================
 
-- Defined in :ref:`file_tvm_ffi_reflection_registry.h`
+- Defined in :ref:`file_tvm_ffi_reflection_accessor.h`
 
 
 Variable Documentation

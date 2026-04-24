@@ -29,6 +29,7 @@ Files
 - :ref:`file_tvm_ffi_cast.h`
 - :ref:`file_tvm_ffi_dtype.h`
 - :ref:`file_tvm_ffi_endian.h`
+- :ref:`file_tvm_ffi_enum.h`
 - :ref:`file_tvm_ffi_error.h`
 - :ref:`file_tvm_ffi_expected.h`
 - :ref:`file_tvm_ffi_function.h`

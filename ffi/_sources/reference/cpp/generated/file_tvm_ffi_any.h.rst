@@ -67,6 +67,8 @@ Included By
 
 - :ref:`file_tvm_ffi_container_variant.h`
 
+- :ref:`file_tvm_ffi_enum.h`
+
 - :ref:`file_tvm_ffi_expected.h`
 
 - :ref:`file_tvm_ffi_extra_dataclass.h`
@@ -85,7 +87,7 @@ Included By
 
 - :ref:`file_tvm_ffi_reflection_accessor.h`
 
-- :ref:`file_tvm_ffi_reflection_init.h`
+- :ref:`file_tvm_ffi_reflection_enum_def.h`
 
 - :ref:`file_tvm_ffi_reflection_overload.h`
 

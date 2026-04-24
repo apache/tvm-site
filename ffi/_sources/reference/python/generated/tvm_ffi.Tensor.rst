@@ -17,6 +17,7 @@
       ~Tensor.__dlpack_device__
       ~Tensor.__init_handle_by_constructor__
       ~Tensor.__move_handle_from__
+      ~Tensor.is_
       ~Tensor.same_as
    
    
@@ -29,6 +30,7 @@
    
       ~Tensor.device
       ~Tensor.dtype
+      ~Tensor.id_
       ~Tensor.shape
       ~Tensor.strides
    

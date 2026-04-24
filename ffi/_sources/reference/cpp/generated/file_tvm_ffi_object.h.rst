@@ -67,6 +67,8 @@ Included By
 
 - :ref:`file_tvm_ffi_container_seq_base.h`
 
+- :ref:`file_tvm_ffi_enum.h`
+
 - :ref:`file_tvm_ffi_error.h`
 
 - :ref:`file_tvm_ffi_extra_stl.h`
@@ -75,7 +77,7 @@ Included By
 
 - :ref:`file_tvm_ffi_optional.h`
 
-- :ref:`file_tvm_ffi_reflection_init.h`
+- :ref:`file_tvm_ffi_reflection_enum_def.h`
 
 - :ref:`file_tvm_ffi_rvalue_ref.h`
 

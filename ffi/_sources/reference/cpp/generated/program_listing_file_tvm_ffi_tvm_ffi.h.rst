@@ -45,6 +45,7 @@ Program Listing for File tvm_ffi.h
    #include <tvm/ffi/container/variant.h>
    #include <tvm/ffi/dtype.h>
    #include <tvm/ffi/endian.h>
+   #include <tvm/ffi/enum.h>
    #include <tvm/ffi/error.h>
    #include <tvm/ffi/expected.h>
    #include <tvm/ffi/function.h>
@@ -55,6 +56,7 @@ Program Listing for File tvm_ffi.h
    #include <tvm/ffi/reflection/access_path.h>
    #include <tvm/ffi/reflection/accessor.h>
    #include <tvm/ffi/reflection/creator.h>
+   #include <tvm/ffi/reflection/enum_def.h>
    #include <tvm/ffi/reflection/overload.h>
    #include <tvm/ffi/reflection/registry.h>
    #include <tvm/ffi/rvalue_ref.h>

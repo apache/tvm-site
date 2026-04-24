@@ -70,6 +70,8 @@ Includes
 
 - ``tvm/ffi/endian.h`` (:ref:`file_tvm_ffi_endian.h`)
 
+- ``tvm/ffi/enum.h`` (:ref:`file_tvm_ffi_enum.h`)
+
 - ``tvm/ffi/error.h`` (:ref:`file_tvm_ffi_error.h`)
 
 - ``tvm/ffi/expected.h`` (:ref:`file_tvm_ffi_expected.h`)
@@ -89,6 +91,8 @@ Includes
 - ``tvm/ffi/reflection/accessor.h`` (:ref:`file_tvm_ffi_reflection_accessor.h`)
 
 - ``tvm/ffi/reflection/creator.h`` (:ref:`file_tvm_ffi_reflection_creator.h`)
+
+- ``tvm/ffi/reflection/enum_def.h`` (:ref:`file_tvm_ffi_reflection_enum_def.h`)
 
 - ``tvm/ffi/reflection/overload.h`` (:ref:`file_tvm_ffi_reflection_overload.h`)
 

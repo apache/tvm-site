@@ -86,6 +86,10 @@ Classes
 
 - :ref:`exhale_class_classtvm_1_1ffi_1_1DictObj`
 
+- :ref:`exhale_class_classtvm_1_1ffi_1_1Enum`
+
+- :ref:`exhale_class_classtvm_1_1ffi_1_1EnumObj`
+
 - :ref:`exhale_class_classtvm_1_1ffi_1_1Error`
 
 - :ref:`exhale_class_classtvm_1_1ffi_1_1ErrorObj`
@@ -174,13 +178,13 @@ Functions
 ---------
 
 
-- :ref:`exhale_function_base64_8h_1acb849cdb1d9b9620be10bbcda0257afa`
-
 - :ref:`exhale_function_base64_8h_1ae1d4736f7dc56b224acd303ba7bf7a45`
 
-- :ref:`exhale_function_base64_8h_1a279b4ba2f4c7ea16291ef24b73e43963`
+- :ref:`exhale_function_base64_8h_1acb849cdb1d9b9620be10bbcda0257afa`
 
 - :ref:`exhale_function_base64_8h_1aa5b2a4531449585b9f079cb170a79f0b`
+
+- :ref:`exhale_function_base64_8h_1a279b4ba2f4c7ea16291ef24b73e43963`
 
 - :ref:`exhale_function_endian_8h_1ab4e0ed8000c632cd2c7cd089c0a0d1af`
 
@@ -194,17 +198,21 @@ Functions
 
 - :ref:`exhale_function_error_8h_1af4cf9e94df0f183e9c5c0a3ccb05fda5`
 
+- :ref:`exhale_function_string_8h_1a462b67a1ca03cb444893ec950bf5e916`
+
 - :ref:`exhale_function_string_8h_1aa190eed2516ff9a633009cc62f660502`
+
+- :ref:`exhale_function_string_8h_1a88e8350835739df34d48ab4e9d776535`
 
 - :ref:`exhale_function_serialization_8h_1a56baa5d1ca415dbdebf19ac1f54bd5b7`
 
-- :ref:`exhale_function_tensor_8h_1a65b3a61c540c72d9410150a3a7a76dde`
-
-- :ref:`exhale_function_tensor_8h_1a011d0a2dcbe5702156124d7a7223b3dd`
+- :ref:`exhale_function_tensor_8h_1a71e4a492b5a03a19a95087771a7e9ed1`
 
 - :ref:`exhale_function_tensor_8h_1a226723176642cde5996498e7da6a6368`
 
-- :ref:`exhale_function_tensor_8h_1a71e4a492b5a03a19a95087771a7e9ed1`
+- :ref:`exhale_function_tensor_8h_1a011d0a2dcbe5702156124d7a7223b3dd`
+
+- :ref:`exhale_function_tensor_8h_1a65b3a61c540c72d9410150a3a7a76dde`
 
 - :ref:`exhale_function_cast_8h_1a4dba749dd934d8a7891ad126a8fdcc1f`
 
@@ -220,9 +228,9 @@ Functions
 
 - :ref:`exhale_function_memory_8h_1a801e8ecc2e3adbc1dac52c714e7cef11`
 
-- :ref:`exhale_function_array_8h_1a3b56317c7cfb2760cf6c09c303840967`
-
 - :ref:`exhale_function_memory_8h_1a8892f2a3cad8dbc51930c464f2ab863b`
+
+- :ref:`exhale_function_array_8h_1a3b56317c7cfb2760cf6c09c303840967`
 
 - :ref:`exhale_function_map_8h_1a611844db41026b7a95846dd316b435af`
 

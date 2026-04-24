@@ -49,7 +49,7 @@ Included By
 -----------
 
 
-- :ref:`file_tvm_ffi_reflection_init.h`
+- :ref:`file_tvm_ffi_reflection_registry.h`
 
 - :ref:`file_tvm_ffi_tvm_ffi.h`
 

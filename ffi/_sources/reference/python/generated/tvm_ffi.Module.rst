@@ -13,7 +13,7 @@
 
    .. autosummary::
    
-      ~Module.__ffi_init__
+      ~Module.__init__
       ~Module.__init_handle_by_constructor__
       ~Module.__move_handle_from__
       ~Module._move
@@ -26,6 +26,7 @@
       ~Module.implements_function
       ~Module.import_module
       ~Module.inspect_source
+      ~Module.is_
       ~Module.is_binary_serializable
       ~Module.is_compilation_exportable
       ~Module.is_runnable
@@ -41,6 +42,7 @@
    .. autosummary::
    
       ~Module.entry_name
+      ~Module.id_
       ~Module.imports
       ~Module.imports_
       ~Module.kind

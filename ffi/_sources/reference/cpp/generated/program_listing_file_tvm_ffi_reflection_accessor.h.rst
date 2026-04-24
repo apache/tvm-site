@@ -37,7 +37,6 @@ Program Listing for File accessor.h
    #include <tvm/ffi/type_traits.h>
    
    #include <string>
-   #include <utility>
    
    namespace tvm {
    namespace ffi {
@@ -204,6 +203,30 @@ Program Listing for File accessor.h
        if (callback_with_early_stop(type_info->fields + i)) return true;
      }
      return false;
+   }
+   
+   namespace type_attr {
+   inline constexpr const char* kNew = "__ffi_new__";
+   inline constexpr const char* kInit = "__ffi_init__";
+   inline constexpr const char* kConvert = "__ffi_convert__";
+   inline constexpr const char* kShallowCopy = "__ffi_shallow_copy__";
+   inline constexpr const char* kRepr = "__ffi_repr__";
+   inline constexpr const char* kHash = "__ffi_hash__";
+   inline constexpr const char* kEq = "__ffi_eq__";
+   inline constexpr const char* kCompare = "__ffi_compare__";
+   inline constexpr const char* kAnyHash = "__any_hash__";
+   inline constexpr const char* kAnyEqual = "__any_equal__";
+   inline constexpr const char* kSHash = "__s_hash__";
+   inline constexpr const char* kSEqual = "__s_equal__";
+   inline constexpr const char* kDataToJson = "__data_to_json__";
+   inline constexpr const char* kDataFromJson = "__data_from_json__";
+   inline constexpr const char* kEnumEntries = "__ffi_enum_entries__";
+   inline constexpr const char* kEnumAttrs = "__ffi_enum_attrs__";
+   inline constexpr const char* kEnumValueEntries = "__ffi_enum_value_entries__";
+   }  // namespace type_attr
+   
+   inline constexpr TVMFFIByteArray AsByteArray(const char* s) {
+     return {s, std::char_traits<char>::length(s)};
    }
    
    }  // namespace reflection

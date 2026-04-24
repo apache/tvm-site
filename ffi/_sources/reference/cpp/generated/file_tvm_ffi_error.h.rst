@@ -66,6 +66,8 @@ Included By
 
 - :ref:`file_tvm_ffi_dtype.h`
 
+- :ref:`file_tvm_ffi_enum.h`
+
 - :ref:`file_tvm_ffi_expected.h`
 
 - :ref:`file_tvm_ffi_extra_cuda_base.h`
@@ -81,6 +83,8 @@ Included By
 - :ref:`file_tvm_ffi_optional.h`
 
 - :ref:`file_tvm_ffi_reflection_access_path.h`
+
+- :ref:`file_tvm_ffi_reflection_enum_def.h`
 
 - :ref:`file_tvm_ffi_string.h`
 

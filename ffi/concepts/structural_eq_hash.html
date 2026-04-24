@@ -44,7 +44,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../_static/documentation_options.js?v=226845cb"></script>
+    <script src="../_static/documentation_options.js?v=269d0455"></script>
     <script src="../_static/doctools.js?v=9bcbadda"></script>
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -498,8 +498,8 @@ window.runMermaid = runMermaid;</script>
     <link rel="prev" title="Exception Handling" href="exception_handling.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="0.1.dev1+g41d38fa32" />
-    <meta name="docbuild:last-update" content="Mar 23, 2026"/>
+  <meta name="docsearch:version" content="0.1.dev1+g281f7e114" />
+    <meta name="docbuild:last-update" content="Apr 24, 2026"/>
   </head>
   
   
@@ -840,7 +840,7 @@ window.runMermaid = runMermaid;</script>
 </ul>
 </li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#const-tree-tree-with-a-fast-path"><code class="docutils literal notranslate"><span class="pre">"const-tree"</span></code> — Tree with a Fast Path</a><ul class="visible nav section-nav flex-column">
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#when-is-this-safe">When is this safe?</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#when-is-this-safe-and-worth-it">When is this safe (and worth it)?</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#why-not-use-it-everywhere">Why not use it everywhere?</a></li>
 </ul>
 </li>
@@ -853,6 +853,7 @@ window.runMermaid = runMermaid;</script>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#var-bound-variables"><code class="docutils literal notranslate"><span class="pre">"var"</span></code> — Bound Variables</a><ul class="visible nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#the-problem">The problem</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#how-it-works-definition-regions">How it works: definition regions</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#fields-and-the-sticky-mapping">Fields and the sticky mapping</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#full-comparison-with-and-without-definition-regions">Full comparison: with and without definition regions</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#inconsistent-variable-usage">Inconsistent variable usage</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#the-map-free-vars-flag">The <code class="docutils literal notranslate"><span class="pre">map_free_vars</span></code> flag</a></li>
@@ -864,7 +865,12 @@ window.runMermaid = runMermaid;</script>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#structural-eq-def-definition-region"><code class="docutils literal notranslate"><span class="pre">structural_eq="def"</span></code> — Definition region</a></li>
 </ul>
 </li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#custom-equality-and-hashing">Custom Equality and Hashing</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#custom-equality-and-hashing-s-equal-s-hash">Custom Equality and Hashing: <code class="docutils literal notranslate"><span class="pre">__s_equal__</span></code> / <code class="docutils literal notranslate"><span class="pre">__s_hash__</span></code></a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#signatures">Signatures</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#example-python">Example (Python)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#example-c">Example (C++)</a></li>
+</ul>
+</li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#all-kinds-at-a-glance">All Kinds at a Glance</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#decision-guide">Decision Guide</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#worked-example">Worked Example</a></li>
@@ -894,6 +900,18 @@ should this field be skipped, or does it introduce new variable bindings?</p></l
 </ol>
 <p>This document explains what each annotation means, when to use it, and how
 they compose.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Structural equality and hashing <strong>never call Python-level</strong> <code class="docutils literal notranslate"><span class="pre">__eq__</span></code>
+or <code class="docutils literal notranslate"><span class="pre">__hash__</span></code>.  <code class="docutils literal notranslate"><span class="pre">structural_equal</span></code> / <code class="docutils literal notranslate"><span class="pre">structural_hash</span></code> dispatch
+entirely through a C++ walker driven by the kind metadata registered
+via <code class="docutils literal notranslate"><span class="pre">structural_eq=</span></code>; the Python <code class="docutils literal notranslate"><span class="pre">a</span> <span class="pre">==</span> <span class="pre">b</span></code> / <code class="docutils literal notranslate"><span class="pre">hash(a)</span></code> dunders
+are independent (they default to pointer identity and handle address,
+inherited from <code class="docutils literal notranslate"><span class="pre">Object</span></code>).  To customize how a specific type
+participates in <em>structural</em> comparison, register the
+<a class="reference internal" href="#sequal-shash"><span class="std std-ref">Custom Equality and Hashing: __s_equal__ / __s_hash__</span></a> hooks described below — do <strong>not</strong> override
+<code class="docutils literal notranslate"><span class="pre">__eq__</span></code> or <code class="docutils literal notranslate"><span class="pre">__hash__</span></code>.</p>
+</div>
 <section id="type-level-annotation">
 <h2>Type-Level Annotation<a class="headerlink" href="#type-level-annotation" title="Link to this heading">#</a></h2>
 <p>The <code class="docutils literal notranslate"><span class="pre">structural_eq</span></code> parameter on <code class="docutils literal notranslate"><span class="pre">&#64;py_class</span></code> declares how instances of the
@@ -1015,58 +1033,94 @@ every node has the same content:</p>
 object, they are guaranteed equal — skip the field comparison.”</p>
 <p>This is purely a <strong>performance optimization</strong>. The only behavioral difference
 from <code class="docutils literal notranslate"><span class="pre">&quot;tree&quot;</span></code> is that pointer identity short-circuits to <code class="docutils literal notranslate"><span class="pre">True</span></code>.</p>
-<section id="when-is-this-safe">
-<h3>When is this safe?<a class="headerlink" href="#when-is-this-safe" title="Link to this heading">#</a></h3>
-<p>When the type satisfies two conditions:</p>
+<section id="when-is-this-safe-and-worth-it">
+<h3>When is this safe (and worth it)?<a class="headerlink" href="#when-is-this-safe-and-worth-it" title="Link to this heading">#</a></h3>
+<p>Three conditions decide whether <code class="docutils literal notranslate"><span class="pre">&quot;const-tree&quot;</span></code> is the right choice:</p>
 <ol class="arabic simple">
 <li><p><strong>Immutable</strong> — content doesn’t change after construction, so same-pointer
 always implies same-content.</p></li>
 <li><p><strong>No transitive</strong> <code class="docutils literal notranslate"><span class="pre">&quot;var&quot;</span></code> <strong>children</strong> — skipping field traversal won’t
 cause variable mappings to be missed (see <a class="reference internal" href="#var-kind"><span class="std std-ref">&quot;var&quot; — Bound Variables</span></a> for why this
 matters).</p></li>
+<li><p><strong>Sharing is common</strong> — instances are interned or canonicalized, so the
+same pointer actually appears on both sides of real comparisons. Without
+interning, the shortcut never fires and <code class="docutils literal notranslate"><span class="pre">&quot;const-tree&quot;</span></code> behaves like
+<code class="docutils literal notranslate"><span class="pre">&quot;tree&quot;</span></code> with a dead branch.</p></li>
 </ol>
+<p>Conditions 1 and 2 are correctness requirements: violating them is a bug,
+not a performance regression. Condition 3 is the payoff — <code class="docutils literal notranslate"><span class="pre">&quot;const-tree&quot;</span></code>
+is worth reaching for only when it will actually save work.</p>
+<p>A useful rule of thumb: <em>does the system go out of its way to make two
+equal instances of this type share a pointer?</em> Canonical types, interned
+constants, cached shapes, and op metadata usually do. General expression
+and statement nodes usually don’t — and also fail condition 2. Prefer
+<code class="docutils literal notranslate"><span class="pre">&quot;const-tree&quot;</span></code> for the type / attribute / metadata layer of the IR, not
+the expression / statement layer.</p>
+<p>Note also that condition 2 is a <em>whole-subgraph</em> property: once a field
+holds an <code class="docutils literal notranslate"><span class="pre">Expr</span></code> (which may one day contain a <code class="docutils literal notranslate"><span class="pre">Var</span></code>), the annotation
+silently commits the type to that invariant — a later refactor embedding
+a <code class="docutils literal notranslate"><span class="pre">Var</span></code> becomes a correctness break rather than a local change.</p>
 </section>
 <section id="why-not-use-it-everywhere">
 <h3>Why not use it everywhere?<a class="headerlink" href="#why-not-use-it-everywhere" title="Link to this heading">#</a></h3>
 <p>Most IR nodes are immutable, but many transitively contain variables
-(e.g., <code class="docutils literal notranslate"><span class="pre">x</span> <span class="pre">+</span> <span class="pre">1</span></code> contains the <code class="docutils literal notranslate"><span class="pre">&quot;var&quot;</span></code> node <code class="docutils literal notranslate"><span class="pre">x</span></code>). If the pointer
-shortcut fires, the traversal skips <code class="docutils literal notranslate"><span class="pre">x</span></code>, and a variable mapping that should
-have been established is silently missed.</p>
-<p>The following diagram shows the danger. Suppose the <code class="docutils literal notranslate"><span class="pre">+</span></code> node were
-incorrectly annotated as <code class="docutils literal notranslate"><span class="pre">&quot;const-tree&quot;</span></code>. When comparing two trees that
-share a sub-expression, the pointer shortcut fires on the shared node, and
-the <code class="docutils literal notranslate"><span class="pre">&quot;var&quot;</span></code> <code class="docutils literal notranslate"><span class="pre">x</span></code> inside it is never visited — so no <code class="docutils literal notranslate"><span class="pre">x</span> <span class="pre">↔</span> <span class="pre">y</span></code> mapping
-is recorded:</p>
+(e.g., <code class="docutils literal notranslate"><span class="pre">x</span> <span class="pre">+</span> <span class="pre">1</span></code> contains the <code class="docutils literal notranslate"><span class="pre">&quot;var&quot;</span></code> node <code class="docutils literal notranslate"><span class="pre">x</span></code>). The pointer shortcut
+fires only when both sides of a comparison reference the <strong>same object</strong> —
+but when that sharing exists, skipping traversal also skips the variable
+occurrences inside, and mappings that should have been recorded are
+silently missed.</p>
+<p>Suppose the <code class="docutils literal notranslate"><span class="pre">+</span></code> node were incorrectly annotated as <code class="docutils literal notranslate"><span class="pre">&quot;const-tree&quot;</span></code>, and
+consider comparing two tuples that share the <code class="docutils literal notranslate"><span class="pre">+</span></code> subtree via pointer
+identity:</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>shared = x + 1                     # pointer P, contains var x
+
+lhs = (shared, x)                  # .0 = P, .1 = var x
+rhs = (shared, y)                  # .0 = P, .1 = var y  (different Var)
+
+structural_equal(lhs, rhs, map_free_vars=True)
+</pre></div>
+</div>
+<p>With the <code class="docutils literal notranslate"><span class="pre">+</span></code> annotated as plain <code class="docutils literal notranslate"><span class="pre">&quot;tree&quot;</span></code> (correct):</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">.0</span></code>: traverse into <code class="docutils literal notranslate"><span class="pre">shared</span></code> on both sides, visit <code class="docutils literal notranslate"><span class="pre">x</span></code> at <code class="docutils literal notranslate"><span class="pre">.lhs</span></code>,
+record the mapping <code class="docutils literal notranslate"><span class="pre">x</span> <span class="pre">↔</span> <span class="pre">x</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">.1</span></code>: look up <code class="docutils literal notranslate"><span class="pre">x</span></code> → maps to <code class="docutils literal notranslate"><span class="pre">x</span></code>, but rhs is <code class="docutils literal notranslate"><span class="pre">y</span></code>. <strong>NOT EQUAL</strong> ✓</p></li>
+</ul>
+<p>With the <code class="docutils literal notranslate"><span class="pre">+</span></code> annotated as <code class="docutils literal notranslate"><span class="pre">&quot;const-tree&quot;</span></code> (the bug):</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">.0</span></code>: pointer shortcut fires on <code class="docutils literal notranslate"><span class="pre">shared</span></code> (both sides reference P).
+Fields are skipped, <code class="docutils literal notranslate"><span class="pre">x</span></code> inside is never visited, no mapping is recorded.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">.1</span></code>: compare <code class="docutils literal notranslate"><span class="pre">x</span></code> vs <code class="docutils literal notranslate"><span class="pre">y</span></code>. No existing mapping, and
+<code class="docutils literal notranslate"><span class="pre">map_free_vars=True</span></code> lets a new one be recorded as <code class="docutils literal notranslate"><span class="pre">x</span> <span class="pre">↔</span> <span class="pre">y</span></code>.
+<strong>EQUAL</strong> ✗ (wrong)</p></li>
+</ul>
+<p>The following diagram illustrates the shared structure. The <code class="docutils literal notranslate"><span class="pre">+</span></code> node
+(<code class="docutils literal notranslate"><span class="pre">shared</span></code>) has two incoming <code class="docutils literal notranslate"><span class="pre">.0</span></code> edges — one from each side — which
+is exactly the situation in which the pointer shortcut fires:</p>
 <pre  class="mermaid">
         graph TD
-    subgraph &quot;lhs&quot;
-        LT[&quot;(_, _)&quot;]
-        LE[&quot;x + 1&quot;]
-        LX[&quot;x : var&quot;]
-        LT --&gt;|&quot;.0&quot;| LE
-        LT --&gt;|&quot;.1&quot;| LX
-        LE --&gt;|&quot;.lhs&quot;| LX2[&quot;x&quot;]
-    end
+    LT[&quot;lhs: (_, _)&quot;]
+    RT[&quot;rhs: (_, _)&quot;]
+    ADD[&quot;shared = x + 1&lt;br/&gt;const-tree&lt;br/&gt;&lt;i&gt;same pointer on both sides&lt;/i&gt;&quot;]
+    X[&quot;x : var&quot;]
+    ONE[&quot;1&quot;]
+    Y[&quot;y : var&quot;]
 
-    subgraph &quot;rhs&quot;
-        RT[&quot;(_, _)&quot;]
-        RE[&quot;y + 1&quot;]
-        RY[&quot;y : var&quot;]
-        RT --&gt;|&quot;.0&quot;| RE
-        RT --&gt;|&quot;.1&quot;| RY
-        RE --&gt;|&quot;.lhs&quot;| RY2[&quot;y&quot;]
-    end
+    LT --&gt;|&quot;.0&quot;| ADD
+    RT --&gt;|&quot;.0&quot;| ADD
+    LT --&gt;|&quot;.1&quot;| X
+    RT --&gt;|&quot;.1&quot;| Y
+    ADD --&gt;|&quot;.lhs&quot;| X
+    ADD --&gt;|&quot;.rhs&quot;| ONE
 
-    LE -. &quot;const-tree would skip here&lt;br/&gt;(misses x ↔ y mapping)&quot; .-&gt; RE
-    LX -. &quot;Later comparison fails:&lt;br/&gt;x has no recorded mapping&quot; .-&gt; RY
-
-    style LE fill:#fff3cd
-    style RE fill:#fff3cd
-    style LX fill:#f8d7da
-    style RY fill:#f8d7da
-    style LX2 fill:#f8d7da
-    style RY2 fill:#f8d7da
-    </pre></section>
+    style ADD fill:#fff3cd
+    style X fill:#f8d7da
+    style Y fill:#f8d7da
+    </pre><p>The same failure mode arises whenever a shared subtree containing a
+<code class="docutils literal notranslate"><span class="pre">&quot;var&quot;</span></code> is compared inside any definition region (e.g., the body of a
+<code class="docutils literal notranslate"><span class="pre">Lambda</span></code> whose params field is <code class="docutils literal notranslate"><span class="pre">structural_eq=&quot;def&quot;</span></code>), not only under
+<code class="docutils literal notranslate"><span class="pre">map_free_vars=True</span></code>.</p>
+</section>
 </section>
 <section id="dag-sharing-aware-comparison">
 <h2><code class="docutils literal notranslate"><span class="pre">&quot;dag&quot;</span></code> — Sharing-Aware Comparison<a class="headerlink" href="#dag-sharing-aware-comparison" title="Link to this heading">#</a></h2>
@@ -1181,18 +1235,22 @@ comparison, find <code class="docutils literal notranslate"><span class="pre">b�
 <span id="var-kind"></span><h2><code class="docutils literal notranslate"><span class="pre">&quot;var&quot;</span></code> — Bound Variables<a class="headerlink" href="#var-bound-variables" title="Link to this heading">#</a></h2>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nd">@py_class</span><span class="p">(</span><span class="n">structural_eq</span><span class="o">=</span><span class="s2">&quot;var&quot;</span><span class="p">)</span>
 <span class="k">class</span><span class="w"> </span><span class="nc">Var</span><span class="p">(</span><span class="n">Object</span><span class="p">):</span>
-    <span class="n">name</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">structural_eq</span><span class="o">=</span><span class="s2">&quot;ignore&quot;</span><span class="p">)</span>   <span class="c1"># alpha-equivalent vars differ in name</span>
+    <span class="nb">type</span><span class="p">:</span> <span class="n">Type</span>                                  <span class="c1"># participates in equality</span>
 </pre></div>
 </div>
 <p><strong>Meaning</strong>: “This is a variable. Two variables are equal if they are
-<strong>bound in corresponding positions</strong>, not if they have the same name or
-content.”</p>
+<strong>bound in corresponding positions</strong>, not if they have the same name.”
+The <code class="docutils literal notranslate"><span class="pre">name</span></code> field is almost always marked <code class="docutils literal notranslate"><span class="pre">structural_eq=&quot;ignore&quot;</span></code>
+because alpha-equivalent variables have different names. Other fields
+such as <code class="docutils literal notranslate"><span class="pre">type</span></code> <em>are</em> compared — but only at the binding site (see
+<a class="reference internal" href="#var-fields"><span class="std std-ref">Fields and the sticky mapping</span></a>).</p>
 <section id="the-problem">
 <h3>The problem<a class="headerlink" href="#the-problem" title="Link to this heading">#</a></h3>
 <div class="highlight-text notranslate"><div class="highlight"><pre><span></span>fun x → x + 1       should equal       fun y → y + 1
 </pre></div>
 </div>
-<p>Variables are not defined by their content (name, type annotation). They
+<p>Variables are not defined by their content, such as their name. They
 are defined by <strong>where they are introduced</strong> and <strong>how they are used</strong>.
 <code class="docutils literal notranslate"><span class="pre">x</span></code> and <code class="docutils literal notranslate"><span class="pre">y</span></code> above are interchangeable because they occupy the same
 binding position and are used in the same way.</p>
@@ -1235,6 +1293,48 @@ correspondence already exists, or they are the same pointer.</p></li>
 x + 1  vs  y + 1   →  NOT EQUAL (no definition region, different pointers)
 </pre></div>
 </div>
+</section>
+<section id="fields-and-the-sticky-mapping">
+<span id="var-fields"></span><h3>Fields and the sticky mapping<a class="headerlink" href="#fields-and-the-sticky-mapping" title="Link to this heading">#</a></h3>
+<p>A <code class="docutils literal notranslate"><span class="pre">&quot;var&quot;</span></code> type still has fields, and non-ignored fields <em>are</em> compared —
+but only on the <strong>first</strong> encounter of a var pair. Once a mapping is
+recorded, subsequent occurrences look up the mapping and skip field
+comparison entirely.</p>
+<p>Take the <code class="docutils literal notranslate"><span class="pre">Var</span></code> declaration from the top of this section: <code class="docutils literal notranslate"><span class="pre">name</span></code> is
+ignored, but <code class="docutils literal notranslate"><span class="pre">type</span></code> is not. The first time a pair of vars is seen in
+a definition region, their <code class="docutils literal notranslate"><span class="pre">type</span></code> fields are compared and the mapping
+is only established if they match. After that, the mapping is <strong>sticky</strong>
+— later occurrences trust the correspondence regardless of those fields:</p>
+<div class="pst-scrollable-table-container"><table class="table">
+<colgroup>
+<col style="width: 55.0%" />
+<col style="width: 45.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Scenario</p></th>
+<th class="head"><p>Result</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">Var(&quot;x&quot;,</span> <span class="pre">int)</span></code> vs <code class="docutils literal notranslate"><span class="pre">Var(&quot;y&quot;,</span> <span class="pre">int)</span></code> on first encounter</p></td>
+<td><p>Fields match → mapping <code class="docutils literal notranslate"><span class="pre">x</span> <span class="pre">↔</span> <span class="pre">y</span></code> recorded → <strong>Equal</strong></p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">Var(&quot;x&quot;,</span> <span class="pre">int)</span></code> vs <code class="docutils literal notranslate"><span class="pre">Var(&quot;y&quot;,</span> <span class="pre">float)</span></code> on first encounter</p></td>
+<td><p>Fields differ → <strong>Not equal</strong></p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">Var(&quot;x&quot;,</span> <span class="pre">int)</span></code> vs <code class="docutils literal notranslate"><span class="pre">Var(&quot;y&quot;,</span> <span class="pre">float)</span></code> when <code class="docutils literal notranslate"><span class="pre">x</span> <span class="pre">↔</span> <span class="pre">y</span></code> already mapped</p></td>
+<td><p>Lookup succeeds → <strong>Equal</strong> (types are <em>not</em> rechecked)</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>For IRs where type consistency is part of well-formedness, this is
+usually sufficient: a well-formed program uses each var with a consistent
+type at every occurrence, so the first-encounter check at the binding
+site covers the rest. If you truly want types re-verified at every use,
+they don’t belong on the <code class="docutils literal notranslate"><span class="pre">&quot;var&quot;</span></code> node — lift them into the surrounding
+expression/statement node where they participate in normal <code class="docutils literal notranslate"><span class="pre">&quot;tree&quot;</span></code>
+comparison.</p>
 </section>
 <section id="full-comparison-with-and-without-definition-regions">
 <h3>Full comparison: with and without definition regions<a class="headerlink" href="#full-comparison-with-and-without-definition-regions" title="Link to this heading">#</a></h3>
@@ -1380,19 +1480,112 @@ to consistent variable renaming.</p>
 </ul>
 </section>
 </section>
-<section id="custom-equality-and-hashing">
-<h2>Custom Equality and Hashing<a class="headerlink" href="#custom-equality-and-hashing" title="Link to this heading">#</a></h2>
-<p>For types where the default field-by-field traversal is insufficient, you
-can register custom callbacks as type attributes:</p>
+<section id="custom-equality-and-hashing-s-equal-s-hash">
+<span id="sequal-shash"></span><h2>Custom Equality and Hashing: <code class="docutils literal notranslate"><span class="pre">__s_equal__</span></code> / <code class="docutils literal notranslate"><span class="pre">__s_hash__</span></code><a class="headerlink" href="#custom-equality-and-hashing-s-equal-s-hash" title="Link to this heading">#</a></h2>
+<p>For types where the default field-by-field traversal is insufficient (for
+example, fields that need to be visited in a specific order, cross-field
+invariants, or sub-values that need a different <code class="docutils literal notranslate"><span class="pre">def_region</span></code> setting
+than the declarative field flags allow), you can register custom
+callbacks as <strong>type attributes</strong>:</p>
 <ul class="simple">
-<li><p><strong>``__s_equal__``</strong> — custom equality logic</p></li>
-<li><p><strong>``__s_hash__``</strong> — custom hashing logic</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">__s_equal__</span></code> — custom structural equality logic.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">__s_hash__</span></code> — custom structural hashing logic.</p></li>
 </ul>
-<p>These are registered per type via <code class="docutils literal notranslate"><span class="pre">EnsureTypeAttrColumn</span></code>. When present,
-they replace the default field iteration. The system still manages all
-kind-specific logic (<code class="docutils literal notranslate"><span class="pre">&quot;dag&quot;</span></code> memoization, <code class="docutils literal notranslate"><span class="pre">&quot;var&quot;</span></code> mapping, etc.) — the
-custom callback only controls which sub-values to compare/hash and in what
-order.</p>
+<p>These are the <em>only</em> supported way to override structural comparison.
+<code class="docutils literal notranslate"><span class="pre">structural_equal</span></code> / <code class="docutils literal notranslate"><span class="pre">structural_hash</span></code> never consult Python
+<code class="docutils literal notranslate"><span class="pre">__eq__</span></code> / <code class="docutils literal notranslate"><span class="pre">__hash__</span></code> — those dunders serve a separate purpose
+(<code class="docutils literal notranslate"><span class="pre">==</span></code> and <code class="docutils literal notranslate"><span class="pre">hash()</span></code>, which default to pointer identity).</p>
+<p>When either hook is registered, it replaces the default field iteration
+for that type.  All kind-specific machinery (<code class="docutils literal notranslate"><span class="pre">&quot;dag&quot;</span></code> memoization,
+<code class="docutils literal notranslate"><span class="pre">&quot;var&quot;</span></code> mapping, the pointer shortcut of <code class="docutils literal notranslate"><span class="pre">&quot;const-tree&quot;</span></code>, etc.) is
+still managed by the framework — the custom callback only controls
+<em>which</em> sub-values are compared or hashed, <em>in what order</em>, and <em>with
+what</em> <code class="docutils literal notranslate"><span class="pre">def_region</span></code> flag.</p>
+<section id="signatures">
+<h3>Signatures<a class="headerlink" href="#signatures" title="Link to this heading">#</a></h3>
+<p><code class="docutils literal notranslate"><span class="pre">__s_equal__</span></code>:</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>(self, other, eq_cb) -&gt; bool
+
+eq_cb(lhs, rhs, def_region: bool, field_name: str) -&gt; bool
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">__s_hash__</span></code>:</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>(self, init_hash: int, hash_cb) -&gt; int
+
+hash_cb(value, init_hash: int, def_region: bool) -&gt; int
+</pre></div>
+</div>
+<p>The <code class="docutils literal notranslate"><span class="pre">def_region</span></code> flag on each recursive call controls whether the
+sub-value is compared/hashed in a definition region (enabling new
+variable bindings, just like <code class="docutils literal notranslate"><span class="pre">field(structural_eq=&quot;def&quot;)</span></code>).  The
+<code class="docutils literal notranslate"><span class="pre">field_name</span></code> argument on <code class="docutils literal notranslate"><span class="pre">eq_cb</span></code> is used only for mismatch path
+reporting from <code class="xref py py-func docutils literal notranslate"><span class="pre">get_first_structural_mismatch()</span></code>.</p>
+</section>
+<section id="example-python">
+<h3>Example (Python)<a class="headerlink" href="#example-python" title="Link to this heading">#</a></h3>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nd">@py_class</span><span class="p">(</span><span class="n">structural_eq</span><span class="o">=</span><span class="s2">&quot;tree&quot;</span><span class="p">)</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">Lambda</span><span class="p">(</span><span class="n">Object</span><span class="p">):</span>
+    <span class="n">params</span><span class="p">:</span> <span class="nb">list</span>
+    <span class="n">body</span><span class="p">:</span> <span class="n">Any</span>
+    <span class="n">comment</span><span class="p">:</span> <span class="nb">str</span>  <span class="c1"># not part of identity, but also not iterated below</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">__s_equal__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">other</span><span class="p">,</span> <span class="n">eq_cb</span><span class="p">):</span>
+        <span class="c1"># params is a definition region; body is not.</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">eq_cb</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="p">,</span> <span class="n">other</span><span class="o">.</span><span class="n">params</span><span class="p">,</span> <span class="kc">True</span><span class="p">,</span> <span class="s2">&quot;params&quot;</span><span class="p">):</span>
+            <span class="k">return</span> <span class="kc">False</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">eq_cb</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">body</span><span class="p">,</span> <span class="n">other</span><span class="o">.</span><span class="n">body</span><span class="p">,</span> <span class="kc">False</span><span class="p">,</span> <span class="s2">&quot;body&quot;</span><span class="p">):</span>
+            <span class="k">return</span> <span class="kc">False</span>
+        <span class="k">return</span> <span class="kc">True</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">__s_hash__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">init_hash</span><span class="p">,</span> <span class="n">hash_cb</span><span class="p">):</span>
+        <span class="n">h</span> <span class="o">=</span> <span class="n">hash_cb</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">params</span><span class="p">,</span> <span class="n">init_hash</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
+        <span class="n">h</span> <span class="o">=</span> <span class="n">hash_cb</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">body</span><span class="p">,</span> <span class="n">h</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">h</span>
+</pre></div>
+</div>
+<p>The two methods must agree: if <code class="docutils literal notranslate"><span class="pre">__s_equal__</span></code> considers two instances
+equal, <code class="docutils literal notranslate"><span class="pre">__s_hash__</span></code> must produce the same hash for them.</p>
+</section>
+<section id="example-c">
+<h3>Example (C++)<a class="headerlink" href="#example-c" title="Link to this heading">#</a></h3>
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="k">class</span><span class="w"> </span><span class="nc">MyNodeObj</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="k">public</span><span class="w"> </span><span class="n">Object</span><span class="w"> </span><span class="p">{</span>
+<span class="w"> </span><span class="k">public</span><span class="o">:</span>
+<span class="w">  </span><span class="n">Array</span><span class="o">&lt;</span><span class="n">Var</span><span class="o">&gt;</span><span class="w"> </span><span class="n">params</span><span class="p">;</span>
+<span class="w">  </span><span class="n">Array</span><span class="o">&lt;</span><span class="n">ObjectRef</span><span class="o">&gt;</span><span class="w"> </span><span class="n">body</span><span class="p">;</span>
+
+<span class="w">  </span><span class="kt">bool</span><span class="w"> </span><span class="nf">SEqual</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="n">MyNodeObj</span><span class="o">*</span><span class="w"> </span><span class="n">other</span><span class="p">,</span>
+<span class="w">              </span><span class="n">ffi</span><span class="o">::</span><span class="n">TypedFunction</span><span class="o">&lt;</span><span class="kt">bool</span><span class="p">(</span><span class="n">AnyView</span><span class="p">,</span><span class="w"> </span><span class="n">AnyView</span><span class="p">,</span><span class="w"> </span><span class="kt">bool</span><span class="p">,</span><span class="w"> </span><span class="n">AnyView</span><span class="p">)</span><span class="o">&gt;</span><span class="w"> </span><span class="n">cmp</span><span class="p">)</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">cmp</span><span class="p">(</span><span class="n">params</span><span class="p">,</span><span class="w"> </span><span class="n">other</span><span class="o">-&gt;</span><span class="n">params</span><span class="p">,</span><span class="w"> </span><span class="cm">/*def_region=*/</span><span class="nb">true</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;params&quot;</span><span class="p">))</span><span class="w"> </span><span class="k">return</span><span class="w"> </span><span class="nb">false</span><span class="p">;</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="o">!</span><span class="n">cmp</span><span class="p">(</span><span class="n">body</span><span class="p">,</span><span class="w"> </span><span class="n">other</span><span class="o">-&gt;</span><span class="n">body</span><span class="p">,</span><span class="w"> </span><span class="cm">/*def_region=*/</span><span class="nb">false</span><span class="p">,</span><span class="w"> </span><span class="s">&quot;body&quot;</span><span class="p">))</span><span class="w"> </span><span class="k">return</span><span class="w"> </span><span class="nb">false</span><span class="p">;</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="nb">true</span><span class="p">;</span>
+<span class="w">  </span><span class="p">}</span>
+
+<span class="w">  </span><span class="kt">int64_t</span><span class="w"> </span><span class="nf">SHash</span><span class="p">(</span><span class="kt">int64_t</span><span class="w"> </span><span class="n">init_hash</span><span class="p">,</span>
+<span class="w">                </span><span class="n">ffi</span><span class="o">::</span><span class="n">TypedFunction</span><span class="o">&lt;</span><span class="kt">int64_t</span><span class="p">(</span><span class="n">AnyView</span><span class="p">,</span><span class="w"> </span><span class="kt">int64_t</span><span class="p">,</span><span class="w"> </span><span class="kt">bool</span><span class="p">)</span><span class="o">&gt;</span><span class="w"> </span><span class="n">hash</span><span class="p">)</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="kt">int64_t</span><span class="w"> </span><span class="n">h</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">hash</span><span class="p">(</span><span class="n">params</span><span class="p">,</span><span class="w"> </span><span class="n">init_hash</span><span class="p">,</span><span class="w"> </span><span class="cm">/*def_region=*/</span><span class="nb">true</span><span class="p">);</span>
+<span class="w">    </span><span class="n">h</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">hash</span><span class="p">(</span><span class="n">body</span><span class="p">,</span><span class="w"> </span><span class="n">h</span><span class="p">,</span><span class="w"> </span><span class="cm">/*def_region=*/</span><span class="nb">false</span><span class="p">);</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">h</span><span class="p">;</span>
+<span class="w">  </span><span class="p">}</span>
+
+<span class="w">  </span><span class="k">static</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="nf">RegisterReflection</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="k">namespace</span><span class="w"> </span><span class="nn">refl</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nn">tvm</span><span class="o">::</span><span class="nn">ffi</span><span class="o">::</span><span class="nn">reflection</span><span class="p">;</span>
+<span class="w">    </span><span class="n">refl</span><span class="o">::</span><span class="n">ObjectDef</span><span class="o">&lt;</span><span class="n">MyNodeObj</span><span class="o">&gt;</span><span class="p">()</span>
+<span class="w">        </span><span class="p">.</span><span class="n">def_ro</span><span class="p">(</span><span class="s">&quot;params&quot;</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">MyNodeObj</span><span class="o">::</span><span class="n">params</span><span class="p">)</span>
+<span class="w">        </span><span class="p">.</span><span class="n">def_ro</span><span class="p">(</span><span class="s">&quot;body&quot;</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">MyNodeObj</span><span class="o">::</span><span class="n">body</span><span class="p">);</span>
+<span class="w">    </span><span class="n">refl</span><span class="o">::</span><span class="n">TypeAttrDef</span><span class="o">&lt;</span><span class="n">MyNodeObj</span><span class="o">&gt;</span><span class="p">()</span>
+<span class="w">        </span><span class="p">.</span><span class="n">def</span><span class="p">(</span><span class="n">refl</span><span class="o">::</span><span class="n">type_attr</span><span class="o">::</span><span class="n">kSEqual</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">MyNodeObj</span><span class="o">::</span><span class="n">SEqual</span><span class="p">)</span>
+<span class="w">        </span><span class="p">.</span><span class="n">def</span><span class="p">(</span><span class="n">refl</span><span class="o">::</span><span class="n">type_attr</span><span class="o">::</span><span class="n">kSHash</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">MyNodeObj</span><span class="o">::</span><span class="n">SHash</span><span class="p">);</span>
+<span class="w">  </span><span class="p">}</span>
+
+<span class="w">  </span><span class="k">static</span><span class="w"> </span><span class="k">constexpr</span><span class="w"> </span><span class="n">TVMFFISEqHashKind</span><span class="w"> </span><span class="n">_type_s_eq_hash_kind</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">kTVMFFISEqHashKindTreeNode</span><span class="p">;</span>
+<span class="w">  </span><span class="n">TVM_FFI_DECLARE_OBJECT_INFO_FINAL</span><span class="p">(</span><span class="s">&quot;my.Node&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">MyNodeObj</span><span class="p">,</span><span class="w"> </span><span class="n">Object</span><span class="p">);</span>
+<span class="p">};</span>
+</pre></div>
+</div>
+<p>See <a class="reference internal" href="../reference/cpp/generated/variable_namespacetvm_1_1ffi_1_1reflection_1_1type__attr_1a9a2230acd6ebfab403460ad574a1c53b.html#_CPPv4N3tvm3ffi10reflection9type_attr7kSEqualE" title="tvm::ffi::reflection::type_attr::kSEqual"><code class="xref cpp cpp-var docutils literal notranslate"><span class="pre">tvm::ffi::reflection::type_attr::kSEqual</span></code></a> and
+<a class="reference internal" href="../reference/cpp/generated/variable_namespacetvm_1_1ffi_1_1reflection_1_1type__attr_1a18dd88667c1998578f7fdbbf25c9a33d.html#_CPPv4N3tvm3ffi10reflection9type_attr6kSHashE" title="tvm::ffi::reflection::type_attr::kSHash"><code class="xref cpp cpp-var docutils literal notranslate"><span class="pre">tvm::ffi::reflection::type_attr::kSHash</span></code></a> in
+<code class="docutils literal notranslate"><span class="pre">include/tvm/ffi/reflection/accessor.h</span></code> for the full reference.</p>
+</section>
 </section>
 <section id="all-kinds-at-a-glance">
 <h2>All Kinds at a Glance<a class="headerlink" href="#all-kinds-at-a-glance" title="Link to this heading">#</a></h2>
@@ -1512,7 +1705,7 @@ source location:</p>
 
 <span class="nd">@py_class</span><span class="p">(</span><span class="n">structural_eq</span><span class="o">=</span><span class="s2">&quot;var&quot;</span><span class="p">)</span>
 <span class="k">class</span><span class="w"> </span><span class="nc">Var</span><span class="p">(</span><span class="n">Object</span><span class="p">):</span>
-    <span class="n">name</span><span class="p">:</span> <span class="nb">str</span>
+    <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="n">field</span><span class="p">(</span><span class="n">structural_eq</span><span class="o">=</span><span class="s2">&quot;ignore&quot;</span><span class="p">)</span>
 
 <span class="nd">@py_class</span><span class="p">(</span><span class="n">structural_eq</span><span class="o">=</span><span class="s2">&quot;singleton&quot;</span><span class="p">)</span>
 <span class="k">class</span><span class="w"> </span><span class="nc">Op</span><span class="p">(</span><span class="n">Object</span><span class="p">):</span>
@@ -1599,7 +1792,7 @@ fun [y] → y + 1       (span=&quot;b.py:5&quot;)
 </ul>
 </li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#const-tree-tree-with-a-fast-path"><code class="docutils literal notranslate"><span class="pre">"const-tree"</span></code> — Tree with a Fast Path</a><ul class="visible nav section-nav flex-column">
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#when-is-this-safe">When is this safe?</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#when-is-this-safe-and-worth-it">When is this safe (and worth it)?</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#why-not-use-it-everywhere">Why not use it everywhere?</a></li>
 </ul>
 </li>
@@ -1612,6 +1805,7 @@ fun [y] → y + 1       (span=&quot;b.py:5&quot;)
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#var-bound-variables"><code class="docutils literal notranslate"><span class="pre">"var"</span></code> — Bound Variables</a><ul class="visible nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#the-problem">The problem</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#how-it-works-definition-regions">How it works: definition regions</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#fields-and-the-sticky-mapping">Fields and the sticky mapping</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#full-comparison-with-and-without-definition-regions">Full comparison: with and without definition regions</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#inconsistent-variable-usage">Inconsistent variable usage</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#the-map-free-vars-flag">The <code class="docutils literal notranslate"><span class="pre">map_free_vars</span></code> flag</a></li>
@@ -1623,7 +1817,12 @@ fun [y] → y + 1       (span=&quot;b.py:5&quot;)
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#structural-eq-def-definition-region"><code class="docutils literal notranslate"><span class="pre">structural_eq="def"</span></code> — Definition region</a></li>
 </ul>
 </li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#custom-equality-and-hashing">Custom Equality and Hashing</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#custom-equality-and-hashing-s-equal-s-hash">Custom Equality and Hashing: <code class="docutils literal notranslate"><span class="pre">__s_equal__</span></code> / <code class="docutils literal notranslate"><span class="pre">__s_hash__</span></code></a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#signatures">Signatures</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#example-python">Example (Python)</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#example-c">Example (C++)</a></li>
+</ul>
+</li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#all-kinds-at-a-glance">All Kinds at a Glance</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#decision-guide">Decision Guide</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#worked-example">Worked Example</a></li>
@@ -1653,7 +1852,7 @@ By Apache TVM FFI contributors
   
   <div class="footer-item">
     <p class="last-updated">
-  Last updated on Mar 23, 2026.
+  Last updated on Apr 24, 2026.
   <br/>
 </p>
   </div>

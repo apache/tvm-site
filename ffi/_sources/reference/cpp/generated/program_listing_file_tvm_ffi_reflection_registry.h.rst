@@ -38,10 +38,11 @@ Program Listing for File registry.h
    #include <tvm/ffi/function.h>
    #include <tvm/ffi/function_details.h>
    #include <tvm/ffi/optional.h>
-   #include <tvm/ffi/reflection/init.h>
+   #include <tvm/ffi/reflection/creator.h>
    #include <tvm/ffi/string.h>
    #include <tvm/ffi/type_traits.h>
    
+   #include <iostream>
    #include <iterator>
    #include <optional>
    #include <sstream>
@@ -94,7 +95,7 @@ Program Listing for File registry.h
          } else if (std::optional<bool> v = value.as<bool>()) {
            os << (*v ? "true" : "false");
          } else if (std::optional<String> v = value.as<String>()) {
-           String escaped = EscapeString(*v);
+           String escaped = EscapeStringJSON(*v);
            os << escaped.c_str();
          } else {
            TVM_FFI_LOG_AND_THROW(TypeError) << "Metadata can be only int, bool or string, but on key `"
@@ -425,16 +426,6 @@ Program Listing for File registry.h
    init(bool) -> init<>;
    #endif
    
-   namespace type_attr {
-   inline constexpr const char* kInit = "__ffi_init__";
-   inline constexpr const char* kShallowCopy = "__ffi_shallow_copy__";
-   inline constexpr const char* kRepr = "__ffi_repr__";
-   inline constexpr const char* kHash = "__ffi_hash__";
-   inline constexpr const char* kEq = "__ffi_eq__";
-   inline constexpr const char* kCompare = "__ffi_compare__";
-   inline constexpr const char* kConvert = "__ffi_convert__";
-   }  // namespace type_attr
-   
    template <typename Class>
    class ObjectDef : public ReflectionDefBase {
     public:
@@ -443,7 +434,6 @@ Program Listing for File registry.h
          : type_index_(Class::_GetOrAllocRuntimeTypeIndex()), type_key_(Class::_type_key) {
        (MaybeSuppressAutoInit(extra_args), ...);
        RegisterExtraInfo(std::forward<ExtraArgs>(extra_args)...);
-       AutoRegisterCopy();
      }
    
      ObjectDef(const ObjectDef&) = delete;
@@ -452,11 +442,37 @@ Program Listing for File registry.h
      ObjectDef& operator=(ObjectDef&&) = delete;
    
      ~ObjectDef() noexcept(false) {
-       if (!has_explicit_init_) {
-         // Only auto-register if the type has a default creator.
-         const TVMFFITypeInfo* info = TVMFFIGetTypeInfo(type_index_);
-         if (info->metadata != nullptr && info->metadata->creator != nullptr) {
-           AutoRegisterInit();
+       const TVMFFITypeInfo* info = TVMFFIGetTypeInfo(type_index_);
+       // Step 1. Register `__ffi_shallow_copy__` <== copy constructor (if it exists and is public)
+       if constexpr (std::is_copy_constructible_v<Class>) {
+         Function fn = Function::FromTyped(
+             [](const Class* self) { return ObjectRef(ffi::make_object<Class>(*self)); },
+             std::string(type_key_) + "." + type_attr::kShallowCopy);
+         TVMFFIByteArray attr = AsByteArray(type_attr::kShallowCopy);
+         TVMFFIAny fn_any = AnyView(fn).CopyToTVMFFIAny();
+         TVM_FFI_CHECK_SAFE_CALL(TVMFFITypeRegisterAttr(type_index_, &attr, &fn_any));
+       }
+       // Step 2. Register `__ffi_new__` <== info->metadata->creator
+       // Also, `__ffi_init__` if no explicit init is defined.
+       if (info->metadata != nullptr && info->metadata->creator != nullptr) {
+         Function fn = Function::FromTyped(
+             [creator = info->metadata->creator]() -> ObjectRef {
+               TVMFFIObjectHandle handle;
+               TVM_FFI_CHECK_SAFE_CALL(creator(&handle));
+               return ObjectRef(::tvm::ffi::details::ObjectUnsafe::ObjectPtrFromOwned<Object>(
+                   static_cast<TVMFFIObject*>(handle)));
+             },
+             std::string(type_key_) + "." + type_attr::kNew);
+         TVMFFIByteArray attr = AsByteArray(type_attr::kNew);
+         TVMFFIAny fn_any = AnyView(fn).CopyToTVMFFIAny();
+         TVM_FFI_CHECK_SAFE_CALL(TVMFFITypeRegisterAttr(type_index_, &attr, &fn_any));
+         // Step 3. Register `__ffi_init__` if no explicit init is defined.
+         // Use Function::GetGlobal to look up the registration function, which lives in
+         // dataclass.cc and may not be loaded yet for early (builtin) types.
+         if (!has_explicit_init_) {
+           if (std::optional<Function> opt = Function::GetGlobal("ffi._RegisterFFIInit")) {
+             (*opt)(type_index_);
+           }
          }
        }
      }
@@ -489,8 +505,20 @@ Program Listing for File registry.h
      template <typename... Args, typename... Extra>
      TVM_FFI_INLINE ObjectDef& def([[maybe_unused]] init<Args...> init_func, Extra&&... extra) {
        has_explicit_init_ = true;
+       // Register as TypeMethod (preserves type_schema metadata for Python stub generation).
        RegisterMethod(kInitMethodName, true, &init<Args...>::template execute<Class>,
                       std::forward<Extra>(extra)...);
+       // Also mirror into __ffi_init__ TypeAttrColumn for runtime dispatch.
+       const TVMFFITypeInfo* tinfo = TVMFFIGetTypeInfo(type_index_);
+       constexpr TVMFFIByteArray attr_name = AsByteArray(type_attr::kInit);
+       for (int32_t i = 0; i < tinfo->num_methods; ++i) {
+         if (tinfo->methods[i].name.size == attr_name.size &&
+             std::strncmp(tinfo->methods[i].name.data, attr_name.data, attr_name.size) == 0) {
+           TVM_FFI_CHECK_SAFE_CALL(
+               TVMFFITypeRegisterAttr(type_index_, &attr_name, &tinfo->methods[i].method));
+           break;
+         }
+       }
        return *this;
      }
    
@@ -504,24 +532,6 @@ Program Listing for File registry.h
          if (!value.include_) {
            has_explicit_init_ = true;
          }
-       }
-     }
-   
-     static ObjectRef ShallowCopy(const Class* self) {
-       return ObjectRef(ffi::make_object<Class>(*self));
-     }
-   
-     void AutoRegisterCopy() {
-       if constexpr (std::is_copy_constructible_v<Class>) {
-         // Register __ffi_shallow_copy__ as an instance method
-         RegisterMethod(type_attr::kShallowCopy, false, &ObjectDef::ShallowCopy);
-         // Also register as a type attribute for generic deep copy lookup
-         Function copy_fn = GetMethod(std::string(type_key_) + "." + type_attr::kShallowCopy,
-                                      &ObjectDef::ShallowCopy);
-         TVMFFIByteArray attr_name = {type_attr::kShallowCopy,
-                                      std::char_traits<char>::length(type_attr::kShallowCopy)};
-         TVMFFIAny attr_value = AnyView(copy_fn).CopyToTVMFFIAny();
-         TVM_FFI_CHECK_SAFE_CALL(TVMFFITypeRegisterAttr(type_index_, &attr_name, &attr_value));
        }
      }
    
@@ -594,8 +604,6 @@ Program Listing for File registry.h
        info.metadata = TVMFFIByteArray{metadata_str.c_str(), metadata_str.size()};
        TVM_FFI_CHECK_SAFE_CALL(TVMFFITypeRegisterMethod(type_index_, &info));
      }
-   
-     void AutoRegisterInit() { RegisterAutoInit(type_index_); }
    
      int32_t type_index_;
      const char* type_key_;

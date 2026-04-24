@@ -12,6 +12,7 @@ Inheritance Relationships
 Derived Types
 *************
 
+- ``public tvm::ffi::EnumObj`` (:ref:`exhale_class_classtvm_1_1ffi_1_1EnumObj`)
 - ``public tvm::ffi::ErrorObj`` (:ref:`exhale_class_classtvm_1_1ffi_1_1ErrorObj`)
 - ``public tvm::ffi::FunctionObj`` (:ref:`exhale_class_classtvm_1_1ffi_1_1FunctionObj`)
 - ``public tvm::ffi::MapBaseObj`` (:ref:`exhale_class_classtvm_1_1ffi_1_1MapBaseObj`)

@@ -13,12 +13,12 @@
 
    .. autosummary::
    
-      ~Map.__ffi_init__
       ~Map.__init__
       ~Map.__init_handle_by_constructor__
       ~Map.__move_handle_from__
       ~Map._move
       ~Map.get
+      ~Map.is_
       ~Map.items
       ~Map.keys
       ~Map.same_as
@@ -27,5 +27,11 @@
    
 
    
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+   
+      ~Map.id_
    
    

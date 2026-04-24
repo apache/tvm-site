@@ -573,7 +573,7 @@ Program Listing for File function.h
        using FuncInfo = ::tvm::ffi::details::FunctionInfo<decltype(Function)>;                      \
        std::ostringstream os;                                                                       \
        os << R"({"type_schema":)"                                                                   \
-          << ::tvm::ffi::EscapeString(::tvm::ffi::String(FuncInfo::TypeSchema())) << R"(})";        \
+          << ::tvm::ffi::EscapeStringJSON(::tvm::ffi::String(FuncInfo::TypeSchema())) << R"(})";    \
        std::string data = os.str();                                                                 \
        TVMFFIByteArray data_array{data.data(), data.size()};                                        \
        return TVMFFIStringFromByteArray(&data_array, result);                                       \
