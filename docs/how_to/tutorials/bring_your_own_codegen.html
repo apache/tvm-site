@@ -44,7 +44,9 @@
     
     <script type="text/javascript" src="../../_static/js/tlcpack_theme.js"></script>
     <link rel="index" title="Index" href="../../genindex.html" />
-    <link rel="search" title="Search" href="../../search.html" /> 
+    <link rel="search" title="Search" href="../../search.html" />
+    <link rel="next" title="Development Guides" href="../dev/index.html" />
+    <link rel="prev" title="Mix Python/PyTorch with TVM Using BasePyModule" href="mix_python_and_tvm_with_pymodule.html" /> 
 </head>
 
 <body class="wy-body-for-nav">
@@ -181,7 +183,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../../get_started/tutorials/ir_module.html">IRModule</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">How To</span></p>
-<ul>
+<ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="import_model.html">Importing Models from ML Frameworks</a></li>
 <li class="toctree-l1"><a class="reference internal" href="e2e_opt_model.html">End-to-End Optimize Model</a></li>
 <li class="toctree-l1"><a class="reference internal" href="customize_opt.html">Customize Optimization</a></li>
@@ -189,6 +191,16 @@
 <li class="toctree-l1"><a class="reference internal" href="cross_compilation_and_rpc.html">Cross Compilation and RPC</a></li>
 <li class="toctree-l1"><a class="reference internal" href="export_and_load_executable.html">Export and Load Relax Executables</a></li>
 <li class="toctree-l1"><a class="reference internal" href="mix_python_and_tvm_with_pymodule.html">Mix Python/PyTorch with TVM Using BasePyModule</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Bring Your Own Codegen: NPU Backend Example</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#overview-of-the-byoc-flow">Overview of the BYOC Flow</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#step-1-import-the-backend-to-register-its-patterns">Step 1: Import the backend to register its patterns</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#step-2-define-a-model">Step 2: Define a model</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#step-3-partition-the-graph">Step 3: Partition the graph</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#step-4-run-codegen">Step 4: Run codegen</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#step-6-conv2d-relu">Step 6: Conv2D + ReLU</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#next-steps">Next steps</a></li>
+</ul>
+</li>
 <li class="toctree-l1"><a class="reference internal" href="../dev/index.html">Development Guides</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Deep Dive</span></p>
@@ -280,7 +292,7 @@
         
             
             
-              <a href="https://github.com/apache/tvm/edit/main/docs/how_to/tutorials/byoc_npu_example.rst" class="fa fa-github"> Edit on GitHub</a>
+              <a href="https://github.com/apache/tvm/edit/main/docs/how_to/tutorials/bring_your_own_codegen.rst" class="fa fa-github"> Edit on GitHub</a>
             
           
         
@@ -296,19 +308,23 @@
             
   <div class="sphx-glr-download-link-note admonition note">
 <p class="admonition-title">Note</p>
-<p>You can click <a class="reference internal" href="#sphx-glr-download-how-to-tutorials-byoc-npu-example-py"><span class="std std-ref">here</span></a> to run the Jupyter notebook locally.</p>
+<p>You can click <a class="reference internal" href="#sphx-glr-download-how-to-tutorials-bring-your-own-codegen-py"><span class="std std-ref">here</span></a> to run the Jupyter notebook locally.</p>
 </div>
 <section class="sphx-glr-example-title" id="bring-your-own-codegen-npu-backend-example">
-<span id="tutorial-byoc-npu-example"></span><span id="sphx-glr-how-to-tutorials-byoc-npu-example-py"></span><h1>Bring Your Own Codegen: NPU Backend Example<a class="headerlink" href="#bring-your-own-codegen-npu-backend-example" title="Link to this heading"></a></h1>
-<p><strong>Author</strong>: <a class="reference external" href="https://github.com/Aristide021/">Sheldon Aristide</a></p>
-<p>This tutorial walks through the example NPU BYOC backend included in TVM.
-It demonstrates the key concepts needed to offload operations to a custom
-accelerator: pattern registration, graph partitioning, codegen, and runtime
-dispatch.</p>
+<span id="tutorial-bring-your-own-codegen"></span><span id="sphx-glr-how-to-tutorials-bring-your-own-codegen-py"></span><h1>Bring Your Own Codegen: NPU Backend Example<a class="headerlink" href="#bring-your-own-codegen-npu-backend-example" title="Link to this heading"></a></h1>
+<p>This tutorial shows how to integrate a custom hardware backend with TVM’s
+BYOC framework, using the bundled example NPU backend (CPU emulation, no
+real hardware required) as the worked example.  You will see the key
+concepts needed to offload operations to a custom accelerator: pattern
+registration, graph partitioning, codegen, and runtime dispatch.</p>
 <p>NPUs are purpose-built accelerators designed around a fixed set of operations
 common in neural network inference, such as matrix multiplication, convolution,
 and activation functions.
-The example backend uses CPU emulation so no real NPU hardware is required.</p>
+The example backend’s runtime is a <em>stub</em>: it logs the dispatch decisions an
+NPU would make (memory tier, execution engine, fusion) but performs no real
+computation, so output buffers are uninitialized.  Assertions in this tutorial
+therefore check shapes, not values.  When you replace the runtime with your
+hardware SDK calls, the same flow produces real results.</p>
 <p><strong>Prerequisites</strong>: Build TVM with <code class="docutils literal notranslate"><span class="pre">USE_EXAMPLE_NPU_CODEGEN=ON</span></code> and
 <code class="docutils literal notranslate"><span class="pre">USE_EXAMPLE_NPU_RUNTIME=ON</span></code>.</p>
 <section id="overview-of-the-byoc-flow">
@@ -329,7 +345,9 @@ registered backend runtime.</p></li>
 <h2>Step 1: Import the backend to register its patterns<a class="headerlink" href="#step-1-import-the-backend-to-register-its-patterns" title="Link to this heading"></a></h2>
 <p>Importing the module is enough to register all supported patterns with
 TVM’s pattern registry.</p>
-<div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">tvm</span>
+<div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">tvm</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">tvm.relax.backend.contrib.example_npu</span>  <span class="c1"># registers patterns</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">tvm</span><span class="w"> </span><span class="kn">import</span> <span class="n">relax</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">tvm.relax.backend.pattern_registry</span><span class="w"> </span><span class="kn">import</span> <a href="../../reference/api/python/relax/backend.html#tvm.relax.backend.get_patterns_with_prefix" title="tvm.relax.backend.get_patterns_with_prefix" class="sphx-glr-backref-module-tvm-relax-backend sphx-glr-backref-type-py-function"><span class="n">get_patterns_with_prefix</span></a>
@@ -340,11 +358,13 @@ TVM’s pattern registry.</p>
 <span class="n">has_example_npu_runtime</span> <span class="o">=</span> <span class="n">tvm</span><span class="o">.</span><span class="n">get_global_func</span><span class="p">(</span><span class="s2">&quot;runtime.ExampleNPUJSONRuntimeCreate&quot;</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
 <span class="n">has_example_npu</span> <span class="o">=</span> <span class="n">has_example_npu_codegen</span> <span class="ow">and</span> <span class="n">has_example_npu_runtime</span>
 
+<a href="../../reference/api/python/target.html#tvm.target.Target" title="tvm.target.Target" class="sphx-glr-backref-module-tvm-target sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">target</span></a> <span class="o">=</span> <a href="../../reference/api/python/target.html#tvm.target.Target" title="tvm.target.Target" class="sphx-glr-backref-module-tvm-target sphx-glr-backref-type-py-class"><span class="n">tvm</span><span class="o">.</span><span class="n">target</span><span class="o">.</span><span class="n">Target</span></a><span class="p">(</span><span class="s2">&quot;llvm&quot;</span><span class="p">)</span>
+
 <span class="n">patterns</span> <span class="o">=</span> <a href="../../reference/api/python/relax/backend.html#tvm.relax.backend.get_patterns_with_prefix" title="tvm.relax.backend.get_patterns_with_prefix" class="sphx-glr-backref-module-tvm-relax-backend sphx-glr-backref-type-py-function"><span class="n">get_patterns_with_prefix</span></a><span class="p">(</span><span class="s2">&quot;example_npu&quot;</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Registered patterns:&quot;</span><span class="p">,</span> <span class="p">[</span><span class="n">p</span><span class="o">.</span><span class="n">name</span> <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">patterns</span><span class="p">])</span>
 </pre></div>
 </div>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Registered patterns: [&#39;example_npu.dequantize&#39;, &#39;example_npu.quantize&#39;, &#39;example_npu.divide&#39;, &#39;example_npu.subtract&#39;, &#39;example_npu.multiply&#39;, &#39;example_npu.add&#39;, &#39;example_npu.gelu&#39;, &#39;example_npu.relu&#39;, &#39;example_npu.softmax&#39;, &#39;example_npu.batch_norm&#39;, &#39;example_npu.avg_pool2d&#39;, &#39;example_npu.max_pool2d&#39;, &#39;example_npu.depthwise_conv2d&#39;, &#39;example_npu.conv2d&#39;, &#39;example_npu.conv1d&#39;, &#39;example_npu.matmul&#39;, &#39;example_npu.dense&#39;, &#39;example_npu.conv2d_relu_fused&#39;]
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>Registered patterns: [&#39;example_npu.conv2d_relu_fused&#39;, &#39;example_npu.matmul_relu_fused&#39;, &#39;example_npu.depthwise_conv2d&#39;, &#39;example_npu.conv2d&#39;, &#39;example_npu.conv1d&#39;, &#39;example_npu.matmul&#39;, &#39;example_npu.dense&#39;, &#39;example_npu.avg_pool2d&#39;, &#39;example_npu.max_pool2d&#39;, &#39;example_npu.batch_norm&#39;, &#39;example_npu.softmax&#39;, &#39;example_npu.gelu&#39;, &#39;example_npu.relu&#39;, &#39;example_npu.divide&#39;, &#39;example_npu.subtract&#39;, &#39;example_npu.multiply&#39;, &#39;example_npu.add&#39;, &#39;example_npu.dequantize&#39;, &#39;example_npu.quantize&#39;]
 </pre></div>
 </div>
 </section>
@@ -369,8 +389,22 @@ TVM’s pattern registry.</p>
 <section id="step-3-partition-the-graph">
 <h2>Step 3: Partition the graph<a class="headerlink" href="#step-3-partition-the-graph" title="Link to this heading"></a></h2>
 <p><code class="docutils literal notranslate"><span class="pre">FuseOpsByPattern</span></code> groups ops that match a registered pattern into
-composite functions.  <code class="docutils literal notranslate"><span class="pre">MergeCompositeFunctions</span></code> consolidates them
-so each group becomes a single external call.</p>
+composite functions, controlled by two flags:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">bind_constants=False</span></code> keeps weights as function arguments instead
+of baking them in, so the host stays in charge of parameter
+ownership.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">annotate_codegen=True</span></code> tags each composite with its backend name
+(<code class="docutils literal notranslate"><span class="pre">example_npu</span></code>); without this tag, <code class="docutils literal notranslate"><span class="pre">RunCodegen</span></code> has no way to
+route the composite to a backend.</p></li>
+</ul>
+<p><code class="docutils literal notranslate"><span class="pre">MergeCompositeFunctions</span></code> then consolidates adjacent composites
+that target the same backend so each group becomes a single external
+call.  Note that consolidation depends on the patterns themselves: an
+<code class="docutils literal notranslate"><span class="pre">op_a</span> <span class="pre">+</span> <span class="pre">op_b</span></code> chain only collapses into one composite if a fused
+pattern (e.g. <code class="docutils literal notranslate"><span class="pre">matmul_relu_fused</span></code>) was registered for it; otherwise
+each op stays as its own composite even when both target the same
+backend.</p>
 <div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><span class="n">mod</span> <span class="o">=</span> <span class="n">MatmulReLU</span>
 <span class="n">mod</span> <span class="o">=</span> <a href="../../reference/api/python/relax/transform.html#tvm.relax.transform.FuseOpsByPattern" title="tvm.relax.transform.FuseOpsByPattern" class="sphx-glr-backref-module-tvm-relax-transform sphx-glr-backref-type-py-function"><span class="n">FuseOpsByPattern</span></a><span class="p">(</span><span class="n">patterns</span><span class="p">,</span> <span class="n">bind_constants</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">annotate_codegen</span><span class="o">=</span><span class="kc">True</span><span class="p">)(</span><span class="n">mod</span><span class="p">)</span>
 <span class="n">mod</span> <span class="o">=</span> <a href="../../reference/api/python/relax/transform.html#tvm.relax.transform.MergeCompositeFunctions" title="tvm.relax.transform.MergeCompositeFunctions" class="sphx-glr-backref-module-tvm-relax-transform sphx-glr-backref-type-py-function"><span class="n">MergeCompositeFunctions</span></a><span class="p">()(</span><span class="n">mod</span><span class="p">)</span>
@@ -385,39 +419,25 @@ so each group becomes a single external call.</p>
 @I.ir_module
 class Module:
     @R.function
-    def fused_relax_matmul_example_npu_example_npu(x: R.Tensor((2, 4), dtype=&quot;float32&quot;), w: R.Tensor((4, 8), dtype=&quot;float32&quot;)) -&gt; R.Tensor((2, 8), dtype=&quot;float32&quot;):
+    def fused_relax_matmul_relax_nn_relu_example_npu_example_npu(x: R.Tensor((2, 4), dtype=&quot;float32&quot;), w: R.Tensor((4, 8), dtype=&quot;float32&quot;)) -&gt; R.Tensor((2, 8), dtype=&quot;float32&quot;):
         R.func_attr({&quot;Codegen&quot;: &quot;example_npu&quot;})
         # from tvm.script import relax as R
 
         @R.function
         def local_func(x_1: R.Tensor((2, 4), dtype=&quot;float32&quot;), w_1: R.Tensor((4, 8), dtype=&quot;float32&quot;)) -&gt; R.Tensor((2, 8), dtype=&quot;float32&quot;):
-            R.func_attr({&quot;Composite&quot;: &quot;example_npu.matmul&quot;})
-            gv: R.Tensor((2, 8), dtype=&quot;float32&quot;) = R.matmul(x_1, w_1, out_dtype=&quot;void&quot;)
+            R.func_attr({&quot;Composite&quot;: &quot;example_npu.matmul_relu_fused&quot;})
+            y: R.Tensor((2, 8), dtype=&quot;float32&quot;) = R.matmul(x_1, w_1, out_dtype=&quot;void&quot;)
+            gv: R.Tensor((2, 8), dtype=&quot;float32&quot;) = R.nn.relu(y)
             return gv
 
         output: R.Tensor((2, 8), dtype=&quot;float32&quot;) = local_func(x, w)
         return output
 
     @R.function
-    def fused_relax_nn_relu_example_npu_example_npu(y: R.Tensor((2, 8), dtype=&quot;float32&quot;)) -&gt; R.Tensor((2, 8), dtype=&quot;float32&quot;):
-        R.func_attr({&quot;Codegen&quot;: &quot;example_npu&quot;})
-        # from tvm.script import relax as R
-
-        @R.function
-        def local_func(y_1: R.Tensor((2, 8), dtype=&quot;float32&quot;)) -&gt; R.Tensor((2, 8), dtype=&quot;float32&quot;):
-            R.func_attr({&quot;Composite&quot;: &quot;example_npu.relu&quot;})
-            gv: R.Tensor((2, 8), dtype=&quot;float32&quot;) = R.nn.relu(y_1)
-            return gv
-
-        output: R.Tensor((2, 8), dtype=&quot;float32&quot;) = local_func(y)
-        return output
-
-    @R.function
     def main(x: R.Tensor((2, 4), dtype=&quot;float32&quot;), w: R.Tensor((4, 8), dtype=&quot;float32&quot;)) -&gt; R.Tensor((2, 8), dtype=&quot;float32&quot;):
         cls = Module
         with R.dataflow():
-            lv: R.Tensor((2, 8), dtype=&quot;float32&quot;) = cls.fused_relax_matmul_example_npu_example_npu(x, w)
-            gv: R.Tensor((2, 8), dtype=&quot;float32&quot;) = cls.fused_relax_nn_relu_example_npu_example_npu(lv)
+            gv: R.Tensor((2, 8), dtype=&quot;float32&quot;) = cls.fused_relax_matmul_relax_nn_relu_example_npu_example_npu(x, w)
             R.output(gv)
         return gv
 </pre></div>
@@ -442,28 +462,27 @@ and <code class="docutils literal notranslate"><span class="pre">USE_EXAMPLE_NPU
     <span class="c1"># Build the module for the host target, create a virtual machine, and</span>
     <span class="c1"># execute the compiled function.</span>
 
-    <span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
-
     <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
     <span class="n">x_np</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s2">&quot;float32&quot;</span><span class="p">)</span>
     <span class="n">w_np</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">4</span><span class="p">,</span> <span class="mi">8</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s2">&quot;float32&quot;</span><span class="p">)</span>
 
-    <span class="n">target</span> <span class="o">=</span> <a href="../../reference/api/python/target.html#tvm.target.Target" title="tvm.target.Target" class="sphx-glr-backref-module-tvm-target sphx-glr-backref-type-py-class"><span class="n">tvm</span><span class="o">.</span><span class="n">target</span><span class="o">.</span><span class="n">Target</span></a><span class="p">(</span><span class="s2">&quot;llvm&quot;</span><span class="p">)</span>
     <span class="k">with</span> <a href="../../reference/api/python/transform.html#tvm.ir.transform.PassContext" title="tvm.ir.transform.PassContext" class="sphx-glr-backref-module-tvm-ir-transform sphx-glr-backref-type-py-class"><span class="n">tvm</span><span class="o">.</span><span class="n">transform</span><span class="o">.</span><span class="n">PassContext</span></a><span class="p">(</span><span class="n">opt_level</span><span class="o">=</span><span class="mi">3</span><span class="p">):</span>
-        <span class="n">built</span> <span class="o">=</span> <a href="../../reference/api/python/relax/relax.html#tvm.relax.build" title="tvm.relax.build" class="sphx-glr-backref-module-tvm-relax sphx-glr-backref-type-py-function"><span class="n">relax</span><span class="o">.</span><span class="n">build</span></a><span class="p">(</span><span class="n">mod</span><span class="p">,</span> <span class="n">target</span><span class="p">)</span>
+        <span class="n">built</span> <span class="o">=</span> <a href="../../reference/api/python/relax/relax.html#tvm.relax.build" title="tvm.relax.build" class="sphx-glr-backref-module-tvm-relax sphx-glr-backref-type-py-function"><span class="n">relax</span><span class="o">.</span><span class="n">build</span></a><span class="p">(</span><span class="n">mod</span><span class="p">,</span> <a href="../../reference/api/python/target.html#tvm.target.Target" title="tvm.target.Target" class="sphx-glr-backref-module-tvm-target sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">target</span></a><span class="p">)</span>
 
     <span class="n">vm</span> <span class="o">=</span> <a href="../../reference/api/python/relax/relax.html#tvm.relax.VirtualMachine" title="tvm.relax.VirtualMachine" class="sphx-glr-backref-module-tvm-relax sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">relax</span><span class="o">.</span><span class="n">VirtualMachine</span></a><span class="p">(</span><span class="n">built</span><span class="p">,</span> <span class="n">tvm</span><span class="o">.</span><span class="n">cpu</span><span class="p">())</span>
     <span class="n">result</span> <span class="o">=</span> <span class="n">vm</span><span class="p">[</span><span class="s2">&quot;main&quot;</span><span class="p">](</span><span class="n">tvm</span><span class="o">.</span><span class="n">runtime</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">x_np</span><span class="p">,</span> <span class="n">tvm</span><span class="o">.</span><span class="n">cpu</span><span class="p">()),</span> <span class="n">tvm</span><span class="o">.</span><span class="n">runtime</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">w_np</span><span class="p">,</span> <span class="n">tvm</span><span class="o">.</span><span class="n">cpu</span><span class="p">()))</span>
 
-    <span class="n">expected_shape</span> <span class="o">=</span> <span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">8</span><span class="p">)</span>
-    <span class="k">assert</span> <span class="n">result</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span><span class="o">.</span><span class="n">shape</span> <span class="o">==</span> <span class="n">expected_shape</span>
+    <span class="k">assert</span> <span class="n">result</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span><span class="o">.</span><span class="n">shape</span> <span class="o">==</span> <span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">8</span><span class="p">)</span>
     <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Execution completed. Output shape:&quot;</span><span class="p">,</span> <span class="n">result</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
 </pre></div>
 </div>
 </section>
 <section id="step-6-conv2d-relu">
 <h2>Step 6: Conv2D + ReLU<a class="headerlink" href="#step-6-conv2d-relu" title="Link to this heading"></a></h2>
-<p>The same flow applies to convolution workloads.</p>
+<p>The same flow applies to convolution workloads.  Because the fused
+<code class="docutils literal notranslate"><span class="pre">conv2d</span> <span class="pre">+</span> <span class="pre">relu</span></code> pattern is registered after the standalone
+<code class="docutils literal notranslate"><span class="pre">conv2d</span></code> pattern in <code class="docutils literal notranslate"><span class="pre">patterns.py</span></code> (later entries have higher
+priority), both ops are offloaded as a single composite function.</p>
 <div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><span class="nd">@tvm</span><span class="o">.</span><span class="n">script</span><span class="o">.</span><span class="n">ir_module</span>
 <span class="k">class</span><span class="w"> </span><span class="nc">Conv2dReLU</span><span class="p">:</span>
     <span class="nd">@R</span><span class="o">.</span><span class="n">function</span>
@@ -485,9 +504,17 @@ and <code class="docutils literal notranslate"><span class="pre">USE_EXAMPLE_NPU
     <span class="n">mod2</span> <span class="o">=</span> <a href="../../reference/api/python/relax/transform.html#tvm.relax.transform.RunCodegen" title="tvm.relax.transform.RunCodegen" class="sphx-glr-backref-module-tvm-relax-transform sphx-glr-backref-type-py-function"><span class="n">RunCodegen</span></a><span class="p">()(</span><span class="n">mod2</span><span class="p">)</span>
 
     <span class="k">with</span> <a href="../../reference/api/python/transform.html#tvm.ir.transform.PassContext" title="tvm.ir.transform.PassContext" class="sphx-glr-backref-module-tvm-ir-transform sphx-glr-backref-type-py-class"><span class="n">tvm</span><span class="o">.</span><span class="n">transform</span><span class="o">.</span><span class="n">PassContext</span></a><span class="p">(</span><span class="n">opt_level</span><span class="o">=</span><span class="mi">3</span><span class="p">):</span>
-        <span class="n">built2</span> <span class="o">=</span> <a href="../../reference/api/python/relax/relax.html#tvm.relax.build" title="tvm.relax.build" class="sphx-glr-backref-module-tvm-relax sphx-glr-backref-type-py-function"><span class="n">relax</span><span class="o">.</span><span class="n">build</span></a><span class="p">(</span><span class="n">mod2</span><span class="p">,</span> <span class="n">target</span><span class="p">)</span>
+        <span class="n">built2</span> <span class="o">=</span> <a href="../../reference/api/python/relax/relax.html#tvm.relax.build" title="tvm.relax.build" class="sphx-glr-backref-module-tvm-relax sphx-glr-backref-type-py-function"><span class="n">relax</span><span class="o">.</span><span class="n">build</span></a><span class="p">(</span><span class="n">mod2</span><span class="p">,</span> <a href="../../reference/api/python/target.html#tvm.target.Target" title="tvm.target.Target" class="sphx-glr-backref-module-tvm-target sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">target</span></a><span class="p">)</span>
 
-    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Conv2dReLU compiled successfully.&quot;</span><span class="p">)</span>
+    <span class="n">x2_np</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">32</span><span class="p">,</span> <span class="mi">32</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s2">&quot;float32&quot;</span><span class="p">)</span>
+    <span class="n">w2_np</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">randn</span><span class="p">(</span><span class="mi">16</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s2">&quot;float32&quot;</span><span class="p">)</span>
+
+    <span class="n">vm2</span> <span class="o">=</span> <a href="../../reference/api/python/relax/relax.html#tvm.relax.VirtualMachine" title="tvm.relax.VirtualMachine" class="sphx-glr-backref-module-tvm-relax sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">relax</span><span class="o">.</span><span class="n">VirtualMachine</span></a><span class="p">(</span><span class="n">built2</span><span class="p">,</span> <span class="n">tvm</span><span class="o">.</span><span class="n">cpu</span><span class="p">())</span>
+    <span class="n">result2</span> <span class="o">=</span> <span class="n">vm2</span><span class="p">[</span><span class="s2">&quot;main&quot;</span><span class="p">](</span>
+        <span class="n">tvm</span><span class="o">.</span><span class="n">runtime</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">x2_np</span><span class="p">,</span> <span class="n">tvm</span><span class="o">.</span><span class="n">cpu</span><span class="p">()),</span> <span class="n">tvm</span><span class="o">.</span><span class="n">runtime</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">w2_np</span><span class="p">,</span> <span class="n">tvm</span><span class="o">.</span><span class="n">cpu</span><span class="p">())</span>
+    <span class="p">)</span>
+    <span class="k">assert</span> <span class="n">result2</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span><span class="o">.</span><span class="n">shape</span> <span class="o">==</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">16</span><span class="p">,</span> <span class="mi">30</span><span class="p">,</span> <span class="mi">30</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Conv2dReLU output shape:&quot;</span><span class="p">,</span> <span class="n">result2</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span><span class="o">.</span><span class="n">shape</span><span class="p">)</span>
 </pre></div>
 </div>
 </section>
@@ -502,15 +529,15 @@ hardware requires a non-JSON serialization format.</p></li>
 <li><p>Add your cmake module under <code class="docutils literal notranslate"><span class="pre">cmake/modules/contrib/</span></code> following
 the pattern in <code class="docutils literal notranslate"><span class="pre">cmake/modules/contrib/ExampleNPU.cmake</span></code>.</p></li>
 </ul>
-<div class="sphx-glr-footer sphx-glr-footer-example docutils container" id="sphx-glr-download-how-to-tutorials-byoc-npu-example-py">
+<div class="sphx-glr-footer sphx-glr-footer-example docutils container" id="sphx-glr-download-how-to-tutorials-bring-your-own-codegen-py">
 <div class="sphx-glr-download sphx-glr-download-jupyter docutils container">
-<p><a class="reference download internal" download="" href="../../_downloads/43824fc479896e7049e14d1a62e6b864/byoc_npu_example.ipynb"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Jupyter</span> <span class="pre">notebook:</span> <span class="pre">byoc_npu_example.ipynb</span></code></a></p>
+<p><a class="reference download internal" download="" href="../../_downloads/2729a585e9deb6295e6d7badc73087d7/bring_your_own_codegen.ipynb"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Jupyter</span> <span class="pre">notebook:</span> <span class="pre">bring_your_own_codegen.ipynb</span></code></a></p>
 </div>
 <div class="sphx-glr-download sphx-glr-download-python docutils container">
-<p><a class="reference download internal" download="" href="../../_downloads/59e92ec30b073e69118f05697f7e4e5b/byoc_npu_example.py"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">byoc_npu_example.py</span></code></a></p>
+<p><a class="reference download internal" download="" href="../../_downloads/c4ca99367570f8682036b6e670ef0dd9/bring_your_own_codegen.py"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">Python</span> <span class="pre">source</span> <span class="pre">code:</span> <span class="pre">bring_your_own_codegen.py</span></code></a></p>
 </div>
 <div class="sphx-glr-download sphx-glr-download-zip docutils container">
-<p><a class="reference download internal" download="" href="../../_downloads/d42bd0f97b9a6b25a1a2ba6cf45f871b/byoc_npu_example.zip"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">zipped:</span> <span class="pre">byoc_npu_example.zip</span></code></a></p>
+<p><a class="reference download internal" download="" href="../../_downloads/8c05f1d580979a2c26428a509c07ed72/bring_your_own_codegen.zip"><code class="xref download docutils literal notranslate"><span class="pre">Download</span> <span class="pre">zipped:</span> <span class="pre">bring_your_own_codegen.zip</span></code></a></p>
 </div>
 </div>
 <p class="sphx-glr-signature"><a class="reference external" href="https://sphinx-gallery.github.io">Gallery generated by Sphinx-Gallery</a></p>
@@ -524,6 +551,15 @@ the pattern in <code class="docutils literal notranslate"><span class="pre">cmak
           
 
 <footer>
+
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="../dev/index.html" class="btn btn-neutral float-right" title="Development Guides" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+        <a href="mix_python_and_tvm_with_pymodule.html" class="btn btn-neutral float-left" title="Mix Python/PyTorch with TVM Using BasePyModule" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left"></span> Previous</a>
+      
+    </div>
 
 <div id="button" class="backtop"><img src="../../_static/img/right.svg" alt="backtop"/> </div>
 <section class="footerSec">
