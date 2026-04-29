@@ -23,7 +23,7 @@ var searchData=
   ['liftthreadbinding_5876',['LiftThreadBinding',['../namespacetvm_1_1s__tir_1_1transform.html#acff3f0ecba9931aae7bac920fcce7d1b',1,'tvm::s_tir::transform']]],
   ['lifttransformparams_5877',['LiftTransformParams',['../namespacetvm_1_1relax_1_1transform.html#a313133cbc2c030cc7602d22efb7a3ca1',1,'tvm::relax::transform']]],
   ['likely_5878',['likely',['../namespacetvm.html#a336b811d7f339f888ad38d2e2657710d',1,'tvm::likely()'],['../namespacetvm_1_1tirx_1_1builtin.html#ac498bcb3f4c9e74e420af0680b503f67',1,'tvm::tirx::builtin::likely()']]],
-  ['linearcongruentialengine_5879',['LinearCongruentialEngine',['../classtvm_1_1support_1_1LinearCongruentialEngine.html#af1286194e2b9e315bf4174f2dd759ecc',1,'tvm::support::LinearCongruentialEngine']]],
+  ['linearcongruentialengine_5879',['LinearCongruentialEngine',['../classtvm_1_1s__tir_1_1LinearCongruentialEngine.html#a2dbc2552faada4c1876332947c3a741e',1,'tvm::s_tir::LinearCongruentialEngine']]],
   ['listconfigs_5880',['ListConfigs',['../classtvm_1_1transform_1_1PassContext.html#a7b9db540a7eddeb0db8f880fc5738046',1,'tvm::transform::PassContext']]],
   ['listdoc_5881',['ListDoc',['../classtvm_1_1script_1_1printer_1_1ListDoc.html#a312edc2fe47a5d3839393ff21f9300b4',1,'tvm::script::printer::ListDoc::ListDoc()'],['../classtvm_1_1script_1_1printer_1_1ListDoc.html#a89124961a053fe74a83c273f1a8a590e',1,'tvm::script::printer::ListDoc::ListDoc(ffi::Array&lt; ExprDoc &gt; elements)']]],
   ['listoptions_5882',['ListOptions',['../classtvm_1_1ir_1_1ConfigSchema.html#af6d6f091a2fff3643f95aec7818f59ec',1,'tvm::ir::ConfigSchema']]],
