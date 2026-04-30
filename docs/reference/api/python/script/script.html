@@ -240,8 +240,10 @@
 <li class="toctree-l2"><a class="reference internal" href="../s_tir/tensor_intrin.html">tvm.s_tir.tensor_intrin</a></li>
 <li class="toctree-l2 current"><a class="current reference internal" href="#">tvm.script</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#id1">tvm.script</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#dialect-resolution-mechanism">Dialect resolution mechanism</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#bootstrap-order">Bootstrap order</a></li>
+<li class="toctree-l4"><a class="reference internal" href="#tvm.script.register_dialect"><code class="docutils literal notranslate"><span class="pre">register_dialect()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#tvm.script.ir_module"><code class="docutils literal notranslate"><span class="pre">ir_module()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#tvm.script.from_source"><code class="docutils literal notranslate"><span class="pre">from_source()</span></code></a></li>
 </ul>
 </li>
 <li class="toctree-l3"><a class="reference internal" href="#module-tvm.script.relax">tvm.script.relax</a></li>
@@ -358,7 +360,82 @@
 <h1>tvm.script<a class="headerlink" href="#tvm-script" title="Link to this heading"></a></h1>
 <section id="id1">
 <h2>tvm.script<a class="headerlink" href="#id1" title="Link to this heading"></a></h2>
-<p id="module-tvm.script">TVM Script APIs of TVM Python Package</p>
+<p id="module-tvm.script">TVMScript public namespace.</p>
+<section id="dialect-resolution-mechanism">
+<h3>Dialect resolution mechanism<a class="headerlink" href="#dialect-resolution-mechanism" title="Link to this heading"></a></h3>
+<p><code class="docutils literal notranslate"><span class="pre">tvm.script</span></code> is a virtual namespace: dialect names like <code class="docutils literal notranslate"><span class="pre">tirx</span></code> and
+<code class="docutils literal notranslate"><span class="pre">relax</span></code> are not bound as static attributes here.  Instead:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">register_dialect(name,</span> <span class="pre">module_path)</span></code> writes an entry to
+<code class="docutils literal notranslate"><span class="pre">_DIALECT_REGISTRY:</span> <span class="pre">dict[str,</span> <span class="pre">str]</span></code>.  Each in-tree dialect’s
+<code class="docutils literal notranslate"><span class="pre">__init__.py</span></code> calls this on import (e.g., <code class="docutils literal notranslate"><span class="pre">tvm.tirx.__init__.py</span></code>
+calls <code class="docutils literal notranslate"><span class="pre">tvm.script.register_dialect(&quot;tirx&quot;,</span> <span class="pre">&quot;tvm.tirx.script&quot;)</span></code>).
+Out-of-tree dialects can register themselves the same way.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">__getattr__(name)</span></code> (PEP 562) fires on missing attribute access.
+If <code class="docutils literal notranslate"><span class="pre">name</span></code> is in <code class="docutils literal notranslate"><span class="pre">_DIALECT_REGISTRY</span></code>, the listed module is imported
+and cached as a normal module attribute.  Subsequent accesses
+skip <code class="docutils literal notranslate"><span class="pre">__getattr__</span></code> (cached in <code class="docutils literal notranslate"><span class="pre">globals()</span></code>).</p></li>
+<li><p>Subpackages <code class="docutils literal notranslate"><span class="pre">tvm.script.parser</span></code>, <code class="docutils literal notranslate"><span class="pre">tvm.script.ir_builder</span></code>, etc.
+each define their own <code class="docutils literal notranslate"><span class="pre">__getattr__</span></code> that consults the SAME
+<code class="docutils literal notranslate"><span class="pre">_DIALECT_REGISTRY</span></code> and appends their suffix.  So
+<code class="docutils literal notranslate"><span class="pre">tvm.script.parser.tirx</span></code> resolves to <code class="docutils literal notranslate"><span class="pre">tvm.tirx.script.parser</span></code> via
+the dialect registry + <code class="docutils literal notranslate"><span class="pre">.parser</span></code> suffix.</p></li>
+<li><p>For deep statement-form imports like
+<code class="docutils literal notranslate"><span class="pre">from</span> <span class="pre">tvm.script.parser.tirx.entry</span> <span class="pre">import</span> <span class="pre">ObjectProxy</span></code>, PEP 562’s
+<code class="docutils literal notranslate"><span class="pre">__getattr__</span></code> is not enough — it only handles one-level
+<code class="docutils literal notranslate"><span class="pre">from</span> <span class="pre">X</span> <span class="pre">import</span> <span class="pre">Y</span></code>.  A <code class="docutils literal notranslate"><span class="pre">sys.meta_path</span></code> finder (see
+<code class="docutils literal notranslate"><span class="pre">_DialectRedirectFinder</span></code>) intercepts the import machinery to
+register the real module under the legacy name in <code class="docutils literal notranslate"><span class="pre">sys.modules</span></code>,
+so subsequent attribute walks resolve correctly.</p></li>
+</ul>
+<p>Each dialect’s <code class="docutils literal notranslate"><span class="pre">tvm.&lt;dialect&gt;.script</span></code> package MUST expose <code class="docutils literal notranslate"><span class="pre">parser</span></code>,
+<code class="docutils literal notranslate"><span class="pre">ir_builder</span></code>, and (where applicable) <code class="docutils literal notranslate"><span class="pre">printer</span></code> as submodules.  This
+convention is what makes the suffix-append redirect work uniformly.
+IR is foundational (script depends on ir) and is NOT a dialect; its
+script handlers live in the shared core, not via this registry.</p>
+</section>
+<section id="bootstrap-order">
+<h3>Bootstrap order<a class="headerlink" href="#bootstrap-order" title="Link to this heading"></a></h3>
+<p><code class="docutils literal notranslate"><span class="pre">python/tvm/__init__.py</span></code> imports <code class="docutils literal notranslate"><span class="pre">tvm.script</span></code> BEFORE importing any
+dialect package (<code class="docutils literal notranslate"><span class="pre">tvm.tirx</span></code>, <code class="docutils literal notranslate"><span class="pre">tvm.relax</span></code>, …).  This guarantees that
+<code class="docutils literal notranslate"><span class="pre">tvm.script.register_dialect</span></code> is reachable the moment a dialect’s own
+<code class="docutils literal notranslate"><span class="pre">__init__.py</span></code> runs and calls it.  The <code class="docutils literal notranslate"><span class="pre">tvm.script</span></code> module itself
+stays dialect-agnostic at load time (no dialect submodules are eagerly
+imported here), so there is no circular dependency.</p>
+</section>
+<dl class="py function">
+<dt class="sig sig-object py" id="tvm.script.register_dialect">
+<span class="sig-prename descclassname"><span class="pre">tvm.script.</span></span><span class="sig-name descname"><span class="pre">register_dialect</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">module_path</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span></span><a class="headerlink" href="#tvm.script.register_dialect" title="Link to this definition"></a></dt>
+<dd><p>Register a dialect’s script package path.</p>
+<p>Writes <code class="docutils literal notranslate"><span class="pre">name</span> <span class="pre">-&gt;</span> <span class="pre">module_path</span></code> into <code class="docutils literal notranslate"><span class="pre">_DIALECT_REGISTRY</span></code>.  After
+registration, <code class="docutils literal notranslate"><span class="pre">tvm.script.&lt;name&gt;</span></code> resolves to <code class="docutils literal notranslate"><span class="pre">module_path</span></code> via
+<code class="docutils literal notranslate"><span class="pre">__getattr__</span></code>, and <code class="docutils literal notranslate"><span class="pre">tvm.script.parser.&lt;name&gt;</span></code> / <code class="docutils literal notranslate"><span class="pre">tvm.script.ir_builder.&lt;name&gt;</span></code>
+resolve to <code class="docutils literal notranslate"><span class="pre">module_path</span> <span class="pre">+</span> <span class="pre">&quot;.parser&quot;</span></code> / <code class="docutils literal notranslate"><span class="pre">module_path</span> <span class="pre">+</span> <span class="pre">&quot;.builder&quot;</span></code> etc.
+via each subpackage’s own <code class="docutils literal notranslate"><span class="pre">__getattr__</span></code>.  Deep statement-form imports
+(e.g., <code class="docutils literal notranslate"><span class="pre">from</span> <span class="pre">tvm.script.parser.&lt;name&gt;.entry</span> <span class="pre">import</span> <span class="pre">X</span></code>) are handled
+by <code class="docutils literal notranslate"><span class="pre">_DialectRedirectFinder</span></code> on <code class="docutils literal notranslate"><span class="pre">sys.meta_path</span></code>.</p>
+<p>This function is idempotent — re-registering the same name with the same
+path is harmless.</p>
+<p>Each in-tree dialect calls this from its own <code class="docutils literal notranslate"><span class="pre">__init__.py</span></code>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">tvm.script</span>
+<span class="n">tvm</span><span class="o">.</span><span class="n">script</span><span class="o">.</span><span class="n">register_dialect</span><span class="p">(</span><span class="s2">&quot;tirx&quot;</span><span class="p">,</span> <span class="s2">&quot;tvm.tirx.script&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Out-of-tree dialects do the same in their own package init without
+editing any in-tree file.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>) – The short name exposed under <code class="docutils literal notranslate"><span class="pre">tvm.script.&lt;name&gt;</span></code> (e.g. <code class="docutils literal notranslate"><span class="pre">&quot;tirx&quot;</span></code>).</p></li>
+<li><p><strong>module_path</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>) – The full dotted module path of the dialect’s script package, e.g.
+<code class="docutils literal notranslate"><span class="pre">&quot;tvm.tirx.script&quot;</span></code>.  That package must expose <code class="docutils literal notranslate"><span class="pre">parser</span></code> and
+<code class="docutils literal notranslate"><span class="pre">ir_builder</span></code> as submodules (and <code class="docutils literal notranslate"><span class="pre">printer</span></code> where applicable) so
+that the suffix-append redirect works uniformly.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
 <dl class="py function">
 <dt class="sig sig-object py" id="tvm.script.ir_module">
 <span class="sig-prename descclassname"><span class="pre">tvm.script.</span></span><span class="sig-name descname"><span class="pre">ir_module</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">mod</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#type" title="(in Python v3.14)"><span class="pre">type</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">check_well_formed</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="../ir.html#tvm.ir.IRModule" title="tvm.ir.module.IRModule"><span class="pre">IRModule</span></a></span></span><a class="headerlink" href="#tvm.script.ir_module" title="Link to this definition"></a></dt>
@@ -379,35 +456,22 @@
 </dl>
 </dd></dl>
 
-<dl class="py function">
-<dt class="sig sig-object py" id="tvm.script.from_source">
-<span class="sig-prename descclassname"><span class="pre">tvm.script.</span></span><span class="sig-name descname"><span class="pre">from_source</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">program</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">AST</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><span class="pre">Any</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">extra_vars</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.14)"><span class="pre">dict</span></a><span class="p"><span class="pre">[</span></span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="p"><span class="pre">,</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><span class="pre">Any</span></a><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">check_well_formed</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Any" title="(in Python v3.14)"><span class="pre">Any</span></a></span></span><a class="headerlink" href="#tvm.script.from_source" title="Link to this definition"></a></dt>
-<dd><p>Register a method for a operand type, AST operator node and operand index.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>program</strong> (<em>Union</em><em>[</em><em>doc.AST</em><em>, </em><em>Any</em><em>, </em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>]</em>) – The TVMScript code to parse.</p></li>
-<li><p><strong>extra_vars</strong> (<em>Dict</em><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>, </em><em>Any</em><em>]</em>) – The extra variable table for parsing.</p></li>
-<li><p><strong>check_well_formed</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><em>bool</em></a>) – Whether to check well-formedness after parsing.</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p><strong>func</strong> – The parsed TVMScript program.</p>
-</dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>Any</p>
-</dd>
-</dl>
-</dd></dl>
-
 </section>
 <section id="module-tvm.script.relax">
 <span id="tvm-script-relax"></span><h2>tvm.script.relax<a class="headerlink" href="#module-tvm.script.relax" title="Link to this heading"></a></h2>
-<p>TVM Script APIs of TVM Python Package for Relax</p>
+<p>Relax-layer TVMScript pieces (parser, builder).</p>
+<p>After the per-dialect TVMScript restructure, the Relax layer owns its own
+<code class="docutils literal notranslate"><span class="pre">script/{parser,builder}</span></code> subpackages. <code class="docutils literal notranslate"><span class="pre">tvm.script.relax</span></code> resolves to
+this module via the dialect registry, so the public parser surface
+(<code class="docutils literal notranslate"><span class="pre">function</span></code>, <code class="docutils literal notranslate"><span class="pre">Tensor</span></code>, <code class="docutils literal notranslate"><span class="pre">match_cast</span></code>, etc.) is re-exported here.</p>
 </section>
 <section id="module-tvm.script.tirx">
 <span id="tvm-script-tirx"></span><h2>tvm.script.tirx<a class="headerlink" href="#module-tvm.script.tirx" title="Link to this heading"></a></h2>
-<p>TVM Script APIs of TVM Python Package for TIR</p>
+<p>TIRX-layer TVMScript pieces (parser, builder).</p>
+<p>After the per-dialect TVMScript restructure, the TIRX layer owns its own
+<code class="docutils literal notranslate"><span class="pre">script/{parser,builder}</span></code> subpackages. <code class="docutils literal notranslate"><span class="pre">tvm.script.tirx</span></code> resolves to
+this module via the dialect registry, so the public parser surface
+(<code class="docutils literal notranslate"><span class="pre">prim_func</span></code>, <code class="docutils literal notranslate"><span class="pre">Buffer</span></code>, <code class="docutils literal notranslate"><span class="pre">Ptr</span></code>, etc.) is re-exported here.</p>
 </section>
 </section>
 

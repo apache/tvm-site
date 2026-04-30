@@ -1,7 +1,7 @@
 var searchData=
 [
-  ['name_5997',['name',['../classtvm_1_1tirx_1_1Layout.html#a6f1197385f34cd9c571fdd32ec2f692a',1,'tvm::tirx::Layout::name()'],['../classtvm_1_1tirx_1_1LayoutAxis.html#a5bae4fc6bbbac277f03cb13937e2c82a',1,'tvm::tirx::LayoutAxis::name()']]],
-  ['name_5998',['Name',['../classtvm_1_1script_1_1ir__builder_1_1details_1_1Namer.html#a39cda244096d654bfbd5a38e90723dbf',1,'tvm::script::ir_builder::details::Namer::Name()'],['../classtvm_1_1script_1_1ir__builder_1_1IRBuilder.html#a16bb7ca91d7a825ce3941a81a57782d9',1,'tvm::script::ir_builder::IRBuilder::Name()']]],
+  ['name_5997',['Name',['../classtvm_1_1script_1_1ir__builder_1_1details_1_1Namer.html#a39cda244096d654bfbd5a38e90723dbf',1,'tvm::script::ir_builder::details::Namer::Name()'],['../classtvm_1_1script_1_1ir__builder_1_1IRBuilder.html#a16bb7ca91d7a825ce3941a81a57782d9',1,'tvm::script::ir_builder::IRBuilder::Name()']]],
+  ['name_5998',['name',['../classtvm_1_1tirx_1_1Layout.html#a6f1197385f34cd9c571fdd32ec2f692a',1,'tvm::tirx::Layout::name()'],['../classtvm_1_1tirx_1_1LayoutAxis.html#a5bae4fc6bbbac277f03cb13937e2c82a',1,'tvm::tirx::LayoutAxis::name()']]],
   ['name_5fhint_5999',['name_hint',['../classtvm_1_1relax_1_1VarPatternNode.html#a5b0cc104cb0b6a3bf3fc03db0d4889fd',1,'tvm::relax::VarPatternNode::name_hint()'],['../classtvm_1_1relax_1_1VarNode.html#a445b6bdb85b92c7afc69b88533cc9795',1,'tvm::relax::VarNode::name_hint()']]],
   ['name_5fsupply_6000',['name_supply',['../classtvm_1_1relax_1_1BlockBuilderNode.html#a0d90afaaadeab9dedac9a61311c910f5',1,'tvm::relax::BlockBuilderNode']]],
   ['namesupply_6001',['NameSupply',['../classtvm_1_1NameSupply.html#a602330d065892f4bb2f520f9fec85bae',1,'tvm::NameSupply::NameSupply(const ffi::String &amp;prefix=&quot;&quot;, std::unordered_map&lt; std::string, int &gt; name_map={})'],['../classtvm_1_1NameSupply.html#a4ad1b3236ebe88ea083148702549fdc6',1,'tvm::NameSupply::NameSupply(Iter begin, Iter end, Lambda f)']]],
