@@ -43,7 +43,7 @@
   <link rel="preload" as="script" href="../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../../_static/documentation_options.js?v=269d0455"></script>
+    <script src="../../_static/documentation_options.js?v=a0222484"></script>
     <script src="../../_static/doctools.js?v=9bcbadda"></script>
     <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -496,8 +496,8 @@ window.runMermaid = runMermaid;</script>
     <link rel="search" title="Search" href="../../search.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="0.1.dev1+g281f7e114" />
-    <meta name="docbuild:last-update" content="Apr 24, 2026"/>
+  <meta name="docsearch:version" content="0.1.dev1+gb4525d2bb" />
+    <meta name="docbuild:last-update" content="May 04, 2026"/>
   </head>
   
   
@@ -659,6 +659,7 @@ window.runMermaid = runMermaid;</script>
 <li class="toctree-l2"><a class="reference internal" href="../../reference/python/generated/tvm_ffi.access_path.AccessPath.html">tvm_ffi.access_path.AccessPath</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../reference/python/generated/tvm_ffi.access_path.AccessStep.html">tvm_ffi.access_path.AccessStep</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../reference/python/generated/tvm_ffi.convert.html">tvm_ffi.convert</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../reference/python/generated/tvm_ffi.convert_func.html">tvm_ffi.convert_func</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../reference/python/generated/tvm_ffi.ObjectConvertible.html">tvm_ffi.ObjectConvertible</a></li>
 </ul>
 </details></li>
@@ -809,7 +810,7 @@ window.runMermaid = runMermaid;</script>
 <span class="kn">import</span><span class="w"> </span><span class="nn">ctypes</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">numbers</span><span class="w"> </span><span class="kn">import</span> <span class="n">Number</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">types</span><span class="w"> </span><span class="kn">import</span> <span class="n">ModuleType</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Any</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Callable</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">.</span><span class="w"> </span><span class="kn">import</span> <span class="n">_dtype</span><span class="p">,</span> <span class="n">container</span><span class="p">,</span> <span class="n">core</span>
 
@@ -929,6 +930,76 @@ window.runMermaid = runMermaid;</script>
         <span class="c1"># in this case, it is an opaque python object</span>
         <span class="k">return</span> <span class="n">core</span><span class="o">.</span><span class="n">_convert_to_opaque_object</span><span class="p">(</span><span class="n">value</span><span class="p">)</span></div>
 
+
+
+<div class="viewcode-block" id="convert_func">
+<a class="viewcode-back" href="../../reference/python/generated/tvm_ffi.convert_func.html#tvm_ffi.convert_func">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">convert_func</span><span class="p">(</span>
+    <span class="n">pyfunc</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">Any</span><span class="p">],</span>
+    <span class="n">tensor_cls</span><span class="p">:</span> <span class="nb">type</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Any</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Convert a Python callable to an FFI :py:class:`~tvm_ffi.Function`.</span>
+
+<span class="sd">    This is the callable-specific sibling of :py:func:`tvm_ffi.convert`.</span>
+<span class="sd">    It accepts one extra argument, ``tensor_cls``, that lets the caller</span>
+<span class="sd">    specify how tensor arguments should be delivered to the Python</span>
+<span class="sd">    callable when the resulting :py:class:`Function` is invoked from C++.</span>
+<span class="sd">    :py:func:`tvm_ffi.convert` has no such knob — it always produces a</span>
+<span class="sd">    :py:class:`Function` whose callback receives ``tvm_ffi.Tensor`` for</span>
+<span class="sd">    tensor args.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    pyfunc : Callable</span>
+<span class="sd">        The Python callable to wrap.</span>
+<span class="sd">    tensor_cls : type, optional</span>
+<span class="sd">        The class whose instances the callback should receive for tensor</span>
+<span class="sd">        args. The class must expose a ``__dlpack_c_exchange_api__``</span>
+<span class="sd">        :py:class:`PyCapsule`; its capsule is threaded into the callback</span>
+<span class="sd">        closure so tensor args are converted at the C level (via the</span>
+<span class="sd">        DLPack exchange API) before the Python callback body runs — this</span>
+<span class="sd">        is significantly faster than calling ``torch.from_dlpack(x)`` (or</span>
+<span class="sd">        equivalent) inside the callback. Raises :py:class:`TypeError` if</span>
+<span class="sd">        ``tensor_cls`` does not expose the attribute.</span>
+
+<span class="sd">        When ``tensor_cls`` is ``None``, ``convert_func`` behaves like the</span>
+<span class="sd">        callable branch of :py:func:`tvm_ffi.convert`.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    Function</span>
+<span class="sd">        The wrapped FFI function.</span>
+
+<span class="sd">    Examples</span>
+<span class="sd">    --------</span>
+<span class="sd">    .. code-block:: python</span>
+
+<span class="sd">        import torch</span>
+<span class="sd">        import tvm_ffi</span>
+
+<span class="sd">        # Without tensor_cls: same as tvm_ffi.convert(pyfunc) — the callback</span>
+<span class="sd">        # receives tvm_ffi.Tensor for tensor args.</span>
+<span class="sd">        f = tvm_ffi.convert_func(lambda x: x + 1)</span>
+<span class="sd">        assert isinstance(f, tvm_ffi.Function)</span>
+
+
+<span class="sd">        # With tensor_cls=torch.Tensor: the callback receives torch.Tensor</span>
+<span class="sd">        # directly; the DLPack conversion happens in C before the body runs.</span>
+<span class="sd">        def callback(a: torch.Tensor, b: torch.Tensor) -&gt; torch.Tensor:</span>
+<span class="sd">            return a + b</span>
+
+
+<span class="sd">        g = tvm_ffi.convert_func(callback, tensor_cls=torch.Tensor)</span>
+
+<span class="sd">    See Also</span>
+<span class="sd">    --------</span>
+<span class="sd">    :py:func:`tvm_ffi.convert` :</span>
+<span class="sd">        Generic value-to-FFI conversion. Use this when you don&#39;t need to</span>
+<span class="sd">        specify ``tensor_cls``.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">core</span><span class="o">.</span><span class="n">_convert_to_ffi_func</span><span class="p">(</span><span class="n">pyfunc</span><span class="p">,</span> <span class="n">tensor_cls</span><span class="o">=</span><span class="n">tensor_cls</span><span class="p">)</span></div>
+
 </pre></div>
 
                 </article>
@@ -969,7 +1040,7 @@ By Apache TVM FFI contributors
   
   <div class="footer-item">
     <p class="last-updated">
-  Last updated on Apr 24, 2026.
+  Last updated on May 04, 2026.
   <br/>
 </p>
   </div>
