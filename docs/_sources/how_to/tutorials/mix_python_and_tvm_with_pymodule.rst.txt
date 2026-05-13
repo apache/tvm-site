@@ -43,12 +43,12 @@ This tutorial walks through the full workflow step by step.
     :local:
     :depth: 1
 
-.. GENERATED FROM PYTHON SOURCE LINES 49-51
+.. GENERATED FROM PYTHON SOURCE LINES 48-50
 
 Preparation
 -----------
 
-.. GENERATED FROM PYTHON SOURCE LINES 51-72
+.. GENERATED FROM PYTHON SOURCE LINES 50-71
 
 .. code-block:: Python
 
@@ -80,7 +80,7 @@ Preparation
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 73-84
+.. GENERATED FROM PYTHON SOURCE LINES 72-83
 
 Step 1: Your First Hybrid Module
 ----------------------------------
@@ -94,7 +94,7 @@ three decorators for three kinds of functions:
 ``call_tir`` bridges Python and TIR: it converts PyTorch tensors to TVM NDArrays via DLPack
 (zero-copy), allocates the output buffer, calls the compiled kernel, and converts back.
 
-.. GENERATED FROM PYTHON SOURCE LINES 84-125
+.. GENERATED FROM PYTHON SOURCE LINES 83-124
 
 .. code-block:: Python
 
@@ -146,7 +146,7 @@ three decorators for three kinds of functions:
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 126-132
+.. GENERATED FROM PYTHON SOURCE LINES 125-131
 
 Step 2: Debugging — The Main Selling Point
 ---------------------------------------------
@@ -155,7 +155,7 @@ intermediate tensor values without compiling the entire module. With ``@I.pyfunc
 is as simple as adding a ``print`` statement. You can also make quick edits and re-run
 immediately — no recompilation needed.
 
-.. GENERATED FROM PYTHON SOURCE LINES 132-181
+.. GENERATED FROM PYTHON SOURCE LINES 131-182
 
 .. code-block:: Python
 
@@ -193,8 +193,10 @@ immediately — no recompilation needed.
                 logits = self._convert_tvm_to_pytorch(out)
 
                 # Inspect intermediate value — impossible with a compiled-only workflow
-                print(f"  [DEBUG] logits shape: {logits.shape}, "
-                      f"min: {logits.min():.4f}, max: {logits.max():.4f}")
+                print(
+                    f"  [DEBUG] logits shape: {logits.shape}, "
+                    f"min: {logits.min():.4f}, max: {logits.max():.4f}"
+                )
 
                 result = F.softmax(logits, dim=-1)
 
@@ -215,13 +217,13 @@ immediately — no recompilation needed.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 182-185
+.. GENERATED FROM PYTHON SOURCE LINES 183-186
 
 This is the key benefit: "debugging is as simple as inserting a print statement.
 Users can also make quick, manual edits to Python functions and immediately observe the
 results." No compilation cycle, no VM loading — just Python.
 
-.. GENERATED FROM PYTHON SOURCE LINES 188-199
+.. GENERATED FROM PYTHON SOURCE LINES 189-200
 
 Step 3: A Realistic Pipeline — Python, TIR, and Packed Functions
 -------------------------------------------------------------------
@@ -235,18 +237,16 @@ three different calling conventions:
 ``call_dps_packed`` is useful for calling functions registered via ``tvm.register_global_func``
 — for example, CUBLAS or cuDNN bindings that TVM wraps as packed functions.
 
-.. GENERATED FROM PYTHON SOURCE LINES 199-260
+.. GENERATED FROM PYTHON SOURCE LINES 200-261
 
 .. code-block:: Python
 
 
     if RUN_EXAMPLE:
-
         # Register a packed function (simulating an external library binding)
         @tvm.register_global_func("my_bias_add", override=True)
         def my_bias_add(x, bias, out):
             """Packed function: adds bias to each row of x."""
-            import numpy as np
 
             x_np = x.numpy()
             b_np = bias.numpy()
@@ -273,14 +273,16 @@ three different calling conventions:
                 x_tvm = self._convert_pytorch_to_tvm(x)
                 w_tvm = self._convert_pytorch_to_tvm(weights)
                 h = self.call_tir(
-                    self.matmul_tir, [x_tvm, w_tvm],
+                    self.matmul_tir,
+                    [x_tvm, w_tvm],
                     out_sinfo=R.Tensor((2, 3), "float32"),
                 )
                 h_pt = self._convert_tvm_to_pytorch(h)
 
                 # 2. Packed function for bias add (simulating an external library)
                 h_biased = self.call_dps_packed(
-                    "my_bias_add", [h_pt, bias],
+                    "my_bias_add",
+                    [h_pt, bias],
                     out_sinfo=R.Tensor((2, 3), "float32"),
                 )
 
@@ -307,7 +309,7 @@ three different calling conventions:
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 261-270
+.. GENERATED FROM PYTHON SOURCE LINES 262-271
 
 Step 4: Relax-to-Python Converter — Verify at Any Compilation Stage
 ----------------------------------------------------------------------
@@ -319,7 +321,7 @@ A key feature: **this conversion can happen at any stage of compilation**.
 You can convert early (right after import) or late (after optimization passes have
 transformed the IR), and compare the output against a PyTorch reference to catch bugs.
 
-.. GENERATED FROM PYTHON SOURCE LINES 270-332
+.. GENERATED FROM PYTHON SOURCE LINES 271-333
 
 .. code-block:: Python
 
@@ -347,7 +349,8 @@ transformed the IR), and compare the output against a PyTorch reference to catch
                 h = R.matmul(x, w)
                 cls = DenseLayer
                 h_bias = R.call_tir(
-                    cls.bias_add_tir, (h, b),
+                    cls.bias_add_tir,
+                    (h, b),
                     out_sinfo=R.Tensor((2, 4), "float32"),
                 )
                 return R.nn.relu(h_bias)
@@ -380,8 +383,7 @@ transformed the IR), and compare the output against a PyTorch reference to catch
 
         print("\nAfter CanonicalizeBindings pass:")
         print("  Converted result:", py_result_late)
-        print("  Still matches:   ",
-              torch.allclose(py_result_late, expected, atol=1e-5))
+        print("  Still matches:   ", torch.allclose(py_result_late, expected, atol=1e-5))
         assert torch.allclose(py_result_late, expected, atol=1e-5)
 
 
@@ -392,7 +394,7 @@ transformed the IR), and compare the output against a PyTorch reference to catch
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 333-346
+.. GENERATED FROM PYTHON SOURCE LINES 334-347
 
 Step 5: R.call_py_func — Python Callbacks in Compiled IR
 -----------------------------------------------------------
@@ -408,7 +410,7 @@ Use case: your model has a custom op (e.g., a special normalization or a samplin
 that is complex to implement in TIR. Compile everything else, and let that one op stay
 in Python.
 
-.. GENERATED FROM PYTHON SOURCE LINES 346-387
+.. GENERATED FROM PYTHON SOURCE LINES 347-384
 
 .. code-block:: Python
 
@@ -432,12 +434,8 @@ in Python.
                 x: R.Tensor((4, 8), "float32"),
             ) -> R.Tensor((4, 8), "float32"):
                 # The VM calls back into Python for these two ops
-                h = R.call_py_func(
-                    "layer_norm", (x,), out_sinfo=R.Tensor((4, 8), "float32")
-                )
-                out = R.call_py_func(
-                    "silu", (h,), out_sinfo=R.Tensor((4, 8), "float32")
-                )
+                h = R.call_py_func("layer_norm", (x,), out_sinfo=R.Tensor((4, 8), "float32"))
+                out = R.call_py_func("silu", (h,), out_sinfo=R.Tensor((4, 8), "float32"))
                 return out
 
         mod = HybridVMModule(device=tvm.cpu(0))
@@ -460,14 +458,14 @@ in Python.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 388-404
+.. GENERATED FROM PYTHON SOURCE LINES 385-401
 
 Step 6: Cross-Level Calls and Symbolic Shapes
 ------------------------------------------------
 ``BasePyModule`` is designed for **cross-level interoperability**: Python functions can call
 TIR and Relax functions, and Relax functions can call Python functions. We have already seen:
 
-- Python → TIR via ``call_tir`` (Steps 1–3)
+- Python → TIR via ``call_tir`` (Steps 1-3)
 - Python → packed function via ``call_dps_packed`` (Step 3)
 - Relax → Python via ``R.call_py_func`` (Step 5)
 
@@ -479,7 +477,7 @@ This step also shows **symbolic shapes**: TIR and Relax functions can declare dy
 dimensions (e.g., ``"n"``). ``BasePyModule`` infers concrete shapes from the actual input
 tensors at call time, so the same module handles different sizes without recompilation.
 
-.. GENERATED FROM PYTHON SOURCE LINES 404-451
+.. GENERATED FROM PYTHON SOURCE LINES 401-446
 
 .. code-block:: Python
 
@@ -523,9 +521,7 @@ tensors at call time, so the same module handles different sizes without recompi
         # Python → TIR with symbolic output shape
         n = T.int64()
         x7 = torch.randn(7)
-        scaled = mod.call_tir(
-            "scale_tir", [x7], relax.TensorStructInfo((n,), "float32")
-        )
+        scaled = mod.call_tir("scale_tir", [x7], relax.TensorStructInfo((n,), "float32"))
         print("scale_tir(len=7):", scaled)
         assert torch.allclose(torch.tensor(scaled.numpy()), x7 * 2.0, atol=1e-5)
 
@@ -537,7 +533,7 @@ tensors at call time, so the same module handles different sizes without recompi
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 452-469
+.. GENERATED FROM PYTHON SOURCE LINES 447-464
 
 Summary
 -------
