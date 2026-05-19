@@ -170,11 +170,12 @@ Here we use a common subset of rules. The full catalog (including ``LowBatchGEMV
 
     # from tvm.script import ir as I
     # from tvm.script import tirx as T
+    # from tvm.tirx.layout import Axis
     # from tvm.script import relax as R
 
     @I.ir_module
     class Module:
-        @T.prim_func(private=True)
+        @T.prim_func(private=True, s_tir=True)
         def fused_matmul1_add1(layer_norm: T.Buffer((T.int64(1), T.int64(768)), "float32"), permute_dims1: T.Buffer((T.int64(768), T.int64(256)), "float32"), fc2_bias: T.Buffer((T.int64(256),), "float32"), T_add_intermediate: T.Buffer((T.int64(1), T.int64(256)), "float32")):
             T.func_attr({"tirx.is_scheduled": True, "tirx.noalias": True})
             # with T.sblock("root"):
@@ -215,7 +216,7 @@ Here we use a common subset of rules. The full catalog (including ``LowBatchGEMV
                             T.writes(T_add_intermediate[T.int64(0), v0])
                             T_add_intermediate[T.int64(0), v0] = matmul_intermediate_local[T.int64(0), v0] + fc2_bias[v0]
 
-        @T.prim_func(private=True)
+        @T.prim_func(private=True, s_tir=True)
         def fused_matmul_add_relu(x: T.Buffer((T.int64(1), T.int64(768)), "float32"), permute_dims: T.Buffer((T.int64(768), T.int64(768)), "float32"), fc1_bias: T.Buffer((T.int64(768),), "float32"), compute_intermediate: T.Buffer((T.int64(1), T.int64(768)), "float32")):
             T.func_attr({"tirx.is_scheduled": True, "tirx.noalias": True})
             # with T.sblock("root"):
@@ -256,7 +257,7 @@ Here we use a common subset of rules. The full catalog (including ``LowBatchGEMV
                             T.writes(compute_intermediate[T.int64(0), v0])
                             compute_intermediate[T.int64(0), v0] = T.max(matmul_intermediate_local[T.int64(0), v0] + fc1_bias[v0], T.float32(0.0))
 
-        @T.prim_func(private=True)
+        @T.prim_func(private=True, s_tir=True)
         def layer_norm(relu: T.Buffer((T.int64(1), T.int64(768)), "float32"), norm_weight: T.Buffer((T.int64(768),), "float32"), norm_bias: T.Buffer((T.int64(768),), "float32"), T_layer_norm: T.Buffer((T.int64(1), T.int64(768)), "float32")):
             T.func_attr({"op_pattern": 4, "tirx.is_scheduled": True, "tirx.noalias": True})
             # with T.sblock("root"):
@@ -274,8 +275,8 @@ Here we use a common subset of rules. The full catalog (including ``LowBatchGEMV
                                 with T.init():
                                     relu_red_temp_v0_shared[T.int64(0)] = T.float32(0.0)
                                     relu_red_temp_v1_shared[T.int64(0)] = T.float32(0.0)
-                                v_relu_red_temp_v0: T.float32 = relu_red_temp_v0_shared[T.int64(0)] + relu[T.int64(0), v1]
-                                v_relu_red_temp_v1: T.float32 = relu_red_temp_v1_shared[T.int64(0)] + relu[T.int64(0), v1] * relu[T.int64(0), v1]
+                                v_relu_red_temp_v0: T.let[T.float32] = relu_red_temp_v0_shared[T.int64(0)] + relu[T.int64(0), v1]
+                                v_relu_red_temp_v1: T.let[T.float32] = relu_red_temp_v1_shared[T.int64(0)] + relu[T.int64(0), v1] * relu[T.int64(0), v1]
                                 relu_red_temp_v0_shared[T.int64(0)] = v_relu_red_temp_v0
                                 relu_red_temp_v1_shared[T.int64(0)] = v_relu_red_temp_v1
                 for ax1_1 in T.thread_binding(T.int64(256), thread="threadIdx.x"):
@@ -287,7 +288,7 @@ Here we use a common subset of rules. The full catalog (including ``LowBatchGEMV
                             T.writes(T_layer_norm[T.int64(0), v1])
                             T_layer_norm[T.int64(0), v1] = (relu[T.int64(0), v1] - relu_red_temp_v0_shared[T.int64(0)] / T.float32(768.0)) * T.rsqrt(relu_red_temp_v1_shared[T.int64(0)] / T.float32(768.0) - relu_red_temp_v0_shared[T.int64(0)] / T.float32(768.0) * (relu_red_temp_v0_shared[T.int64(0)] / T.float32(768.0)) + T.float32(1.0000000000000001e-05)) * norm_weight[v1] + norm_bias[v1]
 
-        @T.prim_func(private=True)
+        @T.prim_func(private=True, s_tir=True)
         def transpose(fc1_weight: T.Buffer((T.int64(768), T.int64(768)), "float32"), T_transpose: T.Buffer((T.int64(768), T.int64(768)), "float32")):
             T.func_attr({"op_pattern": 2, "tirx.is_scheduled": True, "tirx.noalias": True})
             # with T.sblock("root"):
@@ -300,7 +301,7 @@ Here we use a common subset of rules. The full catalog (including ``LowBatchGEMV
                         T.writes(T_transpose[v0, v1])
                         T_transpose[v0, v1] = fc1_weight[v1, v0]
 
-        @T.prim_func(private=True)
+        @T.prim_func(private=True, s_tir=True)
         def transpose1(fc2_weight: T.Buffer((T.int64(256), T.int64(768)), "float32"), T_transpose: T.Buffer((T.int64(768), T.int64(256)), "float32")):
             T.func_attr({"op_pattern": 2, "tirx.is_scheduled": True, "tirx.noalias": True})
             # with T.sblock("root"):
@@ -594,11 +595,12 @@ Insert the custom rule into the rule chain. Note that ``from_callable`` returns 
 
     # from tvm.script import ir as I
     # from tvm.script import tirx as T
+    # from tvm.tirx.layout import Axis
     # from tvm.script import relax as R
 
     @I.ir_module
     class Module:
-        @T.prim_func(private=True)
+        @T.prim_func(private=True, s_tir=True)
         def fused_matmul1_add1(layer_norm: T.Buffer((T.int64(1), T.int64(768)), "float32"), permute_dims1: T.Buffer((T.int64(768), T.int64(256)), "float32"), fc2_bias: T.Buffer((T.int64(256),), "float32"), T_add_intermediate: T.Buffer((T.int64(1), T.int64(256)), "float32")):
             T.func_attr({"tirx.is_scheduled": True, "tirx.noalias": True})
             # with T.sblock("root"):
@@ -639,7 +641,7 @@ Insert the custom rule into the rule chain. Note that ``from_callable`` returns 
                             T.writes(T_add_intermediate[T.int64(0), v0])
                             T_add_intermediate[T.int64(0), v0] = matmul_intermediate_local[T.int64(0), v0] + fc2_bias[v0]
 
-        @T.prim_func(private=True)
+        @T.prim_func(private=True, s_tir=True)
         def fused_matmul_add_relu(x: T.Buffer((T.int64(1), T.int64(768)), "float32"), permute_dims: T.Buffer((T.int64(768), T.int64(768)), "float32"), fc1_bias: T.Buffer((T.int64(768),), "float32"), compute_intermediate: T.Buffer((T.int64(1), T.int64(768)), "float32")):
             T.func_attr({"tirx.is_scheduled": True, "tirx.noalias": True})
             # with T.sblock("root"):
@@ -680,7 +682,7 @@ Insert the custom rule into the rule chain. Note that ``from_callable`` returns 
                             T.writes(compute_intermediate[T.int64(0), v0])
                             compute_intermediate[T.int64(0), v0] = T.max(matmul_intermediate_local[T.int64(0), v0] + fc1_bias[v0], T.float32(0.0))
 
-        @T.prim_func(private=True)
+        @T.prim_func(private=True, s_tir=True)
         def layer_norm(relu: T.Buffer((T.int64(1), T.int64(768)), "float32"), norm_weight: T.Buffer((T.int64(768),), "float32"), norm_bias: T.Buffer((T.int64(768),), "float32"), T_layer_norm: T.Buffer((T.int64(1), T.int64(768)), "float32")):
             T.func_attr({"op_pattern": 4, "tirx.is_scheduled": True, "tirx.noalias": True})
             # with T.sblock("root"):
@@ -698,8 +700,8 @@ Insert the custom rule into the rule chain. Note that ``from_callable`` returns 
                                 with T.init():
                                     relu_red_temp_v0_shared[T.int64(0)] = T.float32(0.0)
                                     relu_red_temp_v1_shared[T.int64(0)] = T.float32(0.0)
-                                v_relu_red_temp_v0: T.float32 = relu_red_temp_v0_shared[T.int64(0)] + relu[T.int64(0), v1]
-                                v_relu_red_temp_v1: T.float32 = relu_red_temp_v1_shared[T.int64(0)] + relu[T.int64(0), v1] * relu[T.int64(0), v1]
+                                v_relu_red_temp_v0: T.let[T.float32] = relu_red_temp_v0_shared[T.int64(0)] + relu[T.int64(0), v1]
+                                v_relu_red_temp_v1: T.let[T.float32] = relu_red_temp_v1_shared[T.int64(0)] + relu[T.int64(0), v1] * relu[T.int64(0), v1]
                                 relu_red_temp_v0_shared[T.int64(0)] = v_relu_red_temp_v0
                                 relu_red_temp_v1_shared[T.int64(0)] = v_relu_red_temp_v1
                 for ax1_1 in T.thread_binding(T.int64(256), thread="threadIdx.x"):
@@ -711,7 +713,7 @@ Insert the custom rule into the rule chain. Note that ``from_callable`` returns 
                             T.writes(T_layer_norm[T.int64(0), v1])
                             T_layer_norm[T.int64(0), v1] = (relu[T.int64(0), v1] - relu_red_temp_v0_shared[T.int64(0)] / T.float32(768.0)) * T.rsqrt(relu_red_temp_v1_shared[T.int64(0)] / T.float32(768.0) - relu_red_temp_v0_shared[T.int64(0)] / T.float32(768.0) * (relu_red_temp_v0_shared[T.int64(0)] / T.float32(768.0)) + T.float32(1.0000000000000001e-05)) * norm_weight[v1] + norm_bias[v1]
 
-        @T.prim_func(private=True)
+        @T.prim_func(private=True, s_tir=True)
         def transpose(fc1_weight: T.Buffer((T.int64(768), T.int64(768)), "float32"), T_transpose: T.Buffer((T.int64(768), T.int64(768)), "float32")):
             T.func_attr({"op_pattern": 2, "tirx.is_scheduled": True, "tirx.noalias": True})
             # with T.sblock("root"):
@@ -724,7 +726,7 @@ Insert the custom rule into the rule chain. Note that ``from_callable`` returns 
                         T.writes(T_transpose[v0, v1])
                         T_transpose[v0, v1] = fc1_weight[v1, v0]
 
-        @T.prim_func(private=True)
+        @T.prim_func(private=True, s_tir=True)
         def transpose1(fc2_weight: T.Buffer((T.int64(256), T.int64(768)), "float32"), T_transpose: T.Buffer((T.int64(768), T.int64(256)), "float32")):
             T.func_attr({"op_pattern": 2, "tirx.is_scheduled": True, "tirx.noalias": True})
             # with T.sblock("root"):

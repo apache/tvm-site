@@ -370,6 +370,17 @@
 <dd><p>Transform a backbone module to a complete, legalized trainer module.</p>
 <p>The provided backbone module should contain at least a function named <cite>backbone</cite>, and has two
 int attributes <cite>param_num</cite> and <cite>state_num</cite>, as follows:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nd">@I</span><span class="o">.</span><span class="n">ir_module</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">Backbone</span><span class="p">:</span>
+    <span class="n">I</span><span class="o">.</span><span class="n">module_attrs</span><span class="p">({</span><span class="s2">&quot;param_num&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s2">&quot;state_num&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">})</span>
+    <span class="nd">@R</span><span class="o">.</span><span class="n">function</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">backbone</span><span class="p">(</span><span class="n">input_instances</span><span class="p">,</span> <span class="n">parameters</span><span class="p">,</span> <span class="n">states</span><span class="p">):</span>
+        <span class="c1"># Predicts the result</span>
+        <span class="c1"># Should contain only one DataflowBlock</span>
+        <span class="o">...</span>
+        <span class="k">return</span> <span class="n">backbone_result</span><span class="p">,</span> <span class="n">updated_states</span>
+</pre></div>
+</div>
 <p>Here each of input_instances, parameters, states, backbone_result and updated_states can
 denote a number of parameters. The length of parameters and the length of states is specified
 by param_num and state_num respectively.</p>
@@ -377,6 +388,35 @@ by param_num and state_num respectively.</p>
 the running mean and the running var of the batch norm operator. The updated states is returned
 in <cite>updated_states</cite>. States can be empty if there is no state that needs to be updated.</p>
 <p>The transformed module will at least contain the functions and attributes listed below:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nd">@I</span><span class="o">.</span><span class="n">ir_module</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">Module</span><span class="p">:</span>
+    <span class="n">I</span><span class="o">.</span><span class="n">module_attrs</span><span class="p">({</span><span class="s2">&quot;input_num&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s2">&quot;param_num&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s2">&quot;state_num&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s2">&quot;optim_states&quot;</span><span class="p">:</span> <span class="o">...</span><span class="p">})</span>
+
+    <span class="nd">@R</span><span class="o">.</span><span class="n">function</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">backbone</span><span class="p">(</span><span class="n">input_instances</span><span class="p">,</span> <span class="n">parameters</span><span class="p">,</span> <span class="n">states</span><span class="p">):</span>
+        <span class="c1"># Predicts the result. It is provided in the input module.</span>
+        <span class="o">...</span>
+        <span class="k">return</span> <span class="n">backbone_result</span><span class="p">,</span> <span class="n">updated_states</span>
+
+    <span class="nd">@R</span><span class="o">.</span><span class="n">function</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">backbone_loss</span><span class="p">(</span><span class="n">input_instances</span><span class="p">,</span> <span class="n">parameters</span><span class="p">,</span> <span class="n">states</span><span class="p">,</span> <span class="n">targets</span><span class="p">):</span>
+        <span class="c1"># Runs like backbone and then computes the loss between the result and targets.</span>
+        <span class="o">...</span>
+        <span class="k">return</span> <span class="n">loss</span><span class="p">,</span> <span class="n">updated_states</span>
+
+    <span class="nd">@R</span><span class="o">.</span><span class="n">function</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">backbone_loss_adjoint</span><span class="p">(</span><span class="n">input_instances</span><span class="p">,</span> <span class="n">parameters</span><span class="p">,</span> <span class="n">states</span><span class="p">,</span> <span class="n">targets</span><span class="p">):</span>
+        <span class="c1"># Runs like backbone_loss and then calculates the gradient of parameters.</span>
+        <span class="o">...</span>
+        <span class="k">return</span> <span class="p">(</span><span class="n">loss</span><span class="p">,</span> <span class="n">updated_states</span><span class="p">),</span> <span class="n">gradient_of_params</span>
+
+    <span class="nd">@R</span><span class="o">.</span><span class="n">function</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">optimizer</span><span class="p">(</span><span class="n">params</span><span class="p">,</span> <span class="n">gradients</span><span class="p">,</span> <span class="n">optim_states</span><span class="p">):</span>
+        <span class="c1"># Update parameters and optimizer states with the gradient computed</span>
+        <span class="o">...</span>
+        <span class="k">return</span> <span class="p">(</span><span class="n">updated_params</span><span class="p">,</span> <span class="n">updated_optim_states</span><span class="p">)</span>
+</pre></div>
+</div>
 <p>The transformed module contains an attribute <cite>optim_states</cite> as the initial optimizer states.</p>
 <p>Then the transformed module will be legalized by <cite>relax.transform.LegalizeOps()</cite> to lower
 relax operators into TIR functions.</p>
@@ -395,7 +435,7 @@ relax.transform.AppendLoss.</p></li>
 
 <dl class="py class">
 <dt class="sig sig-object py" id="tvm.relax.training.Trainer">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">tvm.relax.training.</span></span><span class="sig-name descname"><span class="pre">Trainer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">train_mod</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../ir.html#tvm.ir.IRModule" title="tvm.ir.module.IRModule"><span class="pre">IRModule</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">vm</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="relax.html#tvm.relax.VirtualMachine" title="tvm.runtime.vm.VirtualMachine"><span class="pre">VirtualMachine</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">device</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Device</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">zero_init_param_state</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#tvm.relax.training.Trainer" title="Link to this definition"></a></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">tvm.relax.training.</span></span><span class="sig-name descname"><span class="pre">Trainer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">train_mod</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../ir.html#tvm.ir.IRModule" title="tvm.ir.module.IRModule"><span class="pre">IRModule</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">vm</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference internal" href="../runtime/vm.html#tvm.runtime.vm.VirtualMachine" title="tvm.runtime.vm.VirtualMachine"><span class="pre">VirtualMachine</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">device</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Device</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">zero_init_param_state</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#tvm.relax.training.Trainer" title="Link to this definition"></a></dt>
 <dd><p>Unified wrapper for relax training. It accepts the IRModule (that is the result of
 SetupTrainer) and the relax VM (that contains the built result of the IRModule), and helps run
 the VM. It maintains the parameters, the model states and the optimizer states internally.</p>
@@ -414,6 +454,22 @@ states have static shape.</p></li>
 </dd>
 </dl>
 <p class="rubric">Examples</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">setup_trainer</span> <span class="o">=</span> <span class="n">SetupTrainer</span><span class="p">(</span>
+    <span class="n">MSELoss</span><span class="p">(</span><span class="n">reduction</span><span class="o">=</span><span class="s2">&quot;sum&quot;</span><span class="p">),</span>
+    <span class="n">SGD</span><span class="p">(</span><span class="mf">0.001</span><span class="p">),</span>
+    <span class="p">[</span><span class="n">pred_sinfo</span><span class="p">,</span> <span class="n">target_sinfo</span><span class="p">],</span>
+<span class="p">)</span>
+<span class="n">train_mod</span> <span class="o">=</span> <span class="n">setup_trainer</span><span class="p">(</span><span class="n">Backbone</span><span class="p">)</span>
+<span class="n">ex</span> <span class="o">=</span> <span class="n">tvm</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="n">train_mod</span><span class="p">,</span> <span class="n">target</span><span class="p">)</span>
+<span class="n">vm</span> <span class="o">=</span> <span class="n">relax</span><span class="o">.</span><span class="n">VirtualMachine</span><span class="p">(</span><span class="n">ex</span><span class="p">,</span> <span class="n">dev</span><span class="p">)</span>
+
+<span class="n">trainer</span> <span class="o">=</span> <span class="n">training</span><span class="o">.</span><span class="n">Trainer</span><span class="p">(</span><span class="n">train_mod</span><span class="p">,</span> <span class="n">vm</span><span class="p">,</span> <span class="n">dev</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
+
+<span class="n">trainer</span><span class="o">.</span><span class="n">xaiver_uniform_init_params</span><span class="p">()</span>
+<span class="n">trainer</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">input_instances</span><span class="p">)</span>
+<span class="n">trainer</span><span class="o">.</span><span class="n">update</span><span class="p">([</span><span class="n">input_instances</span><span class="p">],</span> <span class="p">[</span><span class="n">labels</span><span class="p">])</span>
+</pre></div>
+</div>
 <dl class="py method">
 <dt class="sig sig-object py" id="tvm.relax.training.Trainer.xaiver_uniform_init_params">
 <span class="sig-name descname"><span class="pre">xaiver_uniform_init_params</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tvm.relax.training.Trainer.xaiver_uniform_init_params" title="Link to this definition"></a></dt>
@@ -558,6 +614,22 @@ loss function is generated by instances of <cite>relax.training.Loss</cite>.</p>
 - Backbone should return either one relax.Var, or a tuple of Vars
 - Loss should return a scalar(0-dim Tensor) relax.Var</p>
 <p>They should be like:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nd">@R</span><span class="o">.</span><span class="n">function</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">backbone</span><span class="p">(</span><span class="n">input_instances</span><span class="p">,</span> <span class="n">parameters</span><span class="p">,</span> <span class="n">states</span><span class="p">):</span>
+    <span class="k">with</span> <span class="n">R</span><span class="o">.</span><span class="n">dataflow</span><span class="p">():</span>
+        <span class="c1"># Predicts the result</span>
+        <span class="o">...</span>
+    <span class="k">return</span> <span class="n">backbone_result</span><span class="p">,</span> <span class="n">updated_states</span>
+
+<span class="nd">@R</span><span class="o">.</span><span class="n">function</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">loss</span><span class="p">(</span><span class="n">backbone_result</span><span class="p">,</span> <span class="n">targets</span><span class="p">):</span>
+    <span class="k">with</span> <span class="n">R</span><span class="o">.</span><span class="n">dataflow</span><span class="p">():</span>
+        <span class="c1"># calculate the loss between backbone_result and targets</span>
+        <span class="o">...</span>
+    <span class="c1"># loss should be a scalar relax.Var</span>
+    <span class="k">return</span> <span class="n">loss</span>
+</pre></div>
+</div>
 <p>Here each of input_instances, parameters, states, backbone_result and updated_states can
 denote a number of parameters.</p>
 <p><cite>states</cite> denote the states that we need to maintain as the training process proceeds, such as
@@ -565,6 +637,14 @@ the running mean and the running var of the batch norm operator. The updated sta
 in <cite>updated_states</cite>. States can be empty if there is no state that needs to be updated.</p>
 <p>The appended result contains only one DataflowBlock containing all bindings in backbone and
 loss. It will be like:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nd">@R</span><span class="o">.</span><span class="n">function</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">backbone_loss</span><span class="p">(</span><span class="n">input_instances</span><span class="p">,</span> <span class="n">parameters</span><span class="p">,</span> <span class="n">states</span><span class="p">,</span> <span class="n">targets</span><span class="p">):</span>
+    <span class="k">with</span> <span class="n">R</span><span class="o">.</span><span class="n">dataflow</span><span class="p">():</span>
+        <span class="c1"># all bindings in backbone and loss</span>
+        <span class="o">...</span>
+    <span class="k">return</span> <span class="n">loss</span><span class="p">,</span> <span class="n">updated_states</span>
+</pre></div>
+</div>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
@@ -583,7 +663,50 @@ loss. It will be like:</p>
 </dd>
 </dl>
 <p class="rubric">Examples</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nd">@I</span><span class="o">.</span><span class="n">ir_module</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">Module</span>
+    <span class="nd">@R</span><span class="o">.</span><span class="n">function</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">predict</span><span class="p">(</span><span class="n">x</span><span class="p">:</span> <span class="n">R</span><span class="o">.</span><span class="n">Tensor</span><span class="p">((</span><span class="mi">2</span><span class="p">,</span> <span class="mi">4</span><span class="p">),</span> <span class="s2">&quot;float32&quot;</span><span class="p">),</span> <span class="n">y</span><span class="p">:</span> <span class="n">R</span><span class="o">.</span><span class="n">Tensor</span><span class="p">((</span><span class="mi">2</span><span class="p">,</span> <span class="mi">4</span><span class="p">),</span> <span class="s2">&quot;float32&quot;</span><span class="p">)):</span>
+        <span class="k">with</span> <span class="n">R</span><span class="o">.</span><span class="n">dataflow</span><span class="p">():</span>
+            <span class="n">out</span> <span class="o">=</span> <span class="n">R</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+            <span class="n">R</span><span class="o">.</span><span class="n">output</span><span class="p">(</span><span class="n">out</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">out</span>
+
+<span class="nd">@R</span><span class="o">.</span><span class="n">function</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">loss</span><span class="p">(</span><span class="n">predictions</span><span class="p">:</span> <span class="n">R</span><span class="o">.</span><span class="n">Tensor</span><span class="p">((</span><span class="mi">2</span><span class="p">,</span> <span class="mi">4</span><span class="p">),</span> <span class="s2">&quot;float32&quot;</span><span class="p">),</span> <span class="n">labels</span><span class="p">:</span> <span class="n">R</span><span class="o">.</span><span class="n">Tensor</span><span class="p">((</span><span class="mi">2</span><span class="p">,</span> <span class="mi">4</span><span class="p">),</span> <span class="s2">&quot;float32&quot;</span><span class="p">)):</span>
+    <span class="k">with</span> <span class="n">R</span><span class="o">.</span><span class="n">dataflow</span><span class="p">():</span>
+        <span class="n">lv</span> <span class="o">=</span> <span class="n">R</span><span class="o">.</span><span class="n">subtract</span><span class="p">(</span><span class="n">predictions</span><span class="p">,</span> <span class="n">labels</span><span class="p">)</span>
+        <span class="n">lv1</span> <span class="o">=</span> <span class="n">R</span><span class="o">.</span><span class="n">multiply</span><span class="p">(</span><span class="n">lv</span><span class="p">,</span> <span class="n">lv</span><span class="p">)</span>
+        <span class="n">gv</span> <span class="o">=</span> <span class="n">R</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">lv1</span><span class="p">)</span>
+        <span class="n">R</span><span class="o">.</span><span class="n">output</span><span class="p">(</span><span class="n">gv</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">gv</span>
+
+<span class="n">expected</span> <span class="o">=</span> <span class="n">AppendLoss</span><span class="p">(</span><span class="s2">&quot;predict&quot;</span><span class="p">,</span> <span class="n">loss</span><span class="p">)(</span><span class="n">Module</span><span class="p">)</span>
+<span class="n">expected</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
 <p>Will get</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nd">@I</span><span class="o">.</span><span class="n">ir_module</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">Module</span>
+    <span class="nd">@R</span><span class="o">.</span><span class="n">function</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">predict</span><span class="p">(</span><span class="n">x</span><span class="p">:</span> <span class="n">R</span><span class="o">.</span><span class="n">Tensor</span><span class="p">((</span><span class="mi">2</span><span class="p">,</span> <span class="mi">4</span><span class="p">),</span> <span class="s2">&quot;float32&quot;</span><span class="p">),</span> <span class="n">y</span><span class="p">:</span> <span class="n">R</span><span class="o">.</span><span class="n">Tensor</span><span class="p">((</span><span class="mi">2</span><span class="p">,</span> <span class="mi">4</span><span class="p">),</span> <span class="s2">&quot;float32&quot;</span><span class="p">)):</span>
+        <span class="k">with</span> <span class="n">R</span><span class="o">.</span><span class="n">dataflow</span><span class="p">():</span>
+            <span class="n">out</span> <span class="o">=</span> <span class="n">R</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+            <span class="n">R</span><span class="o">.</span><span class="n">output</span><span class="p">(</span><span class="n">out</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">out</span>
+
+    <span class="nd">@R</span><span class="o">.</span><span class="n">function</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">predict_loss</span><span class="p">(</span><span class="n">x</span><span class="p">:</span> <span class="n">R</span><span class="o">.</span><span class="n">Tensor</span><span class="p">((</span><span class="mi">2</span><span class="p">,</span> <span class="mi">4</span><span class="p">),</span> <span class="s2">&quot;float32&quot;</span><span class="p">),</span> <span class="n">y</span><span class="p">:</span> <span class="n">R</span><span class="o">.</span><span class="n">Tensor</span><span class="p">((</span><span class="mi">2</span><span class="p">,</span> <span class="mi">4</span><span class="p">),</span> <span class="s2">&quot;float32&quot;</span><span class="p">),</span>
+                     <span class="n">labels</span><span class="p">:</span> <span class="n">R</span><span class="o">.</span><span class="n">Tensor</span><span class="p">((</span><span class="mi">2</span><span class="p">,</span> <span class="mi">4</span><span class="p">),</span> <span class="s2">&quot;float32&quot;</span><span class="p">))</span> <span class="o">-&gt;</span> <span class="n">R</span><span class="o">.</span><span class="n">Tensor</span><span class="p">((),</span> <span class="s2">&quot;float32&quot;</span><span class="p">):</span>
+        <span class="k">with</span> <span class="n">R</span><span class="o">.</span><span class="n">dataflow</span><span class="p">():</span>
+            <span class="n">out</span><span class="p">:</span> <span class="n">R</span><span class="o">.</span><span class="n">Tensor</span><span class="p">((</span><span class="mi">2</span><span class="p">,</span> <span class="mi">4</span><span class="p">),</span> <span class="s2">&quot;float32&quot;</span><span class="p">)</span> <span class="o">=</span> <span class="n">R</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
+            <span class="n">lv</span><span class="p">:</span> <span class="n">R</span><span class="o">.</span><span class="n">Tensor</span><span class="p">((</span><span class="mi">2</span><span class="p">,</span> <span class="mi">4</span><span class="p">),</span> <span class="s2">&quot;float32&quot;</span><span class="p">)</span> <span class="o">=</span> <span class="n">R</span><span class="o">.</span><span class="n">subtract</span><span class="p">(</span><span class="n">out</span><span class="p">,</span> <span class="n">labels</span><span class="p">)</span>
+            <span class="n">lv1</span><span class="p">:</span> <span class="n">R</span><span class="o">.</span><span class="n">Tensor</span><span class="p">((</span><span class="mi">2</span><span class="p">,</span> <span class="mi">4</span><span class="p">),</span> <span class="s2">&quot;float32&quot;</span><span class="p">)</span> <span class="o">=</span> <span class="n">R</span><span class="o">.</span><span class="n">multiply</span><span class="p">(</span><span class="n">lv</span><span class="p">,</span> <span class="n">lv</span><span class="p">)</span>
+            <span class="n">gv</span><span class="p">:</span> <span class="n">R</span><span class="o">.</span><span class="n">Tensor</span><span class="p">((),</span> <span class="s2">&quot;float32&quot;</span><span class="p">)</span> <span class="o">=</span> <span class="n">R</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">lv1</span><span class="p">)</span>
+            <span class="n">R</span><span class="o">.</span><span class="n">output</span><span class="p">(</span><span class="n">gv</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">gv</span>
+</pre></div>
+</div>
 <p class="rubric">Notes</p>
 <p>This util can be replaced if we have inline pass. It is equivalent to inline a tail call in
 some sense.</p>

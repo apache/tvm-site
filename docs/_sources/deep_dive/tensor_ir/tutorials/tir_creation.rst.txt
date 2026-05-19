@@ -64,7 +64,7 @@ format of the ir_module and in TVMScript:
 
     @I.ir_module
     class MyModule:
-        @T.prim_func
+        @T.prim_func(s_tir=True)
         def mm_relu(
             A: T.Buffer((128, 128), "float32"),
             B: T.Buffer((128, 128), "float32"),
@@ -120,7 +120,7 @@ streamline the code:
 
     @I.ir_module
     class ConciseModule:
-        @T.prim_func
+        @T.prim_func(s_tir=True)
         def mm_relu(
             A: T.Buffer((128, 128), "float32"),
             B: T.Buffer((128, 128), "float32"),
@@ -191,7 +191,7 @@ be used to ascertain the shape and data type of a TensorIR.
     # IRModule in TVMScript
     @I.ir_module
     class ConciseModuleFromPython:
-        @T.prim_func
+        @T.prim_func(s_tir=True)
         def mm_relu(
             A: T.Buffer((M, K), dtype),
             B: T.Buffer((K, N), dtype),
@@ -237,7 +237,7 @@ Check the equivalence:
 
  .. code-block:: none
 
-    True
+    False
 
 
 
@@ -250,7 +250,7 @@ Despite TVMScript not being executed by a Python interpreter, limited
 interaction with Python is feasible. For instance, Python variables can
 be used to ascertain the shape and data type of a TensorIR.
 
-.. GENERATED FROM PYTHON SOURCE LINES 177-203
+.. GENERATED FROM PYTHON SOURCE LINES 177-205
 
 .. code-block:: Python
 
@@ -258,10 +258,12 @@ be used to ascertain the shape and data type of a TensorIR.
 
     @I.ir_module
     class DynamicShapeModule:
-        @T.prim_func
+        @T.prim_func(s_tir=True)
         def mm_relu(a: T.handle, b: T.handle, c: T.handle):
             # Dynamic shape definition
-            M, N, K = T.int32(), T.int32(), T.int32()
+            M = T.int32()
+            N = T.int32()
+            K = T.int32()
 
             # Bind the input buffers with the dynamic shapes
             A = T.match_buffer(a, [M, K], dtype)
@@ -287,11 +289,11 @@ be used to ascertain the shape and data type of a TensorIR.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 204-205
+.. GENERATED FROM PYTHON SOURCE LINES 206-207
 
 Now let's check the runtime dynamic shape inference:
 
-.. GENERATED FROM PYTHON SOURCE LINES 205-221
+.. GENERATED FROM PYTHON SOURCE LINES 207-223
 
 .. code-block:: Python
 
@@ -319,22 +321,22 @@ Now let's check the runtime dynamic shape inference:
 
  .. code-block:: none
 
-    [[0.72663146 0.82204187 0.6169227  0.41157207]
-     [0.8226283  0.8335908  0.95086104 0.88079655]
-     [0.7447089  1.162973   0.5435877  0.29536912]
-     [1.320448   1.590133   1.1003654  0.71764433]]
-    [[29.357206 29.814638 29.64556  ... 30.791183 28.855263 32.273003]
-     [29.307863 30.214073 28.382586 ... 30.808743 29.207712 31.74442 ]
-     [30.63983  34.331722 32.874325 ... 33.590473 31.389427 34.900597]
+    [[1.248871  1.1072385 1.2089366 1.08747  ]
+     [1.7685622 1.8014312 1.5779071 1.1809014]
+     [0.8354383 1.0471411 0.625105  0.6688553]
+     [0.9882026 1.1459298 0.7702638 0.6423952]]
+    [[31.41815  29.977863 29.987726 ... 30.865156 31.312616 26.681898]
+     [34.006706 33.061962 33.843784 ... 35.20058  37.259697 33.27658 ]
+     [32.428677 32.665882 31.84242  ... 32.552696 34.295635 32.657528]
      ...
-     [30.545042 30.977753 28.414347 ... 32.313168 30.111656 32.656124]
-     [30.964117 33.894234 30.796148 ... 33.10036  30.87871  35.797287]
-     [31.45706  33.434906 33.835846 ... 34.040688 29.69817  34.750965]]
+     [30.995216 31.204472 30.041468 ... 31.985136 32.074047 29.83796 ]
+     [31.424732 29.27756  28.049372 ... 31.493656 31.584473 29.32411 ]
+     [30.792358 33.096066 31.5055   ... 30.839664 31.99559  28.923311]]
 
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 222-242
+.. GENERATED FROM PYTHON SOURCE LINES 224-244
 
 Create TensorIR using Tensor Expression
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -357,7 +359,7 @@ Create Static-Shape Functions
 We use the same example of ``mm_relu`` from the last subsection to demonstrate the
 TE creation method.
 
-.. GENERATED FROM PYTHON SOURCE LINES 242-251
+.. GENERATED FROM PYTHON SOURCE LINES 244-253
 
 .. code-block:: Python
 
@@ -377,7 +379,7 @@ TE creation method.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 252-265
+.. GENERATED FROM PYTHON SOURCE LINES 254-267
 
 Here ``te.compute`` takes the signature ``te.compute(output_shape, fcompute)``.
 And the fcompute function describes how we want to compute the value of each
@@ -393,7 +395,7 @@ we can formulate a TensorIR function by incorporating the pertinent parameters o
 In this specific instance, we aim to construct a function with two input parameters **A, B**
 and one output parameter **C**.
 
-.. GENERATED FROM PYTHON SOURCE LINES 265-270
+.. GENERATED FROM PYTHON SOURCE LINES 267-272
 
 .. code-block:: Python
 
@@ -412,10 +414,11 @@ and one output parameter **C**.
 
     # from tvm.script import ir as I
     # from tvm.script import tirx as T
+    # from tvm.tirx.layout import Axis
 
     @I.ir_module
     class Module:
-        @T.prim_func
+        @T.prim_func(s_tir=True)
         def mm_relu(A: T.Buffer((128, 128), "float32"), B: T.Buffer((128, 128), "float32"), C: T.Buffer((128, 128), "float32")):
             T.func_attr({"tirx.noalias": True})
             # with T.sblock("root"):
@@ -439,14 +442,14 @@ and one output parameter **C**.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 271-275
+.. GENERATED FROM PYTHON SOURCE LINES 273-277
 
 Create Dynamic-Shape Functions
 ******************************
 We can also create a dynamic-shape function using Tensor Expression. The only difference
 is that we need to specify the shape of the input tensors as symbolic variables.
 
-.. GENERATED FROM PYTHON SOURCE LINES 275-287
+.. GENERATED FROM PYTHON SOURCE LINES 277-289
 
 .. code-block:: Python
 
@@ -472,10 +475,11 @@ is that we need to specify the shape of the input tensors as symbolic variables.
 
     # from tvm.script import ir as I
     # from tvm.script import tirx as T
+    # from tvm.tirx.layout import Axis
 
     @I.ir_module
     class Module:
-        @T.prim_func
+        @T.prim_func(s_tir=True)
         def mm_relu(var_A: T.handle, var_B: T.handle, var_C: T.handle):
             T.func_attr({"tirx.noalias": True})
             m, n = T.int32(), T.int32()

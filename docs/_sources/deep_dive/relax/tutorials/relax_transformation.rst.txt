@@ -68,6 +68,7 @@ the :ref:`previous section <relax-creation>`.
 
     # from tvm.script import ir as I
     # from tvm.script import tirx as T
+    # from tvm.tirx.layout import Axis
     # from tvm.script import relax as R
 
     @I.ir_module
@@ -119,11 +120,12 @@ into low-level operators.
 
     # from tvm.script import ir as I
     # from tvm.script import tirx as T
+    # from tvm.tirx.layout import Axis
     # from tvm.script import relax as R
 
     @I.ir_module
     class Module:
-        @T.prim_func(private=True)
+        @T.prim_func(private=True, s_tir=True)
         def add(var_matmul: T.handle, fc1_bias: T.Buffer((T.int64(128),), "float32"), var_T_add: T.handle):
             T.func_attr({"tirx.noalias": True})
             n = T.int64()
@@ -137,7 +139,7 @@ into low-level operators.
                     T.writes(T_add[v_ax0, v_ax1])
                     T_add[v_ax0, v_ax1] = matmul[v_ax0, v_ax1] + fc1_bias[v_ax1]
 
-        @T.prim_func(private=True)
+        @T.prim_func(private=True, s_tir=True)
         def add1(var_matmul1: T.handle, fc2_bias: T.Buffer((T.int64(10),), "float32"), var_T_add: T.handle):
             T.func_attr({"tirx.noalias": True})
             n = T.int64()
@@ -151,7 +153,7 @@ into low-level operators.
                     T.writes(T_add[v_ax0, v_ax1])
                     T_add[v_ax0, v_ax1] = matmul1[v_ax0, v_ax1] + fc2_bias[v_ax1]
 
-        @T.prim_func(private=True)
+        @T.prim_func(private=True, s_tir=True)
         def matmul(var_x: T.handle, permute_dims: T.Buffer((T.int64(784), T.int64(128)), "float32"), var_matmul: T.handle):
             T.func_attr({"tirx.noalias": True})
             n = T.int64()
@@ -167,7 +169,7 @@ into low-level operators.
                         matmul[v_i0, v_i1] = T.float32(0.0)
                     matmul[v_i0, v_i1] = matmul[v_i0, v_i1] + x[v_i0, v_k] * permute_dims[v_k, v_i1]
 
-        @T.prim_func(private=True)
+        @T.prim_func(private=True, s_tir=True)
         def matmul1(var_relu: T.handle, permute_dims1: T.Buffer((T.int64(128), T.int64(10)), "float32"), var_matmul: T.handle):
             T.func_attr({"tirx.noalias": True})
             n = T.int64()
@@ -183,7 +185,7 @@ into low-level operators.
                         matmul[v_i0, v_i1] = T.float32(0.0)
                     matmul[v_i0, v_i1] = matmul[v_i0, v_i1] + relu[v_i0, v_k] * permute_dims1[v_k, v_i1]
 
-        @T.prim_func(private=True)
+        @T.prim_func(private=True, s_tir=True)
         def relu(var_add: T.handle, var_compute: T.handle):
             T.func_attr({"tirx.noalias": True})
             n = T.int64()
@@ -197,7 +199,7 @@ into low-level operators.
                     T.writes(compute[v_i0, v_i1])
                     compute[v_i0, v_i1] = T.max(add[v_i0, v_i1], T.float32(0.0))
 
-        @T.prim_func(private=True)
+        @T.prim_func(private=True, s_tir=True)
         def transpose(fc1_weight: T.Buffer((T.int64(128), T.int64(784)), "float32"), T_transpose: T.Buffer((T.int64(784), T.int64(128)), "float32")):
             T.func_attr({"tirx.noalias": True})
             # with T.sblock("root"):
@@ -208,7 +210,7 @@ into low-level operators.
                     T.writes(T_transpose[v_ax0, v_ax1])
                     T_transpose[v_ax0, v_ax1] = fc1_weight[v_ax1, v_ax0]
 
-        @T.prim_func(private=True)
+        @T.prim_func(private=True, s_tir=True)
         def transpose1(fc2_weight: T.Buffer((T.int64(10), T.int64(128)), "float32"), T_transpose: T.Buffer((T.int64(128), T.int64(10)), "float32")):
             T.func_attr({"tirx.noalias": True})
             # with T.sblock("root"):
@@ -273,11 +275,12 @@ a set of passes. We can apply them in a sequence.
 
     # from tvm.script import ir as I
     # from tvm.script import tirx as T
+    # from tvm.tirx.layout import Axis
     # from tvm.script import relax as R
 
     @I.ir_module
     class Module:
-        @T.prim_func(private=True)
+        @T.prim_func(private=True, s_tir=True)
         def fused_matmul1_add1(p_relu: T.handle, permute_dims1: T.Buffer((T.int64(128), T.int64(10)), "float32"), fc2_bias: T.Buffer((T.int64(10),), "float32"), p_output0: T.handle):
             T.func_attr({"tirx.noalias": True})
             n = T.int64()
@@ -300,7 +303,7 @@ a set of passes. We can apply them in a sequence.
                     T.writes(T_add_intermediate[v_ax0, v_ax1])
                     T_add_intermediate[v_ax0, v_ax1] = matmul_intermediate[v_ax0, v_ax1] + fc2_bias[v_ax1]
 
-        @T.prim_func(private=True)
+        @T.prim_func(private=True, s_tir=True)
         def fused_matmul_add_relu(p_x: T.handle, permute_dims: T.Buffer((T.int64(784), T.int64(128)), "float32"), fc1_bias: T.Buffer((T.int64(128),), "float32"), p_output0: T.handle):
             T.func_attr({"tirx.noalias": True})
             n = T.int64()
@@ -330,7 +333,7 @@ a set of passes. We can apply them in a sequence.
                     T.writes(compute_intermediate[v_i0, v_i1])
                     compute_intermediate[v_i0, v_i1] = T.max(T_add_intermediate[v_i0, v_i1], T.float32(0.0))
 
-        @T.prim_func(private=True)
+        @T.prim_func(private=True, s_tir=True)
         def transpose(fc1_weight: T.Buffer((T.int64(128), T.int64(784)), "float32"), T_transpose: T.Buffer((T.int64(784), T.int64(128)), "float32")):
             T.func_attr({"op_pattern": 2, "tirx.noalias": True})
             # with T.sblock("root"):
@@ -341,7 +344,7 @@ a set of passes. We can apply them in a sequence.
                     T.writes(T_transpose[v_ax0, v_ax1])
                     T_transpose[v_ax0, v_ax1] = fc1_weight[v_ax1, v_ax0]
 
-        @T.prim_func(private=True)
+        @T.prim_func(private=True, s_tir=True)
         def transpose1(fc2_weight: T.Buffer((T.int64(10), T.int64(128)), "float32"), T_transpose: T.Buffer((T.int64(128), T.int64(10)), "float32")):
             T.func_attr({"op_pattern": 2, "tirx.noalias": True})
             # with T.sblock("root"):
@@ -446,6 +449,7 @@ Then we can write a pass to apply the mutator to the whole module.
 
     # from tvm.script import ir as I
     # from tvm.script import tirx as T
+    # from tvm.tirx.layout import Axis
     # from tvm.script import relax as R
 
     @I.ir_module

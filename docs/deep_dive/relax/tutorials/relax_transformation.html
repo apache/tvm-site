@@ -337,6 +337,7 @@ the <a class="reference internal" href="relax_creation.html#relax-creation"><spa
 </div>
 <div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span># from tvm.script import ir as I
 # from tvm.script import tirx as T
+# from tvm.tirx.layout import Axis
 # from tvm.script import relax as R
 
 @I.ir_module
@@ -370,11 +371,12 @@ into low-level operators.</p>
 </div>
 <div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span># from tvm.script import ir as I
 # from tvm.script import tirx as T
+# from tvm.tirx.layout import Axis
 # from tvm.script import relax as R
 
 @I.ir_module
 class Module:
-    @T.prim_func(private=True)
+    @T.prim_func(private=True, s_tir=True)
     def add(var_matmul: T.handle, fc1_bias: T.Buffer((T.int64(128),), &quot;float32&quot;), var_T_add: T.handle):
         T.func_attr({&quot;tirx.noalias&quot;: True})
         n = T.int64()
@@ -388,7 +390,7 @@ class Module:
                 T.writes(T_add[v_ax0, v_ax1])
                 T_add[v_ax0, v_ax1] = matmul[v_ax0, v_ax1] + fc1_bias[v_ax1]
 
-    @T.prim_func(private=True)
+    @T.prim_func(private=True, s_tir=True)
     def add1(var_matmul1: T.handle, fc2_bias: T.Buffer((T.int64(10),), &quot;float32&quot;), var_T_add: T.handle):
         T.func_attr({&quot;tirx.noalias&quot;: True})
         n = T.int64()
@@ -402,7 +404,7 @@ class Module:
                 T.writes(T_add[v_ax0, v_ax1])
                 T_add[v_ax0, v_ax1] = matmul1[v_ax0, v_ax1] + fc2_bias[v_ax1]
 
-    @T.prim_func(private=True)
+    @T.prim_func(private=True, s_tir=True)
     def matmul(var_x: T.handle, permute_dims: T.Buffer((T.int64(784), T.int64(128)), &quot;float32&quot;), var_matmul: T.handle):
         T.func_attr({&quot;tirx.noalias&quot;: True})
         n = T.int64()
@@ -418,7 +420,7 @@ class Module:
                     matmul[v_i0, v_i1] = T.float32(0.0)
                 matmul[v_i0, v_i1] = matmul[v_i0, v_i1] + x[v_i0, v_k] * permute_dims[v_k, v_i1]
 
-    @T.prim_func(private=True)
+    @T.prim_func(private=True, s_tir=True)
     def matmul1(var_relu: T.handle, permute_dims1: T.Buffer((T.int64(128), T.int64(10)), &quot;float32&quot;), var_matmul: T.handle):
         T.func_attr({&quot;tirx.noalias&quot;: True})
         n = T.int64()
@@ -434,7 +436,7 @@ class Module:
                     matmul[v_i0, v_i1] = T.float32(0.0)
                 matmul[v_i0, v_i1] = matmul[v_i0, v_i1] + relu[v_i0, v_k] * permute_dims1[v_k, v_i1]
 
-    @T.prim_func(private=True)
+    @T.prim_func(private=True, s_tir=True)
     def relu(var_add: T.handle, var_compute: T.handle):
         T.func_attr({&quot;tirx.noalias&quot;: True})
         n = T.int64()
@@ -448,7 +450,7 @@ class Module:
                 T.writes(compute[v_i0, v_i1])
                 compute[v_i0, v_i1] = T.max(add[v_i0, v_i1], T.float32(0.0))
 
-    @T.prim_func(private=True)
+    @T.prim_func(private=True, s_tir=True)
     def transpose(fc1_weight: T.Buffer((T.int64(128), T.int64(784)), &quot;float32&quot;), T_transpose: T.Buffer((T.int64(784), T.int64(128)), &quot;float32&quot;)):
         T.func_attr({&quot;tirx.noalias&quot;: True})
         # with T.sblock(&quot;root&quot;):
@@ -459,7 +461,7 @@ class Module:
                 T.writes(T_transpose[v_ax0, v_ax1])
                 T_transpose[v_ax0, v_ax1] = fc1_weight[v_ax1, v_ax0]
 
-    @T.prim_func(private=True)
+    @T.prim_func(private=True, s_tir=True)
     def transpose1(fc2_weight: T.Buffer((T.int64(10), T.int64(128)), &quot;float32&quot;), T_transpose: T.Buffer((T.int64(128), T.int64(10)), &quot;float32&quot;)):
         T.func_attr({&quot;tirx.noalias&quot;: True})
         # with T.sblock(&quot;root&quot;):
@@ -505,11 +507,12 @@ a set of passes. We can apply them in a sequence.</p>
 </div>
 <div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span># from tvm.script import ir as I
 # from tvm.script import tirx as T
+# from tvm.tirx.layout import Axis
 # from tvm.script import relax as R
 
 @I.ir_module
 class Module:
-    @T.prim_func(private=True)
+    @T.prim_func(private=True, s_tir=True)
     def fused_matmul1_add1(p_relu: T.handle, permute_dims1: T.Buffer((T.int64(128), T.int64(10)), &quot;float32&quot;), fc2_bias: T.Buffer((T.int64(10),), &quot;float32&quot;), p_output0: T.handle):
         T.func_attr({&quot;tirx.noalias&quot;: True})
         n = T.int64()
@@ -532,7 +535,7 @@ class Module:
                 T.writes(T_add_intermediate[v_ax0, v_ax1])
                 T_add_intermediate[v_ax0, v_ax1] = matmul_intermediate[v_ax0, v_ax1] + fc2_bias[v_ax1]
 
-    @T.prim_func(private=True)
+    @T.prim_func(private=True, s_tir=True)
     def fused_matmul_add_relu(p_x: T.handle, permute_dims: T.Buffer((T.int64(784), T.int64(128)), &quot;float32&quot;), fc1_bias: T.Buffer((T.int64(128),), &quot;float32&quot;), p_output0: T.handle):
         T.func_attr({&quot;tirx.noalias&quot;: True})
         n = T.int64()
@@ -562,7 +565,7 @@ class Module:
                 T.writes(compute_intermediate[v_i0, v_i1])
                 compute_intermediate[v_i0, v_i1] = T.max(T_add_intermediate[v_i0, v_i1], T.float32(0.0))
 
-    @T.prim_func(private=True)
+    @T.prim_func(private=True, s_tir=True)
     def transpose(fc1_weight: T.Buffer((T.int64(128), T.int64(784)), &quot;float32&quot;), T_transpose: T.Buffer((T.int64(784), T.int64(128)), &quot;float32&quot;)):
         T.func_attr({&quot;op_pattern&quot;: 2, &quot;tirx.noalias&quot;: True})
         # with T.sblock(&quot;root&quot;):
@@ -573,7 +576,7 @@ class Module:
                 T.writes(T_transpose[v_ax0, v_ax1])
                 T_transpose[v_ax0, v_ax1] = fc1_weight[v_ax1, v_ax0]
 
-    @T.prim_func(private=True)
+    @T.prim_func(private=True, s_tir=True)
     def transpose1(fc2_weight: T.Buffer((T.int64(10), T.int64(128)), &quot;float32&quot;), T_transpose: T.Buffer((T.int64(128), T.int64(10)), &quot;float32&quot;)):
         T.func_attr({&quot;op_pattern&quot;: 2, &quot;tirx.noalias&quot;: True})
         # with T.sblock(&quot;root&quot;):
@@ -642,6 +645,7 @@ operator to <code class="docutils literal notranslate"><span class="pre">gelu</s
 </div>
 <div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span># from tvm.script import ir as I
 # from tvm.script import tirx as T
+# from tvm.tirx.layout import Axis
 # from tvm.script import relax as R
 
 @I.ir_module
