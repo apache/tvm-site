@@ -68,7 +68,7 @@ var searchData=
   ['use_5fdefault_5ftype_5ftraits_5fv_3c_20primexpr_20_3e_3977',['use_default_type_traits_v&lt; PrimExpr &gt;',['../namespacetvm_1_1ffi.html#a3953ced274a99f70b1ab2cd282f266e2',1,'tvm::ffi']]],
   ['useassumetoreducebranches_3978',['UseAssumeToReduceBranches',['../namespacetvm_1_1s__tir_1_1transform.html#a1d8ea88c4e1d224910925c3f499d3e4a',1,'tvm::s_tir::transform']]],
   ['usedby_3979',['UsedBy',['../namespacetvm_1_1relax.html#ae51bf4cd12992d277cc20eb82881ca23',1,'tvm::relax::UsedBy()'],['../classtvm_1_1relax_1_1PatternSeq.html#a9901bd20ecd194cd32825f437a4f4a42',1,'tvm::relax::PatternSeq::UsedBy()'],['../classtvm_1_1relax_1_1PatternSeq.html#a701c6fd85238362bbe29f7fd26d41c35',1,'tvm::relax::PatternSeq::UsedBy(PatternSeq other, int index=-1) const']]],
-  ['usedmemory_3980',['UsedMemory',['../classtvm_1_1runtime_1_1memory_1_1Allocator.html#abdc5ce316a5e24a6fbcac8b619c4291e',1,'tvm::runtime::memory::Allocator']]],
+  ['usedmemory_3980',['UsedMemory',['../classtvm_1_1runtime_1_1memory_1_1Allocator.html#a2c5e075e9b1ee86a6b39791e8e78683b',1,'tvm::runtime::memory::Allocator']]],
   ['usesvar_3981',['UsesVar',['../namespacetvm_1_1tirx.html#a9e70a64ac0f0e03161ec0ca03edea9ed',1,'tvm::tirx::UsesVar(const Stmt &amp;stmt, std::function&lt; bool(const VarNode *)&gt; vset_contains)'],['../namespacetvm_1_1tirx.html#a9d037a0fad6e2fc107bddafe2bec94bd',1,'tvm::tirx::UsesVar(const PrimExpr &amp;expr, std::function&lt; bool(const VarNode *)&gt; vset_contains)']]],
   ['utils_2eh_3982',['utils.h',['../relax_2utils_8h.html',1,'(Global Namespace)'],['../s__tir_2utils_8h.html',1,'(Global Namespace)'],['../topi_2utils_8h.html',1,'(Global Namespace)']]]
 ];

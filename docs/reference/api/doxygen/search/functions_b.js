@@ -35,7 +35,7 @@ var searchData=
   ['loadexecutable_6481',['LoadExecutable',['../classtvm_1_1runtime_1_1vm_1_1VirtualMachine.html#a323165e5f34ef9fe84881e7dac927ee5',1,'tvm::runtime::vm::VirtualMachine']]],
   ['loadfrombytes_6482',['LoadFromBytes',['../classtvm_1_1runtime_1_1vm_1_1VMExecutable.html#ad8aba4af1475f81460b95cd5d0b42bbd',1,'tvm::runtime::vm::VMExecutable']]],
   ['loadfromfile_6483',['LoadFromFile',['../classtvm_1_1runtime_1_1vm_1_1VMExecutable.html#a0e741c152e68a73ab2b157444f148001',1,'tvm::runtime::vm::VMExecutable']]],
-  ['loadfromstr_6484',['LoadFromStr',['../structtvm_1_1runtime_1_1vm_1_1TensorCacheMetadata.html#a62f2495ce2683e976141799654bb1bcd',1,'tvm::runtime::vm::TensorCacheMetadata']]],
+  ['loadfromstr_6484',['LoadFromStr',['../structtvm_1_1runtime_1_1vm_1_1TensorCacheMetadata.html#af9c529a8defdb8fa753649284441df16',1,'tvm::runtime::vm::TensorCacheMetadata']]],
   ['loadvmmodule_6485',['LoadVMModule',['../namespacetvm_1_1runtime.html#a30ce952481686f2ebc6bf31ad773ca8b',1,'tvm::runtime']]],
   ['log_6486',['log',['../namespacetvm.html#ae39f72b12020a4f7ad6b16b66ffdfe1f',1,'tvm::log()'],['../namespacetvm_1_1topi.html#a524b8bb4fe7a02478ea617911cf467ab',1,'tvm::topi::log()']]],
   ['log10_6487',['log10',['../namespacetvm.html#a16a5aa0300233b6c5fbcc61c424eee30',1,'tvm::log10()'],['../namespacetvm_1_1topi.html#aa4595c96c60e3706f30f24d33d53a09c',1,'tvm::topi::log10()']]],
