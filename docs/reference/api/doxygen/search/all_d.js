@@ -46,7 +46,7 @@ var searchData=
   ['level_2192',['level',['../classtvm_1_1DiagnosticNode.html#ac7cfbfb2effb1a19a1802c71d5e47939',1,'tvm::DiagnosticNode::level()'],['../classtvm_1_1DiagnosticBuilder.html#aaa261651b73b9156793bfce29dfaa26f',1,'tvm::DiagnosticBuilder::level()']]],
   ['lhs_2193',['lhs',['../classtvm_1_1tirx_1_1CommReducerNode.html#a28922586d284d6a823ba73af0a4bec00',1,'tvm::tirx::CommReducerNode::lhs()'],['../classtvm_1_1script_1_1printer_1_1ScopeDocNode.html#a9237edc6233763c2092893e4f37b89cd',1,'tvm::script::printer::ScopeDocNode::lhs()'],['../classtvm_1_1script_1_1printer_1_1ForDocNode.html#a4d379635b6557930395ca0e8463a8449',1,'tvm::script::printer::ForDocNode::lhs()'],['../classtvm_1_1script_1_1printer_1_1AssignDocNode.html#a77d29bfe645e6120ff1b94fb53f67f5c',1,'tvm::script::printer::AssignDocNode::lhs()']]],
   ['liftthreadbinding_2194',['LiftThreadBinding',['../namespacetvm_1_1s__tir_1_1transform.html#acff3f0ecba9931aae7bac920fcce7d1b',1,'tvm::s_tir::transform']]],
-  ['lifttransformparams_2195',['LiftTransformParams',['../namespacetvm_1_1relax_1_1transform.html#a313133cbc2c030cc7602d22efb7a3ca1',1,'tvm::relax::transform']]],
+  ['lifttransformparams_2195',['LiftTransformParams',['../namespacetvm_1_1relax_1_1transform.html#ac5b4bb271e9683db84716bf2c9c7a3ec',1,'tvm::relax::transform']]],
   ['likely_2196',['likely',['../namespacetvm_1_1tirx_1_1builtin.html#ac498bcb3f4c9e74e420af0680b503f67',1,'tvm::tirx::builtin::likely()'],['../namespacetvm.html#a336b811d7f339f888ad38d2e2657710d',1,'tvm::likely()']]],
   ['line_2197',['line',['../classtvm_1_1SpanNode.html#a6890bb225890f64611e6f77a401ee617',1,'tvm::SpanNode']]],
   ['line_5fmap_2198',['line_map',['../classtvm_1_1SourceNode.html#a34f2c9047c34df59043c68c2359b9768',1,'tvm::SourceNode']]],

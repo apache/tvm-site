@@ -5,7 +5,7 @@ var searchData=
   ['barrier_5fin_7414',['barrier_in',['../classtvm_1_1runtime_1_1cuda__ipc_1_1CUDAIPCMemoryObj.html#a8d4a0fe583176227e28e77214e82ec2a',1,'tvm::runtime::cuda_ipc::CUDAIPCMemoryObj']]],
   ['barrier_5fout_7415',['barrier_out',['../classtvm_1_1runtime_1_1cuda__ipc_1_1CUDAIPCMemoryObj.html#a78705723c7a73985bf86b0b946164168',1,'tvm::runtime::cuda_ipc::CUDAIPCMemoryObj']]],
   ['base_7416',['base',['../classtvm_1_1arith_1_1ModularSetNode.html#afe63e5586712774be5935e86121431ad',1,'tvm::arith::ModularSetNode::base()'],['../classtvm_1_1arith_1_1IterSumExprNode.html#ab9516d8fa15d4691d2255e4d5371bdc6',1,'tvm::arith::IterSumExprNode::base()'],['../classtvm_1_1tirx_1_1RampNode.html#a3430b6afecc6b3f849b77cd9379c8bac',1,'tvm::tirx::RampNode::base()']]],
-  ['batch_5fdims_7417',['batch_dims',['../structtvm_1_1relax_1_1GatherNDAttrs.html#a083ca0e726dd7133e61992892d75ad02',1,'tvm::relax::GatherNDAttrs']]],
+  ['batch_5fdims_7417',['batch_dims',['../structtvm_1_1relax_1_1GatherNDAttrs.html#a093e51a3549a184323dfedce9f2a3257',1,'tvm::relax::GatherNDAttrs']]],
   ['beta_7418',['beta',['../structtvm_1_1relax_1_1SoftplusAttrs.html#aab9e5b177ba08e3ded170fe85bdc439a',1,'tvm::relax::SoftplusAttrs']]],
   ['binding_5fblocks_7419',['binding_blocks',['../classtvm_1_1script_1_1ir__builder_1_1relax_1_1SeqExprFrameNode.html#abdb051a4b47b4a09da7537d3adfbecfb',1,'tvm::script::ir_builder::relax::SeqExprFrameNode']]],
   ['binding_5fnames_7420',['binding_names',['../classtvm_1_1PrinterConfigNode.html#a187363124bf63cf14fca12853bc48771',1,'tvm::PrinterConfigNode']]],

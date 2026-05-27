@@ -53,7 +53,7 @@ var searchData=
   ['renewdefs_6754',['RenewDefs',['../namespacetvm_1_1s__tir.html#ac87f932d0dfab1b2503d39df9c26a2ab',1,'tvm::s_tir']]],
   ['renormalizesplitpattern_6755',['RenormalizeSplitPattern',['../namespacetvm_1_1s__tir_1_1transform.html#ab655ab1e0af8a741f66ef7c14347fccb',1,'tvm::s_tir::transform']]],
   ['reorder_6756',['Reorder',['../classtvm_1_1s__tir_1_1ScheduleNode.html#aad1af398cb518f5d2d91e1ee878113f3',1,'tvm::s_tir::ScheduleNode']]],
-  ['reorderblockitervar_6757',['ReorderBlockIterVar',['../classtvm_1_1s__tir_1_1ScheduleNode.html#a14c1bef7d6a0836736352572ac6ed5cc',1,'tvm::s_tir::ScheduleNode']]],
+  ['reorderblockitervar_6757',['ReorderBlockIterVar',['../classtvm_1_1s__tir_1_1ScheduleNode.html#a53b2449b2feb63b8eae18343725f8f5f',1,'tvm::s_tir::ScheduleNode']]],
   ['reorg_6758',['reorg',['../namespacetvm_1_1topi_1_1vision.html#a1014df582489005202c4218e51792314',1,'tvm::topi::vision']]],
   ['repeat_6759',['repeat',['../namespacetvm_1_1topi.html#afe9f6d9103b2dfbc601bfd2304a4e687',1,'tvm::topi']]],
   ['replace_6760',['Replace',['../classtvm_1_1s__tir_1_1ScheduleStateNode.html#a7b867b7a8886e32fecc7835dde24e8dd',1,'tvm::s_tir::ScheduleStateNode']]],

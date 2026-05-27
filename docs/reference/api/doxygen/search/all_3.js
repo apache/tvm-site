@@ -16,7 +16,7 @@ var searchData=
   ['baseexprnode_234',['BaseExprNode',['../classtvm_1_1BaseExprNode.html',1,'tvm']]],
   ['basefunc_235',['BaseFunc',['../classtvm_1_1BaseFunc.html',1,'tvm']]],
   ['basefuncnode_236',['BaseFuncNode',['../classtvm_1_1BaseFuncNode.html',1,'tvm']]],
-  ['batch_5fdims_237',['batch_dims',['../structtvm_1_1relax_1_1GatherNDAttrs.html#a083ca0e726dd7133e61992892d75ad02',1,'tvm::relax::GatherNDAttrs']]],
+  ['batch_5fdims_237',['batch_dims',['../structtvm_1_1relax_1_1GatherNDAttrs.html#a093e51a3549a184323dfedce9f2a3257',1,'tvm::relax::GatherNDAttrs']]],
   ['batch_5fto_5fspace_5fnd_238',['batch_to_space_nd',['../namespacetvm_1_1topi.html#a35cd62981c77c4f25a0078780751fc1b',1,'tvm::topi']]],
   ['batchnormattrs_239',['BatchNormAttrs',['../structtvm_1_1relax_1_1BatchNormAttrs.html',1,'tvm::relax']]],
   ['beginbindingblock_240',['BeginBindingBlock',['../classtvm_1_1relax_1_1BlockBuilderNode.html#ad66cba2fdae54095fc9d9cf7fbbec13d',1,'tvm::relax::BlockBuilderNode']]],
