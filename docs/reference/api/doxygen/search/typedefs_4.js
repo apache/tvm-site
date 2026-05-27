@@ -1,9 +1,7 @@
 var searchData=
 [
-  ['execword_8100',['ExecWord',['../namespacetvm_1_1runtime_1_1vm.html#a686b3f7ba5f75e2b87ef66bd2783de77',1,'tvm::runtime::vm']]],
-  ['expr_8101',['Expr',['../namespacetvm_1_1relax.html#ac287c47b30d1126e4017da1b96957fa0',1,'tvm::relax']]],
-  ['exprintsetmap_8102',['ExprIntSetMap',['../namespacetvm_1_1arith.html#a2283f333f41c34feca1c6914c0fc52f0',1,'tvm::arith']]],
-  ['exprnode_8103',['ExprNode',['../namespacetvm_1_1relax.html#a71b7f14f445c67648c3849d69ea8f5bc',1,'tvm::relax']]],
-  ['exprrv_8104',['ExprRV',['../namespacetvm_1_1s__tir.html#a974cb09c470621792d135adb5550c9e7',1,'tvm::s_tir']]],
-  ['exprrvnode_8105',['ExprRVNode',['../namespacetvm_1_1s__tir.html#acb4c5a5a489c66683a623abc41c15715',1,'tvm::s_tir']]]
+  ['dataflowblock_8103',['DataflowBlock',['../namespacetvm_1_1relax_1_1backend_1_1adreno_1_1transform.html#a949da57b6a5d4a632801c09771c43e1b',1,'tvm::relax::backend::adreno::transform::DataflowBlock()'],['../namespacetvm_1_1relax_1_1distributed_1_1transform.html#a95c0cdfb8ea490fa863b8d9ad560ec6a',1,'tvm::relax::distributed::transform::DataflowBlock()'],['../namespacetvm_1_1relax_1_1transform.html#a0a73fe4f7173374898cc8978103ceaee',1,'tvm::relax::transform::DataflowBlock()']]],
+  ['datatype_8104',['DataType',['../namespacetvm.html#a41918af1a1dc386388639a9d3ad06c5d',1,'tvm']]],
+  ['device_8105',['Device',['../namespacetvm.html#a7c2095aed90b2129ba631b90103313a2',1,'tvm']]],
+  ['doccreator_8106',['DocCreator',['../classtvm_1_1script_1_1printer_1_1IRDocsifierNode.html#a0b3746ae1e3dec33534003c8fbb5553f',1,'tvm::script::printer::IRDocsifierNode']]]
 ];

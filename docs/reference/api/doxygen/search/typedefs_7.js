@@ -1,6 +1,5 @@
 var searchData=
 [
-  ['label_8169',['Label',['../structtvm_1_1topi_1_1EinsumEquation.html#a09547a1735a962ace2c9541322b60461',1,'tvm::topi::EinsumEquation']]],
-  ['launchparams_8170',['LaunchParams',['../classtvm_1_1tirx_1_1ScopeIdResolve.html#ae0bcad52de4b04a2509fb0717d43affc',1,'tvm::tirx::ScopeIdResolve']]],
-  ['layoutcb_8171',['LayoutCb',['../namespacetvm_1_1relax_1_1transform.html#abad545ac39d94605cc39c47d05c82e70',1,'tvm::relax::transform']]]
+  ['index_8174',['Index',['../namespacetvm_1_1runtime_1_1vm.html#a1227d803d3d8f11b3d32a1372358f694',1,'tvm::runtime::vm']]],
+  ['intimmnode_8175',['IntImmNode',['../namespacetvm_1_1tirx.html#ad0f033546039a1ba9e35fcebe3b0c71a',1,'tvm::tirx']]]
 ];
