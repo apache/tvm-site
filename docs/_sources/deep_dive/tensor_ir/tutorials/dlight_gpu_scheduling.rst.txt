@@ -261,32 +261,39 @@ Here we use a common subset of rules. The full catalog (including ``LowBatchGEMV
         def layer_norm(relu: T.Buffer((T.int64(1), T.int64(768)), "float32"), norm_weight: T.Buffer((T.int64(768),), "float32"), norm_bias: T.Buffer((T.int64(768),), "float32"), T_layer_norm: T.Buffer((T.int64(1), T.int64(768)), "float32")):
             T.func_attr({"op_pattern": 4, "tirx.is_scheduled": True, "tirx.noalias": True})
             # with T.sblock("root"):
-            relu_red_temp_v0_shared = T.sblock_alloc_buffer((T.int64(1),), scope="shared")
-            relu_red_temp_v1_shared = T.sblock_alloc_buffer((T.int64(1),), scope="shared")
+            relu_sum_shared = T.sblock_alloc_buffer((T.int64(1),), scope="shared")
+            relu_var_sum_shared = T.sblock_alloc_buffer((T.int64(1),), scope="shared")
             for ax0_fused in T.thread_binding(T.int64(1), thread="blockIdx.x"):
                 for ax0 in range(T.int64(1)):
                     for ax1_fused_1 in T.thread_binding(T.int64(256), thread="threadIdx.x"):
                         for ax1_fused_0 in T.serial(T.int64(3), annotations={"pragma_auto_unroll_max_step": 256, "pragma_unroll_explicit": 1}):
-                            with T.sblock("relu_red_temp"):
+                            with T.sblock("relu_sum"):
                                 v0 = T.axis.spatial(T.int64(1), ax0)
                                 v1 = T.axis.reduce(T.int64(768), ax1_fused_0 * T.int64(256) + ax1_fused_1)
                                 T.reads(relu[T.int64(0), v1])
-                                T.writes(relu_red_temp_v0_shared[T.int64(0)], relu_red_temp_v1_shared[T.int64(0)])
+                                T.writes(relu_sum_shared[T.int64(0)])
                                 with T.init():
-                                    relu_red_temp_v0_shared[T.int64(0)] = T.float32(0.0)
-                                    relu_red_temp_v1_shared[T.int64(0)] = T.float32(0.0)
-                                v_relu_red_temp_v0: T.let[T.float32] = relu_red_temp_v0_shared[T.int64(0)] + relu[T.int64(0), v1]
-                                v_relu_red_temp_v1: T.let[T.float32] = relu_red_temp_v1_shared[T.int64(0)] + relu[T.int64(0), v1] * relu[T.int64(0), v1]
-                                relu_red_temp_v0_shared[T.int64(0)] = v_relu_red_temp_v0
-                                relu_red_temp_v1_shared[T.int64(0)] = v_relu_red_temp_v1
+                                    relu_sum_shared[T.int64(0)] = T.float32(0.0)
+                                relu_sum_shared[T.int64(0)] = relu_sum_shared[T.int64(0)] + relu[T.int64(0), v1]
+                for ax0 in range(T.int64(1)):
+                    for ax1_fused_1 in T.thread_binding(T.int64(256), thread="threadIdx.x"):
+                        for ax1_fused_0 in T.serial(T.int64(3), annotations={"pragma_auto_unroll_max_step": 256, "pragma_unroll_explicit": 1}):
+                            with T.sblock("relu_var_sum"):
+                                v0 = T.axis.spatial(T.int64(1), ax0)
+                                v1 = T.axis.reduce(T.int64(768), ax1_fused_0 * T.int64(256) + ax1_fused_1)
+                                T.reads(relu[T.int64(0), v1], relu_sum_shared[T.int64(0)])
+                                T.writes(relu_var_sum_shared[T.int64(0)])
+                                with T.init():
+                                    relu_var_sum_shared[T.int64(0)] = T.float32(0.0)
+                                relu_var_sum_shared[T.int64(0)] = relu_var_sum_shared[T.int64(0)] + (relu[T.int64(0), v1] - relu_sum_shared[T.int64(0)] / T.float32(768.0)) * (relu[T.int64(0), v1] - relu_sum_shared[T.int64(0)] / T.float32(768.0))
                 for ax1_1 in T.thread_binding(T.int64(256), thread="threadIdx.x"):
                     for ax1_0 in T.serial(T.int64(3), annotations={"pragma_auto_unroll_max_step": 256, "pragma_unroll_explicit": 1}):
                         with T.sblock("T_layer_norm"):
                             v0 = T.axis.spatial(T.int64(1), T.int64(0))
                             v1 = T.axis.spatial(T.int64(768), ax1_0 * T.int64(256) + ax1_1)
-                            T.reads(relu[T.int64(0), v1], relu_red_temp_v0_shared[T.int64(0)], relu_red_temp_v1_shared[T.int64(0)], norm_weight[v1], norm_bias[v1])
+                            T.reads(relu[T.int64(0), v1], relu_sum_shared[T.int64(0)], relu_var_sum_shared[T.int64(0)], norm_weight[v1], norm_bias[v1])
                             T.writes(T_layer_norm[T.int64(0), v1])
-                            T_layer_norm[T.int64(0), v1] = (relu[T.int64(0), v1] - relu_red_temp_v0_shared[T.int64(0)] / T.float32(768.0)) * T.rsqrt(relu_red_temp_v1_shared[T.int64(0)] / T.float32(768.0) - relu_red_temp_v0_shared[T.int64(0)] / T.float32(768.0) * (relu_red_temp_v0_shared[T.int64(0)] / T.float32(768.0)) + T.float32(1.0000000000000001e-05)) * norm_weight[v1] + norm_bias[v1]
+                            T_layer_norm[T.int64(0), v1] = (relu[T.int64(0), v1] - relu_sum_shared[T.int64(0)] / T.float32(768.0)) * T.rsqrt(relu_var_sum_shared[T.int64(0)] / T.float32(768.0) + T.float32(1.0000000000000001e-05)) * norm_weight[v1] + norm_bias[v1]
 
         @T.prim_func(private=True, s_tir=True)
         def transpose(fc1_weight: T.Buffer((T.int64(768), T.int64(768)), "float32"), T_transpose: T.Buffer((T.int64(768), T.int64(768)), "float32")):
@@ -686,32 +693,39 @@ Insert the custom rule into the rule chain. Note that ``from_callable`` returns 
         def layer_norm(relu: T.Buffer((T.int64(1), T.int64(768)), "float32"), norm_weight: T.Buffer((T.int64(768),), "float32"), norm_bias: T.Buffer((T.int64(768),), "float32"), T_layer_norm: T.Buffer((T.int64(1), T.int64(768)), "float32")):
             T.func_attr({"op_pattern": 4, "tirx.is_scheduled": True, "tirx.noalias": True})
             # with T.sblock("root"):
-            relu_red_temp_v0_shared = T.sblock_alloc_buffer((T.int64(1),), scope="shared")
-            relu_red_temp_v1_shared = T.sblock_alloc_buffer((T.int64(1),), scope="shared")
+            relu_sum_shared = T.sblock_alloc_buffer((T.int64(1),), scope="shared")
+            relu_var_sum_shared = T.sblock_alloc_buffer((T.int64(1),), scope="shared")
             for ax0_fused in T.thread_binding(T.int64(1), thread="blockIdx.x"):
                 for ax0 in range(T.int64(1)):
                     for ax1_fused_1 in T.thread_binding(T.int64(256), thread="threadIdx.x"):
                         for ax1_fused_0 in T.serial(T.int64(3), annotations={"pragma_auto_unroll_max_step": 256, "pragma_unroll_explicit": 1}):
-                            with T.sblock("relu_red_temp"):
+                            with T.sblock("relu_sum"):
                                 v0 = T.axis.spatial(T.int64(1), ax0)
                                 v1 = T.axis.reduce(T.int64(768), ax1_fused_0 * T.int64(256) + ax1_fused_1)
                                 T.reads(relu[T.int64(0), v1])
-                                T.writes(relu_red_temp_v0_shared[T.int64(0)], relu_red_temp_v1_shared[T.int64(0)])
+                                T.writes(relu_sum_shared[T.int64(0)])
                                 with T.init():
-                                    relu_red_temp_v0_shared[T.int64(0)] = T.float32(0.0)
-                                    relu_red_temp_v1_shared[T.int64(0)] = T.float32(0.0)
-                                v_relu_red_temp_v0: T.let[T.float32] = relu_red_temp_v0_shared[T.int64(0)] + relu[T.int64(0), v1]
-                                v_relu_red_temp_v1: T.let[T.float32] = relu_red_temp_v1_shared[T.int64(0)] + relu[T.int64(0), v1] * relu[T.int64(0), v1]
-                                relu_red_temp_v0_shared[T.int64(0)] = v_relu_red_temp_v0
-                                relu_red_temp_v1_shared[T.int64(0)] = v_relu_red_temp_v1
+                                    relu_sum_shared[T.int64(0)] = T.float32(0.0)
+                                relu_sum_shared[T.int64(0)] = relu_sum_shared[T.int64(0)] + relu[T.int64(0), v1]
+                for ax0 in range(T.int64(1)):
+                    for ax1_fused_1 in T.thread_binding(T.int64(256), thread="threadIdx.x"):
+                        for ax1_fused_0 in T.serial(T.int64(3), annotations={"pragma_auto_unroll_max_step": 256, "pragma_unroll_explicit": 1}):
+                            with T.sblock("relu_var_sum"):
+                                v0 = T.axis.spatial(T.int64(1), ax0)
+                                v1 = T.axis.reduce(T.int64(768), ax1_fused_0 * T.int64(256) + ax1_fused_1)
+                                T.reads(relu[T.int64(0), v1], relu_sum_shared[T.int64(0)])
+                                T.writes(relu_var_sum_shared[T.int64(0)])
+                                with T.init():
+                                    relu_var_sum_shared[T.int64(0)] = T.float32(0.0)
+                                relu_var_sum_shared[T.int64(0)] = relu_var_sum_shared[T.int64(0)] + (relu[T.int64(0), v1] - relu_sum_shared[T.int64(0)] / T.float32(768.0)) * (relu[T.int64(0), v1] - relu_sum_shared[T.int64(0)] / T.float32(768.0))
                 for ax1_1 in T.thread_binding(T.int64(256), thread="threadIdx.x"):
                     for ax1_0 in T.serial(T.int64(3), annotations={"pragma_auto_unroll_max_step": 256, "pragma_unroll_explicit": 1}):
                         with T.sblock("T_layer_norm"):
                             v0 = T.axis.spatial(T.int64(1), T.int64(0))
                             v1 = T.axis.spatial(T.int64(768), ax1_0 * T.int64(256) + ax1_1)
-                            T.reads(relu[T.int64(0), v1], relu_red_temp_v0_shared[T.int64(0)], relu_red_temp_v1_shared[T.int64(0)], norm_weight[v1], norm_bias[v1])
+                            T.reads(relu[T.int64(0), v1], relu_sum_shared[T.int64(0)], relu_var_sum_shared[T.int64(0)], norm_weight[v1], norm_bias[v1])
                             T.writes(T_layer_norm[T.int64(0), v1])
-                            T_layer_norm[T.int64(0), v1] = (relu[T.int64(0), v1] - relu_red_temp_v0_shared[T.int64(0)] / T.float32(768.0)) * T.rsqrt(relu_red_temp_v1_shared[T.int64(0)] / T.float32(768.0) - relu_red_temp_v0_shared[T.int64(0)] / T.float32(768.0) * (relu_red_temp_v0_shared[T.int64(0)] / T.float32(768.0)) + T.float32(1.0000000000000001e-05)) * norm_weight[v1] + norm_bias[v1]
+                            T_layer_norm[T.int64(0), v1] = (relu[T.int64(0), v1] - relu_sum_shared[T.int64(0)] / T.float32(768.0)) * T.rsqrt(relu_var_sum_shared[T.int64(0)] / T.float32(768.0) + T.float32(1.0000000000000001e-05)) * norm_weight[v1] + norm_bias[v1]
 
         @T.prim_func(private=True, s_tir=True)
         def transpose(fc1_weight: T.Buffer((T.int64(768), T.int64(768)), "float32"), T_transpose: T.Buffer((T.int64(768), T.int64(768)), "float32")):
