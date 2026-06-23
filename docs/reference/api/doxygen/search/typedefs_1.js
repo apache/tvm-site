@@ -1,7 +1,7 @@
 var searchData=
 [
-  ['accesspath_7628',['AccessPath',['../namespacetvm_1_1script_1_1printer.html#aa6150963ae2f3f94a3cb24b45dd0ff0c',1,'tvm::script::printer']]],
-  ['axisgroup_7629',['AxisGroup',['../namespacetvm_1_1relax_1_1distributed.html#a56b93fc9f726d6abaa0a0e7149ed915f',1,'tvm::relax::distributed']]],
-  ['axisregistry_7630',['AxisRegistry',['../namespacetvm_1_1tirx.html#a27649d104762ab1f001a6bb9a82f0757',1,'tvm::tirx']]],
-  ['axisshardingspec_7631',['AxisShardingSpec',['../namespacetvm_1_1relax_1_1distributed.html#a91f85ef8cbcb42c73af66d468edb2d86',1,'tvm::relax::distributed']]]
+  ['accesspath_7629',['AccessPath',['../namespacetvm_1_1script_1_1printer.html#aa6150963ae2f3f94a3cb24b45dd0ff0c',1,'tvm::script::printer']]],
+  ['axisgroup_7630',['AxisGroup',['../namespacetvm_1_1relax_1_1distributed.html#a56b93fc9f726d6abaa0a0e7149ed915f',1,'tvm::relax::distributed']]],
+  ['axisregistry_7631',['AxisRegistry',['../namespacetvm_1_1tirx.html#a27649d104762ab1f001a6bb9a82f0757',1,'tvm::tirx']]],
+  ['axisshardingspec_7632',['AxisShardingSpec',['../namespacetvm_1_1relax_1_1distributed.html#a91f85ef8cbcb42c73af66d468edb2d86',1,'tvm::relax::distributed']]]
 ];
