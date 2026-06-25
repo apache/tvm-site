@@ -168,7 +168,7 @@ var searchData=
   ['stop_6471',['Stop',['../classtvm_1_1runtime_1_1TimerNode.html#a67eb764f2c9e3fb7c2708f01c0c35683',1,'tvm::runtime::TimerNode']]],
   ['storage_6472',['Storage',['../classtvm_1_1runtime_1_1memory_1_1Storage.html#a4c6962cccc82e0ed78ae327c6c4c6844',1,'tvm::runtime::memory::Storage']]],
   ['storagealign_6473',['StorageAlign',['../classtvm_1_1s__tir_1_1ScheduleNode.html#a17a3d056e6be83a0a65a23141c745152',1,'tvm::s_tir::ScheduleNode']]],
-  ['storagebytes_6474',['StorageBytes',['../classtvm_1_1PrimType.html#a7c9151aab687a95c4eca43f8f2f798e6',1,'tvm::PrimType']]],
+  ['storagebytes_6474',['StorageBytes',['../classtvm_1_1PrimType.html#ae38ccfedf456e6d6cf364249fabe75ce',1,'tvm::PrimType']]],
   ['storagerewrite_6475',['StorageRewrite',['../namespacetvm_1_1tirx_1_1transform.html#a77a8f6edf644f00ee1285566de2cc639',1,'tvm::tirx::transform']]],
   ['str_6476',['str',['../classtvm_1_1TargetNode.html#a30cd67db46a9c4b098a8ba38fff22e26',1,'tvm::TargetNode']]],
   ['str_6477',['Str',['../classtvm_1_1script_1_1printer_1_1LiteralDoc.html#aff9ffe0ea5415919afa1fdc8f85a9867',1,'tvm::script::printer::LiteralDoc']]],

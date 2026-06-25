@@ -337,7 +337,7 @@ var searchData=
   ['storage_5falignment_3158',['storage_alignment',['../namespacetvm_1_1tirx_1_1attr.html#a578f957aa3fea3bca9bdfcc121122d2e',1,'tvm::tirx::attr']]],
   ['storage_5fscope_3159',['storage_scope',['../classtvm_1_1PointerTypeNode.html#ae309f7f562a4243bf92f070a9d86ebe4',1,'tvm::PointerTypeNode']]],
   ['storagealign_3160',['StorageAlign',['../classtvm_1_1s__tir_1_1ScheduleNode.html#a17a3d056e6be83a0a65a23141c745152',1,'tvm::s_tir::ScheduleNode']]],
-  ['storagebytes_3161',['StorageBytes',['../classtvm_1_1PrimType.html#a7c9151aab687a95c4eca43f8f2f798e6',1,'tvm::PrimType']]],
+  ['storagebytes_3161',['StorageBytes',['../classtvm_1_1PrimType.html#ae38ccfedf456e6d6cf364249fabe75ce',1,'tvm::PrimType']]],
   ['storageobj_3162',['StorageObj',['../classtvm_1_1runtime_1_1memory_1_1StorageObj.html',1,'tvm::runtime::memory']]],
   ['storagerewrite_3163',['StorageRewrite',['../namespacetvm_1_1tirx_1_1transform.html#a77a8f6edf644f00ee1285566de2cc639',1,'tvm::tirx::transform']]],
   ['str_3164',['Str',['../classtvm_1_1script_1_1printer_1_1LiteralDoc.html#aff9ffe0ea5415919afa1fdc8f85a9867',1,'tvm::script::printer::LiteralDoc']]],
