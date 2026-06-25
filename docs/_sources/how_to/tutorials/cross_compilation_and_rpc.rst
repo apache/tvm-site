@@ -239,6 +239,15 @@ compiler to relink them. Now `func` is a remote module object.
 
 
 
+.. rst-class:: sphx-glr-script-out
+
+ .. code-block:: none
+
+    /workspace/docs/how_to/tutorials/cross_compilation_and_rpc.py:186: DeprecationWarning: in the future the `.dtype` attribute of a given datatype object must be a valid dtype instance. `data_type.dtype` may need to be coerced using `np.dtype(data_type.dtype)`. (Deprecated NumPy 1.20)
+      a = tvm.runtime.tensor(np.random.uniform(size=1024).astype(A.dtype), dev)
+    /workspace/docs/how_to/tutorials/cross_compilation_and_rpc.py:187: DeprecationWarning: in the future the `.dtype` attribute of a given datatype object must be a valid dtype instance. `data_type.dtype` may need to be coerced using `np.dtype(data_type.dtype)`. (Deprecated NumPy 1.20)
+      b = tvm.runtime.tensor(np.zeros(1024, dtype=A.dtype), dev)
+
 
 
 
@@ -267,7 +276,7 @@ device and returns the measured cost. Network overhead is excluded.
 
  .. code-block:: none
 
-    1.071e-07 secs/op
+    1.05e-07 secs/op
 
 
 
@@ -857,8 +866,8 @@ This workflow is applicable to various deployment scenarios:
     Converted PyTorch model to Relax:
       - Number of parameters: 4
     Using local target for demonstration
-    Exported library to: /tmp/tmp7zwqjmw5/model_deployed.so
-    Saved parameters to: /tmp/tmp7zwqjmw5/model_params.npz
+    Exported library to: /tmp/tmpufg_7p0i/model_deployed.so
+    Saved parameters to: /tmp/tmpufg_7p0i/model_params.npz
 
     RPC workflow (works for any remote device):
     ==================================================

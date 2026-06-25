@@ -426,6 +426,8 @@ We can build and deploy the optimized model to the TVM runtime.
 
  .. code-block:: none
 
+    /workspace/docs/how_to/tutorials/customize_opt.py:225: DeprecationWarning: in the future the `.dtype` attribute of a given datatype object must be a valid dtype instance. `data_type.dtype` may need to be coerced using `np.dtype(data_type.dtype)`. (Deprecated NumPy 1.20)
+      gpu_params = [tvm.runtime.tensor(np.random.rand(*p.shape).astype(p.dtype), dev) for _, p in params]
     [[25302.758 26301.07  25925.635 24935.379 25223.234 24493.31  24251.89
       24630.104 25003.176 23884.219]]
 
