@@ -128,11 +128,11 @@ with NN module frontend or TVMScript. Here we use a simple neural network model 
             R.func_attr({"num_input": 1})
             with R.dataflow():
                 permute_dims: R.Tensor((784, 256), dtype="float32") = R.permute_dims(fc1_weight, axes=None)
-                matmul: R.Tensor((1, 256), dtype="float32") = R.matmul(x, permute_dims, out_dtype="void")
+                matmul: R.Tensor((1, 256), dtype="float32") = R.matmul(x, permute_dims, out_dtype=None)
                 add: R.Tensor((1, 256), dtype="float32") = R.add(matmul, fc1_bias)
                 relu: R.Tensor((1, 256), dtype="float32") = R.nn.relu(add)
                 permute_dims1: R.Tensor((256, 10), dtype="float32") = R.permute_dims(fc2_weight, axes=None)
-                matmul1: R.Tensor((1, 10), dtype="float32") = R.matmul(relu, permute_dims1, out_dtype="void")
+                matmul1: R.Tensor((1, 10), dtype="float32") = R.matmul(relu, permute_dims1, out_dtype=None)
                 gv: R.Tensor((1, 10), dtype="float32") = matmul1
                 R.output(gv)
             return gv
@@ -215,7 +215,7 @@ operator. Here we demonstrate how to dispatch the CUBLAS library for certain pat
             with R.dataflow():
                 lv = R.call_dps_packed("fused_relax_permute_dims_relax_matmul_relax_add_relax_nn_relu_cublas", (fc1_weight, x, fc1_bias), out_ty=R.Tensor((1, 256), dtype="float32"))
                 permute_dims1: R.Tensor((256, 10), dtype="float32") = R.permute_dims(fc2_weight, axes=None)
-                matmul1: R.Tensor((1, 10), dtype="float32") = R.matmul(lv, permute_dims1, out_dtype="void")
+                matmul1: R.Tensor((1, 10), dtype="float32") = R.matmul(lv, permute_dims1, out_dtype=None)
                 gv: R.Tensor((1, 10), dtype="float32") = matmul1
                 R.output(gv)
             return gv

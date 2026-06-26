@@ -79,11 +79,11 @@ the :ref:`previous section <relax-creation>`.
             R.func_attr({"num_input": 1})
             with R.dataflow():
                 permute_dims: R.Tensor((784, 128), dtype="float32") = R.permute_dims(fc1_weight, axes=None)
-                matmul: R.Tensor((n, 128), dtype="float32") = R.matmul(x, permute_dims, out_dtype="void")
+                matmul: R.Tensor((n, 128), dtype="float32") = R.matmul(x, permute_dims, out_dtype=None)
                 add: R.Tensor((n, 128), dtype="float32") = R.add(matmul, fc1_bias)
                 relu: R.Tensor((n, 128), dtype="float32") = R.nn.relu(add)
                 permute_dims1: R.Tensor((128, 10), dtype="float32") = R.permute_dims(fc2_weight, axes=None)
-                matmul1: R.Tensor((n, 10), dtype="float32") = R.matmul(relu, permute_dims1, out_dtype="void")
+                matmul1: R.Tensor((n, 10), dtype="float32") = R.matmul(relu, permute_dims1, out_dtype=None)
                 add1: R.Tensor((n, 10), dtype="float32") = R.add(matmul1, fc2_bias)
                 gv: R.Tensor((n, 10), dtype="float32") = add1
                 R.output(gv)
@@ -460,11 +460,11 @@ Then we can write a pass to apply the mutator to the whole module.
             R.func_attr({"num_input": 1})
             with R.dataflow():
                 permute_dims: R.Tensor((784, 128), dtype="float32") = R.permute_dims(fc1_weight, axes=None)
-                matmul: R.Tensor((n, 128), dtype="float32") = R.matmul(x, permute_dims, out_dtype="void")
+                matmul: R.Tensor((n, 128), dtype="float32") = R.matmul(x, permute_dims, out_dtype=None)
                 add: R.Tensor((n, 128), dtype="float32") = R.add(matmul, fc1_bias)
                 relu: R.Tensor((n, 128), dtype="float32") = R.nn.gelu(add)
                 permute_dims1: R.Tensor((128, 10), dtype="float32") = R.permute_dims(fc2_weight, axes=None)
-                matmul1: R.Tensor((n, 10), dtype="float32") = R.matmul(relu, permute_dims1, out_dtype="void")
+                matmul1: R.Tensor((n, 10), dtype="float32") = R.matmul(relu, permute_dims1, out_dtype=None)
                 add1: R.Tensor((n, 10), dtype="float32") = R.add(matmul1, fc2_bias)
                 gv: R.Tensor((n, 10), dtype="float32") = add1
                 R.output(gv)

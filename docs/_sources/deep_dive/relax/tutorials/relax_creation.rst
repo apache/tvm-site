@@ -86,11 +86,11 @@ high-level Relax operators using TVMScript.
             n = T.int64()
             with R.dataflow():
                 lv: R.Tensor((784, 128), dtype="float32") = R.permute_dims(w0, axes=None)
-                lv1: R.Tensor((n, 128), dtype="float32") = R.matmul(data, lv, out_dtype="void")
+                lv1: R.Tensor((n, 128), dtype="float32") = R.matmul(data, lv, out_dtype=None)
                 lv0: R.Tensor((n, 128), dtype="float32") = R.add(lv1, b0)
                 lv1_1: R.Tensor((n, 128), dtype="float32") = R.nn.relu(lv0)
                 lv4: R.Tensor((128, 10), dtype="float32") = R.permute_dims(w1, axes=None)
-                lv5: R.Tensor((n, 10), dtype="float32") = R.matmul(lv1_1, lv4, out_dtype="void")
+                lv5: R.Tensor((n, 10), dtype="float32") = R.matmul(lv1_1, lv4, out_dtype=None)
                 lv2: R.Tensor((n, 10), dtype="float32") = R.add(lv5, b1)
                 R.output(lv2)
             return lv2
@@ -178,11 +178,11 @@ TensorIR functions in Relax function.
             cls = Module
             with R.dataflow():
                 lv: R.Tensor((784, 128), dtype="float32") = R.permute_dims(w0, axes=None)
-                lv1: R.Tensor((n, 128), dtype="float32") = R.matmul(data, lv, out_dtype="void")
+                lv1: R.Tensor((n, 128), dtype="float32") = R.matmul(data, lv, out_dtype=None)
                 lv0: R.Tensor((n, 128), dtype="float32") = R.add(lv1, b0)
                 lv1_1 = R.call_tir(cls.relu, (lv0,), out_ty=R.Tensor((n, 128), dtype="float32"))
                 lv4: R.Tensor((128, 10), dtype="float32") = R.permute_dims(w1, axes=None)
-                lv5: R.Tensor((n, 10), dtype="float32") = R.matmul(lv1_1, lv4, out_dtype="void")
+                lv5: R.Tensor((n, 10), dtype="float32") = R.matmul(lv1_1, lv4, out_dtype=None)
                 lv2: R.Tensor((n, 10), dtype="float32") = R.add(lv5, b1)
                 R.output(lv2)
             return lv2
@@ -212,7 +212,7 @@ TensorIR functions in Relax function.
   .. code-block:: python
 
     lv: R.Tensor((784, 128), dtype="float32") = R.permute_dims(w0, axes=None)
-    lv1: R.Tensor((n, 128), dtype="float32") = R.matmul(data, lv, out_dtype="void")
+    lv1: R.Tensor((n, 128), dtype="float32") = R.matmul(data, lv)
     lv0: R.Tensor((n, 128), dtype="float32") = R.add(lv1, b0)
 
 
@@ -289,11 +289,11 @@ After we define the NNModule, we can export it to TVM IRModule via
             R.func_attr({"num_input": 1})
             with R.dataflow():
                 permute_dims: R.Tensor((784, 128), dtype="float32") = R.permute_dims(fc1_weight, axes=None)
-                matmul: R.Tensor((n, 128), dtype="float32") = R.matmul(x, permute_dims, out_dtype="void")
+                matmul: R.Tensor((n, 128), dtype="float32") = R.matmul(x, permute_dims, out_dtype=None)
                 add: R.Tensor((n, 128), dtype="float32") = R.add(matmul, fc1_bias)
                 relu: R.Tensor((n, 128), dtype="float32") = R.nn.relu(add)
                 permute_dims1: R.Tensor((128, 10), dtype="float32") = R.permute_dims(fc2_weight, axes=None)
-                matmul1: R.Tensor((n, 10), dtype="float32") = R.matmul(relu, permute_dims1, out_dtype="void")
+                matmul1: R.Tensor((n, 10), dtype="float32") = R.matmul(relu, permute_dims1, out_dtype=None)
                 add1: R.Tensor((n, 10), dtype="float32") = R.add(matmul1, fc2_bias)
                 gv: R.Tensor((n, 10), dtype="float32") = add1
                 R.output(gv)
@@ -489,11 +489,11 @@ customized pass.
             v = T.int64()
             with R.dataflow():
                 lv: R.Tensor((784, 128), dtype="float32") = R.permute_dims(fc1_weight, axes=None)
-                lv1: R.Tensor((v, 128), dtype="float32") = R.matmul(x, lv, out_dtype="void")
+                lv1: R.Tensor((v, 128), dtype="float32") = R.matmul(x, lv, out_dtype=None)
                 lv2: R.Tensor((v, 128), dtype="float32") = R.add(lv1, fc1_bias)
                 lv3: R.Tensor((v, 128), dtype="float32") = R.nn.relu(lv2)
                 lv4: R.Tensor((128, 10), dtype="float32") = R.permute_dims(fc2_weight, axes=None)
-                lv5: R.Tensor((v, 10), dtype="float32") = R.matmul(lv3, lv4, out_dtype="void")
+                lv5: R.Tensor((v, 10), dtype="float32") = R.matmul(lv3, lv4, out_dtype=None)
                 lv6: R.Tensor((v, 10), dtype="float32") = R.add(lv5, fc2_bias)
                 gv: R.Tensor((v, 10), dtype="float32") = lv6
                 R.output(gv)

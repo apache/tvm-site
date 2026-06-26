@@ -143,11 +143,11 @@ in TVM.
             R.func_attr({"num_input": 1})
             with R.dataflow():
                 permute_dims: R.Tensor((784, 256), dtype="float32") = R.permute_dims(fc1_weight, axes=None)
-                matmul: R.Tensor((1, 256), dtype="float32") = R.matmul(x, permute_dims, out_dtype="void")
+                matmul: R.Tensor((1, 256), dtype="float32") = R.matmul(x, permute_dims, out_dtype=None)
                 add: R.Tensor((1, 256), dtype="float32") = R.add(matmul, fc1_bias)
                 relu: R.Tensor((1, 256), dtype="float32") = R.nn.relu(add)
                 permute_dims1: R.Tensor((256, 10), dtype="float32") = R.permute_dims(fc2_weight, axes=None)
-                matmul1: R.Tensor((1, 10), dtype="float32") = R.matmul(relu, permute_dims1, out_dtype="void")
+                matmul1: R.Tensor((1, 10), dtype="float32") = R.matmul(relu, permute_dims1, out_dtype=None)
                 add1: R.Tensor((1, 10), dtype="float32") = R.add(matmul1, fc2_bias)
                 gv: R.Tensor((1, 10), dtype="float32") = add1
                 R.output(gv)
@@ -224,8 +224,8 @@ different devices.
 
  .. code-block:: none
 
-    [[24551.436 25667.14  24682.658 26334.27  25250.744 25172.236 25474.076
-      25286.598 24505.564 24594.307]]
+    [[26768.314 25575.281 23894.371 24074.025 26529.957 24805.723 25166.71
+      24915.234 25667.688 26681.35 ]]
 
 
 

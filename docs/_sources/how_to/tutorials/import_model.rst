@@ -463,7 +463,7 @@ Below we create a minimal TFLite model from TensorFlow and import it.
             with R.dataflow():
                 lv: R.Tensor((10, 784), dtype="float32") = R.permute_dims(serving_default_weight_0, axes=[1, 0])
                 lv1: R.Tensor((784, 10), dtype="float32") = R.permute_dims(lv, axes=[1, 0])
-                lv2: R.Tensor((1, 10), dtype="float32") = R.matmul(serving_default_x_0, lv1, out_dtype="void")
+                lv2: R.Tensor((1, 10), dtype="float32") = R.matmul(serving_default_x_0, lv1, out_dtype=None)
                 gv: R.Tensor((1, 10), dtype="float32") = R.add(lv2, metadata["relax.expr.Constant"][0])
                 R.output(gv)
             return gv

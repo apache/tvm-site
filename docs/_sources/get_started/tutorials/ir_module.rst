@@ -198,11 +198,11 @@ write the IRModule directly.
             R.func_attr({"num_input": 1})
             with R.dataflow():
                 permute_dims: R.Tensor((784, 256), dtype="float32") = R.permute_dims(fc1_weight, axes=None)
-                matmul: R.Tensor((1, 256), dtype="float32") = R.matmul(x, permute_dims, out_dtype="void")
+                matmul: R.Tensor((1, 256), dtype="float32") = R.matmul(x, permute_dims, out_dtype=None)
                 add: R.Tensor((1, 256), dtype="float32") = R.add(matmul, fc1_bias)
                 relu: R.Tensor((1, 256), dtype="float32") = R.nn.relu(add)
                 permute_dims1: R.Tensor((256, 10), dtype="float32") = R.permute_dims(fc2_weight, axes=None)
-                matmul1: R.Tensor((1, 10), dtype="float32") = R.matmul(relu, permute_dims1, out_dtype="void")
+                matmul1: R.Tensor((1, 10), dtype="float32") = R.matmul(relu, permute_dims1, out_dtype=None)
                 add1: R.Tensor((1, 10), dtype="float32") = R.add(matmul1, fc2_bias)
                 gv: R.Tensor((1, 10), dtype="float32") = add1
                 R.output(gv)
@@ -242,11 +242,11 @@ parse the TVMScript to obtain an IRModule.
             R.func_attr({"num_input": 1})
             with R.dataflow():
                 permute_dims = R.permute_dims(fc1_weight, axes=None)
-                matmul = R.matmul(x, permute_dims, out_dtype="void")
+                matmul = R.matmul(x, permute_dims, out_dtype=None)
                 add = R.add(matmul, fc1_bias)
                 relu = R.nn.relu(add)
                 permute_dims1 = R.permute_dims(fc2_weight, axes=None)
-                matmul1 = R.matmul(relu, permute_dims1, out_dtype="void")
+                matmul1 = R.matmul(relu, permute_dims1, out_dtype=None)
                 add1 = R.add(matmul1, fc2_bias)
                 gv = add1
                 R.output(gv)
@@ -274,11 +274,11 @@ parse the TVMScript to obtain an IRModule.
             R.func_attr({"num_input": 1})
             with R.dataflow():
                 permute_dims: R.Tensor((784, 256), dtype="float32") = R.permute_dims(fc1_weight, axes=None)
-                matmul: R.Tensor((1, 256), dtype="float32") = R.matmul(x, permute_dims, out_dtype="void")
+                matmul: R.Tensor((1, 256), dtype="float32") = R.matmul(x, permute_dims, out_dtype=None)
                 add: R.Tensor((1, 256), dtype="float32") = R.add(matmul, fc1_bias)
                 relu: R.Tensor((1, 256), dtype="float32") = R.nn.relu(add)
                 permute_dims1: R.Tensor((256, 10), dtype="float32") = R.permute_dims(fc2_weight, axes=None)
-                matmul1: R.Tensor((1, 10), dtype="float32") = R.matmul(relu, permute_dims1, out_dtype="void")
+                matmul1: R.Tensor((1, 10), dtype="float32") = R.matmul(relu, permute_dims1, out_dtype=None)
                 add1: R.Tensor((1, 10), dtype="float32") = R.add(matmul1, fc2_bias)
                 gv: R.Tensor((1, 10), dtype="float32") = add1
                 R.output(gv)
@@ -696,8 +696,9 @@ We can deploy the IRModule on CPU by specifying the target as ``llvm``.
 
  .. code-block:: none
 
-    [[-0.2689491   0.00195084 -0.22310013 -0.1536634   0.03165688  0.00410769
-      -0.18197261  0.24246499 -0.28510618 -0.1605641 ]]
+    [[ 2.01046467e-04 -5.35350293e-02 -2.78717607e-01  9.53810364e-02
+      -2.40422457e-01  1.87629640e-01 -1.35906056e-01  2.84366012e-01
+      -1.21429324e-01  2.79199220e-02]]
 
 
 
@@ -763,8 +764,9 @@ Now we can compile the IRModule on GPU, the similar way as we did on CPU.
 
  .. code-block:: none
 
-    [[-0.26894906  0.00195089 -0.2231001  -0.15366346  0.03165688  0.00410767
-      -0.18197267  0.24246505 -0.28510615 -0.16056404]]
+    [[ 2.0103529e-04 -5.3535044e-02 -2.7871764e-01  9.5380999e-02
+      -2.4042246e-01  1.8762964e-01 -1.3590604e-01  2.8436598e-01
+      -1.2142939e-01  2.7919993e-02]]
 
 
 
