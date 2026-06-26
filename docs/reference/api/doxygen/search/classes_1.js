@@ -1,8 +1,6 @@
 var searchData=
 [
-  ['basecomputeopnode_3908',['BaseComputeOpNode',['../classtvm_1_1te_1_1BaseComputeOpNode.html',1,'tvm::te']]],
-  ['baseexpr_3909',['BaseExpr',['../classtvm_1_1BaseExpr.html',1,'tvm']]],
-  ['baseexprnode_3910',['BaseExprNode',['../classtvm_1_1BaseExprNode.html',1,'tvm']]],
+  ['basecomputeopnode_3910',['BaseComputeOpNode',['../classtvm_1_1te_1_1BaseComputeOpNode.html',1,'tvm::te']]],
   ['basefunc_3911',['BaseFunc',['../classtvm_1_1BaseFunc.html',1,'tvm']]],
   ['basefuncnode_3912',['BaseFuncNode',['../classtvm_1_1BaseFuncNode.html',1,'tvm']]],
   ['batchnormattrs_3913',['BatchNormAttrs',['../structtvm_1_1relax_1_1BatchNormAttrs.html',1,'tvm::relax']]],
