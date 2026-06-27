@@ -1,0 +1,1033 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../../../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>In-kernel profiling with CudaProfiler &#8212; Apache TVM</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../../../_static/styles/theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+<link href="../../../_static/styles/bootstrap.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+<link href="../../../_static/styles/pydata-sphinx-theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+
+  
+  <link href="../../../_static/vendor/fontawesome/6.5.2/css/all.min.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="../../../_static/vendor/fontawesome/6.5.2/webfonts/fa-solid-900.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../../_static/vendor/fontawesome/6.5.2/webfonts/fa-brands-400.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../../../_static/vendor/fontawesome/6.5.2/webfonts/fa-regular-400.woff2" />
+
+    <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/styles/sphinx-book-theme.css?v=eba8b062" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/sg_gallery.css?v=d2d258e8" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/sg_gallery-binder.css?v=f4aeca0c" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/sg_gallery-dataframe.css?v=2082cf3c" />
+    <link rel="stylesheet" type="text/css" href="../../../_static/sg_gallery-rendered-html.css?v=1277b6f3" />
+  
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b" />
+<link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
+  <script src="../../../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
+
+    <script src="../../../_static/documentation_options.js?v=572841fb"></script>
+    <script src="../../../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../_static/scripts/sphinx-book-theme.js?v=887ef09a"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'tirx/native_basics/cuda/profiling';</script>
+    <link rel="icon" href="../../../_static/tvm-logo-square.png"/>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" />
+    <link rel="next" title="Tensor Layout" href="../../layout.html" />
+    <link rel="prev" title="Compiling and inspecting" href="compiling.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          id="pst-primary-sidebar-checkbox"/>
+  <label class="overlay overlay-primary" for="pst-primary-sidebar-checkbox"></label>
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          id="pst-secondary-sidebar-checkbox"/>
+  <label class="overlay overlay-secondary" for="pst-secondary-sidebar-checkbox"></label>
+  
+  <div class="search-button__wrapper">
+    <div class="search-button__overlay"></div>
+    <div class="search-button__search-container">
+<form class="bd-search d-flex align-items-center"
+      action="../../../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         id="search-input"
+         placeholder="Search..."
+         aria-label="Search..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form></div>
+  </div>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <div class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+    
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../../../index.html">
+  
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="../../../_static/tvm-logo-small.png" class="logo__image only-light" alt="Apache TVM - Home"/>
+    <script>document.write(`<img src="../../../_static/tvm-logo-small.png" class="logo__image only-dark" alt="Apache TVM - Home"/>`);</script>
+  
+  
+</a></div>
+        <div class="sidebar-primary-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/apache/tvm" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-github fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://tvm.apache.org/" title="TVM Homepage" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-solid fa-house fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">TVM Homepage</span></a>
+        </li>
+</ul></div>
+        <div class="sidebar-primary-item">
+
+ <script>
+ document.write(`
+   <button class="btn search-button-field search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass"></i>
+    <span class="search-button__default-text">Search</span>
+    <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+   </button>
+ `);
+ </script></div>
+        <div class="sidebar-primary-item"><nav class="bd-links bd-docs-nav" aria-label="Main">
+    <div class="bd-toc-item navbar-nav active">
+        <p aria-level="2" class="caption" role="heading"><span class="caption-text">Getting Started</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../../../get_started/overview.html">Overview</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../../install/index.html">Installing TVM</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../install/pypi.html">Install from PyPI</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../install/from_source.html">Install from Source</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../install/docker.html">Docker Images</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../get_started/tutorials/quick_start.html">Quick Start</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../get_started/tutorials/ir_module.html">IRModule</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../errors.html">TVM Errors</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">How To</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../../../how_to/tutorials/import_model.html">Importing Models from ML Frameworks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../how_to/tutorials/e2e_opt_model.html">End-to-End Optimize Model</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../how_to/tutorials/customize_opt.html">Customize Optimization</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../how_to/tutorials/optimize_llm.html">Optimize Large Language Model</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../how_to/tutorials/cross_compilation_and_rpc.html">Cross Compilation and RPC</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../how_to/tutorials/export_and_load_executable.html">Export and Load Relax Executables</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../how_to/tutorials/mix_python_and_tvm_with_pymodule.html">Mix Python/PyTorch with TVM Using BasePyModule</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../how_to/tutorials/bring_your_own_codegen.html">Bring Your Own Codegen</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Deep Dive</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../../arch/index.html">Design and Architecture</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../arch/fusion.html">Operator Fusion</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../arch/codegen.html">Code Generation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../arch/external_library_dispatch.html">External Library Dispatch (BYOC)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../arch/runtime.html">TVM Runtime System</a></li>
+
+<li class="toctree-l2"><a class="reference internal" href="../../../arch/introduction_to_module_serialization.html">Introduction to Module Serialization</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../arch/relax_vm.html">Relax Virtual Machine</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../arch/pass_infra.html">Pass Infrastructure</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../arch/tvmscript.html">TVMScript</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../arch/device_target_interactions.html">Device/Target Interactions</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../../deep_dive/tensor_ir/index.html">TensorIR</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../deep_dive/tensor_ir/abstraction.html">Tensor Program Abstraction</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../deep_dive/tensor_ir/learning.html">Understand TensorIR Abstraction</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../deep_dive/tensor_ir/tutorials/tir_creation.html">TensorIR Creation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../deep_dive/tensor_ir/tutorials/tir_transformation.html">Transformation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../deep_dive/tensor_ir/tutorials/dlight_gpu_scheduling.html">DLight: Rule-Based GPU Scheduling</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../deep_dive/tensor_ir/tutorials/meta_schedule.html">MetaSchedule: Search-Based Auto-Tuning</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../../deep_dive/relax/index.html">Relax</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../deep_dive/relax/abstraction.html">Graph Abstraction for ML Models</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../deep_dive/relax/learning.html">Understand Relax Abstraction</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../deep_dive/relax/dpl.html">Dataflow Pattern Language (DPL)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../deep_dive/relax/tutorials/relax_creation.html">Relax Creation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../deep_dive/relax/tutorials/relax_transformation.html">Transformation</a></li>
+</ul>
+</details></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">TIRx</span></p>
+<ul class="current nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../../overview.html">Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../install.html">Installation</a></li>
+<li class="toctree-l1 current active has-children"><a class="reference internal" href="../../native_basics.html">TIRx Basics: CUDA C++/PTX native level</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="first_kernel.html">Your first kernel</a></li>
+<li class="toctree-l2"><a class="reference internal" href="functions.html">Defining a function</a></li>
+<li class="toctree-l2"><a class="reference internal" href="parser_utils.html">Parser utilities</a></li>
+<li class="toctree-l2"><a class="reference internal" href="data_types.html">Data types and expressions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="buffers.html">Buffers and memory</a></li>
+<li class="toctree-l2"><a class="reference internal" href="control_flow.html">Control flow</a></li>
+<li class="toctree-l2"><a class="reference internal" href="threads_sync.html">CUDA C++/PTX intrinsics</a></li>
+<li class="toctree-l2"><a class="reference internal" href="compiling.html">Compiling and inspecting</a></li>
+<li class="toctree-l2 current active"><a class="current reference internal" href="#">In-kernel profiling with CudaProfiler</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1"><a class="reference internal" href="../../layout.html">Tensor Layout</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../tile_primitives.html">Tile Primitives</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../../tile_primitives/copy.html">copy</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../tile_primitives/copy/gmem_smem.html">copy → gmem_smem</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../tile_primitives/copy/reg.html">copy → reg</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../tile_primitives/copy/ldstmatrix.html">copy → ldstmatrix</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../tile_primitives/copy/fallback.html">copy → fallback</a></li>
+</ul>
+</details></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../../tile_primitives/copy_async.html">copy_async</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../tile_primitives/copy_async/ldgsts.html">copy_async → ldgsts</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../tile_primitives/copy_async/tma.html">copy_async → tma</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../tile_primitives/copy_async/dsmem.html">copy_async → dsmem</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../tile_primitives/copy_async/tcgen05_cp.html">copy_async → tcgen05_cp</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../tile_primitives/copy_async/tcgen05_ldst.html">copy_async → tcgen05_ldst</a></li>
+</ul>
+</details></li>
+<li class="toctree-l2"><a class="reference internal" href="../../tile_primitives/gemm.html">gemm</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../tile_primitives/gemm_async.html">gemm_async</a></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../../tile_primitives/elementwise.html">elementwise</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../tile_primitives/elementwise/reg.html">elementwise → reg</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../tile_primitives/elementwise/smem.html">elementwise → smem</a></li>
+</ul>
+</details></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="../../tile_primitives/reduction.html">reduction</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="../../tile_primitives/reduction/local.html">reduction → local</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../tile_primitives/reduction/shared.html">reduction → shared</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../../tile_primitives/reduction/sm100_packed.html">reduction → sm100_packed</a></li>
+</ul>
+</details></li>
+<li class="toctree-l2"><a class="reference internal" href="../../tile_primitives/permute_layout.html">permute_layout</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../arch/index.html">Compiler Internals</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../arch/lowering_pipeline.html">TIRx lowering pipeline</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../api/index.html">API Reference</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../api/tirx.html">tvm.tirx</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../api/analysis.html">tvm.tirx.analysis</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../api/stmt_functor.html">tvm.tirx.stmt_functor</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../api/transform.html">tvm.tirx.transform</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../api/backend.html">tvm.backend.cuda</a></li>
+</ul>
+</details></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">API Reference</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../../reference/api/python/index.html">Python API</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../reference/api/python/error.html">tvm.error</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../reference/api/python/ir.html">tvm.ir</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../reference/api/python/arith.html">tvm.arith</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../reference/api/python/instrument.html">tvm.ir.instrument</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../reference/api/python/transform.html">tvm.ir.transform</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../reference/api/python/target.html">tvm.target</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../reference/api/python/driver.html">tvm.driver</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../reference/api/python/testing.html">tvm.testing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../reference/api/python/exec.html">tvm.exec</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../reference/api/python/support.html">tvm.support</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../reference/api/python/runtime/runtime.html">tvm.runtime</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../reference/api/python/runtime/vm.html">tvm.runtime.vm</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../reference/api/python/runtime/disco.html">tvm.runtime.disco</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../reference/api/python/relax/relax.html">tvm.relax</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../reference/api/python/relax/analysis.html">tvm.relax.analysis</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../reference/api/python/relax/backend.html">tvm.relax.backend</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../reference/api/python/relax/block_builder.html">tvm.relax.block_builder</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../reference/api/python/relax/distributed.html">tvm.relax.distributed</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../reference/api/python/relax/frontend.html">tvm.relax.frontend</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../reference/api/python/relax/op.html">tvm.relax.op</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../reference/api/python/relax/testing.html">tvm.relax.testing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../reference/api/python/relax/training.html">tvm.relax.training</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../reference/api/python/relax/transform.html">tvm.relax.transform</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../reference/api/python/relax/dpl.html">tvm.relax.dpl</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../reference/api/python/s_tir/analysis.html">tvm.s_tir.analysis</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../reference/api/python/s_tir/schedule.html">tvm.s_tir.schedule</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../reference/api/python/s_tir/transform.html">tvm.s_tir.transform</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../reference/api/python/s_tir/dlight.html">tvm.s_tir.dlight</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../reference/api/python/s_tir/backend.html">tvm.s_tir.backend</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../reference/api/python/s_tir/tensor_intrin.html">tvm.s_tir.tensor_intrin</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../reference/api/python/script/script.html">tvm.script</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../reference/api/python/script/parser.html">tvm.script.parser</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../reference/api/python/script/ir_builder.html">tvm.script.ir_builder</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../reference/api/python/script/printer.html">tvm.script.printer</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../reference/api/python/te.html">tvm.te</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../reference/api/python/topi.html">tvm.topi</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../reference/api/python/meta_schedule.html">tvm.s_tir.meta_schedule</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../reference/api/python/rpc.html">tvm.rpc</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../reference/api/python/contrib.html">tvm.contrib</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../reference/api/links.html">Other APIs</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">About</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1 has-children"><a class="reference internal" href="../../../contribute/index.html">Contributor Guide</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../../../contribute/community.html">TVM Community Guidelines</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../contribute/pull_request.html">Submit a Pull Request</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../contribute/code_review.html">Code Reviews</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../contribute/committer_guide.html">Committer Guide</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../contribute/document.html">Documentation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../contribute/code_guide.html">Code Guide and Tips</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../contribute/testing.html">Testing TVM</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../contribute/git_howto.html">Git Usage Tips</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../contribute/ci.html">Using TVM’s CI</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../contribute/release_process.html">Release Process</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../../contribute/error_handling.html">Error Handling Guide</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../reference/publications.html">Publications</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../reference/security.html">Security Guide</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Index</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../../../genindex.html">Index</a></li>
+</ul>
+
+    </div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+  </div>
+  
+  <div id="rtd-footer-container"></div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+
+<div class="sbt-scroll-pixel-helper"></div>
+
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item"><button class="sidebar-toggle primary-toggle btn btn-sm" title="Toggle primary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <span class="fa-solid fa-bars"></span>
+</button></div>
+      
+    </div>
+  
+  
+    <div class="header-article-items__end">
+      
+        <div class="header-article-item">
+
+<div class="article-header-buttons">
+
+
+
+
+
+<div class="dropdown dropdown-source-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Source repositories">
+    <i class="fab fa-github"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="https://github.com/apache/tvm" target="_blank"
+   class="btn btn-sm btn-source-repository-button dropdown-item"
+   title="Source repository"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fab fa-github"></i>
+  </span>
+<span class="btn__text-container">Repository</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li><a href="https://github.com/apache/tvm/blob/main/docs/tirx/native_basics/cuda/profiling.rst?plain=1" target="_blank"
+   class="btn btn-sm btn-source-file-button dropdown-item"
+   title="Show source"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-code"></i>
+  </span>
+<span class="btn__text-container">Show source</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li><a href="https://github.com/apache/tvm/edit/main/docs/tirx/native_basics/cuda/profiling.rst" target="_blank"
+   class="btn btn-sm btn-source-edit-button dropdown-item"
+   title="Suggest edit"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-pencil-alt"></i>
+  </span>
+<span class="btn__text-container">Suggest edit</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li><a href="https://github.com/apache/tvm/issues/new?title=Issue%20on%20page%20%2Ftirx/native_basics/cuda/profiling.html&body=Your%20issue%20content%20here." target="_blank"
+   class="btn btn-sm btn-source-issues-button dropdown-item"
+   title="Open an issue"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-lightbulb"></i>
+  </span>
+<span class="btn__text-container">Open issue</span>
+</a>
+</li>
+      
+  </ul>
+</div>
+
+
+
+
+
+
+<div class="dropdown dropdown-download-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Download this page">
+    <i class="fas fa-download"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="../../../_sources/tirx/native_basics/cuda/profiling.rst" target="_blank"
+   class="btn btn-sm btn-download-source-button dropdown-item"
+   title="Download source file"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file"></i>
+  </span>
+<span class="btn__text-container">.rst</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li>
+<button onclick="window.print()"
+  class="btn btn-sm btn-download-pdf-button dropdown-item"
+  title="Print to PDF"
+  data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file-pdf"></i>
+  </span>
+<span class="btn__text-container">.pdf</span>
+</button>
+</li>
+      
+  </ul>
+</div>
+
+
+
+
+<button onclick="toggleFullScreen()"
+  class="btn btn-sm btn-fullscreen-button"
+  title="Fullscreen mode"
+  data-bs-placement="bottom" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-expand"></i>
+  </span>
+
+</button>
+
+
+
+<script>
+document.write(`
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="theme-switch fa-solid fa-sun fa-lg" data-mode="light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg" data-mode="dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"></i>
+  </button>
+`);
+</script>
+
+
+<script>
+document.write(`
+  <button class="btn btn-sm pst-navbar-icon search-button search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass fa-lg"></i>
+  </button>
+`);
+</script>
+<button class="sidebar-toggle secondary-toggle btn btn-sm" title="Toggle secondary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="fa-solid fa-list"></span>
+</button>
+</div></div>
+      
+    </div>
+  
+</div>
+</div>
+              
+              
+
+<div id="jb-print-docs-body" class="onlyprint">
+    <h1>In-kernel profiling with CudaProfiler</h1>
+    <!-- Table of contents -->
+    <div id="print-main-content">
+        <div id="jb-print-toc">
+            
+            <div>
+                <h2> Contents </h2>
+            </div>
+            <nav aria-label="Page">
+                <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#the-kernel">The kernel</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#run-it-and-read-the-trace">Run it and read the trace</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#on-a-real-kernel">On a real kernel</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#the-api">The API</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#groups-and-granularity">Groups and granularity</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#what-each-call-wraps">What each call wraps</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#usage-notes-and-caveats">Usage notes and caveats</a></li>
+</ul>
+            </nav>
+        </div>
+    </div>
+</div>
+
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <section id="in-kernel-profiling-with-cudaprofiler">
+<h1>In-kernel profiling with CudaProfiler<a class="headerlink" href="#in-kernel-profiling-with-cudaprofiler" title="Link to this heading">#</a></h1>
+<p>Once a kernel is correct and you have seen how it compiles (see
+<a class="reference internal" href="compiling.html"><span class="doc">Compiling and inspecting</span></a>), the next question is usually <em>where the cycles go</em>. Host-side
+timers and <code class="docutils literal notranslate"><span class="pre">nsys</span></code> tell you how long a launch took, but not how that time splits
+across the regions <em>inside</em> one kernel — the TMA loads, the mainloop MMAs, the
+softmax, the epilogue.</p>
+<p><code class="docutils literal notranslate"><span class="pre">tvm.tirx.bench.CudaProfiler</span></code> is a lightweight, in-kernel event tracer for
+exactly this. You bracket regions of device code with <code class="docutils literal notranslate"><span class="pre">start</span></code> / <code class="docutils literal notranslate"><span class="pre">end</span></code>
+markers; at runtime one leader thread per block stamps the GPU global timer into
+a buffer you pass in as an ordinary kernel argument. After the launch you read
+the buffer back and decode it into per-region durations or a Perfetto timeline.</p>
+<p>It is <em>not</em> zero cost — every event is a <code class="docutils literal notranslate"><span class="pre">%globaltimer</span></code> read plus a global
+store, and every thread in the region pays a block fence — so it is a
+profiling/debugging tool, not something you leave on in production.</p>
+<section id="the-kernel">
+<h2>The kernel<a class="headerlink" href="#the-kernel" title="Link to this heading">#</a></h2>
+<p>The kernel below brackets a <code class="docutils literal notranslate"><span class="pre">load</span></code> / <code class="docutils literal notranslate"><span class="pre">compute</span></code> / <code class="docutils literal notranslate"><span class="pre">store</span></code> sequence. The
+<code class="docutils literal notranslate"><span class="pre">compute</span></code> region runs a 4000-iteration FMA loop so it clearly dominates. Events
+are a plain <code class="docutils literal notranslate"><span class="pre">enum.Enum</span></code> whose integer values start at 0 and index a names list.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">enum</span><span class="w"> </span><span class="kn">import</span> <span class="n">Enum</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">tvm</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">tvm.script</span><span class="w"> </span><span class="kn">import</span> <span class="n">tirx</span> <span class="k">as</span> <span class="n">T</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">tvm.tirx.bench</span><span class="w"> </span><span class="kn">import</span> <span class="n">CudaProfiler</span><span class="p">,</span> <span class="n">export_to_perfetto_trace</span>
+
+<span class="n">NUM_BLOCKS</span><span class="p">,</span> <span class="n">BLOCK</span><span class="p">,</span> <span class="n">NUM_GROUPS</span> <span class="o">=</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">128</span><span class="p">,</span> <span class="mi">1</span>
+<span class="n">WRITE_STRIDE</span> <span class="o">=</span> <span class="n">NUM_BLOCKS</span> <span class="o">*</span> <span class="n">NUM_GROUPS</span>   <span class="c1"># &gt;= number of (block, group) lanes</span>
+<span class="n">PROF_SIZE</span> <span class="o">=</span> <span class="mi">4096</span>                         <span class="c1"># uint64 slots in the profiler buffer</span>
+<span class="n">N</span> <span class="o">=</span> <span class="n">NUM_BLOCKS</span> <span class="o">*</span> <span class="n">BLOCK</span>
+
+<span class="k">class</span><span class="w"> </span><span class="nc">Ev</span><span class="p">(</span><span class="n">Enum</span><span class="p">):</span>
+    <span class="n">Load</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">Compute</span> <span class="o">=</span> <span class="mi">1</span>
+    <span class="n">Store</span> <span class="o">=</span> <span class="mi">2</span>
+
+<span class="n">EV_NAMES</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;load&quot;</span><span class="p">,</span> <span class="s2">&quot;compute&quot;</span><span class="p">,</span> <span class="s2">&quot;store&quot;</span><span class="p">]</span>
+
+<span class="nd">@T</span><span class="o">.</span><span class="n">prim_func</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">profiled_kernel</span><span class="p">(</span><span class="n">out_ptr</span><span class="p">:</span> <span class="n">T</span><span class="o">.</span><span class="n">handle</span><span class="p">,</span> <span class="n">inp_ptr</span><span class="p">:</span> <span class="n">T</span><span class="o">.</span><span class="n">handle</span><span class="p">,</span> <span class="n">prof_ptr</span><span class="p">:</span> <span class="n">T</span><span class="o">.</span><span class="n">handle</span><span class="p">):</span>
+    <span class="n">out</span> <span class="o">=</span> <span class="n">T</span><span class="o">.</span><span class="n">match_buffer</span><span class="p">(</span><span class="n">out_ptr</span><span class="p">,</span> <span class="p">(</span><span class="n">N</span><span class="p">,),</span> <span class="s2">&quot;float32&quot;</span><span class="p">)</span>
+    <span class="n">inp</span> <span class="o">=</span> <span class="n">T</span><span class="o">.</span><span class="n">match_buffer</span><span class="p">(</span><span class="n">inp_ptr</span><span class="p">,</span> <span class="p">(</span><span class="n">N</span><span class="p">,),</span> <span class="s2">&quot;float32&quot;</span><span class="p">)</span>
+    <span class="n">prof</span> <span class="o">=</span> <span class="n">T</span><span class="o">.</span><span class="n">match_buffer</span><span class="p">(</span><span class="n">prof_ptr</span><span class="p">,</span> <span class="p">(</span><span class="n">PROF_SIZE</span><span class="p">,),</span> <span class="s2">&quot;uint64&quot;</span><span class="p">)</span>
+    <span class="n">T</span><span class="o">.</span><span class="n">device_entry</span><span class="p">()</span>
+    <span class="n">bid</span> <span class="o">=</span> <span class="n">T</span><span class="o">.</span><span class="n">cta_id</span><span class="p">([</span><span class="n">NUM_BLOCKS</span><span class="p">])</span>
+    <span class="n">tid</span> <span class="o">=</span> <span class="n">T</span><span class="o">.</span><span class="n">thread_id</span><span class="p">([</span><span class="n">BLOCK</span><span class="p">])</span>
+    <span class="n">idx</span> <span class="o">=</span> <span class="n">bid</span> <span class="o">*</span> <span class="n">BLOCK</span> <span class="o">+</span> <span class="n">tid</span>
+
+    <span class="c1"># Construct the profiler inside the kernel; only the leader thread writes.</span>
+    <span class="n">p</span> <span class="o">=</span> <span class="n">CudaProfiler</span><span class="p">(</span><span class="n">prof</span><span class="p">,</span> <span class="n">write_stride</span><span class="o">=</span><span class="n">WRITE_STRIDE</span><span class="p">,</span> <span class="n">num_groups</span><span class="o">=</span><span class="n">NUM_GROUPS</span><span class="p">,</span>
+                     <span class="n">default_leader</span><span class="o">=</span><span class="p">(</span><span class="n">tid</span> <span class="o">==</span> <span class="mi">0</span><span class="p">))</span>
+    <span class="n">p</span><span class="o">.</span><span class="n">init</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>                  <span class="c1"># group_id = 0; also stamps the buffer header at slot 0</span>
+
+    <span class="n">p</span><span class="o">.</span><span class="n">start</span><span class="p">(</span><span class="n">Ev</span><span class="o">.</span><span class="n">Load</span><span class="p">)</span>
+    <span class="n">x</span><span class="p">:</span> <span class="n">T</span><span class="o">.</span><span class="n">f32</span> <span class="o">=</span> <span class="n">inp</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span>
+    <span class="n">p</span><span class="o">.</span><span class="n">end</span><span class="p">(</span><span class="n">Ev</span><span class="o">.</span><span class="n">Load</span><span class="p">)</span>
+
+    <span class="n">p</span><span class="o">.</span><span class="n">start</span><span class="p">(</span><span class="n">Ev</span><span class="o">.</span><span class="n">Compute</span><span class="p">)</span>
+    <span class="n">acc</span><span class="p">:</span> <span class="n">T</span><span class="o">.</span><span class="n">f32</span> <span class="o">=</span> <span class="n">T</span><span class="o">.</span><span class="n">float32</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">4000</span><span class="p">):</span>
+        <span class="n">acc</span> <span class="o">=</span> <span class="n">acc</span> <span class="o">*</span> <span class="n">T</span><span class="o">.</span><span class="n">float32</span><span class="p">(</span><span class="mf">1.0001</span><span class="p">)</span> <span class="o">+</span> <span class="n">x</span>
+    <span class="n">p</span><span class="o">.</span><span class="n">end</span><span class="p">(</span><span class="n">Ev</span><span class="o">.</span><span class="n">Compute</span><span class="p">)</span>
+
+    <span class="n">p</span><span class="o">.</span><span class="n">start</span><span class="p">(</span><span class="n">Ev</span><span class="o">.</span><span class="n">Store</span><span class="p">)</span>
+    <span class="n">out</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span> <span class="o">=</span> <span class="n">acc</span>
+    <span class="n">p</span><span class="o">.</span><span class="n">end</span><span class="p">(</span><span class="n">Ev</span><span class="o">.</span><span class="n">Store</span><span class="p">)</span>
+
+    <span class="n">p</span><span class="o">.</span><span class="n">finalize</span><span class="p">()</span>               <span class="c1"># mark this (block, group) lane done</span>
+</pre></div>
+</div>
+</section>
+<section id="run-it-and-read-the-trace">
+<h2>Run it and read the trace<a class="headerlink" href="#run-it-and-read-the-trace" title="Link to this heading">#</a></h2>
+<p>Allocate a zeroed <code class="docutils literal notranslate"><span class="pre">uint64</span></code> buffer, pass it as the last argument, then read it
+back. Each record is one <code class="docutils literal notranslate"><span class="pre">uint64</span></code>: the high 32 bits are the timestamp, the low
+32 bits a packed tag, so decoding is plain bit-twiddling on the host.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">dev</span> <span class="o">=</span> <span class="n">tvm</span><span class="o">.</span><span class="n">cuda</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+<span class="n">exe</span> <span class="o">=</span> <span class="n">tvm</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="n">tvm</span><span class="o">.</span><span class="n">IRModule</span><span class="p">({</span><span class="s2">&quot;main&quot;</span><span class="p">:</span> <span class="n">profiled_kernel</span><span class="p">}),</span>
+                  <span class="n">target</span><span class="o">=</span><span class="n">tvm</span><span class="o">.</span><span class="n">target</span><span class="o">.</span><span class="n">Target</span><span class="p">(</span><span class="s2">&quot;cuda&quot;</span><span class="p">),</span> <span class="n">tir_pipeline</span><span class="o">=</span><span class="s2">&quot;tirx&quot;</span><span class="p">)</span>
+
+<span class="n">inp</span> <span class="o">=</span> <span class="n">tvm</span><span class="o">.</span><span class="n">runtime</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">N</span><span class="p">,</span> <span class="s2">&quot;float32&quot;</span><span class="p">),</span> <span class="n">device</span><span class="o">=</span><span class="n">dev</span><span class="p">)</span>
+<span class="n">out</span> <span class="o">=</span> <span class="n">tvm</span><span class="o">.</span><span class="n">runtime</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">N</span><span class="p">,</span> <span class="s2">&quot;float32&quot;</span><span class="p">),</span> <span class="n">device</span><span class="o">=</span><span class="n">dev</span><span class="p">)</span>
+<span class="n">prof</span> <span class="o">=</span> <span class="n">tvm</span><span class="o">.</span><span class="n">runtime</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">PROF_SIZE</span><span class="p">,</span> <span class="s2">&quot;uint64&quot;</span><span class="p">),</span> <span class="n">device</span><span class="o">=</span><span class="n">dev</span><span class="p">)</span>
+
+<span class="n">exe</span><span class="p">(</span><span class="n">out</span><span class="p">,</span> <span class="n">inp</span><span class="p">,</span> <span class="n">prof</span><span class="p">)</span>
+<span class="n">dev</span><span class="o">.</span><span class="n">sync</span><span class="p">()</span>
+
+<span class="n">prof_np</span> <span class="o">=</span> <span class="n">prof</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span>
+<span class="n">opens</span><span class="p">,</span> <span class="n">spans</span> <span class="o">=</span> <span class="p">{},</span> <span class="p">{}</span>
+<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">prof_np</span><span class="p">)):</span>
+    <span class="n">word</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">prof_np</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+    <span class="k">if</span> <span class="n">word</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">continue</span>
+    <span class="n">ts</span><span class="p">,</span> <span class="n">tag</span> <span class="o">=</span> <span class="n">word</span> <span class="o">&gt;&gt;</span> <span class="mi">32</span><span class="p">,</span> <span class="n">word</span> <span class="o">&amp;</span> <span class="mh">0xFFFFFFFF</span>
+    <span class="n">block</span> <span class="o">=</span> <span class="p">(</span><span class="n">tag</span> <span class="o">&gt;&gt;</span> <span class="mi">12</span><span class="p">)</span> <span class="o">//</span> <span class="n">NUM_GROUPS</span>
+    <span class="n">event_idx</span><span class="p">,</span> <span class="n">event_type</span> <span class="o">=</span> <span class="p">(</span><span class="n">tag</span> <span class="o">&gt;&gt;</span> <span class="mi">2</span><span class="p">)</span> <span class="o">&amp;</span> <span class="mh">0x3FF</span><span class="p">,</span> <span class="n">tag</span> <span class="o">&amp;</span> <span class="mh">0x3</span>   <span class="c1"># 0=start 1=end 2=instant 3=finalize</span>
+    <span class="k">if</span> <span class="n">event_type</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">opens</span><span class="p">[(</span><span class="n">block</span><span class="p">,</span> <span class="n">event_idx</span><span class="p">)]</span> <span class="o">=</span> <span class="n">ts</span>
+    <span class="k">elif</span> <span class="n">event_type</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="n">spans</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="n">block</span><span class="p">,</span> <span class="p">[])</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">EV_NAMES</span><span class="p">[</span><span class="n">event_idx</span><span class="p">],</span> <span class="n">ts</span> <span class="o">-</span> <span class="n">opens</span><span class="p">[(</span><span class="n">block</span><span class="p">,</span> <span class="n">event_idx</span><span class="p">)]))</span>
+<span class="k">for</span> <span class="n">block</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">spans</span><span class="p">):</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;block </span><span class="si">{</span><span class="n">block</span><span class="si">}</span><span class="s2">:&quot;</span><span class="p">,</span> <span class="s2">&quot;, &quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">n</span><span class="si">}</span><span class="s2">=</span><span class="si">{</span><span class="n">d</span><span class="si">}</span><span class="s2">ns&quot;</span> <span class="k">for</span> <span class="n">n</span><span class="p">,</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">spans</span><span class="p">[</span><span class="n">block</span><span class="p">]))</span>
+
+<span class="n">export_to_perfetto_trace</span><span class="p">(</span><span class="n">prof_np</span><span class="p">,</span> <span class="s2">&quot;cudaprofiler.perfetto-trace&quot;</span><span class="p">,</span> <span class="n">EV_NAMES</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Durations are stable to within a few percent (they shift with GPU clocks):</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">block</span> <span class="mi">0</span><span class="p">:</span> <span class="n">load</span><span class="o">=</span><span class="mi">32</span><span class="n">ns</span><span class="p">,</span> <span class="n">compute</span><span class="o">=</span><span class="mi">8704</span><span class="n">ns</span><span class="p">,</span> <span class="n">store</span><span class="o">=</span><span class="mi">64</span><span class="n">ns</span>
+<span class="n">block</span> <span class="mi">1</span><span class="p">:</span> <span class="n">load</span><span class="o">=</span><span class="mi">96</span><span class="n">ns</span><span class="p">,</span> <span class="n">compute</span><span class="o">=</span><span class="mi">8704</span><span class="n">ns</span><span class="p">,</span> <span class="n">store</span><span class="o">=</span><span class="mi">64</span><span class="n">ns</span>
+<span class="n">block</span> <span class="mi">2</span><span class="p">:</span> <span class="n">load</span><span class="o">=</span><span class="mi">96</span><span class="n">ns</span><span class="p">,</span> <span class="n">compute</span><span class="o">=</span><span class="mi">8704</span><span class="n">ns</span><span class="p">,</span> <span class="n">store</span><span class="o">=</span><span class="mi">64</span><span class="n">ns</span>
+<span class="n">block</span> <span class="mi">3</span><span class="p">:</span> <span class="n">load</span><span class="o">=</span><span class="mi">96</span><span class="n">ns</span><span class="p">,</span> <span class="n">compute</span><span class="o">=</span><span class="mi">8704</span><span class="n">ns</span><span class="p">,</span> <span class="n">store</span><span class="o">=</span><span class="mi">64</span><span class="n">ns</span>
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">export_to_perfetto_trace</span></code> writes <code class="docutils literal notranslate"><span class="pre">cudaprofiler.perfetto-trace</span></code> from the same
+records; drop it onto <a class="reference external" href="https://ui.perfetto.dev">https://ui.perfetto.dev</a> for an interactive timeline. Because
+the timestamps come from the global <code class="docutils literal notranslate"><span class="pre">%globaltimer</span></code> (not a per-SM cycle counter),
+events from different blocks share one time axis and are directly comparable.</p>
+</section>
+<section id="on-a-real-kernel">
+<h2>On a real kernel<a class="headerlink" href="#on-a-real-kernel" title="Link to this heading">#</a></h2>
+<p>The same markers, sprinkled through a warp-specialized FlashAttention-4 kernel
+(one <code class="docutils literal notranslate"><span class="pre">group</span></code> per warp-group via <code class="docutils literal notranslate"><span class="pre">num_groups</span></code>), produce a per-warp-group
+timeline of the whole pipeline:</p>
+<figure class="align-center" id="id1">
+<img alt="FlashAttention-4 in-kernel timeline in Perfetto" src="../../../_static/downloads/tirx_cudaprofiler_fa4.png" />
+<figcaption>
+<p><span class="caption-text">One CTA of an FA4 forward kernel. <code class="docutils literal notranslate"><span class="pre">group_0</span></code> issues the TMA loads
+(<code class="docutils literal notranslate"><span class="pre">issue-tma-*</span></code>), <code class="docutils literal notranslate"><span class="pre">group_3</span></code> / <code class="docutils literal notranslate"><span class="pre">group_4</span></code> run the softmax pipeline
+(<code class="docutils literal notranslate"><span class="pre">softmax-max</span></code> / <code class="docutils literal notranslate"><span class="pre">-exp2</span></code> / <code class="docutils literal notranslate"><span class="pre">-sum</span></code>), and <code class="docutils literal notranslate"><span class="pre">group_5</span></code> runs the
+<code class="docutils literal notranslate"><span class="pre">correction</span></code> — the overlap between the producer and consumer warp-groups is
+exactly what intra-kernel profiling is for.</span><a class="headerlink" href="#id1" title="Link to this image">#</a></p>
+</figcaption>
+</figure>
+</section>
+<section id="the-api">
+<h2>The API<a class="headerlink" href="#the-api" title="Link to this heading">#</a></h2>
+<p>Construct the profiler <strong>inside</strong> the kernel body and call four methods:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">init(group_id)</span></code> — once per thread; <code class="docutils literal notranslate"><span class="pre">group_id</span></code> selects the sub-track and
+stamps the buffer header at slot 0.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">start(event_type,</span> <span class="pre">leader=None)</span></code> / <code class="docutils literal notranslate"><span class="pre">end(event_type,</span> <span class="pre">leader=None)</span></code> — open and
+close a region. Every thread executes them, but only the leader stores a record.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">finalize(leader=None)</span></code> — write a terminal record for this lane.</p></li>
+</ul>
+<p>Constructor arguments:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">profiler_buffer</span></code> — the <code class="docutils literal notranslate"><span class="pre">uint64</span></code> buffer you pass into the kernel.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">write_stride</span></code> — how far each leader advances between writes. Must be <code class="docutils literal notranslate"><span class="pre">&gt;=</span></code>
+the number of <code class="docutils literal notranslate"><span class="pre">(block,</span> <span class="pre">group)</span></code> lanes so per-lane streams never collide;
+<code class="docutils literal notranslate"><span class="pre">NUM_BLOCKS</span> <span class="pre">*</span> <span class="pre">NUM_GROUPS</span></code> is the tight value, a persistent-grid kernel uses
+<code class="docutils literal notranslate"><span class="pre">num_sms</span> <span class="pre">*</span> <span class="pre">num_groups</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">num_groups</span></code> — independent sub-tracks per block. Use <code class="docutils literal notranslate"><span class="pre">1</span></code> for a plain kernel;
+in a warp-specialized kernel give each warp-group its own <code class="docutils literal notranslate"><span class="pre">group_id</span></code> and
+leader so their timelines don’t mix.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">default_leader</span></code> — the predicate for the one writing thread (override per call
+with <code class="docutils literal notranslate"><span class="pre">leader=</span></code>).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">profiler_enabled</span></code> — pass <code class="docutils literal notranslate"><span class="pre">False</span></code> (or a false-y <code class="docutils literal notranslate"><span class="pre">PrimExpr</span></code>) to turn every
+method into a no-op, so you can leave the markers in and compile them out.</p></li>
+</ul>
+<p><code class="docutils literal notranslate"><span class="pre">CudaProfiler</span></code> emits <code class="docutils literal notranslate"><span class="pre">start</span></code> / <code class="docutils literal notranslate"><span class="pre">end</span></code> / <code class="docutils literal notranslate"><span class="pre">finalize</span></code>; <code class="docutils literal notranslate"><span class="pre">instant</span></code> (event type
+2) is reserved in the wire format and understood by the decoder, but there is no
+method that produces one.</p>
+</section>
+<section id="groups-and-granularity">
+<h2>Groups and granularity<a class="headerlink" href="#groups-and-granularity" title="Link to this heading">#</a></h2>
+<p>A block’s threads are partitioned into <code class="docutils literal notranslate"><span class="pre">num_groups</span></code> logical <em>groups</em>, and the
+trace’s unit is one <code class="docutils literal notranslate"><span class="pre">(block,</span> <span class="pre">group)</span></code> lane — each becomes its own track. The
+partition is yours: a group can be a warp-group, a single warp, or any set of
+threads, and it does <strong>not</strong> have to align to a warp (the recording path has no
+warp-collective op — just a predicated per-thread store and a block fence). Two
+rules:</p>
+<ul class="simple">
+<li><p>a thread joins a group by calling <code class="docutils literal notranslate"><span class="pre">init(group_id)</span></code>, which points <em>its</em> write
+cursor at that group’s lane;</p></li>
+<li><p>exactly one thread per group is the leader and actually writes — pick it with a
+predicate that is true for one thread in the group, and it must be a thread that
+called <code class="docutils literal notranslate"><span class="pre">init</span></code> for that group.</p></li>
+</ul>
+<p>Because each leader has its own cursor, one <code class="docutils literal notranslate"><span class="pre">start</span></code> / <code class="docutils literal notranslate"><span class="pre">end</span></code> statement records
+into <em>every</em> group at once: each leader stamps its own lane.</p>
+<p><strong>Groups as warp-groups.</strong> A 256-thread block is two warp-groups; give each its
+own <code class="docutils literal notranslate"><span class="pre">group_id</span></code> and make its first thread the leader. Here the two warp-groups do
+different amounts of compute, so their tracks have different durations:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">NUM_GROUPS</span> <span class="o">=</span> <span class="mi">2</span>
+<span class="n">p</span> <span class="o">=</span> <span class="n">CudaProfiler</span><span class="p">(</span><span class="n">prof</span><span class="p">,</span> <span class="n">write_stride</span><span class="o">=</span><span class="n">NUM_BLOCKS</span> <span class="o">*</span> <span class="n">NUM_GROUPS</span><span class="p">,</span> <span class="n">num_groups</span><span class="o">=</span><span class="n">NUM_GROUPS</span><span class="p">,</span>
+                 <span class="n">default_leader</span><span class="o">=</span><span class="p">(</span><span class="n">tid</span> <span class="o">%</span> <span class="mi">128</span> <span class="o">==</span> <span class="mi">0</span><span class="p">))</span>   <span class="c1"># first thread of each warp-group</span>
+<span class="k">if</span> <span class="n">tid</span> <span class="o">&lt;</span> <span class="mi">128</span><span class="p">:</span>
+    <span class="n">p</span><span class="o">.</span><span class="n">init</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+<span class="k">else</span><span class="p">:</span>
+    <span class="n">p</span><span class="o">.</span><span class="n">init</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+<span class="c1"># ... load ...</span>
+<span class="n">p</span><span class="o">.</span><span class="n">start</span><span class="p">(</span><span class="n">Ev</span><span class="o">.</span><span class="n">Compute</span><span class="p">)</span>
+<span class="k">if</span> <span class="n">tid</span> <span class="o">&lt;</span> <span class="mi">128</span><span class="p">:</span>
+    <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1000</span><span class="p">):</span>           <span class="c1"># warp-group 0: light</span>
+        <span class="n">acc</span> <span class="o">=</span> <span class="n">acc</span> <span class="o">*</span> <span class="n">T</span><span class="o">.</span><span class="n">float32</span><span class="p">(</span><span class="mf">1.0001</span><span class="p">)</span> <span class="o">+</span> <span class="n">x</span>
+<span class="k">else</span><span class="p">:</span>
+    <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">5000</span><span class="p">):</span>           <span class="c1"># warp-group 1: heavy</span>
+        <span class="n">acc</span> <span class="o">=</span> <span class="n">acc</span> <span class="o">*</span> <span class="n">T</span><span class="o">.</span><span class="n">float32</span><span class="p">(</span><span class="mf">1.0001</span><span class="p">)</span> <span class="o">+</span> <span class="n">x</span>
+<span class="n">p</span><span class="o">.</span><span class="n">end</span><span class="p">(</span><span class="n">Ev</span><span class="o">.</span><span class="n">Compute</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">block</span> <span class="mi">0</span> <span class="n">group</span> <span class="mi">0</span><span class="p">:</span> <span class="n">load</span><span class="o">=</span><span class="mi">96</span><span class="n">ns</span><span class="p">,</span> <span class="n">compute</span><span class="o">=</span><span class="mi">3040</span><span class="n">ns</span><span class="p">,</span>  <span class="n">store</span><span class="o">=</span><span class="mi">64</span><span class="n">ns</span>
+<span class="n">block</span> <span class="mi">0</span> <span class="n">group</span> <span class="mi">1</span><span class="p">:</span> <span class="n">load</span><span class="o">=</span><span class="mi">96</span><span class="n">ns</span><span class="p">,</span> <span class="n">compute</span><span class="o">=</span><span class="mi">10816</span><span class="n">ns</span><span class="p">,</span> <span class="n">store</span><span class="o">=</span><span class="mi">64</span><span class="n">ns</span>
+<span class="n">block</span> <span class="mi">1</span> <span class="n">group</span> <span class="mi">0</span><span class="p">:</span> <span class="n">load</span><span class="o">=</span><span class="mi">96</span><span class="n">ns</span><span class="p">,</span> <span class="n">compute</span><span class="o">=</span><span class="mi">3072</span><span class="n">ns</span><span class="p">,</span>  <span class="n">store</span><span class="o">=</span><span class="mi">64</span><span class="n">ns</span>
+<span class="n">block</span> <span class="mi">1</span> <span class="n">group</span> <span class="mi">1</span><span class="p">:</span> <span class="n">load</span><span class="o">=</span><span class="mi">128</span><span class="n">ns</span><span class="p">,</span> <span class="n">compute</span><span class="o">=</span><span class="mi">10784</span><span class="n">ns</span><span class="p">,</span> <span class="n">store</span><span class="o">=</span><span class="mi">64</span><span class="n">ns</span>
+</pre></div>
+</div>
+<p><strong>Groups that are not warp multiples.</strong> A 128-thread block split 48 / 48 / 32
+works the same way — the leaders are the base thread of each group, and the
+48-thread groups (1.5 warps, crossing warp boundaries) each record a correct
+track:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">NUM_GROUPS</span> <span class="o">=</span> <span class="mi">3</span>                                  <span class="c1"># groups [0, 48) [48, 96) [96, 128)</span>
+<span class="n">p</span> <span class="o">=</span> <span class="n">CudaProfiler</span><span class="p">(</span><span class="n">prof</span><span class="p">,</span> <span class="n">write_stride</span><span class="o">=</span><span class="n">NUM_BLOCKS</span> <span class="o">*</span> <span class="n">NUM_GROUPS</span><span class="p">,</span> <span class="n">num_groups</span><span class="o">=</span><span class="n">NUM_GROUPS</span><span class="p">,</span>
+                 <span class="n">default_leader</span><span class="o">=</span><span class="p">((</span><span class="n">tid</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span> <span class="o">|</span> <span class="p">(</span><span class="n">tid</span> <span class="o">==</span> <span class="mi">48</span><span class="p">)</span> <span class="o">|</span> <span class="p">(</span><span class="n">tid</span> <span class="o">==</span> <span class="mi">96</span><span class="p">)))</span>
+<span class="k">if</span> <span class="n">tid</span> <span class="o">&lt;</span> <span class="mi">48</span><span class="p">:</span>
+    <span class="n">p</span><span class="o">.</span><span class="n">init</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+<span class="k">elif</span> <span class="n">tid</span> <span class="o">&lt;</span> <span class="mi">96</span><span class="p">:</span>
+    <span class="n">p</span><span class="o">.</span><span class="n">init</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+<span class="k">else</span><span class="p">:</span>
+    <span class="n">p</span><span class="o">.</span><span class="n">init</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">block</span> <span class="mi">0</span> <span class="n">group</span> <span class="mi">0</span><span class="p">:</span> <span class="n">load</span><span class="o">=</span><span class="mi">96</span><span class="n">ns</span><span class="p">,</span> <span class="n">compute</span><span class="o">=</span><span class="mi">4544</span><span class="n">ns</span><span class="p">,</span> <span class="n">store</span><span class="o">=</span><span class="mi">64</span><span class="n">ns</span>   <span class="c1"># 48 threads (1.5 warps)</span>
+<span class="n">block</span> <span class="mi">0</span> <span class="n">group</span> <span class="mi">1</span><span class="p">:</span> <span class="n">load</span><span class="o">=</span><span class="mi">64</span><span class="n">ns</span><span class="p">,</span> <span class="n">compute</span><span class="o">=</span><span class="mi">4512</span><span class="n">ns</span><span class="p">,</span> <span class="n">store</span><span class="o">=</span><span class="mi">96</span><span class="n">ns</span>   <span class="c1"># 48 threads, crosses warp lines</span>
+<span class="n">block</span> <span class="mi">0</span> <span class="n">group</span> <span class="mi">2</span><span class="p">:</span> <span class="n">load</span><span class="o">=</span><span class="mi">64</span><span class="n">ns</span><span class="p">,</span> <span class="n">compute</span><span class="o">=</span><span class="mi">4576</span><span class="n">ns</span><span class="p">,</span> <span class="n">store</span><span class="o">=</span><span class="mi">64</span><span class="n">ns</span>   <span class="c1"># 32 threads</span>
+</pre></div>
+</div>
+</section>
+<section id="what-each-call-wraps">
+<h2>What each call wraps<a class="headerlink" href="#what-each-call-wraps" title="Link to this heading">#</a></h2>
+<p>The methods are thin wrappers around the <code class="docutils literal notranslate"><span class="pre">T.cuda.timer_*</span></code> intrinsics, which
+lower to small <code class="docutils literal notranslate"><span class="pre">__device__</span></code> helpers emitted into the generated CUDA. The
+profiler keeps two per-thread <code class="docutils literal notranslate"><span class="pre">&quot;local&quot;</span></code> scratch slots — the running tag and
+write cursor — and every record is written by:</p>
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="c1">// tvm_builtin_get_timestamp() == asm(&quot;mov.u32 %0, %globaltimer_lo;&quot;)</span>
+<span class="n">profiler_buffer</span><span class="p">[</span><span class="n">profiler_write_offset</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span><span class="w"> </span><span class="o">=</span>
+<span class="w">    </span><span class="p">((</span><span class="kt">uint64_t</span><span class="p">)</span><span class="n">tvm_builtin_get_timestamp</span><span class="p">()</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="mi">32</span><span class="p">)</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="p">(</span><span class="n">profiler_tag</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="n">event_bits</span><span class="p">);</span>
+<span class="n">profiler_write_offset</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="n">profiler_write_stride</span><span class="p">;</span><span class="w">   </span><span class="c1">// global store; only the leader runs this</span>
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">init</span></code> computes <code class="docutils literal notranslate"><span class="pre">BLOCK_GROUP_IDX</span> <span class="pre">=</span> <span class="pre">block_idx</span> <span class="pre">*</span> <span class="pre">num_groups</span> <span class="pre">+</span> <span class="pre">group_id</span></code>, writes
+the header <code class="docutils literal notranslate"><span class="pre">profiler_buffer[0]</span> <span class="pre">=</span> <span class="pre">((uint64_t)num_groups</span> <span class="pre">&lt;&lt;</span> <span class="pre">32)</span> <span class="pre">|</span> <span class="pre">num_blocks</span></code> from
+block 0 / <code class="docutils literal notranslate"><span class="pre">threadIdx.x</span> <span class="pre">==</span> <span class="pre">0</span></code>, and seeds this lane’s cursor to <code class="docutils literal notranslate"><span class="pre">1</span> <span class="pre">+</span>
+<span class="pre">BLOCK_GROUP_IDX</span></code> and tag to <code class="docutils literal notranslate"><span class="pre">BLOCK_GROUP_IDX</span> <span class="pre">&lt;&lt;</span> <span class="pre">12</span></code>. <code class="docutils literal notranslate"><span class="pre">start</span></code> writes the record
+(<code class="docutils literal notranslate"><span class="pre">event_bits</span> <span class="pre">=</span> <span class="pre">(event</span> <span class="pre">&lt;&lt;</span> <span class="pre">2)</span> <span class="pre">|</span> <span class="pre">0</span></code>) then <code class="docutils literal notranslate"><span class="pre">__threadfence_block()</span></code>; <code class="docutils literal notranslate"><span class="pre">end</span></code> fences
+then writes (<code class="docutils literal notranslate"><span class="pre">|</span> <span class="pre">1</span></code>); <code class="docutils literal notranslate"><span class="pre">finalize</span></code> fences then writes <code class="docutils literal notranslate"><span class="pre">0x3</span></code>. The fence runs on
+<em>every</em> thread in the region, only the store is leader-only — that fence is what
+brackets the region’s memory traffic, and why the markers perturb the kernel.</p>
+</section>
+<section id="usage-notes-and-caveats">
+<h2>Usage notes and caveats<a class="headerlink" href="#usage-notes-and-caveats" title="Link to this heading">#</a></h2>
+<ul class="simple">
+<li><p><strong>Zero the buffer before the launch.</strong> The decoder treats <code class="docutils literal notranslate"><span class="pre">0</span></code> as “empty” and
+reads the grid shape from slot 0, which only block 0 / thread 0 writes.</p></li>
+<li><p><strong>Exactly one leader per (block, group).</strong> Each thread keeps its own cursor,
+initialized to <code class="docutils literal notranslate"><span class="pre">1</span> <span class="pre">+</span> <span class="pre">block_group</span></code>; two leaders in the same lane write the same
+offsets and clobber each other. Use <code class="docutils literal notranslate"><span class="pre">tid</span> <span class="pre">==</span> <span class="pre">0</span></code> or lane 0 of the group’s leader
+warp.</p></li>
+<li><p><strong>Call ``init`` once, before any ``start``.</strong> It seeds each thread’s tag and
+cursor; without it both are garbage.</p></li>
+<li><p><strong>Size ``write_stride`` and the buffer together.</strong> The largest slot a lane
+touches is <code class="docutils literal notranslate"><span class="pre">1</span> <span class="pre">+</span> <span class="pre">block_group</span> <span class="pre">+</span> <span class="pre">(records_per_lane</span> <span class="pre">-</span> <span class="pre">1)</span> <span class="pre">*</span> <span class="pre">write_stride</span></code>;
+over-allocate, unused slots stay <code class="docutils literal notranslate"><span class="pre">0</span></code> and are skipped.</p></li>
+<li><p><strong>``%globaltimer_lo`` is only the low 32 bits of the nanosecond timer.</strong> It wraps
+about every 4.29 s (<code class="docutils literal notranslate"><span class="pre">2**32</span></code> ns), so a region straddling a wrap decodes to a
+bogus duration. Resolution is coarse (tens of ns), so very short regions read 0
+or a single tick.</p></li>
+<li><p><strong>No payload.</strong> <code class="docutils literal notranslate"><span class="pre">start</span></code> / <code class="docutils literal notranslate"><span class="pre">end</span></code> record only a timestamp and the event id;
+encode anything extra in the event id (a distinct <code class="docutils literal notranslate"><span class="pre">Ev</span></code> member) or in
+<code class="docutils literal notranslate"><span class="pre">num_groups</span></code>.</p></li>
+<li><p><strong>It is not free.</strong> Two stores plus two block fences per region. Profile, read
+the numbers, then build with <code class="docutils literal notranslate"><span class="pre">profiler_enabled=False</span></code>.</p></li>
+</ul>
+</section>
+</section>
+
+
+                </article>
+              
+
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="compiling.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">Compiling and inspecting</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="../../layout.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">Tensor Layout</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <div class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+  <div class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> Contents
+  </div>
+  <nav class="bd-toc-nav page-toc">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#the-kernel">The kernel</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#run-it-and-read-the-trace">Run it and read the trace</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#on-a-real-kernel">On a real kernel</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#the-api">The API</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#groups-and-granularity">Groups and granularity</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#what-each-call-wraps">What each call wraps</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#usage-notes-and-caveats">Usage notes and caveats</a></li>
+</ul>
+  </nav></div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+<div class="bd-footer-content__inner container">
+  
+  <div class="footer-item">
+    
+<p class="component-author">
+By Apache Software Foundation
+</p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+
+  <p class="copyright">
+    
+      © Copyright 2020 - 2026, Apache Software Foundation.
+      <br/>
+    
+  </p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+  <div class="footer-item">
+    
+<div class="extra_footer">
+  
+  <div class="footer-container" style="margin: 5px 0; font-size: 0.9em; color: #6c757d; text-align: right;">
+      <div class="footer-line1" style="display: flex; justify-content: flex-end; align-items: center; gap: 0.9em; margin-bottom: 3px; flex-wrap: wrap;">
+          <span class="footer-links"><a href="https://tvm.apache.org/community" style="color: #6c757d; text-decoration: none;">Community</a> &middot; <a href="https://tvm.apache.org/download" style="color: #6c757d; text-decoration: none;">Download</a> &middot; <a href="https://tvm.apache.org/docs" style="color: #6c757d; text-decoration: none;">Docs</a></span>
+          <div class="footer-dropdown">
+              <div class="dropdown">
+                  <button class="btn btn-link dropdown-toggle" type="button" id="footerDropdown" data-bs-toggle="dropdown"
+                  aria-expanded="false" style="font-size: 0.9em; color: #6c757d; text-decoration: none; padding: 0; border: none; background: none;">
+                      ASF
+                  </button>
+                  <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="footerDropdown" style="font-size: 0.9em;">
+<li><a class="dropdown-item" href="https://apache.org/" target="_blank" style="font-size: 0.9em;">Apache Homepage</a></li>
+<li><a class="dropdown-item" href="https://www.apache.org/licenses/" target="_blank" style="font-size: 0.9em;">License</a></li>
+<li><a class="dropdown-item" href="https://www.apache.org/foundation/sponsorship.html" target="_blank" style="font-size: 0.9em;">Sponsorship</a></li>
+<li><a class="dropdown-item" href="https://tvm.apache.org/docs/reference/security.html" target="_blank" style="font-size: 0.9em;">Security</a></li>
+<li><a class="dropdown-item" href="https://www.apache.org/foundation/thanks.html" target="_blank" style="font-size: 0.9em;">Thanks</a></li>
+<li><a class="dropdown-item" href="https://www.apache.org/events/current-event" target="_blank" style="font-size: 0.9em;">Events</a></li>
+                  </ul>
+              </div>
+          </div>
+      </div>
+      <div class="footer-line2" style="font-size: 0.9em; color: #6c757d; text-align: right;">
+          Copyright © 2026 The Apache Software Foundation. Apache TVM, Apache, the Apache feather, and the Apache TVM project logo are either trademarks or registered trademarks of the Apache Software Foundation.
+      </div>
+  </div>
+  
+</div>
+  </div>
+  
+</div>
+          </footer>
+        
+
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="../../../_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b"></script>
+<script src="../../../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b"></script>
+
+  <footer class="bd-footer">
+  </footer>
+  </body>
+</html>
