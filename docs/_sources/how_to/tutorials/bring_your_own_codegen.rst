@@ -269,7 +269,7 @@ only -- the values are uninitialized.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 182-196
+.. GENERATED FROM PYTHON SOURCE LINES 182-199
 
 The same flow on a real backend: TensorRT
 -----------------------------------------
@@ -286,7 +286,10 @@ differs for NVIDIA TensorRT:
 - **Real values.** TensorRT actually computes, so we build for CUDA, run on
   the GPU, and cross-check against a plain CPU build -- not just the shape.
 
-.. GENERATED FROM PYTHON SOURCE LINES 196-202
+The build-and-run cells below execute only when TensorRT and CUDA are
+available. In CPU-only documentation builds, they produce no output.
+
+.. GENERATED FROM PYTHON SOURCE LINES 199-205
 
 .. code-block:: Python
 
@@ -350,11 +353,11 @@ differs for NVIDIA TensorRT:
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 203-204
+.. GENERATED FROM PYTHON SOURCE LINES 206-207
 
 Build for CUDA, run on the GPU, and compare against the CPU reference.
 
-.. GENERATED FROM PYTHON SOURCE LINES 204-224
+.. GENERATED FROM PYTHON SOURCE LINES 207-225
 
 .. code-block:: Python
 
@@ -375,23 +378,15 @@ Build for CUDA, run on the GPU, and compare against the CPU reference.
 
         np.testing.assert_allclose(trt_out, cpu_out, rtol=1e-2, atol=1e-2)
         print("TensorRT output shape:", trt_out.shape, "- matches the CPU reference.")
-    else:
-        print("TensorRT/CUDA unavailable; skipping the GPU build and run.")
 
 
 
 
 
-.. rst-class:: sphx-glr-script-out
-
- .. code-block:: none
-
-    TensorRT/CUDA unavailable; skipping the GPU build and run.
 
 
 
-
-.. GENERATED FROM PYTHON SOURCE LINES 225-232
+.. GENERATED FROM PYTHON SOURCE LINES 226-233
 
 A real backend also exposes knobs the stub does not.  Setting ``use_fp16``
 through the ``relax.ext.tensorrt.options`` config lets TensorRT pick FP16
@@ -401,7 +396,7 @@ enables INT8 with calibration, ``TVM_TENSORRT_MAX_WORKSPACE_SIZE`` caps the
 build workspace, and ``TVM_TENSORRT_CACHE_DIR`` caches built engines to disk
 for reuse across runs.)
 
-.. GENERATED FROM PYTHON SOURCE LINES 232-250
+.. GENERATED FROM PYTHON SOURCE LINES 233-249
 
 .. code-block:: Python
 
@@ -420,23 +415,15 @@ for reuse across runs.)
 
         np.testing.assert_allclose(fp16_out, cpu_out, rtol=5e-2, atol=5e-2)
         print("TensorRT FP16 output shape:", fp16_out.shape, "- matches within FP16 tolerance.")
-    else:
-        print("TensorRT/CUDA unavailable; skipping the FP16 build.")
 
 
 
 
 
-.. rst-class:: sphx-glr-script-out
-
- .. code-block:: none
-
-    TensorRT/CUDA unavailable; skipping the FP16 build.
 
 
 
-
-.. GENERATED FROM PYTHON SOURCE LINES 251-264
+.. GENERATED FROM PYTHON SOURCE LINES 250-263
 
 Example NPU vs TensorRT at a glance
 -----------------------------------
@@ -452,7 +439,7 @@ Weights    ``bind_constants=False``        ``bind_constants=True`` (baked in)
 Partition  two passes, by hand             ``partition_for_tensorrt`` one call
 =========  ==============================  ==================================
 
-.. GENERATED FROM PYTHON SOURCE LINES 266-280
+.. GENERATED FROM PYTHON SOURCE LINES 265-279
 
 Deploying a PyTorch model with TensorRT
 ---------------------------------------
@@ -469,7 +456,7 @@ partition-build-run flow is otherwise unchanged.
 
 This section additionally requires PyTorch.
 
-.. GENERATED FROM PYTHON SOURCE LINES 280-328
+.. GENERATED FROM PYTHON SOURCE LINES 279-325
 
 .. code-block:: Python
 
@@ -518,29 +505,21 @@ This section additionally requires PyTorch.
 
         np.testing.assert_allclose(deployed, torch_ref, rtol=1e-2, atol=1e-2)
         print("Deployed PyTorch model on TensorRT; output", deployed.shape, "matches PyTorch.")
-    else:
-        print("PyTorch / TensorRT / CUDA unavailable; skipping the deployment example.")
 
 
 
 
 
-.. rst-class:: sphx-glr-script-out
-
- .. code-block:: none
-
-    PyTorch / TensorRT / CUDA unavailable; skipping the deployment example.
 
 
 
-
-.. GENERATED FROM PYTHON SOURCE LINES 329-332
+.. GENERATED FROM PYTHON SOURCE LINES 326-329
 
 Real deployment builds once and reuses the artifact.  Export the compiled
 module to a shared library, then load and run it later -- in a fresh process,
 with no PyTorch and no rebuild needed.
 
-.. GENERATED FROM PYTHON SOURCE LINES 332-346
+.. GENERATED FROM PYTHON SOURCE LINES 329-341
 
 .. code-block:: Python
 
@@ -555,23 +534,15 @@ with no PyTorch and no rebuild needed.
             )[0].numpy()
             np.testing.assert_allclose(reran, torch_ref, rtol=1e-2, atol=1e-2)
             print("Reloaded the exported library and reran; output", reran.shape, "still matches.")
-    else:
-        print("PyTorch / TensorRT / CUDA unavailable; skipping the export/reload step.")
 
 
 
 
 
-.. rst-class:: sphx-glr-script-out
-
- .. code-block:: none
-
-    PyTorch / TensorRT / CUDA unavailable; skipping the export/reload step.
 
 
 
-
-.. GENERATED FROM PYTHON SOURCE LINES 347-360
+.. GENERATED FROM PYTHON SOURCE LINES 342-355
 
 Notes for real deployments
 --------------------------
@@ -587,7 +558,7 @@ Notes for real deployments
   is not a hang).  Set ``TVM_TENSORRT_CACHE_DIR`` to cache built engines to
   disk and skip the rebuild on later runs.
 
-.. GENERATED FROM PYTHON SOURCE LINES 362-381
+.. GENERATED FROM PYTHON SOURCE LINES 357-376
 
 Next steps
 ----------
