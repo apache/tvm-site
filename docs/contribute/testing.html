@@ -746,6 +746,42 @@ module, when called at import time) if an optional Python package is
 not installed.  Use this instead of a <code class="docutils literal notranslate"><span class="pre">skipif</span></code> for package
 dependencies.</p></li>
 </ul>
+<p>Tests that execute on a local GPU must put the complete live-device
+lifetime in a small callback passed to
+<a class="reference internal" href="../reference/api/python/testing.html#tvm.testing.run_with_gpu_lock" title="tvm.testing.run_with_gpu_lock"><code class="xref py py-func docutils literal notranslate"><span class="pre">tvm.testing.run_with_gpu_lock()</span></code></a>.  Target construction and
+compilation remain outside so that pytest-xdist workers can compile in
+parallel.  Device creation, allocation, execution, synchronization,
+host conversion, result checks, and child-process teardown remain inside
+the callback so no device-backed object outlives the lock.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nd">@pytest</span><span class="o">.</span><span class="n">mark</span><span class="o">.</span><span class="n">gpu</span>
+<span class="nd">@pytest</span><span class="o">.</span><span class="n">mark</span><span class="o">.</span><span class="n">skipif</span><span class="p">(</span><span class="ow">not</span> <span class="n">tvm</span><span class="o">.</span><span class="n">testing</span><span class="o">.</span><span class="n">env</span><span class="o">.</span><span class="n">has_cuda</span><span class="p">(),</span> <span class="n">reason</span><span class="o">=</span><span class="s2">&quot;need cuda&quot;</span><span class="p">)</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">test_cuda_add_one</span><span class="p">():</span>
+    <span class="n">target</span> <span class="o">=</span> <span class="n">tvm</span><span class="o">.</span><span class="n">target</span><span class="o">.</span><span class="n">Target</span><span class="p">(</span><span class="s2">&quot;cuda -arch=sm_90&quot;</span><span class="p">)</span>
+    <span class="n">executable</span> <span class="o">=</span> <span class="n">tvm</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="n">make_add_one_module</span><span class="p">(),</span> <span class="n">target</span><span class="p">)</span>
+    <span class="n">host_input</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">16</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="s2">&quot;float32&quot;</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">run_and_check</span><span class="p">():</span>
+        <span class="n">dev</span> <span class="o">=</span> <span class="n">tvm</span><span class="o">.</span><span class="n">cuda</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+        <span class="n">device_input</span> <span class="o">=</span> <span class="n">tvm</span><span class="o">.</span><span class="n">runtime</span><span class="o">.</span><span class="n">tensor</span><span class="p">(</span><span class="n">host_input</span><span class="p">,</span> <span class="n">dev</span><span class="p">)</span>
+        <span class="n">device_output</span> <span class="o">=</span> <span class="n">tvm</span><span class="o">.</span><span class="n">runtime</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="n">host_input</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span> <span class="s2">&quot;float32&quot;</span><span class="p">,</span> <span class="n">dev</span><span class="p">)</span>
+        <span class="n">executable</span><span class="p">(</span><span class="n">device_input</span><span class="p">,</span> <span class="n">device_output</span><span class="p">)</span>
+        <span class="n">dev</span><span class="o">.</span><span class="n">sync</span><span class="p">()</span>
+        <span class="n">tvm</span><span class="o">.</span><span class="n">testing</span><span class="o">.</span><span class="n">assert_allclose</span><span class="p">(</span><span class="n">device_output</span><span class="o">.</span><span class="n">numpy</span><span class="p">(),</span> <span class="n">host_input</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+
+    <span class="n">tvm</span><span class="o">.</span><span class="n">testing</span><span class="o">.</span><span class="n">run_with_gpu_lock</span><span class="p">(</span><span class="n">run_and_check</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The wrapper uses the existing <code class="xref py py-class docutils literal notranslate"><span class="pre">tvm_ffi.utils.FileLock</span></code> with a
+persistent machine-local path.  A process exit releases the kernel lock;
+the remaining file is not stale ownership.  Test startup must never
+delete or rotate it, because another process could then lock a different
+inode.  Set <code class="docutils literal notranslate"><span class="pre">TVM_TEST_LOCK_DIR</span></code> only when all cooperating processes need
+an explicitly configured shared machine-local directory.  The default
+temporary path coordinates processes running as the same user.  Multi-user
+runners sharing a GPU must use one administrator-provisioned directory and
+persistent lock file that every contender can write, or enforce exclusivity
+through the runner.  A per-user lock path cannot protect a GPU shared across
+users because each user would lock a different file.</p>
 <p>There also exists a <code class="docutils literal notranslate"><span class="pre">tvm.testing.enabled_targets()</span></code> that returns
 all targets that are enabled and runnable on the current machine,
 based on the environment variable <code class="docutils literal notranslate"><span class="pre">TVM_TEST_TARGETS</span></code>, the build
