@@ -1,7 +1,7 @@
 var searchData=
 [
   ['hand_5fthreaded_1481',['hand_threaded',['../namespacetvm_1_1tirx_1_1attr.html#a06bc1cdf7c3d055d28bffeb0a84d804a',1,'tvm::tirx::attr::hand_threaded()'],['../namespacetvm_1_1s__tir_1_1attr.html#aa69ea60566dd6bf3922985cd167878fa',1,'tvm::s_tir::attr::hand_threaded()']]],
-  ['handle_1482',['Handle',['../namespacetvm_1_1script_1_1ir__builder_1_1tirx.html#a777e7843a6cf4cc5e099eb22c2250a6a',1,'tvm::script::ir_builder::tirx::Handle()'],['../classtvm_1_1PrimType.html#af44f64ee15c0bd71b4b4fb738b88801c',1,'tvm::PrimType::Handle()']]],
+  ['handle_1482',['Handle',['../namespacetvm_1_1script_1_1ir__builder_1_1tirx.html#a777e7843a6cf4cc5e099eb22c2250a6a',1,'tvm::script::ir_builder::tirx']]],
   ['handle_5fadd_5fbyte_5foffset_1483',['handle_add_byte_offset',['../namespacetvm_1_1tirx_1_1builtin.html#aa80062403274605c1cb9d7410e0b5e70',1,'tvm::tirx::builtin']]],
   ['has_5fdefault_1484',['has_default',['../structtvm_1_1ir_1_1ConfigSchema_1_1OptionEntry.html#a69bcd548173d3e0c04ca8826328190e4',1,'tvm::ir::ConfigSchema::OptionEntry']]],
   ['hasattr_1485',['HasAttr',['../classtvm_1_1relax_1_1DFPattern.html#a5ec24bab817dcd540c0db81c297c83ae',1,'tvm::relax::DFPattern']]],
@@ -13,7 +13,7 @@ var searchData=
   ['haskey_1491',['HasKey',['../classtvm_1_1TargetNode.html#abcc7efac49712b3a1a2ec5e511a6ec49',1,'tvm::TargetNode']]],
   ['haslowerbound_1492',['HasLowerBound',['../classtvm_1_1arith_1_1IntSet.html#a43fe07f824564cd2c9aab6f06a5a79c9',1,'tvm::arith::IntSet']]],
   ['hasmemoryaxis_1493',['HasMemoryAxis',['../classtvm_1_1tirx_1_1TileLayoutNode.html#a99c542cb431270df8b109642db6d6905',1,'tvm::tirx::TileLayoutNode']]],
-  ['hasnonzeroattr_1494',['HasNonzeroAttr',['../classtvm_1_1BaseFuncNode.html#a1fbf773665334f7d109c7c4c12d40d76',1,'tvm::BaseFuncNode::HasNonzeroAttr()'],['../classtvm_1_1IRModuleNode.html#a0051e1b8ec1d99cbade4dfaa511b3bcd',1,'tvm::IRModuleNode::HasNonzeroAttr()'],['../classtvm_1_1DictAttrs.html#a45e524ce0f8ae389341ec37e468d887d',1,'tvm::DictAttrs::HasNonzeroAttr()']]],
+  ['hasnonzeroattr_1494',['HasNonzeroAttr',['../classtvm_1_1IRModuleNode.html#a0051e1b8ec1d99cbade4dfaa511b3bcd',1,'tvm::IRModuleNode::HasNonzeroAttr()'],['../classtvm_1_1BaseFuncNode.html#a1fbf773665334f7d109c7c4c12d40d76',1,'tvm::BaseFuncNode::HasNonzeroAttr()'],['../classtvm_1_1DictAttrs.html#a45e524ce0f8ae389341ec37e468d887d',1,'tvm::DictAttrs::HasNonzeroAttr()']]],
   ['hasoption_1495',['HasOption',['../classtvm_1_1ir_1_1ConfigSchema.html#a09eb874e14e351662339af51cbaf1260',1,'tvm::ir::ConfigSchema']]],
   ['hasreshapepattern_1496',['HasReshapePattern',['../namespacetvm_1_1relax.html#af12a9b0e49464eb96298f9ea8ac30b17',1,'tvm::relax']]],
   ['hassameshapeas_1497',['HasSameShapeAs',['../classtvm_1_1relax_1_1DFPattern.html#a38905d1b7e0ab207b658afce9e50f838',1,'tvm::relax::DFPattern']]],

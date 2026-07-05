@@ -1,7 +1,7 @@
 var searchData=
 [
   ['abs_4835',['abs',['../namespacetvm.html#ab2a3c98ef29937defd6accb9b171a940',1,'tvm::abs()'],['../namespacetvm_1_1topi.html#a91313bc00e3b96717f8420181f789300',1,'tvm::topi::abs()']]],
-  ['access_5fptr_4836',['access_ptr',['../classtvm_1_1tirx_1_1Buffer.html#a4d3b1e94399af6a67699b1a22e2e60b3',1,'tvm::tirx::Buffer']]],
+  ['access_5fptr_4836',['access_ptr',['../classtvm_1_1tirx_1_1Buffer.html#ae5d66996c62b0daac2053cfa34aecdb0',1,'tvm::tirx::Buffer']]],
   ['acos_4837',['acos',['../namespacetvm.html#aa8e1cc91eb14b427e3018836d82e15e6',1,'tvm::acos()'],['../namespacetvm_1_1topi.html#a472208fa01448c0ed649bec218eed7f9',1,'tvm::topi::acos()']]],
   ['acosh_4838',['acosh',['../namespacetvm.html#af38d8633e3508033faa7bd60d8232bfe',1,'tvm::acosh()'],['../namespacetvm_1_1topi.html#ade9574415f3b1fdb49fe9e0059ce0e85',1,'tvm::topi::acosh()']]],
   ['adaptive_5fpool_4839',['adaptive_pool',['../namespacetvm_1_1topi_1_1nn.html#a1d924cd2500583c24362ccd0be70f089',1,'tvm::topi::nn']]],

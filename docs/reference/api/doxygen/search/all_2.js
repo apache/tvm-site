@@ -1,10 +1,10 @@
 var searchData=
 [
-  ['a_10',['a',['../classtvm_1_1tirx_1_1CmpOpNode.html#a0fc8078bb496a47e3102539220fe708d',1,'tvm::tirx::CmpOpNode::a()'],['../classtvm_1_1tirx_1_1AndNode.html#a11b9168bb7bec918e09d4c1c1577bc2f',1,'tvm::tirx::AndNode::a()'],['../classtvm_1_1tirx_1_1BinaryOpNode.html#ae1e8d5a2891d278d9a1c149f50f7c830',1,'tvm::tirx::BinaryOpNode::a()']]],
+  ['a_10',['a',['../classtvm_1_1tirx_1_1BinaryOpNode.html#ae1e8d5a2891d278d9a1c149f50f7c830',1,'tvm::tirx::BinaryOpNode::a()'],['../classtvm_1_1tirx_1_1CmpOpNode.html#a0fc8078bb496a47e3102539220fe708d',1,'tvm::tirx::CmpOpNode::a()']]],
   ['a_11',['A',['../structtvm_1_1tirx_1_1ExecContext.html#a53d6187f2c60588dc98655e0c3f1b84e',1,'tvm::tirx::ExecContext']]],
-  ['a_12',['a',['../classtvm_1_1tirx_1_1NotNode.html#a8ad692257c9f2958fb3c3b1696cdfcd5',1,'tvm::tirx::NotNode::a()'],['../classtvm_1_1tirx_1_1OrNode.html#a99e5a34b3dd634e76e3a62064c08ed8c',1,'tvm::tirx::OrNode::a()']]],
+  ['a_12',['a',['../classtvm_1_1tirx_1_1NotNode.html#a8ad692257c9f2958fb3c3b1696cdfcd5',1,'tvm::tirx::NotNode::a()'],['../classtvm_1_1tirx_1_1OrNode.html#a99e5a34b3dd634e76e3a62064c08ed8c',1,'tvm::tirx::OrNode::a()'],['../classtvm_1_1tirx_1_1AndNode.html#a11b9168bb7bec918e09d4c1c1577bc2f',1,'tvm::tirx::AndNode::a()']]],
   ['abs_13',['abs',['../namespacetvm.html#ab2a3c98ef29937defd6accb9b171a940',1,'tvm::abs()'],['../namespacetvm_1_1topi.html#a91313bc00e3b96717f8420181f789300',1,'tvm::topi::abs()']]],
-  ['access_5fptr_14',['access_ptr',['../classtvm_1_1tirx_1_1Buffer.html#a4d3b1e94399af6a67699b1a22e2e60b3',1,'tvm::tirx::Buffer']]],
+  ['access_5fptr_14',['access_ptr',['../classtvm_1_1tirx_1_1Buffer.html#ae5d66996c62b0daac2053cfa34aecdb0',1,'tvm::tirx::Buffer']]],
   ['accesspath_15',['AccessPath',['../namespacetvm_1_1script_1_1printer.html#aa6150963ae2f3f94a3cb24b45dd0ff0c',1,'tvm::script::printer']]],
   ['accumulate_16',['accumulate',['../structtvm_1_1relax_1_1IndexPutAttrs.html#aa1590f6fefa6094d6b6c83be0afb15d4',1,'tvm::relax::IndexPutAttrs']]],
   ['acos_17',['acos',['../namespacetvm.html#aa8e1cc91eb14b427e3018836d82e15e6',1,'tvm::acos()'],['../namespacetvm_1_1topi.html#a472208fa01448c0ed649bec218eed7f9',1,'tvm::topi::acos()']]],
