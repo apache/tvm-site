@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['zero_6794',['zero',['../namespacetvm_1_1tirx.html#a99f4a9b53a95f7d9af62adf6b6859b79',1,'tvm::tirx']]]
+  ['zero_0',['zero',['../namespacetvm_1_1tirx.html#a5d9b5612083467816a992da6517967f6',1,'tvm::tirx']]]
 ];
