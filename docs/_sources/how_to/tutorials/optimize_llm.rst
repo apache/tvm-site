@@ -109,7 +109,7 @@ constant config specially for the TinyLlama model.
         head_dim: int = 64  # hidden_size // num_attention_heads
 
 
-    dev = tvm.device("cuda", 0)
+    dev = tvm.cuda(0)
     target = tvm.target.Target.from_device(dev)
 
 

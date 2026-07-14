@@ -54,7 +54,7 @@ PyTorch.
  .. code-block:: none
 
     Downloading: "https://download.pytorch.org/models/resnet18-f37072fd.pth" to /workspace/.cache/torch/hub/checkpoints/resnet18-f37072fd.pth
-      0%|          | 0.00/44.7M [00:00<?, ?B/s]     73%|███████▎  | 32.5M/44.7M [00:00<00:00, 340MB/s]    100%|██████████| 44.7M/44.7M [00:00<00:00, 368MB/s]
+      0%|          | 0.00/44.7M [00:00<?, ?B/s]     56%|█████▌    | 24.9M/44.7M [00:00<00:00, 260MB/s]    100%|██████████| 44.7M/44.7M [00:00<00:00, 285MB/s]
 
 
 
@@ -193,7 +193,7 @@ We skip this step in the CI environment.
         with target:
             mod = tvm.s_tir.transform.DefaultGPUSchedule()(mod)
         ex = tvm.compile(mod, target=target)
-        dev = tvm.device("cuda", 0)
+        dev = tvm.cuda(0)
         vm = relax.VirtualMachine(ex, dev)
         # Need to allocate data and params on GPU device
         gpu_data = tvm.runtime.tensor(np.random.rand(1, 3, 224, 224).astype("float32"), dev)

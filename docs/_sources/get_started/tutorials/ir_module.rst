@@ -696,8 +696,8 @@ We can deploy the IRModule on CPU by specifying the target as ``llvm``.
 
  .. code-block:: none
 
-    [[-0.309137   -0.03441708  0.11561745  0.08223156 -0.06886631  0.07405012
-      -0.11162274 -0.03737279 -0.13187504  0.05913461]]
+    [[-0.08429101 -0.27158263 -0.06586359  0.17563394  0.11557744  0.02116886
+       0.0101552   0.30113357  0.21389922 -0.05414462]]
 
 
 
@@ -744,7 +744,7 @@ Now we can compile the IRModule on GPU, the similar way as we did on CPU.
 
 
     exec = tvm.compile(gpu_mod, target="cuda")
-    dev = tvm.device("cuda", 0)
+    dev = tvm.cuda(0)
     vm = relax.VirtualMachine(exec, dev)
     # Need to allocate data and params on GPU device
     data = tvm.runtime.tensor(raw_data, dev)
@@ -763,8 +763,8 @@ Now we can compile the IRModule on GPU, the similar way as we did on CPU.
 
  .. code-block:: none
 
-    [[-0.309137   -0.03441706  0.11561742  0.0822316  -0.06886627  0.07405011
-      -0.11162274 -0.03737278 -0.13187501  0.05913462]]
+    [[-0.08429106 -0.2715825  -0.06586359  0.175634    0.11557743  0.02116885
+       0.01015516  0.30113363  0.2138992  -0.05414463]]
 
 
 
