@@ -6,7 +6,7 @@
 
 Computation times
 =================
-**00:17.434** total execution time for 8 files **from how_to/tutorials**:
+**00:17.531** total execution time for 8 files **from how_to/tutorials**:
 
 .. container::
 
@@ -33,16 +33,16 @@ Computation times
      - Time
      - Mem (MB)
    * - :ref:`sphx_glr_how_to_tutorials_optimize_llm.py` (``optimize_llm.py``)
-     - 00:12.372
+     - 00:12.470
      - 0.0
    * - :ref:`sphx_glr_how_to_tutorials_import_model.py` (``import_model.py``)
-     - 00:03.468
-     - 0.0
-   * - :ref:`sphx_glr_how_to_tutorials_e2e_opt_model.py` (``e2e_opt_model.py``)
-     - 00:00.619
+     - 00:03.517
      - 0.0
    * - :ref:`sphx_glr_how_to_tutorials_cross_compilation_and_rpc.py` (``cross_compilation_and_rpc.py``)
-     - 00:00.568
+     - 00:00.575
+     - 0.0
+   * - :ref:`sphx_glr_how_to_tutorials_e2e_opt_model.py` (``e2e_opt_model.py``)
+     - 00:00.563
      - 0.0
    * - :ref:`sphx_glr_how_to_tutorials_customize_opt.py` (``customize_opt.py``)
      - 00:00.333
@@ -51,7 +51,7 @@ Computation times
      - 00:00.067
      - 0.0
    * - :ref:`sphx_glr_how_to_tutorials_mix_python_and_tvm_with_pymodule.py` (``mix_python_and_tvm_with_pymodule.py``)
-     - 00:00.004
+     - 00:00.005
      - 0.0
    * - :ref:`sphx_glr_how_to_tutorials_export_and_load_executable.py` (``export_and_load_executable.py``)
      - 00:00.002
