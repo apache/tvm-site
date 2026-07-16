@@ -1,6 +1,6 @@
 var searchData=
 [
-  ['warp_5fexecution_0',['warp_execution',['../namespacetvm_1_1s__tir_1_1attr.html#a87eabc037c5541fecf34904372e41d74',1,'tvm::s_tir::attr::warp_execution'],['../namespacetvm_1_1tirx_1_1attr.html#a462abaea50cce078e7506a2406646ba5',1,'tvm::tirx::attr::warp_execution']]],
+  ['warp_5fexecution_0',['warp_execution',['../namespacetvm_1_1s__tir_1_1attr.html#a87eabc037c5541fecf34904372e41d74',1,'tvm::s_tir::attr']]],
   ['weight_1',['weight',['../classtvm_1_1s__tir_1_1meta__schedule_1_1ExtractedTaskNode.html#a6d6591e4744fbd0fc3825bc240194525',1,'tvm::s_tir::meta_schedule::ExtractedTaskNode']]],
   ['window_5fsize_2',['window_size',['../structtvm_1_1relax_1_1AttentionAttrs.html#a13f5c9ddfe43b555674b858b0112839b',1,'tvm::relax::AttentionAttrs']]],
   ['worker_3',['worker',['../structtvm_1_1runtime_1_1ThreadLocalDiscoWorker.html#a382185eacea869e97da1c49ca46a1f9d',1,'tvm::runtime::ThreadLocalDiscoWorker']]],

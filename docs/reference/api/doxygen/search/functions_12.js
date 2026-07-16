@@ -21,7 +21,7 @@ var searchData=
   ['scalablevector_18',['ScalableVector',['../classtvm_1_1PrimType.html#a043514f4e0b140cb32826f8153205d35',1,'tvm::PrimType']]],
   ['scale_5fshift_5fnchw_19',['scale_shift_nchw',['../namespacetvm_1_1topi_1_1nn.html#a07b8a04f27f17af58dd9f18218cfe081',1,'tvm::topi::nn']]],
   ['scale_5fshift_5fnhwc_20',['scale_shift_nhwc',['../namespacetvm_1_1topi_1_1nn.html#acaf3bc4e89fc55b8444d2550d25f4f22',1,'tvm::topi::nn']]],
-  ['scan_21',['scan',['../namespacetvm_1_1te.html#a665b6af508ca707d3c4aed749e8a113e',1,'tvm::te::scan()'],['../namespacetvm_1_1script_1_1ir__builder_1_1tirx_1_1axis.html#aadd5e359deb57dcba129726703e7aecb',1,'tvm::script::ir_builder::tirx::axis::Scan()']]],
+  ['scan_21',['scan',['../namespacetvm_1_1script_1_1ir__builder_1_1tirx_1_1axis.html#aadd5e359deb57dcba129726703e7aecb',1,'tvm::script::ir_builder::tirx::axis::Scan()'],['../namespacetvm_1_1te.html#a665b6af508ca707d3c4aed749e8a113e',1,'tvm::te::scan()']]],
   ['scanop_22',['ScanOp',['../classtvm_1_1te_1_1ScanOp.html#ac543d72bda102433f59f765976c6d14e',1,'tvm::te::ScanOp']]],
   ['scanopnode_23',['ScanOpNode',['../classtvm_1_1te_1_1ScanOpNode.html#a1b681295f74cb94732ef167a15a8488f',1,'tvm::te::ScanOpNode']]],
   ['scatterfromworker0_24',['ScatterFromWorker0',['../namespacetvm_1_1runtime.html#a8f601397b80f97c316413a0a0236b5e3',1,'tvm::runtime']]],
