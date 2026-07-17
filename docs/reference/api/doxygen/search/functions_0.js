@@ -44,7 +44,7 @@ var searchData=
   ['allowmemoryscope_41',['AllowMemoryScope',['../classtvm_1_1runtime_1_1memory_1_1Allocator.html#a64347e77d6966773b9732d414ad8ce3d',1,'tvm::runtime::memory::Allocator']]],
   ['allreduce_42',['AllReduce',['../namespacetvm_1_1runtime.html#ac21f217e927025c825cf202941dbb54a',1,'tvm::runtime']]],
   ['allvars_43',['AllVars',['../namespacetvm_1_1relax.html#ac677e6dfffb286b9d25c65118d32ffc0',1,'tvm::relax']]],
-  ['alteropimpl_44',['AlterOpImpl',['../namespacetvm_1_1relax_1_1transform.html#aef1a2699b646043ccb35ea053b9cf66b',1,'tvm::relax::transform']]],
+  ['alteropimpl_44',['AlterOpImpl',['../namespacetvm_1_1relax_1_1transform.html#a1fbd691169616c2a0db3f528d4d59f88',1,'tvm::relax::transform']]],
   ['analyzeoppatternkind_45',['AnalyzeOpPatternKind',['../namespacetvm_1_1relax.html#ab34200346d3dab26bb6ad581e6e01717',1,'tvm::relax']]],
   ['analyzer_46',['analyzer',['../classtvm_1_1arith_1_1Analyzer.html#ae8568eeee02c68849e468f8c19a2701d',1,'tvm::arith::Analyzer::Analyzer()'],['../classtvm_1_1arith_1_1Analyzer.html#a986c5877025fcf36b25a79fb58b8c2ed',1,'tvm::arith::Analyzer::Analyzer(ffi::ObjectPtr&lt; AnalyzerObj &gt; n)']]],
   ['analyzerobj_47',['AnalyzerObj',['../classtvm_1_1arith_1_1AnalyzerObj.html#a61718b9bdfcc01483cf70d159c4f12c8',1,'tvm::arith::AnalyzerObj']]],

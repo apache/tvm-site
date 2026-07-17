@@ -52,7 +52,7 @@ var searchData=
   ['tostring_49',['ToString',['../classtvm_1_1relax_1_1distributed_1_1PlacementNode.html#a4f377361f55466f7e855f6bdbd1f4266',1,'tvm::relax::distributed::PlacementNode']]],
   ['tosubordinate_50',['ToSubordinate',['../classtvm_1_1tirx_1_1SLayoutAxis.html#a368bd171964e4714331b744913abdbfa',1,'tvm::tirx::SLayoutAxis']]],
   ['touchtask_51',['TouchTask',['../classtvm_1_1s__tir_1_1meta__schedule_1_1TaskSchedulerNode.html#a96dad2bf37679aba787f4e4b81c979f9',1,'tvm::s_tir::meta_schedule::TaskSchedulerNode']]],
-  ['trace_52',['trace',['../classtvm_1_1s__tir_1_1ScheduleNode.html#a181cd324ae42a93a5308454122d10ff3',1,'tvm::s_tir::ScheduleNode::trace()'],['../classtvm_1_1s__tir_1_1Trace.html#aab8cc9848fd4be6164533a515937978c',1,'tvm::s_tir::Trace::Trace(ffi::Array&lt; Instruction &gt; insts, ffi::Map&lt; Instruction, Any &gt; decisions)'],['../classtvm_1_1s__tir_1_1Trace.html#a894c9a4fca263f9ad13cec46ac74de11',1,'tvm::s_tir::Trace::Trace()']]],
+  ['trace_52',['trace',['../classtvm_1_1s__tir_1_1Trace.html#a894c9a4fca263f9ad13cec46ac74de11',1,'tvm::s_tir::Trace::Trace()'],['../classtvm_1_1s__tir_1_1ScheduleNode.html#a181cd324ae42a93a5308454122d10ff3',1,'tvm::s_tir::ScheduleNode::trace()'],['../classtvm_1_1s__tir_1_1Trace.html#aab8cc9848fd4be6164533a515937978c',1,'tvm::s_tir::Trace::Trace()']]],
   ['traced_53',['Traced',['../classtvm_1_1s__tir_1_1Schedule.html#a5e3700664d2588ecb67b05d537fe3bbb',1,'tvm::s_tir::Schedule']]],
   ['transformblocklayout_54',['TransformBlockLayout',['../classtvm_1_1s__tir_1_1ScheduleNode.html#a804ffa32697098deb4d62faa557ae742',1,'tvm::s_tir::ScheduleNode']]],
   ['transformlayout_55',['TransformLayout',['../classtvm_1_1s__tir_1_1ScheduleNode.html#adba248c3349835b6262b890743f73a05',1,'tvm::s_tir::ScheduleNode']]],

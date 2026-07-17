@@ -1,6 +1,6 @@
 var searchData=
 [
-  ['b_0',['b',['../classtvm_1_1tirx_1_1CmpOpNode.html#a41c29001fe2db93941f3a778b601681a',1,'tvm::tirx::CmpOpNode::b'],['../classtvm_1_1tirx_1_1AndNode.html#a58024c6d2334e185282e12b0f739a543',1,'tvm::tirx::AndNode::b'],['../classtvm_1_1tirx_1_1OrNode.html#a3fd53d4e9013b1b5366e36294a997a89',1,'tvm::tirx::OrNode::b'],['../classtvm_1_1tirx_1_1BinaryOpNode.html#a6e0ebc2ea42a4f1c997d674919c2ad99',1,'tvm::tirx::BinaryOpNode::b']]],
+  ['b_0',['b',['../classtvm_1_1tirx_1_1CmpOpNode.html#a41c29001fe2db93941f3a778b601681a',1,'tvm::tirx::CmpOpNode::b'],['../classtvm_1_1tirx_1_1BinaryOpNode.html#a6e0ebc2ea42a4f1c997d674919c2ad99',1,'tvm::tirx::BinaryOpNode::b'],['../classtvm_1_1tirx_1_1OrNode.html#a3fd53d4e9013b1b5366e36294a997a89',1,'tvm::tirx::OrNode::b'],['../classtvm_1_1tirx_1_1AndNode.html#a58024c6d2334e185282e12b0f739a543',1,'tvm::tirx::AndNode::b']]],
   ['barrier_5fflag_1',['barrier_flag',['../classtvm_1_1runtime_1_1cuda__ipc_1_1CUDAIPCMemoryObj.html#aba77dd23312758b704fecc4ea004a4ef',1,'tvm::runtime::cuda_ipc::CUDAIPCMemoryObj']]],
   ['barrier_5fin_2',['barrier_in',['../classtvm_1_1runtime_1_1cuda__ipc_1_1CUDAIPCMemoryObj.html#a8d4a0fe583176227e28e77214e82ec2a',1,'tvm::runtime::cuda_ipc::CUDAIPCMemoryObj']]],
   ['barrier_5fout_3',['barrier_out',['../classtvm_1_1runtime_1_1cuda__ipc_1_1CUDAIPCMemoryObj.html#a78705723c7a73985bf86b0b946164168',1,'tvm::runtime::cuda_ipc::CUDAIPCMemoryObj']]],
@@ -26,10 +26,9 @@ var searchData=
   ['buffer_5fdtype_23',['buffer_dtype',['../classtvm_1_1PrinterConfigNode.html#ace42a7b4868f3eaf878af125b07cdef4',1,'tvm::PrinterConfigNode']]],
   ['buffer_5fmap_24',['buffer_map',['../classtvm_1_1script_1_1ir__builder_1_1tirx_1_1PrimFuncFrameNode.html#a4d91eceea4805a81703fdc16e99f662e',1,'tvm::script::ir_builder::tirx::PrimFuncFrameNode::buffer_map'],['../classtvm_1_1tirx_1_1PrimFuncNode.html#a38cab23688ffcfcddd8a595bdc7357de',1,'tvm::tirx::PrimFuncNode::buffer_map']]],
   ['buffer_5fremap_5f_25',['buffer_remap_',['../classtvm_1_1tirx_1_1StmtMutator.html#a81678fed3baa736f524e082128affe54',1,'tvm::tirx::StmtMutator']]],
-  ['buffer_5ftype_26',['buffer_type',['../classtvm_1_1tirx_1_1BufferNode.html#ae8e3266dd7a46099a7f45ca4ed2f8378',1,'tvm::tirx::BufferNode']]],
-  ['buffer_5fwriters_27',['buffer_writers',['../classtvm_1_1tirx_1_1SBlockScopeNode.html#a3042a7c858e6d95e6fd00ae02bd0dc04',1,'tvm::tirx::SBlockScopeNode']]],
-  ['build_5ferror_5fcount_28',['build_error_count',['../classtvm_1_1s__tir_1_1meta__schedule_1_1TaskRecordNode.html#a6f101efd88a20f909cfb66530279c594',1,'tvm::s_tir::meta_schedule::TaskRecordNode']]],
-  ['builder_5f_29',['builder_',['../classtvm_1_1relax_1_1ExprMutator.html#ad973a81b770749899858d6ea2650a06b',1,'tvm::relax::ExprMutator']]],
-  ['builder_5fresults_30',['builder_results',['../classtvm_1_1s__tir_1_1meta__schedule_1_1TaskRecordNode.html#a42704a89c13006a52c8321b6c72f44f2',1,'tvm::s_tir::meta_schedule::TaskRecordNode']]],
-  ['byte_5foffset_31',['byte_offset',['../structtvm_1_1runtime_1_1vm_1_1TensorCacheMetadata_1_1FileRecord_1_1ParamRecord.html#a4ac2dec11b5a06a26e319ef9d452afad',1,'tvm::runtime::vm::TensorCacheMetadata::FileRecord::ParamRecord']]]
+  ['buffer_5fwriters_26',['buffer_writers',['../classtvm_1_1tirx_1_1SBlockScopeNode.html#a3042a7c858e6d95e6fd00ae02bd0dc04',1,'tvm::tirx::SBlockScopeNode']]],
+  ['build_5ferror_5fcount_27',['build_error_count',['../classtvm_1_1s__tir_1_1meta__schedule_1_1TaskRecordNode.html#a6f101efd88a20f909cfb66530279c594',1,'tvm::s_tir::meta_schedule::TaskRecordNode']]],
+  ['builder_5f_28',['builder_',['../classtvm_1_1relax_1_1ExprMutator.html#ad973a81b770749899858d6ea2650a06b',1,'tvm::relax::ExprMutator']]],
+  ['builder_5fresults_29',['builder_results',['../classtvm_1_1s__tir_1_1meta__schedule_1_1TaskRecordNode.html#a42704a89c13006a52c8321b6c72f44f2',1,'tvm::s_tir::meta_schedule::TaskRecordNode']]],
+  ['byte_5foffset_30',['byte_offset',['../structtvm_1_1runtime_1_1vm_1_1TensorCacheMetadata_1_1FileRecord_1_1ParamRecord.html#a4ac2dec11b5a06a26e319ef9d452afad',1,'tvm::runtime::vm::TensorCacheMetadata::FileRecord::ParamRecord']]]
 ];
