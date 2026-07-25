@@ -42,7 +42,7 @@
   <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="_static/documentation_options.js?v=e435db62"></script>
+    <script src="_static/documentation_options.js?v=343e8fc7"></script>
     <script src="_static/doctools.js?v=9bcbadda"></script>
     <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/clipboard.min.js?v=a7894cd8"></script>
@@ -272,6 +272,25 @@ let darkTheme = isDarkTheme();
 let modal = null;
 let modalContent = null;
 let previousScrollOffset = [window.scrollX, window.scrollY];
+let _lazyObserver = null;
+let _renderQueue = Promise.resolve();
+
+// Apply d3 zoom to each SVG. Idempotent: an SVG already wrapped is skipped,
+// so this is safe to call both for the initial batch and for diagrams that
+// render lazily once they become visible.
+const addZoomToSvgs = (svgs) => {
+    svgs.each(function() {
+        if (this.getAttribute('data-zoom-applied') === 'true') return;
+        var svg = d3.select(this);
+        svg.html("<g class='wrapper'>" + svg.html() + "</g>");
+        var inner = svg.select("g");
+        var zoom = d3.zoom().on("zoom", function(event) {
+            inner.attr("transform", event.transform);
+        });
+        svg.call(zoom);
+        this.setAttribute('data-zoom-applied', 'true');
+    });
+};
 
 const runMermaid = async (rerun) => {
     console.log("Running mermaid diagrams, rerun =", rerun);
@@ -279,7 +298,15 @@ const runMermaid = async (rerun) => {
     let all_mermaids = document.querySelectorAll(".mermaid");
 
     if (rerun) {
+        // Disconnect any previous lazy rendering observer
+        if (_lazyObserver) {
+            _lazyObserver.disconnect();
+            _lazyObserver = null;
+        }
+
         all_mermaids.forEach((el) => {
+            el.removeAttribute('data-mermaid-deferred');
+            el.removeAttribute('data-mermaid-render-failed');
             if(!el.hasAttribute("data-original-code")) {
                 // store original code
                 // console.log(`Storing original code for first run: `, el.innerHTML);
@@ -296,35 +323,89 @@ const runMermaid = async (rerun) => {
                 el.setAttribute('data-original-code', el.innerHTML);
             }
         });
-        await mermaid.run();
+
+        // Separate visible and hidden elements. Mermaid's layout engine measures
+        // text dimensions via the DOM, which fails for elements hidden by a parent
+        // (e.g., Reveal.js non-active slides, sphinx-design unopened tabs),
+        // producing broken SVGs. Render visible elements now, defer hidden ones.
+        const visible = [];
+        const hidden = [];
+        all_mermaids.forEach((el) => {
+            // offsetParent is null for display:none ancestors.
+            // getClientRects().length > 0 catches position:fixed elements
+            // (which also have null offsetParent but are still visible).
+            if (el.offsetParent !== null || el.getClientRects().length > 0) {
+                visible.push(el);
+            } else {
+                hidden.push(el);
+                el.setAttribute('data-mermaid-deferred', 'true');
+            }
+        });
+
+        if (visible.length > 0) {
+            try {
+                await mermaid.run({ nodes: visible });
+            } catch (e) {
+                console.error("Mermaid rendering failed:", e);
+            }
+        }
+
+        // Lazily render hidden elements when they become visible.
+        // Uses a promise chain (_renderQueue) to serialize rendering,
+        // since IntersectionObserver may report multiple entries at once
+        // and mermaid.run() is not safe to call concurrently.
+        if (hidden.length > 0) {
+            if (typeof IntersectionObserver === 'undefined') {
+                console.warn("IntersectionObserver not available; hidden mermaid diagrams will not render.");
+            } else {
+                _renderQueue = Promise.resolve();
+                _lazyObserver = new IntersectionObserver((entries) => {
+                    for (const entry of entries) {
+                        if (entry.isIntersecting && entry.target.getAttribute("data-processed") !== "true") {
+                            _lazyObserver.unobserve(entry.target);
+                            const el = entry.target;
+                            _renderQueue = _renderQueue.then(async () => {
+                                try {
+                                    await mermaid.run({ nodes: [el] });
+                                    el.removeAttribute('data-mermaid-deferred');
+                                    // Apply zoom to the now-rendered diagram, matching
+                                    // the decoration visible diagrams receive.
+                                    if ("False" === "True") {
+                                        addZoomToSvgs(d3.selectAll(""));
+                                    }
+                                } catch (e) {
+                                    console.error("Mermaid deferred rendering failed:", e);
+                                    el.removeAttribute('data-mermaid-deferred');
+                                    el.setAttribute('data-mermaid-render-failed', 'true');
+                                }
+                            });
+                        }
+                    }
+                });
+                hidden.forEach((el) => _lazyObserver.observe(el));
+            }
+        }
     }
 
     all_mermaids = document.querySelectorAll(".mermaid");
-    const mermaids_processed = document.querySelectorAll(".mermaid[data-processed='true']");
+    // Exclude deferred (hidden) and render-failed elements from completion checks
+    const mermaids_active = document.querySelectorAll(".mermaid:not([data-mermaid-deferred]):not([data-mermaid-render-failed])");
+    const mermaids_processed = document.querySelectorAll(".mermaid:not([data-mermaid-deferred]):not([data-mermaid-render-failed])[data-processed='true']");
 
     if ("False" === "True") {
-        const mermaids_to_add_zoom = -1 === -1 ? all_mermaids.length : -1;
+        const mermaids_to_add_zoom = -1 === -1 ? mermaids_active.length : -1;
         if(mermaids_to_add_zoom > 0) {
             var svgs = d3.selectAll("");
-            if(all_mermaids.length !== mermaids_processed.length) {
+            // Wait until every active (visible) diagram has rendered. Deferred
+            // diagrams are excluded, so a fixed d3_node_count that counts a
+            // hidden diagram no longer loops forever waiting for its SVG.
+            if(mermaids_active.length !== mermaids_processed.length) {
                 setTimeout(() => runMermaid(false), 200);
                 return;
-            } else if(svgs.size() !== mermaids_to_add_zoom) {
-                setTimeout(() => runMermaid(false), 200);
-                return;
-            } else {
-                svgs.each(function() {
-                    var svg = d3.select(this);
-                    svg.html("<g class='wrapper'>" + svg.html() + "</g>");
-                    var inner = svg.select("g");
-                    var zoom = d3.zoom().on("zoom", function(event) {
-                        inner.attr("transform", event.transform);
-                    });
-                    svg.call(zoom);
-                });
             }
+            addZoomToSvgs(svgs);
         }
-    } else if(all_mermaids.length !== mermaids_processed.length) {
+    } else if(mermaids_active.length !== mermaids_processed.length) {
         // Wait for mermaid to process all diagrams
         setTimeout(() => runMermaid(false), 200);
         return;
@@ -494,8 +575,8 @@ window.runMermaid = runMermaid;</script>
     <link rel="search" title="Search" href="search.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="0.1.dev1+gf90410468" />
-    <meta name="docbuild:last-update" content="Jun 17, 2026"/>
+  <meta name="docsearch:version" content="0.1.dev1+g135c2e8bb" />
+    <meta name="docbuild:last-update" content="Jul 25, 2026"/>
   </head>
   
   
@@ -831,13 +912,7 @@ window.runMermaid = runMermaid;</script>
       <li><a href="reference/python/generated/tvm_ffi.Tensor.html#tvm_ffi.Tensor.__dlpack_device__">__dlpack_device__() (tvm_ffi.Tensor method)</a>
 </li>
       <li><a href="reference/python/generated/tvm_ffi.StructuralKey.html#tvm_ffi.StructuralKey.__ffi_init__">__ffi_init__() (tvm_ffi.StructuralKey method)</a>
-
-      <ul>
-        <li><a href="reference/python/generated/tvm_ffi.StructuralVisitor.html#tvm_ffi.StructuralVisitor.__ffi_init__">(tvm_ffi.StructuralVisitor method)</a>
 </li>
-        <li><a href="reference/python/generated/tvm_ffi.VisitInterrupt.html#tvm_ffi.VisitInterrupt.__ffi_init__">(tvm_ffi.VisitInterrupt method)</a>
-</li>
-      </ul></li>
       <li><a href="reference/python/generated/tvm_ffi.Function.html#tvm_ffi.Function.__from_extern_c__">__from_extern_c__() (tvm_ffi.Function static method)</a>
 </li>
       <li><a href="reference/python/generated/tvm_ffi.Function.html#tvm_ffi.Function.__from_mlir_packed_safe_call__">__from_mlir_packed_safe_call__() (tvm_ffi.Function static method)</a>
@@ -964,6 +1039,8 @@ window.runMermaid = runMermaid;</script>
 <h2 id="D">D</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%; vertical-align: top;"><ul>
+      <li><a href="reference/python/generated/tvm_ffi.Tensor.html#tvm_ffi.Tensor.data_ptr">data_ptr() (tvm_ffi.Tensor method)</a>
+</li>
       <li><a href="reference/python/generated/tvm_ffi.StructuralVisitor.html#tvm_ffi.StructuralVisitor.def_region_kind">def_region_kind() (tvm_ffi.StructuralVisitor method)</a>
 </li>
       <li><a href="reference/python/generated/tvm_ffi.access_path.AccessPath.html#tvm_ffi.access_path.AccessPath.depth">depth (tvm_ffi.access_path.AccessPath property)</a>
@@ -1066,13 +1143,23 @@ window.runMermaid = runMermaid;</script>
 </li>
       <li><a href="reference/python/generated/tvm_ffi.Module.html#tvm_ffi.Module.inspect_source">inspect_source() (tvm_ffi.Module method)</a>
 </li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="reference/python/generated/tvm_ffi.Module.html#tvm_ffi.Module.is_binary_serializable">is_binary_serializable() (tvm_ffi.Module method)</a>
 </li>
+      <li><a href="reference/python/generated/tvm_ffi.dtype.html#tvm_ffi.dtype.is_bool">is_bool (tvm_ffi.dtype property)</a>
+</li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="reference/python/generated/tvm_ffi.Module.html#tvm_ffi.Module.is_compilation_exportable">is_compilation_exportable() (tvm_ffi.Module method)</a>
 </li>
       <li><a href="reference/python/generated/tvm_ffi.Tensor.html#tvm_ffi.Tensor.is_contiguous">is_contiguous() (tvm_ffi.Tensor method)</a>
+</li>
+      <li><a href="reference/python/generated/tvm_ffi.dtype.html#tvm_ffi.dtype.is_dtype">is_dtype() (tvm_ffi.dtype static method)</a>
+</li>
+      <li><a href="reference/python/generated/tvm_ffi.dtype.html#tvm_ffi.dtype.is_float">is_float (tvm_ffi.dtype property)</a>
+</li>
+      <li><a href="reference/python/generated/tvm_ffi.dtype.html#tvm_ffi.dtype.is_handle">is_handle (tvm_ffi.dtype property)</a>
+</li>
+      <li><a href="reference/python/generated/tvm_ffi.dtype.html#tvm_ffi.dtype.is_integer">is_integer (tvm_ffi.dtype property)</a>
 </li>
       <li><a href="reference/python/generated/tvm_ffi.access_path.AccessPath.html#tvm_ffi.access_path.AccessPath.is_prefix_of">is_prefix_of() (tvm_ffi.access_path.AccessPath method)</a>
 </li>
@@ -1302,6 +1389,8 @@ window.runMermaid = runMermaid;</script>
 </li>
       <li><a href="reference/cpp/generated/classtvm_1_1ffi_1_1Any.html#_CPPv4I00ENKR3tvm3ffi3Any2asENSt8optionalI1TEEv">tvm::ffi::Any::as (C++ function)</a>, <a href="reference/cpp/generated/classtvm_1_1ffi_1_1Any.html#_CPPv4I00ENKR3tvm3ffi3Any2asEPK1Tv">[1]</a>, <a href="reference/cpp/generated/classtvm_1_1ffi_1_1Any.html#_CPPv4I00ENO3tvm3ffi3Any2asENSt8optionalI1TEEv">[2]</a>
 </li>
+      <li><a href="reference/cpp/generated/classtvm_1_1ffi_1_1Any.html#_CPPv4I00ENKR3tvm3ffi3Any11as_or_throwE1Tv">tvm::ffi::Any::as_or_throw (C++ function)</a>, <a href="reference/cpp/generated/classtvm_1_1ffi_1_1Any.html#_CPPv4I00ENO3tvm3ffi3Any11as_or_throwE1Tv">[1]</a>
+</li>
       <li><a href="reference/cpp/generated/classtvm_1_1ffi_1_1Any.html#_CPPv4I00ENKR3tvm3ffi3Any4castE1Tv">tvm::ffi::Any::cast (C++ function)</a>, <a href="reference/cpp/generated/classtvm_1_1ffi_1_1Any.html#_CPPv4I00ENO3tvm3ffi3Any4castE1Tv">[1]</a>
 </li>
       <li><a href="reference/cpp/generated/classtvm_1_1ffi_1_1Any.html#_CPPv4N3tvm3ffi3Any5data_E">tvm::ffi::Any::data_ (C++ member)</a>
@@ -1350,6 +1439,10 @@ window.runMermaid = runMermaid;</script>
 </li>
       <li><a href="reference/cpp/generated/classtvm_1_1ffi_1_1AnyView.html#_CPPv4N3tvm3ffi7AnyViewD0Ev">tvm::ffi::AnyView::~AnyView (C++ function)</a>
 </li>
+      <li><a href="reference/cpp/generated/classtvm_1_1ffi_1_1Arc.html#_CPPv4I0EN3tvm3ffi3ArcE">tvm::ffi::Arc (C++ class)</a>
+</li>
+      <li><a href="reference/cpp/generated/classtvm_1_1ffi_1_1Arc.html#_CPPv4I0_NSt11enable_if_tINSt12is_base_of_vI1T1UEEiEEEN3tvm3ffi3Arc3ArcERK3ArcI1UE">tvm::ffi::Arc::Arc (C++ function)</a>, <a href="reference/cpp/generated/classtvm_1_1ffi_1_1Arc.html#_CPPv4I0_NSt11enable_if_tINSt12is_base_of_vI1T1UEEiEEEN3tvm3ffi3Arc3ArcERR3ArcI1UE">[1]</a>, <a href="reference/cpp/generated/classtvm_1_1ffi_1_1Arc.html#_CPPv4N3tvm3ffi3Arc3ArcE10UnsafeInit">[2]</a>, <a href="reference/cpp/generated/classtvm_1_1ffi_1_1Arc.html#_CPPv4N3tvm3ffi3Arc3ArcENSt9nullptr_tE">[3]</a>, <a href="reference/cpp/generated/classtvm_1_1ffi_1_1Arc.html#_CPPv4N3tvm3ffi3Arc3ArcERK3Arc">[4]</a>, <a href="reference/cpp/generated/classtvm_1_1ffi_1_1Arc.html#_CPPv4N3tvm3ffi3Arc3ArcERR3Arc">[5]</a>, <a href="reference/cpp/generated/classtvm_1_1ffi_1_1Arc.html#_CPPv4N3tvm3ffi3Arc3ArcEv">[6]</a>
+</li>
       <li><a href="reference/cpp/generated/classtvm_1_1ffi_1_1Array.html#_CPPv4I00EN3tvm3ffi5ArrayE">tvm::ffi::Array (C++ class)</a>
 </li>
       <li><a href="reference/cpp/generated/classtvm_1_1ffi_1_1Array.html#_CPPv4IDpEN3tvm3ffi5Array8AgregateE5ArrayI1TEDp4Args">tvm::ffi::Array::Agregate (C++ function)</a>
@@ -1365,8 +1458,6 @@ window.runMermaid = runMermaid;</script>
       <li><a href="reference/cpp/generated/classtvm_1_1ffi_1_1Array.html#_CPPv4NK3tvm3ffi5Array8capacityEv">tvm::ffi::Array::capacity (C++ function)</a>
 </li>
       <li><a href="reference/cpp/generated/classtvm_1_1ffi_1_1Array.html#_CPPv4N3tvm3ffi5Array5clearEv">tvm::ffi::Array::clear (C++ function)</a>
-</li>
-      <li><a href="reference/cpp/generated/classtvm_1_1ffi_1_1Array.html#_CPPv4N3tvm3ffi5Array13ContainerTypeE">tvm::ffi::Array::ContainerType (C++ type)</a>
 </li>
       <li><a href="reference/cpp/generated/classtvm_1_1ffi_1_1Array.html#_CPPv4N3tvm3ffi5Array11CopyOnWriteEv">tvm::ffi::Array::CopyOnWrite (C++ function)</a>
 </li>
@@ -1612,8 +1703,6 @@ window.runMermaid = runMermaid;</script>
 </li>
       <li><a href="reference/cpp/generated/classtvm_1_1ffi_1_1Dict.html#_CPPv4N3tvm3ffi4Dict5clearEv">tvm::ffi::Dict::clear (C++ function)</a>
 </li>
-      <li><a href="reference/cpp/generated/classtvm_1_1ffi_1_1Dict.html#_CPPv4N3tvm3ffi4Dict13ContainerTypeE">tvm::ffi::Dict::ContainerType (C++ type)</a>
-</li>
       <li><a href="reference/cpp/generated/classtvm_1_1ffi_1_1Dict.html#_CPPv4NK3tvm3ffi4Dict5countERK1K">tvm::ffi::Dict::count (C++ function)</a>
 </li>
       <li><a href="reference/cpp/generated/classtvm_1_1ffi_1_1Dict.html#_CPPv4I000EN3tvm3ffi4Dict4DictERK4DictI2KU2VUE">tvm::ffi::Dict::Dict (C++ function)</a>, <a href="reference/cpp/generated/classtvm_1_1ffi_1_1Dict.html#_CPPv4I000EN3tvm3ffi4Dict4DictERR4DictI2KU2VUE">[1]</a>, <a href="reference/cpp/generated/classtvm_1_1ffi_1_1Dict.html#_CPPv4I00EN3tvm3ffi4Dict4DictERKNSt13unordered_mapI1K1V4Hash5EqualEE">[2]</a>, <a href="reference/cpp/generated/classtvm_1_1ffi_1_1Dict.html#_CPPv4I0EN3tvm3ffi4Dict4DictE8IterType8IterType">[3]</a>, <a href="reference/cpp/generated/classtvm_1_1ffi_1_1Dict.html#_CPPv4N3tvm3ffi4Dict4DictE10UnsafeInit">[4]</a>, <a href="reference/cpp/generated/classtvm_1_1ffi_1_1Dict.html#_CPPv4N3tvm3ffi4Dict4DictE9ObjectPtrI6ObjectE">[5]</a>, <a href="reference/cpp/generated/classtvm_1_1ffi_1_1Dict.html#_CPPv4N3tvm3ffi4Dict4DictENSt16initializer_listINSt4pairI1K1VEEEE">[6]</a>, <a href="reference/cpp/generated/classtvm_1_1ffi_1_1Dict.html#_CPPv4N3tvm3ffi4Dict4DictERK4DictI1K1VE">[7]</a>, <a href="reference/cpp/generated/classtvm_1_1ffi_1_1Dict.html#_CPPv4N3tvm3ffi4Dict4DictERR4DictI1K1VE">[8]</a>, <a href="reference/cpp/generated/classtvm_1_1ffi_1_1Dict.html#_CPPv4N3tvm3ffi4Dict4DictEv">[9]</a>
@@ -1654,17 +1743,37 @@ window.runMermaid = runMermaid;</script>
 </li>
       <li><a href="reference/cpp/generated/enum_dtype_8h_1a16f66b97fa44d7bd6114324c8b8e1bed.html#_CPPv4N3tvm3ffi17DLExtDataTypeCode17kDLExtCustomBeginE">tvm::ffi::DLExtDataTypeCode::kDLExtCustomBegin (C++ enumerator)</a>
 </li>
+      <li><a href="reference/cpp/generated/function_dtype_8h_1a89696eef7917af8ff34285cb6fae4c63.html#_CPPv4N3tvm3ffi11DTypeAbbrevE10DLDataType">tvm::ffi::DTypeAbbrev (C++ function)</a>
+</li>
+      <li><a href="reference/cpp/generated/function_dtype_8h_1a16f5ec0ba28cdd73f61247f4a662115a.html#_CPPv4N3tvm3ffi11DTypeIsBoolE10DLDataType">tvm::ffi::DTypeIsBool (C++ function)</a>
+</li>
+      <li><a href="reference/cpp/generated/function_dtype_8h_1a74a70941a707682598886f8475f86848.html#_CPPv4N3tvm3ffi12DTypeIsFloatE10DLDataType">tvm::ffi::DTypeIsFloat (C++ function)</a>
+</li>
+      <li><a href="reference/cpp/generated/function_dtype_8h_1a95190c80d6dfa260c156b00ce5336c83.html#_CPPv4N3tvm3ffi10DTypeIsIntE10DLDataType">tvm::ffi::DTypeIsInt (C++ function)</a>
+</li>
       <li><a href="reference/cpp/generated/classtvm_1_1ffi_1_1Enum.html#_CPPv4N3tvm3ffi4EnumE">tvm::ffi::Enum (C++ class)</a>
 </li>
       <li><a href="reference/cpp/generated/classtvm_1_1ffi_1_1EnumObj.html#_CPPv4N3tvm3ffi7EnumObjE">tvm::ffi::EnumObj (C++ class)</a>
 </li>
-      <li><a href="reference/cpp/generated/classtvm_1_1ffi_1_1EnumObj.html#_CPPv4N3tvm3ffi7EnumObj5_nameE">tvm::ffi::EnumObj::_name (C++ member)</a>
+      <li><a href="reference/cpp/generated/classtvm_1_1ffi_1_1EnumObj.html#_CPPv4I0EN3tvm3ffi7EnumObj14_GetByIntIndexE4Enum7int64_t">tvm::ffi::EnumObj::_GetByIntIndex (C++ function)</a>, <a href="reference/cpp/generated/classtvm_1_1ffi_1_1EnumObj.html#_CPPv4N3tvm3ffi7EnumObj14_GetByIntIndexE7int32_t7int64_t">[1]</a>
 </li>
-      <li><a href="reference/cpp/generated/classtvm_1_1ffi_1_1EnumObj.html#_CPPv4N3tvm3ffi7EnumObj6_valueE">tvm::ffi::EnumObj::_value (C++ member)</a>
+      <li><a href="reference/cpp/generated/classtvm_1_1ffi_1_1EnumObj.html#_CPPv4I0EN3tvm3ffi7EnumObj14_GetByStrIndexE4EnumRK6String">tvm::ffi::EnumObj::_GetByStrIndex (C++ function)</a>, <a href="reference/cpp/generated/classtvm_1_1ffi_1_1EnumObj.html#_CPPv4N3tvm3ffi7EnumObj14_GetByStrIndexE7int32_tRK6String">[1]</a>
+</li>
+      <li><a href="reference/cpp/generated/classtvm_1_1ffi_1_1EnumObj.html#_CPPv4N3tvm3ffi7EnumObj10_int_indexE">tvm::ffi::EnumObj::_int_index (C++ member)</a>
+</li>
+      <li><a href="reference/cpp/generated/classtvm_1_1ffi_1_1EnumObj.html#_CPPv4N3tvm3ffi7EnumObj10_str_indexE">tvm::ffi::EnumObj::_str_index (C++ member)</a>
 </li>
       <li><a href="reference/cpp/generated/classtvm_1_1ffi_1_1EnumObj.html#_CPPv4N3tvm3ffi7EnumObj7EnumObjE7int64_t6String">tvm::ffi::EnumObj::EnumObj (C++ function)</a>, <a href="reference/cpp/generated/classtvm_1_1ffi_1_1EnumObj.html#_CPPv4N3tvm3ffi7EnumObj7EnumObjEv">[1]</a>
 </li>
-      <li><a href="reference/cpp/generated/classtvm_1_1ffi_1_1EnumObj.html#_CPPv4I0EN3tvm3ffi7EnumObj3GetE4EnumRK6String">tvm::ffi::EnumObj::Get (C++ function)</a>
+      <li><a href="reference/cpp/generated/classtvm_1_1ffi_1_1EnumState.html#_CPPv4N3tvm3ffi9EnumStateE">tvm::ffi::EnumState (C++ class)</a>
+</li>
+      <li><a href="reference/cpp/generated/classtvm_1_1ffi_1_1EnumStateObj.html#_CPPv4N3tvm3ffi12EnumStateObjE">tvm::ffi::EnumStateObj (C++ class)</a>
+</li>
+      <li><a href="reference/cpp/generated/classtvm_1_1ffi_1_1EnumStateObj.html#_CPPv4N3tvm3ffi12EnumStateObj5attrsE">tvm::ffi::EnumStateObj::attrs (C++ member)</a>
+</li>
+      <li><a href="reference/cpp/generated/classtvm_1_1ffi_1_1EnumStateObj.html#_CPPv4N3tvm3ffi12EnumStateObj7entriesE">tvm::ffi::EnumStateObj::entries (C++ member)</a>
+</li>
+      <li><a href="reference/cpp/generated/classtvm_1_1ffi_1_1EnumStateObj.html#_CPPv4N3tvm3ffi12EnumStateObj7indexesE">tvm::ffi::EnumStateObj::indexes (C++ member)</a>
 </li>
       <li><a href="reference/cpp/generated/function_error_8h_1af4cf9e94df0f183e9c5c0a3ccb05fda5.html#_CPPv4N3tvm3ffi18EnvErrorAlreadySetEv">tvm::ffi::EnvErrorAlreadySet (C++ function)</a>
 </li>
@@ -1719,6 +1828,22 @@ window.runMermaid = runMermaid;</script>
       <li><a href="reference/cpp/generated/classtvm_1_1ffi_1_1Expected.html#_CPPv4NKR3tvm3ffi8Expected5valueEv">tvm::ffi::Expected::value (C++ function)</a>, <a href="reference/cpp/generated/classtvm_1_1ffi_1_1Expected.html#_CPPv4NO3tvm3ffi8Expected5valueEv">[1]</a>
 </li>
       <li><a href="reference/cpp/generated/classtvm_1_1ffi_1_1Expected.html#_CPPv4I0ENKR3tvm3ffi8Expected8value_orE1TRR1U">tvm::ffi::Expected::value_or (C++ function)</a>, <a href="reference/cpp/generated/classtvm_1_1ffi_1_1Expected.html#_CPPv4I0ENO3tvm3ffi8Expected8value_orE1TRR1U">[1]</a>
+</li>
+      <li><a href="reference/cpp/generated/classtvm_1_1ffi_1_1Expected_3_01void_01_4.html#_CPPv4IEN3tvm3ffi8ExpectedIvEE">tvm::ffi::Expected&lt;void&gt; (C++ class)</a>
+</li>
+      <li><a href="reference/cpp/generated/classtvm_1_1ffi_1_1Expected_3_01void_01_4.html#_CPPv4NKR3tvm3ffi8ExpectedIvE5errorEv">tvm::ffi::Expected&lt;void&gt;::error (C++ function)</a>, <a href="reference/cpp/generated/classtvm_1_1ffi_1_1Expected_3_01void_01_4.html#_CPPv4NO3tvm3ffi8ExpectedIvE5errorEv">[1]</a>
+</li>
+      <li><a href="reference/cpp/generated/classtvm_1_1ffi_1_1Expected_3_01void_01_4.html#_CPPv4I00EN3tvm3ffi8ExpectedIvE8ExpectedE10UnexpectedI1EE">tvm::ffi::Expected&lt;void&gt;::Expected (C++ function)</a>, <a href="reference/cpp/generated/classtvm_1_1ffi_1_1Expected_3_01void_01_4.html#_CPPv4N3tvm3ffi8ExpectedIvE8ExpectedE5Error">[1]</a>, <a href="reference/cpp/generated/classtvm_1_1ffi_1_1Expected_3_01void_01_4.html#_CPPv4N3tvm3ffi8ExpectedIvE8ExpectedEv">[2]</a>
+</li>
+      <li><a href="reference/cpp/generated/classtvm_1_1ffi_1_1Expected_3_01void_01_4.html#_CPPv4NK3tvm3ffi8ExpectedIvE9has_valueEv">tvm::ffi::Expected&lt;void&gt;::has_value (C++ function)</a>
+</li>
+      <li><a href="reference/cpp/generated/classtvm_1_1ffi_1_1Expected_3_01void_01_4.html#_CPPv4NK3tvm3ffi8ExpectedIvE6is_errEv">tvm::ffi::Expected&lt;void&gt;::is_err (C++ function)</a>
+</li>
+      <li><a href="reference/cpp/generated/classtvm_1_1ffi_1_1Expected_3_01void_01_4.html#_CPPv4NK3tvm3ffi8ExpectedIvE5is_okEv">tvm::ffi::Expected&lt;void&gt;::is_ok (C++ function)</a>
+</li>
+      <li><a href="reference/cpp/generated/classtvm_1_1ffi_1_1Expected_3_01void_01_4.html#_CPPv4NK3tvm3ffi8ExpectedIvE10type_indexEv">tvm::ffi::Expected&lt;void&gt;::type_index (C++ function)</a>
+</li>
+      <li><a href="reference/cpp/generated/classtvm_1_1ffi_1_1Expected_3_01void_01_4.html#_CPPv4NKR3tvm3ffi8ExpectedIvE5valueEv">tvm::ffi::Expected&lt;void&gt;::value (C++ function)</a>, <a href="reference/cpp/generated/classtvm_1_1ffi_1_1Expected_3_01void_01_4.html#_CPPv4NO3tvm3ffi8ExpectedIvE5valueEv">[1]</a>
 </li>
       <li><a href="reference/cpp/generated/structtvm_1_1ffi_1_1FallbackOnlyTraitsBase.html#_CPPv4I0DpEN3tvm3ffi22FallbackOnlyTraitsBaseE">tvm::ffi::FallbackOnlyTraitsBase (C++ struct)</a>
 </li>
@@ -1776,6 +1901,12 @@ window.runMermaid = runMermaid;</script>
 </li>
       <li><a href="reference/cpp/generated/function_creator_8h_1a9f39a70dd0c30ef28f11b745a6753222.html#_CPPv4N3tvm3ffi10HasCreatorEPK14TVMFFITypeInfo">tvm::ffi::HasCreator (C++ function)</a>
 </li>
+      <li><a href="reference/cpp/generated/classtvm_1_1ffi_1_1IntEnum.html#_CPPv4N3tvm3ffi7IntEnumE">tvm::ffi::IntEnum (C++ class)</a>
+</li>
+      <li><a href="reference/cpp/generated/classtvm_1_1ffi_1_1IntEnumObj.html#_CPPv4N3tvm3ffi10IntEnumObjE">tvm::ffi::IntEnumObj (C++ class)</a>
+</li>
+      <li><a href="reference/cpp/generated/variable_object_8h_1a5f52cb03b4b23d5d7738ff0386335845.html#_CPPv4I0EN3tvm3ffi20is_object_subclass_vE">tvm::ffi::is_object_subclass_v (C++ member)</a>
+</li>
       <li><a href="reference/cpp/generated/structtvm_1_1ffi_1_1is__valid__iterator.html#_CPPv4I00EN3tvm3ffi17is_valid_iteratorE">tvm::ffi::is_valid_iterator (C++ struct)</a>
 </li>
       <li><a href="reference/cpp/generated/structtvm_1_1ffi_1_1is__valid__iterator_3_01Any_00_01IterType_01_4.html#_CPPv4I0EN3tvm3ffi17is_valid_iteratorI3Any8IterTypeEE">tvm::ffi::is_valid_iterator&lt;Any, IterType&gt; (C++ struct)</a>
@@ -1796,7 +1927,7 @@ window.runMermaid = runMermaid;</script>
 </li>
       <li><a href="reference/cpp/generated/function_json_8h_1a86217bda8bfebd85f8265878bc8a59b8.html#_CPPv4N3tvm3ffi4json5ParseERK6StringP6String">tvm::ffi::json::Parse (C++ function)</a>
 </li>
-      <li><a href="reference/cpp/generated/function_json_8h_1a2cd33b0fbc0194eaa803b8a476670587.html#_CPPv4N3tvm3ffi4json9StringifyERKN4json5ValueE8OptionalIiE">tvm::ffi::json::Stringify (C++ function)</a>
+      <li><a href="reference/cpp/generated/function_json_8h_1a0a0dc3202335cbaa265618821764fa2d.html#_CPPv4N3tvm3ffi4json9StringifyERKN4json5ValueERK8OptionalIiE">tvm::ffi::json::Stringify (C++ function)</a>
 </li>
       <li><a href="reference/cpp/generated/typedef_json_8h_1a8e808548bb6a99d0a6093ab3e2229ad3.html#_CPPv4N3tvm3ffi4json5ValueE">tvm::ffi::json::Value (C++ type)</a>
 </li>
@@ -1811,8 +1942,6 @@ window.runMermaid = runMermaid;</script>
       <li><a href="reference/cpp/generated/classtvm_1_1ffi_1_1List.html#_CPPv4NK3tvm3ffi4List8capacityEv">tvm::ffi::List::capacity (C++ function)</a>
 </li>
       <li><a href="reference/cpp/generated/classtvm_1_1ffi_1_1List.html#_CPPv4N3tvm3ffi4List5clearEv">tvm::ffi::List::clear (C++ function)</a>
-</li>
-      <li><a href="reference/cpp/generated/classtvm_1_1ffi_1_1List.html#_CPPv4N3tvm3ffi4List13ContainerTypeE">tvm::ffi::List::ContainerType (C++ type)</a>
 </li>
       <li><a href="reference/cpp/generated/classtvm_1_1ffi_1_1List.html#_CPPv4IDpEN3tvm3ffi4List12emplace_backEvDpRR4Args">tvm::ffi::List::emplace_back (C++ function)</a>
 </li>
@@ -1856,6 +1985,8 @@ window.runMermaid = runMermaid;</script>
 </li>
       <li><a href="reference/cpp/generated/classtvm_1_1ffi_1_1ListObj.html#_CPPv4N3tvm3ffi7ListObj14CreateRepeatedE7int64_tRK3Any">tvm::ffi::ListObj::CreateRepeated (C++ function)</a>
 </li>
+      <li><a href="reference/cpp/generated/function_memory_8h_1a6001462e18d71614c0f11a4c2e064f7e.html#_CPPv4I0DpEN3tvm3ffi8make_arcE3ArcI1TEDpRR4Args">tvm::ffi::make_arc (C++ function)</a>
+</li>
       <li><a href="reference/cpp/generated/function_memory_8h_1a801e8ecc2e3adbc1dac52c714e7cef11.html#_CPPv4I00DpEN3tvm3ffi25make_inplace_array_objectE9ObjectPtrI9ArrayTypeE6size_tDpRR4Args">tvm::ffi::make_inplace_array_object (C++ function)</a>
 </li>
       <li><a href="reference/cpp/generated/function_array_8h_1a3b56317c7cfb2760cf6c09c303840967.html#_CPPv4IEN3tvm3ffi11make_objectE9ObjectPtrI8ArrayObjEv">tvm::ffi::make_object (C++ function)</a>, <a href="reference/cpp/generated/function_memory_8h_1a8892f2a3cad8dbc51930c464f2ab863b.html#_CPPv4I0DpEN3tvm3ffi11make_objectE9ObjectPtrI1TEDpRR4Args">[1]</a>
@@ -1867,8 +1998,6 @@ window.runMermaid = runMermaid;</script>
       <li><a href="reference/cpp/generated/classtvm_1_1ffi_1_1Map.html#_CPPv4NK3tvm3ffi3Map5beginEv">tvm::ffi::Map::begin (C++ function)</a>
 </li>
       <li><a href="reference/cpp/generated/classtvm_1_1ffi_1_1Map.html#_CPPv4N3tvm3ffi3Map5clearEv">tvm::ffi::Map::clear (C++ function)</a>
-</li>
-      <li><a href="reference/cpp/generated/classtvm_1_1ffi_1_1Map.html#_CPPv4N3tvm3ffi3Map13ContainerTypeE">tvm::ffi::Map::ContainerType (C++ type)</a>
 </li>
       <li><a href="reference/cpp/generated/classtvm_1_1ffi_1_1Map.html#_CPPv4N3tvm3ffi3Map11CopyOnWriteEv">tvm::ffi::Map::CopyOnWrite (C++ function)</a>
 </li>
@@ -2030,6 +2159,8 @@ window.runMermaid = runMermaid;</script>
 </li>
       <li><a href="reference/cpp/generated/classtvm_1_1ffi_1_1Object.html#_CPPv4NK3tvm3ffi6Object9use_countEv">tvm::ffi::Object::use_count (C++ function)</a>
 </li>
+      <li><a href="reference/cpp/generated/variable_object_8h_1a31dc4b1b71941b3e4217a0e389f807a4.html#_CPPv4I000EN3tvm3ffi21object_ref_contains_vE">tvm::ffi::object_ref_contains_v (C++ member)</a>
+</li>
       <li><a href="reference/cpp/generated/classtvm_1_1ffi_1_1ObjectPtr.html#_CPPv4I0EN3tvm3ffi9ObjectPtrE">tvm::ffi::ObjectPtr (C++ class)</a>
 </li>
       <li><a href="reference/cpp/generated/classtvm_1_1ffi_1_1ObjectPtr.html#_CPPv4NK3tvm3ffi9ObjectPtr3getEv">tvm::ffi::ObjectPtr::get (C++ function)</a>
@@ -2052,9 +2183,13 @@ window.runMermaid = runMermaid;</script>
 </li>
       <li><a href="reference/cpp/generated/classtvm_1_1ffi_1_1ObjectRef.html#_CPPv4N3tvm3ffi9ObjectRefE">tvm::ffi::ObjectRef (C++ class)</a>
 </li>
+      <li><a href="reference/cpp/generated/classtvm_1_1ffi_1_1ObjectRef.html#_CPPv4N3tvm3ffi9ObjectRef24_type_container_is_exactE">tvm::ffi::ObjectRef::_type_container_is_exact (C++ member)</a>
+</li>
       <li><a href="reference/cpp/generated/classtvm_1_1ffi_1_1ObjectRef.html#_CPPv4N3tvm3ffi9ObjectRef17_type_is_nullableE">tvm::ffi::ObjectRef::_type_is_nullable (C++ member)</a>
 </li>
-      <li><a href="reference/cpp/generated/classtvm_1_1ffi_1_1ObjectRef.html#_CPPv4I00ENK3tvm3ffi9ObjectRef2asENSt8optionalI13ObjectRefTypeEEv">tvm::ffi::ObjectRef::as (C++ function)</a>, <a href="reference/cpp/generated/classtvm_1_1ffi_1_1ObjectRef.html#_CPPv4I00ENK3tvm3ffi9ObjectRef2asEPK10ObjectTypev">[1]</a>
+      <li><a href="reference/cpp/generated/classtvm_1_1ffi_1_1ObjectRef.html#_CPPv4I00ENKR3tvm3ffi9ObjectRef2asENSt8optionalI13ObjectRefTypeEEv">tvm::ffi::ObjectRef::as (C++ function)</a>, <a href="reference/cpp/generated/classtvm_1_1ffi_1_1ObjectRef.html#_CPPv4I00ENKR3tvm3ffi9ObjectRef2asEPK10ObjectTypev">[1]</a>, <a href="reference/cpp/generated/classtvm_1_1ffi_1_1ObjectRef.html#_CPPv4I00ENO3tvm3ffi9ObjectRef2asENSt8optionalI13ObjectRefTypeEEv">[2]</a>
+</li>
+      <li><a href="reference/cpp/generated/classtvm_1_1ffi_1_1ObjectRef.html#_CPPv4I00ENKR3tvm3ffi9ObjectRef11as_or_throwE13ObjectRefTypev">tvm::ffi::ObjectRef::as_or_throw (C++ function)</a>, <a href="reference/cpp/generated/classtvm_1_1ffi_1_1ObjectRef.html#_CPPv4I00ENO3tvm3ffi9ObjectRef11as_or_throwE13ObjectRefTypev">[1]</a>
 </li>
       <li><a href="reference/cpp/generated/classtvm_1_1ffi_1_1ObjectRef.html#_CPPv4N3tvm3ffi9ObjectRef13ContainerTypeE">tvm::ffi::ObjectRef::ContainerType (C++ type)</a>
 </li>
@@ -2228,11 +2363,7 @@ window.runMermaid = runMermaid;</script>
 </li>
       <li><a href="reference/cpp/generated/classtvm_1_1ffi_1_1reflection_1_1EnumDef.html#_CPPv4I00EN3tvm3ffi10reflection7EnumDefE">tvm::ffi::reflection::EnumDef (C++ class)</a>
 </li>
-      <li><a href="reference/cpp/generated/classtvm_1_1ffi_1_1reflection_1_1EnumDef.html#_CPPv4N3tvm3ffi10reflection7EnumDef7EnumDefEPKc">tvm::ffi::reflection::EnumDef::EnumDef (C++ function)</a>
-</li>
-      <li><a href="reference/cpp/generated/classtvm_1_1ffi_1_1reflection_1_1EnumDef.html#_CPPv4NK3tvm3ffi10reflection7EnumDef8instanceEv">tvm::ffi::reflection::EnumDef::instance (C++ function)</a>
-</li>
-      <li><a href="reference/cpp/generated/classtvm_1_1ffi_1_1reflection_1_1EnumDef.html#_CPPv4NK3tvm3ffi10reflection7EnumDef7ordinalEv">tvm::ffi::reflection::EnumDef::ordinal (C++ function)</a>
+      <li><a href="reference/cpp/generated/classtvm_1_1ffi_1_1reflection_1_1EnumDef.html#_CPPv4N3tvm3ffi10reflection7EnumDef7EnumDefEPKc">tvm::ffi::reflection::EnumDef::EnumDef (C++ function)</a>, <a href="reference/cpp/generated/classtvm_1_1ffi_1_1reflection_1_1EnumDef.html#_CPPv4N3tvm3ffi10reflection7EnumDef7EnumDefEPKc7int64_t">[1]</a>
 </li>
       <li><a href="reference/cpp/generated/classtvm_1_1ffi_1_1reflection_1_1EnumDef.html#_CPPv4I0EN3tvm3ffi10reflection7EnumDef8set_attrER7EnumDefPKc1T">tvm::ffi::reflection::EnumDef::set_attr (C++ function)</a>
 </li>
@@ -2310,11 +2441,15 @@ window.runMermaid = runMermaid;</script>
 </li>
       <li><a href="reference/cpp/generated/classtvm_1_1ffi_1_1reflection_1_1ObjectDef.html#_CPPv4I0DpEN3tvm3ffi10reflection9ObjectDef3defER9ObjectDefPKcRR4FuncDpRR5Extra">tvm::ffi::reflection::ObjectDef::def (C++ function)</a>, <a href="reference/cpp/generated/classtvm_1_1ffi_1_1reflection_1_1ObjectDef.html#_CPPv4IDpDpEN3tvm3ffi10reflection9ObjectDef3defER9ObjectDef4initIDp4ArgsEDpRR5Extra">[1]</a>
 </li>
+      <li><a href="reference/cpp/generated/classtvm_1_1ffi_1_1reflection_1_1ObjectDef.html#_CPPv4I0EN3tvm3ffi10reflection9ObjectDef11def_convertER9ObjectDefv">tvm::ffi::reflection::ObjectDef::def_convert (C++ function)</a>
+</li>
       <li><a href="reference/cpp/generated/classtvm_1_1ffi_1_1reflection_1_1ObjectDef.html#_CPPv4I00DpEN3tvm3ffi10reflection9ObjectDef6def_roER9ObjectDefPKcM9BaseClass1TDpRR5Extra">tvm::ffi::reflection::ObjectDef::def_ro (C++ function)</a>
 </li>
       <li><a href="reference/cpp/generated/classtvm_1_1ffi_1_1reflection_1_1ObjectDef.html#_CPPv4I00DpEN3tvm3ffi10reflection9ObjectDef6def_rwER9ObjectDefPKcM9BaseClass1TDpRR5Extra">tvm::ffi::reflection::ObjectDef::def_rw (C++ function)</a>
 </li>
       <li><a href="reference/cpp/generated/classtvm_1_1ffi_1_1reflection_1_1ObjectDef.html#_CPPv4I0DpEN3tvm3ffi10reflection9ObjectDef10def_staticER9ObjectDefPKcRR4FuncDpRR5Extra">tvm::ffi::reflection::ObjectDef::def_static (C++ function)</a>
+</li>
+      <li><a href="reference/cpp/generated/classtvm_1_1ffi_1_1reflection_1_1ObjectDef.html#_CPPv4I0_NSt11enable_if_tIXaantNSt16is_convertible_vIRR4Func7AnyViewEEntNSt16is_convertible_vINSt7decay_tI4FuncEE7AnyViewEEEiEEEN3tvm3ffi10reflection9ObjectDef13def_type_attrER9ObjectDefPKcRR4Func">tvm::ffi::reflection::ObjectDef::def_type_attr (C++ function)</a>, <a href="reference/cpp/generated/classtvm_1_1ffi_1_1reflection_1_1ObjectDef.html#_CPPv4I0_NSt11enable_if_tIXooNSt16is_convertible_vIRR5Value7AnyViewEENSt16is_convertible_vINSt7decay_tI5ValueEE7AnyViewEEEiEEEN3tvm3ffi10reflection9ObjectDef13def_type_attrER9ObjectDefPKcRR5Value">[1]</a>
 </li>
       <li><a href="reference/cpp/generated/classtvm_1_1ffi_1_1reflection_1_1ObjectDef.html#_CPPv4IDpEN3tvm3ffi10reflection9ObjectDef9ObjectDefEDpRR9ExtraArgs">tvm::ffi::reflection::ObjectDef::ObjectDef (C++ function)</a>, <a href="reference/cpp/generated/classtvm_1_1ffi_1_1reflection_1_1ObjectDef.html#_CPPv4N3tvm3ffi10reflection9ObjectDef9ObjectDefERK9ObjectDef">[1]</a>, <a href="reference/cpp/generated/classtvm_1_1ffi_1_1reflection_1_1ObjectDef.html#_CPPv4N3tvm3ffi10reflection9ObjectDef9ObjectDefERR9ObjectDef">[2]</a>
 </li>
@@ -2334,6 +2469,12 @@ window.runMermaid = runMermaid;</script>
 </li>
       <li><a href="reference/cpp/generated/classtvm_1_1ffi_1_1reflection_1_1OverloadObjectDef.html#_CPPv4IDpEN3tvm3ffi10reflection17OverloadObjectDef17OverloadObjectDefEDpRR9ExtraArgs">tvm::ffi::reflection::OverloadObjectDef::OverloadObjectDef (C++ function)</a>
 </li>
+      <li><a href="reference/cpp/generated/structtvm_1_1ffi_1_1reflection_1_1OverloadObjectDef_1_1RegisteredMethod.html#_CPPv4N3tvm3ffi10reflection17OverloadObjectDef16RegisteredMethodE">tvm::ffi::reflection::OverloadObjectDef::RegisteredMethod (C++ struct)</a>
+</li>
+      <li><a href="reference/cpp/generated/structtvm_1_1ffi_1_1reflection_1_1OverloadObjectDef_1_1RegisteredMethod.html#_CPPv4N3tvm3ffi10reflection17OverloadObjectDef16RegisteredMethod6methodE">tvm::ffi::reflection::OverloadObjectDef::RegisteredMethod::method (C++ member)</a>
+</li>
+      <li><a href="reference/cpp/generated/structtvm_1_1ffi_1_1reflection_1_1OverloadObjectDef_1_1RegisteredMethod.html#_CPPv4N3tvm3ffi10reflection17OverloadObjectDef16RegisteredMethod8overloadE">tvm::ffi::reflection::OverloadObjectDef::RegisteredMethod::overload (C++ member)</a>
+</li>
       <li><a href="reference/cpp/generated/classtvm_1_1ffi_1_1reflection_1_1OverloadObjectDef.html#_CPPv4N3tvm3ffi10reflection17OverloadObjectDef5SuperE">tvm::ffi::reflection::OverloadObjectDef::Super (C++ type)</a>
 </li>
       <li><a href="reference/cpp/generated/classtvm_1_1ffi_1_1reflection_1_1repr.html#_CPPv4N3tvm3ffi10reflection4reprE">tvm::ffi::reflection::repr (C++ class)</a>
@@ -2346,24 +2487,22 @@ window.runMermaid = runMermaid;</script>
 </li>
       <li><a href="reference/cpp/generated/variable_namespacetvm_1_1ffi_1_1reflection_1_1type__attr_1a096d266d5a2b4523f98f044de310489d.html#_CPPv4N3tvm3ffi10reflection9type_attr9kAnyEqualE">tvm::ffi::reflection::type_attr::kAnyEqual (C++ member)</a>
 </li>
+  </ul></td>
+  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="reference/cpp/generated/variable_namespacetvm_1_1ffi_1_1reflection_1_1type__attr_1ac49c0e8607e2a8fe80b5a02250330955.html#_CPPv4N3tvm3ffi10reflection9type_attr8kAnyHashE">tvm::ffi::reflection::type_attr::kAnyHash (C++ member)</a>
 </li>
       <li><a href="reference/cpp/generated/variable_namespacetvm_1_1ffi_1_1reflection_1_1type__attr_1abfb8210e9d25dea8ac19ae403e4d09f7.html#_CPPv4N3tvm3ffi10reflection9type_attr8kCompareE">tvm::ffi::reflection::type_attr::kCompare (C++ member)</a>
 </li>
       <li><a href="reference/cpp/generated/variable_namespacetvm_1_1ffi_1_1reflection_1_1type__attr_1a214da76aef89b240bf763409cc7ce8f4.html#_CPPv4N3tvm3ffi10reflection9type_attr8kConvertE">tvm::ffi::reflection::type_attr::kConvert (C++ member)</a>
 </li>
+      <li><a href="reference/cpp/generated/variable_namespacetvm_1_1ffi_1_1reflection_1_1type__attr_1ab8b34ca1b301024a7f48d226906bf5c1.html#_CPPv4N3tvm3ffi10reflection9type_attr18kConvertTypeSchemaE">tvm::ffi::reflection::type_attr::kConvertTypeSchema (C++ member)</a>
+</li>
       <li><a href="reference/cpp/generated/variable_namespacetvm_1_1ffi_1_1reflection_1_1type__attr_1a23d22935800d0c4ccefe7a3a0b9a44c0.html#_CPPv4N3tvm3ffi10reflection9type_attr13kDataFromJsonE">tvm::ffi::reflection::type_attr::kDataFromJson (C++ member)</a>
 </li>
       <li><a href="reference/cpp/generated/variable_namespacetvm_1_1ffi_1_1reflection_1_1type__attr_1a8ad904131880910d82adfd8e695fe259.html#_CPPv4N3tvm3ffi10reflection9type_attr11kDataToJsonE">tvm::ffi::reflection::type_attr::kDataToJson (C++ member)</a>
 </li>
-      <li><a href="reference/cpp/generated/variable_namespacetvm_1_1ffi_1_1reflection_1_1type__attr_1a73b8599796f9364537b3ac1091e6ca5a.html#_CPPv4N3tvm3ffi10reflection9type_attr10kEnumAttrsE">tvm::ffi::reflection::type_attr::kEnumAttrs (C++ member)</a>
+      <li><a href="reference/cpp/generated/variable_namespacetvm_1_1ffi_1_1reflection_1_1type__attr_1a877b4867a278823be18e6c7f7bff378e.html#_CPPv4N3tvm3ffi10reflection9type_attr10kEnumStateE">tvm::ffi::reflection::type_attr::kEnumState (C++ member)</a>
 </li>
-      <li><a href="reference/cpp/generated/variable_namespacetvm_1_1ffi_1_1reflection_1_1type__attr_1aff9e02aea85ecba0ee1956f7ee2ce4a9.html#_CPPv4N3tvm3ffi10reflection9type_attr12kEnumEntriesE">tvm::ffi::reflection::type_attr::kEnumEntries (C++ member)</a>
-</li>
-      <li><a href="reference/cpp/generated/variable_namespacetvm_1_1ffi_1_1reflection_1_1type__attr_1a2235b3faf38b1017a13ef6178d9a8fa8.html#_CPPv4N3tvm3ffi10reflection9type_attr17kEnumValueEntriesE">tvm::ffi::reflection::type_attr::kEnumValueEntries (C++ member)</a>
-</li>
-  </ul></td>
-  <td style="width: 33%; vertical-align: top;"><ul>
       <li><a href="reference/cpp/generated/variable_namespacetvm_1_1ffi_1_1reflection_1_1type__attr_1a4e67838e846b587f2f82127c53b6ef86.html#_CPPv4N3tvm3ffi10reflection9type_attr3kEqE">tvm::ffi::reflection::type_attr::kEq (C++ member)</a>
 </li>
       <li><a href="reference/cpp/generated/variable_namespacetvm_1_1ffi_1_1reflection_1_1type__attr_1a8473fde721d924e9ffb48fc818f6b609.html#_CPPv4N3tvm3ffi10reflection9type_attr5kHashE">tvm::ffi::reflection::type_attr::kHash (C++ member)</a>
@@ -2390,7 +2529,9 @@ window.runMermaid = runMermaid;</script>
 </li>
       <li><a href="reference/cpp/generated/classtvm_1_1ffi_1_1reflection_1_1TypeAttrDef.html#_CPPv4I0EN3tvm3ffi10reflection11TypeAttrDef4attrER11TypeAttrDefPKc1T">tvm::ffi::reflection::TypeAttrDef::attr (C++ function)</a>
 </li>
-      <li><a href="reference/cpp/generated/classtvm_1_1ffi_1_1reflection_1_1TypeAttrDef.html#_CPPv4I0EN3tvm3ffi10reflection11TypeAttrDef3defER11TypeAttrDefPKcRR4Func">tvm::ffi::reflection::TypeAttrDef::def (C++ function)</a>
+      <li><a href="reference/cpp/generated/classtvm_1_1ffi_1_1reflection_1_1TypeAttrDef.html#_CPPv4I0_NSt11enable_if_tIXaantNSt16is_convertible_vIRR4Func7AnyViewEEntNSt16is_convertible_vINSt7decay_tI4FuncEE7AnyViewEEEiEEEN3tvm3ffi10reflection11TypeAttrDef3defER11TypeAttrDefPKcRR4Func">tvm::ffi::reflection::TypeAttrDef::def (C++ function)</a>, <a href="reference/cpp/generated/classtvm_1_1ffi_1_1reflection_1_1TypeAttrDef.html#_CPPv4I0_NSt11enable_if_tIXooNSt16is_convertible_vIRR5Value7AnyViewEENSt16is_convertible_vINSt7decay_tI5ValueEE7AnyViewEEEiEEEN3tvm3ffi10reflection11TypeAttrDef3defER11TypeAttrDefPKcRR5Value">[1]</a>
+</li>
+      <li><a href="reference/cpp/generated/classtvm_1_1ffi_1_1reflection_1_1TypeAttrDef.html#_CPPv4I0EN3tvm3ffi10reflection11TypeAttrDef11def_convertER11TypeAttrDefv">tvm::ffi::reflection::TypeAttrDef::def_convert (C++ function)</a>
 </li>
       <li><a href="reference/cpp/generated/classtvm_1_1ffi_1_1reflection_1_1TypeAttrDef.html#_CPPv4IDpEN3tvm3ffi10reflection11TypeAttrDef11TypeAttrDefEDpRR9ExtraArgs">tvm::ffi::reflection::TypeAttrDef::TypeAttrDef (C++ function)</a>
 </li>
@@ -2572,6 +2713,10 @@ window.runMermaid = runMermaid;</script>
 </li>
       <li><a href="reference/cpp/generated/structtvm_1_1ffi_1_1StaticTypeKey.html#_CPPv4N3tvm3ffi13StaticTypeKey21kTVMFFIVisitInterruptE">tvm::ffi::StaticTypeKey::kTVMFFIVisitInterrupt (C++ member)</a>
 </li>
+      <li><a href="reference/cpp/generated/classtvm_1_1ffi_1_1StrEnum.html#_CPPv4N3tvm3ffi7StrEnumE">tvm::ffi::StrEnum (C++ class)</a>
+</li>
+      <li><a href="reference/cpp/generated/classtvm_1_1ffi_1_1StrEnumObj.html#_CPPv4N3tvm3ffi10StrEnumObjE">tvm::ffi::StrEnumObj (C++ class)</a>
+</li>
       <li><a href="reference/cpp/generated/classtvm_1_1ffi_1_1StrictBool.html#_CPPv4N3tvm3ffi10StrictBoolE">tvm::ffi::StrictBool (C++ class)</a>
 </li>
       <li><a href="reference/cpp/generated/classtvm_1_1ffi_1_1StrictBool.html#_CPPv4N3tvm3ffi10StrictBool10StrictBoolEb">tvm::ffi::StrictBool::StrictBool (C++ function)</a>
@@ -2634,7 +2779,7 @@ window.runMermaid = runMermaid;</script>
 </li>
       <li><a href="reference/cpp/generated/classtvm_1_1ffi_1_1StructuralVisitor.html#_CPPv4N3tvm3ffi17StructuralVisitorE">tvm::ffi::StructuralVisitor (C++ class)</a>
 </li>
-      <li><a href="reference/cpp/generated/classtvm_1_1ffi_1_1StructuralVisitor.html#_CPPv4N3tvm3ffi17StructuralVisitor17StructuralVisitorE9ObjectPtrI20StructuralVisitorObjE">tvm::ffi::StructuralVisitor::StructuralVisitor (C++ function)</a>, <a href="reference/cpp/generated/classtvm_1_1ffi_1_1StructuralVisitor.html#_CPPv4N3tvm3ffi17StructuralVisitor17StructuralVisitorEv">[1]</a>
+      <li><a href="reference/cpp/generated/classtvm_1_1ffi_1_1StructuralVisitor.html#_CPPv4N3tvm3ffi17StructuralVisitor17StructuralVisitorE9ObjectPtrI20StructuralVisitorObjE">tvm::ffi::StructuralVisitor::StructuralVisitor (C++ function)</a>
 </li>
       <li><a href="reference/cpp/generated/classtvm_1_1ffi_1_1StructuralVisitorObj.html#_CPPv4N3tvm3ffi20StructuralVisitorObjE">tvm::ffi::StructuralVisitorObj (C++ class)</a>
 </li>
@@ -2642,11 +2787,9 @@ window.runMermaid = runMermaid;</script>
 </li>
       <li><a href="reference/cpp/generated/classtvm_1_1ffi_1_1StructuralVisitorObj.html#_CPPv4N3tvm3ffi20StructuralVisitorObj16def_region_mode_E">tvm::ffi::StructuralVisitorObj::def_region_mode_ (C++ member)</a>
 </li>
-      <li><a href="reference/cpp/generated/classtvm_1_1ffi_1_1StructuralVisitorObj.html#_CPPv4N3tvm3ffi20StructuralVisitorObj12DefaultVisitE7AnyView">tvm::ffi::StructuralVisitorObj::DefaultVisit (C++ function)</a>
-</li>
       <li><a href="reference/cpp/generated/classtvm_1_1ffi_1_1StructuralVisitorObj.html#_CPPv4N3tvm3ffi20StructuralVisitorObj20DefaultVisitExpectedE7AnyView">tvm::ffi::StructuralVisitorObj::DefaultVisitExpected (C++ function)</a>
 </li>
-      <li><a href="reference/cpp/generated/classtvm_1_1ffi_1_1StructuralVisitorObj.html#_CPPv4N3tvm3ffi20StructuralVisitorObj20StructuralVisitorObjEPK23StructuralVisitorVTable">tvm::ffi::StructuralVisitorObj::StructuralVisitorObj (C++ function)</a>, <a href="reference/cpp/generated/classtvm_1_1ffi_1_1StructuralVisitorObj.html#_CPPv4N3tvm3ffi20StructuralVisitorObj20StructuralVisitorObjEv">[1]</a>
+      <li><a href="reference/cpp/generated/classtvm_1_1ffi_1_1StructuralVisitorObj.html#_CPPv4N3tvm3ffi20StructuralVisitorObj20StructuralVisitorObjEPK23StructuralVisitorVTable">tvm::ffi::StructuralVisitorObj::StructuralVisitorObj (C++ function)</a>
 </li>
       <li><a href="reference/cpp/generated/classtvm_1_1ffi_1_1StructuralVisitorObj.html#_CPPv4N3tvm3ffi20StructuralVisitorObj5VisitE7AnyView">tvm::ffi::StructuralVisitorObj::Visit (C++ function)</a>
 </li>
@@ -2780,13 +2923,13 @@ window.runMermaid = runMermaid;</script>
 </li>
       <li><a href="reference/cpp/generated/classtvm_1_1ffi_1_1Tuple.html#_CPPv4IDpEN3tvm3ffi5TupleE">tvm::ffi::Tuple (C++ class)</a>
 </li>
-      <li><a href="reference/cpp/generated/classtvm_1_1ffi_1_1Tuple.html#_CPPv4N3tvm3ffi5Tuple13ContainerTypeE">tvm::ffi::Tuple::ContainerType (C++ type)</a>
-</li>
       <li><a href="reference/cpp/generated/classtvm_1_1ffi_1_1Tuple.html#_CPPv4I_6size_tENKR3tvm3ffi5Tuple3getEDav">tvm::ffi::Tuple::get (C++ function)</a>, <a href="reference/cpp/generated/classtvm_1_1ffi_1_1Tuple.html#_CPPv4I_6size_tENO3tvm3ffi5Tuple3getEDav">[1]</a>
 </li>
       <li><a href="reference/cpp/generated/classtvm_1_1ffi_1_1Tuple.html#_CPPv4I_6size_t0EN3tvm3ffi5Tuple3SetEvRR1U">tvm::ffi::Tuple::Set (C++ function)</a>
 </li>
       <li><a href="reference/cpp/generated/classtvm_1_1ffi_1_1Tuple.html#_CPPv4IDp0EN3tvm3ffi5Tuple5TupleEDpRR6UTypes">tvm::ffi::Tuple::Tuple (C++ function)</a>, <a href="reference/cpp/generated/classtvm_1_1ffi_1_1Tuple.html#_CPPv4IDp0EN3tvm3ffi5Tuple5TupleERK5TupleIDp6UTypesE">[1]</a>, <a href="reference/cpp/generated/classtvm_1_1ffi_1_1Tuple.html#_CPPv4IDp0EN3tvm3ffi5Tuple5TupleERR5TupleIDp6UTypesE">[2]</a>, <a href="reference/cpp/generated/classtvm_1_1ffi_1_1Tuple.html#_CPPv4N3tvm3ffi5Tuple5TupleE10UnsafeInit">[3]</a>, <a href="reference/cpp/generated/classtvm_1_1ffi_1_1Tuple.html#_CPPv4N3tvm3ffi5Tuple5TupleERK5TupleIDp5TypesE">[4]</a>, <a href="reference/cpp/generated/classtvm_1_1ffi_1_1Tuple.html#_CPPv4N3tvm3ffi5Tuple5TupleERR5TupleIDp5TypesE">[5]</a>, <a href="reference/cpp/generated/classtvm_1_1ffi_1_1Tuple.html#_CPPv4N3tvm3ffi5Tuple5TupleEv">[6]</a>
+</li>
+      <li><a href="reference/cpp/generated/variable_type__traits_8h_1a62ef22ceb232bddd3e9540895af38cc1.html#_CPPv4I000EN3tvm3ffi15type_subsumes_vE">tvm::ffi::type_subsumes_v (C++ member)</a>
 </li>
       <li><a href="reference/cpp/generated/classtvm_1_1ffi_1_1TypedFunction.html#_CPPv4I0EN3tvm3ffi13TypedFunctionE">tvm::ffi::TypedFunction (C++ class)</a>
 </li>
@@ -2800,11 +2943,11 @@ window.runMermaid = runMermaid;</script>
 </li>
       <li><a href="reference/cpp/generated/classtvm_1_1ffi_1_1TypedFunction_3_01R_07Args_8_8_8_08_4.html#_CPPv4N3tvm3ffi13TypedFunctionIF1RDp4ArgsEE10TypeSchemaEv">tvm::ffi::TypedFunction&lt;R(Args...)&gt;::TypeSchema (C++ function)</a>
 </li>
-      <li><a href="reference/cpp/generated/typedef_object_8h_1a7ba296d84188e5970ba854332a1f04a6.html#_CPPv4N3tvm3ffi9TypeIndexE">tvm::ffi::TypeIndex (C++ type)</a>
+      <li><a href="reference/cpp/generated/typedef_type__traits_8h_1a7ba296d84188e5970ba854332a1f04a6.html#_CPPv4N3tvm3ffi9TypeIndexE">tvm::ffi::TypeIndex (C++ type)</a>
 </li>
-      <li><a href="reference/cpp/generated/function_object_8h_1a0d6e075f219808c4ff7adebd99210a7b.html#_CPPv4N3tvm3ffi18TypeIndexToTypeKeyE7int32_t">tvm::ffi::TypeIndexToTypeKey (C++ function)</a>
+      <li><a href="reference/cpp/generated/function_type__traits_8h_1a0d6e075f219808c4ff7adebd99210a7b.html#_CPPv4N3tvm3ffi18TypeIndexToTypeKeyE7int32_t">tvm::ffi::TypeIndexToTypeKey (C++ function)</a>
 </li>
-      <li><a href="reference/cpp/generated/typedef_object_8h_1ae125f5f5a8a94c7340577c1959805295.html#_CPPv4N3tvm3ffi8TypeInfoE">tvm::ffi::TypeInfo (C++ type)</a>
+      <li><a href="reference/cpp/generated/typedef_type__traits_8h_1ae125f5f5a8a94c7340577c1959805295.html#_CPPv4N3tvm3ffi8TypeInfoE">tvm::ffi::TypeInfo (C++ type)</a>
 </li>
       <li><a href="reference/cpp/generated/function_8h_1a111e2ed7444eb220e19c7624d0932d89.html#_CPPv4N3tvm3ffi14TypeKeyToIndexENSt11string_viewE">tvm::ffi::TypeKeyToIndex (C++ function)</a>
 </li>
@@ -2831,6 +2974,8 @@ window.runMermaid = runMermaid;</script>
       <li><a href="reference/cpp/generated/classtvm_1_1ffi_1_1Variant.html#_CPPv4I00ENKR3tvm3ffi7Variant3getE1Tv">tvm::ffi::Variant::get (C++ function)</a>, <a href="reference/cpp/generated/classtvm_1_1ffi_1_1Variant.html#_CPPv4I00ENO3tvm3ffi7Variant3getE1Tv">[1]</a>
 </li>
       <li><a href="reference/cpp/generated/classtvm_1_1ffi_1_1Variant.html#_CPPv4NK3tvm3ffi7Variant10GetTypeKeyEv">tvm::ffi::Variant::GetTypeKey (C++ function)</a>
+</li>
+      <li><a href="reference/cpp/generated/classtvm_1_1ffi_1_1Variant.html#_CPPv4NK3tvm3ffi7Variant7same_asERK7VariantIDp1VE">tvm::ffi::Variant::same_as (C++ function)</a>
 </li>
       <li><a href="reference/cpp/generated/classtvm_1_1ffi_1_1Variant.html#_CPPv4I00EN3tvm3ffi7Variant7VariantE1T">tvm::ffi::Variant::Variant (C++ function)</a>, <a href="reference/cpp/generated/classtvm_1_1ffi_1_1Variant.html#_CPPv4N3tvm3ffi7Variant7VariantERK7VariantIDp1VE">[1]</a>, <a href="reference/cpp/generated/classtvm_1_1ffi_1_1Variant.html#_CPPv4N3tvm3ffi7Variant7VariantERR7VariantIDp1VE">[2]</a>
 </li>
@@ -2951,6 +3096,8 @@ window.runMermaid = runMermaid;</script>
 </li>
       <li><a href="reference/cpp/generated/define_object_8h_1ac593f4065568c8f61cf38d00d585befd.html#c.TVM_FFI_DECLARE_OBJECT_INFO_FINAL">TVM_FFI_DECLARE_OBJECT_INFO_FINAL (C macro)</a>
 </li>
+      <li><a href="reference/cpp/generated/define_type__traits_8h_1a63cd913de4d021d2e201531d5c675a88.html#c.TVM_FFI_DECLARE_OBJECT_INFO_LOOKUP">TVM_FFI_DECLARE_OBJECT_INFO_LOOKUP (C macro)</a>
+</li>
       <li><a href="reference/cpp/generated/define_object_8h_1a9d1c42071de0440f70c7bb5e0bd0f325.html#c.TVM_FFI_DECLARE_OBJECT_INFO_PREDEFINED_TYPE_KEY">TVM_FFI_DECLARE_OBJECT_INFO_PREDEFINED_TYPE_KEY (C macro)</a>
 </li>
       <li><a href="reference/cpp/generated/define_object_8h_1a6ad2a76d53c8c695743f7a275c8c0523.html#c.TVM_FFI_DECLARE_OBJECT_INFO_STATIC">TVM_FFI_DECLARE_OBJECT_INFO_STATIC (C macro)</a>
@@ -3064,6 +3211,12 @@ window.runMermaid = runMermaid;</script>
       <li><a href="reference/cpp/generated/function_c__api_8h_1aa2a81275b69ba0f61ce556df85517ef9.html#_CPPv424TVMFFIBytesFromByteArrayPK15TVMFFIByteArrayP9TVMFFIAny">TVMFFIBytesFromByteArray (C++ function)</a>
 </li>
       <li><a href="reference/cpp/generated/function_c__api_8h_1a1dd5584d94f6e00a18f4cfa003dfb93a.html#_CPPv426TVMFFIBytesGetByteArrayPtr18TVMFFIObjectHandle">TVMFFIBytesGetByteArrayPtr (C++ function)</a>
+</li>
+      <li><a href="reference/cpp/generated/structTVMFFICustomAllocator.html#_CPPv421TVMFFICustomAllocator">TVMFFICustomAllocator (C++ struct)</a>
+</li>
+      <li><a href="reference/cpp/generated/structTVMFFICustomAllocator.html#_CPPv4N21TVMFFICustomAllocator8allocateE">TVMFFICustomAllocator::allocate (C++ member)</a>
+</li>
+      <li><a href="reference/cpp/generated/structTVMFFICustomAllocator.html#_CPPv4N21TVMFFICustomAllocator7contextE">TVMFFICustomAllocator::context (C++ member)</a>
 </li>
       <li><a href="reference/cpp/generated/function_c__api_8h_1a44604b1d0db208ed82cbc7cf0fd0f47c.html#_CPPv424TVMFFIDataTypeFromStringPK15TVMFFIByteArrayP10DLDataType">TVMFFIDataTypeFromString (C++ function)</a>
 </li>
@@ -3201,6 +3354,8 @@ window.runMermaid = runMermaid;</script>
 </li>
       <li><a href="reference/cpp/generated/function_c__api_8h_1aa26fa16c024c6f2fa15e46aa1333fdb9.html#_CPPv437TVMFFIFunctionSetGlobalFromMethodInfoPK16TVMFFIMethodInfoi">TVMFFIFunctionSetGlobalFromMethodInfo (C++ function)</a>
 </li>
+      <li><a href="reference/cpp/generated/function_c__api_8h_1a147c7c5616be4acf5a71623dbb7dd680.html#_CPPv424TVMFFIGetCustomAllocatorv">TVMFFIGetCustomAllocator (C++ function)</a>
+</li>
       <li><a href="reference/cpp/generated/function_c__api_8h_1a53c5ec2971806966ed96a6add32b5238.html#_CPPv423TVMFFIGetTypeAttrColumnPK15TVMFFIByteArray">TVMFFIGetTypeAttrColumn (C++ function)</a>
 </li>
       <li><a href="reference/cpp/generated/function_c__api_8h_1afee5a803e22f9baf5ee2ff1f0ace6429.html#_CPPv417TVMFFIGetTypeInfo7int32_t">TVMFFIGetTypeInfo (C++ function)</a>
@@ -3234,6 +3389,10 @@ window.runMermaid = runMermaid;</script>
       <li><a href="reference/cpp/generated/structTVMFFIObject.html#_CPPv4N12TVMFFIObject7deleterE">TVMFFIObject::deleter (C++ member)</a>
 </li>
       <li><a href="reference/cpp/generated/structTVMFFIObject.html#_CPPv4N12TVMFFIObject10type_indexE">TVMFFIObject::type_index (C++ member)</a>
+</li>
+      <li><a href="reference/cpp/generated/structTVMFFIObjectAllocHeader.html#_CPPv423TVMFFIObjectAllocHeader">TVMFFIObjectAllocHeader (C++ struct)</a>
+</li>
+      <li><a href="reference/cpp/generated/structTVMFFIObjectAllocHeader.html#_CPPv4N23TVMFFIObjectAllocHeader12delete_spaceE">TVMFFIObjectAllocHeader::delete_space (C++ member)</a>
 </li>
       <li><a href="reference/cpp/generated/function_c__api_8h_1a6415c088928d62af8749f3dc57dcf23b.html#_CPPv424TVMFFIObjectCreateOpaquePv7int32_tPFvPvEP18TVMFFIObjectHandle">TVMFFIObjectCreateOpaque (C++ function)</a>
 </li>
@@ -3286,6 +3445,8 @@ window.runMermaid = runMermaid;</script>
       <li><a href="reference/cpp/generated/enum_c__api_8h_1aea0f30bf60e26c1322e525e246ef5be9.html#_CPPv4N17TVMFFISEqHashKind32kTVMFFISEqHashKindUniqueInstanceE">TVMFFISEqHashKind::kTVMFFISEqHashKindUniqueInstance (C++ enumerator)</a>
 </li>
       <li><a href="reference/cpp/generated/enum_c__api_8h_1aea0f30bf60e26c1322e525e246ef5be9.html#_CPPv4N17TVMFFISEqHashKind29kTVMFFISEqHashKindUnsupportedE">TVMFFISEqHashKind::kTVMFFISEqHashKindUnsupported (C++ enumerator)</a>
+</li>
+      <li><a href="reference/cpp/generated/function_c__api_8h_1aa7d102c19d2ac12f730935e6fb210bf1.html#_CPPv424TVMFFISetCustomAllocatorP21TVMFFICustomAllocator">TVMFFISetCustomAllocator (C++ function)</a>
 </li>
       <li><a href="reference/cpp/generated/structTVMFFIShapeCell.html#_CPPv415TVMFFIShapeCell">TVMFFIShapeCell (C++ struct)</a>
 </li>
@@ -3530,7 +3691,7 @@ By Apache TVM FFI contributors
   
   <div class="footer-item">
     <p class="last-updated">
-  Last updated on Jun 17, 2026.
+  Last updated on Jul 25, 2026.
   <br/>
 </p>
   </div>

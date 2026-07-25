@@ -43,7 +43,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../_static/documentation_options.js?v=e435db62"></script>
+    <script src="../_static/documentation_options.js?v=343e8fc7"></script>
     <script src="../_static/doctools.js?v=9bcbadda"></script>
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -61,8 +61,8 @@
     <link rel="prev" title="Export Functions and Classes" href="export_func_cls.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="0.1.dev1+gf90410468" />
-    <meta name="docbuild:last-update" content="Jun 17, 2026"/>
+  <meta name="docsearch:version" content="0.1.dev1+g135c2e8bb" />
+    <meta name="docbuild:last-update" content="Jul 25, 2026"/>
   </head>
   
   
@@ -425,7 +425,10 @@
 </ul>
 </li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#custom-hooks">Custom Hooks</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#python-c-class-decorator">Python <code class="docutils literal notranslate"><span class="pre">c_class</span></code> Decorator</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#python-c-class-decorator">Python <code class="docutils literal notranslate"><span class="pre">c_class</span></code> Decorator</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#enum-payload-fields-and-structural-identity">Enum Payload Fields and Structural Identity</a></li>
+</ul>
+</li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#inheritance">Inheritance</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#further-reading">Further Reading</a></li>
 </ul>
@@ -670,7 +673,8 @@ automatically support deep copy (through the <code class="docutils literal notra
 attribute).</p>
 <ul class="simple">
 <li><p><strong>Immutable leaves</strong> (returned as-is): primitives, <code class="docutils literal notranslate"><span class="pre">String</span></code>, <code class="docutils literal notranslate"><span class="pre">Bytes</span></code>,
-<code class="docutils literal notranslate"><span class="pre">Shape</span></code></p></li>
+<code class="docutils literal notranslate"><span class="pre">Shape</span></code>, and <code class="docutils literal notranslate"><span class="pre">Enum</span></code> instances (including <code class="docutils literal notranslate"><span class="pre">IntEnum</span></code> and <code class="docutils literal notranslate"><span class="pre">StrEnum</span></code>
+subclasses)</p></li>
 <li><p><strong>Recursively copied</strong>: <code class="docutils literal notranslate"><span class="pre">Array</span></code>, <code class="docutils literal notranslate"><span class="pre">List</span></code>, <code class="docutils literal notranslate"><span class="pre">Map</span></code>, <code class="docutils literal notranslate"><span class="pre">Dict</span></code>, and
 reflected objects</p></li>
 </ul>
@@ -807,11 +811,75 @@ defaults, and <code class="docutils literal notranslate"><span class="pre">init(
 <li><p>Installs <code class="docutils literal notranslate"><span class="pre">__copy__</span></code>, <code class="docutils literal notranslate"><span class="pre">__deepcopy__</span></code>, <code class="docutils literal notranslate"><span class="pre">__eq__</span></code>, <code class="docutils literal notranslate"><span class="pre">__hash__</span></code>,
 <code class="docutils literal notranslate"><span class="pre">__repr__</span></code>, and comparison operators.</p></li>
 </ol>
+<p>Use <code class="docutils literal notranslate"><span class="pre">frozen=True</span></code> when the Python class should expose reflected fields as
+read-only after construction:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nd">@c_class</span><span class="p">(</span><span class="s2">&quot;my_ext.Point&quot;</span><span class="p">,</span> <span class="n">frozen</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">Point</span><span class="p">(</span><span class="n">tvm_ffi</span><span class="o">.</span><span class="n">Object</span><span class="p">):</span>
+    <span class="n">x</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="n">y</span><span class="p">:</span> <span class="nb">int</span>
+    <span class="n">label</span><span class="p">:</span> <span class="nb">str</span>
+</pre></div>
+</div>
+<p>This marks the reflected field metadata as frozen and installs read-only
+descriptors on the Python class, even for fields that are registered as
+<code class="docutils literal notranslate"><span class="pre">def_rw</span></code> on the C++ side. It is intended for immutable value and IR node
+families. Controlled internal updates can still use the field descriptor’s
+<code class="docutils literal notranslate"><span class="pre">set</span></code> method when a framework component needs to rebuild or annotate an
+object.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p><code class="docutils literal notranslate"><span class="pre">&#64;tvm_ffi.register_object</span></code> can also be used, which delegates to
 <code class="docutils literal notranslate"><span class="pre">c_class</span></code> internally for objects with reflected fields.</p>
 </div>
+<section id="enum-payload-fields-and-structural-identity">
+<h3>Enum Payload Fields and Structural Identity<a class="headerlink" href="#enum-payload-fields-and-structural-identity" title="Link to this heading">#</a></h3>
+<p><code class="docutils literal notranslate"><span class="pre">tvm_ffi.dataclasses.Enum</span></code> and all of its subclasses use <code class="docutils literal notranslate"><span class="pre">&quot;singleton&quot;</span></code>
+structural equality by default. This includes <code class="docutils literal notranslate"><span class="pre">IntEnum</span></code>, <code class="docutils literal notranslate"><span class="pre">StrEnum</span></code>, and
+their subclasses: two enum values are structurally equal only when they are
+the same registered variant.</p>
+<p><code class="docutils literal notranslate"><span class="pre">tvm_ffi.dataclasses.IntEnum</span></code> and <code class="docutils literal notranslate"><span class="pre">StrEnum</span></code> are reflected subclasses of
+<code class="docutils literal notranslate"><span class="pre">ffi.IntEnum</span></code> and <code class="docutils literal notranslate"><span class="pre">ffi.StrEnum</span></code>. Their user-visible <code class="docutils literal notranslate"><span class="pre">value</span></code> payload is
+stored by the native base class, so subclasses only declare entries:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">tvm_ffi.dataclasses</span><span class="w"> </span><span class="kn">import</span> <span class="n">IntEnum</span><span class="p">,</span> <span class="n">StrEnum</span><span class="p">,</span> <span class="n">entry</span>
+
+<span class="k">class</span><span class="w"> </span><span class="nc">Level</span><span class="p">(</span><span class="n">IntEnum</span><span class="p">,</span> <span class="n">type_key</span><span class="o">=</span><span class="s2">&quot;my_ext.Level&quot;</span><span class="p">):</span>
+    <span class="n">low</span> <span class="o">=</span> <span class="n">entry</span><span class="p">(</span><span class="n">value</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">high</span> <span class="o">=</span> <span class="n">entry</span><span class="p">(</span><span class="n">value</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+
+<span class="k">class</span><span class="w"> </span><span class="nc">Opcode</span><span class="p">(</span><span class="n">StrEnum</span><span class="p">,</span> <span class="n">type_key</span><span class="o">=</span><span class="s2">&quot;my_ext.Opcode&quot;</span><span class="p">):</span>
+    <span class="n">add</span> <span class="o">=</span> <span class="n">entry</span><span class="p">(</span><span class="n">value</span><span class="o">=</span><span class="s2">&quot;+&quot;</span><span class="p">)</span>
+    <span class="n">mul</span> <span class="o">=</span> <span class="n">entry</span><span class="p">(</span><span class="n">value</span><span class="o">=</span><span class="s2">&quot;*&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Enum-specific <code class="docutils literal notranslate"><span class="pre">__data_to_json__</span></code> and <code class="docutils literal notranslate"><span class="pre">__data_from_json__</span></code> hooks preserve
+this singleton identity during JSON graph serialization. Following the scalar
+<code class="docutils literal notranslate"><span class="pre">TypeAttrDef</span></code> hook pattern, plain <code class="docutils literal notranslate"><span class="pre">Enum</span></code> variants serialize as their
+registered name, while <code class="docutils literal notranslate"><span class="pre">IntEnum</span></code> and <code class="docutils literal notranslate"><span class="pre">StrEnum</span></code> variants serialize as their
+public <code class="docutils literal notranslate"><span class="pre">value</span></code> payload (an integer or string, respectively). Deserialization
+uses that scalar to resolve the registered variant instead of allocating a
+replacement object. Singleton-preserving round-trips therefore require payload
+values to be unique within an enum type. This applies both to an enum serialized
+directly and to enum-valued fields nested in another reflected object:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">tvm_ffi.serialization</span><span class="w"> </span><span class="kn">import</span> <span class="n">from_json_graph_str</span><span class="p">,</span> <span class="n">to_json_graph_str</span>
+
+<span class="n">data</span> <span class="o">=</span> <span class="n">to_json_graph_str</span><span class="p">(</span><span class="n">Opcode</span><span class="o">.</span><span class="n">add</span><span class="p">)</span>
+<span class="n">restored</span> <span class="o">=</span> <span class="n">from_json_graph_str</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+
+<span class="k">assert</span> <span class="n">restored</span><span class="o">.</span><span class="n">same_as</span><span class="p">(</span><span class="n">Opcode</span><span class="o">.</span><span class="n">add</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>C++ enum owners register the value-based hook pair on their concrete
+<code class="docutils literal notranslate"><span class="pre">ObjectDef</span></code> or <code class="docutils literal notranslate"><span class="pre">TypeAttrDef</span></code>. Python-defined <code class="docutils literal notranslate"><span class="pre">IntEnum</span></code> and <code class="docutils literal notranslate"><span class="pre">StrEnum</span></code>
+classes obtain missing hooks from C++ reflection with
+<code class="docutils literal notranslate"><span class="pre">core._lookup_type_attr</span></code>: the serializer is reused from the native payload
+base, while a native factory binds the deserializer to the concrete Python
+type index. This keeps payload lookup in C++ while leaving explicit Python
+hooks unchanged. A plain <code class="docutils literal notranslate"><span class="pre">Enum</span></code> owner defines its name-based hook pair
+explicitly; <code class="docutils literal notranslate"><span class="pre">EnumDef</span></code> itself only registers variants.</p>
+<p>Payload enum values can be used in reflected object fields, including optional
+and container fields. Payload normalization recurses through <code class="docutils literal notranslate"><span class="pre">Array</span></code>, <code class="docutils literal notranslate"><span class="pre">List</span></code>,
+<code class="docutils literal notranslate"><span class="pre">Map</span></code>, and <code class="docutils literal notranslate"><span class="pre">Dict</span></code> values.</p>
+</section>
 </section>
 <section id="inheritance">
 <h2>Inheritance<a class="headerlink" href="#inheritance" title="Link to this heading">#</a></h2>
@@ -939,7 +1007,10 @@ parent’s fields and adds its own:</p>
 </ul>
 </li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#custom-hooks">Custom Hooks</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#python-c-class-decorator">Python <code class="docutils literal notranslate"><span class="pre">c_class</span></code> Decorator</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#python-c-class-decorator">Python <code class="docutils literal notranslate"><span class="pre">c_class</span></code> Decorator</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#enum-payload-fields-and-structural-identity">Enum Payload Fields and Structural Identity</a></li>
+</ul>
+</li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#inheritance">Inheritance</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#further-reading">Further Reading</a></li>
 </ul>
@@ -968,7 +1039,7 @@ By Apache TVM FFI contributors
   
   <div class="footer-item">
     <p class="last-updated">
-  Last updated on Jun 17, 2026.
+  Last updated on Jul 25, 2026.
   <br/>
 </p>
   </div>

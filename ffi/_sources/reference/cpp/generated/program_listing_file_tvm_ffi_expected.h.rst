@@ -72,6 +72,9 @@ Program Listing for File expected.h
    template <typename T>
    class Expected {
     public:
+     static_assert(
+         !std::is_void_v<T>,
+         "Expected with a cv-qualified void success type is not allowed. Use Expected<void>.");
      static_assert(!std::is_same_v<T, Error>, "Expected<Error> is not allowed. Use Error directly.");
    
      // NOLINTNEXTLINE(google-explicit-constructor,runtime/explicit)
@@ -152,6 +155,62 @@ Program Listing for File expected.h
      Any data_;  // Invariant: holds a T (type_index != kTVMFFIError) or an Error.
    };
    
+   template <>
+   class Expected<void> {
+    public:
+     Expected() = default;
+   
+     // NOLINTNEXTLINE(google-explicit-constructor,runtime/explicit)
+     Expected(Error error) : data_(Any(std::move(error))) {}
+   
+     template <typename E, typename = std::enable_if_t<std::is_base_of_v<Error, std::remove_cv_t<E>>>>
+     // NOLINTNEXTLINE(google-explicit-constructor,runtime/explicit)
+     Expected(Unexpected<E> unexpected) : data_(Any(std::move(unexpected).error())) {}
+   
+     TVM_FFI_INLINE int32_t type_index() const noexcept { return data_.type_index(); }
+   
+     TVM_FFI_INLINE bool is_ok() const noexcept {
+       return data_.type_index() != TypeIndex::kTVMFFIError;
+     }
+   
+     TVM_FFI_INLINE bool is_err() const noexcept {
+       return data_.type_index() == TypeIndex::kTVMFFIError;
+     }
+   
+     TVM_FFI_INLINE bool has_value() const noexcept { return is_ok(); }
+   
+     TVM_FFI_INLINE void value() const& {
+       if (TVM_FFI_PREDICT_FALSE(is_err())) {
+         throw details::AnyUnsafe::CopyFromAnyViewAfterCheck<Error>(data_);
+       }
+     }
+   
+     TVM_FFI_INLINE void value() && {
+       if (TVM_FFI_PREDICT_FALSE(is_err())) {
+         throw details::AnyUnsafe::MoveFromAnyAfterCheck<Error>(std::move(data_));
+       }
+     }
+   
+     TVM_FFI_INLINE Error error() const& {
+       if (is_ok()) {
+         TVM_FFI_THROW(RuntimeError) << "Bad expected access: contains value, not error";
+       }
+       return details::AnyUnsafe::CopyFromAnyViewAfterCheck<Error>(data_);
+     }
+   
+     TVM_FFI_INLINE Error error() && {
+       if (is_ok()) {
+         TVM_FFI_THROW(RuntimeError) << "Bad expected access: contains value, not error";
+       }
+       return details::AnyUnsafe::MoveFromAnyAfterCheck<Error>(std::move(data_));
+     }
+   
+    private:
+     friend struct details::ExpectedUnsafe;
+   
+     Any data_;  // Invariant: holds FFI None on success or an Error.
+   };
+   
    namespace details {
    
    struct ExpectedUnsafe {
@@ -174,11 +233,16 @@ Program Listing for File expected.h
    
      template <typename T, typename U>
      TVM_FFI_INLINE static T ValueAs(const Expected<U>& result) {
-       const Any& data = result.data_;
-       if (TVM_FFI_PREDICT_TRUE(data.type_index() != TypeIndex::kTVMFFIError)) {
-         return AnyUnsafe::CopyFromAnyViewAfterCheck<T>(data);
+       if constexpr (std::is_void_v<T>) {
+         static_assert(std::is_void_v<U>, "ExpectedUnsafe::ValueAs<void> requires an Expected<void>");
+         result.value();
+       } else {
+         const Any& data = result.data_;
+         if (TVM_FFI_PREDICT_TRUE(data.type_index() != TypeIndex::kTVMFFIError)) {
+           return AnyUnsafe::CopyFromAnyViewAfterCheck<T>(data);
+         }
+         throw AnyUnsafe::CopyFromAnyViewAfterCheck<Error>(data);
        }
-       throw AnyUnsafe::CopyFromAnyViewAfterCheck<Error>(data);
      }
    };
    
@@ -240,6 +304,61 @@ Program Listing for File expected.h
    
      TVM_FFI_INLINE static std::string TypeSchema() {
        return R"({"type":"Expected","args":[)" + details::TypeSchema<T>::v() +
+              R"(,{"type":"ffi.Error"}]})";
+     }
+   };
+   
+   template <>
+   struct TypeTraits<Expected<void>> : public TypeTraitsBase {
+     TVM_FFI_INLINE static void CopyToAnyView(const Expected<void>& src, TVMFFIAny* result) {
+       if (src.is_err()) {
+         TypeTraits<Error>::CopyToAnyView(src.error(), result);
+       } else {
+         TypeTraits<std::nullptr_t>::CopyToAnyView(nullptr, result);
+       }
+     }
+   
+     TVM_FFI_INLINE static void MoveToAny(Expected<void> src, TVMFFIAny* result) {
+       if (src.is_err()) {
+         TypeTraits<Error>::MoveToAny(std::move(src).error(), result);
+       } else {
+         TypeTraits<std::nullptr_t>::MoveToAny(nullptr, result);
+       }
+     }
+   
+     TVM_FFI_INLINE static bool CheckAnyStrict(const TVMFFIAny* src) {
+       return TypeTraits<std::nullptr_t>::CheckAnyStrict(src) ||
+              TypeTraits<Error>::CheckAnyStrict(src);
+     }
+   
+     TVM_FFI_INLINE static Expected<void> CopyFromAnyViewAfterCheck(const TVMFFIAny* src) {
+       if (TypeTraits<std::nullptr_t>::CheckAnyStrict(src)) {
+         return Expected<void>();
+       }
+       return TypeTraits<Error>::CopyFromAnyViewAfterCheck(src);
+     }
+   
+     TVM_FFI_INLINE static Expected<void> MoveFromAnyAfterCheck(TVMFFIAny* src) {
+       if (TypeTraits<std::nullptr_t>::CheckAnyStrict(src)) {
+         return Expected<void>();
+       }
+       return TypeTraits<Error>::MoveFromAnyAfterCheck(src);
+     }
+   
+     TVM_FFI_INLINE static std::optional<Expected<void>> TryCastFromAnyView(const TVMFFIAny* src) {
+       if (TypeTraits<std::nullptr_t>::CheckAnyStrict(src)) {
+         return Expected<void>();
+       }
+       if (auto opt_err = TypeTraits<Error>::TryCastFromAnyView(src)) {
+         return Expected<void>(*std::move(opt_err));
+       }
+       return std::nullopt;
+     }
+   
+     TVM_FFI_INLINE static std::string TypeStr() { return "Expected<void>"; }
+   
+     TVM_FFI_INLINE static std::string TypeSchema() {
+       return R"({"type":"Expected","args":[)" + TypeTraits<std::nullptr_t>::TypeSchema() +
               R"(,{"type":"ffi.Error"}]})";
      }
    };

@@ -120,6 +120,11 @@ Files
 .. toctree::
    :maxdepth: 5
 
+   file_tvm_ffi_device.h.rst
+
+.. toctree::
+   :maxdepth: 5
+
    file_tvm_ffi_extra_cuda_device_guard.h.rst
 
 .. toctree::

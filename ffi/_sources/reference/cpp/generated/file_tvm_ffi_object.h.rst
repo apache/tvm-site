@@ -43,6 +43,8 @@ Includes
 
 - ``tvm/ffi/c_api.h`` (:ref:`file_tvm_ffi_c_api.h`)
 
+- ``tvm/ffi/type_traits.h`` (:ref:`file_tvm_ffi_type_traits.h`)
+
 - ``type_traits`` (:ref:`file_tvm_ffi_type_traits.h`)
 
 - ``utility``
@@ -87,8 +89,6 @@ Included By
 
 - :ref:`file_tvm_ffi_tvm_ffi.h`
 
-- :ref:`file_tvm_ffi_type_traits.h`
-
 
 
 
@@ -109,9 +109,11 @@ Classes
 
 - :ref:`exhale_struct_structtvm_1_1ffi_1_1ObjectPtrHash`
 
-- :ref:`exhale_struct_structtvm_1_1ffi_1_1StaticTypeKey`
+- :ref:`exhale_struct_structtvm_1_1ffi_1_1ObjectRefWithFallbackTraitsBase`
 
 - :ref:`exhale_struct_structtvm_1_1ffi_1_1UnsafeInit`
+
+- :ref:`exhale_class_classtvm_1_1ffi_1_1Arc`
 
 - :ref:`exhale_class_classtvm_1_1ffi_1_1Object`
 
@@ -122,13 +124,6 @@ Classes
 - :ref:`exhale_class_classtvm_1_1ffi_1_1Optional`
 
 - :ref:`exhale_class_classtvm_1_1ffi_1_1WeakObjectPtr`
-
-
-Functions
----------
-
-
-- :ref:`exhale_function_object_8h_1a0d6e075f219808c4ff7adebd99210a7b`
 
 
 Defines
@@ -148,11 +143,11 @@ Defines
 - :ref:`exhale_define_object_8h_1a0fc0cc2d8f4318bc41a896c117e8a15c`
 
 
-Typedefs
---------
+Variables
+---------
 
 
-- :ref:`exhale_typedef_object_8h_1a7ba296d84188e5970ba854332a1f04a6`
+- :ref:`exhale_variable_object_8h_1a5f52cb03b4b23d5d7738ff0386335845`
 
-- :ref:`exhale_typedef_object_8h_1ae125f5f5a8a94c7340577c1959805295`
+- :ref:`exhale_variable_object_8h_1a31dc4b1b71941b3e4217a0e389f807a4`
 

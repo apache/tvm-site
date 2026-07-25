@@ -43,6 +43,8 @@ Includes
 
 - ``tvm/ffi/container/dict.h`` (:ref:`file_tvm_ffi_container_dict.h`)
 
+- ``tvm/ffi/container/list.h`` (:ref:`file_tvm_ffi_container_list.h`)
+
 - ``tvm/ffi/error.h`` (:ref:`file_tvm_ffi_error.h`)
 
 - ``tvm/ffi/object.h`` (:ref:`file_tvm_ffi_object.h`)
@@ -84,4 +86,16 @@ Classes
 - :ref:`exhale_class_classtvm_1_1ffi_1_1Enum`
 
 - :ref:`exhale_class_classtvm_1_1ffi_1_1EnumObj`
+
+- :ref:`exhale_class_classtvm_1_1ffi_1_1EnumState`
+
+- :ref:`exhale_class_classtvm_1_1ffi_1_1EnumStateObj`
+
+- :ref:`exhale_class_classtvm_1_1ffi_1_1IntEnum`
+
+- :ref:`exhale_class_classtvm_1_1ffi_1_1IntEnumObj`
+
+- :ref:`exhale_class_classtvm_1_1ffi_1_1StrEnum`
+
+- :ref:`exhale_class_classtvm_1_1ffi_1_1StrEnumObj`
 

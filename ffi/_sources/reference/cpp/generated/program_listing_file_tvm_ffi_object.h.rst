@@ -33,6 +33,7 @@ Program Listing for File object.h
    
    #include <tvm/ffi/base_details.h>
    #include <tvm/ffi/c_api.h>
+   #include <tvm/ffi/type_traits.h>
    
    #include <optional>
    #include <string>
@@ -42,47 +43,7 @@ Program Listing for File object.h
    namespace tvm {
    namespace ffi {
    
-   using TypeIndex = TVMFFITypeIndex;
-   
-   using TypeInfo = TVMFFITypeInfo;
-   
    struct UnsafeInit {};
-   
-   struct StaticTypeKey {
-     static constexpr const char* kTVMFFIAny = "Any";
-     static constexpr const char* kTVMFFINone = "None";
-     static constexpr const char* kTVMFFIBool = "bool";
-     static constexpr const char* kTVMFFIInt = "int";
-     static constexpr const char* kTVMFFIFloat = "float";
-     static constexpr const char* kTVMFFIOpaquePtr = "void*";
-     static constexpr const char* kTVMFFIDataType = "DataType";
-     static constexpr const char* kTVMFFIDevice = "Device";
-     static constexpr const char* kTVMFFIDLTensorPtr = "DLTensor*";
-     static constexpr const char* kTVMFFIRawStr = "const char*";
-     static constexpr const char* kTVMFFIByteArrayPtr = "TVMFFIByteArray*";
-     static constexpr const char* kTVMFFIObjectRValueRef = "ObjectRValueRef";
-     static constexpr const char* kTVMFFISmallStr = "ffi.SmallStr";
-     static constexpr const char* kTVMFFISmallBytes = "ffi.SmallBytes";
-     static constexpr const char* kTVMFFIError = "ffi.Error";
-     static constexpr const char* kTVMFFIBytes = "ffi.Bytes";
-     static constexpr const char* kTVMFFIStr = "ffi.String";
-     static constexpr const char* kTVMFFIShape = "ffi.Shape";
-     static constexpr const char* kTVMFFITensor = "ffi.Tensor";
-     static constexpr const char* kTVMFFIObject = "ffi.Object";
-     static constexpr const char* kTVMFFIFunction = "ffi.Function";
-     static constexpr const char* kTVMFFIArray = "ffi.Array";
-     static constexpr const char* kTVMFFIList = "ffi.List";
-     static constexpr const char* kTVMFFIMap = "ffi.Map";
-     static constexpr const char* kTVMFFIModule = "ffi.Module";
-     static constexpr const char* kTVMFFIDict = "ffi.Dict";
-     static constexpr const char* kTVMFFIVisitInterrupt = "ffi.VisitInterrupt";
-     static constexpr const char* kTVMFFIOpaquePyObject = "ffi.OpaquePyObject";
-   };
-   
-   inline std::string TypeIndexToTypeKey(int32_t type_index) {
-     const TypeInfo* type_info = TVMFFIGetTypeInfo(type_index);
-     return std::string(type_info->type_key.data, type_info->type_key.size);
-   }
    
    namespace details {
    // Helper to perform
@@ -96,6 +57,7 @@ Program Listing for File object.h
    
    template <typename TargetType>
    TVM_FFI_INLINE bool IsObjectInstance(int32_t object_type_index);
+   
    }  // namespace details
    
    class Object {
@@ -161,8 +123,8 @@ Program Listing for File object.h
      static constexpr TVMFFISEqHashKind _type_s_eq_hash_kind = kTVMFFISEqHashKindUnsupported;
      // The following functions are provided by macro
      // TVM_FFI_DECLARE_OBJECT_INFO and TVM_FFI_DECLARE_OBJECT_INFO_FINAL
-     static int32_t RuntimeTypeIndex() { return TypeIndex::kTVMFFIObject; }
-     static int32_t _GetOrAllocRuntimeTypeIndex() {  // NOLINT(bugprone-reserved-identifier)
+     TVM_FFI_INLINE static int32_t RuntimeTypeIndex() noexcept { return TypeIndex::kTVMFFIObject; }
+     TVM_FFI_COLD_CODE static int32_t _GetOrAllocRuntimeTypeIndex() {  // NOLINT(*)
        return TypeIndex::kTVMFFIObject;
      }
    
@@ -389,6 +351,68 @@ Program Listing for File object.h
    };
    
    template <typename T>
+   class Arc : public ObjectPtr<T> {
+    public:
+     Arc() = delete;
+     Arc(std::nullptr_t) = delete;
+   
+     Arc(const Arc&) = default;
+   
+     Arc(Arc&&) = default;
+   
+     Arc& operator=(const Arc&) = default;
+   
+     Arc& operator=(Arc&&) = default;
+   
+     template <typename U, std::enable_if_t<std::is_base_of_v<T, U>, int> = 0>
+     Arc(const Arc<U>& other)  // NOLINT(*)
+         : ObjectPtr<T>(static_cast<const ObjectPtr<U>&>(other)) {}
+   
+     template <typename U, std::enable_if_t<std::is_base_of_v<T, U>, int> = 0>
+     Arc(Arc<U>&& other)  // NOLINT(*)
+         : ObjectPtr<T>(std::move(static_cast<ObjectPtr<U>&>(other))) {}
+   
+     explicit Arc(UnsafeInit tag) : ObjectPtr<T>(nullptr) { static_cast<void>(tag); }
+   
+    private:
+     explicit Arc(ObjectPtr<T> ptr) : ObjectPtr<T>(std::move(ptr)) {}
+   
+     using ObjectPtr<T>::reset;
+     using ObjectPtr<T>::swap;
+   
+     template <typename U, typename... Args>
+     friend Arc<U> make_arc(Args&&... args);
+     template <typename>
+     friend class Arc;
+     friend struct tvm::ffi::details::ObjectUnsafe;
+   };
+   
+   template <typename T>
+   inline constexpr bool is_object_subclass_v = std::is_base_of_v<Object, T>;
+   
+   namespace details {
+   
+   template <typename T>
+   inline constexpr bool is_qualified_object_v =
+       ::tvm::ffi::is_object_subclass_v<std::remove_cv_t<std::remove_reference_t<T>>> &&
+       !std::is_same_v<T, std::remove_cv_t<std::remove_reference_t<T>>>;
+   
+   }  // namespace details
+   
+   
+   template <typename BaseObject, typename DerivedObject>
+   inline constexpr bool type_subsumes_v<ObjectPtr<BaseObject>, ObjectPtr<DerivedObject>> =
+       std::is_base_of_v<BaseObject, DerivedObject>;
+   
+   template <typename BaseObject, typename DerivedObject>
+   inline constexpr bool type_subsumes_v<Arc<BaseObject>, Arc<DerivedObject>> =
+       std::is_base_of_v<BaseObject, DerivedObject>;
+   
+   template <typename BaseObject, typename DerivedObject>
+   inline constexpr bool type_subsumes_v<ObjectPtr<BaseObject>, Arc<DerivedObject>> =
+       std::is_base_of_v<BaseObject, DerivedObject>;
+   
+   template <typename T>
    class WeakObjectPtr {
     public:
      WeakObjectPtr() = default;
@@ -497,7 +521,7 @@ Program Listing for File object.h
      int use_count() const { return data_.use_count(); }
    
      template <typename ObjectType, typename = std::enable_if_t<std::is_base_of_v<Object, ObjectType>>>
-     const ObjectType* as() const {
+     const ObjectType* as() const& {
        if (data_ != nullptr && data_->IsInstance<ObjectType>()) {
          return static_cast<ObjectType*>(data_.get());
        } else {
@@ -507,19 +531,60 @@ Program Listing for File object.h
    
      template <typename ObjectRefType,
                typename = std::enable_if_t<std::is_base_of_v<ObjectRef, ObjectRefType>>>
-     TVM_FFI_INLINE std::optional<ObjectRefType> as() const {
+     TVM_FFI_INLINE std::optional<ObjectRefType> as() const& {
        if (data_ != nullptr) {
-         if (data_->IsInstance<typename ObjectRefType::ContainerType>()) {
-           ObjectRefType ref(UnsafeInit{});
-           ref.data_ = data_;
-           return ref;
-         } else {
-           return std::nullopt;
+         // Piggy back to Any TypeTraits for rich ObjectRef check, temp any_data will optimize away.
+         TVMFFIAny any_data;
+         any_data.type_index = data_->type_index();
+         TVM_FFI_UNSAFE_ASSUME(any_data.type_index >= TypeIndex::kTVMFFIStaticObjectBegin);
+         any_data.zero_padding = 0;
+         TVM_FFI_CLEAR_PTR_PADDING_IN_FFI_ANY(&any_data);
+         any_data.v_obj = reinterpret_cast<TVMFFIObject*>(const_cast<Object*>(data_.get()));
+         if (TypeTraits<ObjectRefType>::CheckAnyStrict(&any_data)) {
+           ObjectRefType result(UnsafeInit{});
+           result.data_ = data_;
+           return result;
          }
-       } else {
          return std::nullopt;
        }
+       if constexpr (ObjectRefType::_type_is_nullable) {
+         return ObjectRefType(UnsafeInit{});
+       }
+       return std::nullopt;
      }
+   
+     template <typename ObjectRefType,
+               typename = std::enable_if_t<std::is_base_of_v<ObjectRef, ObjectRefType>>>
+     TVM_FFI_INLINE std::optional<ObjectRefType> as() && {
+       if (data_ != nullptr) {
+         // Piggy back to Any TypeTraits for rich ObjectRef check, temp any_data will optimize away.
+         TVMFFIAny any_data;
+         any_data.type_index = data_->type_index();
+         TVM_FFI_UNSAFE_ASSUME(any_data.type_index >= TypeIndex::kTVMFFIStaticObjectBegin);
+         any_data.zero_padding = 0;
+         TVM_FFI_CLEAR_PTR_PADDING_IN_FFI_ANY(&any_data);
+         any_data.v_obj = reinterpret_cast<TVMFFIObject*>(const_cast<Object*>(data_.get()));
+         if (TypeTraits<ObjectRefType>::CheckAnyStrict(&any_data)) {
+           ObjectRefType result(UnsafeInit{});
+           result.data_ = std::move(data_);
+           data_ = nullptr;
+           return result;
+         }
+         return std::nullopt;
+       }
+       if constexpr (ObjectRefType::_type_is_nullable) {
+         return ObjectRefType(UnsafeInit{});
+       }
+       return std::nullopt;
+     }
+   
+     template <typename ObjectRefType,
+               typename = std::enable_if_t<std::is_base_of_v<ObjectRef, ObjectRefType>>>
+     TVM_FFI_INLINE ObjectRefType as_or_throw() const&;
+   
+     template <typename ObjectRefType,
+               typename = std::enable_if_t<std::is_base_of_v<ObjectRef, ObjectRefType>>>
+     TVM_FFI_INLINE ObjectRefType as_or_throw() &&;
    
      int32_t type_index() const {
        return data_ != nullptr ? data_->type_index() : TypeIndex::kTVMFFINone;
@@ -530,6 +595,7 @@ Program Listing for File object.h
      }
    
      using ContainerType = Object;
+     static constexpr bool _type_container_is_exact = true;
      static constexpr bool _type_is_nullable = true;
    
     protected:
@@ -539,6 +605,13 @@ Program Listing for File object.h
      friend struct ObjectPtrHash;
      friend struct tvm::ffi::details::ObjectUnsafe;
    };
+   
+   template <typename RefType, typename ObjectType,
+             typename = std::enable_if_t<std::is_base_of_v<ObjectRef, RefType> &&
+                                         std::is_base_of_v<Object, ObjectType>>>
+   inline constexpr bool object_ref_contains_v =
+       RefType::_type_container_is_exact &&
+       std::is_base_of_v<typename RefType::ContainerType, ObjectType>;
    
    // forward delcare variant
    template <typename... V>
@@ -570,7 +643,7 @@ Program Listing for File object.h
    
    #define TVM_FFI_DECLARE_OBJECT_INFO_STATIC(TypeKey, TypeName, ParentType)                     \
      static constexpr int32_t _type_depth = ParentType::_type_depth + 1;                         \
-     static int32_t _GetOrAllocRuntimeTypeIndex() {                                              \
+     TVM_FFI_COLD_CODE static int32_t _GetOrAllocRuntimeTypeIndex() {                            \
        static_assert(!ParentType::_type_final, "ParentType marked as final");                    \
        static_assert(TypeName::_type_child_slots == 0 || ParentType::_type_child_slots == 0 ||   \
                          TypeName::_type_child_slots < ParentType::_type_child_slots,            \
@@ -582,12 +655,12 @@ Program Listing for File object.h
            TypeName::_type_child_slots_can_overflow, ParentType::_GetOrAllocRuntimeTypeIndex()); \
        return TypeName::_type_index;                                                             \
      }                                                                                           \
-     static int32_t RuntimeTypeIndex() { return TypeName::_type_index; }                         \
+     TVM_FFI_INLINE static int32_t RuntimeTypeIndex() noexcept { return TypeName::_type_index; } \
      static constexpr const char* _type_key = TypeKey
    
    #define TVM_FFI_DECLARE_OBJECT_INFO_PREDEFINED_TYPE_KEY(TypeName, ParentType)                 \
      static constexpr int32_t _type_depth = ParentType::_type_depth + 1;                         \
-     static int32_t _GetOrAllocRuntimeTypeIndex() {                                              \
+     TVM_FFI_COLD_CODE static int32_t _GetOrAllocRuntimeTypeIndex() {                            \
        static_assert(!ParentType::_type_final, "ParentType marked as final");                    \
        static_assert(TypeName::_type_child_slots == 0 || ParentType::_type_child_slots == 0 ||   \
                          TypeName::_type_child_slots < ParentType::_type_child_slots,            \
@@ -599,7 +672,8 @@ Program Listing for File object.h
            TypeName::_type_child_slots_can_overflow, ParentType::_GetOrAllocRuntimeTypeIndex()); \
        return tindex;                                                                            \
      }                                                                                           \
-     static int32_t RuntimeTypeIndex() { return _GetOrAllocRuntimeTypeIndex(); }
+     static inline const int32_t _type_index = _GetOrAllocRuntimeTypeIndex();                    \
+     TVM_FFI_INLINE static int32_t RuntimeTypeIndex() noexcept { return TypeName::_type_index; }
    
    #define TVM_FFI_DECLARE_OBJECT_INFO(TypeKey, TypeName, ParentType) \
      static constexpr const char* _type_key = TypeKey;                \
@@ -716,6 +790,11 @@ Program Listing for File object.h
        return const_cast<TVMFFIObject*>(&(src->header_));
      }
    
+     TVM_FFI_INLINE static TVMFFIObjectAllocHeader* GetObjectAllocHeaderFromPtr(void* ptr) {
+       return reinterpret_cast<TVMFFIObjectAllocHeader*>(static_cast<char*>(ptr) -
+                                                         sizeof(TVMFFIObjectAllocHeader));
+     }
+   
    // Suppress -Winvalid-offsetof: we intentionally use offsetof on non-standard-layout types
    // to avoid undefined behavior from null pointer arithmetic that sanitizers flag.
    #if defined(__clang__) || defined(__GNUC__)
@@ -779,6 +858,11 @@ Program Listing for File object.h
      }
    
      template <typename T>
+     TVM_FFI_INLINE static Arc<T> ArcFromObjectPtr(ObjectPtr<T>&& ptr) {
+       return Arc<T>(std::move(ptr));
+     }
+   
+     template <typename T>
      TVM_FFI_INLINE static T* RawObjectPtrFromUnowned(TVMFFIObject* obj_ptr) {
        // NOTE: this is important to first cast to Object*
        // then cast back to T* because objptr and tptr may not be the same
@@ -831,7 +915,290 @@ Program Listing for File object.h
        return GetHeader(obj_ptr);
      }
    };
+   
    }  // namespace details
+   
+   template <typename T>
+   struct TypeToRuntimeTypeIndex<T, std::enable_if_t<std::is_base_of_v<ObjectRef, T>>> {
+     static int32_t v() { return T::ContainerType::RuntimeTypeIndex(); }
+   };
+   
+   template <typename TObject>
+   struct TypeToRuntimeTypeIndex<
+       ObjectPtr<TObject>, std::enable_if_t<is_object_subclass_v<TObject> &&
+                                            std::is_same_v<TObject, std::remove_cv_t<TObject>>>> {
+     static int32_t v() { return TObject::RuntimeTypeIndex(); }
+   };
+   
+   template <typename TObject>
+   struct TypeToRuntimeTypeIndex<
+       Arc<TObject>, std::enable_if_t<is_object_subclass_v<TObject> &&
+                                      std::is_same_v<TObject, std::remove_cv_t<TObject>>>> {
+     static int32_t v() { return TObject::RuntimeTypeIndex(); }
+   };
+   
+   template <typename TObject>
+   struct TypeTraits<ObjectPtr<TObject>,
+                     std::enable_if_t<is_object_subclass_v<TObject> &&
+                                      std::is_same_v<TObject, std::remove_cv_t<TObject>>>>
+       : public TypeTraitsBase {
+     static constexpr int32_t field_static_type_index = TypeIndex::kTVMFFIObject;
+   
+     TVM_FFI_INLINE static void CopyToAnyView(const ObjectPtr<TObject>& src, TVMFFIAny* result) {
+       if (src == nullptr) {
+         TypeTraits<std::nullptr_t>::CopyToAnyView(nullptr, result);
+         return;
+       }
+       TVMFFIObject* obj_ptr = details::ObjectUnsafe::TVMFFIObjectPtrFromObjectPtr(src);
+       result->type_index = obj_ptr->type_index;
+       result->zero_padding = 0;
+       TVM_FFI_CLEAR_PTR_PADDING_IN_FFI_ANY(result);
+       result->v_obj = obj_ptr;
+     }
+   
+     TVM_FFI_INLINE static void MoveToAny(ObjectPtr<TObject> src, TVMFFIAny* result) {
+       if (src == nullptr) {
+         TypeTraits<std::nullptr_t>::MoveToAny(nullptr, result);
+         return;
+       }
+       TVMFFIObject* obj_ptr = details::ObjectUnsafe::MoveObjectPtrToTVMFFIObjectPtr(std::move(src));
+       result->type_index = obj_ptr->type_index;
+       result->zero_padding = 0;
+       TVM_FFI_CLEAR_PTR_PADDING_IN_FFI_ANY(result);
+       result->v_obj = obj_ptr;
+     }
+   
+     TVM_FFI_INLINE static bool CheckAnyStrict(const TVMFFIAny* src) {
+       if (src->type_index == TypeIndex::kTVMFFINone) return true;
+       return src->type_index >= TypeIndex::kTVMFFIStaticObjectBegin &&
+              details::IsObjectInstance<TObject>(src->type_index);
+     }
+   
+     TVM_FFI_INLINE static ObjectPtr<TObject> CopyFromAnyViewAfterCheck(const TVMFFIAny* src) {
+       if (src->type_index == TypeIndex::kTVMFFINone) return nullptr;
+       return details::ObjectUnsafe::ObjectPtrFromUnowned<TObject>(src->v_obj);
+     }
+   
+     TVM_FFI_INLINE static ObjectPtr<TObject> MoveFromAnyAfterCheck(TVMFFIAny* src) {
+       if (src->type_index == TypeIndex::kTVMFFINone) return nullptr;
+       ObjectPtr<TObject> result = details::ObjectUnsafe::ObjectPtrFromOwned<TObject>(src->v_obj);
+       TypeTraits<std::nullptr_t>::MoveToAny(nullptr, src);
+       return result;
+     }
+   
+     TVM_FFI_INLINE static std::optional<ObjectPtr<TObject>> TryCastFromAnyView(const TVMFFIAny* src) {
+       if (CheckAnyStrict(src)) return CopyFromAnyViewAfterCheck(src);
+       return std::nullopt;
+     }
+   
+     TVM_FFI_INLINE static std::string TypeStr() { return TObject::_type_key; }
+     TVM_FFI_INLINE static std::string TypeSchema() {
+       return R"({"type":"Optional","args":[{"type":")" + std::string(TObject::_type_key) + R"("}]})";
+     }
+   };
+   
+   template <typename TObject>
+   struct TypeTraits<Arc<TObject>,
+                     std::enable_if_t<is_object_subclass_v<TObject> &&
+                                      std::is_same_v<TObject, std::remove_cv_t<TObject>>>>
+       : public TypeTraitsBase {
+     static constexpr int32_t field_static_type_index = TypeIndex::kTVMFFIObject;
+   
+     TVM_FFI_INLINE static void CopyToAnyView(const Arc<TObject>& src, TVMFFIAny* result) {
+       TypeTraits<ObjectPtr<TObject>>::CopyToAnyView(src, result);
+     }
+   
+     TVM_FFI_INLINE static void MoveToAny(Arc<TObject> src, TVMFFIAny* result) {
+       TypeTraits<ObjectPtr<TObject>>::MoveToAny(std::move(src), result);
+     }
+   
+     TVM_FFI_INLINE static bool CheckAnyStrict(const TVMFFIAny* src) {
+       return src->type_index >= TypeIndex::kTVMFFIStaticObjectBegin &&
+              details::IsObjectInstance<TObject>(src->type_index);
+     }
+   
+     TVM_FFI_INLINE static Arc<TObject> CopyFromAnyViewAfterCheck(const TVMFFIAny* src) {
+       return details::ObjectUnsafe::ArcFromObjectPtr(
+           details::ObjectUnsafe::ObjectPtrFromUnowned<TObject>(src->v_obj));
+     }
+   
+     TVM_FFI_INLINE static Arc<TObject> MoveFromAnyAfterCheck(TVMFFIAny* src) {
+       Arc<TObject> result = details::ObjectUnsafe::ArcFromObjectPtr(
+           details::ObjectUnsafe::ObjectPtrFromOwned<TObject>(src->v_obj));
+       TypeTraits<std::nullptr_t>::MoveToAny(nullptr, src);
+       return result;
+     }
+   
+     TVM_FFI_INLINE static std::optional<Arc<TObject>> TryCastFromAnyView(const TVMFFIAny* src) {
+       if (CheckAnyStrict(src)) return CopyFromAnyViewAfterCheck(src);
+       return std::nullopt;
+     }
+   
+     TVM_FFI_INLINE static std::string TypeStr() { return TObject::_type_key; }
+     TVM_FFI_INLINE static std::string TypeSchema() {
+       return R"({"type":")" + std::string(TObject::_type_key) + R"("})";
+     }
+   };
+   
+   template <typename TObjRef>
+   struct ObjectRefTypeTraitsBase : public TypeTraitsBase {
+     static constexpr int32_t field_static_type_index = TypeIndex::kTVMFFIObject;
+     using ContainerType = typename TObjRef::ContainerType;
+   
+     TVM_FFI_INLINE static void CopyToAnyView(const TObjRef& src, TVMFFIAny* result) {
+       if constexpr (TObjRef::_type_is_nullable) {
+         if (!src.defined()) {
+           TypeTraits<std::nullptr_t>::CopyToAnyView(nullptr, result);
+           return;
+         }
+       }
+       TVMFFIObject* obj_ptr = details::ObjectUnsafe::TVMFFIObjectPtrFromObjectRef(src);
+       result->type_index = obj_ptr->type_index;
+       result->zero_padding = 0;
+       TVM_FFI_CLEAR_PTR_PADDING_IN_FFI_ANY(result);
+       result->v_obj = obj_ptr;
+     }
+   
+     TVM_FFI_INLINE static void MoveToAny(TObjRef src, TVMFFIAny* result) {
+       if constexpr (TObjRef::_type_is_nullable) {
+         if (!src.defined()) {
+           TypeTraits<std::nullptr_t>::CopyToAnyView(nullptr, result);
+           return;
+         }
+       }
+       TVMFFIObject* obj_ptr = details::ObjectUnsafe::MoveObjectRefToTVMFFIObjectPtr(std::move(src));
+       result->type_index = obj_ptr->type_index;
+       result->zero_padding = 0;
+       TVM_FFI_CLEAR_PTR_PADDING_IN_FFI_ANY(result);
+       result->v_obj = obj_ptr;
+     }
+   
+     TVM_FFI_INLINE static bool CheckAnyStrict(const TVMFFIAny* src) {
+       if constexpr (TObjRef::_type_is_nullable) {
+         if (src->type_index == TypeIndex::kTVMFFINone) return true;
+       }
+       return src->type_index >= TypeIndex::kTVMFFIStaticObjectBegin &&
+              details::IsObjectInstance<ContainerType>(src->type_index);
+     }
+   
+     TVM_FFI_INLINE static TObjRef CopyFromAnyViewAfterCheck(const TVMFFIAny* src) {
+       if constexpr (TObjRef::_type_is_nullable) {
+         if (src->type_index == TypeIndex::kTVMFFINone) {
+           return details::ObjectUnsafe::ObjectRefFromObjectPtr<TObjRef>(nullptr);
+         }
+       }
+       return details::ObjectUnsafe::ObjectRefFromObjectPtr<TObjRef>(
+           details::ObjectUnsafe::ObjectPtrFromUnowned<Object>(src->v_obj));
+     }
+   
+     TVM_FFI_INLINE static TObjRef MoveFromAnyAfterCheck(TVMFFIAny* src) {
+       if constexpr (TObjRef::_type_is_nullable) {
+         if (src->type_index == TypeIndex::kTVMFFINone) {
+           return details::ObjectUnsafe::ObjectRefFromObjectPtr<TObjRef>(nullptr);
+         }
+       }
+       ObjectPtr<ContainerType> obj_ptr =
+           details::ObjectUnsafe::ObjectPtrFromOwned<ContainerType>(src->v_obj);
+       TypeTraits<std::nullptr_t>::MoveToAny(nullptr, src);
+       return details::ObjectUnsafe::ObjectRefFromObjectPtr<TObjRef>(std::move(obj_ptr));
+     }
+   
+     TVM_FFI_INLINE static std::optional<TObjRef> TryCastFromAnyView(const TVMFFIAny* src) {
+       if constexpr (TObjRef::_type_is_nullable) {
+         if (src->type_index == TypeIndex::kTVMFFINone) {
+           return details::ObjectUnsafe::ObjectRefFromObjectPtr<TObjRef>(nullptr);
+         }
+       }
+       if (src->type_index >= TypeIndex::kTVMFFIStaticObjectBegin &&
+           details::IsObjectInstance<ContainerType>(src->type_index)) {
+         return details::ObjectUnsafe::ObjectRefFromObjectPtr<TObjRef>(
+             details::ObjectUnsafe::ObjectPtrFromUnowned<ContainerType>(src->v_obj));
+       }
+       return std::nullopt;
+     }
+   
+     TVM_FFI_INLINE static std::string TypeStr() { return ContainerType::_type_key; }
+     TVM_FFI_INLINE static std::string TypeSchema() {
+       return R"({"type":")" + std::string(ContainerType::_type_key) + R"("})";
+     }
+   };
+   
+   template <typename TObjRef>
+   struct TypeTraits<TObjRef, std::enable_if_t<std::is_base_of_v<ObjectRef, TObjRef> &&
+                                               use_default_type_traits_v<TObjRef>>>
+       : public ObjectRefTypeTraitsBase<TObjRef> {};
+   
+   template <typename ObjectRefType, typename... FallbackTypes>
+   struct ObjectRefWithFallbackTraitsBase : public ObjectRefTypeTraitsBase<ObjectRefType> {
+     TVM_FFI_INLINE static std::optional<ObjectRefType> TryCastFromAnyView(const TVMFFIAny* src) {
+       if (auto opt_obj = ObjectRefTypeTraitsBase<ObjectRefType>::TryCastFromAnyView(src)) {
+         return opt_obj;
+       }
+       return TryFallbackTypes<FallbackTypes...>(src);
+     }
+   
+     template <typename FallbackType, typename... Rest>
+     TVM_FFI_INLINE static std::optional<ObjectRefType> TryFallbackTypes(const TVMFFIAny* src) {
+       static_assert(!std::is_same_v<bool, FallbackType>,
+                     "Using bool as FallbackType can cause bug because int will be detected as bool, "
+                     "use tvm::ffi::StrictBool instead");
+       if (auto opt_fallback = TypeTraits<FallbackType>::TryCastFromAnyView(src)) {
+         return TypeTraits<ObjectRefType>::ConvertFallbackValue(*std::move(opt_fallback));
+       }
+       if constexpr (sizeof...(Rest) > 0) {
+         return TryFallbackTypes<Rest...>(src);
+       }
+       return std::nullopt;
+     }
+   };
+   
+   template <typename TObject>
+   struct TypeTraits<TObject*, std::enable_if_t<std::is_base_of_v<Object, TObject>>>
+       : public TypeTraitsBase {
+     TVM_FFI_INLINE static void CopyToAnyView(TObject* src, TVMFFIAny* result) {
+       TVMFFIObject* obj_ptr = details::ObjectUnsafe::GetHeader(src);
+       result->type_index = obj_ptr->type_index;
+       result->zero_padding = 0;
+       TVM_FFI_CLEAR_PTR_PADDING_IN_FFI_ANY(result);
+       result->v_obj = obj_ptr;
+     }
+   
+     TVM_FFI_INLINE static void MoveToAny(TObject* src, TVMFFIAny* result) {
+       TVMFFIObject* obj_ptr = details::ObjectUnsafe::GetHeader(src);
+       result->type_index = obj_ptr->type_index;
+       result->zero_padding = 0;
+       TVM_FFI_CLEAR_PTR_PADDING_IN_FFI_ANY(result);
+       result->v_obj = obj_ptr;
+       details::ObjectUnsafe::IncRefObjectHandle(result->v_obj);
+     }
+   
+     TVM_FFI_INLINE static bool CheckAnyStrict(const TVMFFIAny* src) {
+       return src->type_index >= TypeIndex::kTVMFFIStaticObjectBegin &&
+              details::IsObjectInstance<TObject>(src->type_index);
+     }
+   
+     TVM_FFI_INLINE static TObject* CopyFromAnyViewAfterCheck(const TVMFFIAny* src) {
+       if constexpr (!std::is_const_v<TObject>) {
+         static_assert(TObject::_type_mutable, "TObject must be mutable to enable cast from Any");
+       }
+       return details::ObjectUnsafe::RawObjectPtrFromUnowned<TObject>(src->v_obj);
+     }
+   
+     TVM_FFI_INLINE static std::optional<TObject*> TryCastFromAnyView(const TVMFFIAny* src) {
+       if constexpr (!std::is_const_v<TObject>) {
+         static_assert(TObject::_type_mutable, "TObject must be mutable to enable cast from Any");
+       }
+       if (CheckAnyStrict(src)) return CopyFromAnyViewAfterCheck(src);
+       return std::nullopt;
+     }
+   
+     TVM_FFI_INLINE static std::string TypeStr() { return TObject::_type_key; }
+     TVM_FFI_INLINE static std::string TypeSchema() {
+       return R"({"type":")" + std::string(TObject::_type_key) + R"("})";
+     }
+   };
+   
    }  // namespace ffi
    }  // namespace tvm
+   
    #endif  // TVM_FFI_OBJECT_H_

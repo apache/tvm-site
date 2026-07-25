@@ -41,6 +41,8 @@ Includes
 
 - ``tvm/ffi/optional.h`` (:ref:`file_tvm_ffi_optional.h`)
 
+- ``type_traits`` (:ref:`file_tvm_ffi_type_traits.h`)
+
 
 
 Included By

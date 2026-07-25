@@ -43,7 +43,7 @@
   <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../_static/documentation_options.js?v=e435db62"></script>
+    <script src="../_static/documentation_options.js?v=343e8fc7"></script>
     <script src="../_static/doctools.js?v=9bcbadda"></script>
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -61,8 +61,8 @@
     <link rel="prev" title="Python Guide" href="python_lang_guide.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="0.1.dev1+gf90410468" />
-    <meta name="docbuild:last-update" content="Jun 17, 2026"/>
+  <meta name="docsearch:version" content="0.1.dev1+g135c2e8bb" />
+    <meta name="docbuild:last-update" content="Jul 25, 2026"/>
   </head>
   
   
@@ -519,7 +519,7 @@ counting correctly when the stored value is an on-heap object.</p>
 <h2>Object and ObjectRef<a class="headerlink" href="#object-and-objectref" title="Link to this heading">#</a></h2>
 <p>The tvm-ffi object system provides the foundation for all managed, reference-counted objects
 in the system. It enables type safety, cross-language compatibility, and efficient memory management.</p>
-<p>The object system is built around three key classes: Object, ObjectPtr, and ObjectRef.
+<p>The object system is built around four key classes: <code class="docutils literal notranslate"><span class="pre">Object</span></code>, <code class="docutils literal notranslate"><span class="pre">ObjectPtr</span></code>, <code class="docutils literal notranslate"><span class="pre">Arc</span></code>, and <code class="docutils literal notranslate"><span class="pre">ObjectRef</span></code>.
 The <code class="docutils literal notranslate"><span class="pre">Object</span></code> class is the base class of all heap-allocated objects. It contains a common header
 that includes the <code class="docutils literal notranslate"><span class="pre">type_index</span></code>, reference counter and deleter for the object.
 Users do not need to explicitly manage these fields as part of the C++ API. Instead,
@@ -544,16 +544,37 @@ The following code shows an example object and the creation of an <code class="d
 
 <span class="kt">void</span><span class="w"> </span><span class="nf">ExampleObjectPtr</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
 <span class="w">  </span><span class="k">namespace</span><span class="w"> </span><span class="nn">ffi</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nn">tvm</span><span class="o">::</span><span class="nn">ffi</span><span class="p">;</span>
-<span class="w">  </span><span class="c1">// make_object automatically sets up the deleter correctly</span>
-<span class="w">  </span><span class="c1">// This function creates a new ObjectPtr with proper memory management</span>
-<span class="w">  </span><span class="c1">// It handles allocation, initialization, and sets up the reference counting system</span>
-<span class="w">  </span><span class="n">ffi</span><span class="o">::</span><span class="n">ObjectPtr</span><span class="o">&lt;</span><span class="n">MyIntPairObj</span><span class="o">&gt;</span><span class="w"> </span><span class="n">obj</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ffi</span><span class="o">::</span><span class="n">make_object</span><span class="o">&lt;</span><span class="n">MyIntPairObj</span><span class="o">&gt;</span><span class="p">(</span><span class="mi">100</span><span class="p">,</span><span class="w"> </span><span class="mi">200</span><span class="p">);</span>
+<span class="w">  </span><span class="c1">// make_arc allocates, initializes, and sets up reference counting and the deleter.</span>
+<span class="w">  </span><span class="n">ffi</span><span class="o">::</span><span class="n">Arc</span><span class="o">&lt;</span><span class="n">MyIntPairObj</span><span class="o">&gt;</span><span class="w"> </span><span class="n">required</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ffi</span><span class="o">::</span><span class="n">make_arc</span><span class="o">&lt;</span><span class="n">MyIntPairObj</span><span class="o">&gt;</span><span class="p">(</span><span class="mi">100</span><span class="p">,</span><span class="w"> </span><span class="mi">200</span><span class="p">);</span>
+<span class="w">  </span><span class="c1">// ObjectPtr is the nullable one-pointer carrier.</span>
+<span class="w">  </span><span class="n">ffi</span><span class="o">::</span><span class="n">ObjectPtr</span><span class="o">&lt;</span><span class="n">MyIntPairObj</span><span class="o">&gt;</span><span class="w"> </span><span class="n">optional</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">required</span><span class="p">;</span>
 <span class="w">  </span><span class="c1">// EXPECT_EQ is used here for demonstration purposes (testing framework)</span>
-<span class="w">  </span><span class="n">EXPECT_EQ</span><span class="p">(</span><span class="n">obj</span><span class="o">-&gt;</span><span class="n">a</span><span class="p">,</span><span class="w"> </span><span class="mi">100</span><span class="p">);</span>
-<span class="w">  </span><span class="n">EXPECT_EQ</span><span class="p">(</span><span class="n">obj</span><span class="o">-&gt;</span><span class="n">b</span><span class="p">,</span><span class="w"> </span><span class="mi">200</span><span class="p">);</span>
+<span class="w">  </span><span class="n">EXPECT_EQ</span><span class="p">(</span><span class="n">required</span><span class="o">-&gt;</span><span class="n">a</span><span class="p">,</span><span class="w"> </span><span class="mi">100</span><span class="p">);</span>
+<span class="w">  </span><span class="n">EXPECT_EQ</span><span class="p">(</span><span class="n">required</span><span class="o">-&gt;</span><span class="n">b</span><span class="p">,</span><span class="w"> </span><span class="mi">200</span><span class="p">);</span>
+<span class="w">  </span><span class="n">optional</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">nullptr</span><span class="p">;</span>
 <span class="p">}</span>
 </pre></div>
 </div>
+<p>For an unqualified <code class="docutils literal notranslate"><span class="pre">Object</span></code> subclass <code class="docutils literal notranslate"><span class="pre">T</span></code>, use <code class="docutils literal notranslate"><span class="pre">Arc&lt;T&gt;</span></code> when the object is required and
+<code class="docutils literal notranslate"><span class="pre">ObjectPtr&lt;T&gt;</span></code> when it may be absent. Both are owning pointers with the same one-pointer layout and
+reference-counting behavior. Copying through <code class="docutils literal notranslate"><span class="pre">Any</span></code> retains the object, while moving transfers its
+reference. They can be used in typed containers such as <code class="docutils literal notranslate"><span class="pre">Array</span></code>, <code class="docutils literal notranslate"><span class="pre">List</span></code>, <code class="docutils literal notranslate"><span class="pre">Map</span></code>, <code class="docutils literal notranslate"><span class="pre">Dict</span></code>, <code class="docutils literal notranslate"><span class="pre">Tuple</span></code>,
+<code class="docutils literal notranslate"><span class="pre">Optional</span></code>, <code class="docutils literal notranslate"><span class="pre">Variant</span></code>, and <code class="docutils literal notranslate"><span class="pre">Expected</span></code>, as well as reflected fields and function signatures.</p>
+<p><code class="docutils literal notranslate"><span class="pre">Arc&lt;T&gt;</span></code> has no default or <code class="docutils literal notranslate"><span class="pre">nullptr</span></code> constructor, and <code class="docutils literal notranslate"><span class="pre">make_arc&lt;T&gt;(args...)</span></code> is its normal creation
+API. Its type schema is the bare object schema <code class="docutils literal notranslate"><span class="pre">{&quot;type&quot;:&quot;T&quot;}</span></code>, so ABI <code class="docutils literal notranslate"><span class="pre">None</span></code> is rejected. By
+contrast, <code class="docutils literal notranslate"><span class="pre">ObjectPtr&lt;T&gt;</span></code> remains mechanically nullable, maps a null pointer to ABI <code class="docutils literal notranslate"><span class="pre">None</span></code>, and has
+schema <code class="docutils literal notranslate"><span class="pre">Optional[T]</span></code>. <code class="docutils literal notranslate"><span class="pre">Optional&lt;Arc&lt;T&gt;&gt;</span></code> is also supported and produces exactly <code class="docutils literal notranslate"><span class="pre">Optional[T]</span></code>; use
+it when the native field needs the 16-byte <code class="docutils literal notranslate"><span class="pre">Optional</span></code> carrier rather than the 8-byte
+<code class="docutils literal notranslate"><span class="pre">ObjectPtr&lt;T&gt;</span></code> carrier.</p>
+<p>Normal C++ move semantics leave a moved-from <code class="docutils literal notranslate"><span class="pre">Arc</span></code> empty. <code class="docutils literal notranslate"><span class="pre">Arc(UnsafeInit{})</span></code> also creates an empty
+value for reflection’s controlled construct-then-populate path. These states are exceptions to the
+safe API’s non-null guarantee and must be populated before use; Arc operations rely on the invariant
+without runtime validation. A reflected class with an <code class="docutils literal notranslate"><span class="pre">Arc</span></code> field should initialize that field
+explicitly in its unsafe constructor, for example
+<code class="docutils literal notranslate"><span class="pre">HolderObj(UnsafeInit)</span> <span class="pre">:</span> <span class="pre">required(UnsafeInit{})</span> <span class="pre">{}</span></code>. Because <code class="docutils literal notranslate"><span class="pre">Arc</span></code> publicly inherits <code class="docutils literal notranslate"><span class="pre">ObjectPtr</span></code>,
+deliberately mutating it through the base class can likewise bypass the guarantee and is unsafe.</p>
+<p>Qualified pointee types such as <code class="docutils literal notranslate"><span class="pre">Arc&lt;const</span> <span class="pre">T&gt;</span></code>, <code class="docutils literal notranslate"><span class="pre">ObjectPtr&lt;const</span> <span class="pre">T&gt;</span></code>, volatile pointees, and
+reference pointee types are not supported.</p>
 <p>We typically provide a reference class that wraps the ObjectPtr.
 The <code class="docutils literal notranslate"><span class="pre">ObjectRef</span></code> base class provides the interface and reference counting
 functionality for these wrapper classes.</p>
@@ -586,7 +607,8 @@ The ObjectRef acts as a smart pointer wrapper that automatically manages the Obj
 <p>The overall implementation pattern is as follows:</p>
 <ul class="simple">
 <li><p><strong>Object Class</strong>: Inherits from <code class="docutils literal notranslate"><span class="pre">ffi::Object</span></code>, stores data and implements the core functionality.</p></li>
-<li><p><strong>ObjectPtr</strong>: Smart pointer that manages the Object lifecycle and reference counting.</p></li>
+<li><p><strong>Arc</strong>: Non-null owning pointer used for required object values.</p></li>
+<li><p><strong>ObjectPtr</strong>: Nullable owning pointer used when the object may be absent.</p></li>
 <li><p><strong>Ref Class</strong>: Inherits from <code class="docutils literal notranslate"><span class="pre">ffi::ObjectRef</span></code>, provides a user-friendly interface and automatic memory management.</p></li>
 </ul>
 <p>This design ensures efficient memory management while providing a clean API for users. Once we define an ObjectRef class,
@@ -1221,7 +1243,7 @@ By Apache TVM FFI contributors
   
   <div class="footer-item">
     <p class="last-updated">
-  Last updated on Jun 17, 2026.
+  Last updated on Jul 25, 2026.
   <br/>
 </p>
   </div>

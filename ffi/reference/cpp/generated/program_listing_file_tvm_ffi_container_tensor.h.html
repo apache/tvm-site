@@ -43,7 +43,7 @@
   <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../../../_static/documentation_options.js?v=e435db62"></script>
+    <script src="../../../_static/documentation_options.js?v=343e8fc7"></script>
     <script src="../../../_static/doctools.js?v=9bcbadda"></script>
     <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -59,8 +59,8 @@
     <link rel="search" title="Search" href="../../../search.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="0.1.dev1+gf90410468" />
-    <meta name="docbuild:last-update" content="Jun 17, 2026"/>
+  <meta name="docsearch:version" content="0.1.dev1+g135c2e8bb" />
+    <meta name="docbuild:last-update" content="Jul 25, 2026"/>
   </head>
   
   
@@ -430,6 +430,7 @@
 <span class="cp">#define TVM_FFI_CONTAINER_TENSOR_H_</span>
 
 <span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;tvm/ffi/container/shape.h&gt;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;tvm/ffi/device.h&gt;</span>
 <span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;tvm/ffi/dtype.h&gt;</span>
 <span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;tvm/ffi/error.h&gt;</span>
 <span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;tvm/ffi/type_traits.h&gt;</span>
@@ -483,12 +484,7 @@
 <span class="p">}</span>
 
 <span class="kr">inline</span><span class="w"> </span><span class="kt">size_t</span><span class="w"> </span><span class="nf">GetDataSize</span><span class="p">(</span><span class="kt">size_t</span><span class="w"> </span><span class="n">numel</span><span class="p">,</span><span class="w"> </span><span class="n">DLDataType</span><span class="w"> </span><span class="n">dtype</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
-<span class="w">  </span><span class="c1">// compatible handling sub-byte uint1(bool), which usually stored as uint8_t</span>
-<span class="w">  </span><span class="c1">// TODO(tqchen): revisit and switch to kDLBool</span>
-<span class="w">  </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">dtype</span><span class="p">.</span><span class="n">code</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">kDLUInt</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="n">dtype</span><span class="p">.</span><span class="n">bits</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">1</span><span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="n">dtype</span><span class="p">.</span><span class="n">lanes</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="mi">1</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
-<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">numel</span><span class="p">;</span>
-<span class="w">  </span><span class="p">}</span>
-<span class="w">  </span><span class="c1">// for other sub-byte types, packing is preferred</span>
+<span class="w">  </span><span class="c1">// Sub-byte types are stored packed.</span>
 <span class="w">  </span><span class="c1">// Use uint64_t to avoid overflow on 32-bit platforms (WASM) for large allocations.</span>
 <span class="w">  </span><span class="k">return</span><span class="w"> </span><span class="k">static_cast</span><span class="o">&lt;</span><span class="kt">size_t</span><span class="o">&gt;</span><span class="p">((</span><span class="k">static_cast</span><span class="o">&lt;</span><span class="kt">uint64_t</span><span class="o">&gt;</span><span class="p">(</span><span class="n">numel</span><span class="p">)</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">dtype</span><span class="p">.</span><span class="n">bits</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="n">dtype</span><span class="p">.</span><span class="n">lanes</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">7</span><span class="p">)</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="mi">8</span><span class="p">);</span>
 <span class="p">}</span>
@@ -879,6 +875,50 @@
 <span class="w">  </span><span class="k">return</span><span class="w"> </span><span class="n">GetDataSize</span><span class="p">(</span><span class="n">tensor</span><span class="p">.</span><span class="n">numel</span><span class="p">(),</span><span class="w"> </span><span class="n">tensor</span><span class="p">.</span><span class="n">dtype</span><span class="p">());</span>
 <span class="p">}</span>
 
+<span class="c1">// DLTensor* support lives with Tensor/TensorView because the conversion path</span>
+<span class="c1">// is tensor-specific and can reuse the FFI error layer.</span>
+<span class="k">template</span><span class="w"> </span><span class="o">&lt;&gt;</span>
+<span class="k">struct</span><span class="w"> </span><span class="nc">TypeTraits</span><span class="o">&lt;</span><span class="n">DLTensor</span><span class="o">*&gt;</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="k">public</span><span class="w"> </span><span class="n">TypeTraitsBase</span><span class="w"> </span><span class="p">{</span>
+<span class="w">  </span><span class="k">static</span><span class="w"> </span><span class="k">constexpr</span><span class="w"> </span><span class="kt">bool</span><span class="w"> </span><span class="n">storage_enabled</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="nb">false</span><span class="p">;</span>
+<span class="w">  </span><span class="k">static</span><span class="w"> </span><span class="k">constexpr</span><span class="w"> </span><span class="kt">int32_t</span><span class="w"> </span><span class="n">field_static_type_index</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">TypeIndex</span><span class="o">::</span><span class="n">kTVMFFIDLTensorPtr</span><span class="p">;</span>
+
+<span class="w">  </span><span class="n">TVM_FFI_INLINE</span><span class="w"> </span><span class="k">static</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="n">CopyToAnyView</span><span class="p">(</span><span class="n">DLTensor</span><span class="o">*</span><span class="w"> </span><span class="n">src</span><span class="p">,</span><span class="w"> </span><span class="n">TVMFFIAny</span><span class="o">*</span><span class="w"> </span><span class="n">result</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">TVM_FFI_ICHECK_NOTNULL</span><span class="p">(</span><span class="n">src</span><span class="p">);</span>
+<span class="w">    </span><span class="n">result</span><span class="o">-&gt;</span><span class="n">type_index</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">TypeIndex</span><span class="o">::</span><span class="n">kTVMFFIDLTensorPtr</span><span class="p">;</span>
+<span class="w">    </span><span class="n">result</span><span class="o">-&gt;</span><span class="n">zero_padding</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">0</span><span class="p">;</span>
+<span class="w">    </span><span class="n">TVM_FFI_CLEAR_PTR_PADDING_IN_FFI_ANY</span><span class="p">(</span><span class="n">result</span><span class="p">);</span>
+<span class="w">    </span><span class="n">result</span><span class="o">-&gt;</span><span class="n">v_ptr</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">src</span><span class="p">;</span>
+<span class="w">  </span><span class="p">}</span>
+
+<span class="w">  </span><span class="n">TVM_FFI_INLINE</span><span class="w"> </span><span class="k">static</span><span class="w"> </span><span class="kt">bool</span><span class="w"> </span><span class="n">CheckAnyStrict</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="n">TVMFFIAny</span><span class="o">*</span><span class="w"> </span><span class="n">src</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">src</span><span class="o">-&gt;</span><span class="n">type_index</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">TypeIndex</span><span class="o">::</span><span class="n">kTVMFFIDLTensorPtr</span><span class="p">;</span>
+<span class="w">  </span><span class="p">}</span>
+
+<span class="w">  </span><span class="n">TVM_FFI_INLINE</span><span class="w"> </span><span class="k">static</span><span class="w"> </span><span class="n">DLTensor</span><span class="o">*</span><span class="w"> </span><span class="n">CopyFromAnyViewAfterCheck</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="n">TVMFFIAny</span><span class="o">*</span><span class="w"> </span><span class="n">src</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">TVM_FFI_UNSAFE_ASSUME</span><span class="p">(</span><span class="n">src</span><span class="o">-&gt;</span><span class="n">type_index</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">TypeIndex</span><span class="o">::</span><span class="n">kTVMFFIDLTensorPtr</span><span class="p">);</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="k">static_cast</span><span class="o">&lt;</span><span class="n">DLTensor</span><span class="o">*&gt;</span><span class="p">(</span><span class="n">src</span><span class="o">-&gt;</span><span class="n">v_ptr</span><span class="p">);</span>
+<span class="w">  </span><span class="p">}</span>
+
+<span class="w">  </span><span class="n">TVM_FFI_INLINE</span><span class="w"> </span><span class="k">static</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="n">MoveToAny</span><span class="p">(</span><span class="n">DLTensor</span><span class="o">*</span><span class="p">,</span><span class="w"> </span><span class="n">TVMFFIAny</span><span class="o">*</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">TVM_FFI_THROW</span><span class="p">(</span><span class="n">RuntimeError</span><span class="p">)</span>
+<span class="w">        </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="s">&quot;DLTensor* cannot be held in Any as it does not retain ownership, use Tensor instead&quot;</span><span class="p">;</span>
+<span class="w">  </span><span class="p">}</span>
+
+<span class="w">  </span><span class="n">TVM_FFI_INLINE</span><span class="w"> </span><span class="k">static</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">optional</span><span class="o">&lt;</span><span class="n">DLTensor</span><span class="o">*&gt;</span><span class="w"> </span><span class="n">TryCastFromAnyView</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="n">TVMFFIAny</span><span class="o">*</span><span class="w"> </span><span class="n">src</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">src</span><span class="o">-&gt;</span><span class="n">type_index</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">TypeIndex</span><span class="o">::</span><span class="n">kTVMFFIDLTensorPtr</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="k">return</span><span class="w"> </span><span class="k">static_cast</span><span class="o">&lt;</span><span class="n">DLTensor</span><span class="o">*&gt;</span><span class="p">(</span><span class="n">src</span><span class="o">-&gt;</span><span class="n">v_ptr</span><span class="p">);</span>
+<span class="w">    </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">src</span><span class="o">-&gt;</span><span class="n">type_index</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">TypeIndex</span><span class="o">::</span><span class="n">kTVMFFITensor</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="k">return</span><span class="w"> </span><span class="n">TVMFFITensorGetDLTensorPtr</span><span class="p">(</span><span class="n">src</span><span class="o">-&gt;</span><span class="n">v_obj</span><span class="p">);</span>
+<span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">nullopt</span><span class="p">;</span>
+<span class="w">  </span><span class="p">}</span>
+
+<span class="w">  </span><span class="n">TVM_FFI_INLINE</span><span class="w"> </span><span class="k">static</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="w"> </span><span class="n">TypeStr</span><span class="p">()</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="k">return</span><span class="w"> </span><span class="n">StaticTypeKey</span><span class="o">::</span><span class="n">kTVMFFIDLTensorPtr</span><span class="p">;</span><span class="w"> </span><span class="p">}</span>
+<span class="w">  </span><span class="n">TVM_FFI_INLINE</span><span class="w"> </span><span class="k">static</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="w"> </span><span class="n">TypeSchema</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="sa">R</span><span class="s">&quot;</span><span class="dl">(</span><span class="s">{&quot;type&quot;:&quot;</span><span class="dl">)</span><span class="s">&quot;</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="p">(</span><span class="n">StaticTypeKey</span><span class="o">::</span><span class="n">kTVMFFIDLTensorPtr</span><span class="p">)</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="sa">R</span><span class="s">&quot;</span><span class="dl">(</span><span class="s">&quot;}</span><span class="dl">)</span><span class="s">&quot;</span><span class="p">;</span>
+<span class="w">  </span><span class="p">}</span>
+<span class="p">};</span>
+
 <span class="c1">// TensorView type, allow implicit casting from DLTensor*</span>
 <span class="c1">// NOTE: we deliberately do not support MoveToAny and MoveFromAny since it does not retain ownership</span>
 <span class="k">template</span><span class="w"> </span><span class="o">&lt;&gt;</span>
@@ -963,7 +1003,7 @@ By Apache TVM FFI contributors
   
   <div class="footer-item">
     <p class="last-updated">
-  Last updated on Jun 17, 2026.
+  Last updated on Jul 25, 2026.
   <br/>
 </p>
   </div>

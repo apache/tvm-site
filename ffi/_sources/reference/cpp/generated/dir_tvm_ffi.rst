@@ -27,6 +27,7 @@ Files
 - :ref:`file_tvm_ffi_base_details.h`
 - :ref:`file_tvm_ffi_c_api.h`
 - :ref:`file_tvm_ffi_cast.h`
+- :ref:`file_tvm_ffi_device.h`
 - :ref:`file_tvm_ffi_dtype.h`
 - :ref:`file_tvm_ffi_endian.h`
 - :ref:`file_tvm_ffi_enum.h`

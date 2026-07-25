@@ -73,14 +73,12 @@ Program Listing for File dict.h
          : ObjectRef(other.data_) {}
    
      template <typename KU, typename VU,
-               typename = std::enable_if_t<details::type_contains_v<K, KU> &&
-                                           details::type_contains_v<V, VU>>>
+               typename = std::enable_if_t<type_subsumes_v<K, KU> && type_subsumes_v<V, VU>>>
      Dict(Dict<KU, VU>&& other)  // NOLINT(google-explicit-constructor)
          : ObjectRef(std::move(other.data_)) {}
    
      template <typename KU, typename VU,
-               typename = std::enable_if_t<details::type_contains_v<K, KU> &&
-                                           details::type_contains_v<V, VU>>>
+               typename = std::enable_if_t<type_subsumes_v<K, KU> && type_subsumes_v<V, VU>>>
      // NOLINTNEXTLINE(google-explicit-constructor)
      Dict(const Dict<KU, VU>& other) : ObjectRef(other.data_) {}
    
@@ -95,16 +93,14 @@ Program Listing for File dict.h
      }
    
      template <typename KU, typename VU,
-               typename = std::enable_if_t<details::type_contains_v<K, KU> &&
-                                           details::type_contains_v<V, VU>>>
+               typename = std::enable_if_t<type_subsumes_v<K, KU> && type_subsumes_v<V, VU>>>
      Dict<K, V>& operator=(Dict<KU, VU>&& other) {
        data_ = std::move(other.data_);
        return *this;
      }
    
      template <typename KU, typename VU,
-               typename = std::enable_if_t<details::type_contains_v<K, KU> &&
-                                           details::type_contains_v<V, VU>>>
+               typename = std::enable_if_t<type_subsumes_v<K, KU> && type_subsumes_v<V, VU>>>
      Dict<K, V>& operator=(const Dict<KU, VU>& other) {
        data_ = other.data_;
        return *this;
@@ -167,6 +163,7 @@ Program Listing for File dict.h
      }
    
      using ContainerType = DictObj;
+     static constexpr bool _type_container_is_exact = false;
    
    
      class iterator {
@@ -250,11 +247,10 @@ Program Listing for File dict.h
      }
    };
    
-   namespace details {
+   
    template <typename K, typename V, typename KU, typename VU>
-   inline constexpr bool type_contains_v<Dict<K, V>, Dict<KU, VU>> =
-       type_contains_v<K, KU> && type_contains_v<V, VU>;
-   }  // namespace details
+   inline constexpr bool type_subsumes_v<Dict<K, V>, Dict<KU, VU>> =
+       type_subsumes_v<K, KU> && type_subsumes_v<V, VU>;
    
    }  // namespace ffi
    }  // namespace tvm

@@ -66,6 +66,8 @@ Includes
 
 - ``tvm/ffi/container/variant.h`` (:ref:`file_tvm_ffi_container_variant.h`)
 
+- ``tvm/ffi/device.h`` (:ref:`file_tvm_ffi_device.h`)
+
 - ``tvm/ffi/dtype.h`` (:ref:`file_tvm_ffi_dtype.h`)
 
 - ``tvm/ffi/endian.h`` (:ref:`file_tvm_ffi_endian.h`)

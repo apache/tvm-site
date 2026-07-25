@@ -15,6 +15,13 @@ Base Type
 - ``public tvm::ffi::Object`` (:ref:`exhale_class_classtvm_1_1ffi_1_1Object`)
 
 
+Derived Types
+*************
+
+- ``public tvm::ffi::IntEnumObj`` (:ref:`exhale_class_classtvm_1_1ffi_1_1IntEnumObj`)
+- ``public tvm::ffi::StrEnumObj`` (:ref:`exhale_class_classtvm_1_1ffi_1_1StrEnumObj`)
+
+
 Class Documentation
 -------------------
 

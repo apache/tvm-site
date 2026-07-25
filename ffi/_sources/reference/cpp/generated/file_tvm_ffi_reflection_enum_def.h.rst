@@ -37,8 +37,6 @@ Includes
 
 - ``cstdint``
 
-- ``string`` (:ref:`file_tvm_ffi_string.h`)
-
 - ``tvm/ffi/any.h`` (:ref:`file_tvm_ffi_any.h`)
 
 - ``tvm/ffi/c_api.h`` (:ref:`file_tvm_ffi_c_api.h`)

@@ -43,7 +43,7 @@
   <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../../../_static/documentation_options.js?v=e435db62"></script>
+    <script src="../../../_static/documentation_options.js?v=343e8fc7"></script>
     <script src="../../../_static/doctools.js?v=9bcbadda"></script>
     <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -59,8 +59,8 @@
     <link rel="search" title="Search" href="../../../search.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="0.1.dev1+gf90410468" />
-    <meta name="docbuild:last-update" content="Jun 17, 2026"/>
+  <meta name="docsearch:version" content="0.1.dev1+g135c2e8bb" />
+    <meta name="docbuild:last-update" content="Jul 25, 2026"/>
   </head>
   
   
@@ -808,17 +808,24 @@
 
 <span class="w">    </span><span class="k">auto</span><span class="w"> </span><span class="n">method_name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="p">(</span><span class="n">type_key_</span><span class="p">)</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="s">&quot;.&quot;</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">name</span><span class="p">;</span>
 
-<span class="w">    </span><span class="c1">// if an overload method exists, register to existing overload function</span>
+<span class="w">    </span><span class="c1">// If an overload method exists, add the callable to the existing runtime</span>
+<span class="w">    </span><span class="c1">// dispatcher but still publish a TypeMethod entry for this signature.</span>
+<span class="w">    </span><span class="c1">// Stub generators consume TypeInfo::methods, so omitting later entries</span>
+<span class="w">    </span><span class="c1">// made an overloaded C++ method look like a single Python signature.</span>
+<span class="w">    </span><span class="n">Function</span><span class="w"> </span><span class="n">method</span><span class="p">;</span>
 <span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="k">auto</span><span class="w"> </span><span class="n">overload_it</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">registered_fields_</span><span class="p">.</span><span class="n">find</span><span class="p">(</span><span class="n">name</span><span class="p">);</span>
 <span class="w">        </span><span class="n">overload_it</span><span class="w"> </span><span class="o">!=</span><span class="w"> </span><span class="n">registered_fields_</span><span class="p">.</span><span class="n">end</span><span class="p">())</span><span class="w"> </span><span class="p">{</span>
-<span class="w">      </span><span class="o">::</span><span class="n">tvm</span><span class="o">::</span><span class="n">ffi</span><span class="o">::</span><span class="n">details</span><span class="o">::</span><span class="n">OverloadBase</span><span class="o">*</span><span class="w"> </span><span class="n">overload_ptr</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">overload_it</span><span class="o">-&gt;</span><span class="n">second</span><span class="p">;</span>
-<span class="w">      </span><span class="k">return</span><span class="w"> </span><span class="n">overload_ptr</span><span class="o">-&gt;</span><span class="n">Register</span><span class="p">(</span><span class="n">NewOverload</span><span class="p">(</span><span class="n">std</span><span class="o">::</span><span class="n">move</span><span class="p">(</span><span class="n">method_name</span><span class="p">),</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">forward</span><span class="o">&lt;</span><span class="n">Func</span><span class="o">&gt;</span><span class="p">(</span><span class="n">func</span><span class="p">)));</span>
+<span class="w">      </span><span class="n">overload_it</span><span class="o">-&gt;</span><span class="n">second</span><span class="p">.</span><span class="n">overload</span><span class="o">-&gt;</span><span class="n">Register</span><span class="p">(</span>
+<span class="w">          </span><span class="n">NewOverload</span><span class="p">(</span><span class="n">std</span><span class="o">::</span><span class="n">move</span><span class="p">(</span><span class="n">method_name</span><span class="p">),</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">forward</span><span class="o">&lt;</span><span class="n">Func</span><span class="o">&gt;</span><span class="p">(</span><span class="n">func</span><span class="p">)));</span>
+<span class="w">      </span><span class="n">method</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">overload_it</span><span class="o">-&gt;</span><span class="n">second</span><span class="p">.</span><span class="n">method</span><span class="p">;</span>
+<span class="w">    </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="c1">// First registration creates the runtime overload dispatcher. Keep the</span>
+<span class="w">      </span><span class="c1">// Function alive so every reflected signature can reference it.</span>
+<span class="w">      </span><span class="k">auto</span><span class="w"> </span><span class="p">[</span><span class="n">new_method</span><span class="p">,</span><span class="w"> </span><span class="n">overload_ptr</span><span class="p">]</span><span class="w"> </span><span class="o">=</span>
+<span class="w">          </span><span class="n">GetOverloadMethod</span><span class="p">(</span><span class="n">std</span><span class="o">::</span><span class="n">move</span><span class="p">(</span><span class="n">method_name</span><span class="p">),</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">forward</span><span class="o">&lt;</span><span class="n">Func</span><span class="o">&gt;</span><span class="p">(</span><span class="n">func</span><span class="p">));</span>
+<span class="w">      </span><span class="n">method</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">move</span><span class="p">(</span><span class="n">new_method</span><span class="p">);</span>
+<span class="w">      </span><span class="n">registered_fields_</span><span class="p">.</span><span class="n">try_emplace</span><span class="p">(</span><span class="n">name</span><span class="p">,</span><span class="w"> </span><span class="n">RegisteredMethod</span><span class="p">{</span><span class="n">overload_ptr</span><span class="p">,</span><span class="w"> </span><span class="n">method</span><span class="p">});</span>
 <span class="w">    </span><span class="p">}</span>
-
-<span class="w">    </span><span class="c1">// first time registering overload method</span>
-<span class="w">    </span><span class="k">auto</span><span class="w"> </span><span class="p">[</span><span class="n">method</span><span class="p">,</span><span class="w"> </span><span class="n">overload_ptr</span><span class="p">]</span><span class="w"> </span><span class="o">=</span>
-<span class="w">        </span><span class="n">GetOverloadMethod</span><span class="p">(</span><span class="n">std</span><span class="o">::</span><span class="n">move</span><span class="p">(</span><span class="n">method_name</span><span class="p">),</span><span class="w"> </span><span class="n">std</span><span class="o">::</span><span class="n">forward</span><span class="o">&lt;</span><span class="n">Func</span><span class="o">&gt;</span><span class="p">(</span><span class="n">func</span><span class="p">));</span>
-<span class="w">    </span><span class="n">registered_fields_</span><span class="p">.</span><span class="n">try_emplace</span><span class="p">(</span><span class="n">name</span><span class="p">,</span><span class="w"> </span><span class="n">overload_ptr</span><span class="p">);</span>
 
 <span class="w">    </span><span class="n">info</span><span class="p">.</span><span class="n">method</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">AnyView</span><span class="p">(</span><span class="n">method</span><span class="p">).</span><span class="n">CopyToTVMFFIAny</span><span class="p">();</span>
 <span class="w">    </span><span class="n">info</span><span class="p">.</span><span class="n">metadata_</span><span class="p">.</span><span class="n">emplace_back</span><span class="p">(</span><span class="s">&quot;type_schema&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">FuncInfo</span><span class="o">::</span><span class="n">TypeSchema</span><span class="p">());</span>
@@ -829,7 +836,12 @@
 <span class="w">    </span><span class="n">TVM_FFI_CHECK_SAFE_CALL</span><span class="p">(</span><span class="n">TVMFFITypeRegisterMethod</span><span class="p">(</span><span class="n">type_index_</span><span class="p">,</span><span class="w"> </span><span class="o">&amp;</span><span class="n">info</span><span class="p">));</span>
 <span class="w">  </span><span class="p">}</span>
 
-<span class="w">  </span><span class="n">std</span><span class="o">::</span><span class="n">unordered_map</span><span class="o">&lt;</span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="p">,</span><span class="w"> </span><span class="o">::</span><span class="n">tvm</span><span class="o">::</span><span class="n">ffi</span><span class="o">::</span><span class="n">details</span><span class="o">::</span><span class="n">OverloadBase</span><span class="o">*&gt;</span><span class="w"> </span><span class="n">registered_fields_</span><span class="p">;</span>
+<span class="w">  </span><span class="k">struct</span><span class="w"> </span><span class="nc">RegisteredMethod</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="o">::</span><span class="n">tvm</span><span class="o">::</span><span class="n">ffi</span><span class="o">::</span><span class="n">details</span><span class="o">::</span><span class="n">OverloadBase</span><span class="o">*</span><span class="w"> </span><span class="n">overload</span><span class="p">;</span>
+<span class="w">    </span><span class="n">Function</span><span class="w"> </span><span class="n">method</span><span class="p">;</span>
+<span class="w">  </span><span class="p">};</span>
+
+<span class="w">  </span><span class="n">std</span><span class="o">::</span><span class="n">unordered_map</span><span class="o">&lt;</span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="p">,</span><span class="w"> </span><span class="n">RegisteredMethod</span><span class="o">&gt;</span><span class="w"> </span><span class="n">registered_fields_</span><span class="p">;</span>
 <span class="p">};</span>
 
 <span class="p">}</span><span class="w">  </span><span class="c1">// namespace reflection</span>
@@ -879,7 +891,7 @@ By Apache TVM FFI contributors
   
   <div class="footer-item">
     <p class="last-updated">
-  Last updated on Jun 17, 2026.
+  Last updated on Jul 25, 2026.
   <br/>
 </p>
   </div>

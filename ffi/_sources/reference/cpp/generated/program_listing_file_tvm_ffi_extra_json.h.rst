@@ -49,7 +49,7 @@ Program Listing for File json.h
    TVM_FFI_EXTRA_CXX_API json::Value Parse(const String& json_str, String* error_msg = nullptr);
    
    TVM_FFI_EXTRA_CXX_API String Stringify(const json::Value& value,
-                                          Optional<int> indent = std::nullopt);
+                                          const Optional<int>& indent = std::nullopt);
    
    }  // namespace json
    }  // namespace ffi

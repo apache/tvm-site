@@ -35,6 +35,7 @@ Program Listing for File enum.h
    #include <tvm/ffi/any.h>
    #include <tvm/ffi/c_api.h>
    #include <tvm/ffi/container/dict.h>
+   #include <tvm/ffi/container/list.h>
    #include <tvm/ffi/error.h>
    #include <tvm/ffi/object.h>
    #include <tvm/ffi/reflection/accessor.h>
@@ -48,28 +49,47 @@ Program Listing for File enum.h
    namespace ffi {
    
    class Enum;
+   class IntEnum;
+   class StrEnum;
+   
+   class EnumStateObj : public Object {
+    public:
+     List<ObjectRef> entries;
+     Dict<Any, ObjectRef> indexes;
+     Dict<String, Dict<ObjectRef, Any>> attrs;
+   
+     TVM_FFI_DECLARE_OBJECT_INFO_FINAL("ffi.EnumState", EnumStateObj, Object);
+   };
+   
+   class EnumState : public ObjectRef {
+    public:
+     TVM_FFI_DEFINE_OBJECT_REF_METHODS_NULLABLE(EnumState, ObjectRef, EnumStateObj);
+   };
    
    class EnumObj : public Object {
     public:
-     int64_t _value;
-     String _name;
+     int64_t _int_index = 0;
+     String _str_index;
    
      EnumObj() = default;
-     EnumObj(int64_t value, String name) : _value(value), _name(std::move(name)) {}
+     EnumObj(int64_t int_index, String str_index)
+         : _int_index(int_index), _str_index(std::move(str_index)) {}
    
+     // NOLINTBEGIN(bugprone-reserved-identifier)
      template <typename EnumClsObj>
-     static Enum Get(const String& name);
+     static Enum _GetByIntIndex(int64_t index);
+     template <typename EnumClsObj>
+     static Enum _GetByStrIndex(const String& index);
+     static Enum _GetByIntIndex(int32_t type_index, int64_t index);
+     static Enum _GetByStrIndex(int32_t type_index, const String& index);
+     // NOLINTEND(bugprone-reserved-identifier)
    
      static constexpr TVMFFISEqHashKind _type_s_eq_hash_kind = kTVMFFISEqHashKindUniqueInstance;
      TVM_FFI_DECLARE_OBJECT_INFO("ffi.Enum", EnumObj, Object);
    
     private:
-     static const TVMFFITypeAttrColumn* GetEnumEntriesColumn() {
-       constexpr TVMFFIByteArray kAttrName =
-           reflection::AsByteArray(reflection::type_attr::kEnumEntries);
-       static const TVMFFITypeAttrColumn* column = TVMFFIGetTypeAttrColumn(&kAttrName);
-       return column;
-     }
+     template <typename Index>
+     static Enum GetByIndex(int32_t type_index, const Index& index);
    };
    
    class Enum : public ObjectRef {
@@ -77,29 +97,59 @@ Program Listing for File enum.h
      TVM_FFI_DEFINE_OBJECT_REF_METHODS_NULLABLE(Enum, ObjectRef, EnumObj);
    };
    
-   template <typename EnumClsObj>
-   inline Enum EnumObj::Get(const String& name) {
-     static_assert(std::is_base_of_v<EnumObj, EnumClsObj>,
-                   "EnumObj::Get<T> requires T to be a subclass of EnumObj");
-     const TVMFFITypeAttrColumn* column = GetEnumEntriesColumn();
-     int32_t type_index = EnumClsObj::RuntimeTypeIndex();
-     if (column != nullptr) {
-       int32_t offset = type_index - column->begin_index;
-       if (offset >= 0 && offset < column->size) {
-         const TVMFFIAny* stored = &column->data[offset];
-         if (stored->type_index != kTVMFFINone) {
-           Dict<String, Enum> entries = AnyView::CopyFromTVMFFIAny(*stored).cast<Dict<String, Enum>>();
-           auto it = entries.find(name);
-           if (it != entries.end()) {
-             return (*it).second;
-           }
-         }
-       }
+   class IntEnumObj : public EnumObj {
+    public:
+     TVM_FFI_DECLARE_OBJECT_INFO("ffi.IntEnum", IntEnumObj, EnumObj);
+   };
+   
+   class IntEnum : public Enum {
+    public:
+     TVM_FFI_DEFINE_OBJECT_REF_METHODS_NULLABLE(IntEnum, Enum, IntEnumObj);
+   };
+   
+   class StrEnumObj : public EnumObj {
+    public:
+     TVM_FFI_DECLARE_OBJECT_INFO("ffi.StrEnum", StrEnumObj, EnumObj);
+   };
+   
+   class StrEnum : public Enum {
+    public:
+     TVM_FFI_DEFINE_OBJECT_REF_METHODS_NULLABLE(StrEnum, Enum, StrEnumObj);
+   };
+   
+   template <typename Index>
+   inline Enum EnumObj::GetByIndex(int32_t type_index, const Index& index) {
+     static reflection::TypeAttrColumn state_column(reflection::type_attr::kEnumState);
+     if (AnyView value = state_column[type_index]; value != nullptr) {
+       EnumState state = value.cast<EnumState>();
+       if (auto entry = state->indexes.Get(Any(index))) return entry->as_or_throw<Enum>();
      }
-     TVM_FFI_THROW(RuntimeError) << "Enum `" << EnumClsObj::_type_key << "` has no instance named `"
-                                 << name << "`";
+     TVM_FFI_THROW(ValueError) << "Enum `" << TypeIndexToTypeKey(type_index)
+                               << "` has no instance with index " << index;
      TVM_FFI_UNREACHABLE();
    }
+   
+   // NOLINTBEGIN(bugprone-reserved-identifier)
+   template <typename EnumClsObj>
+   inline Enum EnumObj::_GetByIntIndex(int64_t index) {
+     static_assert(std::is_base_of_v<EnumObj, EnumClsObj>);
+     return _GetByIntIndex(EnumClsObj::_GetOrAllocRuntimeTypeIndex(), index);
+   }
+   
+   template <typename EnumClsObj>
+   inline Enum EnumObj::_GetByStrIndex(const String& index) {
+     static_assert(std::is_base_of_v<EnumObj, EnumClsObj>);
+     return _GetByStrIndex(EnumClsObj::_GetOrAllocRuntimeTypeIndex(), index);
+   }
+   
+   inline Enum EnumObj::_GetByIntIndex(int32_t type_index, int64_t index) {
+     return GetByIndex(type_index, index);
+   }
+   
+   inline Enum EnumObj::_GetByStrIndex(int32_t type_index, const String& index) {
+     return GetByIndex(type_index, index);
+   }
+   // NOLINTEND(bugprone-reserved-identifier)
    
    }  // namespace ffi
    }  // namespace tvm

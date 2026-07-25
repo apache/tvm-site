@@ -1,1 +1,1 @@
-window.SIDEBAR_ITEMS = {"derive":["Object","ObjectRef"]};
+window.SIDEBAR_ITEMS = {"derive":["Object","ObjectRef"],"macro":["match_any"]};

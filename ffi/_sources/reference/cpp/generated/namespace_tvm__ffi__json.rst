@@ -19,7 +19,7 @@ Functions
 
 - :ref:`exhale_function_json_8h_1a86217bda8bfebd85f8265878bc8a59b8`
 
-- :ref:`exhale_function_json_8h_1a2cd33b0fbc0194eaa803b8a476670587`
+- :ref:`exhale_function_json_8h_1a0a0dc3202335cbaa265618821764fa2d`
 
 
 Typedefs

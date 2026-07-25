@@ -6,6 +6,16 @@ Template Class OverloadObjectDef
 - Defined in :ref:`file_tvm_ffi_reflection_overload.h`
 
 
+Nested Relationships
+--------------------
+
+
+Nested Types
+************
+
+- :ref:`exhale_struct_structtvm_1_1ffi_1_1reflection_1_1OverloadObjectDef_1_1RegisteredMethod`
+
+
 Inheritance Relationships
 -------------------------
 

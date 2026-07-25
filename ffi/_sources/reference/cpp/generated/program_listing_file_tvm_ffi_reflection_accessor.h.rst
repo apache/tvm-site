@@ -48,7 +48,8 @@ Program Listing for File accessor.h
      TVM_FFI_CHECK_SAFE_CALL(TVMFFITypeKeyToIndex(&type_key_array, &type_index));
      const TypeInfo* info = TVMFFIGetTypeInfo(type_index);
      for (int32_t i = 0; i < info->num_fields; ++i) {
-       if (std::strncmp(info->fields[i].name.data, field_name, info->fields[i].name.size) == 0) {
+       if (std::strncmp(info->fields[i].name.data, field_name, info->fields[i].name.size) == 0 &&
+           field_name[info->fields[i].name.size] == '\0') {
          return &(info->fields[i]);
        }
      }
@@ -147,7 +148,8 @@ Program Listing for File accessor.h
      TVM_FFI_CHECK_SAFE_CALL(TVMFFITypeKeyToIndex(&type_key_array, &type_index));
      const TypeInfo* info = TVMFFIGetTypeInfo(type_index);
      for (int32_t i = 0; i < info->num_methods; ++i) {
-       if (std::strncmp(info->methods[i].name.data, method_name, info->methods[i].name.size) == 0) {
+       if (std::strncmp(info->methods[i].name.data, method_name, info->methods[i].name.size) == 0 &&
+           method_name[info->methods[i].name.size] == '\0') {
          return &(info->methods[i]);
        }
      }
@@ -209,6 +211,7 @@ Program Listing for File accessor.h
    inline constexpr const char* kNew = "__ffi_new__";
    inline constexpr const char* kInit = "__ffi_init__";
    inline constexpr const char* kConvert = "__ffi_convert__";
+   inline constexpr const char* kConvertTypeSchema = "__ffi_convert_type_schema__";
    inline constexpr const char* kShallowCopy = "__ffi_shallow_copy__";
    inline constexpr const char* kRepr = "__ffi_repr__";
    inline constexpr const char* kHash = "__ffi_hash__";
@@ -221,9 +224,7 @@ Program Listing for File accessor.h
    inline constexpr const char* kStructuralVisit = "__s_visit__";
    inline constexpr const char* kDataToJson = "__data_to_json__";
    inline constexpr const char* kDataFromJson = "__data_from_json__";
-   inline constexpr const char* kEnumEntries = "__ffi_enum_entries__";
-   inline constexpr const char* kEnumAttrs = "__ffi_enum_attrs__";
-   inline constexpr const char* kEnumValueEntries = "__ffi_enum_value_entries__";
+   inline constexpr const char* kEnumState = "__ffi_enum__";
    }  // namespace type_attr
    
    inline constexpr TVMFFIByteArray AsByteArray(const char* s) {

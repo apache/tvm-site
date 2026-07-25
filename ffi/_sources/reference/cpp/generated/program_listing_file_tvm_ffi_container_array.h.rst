@@ -162,10 +162,10 @@ Program Listing for File array.h
      Array(Array<T>&& other)  // NOLINT(google-explicit-constructor)
          : ObjectRef(std::move(other.data_)) {}
      Array(const Array<T>& other) : ObjectRef(other.data_) {}  // NOLINT(google-explicit-constructor)
-     template <typename U, typename = std::enable_if_t<details::type_contains_v<T, U>>>
+     template <typename U, typename = std::enable_if_t<type_subsumes_v<T, U>>>
      Array(Array<U>&& other)  // NOLINT(google-explicit-constructor)
          : ObjectRef(std::move(other.data_)) {}
-     template <typename U, typename = std::enable_if_t<details::type_contains_v<T, U>>>
+     template <typename U, typename = std::enable_if_t<type_subsumes_v<T, U>>>
      Array(const Array<U>& other)  // NOLINT(google-explicit-constructor)
          : ObjectRef(other.data_) {}
    
@@ -177,12 +177,12 @@ Program Listing for File array.h
        data_ = other.data_;
        return *this;
      }
-     template <typename U, typename = std::enable_if_t<details::type_contains_v<T, U>>>
+     template <typename U, typename = std::enable_if_t<type_subsumes_v<T, U>>>
      TVM_FFI_INLINE Array<T>& operator=(Array<U>&& other) {
        data_ = std::move(other.data_);
        return *this;
      }
-     template <typename U, typename = std::enable_if_t<details::type_contains_v<T, U>>>
+     template <typename U, typename = std::enable_if_t<type_subsumes_v<T, U>>>
      TVM_FFI_INLINE Array<T>& operator=(const Array<U>& other) {
        data_ = other.data_;
        return *this;
@@ -273,13 +273,15 @@ Program Listing for File array.h
      // mutation in std::vector, implements copy-on-write
      void push_back(const T& item) {
        ArrayObj* p = CopyOnWrite(1);
-       p->EmplaceInit(p->TVMFFISeqCell::size++, item);
+       p->EmplaceInit(p->TVMFFISeqCell::size, item);
+       ++p->TVMFFISeqCell::size;
      }
    
      template <typename... Args>
      void emplace_back(Args&&... args) {
        ArrayObj* p = CopyOnWrite(1);
-       p->EmplaceInit(p->TVMFFISeqCell::size++, std::forward<Args>(args)...);
+       p->EmplaceInit(p->TVMFFISeqCell::size, std::forward<Args>(args)...);
+       ++p->TVMFFISeqCell::size;
      }
    
      void insert(iterator position, const T& val) {
@@ -436,6 +438,7 @@ Program Listing for File array.h
      }
    
      using ContainerType = ArrayObj;
+     static constexpr bool _type_container_is_exact = false;
    
      template <typename... Args>
      static Array<T> Agregate(Args... args) {
@@ -613,10 +616,9 @@ Program Listing for File array.h
      }
    };
    
-   namespace details {
+   
    template <typename T, typename U>
-   inline constexpr bool type_contains_v<Array<T>, Array<U>> = type_contains_v<T, U>;
-   }  // namespace details
+   inline constexpr bool type_subsumes_v<Array<T>, Array<U>> = type_subsumes_v<T, U>;
    
    }  // namespace ffi
    }  // namespace tvm

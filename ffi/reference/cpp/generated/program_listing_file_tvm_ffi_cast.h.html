@@ -43,7 +43,7 @@
   <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../../../_static/documentation_options.js?v=e435db62"></script>
+    <script src="../../../_static/documentation_options.js?v=343e8fc7"></script>
     <script src="../../../_static/doctools.js?v=9bcbadda"></script>
     <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -59,8 +59,8 @@
     <link rel="search" title="Search" href="../../../search.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="0.1.dev1+gf90410468" />
-    <meta name="docbuild:last-update" content="Jun 17, 2026"/>
+  <meta name="docsearch:version" content="0.1.dev1+g135c2e8bb" />
+    <meta name="docbuild:last-update" content="Jul 25, 2026"/>
   </head>
   
   
@@ -432,25 +432,31 @@
 <span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;tvm/ffi/object.h&gt;</span>
 <span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;tvm/ffi/optional.h&gt;</span>
 
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;type_traits&gt;</span>
+
 <span class="k">namespace</span><span class="w"> </span><span class="nn">tvm</span><span class="w"> </span><span class="p">{</span>
 <span class="k">namespace</span><span class="w"> </span><span class="nn">ffi</span><span class="w"> </span><span class="p">{</span>
 
 <span class="k">template</span><span class="w"> </span><span class="o">&lt;</span><span class="k">typename</span><span class="w"> </span><span class="nc">RefType</span><span class="p">,</span><span class="w"> </span><span class="k">typename</span><span class="w"> </span><span class="nc">ObjectType</span><span class="o">&gt;</span>
 <span class="kr">inline</span><span class="w"> </span><span class="n">RefType</span><span class="w"> </span><span class="n">GetRef</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="n">ObjectType</span><span class="o">*</span><span class="w"> </span><span class="n">ptr</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
-<span class="w">  </span><span class="k">using</span><span class="w"> </span><span class="n">ContainerType</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="k">typename</span><span class="w"> </span><span class="nc">RefType</span><span class="o">::</span><span class="n">ContainerType</span><span class="p">;</span>
-<span class="w">  </span><span class="k">static_assert</span><span class="p">(</span><span class="n">std</span><span class="o">::</span><span class="n">is_base_of_v</span><span class="o">&lt;</span><span class="n">ContainerType</span><span class="p">,</span><span class="w"> </span><span class="n">ObjectType</span><span class="o">&gt;</span><span class="p">,</span>
-<span class="w">                </span><span class="s">&quot;Can only cast to the ref of same container type&quot;</span><span class="p">);</span>
-
-<span class="w">  </span><span class="k">if</span><span class="w"> </span><span class="k">constexpr</span><span class="w"> </span><span class="p">(</span><span class="n">is_optional_type_v</span><span class="o">&lt;</span><span class="n">RefType</span><span class="o">&gt;</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="n">RefType</span><span class="o">::</span><span class="n">_type_is_nullable</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
-<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">ptr</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="nb">nullptr</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
-<span class="w">      </span><span class="k">return</span><span class="w"> </span><span class="n">details</span><span class="o">::</span><span class="n">ObjectUnsafe</span><span class="o">::</span><span class="n">ObjectRefFromObjectPtr</span><span class="o">&lt;</span><span class="n">RefType</span><span class="o">&gt;</span><span class="p">(</span><span class="nb">nullptr</span><span class="p">);</span>
+<span class="w">  </span><span class="k">if</span><span class="w"> </span><span class="k">constexpr</span><span class="w"> </span><span class="p">(</span><span class="n">object_ref_contains_v</span><span class="o">&lt;</span><span class="n">RefType</span><span class="p">,</span><span class="w"> </span><span class="n">ObjectType</span><span class="o">&gt;</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="k">if</span><span class="w"> </span><span class="k">constexpr</span><span class="w"> </span><span class="p">(</span><span class="n">is_optional_type_v</span><span class="o">&lt;</span><span class="n">RefType</span><span class="o">&gt;</span><span class="w"> </span><span class="o">||</span><span class="w"> </span><span class="n">RefType</span><span class="o">::</span><span class="n">_type_is_nullable</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="k">if</span><span class="w"> </span><span class="p">(</span><span class="n">ptr</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="nb">nullptr</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="k">return</span><span class="w"> </span><span class="n">details</span><span class="o">::</span><span class="n">ObjectUnsafe</span><span class="o">::</span><span class="n">ObjectRefFromObjectPtr</span><span class="o">&lt;</span><span class="n">RefType</span><span class="o">&gt;</span><span class="p">(</span><span class="nb">nullptr</span><span class="p">);</span>
+<span class="w">      </span><span class="p">}</span>
+<span class="w">    </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="p">{</span>
+<span class="w">      </span><span class="n">TVM_FFI_ICHECK_NOTNULL</span><span class="p">(</span><span class="n">ptr</span><span class="p">);</span>
 <span class="w">    </span><span class="p">}</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">details</span><span class="o">::</span><span class="n">ObjectUnsafe</span><span class="o">::</span><span class="n">ObjectRefFromObjectPtr</span><span class="o">&lt;</span><span class="n">RefType</span><span class="o">&gt;</span><span class="p">(</span>
+<span class="w">        </span><span class="n">details</span><span class="o">::</span><span class="n">ObjectUnsafe</span><span class="o">::</span><span class="n">ObjectPtrFromUnowned</span><span class="o">&lt;</span><span class="n">Object</span><span class="o">&gt;</span><span class="p">(</span>
+<span class="w">            </span><span class="k">const_cast</span><span class="o">&lt;</span><span class="n">Object</span><span class="o">*&gt;</span><span class="p">(</span><span class="k">static_cast</span><span class="o">&lt;</span><span class="k">const</span><span class="w"> </span><span class="n">Object</span><span class="o">*&gt;</span><span class="p">(</span><span class="n">ptr</span><span class="p">))));</span>
 <span class="w">  </span><span class="p">}</span><span class="w"> </span><span class="k">else</span><span class="w"> </span><span class="p">{</span>
-<span class="w">    </span><span class="n">TVM_FFI_ICHECK_NOTNULL</span><span class="p">(</span><span class="n">ptr</span><span class="p">);</span>
+<span class="w">    </span><span class="k">static_assert</span><span class="p">(</span><span class="n">object_ref_contains_v</span><span class="o">&lt;</span><span class="n">RefType</span><span class="p">,</span><span class="w"> </span><span class="n">ObjectType</span><span class="o">&gt;</span><span class="p">,</span>
+<span class="w">                  </span><span class="s">&quot;GetRef requires RefType to contain every ObjectType instance; specialize &quot;</span>
+<span class="w">                  </span><span class="s">&quot;object_ref_contains_v for statically safe typed refs or use &quot;</span>
+<span class="w">                  </span><span class="s">&quot;ObjectRef::as&lt;RefType&gt;() for runtime-dependent checks&quot;</span><span class="p">);</span>
+<span class="w">    </span><span class="n">TVM_FFI_UNREACHABLE</span><span class="p">();</span>
 <span class="w">  </span><span class="p">}</span>
-<span class="w">  </span><span class="k">return</span><span class="w"> </span><span class="n">details</span><span class="o">::</span><span class="n">ObjectUnsafe</span><span class="o">::</span><span class="n">ObjectRefFromObjectPtr</span><span class="o">&lt;</span><span class="n">RefType</span><span class="o">&gt;</span><span class="p">(</span>
-<span class="w">      </span><span class="n">details</span><span class="o">::</span><span class="n">ObjectUnsafe</span><span class="o">::</span><span class="n">ObjectPtrFromUnowned</span><span class="o">&lt;</span><span class="n">Object</span><span class="o">&gt;</span><span class="p">(</span>
-<span class="w">          </span><span class="k">const_cast</span><span class="o">&lt;</span><span class="n">Object</span><span class="o">*&gt;</span><span class="p">(</span><span class="k">static_cast</span><span class="o">&lt;</span><span class="k">const</span><span class="w"> </span><span class="n">Object</span><span class="o">*&gt;</span><span class="p">(</span><span class="n">ptr</span><span class="p">))));</span>
 <span class="p">}</span>
 
 <span class="k">template</span><span class="w"> </span><span class="o">&lt;</span><span class="k">typename</span><span class="w"> </span><span class="nc">BaseType</span><span class="p">,</span><span class="w"> </span><span class="k">typename</span><span class="w"> </span><span class="nc">ObjectType</span><span class="o">&gt;</span>
@@ -505,7 +511,7 @@ By Apache TVM FFI contributors
   
   <div class="footer-item">
     <p class="last-updated">
-  Last updated on Jun 17, 2026.
+  Last updated on Jul 25, 2026.
   <br/>
 </p>
   </div>

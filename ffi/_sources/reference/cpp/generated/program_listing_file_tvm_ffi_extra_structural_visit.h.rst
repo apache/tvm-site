@@ -95,8 +95,6 @@ Program Listing for File structural_visit.h
    
    class StructuralVisitorObj : public Object {
     public:
-     StructuralVisitorObj() : StructuralVisitorObj(VTable()) {}
-   
      TVM_FFI_INLINE Optional<VisitInterrupt> Visit(AnyView value) {
        return VisitExpected(value).value();
      }
@@ -106,8 +104,26 @@ Program Listing for File structural_visit.h
            (*vtable_->visit)(this, value));
      }
    
-     TVM_FFI_INLINE Optional<VisitInterrupt> DefaultVisit(AnyView value) {
-       return DefaultVisitExpected(value).value();
+     TVM_FFI_INLINE TVMFFIDefRegionKind def_region_kind() const { return def_region_mode_; }
+   
+     template <typename Callback>
+     TVM_FFI_INLINE auto WithDefRegionKind(TVMFFIDefRegionKind kind, Callback&& callback) {
+       class Scope {
+        public:
+         Scope(StructuralVisitorObj* visitor, TVMFFIDefRegionKind kind)
+             : visitor_(visitor), old_kind_(visitor->def_region_mode_) {
+           visitor_->def_region_mode_ = kind;
+         }
+         ~Scope() { visitor_->def_region_mode_ = old_kind_; }
+         Scope(const Scope&) = delete;
+         Scope& operator=(const Scope&) = delete;
+   
+        private:
+         StructuralVisitorObj* visitor_;
+         TVMFFIDefRegionKind old_kind_;
+       };
+       Scope scope(this, kind);
+       return std::forward<Callback>(callback)();
      }
    
      TVM_FFI_INLINE Expected<Optional<VisitInterrupt>> DefaultVisitExpected(AnyView value) noexcept {
@@ -141,28 +157,6 @@ Program Listing for File structural_visit.h
        return details::VisitReflectedFieldsExpected(this, value.cast<const Object*>());
      }
    
-     TVM_FFI_INLINE TVMFFIDefRegionKind def_region_kind() const { return def_region_mode_; }
-   
-     template <typename Callback>
-     TVM_FFI_INLINE auto WithDefRegionKind(TVMFFIDefRegionKind kind, Callback&& callback) {
-       class Scope {
-        public:
-         Scope(StructuralVisitorObj* visitor, TVMFFIDefRegionKind kind)
-             : visitor_(visitor), old_kind_(visitor->def_region_mode_) {
-           visitor_->def_region_mode_ = kind;
-         }
-         ~Scope() { visitor_->def_region_mode_ = old_kind_; }
-         Scope(const Scope&) = delete;
-         Scope& operator=(const Scope&) = delete;
-   
-        private:
-         StructuralVisitorObj* visitor_;
-         TVMFFIDefRegionKind old_kind_;
-       };
-       Scope scope(this, kind);
-       return std::forward<Callback>(callback)();
-     }
-   
      static constexpr const bool _type_mutable = true;
      TVM_FFI_DECLARE_OBJECT_INFO("ffi.StructuralVisitor", StructuralVisitorObj, Object);
    
@@ -172,28 +166,10 @@ Program Listing for File structural_visit.h
      const StructuralVisitorVTable* vtable_ = nullptr;
    
      TVMFFIDefRegionKind def_region_mode_ = kTVMFFIDefRegionKindNone;
-   
-    private:
-     static const StructuralVisitorVTable* VTable() {
-       static const StructuralVisitorVTable vtable{&StructuralVisitorObj::DispatchVisit};
-       return &vtable;
-     }
-   
-     static TVMFFIAny DispatchVisit(StructuralVisitorObj* visitor, AnyView value) noexcept {
-       auto interrupt = visitor->DefaultVisitExpected(value);
-       if (TVM_FFI_PREDICT_FALSE(interrupt.type_index() == TypeIndex::kTVMFFIError)) {
-         if (value.type_index() >= TypeIndex::kTVMFFIStaticObjectBegin) {
-           Error err = interrupt.error();
-           details::UpdateVisitErrorContext(err, value.cast<ObjectRef>());
-         }
-       }
-       return details::ExpectedUnsafe::MoveToTVMFFIAny(std::move(interrupt));
-     }
    };
    
    class StructuralVisitor : public ObjectRef {
     public:
-     StructuralVisitor() : ObjectRef(make_object<StructuralVisitorObj>()) {}
      explicit StructuralVisitor(ObjectPtr<StructuralVisitorObj> n) : ObjectRef(std::move(n)) {}
    
      TVM_FFI_DEFINE_OBJECT_REF_METHODS_NOTNULLABLE(StructuralVisitor, ObjectRef, StructuralVisitorObj);
@@ -211,6 +187,13 @@ Program Listing for File structural_visit.h
        StructuralVisitorObj* visitor, const Object* obj) noexcept {
      int32_t type_index = obj->type_index();
      const TVMFFITypeInfo* type_info = TVMFFIGetTypeInfo(type_index);
+     // A non-recursive definition applies to a FreeVar itself, but not to its children. All other
+     // inherited modes propagate until an explicit field annotation overrides them.
+     TVMFFIDefRegionKind inherited_kind = visitor->def_region_kind();
+     if (inherited_kind == kTVMFFIDefRegionKindNonRecursive && type_info->metadata != nullptr &&
+         type_info->metadata->structural_eq_hash_kind == kTVMFFISEqHashKindFreeVar) {
+       inherited_kind = kTVMFFIDefRegionKindNone;
+     }
    
      Expected<Optional<VisitInterrupt>> result = Optional<VisitInterrupt>(std::nullopt);
      reflection::ForEachFieldInfoWithEarlyStop(
@@ -228,19 +211,15 @@ Program Listing for File structural_visit.h
              return true;
            }
    
-           TVMFFIDefRegionKind kind = kTVMFFIDefRegionKindNone;
+           TVMFFIDefRegionKind kind = inherited_kind;
            if (field_info->flags & kTVMFFIFieldFlagBitMaskSEqHashDefNonRecursive) {
              kind = kTVMFFIDefRegionKindNonRecursive;
            } else if (field_info->flags & kTVMFFIFieldFlagBitMaskSEqHashDefRecursive) {
              kind = kTVMFFIDefRegionKindRecursive;
            }
    
-           if (kind != kTVMFFIDefRegionKindNone) {
-             result = visitor->WithDefRegionKind(
-                 kind, [&]() { return visitor->VisitExpected(field_value); });
-           } else {
-             result = visitor->VisitExpected(field_value);
-           }
+           result =
+               visitor->WithDefRegionKind(kind, [&]() { return visitor->VisitExpected(field_value); });
            return StructuralVisitNeedEarlyReturn(result);
          });
      return result;
@@ -358,7 +337,9 @@ Program Listing for File structural_visit.h
    
     private:
      static const StructuralVisitorVTable* VTable() {
-       static const StructuralVisitorVTable vtable{&StructuralWalkCallbackVisitorObj::DispatchVisit};
+       static const StructuralVisitorVTable vtable{
+           &StructuralWalkCallbackVisitorObj::DispatchVisit,
+       };
        return &vtable;
      }
    
@@ -374,7 +355,11 @@ Program Listing for File structural_visit.h
        if constexpr (order == WalkOrder::kPreOrder) {
          auto result = dispatch_(value, this->def_region_kind());
          TVM_FFI_S_VISIT_MAYBE_EARLY_RETURN_WITH_ERROR_CONTEXT(result, value);
-         int32_t type_index = result.type_index();
+         // Hoist the call out of TVM_FFI_UNSAFE_ASSUME: clang's -Wassume rejects
+         // arguments that contain a call expression (its potential side effects
+         // would be discarded), while [[maybe_unused]] keeps -Wunused-variable
+         // quiet on configs where the assume macro compiles away.
+         [[maybe_unused]] int32_t type_index = result.type_index();
          TVM_FFI_UNSAFE_ASSUME(type_index == TypeIndex::kTVMFFIInt);
          if (TVM_FFI_PREDICT_FALSE(details::ExpectedUnsafe::ValueAs<int32_t>(result) ==
                                    WalkResult::kSkipTag)) {

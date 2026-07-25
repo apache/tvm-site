@@ -95,5 +95,7 @@ Classes
 -------
 
 
+- :ref:`exhale_struct_structtvm_1_1ffi_1_1reflection_1_1OverloadObjectDef_1_1RegisteredMethod`
+
 - :ref:`exhale_class_classtvm_1_1ffi_1_1reflection_1_1OverloadObjectDef`
 

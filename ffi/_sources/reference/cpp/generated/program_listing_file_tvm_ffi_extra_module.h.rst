@@ -49,7 +49,7 @@ Program Listing for File module.h
      virtual const char* kind() const = 0;
      virtual int GetPropertyMask() const { return 0b000; }
      virtual Optional<Function> GetFunction(const String& name) = 0;
-     virtual bool ImplementsFunction(const String& name) { return GetFunction(name).defined(); }
+     virtual bool ImplementsFunction(const String& name) { return GetFunction(name).has_value(); }
      virtual Optional<String> GetFunctionDoc(const String& name) { return std::nullopt; }
      // Rationale: We separate the docstring from the metadata since docstrings
      // can be unstructured and sometimes large, while metadata can be focused

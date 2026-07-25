@@ -71,14 +71,12 @@ Program Listing for File map.h
          : ObjectRef(other.data_) {}
    
      template <typename KU, typename VU,
-               typename = std::enable_if_t<details::type_contains_v<K, KU> &&
-                                           details::type_contains_v<V, VU>>>
+               typename = std::enable_if_t<type_subsumes_v<K, KU> && type_subsumes_v<V, VU>>>
      Map(Map<KU, VU>&& other)  // NOLINT(google-explicit-constructor)
          : ObjectRef(std::move(other.data_)) {}
    
      template <typename KU, typename VU,
-               typename = std::enable_if_t<details::type_contains_v<K, KU> &&
-                                           details::type_contains_v<V, VU>>>
+               typename = std::enable_if_t<type_subsumes_v<K, KU> && type_subsumes_v<V, VU>>>
      Map(const Map<KU, VU>& other) : ObjectRef(other.data_) {}  // NOLINT(google-explicit-constructor)
    
      Map<K, V>& operator=(Map<K, V>&& other) {
@@ -92,16 +90,14 @@ Program Listing for File map.h
      }
    
      template <typename KU, typename VU,
-               typename = std::enable_if_t<details::type_contains_v<K, KU> &&
-                                           details::type_contains_v<V, VU>>>
+               typename = std::enable_if_t<type_subsumes_v<K, KU> && type_subsumes_v<V, VU>>>
      Map<K, V>& operator=(Map<KU, VU>&& other) {
        data_ = std::move(other.data_);
        return *this;
      }
    
      template <typename KU, typename VU,
-               typename = std::enable_if_t<details::type_contains_v<K, KU> &&
-                                           details::type_contains_v<V, VU>>>
+               typename = std::enable_if_t<type_subsumes_v<K, KU> && type_subsumes_v<V, VU>>>
      Map<K, V>& operator=(const Map<KU, VU>& other) {
        data_ = other.data_;
        return *this;
@@ -167,6 +163,7 @@ Program Listing for File map.h
        return GetMapObj();
      }
      using ContainerType = MapObj;
+     static constexpr bool _type_container_is_exact = false;
    
    
      class iterator {
@@ -254,11 +251,10 @@ Program Listing for File map.h
      }
    };
    
-   namespace details {
+   
    template <typename K, typename V, typename KU, typename VU>
-   inline constexpr bool type_contains_v<Map<K, V>, Map<KU, VU>> =
-       type_contains_v<K, KU> && type_contains_v<V, VU>;
-   }  // namespace details
+   inline constexpr bool type_subsumes_v<Map<K, V>, Map<KU, VU>> =
+       type_subsumes_v<K, KU> && type_subsumes_v<V, VU>;
    
    }  // namespace ffi
    }  // namespace tvm

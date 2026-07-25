@@ -54,6 +54,16 @@ Program Listing for File registry.h
    namespace tvm {
    namespace ffi {
    namespace reflection {
+   namespace details {
+   
+   template <typename T, typename = void>
+   struct HasContainerType : public std::false_type {};
+   
+   template <typename T>
+   struct HasContainerType<T, std::void_t<typename T::ContainerType>> : public std::true_type {};
+   
+   }  // namespace details
+   
    using _MetadataType = std::vector<std::pair<String, Any>>;  // NOLINT(bugprone-reserved-identifier)
    struct FieldInfoBuilder : public TVMFFIFieldInfo {
      _MetadataType metadata_;
@@ -300,6 +310,14 @@ Program Listing for File registry.h
        return ffi::Function::FromTyped(WrapFunction(std::forward<Func>(func)), std::move(name));
      }
    
+     template <typename Value>
+     TVM_FFI_INLINE static void RegisterTypeAttrValue(int32_t type_index, const char* name,
+                                                      Value&& value) {
+       TVMFFIByteArray name_array = {name, std::char_traits<char>::length(name)};
+       TVMFFIAny value_any = AnyView(std::forward<Value>(value)).CopyToTVMFFIAny();
+       TVM_FFI_CHECK_SAFE_CALL(TVMFFITypeRegisterAttr(type_index, &name_array, &value_any));
+     }
+   
      template <typename Func>
      TVM_FFI_INLINE static Func&& WrapFunction(Func&& func) {
        return std::forward<Func>(func);
@@ -505,6 +523,34 @@ Program Listing for File registry.h
        return *this;
      }
    
+     template <typename Value,
+               std::enable_if_t<std::is_convertible_v<Value&&, AnyView> ||
+                                    std::is_convertible_v<std::decay_t<Value>, AnyView>,
+                                int> = 0>
+     TVM_FFI_INLINE ObjectDef& def_type_attr(const char* name, Value&& value) {
+       RegisterTypeAttrValue(type_index_, name, std::forward<Value>(value));
+       return *this;
+     }
+   
+     template <typename Func, std::enable_if_t<!std::is_convertible_v<Func&&, AnyView> &&
+                                                   !std::is_convertible_v<std::decay_t<Func>, AnyView>,
+                                               int> = 0>
+     TVM_FFI_INLINE ObjectDef& def_type_attr(const char* name, Func&& func) {
+       ffi::Function ffi_func =
+           GetMethod(std::string(type_key_) + "." + name, std::forward<Func>(func));
+       RegisterTypeAttrValue(type_index_, name, ffi_func);
+       return *this;
+     }
+   
+     template <typename TSelf>
+     TVM_FFI_INLINE ObjectDef& def_convert() {
+       if constexpr (details::HasContainerType<TSelf>::value) {
+         static_assert(std::is_same_v<typename TSelf::ContainerType, Class>,
+                       "TSelf::ContainerType must match ObjectDef's object type");
+       }
+       return def_type_attr(type_attr::kConvert, &details::FFIConvertFromAnyViewToObjectRef<TSelf>);
+     }
+   
      template <typename... Args, typename... Extra>
      TVM_FFI_INLINE ObjectDef& def([[maybe_unused]] init<Args...> init_func, Extra&&... extra) {
        has_explicit_init_ = true;
@@ -619,23 +665,39 @@ Program Listing for File registry.h
     public:
      template <typename... ExtraArgs>
      explicit TypeAttrDef(ExtraArgs&&... extra_args)
-         : type_index_(Class::RuntimeTypeIndex()), type_key_(Class::_type_key) {}
+         : type_index_(Class::_GetOrAllocRuntimeTypeIndex()), type_key_(Class::_type_key) {}
    
-     template <typename Func>
+     template <typename Value,
+               std::enable_if_t<std::is_convertible_v<Value&&, AnyView> ||
+                                    std::is_convertible_v<std::decay_t<Value>, AnyView>,
+                                int> = 0>
+     TypeAttrDef& def(const char* name, Value&& value) {
+       RegisterTypeAttrValue(type_index_, name, std::forward<Value>(value));
+       return *this;
+     }
+   
+     template <typename Func, std::enable_if_t<!std::is_convertible_v<Func&&, AnyView> &&
+                                                   !std::is_convertible_v<std::decay_t<Func>, AnyView>,
+                                               int> = 0>
      TypeAttrDef& def(const char* name, Func&& func) {
-       TVMFFIByteArray name_array = {name, std::char_traits<char>::length(name)};
        ffi::Function ffi_func =
            GetMethod(std::string(type_key_) + "." + name, std::forward<Func>(func));
-       TVMFFIAny value_any = AnyView(ffi_func).CopyToTVMFFIAny();
-       TVM_FFI_CHECK_SAFE_CALL(TVMFFITypeRegisterAttr(type_index_, &name_array, &value_any));
+       RegisterTypeAttrValue(type_index_, name, ffi_func);
        return *this;
+     }
+   
+     template <typename TSelf>
+     TVM_FFI_INLINE TypeAttrDef& def_convert() {
+       if constexpr (details::HasContainerType<TSelf>::value) {
+         static_assert(std::is_same_v<typename TSelf::ContainerType, Class>,
+                       "TSelf::ContainerType must match TypeAttrDef's object type");
+       }
+       return def(type_attr::kConvert, &details::FFIConvertFromAnyViewToObjectRef<TSelf>);
      }
    
      template <typename T>
      TypeAttrDef& attr(const char* name, T value) {
-       TVMFFIByteArray name_array = {name, std::char_traits<char>::length(name)};
-       TVMFFIAny value_any = AnyView(value).CopyToTVMFFIAny();
-       TVM_FFI_CHECK_SAFE_CALL(TVMFFITypeRegisterAttr(type_index_, &name_array, &value_any));
+       RegisterTypeAttrValue(type_index_, name, std::move(value));
        return *this;
      }
    

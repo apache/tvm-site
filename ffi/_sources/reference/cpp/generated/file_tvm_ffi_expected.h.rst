@@ -73,5 +73,7 @@ Classes
 
 - :ref:`exhale_class_classtvm_1_1ffi_1_1Expected`
 
+- :ref:`exhale_class_classtvm_1_1ffi_1_1Expected_3_01void_01_4`
+
 - :ref:`exhale_class_classtvm_1_1ffi_1_1Unexpected`
 

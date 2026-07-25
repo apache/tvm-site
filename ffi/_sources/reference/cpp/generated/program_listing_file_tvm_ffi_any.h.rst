@@ -35,6 +35,7 @@ Program Listing for File any.h
    #include <tvm/ffi/string.h>
    #include <tvm/ffi/type_traits.h>
    
+   #include <limits>
    #include <string>
    #include <utility>
    
@@ -104,7 +105,7 @@ Program Listing for File any.h
      template <typename T, typename = std::enable_if_t<TypeTraits<T>::convert_enabled>>
      TVM_FFI_INLINE T cast() const {
        std::optional<T> opt = TypeTraits<T>::TryCastFromAnyView(&data_);
-       if (!opt.has_value()) {
+       if (TVM_FFI_PREDICT_FALSE(!opt.has_value())) {
          TVM_FFI_THROW(TypeError) << "Cannot convert from type `"
                                   << TypeTraits<T>::GetMismatchTypeInfo(&data_) << "` to `"
                                   << TypeTraits<T>::TypeStr() << "`";
@@ -239,6 +240,22 @@ Program Listing for File any.h
      }
    
      template <typename T,
+               typename = std::enable_if_t<TypeTraits<T>::storage_enabled || std::is_same_v<T, Any>>>
+     TVM_FFI_INLINE T as_or_throw() && {
+       if constexpr (std::is_same_v<T, Any>) {
+         return std::move(*this);
+       } else {
+         std::optional<T> result = std::move(*this).template as<T>();
+         if (TVM_FFI_PREDICT_FALSE(!result.has_value())) {
+           TVM_FFI_THROW(TypeError) << "Cannot treat type `"
+                                    << TypeTraits<T>::GetMismatchTypeInfo(&data_) << "` as type `"
+                                    << TypeTraits<T>::TypeStr() << "`";
+         }
+         return *std::move(result);
+       }
+     }
+   
+     template <typename T,
                typename = std::enable_if_t<TypeTraits<T>::convert_enabled || std::is_same_v<T, Any>>>
      TVM_FFI_INLINE std::optional<T> as() const& {
        if constexpr (std::is_same_v<T, Any>) {
@@ -252,6 +269,22 @@ Program Listing for File any.h
        }
      }
    
+     template <typename T,
+               typename = std::enable_if_t<TypeTraits<T>::convert_enabled || std::is_same_v<T, Any>>>
+     TVM_FFI_INLINE T as_or_throw() const& {
+       if constexpr (std::is_same_v<T, Any>) {
+         return *this;
+       } else {
+         std::optional<T> result = this->as<T>();
+         if (TVM_FFI_PREDICT_FALSE(!result.has_value())) {
+           TVM_FFI_THROW(TypeError) << "Cannot treat type `"
+                                    << TypeTraits<T>::GetMismatchTypeInfo(&data_) << "` as type `"
+                                    << TypeTraits<T>::TypeStr() << "`";
+         }
+         return *std::move(result);
+       }
+     }
+   
      template <typename T, typename = std::enable_if_t<std::is_base_of_v<Object, T>>>
      TVM_FFI_INLINE const T* as() const& {
        return this->as<const T*>().value_or(nullptr);
@@ -260,7 +293,7 @@ Program Listing for File any.h
      template <typename T, typename = std::enable_if_t<TypeTraits<T>::convert_enabled>>
      TVM_FFI_INLINE T cast() const& {
        std::optional<T> opt = TypeTraits<T>::TryCastFromAnyView(&data_);
-       if (!opt.has_value()) {
+       if (TVM_FFI_PREDICT_FALSE(!opt.has_value())) {
          TVM_FFI_THROW(TypeError) << "Cannot convert from type `"
                                   << TypeTraits<T>::GetMismatchTypeInfo(&data_) << "` to `"
                                   << TypeTraits<T>::TypeStr() << "`";
@@ -275,7 +308,7 @@ Program Listing for File any.h
        }
        // slow path, try to do fallback convert
        std::optional<T> opt = TypeTraits<T>::TryCastFromAnyView(&data_);
-       if (!opt.has_value()) {
+       if (TVM_FFI_PREDICT_FALSE(!opt.has_value())) {
          TVM_FFI_THROW(TypeError) << "Cannot convert from type `"
                                   << TypeTraits<T>::GetMismatchTypeInfo(&data_) << "` to `"
                                   << TypeTraits<T>::TypeStr() << "`";
@@ -620,6 +653,86 @@ Program Listing for File any.h
          TVM_FFI_ICHECK(result_any.type_index() == TypeIndex::kTVMFFIBool);
          return result_any.data_.v_int64 != 0;
        }
+     }
+   };
+   
+   // Defer this definition until any.h so the throwing path can depend on
+   // TVM_FFI_THROW(TypeError), while object.h stays below the error layer.
+   template <typename ObjectRefType, typename>
+   TVM_FFI_INLINE ObjectRefType ObjectRef::as_or_throw() const& {
+     if (data_ != nullptr) {
+       // Piggy back to Any TypeTraits for rich ObjectRef check, temp any_data will optimize away.
+       TVMFFIAny any_data;
+       any_data.type_index = data_->type_index();
+       TVM_FFI_UNSAFE_ASSUME(any_data.type_index >= TypeIndex::kTVMFFIStaticObjectBegin);
+       any_data.zero_padding = 0;
+       TVM_FFI_CLEAR_PTR_PADDING_IN_FFI_ANY(&any_data);
+       any_data.v_obj = reinterpret_cast<TVMFFIObject*>(const_cast<Object*>(data_.get()));
+       if (TVM_FFI_PREDICT_TRUE(TypeTraits<ObjectRefType>::CheckAnyStrict(&any_data))) {
+         ObjectRefType result(UnsafeInit{});
+         result.data_ = data_;
+         return result;
+       } else {
+         TVM_FFI_THROW(TypeError) << "Cannot treat type `"
+                                  << TypeTraits<ObjectRefType>::GetMismatchTypeInfo(&any_data)
+                                  << "` as type `" << TypeTraits<ObjectRefType>::TypeStr() << "`";
+       }
+     } else {
+       if constexpr (ObjectRefType::_type_is_nullable) {
+         return ObjectRefType(UnsafeInit{});
+       } else {
+         TVM_FFI_THROW(TypeError) << "Cannot treat type `" << StaticTypeKey::kTVMFFINone
+                                  << "` as type `" << TypeTraits<ObjectRefType>::TypeStr() << "`";
+       }
+     }
+     TVM_FFI_UNREACHABLE();
+   }
+   
+   template <typename ObjectRefType, typename>
+   TVM_FFI_INLINE ObjectRefType ObjectRef::as_or_throw() && {
+     if (data_ != nullptr) {
+       // Piggy back to Any TypeTraits for rich ObjectRef check, temp any_data will optimize away.
+       TVMFFIAny any_data;
+       any_data.type_index = data_->type_index();
+       TVM_FFI_UNSAFE_ASSUME(any_data.type_index >= TypeIndex::kTVMFFIStaticObjectBegin);
+       any_data.zero_padding = 0;
+       TVM_FFI_CLEAR_PTR_PADDING_IN_FFI_ANY(&any_data);
+       any_data.v_obj = reinterpret_cast<TVMFFIObject*>(const_cast<Object*>(data_.get()));
+       if (TVM_FFI_PREDICT_TRUE(TypeTraits<ObjectRefType>::CheckAnyStrict(&any_data))) {
+         ObjectRefType result(UnsafeInit{});
+         result.data_ = std::move(data_);
+         data_ = nullptr;
+         return result;
+       } else {
+         TVM_FFI_THROW(TypeError) << "Cannot treat type `"
+                                  << TypeTraits<ObjectRefType>::GetMismatchTypeInfo(&any_data)
+                                  << "` as type `" << TypeTraits<ObjectRefType>::TypeStr() << "`";
+       }
+     } else {
+       if constexpr (ObjectRefType::_type_is_nullable) {
+         return ObjectRefType(UnsafeInit{});
+       } else {
+         TVM_FFI_THROW(TypeError) << "Cannot treat type `" << StaticTypeKey::kTVMFFINone
+                                  << "` as type `" << TypeTraits<ObjectRefType>::TypeStr() << "`";
+       }
+     }
+     TVM_FFI_UNREACHABLE();
+   }
+   
+   // Placed near the end because this specialization depends on error handling.
+   template <>
+   struct TypeTraits<uint64_t> : public TypeTraitsIntBase<uint64_t> {
+     TVM_FFI_INLINE static void CopyToAnyView(const uint64_t& src, TVMFFIAny* result) {
+       if (src > static_cast<uint64_t>(std::numeric_limits<int64_t>::max())) {
+         TVM_FFI_THROW(OverflowError)
+             << "Integer value " << src << " is too large to fit in int64_t. "
+             << "Consider explicitly casting to int64_t first if this is intentional.";
+       }
+       TypeTraitsIntBase<uint64_t>::CopyInt64ToAnyView(static_cast<int64_t>(src), result);
+     }
+   
+     TVM_FFI_INLINE static void MoveToAny(uint64_t src, TVMFFIAny* result) {
+       CopyToAnyView(src, result);
      }
    };
    }  // namespace ffi

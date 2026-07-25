@@ -131,6 +131,132 @@ Program Listing for File dtype.h
      return TypeTraits<String>::MoveFromAnyAfterCheck(&out);
    }
    
+   inline bool DTypeIsFloat(DLDataType dtype) {
+     switch (static_cast<int>(dtype.code)) {
+       case kDLFloat:
+       case kDLBfloat:
+       case kDLFloat8_e3m4:
+       case kDLFloat8_e4m3:
+       case kDLFloat8_e4m3b11fnuz:
+       case kDLFloat8_e4m3fn:
+       case kDLFloat8_e4m3fnuz:
+       case kDLFloat8_e5m2:
+       case kDLFloat8_e5m2fnuz:
+       case kDLFloat8_e8m0fnu:
+       case kDLFloat6_e2m3fn:
+       case kDLFloat6_e3m2fn:
+       case kDLFloat4_e2m1fn:
+         return true;
+       default:
+         return false;
+     }
+   }
+   
+   TVM_FFI_INLINE bool DTypeIsInt(DLDataType dtype) {
+     return dtype.code == kDLInt || dtype.code == kDLUInt;
+   }
+   
+   TVM_FFI_INLINE bool DTypeIsBool(DLDataType dtype) { return dtype.code == kDLBool; }
+   
+   inline std::string DTypeAbbrev(DLDataType dtype) {
+     if (dtype.bits == 8 && dtype.lanes == 1 && dtype.code == kDLBool) {
+       return "bool";
+     }
+     if (dtype.code == kDLOpaqueHandle && dtype.lanes == 0 && dtype.bits == 0) {
+       return "void";
+     }
+   
+     std::string result;
+     switch (static_cast<int>(dtype.code)) {
+       case kDLInt: {
+         result = "i";
+         break;
+       }
+       case kDLUInt: {
+         result = "u";
+         break;
+       }
+       case kDLFloat: {
+         result = "f";
+         break;
+       }
+       case kDLOpaqueHandle: {
+         return "handle";
+       }
+       case kDLBfloat: {
+         result = "bf";
+         break;
+       }
+       case kDLBool: {
+         result = "bool";
+         break;
+       }
+       case kDLFloat8_e3m4: {
+         result = "f8_e3m4";
+         break;
+       }
+       case kDLFloat8_e4m3: {
+         result = "f8_e4m3";
+         break;
+       }
+       case kDLFloat8_e4m3b11fnuz: {
+         result = "f8_e4m3b11fnuz";
+         break;
+       }
+       case kDLFloat8_e4m3fn: {
+         result = "f8_e4m3fn";
+         break;
+       }
+       case kDLFloat8_e4m3fnuz: {
+         result = "f8_e4m3fnuz";
+         break;
+       }
+       case kDLFloat8_e5m2: {
+         result = "f8_e5m2";
+         break;
+       }
+       case kDLFloat8_e5m2fnuz: {
+         result = "f8_e5m2fnuz";
+         break;
+       }
+       case kDLFloat8_e8m0fnu: {
+         result = "f8_e8m0fnu";
+         break;
+       }
+       case kDLFloat6_e2m3fn: {
+         result = "f6_e2m3fn";
+         break;
+       }
+       case kDLFloat6_e3m2fn: {
+         result = "f6_e3m2fn";
+         break;
+       }
+       case kDLFloat4_e2m1fn: {
+         result = "f4_e2m1fn";
+         break;
+       }
+       default: {
+         if (static_cast<int>(dtype.code) >= static_cast<int>(DLExtDataTypeCode::kDLExtCustomBegin)) {
+           String full_name = DLDataTypeToString(dtype);
+           return std::string(full_name.data(), full_name.size());
+         }
+         TVM_FFI_THROW(ValueError) << "DLDataType contains unknown type_code="
+                                   << static_cast<int>(dtype.code);
+       }
+     }
+   
+     int16_t lanes = static_cast<int16_t>(dtype.lanes);
+     if (dtype.code < kDLFloat8_e3m4 && (dtype.code != kDLBool || dtype.bits != 8)) {
+       result += std::to_string(static_cast<int>(dtype.bits));
+     }
+     if (lanes > 1) {
+       result += "x" + std::to_string(lanes);
+     } else if (lanes < -1) {
+       result += "xvscalex" + std::to_string(-lanes);
+     }
+     return result;
+   }
+   
    // DLDataType
    template <>
    struct TypeTraits<DLDataType> : public TypeTraitsBase {

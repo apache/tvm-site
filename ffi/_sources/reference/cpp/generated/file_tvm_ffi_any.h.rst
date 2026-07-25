@@ -35,6 +35,8 @@ Includes
 --------
 
 
+- ``limits``
+
 - ``string`` (:ref:`file_tvm_ffi_string.h`)
 
 - ``tvm/ffi/c_api.h`` (:ref:`file_tvm_ffi_c_api.h`)
@@ -84,6 +86,8 @@ Included By
 - :ref:`file_tvm_ffi_extra_structural_visit.h`
 
 - :ref:`file_tvm_ffi_function.h`
+
+- :ref:`file_tvm_ffi_optional.h`
 
 - :ref:`file_tvm_ffi_reflection_access_path.h`
 

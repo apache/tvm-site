@@ -35,25 +35,31 @@ Program Listing for File cast.h
    #include <tvm/ffi/object.h>
    #include <tvm/ffi/optional.h>
    
+   #include <type_traits>
+   
    namespace tvm {
    namespace ffi {
    
    template <typename RefType, typename ObjectType>
    inline RefType GetRef(const ObjectType* ptr) {
-     using ContainerType = typename RefType::ContainerType;
-     static_assert(std::is_base_of_v<ContainerType, ObjectType>,
-                   "Can only cast to the ref of same container type");
-   
-     if constexpr (is_optional_type_v<RefType> || RefType::_type_is_nullable) {
-       if (ptr == nullptr) {
-         return details::ObjectUnsafe::ObjectRefFromObjectPtr<RefType>(nullptr);
+     if constexpr (object_ref_contains_v<RefType, ObjectType>) {
+       if constexpr (is_optional_type_v<RefType> || RefType::_type_is_nullable) {
+         if (ptr == nullptr) {
+           return details::ObjectUnsafe::ObjectRefFromObjectPtr<RefType>(nullptr);
+         }
+       } else {
+         TVM_FFI_ICHECK_NOTNULL(ptr);
        }
+       return details::ObjectUnsafe::ObjectRefFromObjectPtr<RefType>(
+           details::ObjectUnsafe::ObjectPtrFromUnowned<Object>(
+               const_cast<Object*>(static_cast<const Object*>(ptr))));
      } else {
-       TVM_FFI_ICHECK_NOTNULL(ptr);
+       static_assert(object_ref_contains_v<RefType, ObjectType>,
+                     "GetRef requires RefType to contain every ObjectType instance; specialize "
+                     "object_ref_contains_v for statically safe typed refs or use "
+                     "ObjectRef::as<RefType>() for runtime-dependent checks");
+       TVM_FFI_UNREACHABLE();
      }
-     return details::ObjectUnsafe::ObjectRefFromObjectPtr<RefType>(
-         details::ObjectUnsafe::ObjectPtrFromUnowned<Object>(
-             const_cast<Object*>(static_cast<const Object*>(ptr))));
    }
    
    template <typename BaseType, typename ObjectType>

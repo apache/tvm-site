@@ -118,7 +118,7 @@ Program Listing for File error.h
    };
    }  // namespace details
    
-   class Error : public ObjectRef, public std::exception {
+   class TVM_FFI_DLL Error : public ObjectRef, public std::exception {
     public:
      Error(std::string kind, std::string message, std::string backtrace) {
        data_ = make_object<details::ErrorObjFromStd>(std::move(kind), std::move(message),

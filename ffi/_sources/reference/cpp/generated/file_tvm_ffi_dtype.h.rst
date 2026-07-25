@@ -84,5 +84,13 @@ Functions
 
 - :ref:`exhale_function_dtype_8h_1a94787950883e5a7e97b764ddd342afc3`
 
+- :ref:`exhale_function_dtype_8h_1a89696eef7917af8ff34285cb6fae4c63`
+
+- :ref:`exhale_function_dtype_8h_1a16f5ec0ba28cdd73f61247f4a662115a`
+
+- :ref:`exhale_function_dtype_8h_1a74a70941a707682598886f8475f86848`
+
+- :ref:`exhale_function_dtype_8h_1a95190c80d6dfa260c156b00ce5336c83`
+
 - :ref:`exhale_function_dtype_8h_1a8a71c64237efaa13a8d40dfacd6c3165`
 

@@ -45,7 +45,6 @@ Program Listing for File enum_def.h
    #include <tvm/ffi/string.h>
    
    #include <cstdint>
-   #include <string>
    #include <type_traits>
    #include <utility>
    
@@ -56,78 +55,76 @@ Program Listing for File enum_def.h
    template <typename EnumClsObj, typename = std::enable_if_t<std::is_base_of_v<EnumObj, EnumClsObj>>>
    class EnumDef : public ReflectionDefBase {
     public:
-     explicit EnumDef(const char* instance_name)
-         : type_index_(EnumClsObj::RuntimeTypeIndex()), name_(instance_name) {
-       Dict<String, Enum> entries = EnsureEntriesDict();
-       String name_str(name_);
-       if (entries.count(name_str) != 0) {
-         TVM_FFI_THROW(RuntimeError) << "Duplicate enum entry `" << name_ << "` for type `"
-                                     << EnumClsObj::_type_key << "`";
-       }
-       ordinal_ = static_cast<int64_t>(entries.size());
-       ObjectPtr<EnumClsObj> obj = make_object<EnumClsObj>();
-       obj->_value = ordinal_;
-       obj->_name = name_str;
-       instance_ = Enum(ObjectPtr<EnumObj>(std::move(obj)));
-       entries.Set(name_str, instance_);
-       // Ensure the attrs dict exists so later ``set_attr`` calls can mutate it.
-       EnsureAttrsDict();
+     explicit EnumDef(const char* str_index) : type_index_(EnumClsObj::_GetOrAllocRuntimeTypeIndex()) {
+       static_assert(!std::is_base_of_v<IntEnumObj, EnumClsObj>,
+                     "IntEnum registration requires an explicit integer index");
+       EnumState state = EnsureState();
+       Register(state, static_cast<int64_t>(state->entries.size()), String(str_index));
+     }
+   
+     EnumDef(const char* str_index, int64_t int_index)
+         : type_index_(EnumClsObj::_GetOrAllocRuntimeTypeIndex()) {
+       static_assert(std::is_base_of_v<IntEnumObj, EnumClsObj>,
+                     "Explicit integer indices are reserved for IntEnum");
+       Register(EnsureState(), int_index, String(str_index));
      }
    
      template <typename T>
      EnumDef& set_attr(const char* attr_name, T value) {
-       Dict<String, List<Any>> attrs = EnsureAttrsDict();
-       String attr_key(attr_name);
-       List<Any> column;
-       auto it = attrs.find(attr_key);
-       if (it == attrs.end()) {
-         column = List<Any>();
-         attrs.Set(attr_key, column);
-       } else {
-         column = (*it).second;
-       }
-       while (static_cast<int64_t>(column.size()) <= ordinal_) {
-         column.push_back(Any(nullptr));
-       }
-       column.Set(ordinal_, Any(std::move(value)));
+       Dict<String, Dict<ObjectRef, Any>> attrs = EnsureState()->attrs;
+       String key(attr_name);
+       Dict<ObjectRef, Any> column = attrs.Get(key).value_or(Dict<ObjectRef, Any>());
+       attrs.Set(key, column);
+       column.Set(instance_, Any(std::move(value)));
        return *this;
      }
    
-     Enum instance() const { return instance_; }
-   
-     int64_t ordinal() const { return ordinal_; }
-   
     private:
-     Dict<String, Enum> EnsureEntriesDict() {
-       return EnsureDict<Dict<String, Enum>>(type_attr::kEnumEntries);
-     }
-   
-     Dict<String, List<Any>> EnsureAttrsDict() {
-       return EnsureDict<Dict<String, List<Any>>>(type_attr::kEnumAttrs);
-     }
-   
-     template <typename DictT>
-     DictT EnsureDict(const char* attr_name) {
-       TVMFFIByteArray name_array = {attr_name, std::char_traits<char>::length(attr_name)};
-       const TVMFFITypeAttrColumn* column = TVMFFIGetTypeAttrColumn(&name_array);
-       if (column != nullptr) {
-         int32_t offset = type_index_ - column->begin_index;
-         if (offset >= 0 && offset < column->size) {
-           const TVMFFIAny* stored = &column->data[offset];
-           if (stored->type_index != kTVMFFINone) {
-             return AnyView::CopyFromTVMFFIAny(*stored).cast<DictT>();
-           }
-         }
+     void Register(const EnumState& state, int64_t int_index, String str_index) {
+       List<ObjectRef> entries = state->entries;
+       Dict<Any, ObjectRef> indexes = state->indexes;
+       Any int_key(int_index);
+       Any str_key(str_index);
+       if (indexes.count(int_key) || indexes.count(str_key)) {
+         TVM_FFI_THROW(ValueError) << "Duplicate enum index for type `" << EnumClsObj::_type_key
+                                   << "`";
        }
-       DictT fresh;
-       TVMFFIAny value_any = AnyView(fresh).CopyToTVMFFIAny();
-       TVM_FFI_CHECK_SAFE_CALL(TVMFFITypeRegisterAttr(type_index_, &name_array, &value_any));
-       return fresh;
+       ObjectPtr<EnumClsObj> obj = make_object<EnumClsObj>();
+       ::tvm::ffi::details::ObjectUnsafe::GetHeader(obj.get())->type_index = type_index_;
+       obj->_int_index = int_index;
+       obj->_str_index = std::move(str_index);
+       instance_ = Enum(ObjectPtr<EnumObj>(std::move(obj)));
+       entries.push_back(instance_);
+       indexes.Set(int_key, instance_);
+       indexes.Set(str_key, instance_);
+     }
+   
+     EnumState EnsureState() {
+       int32_t state_type_index = EnumStateObj::_GetOrAllocRuntimeTypeIndex();
+       TypeAttrColumn column(type_attr::kEnumState);
+       if (AnyView value = column[type_index_]; value != nullptr) {
+         if (value.type_index() != state_type_index) {
+           TVM_FFI_THROW(TypeError) << "Expected `" << EnumStateObj::_type_key
+                                    << "` in enum state column, but got `" << value.GetTypeKey()
+                                    << "`";
+         }
+         // Avoid cast<EnumState> here because it reads the same deferred inline type index.
+         TVMFFIAny value_any = value.CopyToTVMFFIAny();
+         return ::tvm::ffi::details::ObjectUnsafe::ObjectRefFromObjectPtr<EnumState>(
+             ::tvm::ffi::details::ObjectUnsafe::ObjectPtrFromUnowned<Object>(value_any.v_obj));
+       }
+       ObjectPtr<EnumStateObj> state_obj = make_object<EnumStateObj>();
+       // GCC runs attribute constructors before dynamic initialization of inline type indices.
+       // Set the header explicitly so the state is not packed as `None` during static init.
+       ::tvm::ffi::details::ObjectUnsafe::GetHeader(state_obj.get())->type_index = state_type_index;
+       EnumState state(std::move(state_obj));
+       constexpr TVMFFIByteArray name = AsByteArray(type_attr::kEnumState);
+       TVMFFIAny value_any = AnyView(state).CopyToTVMFFIAny();
+       TVM_FFI_CHECK_SAFE_CALL(TVMFFITypeRegisterAttr(type_index_, &name, &value_any));
+       return state;
      }
    
      int32_t type_index_;
-     const char* name_;
-     int64_t ordinal_;
      Enum instance_;
    };
    

@@ -3,7 +3,7 @@
 Struct StaticTypeKey
 ====================
 
-- Defined in :ref:`file_tvm_ffi_object.h`
+- Defined in :ref:`file_tvm_ffi_type_traits.h`
 
 
 Struct Documentation

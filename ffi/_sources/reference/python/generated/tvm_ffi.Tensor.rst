@@ -17,6 +17,7 @@
       ~Tensor.__dlpack_device__
       ~Tensor.__init_handle_by_constructor__
       ~Tensor.__move_handle_from__
+      ~Tensor.data_ptr
       ~Tensor.is_
       ~Tensor.is_contiguous
       ~Tensor.numel

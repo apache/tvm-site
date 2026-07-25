@@ -71,6 +71,8 @@ Included By
 
 - :ref:`file_tvm_ffi_any.h`
 
+- :ref:`file_tvm_ffi_device.h`
+
 - :ref:`file_tvm_ffi_dtype.h`
 
 - :ref:`file_tvm_ffi_enum.h`

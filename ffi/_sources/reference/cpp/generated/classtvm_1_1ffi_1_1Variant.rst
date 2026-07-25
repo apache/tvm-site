@@ -6,15 +6,6 @@ Template Class Variant
 - Defined in :ref:`file_tvm_ffi_container_variant.h`
 
 
-Inheritance Relationships
--------------------------
-
-Base Type
-*********
-
-- ``public tvm::ffi::details::VariantBase< details::all_object_ref_v< V... > >``
-
-
 Class Documentation
 -------------------
 

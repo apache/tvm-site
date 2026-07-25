@@ -13,7 +13,6 @@
 
    .. autosummary::
    
-      ~VisitInterrupt.__ffi_init__
       ~VisitInterrupt.__init__
       ~VisitInterrupt.__init_handle_by_constructor__
       ~VisitInterrupt.__move_handle_from__

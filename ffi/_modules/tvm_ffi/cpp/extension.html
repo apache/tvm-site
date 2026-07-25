@@ -42,7 +42,7 @@
   <link rel="preload" as="script" href="../../../_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="../../../_static/documentation_options.js?v=e435db62"></script>
+    <script src="../../../_static/documentation_options.js?v=343e8fc7"></script>
     <script src="../../../_static/doctools.js?v=9bcbadda"></script>
     <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../_static/clipboard.min.js?v=a7894cd8"></script>
@@ -272,6 +272,25 @@ let darkTheme = isDarkTheme();
 let modal = null;
 let modalContent = null;
 let previousScrollOffset = [window.scrollX, window.scrollY];
+let _lazyObserver = null;
+let _renderQueue = Promise.resolve();
+
+// Apply d3 zoom to each SVG. Idempotent: an SVG already wrapped is skipped,
+// so this is safe to call both for the initial batch and for diagrams that
+// render lazily once they become visible.
+const addZoomToSvgs = (svgs) => {
+    svgs.each(function() {
+        if (this.getAttribute('data-zoom-applied') === 'true') return;
+        var svg = d3.select(this);
+        svg.html("<g class='wrapper'>" + svg.html() + "</g>");
+        var inner = svg.select("g");
+        var zoom = d3.zoom().on("zoom", function(event) {
+            inner.attr("transform", event.transform);
+        });
+        svg.call(zoom);
+        this.setAttribute('data-zoom-applied', 'true');
+    });
+};
 
 const runMermaid = async (rerun) => {
     console.log("Running mermaid diagrams, rerun =", rerun);
@@ -279,7 +298,15 @@ const runMermaid = async (rerun) => {
     let all_mermaids = document.querySelectorAll(".mermaid");
 
     if (rerun) {
+        // Disconnect any previous lazy rendering observer
+        if (_lazyObserver) {
+            _lazyObserver.disconnect();
+            _lazyObserver = null;
+        }
+
         all_mermaids.forEach((el) => {
+            el.removeAttribute('data-mermaid-deferred');
+            el.removeAttribute('data-mermaid-render-failed');
             if(!el.hasAttribute("data-original-code")) {
                 // store original code
                 // console.log(`Storing original code for first run: `, el.innerHTML);
@@ -296,35 +323,89 @@ const runMermaid = async (rerun) => {
                 el.setAttribute('data-original-code', el.innerHTML);
             }
         });
-        await mermaid.run();
+
+        // Separate visible and hidden elements. Mermaid's layout engine measures
+        // text dimensions via the DOM, which fails for elements hidden by a parent
+        // (e.g., Reveal.js non-active slides, sphinx-design unopened tabs),
+        // producing broken SVGs. Render visible elements now, defer hidden ones.
+        const visible = [];
+        const hidden = [];
+        all_mermaids.forEach((el) => {
+            // offsetParent is null for display:none ancestors.
+            // getClientRects().length > 0 catches position:fixed elements
+            // (which also have null offsetParent but are still visible).
+            if (el.offsetParent !== null || el.getClientRects().length > 0) {
+                visible.push(el);
+            } else {
+                hidden.push(el);
+                el.setAttribute('data-mermaid-deferred', 'true');
+            }
+        });
+
+        if (visible.length > 0) {
+            try {
+                await mermaid.run({ nodes: visible });
+            } catch (e) {
+                console.error("Mermaid rendering failed:", e);
+            }
+        }
+
+        // Lazily render hidden elements when they become visible.
+        // Uses a promise chain (_renderQueue) to serialize rendering,
+        // since IntersectionObserver may report multiple entries at once
+        // and mermaid.run() is not safe to call concurrently.
+        if (hidden.length > 0) {
+            if (typeof IntersectionObserver === 'undefined') {
+                console.warn("IntersectionObserver not available; hidden mermaid diagrams will not render.");
+            } else {
+                _renderQueue = Promise.resolve();
+                _lazyObserver = new IntersectionObserver((entries) => {
+                    for (const entry of entries) {
+                        if (entry.isIntersecting && entry.target.getAttribute("data-processed") !== "true") {
+                            _lazyObserver.unobserve(entry.target);
+                            const el = entry.target;
+                            _renderQueue = _renderQueue.then(async () => {
+                                try {
+                                    await mermaid.run({ nodes: [el] });
+                                    el.removeAttribute('data-mermaid-deferred');
+                                    // Apply zoom to the now-rendered diagram, matching
+                                    // the decoration visible diagrams receive.
+                                    if ("False" === "True") {
+                                        addZoomToSvgs(d3.selectAll(""));
+                                    }
+                                } catch (e) {
+                                    console.error("Mermaid deferred rendering failed:", e);
+                                    el.removeAttribute('data-mermaid-deferred');
+                                    el.setAttribute('data-mermaid-render-failed', 'true');
+                                }
+                            });
+                        }
+                    }
+                });
+                hidden.forEach((el) => _lazyObserver.observe(el));
+            }
+        }
     }
 
     all_mermaids = document.querySelectorAll(".mermaid");
-    const mermaids_processed = document.querySelectorAll(".mermaid[data-processed='true']");
+    // Exclude deferred (hidden) and render-failed elements from completion checks
+    const mermaids_active = document.querySelectorAll(".mermaid:not([data-mermaid-deferred]):not([data-mermaid-render-failed])");
+    const mermaids_processed = document.querySelectorAll(".mermaid:not([data-mermaid-deferred]):not([data-mermaid-render-failed])[data-processed='true']");
 
     if ("False" === "True") {
-        const mermaids_to_add_zoom = -1 === -1 ? all_mermaids.length : -1;
+        const mermaids_to_add_zoom = -1 === -1 ? mermaids_active.length : -1;
         if(mermaids_to_add_zoom > 0) {
             var svgs = d3.selectAll("");
-            if(all_mermaids.length !== mermaids_processed.length) {
+            // Wait until every active (visible) diagram has rendered. Deferred
+            // diagrams are excluded, so a fixed d3_node_count that counts a
+            // hidden diagram no longer loops forever waiting for its SVG.
+            if(mermaids_active.length !== mermaids_processed.length) {
                 setTimeout(() => runMermaid(false), 200);
                 return;
-            } else if(svgs.size() !== mermaids_to_add_zoom) {
-                setTimeout(() => runMermaid(false), 200);
-                return;
-            } else {
-                svgs.each(function() {
-                    var svg = d3.select(this);
-                    svg.html("<g class='wrapper'>" + svg.html() + "</g>");
-                    var inner = svg.select("g");
-                    var zoom = d3.zoom().on("zoom", function(event) {
-                        inner.attr("transform", event.transform);
-                    });
-                    svg.call(zoom);
-                });
             }
+            addZoomToSvgs(svgs);
         }
-    } else if(all_mermaids.length !== mermaids_processed.length) {
+    } else if(mermaids_active.length !== mermaids_processed.length) {
         // Wait for mermaid to process all diagrams
         setTimeout(() => runMermaid(false), 200);
         return;
@@ -494,8 +575,8 @@ window.runMermaid = runMermaid;</script>
     <link rel="search" title="Search" href="../../../search.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
-  <meta name="docsearch:version" content="0.1.dev1+gf90410468" />
-    <meta name="docbuild:last-update" content="Jun 17, 2026"/>
+  <meta name="docsearch:version" content="0.1.dev1+g135c2e8bb" />
+    <meta name="docbuild:last-update" content="Jul 25, 2026"/>
   </head>
   
   
@@ -836,21 +917,50 @@ window.runMermaid = runMermaid;</script>
 <span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
 
 
+<span class="k">def</span><span class="w"> </span><span class="nf">_find_compiler</span><span class="p">(</span><span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">*</span><span class="n">home_vars</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Locate a compiler on ``PATH`` or under an env-specified toolkit home&#39;s ``bin``.&quot;&quot;&quot;</span>
+    <span class="n">found</span> <span class="o">=</span> <span class="n">shutil</span><span class="o">.</span><span class="n">which</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">found</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">found</span>
+    <span class="k">for</span> <span class="n">var</span> <span class="ow">in</span> <span class="n">home_vars</span><span class="p">:</span>
+        <span class="n">home</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">var</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">home</span><span class="p">:</span>
+            <span class="n">found</span> <span class="o">=</span> <span class="n">shutil</span><span class="o">.</span><span class="n">which</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">path</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">Path</span><span class="p">(</span><span class="n">home</span><span class="p">)</span> <span class="o">/</span> <span class="s2">&quot;bin&quot;</span><span class="p">))</span>
+            <span class="k">if</span> <span class="n">found</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">found</span>
+    <span class="k">return</span> <span class="kc">None</span>
+
+
 <span class="nd">@functools</span><span class="o">.</span><span class="n">lru_cache</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">_detect_gpu_backend</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="n">BACKEND_STR</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Auto-detect whether to use CUDA or HIP (ROCm).</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Auto-detect whether to use CUDA or HIP (ROCm), defaulting to CUDA.</span>
 
-<span class="sd">    Returns &#39;hip&#39; if ROCm/HIP is available, &#39;cuda&#39; otherwise.</span>
+<span class="sd">    Resolution order: the ``TVM_FFI_GPU_BACKEND`` override, then PyTorch build</span>
+<span class="sd">    signals (``torch.version.hip`` / ``torch.version.cuda``), then a discoverable</span>
+<span class="sd">    ``hipcc`` when no ``nvcc`` can be found. Compilers are resolved from ``PATH``</span>
+<span class="sd">    and from the ``CUDA_HOME``/``CUDA_PATH`` and ``ROCM_HOME``/``ROCM_PATH``</span>
+<span class="sd">    toolkit homes, so an env-specified CUDA install is honored even when ``nvcc``</span>
+<span class="sd">    is off ``PATH``. The mere existence of ``/opt/rocm`` is not treated as</span>
+<span class="sd">    evidence of HIP.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="c1"># Check environment variable override first</span>
     <span class="n">backend</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;TVM_FFI_GPU_BACKEND&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
     <span class="k">if</span> <span class="n">backend</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;cuda&quot;</span><span class="p">,</span> <span class="s2">&quot;hip&quot;</span><span class="p">):</span>
         <span class="k">return</span> <span class="n">backend</span>  <span class="c1"># type: ignore[return-value]</span>
     <span class="k">try</span><span class="p">:</span>
-        <span class="n">_find_rocm_home</span><span class="p">()</span>
+        <span class="kn">import</span><span class="w"> </span><span class="nn">torch</span>  <span class="c1"># noqa: PLC0415</span>
+
+        <span class="n">version</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">torch</span><span class="p">,</span> <span class="s2">&quot;version&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">version</span><span class="p">,</span> <span class="s2">&quot;hip&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">):</span>
+            <span class="k">return</span> <span class="s2">&quot;hip&quot;</span>
+        <span class="k">if</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">version</span><span class="p">,</span> <span class="s2">&quot;cuda&quot;</span><span class="p">,</span> <span class="kc">None</span><span class="p">):</span>
+            <span class="k">return</span> <span class="s2">&quot;cuda&quot;</span>
+    <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+        <span class="k">pass</span>
+    <span class="k">if</span> <span class="n">_find_compiler</span><span class="p">(</span><span class="s2">&quot;nvcc&quot;</span><span class="p">,</span> <span class="s2">&quot;CUDA_HOME&quot;</span><span class="p">,</span> <span class="s2">&quot;CUDA_PATH&quot;</span><span class="p">)</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="p">(</span>
+        <span class="n">_find_compiler</span><span class="p">(</span><span class="s2">&quot;hipcc&quot;</span><span class="p">,</span> <span class="s2">&quot;ROCM_HOME&quot;</span><span class="p">,</span> <span class="s2">&quot;ROCM_PATH&quot;</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+    <span class="p">):</span>
         <span class="k">return</span> <span class="s2">&quot;hip&quot;</span>
-    <span class="k">except</span> <span class="ne">RuntimeError</span><span class="p">:</span>
-        <span class="k">return</span> <span class="s2">&quot;cuda&quot;</span>
+    <span class="k">return</span> <span class="s2">&quot;cuda&quot;</span>
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_resolve_gpu_backend</span><span class="p">(</span><span class="n">backend</span><span class="p">:</span> <span class="nb">str</span> <span class="o">|</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">BACKEND_STR</span><span class="p">:</span>
@@ -1285,6 +1395,16 @@ window.runMermaid = runMermaid;</script>
         <span class="n">ninja</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;  command = ld -r -o $out $in&quot;</span><span class="p">)</span>
         <span class="n">ninja</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
 
+        <span class="c1"># Copy a single object straight through, bypassing `ld -r`. A partial</span>
+        <span class="c1"># link of one input is a pointless round-trip, and some system linkers</span>
+        <span class="c1"># (e.g. GNU ld 2.45) assign a nonzero sh_addr to zero-size, non-SHF_ALLOC</span>
+        <span class="c1"># sections like `.note.GNU-stack` during it. JITLink then materializes a</span>
+        <span class="c1"># zero-length block at that address, which collides with a real block in</span>
+        <span class="c1"># EHFrameEdgeFixer&#39;s block map and aborts C++ (eh_frame-bearing) loads.</span>
+        <span class="n">ninja</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;rule copy_object&quot;</span><span class="p">)</span>
+        <span class="n">ninja</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;  command = cp -f $in $out&quot;</span><span class="p">)</span>
+        <span class="n">ninja</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
+
         <span class="k">if</span> <span class="n">embed_cubin</span><span class="p">:</span>
             <span class="n">ninja</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;rule embed_cubin&quot;</span><span class="p">)</span>
             <span class="n">ninja</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
@@ -1329,7 +1449,10 @@ window.runMermaid = runMermaid;</script>
     <span class="k">if</span> <span class="n">object_mode</span><span class="p">:</span>
         <span class="c1"># Object-only output: merge all object files into the target.</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">IS_WINDOWS</span><span class="p">:</span>
-            <span class="n">ninja</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;build </span><span class="si">{</span><span class="n">output_name</span><span class="si">}</span><span class="s2">: merge_objects </span><span class="si">{</span><span class="s1">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">obj_files</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+            <span class="c1"># A single object needs no partial link — copy it through to avoid</span>
+            <span class="c1"># `ld -r` rewriting section addresses (see the copy_object rule).</span>
+            <span class="n">rule</span> <span class="o">=</span> <span class="s2">&quot;copy_object&quot;</span> <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">obj_files</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span> <span class="k">else</span> <span class="s2">&quot;merge_objects&quot;</span>
+            <span class="n">ninja</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;build </span><span class="si">{</span><span class="n">output_name</span><span class="si">}</span><span class="s2">: </span><span class="si">{</span><span class="n">rule</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="s1">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">obj_files</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
             <span class="n">ninja</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s2">&quot;&quot;</span><span class="p">)</span>
             <span class="n">ninja</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;default </span><span class="si">{</span><span class="n">output_name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
@@ -2322,7 +2445,7 @@ By Apache TVM FFI contributors
   
   <div class="footer-item">
     <p class="last-updated">
-  Last updated on Jun 17, 2026.
+  Last updated on Jul 25, 2026.
   <br/>
 </p>
   </div>

@@ -39,6 +39,8 @@ Includes
 
 - ``cstdlib``
 
+- ``new``
+
 - ``tvm/ffi/object.h`` (:ref:`file_tvm_ffi_object.h`)
 
 - ``type_traits`` (:ref:`file_tvm_ffi_type_traits.h`)
@@ -84,6 +86,8 @@ Namespaces
 Functions
 ---------
 
+
+- :ref:`exhale_function_memory_8h_1a6001462e18d71614c0f11a4c2e064f7e`
 
 - :ref:`exhale_function_memory_8h_1a801e8ecc2e3adbc1dac52c714e7cef11`
 

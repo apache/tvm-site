@@ -42,91 +42,30 @@ Program Listing for File variant.h
    
    namespace tvm {
    namespace ffi {
-   namespace details {
-   template <bool all_storage_object = false>
-   class VariantBase {
-    public:
-     TVM_FFI_INLINE bool same_as(const VariantBase<all_storage_object>& other) const {
-       return data_.same_as(other.data_);
-     }
-   
-    protected:
-     template <typename T>
-     explicit VariantBase(T other) : data_(std::move(other)) {}
-   
-     TVM_FFI_INLINE void SetData(Any other_data) { data_ = std::move(other_data); }
-   
-     TVM_FFI_INLINE Any MoveToAny() && { return std::move(data_); }
-   
-     TVM_FFI_INLINE AnyView ToAnyView() const { return data_.operator AnyView(); }
-   
-     Any data_;
-   };
-   
-   // Specialization for all object ref case, backed by ObjectRef.
-   template <>
-   class VariantBase<true> : public ObjectRef {
-    protected:
-     template <typename T>
-     explicit VariantBase(const T& other) : ObjectRef(other) {}
-     template <typename T,
-               typename = std::enable_if_t<!std::is_same_v<std::decay_t<T>, VariantBase<true>>>>
-     explicit VariantBase(T&& other) : ObjectRef(std::forward<T>(other)) {}
-     explicit VariantBase(UnsafeInit tag) : ObjectRef(tag) {}
-     explicit VariantBase(Any other)
-         : ObjectRef(details::AnyUnsafe::MoveFromAnyAfterCheck<ObjectRef>(std::move(other))) {}
-   
-     TVM_FFI_INLINE void SetData(ObjectPtr<Object> other) { data_ = std::move(other); }
-   
-     TVM_FFI_INLINE Any MoveToAny() && { return Any(ObjectRef(std::move(data_))); }
-   
-     TVM_FFI_INLINE AnyView ToAnyView() const {
-       TVMFFIAny any_data;
-       if (data_ == nullptr) {
-         any_data.type_index = TypeIndex::kTVMFFINone;
-         any_data.zero_padding = 0;
-         any_data.v_int64 = 0;
-       } else {
-         TVM_FFI_CLEAR_PTR_PADDING_IN_FFI_ANY(&any_data);
-         any_data.type_index = data_->type_index();
-         any_data.zero_padding = 0;
-         any_data.v_obj = details::ObjectUnsafe::TVMFFIObjectPtrFromObjectPtr<Object>(data_);
-       }
-       return AnyView::CopyFromTVMFFIAny(any_data);
-     }
-   };
-   }  // namespace details
-   
    template <typename... V>
-   class Variant : public details::VariantBase<details::all_object_ref_v<V...>> {
+   class Variant {
     public:
-     using TParent = details::VariantBase<details::all_object_ref_v<V...>>;
      static_assert(details::all_storage_enabled_v<V...>,
                    "All types used in Variant<...> must be compatible with Any");
+     static constexpr bool _type_container_is_exact = false;
      /*
       * \brief Helper utility to check if the type can be contained in the variant
       */
      template <typename T>
-     static constexpr bool variant_contains_v = (details::type_contains_v<V, T> || ...);
+     static constexpr bool variant_contains_v = (type_subsumes_v<V, T> || ...);
      /* \brief Helper utility for SFINAE if the type is part of the variant */
      template <typename T>
      using enable_if_variant_contains_t = std::enable_if_t<variant_contains_v<T>>;
    
-     Variant(const Variant<V...>& other) : TParent(other.data_) {}
-     Variant(Variant<V...>&& other) noexcept : TParent(std::move(other.data_)) {}
+     Variant(const Variant<V...>& other) = default;
+     Variant(Variant<V...>&& other) noexcept = default;
    
-     TVM_FFI_INLINE Variant& operator=(const Variant<V...>& other) {
-       this->SetData(other.data_);
-       return *this;
-     }
+     Variant& operator=(const Variant<V...>& other) = default;
    
-     TVM_FFI_INLINE Variant& operator=(Variant<V...>&& other) noexcept {
-       this->SetData(std::move(other.data_));
-       return *this;
-     }
+     Variant& operator=(Variant<V...>&& other) noexcept = default;
    
      template <typename T, typename = enable_if_variant_contains_t<T>>
-     Variant(T other) : TParent(std::move(other)) {}  // NOLINT(*)
+     Variant(T other) : data_(std::move(other)) {}  // NOLINT(*)
    
      template <typename T, typename = enable_if_variant_contains_t<T>>
      TVM_FFI_INLINE Variant& operator=(T other) {
@@ -135,42 +74,46 @@ Program Listing for File variant.h
    
      template <typename T, typename = enable_if_variant_contains_t<T>>
      TVM_FFI_INLINE std::optional<T> as() const {
-       return this->TParent::ToAnyView().template as<T>();
+       return ToAnyView().template as<T>();
      }
    
      template <typename T, typename = std::enable_if_t<std::is_base_of_v<Object, T>>>
      TVM_FFI_INLINE const T* as() const {
-       return this->TParent::ToAnyView().template as<const T*>().value_or(nullptr);
+       return ToAnyView().template as<const T*>().value_or(nullptr);
      }
    
      template <typename T, typename = enable_if_variant_contains_t<T>>
      TVM_FFI_INLINE T get() const& {
-       return this->TParent::ToAnyView().template cast<T>();
+       return ToAnyView().template cast<T>();
      }
    
      template <typename T, typename = enable_if_variant_contains_t<T>>
      TVM_FFI_INLINE T get() && {
-       return std::move(*this).TParent::MoveToAny().template cast<T>();
+       return std::move(*this).MoveToAny().template cast<T>();
      }
    
-     TVM_FFI_INLINE std::string GetTypeKey() const { return this->TParent::ToAnyView().GetTypeKey(); }
+     TVM_FFI_INLINE std::string GetTypeKey() const { return ToAnyView().GetTypeKey(); }
+   
+     TVM_FFI_INLINE bool same_as(const Variant<V...>& other) const {
+       return data_.same_as(other.data_);
+     }
    
     private:
      friend struct TypeTraits<Variant<V...>>;
      friend struct ObjectPtrHash;
      friend struct ObjectPtrEqual;
      // constructor from any
-     explicit Variant(Any data) : TParent(std::move(data)) {}
+     explicit Variant(Any data) : data_(std::move(data)) {}
      TVM_FFI_INLINE Object* GetObjectPtrForHashEqual() const {
        constexpr bool all_object_v = (std::is_base_of_v<ObjectRef, V> && ...);
        static_assert(all_object_v,
                      "All types used in Variant<...> must be derived from ObjectRef "
                      "to enable ObjectPtrHash/ObjectPtrEqual");
-       return this->data_.get();
+       return details::AnyUnsafe::ObjectPtrFromAnyAfterCheck(this->data_);
      }
-     // rexpose to friend class
-     using TParent::MoveToAny;
-     using TParent::ToAnyView;
+     TVM_FFI_INLINE AnyView ToAnyView() const { return data_.operator AnyView(); }
+     TVM_FFI_INLINE Any MoveToAny() && { return std::move(data_); }
+     Any data_;
    };
    
    template <typename... V>
@@ -244,10 +187,9 @@ Program Listing for File variant.h
      return a.GetObjectPtrForHashEqual() == b.GetObjectPtrForHashEqual();
    }
    
-   namespace details {
+   
    template <typename... V, typename T>
-   inline constexpr bool type_contains_v<Variant<V...>, T> = (type_contains_v<V, T> || ...);
-   }  // namespace details
+   inline constexpr bool type_subsumes_v<Variant<V...>, T> = (type_subsumes_v<V, T> || ...);
    }  // namespace ffi
    }  // namespace tvm
    #endif  // TVM_FFI_CONTAINER_VARIANT_H_

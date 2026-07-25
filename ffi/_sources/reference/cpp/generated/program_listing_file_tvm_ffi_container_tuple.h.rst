@@ -53,11 +53,11 @@ Program Listing for File tuple.h
      Tuple(const Tuple<Types...>& other) : ObjectRef(other) {}
      Tuple(Tuple<Types...>&& other) noexcept : ObjectRef(std::move(other)) {}
      template <typename... UTypes,
-               typename = std::enable_if_t<(details::type_contains_v<Types, UTypes> && ...), int>>
+               typename = std::enable_if_t<(type_subsumes_v<Types, UTypes> && ...), int>>
      Tuple(const Tuple<UTypes...>& other) : ObjectRef(other) {}  // NOLINT(google-explicit-constructor)
    
      template <typename... UTypes,
-               typename = std::enable_if_t<(details::type_contains_v<Types, UTypes> && ...), int>>
+               typename = std::enable_if_t<(type_subsumes_v<Types, UTypes> && ...), int>>
      Tuple(Tuple<UTypes...>&& other)  // NOLINT(google-explicit-constructor)
          : ObjectRef(std::move(other)) {}
    
@@ -78,14 +78,14 @@ Program Listing for File tuple.h
      }
    
      template <typename... UTypes,
-               typename = std::enable_if_t<(details::type_contains_v<Types, UTypes> && ...)>>
+               typename = std::enable_if_t<(type_subsumes_v<Types, UTypes> && ...)>>
      TVM_FFI_INLINE Tuple& operator=(const Tuple<UTypes...>& other) {
        data_ = other.data_;
        return *this;
      }
    
      template <typename... UTypes,
-               typename = std::enable_if_t<(details::type_contains_v<Types, UTypes> && ...)>>
+               typename = std::enable_if_t<(type_subsumes_v<Types, UTypes> && ...)>>
      TVM_FFI_INLINE Tuple& operator=(Tuple<UTypes...>&& other) {
        data_ = std::move(other.data_);
        return *this;
@@ -121,6 +121,7 @@ Program Listing for File tuple.h
      }
    
      using ContainerType = ArrayObj;
+     static constexpr bool _type_container_is_exact = false;
    
     private:
      static ObjectPtr<ArrayObj> MakeDefaultTupleNode() {
@@ -263,10 +264,11 @@ Program Listing for File tuple.h
      }
    };
    
-   namespace details {
+   
    template <typename... T, typename... U>
-   inline constexpr bool type_contains_v<Tuple<T...>, Tuple<U...>> = (type_contains_v<T, U> && ...);
-   }  // namespace details
+   inline constexpr bool
+       type_subsumes_v<Tuple<T...>, Tuple<U...>, std::enable_if_t<sizeof...(T) == sizeof...(U)>> =
+           (type_subsumes_v<T, U> && ...);
    
    
    

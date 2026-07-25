@@ -72,6 +72,8 @@ Classes
 
 - :ref:`exhale_class_classtvm_1_1ffi_1_1AnyView`
 
+- :ref:`exhale_class_classtvm_1_1ffi_1_1Arc`
+
 - :ref:`exhale_class_classtvm_1_1ffi_1_1Array`
 
 - :ref:`exhale_class_classtvm_1_1ffi_1_1ArrayObj`
@@ -92,15 +94,25 @@ Classes
 
 - :ref:`exhale_class_classtvm_1_1ffi_1_1EnumObj`
 
+- :ref:`exhale_class_classtvm_1_1ffi_1_1EnumState`
+
+- :ref:`exhale_class_classtvm_1_1ffi_1_1EnumStateObj`
+
 - :ref:`exhale_class_classtvm_1_1ffi_1_1Error`
 
 - :ref:`exhale_class_classtvm_1_1ffi_1_1ErrorObj`
 
 - :ref:`exhale_class_classtvm_1_1ffi_1_1Expected`
 
+- :ref:`exhale_class_classtvm_1_1ffi_1_1Expected_3_01void_01_4`
+
 - :ref:`exhale_class_classtvm_1_1ffi_1_1Function`
 
 - :ref:`exhale_class_classtvm_1_1ffi_1_1FunctionObj`
+
+- :ref:`exhale_class_classtvm_1_1ffi_1_1IntEnum`
+
+- :ref:`exhale_class_classtvm_1_1ffi_1_1IntEnumObj`
 
 - :ref:`exhale_class_classtvm_1_1ffi_1_1List`
 
@@ -137,6 +149,10 @@ Classes
 - :ref:`exhale_class_classtvm_1_1ffi_1_1ShapeView`
 
 - :ref:`exhale_class_classtvm_1_1ffi_1_1SmallMapBaseObj`
+
+- :ref:`exhale_class_classtvm_1_1ffi_1_1StrEnum`
+
+- :ref:`exhale_class_classtvm_1_1ffi_1_1StrEnumObj`
 
 - :ref:`exhale_class_classtvm_1_1ffi_1_1StrictBool`
 
@@ -196,13 +212,13 @@ Functions
 ---------
 
 
-- :ref:`exhale_function_base64_8h_1ae1d4736f7dc56b224acd303ba7bf7a45`
-
 - :ref:`exhale_function_base64_8h_1acb849cdb1d9b9620be10bbcda0257afa`
 
-- :ref:`exhale_function_base64_8h_1a279b4ba2f4c7ea16291ef24b73e43963`
+- :ref:`exhale_function_base64_8h_1ae1d4736f7dc56b224acd303ba7bf7a45`
 
 - :ref:`exhale_function_base64_8h_1aa5b2a4531449585b9f079cb170a79f0b`
+
+- :ref:`exhale_function_base64_8h_1a279b4ba2f4c7ea16291ef24b73e43963`
 
 - :ref:`exhale_function_endian_8h_1ab4e0ed8000c632cd2c7cd089c0a0d1af`
 
@@ -213,6 +229,14 @@ Functions
 - :ref:`exhale_function_dataclass_8h_1ae661fadd13fbc7aef6e15cddba7607e8`
 
 - :ref:`exhale_function_dtype_8h_1a94787950883e5a7e97b764ddd342afc3`
+
+- :ref:`exhale_function_dtype_8h_1a89696eef7917af8ff34285cb6fae4c63`
+
+- :ref:`exhale_function_dtype_8h_1a16f5ec0ba28cdd73f61247f4a662115a`
+
+- :ref:`exhale_function_dtype_8h_1a74a70941a707682598886f8475f86848`
+
+- :ref:`exhale_function_dtype_8h_1a95190c80d6dfa260c156b00ce5336c83`
 
 - :ref:`exhale_function_error_8h_1af4cf9e94df0f183e9c5c0a3ccb05fda5`
 
@@ -228,9 +252,9 @@ Functions
 
 - :ref:`exhale_function_tensor_8h_1a226723176642cde5996498e7da6a6368`
 
-- :ref:`exhale_function_tensor_8h_1a011d0a2dcbe5702156124d7a7223b3dd`
-
 - :ref:`exhale_function_tensor_8h_1a65b3a61c540c72d9410150a3a7a76dde`
+
+- :ref:`exhale_function_tensor_8h_1a011d0a2dcbe5702156124d7a7223b3dd`
 
 - :ref:`exhale_function_cast_8h_1a4dba749dd934d8a7891ad126a8fdcc1f`
 
@@ -243,6 +267,8 @@ Functions
 - :ref:`exhale_function_tensor_8h_1a93094b6b3f20c2cd5aa1c1c2522bc3e4`
 
 - :ref:`exhale_function_tensor_8h_1aab70a15ca1dde710bc3052c5ce1f6fbd`
+
+- :ref:`exhale_function_memory_8h_1a6001462e18d71614c0f11a4c2e064f7e`
 
 - :ref:`exhale_function_memory_8h_1a801e8ecc2e3adbc1dac52c714e7cef11`
 
@@ -276,7 +302,7 @@ Functions
 
 - :ref:`exhale_function_string_8h_1ad045700080c053c50d68cde298b2b4b2`
 
-- :ref:`exhale_function_object_8h_1a0d6e075f219808c4ff7adebd99210a7b`
+- :ref:`exhale_function_type__traits_8h_1a0d6e075f219808c4ff7adebd99210a7b`
 
 - :ref:`exhale_function_function_8h_1a111e2ed7444eb220e19c7624d0932d89`
 
@@ -289,13 +315,19 @@ Typedefs
 
 - :ref:`exhale_typedef_structural__visit_8h_1a745d053678181bd38e0fee17b772656b`
 
-- :ref:`exhale_typedef_object_8h_1a7ba296d84188e5970ba854332a1f04a6`
+- :ref:`exhale_typedef_type__traits_8h_1a7ba296d84188e5970ba854332a1f04a6`
 
-- :ref:`exhale_typedef_object_8h_1ae125f5f5a8a94c7340577c1959805295`
+- :ref:`exhale_typedef_type__traits_8h_1ae125f5f5a8a94c7340577c1959805295`
 
 
 Variables
 ---------
 
 
+- :ref:`exhale_variable_object_8h_1a5f52cb03b4b23d5d7738ff0386335845`
+
 - :ref:`exhale_variable_array_8h_1a3bbf4c2bf19b72b026ad9e19a23143d5`
+
+- :ref:`exhale_variable_object_8h_1a31dc4b1b71941b3e4217a0e389f807a4`
+
+- :ref:`exhale_variable_type__traits_8h_1a62ef22ceb232bddd3e9540895af38cc1`

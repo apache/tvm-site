@@ -116,11 +116,11 @@ Program Listing for File list.h
          : ObjectRef(std::move(other.data_)) {}
      List(const List<T>& other) : ObjectRef(other.data_) {}  // NOLINT(google-explicit-constructor)
    
-     template <typename U, typename = std::enable_if_t<details::type_contains_v<T, U>>>
+     template <typename U, typename = std::enable_if_t<type_subsumes_v<T, U>>>
      List(List<U>&& other)  // NOLINT(google-explicit-constructor)
          : ObjectRef(std::move(other.data_)) {}
    
-     template <typename U, typename = std::enable_if_t<details::type_contains_v<T, U>>>
+     template <typename U, typename = std::enable_if_t<type_subsumes_v<T, U>>>
      List(const List<U>& other)  // NOLINT(google-explicit-constructor)
          : ObjectRef(other.data_) {}
    
@@ -134,13 +134,13 @@ Program Listing for File list.h
        return *this;
      }
    
-     template <typename U, typename = std::enable_if_t<details::type_contains_v<T, U>>>
+     template <typename U, typename = std::enable_if_t<type_subsumes_v<T, U>>>
      TVM_FFI_INLINE List<T>& operator=(List<U>&& other) {
        data_ = std::move(other.data_);
        return *this;
      }
    
-     template <typename U, typename = std::enable_if_t<details::type_contains_v<T, U>>>
+     template <typename U, typename = std::enable_if_t<type_subsumes_v<T, U>>>
      TVM_FFI_INLINE List<T>& operator=(const List<U>& other) {
        data_ = other.data_;
        return *this;
@@ -222,13 +222,15 @@ Program Listing for File list.h
      // mutation in std::vector
      void push_back(const T& item) {
        ListObj* p = EnsureCapacity(1);
-       p->EmplaceInit(p->TVMFFISeqCell::size++, item);
+       p->EmplaceInit(p->TVMFFISeqCell::size, item);
+       ++p->TVMFFISeqCell::size;
      }
    
      template <typename... Args>
      void emplace_back(Args&&... args) {
        ListObj* p = EnsureCapacity(1);
-       p->EmplaceInit(p->TVMFFISeqCell::size++, std::forward<Args>(args)...);
+       p->EmplaceInit(p->TVMFFISeqCell::size, std::forward<Args>(args)...);
+       ++p->TVMFFISeqCell::size;
      }
    
      void insert(iterator position, const T& val) {
@@ -314,6 +316,7 @@ Program Listing for File list.h
      }
    
      using ContainerType = ListObj;
+     static constexpr bool _type_container_is_exact = false;
    
     private:
      ListObj* EnsureCapacity(int64_t reserve_extra) {
@@ -359,10 +362,9 @@ Program Listing for File list.h
      }
    };
    
-   namespace details {
+   
    template <typename T, typename U>
-   inline constexpr bool type_contains_v<List<T>, List<U>> = type_contains_v<T, U>;
-   }  // namespace details
+   inline constexpr bool type_subsumes_v<List<T>, List<U>> = type_subsumes_v<T, U>;
    
    }  // namespace ffi
    }  // namespace tvm

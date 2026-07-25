@@ -475,7 +475,7 @@ The following C code sets the TLS error and returns ``-1`` via :cpp:func:`TVMFFI
   :start-after: [Error.RaiseException.begin]
   :end-before: [Error.RaiseException.end]
 
-For non-null-terminated strings, use :cpp:func:`TVMFFIErrorSetRaisedFromCStrParts`, which accepts explicit string lengths.
+When an error message is assembled from reusable parts, use :cpp:func:`TVMFFIErrorSetRaisedFromCStrParts` to avoid duplicating common message fragments.
 
 .. note::
    You rarely need to create a :cpp:class:`~tvm::ffi::ErrorObj` directly.

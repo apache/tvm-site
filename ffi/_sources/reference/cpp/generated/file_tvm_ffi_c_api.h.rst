@@ -85,6 +85,8 @@ Classes
 
 - :ref:`exhale_struct_structTVMFFIByteArray`
 
+- :ref:`exhale_struct_structTVMFFICustomAllocator`
+
 - :ref:`exhale_struct_structTVMFFIErrorCell`
 
 - :ref:`exhale_struct_structTVMFFIFieldInfo`
@@ -94,6 +96,8 @@ Classes
 - :ref:`exhale_struct_structTVMFFIMethodInfo`
 
 - :ref:`exhale_struct_structTVMFFIObject`
+
+- :ref:`exhale_struct_structTVMFFIObjectAllocHeader`
 
 - :ref:`exhale_struct_structTVMFFIOpaqueObjectCell`
 
@@ -171,6 +175,8 @@ Functions
 
 - :ref:`exhale_function_c__api_8h_1aa26fa16c024c6f2fa15e46aa1333fdb9`
 
+- :ref:`exhale_function_c__api_8h_1a147c7c5616be4acf5a71623dbb7dd680`
+
 - :ref:`exhale_function_c__api_8h_1a53c5ec2971806966ed96a6add32b5238`
 
 - :ref:`exhale_function_c__api_8h_1afee5a803e22f9baf5ee2ff1f0ace6429`
@@ -190,6 +196,8 @@ Functions
 - :ref:`exhale_function_c__api_8h_1ac66c1d142240be0cdf65c8ba38770eb6`
 
 - :ref:`exhale_function_c__api_8h_1a3253bbf35e2ad1361b2ce1de13d2c9b2`
+
+- :ref:`exhale_function_c__api_8h_1aa7d102c19d2ac12f730935e6fb210bf1`
 
 - :ref:`exhale_function_c__api_8h_1a74c26efdd74840abc3e1581c73a38bfa`
 

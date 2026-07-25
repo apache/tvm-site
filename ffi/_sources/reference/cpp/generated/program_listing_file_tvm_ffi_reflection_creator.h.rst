@@ -92,6 +92,7 @@ Program Listing for File creator.h
      }
      TVM_FFI_THROW(TypeError) << "Cannot cast from `" << TypeIndexToTypeKey(input_pod.type_index)
                               << "` to `" << TypeTraits<TObjectRef>::TypeStr() << "`";
+     TVM_FFI_UNREACHABLE();
    }
    
    }  // namespace details

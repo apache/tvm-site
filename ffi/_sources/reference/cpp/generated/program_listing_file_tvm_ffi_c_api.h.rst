@@ -293,6 +293,23 @@ Program Listing for File c_api.h
    TVM_FFI_DLL int TVMFFIObjectCreateOpaque(void* handle, int32_t type_index,
                                             void (*deleter)(void* handle), TVMFFIObjectHandle* out);
    
+   //-----------------------------------------------------------------------
+   // Section: ObjectAllocHeader and CustomAllocator
+   //-----------------------------------------------------------------------
+   typedef struct {
+     void (*delete_space)(void* ptr);
+   } TVMFFIObjectAllocHeader;
+   
+   typedef struct {
+     void* (*allocate)(size_t size, size_t alignment, int32_t type_index, void* context);
+   
+     void* context;
+   } TVMFFICustomAllocator;
+   
+   TVM_FFI_DLL TVMFFICustomAllocator* TVMFFIGetCustomAllocator(void);
+   
+   TVM_FFI_DLL int TVMFFISetCustomAllocator(TVMFFICustomAllocator* allocator);
+   
    TVM_FFI_DLL int TVMFFITypeKeyToIndex(const TVMFFIByteArray* type_key, int32_t* out_tindex);
    
    //-----------------------------------------------------------------------
