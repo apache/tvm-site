@@ -620,6 +620,7 @@ document.write(`
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#forward-mapping">Forward mapping</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#case-study-nvidia-tensor-core-tile">Case study: NVIDIA tensor-core tile</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#case-study-blackwell-tensor-memory">Case study: Blackwell tensor memory</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#tmem-datapath-layouts">TMEM datapath layouts</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#beyond-gpu-registers">Beyond GPU registers</a></li>
 </ul>
 </li>
@@ -877,6 +878,31 @@ MMAs and double-buffering. So the one <code class="docutils literal notranslate"
 accumulator (a pure placement, no replica) and its scale factors (a replicated,
 routed placement) in the same tensor-memory address space.</p>
 </section>
+<section id="tmem-datapath-layouts">
+<h3>TMEM datapath layouts<a class="headerlink" href="#tmem-datapath-layouts" title="Link to this heading">#</a></h3>
+<p><code class="docutils literal notranslate"><span class="pre">tmem_datapath_layout</span></code> provides the canonical row placement for supported
+<code class="docutils literal notranslate"><span class="pre">tcgen05</span></code> MMA datapaths:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">tvm.tirx.layout</span><span class="w"> </span><span class="kn">import</span> <span class="n">tmem_datapath_layout</span>
+
+<span class="n">accum</span> <span class="o">=</span> <span class="n">tmem_datapath_layout</span><span class="p">(</span><span class="s2">&quot;D&quot;</span><span class="p">,</span> <span class="mi">128</span><span class="p">,</span> <span class="n">cols</span><span class="p">)</span>
+<span class="n">lower</span> <span class="o">=</span> <span class="n">tmem_datapath_layout</span><span class="p">(</span><span class="s2">&quot;F&quot;</span><span class="p">,</span> <span class="mi">64</span><span class="p">,</span> <span class="n">cols</span><span class="p">,</span> <span class="n">sub_slab</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+<span class="n">upper</span> <span class="o">=</span> <span class="n">tmem_datapath_layout</span><span class="p">(</span><span class="s2">&quot;F&quot;</span><span class="p">,</span> <span class="mi">64</span><span class="p">,</span> <span class="n">cols</span><span class="p">,</span> <span class="n">sub_slab</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Layout D maps logical row <code class="docutils literal notranslate"><span class="pre">r</span></code> directly to <code class="docutils literal notranslate"><span class="pre">TLane</span> <span class="pre">=</span> <span class="pre">r</span></code> and spans both
+16-lane halves of every warp’s 32-lane TMEM partition. Layout F maps its 64
+logical rows according to</p>
+<div class="math notranslate nohighlight">
+\[\mathrm{TLane}
+= 32\left\lfloor\frac{r}{16}\right\rfloor
+  + 16\,\mathrm{sub\_slab}
+  + (r \bmod 16).\]</div>
+<p>Thus F with <code class="docutils literal notranslate"><span class="pre">sub_slab=0</span></code> and <code class="docutils literal notranslate"><span class="pre">sub_slab=1</span></code> can describe lower- and
+upper-half aliases of the same 128-row Layout D allocation. The
+<code class="docutils literal notranslate"><span class="pre">tcgen05_ldst</span></code> copy dispatch recognizes the layout and emits the matching
+<code class="docutils literal notranslate"><span class="pre">row=0</span></code> or <code class="docutils literal notranslate"><span class="pre">row=16</span></code> instruction. Layout D already occupies both halves,
+so a nonzero <code class="docutils literal notranslate"><span class="pre">sub_slab</span></code> is rejected.</p>
+</section>
 <section id="beyond-gpu-registers">
 <h3>Beyond GPU registers<a class="headerlink" href="#beyond-gpu-registers" title="Link to this heading">#</a></h3>
 <p>The same layout describes more than register tiles. Binding strides to a device
@@ -1036,6 +1062,7 @@ dispatch.</p></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#forward-mapping">Forward mapping</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#case-study-nvidia-tensor-core-tile">Case study: NVIDIA tensor-core tile</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#case-study-blackwell-tensor-memory">Case study: Blackwell tensor memory</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#tmem-datapath-layouts">TMEM datapath layouts</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#beyond-gpu-registers">Beyond GPU registers</a></li>
 </ul>
 </li>

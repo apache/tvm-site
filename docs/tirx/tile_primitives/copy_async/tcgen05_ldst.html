@@ -617,6 +617,7 @@ document.write(`
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#what-it-accepts">What it accepts</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#demonstration-program">Demonstration program</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#algorithm">Algorithm</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#selecting-the-upper-f-sub-slab">Selecting the upper F sub-slab</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#generated-tirx-ir">Generated TIRx IR</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#generated-cuda">Generated CUDA</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#how-inputs-change-the-algorithm">How inputs change the algorithm</a></li>
@@ -681,8 +682,8 @@ warps act together</p></td>
 <code class="docutils literal notranslate"><span class="pre">.16x256b</span></code>) for the fast path; otherwise the <code class="docutils literal notranslate"><span class="pre">.32x32b</span></code> fallback</p></td>
 </tr>
 <tr class="row-even"><td><p>tmem datapath</p></td>
-<td><p>classified <code class="docutils literal notranslate"><span class="pre">D</span></code> (M=128 identity) or <code class="docutils literal notranslate"><span class="pre">F</span></code> (M=64 scattered) — sets how
-fragment rows map to lanes</p></td>
+<td><p>classified <code class="docutils literal notranslate"><span class="pre">D</span></code> (M=128 identity) or <code class="docutils literal notranslate"><span class="pre">F</span></code> (M=64 scattered); an F layout
+also selects the lower or upper 16-lane sub-slab of each warp partition</p></td>
 </tr>
 </tbody>
 </table>
@@ -730,18 +731,55 @@ is a store (<code class="docutils literal notranslate"><span class="pre">tcgen05
 (<code class="docutils literal notranslate"><span class="pre">_match_tcgen05_atom_layout</span></code>); the matched shape sets the column factor (2/4/8
 fp32 columns) and the <code class="docutils literal notranslate"><span class="pre">num</span></code> count. If nothing matches it falls back to
 <code class="docutils literal notranslate"><span class="pre">.32x32b</span></code> and probes <code class="docutils literal notranslate"><span class="pre">num</span> <span class="pre">∈</span> <span class="pre">{1,</span> <span class="pre">2,</span> <span class="pre">4,</span> <span class="pre">8,</span> <span class="pre">…}</span></code> against the column width.</p>
-<p><strong>3. Issue per datapath slab.</strong> For an M=128 <code class="docutils literal notranslate"><span class="pre">.16x*b</span></code> copy the fragment spans two
-16-row slabs, so the warps issue the atom twice (<code class="docutils literal notranslate"><span class="pre">row</span> <span class="pre">=</span> <span class="pre">0</span></code> and <code class="docutils literal notranslate"><span class="pre">row</span> <span class="pre">=</span> <span class="pre">16</span></code>); the
-<code class="docutils literal notranslate"><span class="pre">.32x32b</span></code> path covers M=128 in a single issue (<code class="docutils literal notranslate"><span class="pre">row</span> <span class="pre">=</span> <span class="pre">0</span></code>):</p>
+<p><strong>3. Issue per datapath slab.</strong> For an M=128 Layout D <code class="docutils literal notranslate"><span class="pre">.16x*b</span></code> copy the
+fragment spans two 16-row slabs, so the warps issue the atom twice
+(<code class="docutils literal notranslate"><span class="pre">row</span> <span class="pre">=</span> <span class="pre">0</span></code> and <code class="docutils literal notranslate"><span class="pre">row</span> <span class="pre">=</span> <span class="pre">16</span></code>). An M=64 Layout F copy issues once, at
+<code class="docutils literal notranslate"><span class="pre">row</span> <span class="pre">=</span> <span class="pre">0</span></code> for <code class="docutils literal notranslate"><span class="pre">sub_slab=0</span></code> or <code class="docutils literal notranslate"><span class="pre">row</span> <span class="pre">=</span> <span class="pre">16</span></code> for <code class="docutils literal notranslate"><span class="pre">sub_slab=1</span></code>. The
+<code class="docutils literal notranslate"><span class="pre">.32x32b</span></code> path covers M=128 in a single issue at <code class="docutils literal notranslate"><span class="pre">row</span> <span class="pre">=</span> <span class="pre">0</span></code>:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">op</span> <span class="o">=</span> <span class="n">T</span><span class="o">.</span><span class="n">ptx</span><span class="o">.</span><span class="n">tcgen05</span><span class="o">.</span><span class="n">ld</span> <span class="k">if</span> <span class="n">load</span> <span class="k">else</span> <span class="n">T</span><span class="o">.</span><span class="n">ptx</span><span class="o">.</span><span class="n">tcgen05</span><span class="o">.</span><span class="n">st</span>
-<span class="k">for</span> <span class="n">slab</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_slabs</span><span class="p">):</span>                 <span class="c1"># 1 for .32x32b / M=64; 2 for .16x*b M=128</span>
+<span class="n">classified</span> <span class="o">=</span> <span class="n">_check_tmem_layout_for_atom</span><span class="p">(</span><span class="n">tmem_buf</span><span class="p">,</span> <span class="s2">&quot;16x*b&quot;</span><span class="p">,</span> <span class="n">frag_rows</span><span class="p">)</span>
+<span class="n">datapath</span><span class="p">,</span> <span class="n">sub_slab</span> <span class="o">=</span> <span class="n">classified</span> <span class="k">if</span> <span class="n">classified</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">slab</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_slabs</span><span class="p">):</span>                 <span class="c1"># 1 for M=64; 2 for M=128</span>
     <span class="n">op</span><span class="p">(</span><span class="n">tmem_buf</span><span class="o">.</span><span class="n">allocated_addr</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
        <span class="o">*</span><span class="p">[</span><span class="n">local_32b</span><span class="p">[</span><span class="n">reg_base</span> <span class="o">+</span> <span class="n">i</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">regs_eff</span><span class="p">)],</span>
-       <span class="n">shape</span><span class="o">=</span><span class="n">shape</span><span class="p">,</span> <span class="n">num</span><span class="o">=</span><span class="n">num_eff</span><span class="p">,</span> <span class="n">row</span><span class="o">=</span><span class="n">slab</span> <span class="o">*</span> <span class="mi">16</span><span class="p">,</span> <span class="n">col</span><span class="o">=</span><span class="n">col_off_32b</span><span class="p">)</span>
+       <span class="n">shape</span><span class="o">=</span><span class="n">shape</span><span class="p">,</span> <span class="n">num</span><span class="o">=</span><span class="n">num_eff</span><span class="p">,</span>
+       <span class="n">row</span><span class="o">=</span><span class="p">(</span><span class="n">sub_slab</span> <span class="o">+</span> <span class="n">slab</span><span class="p">)</span> <span class="o">*</span> <span class="mi">16</span><span class="p">,</span> <span class="n">col</span><span class="o">=</span><span class="n">col_off_32b</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>The dispatch emits <strong>no</strong> wait — the caller issues <code class="docutils literal notranslate"><span class="pre">tcgen05.wait.ld()</span></code> /
 <code class="docutils literal notranslate"><span class="pre">wait.st()</span></code> (as in the demo).</p>
+</section>
+<section id="selecting-the-upper-f-sub-slab">
+<h2>Selecting the upper F sub-slab<a class="headerlink" href="#selecting-the-upper-f-sub-slab" title="Link to this heading">#</a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">sub_slab</span></code> is part of the tensor-memory layout rather than an option on
+<code class="docutils literal notranslate"><span class="pre">copy_async</span></code>. This keeps physical TMEM occupation explicit and lets two
+64-row buffers alias the lower and upper halves of one 128-row allocation:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">tvm.tirx.layout</span><span class="w"> </span><span class="kn">import</span> <span class="n">tmem_datapath_layout</span>
+
+<span class="n">lower</span> <span class="o">=</span> <span class="n">T</span><span class="o">.</span><span class="n">decl_buffer</span><span class="p">(</span>
+    <span class="p">(</span><span class="mi">64</span><span class="p">,</span> <span class="n">cols</span><span class="p">),</span>
+    <span class="s2">&quot;float32&quot;</span><span class="p">,</span>
+    <span class="n">scope</span><span class="o">=</span><span class="s2">&quot;tmem&quot;</span><span class="p">,</span>
+    <span class="n">allocated_addr</span><span class="o">=</span><span class="n">tmem_addr</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+    <span class="n">layout</span><span class="o">=</span><span class="n">tmem_datapath_layout</span><span class="p">(</span><span class="s2">&quot;F&quot;</span><span class="p">,</span> <span class="mi">64</span><span class="p">,</span> <span class="n">cols</span><span class="p">,</span> <span class="n">sub_slab</span><span class="o">=</span><span class="mi">0</span><span class="p">),</span>
+<span class="p">)</span>
+<span class="n">upper</span> <span class="o">=</span> <span class="n">T</span><span class="o">.</span><span class="n">decl_buffer</span><span class="p">(</span>
+    <span class="p">(</span><span class="mi">64</span><span class="p">,</span> <span class="n">cols</span><span class="p">),</span>
+    <span class="s2">&quot;float32&quot;</span><span class="p">,</span>
+    <span class="n">scope</span><span class="o">=</span><span class="s2">&quot;tmem&quot;</span><span class="p">,</span>
+    <span class="n">allocated_addr</span><span class="o">=</span><span class="n">tmem_addr</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+    <span class="n">layout</span><span class="o">=</span><span class="n">tmem_datapath_layout</span><span class="p">(</span><span class="s2">&quot;F&quot;</span><span class="p">,</span> <span class="mi">64</span><span class="p">,</span> <span class="n">cols</span><span class="p">,</span> <span class="n">sub_slab</span><span class="o">=</span><span class="mi">1</span><span class="p">),</span>
+<span class="p">)</span>
+
+<span class="n">Tx</span><span class="o">.</span><span class="n">wg</span><span class="o">.</span><span class="n">copy_async</span><span class="p">(</span><span class="n">lower_frag</span><span class="p">,</span> <span class="n">lower</span><span class="p">)</span>
+<span class="n">T</span><span class="o">.</span><span class="n">ptx</span><span class="o">.</span><span class="n">tcgen05</span><span class="o">.</span><span class="n">wait</span><span class="o">.</span><span class="n">ld</span><span class="p">()</span>
+<span class="n">Tx</span><span class="o">.</span><span class="n">wg</span><span class="o">.</span><span class="n">copy_async</span><span class="p">(</span><span class="n">upper_frag</span><span class="p">,</span> <span class="n">upper</span><span class="p">)</span>
+<span class="n">T</span><span class="o">.</span><span class="n">ptx</span><span class="o">.</span><span class="n">tcgen05</span><span class="o">.</span><span class="n">wait</span><span class="o">.</span><span class="n">ld</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>The lower view emits <code class="docutils literal notranslate"><span class="pre">row=0</span></code> and the upper view emits <code class="docutils literal notranslate"><span class="pre">row=16</span></code> for
+<code class="docutils literal notranslate"><span class="pre">.16x64b</span></code>, <code class="docutils literal notranslate"><span class="pre">.16x128b</span></code>, and <code class="docutils literal notranslate"><span class="pre">.16x256b</span></code> atoms. Layout D has 128 rows and
+already spans both sub-slabs, so it only accepts <code class="docutils literal notranslate"><span class="pre">sub_slab=0</span></code>.</p>
 </section>
 <section id="generated-tirx-ir">
 <h2>Generated TIRx IR<a class="headerlink" href="#generated-tirx-ir" title="Link to this heading">#</a></h2>
@@ -789,7 +827,8 @@ shape/num logic)</p></td>
 </tr>
 <tr class="row-odd"><td><p>datapath D vs F</p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">D</span></code> (M=128) covers all 128 rows; an M=128 <code class="docutils literal notranslate"><span class="pre">.16x*b</span></code> copy issues two slabs
-(<code class="docutils literal notranslate"><span class="pre">row</span> <span class="pre">=</span> <span class="pre">0</span></code> / <code class="docutils literal notranslate"><span class="pre">row</span> <span class="pre">=</span> <span class="pre">16</span></code>); <code class="docutils literal notranslate"><span class="pre">F</span></code> (M=64) scatters rows to lanes</p></td>
+(<code class="docutils literal notranslate"><span class="pre">row</span> <span class="pre">=</span> <span class="pre">0</span></code> / <code class="docutils literal notranslate"><span class="pre">row</span> <span class="pre">=</span> <span class="pre">16</span></code>). <code class="docutils literal notranslate"><span class="pre">F</span></code> (M=64) scatters rows to lanes and
+its layout selects one issue at <code class="docutils literal notranslate"><span class="pre">row</span> <span class="pre">=</span> <span class="pre">0</span></code> or <code class="docutils literal notranslate"><span class="pre">row</span> <span class="pre">=</span> <span class="pre">16</span></code></p></td>
 </tr>
 </tbody>
 </table>
@@ -845,6 +884,7 @@ shape/num logic)</p></td>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#what-it-accepts">What it accepts</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#demonstration-program">Demonstration program</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#algorithm">Algorithm</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#selecting-the-upper-f-sub-slab">Selecting the upper F sub-slab</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#generated-tirx-ir">Generated TIRx IR</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#generated-cuda">Generated CUDA</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#how-inputs-change-the-algorithm">How inputs change the algorithm</a></li>
