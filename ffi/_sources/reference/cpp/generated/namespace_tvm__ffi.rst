@@ -212,9 +212,9 @@ Functions
 ---------
 
 
-- :ref:`exhale_function_base64_8h_1acb849cdb1d9b9620be10bbcda0257afa`
-
 - :ref:`exhale_function_base64_8h_1ae1d4736f7dc56b224acd303ba7bf7a45`
+
+- :ref:`exhale_function_base64_8h_1acb849cdb1d9b9620be10bbcda0257afa`
 
 - :ref:`exhale_function_base64_8h_1aa5b2a4531449585b9f079cb170a79f0b`
 
@@ -252,9 +252,9 @@ Functions
 
 - :ref:`exhale_function_tensor_8h_1a226723176642cde5996498e7da6a6368`
 
-- :ref:`exhale_function_tensor_8h_1a65b3a61c540c72d9410150a3a7a76dde`
-
 - :ref:`exhale_function_tensor_8h_1a011d0a2dcbe5702156124d7a7223b3dd`
+
+- :ref:`exhale_function_tensor_8h_1a65b3a61c540c72d9410150a3a7a76dde`
 
 - :ref:`exhale_function_cast_8h_1a4dba749dd934d8a7891ad126a8fdcc1f`
 
