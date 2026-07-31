@@ -1,7 +1,7 @@
 var searchData=
 [
   ['edge_5fconstraints_0',['edge_constraints',['../classtvm_1_1relax_1_1PatternContextNode.html#ac0a6a254461e25828ebe5ec8b45b9619',1,'tvm::relax::PatternContextNode']]],
-  ['elem_5foffset_1',['elem_offset',['../classtvm_1_1tirx_1_1BufferNode.html#aaaa0ff22d869d8a21a8e1c8354ae7aa7',1,'tvm::tirx::BufferNode']]],
+  ['elem_5foffset_1',['elem_offset',['../classtvm_1_1tirx_1_1BufferTypeNode.html#a839664705b12711c95beb9b01385c3e2',1,'tvm::tirx::BufferTypeNode']]],
   ['element_5ftype_2',['element_type',['../classtvm_1_1PointerTypeNode.html#a3ce20495711da0c9f83f02df466ae8a0',1,'tvm::PointerTypeNode']]],
   ['elements_3',['elements',['../classtvm_1_1script_1_1printer_1_1TupleDocNode.html#a0be5e8081c41fdffbd1bfdd748054d79',1,'tvm::script::printer::TupleDocNode::elements'],['../classtvm_1_1script_1_1printer_1_1ListDocNode.html#ae0cd446acccc99b77e0fd4dccc423423',1,'tvm::script::printer::ListDocNode::elements']]],
   ['else_5fbranch_4',['else_branch',['../classtvm_1_1script_1_1printer_1_1IfDocNode.html#a40c60cfcf48a1b4fe49223564f6f3c22',1,'tvm::script::printer::IfDocNode']]],

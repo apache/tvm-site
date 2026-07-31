@@ -82,8 +82,9 @@ var searchData=
   ['typetraits_3c_20intimm_20_3e_79',['TypeTraits&lt; IntImm &gt;',['../structtvm_1_1ffi_1_1TypeTraits_3_01IntImm_01_4.html',1,'tvm::ffi']]],
   ['typetraits_3c_20primexpr_20_3e_80',['TypeTraits&lt; PrimExpr &gt;',['../structtvm_1_1ffi_1_1TypeTraits_3_01PrimExpr_01_4.html',1,'tvm::ffi']]],
   ['typetraits_3c_20primtype_20_3e_81',['TypeTraits&lt; PrimType &gt;',['../structtvm_1_1ffi_1_1TypeTraits_3_01PrimType_01_4.html',1,'tvm::ffi']]],
-  ['typetraits_3c_20tirx_3a_3aprimvar_20_3e_82',['TypeTraits&lt; tirx::PrimVar &gt;',['../structtvm_1_1ffi_1_1TypeTraits_3_01tirx_1_1PrimVar_01_4.html',1,'tvm::ffi']]],
-  ['typetraits_3c_20tvm_3a_3atirx_3a_3astringimm_20_3e_83',['TypeTraits&lt; tvm::tirx::StringImm &gt;',['../structtvm_1_1ffi_1_1TypeTraits_3_01tvm_1_1tirx_1_1StringImm_01_4.html',1,'tvm::ffi']]],
-  ['typetraits_3c_20typedexpr_3c_20expectedtype_20_3e_20_3e_84',['TypeTraits&lt; TypedExpr&lt; ExpectedType &gt; &gt;',['../structtvm_1_1ffi_1_1TypeTraits_3_01TypedExpr_3_01ExpectedType_01_4_01_4.html',1,'tvm::ffi']]],
-  ['typevisitor_85',['TypeVisitor',['../classtvm_1_1relax_1_1TypeVisitor.html',1,'tvm::relax']]]
+  ['typetraits_3c_20tirx_3a_3abuffervar_20_3e_82',['TypeTraits&lt; tirx::BufferVar &gt;',['../structtvm_1_1ffi_1_1TypeTraits_3_01tirx_1_1BufferVar_01_4.html',1,'tvm::ffi']]],
+  ['typetraits_3c_20tirx_3a_3aprimvar_20_3e_83',['TypeTraits&lt; tirx::PrimVar &gt;',['../structtvm_1_1ffi_1_1TypeTraits_3_01tirx_1_1PrimVar_01_4.html',1,'tvm::ffi']]],
+  ['typetraits_3c_20tvm_3a_3atirx_3a_3astringimm_20_3e_84',['TypeTraits&lt; tvm::tirx::StringImm &gt;',['../structtvm_1_1ffi_1_1TypeTraits_3_01tvm_1_1tirx_1_1StringImm_01_4.html',1,'tvm::ffi']]],
+  ['typetraits_3c_20typedexpr_3c_20expectedtype_20_3e_20_3e_85',['TypeTraits&lt; TypedExpr&lt; ExpectedType &gt; &gt;',['../structtvm_1_1ffi_1_1TypeTraits_3_01TypedExpr_3_01ExpectedType_01_4_01_4.html',1,'tvm::ffi']]],
+  ['typevisitor_86',['TypeVisitor',['../classtvm_1_1relax_1_1TypeVisitor.html',1,'tvm::relax']]]
 ];

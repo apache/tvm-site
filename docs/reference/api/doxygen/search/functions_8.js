@@ -143,7 +143,7 @@ var searchData=
   ['isregioncoveredconsumer_140',['IsRegionCoveredConsumer',['../classtvm_1_1s__tir_1_1ScheduleStateNode.html#af0d8d5357eb18cb759f7eab287b9b1e9',1,'tvm::s_tir::ScheduleStateNode']]],
   ['isrpcsessiondevice_141',['IsRPCSessionDevice',['../namespacetvm_1_1runtime.html#aa5f13cd8047078f88d142fe53337ba6f',1,'tvm::runtime']]],
   ['isscalablevector_142',['IsScalableVector',['../classtvm_1_1PrimType.html#a4d89bc6607e5e9e861a4071646befd7f',1,'tvm::PrimType']]],
-  ['isscalar_143',['isscalar',['../classtvm_1_1tirx_1_1Buffer.html#a93df7d8918fd7b1e88a240ac3ba9f8f3',1,'tvm::tirx::Buffer::IsScalar()'],['../classtvm_1_1PrimType.html#a863246183a239b6fcd2fd6961ba5464b',1,'tvm::PrimType::IsScalar()']]],
+  ['isscalar_143',['isscalar',['../classtvm_1_1tirx_1_1BufferVar.html#a5308a530136e871be239a7443acb90a7',1,'tvm::tirx::BufferVar::IsScalar()'],['../classtvm_1_1PrimType.html#a863246183a239b6fcd2fd6961ba5464b',1,'tvm::PrimType::IsScalar()']]],
   ['issinglepoint_144',['IsSinglePoint',['../classtvm_1_1arith_1_1IntSet.html#a698b2ae4136f56fb6429cb75913ee959',1,'tvm::arith::IntSet']]],
   ['isstagepipeline_145',['IsStagePipeline',['../classtvm_1_1s__tir_1_1ScheduleStateNode.html#a4be418be6ba9286b628800861962832e',1,'tvm::s_tir::ScheduleStateNode']]],
   ['isstorageshared_146',['isstorageshared',['../classtvm_1_1runtime_1_1Tensor.html#a114c1ebfd17fa456be17bc294d2032ca',1,'tvm::runtime::Tensor::IsStorageShared(const Tensor &amp;a, const Tensor &amp;b)'],['../classtvm_1_1runtime_1_1Tensor.html#a37a7232661f3552d6ec4ef97c4ecef4d',1,'tvm::runtime::Tensor::IsStorageShared(const DLTensor *a, const DLTensor *b)']]],
