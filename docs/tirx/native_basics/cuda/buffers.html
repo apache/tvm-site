@@ -989,7 +989,7 @@ tensor as a view at a column offset, and one warp frees it at the end:</p>
     <span class="n">T</span><span class="o">.</span><span class="n">ptx</span><span class="o">.</span><span class="n">tcgen05</span><span class="o">.</span><span class="n">dealloc</span><span class="p">(</span><span class="n">addr</span><span class="p">,</span> <span class="n">n_cols</span><span class="o">=</span><span class="mi">512</span><span class="p">,</span> <span class="n">cta_group</span><span class="o">=</span><span class="n">cta_group</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>You manage the column offsets and the <code class="docutils literal notranslate"><span class="pre">tmem_layout</span></code> (a datapath D/F layout)
+<p>You manage the column offsets and the <code class="docutils literal notranslate"><span class="pre">tmem_layout</span></code> (a datapath D/F/B layout)
 yourself. This is exactly the sequence the pool below emits.</p>
 <section id="pool">
 <h3>Pool<a class="headerlink" href="#pool" title="Link to this heading">#</a></h3>
@@ -998,7 +998,9 @@ bump-allocation, and the datapath layout:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">tmem_addr</span> <span class="o">=</span> <span class="n">pool</span><span class="o">.</span><span class="n">alloc</span><span class="p">((</span><span class="mi">1</span><span class="p">,),</span> <span class="s2">&quot;uint32&quot;</span><span class="p">)</span>          <span class="c1"># pool = the kernel&#39;s smem pool</span>
 <span class="n">tmem_pool</span> <span class="o">=</span> <span class="n">T</span><span class="o">.</span><span class="n">TMEMPool</span><span class="p">(</span><span class="n">pool</span><span class="p">,</span> <span class="n">total_cols</span><span class="o">=</span><span class="mi">512</span><span class="p">,</span> <span class="n">cta_group</span><span class="o">=</span><span class="n">cta_group</span><span class="p">,</span>
                        <span class="n">tmem_addr</span><span class="o">=</span><span class="n">tmem_addr</span><span class="p">)</span>
-<span class="n">acc</span> <span class="o">=</span> <span class="n">tmem_pool</span><span class="o">.</span><span class="n">alloc</span><span class="p">((</span><span class="n">CTA_M</span><span class="p">,</span> <span class="mi">512</span><span class="p">),</span> <span class="s2">&quot;float32&quot;</span><span class="p">)</span>  <span class="c1"># allocated_addr set for you</span>
+<span class="c1"># Choose the layout required by the instruction that consumes the buffer:</span>
+<span class="n">acc</span> <span class="o">=</span> <span class="n">tmem_pool</span><span class="o">.</span><span class="n">alloc</span><span class="p">((</span><span class="n">CTA_M</span><span class="p">,</span> <span class="mi">512</span><span class="p">),</span> <span class="s2">&quot;float32&quot;</span><span class="p">)</span>  <span class="c1"># Layout D when CTA_M=128</span>
+<span class="c1"># acc = tmem_pool.alloc((64, N), &quot;float32&quot;, datapath=&quot;B&quot;)  # cta_group=2</span>
 <span class="n">tmem_pool</span><span class="o">.</span><span class="n">commit</span><span class="p">()</span>                               <span class="c1"># emits tcgen05.alloc (one warp)</span>
 <span class="c1"># ... use acc ...</span>
 <span class="n">tmem_pool</span><span class="o">.</span><span class="n">dealloc</span><span class="p">()</span>                              <span class="c1"># emits tcgen05.dealloc (one warp)</span>

@@ -617,6 +617,7 @@ document.write(`
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#what-it-accepts">What it accepts</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#demonstration-program">Demonstration program</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#algorithm">Algorithm</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#accumulator-datapaths-and-readback">Accumulator datapaths and readback</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#generated-tirx-ir">Generated TIRx IR</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#generated-cuda">Generated CUDA</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#how-inputs-change-the-algorithm">How inputs change the algorithm</a></li>
@@ -676,9 +677,9 @@ accumulator <strong>C/D in tmem</strong> (<code class="docutils literal notransl
 tmem; accumulator always <code class="docutils literal notranslate"><span class="pre">float32</span></code></p></td>
 </tr>
 <tr class="row-odd"><td><p>shape</p></td>
-<td><p><code class="docutils literal notranslate"><span class="pre">M</span> <span class="pre">∈</span> <span class="pre">{64,</span> <span class="pre">128}</span></code> (×2 for cta_group=2); <code class="docutils literal notranslate"><span class="pre">N</span></code> divisible by 8 (cta_group=1) or
-16 (cta_group=2); <code class="docutils literal notranslate"><span class="pre">K</span></code> divisible by <code class="docutils literal notranslate"><span class="pre">MMA_K</span></code> = 16 (f16/bf16) / 32 (fp8) /
-64 (fp4)</p></td>
+<td><p>per-CTA <code class="docutils literal notranslate"><span class="pre">M</span> <span class="pre">∈</span> <span class="pre">{64,</span> <span class="pre">128}</span></code>; <code class="docutils literal notranslate"><span class="pre">N</span></code> divisible by 8 (cta_group=1) or 16
+(cta_group=2); <code class="docutils literal notranslate"><span class="pre">K</span></code> divisible by <code class="docutils literal notranslate"><span class="pre">MMA_K</span></code> = 16 (f16/bf16) / 32 (fp8) /
+64 (fp4). With cta_group=2, the CTA pair covers twice the per-CTA M</p></td>
 </tr>
 <tr class="row-even"><td><p>cta_group</p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">1</span></code> (one CTA) or <code class="docutils literal notranslate"><span class="pre">2</span></code> (two CTAs split the operand)</p></td>
@@ -742,6 +743,36 @@ instruction descriptor is encoded at runtime. As with the other async ops, the
 dispatch emits <strong>no</strong> completion — the caller’s <code class="docutils literal notranslate"><span class="pre">tcgen05.commit</span></code> + mbarrier wait
 close it.</p>
 </section>
+<section id="accumulator-datapaths-and-readback">
+<h2>Accumulator datapaths and readback<a class="headerlink" href="#accumulator-datapaths-and-readback" title="Link to this heading">#</a></h2>
+<p>The accumulator layout must match the MMA’s row placement:</p>
+<ul class="simple">
+<li><p>Layout D is the M=128 identity placement.</p></li>
+<li><p>Layout F is the single-CTA M=64 scattered placement.</p></li>
+<li><p>Layout B is the per-CTA M=64 placement for <code class="docutils literal notranslate"><span class="pre">cta_group=2</span></code>. Its logical
+N columns split across physical lane halves 0–63 and 64–127, so it
+occupies all 128 lanes and <code class="docutils literal notranslate"><span class="pre">N/2</span></code> tensor-memory columns.</p></li>
+</ul>
+<p>Allocate and read a Layout B result as follows:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">accumulator</span> <span class="o">=</span> <span class="n">tmem_pool</span><span class="o">.</span><span class="n">alloc</span><span class="p">((</span><span class="mi">64</span><span class="p">,</span> <span class="n">N</span><span class="p">),</span> <span class="s2">&quot;float32&quot;</span><span class="p">,</span> <span class="n">datapath</span><span class="o">=</span><span class="s2">&quot;B&quot;</span><span class="p">)</span>
+<span class="n">Tx</span><span class="o">.</span><span class="n">gemm_async</span><span class="p">(</span>
+    <span class="n">accumulator</span><span class="p">[:,</span> <span class="p">:],</span>
+    <span class="n">A_smem</span><span class="p">[:,</span> <span class="p">:],</span>
+    <span class="n">B_smem</span><span class="p">[:,</span> <span class="p">:],</span>
+    <span class="n">dispatch</span><span class="o">=</span><span class="s2">&quot;tcgen05&quot;</span><span class="p">,</span>
+    <span class="n">cta_group</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+<span class="p">)</span>
+
+<span class="n">frag</span> <span class="o">=</span> <span class="n">T</span><span class="o">.</span><span class="n">alloc_tcgen05_ldst_frag</span><span class="p">(</span><span class="s2">&quot;32x32b&quot;</span><span class="p">,</span> <span class="p">(</span><span class="mi">64</span><span class="p">,</span> <span class="n">N</span><span class="p">),</span> <span class="s2">&quot;float32&quot;</span><span class="p">)</span>
+<span class="n">Tx</span><span class="o">.</span><span class="n">wg</span><span class="o">.</span><span class="n">copy_async</span><span class="p">(</span><span class="n">frag</span><span class="p">[:,</span> <span class="p">:],</span> <span class="n">accumulator</span><span class="p">[:,</span> <span class="p">:])</span>
+<span class="n">T</span><span class="o">.</span><span class="n">ptx</span><span class="o">.</span><span class="n">tcgen05</span><span class="o">.</span><span class="n">wait</span><span class="o">.</span><span class="n">ld</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>The fragment is a logical <code class="docutils literal notranslate"><span class="pre">(64,</span> <span class="pre">N)</span></code> view of one physical
+<code class="docutils literal notranslate"><span class="pre">.32x32b</span></code> transfer over all 128 lanes. The gemm write-side layout and
+the allocation/readback layout are produced by the same
+<code class="docutils literal notranslate"><span class="pre">tmem_datapath_layout(&quot;B&quot;,</span> <span class="pre">64,</span> <span class="pre">N)</span></code> factory.</p>
+</section>
 <section id="generated-tirx-ir">
 <h2>Generated TIRx IR<a class="headerlink" href="#generated-tirx-ir" title="Link to this heading">#</a></h2>
 <p>For the <code class="docutils literal notranslate"><span class="pre">128×64</span> <span class="pre">×</span> <span class="pre">64×128</span></code> fp16 tile (swizzle mode 3):</p>
@@ -785,7 +816,8 @@ addresses and a runtime-encoded instruction descriptor</p></td>
 </tr>
 <tr class="row-even"><td><p>cta_group</p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">1</span></code> → one CTA, <code class="docutils literal notranslate"><span class="pre">M</span> <span class="pre">∈</span> <span class="pre">{64,</span> <span class="pre">128}</span></code>; <code class="docutils literal notranslate"><span class="pre">2</span></code> → two CTAs split the operand,
-<code class="docutils literal notranslate"><span class="pre">M</span> <span class="pre">∈</span> <span class="pre">{128,</span> <span class="pre">256}</span></code> and half the per-CTA N</p></td>
+each with per-CTA <code class="docutils literal notranslate"><span class="pre">M</span> <span class="pre">∈</span> <span class="pre">{64,</span> <span class="pre">128}</span></code> and half the B rows. The
+per-CTA M=64 output uses Layout B</p></td>
 </tr>
 <tr class="row-odd"><td><p>M / N / K extents</p></td>
 <td><p>set the <code class="docutils literal notranslate"><span class="pre">(mi,</span> <span class="pre">ni,</span> <span class="pre">ki)</span></code> unrolled loop counts; K iterations accumulate into
@@ -848,6 +880,7 @@ the same tmem accumulator</p></td>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#what-it-accepts">What it accepts</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#demonstration-program">Demonstration program</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#algorithm">Algorithm</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#accumulator-datapaths-and-readback">Accumulator datapaths and readback</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#generated-tirx-ir">Generated TIRx IR</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#generated-cuda">Generated CUDA</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#how-inputs-change-the-algorithm">How inputs change the algorithm</a></li>

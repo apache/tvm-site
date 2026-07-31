@@ -618,6 +618,7 @@ document.write(`
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#demonstration-program">Demonstration program</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#algorithm">Algorithm</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#selecting-the-upper-f-sub-slab">Selecting the upper F sub-slab</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#layout-b-readback">Layout B readback</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#generated-tirx-ir">Generated TIRx IR</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#generated-cuda">Generated CUDA</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#how-inputs-change-the-algorithm">How inputs change the algorithm</a></li>
@@ -679,11 +680,13 @@ warps act together</p></td>
 </tr>
 <tr class="row-odd"><td><p>register layout</p></td>
 <td><p>matched against a <code class="docutils literal notranslate"><span class="pre">tcgen05_atom_layout</span></code> (<code class="docutils literal notranslate"><span class="pre">.16x64b</span></code> / <code class="docutils literal notranslate"><span class="pre">.16x128b</span></code> /
-<code class="docutils literal notranslate"><span class="pre">.16x256b</span></code>) for the fast path; otherwise the <code class="docutils literal notranslate"><span class="pre">.32x32b</span></code> fallback</p></td>
+<code class="docutils literal notranslate"><span class="pre">.16x256b</span></code>) for the fast path; otherwise the <code class="docutils literal notranslate"><span class="pre">.32x32b</span></code> fallback.
+Layout B uses the special <code class="docutils literal notranslate"><span class="pre">.32x32b</span></code> logical <code class="docutils literal notranslate"><span class="pre">(64,</span> <span class="pre">N)</span></code> image</p></td>
 </tr>
 <tr class="row-even"><td><p>tmem datapath</p></td>
-<td><p>classified <code class="docutils literal notranslate"><span class="pre">D</span></code> (M=128 identity) or <code class="docutils literal notranslate"><span class="pre">F</span></code> (M=64 scattered); an F layout
-also selects the lower or upper 16-lane sub-slab of each warp partition</p></td>
+<td><p>classified <code class="docutils literal notranslate"><span class="pre">D</span></code> (M=128 identity), <code class="docutils literal notranslate"><span class="pre">F</span></code> (M=64 scattered), or <code class="docutils literal notranslate"><span class="pre">B</span></code>
+(per-CTA M=64, <code class="docutils literal notranslate"><span class="pre">cta_group=2</span></code> column split); an F layout also selects
+the lower or upper 16-lane sub-slab of each warp partition</p></td>
 </tr>
 </tbody>
 </table>
@@ -746,6 +749,9 @@ fragment spans two 16-row slabs, so the warps issue the atom twice
        <span class="n">row</span><span class="o">=</span><span class="p">(</span><span class="n">sub_slab</span> <span class="o">+</span> <span class="n">slab</span><span class="p">)</span> <span class="o">*</span> <span class="mi">16</span><span class="p">,</span> <span class="n">col</span><span class="o">=</span><span class="n">col_off_32b</span><span class="p">)</span>
 </pre></div>
 </div>
+<p>Layout B is routed before the ordinary atom matching. Its logical
+<code class="docutils literal notranslate"><span class="pre">(64,</span> <span class="pre">N)</span></code> fragment is emitted as one physical <code class="docutils literal notranslate"><span class="pre">.32x32b.x{N/2}</span></code>
+instruction over all 128 lanes.</p>
 <p>The dispatch emits <strong>no</strong> wait — the caller issues <code class="docutils literal notranslate"><span class="pre">tcgen05.wait.ld()</span></code> /
 <code class="docutils literal notranslate"><span class="pre">wait.st()</span></code> (as in the demo).</p>
 </section>
@@ -780,6 +786,32 @@ fragment spans two 16-row slabs, so the warps issue the atom twice
 <p>The lower view emits <code class="docutils literal notranslate"><span class="pre">row=0</span></code> and the upper view emits <code class="docutils literal notranslate"><span class="pre">row=16</span></code> for
 <code class="docutils literal notranslate"><span class="pre">.16x64b</span></code>, <code class="docutils literal notranslate"><span class="pre">.16x128b</span></code>, and <code class="docutils literal notranslate"><span class="pre">.16x256b</span></code> atoms. Layout D has 128 rows and
 already spans both sub-slabs, so it only accepts <code class="docutils literal notranslate"><span class="pre">sub_slab=0</span></code>.</p>
+</section>
+<section id="layout-b-readback">
+<h2>Layout B readback<a class="headerlink" href="#layout-b-readback" title="Link to this heading">#</a></h2>
+<p>Layout B is produced by an M=64-per-CTA <code class="docutils literal notranslate"><span class="pre">tcgen05.mma</span></code> with
+<code class="docutils literal notranslate"><span class="pre">cta_group=2</span></code>. Its logical <code class="docutils literal notranslate"><span class="pre">(64,</span> <span class="pre">N)</span></code> columns are split into two
+<code class="docutils literal notranslate"><span class="pre">N/2</span></code> halves: the low half uses physical TMEM lanes 0–63, and the high
+half uses lanes 64–127. It therefore occupies all 128 lanes and <code class="docutils literal notranslate"><span class="pre">N/2</span></code>
+<code class="docutils literal notranslate"><span class="pre">TCol</span></code> values.</p>
+<p>Use the public allocation and fragment APIs together:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">accumulator</span> <span class="o">=</span> <span class="n">tmem_pool</span><span class="o">.</span><span class="n">alloc</span><span class="p">((</span><span class="mi">64</span><span class="p">,</span> <span class="n">N</span><span class="p">),</span> <span class="s2">&quot;float32&quot;</span><span class="p">,</span> <span class="n">datapath</span><span class="o">=</span><span class="s2">&quot;B&quot;</span><span class="p">)</span>
+<span class="n">frag</span> <span class="o">=</span> <span class="n">T</span><span class="o">.</span><span class="n">alloc_tcgen05_ldst_frag</span><span class="p">(</span><span class="s2">&quot;32x32b&quot;</span><span class="p">,</span> <span class="p">(</span><span class="mi">64</span><span class="p">,</span> <span class="n">N</span><span class="p">),</span> <span class="s2">&quot;float32&quot;</span><span class="p">)</span>
+
+<span class="n">Tx</span><span class="o">.</span><span class="n">wg</span><span class="o">.</span><span class="n">copy_async</span><span class="p">(</span><span class="n">frag</span><span class="p">[:,</span> <span class="p">:],</span> <span class="n">accumulator</span><span class="p">[:,</span> <span class="p">:])</span>
+<span class="n">T</span><span class="o">.</span><span class="n">ptx</span><span class="o">.</span><span class="n">tcgen05</span><span class="o">.</span><span class="n">wait</span><span class="o">.</span><span class="n">ld</span><span class="p">()</span>
+
+<span class="c1"># The inverse direction emits tcgen05.st with the same physical image.</span>
+<span class="n">Tx</span><span class="o">.</span><span class="n">wg</span><span class="o">.</span><span class="n">copy_async</span><span class="p">(</span><span class="n">accumulator</span><span class="p">[:,</span> <span class="p">:],</span> <span class="n">frag</span><span class="p">[:,</span> <span class="p">:])</span>
+<span class="n">T</span><span class="o">.</span><span class="n">ptx</span><span class="o">.</span><span class="n">tcgen05</span><span class="o">.</span><span class="n">wait</span><span class="o">.</span><span class="n">st</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>This is a single <code class="docutils literal notranslate"><span class="pre">tcgen05.{ld,st}.32x32b.x{N/2}</span></code> issue. <code class="docutils literal notranslate"><span class="pre">N</span></code> must be
+even, <code class="docutils literal notranslate"><span class="pre">N/2</span></code> must be a valid PTX <code class="docutils literal notranslate"><span class="pre">num</span></code>, and the fragment is fp32-only.
+The first implementation intentionally requires the full logical
+<code class="docutils literal notranslate"><span class="pre">(64,</span> <span class="pre">N)</span></code> region: a partial logical-column slice is not contiguous after
+the two-way lane split. A conventional <code class="docutils literal notranslate"><span class="pre">.16x*b</span></code> fragment is rejected with
+an actionable error.</p>
 </section>
 <section id="generated-tirx-ir">
 <h2>Generated TIRx IR<a class="headerlink" href="#generated-tirx-ir" title="Link to this heading">#</a></h2>
@@ -825,10 +857,12 @@ match → the <code class="docutils literal notranslate"><span class="pre">.32x3
 <td><p><code class="docutils literal notranslate"><span class="pre">tmem</span> <span class="pre">→</span> <span class="pre">local</span></code> → <code class="docutils literal notranslate"><span class="pre">tcgen05.ld</span></code>; <code class="docutils literal notranslate"><span class="pre">local</span> <span class="pre">→</span> <span class="pre">tmem</span></code> → <code class="docutils literal notranslate"><span class="pre">tcgen05.st</span></code> (same
 shape/num logic)</p></td>
 </tr>
-<tr class="row-odd"><td><p>datapath D vs F</p></td>
+<tr class="row-odd"><td><p>datapath D vs F vs B</p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">D</span></code> (M=128) covers all 128 rows; an M=128 <code class="docutils literal notranslate"><span class="pre">.16x*b</span></code> copy issues two slabs
 (<code class="docutils literal notranslate"><span class="pre">row</span> <span class="pre">=</span> <span class="pre">0</span></code> / <code class="docutils literal notranslate"><span class="pre">row</span> <span class="pre">=</span> <span class="pre">16</span></code>). <code class="docutils literal notranslate"><span class="pre">F</span></code> (M=64) scatters rows to lanes and
-its layout selects one issue at <code class="docutils literal notranslate"><span class="pre">row</span> <span class="pre">=</span> <span class="pre">0</span></code> or <code class="docutils literal notranslate"><span class="pre">row</span> <span class="pre">=</span> <span class="pre">16</span></code></p></td>
+its layout selects one issue at <code class="docutils literal notranslate"><span class="pre">row</span> <span class="pre">=</span> <span class="pre">0</span></code> or <code class="docutils literal notranslate"><span class="pre">row</span> <span class="pre">=</span> <span class="pre">16</span></code>. <code class="docutils literal notranslate"><span class="pre">B</span></code>
+(per-CTA M=64, <code class="docutils literal notranslate"><span class="pre">cta_group=2</span></code>) splits N across two 64-lane halves and
+emits one logical-64-row <code class="docutils literal notranslate"><span class="pre">.32x32b</span></code> image</p></td>
 </tr>
 </tbody>
 </table>
@@ -885,6 +919,7 @@ its layout selects one issue at <code class="docutils literal notranslate"><span
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#demonstration-program">Demonstration program</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#algorithm">Algorithm</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#selecting-the-upper-f-sub-slab">Selecting the upper F sub-slab</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#layout-b-readback">Layout B readback</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#generated-tirx-ir">Generated TIRx IR</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#generated-cuda">Generated CUDA</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#how-inputs-change-the-algorithm">How inputs change the algorithm</a></li>

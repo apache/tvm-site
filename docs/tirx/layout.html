@@ -887,6 +887,7 @@ routed placement) in the same tensor-memory address space.</p>
 <span class="n">accum</span> <span class="o">=</span> <span class="n">tmem_datapath_layout</span><span class="p">(</span><span class="s2">&quot;D&quot;</span><span class="p">,</span> <span class="mi">128</span><span class="p">,</span> <span class="n">cols</span><span class="p">)</span>
 <span class="n">lower</span> <span class="o">=</span> <span class="n">tmem_datapath_layout</span><span class="p">(</span><span class="s2">&quot;F&quot;</span><span class="p">,</span> <span class="mi">64</span><span class="p">,</span> <span class="n">cols</span><span class="p">,</span> <span class="n">sub_slab</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
 <span class="n">upper</span> <span class="o">=</span> <span class="n">tmem_datapath_layout</span><span class="p">(</span><span class="s2">&quot;F&quot;</span><span class="p">,</span> <span class="mi">64</span><span class="p">,</span> <span class="n">cols</span><span class="p">,</span> <span class="n">sub_slab</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">paired</span> <span class="o">=</span> <span class="n">tmem_datapath_layout</span><span class="p">(</span><span class="s2">&quot;B&quot;</span><span class="p">,</span> <span class="mi">64</span><span class="p">,</span> <span class="n">cols</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>Layout D maps logical row <code class="docutils literal notranslate"><span class="pre">r</span></code> directly to <code class="docutils literal notranslate"><span class="pre">TLane</span> <span class="pre">=</span> <span class="pre">r</span></code> and spans both
@@ -902,6 +903,26 @@ upper-half aliases of the same 128-row Layout D allocation. The
 <code class="docutils literal notranslate"><span class="pre">tcgen05_ldst</span></code> copy dispatch recognizes the layout and emits the matching
 <code class="docutils literal notranslate"><span class="pre">row=0</span></code> or <code class="docutils literal notranslate"><span class="pre">row=16</span></code> instruction. Layout D already occupies both halves,
 so a nonzero <code class="docutils literal notranslate"><span class="pre">sub_slab</span></code> is rejected.</p>
+<p>Layout B is the per-CTA accumulator placement for an M=64
+<code class="docutils literal notranslate"><span class="pre">tcgen05.mma.cta_group::2</span></code> operation. PTX describes the two-CTA operation
+as M=128, while each CTA owns a logical <code class="docutils literal notranslate"><span class="pre">(64,</span> <span class="pre">N)</span></code> tile. Its columns split
+across the two 64-lane halves:</p>
+<div class="math notranslate nohighlight">
+\[\mathrm{TLane}
+= r + 64\left\lfloor\frac{c}{N/2}\right\rfloor,
+\qquad
+\mathrm{TCol} = c \bmod (N/2).\]</div>
+<p>Thus the tile occupies all 128 lanes and <code class="docutils literal notranslate"><span class="pre">N/2</span></code> tensor-memory columns, the
+same physical footprint as Layout D <code class="docutils literal notranslate"><span class="pre">(128,</span> <span class="pre">N/2)</span></code>. <code class="docutils literal notranslate"><span class="pre">N</span></code> must be even and
+Layout B does not accept <code class="docutils literal notranslate"><span class="pre">sub_slab</span></code>. Its register image uses the existing
+fragment API:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">frag</span> <span class="o">=</span> <span class="n">T</span><span class="o">.</span><span class="n">alloc_tcgen05_ldst_frag</span><span class="p">(</span><span class="s2">&quot;32x32b&quot;</span><span class="p">,</span> <span class="p">(</span><span class="mi">64</span><span class="p">,</span> <span class="n">N</span><span class="p">),</span> <span class="s2">&quot;float32&quot;</span><span class="p">)</span>
+<span class="n">Tx</span><span class="o">.</span><span class="n">wg</span><span class="o">.</span><span class="n">copy_async</span><span class="p">(</span><span class="n">frag</span><span class="p">[:,</span> <span class="p">:],</span> <span class="n">paired_accumulator</span><span class="p">[:,</span> <span class="p">:])</span>
+<span class="n">T</span><span class="o">.</span><span class="n">ptx</span><span class="o">.</span><span class="n">tcgen05</span><span class="o">.</span><span class="n">wait</span><span class="o">.</span><span class="n">ld</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>The logical <code class="docutils literal notranslate"><span class="pre">(64,</span> <span class="pre">N)</span></code> fragment is one physical <code class="docutils literal notranslate"><span class="pre">.32x32b</span></code> transfer over
+all 128 lanes; each thread owns <code class="docutils literal notranslate"><span class="pre">N/2</span></code> contiguous fp32 registers.</p>
 </section>
 <section id="beyond-gpu-registers">
 <h3>Beyond GPU registers<a class="headerlink" href="#beyond-gpu-registers" title="Link to this heading">#</a></h3>
