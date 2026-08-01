@@ -282,7 +282,7 @@
 </details></li>
 <li class="toctree-l2 has-children"><a class="reference internal" href="copy_async.html">copy_async</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l3"><a class="reference internal" href="copy_async/ldgsts.html">copy_async → ldgsts</a></li>
-<li class="toctree-l3"><a class="reference internal" href="copy_async/tma.html">copy_async → tma</a></li>
+<li class="toctree-l3"><a class="reference internal" href="copy_async/tma.html">copy_async → tma_auto / tma_explicit</a></li>
 <li class="toctree-l3"><a class="reference internal" href="copy_async/dsmem.html">copy_async → dsmem</a></li>
 <li class="toctree-l3"><a class="reference internal" href="copy_async/tcgen05_cp.html">copy_async → tcgen05_cp</a></li>
 <li class="toctree-l3"><a class="reference internal" href="copy_async/tcgen05_ldst.html">copy_async → tcgen05_ldst</a></li>
@@ -684,6 +684,15 @@ tmem; accumulator always <code class="docutils literal notranslate"><span class=
 <tr class="row-even"><td><p>cta_group</p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">1</span></code> (one CTA) or <code class="docutils literal notranslate"><span class="pre">2</span></code> (two CTAs split the operand)</p></td>
 </tr>
+<tr class="row-odd"><td><p>descriptor mode</p></td>
+<td><p>optional <code class="docutils literal notranslate"><span class="pre">smem_desc</span></code> controls shared matrix-descriptor construction:
+<code class="docutils literal notranslate"><span class="pre">&quot;hoist&quot;</span></code> (default), <code class="docutils literal notranslate"><span class="pre">&quot;local_hoist&quot;</span></code>, <code class="docutils literal notranslate"><span class="pre">&quot;encode&quot;</span></code>, or
+<code class="docutils literal notranslate"><span class="pre">&quot;recompute&quot;</span></code></p></td>
+</tr>
+<tr class="row-even"><td><p>layout forms</p></td>
+<td><p>swizzled shared layouts, no-swizzle packed shared layouts, regular tmem
+accumulators, and FlashMLA-style packed <code class="docutils literal notranslate"><span class="pre">N/2</span></code> tmem accumulator layouts</p></td>
+</tr>
 </tbody>
 </table>
 </div>
@@ -716,9 +725,19 @@ into a tmem accumulator, after TMA-loading A/B into shared (from
 </section>
 <section id="algorithm">
 <h2>Algorithm<a class="headerlink" href="#algorithm" title="Link to this heading">#</a></h2>
-<p><strong>1. Encode shared matrix descriptors.</strong> Each shared operand gets a 64-bit
-descriptor (leading-dim offset <code class="docutils literal notranslate"><span class="pre">ldo</span></code>, stride-dim offset <code class="docutils literal notranslate"><span class="pre">sdo</span></code>, swizzle mode)
-naming its tile to the tensor core:</p>
+<p><strong>1. Encode or synthesize shared matrix descriptors.</strong> Each shared operand is named
+by a 64-bit descriptor (leading-dim offset <code class="docutils literal notranslate"><span class="pre">ldo</span></code>, stride-dim offset <code class="docutils literal notranslate"><span class="pre">sdo</span></code>,
+swizzle mode).  <code class="docutils literal notranslate"><span class="pre">smem_desc</span></code> selects where that descriptor comes from:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">&quot;hoist&quot;</span></code> (default): encode one uniform descriptor per operand after shared
+allocation and add each per-MMA 16-byte offset.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">&quot;local_hoist&quot;</span></code>: encode at this <code class="docutils literal notranslate"><span class="pre">gemm_async</span></code> call site, under the caller’s
+control flow, then add offsets.  This is for call sites where only the elected
+issue thread should construct the descriptor.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">&quot;encode&quot;</span></code>: encode the exact shared pointer for each MMA issue.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">&quot;recompute&quot;</span></code>: synthesize the descriptor value inline per MMA without a local
+descriptor cell.</p></li>
+</ul>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">T</span><span class="o">.</span><span class="n">ptx</span><span class="o">.</span><span class="n">tcgen05</span><span class="o">.</span><span class="n">encode_matrix_descriptor</span><span class="p">(</span><span class="n">descA</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="n">A_smem</span><span class="o">.</span><span class="n">ptr_to</span><span class="p">([</span><span class="mi">0</span><span class="p">]),</span> <span class="n">ldo</span><span class="p">,</span> <span class="n">sdo</span><span class="p">,</span> <span class="n">swizzle</span><span class="p">)</span>
 <span class="n">T</span><span class="o">.</span><span class="n">ptx</span><span class="o">.</span><span class="n">tcgen05</span><span class="o">.</span><span class="n">encode_matrix_descriptor</span><span class="p">(</span><span class="n">descB</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="n">B_smem</span><span class="o">.</span><span class="n">ptr_to</span><span class="p">([</span><span class="mi">0</span><span class="p">]),</span> <span class="n">ldo</span><span class="p">,</span> <span class="n">sdo</span><span class="p">,</span> <span class="n">swizzle</span><span class="p">)</span>
 </pre></div>
@@ -742,6 +761,11 @@ with two extra tmem addresses — <code class="docutils literal notranslate"><sp
 instruction descriptor is encoded at runtime. As with the other async ops, the
 dispatch emits <strong>no</strong> completion — the caller’s <code class="docutils literal notranslate"><span class="pre">tcgen05.commit</span></code> + mbarrier wait
 close it.</p>
+<p>For row-0 schedules, the lowering folds <code class="docutils literal notranslate"><span class="pre">T.cuda.get_tmem_addr(base,</span> <span class="pre">0,</span> <span class="pre">col)</span></code> to
+<code class="docutils literal notranslate"><span class="pre">base</span> <span class="pre">+</span> <span class="pre">col</span></code>.  This keeps the generated issue loop close to hand-written
+FlashMLA kernels while preserving the helper call for nonzero row offsets.  When
+<code class="docutils literal notranslate"><span class="pre">weight_stationary=True</span></code> is passed, the flag is forwarded to the PTX wrapper so
+the wrapper can select the matching tcgen05 MMA ABI.</p>
 </section>
 <section id="accumulator-datapaths-and-readback">
 <h2>Accumulator datapaths and readback<a class="headerlink" href="#accumulator-datapaths-and-readback" title="Link to this heading">#</a></h2>
@@ -824,7 +848,24 @@ per-CTA M=64 output uses Layout B</p></td>
 the same tmem accumulator</p></td>
 </tr>
 <tr class="row-even"><td><p>shared swizzle</p></td>
-<td><p>sets the <code class="docutils literal notranslate"><span class="pre">swizzle</span></code> mode + <code class="docutils literal notranslate"><span class="pre">ldo</span></code>/<code class="docutils literal notranslate"><span class="pre">sdo</span></code> in the matrix descriptors</p></td>
+<td><p>sets the <code class="docutils literal notranslate"><span class="pre">swizzle</span></code> mode + <code class="docutils literal notranslate"><span class="pre">ldo</span></code>/<code class="docutils literal notranslate"><span class="pre">sdo</span></code> in the matrix descriptors;
+no-swizzle packed layouts are accepted when the selected tile has a
+hardware-compatible 16-byte packed stride</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">smem_desc</span></code></p></td>
+<td><p>selects hoisted, call-site-hoisted, per-MMA encoded, or recomputed shared
+descriptor construction.  The choice changes code shape only; the MMA
+operands still describe the same selected shared tiles.</p></td>
+</tr>
+<tr class="row-even"><td><p>packed tmem accumulator</p></td>
+<td><p>layouts of the form <code class="docutils literal notranslate"><span class="pre">TileLayout(S[(M,</span> <span class="pre">2,</span> <span class="pre">N//2)</span> <span class="pre">:</span> <span class="pre">(1&#64;TLane,</span> <span class="pre">64&#64;TLane,</span>
+<span class="pre">1&#64;TCol)])</span></code> are treated as packed <code class="docutils literal notranslate"><span class="pre">N/2</span></code> physical columns, matching
+FlashMLA-style low/high accumulator placement.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">weight_stationary</span></code></p></td>
+<td><p>forwarded to the low-level tcgen05 wrapper for kernels that require that
+issue ABI; it is a lowering/configuration mode, not a separate PTX
+instruction mnemonic.</p></td>
 </tr>
 </tbody>
 </table>

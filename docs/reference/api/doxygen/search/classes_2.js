@@ -51,10 +51,8 @@ var searchData=
   ['conv2dtransposeattrs_48',['Conv2DTransposeAttrs',['../structtvm_1_1relax_1_1Conv2DTransposeAttrs.html',1,'tvm::relax']]],
   ['conv3dattrs_49',['Conv3DAttrs',['../structtvm_1_1relax_1_1Conv3DAttrs.html',1,'tvm::relax']]],
   ['conv3dtransposeattrs_50',['Conv3DTransposeAttrs',['../structtvm_1_1relax_1_1Conv3DTransposeAttrs.html',1,'tvm::relax']]],
-  ['copypipeline_51',['CopyPipeline',['../classtvm_1_1tirx_1_1CopyPipeline.html',1,'tvm::tirx']]],
-  ['copypipelinenode_52',['CopyPipelineNode',['../classtvm_1_1tirx_1_1CopyPipelineNode.html',1,'tvm::tirx']]],
-  ['costmodel_53',['CostModel',['../classtvm_1_1s__tir_1_1meta__schedule_1_1CostModel.html',1,'tvm::s_tir::meta_schedule']]],
-  ['costmodelnode_54',['CostModelNode',['../classtvm_1_1s__tir_1_1meta__schedule_1_1CostModelNode.html',1,'tvm::s_tir::meta_schedule']]],
-  ['cudaipcmemory_55',['CUDAIPCMemory',['../classtvm_1_1runtime_1_1cuda__ipc_1_1CUDAIPCMemory.html',1,'tvm::runtime::cuda_ipc']]],
-  ['cudaipcmemoryobj_56',['CUDAIPCMemoryObj',['../classtvm_1_1runtime_1_1cuda__ipc_1_1CUDAIPCMemoryObj.html',1,'tvm::runtime::cuda_ipc']]]
+  ['costmodel_51',['CostModel',['../classtvm_1_1s__tir_1_1meta__schedule_1_1CostModel.html',1,'tvm::s_tir::meta_schedule']]],
+  ['costmodelnode_52',['CostModelNode',['../classtvm_1_1s__tir_1_1meta__schedule_1_1CostModelNode.html',1,'tvm::s_tir::meta_schedule']]],
+  ['cudaipcmemory_53',['CUDAIPCMemory',['../classtvm_1_1runtime_1_1cuda__ipc_1_1CUDAIPCMemory.html',1,'tvm::runtime::cuda_ipc']]],
+  ['cudaipcmemoryobj_54',['CUDAIPCMemoryObj',['../classtvm_1_1runtime_1_1cuda__ipc_1_1CUDAIPCMemoryObj.html',1,'tvm::runtime::cuda_ipc']]]
 ];

@@ -283,7 +283,7 @@
 </details></li>
 <li class="toctree-l2 has-children"><a class="reference internal" href="tile_primitives/copy_async.html">copy_async</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l3"><a class="reference internal" href="tile_primitives/copy_async/ldgsts.html">copy_async → ldgsts</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tile_primitives/copy_async/tma.html">copy_async → tma</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tile_primitives/copy_async/tma.html">copy_async → tma_auto / tma_explicit</a></li>
 <li class="toctree-l3"><a class="reference internal" href="tile_primitives/copy_async/dsmem.html">copy_async → dsmem</a></li>
 <li class="toctree-l3"><a class="reference internal" href="tile_primitives/copy_async/tcgen05_cp.html">copy_async → tcgen05_cp</a></li>
 <li class="toctree-l3"><a class="reference internal" href="tile_primitives/copy_async/tcgen05_ldst.html">copy_async → tcgen05_ldst</a></li>
@@ -624,7 +624,7 @@ document.write(`
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#beyond-gpu-registers">Beyond GPU registers</a></li>
 </ul>
 </li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#swizzlelayout-composelayout">SwizzleLayout, ComposeLayout</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#composelayout-swizzled-tile">ComposeLayout (swizzled tile)</a><ul class="visible nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#why-swizzle">Why swizzle</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#the-transform">The transform</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#choosing-the-parameters">Choosing the parameters</a></li>
@@ -934,13 +934,16 @@ memory with native 2D addressing (<code class="docutils literal notranslate"><sp
 presets for each.</p>
 </section>
 </section>
-<section id="swizzlelayout-composelayout">
-<h2>SwizzleLayout, ComposeLayout<a class="headerlink" href="#swizzlelayout-composelayout" title="Link to this heading">#</a></h2>
+<section id="composelayout-swizzled-tile">
+<h2>ComposeLayout (swizzled tile)<a class="headerlink" href="#composelayout-swizzled-tile" title="Link to this heading">#</a></h2>
 <p>Some layouts also need a <em>swizzle</em>: a non-linear, XOR-based permutation of the
 linear memory address. It is not expressible as a strided <code class="docutils literal notranslate"><span class="pre">TileLayout</span></code> (which
-is affine), so TIRx represents it as a separate <code class="docutils literal notranslate"><span class="pre">SwizzleLayout</span></code> composed with
-the tile layout: <code class="docutils literal notranslate"><span class="pre">ComposeLayout(swizzle,</span> <span class="pre">tile)</span></code>. The tile layout produces a
-linear memory address; the swizzle then permutes that address.</p>
+is affine), so TIRx folds it into a <code class="docutils literal notranslate"><span class="pre">ComposeLayout</span></code>: alongside a
+<code class="docutils literal notranslate"><span class="pre">tile_layout</span></code>, a <code class="docutils literal notranslate"><span class="pre">ComposeLayout</span></code> carries four swizzle parameters
+(<code class="docutils literal notranslate"><span class="pre">per_element</span></code>, <code class="docutils literal notranslate"><span class="pre">swizzle_len</span></code>, <code class="docutils literal notranslate"><span class="pre">atom_len</span></code>, <code class="docutils literal notranslate"><span class="pre">swizzle_inner</span></code>). The tile
+layout produces a linear memory address; the swizzle then permutes that address.
+A <em>bare</em> swizzle (no meaningful tile) is a <code class="docutils literal notranslate"><span class="pre">ComposeLayout</span></code> over a trivial
+identity <code class="docutils literal notranslate"><span class="pre">TileLayout</span></code> covering one swizzle period.</p>
 <section id="why-swizzle">
 <h3>Why swizzle<a class="headerlink" href="#why-swizzle" title="Link to this heading">#</a></h3>
 <p>Shared memory is organized into <strong>32 banks of 4 bytes</strong>. Consecutive 4-byte
@@ -956,10 +959,11 @@ conflict. Swizzle scatters those accesses across banks.</p>
 </section>
 <section id="the-transform">
 <h3>The transform<a class="headerlink" href="#the-transform" title="Link to this heading">#</a></h3>
-<p>A <code class="docutils literal notranslate"><span class="pre">SwizzleLayout</span></code> has three integer parameters — <code class="docutils literal notranslate"><span class="pre">per_element</span></code> (M),
+<p>The swizzle has three integer parameters — <code class="docutils literal notranslate"><span class="pre">per_element</span></code> (M),
 <code class="docutils literal notranslate"><span class="pre">swizzle_len</span></code> (B), and <code class="docutils literal notranslate"><span class="pre">atom_len</span></code> (S) — and maps a linear element address
 <code class="docutils literal notranslate"><span class="pre">m</span></code> as follows (keeping the low <code class="docutils literal notranslate"><span class="pre">M</span></code> bits untouched and XOR-ing a higher bit
-group down into a lower one):</p>
+group down into a lower one; this is the <code class="docutils literal notranslate"><span class="pre">swizzle_inner=True</span></code> direction, and
+<code class="docutils literal notranslate"><span class="pre">swizzle_inner=False</span></code> mirrors the XOR):</p>
 <div class="math notranslate nohighlight">
 \[\text{addr}(m) = \bigl(f(m \gg M)\bigr)\!\cdot\! 2^{M} + (m \bmod 2^{M}),
 \qquad
@@ -978,7 +982,7 @@ B = \begin{cases} 1 &amp; 32\text{B} \\ 2 &amp; 64\text{B} \\ 3 &amp; 128\text{B
 \qquad
 S = 3 .\end{split}\]</div>
 <p>For example <code class="docutils literal notranslate"><span class="pre">float16</span></code> (16-bit) gives <code class="docutils literal notranslate"><span class="pre">M</span> <span class="pre">=</span> <span class="pre">bitlen(8)</span> <span class="pre">-</span> <span class="pre">1</span> <span class="pre">=</span> <span class="pre">3</span></code>; with 128B
-swizzle that is <code class="docutils literal notranslate"><span class="pre">Swizzle(M=3,</span> <span class="pre">B=3,</span> <span class="pre">S=3)</span></code>. <code class="docutils literal notranslate"><span class="pre">M</span></code> keeps a 16-byte (128-bit)
+swizzle that is swizzle <code class="docutils literal notranslate"><span class="pre">(M=3,</span> <span class="pre">B=3,</span> <span class="pre">S=3)</span></code>. <code class="docutils literal notranslate"><span class="pre">M</span></code> keeps a 16-byte (128-bit)
 contiguous run unswizzled, matching the minimum vector access.</p>
 </section>
 <section id="bank-and-line-of-an-element">
@@ -994,7 +998,7 @@ swizzled element address <code class="docutils literal notranslate"><span class=
 </section>
 <section id="worked-example-128b-swizzle-float16-8-64-tile">
 <h3>Worked example: 128B swizzle, <code class="docutils literal notranslate"><span class="pre">float16</span></code>, <code class="docutils literal notranslate"><span class="pre">(8,</span> <span class="pre">64)</span></code> tile<a class="headerlink" href="#worked-example-128b-swizzle-float16-8-64-tile" title="Link to this heading">#</a></h3>
-<p>With <code class="docutils literal notranslate"><span class="pre">Swizzle(3,3,3)</span></code> over <code class="docutils literal notranslate"><span class="pre">m</span> <span class="pre">=</span> <span class="pre">64i</span> <span class="pre">+</span> <span class="pre">j</span></code> the address simplifies to</p>
+<p>With the swizzle <code class="docutils literal notranslate"><span class="pre">(3,3,3)</span></code> over <code class="docutils literal notranslate"><span class="pre">m</span> <span class="pre">=</span> <span class="pre">64i</span> <span class="pre">+</span> <span class="pre">j</span></code> the address simplifies to</p>
 <div class="math notranslate nohighlight">
 \[\text{addr}(i, j) = 64\,i + 8\,(\lfloor j/8 \rfloor \oplus i) + (j \bmod 8),\]</div>
 <p>and (<code class="docutils literal notranslate"><span class="pre">b</span> <span class="pre">=</span> <span class="pre">2</span></code>) <code class="docutils literal notranslate"><span class="pre">bank</span> <span class="pre">=</span> <span class="pre">⌊addr/2⌋</span> <span class="pre">mod</span> <span class="pre">32</span></code>. Reading column <code class="docutils literal notranslate"><span class="pre">j</span> <span class="pre">=</span> <span class="pre">0</span></code> down the
@@ -1087,7 +1091,7 @@ dispatch.</p></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#beyond-gpu-registers">Beyond GPU registers</a></li>
 </ul>
 </li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#swizzlelayout-composelayout">SwizzleLayout, ComposeLayout</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#composelayout-swizzled-tile">ComposeLayout (swizzled tile)</a><ul class="visible nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#why-swizzle">Why swizzle</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#the-transform">The transform</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#choosing-the-parameters">Choosing the parameters</a></li>

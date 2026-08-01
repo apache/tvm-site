@@ -282,7 +282,7 @@
 </details></li>
 <li class="toctree-l2 current active has-children"><a class="reference internal" href="../copy_async.html">copy_async</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
 <li class="toctree-l3"><a class="reference internal" href="ldgsts.html">copy_async → ldgsts</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tma.html">copy_async → tma</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tma.html">copy_async → tma_auto / tma_explicit</a></li>
 <li class="toctree-l3"><a class="reference internal" href="dsmem.html">copy_async → dsmem</a></li>
 <li class="toctree-l3 current active"><a class="current reference internal" href="#">copy_async → tcgen05_cp</a></li>
 <li class="toctree-l3"><a class="reference internal" href="tcgen05_ldst.html">copy_async → tcgen05_ldst</a></li>
@@ -614,10 +614,10 @@ document.write(`
             </div>
             <nav aria-label="Page">
                 <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#shape-selection">Shape selection</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#what-it-accepts">What it accepts</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#demonstration-program">Demonstration program</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#algorithm">Algorithm</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#generated-tirx-ir">Generated TIRx IR</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#generated-cuda">Generated CUDA</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#how-inputs-change-the-algorithm">How inputs change the algorithm</a></li>
 </ul>
@@ -634,29 +634,83 @@ document.write(`
   <section id="copy-async-tcgen05-cp">
 <h1>copy_async → tcgen05_cp<a class="headerlink" href="#copy-async-tcgen05-cp" title="Link to this heading">#</a></h1>
 <p>The <code class="docutils literal notranslate"><span class="pre">tcgen05_cp</span></code> variant lowers a <code class="docutils literal notranslate"><span class="pre">copy_async</span></code> from <strong>shared memory to tensor
-memory</strong> (Blackwell <code class="docutils literal notranslate"><span class="pre">tmem</span></code>). One elected thread issues
-<code class="docutils literal notranslate"><span class="pre">tcgen05.cp.32x128b.warpx4</span></code>: a shared <strong>matrix descriptor</strong> names the source tile,
-and the <code class="docutils literal notranslate"><span class="pre">warpx4</span></code> multicast routes 32 lanes × 128 bits into the tensor-memory lanes
-owned by all four warps. The dispatch issues only the copy; the caller signals
+memory</strong> (Blackwell <code class="docutils literal notranslate"><span class="pre">tmem</span></code>) through a generic planner covering every
+<code class="docutils literal notranslate"><span class="pre">tcgen05.cp</span></code> shape. A shared <strong>matrix descriptor</strong> names the source tile; all
+descriptor fields (ldo/sdo/swizzle) and the cp issue sequence are derived from
+the two buffer layouts. The dispatch issues only the copy; the caller signals
 completion with <code class="docutils literal notranslate"><span class="pre">tcgen05.commit</span></code>. Source:
 <code class="docutils literal notranslate"><span class="pre">python/tvm/backend/cuda/operator/tile_primitive/copy_async/tcgen05_cp.py</span></code>.</p>
+<section id="shape-selection">
+<h2>Shape selection<a class="headerlink" href="#shape-selection" title="Link to this heading">#</a></h2>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">shape=</span></code> config: forces that PTX shape (with <code class="docutils literal notranslate"><span class="pre">multicast=</span></code> where the shape
+has more than one legal qualifier).</p></li>
+<li><p>No <code class="docutils literal notranslate"><span class="pre">shape</span></code> config: the planner tries each candidate <strong>widest atom first</strong>
+and takes the first whose plan validates against the layouts:
+<code class="docutils literal notranslate"><span class="pre">128x256b</span></code> → <code class="docutils literal notranslate"><span class="pre">4x256b</span></code> → <code class="docutils literal notranslate"><span class="pre">128x128b</span></code> → <code class="docutils literal notranslate"><span class="pre">64x128b.warpx2::02_13</span></code> →
+<code class="docutils literal notranslate"><span class="pre">64x128b.warpx2::01_23</span></code> → <code class="docutils literal notranslate"><span class="pre">32x128b.warpx4</span></code>. All candidates but the
+256b/128b pair are mutually exclusive by the tmem (lane, replica) pattern, so
+a bare warpx4 copy still resolves to <code class="docutils literal notranslate"><span class="pre">32x128b.warpx4</span></code>.</p></li>
+</ul>
+<p>Each shape pins a tmem row→lane mapping and replica (multicast) pattern
+(verified bit-exactly on B200 by <code class="docutils literal notranslate"><span class="pre">test_tcgen05_cp.py</span></code>):</p>
+<div class="pst-scrollable-table-container"><table class="table">
+<colgroup>
+<col style="width: 18.0%" />
+<col style="width: 26.0%" />
+<col style="width: 30.0%" />
+<col style="width: 26.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>shape</p></th>
+<th class="head"><p>multicast</p></th>
+<th class="head"><p>t lane pattern</p></th>
+<th class="head"><p>t replica</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">128x256b</span></code></p></td>
+<td><p>(none)</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">(128,</span> <span class="pre">1&#64;TLane)</span></code></p></td>
+<td><p>—</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">4x256b</span></code></p></td>
+<td><p>(none)</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">(4,</span> <span class="pre">32&#64;TLane)</span></code></p></td>
+<td><p>—</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">128x128b</span></code></p></td>
+<td><p>(none)</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">(128,</span> <span class="pre">1&#64;TLane)</span></code></p></td>
+<td><p>—</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">64x128b</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">warpx2::02_13</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">(64,</span> <span class="pre">1&#64;TLane)</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">(2,</span> <span class="pre">64&#64;TLane)</span></code></p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">64x128b</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">warpx2::01_23</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">(2,32):(64,1)&#64;TLane</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">(2,</span> <span class="pre">32&#64;TLane)</span></code></p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">32x128b</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">warpx4</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">(32,</span> <span class="pre">1&#64;TLane)</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">(4,</span> <span class="pre">32&#64;TLane)</span></code></p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
 <section id="what-it-accepts">
 <h2>What it accepts<a class="headerlink" href="#what-it-accepts" title="Link to this heading">#</a></h2>
-<p>Two predicates — a valid shared→tmem copy and a single-thread scope:</p>
+<p>Two predicates — the memory-scope envelope and a single-thread exec scope; all
+shape/layout validation happens in the planner with readable errors:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># register_dispatch(..., variant=&quot;smem-&gt;tmem&quot;, priority=10, when=[</span>
-<span class="n">predicate</span><span class="p">(</span><span class="s2">&quot;validate_smem_tmem_copy&quot;</span><span class="p">,</span> <span class="n">_is_valid_smem_tmem_copy</span><span class="p">),</span>
+<span class="n">predicate</span><span class="p">(</span><span class="s2">&quot;validate_smem_tmem_copy&quot;</span><span class="p">,</span> <span class="n">_validate_smem_tmem_copy</span><span class="p">),</span>
 <span class="n">predicate</span><span class="p">(</span><span class="s2">&quot;exec_scope&quot;</span><span class="p">,</span> <span class="n">_single_thread_exec</span><span class="p">),</span>       <span class="c1"># exec_scope == &quot;thread&quot;</span>
 <span class="c1"># ])</span>
-
-<span class="k">def</span><span class="w"> </span><span class="nf">_is_valid_smem_tmem_copy</span><span class="p">(</span><span class="n">op</span><span class="p">,</span> <span class="n">sctx</span><span class="p">):</span>
-    <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">src</span><span class="o">.</span><span class="n">scope</span><span class="p">()</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s2">&quot;shared&quot;</span><span class="p">)</span> <span class="ow">and</span> <span class="n">dst</span><span class="o">.</span><span class="n">scope</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;tmem&quot;</span><span class="p">):</span> <span class="o">...</span>
-    <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">src</span><span class="o">.</span><span class="n">layout</span> <span class="ow">and</span> <span class="n">dst</span><span class="o">.</span><span class="n">layout</span><span class="p">):</span> <span class="o">...</span>
-    <span class="k">if</span> <span class="n">dst</span><span class="o">.</span><span class="n">allocated_addr</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span> <span class="o">...</span>
-    <span class="n">rep</span> <span class="o">=</span> <span class="n">dst</span><span class="o">.</span><span class="n">layout</span><span class="o">.</span><span class="n">replica</span>                         <span class="c1"># the warpx4 router</span>
-    <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">rep</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span> <span class="ow">and</span> <span class="nb">int</span><span class="p">(</span><span class="n">rep</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">extent</span><span class="p">)</span> <span class="o">==</span> <span class="mi">4</span>
-            <span class="ow">and</span> <span class="nb">int</span><span class="p">(</span><span class="n">rep</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">stride</span><span class="p">)</span> <span class="o">==</span> <span class="mi">32</span> <span class="ow">and</span> <span class="s2">&quot;TLane&quot;</span> <span class="ow">in</span> <span class="nb">str</span><span class="p">(</span><span class="n">rep</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">axis</span><span class="p">)):</span>
-        <span class="k">return</span> <span class="kc">False</span><span class="p">,</span> <span class="sa">f</span><span class="s2">&quot;requires R[4:32@TLane] on tmem, got </span><span class="si">{</span><span class="nb">list</span><span class="p">(</span><span class="n">rep</span><span class="p">)</span><span class="si">}</span><span class="s2">&quot;</span>
-    <span class="k">return</span> <span class="kc">True</span><span class="p">,</span> <span class="kc">None</span>
 </pre></div>
 </div>
 <div class="pst-scrollable-table-container"><table class="table">
@@ -677,16 +731,16 @@ completion with <code class="docutils literal notranslate"><span class="pre">tcg
 <td><p><strong>single thread</strong> issues the copy</p></td>
 </tr>
 <tr class="row-even"><td><p>memory pair</p></td>
-<td><p>source <code class="docutils literal notranslate"><span class="pre">shared*</span></code> → destination <code class="docutils literal notranslate"><span class="pre">tmem</span></code> (with <code class="docutils literal notranslate"><span class="pre">allocated_addr</span></code> set by a
-prior <code class="docutils literal notranslate"><span class="pre">tcgen05.alloc</span></code>)</p></td>
+<td><p>source <code class="docutils literal notranslate"><span class="pre">shared*</span></code> → destination <code class="docutils literal notranslate"><span class="pre">tmem</span></code> (with <code class="docutils literal notranslate"><span class="pre">allocated_addr</span></code> set by
+a prior <code class="docutils literal notranslate"><span class="pre">tcgen05.alloc</span></code>); both buffers carry layouts, dtypes match</p></td>
 </tr>
 <tr class="row-odd"><td><p>tmem layout</p></td>
-<td><p>the replica <strong>must be exactly</strong> <code class="docutils literal notranslate"><span class="pre">R[4:32&#64;TLane]</span></code> — the warpx4 router that
-fans the copy across all four warps’ tensor-memory lanes</p></td>
+<td><p>must slice to one shape’s (lane, replica) pattern from the table above</p></td>
 </tr>
-<tr class="row-even"><td><p>dtype</p></td>
-<td><p>sets <code class="docutils literal notranslate"><span class="pre">elem_per_128b</span> <span class="pre">=</span> <span class="pre">128</span> <span class="pre">/</span> <span class="pre">dtype_bits</span></code> (uint8 → 16) and the descriptor
-swizzle mode</p></td>
+<tr class="row-even"><td><p>smem layout</p></td>
+<td><p>rows in 8-row descriptor core-matrix groups; the atom row width derives
+the swizzle mode (K-byte ∈ {16, 32, 64, 128} → sw 0..3) and must match
+the buffer’s swizzle (if any)</p></td>
 </tr>
 </tbody>
 </table>
@@ -694,9 +748,10 @@ swizzle mode</p></td>
 </section>
 <section id="demonstration-program">
 <h2>Demonstration program<a class="headerlink" href="#demonstration-program" title="Link to this heading">#</a></h2>
-<p>A warpgroup allocates 16 tmem columns, fills a <code class="docutils literal notranslate"><span class="pre">32×16</span></code> <code class="docutils literal notranslate"><span class="pre">uint8</span></code> shared tile, and
-copies it into tmem with <code class="docutils literal notranslate"><span class="pre">tcgen05_cp</span></code> (from <code class="docutils literal notranslate"><span class="pre">test_smem_tmem.py</span></code>; the readback /
-dealloc tail is elided):</p>
+<p>A warpgroup allocates 16 tmem columns, fills a <code class="docutils literal notranslate"><span class="pre">32×16</span></code> <code class="docutils literal notranslate"><span class="pre">uint8</span></code> shared tile,
+and copies it into tmem — no shape config, the planner infers
+<code class="docutils literal notranslate"><span class="pre">32x128b.warpx4</span></code> from the layouts (from <code class="docutils literal notranslate"><span class="pre">test_tcgen05_cp.py</span></code>; readback /
+dealloc tail elided):</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">tvm.tirx.layout</span><span class="w"> </span><span class="kn">import</span> <span class="n">R</span><span class="p">,</span> <span class="n">S</span><span class="p">,</span> <span class="n">TCol</span><span class="p">,</span> <span class="n">TileLayout</span><span class="p">,</span> <span class="n">TLane</span>
 
 <span class="n">A_smem</span> <span class="o">=</span> <span class="n">T</span><span class="o">.</span><span class="n">alloc_buffer</span><span class="p">([</span><span class="mi">32</span><span class="p">,</span> <span class="mi">16</span><span class="p">],</span> <span class="s2">&quot;uint8&quot;</span><span class="p">,</span> <span class="n">scope</span><span class="o">=</span><span class="s2">&quot;shared&quot;</span><span class="p">,</span>
@@ -715,50 +770,35 @@ dealloc tail is elided):</p>
 <span class="c1"># ... readback via tcgen05.ld, then tcgen05.dealloc ...</span>
 </pre></div>
 </div>
-<p>(The <code class="docutils literal notranslate"><span class="pre">copy_async</span></code> is auto-dispatched to the <code class="docutils literal notranslate"><span class="pre">smem-&gt;tmem</span></code> variant — the source is
-shared and the destination is the <code class="docutils literal notranslate"><span class="pre">R[4:32&#64;TLane]</span></code> tmem buffer.)</p>
 </section>
 <section id="algorithm">
 <h2>Algorithm<a class="headerlink" href="#algorithm" title="Link to this heading">#</a></h2>
-<p><strong>1. Verify the warpx4 router and re-order.</strong> After slicing both layouts to the
-region, the dispatch confirms the tmem replica is <code class="docutils literal notranslate"><span class="pre">R[4:32&#64;TLane]</span></code>, permutes to
-TLane-first / TCol-stride-descending, isolates the broadcast, and groups the
-remaining iters into <code class="docutils literal notranslate"><span class="pre">(32,</span> <span class="pre">middle,</span> <span class="pre">elem_per_128b)</span></code> — the 32×128-bit atom plus a
-list of <em>middle</em> tiles to loop over.</p>
-<p><strong>2. Encode the matrix descriptor once.</strong> A 64-bit shared descriptor (leading-dim
-offset <code class="docutils literal notranslate"><span class="pre">ldo</span></code>, stride-dim offset <code class="docutils literal notranslate"><span class="pre">sdo</span></code>, swizzle mode) is encoded right after the
-shared buffer is allocated, cached per <code class="docutils literal notranslate"><span class="pre">(smem_buf,</span> <span class="pre">ldo,</span> <span class="pre">sdo,</span> <span class="pre">swizzle)</span></code>:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">desc_buf</span> <span class="o">=</span> <span class="n">decl_buffer</span><span class="p">((</span><span class="mi">1</span><span class="p">,),</span> <span class="s2">&quot;uint64&quot;</span><span class="p">,</span> <span class="n">scope</span><span class="o">=</span><span class="s2">&quot;local&quot;</span><span class="p">)</span>
-<span class="n">T</span><span class="o">.</span><span class="n">ptx</span><span class="o">.</span><span class="n">tcgen05</span><span class="o">.</span><span class="n">encode_matrix_descriptor</span><span class="p">(</span><span class="n">desc_buf</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="n">s_buf</span><span class="o">.</span><span class="n">ptr_to</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]),</span> <span class="n">ldo</span><span class="p">,</span> <span class="n">sdo</span><span class="p">,</span> <span class="n">swizzle</span><span class="p">)</span>
+<p><strong>1. Resolve the shape</strong> — explicit <code class="docutils literal notranslate"><span class="pre">shape=</span></code> or layout inference (above).</p>
+<p><strong>2. Validate the plan.</strong> Slice both layouts to the region, permute to
+TLane-first / TCol-stride-descending, isolate broadcast iters, and split each
+side into <code class="docutils literal notranslate"><span class="pre">(lane,</span> <span class="pre">middle,</span> <span class="pre">col)</span></code> segments against the atom: <code class="docutils literal notranslate"><span class="pre">lane</span></code> = one
+instruction’s rows (must match the shape’s lane pattern), <code class="docutils literal notranslate"><span class="pre">col</span></code> = one
+instruction’s columns, <code class="docutils literal notranslate"><span class="pre">middle</span></code> = the loop dims — the outer columns and, for
+lane-tiled atoms (e.g. 16 <code class="docutils literal notranslate"><span class="pre">4x256b</span></code> cps filling each warp’s first 16 rows, the
+M=64 Layout-F scatter), the extra row iters. The smem side derives the
+descriptor fields: 8-row group strides → sdo + swizzle mode, 16B-unit stride →
+ldo (256b atoms).</p>
+<p><strong>3. Encode the matrix descriptor once.</strong> A 64-bit shared descriptor is encoded
+at the smem buffer base right after its allocation, cached per
+<code class="docutils literal notranslate"><span class="pre">(smem_buf,</span> <span class="pre">ldo,</span> <span class="pre">sdo,</span> <span class="pre">swizzle)</span></code>; each cp patches only the 14-bit address
+field.</p>
+<p><strong>4. Issue the copies</strong> — the middle dims flatten into one unrolled loop; each
+step bumps the descriptor’s 16-byte shared offset and the tmem address (column
+bits, plus the lane half-word for lane-tiled atoms):</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">for</span> <span class="n">flat</span> <span class="ow">in</span> <span class="n">T</span><span class="o">.</span><span class="n">unroll</span><span class="p">(</span><span class="n">total</span><span class="p">):</span>
+    <span class="n">t_off</span><span class="p">,</span> <span class="n">s_off</span> <span class="o">=</span> <span class="n">T</span><span class="o">.</span><span class="n">meta_var</span><span class="p">(</span><span class="n">compute_offsets</span><span class="p">(</span><span class="n">flat</span><span class="p">))</span>
+    <span class="n">T</span><span class="o">.</span><span class="n">ptx</span><span class="o">.</span><span class="n">tcgen05</span><span class="o">.</span><span class="n">cp</span><span class="p">(</span><span class="n">t_addr</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="n">t_addr_off</span> <span class="o">+</span> <span class="n">t_off</span><span class="p">,</span>
+                     <span class="n">smem_desc_add_16B_offset</span><span class="p">(</span><span class="n">desc_buf</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">init_off_16B</span> <span class="o">+</span> <span class="n">s_off</span><span class="p">),</span>
+                     <span class="n">shape</span><span class="o">=</span><span class="n">shape</span><span class="p">,</span> <span class="n">cta_group</span><span class="o">=</span><span class="n">cta_group</span><span class="p">,</span> <span class="n">multicast</span><span class="o">=</span><span class="n">multicast</span><span class="p">)</span>
 </pre></div>
 </div>
-<p><strong>3. Issue the copy</strong> — one <code class="docutils literal notranslate"><span class="pre">tcgen05.cp</span></code> for a single atom, or an unrolled loop
-that bumps the tmem column offset and the descriptor’s 16-byte shared offset per
-middle tile:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">if</span> <span class="n">total</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
-    <span class="n">T</span><span class="o">.</span><span class="n">ptx</span><span class="o">.</span><span class="n">tcgen05</span><span class="o">.</span><span class="n">cp</span><span class="p">(</span><span class="n">t_addr</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="n">t_col0</span><span class="p">,</span>
-                     <span class="n">smem_desc_add_16B_offset</span><span class="p">(</span><span class="n">desc_buf</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">init_off_16B</span><span class="p">),</span>
-                     <span class="n">shape</span><span class="o">=</span><span class="s2">&quot;32x128b&quot;</span><span class="p">,</span> <span class="n">cta_group</span><span class="o">=</span><span class="n">cta_group</span><span class="p">,</span> <span class="n">multicast</span><span class="o">=</span><span class="s2">&quot;warpx4&quot;</span><span class="p">)</span>
-<span class="k">else</span><span class="p">:</span>
-    <span class="k">for</span> <span class="n">flat</span> <span class="ow">in</span> <span class="n">T</span><span class="o">.</span><span class="n">unroll</span><span class="p">(</span><span class="n">total</span><span class="p">):</span>
-        <span class="n">t_off</span><span class="p">,</span> <span class="n">s_off</span> <span class="o">=</span> <span class="n">T</span><span class="o">.</span><span class="n">meta_var</span><span class="p">(</span><span class="n">compute_offsets</span><span class="p">(</span><span class="n">flat</span><span class="p">))</span>
-        <span class="n">T</span><span class="o">.</span><span class="n">ptx</span><span class="o">.</span><span class="n">tcgen05</span><span class="o">.</span><span class="n">cp</span><span class="p">(</span><span class="n">t_addr</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="n">t_col0</span> <span class="o">+</span> <span class="n">t_off</span><span class="p">,</span>
-                         <span class="n">smem_desc_add_16B_offset</span><span class="p">(</span><span class="n">desc_buf</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">init_off_16B</span> <span class="o">+</span> <span class="n">s_off</span><span class="p">),</span>
-                         <span class="n">shape</span><span class="o">=</span><span class="s2">&quot;32x128b&quot;</span><span class="p">,</span> <span class="n">cta_group</span><span class="o">=</span><span class="n">cta_group</span><span class="p">,</span> <span class="n">multicast</span><span class="o">=</span><span class="s2">&quot;warpx4&quot;</span><span class="p">)</span>
-</pre></div>
-</div>
-<p>The dispatch emits <strong>no</strong> <code class="docutils literal notranslate"><span class="pre">tcgen05.commit</span></code> / <code class="docutils literal notranslate"><span class="pre">wait</span></code> — the caller commits against
-an mbarrier (as in the demo).</p>
-</section>
-<section id="generated-tirx-ir">
-<h2>Generated TIRx IR<a class="headerlink" href="#generated-tirx-ir" title="Link to this heading">#</a></h2>
-<p>The <code class="docutils literal notranslate"><span class="pre">32×16</span></code> uint8 tile is a single atom (ldo=16, sdo=8, swizzle=0):</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">T</span><span class="o">.</span><span class="n">ptx</span><span class="o">.</span><span class="n">tcgen05</span><span class="o">.</span><span class="n">encode_matrix_descriptor</span><span class="p">(</span><span class="n">cp_desc</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="n">T</span><span class="o">.</span><span class="n">address_of</span><span class="p">(</span><span class="n">A_smem</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span> <span class="mi">16</span><span class="p">,</span> <span class="mi">8</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
-<span class="n">T</span><span class="o">.</span><span class="n">ptx</span><span class="o">.</span><span class="n">tcgen05</span><span class="o">.</span><span class="n">cp</span><span class="p">(</span><span class="n">tmem_addr</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
-                 <span class="n">smem_desc_add_16B_offset</span><span class="p">(</span><span class="n">cp_desc</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="mi">0</span><span class="p">),</span>
-                 <span class="n">shape</span><span class="o">=</span><span class="s2">&quot;32x128b&quot;</span><span class="p">,</span> <span class="n">cta_group</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">multicast</span><span class="o">=</span><span class="s2">&quot;warpx4&quot;</span><span class="p">)</span>
-</pre></div>
-</div>
+<p>The dispatch emits <strong>no</strong> <code class="docutils literal notranslate"><span class="pre">tcgen05.commit</span></code> / <code class="docutils literal notranslate"><span class="pre">wait</span></code> — the caller commits
+against an mbarrier (as in the demo).</p>
 </section>
 <section id="generated-cuda">
 <h2>Generated CUDA<a class="headerlink" href="#generated-cuda" title="Link to this heading">#</a></h2>
@@ -766,8 +806,8 @@ an mbarrier (as in the demo).</p>
 <span class="s">&quot;tcgen05.cp.cta_group::1.32x128b.warpx4 [%0], %1;&quot;</span><span class="w">   </span><span class="c1">// [%0]=tmem addr, %1=descriptor</span>
 </pre></div>
 </div>
-<p>(Compiled for <code class="docutils literal notranslate"><span class="pre">sm_100a</span></code>. End-to-end correctness — including the tmem readback —
-is covered by <code class="docutils literal notranslate"><span class="pre">test_smem_tmem.py</span></code>.)</p>
+<p>(Compiled for <code class="docutils literal notranslate"><span class="pre">sm_100a</span></code>. End-to-end correctness — including the tmem readback
+— is covered by <code class="docutils literal notranslate"><span class="pre">test_tcgen05_cp.py</span></code>.)</p>
 </section>
 <section id="how-inputs-change-the-algorithm">
 <h2>How inputs change the algorithm<a class="headerlink" href="#how-inputs-change-the-algorithm" title="Link to this heading">#</a></h2>
@@ -782,24 +822,26 @@ is covered by <code class="docutils literal notranslate"><span class="pre">test_
 </tr>
 </thead>
 <tbody>
-<tr class="row-even"><td><p>dtype</p></td>
-<td><p>sets <code class="docutils literal notranslate"><span class="pre">elem_per_128b</span> <span class="pre">=</span> <span class="pre">128</span> <span class="pre">/</span> <span class="pre">dtype_bits</span></code> (uint8 → 16, uint32 → 4) and the
-descriptor swizzle mode (atom K-byte ∈ {16, 32, 64, 128} → swizzle 0/1/2/3)</p></td>
+<tr class="row-even"><td><p>tmem layout</p></td>
+<td><p>selects the shape under inference via its (lane, replica) pattern; a
+<code class="docutils literal notranslate"><span class="pre">R[4:32&#64;TLane]</span></code> replica resolves to <code class="docutils literal notranslate"><span class="pre">32x128b.warpx4</span></code></p></td>
 </tr>
-<tr class="row-odd"><td><p>number of tiles</p></td>
-<td><p><code class="docutils literal notranslate"><span class="pre">total</span></code> middle tiles: <code class="docutils literal notranslate"><span class="pre">1</span></code> → a single <code class="docutils literal notranslate"><span class="pre">tcgen05.cp</span></code>; <code class="docutils literal notranslate"><span class="pre">&gt;</span> <span class="pre">1</span></code> → an
-unrolled loop, each step bumping the tmem column and the descriptor’s 16-B
-shared offset</p></td>
+<tr class="row-odd"><td><p>dtype</p></td>
+<td><p>sets <code class="docutils literal notranslate"><span class="pre">elem_per_atom</span> <span class="pre">=</span> <span class="pre">atom_bits</span> <span class="pre">/</span> <span class="pre">dtype_bits</span></code> and, with the smem row
+strides, the descriptor swizzle mode</p></td>
 </tr>
-<tr class="row-even"><td><p>shared swizzle layout</p></td>
-<td><p>changes the encoded <code class="docutils literal notranslate"><span class="pre">swizzle</span></code> mode (must match the shared buffer’s swizzle)</p></td>
+<tr class="row-even"><td><p>region size</p></td>
+<td><p>middle dims: one atom → a single <code class="docutils literal notranslate"><span class="pre">tcgen05.cp</span></code>; wider regions → an
+unrolled loop over columns; more rows than one atom → lane-tiled cps
+stepping the tmem lane half-word</p></td>
 </tr>
-<tr class="row-odd"><td><p>tmem layout (D vs F) / cta_group</p></td>
-<td><p>the permutation order sets per-tile column steps; <code class="docutils literal notranslate"><span class="pre">cta_group</span></code> selects the
-multicast routing (<code class="docutils literal notranslate"><span class="pre">cta_group::1</span></code> vs <code class="docutils literal notranslate"><span class="pre">::2</span></code>)</p></td>
+<tr class="row-odd"><td><p>shared swizzle layout</p></td>
+<td><p>changes the encoded <code class="docutils literal notranslate"><span class="pre">swizzle</span></code> mode (must match the derived atom K-byte)</p></td>
 </tr>
-<tr class="row-even"><td><p>atom shape</p></td>
-<td><p>fixed at <code class="docutils literal notranslate"><span class="pre">32x128b</span></code> <code class="docutils literal notranslate"><span class="pre">warpx4</span></code> — a different atom would need a new variant</p></td>
+<tr class="row-even"><td><p>cta_group</p></td>
+<td><p>forwarded to the instruction; <code class="docutils literal notranslate"><span class="pre">cta_group::2</span></code> is pair-collective — one
+even-CTA issue makes each CTA copy from its own smem into its own tmem
+(B200-pinned by the cta_group=2 round-trip tests)</p></td>
 </tr>
 </tbody>
 </table>
@@ -852,10 +894,10 @@ multicast routing (<code class="docutils literal notranslate"><span class="pre">
   </div>
   <nav class="bd-toc-nav page-toc">
     <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#shape-selection">Shape selection</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#what-it-accepts">What it accepts</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#demonstration-program">Demonstration program</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#algorithm">Algorithm</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#generated-tirx-ir">Generated TIRx IR</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#generated-cuda">Generated CUDA</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#how-inputs-change-the-algorithm">How inputs change the algorithm</a></li>
 </ul>

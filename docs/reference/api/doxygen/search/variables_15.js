@@ -14,7 +14,7 @@ var searchData=
   ['varg_5fdefault_5fwildcard_11',['varg_default_wildcard',['../classtvm_1_1relax_1_1CallPatternNode.html#a06bae27dbf4398894632f88f75f6f623',1,'tvm::relax::CallPatternNode']]],
   ['variables_12',['variables',['../classtvm_1_1arith_1_1IntConstraintsNode.html#ac25d34f104987ee4af68da7146d7d5c3',1,'tvm::arith::IntConstraintsNode']]],
   ['variances_13',['variances',['../structtvm_1_1relax_1_1MultiboxTransformLocAttrs.html#a867153646fdde09eb89aa93c330a0355',1,'tvm::relax::MultiboxTransformLocAttrs']]],
-  ['vars_14',['vars',['../classtvm_1_1tirx_1_1PredicateNode.html#a4225708643c3689098cbc2487234c124',1,'tvm::tirx::PredicateNode::vars'],['../classtvm_1_1script_1_1ir__builder_1_1tirx_1_1ForFrameNode.html#acd074075b8a7fa00e28106139fa3c319',1,'tvm::script::ir_builder::tirx::ForFrameNode::vars']]],
+  ['vars_14',['vars',['../classtvm_1_1script_1_1ir__builder_1_1tirx_1_1ForFrameNode.html#acd074075b8a7fa00e28106139fa3c319',1,'tvm::script::ir_builder::tirx::ForFrameNode::vars'],['../classtvm_1_1tirx_1_1LambdaExprNode.html#a38e5d3ceadba7e4312cdafff56fb22fd',1,'tvm::tirx::LambdaExprNode::vars']]],
   ['vdevice_15',['vdevice',['../classtvm_1_1relax_1_1TensorTypeNode.html#a67c8791525c1523c77126c50826aab9e',1,'tvm::relax::TensorTypeNode']]],
   ['vdevice_5fid_16',['vdevice_id',['../classtvm_1_1VDeviceNode.html#a7e9283f6b2586c56228df3672d3571dc',1,'tvm::VDeviceNode']]],
   ['vector_5fbytes_17',['vector_bytes',['../namespacetvm_1_1s__tir_1_1attr.html#a0b4f1c2f0cb910c158d73c2dfb85e1d0',1,'tvm::s_tir::attr']]],

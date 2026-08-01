@@ -119,7 +119,5 @@ var searchData=
   ['stringimm_116',['stringimm',['../classtvm_1_1relax_1_1StringImm.html',1,'tvm::relax::StringImm'],['../classtvm_1_1tirx_1_1StringImm.html',1,'tvm::tirx::StringImm']]],
   ['stringimmnode_117',['stringimmnode',['../classtvm_1_1relax_1_1StringImmNode.html',1,'tvm::relax::StringImmNode'],['../classtvm_1_1tirx_1_1StringImmNode.html',1,'tvm::tirx::StringImmNode']]],
   ['sub_118',['Sub',['../classtvm_1_1tirx_1_1Sub.html',1,'tvm::tirx']]],
-  ['subnode_119',['SubNode',['../classtvm_1_1tirx_1_1SubNode.html',1,'tvm::tirx']]],
-  ['swizzlelayout_120',['SwizzleLayout',['../classtvm_1_1tirx_1_1SwizzleLayout.html',1,'tvm::tirx']]],
-  ['swizzlelayoutnode_121',['SwizzleLayoutNode',['../classtvm_1_1tirx_1_1SwizzleLayoutNode.html',1,'tvm::tirx']]]
+  ['subnode_119',['SubNode',['../classtvm_1_1tirx_1_1SubNode.html',1,'tvm::tirx']]]
 ];

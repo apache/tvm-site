@@ -9,13 +9,12 @@ var searchData=
   ['tensor_5fcache_5fsupport_2eh_6',['tensor_cache_support.h',['../tensor__cache__support_8h.html',1,'']]],
   ['tensor_5futils_2eh_7',['tensor_utils.h',['../tensor__utils_8h.html',1,'']]],
   ['thread_5fbind_2eh_8',['thread_bind.h',['../thread__bind_8h.html',1,'']]],
-  ['timer_2eh_9',['timer.h',['../timer_8h.html',1,'']]],
-  ['tir_5fpattern_2eh_10',['tir_pattern.h',['../tir__pattern_8h.html',1,'']]],
-  ['tirx_5fop_2eh_11',['tirx_op.h',['../tirx__op_8h.html',1,'']]],
-  ['tirx_5fstmt_2eh_12',['tirx_stmt.h',['../tirx__stmt_8h.html',1,'']]],
-  ['trace_2eh_13',['trace.h',['../trace_8h.html',1,'']]],
-  ['transform_2eh_14',['transform.h',['../s__tir_2transform_8h.html',1,'(Global Namespace)'],['../topi_2transform_8h.html',1,'(Global Namespace)'],['../tirx_2transform_8h.html',1,'(Global Namespace)'],['../s__tir_2backend_2adreno_2transform_8h.html',1,'(Global Namespace)'],['../relax_2transform_8h.html',1,'(Global Namespace)'],['../relax_2distributed_2transform_8h.html',1,'(Global Namespace)'],['../relax_2backend_2adreno_2transform_8h.html',1,'(Global Namespace)'],['../ir_2transform_8h.html',1,'(Global Namespace)']]],
-  ['tune_5fcontext_2eh_15',['tune_context.h',['../tune__context_8h.html',1,'']]],
-  ['type_2eh_16',['type.h',['../ir_2type_8h.html',1,'(Global Namespace)'],['../relax_2type_8h.html',1,'(Global Namespace)'],['../relax_2distributed_2type_8h.html',1,'(Global Namespace)']]],
-  ['type_5ffunctor_2eh_17',['type_functor.h',['../type__functor_8h.html',1,'']]]
+  ['tile_5fprimitive_2eh_9',['tile_primitive.h',['../tile__primitive_8h.html',1,'']]],
+  ['timer_2eh_10',['timer.h',['../timer_8h.html',1,'']]],
+  ['tir_5fpattern_2eh_11',['tir_pattern.h',['../tir__pattern_8h.html',1,'']]],
+  ['trace_2eh_12',['trace.h',['../trace_8h.html',1,'']]],
+  ['transform_2eh_13',['transform.h',['../s__tir_2backend_2adreno_2transform_8h.html',1,'(Global Namespace)'],['../topi_2transform_8h.html',1,'(Global Namespace)'],['../tirx_2transform_8h.html',1,'(Global Namespace)'],['../s__tir_2transform_8h.html',1,'(Global Namespace)'],['../relax_2transform_8h.html',1,'(Global Namespace)'],['../relax_2distributed_2transform_8h.html',1,'(Global Namespace)'],['../relax_2backend_2adreno_2transform_8h.html',1,'(Global Namespace)'],['../ir_2transform_8h.html',1,'(Global Namespace)']]],
+  ['tune_5fcontext_2eh_14',['tune_context.h',['../tune__context_8h.html',1,'']]],
+  ['type_2eh_15',['type.h',['../ir_2type_8h.html',1,'(Global Namespace)'],['../relax_2type_8h.html',1,'(Global Namespace)'],['../relax_2distributed_2type_8h.html',1,'(Global Namespace)']]],
+  ['type_5ffunctor_2eh_16',['type_functor.h',['../type__functor_8h.html',1,'']]]
 ];
