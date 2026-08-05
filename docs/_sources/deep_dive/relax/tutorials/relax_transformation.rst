@@ -126,11 +126,9 @@ into low-level operators.
     @I.ir_module
     class Module:
         @T.prim_func(private=True, s_tir=True)
-        def add(var_matmul: T.handle, fc1_bias: T.Buffer((T.int64(128),), "float32"), var_T_add: T.handle):
-            T.func_attr({"tirx.noalias": True})
+        def add(matmul: T.Buffer(("n", T.int64(128)), "float32"), fc1_bias: T.Buffer((T.int64(128),), "float32"), T_add: T.Buffer((n, T.int64(128)), "float32")):
             n = T.int64()
-            matmul = T.match_buffer(var_matmul, (n, T.int64(128)))
-            T_add = T.match_buffer(var_T_add, (n, T.int64(128)))
+            T.func_attr({"tirx.noalias": True})
             # with T.sblock("root"):
             for ax0, ax1 in T.grid(n, T.int64(128)):
                 with T.sblock("T_add"):
@@ -140,11 +138,9 @@ into low-level operators.
                     T_add[v_ax0, v_ax1] = matmul[v_ax0, v_ax1] + fc1_bias[v_ax1]
 
         @T.prim_func(private=True, s_tir=True)
-        def add1(var_matmul1: T.handle, fc2_bias: T.Buffer((T.int64(10),), "float32"), var_T_add: T.handle):
-            T.func_attr({"tirx.noalias": True})
+        def add1(matmul1: T.Buffer(("n", T.int64(10)), "float32"), fc2_bias: T.Buffer((T.int64(10),), "float32"), T_add: T.Buffer((n, T.int64(10)), "float32")):
             n = T.int64()
-            matmul1 = T.match_buffer(var_matmul1, (n, T.int64(10)))
-            T_add = T.match_buffer(var_T_add, (n, T.int64(10)))
+            T.func_attr({"tirx.noalias": True})
             # with T.sblock("root"):
             for ax0, ax1 in T.grid(n, T.int64(10)):
                 with T.sblock("T_add"):
@@ -154,11 +150,9 @@ into low-level operators.
                     T_add[v_ax0, v_ax1] = matmul1[v_ax0, v_ax1] + fc2_bias[v_ax1]
 
         @T.prim_func(private=True, s_tir=True)
-        def matmul(var_x: T.handle, permute_dims: T.Buffer((T.int64(784), T.int64(128)), "float32"), var_matmul: T.handle):
-            T.func_attr({"tirx.noalias": True})
+        def matmul(x: T.Buffer(("n", T.int64(784)), "float32"), permute_dims: T.Buffer((T.int64(784), T.int64(128)), "float32"), matmul: T.Buffer((n, T.int64(128)), "float32")):
             n = T.int64()
-            x = T.match_buffer(var_x, (n, T.int64(784)))
-            matmul = T.match_buffer(var_matmul, (n, T.int64(128)))
+            T.func_attr({"tirx.noalias": True})
             # with T.sblock("root"):
             for i0, i1, k in T.grid(n, T.int64(128), T.int64(784)):
                 with T.sblock("matmul"):
@@ -170,11 +164,9 @@ into low-level operators.
                     matmul[v_i0, v_i1] = matmul[v_i0, v_i1] + x[v_i0, v_k] * permute_dims[v_k, v_i1]
 
         @T.prim_func(private=True, s_tir=True)
-        def matmul1(var_relu: T.handle, permute_dims1: T.Buffer((T.int64(128), T.int64(10)), "float32"), var_matmul: T.handle):
-            T.func_attr({"tirx.noalias": True})
+        def matmul1(relu: T.Buffer(("n", T.int64(128)), "float32"), permute_dims1: T.Buffer((T.int64(128), T.int64(10)), "float32"), matmul: T.Buffer((n, T.int64(10)), "float32")):
             n = T.int64()
-            relu = T.match_buffer(var_relu, (n, T.int64(128)))
-            matmul = T.match_buffer(var_matmul, (n, T.int64(10)))
+            T.func_attr({"tirx.noalias": True})
             # with T.sblock("root"):
             for i0, i1, k in T.grid(n, T.int64(10), T.int64(128)):
                 with T.sblock("matmul"):
@@ -186,11 +178,9 @@ into low-level operators.
                     matmul[v_i0, v_i1] = matmul[v_i0, v_i1] + relu[v_i0, v_k] * permute_dims1[v_k, v_i1]
 
         @T.prim_func(private=True, s_tir=True)
-        def relu(var_add: T.handle, var_compute: T.handle):
-            T.func_attr({"tirx.noalias": True})
+        def relu(add: T.Buffer(("n", T.int64(128)), "float32"), compute: T.Buffer((n, T.int64(128)), "float32")):
             n = T.int64()
-            add = T.match_buffer(var_add, (n, T.int64(128)))
-            compute = T.match_buffer(var_compute, (n, T.int64(128)))
+            T.func_attr({"tirx.noalias": True})
             # with T.sblock("root"):
             for i0, i1 in T.grid(n, T.int64(128)):
                 with T.sblock("compute"):
@@ -281,11 +271,9 @@ a set of passes. We can apply them in a sequence.
     @I.ir_module
     class Module:
         @T.prim_func(private=True, s_tir=True)
-        def fused_matmul1_add1(p_relu: T.handle, permute_dims1: T.Buffer((T.int64(128), T.int64(10)), "float32"), fc2_bias: T.Buffer((T.int64(10),), "float32"), p_output0: T.handle):
-            T.func_attr({"tirx.noalias": True})
+        def fused_matmul1_add1(relu: T.Buffer(("n", T.int64(128)), "float32"), permute_dims1: T.Buffer((T.int64(128), T.int64(10)), "float32"), fc2_bias: T.Buffer((T.int64(10),), "float32"), T_add_intermediate: T.Buffer((n, T.int64(10)), "float32")):
             n = T.int64()
-            relu = T.match_buffer(p_relu, (n, T.int64(128)))
-            T_add_intermediate = T.match_buffer(p_output0, (n, T.int64(10)))
+            T.func_attr({"tirx.noalias": True})
             # with T.sblock("root"):
             matmul_intermediate = T.sblock_alloc_buffer((n, T.int64(10)))
             for i0, i1, k in T.grid(n, T.int64(10), T.int64(128)):
@@ -304,11 +292,9 @@ a set of passes. We can apply them in a sequence.
                     T_add_intermediate[v_ax0, v_ax1] = matmul_intermediate[v_ax0, v_ax1] + fc2_bias[v_ax1]
 
         @T.prim_func(private=True, s_tir=True)
-        def fused_matmul_add_relu(p_x: T.handle, permute_dims: T.Buffer((T.int64(784), T.int64(128)), "float32"), fc1_bias: T.Buffer((T.int64(128),), "float32"), p_output0: T.handle):
-            T.func_attr({"tirx.noalias": True})
+        def fused_matmul_add_relu(x: T.Buffer(("n", T.int64(784)), "float32"), permute_dims: T.Buffer((T.int64(784), T.int64(128)), "float32"), fc1_bias: T.Buffer((T.int64(128),), "float32"), compute_intermediate: T.Buffer((n, T.int64(128)), "float32")):
             n = T.int64()
-            x = T.match_buffer(p_x, (n, T.int64(784)))
-            compute_intermediate = T.match_buffer(p_output0, (n, T.int64(128)))
+            T.func_attr({"tirx.noalias": True})
             # with T.sblock("root"):
             matmul_intermediate = T.sblock_alloc_buffer((n, T.int64(128)))
             T_add_intermediate = T.sblock_alloc_buffer((n, T.int64(128)))

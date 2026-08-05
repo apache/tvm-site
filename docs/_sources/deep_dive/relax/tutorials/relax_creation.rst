@@ -160,10 +160,8 @@ TensorIR functions in Relax function.
     @I.ir_module
     class Module:
         @T.prim_func(s_tir=True)
-        def relu(x: T.handle, y: T.handle):
+        def relu(X: T.Buffer(("n", "m"), "float32"), Y: T.Buffer((n, m), "float32")):
             n, m = T.int64(), T.int64()
-            X = T.match_buffer(x, (n, m))
-            Y = T.match_buffer(y, (n, m))
             # with T.sblock("root"):
             for i, j in T.grid(n, m):
                 with T.sblock("relu"):
@@ -383,11 +381,9 @@ Tensor Expression(TE), TensorIR functions or other TVM packed functions.
     @I.ir_module
     class Module:
         @T.prim_func(private=True, s_tir=True)
-        def relu(var_env_linear: T.handle, var_compute: T.handle):
-            T.func_attr({"tirx.noalias": True})
+        def relu(env_linear: T.Buffer(("n", T.int64(128)), "float32"), compute: T.Buffer((n, T.int64(128)), "float32")):
             n = T.int64()
-            env_linear = T.match_buffer(var_env_linear, (n, T.int64(128)))
-            compute = T.match_buffer(var_compute, (n, T.int64(128)))
+            T.func_attr({"tirx.noalias": True})
             # with T.sblock("root"):
             for i0, i1 in T.grid(n, T.int64(128)):
                 with T.sblock("compute"):
@@ -397,13 +393,9 @@ Tensor Expression(TE), TensorIR functions or other TVM packed functions.
                     compute[v_i0, v_i1] = T.max(env_linear[v_i0, v_i1], T.float32(0.0))
 
         @T.prim_func(s_tir=True)
-        def tir_linear(x: T.handle, w: T.handle, b: T.handle, z: T.handle):
+        def tir_linear(X: T.Buffer(("M", "K"), "float32"), W: T.Buffer(("N", K), "float32"), B: T.Buffer((N,), "float32"), Z: T.Buffer((M, N), "float32")):
             M, K = T.int64(), T.int64()
-            X = T.match_buffer(x, (M, K))
             N = T.int64()
-            W = T.match_buffer(w, (N, K))
-            B = T.match_buffer(b, (N,))
-            Z = T.match_buffer(z, (M, N))
             # with T.sblock("root"):
             for i, j, k in T.grid(M, N, K):
                 with T.sblock("linear"):
@@ -553,11 +545,9 @@ Relax functions, TensorIR functions and other TVM packed functions.
     @I.ir_module
     class Module:
         @T.prim_func(private=True, s_tir=True)
-        def relu(var_lv: T.handle, var_compute: T.handle):
-            T.func_attr({"tirx.noalias": True})
+        def relu(lv: T.Buffer(("v", T.int64(128)), "float32"), compute: T.Buffer((v, T.int64(128)), "float32")):
             v = T.int64()
-            lv = T.match_buffer(var_lv, (v, T.int64(128)))
-            compute = T.match_buffer(var_compute, (v, T.int64(128)))
+            T.func_attr({"tirx.noalias": True})
             # with T.sblock("root"):
             for i0, i1 in T.grid(v, T.int64(128)):
                 with T.sblock("compute"):
@@ -567,13 +557,9 @@ Relax functions, TensorIR functions and other TVM packed functions.
                     compute[v_i0, v_i1] = T.max(lv[v_i0, v_i1], T.float32(0.0))
 
         @T.prim_func(s_tir=True)
-        def tir_linear(x: T.handle, w: T.handle, b: T.handle, z: T.handle):
+        def tir_linear(X: T.Buffer(("M", "K"), "float32"), W: T.Buffer(("N", K), "float32"), B: T.Buffer((N,), "float32"), Z: T.Buffer((M, N), "float32")):
             M, K = T.int64(), T.int64()
-            X = T.match_buffer(x, (M, K))
             N = T.int64()
-            W = T.match_buffer(w, (N, K))
-            B = T.match_buffer(b, (N,))
-            Z = T.match_buffer(z, (M, N))
             # with T.sblock("root"):
             for i, j, k in T.grid(M, N, K):
                 with T.sblock("linear"):

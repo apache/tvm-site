@@ -1038,7 +1038,8 @@ or hand you a pointer — they emit no runtime op of their own. The common ones:
 <td><p>reinterpret the same storage under a new shape/layout (no copy)</p></td>
 </tr>
 <tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">B.local(*shape,</span> <span class="pre">layout=…)</span></code></p></td>
-<td><p>the calling thread’s private register slice of a <code class="docutils literal notranslate"><span class="pre">local</span></code> buffer</p></td>
+<td><p>the calling thread’s private register slice of a <code class="docutils literal notranslate"><span class="pre">local</span></code> buffer,
+in physical storage order by default</p></td>
 </tr>
 <tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">B.permute(*dims)</span></code></p></td>
 <td><p>a view with axes permuted (a transposed layout)</p></td>
@@ -1082,12 +1083,22 @@ sees the 256-element buffer as <code class="docutils literal notranslate"><span 
 </pre></div>
 </div>
 <p><strong>Registers — ``local``.</strong> Decomposes a thread-axis <code class="docutils literal notranslate"><span class="pre">local</span></code> layout into the
-calling thread’s flat register bundle (used pervasively by the tile primitives):</p>
+calling thread’s register bundle (used pervasively by the tile primitives).
+Both forms expose the raw physical storage span by default, including layout
+gaps and offsets: <code class="docutils literal notranslate"><span class="pre">R.local()</span></code> infers a flat 1-D span, while
+<code class="docutils literal notranslate"><span class="pre">R.local(d0,</span> <span class="pre">d1,</span> <span class="pre">...)</span></code> is a row-major reshape whose product must equal that
+span.  Pass an explicit <code class="docutils literal notranslate"><span class="pre">layout=</span></code> only when storage-iterator coordinates are
+required.  This mediated form is an escape hatch: the supplied layout
+interprets the requested shape, so that shape is not constrained to the raw
+span.  Without <code class="docutils literal notranslate"><span class="pre">layout=</span></code>, omitting the shape always infers a one-dimensional
+physical storage span.  Only the explicit-<code class="docutils literal notranslate"><span class="pre">layout=</span></code> compatibility form with
+no shape infers a one-dimensional shape from the logical storage size:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">R</span>  <span class="o">=</span> <span class="n">T</span><span class="o">.</span><span class="n">alloc_buffer</span><span class="p">((</span><span class="mi">32</span><span class="p">,</span> <span class="mi">8</span><span class="p">),</span> <span class="s2">&quot;float32&quot;</span><span class="p">,</span> <span class="n">scope</span><span class="o">=</span><span class="s2">&quot;local&quot;</span><span class="p">,</span> <span class="n">layout</span><span class="o">=</span><span class="n">TileLayout</span><span class="p">(</span><span class="n">S</span><span class="p">[(</span><span class="mi">32</span><span class="p">,</span> <span class="mi">8</span><span class="p">)</span> <span class="p">:</span> <span class="p">(</span><span class="mi">1</span> <span class="o">@</span> <span class="n">laneid</span><span class="p">,</span> <span class="mi">1</span><span class="p">)]))</span>
-<span class="n">Rl</span> <span class="o">=</span> <span class="n">R</span><span class="o">.</span><span class="n">local</span><span class="p">(</span><span class="mi">8</span><span class="p">)</span>          <span class="c1"># this lane&#39;s 8 registers</span>
+<span class="n">R_flat</span> <span class="o">=</span> <span class="n">R</span><span class="o">.</span><span class="n">local</span><span class="p">()</span>       <span class="c1"># this lane&#39;s 8 registers, physical order</span>
+<span class="n">R_2d</span> <span class="o">=</span> <span class="n">R</span><span class="o">.</span><span class="n">local</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span>     <span class="c1"># the same registers, row-major 2x4 reshape</span>
 </pre></div>
 </div>
-<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="k">alignas</span><span class="p">(</span><span class="mi">64</span><span class="p">)</span><span class="w"> </span><span class="kt">float</span><span class="w"> </span><span class="n">Rl_ptr</span><span class="p">[</span><span class="mi">8</span><span class="p">];</span><span class="w">             </span><span class="c1">// the lane&#39;s private registers</span>
+<div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="k">alignas</span><span class="p">(</span><span class="mi">64</span><span class="p">)</span><span class="w"> </span><span class="kt">float</span><span class="w"> </span><span class="n">R_flat_ptr</span><span class="p">[</span><span class="mi">8</span><span class="p">];</span><span class="w">          </span><span class="c1">// the lane&#39;s private registers</span>
 </pre></div>
 </div>
 </section>

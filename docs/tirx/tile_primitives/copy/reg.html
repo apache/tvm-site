@@ -737,7 +737,7 @@ address). For <code class="docutils literal notranslate"><span class="pre">8</sp
 from thread-axis placeholders (substituted with the real <code class="docutils literal notranslate"><span class="pre">T.lane_id()</span></code> etc.),
 and the register side is a flat per-thread <code class="docutils literal notranslate"><span class="pre">local</span></code> buffer. The emit is a serial
 loop (not <code class="docutils literal notranslate"><span class="pre">T.unroll</span></code> — same flooding rationale as <a class="reference internal" href="gmem_smem.html"><span class="doc">copy → gmem_smem</span></a>):</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">r_local</span> <span class="o">=</span> <span class="n">r_buf</span><span class="o">.</span><span class="n">local</span><span class="p">(</span><span class="o">*</span><span class="n">per_thread_r_shape</span><span class="p">)</span>   <span class="c1"># flat per-thread registers</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">r_local</span> <span class="o">=</span> <span class="n">r_buf</span><span class="o">.</span><span class="n">local</span><span class="p">()</span>                      <span class="c1"># raw per-thread physical span</span>
 <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">total_outer</span><span class="p">):</span>
     <span class="n">ds</span><span class="p">,</span> <span class="n">dr</span> <span class="o">=</span> <span class="n">_outer_const_offsets</span><span class="p">(</span><span class="n">outer</span><span class="p">,</span> <span class="n">f</span><span class="p">)</span>               <span class="c1"># shared / reg deltas</span>
     <span class="n">s_ptr</span> <span class="o">=</span> <span class="n">_ptr_off</span><span class="p">(</span><span class="n">s_buf</span><span class="o">.</span><span class="n">ptr_to</span><span class="p">(</span><span class="n">s_zero_indices</span><span class="p">),</span> <span class="n">_s_iter_off</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">ds</span><span class="p">,</span> <span class="n">s_off</span><span class="p">))</span>
@@ -748,6 +748,10 @@ loop (not <code class="docutils literal notranslate"><span class="pre">T.unroll<
         <span class="n">copy_op</span><span class="p">(</span><span class="n">r_ptr</span><span class="p">,</span> <span class="n">s_ptr</span><span class="p">)</span>     <span class="c1"># shared/global -&gt; register</span>
 </pre></div>
 </div>
+<p><code class="docutils literal notranslate"><span class="pre">dr</span></code> and <code class="docutils literal notranslate"><span class="pre">r_off_base</span></code> are physical storage offsets, so the register alias
+must use the raw-span <code class="docutils literal notranslate"><span class="pre">local()</span></code> view.  This remains correct when storage
+iterators are permuted or leave gaps; every physical slot through
+<code class="docutils literal notranslate"><span class="pre">layout.storage().span()</span></code> is directly addressable.</p>
 </section>
 <section id="generated-tirx-ir">
 <h2>Generated TIRx IR<a class="headerlink" href="#generated-tirx-ir" title="Link to this heading">#</a></h2>

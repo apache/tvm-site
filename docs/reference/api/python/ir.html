@@ -1587,15 +1587,27 @@ False for decl_scalar.</p>
 <dt class="sig sig-object py" id="tvm.ir.Var.local">
 <span class="sig-name descname"><span class="pre">local</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">*</span></span><span class="n"><span class="pre">shape</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">layout</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="#tvm.ir.Var" title="tvm.ir.expr.Var"><span class="pre">Var</span></a></span></span><a class="headerlink" href="#tvm.ir.Var.local" title="Link to this definition">#</a></dt>
 <dd><p>Create a thread-local view of this buffer.</p>
+<p>By default, both the inferred and explicit-shape forms address the
+raw physical storage span.  <code class="docutils literal notranslate"><span class="pre">local()[k]</span></code> is the k-th physical
+storage element, including any gaps or layout offset, while
+<code class="docutils literal notranslate"><span class="pre">local(d0,</span> <span class="pre">d1,</span> <span class="pre">...)</span></code> is a row-major reshape of that same span.
+Pass <code class="docutils literal notranslate"><span class="pre">layout=</span></code> to request a mediated view explicitly.  This is an
+escape hatch whose shape is interpreted by the supplied layout.  When
+that shape is explicit, the parent buffer does not need a layout.</p>
 <p>When called with no shape arguments, auto-infers a 1D shape from
-the layout’s non-thread component (i.e. <code class="docutils literal notranslate"><span class="pre">layout.storage().shard</span></code>).</p>
+the span of the parent layout’s non-thread component (i.e.
+<code class="docutils literal notranslate"><span class="pre">self.layout.storage().span()</span></code>).  The explicit-<code class="docutils literal notranslate"><span class="pre">layout=</span></code> form
+instead infers the parent layout’s <code class="docutils literal notranslate"><span class="pre">storage().size()</span></code> for
+compatibility.  Either inference requires the parent buffer to have a
+layout.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>shape</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)"><em>tuple</em></a><em> of </em><a class="reference internal" href="relax/relax.html#tvm.relax.Expr" title="tvm.relax.Expr"><em>Expr</em></a>) – The shape of the local view for indexing. If omitted, a 1D
-shape is computed automatically.</p></li>
-<li><p><strong>layout</strong> (<em>optional</em>) – Override layout. If None, uses the storage layout
-(parent layout with thread axes removed).</p></li>
+<li><p><strong>shape</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)"><em>tuple</em></a><em> of </em><a class="reference internal" href="relax/relax.html#tvm.relax.Expr" title="tvm.relax.Expr"><em>Expr</em></a>) – The shape of the local view for indexing.  Without <code class="docutils literal notranslate"><span class="pre">layout=</span></code>,
+its product must equal the per-thread physical storage span.
+With an explicit layout, the shape is not constrained by the raw
+span.  If omitted, a matching 1D shape is computed automatically.</p></li>
+<li><p><strong>layout</strong> (<em>optional</em>) – Override layout. If None, the default (identity) layout is used.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
