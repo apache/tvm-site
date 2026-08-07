@@ -120,7 +120,7 @@ original implementation.
 
     Execution time summary:
      mean (ms)   median (ms)    max (ms)     min (ms)     std (ms)  
-       2.6419       2.6419       2.6419       2.6419       0.0000                  
+       2.7058       2.7058       2.7058       2.7058       0.0000                  
 
 
 
@@ -424,7 +424,7 @@ from the reduction update via the **decompose_reduction** primitive.
 
     Execution time summary:
      mean (ms)   median (ms)    max (ms)     min (ms)     std (ms)  
-       0.3587       0.3587       0.3587       0.3587       0.0000                  
+       0.3588       0.3588       0.3588       0.3588       0.0000                  
 
 
 
