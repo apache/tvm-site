@@ -664,16 +664,15 @@ the <a class="reference internal" href="relax_creation.html#relax-creation"><spa
 <span class="n">origin_mod</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
 </pre></div>
 </div>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span># from tvm.script import ir as I
-# from tvm.script import tirx as T
-# from tvm.tirx.layout import Axis
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span># from typing import TypeVar
+# from tvm.script import ir as I
 # from tvm.script import relax as R
 
+n = TypeVar(&quot;n&quot;)
 @I.ir_module
 class Module:
     @R.function
-    def forward(x: R.Tensor((&quot;n&quot;, 784), dtype=&quot;float32&quot;), fc1_weight: R.Tensor((128, 784), dtype=&quot;float32&quot;), fc1_bias: R.Tensor((128,), dtype=&quot;float32&quot;), fc2_weight: R.Tensor((10, 128), dtype=&quot;float32&quot;), fc2_bias: R.Tensor((10,), dtype=&quot;float32&quot;)) -&gt; R.Tensor((&quot;n&quot;, 10), dtype=&quot;float32&quot;):
-        n = T.int64()
+    def forward(x: R.Tensor((n, 784), dtype=&quot;float32&quot;), fc1_weight: R.Tensor((128, 784), dtype=&quot;float32&quot;), fc1_bias: R.Tensor((128,), dtype=&quot;float32&quot;), fc2_weight: R.Tensor((10, 128), dtype=&quot;float32&quot;), fc2_bias: R.Tensor((10,), dtype=&quot;float32&quot;)) -&gt; R.Tensor((n, 10), dtype=&quot;float32&quot;):
         R.func_attr({&quot;num_input&quot;: 1})
         with R.dataflow():
             permute_dims: R.Tensor((784, 128), dtype=&quot;float32&quot;) = R.permute_dims(fc1_weight, axes=None)
@@ -698,16 +697,17 @@ into low-level operators.</p>
 <span class="n">mod</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
 </pre></div>
 </div>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span># from tvm.script import ir as I
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span># from typing import TypeVar
+# from tvm.script import ir as I
 # from tvm.script import tirx as T
 # from tvm.tirx.layout import Axis
 # from tvm.script import relax as R
 
+n = TypeVar(&quot;n&quot;)
 @I.ir_module
 class Module:
     @T.prim_func(private=True, s_tir=True)
-    def add(matmul: T.Buffer((&quot;n&quot;, T.int64(128)), &quot;float32&quot;), fc1_bias: T.Buffer((T.int64(128),), &quot;float32&quot;), T_add: T.Buffer((n, T.int64(128)), &quot;float32&quot;)):
-        n = T.int64()
+    def add(matmul: T.Buffer((n, T.int64(128)), &quot;float32&quot;), fc1_bias: T.Buffer((T.int64(128),), &quot;float32&quot;), T_add: T.Buffer((n, T.int64(128)), &quot;float32&quot;)):
         T.func_attr({&quot;tirx.noalias&quot;: True})
         # with T.sblock(&quot;root&quot;):
         for ax0, ax1 in T.grid(n, T.int64(128)):
@@ -718,8 +718,7 @@ class Module:
                 T_add[v_ax0, v_ax1] = matmul[v_ax0, v_ax1] + fc1_bias[v_ax1]
 
     @T.prim_func(private=True, s_tir=True)
-    def add1(matmul1: T.Buffer((&quot;n&quot;, T.int64(10)), &quot;float32&quot;), fc2_bias: T.Buffer((T.int64(10),), &quot;float32&quot;), T_add: T.Buffer((n, T.int64(10)), &quot;float32&quot;)):
-        n = T.int64()
+    def add1(matmul1: T.Buffer((n, T.int64(10)), &quot;float32&quot;), fc2_bias: T.Buffer((T.int64(10),), &quot;float32&quot;), T_add: T.Buffer((n, T.int64(10)), &quot;float32&quot;)):
         T.func_attr({&quot;tirx.noalias&quot;: True})
         # with T.sblock(&quot;root&quot;):
         for ax0, ax1 in T.grid(n, T.int64(10)):
@@ -730,8 +729,7 @@ class Module:
                 T_add[v_ax0, v_ax1] = matmul1[v_ax0, v_ax1] + fc2_bias[v_ax1]
 
     @T.prim_func(private=True, s_tir=True)
-    def matmul(x: T.Buffer((&quot;n&quot;, T.int64(784)), &quot;float32&quot;), permute_dims: T.Buffer((T.int64(784), T.int64(128)), &quot;float32&quot;), matmul: T.Buffer((n, T.int64(128)), &quot;float32&quot;)):
-        n = T.int64()
+    def matmul(x: T.Buffer((n, T.int64(784)), &quot;float32&quot;), permute_dims: T.Buffer((T.int64(784), T.int64(128)), &quot;float32&quot;), matmul: T.Buffer((n, T.int64(128)), &quot;float32&quot;)):
         T.func_attr({&quot;tirx.noalias&quot;: True})
         # with T.sblock(&quot;root&quot;):
         for i0, i1, k in T.grid(n, T.int64(128), T.int64(784)):
@@ -744,8 +742,7 @@ class Module:
                 matmul[v_i0, v_i1] = matmul[v_i0, v_i1] + x[v_i0, v_k] * permute_dims[v_k, v_i1]
 
     @T.prim_func(private=True, s_tir=True)
-    def matmul1(relu: T.Buffer((&quot;n&quot;, T.int64(128)), &quot;float32&quot;), permute_dims1: T.Buffer((T.int64(128), T.int64(10)), &quot;float32&quot;), matmul: T.Buffer((n, T.int64(10)), &quot;float32&quot;)):
-        n = T.int64()
+    def matmul1(relu: T.Buffer((n, T.int64(128)), &quot;float32&quot;), permute_dims1: T.Buffer((T.int64(128), T.int64(10)), &quot;float32&quot;), matmul: T.Buffer((n, T.int64(10)), &quot;float32&quot;)):
         T.func_attr({&quot;tirx.noalias&quot;: True})
         # with T.sblock(&quot;root&quot;):
         for i0, i1, k in T.grid(n, T.int64(10), T.int64(128)):
@@ -758,8 +755,7 @@ class Module:
                 matmul[v_i0, v_i1] = matmul[v_i0, v_i1] + relu[v_i0, v_k] * permute_dims1[v_k, v_i1]
 
     @T.prim_func(private=True, s_tir=True)
-    def relu(add: T.Buffer((&quot;n&quot;, T.int64(128)), &quot;float32&quot;), compute: T.Buffer((n, T.int64(128)), &quot;float32&quot;)):
-        n = T.int64()
+    def relu(add: T.Buffer((n, T.int64(128)), &quot;float32&quot;), compute: T.Buffer((n, T.int64(128)), &quot;float32&quot;)):
         T.func_attr({&quot;tirx.noalias&quot;: True})
         # with T.sblock(&quot;root&quot;):
         for i0, i1 in T.grid(n, T.int64(128)):
@@ -792,8 +788,7 @@ class Module:
                 T_transpose[v_ax0, v_ax1] = fc2_weight[v_ax1, v_ax0]
 
     @R.function
-    def forward(x: R.Tensor((&quot;n&quot;, 784), dtype=&quot;float32&quot;), fc1_weight: R.Tensor((128, 784), dtype=&quot;float32&quot;), fc1_bias: R.Tensor((128,), dtype=&quot;float32&quot;), fc2_weight: R.Tensor((10, 128), dtype=&quot;float32&quot;), fc2_bias: R.Tensor((10,), dtype=&quot;float32&quot;)) -&gt; R.Tensor((&quot;n&quot;, 10), dtype=&quot;float32&quot;):
-        n = T.int64()
+    def forward(x: R.Tensor((n, 784), dtype=&quot;float32&quot;), fc1_weight: R.Tensor((128, 784), dtype=&quot;float32&quot;), fc1_bias: R.Tensor((128,), dtype=&quot;float32&quot;), fc2_weight: R.Tensor((10, 128), dtype=&quot;float32&quot;), fc2_bias: R.Tensor((10,), dtype=&quot;float32&quot;)) -&gt; R.Tensor((n, 10), dtype=&quot;float32&quot;):
         R.func_attr({&quot;num_input&quot;: 1})
         cls = Module
         with R.dataflow():
@@ -824,16 +819,17 @@ a set of passes. We can apply them in a sequence.</p>
 <span class="n">mod</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
 </pre></div>
 </div>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span># from tvm.script import ir as I
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span># from typing import TypeVar
+# from tvm.script import ir as I
 # from tvm.script import tirx as T
 # from tvm.tirx.layout import Axis
 # from tvm.script import relax as R
 
+n = TypeVar(&quot;n&quot;)
 @I.ir_module
 class Module:
     @T.prim_func(private=True, s_tir=True)
-    def fused_matmul1_add1(relu: T.Buffer((&quot;n&quot;, T.int64(128)), &quot;float32&quot;), permute_dims1: T.Buffer((T.int64(128), T.int64(10)), &quot;float32&quot;), fc2_bias: T.Buffer((T.int64(10),), &quot;float32&quot;), T_add_intermediate: T.Buffer((n, T.int64(10)), &quot;float32&quot;)):
-        n = T.int64()
+    def fused_matmul1_add1(relu: T.Buffer((n, T.int64(128)), &quot;float32&quot;), permute_dims1: T.Buffer((T.int64(128), T.int64(10)), &quot;float32&quot;), fc2_bias: T.Buffer((T.int64(10),), &quot;float32&quot;), T_add_intermediate: T.Buffer((n, T.int64(10)), &quot;float32&quot;)):
         T.func_attr({&quot;tirx.noalias&quot;: True})
         # with T.sblock(&quot;root&quot;):
         matmul_intermediate = T.sblock_alloc_buffer((n, T.int64(10)))
@@ -853,8 +849,7 @@ class Module:
                 T_add_intermediate[v_ax0, v_ax1] = matmul_intermediate[v_ax0, v_ax1] + fc2_bias[v_ax1]
 
     @T.prim_func(private=True, s_tir=True)
-    def fused_matmul_add_relu(x: T.Buffer((&quot;n&quot;, T.int64(784)), &quot;float32&quot;), permute_dims: T.Buffer((T.int64(784), T.int64(128)), &quot;float32&quot;), fc1_bias: T.Buffer((T.int64(128),), &quot;float32&quot;), compute_intermediate: T.Buffer((n, T.int64(128)), &quot;float32&quot;)):
-        n = T.int64()
+    def fused_matmul_add_relu(x: T.Buffer((n, T.int64(784)), &quot;float32&quot;), permute_dims: T.Buffer((T.int64(784), T.int64(128)), &quot;float32&quot;), fc1_bias: T.Buffer((T.int64(128),), &quot;float32&quot;), compute_intermediate: T.Buffer((n, T.int64(128)), &quot;float32&quot;)):
         T.func_attr({&quot;tirx.noalias&quot;: True})
         # with T.sblock(&quot;root&quot;):
         matmul_intermediate = T.sblock_alloc_buffer((n, T.int64(128)))
@@ -903,8 +898,7 @@ class Module:
                 T_transpose[v_ax0, v_ax1] = fc2_weight[v_ax1, v_ax0]
 
     @R.function
-    def forward(x: R.Tensor((&quot;n&quot;, 784), dtype=&quot;float32&quot;), fc1_weight: R.Tensor((128, 784), dtype=&quot;float32&quot;), fc1_bias: R.Tensor((128,), dtype=&quot;float32&quot;), fc2_weight: R.Tensor((10, 128), dtype=&quot;float32&quot;), fc2_bias: R.Tensor((10,), dtype=&quot;float32&quot;)) -&gt; R.Tensor((&quot;n&quot;, 10), dtype=&quot;float32&quot;):
-        n = T.int64()
+    def forward(x: R.Tensor((n, 784), dtype=&quot;float32&quot;), fc1_weight: R.Tensor((128, 784), dtype=&quot;float32&quot;), fc1_bias: R.Tensor((128,), dtype=&quot;float32&quot;), fc2_weight: R.Tensor((10, 128), dtype=&quot;float32&quot;), fc2_bias: R.Tensor((10,), dtype=&quot;float32&quot;)) -&gt; R.Tensor((n, 10), dtype=&quot;float32&quot;):
         R.func_attr({&quot;num_input&quot;: 1})
         cls = Module
         with R.dataflow():
@@ -958,16 +952,15 @@ operator to <code class="docutils literal notranslate"><span class="pre">gelu</s
 <span class="n">mod</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
 </pre></div>
 </div>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span># from tvm.script import ir as I
-# from tvm.script import tirx as T
-# from tvm.tirx.layout import Axis
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span># from typing import TypeVar
+# from tvm.script import ir as I
 # from tvm.script import relax as R
 
+n = TypeVar(&quot;n&quot;)
 @I.ir_module
 class Module:
     @R.function
-    def forward(x: R.Tensor((&quot;n&quot;, 784), dtype=&quot;float32&quot;), fc1_weight: R.Tensor((128, 784), dtype=&quot;float32&quot;), fc1_bias: R.Tensor((128,), dtype=&quot;float32&quot;), fc2_weight: R.Tensor((10, 128), dtype=&quot;float32&quot;), fc2_bias: R.Tensor((10,), dtype=&quot;float32&quot;)) -&gt; R.Tensor((&quot;n&quot;, 10), dtype=&quot;float32&quot;):
-        n = T.int64()
+    def forward(x: R.Tensor((n, 784), dtype=&quot;float32&quot;), fc1_weight: R.Tensor((128, 784), dtype=&quot;float32&quot;), fc1_bias: R.Tensor((128,), dtype=&quot;float32&quot;), fc2_weight: R.Tensor((10, 128), dtype=&quot;float32&quot;), fc2_bias: R.Tensor((10,), dtype=&quot;float32&quot;)) -&gt; R.Tensor((n, 10), dtype=&quot;float32&quot;):
         R.func_attr({&quot;num_input&quot;: 1})
         with R.dataflow():
             permute_dims: R.Tensor((784, 128), dtype=&quot;float32&quot;) = R.permute_dims(fc1_weight, axes=None)

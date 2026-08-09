@@ -1,7 +1,7 @@
 var searchData=
 [
   ['value_0',['value',['../classtvm_1_1runtime_1_1vm_1_1Instruction_1_1Arg.html#a7f8b13a64c4160100aaf691f877f0270',1,'tvm::runtime::vm::Instruction::Arg']]],
-  ['var_1',['var',['../classtvm_1_1tirx_1_1BufferVar.html#a5a71693e34d4c4ca4a3d1f4b94b49a4c',1,'tvm::tirx::BufferVar::var()'],['../namespacetvm_1_1te.html#a054fef7460475c6d4adb0c845648bcd7',1,'tvm::te::var()'],['../classtvm_1_1Var.html#a5d3fb40557f1f178a7c646068ad5bfe0',1,'tvm::Var::Var()']]],
+  ['var_1',['var',['../classtvm_1_1Var.html#a5d3fb40557f1f178a7c646068ad5bfe0',1,'tvm::Var::Var()'],['../namespacetvm_1_1te.html#a054fef7460475c6d4adb0c845648bcd7',1,'tvm::te::var()'],['../classtvm_1_1tirx_1_1BufferVar.html#a5a71693e34d4c4ca4a3d1f4b94b49a4c',1,'tvm::tirx::BufferVar::var()']]],
   ['varbinding_2',['VarBinding',['../classtvm_1_1relax_1_1VarBinding.html#abd1a546ed7fa509d776563e8018b4599',1,'tvm::relax::VarBinding']]],
   ['varpattern_3',['VarPattern',['../classtvm_1_1relax_1_1VarPattern.html#a55ce0a13e1e0f61a3fecfdb2f5e0e64f',1,'tvm::relax::VarPattern']]],
   ['vdevice_4',['VDevice',['../classtvm_1_1VDevice.html#a37e65be8324548bfb6a74054f27ae232',1,'tvm::VDevice']]],

@@ -18,7 +18,7 @@ var searchData=
   ['thread_5fbinding_15',['thread_binding',['../classtvm_1_1tirx_1_1ForNode.html#a3d98571b7c497e317b0ff34da875b5d8',1,'tvm::tirx::ForNode']]],
   ['thread_5fextent_16',['thread_extent',['../namespacetvm_1_1tirx_1_1attr.html#a3626ee89890a92345703c4b6eee52415',1,'tvm::tirx::attr']]],
   ['thread_5ftag_17',['thread_tag',['../classtvm_1_1tirx_1_1IterVarNode.html#a18766ac76709bc97141c500a11062d50',1,'tvm::tirx::IterVarNode']]],
-  ['threshold_18',['threshold',['../structtvm_1_1relax_1_1SoftplusAttrs.html#a354c1dc30d9cea52bee0714384178cb9',1,'tvm::relax::SoftplusAttrs::threshold'],['../structtvm_1_1relax_1_1MultiboxTransformLocAttrs.html#ad645d845bf2f6cd7af0be73ec7582cee',1,'tvm::relax::MultiboxTransformLocAttrs::threshold']]],
+  ['threshold_18',['threshold',['../structtvm_1_1relax_1_1MultiboxTransformLocAttrs.html#ad645d845bf2f6cd7af0be73ec7582cee',1,'tvm::relax::MultiboxTransformLocAttrs::threshold'],['../structtvm_1_1relax_1_1SoftplusAttrs.html#a354c1dc30d9cea52bee0714384178cb9',1,'tvm::relax::SoftplusAttrs::threshold']]],
   ['tile_5flayout_19',['tile_layout',['../classtvm_1_1tirx_1_1ComposeLayoutNode.html#a4c90358e33fcb3f5e9c8dddf7329b814',1,'tvm::tirx::ComposeLayoutNode']]],
   ['to_5fusers_5f_20',['to_users_',['../classtvm_1_1relax_1_1DataflowBlockRewriteNode.html#a667829eb57e5e2ca06817f15dc4e45ff',1,'tvm::relax::DataflowBlockRewriteNode']]],
   ['top_5fk_21',['top_k',['../structtvm_1_1relax_1_1NonMaximumSuppressionAttrs.html#a606a2e78db8c9db146a4354f31f7f3ac',1,'tvm::relax::NonMaximumSuppressionAttrs']]],
@@ -36,5 +36,6 @@ var searchData=
   ['ty_5fargs_33',['ty_args',['../classtvm_1_1CallNode.html#aea255b3c2342dc40ac3b2a4af9d332a0',1,'tvm::CallNode']]],
   ['type_34',['type',['../structtvm_1_1relax_1_1PairCons.html#aa7fe6fdef3ab68d2f5176485000646b9',1,'tvm::relax::PairCons']]],
   ['type_5finfo_35',['type_info',['../classtvm_1_1ArgumentInfoNode.html#a546e864a8d048ec7922009f1c7864933',1,'tvm::ArgumentInfoNode']]],
-  ['type_5fstr_36',['type_str',['../structtvm_1_1ir_1_1ConfigSchema_1_1OptionEntry.html#a4f3cb8337bef2fb3460e575d534b087a',1,'tvm::ir::ConfigSchema::OptionEntry']]]
+  ['type_5fparams_36',['type_params',['../classtvm_1_1script_1_1printer_1_1FunctionDocNode.html#a6b3656238d197981cf25870e7f7bb1ab',1,'tvm::script::printer::FunctionDocNode']]],
+  ['type_5fstr_37',['type_str',['../structtvm_1_1ir_1_1ConfigSchema_1_1OptionEntry.html#a4f3cb8337bef2fb3460e575d534b087a',1,'tvm::ir::ConfigSchema::OptionEntry']]]
 ];
