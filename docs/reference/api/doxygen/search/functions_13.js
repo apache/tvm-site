@@ -30,7 +30,7 @@ var searchData=
   ['thread_5freturn_27',['thread_return',['../namespacetvm.html#a468205fa3486aa1ecc034aa9dfcc0c0e',1,'tvm::thread_return()'],['../namespacetvm_1_1tirx_1_1builtin.html#a0ea115dbfb26875aabd97669e76e74fb',1,'tvm::tirx::builtin::thread_return()']]],
   ['threadbinding_28',['ThreadBinding',['../namespacetvm_1_1script_1_1ir__builder_1_1tirx.html#ac38dc467aecb34400452c35511049773',1,'tvm::script::ir_builder::tirx']]],
   ['threadedsession_29',['ThreadedSession',['../classtvm_1_1runtime_1_1Session.html#a42a45c618e0945ce2f5ac98fde9b323c',1,'tvm::runtime::Session']]],
-  ['threadid_30',['ThreadId',['../namespacetvm_1_1script_1_1ir__builder_1_1tirx.html#a3198a10c3564ab7f6f26a83189175a1a',1,'tvm::script::ir_builder::tirx']]],
+  ['threadid_30',['ThreadId',['../namespacetvm_1_1script_1_1ir__builder_1_1tirx.html#ad4e63a12958ba19f5215600d7437c034',1,'tvm::script::ir_builder::tirx']]],
   ['threadlocal_31',['ThreadLocal',['../classtvm_1_1runtime_1_1DiscoWorker.html#afe757fc231903456972080cddc5e5b48',1,'tvm::runtime::DiscoWorker']]],
   ['threadsync_32',['ThreadSync',['../namespacetvm_1_1s__tir_1_1transform.html#af8930746842b1a0e8034d481c882eada',1,'tvm::s_tir::transform']]],
   ['tile_33',['tile',['../classtvm_1_1tirx_1_1TileLayoutNode.html#ad6043452e9b55abf5826e77720001d15',1,'tvm::tirx::TileLayoutNode::Tile()'],['../classtvm_1_1tirx_1_1LayoutNode.html#ae5f741818ebf83910cb0c803471e892c',1,'tvm::tirx::LayoutNode::Tile()'],['../namespacetvm_1_1topi.html#afddec6e5a81b54c7506b8d1a302a852f',1,'tvm::topi::tile()'],['../classtvm_1_1tirx_1_1ComposeLayoutNode.html#a88bcaeb354ffb1ac9cb60b05efbabb34',1,'tvm::tirx::ComposeLayoutNode::Tile()']]],

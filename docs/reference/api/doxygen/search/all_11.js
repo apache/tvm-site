@@ -18,7 +18,7 @@ var searchData=
   ['padeinsum_15',['PadEinsum',['../classtvm_1_1s__tir_1_1ScheduleNode.html#a10ac993f319829c2382b121daae12ff9',1,'tvm::s_tir::ScheduleNode']]],
   ['pair_5fconstraints_16',['pair_constraints',['../classtvm_1_1relax_1_1PatternSeqNode.html#abe070a70dd182b58588a655fba188b3a',1,'tvm::relax::PatternSeqNode']]],
   ['paircons_17',['paircons',['../structtvm_1_1relax_1_1PairCons.html#afd686a888f3fa072a688eff4b6b16ba0',1,'tvm::relax::PairCons::PairCons()'],['../structtvm_1_1relax_1_1PairCons.html',1,'tvm::relax::PairCons']]],
-  ['parallel_18',['parallel',['../classtvm_1_1s__tir_1_1ScheduleNode.html#a1f37cbbb6add4fe12e9dd044c22a5792',1,'tvm::s_tir::ScheduleNode::Parallel()'],['../namespacetvm_1_1script_1_1ir__builder_1_1tirx.html#a500bd6b127a4d961a1a663ec21d18af3',1,'tvm::script::ir_builder::tirx::Parallel()']]],
+  ['parallel_18',['parallel',['../classtvm_1_1s__tir_1_1ScheduleNode.html#a1f37cbbb6add4fe12e9dd044c22a5792',1,'tvm::s_tir::ScheduleNode::Parallel()'],['../namespacetvm_1_1script_1_1ir__builder_1_1tirx.html#ae2dc3c4d85ee0fd3eadd7d99d4d403d3',1,'tvm::script::ir_builder::tirx::Parallel()']]],
   ['parallelizevectorizeunroll_19',['ParallelizeVectorizeUnroll',['../classtvm_1_1s__tir_1_1meta__schedule_1_1ScheduleRule.html#a0c14857bafb9e8ab4da268e618544f21',1,'tvm::s_tir::meta_schedule::ScheduleRule']]],
   ['param_5fnames_20',['param_names',['../structtvm_1_1runtime_1_1vm_1_1VMFuncInfo.html#a314d833ba73af8f4bcf5a6ac2d615a19',1,'tvm::runtime::vm::VMFuncInfo']]],
   ['paramrecord_21',['ParamRecord',['../structtvm_1_1runtime_1_1vm_1_1TensorCacheMetadata_1_1FileRecord_1_1ParamRecord.html',1,'tvm::runtime::vm::TensorCacheMetadata::FileRecord']]],

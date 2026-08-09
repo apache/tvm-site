@@ -9,7 +9,7 @@ var searchData=
   ['vectorcombine_6',['vectorcombine',['../namespacetvm_1_1tirx_1_1builtin.html#a85392d960b3d71e4127e34d375e6924d',1,'tvm::tirx::builtin']]],
   ['vectorhigh_7',['vectorhigh',['../namespacetvm_1_1tirx_1_1builtin.html#a7ee9480d325ddf2b428cc1753e9ee129',1,'tvm::tirx::builtin']]],
   ['vectorize_8',['Vectorize',['../classtvm_1_1s__tir_1_1ScheduleNode.html#a2c127b633205af565427664a973a825c',1,'tvm::s_tir::ScheduleNode']]],
-  ['vectorized_9',['Vectorized',['../namespacetvm_1_1script_1_1ir__builder_1_1tirx.html#a90a34e895605c33580b73c97f2d86c9f',1,'tvm::script::ir_builder::tirx']]],
+  ['vectorized_9',['Vectorized',['../namespacetvm_1_1script_1_1ir__builder_1_1tirx.html#a4e5ec21007f8aa0a2765322a568f7019',1,'tvm::script::ir_builder::tirx']]],
   ['vectorizeloop_10',['VectorizeLoop',['../namespacetvm_1_1tirx_1_1transform.html#a858b84b9e3e0718c391f8263b2599541',1,'tvm::tirx::transform']]],
   ['vectorlow_11',['vectorlow',['../namespacetvm_1_1tirx_1_1builtin.html#afc85dee0b68317f74e9c3ef1406ac671',1,'tvm::tirx::builtin']]],
   ['verify_12',['Verify',['../classtvm_1_1tirx_1_1ScopeIdDefVerifier.html#ad834ad72979b0b7c2d443412fd9341c1',1,'tvm::tirx::ScopeIdDefVerifier']]],

@@ -8,7 +8,7 @@ var searchData=
   ['pad_5',['pad',['../namespacetvm_1_1topi.html#a8b25c82fe78fb593e495461cc54aedc3',1,'tvm::topi']]],
   ['padeinsum_6',['PadEinsum',['../classtvm_1_1s__tir_1_1ScheduleNode.html#a10ac993f319829c2382b121daae12ff9',1,'tvm::s_tir::ScheduleNode']]],
   ['paircons_7',['PairCons',['../structtvm_1_1relax_1_1PairCons.html#afd686a888f3fa072a688eff4b6b16ba0',1,'tvm::relax::PairCons']]],
-  ['parallel_8',['parallel',['../classtvm_1_1s__tir_1_1ScheduleNode.html#a1f37cbbb6add4fe12e9dd044c22a5792',1,'tvm::s_tir::ScheduleNode::Parallel()'],['../namespacetvm_1_1script_1_1ir__builder_1_1tirx.html#a500bd6b127a4d961a1a663ec21d18af3',1,'tvm::script::ir_builder::tirx::Parallel()']]],
+  ['parallel_8',['parallel',['../classtvm_1_1s__tir_1_1ScheduleNode.html#a1f37cbbb6add4fe12e9dd044c22a5792',1,'tvm::s_tir::ScheduleNode::Parallel()'],['../namespacetvm_1_1script_1_1ir__builder_1_1tirx.html#ae2dc3c4d85ee0fd3eadd7d99d4d403d3',1,'tvm::script::ir_builder::tirx::Parallel()']]],
   ['parallelizevectorizeunroll_9',['ParallelizeVectorizeUnroll',['../classtvm_1_1s__tir_1_1meta__schedule_1_1ScheduleRule.html#a0c14857bafb9e8ab4da268e618544f21',1,'tvm::s_tir::meta_schedule::ScheduleRule']]],
   ['parse_5fauto_5fscheduler_5flayout_10',['parse_auto_scheduler_layout',['../namespacetvm_1_1topi.html#a6f61efe1426ff8a61a683e27894ed0de',1,'tvm::topi']]],
   ['passconfigwithdefaults_11',['PassConfigWithDefaults',['../namespacetvm_1_1transform.html#af0a18b4d7ea2290541577f3c0b9382d3',1,'tvm::transform']]],

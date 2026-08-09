@@ -48,7 +48,7 @@ var searchData=
   ['unorderedtuplepatternnode_45',['UnorderedTuplePatternNode',['../classtvm_1_1relax_1_1UnorderedTuplePatternNode.html',1,'tvm::relax']]],
   ['unpackitervar_46',['UnpackIterVar',['../classtvm_1_1tirx_1_1SLayout.html#ad7116f70511d19a749c7978367e3ea0e',1,'tvm::tirx::SLayout']]],
   ['unravel_5findex_47',['unravel_index',['../namespacetvm_1_1topi.html#a8811a02532bbe3047986bf1a8449ac0e',1,'tvm::topi']]],
-  ['unroll_48',['unroll',['../namespacetvm_1_1script_1_1ir__builder_1_1tirx.html#a00a9779197d9b802495f242be0c818ce',1,'tvm::script::ir_builder::tirx::Unroll()'],['../classtvm_1_1s__tir_1_1ScheduleNode.html#a066ca595d9c1d73b650ccf0923c6fefc',1,'tvm::s_tir::ScheduleNode::Unroll()']]],
+  ['unroll_48',['unroll',['../namespacetvm_1_1script_1_1ir__builder_1_1tirx.html#ac8ece067aa0240d4253a98ea3afd92f5',1,'tvm::script::ir_builder::tirx::Unroll()'],['../classtvm_1_1s__tir_1_1ScheduleNode.html#a066ca595d9c1d73b650ccf0923c6fefc',1,'tvm::s_tir::ScheduleNode::Unroll()']]],
   ['unrollloop_49',['UnrollLoop',['../namespacetvm_1_1tirx_1_1transform.html#ad28f214ddefa23071603ef7e91b5bffd',1,'tvm::tirx::transform']]],
   ['unsafehidebufferaccess_50',['UnsafeHideBufferAccess',['../classtvm_1_1s__tir_1_1ScheduleNode.html#a4056d43eb6b342b6d0fa49a8398ae67c',1,'tvm::s_tir::ScheduleNode']]],
   ['unsafesetdtype_51',['UnsafeSetDType',['../classtvm_1_1s__tir_1_1ScheduleNode.html#a1e51e99b4ad58d1ed9be294c6118842f',1,'tvm::s_tir::ScheduleNode']]],

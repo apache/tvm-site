@@ -78,7 +78,7 @@ var searchData=
   ['thread_5ftag_75',['thread_tag',['../classtvm_1_1tirx_1_1IterVarNode.html#a18766ac76709bc97141c500a11062d50',1,'tvm::tirx::IterVarNode']]],
   ['threadbinding_76',['ThreadBinding',['../namespacetvm_1_1script_1_1ir__builder_1_1tirx.html#ac38dc467aecb34400452c35511049773',1,'tvm::script::ir_builder::tirx']]],
   ['threadedsession_77',['ThreadedSession',['../classtvm_1_1runtime_1_1Session.html#a42a45c618e0945ce2f5ac98fde9b323c',1,'tvm::runtime::Session']]],
-  ['threadid_78',['ThreadId',['../namespacetvm_1_1script_1_1ir__builder_1_1tirx.html#a3198a10c3564ab7f6f26a83189175a1a',1,'tvm::script::ir_builder::tirx']]],
+  ['threadid_78',['ThreadId',['../namespacetvm_1_1script_1_1ir__builder_1_1tirx.html#ad4e63a12958ba19f5215600d7437c034',1,'tvm::script::ir_builder::tirx']]],
   ['threadlocal_79',['ThreadLocal',['../classtvm_1_1runtime_1_1DiscoWorker.html#afe757fc231903456972080cddc5e5b48',1,'tvm::runtime::DiscoWorker']]],
   ['threadlocaldiscoworker_80',['ThreadLocalDiscoWorker',['../structtvm_1_1runtime_1_1ThreadLocalDiscoWorker.html',1,'tvm::runtime']]],
   ['threadsync_81',['ThreadSync',['../namespacetvm_1_1s__tir_1_1transform.html#af8930746842b1a0e8034d481c882eada',1,'tvm::s_tir::transform']]],
