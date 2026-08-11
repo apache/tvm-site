@@ -6,7 +6,7 @@
 
 Computation times
 =================
-**00:00.888** total execution time for 4 files **from deep_dive/tensor_ir/tutorials**:
+**00:00.883** total execution time for 4 files **from deep_dive/tensor_ir/tutorials**:
 
 .. container::
 
@@ -36,11 +36,11 @@ Computation times
      - 00:00.375
      - 0.0
    * - :ref:`sphx_glr_deep_dive_tensor_ir_tutorials_tir_creation.py` (``tir_creation.py``)
-     - 00:00.333
+     - 00:00.330
      - 0.0
    * - :ref:`sphx_glr_deep_dive_tensor_ir_tutorials_dlight_gpu_scheduling.py` (``dlight_gpu_scheduling.py``)
-     - 00:00.166
+     - 00:00.164
      - 0.0
    * - :ref:`sphx_glr_deep_dive_tensor_ir_tutorials_meta_schedule.py` (``meta_schedule.py``)
-     - 00:00.015
+     - 00:00.014
      - 0.0
