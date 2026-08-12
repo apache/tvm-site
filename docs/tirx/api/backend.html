@@ -714,7 +714,8 @@ document.write(`
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#tvm.backend.cuda.script.STIRNamespace"><code class="docutils literal notranslate"><span class="pre">STIRNamespace</span></code></a></li>
 </ul>
 </li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#tvm-backend-cuda-intrinsics">tvm.backend.cuda.intrinsics</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#tvm-backend-cuda-codegen">tvm.backend.cuda.codegen</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#tvm-backend-cuda-cpp">tvm.backend.cuda.cpp</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-tvm.backend.cuda.tile_primitive">tvm.backend.cuda.tile_primitive</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-tvm.backend.cuda.target_tags">tvm.backend.cuda.target_tags</a><ul class="visible nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#tvm.backend.cuda.target_tags.register_tag"><code class="docutils literal notranslate"><span class="pre">register_tag()</span></code></a></li>
@@ -2148,29 +2149,27 @@ IR round-trips.</p>
 </dd></dl>
 
 </section>
-<section id="tvm-backend-cuda-intrinsics">
-<h2>tvm.backend.cuda.intrinsics<a class="headerlink" href="#tvm-backend-cuda-intrinsics" title="Link to this heading">#</a></h2>
-<p>CUDA HW intrinsic codegens, grouped by feature domain.</p>
+<section id="tvm-backend-cuda-codegen">
+<h2>tvm.backend.cuda.codegen<a class="headerlink" href="#tvm-backend-cuda-codegen" title="Link to this heading">#</a></h2>
+<p>Shared machinery behind every CUDA device-intrinsic codegen.</p>
+<p>Both dialects build on this layer: <code class="xref py py-mod docutils literal notranslate"><span class="pre">tvm.backend.cuda.ptx</span></code> renders PTX
+instructions from a table, and <code class="xref py py-mod docutils literal notranslate"><span class="pre">tvm.backend.cuda.cpp</span></code> registers
+hand-written CUDA C++ device helpers.</p>
 <ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">mma</span></code> / <code class="docutils literal notranslate"><span class="pre">wgmma</span></code> / <code class="docutils literal notranslate"><span class="pre">tcgen05</span></code> — matrix-multiply hardware (Volta+/Hopper/Blackwell).</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">cp_async</span></code> — cp.async + cp.async.bulk + cp.async.bulk.tensor (TMA), incl. TMA address helpers.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">sync</span></code> — barriers, fences, mbarrier, cluster.barrier, warp vote, elect, sync helpers.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">math</span></code> — packed-f32x2 arithmetic, exp2/rcp/reduce3, warp/CTA reductions.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">cvt</span></code> — PTX data movement and conversion instruction forms.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">memory</span></code> — typed copies, ldg, ld.global.acquire, atomics, type conversions, address casts.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">nvshmem</span></code> — NVSHMEM RMA / signal / collective.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">misc</span></code> — register-allocation control, profiler timer, debug helpers (printf / trap).</p></li>
-</ul>
-<p>Plus the support modules:</p>
-<ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">header</span></code> — CUDA header generator and helper-tag table.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">registry</span></code> — codegen registry.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">types</span></code> — PTX dtype enum.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">registry</span></code> — the op-name → codegen map C++ queries during codegen.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">schema</span></code> — <code class="xref py py-func docutils literal notranslate"><span class="pre">device_intrinsic()</span></code>, the declarative helper registration.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">header</span></code> — CUDA header generator and its helper-tag table.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">types</span></code> — PTX dtype enum mirroring <code class="docutils literal notranslate"><span class="pre">src/backend/cuda/codegen/ptx.cc</span></code>.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">utils</span></code> — small parsing / validation helpers.</p></li>
 </ul>
+<p>Importing <code class="docutils literal notranslate"><span class="pre">registry</span></code> and <code class="docutils literal notranslate"><span class="pre">header</span></code> is load-bearing: their module-level
+<code class="docutils literal notranslate"><span class="pre">register_global_func</span></code> decorators publish <code class="docutils literal notranslate"><span class="pre">tirx.intrinsics.cuda.get_codegen</span></code>
+and <code class="docutils literal notranslate"><span class="pre">tirx.intrinsics.cuda.header_generator</span></code>, which <code class="docutils literal notranslate"><span class="pre">codegen_cuda.cc</span></code> looks
+up when it emits a kernel. Nothing else imports them for their side effects, so
+dropping them here fails at kernel-build time, not at import time.</p>
 <dl class="py class">
 <dt class="sig sig-object py">
-<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">tvm.backend.cuda.intrinsics.</span></span><span class="sig-name descname"><span class="pre">PTXDataType</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span></dt>
+<em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">tvm.backend.cuda.codegen.</span></span><span class="sig-name descname"><span class="pre">PTXDataType</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">value</span></span></em><span class="sig-paren">)</span></dt>
 <dd><p>A Python equivalent of the provided C++ DataType enum class.</p>
 <p>Inherits from IntEnum so that members behave both as enum members
 and as integers, mirroring the C++ behavior.</p>
@@ -2179,12 +2178,67 @@ and as integers, mirroring the C++ behavior.</p>
 
 <dl class="py function">
 <dt class="sig sig-object py">
-<span class="sig-prename descclassname"><span class="pre">tvm.backend.cuda.intrinsics.</span></span><span class="sig-name descname"><span class="pre">register_codegen</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">op</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">backend</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'cuda'</span></span></em><span class="sig-paren">)</span></dt>
+<span class="sig-prename descclassname"><span class="pre">tvm.backend.cuda.codegen.</span></span><span class="sig-name descname"><span class="pre">device_intrinsic</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">op_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="o"><span class="pre">*</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">helper_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable" title="(in Python v3.14)"><span class="pre">Callable</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">c_signature</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable" title="(in Python v3.14)"><span class="pre">Callable</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'()'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">body</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable" title="(in Python v3.14)"><span class="pre">Callable</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_attrs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><span class="pre">int</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">return_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable" title="(in Python v3.14)"><span class="pre">Callable</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'void'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tvm_return_type</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/collections.abc.html#collections.abc.Callable" title="(in Python v3.14)"><span class="pre">Callable</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">templated</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.14)"><span class="pre">bool</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">extra_deps</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.14)"><span class="pre">tuple</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">()</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.14)"><span class="pre">None</span></a></span></span></dt>
+<dd><p>Register a CUDA device-helper intrinsic.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>op_name</strong> – Registry key — <code class="docutils literal notranslate"><span class="pre">call_intrin(&quot;&quot;,</span> <span class="pre">&quot;tirx.&lt;op_name&gt;&quot;,</span> <span class="pre">...)</span></code> resolves
+here. Also used as the default helper name (<code class="docutils literal notranslate"><span class="pre">tvm_builtin_&lt;op_name&gt;</span></code>)
+when <code class="docutils literal notranslate"><span class="pre">helper_name</span></code> is not provided.</p></li>
+<li><p><strong>helper_name</strong> – Literal C function name, OR <code class="docutils literal notranslate"><span class="pre">(*args)</span> <span class="pre">-&gt;</span> <span class="pre">str</span></code> to compute it from
+attr values. Defaults to <code class="docutils literal notranslate"><span class="pre">f&quot;tvm_builtin_{op_name}&quot;</span></code>.</p></li>
+<li><p><strong>c_signature</strong> – Literal C parameter list including outer parens (<code class="docutils literal notranslate"><span class="pre">&quot;(int</span> <span class="pre">x,</span> <span class="pre">int</span> <span class="pre">y)&quot;</span></code>),
+OR <code class="docutils literal notranslate"><span class="pre">(*args)</span> <span class="pre">-&gt;</span> <span class="pre">str</span></code> to compute it from attr values. Defaults to
+<code class="docutils literal notranslate"><span class="pre">&quot;()&quot;</span></code>.</p></li>
+<li><p><strong>body</strong> – Literal C body string (already indented), OR <code class="docutils literal notranslate"><span class="pre">(*args)</span> <span class="pre">-&gt;</span> <span class="pre">str</span></code>.</p></li>
+<li><p><strong>n_attrs</strong> – Number of trailing args that are attrs (consumed by <code class="docutils literal notranslate"><span class="pre">helper_name</span></code>
+/ <code class="docutils literal notranslate"><span class="pre">c_signature</span></code> / <code class="docutils literal notranslate"><span class="pre">body</span></code> callables, NOT forwarded to the helper
+as call arguments). The first <code class="docutils literal notranslate"><span class="pre">len(args)</span> <span class="pre">-</span> <span class="pre">n_attrs</span></code> args are the
+operand args forwarded to the helper.</p></li>
+<li><p><strong>return_type</strong> – C return type. Default <code class="docutils literal notranslate"><span class="pre">&quot;void&quot;</span></code>. Either a literal string or
+<code class="docutils literal notranslate"><span class="pre">(*args)</span> <span class="pre">-&gt;</span> <span class="pre">str</span></code> when the helper return type depends on attrs.</p></li>
+<li><p><strong>tvm_return_type</strong> – TVM dtype for the call result, when the helper has a non-void
+return. Either a literal string (<code class="docutils literal notranslate"><span class="pre">&quot;int32&quot;</span></code>) or <code class="docutils literal notranslate"><span class="pre">(*args)</span> <span class="pre">-&gt;</span> <span class="pre">str</span></code>.
+If omitted and <code class="docutils literal notranslate"><span class="pre">return_type</span></code> is non-void, it is auto-derived from
+the <code class="docutils literal notranslate"><span class="pre">_C_TO_TVM_DTYPE</span></code> table.</p></li>
+<li><p><strong>templated</strong> – Prefix the helper with <code class="docutils literal notranslate"><span class="pre">template</span> <span class="pre">&lt;typename</span> <span class="pre">T&gt;</span></code>.</p></li>
+<li><p><strong>extra_deps</strong> – Helper-tag list (e.g. <code class="docutils literal notranslate"><span class="pre">(&quot;get_tmem_addr&quot;,)</span></code>) forwarded as the second
+element of the codegen result so the header generator emits the
+prerequisite snippets.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py">
+<span class="sig-prename descclassname"><span class="pre">tvm.backend.cuda.codegen.</span></span><span class="sig-name descname"><span class="pre">register_codegen</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">op</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">backend</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'cuda'</span></span></em><span class="sig-paren">)</span></dt>
 <dd><p>Register a codegen function for a given op.</p>
 <p>The codegen function should return a <code class="docutils literal notranslate"><span class="pre">cuda_func_call</span></code> statement, and
 optionally a list of tags that the codegen function needs.</p>
 </dd></dl>
 
+</section>
+<section id="tvm-backend-cuda-cpp">
+<h2>tvm.backend.cuda.cpp<a class="headerlink" href="#tvm-backend-cuda-cpp" title="Link to this heading">#</a></h2>
+<p>Hand-written CUDA C++ device helpers.</p>
+<p>The CUDA backend emits device intrinsics two ways. A single PTX instruction is
+a row in the <code class="xref py py-mod docutils literal notranslate"><span class="pre">tvm.backend.cuda.ptx</span></code> table, rendered by a generic engine.
+Everything else – anything needing a hand-written <code class="docutils literal notranslate"><span class="pre">__device__</span></code> function body
+– is registered here, grouped by why it needs one:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">builtins</span></code> — a CUDA builtin or library call wrapped as an op, no asm.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">asm</span></code> — a body that must be hand-written asm: spin-wait loops, barrier
+pairs, empty compiler-barrier asm, special-register reads.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">descriptors</span></code> — wgmma / tcgen05 descriptor bitfield encoding, plus the
+tcgen05 MMA dtype-kind and shape validation those encoders enforce.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">instrument</span></code> — profiler timers, IKET events, <code class="docutils literal notranslate"><span class="pre">printf</span></code> / <code class="docutils literal notranslate"><span class="pre">trap</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">nvshmem</span></code> — NVSHMEM RMA, signal, and collective bindings.</p></li>
+</ul>
+<p>Importing this package is what registers those codegens; the shared registry,
+<code class="docutils literal notranslate"><span class="pre">device_intrinsic</span></code> schema, and header generator live in
+<code class="xref py py-mod docutils literal notranslate"><span class="pre">tvm.backend.cuda.codegen</span></code>.</p>
 </section>
 <section id="module-tvm.backend.cuda.tile_primitive">
 <span id="tvm-backend-cuda-tile-primitive"></span><h2>tvm.backend.cuda.tile_primitive<a class="headerlink" href="#module-tvm.backend.cuda.tile_primitive" title="Link to this heading">#</a></h2>
@@ -2370,7 +2424,8 @@ None if TVM is built in runtime-only mode.</p>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#tvm.backend.cuda.script.STIRNamespace"><code class="docutils literal notranslate"><span class="pre">STIRNamespace</span></code></a></li>
 </ul>
 </li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#tvm-backend-cuda-intrinsics">tvm.backend.cuda.intrinsics</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#tvm-backend-cuda-codegen">tvm.backend.cuda.codegen</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#tvm-backend-cuda-cpp">tvm.backend.cuda.cpp</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-tvm.backend.cuda.tile_primitive">tvm.backend.cuda.tile_primitive</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#module-tvm.backend.cuda.target_tags">tvm.backend.cuda.target_tags</a><ul class="visible nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#tvm.backend.cuda.target_tags.register_tag"><code class="docutils literal notranslate"><span class="pre">register_tag()</span></code></a></li>
