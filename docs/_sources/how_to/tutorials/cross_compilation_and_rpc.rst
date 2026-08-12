@@ -864,8 +864,8 @@ This workflow is applicable to various deployment scenarios:
     Converted PyTorch model to Relax:
       - Number of parameters: 4
     Using local target for demonstration
-    Exported library to: /tmp/tmpls5ido5s/model_deployed.so
-    Saved parameters to: /tmp/tmpls5ido5s/model_params.npz
+    Exported library to: /tmp/tmp78bgcli8/model_deployed.so
+    Saved parameters to: /tmp/tmp78bgcli8/model_params.npz
 
     RPC workflow (works for any remote device):
     ==================================================
