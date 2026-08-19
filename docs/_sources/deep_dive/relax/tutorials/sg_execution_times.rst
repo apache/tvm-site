@@ -33,8 +33,8 @@ Computation times
      - Time
      - Mem (MB)
    * - :ref:`sphx_glr_deep_dive_relax_tutorials_relax_creation.py` (``relax_creation.py``)
-     - 00:00.171
+     - 00:00.170
      - 0.0
    * - :ref:`sphx_glr_deep_dive_relax_tutorials_relax_transformation.py` (``relax_transformation.py``)
-     - 00:00.061
+     - 00:00.063
      - 0.0
