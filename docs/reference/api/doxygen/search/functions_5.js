@@ -11,7 +11,7 @@ var searchData=
   ['fast_5ftanh_5ffloat_8',['fast_tanh_float',['../namespacetvm_1_1topi.html#a52d5442416a0ff2a808bf5bb99c8e8c3',1,'tvm::topi']]],
   ['fdiv_9',['fdiv',['../namespacetvm_1_1tirx.html#a5480c3487e1d5c98ad4485dbb474bc22',1,'tvm::tirx']]],
   ['fill_10',['fill',['../namespacetvm_1_1tirx.html#a943be708b2ca02f7a107239b2be5ce90',1,'tvm::tirx']]],
-  ['filter_11',['filter',['../namespacetvm_1_1tirx_1_1transform.html#abccb0a65afb722531d5b6dd3752e675e',1,'tvm::tirx::transform::Filter()'],['../namespacetvm_1_1tirx_1_1builtin.html#a0823a87014813f01a3f89feef28de3d8',1,'tvm::tirx::builtin::filter()']]],
+  ['filter_11',['filter',['../namespacetvm_1_1tirx_1_1builtin.html#a0823a87014813f01a3f89feef28de3d8',1,'tvm::tirx::builtin::filter()'],['../namespacetvm_1_1tirx_1_1transform.html#abccb0a65afb722531d5b6dd3752e675e',1,'tvm::tirx::transform::Filter()']]],
   ['filternarrow_12',['FilterNarrow',['../namespacetvm_1_1tirx.html#af428c644072224183c9e5362634285e9',1,'tvm::tirx']]],
   ['finalize_13',['finalize',['../classtvm_1_1NodeFunctor_3_01R_07const_01ffi_1_1ObjectRef_01_6n_00_01Args_8_8_8_08_4.html#ac46cd82ad698ee62e0d6993c35d9bbf2',1,'tvm::NodeFunctor&lt; R(const ffi::ObjectRef &amp;n, Args...)&gt;::Finalize()'],['../classtvm_1_1relax_1_1BlockBuilderNode.html#a6656c6162859b94d465b7aaabb2aaf90',1,'tvm::relax::BlockBuilderNode::Finalize()']]],
   ['find_5fdepth_5fheight_5fwidth_14',['find_depth_height_width',['../namespacetvm_1_1topi_1_1nn.html#ab03974ee6b2d02a4619de1a4d0b42891',1,'tvm::topi::nn']]],
