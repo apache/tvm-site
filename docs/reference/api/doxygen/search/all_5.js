@@ -107,7 +107,7 @@ var searchData=
   ['detectitermap_104',['DetectIterMap',['../namespacetvm_1_1arith.html#a99dcbc7df5a15449dc181a50b0aa1658',1,'tvm::arith']]],
   ['detectlinearequation_105',['DetectLinearEquation',['../namespacetvm_1_1arith.html#a8a6534c63e238afa7d827e8128cdb6c2',1,'tvm::arith']]],
   ['detectrecursion_106',['DetectRecursion',['../namespacetvm_1_1relax.html#a006084fca908b3d3068f38dcd9390add',1,'tvm::relax']]],
-  ['device_107',['device',['../namespacetvm.html#a7c2095aed90b2129ba631b90103313a2',1,'tvm::Device'],['../classtvm_1_1script_1_1printer_1_1LiteralDoc.html#a60cc0caeefc4bb1638e23794f34c02e0',1,'tvm::script::printer::LiteralDoc::Device()'],['../structtvm_1_1runtime_1_1memory_1_1Buffer.html#a76431b16af008203933506ad789664f3',1,'tvm::runtime::memory::Buffer::device']]],
+  ['device_107',['device',['../namespacetvm.html#a7c2095aed90b2129ba631b90103313a2',1,'tvm::Device'],['../structtvm_1_1runtime_1_1memory_1_1Buffer.html#a76431b16af008203933506ad789664f3',1,'tvm::runtime::memory::Buffer::device'],['../classtvm_1_1script_1_1printer_1_1LiteralDoc.html#a60cc0caeefc4bb1638e23794f34c02e0',1,'tvm::script::printer::LiteralDoc::Device()']]],
   ['device_5fapi_2eh_108',['device_api.h',['../device__api_8h.html',1,'']]],
   ['device_5fid_109',['device_id',['../namespacetvm_1_1tirx_1_1attr.html#a740f585932379e96b0a20c709359b7aa',1,'tvm::tirx::attr']]],
   ['device_5fids_110',['device_ids',['../classtvm_1_1relax_1_1distributed_1_1DeviceMeshNode.html#a7c9f5a977f3271381d525b16815d4cdd',1,'tvm::relax::distributed::DeviceMeshNode']]],

@@ -29,7 +29,7 @@ var searchData=
   ['transitive_5fcomparisons_26',['transitive_comparisons',['../classtvm_1_1arith_1_1AnalyzerObj.html#aabac046e3ed1abf7f96b446114cafa62',1,'tvm::arith::AnalyzerObj']]],
   ['true_5fbranch_27',['true_branch',['../classtvm_1_1relax_1_1IfNode.html#a961e51229f459ef22622f5e9fd040c72',1,'tvm::relax::IfNode']]],
   ['true_5fvalue_28',['true_value',['../classtvm_1_1tirx_1_1SelectNode.html#ac684847ff51b4457c49af117c3dfb46c',1,'tvm::tirx::SelectNode']]],
-  ['tuple_29',['tuple',['../classtvm_1_1relax_1_1TupleGetItemPatternNode.html#aa2c7e22ed458fb63f4466d9f820ba26c',1,'tvm::relax::TupleGetItemPatternNode::tuple'],['../classtvm_1_1relax_1_1TupleGetItemNode.html#adbcebfaec8bf19152dd8cbb31952b667',1,'tvm::relax::TupleGetItemNode::tuple']]],
+  ['tuple_29',['tuple',['../classtvm_1_1TupleGetItemNode.html#a6c474a133001bb6fb76ab605aec1275a',1,'tvm::TupleGetItemNode::tuple'],['../classtvm_1_1relax_1_1TupleGetItemPatternNode.html#aa2c7e22ed458fb63f4466d9f820ba26c',1,'tvm::relax::TupleGetItemPatternNode::tuple']]],
   ['tvm_5fglobal_5fbarrier_5fstate_30',['tvm_global_barrier_state',['../namespacetvm_1_1runtime_1_1symbol.html#ac21d436bd65464b49858ba4bc55fb3ec',1,'tvm::runtime::symbol']]],
   ['tvm_5fset_5fdevice_31',['tvm_set_device',['../namespacetvm_1_1runtime_1_1symbol.html#aaad9cf8f51a55b2ec5b19854d692bd21',1,'tvm::runtime::symbol']]],
   ['ty_32',['ty',['../classtvm_1_1relax_1_1MatchCastNode.html#a93a4d080db242436bdee1ae702536324',1,'tvm::relax::MatchCastNode::ty'],['../classtvm_1_1relax_1_1TypePatternNode.html#a4c785bb96db69e2bb8b6741009483279',1,'tvm::relax::TypePatternNode::ty'],['../classtvm_1_1ExprNode.html#a4c2a9b792a5ec422d8e04d6d78707fcb',1,'tvm::ExprNode::ty']]],
