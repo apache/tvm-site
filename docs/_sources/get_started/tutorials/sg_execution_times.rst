@@ -6,7 +6,7 @@
 
 Computation times
 =================
-**00:06.445** total execution time for 2 files **from get_started/tutorials**:
+**00:06.431** total execution time for 2 files **from get_started/tutorials**:
 
 .. container::
 
@@ -33,8 +33,8 @@ Computation times
      - Time
      - Mem (MB)
    * - :ref:`sphx_glr_get_started_tutorials_ir_module.py` (``ir_module.py``)
-     - 00:06.209
+     - 00:06.202
      - 0.0
    * - :ref:`sphx_glr_get_started_tutorials_quick_start.py` (``quick_start.py``)
-     - 00:00.236
+     - 00:00.230
      - 0.0
