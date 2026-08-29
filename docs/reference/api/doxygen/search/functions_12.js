@@ -134,7 +134,7 @@ var searchData=
   ['space_5fto_5fbatch_5fnd_131',['space_to_batch_nd',['../namespacetvm_1_1topi.html#a6f80bb9eb5910f7ca63ce9df855caa56',1,'tvm::topi']]],
   ['spacegenerator_132',['spacegenerator',['../classtvm_1_1s__tir_1_1meta__schedule_1_1SpaceGenerator.html#a214c85610c9564e38a53a999c196c1fe',1,'tvm::s_tir::meta_schedule::SpaceGenerator::SpaceGenerator()=default'],['../classtvm_1_1s__tir_1_1meta__schedule_1_1SpaceGenerator.html#a783e0c0d9bae1d4cb2a874c1f2cf2169',1,'tvm::s_tir::meta_schedule::SpaceGenerator::SpaceGenerator(ffi::ObjectPtr&lt; SpaceGeneratorNode &gt; data)']]],
   ['spacegeneratorunion_133',['SpaceGeneratorUnion',['../classtvm_1_1s__tir_1_1meta__schedule_1_1SpaceGenerator.html#a09b5c918b9f4f6e0c6b5b5223616f131',1,'tvm::s_tir::meta_schedule::SpaceGenerator']]],
-  ['span_134',['span',['../classtvm_1_1tirx_1_1BufferVar.html#a45e932c5b7c5fa2177947755032cea86',1,'tvm::tirx::BufferVar::span()'],['../classtvm_1_1Span.html#a5216631b639e8c802263d87d3fe9e5f6',1,'tvm::Span::Span()']]],
+  ['span_134',['span',['../classtvm_1_1Span.html#a5216631b639e8c802263d87d3fe9e5f6',1,'tvm::Span::Span()'],['../classtvm_1_1tirx_1_1BufferVar.html#a45e932c5b7c5fa2177947755032cea86',1,'tvm::tirx::BufferVar::span()']]],
   ['sparse_5fto_5fdense_135',['sparse_to_dense',['../namespacetvm_1_1topi.html#a86bc60ca6d4e6f36974d20fdb1812ba5',1,'tvm::topi']]],
   ['spatial_136',['Spatial',['../namespacetvm_1_1script_1_1ir__builder_1_1tirx_1_1axis.html#a0fa6e0a90c8ef2f32f94fab2bd8e6927',1,'tvm::script::ir_builder::tirx::axis']]],
   ['specialize_137',['Specialize',['../namespacetvm_1_1tirx.html#a19f0f86cdd19c3d685ac50387d5b4c1e',1,'tvm::tirx']]],
