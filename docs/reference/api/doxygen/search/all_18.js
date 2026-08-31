@@ -5,7 +5,7 @@ var searchData=
   ['warpid_2',['WarpId',['../namespacetvm_1_1script_1_1ir__builder_1_1tirx.html#a100742007467deb0c3516fef49880e0c',1,'tvm::script::ir_builder::tirx']]],
   ['weight_3',['weight',['../classtvm_1_1s__tir_1_1meta__schedule_1_1ExtractedTaskNode.html#a6d6591e4744fbd0fc3825bc240194525',1,'tvm::s_tir::meta_schedule::ExtractedTaskNode']]],
   ['wellformed_4',['WellFormed',['../namespacetvm_1_1relax.html#ab277242c7f49d3ca1924729ac3b0d99b',1,'tvm::relax']]],
-  ['where_5',['where',['../namespacetvm_1_1topi.html#af011847b6e7f72f1bec25eee05c80590',1,'tvm::topi::where()'],['../namespacetvm_1_1script_1_1ir__builder_1_1tirx.html#abedcb7f577079ad0798385f563037f01',1,'tvm::script::ir_builder::tirx::Where()']]],
+  ['where_5',['where',['../namespacetvm_1_1script_1_1ir__builder_1_1tirx.html#abedcb7f577079ad0798385f563037f01',1,'tvm::script::ir_builder::tirx::Where()'],['../namespacetvm_1_1topi.html#af011847b6e7f72f1bec25eee05c80590',1,'tvm::topi::where()']]],
   ['while_6',['while',['../classtvm_1_1tirx_1_1While.html',1,'tvm::tirx::While'],['../classtvm_1_1tirx_1_1While.html#ab0b5efffa898af6690bfbd4d3956c5d1',1,'tvm::tirx::While::While()'],['../namespacetvm_1_1script_1_1ir__builder_1_1tirx.html#a021a4b73625c5731ab93400404b6505e',1,'tvm::script::ir_builder::tirx::While()']]],
   ['whiledoc_7',['whiledoc',['../classtvm_1_1script_1_1printer_1_1WhileDoc.html',1,'tvm::script::printer::WhileDoc'],['../classtvm_1_1script_1_1printer_1_1WhileDoc.html#aed5d0c9693c8137a909e9c3d9836ef28',1,'tvm::script::printer::WhileDoc::WhileDoc()']]],
   ['whiledocnode_8',['WhileDocNode',['../classtvm_1_1script_1_1printer_1_1WhileDocNode.html',1,'tvm::script::printer']]],

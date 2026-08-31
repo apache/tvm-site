@@ -1,6 +1,6 @@
 var searchData=
 [
-  ['canonicalsimplifier_0',['CanonicalSimplifier',['../classtvm_1_1arith_1_1RewriteSimplifier.html#abd092d074e3063da6d7bb0c67115a33f',1,'tvm::arith::RewriteSimplifier']]],
-  ['constraintcontext_1',['constraintcontext',['../classtvm_1_1arith_1_1ConstIntBoundAnalyzer.html#ab8bf22547cf1df0a28fc4ee98841ab89',1,'tvm::arith::ConstIntBoundAnalyzer::ConstraintContext'],['../classtvm_1_1arith_1_1ModularSetAnalyzer.html#ab8bf22547cf1df0a28fc4ee98841ab89',1,'tvm::arith::ModularSetAnalyzer::ConstraintContext'],['../classtvm_1_1arith_1_1RewriteSimplifier.html#ab8bf22547cf1df0a28fc4ee98841ab89',1,'tvm::arith::RewriteSimplifier::ConstraintContext'],['../classtvm_1_1arith_1_1CanonicalSimplifier.html#ab8bf22547cf1df0a28fc4ee98841ab89',1,'tvm::arith::CanonicalSimplifier::ConstraintContext'],['../classtvm_1_1arith_1_1TransitiveComparisonAnalyzer.html#ab8bf22547cf1df0a28fc4ee98841ab89',1,'tvm::arith::TransitiveComparisonAnalyzer::ConstraintContext']]],
-  ['customdatatypeslowerer_2',['CustomDatatypesLowerer',['../classtvm_1_1tirx_1_1BufferLoadNode.html#a46452c76ddea6c63353f8101e3462238',1,'tvm::tirx::BufferLoadNode']]]
+  ['dataflowblockrewrite_0',['DataflowBlockRewrite',['../classtvm_1_1relax_1_1DataflowBlockRewriteNode.html#ad7cbef1aa889c9f40cf1444d9f780dc6',1,'tvm::relax::DataflowBlockRewriteNode']]],
+  ['discoworker_3a_3aimpl_1',['Impl',['../classtvm_1_1runtime_1_1DiscoWorker.html#a379c6dd5a183ed1df75515f7f21a3f49',1,'tvm::runtime::DiscoWorker']]],
+  ['drefobj_2',['DRefObj',['../classtvm_1_1runtime_1_1SessionObj.html#a4051d489eb872cf706c8c47b657224c2',1,'tvm::runtime::SessionObj']]]
 ];

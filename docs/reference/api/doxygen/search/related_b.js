@@ -1,4 +1,5 @@
 var searchData=
 [
-  ['usedby_0',['UsedBy',['../classtvm_1_1relax_1_1PatternSeq.html#a9901bd20ecd194cd32825f437a4f4a42',1,'tvm::relax::PatternSeq']]]
+  ['virtualdevice_0',['VirtualDevice',['../classtvm_1_1VirtualDeviceNode.html#ae4d7f111e3a45058026a3ffb156a4790',1,'tvm::VirtualDeviceNode']]],
+  ['virtualdevicecache_1',['VirtualDeviceCache',['../classtvm_1_1VirtualDevice.html#a4e08dee8d23f7eb0224a08e4e85e835e',1,'tvm::VirtualDevice']]]
 ];

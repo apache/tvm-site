@@ -195,8 +195,8 @@ Before tuning, use ``extract_tasks`` to see what MetaSchedule will tune:
 
  .. code-block:: none
 
-    Task 0: transpose1  (weight=1)
-    Task 1: matmul1  (weight=1)
+    Task 0: matmul1  (weight=1)
+    Task 1: transpose1  (weight=1)
     Task 2: fused_matmul_add_relu  (weight=1)
     Task 3: transpose  (weight=1)
 
