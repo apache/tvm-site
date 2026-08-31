@@ -52,7 +52,7 @@ var searchData=
   ['visitvardef_5f_49',['visitvardef_',['../classtvm_1_1relax_1_1ExprVisitor.html#ac4c15a65c7a028269e4c44b3373938ea',1,'tvm::relax::ExprVisitor::VisitVarDef_(const VarNode *var)'],['../classtvm_1_1relax_1_1ExprVisitor.html#ab252b2b8d82c6e4f300775ca4d308f4a',1,'tvm::relax::ExprVisitor::VisitVarDef_(const DataflowVarNode *var)'],['../classtvm_1_1relax_1_1ExprMutator.html#ae2762b6909bcb175253170b4e2dab179',1,'tvm::relax::ExprMutator::VisitVarDef_(const VarNode *var)'],['../classtvm_1_1relax_1_1ExprMutator.html#a8e416e45a1c5469516d6d8d9965c89c2',1,'tvm::relax::ExprMutator::VisitVarDef_(const DataflowVarNode *var)']]],
   ['visitwithinnerscope_50',['VisitWithInnerScope',['../classtvm_1_1relax_1_1ExprMutator.html#ac69f48c64e9722089987111fcc609a3e',1,'tvm::relax::ExprMutator']]],
   ['visitwithnewscope_51',['VisitWithNewScope',['../classtvm_1_1relax_1_1ExprMutator.html#a352b987c6dc59fc403e581bc00584dd0',1,'tvm::relax::ExprMutator']]],
-  ['vload_52',['vload',['../classtvm_1_1tirx_1_1BufferVar.html#af26e118d45be72a1992b4ba08104b044',1,'tvm::tirx::BufferVar']]],
+  ['vload_52',['vload',['../classtvm_1_1tirx_1_1BufferVar.html#aed1bd58a8bf5eb890d7563098ad4de2a',1,'tvm::tirx::BufferVar']]],
   ['vmclosure_53',['VMClosure',['../classtvm_1_1runtime_1_1vm_1_1VMClosure.html#a74aa7db30730169a960773695b846d29',1,'tvm::runtime::vm::VMClosure']]],
   ['vmloadexecutable_54',['VMLoadExecutable',['../classtvm_1_1runtime_1_1vm_1_1VMExecutable.html#a0e6b34e4870a5d22a0fb64567d47e424',1,'tvm::runtime::vm::VMExecutable']]],
   ['vmshapelower_55',['VMShapeLower',['../namespacetvm_1_1relax_1_1transform.html#a640f84c6058f570cdef3e463338a8267',1,'tvm::relax::transform']]],
@@ -61,6 +61,6 @@ var searchData=
   ['voidtype_58',['VoidType',['../namespacetvm.html#a27df956aaa2e5e25005e0f9dc1638a08',1,'tvm']]],
   ['vscale_59',['vscale',['../namespacetvm_1_1tirx_1_1builtin.html#a98e5f04e27438ed2ddb5abd566b65c07',1,'tvm::tirx::builtin']]],
   ['vscalefactor_60',['VScaleFactor',['../classtvm_1_1PrimType.html#abc0ace579c1e6ff2d38103f56a0bade6',1,'tvm::PrimType']]],
-  ['vstore_61',['vstore',['../classtvm_1_1tirx_1_1BufferVar.html#aa0ba24f889c165411627bf3c6085138b',1,'tvm::tirx::BufferVar']]],
+  ['vstore_61',['vstore',['../classtvm_1_1tirx_1_1BufferVar.html#af6dfc10cf5b3b9df04fae89b4121f673',1,'tvm::tirx::BufferVar']]],
   ['vtable_62',['vtable',['../classtvm_1_1TVMScriptPrinter.html#a50ae14cc36ef78ae96845cffe4c6625a',1,'tvm::TVMScriptPrinter::vtable()'],['../classtvm_1_1script_1_1printer_1_1IRDocsifier.html#a3f924aee7e387c217a549247815e1ee6',1,'tvm::script::printer::IRDocsifier::vtable()'],['../classtvm_1_1script_1_1ir__builder_1_1details_1_1Namer.html#ac15fa1c07a3e7fca27ce8ac46c0027c3',1,'tvm::script::ir_builder::details::Namer::vtable()']]]
 ];
