@@ -1,6 +1,6 @@
 var searchData=
 [
-  ['name_0',['name',['../classtvm_1_1script_1_1ir__builder_1_1details_1_1Namer.html#a39cda244096d654bfbd5a38e90723dbf',1,'tvm::script::ir_builder::details::Namer::Name()'],['../classtvm_1_1script_1_1ir__builder_1_1IRBuilder.html#a16bb7ca91d7a825ce3941a81a57782d9',1,'tvm::script::ir_builder::IRBuilder::Name()'],['../classtvm_1_1tirx_1_1ExecScopeNode.html#af8d4a624f10d47b51cab9684568a9a59',1,'tvm::tirx::ExecScopeNode::name()'],['../classtvm_1_1tirx_1_1BufferVar.html#ad39f8ce414e817d0c19ecbd9c27b5585',1,'tvm::tirx::BufferVar::name()'],['../classtvm_1_1tirx_1_1SLayout.html#a58c86dad370a9470353f1204b540a7c8',1,'tvm::tirx::SLayout::name()'],['../classtvm_1_1tirx_1_1SLayoutAxis.html#a4ae073a04876ac4d11f782718e53799c',1,'tvm::tirx::SLayoutAxis::name()']]],
+  ['name_0',['name',['../classtvm_1_1tirx_1_1SLayout.html#a58c86dad370a9470353f1204b540a7c8',1,'tvm::tirx::SLayout::name()'],['../classtvm_1_1tirx_1_1SLayoutAxis.html#a4ae073a04876ac4d11f782718e53799c',1,'tvm::tirx::SLayoutAxis::name()'],['../classtvm_1_1script_1_1ir__builder_1_1details_1_1Namer.html#a39cda244096d654bfbd5a38e90723dbf',1,'tvm::script::ir_builder::details::Namer::Name()'],['../classtvm_1_1script_1_1ir__builder_1_1IRBuilder.html#a16bb7ca91d7a825ce3941a81a57782d9',1,'tvm::script::ir_builder::IRBuilder::Name()'],['../classtvm_1_1tirx_1_1ExecScopeNode.html#af8d4a624f10d47b51cab9684568a9a59',1,'tvm::tirx::ExecScopeNode::name()'],['../classtvm_1_1tirx_1_1BufferVar.html#ad39f8ce414e817d0c19ecbd9c27b5585',1,'tvm::tirx::BufferVar::name()']]],
   ['name_5fhint_1',['name_hint',['../classtvm_1_1relax_1_1VarPatternNode.html#a188e22607ce39c1e68a5f9bc8abcb275',1,'tvm::relax::VarPatternNode']]],
   ['name_5fsupply_2',['name_supply',['../classtvm_1_1relax_1_1BlockBuilderNode.html#a8bad9475833a0f69b003945b1b4bd42c',1,'tvm::relax::BlockBuilderNode']]],
   ['nametobinding_3',['NameToBinding',['../namespacetvm_1_1relax.html#a869498bd902b6cfe9a04ccc83460337b',1,'tvm::relax']]],
@@ -8,7 +8,7 @@ var searchData=
   ['nd_5fmem_5falloc_5fwith_5fscope_5',['nd_mem_alloc_with_scope',['../namespacetvm_1_1tirx_1_1builtin.html#a51c355988f5305946c0fbc0fbf132e23',1,'tvm::tirx::builtin']]],
   ['ndim_6',['ndim',['../classtvm_1_1tirx_1_1SLayout.html#a2df0ceafa6dad9655f0a845ea2bf7f6e',1,'tvm::tirx::SLayout::ndim()'],['../classtvm_1_1te_1_1Tensor.html#a7c8d978e9905bb0f0f88226d4f5cbe7a',1,'tvm::te::Tensor::ndim()']]],
   ['ndim_5fprimal_7',['ndim_primal',['../classtvm_1_1tirx_1_1SLayout.html#a6bbc749814d2322d24c618ae7f932b51',1,'tvm::tirx::SLayout']]],
-  ['ne_8',['NE',['../classtvm_1_1tirx_1_1NE.html#a6a8e5276dcaaab7b6ea843a63f1cc968',1,'tvm::tirx::NE']]],
+  ['ne_8',['NE',['../classtvm_1_1prim_1_1NE.html#a401ced8f3f34133ab15fe4ad301621ee',1,'tvm::prim::NE']]],
   ['nearbyint_9',['nearbyint',['../namespacetvm.html#ae7826d26d74304ff31ad2cbf278b772c',1,'tvm']]],
   ['needsetdevice_10',['NeedSetDevice',['../classtvm_1_1runtime_1_1DeviceAPI.html#a04a11f5fc72ad905880f639e5a7a4bd5',1,'tvm::runtime::DeviceAPI']]],
   ['neg_11',['neg',['../namespacetvm.html#a5cd85b156fb31f75f91c8a5c012f8a66',1,'tvm']]],
@@ -28,7 +28,7 @@ var searchData=
   ['normalizeitermaptoexpr_25',['NormalizeIterMapToExpr',['../namespacetvm_1_1arith.html#a5ec2f0c15f6e42cc49a414146b39d0b5',1,'tvm::arith']]],
   ['normalizeseed_26',['NormalizeSeed',['../classtvm_1_1s__tir_1_1LinearCongruentialEngine.html#ab07cbe9c8814d657fc97a57c0f533e96',1,'tvm::s_tir::LinearCongruentialEngine']]],
   ['normalizetoitersum_27',['NormalizeToIterSum',['../namespacetvm_1_1arith.html#a128e1cc00a83b72bb2614747e5089c3c',1,'tvm::arith']]],
-  ['not_28',['Not',['../classtvm_1_1tirx_1_1Not.html#a2d8d7abf11aa4a9bd8435b3d5a1ad56b',1,'tvm::tirx::Not']]],
+  ['not_28',['Not',['../classtvm_1_1prim_1_1Not.html#ad05484af2b03264e08bbed952f2084f8',1,'tvm::prim::Not']]],
   ['not_5fequal_29',['not_equal',['../namespacetvm_1_1topi.html#acf85f1933d26f50a870da67925c7e069',1,'tvm::topi::not_equal()'],['../namespacetvm.html#ac3932d85fd31819eae6a80841296af51',1,'tvm::not_equal()'],['../namespacetvm_1_1topi.html#a23bd66c06c282d7eea39108d503f95a8',1,'tvm::topi::not_equal(const tvm::PrimExpr &amp;a, const tvm::PrimExpr &amp;b)'],['../namespacetvm_1_1topi.html#a947dbec698a5329b6fcb68d5822d08dc',1,'tvm::topi::not_equal(const tvm::te::Tensor &amp;A, const tvm::te::Tensor &amp;B, std::string name=&quot;T_&quot; &quot;not_equal&quot;, std::string tag=kBroadcast)'],['../namespacetvm_1_1topi.html#a3428ced7efeeafb68adc69efbb077ce2',1,'tvm::topi::not_equal(const tvm::te::Tensor &amp;A, const tvm::PrimExpr &amp;B, std::string name=&quot;T_&quot; &quot;not_equal&quot;, std::string tag=kElementWise)']]],
   ['nothing_30',['Nothing',['../classtvm_1_1arith_1_1IntSet.html#a9c2f6e224e86669e9552b4d481ad65ea',1,'tvm::arith::IntSet']]],
   ['notifyrunnerresults_31',['notifyrunnerresults',['../classtvm_1_1s__tir_1_1meta__schedule_1_1PySearchStrategyNode.html#a2767ae2b8f823408dd5d25bf09cac196',1,'tvm::s_tir::meta_schedule::PySearchStrategyNode::NotifyRunnerResults()'],['../classtvm_1_1s__tir_1_1meta__schedule_1_1SearchStrategyNode.html#a4669f79cac5246ba2ae4cb3a526aa92c',1,'tvm::s_tir::meta_schedule::SearchStrategyNode::NotifyRunnerResults()']]],

@@ -1,6 +1,6 @@
 var searchData=
 [
-  ['lanes_0',['lanes',['../classtvm_1_1tirx_1_1BroadcastNode.html#aec0f3aa5855b068c50f0bd7440f211a4',1,'tvm::tirx::BroadcastNode::lanes'],['../classtvm_1_1tirx_1_1RampNode.html#a27441120695dd751135eb74fd430c9dc',1,'tvm::tirx::RampNode::lanes']]],
+  ['lanes_0',['lanes',['../classtvm_1_1prim_1_1BroadcastNode.html#afdbe8ca9a254f4c4cac09deb6cffcb4d',1,'tvm::prim::BroadcastNode::lanes'],['../classtvm_1_1prim_1_1RampNode.html#a4aaa66a8fa9c8da7db394a278019164e',1,'tvm::prim::RampNode::lanes']]],
   ['largest_1',['largest',['../structtvm_1_1relax_1_1TopKAttrs.html#af3ca4842445d70b75fb0bcdafe7f2e65',1,'tvm::relax::TopKAttrs']]],
   ['latency_5fms_2',['latency_ms',['../classtvm_1_1s__tir_1_1meta__schedule_1_1TaskRecordNode.html#adae5eb090e20a9b2d8ba4c5a4e050453',1,'tvm::s_tir::meta_schedule::TaskRecordNode']]],
   ['launch_5fparams_3',['launch_params',['../classtvm_1_1tirx_1_1DispatchContextNode.html#a6172a46a868471adedcc728ad26181c7',1,'tvm::tirx::DispatchContextNode']]],
@@ -8,7 +8,7 @@ var searchData=
   ['layout_5ffree_5fbuffers_5',['layout_free_buffers',['../namespacetvm_1_1s__tir_1_1attr.html#a2ffe68a1c0a01b9192a1d13552a96962',1,'tvm::s_tir::attr']]],
   ['layout_5ftransforms_6',['layout_transforms',['../namespacetvm_1_1s__tir_1_1attr.html#a76b24bf1daf352c495e5bc86e7b8d8ff',1,'tvm::s_tir::attr']]],
   ['left_7',['left',['../classtvm_1_1relax_1_1AndPatternNode.html#a2b62f20e50ead225c897eef987682b8a',1,'tvm::relax::AndPatternNode::left'],['../classtvm_1_1relax_1_1OrPatternNode.html#a39487f599d873167ccd9435bcdd35bea',1,'tvm::relax::OrPatternNode::left']]],
-  ['lhs_8',['lhs',['../classtvm_1_1tirx_1_1CommReducerNode.html#acafdbc13bf30258aa9223fee3af945c0',1,'tvm::tirx::CommReducerNode::lhs'],['../classtvm_1_1script_1_1printer_1_1ScopeDocNode.html#a9237edc6233763c2092893e4f37b89cd',1,'tvm::script::printer::ScopeDocNode::lhs'],['../classtvm_1_1script_1_1printer_1_1ForDocNode.html#a4d379635b6557930395ca0e8463a8449',1,'tvm::script::printer::ForDocNode::lhs'],['../classtvm_1_1script_1_1printer_1_1AssignDocNode.html#a77d29bfe645e6120ff1b94fb53f67f5c',1,'tvm::script::printer::AssignDocNode::lhs']]],
+  ['lhs_8',['lhs',['../classtvm_1_1te_1_1CommReducerNode.html#a3dadd87c62ddfcdad15b147411e06e82',1,'tvm::te::CommReducerNode::lhs'],['../classtvm_1_1script_1_1printer_1_1ScopeDocNode.html#a9237edc6233763c2092893e4f37b89cd',1,'tvm::script::printer::ScopeDocNode::lhs'],['../classtvm_1_1script_1_1printer_1_1ForDocNode.html#a4d379635b6557930395ca0e8463a8449',1,'tvm::script::printer::ForDocNode::lhs'],['../classtvm_1_1script_1_1printer_1_1AssignDocNode.html#a77d29bfe645e6120ff1b94fb53f67f5c',1,'tvm::script::printer::AssignDocNode::lhs']]],
   ['line_9',['line',['../classtvm_1_1SpanNode.html#a6890bb225890f64611e6f77a401ee617',1,'tvm::SpanNode']]],
   ['line_5fmap_10',['line_map',['../classtvm_1_1SourceNode.html#a34f2c9047c34df59043c68c2359b9768',1,'tvm::SourceNode']]],
   ['local_5fstage_11',['local_stage',['../namespacetvm_1_1s__tir_1_1attr.html#a30fcc7a5a518775c76610bf95c7b6fe5',1,'tvm::s_tir::attr']]],

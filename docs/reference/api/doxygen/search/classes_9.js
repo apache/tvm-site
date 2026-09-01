@@ -10,11 +10,11 @@ var searchData=
   ['layout_7',['Layout',['../classtvm_1_1tirx_1_1Layout.html',1,'tvm::tirx']]],
   ['layoutnode_8',['LayoutNode',['../classtvm_1_1tirx_1_1LayoutNode.html',1,'tvm::tirx']]],
   ['layouttransformattrs_9',['LayoutTransformAttrs',['../structtvm_1_1relax_1_1LayoutTransformAttrs.html',1,'tvm::relax']]],
-  ['le_10',['LE',['../classtvm_1_1tirx_1_1LE.html',1,'tvm::tirx']]],
+  ['le_10',['LE',['../classtvm_1_1prim_1_1LE.html',1,'tvm::prim']]],
   ['leakyreluattrs_11',['LeakyReluAttrs',['../structtvm_1_1relax_1_1LeakyReluAttrs.html',1,'tvm::relax']]],
-  ['lenode_12',['LENode',['../structtvm_1_1tirx_1_1LENode.html',1,'tvm::tirx']]],
-  ['let_13',['Let',['../classtvm_1_1tirx_1_1Let.html',1,'tvm::tirx']]],
-  ['letnode_14',['LetNode',['../classtvm_1_1tirx_1_1LetNode.html',1,'tvm::tirx']]],
+  ['lenode_12',['LENode',['../structtvm_1_1prim_1_1LENode.html',1,'tvm::prim']]],
+  ['let_13',['Let',['../classtvm_1_1prim_1_1Let.html',1,'tvm::prim']]],
+  ['letnode_14',['LetNode',['../classtvm_1_1prim_1_1LetNode.html',1,'tvm::prim']]],
   ['linearcongruentialengine_15',['LinearCongruentialEngine',['../classtvm_1_1s__tir_1_1LinearCongruentialEngine.html',1,'tvm::s_tir']]],
   ['listdoc_16',['ListDoc',['../classtvm_1_1script_1_1printer_1_1ListDoc.html',1,'tvm::script::printer']]],
   ['listdocnode_17',['ListDocNode',['../classtvm_1_1script_1_1printer_1_1ListDocNode.html',1,'tvm::script::printer']]],
@@ -22,6 +22,6 @@ var searchData=
   ['literaldocnode_19',['LiteralDocNode',['../classtvm_1_1script_1_1printer_1_1LiteralDocNode.html',1,'tvm::script::printer']]],
   ['looprv_20',['LoopRV',['../classtvm_1_1s__tir_1_1LoopRV.html',1,'tvm::s_tir']]],
   ['looprvnode_21',['LoopRVNode',['../classtvm_1_1s__tir_1_1LoopRVNode.html',1,'tvm::s_tir']]],
-  ['lt_22',['LT',['../classtvm_1_1tirx_1_1LT.html',1,'tvm::tirx']]],
-  ['ltnode_23',['LTNode',['../classtvm_1_1tirx_1_1LTNode.html',1,'tvm::tirx']]]
+  ['lt_22',['LT',['../classtvm_1_1prim_1_1LT.html',1,'tvm::prim']]],
+  ['ltnode_23',['LTNode',['../classtvm_1_1prim_1_1LTNode.html',1,'tvm::prim']]]
 ];

@@ -2,8 +2,8 @@ var searchData=
 [
   ['gatherelementsattrs_0',['GatherElementsAttrs',['../structtvm_1_1relax_1_1GatherElementsAttrs.html',1,'tvm::relax']]],
   ['gatherndattrs_1',['GatherNDAttrs',['../structtvm_1_1relax_1_1GatherNDAttrs.html',1,'tvm::relax']]],
-  ['ge_2',['GE',['../classtvm_1_1tirx_1_1GE.html',1,'tvm::tirx']]],
-  ['genode_3',['GENode',['../classtvm_1_1tirx_1_1GENode.html',1,'tvm::tirx']]],
+  ['ge_2',['GE',['../classtvm_1_1prim_1_1GE.html',1,'tvm::prim']]],
+  ['genode_3',['GENode',['../classtvm_1_1prim_1_1GENode.html',1,'tvm::prim']]],
   ['getvalidcountsattrs_4',['GetValidCountsAttrs',['../structtvm_1_1relax_1_1GetValidCountsAttrs.html',1,'tvm::relax']]],
   ['globalinfo_5',['GlobalInfo',['../classtvm_1_1GlobalInfo.html',1,'tvm']]],
   ['globalinfonode_6',['GlobalInfoNode',['../classtvm_1_1GlobalInfoNode.html',1,'tvm']]],
@@ -13,6 +13,6 @@ var searchData=
   ['globalvarpatternnode_10',['GlobalVarPatternNode',['../classtvm_1_1relax_1_1GlobalVarPatternNode.html',1,'tvm::relax']]],
   ['gridsampleattrs_11',['GridSampleAttrs',['../structtvm_1_1relax_1_1GridSampleAttrs.html',1,'tvm::relax']]],
   ['groupnormattrs_12',['GroupNormAttrs',['../structtvm_1_1relax_1_1GroupNormAttrs.html',1,'tvm::relax']]],
-  ['gt_13',['GT',['../classtvm_1_1tirx_1_1GT.html',1,'tvm::tirx']]],
-  ['gtnode_14',['GTNode',['../classtvm_1_1tirx_1_1GTNode.html',1,'tvm::tirx']]]
+  ['gt_13',['GT',['../classtvm_1_1prim_1_1GT.html',1,'tvm::prim']]],
+  ['gtnode_14',['GTNode',['../classtvm_1_1prim_1_1GTNode.html',1,'tvm::prim']]]
 ];

@@ -1,11 +1,11 @@
 var searchData=
 [
-  ['ramp_0',['Ramp',['../classtvm_1_1tirx_1_1Ramp.html',1,'tvm::tirx']]],
-  ['rampnode_1',['RampNode',['../classtvm_1_1tirx_1_1RampNode.html',1,'tvm::tirx']]],
+  ['ramp_0',['Ramp',['../classtvm_1_1prim_1_1Ramp.html',1,'tvm::prim']]],
+  ['rampnode_1',['RampNode',['../classtvm_1_1prim_1_1RampNode.html',1,'tvm::prim']]],
   ['range_2',['Range',['../classtvm_1_1Range.html',1,'tvm']]],
   ['rangenode_3',['RangeNode',['../classtvm_1_1RangeNode.html',1,'tvm']]],
-  ['reduce_4',['Reduce',['../classtvm_1_1tirx_1_1Reduce.html',1,'tvm::tirx']]],
-  ['reducenode_5',['ReduceNode',['../classtvm_1_1tirx_1_1ReduceNode.html',1,'tvm::tirx']]],
+  ['reduce_4',['Reduce',['../classtvm_1_1te_1_1Reduce.html',1,'tvm::te']]],
+  ['reducenode_5',['ReduceNode',['../classtvm_1_1te_1_1ReduceNode.html',1,'tvm::te']]],
   ['relaxframe_6',['RelaxFrame',['../classtvm_1_1script_1_1ir__builder_1_1relax_1_1RelaxFrame.html',1,'tvm::script::ir_builder::relax']]],
   ['relaxframenode_7',['RelaxFrameNode',['../classtvm_1_1script_1_1ir__builder_1_1relax_1_1RelaxFrameNode.html',1,'tvm::script::ir_builder::relax']]],
   ['repeatattrs_8',['RepeatAttrs',['../structtvm_1_1relax_1_1RepeatAttrs.html',1,'tvm::relax']]],

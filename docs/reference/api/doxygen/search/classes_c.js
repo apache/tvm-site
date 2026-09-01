@@ -16,8 +16,8 @@ var searchData=
   ['opnode_13',['OpNode',['../classtvm_1_1OpNode.html',1,'tvm']]],
   ['opregentry_14',['OpRegEntry',['../classtvm_1_1OpRegEntry.html',1,'tvm']]],
   ['optionentry_15',['OptionEntry',['../structtvm_1_1ir_1_1ConfigSchema_1_1OptionEntry.html',1,'tvm::ir::ConfigSchema']]],
-  ['or_16',['Or',['../classtvm_1_1tirx_1_1Or.html',1,'tvm::tirx']]],
-  ['ornode_17',['OrNode',['../classtvm_1_1tirx_1_1OrNode.html',1,'tvm::tirx']]],
+  ['or_16',['Or',['../classtvm_1_1prim_1_1Or.html',1,'tvm::prim']]],
+  ['ornode_17',['OrNode',['../classtvm_1_1prim_1_1OrNode.html',1,'tvm::prim']]],
   ['orpattern_18',['OrPattern',['../classtvm_1_1relax_1_1OrPattern.html',1,'tvm::relax']]],
   ['orpatternnode_19',['OrPatternNode',['../classtvm_1_1relax_1_1OrPatternNode.html',1,'tvm::relax']]]
 ];

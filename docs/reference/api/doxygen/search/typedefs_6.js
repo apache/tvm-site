@@ -31,7 +31,7 @@ var searchData=
   ['fjoinrunningtask_28',['FJoinRunningTask',['../classtvm_1_1s__tir_1_1meta__schedule_1_1PyTaskSchedulerNode.html#a1fd81228b53c9180784a00cb827f499f',1,'tvm::s_tir::meta_schedule::PyTaskSchedulerNode']]],
   ['flegalize_29',['flegalize',['../namespacetvm_1_1relax.html#ad5a6ed68c50ce093ea96351e8d983ea4',1,'tvm::relax::FLegalize'],['../namespacetvm_1_1tirx.html#aba5840d0f677916170939a3b7a30223c',1,'tvm::tirx::FLegalize']]],
   ['fload_30',['FLoad',['../classtvm_1_1s__tir_1_1meta__schedule_1_1PyCostModelNode.html#afa5d83f9c76c6c7897685490db94f0d6',1,'tvm::s_tir::meta_schedule::PyCostModelNode']]],
-  ['floatimmnode_31',['FloatImmNode',['../namespacetvm_1_1tirx.html#a5f388fbda9b8b0edcce4f29b607266e4',1,'tvm::tirx']]],
+  ['floatimmnode_31',['FloatImmNode',['../namespacetvm_1_1prim.html#a63723ec3c7a4528a8107a667204d78da',1,'tvm::prim']]],
   ['flowerbuiltin_32',['FLowerBuiltin',['../namespacetvm_1_1relax.html#ae51243f350e2459b5dfc51741202b0d2',1,'tvm::relax']]],
   ['flowerintrinsic_33',['FLowerIntrinsic',['../namespacetvm_1_1tirx.html#a0c1f44abdaf5b9ea2bef638dcc66865a',1,'tvm::tirx']]],
   ['fmakeforloop_34',['FMakeForLoop',['../classtvm_1_1script_1_1ir__builder_1_1tirx_1_1ForFrameNode.html#a25e776fb48271db56907c6e531bc25e9',1,'tvm::script::ir_builder::tirx::ForFrameNode']]],
