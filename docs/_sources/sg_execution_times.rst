@@ -6,7 +6,7 @@
 
 Computation times
 =================
-**00:24.591** total execution time for 16 files **from all galleries**:
+**00:24.380** total execution time for 16 files **from all galleries**:
 
 .. container::
 
@@ -33,40 +33,40 @@ Computation times
      - Time
      - Mem (MB)
    * - :ref:`sphx_glr_how_to_tutorials_optimize_llm.py` (``../how_to/tutorials/optimize_llm.py``)
-     - 00:11.905
+     - 00:11.855
      - 0.0
    * - :ref:`sphx_glr_get_started_tutorials_ir_module.py` (``../get_started/tutorials/ir_module.py``)
-     - 00:05.981
+     - 00:05.874
      - 0.0
    * - :ref:`sphx_glr_how_to_tutorials_import_model.py` (``../how_to/tutorials/import_model.py``)
-     - 00:03.658
+     - 00:03.645
      - 0.0
    * - :ref:`sphx_glr_how_to_tutorials_e2e_opt_model.py` (``../how_to/tutorials/e2e_opt_model.py``)
-     - 00:00.649
+     - 00:00.620
      - 0.0
    * - :ref:`sphx_glr_how_to_tutorials_cross_compilation_and_rpc.py` (``../how_to/tutorials/cross_compilation_and_rpc.py``)
-     - 00:00.574
+     - 00:00.569
      - 0.0
    * - :ref:`sphx_glr_deep_dive_tensor_ir_tutorials_tir_creation.py` (``../deep_dive/tensor_ir/tutorials/tir_creation.py``)
      - 00:00.406
      - 0.0
    * - :ref:`sphx_glr_deep_dive_tensor_ir_tutorials_tir_transformation.py` (``../deep_dive/tensor_ir/tutorials/tir_transformation.py``)
-     - 00:00.372
+     - 00:00.371
      - 0.0
    * - :ref:`sphx_glr_how_to_tutorials_customize_opt.py` (``../how_to/tutorials/customize_opt.py``)
-     - 00:00.347
+     - 00:00.346
      - 0.0
    * - :ref:`sphx_glr_deep_dive_relax_tutorials_relax_creation.py` (``../deep_dive/relax/tutorials/relax_creation.py``)
-     - 00:00.226
+     - 00:00.225
      - 0.0
    * - :ref:`sphx_glr_get_started_tutorials_quick_start.py` (``../get_started/tutorials/quick_start.py``)
-     - 00:00.190
+     - 00:00.189
      - 0.0
    * - :ref:`sphx_glr_deep_dive_tensor_ir_tutorials_dlight_gpu_scheduling.py` (``../deep_dive/tensor_ir/tutorials/dlight_gpu_scheduling.py``)
-     - 00:00.155
+     - 00:00.154
      - 0.0
    * - :ref:`sphx_glr_deep_dive_relax_tutorials_relax_transformation.py` (``../deep_dive/relax/tutorials/relax_transformation.py``)
-     - 00:00.068
+     - 00:00.067
      - 0.0
    * - :ref:`sphx_glr_how_to_tutorials_bring_your_own_codegen.py` (``../how_to/tutorials/bring_your_own_codegen.py``)
      - 00:00.045
