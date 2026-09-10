@@ -178,7 +178,7 @@ var searchData=
   ['docstringdocnode_175',['DocStringDocNode',['../classtvm_1_1script_1_1printer_1_1DocStringDocNode.html',1,'tvm::script::printer']]],
   ['doctopythonscript_176',['DocToPythonScript',['../namespacetvm_1_1script_1_1printer.html#a28b97fd92649c5f72f1ae6e2bfbd7f3e',1,'tvm::script::printer']]],
   ['dom_177',['dom',['../classtvm_1_1tirx_1_1IterVarNode.html#a04dd1aa3cf634795e2553e4cf191f761',1,'tvm::tirx::IterVarNode']]],
-  ['domaintouched_178',['DomainTouched',['../namespacetvm_1_1arith.html#af9aba426afff3f31a93c8dde9e846738',1,'tvm::arith']]],
+  ['domaintouched_178',['DomainTouched',['../namespacetvm_1_1s__tir.html#ac164422318b3d299e31bea2cb6b7f5a8',1,'tvm::s_tir']]],
   ['doms_179',['doms',['../classtvm_1_1script_1_1ir__builder_1_1tirx_1_1ForFrameNode.html#a7d5fa09e4fd15a21d1114a890ef86b4b',1,'tvm::script::ir_builder::tirx::ForFrameNode']]],
   ['done_180',['Done',['../classtvm_1_1s__tir_1_1meta__schedule_1_1RunnerFutureNode.html#a6ba10da4f03f0c9f03a24c7f6987f8ab',1,'tvm::s_tir::meta_schedule::RunnerFutureNode']]],
   ['double_5fbuffer_5fscope_181',['double_buffer_scope',['../namespacetvm_1_1s__tir_1_1attr.html#af0587d33514bd1bb79c574887d3bcd7b',1,'tvm::s_tir::attr']]],

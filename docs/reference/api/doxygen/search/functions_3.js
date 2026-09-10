@@ -92,7 +92,7 @@ var searchData=
   ['docommreduce_89',['DoCommReduce',['../namespacetvm_1_1topi.html#a01c4819e8164ca1ca3c724455b70b300',1,'tvm::topi']]],
   ['docstringdoc_90',['DocStringDoc',['../classtvm_1_1script_1_1printer_1_1DocStringDoc.html#a0606bf953ef730bf7e89e0ea093cbe02',1,'tvm::script::printer::DocStringDoc']]],
   ['doctopythonscript_91',['DocToPythonScript',['../namespacetvm_1_1script_1_1printer.html#a28b97fd92649c5f72f1ae6e2bfbd7f3e',1,'tvm::script::printer']]],
-  ['domaintouched_92',['DomainTouched',['../namespacetvm_1_1arith.html#af9aba426afff3f31a93c8dde9e846738',1,'tvm::arith']]],
+  ['domaintouched_92',['DomainTouched',['../namespacetvm_1_1s__tir.html#ac164422318b3d299e31bea2cb6b7f5a8',1,'tvm::s_tir']]],
   ['done_93',['Done',['../classtvm_1_1s__tir_1_1meta__schedule_1_1RunnerFutureNode.html#a6ba10da4f03f0c9f03a24c7f6987f8ab',1,'tvm::s_tir::meta_schedule::RunnerFutureNode']]],
   ['dp4a_94',['dp4a',['../namespacetvm_1_1tirx_1_1builtin.html#aaaf6c3c481e9441efe898d664f2b3022',1,'tvm::tirx::builtin']]],
   ['dref_95',['DRef',['../classtvm_1_1runtime_1_1DRef.html#a2a3f86bbdd40891b8e4cb3cdc1549b7f',1,'tvm::runtime::DRef']]],
