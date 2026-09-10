@@ -6,7 +6,7 @@
 
 Computation times
 =================
-**00:20.787** total execution time for 16 files **from all galleries**:
+**00:20.717** total execution time for 16 files **from all galleries**:
 
 .. container::
 
@@ -33,34 +33,34 @@ Computation times
      - Time
      - Mem (MB)
    * - :ref:`sphx_glr_how_to_tutorials_optimize_llm.py` (``../how_to/tutorials/optimize_llm.py``)
-     - 00:09.555
+     - 00:09.544
      - 0.0
    * - :ref:`sphx_glr_get_started_tutorials_ir_module.py` (``../get_started/tutorials/ir_module.py``)
-     - 00:05.192
+     - 00:05.218
      - 0.0
    * - :ref:`sphx_glr_how_to_tutorials_import_model.py` (``../how_to/tutorials/import_model.py``)
-     - 00:03.352
+     - 00:03.354
      - 0.0
    * - :ref:`sphx_glr_how_to_tutorials_e2e_opt_model.py` (``../how_to/tutorials/e2e_opt_model.py``)
-     - 00:00.719
+     - 00:00.644
      - 0.0
    * - :ref:`sphx_glr_how_to_tutorials_cross_compilation_and_rpc.py` (``../how_to/tutorials/cross_compilation_and_rpc.py``)
-     - 00:00.483
+     - 00:00.482
      - 0.0
    * - :ref:`sphx_glr_deep_dive_tensor_ir_tutorials_tir_transformation.py` (``../deep_dive/tensor_ir/tutorials/tir_transformation.py``)
-     - 00:00.312
+     - 00:00.308
      - 0.0
    * - :ref:`sphx_glr_deep_dive_tensor_ir_tutorials_tir_creation.py` (``../deep_dive/tensor_ir/tutorials/tir_creation.py``)
-     - 00:00.309
+     - 00:00.304
      - 0.0
    * - :ref:`sphx_glr_how_to_tutorials_customize_opt.py` (``../how_to/tutorials/customize_opt.py``)
-     - 00:00.293
+     - 00:00.297
      - 0.0
    * - :ref:`sphx_glr_deep_dive_relax_tutorials_relax_creation.py` (``../deep_dive/relax/tutorials/relax_creation.py``)
-     - 00:00.174
+     - 00:00.169
      - 0.0
    * - :ref:`sphx_glr_get_started_tutorials_quick_start.py` (``../get_started/tutorials/quick_start.py``)
-     - 00:00.160
+     - 00:00.159
      - 0.0
    * - :ref:`sphx_glr_deep_dive_tensor_ir_tutorials_dlight_gpu_scheduling.py` (``../deep_dive/tensor_ir/tutorials/dlight_gpu_scheduling.py``)
      - 00:00.126
@@ -69,7 +69,7 @@ Computation times
      - 00:00.054
      - 0.0
    * - :ref:`sphx_glr_how_to_tutorials_bring_your_own_codegen.py` (``../how_to/tutorials/bring_your_own_codegen.py``)
-     - 00:00.041
+     - 00:00.042
      - 0.0
    * - :ref:`sphx_glr_deep_dive_tensor_ir_tutorials_meta_schedule.py` (``../deep_dive/tensor_ir/tutorials/meta_schedule.py``)
      - 00:00.008
