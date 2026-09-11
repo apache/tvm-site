@@ -3,7 +3,7 @@ var searchData=
   ['warpgroupid_0',['WarpgroupId',['../namespacetvm_1_1script_1_1ir__builder_1_1tirx.html#ae196bded710edd1c3b8bf45c376255e4',1,'tvm::script::ir_builder::tirx']]],
   ['warpid_1',['WarpId',['../namespacetvm_1_1script_1_1ir__builder_1_1tirx.html#a100742007467deb0c3516fef49880e0c',1,'tvm::script::ir_builder::tirx']]],
   ['wellformed_2',['WellFormed',['../namespacetvm_1_1relax.html#ab277242c7f49d3ca1924729ac3b0d99b',1,'tvm::relax']]],
-  ['where_3',['where',['../namespacetvm_1_1script_1_1ir__builder_1_1tirx.html#abedcb7f577079ad0798385f563037f01',1,'tvm::script::ir_builder::tirx::Where()'],['../namespacetvm_1_1topi.html#af011847b6e7f72f1bec25eee05c80590',1,'tvm::topi::where()']]],
+  ['where_3',['where',['../namespacetvm_1_1topi.html#af011847b6e7f72f1bec25eee05c80590',1,'tvm::topi::where()'],['../namespacetvm_1_1script_1_1ir__builder_1_1tirx.html#abedcb7f577079ad0798385f563037f01',1,'tvm::script::ir_builder::tirx::Where(PrimExpr predicate)']]],
   ['while_4',['while',['../namespacetvm_1_1script_1_1ir__builder_1_1tirx.html#a021a4b73625c5731ab93400404b6505e',1,'tvm::script::ir_builder::tirx::While()'],['../classtvm_1_1tirx_1_1While.html#ab0b5efffa898af6690bfbd4d3956c5d1',1,'tvm::tirx::While::While()']]],
   ['whiledoc_5',['WhileDoc',['../classtvm_1_1script_1_1printer_1_1WhileDoc.html#aed5d0c9693c8137a909e9c3d9836ef28',1,'tvm::script::printer::WhileDoc']]],
   ['whileframe_6',['WhileFrame',['../classtvm_1_1script_1_1ir__builder_1_1tirx_1_1WhileFrame.html#a20128982bbfec3e6d71b1fe5ec620754',1,'tvm::script::ir_builder::tirx::WhileFrame']]],
