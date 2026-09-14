@@ -30,7 +30,7 @@ var searchData=
   ['calltirrewrite_27',['CallTIRRewrite',['../namespacetvm_1_1relax_1_1transform.html#a1811e8bbe0369530605d02e332bed5dc',1,'tvm::relax::transform']]],
   ['calltirwithgradattrs_28',['CallTIRWithGradAttrs',['../structtvm_1_1relax_1_1CallTIRWithGradAttrs.html',1,'tvm::relax']]],
   ['callwithpacked_29',['CallWithPacked',['../classtvm_1_1runtime_1_1SessionObj.html#a10bd253529384336ccf3aab3ece98882',1,'tvm::runtime::SessionObj']]],
-  ['candispatch_30',['CanDispatch',['../classtvm_1_1ObjectFunctor_3_01R_07NodeArg_00_01Args_8_8_8_08_4.html#ae2fcf1e3221fbfb652fb9a83138c9e37',1,'tvm::ObjectFunctor&lt; R(NodeArg, Args...)&gt;']]],
+  ['candispatch_30',['CanDispatch',['../classtvm_1_1ObjectFunctor_3_01R_07NodeArg_00_01Args_8_8_8_08_4.html#a429d54d3cc2ef20d030aad59a92f7550',1,'tvm::ObjectFunctor&lt; R(NodeArg, Args...)&gt;']]],
   ['canonical_5fsimplify_31',['canonical_simplify',['../classtvm_1_1arith_1_1AnalyzerObj.html#afcf97e818f5778d64ceb6e5e0fa59de7',1,'tvm::arith::AnalyzerObj']]],
   ['canonicalize_32',['canonicalize',['../classtvm_1_1tirx_1_1TileLayoutNode.html#a9a5633698014107907a3541e7a101395',1,'tvm::tirx::TileLayoutNode::Canonicalize()'],['../classtvm_1_1tirx_1_1LayoutNode.html#aa15e774c61a30dbb15ce5ac20b33d5d1',1,'tvm::tirx::LayoutNode::Canonicalize()'],['../classtvm_1_1tirx_1_1ComposeLayoutNode.html#abd45e6078e389b243744fa10ffac440f',1,'tvm::tirx::ComposeLayoutNode::Canonicalize()']]],
   ['canonicalizebindings_33',['CanonicalizeBindings',['../namespacetvm_1_1relax_1_1transform.html#aa697394f51af1181825cc5223746f18c',1,'tvm::relax::transform']]],
