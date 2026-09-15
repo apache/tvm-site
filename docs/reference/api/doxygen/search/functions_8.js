@@ -165,7 +165,7 @@ var searchData=
   ['isvoidtype_162',['IsVoidType',['../namespacetvm.html#a196edb73fc9f13d965b8de1c9287a2db',1,'tvm']]],
   ['iter_163',['Iter',['../classtvm_1_1tirx_1_1Iter.html#a3942597a5a72d4cc7579d9d7faac380b',1,'tvm::tirx::Iter']]],
   ['itermapresult_164',['IterMapResult',['../classtvm_1_1arith_1_1IterMapResult.html#a11e7d31f34d03f6d23eb1b27c00a7890',1,'tvm::arith::IterMapResult']]],
-  ['itermapsimplify_165',['IterMapSimplify',['../namespacetvm_1_1arith.html#aa379e24672a17388bfd8a83eacd261fd',1,'tvm::arith']]],
+  ['itermapsimplify_165',['IterMapSimplify',['../namespacetvm_1_1arith.html#a296c29d5d25bd5c432b99343661a2b2b',1,'tvm::arith']]],
   ['itermark_166',['IterMark',['../classtvm_1_1arith_1_1IterMark.html#a7b46a2bc2460f43e529a6fc65a0a618d',1,'tvm::arith::IterMark']]],
   ['itersplitexpr_167',['itersplitexpr',['../classtvm_1_1arith_1_1IterSplitExpr.html#a59bd2fa8d07f4ad2c4ac09c8f7004cb8',1,'tvm::arith::IterSplitExpr::IterSplitExpr(IterMark source, PrimExpr lower_factor, PrimExpr extent, PrimExpr scale)'],['../classtvm_1_1arith_1_1IterSplitExpr.html#af919631fd9bfb7726d0a867ee9f0e6f5',1,'tvm::arith::IterSplitExpr::IterSplitExpr(IterMark source, PrimExpr scale)'],['../classtvm_1_1arith_1_1IterSplitExpr.html#a754a9d8338aa2d2b5fac9e10c95c9128',1,'tvm::arith::IterSplitExpr::IterSplitExpr(IterMark source)']]],
   ['itersumexpr_168',['IterSumExpr',['../classtvm_1_1arith_1_1IterSumExpr.html#a7f2c1a4999f2fa2280197cea9c6142d3',1,'tvm::arith::IterSumExpr']]],

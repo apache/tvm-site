@@ -66,9 +66,10 @@ var searchData=
   ['use_5fdefault_5ftype_5ftraits_5fv_3c_20intimm_20_3e_63',['use_default_type_traits_v&lt; IntImm &gt;',['../namespacetvm_1_1ffi.html#affc7f0cfe0516ec3e484c2fe040e1b1c',1,'tvm::ffi']]],
   ['use_5fdefault_5ftype_5ftraits_5fv_3c_20primexpr_20_3e_64',['use_default_type_traits_v&lt; PrimExpr &gt;',['../namespacetvm_1_1ffi.html#a3953ced274a99f70b1ab2cd282f266e2',1,'tvm::ffi']]],
   ['use_5fdefault_5ftype_5ftraits_5fv_3c_20primtype_20_3e_65',['use_default_type_traits_v&lt; PrimType &gt;',['../namespacetvm_1_1ffi.html#a919f86f3cbe6b3aeae34c3a3bafe98a4',1,'tvm::ffi']]],
-  ['use_5fdefault_5ftype_5ftraits_5fv_3c_20typedexpr_3c_20expectedtype_20_3e_20_3e_66',['use_default_type_traits_v&lt; TypedExpr&lt; ExpectedType &gt; &gt;',['../namespacetvm_1_1ffi.html#a989ab76251427253427563ab92948640',1,'tvm::ffi']]],
-  ['useassumetoreducebranches_67',['UseAssumeToReduceBranches',['../namespacetvm_1_1s__tir_1_1transform.html#a1d8ea88c4e1d224910925c3f499d3e4a',1,'tvm::s_tir::transform']]],
-  ['usedby_68',['usedby',['../namespacetvm_1_1relax.html#ae51bf4cd12992d277cc20eb82881ca23',1,'tvm::relax::UsedBy()'],['../classtvm_1_1relax_1_1PatternSeq.html#a701c6fd85238362bbe29f7fd26d41c35',1,'tvm::relax::PatternSeq::UsedBy(PatternSeq other, int index=-1) const'],['../classtvm_1_1relax_1_1PatternSeq.html#a9901bd20ecd194cd32825f437a4f4a42',1,'tvm::relax::PatternSeq::UsedBy']]],
-  ['usedmemory_69',['UsedMemory',['../classtvm_1_1runtime_1_1memory_1_1Allocator.html#a2c5e075e9b1ee86a6b39791e8e78683b',1,'tvm::runtime::memory::Allocator']]],
-  ['utils_2eh_70',['utils.h',['../relax_2utils_8h.html',1,'(Global Namespace)'],['../s__tir_2utils_8h.html',1,'(Global Namespace)'],['../topi_2utils_8h.html',1,'(Global Namespace)']]]
+  ['use_5fdefault_5ftype_5ftraits_5fv_3c_20primvar_20_3e_66',['use_default_type_traits_v&lt; PrimVar &gt;',['../namespacetvm_1_1ffi.html#a1b7963f2bc55e185b34b5c9ce1c20e75',1,'tvm::ffi']]],
+  ['use_5fdefault_5ftype_5ftraits_5fv_3c_20typedexpr_3c_20expectedtype_20_3e_20_3e_67',['use_default_type_traits_v&lt; TypedExpr&lt; ExpectedType &gt; &gt;',['../namespacetvm_1_1ffi.html#a989ab76251427253427563ab92948640',1,'tvm::ffi']]],
+  ['useassumetoreducebranches_68',['UseAssumeToReduceBranches',['../namespacetvm_1_1s__tir_1_1transform.html#a1d8ea88c4e1d224910925c3f499d3e4a',1,'tvm::s_tir::transform']]],
+  ['usedby_69',['usedby',['../namespacetvm_1_1relax.html#ae51bf4cd12992d277cc20eb82881ca23',1,'tvm::relax::UsedBy()'],['../classtvm_1_1relax_1_1PatternSeq.html#a701c6fd85238362bbe29f7fd26d41c35',1,'tvm::relax::PatternSeq::UsedBy(PatternSeq other, int index=-1) const'],['../classtvm_1_1relax_1_1PatternSeq.html#a9901bd20ecd194cd32825f437a4f4a42',1,'tvm::relax::PatternSeq::UsedBy']]],
+  ['usedmemory_70',['UsedMemory',['../classtvm_1_1runtime_1_1memory_1_1Allocator.html#a2c5e075e9b1ee86a6b39791e8e78683b',1,'tvm::runtime::memory::Allocator']]],
+  ['utils_2eh_71',['utils.h',['../relax_2utils_8h.html',1,'(Global Namespace)'],['../s__tir_2utils_8h.html',1,'(Global Namespace)'],['../topi_2utils_8h.html',1,'(Global Namespace)']]]
 ];

@@ -46,7 +46,7 @@ var searchData=
   ['primfuncnode_43',['PrimFuncNode',['../classtvm_1_1tirx_1_1PrimFuncNode.html',1,'tvm::tirx']]],
   ['primtype_44',['PrimType',['../classtvm_1_1PrimType.html',1,'tvm']]],
   ['primtypenode_45',['PrimTypeNode',['../classtvm_1_1PrimTypeNode.html',1,'tvm']]],
-  ['primvar_46',['PrimVar',['../classtvm_1_1tirx_1_1PrimVar.html',1,'tvm::tirx']]],
+  ['primvar_46',['PrimVar',['../classtvm_1_1PrimVar.html',1,'tvm']]],
   ['printerconfig_47',['PrinterConfig',['../classtvm_1_1PrinterConfig.html',1,'tvm']]],
   ['printerconfignode_48',['PrinterConfigNode',['../classtvm_1_1PrinterConfigNode.html',1,'tvm']]],
   ['profiler_49',['Profiler',['../classtvm_1_1s__tir_1_1meta__schedule_1_1Profiler.html',1,'tvm::s_tir::meta_schedule']]],

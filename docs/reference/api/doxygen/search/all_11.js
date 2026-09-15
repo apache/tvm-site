@@ -121,7 +121,7 @@ var searchData=
   ['primfuncnode_118',['PrimFuncNode',['../classtvm_1_1tirx_1_1PrimFuncNode.html',1,'tvm::tirx']]],
   ['primtype_119',['primtype',['../classtvm_1_1PrimType.html#ae89872084a876dc729f39c888167a640',1,'tvm::PrimType::PrimType(DLDataType dtype)'],['../classtvm_1_1PrimType.html#ac72302fb1ed0e2110333d57bbb2930cc',1,'tvm::PrimType::PrimType(DLDataTypeCode code, int bits, int lanes=1)'],['../classtvm_1_1PrimType.html',1,'tvm::PrimType']]],
   ['primtypenode_120',['PrimTypeNode',['../classtvm_1_1PrimTypeNode.html',1,'tvm']]],
-  ['primvar_121',['primvar',['../classtvm_1_1tirx_1_1PrimVar.html#af830c6fe3711e7448021363b2a72fb42',1,'tvm::tirx::PrimVar::PrimVar()'],['../classtvm_1_1tirx_1_1PrimVar.html',1,'tvm::tirx::PrimVar'],['../classtvm_1_1tirx_1_1PrimVar.html#a261fadf698ad629969ef91371d7d6b00',1,'tvm::tirx::PrimVar::PrimVar()']]],
+  ['primvar_121',['primvar',['../classtvm_1_1PrimVar.html#aa305006cf8b7b53cc6b4fa128cd71155',1,'tvm::PrimVar::PrimVar()'],['../classtvm_1_1PrimVar.html',1,'tvm::PrimVar'],['../classtvm_1_1PrimVar.html#aa900847e843f2f353dc0441595c387e0',1,'tvm::PrimVar::PrimVar()']]],
   ['print_5fbuffer_122',['print_buffer',['../namespacetvm_1_1tirx_1_1builtin.html#ad0651cc75056679e1f0b6bd9de8f2411',1,'tvm::tirx::builtin']]],
   ['print_5fline_5fnumbers_123',['print_line_numbers',['../classtvm_1_1PrinterConfigNode.html#a326fadb110a4356ccd783ed0e0b26733',1,'tvm::PrinterConfigNode']]],
   ['printer_2eh_124',['printer.h',['../printer_8h.html',1,'']]],

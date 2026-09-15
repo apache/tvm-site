@@ -8,5 +8,6 @@ var searchData=
   ['use_5fdefault_5ftype_5ftraits_5fv_3c_20intimm_20_3e_5',['use_default_type_traits_v&lt; IntImm &gt;',['../namespacetvm_1_1ffi.html#affc7f0cfe0516ec3e484c2fe040e1b1c',1,'tvm::ffi']]],
   ['use_5fdefault_5ftype_5ftraits_5fv_3c_20primexpr_20_3e_6',['use_default_type_traits_v&lt; PrimExpr &gt;',['../namespacetvm_1_1ffi.html#a3953ced274a99f70b1ab2cd282f266e2',1,'tvm::ffi']]],
   ['use_5fdefault_5ftype_5ftraits_5fv_3c_20primtype_20_3e_7',['use_default_type_traits_v&lt; PrimType &gt;',['../namespacetvm_1_1ffi.html#a919f86f3cbe6b3aeae34c3a3bafe98a4',1,'tvm::ffi']]],
-  ['use_5fdefault_5ftype_5ftraits_5fv_3c_20typedexpr_3c_20expectedtype_20_3e_20_3e_8',['use_default_type_traits_v&lt; TypedExpr&lt; ExpectedType &gt; &gt;',['../namespacetvm_1_1ffi.html#a989ab76251427253427563ab92948640',1,'tvm::ffi']]]
+  ['use_5fdefault_5ftype_5ftraits_5fv_3c_20primvar_20_3e_8',['use_default_type_traits_v&lt; PrimVar &gt;',['../namespacetvm_1_1ffi.html#a1b7963f2bc55e185b34b5c9ce1c20e75',1,'tvm::ffi']]],
+  ['use_5fdefault_5ftype_5ftraits_5fv_3c_20typedexpr_3c_20expectedtype_20_3e_20_3e_9',['use_default_type_traits_v&lt; TypedExpr&lt; ExpectedType &gt; &gt;',['../namespacetvm_1_1ffi.html#a989ab76251427253427563ab92948640',1,'tvm::ffi']]]
 ];
