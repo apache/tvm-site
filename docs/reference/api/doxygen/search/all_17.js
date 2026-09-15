@@ -27,7 +27,7 @@ var searchData=
   ['varremapsetexpected_24',['VarRemapSetExpected',['../classtvm_1_1ObjectMutator.html#a739cb0f0c4789b601fd613ea2e13bfe2',1,'tvm::ObjectMutator']]],
   ['vars_25',['vars',['../classtvm_1_1tirx_1_1LambdaExprNode.html#a38e5d3ceadba7e4312cdafff56fb22fd',1,'tvm::tirx::LambdaExprNode::vars'],['../classtvm_1_1script_1_1ir__builder_1_1tirx_1_1ForFrameNode.html#acd074075b8a7fa00e28106139fa3c319',1,'tvm::script::ir_builder::tirx::ForFrameNode::vars']]],
   ['varusageinfo_26',['VarUsageInfo',['../structtvm_1_1relax_1_1VarUsageInfo.html',1,'tvm::relax']]],
-  ['vdevice_27',['vdevice',['../classtvm_1_1VDevice.html',1,'tvm::VDevice'],['../classtvm_1_1relax_1_1TensorTypeNode.html#a67c8791525c1523c77126c50826aab9e',1,'tvm::relax::TensorTypeNode::vdevice'],['../classtvm_1_1VDevice.html#a37e65be8324548bfb6a74054f27ae232',1,'tvm::VDevice::VDevice()']]],
+  ['vdevice_27',['vdevice',['../classtvm_1_1VDevice.html',1,'tvm::VDevice'],['../classtvm_1_1VDevice.html#a37e65be8324548bfb6a74054f27ae232',1,'tvm::VDevice::VDevice()'],['../classtvm_1_1relax_1_1TensorTypeNode.html#a67c8791525c1523c77126c50826aab9e',1,'tvm::relax::TensorTypeNode::vdevice']]],
   ['vdevice_5fid_28',['vdevice_id',['../classtvm_1_1VDeviceNode.html#a7e9283f6b2586c56228df3672d3571dc',1,'tvm::VDeviceNode']]],
   ['vdevicenode_29',['VDeviceNode',['../classtvm_1_1VDeviceNode.html',1,'tvm']]],
   ['vector_30',['Vector',['../classtvm_1_1arith_1_1IntSet.html#a29b6f1e60f4b328fcfabc514e0c10f17',1,'tvm::arith::IntSet']]],
