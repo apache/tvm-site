@@ -106,16 +106,6 @@ Program Listing for File array.h
        return p;
      }
    
-     template <typename IterType>
-     ArrayObj* InitRange(int64_t idx, IterType first, IterType last) {
-       Any* itr = MutableBegin() + idx;
-       for (; first != last; ++first) {
-         Any ref = *first;
-         new (itr++) Any(std::move(ref));
-       }
-       return this;
-     }
-   
      static constexpr int64_t kInitSize = 4;
    
      static constexpr int64_t kIncFactor = 2;

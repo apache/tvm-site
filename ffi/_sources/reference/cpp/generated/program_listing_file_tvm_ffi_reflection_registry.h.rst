@@ -158,11 +158,11 @@ Program Listing for File registry.h
     public:
      explicit AttachFieldFlag(int32_t flag) : flag_(flag) {}
    
-     TVM_FFI_INLINE static AttachFieldFlag SEqHashDefRecursive() {
-       return AttachFieldFlag(kTVMFFIFieldFlagBitMaskSEqHashDefRecursive);
+     TVM_FFI_INLINE static AttachFieldFlag SEqHashDefPattern() {
+       return AttachFieldFlag(kTVMFFIFieldFlagBitMaskSEqHashDefPattern);
      }
-     TVM_FFI_INLINE static AttachFieldFlag SEqHashDefNonRecursive() {
-       return AttachFieldFlag(kTVMFFIFieldFlagBitMaskSEqHashDefNonRecursive);
+     TVM_FFI_INLINE static AttachFieldFlag SEqHashDefSimple() {
+       return AttachFieldFlag(kTVMFFIFieldFlagBitMaskSEqHashDefSimple);
      }
      TVM_FFI_INLINE static AttachFieldFlag SEqHashIgnore() {
        return AttachFieldFlag(kTVMFFIFieldFlagBitMaskSEqHashIgnore);
@@ -496,6 +496,8 @@ Program Listing for File registry.h
            }
          }
        }
+       // Step 4. Publish finality, which no other registered metadata exposes.
+       RegisterTypeAttrValue(type_index_, type_attr::kTypeFinal, Class::_type_final);
      }
    
      template <typename T, typename BaseClass, typename... Extra>

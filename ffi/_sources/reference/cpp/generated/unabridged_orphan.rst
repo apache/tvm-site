@@ -90,6 +90,11 @@ Files
 .. toctree::
    :maxdepth: 5
 
+   file_tvm_ffi_big_int.h.rst
+
+.. toctree::
+   :maxdepth: 5
+
    file_tvm_ffi_c_api.h.rst
 
 .. toctree::
@@ -266,6 +271,11 @@ Files
    :maxdepth: 5
 
    file_tvm_ffi_extra_structural_key.h.rst
+
+.. toctree::
+   :maxdepth: 5
+
+   file_tvm_ffi_extra_structural_mutate.h.rst
 
 .. toctree::
    :maxdepth: 5

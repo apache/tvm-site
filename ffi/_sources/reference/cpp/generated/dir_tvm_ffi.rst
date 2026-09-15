@@ -25,6 +25,7 @@ Files
 
 - :ref:`file_tvm_ffi_any.h`
 - :ref:`file_tvm_ffi_base_details.h`
+- :ref:`file_tvm_ffi_big_int.h`
 - :ref:`file_tvm_ffi_c_api.h`
 - :ref:`file_tvm_ffi_cast.h`
 - :ref:`file_tvm_ffi_device.h`

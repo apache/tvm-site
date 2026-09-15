@@ -1,0 +1,1 @@
+window.SIDEBAR_ITEMS = {"fn":["structural_map","structural_mutate"],"struct":["InplaceValue","MapValue","MutateCallbacks","MutateContext","Mutator","StructuralVarRemap"],"trait":["IntoMapper","IntoMutator","MapChainLink","MapDispatch","MutateChainLink","MutateDispatch","StructuralMutator"],"type":["CallbackMutator"]};

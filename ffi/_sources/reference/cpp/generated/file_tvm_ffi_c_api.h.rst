@@ -54,6 +54,8 @@ Included By
 
 - :ref:`file_tvm_ffi_extra_stl.h`
 
+- :ref:`file_tvm_ffi_extra_structural_mutate.h`
+
 - :ref:`file_tvm_ffi_extra_structural_visit.h`
 
 - :ref:`file_tvm_ffi_function.h`
@@ -138,6 +140,10 @@ Functions
 - :ref:`exhale_function_c__api_8h_1a63149ed43a6ecffa2146f92914c0bc7b`
 
 - :ref:`exhale_function_c__api_8h_1ac0e2d59d3a8ba7f2b32eac47b1c6fc5d`
+
+- :ref:`exhale_function_c__api_8h_1a7d1e6bea055fa1e4e9422342f8f096ac`
+
+- :ref:`exhale_function_c__api_8h_1a7306ae6d3ae66f958ce6a777a8b515fe`
 
 - :ref:`exhale_function_c__api_8h_1aa2a81275b69ba0f61ce556df85517ef9`
 
@@ -233,6 +239,8 @@ Functions
 Defines
 -------
 
+
+- :ref:`exhale_define_c__api_8h_1ae5d3f69eb7caba8077fbc18dbeab494b`
 
 - :ref:`exhale_define_c__api_8h_1a4241f838270253b885e1de02534bc273`
 

@@ -46,6 +46,10 @@ Program Listing for File map.h
    
    class MapObj : public MapBaseObj {
     public:
+     static ObjectPtr<Object> ShallowCopy(const MapObj* src) {
+       return MapBaseObj::CopyFrom<MapObj>(const_cast<MapObj*>(src));
+     }
+   
      static constexpr const int32_t _type_index = TypeIndex::kTVMFFIMap;
      static const constexpr bool _type_final = true;
      TVM_FFI_DECLARE_OBJECT_INFO_STATIC(StaticTypeKey::kTVMFFIMap, MapObj, Object);

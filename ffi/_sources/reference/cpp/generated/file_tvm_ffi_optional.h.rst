@@ -32,7 +32,7 @@ Definition (``tvm/ffi/optional.h``)
 Detailed Description
 --------------------
 
-Optional<T> uses a hybrid representation. For types that enable Any storage (``TypeTraits<T>::storage_enabled``), it is backed by a single :ref:`exhale_struct_structTVMFFIAny` (Any) with nullopt represented as kTVMFFINone, mirroring Variant<...>; the layout is then independent of T (sizeof == sizeof(Any)) which keeps the ABI stable. For types that do not enable storage (e.g. non-owning view types) it falls back to std::optional<T>. 
+Optional<T> uses a hybrid representation. ObjectRef, ObjectPtr, and Arc values keep the established one-pointer ObjectPtr representation, with nullptr representing nullopt. Other types that enable Any storage are backed by one :ref:`exhale_struct_structTVMFFIAny`. Types that do not enable storage (for example, non-owning view types) fall back to std::optional<T>. 
 
 
 
@@ -78,6 +78,8 @@ Included By
 - :ref:`file_tvm_ffi_extra_dataclass.h`
 
 - :ref:`file_tvm_ffi_extra_structural_equal.h`
+
+- :ref:`file_tvm_ffi_extra_structural_mutate.h`
 
 - :ref:`file_tvm_ffi_extra_structural_visit.h`
 

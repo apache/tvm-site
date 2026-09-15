@@ -56,13 +56,14 @@ Program Listing for File variant.h
      /* \brief Helper utility for SFINAE if the type is part of the variant */
      template <typename T>
      using enable_if_variant_contains_t = std::enable_if_t<variant_contains_v<T>>;
+     // Special members are explicitly inlined to enable move cleanup optimizations
+     TVM_FFI_INLINE ~Variant() = default;
+     TVM_FFI_INLINE Variant(const Variant<V...>& other) = default;
+     TVM_FFI_INLINE Variant(Variant<V...>&& other) noexcept = default;
    
-     Variant(const Variant<V...>& other) = default;
-     Variant(Variant<V...>&& other) noexcept = default;
+     TVM_FFI_INLINE Variant& operator=(const Variant<V...>& other) = default;
    
-     Variant& operator=(const Variant<V...>& other) = default;
-   
-     Variant& operator=(Variant<V...>&& other) noexcept = default;
+     TVM_FFI_INLINE Variant& operator=(Variant<V...>&& other) noexcept = default;
    
      template <typename T, typename = enable_if_variant_contains_t<T>>
      Variant(T other) : data_(std::move(other)) {}  // NOLINT(*)
@@ -109,7 +110,7 @@ Program Listing for File variant.h
        static_assert(all_object_v,
                      "All types used in Variant<...> must be derived from ObjectRef "
                      "to enable ObjectPtrHash/ObjectPtrEqual");
-       return details::AnyUnsafe::ObjectPtrFromAnyAfterCheck(this->data_);
+       return details::AnyUnsafe::RawObjectPtrFromAnyAfterCheck(this->data_);
      }
      TVM_FFI_INLINE AnyView ToAnyView() const { return data_.operator AnyView(); }
      TVM_FFI_INLINE Any MoveToAny() && { return std::move(data_); }

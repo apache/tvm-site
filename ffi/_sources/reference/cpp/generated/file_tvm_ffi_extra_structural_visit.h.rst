@@ -75,6 +75,12 @@ Includes
 
 
 
+Included By
+-----------
+
+
+- :ref:`file_tvm_ffi_extra_structural_mutate.h`
+
 
 
 
@@ -93,9 +99,13 @@ Classes
 
 - :ref:`exhale_struct_structtvm_1_1ffi_1_1StructuralVisitorVTable`
 
+- :ref:`exhale_class_classtvm_1_1ffi_1_1StructuralVisitEngine`
+
 - :ref:`exhale_class_classtvm_1_1ffi_1_1StructuralVisitor`
 
 - :ref:`exhale_class_classtvm_1_1ffi_1_1StructuralVisitorObj`
+
+- :ref:`exhale_class_classtvm_1_1ffi_1_1StructuralWalkEngine`
 
 - :ref:`exhale_class_classtvm_1_1ffi_1_1VisitInterrupt`
 
@@ -115,9 +125,20 @@ Functions
 ---------
 
 
+- :ref:`exhale_function_structural__visit_8h_1ad632463d20e2bee04ca4fc38ec95df23`
+
+- :ref:`exhale_function_structural__visit_8h_1aece5d69ac3a9b3ee2c0c2bc2210c57b3`
+
 - :ref:`exhale_function_structural__visit_8h_1a22c788e5e785d50c51b588526601f9cb`
 
 - :ref:`exhale_function_structural__visit_8h_1ab94d5197b2b27e397f0bcdef5a63048b`
+
+
+Defines
+-------
+
+
+- :ref:`exhale_define_structural__visit_8h_1ac74b688a86e26ee7dc5518e277d58393`
 
 
 Typedefs

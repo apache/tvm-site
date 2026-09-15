@@ -55,6 +55,7 @@ Program Listing for File any.h
      TVMFFIAny data_;
      // Any can see AnyView
      friend class Any;
+     friend struct details::AnyUnsafe;
    
     public:
      // NOTE: the following functions use style
@@ -67,7 +68,11 @@ Program Listing for File any.h
      }
      TVM_FFI_INLINE void swap(AnyView& other) noexcept { std::swap(data_, other.data_); }
      TVM_FFI_INLINE int32_t type_index() const noexcept { return data_.type_index; }
-     AnyView() {
+     TVM_FFI_INLINE bool same_as(const AnyView& other) const noexcept {
+       return data_.type_index == other.data_.type_index &&
+              data_.zero_padding == other.data_.zero_padding && data_.v_int64 == other.data_.v_int64;
+     }
+     TVM_FFI_INLINE AnyView() {
        data_.type_index = TypeIndex::kTVMFFINone;
        data_.zero_padding = 0;
        data_.v_int64 = 0;
@@ -79,7 +84,7 @@ Program Listing for File any.h
      AnyView(AnyView&& other) noexcept = default;
      AnyView& operator=(AnyView&& other) noexcept = default;
      template <typename T, typename = std::enable_if_t<TypeTraits<T>::convert_enabled>>
-     AnyView(const T& other) {  // NOLINT(*)
+     TVM_FFI_INLINE AnyView(const T& other) {  // NOLINT(*)
        TypeTraits<T>::CopyToAnyView(other, &data_);
      }
      template <typename T, typename = std::enable_if_t<TypeTraits<T>::convert_enabled>>
@@ -177,18 +182,18 @@ Program Listing for File any.h
      }
      TVM_FFI_INLINE void swap(Any& other) noexcept { std::swap(data_, other.data_); }
      TVM_FFI_INLINE int32_t type_index() const noexcept { return data_.type_index; }
-     Any() {
+     TVM_FFI_INLINE Any() {
        data_.type_index = TypeIndex::kTVMFFINone;
        data_.zero_padding = 0;
        data_.v_int64 = 0;
      }
-     ~Any() { this->reset(); }
-     Any(const Any& other) : data_(other.data_) {
+     TVM_FFI_INLINE ~Any() { this->reset(); }
+     TVM_FFI_INLINE Any(const Any& other) : data_(other.data_) {
        if (data_.type_index >= TypeIndex::kTVMFFIStaticObjectBegin) {
          details::ObjectUnsafe::IncRefObjectHandle(data_.v_obj);
        }
      }
-     Any(Any&& other) noexcept : data_(other.data_) {
+     TVM_FFI_INLINE Any(Any&& other) noexcept : data_(other.data_) {
        other.data_.type_index = TypeIndex::kTVMFFINone;
        other.data_.zero_padding = 0;
        other.data_.v_int64 = 0;
@@ -348,6 +353,15 @@ Program Listing for File any.h
    
      TVM_FFI_INLINE std::string GetTypeKey() const { return TypeIndexToTypeKey(data_.type_index); }
    
+    private:
+     // Member-wise on purpose: an aggregate copy makes GCC re-store type_index as a partial
+     // write before a wide reload of the same word, which stalls store forwarding.
+     TVM_FFI_INLINE explicit Any(UnsafeInit, TVMFFIAny raw) noexcept {
+       data_.type_index = raw.type_index;
+       data_.zero_padding = raw.zero_padding;
+       data_.v_int64 = raw.v_int64;
+     }
+   
      friend struct details::AnyUnsafe;
      friend struct AnyHash;
      friend struct AnyEqual;
@@ -425,9 +439,28 @@ Program Listing for File any.h
        return any;
      }
    
+     TVM_FFI_INLINE static Any MoveTVMFFIAnyRawToAny(TVMFFIAny raw) { return Any(UnsafeInit{}, raw); }
+   
      template <typename T>
      TVM_FFI_INLINE static bool CheckAnyStrict(const Any& ref) {
-       return TypeTraits<T>::CheckAnyStrict(&(ref.data_));
+       if constexpr (!std::is_same_v<T, Any>) {
+         return TypeTraits<T>::CheckAnyStrict(&(ref.data_));
+       } else {
+         // Any holds any value, so there is nothing to check against.
+         return true;
+       }
+     }
+   
+     // Borrowed form: a caller checking a field it does not own passes AnyView(field), which
+     // costs no refcount where CheckAnyStrict would build a temporary Any. A distinct name, so
+     // an ObjectRef argument never has two conversions to choose from.
+     template <typename T>
+     TVM_FFI_INLINE static bool CheckAnyViewStrict(const AnyView& ref) {
+       if constexpr (!std::is_same_v<T, Any>) {
+         return TypeTraits<T>::CheckAnyStrict(&(ref.data_));
+       } else {
+         return true;
+       }
      }
    
      template <typename T>
@@ -448,8 +481,14 @@ Program Listing for File any.h
        }
      }
    
-     TVM_FFI_INLINE static Object* ObjectPtrFromAnyAfterCheck(const Any& ref) {
-       return reinterpret_cast<Object*>(ref.data_.v_obj);
+     template <typename TObject = Object>
+     TVM_FFI_INLINE static TObject* RawObjectPtrFromAnyAfterCheck(const Any& ref) {
+       return ObjectUnsafe::RawObjectPtrFromUnowned<TObject>(ref.data_.v_obj);
+     }
+   
+     template <typename TObject = Object>
+     TVM_FFI_INLINE static TObject* RawObjectPtrFromAnyViewAfterCheck(const AnyView& ref) {
+       return ObjectUnsafe::RawObjectPtrFromUnowned<TObject>(ref.data_.v_obj);
      }
    
      TVM_FFI_INLINE static const TVMFFIAny* TVMFFIAnyPtrFromAny(const Any& ref) {
@@ -535,7 +574,7 @@ Program Listing for File any.h
              throw details::MoveFromSafeCallRaised();
            }
          }
-         Any result_any = details::AnyUnsafe::MoveTVMFFIAnyToAny(&result);
+         Any result_any = details::AnyUnsafe::MoveTVMFFIAnyRawToAny(result);
          TVM_FFI_ICHECK_EQ(result_any.type_index(), TypeIndex::kTVMFFIInt);
          return static_cast<uint64_t>(result_any.data_.v_int64);
        }
@@ -649,7 +688,7 @@ Program Listing for File any.h
              throw details::MoveFromSafeCallRaised();
            }
          }
-         Any result_any = details::AnyUnsafe::MoveTVMFFIAnyToAny(&result);
+         Any result_any = details::AnyUnsafe::MoveTVMFFIAnyRawToAny(result);
          TVM_FFI_ICHECK(result_any.type_index() == TypeIndex::kTVMFFIBool);
          return result_any.data_.v_int64 != 0;
        }

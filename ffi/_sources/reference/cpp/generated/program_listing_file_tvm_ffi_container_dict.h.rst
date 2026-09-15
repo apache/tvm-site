@@ -46,6 +46,10 @@ Program Listing for File dict.h
    
    class DictObj : public MapBaseObj {
     public:
+     static ObjectPtr<Object> ShallowCopy(const DictObj* src) {
+       return MapBaseObj::CopyFrom<DictObj>(const_cast<DictObj*>(src));
+     }
+   
      static constexpr const int32_t _type_index = TypeIndex::kTVMFFIDict;
      static const constexpr bool _type_final = true;
      TVM_FFI_DECLARE_OBJECT_INFO_STATIC(StaticTypeKey::kTVMFFIDict, DictObj, Object);

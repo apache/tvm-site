@@ -70,4 +70,10 @@ Variables
 
 - :ref:`exhale_variable_namespacetvm_1_1ffi_1_1reflection_1_1type__attr_1a18dd88667c1998578f7fdbbf25c9a33d`
 
+- :ref:`exhale_variable_namespacetvm_1_1ffi_1_1reflection_1_1type__attr_1aa78a5fd8e7af94d0540d67c278128960`
+
+- :ref:`exhale_variable_namespacetvm_1_1ffi_1_1reflection_1_1type__attr_1a0e928fa6d490779c06ed997dc8af2f35`
+
 - :ref:`exhale_variable_namespacetvm_1_1ffi_1_1reflection_1_1type__attr_1a121b81bcda7ce56913cd5cee586ab85f`
+
+- :ref:`exhale_variable_namespacetvm_1_1ffi_1_1reflection_1_1type__attr_1a09a99f5f4a3b5ec6730fafa33309461f`

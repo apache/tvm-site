@@ -222,9 +222,14 @@ Program Listing for File accessor.h
    inline constexpr const char* kSHash = "__s_hash__";
    inline constexpr const char* kSEqual = "__s_equal__";
    inline constexpr const char* kStructuralVisit = "__s_visit__";
+   
+   inline constexpr const char* kStructuralMutate = "__s_mutate__";
+   inline constexpr const char* kStructuralMaybeInplaceMutate = "__s_maybe_inplace_mutate__";
+   
    inline constexpr const char* kDataToJson = "__data_to_json__";
    inline constexpr const char* kDataFromJson = "__data_from_json__";
    inline constexpr const char* kEnumState = "__ffi_enum__";
+   inline constexpr const char* kTypeFinal = "__ffi_type_final__";
    }  // namespace type_attr
    
    inline constexpr TVMFFIByteArray AsByteArray(const char* s) {

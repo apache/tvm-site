@@ -15,12 +15,6 @@ Base Type
 - ``public tvm::ffi::Object`` (:ref:`exhale_class_classtvm_1_1ffi_1_1Object`)
 
 
-Derived Type
-************
-
-- ``public tvm::ffi::details::StructuralWalkCallbackVisitorObj< order, Dispatch >``
-
-
 Class Documentation
 -------------------
 

@@ -62,9 +62,11 @@ Program Listing for File type_traits.h
      static constexpr const char* kTVMFFIObjectRValueRef = "ObjectRValueRef";
      static constexpr const char* kTVMFFISmallStr = "ffi.SmallStr";
      static constexpr const char* kTVMFFISmallBytes = "ffi.SmallBytes";
+     static constexpr const char* kTVMFFIUnchanged = "ffi.Unchanged";
      static constexpr const char* kTVMFFIError = "ffi.Error";
      static constexpr const char* kTVMFFIBytes = "ffi.Bytes";
      static constexpr const char* kTVMFFIStr = "ffi.String";
+     static constexpr const char* kTVMFFIBigInt = "ffi.BigInt";
      static constexpr const char* kTVMFFIShape = "ffi.Shape";
      static constexpr const char* kTVMFFITensor = "ffi.Tensor";
      static constexpr const char* kTVMFFIObject = "ffi.Object";

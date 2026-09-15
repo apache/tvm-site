@@ -68,10 +68,18 @@ Program Listing for File c_api.h
    #define TVM_FFI_DLL_EXPORT __attribute__((visibility("default")))
    #endif
    
+   // Marks a function that has no observable effects and whose return value depends
+   // only on its arguments and non-volatile memory.
+   #if defined(__GNUC__) || defined(__clang__)
+   #define TVM_FFI_ATTRIBUTE_PURE __attribute__((__pure__))
+   #else
+   #define TVM_FFI_ATTRIBUTE_PURE
+   #endif
+   
    // NOLINTBEGIN(modernize-macro-to-enum)
    #define TVM_FFI_VERSION_MAJOR 0
    #define TVM_FFI_VERSION_MINOR 1
-   #define TVM_FFI_VERSION_PATCH 13
+   #define TVM_FFI_VERSION_PATCH 14
    // NOLINTEND(modernize-macro-to-enum)
    
    #ifdef __cplusplus
@@ -118,6 +126,7 @@ Program Listing for File c_api.h
      kTVMFFIObjectRValueRef = 10,
      kTVMFFISmallStr = 11,
      kTVMFFISmallBytes = 12,
+     kTVMFFIUnchanged = 13,
      kTVMFFIStaticObjectBegin = 64,
      kTVMFFIObject = 64,
      kTVMFFIStr = 65,
@@ -133,6 +142,7 @@ Program Listing for File c_api.h
      kTVMFFIList = 75,
      kTVMFFIDict = 76,
      kTVMFFIVisitInterrupt = 77,
+     kTVMFFIBigInt = 78,
      //----------------------------------------------------------------
      // more complex objects
      //----------------------------------------------------------------
@@ -367,6 +377,9 @@ Program Listing for File c_api.h
    
    TVM_FFI_DLL int TVMFFIBytesFromByteArray(const TVMFFIByteArray* input, TVMFFIAny* out);
    
+   TVM_FFI_DLL int TVMFFIBigIntFromByteArray(const TVMFFIByteArray* input, TVMFFIAny* out);
+   TVM_FFI_DLL TVMFFIByteArray TVMFFIBigIntGetContentByteArray(const TVMFFIAny* value);
+   
    //---------------------------------------------------------------
    // Section: dtype string support APIs.
    // These APIs are used to simplify the dtype printings during FFI
@@ -396,7 +409,7 @@ Program Listing for File c_api.h
      kTVMFFIFieldFlagBitMaskHasDefault = 1 << 1,
      kTVMFFIFieldFlagBitMaskIsStaticMethod = 1 << 2,
      kTVMFFIFieldFlagBitMaskSEqHashIgnore = 1 << 3,
-     kTVMFFIFieldFlagBitMaskSEqHashDefRecursive = 1 << 4,
+     kTVMFFIFieldFlagBitMaskSEqHashDefPattern = 1 << 4,
      kTVMFFIFieldFlagBitMaskDefaultFromFactory = 1 << 5,
      kTVMFFIFieldFlagBitMaskReprOff = 1 << 6,
      kTVMFFIFieldFlagBitMaskCompareOff = 1 << 7,
@@ -404,7 +417,7 @@ Program Listing for File c_api.h
      kTVMFFIFieldFlagBitMaskInitOff = 1 << 9,
      kTVMFFIFieldFlagBitMaskKwOnly = 1 << 10,
      kTVMFFIFieldFlagBitSetterIsFunctionObj = 1 << 11,
-     kTVMFFIFieldFlagBitMaskSEqHashDefNonRecursive = 1 << 12,
+     kTVMFFIFieldFlagBitMaskSEqHashDefSimple = 1 << 12,
    #ifdef __cplusplus
    };
    #else
@@ -434,8 +447,8 @@ Program Listing for File c_api.h
    typedef enum {
    #endif
      kTVMFFIDefRegionKindNone = 0,
-     kTVMFFIDefRegionKindRecursive = 1,
-     kTVMFFIDefRegionKindNonRecursive = 2,
+     kTVMFFIDefRegionKindPattern = 1,
+     kTVMFFIDefRegionKindSimple = 2,
    #ifdef __cplusplus
    };
    #else
@@ -536,7 +549,7 @@ Program Listing for File c_api.h
                                                  int32_t child_slots_can_overflow,
                                                  int32_t parent_type_index);
    
-   TVM_FFI_DLL const TVMFFITypeInfo* TVMFFIGetTypeInfo(int32_t type_index);
+   TVM_FFI_DLL TVM_FFI_ATTRIBUTE_PURE const TVMFFITypeInfo* TVMFFIGetTypeInfo(int32_t type_index);
    
    // ----------------------------------------------------------------------------
    // Static handle initialization and deinitialization API

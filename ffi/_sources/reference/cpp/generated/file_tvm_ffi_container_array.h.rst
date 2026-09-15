@@ -81,6 +81,8 @@ Included By
 
 - :ref:`file_tvm_ffi_extra_stl.h`
 
+- :ref:`file_tvm_ffi_extra_structural_mutate.h`
+
 - :ref:`file_tvm_ffi_extra_structural_visit.h`
 
 - :ref:`file_tvm_ffi_extra_visit_error_context.h`

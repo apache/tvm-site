@@ -35,6 +35,8 @@ Program Listing for File expected.h
    #include <tvm/ffi/any.h>
    #include <tvm/ffi/error.h>
    
+   #include <sstream>
+   #include <string>
    #include <type_traits>
    #include <utility>
    
@@ -47,6 +49,13 @@ Program Listing for File expected.h
                    "Unexpected<E> requires E to be Error or a subclass of Error.");
    
     public:
+     // Special members are explicitly inlined to enable move cleanup optimizations
+     TVM_FFI_INLINE ~Unexpected() = default;
+     TVM_FFI_INLINE Unexpected(const Unexpected&) = default;
+     TVM_FFI_INLINE Unexpected(Unexpected&&) noexcept = default;
+     TVM_FFI_INLINE Unexpected& operator=(const Unexpected&) = default;
+     TVM_FFI_INLINE Unexpected& operator=(Unexpected&&) noexcept = default;
+   
      explicit Unexpected(E error) : error_(std::move(error)) {}
    
      const E& error() const& noexcept { return error_; }
@@ -63,9 +72,28 @@ Program Listing for File expected.h
    Unexpected(E) -> Unexpected<E>;
    #endif
    
+   template <typename T>
+   class Expected;
+   
+   
+   template <typename T, typename U>
+   inline constexpr bool type_subsumes_v<Expected<T>, Expected<U>> = type_subsumes_v<T, U>;
+   
    namespace details {
    
    struct ExpectedUnsafe;
+   
+   template <typename T>
+   inline constexpr bool is_expected_v = false;
+   
+   template <typename T>
+   inline constexpr bool is_expected_v<Expected<T>> = true;
+   
+   template <typename T>
+   inline constexpr bool is_unexpected_v = false;
+   
+   template <typename E>
+   inline constexpr bool is_unexpected_v<Unexpected<E>> = true;
    
    }  // namespace details
    
@@ -77,15 +105,60 @@ Program Listing for File expected.h
          "Expected with a cv-qualified void success type is not allowed. Use Expected<void>.");
      static_assert(!std::is_same_v<T, Error>, "Expected<Error> is not allowed. Use Error directly.");
    
-     // NOLINTNEXTLINE(google-explicit-constructor,runtime/explicit)
-     Expected(T value) : data_(Any(std::move(value))) {}
+     // Special members are explicitly inlined to enable move cleanup optimizations
+     TVM_FFI_INLINE ~Expected() = default;
+     TVM_FFI_INLINE Expected(const Expected&) = default;
+     TVM_FFI_INLINE Expected(Expected&&) noexcept = default;
+     TVM_FFI_INLINE Expected& operator=(const Expected&) = default;
+     TVM_FFI_INLINE Expected& operator=(Expected&&) noexcept = default;
    
      // NOLINTNEXTLINE(google-explicit-constructor,runtime/explicit)
-     Expected(Error error) : data_(Any(std::move(error))) {}
+     TVM_FFI_INLINE Expected(T value) : data_(Any(std::move(value))) {}
+   
+     // Excludes Error, Unexpected, and Expected deliberately: Any subsumes all three, so without
+     // these an Expected<Any> built from an error would store it as a success value. The Expected
+     // exclusion also keeps this overload disjoint from Expected(Expected<U>) instead of relying on
+     // partial ordering to choose between two paths that must agree.
+     //
+     // std::expected admits constructible sources and uses C++20 explicit(bool) to separate its
+     // implicit subset. Under C++17, convertibility keeps exactly that implicit subset and drops only
+     // explicit-only conversions; is_constructible plus explicit(bool) can extend it after an upgrade.
+     template <typename U, typename = std::enable_if_t<!details::is_expected_v<std::decay_t<U>> &&
+                                                       !details::is_unexpected_v<std::decay_t<U>> &&
+                                                       !std::is_base_of_v<Error, std::decay_t<U>> &&
+                                                       std::is_convertible_v<U, T>>>
+     // NOLINTNEXTLINE(google-explicit-constructor,runtime/explicit)
+     TVM_FFI_INLINE Expected(U&& value) : data_(Any(T(std::forward<U>(value)))) {}
+   
+     // Subsumption belongs only here: this source already contains a materialized U or Error whose
+     // representation may be reused. Applying type_subsumes_v<Any, U> to the bare-value constructor
+     // would accept every U, including types that cannot be materialized as Any, and fail in its body.
+     // Taking by value gives a local to move from, copying an lvalue source and moving an rvalue. The
+     // implicit copy constructor still wins for Expected<T> itself by the non-template tiebreaker.
+     template <typename U,
+               typename = std::enable_if_t<!std::is_void_v<U> &&
+                                           (type_subsumes_v<T, U> || std::is_convertible_v<U, T>)>>
+     // NOLINTNEXTLINE(google-explicit-constructor,runtime/explicit)
+     TVM_FFI_INLINE Expected(Expected<U> other)
+         : data_([&other]() {
+             if constexpr (type_subsumes_v<T, U>) {
+               // data_ holds a T or an Error. Subsumption proves the source representation already
+               // satisfies that invariant, so adopt the raw storage without inspecting its state.
+               // Do not make this unconditional: value() checks the success/error state, not the type.
+               return details::AnyUnsafe::MoveTVMFFIAnyRawToAny(
+                   details::AnyUnsafe::MoveAnyToTVMFFIAny(std::move(other.data_)));
+             } else {
+               return other.is_err() ? Any(std::move(other).error())
+                                     : Any(T(std::move(other).value()));
+             }
+           }()) {}
+   
+     // NOLINTNEXTLINE(google-explicit-constructor,runtime/explicit)
+     TVM_FFI_INLINE Expected(Error error) : data_(Any(std::move(error))) {}
    
      template <typename E, typename = std::enable_if_t<std::is_base_of_v<Error, std::remove_cv_t<E>>>>
      // NOLINTNEXTLINE(google-explicit-constructor,runtime/explicit)
-     Expected(Unexpected<E> unexpected) : data_(Any(std::move(unexpected).error())) {}
+     TVM_FFI_INLINE Expected(Unexpected<E> unexpected) : data_(Any(std::move(unexpected).error())) {}
    
      TVM_FFI_INLINE int32_t type_index() const noexcept { return data_.type_index(); }
    
@@ -111,6 +184,36 @@ Program Listing for File expected.h
          return details::AnyUnsafe::MoveFromAnyAfterCheck<T>(std::move(data_));
        }
        throw details::AnyUnsafe::MoveFromAnyAfterCheck<Error>(std::move(data_));
+     }
+   
+     template <typename U, typename = std::enable_if_t<
+                               std::is_same_v<U, std::decay_t<U>> && !std::is_base_of_v<Error, U> &&
+                               (TypeTraits<U>::storage_enabled || std::is_same_v<U, Any>)>>
+     TVM_FFI_INLINE Expected<U> as_or_error() const& {
+       if (TVM_FFI_PREDICT_FALSE(data_.type_index() != TypeIndex::kTVMFFIError &&
+                                 !details::AnyUnsafe::CheckAnyStrict<U>(data_))) {
+         // Conversion-failure diagnostics may try fallback conversions, so use the stored type key.
+         return Error("TypeError",
+                      "Cannot treat type `" + data_.GetTypeKey() + "` as type `" +
+                          details::Type2Str<U>::v() + "`",
+                      "");
+       }
+       return Expected<U>(UnsafeInit{}, details::AnyUnsafe::MoveAnyToTVMFFIAny(Any(data_)));
+     }
+   
+     template <typename U, typename = std::enable_if_t<
+                               std::is_same_v<U, std::decay_t<U>> && !std::is_base_of_v<Error, U> &&
+                               (TypeTraits<U>::storage_enabled || std::is_same_v<U, Any>)>>
+     TVM_FFI_INLINE Expected<U> as_or_error() && {
+       if (TVM_FFI_PREDICT_FALSE(data_.type_index() != TypeIndex::kTVMFFIError &&
+                                 !details::AnyUnsafe::CheckAnyStrict<U>(data_))) {
+         // Conversion-failure diagnostics may try fallback conversions, so use the stored type key.
+         return Error("TypeError",
+                      "Cannot treat type `" + data_.GetTypeKey() + "` as type `" +
+                          details::Type2Str<U>::v() + "`",
+                      "");
+       }
+       return Expected<U>(UnsafeInit{}, details::AnyUnsafe::MoveAnyToTVMFFIAny(std::move(data_)));
      }
    
      TVM_FFI_INLINE Error error() const& {
@@ -148,7 +251,11 @@ Program Listing for File expected.h
      }
    
     private:
+     template <typename>
+     friend class Expected;
      Expected() = default;
+     TVM_FFI_INLINE Expected(UnsafeInit, TVMFFIAny raw) noexcept
+         : data_(details::AnyUnsafe::MoveTVMFFIAnyRawToAny(raw)) {}
    
      friend struct details::ExpectedUnsafe;
    
@@ -158,14 +265,21 @@ Program Listing for File expected.h
    template <>
    class Expected<void> {
     public:
+     // Special members are explicitly inlined to enable move cleanup optimizations
+     TVM_FFI_INLINE ~Expected() = default;
+     TVM_FFI_INLINE Expected(const Expected&) = default;
+     TVM_FFI_INLINE Expected(Expected&&) noexcept = default;
+     TVM_FFI_INLINE Expected& operator=(const Expected&) = default;
+     TVM_FFI_INLINE Expected& operator=(Expected&&) noexcept = default;
+   
      Expected() = default;
    
      // NOLINTNEXTLINE(google-explicit-constructor,runtime/explicit)
-     Expected(Error error) : data_(Any(std::move(error))) {}
+     TVM_FFI_INLINE Expected(Error error) : data_(Any(std::move(error))) {}
    
      template <typename E, typename = std::enable_if_t<std::is_base_of_v<Error, std::remove_cv_t<E>>>>
      // NOLINTNEXTLINE(google-explicit-constructor,runtime/explicit)
-     Expected(Unexpected<E> unexpected) : data_(Any(std::move(unexpected).error())) {}
+     TVM_FFI_INLINE Expected(Unexpected<E> unexpected) : data_(Any(std::move(unexpected).error())) {}
    
      TVM_FFI_INLINE int32_t type_index() const noexcept { return data_.type_index(); }
    
@@ -206,6 +320,9 @@ Program Listing for File expected.h
      }
    
     private:
+     TVM_FFI_INLINE Expected(UnsafeInit, TVMFFIAny raw) noexcept
+         : data_(details::AnyUnsafe::MoveTVMFFIAnyRawToAny(raw)) {}
+   
      friend struct details::ExpectedUnsafe;
    
      Any data_;  // Invariant: holds FFI None on success or an Error.
@@ -216,14 +333,17 @@ Program Listing for File expected.h
    struct ExpectedUnsafe {
      template <typename T>
      TVM_FFI_INLINE static Expected<T> MoveFromTVMFFIAny(TVMFFIAny raw) {
-       Expected<T> result;
-       result.data_ = AnyUnsafe::MoveTVMFFIAnyToAny(&raw);
-       return result;
+       return Expected<T>(UnsafeInit{}, raw);
      }
    
      template <typename T>
      TVM_FFI_INLINE static TVMFFIAny MoveToTVMFFIAny(Expected<T>&& result) {
        return AnyUnsafe::MoveAnyToTVMFFIAny(std::move(result.data_));
+     }
+   
+     template <typename T>
+     TVM_FFI_INLINE static Any&& GetData(Expected<T>& result) noexcept {
+       return std::move(result.data_);
      }
    
      template <typename T>
@@ -244,6 +364,44 @@ Program Listing for File expected.h
          throw AnyUnsafe::CopyFromAnyViewAfterCheck<Error>(data);
        }
      }
+   };
+   
+   class UnexpectedReturnHelper {
+    public:
+     TVM_FFI_INLINE explicit UnexpectedReturnHelper(Unexpected<Error>&& value) noexcept
+         : value_(std::move(value)) {}
+   
+     // NOLINTNEXTLINE(google-explicit-constructor,runtime/explicit)
+     TVM_FFI_INLINE operator TVMFFIAny() && noexcept {
+       return ExpectedUnsafe::MoveToTVMFFIAny(Expected<Any>(std::move(value_)));
+     }
+   
+     template <typename T>
+     // NOLINTNEXTLINE(google-explicit-constructor,runtime/explicit)
+     TVM_FFI_INLINE operator Expected<T>() && noexcept {
+       return std::move(value_);
+     }
+   
+    private:
+     Unexpected<Error> value_;
+   };
+   
+   template <typename T>
+   class ExpectedReturnHelper {
+    public:
+     TVM_FFI_INLINE explicit ExpectedReturnHelper(Expected<T>&& value) noexcept
+         : value_(std::move(value)) {}
+   
+     // NOLINTNEXTLINE(google-explicit-constructor,runtime/explicit)
+     TVM_FFI_INLINE operator TVMFFIAny() && noexcept {
+       return ExpectedUnsafe::MoveToTVMFFIAny(std::move(value_));
+     }
+   
+     // NOLINTNEXTLINE(google-explicit-constructor,runtime/explicit)
+     TVM_FFI_INLINE operator Expected<T>() && noexcept { return std::move(value_); }
+   
+    private:
+     Expected<T> value_;
    };
    
    }  // namespace details
@@ -362,6 +520,80 @@ Program Listing for File expected.h
               R"(,{"type":"ffi.Error"}]})";
      }
    };
+   
+   // check macros for expected land
+   // RET_ means the macro contains return; UNEXPECTED is a value and the caller writes return.
+   // While guards preserve an enclosing if/else. Errors record file/line/function only, without
+   // a stack walk.
+   namespace details {
+   
+   class UnexpectedBuilder {
+    public:
+     UnexpectedBuilder(const char* kind, const char* file, int line, const char* function)
+         : kind_(kind), file_(file), line_(line), function_(function) {}
+   
+     template <typename T>
+     UnexpectedBuilder&& operator<<(T&& value) && {
+       stream_ << std::forward<T>(value);
+       return std::move(*this);
+     }
+   
+     UnexpectedBuilder&& operator<<(std::ostream& (*manipulator)(std::ostream&)) && {
+       manipulator(stream_);
+       return std::move(*this);
+     }
+   
+     // NOLINTNEXTLINE(google-explicit-constructor,runtime/explicit)
+     operator Unexpected<Error>() && {
+       std::ostringstream backtrace;
+       backtrace << "  File \"" << file_ << "\", line " << line_ << ", in " << function_ << '\n';
+       return Unexpected(Error(kind_, stream_.str(), backtrace.str()));
+     }
+   
+     template <typename T>
+     // NOLINTNEXTLINE(google-explicit-constructor,runtime/explicit)
+     operator Expected<T>() && {
+       // A return expression cannot chain builder -> Unexpected -> Expected conversions.
+       return static_cast<Unexpected<Error>>(std::move(*this));
+     }
+   
+    private:
+     const char* kind_;
+     const char* file_;
+     int line_;
+     const char* function_;
+     std::ostringstream stream_;
+   };
+   
+   }  // namespace details
+   
+   #define TVM_FFI_UNEXPECTED(ErrorKind) \
+     ::tvm::ffi::details::UnexpectedBuilder(#ErrorKind, __FILE__, __LINE__, TVM_FFI_FUNC_SIG)
+   
+   #define TVM_FFI_RET_CHECK(cond, ErrorKind) \
+     while (TVM_FFI_PREDICT_FALSE(!(cond)))   \
+     return TVM_FFI_UNEXPECTED(ErrorKind) << "Check failed: (" #cond ") is false: "
+   
+   #define TVM_FFI_RET_CHECK_BINARY_OP(name, op, x, y, ErrorKind)               \
+     while (auto __tvm_ffi_log_err = /* NOLINT(bugprone-reserved-identifier) */ \
+            ::tvm::ffi::details::LogCheck##name(x, y))                          \
+     return TVM_FFI_UNEXPECTED(ErrorKind)                                       \
+            << "Check failed: " << #x " " #op " " #y << (*__tvm_ffi_log_err) << ": "
+   
+   #define TVM_FFI_RET_CHECK_LT(x, y, ErrorKind) TVM_FFI_RET_CHECK_BINARY_OP(_LT, <, x, y, ErrorKind)
+   #define TVM_FFI_RET_CHECK_GT(x, y, ErrorKind) TVM_FFI_RET_CHECK_BINARY_OP(_GT, >, x, y, ErrorKind)
+   #define TVM_FFI_RET_CHECK_LE(x, y, ErrorKind) TVM_FFI_RET_CHECK_BINARY_OP(_LE, <=, x, y, ErrorKind)
+   #define TVM_FFI_RET_CHECK_GE(x, y, ErrorKind) TVM_FFI_RET_CHECK_BINARY_OP(_GE, >=, x, y, ErrorKind)
+   #define TVM_FFI_RET_CHECK_EQ(x, y, ErrorKind) TVM_FFI_RET_CHECK_BINARY_OP(_EQ, ==, x, y, ErrorKind)
+   #define TVM_FFI_RET_CHECK_NE(x, y, ErrorKind) TVM_FFI_RET_CHECK_BINARY_OP(_NE, !=, x, y, ErrorKind)
+   
+   #define TVM_FFI_RET_ICHECK(x) TVM_FFI_RET_CHECK(x, InternalError)
+   #define TVM_FFI_RET_ICHECK_LT(x, y) TVM_FFI_RET_CHECK_LT(x, y, InternalError)
+   #define TVM_FFI_RET_ICHECK_GT(x, y) TVM_FFI_RET_CHECK_GT(x, y, InternalError)
+   #define TVM_FFI_RET_ICHECK_LE(x, y) TVM_FFI_RET_CHECK_LE(x, y, InternalError)
+   #define TVM_FFI_RET_ICHECK_GE(x, y) TVM_FFI_RET_CHECK_GE(x, y, InternalError)
+   #define TVM_FFI_RET_ICHECK_EQ(x, y) TVM_FFI_RET_CHECK_EQ(x, y, InternalError)
+   #define TVM_FFI_RET_ICHECK_NE(x, y) TVM_FFI_RET_CHECK_NE(x, y, InternalError)
    
    }  // namespace ffi
    }  // namespace tvm

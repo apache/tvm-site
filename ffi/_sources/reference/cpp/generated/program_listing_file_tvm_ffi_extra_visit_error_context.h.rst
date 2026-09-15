@@ -132,6 +132,21 @@ Program Listing for File visit_error_context.h
      error_obj->extra_context =
          details::ObjectUnsafe::MoveObjectPtrToTVMFFIObjectPtr(std::move(new_context));
    }
+   
+   TVM_FFI_COLD_CODE inline void UpdateVisitErrorContext(const TVMFFIAny& result,
+                                                         AnyView node) noexcept {
+     if (node.type_index() >= TypeIndex::kTVMFFIStaticObjectBegin) {
+       Error err = AnyView::CopyFromTVMFFIAny(result).cast<Error>();
+       UpdateVisitErrorContext(err, node.cast<ObjectRef>());
+     }
+   }
+   
+   TVM_FFI_COLD_CODE inline void UpdateVisitErrorContext(Error& err,
+                                                         AnyView node) noexcept {  // NOLINT(*)
+     if (node.type_index() >= TypeIndex::kTVMFFIStaticObjectBegin) {
+       UpdateVisitErrorContext(err, node.cast<ObjectRef>());
+     }
+   }
    }  // namespace details
    
    }  // namespace ffi

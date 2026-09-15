@@ -95,7 +95,16 @@ Program Listing for File object.h
        return std::string(type_info->type_key.data, type_info->type_key.size);
      }
    
-     bool unique() const { return use_count() == 1; }
+     bool unique() const {
+   #ifdef _MSC_VER
+       return (reinterpret_cast<const volatile uint64_t*>(
+                  &header_.combined_ref_count))[0] ==  // NOLINT(*)
+              kCombinedRefCountBothOne;
+   #else
+       return __atomic_load_n(&(header_.combined_ref_count), __ATOMIC_RELAXED) ==
+              kCombinedRefCountBothOne;
+   #endif
+     }
    
      uint64_t use_count() const {
        // only need relaxed load of counters
@@ -121,6 +130,7 @@ Program Listing for File object.h
      static constexpr int32_t _type_index = TypeIndex::kTVMFFIObject;
      static constexpr int32_t _type_depth = 0;
      static constexpr TVMFFISEqHashKind _type_s_eq_hash_kind = kTVMFFISEqHashKindUnsupported;
+     static constexpr bool _type_s_eq_hash_subclass_kind_fixed = false;
      // The following functions are provided by macro
      // TVM_FFI_DECLARE_OBJECT_INFO and TVM_FFI_DECLARE_OBJECT_INFO_FINAL
      TVM_FFI_INLINE static int32_t RuntimeTypeIndex() noexcept { return TypeIndex::kTVMFFIObject; }
@@ -134,7 +144,7 @@ Program Listing for File object.h
      static constexpr uint64_t kCombinedRefCountStrongOne = details::kCombinedRefCountStrongOne;
      static constexpr uint64_t kCombinedRefCountWeakOne = details::kCombinedRefCountWeakOne;
      static constexpr uint64_t kCombinedRefCountBothOne = details::kCombinedRefCountBothOne;
-     void IncRef() {
+     TVM_FFI_INLINE void IncRef() {
    #ifdef _MSC_VER
        _InterlockedIncrement64(
            reinterpret_cast<volatile __int64*>(&header_.combined_ref_count));  // NOLINT(*)
@@ -182,7 +192,7 @@ Program Listing for File object.h
    #endif
      }
    
-     void DecRef() {
+     TVM_FFI_INLINE void DecRef() {
    #ifdef _MSC_VER
        // use simpler impl in windows to ensure correctness
        uint64_t count_before_sub =
@@ -279,26 +289,27 @@ Program Listing for File object.h
    template <typename T>
    class ObjectPtr {
     public:
+     // Special members are explicitly inlined to enable move cleanup optimizations
      ObjectPtr() = default;
      ObjectPtr(std::nullptr_t) {}  // NOLINT(*)
-     ObjectPtr(const ObjectPtr<T>& other)  // NOLINT(*)
+     TVM_FFI_INLINE ObjectPtr(const ObjectPtr<T>& other)  // NOLINT(*)
          : ObjectPtr(other.data_) {}
      template <typename U>
-     ObjectPtr(const ObjectPtr<U>& other)  // NOLINT(*)
+     TVM_FFI_INLINE ObjectPtr(const ObjectPtr<U>& other)  // NOLINT(*)
          : ObjectPtr(other.data_) {
        static_assert(std::is_base_of_v<T, U>, "can only assign of child class ObjectPtr to parent");
      }
-     ObjectPtr(ObjectPtr<T>&& other)  // NOLINT(*)
+     TVM_FFI_INLINE ObjectPtr(ObjectPtr<T>&& other) noexcept  // NOLINT(*)
          : data_(other.data_) {
        other.data_ = nullptr;
      }
      template <typename Y>
-     ObjectPtr(ObjectPtr<Y>&& other)  // NOLINT(*)
+     TVM_FFI_INLINE ObjectPtr(ObjectPtr<Y>&& other) noexcept  // NOLINT(*)
          : data_(other.data_) {
        static_assert(std::is_base_of_v<T, Y>, "can only assign of child class ObjectPtr to parent");
        other.data_ = nullptr;
      }
-     ~ObjectPtr() { this->reset(); }
+     TVM_FFI_INLINE ~ObjectPtr() { this->reset(); }
      void swap(ObjectPtr<T>& other) {  // NOLINT(*)
        std::swap(data_, other.data_);
      }
@@ -307,26 +318,28 @@ Program Listing for File object.h
      T& operator*() const {  // NOLINT(*)
        return *get();
      }
-     ObjectPtr<T>& operator=(const ObjectPtr<T>& other) {  // NOLINT(*)
+     TVM_FFI_INLINE ObjectPtr<T>& operator=(const ObjectPtr<T>& other) {  // NOLINT(*)
        // takes in plane operator to enable copy elison.
        // copy-and-swap idiom
        ObjectPtr(other).swap(*this);  // NOLINT(*)
        return *this;
      }
-     ObjectPtr<T>& operator=(ObjectPtr<T>&& other) {  // NOLINT(*)
+     TVM_FFI_INLINE ObjectPtr<T>& operator=(ObjectPtr<T>&& other) noexcept {  // NOLINT(*)
        // copy-and-swap idiom
        ObjectPtr(std::move(other)).swap(*this);  // NOLINT(*)
        return *this;
      }
      explicit operator bool() const { return get() != nullptr; }
-     void reset() {
+     // Explicitly inlined: the inlined destructor delegates here, so an out-of-line
+     // reset would turn every destruction back into a call.
+     TVM_FFI_INLINE void reset() {
        if (data_ != nullptr) {
          data_->DecRef();
          data_ = nullptr;
        }
      }
      int use_count() const { return data_ != nullptr ? data_->use_count() : 0; }
-     bool unique() const { return data_ != nullptr && data_->use_count() == 1; }
+     bool unique() const { return data_ != nullptr && data_->unique(); }
      bool operator==(const ObjectPtr<T>& other) const { return data_ == other.data_; }
      bool operator!=(const ObjectPtr<T>& other) const { return data_ != other.data_; }
      bool operator==(std::nullptr_t) const { return data_ == nullptr; }
@@ -356,13 +369,16 @@ Program Listing for File object.h
      Arc() = delete;
      Arc(std::nullptr_t) = delete;
    
-     Arc(const Arc&) = default;
+     // Special members are explicitly inlined to enable move cleanup optimizations
+     TVM_FFI_INLINE ~Arc() = default;
    
-     Arc(Arc&&) = default;
+     TVM_FFI_INLINE Arc(const Arc&) = default;
    
-     Arc& operator=(const Arc&) = default;
+     TVM_FFI_INLINE Arc(Arc&&) noexcept = default;
    
-     Arc& operator=(Arc&&) = default;
+     TVM_FFI_INLINE Arc& operator=(const Arc&) = default;
+   
+     TVM_FFI_INLINE Arc& operator=(Arc&&) noexcept = default;
    
      template <typename U, std::enable_if_t<std::is_base_of_v<T, U>, int> = 0>
      Arc(const Arc<U>& other)  // NOLINT(*)
@@ -469,7 +485,9 @@ Program Listing for File object.h
        return nullptr;
      }
    
-     void reset() {
+     // Explicitly inlined: the inlined destructor delegates here, so an out-of-line
+     // reset would turn every destruction back into a call.
+     TVM_FFI_INLINE void reset() {
        if (data_ != nullptr) {
          data_->DecWeakRef();
          data_ = nullptr;
@@ -500,10 +518,14 @@ Program Listing for File object.h
    class ObjectRef {
     public:
      ObjectRef() = default;
-     ObjectRef(const ObjectRef& other) = default;
-     ObjectRef(ObjectRef&& other) noexcept : data_(std::move(other.data_)) { other.data_ = nullptr; }
-     ObjectRef& operator=(const ObjectRef& other) = default;
-     ObjectRef& operator=(ObjectRef&& other) noexcept {
+     // Special members are explicitly inlined to enable move cleanup optimizations
+     TVM_FFI_INLINE ~ObjectRef() = default;
+     TVM_FFI_INLINE ObjectRef(const ObjectRef& other) = default;
+     TVM_FFI_INLINE ObjectRef(ObjectRef&& other) noexcept : data_(std::move(other.data_)) {
+       other.data_ = nullptr;
+     }
+     TVM_FFI_INLINE ObjectRef& operator=(const ObjectRef& other) = default;
+     TVM_FFI_INLINE ObjectRef& operator=(ObjectRef&& other) noexcept {
        data_ = std::move(other.data_);
        other.data_ = nullptr;
        return *this;
@@ -645,6 +667,10 @@ Program Listing for File object.h
      static constexpr int32_t _type_depth = ParentType::_type_depth + 1;                         \
      TVM_FFI_COLD_CODE static int32_t _GetOrAllocRuntimeTypeIndex() {                            \
        static_assert(!ParentType::_type_final, "ParentType marked as final");                    \
+       static_assert(!ParentType::_type_s_eq_hash_subclass_kind_fixed ||                         \
+                         TypeName::_type_s_eq_hash_kind == ParentType::_type_s_eq_hash_kind,     \
+                     "Subclass must retain the structural equality and hash kind of its fixed "  \
+                     "ancestor");                                                                \
        static_assert(TypeName::_type_child_slots == 0 || ParentType::_type_child_slots == 0 ||   \
                          TypeName::_type_child_slots < ParentType::_type_child_slots,            \
                      "Need to set _type_child_slots when parent specifies it.");                 \
@@ -662,6 +688,10 @@ Program Listing for File object.h
      static constexpr int32_t _type_depth = ParentType::_type_depth + 1;                         \
      TVM_FFI_COLD_CODE static int32_t _GetOrAllocRuntimeTypeIndex() {                            \
        static_assert(!ParentType::_type_final, "ParentType marked as final");                    \
+       static_assert(!ParentType::_type_s_eq_hash_subclass_kind_fixed ||                         \
+                         TypeName::_type_s_eq_hash_kind == ParentType::_type_s_eq_hash_kind,     \
+                     "Subclass must retain the structural equality and hash kind of its fixed "  \
+                     "ancestor");                                                                \
        static_assert(TypeName::_type_child_slots == 0 || ParentType::_type_child_slots == 0 ||   \
                          TypeName::_type_child_slots < ParentType::_type_child_slots,            \
                      "Need to set _type_child_slots when parent specifies it.");                 \
@@ -714,7 +744,7 @@ Program Listing for File object.h
    TVM_FFI_INLINE bool IsObjectInstance(int32_t object_type_index) {
      static_assert(std::is_base_of_v<Object, TargetType>);
      // Everything is a subclass of object.
-     if constexpr (std::is_same_v<TargetType, Object>) {
+     if constexpr (std::is_same_v<std::remove_cv_t<TargetType>, Object>) {
        return true;
      } else if constexpr (TargetType::_type_final) {
        // if the target type is a final type
@@ -951,6 +981,7 @@ Program Listing for File object.h
        }
        TVMFFIObject* obj_ptr = details::ObjectUnsafe::TVMFFIObjectPtrFromObjectPtr(src);
        result->type_index = obj_ptr->type_index;
+       TVM_FFI_UNSAFE_ASSUME(result->type_index >= TypeIndex::kTVMFFIStaticObjectBegin);
        result->zero_padding = 0;
        TVM_FFI_CLEAR_PTR_PADDING_IN_FFI_ANY(result);
        result->v_obj = obj_ptr;
@@ -963,6 +994,7 @@ Program Listing for File object.h
        }
        TVMFFIObject* obj_ptr = details::ObjectUnsafe::MoveObjectPtrToTVMFFIObjectPtr(std::move(src));
        result->type_index = obj_ptr->type_index;
+       TVM_FFI_UNSAFE_ASSUME(result->type_index >= TypeIndex::kTVMFFIStaticObjectBegin);
        result->zero_padding = 0;
        TVM_FFI_CLEAR_PTR_PADDING_IN_FFI_ANY(result);
        result->v_obj = obj_ptr;
@@ -1054,6 +1086,7 @@ Program Listing for File object.h
        }
        TVMFFIObject* obj_ptr = details::ObjectUnsafe::TVMFFIObjectPtrFromObjectRef(src);
        result->type_index = obj_ptr->type_index;
+       TVM_FFI_UNSAFE_ASSUME(result->type_index >= TypeIndex::kTVMFFIStaticObjectBegin);
        result->zero_padding = 0;
        TVM_FFI_CLEAR_PTR_PADDING_IN_FFI_ANY(result);
        result->v_obj = obj_ptr;
@@ -1068,6 +1101,7 @@ Program Listing for File object.h
        }
        TVMFFIObject* obj_ptr = details::ObjectUnsafe::MoveObjectRefToTVMFFIObjectPtr(std::move(src));
        result->type_index = obj_ptr->type_index;
+       TVM_FFI_UNSAFE_ASSUME(result->type_index >= TypeIndex::kTVMFFIStaticObjectBegin);
        result->zero_padding = 0;
        TVM_FFI_CLEAR_PTR_PADDING_IN_FFI_ANY(result);
        result->v_obj = obj_ptr;
@@ -1158,6 +1192,7 @@ Program Listing for File object.h
      TVM_FFI_INLINE static void CopyToAnyView(TObject* src, TVMFFIAny* result) {
        TVMFFIObject* obj_ptr = details::ObjectUnsafe::GetHeader(src);
        result->type_index = obj_ptr->type_index;
+       TVM_FFI_UNSAFE_ASSUME(result->type_index >= TypeIndex::kTVMFFIStaticObjectBegin);
        result->zero_padding = 0;
        TVM_FFI_CLEAR_PTR_PADDING_IN_FFI_ANY(result);
        result->v_obj = obj_ptr;
@@ -1166,6 +1201,7 @@ Program Listing for File object.h
      TVM_FFI_INLINE static void MoveToAny(TObject* src, TVMFFIAny* result) {
        TVMFFIObject* obj_ptr = details::ObjectUnsafe::GetHeader(src);
        result->type_index = obj_ptr->type_index;
+       TVM_FFI_UNSAFE_ASSUME(result->type_index >= TypeIndex::kTVMFFIStaticObjectBegin);
        result->zero_padding = 0;
        TVM_FFI_CLEAR_PTR_PADDING_IN_FFI_ANY(result);
        result->v_obj = obj_ptr;

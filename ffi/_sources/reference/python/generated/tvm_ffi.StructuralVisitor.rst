@@ -18,6 +18,7 @@
       ~StructuralVisitor.__move_handle_from__
       ~StructuralVisitor._move
       ~StructuralVisitor.def_region_kind
+      ~StructuralVisitor.default_visit
       ~StructuralVisitor.is_
       ~StructuralVisitor.same_as
       ~StructuralVisitor.visit

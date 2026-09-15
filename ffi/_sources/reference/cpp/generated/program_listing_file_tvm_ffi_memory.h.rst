@@ -134,7 +134,7 @@ Program Listing for File memory.h
    
        ~AllocGuard() noexcept {
          if (data_ != nullptr) {
-           ObjectUnsafe::GetObjectAllocHeaderFromPtr(data_)->delete_space(data_);
+           AlignedFree(data_);
          }
        }
    
@@ -163,11 +163,7 @@ Program Listing for File memory.h
          // class with non-virtual destructor.
          // We are fine here as we captured the right deleter during construction.
          // This is also the right way to get storage type for an object pool.
-         static_assert(alignof(T) <= alignof(::std::max_align_t),
-                       "Object types with alignment > max_align_t are not supported "
-                       "by the custom allocator hook");
-         TVMFFICustomAllocator* alloc = TVMFFIGetCustomAllocator();
-         void* data = alloc->allocate(sizeof(T), alignof(T), T::RuntimeTypeIndex(), alloc->context);
+         void* data = AlignedAlloc(sizeof(T), alignof(T));
          AllocGuard alloc_guard(data);
          new (data) T(std::forward<Args>(args)...);
          alloc_guard.Release();
@@ -188,8 +184,7 @@ Program Listing for File memory.h
            tptr->T::~T();
          }
          if (flags & kTVMFFIObjectDeleterFlagBitMaskWeak) {
-           ObjectUnsafe::GetObjectAllocHeaderFromPtr(static_cast<void*>(tptr))
-               ->delete_space(static_cast<void*>(tptr));
+           AlignedFree(static_cast<void*>(tptr));
          }
        }
      };
@@ -217,17 +212,12 @@ Program Listing for File memory.h
          static_assert(
              alignof(ArrayType) % alignof(ElemType) == 0 && sizeof(ArrayType) % alignof(ElemType) == 0,
              "element alignment constraint");
-         static_assert(alignof(ArrayType) <= alignof(::std::max_align_t),
-                       "Object types with alignment > max_align_t are not supported "
-                       "by the custom allocator hook");
          size_t size = sizeof(ArrayType) + sizeof(ElemType) * num_elems;
          // round up to the nearest multiple of align
          constexpr size_t align = alignof(ArrayType);
          // C++ standard always guarantees that alignof operator returns a power of 2
          size_t aligned_size = (size + (align - 1)) & ~(align - 1);
-         TVMFFICustomAllocator* alloc = TVMFFIGetCustomAllocator();
-         void* data =
-             alloc->allocate(aligned_size, align, ArrayType::RuntimeTypeIndex(), alloc->context);
+         void* data = AlignedAlloc(aligned_size, align);
          AllocGuard alloc_guard(data);
          new (data) ArrayType(std::forward<Args>(args)...);
          alloc_guard.Release();
@@ -248,8 +238,7 @@ Program Listing for File memory.h
            tptr->ArrayType::~ArrayType();
          }
          if (flags & kTVMFFIObjectDeleterFlagBitMaskWeak) {
-           ObjectUnsafe::GetObjectAllocHeaderFromPtr(static_cast<void*>(tptr))
-               ->delete_space(static_cast<void*>(tptr));
+           AlignedFree(static_cast<void*>(tptr));
          }
        }
      };

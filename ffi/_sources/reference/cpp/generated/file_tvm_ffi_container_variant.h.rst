@@ -55,6 +55,8 @@ Included By
 
 - :ref:`file_tvm_ffi_extra_dataclass.h`
 
+- :ref:`file_tvm_ffi_extra_structural_mutate.h`
+
 - :ref:`file_tvm_ffi_extra_structural_visit.h`
 
 - :ref:`file_tvm_ffi_reflection_overload.h`
