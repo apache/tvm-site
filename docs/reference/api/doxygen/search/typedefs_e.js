@@ -1,6 +1,6 @@
 var searchData=
 [
-  ['tcalleffectkind_0',['TCallEffectKind',['../namespacetvm_1_1tirx.html#ae25c9d6f13d0eed4ecf2f94d720055a9',1,'tvm::tirx']]],
+  ['tcalleffectkind_0',['TCallEffectKind',['../namespacetvm.html#a199994bae3b0c543fc79e168f37bebbf',1,'tvm']]],
   ['tdeviceintrinsicnamespace_1',['TDeviceIntrinsicNamespace',['../namespacetvm_1_1tirx.html#adb1ead40684cfba4ce58fc011f22b02d',1,'tvm::tirx']]],
   ['tglobalsymbol_2',['TGlobalSymbol',['../namespacetvm_1_1tirx.html#a89bccb1e2371cac4687dca2b2f1b4060',1,'tvm::tirx']]],
   ['thashcode_3',['thashcode',['../classtvm_1_1s__tir_1_1meta__schedule_1_1Workload.html#a92a9ccd9c964c283847dd66505b15406',1,'tvm::s_tir::meta_schedule::Workload::THashCode'],['../classtvm_1_1s__tir_1_1meta__schedule_1_1WorkloadNode.html#a06e80b1eca89561c121b5a460f29e3a8',1,'tvm::s_tir::meta_schedule::WorkloadNode::THashCode']]],

@@ -19,7 +19,7 @@ var searchData=
   ['calldoc_16',['calldoc',['../classtvm_1_1script_1_1printer_1_1CallDoc.html#ae26a9378550bb5750464fd299b33e9ed',1,'tvm::script::printer::CallDoc::CallDoc()'],['../classtvm_1_1script_1_1printer_1_1CallDoc.html',1,'tvm::script::printer::CallDoc']]],
   ['calldocnode_17',['CallDocNode',['../classtvm_1_1script_1_1printer_1_1CallDocNode.html',1,'tvm::script::printer']]],
   ['callee_18',['callee',['../classtvm_1_1script_1_1printer_1_1CallDocNode.html#afd99b131a9accf85284b528203e71413',1,'tvm::script::printer::CallDocNode::callee'],['../classtvm_1_1script_1_1printer_1_1OpCallDocNode.html#adbcf4a3aabbe1d82f73fc2d5f6154f6b',1,'tvm::script::printer::OpCallDocNode::callee']]],
-  ['calleffectkind_19',['CallEffectKind',['../namespacetvm_1_1tirx.html#ac1a485fc52c206da5adba5b1f5850339',1,'tvm::tirx']]],
+  ['calleffectkind_19',['CallEffectKind',['../namespacetvm.html#aa80b1c23bd976ef8420358cfd4cd724a',1,'tvm']]],
   ['callingconv_20',['CallingConv',['../namespacetvm.html#a85e4536ea4e1c8d3d48c61135f0a8ff0',1,'tvm']]],
   ['callinplacepackedattrs_21',['CallInplacePackedAttrs',['../structtvm_1_1relax_1_1CallInplacePackedAttrs.html',1,'tvm::relax']]],
   ['callnode_22',['CallNode',['../classtvm_1_1CallNode.html',1,'tvm']]],

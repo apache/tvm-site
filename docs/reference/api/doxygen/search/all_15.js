@@ -30,7 +30,7 @@ var searchData=
   ['tasks_5f_27',['tasks_',['../classtvm_1_1s__tir_1_1meta__schedule_1_1TaskSchedulerNode.html#a5e481f16c680029d25b83072144a79a0',1,'tvm::s_tir::meta_schedule::TaskSchedulerNode']]],
   ['taskscheduler_28',['taskscheduler',['../classtvm_1_1s__tir_1_1meta__schedule_1_1TaskScheduler.html',1,'tvm::s_tir::meta_schedule::TaskScheduler'],['../classtvm_1_1s__tir_1_1meta__schedule_1_1TaskScheduler.html#a25daa154a4bacc6a29be32301984a22b',1,'tvm::s_tir::meta_schedule::TaskScheduler::TaskScheduler()']]],
   ['taskschedulernode_29',['TaskSchedulerNode',['../classtvm_1_1s__tir_1_1meta__schedule_1_1TaskSchedulerNode.html',1,'tvm::s_tir::meta_schedule']]],
-  ['tcalleffectkind_30',['TCallEffectKind',['../namespacetvm_1_1tirx.html#ae25c9d6f13d0eed4ecf2f94d720055a9',1,'tvm::tirx']]],
+  ['tcalleffectkind_30',['TCallEffectKind',['../namespacetvm.html#a199994bae3b0c543fc79e168f37bebbf',1,'tvm']]],
   ['tdeviceintrinsicnamespace_31',['TDeviceIntrinsicNamespace',['../namespacetvm_1_1tirx.html#adb1ead40684cfba4ce58fc011f22b02d',1,'tvm::tirx']]],
   ['te_5fgrad_5fkwargs_32',['te_grad_kwargs',['../structtvm_1_1relax_1_1CallTIRWithGradAttrs.html#afad3a6b3d8350e9c02736d09aaf90bd1',1,'tvm::relax::CallTIRWithGradAttrs']]],
   ['te_5fgrad_5fname_33',['te_grad_name',['../structtvm_1_1relax_1_1CallTIRWithGradAttrs.html#a9a9a9fa22fc80aff2d71b46e6515879a',1,'tvm::relax::CallTIRWithGradAttrs']]],
