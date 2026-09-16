@@ -1,6 +1,6 @@
 var searchData=
 [
-  ['q_5fmultiply_5fshift_0',['q_multiply_shift',['../namespacetvm_1_1tirx_1_1builtin.html#a9f801f2337f6a8e9a8d99a09a75c8678',1,'tvm::tirx::builtin::q_multiply_shift()'],['../namespacetvm.html#ac788f9eb54a8971596779537afc6c896',1,'tvm::q_multiply_shift()']]],
+  ['q_5fmultiply_5fshift_0',['q_multiply_shift',['../namespacetvm_1_1tirx_1_1builtin.html#a9f801f2337f6a8e9a8d99a09a75c8678',1,'tvm::tirx::builtin::q_multiply_shift()'],['../namespacetvm_1_1prim.html#ad79c3562c8c7fa713466238b6e86d6c2',1,'tvm::prim::q_multiply_shift()']]],
   ['q_5fmultiply_5fshift_5fper_5faxis_1',['q_multiply_shift_per_axis',['../namespacetvm_1_1tirx_1_1builtin.html#ac54d648f9f36cf5cc0a96cf31726bc83',1,'tvm::tirx::builtin']]],
   ['qdq_2eh_2',['qdq.h',['../qdq_8h.html',1,'']]],
   ['quantizeattrs_3',['QuantizeAttrs',['../structtvm_1_1relax_1_1QuantizeAttrs.html',1,'tvm::relax']]],

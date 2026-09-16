@@ -67,7 +67,7 @@ var searchData=
   ['boolean_64',['boolean',['../classtvm_1_1script_1_1printer_1_1LiteralDoc.html#a37e0ce5dbc9eb79a10ad3f7103d551a4',1,'tvm::script::printer::LiteralDoc::Boolean()'],['../namespacetvm_1_1script_1_1ir__builder_1_1tirx.html#ac7b794425f076247d1e7c9d4752e3a7c',1,'tvm::script::ir_builder::tirx::Boolean()']]],
   ['boundvars_65',['BoundVars',['../namespacetvm_1_1relax.html#ab5a6cda6d0966071dadf19b8af3cfe8c',1,'tvm::relax']]],
   ['break_66',['break',['../classtvm_1_1tirx_1_1Break.html#a3d1062af38de8b50f22a12f0d147af84',1,'tvm::tirx::Break::Break()'],['../namespacetvm_1_1script_1_1ir__builder_1_1tirx.html#a87e9ccf0a468aa9259fe3986e8927c55',1,'tvm::script::ir_builder::tirx::Break()']]],
-  ['break_5floop_67',['break_loop',['../namespacetvm.html#ae2393ca8dafa65593bc1096881d19120',1,'tvm::break_loop()'],['../namespacetvm_1_1tirx_1_1builtin.html#a588f34a15e6721bfa027001b501f6dad',1,'tvm::tirx::builtin::break_loop()']]],
+  ['break_5floop_67',['break_loop',['../namespacetvm_1_1prim.html#ad371bafd2fcc8cca888c909d3db35624',1,'tvm::prim::break_loop()'],['../namespacetvm_1_1tirx_1_1builtin.html#a588f34a15e6721bfa027001b501f6dad',1,'tvm::tirx::builtin::break_loop()']]],
   ['breakdoc_68',['BreakDoc',['../classtvm_1_1script_1_1printer_1_1BreakDoc.html#a69f4c973c34072c9aa53815a3cc0f27d',1,'tvm::script::printer::BreakDoc']]],
   ['broadcast_69',['Broadcast',['../classtvm_1_1prim_1_1Broadcast.html#a79b9d359fb53bb3ea5150b7bb11a693f',1,'tvm::prim::Broadcast']]],
   ['broadcast_5fto_70',['broadcast_to',['../namespacetvm_1_1topi.html#a10a64d62ed878750e934faf8d61fded7',1,'tvm::topi']]],

@@ -25,5 +25,5 @@ var searchData=
   ['hintframe_22',['HintFrame',['../classtvm_1_1script_1_1ir__builder_1_1tirx_1_1HintFrame.html#a4544399eddf6d211d303cf132b71e197',1,'tvm::script::ir_builder::tirx::HintFrame']]],
   ['hoistexpression_23',['HoistExpression',['../namespacetvm_1_1s__tir_1_1transform.html#a314cbfe0162cc1ffb4e392761694191d',1,'tvm::s_tir::transform']]],
   ['hoistifthenelse_24',['HoistIfThenElse',['../namespacetvm_1_1s__tir_1_1transform.html#a037e97d08520c63791ded380c95ebb7a',1,'tvm::s_tir::transform']]],
-  ['hypot_25',['hypot',['../namespacetvm.html#a28e456d33229a628a312110db8d45b44',1,'tvm']]]
+  ['hypot_25',['hypot',['../namespacetvm_1_1prim.html#ac79a801a0cc0196b7684ed429937ffde',1,'tvm::prim']]]
 ];
