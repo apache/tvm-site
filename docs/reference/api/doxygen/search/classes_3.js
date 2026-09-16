@@ -52,6 +52,6 @@ var searchData=
   ['dropoutattrs_49',['DropoutAttrs',['../structtvm_1_1relax_1_1DropoutAttrs.html',1,'tvm::relax']]],
   ['dtensortype_50',['DTensorType',['../classtvm_1_1relax_1_1distributed_1_1DTensorType.html',1,'tvm::relax::distributed']]],
   ['dtensortypenode_51',['DTensorTypeNode',['../classtvm_1_1relax_1_1distributed_1_1DTensorTypeNode.html',1,'tvm::relax::distributed']]],
-  ['dummyglobalinfo_52',['DummyGlobalInfo',['../classtvm_1_1DummyGlobalInfo.html',1,'tvm']]],
-  ['dummyglobalinfonode_53',['DummyGlobalInfoNode',['../classtvm_1_1DummyGlobalInfoNode.html',1,'tvm']]]
+  ['dummyglobalinfo_52',['DummyGlobalInfo',['../classtvm_1_1relax_1_1DummyGlobalInfo.html',1,'tvm::relax']]],
+  ['dummyglobalinfonode_53',['DummyGlobalInfoNode',['../classtvm_1_1relax_1_1DummyGlobalInfoNode.html',1,'tvm::relax']]]
 ];
