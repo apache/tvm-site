@@ -35,7 +35,7 @@ var searchData=
   ['exprstmtdocnode_32',['ExprStmtDocNode',['../classtvm_1_1script_1_1printer_1_1ExprStmtDocNode.html',1,'tvm::script::printer']]],
   ['exprstringdoc_33',['ExprStringDoc',['../classtvm_1_1script_1_1printer_1_1ExprStringDoc.html',1,'tvm::script::printer']]],
   ['exprstringdocnode_34',['ExprStringDocNode',['../classtvm_1_1script_1_1printer_1_1ExprStringDocNode.html',1,'tvm::script::printer']]],
-  ['exprvisitor_35',['exprvisitor',['../classtvm_1_1ExprVisitor.html',1,'tvm::ExprVisitor'],['../classtvm_1_1relax_1_1ExprVisitor.html',1,'tvm::relax::ExprVisitor'],['../classtvm_1_1tirx_1_1ExprVisitor.html',1,'tvm::tirx::ExprVisitor']]],
+  ['exprvisitor_35',['exprvisitor',['../classtvm_1_1ExprVisitor.html',1,'tvm::ExprVisitor'],['../classtvm_1_1relax_1_1ExprVisitor.html',1,'tvm::relax::ExprVisitor']]],
   ['externfunc_36',['ExternFunc',['../classtvm_1_1relax_1_1ExternFunc.html',1,'tvm::relax']]],
   ['externfuncnode_37',['ExternFuncNode',['../classtvm_1_1relax_1_1ExternFuncNode.html',1,'tvm::relax']]],
   ['externfuncpattern_38',['ExternFuncPattern',['../classtvm_1_1relax_1_1ExternFuncPattern.html',1,'tvm::relax']]],
