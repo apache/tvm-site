@@ -18,7 +18,7 @@ var searchData=
   ['execsplit_15',['ExecSplit',['../structtvm_1_1tirx_1_1ExecSplit.html',1,'tvm::tirx']]],
   ['expanddimsattrs_16',['ExpandDimsAttrs',['../structtvm_1_1relax_1_1ExpandDimsAttrs.html',1,'tvm::relax']]],
   ['expr_17',['Expr',['../classtvm_1_1Expr.html',1,'tvm']]],
-  ['exprdeepequal_18',['ExprDeepEqual',['../structtvm_1_1tirx_1_1ExprDeepEqual.html',1,'tvm::tirx']]],
+  ['exprdeepequal_18',['ExprDeepEqual',['../structtvm_1_1prim_1_1ExprDeepEqual.html',1,'tvm::prim']]],
   ['exprdoc_19',['ExprDoc',['../classtvm_1_1script_1_1printer_1_1ExprDoc.html',1,'tvm::script::printer']]],
   ['exprdocnode_20',['ExprDocNode',['../classtvm_1_1script_1_1printer_1_1ExprDocNode.html',1,'tvm::script::printer']]],
   ['exprfunctor_21',['exprfunctor',['../classtvm_1_1ExprFunctor.html',1,'tvm::ExprFunctor&lt; FType &gt;'],['../classtvm_1_1relax_1_1ExprFunctor.html',1,'tvm::relax::ExprFunctor&lt; FType &gt;'],['../classtvm_1_1tirx_1_1ExprFunctor.html',1,'tvm::tirx::ExprFunctor&lt; FType &gt;']]],
