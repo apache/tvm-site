@@ -25,10 +25,9 @@ var searchData=
   ['buffer_5fdim_5falign_22',['buffer_dim_align',['../namespacetvm_1_1s__tir_1_1attr.html#a575c421abfa1ab9a51c3ceeb35d6b483',1,'tvm::s_tir::attr']]],
   ['buffer_5fdtype_23',['buffer_dtype',['../classtvm_1_1PrinterConfigNode.html#ace42a7b4868f3eaf878af125b07cdef4',1,'tvm::PrinterConfigNode']]],
   ['buffer_5fmap_24',['buffer_map',['../classtvm_1_1script_1_1ir__builder_1_1tirx_1_1PrimFuncFrameNode.html#a562d80758dd9cc142771f2617e17560b',1,'tvm::script::ir_builder::tirx::PrimFuncFrameNode']]],
-  ['buffer_5fremap_5f_25',['buffer_remap_',['../classtvm_1_1tirx_1_1StmtMutator.html#a9c86e1a19de5084923629c922a95af41',1,'tvm::tirx::StmtMutator']]],
-  ['buffer_5fwriters_26',['buffer_writers',['../classtvm_1_1tirx_1_1SBlockScopeNode.html#acdd643497d50fe038481b80a5324dd32',1,'tvm::tirx::SBlockScopeNode']]],
-  ['build_5ferror_5fcount_27',['build_error_count',['../classtvm_1_1s__tir_1_1meta__schedule_1_1TaskRecordNode.html#a6f101efd88a20f909cfb66530279c594',1,'tvm::s_tir::meta_schedule::TaskRecordNode']]],
-  ['builder_5f_28',['builder_',['../classtvm_1_1relax_1_1ExprMutator.html#ad973a81b770749899858d6ea2650a06b',1,'tvm::relax::ExprMutator']]],
-  ['builder_5fresults_29',['builder_results',['../classtvm_1_1s__tir_1_1meta__schedule_1_1TaskRecordNode.html#a42704a89c13006a52c8321b6c72f44f2',1,'tvm::s_tir::meta_schedule::TaskRecordNode']]],
-  ['byte_5foffset_30',['byte_offset',['../structtvm_1_1runtime_1_1vm_1_1TensorCacheMetadata_1_1FileRecord_1_1ParamRecord.html#a4ac2dec11b5a06a26e319ef9d452afad',1,'tvm::runtime::vm::TensorCacheMetadata::FileRecord::ParamRecord']]]
+  ['buffer_5fwriters_25',['buffer_writers',['../classtvm_1_1tirx_1_1SBlockScopeNode.html#acdd643497d50fe038481b80a5324dd32',1,'tvm::tirx::SBlockScopeNode']]],
+  ['build_5ferror_5fcount_26',['build_error_count',['../classtvm_1_1s__tir_1_1meta__schedule_1_1TaskRecordNode.html#a6f101efd88a20f909cfb66530279c594',1,'tvm::s_tir::meta_schedule::TaskRecordNode']]],
+  ['builder_5f_27',['builder_',['../classtvm_1_1relax_1_1ExprMutator.html#ad973a81b770749899858d6ea2650a06b',1,'tvm::relax::ExprMutator']]],
+  ['builder_5fresults_28',['builder_results',['../classtvm_1_1s__tir_1_1meta__schedule_1_1TaskRecordNode.html#a42704a89c13006a52c8321b6c72f44f2',1,'tvm::s_tir::meta_schedule::TaskRecordNode']]],
+  ['byte_5foffset_29',['byte_offset',['../structtvm_1_1runtime_1_1vm_1_1TensorCacheMetadata_1_1FileRecord_1_1ParamRecord.html#a4ac2dec11b5a06a26e319ef9d452afad',1,'tvm::runtime::vm::TensorCacheMetadata::FileRecord::ParamRecord']]]
 ];
