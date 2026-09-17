@@ -19,7 +19,7 @@ var searchData=
   ['defined_5fnames_16',['defined_names',['../classtvm_1_1script_1_1printer_1_1IRDocsifierNode.html#a9182b49ffcff743e3f92e4101199ffa4',1,'tvm::script::printer::IRDocsifierNode']]],
   ['depth_17',['depth',['../structtvm_1_1relax_1_1OneHotAttrs.html#ab60c9699004245b58f997bfea8376164',1,'tvm::relax::OneHotAttrs']]],
   ['derive_5ffunc_18',['derive_func',['../classtvm_1_1relax_1_1FuncTypeNode.html#ab877d4cbc0b07a7ae93ccf2b2e55e718',1,'tvm::relax::FuncTypeNode']]],
-  ['desc_19',['desc',['../classtvm_1_1tirx_1_1TensorIntrinNode.html#a014b6c93f9edd52275fbfdf88f4fcf35',1,'tvm::tirx::TensorIntrinNode']]],
+  ['desc_19',['desc',['../classtvm_1_1s__tir_1_1TensorIntrinNode.html#aaedd36e37023c0210d57c31b3d910bf3',1,'tvm::s_tir::TensorIntrinNode']]],
   ['descending_20',['descending',['../structtvm_1_1relax_1_1SortAttrs.html#a2ca7f48406dd763ea3b60dfadee75555',1,'tvm::relax::SortAttrs::descending'],['../structtvm_1_1relax_1_1ArgsortAttrs.html#afed38a04188259898f709469f2bc65dd',1,'tvm::relax::ArgsortAttrs::descending']]],
   ['description_21',['description',['../classtvm_1_1ArgumentInfoNode.html#a054f84cfb7212257ede051cec518eb94',1,'tvm::ArgumentInfoNode::description'],['../classtvm_1_1OpNode.html#a31ca0b41cca71c1250a163d14baef7b9',1,'tvm::OpNode::description']]],
   ['dest_22',['dest',['../structtvm_1_1s__tir_1_1MemCpyDetails.html#a48706a44360a71274e21373b0a1dc590',1,'tvm::s_tir::MemCpyDetails']]],

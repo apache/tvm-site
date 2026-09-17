@@ -1,7 +1,7 @@
 var searchData=
 [
-  ['matchbufferregion_0',['MatchBufferRegion',['../classtvm_1_1tirx_1_1MatchBufferRegion.html',1,'tvm::tirx']]],
-  ['matchbufferregionnode_1',['MatchBufferRegionNode',['../classtvm_1_1tirx_1_1MatchBufferRegionNode.html',1,'tvm::tirx']]],
+  ['matchbufferregion_0',['MatchBufferRegion',['../classtvm_1_1s__tir_1_1MatchBufferRegion.html',1,'tvm::s_tir']]],
+  ['matchbufferregionnode_1',['MatchBufferRegionNode',['../classtvm_1_1s__tir_1_1MatchBufferRegionNode.html',1,'tvm::s_tir']]],
   ['matchcast_2',['MatchCast',['../classtvm_1_1relax_1_1MatchCast.html',1,'tvm::relax']]],
   ['matchcastnode_3',['MatchCastNode',['../classtvm_1_1relax_1_1MatchCastNode.html',1,'tvm::relax']]],
   ['matchresult_4',['MatchResult',['../classtvm_1_1relax_1_1MatchResult.html',1,'tvm::relax']]],
