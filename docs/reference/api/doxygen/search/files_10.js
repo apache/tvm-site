@@ -15,6 +15,6 @@ var searchData=
   ['trace_2eh_12',['trace.h',['../trace_8h.html',1,'']]],
   ['transform_2eh_13',['transform.h',['../s__tir_2backend_2adreno_2transform_8h.html',1,'(Global Namespace)'],['../topi_2transform_8h.html',1,'(Global Namespace)'],['../tirx_2transform_8h.html',1,'(Global Namespace)'],['../s__tir_2transform_8h.html',1,'(Global Namespace)'],['../relax_2transform_8h.html',1,'(Global Namespace)'],['../relax_2distributed_2transform_8h.html',1,'(Global Namespace)'],['../relax_2backend_2adreno_2transform_8h.html',1,'(Global Namespace)'],['../ir_2transform_8h.html',1,'(Global Namespace)']]],
   ['tune_5fcontext_2eh_14',['tune_context.h',['../tune__context_8h.html',1,'']]],
-  ['type_2eh_15',['type.h',['../ir_2type_8h.html',1,'(Global Namespace)'],['../relax_2type_8h.html',1,'(Global Namespace)'],['../relax_2distributed_2type_8h.html',1,'(Global Namespace)']]],
+  ['type_2eh_15',['type.h',['../ir_2type_8h.html',1,'(Global Namespace)'],['../tirx_2type_8h.html',1,'(Global Namespace)'],['../relax_2type_8h.html',1,'(Global Namespace)'],['../relax_2distributed_2type_8h.html',1,'(Global Namespace)']]],
   ['type_5ffunctor_2eh_16',['type_functor.h',['../type__functor_8h.html',1,'']]]
 ];

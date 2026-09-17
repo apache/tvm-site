@@ -104,7 +104,7 @@ var searchData=
   ['stmtexprmutator_101',['StmtExprMutator',['../classtvm_1_1tirx_1_1StmtExprMutator.html',1,'tvm::tirx']]],
   ['stmtexprvisitor_102',['StmtExprVisitor',['../classtvm_1_1tirx_1_1StmtExprVisitor.html',1,'tvm::tirx']]],
   ['stmtfunctor_103',['StmtFunctor',['../classtvm_1_1tirx_1_1StmtFunctor.html',1,'tvm::tirx']]],
-  ['stmtfunctor_3c_20r_28const_20stmt_20_26n_2c_20args_2e_2e_2e_20args_29_3e_104',['StmtFunctor&lt; R(const Stmt &amp;n, Args... args)&gt;',['../classtvm_1_1tirx_1_1StmtFunctor_3_01R_07const_01Stmt_01_6n_00_01Args_8_8_8_01args_08_4.html',1,'tvm::tirx']]],
+  ['stmtfunctor_3c_20r_28const_20stmt_20_26_2c_20args_2e_2e_2e_29_3e_104',['StmtFunctor&lt; R(const Stmt &amp;, Args...)&gt;',['../classtvm_1_1tirx_1_1StmtFunctor_3_01R_07const_01Stmt_01_6_00_01Args_8_8_8_08_4.html',1,'tvm::tirx']]],
   ['stmtnode_105',['StmtNode',['../classtvm_1_1tirx_1_1StmtNode.html',1,'tvm::tirx']]],
   ['stmtsref_106',['StmtSRef',['../classtvm_1_1tirx_1_1StmtSRef.html',1,'tvm::tirx']]],
   ['stmtsrefnode_107',['StmtSRefNode',['../classtvm_1_1tirx_1_1StmtSRefNode.html',1,'tvm::tirx']]],

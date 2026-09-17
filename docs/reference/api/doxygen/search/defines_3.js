@@ -1,4 +1,5 @@
 var searchData=
 [
-  ['labelrange_0',['LABELRANGE',['../einsum_8h.html#a763d27d8c15e2c975f9938c942bda4d2',1,'einsum.h']]]
+  ['npy_5fmaxargs_0',['NPY_MAXARGS',['../einsum_8h.html#a001b5a5cffb1e85728a176fed1180683',1,'einsum.h']]],
+  ['npy_5fmaxdims_1',['NPY_MAXDIMS',['../einsum_8h.html#a737679ea9ee902bfa707c146051c17b5',1,'einsum.h']]]
 ];

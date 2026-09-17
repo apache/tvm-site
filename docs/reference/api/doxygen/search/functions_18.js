@@ -30,7 +30,7 @@ var searchData=
   ['_7esearchstrategynode_27',['~SearchStrategyNode',['../classtvm_1_1s__tir_1_1meta__schedule_1_1SearchStrategyNode.html#a161e0d401069c92fd5eff75ed71fc406',1,'tvm::s_tir::meta_schedule::SearchStrategyNode']]],
   ['_7esessionobj_28',['~SessionObj',['../classtvm_1_1runtime_1_1SessionObj.html#a9c10fd783f8713935e284ef79201661a',1,'tvm::runtime::SessionObj']]],
   ['_7espacegeneratornode_29',['~SpaceGeneratorNode',['../classtvm_1_1s__tir_1_1meta__schedule_1_1SpaceGeneratorNode.html#a5192a306d940e069c090e69dc113ab6e',1,'tvm::s_tir::meta_schedule::SpaceGeneratorNode']]],
-  ['_7estmtfunctor_30',['~StmtFunctor',['../classtvm_1_1tirx_1_1StmtFunctor_3_01R_07const_01Stmt_01_6n_00_01Args_8_8_8_01args_08_4.html#a27833a6cecad6ae53913d078dd835c98',1,'tvm::tirx::StmtFunctor&lt; R(const Stmt &amp;n, Args... args)&gt;']]],
+  ['_7estmtfunctor_30',['~StmtFunctor',['../classtvm_1_1tirx_1_1StmtFunctor_3_01R_07const_01Stmt_01_6_00_01Args_8_8_8_08_4.html#a386ce37d7939cbce0cff380b48134742',1,'tvm::tirx::StmtFunctor&lt; R(const Stmt &amp;, Args...)&gt;']]],
   ['_7estorageobj_31',['~StorageObj',['../classtvm_1_1runtime_1_1memory_1_1StorageObj.html#a4a7ed495e72911b721ce076130b90117',1,'tvm::runtime::memory::StorageObj']]],
   ['_7estream_32',['~Stream',['../classtvm_1_1support_1_1Stream.html#a662e97a18989c94131d45a2ebe905294',1,'tvm::support::Stream']]],
   ['_7etaskschedulernode_33',['~TaskSchedulerNode',['../classtvm_1_1s__tir_1_1meta__schedule_1_1TaskSchedulerNode.html#a943a0de45399985200c36a4ce9e2fb70',1,'tvm::s_tir::meta_schedule::TaskSchedulerNode']]],
