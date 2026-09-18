@@ -113,8 +113,10 @@ var searchData=
   ['storageobj_110',['StorageObj',['../classtvm_1_1runtime_1_1memory_1_1StorageObj.html',1,'tvm::runtime::memory']]],
   ['stream_111',['Stream',['../classtvm_1_1support_1_1Stream.html',1,'tvm::support']]],
   ['stridedsliceattrs_112',['StridedSliceAttrs',['../structtvm_1_1relax_1_1StridedSliceAttrs.html',1,'tvm::relax']]],
-  ['stringimm_113',['stringimm',['../classtvm_1_1prim_1_1StringImm.html',1,'tvm::prim::StringImm'],['../classtvm_1_1relax_1_1StringImm.html',1,'tvm::relax::StringImm']]],
-  ['stringimmnode_114',['stringimmnode',['../classtvm_1_1prim_1_1StringImmNode.html',1,'tvm::prim::StringImmNode'],['../classtvm_1_1relax_1_1StringImmNode.html',1,'tvm::relax::StringImmNode']]],
-  ['sub_115',['Sub',['../classtvm_1_1prim_1_1Sub.html',1,'tvm::prim']]],
-  ['subnode_116',['SubNode',['../classtvm_1_1prim_1_1SubNode.html',1,'tvm::prim']]]
+  ['stringimm_113',['StringImm',['../classtvm_1_1StringImm.html',1,'tvm']]],
+  ['stringimmnode_114',['StringImmNode',['../classtvm_1_1StringImmNode.html',1,'tvm']]],
+  ['stringtype_115',['StringType',['../classtvm_1_1StringType.html',1,'tvm']]],
+  ['stringtypenode_116',['StringTypeNode',['../classtvm_1_1StringTypeNode.html',1,'tvm']]],
+  ['sub_117',['Sub',['../classtvm_1_1prim_1_1Sub.html',1,'tvm::prim']]],
+  ['subnode_118',['SubNode',['../classtvm_1_1prim_1_1SubNode.html',1,'tvm::prim']]]
 ];

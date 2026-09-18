@@ -322,7 +322,7 @@ available. In CPU-only documentation builds, they produce no output.
             def gv(data_1: R.Tensor((1, 3, 32, 32), dtype="float32")) -> R.Tensor((1, 16, 30, 30), dtype="float32"):
                 R.func_attr({"Composite": "tensorrt.nn.conv2d"})
                 with R.dataflow():
-                    gv_1: R.Tensor((1, 16, 30, 30), dtype="float32") = R.nn.conv2d(data_1, metadata["relax.expr.Constant"][0], strides=[1, 1], padding=[0, 0, 0, 0], dilation=[1, 1], groups=1, data_layout="NCHW", kernel_layout="OIHW", out_layout="NCHW", out_dtype=None)
+                    gv_1: R.Tensor((1, 16, 30, 30), dtype="float32") = R.nn.conv2d(data_1, metadata["ir.GenericConst"][0], strides=[1, 1], padding=[0, 0, 0, 0], dilation=[1, 1], groups=1, data_layout="NCHW", kernel_layout="OIHW", out_layout="NCHW", out_dtype=None)
                     R.output(gv_1)
                 return gv_1
 

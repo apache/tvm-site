@@ -133,7 +133,7 @@ The standard workflow is: ``torch.export.export()`` → ``from_exported_program(
                 lv: R.Tensor((1, 16, 32, 32), dtype="float32") = R.nn.conv2d(x, p_conv_weight, strides=[1, 1], padding=[1, 1, 1, 1], dilation=[1, 1], groups=1, data_layout="NCHW", kernel_layout="OIHW", out_layout="NCHW", out_dtype="float32")
                 lv1: R.Tensor((1, 16, 1, 1), dtype="float32") = R.reshape(p_conv_bias, R.shape([1, 16, 1, 1]))
                 lv2: R.Tensor((1, 16, 32, 32), dtype="float32") = R.add(lv, lv1)
-                lv3: R.Tuple(R.Tensor((1, 16, 32, 32), dtype="float32"), R.Tensor((16,), dtype="float32"), R.Tensor((16,), dtype="float32")) = R.nn.batch_norm(lv2, p_bn_weight, p_bn_bias, metadata["relax.expr.Constant"][0], metadata["relax.expr.Constant"][1], axis=1, epsilon=1.0000000000000001e-05, center=True, scale=True, momentum=0.10000000000000001, training=False)
+                lv3: R.Tuple(R.Tensor((1, 16, 32, 32), dtype="float32"), R.Tensor((16,), dtype="float32"), R.Tensor((16,), dtype="float32")) = R.nn.batch_norm(lv2, p_bn_weight, p_bn_bias, metadata["ir.GenericConst"][0], metadata["ir.GenericConst"][1], axis=1, epsilon=1.0000000000000001e-05, center=True, scale=True, momentum=0.10000000000000001, training=False)
                 lv4: R.Tensor((1, 16, 32, 32), dtype="float32") = lv3[0]
                 lv5: R.Tensor((1, 16, 32, 32), dtype="float32") = R.nn.relu(lv4)
                 lv6: R.Tensor((1, 16, 1, 1), dtype="float32") = R.mean(lv5, axis=[-1, -2], keepdims=True)
@@ -464,7 +464,7 @@ Below we create a minimal TFLite model from TensorFlow and import it.
                 lv: R.Tensor((10, 784), dtype="float32") = R.permute_dims(serving_default_weight_0, axes=[1, 0])
                 lv1: R.Tensor((784, 10), dtype="float32") = R.permute_dims(lv, axes=[1, 0])
                 lv2: R.Tensor((1, 10), dtype="float32") = R.matmul(serving_default_x_0, lv1, out_dtype=None)
-                gv: R.Tensor((1, 10), dtype="float32") = R.add(lv2, metadata["relax.expr.Constant"][0])
+                gv: R.Tensor((1, 10), dtype="float32") = R.add(lv2, metadata["ir.GenericConst"][0])
                 R.output(gv)
             return gv
 

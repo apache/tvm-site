@@ -72,7 +72,7 @@ var searchData=
   ['typedexpr_69',['TypedExpr',['../classtvm_1_1TypedExpr.html',1,'tvm']]],
   ['typedexpr_3c_20primtype_20_3e_70',['TypedExpr&lt; PrimType &gt;',['../classtvm_1_1TypedExpr.html',1,'tvm']]],
   ['typedexprwithfallbacktraitsbase_71',['TypedExprWithFallbackTraitsBase',['../structtvm_1_1ffi_1_1TypedExprWithFallbackTraitsBase.html',1,'tvm::ffi']]],
-  ['typedexprwithfallbacktraitsbase_3c_20primexpr_2c_20primtype_2c_20strictbool_2c_20int64_5ft_2c_20double_2c_20ffi_3a_3astring_2c_20primexprconvertible_20_3e_72',['TypedExprWithFallbackTraitsBase&lt; PrimExpr, PrimType, StrictBool, int64_t, double, ffi::String, PrimExprConvertible &gt;',['../structtvm_1_1ffi_1_1TypedExprWithFallbackTraitsBase.html',1,'tvm::ffi']]],
+  ['typedexprwithfallbacktraitsbase_3c_20primexpr_2c_20primtype_2c_20strictbool_2c_20int64_5ft_2c_20double_2c_20primexprconvertible_20_3e_72',['TypedExprWithFallbackTraitsBase&lt; PrimExpr, PrimType, StrictBool, int64_t, double, PrimExprConvertible &gt;',['../structtvm_1_1ffi_1_1TypedExprWithFallbackTraitsBase.html',1,'tvm::ffi']]],
   ['typefunctor_73',['TypeFunctor',['../classtvm_1_1relax_1_1TypeFunctor.html',1,'tvm::relax']]],
   ['typefunctor_3c_20r_28const_20type_20_26n_2c_20args_2e_2e_2e_29_3e_74',['TypeFunctor&lt; R(const Type &amp;n, Args...)&gt;',['../classtvm_1_1relax_1_1TypeFunctor_3_01R_07const_01Type_01_6n_00_01Args_8_8_8_08_4.html',1,'tvm::relax']]],
   ['typefunctor_3c_20type_28const_20type_20_26n_29_3e_75',['TypeFunctor&lt; Type(const Type &amp;n)&gt;',['../classtvm_1_1relax_1_1TypeFunctor.html',1,'tvm::relax']]],
@@ -88,7 +88,7 @@ var searchData=
   ['typetraits_3c_20primtype_20_3e_85',['TypeTraits&lt; PrimType &gt;',['../structtvm_1_1ffi_1_1TypeTraits_3_01PrimType_01_4.html',1,'tvm::ffi']]],
   ['typetraits_3c_20primvar_20_3e_86',['TypeTraits&lt; PrimVar &gt;',['../structtvm_1_1ffi_1_1TypeTraits_3_01PrimVar_01_4.html',1,'tvm::ffi']]],
   ['typetraits_3c_20tirx_3a_3abuffervar_20_3e_87',['TypeTraits&lt; tirx::BufferVar &gt;',['../structtvm_1_1ffi_1_1TypeTraits_3_01tirx_1_1BufferVar_01_4.html',1,'tvm::ffi']]],
-  ['typetraits_3c_20tvm_3a_3aprim_3a_3astringimm_20_3e_88',['TypeTraits&lt; tvm::prim::StringImm &gt;',['../structtvm_1_1ffi_1_1TypeTraits_3_01tvm_1_1prim_1_1StringImm_01_4.html',1,'tvm::ffi']]],
+  ['typetraits_3c_20tvm_3a_3astringimm_20_3e_88',['TypeTraits&lt; tvm::StringImm &gt;',['../structtvm_1_1ffi_1_1TypeTraits_3_01tvm_1_1StringImm_01_4.html',1,'tvm::ffi']]],
   ['typetraits_3c_20typedexpr_3c_20expectedtype_20_3e_20_3e_89',['TypeTraits&lt; TypedExpr&lt; ExpectedType &gt; &gt;',['../structtvm_1_1ffi_1_1TypeTraits_3_01TypedExpr_3_01ExpectedType_01_4_01_4.html',1,'tvm::ffi']]],
   ['typevisitor_90',['TypeVisitor',['../classtvm_1_1relax_1_1TypeVisitor.html',1,'tvm::relax']]]
 ];
