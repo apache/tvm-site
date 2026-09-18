@@ -46,7 +46,7 @@ var searchData=
   ['tovdeviceattrs_43',['ToVDeviceAttrs',['../structtvm_1_1relax_1_1ToVDeviceAttrs.html',1,'tvm::relax']]],
   ['trace_44',['Trace',['../classtvm_1_1s__tir_1_1Trace.html',1,'tvm::s_tir']]],
   ['tracenode_45',['TraceNode',['../classtvm_1_1s__tir_1_1TraceNode.html',1,'tvm::s_tir']]],
-  ['transitivecomparisonanalyzer_46',['TransitiveComparisonAnalyzer',['../classtvm_1_1arith_1_1TransitiveComparisonAnalyzer.html',1,'tvm::arith']]],
+  ['transitivecomparisonanalyzer_46',['TransitiveComparisonAnalyzer',['../classtvm_1_1sym_1_1TransitiveComparisonAnalyzer.html',1,'tvm::sym']]],
   ['triluattrs_47',['TriluAttrs',['../structtvm_1_1relax_1_1TriluAttrs.html',1,'tvm::relax']]],
   ['tunecontext_48',['TuneContext',['../classtvm_1_1s__tir_1_1meta__schedule_1_1TuneContext.html',1,'tvm::s_tir::meta_schedule']]],
   ['tunecontextnode_49',['TuneContextNode',['../classtvm_1_1s__tir_1_1meta__schedule_1_1TuneContextNode.html',1,'tvm::s_tir::meta_schedule']]],

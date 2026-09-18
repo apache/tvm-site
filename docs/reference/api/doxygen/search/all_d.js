@@ -87,7 +87,7 @@ var searchData=
   ['looppartition_84',['looppartition',['../classtvm_1_1s__tir_1_1ScheduleNode.html#a1d6bbe56b8860da48d76190bbcff972e',1,'tvm::s_tir::ScheduleNode::LoopPartition()'],['../namespacetvm_1_1s__tir_1_1transform.html#a6d9ad51765f625bc3022b200ab682dd9',1,'tvm::s_tir::transform::LoopPartition()']]],
   ['looprv_85',['looprv',['../classtvm_1_1s__tir_1_1LoopRV.html',1,'tvm::s_tir::LoopRV'],['../classtvm_1_1s__tir_1_1LoopRV.html#ac9d782ff4502c7b4525263e77e47c1a8',1,'tvm::s_tir::LoopRV::LoopRV()']]],
   ['looprvnode_86',['LoopRVNode',['../classtvm_1_1s__tir_1_1LoopRVNode.html',1,'tvm::s_tir']]],
-  ['lower_5ffactor_87',['lower_factor',['../classtvm_1_1arith_1_1IterSplitExprNode.html#a21dc15af4502a5106f831082463c0f40',1,'tvm::arith::IterSplitExprNode']]],
+  ['lower_5ffactor_87',['lower_factor',['../classtvm_1_1sym_1_1IterSplitExprNode.html#a93c05cf03f6e3e971f79ea6876136bd4',1,'tvm::sym::IterSplitExprNode']]],
   ['lowerasyncdma_88',['LowerAsyncDMA',['../namespacetvm_1_1s__tir_1_1transform.html#a812f1fb1db5263c32ec0aef0e9841821',1,'tvm::s_tir::transform']]],
   ['lowerautocopy_89',['LowerAutoCopy',['../namespacetvm_1_1s__tir_1_1transform.html#a0a2473f3c93a19447dd54737b49d675c',1,'tvm::s_tir::transform']]],
   ['lowercrossthreadreduction_90',['LowerCrossThreadReduction',['../namespacetvm_1_1s__tir_1_1transform.html#a450da4d39a34a9dc570b8f4830ceab9b',1,'tvm::s_tir::transform']]],

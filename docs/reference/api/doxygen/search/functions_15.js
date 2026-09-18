@@ -9,7 +9,7 @@ var searchData=
   ['varremapset_6',['VarRemapSet',['../classtvm_1_1ObjectMutator.html#aef871f9f816a526a7755997f6551f385',1,'tvm::ObjectMutator']]],
   ['varremapsetexpected_7',['VarRemapSetExpected',['../classtvm_1_1ObjectMutator.html#a739cb0f0c4789b601fd613ea2e13bfe2',1,'tvm::ObjectMutator']]],
   ['vdevice_8',['VDevice',['../classtvm_1_1relax_1_1VDevice.html#a57855a5392df000478ba8585e1d0fa5c',1,'tvm::relax::VDevice']]],
-  ['vector_9',['Vector',['../classtvm_1_1arith_1_1IntSet.html#a29b6f1e60f4b328fcfabc514e0c10f17',1,'tvm::arith::IntSet']]],
+  ['vector_9',['Vector',['../classtvm_1_1sym_1_1IntSet.html#ab4bb32bb2f56ee4d1f55ef526fff505b',1,'tvm::sym::IntSet']]],
   ['vectorcombine_10',['vectorcombine',['../namespacetvm_1_1tirx_1_1builtin.html#a85392d960b3d71e4127e34d375e6924d',1,'tvm::tirx::builtin']]],
   ['vectorhigh_11',['vectorhigh',['../namespacetvm_1_1tirx_1_1builtin.html#a7ee9480d325ddf2b428cc1753e9ee129',1,'tvm::tirx::builtin']]],
   ['vectorize_12',['Vectorize',['../classtvm_1_1s__tir_1_1ScheduleNode.html#a2c127b633205af565427664a973a825c',1,'tvm::s_tir::ScheduleNode']]],

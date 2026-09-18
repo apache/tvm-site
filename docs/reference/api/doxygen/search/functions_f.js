@@ -28,7 +28,7 @@ var searchData=
   ['planandupdatebufferallocationlocation_25',['PlanAndUpdateBufferAllocationLocation',['../namespacetvm_1_1s__tir_1_1transform.html#a31bee6f59acb6cc5ad81cf6387ab0a56',1,'tvm::s_tir::transform']]],
   ['pointertype_26',['PointerType',['../classtvm_1_1PointerType.html#a13c14aa973359645b18988de76c381b8',1,'tvm::PointerType']]],
   ['pointervaluetyperewrite_27',['PointerValueTypeRewrite',['../namespacetvm_1_1tirx_1_1transform.html#a31ab61c2116f93cda74a17fc2c0a14e3',1,'tvm::tirx::transform']]],
-  ['pointvalue_28',['PointValue',['../classtvm_1_1arith_1_1IntSet.html#ae76ec395be3ac3fb52d47fda539bb985',1,'tvm::arith::IntSet']]],
+  ['pointvalue_28',['PointValue',['../classtvm_1_1sym_1_1IntSet.html#a194bf7eca1822c50612dac60f47d31db',1,'tvm::sym::IntSet']]],
   ['pool1d_29',['pool1d',['../namespacetvm_1_1topi_1_1nn.html#af90bfd1ab2d46c8ddec90ae2e8ba018e',1,'tvm::topi::nn']]],
   ['pool2d_30',['pool2d',['../namespacetvm_1_1topi_1_1nn.html#a656543b7022862841288756c53ce28b3',1,'tvm::topi::nn']]],
   ['pool3d_31',['pool3d',['../namespacetvm_1_1topi_1_1nn.html#a50607a371c8e1ee9a232666527070057',1,'tvm::topi::nn']]],

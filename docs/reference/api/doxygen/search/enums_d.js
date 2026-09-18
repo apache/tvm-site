@@ -5,5 +5,5 @@ var searchData=
   ['scopebinding_2',['ScopeBinding',['../namespacetvm_1_1tirx.html#ab2fb207581a0c58e7667287500aa1068',1,'tvm::tirx']]],
   ['scopekind_3',['ScopeKind',['../namespacetvm_1_1tirx.html#a5557ec0aa484324e44adaa012ff081c4',1,'tvm::tirx']]],
   ['scriptdtypeprintlocation_4',['ScriptDtypePrintLocation',['../namespacetvm_1_1tirx.html#a80975d0460ff2131a5f3b29908ec18cd',1,'tvm::tirx']]],
-  ['signtype_5',['SignType',['../namespacetvm_1_1arith.html#aca8806e355ad3dd5f1df9c1eca9aac9d',1,'tvm::arith']]]
+  ['signtype_5',['SignType',['../namespacetvm_1_1sym.html#a1c6cbf529ef7cb45cf082dbe8708c2a2',1,'tvm::sym']]]
 ];

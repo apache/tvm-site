@@ -16,7 +16,7 @@ var searchData=
   ['returndocnode_13',['ReturnDocNode',['../classtvm_1_1script_1_1printer_1_1ReturnDocNode.html',1,'tvm::script::printer']]],
   ['returnnode_14',['ReturnNode',['../classtvm_1_1tirx_1_1ReturnNode.html',1,'tvm::tirx']]],
   ['reversesequenceattrs_15',['ReverseSequenceAttrs',['../structtvm_1_1relax_1_1ReverseSequenceAttrs.html',1,'tvm::relax']]],
-  ['rewritesimplifier_16',['RewriteSimplifier',['../classtvm_1_1arith_1_1RewriteSimplifier.html',1,'tvm::arith']]],
+  ['rewritesimplifier_16',['RewriteSimplifier',['../classtvm_1_1sym_1_1RewriteSimplifier.html',1,'tvm::sym']]],
   ['rmsnormattrs_17',['RMSNormAttrs',['../structtvm_1_1relax_1_1RMSNormAttrs.html',1,'tvm::relax']]],
   ['roialignattrs_18',['ROIAlignAttrs',['../structtvm_1_1relax_1_1ROIAlignAttrs.html',1,'tvm::relax']]],
   ['roipoolattrs_19',['ROIPoolAttrs',['../structtvm_1_1relax_1_1ROIPoolAttrs.html',1,'tvm::relax']]],

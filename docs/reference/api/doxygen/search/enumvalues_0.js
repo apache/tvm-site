@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['bijective_0',['Bijective',['../namespacetvm_1_1arith.html#a243b60bbe2d3852099eb65454b240c63add09a1312b40f018ee4714799cdb0c81',1,'tvm::arith']]]
+  ['bijective_0',['Bijective',['../namespacetvm_1_1sym.html#afbbf34adac93082f4ce8a4bbc2ad1e2bad43180987df8ea75cb7aaea14cac39b9',1,'tvm::sym']]]
 ];

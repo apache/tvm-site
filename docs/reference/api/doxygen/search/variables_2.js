@@ -4,7 +4,7 @@ var searchData=
   ['barrier_5fflag_1',['barrier_flag',['../classtvm_1_1runtime_1_1cuda__ipc_1_1CUDAIPCMemoryObj.html#aba77dd23312758b704fecc4ea004a4ef',1,'tvm::runtime::cuda_ipc::CUDAIPCMemoryObj']]],
   ['barrier_5fin_2',['barrier_in',['../classtvm_1_1runtime_1_1cuda__ipc_1_1CUDAIPCMemoryObj.html#a8d4a0fe583176227e28e77214e82ec2a',1,'tvm::runtime::cuda_ipc::CUDAIPCMemoryObj']]],
   ['barrier_5fout_3',['barrier_out',['../classtvm_1_1runtime_1_1cuda__ipc_1_1CUDAIPCMemoryObj.html#a78705723c7a73985bf86b0b946164168',1,'tvm::runtime::cuda_ipc::CUDAIPCMemoryObj']]],
-  ['base_4',['base',['../classtvm_1_1arith_1_1ModularSetNode.html#afe63e5586712774be5935e86121431ad',1,'tvm::arith::ModularSetNode::base'],['../classtvm_1_1arith_1_1IterSumExprNode.html#ab9516d8fa15d4691d2255e4d5371bdc6',1,'tvm::arith::IterSumExprNode::base'],['../classtvm_1_1prim_1_1RampNode.html#a556ef0605a354657ad3e44fe1fa5d044',1,'tvm::prim::RampNode::base']]],
+  ['base_4',['base',['../classtvm_1_1prim_1_1RampNode.html#a556ef0605a354657ad3e44fe1fa5d044',1,'tvm::prim::RampNode::base'],['../classtvm_1_1sym_1_1ModularSetNode.html#a11afcd4f3d30e34c900fc7e8177655ec',1,'tvm::sym::ModularSetNode::base'],['../classtvm_1_1sym_1_1IterSumExprNode.html#a6726e0511cda9dee70d3202841799c65',1,'tvm::sym::IterSumExprNode::base']]],
   ['batch_5faxis_5',['batch_axis',['../structtvm_1_1relax_1_1ReverseSequenceAttrs.html#a34bb2e286746f45c8b5e2ca1fd8509d2',1,'tvm::relax::ReverseSequenceAttrs']]],
   ['batch_5fdims_6',['batch_dims',['../structtvm_1_1relax_1_1GatherNDAttrs.html#a093e51a3549a184323dfedce9f2a3257',1,'tvm::relax::GatherNDAttrs']]],
   ['beta_7',['beta',['../structtvm_1_1relax_1_1SoftplusAttrs.html#aab9e5b177ba08e3ded170fe85bdc439a',1,'tvm::relax::SoftplusAttrs']]],
