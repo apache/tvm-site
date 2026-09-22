@@ -11,7 +11,7 @@ var searchData=
   ['dataflowuseinplacecalls_8',['DataflowUseInplaceCalls',['../namespacetvm_1_1relax_1_1transform.html#a11f82e9471203ddc307c67bc858a28d8',1,'tvm::relax::transform']]],
   ['dataflowvar_9',['DataflowVar',['../classtvm_1_1relax_1_1DataflowVar.html#a678ced1f81f32b7800dae5658e87d0b8',1,'tvm::relax::DataflowVar']]],
   ['dataflowvarpattern_10',['DataflowVarPattern',['../classtvm_1_1relax_1_1DataflowVarPattern.html#a03bea82d4b0b0cafc9e5a5c1ca9d598c',1,'tvm::relax::DataflowVarPattern']]],
-  ['datapointertype_11',['datapointertype',['../classtvm_1_1tirx_1_1BufferTypeNode.html#aebdbc9f11cc6f1e4f32330677116c126',1,'tvm::tirx::BufferTypeNode::DataPointerType()'],['../classtvm_1_1tirx_1_1BufferVar.html#a5ff50d0ff915bde811467ecb69c864d9',1,'tvm::tirx::BufferVar::DataPointerType()']]],
+  ['datapointertype_11',['datapointertype',['../classtvm_1_1tirx_1_1BufferVar.html#a5ff50d0ff915bde811467ecb69c864d9',1,'tvm::tirx::BufferVar::DataPointerType()'],['../classtvm_1_1tirx_1_1BufferTypeNode.html#aebdbc9f11cc6f1e4f32330677116c126',1,'tvm::tirx::BufferTypeNode::DataPointerType()']]],
   ['datatype_12',['datatype',['../classtvm_1_1script_1_1printer_1_1LiteralDoc.html#a1463052c66282c80054ed850e14da66d',1,'tvm::script::printer::LiteralDoc::DataType()'],['../classtvm_1_1runtime_1_1Tensor.html#a2954936e9e928cc3b1085ac54b77e1e7',1,'tvm::runtime::Tensor::DataType()']]],
   ['datatypepattern_13',['DataTypePattern',['../classtvm_1_1relax_1_1DataTypePattern.html#abcc257d33d11e726769890457521cc9d',1,'tvm::relax::DataTypePattern']]],
   ['deadcodeelimination_14',['DeadCodeElimination',['../namespacetvm_1_1relax_1_1transform.html#afc435a69f08a8e5eee5c2bce0dfd6992',1,'tvm::relax::transform']]],

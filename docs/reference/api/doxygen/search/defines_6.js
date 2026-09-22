@@ -17,7 +17,7 @@ var searchData=
   ['tvm_5fdefine_5flogical_5fop_5fconst_5fval_5foverload_5fspanned_14',['TVM_DEFINE_LOGICAL_OP_CONST_VAL_OVERLOAD_SPANNED',['../ir_2prim_2op_8h.html#a29826503ae15ba83c6bc8e6cbe218a69',1,'op.h']]],
   ['tvm_5fdefine_5fobject_5ffunctor_5fdefault_5fconstructor_15',['TVM_DEFINE_OBJECT_FUNCTOR_DEFAULT_CONSTRUCTOR',['../object__functor_8h.html#a4a48df19c48977e46bc4814dcfc05292',1,'object_functor.h']]],
   ['tvm_5fdefine_5fobject_5fref_5fcow_5fmethod_16',['TVM_DEFINE_OBJECT_REF_COW_METHOD',['../cow_8h.html#af8330e3864503fb7c4133ae4d48fe4a2',1,'cow.h']]],
-  ['tvm_5findex_5fdefault_5fi64_17',['TVM_INDEX_DEFAULT_I64',['../buffer_8h.html#af4c763c99c1617d96f0779aad8b70e38',1,'buffer.h']]],
+  ['tvm_5findex_5fdefault_5fi64_17',['TVM_INDEX_DEFAULT_I64',['../tirx_2type_8h.html#af4c763c99c1617d96f0779aad8b70e38',1,'type.h']]],
   ['tvm_5finst_5fkind_5fregister_5fvar_5fdef_18',['TVM_INST_KIND_REGISTER_VAR_DEF',['../instruction_8h.html#a013bf2d8c6153ab1ed207f9639cfffd2',1,'instruction.h']]],
   ['tvm_5fnvtx_5fenabled_19',['TVM_NVTX_ENABLED',['../nvtx_8h.html#a82f7e3ec0cf59b11006e1a28d549740a',1,'nvtx.h']]],
   ['tvm_5fnvtx_5ffunc_5fscope_20',['TVM_NVTX_FUNC_SCOPE',['../nvtx_8h.html#a45ac4dbf6468688cf6ee395f0df273bc',1,'nvtx.h']]],
