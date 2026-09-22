@@ -91,7 +91,7 @@ var searchData=
   ['searchstrategy_88',['SearchStrategy',['../classtvm_1_1s__tir_1_1meta__schedule_1_1SearchStrategy.html',1,'tvm::s_tir::meta_schedule']]],
   ['searchstrategynode_89',['SearchStrategyNode',['../classtvm_1_1s__tir_1_1meta__schedule_1_1SearchStrategyNode.html',1,'tvm::s_tir::meta_schedule']]],
   ['seed_90',['seed',['../classtvm_1_1s__tir_1_1LinearCongruentialEngine.html#a22691b964b9163c0047ca29a80f36e7b',1,'tvm::s_tir::LinearCongruentialEngine::Seed()'],['../classtvm_1_1s__tir_1_1ScheduleNode.html#a65e5448786106b000c5ebd13a49d03f8',1,'tvm::s_tir::ScheduleNode::Seed()']]],
-  ['select_91',['select',['../namespacetvm_1_1tirx.html#a57376ed47b4b4b7be0762f9a212ab055',1,'tvm::tirx::select()'],['../classtvm_1_1prim_1_1Select.html',1,'tvm::prim::Select'],['../classtvm_1_1prim_1_1Select.html#afddd9539e40f3ef09fab111493c849e5',1,'tvm::prim::Select::Select()']]],
+  ['select_91',['select',['../classtvm_1_1prim_1_1Select.html',1,'tvm::prim::Select'],['../namespacetvm_1_1tirx.html#a57376ed47b4b4b7be0762f9a212ab055',1,'tvm::tirx::select()'],['../classtvm_1_1prim_1_1Select.html#afddd9539e40f3ef09fab111493c849e5',1,'tvm::prim::Select::Select()']]],
   ['selectnode_92',['SelectNode',['../classtvm_1_1prim_1_1SelectNode.html',1,'tvm::prim']]],
   ['selector_93',['selector',['../namespacetvm_1_1tirx_1_1builtin.html#a5f7c0b0215e10d9662f9e3d791512adf',1,'tvm::tirx::builtin']]],
   ['send_94',['Send',['../classtvm_1_1runtime_1_1DiscoChannel.html#adc3703fea5d53129f1793488723e9e15',1,'tvm::runtime::DiscoChannel']]],
