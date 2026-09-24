@@ -36,5 +36,5 @@ Computation times
      - 00:00.108
      - 0.0
    * - :ref:`sphx_glr_deep_dive_relax_tutorials_relax_transformation.py` (``relax_transformation.py``)
-     - 00:00.070
+     - 00:00.069
      - 0.0
