@@ -481,7 +481,7 @@ is that we need to specify the shape of the input tensors as symbolic variables.
     @I.ir_module
     class Module:
         @T.prim_func(s_tir=True)
-        def mm_relu(A: T.Buffer(("m", "n"), "float32"), B: T.Buffer(("k", n), "float32"), C: T.Buffer((m, n), "float32")):
+        def mm_relu(A: T.Buffer(("m", "n"), "float32"), B: T.Buffer(("k", "n"), "float32"), C: T.Buffer(("m", "n"), "float32")):
             m, n = T.int32(), T.int32()
             k = T.int32()
             T.func_attr({"tirx.noalias": True})

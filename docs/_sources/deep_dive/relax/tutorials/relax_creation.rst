@@ -76,6 +76,8 @@ high-level Relax operators using TVMScript.
 
     # from typing import TypeVar
     # from tvm.script import ir as I
+    # from tvm.script import tirx as T
+    # from tvm.tirx.layout import Axis
     # from tvm.script import relax as R
 
     n = TypeVar("n")
@@ -83,6 +85,7 @@ high-level Relax operators using TVMScript.
     class Module:
         @R.function
         def forward(data: R.Tensor((n, 784), dtype="float32"), w0: R.Tensor((128, 784), dtype="float32"), b0: R.Tensor((128,), dtype="float32"), w1: R.Tensor((10, 128), dtype="float32"), b1: R.Tensor((10,), dtype="float32")) -> R.Tensor((n, 10), dtype="float32"):
+            n = T.int64()
             with R.dataflow():
                 lv: R.Tensor((784, 128), dtype="float32") = R.permute_dims(w0, axes=None)
                 lv1: R.Tensor((n, 128), dtype="float32") = R.matmul(data, lv, out_dtype=None)
@@ -163,16 +166,19 @@ TensorIR functions in Relax function.
     class Module:
         @T.prim_func(s_tir=True)
         def relu(X: T.Buffer((n, m), "float32"), Y: T.Buffer((n, m), "float32")):
+            m = T.int64()
+            n = T.int64()
             # with T.sblock("root"):
             for i, j in T.grid(n, m):
                 with T.sblock("relu"):
-                    vi, vj = T.axis.remap("SS", [i, j])
-                    T.reads(X[vi, vj])
-                    T.writes(Y[vi, vj])
-                    Y[vi, vj] = T.max(X[vi, vj], T.float32(0.0))
+                    v, v_1 = T.axis.remap("SS", [i, j])
+                    T.reads(X[v, v_1])
+                    T.writes(Y[v, v_1])
+                    Y[v, v_1] = T.max(X[v, v_1], T.float32(0.0))
 
         @R.function
         def forward(data: R.Tensor((n, 784), dtype="float32"), w0: R.Tensor((128, 784), dtype="float32"), b0: R.Tensor((128,), dtype="float32"), w1: R.Tensor((10, 128), dtype="float32"), b1: R.Tensor((10,), dtype="float32")) -> R.Tensor((n, 10), dtype="float32"):
+            n = T.int64()
             cls = Module
             with R.dataflow():
                 lv: R.Tensor((784, 128), dtype="float32") = R.permute_dims(w0, axes=None)
@@ -276,6 +282,8 @@ After we define the NNModule, we can export it to TVM IRModule via
 
     # from typing import TypeVar
     # from tvm.script import ir as I
+    # from tvm.script import tirx as T
+    # from tvm.tirx.layout import Axis
     # from tvm.script import relax as R
 
     n = TypeVar("n")
@@ -283,6 +291,7 @@ After we define the NNModule, we can export it to TVM IRModule via
     class Module:
         @R.function
         def forward(x: R.Tensor((n, 784), dtype="float32"), fc1_weight: R.Tensor((128, 784), dtype="float32"), fc1_bias: R.Tensor((128,), dtype="float32"), fc2_weight: R.Tensor((10, 128), dtype="float32"), fc2_bias: R.Tensor((10,), dtype="float32")) -> R.Tensor((n, 10), dtype="float32"):
+            n = T.int64()
             R.func_attr({"num_input": 1})
             with R.dataflow():
                 permute_dims: R.Tensor((784, 128), dtype="float32") = R.permute_dims(fc1_weight, axes=None)
@@ -386,6 +395,7 @@ Tensor Expression(TE), TensorIR functions or other TVM packed functions.
     class Module:
         @T.prim_func(private=True, s_tir=True)
         def relu(env_linear: T.Buffer((n, T.int64(128)), "float32"), compute: T.Buffer((n, T.int64(128)), "float32")):
+            n = T.int64()
             T.func_attr({"tirx.noalias": True})
             # with T.sblock("root"):
             for i0, i1 in T.grid(n, T.int64(128)):
@@ -397,24 +407,28 @@ Tensor Expression(TE), TensorIR functions or other TVM packed functions.
 
         @T.prim_func(s_tir=True)
         def tir_linear(X: T.Buffer((M, K), "float32"), W: T.Buffer((N, K), "float32"), B: T.Buffer((N,), "float32"), Z: T.Buffer((M, N), "float32")):
+            K = T.int64()
+            M = T.int64()
+            N = T.int64()
             # with T.sblock("root"):
             for i, j, k in T.grid(M, N, K):
                 with T.sblock("linear"):
-                    vi, vj, vk = T.axis.remap("SSR", [i, j, k])
-                    T.reads(X[vi, vk], W[vj, vk])
-                    T.writes(Z[vi, vj])
+                    v, v_1, v_2 = T.axis.remap("SSR", [i, j, k])
+                    T.reads(X[v, v_2], W[v_1, v_2])
+                    T.writes(Z[v, v_1])
                     with T.init():
-                        Z[vi, vj] = T.float32(0.0)
-                    Z[vi, vj] = Z[vi, vj] + X[vi, vk] * W[vj, vk]
+                        Z[v, v_1] = T.float32(0.0)
+                    Z[v, v_1] = Z[v, v_1] + X[v, v_2] * W[v_1, v_2]
             for i, j in T.grid(M, N):
                 with T.sblock("add"):
-                    vi, vj = T.axis.remap("SS", [i, j])
-                    T.reads(Z[vi, vj], B[vj])
-                    T.writes(Z[vi, vj])
-                    Z[vi, vj] = Z[vi, vj] + B[vj]
+                    v, v_1 = T.axis.remap("SS", [i, j])
+                    T.reads(Z[v, v_1], B[v_1])
+                    T.writes(Z[v, v_1])
+                    Z[v, v_1] = Z[v, v_1] + B[v_1]
 
         @R.function
         def forward(x: R.Tensor((n, 784), dtype="float32"), fc1_weight: R.Tensor((128, 784), dtype="float32"), fc1_bias: R.Tensor((128,), dtype="float32"), fc2_weight: R.Tensor((10, 128), dtype="float32"), fc2_bias: R.Tensor((10,), dtype="float32")) -> R.Tensor((n, 10), dtype="float32"):
+            n = T.int64()
             R.func_attr({"num_input": 1})
             cls = Module
             with R.dataflow():
@@ -471,6 +485,8 @@ customized pass.
 
     # from typing import TypeVar
     # from tvm.script import ir as I
+    # from tvm.script import tirx as T
+    # from tvm.tirx.layout import Axis
     # from tvm.script import relax as R
 
     v = TypeVar("v")
@@ -478,6 +494,7 @@ customized pass.
     class Module:
         @R.function
         def forward(x: R.Tensor((v, 784), dtype="float32"), fc1_weight: R.Tensor((128, 784), dtype="float32"), fc1_bias: R.Tensor((128,), dtype="float32"), fc2_weight: R.Tensor((10, 128), dtype="float32"), fc2_bias: R.Tensor((10,), dtype="float32")) -> R.Tensor((v, 10), dtype="float32"):
+            v = T.int64()
             with R.dataflow():
                 lv: R.Tensor((784, 128), dtype="float32") = R.permute_dims(fc1_weight, axes=None)
                 lv1: R.Tensor((v, 128), dtype="float32") = R.matmul(x, lv, out_dtype=None)
@@ -550,6 +567,7 @@ Relax functions, TensorIR functions and other TVM packed functions.
     class Module:
         @T.prim_func(private=True, s_tir=True)
         def relu(lv: T.Buffer((v, T.int64(128)), "float32"), compute: T.Buffer((v, T.int64(128)), "float32")):
+            v = T.int64()
             T.func_attr({"tirx.noalias": True})
             # with T.sblock("root"):
             for i0, i1 in T.grid(v, T.int64(128)):
@@ -561,24 +579,28 @@ Relax functions, TensorIR functions and other TVM packed functions.
 
         @T.prim_func(s_tir=True)
         def tir_linear(X: T.Buffer((M, K), "float32"), W: T.Buffer((N, K), "float32"), B: T.Buffer((N,), "float32"), Z: T.Buffer((M, N), "float32")):
+            K = T.int64()
+            M = T.int64()
+            N = T.int64()
             # with T.sblock("root"):
             for i, j, k in T.grid(M, N, K):
                 with T.sblock("linear"):
-                    vi, vj, vk = T.axis.remap("SSR", [i, j, k])
-                    T.reads(X[vi, vk], W[vj, vk])
-                    T.writes(Z[vi, vj])
+                    v, v_1, v_2 = T.axis.remap("SSR", [i, j, k])
+                    T.reads(X[v, v_2], W[v_1, v_2])
+                    T.writes(Z[v, v_1])
                     with T.init():
-                        Z[vi, vj] = T.float32(0.0)
-                    Z[vi, vj] = Z[vi, vj] + X[vi, vk] * W[vj, vk]
+                        Z[v, v_1] = T.float32(0.0)
+                    Z[v, v_1] = Z[v, v_1] + X[v, v_2] * W[v_1, v_2]
             for i, j in T.grid(M, N):
                 with T.sblock("add"):
-                    vi, vj = T.axis.remap("SS", [i, j])
-                    T.reads(Z[vi, vj], B[vj])
-                    T.writes(Z[vi, vj])
-                    Z[vi, vj] = Z[vi, vj] + B[vj]
+                    v, v_1 = T.axis.remap("SS", [i, j])
+                    T.reads(Z[v, v_1], B[v_1])
+                    T.writes(Z[v, v_1])
+                    Z[v, v_1] = Z[v, v_1] + B[v_1]
 
         @R.function
         def forward(x: R.Tensor((v, 784), dtype="float32"), fc1_weight: R.Tensor((128, 784), dtype="float32"), fc1_bias: R.Tensor((128,), dtype="float32"), fc2_weight: R.Tensor((10, 128), dtype="float32"), fc2_bias: R.Tensor((10,), dtype="float32")) -> R.Tensor((v, 10), dtype="float32"):
+            v = T.int64()
             cls = Module
             with R.dataflow():
                 lv = R.call_dps_packed("env.linear", (x, fc1_weight, fc1_bias), out_ty=R.Tensor((v, 128), dtype="float32"))
