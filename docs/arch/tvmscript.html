@@ -690,8 +690,9 @@ fresh native variable, defaulting to int64. Reuse that object in ordinary Python
 stride and offset expressions to share identity; strings in those fields are not
 parsed as expressions. On Python 3.12+, explicit headers such as
 <code class="docutils literal notranslate"><span class="pre">def</span> <span class="pre">f[n,</span> <span class="pre">k:</span> <span class="pre">T.int32](...)</span></code> declare local symbols; <code class="docutils literal notranslate"><span class="pre">n:</span> <span class="pre">int</span></code> retains the int64
-default. Quote the whole annotation or use <code class="docutils literal notranslate"><span class="pre">from</span> <span class="pre">__future__</span> <span class="pre">import</span> <span class="pre">annotations</span></code>
-to defer eager Python evaluation of header symbols. Captured runtime <code class="docutils literal notranslate"><span class="pre">typing.TypeVar</span></code>
+default. Use <code class="docutils literal notranslate"><span class="pre">from</span> <span class="pre">__future__</span> <span class="pre">import</span> <span class="pre">annotations</span></code> to defer eager Python evaluation
+of header symbols. Explicit whole quoted annotations are rejected in script source;
+normal string arguments inside annotation constructors remain valid. Captured runtime <code class="docutils literal notranslate"><span class="pre">typing.TypeVar</span></code>
 objects are not script symbols; ordinary Python typing uses remain unaffected.</p>
 <p>An explicit scalar annotation <code class="docutils literal notranslate"><span class="pre">n:</span> <span class="pre">n</span></code> preserves a captured native symbol’s identity.
 An independently typed parameter such as <code class="docutils literal notranslate"><span class="pre">n:</span> <span class="pre">T.int32</span></code> and ordinary body locals
@@ -709,10 +710,23 @@ so option expressions execute once. Nested functions and module members use thei
 decorator options. Builder hooks own option defaults; <code class="docutils literal notranslate"><span class="pre">check_well_formed</span></code> remains a
 separate parser setting.</p>
 <p><code class="docutils literal notranslate"><span class="pre">tvm.script.parser.protocol_registry</span></code> records syntax policies under registered
-namespace paths. These policies identify scalar annotations, mutable declarations and
-result span handling. Symbolic shapes use concrete expressions. Source aliases resolve to those paths;
+canonical namespace paths rooted at <code class="docutils literal notranslate"><span class="pre">tirx</span></code>, <code class="docutils literal notranslate"><span class="pre">relax</span></code>, <code class="docutils literal notranslate"><span class="pre">ir</span></code> and <code class="docutils literal notranslate"><span class="pre">s_tir</span></code>.
+Source code selects its own aliases through imports or explicit environments; the parser
+does not provide implicit <code class="docutils literal notranslate"><span class="pre">T</span></code>, <code class="docutils literal notranslate"><span class="pre">R</span></code>, <code class="docutils literal notranslate"><span class="pre">I</span></code> or <code class="docutils literal notranslate"><span class="pre">Ts</span></code> bindings. For example,
+<code class="docutils literal notranslate"><span class="pre">from</span> <span class="pre">tvm.script</span> <span class="pre">import</span> <span class="pre">tirx</span> <span class="pre">as</span> <span class="pre">X</span></code> makes <code class="docutils literal notranslate"><span class="pre">X.prim_func</span></code> resolve to
+<code class="docutils literal notranslate"><span class="pre">tirx.prim_func</span></code> without changing the callable. Printed scripts show suggested imports
+as comments: include those imports in executable source or pass equivalent
+<code class="docutils literal notranslate"><span class="pre">extra_vars</span></code> when parsing a printed script. The public registration helpers
+identify scalar annotations and mutable
+declarations. Entry factories populate <code class="docutils literal notranslate"><span class="pre">DEFINITION_KIND</span></code> with <code class="docutils literal notranslate"><span class="pre">DefinitionKind</span></code>
+values: <code class="docutils literal notranslate"><span class="pre">FUNCTION</span></code> for regular and JIT IR definitions, <code class="docutils literal notranslate"><span class="pre">MACRO</span></code> for inline and macro
+expansion, and <code class="docutils literal notranslate"><span class="pre">PYTHON</span></code> for retained <code class="docutils literal notranslate"><span class="pre">I.pyfunc</span></code> runtime callables. Macro bodies
+construct IR in the caller’s context; Python bodies retain ordinary execution and do
+not need builder span context.
+All calls retain their source context, with binding hooks owning result attachment.
+Symbolic shapes use concrete expressions. Source aliases resolve to those paths;
 ordinary Python calls remain calls in the generated program. Explicit <code class="docutils literal notranslate"><span class="pre">constexpr</span></code>
-markers select host control flow during construction.</p>
+markers from the shared builder select host control flow during construction.</p>
 <p>JIT supplies <code class="docutils literal notranslate"><span class="pre">const_args</span></code>, a mapping from parameter names to fixed values. Explicit
 <code class="docutils literal notranslate"><span class="pre">None</span></code> values mark absent optional arguments and skip their annotation evaluation.
 Generated code reads the mapping through a fresh <code class="docutils literal notranslate"><span class="pre">_const_args</span></code> name. An empty map
