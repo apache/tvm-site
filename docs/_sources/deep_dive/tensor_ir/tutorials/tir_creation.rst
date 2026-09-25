@@ -50,7 +50,7 @@ Standard Format
 Let's take an example of ``mm_relu`` from :ref:`tirx-learning`. Here is the complete
 format of the ir_module and in TVMScript:
 
-.. GENERATED FROM PYTHON SOURCE LINES 54-94
+.. GENERATED FROM PYTHON SOURCE LINES 54-95
 
 .. code-block:: Python
 
@@ -60,12 +60,13 @@ format of the ir_module and in TVMScript:
 
     import tvm
     from tvm.script import ir as I
+    from tvm.script import s_tir as Ts
     from tvm.script import tirx as T
 
 
     @I.ir_module
     class MyModule:
-        @T.prim_func(s_tir=True)
+        @Ts.prim_func
         def mm_relu(
             A: T.Buffer((128, 128), "float32"),
             B: T.Buffer((128, 128), "float32"),
@@ -75,22 +76,22 @@ format of the ir_module and in TVMScript:
             for i in range(128):
                 for j in range(128):
                     for k in range(128):
-                        with T.sblock("Y"):
-                            vi = T.axis.spatial(128, i)
-                            vj = T.axis.spatial(128, j)
-                            vk = T.axis.reduce(128, k)
-                            T.reads(A[vi, vk], B[vk, vj])
-                            T.writes(Y[vi, vj])
-                            with T.init():
+                        with Ts.sblock("Y"):
+                            vi = Ts.axis.spatial(128, i)
+                            vj = Ts.axis.spatial(128, j)
+                            vk = Ts.axis.reduce(128, k)
+                            Ts.reads(A[vi, vk], B[vk, vj])
+                            Ts.writes(Y[vi, vj])
+                            with Ts.init():
                                 Y[vi, vj] = T.float32(0)
                             Y[vi, vj] = Y[vi, vj] + A[vi, vk] * B[vk, vj]
             for i in range(128):
                 for j in range(128):
-                    with T.sblock("C"):
-                        vi = T.axis.spatial(128, i)
-                        vj = T.axis.spatial(128, j)
-                        T.reads(Y[vi, vj])
-                        T.writes(C[vi, vj])
+                    with Ts.sblock("C"):
+                        vi = Ts.axis.spatial(128, i)
+                        vj = Ts.axis.spatial(128, j)
+                        Ts.reads(Y[vi, vj])
+                        Ts.writes(C[vi, vj])
                         C[vi, vj] = T.max(Y[vi, vj], T.float32(0))
 
 
@@ -101,7 +102,7 @@ format of the ir_module and in TVMScript:
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 95-104
+.. GENERATED FROM PYTHON SOURCE LINES 96-105
 
 Concise with Syntactic Sugar
 ****************************
@@ -109,11 +110,11 @@ For ease of writing, we can employ the following syntactic sugar to
 streamline the code:
 
 - Utilize ``T.grid`` to condense nested loops;
-- Employ ``T.axis.remap`` to abbreviate block iterator annotations;
-- Exclude ``T.reads`` and ``T.writes`` for blocks whose content can
+- Employ ``Ts.axis.remap`` to abbreviate block iterator annotations;
+- Exclude ``Ts.reads`` and ``Ts.writes`` for blocks whose content can
   be inferred from the block body;
 
-.. GENERATED FROM PYTHON SOURCE LINES 104-127
+.. GENERATED FROM PYTHON SOURCE LINES 105-128
 
 .. code-block:: Python
 
@@ -121,7 +122,7 @@ streamline the code:
 
     @I.ir_module
     class ConciseModule:
-        @T.prim_func(s_tir=True)
+        @Ts.prim_func
         def mm_relu(
             A: T.Buffer((128, 128), "float32"),
             B: T.Buffer((128, 128), "float32"),
@@ -129,14 +130,14 @@ streamline the code:
         ):
             Y = T.alloc_buffer((128, 128), dtype="float32")
             for i, j, k in T.grid(128, 128, 128):
-                with T.sblock("Y"):
-                    vi, vj, vk = T.axis.remap("SSR", [i, j, k])
-                    with T.init():
+                with Ts.sblock("Y"):
+                    vi, vj, vk = Ts.axis.remap("SSR", [i, j, k])
+                    with Ts.init():
                         Y[vi, vj] = T.float32(0)
                     Y[vi, vj] = Y[vi, vj] + A[vi, vk] * B[vk, vj]
             for i, j in T.grid(128, 128):
-                with T.sblock("C"):
-                    vi, vj = T.axis.remap("SS", [i, j])
+                with Ts.sblock("C"):
+                    vi, vj = Ts.axis.remap("SS", [i, j])
                     C[vi, vj] = T.max(Y[vi, vj], T.float32(0))
 
 
@@ -147,11 +148,11 @@ streamline the code:
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 128-129
+.. GENERATED FROM PYTHON SOURCE LINES 129-130
 
 We can use the following code to verify that the two modules are equivalent:
 
-.. GENERATED FROM PYTHON SOURCE LINES 129-132
+.. GENERATED FROM PYTHON SOURCE LINES 130-133
 
 .. code-block:: Python
 
@@ -171,7 +172,7 @@ We can use the following code to verify that the two modules are equivalent:
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 133-138
+.. GENERATED FROM PYTHON SOURCE LINES 134-139
 
 Interactive with Python Variables
 *********************************
@@ -179,7 +180,7 @@ Despite TVMScript not being executed by a Python interpreter, limited
 interaction with Python is feasible. For instance, Python variables can
 be used to ascertain the shape and data type of a TensorIR.
 
-.. GENERATED FROM PYTHON SOURCE LINES 138-166
+.. GENERATED FROM PYTHON SOURCE LINES 139-167
 
 .. code-block:: Python
 
@@ -192,7 +193,7 @@ be used to ascertain the shape and data type of a TensorIR.
     # IRModule in TVMScript
     @I.ir_module
     class ConciseModuleFromPython:
-        @T.prim_func(s_tir=True)
+        @Ts.prim_func
         def mm_relu(
             A: T.Buffer((M, K), dtype),
             B: T.Buffer((K, N), dtype),
@@ -200,14 +201,14 @@ be used to ascertain the shape and data type of a TensorIR.
         ):
             Y = T.alloc_buffer((M, N), dtype)
             for i, j, k in T.grid(M, N, K):
-                with T.sblock("Y"):
-                    vi, vj, vk = T.axis.remap("SSR", [i, j, k])
-                    with T.init():
+                with Ts.sblock("Y"):
+                    vi, vj, vk = Ts.axis.remap("SSR", [i, j, k])
+                    with Ts.init():
                         Y[vi, vj] = T.cast(T.float32(0), dtype)
                     Y[vi, vj] = Y[vi, vj] + A[vi, vk] * B[vk, vj]
             for i, j in T.grid(M, N):
-                with T.sblock("C"):
-                    vi, vj = T.axis.remap("SS", [i, j])
+                with Ts.sblock("C"):
+                    vi, vj = Ts.axis.remap("SS", [i, j])
                     C[vi, vj] = T.max(Y[vi, vj], T.cast(T.float32(0), dtype))
 
 
@@ -218,11 +219,11 @@ be used to ascertain the shape and data type of a TensorIR.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 167-168
+.. GENERATED FROM PYTHON SOURCE LINES 168-169
 
 Check the equivalence:
 
-.. GENERATED FROM PYTHON SOURCE LINES 168-172
+.. GENERATED FROM PYTHON SOURCE LINES 169-173
 
 .. code-block:: Python
 
@@ -243,7 +244,7 @@ Check the equivalence:
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 173-178
+.. GENERATED FROM PYTHON SOURCE LINES 174-179
 
 TensorIR Function with Dynamic Shapes
 *************************************
@@ -251,7 +252,7 @@ Despite TVMScript not being executed by a Python interpreter, limited
 interaction with Python is feasible. For instance, Python variables can
 be used to ascertain the shape and data type of a TensorIR.
 
-.. GENERATED FROM PYTHON SOURCE LINES 178-206
+.. GENERATED FROM PYTHON SOURCE LINES 179-207
 
 .. code-block:: Python
 
@@ -259,7 +260,7 @@ be used to ascertain the shape and data type of a TensorIR.
 
     @I.ir_module
     class DynamicShapeModule:
-        @T.prim_func(s_tir=True)
+        @Ts.prim_func
         def mm_relu(a: T.handle, b: T.handle, c: T.handle):
             # Dynamic shape definition
             M = T.int32()
@@ -272,14 +273,14 @@ be used to ascertain the shape and data type of a TensorIR.
             C = T.match_buffer(c, [M, N], dtype)
             Y = T.alloc_buffer((M, N), dtype)
             for i, j, k in T.grid(M, N, K):
-                with T.sblock("Y"):
-                    vi, vj, vk = T.axis.remap("SSR", [i, j, k])
-                    with T.init():
+                with Ts.sblock("Y"):
+                    vi, vj, vk = Ts.axis.remap("SSR", [i, j, k])
+                    with Ts.init():
                         Y[vi, vj] = T.cast(T.float32(0), dtype)
                     Y[vi, vj] = Y[vi, vj] + A[vi, vk] * B[vk, vj]
             for i, j in T.grid(M, N):
-                with T.sblock("C"):
-                    vi, vj = T.axis.remap("SS", [i, j])
+                with Ts.sblock("C"):
+                    vi, vj = Ts.axis.remap("SS", [i, j])
                     C[vi, vj] = T.max(Y[vi, vj], T.cast(T.float32(0), dtype))
 
 
@@ -290,11 +291,11 @@ be used to ascertain the shape and data type of a TensorIR.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 207-208
+.. GENERATED FROM PYTHON SOURCE LINES 208-209
 
 Now let's check the runtime dynamic shape inference:
 
-.. GENERATED FROM PYTHON SOURCE LINES 208-224
+.. GENERATED FROM PYTHON SOURCE LINES 209-225
 
 .. code-block:: Python
 
@@ -337,7 +338,7 @@ Now let's check the runtime dynamic shape inference:
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 225-245
+.. GENERATED FROM PYTHON SOURCE LINES 226-246
 
 Create TensorIR using Tensor Expression
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -360,7 +361,7 @@ Create Static-Shape Functions
 We use the same example of ``mm_relu`` from the last subsection to demonstrate the
 TE creation method.
 
-.. GENERATED FROM PYTHON SOURCE LINES 245-254
+.. GENERATED FROM PYTHON SOURCE LINES 246-255
 
 .. code-block:: Python
 
@@ -380,7 +381,7 @@ TE creation method.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 255-268
+.. GENERATED FROM PYTHON SOURCE LINES 256-269
 
 Here ``te.compute`` takes the signature ``te.compute(output_shape, fcompute)``.
 And the fcompute function describes how we want to compute the value of each
@@ -396,7 +397,7 @@ we can formulate a TensorIR function by incorporating the pertinent parameters o
 In this specific instance, we aim to construct a function with two input parameters **A, B**
 and one output parameter **C**.
 
-.. GENERATED FROM PYTHON SOURCE LINES 268-273
+.. GENERATED FROM PYTHON SOURCE LINES 269-274
 
 .. code-block:: Python
 
@@ -416,41 +417,42 @@ and one output parameter **C**.
     # from tvm.script import ir as I
     # from tvm.script import tirx as T
     # from tvm.tirx.layout import Axis
+    # from tvm.script import s_tir as Ts
 
     @I.ir_module
     class Module:
-        @T.prim_func(s_tir=True)
+        @Ts.prim_func
         def mm_relu(A: T.Buffer((128, 128), "float32"), B: T.Buffer((128, 128), "float32"), C: T.Buffer((128, 128), "float32")):
             T.func_attr({"tirx.noalias": True})
-            # with T.sblock("root"):
-            Y = T.sblock_alloc_buffer((128, 128))
+            # with Ts.sblock("root"):
+            Y = Ts.sblock_alloc_buffer((128, 128))
             for i, j, k in T.grid(128, 128, 128):
-                with T.sblock("Y"):
-                    v_i, v_j, v_k = T.axis.remap("SSR", [i, j, k])
-                    T.reads(A[v_i, v_k], B[v_k, v_j])
-                    T.writes(Y[v_i, v_j])
-                    with T.init():
+                with Ts.sblock("Y"):
+                    v_i, v_j, v_k = Ts.axis.remap("SSR", [i, j, k])
+                    Ts.reads(A[v_i, v_k], B[v_k, v_j])
+                    Ts.writes(Y[v_i, v_j])
+                    with Ts.init():
                         Y[v_i, v_j] = T.float32(0.0)
                     Y[v_i, v_j] = Y[v_i, v_j] + A[v_i, v_k] * B[v_k, v_j]
             for i, j in T.grid(128, 128):
-                with T.sblock("C"):
-                    v_i, v_j = T.axis.remap("SS", [i, j])
-                    T.reads(Y[v_i, v_j])
-                    T.writes(C[v_i, v_j])
+                with Ts.sblock("C"):
+                    v_i, v_j = Ts.axis.remap("SS", [i, j])
+                    Ts.reads(Y[v_i, v_j])
+                    Ts.writes(C[v_i, v_j])
                     C[v_i, v_j] = T.max(Y[v_i, v_j], T.float32(0.0))
 
 
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 274-278
+.. GENERATED FROM PYTHON SOURCE LINES 275-279
 
 Create Dynamic-Shape Functions
 ******************************
 We can also create a dynamic-shape function using Tensor Expression. The only difference
 is that we need to specify the shape of the input tensors as symbolic variables.
 
-.. GENERATED FROM PYTHON SOURCE LINES 278-290
+.. GENERATED FROM PYTHON SOURCE LINES 279-291
 
 .. code-block:: Python
 
@@ -477,29 +479,30 @@ is that we need to specify the shape of the input tensors as symbolic variables.
     # from tvm.script import ir as I
     # from tvm.script import tirx as T
     # from tvm.tirx.layout import Axis
+    # from tvm.script import s_tir as Ts
 
     @I.ir_module
     class Module:
-        @T.prim_func(s_tir=True)
+        @Ts.prim_func
         def mm_relu(A: T.Buffer(("m", "n"), "float32"), B: T.Buffer(("k", "n"), "float32"), C: T.Buffer(("m", "n"), "float32")):
             m, n = T.int32(), T.int32()
             k = T.int32()
             T.func_attr({"tirx.noalias": True})
-            # with T.sblock("root"):
-            Y = T.sblock_alloc_buffer((m, n))
+            # with Ts.sblock("root"):
+            Y = Ts.sblock_alloc_buffer((m, n))
             for i, j, k_1 in T.grid(m, n, k):
-                with T.sblock("Y"):
-                    v_i, v_j, v_k = T.axis.remap("SSR", [i, j, k_1])
-                    T.reads(A[v_i, v_k], B[v_k, v_j])
-                    T.writes(Y[v_i, v_j])
-                    with T.init():
+                with Ts.sblock("Y"):
+                    v_i, v_j, v_k = Ts.axis.remap("SSR", [i, j, k_1])
+                    Ts.reads(A[v_i, v_k], B[v_k, v_j])
+                    Ts.writes(Y[v_i, v_j])
+                    with Ts.init():
                         Y[v_i, v_j] = T.float32(0.0)
                     Y[v_i, v_j] = Y[v_i, v_j] + A[v_i, v_k] * B[v_k, v_j]
             for i, j in T.grid(m, n):
-                with T.sblock("C"):
-                    v_i, v_j = T.axis.remap("SS", [i, j])
-                    T.reads(Y[v_i, v_j])
-                    T.writes(C[v_i, v_j])
+                with Ts.sblock("C"):
+                    v_i, v_j = Ts.axis.remap("SS", [i, j])
+                    Ts.reads(Y[v_i, v_j])
+                    Ts.writes(C[v_i, v_j])
                     C[v_i, v_j] = T.max(Y[v_i, v_j], T.float32(0.0))
 
 

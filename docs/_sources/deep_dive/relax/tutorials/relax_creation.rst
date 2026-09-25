@@ -35,7 +35,7 @@ to define an IRModule, which contains both TensorIR and Relax functions.
 In this section, we will show how to define a simple MLP model with only
 high-level Relax operators using TVMScript.
 
-.. GENERATED FROM PYTHON SOURCE LINES 39-66
+.. GENERATED FROM PYTHON SOURCE LINES 39-67
 
 .. code-block:: Python
 
@@ -43,6 +43,7 @@ high-level Relax operators using TVMScript.
     from tvm import relax, topi
     from tvm.script import ir as I
     from tvm.script import relax as R
+    from tvm.script import s_tir as Ts
     from tvm.script import tirx as T
 
 
@@ -101,13 +102,13 @@ high-level Relax operators using TVMScript.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 67-70
+.. GENERATED FROM PYTHON SOURCE LINES 68-71
 
 Relax is not only a graph-level IR, but also supports cross-level
 representation and transformation. To be specific, we can directly call
 TensorIR functions in Relax function.
 
-.. GENERATED FROM PYTHON SOURCE LINES 70-105
+.. GENERATED FROM PYTHON SOURCE LINES 71-106
 
 .. code-block:: Python
 
@@ -115,15 +116,15 @@ TensorIR functions in Relax function.
 
     @I.ir_module
     class RelaxModuleWithTIR:
-        @T.prim_func(s_tir=True)
+        @Ts.prim_func
         def relu(x: T.handle, y: T.handle):
             n = T.int64()
             m = T.int64()
             X = T.match_buffer(x, (n, m), "float32")
             Y = T.match_buffer(y, (n, m), "float32")
             for i, j in T.grid(n, m):
-                with T.sblock("relu"):
-                    vi, vj = T.axis.remap("SS", [i, j])
+                with Ts.sblock("relu"):
+                    vi, vj = Ts.axis.remap("SS", [i, j])
                     Y[vi, vj] = T.max(X[vi, vj], T.float32(0))
 
         @R.function
@@ -158,22 +159,23 @@ TensorIR functions in Relax function.
     # from tvm.script import ir as I
     # from tvm.script import tirx as T
     # from tvm.tirx.layout import Axis
+    # from tvm.script import s_tir as Ts
     # from tvm.script import relax as R
 
     m = TypeVar("m")
     n = TypeVar("n")
     @I.ir_module
     class Module:
-        @T.prim_func(s_tir=True)
+        @Ts.prim_func
         def relu(X: T.Buffer((n, m), "float32"), Y: T.Buffer((n, m), "float32")):
             m = T.int64()
             n = T.int64()
-            # with T.sblock("root"):
+            # with Ts.sblock("root"):
             for i, j in T.grid(n, m):
-                with T.sblock("relu"):
-                    v, v_1 = T.axis.remap("SS", [i, j])
-                    T.reads(X[v, v_1])
-                    T.writes(Y[v, v_1])
+                with Ts.sblock("relu"):
+                    v, v_1 = Ts.axis.remap("SS", [i, j])
+                    Ts.reads(X[v, v_1])
+                    Ts.writes(Y[v, v_1])
                     Y[v, v_1] = T.max(X[v, v_1], T.float32(0.0))
 
         @R.function
@@ -195,7 +197,7 @@ TensorIR functions in Relax function.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 106-128
+.. GENERATED FROM PYTHON SOURCE LINES 107-129
 
 .. note::
 
@@ -220,7 +222,7 @@ TensorIR functions in Relax function.
     lv0: R.Tensor((n, 128), dtype="float32") = R.add(lv1, b0)
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 130-137
+.. GENERATED FROM PYTHON SOURCE LINES 131-138
 
 Create Relax programs using NNModule API
 ----------------------------------------
@@ -230,7 +232,7 @@ It is designed to be more intuitive and easier to use than TVMScript.
 In this section, we will show how to define the same MLP model using
 Relax NNModule API.
 
-.. GENERATED FROM PYTHON SOURCE LINES 137-155
+.. GENERATED FROM PYTHON SOURCE LINES 138-156
 
 .. code-block:: Python
 
@@ -259,12 +261,12 @@ Relax NNModule API.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 156-158
+.. GENERATED FROM PYTHON SOURCE LINES 157-159
 
 After we define the NNModule, we can export it to TVM IRModule via
 ``export_tvm``.
 
-.. GENERATED FROM PYTHON SOURCE LINES 158-162
+.. GENERATED FROM PYTHON SOURCE LINES 159-163
 
 .. code-block:: Python
 
@@ -309,18 +311,18 @@ After we define the NNModule, we can export it to TVM IRModule via
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 163-165
+.. GENERATED FROM PYTHON SOURCE LINES 164-166
 
 We can also insert customized function calls into the NNModule, such as
 Tensor Expression(TE), TensorIR functions or other TVM packed functions.
 
-.. GENERATED FROM PYTHON SOURCE LINES 165-220
+.. GENERATED FROM PYTHON SOURCE LINES 166-221
 
 .. code-block:: Python
 
 
 
-    @T.prim_func(s_tir=True)
+    @Ts.prim_func
     def tir_linear(x: T.handle, w: T.handle, b: T.handle, z: T.handle):
         M = T.int64()
         N = T.int64()
@@ -330,14 +332,14 @@ Tensor Expression(TE), TensorIR functions or other TVM packed functions.
         B = T.match_buffer(b, (N,), "float32")
         Z = T.match_buffer(z, (M, N), "float32")
         for i, j, k in T.grid(M, N, K):
-            with T.sblock("linear"):
-                vi, vj, vk = T.axis.remap("SSR", [i, j, k])
-                with T.init():
+            with Ts.sblock("linear"):
+                vi, vj, vk = Ts.axis.remap("SSR", [i, j, k])
+                with Ts.init():
                     Z[vi, vj] = 0
                 Z[vi, vj] = Z[vi, vj] + X[vi, vk] * W[vj, vk]
         for i, j in T.grid(M, N):
-            with T.sblock("add"):
-                vi, vj = T.axis.remap("SS", [i, j])
+            with Ts.sblock("add"):
+                vi, vj = Ts.axis.remap("SS", [i, j])
                 Z[vi, vj] = Z[vi, vj] + B[vj]
 
 
@@ -385,6 +387,7 @@ Tensor Expression(TE), TensorIR functions or other TVM packed functions.
     # from tvm.script import ir as I
     # from tvm.script import tirx as T
     # from tvm.tirx.layout import Axis
+    # from tvm.script import s_tir as Ts
     # from tvm.script import relax as R
 
     n = TypeVar("n")
@@ -393,37 +396,37 @@ Tensor Expression(TE), TensorIR functions or other TVM packed functions.
     N = TypeVar("N")
     @I.ir_module
     class Module:
-        @T.prim_func(private=True, s_tir=True)
+        @Ts.prim_func(private=True)
         def relu(env_linear: T.Buffer((n, T.int64(128)), "float32"), compute: T.Buffer((n, T.int64(128)), "float32")):
             n = T.int64()
             T.func_attr({"tirx.noalias": True})
-            # with T.sblock("root"):
+            # with Ts.sblock("root"):
             for i0, i1 in T.grid(n, T.int64(128)):
-                with T.sblock("compute"):
-                    v_i0, v_i1 = T.axis.remap("SS", [i0, i1])
-                    T.reads(env_linear[v_i0, v_i1])
-                    T.writes(compute[v_i0, v_i1])
+                with Ts.sblock("compute"):
+                    v_i0, v_i1 = Ts.axis.remap("SS", [i0, i1])
+                    Ts.reads(env_linear[v_i0, v_i1])
+                    Ts.writes(compute[v_i0, v_i1])
                     compute[v_i0, v_i1] = T.max(env_linear[v_i0, v_i1], T.float32(0.0))
 
-        @T.prim_func(s_tir=True)
+        @Ts.prim_func
         def tir_linear(X: T.Buffer((M, K), "float32"), W: T.Buffer((N, K), "float32"), B: T.Buffer((N,), "float32"), Z: T.Buffer((M, N), "float32")):
             K = T.int64()
             M = T.int64()
             N = T.int64()
-            # with T.sblock("root"):
+            # with Ts.sblock("root"):
             for i, j, k in T.grid(M, N, K):
-                with T.sblock("linear"):
-                    v, v_1, v_2 = T.axis.remap("SSR", [i, j, k])
-                    T.reads(X[v, v_2], W[v_1, v_2])
-                    T.writes(Z[v, v_1])
-                    with T.init():
+                with Ts.sblock("linear"):
+                    v, v_1, v_2 = Ts.axis.remap("SSR", [i, j, k])
+                    Ts.reads(X[v, v_2], W[v_1, v_2])
+                    Ts.writes(Z[v, v_1])
+                    with Ts.init():
                         Z[v, v_1] = T.float32(0.0)
                     Z[v, v_1] = Z[v, v_1] + X[v, v_2] * W[v_1, v_2]
             for i, j in T.grid(M, N):
-                with T.sblock("add"):
-                    v, v_1 = T.axis.remap("SS", [i, j])
-                    T.reads(Z[v, v_1], B[v_1])
-                    T.writes(Z[v, v_1])
+                with Ts.sblock("add"):
+                    v, v_1 = Ts.axis.remap("SS", [i, j])
+                    Ts.reads(Z[v, v_1], B[v_1])
+                    Ts.writes(Z[v, v_1])
                     Z[v, v_1] = Z[v, v_1] + B[v_1]
 
         @R.function
@@ -443,7 +446,7 @@ Tensor Expression(TE), TensorIR functions or other TVM packed functions.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 221-227
+.. GENERATED FROM PYTHON SOURCE LINES 222-228
 
 Create Relax programs using Block Builder API
 ---------------------------------------------
@@ -452,7 +455,7 @@ creating Relax programs. It is a IR builder API, which is more
 low-level and widely used in TVM's internal logic, e.g writing a
 customized pass.
 
-.. GENERATED FROM PYTHON SOURCE LINES 227-246
+.. GENERATED FROM PYTHON SOURCE LINES 228-247
 
 .. code-block:: Python
 
@@ -511,12 +514,12 @@ customized pass.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 247-249
+.. GENERATED FROM PYTHON SOURCE LINES 248-250
 
 Also, Block Builder API supports building cross-level IRModule with both
 Relax functions, TensorIR functions and other TVM packed functions.
 
-.. GENERATED FROM PYTHON SOURCE LINES 249-274
+.. GENERATED FROM PYTHON SOURCE LINES 250-275
 
 .. code-block:: Python
 
@@ -557,6 +560,7 @@ Relax functions, TensorIR functions and other TVM packed functions.
     # from tvm.script import ir as I
     # from tvm.script import tirx as T
     # from tvm.tirx.layout import Axis
+    # from tvm.script import s_tir as Ts
     # from tvm.script import relax as R
 
     v = TypeVar("v")
@@ -565,37 +569,37 @@ Relax functions, TensorIR functions and other TVM packed functions.
     N = TypeVar("N")
     @I.ir_module
     class Module:
-        @T.prim_func(private=True, s_tir=True)
+        @Ts.prim_func(private=True)
         def relu(lv: T.Buffer((v, T.int64(128)), "float32"), compute: T.Buffer((v, T.int64(128)), "float32")):
             v = T.int64()
             T.func_attr({"tirx.noalias": True})
-            # with T.sblock("root"):
+            # with Ts.sblock("root"):
             for i0, i1 in T.grid(v, T.int64(128)):
-                with T.sblock("compute"):
-                    v_i0, v_i1 = T.axis.remap("SS", [i0, i1])
-                    T.reads(lv[v_i0, v_i1])
-                    T.writes(compute[v_i0, v_i1])
+                with Ts.sblock("compute"):
+                    v_i0, v_i1 = Ts.axis.remap("SS", [i0, i1])
+                    Ts.reads(lv[v_i0, v_i1])
+                    Ts.writes(compute[v_i0, v_i1])
                     compute[v_i0, v_i1] = T.max(lv[v_i0, v_i1], T.float32(0.0))
 
-        @T.prim_func(s_tir=True)
+        @Ts.prim_func
         def tir_linear(X: T.Buffer((M, K), "float32"), W: T.Buffer((N, K), "float32"), B: T.Buffer((N,), "float32"), Z: T.Buffer((M, N), "float32")):
             K = T.int64()
             M = T.int64()
             N = T.int64()
-            # with T.sblock("root"):
+            # with Ts.sblock("root"):
             for i, j, k in T.grid(M, N, K):
-                with T.sblock("linear"):
-                    v, v_1, v_2 = T.axis.remap("SSR", [i, j, k])
-                    T.reads(X[v, v_2], W[v_1, v_2])
-                    T.writes(Z[v, v_1])
-                    with T.init():
+                with Ts.sblock("linear"):
+                    v, v_1, v_2 = Ts.axis.remap("SSR", [i, j, k])
+                    Ts.reads(X[v, v_2], W[v_1, v_2])
+                    Ts.writes(Z[v, v_1])
+                    with Ts.init():
                         Z[v, v_1] = T.float32(0.0)
                     Z[v, v_1] = Z[v, v_1] + X[v, v_2] * W[v_1, v_2]
             for i, j in T.grid(M, N):
-                with T.sblock("add"):
-                    v, v_1 = T.axis.remap("SS", [i, j])
-                    T.reads(Z[v, v_1], B[v_1])
-                    T.writes(Z[v, v_1])
+                with Ts.sblock("add"):
+                    v, v_1 = Ts.axis.remap("SS", [i, j])
+                    Ts.reads(Z[v, v_1], B[v_1])
+                    Ts.writes(Z[v, v_1])
                     Z[v, v_1] = Z[v, v_1] + B[v_1]
 
         @R.function
@@ -614,7 +618,7 @@ Relax functions, TensorIR functions and other TVM packed functions.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 275-280
+.. GENERATED FROM PYTHON SOURCE LINES 276-281
 
 Note that the Block Builder API is not as user-friendly as the above APIs,
 but it is lowest-level API and works closely with the IR definition. We
@@ -622,7 +626,7 @@ recommend using the above APIs for users who only want to define and
 transform a ML model. But for those who want to build more complex
 transformations, the Block Builder API is a more flexible choice.
 
-.. GENERATED FROM PYTHON SOURCE LINES 282-286
+.. GENERATED FROM PYTHON SOURCE LINES 283-287
 
 Summary
 -------

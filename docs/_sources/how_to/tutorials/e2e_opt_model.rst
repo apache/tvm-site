@@ -54,7 +54,7 @@ PyTorch.
  .. code-block:: none
 
     Downloading: "https://download.pytorch.org/models/resnet18-f37072fd.pth" to /workspace/.cache/torch/hub/checkpoints/resnet18-f37072fd.pth
-      0%|          | 0.00/44.7M [00:00<?, ?B/s]     64%|██████▍   | 28.6M/44.7M [00:00<00:00, 300MB/s]    100%|██████████| 44.7M/44.7M [00:00<00:00, 322MB/s]
+      0%|          | 0.00/44.7M [00:00<?, ?B/s]     18%|█▊        | 8.00M/44.7M [00:00<00:00, 83.7MB/s]     85%|████████▌ | 38.0M/44.7M [00:00<00:00, 210MB/s]     100%|██████████| 44.7M/44.7M [00:00<00:00, 196MB/s]
 
 
 

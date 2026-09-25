@@ -35,38 +35,39 @@ the same functionality, and each implementation can result in different performa
 
 First, let's take a look at the implementation of ``mm_relu`` in the previous section:
 
-.. GENERATED FROM PYTHON SOURCE LINES 38-69
+.. GENERATED FROM PYTHON SOURCE LINES 38-70
 
 .. code-block:: Python
 
 
     import tvm
     from tvm.script import ir as I
+    from tvm.script import s_tir as Ts
     from tvm.script import tirx as T
 
 
     @I.ir_module
     class MyModule:
-        @T.prim_func(s_tir=True)
+        @Ts.prim_func
         def main(
             A: T.Buffer((128, 128), "float32"),
             B: T.Buffer((128, 128), "float32"),
             C: T.Buffer((128, 128), "float32"),
         ):
             T.func_attr({"tirx.noalias": True})
-            with T.sblock("root"):
-                T.reads()
-                T.writes()
-                Y = T.sblock_alloc_buffer((128, 128))
+            with Ts.sblock("root"):
+                Ts.reads()
+                Ts.writes()
+                Y = Ts.sblock_alloc_buffer((128, 128))
                 for i, j, k in T.grid(128, 128, 128):
-                    with T.sblock("Y"):
-                        vi, vj, vk = T.axis.remap("SSR", [i, j, k])
-                        with T.init():
+                    with Ts.sblock("Y"):
+                        vi, vj, vk = Ts.axis.remap("SSR", [i, j, k])
+                        with Ts.init():
                             Y[vi, vj] = T.float32(0)
                         Y[vi, vj] = Y[vi, vj] + A[vi, vk] * B[vk, vj]
                 for i, j in T.grid(128, 128):
-                    with T.sblock("C"):
-                        vi, vj = T.axis.remap("SS", [i, j])
+                    with Ts.sblock("C"):
+                        vi, vj = Ts.axis.remap("SS", [i, j])
                         C[vi, vj] = T.max(Y[vi, vj], T.float32(0))
 
 
@@ -77,12 +78,12 @@ First, let's take a look at the implementation of ``mm_relu`` in the previous se
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 70-72
+.. GENERATED FROM PYTHON SOURCE LINES 71-73
 
 Before we transform the function, let's first evaluate the performance of the
 original implementation.
 
-.. GENERATED FROM PYTHON SOURCE LINES 72-96
+.. GENERATED FROM PYTHON SOURCE LINES 73-97
 
 .. code-block:: Python
 
@@ -120,19 +121,19 @@ original implementation.
 
     Execution time summary:
      mean (ms)   median (ms)    max (ms)     min (ms)     std (ms)  
-       2.5953       2.5953       2.5953       2.5953       0.0000                  
+       2.5850       2.5850       2.5850       2.5850       0.0000                  
 
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 97-101
+.. GENERATED FROM PYTHON SOURCE LINES 98-102
 
 Initialization Schedule
 ***********************
 We initiate the process of code transformation by establishing a Schedule helper class,
 utilizing the provided **MyModule** as input.
 
-.. GENERATED FROM PYTHON SOURCE LINES 101-104
+.. GENERATED FROM PYTHON SOURCE LINES 102-105
 
 .. code-block:: Python
 
@@ -146,14 +147,14 @@ utilizing the provided **MyModule** as input.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 105-109
+.. GENERATED FROM PYTHON SOURCE LINES 106-110
 
 Loop Tiling
 ***********
 Subsequently, we execute the requisite operations to acquire a reference to
 block **Y** and its associated loops.
 
-.. GENERATED FROM PYTHON SOURCE LINES 109-113
+.. GENERATED FROM PYTHON SOURCE LINES 110-114
 
 .. code-block:: Python
 
@@ -168,7 +169,7 @@ block **Y** and its associated loops.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 114-119
+.. GENERATED FROM PYTHON SOURCE LINES 115-120
 
 We now proceed to execute the transformations. The initial modification involves
 splitting loop ``j`` into two separate loops, with the inner loop possessing a
@@ -176,7 +177,7 @@ length of 8. It is crucial to understand that the transformation process is proc
 thus, inadvertent execution of the block twice will yield an error stating the
 non-existence of variable ``j``.
 
-.. GENERATED FROM PYTHON SOURCE LINES 119-122
+.. GENERATED FROM PYTHON SOURCE LINES 120-123
 
 .. code-block:: Python
 
@@ -190,11 +191,11 @@ non-existence of variable ``j``.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 123-124
+.. GENERATED FROM PYTHON SOURCE LINES 124-125
 
 The outcome of the transformation can be examined, as it is retained within ``sch.mod``.
 
-.. GENERATED FROM PYTHON SOURCE LINES 124-127
+.. GENERATED FROM PYTHON SOURCE LINES 125-128
 
 .. code-block:: Python
 
@@ -212,42 +213,43 @@ The outcome of the transformation can be examined, as it is retained within ``sc
     # from tvm.script import ir as I
     # from tvm.script import tirx as T
     # from tvm.tirx.layout import Axis
+    # from tvm.script import s_tir as Ts
 
     @I.ir_module
     class Module:
-        @T.prim_func(s_tir=True)
+        @Ts.prim_func
         def main(A: T.Buffer((128, 128), "float32"), B: T.Buffer((128, 128), "float32"), C: T.Buffer((128, 128), "float32")):
             T.func_attr({"tirx.noalias": True})
-            # with T.sblock("root"):
-            buffer = T.sblock_alloc_buffer((128, 128))
+            # with Ts.sblock("root"):
+            buffer = Ts.sblock_alloc_buffer((128, 128))
             for i, j_0, j_1, k in T.grid(128, 16, 8, 128):
-                with T.sblock("Y"):
-                    v = T.axis.spatial(128, i)
-                    v_1 = T.axis.spatial(128, j_0 * 8 + j_1)
-                    v_2 = T.axis.reduce(128, k)
-                    T.reads(A[v, v_2], B[v_2, v_1])
-                    T.writes(buffer[v, v_1])
-                    with T.init():
+                with Ts.sblock("Y"):
+                    v = Ts.axis.spatial(128, i)
+                    v_1 = Ts.axis.spatial(128, j_0 * 8 + j_1)
+                    v_2 = Ts.axis.reduce(128, k)
+                    Ts.reads(A[v, v_2], B[v_2, v_1])
+                    Ts.writes(buffer[v, v_1])
+                    with Ts.init():
                         buffer[v, v_1] = T.float32(0.0)
                     buffer[v, v_1] = buffer[v, v_1] + A[v, v_2] * B[v_2, v_1]
             for i, j in T.grid(128, 128):
-                with T.sblock("C"):
-                    v, v_1 = T.axis.remap("SS", [i, j])
-                    T.reads(buffer[v, v_1])
-                    T.writes(C[v, v_1])
+                with Ts.sblock("C"):
+                    v, v_1 = Ts.axis.remap("SS", [i, j])
+                    Ts.reads(buffer[v, v_1])
+                    Ts.writes(C[v, v_1])
                     C[v, v_1] = T.max(buffer[v, v_1], T.float32(0.0))
 
 
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 128-131
+.. GENERATED FROM PYTHON SOURCE LINES 129-132
 
 Following the initial transformation phase, two supplementary loops, ``j_0`` and ``j_1``,
 have been generated with respective ranges of 16 and 8. The subsequent
 action involves reordering these two loops.
 
-.. GENERATED FROM PYTHON SOURCE LINES 131-136
+.. GENERATED FROM PYTHON SOURCE LINES 132-137
 
 .. code-block:: Python
 
@@ -267,39 +269,40 @@ action involves reordering these two loops.
     # from tvm.script import ir as I
     # from tvm.script import tirx as T
     # from tvm.tirx.layout import Axis
+    # from tvm.script import s_tir as Ts
 
     @I.ir_module
     class Module:
-        @T.prim_func(s_tir=True)
+        @Ts.prim_func
         def main(A: T.Buffer((128, 128), "float32"), B: T.Buffer((128, 128), "float32"), C: T.Buffer((128, 128), "float32")):
             T.func_attr({"tirx.noalias": True})
-            # with T.sblock("root"):
-            buffer = T.sblock_alloc_buffer((128, 128))
+            # with Ts.sblock("root"):
+            buffer = Ts.sblock_alloc_buffer((128, 128))
             for i, j_0, k, j_1 in T.grid(128, 16, 128, 8):
-                with T.sblock("Y"):
-                    v = T.axis.spatial(128, i)
-                    v_1 = T.axis.spatial(128, j_0 * 8 + j_1)
-                    v_2 = T.axis.reduce(128, k)
-                    T.reads(A[v, v_2], B[v_2, v_1])
-                    T.writes(buffer[v, v_1])
-                    with T.init():
+                with Ts.sblock("Y"):
+                    v = Ts.axis.spatial(128, i)
+                    v_1 = Ts.axis.spatial(128, j_0 * 8 + j_1)
+                    v_2 = Ts.axis.reduce(128, k)
+                    Ts.reads(A[v, v_2], B[v_2, v_1])
+                    Ts.writes(buffer[v, v_1])
+                    with Ts.init():
                         buffer[v, v_1] = T.float32(0.0)
                     buffer[v, v_1] = buffer[v, v_1] + A[v, v_2] * B[v_2, v_1]
             for i, j in T.grid(128, 128):
-                with T.sblock("C"):
-                    v, v_1 = T.axis.remap("SS", [i, j])
-                    T.reads(buffer[v, v_1])
-                    T.writes(C[v, v_1])
+                with Ts.sblock("C"):
+                    v, v_1 = Ts.axis.remap("SS", [i, j])
+                    Ts.reads(buffer[v, v_1])
+                    Ts.writes(C[v, v_1])
                     C[v, v_1] = T.max(buffer[v, v_1], T.float32(0.0))
 
     Execution time summary:
      mean (ms)   median (ms)    max (ms)     min (ms)     std (ms)  
-       0.8639       0.8639       0.8639       0.8639       0.0000                  
+       0.8708       0.8708       0.8708       0.8708       0.0000                  
 
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 137-142
+.. GENERATED FROM PYTHON SOURCE LINES 138-143
 
 Leverage Localities
 *******************
@@ -307,7 +310,7 @@ Subsequently, we will execute two additional transformation steps to achieve a d
 variant. First, we employ a primitive known as **reverse_compute_at** to relocate block
 **C** to an inner loop of **Y**.
 
-.. GENERATED FROM PYTHON SOURCE LINES 142-147
+.. GENERATED FROM PYTHON SOURCE LINES 143-148
 
 .. code-block:: Python
 
@@ -327,38 +330,39 @@ variant. First, we employ a primitive known as **reverse_compute_at** to relocat
     # from tvm.script import ir as I
     # from tvm.script import tirx as T
     # from tvm.tirx.layout import Axis
+    # from tvm.script import s_tir as Ts
 
     @I.ir_module
     class Module:
-        @T.prim_func(s_tir=True)
+        @Ts.prim_func
         def main(A: T.Buffer((128, 128), "float32"), B: T.Buffer((128, 128), "float32"), C: T.Buffer((128, 128), "float32")):
             T.func_attr({"tirx.noalias": True})
-            # with T.sblock("root"):
-            buffer = T.sblock_alloc_buffer((128, 128))
+            # with Ts.sblock("root"):
+            buffer = Ts.sblock_alloc_buffer((128, 128))
             for i, j_0 in T.grid(128, 16):
                 for k, j_1 in T.grid(128, 8):
-                    with T.sblock("Y"):
-                        v = T.axis.spatial(128, i)
-                        v_1 = T.axis.spatial(128, j_0 * 8 + j_1)
-                        v_2 = T.axis.reduce(128, k)
-                        T.reads(A[v, v_2], B[v_2, v_1])
-                        T.writes(buffer[v, v_1])
-                        with T.init():
+                    with Ts.sblock("Y"):
+                        v = Ts.axis.spatial(128, i)
+                        v_1 = Ts.axis.spatial(128, j_0 * 8 + j_1)
+                        v_2 = Ts.axis.reduce(128, k)
+                        Ts.reads(A[v, v_2], B[v_2, v_1])
+                        Ts.writes(buffer[v, v_1])
+                        with Ts.init():
                             buffer[v, v_1] = T.float32(0.0)
                         buffer[v, v_1] = buffer[v, v_1] + A[v, v_2] * B[v_2, v_1]
                 for ax0 in range(8):
-                    with T.sblock("C"):
-                        v = T.axis.spatial(128, i)
-                        v_1 = T.axis.spatial(128, j_0 * 8 + ax0)
-                        T.reads(buffer[v, v_1])
-                        T.writes(C[v, v_1])
+                    with Ts.sblock("C"):
+                        v = Ts.axis.spatial(128, i)
+                        v_1 = Ts.axis.spatial(128, j_0 * 8 + ax0)
+                        Ts.reads(buffer[v, v_1])
+                        Ts.writes(C[v, v_1])
                         C[v, v_1] = T.max(buffer[v, v_1], T.float32(0.0))
 
 
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 148-157
+.. GENERATED FROM PYTHON SOURCE LINES 149-158
 
 Rewrite Reduction
 *****************
@@ -370,7 +374,7 @@ synchronized.
 Following the loop transformations, we can segregate the initialization of Y's elements
 from the reduction update via the **decompose_reduction** primitive.
 
-.. GENERATED FROM PYTHON SOURCE LINES 157-162
+.. GENERATED FROM PYTHON SOURCE LINES 158-163
 
 .. code-block:: Python
 
@@ -390,46 +394,47 @@ from the reduction update via the **decompose_reduction** primitive.
     # from tvm.script import ir as I
     # from tvm.script import tirx as T
     # from tvm.tirx.layout import Axis
+    # from tvm.script import s_tir as Ts
 
     @I.ir_module
     class Module:
-        @T.prim_func(s_tir=True)
+        @Ts.prim_func
         def main(A: T.Buffer((128, 128), "float32"), B: T.Buffer((128, 128), "float32"), C: T.Buffer((128, 128), "float32")):
             T.func_attr({"tirx.noalias": True})
-            # with T.sblock("root"):
-            buffer = T.sblock_alloc_buffer((128, 128))
+            # with Ts.sblock("root"):
+            buffer = Ts.sblock_alloc_buffer((128, 128))
             for i, j_0 in T.grid(128, 16):
                 for j_1_init in range(8):
-                    with T.sblock("Y_init"):
-                        v = T.axis.spatial(128, i)
-                        v_1 = T.axis.spatial(128, j_0 * 8 + j_1_init)
-                        T.reads()
-                        T.writes(buffer[v, v_1])
+                    with Ts.sblock("Y_init"):
+                        v = Ts.axis.spatial(128, i)
+                        v_1 = Ts.axis.spatial(128, j_0 * 8 + j_1_init)
+                        Ts.reads()
+                        Ts.writes(buffer[v, v_1])
                         buffer[v, v_1] = T.float32(0.0)
                 for k, j_1 in T.grid(128, 8):
-                    with T.sblock("Y_update"):
-                        v = T.axis.spatial(128, i)
-                        v_1 = T.axis.spatial(128, j_0 * 8 + j_1)
-                        v_2 = T.axis.reduce(128, k)
-                        T.reads(buffer[v, v_1], A[v, v_2], B[v_2, v_1])
-                        T.writes(buffer[v, v_1])
+                    with Ts.sblock("Y_update"):
+                        v = Ts.axis.spatial(128, i)
+                        v_1 = Ts.axis.spatial(128, j_0 * 8 + j_1)
+                        v_2 = Ts.axis.reduce(128, k)
+                        Ts.reads(buffer[v, v_1], A[v, v_2], B[v_2, v_1])
+                        Ts.writes(buffer[v, v_1])
                         buffer[v, v_1] = buffer[v, v_1] + A[v, v_2] * B[v_2, v_1]
                 for ax0 in range(8):
-                    with T.sblock("C"):
-                        v = T.axis.spatial(128, i)
-                        v_1 = T.axis.spatial(128, j_0 * 8 + ax0)
-                        T.reads(buffer[v, v_1])
-                        T.writes(C[v, v_1])
+                    with Ts.sblock("C"):
+                        v = Ts.axis.spatial(128, i)
+                        v_1 = Ts.axis.spatial(128, j_0 * 8 + ax0)
+                        Ts.reads(buffer[v, v_1])
+                        Ts.writes(C[v, v_1])
                         C[v, v_1] = T.max(buffer[v, v_1], T.float32(0.0))
 
     Execution time summary:
      mean (ms)   median (ms)    max (ms)     min (ms)     std (ms)  
-       0.3396       0.3396       0.3396       0.3396       0.0000                  
+       0.3477       0.3477       0.3477       0.3477       0.0000                  
 
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 163-171
+.. GENERATED FROM PYTHON SOURCE LINES 164-172
 
 Trace the Transformation
 ************************
@@ -440,7 +445,7 @@ history of the schedule.
 We've already see the schedule by printing ``sch.mod``. We can also print the history
 of the schedule by ``sch.trace``.
 
-.. GENERATED FROM PYTHON SOURCE LINES 171-174
+.. GENERATED FROM PYTHON SOURCE LINES 172-175
 
 .. code-block:: Python
 
@@ -469,11 +474,11 @@ of the schedule by ``sch.trace``.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 175-176
+.. GENERATED FROM PYTHON SOURCE LINES 176-177
 
 Alternatively, we can output the IRModule in conjunction with the historical trace.
 
-.. GENERATED FROM PYTHON SOURCE LINES 176-178
+.. GENERATED FROM PYTHON SOURCE LINES 177-179
 
 .. code-block:: Python
 
@@ -490,36 +495,37 @@ Alternatively, we can output the IRModule in conjunction with the historical tra
     # from tvm.script import ir as I
     # from tvm.script import tirx as T
     # from tvm.tirx.layout import Axis
+    # from tvm.script import s_tir as Ts
 
     @I.ir_module
     class Module:
-        @T.prim_func(s_tir=True)
+        @Ts.prim_func
         def main(A: T.Buffer((128, 128), "float32"), B: T.Buffer((128, 128), "float32"), C: T.Buffer((128, 128), "float32")):
             T.func_attr({"tirx.noalias": True})
-            # with T.sblock("root"):
-            buffer = T.sblock_alloc_buffer((128, 128))
+            # with Ts.sblock("root"):
+            buffer = Ts.sblock_alloc_buffer((128, 128))
             for i, j_0 in T.grid(128, 16):
                 for j_1_init in range(8):
-                    with T.sblock("Y_init"):
-                        v = T.axis.spatial(128, i)
-                        v_1 = T.axis.spatial(128, j_0 * 8 + j_1_init)
-                        T.reads()
-                        T.writes(buffer[v, v_1])
+                    with Ts.sblock("Y_init"):
+                        v = Ts.axis.spatial(128, i)
+                        v_1 = Ts.axis.spatial(128, j_0 * 8 + j_1_init)
+                        Ts.reads()
+                        Ts.writes(buffer[v, v_1])
                         buffer[v, v_1] = T.float32(0.0)
                 for k, j_1 in T.grid(128, 8):
-                    with T.sblock("Y_update"):
-                        v = T.axis.spatial(128, i)
-                        v_1 = T.axis.spatial(128, j_0 * 8 + j_1)
-                        v_2 = T.axis.reduce(128, k)
-                        T.reads(buffer[v, v_1], A[v, v_2], B[v_2, v_1])
-                        T.writes(buffer[v, v_1])
+                    with Ts.sblock("Y_update"):
+                        v = Ts.axis.spatial(128, i)
+                        v_1 = Ts.axis.spatial(128, j_0 * 8 + j_1)
+                        v_2 = Ts.axis.reduce(128, k)
+                        Ts.reads(buffer[v, v_1], A[v, v_2], B[v_2, v_1])
+                        Ts.writes(buffer[v, v_1])
                         buffer[v, v_1] = buffer[v, v_1] + A[v, v_2] * B[v_2, v_1]
                 for ax0 in range(8):
-                    with T.sblock("C"):
-                        v = T.axis.spatial(128, i)
-                        v_1 = T.axis.spatial(128, j_0 * 8 + ax0)
-                        T.reads(buffer[v, v_1])
-                        T.writes(C[v, v_1])
+                    with Ts.sblock("C"):
+                        v = Ts.axis.spatial(128, i)
+                        v_1 = Ts.axis.spatial(128, j_0 * 8 + ax0)
+                        Ts.reads(buffer[v, v_1])
+                        Ts.writes(C[v, v_1])
                         C[v, v_1] = T.max(buffer[v, v_1], T.float32(0.0))
 
     # from tvm import s_tir

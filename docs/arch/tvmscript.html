@@ -630,43 +630,11 @@ document.write(`
             </div>
             <nav aria-label="Page">
                 <ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#overview">Overview</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#decorators">Decorators</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#parser-architecture">Parser Architecture</a><ul class="visible nav section-nav flex-column">
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#syntax-and-construction-protocol">Syntax and construction protocol</a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#parse-flow">Parse flow</a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#definition-and-symbol-scopes">Definition and symbol scopes</a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#explicit-host-control-flow">Explicit host control flow</a></li>
-</ul>
-</li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#ir-builder-architecture">IR Builder Architecture</a><ul class="visible nav section-nav flex-column">
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#frame-stack">Frame stack</a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#tir-builder">TIR builder</a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#relax-builder">Relax builder</a></li>
-</ul>
-</li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#printer-architecture">Printer Architecture</a><ul class="visible nav section-nav flex-column">
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#doc-tree">Doc tree</a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#irdocsifier">IRDocsifier</a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#roundtrip">Roundtrip</a></li>
-</ul>
-</li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#supported-python-syntax">Supported Python Syntax</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#tir-syntax-reference">TIR Syntax Reference</a><ul class="visible nav section-nav flex-column">
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#function-definition">Function definition</a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#block-and-axes">Block and axes</a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#loop-types">Loop types</a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#buffer-operations">Buffer operations</a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#common-intrinsics">Common intrinsics</a></li>
-</ul>
-</li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#relax-syntax-reference">Relax Syntax Reference</a><ul class="visible nav section-nav flex-column">
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id1">Function definition</a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#dataflow-blocks">Dataflow blocks</a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#calling-tir-functions">Calling TIR functions</a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#control-flow">Control flow</a></li>
-</ul>
-</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#source-and-frontend">Source and frontend</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#syntax-and-construction-protocol">Syntax and construction protocol</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#frame-based-construction">Frame-based construction</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#printing-and-round-trips">Printing and round trips</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#namespace-extension">Namespace extension</a></li>
 </ul>
             </nav>
         </div>
@@ -680,650 +648,90 @@ document.write(`
                   
   <section id="tvmscript">
 <span id="tvmscript-arch"></span><h1>TVMScript<a class="headerlink" href="#tvmscript" title="Link to this heading">#</a></h1>
-<p>TVMScript is a Python-based domain-specific language (DSL) for writing TVM IR. It lets users
-define <code class="docutils literal notranslate"><span class="pre">IRModule</span></code>s — containing both Relax functions and TIR <code class="docutils literal notranslate"><span class="pre">PrimFunc</span></code>s — using
-familiar Python syntax. Decorators acquire the source and its definition context. A syntax
-transpiler translates the Python AST into a Python builder program; executing that program
-constructs TVM IR. The scripted function body is therefore translated before execution.</p>
-<p>TVMScript serves two roles in the TVM stack:</p>
-<ul class="simple">
-<li><p><strong>Authoring</strong>: users write TIR kernels and Relax programs directly in TVMScript.</p></li>
-<li><p><strong>Roundtrip</strong>: <code class="docutils literal notranslate"><span class="pre">mod.script()</span></code> prints IR as TVMScript, which can be re-parsed with any
-required external symbols to reconstruct equivalent IR. This supports inspection,
-debugging, and serialization of printable IR.</p></li>
-</ul>
-<section id="overview">
-<h2>Overview<a class="headerlink" href="#overview" title="Link to this heading">#</a></h2>
-<p>TVMScript separates source acquisition, syntax translation, IR construction, and printing:</p>
-<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>Parsing (Python source → TVM IR):
-
-Python source (TVMScript)
-     │
-     ▼  Frontend: source + definition context
-     │
-Python AST
-     │
-     ▼  Syntax transpiler + construction protocol
-     │
-Generated Python builder program
-     │
-     ▼  Frontend: recompose and execute callable
-     │
-     ▼  IR builders (frame stack + dialect policy)
-     │
-TVM IR (IRModule, PrimFunc, relax.Function)
-
-
-Printing (TVM IR → Python source):
-
+<p>TVMScript expresses TVM IR with Python syntax. A shared frontend translates source
+into a Python builder program; executing that program constructs IR. A separate
+printer converts IR back into readable, parseable source.</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>Source + definition context
+    → Python AST → syntax transpiler → Python builder program → TVM IR
 TVM IR
-     │
-     ▼  IRDocsifier (C++, dispatch by token + type)
-     │
-Doc tree (ExprDoc, StmtDoc, ...)
-     │
-     ▼  DocToPythonScript
-     │
-TVMScript text
+    → IRDocsifier → Doc tree → Python text
 </pre></div>
 </div>
-<ul class="simple">
-<li><p><strong>Frontend</strong> (Python): captures definition context, acquires source, and composes the
-generated callable with its lexical environment. It owns decorators, helper entry points,
-and execution of the builder program.</p></li>
-<li><p><strong>Syntax transpiler</strong> (Python): rewrites Python AST nodes into calls on the selected
-construction namespace. It preserves source scopes, evaluation order, and locations.</p></li>
-<li><p><strong>IR builders</strong> (Python + C++): own typed values, symbol identity, dialect policy, and
-construction frames. Exiting a frame finalizes its IR and attaches it to its parent.</p></li>
-<li><p><strong>Printer</strong> (C++): converts IR to a <code class="docutils literal notranslate"><span class="pre">Doc</span></code> tree and formats it as Python syntax. The
-printer’s Doc tree is separate from the Python AST used for parsing.</p></li>
-</ul>
-<p>All source entry points use the canonical <code class="docutils literal notranslate"><span class="pre">tvm.script.parser</span></code> implementation.</p>
+<section id="source-and-frontend">
+<h2>Source and frontend<a class="headerlink" href="#source-and-frontend" title="Link to this heading">#</a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">tvm.script.parser</span></code> accepts Python functions, classes and source strings through
+public decorators, <code class="docutils literal notranslate"><span class="pre">tvm.script.parse</span></code> and <code class="docutils literal notranslate"><span class="pre">tvm.script.from_source</span></code>. The frontend
+acquires source and locations, captures the definition’s globals and closure bindings,
+and composes the generated callable with that environment. String callers provide
+external bindings through <code class="docutils literal notranslate"><span class="pre">extra_vars</span></code>.</p>
+<p>Standalone function decorators construct IR immediately. Within an IR-module class,
+function decorators retain definitions until module construction, which can declare
+signatures before building bodies. Captured Python values belong to the source
+context; symbolic IR values are created and resolved by builders.</p>
 </section>
-<section id="decorators">
-<h2>Decorators<a class="headerlink" href="#decorators" title="Link to this heading">#</a></h2>
-<p>TVMScript uses three import aliases by convention:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">tvm.script</span><span class="w"> </span><span class="kn">import</span> <span class="n">ir</span> <span class="k">as</span> <span class="n">I</span>       <span class="c1"># module-level constructs</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">tvm.script</span><span class="w"> </span><span class="kn">import</span> <span class="n">tirx</span> <span class="k">as</span> <span class="n">T</span>     <span class="c1"># TIR constructs</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">tvm.script</span><span class="w"> </span><span class="kn">import</span> <span class="n">relax</span> <span class="k">as</span> <span class="n">R</span>    <span class="c1"># Relax constructs</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">tvm.script.parser.entry</span><span class="w"> </span><span class="kn">import</span> <span class="n">make_macro_decorator</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">tvm.target</span><span class="w"> </span><span class="kn">import</span> <span class="n">Target</span>
-</pre></div>
-</div>
-<p>These are public authoring APIs. <code class="docutils literal notranslate"><span class="pre">Target</span></code> configures compilation targets; it remains in
-<code class="docutils literal notranslate"><span class="pre">tvm.target</span></code>. Public dialect namespaces expose decorators and source constructors, so
-scripted programs do not need direct imports from builder implementation packages.</p>
-<p>The primary decorators are:</p>
-<ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">&#64;I.ir_module</span></code>: marks a Python class as an <code class="docutils literal notranslate"><span class="pre">IRModule</span></code>. Each method inside becomes a
-function in the module.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">&#64;T.prim_func</span></code>: marks a function as a TIR <code class="docutils literal notranslate"><span class="pre">PrimFunc</span></code>.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">&#64;R.function</span></code>: marks a function as a <code class="docutils literal notranslate"><span class="pre">relax.Function</span></code>.</p></li>
-</ul>
-<p>These can be composed:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nd">@I</span><span class="o">.</span><span class="n">ir_module</span>
-<span class="k">class</span><span class="w"> </span><span class="nc">MyModule</span><span class="p">:</span>
-    <span class="nd">@T</span><span class="o">.</span><span class="n">prim_func</span><span class="p">(</span><span class="n">s_tir</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">add_kernel</span><span class="p">(</span><span class="n">A</span><span class="p">:</span> <span class="n">T</span><span class="o">.</span><span class="n">Buffer</span><span class="p">((</span><span class="mi">128</span><span class="p">,),</span> <span class="s2">&quot;float32&quot;</span><span class="p">),</span>
-                   <span class="n">B</span><span class="p">:</span> <span class="n">T</span><span class="o">.</span><span class="n">Buffer</span><span class="p">((</span><span class="mi">128</span><span class="p">,),</span> <span class="s2">&quot;float32&quot;</span><span class="p">),</span>
-                   <span class="n">C</span><span class="p">:</span> <span class="n">T</span><span class="o">.</span><span class="n">Buffer</span><span class="p">((</span><span class="mi">128</span><span class="p">,),</span> <span class="s2">&quot;float32&quot;</span><span class="p">)):</span>
-        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">128</span><span class="p">):</span>
-            <span class="k">with</span> <span class="n">T</span><span class="o">.</span><span class="n">sblock</span><span class="p">(</span><span class="s2">&quot;compute&quot;</span><span class="p">):</span>
-                <span class="n">vi</span> <span class="o">=</span> <span class="n">T</span><span class="o">.</span><span class="n">axis</span><span class="o">.</span><span class="n">spatial</span><span class="p">(</span><span class="mi">128</span><span class="p">,</span> <span class="n">i</span><span class="p">)</span>
-                <span class="n">C</span><span class="p">[</span><span class="n">vi</span><span class="p">]</span> <span class="o">=</span> <span class="n">A</span><span class="p">[</span><span class="n">vi</span><span class="p">]</span> <span class="o">+</span> <span class="n">B</span><span class="p">[</span><span class="n">vi</span><span class="p">]</span>
-
-    <span class="nd">@R</span><span class="o">.</span><span class="n">function</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">main</span><span class="p">(</span><span class="n">x</span><span class="p">:</span> <span class="n">R</span><span class="o">.</span><span class="n">Tensor</span><span class="p">((</span><span class="mi">128</span><span class="p">,),</span> <span class="s2">&quot;float32&quot;</span><span class="p">),</span>
-             <span class="n">y</span><span class="p">:</span> <span class="n">R</span><span class="o">.</span><span class="n">Tensor</span><span class="p">((</span><span class="mi">128</span><span class="p">,),</span> <span class="s2">&quot;float32&quot;</span><span class="p">))</span> <span class="o">-&gt;</span> <span class="n">R</span><span class="o">.</span><span class="n">Tensor</span><span class="p">((</span><span class="mi">128</span><span class="p">,),</span> <span class="s2">&quot;float32&quot;</span><span class="p">):</span>
-        <span class="k">with</span> <span class="n">R</span><span class="o">.</span><span class="n">dataflow</span><span class="p">():</span>
-            <span class="n">out</span> <span class="o">=</span> <span class="n">R</span><span class="o">.</span><span class="n">call_tir</span><span class="p">(</span><span class="n">MyModule</span><span class="o">.</span><span class="n">add_kernel</span><span class="p">,</span> <span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">),</span>
-                             <span class="n">out_ty</span><span class="o">=</span><span class="n">R</span><span class="o">.</span><span class="n">Tensor</span><span class="p">((</span><span class="mi">128</span><span class="p">,),</span> <span class="s2">&quot;float32&quot;</span><span class="p">))</span>
-            <span class="n">R</span><span class="o">.</span><span class="n">output</span><span class="p">(</span><span class="n">out</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">out</span>
-</pre></div>
-</div>
-<p>Python creates the class before invoking <code class="docutils literal notranslate"><span class="pre">&#64;I.ir_module</span></code>. Function decorators inside an
-IR-module class retain method definitions for module construction. The module frontend then
-acquires the source and constructs declarations and bodies in the module’s builder context.
-Standalone <code class="docutils literal notranslate"><span class="pre">&#64;T.prim_func</span></code> and <code class="docutils literal notranslate"><span class="pre">&#64;R.function</span></code> definitions construct their IR immediately.</p>
-<p>A helper can construct expressions or statements in the caller’s active builder frames:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nd">@make_macro_decorator</span><span class="p">(</span><span class="n">T</span><span class="p">)</span>
-<span class="k">def</span><span class="w"> </span><span class="nf">add_one</span><span class="p">(</span><span class="n">value</span><span class="p">):</span>
-    <span class="k">return</span> <span class="n">value</span> <span class="o">+</span> <span class="mi">1</span>
-</pre></div>
-</div>
-<p>Unlike a function decorator, <code class="docutils literal notranslate"><span class="pre">make_macro_decorator</span></code> does not create an IR function for
-each helper. Its default return behavior is ordinary Python return from the generated
-helper program.
-<code class="docutils literal notranslate"><span class="pre">T.inline</span></code> and the dialect macro decorators are supplied through the same frontend helper
-mechanism.</p>
-</section>
-<section id="parser-architecture">
-<h2>Parser Architecture<a class="headerlink" href="#parser-architecture" title="Link to this heading">#</a></h2>
-<p>The parser lives in <code class="docutils literal notranslate"><span class="pre">python/tvm/script/parser/</span></code>. <code class="docutils literal notranslate"><span class="pre">inspect_source.py</span></code> owns source
-acquisition, the <code class="docutils literal notranslate"><span class="pre">Source</span></code> representation and its coordinate helpers, and definition-context
-capture. Documented functions in <code class="docutils literal notranslate"><span class="pre">entry.py</span></code> manage the parse sequence, callable composition
-and execution.
-The transpiler handles syntax; the builders interpret concrete values. TIRx JIT validation,
-defaults and specialization caching live in <code class="docutils literal notranslate"><span class="pre">tvm.tirx.script.jit</span></code>; shared parser utilities
-remain independent of that policy.</p>
 <section id="syntax-and-construction-protocol">
-<h3>Syntax and construction protocol<a class="headerlink" href="#syntax-and-construction-protocol" title="Link to this heading">#</a></h3>
-<p>A registered function decorator selects a construction namespace. The same Python syntax
-then lowers to operations supplied by that namespace: for example, unmarked <code class="docutils literal notranslate"><span class="pre">if</span></code> creates
-TIR control-flow frames in a primitive function and Relax control-flow frames in a Relax
-function. The transpiler emits these operations without implementing dialect IR semantics.</p>
-<p><code class="docutils literal notranslate"><span class="pre">parser/protocol_registry.py</span></code> owns callable syntax metadata and registration. Argument policies such
-as <code class="docutils literal notranslate"><span class="pre">expr_str</span></code> translate symbolic strings written directly in source expressions.
-Global-info selectors use the builder decorator
-<a class="reference internal" href="../reference/api/python/script/ir_builder.html#tvm.script.ir_builder.resolve_global_info_args" title="tvm.script.ir_builder.resolve_global_info_args"><code class="xref py py-func docutils literal notranslate"><span class="pre">tvm.script.ir_builder.resolve_global_info_args()</span></code></a>, which resolves named string arguments
-through an explicit dialect callback after ordinary Python argument evaluation. Captured
-aliases and unpacked calls use the same decorator. Dtype and placement strings remain literal. Captured or computed symbolic shapes must already contain explicit IR variables;
-the parser does not interpret expression strings found inside captured values.
-Registration keeps syntax facts in simple dictionaries keyed by canonical namespace paths.
-Known namespace aliases normalize to the registered path; ordinary captured callables,
-local aliases, methods and closures execute as Python without marker inference. The
-dictionaries retain no source functions or parse captures. Dialects own their namespace
-exports, entry points and aliases and register them with the generic parser.
-The registry selects a call’s argument policy before traversal and reuses positional
-parameter names computed once at registration;
-<code class="docutils literal notranslate"><span class="pre">parser/expr_str_handling.py</span></code> decodes annotation/expression strings and maps their
-escaped, multiline and UTF-8 source ranges. The main visitor rewrites the decoded syntax.</p>
-<p>Assignments become binding operations, standalone expressions become emission operations,
-and loops and scopes become builder contexts. An ordinary assignment passes its evaluated
-RHS and a separate <code class="docutils literal notranslate"><span class="pre">value_span</span></code> to <code class="docutils literal notranslate"><span class="pre">bind_</span></code>, without first stamping the returned value.
-The binding target has its own span. TIRx preserves returned Vars, including BufferVars,
-and ordinary metadata objects; other expressions follow the dialect’s binding rules.
-Construction still runs in the source context, and nested expressions retain their locations.
-Concrete binding, type checking, comparison construction, and frame finalization belong to
-the builders. Ordinary host calls and
-operator overloads execute as part of the generated Python program.</p>
-<p>Loop frames create their named variables during construction. Entering a frame returns
-the variable directly for one dimension and the variable sequence for multiple dimensions,
-so ordinary Python uses <code class="docutils literal notranslate"><span class="pre">with</span> <span class="pre">T.serial(0,</span> <span class="pre">n)</span> <span class="pre">as</span> <span class="pre">i</span></code>. Generated scalar loops use the same
-entry form. Generated tuple, list and starred targets unpack the entered frame’s stable
-<code class="docutils literal notranslate"><span class="pre">vars</span></code> sequence, preserving explicit one-dimensional unpacking and native variable identity.</p>
-<p>Parser syntax restrictions raise <code class="docutils literal notranslate"><span class="pre">SyntaxError</span></code> with the original filename and source
-range. Python helper and builder exceptions propagate unchanged, preserving their identity,
-type and source-mapped traceback. Temporary parser contexts are released on both successful
-and exceptional exits.</p>
+<h2>Syntax and construction protocol<a class="headerlink" href="#syntax-and-construction-protocol" title="Link to this heading">#</a></h2>
+<p>The syntax transpiler rewrites a fresh Python AST using scope and declaration facts
+from a prescan. A registered decorator selects the construction namespace. Assignments
+call binding hooks, expression statements call emission hooks, and control flow opens
+builder frames. The namespace owns the meaning of these operations and the supported
+IR constructs.</p>
+<p><code class="docutils literal notranslate"><span class="pre">tvm.script.parser.protocol_registry</span></code> records syntax policies under registered
+namespace paths. These policies identify declarations and arguments that need special
+handling, such as symbolic expression strings. Source aliases resolve to those paths;
+ordinary Python calls remain calls in the generated program. Explicit <code class="docutils literal notranslate"><span class="pre">constexpr</span></code>
+markers select host control flow during construction.</p>
+<p>Generated operations retain source locations. Syntax restrictions raise source-located
+<code class="docutils literal notranslate"><span class="pre">SyntaxError</span></code> exceptions; builder and Python helper errors retain their original
+exception types. Temporary parse state is released when construction finishes or fails.</p>
 </section>
-<section id="parse-flow">
-<h3>Parse flow<a class="headerlink" href="#parse-flow" title="Link to this heading">#</a></h3>
-<p>The public entry points include <code class="docutils literal notranslate"><span class="pre">tvm.script.parse</span></code> and <code class="docutils literal notranslate"><span class="pre">tvm.script.from_source</span></code>:</p>
-<ol class="arabic simple">
-<li><p><strong>Acquire source and context</strong>: the frontend accepts a function, class, or source string,
-obtains its Python AST, and retains source locations. Decorators capture the definition
-context temporarily through <code class="docutils literal notranslate"><span class="pre">definition_scope</span></code>; source-string callers can supply
-external bindings through <code class="docutils literal notranslate"><span class="pre">extra_vars</span></code>. Source inspection belongs to
-<code class="docutils literal notranslate"><span class="pre">parser.inspect_source</span></code>.</p></li>
-<li><p><strong>Prescan and translate syntax</strong>: acquisition supplies a fresh owned AST. One
-<code class="docutils literal notranslate"><span class="pre">PrescanCollector</span></code> produces read-only <code class="docutils literal notranslate"><span class="pre">PrescanContext</span></code> facts for reserved names,
-scoped declarations and conditional outputs. <code class="docutils literal notranslate"><span class="pre">IRBuilderTranspiler</span></code> rewrites that owned
-tree with the standard Python AST visitor, using fixed namespace metadata and registered
-argument policies without copying or reparsing the tree. One shared name allocator
-avoids collisions with user identifiers through rewriting and recomposition.</p></li>
-<li><p><strong>Compose the callable</strong>: the private frontend helper <code class="docutils literal notranslate"><span class="pre">_recompose_builder</span></code> compiles
-the generated program with the source’s globals, closure bindings, and necessary
-annotation context. Explicit temporary phase inputs connect generated helpers to
-their source functions without rediscovering them through a generated-AST walk.</p></li>
-<li><p><strong>Execute construction</strong>: the callable enters native builder frames and reconstructs
-declarations and annotations in their required context. When forward declarations are
-needed, it declares all signatures first. Inside each retained native function frame,
-it defines and calls a lexical body helper without an explicit frame argument. Re-entry
-uses the existing parameters instead of adding them again. Native frames own module
-references, results and function-local symbols.</p></li>
-<li><p><strong>Validate and return IR</strong>: generated code calls the dialect’s
-<code class="docutils literal notranslate"><span class="pre">X.check_well_formed_</span></code> for a completed function or the shared
-<code class="docutils literal notranslate"><span class="pre">I.check_well_formed_</span></code> for a completed module. Public parsing validates by default.
-Parsing owns execution and releases its temporary builder and captures afterward.</p></li>
-</ol>
+<section id="frame-based-construction">
+<h2>Frame-based construction<a class="headerlink" href="#frame-based-construction" title="Link to this heading">#</a></h2>
+<p>The IR builder maintains an active stack of frames, such as module, function and loop
+frames. Entering a frame establishes its scope; exiting finalizes its IR and attaches it
+to its parent. Frames own parameters, symbols and construction state. Builder hooks own
+value binding, type rules and validation of completed IR. The shared
+<code class="docutils literal notranslate"><span class="pre">resolve_global_info_args</span></code> decorator resolves named metadata arguments after
+ordinary Python argument evaluation; dialect callbacks own selector syntax and
+lookup in the active module.</p>
+<p>Public script namespaces expose decorators and construction operations. The same
+underlying builders can also be used directly from Python. The transpiler therefore
+needs no separate mutable IR representation: it generates calls to this construction
+protocol.</p>
 </section>
-<section id="definition-and-symbol-scopes">
-<h3>Definition and symbol scopes<a class="headerlink" href="#definition-and-symbol-scopes" title="Link to this heading">#</a></h3>
-<p>Python lexical bindings and DSL symbolic declarations have different owners. The frontend
-captures the exact definition scope during decoration, including enclosing names used only
-in annotations that Python may omit from the function’s closure. Ordinary body references
-retain their source globals and closure bindings. Unrelated callers’ local variables do not
-become part of this environment.</p>
-<p>Annotations are reconstructed as builder operations within the module/function context.
-The generated program preserves their definition scope and original names, using a
-distinct compiler binding only when a source-local binding would shadow the annotation.
-One prescan-seeded name allocator serves rewriting and callable recomposition. Body
-globals and closures retain their original lookup, including a method closure whose name
-also appears as a class member. Callable recomposition and
-lexical environment setup belong to the frontend. The transpiler preserves source scopes
-through Python syntax; it does not classify each name by membership in a runtime environment
-or search caller stacks for values.</p>
-<p>DSL expression strings such as <code class="docutils literal notranslate"><span class="pre">R.Tensor((&quot;n&quot;,</span> <span class="pre">4),</span> <span class="pre">&quot;float32&quot;)</span></code> use
-<code class="docutils literal notranslate"><span class="pre">X.resolve_type_var_(&quot;n&quot;)</span></code>, which delegates to the nearest native function frame’s
-<code class="docutils literal notranslate"><span class="pre">type_var_map</span></code>. Repeated names refer to the same symbol across parameters, return
-annotations and the body. Quoted lookup does not introduce a Python name; an explicit
-symbol declaration does. A Python name in <code class="docutils literal notranslate"><span class="pre">R.Tensor((n,</span> <span class="pre">4),</span> <span class="pre">...)</span></code> follows its source
-lexical scope. Relax global-info selectors use <code class="docutils literal notranslate"><span class="pre">R.resolve_global_info_</span></code> against the
-nearest active native module frame’s existing map. String selectors outside an active module
-raise, including when an unrelated builder is active. Concrete metadata objects retain identity.
-When defining Python functions before their module builder opens, quote the whole annotation
-or use <code class="docutils literal notranslate"><span class="pre">from</span> <span class="pre">__future__</span> <span class="pre">import</span> <span class="pre">annotations</span></code>; the parser reconstructs these annotations inside
-the module. Printed module function signatures containing selectors request postponed annotations.
-Eager printed class assignments, such as typed <code class="docutils literal notranslate"><span class="pre">R.ExternFunc</span></code> declarations, retrieve concrete
-virtual devices with <code class="docutils literal notranslate"><span class="pre">R.lookup_vdevice</span></code> because postponed annotations do not defer assignment
-values. This explicit lookup preserves the module metadata object before tensor construction.</p>
-<p>During rewriting, each needed source range becomes a fixed native span entry in an
-injected table. <code class="docutils literal notranslate"><span class="pre">_S[i](value)</span></code> attaches that location while preserving identity;
-<code class="docutils literal notranslate"><span class="pre">_S[i].ctx(lambda:</span> <span class="pre">helper(value))</span></code> evaluates the callee and arguments once within
-the source context and restores it on success or failure. Entries live in
-<code class="docutils literal notranslate"><span class="pre">ir_builder.base</span></code> and retain no AST or active caller context. Dynamic caller/definition
-provenance is composed when an entry is used. Ordinary names, Python literals, fixed
-namespace/callee lookup and structural indexing tuples need no entries. Arithmetic and
-buffer loads retain their own expression ranges.</p>
-<p>Generated hooks receive entries explicitly: <code class="docutils literal notranslate"><span class="pre">X.for_(X.range_(3),</span> <span class="pre">names=&quot;i&quot;,</span> <span class="pre">span=_S[i])</span></code>
-and <code class="docutils literal notranslate"><span class="pre">X.emit_(value,</span> <span class="pre">span=_S[j])</span></code> own their result locations. A callable registered with
-<code class="docutils literal notranslate"><span class="pre">result_span</span></code> promises that its complete IR effect is represented by its returned node
-or emission receipt, allowing result attachment without a construction context. Opaque
-helpers still require <code class="docutils literal notranslate"><span class="pre">.ctx</span></code> to locate internal effects. At an ordinary assignment boundary,
-<code class="docutils literal notranslate"><span class="pre">.ctx(...,</span> <span class="pre">attach_result=False)</span></code> preserves construction context while leaving the returned
-value’s attribution to <code class="docutils literal notranslate"><span class="pre">bind_</span></code> through its separate <code class="docutils literal notranslate"><span class="pre">value_span</span></code>.
-The parser-owned <a class="reference internal" href="../reference/api/python/script/parser.html#module-tvm.script.parser.protocol_registry" title="tvm.script.parser.protocol_registry"><code class="xref py py-mod docutils literal notranslate"><span class="pre">tvm.script.parser.protocol_registry</span></code></a> module defines registration APIs,
-metadata and persistent registration state. Dialects apply these policies beside concrete definitions,
-constructor creation or necessary exposure sites, without namespace scans or bulk
-registration inventories. Dialect <code class="docutils literal notranslate"><span class="pre">parser_protocol</span></code> modules implement construction hooks. The shared
-<a class="reference internal" href="../reference/api/python/script/ir_builder.html#module-tvm.script.ir_builder.parser_protocol" title="tvm.script.ir_builder.parser_protocol"><code class="xref py py-mod docutils literal notranslate"><span class="pre">tvm.script.ir_builder.parser_protocol</span></code></a> documents the detailed builder-hook contract and links
-to the registry for special syntax policies. Dialect hooks retain typed signatures and
-document only their specific behavior. For example, dialects import <code class="docutils literal notranslate"><span class="pre">args_policy</span></code>
-from <code class="docutils literal notranslate"><span class="pre">tvm.script.parser.protocol_registry</span></code> to register literal argument policies.</p>
-<p>Ordinary assignments pass returned values to <code class="docutils literal notranslate"><span class="pre">bind_</span></code>. TIRx Vars keep their exact identity,
-producer names and spans, including scope variables, block axes and explicit <code class="docutils literal notranslate"><span class="pre">T.bind</span></code>
-results. This behavior belongs to the builder’s value handling and requires no parser
-producer classification. Self-emitting builders return <code class="docutils literal notranslate"><span class="pre">AlreadyEmitted[T]</span></code> so
-source-location handling can annotate the emitted object without emitting it twice.
-Layout, meta_class and view results likewise follow dialect value handling for assignment
-and standalone statements. Unsupported host values still fail under the dialect’s emission
-rules. Expression-facing thread APIs return native Vars; IterVar remains native metadata.</p>
-<p>Simple comparison chains such as <code class="docutils literal notranslate"><span class="pre">0</span> <span class="pre">&lt;</span> <span class="pre">i</span> <span class="pre">&lt;</span> <span class="pre">10</span></code> lower to
-<code class="docutils literal notranslate"><span class="pre">X.and_(X.lt_(0,</span> <span class="pre">i),</span> <span class="pre">X.lt_(i,</span> <span class="pre">10))</span></code>. Only names and numeric literals, including signed
-literals, are supported in a chain. Complex chain operands fail with a source-located
-syntax error before they evaluate. Single comparisons retain general operands, and the
-explicit constexpr boundary retains Python comparison semantics.</p>
-<p>A bare loop target receives the native entry result: <code class="docutils literal notranslate"><span class="pre">for</span> <span class="pre">iters</span> <span class="pre">in</span> <span class="pre">T.grid(m,</span> <span class="pre">n)</span></code> binds
-the original variable sequence, while <code class="docutils literal notranslate"><span class="pre">for</span> <span class="pre">i</span> <span class="pre">in</span> <span class="pre">T.serial(n)</span></code> binds one Var. Explicit
-tuple, list and starred targets unpack the native frame’s stable <code class="docutils literal notranslate"><span class="pre">vars</span></code> field.</p>
-<p>Function decorators pass their construction namespace and options explicitly to parsing.
-Generated <code class="docutils literal notranslate"><span class="pre">X.function_(**options)</span></code> creates the frame; the dialect hook owns option defaults.
-Declaration creates stable references before function bodies; generated code reads the
-native <code class="docutils literal notranslate"><span class="pre">global_var</span></code> or <code class="docutils literal notranslate"><span class="pre">local_var</span></code> field directly, without a separate reservation pass.
-There is no function-registration record or copied source-function metadata. The root
-retains <code class="docutils literal notranslate"><span class="pre">pyfunc</span></code> behavior and original Python callables for module assembly.</p>
-<p>Completed modules use generic root coordination over dialect-owned validation hooks.
-Each dialect checks its members and cross-function requirements against the whole module,
-including captured members. Shared GlobalInfo construction and lookup belong to <code class="docutils literal notranslate"><span class="pre">tvm.ir</span></code>;
-existing Relax class exports and serialized type keys remain compatible.</p>
-<p>Each parse rewrites the fresh AST returned by source acquisition directly, without
-copying or reparsing it. Ordinary functions construct arguments directly and bind their
-known body parameters from <code class="docutils literal notranslate"><span class="pre">frame.params</span></code>. Specialization setup and conditional
-parameter selection are generated only for an explicit specialization request; an empty
-mapping still requests that path, while <code class="docutils literal notranslate"><span class="pre">None</span></code> selects ordinary parsing.</p>
-</section>
-<section id="explicit-host-control-flow">
-<h3>Explicit host control flow<a class="headerlink" href="#explicit-host-control-flow" title="Link to this heading">#</a></h3>
-<p>Mark compile-time Python selection with <code class="docutils literal notranslate"><span class="pre">I.constexpr</span></code> or the identical dialect alias:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">if</span> <span class="n">I</span><span class="o">.</span><span class="n">constexpr</span><span class="p">(</span><span class="n">enabled</span><span class="p">):</span>
-    <span class="n">T</span><span class="o">.</span><span class="n">evaluate</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
-<span class="k">else</span><span class="p">:</span>
-    <span class="n">T</span><span class="o">.</span><span class="n">evaluate</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+<section id="printing-and-round-trips">
+<h2>Printing and round trips<a class="headerlink" href="#printing-and-round-trips" title="Link to this heading">#</a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">IRDocsifier</span></code> dispatches on IR types and context to produce a <code class="docutils literal notranslate"><span class="pre">Doc</span></code> tree of
+expressions and statements. It tracks scopes and names; <code class="docutils literal notranslate"><span class="pre">DocToPythonScript</span></code> formats
+the tree as Python text. This document tree is separate from the parser’s Python AST.</p>
+<p>For example, a small function can be authored, printed and parsed again:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">tvm</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">tvm.script</span><span class="w"> </span><span class="kn">import</span> <span class="n">tirx</span> <span class="k">as</span> <span class="n">T</span>
 
-<span class="n">value</span> <span class="o">=</span> <span class="n">T</span><span class="o">.</span><span class="n">ramp</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">lanes</span><span class="p">)</span> <span class="k">if</span> <span class="n">T</span><span class="o">.</span><span class="n">constexpr</span><span class="p">(</span><span class="n">lanes</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">)</span> <span class="k">else</span> <span class="mi">0</span>
+<span class="nd">@T</span><span class="o">.</span><span class="n">prim_func</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">increment</span><span class="p">(</span><span class="n">A</span><span class="p">:</span> <span class="n">T</span><span class="o">.</span><span class="n">Buffer</span><span class="p">((</span><span class="mi">4</span><span class="p">,),</span> <span class="s2">&quot;float32&quot;</span><span class="p">)):</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">T</span><span class="o">.</span><span class="n">serial</span><span class="p">(</span><span class="mi">4</span><span class="p">):</span>
+        <span class="n">A</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">A</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">+</span> <span class="mf">1.0</span>
+
+<span class="n">text</span> <span class="o">=</span> <span class="n">increment</span><span class="o">.</span><span class="n">script</span><span class="p">()</span>
+<span class="n">reparsed</span> <span class="o">=</span> <span class="n">tvm</span><span class="o">.</span><span class="n">script</span><span class="o">.</span><span class="n">from_source</span><span class="p">(</span><span class="n">text</span><span class="p">)</span>
+<span class="n">tvm</span><span class="o">.</span><span class="n">ir</span><span class="o">.</span><span class="n">assert_structural_equal</span><span class="p">(</span><span class="n">increment</span><span class="p">,</span> <span class="n">reparsed</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>The marker applies to the controlling value. The generated program evaluates it once and
-executes only the selected Python branch in the existing builder scope. Branch bodies and
-result expressions still translate normally. Marked <code class="docutils literal notranslate"><span class="pre">and</span></code> and <code class="docutils literal notranslate"><span class="pre">or</span></code> decisions retain
-Python short-circuiting; unmarked conditionals and logical expressions call dialect IR
-constructors. A Python boolean alone does not request compile-time branch selection.</p>
-<p>JIT supplies validated specialization bindings and optional-argument absence to builder
-execution. Syntax translation does not inspect those values to select a branch.</p>
+<p>Printed source uses canonical forms rather than preserving the original spelling.
+Round trips require printable IR and any external objects needed by the source;
+the text does not serialize arbitrary Python state.</p>
 </section>
-</section>
-<section id="ir-builder-architecture">
-<h2>IR Builder Architecture<a class="headerlink" href="#ir-builder-architecture" title="Link to this heading">#</a></h2>
-<p>The IR builder (<code class="docutils literal notranslate"><span class="pre">python/tvm/script/ir_builder/</span></code>, backed by C++ in <code class="docutils literal notranslate"><span class="pre">src/script/ir_builder/</span></code>)
-provides a frame-stack API for constructing IR incrementally.</p>
-<section id="frame-stack">
-<h3>Frame stack<a class="headerlink" href="#frame-stack" title="Link to this heading">#</a></h3>
-<p>The core idea: each IR scope (module, function, block, loop) is a <strong>frame</strong>. Frames are pushed
-on <code class="docutils literal notranslate"><span class="pre">__enter__</span></code> and popped on <code class="docutils literal notranslate"><span class="pre">__exit__</span></code>. When a frame exits, it finalizes the IR it
-represents and attaches it to the parent frame.</p>
-<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>IRBuilder (current construction context)
-└── frame stack:
-    ├── IRModuleFrame          ← @I.ir_module
-    │   ├── PrimFuncFrame      ← @T.prim_func
-    │   │   ├── ForFrame       ← T.grid(...) / T.serial(...)
-    │   │   │   └── SBlockFrame ← T.sblock(...)
-    │   │   └── ...
-    │   └── FunctionFrame      ← @R.function
-    │       └── BindingBlockFrame ← R.dataflow()
-    └── ...
-</pre></div>
-</div>
-<p>The generated program constructs IR by entering and exiting frames. Each frame owns its
-construction policy and finalization; the syntax transpiler does not maintain an IR tree.</p>
-</section>
-<section id="tir-builder">
-<h3>TIR builder<a class="headerlink" href="#tir-builder" title="Link to this heading">#</a></h3>
-<p>The TIR builder (<code class="docutils literal notranslate"><span class="pre">python/tvm/tirx/script/ir_builder/</span></code>) implements the construction operations
-behind public <code class="docutils literal notranslate"><span class="pre">T</span></code> syntax. Builder modules also support direct programmatic construction;
-public decorators and internal frame-opening operations have distinct roles. Key categories:</p>
-<p><strong>Function and block</strong>:</p>
-<ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">&#64;T.prim_func</span></code> selects TIR construction; its builder <code class="docutils literal notranslate"><span class="pre">function()</span></code> opens <code class="docutils literal notranslate"><span class="pre">PrimFuncFrame</span></code></p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">T.sblock(name)</span></code> → <code class="docutils literal notranslate"><span class="pre">SBlockFrame</span></code> (spatial block)</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">T.init()</span></code> → <code class="docutils literal notranslate"><span class="pre">BlockInitFrame</span></code> (reduction initialization)</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">T.reads(...)</span></code>, <code class="docutils literal notranslate"><span class="pre">T.writes(...)</span></code> → declare buffer access regions</p></li>
-</ul>
-<p><strong>Loops</strong>:</p>
-<ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">T.grid(*extents)</span></code> → <code class="docutils literal notranslate"><span class="pre">ForFrame</span></code> returning loop variables</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">T.serial(start,</span> <span class="pre">stop)</span></code>, <code class="docutils literal notranslate"><span class="pre">T.parallel(...)</span></code>, <code class="docutils literal notranslate"><span class="pre">T.vectorized(...)</span></code>,
-<code class="docutils literal notranslate"><span class="pre">T.unroll(...)</span></code>, <code class="docutils literal notranslate"><span class="pre">T.thread_binding(...)</span></code> → loop with specific iterator type</p></li>
-</ul>
-<p><strong>Block axes</strong>:</p>
-<ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">T.axis.spatial(dom,</span> <span class="pre">binding)</span></code> — spatial iteration axis</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">T.axis.reduce(dom,</span> <span class="pre">binding)</span></code> — reduction axis</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">T.axis.remap(kinds,</span> <span class="pre">bindings)</span></code> — shorthand for multiple axes</p></li>
-</ul>
-<p><strong>Buffers</strong>:</p>
-<ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">T.match_buffer(param,</span> <span class="pre">shape,</span> <span class="pre">dtype)</span></code> — match function parameter to buffer</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">T.alloc_buffer(shape,</span> <span class="pre">dtype)</span></code> — allocate intermediate buffer</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">T.Buffer(shape,</span> <span class="pre">dtype)</span></code> — buffer type annotation in function signatures</p></li>
-</ul>
-</section>
-<section id="relax-builder">
-<h3>Relax builder<a class="headerlink" href="#relax-builder" title="Link to this heading">#</a></h3>
-<p>The Relax builder (<code class="docutils literal notranslate"><span class="pre">python/tvm/relax/script/ir_builder/</span></code>) implements:</p>
-<p><strong>Function and dataflow</strong>:</p>
-<ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">&#64;R.function</span></code> selects Relax construction; its builder <code class="docutils literal notranslate"><span class="pre">function()</span></code> opens <code class="docutils literal notranslate"><span class="pre">FunctionFrame</span></code></p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">R.dataflow()</span></code> → <code class="docutils literal notranslate"><span class="pre">BindingBlockFrame</span></code></p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">R.output(*vars)</span></code> → expose variables from a dataflow block</p></li>
-</ul>
-<p><strong>Emit</strong>:</p>
-<ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">R.emit(value)</span></code> → emit a binding, returns a <code class="docutils literal notranslate"><span class="pre">Var</span></code></p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">R.emit_match_cast(value,</span> <span class="pre">ty)</span></code> → emit with type assertion</p></li>
-</ul>
-<p>Generated standalone-statement emission uses the construction protocol’s separate <code class="docutils literal notranslate"><span class="pre">emit_</span></code>
-operation. Public <code class="docutils literal notranslate"><span class="pre">R.emit</span></code> retains its binding-returning imperative API.</p>
-<p><strong>Type annotations</strong>:</p>
-<ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">R.Tensor(shape,</span> <span class="pre">dtype)</span></code> — tensor type</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">R.Tuple(*fields)</span></code> — tuple type</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">R.Shape(values)</span></code> — shape type</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">R.Any()</span></code> — any Relax value type</p></li>
-</ul>
-<p><strong>Calling conventions</strong>:</p>
-<ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">R.call_tir(func,</span> <span class="pre">args,</span> <span class="pre">out_ty)</span></code> — call a TIR function</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">R.call_packed(name,</span> <span class="pre">*args)</span></code> — call a PackedFunc</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">R.call_dps_packed(func,</span> <span class="pre">*args)</span></code> — call using destination-passing style</p></li>
-</ul>
-<p><strong>Operators</strong>: the <code class="docutils literal notranslate"><span class="pre">R</span></code> module also re-exports all Relax operators
-(<code class="docutils literal notranslate"><span class="pre">R.add</span></code>, <code class="docutils literal notranslate"><span class="pre">R.matmul</span></code>, <code class="docutils literal notranslate"><span class="pre">R.nn.conv2d</span></code>, etc.) so they can be used directly in TVMScript.</p>
-</section>
-</section>
-<section id="printer-architecture">
-<h2>Printer Architecture<a class="headerlink" href="#printer-architecture" title="Link to this heading">#</a></h2>
-<p>The printer converts TVM IR back to TVMScript text. It is implemented primarily in C++
-(<code class="docutils literal notranslate"><span class="pre">src/script/printer/</span></code>) for performance.</p>
-<section id="doc-tree">
-<h3>Doc tree<a class="headerlink" href="#doc-tree" title="Link to this heading">#</a></h3>
-<p>The printer does <strong>not</strong> generate text directly. Instead, it first builds a <code class="docutils literal notranslate"><span class="pre">Doc</span></code> tree — an
-intermediate representation that mirrors Python syntax:</p>
-<ul class="simple">
-<li><p><strong>Expression docs</strong>: <code class="docutils literal notranslate"><span class="pre">IdDoc</span></code>, <code class="docutils literal notranslate"><span class="pre">AttrAccessDoc</span></code>, <code class="docutils literal notranslate"><span class="pre">CallDoc</span></code>, <code class="docutils literal notranslate"><span class="pre">IndexDoc</span></code>,
-<code class="docutils literal notranslate"><span class="pre">OperationDoc</span></code>, <code class="docutils literal notranslate"><span class="pre">LiteralDoc</span></code>, <code class="docutils literal notranslate"><span class="pre">TupleDoc</span></code>, <code class="docutils literal notranslate"><span class="pre">ListDoc</span></code>, etc.</p></li>
-<li><p><strong>Statement docs</strong>: <code class="docutils literal notranslate"><span class="pre">AssignDoc</span></code>, <code class="docutils literal notranslate"><span class="pre">ForDoc</span></code>, <code class="docutils literal notranslate"><span class="pre">IfDoc</span></code>, <code class="docutils literal notranslate"><span class="pre">ScopeDoc</span></code> (<code class="docutils literal notranslate"><span class="pre">with</span></code> blocks),
-<code class="docutils literal notranslate"><span class="pre">FunctionDoc</span></code>, <code class="docutils literal notranslate"><span class="pre">ClassDoc</span></code>, <code class="docutils literal notranslate"><span class="pre">ReturnDoc</span></code>, <code class="docutils literal notranslate"><span class="pre">CommentDoc</span></code>, etc.</p></li>
-</ul>
-<p>For example, <code class="docutils literal notranslate"><span class="pre">T.axis.spatial(128,</span> <span class="pre">i)</span></code> is represented as:</p>
-<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>CallDoc(
-  callee=AttrAccessDoc(AttrAccessDoc(IdDoc(&quot;T&quot;), &quot;axis&quot;), &quot;spatial&quot;),
-  args=[LiteralDoc(128), IdDoc(&quot;i&quot;)]
-)
-</pre></div>
-</div>
-</section>
-<section id="irdocsifier">
-<h3>IRDocsifier<a class="headerlink" href="#irdocsifier" title="Link to this heading">#</a></h3>
-<p>The <code class="docutils literal notranslate"><span class="pre">IRDocsifier</span></code> (<code class="docutils literal notranslate"><span class="pre">include/tvm/script/printer/ir_docsifier.h</span></code>) is the main dispatcher.
-It maintains:</p>
-<ul class="simple">
-<li><p>A dispatch table mapping <code class="docutils literal notranslate"><span class="pre">(token,</span> <span class="pre">type_index)</span></code> pairs to converter functions.</p></li>
-<li><p>A frame stack for tracking the current scope (similar to the builder’s frame stack).</p></li>
-<li><p>A variable-to-name mapping to produce readable names.</p></li>
-</ul>
-<p>Each IR dialect registers its own converters:</p>
-<ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">src/tirx/script/printer/</span></code> — converts PrimFunc, Buffer, SBlock, loops, expressions.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">src/relax/script/printer/</span></code> — converts relax.Function, bindings, types, operators.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">src/script/printer/ir/</span></code> — converts IRModule, shared types.</p></li>
-</ul>
-<p>The final step calls <code class="docutils literal notranslate"><span class="pre">DocToPythonScript()</span></code> (<code class="docutils literal notranslate"><span class="pre">src/script/printer/doc_printer/python_doc_printer.cc</span></code>)
-to format the Doc tree into properly indented Python text.</p>
-</section>
-<section id="roundtrip">
-<h3>Roundtrip<a class="headerlink" href="#roundtrip" title="Link to this heading">#</a></h3>
-<p>For printable IR with the required source context available:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">text</span> <span class="o">=</span> <span class="n">mod</span><span class="o">.</span><span class="n">script</span><span class="p">()</span>           <span class="c1"># IR → TVMScript text</span>
-<span class="n">reparsed</span> <span class="o">=</span> <span class="n">tvm</span><span class="o">.</span><span class="n">script</span><span class="o">.</span><span class="n">from_source</span><span class="p">(</span><span class="n">text</span><span class="p">)</span>  <span class="c1"># text → IR</span>
-<span class="n">tvm</span><span class="o">.</span><span class="n">ir</span><span class="o">.</span><span class="n">assert_structural_equal</span><span class="p">(</span><span class="n">mod</span><span class="p">,</span> <span class="n">reparsed</span><span class="p">)</span>
-</pre></div>
-</div>
-<p>This roundtrip property is relied upon by testing infrastructure and serialization workflows.
-Printed text uses canonical forms and may differ from hand-written TVMScript. External
-objects or Python attachments require their corresponding context; text alone does not
-serialize arbitrary Python state.</p>
-</section>
-</section>
-<section id="supported-python-syntax">
-<h2>Supported Python Syntax<a class="headerlink" href="#supported-python-syntax" title="Link to this heading">#</a></h2>
-<p>TVMScript supports a subset of Python syntax. The table below summarizes what is supported
-and how each construct is interpreted:</p>
-<div class="pst-scrollable-table-container"><table class="table">
-<colgroup>
-<col style="width: 25.0%" />
-<col style="width: 15.0%" />
-<col style="width: 60.0%" />
-</colgroup>
-<thead>
-<tr class="row-odd"><th class="head"><p>Python Syntax</p></th>
-<th class="head"><p>TIR</p></th>
-<th class="head"><p>Relax</p></th>
-</tr>
-</thead>
-<tbody>
-<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">for</span> <span class="pre">i</span> <span class="pre">in</span> <span class="pre">range(n)</span></code></p></td>
-<td><p>Serial loop nest</p></td>
-<td><p>No Relax IR loop construction</p></td>
-</tr>
-<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">with</span> <span class="pre">T.sblock(...)</span></code></p></td>
-<td><p>Spatial block scope</p></td>
-<td><p>N/A</p></td>
-</tr>
-<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">with</span> <span class="pre">R.dataflow()</span></code></p></td>
-<td><p>N/A</p></td>
-<td><p>Dataflow block</p></td>
-</tr>
-<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">if</span> <span class="pre">...</span> <span class="pre">else</span></code></p></td>
-<td><p>TIR <code class="docutils literal notranslate"><span class="pre">IfThenElse</span></code>; explicit <code class="docutils literal notranslate"><span class="pre">I.constexpr</span></code> selects a Python branch</p></td>
-<td><p>Relax <code class="docutils literal notranslate"><span class="pre">If</span></code>; explicit <code class="docutils literal notranslate"><span class="pre">I.constexpr</span></code> selects a Python branch</p></td>
-</tr>
-<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">while</span></code></p></td>
-<td><p><code class="docutils literal notranslate"><span class="pre">T.While</span></code> loop</p></td>
-<td><p>Not supported</p></td>
-</tr>
-<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">x</span> <span class="pre">=</span> <span class="pre">expr</span></code></p></td>
-<td><p>Variable binding</p></td>
-<td><p>Emit binding (implicit <code class="docutils literal notranslate"><span class="pre">R.emit</span></code>)</p></td>
-</tr>
-<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">x:</span> <span class="pre">T.Buffer(...)</span></code></p></td>
-<td><p>Buffer annotation</p></td>
-<td><p>N/A</p></td>
-</tr>
-<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">x:</span> <span class="pre">R.Tensor(...)</span></code></p></td>
-<td><p>N/A</p></td>
-<td><p>Type annotation</p></td>
-</tr>
-<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">return</span></code></p></td>
-<td><p>Primitive return expression</p></td>
-<td><p>Function return value</p></td>
-</tr>
-<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">A[i,</span> <span class="pre">j]</span></code></p></td>
-<td><p>Buffer load</p></td>
-<td><p>Not applicable (use operators)</p></td>
-</tr>
-<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">A[i,</span> <span class="pre">j]</span> <span class="pre">=</span> <span class="pre">expr</span></code></p></td>
-<td><p>Buffer store</p></td>
-<td><p>Not applicable</p></td>
-</tr>
-<tr class="row-odd"><td><p>Arithmetic (<code class="docutils literal notranslate"><span class="pre">+</span></code>, <code class="docutils literal notranslate"><span class="pre">-</span></code>, etc.)</p></td>
-<td><p>PrimExpr operations</p></td>
-<td><p>Calls to Relax operators</p></td>
-</tr>
-<tr class="row-even"><td><p>Function calls</p></td>
-<td><p><code class="docutils literal notranslate"><span class="pre">T.*</span></code> intrinsics</p></td>
-<td><p><code class="docutils literal notranslate"><span class="pre">R.*</span></code> operators or <code class="docutils literal notranslate"><span class="pre">call_tir</span></code> / <code class="docutils literal notranslate"><span class="pre">call_packed</span></code></p></td>
-</tr>
-</tbody>
-</table>
-</div>
-<p>Inside scripted function bodies, unsupported statement forms include <code class="docutils literal notranslate"><span class="pre">class</span></code>,
-<code class="docutils literal notranslate"><span class="pre">try/except</span></code>, <code class="docutils literal notranslate"><span class="pre">import</span></code>, and <code class="docutils literal notranslate"><span class="pre">global</span></code>. <code class="docutils literal notranslate"><span class="pre">yield</span></code> and <code class="docutils literal notranslate"><span class="pre">async/await</span></code> are also unsupported.
-Place imports and ordinary Python class definitions in the surrounding Python program.</p>
-</section>
-<section id="tir-syntax-reference">
-<h2>TIR Syntax Reference<a class="headerlink" href="#tir-syntax-reference" title="Link to this heading">#</a></h2>
-<section id="function-definition">
-<h3>Function definition<a class="headerlink" href="#function-definition" title="Link to this heading">#</a></h3>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nd">@T</span><span class="o">.</span><span class="n">prim_func</span>
-<span class="k">def</span><span class="w"> </span><span class="nf">func_name</span><span class="p">(</span><span class="n">a</span><span class="p">:</span> <span class="n">T</span><span class="o">.</span><span class="n">handle</span><span class="p">,</span> <span class="n">b</span><span class="p">:</span> <span class="n">T</span><span class="o">.</span><span class="n">handle</span><span class="p">):</span>
-    <span class="n">m</span> <span class="o">=</span> <span class="n">T</span><span class="o">.</span><span class="n">int32</span><span class="p">()</span>
-    <span class="n">n</span> <span class="o">=</span> <span class="n">T</span><span class="o">.</span><span class="n">int32</span><span class="p">()</span>
-    <span class="n">A</span> <span class="o">=</span> <span class="n">T</span><span class="o">.</span><span class="n">match_buffer</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="p">(</span><span class="n">m</span><span class="p">,</span> <span class="n">n</span><span class="p">),</span> <span class="s2">&quot;float32&quot;</span><span class="p">)</span>
-    <span class="n">B</span> <span class="o">=</span> <span class="n">T</span><span class="o">.</span><span class="n">match_buffer</span><span class="p">(</span><span class="n">b</span><span class="p">,</span> <span class="p">(</span><span class="n">m</span><span class="p">,),</span> <span class="s2">&quot;float32&quot;</span><span class="p">)</span>
-    <span class="c1"># function body</span>
-</pre></div>
-</div>
-<ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">T.handle</span></code> — opaque handle parameter (matched to a buffer inside the function).</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">T.Buffer(shape,</span> <span class="pre">dtype)</span></code> — can also be used directly in the signature:
-<code class="docutils literal notranslate"><span class="pre">def</span> <span class="pre">func(A:</span> <span class="pre">T.Buffer((128,),</span> <span class="pre">&quot;float32&quot;))</span></code>.</p></li>
-</ul>
-</section>
-<section id="block-and-axes">
-<h3>Block and axes<a class="headerlink" href="#block-and-axes" title="Link to this heading">#</a></h3>
-<p>Use <code class="docutils literal notranslate"><span class="pre">&#64;T.prim_func(s_tir=True)</span></code> for functions with scheduled-TIR blocks and block axes.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">j</span> <span class="ow">in</span> <span class="n">T</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="mi">128</span><span class="p">,</span> <span class="mi">128</span><span class="p">):</span>
-    <span class="k">with</span> <span class="n">T</span><span class="o">.</span><span class="n">sblock</span><span class="p">(</span><span class="s2">&quot;block_name&quot;</span><span class="p">):</span>
-        <span class="n">vi</span> <span class="o">=</span> <span class="n">T</span><span class="o">.</span><span class="n">axis</span><span class="o">.</span><span class="n">spatial</span><span class="p">(</span><span class="mi">128</span><span class="p">,</span> <span class="n">i</span><span class="p">)</span>
-        <span class="n">vj</span> <span class="o">=</span> <span class="n">T</span><span class="o">.</span><span class="n">axis</span><span class="o">.</span><span class="n">reduce</span><span class="p">(</span><span class="mi">128</span><span class="p">,</span> <span class="n">j</span><span class="p">)</span>
-        <span class="n">T</span><span class="o">.</span><span class="n">reads</span><span class="p">(</span><span class="n">A</span><span class="p">[</span><span class="n">vi</span><span class="p">,</span> <span class="n">vj</span><span class="p">])</span>
-        <span class="n">T</span><span class="o">.</span><span class="n">writes</span><span class="p">(</span><span class="n">B</span><span class="p">[</span><span class="n">vi</span><span class="p">])</span>
-        <span class="c1"># compute</span>
-</pre></div>
-</div>
-<ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">T.axis.spatial</span></code> / <code class="docutils literal notranslate"><span class="pre">T.axis.reduce</span></code> / <code class="docutils literal notranslate"><span class="pre">T.axis.scan</span></code> — declare axis variables with
-their iteration domain and binding to outer loop variables.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">T.axis.remap(&quot;SR&quot;,</span> <span class="pre">[i,</span> <span class="pre">j])</span></code> — shorthand: <code class="docutils literal notranslate"><span class="pre">S</span></code> = spatial, <code class="docutils literal notranslate"><span class="pre">R</span></code> = reduce.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">T.reads(...)</span></code>, <code class="docutils literal notranslate"><span class="pre">T.writes(...)</span></code> — declare buffer regions accessed by this block.</p></li>
-</ul>
-</section>
-<section id="loop-types">
-<h3>Loop types<a class="headerlink" href="#loop-types" title="Link to this heading">#</a></h3>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">T</span><span class="o">.</span><span class="n">serial</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">128</span><span class="p">):</span>          <span class="c1"># sequential</span>
-<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">T</span><span class="o">.</span><span class="n">parallel</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">128</span><span class="p">):</span>        <span class="c1"># parallel</span>
-<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">T</span><span class="o">.</span><span class="n">vectorized</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">128</span><span class="p">):</span>      <span class="c1"># vectorized</span>
-<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">T</span><span class="o">.</span><span class="n">unroll</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">128</span><span class="p">):</span>          <span class="c1"># unrolled</span>
-<span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">T</span><span class="o">.</span><span class="n">thread_binding</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">128</span><span class="p">,</span> <span class="n">thread</span><span class="o">=</span><span class="s2">&quot;threadIdx.x&quot;</span><span class="p">):</span>  <span class="c1"># GPU thread</span>
-</pre></div>
-</div>
-</section>
-<section id="buffer-operations">
-<h3>Buffer operations<a class="headerlink" href="#buffer-operations" title="Link to this heading">#</a></h3>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">C</span> <span class="o">=</span> <span class="n">T</span><span class="o">.</span><span class="n">alloc_buffer</span><span class="p">((</span><span class="mi">128</span><span class="p">,</span> <span class="mi">128</span><span class="p">),</span> <span class="s2">&quot;float32&quot;</span><span class="p">)</span>  <span class="c1"># intermediate buffer</span>
-<span class="n">val</span> <span class="o">=</span> <span class="n">A</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">]</span>                               <span class="c1"># buffer load</span>
-<span class="n">B</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">val</span> <span class="o">+</span> <span class="mf">1.0</span>                            <span class="c1"># buffer store</span>
-</pre></div>
-</div>
-</section>
-<section id="common-intrinsics">
-<h3>Common intrinsics<a class="headerlink" href="#common-intrinsics" title="Link to this heading">#</a></h3>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">T</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="n">x</span><span class="p">),</span> <span class="n">T</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">x</span><span class="p">),</span> <span class="n">T</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">x</span><span class="p">),</span> <span class="n">T</span><span class="o">.</span><span class="n">tanh</span><span class="p">(</span><span class="n">x</span><span class="p">),</span> <span class="o">...</span>  <span class="c1"># math functions</span>
-<span class="n">T</span><span class="o">.</span><span class="n">cast</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="s2">&quot;float16&quot;</span><span class="p">)</span>                              <span class="c1"># type cast</span>
-<span class="n">T</span><span class="o">.</span><span class="n">if_then_else</span><span class="p">(</span><span class="n">cond</span><span class="p">,</span> <span class="n">true_val</span><span class="p">,</span> <span class="n">false_val</span><span class="p">)</span>          <span class="c1"># conditional expression</span>
-<span class="n">T</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">),</span> <span class="n">T</span><span class="o">.</span><span class="n">max</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span>                           <span class="c1"># min/max</span>
-<span class="n">T</span><span class="o">.</span><span class="n">call_extern</span><span class="p">(</span><span class="s2">&quot;int32&quot;</span><span class="p">,</span> <span class="s2">&quot;func_name&quot;</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">)</span>                  <span class="c1"># external function call</span>
-<span class="n">T</span><span class="o">.</span><span class="n">call_packed</span><span class="p">(</span><span class="s2">&quot;func_name&quot;</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">)</span>                   <span class="c1"># packed function call</span>
-<span class="n">T</span><span class="o">.</span><span class="n">tvm_storage_sync</span><span class="p">(</span><span class="s2">&quot;shared&quot;</span><span class="p">)</span>                        <span class="c1"># GPU memory fence</span>
-</pre></div>
-</div>
-</section>
-</section>
-<section id="relax-syntax-reference">
-<h2>Relax Syntax Reference<a class="headerlink" href="#relax-syntax-reference" title="Link to this heading">#</a></h2>
-<section id="id1">
-<h3>Function definition<a class="headerlink" href="#id1" title="Link to this heading">#</a></h3>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nd">@R</span><span class="o">.</span><span class="n">function</span>
-<span class="k">def</span><span class="w"> </span><span class="nf">main</span><span class="p">(</span><span class="n">x</span><span class="p">:</span> <span class="n">R</span><span class="o">.</span><span class="n">Tensor</span><span class="p">((</span><span class="mi">128</span><span class="p">,</span> <span class="mi">128</span><span class="p">),</span> <span class="s2">&quot;float32&quot;</span><span class="p">),</span>
-         <span class="n">y</span><span class="p">:</span> <span class="n">R</span><span class="o">.</span><span class="n">Tensor</span><span class="p">((</span><span class="mi">128</span><span class="p">,),</span> <span class="s2">&quot;float32&quot;</span><span class="p">))</span> <span class="o">-&gt;</span> <span class="n">R</span><span class="o">.</span><span class="n">Tensor</span><span class="p">((</span><span class="mi">128</span><span class="p">,</span> <span class="mi">128</span><span class="p">),</span> <span class="s2">&quot;float32&quot;</span><span class="p">):</span>
-    <span class="c1"># function body</span>
-    <span class="k">return</span> <span class="n">result</span>
-</pre></div>
-</div>
-<ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">R.Tensor(shape,</span> <span class="pre">dtype)</span></code> — tensor type annotation.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">R.Tuple(...)</span></code>, <code class="docutils literal notranslate"><span class="pre">R.Shape(...)</span></code>, <code class="docutils literal notranslate"><span class="pre">R.Any()</span></code> — other Relax type annotations.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">R.function(private=True)</span></code> — marks the function as module-private.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">R.function(pure=False)</span></code> — marks the function as having side effects.</p></li>
-</ul>
-</section>
-<section id="dataflow-blocks">
-<h3>Dataflow blocks<a class="headerlink" href="#dataflow-blocks" title="Link to this heading">#</a></h3>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">with</span> <span class="n">R</span><span class="o">.</span><span class="n">dataflow</span><span class="p">():</span>
-    <span class="n">lv0</span> <span class="o">=</span> <span class="n">R</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
-    <span class="n">lv1</span> <span class="o">=</span> <span class="n">R</span><span class="o">.</span><span class="n">nn</span><span class="o">.</span><span class="n">relu</span><span class="p">(</span><span class="n">lv0</span><span class="p">)</span>
-    <span class="n">R</span><span class="o">.</span><span class="n">output</span><span class="p">(</span><span class="n">lv1</span><span class="p">)</span>
-</pre></div>
-</div>
-<p>Variables inside a <code class="docutils literal notranslate"><span class="pre">R.dataflow()</span></code> block are local to that block. <code class="docutils literal notranslate"><span class="pre">R.output(...)</span></code> exposes
-variables to the outer scope.</p>
-</section>
-<section id="calling-tir-functions">
-<h3>Calling TIR functions<a class="headerlink" href="#calling-tir-functions" title="Link to this heading">#</a></h3>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">out</span> <span class="o">=</span> <span class="n">R</span><span class="o">.</span><span class="n">call_tir</span><span class="p">(</span><span class="n">MyModule</span><span class="o">.</span><span class="n">my_kernel</span><span class="p">,</span> <span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">),</span> <span class="n">out_ty</span><span class="o">=</span><span class="n">R</span><span class="o">.</span><span class="n">Tensor</span><span class="p">((</span><span class="mi">128</span><span class="p">,),</span> <span class="s2">&quot;float32&quot;</span><span class="p">))</span>
-</pre></div>
-</div>
-<ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">MyModule.my_kernel</span></code> — references a TIR <code class="docutils literal notranslate"><span class="pre">PrimFunc</span></code> in the same module.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">out_ty</span></code> — the type (shape and dtype) of the output tensor.</p></li>
-</ul>
-</section>
-<section id="control-flow">
-<h3>Control flow<a class="headerlink" href="#control-flow" title="Link to this heading">#</a></h3>
-<p>Relax <code class="docutils literal notranslate"><span class="pre">if</span></code> uses plain Python <code class="docutils literal notranslate"><span class="pre">if</span></code> syntax. The condition must be a Relax variable with
-boolean type. Both branches are required.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nd">@R</span><span class="o">.</span><span class="n">function</span>
-<span class="k">def</span><span class="w"> </span><span class="nf">f</span><span class="p">(</span><span class="n">cond</span><span class="p">:</span> <span class="n">R</span><span class="o">.</span><span class="n">Tensor</span><span class="p">((),</span> <span class="s2">&quot;bool&quot;</span><span class="p">),</span> <span class="n">x</span><span class="p">:</span> <span class="n">R</span><span class="o">.</span><span class="n">Tensor</span><span class="p">((</span><span class="mi">128</span><span class="p">,),</span> <span class="s2">&quot;float32&quot;</span><span class="p">)):</span>
-    <span class="k">if</span> <span class="n">cond</span><span class="p">:</span>
-        <span class="n">result</span> <span class="o">=</span> <span class="n">R</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">x</span><span class="p">)</span>
-    <span class="k">else</span><span class="p">:</span>
-        <span class="n">result</span> <span class="o">=</span> <span class="n">R</span><span class="o">.</span><span class="n">multiply</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">x</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">result</span>
-</pre></div>
-</div>
-</section>
+<section id="namespace-extension">
+<h2>Namespace extension<a class="headerlink" href="#namespace-extension" title="Link to this heading">#</a></h2>
+<p>A language variant supplies construction hooks and a public script namespace, then
+registers its aliases with <code class="docutils literal notranslate"><span class="pre">register_namespace</span></code>. <code class="docutils literal notranslate"><span class="pre">register_namespace_initializer</span></code>
+supports lazy setup. <code class="docutils literal notranslate"><span class="pre">tvm.script.register_dialect</span></code> exposes a package through the
+public script namespace. Syntax policies are registered beside the operations that
+need them, while IR printing is extended through docsifier registrations.</p>
+<p>This division keeps source acquisition, syntax translation and formatting shared.
+Language-specific construction and validation remain with the namespace and its
+builders.</p>
 </section>
 </section>
 
@@ -1372,43 +780,11 @@ boolean type. Both branches are required.</p>
   </div>
   <nav class="bd-toc-nav page-toc">
     <ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#overview">Overview</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#decorators">Decorators</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#parser-architecture">Parser Architecture</a><ul class="visible nav section-nav flex-column">
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#syntax-and-construction-protocol">Syntax and construction protocol</a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#parse-flow">Parse flow</a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#definition-and-symbol-scopes">Definition and symbol scopes</a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#explicit-host-control-flow">Explicit host control flow</a></li>
-</ul>
-</li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#ir-builder-architecture">IR Builder Architecture</a><ul class="visible nav section-nav flex-column">
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#frame-stack">Frame stack</a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#tir-builder">TIR builder</a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#relax-builder">Relax builder</a></li>
-</ul>
-</li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#printer-architecture">Printer Architecture</a><ul class="visible nav section-nav flex-column">
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#doc-tree">Doc tree</a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#irdocsifier">IRDocsifier</a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#roundtrip">Roundtrip</a></li>
-</ul>
-</li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#supported-python-syntax">Supported Python Syntax</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#tir-syntax-reference">TIR Syntax Reference</a><ul class="visible nav section-nav flex-column">
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#function-definition">Function definition</a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#block-and-axes">Block and axes</a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#loop-types">Loop types</a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#buffer-operations">Buffer operations</a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#common-intrinsics">Common intrinsics</a></li>
-</ul>
-</li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#relax-syntax-reference">Relax Syntax Reference</a><ul class="visible nav section-nav flex-column">
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id1">Function definition</a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#dataflow-blocks">Dataflow blocks</a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#calling-tir-functions">Calling TIR functions</a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#control-flow">Control flow</a></li>
-</ul>
-</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#source-and-frontend">Source and frontend</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#syntax-and-construction-protocol">Syntax and construction protocol</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#frame-based-construction">Frame-based construction</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#printing-and-round-trips">Printing and round trips</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#namespace-extension">Namespace extension</a></li>
 </ul>
   </nav></div>
 

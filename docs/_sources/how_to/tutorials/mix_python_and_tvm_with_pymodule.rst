@@ -48,7 +48,7 @@ This tutorial walks through the full workflow step by step.
 Preparation
 -----------
 
-.. GENERATED FROM PYTHON SOURCE LINES 50-71
+.. GENERATED FROM PYTHON SOURCE LINES 50-72
 
 .. code-block:: Python
 
@@ -66,6 +66,7 @@ Preparation
     from tvm.relax.base_py_module import BasePyModule
     from tvm.script import ir as I
     from tvm.script import relax as R
+    from tvm.script import s_tir as Ts
     from tvm.script import tirx as T
 
     IS_IN_CI = os.getenv("CI", "").lower() == "true"
@@ -80,7 +81,7 @@ Preparation
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 72-83
+.. GENERATED FROM PYTHON SOURCE LINES 73-84
 
 Step 1: Your First Hybrid Module
 ----------------------------------
@@ -94,7 +95,7 @@ three decorators for three kinds of functions:
 ``call_tir`` bridges Python and TIR: it converts PyTorch tensors to TVM NDArrays via DLPack
 (zero-copy), allocates the output buffer, calls the compiled kernel, and converts back.
 
-.. GENERATED FROM PYTHON SOURCE LINES 83-122
+.. GENERATED FROM PYTHON SOURCE LINES 84-123
 
 .. code-block:: Python
 
@@ -103,7 +104,7 @@ three decorators for three kinds of functions:
 
         @R.py_module
         class MyFirstModule(BasePyModule):
-            @T.prim_func(s_tir=True)
+            @Ts.prim_func
             def add_tir(
                 A: T.Buffer((4,), "float32"),
                 B: T.Buffer((4,), "float32"),
@@ -144,7 +145,7 @@ three decorators for three kinds of functions:
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 123-129
+.. GENERATED FROM PYTHON SOURCE LINES 124-130
 
 Step 2: Debugging — The Main Selling Point
 ---------------------------------------------
@@ -153,7 +154,7 @@ intermediate tensor values without compiling the entire module. With ``@I.pyfunc
 is as simple as adding a ``print`` statement. You can also make quick edits and re-run
 immediately — no recompilation needed.
 
-.. GENERATED FROM PYTHON SOURCE LINES 129-180
+.. GENERATED FROM PYTHON SOURCE LINES 130-181
 
 .. code-block:: Python
 
@@ -162,16 +163,16 @@ immediately — no recompilation needed.
 
         @R.py_module
         class DebugModule(BasePyModule):
-            @T.prim_func(s_tir=True)
+            @Ts.prim_func
             def matmul_tir(var_A: T.handle, var_B: T.handle, var_C: T.handle):
                 n = T.int32()
                 A = T.match_buffer(var_A, (n, 4), "float32")
                 B = T.match_buffer(var_B, (4, 3), "float32")
                 C = T.match_buffer(var_C, (n, 3), "float32")
                 for i, j, k in T.grid(n, 3, 4):
-                    with T.sblock("matmul"):
-                        vi, vj, vk = T.axis.remap("SSR", [i, j, k])
-                        with T.init():
+                    with Ts.sblock("matmul"):
+                        vi, vj, vk = Ts.axis.remap("SSR", [i, j, k])
+                        with Ts.init():
                             C[vi, vj] = T.float32(0)
                         C[vi, vj] = C[vi, vj] + A[vi, vk] * B[vk, vj]
 
@@ -215,13 +216,13 @@ immediately — no recompilation needed.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 181-184
+.. GENERATED FROM PYTHON SOURCE LINES 182-185
 
 This is the key benefit: "debugging is as simple as inserting a print statement.
 Users can also make quick, manual edits to Python functions and immediately observe the
 results." No compilation cycle, no VM loading — just Python.
 
-.. GENERATED FROM PYTHON SOURCE LINES 187-198
+.. GENERATED FROM PYTHON SOURCE LINES 188-199
 
 Step 3: A Realistic Pipeline — Python, TIR, and Packed Functions
 -------------------------------------------------------------------
@@ -235,7 +236,7 @@ three different calling conventions:
 ``call_dps_packed`` is useful for calling functions registered via ``tvm.register_global_func``
 — for example, CUBLAS or cuDNN bindings that TVM wraps as packed functions.
 
-.. GENERATED FROM PYTHON SOURCE LINES 198-259
+.. GENERATED FROM PYTHON SOURCE LINES 199-260
 
 .. code-block:: Python
 
@@ -253,15 +254,15 @@ three different calling conventions:
 
         @R.py_module
         class PipelineModule(BasePyModule):
-            @T.prim_func(s_tir=True)
+            @Ts.prim_func
             def matmul_tir(var_A: T.handle, var_B: T.handle, var_C: T.handle):
                 A = T.match_buffer(var_A, (2, 4), "float32")
                 B = T.match_buffer(var_B, (4, 3), "float32")
                 C = T.match_buffer(var_C, (2, 3), "float32")
                 for i, j, k in T.grid(2, 3, 4):
-                    with T.sblock("matmul"):
-                        vi, vj, vk = T.axis.remap("SSR", [i, j, k])
-                        with T.init():
+                    with Ts.sblock("matmul"):
+                        vi, vj, vk = Ts.axis.remap("SSR", [i, j, k])
+                        with Ts.init():
                             C[vi, vj] = T.float32(0)
                         C[vi, vj] = C[vi, vj] + A[vi, vk] * B[vk, vj]
 
@@ -307,7 +308,7 @@ three different calling conventions:
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 260-269
+.. GENERATED FROM PYTHON SOURCE LINES 261-270
 
 Step 4: Relax-to-Python Converter — Verify at Any Compilation Stage
 ----------------------------------------------------------------------
@@ -319,7 +320,7 @@ A key feature: **this conversion can happen at any stage of compilation**.
 You can convert early (right after import) or late (after optimization passes have
 transformed the IR), and compare the output against a PyTorch reference to catch bugs.
 
-.. GENERATED FROM PYTHON SOURCE LINES 269-331
+.. GENERATED FROM PYTHON SOURCE LINES 270-332
 
 .. code-block:: Python
 
@@ -330,7 +331,7 @@ transformed the IR), and compare the output against a PyTorch reference to catch
         # A simple Relax module: matmul + bias + relu (a dense layer)
         @I.ir_module
         class DenseLayer:
-            @T.prim_func(s_tir=True)
+            @Ts.prim_func
             def bias_add_tir(var_x: T.handle, var_b: T.handle, var_out: T.handle):
                 x = T.match_buffer(var_x, (2, 4), "float32")
                 b = T.match_buffer(var_b, (4,), "float32")
@@ -392,7 +393,7 @@ transformed the IR), and compare the output against a PyTorch reference to catch
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 332-345
+.. GENERATED FROM PYTHON SOURCE LINES 333-346
 
 Step 5: R.call_py_func — Python Callbacks in Compiled IR
 -----------------------------------------------------------
@@ -408,7 +409,7 @@ Use case: your model has a custom op (e.g., a special normalization or a samplin
 that is complex to implement in TIR. Compile everything else, and let that one op stay
 in Python.
 
-.. GENERATED FROM PYTHON SOURCE LINES 345-382
+.. GENERATED FROM PYTHON SOURCE LINES 346-383
 
 .. code-block:: Python
 
@@ -456,7 +457,7 @@ in Python.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 383-399
+.. GENERATED FROM PYTHON SOURCE LINES 384-400
 
 Step 6: Cross-Level Calls and Symbolic Shapes
 ------------------------------------------------
@@ -475,7 +476,7 @@ This step also shows **symbolic shapes**: TIR and Relax functions can declare dy
 dimensions (e.g., ``"n"``). ``BasePyModule`` infers concrete shapes from the actual input
 tensors at call time, so the same module handles different sizes without recompilation.
 
-.. GENERATED FROM PYTHON SOURCE LINES 399-444
+.. GENERATED FROM PYTHON SOURCE LINES 400-445
 
 .. code-block:: Python
 
@@ -484,7 +485,7 @@ tensors at call time, so the same module handles different sizes without recompi
 
         @R.py_module
         class DynamicModule(BasePyModule):
-            @T.prim_func(s_tir=True)
+            @Ts.prim_func
             def scale_tir(var_x: T.handle, var_out: T.handle):
                 n = T.int64()
                 x = T.match_buffer(var_x, (n,), "float32")
@@ -531,7 +532,7 @@ tensors at call time, so the same module handles different sizes without recompi
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 445-462
+.. GENERATED FROM PYTHON SOURCE LINES 446-463
 
 Summary
 -------

@@ -8,7 +8,7 @@ var searchData=
   ['onlyusedby_5',['onlyusedby',['../namespacetvm_1_1relax.html#ae7d3238251393e90f87314ae9ea1d773',1,'tvm::relax::OnlyUsedBy()'],['../classtvm_1_1relax_1_1PatternSeq.html#a456f12bd57d6c0c161fe40b0373cd316',1,'tvm::relax::PatternSeq::OnlyUsedBy()']]],
   ['oobchecker_6',['OOBChecker',['../namespacetvm_1_1s__tir_1_1transform.html#afb41fe047152ae0e6804c1a29d3fa401',1,'tvm::s_tir::transform']]],
   ['op_7',['op',['../classtvm_1_1OpRegEntry.html#a2205db26ba7006b48a2995c096548257',1,'tvm::OpRegEntry::op()'],['../classtvm_1_1Op.html#ae3f0bff0046a7e49afdccaedbd549e83',1,'tvm::Op::Op()']]],
-  ['opaque_8',['Opaque',['../namespacetvm_1_1script_1_1ir__builder_1_1tirx_1_1axis.html#a683b28f4596e697b0b9ef7a6e0005f1e',1,'tvm::script::ir_builder::tirx::axis']]],
+  ['opaque_8',['Opaque',['../namespacetvm_1_1script_1_1ir__builder_1_1s__tir_1_1axis.html#ae131e4c17ad6ab1dc4401d11dafbbc5a',1,'tvm::script::ir_builder::s_tir::axis']]],
   ['opaquefunc_9',['opaquefunc',['../classtvm_1_1relax_1_1FuncType.html#a74b08d30c1a2d58e1c0efb548054bbe8',1,'tvm::relax::FuncType::OpaqueFunc(TypeDeriveFunc derive_func, bool purity=false, Span span=Span())'],['../classtvm_1_1relax_1_1FuncType.html#a4e2383b983df75ec94c62515c90b32c2',1,'tvm::relax::FuncType::OpaqueFunc(Type ret=AnyType(), bool purity=false, Span span=Span())']]],
   ['opaquetype_10',['OpaqueType',['../classtvm_1_1OpaqueType.html#a6c374ff2d7cb64952ec2e7067e438d8f',1,'tvm::OpaqueType']]],
   ['opcalldoc_11',['OpCallDoc',['../classtvm_1_1script_1_1printer_1_1OpCallDoc.html#ab5b4f91b550e6e9b43f8a5659604da42',1,'tvm::script::printer::OpCallDoc']]],

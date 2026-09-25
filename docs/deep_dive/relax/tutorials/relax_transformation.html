@@ -720,95 +720,96 @@ into low-level operators.</p>
 # from tvm.script import ir as I
 # from tvm.script import tirx as T
 # from tvm.tirx.layout import Axis
+# from tvm.script import s_tir as Ts
 # from tvm.script import relax as R
 
 n = TypeVar(&quot;n&quot;)
 @I.ir_module
 class Module:
-    @T.prim_func(private=True, s_tir=True)
+    @Ts.prim_func(private=True)
     def add(matmul: T.Buffer((n, T.int64(128)), &quot;float32&quot;), fc1_bias: T.Buffer((T.int64(128),), &quot;float32&quot;), T_add: T.Buffer((n, T.int64(128)), &quot;float32&quot;)):
         n = T.int64()
         T.func_attr({&quot;tirx.noalias&quot;: True})
-        # with T.sblock(&quot;root&quot;):
+        # with Ts.sblock(&quot;root&quot;):
         for ax0, ax1 in T.grid(n, T.int64(128)):
-            with T.sblock(&quot;T_add&quot;):
-                v_ax0, v_ax1 = T.axis.remap(&quot;SS&quot;, [ax0, ax1])
-                T.reads(matmul[v_ax0, v_ax1], fc1_bias[v_ax1])
-                T.writes(T_add[v_ax0, v_ax1])
+            with Ts.sblock(&quot;T_add&quot;):
+                v_ax0, v_ax1 = Ts.axis.remap(&quot;SS&quot;, [ax0, ax1])
+                Ts.reads(matmul[v_ax0, v_ax1], fc1_bias[v_ax1])
+                Ts.writes(T_add[v_ax0, v_ax1])
                 T_add[v_ax0, v_ax1] = matmul[v_ax0, v_ax1] + fc1_bias[v_ax1]
 
-    @T.prim_func(private=True, s_tir=True)
+    @Ts.prim_func(private=True)
     def add1(matmul1: T.Buffer((n, T.int64(10)), &quot;float32&quot;), fc2_bias: T.Buffer((T.int64(10),), &quot;float32&quot;), T_add: T.Buffer((n, T.int64(10)), &quot;float32&quot;)):
         n = T.int64()
         T.func_attr({&quot;tirx.noalias&quot;: True})
-        # with T.sblock(&quot;root&quot;):
+        # with Ts.sblock(&quot;root&quot;):
         for ax0, ax1 in T.grid(n, T.int64(10)):
-            with T.sblock(&quot;T_add&quot;):
-                v_ax0, v_ax1 = T.axis.remap(&quot;SS&quot;, [ax0, ax1])
-                T.reads(matmul1[v_ax0, v_ax1], fc2_bias[v_ax1])
-                T.writes(T_add[v_ax0, v_ax1])
+            with Ts.sblock(&quot;T_add&quot;):
+                v_ax0, v_ax1 = Ts.axis.remap(&quot;SS&quot;, [ax0, ax1])
+                Ts.reads(matmul1[v_ax0, v_ax1], fc2_bias[v_ax1])
+                Ts.writes(T_add[v_ax0, v_ax1])
                 T_add[v_ax0, v_ax1] = matmul1[v_ax0, v_ax1] + fc2_bias[v_ax1]
 
-    @T.prim_func(private=True, s_tir=True)
+    @Ts.prim_func(private=True)
     def matmul(x: T.Buffer((n, T.int64(784)), &quot;float32&quot;), permute_dims: T.Buffer((T.int64(784), T.int64(128)), &quot;float32&quot;), matmul: T.Buffer((n, T.int64(128)), &quot;float32&quot;)):
         n = T.int64()
         T.func_attr({&quot;tirx.noalias&quot;: True})
-        # with T.sblock(&quot;root&quot;):
+        # with Ts.sblock(&quot;root&quot;):
         for i0, i1, k in T.grid(n, T.int64(128), T.int64(784)):
-            with T.sblock(&quot;matmul&quot;):
-                v_i0, v_i1, v_k = T.axis.remap(&quot;SSR&quot;, [i0, i1, k])
-                T.reads(x[v_i0, v_k], permute_dims[v_k, v_i1])
-                T.writes(matmul[v_i0, v_i1])
-                with T.init():
+            with Ts.sblock(&quot;matmul&quot;):
+                v_i0, v_i1, v_k = Ts.axis.remap(&quot;SSR&quot;, [i0, i1, k])
+                Ts.reads(x[v_i0, v_k], permute_dims[v_k, v_i1])
+                Ts.writes(matmul[v_i0, v_i1])
+                with Ts.init():
                     matmul[v_i0, v_i1] = T.float32(0.0)
                 matmul[v_i0, v_i1] = matmul[v_i0, v_i1] + x[v_i0, v_k] * permute_dims[v_k, v_i1]
 
-    @T.prim_func(private=True, s_tir=True)
+    @Ts.prim_func(private=True)
     def matmul1(relu: T.Buffer((n, T.int64(128)), &quot;float32&quot;), permute_dims1: T.Buffer((T.int64(128), T.int64(10)), &quot;float32&quot;), matmul: T.Buffer((n, T.int64(10)), &quot;float32&quot;)):
         n = T.int64()
         T.func_attr({&quot;tirx.noalias&quot;: True})
-        # with T.sblock(&quot;root&quot;):
+        # with Ts.sblock(&quot;root&quot;):
         for i0, i1, k in T.grid(n, T.int64(10), T.int64(128)):
-            with T.sblock(&quot;matmul&quot;):
-                v_i0, v_i1, v_k = T.axis.remap(&quot;SSR&quot;, [i0, i1, k])
-                T.reads(relu[v_i0, v_k], permute_dims1[v_k, v_i1])
-                T.writes(matmul[v_i0, v_i1])
-                with T.init():
+            with Ts.sblock(&quot;matmul&quot;):
+                v_i0, v_i1, v_k = Ts.axis.remap(&quot;SSR&quot;, [i0, i1, k])
+                Ts.reads(relu[v_i0, v_k], permute_dims1[v_k, v_i1])
+                Ts.writes(matmul[v_i0, v_i1])
+                with Ts.init():
                     matmul[v_i0, v_i1] = T.float32(0.0)
                 matmul[v_i0, v_i1] = matmul[v_i0, v_i1] + relu[v_i0, v_k] * permute_dims1[v_k, v_i1]
 
-    @T.prim_func(private=True, s_tir=True)
+    @Ts.prim_func(private=True)
     def relu(add: T.Buffer((n, T.int64(128)), &quot;float32&quot;), compute: T.Buffer((n, T.int64(128)), &quot;float32&quot;)):
         n = T.int64()
         T.func_attr({&quot;tirx.noalias&quot;: True})
-        # with T.sblock(&quot;root&quot;):
+        # with Ts.sblock(&quot;root&quot;):
         for i0, i1 in T.grid(n, T.int64(128)):
-            with T.sblock(&quot;compute&quot;):
-                v_i0, v_i1 = T.axis.remap(&quot;SS&quot;, [i0, i1])
-                T.reads(add[v_i0, v_i1])
-                T.writes(compute[v_i0, v_i1])
+            with Ts.sblock(&quot;compute&quot;):
+                v_i0, v_i1 = Ts.axis.remap(&quot;SS&quot;, [i0, i1])
+                Ts.reads(add[v_i0, v_i1])
+                Ts.writes(compute[v_i0, v_i1])
                 compute[v_i0, v_i1] = T.max(add[v_i0, v_i1], T.float32(0.0))
 
-    @T.prim_func(private=True, s_tir=True)
+    @Ts.prim_func(private=True)
     def transpose(fc1_weight: T.Buffer((T.int64(128), T.int64(784)), &quot;float32&quot;), T_transpose: T.Buffer((T.int64(784), T.int64(128)), &quot;float32&quot;)):
         T.func_attr({&quot;tirx.noalias&quot;: True})
-        # with T.sblock(&quot;root&quot;):
+        # with Ts.sblock(&quot;root&quot;):
         for ax0, ax1 in T.grid(T.int64(784), T.int64(128)):
-            with T.sblock(&quot;T_transpose&quot;):
-                v_ax0, v_ax1 = T.axis.remap(&quot;SS&quot;, [ax0, ax1])
-                T.reads(fc1_weight[v_ax1, v_ax0])
-                T.writes(T_transpose[v_ax0, v_ax1])
+            with Ts.sblock(&quot;T_transpose&quot;):
+                v_ax0, v_ax1 = Ts.axis.remap(&quot;SS&quot;, [ax0, ax1])
+                Ts.reads(fc1_weight[v_ax1, v_ax0])
+                Ts.writes(T_transpose[v_ax0, v_ax1])
                 T_transpose[v_ax0, v_ax1] = fc1_weight[v_ax1, v_ax0]
 
-    @T.prim_func(private=True, s_tir=True)
+    @Ts.prim_func(private=True)
     def transpose1(fc2_weight: T.Buffer((T.int64(10), T.int64(128)), &quot;float32&quot;), T_transpose: T.Buffer((T.int64(128), T.int64(10)), &quot;float32&quot;)):
         T.func_attr({&quot;tirx.noalias&quot;: True})
-        # with T.sblock(&quot;root&quot;):
+        # with Ts.sblock(&quot;root&quot;):
         for ax0, ax1 in T.grid(T.int64(128), T.int64(10)):
-            with T.sblock(&quot;T_transpose&quot;):
-                v_ax0, v_ax1 = T.axis.remap(&quot;SS&quot;, [ax0, ax1])
-                T.reads(fc2_weight[v_ax1, v_ax0])
-                T.writes(T_transpose[v_ax0, v_ax1])
+            with Ts.sblock(&quot;T_transpose&quot;):
+                v_ax0, v_ax1 = Ts.axis.remap(&quot;SS&quot;, [ax0, ax1])
+                Ts.reads(fc2_weight[v_ax1, v_ax0])
+                Ts.writes(T_transpose[v_ax0, v_ax1])
                 T_transpose[v_ax0, v_ax1] = fc2_weight[v_ax1, v_ax0]
 
     @R.function
@@ -848,80 +849,81 @@ a set of passes. We can apply them in a sequence.</p>
 # from tvm.script import ir as I
 # from tvm.script import tirx as T
 # from tvm.tirx.layout import Axis
+# from tvm.script import s_tir as Ts
 # from tvm.script import relax as R
 
 n = TypeVar(&quot;n&quot;)
 @I.ir_module
 class Module:
-    @T.prim_func(private=True, s_tir=True)
+    @Ts.prim_func(private=True)
     def fused_matmul1_add1(relu: T.Buffer((n, T.int64(128)), &quot;float32&quot;), permute_dims1: T.Buffer((T.int64(128), T.int64(10)), &quot;float32&quot;), fc2_bias: T.Buffer((T.int64(10),), &quot;float32&quot;), T_add_intermediate: T.Buffer((n, T.int64(10)), &quot;float32&quot;)):
         n = T.int64()
         T.func_attr({&quot;tirx.noalias&quot;: True})
-        # with T.sblock(&quot;root&quot;):
-        matmul_intermediate = T.sblock_alloc_buffer((n, T.int64(10)))
+        # with Ts.sblock(&quot;root&quot;):
+        matmul_intermediate = Ts.sblock_alloc_buffer((n, T.int64(10)))
         for i0, i1, k in T.grid(n, T.int64(10), T.int64(128)):
-            with T.sblock(&quot;matmul&quot;):
-                v_i0, v_i1, v_k = T.axis.remap(&quot;SSR&quot;, [i0, i1, k])
-                T.reads(relu[v_i0, v_k], permute_dims1[v_k, v_i1])
-                T.writes(matmul_intermediate[v_i0, v_i1])
-                with T.init():
+            with Ts.sblock(&quot;matmul&quot;):
+                v_i0, v_i1, v_k = Ts.axis.remap(&quot;SSR&quot;, [i0, i1, k])
+                Ts.reads(relu[v_i0, v_k], permute_dims1[v_k, v_i1])
+                Ts.writes(matmul_intermediate[v_i0, v_i1])
+                with Ts.init():
                     matmul_intermediate[v_i0, v_i1] = T.float32(0.0)
                 matmul_intermediate[v_i0, v_i1] = matmul_intermediate[v_i0, v_i1] + relu[v_i0, v_k] * permute_dims1[v_k, v_i1]
         for ax0, ax1 in T.grid(n, T.int64(10)):
-            with T.sblock(&quot;T_add&quot;):
-                v_ax0, v_ax1 = T.axis.remap(&quot;SS&quot;, [ax0, ax1])
-                T.reads(matmul_intermediate[v_ax0, v_ax1], fc2_bias[v_ax1])
-                T.writes(T_add_intermediate[v_ax0, v_ax1])
+            with Ts.sblock(&quot;T_add&quot;):
+                v_ax0, v_ax1 = Ts.axis.remap(&quot;SS&quot;, [ax0, ax1])
+                Ts.reads(matmul_intermediate[v_ax0, v_ax1], fc2_bias[v_ax1])
+                Ts.writes(T_add_intermediate[v_ax0, v_ax1])
                 T_add_intermediate[v_ax0, v_ax1] = matmul_intermediate[v_ax0, v_ax1] + fc2_bias[v_ax1]
 
-    @T.prim_func(private=True, s_tir=True)
+    @Ts.prim_func(private=True)
     def fused_matmul_add_relu(x: T.Buffer((n, T.int64(784)), &quot;float32&quot;), permute_dims: T.Buffer((T.int64(784), T.int64(128)), &quot;float32&quot;), fc1_bias: T.Buffer((T.int64(128),), &quot;float32&quot;), compute_intermediate: T.Buffer((n, T.int64(128)), &quot;float32&quot;)):
         n = T.int64()
         T.func_attr({&quot;tirx.noalias&quot;: True})
-        # with T.sblock(&quot;root&quot;):
-        matmul_intermediate = T.sblock_alloc_buffer((n, T.int64(128)))
-        T_add_intermediate = T.sblock_alloc_buffer((n, T.int64(128)))
+        # with Ts.sblock(&quot;root&quot;):
+        matmul_intermediate = Ts.sblock_alloc_buffer((n, T.int64(128)))
+        T_add_intermediate = Ts.sblock_alloc_buffer((n, T.int64(128)))
         for i0, i1, k in T.grid(n, T.int64(128), T.int64(784)):
-            with T.sblock(&quot;matmul&quot;):
-                v_i0, v_i1, v_k = T.axis.remap(&quot;SSR&quot;, [i0, i1, k])
-                T.reads(x[v_i0, v_k], permute_dims[v_k, v_i1])
-                T.writes(matmul_intermediate[v_i0, v_i1])
-                with T.init():
+            with Ts.sblock(&quot;matmul&quot;):
+                v_i0, v_i1, v_k = Ts.axis.remap(&quot;SSR&quot;, [i0, i1, k])
+                Ts.reads(x[v_i0, v_k], permute_dims[v_k, v_i1])
+                Ts.writes(matmul_intermediate[v_i0, v_i1])
+                with Ts.init():
                     matmul_intermediate[v_i0, v_i1] = T.float32(0.0)
                 matmul_intermediate[v_i0, v_i1] = matmul_intermediate[v_i0, v_i1] + x[v_i0, v_k] * permute_dims[v_k, v_i1]
         for ax0, ax1 in T.grid(n, T.int64(128)):
-            with T.sblock(&quot;T_add&quot;):
-                v_ax0, v_ax1 = T.axis.remap(&quot;SS&quot;, [ax0, ax1])
-                T.reads(matmul_intermediate[v_ax0, v_ax1], fc1_bias[v_ax1])
-                T.writes(T_add_intermediate[v_ax0, v_ax1])
+            with Ts.sblock(&quot;T_add&quot;):
+                v_ax0, v_ax1 = Ts.axis.remap(&quot;SS&quot;, [ax0, ax1])
+                Ts.reads(matmul_intermediate[v_ax0, v_ax1], fc1_bias[v_ax1])
+                Ts.writes(T_add_intermediate[v_ax0, v_ax1])
                 T_add_intermediate[v_ax0, v_ax1] = matmul_intermediate[v_ax0, v_ax1] + fc1_bias[v_ax1]
         for i0, i1 in T.grid(n, T.int64(128)):
-            with T.sblock(&quot;compute&quot;):
-                v_i0, v_i1 = T.axis.remap(&quot;SS&quot;, [i0, i1])
-                T.reads(T_add_intermediate[v_i0, v_i1])
-                T.writes(compute_intermediate[v_i0, v_i1])
+            with Ts.sblock(&quot;compute&quot;):
+                v_i0, v_i1 = Ts.axis.remap(&quot;SS&quot;, [i0, i1])
+                Ts.reads(T_add_intermediate[v_i0, v_i1])
+                Ts.writes(compute_intermediate[v_i0, v_i1])
                 compute_intermediate[v_i0, v_i1] = T.max(T_add_intermediate[v_i0, v_i1], T.float32(0.0))
 
-    @T.prim_func(private=True, s_tir=True)
+    @Ts.prim_func(private=True)
     def transpose(fc1_weight: T.Buffer((T.int64(128), T.int64(784)), &quot;float32&quot;), T_transpose: T.Buffer((T.int64(784), T.int64(128)), &quot;float32&quot;)):
         T.func_attr({&quot;op_pattern&quot;: 2, &quot;tirx.noalias&quot;: True})
-        # with T.sblock(&quot;root&quot;):
+        # with Ts.sblock(&quot;root&quot;):
         for ax0, ax1 in T.grid(T.int64(784), T.int64(128)):
-            with T.sblock(&quot;T_transpose&quot;):
-                v_ax0, v_ax1 = T.axis.remap(&quot;SS&quot;, [ax0, ax1])
-                T.reads(fc1_weight[v_ax1, v_ax0])
-                T.writes(T_transpose[v_ax0, v_ax1])
+            with Ts.sblock(&quot;T_transpose&quot;):
+                v_ax0, v_ax1 = Ts.axis.remap(&quot;SS&quot;, [ax0, ax1])
+                Ts.reads(fc1_weight[v_ax1, v_ax0])
+                Ts.writes(T_transpose[v_ax0, v_ax1])
                 T_transpose[v_ax0, v_ax1] = fc1_weight[v_ax1, v_ax0]
 
-    @T.prim_func(private=True, s_tir=True)
+    @Ts.prim_func(private=True)
     def transpose1(fc2_weight: T.Buffer((T.int64(10), T.int64(128)), &quot;float32&quot;), T_transpose: T.Buffer((T.int64(128), T.int64(10)), &quot;float32&quot;)):
         T.func_attr({&quot;op_pattern&quot;: 2, &quot;tirx.noalias&quot;: True})
-        # with T.sblock(&quot;root&quot;):
+        # with Ts.sblock(&quot;root&quot;):
         for ax0, ax1 in T.grid(T.int64(128), T.int64(10)):
-            with T.sblock(&quot;T_transpose&quot;):
-                v_ax0, v_ax1 = T.axis.remap(&quot;SS&quot;, [ax0, ax1])
-                T.reads(fc2_weight[v_ax1, v_ax0])
-                T.writes(T_transpose[v_ax0, v_ax1])
+            with Ts.sblock(&quot;T_transpose&quot;):
+                v_ax0, v_ax1 = Ts.axis.remap(&quot;SS&quot;, [ax0, ax1])
+                Ts.reads(fc2_weight[v_ax1, v_ax0])
+                Ts.writes(T_transpose[v_ax0, v_ax1])
                 T_transpose[v_ax0, v_ax1] = fc2_weight[v_ax1, v_ax0]
 
     @R.function

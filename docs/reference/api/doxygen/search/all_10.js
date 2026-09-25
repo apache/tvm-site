@@ -26,7 +26,7 @@ var searchData=
   ['op_2eh_23',['op.h',['../ir_2op_8h.html',1,'(Global Namespace)'],['../ir_2prim_2op_8h.html',1,'(Global Namespace)'],['../relax_2attrs_2op_8h.html',1,'(Global Namespace)'],['../tirx_2op_8h.html',1,'(Global Namespace)']]],
   ['op_5fattr_5ftypes_2eh_24',['op_attr_types.h',['../tirx_2op__attr__types_8h.html',1,'(Global Namespace)'],['../relax_2op__attr__types_8h.html',1,'(Global Namespace)'],['../ir_2op__attr__types_8h.html',1,'(Global Namespace)']]],
   ['op_5ftype_25',['op_type',['../structtvm_1_1relax_1_1AllReduceAttrs.html#aa0884b56708052f5a53ac5cf77a5f36d',1,'tvm::relax::AllReduceAttrs']]],
-  ['opaque_26',['Opaque',['../namespacetvm_1_1script_1_1ir__builder_1_1tirx_1_1axis.html#a683b28f4596e697b0b9ef7a6e0005f1e',1,'tvm::script::ir_builder::tirx::axis']]],
+  ['opaque_26',['Opaque',['../namespacetvm_1_1script_1_1ir__builder_1_1s__tir_1_1axis.html#ae131e4c17ad6ab1dc4401d11dafbbc5a',1,'tvm::script::ir_builder::s_tir::axis']]],
   ['opaqueexpr_27',['OpaqueExpr',['../classtvm_1_1OpaqueExpr.html',1,'tvm']]],
   ['opaqueexprnode_28',['OpaqueExprNode',['../classtvm_1_1OpaqueExprNode.html',1,'tvm']]],
   ['opaquefunc_29',['opaquefunc',['../classtvm_1_1relax_1_1FuncType.html#a74b08d30c1a2d58e1c0efb548054bbe8',1,'tvm::relax::FuncType::OpaqueFunc(TypeDeriveFunc derive_func, bool purity=false, Span span=Span())'],['../classtvm_1_1relax_1_1FuncType.html#a4e2383b983df75ec94c62515c90b32c2',1,'tvm::relax::FuncType::OpaqueFunc(Type ret=AnyType(), bool purity=false, Span span=Span())']]],

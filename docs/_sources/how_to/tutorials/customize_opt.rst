@@ -322,55 +322,56 @@ it achieves a balance between performance and compilation time.
     # from tvm.script import ir as I
     # from tvm.script import tirx as T
     # from tvm.tirx.layout import Axis
+    # from tvm.script import s_tir as Ts
     # from tvm.script import relax as R
 
     @I.ir_module
     class Module:
         I.module_attrs({"external_mods": [metadata["ffi.Module"][0]]})
-        @T.prim_func(private=True, s_tir=True)
+        @Ts.prim_func(private=True)
         def matmul(lv: T.Buffer((T.int64(1), T.int64(256)), "float32"), permute_dims1: T.Buffer((T.int64(256), T.int64(10)), "float32"), matmul: T.Buffer((T.int64(1), T.int64(10)), "float32")):
             T.func_attr({"op_pattern": 4, "tirx.is_scheduled": True, "tirx.noalias": True})
-            # with T.sblock("root"):
-            matmul_rf_local = T.sblock_alloc_buffer((T.int64(16), T.int64(1), T.int64(10)), scope="local")
+            # with Ts.sblock("root"):
+            matmul_rf_local = Ts.sblock_alloc_buffer((T.int64(16), T.int64(1), T.int64(10)), scope="local")
             for ax0_fused_0 in T.thread_binding(T.int64(1), thread="blockIdx.x"):
                 for ax0_fused_1 in T.thread_binding(T.int64(10), thread="threadIdx.x"):
                     for ax1_fused_1 in T.thread_binding(T.int64(16), thread="threadIdx.y"):
-                        with T.sblock("matmul_rf_init"):
-                            vax1_fused_1 = T.axis.spatial(T.int64(16), ax1_fused_1)
-                            v0 = T.axis.spatial(T.int64(10), ax0_fused_0 * T.int64(10) + ax0_fused_1)
-                            T.reads()
-                            T.writes(matmul_rf_local[vax1_fused_1, T.int64(0), v0])
+                        with Ts.sblock("matmul_rf_init"):
+                            vax1_fused_1 = Ts.axis.spatial(T.int64(16), ax1_fused_1)
+                            v0 = Ts.axis.spatial(T.int64(10), ax0_fused_0 * T.int64(10) + ax0_fused_1)
+                            Ts.reads()
+                            Ts.writes(matmul_rf_local[vax1_fused_1, T.int64(0), v0])
                             matmul_rf_local[vax1_fused_1, T.int64(0), v0] = T.float32(0.0)
                         for ax1_fused_0, u in T.grid(T.int64(16), 1):
-                            with T.sblock("matmul_rf_update"):
-                                vax1_fused_1 = T.axis.spatial(T.int64(16), ax1_fused_1)
-                                v0 = T.axis.spatial(T.int64(10), ax0_fused_0 * T.int64(10) + ax0_fused_1)
-                                vax1_fused_0 = T.axis.reduce(T.int64(16), ax1_fused_0)
-                                T.reads(matmul_rf_local[vax1_fused_1, T.int64(0), v0], lv[T.int64(0), vax1_fused_0 * T.int64(16) + vax1_fused_1], permute_dims1[vax1_fused_0 * T.int64(16) + vax1_fused_1, v0])
-                                T.writes(matmul_rf_local[vax1_fused_1, T.int64(0), v0])
+                            with Ts.sblock("matmul_rf_update"):
+                                vax1_fused_1 = Ts.axis.spatial(T.int64(16), ax1_fused_1)
+                                v0 = Ts.axis.spatial(T.int64(10), ax0_fused_0 * T.int64(10) + ax0_fused_1)
+                                vax1_fused_0 = Ts.axis.reduce(T.int64(16), ax1_fused_0)
+                                Ts.reads(matmul_rf_local[vax1_fused_1, T.int64(0), v0], lv[T.int64(0), vax1_fused_0 * T.int64(16) + vax1_fused_1], permute_dims1[vax1_fused_0 * T.int64(16) + vax1_fused_1, v0])
+                                Ts.writes(matmul_rf_local[vax1_fused_1, T.int64(0), v0])
                                 matmul_rf_local[vax1_fused_1, T.int64(0), v0] = matmul_rf_local[vax1_fused_1, T.int64(0), v0] + lv[T.int64(0), vax1_fused_0 * T.int64(16) + vax1_fused_1] * permute_dims1[vax1_fused_0 * T.int64(16) + vax1_fused_1, v0]
                 for ax1_fused in T.thread_binding(T.int64(10), thread="threadIdx.x"):
                     for ax0 in T.thread_binding(T.int64(16), thread="threadIdx.y"):
-                        with T.sblock("matmul"):
-                            vax1_fused_1, v0 = T.axis.remap("RS", [ax0, ax1_fused])
-                            T.reads(matmul_rf_local[vax1_fused_1, T.int64(0), v0])
-                            T.writes(matmul[T.int64(0), v0])
-                            with T.init():
+                        with Ts.sblock("matmul"):
+                            vax1_fused_1, v0 = Ts.axis.remap("RS", [ax0, ax1_fused])
+                            Ts.reads(matmul_rf_local[vax1_fused_1, T.int64(0), v0])
+                            Ts.writes(matmul[T.int64(0), v0])
+                            with Ts.init():
                                 matmul[T.int64(0), v0] = T.float32(0.0)
                             matmul[T.int64(0), v0] = matmul[T.int64(0), v0] + matmul_rf_local[vax1_fused_1, T.int64(0), v0]
 
-        @T.prim_func(private=True, s_tir=True)
+        @Ts.prim_func(private=True)
         def transpose(fc2_weight: T.Buffer((T.int64(10), T.int64(256)), "float32"), T_transpose: T.Buffer((T.int64(256), T.int64(10)), "float32")):
             T.func_attr({"op_pattern": 2, "tirx.is_scheduled": True, "tirx.noalias": True})
-            # with T.sblock("root"):
+            # with Ts.sblock("root"):
             for ax0_ax1_fused_0 in T.thread_binding(T.int64(3), thread="blockIdx.x"):
                 for ax0_ax1_fused_1 in T.thread_binding(T.int64(1024), thread="threadIdx.x"):
-                    with T.sblock("T_transpose"):
-                        v0 = T.axis.spatial(T.int64(256), (ax0_ax1_fused_0 * T.int64(1024) + ax0_ax1_fused_1) // T.int64(10))
-                        v1 = T.axis.spatial(T.int64(10), (ax0_ax1_fused_0 * T.int64(1024) + ax0_ax1_fused_1) % T.int64(10))
-                        T.where(ax0_ax1_fused_0 * T.int64(1024) + ax0_ax1_fused_1 < T.int64(2560))
-                        T.reads(fc2_weight[v1, v0])
-                        T.writes(T_transpose[v0, v1])
+                    with Ts.sblock("T_transpose"):
+                        v0 = Ts.axis.spatial(T.int64(256), (ax0_ax1_fused_0 * T.int64(1024) + ax0_ax1_fused_1) // T.int64(10))
+                        v1 = Ts.axis.spatial(T.int64(10), (ax0_ax1_fused_0 * T.int64(1024) + ax0_ax1_fused_1) % T.int64(10))
+                        Ts.where(ax0_ax1_fused_0 * T.int64(1024) + ax0_ax1_fused_1 < T.int64(2560))
+                        Ts.reads(fc2_weight[v1, v0])
+                        Ts.writes(T_transpose[v0, v1])
                         T_transpose[v0, v1] = fc2_weight[v1, v0]
 
         @R.function
