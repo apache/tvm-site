@@ -632,7 +632,6 @@ document.write(`
                 <ul class="visible nav section-nav flex-column">
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#parser-entry-points">Parser entry points</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#core-ir-builder">Core IR builder</a><ul class="visible nav section-nav flex-column">
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#tvm.tirx.script.ir_builder.ir.match_buffer"><code class="docutils literal notranslate"><span class="pre">match_buffer()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#tvm.tirx.script.ir_builder.ir.LetAnnotation"><code class="docutils literal notranslate"><span class="pre">LetAnnotation</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#tvm.tirx.script.ir_builder.ir.alloc_tcgen05_ldst_frag"><code class="docutils literal notranslate"><span class="pre">alloc_tcgen05_ldst_frag()</span></code></a></li>
 </ul>
@@ -761,11 +760,12 @@ controls the parser separately from the function builder kwargs.</p></li>
 <span class="n">kernel</span> <span class="o">=</span> <span class="n">add</span><span class="o">.</span><span class="n">specialize</span><span class="p">(</span><span class="n">N</span><span class="o">=</span><span class="mi">1024</span><span class="p">)</span>  <span class="c1"># returns a PrimFunc</span>
 
 <span class="nd">@T</span><span class="o">.</span><span class="n">jit</span>
-<span class="k">def</span><span class="w"> </span><span class="nf">guarded</span><span class="p">(</span><span class="n">optional</span><span class="p">:</span> <span class="n">T</span><span class="o">.</span><span class="n">Optional</span><span class="p">(</span><span class="n">T</span><span class="o">.</span><span class="n">handle</span><span class="p">),</span> <span class="n">out</span><span class="p">:</span> <span class="n">T</span><span class="o">.</span><span class="n">handle</span><span class="p">):</span>
-    <span class="n">output</span> <span class="o">=</span> <span class="n">T</span><span class="o">.</span><span class="n">match_buffer</span><span class="p">(</span><span class="n">out</span><span class="p">,</span> <span class="p">(</span><span class="mi">1</span><span class="p">,),</span> <span class="s2">&quot;int32&quot;</span><span class="p">)</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">guarded</span><span class="p">(</span>
+    <span class="n">optional</span><span class="p">:</span> <span class="n">T</span><span class="o">.</span><span class="n">Optional</span><span class="p">(</span><span class="n">T</span><span class="o">.</span><span class="n">Buffer</span><span class="p">((</span><span class="mi">1</span><span class="p">,),</span> <span class="s2">&quot;int32&quot;</span><span class="p">)),</span>
+    <span class="n">output</span><span class="p">:</span> <span class="n">T</span><span class="o">.</span><span class="n">Buffer</span><span class="p">((</span><span class="mi">1</span><span class="p">,),</span> <span class="s2">&quot;int32&quot;</span><span class="p">),</span>
+<span class="p">):</span>
     <span class="k">if</span> <span class="n">T</span><span class="o">.</span><span class="n">constexpr</span><span class="p">(</span><span class="n">optional</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">):</span>
-        <span class="n">value</span> <span class="o">=</span> <span class="n">T</span><span class="o">.</span><span class="n">match_buffer</span><span class="p">(</span><span class="n">optional</span><span class="p">,</span> <span class="p">(</span><span class="mi">1</span><span class="p">,),</span> <span class="s2">&quot;int32&quot;</span><span class="p">)</span>
-        <span class="n">output</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">output</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">optional</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
     <span class="k">else</span><span class="p">:</span>
         <span class="n">output</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
 
@@ -2353,15 +2353,6 @@ the extent; it will be inferred at LowerTIRx from sibling closure.</p>
 owns one row of <code class="docutils literal notranslate"><span class="pre">elem_per_thread</span></code> contiguous elements.</p>
 </dd></dl>
 
-<dl class="py function">
-<dt class="sig sig-object py" id="tvm.tirx.script.ir_builder.ir.match_buffer">
-<span class="sig-prename descclassname"><span class="pre">tvm.tirx.script.ir_builder.ir.</span></span><span class="sig-name descname"><span class="pre">match_buffer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">param</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">shape</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dtype</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'float32'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">strides</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">elem_offset</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scope</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'global'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">align</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">-1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">offset_factor</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">layout</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'default'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#tvm.tirx.script.ir_builder.ir.match_buffer" title="Link to this definition">#</a></dt>
-<dd><p>Bind a function parameter or an existing buffer region to a TIRx buffer.
-<code class="docutils literal notranslate"><span class="pre">shape</span></code> is required for a function parameter and is inferred from a
-<code class="docutils literal notranslate"><span class="pre">BufferRegion</span></code> when omitted.  <code class="docutils literal notranslate"><span class="pre">layout</span></code> accepts a layout object, a
-registered layout string, or <code class="docutils literal notranslate"><span class="pre">None</span></code>.</p>
-</dd></dl>
-
 <dl class="py class">
 <dt class="sig sig-object py" id="tvm.tirx.script.ir_builder.ir.LetAnnotation">
 <em class="property"><span class="pre">class</span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">tvm.tirx.script.ir_builder.ir.</span></span><span class="sig-name descname"><span class="pre">LetAnnotation</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">type_spec</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#tvm.tirx.script.ir_builder.ir.LetAnnotation" title="Link to this definition">#</a></dt>
@@ -2434,7 +2425,6 @@ two-CTA Layout-B accumulator and its readback fragment can be allocated as:</p>
     <ul class="visible nav section-nav flex-column">
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#parser-entry-points">Parser entry points</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#core-ir-builder">Core IR builder</a><ul class="visible nav section-nav flex-column">
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#tvm.tirx.script.ir_builder.ir.match_buffer"><code class="docutils literal notranslate"><span class="pre">match_buffer()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#tvm.tirx.script.ir_builder.ir.LetAnnotation"><code class="docutils literal notranslate"><span class="pre">LetAnnotation</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#tvm.tirx.script.ir_builder.ir.alloc_tcgen05_ldst_frag"><code class="docutils literal notranslate"><span class="pre">alloc_tcgen05_ldst_frag()</span></code></a></li>
 </ul>

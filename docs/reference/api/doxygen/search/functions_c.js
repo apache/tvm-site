@@ -25,7 +25,7 @@ var searchData=
   ['markglobalnonnegvalue_22',['MarkGlobalNonNegValue',['../classtvm_1_1sym_1_1AnalyzerObj.html#ab52158162c35e4627432a204ad6759ea',1,'tvm::sym::AnalyzerObj']]],
   ['masked_5fload_23',['masked_load',['../namespacetvm_1_1tirx_1_1builtin.html#a12f5b43205cd142c371622f93f82ba94',1,'tvm::tirx::builtin']]],
   ['masked_5fstore_24',['masked_store',['../namespacetvm_1_1tirx_1_1builtin.html#a58696cae231c6cc267ad81e9c6b90fd4',1,'tvm::tirx::builtin']]],
-  ['matchbuffer_25',['MatchBuffer',['../namespacetvm_1_1script_1_1ir__builder_1_1tirx.html#a6c28715ba7fe0298174d3cbf67f5550f',1,'tvm::script::ir_builder::tirx']]],
+  ['matchbuffer_25',['MatchBuffer',['../namespacetvm_1_1script_1_1ir__builder_1_1s__tir.html#a0481f7e248a547525f08a340fe32e305',1,'tvm::script::ir_builder::s_tir']]],
   ['matchbufferregion_26',['MatchBufferRegion',['../classtvm_1_1s__tir_1_1MatchBufferRegion.html#a3033a8440ca5a8c37325ec80c49bc27a',1,'tvm::s_tir::MatchBufferRegion']]],
   ['matchcast_27',['MatchCast',['../classtvm_1_1relax_1_1MatchCast.html#ae44ce4dda32d92f963a7231bff6ecf16',1,'tvm::relax::MatchCast']]],
   ['matchescode_28',['MatchesCode',['../classtvm_1_1PrimType.html#a89248a39565e01bd9ac20f3822f4bc95',1,'tvm::PrimType']]],

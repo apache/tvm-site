@@ -31,7 +31,7 @@ var searchData=
   ['masked_5fload_28',['masked_load',['../namespacetvm_1_1tirx_1_1builtin.html#a12f5b43205cd142c371622f93f82ba94',1,'tvm::tirx::builtin']]],
   ['masked_5fstore_29',['masked_store',['../namespacetvm_1_1tirx_1_1builtin.html#a58696cae231c6cc267ad81e9c6b90fd4',1,'tvm::tirx::builtin']]],
   ['match_5fbuffers_30',['match_buffers',['../classtvm_1_1script_1_1ir__builder_1_1s__tir_1_1SBlockFrameNode.html#af42639019c84bea29e40b118e940f42d',1,'tvm::script::ir_builder::s_tir::SBlockFrameNode::match_buffers'],['../classtvm_1_1s__tir_1_1SBlockNode.html#afbec2d77fc1e6af1fee299720e583ae9',1,'tvm::s_tir::SBlockNode::match_buffers']]],
-  ['matchbuffer_31',['MatchBuffer',['../namespacetvm_1_1script_1_1ir__builder_1_1tirx.html#a6c28715ba7fe0298174d3cbf67f5550f',1,'tvm::script::ir_builder::tirx']]],
+  ['matchbuffer_31',['MatchBuffer',['../namespacetvm_1_1script_1_1ir__builder_1_1s__tir.html#a0481f7e248a547525f08a340fe32e305',1,'tvm::script::ir_builder::s_tir']]],
   ['matchbufferregion_32',['matchbufferregion',['../classtvm_1_1s__tir_1_1MatchBufferRegion.html#a3033a8440ca5a8c37325ec80c49bc27a',1,'tvm::s_tir::MatchBufferRegion::MatchBufferRegion()'],['../classtvm_1_1s__tir_1_1MatchBufferRegion.html',1,'tvm::s_tir::MatchBufferRegion']]],
   ['matchbufferregionnode_33',['MatchBufferRegionNode',['../classtvm_1_1s__tir_1_1MatchBufferRegionNode.html',1,'tvm::s_tir']]],
   ['matchcast_34',['matchcast',['../classtvm_1_1relax_1_1MatchCast.html',1,'tvm::relax::MatchCast'],['../classtvm_1_1relax_1_1MatchCast.html#ae44ce4dda32d92f963a7231bff6ecf16',1,'tvm::relax::MatchCast::MatchCast()']]],

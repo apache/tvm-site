@@ -677,31 +677,37 @@ are a plain <code class="docutils literal notranslate"><span class="pre">enum.En
 <span class="kn">from</span><span class="w"> </span><span class="nn">tvm.tirx.bench</span><span class="w"> </span><span class="kn">import</span> <span class="n">CudaProfiler</span><span class="p">,</span> <span class="n">export_to_perfetto_trace</span>
 
 <span class="n">NUM_BLOCKS</span><span class="p">,</span> <span class="n">BLOCK</span><span class="p">,</span> <span class="n">NUM_GROUPS</span> <span class="o">=</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">128</span><span class="p">,</span> <span class="mi">1</span>
-<span class="n">WRITE_STRIDE</span> <span class="o">=</span> <span class="n">NUM_BLOCKS</span> <span class="o">*</span> <span class="n">NUM_GROUPS</span>   <span class="c1"># &gt;= number of (block, group) lanes</span>
-<span class="n">PROF_SIZE</span> <span class="o">=</span> <span class="mi">4096</span>                         <span class="c1"># uint64 slots in the profiler buffer</span>
+<span class="n">WRITE_STRIDE</span> <span class="o">=</span> <span class="n">NUM_BLOCKS</span> <span class="o">*</span> <span class="n">NUM_GROUPS</span>  <span class="c1"># &gt;= number of (block, group) lanes</span>
+<span class="n">PROF_SIZE</span> <span class="o">=</span> <span class="mi">4096</span>  <span class="c1"># uint64 slots in the profiler buffer</span>
 <span class="n">N</span> <span class="o">=</span> <span class="n">NUM_BLOCKS</span> <span class="o">*</span> <span class="n">BLOCK</span>
+
 
 <span class="k">class</span><span class="w"> </span><span class="nc">Ev</span><span class="p">(</span><span class="n">Enum</span><span class="p">):</span>
     <span class="n">Load</span> <span class="o">=</span> <span class="mi">0</span>
     <span class="n">Compute</span> <span class="o">=</span> <span class="mi">1</span>
     <span class="n">Store</span> <span class="o">=</span> <span class="mi">2</span>
 
+
 <span class="n">EV_NAMES</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;load&quot;</span><span class="p">,</span> <span class="s2">&quot;compute&quot;</span><span class="p">,</span> <span class="s2">&quot;store&quot;</span><span class="p">]</span>
 
+
 <span class="nd">@Tx</span><span class="o">.</span><span class="n">prim_func</span>
-<span class="k">def</span><span class="w"> </span><span class="nf">profiled_kernel</span><span class="p">(</span><span class="n">out_ptr</span><span class="p">:</span> <span class="n">Tx</span><span class="o">.</span><span class="n">handle</span><span class="p">,</span> <span class="n">inp_ptr</span><span class="p">:</span> <span class="n">Tx</span><span class="o">.</span><span class="n">handle</span><span class="p">,</span> <span class="n">prof_ptr</span><span class="p">:</span> <span class="n">Tx</span><span class="o">.</span><span class="n">handle</span><span class="p">):</span>
-    <span class="n">out</span> <span class="o">=</span> <span class="n">Tx</span><span class="o">.</span><span class="n">match_buffer</span><span class="p">(</span><span class="n">out_ptr</span><span class="p">,</span> <span class="p">(</span><span class="n">N</span><span class="p">,),</span> <span class="s2">&quot;float32&quot;</span><span class="p">)</span>
-    <span class="n">inp</span> <span class="o">=</span> <span class="n">Tx</span><span class="o">.</span><span class="n">match_buffer</span><span class="p">(</span><span class="n">inp_ptr</span><span class="p">,</span> <span class="p">(</span><span class="n">N</span><span class="p">,),</span> <span class="s2">&quot;float32&quot;</span><span class="p">)</span>
-    <span class="n">prof</span> <span class="o">=</span> <span class="n">Tx</span><span class="o">.</span><span class="n">match_buffer</span><span class="p">(</span><span class="n">prof_ptr</span><span class="p">,</span> <span class="p">(</span><span class="n">PROF_SIZE</span><span class="p">,),</span> <span class="s2">&quot;uint64&quot;</span><span class="p">)</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">profiled_kernel</span><span class="p">(</span>
+    <span class="n">out</span><span class="p">:</span> <span class="n">Tx</span><span class="o">.</span><span class="n">Buffer</span><span class="p">((</span><span class="n">N</span><span class="p">,),</span> <span class="s2">&quot;float32&quot;</span><span class="p">),</span>
+    <span class="n">inp</span><span class="p">:</span> <span class="n">Tx</span><span class="o">.</span><span class="n">Buffer</span><span class="p">((</span><span class="n">N</span><span class="p">,),</span> <span class="s2">&quot;float32&quot;</span><span class="p">),</span>
+    <span class="n">prof</span><span class="p">:</span> <span class="n">Tx</span><span class="o">.</span><span class="n">Buffer</span><span class="p">((</span><span class="n">PROF_SIZE</span><span class="p">,),</span> <span class="s2">&quot;uint64&quot;</span><span class="p">),</span>
+<span class="p">):</span>
+
     <span class="n">Tx</span><span class="o">.</span><span class="n">device_entry</span><span class="p">()</span>
     <span class="n">bid</span> <span class="o">=</span> <span class="n">Tx</span><span class="o">.</span><span class="n">cta_id</span><span class="p">([</span><span class="n">NUM_BLOCKS</span><span class="p">])</span>
     <span class="n">tid</span> <span class="o">=</span> <span class="n">Tx</span><span class="o">.</span><span class="n">thread_id</span><span class="p">([</span><span class="n">BLOCK</span><span class="p">])</span>
     <span class="n">idx</span> <span class="o">=</span> <span class="n">bid</span> <span class="o">*</span> <span class="n">BLOCK</span> <span class="o">+</span> <span class="n">tid</span>
 
     <span class="c1"># Construct the profiler inside the kernel; only the leader thread writes.</span>
-    <span class="n">p</span> <span class="o">=</span> <span class="n">CudaProfiler</span><span class="p">(</span><span class="n">prof</span><span class="p">,</span> <span class="n">write_stride</span><span class="o">=</span><span class="n">WRITE_STRIDE</span><span class="p">,</span> <span class="n">num_groups</span><span class="o">=</span><span class="n">NUM_GROUPS</span><span class="p">,</span>
-                     <span class="n">default_leader</span><span class="o">=</span><span class="p">(</span><span class="n">tid</span> <span class="o">==</span> <span class="mi">0</span><span class="p">))</span>
-    <span class="n">p</span><span class="o">.</span><span class="n">init</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>                  <span class="c1"># group_id = 0; also stamps the buffer header at slot 0</span>
+    <span class="n">p</span> <span class="o">=</span> <span class="n">CudaProfiler</span><span class="p">(</span>
+        <span class="n">prof</span><span class="p">,</span> <span class="n">write_stride</span><span class="o">=</span><span class="n">WRITE_STRIDE</span><span class="p">,</span> <span class="n">num_groups</span><span class="o">=</span><span class="n">NUM_GROUPS</span><span class="p">,</span> <span class="n">default_leader</span><span class="o">=</span><span class="p">(</span><span class="n">tid</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span>
+    <span class="p">)</span>
+    <span class="n">p</span><span class="o">.</span><span class="n">init</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>  <span class="c1"># group_id = 0; also stamps the buffer header at slot 0</span>
 
     <span class="n">p</span><span class="o">.</span><span class="n">start</span><span class="p">(</span><span class="n">Ev</span><span class="o">.</span><span class="n">Load</span><span class="p">)</span>
     <span class="n">x</span><span class="p">:</span> <span class="n">Tx</span><span class="o">.</span><span class="n">f32</span> <span class="o">=</span> <span class="n">inp</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span>
@@ -717,7 +723,7 @@ are a plain <code class="docutils literal notranslate"><span class="pre">enum.En
     <span class="n">out</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span> <span class="o">=</span> <span class="n">acc</span>
     <span class="n">p</span><span class="o">.</span><span class="n">end</span><span class="p">(</span><span class="n">Ev</span><span class="o">.</span><span class="n">Store</span><span class="p">)</span>
 
-    <span class="n">p</span><span class="o">.</span><span class="n">finalize</span><span class="p">()</span>               <span class="c1"># mark this (block, group) lane done</span>
+    <span class="n">p</span><span class="o">.</span><span class="n">finalize</span><span class="p">()</span>  <span class="c1"># mark this (block, group) lane done</span>
 </pre></div>
 </div>
 </section>

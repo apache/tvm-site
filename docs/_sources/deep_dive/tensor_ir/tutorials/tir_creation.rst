@@ -223,13 +223,12 @@ be used to ascertain the shape and data type of a TensorIR.
 
 Check the equivalence:
 
-.. GENERATED FROM PYTHON SOURCE LINES 169-173
+.. GENERATED FROM PYTHON SOURCE LINES 169-172
 
 .. code-block:: Python
 
 
     print(tvm_ffi.structural_equal(ConciseModule, ConciseModuleFromPython))
-
 
 
 
@@ -244,7 +243,7 @@ Check the equivalence:
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 174-179
+.. GENERATED FROM PYTHON SOURCE LINES 173-178
 
 TensorIR Function with Dynamic Shapes
 *************************************
@@ -252,10 +251,9 @@ Despite TVMScript not being executed by a Python interpreter, limited
 interaction with Python is feasible. For instance, Python variables can
 be used to ascertain the shape and data type of a TensorIR.
 
-.. GENERATED FROM PYTHON SOURCE LINES 179-208
+.. GENERATED FROM PYTHON SOURCE LINES 178-204
 
 .. code-block:: Python
-
 
 
     # Dynamic shape definition
@@ -267,11 +265,9 @@ be used to ascertain the shape and data type of a TensorIR.
     @I.ir_module
     class DynamicShapeModule:
         @Ts.prim_func
-        def mm_relu(a: T.handle, b: T.handle, c: T.handle):
+        def mm_relu(A: T.Buffer([M, K], dtype), B: T.Buffer([K, N], dtype), C: T.Buffer([M, N], dtype)):
             # Bind the input buffers with the dynamic shapes
-            A = T.match_buffer(a, [M, K], dtype)
-            B = T.match_buffer(b, [K, N], dtype)
-            C = T.match_buffer(c, [M, N], dtype)
+
             Y = T.alloc_buffer((M, N), dtype)
             for i, j, k in T.grid(M, N, K):
                 with Ts.sblock("Y"):
@@ -292,11 +288,11 @@ be used to ascertain the shape and data type of a TensorIR.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 209-210
+.. GENERATED FROM PYTHON SOURCE LINES 205-206
 
 Now let's check the runtime dynamic shape inference:
 
-.. GENERATED FROM PYTHON SOURCE LINES 210-226
+.. GENERATED FROM PYTHON SOURCE LINES 206-222
 
 .. code-block:: Python
 
@@ -339,7 +335,7 @@ Now let's check the runtime dynamic shape inference:
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 227-247
+.. GENERATED FROM PYTHON SOURCE LINES 223-243
 
 Create TensorIR using Tensor Expression
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -362,7 +358,7 @@ Create Static-Shape Functions
 We use the same example of ``mm_relu`` from the last subsection to demonstrate the
 TE creation method.
 
-.. GENERATED FROM PYTHON SOURCE LINES 247-256
+.. GENERATED FROM PYTHON SOURCE LINES 243-252
 
 .. code-block:: Python
 
@@ -382,7 +378,7 @@ TE creation method.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 257-270
+.. GENERATED FROM PYTHON SOURCE LINES 253-266
 
 Here ``te.compute`` takes the signature ``te.compute(output_shape, fcompute)``.
 And the fcompute function describes how we want to compute the value of each
@@ -398,7 +394,7 @@ we can formulate a TensorIR function by incorporating the pertinent parameters o
 In this specific instance, we aim to construct a function with two input parameters **A, B**
 and one output parameter **C**.
 
-.. GENERATED FROM PYTHON SOURCE LINES 270-275
+.. GENERATED FROM PYTHON SOURCE LINES 266-271
 
 .. code-block:: Python
 
@@ -446,14 +442,14 @@ and one output parameter **C**.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 276-280
+.. GENERATED FROM PYTHON SOURCE LINES 272-276
 
 Create Dynamic-Shape Functions
 ******************************
 We can also create a dynamic-shape function using Tensor Expression. The only difference
 is that we need to specify the shape of the input tensors as symbolic variables.
 
-.. GENERATED FROM PYTHON SOURCE LINES 280-292
+.. GENERATED FROM PYTHON SOURCE LINES 276-288
 
 .. code-block:: Python
 

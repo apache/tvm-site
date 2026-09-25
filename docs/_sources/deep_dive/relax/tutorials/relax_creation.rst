@@ -24,7 +24,7 @@ This tutorial demonstrates how to create Relax functions and programs.
 We'll cover various ways to define Relax functions, including using TVMScript,
 and relax NNModule API.
 
-.. GENERATED FROM PYTHON SOURCE LINES 31-39
+.. GENERATED FROM PYTHON SOURCE LINES 30-38
 
 Create Relax programs using TVMScript
 -------------------------------------
@@ -35,7 +35,7 @@ to define an IRModule, which contains both TensorIR and Relax functions.
 In this section, we will show how to define a simple MLP model with only
 high-level Relax operators using TVMScript.
 
-.. GENERATED FROM PYTHON SOURCE LINES 39-69
+.. GENERATED FROM PYTHON SOURCE LINES 38-68
 
 .. code-block:: Python
 
@@ -100,16 +100,15 @@ high-level Relax operators using TVMScript.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 70-73
+.. GENERATED FROM PYTHON SOURCE LINES 69-72
 
 Relax is not only a graph-level IR, but also supports cross-level
 representation and transformation. To be specific, we can directly call
 TensorIR functions in Relax function.
 
-.. GENERATED FROM PYTHON SOURCE LINES 73-109
+.. GENERATED FROM PYTHON SOURCE LINES 72-105
 
 .. code-block:: Python
-
 
 
     n = T.dynamic("n", "int64")
@@ -119,9 +118,7 @@ TensorIR functions in Relax function.
     @I.ir_module
     class RelaxModuleWithTIR:
         @Ts.prim_func
-        def relu(x: T.handle, y: T.handle):
-            X = T.match_buffer(x, (n, m), "float32")
-            Y = T.match_buffer(y, (n, m), "float32")
+        def relu(X: T.Buffer((n, m), "float32"), Y: T.Buffer((n, m), "float32")):
             for i, j in T.grid(n, m):
                 with Ts.sblock("relu"):
                     vi, vj = Ts.axis.remap("SS", [i, j])
@@ -192,7 +189,7 @@ TensorIR functions in Relax function.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 110-132
+.. GENERATED FROM PYTHON SOURCE LINES 106-128
 
 .. note::
 
@@ -217,7 +214,7 @@ TensorIR functions in Relax function.
     lv0: R.Tensor((n, 128), dtype="float32") = R.add(lv1, b0)
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 134-141
+.. GENERATED FROM PYTHON SOURCE LINES 130-137
 
 Create Relax programs using NNModule API
 ----------------------------------------
@@ -227,7 +224,7 @@ It is designed to be more intuitive and easier to use than TVMScript.
 In this section, we will show how to define the same MLP model using
 Relax NNModule API.
 
-.. GENERATED FROM PYTHON SOURCE LINES 141-159
+.. GENERATED FROM PYTHON SOURCE LINES 137-155
 
 .. code-block:: Python
 
@@ -256,12 +253,12 @@ Relax NNModule API.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 160-162
+.. GENERATED FROM PYTHON SOURCE LINES 156-158
 
 After we define the NNModule, we can export it to TVM IRModule via
 ``export_tvm``.
 
-.. GENERATED FROM PYTHON SOURCE LINES 162-166
+.. GENERATED FROM PYTHON SOURCE LINES 158-162
 
 .. code-block:: Python
 
@@ -302,15 +299,14 @@ After we define the NNModule, we can export it to TVM IRModule via
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 167-169
+.. GENERATED FROM PYTHON SOURCE LINES 163-165
 
 We can also insert customized function calls into the NNModule, such as
 Tensor Expression(TE), TensorIR functions or other TVM packed functions.
 
-.. GENERATED FROM PYTHON SOURCE LINES 169-226
+.. GENERATED FROM PYTHON SOURCE LINES 165-221
 
 .. code-block:: Python
-
 
 
     M = T.dynamic("M", "int64")
@@ -319,11 +315,12 @@ Tensor Expression(TE), TensorIR functions or other TVM packed functions.
 
 
     @Ts.prim_func
-    def tir_linear(x: T.handle, w: T.handle, b: T.handle, z: T.handle):
-        X = T.match_buffer(x, (M, K), "float32")
-        W = T.match_buffer(w, (N, K), "float32")
-        B = T.match_buffer(b, (N,), "float32")
-        Z = T.match_buffer(z, (M, N), "float32")
+    def tir_linear(
+        X: T.Buffer((M, K), "float32"),
+        W: T.Buffer((N, K), "float32"),
+        B: T.Buffer((N,), "float32"),
+        Z: T.Buffer((M, N), "float32"),
+    ):
         for i, j, k in T.grid(M, N, K):
             with Ts.sblock("linear"):
                 vi, vj, vk = Ts.axis.remap("SSR", [i, j, k])
@@ -366,7 +363,6 @@ Tensor Expression(TE), TensorIR functions or other TVM packed functions.
         {"forward": {"x": nn.spec.Tensor(("n", 784), "float32")}}
     )
     mod.show()
-
 
 
 
@@ -434,7 +430,7 @@ Tensor Expression(TE), TensorIR functions or other TVM packed functions.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 227-233
+.. GENERATED FROM PYTHON SOURCE LINES 222-228
 
 Create Relax programs using Block Builder API
 ---------------------------------------------
@@ -443,7 +439,7 @@ creating Relax programs. It is a IR builder API, which is more
 low-level and widely used in TVM's internal logic, e.g writing a
 customized pass.
 
-.. GENERATED FROM PYTHON SOURCE LINES 233-252
+.. GENERATED FROM PYTHON SOURCE LINES 228-247
 
 .. code-block:: Python
 
@@ -498,12 +494,12 @@ customized pass.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 253-255
+.. GENERATED FROM PYTHON SOURCE LINES 248-250
 
 Also, Block Builder API supports building cross-level IRModule with both
 Relax functions, TensorIR functions and other TVM packed functions.
 
-.. GENERATED FROM PYTHON SOURCE LINES 255-280
+.. GENERATED FROM PYTHON SOURCE LINES 250-275
 
 .. code-block:: Python
 
@@ -597,7 +593,7 @@ Relax functions, TensorIR functions and other TVM packed functions.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 281-286
+.. GENERATED FROM PYTHON SOURCE LINES 276-281
 
 Note that the Block Builder API is not as user-friendly as the above APIs,
 but it is lowest-level API and works closely with the IR definition. We
@@ -605,7 +601,7 @@ recommend using the above APIs for users who only want to define and
 transform a ML model. But for those who want to build more complex
 transformations, the Block Builder API is a more flexible choice.
 
-.. GENERATED FROM PYTHON SOURCE LINES 288-292
+.. GENERATED FROM PYTHON SOURCE LINES 283-287
 
 Summary
 -------

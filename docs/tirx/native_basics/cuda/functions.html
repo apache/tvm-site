@@ -659,32 +659,14 @@ chapter covers the parameter list — how to declare buffers, what types you can
 pass, symbolic shapes, and the <code class="docutils literal notranslate"><span class="pre">prim_func</span></code> / <code class="docutils literal notranslate"><span class="pre">jit</span></code> distinction.</p>
 <section id="declaring-buffer-parameters">
 <h2>Declaring buffer parameters<a class="headerlink" href="#declaring-buffer-parameters" title="Link to this heading">#</a></h2>
-<p>There are two equivalent ways to take a tensor parameter:</p>
-<ul>
-<li><p><strong>Handle + match_buffer.</strong> Take a <code class="docutils literal notranslate"><span class="pre">Tx.handle</span></code> (an opaque data pointer) and bind
-it in the body with <code class="docutils literal notranslate"><span class="pre">Tx.match_buffer</span></code>. This is the explicit form and the one
-that exposes every descriptor field — <code class="docutils literal notranslate"><span class="pre">layout</span></code>, <code class="docutils literal notranslate"><span class="pre">elem_offset</span></code>, <code class="docutils literal notranslate"><span class="pre">scope</span></code>,
-<code class="docutils literal notranslate"><span class="pre">align</span></code>, and symbolic shapes:</p>
+<p>Declare tensor parameters with <code class="docutils literal notranslate"><span class="pre">Tx.Buffer</span></code> annotations. The annotation accepts
+shape, dtype, layout, offset, scope, and alignment metadata:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nd">@Tx</span><span class="o">.</span><span class="n">prim_func</span>
-<span class="k">def</span><span class="w"> </span><span class="nf">f</span><span class="p">(</span><span class="n">A_ptr</span><span class="p">:</span> <span class="n">Tx</span><span class="o">.</span><span class="n">handle</span><span class="p">,</span> <span class="n">B_ptr</span><span class="p">:</span> <span class="n">Tx</span><span class="o">.</span><span class="n">handle</span><span class="p">):</span>
-    <span class="n">A</span> <span class="o">=</span> <span class="n">Tx</span><span class="o">.</span><span class="n">match_buffer</span><span class="p">(</span><span class="n">A_ptr</span><span class="p">,</span> <span class="p">(</span><span class="mi">256</span><span class="p">,),</span> <span class="s2">&quot;float32&quot;</span><span class="p">,</span> <span class="n">align</span><span class="o">=</span><span class="mi">16</span><span class="p">)</span>
-    <span class="n">B</span> <span class="o">=</span> <span class="n">Tx</span><span class="o">.</span><span class="n">match_buffer</span><span class="p">(</span><span class="n">B_ptr</span><span class="p">,</span> <span class="p">(</span><span class="mi">256</span><span class="p">,),</span> <span class="s2">&quot;float32&quot;</span><span class="p">)</span>
-    <span class="o">...</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">f</span><span class="p">(</span><span class="n">A</span><span class="p">:</span> <span class="n">Tx</span><span class="o">.</span><span class="n">Buffer</span><span class="p">((</span><span class="mi">256</span><span class="p">,),</span> <span class="s2">&quot;float32&quot;</span><span class="p">,</span> <span class="n">align</span><span class="o">=</span><span class="mi">16</span><span class="p">),</span> <span class="n">B</span><span class="p">:</span> <span class="n">Tx</span><span class="o">.</span><span class="n">Buffer</span><span class="p">((</span><span class="mi">256</span><span class="p">,),</span> <span class="s2">&quot;float32&quot;</span><span class="p">)):</span> <span class="o">...</span>
 </pre></div>
 </div>
-</li>
-<li><p><strong>Tx.Buffer annotation.</strong> Annotate the parameter directly. This is the concise
-form — equivalent to a handle bound with <code class="docutils literal notranslate"><span class="pre">match_buffer</span></code> using the defaults:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nd">@Tx</span><span class="o">.</span><span class="n">prim_func</span>
-<span class="k">def</span><span class="w"> </span><span class="nf">f</span><span class="p">(</span><span class="n">A</span><span class="p">:</span> <span class="n">Tx</span><span class="o">.</span><span class="n">Buffer</span><span class="p">((</span><span class="mi">256</span><span class="p">,),</span> <span class="s2">&quot;float32&quot;</span><span class="p">),</span> <span class="n">B</span><span class="p">:</span> <span class="n">Tx</span><span class="o">.</span><span class="n">Buffer</span><span class="p">((</span><span class="mi">256</span><span class="p">,),</span> <span class="s2">&quot;float32&quot;</span><span class="p">)):</span>
-    <span class="o">...</span>
-</pre></div>
-</div>
-</li>
-</ul>
-<p>Both give you a <code class="docutils literal notranslate"><span class="pre">Buffer</span></code> you index with <code class="docutils literal notranslate"><span class="pre">A[i]</span></code> / <code class="docutils literal notranslate"><span class="pre">A[i,</span> <span class="pre">j]</span></code>. Use <code class="docutils literal notranslate"><span class="pre">Tx.Buffer</span></code>
-for the common case; drop to <code class="docutils literal notranslate"><span class="pre">Tx.handle</span></code> + <code class="docutils literal notranslate"><span class="pre">match_buffer</span></code> when you need a custom
-layout/offset/scope/alignment or a <a class="reference internal" href="#symbolic-shapes"><span class="std std-ref">symbolic shape</span></a>.</p>
+<p>The parameters are buffers that you index with <code class="docutils literal notranslate"><span class="pre">A[i]</span></code> or <code class="docutils literal notranslate"><span class="pre">A[i,</span> <span class="pre">j]</span></code>.
+Annotations also support <a class="reference internal" href="#symbolic-shapes"><span class="std std-ref">symbolic shapes</span></a>.</p>
 </section>
 <section id="what-the-parameter-list-accepts">
 <h2>What the parameter list accepts<a class="headerlink" href="#what-the-parameter-list-accepts" title="Link to this heading">#</a></h2>
@@ -708,8 +690,8 @@ pass on the Python side when you call the compiled <code class="docutils literal
 <td><p>a tensor on the right device</p></td>
 </tr>
 <tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">Tx.handle</span></code></p></td>
-<td><p>an opaque data pointer (bind with <code class="docutils literal notranslate"><span class="pre">match_buffer</span></code>)</p></td>
-<td><p>a tensor</p></td>
+<td><p>an opaque handle</p></td>
+<td><p>a handle value</p></td>
 </tr>
 <tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">Tx.int32</span></code> / <code class="docutils literal notranslate"><span class="pre">Tx.float32</span></code> / …</p></td>
 <td><p>a runtime scalar</p></td>
@@ -727,9 +709,9 @@ interop) or
 <code class="docutils literal notranslate"><span class="pre">tvm.runtime.tensor(...)</span></code>. Arguments are positional and match the parameter
 order. For example, a kernel with a scalar parameter:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nd">@Tx</span><span class="o">.</span><span class="n">prim_func</span>
-<span class="k">def</span><span class="w"> </span><span class="nf">scal</span><span class="p">(</span><span class="n">A_ptr</span><span class="p">:</span> <span class="n">Tx</span><span class="o">.</span><span class="n">handle</span><span class="p">,</span> <span class="n">B_ptr</span><span class="p">:</span> <span class="n">Tx</span><span class="o">.</span><span class="n">handle</span><span class="p">,</span> <span class="n">s</span><span class="p">:</span> <span class="n">Tx</span><span class="o">.</span><span class="n">float32</span><span class="p">):</span>
-    <span class="n">A</span> <span class="o">=</span> <span class="n">Tx</span><span class="o">.</span><span class="n">match_buffer</span><span class="p">(</span><span class="n">A_ptr</span><span class="p">,</span> <span class="p">(</span><span class="mi">256</span><span class="p">,),</span> <span class="s2">&quot;float32&quot;</span><span class="p">)</span>
-    <span class="n">B</span> <span class="o">=</span> <span class="n">Tx</span><span class="o">.</span><span class="n">match_buffer</span><span class="p">(</span><span class="n">B_ptr</span><span class="p">,</span> <span class="p">(</span><span class="mi">256</span><span class="p">,),</span> <span class="s2">&quot;float32&quot;</span><span class="p">)</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">scal</span><span class="p">(</span><span class="n">A</span><span class="p">:</span> <span class="n">Tx</span><span class="o">.</span><span class="n">Buffer</span><span class="p">((</span><span class="mi">256</span><span class="p">,),</span> <span class="s1">&#39;float32&#39;</span><span class="p">),</span> <span class="n">B</span><span class="p">:</span> <span class="n">Tx</span><span class="o">.</span><span class="n">Buffer</span><span class="p">((</span><span class="mi">256</span><span class="p">,),</span> <span class="s1">&#39;float32&#39;</span><span class="p">),</span> <span class="n">s</span><span class="p">:</span> <span class="n">Tx</span><span class="o">.</span><span class="n">float32</span><span class="p">):</span>
+
+
     <span class="n">Tx</span><span class="o">.</span><span class="n">device_entry</span><span class="p">();</span> <span class="n">bx</span> <span class="o">=</span> <span class="n">Tx</span><span class="o">.</span><span class="n">cta_id</span><span class="p">([</span><span class="mi">1</span><span class="p">]);</span> <span class="n">tx</span> <span class="o">=</span> <span class="n">Tx</span><span class="o">.</span><span class="n">thread_id</span><span class="p">([</span><span class="mi">256</span><span class="p">])</span>
     <span class="n">B</span><span class="p">[</span><span class="n">tx</span><span class="p">]</span> <span class="o">=</span> <span class="n">A</span><span class="p">[</span><span class="n">tx</span><span class="p">]</span> <span class="o">*</span> <span class="n">s</span>
 
@@ -742,23 +724,26 @@ order. For example, a kernel with a scalar parameter:</p>
 <p>For a size that varies at run time, declare a free symbolic extent with
 <code class="docutils literal notranslate"><span class="pre">Tx.int32()</span></code> and use it in the buffer shape. Its value is <strong>inferred from the
 passed tensor</strong> at run time, so a <em>single compiled kernel</em> handles any size:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nd">@Tx</span><span class="o">.</span><span class="n">prim_func</span>
-<span class="k">def</span><span class="w"> </span><span class="nf">scale_dyn</span><span class="p">(</span><span class="n">a</span><span class="p">:</span> <span class="n">Tx</span><span class="o">.</span><span class="n">handle</span><span class="p">,</span> <span class="n">b</span><span class="p">:</span> <span class="n">Tx</span><span class="o">.</span><span class="n">handle</span><span class="p">):</span>
-    <span class="n">n</span> <span class="o">=</span> <span class="n">Tx</span><span class="o">.</span><span class="n">int32</span><span class="p">()</span>                          <span class="c1"># free symbolic extent</span>
-    <span class="n">A</span> <span class="o">=</span> <span class="n">Tx</span><span class="o">.</span><span class="n">match_buffer</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="p">(</span><span class="n">n</span><span class="p">,),</span> <span class="s2">&quot;float32&quot;</span><span class="p">)</span>
-    <span class="n">B</span> <span class="o">=</span> <span class="n">Tx</span><span class="o">.</span><span class="n">match_buffer</span><span class="p">(</span><span class="n">b</span><span class="p">,</span> <span class="p">(</span><span class="n">n</span><span class="p">,),</span> <span class="s2">&quot;float32&quot;</span><span class="p">)</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">n</span> <span class="o">=</span> <span class="n">Tx</span><span class="o">.</span><span class="n">int32</span><span class="p">()</span>  <span class="c1"># free symbolic extent</span>
+
+
+<span class="nd">@Tx</span><span class="o">.</span><span class="n">prim_func</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">scale_dyn</span><span class="p">(</span><span class="n">A</span><span class="p">:</span> <span class="n">Tx</span><span class="o">.</span><span class="n">Buffer</span><span class="p">((</span><span class="n">n</span><span class="p">,),</span> <span class="s2">&quot;float32&quot;</span><span class="p">),</span> <span class="n">B</span><span class="p">:</span> <span class="n">Tx</span><span class="o">.</span><span class="n">Buffer</span><span class="p">((</span><span class="n">n</span><span class="p">,),</span> <span class="s2">&quot;float32&quot;</span><span class="p">)):</span>
     <span class="n">Tx</span><span class="o">.</span><span class="n">device_entry</span><span class="p">()</span>
-    <span class="n">bx</span> <span class="o">=</span> <span class="n">Tx</span><span class="o">.</span><span class="n">cta_id</span><span class="p">([</span><span class="mi">1</span><span class="p">]);</span> <span class="n">tx</span> <span class="o">=</span> <span class="n">Tx</span><span class="o">.</span><span class="n">thread_id</span><span class="p">([</span><span class="mi">1</span><span class="p">])</span>
-    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n</span><span class="p">):</span>                     <span class="c1"># loop / launch bounds may use n</span>
+    <span class="n">bx</span> <span class="o">=</span> <span class="n">Tx</span><span class="o">.</span><span class="n">cta_id</span><span class="p">([</span><span class="mi">1</span><span class="p">])</span>
+    <span class="n">tx</span> <span class="o">=</span> <span class="n">Tx</span><span class="o">.</span><span class="n">thread_id</span><span class="p">([</span><span class="mi">1</span><span class="p">])</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n</span><span class="p">):</span>  <span class="c1"># loop / launch bounds may use n</span>
         <span class="n">B</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">A</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">*</span> <span class="n">Tx</span><span class="o">.</span><span class="n">float32</span><span class="p">(</span><span class="mf">2.0</span><span class="p">)</span>
 
-<span class="n">exe</span> <span class="o">=</span> <span class="n">tvm</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="n">tvm</span><span class="o">.</span><span class="n">IRModule</span><span class="p">({</span><span class="s2">&quot;main&quot;</span><span class="p">:</span> <span class="n">scale_dyn</span><span class="p">}),</span>
-                  <span class="n">target</span><span class="o">=</span><span class="n">tvm</span><span class="o">.</span><span class="n">target</span><span class="o">.</span><span class="n">Target</span><span class="p">(</span><span class="s2">&quot;cuda&quot;</span><span class="p">),</span> <span class="n">tir_pipeline</span><span class="o">=</span><span class="s2">&quot;tirx&quot;</span><span class="p">)</span>
-<span class="n">exe</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="mi">100</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="s2">&quot;cuda&quot;</span><span class="p">),</span> <span class="n">torch</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="mi">100</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="s2">&quot;cuda&quot;</span><span class="p">))</span>   <span class="c1"># n = 100</span>
-<span class="n">exe</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="mi">200</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="s2">&quot;cuda&quot;</span><span class="p">),</span> <span class="n">torch</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="mi">200</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="s2">&quot;cuda&quot;</span><span class="p">))</span>   <span class="c1"># n = 200, same kernel</span>
+
+<span class="n">exe</span> <span class="o">=</span> <span class="n">tvm</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span>
+    <span class="n">tvm</span><span class="o">.</span><span class="n">IRModule</span><span class="p">({</span><span class="s2">&quot;main&quot;</span><span class="p">:</span> <span class="n">scale_dyn</span><span class="p">}),</span> <span class="n">target</span><span class="o">=</span><span class="n">tvm</span><span class="o">.</span><span class="n">target</span><span class="o">.</span><span class="n">Target</span><span class="p">(</span><span class="s2">&quot;cuda&quot;</span><span class="p">),</span> <span class="n">tir_pipeline</span><span class="o">=</span><span class="s2">&quot;tirx&quot;</span>
+<span class="p">)</span>
+<span class="n">exe</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="mi">100</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="s2">&quot;cuda&quot;</span><span class="p">),</span> <span class="n">torch</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="mi">100</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="s2">&quot;cuda&quot;</span><span class="p">))</span>  <span class="c1"># n = 100</span>
+<span class="n">exe</span><span class="p">(</span><span class="n">torch</span><span class="o">.</span><span class="n">rand</span><span class="p">(</span><span class="mi">200</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="s2">&quot;cuda&quot;</span><span class="p">),</span> <span class="n">torch</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="mi">200</span><span class="p">,</span> <span class="n">device</span><span class="o">=</span><span class="s2">&quot;cuda&quot;</span><span class="p">))</span>  <span class="c1"># n = 200, same kernel</span>
 </pre></div>
 </div>
-<p>Both <code class="docutils literal notranslate"><span class="pre">match_buffer</span></code> calls share <code class="docutils literal notranslate"><span class="pre">n</span></code>, so the two shapes are constrained equal;
+<p>Both buffer annotations share <code class="docutils literal notranslate"><span class="pre">n</span></code>, so the two shapes are constrained equal;
 <code class="docutils literal notranslate"><span class="pre">n</span></code> is never passed explicitly — it comes from the tensor.</p>
 <p>In the generated CUDA, <code class="docutils literal notranslate"><span class="pre">n</span></code> is just a runtime kernel argument; the host launcher
 reads it from the tensor’s shape and passes it, and the loop bound uses it
@@ -786,11 +771,12 @@ the packed host-side argument handling.</p>
 </div>
 <p>You can see it in the IR. <strong>Before</strong> the split, the lowered module is a single
 merged function (trimmed):</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nd">@Tx</span><span class="o">.</span><span class="n">prim_func</span>
-<span class="k">def</span><span class="w"> </span><span class="nf">main</span><span class="p">(</span><span class="n">a</span><span class="p">:</span> <span class="n">Tx</span><span class="o">.</span><span class="n">handle</span><span class="p">,</span> <span class="n">b</span><span class="p">:</span> <span class="n">Tx</span><span class="o">.</span><span class="n">handle</span><span class="p">):</span>
-    <span class="n">n</span> <span class="o">=</span> <span class="n">Tx</span><span class="o">.</span><span class="n">int32</span><span class="p">()</span>
-    <span class="n">A</span> <span class="o">=</span> <span class="n">Tx</span><span class="o">.</span><span class="n">match_buffer</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="p">(</span><span class="n">n</span><span class="p">,))</span>
-    <span class="n">B</span> <span class="o">=</span> <span class="n">Tx</span><span class="o">.</span><span class="n">match_buffer</span><span class="p">(</span><span class="n">b</span><span class="p">,</span> <span class="p">(</span><span class="n">n</span><span class="p">,))</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">n</span> <span class="o">=</span> <span class="n">Tx</span><span class="o">.</span><span class="n">int32</span><span class="p">()</span>  <span class="c1"># free symbolic extent</span>
+
+
+<span class="nd">@Tx</span><span class="o">.</span><span class="n">prim_func</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">main</span><span class="p">(</span><span class="n">A</span><span class="p">:</span> <span class="n">Tx</span><span class="o">.</span><span class="n">Buffer</span><span class="p">((</span><span class="n">n</span><span class="p">,)),</span> <span class="n">B</span><span class="p">:</span> <span class="n">Tx</span><span class="o">.</span><span class="n">Buffer</span><span class="p">((</span><span class="n">n</span><span class="p">,))):</span>
+
     <span class="k">with</span> <span class="n">Tx</span><span class="o">.</span><span class="n">launch_thread</span><span class="p">(</span><span class="s2">&quot;blockIdx.x&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">),</span> <span class="n">Tx</span><span class="o">.</span><span class="n">launch_thread</span><span class="p">(</span><span class="s2">&quot;threadIdx.x&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">):</span>
         <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n</span><span class="p">):</span>
             <span class="n">B</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">A</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">*</span> <span class="n">Tx</span><span class="o">.</span><span class="n">float32</span><span class="p">(</span><span class="mf">2.0</span><span class="p">)</span>
@@ -799,18 +785,20 @@ merged function (trimmed):</p>
 <p><strong>After</strong> <code class="docutils literal notranslate"><span class="pre">SplitHostDevice</span></code>, it is two functions — a device kernel that takes
 <code class="docutils literal notranslate"><span class="pre">n</span></code> as a parameter, and a host <code class="docutils literal notranslate"><span class="pre">main</span></code> that calls it, forwarding <code class="docutils literal notranslate"><span class="pre">n</span></code> (the
 trailing <code class="docutils literal notranslate"><span class="pre">1,</span> <span class="pre">1</span></code> are the grid/block launch dims):</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nd">@Tx</span><span class="o">.</span><span class="n">prim_func</span>   <span class="c1"># device</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nd">@Tx</span><span class="o">.</span><span class="n">prim_func</span>  <span class="c1"># device</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">scale_dyn_kernel</span><span class="p">(</span><span class="n">A_ptr</span><span class="p">:</span> <span class="n">Tx</span><span class="o">.</span><span class="n">handle</span><span class="p">(</span><span class="s2">&quot;float32&quot;</span><span class="p">),</span> <span class="n">B_ptr</span><span class="p">:</span> <span class="n">Tx</span><span class="o">.</span><span class="n">handle</span><span class="p">(</span><span class="s2">&quot;float32&quot;</span><span class="p">),</span> <span class="n">n</span><span class="p">:</span> <span class="n">Tx</span><span class="o">.</span><span class="n">int32</span><span class="p">):</span>
     <span class="o">...</span>
     <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n</span><span class="p">):</span>
         <span class="n">B</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">A</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">*</span> <span class="n">Tx</span><span class="o">.</span><span class="n">float32</span><span class="p">(</span><span class="mf">2.0</span><span class="p">)</span>
 
-<span class="nd">@Tx</span><span class="o">.</span><span class="n">prim_func</span>   <span class="c1"># host</span>
-<span class="k">def</span><span class="w"> </span><span class="nf">main</span><span class="p">(</span><span class="n">a</span><span class="p">:</span> <span class="n">Tx</span><span class="o">.</span><span class="n">handle</span><span class="p">,</span> <span class="n">b</span><span class="p">:</span> <span class="n">Tx</span><span class="o">.</span><span class="n">handle</span><span class="p">):</span>
-    <span class="n">n</span> <span class="o">=</span> <span class="n">Tx</span><span class="o">.</span><span class="n">int32</span><span class="p">()</span>
-    <span class="n">A</span> <span class="o">=</span> <span class="n">Tx</span><span class="o">.</span><span class="n">match_buffer</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="p">(</span><span class="n">n</span><span class="p">,))</span>
-    <span class="n">B</span> <span class="o">=</span> <span class="n">Tx</span><span class="o">.</span><span class="n">match_buffer</span><span class="p">(</span><span class="n">b</span><span class="p">,</span> <span class="p">(</span><span class="n">n</span><span class="p">,))</span>
-    <span class="n">Tx</span><span class="o">.</span><span class="n">call_packed</span><span class="p">(</span><span class="s2">&quot;scale_dyn_kernel&quot;</span><span class="p">,</span> <span class="n">A</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="n">B</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>   <span class="c1"># n forwarded</span>
+
+<span class="n">n</span> <span class="o">=</span> <span class="n">Tx</span><span class="o">.</span><span class="n">int32</span><span class="p">()</span>  <span class="c1"># free symbolic extent</span>
+
+
+<span class="nd">@Tx</span><span class="o">.</span><span class="n">prim_func</span>  <span class="c1"># host</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">main</span><span class="p">(</span><span class="n">A</span><span class="p">:</span> <span class="n">Tx</span><span class="o">.</span><span class="n">Buffer</span><span class="p">((</span><span class="n">n</span><span class="p">,)),</span> <span class="n">B</span><span class="p">:</span> <span class="n">Tx</span><span class="o">.</span><span class="n">Buffer</span><span class="p">((</span><span class="n">n</span><span class="p">,))):</span>
+
+    <span class="n">Tx</span><span class="o">.</span><span class="n">call_packed</span><span class="p">(</span><span class="s2">&quot;scale_dyn_kernel&quot;</span><span class="p">,</span> <span class="n">A</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="n">B</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="n">n</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>  <span class="c1"># n forwarded</span>
 </pre></div>
 </div>
 <p><code class="docutils literal notranslate"><span class="pre">MakePackedAPI</span></code> then fills in where <code class="docutils literal notranslate"><span class="pre">n</span></code> comes from — reading it from the
@@ -832,13 +820,24 @@ compile time (so the compiler can unroll, statically size shared memory, etc.).
 Referencing a constexpr inside an annotation (e.g. <code class="docutils literal notranslate"><span class="pre">Tx.Buffer((N,),</span> <span class="pre">...)</span></code>)
 requires <code class="docutils literal notranslate"><span class="pre">from</span> <span class="pre">__future__</span> <span class="pre">import</span> <span class="pre">annotations</span></code> at the top of the file.</p></li>
 </ul>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nd">@Tx</span><span class="o">.</span><span class="n">jit</span>
-<span class="k">def</span><span class="w"> </span><span class="nf">add</span><span class="p">(</span><span class="n">A</span><span class="p">:</span> <span class="n">Tx</span><span class="o">.</span><span class="n">Buffer</span><span class="p">((</span><span class="n">N</span><span class="p">,),</span> <span class="s2">&quot;float32&quot;</span><span class="p">),</span> <span class="n">B</span><span class="p">:</span> <span class="n">Tx</span><span class="o">.</span><span class="n">Buffer</span><span class="p">((</span><span class="n">N</span><span class="p">,),</span> <span class="s2">&quot;float32&quot;</span><span class="p">),</span>
-        <span class="n">C</span><span class="p">:</span> <span class="n">Tx</span><span class="o">.</span><span class="n">Buffer</span><span class="p">((</span><span class="n">N</span><span class="p">,),</span> <span class="s2">&quot;float32&quot;</span><span class="p">),</span> <span class="o">*</span><span class="p">,</span> <span class="n">N</span><span class="p">:</span> <span class="n">Tx</span><span class="o">.</span><span class="n">constexpr</span><span class="p">):</span>
-    <span class="n">Tx</span><span class="o">.</span><span class="n">device_entry</span><span class="p">();</span> <span class="n">bx</span> <span class="o">=</span> <span class="n">Tx</span><span class="o">.</span><span class="n">cta_id</span><span class="p">([</span><span class="mi">1</span><span class="p">]);</span> <span class="n">tx</span> <span class="o">=</span> <span class="n">Tx</span><span class="o">.</span><span class="n">thread_id</span><span class="p">([</span><span class="n">N</span><span class="p">])</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">annotations</span>
+
+
+<span class="nd">@Tx</span><span class="o">.</span><span class="n">jit</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">add</span><span class="p">(</span>
+    <span class="n">A</span><span class="p">:</span> <span class="n">Tx</span><span class="o">.</span><span class="n">Buffer</span><span class="p">((</span><span class="n">N</span><span class="p">,),</span> <span class="s2">&quot;float32&quot;</span><span class="p">),</span>
+    <span class="n">B</span><span class="p">:</span> <span class="n">Tx</span><span class="o">.</span><span class="n">Buffer</span><span class="p">((</span><span class="n">N</span><span class="p">,),</span> <span class="s2">&quot;float32&quot;</span><span class="p">),</span>
+    <span class="n">C</span><span class="p">:</span> <span class="n">Tx</span><span class="o">.</span><span class="n">Buffer</span><span class="p">((</span><span class="n">N</span><span class="p">,),</span> <span class="s2">&quot;float32&quot;</span><span class="p">),</span>
+    <span class="o">*</span><span class="p">,</span>
+    <span class="n">N</span><span class="p">:</span> <span class="n">Tx</span><span class="o">.</span><span class="n">constexpr</span><span class="p">,</span>
+<span class="p">):</span>
+    <span class="n">Tx</span><span class="o">.</span><span class="n">device_entry</span><span class="p">()</span>
+    <span class="n">bx</span> <span class="o">=</span> <span class="n">Tx</span><span class="o">.</span><span class="n">cta_id</span><span class="p">([</span><span class="mi">1</span><span class="p">])</span>
+    <span class="n">tx</span> <span class="o">=</span> <span class="n">Tx</span><span class="o">.</span><span class="n">thread_id</span><span class="p">([</span><span class="n">N</span><span class="p">])</span>
     <span class="n">C</span><span class="p">[</span><span class="n">tx</span><span class="p">]</span> <span class="o">=</span> <span class="n">A</span><span class="p">[</span><span class="n">tx</span><span class="p">]</span> <span class="o">+</span> <span class="n">B</span><span class="p">[</span><span class="n">tx</span><span class="p">]</span>
 
-<span class="n">kernel</span> <span class="o">=</span> <span class="n">add</span><span class="o">.</span><span class="n">specialize</span><span class="p">(</span><span class="n">N</span><span class="o">=</span><span class="mi">256</span><span class="p">)</span>   <span class="c1"># -&gt; a PrimFunc with N = 256 baked in</span>
+
+<span class="n">kernel</span> <span class="o">=</span> <span class="n">add</span><span class="o">.</span><span class="n">specialize</span><span class="p">(</span><span class="n">N</span><span class="o">=</span><span class="mi">256</span><span class="p">)</span>  <span class="c1"># -&gt; a PrimFunc with N = 256 baked in</span>
 </pre></div>
 </div>
 <p>So: a <strong>symbolic shape</strong> is one kernel whose size is resolved at run time; a

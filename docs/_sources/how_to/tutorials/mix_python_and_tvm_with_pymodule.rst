@@ -48,7 +48,7 @@ This tutorial walks through the full workflow step by step.
 Preparation
 -----------
 
-.. GENERATED FROM PYTHON SOURCE LINES 50-72
+.. GENERATED FROM PYTHON SOURCE LINES 50-71
 
 .. code-block:: Python
 
@@ -80,8 +80,7 @@ Preparation
 
 
 
-
-.. GENERATED FROM PYTHON SOURCE LINES 73-84
+.. GENERATED FROM PYTHON SOURCE LINES 72-83
 
 Step 1: Your First Hybrid Module
 ----------------------------------
@@ -95,7 +94,7 @@ three decorators for three kinds of functions:
 ``call_tir`` bridges Python and TIR: it converts PyTorch tensors to TVM NDArrays via DLPack
 (zero-copy), allocates the output buffer, calls the compiled kernel, and converts back.
 
-.. GENERATED FROM PYTHON SOURCE LINES 84-123
+.. GENERATED FROM PYTHON SOURCE LINES 83-121
 
 .. code-block:: Python
 
@@ -144,8 +143,7 @@ three decorators for three kinds of functions:
 
 
 
-
-.. GENERATED FROM PYTHON SOURCE LINES 124-130
+.. GENERATED FROM PYTHON SOURCE LINES 122-128
 
 Step 2: Debugging — The Main Selling Point
 ---------------------------------------------
@@ -154,7 +152,7 @@ intermediate tensor values without compiling the entire module. With ``@I.pyfunc
 is as simple as adding a ``print`` statement. You can also make quick edits and re-run
 immediately — no recompilation needed.
 
-.. GENERATED FROM PYTHON SOURCE LINES 130-181
+.. GENERATED FROM PYTHON SOURCE LINES 128-180
 
 .. code-block:: Python
 
@@ -165,10 +163,11 @@ immediately — no recompilation needed.
         @R.py_module
         class DebugModule(BasePyModule):
             @Ts.prim_func
-            def matmul_tir(var_A: T.handle, var_B: T.handle, var_C: T.handle):
-                A = T.match_buffer(var_A, (n, 4), "float32")
-                B = T.match_buffer(var_B, (4, 3), "float32")
-                C = T.match_buffer(var_C, (n, 3), "float32")
+            def matmul_tir(
+                A: T.Buffer((n, 4), "float32"),
+                B: T.Buffer((4, 3), "float32"),
+                C: T.Buffer((n, 3), "float32"),
+            ):
                 for i, j, k in T.grid(n, 3, 4):
                     with Ts.sblock("matmul"):
                         vi, vj, vk = Ts.axis.remap("SSR", [i, j, k])
@@ -216,13 +215,13 @@ immediately — no recompilation needed.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 182-185
+.. GENERATED FROM PYTHON SOURCE LINES 181-184
 
 This is the key benefit: "debugging is as simple as inserting a print statement.
 Users can also make quick, manual edits to Python functions and immediately observe the
 results." No compilation cycle, no VM loading — just Python.
 
-.. GENERATED FROM PYTHON SOURCE LINES 188-199
+.. GENERATED FROM PYTHON SOURCE LINES 186-197
 
 Step 3: A Realistic Pipeline — Python, TIR, and Packed Functions
 -------------------------------------------------------------------
@@ -236,7 +235,7 @@ three different calling conventions:
 ``call_dps_packed`` is useful for calling functions registered via ``tvm.register_global_func``
 — for example, CUBLAS or cuDNN bindings that TVM wraps as packed functions.
 
-.. GENERATED FROM PYTHON SOURCE LINES 199-260
+.. GENERATED FROM PYTHON SOURCE LINES 197-258
 
 .. code-block:: Python
 
@@ -255,10 +254,11 @@ three different calling conventions:
         @R.py_module
         class PipelineModule(BasePyModule):
             @Ts.prim_func
-            def matmul_tir(var_A: T.handle, var_B: T.handle, var_C: T.handle):
-                A = T.match_buffer(var_A, (2, 4), "float32")
-                B = T.match_buffer(var_B, (4, 3), "float32")
-                C = T.match_buffer(var_C, (2, 3), "float32")
+            def matmul_tir(
+                A: T.Buffer((2, 4), "float32"),
+                B: T.Buffer((4, 3), "float32"),
+                C: T.Buffer((2, 3), "float32"),
+            ):
                 for i, j, k in T.grid(2, 3, 4):
                     with Ts.sblock("matmul"):
                         vi, vj, vk = Ts.axis.remap("SSR", [i, j, k])
@@ -307,8 +307,7 @@ three different calling conventions:
 
 
 
-
-.. GENERATED FROM PYTHON SOURCE LINES 261-270
+.. GENERATED FROM PYTHON SOURCE LINES 259-268
 
 Step 4: Relax-to-Python Converter — Verify at Any Compilation Stage
 ----------------------------------------------------------------------
@@ -320,7 +319,7 @@ A key feature: **this conversion can happen at any stage of compilation**.
 You can convert early (right after import) or late (after optimization passes have
 transformed the IR), and compare the output against a PyTorch reference to catch bugs.
 
-.. GENERATED FROM PYTHON SOURCE LINES 270-332
+.. GENERATED FROM PYTHON SOURCE LINES 268-330
 
 .. code-block:: Python
 
@@ -332,10 +331,11 @@ transformed the IR), and compare the output against a PyTorch reference to catch
         @I.ir_module
         class DenseLayer:
             @Ts.prim_func
-            def bias_add_tir(var_x: T.handle, var_b: T.handle, var_out: T.handle):
-                x = T.match_buffer(var_x, (2, 4), "float32")
-                b = T.match_buffer(var_b, (4,), "float32")
-                out = T.match_buffer(var_out, (2, 4), "float32")
+            def bias_add_tir(
+                x: T.Buffer((2, 4), "float32"),
+                b: T.Buffer((4,), "float32"),
+                out: T.Buffer((2, 4), "float32"),
+            ):
                 for i, j in T.grid(2, 4):
                     out[i, j] = x[i, j] + b[j]
 
@@ -392,8 +392,7 @@ transformed the IR), and compare the output against a PyTorch reference to catch
 
 
 
-
-.. GENERATED FROM PYTHON SOURCE LINES 333-346
+.. GENERATED FROM PYTHON SOURCE LINES 331-344
 
 Step 5: R.call_py_func — Python Callbacks in Compiled IR
 -----------------------------------------------------------
@@ -409,7 +408,7 @@ Use case: your model has a custom op (e.g., a special normalization or a samplin
 that is complex to implement in TIR. Compile everything else, and let that one op stay
 in Python.
 
-.. GENERATED FROM PYTHON SOURCE LINES 346-383
+.. GENERATED FROM PYTHON SOURCE LINES 344-380
 
 .. code-block:: Python
 
@@ -456,8 +455,7 @@ in Python.
 
 
 
-
-.. GENERATED FROM PYTHON SOURCE LINES 384-400
+.. GENERATED FROM PYTHON SOURCE LINES 381-397
 
 Step 6: Cross-Level Calls and Symbolic Shapes
 ------------------------------------------------
@@ -476,7 +474,7 @@ This step also shows **symbolic shapes**: TIR and Relax functions can declare dy
 dimensions (e.g., ``"n"``). ``BasePyModule`` infers concrete shapes from the actual input
 tensors at call time, so the same module handles different sizes without recompilation.
 
-.. GENERATED FROM PYTHON SOURCE LINES 400-445
+.. GENERATED FROM PYTHON SOURCE LINES 397-439
 
 .. code-block:: Python
 
@@ -487,9 +485,7 @@ tensors at call time, so the same module handles different sizes without recompi
         @R.py_module
         class DynamicModule(BasePyModule):
             @Ts.prim_func
-            def scale_tir(var_x: T.handle, var_out: T.handle):
-                x = T.match_buffer(var_x, (n,), "float32")
-                out = T.match_buffer(var_out, (n,), "float32")
+            def scale_tir(x: T.Buffer((n,), "float32"), out: T.Buffer((n,), "float32")):
                 for i in T.serial(n):
                     out[i] = x[i] * T.float32(2.0)
 
@@ -531,8 +527,7 @@ tensors at call time, so the same module handles different sizes without recompi
 
 
 
-
-.. GENERATED FROM PYTHON SOURCE LINES 446-463
+.. GENERATED FROM PYTHON SOURCE LINES 440-457
 
 Summary
 -------
