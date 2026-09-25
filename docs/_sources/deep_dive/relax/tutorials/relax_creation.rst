@@ -35,7 +35,7 @@ to define an IRModule, which contains both TensorIR and Relax functions.
 In this section, we will show how to define a simple MLP model with only
 high-level Relax operators using TVMScript.
 
-.. GENERATED FROM PYTHON SOURCE LINES 39-67
+.. GENERATED FROM PYTHON SOURCE LINES 39-69
 
 .. code-block:: Python
 
@@ -46,17 +46,19 @@ high-level Relax operators using TVMScript.
     from tvm.script import s_tir as Ts
     from tvm.script import tirx as T
 
+    n = T.dynamic("n")
+
 
     @I.ir_module
     class RelaxModule:
         @R.function
         def forward(
-            data: R.Tensor(("n", 784), dtype="float32"),
+            data: R.Tensor((n, 784), dtype="float32"),
             w0: R.Tensor((128, 784), dtype="float32"),
             b0: R.Tensor((128,), dtype="float32"),
             w1: R.Tensor((10, 128), dtype="float32"),
             b1: R.Tensor((10,), dtype="float32"),
-        ) -> R.Tensor(("n", 10), dtype="float32"):
+        ) -> R.Tensor((n, 10), dtype="float32"):
             with R.dataflow():
                 lv0 = R.matmul(data, R.permute_dims(w0)) + b0
                 lv1 = R.nn.relu(lv0)
@@ -75,18 +77,14 @@ high-level Relax operators using TVMScript.
 
  .. code-block:: none
 
-    # from typing import TypeVar
     # from tvm.script import ir as I
-    # from tvm.script import tirx as T
-    # from tvm.tirx.layout import Axis
     # from tvm.script import relax as R
 
-    n = TypeVar("n")
+    n = I.dynamic("n", dtype="int64")
     @I.ir_module
     class Module:
         @R.function
         def forward(data: R.Tensor((n, 784), dtype="float32"), w0: R.Tensor((128, 784), dtype="float32"), b0: R.Tensor((128,), dtype="float32"), w1: R.Tensor((10, 128), dtype="float32"), b1: R.Tensor((10,), dtype="float32")) -> R.Tensor((n, 10), dtype="float32"):
-            n = T.int64()
             with R.dataflow():
                 lv: R.Tensor((784, 128), dtype="float32") = R.permute_dims(w0, axes=None)
                 lv1: R.Tensor((n, 128), dtype="float32") = R.matmul(data, lv, out_dtype=None)
@@ -102,24 +100,26 @@ high-level Relax operators using TVMScript.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 68-71
+.. GENERATED FROM PYTHON SOURCE LINES 70-73
 
 Relax is not only a graph-level IR, but also supports cross-level
 representation and transformation. To be specific, we can directly call
 TensorIR functions in Relax function.
 
-.. GENERATED FROM PYTHON SOURCE LINES 71-106
+.. GENERATED FROM PYTHON SOURCE LINES 73-109
 
 .. code-block:: Python
 
+
+
+    n = T.dynamic("n", "int64")
+    m = T.dynamic("m", "int64")
 
 
     @I.ir_module
     class RelaxModuleWithTIR:
         @Ts.prim_func
         def relu(x: T.handle, y: T.handle):
-            n = T.int64()
-            m = T.int64()
             X = T.match_buffer(x, (n, m), "float32")
             Y = T.match_buffer(y, (n, m), "float32")
             for i, j in T.grid(n, m):
@@ -129,13 +129,12 @@ TensorIR functions in Relax function.
 
         @R.function
         def forward(
-            data: R.Tensor(("n", 784), dtype="float32"),
+            data: R.Tensor((n, 784), dtype="float32"),
             w0: R.Tensor((128, 784), dtype="float32"),
             b0: R.Tensor((128,), dtype="float32"),
             w1: R.Tensor((10, 128), dtype="float32"),
             b1: R.Tensor((10,), dtype="float32"),
-        ) -> R.Tensor(("n", 10), dtype="float32"):
-            n = T.int64()
+        ) -> R.Tensor((n, 10), dtype="float32"):
             cls = RelaxModuleWithTIR
             with R.dataflow():
                 lv0 = R.matmul(data, R.permute_dims(w0)) + b0
@@ -155,21 +154,18 @@ TensorIR functions in Relax function.
 
  .. code-block:: none
 
-    # from typing import TypeVar
     # from tvm.script import ir as I
     # from tvm.script import tirx as T
     # from tvm.tirx.layout import Axis
     # from tvm.script import s_tir as Ts
     # from tvm.script import relax as R
 
-    m = TypeVar("m")
-    n = TypeVar("n")
+    m = I.dynamic("m", dtype="int64")
+    n = I.dynamic("n", dtype="int64")
     @I.ir_module
     class Module:
         @Ts.prim_func
         def relu(X: T.Buffer((n, m), "float32"), Y: T.Buffer((n, m), "float32")):
-            m = T.int64()
-            n = T.int64()
             # with Ts.sblock("root"):
             for i, j in T.grid(n, m):
                 with Ts.sblock("relu"):
@@ -180,7 +176,6 @@ TensorIR functions in Relax function.
 
         @R.function
         def forward(data: R.Tensor((n, 784), dtype="float32"), w0: R.Tensor((128, 784), dtype="float32"), b0: R.Tensor((128,), dtype="float32"), w1: R.Tensor((10, 128), dtype="float32"), b1: R.Tensor((10,), dtype="float32")) -> R.Tensor((n, 10), dtype="float32"):
-            n = T.int64()
             cls = Module
             with R.dataflow():
                 lv: R.Tensor((784, 128), dtype="float32") = R.permute_dims(w0, axes=None)
@@ -197,7 +192,7 @@ TensorIR functions in Relax function.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 107-129
+.. GENERATED FROM PYTHON SOURCE LINES 110-132
 
 .. note::
 
@@ -222,7 +217,7 @@ TensorIR functions in Relax function.
     lv0: R.Tensor((n, 128), dtype="float32") = R.add(lv1, b0)
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 131-138
+.. GENERATED FROM PYTHON SOURCE LINES 134-141
 
 Create Relax programs using NNModule API
 ----------------------------------------
@@ -232,7 +227,7 @@ It is designed to be more intuitive and easier to use than TVMScript.
 In this section, we will show how to define the same MLP model using
 Relax NNModule API.
 
-.. GENERATED FROM PYTHON SOURCE LINES 138-156
+.. GENERATED FROM PYTHON SOURCE LINES 141-159
 
 .. code-block:: Python
 
@@ -261,12 +256,12 @@ Relax NNModule API.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 157-159
+.. GENERATED FROM PYTHON SOURCE LINES 160-162
 
 After we define the NNModule, we can export it to TVM IRModule via
 ``export_tvm``.
 
-.. GENERATED FROM PYTHON SOURCE LINES 159-163
+.. GENERATED FROM PYTHON SOURCE LINES 162-166
 
 .. code-block:: Python
 
@@ -282,18 +277,14 @@ After we define the NNModule, we can export it to TVM IRModule via
 
  .. code-block:: none
 
-    # from typing import TypeVar
     # from tvm.script import ir as I
-    # from tvm.script import tirx as T
-    # from tvm.tirx.layout import Axis
     # from tvm.script import relax as R
 
-    n = TypeVar("n")
+    n = I.dynamic("n", dtype="int64")
     @I.ir_module
     class Module:
         @R.function
         def forward(x: R.Tensor((n, 784), dtype="float32"), fc1_weight: R.Tensor((128, 784), dtype="float32"), fc1_bias: R.Tensor((128,), dtype="float32"), fc2_weight: R.Tensor((10, 128), dtype="float32"), fc2_bias: R.Tensor((10,), dtype="float32")) -> R.Tensor((n, 10), dtype="float32"):
-            n = T.int64()
             R.func_attr({"num_input": 1})
             with R.dataflow():
                 permute_dims: R.Tensor((784, 128), dtype="float32") = R.permute_dims(fc1_weight, axes=None)
@@ -311,22 +302,24 @@ After we define the NNModule, we can export it to TVM IRModule via
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 164-166
+.. GENERATED FROM PYTHON SOURCE LINES 167-169
 
 We can also insert customized function calls into the NNModule, such as
 Tensor Expression(TE), TensorIR functions or other TVM packed functions.
 
-.. GENERATED FROM PYTHON SOURCE LINES 166-221
+.. GENERATED FROM PYTHON SOURCE LINES 169-226
 
 .. code-block:: Python
 
 
 
+    M = T.dynamic("M", "int64")
+    N = T.dynamic("N", "int64")
+    K = T.dynamic("K", "int64")
+
+
     @Ts.prim_func
     def tir_linear(x: T.handle, w: T.handle, b: T.handle, z: T.handle):
-        M = T.int64()
-        N = T.int64()
-        K = T.int64()
         X = T.match_buffer(x, (M, K), "float32")
         W = T.match_buffer(w, (N, K), "float32")
         B = T.match_buffer(b, (N,), "float32")
@@ -383,22 +376,21 @@ Tensor Expression(TE), TensorIR functions or other TVM packed functions.
 
  .. code-block:: none
 
-    # from typing import TypeVar
     # from tvm.script import ir as I
     # from tvm.script import tirx as T
     # from tvm.tirx.layout import Axis
     # from tvm.script import s_tir as Ts
     # from tvm.script import relax as R
 
-    n = TypeVar("n")
-    K = TypeVar("K")
-    M = TypeVar("M")
-    N = TypeVar("N")
+    n = I.dynamic("n", dtype="int64")
+    K = I.dynamic("K", dtype="int64")
+    M = I.dynamic("M", dtype="int64")
+    N = I.dynamic("N", dtype="int64")
+    n_1 = I.dynamic("n", dtype="int64")
     @I.ir_module
     class Module:
         @Ts.prim_func(private=True)
         def relu(env_linear: T.Buffer((n, T.int64(128)), "float32"), compute: T.Buffer((n, T.int64(128)), "float32")):
-            n = T.int64()
             T.func_attr({"tirx.noalias": True})
             # with Ts.sblock("root"):
             for i0, i1 in T.grid(n, T.int64(128)):
@@ -410,9 +402,6 @@ Tensor Expression(TE), TensorIR functions or other TVM packed functions.
 
         @Ts.prim_func
         def tir_linear(X: T.Buffer((M, K), "float32"), W: T.Buffer((N, K), "float32"), B: T.Buffer((N,), "float32"), Z: T.Buffer((M, N), "float32")):
-            K = T.int64()
-            M = T.int64()
-            N = T.int64()
             # with Ts.sblock("root"):
             for i, j, k in T.grid(M, N, K):
                 with Ts.sblock("linear"):
@@ -430,15 +419,14 @@ Tensor Expression(TE), TensorIR functions or other TVM packed functions.
                     Z[v, v_1] = Z[v, v_1] + B[v_1]
 
         @R.function
-        def forward(x: R.Tensor((n, 784), dtype="float32"), fc1_weight: R.Tensor((128, 784), dtype="float32"), fc1_bias: R.Tensor((128,), dtype="float32"), fc2_weight: R.Tensor((10, 128), dtype="float32"), fc2_bias: R.Tensor((10,), dtype="float32")) -> R.Tensor((n, 10), dtype="float32"):
-            n = T.int64()
+        def forward(x: R.Tensor((n_1, 784), dtype="float32"), fc1_weight: R.Tensor((128, 784), dtype="float32"), fc1_bias: R.Tensor((128,), dtype="float32"), fc2_weight: R.Tensor((10, 128), dtype="float32"), fc2_bias: R.Tensor((10,), dtype="float32")) -> R.Tensor((n_1, 10), dtype="float32"):
             R.func_attr({"num_input": 1})
             cls = Module
             with R.dataflow():
-                env_linear = R.call_dps_packed("env.linear", (x, fc1_weight, fc1_bias), out_ty=R.Tensor((n, 128), dtype="float32"))
-                lv = R.call_tir(cls.relu, (env_linear,), out_ty=R.Tensor((n, 128), dtype="float32"))
-                lv1 = R.call_tir(cls.tir_linear, (lv, fc2_weight, fc2_bias), out_ty=R.Tensor((n, 10), dtype="float32"))
-                gv: R.Tensor((n, 10), dtype="float32") = lv1
+                env_linear = R.call_dps_packed("env.linear", (x, fc1_weight, fc1_bias), out_ty=R.Tensor((n_1, 128), dtype="float32"))
+                lv = R.call_tir(cls.relu, (env_linear,), out_ty=R.Tensor((n_1, 128), dtype="float32"))
+                lv1 = R.call_tir(cls.tir_linear, (lv, fc2_weight, fc2_bias), out_ty=R.Tensor((n_1, 10), dtype="float32"))
+                gv: R.Tensor((n_1, 10), dtype="float32") = lv1
                 R.output(gv)
             return gv
 
@@ -446,7 +434,7 @@ Tensor Expression(TE), TensorIR functions or other TVM packed functions.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 222-228
+.. GENERATED FROM PYTHON SOURCE LINES 227-233
 
 Create Relax programs using Block Builder API
 ---------------------------------------------
@@ -455,13 +443,13 @@ creating Relax programs. It is a IR builder API, which is more
 low-level and widely used in TVM's internal logic, e.g writing a
 customized pass.
 
-.. GENERATED FROM PYTHON SOURCE LINES 228-247
+.. GENERATED FROM PYTHON SOURCE LINES 233-252
 
 .. code-block:: Python
 
 
     bb = relax.BlockBuilder()
-    n = T.int64()
+    n = T.dynamic("n", "int64")
     x = relax.Var("x", R.Tensor((n, 784), "float32"))
     fc1_weight = relax.Var("fc1_weight", R.Tensor((128, 784), "float32"))
     fc1_bias = relax.Var("fc1_bias", R.Tensor((128,), "float32"))
@@ -486,27 +474,23 @@ customized pass.
 
  .. code-block:: none
 
-    # from typing import TypeVar
     # from tvm.script import ir as I
-    # from tvm.script import tirx as T
-    # from tvm.tirx.layout import Axis
     # from tvm.script import relax as R
 
-    v = TypeVar("v")
+    n = I.dynamic("n", dtype="int64")
     @I.ir_module
     class Module:
         @R.function
-        def forward(x: R.Tensor((v, 784), dtype="float32"), fc1_weight: R.Tensor((128, 784), dtype="float32"), fc1_bias: R.Tensor((128,), dtype="float32"), fc2_weight: R.Tensor((10, 128), dtype="float32"), fc2_bias: R.Tensor((10,), dtype="float32")) -> R.Tensor((v, 10), dtype="float32"):
-            v = T.int64()
+        def forward(x: R.Tensor((n, 784), dtype="float32"), fc1_weight: R.Tensor((128, 784), dtype="float32"), fc1_bias: R.Tensor((128,), dtype="float32"), fc2_weight: R.Tensor((10, 128), dtype="float32"), fc2_bias: R.Tensor((10,), dtype="float32")) -> R.Tensor((n, 10), dtype="float32"):
             with R.dataflow():
                 lv: R.Tensor((784, 128), dtype="float32") = R.permute_dims(fc1_weight, axes=None)
-                lv1: R.Tensor((v, 128), dtype="float32") = R.matmul(x, lv, out_dtype=None)
-                lv2: R.Tensor((v, 128), dtype="float32") = R.add(lv1, fc1_bias)
-                lv3: R.Tensor((v, 128), dtype="float32") = R.nn.relu(lv2)
+                lv1: R.Tensor((n, 128), dtype="float32") = R.matmul(x, lv, out_dtype=None)
+                lv2: R.Tensor((n, 128), dtype="float32") = R.add(lv1, fc1_bias)
+                lv3: R.Tensor((n, 128), dtype="float32") = R.nn.relu(lv2)
                 lv4: R.Tensor((128, 10), dtype="float32") = R.permute_dims(fc2_weight, axes=None)
-                lv5: R.Tensor((v, 10), dtype="float32") = R.matmul(lv3, lv4, out_dtype=None)
-                lv6: R.Tensor((v, 10), dtype="float32") = R.add(lv5, fc2_bias)
-                gv: R.Tensor((v, 10), dtype="float32") = lv6
+                lv5: R.Tensor((n, 10), dtype="float32") = R.matmul(lv3, lv4, out_dtype=None)
+                lv6: R.Tensor((n, 10), dtype="float32") = R.add(lv5, fc2_bias)
+                gv: R.Tensor((n, 10), dtype="float32") = lv6
                 R.output(gv)
             return lv6
 
@@ -514,12 +498,12 @@ customized pass.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 248-250
+.. GENERATED FROM PYTHON SOURCE LINES 253-255
 
 Also, Block Builder API supports building cross-level IRModule with both
 Relax functions, TensorIR functions and other TVM packed functions.
 
-.. GENERATED FROM PYTHON SOURCE LINES 250-275
+.. GENERATED FROM PYTHON SOURCE LINES 255-280
 
 .. code-block:: Python
 
@@ -556,25 +540,24 @@ Relax functions, TensorIR functions and other TVM packed functions.
 
  .. code-block:: none
 
-    # from typing import TypeVar
     # from tvm.script import ir as I
     # from tvm.script import tirx as T
     # from tvm.tirx.layout import Axis
     # from tvm.script import s_tir as Ts
     # from tvm.script import relax as R
 
-    v = TypeVar("v")
-    K = TypeVar("K")
-    M = TypeVar("M")
-    N = TypeVar("N")
+    n = I.dynamic("n", dtype="int64")
+    K = I.dynamic("K", dtype="int64")
+    M = I.dynamic("M", dtype="int64")
+    N = I.dynamic("N", dtype="int64")
+    n_1 = I.dynamic("n", dtype="int64")
     @I.ir_module
     class Module:
         @Ts.prim_func(private=True)
-        def relu(lv: T.Buffer((v, T.int64(128)), "float32"), compute: T.Buffer((v, T.int64(128)), "float32")):
-            v = T.int64()
+        def relu(lv: T.Buffer((n, T.int64(128)), "float32"), compute: T.Buffer((n, T.int64(128)), "float32")):
             T.func_attr({"tirx.noalias": True})
             # with Ts.sblock("root"):
-            for i0, i1 in T.grid(v, T.int64(128)):
+            for i0, i1 in T.grid(n, T.int64(128)):
                 with Ts.sblock("compute"):
                     v_i0, v_i1 = Ts.axis.remap("SS", [i0, i1])
                     Ts.reads(lv[v_i0, v_i1])
@@ -583,9 +566,6 @@ Relax functions, TensorIR functions and other TVM packed functions.
 
         @Ts.prim_func
         def tir_linear(X: T.Buffer((M, K), "float32"), W: T.Buffer((N, K), "float32"), B: T.Buffer((N,), "float32"), Z: T.Buffer((M, N), "float32")):
-            K = T.int64()
-            M = T.int64()
-            N = T.int64()
             # with Ts.sblock("root"):
             for i, j, k in T.grid(M, N, K):
                 with Ts.sblock("linear"):
@@ -603,14 +583,13 @@ Relax functions, TensorIR functions and other TVM packed functions.
                     Z[v, v_1] = Z[v, v_1] + B[v_1]
 
         @R.function
-        def forward(x: R.Tensor((v, 784), dtype="float32"), fc1_weight: R.Tensor((128, 784), dtype="float32"), fc1_bias: R.Tensor((128,), dtype="float32"), fc2_weight: R.Tensor((10, 128), dtype="float32"), fc2_bias: R.Tensor((10,), dtype="float32")) -> R.Tensor((v, 10), dtype="float32"):
-            v = T.int64()
+        def forward(x: R.Tensor((n_1, 784), dtype="float32"), fc1_weight: R.Tensor((128, 784), dtype="float32"), fc1_bias: R.Tensor((128,), dtype="float32"), fc2_weight: R.Tensor((10, 128), dtype="float32"), fc2_bias: R.Tensor((10,), dtype="float32")) -> R.Tensor((n_1, 10), dtype="float32"):
             cls = Module
             with R.dataflow():
-                lv = R.call_dps_packed("env.linear", (x, fc1_weight, fc1_bias), out_ty=R.Tensor((v, 128), dtype="float32"))
-                lv1 = R.call_tir(cls.relu, (lv,), out_ty=R.Tensor((v, 128), dtype="float32"))
-                lv2 = R.call_tir(cls.tir_linear, (lv1, fc2_weight, fc2_bias), out_ty=R.Tensor((v, 10), dtype="float32"))
-                gv: R.Tensor((v, 10), dtype="float32") = lv2
+                lv = R.call_dps_packed("env.linear", (x, fc1_weight, fc1_bias), out_ty=R.Tensor((n_1, 128), dtype="float32"))
+                lv1 = R.call_tir(cls.relu, (lv,), out_ty=R.Tensor((n_1, 128), dtype="float32"))
+                lv2 = R.call_tir(cls.tir_linear, (lv1, fc2_weight, fc2_bias), out_ty=R.Tensor((n_1, 10), dtype="float32"))
+                gv: R.Tensor((n_1, 10), dtype="float32") = lv2
                 R.output(gv)
             return lv2
 
@@ -618,7 +597,7 @@ Relax functions, TensorIR functions and other TVM packed functions.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 276-281
+.. GENERATED FROM PYTHON SOURCE LINES 281-286
 
 Note that the Block Builder API is not as user-friendly as the above APIs,
 but it is lowest-level API and works closely with the IR definition. We
@@ -626,7 +605,7 @@ recommend using the above APIs for users who only want to define and
 transform a ML model. But for those who want to build more complex
 transformations, the Block Builder API is a more flexible choice.
 
-.. GENERATED FROM PYTHON SOURCE LINES 283-287
+.. GENERATED FROM PYTHON SOURCE LINES 288-292
 
 Summary
 -------
