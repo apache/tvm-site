@@ -142,7 +142,7 @@ var searchData=
   ['invokeclosurepacked_139',['InvokeClosurePacked',['../classtvm_1_1runtime_1_1vm_1_1VirtualMachine.html#aadb389cce30ed4490b48efce84c02313',1,'tvm::runtime::vm::VirtualMachine']]],
   ['io_2eh_140',['io.h',['../io_8h.html',1,'']]],
   ['iou_5fthreshold_141',['iou_threshold',['../structtvm_1_1relax_1_1NonMaximumSuppressionAttrs.html#a5ffb4dafe48a2d6bae9e9928de44bda4',1,'tvm::relax::NonMaximumSuppressionAttrs']]],
-  ['ir_2eh_142',['ir.h',['../relax_2script_2builder_2ir_8h.html',1,'(Global Namespace)'],['../s__tir_2script_2builder_2ir_8h.html',1,'(Global Namespace)'],['../script_2ir__builder_2ir_2ir_8h.html',1,'(Global Namespace)'],['../tirx_2script_2builder_2ir_8h.html',1,'(Global Namespace)']]],
+  ['ir_2eh_142',['ir.h',['../relax_2script_2ir__builder_2ir_8h.html',1,'(Global Namespace)'],['../s__tir_2script_2ir__builder_2ir_8h.html',1,'(Global Namespace)'],['../script_2ir__builder_2ir_8h.html',1,'(Global Namespace)'],['../tirx_2script_2ir__builder_2ir_8h.html',1,'(Global Namespace)']]],
   ['ir_5fdocsifier_2eh_143',['ir_docsifier.h',['../ir__docsifier_8h.html',1,'']]],
   ['ir_5fdocsifier_5ffunctor_2eh_144',['ir_docsifier_functor.h',['../ir__docsifier__functor_8h.html',1,'']]],
   ['ir_5fprefix_145',['ir_prefix',['../classtvm_1_1PrinterConfigNode.html#a02f0a64903b448da95ad7f6e6438c17a',1,'tvm::PrinterConfigNode']]],
