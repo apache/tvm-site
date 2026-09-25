@@ -668,12 +668,34 @@ external bindings through <code class="docutils literal notranslate"><span class
 function decorators retain definitions until module construction, which can declare
 signatures before building bodies. Captured Python values belong to the source
 context; symbolic IR values are created and resolved by builders.</p>
-<p>Use <code class="docutils literal notranslate"><span class="pre">I.dynamic(&quot;n&quot;)</span></code> or the identical <code class="docutils literal notranslate"><span class="pre">T.dynamic</span></code> constructor to create a fresh
-primitive symbol, defaulting to int64. Reuse that object in ordinary Python shape,
+<p>Function construction, JIT and macro decorators require <code class="docutils literal notranslate"><span class="pre">&#64;</span></code> application at the
+function definition site. Later application to an existing function is rejected.
+Use a registered namespace, such as <code class="docutils literal notranslate"><span class="pre">&#64;T.prim_func</span></code> or <code class="docutils literal notranslate"><span class="pre">&#64;Ts.prim_func(private=True)</span></code>.
+Python definitions support namespace aliases such as <code class="docutils literal notranslate"><span class="pre">Alias</span> <span class="pre">=</span> <span class="pre">T</span></code>; bare callable
+aliases and preconfigured decorator aliases are unsupported. Source strings resolve
+namespace aliases from imports or <code class="docutils literal notranslate"><span class="pre">extra_vars</span></code>, not executable prefix assignments.</p>
+<p><code class="docutils literal notranslate"><span class="pre">GeneratedBuilder</span></code> records connect generated body helpers to original functions and
+identify bindings preserved during recomposition. Original-name wrapper parameters
+capture definition values as defaults. Execution globals remain separate from the
+locals that evaluate those defaults. Known unshadowed signature values use these
+parameters; lazy snapshots remain for missing or shadowed names and body annotations.
+Class setup and declaration snapshots execute in source order before function bodies.
+Body globals, closures and local shadowing retain their Python scope. Missing values
+are read only when needed, including conditional and optional annotations.</p>
+<p>Annotations read concrete values from their definition scope, preserving missing-name
+errors when a value is used. Create external symbols with <code class="docutils literal notranslate"><span class="pre">n</span> <span class="pre">=</span> <span class="pre">I.dynamic(&quot;n&quot;)</span></code>
+or the identical <code class="docutils literal notranslate"><span class="pre">T.dynamic</span></code> and <code class="docutils literal notranslate"><span class="pre">Ts.dynamic</span></code> constructors. Each call creates a
+fresh native variable, defaulting to int64. Reuse that object in ordinary Python shape,
 stride and offset expressions to share identity; strings in those fields are not
-parsed as expressions. Whole quoted Python annotations remain supported. On Python
-3.12+, function parameters such as <code class="docutils literal notranslate"><span class="pre">def</span> <span class="pre">f[n,</span> <span class="pre">k:</span> <span class="pre">T.int32](...)</span></code> introduce local
-symbols with default int64 and explicit int32 dtypes.</p>
+parsed as expressions. On Python 3.12+, explicit headers such as
+<code class="docutils literal notranslate"><span class="pre">def</span> <span class="pre">f[n,</span> <span class="pre">k:</span> <span class="pre">T.int32](...)</span></code> declare local symbols; <code class="docutils literal notranslate"><span class="pre">n:</span> <span class="pre">int</span></code> retains the int64
+default. Quote the whole annotation or use <code class="docutils literal notranslate"><span class="pre">from</span> <span class="pre">__future__</span> <span class="pre">import</span> <span class="pre">annotations</span></code>
+to defer eager Python evaluation of header symbols. Captured runtime <code class="docutils literal notranslate"><span class="pre">typing.TypeVar</span></code>
+objects are not script symbols; ordinary Python typing uses remain unaffected.</p>
+<p>An explicit scalar annotation <code class="docutils literal notranslate"><span class="pre">n:</span> <span class="pre">n</span></code> preserves a captured native symbol’s identity.
+An independently typed parameter such as <code class="docutils literal notranslate"><span class="pre">n:</span> <span class="pre">T.int32</span></code> and ordinary body locals
+shadow definition captures normally. Annotation classes, Python unions and deferred
+return-constructor evaluation retain their builder behavior.</p>
 </section>
 <section id="syntax-and-construction-protocol">
 <h2>Syntax and construction protocol<a class="headerlink" href="#syntax-and-construction-protocol" title="Link to this heading">#</a></h2>
@@ -681,12 +703,20 @@ symbols with default int64 and explicit int32 dtypes.</p>
 from a prescan. A registered decorator selects the construction namespace. Assignments
 call binding hooks, expression statements call emission hooks, and control flow opens
 builder frames. The namespace owns the meaning of these operations and the supported
-IR constructs.</p>
+IR constructs. Standalone decorators pass already-evaluated <code class="docutils literal notranslate"><span class="pre">root_function_kwargs</span></code>
+so option expressions execute once. Nested functions and module members use their own
+decorator options. Builder hooks own option defaults; <code class="docutils literal notranslate"><span class="pre">check_well_formed</span></code> remains a
+separate parser setting.</p>
 <p><code class="docutils literal notranslate"><span class="pre">tvm.script.parser.protocol_registry</span></code> records syntax policies under registered
-namespace paths. These policies identify declarations and scalar annotation dtypes.
-Source aliases resolve to those paths;
+namespace paths. These policies identify scalar annotations, mutable declarations and
+result span handling. Symbolic shapes use concrete expressions. Source aliases resolve to those paths;
 ordinary Python calls remain calls in the generated program. Explicit <code class="docutils literal notranslate"><span class="pre">constexpr</span></code>
 markers select host control flow during construction.</p>
+<p>JIT supplies <code class="docutils literal notranslate"><span class="pre">const_args</span></code>, a mapping from parameter names to fixed values. Explicit
+<code class="docutils literal notranslate"><span class="pre">None</span></code> values mark absent optional arguments and skip their annotation evaluation.
+Generated code reads the mapping through a fresh <code class="docutils literal notranslate"><span class="pre">_const_args</span></code> name. An empty map
+still selects root JIT construction; an absent map selects ordinary parsing. Syntax
+translation does not inspect these values to select a branch.</p>
 <p>Generated operations retain source locations. Syntax restrictions raise source-located
 <code class="docutils literal notranslate"><span class="pre">SyntaxError</span></code> exceptions; builder and Python helper errors retain their original
 exception types. Temporary parse state is released when construction finishes or fails.</p>
