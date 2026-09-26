@@ -735,14 +735,7 @@ removed from the IRModule; only TIR functions remain.</p></li>
 <li><p><strong>Link</strong> the bytecode executable with the compiled native module using <code class="docutils literal notranslate"><span class="pre">VMLink</span></code>, producing
 a <code class="docutils literal notranslate"><span class="pre">VMExecutable</span></code>.</p></li>
 </ol>
-<p>Two execution modes are supported:</p>
-<ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">exec_mode=&quot;bytecode&quot;</span></code> (default): Relax functions are interpreted by the VM’s bytecode
-dispatch loop.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">exec_mode=&quot;compiled&quot;</span></code>: Relax functions are compiled into TIR functions (<code class="docutils literal notranslate"><span class="pre">VMTIRCodeGen</span></code>)
-that directly manipulate the register file, bypassing the interpreter loop. This avoids
-dispatch overhead but produces more code.</p></li>
-</ul>
+<p>Relax functions execute through the VM bytecode dispatch loop.</p>
 </section>
 <section id="bytecode-generation">
 <h3>Bytecode generation<a class="headerlink" href="#bytecode-generation" title="Link to this heading">#</a></h3>
@@ -831,7 +824,7 @@ number of arguments, register file size, and parameter names.</p></li>
 </ul>
 <section id="function-kinds">
 <h3>Function kinds<a class="headerlink" href="#function-kinds" title="Link to this heading">#</a></h3>
-<p>The VM recognizes three function kinds (<code class="docutils literal notranslate"><span class="pre">VMFuncInfo::FuncKind</span></code>):</p>
+<p>The VM recognizes two function kinds (<code class="docutils literal notranslate"><span class="pre">VMFuncInfo::FuncKind</span></code>):</p>
 <div class="pst-scrollable-table-container"><table class="table">
 <colgroup>
 <col style="width: 20.0%" />
@@ -849,11 +842,6 @@ registry. Examples: <code class="docutils literal notranslate"><span class="pre"
 </tr>
 <tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">kVMFunc</span></code></p></td>
 <td><p>A bytecode-interpreted Relax function. The VM interprets its instructions in <code class="docutils literal notranslate"><span class="pre">RunLoop()</span></code>.</p></td>
-</tr>
-<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">kVMTIRFunc</span></code></p></td>
-<td><p>A Relax function compiled to a TIR function (<code class="docutils literal notranslate"><span class="pre">exec_mode=&quot;compiled&quot;</span></code>). Found in
-imports under the name <code class="docutils literal notranslate"><span class="pre">__vmtir__&lt;func_name&gt;</span></code>. Called directly with register file
-pointers, bypassing the interpreter loop.</p></td>
 </tr>
 </tbody>
 </table>
@@ -893,7 +881,7 @@ for debugging.</p>
 (either <code class="docutils literal notranslate"><span class="pre">NAIVE_ALLOCATOR</span></code> or <code class="docutils literal notranslate"><span class="pre">POOLED_ALLOCATOR</span></code>, defaulting to pooled). A CPU device
 is always added for shape computations.</p></li>
 <li><p><strong>InitFuncPool</strong>: the function pool is populated — <code class="docutils literal notranslate"><span class="pre">kPackedFunc</span></code> entries are resolved from
-imports or the global registry; <code class="docutils literal notranslate"><span class="pre">kVMFunc</span></code> and <code class="docutils literal notranslate"><span class="pre">kVMTIRFunc</span></code> entries are wrapped in
+imports or the global registry; <code class="docutils literal notranslate"><span class="pre">kVMFunc</span></code> entries are wrapped in
 <code class="docutils literal notranslate"><span class="pre">VMClosure</span></code> objects.</p></li>
 <li><p><strong>Constant pool</strong>: model constants are loaded and optionally transferred to the target device.</p></li>
 </ol>
@@ -941,7 +929,7 @@ guard when <code class="docutils literal notranslate"><span class="pre">InvokeBy
 <section id="vmclosure-and-function-dispatch">
 <h3>VMClosure and function dispatch<a class="headerlink" href="#vmclosure-and-function-dispatch" title="Link to this heading">#</a></h3>
 <p>Functions in the VM are stored in a <code class="docutils literal notranslate"><span class="pre">func_pool_</span></code> indexed by function table position.
-<code class="docutils literal notranslate"><span class="pre">kVMFunc</span></code> and <code class="docutils literal notranslate"><span class="pre">kVMTIRFunc</span></code> entries are wrapped as <code class="docutils literal notranslate"><span class="pre">VMClosure</span></code> objects, while <code class="docutils literal notranslate"><span class="pre">kPackedFunc</span></code>
+<code class="docutils literal notranslate"><span class="pre">kVMFunc</span></code> entries are wrapped as <code class="docutils literal notranslate"><span class="pre">VMClosure</span></code> objects, while <code class="docutils literal notranslate"><span class="pre">kPackedFunc</span></code>
 entries are stored as plain <code class="docutils literal notranslate"><span class="pre">ffi::Function</span></code>. A <code class="docutils literal notranslate"><span class="pre">VMClosure</span></code> stores:</p>
 <ul class="simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">func_name</span></code>: the function’s string name.</p></li>
@@ -1073,13 +1061,10 @@ are called, in what order, and how registers are used.</p>
 <tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">src/relax/backend/vm/codegen_vm.cc</span></code></p></td>
 <td><p>CodeGenVM: Relax IR → bytecode</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">src/relax/backend/vm/codegen_vm_tir.cc</span></code></p></td>
-<td><p>VMTIRCodeGen: Relax IR → compiled TIR</p></td>
-</tr>
-<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">python/tvm/runtime/vm.py</span></code></p></td>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">python/tvm/runtime/vm.py</span></code></p></td>
 <td><p>Python VirtualMachine wrapper</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">python/tvm/relax/vm_build.py</span></code></p></td>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">python/tvm/relax/vm_build.py</span></code></p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">relax.build()</span></code> and VMExecutable Python class</p></td>
 </tr>
 </tbody>
