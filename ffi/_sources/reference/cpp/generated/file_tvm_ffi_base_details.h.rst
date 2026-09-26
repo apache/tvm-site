@@ -49,6 +49,8 @@ Includes
 
 - ``tvm/ffi/endian.h`` (:ref:`file_tvm_ffi_endian.h`)
 
+- ``type_traits`` (:ref:`file_tvm_ffi_type_traits.h`)
+
 - ``utility``
 
 

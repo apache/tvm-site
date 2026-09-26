@@ -118,7 +118,11 @@ Program Listing for File creator.h
          void* field_addr = reinterpret_cast<char*>(ptr.get()) + field_info->offset;
          if (fields.count(field_name) != 0) {
            Any field_value = fields[field_name];
-           CallFieldSetter(field_info, field_addr, reinterpret_cast<const TVMFFIAny*>(&field_value));
+           // The setter reports a type mismatch through the safe-call slot, not
+           // by throwing; dropping the status would leave the field at its
+           // zero-initialized value and strand the raised error.
+           TVM_FFI_CHECK_SAFE_CALL(CallFieldSetter(field_info, field_addr,
+                                                   reinterpret_cast<const TVMFFIAny*>(&field_value)));
            ++match_field_count;
          } else if (field_info->flags & kTVMFFIFieldFlagBitMaskHasDefault) {
            SetFieldToDefault(field_info, field_addr);

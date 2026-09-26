@@ -35,6 +35,7 @@ Program Listing for File base_details.h
    #include <tvm/ffi/endian.h>
    
    #include <cstddef>
+   #include <type_traits>
    #include <utility>
    
    #if defined(_MSC_VER)
