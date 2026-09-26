@@ -25,7 +25,7 @@ var searchData=
   ['address_5fof_22',['address_of',['../namespacetvm_1_1tirx_1_1builtin.html#a328ab7893bf044e1889b8c89e3560842',1,'tvm::tirx::builtin']]],
   ['addrfactor_23',['AddRFactor',['../classtvm_1_1s__tir_1_1meta__schedule_1_1ScheduleRule.html#a9710e15c8dffffb4dc0748e4e488bbf4',1,'tvm::s_tir::meta_schedule::ScheduleRule']]],
   ['addrpcsessionmask_24',['AddRPCSessionMask',['../namespacetvm_1_1runtime.html#aa93f6c733bf54ca19d642a5ae2ec94be',1,'tvm::runtime']]],
-  ['addtag_25',['AddTag',['../classtvm_1_1TargetTag.html#ae007c1f462dddfd4a94612e78b3c88c1',1,'tvm::TargetTag']]],
+  ['addtag_25',['AddTag',['../classtvm_1_1TargetTagRegistry.html#a43b92ceb3c6b24ba5e8c171f09689269',1,'tvm::TargetTagRegistry']]],
   ['addtodatabase_26',['AddToDatabase',['../classtvm_1_1s__tir_1_1meta__schedule_1_1MeasureCallback.html#a024bcec5849027a677bcc4170bdec9d1',1,'tvm::s_tir::meta_schedule::MeasureCallback']]],
   ['addunchecked_27',['AddUnchecked',['../classtvm_1_1IRModuleNode.html#a46112d512de54bcd5d398a79b03c814a',1,'tvm::IRModuleNode']]],
   ['addunitloop_28',['addunitloop',['../classtvm_1_1s__tir_1_1ScheduleNode.html#a64fb842c81336edaa67ca1aeba439d01',1,'tvm::s_tir::ScheduleNode::AddUnitLoop(const SBlockRV &amp;block_rv)=0'],['../classtvm_1_1s__tir_1_1ScheduleNode.html#ad36931007b7140cf579c90e753411be1',1,'tvm::s_tir::ScheduleNode::AddUnitLoop(const LoopRV &amp;loop_rv)=0']]],

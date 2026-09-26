@@ -1,9 +1,9 @@
 var searchData=
 [
-  ['tag_2eh_0',['tag.h',['../tag_8h.html',1,'']]],
-  ['tags_2eh_1',['tags.h',['../tags_8h.html',1,'']]],
-  ['target_2eh_2',['target.h',['../target_8h.html',1,'']]],
-  ['target_5fkind_2eh_3',['target_kind.h',['../target__kind_8h.html',1,'']]],
+  ['tags_2eh_0',['tags.h',['../tags_8h.html',1,'']]],
+  ['target_2eh_1',['target.h',['../target_8h.html',1,'']]],
+  ['target_5fkind_2eh_2',['target_kind.h',['../target__kind_8h.html',1,'']]],
+  ['target_5ftag_5fregistry_2eh_3',['target_tag_registry.h',['../target__tag__registry_8h.html',1,'']]],
   ['task_5fscheduler_2eh_4',['task_scheduler.h',['../task__scheduler_8h.html',1,'']]],
   ['tensor_2eh_5',['tensor.h',['../te_2tensor_8h.html',1,'(Global Namespace)'],['../runtime_2tensor_8h.html',1,'(Global Namespace)']]],
   ['tensor_5fcache_5fsupport_2eh_6',['tensor_cache_support.h',['../tensor__cache__support_8h.html',1,'']]],

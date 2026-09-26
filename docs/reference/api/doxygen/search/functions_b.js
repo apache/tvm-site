@@ -26,7 +26,7 @@ var searchData=
   ['listconfigs_23',['ListConfigs',['../classtvm_1_1transform_1_1PassContext.html#aefe0c6e02483546b85c401cc84318cb1',1,'tvm::transform::PassContext']]],
   ['listdoc_24',['listdoc',['../classtvm_1_1script_1_1printer_1_1ListDoc.html#a89124961a053fe74a83c273f1a8a590e',1,'tvm::script::printer::ListDoc::ListDoc(ffi::Array&lt; ExprDoc &gt; elements)'],['../classtvm_1_1script_1_1printer_1_1ListDoc.html#a312edc2fe47a5d3839393ff21f9300b4',1,'tvm::script::printer::ListDoc::ListDoc()']]],
   ['listoptions_25',['ListOptions',['../classtvm_1_1ir_1_1ConfigSchema.html#a74e52593dd14463b1cb8c1cc004bf64c',1,'tvm::ir::ConfigSchema']]],
-  ['listtags_26',['ListTags',['../classtvm_1_1TargetTag.html#a7d5c94f9636296f2a845fffdac2d9869',1,'tvm::TargetTag']]],
+  ['listtags_26',['ListTags',['../classtvm_1_1TargetTagRegistry.html#aa7ddcd690c49f855038f84f124b3d67f',1,'tvm::TargetTagRegistry']]],
   ['listtargetkindoptions_27',['ListTargetKindOptions',['../classtvm_1_1TargetKindRegEntry.html#aca6b518f61e6534aa8cc220f2435d713',1,'tvm::TargetKindRegEntry']]],
   ['listtargetkinds_28',['ListTargetKinds',['../classtvm_1_1TargetKindRegEntry.html#aa11ab6123662ee1931d71cb08acc729e',1,'tvm::TargetKindRegEntry']]],
   ['literaldoc_29',['LiteralDoc',['../classtvm_1_1script_1_1printer_1_1LiteralDoc.html#a0eed271cdd43328397b295d931c7cc57',1,'tvm::script::printer::LiteralDoc']]],
