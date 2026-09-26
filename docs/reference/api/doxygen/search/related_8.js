@@ -1,5 +1,6 @@
 var searchData=
 [
-  ['schedule_0',['Schedule',['../classtvm_1_1s__tir_1_1ScheduleNode.html#aae5808dc2e987bf17ef42196457a654d',1,'tvm::s_tir::ScheduleNode']]],
-  ['sessionobj_3a_3affi_1',['FFI',['../classtvm_1_1runtime_1_1SessionObj.html#a2c376e805541462f15c883a180495b0e',1,'tvm::runtime::SessionObj']]]
+  ['targetinternal_0',['targetinternal',['../classtvm_1_1TargetNode.html#a7924ccb2fdea6074cca1978c062fb034',1,'tvm::TargetNode::TargetInternal'],['../classtvm_1_1Target.html#a7924ccb2fdea6074cca1978c062fb034',1,'tvm::Target::TargetInternal'],['../classtvm_1_1TargetKindNode.html#a7924ccb2fdea6074cca1978c062fb034',1,'tvm::TargetKindNode::TargetInternal'],['../classtvm_1_1TargetKind.html#a7924ccb2fdea6074cca1978c062fb034',1,'tvm::TargetKind::TargetInternal']]],
+  ['targetkinddef_1',['TargetKindDef',['../classtvm_1_1TargetKindNode.html#a22b9ff799ed7f255d22664f6f779ab39',1,'tvm::TargetKindNode']]],
+  ['targetkindregistry_2',['TargetKindRegistry',['../classtvm_1_1TargetKindNode.html#a02cab5d690a99b054ced498fe2efc38d',1,'tvm::TargetKindNode']]]
 ];
