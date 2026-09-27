@@ -33,8 +33,8 @@ var searchData=
   ['tvm_5fset_5fdevice_30',['tvm_set_device',['../namespacetvm_1_1runtime_1_1symbol.html#aaad9cf8f51a55b2ec5b19854d692bd21',1,'tvm::runtime::symbol']]],
   ['ty_31',['ty',['../classtvm_1_1relax_1_1MatchCastNode.html#a93a4d080db242436bdee1ae702536324',1,'tvm::relax::MatchCastNode::ty'],['../classtvm_1_1relax_1_1TypePatternNode.html#a4c785bb96db69e2bb8b6741009483279',1,'tvm::relax::TypePatternNode::ty'],['../classtvm_1_1ExprNode.html#a4c2a9b792a5ec422d8e04d6d78707fcb',1,'tvm::ExprNode::ty']]],
   ['ty_5fargs_32',['ty_args',['../classtvm_1_1CallNode.html#aea255b3c2342dc40ac3b2a4af9d332a0',1,'tvm::CallNode']]],
-  ['type_33',['type',['../structtvm_1_1relax_1_1PairCons.html#aa7fe6fdef3ab68d2f5176485000646b9',1,'tvm::relax::PairCons']]],
-  ['type_5finfo_34',['type_info',['../classtvm_1_1ArgumentInfoNode.html#a546e864a8d048ec7922009f1c7864933',1,'tvm::ArgumentInfoNode']]],
+  ['ty_5fargs_5finfo_33',['ty_args_info',['../classtvm_1_1OpNode.html#a59a1176e5da55aa98a8447c2da8e3830',1,'tvm::OpNode']]],
+  ['type_34',['type',['../structtvm_1_1relax_1_1PairCons.html#aa7fe6fdef3ab68d2f5176485000646b9',1,'tvm::relax::PairCons']]],
   ['type_5fparams_35',['type_params',['../classtvm_1_1script_1_1printer_1_1FunctionDocNode.html#a6b3656238d197981cf25870e7f7bb1ab',1,'tvm::script::printer::FunctionDocNode']]],
   ['type_5fstr_36',['type_str',['../structtvm_1_1ir_1_1ConfigSchema_1_1OptionEntry.html#a4f3cb8337bef2fb3460e575d534b087a',1,'tvm::ir::ConfigSchema::OptionEntry']]]
 ];
