@@ -129,7 +129,7 @@ var searchData=
   ['const_5fint_5fbound_126',['const_int_bound',['../classtvm_1_1sym_1_1AnalyzerObj.html#abb9f2170a0b1cd7ccf173f393c1a2faf',1,'tvm::sym::AnalyzerObj']]],
   ['constant_127',['Constant',['../classtvm_1_1Constant.html',1,'tvm']]],
   ['constant_5futils_2eh_128',['constant_utils.h',['../constant__utils_8h.html',1,'']]],
-  ['constantallocationsize_129',['ConstantAllocationSize',['../classtvm_1_1tirx_1_1AllocBuffer.html#ac665f8ef5d4d0ca5c763650778ab3a48',1,'tvm::tirx::AllocBuffer']]],
+  ['constantallocationsize_129',['ConstantAllocationSize',['../classtvm_1_1tirx_1_1BufferTypeNode.html#ade1debb2e08ca42493ce10f5065268d2',1,'tvm::tirx::BufferTypeNode']]],
   ['constantnode_130',['ConstantNode',['../classtvm_1_1ConstantNode.html',1,'tvm']]],
   ['constantpattern_131',['ConstantPattern',['../classtvm_1_1relax_1_1ConstantPattern.html',1,'tvm::relax']]],
   ['constantpatternnode_132',['ConstantPatternNode',['../classtvm_1_1relax_1_1ConstantPatternNode.html',1,'tvm::relax']]],

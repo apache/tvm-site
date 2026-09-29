@@ -74,7 +74,7 @@ var searchData=
   ['concat_71',['Concat',['../classtvm_1_1prim_1_1Shuffle.html#ad69cc9dbe05d91ad5933b9141b16f020',1,'tvm::prim::Shuffle']]],
   ['concatenate_72',['concatenate',['../namespacetvm_1_1topi.html#aa2a5b34839ad8fe92241bbdd49daede9',1,'tvm::topi']]],
   ['concrete_73',['Concrete',['../classtvm_1_1s__tir_1_1Schedule.html#a201df3b4dea486314be5ed26cc283b27',1,'tvm::s_tir::Schedule']]],
-  ['constantallocationsize_74',['ConstantAllocationSize',['../classtvm_1_1tirx_1_1AllocBuffer.html#ac665f8ef5d4d0ca5c763650778ab3a48',1,'tvm::tirx::AllocBuffer']]],
+  ['constantallocationsize_74',['ConstantAllocationSize',['../classtvm_1_1tirx_1_1BufferTypeNode.html#ade1debb2e08ca42493ce10f5065268d2',1,'tvm::tirx::BufferTypeNode']]],
   ['consthandle_75',['ConstHandle',['../namespacetvm_1_1prim.html#a93c96228f80f039094b33a3e201a8bb4',1,'tvm::prim']]],
   ['constidx_76',['ConstIdx',['../classtvm_1_1runtime_1_1vm_1_1Instruction_1_1Arg.html#a3c60a8aefabee0c04cafa08fc2e3c69e',1,'tvm::runtime::vm::Instruction::Arg']]],
   ['constintbound_77',['ConstIntBound',['../classtvm_1_1sym_1_1ConstIntBound.html#aea8a0fcc9038d3f66eae42a06573be26',1,'tvm::sym::ConstIntBound']]],
