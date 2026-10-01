@@ -31,7 +31,7 @@ var searchData=
   ['computeop_28',['ComputeOp',['../classtvm_1_1te_1_1ComputeOp.html',1,'tvm::te']]],
   ['computeopnode_29',['ComputeOpNode',['../classtvm_1_1te_1_1ComputeOpNode.html',1,'tvm::te']]],
   ['concatattrs_30',['ConcatAttrs',['../structtvm_1_1relax_1_1ConcatAttrs.html',1,'tvm::relax']]],
-  ['configschema_31',['ConfigSchema',['../classtvm_1_1ir_1_1ConfigSchema.html',1,'tvm::ir']]],
+  ['configschema_31',['ConfigSchema',['../classtvm_1_1ConfigSchema.html',1,'tvm']]],
   ['constant_32',['Constant',['../classtvm_1_1Constant.html',1,'tvm']]],
   ['constantnode_33',['ConstantNode',['../classtvm_1_1ConstantNode.html',1,'tvm']]],
   ['constantpattern_34',['ConstantPattern',['../classtvm_1_1relax_1_1ConstantPattern.html',1,'tvm::relax']]],

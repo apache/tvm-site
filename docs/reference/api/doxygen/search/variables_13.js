@@ -36,5 +36,5 @@ var searchData=
   ['ty_5fargs_5finfo_33',['ty_args_info',['../classtvm_1_1OpNode.html#a59a1176e5da55aa98a8447c2da8e3830',1,'tvm::OpNode']]],
   ['type_34',['type',['../structtvm_1_1relax_1_1PairCons.html#aa7fe6fdef3ab68d2f5176485000646b9',1,'tvm::relax::PairCons']]],
   ['type_5fparams_35',['type_params',['../classtvm_1_1script_1_1printer_1_1FunctionDocNode.html#a6b3656238d197981cf25870e7f7bb1ab',1,'tvm::script::printer::FunctionDocNode']]],
-  ['type_5fstr_36',['type_str',['../structtvm_1_1ir_1_1ConfigSchema_1_1OptionEntry.html#a4f3cb8337bef2fb3460e575d534b087a',1,'tvm::ir::ConfigSchema::OptionEntry']]]
+  ['type_5fstr_36',['type_str',['../structtvm_1_1ConfigSchema_1_1OptionEntry.html#a196a591fb39df500cf45fe3ec15e7a8d',1,'tvm::ConfigSchema::OptionEntry']]]
 ];

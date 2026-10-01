@@ -78,7 +78,7 @@ var searchData=
   ['oppatternkind_75',['OpPatternKind',['../namespacetvm_1_1relax.html#acffa9e980a7331f2eb89cce97f2e3575',1,'tvm::relax']]],
   ['opregistry_76',['OpRegistry',['../classtvm_1_1OpNode.html#af7ebaf5af32d51226208f533e6d5cb1d',1,'tvm::OpNode']]],
   ['opt_5flevel_77',['opt_level',['../classtvm_1_1transform_1_1PassInfoNode.html#a8e22e5767cd899bb9aef1ee1c529a2a7',1,'tvm::transform::PassInfoNode::opt_level'],['../classtvm_1_1transform_1_1PassContextNode.html#af166034a8746d65044eea0a2673de991',1,'tvm::transform::PassContextNode::opt_level']]],
-  ['optionentry_78',['OptionEntry',['../structtvm_1_1ir_1_1ConfigSchema_1_1OptionEntry.html',1,'tvm::ir::ConfigSchema']]],
+  ['optionentry_78',['OptionEntry',['../structtvm_1_1ConfigSchema_1_1OptionEntry.html',1,'tvm::ConfigSchema']]],
   ['or_79',['or',['../classtvm_1_1prim_1_1Or.html#a4b1280f96cb3db936268902b8d27748b',1,'tvm::prim::Or::Or()'],['../classtvm_1_1prim_1_1Or.html',1,'tvm::prim::Or']]],
   ['ordereduniondatabase_80',['OrderedUnionDatabase',['../classtvm_1_1s__tir_1_1meta__schedule_1_1Database.html#aade8f036b4e9e5d088fe51b23e40ee38',1,'tvm::s_tir::meta_schedule::Database']]],
   ['original_5ffn_5fptr_5f_81',['original_fn_ptr_',['../classtvm_1_1relax_1_1DataflowBlockRewriteNode.html#a20f44bd03d79fcaa77be014a6835bc44',1,'tvm::relax::DataflowBlockRewriteNode']]],

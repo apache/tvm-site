@@ -12,7 +12,7 @@ var searchData=
   ['haslowerbound_9',['HasLowerBound',['../classtvm_1_1sym_1_1IntSet.html#a7c99d6aab40b35eec1e8f6064f5230b7',1,'tvm::sym::IntSet']]],
   ['hasmemoryaxis_10',['HasMemoryAxis',['../classtvm_1_1tirx_1_1TileLayoutNode.html#a99c542cb431270df8b109642db6d6905',1,'tvm::tirx::TileLayoutNode']]],
   ['hasnonzeroattr_11',['hasnonzeroattr',['../classtvm_1_1DictAttrs.html#a45e524ce0f8ae389341ec37e468d887d',1,'tvm::DictAttrs::HasNonzeroAttr()'],['../classtvm_1_1BaseFuncNode.html#a1fbf773665334f7d109c7c4c12d40d76',1,'tvm::BaseFuncNode::HasNonzeroAttr()'],['../classtvm_1_1IRModuleNode.html#a0051e1b8ec1d99cbade4dfaa511b3bcd',1,'tvm::IRModuleNode::HasNonzeroAttr()']]],
-  ['hasoption_12',['HasOption',['../classtvm_1_1ir_1_1ConfigSchema.html#a09eb874e14e351662339af51cbaf1260',1,'tvm::ir::ConfigSchema']]],
+  ['hasoption_12',['HasOption',['../classtvm_1_1ConfigSchema.html#a363ab1e6614998bb910b95b5957e865a',1,'tvm::ConfigSchema']]],
   ['hasreshapepattern_13',['HasReshapePattern',['../namespacetvm_1_1relax.html#af12a9b0e49464eb96298f9ea8ac30b17',1,'tvm::relax']]],
   ['hassameshapeas_14',['HasSameShapeAs',['../classtvm_1_1relax_1_1DFPattern.html#a38905d1b7e0ab207b658afce9e50f838',1,'tvm::relax::DFPattern']]],
   ['hasshape_15',['HasShape',['../classtvm_1_1relax_1_1DFPattern.html#a799e4dfc562fc7953c3fcfb710582b82',1,'tvm::relax::DFPattern']]],

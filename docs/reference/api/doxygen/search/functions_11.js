@@ -71,7 +71,7 @@ var searchData=
   ['reset_5fattr_68',['reset_attr',['../classtvm_1_1OpDef.html#a7b10f6912c34543190b0c83eef4e87a7',1,'tvm::OpDef']]],
   ['resetstatscounters_69',['ResetStatsCounters',['../classtvm_1_1sym_1_1RewriteSimplifier.html#a7efc51742949d58907eaae0e2d78dfa3',1,'tvm::sym::RewriteSimplifier']]],
   ['reshape_70',['reshape',['../namespacetvm_1_1topi.html#a0abdbb387ab49291c72687fa741e1527',1,'tvm::topi']]],
-  ['resolve_71',['resolve',['../classtvm_1_1tirx_1_1ScopeIdResolve.html#a9d886fd1cd0850c8e398425837e37db1',1,'tvm::tirx::ScopeIdResolve::Resolve()'],['../classtvm_1_1ir_1_1ConfigSchema.html#a23bba3ffee226ebf40c869a144471145',1,'tvm::ir::ConfigSchema::Resolve()']]],
+  ['resolve_71',['resolve',['../classtvm_1_1tirx_1_1ScopeIdResolve.html#a9d886fd1cd0850c8e398425837e37db1',1,'tvm::tirx::ScopeIdResolve::Resolve()'],['../classtvm_1_1ConfigSchema.html#a6ad6c5b27e30982995ef4a9f2013ec12',1,'tvm::ConfigSchema::Resolve()']]],
   ['resolvedependency_72',['ResolveDependency',['../classtvm_1_1transform_1_1SequentialNode.html#a5549edf77e0a64bd6fcb692603967b8e',1,'tvm::transform::SequentialNode']]],
   ['result_73',['Result',['../classtvm_1_1s__tir_1_1meta__schedule_1_1RunnerFutureNode.html#a65c9a22e50b0c49becc14e6e83fd7f9c',1,'tvm::s_tir::meta_schedule::RunnerFutureNode']]],
   ['ret_74',['Ret',['../structtvm_1_1runtime_1_1vm_1_1Instruction.html#ad14f3c094aa2b6c602ebaa74bfec7ffa',1,'tvm::runtime::vm::Instruction']]],

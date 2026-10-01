@@ -19,7 +19,7 @@ var searchData=
   ['operationdocnode_16',['OperationDocNode',['../classtvm_1_1script_1_1printer_1_1OperationDocNode.html',1,'tvm::script::printer']]],
   ['operationnode_17',['OperationNode',['../classtvm_1_1te_1_1OperationNode.html',1,'tvm::te']]],
   ['opnode_18',['OpNode',['../classtvm_1_1OpNode.html',1,'tvm']]],
-  ['optionentry_19',['OptionEntry',['../structtvm_1_1ir_1_1ConfigSchema_1_1OptionEntry.html',1,'tvm::ir::ConfigSchema']]],
+  ['optionentry_19',['OptionEntry',['../structtvm_1_1ConfigSchema_1_1OptionEntry.html',1,'tvm::ConfigSchema']]],
   ['or_20',['Or',['../classtvm_1_1prim_1_1Or.html',1,'tvm::prim']]],
   ['ornode_21',['OrNode',['../classtvm_1_1prim_1_1OrNode.html',1,'tvm::prim']]],
   ['orpattern_22',['OrPattern',['../classtvm_1_1relax_1_1OrPattern.html',1,'tvm::relax']]],

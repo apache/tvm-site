@@ -54,7 +54,7 @@ var searchData=
   ['listdoc_51',['listdoc',['../classtvm_1_1script_1_1printer_1_1ListDoc.html',1,'tvm::script::printer::ListDoc'],['../classtvm_1_1script_1_1printer_1_1ListDoc.html#a89124961a053fe74a83c273f1a8a590e',1,'tvm::script::printer::ListDoc::ListDoc(ffi::Array&lt; ExprDoc &gt; elements)'],['../classtvm_1_1script_1_1printer_1_1ListDoc.html#a312edc2fe47a5d3839393ff21f9300b4',1,'tvm::script::printer::ListDoc::ListDoc()']]],
   ['listdocnode_52',['ListDocNode',['../classtvm_1_1script_1_1printer_1_1ListDocNode.html',1,'tvm::script::printer']]],
   ['listnames_53',['ListNames',['../classtvm_1_1Op.html#a30d993ef63668bc9999f02fb732d39c1',1,'tvm::Op']]],
-  ['listoptions_54',['ListOptions',['../classtvm_1_1ir_1_1ConfigSchema.html#a74e52593dd14463b1cb8c1cc004bf64c',1,'tvm::ir::ConfigSchema']]],
+  ['listoptions_54',['ListOptions',['../classtvm_1_1ConfigSchema.html#a3d8873ce954d420bb0ee4d9c0376bb1e',1,'tvm::ConfigSchema']]],
   ['listtags_55',['ListTags',['../classtvm_1_1TargetTagRegistry.html#aa7ddcd690c49f855038f84f124b3d67f',1,'tvm::TargetTagRegistry']]],
   ['listtargetkindoptions_56',['ListTargetKindOptions',['../classtvm_1_1TargetKindRegistry.html#a1dee61e95b1365a7e8cb5326063f3d91',1,'tvm::TargetKindRegistry']]],
   ['listtargetkinds_57',['ListTargetKinds',['../classtvm_1_1TargetKindRegistry.html#a882e0c3989cee5c0de9a968f1bca2224',1,'tvm::TargetKindRegistry']]],
