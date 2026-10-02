@@ -45,11 +45,14 @@ var searchData=
   ['docnode_42',['DocNode',['../classtvm_1_1script_1_1printer_1_1DocNode.html',1,'tvm::script::printer']]],
   ['docstringdoc_43',['DocStringDoc',['../classtvm_1_1script_1_1printer_1_1DocStringDoc.html',1,'tvm::script::printer']]],
   ['docstringdocnode_44',['DocStringDocNode',['../classtvm_1_1script_1_1printer_1_1DocStringDocNode.html',1,'tvm::script::printer']]],
-  ['dref_45',['DRef',['../classtvm_1_1runtime_1_1DRef.html',1,'tvm::runtime']]],
-  ['drefobj_46',['DRefObj',['../classtvm_1_1runtime_1_1DRefObj.html',1,'tvm::runtime']]],
-  ['dropoutattrs_47',['DropoutAttrs',['../structtvm_1_1relax_1_1DropoutAttrs.html',1,'tvm::relax']]],
-  ['dtensortype_48',['DTensorType',['../classtvm_1_1relax_1_1distributed_1_1DTensorType.html',1,'tvm::relax::distributed']]],
-  ['dtensortypenode_49',['DTensorTypeNode',['../classtvm_1_1relax_1_1distributed_1_1DTensorTypeNode.html',1,'tvm::relax::distributed']]],
-  ['dummyglobalinfo_50',['DummyGlobalInfo',['../classtvm_1_1relax_1_1DummyGlobalInfo.html',1,'tvm::relax']]],
-  ['dummyglobalinfonode_51',['DummyGlobalInfoNode',['../classtvm_1_1relax_1_1DummyGlobalInfoNode.html',1,'tvm::relax']]]
+  ['doctranslator_45',['DocTranslator',['../classtvm_1_1script_1_1printer_1_1DocTranslator.html',1,'tvm::script::printer']]],
+  ['doctranslatorobj_46',['DocTranslatorObj',['../classtvm_1_1script_1_1printer_1_1DocTranslatorObj.html',1,'tvm::script::printer']]],
+  ['doctranslatorvtable_47',['DocTranslatorVTable',['../structtvm_1_1script_1_1printer_1_1DocTranslatorVTable.html',1,'tvm::script::printer']]],
+  ['dref_48',['DRef',['../classtvm_1_1runtime_1_1DRef.html',1,'tvm::runtime']]],
+  ['drefobj_49',['DRefObj',['../classtvm_1_1runtime_1_1DRefObj.html',1,'tvm::runtime']]],
+  ['dropoutattrs_50',['DropoutAttrs',['../structtvm_1_1relax_1_1DropoutAttrs.html',1,'tvm::relax']]],
+  ['dtensortype_51',['DTensorType',['../classtvm_1_1relax_1_1distributed_1_1DTensorType.html',1,'tvm::relax::distributed']]],
+  ['dtensortypenode_52',['DTensorTypeNode',['../classtvm_1_1relax_1_1distributed_1_1DTensorTypeNode.html',1,'tvm::relax::distributed']]],
+  ['dummyglobalinfo_53',['DummyGlobalInfo',['../classtvm_1_1relax_1_1DummyGlobalInfo.html',1,'tvm::relax']]],
+  ['dummyglobalinfonode_54',['DummyGlobalInfoNode',['../classtvm_1_1relax_1_1DummyGlobalInfoNode.html',1,'tvm::relax']]]
 ];

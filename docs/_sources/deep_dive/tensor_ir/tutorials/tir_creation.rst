@@ -411,32 +411,41 @@ and one output parameter **C**.
 
  .. code-block:: none
 
+    from __future__ import annotations
+
     # from tvm.script import ir as I
-    # from tvm.script import tirx as T
-    # from tvm.tirx.layout import Axis
     # from tvm.script import s_tir as Ts
+    # from tvm.script import tirx as T
 
     @I.ir_module
     class Module:
         @Ts.prim_func
         def mm_relu(A: T.Buffer((128, 128), "float32"), B: T.Buffer((128, 128), "float32"), C: T.Buffer((128, 128), "float32")):
             T.func_attr({"tirx.noalias": True})
-            # with Ts.sblock("root"):
-            Y = Ts.sblock_alloc_buffer((128, 128))
-            for i, j, k in T.grid(128, 128, 128):
-                with Ts.sblock("Y"):
-                    v_i, v_j, v_k = Ts.axis.remap("SSR", [i, j, k])
-                    Ts.reads(A[v_i, v_k], B[v_k, v_j])
-                    Ts.writes(Y[v_i, v_j])
-                    with Ts.init():
-                        Y[v_i, v_j] = T.float32(0.0)
-                    Y[v_i, v_j] = Y[v_i, v_j] + A[v_i, v_k] * B[v_k, v_j]
-            for i, j in T.grid(128, 128):
-                with Ts.sblock("C"):
-                    v_i, v_j = Ts.axis.remap("SS", [i, j])
-                    Ts.reads(Y[v_i, v_j])
-                    Ts.writes(C[v_i, v_j])
-                    C[v_i, v_j] = T.max(Y[v_i, v_j], T.float32(0.0))
+            with Ts.sblock("root"):
+                Ts.reads()
+                Ts.writes()
+                Y = Ts.sblock_alloc_buffer((128, 128), "float32")
+                for i in range(128):
+                    for j in range(128):
+                        for k in range(128):
+                            with Ts.sblock("Y"):
+                                v_i = Ts.axis.spatial(128, i)
+                                v_j = Ts.axis.spatial(128, j)
+                                v_k = Ts.axis.reduce(128, k)
+                                Ts.reads(A[v_i, v_k], B[v_k, v_j])
+                                Ts.writes(Y[v_i, v_j])
+                                with Ts.init():
+                                    Y[v_i, v_j] = T.float32(0.0)
+                                Y[v_i, v_j] = Y[v_i, v_j] + A[v_i, v_k] * B[v_k, v_j]
+                for i_1 in range(128):
+                    for j_1 in range(128):
+                        with Ts.sblock("C"):
+                            v_i_1 = Ts.axis.spatial(128, i_1)
+                            v_j_1 = Ts.axis.spatial(128, j_1)
+                            Ts.reads(Y[v_i_1, v_j_1])
+                            Ts.writes(C[v_i_1, v_j_1])
+                            C[v_i_1, v_j_1] = T.max(Y[v_i_1, v_j_1], T.float32(0.0))
 
 
 
@@ -473,35 +482,44 @@ is that we need to specify the shape of the input tensors as symbolic variables.
 
  .. code-block:: none
 
-    # from tvm.script import ir as I
-    # from tvm.script import tirx as T
-    # from tvm.tirx.layout import Axis
-    # from tvm.script import s_tir as Ts
+    from __future__ import annotations
 
-    k = I.dynamic("k", dtype="int32")
+    # from tvm.script import ir as I
+    # from tvm.script import s_tir as Ts
+    # from tvm.script import tirx as T
+
     m = I.dynamic("m", dtype="int32")
     n = I.dynamic("n", dtype="int32")
+    k = I.dynamic("k", dtype="int32")
     @I.ir_module
     class Module:
         @Ts.prim_func
         def mm_relu(A: T.Buffer((m, n), "float32"), B: T.Buffer((k, n), "float32"), C: T.Buffer((m, n), "float32")):
             T.func_attr({"tirx.noalias": True})
-            # with Ts.sblock("root"):
-            Y = Ts.sblock_alloc_buffer((m, n))
-            for i, j, k_1 in T.grid(m, n, k):
-                with Ts.sblock("Y"):
-                    v_i, v_j, v_k = Ts.axis.remap("SSR", [i, j, k_1])
-                    Ts.reads(A[v_i, v_k], B[v_k, v_j])
-                    Ts.writes(Y[v_i, v_j])
-                    with Ts.init():
-                        Y[v_i, v_j] = T.float32(0.0)
-                    Y[v_i, v_j] = Y[v_i, v_j] + A[v_i, v_k] * B[v_k, v_j]
-            for i, j in T.grid(m, n):
-                with Ts.sblock("C"):
-                    v_i, v_j = Ts.axis.remap("SS", [i, j])
-                    Ts.reads(Y[v_i, v_j])
-                    Ts.writes(C[v_i, v_j])
-                    C[v_i, v_j] = T.max(Y[v_i, v_j], T.float32(0.0))
+            with Ts.sblock("root"):
+                Ts.reads()
+                Ts.writes()
+                Y = Ts.sblock_alloc_buffer((m, n), "float32")
+                for i in range(m):
+                    for j in range(n):
+                        for k_1 in range(k):
+                            with Ts.sblock("Y"):
+                                v_i = Ts.axis.spatial(m, i)
+                                v_j = Ts.axis.spatial(n, j)
+                                v_k = Ts.axis.reduce(k, k_1)
+                                Ts.reads(A[v_i, v_k], B[v_k, v_j])
+                                Ts.writes(Y[v_i, v_j])
+                                with Ts.init():
+                                    Y[v_i, v_j] = T.float32(0.0)
+                                Y[v_i, v_j] = Y[v_i, v_j] + A[v_i, v_k] * B[v_k, v_j]
+                for i_1 in range(m):
+                    for j_1 in range(n):
+                        with Ts.sblock("C"):
+                            v_i_1 = Ts.axis.spatial(m, i_1)
+                            v_j_1 = Ts.axis.spatial(n, j_1)
+                            Ts.reads(Y[v_i_1, v_j_1])
+                            Ts.writes(C[v_i_1, v_j_1])
+                            C[v_i_1, v_j_1] = T.max(Y[v_i_1, v_j_1], T.float32(0.0))
 
 
 

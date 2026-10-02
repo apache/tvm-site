@@ -121,7 +121,7 @@ original implementation.
 
     Execution time summary:
      mean (ms)   median (ms)    max (ms)     min (ms)     std (ms)  
-       2.7527       2.7527       2.7527       2.7527       0.0000                  
+       2.5870       2.5870       2.5870       2.5870       0.0000                  
 
 
 
@@ -210,34 +210,42 @@ The outcome of the transformation can be examined, as it is retained within ``sc
 
  .. code-block:: none
 
+    from __future__ import annotations
+
     # from tvm.script import ir as I
-    # from tvm.script import tirx as T
-    # from tvm.tirx.layout import Axis
     # from tvm.script import s_tir as Ts
+    # from tvm.script import tirx as T
 
     @I.ir_module
     class Module:
         @Ts.prim_func
         def main(A: T.Buffer((128, 128), "float32"), B: T.Buffer((128, 128), "float32"), C: T.Buffer((128, 128), "float32")):
             T.func_attr({"tirx.noalias": True})
-            # with Ts.sblock("root"):
-            buffer = Ts.sblock_alloc_buffer((128, 128))
-            for i, j_0, j_1, k in T.grid(128, 16, 8, 128):
-                with Ts.sblock("Y"):
-                    v = Ts.axis.spatial(128, i)
-                    v_1 = Ts.axis.spatial(128, j_0 * 8 + j_1)
-                    v_2 = Ts.axis.reduce(128, k)
-                    Ts.reads(A[v, v_2], B[v_2, v_1])
-                    Ts.writes(buffer[v, v_1])
-                    with Ts.init():
-                        buffer[v, v_1] = T.float32(0.0)
-                    buffer[v, v_1] = buffer[v, v_1] + A[v, v_2] * B[v_2, v_1]
-            for i, j in T.grid(128, 128):
-                with Ts.sblock("C"):
-                    v, v_1 = Ts.axis.remap("SS", [i, j])
-                    Ts.reads(buffer[v, v_1])
-                    Ts.writes(C[v, v_1])
-                    C[v, v_1] = T.max(buffer[v, v_1], T.float32(0.0))
+            with Ts.sblock("root"):
+                Ts.reads()
+                Ts.writes()
+                v = Ts.sblock_alloc_buffer((128, 128), "float32")
+                for i in range(128):
+                    for j_0 in range(16):
+                        for j_1 in range(8):
+                            for k in range(128):
+                                with Ts.sblock("Y"):
+                                    v_1 = Ts.axis.spatial(128, i)
+                                    v_2 = Ts.axis.spatial(128, j_0 * 8 + j_1)
+                                    v_3 = Ts.axis.reduce(128, k)
+                                    Ts.reads(A[v_1, v_3], B[v_3, v_2])
+                                    Ts.writes(v[v_1, v_2])
+                                    with Ts.init():
+                                        v[v_1, v_2] = T.float32(0.0)
+                                    v[v_1, v_2] = v[v_1, v_2] + A[v_1, v_3] * B[v_3, v_2]
+                for i_1 in range(128):
+                    for j in range(128):
+                        with Ts.sblock("C"):
+                            v_4 = Ts.axis.spatial(128, i_1)
+                            v_5 = Ts.axis.spatial(128, j)
+                            Ts.reads(v[v_4, v_5])
+                            Ts.writes(C[v_4, v_5])
+                            C[v_4, v_5] = T.max(v[v_4, v_5], T.float32(0.0))
 
 
 
@@ -266,38 +274,46 @@ action involves reordering these two loops.
 
  .. code-block:: none
 
+    from __future__ import annotations
+
     # from tvm.script import ir as I
-    # from tvm.script import tirx as T
-    # from tvm.tirx.layout import Axis
     # from tvm.script import s_tir as Ts
+    # from tvm.script import tirx as T
 
     @I.ir_module
     class Module:
         @Ts.prim_func
         def main(A: T.Buffer((128, 128), "float32"), B: T.Buffer((128, 128), "float32"), C: T.Buffer((128, 128), "float32")):
             T.func_attr({"tirx.noalias": True})
-            # with Ts.sblock("root"):
-            buffer = Ts.sblock_alloc_buffer((128, 128))
-            for i, j_0, k, j_1 in T.grid(128, 16, 128, 8):
-                with Ts.sblock("Y"):
-                    v = Ts.axis.spatial(128, i)
-                    v_1 = Ts.axis.spatial(128, j_0 * 8 + j_1)
-                    v_2 = Ts.axis.reduce(128, k)
-                    Ts.reads(A[v, v_2], B[v_2, v_1])
-                    Ts.writes(buffer[v, v_1])
-                    with Ts.init():
-                        buffer[v, v_1] = T.float32(0.0)
-                    buffer[v, v_1] = buffer[v, v_1] + A[v, v_2] * B[v_2, v_1]
-            for i, j in T.grid(128, 128):
-                with Ts.sblock("C"):
-                    v, v_1 = Ts.axis.remap("SS", [i, j])
-                    Ts.reads(buffer[v, v_1])
-                    Ts.writes(C[v, v_1])
-                    C[v, v_1] = T.max(buffer[v, v_1], T.float32(0.0))
+            with Ts.sblock("root"):
+                Ts.reads()
+                Ts.writes()
+                v = Ts.sblock_alloc_buffer((128, 128), "float32")
+                for i in range(128):
+                    for j_0 in range(16):
+                        for k in range(128):
+                            for j_1 in range(8):
+                                with Ts.sblock("Y"):
+                                    v_1 = Ts.axis.spatial(128, i)
+                                    v_2 = Ts.axis.spatial(128, j_0 * 8 + j_1)
+                                    v_3 = Ts.axis.reduce(128, k)
+                                    Ts.reads(A[v_1, v_3], B[v_3, v_2])
+                                    Ts.writes(v[v_1, v_2])
+                                    with Ts.init():
+                                        v[v_1, v_2] = T.float32(0.0)
+                                    v[v_1, v_2] = v[v_1, v_2] + A[v_1, v_3] * B[v_3, v_2]
+                for i_1 in range(128):
+                    for j in range(128):
+                        with Ts.sblock("C"):
+                            v_4 = Ts.axis.spatial(128, i_1)
+                            v_5 = Ts.axis.spatial(128, j)
+                            Ts.reads(v[v_4, v_5])
+                            Ts.writes(C[v_4, v_5])
+                            C[v_4, v_5] = T.max(v[v_4, v_5], T.float32(0.0))
 
     Execution time summary:
      mean (ms)   median (ms)    max (ms)     min (ms)     std (ms)  
-       0.8645       0.8645       0.8645       0.8645       0.0000                  
+       0.8631       0.8631       0.8631       0.8631       0.0000                  
 
 
 
@@ -327,36 +343,41 @@ variant. First, we employ a primitive known as **reverse_compute_at** to relocat
 
  .. code-block:: none
 
+    from __future__ import annotations
+
     # from tvm.script import ir as I
-    # from tvm.script import tirx as T
-    # from tvm.tirx.layout import Axis
     # from tvm.script import s_tir as Ts
+    # from tvm.script import tirx as T
 
     @I.ir_module
     class Module:
         @Ts.prim_func
         def main(A: T.Buffer((128, 128), "float32"), B: T.Buffer((128, 128), "float32"), C: T.Buffer((128, 128), "float32")):
             T.func_attr({"tirx.noalias": True})
-            # with Ts.sblock("root"):
-            buffer = Ts.sblock_alloc_buffer((128, 128))
-            for i, j_0 in T.grid(128, 16):
-                for k, j_1 in T.grid(128, 8):
-                    with Ts.sblock("Y"):
-                        v = Ts.axis.spatial(128, i)
-                        v_1 = Ts.axis.spatial(128, j_0 * 8 + j_1)
-                        v_2 = Ts.axis.reduce(128, k)
-                        Ts.reads(A[v, v_2], B[v_2, v_1])
-                        Ts.writes(buffer[v, v_1])
-                        with Ts.init():
-                            buffer[v, v_1] = T.float32(0.0)
-                        buffer[v, v_1] = buffer[v, v_1] + A[v, v_2] * B[v_2, v_1]
-                for ax0 in range(8):
-                    with Ts.sblock("C"):
-                        v = Ts.axis.spatial(128, i)
-                        v_1 = Ts.axis.spatial(128, j_0 * 8 + ax0)
-                        Ts.reads(buffer[v, v_1])
-                        Ts.writes(C[v, v_1])
-                        C[v, v_1] = T.max(buffer[v, v_1], T.float32(0.0))
+            with Ts.sblock("root"):
+                Ts.reads()
+                Ts.writes()
+                v = Ts.sblock_alloc_buffer((128, 128), "float32")
+                for i in range(128):
+                    for j_0 in range(16):
+                        for k in range(128):
+                            for j_1 in range(8):
+                                with Ts.sblock("Y"):
+                                    v_1 = Ts.axis.spatial(128, i)
+                                    v_2 = Ts.axis.spatial(128, j_0 * 8 + j_1)
+                                    v_3 = Ts.axis.reduce(128, k)
+                                    Ts.reads(A[v_1, v_3], B[v_3, v_2])
+                                    Ts.writes(v[v_1, v_2])
+                                    with Ts.init():
+                                        v[v_1, v_2] = T.float32(0.0)
+                                    v[v_1, v_2] = v[v_1, v_2] + A[v_1, v_3] * B[v_3, v_2]
+                        for ax0 in range(8):
+                            with Ts.sblock("C"):
+                                v_4 = Ts.axis.spatial(128, i)
+                                v_5 = Ts.axis.spatial(128, j_0 * 8 + ax0)
+                                Ts.reads(v[v_4, v_5])
+                                Ts.writes(C[v_4, v_5])
+                                C[v_4, v_5] = T.max(v[v_4, v_5], T.float32(0.0))
 
 
 
@@ -391,45 +412,50 @@ from the reduction update via the **decompose_reduction** primitive.
 
  .. code-block:: none
 
+    from __future__ import annotations
+
     # from tvm.script import ir as I
-    # from tvm.script import tirx as T
-    # from tvm.tirx.layout import Axis
     # from tvm.script import s_tir as Ts
+    # from tvm.script import tirx as T
 
     @I.ir_module
     class Module:
         @Ts.prim_func
         def main(A: T.Buffer((128, 128), "float32"), B: T.Buffer((128, 128), "float32"), C: T.Buffer((128, 128), "float32")):
             T.func_attr({"tirx.noalias": True})
-            # with Ts.sblock("root"):
-            buffer = Ts.sblock_alloc_buffer((128, 128))
-            for i, j_0 in T.grid(128, 16):
-                for j_1_init in range(8):
-                    with Ts.sblock("Y_init"):
-                        v = Ts.axis.spatial(128, i)
-                        v_1 = Ts.axis.spatial(128, j_0 * 8 + j_1_init)
-                        Ts.reads()
-                        Ts.writes(buffer[v, v_1])
-                        buffer[v, v_1] = T.float32(0.0)
-                for k, j_1 in T.grid(128, 8):
-                    with Ts.sblock("Y_update"):
-                        v = Ts.axis.spatial(128, i)
-                        v_1 = Ts.axis.spatial(128, j_0 * 8 + j_1)
-                        v_2 = Ts.axis.reduce(128, k)
-                        Ts.reads(buffer[v, v_1], A[v, v_2], B[v_2, v_1])
-                        Ts.writes(buffer[v, v_1])
-                        buffer[v, v_1] = buffer[v, v_1] + A[v, v_2] * B[v_2, v_1]
-                for ax0 in range(8):
-                    with Ts.sblock("C"):
-                        v = Ts.axis.spatial(128, i)
-                        v_1 = Ts.axis.spatial(128, j_0 * 8 + ax0)
-                        Ts.reads(buffer[v, v_1])
-                        Ts.writes(C[v, v_1])
-                        C[v, v_1] = T.max(buffer[v, v_1], T.float32(0.0))
+            with Ts.sblock("root"):
+                Ts.reads()
+                Ts.writes()
+                v = Ts.sblock_alloc_buffer((128, 128), "float32")
+                for i in range(128):
+                    for j_0 in range(16):
+                        for j_1_init in range(8):
+                            with Ts.sblock("Y_init"):
+                                v_1 = Ts.axis.spatial(128, i)
+                                v_2 = Ts.axis.spatial(128, j_0 * 8 + j_1_init)
+                                Ts.reads()
+                                Ts.writes(v[v_1, v_2])
+                                v[v_1, v_2] = T.float32(0.0)
+                        for k in range(128):
+                            for j_1 in range(8):
+                                with Ts.sblock("Y_update"):
+                                    v_3 = Ts.axis.spatial(128, i)
+                                    v_4 = Ts.axis.spatial(128, j_0 * 8 + j_1)
+                                    v_5 = Ts.axis.reduce(128, k)
+                                    Ts.reads(v[v_3, v_4], A[v_3, v_5], B[v_5, v_4])
+                                    Ts.writes(v[v_3, v_4])
+                                    v[v_3, v_4] = v[v_3, v_4] + A[v_3, v_5] * B[v_5, v_4]
+                        for ax0 in range(8):
+                            with Ts.sblock("C"):
+                                v_6 = Ts.axis.spatial(128, i)
+                                v_7 = Ts.axis.spatial(128, j_0 * 8 + ax0)
+                                Ts.reads(v[v_6, v_7])
+                                Ts.writes(C[v_6, v_7])
+                                C[v_6, v_7] = T.max(v[v_6, v_7], T.float32(0.0))
 
     Execution time summary:
      mean (ms)   median (ms)    max (ms)     min (ms)     std (ms)  
-       0.3367       0.3367       0.3367       0.3367       0.0000                  
+       0.3447       0.3447       0.3447       0.3447       0.0000                  
 
 
 
@@ -492,41 +518,46 @@ Alternatively, we can output the IRModule in conjunction with the historical tra
 
  .. code-block:: none
 
+    from __future__ import annotations
+
     # from tvm.script import ir as I
-    # from tvm.script import tirx as T
-    # from tvm.tirx.layout import Axis
     # from tvm.script import s_tir as Ts
+    # from tvm.script import tirx as T
 
     @I.ir_module
     class Module:
         @Ts.prim_func
         def main(A: T.Buffer((128, 128), "float32"), B: T.Buffer((128, 128), "float32"), C: T.Buffer((128, 128), "float32")):
             T.func_attr({"tirx.noalias": True})
-            # with Ts.sblock("root"):
-            buffer = Ts.sblock_alloc_buffer((128, 128))
-            for i, j_0 in T.grid(128, 16):
-                for j_1_init in range(8):
-                    with Ts.sblock("Y_init"):
-                        v = Ts.axis.spatial(128, i)
-                        v_1 = Ts.axis.spatial(128, j_0 * 8 + j_1_init)
-                        Ts.reads()
-                        Ts.writes(buffer[v, v_1])
-                        buffer[v, v_1] = T.float32(0.0)
-                for k, j_1 in T.grid(128, 8):
-                    with Ts.sblock("Y_update"):
-                        v = Ts.axis.spatial(128, i)
-                        v_1 = Ts.axis.spatial(128, j_0 * 8 + j_1)
-                        v_2 = Ts.axis.reduce(128, k)
-                        Ts.reads(buffer[v, v_1], A[v, v_2], B[v_2, v_1])
-                        Ts.writes(buffer[v, v_1])
-                        buffer[v, v_1] = buffer[v, v_1] + A[v, v_2] * B[v_2, v_1]
-                for ax0 in range(8):
-                    with Ts.sblock("C"):
-                        v = Ts.axis.spatial(128, i)
-                        v_1 = Ts.axis.spatial(128, j_0 * 8 + ax0)
-                        Ts.reads(buffer[v, v_1])
-                        Ts.writes(C[v, v_1])
-                        C[v, v_1] = T.max(buffer[v, v_1], T.float32(0.0))
+            with Ts.sblock("root"):
+                Ts.reads()
+                Ts.writes()
+                v = Ts.sblock_alloc_buffer((128, 128), "float32")
+                for i in range(128):
+                    for j_0 in range(16):
+                        for j_1_init in range(8):
+                            with Ts.sblock("Y_init"):
+                                v_1 = Ts.axis.spatial(128, i)
+                                v_2 = Ts.axis.spatial(128, j_0 * 8 + j_1_init)
+                                Ts.reads()
+                                Ts.writes(v[v_1, v_2])
+                                v[v_1, v_2] = T.float32(0.0)
+                        for k in range(128):
+                            for j_1 in range(8):
+                                with Ts.sblock("Y_update"):
+                                    v_3 = Ts.axis.spatial(128, i)
+                                    v_4 = Ts.axis.spatial(128, j_0 * 8 + j_1)
+                                    v_5 = Ts.axis.reduce(128, k)
+                                    Ts.reads(v[v_3, v_4], A[v_3, v_5], B[v_5, v_4])
+                                    Ts.writes(v[v_3, v_4])
+                                    v[v_3, v_4] = v[v_3, v_4] + A[v_3, v_5] * B[v_5, v_4]
+                        for ax0 in range(8):
+                            with Ts.sblock("C"):
+                                v_6 = Ts.axis.spatial(128, i)
+                                v_7 = Ts.axis.spatial(128, j_0 * 8 + ax0)
+                                Ts.reads(v[v_6, v_7])
+                                Ts.writes(C[v_6, v_7])
+                                C[v_6, v_7] = T.max(v[v_6, v_7], T.float32(0.0))
 
     # from tvm import s_tir
     def apply_trace(sch: s_tir.Schedule) -> None:

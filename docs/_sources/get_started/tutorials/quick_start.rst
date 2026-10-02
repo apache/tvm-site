@@ -133,6 +133,8 @@ in TVM.
 
  .. code-block:: none
 
+    from __future__ import annotations
+
     # from tvm.script import ir as I
     # from tvm.script import relax as R
 
@@ -224,8 +226,8 @@ different devices.
 
  .. code-block:: none
 
-    [[26971.541 24163.498 26412.727 24472.064 25188.469 26570.77  24381.45
-      25214.668 25924.244 25916.143]]
+    [[24394.262 23714.424 25465.494 23587.584 25657.525 23834.256 24638.521
+      25145.371 26069.785 23032.725]]
 
 
 

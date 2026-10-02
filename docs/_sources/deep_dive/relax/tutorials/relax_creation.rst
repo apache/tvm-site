@@ -77,6 +77,8 @@ high-level Relax operators using TVMScript.
 
  .. code-block:: none
 
+    from __future__ import annotations
+
     # from tvm.script import ir as I
     # from tvm.script import relax as R
 
@@ -151,34 +153,38 @@ TensorIR functions in Relax function.
 
  .. code-block:: none
 
-    # from tvm.script import ir as I
-    # from tvm.script import tirx as T
-    # from tvm.tirx.layout import Axis
-    # from tvm.script import s_tir as Ts
-    # from tvm.script import relax as R
+    from __future__ import annotations
 
-    m = I.dynamic("m", dtype="int64")
+    # from tvm.script import ir as I
+    # from tvm.script import relax as R
+    # from tvm.script import s_tir as Ts
+    # from tvm.script import tirx as T
+
     n = I.dynamic("n", dtype="int64")
+    m = I.dynamic("m", dtype="int64")
     @I.ir_module
     class Module:
         @Ts.prim_func
         def relu(X: T.Buffer((n, m), "float32"), Y: T.Buffer((n, m), "float32")):
-            # with Ts.sblock("root"):
-            for i, j in T.grid(n, m):
-                with Ts.sblock("relu"):
-                    v, v_1 = Ts.axis.remap("SS", [i, j])
-                    Ts.reads(X[v, v_1])
-                    Ts.writes(Y[v, v_1])
-                    Y[v, v_1] = T.max(X[v, v_1], T.float32(0.0))
+            with Ts.sblock("root"):
+                Ts.reads()
+                Ts.writes()
+                for i in range(T.int64(0), n):
+                    for j in range(T.int64(0), m):
+                        with Ts.sblock("relu"):
+                            v = Ts.axis.spatial(n, i, dtype="int64")
+                            v_1 = Ts.axis.spatial(m, j, dtype="int64")
+                            Ts.reads(X[v, v_1])
+                            Ts.writes(Y[v, v_1])
+                            Y[v, v_1] = T.max(X[v, v_1], T.float32(0.0))
 
         @R.function
         def forward(data: R.Tensor((n, 784), dtype="float32"), w0: R.Tensor((128, 784), dtype="float32"), b0: R.Tensor((128,), dtype="float32"), w1: R.Tensor((10, 128), dtype="float32"), b1: R.Tensor((10,), dtype="float32")) -> R.Tensor((n, 10), dtype="float32"):
-            cls = Module
             with R.dataflow():
                 lv: R.Tensor((784, 128), dtype="float32") = R.permute_dims(w0, axes=None)
                 lv1: R.Tensor((n, 128), dtype="float32") = R.matmul(data, lv, out_dtype=None)
                 lv0: R.Tensor((n, 128), dtype="float32") = R.add(lv1, b0)
-                lv1_1 = R.call_tir(cls.relu, (lv0,), out_ty=R.Tensor((n, 128), dtype="float32"))
+                lv1_1 = R.call_tir(Module.relu, (lv0,), out_ty=R.Tensor((n, 128), dtype="float32"))
                 lv4: R.Tensor((128, 10), dtype="float32") = R.permute_dims(w1, axes=None)
                 lv5: R.Tensor((n, 10), dtype="float32") = R.matmul(lv1_1, lv4, out_dtype=None)
                 lv2: R.Tensor((n, 10), dtype="float32") = R.add(lv5, b1)
@@ -273,6 +279,8 @@ After we define the NNModule, we can export it to TVM IRModule via
 .. rst-class:: sphx-glr-script-out
 
  .. code-block:: none
+
+    from __future__ import annotations
 
     # from tvm.script import ir as I
     # from tvm.script import relax as R
@@ -372,15 +380,16 @@ Tensor Expression(TE), TensorIR functions or other TVM packed functions.
 
  .. code-block:: none
 
+    from __future__ import annotations
+
     # from tvm.script import ir as I
-    # from tvm.script import tirx as T
-    # from tvm.tirx.layout import Axis
-    # from tvm.script import s_tir as Ts
     # from tvm.script import relax as R
+    # from tvm.script import s_tir as Ts
+    # from tvm.script import tirx as T
 
     n = I.dynamic("n", dtype="int64")
-    K = I.dynamic("K", dtype="int64")
     M = I.dynamic("M", dtype="int64")
+    K = I.dynamic("K", dtype="int64")
     N = I.dynamic("N", dtype="int64")
     n_1 = I.dynamic("n", dtype="int64")
     @I.ir_module
@@ -388,40 +397,51 @@ Tensor Expression(TE), TensorIR functions or other TVM packed functions.
         @Ts.prim_func(private=True)
         def relu(env_linear: T.Buffer((n, T.int64(128)), "float32"), compute: T.Buffer((n, T.int64(128)), "float32")):
             T.func_attr({"tirx.noalias": True})
-            # with Ts.sblock("root"):
-            for i0, i1 in T.grid(n, T.int64(128)):
-                with Ts.sblock("compute"):
-                    v_i0, v_i1 = Ts.axis.remap("SS", [i0, i1])
-                    Ts.reads(env_linear[v_i0, v_i1])
-                    Ts.writes(compute[v_i0, v_i1])
-                    compute[v_i0, v_i1] = T.max(env_linear[v_i0, v_i1], T.float32(0.0))
+            with Ts.sblock("root"):
+                Ts.reads()
+                Ts.writes()
+                for i0 in range(T.int64(0), n):
+                    for i1 in range(T.int64(0), T.int64(128)):
+                        with Ts.sblock("compute"):
+                            v_i0 = Ts.axis.spatial(n, i0, dtype="int64")
+                            v_i1 = Ts.axis.spatial(T.int64(128), i1, dtype="int64")
+                            Ts.reads(env_linear[v_i0, v_i1])
+                            Ts.writes(compute[v_i0, v_i1])
+                            compute[v_i0, v_i1] = T.max(env_linear[v_i0, v_i1], T.float32(0.0))
 
         @Ts.prim_func
         def tir_linear(X: T.Buffer((M, K), "float32"), W: T.Buffer((N, K), "float32"), B: T.Buffer((N,), "float32"), Z: T.Buffer((M, N), "float32")):
-            # with Ts.sblock("root"):
-            for i, j, k in T.grid(M, N, K):
-                with Ts.sblock("linear"):
-                    v, v_1, v_2 = Ts.axis.remap("SSR", [i, j, k])
-                    Ts.reads(X[v, v_2], W[v_1, v_2])
-                    Ts.writes(Z[v, v_1])
-                    with Ts.init():
-                        Z[v, v_1] = T.float32(0.0)
-                    Z[v, v_1] = Z[v, v_1] + X[v, v_2] * W[v_1, v_2]
-            for i, j in T.grid(M, N):
-                with Ts.sblock("add"):
-                    v, v_1 = Ts.axis.remap("SS", [i, j])
-                    Ts.reads(Z[v, v_1], B[v_1])
-                    Ts.writes(Z[v, v_1])
-                    Z[v, v_1] = Z[v, v_1] + B[v_1]
+            with Ts.sblock("root"):
+                Ts.reads()
+                Ts.writes()
+                for i in range(T.int64(0), M):
+                    for j in range(T.int64(0), N):
+                        for k in range(T.int64(0), K):
+                            with Ts.sblock("linear"):
+                                v = Ts.axis.spatial(M, i, dtype="int64")
+                                v_1 = Ts.axis.spatial(N, j, dtype="int64")
+                                v_2 = Ts.axis.reduce(K, k, dtype="int64")
+                                Ts.reads(X[v, v_2], W[v_1, v_2])
+                                Ts.writes(Z[v, v_1])
+                                with Ts.init():
+                                    Z[v, v_1] = T.float32(0.0)
+                                Z[v, v_1] = Z[v, v_1] + X[v, v_2] * W[v_1, v_2]
+                for i_1 in range(T.int64(0), M):
+                    for j_1 in range(T.int64(0), N):
+                        with Ts.sblock("add"):
+                            v_3 = Ts.axis.spatial(M, i_1, dtype="int64")
+                            v_4 = Ts.axis.spatial(N, j_1, dtype="int64")
+                            Ts.reads(Z[v_3, v_4], B[v_4])
+                            Ts.writes(Z[v_3, v_4])
+                            Z[v_3, v_4] = Z[v_3, v_4] + B[v_4]
 
         @R.function
         def forward(x: R.Tensor((n_1, 784), dtype="float32"), fc1_weight: R.Tensor((128, 784), dtype="float32"), fc1_bias: R.Tensor((128,), dtype="float32"), fc2_weight: R.Tensor((10, 128), dtype="float32"), fc2_bias: R.Tensor((10,), dtype="float32")) -> R.Tensor((n_1, 10), dtype="float32"):
             R.func_attr({"num_input": 1})
-            cls = Module
             with R.dataflow():
                 env_linear = R.call_dps_packed("env.linear", (x, fc1_weight, fc1_bias), out_ty=R.Tensor((n_1, 128), dtype="float32"))
-                lv = R.call_tir(cls.relu, (env_linear,), out_ty=R.Tensor((n_1, 128), dtype="float32"))
-                lv1 = R.call_tir(cls.tir_linear, (lv, fc2_weight, fc2_bias), out_ty=R.Tensor((n_1, 10), dtype="float32"))
+                lv = R.call_tir(Module.relu, (env_linear,), out_ty=R.Tensor((n_1, 128), dtype="float32"))
+                lv1 = R.call_tir(Module.tir_linear, (lv, fc2_weight, fc2_bias), out_ty=R.Tensor((n_1, 10), dtype="float32"))
                 gv: R.Tensor((n_1, 10), dtype="float32") = lv1
                 R.output(gv)
             return gv
@@ -469,6 +489,8 @@ customized pass.
 .. rst-class:: sphx-glr-script-out
 
  .. code-block:: none
+
+    from __future__ import annotations
 
     # from tvm.script import ir as I
     # from tvm.script import relax as R
@@ -536,15 +558,16 @@ Relax functions, TensorIR functions and other TVM packed functions.
 
  .. code-block:: none
 
+    from __future__ import annotations
+
     # from tvm.script import ir as I
-    # from tvm.script import tirx as T
-    # from tvm.tirx.layout import Axis
-    # from tvm.script import s_tir as Ts
     # from tvm.script import relax as R
+    # from tvm.script import s_tir as Ts
+    # from tvm.script import tirx as T
 
     n = I.dynamic("n", dtype="int64")
-    K = I.dynamic("K", dtype="int64")
     M = I.dynamic("M", dtype="int64")
+    K = I.dynamic("K", dtype="int64")
     N = I.dynamic("N", dtype="int64")
     n_1 = I.dynamic("n", dtype="int64")
     @I.ir_module
@@ -552,39 +575,50 @@ Relax functions, TensorIR functions and other TVM packed functions.
         @Ts.prim_func(private=True)
         def relu(lv: T.Buffer((n, T.int64(128)), "float32"), compute: T.Buffer((n, T.int64(128)), "float32")):
             T.func_attr({"tirx.noalias": True})
-            # with Ts.sblock("root"):
-            for i0, i1 in T.grid(n, T.int64(128)):
-                with Ts.sblock("compute"):
-                    v_i0, v_i1 = Ts.axis.remap("SS", [i0, i1])
-                    Ts.reads(lv[v_i0, v_i1])
-                    Ts.writes(compute[v_i0, v_i1])
-                    compute[v_i0, v_i1] = T.max(lv[v_i0, v_i1], T.float32(0.0))
+            with Ts.sblock("root"):
+                Ts.reads()
+                Ts.writes()
+                for i0 in range(T.int64(0), n):
+                    for i1 in range(T.int64(0), T.int64(128)):
+                        with Ts.sblock("compute"):
+                            v_i0 = Ts.axis.spatial(n, i0, dtype="int64")
+                            v_i1 = Ts.axis.spatial(T.int64(128), i1, dtype="int64")
+                            Ts.reads(lv[v_i0, v_i1])
+                            Ts.writes(compute[v_i0, v_i1])
+                            compute[v_i0, v_i1] = T.max(lv[v_i0, v_i1], T.float32(0.0))
 
         @Ts.prim_func
         def tir_linear(X: T.Buffer((M, K), "float32"), W: T.Buffer((N, K), "float32"), B: T.Buffer((N,), "float32"), Z: T.Buffer((M, N), "float32")):
-            # with Ts.sblock("root"):
-            for i, j, k in T.grid(M, N, K):
-                with Ts.sblock("linear"):
-                    v, v_1, v_2 = Ts.axis.remap("SSR", [i, j, k])
-                    Ts.reads(X[v, v_2], W[v_1, v_2])
-                    Ts.writes(Z[v, v_1])
-                    with Ts.init():
-                        Z[v, v_1] = T.float32(0.0)
-                    Z[v, v_1] = Z[v, v_1] + X[v, v_2] * W[v_1, v_2]
-            for i, j in T.grid(M, N):
-                with Ts.sblock("add"):
-                    v, v_1 = Ts.axis.remap("SS", [i, j])
-                    Ts.reads(Z[v, v_1], B[v_1])
-                    Ts.writes(Z[v, v_1])
-                    Z[v, v_1] = Z[v, v_1] + B[v_1]
+            with Ts.sblock("root"):
+                Ts.reads()
+                Ts.writes()
+                for i in range(T.int64(0), M):
+                    for j in range(T.int64(0), N):
+                        for k in range(T.int64(0), K):
+                            with Ts.sblock("linear"):
+                                v = Ts.axis.spatial(M, i, dtype="int64")
+                                v_1 = Ts.axis.spatial(N, j, dtype="int64")
+                                v_2 = Ts.axis.reduce(K, k, dtype="int64")
+                                Ts.reads(X[v, v_2], W[v_1, v_2])
+                                Ts.writes(Z[v, v_1])
+                                with Ts.init():
+                                    Z[v, v_1] = T.float32(0.0)
+                                Z[v, v_1] = Z[v, v_1] + X[v, v_2] * W[v_1, v_2]
+                for i_1 in range(T.int64(0), M):
+                    for j_1 in range(T.int64(0), N):
+                        with Ts.sblock("add"):
+                            v_3 = Ts.axis.spatial(M, i_1, dtype="int64")
+                            v_4 = Ts.axis.spatial(N, j_1, dtype="int64")
+                            Ts.reads(Z[v_3, v_4], B[v_4])
+                            Ts.writes(Z[v_3, v_4])
+                            Z[v_3, v_4] = Z[v_3, v_4] + B[v_4]
 
         @R.function
         def forward(x: R.Tensor((n_1, 784), dtype="float32"), fc1_weight: R.Tensor((128, 784), dtype="float32"), fc1_bias: R.Tensor((128,), dtype="float32"), fc2_weight: R.Tensor((10, 128), dtype="float32"), fc2_bias: R.Tensor((10,), dtype="float32")) -> R.Tensor((n_1, 10), dtype="float32"):
-            cls = Module
             with R.dataflow():
                 lv = R.call_dps_packed("env.linear", (x, fc1_weight, fc1_bias), out_ty=R.Tensor((n_1, 128), dtype="float32"))
-                lv1 = R.call_tir(cls.relu, (lv,), out_ty=R.Tensor((n_1, 128), dtype="float32"))
-                lv2 = R.call_tir(cls.tir_linear, (lv1, fc2_weight, fc2_bias), out_ty=R.Tensor((n_1, 10), dtype="float32"))
+                lv1 = R.call_tir(Module.relu, (lv,), out_ty=R.Tensor((n_1, 128), dtype="float32"))
+                lv2 = R.call_tir(Module.tir_linear, (lv1, fc2_weight, fc2_bias), out_ty=R.Tensor((n_1, 10), dtype="float32"))
                 gv: R.Tensor((n_1, 10), dtype="float32") = lv2
                 R.output(gv)
             return lv2

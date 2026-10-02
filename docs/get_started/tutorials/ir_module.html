@@ -727,6 +727,8 @@ from PyTorch.</p>
 </div>
 <div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>/opt/uv/python/cpython-3.10-linux-x86_64-gnu/lib/python3.10/copyreg.py:101: FutureWarning: `isinstance(treespec, LeafSpec)` is deprecated, use `isinstance(treespec, TreeSpec) and treespec.is_leaf()` instead.
   return cls.__new__(cls, *args)
+from __future__ import annotations
+
 # from tvm.script import ir as I
 # from tvm.script import relax as R
 
@@ -776,7 +778,9 @@ write the IRModule directly.</p>
 <span class="n">mod_from_relax</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
 </pre></div>
 </div>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span># from tvm.script import ir as I
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>from __future__ import annotations
+
+# from tvm.script import ir as I
 # from tvm.script import relax as R
 
 @I.ir_module
@@ -835,7 +839,9 @@ parse the TVMScript to obtain an IRModule.</p>
 <span class="n">mod_from_script</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
 </pre></div>
 </div>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span># from tvm.script import ir as I
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>from __future__ import annotations
+
+# from tvm.script import ir as I
 # from tvm.script import relax as R
 
 @I.ir_module
@@ -865,7 +871,7 @@ class Module:
 <span class="nb">print</span><span class="p">(</span><span class="n">mod</span><span class="o">.</span><span class="n">get_global_vars</span><span class="p">())</span>
 </pre></div>
 </div>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>(I.GlobalVar(&quot;main&quot;),)
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>(Module.main,)
 </pre></div>
 </div>
 <p>We can access the functions in the IRModule by indexing with the GlobalVars
@@ -877,7 +883,9 @@ or their names</p>
 <span class="k">assert</span> <span class="n">mod</span><span class="p">[</span><a href="../../reference/api/python/ir.html#tvm.ir.GlobalVar" title="tvm.ir.GlobalVar" class="sphx-glr-backref-module-tvm-ir sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">gv</span></a><span class="p">]</span> <span class="o">==</span> <span class="n">mod</span><span class="p">[</span><span class="s2">&quot;main&quot;</span><span class="p">]</span>
 </pre></div>
 </div>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span># from tvm.script import relax as R
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>from __future__ import annotations
+
+# from tvm.script import relax as R
 
 @R.function
 def main(x: R.Tensor((1, 784), dtype=&quot;float32&quot;), p_fc1_weight: R.Tensor((256, 784), dtype=&quot;float32&quot;), p_fc1_bias: R.Tensor((256,), dtype=&quot;float32&quot;), p_fc2_weight: R.Tensor((10, 256), dtype=&quot;float32&quot;), p_fc2_bias: R.Tensor((10,), dtype=&quot;float32&quot;)) -&gt; R.Tensor((1, 10), dtype=&quot;float32&quot;):
@@ -913,107 +921,139 @@ within the same module. Meanwhile, the Relax operators will be converted into <c
 <span class="n">mod</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
 </pre></div>
 </div>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span># from tvm.script import ir as I
-# from tvm.script import tirx as T
-# from tvm.tirx.layout import Axis
-# from tvm.script import s_tir as Ts
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>from __future__ import annotations
+
+# from tvm.script import ir as I
 # from tvm.script import relax as R
+# from tvm.script import s_tir as Ts
+# from tvm.script import tirx as T
 
 @I.ir_module
 class Module:
     @Ts.prim_func(private=True)
     def add(p_fc1_bias: T.Buffer((T.int64(256),), &quot;float32&quot;), lv1: T.Buffer((T.int64(1), T.int64(256)), &quot;float32&quot;), T_add: T.Buffer((T.int64(1), T.int64(256)), &quot;float32&quot;)):
         T.func_attr({&quot;tirx.noalias&quot;: True})
-        # with Ts.sblock(&quot;root&quot;):
-        for ax0, ax1 in T.grid(T.int64(1), T.int64(256)):
-            with Ts.sblock(&quot;T_add&quot;):
-                v_ax0, v_ax1 = Ts.axis.remap(&quot;SS&quot;, [ax0, ax1])
-                Ts.reads(p_fc1_bias[v_ax1], lv1[v_ax0, v_ax1])
-                Ts.writes(T_add[v_ax0, v_ax1])
-                T_add[v_ax0, v_ax1] = p_fc1_bias[v_ax1] + lv1[v_ax0, v_ax1]
+        with Ts.sblock(&quot;root&quot;):
+            Ts.reads()
+            Ts.writes()
+            for ax0 in range(T.int64(0), T.int64(1)):
+                for ax1 in range(T.int64(0), T.int64(256)):
+                    with Ts.sblock(&quot;T_add&quot;):
+                        v_ax0 = Ts.axis.spatial(T.int64(1), ax0, dtype=&quot;int64&quot;)
+                        v_ax1 = Ts.axis.spatial(T.int64(256), ax1, dtype=&quot;int64&quot;)
+                        Ts.reads(p_fc1_bias[v_ax1], lv1[v_ax0, v_ax1])
+                        Ts.writes(T_add[v_ax0, v_ax1])
+                        T_add[v_ax0, v_ax1] = p_fc1_bias[v_ax1] + lv1[v_ax0, v_ax1]
 
     @Ts.prim_func(private=True)
     def add1(p_fc2_bias: T.Buffer((T.int64(10),), &quot;float32&quot;), lv5: T.Buffer((T.int64(1), T.int64(10)), &quot;float32&quot;), T_add: T.Buffer((T.int64(1), T.int64(10)), &quot;float32&quot;)):
         T.func_attr({&quot;tirx.noalias&quot;: True})
-        # with Ts.sblock(&quot;root&quot;):
-        for ax0, ax1 in T.grid(T.int64(1), T.int64(10)):
-            with Ts.sblock(&quot;T_add&quot;):
-                v_ax0, v_ax1 = Ts.axis.remap(&quot;SS&quot;, [ax0, ax1])
-                Ts.reads(p_fc2_bias[v_ax1], lv5[v_ax0, v_ax1])
-                Ts.writes(T_add[v_ax0, v_ax1])
-                T_add[v_ax0, v_ax1] = p_fc2_bias[v_ax1] + lv5[v_ax0, v_ax1]
+        with Ts.sblock(&quot;root&quot;):
+            Ts.reads()
+            Ts.writes()
+            for ax0 in range(T.int64(0), T.int64(1)):
+                for ax1 in range(T.int64(0), T.int64(10)):
+                    with Ts.sblock(&quot;T_add&quot;):
+                        v_ax0 = Ts.axis.spatial(T.int64(1), ax0, dtype=&quot;int64&quot;)
+                        v_ax1 = Ts.axis.spatial(T.int64(10), ax1, dtype=&quot;int64&quot;)
+                        Ts.reads(p_fc2_bias[v_ax1], lv5[v_ax0, v_ax1])
+                        Ts.writes(T_add[v_ax0, v_ax1])
+                        T_add[v_ax0, v_ax1] = p_fc2_bias[v_ax1] + lv5[v_ax0, v_ax1]
 
     @Ts.prim_func(private=True)
     def matmul(x: T.Buffer((T.int64(1), T.int64(784)), &quot;float32&quot;), lv: T.Buffer((T.int64(784), T.int64(256)), &quot;float32&quot;), matmul: T.Buffer((T.int64(1), T.int64(256)), &quot;float32&quot;)):
         T.func_attr({&quot;tirx.noalias&quot;: True})
-        # with Ts.sblock(&quot;root&quot;):
-        for i0, i1, k in T.grid(T.int64(1), T.int64(256), T.int64(784)):
-            with Ts.sblock(&quot;matmul&quot;):
-                v_i0, v_i1, v_k = Ts.axis.remap(&quot;SSR&quot;, [i0, i1, k])
-                Ts.reads(x[v_i0, v_k], lv[v_k, v_i1])
-                Ts.writes(matmul[v_i0, v_i1])
-                with Ts.init():
-                    matmul[v_i0, v_i1] = T.float32(0.0)
-                matmul[v_i0, v_i1] = matmul[v_i0, v_i1] + x[v_i0, v_k] * lv[v_k, v_i1]
+        with Ts.sblock(&quot;root&quot;):
+            Ts.reads()
+            Ts.writes()
+            for i0 in range(T.int64(0), T.int64(1)):
+                for i1 in range(T.int64(0), T.int64(256)):
+                    for k in range(T.int64(0), T.int64(784)):
+                        with Ts.sblock(&quot;matmul&quot;):
+                            v_i0 = Ts.axis.spatial(T.int64(1), i0, dtype=&quot;int64&quot;)
+                            v_i1 = Ts.axis.spatial(T.int64(256), i1, dtype=&quot;int64&quot;)
+                            v_k = Ts.axis.reduce(T.int64(784), k, dtype=&quot;int64&quot;)
+                            Ts.reads(x[v_i0, v_k], lv[v_k, v_i1])
+                            Ts.writes(matmul[v_i0, v_i1])
+                            with Ts.init():
+                                matmul[v_i0, v_i1] = T.float32(0.0)
+                            matmul[v_i0, v_i1] = matmul[v_i0, v_i1] + x[v_i0, v_k] * lv[v_k, v_i1]
 
     @Ts.prim_func(private=True)
     def matmul1(lv3: T.Buffer((T.int64(1), T.int64(256)), &quot;float32&quot;), lv4: T.Buffer((T.int64(256), T.int64(10)), &quot;float32&quot;), matmul: T.Buffer((T.int64(1), T.int64(10)), &quot;float32&quot;)):
         T.func_attr({&quot;tirx.noalias&quot;: True})
-        # with Ts.sblock(&quot;root&quot;):
-        for i0, i1, k in T.grid(T.int64(1), T.int64(10), T.int64(256)):
-            with Ts.sblock(&quot;matmul&quot;):
-                v_i0, v_i1, v_k = Ts.axis.remap(&quot;SSR&quot;, [i0, i1, k])
-                Ts.reads(lv3[v_i0, v_k], lv4[v_k, v_i1])
-                Ts.writes(matmul[v_i0, v_i1])
-                with Ts.init():
-                    matmul[v_i0, v_i1] = T.float32(0.0)
-                matmul[v_i0, v_i1] = matmul[v_i0, v_i1] + lv3[v_i0, v_k] * lv4[v_k, v_i1]
+        with Ts.sblock(&quot;root&quot;):
+            Ts.reads()
+            Ts.writes()
+            for i0 in range(T.int64(0), T.int64(1)):
+                for i1 in range(T.int64(0), T.int64(10)):
+                    for k in range(T.int64(0), T.int64(256)):
+                        with Ts.sblock(&quot;matmul&quot;):
+                            v_i0 = Ts.axis.spatial(T.int64(1), i0, dtype=&quot;int64&quot;)
+                            v_i1 = Ts.axis.spatial(T.int64(10), i1, dtype=&quot;int64&quot;)
+                            v_k = Ts.axis.reduce(T.int64(256), k, dtype=&quot;int64&quot;)
+                            Ts.reads(lv3[v_i0, v_k], lv4[v_k, v_i1])
+                            Ts.writes(matmul[v_i0, v_i1])
+                            with Ts.init():
+                                matmul[v_i0, v_i1] = T.float32(0.0)
+                            matmul[v_i0, v_i1] = matmul[v_i0, v_i1] + lv3[v_i0, v_k] * lv4[v_k, v_i1]
 
     @Ts.prim_func(private=True)
     def relu(lv2: T.Buffer((T.int64(1), T.int64(256)), &quot;float32&quot;), compute: T.Buffer((T.int64(1), T.int64(256)), &quot;float32&quot;)):
         T.func_attr({&quot;tirx.noalias&quot;: True})
-        # with Ts.sblock(&quot;root&quot;):
-        for i0, i1 in T.grid(T.int64(1), T.int64(256)):
-            with Ts.sblock(&quot;compute&quot;):
-                v_i0, v_i1 = Ts.axis.remap(&quot;SS&quot;, [i0, i1])
-                Ts.reads(lv2[v_i0, v_i1])
-                Ts.writes(compute[v_i0, v_i1])
-                compute[v_i0, v_i1] = T.max(lv2[v_i0, v_i1], T.float32(0.0))
+        with Ts.sblock(&quot;root&quot;):
+            Ts.reads()
+            Ts.writes()
+            for i0 in range(T.int64(0), T.int64(1)):
+                for i1 in range(T.int64(0), T.int64(256)):
+                    with Ts.sblock(&quot;compute&quot;):
+                        v_i0 = Ts.axis.spatial(T.int64(1), i0, dtype=&quot;int64&quot;)
+                        v_i1 = Ts.axis.spatial(T.int64(256), i1, dtype=&quot;int64&quot;)
+                        Ts.reads(lv2[v_i0, v_i1])
+                        Ts.writes(compute[v_i0, v_i1])
+                        compute[v_i0, v_i1] = T.max(lv2[v_i0, v_i1], T.float32(0.0))
 
     @Ts.prim_func(private=True)
     def transpose(p_fc1_weight: T.Buffer((T.int64(256), T.int64(784)), &quot;float32&quot;), T_transpose: T.Buffer((T.int64(784), T.int64(256)), &quot;float32&quot;)):
         T.func_attr({&quot;tirx.noalias&quot;: True})
-        # with Ts.sblock(&quot;root&quot;):
-        for ax0, ax1 in T.grid(T.int64(784), T.int64(256)):
-            with Ts.sblock(&quot;T_transpose&quot;):
-                v_ax0, v_ax1 = Ts.axis.remap(&quot;SS&quot;, [ax0, ax1])
-                Ts.reads(p_fc1_weight[v_ax1, v_ax0])
-                Ts.writes(T_transpose[v_ax0, v_ax1])
-                T_transpose[v_ax0, v_ax1] = p_fc1_weight[v_ax1, v_ax0]
+        with Ts.sblock(&quot;root&quot;):
+            Ts.reads()
+            Ts.writes()
+            for ax0 in range(T.int64(0), T.int64(784)):
+                for ax1 in range(T.int64(0), T.int64(256)):
+                    with Ts.sblock(&quot;T_transpose&quot;):
+                        v_ax0 = Ts.axis.spatial(T.int64(784), ax0, dtype=&quot;int64&quot;)
+                        v_ax1 = Ts.axis.spatial(T.int64(256), ax1, dtype=&quot;int64&quot;)
+                        Ts.reads(p_fc1_weight[v_ax1, v_ax0])
+                        Ts.writes(T_transpose[v_ax0, v_ax1])
+                        T_transpose[v_ax0, v_ax1] = p_fc1_weight[v_ax1, v_ax0]
 
     @Ts.prim_func(private=True)
     def transpose1(p_fc2_weight: T.Buffer((T.int64(10), T.int64(256)), &quot;float32&quot;), T_transpose: T.Buffer((T.int64(256), T.int64(10)), &quot;float32&quot;)):
         T.func_attr({&quot;tirx.noalias&quot;: True})
-        # with Ts.sblock(&quot;root&quot;):
-        for ax0, ax1 in T.grid(T.int64(256), T.int64(10)):
-            with Ts.sblock(&quot;T_transpose&quot;):
-                v_ax0, v_ax1 = Ts.axis.remap(&quot;SS&quot;, [ax0, ax1])
-                Ts.reads(p_fc2_weight[v_ax1, v_ax0])
-                Ts.writes(T_transpose[v_ax0, v_ax1])
-                T_transpose[v_ax0, v_ax1] = p_fc2_weight[v_ax1, v_ax0]
+        with Ts.sblock(&quot;root&quot;):
+            Ts.reads()
+            Ts.writes()
+            for ax0 in range(T.int64(0), T.int64(256)):
+                for ax1 in range(T.int64(0), T.int64(10)):
+                    with Ts.sblock(&quot;T_transpose&quot;):
+                        v_ax0 = Ts.axis.spatial(T.int64(256), ax0, dtype=&quot;int64&quot;)
+                        v_ax1 = Ts.axis.spatial(T.int64(10), ax1, dtype=&quot;int64&quot;)
+                        Ts.reads(p_fc2_weight[v_ax1, v_ax0])
+                        Ts.writes(T_transpose[v_ax0, v_ax1])
+                        T_transpose[v_ax0, v_ax1] = p_fc2_weight[v_ax1, v_ax0]
 
     @R.function
     def main(x: R.Tensor((1, 784), dtype=&quot;float32&quot;), p_fc1_weight: R.Tensor((256, 784), dtype=&quot;float32&quot;), p_fc1_bias: R.Tensor((256,), dtype=&quot;float32&quot;), p_fc2_weight: R.Tensor((10, 256), dtype=&quot;float32&quot;), p_fc2_bias: R.Tensor((10,), dtype=&quot;float32&quot;)) -&gt; R.Tensor((1, 10), dtype=&quot;float32&quot;):
         R.func_attr({&quot;num_input&quot;: 1})
-        cls = Module
         with R.dataflow():
-            lv = R.call_tir(cls.transpose, (p_fc1_weight,), out_ty=R.Tensor((784, 256), dtype=&quot;float32&quot;))
-            lv1 = R.call_tir(cls.matmul, (x, lv), out_ty=R.Tensor((1, 256), dtype=&quot;float32&quot;))
-            lv2 = R.call_tir(cls.add, (p_fc1_bias, lv1), out_ty=R.Tensor((1, 256), dtype=&quot;float32&quot;))
-            lv3 = R.call_tir(cls.relu, (lv2,), out_ty=R.Tensor((1, 256), dtype=&quot;float32&quot;))
-            lv4 = R.call_tir(cls.transpose1, (p_fc2_weight,), out_ty=R.Tensor((256, 10), dtype=&quot;float32&quot;))
-            lv5 = R.call_tir(cls.matmul1, (lv3, lv4), out_ty=R.Tensor((1, 10), dtype=&quot;float32&quot;))
-            lv6 = R.call_tir(cls.add1, (p_fc2_bias, lv5), out_ty=R.Tensor((1, 10), dtype=&quot;float32&quot;))
+            lv = R.call_tir(Module.transpose, (p_fc1_weight,), out_ty=R.Tensor((784, 256), dtype=&quot;float32&quot;))
+            lv1 = R.call_tir(Module.matmul, (x, lv), out_ty=R.Tensor((1, 256), dtype=&quot;float32&quot;))
+            lv2 = R.call_tir(Module.add, (p_fc1_bias, lv1), out_ty=R.Tensor((1, 256), dtype=&quot;float32&quot;))
+            lv3 = R.call_tir(Module.relu, (lv2,), out_ty=R.Tensor((1, 256), dtype=&quot;float32&quot;))
+            lv4 = R.call_tir(Module.transpose1, (p_fc2_weight,), out_ty=R.Tensor((256, 10), dtype=&quot;float32&quot;))
+            lv5 = R.call_tir(Module.matmul1, (lv3, lv4), out_ty=R.Tensor((1, 10), dtype=&quot;float32&quot;))
+            lv6 = R.call_tir(Module.add1, (p_fc2_bias, lv5), out_ty=R.Tensor((1, 10), dtype=&quot;float32&quot;))
             gv: R.Tensor((1, 10), dtype=&quot;float32&quot;) = lv6
             R.output(gv)
         return gv
@@ -1024,7 +1064,7 @@ the global vars again.</p>
 <div class="highlight-Python notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span><span class="p">(</span><span class="n">mod</span><span class="o">.</span><span class="n">get_global_vars</span><span class="p">())</span>
 </pre></div>
 </div>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>(I.GlobalVar(&quot;add&quot;), I.GlobalVar(&quot;add1&quot;), I.GlobalVar(&quot;main&quot;), I.GlobalVar(&quot;matmul&quot;), I.GlobalVar(&quot;matmul1&quot;), I.GlobalVar(&quot;relu&quot;), I.GlobalVar(&quot;transpose&quot;), I.GlobalVar(&quot;transpose1&quot;))
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>(Module.add, Module.add1, Module.main, Module.matmul, Module.matmul1, Module.relu, Module.transpose, Module.transpose1)
 </pre></div>
 </div>
 <p>Next, Apache TVM provides a set of default transformation pipelines for users,
@@ -1053,92 +1093,118 @@ IRModule inputs. This design can help users to construct their own pipeline.</p>
 <span class="n">mod</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
 </pre></div>
 </div>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span># from tvm.script import ir as I
-# from tvm.script import tirx as T
-# from tvm.tirx.layout import Axis
-# from tvm.script import s_tir as Ts
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>from __future__ import annotations
+
+# from tvm.script import ir as I
 # from tvm.script import relax as R
+# from tvm.script import s_tir as Ts
+# from tvm.script import tirx as T
 
 @I.ir_module
 class Module:
     @Ts.prim_func(private=True)
     def fused_matmul1_add1(lv3: T.Buffer((T.int64(1), T.int64(256)), &quot;float32&quot;), lv4: T.Buffer((T.int64(256), T.int64(10)), &quot;float32&quot;), p_fc2_bias: T.Buffer((T.int64(10),), &quot;float32&quot;), T_add_intermediate: T.Buffer((T.int64(1), T.int64(10)), &quot;float32&quot;)):
         T.func_attr({&quot;tirx.noalias&quot;: True})
-        # with Ts.sblock(&quot;root&quot;):
-        matmul_intermediate = Ts.sblock_alloc_buffer((T.int64(1), T.int64(10)))
-        for i0, i1, k in T.grid(T.int64(1), T.int64(10), T.int64(256)):
-            with Ts.sblock(&quot;matmul&quot;):
-                v_i0, v_i1, v_k = Ts.axis.remap(&quot;SSR&quot;, [i0, i1, k])
-                Ts.reads(lv3[v_i0, v_k], lv4[v_k, v_i1])
-                Ts.writes(matmul_intermediate[v_i0, v_i1])
-                with Ts.init():
-                    matmul_intermediate[v_i0, v_i1] = T.float32(0.0)
-                matmul_intermediate[v_i0, v_i1] = matmul_intermediate[v_i0, v_i1] + lv3[v_i0, v_k] * lv4[v_k, v_i1]
-        for ax0, ax1 in T.grid(T.int64(1), T.int64(10)):
-            with Ts.sblock(&quot;T_add&quot;):
-                v_ax0, v_ax1 = Ts.axis.remap(&quot;SS&quot;, [ax0, ax1])
-                Ts.reads(p_fc2_bias[v_ax1], matmul_intermediate[v_ax0, v_ax1])
-                Ts.writes(T_add_intermediate[v_ax0, v_ax1])
-                T_add_intermediate[v_ax0, v_ax1] = p_fc2_bias[v_ax1] + matmul_intermediate[v_ax0, v_ax1]
+        with Ts.sblock(&quot;root&quot;):
+            Ts.reads()
+            Ts.writes()
+            matmul_intermediate = Ts.sblock_alloc_buffer((T.int64(1), T.int64(10)), &quot;float32&quot;)
+            for i0 in range(T.int64(0), T.int64(1)):
+                for i1 in range(T.int64(0), T.int64(10)):
+                    for k in range(T.int64(0), T.int64(256)):
+                        with Ts.sblock(&quot;matmul&quot;):
+                            v_i0 = Ts.axis.spatial(T.int64(1), i0, dtype=&quot;int64&quot;)
+                            v_i1 = Ts.axis.spatial(T.int64(10), i1, dtype=&quot;int64&quot;)
+                            v_k = Ts.axis.reduce(T.int64(256), k, dtype=&quot;int64&quot;)
+                            Ts.reads(lv3[v_i0, v_k], lv4[v_k, v_i1])
+                            Ts.writes(matmul_intermediate[v_i0, v_i1])
+                            with Ts.init():
+                                matmul_intermediate[v_i0, v_i1] = T.float32(0.0)
+                            matmul_intermediate[v_i0, v_i1] = matmul_intermediate[v_i0, v_i1] + lv3[v_i0, v_k] * lv4[v_k, v_i1]
+            for ax0 in range(T.int64(0), T.int64(1)):
+                for ax1 in range(T.int64(0), T.int64(10)):
+                    with Ts.sblock(&quot;T_add&quot;):
+                        v_ax0 = Ts.axis.spatial(T.int64(1), ax0, dtype=&quot;int64&quot;)
+                        v_ax1 = Ts.axis.spatial(T.int64(10), ax1, dtype=&quot;int64&quot;)
+                        Ts.reads(p_fc2_bias[v_ax1], matmul_intermediate[v_ax0, v_ax1])
+                        Ts.writes(T_add_intermediate[v_ax0, v_ax1])
+                        T_add_intermediate[v_ax0, v_ax1] = p_fc2_bias[v_ax1] + matmul_intermediate[v_ax0, v_ax1]
 
     @Ts.prim_func(private=True)
     def fused_matmul_add_relu(x: T.Buffer((T.int64(1), T.int64(784)), &quot;float32&quot;), lv: T.Buffer((T.int64(784), T.int64(256)), &quot;float32&quot;), p_fc1_bias: T.Buffer((T.int64(256),), &quot;float32&quot;), compute_intermediate: T.Buffer((T.int64(1), T.int64(256)), &quot;float32&quot;)):
         T.func_attr({&quot;tirx.noalias&quot;: True})
-        # with Ts.sblock(&quot;root&quot;):
-        matmul_intermediate = Ts.sblock_alloc_buffer((T.int64(1), T.int64(256)))
-        T_add_intermediate = Ts.sblock_alloc_buffer((T.int64(1), T.int64(256)))
-        for i0, i1, k in T.grid(T.int64(1), T.int64(256), T.int64(784)):
-            with Ts.sblock(&quot;matmul&quot;):
-                v_i0, v_i1, v_k = Ts.axis.remap(&quot;SSR&quot;, [i0, i1, k])
-                Ts.reads(x[v_i0, v_k], lv[v_k, v_i1])
-                Ts.writes(matmul_intermediate[v_i0, v_i1])
-                with Ts.init():
-                    matmul_intermediate[v_i0, v_i1] = T.float32(0.0)
-                matmul_intermediate[v_i0, v_i1] = matmul_intermediate[v_i0, v_i1] + x[v_i0, v_k] * lv[v_k, v_i1]
-        for ax0, ax1 in T.grid(T.int64(1), T.int64(256)):
-            with Ts.sblock(&quot;T_add&quot;):
-                v_ax0, v_ax1 = Ts.axis.remap(&quot;SS&quot;, [ax0, ax1])
-                Ts.reads(p_fc1_bias[v_ax1], matmul_intermediate[v_ax0, v_ax1])
-                Ts.writes(T_add_intermediate[v_ax0, v_ax1])
-                T_add_intermediate[v_ax0, v_ax1] = p_fc1_bias[v_ax1] + matmul_intermediate[v_ax0, v_ax1]
-        for i0, i1 in T.grid(T.int64(1), T.int64(256)):
-            with Ts.sblock(&quot;compute&quot;):
-                v_i0, v_i1 = Ts.axis.remap(&quot;SS&quot;, [i0, i1])
-                Ts.reads(T_add_intermediate[v_i0, v_i1])
-                Ts.writes(compute_intermediate[v_i0, v_i1])
-                compute_intermediate[v_i0, v_i1] = T.max(T_add_intermediate[v_i0, v_i1], T.float32(0.0))
+        with Ts.sblock(&quot;root&quot;):
+            Ts.reads()
+            Ts.writes()
+            matmul_intermediate = Ts.sblock_alloc_buffer((T.int64(1), T.int64(256)), &quot;float32&quot;)
+            T_add_intermediate = Ts.sblock_alloc_buffer((T.int64(1), T.int64(256)), &quot;float32&quot;)
+            for i0 in range(T.int64(0), T.int64(1)):
+                for i1 in range(T.int64(0), T.int64(256)):
+                    for k in range(T.int64(0), T.int64(784)):
+                        with Ts.sblock(&quot;matmul&quot;):
+                            v_i0 = Ts.axis.spatial(T.int64(1), i0, dtype=&quot;int64&quot;)
+                            v_i1 = Ts.axis.spatial(T.int64(256), i1, dtype=&quot;int64&quot;)
+                            v_k = Ts.axis.reduce(T.int64(784), k, dtype=&quot;int64&quot;)
+                            Ts.reads(x[v_i0, v_k], lv[v_k, v_i1])
+                            Ts.writes(matmul_intermediate[v_i0, v_i1])
+                            with Ts.init():
+                                matmul_intermediate[v_i0, v_i1] = T.float32(0.0)
+                            matmul_intermediate[v_i0, v_i1] = matmul_intermediate[v_i0, v_i1] + x[v_i0, v_k] * lv[v_k, v_i1]
+            for ax0 in range(T.int64(0), T.int64(1)):
+                for ax1 in range(T.int64(0), T.int64(256)):
+                    with Ts.sblock(&quot;T_add&quot;):
+                        v_ax0 = Ts.axis.spatial(T.int64(1), ax0, dtype=&quot;int64&quot;)
+                        v_ax1 = Ts.axis.spatial(T.int64(256), ax1, dtype=&quot;int64&quot;)
+                        Ts.reads(p_fc1_bias[v_ax1], matmul_intermediate[v_ax0, v_ax1])
+                        Ts.writes(T_add_intermediate[v_ax0, v_ax1])
+                        T_add_intermediate[v_ax0, v_ax1] = p_fc1_bias[v_ax1] + matmul_intermediate[v_ax0, v_ax1]
+            for i0_1 in range(T.int64(0), T.int64(1)):
+                for i1_1 in range(T.int64(0), T.int64(256)):
+                    with Ts.sblock(&quot;compute&quot;):
+                        v_i0_1 = Ts.axis.spatial(T.int64(1), i0_1, dtype=&quot;int64&quot;)
+                        v_i1_1 = Ts.axis.spatial(T.int64(256), i1_1, dtype=&quot;int64&quot;)
+                        Ts.reads(T_add_intermediate[v_i0_1, v_i1_1])
+                        Ts.writes(compute_intermediate[v_i0_1, v_i1_1])
+                        compute_intermediate[v_i0_1, v_i1_1] = T.max(T_add_intermediate[v_i0_1, v_i1_1], T.float32(0.0))
 
     @Ts.prim_func(private=True)
     def transpose(p_fc1_weight: T.Buffer((T.int64(256), T.int64(784)), &quot;float32&quot;), T_transpose: T.Buffer((T.int64(784), T.int64(256)), &quot;float32&quot;)):
         T.func_attr({&quot;op_pattern&quot;: 2, &quot;tirx.noalias&quot;: True})
-        # with Ts.sblock(&quot;root&quot;):
-        for ax0, ax1 in T.grid(T.int64(784), T.int64(256)):
-            with Ts.sblock(&quot;T_transpose&quot;):
-                v_ax0, v_ax1 = Ts.axis.remap(&quot;SS&quot;, [ax0, ax1])
-                Ts.reads(p_fc1_weight[v_ax1, v_ax0])
-                Ts.writes(T_transpose[v_ax0, v_ax1])
-                T_transpose[v_ax0, v_ax1] = p_fc1_weight[v_ax1, v_ax0]
+        with Ts.sblock(&quot;root&quot;):
+            Ts.reads()
+            Ts.writes()
+            for ax0 in range(T.int64(0), T.int64(784)):
+                for ax1 in range(T.int64(0), T.int64(256)):
+                    with Ts.sblock(&quot;T_transpose&quot;):
+                        v_ax0 = Ts.axis.spatial(T.int64(784), ax0, dtype=&quot;int64&quot;)
+                        v_ax1 = Ts.axis.spatial(T.int64(256), ax1, dtype=&quot;int64&quot;)
+                        Ts.reads(p_fc1_weight[v_ax1, v_ax0])
+                        Ts.writes(T_transpose[v_ax0, v_ax1])
+                        T_transpose[v_ax0, v_ax1] = p_fc1_weight[v_ax1, v_ax0]
 
     @Ts.prim_func(private=True)
     def transpose1(p_fc2_weight: T.Buffer((T.int64(10), T.int64(256)), &quot;float32&quot;), T_transpose: T.Buffer((T.int64(256), T.int64(10)), &quot;float32&quot;)):
         T.func_attr({&quot;op_pattern&quot;: 2, &quot;tirx.noalias&quot;: True})
-        # with Ts.sblock(&quot;root&quot;):
-        for ax0, ax1 in T.grid(T.int64(256), T.int64(10)):
-            with Ts.sblock(&quot;T_transpose&quot;):
-                v_ax0, v_ax1 = Ts.axis.remap(&quot;SS&quot;, [ax0, ax1])
-                Ts.reads(p_fc2_weight[v_ax1, v_ax0])
-                Ts.writes(T_transpose[v_ax0, v_ax1])
-                T_transpose[v_ax0, v_ax1] = p_fc2_weight[v_ax1, v_ax0]
+        with Ts.sblock(&quot;root&quot;):
+            Ts.reads()
+            Ts.writes()
+            for ax0 in range(T.int64(0), T.int64(256)):
+                for ax1 in range(T.int64(0), T.int64(10)):
+                    with Ts.sblock(&quot;T_transpose&quot;):
+                        v_ax0 = Ts.axis.spatial(T.int64(256), ax0, dtype=&quot;int64&quot;)
+                        v_ax1 = Ts.axis.spatial(T.int64(10), ax1, dtype=&quot;int64&quot;)
+                        Ts.reads(p_fc2_weight[v_ax1, v_ax0])
+                        Ts.writes(T_transpose[v_ax0, v_ax1])
+                        T_transpose[v_ax0, v_ax1] = p_fc2_weight[v_ax1, v_ax0]
 
     @R.function
     def main(x: R.Tensor((1, 784), dtype=&quot;float32&quot;), p_fc1_weight: R.Tensor((256, 784), dtype=&quot;float32&quot;), p_fc1_bias: R.Tensor((256,), dtype=&quot;float32&quot;), p_fc2_weight: R.Tensor((10, 256), dtype=&quot;float32&quot;), p_fc2_bias: R.Tensor((10,), dtype=&quot;float32&quot;)) -&gt; R.Tensor((1, 10), dtype=&quot;float32&quot;):
         R.func_attr({&quot;num_input&quot;: 1})
-        cls = Module
         with R.dataflow():
-            lv = R.call_tir(cls.transpose, (p_fc1_weight,), out_ty=R.Tensor((784, 256), dtype=&quot;float32&quot;))
-            lv_1 = R.call_tir(cls.fused_matmul_add_relu, (x, lv, p_fc1_bias), out_ty=R.Tensor((1, 256), dtype=&quot;float32&quot;))
-            lv4 = R.call_tir(cls.transpose1, (p_fc2_weight,), out_ty=R.Tensor((256, 10), dtype=&quot;float32&quot;))
-            gv = R.call_tir(cls.fused_matmul1_add1, (lv_1, lv4, p_fc2_bias), out_ty=R.Tensor((1, 10), dtype=&quot;float32&quot;))
+            lv = R.call_tir(Module.transpose, (p_fc1_weight,), out_ty=R.Tensor((784, 256), dtype=&quot;float32&quot;))
+            lv_1 = R.call_tir(Module.fused_matmul_add_relu, (x, lv, p_fc1_bias), out_ty=R.Tensor((1, 256), dtype=&quot;float32&quot;))
+            lv4 = R.call_tir(Module.transpose1, (p_fc2_weight,), out_ty=R.Tensor((256, 10), dtype=&quot;float32&quot;))
+            gv = R.call_tir(Module.fused_matmul1_add1, (lv_1, lv4, p_fc2_bias), out_ty=R.Tensor((1, 10), dtype=&quot;float32&quot;))
             R.output(gv)
         return gv
 </pre></div>
@@ -1163,8 +1229,8 @@ backends.</p>
 <span class="nb">print</span><span class="p">(</span><span class="n">cpu_out</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>[[-0.07639622  0.09393998  0.15279326  0.0067593   0.0712965   0.11450908
-  -0.0593667   0.1031519  -0.02436247  0.06724901]]
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>[[ 0.02156833  0.1480602  -0.18894392 -0.12359875 -0.15182018 -0.0406852
+   0.03429064  0.21808206 -0.1431902  -0.09069045]]
 </pre></div>
 </div>
 </section>
@@ -1198,8 +1264,8 @@ the details of <code class="docutils literal notranslate"><span class="pre">DLig
 <span class="k">assert</span> <span class="n">np</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">cpu_out</span><span class="p">,</span> <span class="n">gpu_out</span><span class="p">,</span> <span class="n">atol</span><span class="o">=</span><span class="mf">1e-3</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>[[-0.07639617  0.09394001  0.15279323  0.00675932  0.07129654  0.11450911
-  -0.05936672  0.10315201 -0.02436246  0.06724904]]
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>[[ 0.0215683   0.14806023 -0.18894392 -0.12359875 -0.15182015 -0.04068519
+   0.03429066  0.21808198 -0.14319019 -0.09069046]]
 </pre></div>
 </div>
 </section>

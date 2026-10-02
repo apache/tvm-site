@@ -121,6 +121,8 @@ The standard workflow is: ``torch.export.export()`` → ``from_exported_program(
 
     /opt/uv/python/cpython-3.10-linux-x86_64-gnu/lib/python3.10/copyreg.py:101: FutureWarning: `isinstance(treespec, LeafSpec)` is deprecated, use `isinstance(treespec, TreeSpec) and treespec.is_leaf()` instead.
       return cls.__new__(cls, *args)
+    from __future__ import annotations
+
     # from tvm.script import ir as I
     # from tvm.script import relax as R
 
@@ -130,10 +132,10 @@ The standard workflow is: ``torch.export.export()`` → ``from_exported_program(
         def main(x: R.Tensor((1, 3, 32, 32), dtype="float32"), p_conv_weight: R.Tensor((16, 3, 3, 3), dtype="float32"), p_conv_bias: R.Tensor((16,), dtype="float32"), p_bn_weight: R.Tensor((16,), dtype="float32"), p_bn_bias: R.Tensor((16,), dtype="float32"), p_fc_weight: R.Tensor((10, 16), dtype="float32"), p_fc_bias: R.Tensor((10,), dtype="float32")) -> R.Tensor((1, 10), dtype="float32"):
             R.func_attr({"num_input": 1})
             with R.dataflow():
-                lv: R.Tensor((1, 16, 32, 32), dtype="float32") = R.nn.conv2d(x, p_conv_weight, strides=[1, 1], padding=[1, 1, 1, 1], dilation=[1, 1], groups=1, data_layout="NCHW", kernel_layout="OIHW", out_layout="NCHW", out_dtype="float32")
+                lv: R.Tensor((1, 16, 32, 32), dtype="float32") = R.nn.conv2d(x, p_conv_weight, data_layout="NCHW", dilation=[1, 1], groups=1, kernel_layout="OIHW", out_dtype="float32", out_layout="NCHW", padding=[1, 1, 1, 1], strides=[1, 1])
                 lv1: R.Tensor((1, 16, 1, 1), dtype="float32") = R.reshape(p_conv_bias, R.shape([1, 16, 1, 1]))
                 lv2: R.Tensor((1, 16, 32, 32), dtype="float32") = R.add(lv, lv1)
-                lv3: R.Tuple(R.Tensor((1, 16, 32, 32), dtype="float32"), R.Tensor((16,), dtype="float32"), R.Tensor((16,), dtype="float32")) = R.nn.batch_norm(lv2, p_bn_weight, p_bn_bias, metadata["ir.GenericConst"][0], metadata["ir.GenericConst"][1], axis=1, epsilon=1.0000000000000001e-05, center=True, scale=True, momentum=0.10000000000000001, training=False)
+                lv3: R.Tuple(R.Tensor((1, 16, 32, 32), dtype="float32"), R.Tensor((16,), dtype="float32"), R.Tensor((16,), dtype="float32")) = R.nn.batch_norm(lv2, p_bn_weight, p_bn_bias, metadata["ir.GenericConst"][0], metadata["ir.GenericConst"][1], axis=1, center=True, epsilon=1.0000000000000001e-05, momentum=0.10000000000000001, scale=True, training=False)
                 lv4: R.Tensor((1, 16, 32, 32), dtype="float32") = lv3[0]
                 lv5: R.Tensor((1, 16, 32, 32), dtype="float32") = R.nn.relu(lv4)
                 lv6: R.Tensor((1, 16, 1, 1), dtype="float32") = R.mean(lv5, axis=[-1, -2], keepdims=True)
@@ -451,6 +453,8 @@ Below we create a minimal TFLite model from TensorFlow and import it.
 .. rst-class:: sphx-glr-script-out
 
  .. code-block:: none
+
+    from __future__ import annotations
 
     # from tvm.script import ir as I
     # from tvm.script import relax as R

@@ -691,7 +691,9 @@ high-level Relax operators using TVMScript.</p>
 <span class="n">RelaxModule</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
 </pre></div>
 </div>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span># from tvm.script import ir as I
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>from __future__ import annotations
+
+# from tvm.script import ir as I
 # from tvm.script import relax as R
 
 n = I.dynamic(&quot;n&quot;, dtype=&quot;int64&quot;)
@@ -747,34 +749,38 @@ TensorIR functions in Relax function.</p>
 <span class="n">RelaxModuleWithTIR</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
 </pre></div>
 </div>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span># from tvm.script import ir as I
-# from tvm.script import tirx as T
-# from tvm.tirx.layout import Axis
-# from tvm.script import s_tir as Ts
-# from tvm.script import relax as R
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>from __future__ import annotations
 
-m = I.dynamic(&quot;m&quot;, dtype=&quot;int64&quot;)
+# from tvm.script import ir as I
+# from tvm.script import relax as R
+# from tvm.script import s_tir as Ts
+# from tvm.script import tirx as T
+
 n = I.dynamic(&quot;n&quot;, dtype=&quot;int64&quot;)
+m = I.dynamic(&quot;m&quot;, dtype=&quot;int64&quot;)
 @I.ir_module
 class Module:
     @Ts.prim_func
     def relu(X: T.Buffer((n, m), &quot;float32&quot;), Y: T.Buffer((n, m), &quot;float32&quot;)):
-        # with Ts.sblock(&quot;root&quot;):
-        for i, j in T.grid(n, m):
-            with Ts.sblock(&quot;relu&quot;):
-                v, v_1 = Ts.axis.remap(&quot;SS&quot;, [i, j])
-                Ts.reads(X[v, v_1])
-                Ts.writes(Y[v, v_1])
-                Y[v, v_1] = T.max(X[v, v_1], T.float32(0.0))
+        with Ts.sblock(&quot;root&quot;):
+            Ts.reads()
+            Ts.writes()
+            for i in range(T.int64(0), n):
+                for j in range(T.int64(0), m):
+                    with Ts.sblock(&quot;relu&quot;):
+                        v = Ts.axis.spatial(n, i, dtype=&quot;int64&quot;)
+                        v_1 = Ts.axis.spatial(m, j, dtype=&quot;int64&quot;)
+                        Ts.reads(X[v, v_1])
+                        Ts.writes(Y[v, v_1])
+                        Y[v, v_1] = T.max(X[v, v_1], T.float32(0.0))
 
     @R.function
     def forward(data: R.Tensor((n, 784), dtype=&quot;float32&quot;), w0: R.Tensor((128, 784), dtype=&quot;float32&quot;), b0: R.Tensor((128,), dtype=&quot;float32&quot;), w1: R.Tensor((10, 128), dtype=&quot;float32&quot;), b1: R.Tensor((10,), dtype=&quot;float32&quot;)) -&gt; R.Tensor((n, 10), dtype=&quot;float32&quot;):
-        cls = Module
         with R.dataflow():
             lv: R.Tensor((784, 128), dtype=&quot;float32&quot;) = R.permute_dims(w0, axes=None)
             lv1: R.Tensor((n, 128), dtype=&quot;float32&quot;) = R.matmul(data, lv, out_dtype=None)
             lv0: R.Tensor((n, 128), dtype=&quot;float32&quot;) = R.add(lv1, b0)
-            lv1_1 = R.call_tir(cls.relu, (lv0,), out_ty=R.Tensor((n, 128), dtype=&quot;float32&quot;))
+            lv1_1 = R.call_tir(Module.relu, (lv0,), out_ty=R.Tensor((n, 128), dtype=&quot;float32&quot;))
             lv4: R.Tensor((128, 10), dtype=&quot;float32&quot;) = R.permute_dims(w1, axes=None)
             lv5: R.Tensor((n, 10), dtype=&quot;float32&quot;) = R.matmul(lv1_1, lv4, out_dtype=None)
             lv2: R.Tensor((n, 10), dtype=&quot;float32&quot;) = R.add(lv5, b1)
@@ -830,7 +836,9 @@ Relax NNModule API.</p>
 <span class="n">mod</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
 </pre></div>
 </div>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span># from tvm.script import ir as I
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>from __future__ import annotations
+
+# from tvm.script import ir as I
 # from tvm.script import relax as R
 
 n = I.dynamic(&quot;n&quot;, dtype=&quot;int64&quot;)
@@ -910,15 +918,16 @@ Tensor Expression(TE), TensorIR functions or other TVM packed functions.</p>
 <span class="n">mod</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
 </pre></div>
 </div>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span># from tvm.script import ir as I
-# from tvm.script import tirx as T
-# from tvm.tirx.layout import Axis
-# from tvm.script import s_tir as Ts
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>from __future__ import annotations
+
+# from tvm.script import ir as I
 # from tvm.script import relax as R
+# from tvm.script import s_tir as Ts
+# from tvm.script import tirx as T
 
 n = I.dynamic(&quot;n&quot;, dtype=&quot;int64&quot;)
-K = I.dynamic(&quot;K&quot;, dtype=&quot;int64&quot;)
 M = I.dynamic(&quot;M&quot;, dtype=&quot;int64&quot;)
+K = I.dynamic(&quot;K&quot;, dtype=&quot;int64&quot;)
 N = I.dynamic(&quot;N&quot;, dtype=&quot;int64&quot;)
 n_1 = I.dynamic(&quot;n&quot;, dtype=&quot;int64&quot;)
 @I.ir_module
@@ -926,40 +935,51 @@ class Module:
     @Ts.prim_func(private=True)
     def relu(env_linear: T.Buffer((n, T.int64(128)), &quot;float32&quot;), compute: T.Buffer((n, T.int64(128)), &quot;float32&quot;)):
         T.func_attr({&quot;tirx.noalias&quot;: True})
-        # with Ts.sblock(&quot;root&quot;):
-        for i0, i1 in T.grid(n, T.int64(128)):
-            with Ts.sblock(&quot;compute&quot;):
-                v_i0, v_i1 = Ts.axis.remap(&quot;SS&quot;, [i0, i1])
-                Ts.reads(env_linear[v_i0, v_i1])
-                Ts.writes(compute[v_i0, v_i1])
-                compute[v_i0, v_i1] = T.max(env_linear[v_i0, v_i1], T.float32(0.0))
+        with Ts.sblock(&quot;root&quot;):
+            Ts.reads()
+            Ts.writes()
+            for i0 in range(T.int64(0), n):
+                for i1 in range(T.int64(0), T.int64(128)):
+                    with Ts.sblock(&quot;compute&quot;):
+                        v_i0 = Ts.axis.spatial(n, i0, dtype=&quot;int64&quot;)
+                        v_i1 = Ts.axis.spatial(T.int64(128), i1, dtype=&quot;int64&quot;)
+                        Ts.reads(env_linear[v_i0, v_i1])
+                        Ts.writes(compute[v_i0, v_i1])
+                        compute[v_i0, v_i1] = T.max(env_linear[v_i0, v_i1], T.float32(0.0))
 
     @Ts.prim_func
     def tir_linear(X: T.Buffer((M, K), &quot;float32&quot;), W: T.Buffer((N, K), &quot;float32&quot;), B: T.Buffer((N,), &quot;float32&quot;), Z: T.Buffer((M, N), &quot;float32&quot;)):
-        # with Ts.sblock(&quot;root&quot;):
-        for i, j, k in T.grid(M, N, K):
-            with Ts.sblock(&quot;linear&quot;):
-                v, v_1, v_2 = Ts.axis.remap(&quot;SSR&quot;, [i, j, k])
-                Ts.reads(X[v, v_2], W[v_1, v_2])
-                Ts.writes(Z[v, v_1])
-                with Ts.init():
-                    Z[v, v_1] = T.float32(0.0)
-                Z[v, v_1] = Z[v, v_1] + X[v, v_2] * W[v_1, v_2]
-        for i, j in T.grid(M, N):
-            with Ts.sblock(&quot;add&quot;):
-                v, v_1 = Ts.axis.remap(&quot;SS&quot;, [i, j])
-                Ts.reads(Z[v, v_1], B[v_1])
-                Ts.writes(Z[v, v_1])
-                Z[v, v_1] = Z[v, v_1] + B[v_1]
+        with Ts.sblock(&quot;root&quot;):
+            Ts.reads()
+            Ts.writes()
+            for i in range(T.int64(0), M):
+                for j in range(T.int64(0), N):
+                    for k in range(T.int64(0), K):
+                        with Ts.sblock(&quot;linear&quot;):
+                            v = Ts.axis.spatial(M, i, dtype=&quot;int64&quot;)
+                            v_1 = Ts.axis.spatial(N, j, dtype=&quot;int64&quot;)
+                            v_2 = Ts.axis.reduce(K, k, dtype=&quot;int64&quot;)
+                            Ts.reads(X[v, v_2], W[v_1, v_2])
+                            Ts.writes(Z[v, v_1])
+                            with Ts.init():
+                                Z[v, v_1] = T.float32(0.0)
+                            Z[v, v_1] = Z[v, v_1] + X[v, v_2] * W[v_1, v_2]
+            for i_1 in range(T.int64(0), M):
+                for j_1 in range(T.int64(0), N):
+                    with Ts.sblock(&quot;add&quot;):
+                        v_3 = Ts.axis.spatial(M, i_1, dtype=&quot;int64&quot;)
+                        v_4 = Ts.axis.spatial(N, j_1, dtype=&quot;int64&quot;)
+                        Ts.reads(Z[v_3, v_4], B[v_4])
+                        Ts.writes(Z[v_3, v_4])
+                        Z[v_3, v_4] = Z[v_3, v_4] + B[v_4]
 
     @R.function
     def forward(x: R.Tensor((n_1, 784), dtype=&quot;float32&quot;), fc1_weight: R.Tensor((128, 784), dtype=&quot;float32&quot;), fc1_bias: R.Tensor((128,), dtype=&quot;float32&quot;), fc2_weight: R.Tensor((10, 128), dtype=&quot;float32&quot;), fc2_bias: R.Tensor((10,), dtype=&quot;float32&quot;)) -&gt; R.Tensor((n_1, 10), dtype=&quot;float32&quot;):
         R.func_attr({&quot;num_input&quot;: 1})
-        cls = Module
         with R.dataflow():
             env_linear = R.call_dps_packed(&quot;env.linear&quot;, (x, fc1_weight, fc1_bias), out_ty=R.Tensor((n_1, 128), dtype=&quot;float32&quot;))
-            lv = R.call_tir(cls.relu, (env_linear,), out_ty=R.Tensor((n_1, 128), dtype=&quot;float32&quot;))
-            lv1 = R.call_tir(cls.tir_linear, (lv, fc2_weight, fc2_bias), out_ty=R.Tensor((n_1, 10), dtype=&quot;float32&quot;))
+            lv = R.call_tir(Module.relu, (env_linear,), out_ty=R.Tensor((n_1, 128), dtype=&quot;float32&quot;))
+            lv1 = R.call_tir(Module.tir_linear, (lv, fc2_weight, fc2_bias), out_ty=R.Tensor((n_1, 10), dtype=&quot;float32&quot;))
             gv: R.Tensor((n_1, 10), dtype=&quot;float32&quot;) = lv1
             R.output(gv)
         return gv
@@ -991,7 +1011,9 @@ customized pass.</p>
 <span class="n">mod</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
 </pre></div>
 </div>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span># from tvm.script import ir as I
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>from __future__ import annotations
+
+# from tvm.script import ir as I
 # from tvm.script import relax as R
 
 n = I.dynamic(&quot;n&quot;, dtype=&quot;int64&quot;)
@@ -1039,15 +1061,16 @@ Relax functions, TensorIR functions and other TVM packed functions.</p>
 <span class="n">mod</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
 </pre></div>
 </div>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span># from tvm.script import ir as I
-# from tvm.script import tirx as T
-# from tvm.tirx.layout import Axis
-# from tvm.script import s_tir as Ts
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>from __future__ import annotations
+
+# from tvm.script import ir as I
 # from tvm.script import relax as R
+# from tvm.script import s_tir as Ts
+# from tvm.script import tirx as T
 
 n = I.dynamic(&quot;n&quot;, dtype=&quot;int64&quot;)
-K = I.dynamic(&quot;K&quot;, dtype=&quot;int64&quot;)
 M = I.dynamic(&quot;M&quot;, dtype=&quot;int64&quot;)
+K = I.dynamic(&quot;K&quot;, dtype=&quot;int64&quot;)
 N = I.dynamic(&quot;N&quot;, dtype=&quot;int64&quot;)
 n_1 = I.dynamic(&quot;n&quot;, dtype=&quot;int64&quot;)
 @I.ir_module
@@ -1055,39 +1078,50 @@ class Module:
     @Ts.prim_func(private=True)
     def relu(lv: T.Buffer((n, T.int64(128)), &quot;float32&quot;), compute: T.Buffer((n, T.int64(128)), &quot;float32&quot;)):
         T.func_attr({&quot;tirx.noalias&quot;: True})
-        # with Ts.sblock(&quot;root&quot;):
-        for i0, i1 in T.grid(n, T.int64(128)):
-            with Ts.sblock(&quot;compute&quot;):
-                v_i0, v_i1 = Ts.axis.remap(&quot;SS&quot;, [i0, i1])
-                Ts.reads(lv[v_i0, v_i1])
-                Ts.writes(compute[v_i0, v_i1])
-                compute[v_i0, v_i1] = T.max(lv[v_i0, v_i1], T.float32(0.0))
+        with Ts.sblock(&quot;root&quot;):
+            Ts.reads()
+            Ts.writes()
+            for i0 in range(T.int64(0), n):
+                for i1 in range(T.int64(0), T.int64(128)):
+                    with Ts.sblock(&quot;compute&quot;):
+                        v_i0 = Ts.axis.spatial(n, i0, dtype=&quot;int64&quot;)
+                        v_i1 = Ts.axis.spatial(T.int64(128), i1, dtype=&quot;int64&quot;)
+                        Ts.reads(lv[v_i0, v_i1])
+                        Ts.writes(compute[v_i0, v_i1])
+                        compute[v_i0, v_i1] = T.max(lv[v_i0, v_i1], T.float32(0.0))
 
     @Ts.prim_func
     def tir_linear(X: T.Buffer((M, K), &quot;float32&quot;), W: T.Buffer((N, K), &quot;float32&quot;), B: T.Buffer((N,), &quot;float32&quot;), Z: T.Buffer((M, N), &quot;float32&quot;)):
-        # with Ts.sblock(&quot;root&quot;):
-        for i, j, k in T.grid(M, N, K):
-            with Ts.sblock(&quot;linear&quot;):
-                v, v_1, v_2 = Ts.axis.remap(&quot;SSR&quot;, [i, j, k])
-                Ts.reads(X[v, v_2], W[v_1, v_2])
-                Ts.writes(Z[v, v_1])
-                with Ts.init():
-                    Z[v, v_1] = T.float32(0.0)
-                Z[v, v_1] = Z[v, v_1] + X[v, v_2] * W[v_1, v_2]
-        for i, j in T.grid(M, N):
-            with Ts.sblock(&quot;add&quot;):
-                v, v_1 = Ts.axis.remap(&quot;SS&quot;, [i, j])
-                Ts.reads(Z[v, v_1], B[v_1])
-                Ts.writes(Z[v, v_1])
-                Z[v, v_1] = Z[v, v_1] + B[v_1]
+        with Ts.sblock(&quot;root&quot;):
+            Ts.reads()
+            Ts.writes()
+            for i in range(T.int64(0), M):
+                for j in range(T.int64(0), N):
+                    for k in range(T.int64(0), K):
+                        with Ts.sblock(&quot;linear&quot;):
+                            v = Ts.axis.spatial(M, i, dtype=&quot;int64&quot;)
+                            v_1 = Ts.axis.spatial(N, j, dtype=&quot;int64&quot;)
+                            v_2 = Ts.axis.reduce(K, k, dtype=&quot;int64&quot;)
+                            Ts.reads(X[v, v_2], W[v_1, v_2])
+                            Ts.writes(Z[v, v_1])
+                            with Ts.init():
+                                Z[v, v_1] = T.float32(0.0)
+                            Z[v, v_1] = Z[v, v_1] + X[v, v_2] * W[v_1, v_2]
+            for i_1 in range(T.int64(0), M):
+                for j_1 in range(T.int64(0), N):
+                    with Ts.sblock(&quot;add&quot;):
+                        v_3 = Ts.axis.spatial(M, i_1, dtype=&quot;int64&quot;)
+                        v_4 = Ts.axis.spatial(N, j_1, dtype=&quot;int64&quot;)
+                        Ts.reads(Z[v_3, v_4], B[v_4])
+                        Ts.writes(Z[v_3, v_4])
+                        Z[v_3, v_4] = Z[v_3, v_4] + B[v_4]
 
     @R.function
     def forward(x: R.Tensor((n_1, 784), dtype=&quot;float32&quot;), fc1_weight: R.Tensor((128, 784), dtype=&quot;float32&quot;), fc1_bias: R.Tensor((128,), dtype=&quot;float32&quot;), fc2_weight: R.Tensor((10, 128), dtype=&quot;float32&quot;), fc2_bias: R.Tensor((10,), dtype=&quot;float32&quot;)) -&gt; R.Tensor((n_1, 10), dtype=&quot;float32&quot;):
-        cls = Module
         with R.dataflow():
             lv = R.call_dps_packed(&quot;env.linear&quot;, (x, fc1_weight, fc1_bias), out_ty=R.Tensor((n_1, 128), dtype=&quot;float32&quot;))
-            lv1 = R.call_tir(cls.relu, (lv,), out_ty=R.Tensor((n_1, 128), dtype=&quot;float32&quot;))
-            lv2 = R.call_tir(cls.tir_linear, (lv1, fc2_weight, fc2_bias), out_ty=R.Tensor((n_1, 10), dtype=&quot;float32&quot;))
+            lv1 = R.call_tir(Module.relu, (lv,), out_ty=R.Tensor((n_1, 128), dtype=&quot;float32&quot;))
+            lv2 = R.call_tir(Module.tir_linear, (lv1, fc2_weight, fc2_bias), out_ty=R.Tensor((n_1, 10), dtype=&quot;float32&quot;))
             gv: R.Tensor((n_1, 10), dtype=&quot;float32&quot;) = lv2
             R.output(gv)
         return lv2

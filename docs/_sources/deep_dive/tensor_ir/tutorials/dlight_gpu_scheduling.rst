@@ -168,170 +168,182 @@ Here we use a common subset of rules. The full catalog (including ``LowBatchGEMV
 
  .. code-block:: none
 
+    from __future__ import annotations
+
     # from tvm.script import ir as I
-    # from tvm.script import tirx as T
-    # from tvm.tirx.layout import Axis
-    # from tvm.script import s_tir as Ts
     # from tvm.script import relax as R
+    # from tvm.script import s_tir as Ts
+    # from tvm.script import tirx as T
 
     @I.ir_module
     class Module:
         @Ts.prim_func(private=True)
         def fused_matmul1_add1(layer_norm: T.Buffer((T.int64(1), T.int64(768)), "float32"), permute_dims1: T.Buffer((T.int64(768), T.int64(256)), "float32"), fc2_bias: T.Buffer((T.int64(256),), "float32"), T_add_intermediate: T.Buffer((T.int64(1), T.int64(256)), "float32")):
             T.func_attr({"tirx.is_scheduled": True, "tirx.noalias": True})
-            # with Ts.sblock("root"):
-            matmul_intermediate_local = Ts.sblock_alloc_buffer((T.int64(1), T.int64(256)), scope="local")
-            matmul_intermediate_rf_local = Ts.sblock_alloc_buffer((T.int64(16), T.int64(1), T.int64(256)), scope="local")
-            for ax0_fused_0 in T.thread_binding(T.int64(16), thread="blockIdx.x"):
-                for ax0_fused_1 in T.thread_binding(T.int64(16), thread="threadIdx.x"):
-                    for ax1_fused_1 in T.thread_binding(T.int64(16), thread="threadIdx.y"):
-                        with Ts.sblock("matmul_rf_init"):
-                            vax1_fused_1 = Ts.axis.spatial(T.int64(16), ax1_fused_1)
-                            v0 = Ts.axis.spatial(T.int64(256), ax0_fused_0 * T.int64(16) + ax0_fused_1)
-                            Ts.reads()
-                            Ts.writes(matmul_intermediate_rf_local[vax1_fused_1, T.int64(0), v0])
-                            matmul_intermediate_rf_local[vax1_fused_1, T.int64(0), v0] = T.float32(0.0)
-                        for ax1_fused_0, u in T.grid(T.int64(48), 1):
-                            with Ts.sblock("matmul_rf_update"):
-                                vax1_fused_1 = Ts.axis.spatial(T.int64(16), ax1_fused_1)
-                                v0 = Ts.axis.spatial(T.int64(256), ax0_fused_0 * T.int64(16) + ax0_fused_1)
-                                vax1_fused_0 = Ts.axis.reduce(T.int64(48), ax1_fused_0)
-                                Ts.reads(matmul_intermediate_rf_local[vax1_fused_1, T.int64(0), v0], layer_norm[T.int64(0), vax1_fused_0 * T.int64(16) + vax1_fused_1], permute_dims1[vax1_fused_0 * T.int64(16) + vax1_fused_1, v0])
+            with Ts.sblock("root"):
+                Ts.reads()
+                Ts.writes()
+                matmul_intermediate_local = Ts.sblock_alloc_buffer((T.int64(1), T.int64(256)), "float32", scope="local")
+                matmul_intermediate_rf_local = Ts.sblock_alloc_buffer((T.int64(16), T.int64(1), T.int64(256)), "float32", scope="local")
+                for ax0_fused_0 in T.thread_binding(T.int64(16), thread="blockIdx.x"):
+                    for ax0_fused_1 in T.thread_binding(T.int64(16), thread="threadIdx.x"):
+                        for ax1_fused_1 in T.thread_binding(T.int64(16), thread="threadIdx.y"):
+                            with Ts.sblock("matmul_rf_init"):
+                                vax1_fused_1 = Ts.axis.spatial(T.int64(16), ax1_fused_1, dtype="int64")
+                                v0 = Ts.axis.spatial(T.int64(256), ax0_fused_0 * T.int64(16) + ax0_fused_1, dtype="int64")
+                                Ts.reads()
                                 Ts.writes(matmul_intermediate_rf_local[vax1_fused_1, T.int64(0), v0])
-                                matmul_intermediate_rf_local[vax1_fused_1, T.int64(0), v0] = matmul_intermediate_rf_local[vax1_fused_1, T.int64(0), v0] + layer_norm[T.int64(0), vax1_fused_0 * T.int64(16) + vax1_fused_1] * permute_dims1[vax1_fused_0 * T.int64(16) + vax1_fused_1, v0]
-                for ax1_fused in T.thread_binding(T.int64(16), thread="threadIdx.x"):
-                    for ax0 in T.thread_binding(T.int64(16), thread="threadIdx.y"):
-                        with Ts.sblock("matmul"):
-                            vax1_fused_1 = Ts.axis.reduce(T.int64(16), ax0)
-                            v0 = Ts.axis.spatial(T.int64(256), ax0_fused_0 * T.int64(16) + ax1_fused)
-                            Ts.reads(matmul_intermediate_rf_local[vax1_fused_1, T.int64(0), v0])
-                            Ts.writes(matmul_intermediate_local[T.int64(0), v0])
-                            with Ts.init():
-                                matmul_intermediate_local[T.int64(0), v0] = T.float32(0.0)
-                            matmul_intermediate_local[T.int64(0), v0] = matmul_intermediate_local[T.int64(0), v0] + matmul_intermediate_rf_local[vax1_fused_1, T.int64(0), v0]
-                for ax0_fused_0_1 in T.thread_binding(T.int64(16), thread="threadIdx.x"):
-                    for ax0_fused_1 in range(T.int64(1)):
-                        with Ts.sblock("T_add"):
-                            v0 = Ts.axis.spatial(T.int64(256), ax0_fused_0 * T.int64(16) + ax0_fused_0_1 + ax0_fused_1)
-                            Ts.reads(matmul_intermediate_local[T.int64(0), v0], fc2_bias[v0])
-                            Ts.writes(T_add_intermediate[T.int64(0), v0])
-                            T_add_intermediate[T.int64(0), v0] = matmul_intermediate_local[T.int64(0), v0] + fc2_bias[v0]
+                                matmul_intermediate_rf_local[vax1_fused_1, T.int64(0), v0] = T.float32(0.0)
+                            for ax1_fused_0 in range(T.int64(0), T.int64(48)):
+                                for u in range(1):
+                                    with Ts.sblock("matmul_rf_update"):
+                                        vax1_fused_1_1 = Ts.axis.spatial(T.int64(16), ax1_fused_1, dtype="int64")
+                                        v0_1 = Ts.axis.spatial(T.int64(256), ax0_fused_0 * T.int64(16) + ax0_fused_1, dtype="int64")
+                                        vax1_fused_0 = Ts.axis.reduce(T.int64(48), ax1_fused_0, dtype="int64")
+                                        Ts.reads(matmul_intermediate_rf_local[vax1_fused_1_1, T.int64(0), v0_1], layer_norm[T.int64(0), vax1_fused_0 * T.int64(16) + vax1_fused_1_1], permute_dims1[vax1_fused_0 * T.int64(16) + vax1_fused_1_1, v0_1])
+                                        Ts.writes(matmul_intermediate_rf_local[vax1_fused_1_1, T.int64(0), v0_1])
+                                        matmul_intermediate_rf_local[vax1_fused_1_1, T.int64(0), v0_1] = matmul_intermediate_rf_local[vax1_fused_1_1, T.int64(0), v0_1] + layer_norm[T.int64(0), vax1_fused_0 * T.int64(16) + vax1_fused_1_1] * permute_dims1[vax1_fused_0 * T.int64(16) + vax1_fused_1_1, v0_1]
+                    for ax1_fused in T.thread_binding(T.int64(16), thread="threadIdx.x"):
+                        for ax0 in T.thread_binding(T.int64(16), thread="threadIdx.y"):
+                            with Ts.sblock("matmul"):
+                                vax1_fused_1_2 = Ts.axis.reduce(T.int64(16), ax0, dtype="int64")
+                                v0_2 = Ts.axis.spatial(T.int64(256), ax0_fused_0 * T.int64(16) + ax1_fused, dtype="int64")
+                                Ts.reads(matmul_intermediate_rf_local[vax1_fused_1_2, T.int64(0), v0_2])
+                                Ts.writes(matmul_intermediate_local[T.int64(0), v0_2])
+                                with Ts.init():
+                                    matmul_intermediate_local[T.int64(0), v0_2] = T.float32(0.0)
+                                matmul_intermediate_local[T.int64(0), v0_2] = matmul_intermediate_local[T.int64(0), v0_2] + matmul_intermediate_rf_local[vax1_fused_1_2, T.int64(0), v0_2]
+                    for ax0_fused_0_1 in T.thread_binding(T.int64(16), thread="threadIdx.x"):
+                        for ax0_fused_1_1 in range(T.int64(0), T.int64(1)):
+                            with Ts.sblock("T_add"):
+                                v0_3 = Ts.axis.spatial(T.int64(256), ax0_fused_0 * T.int64(16) + ax0_fused_0_1 + ax0_fused_1_1, dtype="int64")
+                                Ts.reads(matmul_intermediate_local[T.int64(0), v0_3], fc2_bias[v0_3])
+                                Ts.writes(T_add_intermediate[T.int64(0), v0_3])
+                                T_add_intermediate[T.int64(0), v0_3] = matmul_intermediate_local[T.int64(0), v0_3] + fc2_bias[v0_3]
 
         @Ts.prim_func(private=True)
         def fused_matmul_add_relu(x: T.Buffer((T.int64(1), T.int64(768)), "float32"), permute_dims: T.Buffer((T.int64(768), T.int64(768)), "float32"), fc1_bias: T.Buffer((T.int64(768),), "float32"), compute_intermediate: T.Buffer((T.int64(1), T.int64(768)), "float32")):
             T.func_attr({"tirx.is_scheduled": True, "tirx.noalias": True})
-            # with Ts.sblock("root"):
-            matmul_intermediate_local = Ts.sblock_alloc_buffer((T.int64(1), T.int64(768)), scope="local")
-            matmul_intermediate_rf_local = Ts.sblock_alloc_buffer((T.int64(16), T.int64(1), T.int64(768)), scope="local")
-            for ax0_fused_0 in T.thread_binding(T.int64(48), thread="blockIdx.x"):
-                for ax0_fused_1 in T.thread_binding(T.int64(16), thread="threadIdx.x"):
-                    for ax1_fused_1 in T.thread_binding(T.int64(16), thread="threadIdx.y"):
-                        with Ts.sblock("matmul_rf_init"):
-                            vax1_fused_1 = Ts.axis.spatial(T.int64(16), ax1_fused_1)
-                            v0 = Ts.axis.spatial(T.int64(768), ax0_fused_0 * T.int64(16) + ax0_fused_1)
-                            Ts.reads()
-                            Ts.writes(matmul_intermediate_rf_local[vax1_fused_1, T.int64(0), v0])
-                            matmul_intermediate_rf_local[vax1_fused_1, T.int64(0), v0] = T.float32(0.0)
-                        for ax1_fused_0, u in T.grid(T.int64(48), 1):
-                            with Ts.sblock("matmul_rf_update"):
-                                vax1_fused_1 = Ts.axis.spatial(T.int64(16), ax1_fused_1)
-                                v0 = Ts.axis.spatial(T.int64(768), ax0_fused_0 * T.int64(16) + ax0_fused_1)
-                                vax1_fused_0 = Ts.axis.reduce(T.int64(48), ax1_fused_0)
-                                Ts.reads(matmul_intermediate_rf_local[vax1_fused_1, T.int64(0), v0], x[T.int64(0), vax1_fused_0 * T.int64(16) + vax1_fused_1], permute_dims[vax1_fused_0 * T.int64(16) + vax1_fused_1, v0])
+            with Ts.sblock("root"):
+                Ts.reads()
+                Ts.writes()
+                matmul_intermediate_local = Ts.sblock_alloc_buffer((T.int64(1), T.int64(768)), "float32", scope="local")
+                matmul_intermediate_rf_local = Ts.sblock_alloc_buffer((T.int64(16), T.int64(1), T.int64(768)), "float32", scope="local")
+                for ax0_fused_0 in T.thread_binding(T.int64(48), thread="blockIdx.x"):
+                    for ax0_fused_1 in T.thread_binding(T.int64(16), thread="threadIdx.x"):
+                        for ax1_fused_1 in T.thread_binding(T.int64(16), thread="threadIdx.y"):
+                            with Ts.sblock("matmul_rf_init"):
+                                vax1_fused_1 = Ts.axis.spatial(T.int64(16), ax1_fused_1, dtype="int64")
+                                v0 = Ts.axis.spatial(T.int64(768), ax0_fused_0 * T.int64(16) + ax0_fused_1, dtype="int64")
+                                Ts.reads()
                                 Ts.writes(matmul_intermediate_rf_local[vax1_fused_1, T.int64(0), v0])
-                                matmul_intermediate_rf_local[vax1_fused_1, T.int64(0), v0] = matmul_intermediate_rf_local[vax1_fused_1, T.int64(0), v0] + x[T.int64(0), vax1_fused_0 * T.int64(16) + vax1_fused_1] * permute_dims[vax1_fused_0 * T.int64(16) + vax1_fused_1, v0]
-                for ax1_fused in T.thread_binding(T.int64(16), thread="threadIdx.x"):
-                    for ax0 in T.thread_binding(T.int64(16), thread="threadIdx.y"):
-                        with Ts.sblock("matmul"):
-                            vax1_fused_1 = Ts.axis.reduce(T.int64(16), ax0)
-                            v0 = Ts.axis.spatial(T.int64(768), ax0_fused_0 * T.int64(16) + ax1_fused)
-                            Ts.reads(matmul_intermediate_rf_local[vax1_fused_1, T.int64(0), v0])
-                            Ts.writes(matmul_intermediate_local[T.int64(0), v0])
-                            with Ts.init():
-                                matmul_intermediate_local[T.int64(0), v0] = T.float32(0.0)
-                            matmul_intermediate_local[T.int64(0), v0] = matmul_intermediate_local[T.int64(0), v0] + matmul_intermediate_rf_local[vax1_fused_1, T.int64(0), v0]
-                for ax0_fused_0_1 in T.thread_binding(T.int64(16), thread="threadIdx.x"):
-                    for ax0_fused_1 in range(T.int64(1)):
-                        with Ts.sblock("compute"):
-                            v0 = Ts.axis.spatial(T.int64(768), ax0_fused_0 * T.int64(16) + ax0_fused_0_1 + ax0_fused_1)
-                            Ts.reads(matmul_intermediate_local[T.int64(0), v0], fc1_bias[v0])
-                            Ts.writes(compute_intermediate[T.int64(0), v0])
-                            compute_intermediate[T.int64(0), v0] = T.max(matmul_intermediate_local[T.int64(0), v0] + fc1_bias[v0], T.float32(0.0))
+                                matmul_intermediate_rf_local[vax1_fused_1, T.int64(0), v0] = T.float32(0.0)
+                            for ax1_fused_0 in range(T.int64(0), T.int64(48)):
+                                for u in range(1):
+                                    with Ts.sblock("matmul_rf_update"):
+                                        vax1_fused_1_1 = Ts.axis.spatial(T.int64(16), ax1_fused_1, dtype="int64")
+                                        v0_1 = Ts.axis.spatial(T.int64(768), ax0_fused_0 * T.int64(16) + ax0_fused_1, dtype="int64")
+                                        vax1_fused_0 = Ts.axis.reduce(T.int64(48), ax1_fused_0, dtype="int64")
+                                        Ts.reads(matmul_intermediate_rf_local[vax1_fused_1_1, T.int64(0), v0_1], x[T.int64(0), vax1_fused_0 * T.int64(16) + vax1_fused_1_1], permute_dims[vax1_fused_0 * T.int64(16) + vax1_fused_1_1, v0_1])
+                                        Ts.writes(matmul_intermediate_rf_local[vax1_fused_1_1, T.int64(0), v0_1])
+                                        matmul_intermediate_rf_local[vax1_fused_1_1, T.int64(0), v0_1] = matmul_intermediate_rf_local[vax1_fused_1_1, T.int64(0), v0_1] + x[T.int64(0), vax1_fused_0 * T.int64(16) + vax1_fused_1_1] * permute_dims[vax1_fused_0 * T.int64(16) + vax1_fused_1_1, v0_1]
+                    for ax1_fused in T.thread_binding(T.int64(16), thread="threadIdx.x"):
+                        for ax0 in T.thread_binding(T.int64(16), thread="threadIdx.y"):
+                            with Ts.sblock("matmul"):
+                                vax1_fused_1_2 = Ts.axis.reduce(T.int64(16), ax0, dtype="int64")
+                                v0_2 = Ts.axis.spatial(T.int64(768), ax0_fused_0 * T.int64(16) + ax1_fused, dtype="int64")
+                                Ts.reads(matmul_intermediate_rf_local[vax1_fused_1_2, T.int64(0), v0_2])
+                                Ts.writes(matmul_intermediate_local[T.int64(0), v0_2])
+                                with Ts.init():
+                                    matmul_intermediate_local[T.int64(0), v0_2] = T.float32(0.0)
+                                matmul_intermediate_local[T.int64(0), v0_2] = matmul_intermediate_local[T.int64(0), v0_2] + matmul_intermediate_rf_local[vax1_fused_1_2, T.int64(0), v0_2]
+                    for ax0_fused_0_1 in T.thread_binding(T.int64(16), thread="threadIdx.x"):
+                        for ax0_fused_1_1 in range(T.int64(0), T.int64(1)):
+                            with Ts.sblock("compute"):
+                                v0_3 = Ts.axis.spatial(T.int64(768), ax0_fused_0 * T.int64(16) + ax0_fused_0_1 + ax0_fused_1_1, dtype="int64")
+                                Ts.reads(matmul_intermediate_local[T.int64(0), v0_3], fc1_bias[v0_3])
+                                Ts.writes(compute_intermediate[T.int64(0), v0_3])
+                                compute_intermediate[T.int64(0), v0_3] = T.max(matmul_intermediate_local[T.int64(0), v0_3] + fc1_bias[v0_3], T.float32(0.0))
 
         @Ts.prim_func(private=True)
         def layer_norm(relu: T.Buffer((T.int64(1), T.int64(768)), "float32"), norm_weight: T.Buffer((T.int64(768),), "float32"), norm_bias: T.Buffer((T.int64(768),), "float32"), T_layer_norm: T.Buffer((T.int64(1), T.int64(768)), "float32")):
             T.func_attr({"op_pattern": 4, "tirx.is_scheduled": True, "tirx.noalias": True})
-            # with Ts.sblock("root"):
-            relu_sum_shared = Ts.sblock_alloc_buffer((T.int64(1),), scope="shared")
-            relu_var_sum_shared = Ts.sblock_alloc_buffer((T.int64(1),), scope="shared")
-            for ax0_fused in T.thread_binding(T.int64(1), thread="blockIdx.x"):
-                for ax0 in range(T.int64(1)):
-                    for ax1_fused_1 in T.thread_binding(T.int64(256), thread="threadIdx.x"):
-                        for ax1_fused_0 in T.serial(T.int64(3), annotations={"pragma_auto_unroll_max_step": 256, "pragma_unroll_explicit": 1}):
-                            with Ts.sblock("relu_sum"):
-                                v0 = Ts.axis.spatial(T.int64(1), ax0)
-                                v1 = Ts.axis.reduce(T.int64(768), ax1_fused_0 * T.int64(256) + ax1_fused_1)
-                                Ts.reads(relu[T.int64(0), v1])
-                                Ts.writes(relu_sum_shared[T.int64(0)])
-                                with Ts.init():
-                                    relu_sum_shared[T.int64(0)] = T.float32(0.0)
-                                relu_sum_shared[T.int64(0)] = relu_sum_shared[T.int64(0)] + relu[T.int64(0), v1]
-                for ax0 in range(T.int64(1)):
-                    for ax1_fused_1 in T.thread_binding(T.int64(256), thread="threadIdx.x"):
-                        for ax1_fused_0 in T.serial(T.int64(3), annotations={"pragma_auto_unroll_max_step": 256, "pragma_unroll_explicit": 1}):
-                            with Ts.sblock("relu_var_sum"):
-                                v0 = Ts.axis.spatial(T.int64(1), ax0)
-                                v1 = Ts.axis.reduce(T.int64(768), ax1_fused_0 * T.int64(256) + ax1_fused_1)
-                                Ts.reads(relu[T.int64(0), v1], relu_sum_shared[T.int64(0)])
-                                Ts.writes(relu_var_sum_shared[T.int64(0)])
-                                with Ts.init():
-                                    relu_var_sum_shared[T.int64(0)] = T.float32(0.0)
-                                relu_var_sum_shared[T.int64(0)] = relu_var_sum_shared[T.int64(0)] + (relu[T.int64(0), v1] - relu_sum_shared[T.int64(0)] / T.float32(768.0)) * (relu[T.int64(0), v1] - relu_sum_shared[T.int64(0)] / T.float32(768.0))
-                for ax1_1 in T.thread_binding(T.int64(256), thread="threadIdx.x"):
-                    for ax1_0 in T.serial(T.int64(3), annotations={"pragma_auto_unroll_max_step": 256, "pragma_unroll_explicit": 1}):
-                        with Ts.sblock("T_layer_norm"):
-                            v0 = Ts.axis.spatial(T.int64(1), T.int64(0))
-                            v1 = Ts.axis.spatial(T.int64(768), ax1_0 * T.int64(256) + ax1_1)
-                            Ts.reads(relu[T.int64(0), v1], relu_sum_shared[T.int64(0)], relu_var_sum_shared[T.int64(0)], norm_weight[v1], norm_bias[v1])
-                            Ts.writes(T_layer_norm[T.int64(0), v1])
-                            T_layer_norm[T.int64(0), v1] = (relu[T.int64(0), v1] - relu_sum_shared[T.int64(0)] / T.float32(768.0)) * T.rsqrt(relu_var_sum_shared[T.int64(0)] / T.float32(768.0) + T.float32(1.0000000000000001e-05)) * norm_weight[v1] + norm_bias[v1]
+            with Ts.sblock("root"):
+                Ts.reads()
+                Ts.writes()
+                relu_sum_shared = Ts.sblock_alloc_buffer((T.int64(1),), "float32", scope="shared")
+                relu_var_sum_shared = Ts.sblock_alloc_buffer((T.int64(1),), "float32", scope="shared")
+                for ax0_fused in T.thread_binding(T.int64(1), thread="blockIdx.x"):
+                    for ax0 in range(T.int64(0), T.int64(1)):
+                        for ax1_fused_1 in T.thread_binding(T.int64(256), thread="threadIdx.x"):
+                            for ax1_fused_0 in T.serial(T.int64(0), T.int64(3), annotations={"pragma_auto_unroll_max_step": 256, "pragma_unroll_explicit": 1}):
+                                with Ts.sblock("relu_sum"):
+                                    v0 = Ts.axis.spatial(T.int64(1), ax0, dtype="int64")
+                                    v1 = Ts.axis.reduce(T.int64(768), ax1_fused_0 * T.int64(256) + ax1_fused_1, dtype="int64")
+                                    Ts.reads(relu[T.int64(0), v1])
+                                    Ts.writes(relu_sum_shared[T.int64(0)])
+                                    with Ts.init():
+                                        relu_sum_shared[T.int64(0)] = T.float32(0.0)
+                                    relu_sum_shared[T.int64(0)] = relu_sum_shared[T.int64(0)] + relu[T.int64(0), v1]
+                    for ax0_1 in range(T.int64(0), T.int64(1)):
+                        for ax1_fused_1_1 in T.thread_binding(T.int64(256), thread="threadIdx.x"):
+                            for ax1_fused_0_1 in T.serial(T.int64(0), T.int64(3), annotations={"pragma_auto_unroll_max_step": 256, "pragma_unroll_explicit": 1}):
+                                with Ts.sblock("relu_var_sum"):
+                                    v0_1 = Ts.axis.spatial(T.int64(1), ax0_1, dtype="int64")
+                                    v1_1 = Ts.axis.reduce(T.int64(768), ax1_fused_0_1 * T.int64(256) + ax1_fused_1_1, dtype="int64")
+                                    Ts.reads(relu[T.int64(0), v1_1], relu_sum_shared[T.int64(0)])
+                                    Ts.writes(relu_var_sum_shared[T.int64(0)])
+                                    with Ts.init():
+                                        relu_var_sum_shared[T.int64(0)] = T.float32(0.0)
+                                    relu_var_sum_shared[T.int64(0)] = relu_var_sum_shared[T.int64(0)] + (relu[T.int64(0), v1_1] - relu_sum_shared[T.int64(0)] / T.float32(768.0)) * (relu[T.int64(0), v1_1] - relu_sum_shared[T.int64(0)] / T.float32(768.0))
+                    for ax1_1 in T.thread_binding(T.int64(256), thread="threadIdx.x"):
+                        for ax1_0 in T.serial(T.int64(0), T.int64(3), annotations={"pragma_auto_unroll_max_step": 256, "pragma_unroll_explicit": 1}):
+                            with Ts.sblock("T_layer_norm"):
+                                v0_2 = Ts.axis.spatial(T.int64(1), T.int64(0), dtype="int64")
+                                v1_2 = Ts.axis.spatial(T.int64(768), ax1_0 * T.int64(256) + ax1_1, dtype="int64")
+                                Ts.reads(relu[T.int64(0), v1_2], relu_sum_shared[T.int64(0)], relu_var_sum_shared[T.int64(0)], norm_weight[v1_2], norm_bias[v1_2])
+                                Ts.writes(T_layer_norm[T.int64(0), v1_2])
+                                T_layer_norm[T.int64(0), v1_2] = (relu[T.int64(0), v1_2] - relu_sum_shared[T.int64(0)] / T.float32(768.0)) * I.Call("tirx.rsqrt", [relu_var_sum_shared[T.int64(0)] / T.float32(768.0) + T.float32(1.0000000000000001e-05)], ty="float32") * norm_weight[v1_2] + norm_bias[v1_2]
 
         @Ts.prim_func(private=True)
         def transpose(fc1_weight: T.Buffer((T.int64(768), T.int64(768)), "float32"), T_transpose: T.Buffer((T.int64(768), T.int64(768)), "float32")):
             T.func_attr({"op_pattern": 2, "tirx.is_scheduled": True, "tirx.noalias": True})
-            # with Ts.sblock("root"):
-            for ax0_ax1_fused_0 in T.thread_binding(T.int64(576), thread="blockIdx.x"):
-                for ax0_ax1_fused_1 in T.thread_binding(T.int64(1024), thread="threadIdx.x"):
-                    with Ts.sblock("T_transpose"):
-                        v0 = Ts.axis.spatial(T.int64(768), (ax0_ax1_fused_0 * T.int64(1024) + ax0_ax1_fused_1) // T.int64(768))
-                        v1 = Ts.axis.spatial(T.int64(768), (ax0_ax1_fused_0 * T.int64(1024) + ax0_ax1_fused_1) % T.int64(768))
-                        Ts.reads(fc1_weight[v1, v0])
-                        Ts.writes(T_transpose[v0, v1])
-                        T_transpose[v0, v1] = fc1_weight[v1, v0]
+            with Ts.sblock("root"):
+                Ts.reads()
+                Ts.writes()
+                for ax0_ax1_fused_0 in T.thread_binding(T.int64(576), thread="blockIdx.x"):
+                    for ax0_ax1_fused_1 in T.thread_binding(T.int64(1024), thread="threadIdx.x"):
+                        with Ts.sblock("T_transpose"):
+                            v0 = Ts.axis.spatial(T.int64(768), (ax0_ax1_fused_0 * T.int64(1024) + ax0_ax1_fused_1) // T.int64(768), dtype="int64")
+                            v1 = Ts.axis.spatial(T.int64(768), (ax0_ax1_fused_0 * T.int64(1024) + ax0_ax1_fused_1) % T.int64(768), dtype="int64")
+                            Ts.reads(fc1_weight[v1, v0])
+                            Ts.writes(T_transpose[v0, v1])
+                            T_transpose[v0, v1] = fc1_weight[v1, v0]
 
         @Ts.prim_func(private=True)
         def transpose1(fc2_weight: T.Buffer((T.int64(256), T.int64(768)), "float32"), T_transpose: T.Buffer((T.int64(768), T.int64(256)), "float32")):
             T.func_attr({"op_pattern": 2, "tirx.is_scheduled": True, "tirx.noalias": True})
-            # with Ts.sblock("root"):
-            for ax0_ax1_fused_0 in T.thread_binding(T.int64(192), thread="blockIdx.x"):
-                for ax0_ax1_fused_1 in T.thread_binding(T.int64(1024), thread="threadIdx.x"):
-                    with Ts.sblock("T_transpose"):
-                        v0 = Ts.axis.spatial(T.int64(768), (ax0_ax1_fused_0 * T.int64(1024) + ax0_ax1_fused_1) // T.int64(256))
-                        v1 = Ts.axis.spatial(T.int64(256), (ax0_ax1_fused_0 * T.int64(1024) + ax0_ax1_fused_1) % T.int64(256))
-                        Ts.reads(fc2_weight[v1, v0])
-                        Ts.writes(T_transpose[v0, v1])
-                        T_transpose[v0, v1] = fc2_weight[v1, v0]
+            with Ts.sblock("root"):
+                Ts.reads()
+                Ts.writes()
+                for ax0_ax1_fused_0 in T.thread_binding(T.int64(192), thread="blockIdx.x"):
+                    for ax0_ax1_fused_1 in T.thread_binding(T.int64(1024), thread="threadIdx.x"):
+                        with Ts.sblock("T_transpose"):
+                            v0 = Ts.axis.spatial(T.int64(768), (ax0_ax1_fused_0 * T.int64(1024) + ax0_ax1_fused_1) // T.int64(256), dtype="int64")
+                            v1 = Ts.axis.spatial(T.int64(256), (ax0_ax1_fused_0 * T.int64(1024) + ax0_ax1_fused_1) % T.int64(256), dtype="int64")
+                            Ts.reads(fc2_weight[v1, v0])
+                            Ts.writes(T_transpose[v0, v1])
+                            T_transpose[v0, v1] = fc2_weight[v1, v0]
 
         @R.function
         def forward(x: R.Tensor((1, 768), dtype="float32"), fc1_weight: R.Tensor((768, 768), dtype="float32"), fc1_bias: R.Tensor((768,), dtype="float32"), norm_weight: R.Tensor((768,), dtype="float32"), norm_bias: R.Tensor((768,), dtype="float32"), fc2_weight: R.Tensor((256, 768), dtype="float32"), fc2_bias: R.Tensor((256,), dtype="float32")) -> R.Tensor((1, 256), dtype="float32"):
             R.func_attr({"num_input": 1})
-            cls = Module
             with R.dataflow():
-                permute_dims = R.call_tir(cls.transpose, (fc1_weight,), out_ty=R.Tensor((768, 768), dtype="float32"))
-                lv = R.call_tir(cls.fused_matmul_add_relu, (x, permute_dims, fc1_bias), out_ty=R.Tensor((1, 768), dtype="float32"))
-                layer_norm = R.call_tir(cls.layer_norm, (lv, norm_weight, norm_bias), out_ty=R.Tensor((1, 768), dtype="float32"))
-                permute_dims1 = R.call_tir(cls.transpose1, (fc2_weight,), out_ty=R.Tensor((768, 256), dtype="float32"))
-                gv = R.call_tir(cls.fused_matmul1_add1, (layer_norm, permute_dims1, fc2_bias), out_ty=R.Tensor((1, 256), dtype="float32"))
+                permute_dims = R.call_tir(Module.transpose, (fc1_weight,), out_ty=R.Tensor((768, 768), dtype="float32"))
+                lv = R.call_tir(Module.fused_matmul_add_relu, (x, permute_dims, fc1_bias), out_ty=R.Tensor((1, 768), dtype="float32"))
+                layer_norm = R.call_tir(Module.layer_norm, (lv, norm_weight, norm_bias), out_ty=R.Tensor((1, 768), dtype="float32"))
+                permute_dims1 = R.call_tir(Module.transpose1, (fc2_weight,), out_ty=R.Tensor((768, 256), dtype="float32"))
+                gv = R.call_tir(Module.fused_matmul1_add1, (layer_norm, permute_dims1, fc2_bias), out_ty=R.Tensor((1, 256), dtype="float32"))
                 R.output(gv)
             return gv
 
@@ -601,170 +613,182 @@ Insert the custom rule into the rule chain. Note that ``from_callable`` returns 
 
  .. code-block:: none
 
+    from __future__ import annotations
+
     # from tvm.script import ir as I
-    # from tvm.script import tirx as T
-    # from tvm.tirx.layout import Axis
-    # from tvm.script import s_tir as Ts
     # from tvm.script import relax as R
+    # from tvm.script import s_tir as Ts
+    # from tvm.script import tirx as T
 
     @I.ir_module
     class Module:
         @Ts.prim_func(private=True)
         def fused_matmul1_add1(layer_norm: T.Buffer((T.int64(1), T.int64(768)), "float32"), permute_dims1: T.Buffer((T.int64(768), T.int64(256)), "float32"), fc2_bias: T.Buffer((T.int64(256),), "float32"), T_add_intermediate: T.Buffer((T.int64(1), T.int64(256)), "float32")):
             T.func_attr({"tirx.is_scheduled": True, "tirx.noalias": True})
-            # with Ts.sblock("root"):
-            matmul_intermediate_local = Ts.sblock_alloc_buffer((T.int64(1), T.int64(256)), scope="local")
-            matmul_intermediate_rf_local = Ts.sblock_alloc_buffer((T.int64(16), T.int64(1), T.int64(256)), scope="local")
-            for ax0_fused_0 in T.thread_binding(T.int64(16), thread="blockIdx.x"):
-                for ax0_fused_1 in T.thread_binding(T.int64(16), thread="threadIdx.x"):
-                    for ax1_fused_1 in T.thread_binding(T.int64(16), thread="threadIdx.y"):
-                        with Ts.sblock("matmul_rf_init"):
-                            vax1_fused_1 = Ts.axis.spatial(T.int64(16), ax1_fused_1)
-                            v0 = Ts.axis.spatial(T.int64(256), ax0_fused_0 * T.int64(16) + ax0_fused_1)
-                            Ts.reads()
-                            Ts.writes(matmul_intermediate_rf_local[vax1_fused_1, T.int64(0), v0])
-                            matmul_intermediate_rf_local[vax1_fused_1, T.int64(0), v0] = T.float32(0.0)
-                        for ax1_fused_0, u in T.grid(T.int64(48), 1):
-                            with Ts.sblock("matmul_rf_update"):
-                                vax1_fused_1 = Ts.axis.spatial(T.int64(16), ax1_fused_1)
-                                v0 = Ts.axis.spatial(T.int64(256), ax0_fused_0 * T.int64(16) + ax0_fused_1)
-                                vax1_fused_0 = Ts.axis.reduce(T.int64(48), ax1_fused_0)
-                                Ts.reads(matmul_intermediate_rf_local[vax1_fused_1, T.int64(0), v0], layer_norm[T.int64(0), vax1_fused_0 * T.int64(16) + vax1_fused_1], permute_dims1[vax1_fused_0 * T.int64(16) + vax1_fused_1, v0])
+            with Ts.sblock("root"):
+                Ts.reads()
+                Ts.writes()
+                matmul_intermediate_local = Ts.sblock_alloc_buffer((T.int64(1), T.int64(256)), "float32", scope="local")
+                matmul_intermediate_rf_local = Ts.sblock_alloc_buffer((T.int64(16), T.int64(1), T.int64(256)), "float32", scope="local")
+                for ax0_fused_0 in T.thread_binding(T.int64(16), thread="blockIdx.x"):
+                    for ax0_fused_1 in T.thread_binding(T.int64(16), thread="threadIdx.x"):
+                        for ax1_fused_1 in T.thread_binding(T.int64(16), thread="threadIdx.y"):
+                            with Ts.sblock("matmul_rf_init"):
+                                vax1_fused_1 = Ts.axis.spatial(T.int64(16), ax1_fused_1, dtype="int64")
+                                v0 = Ts.axis.spatial(T.int64(256), ax0_fused_0 * T.int64(16) + ax0_fused_1, dtype="int64")
+                                Ts.reads()
                                 Ts.writes(matmul_intermediate_rf_local[vax1_fused_1, T.int64(0), v0])
-                                matmul_intermediate_rf_local[vax1_fused_1, T.int64(0), v0] = matmul_intermediate_rf_local[vax1_fused_1, T.int64(0), v0] + layer_norm[T.int64(0), vax1_fused_0 * T.int64(16) + vax1_fused_1] * permute_dims1[vax1_fused_0 * T.int64(16) + vax1_fused_1, v0]
-                for ax1_fused in T.thread_binding(T.int64(16), thread="threadIdx.x"):
-                    for ax0 in T.thread_binding(T.int64(16), thread="threadIdx.y"):
-                        with Ts.sblock("matmul"):
-                            vax1_fused_1 = Ts.axis.reduce(T.int64(16), ax0)
-                            v0 = Ts.axis.spatial(T.int64(256), ax0_fused_0 * T.int64(16) + ax1_fused)
-                            Ts.reads(matmul_intermediate_rf_local[vax1_fused_1, T.int64(0), v0])
-                            Ts.writes(matmul_intermediate_local[T.int64(0), v0])
-                            with Ts.init():
-                                matmul_intermediate_local[T.int64(0), v0] = T.float32(0.0)
-                            matmul_intermediate_local[T.int64(0), v0] = matmul_intermediate_local[T.int64(0), v0] + matmul_intermediate_rf_local[vax1_fused_1, T.int64(0), v0]
-                for ax0_fused_0_1 in T.thread_binding(T.int64(16), thread="threadIdx.x"):
-                    for ax0_fused_1 in range(T.int64(1)):
-                        with Ts.sblock("T_add"):
-                            v0 = Ts.axis.spatial(T.int64(256), ax0_fused_0 * T.int64(16) + ax0_fused_0_1 + ax0_fused_1)
-                            Ts.reads(matmul_intermediate_local[T.int64(0), v0], fc2_bias[v0])
-                            Ts.writes(T_add_intermediate[T.int64(0), v0])
-                            T_add_intermediate[T.int64(0), v0] = matmul_intermediate_local[T.int64(0), v0] + fc2_bias[v0]
+                                matmul_intermediate_rf_local[vax1_fused_1, T.int64(0), v0] = T.float32(0.0)
+                            for ax1_fused_0 in range(T.int64(0), T.int64(48)):
+                                for u in range(1):
+                                    with Ts.sblock("matmul_rf_update"):
+                                        vax1_fused_1_1 = Ts.axis.spatial(T.int64(16), ax1_fused_1, dtype="int64")
+                                        v0_1 = Ts.axis.spatial(T.int64(256), ax0_fused_0 * T.int64(16) + ax0_fused_1, dtype="int64")
+                                        vax1_fused_0 = Ts.axis.reduce(T.int64(48), ax1_fused_0, dtype="int64")
+                                        Ts.reads(matmul_intermediate_rf_local[vax1_fused_1_1, T.int64(0), v0_1], layer_norm[T.int64(0), vax1_fused_0 * T.int64(16) + vax1_fused_1_1], permute_dims1[vax1_fused_0 * T.int64(16) + vax1_fused_1_1, v0_1])
+                                        Ts.writes(matmul_intermediate_rf_local[vax1_fused_1_1, T.int64(0), v0_1])
+                                        matmul_intermediate_rf_local[vax1_fused_1_1, T.int64(0), v0_1] = matmul_intermediate_rf_local[vax1_fused_1_1, T.int64(0), v0_1] + layer_norm[T.int64(0), vax1_fused_0 * T.int64(16) + vax1_fused_1_1] * permute_dims1[vax1_fused_0 * T.int64(16) + vax1_fused_1_1, v0_1]
+                    for ax1_fused in T.thread_binding(T.int64(16), thread="threadIdx.x"):
+                        for ax0 in T.thread_binding(T.int64(16), thread="threadIdx.y"):
+                            with Ts.sblock("matmul"):
+                                vax1_fused_1_2 = Ts.axis.reduce(T.int64(16), ax0, dtype="int64")
+                                v0_2 = Ts.axis.spatial(T.int64(256), ax0_fused_0 * T.int64(16) + ax1_fused, dtype="int64")
+                                Ts.reads(matmul_intermediate_rf_local[vax1_fused_1_2, T.int64(0), v0_2])
+                                Ts.writes(matmul_intermediate_local[T.int64(0), v0_2])
+                                with Ts.init():
+                                    matmul_intermediate_local[T.int64(0), v0_2] = T.float32(0.0)
+                                matmul_intermediate_local[T.int64(0), v0_2] = matmul_intermediate_local[T.int64(0), v0_2] + matmul_intermediate_rf_local[vax1_fused_1_2, T.int64(0), v0_2]
+                    for ax0_fused_0_1 in T.thread_binding(T.int64(16), thread="threadIdx.x"):
+                        for ax0_fused_1_1 in range(T.int64(0), T.int64(1)):
+                            with Ts.sblock("T_add"):
+                                v0_3 = Ts.axis.spatial(T.int64(256), ax0_fused_0 * T.int64(16) + ax0_fused_0_1 + ax0_fused_1_1, dtype="int64")
+                                Ts.reads(matmul_intermediate_local[T.int64(0), v0_3], fc2_bias[v0_3])
+                                Ts.writes(T_add_intermediate[T.int64(0), v0_3])
+                                T_add_intermediate[T.int64(0), v0_3] = matmul_intermediate_local[T.int64(0), v0_3] + fc2_bias[v0_3]
 
         @Ts.prim_func(private=True)
         def fused_matmul_add_relu(x: T.Buffer((T.int64(1), T.int64(768)), "float32"), permute_dims: T.Buffer((T.int64(768), T.int64(768)), "float32"), fc1_bias: T.Buffer((T.int64(768),), "float32"), compute_intermediate: T.Buffer((T.int64(1), T.int64(768)), "float32")):
             T.func_attr({"tirx.is_scheduled": True, "tirx.noalias": True})
-            # with Ts.sblock("root"):
-            matmul_intermediate_local = Ts.sblock_alloc_buffer((T.int64(1), T.int64(768)), scope="local")
-            matmul_intermediate_rf_local = Ts.sblock_alloc_buffer((T.int64(16), T.int64(1), T.int64(768)), scope="local")
-            for ax0_fused_0 in T.thread_binding(T.int64(48), thread="blockIdx.x"):
-                for ax0_fused_1 in T.thread_binding(T.int64(16), thread="threadIdx.x"):
-                    for ax1_fused_1 in T.thread_binding(T.int64(16), thread="threadIdx.y"):
-                        with Ts.sblock("matmul_rf_init"):
-                            vax1_fused_1 = Ts.axis.spatial(T.int64(16), ax1_fused_1)
-                            v0 = Ts.axis.spatial(T.int64(768), ax0_fused_0 * T.int64(16) + ax0_fused_1)
-                            Ts.reads()
-                            Ts.writes(matmul_intermediate_rf_local[vax1_fused_1, T.int64(0), v0])
-                            matmul_intermediate_rf_local[vax1_fused_1, T.int64(0), v0] = T.float32(0.0)
-                        for ax1_fused_0, u in T.grid(T.int64(48), 1):
-                            with Ts.sblock("matmul_rf_update"):
-                                vax1_fused_1 = Ts.axis.spatial(T.int64(16), ax1_fused_1)
-                                v0 = Ts.axis.spatial(T.int64(768), ax0_fused_0 * T.int64(16) + ax0_fused_1)
-                                vax1_fused_0 = Ts.axis.reduce(T.int64(48), ax1_fused_0)
-                                Ts.reads(matmul_intermediate_rf_local[vax1_fused_1, T.int64(0), v0], x[T.int64(0), vax1_fused_0 * T.int64(16) + vax1_fused_1], permute_dims[vax1_fused_0 * T.int64(16) + vax1_fused_1, v0])
+            with Ts.sblock("root"):
+                Ts.reads()
+                Ts.writes()
+                matmul_intermediate_local = Ts.sblock_alloc_buffer((T.int64(1), T.int64(768)), "float32", scope="local")
+                matmul_intermediate_rf_local = Ts.sblock_alloc_buffer((T.int64(16), T.int64(1), T.int64(768)), "float32", scope="local")
+                for ax0_fused_0 in T.thread_binding(T.int64(48), thread="blockIdx.x"):
+                    for ax0_fused_1 in T.thread_binding(T.int64(16), thread="threadIdx.x"):
+                        for ax1_fused_1 in T.thread_binding(T.int64(16), thread="threadIdx.y"):
+                            with Ts.sblock("matmul_rf_init"):
+                                vax1_fused_1 = Ts.axis.spatial(T.int64(16), ax1_fused_1, dtype="int64")
+                                v0 = Ts.axis.spatial(T.int64(768), ax0_fused_0 * T.int64(16) + ax0_fused_1, dtype="int64")
+                                Ts.reads()
                                 Ts.writes(matmul_intermediate_rf_local[vax1_fused_1, T.int64(0), v0])
-                                matmul_intermediate_rf_local[vax1_fused_1, T.int64(0), v0] = matmul_intermediate_rf_local[vax1_fused_1, T.int64(0), v0] + x[T.int64(0), vax1_fused_0 * T.int64(16) + vax1_fused_1] * permute_dims[vax1_fused_0 * T.int64(16) + vax1_fused_1, v0]
-                for ax1_fused in T.thread_binding(T.int64(16), thread="threadIdx.x"):
-                    for ax0 in T.thread_binding(T.int64(16), thread="threadIdx.y"):
-                        with Ts.sblock("matmul"):
-                            vax1_fused_1 = Ts.axis.reduce(T.int64(16), ax0)
-                            v0 = Ts.axis.spatial(T.int64(768), ax0_fused_0 * T.int64(16) + ax1_fused)
-                            Ts.reads(matmul_intermediate_rf_local[vax1_fused_1, T.int64(0), v0])
-                            Ts.writes(matmul_intermediate_local[T.int64(0), v0])
-                            with Ts.init():
-                                matmul_intermediate_local[T.int64(0), v0] = T.float32(0.0)
-                            matmul_intermediate_local[T.int64(0), v0] = matmul_intermediate_local[T.int64(0), v0] + matmul_intermediate_rf_local[vax1_fused_1, T.int64(0), v0]
-                for ax0_fused_0_1 in T.thread_binding(T.int64(16), thread="threadIdx.x"):
-                    for ax0_fused_1 in range(T.int64(1)):
-                        with Ts.sblock("compute"):
-                            v0 = Ts.axis.spatial(T.int64(768), ax0_fused_0 * T.int64(16) + ax0_fused_0_1 + ax0_fused_1)
-                            Ts.reads(matmul_intermediate_local[T.int64(0), v0], fc1_bias[v0])
-                            Ts.writes(compute_intermediate[T.int64(0), v0])
-                            compute_intermediate[T.int64(0), v0] = T.max(matmul_intermediate_local[T.int64(0), v0] + fc1_bias[v0], T.float32(0.0))
+                                matmul_intermediate_rf_local[vax1_fused_1, T.int64(0), v0] = T.float32(0.0)
+                            for ax1_fused_0 in range(T.int64(0), T.int64(48)):
+                                for u in range(1):
+                                    with Ts.sblock("matmul_rf_update"):
+                                        vax1_fused_1_1 = Ts.axis.spatial(T.int64(16), ax1_fused_1, dtype="int64")
+                                        v0_1 = Ts.axis.spatial(T.int64(768), ax0_fused_0 * T.int64(16) + ax0_fused_1, dtype="int64")
+                                        vax1_fused_0 = Ts.axis.reduce(T.int64(48), ax1_fused_0, dtype="int64")
+                                        Ts.reads(matmul_intermediate_rf_local[vax1_fused_1_1, T.int64(0), v0_1], x[T.int64(0), vax1_fused_0 * T.int64(16) + vax1_fused_1_1], permute_dims[vax1_fused_0 * T.int64(16) + vax1_fused_1_1, v0_1])
+                                        Ts.writes(matmul_intermediate_rf_local[vax1_fused_1_1, T.int64(0), v0_1])
+                                        matmul_intermediate_rf_local[vax1_fused_1_1, T.int64(0), v0_1] = matmul_intermediate_rf_local[vax1_fused_1_1, T.int64(0), v0_1] + x[T.int64(0), vax1_fused_0 * T.int64(16) + vax1_fused_1_1] * permute_dims[vax1_fused_0 * T.int64(16) + vax1_fused_1_1, v0_1]
+                    for ax1_fused in T.thread_binding(T.int64(16), thread="threadIdx.x"):
+                        for ax0 in T.thread_binding(T.int64(16), thread="threadIdx.y"):
+                            with Ts.sblock("matmul"):
+                                vax1_fused_1_2 = Ts.axis.reduce(T.int64(16), ax0, dtype="int64")
+                                v0_2 = Ts.axis.spatial(T.int64(768), ax0_fused_0 * T.int64(16) + ax1_fused, dtype="int64")
+                                Ts.reads(matmul_intermediate_rf_local[vax1_fused_1_2, T.int64(0), v0_2])
+                                Ts.writes(matmul_intermediate_local[T.int64(0), v0_2])
+                                with Ts.init():
+                                    matmul_intermediate_local[T.int64(0), v0_2] = T.float32(0.0)
+                                matmul_intermediate_local[T.int64(0), v0_2] = matmul_intermediate_local[T.int64(0), v0_2] + matmul_intermediate_rf_local[vax1_fused_1_2, T.int64(0), v0_2]
+                    for ax0_fused_0_1 in T.thread_binding(T.int64(16), thread="threadIdx.x"):
+                        for ax0_fused_1_1 in range(T.int64(0), T.int64(1)):
+                            with Ts.sblock("compute"):
+                                v0_3 = Ts.axis.spatial(T.int64(768), ax0_fused_0 * T.int64(16) + ax0_fused_0_1 + ax0_fused_1_1, dtype="int64")
+                                Ts.reads(matmul_intermediate_local[T.int64(0), v0_3], fc1_bias[v0_3])
+                                Ts.writes(compute_intermediate[T.int64(0), v0_3])
+                                compute_intermediate[T.int64(0), v0_3] = T.max(matmul_intermediate_local[T.int64(0), v0_3] + fc1_bias[v0_3], T.float32(0.0))
 
         @Ts.prim_func(private=True)
         def layer_norm(relu: T.Buffer((T.int64(1), T.int64(768)), "float32"), norm_weight: T.Buffer((T.int64(768),), "float32"), norm_bias: T.Buffer((T.int64(768),), "float32"), T_layer_norm: T.Buffer((T.int64(1), T.int64(768)), "float32")):
             T.func_attr({"op_pattern": 4, "tirx.is_scheduled": True, "tirx.noalias": True})
-            # with Ts.sblock("root"):
-            relu_sum_shared = Ts.sblock_alloc_buffer((T.int64(1),), scope="shared")
-            relu_var_sum_shared = Ts.sblock_alloc_buffer((T.int64(1),), scope="shared")
-            for ax0_fused in T.thread_binding(T.int64(1), thread="blockIdx.x"):
-                for ax0 in range(T.int64(1)):
-                    for ax1_fused_1 in T.thread_binding(T.int64(256), thread="threadIdx.x"):
-                        for ax1_fused_0 in T.serial(T.int64(3), annotations={"pragma_auto_unroll_max_step": 256, "pragma_unroll_explicit": 1}):
-                            with Ts.sblock("relu_sum"):
-                                v0 = Ts.axis.spatial(T.int64(1), ax0)
-                                v1 = Ts.axis.reduce(T.int64(768), ax1_fused_0 * T.int64(256) + ax1_fused_1)
-                                Ts.reads(relu[T.int64(0), v1])
-                                Ts.writes(relu_sum_shared[T.int64(0)])
-                                with Ts.init():
-                                    relu_sum_shared[T.int64(0)] = T.float32(0.0)
-                                relu_sum_shared[T.int64(0)] = relu_sum_shared[T.int64(0)] + relu[T.int64(0), v1]
-                for ax0 in range(T.int64(1)):
-                    for ax1_fused_1 in T.thread_binding(T.int64(256), thread="threadIdx.x"):
-                        for ax1_fused_0 in T.serial(T.int64(3), annotations={"pragma_auto_unroll_max_step": 256, "pragma_unroll_explicit": 1}):
-                            with Ts.sblock("relu_var_sum"):
-                                v0 = Ts.axis.spatial(T.int64(1), ax0)
-                                v1 = Ts.axis.reduce(T.int64(768), ax1_fused_0 * T.int64(256) + ax1_fused_1)
-                                Ts.reads(relu[T.int64(0), v1], relu_sum_shared[T.int64(0)])
-                                Ts.writes(relu_var_sum_shared[T.int64(0)])
-                                with Ts.init():
-                                    relu_var_sum_shared[T.int64(0)] = T.float32(0.0)
-                                relu_var_sum_shared[T.int64(0)] = relu_var_sum_shared[T.int64(0)] + (relu[T.int64(0), v1] - relu_sum_shared[T.int64(0)] / T.float32(768.0)) * (relu[T.int64(0), v1] - relu_sum_shared[T.int64(0)] / T.float32(768.0))
-                for ax1_1 in T.thread_binding(T.int64(256), thread="threadIdx.x"):
-                    for ax1_0 in T.serial(T.int64(3), annotations={"pragma_auto_unroll_max_step": 256, "pragma_unroll_explicit": 1}):
-                        with Ts.sblock("T_layer_norm"):
-                            v0 = Ts.axis.spatial(T.int64(1), T.int64(0))
-                            v1 = Ts.axis.spatial(T.int64(768), ax1_0 * T.int64(256) + ax1_1)
-                            Ts.reads(relu[T.int64(0), v1], relu_sum_shared[T.int64(0)], relu_var_sum_shared[T.int64(0)], norm_weight[v1], norm_bias[v1])
-                            Ts.writes(T_layer_norm[T.int64(0), v1])
-                            T_layer_norm[T.int64(0), v1] = (relu[T.int64(0), v1] - relu_sum_shared[T.int64(0)] / T.float32(768.0)) * T.rsqrt(relu_var_sum_shared[T.int64(0)] / T.float32(768.0) + T.float32(1.0000000000000001e-05)) * norm_weight[v1] + norm_bias[v1]
+            with Ts.sblock("root"):
+                Ts.reads()
+                Ts.writes()
+                relu_sum_shared = Ts.sblock_alloc_buffer((T.int64(1),), "float32", scope="shared")
+                relu_var_sum_shared = Ts.sblock_alloc_buffer((T.int64(1),), "float32", scope="shared")
+                for ax0_fused in T.thread_binding(T.int64(1), thread="blockIdx.x"):
+                    for ax0 in range(T.int64(0), T.int64(1)):
+                        for ax1_fused_1 in T.thread_binding(T.int64(256), thread="threadIdx.x"):
+                            for ax1_fused_0 in T.serial(T.int64(0), T.int64(3), annotations={"pragma_auto_unroll_max_step": 256, "pragma_unroll_explicit": 1}):
+                                with Ts.sblock("relu_sum"):
+                                    v0 = Ts.axis.spatial(T.int64(1), ax0, dtype="int64")
+                                    v1 = Ts.axis.reduce(T.int64(768), ax1_fused_0 * T.int64(256) + ax1_fused_1, dtype="int64")
+                                    Ts.reads(relu[T.int64(0), v1])
+                                    Ts.writes(relu_sum_shared[T.int64(0)])
+                                    with Ts.init():
+                                        relu_sum_shared[T.int64(0)] = T.float32(0.0)
+                                    relu_sum_shared[T.int64(0)] = relu_sum_shared[T.int64(0)] + relu[T.int64(0), v1]
+                    for ax0_1 in range(T.int64(0), T.int64(1)):
+                        for ax1_fused_1_1 in T.thread_binding(T.int64(256), thread="threadIdx.x"):
+                            for ax1_fused_0_1 in T.serial(T.int64(0), T.int64(3), annotations={"pragma_auto_unroll_max_step": 256, "pragma_unroll_explicit": 1}):
+                                with Ts.sblock("relu_var_sum"):
+                                    v0_1 = Ts.axis.spatial(T.int64(1), ax0_1, dtype="int64")
+                                    v1_1 = Ts.axis.reduce(T.int64(768), ax1_fused_0_1 * T.int64(256) + ax1_fused_1_1, dtype="int64")
+                                    Ts.reads(relu[T.int64(0), v1_1], relu_sum_shared[T.int64(0)])
+                                    Ts.writes(relu_var_sum_shared[T.int64(0)])
+                                    with Ts.init():
+                                        relu_var_sum_shared[T.int64(0)] = T.float32(0.0)
+                                    relu_var_sum_shared[T.int64(0)] = relu_var_sum_shared[T.int64(0)] + (relu[T.int64(0), v1_1] - relu_sum_shared[T.int64(0)] / T.float32(768.0)) * (relu[T.int64(0), v1_1] - relu_sum_shared[T.int64(0)] / T.float32(768.0))
+                    for ax1_1 in T.thread_binding(T.int64(256), thread="threadIdx.x"):
+                        for ax1_0 in T.serial(T.int64(0), T.int64(3), annotations={"pragma_auto_unroll_max_step": 256, "pragma_unroll_explicit": 1}):
+                            with Ts.sblock("T_layer_norm"):
+                                v0_2 = Ts.axis.spatial(T.int64(1), T.int64(0), dtype="int64")
+                                v1_2 = Ts.axis.spatial(T.int64(768), ax1_0 * T.int64(256) + ax1_1, dtype="int64")
+                                Ts.reads(relu[T.int64(0), v1_2], relu_sum_shared[T.int64(0)], relu_var_sum_shared[T.int64(0)], norm_weight[v1_2], norm_bias[v1_2])
+                                Ts.writes(T_layer_norm[T.int64(0), v1_2])
+                                T_layer_norm[T.int64(0), v1_2] = (relu[T.int64(0), v1_2] - relu_sum_shared[T.int64(0)] / T.float32(768.0)) * I.Call("tirx.rsqrt", [relu_var_sum_shared[T.int64(0)] / T.float32(768.0) + T.float32(1.0000000000000001e-05)], ty="float32") * norm_weight[v1_2] + norm_bias[v1_2]
 
         @Ts.prim_func(private=True)
         def transpose(fc1_weight: T.Buffer((T.int64(768), T.int64(768)), "float32"), T_transpose: T.Buffer((T.int64(768), T.int64(768)), "float32")):
             T.func_attr({"op_pattern": 2, "tirx.is_scheduled": True, "tirx.noalias": True})
-            # with Ts.sblock("root"):
-            for ax0_ax1_fused_0 in T.thread_binding(T.int64(576), thread="blockIdx.x"):
-                for ax0_ax1_fused_1 in T.thread_binding(T.int64(1024), thread="threadIdx.x"):
-                    with Ts.sblock("T_transpose"):
-                        v0 = Ts.axis.spatial(T.int64(768), (ax0_ax1_fused_0 * T.int64(1024) + ax0_ax1_fused_1) // T.int64(768))
-                        v1 = Ts.axis.spatial(T.int64(768), (ax0_ax1_fused_0 * T.int64(1024) + ax0_ax1_fused_1) % T.int64(768))
-                        Ts.reads(fc1_weight[v1, v0])
-                        Ts.writes(T_transpose[v0, v1])
-                        T_transpose[v0, v1] = fc1_weight[v1, v0]
+            with Ts.sblock("root"):
+                Ts.reads()
+                Ts.writes()
+                for ax0_ax1_fused_0 in T.thread_binding(T.int64(576), thread="blockIdx.x"):
+                    for ax0_ax1_fused_1 in T.thread_binding(T.int64(1024), thread="threadIdx.x"):
+                        with Ts.sblock("T_transpose"):
+                            v0 = Ts.axis.spatial(T.int64(768), (ax0_ax1_fused_0 * T.int64(1024) + ax0_ax1_fused_1) // T.int64(768), dtype="int64")
+                            v1 = Ts.axis.spatial(T.int64(768), (ax0_ax1_fused_0 * T.int64(1024) + ax0_ax1_fused_1) % T.int64(768), dtype="int64")
+                            Ts.reads(fc1_weight[v1, v0])
+                            Ts.writes(T_transpose[v0, v1])
+                            T_transpose[v0, v1] = fc1_weight[v1, v0]
 
         @Ts.prim_func(private=True)
         def transpose1(fc2_weight: T.Buffer((T.int64(256), T.int64(768)), "float32"), T_transpose: T.Buffer((T.int64(768), T.int64(256)), "float32")):
             T.func_attr({"op_pattern": 2, "tirx.is_scheduled": True, "tirx.noalias": True})
-            # with Ts.sblock("root"):
-            for ax0_ax1_fused_0 in T.thread_binding(T.int64(192), thread="blockIdx.x"):
-                for ax0_ax1_fused_1 in T.thread_binding(T.int64(1024), thread="threadIdx.x"):
-                    with Ts.sblock("T_transpose"):
-                        v0 = Ts.axis.spatial(T.int64(768), (ax0_ax1_fused_0 * T.int64(1024) + ax0_ax1_fused_1) // T.int64(256))
-                        v1 = Ts.axis.spatial(T.int64(256), (ax0_ax1_fused_0 * T.int64(1024) + ax0_ax1_fused_1) % T.int64(256))
-                        Ts.reads(fc2_weight[v1, v0])
-                        Ts.writes(T_transpose[v0, v1])
-                        T_transpose[v0, v1] = fc2_weight[v1, v0]
+            with Ts.sblock("root"):
+                Ts.reads()
+                Ts.writes()
+                for ax0_ax1_fused_0 in T.thread_binding(T.int64(192), thread="blockIdx.x"):
+                    for ax0_ax1_fused_1 in T.thread_binding(T.int64(1024), thread="threadIdx.x"):
+                        with Ts.sblock("T_transpose"):
+                            v0 = Ts.axis.spatial(T.int64(768), (ax0_ax1_fused_0 * T.int64(1024) + ax0_ax1_fused_1) // T.int64(256), dtype="int64")
+                            v1 = Ts.axis.spatial(T.int64(256), (ax0_ax1_fused_0 * T.int64(1024) + ax0_ax1_fused_1) % T.int64(256), dtype="int64")
+                            Ts.reads(fc2_weight[v1, v0])
+                            Ts.writes(T_transpose[v0, v1])
+                            T_transpose[v0, v1] = fc2_weight[v1, v0]
 
         @R.function
         def forward(x: R.Tensor((1, 768), dtype="float32"), fc1_weight: R.Tensor((768, 768), dtype="float32"), fc1_bias: R.Tensor((768,), dtype="float32"), norm_weight: R.Tensor((768,), dtype="float32"), norm_bias: R.Tensor((768,), dtype="float32"), fc2_weight: R.Tensor((256, 768), dtype="float32"), fc2_bias: R.Tensor((256,), dtype="float32")) -> R.Tensor((1, 256), dtype="float32"):
             R.func_attr({"num_input": 1})
-            cls = Module
             with R.dataflow():
-                permute_dims = R.call_tir(cls.transpose, (fc1_weight,), out_ty=R.Tensor((768, 768), dtype="float32"))
-                lv = R.call_tir(cls.fused_matmul_add_relu, (x, permute_dims, fc1_bias), out_ty=R.Tensor((1, 768), dtype="float32"))
-                layer_norm = R.call_tir(cls.layer_norm, (lv, norm_weight, norm_bias), out_ty=R.Tensor((1, 768), dtype="float32"))
-                permute_dims1 = R.call_tir(cls.transpose1, (fc2_weight,), out_ty=R.Tensor((768, 256), dtype="float32"))
-                gv = R.call_tir(cls.fused_matmul1_add1, (layer_norm, permute_dims1, fc2_bias), out_ty=R.Tensor((1, 256), dtype="float32"))
+                permute_dims = R.call_tir(Module.transpose, (fc1_weight,), out_ty=R.Tensor((768, 768), dtype="float32"))
+                lv = R.call_tir(Module.fused_matmul_add_relu, (x, permute_dims, fc1_bias), out_ty=R.Tensor((1, 768), dtype="float32"))
+                layer_norm = R.call_tir(Module.layer_norm, (lv, norm_weight, norm_bias), out_ty=R.Tensor((1, 768), dtype="float32"))
+                permute_dims1 = R.call_tir(Module.transpose1, (fc2_weight,), out_ty=R.Tensor((768, 256), dtype="float32"))
+                gv = R.call_tir(Module.fused_matmul1_add1, (layer_norm, permute_dims1, fc2_bias), out_ty=R.Tensor((1, 256), dtype="float32"))
                 R.output(gv)
             return gv
 

@@ -775,6 +775,8 @@ printed module.</p>
 </pre></div>
 </div>
 <div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>After partitioning for the example NPU:
+from __future__ import annotations
+
 # from tvm.script import ir as I
 # from tvm.script import relax as R
 
@@ -788,7 +790,7 @@ class Module:
         @R.function
         def local_func(data_1: R.Tensor((1, 3, 32, 32), dtype=&quot;float32&quot;), weight_1: R.Tensor((16, 3, 3, 3), dtype=&quot;float32&quot;)) -&gt; R.Tensor((1, 16, 30, 30), dtype=&quot;float32&quot;):
             R.func_attr({&quot;Composite&quot;: &quot;example_npu.conv2d_relu_fused&quot;})
-            conv: R.Tensor((1, 16, 30, 30), dtype=&quot;float32&quot;) = R.nn.conv2d(data_1, weight_1, strides=[1, 1], padding=[0, 0, 0, 0], dilation=[1, 1], groups=1, data_layout=&quot;NCHW&quot;, kernel_layout=&quot;OIHW&quot;, out_layout=&quot;NCHW&quot;, out_dtype=None)
+            conv: R.Tensor((1, 16, 30, 30), dtype=&quot;float32&quot;) = R.nn.conv2d(data_1, weight_1, data_layout=&quot;NCHW&quot;, dilation=[1, 1], groups=1, kernel_layout=&quot;OIHW&quot;, out_dtype=None, out_layout=&quot;NCHW&quot;, padding=[0, 0, 0, 0], strides=[1, 1])
             gv: R.Tensor((1, 16, 30, 30), dtype=&quot;float32&quot;) = R.nn.relu(conv)
             return gv
 
@@ -797,9 +799,8 @@ class Module:
 
     @R.function
     def main(data: R.Tensor((1, 3, 32, 32), dtype=&quot;float32&quot;), weight: R.Tensor((16, 3, 3, 3), dtype=&quot;float32&quot;)) -&gt; R.Tensor((1, 16, 30, 30), dtype=&quot;float32&quot;):
-        cls = Module
         with R.dataflow():
-            gv: R.Tensor((1, 16, 30, 30), dtype=&quot;float32&quot;) = cls.fused_relax_nn_conv2d_relax_nn_relu_example_npu_example_npu(data, weight)
+            gv: R.Tensor((1, 16, 30, 30), dtype=&quot;float32&quot;) = Module.fused_relax_nn_conv2d_relax_nn_relu_example_npu_example_npu(data, weight)
             R.output(gv)
         return gv
 </pre></div>
@@ -859,6 +860,8 @@ available. In CPU-only documentation builds, they produce no output.</p>
 </pre></div>
 </div>
 <div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>After partition_for_tensorrt:
+from __future__ import annotations
+
 # from tvm.script import ir as I
 # from tvm.script import relax as R
 
@@ -873,7 +876,7 @@ class Module:
         def gv(data_1: R.Tensor((1, 3, 32, 32), dtype=&quot;float32&quot;)) -&gt; R.Tensor((1, 16, 30, 30), dtype=&quot;float32&quot;):
             R.func_attr({&quot;Composite&quot;: &quot;tensorrt.nn.conv2d&quot;})
             with R.dataflow():
-                gv_1: R.Tensor((1, 16, 30, 30), dtype=&quot;float32&quot;) = R.nn.conv2d(data_1, metadata[&quot;ir.GenericConst&quot;][0], strides=[1, 1], padding=[0, 0, 0, 0], dilation=[1, 1], groups=1, data_layout=&quot;NCHW&quot;, kernel_layout=&quot;OIHW&quot;, out_layout=&quot;NCHW&quot;, out_dtype=None)
+                gv_1: R.Tensor((1, 16, 30, 30), dtype=&quot;float32&quot;) = R.nn.conv2d(data_1, metadata[&quot;ir.GenericConst&quot;][0], data_layout=&quot;NCHW&quot;, dilation=[1, 1], groups=1, kernel_layout=&quot;OIHW&quot;, out_dtype=None, out_layout=&quot;NCHW&quot;, padding=[0, 0, 0, 0], strides=[1, 1])
                 R.output(gv_1)
             return gv_1
 
@@ -893,9 +896,8 @@ class Module:
 
     @R.function
     def main(data: R.Tensor((1, 3, 32, 32), dtype=&quot;float32&quot;)) -&gt; R.Tensor((1, 16, 30, 30), dtype=&quot;float32&quot;):
-        cls = Module
         with R.dataflow():
-            gv: R.Tensor((1, 16, 30, 30), dtype=&quot;float32&quot;) = cls.fused_relax_nn_conv2d_relax_nn_relu_tensorrt(data)
+            gv: R.Tensor((1, 16, 30, 30), dtype=&quot;float32&quot;) = Module.fused_relax_nn_conv2d_relax_nn_relu_tensorrt(data)
             R.output(gv)
         return gv
 

@@ -654,7 +654,7 @@ printer converts IR back into readable, parseable source.</p>
 <div class="highlight-text notranslate"><div class="highlight"><pre><span></span>Source + definition context
     → Python AST → syntax transpiler → Python builder program → TVM IR
 TVM IR
-    → IRDocsifier → Doc tree → Python text
+    → DocTranslator → Doc tree + origins → diagnostic paths → Python text
 </pre></div>
 </div>
 <section id="source-and-frontend">
@@ -752,9 +752,16 @@ protocol.</p>
 </section>
 <section id="printing-and-round-trips">
 <h2>Printing and round trips<a class="headerlink" href="#printing-and-round-trips" title="Link to this heading">#</a></h2>
-<p><code class="docutils literal notranslate"><span class="pre">IRDocsifier</span></code> dispatches on IR types and context to produce a <code class="docutils literal notranslate"><span class="pre">Doc</span></code> tree of
-expressions and statements. It tracks scopes and names; <code class="docutils literal notranslate"><span class="pre">DocToPythonScript</span></code> formats
-the tree as Python text. This document tree is separate from the parser’s Python AST.</p>
+<p><code class="docutils literal notranslate"><span class="pre">DocTranslator</span></code> invokes native type and operation hooks to produce a <code class="docutils literal notranslate"><span class="pre">Doc</span></code> tree
+of expressions and statements. The translation engine tracks scopes, names and each
+Doc’s original IR object. The script entry point maps these origins to diagnostic
+paths; the private Doc printer formats the tree, annotations and underlines as Python
+text. Printer configuration stays read-only throughout. <code class="docutils literal notranslate"><span class="pre">DocToPythonScript</span></code> also
+formats an existing Doc directly. This tree is separate from the parser’s Python AST.</p>
+<p>The public <code class="docutils literal notranslate"><span class="pre">Script</span></code> text entry points are declared in
+<code class="docutils literal notranslate"><span class="pre">tvm/script/printer/printer.h</span></code>. Their orchestration and diagnostic path mapping
+live in <code class="docutils literal notranslate"><span class="pre">src/script/printer/printer.cc</span></code>; <code class="docutils literal notranslate"><span class="pre">doc_translator.h</span></code> exposes the
+IR-to-Doc translation protocol.</p>
 <p>For example, a small function can be authored, printed and parsed again:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">tvm</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">tvm.script</span><span class="w"> </span><span class="kn">import</span> <span class="n">tirx</span> <span class="k">as</span> <span class="n">T</span>
@@ -765,7 +772,7 @@ the tree as Python text. This document tree is separate from the parser’s Pyth
         <span class="n">A</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">A</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">+</span> <span class="mf">1.0</span>
 
 <span class="n">text</span> <span class="o">=</span> <span class="n">increment</span><span class="o">.</span><span class="n">script</span><span class="p">()</span>
-<span class="n">reparsed</span> <span class="o">=</span> <span class="n">tvm</span><span class="o">.</span><span class="n">script</span><span class="o">.</span><span class="n">from_source</span><span class="p">(</span><span class="n">text</span><span class="p">)</span>
+<span class="n">reparsed</span> <span class="o">=</span> <span class="n">tvm</span><span class="o">.</span><span class="n">script</span><span class="o">.</span><span class="n">from_source</span><span class="p">(</span><span class="n">text</span><span class="p">,</span> <span class="n">extra_vars</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;T&quot;</span><span class="p">:</span> <span class="n">T</span><span class="p">})</span>
 <span class="n">tvm</span><span class="o">.</span><span class="n">ir</span><span class="o">.</span><span class="n">assert_structural_equal</span><span class="p">(</span><span class="n">increment</span><span class="p">,</span> <span class="n">reparsed</span><span class="p">)</span>
 </pre></div>
 </div>
@@ -779,7 +786,10 @@ the text does not serialize arbitrary Python state.</p>
 registers its aliases with <code class="docutils literal notranslate"><span class="pre">register_namespace</span></code>. <code class="docutils literal notranslate"><span class="pre">register_namespace_initializer</span></code>
 supports lazy setup. <code class="docutils literal notranslate"><span class="pre">tvm.script.register_dialect</span></code> exposes a package through the
 public script namespace. Syntax policies are registered beside the operations that
-need them, while IR printing is extended through docsifier registrations.</p>
+need them. IR printing uses <code class="docutils literal notranslate"><span class="pre">FDocTranslate</span></code> hooks from
+<code class="docutils literal notranslate"><span class="pre">tvm/script/printer/doc_translator.h</span></code>, registered through the existing type or
+operation attributes. A hook returns an expression Doc or emits completed statements
+through its translator context.</p>
 <p>This division keeps source acquisition, syntax translation and formatting shared.
 Language-specific construction and validation remain with the namespace and its
 builders.</p>
