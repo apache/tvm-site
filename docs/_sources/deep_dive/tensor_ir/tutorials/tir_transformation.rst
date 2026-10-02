@@ -121,7 +121,7 @@ original implementation.
 
     Execution time summary:
      mean (ms)   median (ms)    max (ms)     min (ms)     std (ms)  
-       2.5440       2.5440       2.5440       2.5440       0.0000                  
+       2.7548       2.7548       2.7548       2.7548       0.0000                  
 
 
 
@@ -313,7 +313,7 @@ action involves reordering these two loops.
 
     Execution time summary:
      mean (ms)   median (ms)    max (ms)     min (ms)     std (ms)  
-       0.8609       0.8609       0.8609       0.8609       0.0000                  
+       0.8650       0.8650       0.8650       0.8650       0.0000                  
 
 
 
@@ -455,7 +455,7 @@ from the reduction update via the **decompose_reduction** primitive.
 
     Execution time summary:
      mean (ms)   median (ms)    max (ms)     min (ms)     std (ms)  
-       0.3564       0.3564       0.3564       0.3564       0.0000                  
+       0.3586       0.3586       0.3586       0.3586       0.0000                  
 
 
 
