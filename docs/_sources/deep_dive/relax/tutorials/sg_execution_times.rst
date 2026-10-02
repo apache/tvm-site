@@ -6,7 +6,7 @@
 
 Computation times
 =================
-**00:00.164** total execution time for 2 files **from deep_dive/relax/tutorials**:
+**00:00.163** total execution time for 2 files **from deep_dive/relax/tutorials**:
 
 .. container::
 
@@ -36,5 +36,5 @@ Computation times
      - 00:00.092
      - 0.0
    * - :ref:`sphx_glr_deep_dive_relax_tutorials_relax_transformation.py` (``relax_transformation.py``)
-     - 00:00.072
+     - 00:00.071
      - 0.0
