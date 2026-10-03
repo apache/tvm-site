@@ -32,7 +32,7 @@ var searchData=
   ['varremapsetexpected_29',['VarRemapSetExpected',['../classtvm_1_1ObjectMutator.html#a739cb0f0c4789b601fd613ea2e13bfe2',1,'tvm::ObjectMutator']]],
   ['vars_30',['vars',['../classtvm_1_1tirx_1_1LambdaExprNode.html#a38e5d3ceadba7e4312cdafff56fb22fd',1,'tvm::tirx::LambdaExprNode::vars'],['../classtvm_1_1script_1_1ir__builder_1_1tirx_1_1ForFrameNode.html#acd074075b8a7fa00e28106139fa3c319',1,'tvm::script::ir_builder::tirx::ForFrameNode::vars']]],
   ['varusageinfo_31',['VarUsageInfo',['../structtvm_1_1relax_1_1VarUsageInfo.html',1,'tvm::relax']]],
-  ['vdevice_32',['vdevice',['../classtvm_1_1relax_1_1VDevice.html',1,'tvm::relax::VDevice'],['../classtvm_1_1relax_1_1VDevice.html#a57855a5392df000478ba8585e1d0fa5c',1,'tvm::relax::VDevice::VDevice()'],['../classtvm_1_1relax_1_1TensorTypeNode.html#a67c8791525c1523c77126c50826aab9e',1,'tvm::relax::TensorTypeNode::vdevice']]],
+  ['vdevice_32',['vdevice',['../classtvm_1_1relax_1_1VDevice.html',1,'tvm::relax::VDevice'],['../classtvm_1_1relax_1_1TensorTypeNode.html#a67c8791525c1523c77126c50826aab9e',1,'tvm::relax::TensorTypeNode::vdevice'],['../classtvm_1_1relax_1_1VDevice.html#a57855a5392df000478ba8585e1d0fa5c',1,'tvm::relax::VDevice::VDevice()']]],
   ['vdevice_5fid_33',['vdevice_id',['../classtvm_1_1relax_1_1VDeviceNode.html#a61b61001f1f524a7a975e155bd26e913',1,'tvm::relax::VDeviceNode']]],
   ['vdevicenode_34',['VDeviceNode',['../classtvm_1_1relax_1_1VDeviceNode.html',1,'tvm::relax']]],
   ['vector_35',['Vector',['../classtvm_1_1sym_1_1IntSet.html#ab4bb32bb2f56ee4d1f55ef526fff505b',1,'tvm::sym::IntSet']]],

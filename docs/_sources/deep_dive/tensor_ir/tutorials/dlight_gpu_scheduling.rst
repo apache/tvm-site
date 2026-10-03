@@ -178,7 +178,7 @@ Here we use a common subset of rules. The full catalog (including ``LowBatchGEMV
     @I.ir_module
     class Module:
         @Ts.prim_func(private=True)
-        def fused_matmul1_add1(layer_norm: T.Buffer((T.int64(1), T.int64(768)), "float32"), permute_dims1: T.Buffer((T.int64(768), T.int64(256)), "float32"), fc2_bias: T.Buffer((T.int64(256),), "float32"), T_add_intermediate: T.Buffer((T.int64(1), T.int64(256)), "float32")):
+        def fused_matmul1_add1(layer_norm: T.Tensor((T.int64(1), T.int64(768)), "float32"), permute_dims1: T.Tensor((T.int64(768), T.int64(256)), "float32"), fc2_bias: T.Tensor((T.int64(256),), "float32"), T_add_intermediate: T.Tensor((T.int64(1), T.int64(256)), "float32")):
             T.func_attr({"tirx.is_scheduled": True, "tirx.noalias": True})
             with Ts.sblock("root"):
                 Ts.reads()
@@ -222,7 +222,7 @@ Here we use a common subset of rules. The full catalog (including ``LowBatchGEMV
                                 T_add_intermediate[T.int64(0), v0_3] = matmul_intermediate_local[T.int64(0), v0_3] + fc2_bias[v0_3]
 
         @Ts.prim_func(private=True)
-        def fused_matmul_add_relu(x: T.Buffer((T.int64(1), T.int64(768)), "float32"), permute_dims: T.Buffer((T.int64(768), T.int64(768)), "float32"), fc1_bias: T.Buffer((T.int64(768),), "float32"), compute_intermediate: T.Buffer((T.int64(1), T.int64(768)), "float32")):
+        def fused_matmul_add_relu(x: T.Tensor((T.int64(1), T.int64(768)), "float32"), permute_dims: T.Tensor((T.int64(768), T.int64(768)), "float32"), fc1_bias: T.Tensor((T.int64(768),), "float32"), compute_intermediate: T.Tensor((T.int64(1), T.int64(768)), "float32")):
             T.func_attr({"tirx.is_scheduled": True, "tirx.noalias": True})
             with Ts.sblock("root"):
                 Ts.reads()
@@ -266,7 +266,7 @@ Here we use a common subset of rules. The full catalog (including ``LowBatchGEMV
                                 compute_intermediate[T.int64(0), v0_3] = T.max(matmul_intermediate_local[T.int64(0), v0_3] + fc1_bias[v0_3], T.float32(0.0))
 
         @Ts.prim_func(private=True)
-        def layer_norm(relu: T.Buffer((T.int64(1), T.int64(768)), "float32"), norm_weight: T.Buffer((T.int64(768),), "float32"), norm_bias: T.Buffer((T.int64(768),), "float32"), T_layer_norm: T.Buffer((T.int64(1), T.int64(768)), "float32")):
+        def layer_norm(relu: T.Tensor((T.int64(1), T.int64(768)), "float32"), norm_weight: T.Tensor((T.int64(768),), "float32"), norm_bias: T.Tensor((T.int64(768),), "float32"), T_layer_norm: T.Tensor((T.int64(1), T.int64(768)), "float32")):
             T.func_attr({"op_pattern": 4, "tirx.is_scheduled": True, "tirx.noalias": True})
             with Ts.sblock("root"):
                 Ts.reads()
@@ -306,7 +306,7 @@ Here we use a common subset of rules. The full catalog (including ``LowBatchGEMV
                                 T_layer_norm[T.int64(0), v1_2] = (relu[T.int64(0), v1_2] - relu_sum_shared[T.int64(0)] / T.float32(768.0)) * I.Call.unchecked("tirx.rsqrt", [relu_var_sum_shared[T.int64(0)] / T.float32(768.0) + T.float32(1.0000000000000001e-05)], ty="float32") * norm_weight[v1_2] + norm_bias[v1_2]
 
         @Ts.prim_func(private=True)
-        def transpose(fc1_weight: T.Buffer((T.int64(768), T.int64(768)), "float32"), T_transpose: T.Buffer((T.int64(768), T.int64(768)), "float32")):
+        def transpose(fc1_weight: T.Tensor((T.int64(768), T.int64(768)), "float32"), T_transpose: T.Tensor((T.int64(768), T.int64(768)), "float32")):
             T.func_attr({"op_pattern": 2, "tirx.is_scheduled": True, "tirx.noalias": True})
             with Ts.sblock("root"):
                 Ts.reads()
@@ -321,7 +321,7 @@ Here we use a common subset of rules. The full catalog (including ``LowBatchGEMV
                             T_transpose[v0, v1] = fc1_weight[v1, v0]
 
         @Ts.prim_func(private=True)
-        def transpose1(fc2_weight: T.Buffer((T.int64(256), T.int64(768)), "float32"), T_transpose: T.Buffer((T.int64(768), T.int64(256)), "float32")):
+        def transpose1(fc2_weight: T.Tensor((T.int64(256), T.int64(768)), "float32"), T_transpose: T.Tensor((T.int64(768), T.int64(256)), "float32")):
             T.func_attr({"op_pattern": 2, "tirx.is_scheduled": True, "tirx.noalias": True})
             with Ts.sblock("root"):
                 Ts.reads()
@@ -623,7 +623,7 @@ Insert the custom rule into the rule chain. Note that ``from_callable`` returns 
     @I.ir_module
     class Module:
         @Ts.prim_func(private=True)
-        def fused_matmul1_add1(layer_norm: T.Buffer((T.int64(1), T.int64(768)), "float32"), permute_dims1: T.Buffer((T.int64(768), T.int64(256)), "float32"), fc2_bias: T.Buffer((T.int64(256),), "float32"), T_add_intermediate: T.Buffer((T.int64(1), T.int64(256)), "float32")):
+        def fused_matmul1_add1(layer_norm: T.Tensor((T.int64(1), T.int64(768)), "float32"), permute_dims1: T.Tensor((T.int64(768), T.int64(256)), "float32"), fc2_bias: T.Tensor((T.int64(256),), "float32"), T_add_intermediate: T.Tensor((T.int64(1), T.int64(256)), "float32")):
             T.func_attr({"tirx.is_scheduled": True, "tirx.noalias": True})
             with Ts.sblock("root"):
                 Ts.reads()
@@ -667,7 +667,7 @@ Insert the custom rule into the rule chain. Note that ``from_callable`` returns 
                                 T_add_intermediate[T.int64(0), v0_3] = matmul_intermediate_local[T.int64(0), v0_3] + fc2_bias[v0_3]
 
         @Ts.prim_func(private=True)
-        def fused_matmul_add_relu(x: T.Buffer((T.int64(1), T.int64(768)), "float32"), permute_dims: T.Buffer((T.int64(768), T.int64(768)), "float32"), fc1_bias: T.Buffer((T.int64(768),), "float32"), compute_intermediate: T.Buffer((T.int64(1), T.int64(768)), "float32")):
+        def fused_matmul_add_relu(x: T.Tensor((T.int64(1), T.int64(768)), "float32"), permute_dims: T.Tensor((T.int64(768), T.int64(768)), "float32"), fc1_bias: T.Tensor((T.int64(768),), "float32"), compute_intermediate: T.Tensor((T.int64(1), T.int64(768)), "float32")):
             T.func_attr({"tirx.is_scheduled": True, "tirx.noalias": True})
             with Ts.sblock("root"):
                 Ts.reads()
@@ -711,7 +711,7 @@ Insert the custom rule into the rule chain. Note that ``from_callable`` returns 
                                 compute_intermediate[T.int64(0), v0_3] = T.max(matmul_intermediate_local[T.int64(0), v0_3] + fc1_bias[v0_3], T.float32(0.0))
 
         @Ts.prim_func(private=True)
-        def layer_norm(relu: T.Buffer((T.int64(1), T.int64(768)), "float32"), norm_weight: T.Buffer((T.int64(768),), "float32"), norm_bias: T.Buffer((T.int64(768),), "float32"), T_layer_norm: T.Buffer((T.int64(1), T.int64(768)), "float32")):
+        def layer_norm(relu: T.Tensor((T.int64(1), T.int64(768)), "float32"), norm_weight: T.Tensor((T.int64(768),), "float32"), norm_bias: T.Tensor((T.int64(768),), "float32"), T_layer_norm: T.Tensor((T.int64(1), T.int64(768)), "float32")):
             T.func_attr({"op_pattern": 4, "tirx.is_scheduled": True, "tirx.noalias": True})
             with Ts.sblock("root"):
                 Ts.reads()
@@ -751,7 +751,7 @@ Insert the custom rule into the rule chain. Note that ``from_callable`` returns 
                                 T_layer_norm[T.int64(0), v1_2] = (relu[T.int64(0), v1_2] - relu_sum_shared[T.int64(0)] / T.float32(768.0)) * I.Call.unchecked("tirx.rsqrt", [relu_var_sum_shared[T.int64(0)] / T.float32(768.0) + T.float32(1.0000000000000001e-05)], ty="float32") * norm_weight[v1_2] + norm_bias[v1_2]
 
         @Ts.prim_func(private=True)
-        def transpose(fc1_weight: T.Buffer((T.int64(768), T.int64(768)), "float32"), T_transpose: T.Buffer((T.int64(768), T.int64(768)), "float32")):
+        def transpose(fc1_weight: T.Tensor((T.int64(768), T.int64(768)), "float32"), T_transpose: T.Tensor((T.int64(768), T.int64(768)), "float32")):
             T.func_attr({"op_pattern": 2, "tirx.is_scheduled": True, "tirx.noalias": True})
             with Ts.sblock("root"):
                 Ts.reads()
@@ -766,7 +766,7 @@ Insert the custom rule into the rule chain. Note that ``from_callable`` returns 
                             T_transpose[v0, v1] = fc1_weight[v1, v0]
 
         @Ts.prim_func(private=True)
-        def transpose1(fc2_weight: T.Buffer((T.int64(256), T.int64(768)), "float32"), T_transpose: T.Buffer((T.int64(768), T.int64(256)), "float32")):
+        def transpose1(fc2_weight: T.Tensor((T.int64(256), T.int64(768)), "float32"), T_transpose: T.Tensor((T.int64(768), T.int64(256)), "float32")):
             T.func_attr({"op_pattern": 2, "tirx.is_scheduled": True, "tirx.noalias": True})
             with Ts.sblock("root"):
                 Ts.reads()

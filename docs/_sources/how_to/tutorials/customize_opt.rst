@@ -334,7 +334,7 @@ it achieves a balance between performance and compilation time.
     class Module:
         I.module_attrs({"external_mods": [metadata["ffi.Module"][0]]})
         @Ts.prim_func(private=True)
-        def matmul(lv: T.Buffer((T.int64(1), T.int64(256)), "float32"), permute_dims1: T.Buffer((T.int64(256), T.int64(10)), "float32"), matmul: T.Buffer((T.int64(1), T.int64(10)), "float32")):
+        def matmul(lv: T.Tensor((T.int64(1), T.int64(256)), "float32"), permute_dims1: T.Tensor((T.int64(256), T.int64(10)), "float32"), matmul: T.Tensor((T.int64(1), T.int64(10)), "float32")):
             T.func_attr({"op_pattern": 4, "tirx.is_scheduled": True, "tirx.noalias": True})
             with Ts.sblock("root"):
                 Ts.reads()
@@ -370,7 +370,7 @@ it achieves a balance between performance and compilation time.
                                 matmul[T.int64(0), v0_2] = matmul[T.int64(0), v0_2] + matmul_rf_local[vax1_fused_1_2, T.int64(0), v0_2]
 
         @Ts.prim_func(private=True)
-        def transpose(fc2_weight: T.Buffer((T.int64(10), T.int64(256)), "float32"), T_transpose: T.Buffer((T.int64(256), T.int64(10)), "float32")):
+        def transpose(fc2_weight: T.Tensor((T.int64(10), T.int64(256)), "float32"), T_transpose: T.Tensor((T.int64(256), T.int64(10)), "float32")):
             T.func_attr({"op_pattern": 2, "tirx.is_scheduled": True, "tirx.noalias": True})
             with Ts.sblock("root"):
                 Ts.reads()

@@ -50,9 +50,9 @@ First, let's take a look at the implementation of ``mm_relu`` in the previous se
     class MyModule:
         @Ts.prim_func
         def main(
-            A: T.Buffer((128, 128), "float32"),
-            B: T.Buffer((128, 128), "float32"),
-            C: T.Buffer((128, 128), "float32"),
+            A: T.Tensor((128, 128), "float32"),
+            B: T.Tensor((128, 128), "float32"),
+            C: T.Tensor((128, 128), "float32"),
         ):
             T.func_attr({"tirx.noalias": True})
             with Ts.sblock("root"):
@@ -121,7 +121,7 @@ original implementation.
 
     Execution time summary:
      mean (ms)   median (ms)    max (ms)     min (ms)     std (ms)  
-       2.5056       2.5056       2.5056       2.5056       0.0000                  
+       2.5531       2.5531       2.5531       2.5531       0.0000                  
 
 
 
@@ -219,7 +219,7 @@ The outcome of the transformation can be examined, as it is retained within ``sc
     @I.ir_module
     class Module:
         @Ts.prim_func
-        def main(A: T.Buffer((128, 128), "float32"), B: T.Buffer((128, 128), "float32"), C: T.Buffer((128, 128), "float32")):
+        def main(A: T.Tensor((128, 128), "float32"), B: T.Tensor((128, 128), "float32"), C: T.Tensor((128, 128), "float32")):
             T.func_attr({"tirx.noalias": True})
             with Ts.sblock("root"):
                 Ts.reads()
@@ -283,7 +283,7 @@ action involves reordering these two loops.
     @I.ir_module
     class Module:
         @Ts.prim_func
-        def main(A: T.Buffer((128, 128), "float32"), B: T.Buffer((128, 128), "float32"), C: T.Buffer((128, 128), "float32")):
+        def main(A: T.Tensor((128, 128), "float32"), B: T.Tensor((128, 128), "float32"), C: T.Tensor((128, 128), "float32")):
             T.func_attr({"tirx.noalias": True})
             with Ts.sblock("root"):
                 Ts.reads()
@@ -313,7 +313,7 @@ action involves reordering these two loops.
 
     Execution time summary:
      mean (ms)   median (ms)    max (ms)     min (ms)     std (ms)  
-       0.8626       0.8626       0.8626       0.8626       0.0000                  
+       0.8603       0.8603       0.8603       0.8603       0.0000                  
 
 
 
@@ -352,7 +352,7 @@ variant. First, we employ a primitive known as **reverse_compute_at** to relocat
     @I.ir_module
     class Module:
         @Ts.prim_func
-        def main(A: T.Buffer((128, 128), "float32"), B: T.Buffer((128, 128), "float32"), C: T.Buffer((128, 128), "float32")):
+        def main(A: T.Tensor((128, 128), "float32"), B: T.Tensor((128, 128), "float32"), C: T.Tensor((128, 128), "float32")):
             T.func_attr({"tirx.noalias": True})
             with Ts.sblock("root"):
                 Ts.reads()
@@ -421,7 +421,7 @@ from the reduction update via the **decompose_reduction** primitive.
     @I.ir_module
     class Module:
         @Ts.prim_func
-        def main(A: T.Buffer((128, 128), "float32"), B: T.Buffer((128, 128), "float32"), C: T.Buffer((128, 128), "float32")):
+        def main(A: T.Tensor((128, 128), "float32"), B: T.Tensor((128, 128), "float32"), C: T.Tensor((128, 128), "float32")):
             T.func_attr({"tirx.noalias": True})
             with Ts.sblock("root"):
                 Ts.reads()
@@ -455,7 +455,7 @@ from the reduction update via the **decompose_reduction** primitive.
 
     Execution time summary:
      mean (ms)   median (ms)    max (ms)     min (ms)     std (ms)  
-       0.3421       0.3421       0.3421       0.3421       0.0000                  
+       0.3514       0.3514       0.3514       0.3514       0.0000                  
 
 
 
@@ -527,7 +527,7 @@ Alternatively, we can output the IRModule in conjunction with the historical tra
     @I.ir_module
     class Module:
         @Ts.prim_func
-        def main(A: T.Buffer((128, 128), "float32"), B: T.Buffer((128, 128), "float32"), C: T.Buffer((128, 128), "float32")):
+        def main(A: T.Tensor((128, 128), "float32"), B: T.Tensor((128, 128), "float32"), C: T.Tensor((128, 128), "float32")):
             T.func_attr({"tirx.noalias": True})
             with Ts.sblock("root"):
                 Ts.reads()
