@@ -200,8 +200,6 @@ printed module.
         @R.function
         def fused_relax_nn_conv2d_relax_nn_relu_example_npu_example_npu(data: R.Tensor((1, 3, 32, 32), dtype="float32"), weight: R.Tensor((16, 3, 3, 3), dtype="float32")) -> R.Tensor((1, 16, 30, 30), dtype="float32"):
             R.func_attr({"Codegen": "example_npu"})
-            # from tvm.script import relax as R
-        
             @R.function
             def local_func(data_1: R.Tensor((1, 3, 32, 32), dtype="float32"), weight_1: R.Tensor((16, 3, 3, 3), dtype="float32")) -> R.Tensor((1, 16, 30, 30), dtype="float32"):
                 R.func_attr({"Composite": "example_npu.conv2d_relu_fused"})
@@ -319,8 +317,6 @@ available. In CPU-only documentation builds, they produce no output.
         @R.function
         def fused_relax_nn_conv2d_relax_nn_relu_tensorrt(data: R.Tensor((1, 3, 32, 32), dtype="float32")) -> R.Tensor((1, 16, 30, 30), dtype="float32"):
             R.func_attr({"Codegen": "tensorrt"})
-            # from tvm.script import relax as R
-        
             @R.function
             def gv(data_1: R.Tensor((1, 3, 32, 32), dtype="float32")) -> R.Tensor((1, 16, 30, 30), dtype="float32"):
                 R.func_attr({"Composite": "tensorrt.nn.conv2d"})
@@ -330,8 +326,6 @@ available. In CPU-only documentation builds, they produce no output.
                 return gv_1
 
             lv: R.Tensor((1, 16, 30, 30), dtype="float32") = gv(data)
-            # from tvm.script import relax as R
-        
             @R.function
             def gv1(lv_1: R.Tensor((1, 16, 30, 30), dtype="float32")) -> R.Tensor((1, 16, 30, 30), dtype="float32"):
                 R.func_attr({"Composite": "tensorrt.nn.relu"})
