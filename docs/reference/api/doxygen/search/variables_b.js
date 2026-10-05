@@ -9,7 +9,7 @@ var searchData=
   ['layout_5ffree_5fbuffers_6',['layout_free_buffers',['../namespacetvm_1_1s__tir_1_1attr.html#a2ffe68a1c0a01b9192a1d13552a96962',1,'tvm::s_tir::attr']]],
   ['layout_5ftransforms_7',['layout_transforms',['../namespacetvm_1_1s__tir_1_1attr.html#a76b24bf1daf352c495e5bc86e7b8d8ff',1,'tvm::s_tir::attr']]],
   ['left_8',['left',['../classtvm_1_1relax_1_1AndPatternNode.html#a2b62f20e50ead225c897eef987682b8a',1,'tvm::relax::AndPatternNode::left'],['../classtvm_1_1relax_1_1OrPatternNode.html#a39487f599d873167ccd9435bcdd35bea',1,'tvm::relax::OrPatternNode::left']]],
-  ['lhs_9',['lhs',['../classtvm_1_1te_1_1CommReducerNode.html#ac852d8028c5163b2996e370ed702de89',1,'tvm::te::CommReducerNode::lhs'],['../classtvm_1_1script_1_1printer_1_1ScopeDocNode.html#a9237edc6233763c2092893e4f37b89cd',1,'tvm::script::printer::ScopeDocNode::lhs'],['../classtvm_1_1script_1_1printer_1_1ForDocNode.html#a4d379635b6557930395ca0e8463a8449',1,'tvm::script::printer::ForDocNode::lhs'],['../classtvm_1_1script_1_1printer_1_1AssignDocNode.html#a77d29bfe645e6120ff1b94fb53f67f5c',1,'tvm::script::printer::AssignDocNode::lhs']]],
+  ['lhs_9',['lhs',['../classtvm_1_1script_1_1printer_1_1AssignDocNode.html#a77d29bfe645e6120ff1b94fb53f67f5c',1,'tvm::script::printer::AssignDocNode::lhs'],['../classtvm_1_1script_1_1printer_1_1ForDocNode.html#a4d379635b6557930395ca0e8463a8449',1,'tvm::script::printer::ForDocNode::lhs'],['../classtvm_1_1script_1_1printer_1_1ScopeDocNode.html#a9237edc6233763c2092893e4f37b89cd',1,'tvm::script::printer::ScopeDocNode::lhs'],['../classtvm_1_1te_1_1CommReducerNode.html#ac852d8028c5163b2996e370ed702de89',1,'tvm::te::CommReducerNode::lhs']]],
   ['line_10',['line',['../classtvm_1_1SpanNode.html#a6890bb225890f64611e6f77a401ee617',1,'tvm::SpanNode']]],
   ['line_5fmap_11',['line_map',['../classtvm_1_1SourceNode.html#a34f2c9047c34df59043c68c2359b9768',1,'tvm::SourceNode']]],
   ['local_12',['local',['../classtvm_1_1script_1_1ir__builder_1_1relax_1_1FunctionFrameNode.html#a549ac2489d26031f8ea996891e177773',1,'tvm::script::ir_builder::relax::FunctionFrameNode']]],
@@ -17,6 +17,7 @@ var searchData=
   ['local_5fvar_14',['local_var',['../classtvm_1_1script_1_1ir__builder_1_1relax_1_1FunctionFrameNode.html#ac8b2e51545488bf087437c53af2074f8',1,'tvm::script::ir_builder::relax::FunctionFrameNode']]],
   ['local_5fworker_5fid_15',['local_worker_id',['../classtvm_1_1runtime_1_1DiscoWorker.html#a27c78d61cd7452e34a1bab759ce32d2d',1,'tvm::runtime::DiscoWorker']]],
   ['logger_16',['logger',['../classtvm_1_1s__tir_1_1meta__schedule_1_1TaskSchedulerNode.html#ab460242989482f803e160040fe33935b',1,'tvm::s_tir::meta_schedule::TaskSchedulerNode::logger'],['../classtvm_1_1s__tir_1_1meta__schedule_1_1TuneContextNode.html#a37eb3e47d539e5a9b2a269382b985fb6',1,'tvm::s_tir::meta_schedule::TuneContextNode::logger']]],
-  ['loop_5fvar_17',['loop_var',['../classtvm_1_1tirx_1_1ForNode.html#ae89ba120e2b24f2cb34862dcd3b53cc5',1,'tvm::tirx::ForNode']]],
-  ['lower_5ffactor_18',['lower_factor',['../classtvm_1_1sym_1_1IterSplitExprNode.html#a93c05cf03f6e3e971f79ea6876136bd4',1,'tvm::sym::IterSplitExprNode']]]
+  ['loop_5fpartition_5fhint_17',['loop_partition_hint',['../namespacetvm_1_1s__tir_1_1attr.html#ae2c79ed398c310e04a0ddd66cbb3e2ea',1,'tvm::s_tir::attr']]],
+  ['loop_5fvar_18',['loop_var',['../classtvm_1_1tirx_1_1ForNode.html#ae89ba120e2b24f2cb34862dcd3b53cc5',1,'tvm::tirx::ForNode']]],
+  ['lower_5ffactor_19',['lower_factor',['../classtvm_1_1sym_1_1IterSplitExprNode.html#a93c05cf03f6e3e971f79ea6876136bd4',1,'tvm::sym::IterSplitExprNode']]]
 ];

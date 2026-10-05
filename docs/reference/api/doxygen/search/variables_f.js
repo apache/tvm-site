@@ -27,12 +27,11 @@ var searchData=
   ['pragma_5fauto_5funroll_5fmax_5fstep_24',['pragma_auto_unroll_max_step',['../namespacetvm_1_1tirx_1_1attr.html#a7895440c00877ed9504b39d54dc28e59',1,'tvm::tirx::attr']]],
   ['pragma_5fimport_5fc_25',['pragma_import_c',['../namespacetvm_1_1tirx_1_1attr.html#a86233c3972c0e293bed76a85c23f85be',1,'tvm::tirx::attr']]],
   ['pragma_5fimport_5fllvm_26',['pragma_import_llvm',['../namespacetvm_1_1tirx_1_1attr.html#a83bc30bfa238b70ea871d69782921b97',1,'tvm::tirx::attr']]],
-  ['pragma_5floop_5fpartition_5fhint_27',['pragma_loop_partition_hint',['../namespacetvm_1_1s__tir_1_1attr.html#a384d4ec05fcf191be5fe061696f7fac7',1,'tvm::s_tir::attr']]],
-  ['pragma_5funroll_5fexplicit_28',['pragma_unroll_explicit',['../namespacetvm_1_1tirx_1_1attr.html#a515e3b1b271693dd58b3ffc707bb2107',1,'tvm::tirx::attr']]],
-  ['pred_29',['pred',['../classtvm_1_1tirx_1_1LambdaExprNode.html#a3982c3068c1024ce6f4109298e2bee81',1,'tvm::tirx::LambdaExprNode']]],
-  ['predicate_30',['predicate',['../classtvm_1_1script_1_1ir__builder_1_1s__tir_1_1SBlockFrameNode.html#a5a6c37749b1f92f0ccbef0afd4986b26',1,'tvm::script::ir_builder::s_tir::SBlockFrameNode::predicate'],['../classtvm_1_1s__tir_1_1SBlockRealizeNode.html#a4e3f5cac29a0a8b485a2ceaba9c3a652',1,'tvm::s_tir::SBlockRealizeNode::predicate'],['../classtvm_1_1script_1_1printer_1_1IfDocNode.html#aff607900dab0776aa46ea9cbbfcc0bfd',1,'tvm::script::printer::IfDocNode::predicate'],['../classtvm_1_1script_1_1printer_1_1WhileDocNode.html#ad1f9ea9a5c2109d614b3e5835b348ccb',1,'tvm::script::printer::WhileDocNode::predicate']]],
-  ['preferred_5fextents_31',['preferred_extents',['../classtvm_1_1tirx_1_1ScopeIdDefNode.html#af58a2bd6f38900580d7f2a1e4771e2ec',1,'tvm::tirx::ScopeIdDefNode']]],
-  ['prefix_5f_32',['prefix_',['../classtvm_1_1UniqueNameSupplyNode.html#a2a0089d31a9bad9bbb59f4dbe2f1cc29',1,'tvm::UniqueNameSupplyNode']]],
-  ['print_5fline_5fnumbers_33',['print_line_numbers',['../classtvm_1_1PrinterConfigNode.html#a326fadb110a4356ccd783ed0e0b26733',1,'tvm::PrinterConfigNode']]],
-  ['purity_34',['purity',['../classtvm_1_1relax_1_1FuncTypeNode.html#a4856099db6a1f8f6ae9908ac4e47e3c5',1,'tvm::relax::FuncTypeNode']]]
+  ['pragma_5funroll_5fexplicit_27',['pragma_unroll_explicit',['../namespacetvm_1_1tirx_1_1attr.html#a515e3b1b271693dd58b3ffc707bb2107',1,'tvm::tirx::attr']]],
+  ['pred_28',['pred',['../classtvm_1_1tirx_1_1LambdaExprNode.html#a3982c3068c1024ce6f4109298e2bee81',1,'tvm::tirx::LambdaExprNode']]],
+  ['predicate_29',['predicate',['../classtvm_1_1script_1_1ir__builder_1_1s__tir_1_1SBlockFrameNode.html#a5a6c37749b1f92f0ccbef0afd4986b26',1,'tvm::script::ir_builder::s_tir::SBlockFrameNode::predicate'],['../classtvm_1_1s__tir_1_1SBlockRealizeNode.html#a4e3f5cac29a0a8b485a2ceaba9c3a652',1,'tvm::s_tir::SBlockRealizeNode::predicate'],['../classtvm_1_1script_1_1printer_1_1IfDocNode.html#aff607900dab0776aa46ea9cbbfcc0bfd',1,'tvm::script::printer::IfDocNode::predicate'],['../classtvm_1_1script_1_1printer_1_1WhileDocNode.html#ad1f9ea9a5c2109d614b3e5835b348ccb',1,'tvm::script::printer::WhileDocNode::predicate']]],
+  ['preferred_5fextents_30',['preferred_extents',['../classtvm_1_1tirx_1_1ScopeIdDefNode.html#af58a2bd6f38900580d7f2a1e4771e2ec',1,'tvm::tirx::ScopeIdDefNode']]],
+  ['prefix_5f_31',['prefix_',['../classtvm_1_1UniqueNameSupplyNode.html#a2a0089d31a9bad9bbb59f4dbe2f1cc29',1,'tvm::UniqueNameSupplyNode']]],
+  ['print_5fline_5fnumbers_32',['print_line_numbers',['../classtvm_1_1PrinterConfigNode.html#a326fadb110a4356ccd783ed0e0b26733',1,'tvm::PrinterConfigNode']]],
+  ['purity_33',['purity',['../classtvm_1_1relax_1_1FuncTypeNode.html#a4856099db6a1f8f6ae9908ac4e47e3c5',1,'tvm::relax::FuncTypeNode']]]
 ];
