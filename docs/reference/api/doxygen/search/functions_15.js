@@ -3,7 +3,7 @@ var searchData=
   ['validate_0',['Validate',['../classtvm_1_1Op.html#ac3e555ca1f03eaa2d33bf0886885139a',1,'tvm::Op']]],
   ['validateattrs_1',['ValidateAttrs',['../classtvm_1_1script_1_1ir__builder_1_1tirx_1_1PrimFuncFrameNode.html#ab3a62fed05bd96be5f42f740e7c788e3',1,'tvm::script::ir_builder::tirx::PrimFuncFrameNode']]],
   ['value_2',['value',['../classtvm_1_1runtime_1_1vm_1_1Instruction_1_1Arg.html#a7f8b13a64c4160100aaf691f877f0270',1,'tvm::runtime::vm::Instruction::Arg']]],
-  ['var_3',['var',['../classtvm_1_1Var.html#a5d3fb40557f1f178a7c646068ad5bfe0',1,'tvm::Var::Var(ffi::String name, ffi::Optional&lt; Type &gt; ty_annotation, Span span=Span())'],['../classtvm_1_1Var.html#ab1e43f83b3c137b969c484465eb65337',1,'tvm::Var::Var(ffi::ObjectPtr&lt; VarNode &gt; node)'],['../classtvm_1_1tirx_1_1BufferVar.html#a5a71693e34d4c4ca4a3d1f4b94b49a4c',1,'tvm::tirx::BufferVar::var()'],['../namespacetvm_1_1te.html#a054fef7460475c6d4adb0c845648bcd7',1,'tvm::te::var()']]],
+  ['var_3',['var',['../classtvm_1_1tirx_1_1TensorVar.html#a5f03b85fe2446bc6b5cf94c29b9215dc',1,'tvm::tirx::TensorVar::var()'],['../classtvm_1_1Var.html#a5d3fb40557f1f178a7c646068ad5bfe0',1,'tvm::Var::Var(ffi::String name, ffi::Optional&lt; Type &gt; ty_annotation, Span span=Span())'],['../classtvm_1_1Var.html#ab1e43f83b3c137b969c484465eb65337',1,'tvm::Var::Var(ffi::ObjectPtr&lt; VarNode &gt; node)'],['../namespacetvm_1_1te.html#a054fef7460475c6d4adb0c845648bcd7',1,'tvm::te::var()']]],
   ['varbinding_4',['VarBinding',['../classtvm_1_1relax_1_1VarBinding.html#abd1a546ed7fa509d776563e8018b4599',1,'tvm::relax::VarBinding']]],
   ['varbindingnode_5',['varbindingnode',['../classtvm_1_1relax_1_1VarBindingNode.html#a3d62925ef25535c562bfbc6e9ee86ee7',1,'tvm::relax::VarBindingNode::VarBindingNode(Var var, Expr value)'],['../classtvm_1_1relax_1_1VarBindingNode.html#ad553ea0582fd478684eb10480ca9fff1',1,'tvm::relax::VarBindingNode::VarBindingNode(ffi::UnsafeInit)']]],
   ['vargetorallocid_6',['VarGetOrAllocId',['../classtvm_1_1script_1_1printer_1_1DocTranslatorObj.html#ad177ca6b4dd438224afdf993dbf7002c',1,'tvm::script::printer::DocTranslatorObj']]],
@@ -57,7 +57,7 @@ var searchData=
   ['visitvardef_5f_54',['visitvardef_',['../classtvm_1_1relax_1_1ExprMutator.html#a8e416e45a1c5469516d6d8d9965c89c2',1,'tvm::relax::ExprMutator::VisitVarDef_()'],['../classtvm_1_1relax_1_1ExprVisitor.html#ac4c15a65c7a028269e4c44b3373938ea',1,'tvm::relax::ExprVisitor::VisitVarDef_(const VarNode *var)'],['../classtvm_1_1relax_1_1ExprVisitor.html#ab252b2b8d82c6e4f300775ca4d308f4a',1,'tvm::relax::ExprVisitor::VisitVarDef_(const DataflowVarNode *var)'],['../classtvm_1_1relax_1_1ExprMutator.html#ae2762b6909bcb175253170b4e2dab179',1,'tvm::relax::ExprMutator::VisitVarDef_(const VarNode *var)']]],
   ['visitwithinnerscope_55',['VisitWithInnerScope',['../classtvm_1_1relax_1_1ExprMutator.html#ac69f48c64e9722089987111fcc609a3e',1,'tvm::relax::ExprMutator']]],
   ['visitwithnewscope_56',['VisitWithNewScope',['../classtvm_1_1relax_1_1ExprMutator.html#a352b987c6dc59fc403e581bc00584dd0',1,'tvm::relax::ExprMutator']]],
-  ['vload_57',['vload',['../classtvm_1_1tirx_1_1BufferVar.html#aed1bd58a8bf5eb890d7563098ad4de2a',1,'tvm::tirx::BufferVar']]],
+  ['vload_57',['vload',['../classtvm_1_1tirx_1_1TensorVar.html#af261962aceaedc14051407a3a7011259',1,'tvm::tirx::TensorVar']]],
   ['vmclosure_58',['VMClosure',['../classtvm_1_1runtime_1_1vm_1_1VMClosure.html#a74aa7db30730169a960773695b846d29',1,'tvm::runtime::vm::VMClosure']]],
   ['vmloadexecutable_59',['VMLoadExecutable',['../classtvm_1_1runtime_1_1vm_1_1VMExecutable.html#a0e6b34e4870a5d22a0fb64567d47e424',1,'tvm::runtime::vm::VMExecutable']]],
   ['vmshapelower_60',['VMShapeLower',['../namespacetvm_1_1relax_1_1transform.html#a640f84c6058f570cdef3e463338a8267',1,'tvm::relax::transform']]],
@@ -66,6 +66,6 @@ var searchData=
   ['voidtype_63',['VoidType',['../namespacetvm.html#a27df956aaa2e5e25005e0f9dc1638a08',1,'tvm']]],
   ['vscale_64',['vscale',['../namespacetvm_1_1prim_1_1builtin.html#ae597f74ef81a4e5192885aa1d95f8203',1,'tvm::prim::builtin']]],
   ['vscalefactor_65',['VScaleFactor',['../classtvm_1_1PrimType.html#abc0ace579c1e6ff2d38103f56a0bade6',1,'tvm::PrimType']]],
-  ['vstore_66',['vstore',['../classtvm_1_1tirx_1_1BufferVar.html#af6dfc10cf5b3b9df04fae89b4121f673',1,'tvm::tirx::BufferVar']]],
+  ['vstore_66',['vstore',['../classtvm_1_1tirx_1_1TensorVar.html#ac92779ec69e97a9377fee3baf55b1f13',1,'tvm::tirx::TensorVar']]],
   ['vtable_67',['vtable',['../classtvm_1_1script_1_1ir__builder_1_1details_1_1SourceSpanAccessor.html#a57d10065de05433b8e3225c71d32fcf1',1,'tvm::script::ir_builder::details::SourceSpanAccessor::vtable()'],['../classtvm_1_1script_1_1ir__builder_1_1details_1_1Namer.html#ac15fa1c07a3e7fca27ce8ac46c0027c3',1,'tvm::script::ir_builder::details::Namer::vtable()']]]
 ];

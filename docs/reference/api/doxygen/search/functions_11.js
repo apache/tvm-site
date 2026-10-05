@@ -10,7 +10,7 @@ var searchData=
   ['readat_7',['ReadAt',['../classtvm_1_1s__tir_1_1ScheduleNode.html#a7ab896b72924f22dbc9cf51b517d98ff',1,'tvm::s_tir::ScheduleNode']]],
   ['reads_8',['Reads',['../namespacetvm_1_1script_1_1ir__builder_1_1s__tir.html#a76b70b4fb0c4be1e3b4852f874f9b627',1,'tvm::script::ir_builder::s_tir']]],
   ['realizevdevice_9',['RealizeVDevice',['../namespacetvm_1_1relax_1_1transform.html#a032567f2efa23079fc71029d4cb13ca0',1,'tvm::relax::transform']]],
-  ['rebuildbuffervar_10',['RebuildBufferVar',['../namespacetvm_1_1tirx.html#a2645126c75a130542e5c8e470fd156b7',1,'tvm::tirx']]],
+  ['rebuildtensorvar_10',['RebuildTensorVar',['../namespacetvm_1_1tirx.html#aeaafba69d99e49326a75faed3f564d4a',1,'tvm::tirx']]],
   ['reciprocal_11',['reciprocal',['../namespacetvm_1_1tirx.html#af2945cbb198479f7a06192c20fb755a9',1,'tvm::tirx']]],
   ['recordorigin_12',['RecordOrigin',['../classtvm_1_1script_1_1printer_1_1DocTranslatorObj.html#a303756be2fc86d497f2b9eef7387d29e',1,'tvm::script::printer::DocTranslatorObj']]],
   ['recv_13',['Recv',['../classtvm_1_1runtime_1_1DiscoChannel.html#abf8ea6b42d8119615617fe28d3cda42b',1,'tvm::runtime::DiscoChannel']]],
