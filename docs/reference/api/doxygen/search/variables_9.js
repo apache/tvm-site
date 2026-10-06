@@ -41,6 +41,5 @@ var searchData=
   ['is_5fterminated_38',['is_terminated',['../classtvm_1_1s__tir_1_1meta__schedule_1_1TaskRecordNode.html#a084aff9bd289c2ca780059a775ed4c3f',1,'tvm::s_tir::meta_schedule::TaskRecordNode']]],
   ['iter_5ftype_39',['iter_type',['../classtvm_1_1tirx_1_1IterVarNode.html#a1f6bef72d987ec61e79cc59bfede6f61',1,'tvm::tirx::IterVarNode']]],
   ['iter_5fvalues_40',['iter_values',['../classtvm_1_1script_1_1ir__builder_1_1s__tir_1_1SBlockFrameNode.html#a39a7f26ec267c25082c27ec7c14cef48',1,'tvm::script::ir_builder::s_tir::SBlockFrameNode::iter_values'],['../classtvm_1_1s__tir_1_1SBlockRealizeNode.html#ad4b009295aa7b1075ddf5b3af3876e9e',1,'tvm::s_tir::SBlockRealizeNode::iter_values']]],
-  ['iter_5fvar_41',['iter_var',['../classtvm_1_1script_1_1ir__builder_1_1tirx_1_1LaunchThreadFrameNode.html#a3831c048bd1535984464ad8dc6c658a7',1,'tvm::script::ir_builder::tirx::LaunchThreadFrameNode']]],
-  ['iter_5fvars_42',['iter_vars',['../classtvm_1_1script_1_1ir__builder_1_1s__tir_1_1SBlockFrameNode.html#a2316893bcca21b84e4ecd24c38f109ab',1,'tvm::script::ir_builder::s_tir::SBlockFrameNode::iter_vars'],['../classtvm_1_1s__tir_1_1SBlockNode.html#a440ef6477114aed27d6d0f344ab022c6',1,'tvm::s_tir::SBlockNode::iter_vars']]]
+  ['iter_5fvars_41',['iter_vars',['../classtvm_1_1script_1_1ir__builder_1_1s__tir_1_1SBlockFrameNode.html#a2316893bcca21b84e4ecd24c38f109ab',1,'tvm::script::ir_builder::s_tir::SBlockFrameNode::iter_vars'],['../classtvm_1_1s__tir_1_1SBlockNode.html#a440ef6477114aed27d6d0f344ab022c6',1,'tvm::s_tir::SBlockNode::iter_vars']]]
 ];
