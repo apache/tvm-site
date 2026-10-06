@@ -64,7 +64,7 @@ var searchData=
   ['detectlinearequation_61',['DetectLinearEquation',['../namespacetvm_1_1sym.html#ace29580c5dc912cdbcb73382eb41b114',1,'tvm::sym']]],
   ['detectrecursion_62',['DetectRecursion',['../namespacetvm_1_1relax.html#a006084fca908b3d3068f38dcd9390add',1,'tvm::relax']]],
   ['device_63',['Device',['../classtvm_1_1script_1_1printer_1_1LiteralDoc.html#a60cc0caeefc4bb1638e23794f34c02e0',1,'tvm::script::printer::LiteralDoc']]],
-  ['deviceentry_64',['DeviceEntry',['../namespacetvm_1_1script_1_1ir__builder_1_1tirx.html#aa000d9afb5b19027399b5d26a81ee166',1,'tvm::script::ir_builder::tirx']]],
+  ['device_5fentry_64',['device_entry',['../namespacetvm_1_1tirx_1_1builtin.html#ae47885d15833a88fa095f26ec654fd7f',1,'tvm::tirx::builtin']]],
   ['devicemesh_65',['devicemesh',['../classtvm_1_1relax_1_1distributed_1_1DeviceMesh.html#ae41e24934d9921d86861259b0b6560b0',1,'tvm::relax::distributed::DeviceMesh::DeviceMesh(ffi::Shape shape, ffi::Array&lt; int64_t &gt; device_ids)'],['../classtvm_1_1relax_1_1distributed_1_1DeviceMesh.html#a3bed90c04175de0a2faa437a479ba0ee',1,'tvm::relax::distributed::DeviceMesh::DeviceMesh(ffi::Shape shape, Range device_range)']]],
   ['devicerandom_66',['DeviceRandom',['../classtvm_1_1s__tir_1_1LinearCongruentialEngine.html#a99795177b442b0f9ce317a2bebfd916c',1,'tvm::s_tir::LinearCongruentialEngine']]],
   ['dfsgraph_67',['DFSGraph',['../classtvm_1_1tirx_1_1BufferAxisGraphExtractor.html#a39ce5890c77c364024076f6155299263',1,'tvm::tirx::BufferAxisGraphExtractor']]],
