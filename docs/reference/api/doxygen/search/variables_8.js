@@ -1,7 +1,6 @@
 var searchData=
 [
-  ['hand_5fthreaded_0',['hand_threaded',['../namespacetvm_1_1s__tir_1_1attr.html#aa69ea60566dd6bf3922985cd167878fa',1,'tvm::s_tir::attr']]],
-  ['has_5fdefault_1',['has_default',['../structtvm_1_1ConfigSchema_1_1OptionEntry.html#a30a56c9c53021d29a53bc6fb1071408e',1,'tvm::ConfigSchema::OptionEntry']]],
-  ['host_2',['host',['../classtvm_1_1TargetNode.html#a5816341360e2117f887684911f05792f',1,'tvm::TargetNode']]],
-  ['host_5farrays_3',['host_arrays',['../classtvm_1_1runtime_1_1WorkerZeroData.html#a5b7b4e2602ba81b2236256079a1db5ed',1,'tvm::runtime::WorkerZeroData']]]
+  ['has_5fdefault_0',['has_default',['../structtvm_1_1ConfigSchema_1_1OptionEntry.html#a30a56c9c53021d29a53bc6fb1071408e',1,'tvm::ConfigSchema::OptionEntry']]],
+  ['host_1',['host',['../classtvm_1_1TargetNode.html#a5816341360e2117f887684911f05792f',1,'tvm::TargetNode']]],
+  ['host_5farrays_2',['host_arrays',['../classtvm_1_1runtime_1_1WorkerZeroData.html#a5b7b4e2602ba81b2236256079a1db5ed',1,'tvm::runtime::WorkerZeroData']]]
 ];

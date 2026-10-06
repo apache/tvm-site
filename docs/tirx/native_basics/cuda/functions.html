@@ -905,10 +905,9 @@ them alongside the kernel arguments.</p>
 first argument (max threads per block) is set automatically from the thread
 extent. To also set the second argument — the minimum blocks per SM, an
 occupancy hint — add
-<code class="docutils literal notranslate"><span class="pre">Tx.attr({&quot;tirx.launch_bounds_min_blocks_per_sm&quot;:</span> <span class="pre">N})</span></code> in the device region (note:
-<code class="docutils literal notranslate"><span class="pre">Tx.attr</span></code>, not <code class="docutils literal notranslate"><span class="pre">func_attr</span></code>):</p>
+<code class="docutils literal notranslate"><span class="pre">Tx.cuda.launch_bounds_min_blocks_per_sm(N)</span></code> in the device region:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">Tx</span><span class="o">.</span><span class="n">device_entry</span><span class="p">()</span>
-<span class="n">Tx</span><span class="o">.</span><span class="n">attr</span><span class="p">({</span><span class="s2">&quot;tirx.launch_bounds_min_blocks_per_sm&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">})</span>   <span class="c1"># second launch-bounds arg</span>
+<span class="n">Tx</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">launch_bounds_min_blocks_per_sm</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>   <span class="c1"># second launch-bounds arg</span>
 <span class="n">bx</span> <span class="o">=</span> <span class="n">Tx</span><span class="o">.</span><span class="n">cta_id</span><span class="p">([</span><span class="mi">1</span><span class="p">]);</span> <span class="n">tx</span> <span class="o">=</span> <span class="n">Tx</span><span class="o">.</span><span class="n">thread_id</span><span class="p">([</span><span class="mi">256</span><span class="p">])</span>
 <span class="o">...</span>
 </pre></div>
@@ -916,12 +915,18 @@ occupancy hint — add
 <div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="k">extern</span><span class="w"> </span><span class="s">&quot;C&quot;</span><span class="w"> </span><span class="n">__global__</span><span class="w"> </span><span class="kt">void</span><span class="w"> </span><span class="n">__launch_bounds__</span><span class="p">(</span><span class="mi">256</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="p">)</span><span class="w"> </span><span class="n">scale_kernel</span><span class="p">(...)</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="p">...</span><span class="w"> </span><span class="p">}</span>
 </pre></div>
 </div>
-<p>Without the attr the second argument is omitted (just <code class="docutils literal notranslate"><span class="pre">__launch_bounds__(256)</span></code>).</p>
+<p>Without this declaration the second argument is omitted (just <code class="docutils literal notranslate"><span class="pre">__launch_bounds__(256)</span></code>).</p>
+<p><code class="docutils literal notranslate"><span class="pre">Tx.cuda.launch_bounds_max_blocks_per_cluster(N)</span></code> supplies the third operand
+and requires a minimum-blocks declaration. <code class="docutils literal notranslate"><span class="pre">Tx.cuda.max_registers_per_thread(N)</span></code>
+emits <code class="docutils literal notranslate"><span class="pre">__maxnreg__(N)</span></code> and cannot accompany launch bounds. These declarations
+accept positive integer constants. Matching repetitions are allowed; conflicting
+values are rejected. They configure the containing kernel and produce no runtime
+instructions at their textual position.</p>
 <p>Some kernels require an exact block and cluster shape instead of an advisory
-maximum. Set <code class="docutils literal notranslate"><span class="pre">tirx.required_block_size</span></code> to <code class="docutils literal notranslate"><span class="pre">1</span></code> to make the thread and
-cluster extents a compile-time launch contract:</p>
+maximum. Use <code class="docutils literal notranslate"><span class="pre">Tx.cuda.required_block_size</span></code> with the three thread dimensions followed
+by the three cluster dimensions to declare a compile-time launch contract:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">Tx</span><span class="o">.</span><span class="n">device_entry</span><span class="p">()</span>
-<span class="n">Tx</span><span class="o">.</span><span class="n">attr</span><span class="p">({</span><span class="s2">&quot;tirx.required_block_size&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">})</span>
+<span class="n">Tx</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">required_block_size</span><span class="p">(</span><span class="mi">128</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
 <span class="n">bx</span><span class="p">,</span> <span class="n">by</span> <span class="o">=</span> <span class="n">Tx</span><span class="o">.</span><span class="n">cta_id</span><span class="p">([</span><span class="mi">4</span><span class="p">,</span> <span class="mi">2</span><span class="p">])</span>
 <span class="n">_</span><span class="p">,</span> <span class="n">cy</span> <span class="o">=</span> <span class="n">Tx</span><span class="o">.</span><span class="n">cta_id_in_cluster</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">])</span>
 <span class="n">tx</span> <span class="o">=</span> <span class="n">Tx</span><span class="o">.</span><span class="n">thread_id</span><span class="p">([</span><span class="mi">128</span><span class="p">])</span>
@@ -932,14 +937,14 @@ cluster extents a compile-time launch contract:</p>
 </pre></div>
 </div>
 <p>This requires CUDA Toolkit 13 or newer. All thread and cluster dimensions must
-be static; CUDA lowers <code class="docutils literal notranslate"><span class="pre">__block_size__</span></code> to PTX <code class="docutils literal notranslate"><span class="pre">.reqntid</span></code> and checks the
+be positive constants matching the declared launch extents; CUDA lowers <code class="docutils literal notranslate"><span class="pre">__block_size__</span></code> to PTX <code class="docutils literal notranslate"><span class="pre">.reqntid</span></code> and checks the
 same dimensions at launch. A preferred cluster dimension must be absent or
 equal to the required cluster dimension, and each logical block-grid dimension
 must be divisible by its cluster dimension.</p>
-<p><code class="docutils literal notranslate"><span class="pre">tirx.required_block_size</span></code> can be combined with the launch-bounds attributes
+<p><code class="docutils literal notranslate"><span class="pre">Tx.cuda.required_block_size</span></code> can be combined with the launch-bounds declarations
 when an occupancy hint is also needed; code generation then emits both
 <code class="docutils literal notranslate"><span class="pre">__block_size__</span></code> and <code class="docutils literal notranslate"><span class="pre">__launch_bounds__</span></code>. It cannot be combined with
-<code class="docutils literal notranslate"><span class="pre">tirx.max_registers</span></code>.</p>
+<code class="docutils literal notranslate"><span class="pre">Tx.cuda.max_registers_per_thread</span></code>.</p>
 <p>At run time the kernel is launched through the <strong>CUDA Driver API</strong>. TVM’s CUDA
 runtime loads the module (<code class="docutils literal notranslate"><span class="pre">cuModuleLoadData</span></code>), fetches the function
 (<code class="docutils literal notranslate"><span class="pre">cuModuleGetFunction</span></code>, cached), and calls <code class="docutils literal notranslate"><span class="pre">cuLaunchKernelEx</span></code> with a
@@ -947,7 +952,7 @@ runtime loads the module (<code class="docutils literal notranslate"><span class
 the config carries a list of launch <em>attributes</em> — the thread-block <strong>cluster
 dimension</strong> and <strong>preferred cluster dimension</strong> (Hopper/Blackwell), plus optional
 programmatic-dependent-launch and cooperative-launch flags. Kernels with
-<code class="docutils literal notranslate"><span class="pre">tirx.required_block_size</span></code> instead use CUDA’s required-block sentinel; their
+<code class="docutils literal notranslate"><span class="pre">Tx.cuda.required_block_size</span></code> instead use CUDA’s required-block sentinel; their
 compile-time cluster shape replaces the ordinary runtime cluster attribute. In
 outline, <code class="docutils literal notranslate"><span class="pre">src/backend/cuda/runtime/cuda_module.cc</span></code> follows this path:</p>
 <div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="n">std</span><span class="o">::</span><span class="n">array</span><span class="o">&lt;</span><span class="n">CUlaunchAttribute</span><span class="p">,</span><span class="w"> </span><span class="mi">4</span><span class="o">&gt;</span><span class="w"> </span><span class="n">attrs</span><span class="p">{};</span>
