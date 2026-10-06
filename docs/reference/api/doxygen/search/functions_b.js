@@ -1,8 +1,8 @@
 var searchData=
 [
   ['lambdadoc_0',['LambdaDoc',['../classtvm_1_1script_1_1printer_1_1LambdaDoc.html#aeb864b9928f400594d82c1b02009a3bf',1,'tvm::script::printer::LambdaDoc']]],
-  ['lambdaexpr_1',['LambdaExpr',['../classtvm_1_1tirx_1_1LambdaExpr.html#a89bb4db7e73e1cddc067a80c52f0af50',1,'tvm::tirx::LambdaExpr']]],
-  ['lambdaexprnode_2',['lambdaexprnode',['../classtvm_1_1tirx_1_1LambdaExprNode.html#ac25fa7a431fed557e13249f6bd8c7ffa',1,'tvm::tirx::LambdaExprNode::LambdaExprNode(ffi::UnsafeInit tag)'],['../classtvm_1_1tirx_1_1LambdaExprNode.html#a60e2a1becd7af561373363fe14515b26',1,'tvm::tirx::LambdaExprNode::LambdaExprNode(PrimExpr pred)']]],
+  ['lambdaexpr_1',['LambdaExpr',['../classtvm_1_1LambdaExpr.html#a3bda6db0d091582e2eb8c21e255fc0a2',1,'tvm::LambdaExpr']]],
+  ['lambdaexprnode_2',['lambdaexprnode',['../classtvm_1_1LambdaExprNode.html#a9e05664b53df4481b8ed5b63d1d9aaa5',1,'tvm::LambdaExprNode::LambdaExprNode(ffi::UnsafeInit tag)'],['../classtvm_1_1LambdaExprNode.html#af3e535a3aca252082fe9e914975c62d2',1,'tvm::LambdaExprNode::LambdaExprNode(Expr body)']]],
   ['lambdalift_3',['LambdaLift',['../namespacetvm_1_1relax_1_1transform.html#ac6348965f3158c33e75c2fb780558423',1,'tvm::relax::transform']]],
   ['lanes_4',['lanes',['../classtvm_1_1PrimType.html#ad07bdd138a531d6918d61fdcd7c3e04d',1,'tvm::PrimType']]],
   ['launch_5fthread_5',['launch_thread',['../namespacetvm_1_1tirx_1_1builtin.html#ad745c78adb023f02d9f8ab005fcfee1d',1,'tvm::tirx::builtin']]],

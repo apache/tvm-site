@@ -276,7 +276,7 @@ Here we use a common subset of rules. The full catalog (including ``LowBatchGEMV
                 for ax0_fused in T.thread_binding(T.int64(1), thread="blockIdx.x"):
                     for ax0 in range(T.int64(0), T.int64(1)):
                         for ax1_fused_1 in T.thread_binding(T.int64(256), thread="threadIdx.x"):
-                            for ax1_fused_0 in T.serial(T.int64(0), T.int64(3), annotations={"pragma_auto_unroll_max_step": 256, "pragma_unroll_explicit": 1}):
+                            for ax1_fused_0 in T.serial(T.int64(0), T.int64(3), annotations={"auto_unroll_max_step": 256, "unroll_explicit": 1}):
                                 with Ts.sblock("relu_sum"):
                                     v0 = Ts.axis.spatial(T.int64(1), ax0, dtype="int64")
                                     v1 = Ts.axis.reduce(T.int64(768), ax1_fused_0 * T.int64(256) + ax1_fused_1, dtype="int64")
@@ -287,7 +287,7 @@ Here we use a common subset of rules. The full catalog (including ``LowBatchGEMV
                                     relu_sum_shared[T.int64(0)] = relu_sum_shared[T.int64(0)] + relu[T.int64(0), v1]
                     for ax0_1 in range(T.int64(0), T.int64(1)):
                         for ax1_fused_1_1 in T.thread_binding(T.int64(256), thread="threadIdx.x"):
-                            for ax1_fused_0_1 in T.serial(T.int64(0), T.int64(3), annotations={"pragma_auto_unroll_max_step": 256, "pragma_unroll_explicit": 1}):
+                            for ax1_fused_0_1 in T.serial(T.int64(0), T.int64(3), annotations={"auto_unroll_max_step": 256, "unroll_explicit": 1}):
                                 with Ts.sblock("relu_var_sum"):
                                     v0_1 = Ts.axis.spatial(T.int64(1), ax0_1, dtype="int64")
                                     v1_1 = Ts.axis.reduce(T.int64(768), ax1_fused_0_1 * T.int64(256) + ax1_fused_1_1, dtype="int64")
@@ -297,7 +297,7 @@ Here we use a common subset of rules. The full catalog (including ``LowBatchGEMV
                                         relu_var_sum_shared[T.int64(0)] = T.float32(0.0)
                                     relu_var_sum_shared[T.int64(0)] = relu_var_sum_shared[T.int64(0)] + (relu[T.int64(0), v1_1] - relu_sum_shared[T.int64(0)] / T.float32(768.0)) * (relu[T.int64(0), v1_1] - relu_sum_shared[T.int64(0)] / T.float32(768.0))
                     for ax1_1 in T.thread_binding(T.int64(256), thread="threadIdx.x"):
-                        for ax1_0 in T.serial(T.int64(0), T.int64(3), annotations={"pragma_auto_unroll_max_step": 256, "pragma_unroll_explicit": 1}):
+                        for ax1_0 in T.serial(T.int64(0), T.int64(3), annotations={"auto_unroll_max_step": 256, "unroll_explicit": 1}):
                             with Ts.sblock("T_layer_norm"):
                                 v0_2 = Ts.axis.spatial(T.int64(1), T.int64(0), dtype="int64")
                                 v1_2 = Ts.axis.spatial(T.int64(768), ax1_0 * T.int64(256) + ax1_1, dtype="int64")
@@ -721,7 +721,7 @@ Insert the custom rule into the rule chain. Note that ``from_callable`` returns 
                 for ax0_fused in T.thread_binding(T.int64(1), thread="blockIdx.x"):
                     for ax0 in range(T.int64(0), T.int64(1)):
                         for ax1_fused_1 in T.thread_binding(T.int64(256), thread="threadIdx.x"):
-                            for ax1_fused_0 in T.serial(T.int64(0), T.int64(3), annotations={"pragma_auto_unroll_max_step": 256, "pragma_unroll_explicit": 1}):
+                            for ax1_fused_0 in T.serial(T.int64(0), T.int64(3), annotations={"auto_unroll_max_step": 256, "unroll_explicit": 1}):
                                 with Ts.sblock("relu_sum"):
                                     v0 = Ts.axis.spatial(T.int64(1), ax0, dtype="int64")
                                     v1 = Ts.axis.reduce(T.int64(768), ax1_fused_0 * T.int64(256) + ax1_fused_1, dtype="int64")
@@ -732,7 +732,7 @@ Insert the custom rule into the rule chain. Note that ``from_callable`` returns 
                                     relu_sum_shared[T.int64(0)] = relu_sum_shared[T.int64(0)] + relu[T.int64(0), v1]
                     for ax0_1 in range(T.int64(0), T.int64(1)):
                         for ax1_fused_1_1 in T.thread_binding(T.int64(256), thread="threadIdx.x"):
-                            for ax1_fused_0_1 in T.serial(T.int64(0), T.int64(3), annotations={"pragma_auto_unroll_max_step": 256, "pragma_unroll_explicit": 1}):
+                            for ax1_fused_0_1 in T.serial(T.int64(0), T.int64(3), annotations={"auto_unroll_max_step": 256, "unroll_explicit": 1}):
                                 with Ts.sblock("relu_var_sum"):
                                     v0_1 = Ts.axis.spatial(T.int64(1), ax0_1, dtype="int64")
                                     v1_1 = Ts.axis.reduce(T.int64(768), ax1_fused_0_1 * T.int64(256) + ax1_fused_1_1, dtype="int64")
@@ -742,7 +742,7 @@ Insert the custom rule into the rule chain. Note that ``from_callable`` returns 
                                         relu_var_sum_shared[T.int64(0)] = T.float32(0.0)
                                     relu_var_sum_shared[T.int64(0)] = relu_var_sum_shared[T.int64(0)] + (relu[T.int64(0), v1_1] - relu_sum_shared[T.int64(0)] / T.float32(768.0)) * (relu[T.int64(0), v1_1] - relu_sum_shared[T.int64(0)] / T.float32(768.0))
                     for ax1_1 in T.thread_binding(T.int64(256), thread="threadIdx.x"):
-                        for ax1_0 in T.serial(T.int64(0), T.int64(3), annotations={"pragma_auto_unroll_max_step": 256, "pragma_unroll_explicit": 1}):
+                        for ax1_0 in T.serial(T.int64(0), T.int64(3), annotations={"auto_unroll_max_step": 256, "unroll_explicit": 1}):
                             with Ts.sblock("T_layer_norm"):
                                 v0_2 = Ts.axis.spatial(T.int64(1), T.int64(0), dtype="int64")
                                 v1_2 = Ts.axis.spatial(T.int64(768), ax1_0 * T.int64(256) + ax1_1, dtype="int64")

@@ -2,8 +2,8 @@ var searchData=
 [
   ['lambdadoc_0',['LambdaDoc',['../classtvm_1_1script_1_1printer_1_1LambdaDoc.html',1,'tvm::script::printer']]],
   ['lambdadocnode_1',['LambdaDocNode',['../classtvm_1_1script_1_1printer_1_1LambdaDocNode.html',1,'tvm::script::printer']]],
-  ['lambdaexpr_2',['LambdaExpr',['../classtvm_1_1tirx_1_1LambdaExpr.html',1,'tvm::tirx']]],
-  ['lambdaexprnode_3',['LambdaExprNode',['../classtvm_1_1tirx_1_1LambdaExprNode.html',1,'tvm::tirx']]],
+  ['lambdaexpr_2',['LambdaExpr',['../classtvm_1_1LambdaExpr.html',1,'tvm']]],
+  ['lambdaexprnode_3',['LambdaExprNode',['../classtvm_1_1LambdaExprNode.html',1,'tvm']]],
   ['layernormattrs_4',['LayerNormAttrs',['../structtvm_1_1relax_1_1LayerNormAttrs.html',1,'tvm::relax']]],
   ['layout_5',['Layout',['../classtvm_1_1tirx_1_1Layout.html',1,'tvm::tirx']]],
   ['layoutnode_6',['LayoutNode',['../classtvm_1_1tirx_1_1LayoutNode.html',1,'tvm::tirx']]],
