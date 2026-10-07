@@ -131,7 +131,7 @@ var searchData=
   ['ispostproc_128',['IsPostproc',['../classtvm_1_1s__tir_1_1InstructionKindNode.html#a4f8193e1f03539c9ab01315d1067bc2f',1,'tvm::s_tir::InstructionKindNode']]],
   ['ispoweroftwoint_129',['IsPowerOfTwoInt',['../namespacetvm_1_1prim.html#af9a67d8a6597ddb3573e4676aa5f4a85',1,'tvm::prim']]],
   ['isprimal_130',['IsPrimal',['../classtvm_1_1tirx_1_1SLayoutAxis.html#a1dd5208b45d794407a91feaf15fe12d1',1,'tvm::tirx::SLayoutAxis']]],
-  ['ispurefunction_131',['IsPureFunction',['../namespacetvm_1_1s__tir.html#a48aec715e994877d1221980b5979a961',1,'tvm::s_tir']]],
+  ['ispurefunction_131',['IsPureFunction',['../namespacetvm_1_1s__tir.html#a4e38493891f440cf794772db72e4958c',1,'tvm::s_tir']]],
   ['isregioncoveredconsumer_132',['IsRegionCoveredConsumer',['../classtvm_1_1s__tir_1_1ScheduleStateNode.html#af0d8d5357eb18cb759f7eab287b9b1e9',1,'tvm::s_tir::ScheduleStateNode']]],
   ['isregionop_133',['IsRegionOp',['../namespacetvm_1_1tirx.html#a3cad186e7c2b22ed3e177251137d78ce',1,'tvm::tirx']]],
   ['isrpcsessiondevice_134',['IsRPCSessionDevice',['../namespacetvm_1_1runtime.html#aa5f13cd8047078f88d142fe53337ba6f',1,'tvm::runtime']]],

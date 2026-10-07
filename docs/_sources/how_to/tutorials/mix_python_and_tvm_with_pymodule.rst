@@ -87,7 +87,7 @@ Step 1: Your First Hybrid Module
 The core idea: decorate a class with ``@R.py_module``, inherit from ``BasePyModule``, and use
 three decorators for three kinds of functions:
 
-- ``@T.prim_func`` — low-level TIR kernel (JIT-compiled on instantiation)
+- ``@T.function`` — low-level TIR kernel (JIT-compiled on instantiation)
 - ``@R.function`` — high-level Relax graph (JIT-compiled on instantiation)
 - ``@I.pyfunc`` — plain Python (runs as-is, can use any Python library)
 
@@ -103,7 +103,7 @@ three decorators for three kinds of functions:
 
         @R.py_module
         class MyFirstModule(BasePyModule):
-            @Ts.prim_func
+            @Ts.function
             def add_tir(
                 A: T.Tensor((4,), "float32"),
                 B: T.Tensor((4,), "float32"),
@@ -162,7 +162,7 @@ immediately — no recompilation needed.
 
         @R.py_module
         class DebugModule(BasePyModule):
-            @Ts.prim_func
+            @Ts.function
             def matmul_tir(
                 A: T.Tensor((n, 4), "float32"),
                 B: T.Tensor((4, 3), "float32"),
@@ -253,7 +253,7 @@ three different calling conventions:
 
         @R.py_module
         class PipelineModule(BasePyModule):
-            @Ts.prim_func
+            @Ts.function
             def matmul_tir(
                 A: T.Tensor((2, 4), "float32"),
                 B: T.Tensor((4, 3), "float32"),
@@ -330,7 +330,7 @@ transformed the IR), and compare the output against a PyTorch reference to catch
         # A simple Relax module: matmul + bias + relu (a dense layer)
         @I.ir_module
         class DenseLayer:
-            @Ts.prim_func
+            @Ts.function
             def bias_add_tir(
                 x: T.Tensor((2, 4), "float32"),
                 b: T.Tensor((4,), "float32"),
@@ -484,7 +484,7 @@ tensors at call time, so the same module handles different sizes without recompi
 
         @R.py_module
         class DynamicModule(BasePyModule):
-            @Ts.prim_func
+            @Ts.function
             def scale_tir(x: T.Tensor((n,), "float32"), out: T.Tensor((n,), "float32")):
                 for i in T.serial(n):
                     out[i] = x[i] * T.float32(2.0)

@@ -110,7 +110,7 @@ Here we will declare a simple kernel on the local machine:
     n = tvm.runtime.convert(1024)
     A = te.placeholder((n,), name="A")
     B = te.compute((n,), lambda i: A[i] + 1.0, name="B")
-    mod = tvm.IRModule.from_expr(te.create_prim_func([A, B]).with_attr("global_symbol", "add_one"))
+    mod = tvm.IRModule.from_expr(te.create_function([A, B]).with_attr("global_symbol", "add_one"))
 
 
 
@@ -275,7 +275,7 @@ device and returns the measured cost. Network overhead is excluded.
 
  .. code-block:: none
 
-    1.05e-07 secs/op
+    9e-08 secs/op
 
 
 
@@ -506,7 +506,7 @@ The following function shows how we run an OpenCL kernel remotely
         target = tvm.target.Target("opencl", host={"kind": "llvm", "mtriple": "aarch64-linux-gnu"})
 
         # create schedule for the above "add one" compute declaration
-        mod = tvm.IRModule.from_expr(te.create_prim_func([A, B]))
+        mod = tvm.IRModule.from_expr(te.create_function([A, B]))
         sch = tvm.s_tir.Schedule(mod)
         (x,) = sch.get_loops(block=sch.get_sblock("B"))
         xo, xi = sch.split(x, [None, 32])
@@ -864,8 +864,8 @@ This workflow is applicable to various deployment scenarios:
     Converted PyTorch model to Relax:
       - Number of parameters: 4
     Using local target for demonstration
-    Exported library to: /tmp/tmp2yr9iddr/model_deployed.so
-    Saved parameters to: /tmp/tmp2yr9iddr/model_params.npz
+    Exported library to: /tmp/tmpi8i2mthd/model_deployed.so
+    Saved parameters to: /tmp/tmpi8i2mthd/model_params.npz
 
     RPC workflow (works for any remote device):
     ==================================================

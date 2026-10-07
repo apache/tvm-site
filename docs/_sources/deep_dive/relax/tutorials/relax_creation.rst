@@ -119,7 +119,7 @@ TensorIR functions in Relax function.
 
     @I.ir_module
     class RelaxModuleWithTIR:
-        @Ts.prim_func
+        @Ts.function
         def relu(X: T.Tensor((n, m), "float32"), Y: T.Tensor((n, m), "float32")):
             for i, j in T.grid(n, m):
                 with Ts.sblock("relu"):
@@ -164,7 +164,7 @@ TensorIR functions in Relax function.
     m = I.dynamic("m", dtype="int64")
     @I.ir_module
     class Module:
-        @Ts.prim_func
+        @Ts.function
         def relu(X: T.Tensor((n, m), "float32"), Y: T.Tensor((n, m), "float32")):
             with Ts.sblock("root"):
                 Ts.reads()
@@ -322,7 +322,7 @@ Tensor Expression(TE), TensorIR functions or other TVM packed functions.
     K = T.dynamic("K", "int64")
 
 
-    @Ts.prim_func
+    @Ts.function
     def tir_linear(
         X: T.Tensor((M, K), "float32"),
         W: T.Tensor((N, K), "float32"),
@@ -394,7 +394,7 @@ Tensor Expression(TE), TensorIR functions or other TVM packed functions.
     n_1 = I.dynamic("n", dtype="int64")
     @I.ir_module
     class Module:
-        @Ts.prim_func(private=True)
+        @Ts.function(private=True)
         def relu(env_linear: T.Tensor((n, T.int64(128)), "float32"), compute: T.Tensor((n, T.int64(128)), "float32")):
             T.func_attr({"tirx.noalias": True})
             with Ts.sblock("root"):
@@ -409,7 +409,7 @@ Tensor Expression(TE), TensorIR functions or other TVM packed functions.
                             Ts.writes(compute[v_i0, v_i1])
                             compute[v_i0, v_i1] = T.max(env_linear[v_i0, v_i1], T.float32(0.0))
 
-        @Ts.prim_func
+        @Ts.function
         def tir_linear(X: T.Tensor((M, K), "float32"), W: T.Tensor((N, K), "float32"), B: T.Tensor((N,), "float32"), Z: T.Tensor((M, N), "float32")):
             with Ts.sblock("root"):
                 Ts.reads()
@@ -572,7 +572,7 @@ Relax functions, TensorIR functions and other TVM packed functions.
     n_1 = I.dynamic("n", dtype="int64")
     @I.ir_module
     class Module:
-        @Ts.prim_func(private=True)
+        @Ts.function(private=True)
         def relu(lv: T.Tensor((n, T.int64(128)), "float32"), compute: T.Tensor((n, T.int64(128)), "float32")):
             T.func_attr({"tirx.noalias": True})
             with Ts.sblock("root"):
@@ -587,7 +587,7 @@ Relax functions, TensorIR functions and other TVM packed functions.
                             Ts.writes(compute[v_i0, v_i1])
                             compute[v_i0, v_i1] = T.max(lv[v_i0, v_i1], T.float32(0.0))
 
-        @Ts.prim_func
+        @Ts.function
         def tir_linear(X: T.Tensor((M, K), "float32"), W: T.Tensor((N, K), "float32"), B: T.Tensor((N,), "float32"), Z: T.Tensor((M, N), "float32")):
             with Ts.sblock("root"):
                 Ts.reads()

@@ -94,7 +94,7 @@ var searchData=
   ['gettensorfromload_91',['GetTensorFromLoad',['../namespacetvm_1_1te.html#afe813bc357d584ecead6c68aed50eea2',1,'tvm::te']]],
   ['gettensorloadindices_92',['GetTensorLoadIndices',['../namespacetvm_1_1te.html#a50e213344e01cf652d24e420cef2bed8',1,'tvm::te']]],
   ['gettensorvar_93',['GetTensorVar',['../namespacetvm_1_1tirx.html#a663f1e9db3978cc70a53bd63b29211a0',1,'tvm::tirx']]],
-  ['gettirvaraxisgraph_94',['GetTIRVarAxisGraph',['../classtvm_1_1tirx_1_1BufferAxisGraphExtractor.html#ad8e01d1d6fe77bb27cb007cde0cb83d5',1,'tvm::tirx::BufferAxisGraphExtractor']]],
+  ['gettirvaraxisgraph_94',['GetTIRVarAxisGraph',['../classtvm_1_1tirx_1_1BufferAxisGraphExtractor.html#a8a96d3f9af1b1a98a4f04a3e2c0e884d',1,'tvm::tirx::BufferAxisGraphExtractor']]],
   ['gettopk_95',['gettopk',['../classtvm_1_1s__tir_1_1meta__schedule_1_1PyDatabaseNode.html#a6ba139a6052759221ddcc410e49b177f',1,'tvm::s_tir::meta_schedule::PyDatabaseNode::GetTopK()'],['../classtvm_1_1s__tir_1_1meta__schedule_1_1DatabaseNode.html#a7067e92198c2136a8fc6fe8d8ab6b1bf',1,'tvm::s_tir::meta_schedule::DatabaseNode::GetTopK()']]],
   ['gettype_96',['gettype',['../namespacetvm_1_1prim.html#a0dcd5b5fccb613b06b8b8d8d02fbdb7a',1,'tvm::prim::GetType()'],['../namespacetvm_1_1relax.html#a98ceecc42432e50a5dd8413a3f481050',1,'tvm::relax::GetType(const Expr &amp;expr)']]],
   ['gettypeas_97',['GetTypeAs',['../namespacetvm_1_1relax.html#aa066320382cd10bc1621318678ca0e1c',1,'tvm::relax']]],

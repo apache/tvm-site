@@ -109,7 +109,7 @@ and would not run efficiently on a GPU. Let's see what functions we have:
 .. code-block:: Python
 
     for gv, func in mod.functions_items():
-        if isinstance(func, tirx.PrimFunc):
+        if isinstance(func, tirx.Function):
             print(f"  {gv.name_hint}")
 
 
@@ -177,7 +177,7 @@ Here we use a common subset of rules. The full catalog (including ``LowBatchGEMV
 
     @I.ir_module
     class Module:
-        @Ts.prim_func(private=True)
+        @Ts.function(private=True)
         def fused_matmul1_add1(layer_norm: T.Tensor((T.int64(1), T.int64(768)), "float32"), permute_dims1: T.Tensor((T.int64(768), T.int64(256)), "float32"), fc2_bias: T.Tensor((T.int64(256),), "float32"), T_add_intermediate: T.Tensor((T.int64(1), T.int64(256)), "float32")):
             T.func_attr({"tirx.is_scheduled": True, "tirx.noalias": True})
             with Ts.sblock("root"):
@@ -221,7 +221,7 @@ Here we use a common subset of rules. The full catalog (including ``LowBatchGEMV
                                 Ts.writes(T_add_intermediate[T.int64(0), v0_3])
                                 T_add_intermediate[T.int64(0), v0_3] = matmul_intermediate_local[T.int64(0), v0_3] + fc2_bias[v0_3]
 
-        @Ts.prim_func(private=True)
+        @Ts.function(private=True)
         def fused_matmul_add_relu(x: T.Tensor((T.int64(1), T.int64(768)), "float32"), permute_dims: T.Tensor((T.int64(768), T.int64(768)), "float32"), fc1_bias: T.Tensor((T.int64(768),), "float32"), compute_intermediate: T.Tensor((T.int64(1), T.int64(768)), "float32")):
             T.func_attr({"tirx.is_scheduled": True, "tirx.noalias": True})
             with Ts.sblock("root"):
@@ -265,7 +265,7 @@ Here we use a common subset of rules. The full catalog (including ``LowBatchGEMV
                                 Ts.writes(compute_intermediate[T.int64(0), v0_3])
                                 compute_intermediate[T.int64(0), v0_3] = T.max(matmul_intermediate_local[T.int64(0), v0_3] + fc1_bias[v0_3], T.float32(0.0))
 
-        @Ts.prim_func(private=True)
+        @Ts.function(private=True)
         def layer_norm(relu: T.Tensor((T.int64(1), T.int64(768)), "float32"), norm_weight: T.Tensor((T.int64(768),), "float32"), norm_bias: T.Tensor((T.int64(768),), "float32"), T_layer_norm: T.Tensor((T.int64(1), T.int64(768)), "float32")):
             T.func_attr({"op_pattern": 4, "tirx.is_scheduled": True, "tirx.noalias": True})
             with Ts.sblock("root"):
@@ -305,7 +305,7 @@ Here we use a common subset of rules. The full catalog (including ``LowBatchGEMV
                                 Ts.writes(T_layer_norm[T.int64(0), v1_2])
                                 T_layer_norm[T.int64(0), v1_2] = (relu[T.int64(0), v1_2] - relu_sum_shared[T.int64(0)] / T.float32(768.0)) * I.Call.unchecked("tirx.rsqrt", [relu_var_sum_shared[T.int64(0)] / T.float32(768.0) + T.float32(1.0000000000000001e-05)], ty="float32") * norm_weight[v1_2] + norm_bias[v1_2]
 
-        @Ts.prim_func(private=True)
+        @Ts.function(private=True)
         def transpose(fc1_weight: T.Tensor((T.int64(768), T.int64(768)), "float32"), T_transpose: T.Tensor((T.int64(768), T.int64(768)), "float32")):
             T.func_attr({"op_pattern": 2, "tirx.is_scheduled": True, "tirx.noalias": True})
             with Ts.sblock("root"):
@@ -320,7 +320,7 @@ Here we use a common subset of rules. The full catalog (including ``LowBatchGEMV
                             Ts.writes(T_transpose[v0, v1])
                             T_transpose[v0, v1] = fc1_weight[v1, v0]
 
-        @Ts.prim_func(private=True)
+        @Ts.function(private=True)
         def transpose1(fc2_weight: T.Tensor((T.int64(256), T.int64(768)), "float32"), T_transpose: T.Tensor((T.int64(768), T.int64(256)), "float32")):
             T.func_attr({"op_pattern": 2, "tirx.is_scheduled": True, "tirx.noalias": True})
             with Ts.sblock("root"):
@@ -440,7 +440,7 @@ does not log this directly, but you can figure it out by applying rules one at a
         with target:
             test_mod = dl.ApplyDefaultSchedule(rule)(mod)
         for gv, func in test_mod.functions_items():
-            if isinstance(func, tirx.PrimFunc) and gv.name_hint not in rule_assignment:
+            if isinstance(func, tirx.Function) and gv.name_hint not in rule_assignment:
                 if "tirx.is_scheduled" in func.attrs and func.attrs["tirx.is_scheduled"] == 1:
                     rule_assignment[gv.name_hint] = rule_name
 
@@ -461,7 +461,7 @@ does not log this directly, but you can figure it out by applying rules one at a
 
 
     all_tir_funcs = [
-        gv.name_hint for gv, func in mod.functions_items() if isinstance(func, tirx.PrimFunc)
+        gv.name_hint for gv, func in mod.functions_items() if isinstance(func, tirx.Function)
     ]
     fallback_funcs = [name for name in all_tir_funcs if name not in rule_assignment]
 
@@ -532,7 +532,7 @@ A practical workflow:
 3. Use ``MetaScheduleTuneTIR`` to auto-tune only those kernels.
 
 Note that ``MetaScheduleTuneTIR`` does **not** automatically skip functions already
-scheduled by DLight — it processes every ``PrimFunc`` in the module. In practice this
+scheduled by DLight — it processes every ``Function`` in the module. In practice this
 is harmless (tuning an already-scheduled function simply re-explores its space), but if
 you want to avoid the extra search cost, filter the module or use ``MetaScheduleTuneIRMod``
 with ``op_names`` to target specific functions.
@@ -550,19 +550,19 @@ You can extend DLight by writing your own ``ScheduleRule``. The simplest way is
 
 
     from tvm import s_tir
-    from tvm.s_tir.dlight.analysis import normalize_prim_func
+    from tvm.s_tir.dlight.analysis import normalize_function
     from tvm.s_tir.dlight.base.schedule_rule import ScheduleRule
 
 
     @ScheduleRule.from_callable("MyTileAndBind")
-    def my_tile_and_bind(func: tirx.PrimFunc, target: tvm.target.Target, tunable: bool):
+    def my_tile_and_bind(func: tirx.Function, target: tvm.target.Target, tunable: bool):
         """A minimal rule: for single-block injective functions, tile and bind to GPU threads."""
-        if not isinstance(func, tirx.PrimFunc):
+        if not isinstance(func, tirx.Function):
             return None
         sch = s_tir.Schedule(func)
-        # Use normalize_prim_func to get block info with correct spatial/reduction classification.
+        # Use normalize_function to get block info with correct spatial/reduction classification.
         # This is the same analysis used by built-in DLight rules.
-        block_infos = normalize_prim_func(sch)
+        block_infos = normalize_function(sch)
         if block_infos is None or len(block_infos) != 1:
             return None  # only handle single-block functions
         info = block_infos[0]
@@ -622,7 +622,7 @@ Insert the custom rule into the rule chain. Note that ``from_callable`` returns 
 
     @I.ir_module
     class Module:
-        @Ts.prim_func(private=True)
+        @Ts.function(private=True)
         def fused_matmul1_add1(layer_norm: T.Tensor((T.int64(1), T.int64(768)), "float32"), permute_dims1: T.Tensor((T.int64(768), T.int64(256)), "float32"), fc2_bias: T.Tensor((T.int64(256),), "float32"), T_add_intermediate: T.Tensor((T.int64(1), T.int64(256)), "float32")):
             T.func_attr({"tirx.is_scheduled": True, "tirx.noalias": True})
             with Ts.sblock("root"):
@@ -666,7 +666,7 @@ Insert the custom rule into the rule chain. Note that ``from_callable`` returns 
                                 Ts.writes(T_add_intermediate[T.int64(0), v0_3])
                                 T_add_intermediate[T.int64(0), v0_3] = matmul_intermediate_local[T.int64(0), v0_3] + fc2_bias[v0_3]
 
-        @Ts.prim_func(private=True)
+        @Ts.function(private=True)
         def fused_matmul_add_relu(x: T.Tensor((T.int64(1), T.int64(768)), "float32"), permute_dims: T.Tensor((T.int64(768), T.int64(768)), "float32"), fc1_bias: T.Tensor((T.int64(768),), "float32"), compute_intermediate: T.Tensor((T.int64(1), T.int64(768)), "float32")):
             T.func_attr({"tirx.is_scheduled": True, "tirx.noalias": True})
             with Ts.sblock("root"):
@@ -710,7 +710,7 @@ Insert the custom rule into the rule chain. Note that ``from_callable`` returns 
                                 Ts.writes(compute_intermediate[T.int64(0), v0_3])
                                 compute_intermediate[T.int64(0), v0_3] = T.max(matmul_intermediate_local[T.int64(0), v0_3] + fc1_bias[v0_3], T.float32(0.0))
 
-        @Ts.prim_func(private=True)
+        @Ts.function(private=True)
         def layer_norm(relu: T.Tensor((T.int64(1), T.int64(768)), "float32"), norm_weight: T.Tensor((T.int64(768),), "float32"), norm_bias: T.Tensor((T.int64(768),), "float32"), T_layer_norm: T.Tensor((T.int64(1), T.int64(768)), "float32")):
             T.func_attr({"op_pattern": 4, "tirx.is_scheduled": True, "tirx.noalias": True})
             with Ts.sblock("root"):
@@ -750,7 +750,7 @@ Insert the custom rule into the rule chain. Note that ``from_callable`` returns 
                                 Ts.writes(T_layer_norm[T.int64(0), v1_2])
                                 T_layer_norm[T.int64(0), v1_2] = (relu[T.int64(0), v1_2] - relu_sum_shared[T.int64(0)] / T.float32(768.0)) * I.Call.unchecked("tirx.rsqrt", [relu_var_sum_shared[T.int64(0)] / T.float32(768.0) + T.float32(1.0000000000000001e-05)], ty="float32") * norm_weight[v1_2] + norm_bias[v1_2]
 
-        @Ts.prim_func(private=True)
+        @Ts.function(private=True)
         def transpose(fc1_weight: T.Tensor((T.int64(768), T.int64(768)), "float32"), T_transpose: T.Tensor((T.int64(768), T.int64(768)), "float32")):
             T.func_attr({"op_pattern": 2, "tirx.is_scheduled": True, "tirx.noalias": True})
             with Ts.sblock("root"):
@@ -765,7 +765,7 @@ Insert the custom rule into the rule chain. Note that ``from_callable`` returns 
                             Ts.writes(T_transpose[v0, v1])
                             T_transpose[v0, v1] = fc1_weight[v1, v0]
 
-        @Ts.prim_func(private=True)
+        @Ts.function(private=True)
         def transpose1(fc2_weight: T.Tensor((T.int64(256), T.int64(768)), "float32"), T_transpose: T.Tensor((T.int64(768), T.int64(256)), "float32")):
             T.func_attr({"op_pattern": 2, "tirx.is_scheduled": True, "tirx.noalias": True})
             with Ts.sblock("root"):

@@ -66,7 +66,7 @@ format of the ir_module and in TVMScript:
 
     @I.ir_module
     class MyModule:
-        @Ts.prim_func
+        @Ts.function
         def mm_relu(
             A: T.Tensor((128, 128), "float32"),
             B: T.Tensor((128, 128), "float32"),
@@ -122,7 +122,7 @@ streamline the code:
 
     @I.ir_module
     class ConciseModule:
-        @Ts.prim_func
+        @Ts.function
         def mm_relu(
             A: T.Tensor((128, 128), "float32"),
             B: T.Tensor((128, 128), "float32"),
@@ -193,7 +193,7 @@ be used to ascertain the shape and data type of a TensorIR.
     # IRModule in TVMScript
     @I.ir_module
     class ConciseModuleFromPython:
-        @Ts.prim_func
+        @Ts.function
         def mm_relu(
             A: T.Tensor((M, K), dtype),
             B: T.Tensor((K, N), dtype),
@@ -264,7 +264,7 @@ be used to ascertain the shape and data type of a TensorIR.
 
     @I.ir_module
     class DynamicShapeModule:
-        @Ts.prim_func
+        @Ts.function
         def mm_relu(A: T.Tensor([M, K], dtype), B: T.Tensor([K, N], dtype), C: T.Tensor([M, N], dtype)):
             # Bind the input buffers with the dynamic shapes
 
@@ -399,7 +399,7 @@ and one output parameter **C**.
 .. code-block:: Python
 
 
-    te_func = te.create_prim_func([A, B, C]).with_attr({"global_symbol": "mm_relu"})
+    te_func = te.create_function([A, B, C]).with_attr({"global_symbol": "mm_relu"})
     TEModule = tvm.IRModule({"mm_relu": te_func})
     TEModule.show()
 
@@ -419,7 +419,7 @@ and one output parameter **C**.
 
     @I.ir_module
     class Module:
-        @Ts.prim_func
+        @Ts.function
         def mm_relu(A: T.Tensor((128, 128), "float32"), B: T.Tensor((128, 128), "float32"), C: T.Tensor((128, 128), "float32")):
             T.func_attr({"tirx.noalias": True})
             with Ts.sblock("root"):
@@ -471,7 +471,7 @@ is that we need to specify the shape of the input tensors as symbolic variables.
     Y = te.compute((M, N), lambda i, j: te.sum(A[i, k] * B[k, j], axis=k), name="Y")
     C = te.compute((M, N), lambda i, j: te.max(Y[i, j], 0), name="C")
 
-    dyn_te_func = te.create_prim_func([A, B, C]).with_attr({"global_symbol": "mm_relu"})
+    dyn_te_func = te.create_function([A, B, C]).with_attr({"global_symbol": "mm_relu"})
     DynamicTEModule = tvm.IRModule({"mm_relu": dyn_te_func})
     DynamicTEModule.show()
 
@@ -493,7 +493,7 @@ is that we need to specify the shape of the input tensors as symbolic variables.
     k = I.dynamic("k", dtype="int32")
     @I.ir_module
     class Module:
-        @Ts.prim_func
+        @Ts.function
         def mm_relu(A: T.Tensor((m, n), "float32"), B: T.Tensor((k, n), "float32"), C: T.Tensor((m, n), "float32")):
             T.func_attr({"tirx.noalias": True})
             with Ts.sblock("root"):

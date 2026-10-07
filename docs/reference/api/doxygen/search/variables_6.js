@@ -52,6 +52,6 @@ var searchData=
   ['func_5fmap_49',['func_map',['../classtvm_1_1runtime_1_1vm_1_1VMExecutable.html#a9909556ba0103d41816f100561c6d1a0',1,'tvm::runtime::vm::VMExecutable']]],
   ['func_5fname_50',['func_name',['../classtvm_1_1runtime_1_1vm_1_1VMClosureObj.html#a923340203f536e0b4f4a243983e6e8c8',1,'tvm::runtime::vm::VMClosureObj']]],
   ['func_5ftable_51',['func_table',['../classtvm_1_1runtime_1_1vm_1_1VMExecutable.html#ade88045e1b261f06b1f70e676fbed39e',1,'tvm::runtime::vm::VMExecutable']]],
-  ['function_52',['function',['../classtvm_1_1script_1_1ir__builder_1_1relax_1_1FunctionFrameNode.html#acf739b335fb410ace8736e5c1f927357',1,'tvm::script::ir_builder::relax::FunctionFrameNode::function'],['../classtvm_1_1script_1_1ir__builder_1_1tirx_1_1PrimFuncFrameNode.html#ae357601691ee733893de296d043d2aa6',1,'tvm::script::ir_builder::tirx::PrimFuncFrameNode::function']]],
+  ['function_52',['function',['../classtvm_1_1script_1_1ir__builder_1_1relax_1_1FunctionFrameNode.html#acf739b335fb410ace8736e5c1f927357',1,'tvm::script::ir_builder::relax::FunctionFrameNode::function'],['../classtvm_1_1script_1_1ir__builder_1_1tirx_1_1FunctionFrameNode.html#a53035fd59574f9f2247e8bdad1484c99',1,'tvm::script::ir_builder::tirx::FunctionFrameNode::function']]],
   ['functions_53',['functions',['../classtvm_1_1IRModuleNode.html#a9ab5cf201b6c1bb96884709af7caed39',1,'tvm::IRModuleNode::functions'],['../classtvm_1_1script_1_1ir__builder_1_1ir_1_1IRModuleFrameNode.html#a2981c537c0861df60f77eb3f477675fc',1,'tvm::script::ir_builder::ir::IRModuleFrameNode::functions']]]
 ];
