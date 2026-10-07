@@ -48,6 +48,6 @@ var searchData=
   ['itersplitexprnode_45',['IterSplitExprNode',['../classtvm_1_1sym_1_1IterSplitExprNode.html',1,'tvm::sym']]],
   ['itersumexpr_46',['IterSumExpr',['../classtvm_1_1sym_1_1IterSumExpr.html',1,'tvm::sym']]],
   ['itersumexprnode_47',['IterSumExprNode',['../classtvm_1_1sym_1_1IterSumExprNode.html',1,'tvm::sym']]],
-  ['itervar_48',['IterVar',['../classtvm_1_1tirx_1_1IterVar.html',1,'tvm::tirx']]],
-  ['itervarnode_49',['IterVarNode',['../classtvm_1_1tirx_1_1IterVarNode.html',1,'tvm::tirx']]]
+  ['itervar_48',['IterVar',['../classtvm_1_1s__tir_1_1IterVar.html',1,'tvm::s_tir']]],
+  ['itervarnode_49',['IterVarNode',['../classtvm_1_1s__tir_1_1IterVarNode.html',1,'tvm::s_tir']]]
 ];

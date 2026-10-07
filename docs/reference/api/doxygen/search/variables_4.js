@@ -1,6 +1,6 @@
 var searchData=
 [
-  ['data_0',['data',['../structtvm_1_1te_1_1TensorDom.html#a9f2a41beaf5db1710238e4753ef17b85',1,'tvm::te::TensorDom::data'],['../structtvm_1_1runtime_1_1memory_1_1Buffer.html#aaf049f6aa4dbaf17dc9bdcdbc5c43cea',1,'tvm::runtime::memory::Buffer::data'],['../classtvm_1_1script_1_1ir__builder_1_1tirx_1_1DeclTensorFrameNode.html#a13e0d18aaf22d47eb9eb385ebaeeb303',1,'tvm::script::ir_builder::tirx::DeclTensorFrameNode::data']]],
+  ['data_0',['data',['../structtvm_1_1te_1_1TensorDom.html#a9f2a41beaf5db1710238e4753ef17b85',1,'tvm::te::TensorDom::data'],['../structtvm_1_1runtime_1_1memory_1_1Buffer.html#aaf049f6aa4dbaf17dc9bdcdbc5c43cea',1,'tvm::runtime::memory::Buffer::data']]],
   ['data_5falignment_1',['data_alignment',['../classtvm_1_1tirx_1_1TensorTypeNode.html#a380bc1d7ef0a78e5a1af3364ae8d1dde',1,'tvm::tirx::TensorTypeNode']]],
   ['data_5flayout_2',['data_layout',['../structtvm_1_1relax_1_1Conv1DAttrs.html#a8d9178cf1223eb118d9f3c6ebd0a61cb',1,'tvm::relax::Conv1DAttrs::data_layout'],['../structtvm_1_1relax_1_1Conv2DAttrs.html#a8e5d45b932335eea51cee20384f46fc6',1,'tvm::relax::Conv2DAttrs::data_layout'],['../structtvm_1_1relax_1_1Conv3DAttrs.html#ac958cdd4986050b9cd09e00a998308a4',1,'tvm::relax::Conv3DAttrs::data_layout'],['../structtvm_1_1relax_1_1Conv1DTransposeAttrs.html#a01ca3971365493b257dc34bf19a52b63',1,'tvm::relax::Conv1DTransposeAttrs::data_layout'],['../structtvm_1_1relax_1_1Conv2DTransposeAttrs.html#a573204aa9993bfeb59c82e6b3d172836',1,'tvm::relax::Conv2DTransposeAttrs::data_layout'],['../structtvm_1_1relax_1_1Conv3DTransposeAttrs.html#a88c17bc3c35f8b93eb72710bcec88461',1,'tvm::relax::Conv3DTransposeAttrs::data_layout']]],
   ['data_5fpath_3',['data_path',['../structtvm_1_1runtime_1_1vm_1_1TensorCacheMetadata_1_1FileRecord.html#a630e4d0a3ffefdfad6be242064eb3c3d',1,'tvm::runtime::vm::TensorCacheMetadata::FileRecord']]],
@@ -37,7 +37,7 @@ var searchData=
   ['dispatched_34',['dispatched',['../classtvm_1_1s__tir_1_1meta__schedule_1_1ExtractedTaskNode.html#a8be137581a62630c9b30e5e1d88acaf2',1,'tvm::s_tir::meta_schedule::ExtractedTaskNode']]],
   ['doc_35',['doc',['../classtvm_1_1ArgumentInfoNode.html#ac6e758834aeaa009febaf8996e797dc1',1,'tvm::ArgumentInfoNode::doc'],['../classtvm_1_1OpNode.html#a581785b139323c424e7980367e597d1f',1,'tvm::OpNode::doc']]],
   ['doc_5fscopes_5f_36',['doc_scopes_',['../classtvm_1_1script_1_1printer_1_1DocTranslatorObj.html#a479c72c58a8e22da05cfbc8084abdb2a',1,'tvm::script::printer::DocTranslatorObj']]],
-  ['dom_37',['dom',['../classtvm_1_1tirx_1_1IterVarNode.html#a04dd1aa3cf634795e2553e4cf191f761',1,'tvm::tirx::IterVarNode']]],
+  ['dom_37',['dom',['../classtvm_1_1s__tir_1_1IterVarNode.html#af67442d1654ed04346a2d31c80839369',1,'tvm::s_tir::IterVarNode']]],
   ['doms_38',['doms',['../classtvm_1_1script_1_1ir__builder_1_1tirx_1_1ForFrameNode.html#a7d5fa09e4fd15a21d1114a890ef86b4b',1,'tvm::script::ir_builder::tirx::ForFrameNode']]],
   ['double_5fbuffer_5fscope_39',['double_buffer_scope',['../namespacetvm_1_1s__tir_1_1attr.html#af0587d33514bd1bb79c574887d3bcd7b',1,'tvm::s_tir::attr']]],
   ['downstream_5fusage_40',['downstream_usage',['../structtvm_1_1relax_1_1VarUsageInfo.html#ac46b9b835c0e9c1782c99ae42c552a66',1,'tvm::relax::VarUsageInfo']]],
