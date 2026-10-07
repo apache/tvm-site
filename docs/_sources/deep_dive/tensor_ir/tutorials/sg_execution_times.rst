@@ -33,14 +33,14 @@ Computation times
      - Time
      - Mem (MB)
    * - :ref:`sphx_glr_deep_dive_tensor_ir_tutorials_dlight_gpu_scheduling.py` (``dlight_gpu_scheduling.py``)
-     - 00:00.459
+     - 00:00.454
      - 0.0
    * - :ref:`sphx_glr_deep_dive_tensor_ir_tutorials_tir_transformation.py` (``tir_transformation.py``)
-     - 00:00.266
+     - 00:00.270
      - 0.0
    * - :ref:`sphx_glr_deep_dive_tensor_ir_tutorials_tir_creation.py` (``tir_creation.py``)
-     - 00:00.136
+     - 00:00.137
      - 0.0
    * - :ref:`sphx_glr_deep_dive_tensor_ir_tutorials_meta_schedule.py` (``meta_schedule.py``)
-     - 00:00.009
+     - 00:00.010
      - 0.0
