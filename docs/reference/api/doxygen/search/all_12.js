@@ -83,7 +83,7 @@ var searchData=
   ['removeweightlayoutrewriteblock_80',['RemoveWeightLayoutRewriteBlock',['../namespacetvm_1_1s__tir_1_1transform.html#ad5978815128adcd4156f7b80a5d6d864',1,'tvm::s_tir::transform']]],
   ['renamevariables_81',['RenameVariables',['../classtvm_1_1tirx_1_1IndexMap.html#a94d3e78f09eafa8c7fc434ba8d29775c',1,'tvm::tirx::IndexMap']]],
   ['render_5finvisible_5fpath_5finfo_82',['render_invisible_path_info',['../classtvm_1_1PrinterConfigNode.html#a3cc15384da4c80f52afcd4dff94ef0d3',1,'tvm::PrinterConfigNode']]],
-  ['renewdefs_83',['RenewDefs',['../namespacetvm_1_1s__tir.html#a6505980ad548c69089352f3406972d63',1,'tvm::s_tir']]],
+  ['renewdef_83',['RenewDef',['../namespacetvm_1_1tirx.html#a81317e0a86fa7540defd7c6818b0651b',1,'tvm::tirx']]],
   ['renormalizesplitpattern_84',['RenormalizeSplitPattern',['../namespacetvm_1_1s__tir_1_1transform.html#ab655ab1e0af8a741f66ef7c14347fccb',1,'tvm::s_tir::transform']]],
   ['reorder_85',['Reorder',['../classtvm_1_1s__tir_1_1ScheduleNode.html#aad1af398cb518f5d2d91e1ee878113f3',1,'tvm::s_tir::ScheduleNode']]],
   ['reorderblockitervar_86',['ReorderBlockIterVar',['../classtvm_1_1s__tir_1_1ScheduleNode.html#a53b2449b2feb63b8eae18343725f8f5f',1,'tvm::s_tir::ScheduleNode']]],

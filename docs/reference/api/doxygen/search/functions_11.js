@@ -61,7 +61,7 @@ var searchData=
   ['removeunusedparameters_58',['RemoveUnusedParameters',['../namespacetvm_1_1relax_1_1transform.html#a33a5f8f0e642926291c0554eff604a79',1,'tvm::relax::transform']]],
   ['removeweightlayoutrewriteblock_59',['RemoveWeightLayoutRewriteBlock',['../namespacetvm_1_1s__tir_1_1transform.html#ad5978815128adcd4156f7b80a5d6d864',1,'tvm::s_tir::transform']]],
   ['renamevariables_60',['RenameVariables',['../classtvm_1_1tirx_1_1IndexMap.html#a94d3e78f09eafa8c7fc434ba8d29775c',1,'tvm::tirx::IndexMap']]],
-  ['renewdefs_61',['RenewDefs',['../namespacetvm_1_1s__tir.html#a6505980ad548c69089352f3406972d63',1,'tvm::s_tir']]],
+  ['renewdef_61',['RenewDef',['../namespacetvm_1_1tirx.html#a81317e0a86fa7540defd7c6818b0651b',1,'tvm::tirx']]],
   ['renormalizesplitpattern_62',['RenormalizeSplitPattern',['../namespacetvm_1_1s__tir_1_1transform.html#ab655ab1e0af8a741f66ef7c14347fccb',1,'tvm::s_tir::transform']]],
   ['reorder_63',['Reorder',['../classtvm_1_1s__tir_1_1ScheduleNode.html#aad1af398cb518f5d2d91e1ee878113f3',1,'tvm::s_tir::ScheduleNode']]],
   ['reorderblockitervar_64',['ReorderBlockIterVar',['../classtvm_1_1s__tir_1_1ScheduleNode.html#a53b2449b2feb63b8eae18343725f8f5f',1,'tvm::s_tir::ScheduleNode']]],
