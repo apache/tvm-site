@@ -49,12 +49,10 @@ var searchData=
   ['buffer_46',['Buffer',['../structtvm_1_1runtime_1_1memory_1_1Buffer.html',1,'tvm::runtime::memory']]],
   ['bufferaxisgraphextractor_47',['BufferAxisGraphExtractor',['../classtvm_1_1tirx_1_1BufferAxisGraphExtractor.html',1,'tvm::tirx']]],
   ['bufferaxishash_48',['BufferAxisHash',['../classtvm_1_1tirx_1_1BufferAxisHash.html',1,'tvm::tirx']]],
-  ['bufferregiontype_49',['BufferRegionType',['../classtvm_1_1tirx_1_1BufferRegionType.html',1,'tvm::tirx']]],
-  ['bufferregiontypenode_50',['BufferRegionTypeNode',['../classtvm_1_1tirx_1_1BufferRegionTypeNode.html',1,'tvm::tirx']]],
-  ['builder_51',['Builder',['../classtvm_1_1s__tir_1_1meta__schedule_1_1Builder.html',1,'tvm::s_tir::meta_schedule']]],
-  ['builderinput_52',['BuilderInput',['../classtvm_1_1s__tir_1_1meta__schedule_1_1BuilderInput.html',1,'tvm::s_tir::meta_schedule']]],
-  ['builderinputnode_53',['BuilderInputNode',['../classtvm_1_1s__tir_1_1meta__schedule_1_1BuilderInputNode.html',1,'tvm::s_tir::meta_schedule']]],
-  ['buildernode_54',['BuilderNode',['../classtvm_1_1s__tir_1_1meta__schedule_1_1BuilderNode.html',1,'tvm::s_tir::meta_schedule']]],
-  ['builderresult_55',['BuilderResult',['../classtvm_1_1s__tir_1_1meta__schedule_1_1BuilderResult.html',1,'tvm::s_tir::meta_schedule']]],
-  ['builderresultnode_56',['BuilderResultNode',['../classtvm_1_1s__tir_1_1meta__schedule_1_1BuilderResultNode.html',1,'tvm::s_tir::meta_schedule']]]
+  ['builder_49',['Builder',['../classtvm_1_1s__tir_1_1meta__schedule_1_1Builder.html',1,'tvm::s_tir::meta_schedule']]],
+  ['builderinput_50',['BuilderInput',['../classtvm_1_1s__tir_1_1meta__schedule_1_1BuilderInput.html',1,'tvm::s_tir::meta_schedule']]],
+  ['builderinputnode_51',['BuilderInputNode',['../classtvm_1_1s__tir_1_1meta__schedule_1_1BuilderInputNode.html',1,'tvm::s_tir::meta_schedule']]],
+  ['buildernode_52',['BuilderNode',['../classtvm_1_1s__tir_1_1meta__schedule_1_1BuilderNode.html',1,'tvm::s_tir::meta_schedule']]],
+  ['builderresult_53',['BuilderResult',['../classtvm_1_1s__tir_1_1meta__schedule_1_1BuilderResult.html',1,'tvm::s_tir::meta_schedule']]],
+  ['builderresultnode_54',['BuilderResultNode',['../classtvm_1_1s__tir_1_1meta__schedule_1_1BuilderResultNode.html',1,'tvm::s_tir::meta_schedule']]]
 ];
