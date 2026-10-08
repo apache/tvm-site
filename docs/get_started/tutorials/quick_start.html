@@ -751,13 +751,13 @@ class Module:
     def forward(x: R.Tensor((1, 784), dtype=&quot;float32&quot;), fc1_weight: R.Tensor((256, 784), dtype=&quot;float32&quot;), fc1_bias: R.Tensor((256,), dtype=&quot;float32&quot;), fc2_weight: R.Tensor((10, 256), dtype=&quot;float32&quot;), fc2_bias: R.Tensor((10,), dtype=&quot;float32&quot;)) -&gt; R.Tensor((1, 10), dtype=&quot;float32&quot;):
         R.func_attr({&quot;num_input&quot;: 1})
         with R.dataflow():
-            permute_dims: R.Tensor((784, 256), dtype=&quot;float32&quot;) = R.permute_dims(fc1_weight, axes=None)
-            matmul: R.Tensor((1, 256), dtype=&quot;float32&quot;) = R.matmul(x, permute_dims, out_dtype=None)
-            add: R.Tensor((1, 256), dtype=&quot;float32&quot;) = R.add(matmul, fc1_bias)
+            permute_dims: R.Tensor((784, 256), dtype=&quot;float32&quot;) = I.Call(&quot;relax.permute_dims&quot;, [fc1_weight], attrs=I.make_node(&quot;relax.attrs.PermuteDimsAttrs&quot;, axes=None), ty=R.Tensor((784, 256), dtype=&quot;float32&quot;))
+            matmul: R.Tensor((1, 256), dtype=&quot;float32&quot;) = I.Call(&quot;relax.matmul&quot;, [x, permute_dims], attrs=I.make_node(&quot;relax.attrs.MatmulAttrs&quot;, out_dtype=None), ty=R.Tensor((1, 256), dtype=&quot;float32&quot;))
+            add: R.Tensor((1, 256), dtype=&quot;float32&quot;) = R.add(matmul, fc1_bias, ty=R.Tensor((1, 256), dtype=&quot;float32&quot;))
             relu: R.Tensor((1, 256), dtype=&quot;float32&quot;) = R.nn.relu(add)
-            permute_dims1: R.Tensor((256, 10), dtype=&quot;float32&quot;) = R.permute_dims(fc2_weight, axes=None)
-            matmul1: R.Tensor((1, 10), dtype=&quot;float32&quot;) = R.matmul(relu, permute_dims1, out_dtype=None)
-            add1: R.Tensor((1, 10), dtype=&quot;float32&quot;) = R.add(matmul1, fc2_bias)
+            permute_dims1: R.Tensor((256, 10), dtype=&quot;float32&quot;) = I.Call(&quot;relax.permute_dims&quot;, [fc2_weight], attrs=I.make_node(&quot;relax.attrs.PermuteDimsAttrs&quot;, axes=None), ty=R.Tensor((256, 10), dtype=&quot;float32&quot;))
+            matmul1: R.Tensor((1, 10), dtype=&quot;float32&quot;) = I.Call(&quot;relax.matmul&quot;, [relu, permute_dims1], attrs=I.make_node(&quot;relax.attrs.MatmulAttrs&quot;, out_dtype=None), ty=R.Tensor((1, 10), dtype=&quot;float32&quot;))
+            add1: R.Tensor((1, 10), dtype=&quot;float32&quot;) = R.add(matmul1, fc2_bias, ty=R.Tensor((1, 10), dtype=&quot;float32&quot;))
             gv: R.Tensor((1, 10), dtype=&quot;float32&quot;) = add1
             R.output(gv)
         return gv
@@ -804,8 +804,8 @@ different devices.</p>
 <span class="nb">print</span><span class="p">(</span><span class="n">vm</span><span class="p">[</span><span class="s2">&quot;forward&quot;</span><span class="p">](</span><span class="n">tvm_data</span><span class="p">,</span> <span class="o">*</span><a href="https://docs.python.org/3/builtins/stdtypes.html#list" title="builtins.list" class="sphx-glr-backref-module-builtins sphx-glr-backref-type-py-class sphx-glr-backref-instance"><span class="n">params</span></a><span class="p">)</span><span class="o">.</span><span class="n">numpy</span><span class="p">())</span>
 </pre></div>
 </div>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>[[25372.834 26396.326 25231.062 23777.973 24541.16  23501.646 24677.434
-  23768.373 25135.373 24490.371]]
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>[[22494.73  27061.383 24149.291 26835.277 25114.592 26266.67  25170.73
+  23869.174 26453.188 25008.426]]
 </pre></div>
 </div>
 <p>Our goal is to bring machine learning to the application with any language of interest,

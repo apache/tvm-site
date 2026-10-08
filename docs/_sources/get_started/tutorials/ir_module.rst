@@ -134,12 +134,12 @@ from PyTorch.
             R.func_attr({"num_input": 1})
             with R.dataflow():
                 lv: R.Tensor((784, 256), dtype="float32") = R.permute_dims(p_fc1_weight, axes=[1, 0])
-                lv1: R.Tensor((1, 256), dtype="float32") = R.matmul(x, lv, out_dtype="float32")
-                lv2: R.Tensor((1, 256), dtype="float32") = R.add(p_fc1_bias, lv1)
+                lv1: R.Tensor((1, 256), dtype="float32") = R.matmul(x, lv, out_dtype="float32", ty=R.Tensor((1, 256), dtype="float32"))
+                lv2: R.Tensor((1, 256), dtype="float32") = R.add(p_fc1_bias, lv1, ty=R.Tensor((1, 256), dtype="float32"))
                 lv3: R.Tensor((1, 256), dtype="float32") = R.nn.relu(lv2)
                 lv4: R.Tensor((256, 10), dtype="float32") = R.permute_dims(p_fc2_weight, axes=[1, 0])
-                lv5: R.Tensor((1, 10), dtype="float32") = R.matmul(lv3, lv4, out_dtype="float32")
-                lv6: R.Tensor((1, 10), dtype="float32") = R.add(p_fc2_bias, lv5)
+                lv5: R.Tensor((1, 10), dtype="float32") = R.matmul(lv3, lv4, out_dtype="float32", ty=R.Tensor((1, 10), dtype="float32"))
+                lv6: R.Tensor((1, 10), dtype="float32") = R.add(p_fc2_bias, lv5, ty=R.Tensor((1, 10), dtype="float32"))
                 gv: R.Tensor((1, 10), dtype="float32") = lv6
                 R.output(gv)
             return gv
@@ -201,13 +201,13 @@ write the IRModule directly.
         def forward(x: R.Tensor((1, 784), dtype="float32"), fc1_weight: R.Tensor((256, 784), dtype="float32"), fc1_bias: R.Tensor((256,), dtype="float32"), fc2_weight: R.Tensor((10, 256), dtype="float32"), fc2_bias: R.Tensor((10,), dtype="float32")) -> R.Tensor((1, 10), dtype="float32"):
             R.func_attr({"num_input": 1})
             with R.dataflow():
-                permute_dims: R.Tensor((784, 256), dtype="float32") = R.permute_dims(fc1_weight, axes=None)
-                matmul: R.Tensor((1, 256), dtype="float32") = R.matmul(x, permute_dims, out_dtype=None)
-                add: R.Tensor((1, 256), dtype="float32") = R.add(matmul, fc1_bias)
+                permute_dims: R.Tensor((784, 256), dtype="float32") = I.Call("relax.permute_dims", [fc1_weight], attrs=I.make_node("relax.attrs.PermuteDimsAttrs", axes=None), ty=R.Tensor((784, 256), dtype="float32"))
+                matmul: R.Tensor((1, 256), dtype="float32") = I.Call("relax.matmul", [x, permute_dims], attrs=I.make_node("relax.attrs.MatmulAttrs", out_dtype=None), ty=R.Tensor((1, 256), dtype="float32"))
+                add: R.Tensor((1, 256), dtype="float32") = R.add(matmul, fc1_bias, ty=R.Tensor((1, 256), dtype="float32"))
                 relu: R.Tensor((1, 256), dtype="float32") = R.nn.relu(add)
-                permute_dims1: R.Tensor((256, 10), dtype="float32") = R.permute_dims(fc2_weight, axes=None)
-                matmul1: R.Tensor((1, 10), dtype="float32") = R.matmul(relu, permute_dims1, out_dtype=None)
-                add1: R.Tensor((1, 10), dtype="float32") = R.add(matmul1, fc2_bias)
+                permute_dims1: R.Tensor((256, 10), dtype="float32") = I.Call("relax.permute_dims", [fc2_weight], attrs=I.make_node("relax.attrs.PermuteDimsAttrs", axes=None), ty=R.Tensor((256, 10), dtype="float32"))
+                matmul1: R.Tensor((1, 10), dtype="float32") = I.Call("relax.matmul", [relu, permute_dims1], attrs=I.make_node("relax.attrs.MatmulAttrs", out_dtype=None), ty=R.Tensor((1, 10), dtype="float32"))
+                add1: R.Tensor((1, 10), dtype="float32") = R.add(matmul1, fc2_bias, ty=R.Tensor((1, 10), dtype="float32"))
                 gv: R.Tensor((1, 10), dtype="float32") = add1
                 R.output(gv)
             return gv
@@ -279,13 +279,13 @@ parse the TVMScript to obtain an IRModule.
         def main(x: R.Tensor((1, 784), dtype="float32"), fc1_weight: R.Tensor((256, 784), dtype="float32"), fc1_bias: R.Tensor((256,), dtype="float32"), fc2_weight: R.Tensor((10, 256), dtype="float32"), fc2_bias: R.Tensor((10,), dtype="float32")) -> R.Tensor((1, 10), dtype="float32"):
             R.func_attr({"num_input": 1})
             with R.dataflow():
-                permute_dims: R.Tensor((784, 256), dtype="float32") = R.permute_dims(fc1_weight, axes=None)
-                matmul: R.Tensor((1, 256), dtype="float32") = R.matmul(x, permute_dims, out_dtype=None)
-                add: R.Tensor((1, 256), dtype="float32") = R.add(matmul, fc1_bias)
+                permute_dims: R.Tensor((784, 256), dtype="float32") = I.Call("relax.permute_dims", [fc1_weight], attrs=I.make_node("relax.attrs.PermuteDimsAttrs", axes=None), ty=R.Tensor((784, 256), dtype="float32"))
+                matmul: R.Tensor((1, 256), dtype="float32") = I.Call("relax.matmul", [x, permute_dims], attrs=I.make_node("relax.attrs.MatmulAttrs", out_dtype=None), ty=R.Tensor((1, 256), dtype="float32"))
+                add: R.Tensor((1, 256), dtype="float32") = R.add(matmul, fc1_bias, ty=R.Tensor((1, 256), dtype="float32"))
                 relu: R.Tensor((1, 256), dtype="float32") = R.nn.relu(add)
-                permute_dims1: R.Tensor((256, 10), dtype="float32") = R.permute_dims(fc2_weight, axes=None)
-                matmul1: R.Tensor((1, 10), dtype="float32") = R.matmul(relu, permute_dims1, out_dtype=None)
-                add1: R.Tensor((1, 10), dtype="float32") = R.add(matmul1, fc2_bias)
+                permute_dims1: R.Tensor((256, 10), dtype="float32") = I.Call("relax.permute_dims", [fc2_weight], attrs=I.make_node("relax.attrs.PermuteDimsAttrs", axes=None), ty=R.Tensor((256, 10), dtype="float32"))
+                matmul1: R.Tensor((1, 10), dtype="float32") = I.Call("relax.matmul", [relu, permute_dims1], attrs=I.make_node("relax.attrs.MatmulAttrs", out_dtype=None), ty=R.Tensor((1, 10), dtype="float32"))
+                add1: R.Tensor((1, 10), dtype="float32") = R.add(matmul1, fc2_bias, ty=R.Tensor((1, 10), dtype="float32"))
                 gv: R.Tensor((1, 10), dtype="float32") = add1
                 R.output(gv)
             return gv
@@ -354,12 +354,12 @@ or their names
         R.func_attr({"num_input": 1})
         with R.dataflow():
             lv: R.Tensor((784, 256), dtype="float32") = R.permute_dims(p_fc1_weight, axes=[1, 0])
-            lv1: R.Tensor((1, 256), dtype="float32") = R.matmul(x, lv, out_dtype="float32")
-            lv2: R.Tensor((1, 256), dtype="float32") = R.add(p_fc1_bias, lv1)
+            lv1: R.Tensor((1, 256), dtype="float32") = R.matmul(x, lv, out_dtype="float32", ty=R.Tensor((1, 256), dtype="float32"))
+            lv2: R.Tensor((1, 256), dtype="float32") = R.add(p_fc1_bias, lv1, ty=R.Tensor((1, 256), dtype="float32"))
             lv3: R.Tensor((1, 256), dtype="float32") = R.nn.relu(lv2)
             lv4: R.Tensor((256, 10), dtype="float32") = R.permute_dims(p_fc2_weight, axes=[1, 0])
-            lv5: R.Tensor((1, 10), dtype="float32") = R.matmul(lv3, lv4, out_dtype="float32")
-            lv6: R.Tensor((1, 10), dtype="float32") = R.add(p_fc2_bias, lv5)
+            lv5: R.Tensor((1, 10), dtype="float32") = R.matmul(lv3, lv4, out_dtype="float32", ty=R.Tensor((1, 10), dtype="float32"))
+            lv6: R.Tensor((1, 10), dtype="float32") = R.add(p_fc2_bias, lv5, ty=R.Tensor((1, 10), dtype="float32"))
             gv: R.Tensor((1, 10), dtype="float32") = lv6
             R.output(gv)
         return gv
@@ -764,8 +764,8 @@ We can deploy the IRModule on CPU by specifying the target as ``llvm``.
 
  .. code-block:: none
 
-    [[-0.08917181  0.0872466   0.14208588 -0.25446063 -0.1300681  -0.10799595
-      -0.04862336 -0.08919347  0.17640215  0.0027493 ]]
+    [[-0.02083871  0.39500493  0.10336265 -0.05339709  0.10858568  0.00414795
+      -0.00186468  0.274063   -0.35424694  0.04940347]]
 
 
 
@@ -831,8 +831,8 @@ Now we can compile the IRModule on GPU, the similar way as we did on CPU.
 
  .. code-block:: none
 
-    [[-0.08917187  0.08724655  0.14208588 -0.25446057 -0.13006808 -0.10799599
-      -0.04862328 -0.08919354  0.17640217  0.00274931]]
+    [[-0.02083871  0.39500502  0.10336267 -0.05339708  0.10858574  0.00414793
+      -0.00186461  0.274063   -0.35424694  0.04940343]]
 
 
 

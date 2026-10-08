@@ -144,13 +144,13 @@ in TVM.
         def forward(x: R.Tensor((1, 784), dtype="float32"), fc1_weight: R.Tensor((256, 784), dtype="float32"), fc1_bias: R.Tensor((256,), dtype="float32"), fc2_weight: R.Tensor((10, 256), dtype="float32"), fc2_bias: R.Tensor((10,), dtype="float32")) -> R.Tensor((1, 10), dtype="float32"):
             R.func_attr({"num_input": 1})
             with R.dataflow():
-                permute_dims: R.Tensor((784, 256), dtype="float32") = R.permute_dims(fc1_weight, axes=None)
-                matmul: R.Tensor((1, 256), dtype="float32") = R.matmul(x, permute_dims, out_dtype=None)
-                add: R.Tensor((1, 256), dtype="float32") = R.add(matmul, fc1_bias)
+                permute_dims: R.Tensor((784, 256), dtype="float32") = I.Call("relax.permute_dims", [fc1_weight], attrs=I.make_node("relax.attrs.PermuteDimsAttrs", axes=None), ty=R.Tensor((784, 256), dtype="float32"))
+                matmul: R.Tensor((1, 256), dtype="float32") = I.Call("relax.matmul", [x, permute_dims], attrs=I.make_node("relax.attrs.MatmulAttrs", out_dtype=None), ty=R.Tensor((1, 256), dtype="float32"))
+                add: R.Tensor((1, 256), dtype="float32") = R.add(matmul, fc1_bias, ty=R.Tensor((1, 256), dtype="float32"))
                 relu: R.Tensor((1, 256), dtype="float32") = R.nn.relu(add)
-                permute_dims1: R.Tensor((256, 10), dtype="float32") = R.permute_dims(fc2_weight, axes=None)
-                matmul1: R.Tensor((1, 10), dtype="float32") = R.matmul(relu, permute_dims1, out_dtype=None)
-                add1: R.Tensor((1, 10), dtype="float32") = R.add(matmul1, fc2_bias)
+                permute_dims1: R.Tensor((256, 10), dtype="float32") = I.Call("relax.permute_dims", [fc2_weight], attrs=I.make_node("relax.attrs.PermuteDimsAttrs", axes=None), ty=R.Tensor((256, 10), dtype="float32"))
+                matmul1: R.Tensor((1, 10), dtype="float32") = I.Call("relax.matmul", [relu, permute_dims1], attrs=I.make_node("relax.attrs.MatmulAttrs", out_dtype=None), ty=R.Tensor((1, 10), dtype="float32"))
+                add1: R.Tensor((1, 10), dtype="float32") = R.add(matmul1, fc2_bias, ty=R.Tensor((1, 10), dtype="float32"))
                 gv: R.Tensor((1, 10), dtype="float32") = add1
                 R.output(gv)
             return gv
@@ -226,8 +226,8 @@ different devices.
 
  .. code-block:: none
 
-    [[25372.834 26396.326 25231.062 23777.973 24541.16  23501.646 24677.434
-      23768.373 25135.373 24490.371]]
+    [[22494.73  27061.383 24149.291 26835.277 25114.592 26266.67  25170.73
+      23869.174 26453.188 25008.426]]
 
 
 

@@ -125,7 +125,7 @@ var searchData=
   ['space_5fto_5fbatch_5fnd_122',['space_to_batch_nd',['../namespacetvm_1_1topi.html#ae583e418233d98cda7e753fb3b5b945d',1,'tvm::topi']]],
   ['spacegenerator_123',['spacegenerator',['../classtvm_1_1s__tir_1_1meta__schedule_1_1SpaceGenerator.html#a783e0c0d9bae1d4cb2a874c1f2cf2169',1,'tvm::s_tir::meta_schedule::SpaceGenerator::SpaceGenerator(ffi::ObjectPtr&lt; SpaceGeneratorNode &gt; data)'],['../classtvm_1_1s__tir_1_1meta__schedule_1_1SpaceGenerator.html#a214c85610c9564e38a53a999c196c1fe',1,'tvm::s_tir::meta_schedule::SpaceGenerator::SpaceGenerator()=default']]],
   ['spacegeneratorunion_124',['SpaceGeneratorUnion',['../classtvm_1_1s__tir_1_1meta__schedule_1_1SpaceGenerator.html#a09b5c918b9f4f6e0c6b5b5223616f131',1,'tvm::s_tir::meta_schedule::SpaceGenerator']]],
-  ['span_125',['span',['../classtvm_1_1tirx_1_1TensorVar.html#a2565fea9c6a65bc5632ebc2666c71d6d',1,'tvm::tirx::TensorVar::span()'],['../classtvm_1_1Span.html#a5216631b639e8c802263d87d3fe9e5f6',1,'tvm::Span::Span()']]],
+  ['span_125',['span',['../classtvm_1_1Span.html#a5216631b639e8c802263d87d3fe9e5f6',1,'tvm::Span::Span()'],['../classtvm_1_1tirx_1_1TensorVar.html#a2565fea9c6a65bc5632ebc2666c71d6d',1,'tvm::tirx::TensorVar::span()']]],
   ['sparse_5fto_5fdense_126',['sparse_to_dense',['../namespacetvm_1_1topi.html#a86bc60ca6d4e6f36974d20fdb1812ba5',1,'tvm::topi']]],
   ['spatial_127',['Spatial',['../namespacetvm_1_1script_1_1ir__builder_1_1s__tir_1_1axis.html#a3a541c7d54515df270c4d3dbc53299e2',1,'tvm::script::ir_builder::s_tir::axis']]],
   ['specialize_128',['Specialize',['../namespacetvm_1_1tirx.html#a9fbceca81cd03178f989ac94a7a5d045',1,'tvm::tirx']]],

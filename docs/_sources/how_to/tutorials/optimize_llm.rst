@@ -459,6 +459,7 @@ For demonstration, we only show the part of the model architecture. and paramete
 
  .. code-block:: none
 
+    # from tvm.script import relax as R
     # from tvm.script import tirx as T
 
     @R.function
@@ -475,7 +476,6 @@ For demonstration, we only show the part of the model architecture. and paramete
             model_layers_1_self_attn_qkv_proj_weight1: R.Tensor((2560, 2048), dtype="float16") = packed_params[7]
             model_layers_1_self_attn_o_proj_weight1: R.Tensor((2048, 2048), dtype="float16") = packed_params[8]
             model_layers_1_mlp_gate_up_proj_weight1: R.Tensor((11264, 2048), dtype="float16") = packed_params[9]
-            model_layers_1_mlp_down_proj_weight1: R.Tensor((2048, 5632), dtype="float16") = packed_params[10]
             ...
 
     Parameters:

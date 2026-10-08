@@ -737,12 +737,12 @@ class Module:
     def forward(x: R.Tensor((1, 784), dtype=&quot;float32&quot;), fc1_weight: R.Tensor((256, 784), dtype=&quot;float32&quot;), fc1_bias: R.Tensor((256,), dtype=&quot;float32&quot;), fc2_weight: R.Tensor((10, 256), dtype=&quot;float32&quot;)) -&gt; R.Tensor((1, 10), dtype=&quot;float32&quot;):
         R.func_attr({&quot;num_input&quot;: 1})
         with R.dataflow():
-            permute_dims: R.Tensor((784, 256), dtype=&quot;float32&quot;) = R.permute_dims(fc1_weight, axes=None)
-            matmul: R.Tensor((1, 256), dtype=&quot;float32&quot;) = R.matmul(x, permute_dims, out_dtype=None)
-            add: R.Tensor((1, 256), dtype=&quot;float32&quot;) = R.add(matmul, fc1_bias)
+            permute_dims: R.Tensor((784, 256), dtype=&quot;float32&quot;) = I.Call(&quot;relax.permute_dims&quot;, [fc1_weight], attrs=I.make_node(&quot;relax.attrs.PermuteDimsAttrs&quot;, axes=None), ty=R.Tensor((784, 256), dtype=&quot;float32&quot;))
+            matmul: R.Tensor((1, 256), dtype=&quot;float32&quot;) = I.Call(&quot;relax.matmul&quot;, [x, permute_dims], attrs=I.make_node(&quot;relax.attrs.MatmulAttrs&quot;, out_dtype=None), ty=R.Tensor((1, 256), dtype=&quot;float32&quot;))
+            add: R.Tensor((1, 256), dtype=&quot;float32&quot;) = R.add(matmul, fc1_bias, ty=R.Tensor((1, 256), dtype=&quot;float32&quot;))
             relu: R.Tensor((1, 256), dtype=&quot;float32&quot;) = R.nn.relu(add)
-            permute_dims1: R.Tensor((256, 10), dtype=&quot;float32&quot;) = R.permute_dims(fc2_weight, axes=None)
-            matmul1: R.Tensor((1, 10), dtype=&quot;float32&quot;) = R.matmul(relu, permute_dims1, out_dtype=None)
+            permute_dims1: R.Tensor((256, 10), dtype=&quot;float32&quot;) = I.Call(&quot;relax.permute_dims&quot;, [fc2_weight], attrs=I.make_node(&quot;relax.attrs.PermuteDimsAttrs&quot;, axes=None), ty=R.Tensor((256, 10), dtype=&quot;float32&quot;))
+            matmul1: R.Tensor((1, 10), dtype=&quot;float32&quot;) = I.Call(&quot;relax.matmul&quot;, [relu, permute_dims1], attrs=I.make_node(&quot;relax.attrs.MatmulAttrs&quot;, out_dtype=None), ty=R.Tensor((1, 10), dtype=&quot;float32&quot;))
             gv: R.Tensor((1, 10), dtype=&quot;float32&quot;) = matmul1
             R.output(gv)
         return gv
@@ -809,8 +809,8 @@ class Module:
         R.func_attr({&quot;num_input&quot;: 1})
         with R.dataflow():
             lv = R.call_dps_packed(&quot;fused_relax_permute_dims_relax_matmul_relax_add_relax_nn_relu_cublas&quot;, (fc1_weight, x, fc1_bias), out_ty=R.Tensor((1, 256), dtype=&quot;float32&quot;))
-            permute_dims1: R.Tensor((256, 10), dtype=&quot;float32&quot;) = R.permute_dims(fc2_weight, axes=None)
-            matmul1: R.Tensor((1, 10), dtype=&quot;float32&quot;) = R.matmul(lv, permute_dims1, out_dtype=None)
+            permute_dims1: R.Tensor((256, 10), dtype=&quot;float32&quot;) = I.Call(&quot;relax.permute_dims&quot;, [fc2_weight], attrs=I.make_node(&quot;relax.attrs.PermuteDimsAttrs&quot;, axes=None), ty=R.Tensor((256, 10), dtype=&quot;float32&quot;))
+            matmul1: R.Tensor((1, 10), dtype=&quot;float32&quot;) = I.Call(&quot;relax.matmul&quot;, [lv, permute_dims1], attrs=I.make_node(&quot;relax.attrs.MatmulAttrs&quot;, out_dtype=None), ty=R.Tensor((1, 10), dtype=&quot;float32&quot;))
             gv: R.Tensor((1, 10), dtype=&quot;float32&quot;) = matmul1
             R.output(gv)
         return gv

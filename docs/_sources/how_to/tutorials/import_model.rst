@@ -132,17 +132,17 @@ The standard workflow is: ``torch.export.export()`` → ``from_exported_program(
         def main(x: R.Tensor((1, 3, 32, 32), dtype="float32"), p_conv_weight: R.Tensor((16, 3, 3, 3), dtype="float32"), p_conv_bias: R.Tensor((16,), dtype="float32"), p_bn_weight: R.Tensor((16,), dtype="float32"), p_bn_bias: R.Tensor((16,), dtype="float32"), p_fc_weight: R.Tensor((10, 16), dtype="float32"), p_fc_bias: R.Tensor((10,), dtype="float32")) -> R.Tensor((1, 10), dtype="float32"):
             R.func_attr({"num_input": 1})
             with R.dataflow():
-                lv: R.Tensor((1, 16, 32, 32), dtype="float32") = R.nn.conv2d(x, p_conv_weight, data_layout="NCHW", dilation=[1, 1], groups=1, kernel_layout="OIHW", out_dtype="float32", out_layout="NCHW", padding=[1, 1, 1, 1], strides=[1, 1])
-                lv1: R.Tensor((1, 16, 1, 1), dtype="float32") = R.reshape(p_conv_bias, R.shape([1, 16, 1, 1]))
-                lv2: R.Tensor((1, 16, 32, 32), dtype="float32") = R.add(lv, lv1)
-                lv3: R.Tuple(R.Tensor((1, 16, 32, 32), dtype="float32"), R.Tensor((16,), dtype="float32"), R.Tensor((16,), dtype="float32")) = R.nn.batch_norm(lv2, p_bn_weight, p_bn_bias, metadata["ir.GenericConst"][0], metadata["ir.GenericConst"][1], axis=1, center=True, epsilon=1.0000000000000001e-05, momentum=0.10000000000000001, scale=True, training=False)
+                lv: R.Tensor((1, 16, 32, 32), dtype="float32") = R.nn.conv2d(x, p_conv_weight, out_dtype="float32", out_layout="NCHW", padding=[1, 1, 1, 1], ty=R.Tensor((1, 16, 32, 32), dtype="float32"))
+                lv1: R.Tensor((1, 16, 1, 1), dtype="float32") = R.reshape(p_conv_bias, R.shape([1, 16, 1, 1]), ty=R.Tensor((1, 16, 1, 1), dtype="float32"))
+                lv2: R.Tensor((1, 16, 32, 32), dtype="float32") = R.add(lv, lv1, ty=R.Tensor((1, 16, 32, 32), dtype="float32"))
+                lv3: R.Tuple(R.Tensor((1, 16, 32, 32), dtype="float32"), R.Tensor((16,), dtype="float32"), R.Tensor((16,), dtype="float32")) = R.nn.batch_norm(lv2, p_bn_weight, p_bn_bias, metadata["ir.GenericConst"][0], metadata["ir.GenericConst"][1], axis=1, training=False, ty=R.Tuple(R.Tensor((1, 16, 32, 32), dtype="float32"), R.Tensor((16,), dtype="float32"), R.Tensor((16,), dtype="float32")))
                 lv4: R.Tensor((1, 16, 32, 32), dtype="float32") = lv3[0]
                 lv5: R.Tensor((1, 16, 32, 32), dtype="float32") = R.nn.relu(lv4)
                 lv6: R.Tensor((1, 16, 1, 1), dtype="float32") = R.mean(lv5, axis=[-1, -2], keepdims=True)
-                lv7: R.Tensor((1, 16), dtype="float32") = R.reshape(lv6, R.shape([1, 16]))
+                lv7: R.Tensor((1, 16), dtype="float32") = R.reshape(lv6, R.shape([1, 16]), ty=R.Tensor((1, 16), dtype="float32"))
                 lv8: R.Tensor((16, 10), dtype="float32") = R.permute_dims(p_fc_weight, axes=[1, 0])
-                lv9: R.Tensor((1, 10), dtype="float32") = R.matmul(lv7, lv8, out_dtype="float32")
-                lv10: R.Tensor((1, 10), dtype="float32") = R.add(p_fc_bias, lv9)
+                lv9: R.Tensor((1, 10), dtype="float32") = R.matmul(lv7, lv8, out_dtype="float32", ty=R.Tensor((1, 10), dtype="float32"))
+                lv10: R.Tensor((1, 10), dtype="float32") = R.add(p_fc_bias, lv9, ty=R.Tensor((1, 10), dtype="float32"))
                 gv: R.Tensor((1, 10), dtype="float32") = lv10
                 R.output(gv)
             return gv
@@ -467,8 +467,8 @@ Below we create a minimal TFLite model from TensorFlow and import it.
             with R.dataflow():
                 lv: R.Tensor((10, 784), dtype="float32") = R.permute_dims(serving_default_weight_0, axes=[1, 0])
                 lv1: R.Tensor((784, 10), dtype="float32") = R.permute_dims(lv, axes=[1, 0])
-                lv2: R.Tensor((1, 10), dtype="float32") = R.matmul(serving_default_x_0, lv1, out_dtype=None)
-                gv: R.Tensor((1, 10), dtype="float32") = R.add(lv2, metadata["ir.GenericConst"][0])
+                lv2: R.Tensor((1, 10), dtype="float32") = I.Call("relax.matmul", [serving_default_x_0, lv1], attrs=I.make_node("relax.attrs.MatmulAttrs", out_dtype=None), ty=R.Tensor((1, 10), dtype="float32"))
+                gv: R.Tensor((1, 10), dtype="float32") = R.add(lv2, metadata["ir.GenericConst"][0], ty=R.Tensor((1, 10), dtype="float32"))
                 R.output(gv)
             return gv
 

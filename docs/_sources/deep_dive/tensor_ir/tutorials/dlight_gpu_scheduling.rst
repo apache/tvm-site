@@ -303,7 +303,7 @@ Here we use a common subset of rules. The full catalog (including ``LowBatchGEMV
                                 v1_2 = Ts.axis.spatial(T.int64(768), ax1_0 * T.int64(256) + ax1_1, dtype="int64")
                                 Ts.reads(relu[T.int64(0), v1_2], relu_sum_shared[T.int64(0)], relu_var_sum_shared[T.int64(0)], norm_weight[v1_2], norm_bias[v1_2])
                                 Ts.writes(T_layer_norm[T.int64(0), v1_2])
-                                T_layer_norm[T.int64(0), v1_2] = (relu[T.int64(0), v1_2] - relu_sum_shared[T.int64(0)] / T.float32(768.0)) * I.Call.unchecked("tirx.rsqrt", [relu_var_sum_shared[T.int64(0)] / T.float32(768.0) + T.float32(1.0000000000000001e-05)], ty="float32") * norm_weight[v1_2] + norm_bias[v1_2]
+                                T_layer_norm[T.int64(0), v1_2] = (relu[T.int64(0), v1_2] - relu_sum_shared[T.int64(0)] / T.float32(768.0)) * T.rsqrt(relu_var_sum_shared[T.int64(0)] / T.float32(768.0) + T.float32(1.0000000000000001e-05)) * norm_weight[v1_2] + norm_bias[v1_2]
 
         @Ts.function(private=True)
         def transpose(fc1_weight: T.Tensor((T.int64(768), T.int64(768)), "float32"), T_transpose: T.Tensor((T.int64(768), T.int64(768)), "float32")):
@@ -748,7 +748,7 @@ Insert the custom rule into the rule chain. Note that ``from_callable`` returns 
                                 v1_2 = Ts.axis.spatial(T.int64(768), ax1_0 * T.int64(256) + ax1_1, dtype="int64")
                                 Ts.reads(relu[T.int64(0), v1_2], relu_sum_shared[T.int64(0)], relu_var_sum_shared[T.int64(0)], norm_weight[v1_2], norm_bias[v1_2])
                                 Ts.writes(T_layer_norm[T.int64(0), v1_2])
-                                T_layer_norm[T.int64(0), v1_2] = (relu[T.int64(0), v1_2] - relu_sum_shared[T.int64(0)] / T.float32(768.0)) * I.Call.unchecked("tirx.rsqrt", [relu_var_sum_shared[T.int64(0)] / T.float32(768.0) + T.float32(1.0000000000000001e-05)], ty="float32") * norm_weight[v1_2] + norm_bias[v1_2]
+                                T_layer_norm[T.int64(0), v1_2] = (relu[T.int64(0), v1_2] - relu_sum_shared[T.int64(0)] / T.float32(768.0)) * T.rsqrt(relu_var_sum_shared[T.int64(0)] / T.float32(768.0) + T.float32(1.0000000000000001e-05)) * norm_weight[v1_2] + norm_bias[v1_2]
 
         @Ts.function(private=True)
         def transpose(fc1_weight: T.Tensor((T.int64(768), T.int64(768)), "float32"), T_transpose: T.Tensor((T.int64(768), T.int64(768)), "float32")):

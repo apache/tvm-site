@@ -739,12 +739,12 @@ class Module:
         R.func_attr({&quot;num_input&quot;: 1})
         with R.dataflow():
             lv: R.Tensor((784, 256), dtype=&quot;float32&quot;) = R.permute_dims(p_fc1_weight, axes=[1, 0])
-            lv1: R.Tensor((1, 256), dtype=&quot;float32&quot;) = R.matmul(x, lv, out_dtype=&quot;float32&quot;)
-            lv2: R.Tensor((1, 256), dtype=&quot;float32&quot;) = R.add(p_fc1_bias, lv1)
+            lv1: R.Tensor((1, 256), dtype=&quot;float32&quot;) = R.matmul(x, lv, out_dtype=&quot;float32&quot;, ty=R.Tensor((1, 256), dtype=&quot;float32&quot;))
+            lv2: R.Tensor((1, 256), dtype=&quot;float32&quot;) = R.add(p_fc1_bias, lv1, ty=R.Tensor((1, 256), dtype=&quot;float32&quot;))
             lv3: R.Tensor((1, 256), dtype=&quot;float32&quot;) = R.nn.relu(lv2)
             lv4: R.Tensor((256, 10), dtype=&quot;float32&quot;) = R.permute_dims(p_fc2_weight, axes=[1, 0])
-            lv5: R.Tensor((1, 10), dtype=&quot;float32&quot;) = R.matmul(lv3, lv4, out_dtype=&quot;float32&quot;)
-            lv6: R.Tensor((1, 10), dtype=&quot;float32&quot;) = R.add(p_fc2_bias, lv5)
+            lv5: R.Tensor((1, 10), dtype=&quot;float32&quot;) = R.matmul(lv3, lv4, out_dtype=&quot;float32&quot;, ty=R.Tensor((1, 10), dtype=&quot;float32&quot;))
+            lv6: R.Tensor((1, 10), dtype=&quot;float32&quot;) = R.add(p_fc2_bias, lv5, ty=R.Tensor((1, 10), dtype=&quot;float32&quot;))
             gv: R.Tensor((1, 10), dtype=&quot;float32&quot;) = lv6
             R.output(gv)
         return gv
@@ -789,13 +789,13 @@ class Module:
     def forward(x: R.Tensor((1, 784), dtype=&quot;float32&quot;), fc1_weight: R.Tensor((256, 784), dtype=&quot;float32&quot;), fc1_bias: R.Tensor((256,), dtype=&quot;float32&quot;), fc2_weight: R.Tensor((10, 256), dtype=&quot;float32&quot;), fc2_bias: R.Tensor((10,), dtype=&quot;float32&quot;)) -&gt; R.Tensor((1, 10), dtype=&quot;float32&quot;):
         R.func_attr({&quot;num_input&quot;: 1})
         with R.dataflow():
-            permute_dims: R.Tensor((784, 256), dtype=&quot;float32&quot;) = R.permute_dims(fc1_weight, axes=None)
-            matmul: R.Tensor((1, 256), dtype=&quot;float32&quot;) = R.matmul(x, permute_dims, out_dtype=None)
-            add: R.Tensor((1, 256), dtype=&quot;float32&quot;) = R.add(matmul, fc1_bias)
+            permute_dims: R.Tensor((784, 256), dtype=&quot;float32&quot;) = I.Call(&quot;relax.permute_dims&quot;, [fc1_weight], attrs=I.make_node(&quot;relax.attrs.PermuteDimsAttrs&quot;, axes=None), ty=R.Tensor((784, 256), dtype=&quot;float32&quot;))
+            matmul: R.Tensor((1, 256), dtype=&quot;float32&quot;) = I.Call(&quot;relax.matmul&quot;, [x, permute_dims], attrs=I.make_node(&quot;relax.attrs.MatmulAttrs&quot;, out_dtype=None), ty=R.Tensor((1, 256), dtype=&quot;float32&quot;))
+            add: R.Tensor((1, 256), dtype=&quot;float32&quot;) = R.add(matmul, fc1_bias, ty=R.Tensor((1, 256), dtype=&quot;float32&quot;))
             relu: R.Tensor((1, 256), dtype=&quot;float32&quot;) = R.nn.relu(add)
-            permute_dims1: R.Tensor((256, 10), dtype=&quot;float32&quot;) = R.permute_dims(fc2_weight, axes=None)
-            matmul1: R.Tensor((1, 10), dtype=&quot;float32&quot;) = R.matmul(relu, permute_dims1, out_dtype=None)
-            add1: R.Tensor((1, 10), dtype=&quot;float32&quot;) = R.add(matmul1, fc2_bias)
+            permute_dims1: R.Tensor((256, 10), dtype=&quot;float32&quot;) = I.Call(&quot;relax.permute_dims&quot;, [fc2_weight], attrs=I.make_node(&quot;relax.attrs.PermuteDimsAttrs&quot;, axes=None), ty=R.Tensor((256, 10), dtype=&quot;float32&quot;))
+            matmul1: R.Tensor((1, 10), dtype=&quot;float32&quot;) = I.Call(&quot;relax.matmul&quot;, [relu, permute_dims1], attrs=I.make_node(&quot;relax.attrs.MatmulAttrs&quot;, out_dtype=None), ty=R.Tensor((1, 10), dtype=&quot;float32&quot;))
+            add1: R.Tensor((1, 10), dtype=&quot;float32&quot;) = R.add(matmul1, fc2_bias, ty=R.Tensor((1, 10), dtype=&quot;float32&quot;))
             gv: R.Tensor((1, 10), dtype=&quot;float32&quot;) = add1
             R.output(gv)
         return gv
@@ -850,13 +850,13 @@ class Module:
     def main(x: R.Tensor((1, 784), dtype=&quot;float32&quot;), fc1_weight: R.Tensor((256, 784), dtype=&quot;float32&quot;), fc1_bias: R.Tensor((256,), dtype=&quot;float32&quot;), fc2_weight: R.Tensor((10, 256), dtype=&quot;float32&quot;), fc2_bias: R.Tensor((10,), dtype=&quot;float32&quot;)) -&gt; R.Tensor((1, 10), dtype=&quot;float32&quot;):
         R.func_attr({&quot;num_input&quot;: 1})
         with R.dataflow():
-            permute_dims: R.Tensor((784, 256), dtype=&quot;float32&quot;) = R.permute_dims(fc1_weight, axes=None)
-            matmul: R.Tensor((1, 256), dtype=&quot;float32&quot;) = R.matmul(x, permute_dims, out_dtype=None)
-            add: R.Tensor((1, 256), dtype=&quot;float32&quot;) = R.add(matmul, fc1_bias)
+            permute_dims: R.Tensor((784, 256), dtype=&quot;float32&quot;) = I.Call(&quot;relax.permute_dims&quot;, [fc1_weight], attrs=I.make_node(&quot;relax.attrs.PermuteDimsAttrs&quot;, axes=None), ty=R.Tensor((784, 256), dtype=&quot;float32&quot;))
+            matmul: R.Tensor((1, 256), dtype=&quot;float32&quot;) = I.Call(&quot;relax.matmul&quot;, [x, permute_dims], attrs=I.make_node(&quot;relax.attrs.MatmulAttrs&quot;, out_dtype=None), ty=R.Tensor((1, 256), dtype=&quot;float32&quot;))
+            add: R.Tensor((1, 256), dtype=&quot;float32&quot;) = R.add(matmul, fc1_bias, ty=R.Tensor((1, 256), dtype=&quot;float32&quot;))
             relu: R.Tensor((1, 256), dtype=&quot;float32&quot;) = R.nn.relu(add)
-            permute_dims1: R.Tensor((256, 10), dtype=&quot;float32&quot;) = R.permute_dims(fc2_weight, axes=None)
-            matmul1: R.Tensor((1, 10), dtype=&quot;float32&quot;) = R.matmul(relu, permute_dims1, out_dtype=None)
-            add1: R.Tensor((1, 10), dtype=&quot;float32&quot;) = R.add(matmul1, fc2_bias)
+            permute_dims1: R.Tensor((256, 10), dtype=&quot;float32&quot;) = I.Call(&quot;relax.permute_dims&quot;, [fc2_weight], attrs=I.make_node(&quot;relax.attrs.PermuteDimsAttrs&quot;, axes=None), ty=R.Tensor((256, 10), dtype=&quot;float32&quot;))
+            matmul1: R.Tensor((1, 10), dtype=&quot;float32&quot;) = I.Call(&quot;relax.matmul&quot;, [relu, permute_dims1], attrs=I.make_node(&quot;relax.attrs.MatmulAttrs&quot;, out_dtype=None), ty=R.Tensor((1, 10), dtype=&quot;float32&quot;))
+            add1: R.Tensor((1, 10), dtype=&quot;float32&quot;) = R.add(matmul1, fc2_bias, ty=R.Tensor((1, 10), dtype=&quot;float32&quot;))
             gv: R.Tensor((1, 10), dtype=&quot;float32&quot;) = add1
             R.output(gv)
         return gv
@@ -892,12 +892,12 @@ def main(x: R.Tensor((1, 784), dtype=&quot;float32&quot;), p_fc1_weight: R.Tenso
     R.func_attr({&quot;num_input&quot;: 1})
     with R.dataflow():
         lv: R.Tensor((784, 256), dtype=&quot;float32&quot;) = R.permute_dims(p_fc1_weight, axes=[1, 0])
-        lv1: R.Tensor((1, 256), dtype=&quot;float32&quot;) = R.matmul(x, lv, out_dtype=&quot;float32&quot;)
-        lv2: R.Tensor((1, 256), dtype=&quot;float32&quot;) = R.add(p_fc1_bias, lv1)
+        lv1: R.Tensor((1, 256), dtype=&quot;float32&quot;) = R.matmul(x, lv, out_dtype=&quot;float32&quot;, ty=R.Tensor((1, 256), dtype=&quot;float32&quot;))
+        lv2: R.Tensor((1, 256), dtype=&quot;float32&quot;) = R.add(p_fc1_bias, lv1, ty=R.Tensor((1, 256), dtype=&quot;float32&quot;))
         lv3: R.Tensor((1, 256), dtype=&quot;float32&quot;) = R.nn.relu(lv2)
         lv4: R.Tensor((256, 10), dtype=&quot;float32&quot;) = R.permute_dims(p_fc2_weight, axes=[1, 0])
-        lv5: R.Tensor((1, 10), dtype=&quot;float32&quot;) = R.matmul(lv3, lv4, out_dtype=&quot;float32&quot;)
-        lv6: R.Tensor((1, 10), dtype=&quot;float32&quot;) = R.add(p_fc2_bias, lv5)
+        lv5: R.Tensor((1, 10), dtype=&quot;float32&quot;) = R.matmul(lv3, lv4, out_dtype=&quot;float32&quot;, ty=R.Tensor((1, 10), dtype=&quot;float32&quot;))
+        lv6: R.Tensor((1, 10), dtype=&quot;float32&quot;) = R.add(p_fc2_bias, lv5, ty=R.Tensor((1, 10), dtype=&quot;float32&quot;))
         gv: R.Tensor((1, 10), dtype=&quot;float32&quot;) = lv6
         R.output(gv)
     return gv
@@ -1229,8 +1229,8 @@ backends.</p>
 <span class="nb">print</span><span class="p">(</span><span class="n">cpu_out</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>[[-0.08917181  0.0872466   0.14208588 -0.25446063 -0.1300681  -0.10799595
-  -0.04862336 -0.08919347  0.17640215  0.0027493 ]]
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>[[-0.02083871  0.39500493  0.10336265 -0.05339709  0.10858568  0.00414795
+  -0.00186468  0.274063   -0.35424694  0.04940347]]
 </pre></div>
 </div>
 </section>
@@ -1264,8 +1264,8 @@ the details of <code class="docutils literal notranslate"><span class="pre">DLig
 <span class="k">assert</span> <span class="n">np</span><span class="o">.</span><span class="n">allclose</span><span class="p">(</span><span class="n">cpu_out</span><span class="p">,</span> <span class="n">gpu_out</span><span class="p">,</span> <span class="n">atol</span><span class="o">=</span><span class="mf">1e-3</span><span class="p">)</span>
 </pre></div>
 </div>
-<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>[[-0.08917187  0.08724655  0.14208588 -0.25446057 -0.13006808 -0.10799599
-  -0.04862328 -0.08919354  0.17640217  0.00274931]]
+<div class="sphx-glr-script-out highlight-none notranslate"><div class="highlight"><pre><span></span>[[-0.02083871  0.39500502  0.10336267 -0.05339708  0.10858574  0.00414793
+  -0.00186461  0.274063   -0.35424694  0.04940343]]
 </pre></div>
 </div>
 </section>
