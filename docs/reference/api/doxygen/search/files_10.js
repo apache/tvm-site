@@ -10,7 +10,7 @@ var searchData=
   ['tensor_5fintrin_2eh_7',['tensor_intrin.h',['../tensor__intrin_8h.html',1,'']]],
   ['tensor_5futils_2eh_8',['tensor_utils.h',['../tensor__utils_8h.html',1,'']]],
   ['thread_5fbind_2eh_9',['thread_bind.h',['../thread__bind_8h.html',1,'']]],
-  ['tile_5fprimitive_2eh_10',['tile_primitive.h',['../tile__primitive_8h.html',1,'']]],
+  ['tile_5fop_2eh_10',['tile_op.h',['../tile__op_8h.html',1,'']]],
   ['timer_2eh_11',['timer.h',['../timer_8h.html',1,'']]],
   ['tir_5fpattern_2eh_12',['tir_pattern.h',['../tir__pattern_8h.html',1,'']]],
   ['trace_2eh_13',['trace.h',['../trace_8h.html',1,'']]],

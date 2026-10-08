@@ -6,7 +6,7 @@ var searchData=
   ['namespacedoc_3',['NamespaceDoc',['../classtvm_1_1script_1_1printer_1_1NamespaceDoc.html#aa16a85483cb58dcdeed759480f606291',1,'tvm::script::printer::NamespaceDoc']]],
   ['nametobinding_4',['NameToBinding',['../namespacetvm_1_1relax.html#a869498bd902b6cfe9a04ccc83460337b',1,'tvm::relax']]],
   ['narrowdatatype_5',['NarrowDataType',['../namespacetvm_1_1tirx_1_1transform.html#aac17354937377610001585d2d7e1dd4c',1,'tvm::tirx::transform']]],
-  ['nd_5fmem_5falloc_5fwith_5fscope_6',['nd_mem_alloc_with_scope',['../namespacetvm_1_1tirx_1_1builtin.html#a51c355988f5305946c0fbc0fbf132e23',1,'tvm::tirx::builtin']]],
+  ['nd_5fmem_5falloc_5fwith_5fscope_5fop_6',['nd_mem_alloc_with_scope_op',['../namespacetvm_1_1tirx.html#a9c0af7f88e3bd957759684d09ee3f2e7',1,'tvm::tirx']]],
   ['ndim_7',['ndim',['../classtvm_1_1tirx_1_1SLayout.html#a2df0ceafa6dad9655f0a845ea2bf7f6e',1,'tvm::tirx::SLayout::ndim()'],['../classtvm_1_1te_1_1Tensor.html#a7c8d978e9905bb0f0f88226d4f5cbe7a',1,'tvm::te::Tensor::ndim()']]],
   ['ndim_5fprimal_8',['ndim_primal',['../classtvm_1_1tirx_1_1SLayout.html#a6bbc749814d2322d24c618ae7f932b51',1,'tvm::tirx::SLayout']]],
   ['ne_9',['ne',['../classtvm_1_1prim_1_1NE.html#a401ced8f3f34133ab15fe4ad301621ee',1,'tvm::prim::NE::NE(PrimExpr a, PrimExpr b, Span span=Span())'],['../classtvm_1_1prim_1_1NE.html#a5c485d6d80cfaaf918581d72f5e79dc9',1,'tvm::prim::NE::NE(ffi::ObjectPtr&lt; NENode &gt; node)']]],

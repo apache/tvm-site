@@ -1,7 +1,7 @@
 var searchData=
 [
   ['handle_0',['Handle',['../namespacetvm_1_1script_1_1ir__builder_1_1tirx.html#a777e7843a6cf4cc5e099eb22c2250a6a',1,'tvm::script::ir_builder::tirx']]],
-  ['handle_5fadd_5fbyte_5foffset_1',['handle_add_byte_offset',['../namespacetvm_1_1tirx_1_1builtin.html#adb7f20bd9e198999e94ef566870f9345',1,'tvm::tirx::builtin']]],
+  ['handle_5fadd_5fbyte_5foffset_5fop_1',['handle_add_byte_offset_op',['../namespacetvm_1_1tirx.html#a9ddbd68efb310abad3c9f5fff57c00fe',1,'tvm::tirx']]],
   ['hasattr_2',['HasAttr',['../classtvm_1_1relax_1_1DFPattern.html#a5ec24bab817dcd540c0db81c297c83ae',1,'tvm::relax::DFPattern']]],
   ['hasattrmap_3',['HasAttrMap',['../classtvm_1_1Op.html#adea2c4c1cefc5da4896e0f7346c603f6',1,'tvm::Op']]],
   ['hasaxis_4',['HasAxis',['../structtvm_1_1tirx_1_1ActiveSet.html#a044bb0e58602bbba5a840dc41a4a18c1',1,'tvm::tirx::ActiveSet']]],
