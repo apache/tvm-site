@@ -11,7 +11,7 @@ var searchData=
   ['tensor_5fty_8',['tensor_ty',['../classtvm_1_1relax_1_1distributed_1_1DTensorTypeNode.html#a26dc2379bb166c7fe99d45858f69de42',1,'tvm::relax::distributed::DTensorTypeNode']]],
   ['test_9',['test',['../classtvm_1_1script_1_1printer_1_1AssertDocNode.html#ac721eddf39251116e55dae1715f04635',1,'tvm::script::printer::AssertDocNode']]],
   ['then_5fbranch_10',['then_branch',['../classtvm_1_1script_1_1printer_1_1IfDocNode.html#a62b12f56c6442ce7e2ba931cca8be1e2',1,'tvm::script::printer::IfDocNode']]],
-  ['then_5fcase_11',['then_case',['../classtvm_1_1tirx_1_1IfThenElseNode.html#adfc0dce33920f5595d94f3511229f366',1,'tvm::tirx::IfThenElseNode']]],
+  ['then_5fcase_11',['then_case',['../classtvm_1_1tirx_1_1IfThenElseNode.html#ab76adcfa664590c2be4dea50bcd55ba1',1,'tvm::tirx::IfThenElseNode']]],
   ['then_5fexpr_12',['then_expr',['../classtvm_1_1script_1_1ir__builder_1_1relax_1_1IfFrameNode.html#a416c388c64c6ca85d99e386258012a4e',1,'tvm::script::ir_builder::relax::IfFrameNode']]],
   ['then_5fstmts_13',['then_stmts',['../classtvm_1_1script_1_1ir__builder_1_1tirx_1_1IfFrameNode.html#a69a64c58c09f1c120bb46844d2a581d2',1,'tvm::script::ir_builder::tirx::IfFrameNode']]],
   ['thread_5fbinding_14',['thread_binding',['../classtvm_1_1tirx_1_1ForNode.html#a6a083e9a1dddcebe2199360bae616755',1,'tvm::tirx::ForNode']]],
