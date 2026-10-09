@@ -1,7 +1,7 @@
 var searchData=
 [
   ['rand_5fstate_0',['rand_state',['../classtvm_1_1s__tir_1_1meta__schedule_1_1TuneContextNode.html#a16b1db5f39bbd2f1ec1bc8c3626d6445',1,'tvm::s_tir::meta_schedule::TuneContextNode']]],
-  ['rank_1',['rank',['../structtvm_1_1tirx_1_1TensorMapEncodeTiledAttr.html#a297eebc56f3f2871ebf4d1fa56693146',1,'tvm::tirx::TensorMapEncodeTiledAttr']]],
+  ['rank_1',['rank',['../structtvm_1_1backend_1_1cuda_1_1TensorMapEncodeTiledAttr.html#afe11d9dc9735aa12314bc506df1a4d2a',1,'tvm::backend::cuda::TensorMapEncodeTiledAttr']]],
   ['rate_2',['rate',['../structtvm_1_1relax_1_1DropoutAttrs.html#a0280786e8bf68176560ab8c22937b983',1,'tvm::relax::DropoutAttrs']]],
   ['reads_3',['reads',['../classtvm_1_1script_1_1ir__builder_1_1s__tir_1_1SBlockFrameNode.html#a8b4a415e45f62731e01b01a913fc13ea',1,'tvm::script::ir_builder::s_tir::SBlockFrameNode::reads'],['../classtvm_1_1s__tir_1_1SBlockNode.html#a10e4f010ca3ec56ecce673b6d13a3c31',1,'tvm::s_tir::SBlockNode::reads']]],
   ['records_4',['records',['../structtvm_1_1runtime_1_1vm_1_1TensorCacheMetadata_1_1FileRecord.html#a568d389650a596c171c62ff81821072a',1,'tvm::runtime::vm::TensorCacheMetadata::FileRecord::records'],['../structtvm_1_1runtime_1_1vm_1_1TensorCacheMetadata.html#af4e001175f900f6fcc97c18f16ed2e4d',1,'tvm::runtime::vm::TensorCacheMetadata::records']]],

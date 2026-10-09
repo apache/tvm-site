@@ -84,12 +84,11 @@ var searchData=
   ['broadcast_5fto_81',['broadcast_to',['../namespacetvm_1_1topi.html#a10a64d62ed878750e934faf8d61fded7',1,'tvm::topi']]],
   ['broadcastfromworker0_82',['BroadcastFromWorker0',['../namespacetvm_1_1runtime.html#a8ba5ddbb1b0c1f620926c08b9bc960cf',1,'tvm::runtime']]],
   ['broadcastnode_83',['broadcastnode',['../classtvm_1_1prim_1_1BroadcastNode.html#aa3d6630da61769922b2fe7559ad25db6',1,'tvm::prim::BroadcastNode::BroadcastNode(ffi::UnsafeInit tag)'],['../classtvm_1_1prim_1_1BroadcastNode.html#aaea157f7a62862e96995f5d2b07d71a2',1,'tvm::prim::BroadcastNode::BroadcastNode(PrimExpr value, PrimExpr lanes)']]],
-  ['buffer_5fdata_5fop_84',['buffer_data_op',['../namespacetvm_1_1tirx.html#a00fcd1edee239d2e750d13e56d18c3af',1,'tvm::tirx']]],
-  ['buffer_5foffset_5fop_85',['buffer_offset_op',['../namespacetvm_1_1tirx.html#aed605e537ade4f4f427b377892628ec4',1,'tvm::tirx']]],
-  ['bufferregion_86',['BufferRegion',['../namespacetvm_1_1tirx.html#a150cd22580b9ef06a82eb3bbf2bd9689',1,'tvm::tirx']]],
-  ['bufferregionfrompoint_87',['BufferRegionFromPoint',['../namespacetvm_1_1tirx.html#a48509ef7052da1504a33529ff091f784',1,'tvm::tirx']]],
-  ['build_88',['build',['../classtvm_1_1s__tir_1_1meta__schedule_1_1PyBuilderNode.html#ab6f68913fa4061d08582fa609d97ff89',1,'tvm::s_tir::meta_schedule::PyBuilderNode::Build()'],['../classtvm_1_1s__tir_1_1meta__schedule_1_1BuilderNode.html#a4a54308861e14bb4c39dfd8516f97cfd',1,'tvm::s_tir::meta_schedule::BuilderNode::Build()'],['../namespacetvm_1_1codegen.html#a744535f57f75db748bb39d5b02ebf082',1,'tvm::codegen::Build()']]],
-  ['builder_89',['Builder',['../classtvm_1_1s__tir_1_1meta__schedule_1_1Builder.html#aebf508346356e4941832f230bc399829',1,'tvm::s_tir::meta_schedule::Builder']]],
-  ['builderinput_90',['BuilderInput',['../classtvm_1_1s__tir_1_1meta__schedule_1_1BuilderInput.html#ab40d7f6975676cd5fbc78fd8a417d2e2',1,'tvm::s_tir::meta_schedule::BuilderInput']]],
-  ['builderresult_91',['BuilderResult',['../classtvm_1_1s__tir_1_1meta__schedule_1_1BuilderResult.html#ab5aaf752924bcc617c6888fe89ea5c1d',1,'tvm::s_tir::meta_schedule::BuilderResult']]]
+  ['buffer_5foffset_5fop_84',['buffer_offset_op',['../namespacetvm_1_1tirx.html#aed605e537ade4f4f427b377892628ec4',1,'tvm::tirx']]],
+  ['bufferregion_85',['BufferRegion',['../namespacetvm_1_1tirx.html#a150cd22580b9ef06a82eb3bbf2bd9689',1,'tvm::tirx']]],
+  ['bufferregionfrompoint_86',['BufferRegionFromPoint',['../namespacetvm_1_1tirx.html#a48509ef7052da1504a33529ff091f784',1,'tvm::tirx']]],
+  ['build_87',['build',['../classtvm_1_1s__tir_1_1meta__schedule_1_1PyBuilderNode.html#ab6f68913fa4061d08582fa609d97ff89',1,'tvm::s_tir::meta_schedule::PyBuilderNode::Build()'],['../classtvm_1_1s__tir_1_1meta__schedule_1_1BuilderNode.html#a4a54308861e14bb4c39dfd8516f97cfd',1,'tvm::s_tir::meta_schedule::BuilderNode::Build()'],['../namespacetvm_1_1codegen.html#a744535f57f75db748bb39d5b02ebf082',1,'tvm::codegen::Build()']]],
+  ['builder_88',['Builder',['../classtvm_1_1s__tir_1_1meta__schedule_1_1Builder.html#aebf508346356e4941832f230bc399829',1,'tvm::s_tir::meta_schedule::Builder']]],
+  ['builderinput_89',['BuilderInput',['../classtvm_1_1s__tir_1_1meta__schedule_1_1BuilderInput.html#ab40d7f6975676cd5fbc78fd8a417d2e2',1,'tvm::s_tir::meta_schedule::BuilderInput']]],
+  ['builderresult_90',['BuilderResult',['../classtvm_1_1s__tir_1_1meta__schedule_1_1BuilderResult.html#ab5aaf752924bcc617c6888fe89ea5c1d',1,'tvm::s_tir::meta_schedule::BuilderResult']]]
 ];

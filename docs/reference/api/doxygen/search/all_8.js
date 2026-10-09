@@ -12,7 +12,7 @@ var searchData=
   ['haskey_9',['HasKey',['../classtvm_1_1TargetNode.html#abcc7efac49712b3a1a2ec5e511a6ec49',1,'tvm::TargetNode']]],
   ['haslowerbound_10',['HasLowerBound',['../classtvm_1_1sym_1_1IntSet.html#a7c99d6aab40b35eec1e8f6064f5230b7',1,'tvm::sym::IntSet']]],
   ['hasmemoryaxis_11',['HasMemoryAxis',['../classtvm_1_1tirx_1_1TileLayoutNode.html#a99c542cb431270df8b109642db6d6905',1,'tvm::tirx::TileLayoutNode']]],
-  ['hasnonzeroattr_12',['hasnonzeroattr',['../classtvm_1_1DictAttrs.html#a45e524ce0f8ae389341ec37e468d887d',1,'tvm::DictAttrs::HasNonzeroAttr()'],['../classtvm_1_1BaseFuncNode.html#a1fbf773665334f7d109c7c4c12d40d76',1,'tvm::BaseFuncNode::HasNonzeroAttr()'],['../classtvm_1_1IRModuleNode.html#a0051e1b8ec1d99cbade4dfaa511b3bcd',1,'tvm::IRModuleNode::HasNonzeroAttr()']]],
+  ['hasnonzeroattr_12',['hasnonzeroattr',['../classtvm_1_1BaseFuncNode.html#a1fbf773665334f7d109c7c4c12d40d76',1,'tvm::BaseFuncNode::HasNonzeroAttr()'],['../classtvm_1_1IRModuleNode.html#a0051e1b8ec1d99cbade4dfaa511b3bcd',1,'tvm::IRModuleNode::HasNonzeroAttr()'],['../classtvm_1_1DictAttrs.html#a45e524ce0f8ae389341ec37e468d887d',1,'tvm::DictAttrs::HasNonzeroAttr()']]],
   ['hasoption_13',['HasOption',['../classtvm_1_1ConfigSchema.html#a363ab1e6614998bb910b95b5957e865a',1,'tvm::ConfigSchema']]],
   ['hasreshapepattern_14',['HasReshapePattern',['../namespacetvm_1_1relax.html#a7ecbe0bc6dcd89d476a874d7a20eb3b9',1,'tvm::relax']]],
   ['hassameshapeas_15',['HasSameShapeAs',['../classtvm_1_1relax_1_1DFPattern.html#a38905d1b7e0ab207b658afce9e50f838',1,'tvm::relax::DFPattern']]],
@@ -28,5 +28,6 @@ var searchData=
   ['hoistifthenelse_25',['HoistIfThenElse',['../namespacetvm_1_1s__tir_1_1transform.html#a037e97d08520c63791ded380c95ebb7a',1,'tvm::s_tir::transform']]],
   ['host_26',['host',['../classtvm_1_1TargetNode.html#a5816341360e2117f887684911f05792f',1,'tvm::TargetNode']]],
   ['host_5farrays_27',['host_arrays',['../classtvm_1_1runtime_1_1WorkerZeroData.html#a5b7b4e2602ba81b2236256079a1db5ed',1,'tvm::runtime::WorkerZeroData']]],
-  ['hypot_28',['hypot',['../namespacetvm_1_1prim.html#ac79a801a0cc0196b7684ed429937ffde',1,'tvm::prim']]]
+  ['hypot_28',['hypot',['../namespacetvm_1_1prim.html#ac79a801a0cc0196b7684ed429937ffde',1,'tvm::prim']]],
+  ['hypot_5fop_29',['hypot_op',['../namespacetvm_1_1prim.html#a5f59e937be4df85c8b5736a9e523305a',1,'tvm::prim']]]
 ];
