@@ -250,13 +250,13 @@ into low-level operators.
         def forward(x: R.Tensor((n_5, 784), dtype="float32"), fc1_weight: R.Tensor((128, 784), dtype="float32"), fc1_bias: R.Tensor((128,), dtype="float32"), fc2_weight: R.Tensor((10, 128), dtype="float32"), fc2_bias: R.Tensor((10,), dtype="float32")) -> R.Tensor((n_5, 10), dtype="float32"):
             R.func_attr({"num_input": 1})
             with R.dataflow():
-                permute_dims = R.call_tir(Module.transpose, (fc1_weight,), out_ty=R.Tensor((784, 128), dtype="float32"))
-                matmul = R.call_tir(Module.matmul, (x, permute_dims), out_ty=R.Tensor((n_5, 128), dtype="float32"))
-                add = R.call_tir(Module.add, (matmul, fc1_bias), out_ty=R.Tensor((n_5, 128), dtype="float32"))
-                relu = R.call_tir(Module.relu, (add,), out_ty=R.Tensor((n_5, 128), dtype="float32"))
-                permute_dims1 = R.call_tir(Module.transpose1, (fc2_weight,), out_ty=R.Tensor((128, 10), dtype="float32"))
-                matmul1 = R.call_tir(Module.matmul1, (relu, permute_dims1), out_ty=R.Tensor((n_5, 10), dtype="float32"))
-                add1 = R.call_tir(Module.add1, (matmul1, fc2_bias), out_ty=R.Tensor((n_5, 10), dtype="float32"))
+                permute_dims = R.call_tir(Module.transpose, I.Tuple([fc1_weight]), ty_args=[R.Tensor((784, 128), dtype="float32")])
+                matmul = R.call_tir(Module.matmul, I.Tuple([x, permute_dims]), ty_args=[R.Tensor((n_5, 128), dtype="float32")])
+                add = R.call_tir(Module.add, I.Tuple([matmul, fc1_bias]), ty_args=[R.Tensor((n_5, 128), dtype="float32")])
+                relu = R.call_tir(Module.relu, I.Tuple([add]), ty_args=[R.Tensor((n_5, 128), dtype="float32")])
+                permute_dims1 = R.call_tir(Module.transpose1, I.Tuple([fc2_weight]), ty_args=[R.Tensor((128, 10), dtype="float32")])
+                matmul1 = R.call_tir(Module.matmul1, I.Tuple([relu, permute_dims1]), ty_args=[R.Tensor((n_5, 10), dtype="float32")])
+                add1 = R.call_tir(Module.add1, I.Tuple([matmul1, fc2_bias]), ty_args=[R.Tensor((n_5, 10), dtype="float32")])
                 gv: R.Tensor((n_5, 10), dtype="float32") = add1
                 R.output(gv)
             return gv
@@ -407,10 +407,10 @@ a set of passes. We can apply them in a sequence.
         def forward(x: R.Tensor((n_2, 784), dtype="float32"), fc1_weight: R.Tensor((128, 784), dtype="float32"), fc1_bias: R.Tensor((128,), dtype="float32"), fc2_weight: R.Tensor((10, 128), dtype="float32"), fc2_bias: R.Tensor((10,), dtype="float32")) -> R.Tensor((n_2, 10), dtype="float32"):
             R.func_attr({"num_input": 1})
             with R.dataflow():
-                permute_dims = R.call_tir(Module.transpose, (fc1_weight,), out_ty=R.Tensor((784, 128), dtype="float32"))
-                lv = R.call_tir(Module.fused_matmul_add_relu, (x, permute_dims, fc1_bias), out_ty=R.Tensor((n_2, 128), dtype="float32"))
-                permute_dims1 = R.call_tir(Module.transpose1, (fc2_weight,), out_ty=R.Tensor((128, 10), dtype="float32"))
-                gv = R.call_tir(Module.fused_matmul1_add1, (lv, permute_dims1, fc2_bias), out_ty=R.Tensor((n_2, 10), dtype="float32"))
+                permute_dims = R.call_tir(Module.transpose, I.Tuple([fc1_weight]), ty_args=[R.Tensor((784, 128), dtype="float32")])
+                lv = R.call_tir(Module.fused_matmul_add_relu, I.Tuple([x, permute_dims, fc1_bias]), ty_args=[R.Tensor((n_2, 128), dtype="float32")])
+                permute_dims1 = R.call_tir(Module.transpose1, I.Tuple([fc2_weight]), ty_args=[R.Tensor((128, 10), dtype="float32")])
+                gv = R.call_tir(Module.fused_matmul1_add1, I.Tuple([lv, permute_dims1, fc2_bias]), ty_args=[R.Tensor((n_2, 10), dtype="float32")])
                 R.output(gv)
             return gv
 

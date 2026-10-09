@@ -339,11 +339,11 @@ Here we use a common subset of rules. The full catalog (including ``LowBatchGEMV
         def forward(x: R.Tensor((1, 768), dtype="float32"), fc1_weight: R.Tensor((768, 768), dtype="float32"), fc1_bias: R.Tensor((768,), dtype="float32"), norm_weight: R.Tensor((768,), dtype="float32"), norm_bias: R.Tensor((768,), dtype="float32"), fc2_weight: R.Tensor((256, 768), dtype="float32"), fc2_bias: R.Tensor((256,), dtype="float32")) -> R.Tensor((1, 256), dtype="float32"):
             R.func_attr({"num_input": 1})
             with R.dataflow():
-                permute_dims = R.call_tir(Module.transpose, (fc1_weight,), out_ty=R.Tensor((768, 768), dtype="float32"))
-                lv = R.call_tir(Module.fused_matmul_add_relu, (x, permute_dims, fc1_bias), out_ty=R.Tensor((1, 768), dtype="float32"))
-                layer_norm = R.call_tir(Module.layer_norm, (lv, norm_weight, norm_bias), out_ty=R.Tensor((1, 768), dtype="float32"))
-                permute_dims1 = R.call_tir(Module.transpose1, (fc2_weight,), out_ty=R.Tensor((768, 256), dtype="float32"))
-                gv = R.call_tir(Module.fused_matmul1_add1, (layer_norm, permute_dims1, fc2_bias), out_ty=R.Tensor((1, 256), dtype="float32"))
+                permute_dims = R.call_tir(Module.transpose, I.Tuple([fc1_weight]), ty_args=[R.Tensor((768, 768), dtype="float32")])
+                lv = R.call_tir(Module.fused_matmul_add_relu, I.Tuple([x, permute_dims, fc1_bias]), ty_args=[R.Tensor((1, 768), dtype="float32")])
+                layer_norm = R.call_tir(Module.layer_norm, I.Tuple([lv, norm_weight, norm_bias]), ty_args=[R.Tensor((1, 768), dtype="float32")])
+                permute_dims1 = R.call_tir(Module.transpose1, I.Tuple([fc2_weight]), ty_args=[R.Tensor((768, 256), dtype="float32")])
+                gv = R.call_tir(Module.fused_matmul1_add1, I.Tuple([layer_norm, permute_dims1, fc2_bias]), ty_args=[R.Tensor((1, 256), dtype="float32")])
                 R.output(gv)
             return gv
 
@@ -784,11 +784,11 @@ Insert the custom rule into the rule chain. Note that ``from_callable`` returns 
         def forward(x: R.Tensor((1, 768), dtype="float32"), fc1_weight: R.Tensor((768, 768), dtype="float32"), fc1_bias: R.Tensor((768,), dtype="float32"), norm_weight: R.Tensor((768,), dtype="float32"), norm_bias: R.Tensor((768,), dtype="float32"), fc2_weight: R.Tensor((256, 768), dtype="float32"), fc2_bias: R.Tensor((256,), dtype="float32")) -> R.Tensor((1, 256), dtype="float32"):
             R.func_attr({"num_input": 1})
             with R.dataflow():
-                permute_dims = R.call_tir(Module.transpose, (fc1_weight,), out_ty=R.Tensor((768, 768), dtype="float32"))
-                lv = R.call_tir(Module.fused_matmul_add_relu, (x, permute_dims, fc1_bias), out_ty=R.Tensor((1, 768), dtype="float32"))
-                layer_norm = R.call_tir(Module.layer_norm, (lv, norm_weight, norm_bias), out_ty=R.Tensor((1, 768), dtype="float32"))
-                permute_dims1 = R.call_tir(Module.transpose1, (fc2_weight,), out_ty=R.Tensor((768, 256), dtype="float32"))
-                gv = R.call_tir(Module.fused_matmul1_add1, (layer_norm, permute_dims1, fc2_bias), out_ty=R.Tensor((1, 256), dtype="float32"))
+                permute_dims = R.call_tir(Module.transpose, I.Tuple([fc1_weight]), ty_args=[R.Tensor((768, 768), dtype="float32")])
+                lv = R.call_tir(Module.fused_matmul_add_relu, I.Tuple([x, permute_dims, fc1_bias]), ty_args=[R.Tensor((1, 768), dtype="float32")])
+                layer_norm = R.call_tir(Module.layer_norm, I.Tuple([lv, norm_weight, norm_bias]), ty_args=[R.Tensor((1, 768), dtype="float32")])
+                permute_dims1 = R.call_tir(Module.transpose1, I.Tuple([fc2_weight]), ty_args=[R.Tensor((768, 256), dtype="float32")])
+                gv = R.call_tir(Module.fused_matmul1_add1, I.Tuple([layer_norm, permute_dims1, fc2_bias]), ty_args=[R.Tensor((1, 256), dtype="float32")])
                 R.output(gv)
             return gv
 

@@ -350,7 +350,7 @@ transformed the IR), and compare the output against a PyTorch reference to catch
                 h_bias = R.call_tir(
                     cls.bias_add_tir,
                     (h, b),
-                    out_ty=R.Tensor((2, 4), "float32"),
+                    ty_args=[R.Tensor((2, 4), "float32")],
                 )
                 return R.nn.relu(h_bias)
 
@@ -432,8 +432,8 @@ in Python.
                 x: R.Tensor((4, 8), "float32"),
             ) -> R.Tensor((4, 8), "float32"):
                 # The VM calls back into Python for these two ops
-                h = R.call_py_func("layer_norm", (x,), out_ty=R.Tensor((4, 8), "float32"))
-                out = R.call_py_func("silu", (h,), out_ty=R.Tensor((4, 8), "float32"))
+                h = R.call_py_func("layer_norm", (x,), ty_args=[R.Tensor((4, 8), "float32")])
+                out = R.call_py_func("silu", (h,), ty_args=[R.Tensor((4, 8), "float32")])
                 return out
 
         mod = HybridVMModule(device=tvm.cpu(0))

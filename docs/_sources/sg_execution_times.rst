@@ -6,7 +6,7 @@
 
 Computation times
 =================
-**00:21.081** total execution time for 16 files **from all galleries**:
+**00:21.158** total execution time for 16 files **from all galleries**:
 
 .. container::
 
@@ -33,25 +33,25 @@ Computation times
      - Time
      - Mem (MB)
    * - :ref:`sphx_glr_how_to_tutorials_optimize_llm.py` (``../how_to/tutorials/optimize_llm.py``)
-     - 00:09.903
+     - 00:09.922
      - 0.0
    * - :ref:`sphx_glr_get_started_tutorials_ir_module.py` (``../get_started/tutorials/ir_module.py``)
-     - 00:05.406
+     - 00:05.419
      - 0.0
    * - :ref:`sphx_glr_how_to_tutorials_import_model.py` (``../how_to/tutorials/import_model.py``)
-     - 00:03.302
+     - 00:03.341
      - 0.0
    * - :ref:`sphx_glr_how_to_tutorials_e2e_opt_model.py` (``../how_to/tutorials/e2e_opt_model.py``)
-     - 00:00.623
+     - 00:00.628
      - 0.0
    * - :ref:`sphx_glr_how_to_tutorials_cross_compilation_and_rpc.py` (``../how_to/tutorials/cross_compilation_and_rpc.py``)
-     - 00:00.480
+     - 00:00.489
      - 0.0
    * - :ref:`sphx_glr_how_to_tutorials_customize_opt.py` (``../how_to/tutorials/customize_opt.py``)
-     - 00:00.307
+     - 00:00.303
      - 0.0
    * - :ref:`sphx_glr_deep_dive_tensor_ir_tutorials_tir_transformation.py` (``../deep_dive/tensor_ir/tutorials/tir_transformation.py``)
-     - 00:00.269
+     - 00:00.267
      - 0.0
    * - :ref:`sphx_glr_get_started_tutorials_quick_start.py` (``../get_started/tutorials/quick_start.py``)
      - 00:00.170
@@ -63,7 +63,7 @@ Computation times
      - 00:00.138
      - 0.0
    * - :ref:`sphx_glr_how_to_tutorials_bring_your_own_codegen.py` (``../how_to/tutorials/bring_your_own_codegen.py``)
-     - 00:00.121
+     - 00:00.120
      - 0.0
    * - :ref:`sphx_glr_deep_dive_relax_tutorials_relax_creation.py` (``../deep_dive/relax/tutorials/relax_creation.py``)
      - 00:00.094
@@ -72,10 +72,10 @@ Computation times
      - 00:00.079
      - 0.0
    * - :ref:`sphx_glr_deep_dive_tensor_ir_tutorials_meta_schedule.py` (``../deep_dive/tensor_ir/tutorials/meta_schedule.py``)
-     - 00:00.013
+     - 00:00.012
      - 0.0
    * - :ref:`sphx_glr_how_to_tutorials_mix_python_and_tvm_with_pymodule.py` (``../how_to/tutorials/mix_python_and_tvm_with_pymodule.py``)
-     - 00:00.005
+     - 00:00.004
      - 0.0
    * - :ref:`sphx_glr_how_to_tutorials_export_and_load_executable.py` (``../how_to/tutorials/export_and_load_executable.py``)
      - 00:00.002

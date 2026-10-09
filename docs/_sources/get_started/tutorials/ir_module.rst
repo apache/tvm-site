@@ -529,13 +529,13 @@ within the same module. Meanwhile, the Relax operators will be converted into ``
         def main(x: R.Tensor((1, 784), dtype="float32"), p_fc1_weight: R.Tensor((256, 784), dtype="float32"), p_fc1_bias: R.Tensor((256,), dtype="float32"), p_fc2_weight: R.Tensor((10, 256), dtype="float32"), p_fc2_bias: R.Tensor((10,), dtype="float32")) -> R.Tensor((1, 10), dtype="float32"):
             R.func_attr({"num_input": 1})
             with R.dataflow():
-                lv = R.call_tir(Module.transpose, (p_fc1_weight,), out_ty=R.Tensor((784, 256), dtype="float32"))
-                lv1 = R.call_tir(Module.matmul, (x, lv), out_ty=R.Tensor((1, 256), dtype="float32"))
-                lv2 = R.call_tir(Module.add, (p_fc1_bias, lv1), out_ty=R.Tensor((1, 256), dtype="float32"))
-                lv3 = R.call_tir(Module.relu, (lv2,), out_ty=R.Tensor((1, 256), dtype="float32"))
-                lv4 = R.call_tir(Module.transpose1, (p_fc2_weight,), out_ty=R.Tensor((256, 10), dtype="float32"))
-                lv5 = R.call_tir(Module.matmul1, (lv3, lv4), out_ty=R.Tensor((1, 10), dtype="float32"))
-                lv6 = R.call_tir(Module.add1, (p_fc2_bias, lv5), out_ty=R.Tensor((1, 10), dtype="float32"))
+                lv = R.call_tir(Module.transpose, I.Tuple([p_fc1_weight]), ty_args=[R.Tensor((784, 256), dtype="float32")])
+                lv1 = R.call_tir(Module.matmul, I.Tuple([x, lv]), ty_args=[R.Tensor((1, 256), dtype="float32")])
+                lv2 = R.call_tir(Module.add, I.Tuple([p_fc1_bias, lv1]), ty_args=[R.Tensor((1, 256), dtype="float32")])
+                lv3 = R.call_tir(Module.relu, I.Tuple([lv2]), ty_args=[R.Tensor((1, 256), dtype="float32")])
+                lv4 = R.call_tir(Module.transpose1, I.Tuple([p_fc2_weight]), ty_args=[R.Tensor((256, 10), dtype="float32")])
+                lv5 = R.call_tir(Module.matmul1, I.Tuple([lv3, lv4]), ty_args=[R.Tensor((1, 10), dtype="float32")])
+                lv6 = R.call_tir(Module.add1, I.Tuple([p_fc2_bias, lv5]), ty_args=[R.Tensor((1, 10), dtype="float32")])
                 gv: R.Tensor((1, 10), dtype="float32") = lv6
                 R.output(gv)
             return gv
@@ -718,10 +718,10 @@ The default **zero** pipeline contains very fundamental transformations, includi
         def main(x: R.Tensor((1, 784), dtype="float32"), p_fc1_weight: R.Tensor((256, 784), dtype="float32"), p_fc1_bias: R.Tensor((256,), dtype="float32"), p_fc2_weight: R.Tensor((10, 256), dtype="float32"), p_fc2_bias: R.Tensor((10,), dtype="float32")) -> R.Tensor((1, 10), dtype="float32"):
             R.func_attr({"num_input": 1})
             with R.dataflow():
-                lv = R.call_tir(Module.transpose, (p_fc1_weight,), out_ty=R.Tensor((784, 256), dtype="float32"))
-                lv_1 = R.call_tir(Module.fused_matmul_add_relu, (x, lv, p_fc1_bias), out_ty=R.Tensor((1, 256), dtype="float32"))
-                lv4 = R.call_tir(Module.transpose1, (p_fc2_weight,), out_ty=R.Tensor((256, 10), dtype="float32"))
-                gv = R.call_tir(Module.fused_matmul1_add1, (lv_1, lv4, p_fc2_bias), out_ty=R.Tensor((1, 10), dtype="float32"))
+                lv = R.call_tir(Module.transpose, I.Tuple([p_fc1_weight]), ty_args=[R.Tensor((784, 256), dtype="float32")])
+                lv_1 = R.call_tir(Module.fused_matmul_add_relu, I.Tuple([x, lv, p_fc1_bias]), ty_args=[R.Tensor((1, 256), dtype="float32")])
+                lv4 = R.call_tir(Module.transpose1, I.Tuple([p_fc2_weight]), ty_args=[R.Tensor((256, 10), dtype="float32")])
+                gv = R.call_tir(Module.fused_matmul1_add1, I.Tuple([lv_1, lv4, p_fc2_bias]), ty_args=[R.Tensor((1, 10), dtype="float32")])
                 R.output(gv)
             return gv
 
@@ -764,8 +764,8 @@ We can deploy the IRModule on CPU by specifying the target as ``llvm``.
 
  .. code-block:: none
 
-    [[-0.02009604 -0.06356681  0.14574334  0.03584956 -0.01082264 -0.04531149
-      -0.21125677  0.02617377  0.01133417  0.09353479]]
+    [[-0.22923902  0.2582023  -0.02243661  0.01154435 -0.00982217  0.17932382
+      -0.01828195 -0.05523165  0.0510396   0.07188657]]
 
 
 
@@ -831,8 +831,8 @@ Now we can compile the IRModule on GPU, the similar way as we did on CPU.
 
  .. code-block:: none
 
-    [[-0.02009611 -0.06356678  0.14574328  0.03584951 -0.01082263 -0.04531147
-      -0.21125674  0.0261738   0.01133418  0.0935348 ]]
+    [[-0.22923902  0.2582023  -0.02243654  0.01154437 -0.00982217  0.17932385
+      -0.01828188 -0.05523171  0.05103961  0.07188651]]
 
 
 

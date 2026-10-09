@@ -217,7 +217,7 @@ operator. Here we demonstrate how to dispatch the CUBLAS library for certain pat
         def forward(x: R.Tensor((1, 784), dtype="float32"), fc1_weight: R.Tensor((256, 784), dtype="float32"), fc1_bias: R.Tensor((256,), dtype="float32"), fc2_weight: R.Tensor((10, 256), dtype="float32")) -> R.Tensor((1, 10), dtype="float32"):
             R.func_attr({"num_input": 1})
             with R.dataflow():
-                lv = R.call_dps_packed("fused_relax_permute_dims_relax_matmul_relax_add_relax_nn_relu_cublas", (fc1_weight, x, fc1_bias), out_ty=R.Tensor((1, 256), dtype="float32"))
+                lv = R.call_dps_packed("fused_relax_permute_dims_relax_matmul_relax_add_relax_nn_relu_cublas", I.Tuple([fc1_weight, x, fc1_bias]), ty_args=[R.Tensor((1, 256), dtype="float32")])
                 permute_dims1: R.Tensor((256, 10), dtype="float32") = I.Call("relax.permute_dims", [fc2_weight], attrs=I.make_node("relax.attrs.PermuteDimsAttrs", axes=None), ty=R.Tensor((256, 10), dtype="float32"))
                 matmul1: R.Tensor((1, 10), dtype="float32") = I.Call("relax.matmul", [lv, permute_dims1], attrs=I.make_node("relax.attrs.MatmulAttrs", out_dtype=None), ty=R.Tensor((1, 10), dtype="float32"))
                 gv: R.Tensor((1, 10), dtype="float32") = matmul1
@@ -389,9 +389,9 @@ it achieves a balance between performance and compilation time.
         def forward(x: R.Tensor((1, 784), dtype="float32"), fc1_weight: R.Tensor((256, 784), dtype="float32"), fc1_bias: R.Tensor((256,), dtype="float32"), fc2_weight: R.Tensor((10, 256), dtype="float32")) -> R.Tensor((1, 10), dtype="float32"):
             R.func_attr({"num_input": 1})
             with R.dataflow():
-                lv = R.call_dps_packed("fused_relax_permute_dims_relax_matmul_relax_add_relax_nn_relu_cublas", (fc1_weight, x, fc1_bias), out_ty=R.Tensor((1, 256), dtype="float32"))
-                permute_dims1 = R.call_tir(Module.transpose, (fc2_weight,), out_ty=R.Tensor((256, 10), dtype="float32"))
-                gv = R.call_tir(Module.matmul, (lv, permute_dims1), out_ty=R.Tensor((1, 10), dtype="float32"))
+                lv = R.call_dps_packed("fused_relax_permute_dims_relax_matmul_relax_add_relax_nn_relu_cublas", I.Tuple([fc1_weight, x, fc1_bias]), ty_args=[R.Tensor((1, 256), dtype="float32")])
+                permute_dims1 = R.call_tir(Module.transpose, I.Tuple([fc2_weight]), ty_args=[R.Tensor((256, 10), dtype="float32")])
+                gv = R.call_tir(Module.matmul, I.Tuple([lv, permute_dims1]), ty_args=[R.Tensor((1, 10), dtype="float32")])
                 R.output(gv)
             return gv
 

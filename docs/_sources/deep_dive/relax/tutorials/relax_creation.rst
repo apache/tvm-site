@@ -35,12 +35,13 @@ to define an IRModule, which contains both TensorIR and Relax functions.
 In this section, we will show how to define a simple MLP model with only
 high-level Relax operators using TVMScript.
 
-.. GENERATED FROM PYTHON SOURCE LINES 38-68
+.. GENERATED FROM PYTHON SOURCE LINES 38-69
 
 .. code-block:: Python
 
 
     from tvm import relax, topi
+    from tvm.relax import ExternFunc as _ExternFunc
     from tvm.script import ir as I
     from tvm.script import relax as R
     from tvm.script import s_tir as Ts
@@ -102,13 +103,13 @@ high-level Relax operators using TVMScript.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 69-72
+.. GENERATED FROM PYTHON SOURCE LINES 70-73
 
 Relax is not only a graph-level IR, but also supports cross-level
 representation and transformation. To be specific, we can directly call
 TensorIR functions in Relax function.
 
-.. GENERATED FROM PYTHON SOURCE LINES 72-105
+.. GENERATED FROM PYTHON SOURCE LINES 73-106
 
 .. code-block:: Python
 
@@ -137,7 +138,7 @@ TensorIR functions in Relax function.
             cls = RelaxModuleWithTIR
             with R.dataflow():
                 lv0 = R.matmul(data, R.permute_dims(w0)) + b0
-                lv1 = R.call_tir(cls.relu, lv0, R.Tensor((n, 128), dtype="float32"))
+                lv1 = R.call_tir(cls.relu, lv0, ty_args=[R.Tensor((n, 128), dtype="float32")])
                 lv2 = R.matmul(lv1, R.permute_dims(w1)) + b1
                 R.output(lv2)
             return lv2
@@ -184,7 +185,7 @@ TensorIR functions in Relax function.
                 lv: R.Tensor((784, 128), dtype="float32") = I.Call("relax.permute_dims", [w0], attrs=I.make_node("relax.attrs.PermuteDimsAttrs", axes=None), ty=R.Tensor((784, 128), dtype="float32"))
                 lv1: R.Tensor((n, 128), dtype="float32") = I.Call("relax.matmul", [data, lv], attrs=I.make_node("relax.attrs.MatmulAttrs", out_dtype=None), ty=R.Tensor((n, 128), dtype="float32"))
                 lv0: R.Tensor((n, 128), dtype="float32") = R.add(lv1, b0, ty=R.Tensor((n, 128), dtype="float32"))
-                lv1_1 = R.call_tir(Module.relu, (lv0,), out_ty=R.Tensor((n, 128), dtype="float32"))
+                lv1_1 = R.call_tir(Module.relu, I.Tuple([lv0]), ty_args=[R.Tensor((n, 128), dtype="float32")])
                 lv4: R.Tensor((128, 10), dtype="float32") = I.Call("relax.permute_dims", [w1], attrs=I.make_node("relax.attrs.PermuteDimsAttrs", axes=None), ty=R.Tensor((128, 10), dtype="float32"))
                 lv5: R.Tensor((n, 10), dtype="float32") = I.Call("relax.matmul", [lv1_1, lv4], attrs=I.make_node("relax.attrs.MatmulAttrs", out_dtype=None), ty=R.Tensor((n, 10), dtype="float32"))
                 lv2: R.Tensor((n, 10), dtype="float32") = R.add(lv5, b1, ty=R.Tensor((n, 10), dtype="float32"))
@@ -195,7 +196,7 @@ TensorIR functions in Relax function.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 106-128
+.. GENERATED FROM PYTHON SOURCE LINES 107-129
 
 .. note::
 
@@ -220,7 +221,7 @@ TensorIR functions in Relax function.
     lv0: R.Tensor((n, 128), dtype="float32") = R.add(lv1, b0)
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 130-137
+.. GENERATED FROM PYTHON SOURCE LINES 131-138
 
 Create Relax programs using NNModule API
 ----------------------------------------
@@ -230,7 +231,7 @@ It is designed to be more intuitive and easier to use than TVMScript.
 In this section, we will show how to define the same MLP model using
 Relax NNModule API.
 
-.. GENERATED FROM PYTHON SOURCE LINES 137-155
+.. GENERATED FROM PYTHON SOURCE LINES 138-156
 
 .. code-block:: Python
 
@@ -259,12 +260,12 @@ Relax NNModule API.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 156-158
+.. GENERATED FROM PYTHON SOURCE LINES 157-159
 
 After we define the NNModule, we can export it to TVM IRModule via
 ``export_tvm``.
 
-.. GENERATED FROM PYTHON SOURCE LINES 158-162
+.. GENERATED FROM PYTHON SOURCE LINES 159-163
 
 .. code-block:: Python
 
@@ -307,12 +308,12 @@ After we define the NNModule, we can export it to TVM IRModule via
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 163-165
+.. GENERATED FROM PYTHON SOURCE LINES 164-166
 
 We can also insert customized function calls into the NNModule, such as
 Tensor Expression(TE), TensorIR functions or other TVM packed functions.
 
-.. GENERATED FROM PYTHON SOURCE LINES 165-221
+.. GENERATED FROM PYTHON SOURCE LINES 166-222
 
 .. code-block:: Python
 
@@ -439,9 +440,9 @@ Tensor Expression(TE), TensorIR functions or other TVM packed functions.
         def forward(x: R.Tensor((n_1, 784), dtype="float32"), fc1_weight: R.Tensor((128, 784), dtype="float32"), fc1_bias: R.Tensor((128,), dtype="float32"), fc2_weight: R.Tensor((10, 128), dtype="float32"), fc2_bias: R.Tensor((10,), dtype="float32")) -> R.Tensor((n_1, 10), dtype="float32"):
             R.func_attr({"num_input": 1})
             with R.dataflow():
-                env_linear = R.call_dps_packed("env.linear", (x, fc1_weight, fc1_bias), out_ty=R.Tensor((n_1, 128), dtype="float32"))
-                lv = R.call_tir(Module.relu, (env_linear,), out_ty=R.Tensor((n_1, 128), dtype="float32"))
-                lv1 = R.call_tir(Module.tir_linear, (lv, fc2_weight, fc2_bias), out_ty=R.Tensor((n_1, 10), dtype="float32"))
+                env_linear = R.call_dps_packed("env.linear", I.Tuple([x, fc1_weight, fc1_bias]), ty_args=[R.Tensor((n_1, 128), dtype="float32")])
+                lv = R.call_tir(Module.relu, I.Tuple([env_linear]), ty_args=[R.Tensor((n_1, 128), dtype="float32")])
+                lv1 = R.call_tir(Module.tir_linear, I.Tuple([lv, fc2_weight, fc2_bias]), ty_args=[R.Tensor((n_1, 10), dtype="float32")])
                 gv: R.Tensor((n_1, 10), dtype="float32") = lv1
                 R.output(gv)
             return gv
@@ -450,7 +451,7 @@ Tensor Expression(TE), TensorIR functions or other TVM packed functions.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 222-228
+.. GENERATED FROM PYTHON SOURCE LINES 223-229
 
 Create Relax programs using Block Builder API
 ---------------------------------------------
@@ -459,7 +460,7 @@ creating Relax programs. It is a IR builder API, which is more
 low-level and widely used in TVM's internal logic, e.g writing a
 customized pass.
 
-.. GENERATED FROM PYTHON SOURCE LINES 228-247
+.. GENERATED FROM PYTHON SOURCE LINES 229-248
 
 .. code-block:: Python
 
@@ -516,12 +517,12 @@ customized pass.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 248-250
+.. GENERATED FROM PYTHON SOURCE LINES 249-251
 
 Also, Block Builder API supports building cross-level IRModule with both
 Relax functions, TensorIR functions and other TVM packed functions.
 
-.. GENERATED FROM PYTHON SOURCE LINES 250-275
+.. GENERATED FROM PYTHON SOURCE LINES 251-276
 
 .. code-block:: Python
 
@@ -531,9 +532,9 @@ Relax functions, TensorIR functions and other TVM packed functions.
         with bb.dataflow():
             lv0 = bb.emit(
                 relax.call_dps_packed(
-                    "env.linear",
+                    _ExternFunc("env.linear"),
                     [x, fc1_weight, fc1_bias],
-                    out_ty=relax.TensorType((n, 128), "float32"),
+                    ty_args=[relax.TensorType((n, 128), "float32")],
                 )
             )
             lv1 = bb.emit_te(topi.nn.relu, lv0)
@@ -542,7 +543,7 @@ Relax functions, TensorIR functions and other TVM packed functions.
                 relax.call_tir(
                     tir_gv,
                     [lv1, fc2_weight, fc2_bias],
-                    out_ty=relax.TensorType((n, 10), "float32"),
+                    ty_args=[relax.TensorType((n, 10), "float32")],
                 )
             )
             bb.emit_output(gv)
@@ -616,9 +617,9 @@ Relax functions, TensorIR functions and other TVM packed functions.
         @R.function
         def forward(x: R.Tensor((n_1, 784), dtype="float32"), fc1_weight: R.Tensor((128, 784), dtype="float32"), fc1_bias: R.Tensor((128,), dtype="float32"), fc2_weight: R.Tensor((10, 128), dtype="float32"), fc2_bias: R.Tensor((10,), dtype="float32")) -> R.Tensor((n_1, 10), dtype="float32"):
             with R.dataflow():
-                lv = R.call_dps_packed("env.linear", (x, fc1_weight, fc1_bias), out_ty=R.Tensor((n_1, 128), dtype="float32"))
-                lv1 = R.call_tir(Module.relu, (lv,), out_ty=R.Tensor((n_1, 128), dtype="float32"))
-                lv2 = R.call_tir(Module.tir_linear, (lv1, fc2_weight, fc2_bias), out_ty=R.Tensor((n_1, 10), dtype="float32"))
+                lv = R.call_dps_packed("env.linear", I.Tuple([x, fc1_weight, fc1_bias]), ty_args=[R.Tensor((n_1, 128), dtype="float32")])
+                lv1 = R.call_tir(Module.relu, I.Tuple([lv]), ty_args=[R.Tensor((n_1, 128), dtype="float32")])
+                lv2 = R.call_tir(Module.tir_linear, I.Tuple([lv1, fc2_weight, fc2_bias]), ty_args=[R.Tensor((n_1, 10), dtype="float32")])
                 gv: R.Tensor((n_1, 10), dtype="float32") = lv2
                 R.output(gv)
             return lv2
@@ -627,7 +628,7 @@ Relax functions, TensorIR functions and other TVM packed functions.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 276-281
+.. GENERATED FROM PYTHON SOURCE LINES 277-282
 
 Note that the Block Builder API is not as user-friendly as the above APIs,
 but it is lowest-level API and works closely with the IR definition. We
@@ -635,7 +636,7 @@ recommend using the above APIs for users who only want to define and
 transform a ML model. But for those who want to build more complex
 transformations, the Block Builder API is a more flexible choice.
 
-.. GENERATED FROM PYTHON SOURCE LINES 283-287
+.. GENERATED FROM PYTHON SOURCE LINES 284-288
 
 Summary
 -------

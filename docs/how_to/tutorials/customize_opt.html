@@ -808,7 +808,7 @@ class Module:
     def forward(x: R.Tensor((1, 784), dtype=&quot;float32&quot;), fc1_weight: R.Tensor((256, 784), dtype=&quot;float32&quot;), fc1_bias: R.Tensor((256,), dtype=&quot;float32&quot;), fc2_weight: R.Tensor((10, 256), dtype=&quot;float32&quot;)) -&gt; R.Tensor((1, 10), dtype=&quot;float32&quot;):
         R.func_attr({&quot;num_input&quot;: 1})
         with R.dataflow():
-            lv = R.call_dps_packed(&quot;fused_relax_permute_dims_relax_matmul_relax_add_relax_nn_relu_cublas&quot;, (fc1_weight, x, fc1_bias), out_ty=R.Tensor((1, 256), dtype=&quot;float32&quot;))
+            lv = R.call_dps_packed(&quot;fused_relax_permute_dims_relax_matmul_relax_add_relax_nn_relu_cublas&quot;, I.Tuple([fc1_weight, x, fc1_bias]), ty_args=[R.Tensor((1, 256), dtype=&quot;float32&quot;)])
             permute_dims1: R.Tensor((256, 10), dtype=&quot;float32&quot;) = I.Call(&quot;relax.permute_dims&quot;, [fc2_weight], attrs=I.make_node(&quot;relax.attrs.PermuteDimsAttrs&quot;, axes=None), ty=R.Tensor((256, 10), dtype=&quot;float32&quot;))
             matmul1: R.Tensor((1, 10), dtype=&quot;float32&quot;) = I.Call(&quot;relax.matmul&quot;, [lv, permute_dims1], attrs=I.make_node(&quot;relax.attrs.MatmulAttrs&quot;, out_dtype=None), ty=R.Tensor((1, 10), dtype=&quot;float32&quot;))
             gv: R.Tensor((1, 10), dtype=&quot;float32&quot;) = matmul1
@@ -945,9 +945,9 @@ class Module:
     def forward(x: R.Tensor((1, 784), dtype=&quot;float32&quot;), fc1_weight: R.Tensor((256, 784), dtype=&quot;float32&quot;), fc1_bias: R.Tensor((256,), dtype=&quot;float32&quot;), fc2_weight: R.Tensor((10, 256), dtype=&quot;float32&quot;)) -&gt; R.Tensor((1, 10), dtype=&quot;float32&quot;):
         R.func_attr({&quot;num_input&quot;: 1})
         with R.dataflow():
-            lv = R.call_dps_packed(&quot;fused_relax_permute_dims_relax_matmul_relax_add_relax_nn_relu_cublas&quot;, (fc1_weight, x, fc1_bias), out_ty=R.Tensor((1, 256), dtype=&quot;float32&quot;))
-            permute_dims1 = R.call_tir(Module.transpose, (fc2_weight,), out_ty=R.Tensor((256, 10), dtype=&quot;float32&quot;))
-            gv = R.call_tir(Module.matmul, (lv, permute_dims1), out_ty=R.Tensor((1, 10), dtype=&quot;float32&quot;))
+            lv = R.call_dps_packed(&quot;fused_relax_permute_dims_relax_matmul_relax_add_relax_nn_relu_cublas&quot;, I.Tuple([fc1_weight, x, fc1_bias]), ty_args=[R.Tensor((1, 256), dtype=&quot;float32&quot;)])
+            permute_dims1 = R.call_tir(Module.transpose, I.Tuple([fc2_weight]), ty_args=[R.Tensor((256, 10), dtype=&quot;float32&quot;)])
+            gv = R.call_tir(Module.matmul, I.Tuple([lv, permute_dims1]), ty_args=[R.Tensor((1, 10), dtype=&quot;float32&quot;)])
             R.output(gv)
         return gv
 
