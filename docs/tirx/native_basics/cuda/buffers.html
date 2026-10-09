@@ -660,7 +660,7 @@ Scratch tensors are created in the body with the APIs below. Index a tensor with
 pointer with <code class="docutils literal notranslate"><span class="pre">A.ptr_to([i,</span> <span class="pre">j])</span></code> or the raw data pointer <code class="docutils literal notranslate"><span class="pre">A.data</span></code>.</p>
 <section id="declaring-buffers">
 <h2>Declaring buffers<a class="headerlink" href="#declaring-buffers" title="Link to this heading">#</a></h2>
-<p>Two fundamental APIs create a tensor variable:</p>
+<p>The following APIs create a tensor variable:</p>
 <ul class="simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">Tx.alloc_tensor(shape,</span> <span class="pre">dtype,</span> <span class="pre">scope=...,</span> <span class="pre">...)</span></code> — <strong>allocates new storage</strong>
 (binds a <code class="docutils literal notranslate"><span class="pre">tirx.alloc_tensor</span></code> call) and returns an <code class="docutils literal notranslate"><span class="pre">ir.Var</span></code>. <code class="docutils literal notranslate"><span class="pre">Tx.alloc_shared</span></code> /
@@ -668,14 +668,16 @@ pointer with <code class="docutils literal notranslate"><span class="pre">A.ptr_
 <code class="docutils literal notranslate"><span class="pre">scope=&quot;local&quot;</span></code>.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">Tx.decl_tensor(shape,</span> <span class="pre">dtype,</span> <span class="pre">data=...,</span> <span class="pre">...)</span></code> — <strong>declares a view</strong> over an
 existing pointer <code class="docutils literal notranslate"><span class="pre">data</span></code> (no allocation); use it to alias or reinterpret
-storage — a sub-region of a pool, or a tensor-memory address. With <code class="docutils literal notranslate"><span class="pre">data=None</span></code>
-it allocates, like <code class="docutils literal notranslate"><span class="pre">alloc_tensor</span></code>, except in <code class="docutils literal notranslate"><span class="pre">tmem</span></code> scope, where
-<code class="docutils literal notranslate"><span class="pre">allocated_addr</span></code> identifies externally allocated tensor memory.</p></li>
+storage — for example, a sub-region of a pool. With <code class="docutils literal notranslate"><span class="pre">data=None</span></code> it allocates,
+like <code class="docutils literal notranslate"><span class="pre">alloc_tensor</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Tx.cuda.decl_tmem(addr,</span> <span class="pre">ty_args=[Tx.Tensor(...)])</span></code> — declares a tensor over
+externally allocated tensor memory. The address is a value operand; the tensor
+type supplies shape, dtype, scope and layout.</p></li>
 </ul>
 <p><code class="docutils literal notranslate"><span class="pre">A.data</span></code> projects the physical pointer from the tensor variable.
 <code class="docutils literal notranslate"><span class="pre">alloc_tensor</span></code> supplies new storage; <code class="docutils literal notranslate"><span class="pre">decl_tensor</span></code> with <code class="docutils literal notranslate"><span class="pre">data</span></code> binds an
 existing pointer expression. See <a class="reference internal" href="data_types.html"><span class="doc">Data types and expressions</span></a>.</p>
-<p>Both share one descriptor; the parameters that matter most:</p>
+<p>The tensor descriptors share these parameters:</p>
 <div class="pst-scrollable-table-container"><table class="table">
 <colgroup>
 <col style="width: 28.0%" />
@@ -697,9 +699,9 @@ existing pointer expression. See <a class="reference internal" href="data_types.
 <td><p>physical mapping (<a class="reference internal" href="../../layout.html"><span class="doc">TileLayout</span></a>); <code class="docutils literal notranslate"><span class="pre">&quot;default&quot;</span></code> = dense
 row-major</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">elem_offset</span></code> / <code class="docutils literal notranslate"><span class="pre">allocated_addr</span></code></p></td>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">elem_offset</span></code></p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">elem_offset</span></code> (or <code class="docutils literal notranslate"><span class="pre">byte_offset</span></code>) places a <em>view</em> at an offset into
-<code class="docutils literal notranslate"><span class="pre">data</span></code>; <code class="docutils literal notranslate"><span class="pre">allocated_addr</span></code> carries a pre-assigned address (tensor memory)</p></td>
+<code class="docutils literal notranslate"><span class="pre">data</span></code></p></td>
 </tr>
 <tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">align</span></code></p></td>
 <td><p>alignment of the data pointer, in bytes</p></td>
@@ -979,20 +981,27 @@ load/store semantics.</p>
 <p>Blackwell <em>tensor memory</em> is not a plain scratch scope: it must be explicitly
 reserved and freed with the warp-uniform <code class="docutils literal notranslate"><span class="pre">Tx.ptx.tcgen05.alloc</span></code> /
 <code class="docutils literal notranslate"><span class="pre">tcgen05.dealloc</span></code> intrinsics, and each tensor is a view into it declared with
-<code class="docutils literal notranslate"><span class="pre">Tx.decl_tensor(...,</span> <span class="pre">scope=&quot;tmem&quot;,</span> <span class="pre">allocated_addr=&lt;address&gt;,</span> <span class="pre">layout=&lt;tmem</span> <span class="pre">layout&gt;)</span></code>.
-The <code class="docutils literal notranslate"><span class="pre">allocated_addr</span></code> is the allocated tensor-memory base address plus any desired
-column offset. It is mandatory — the tensor-core dispatch asserts it — so
-<code class="docutils literal notranslate"><span class="pre">Tx.alloc_tensor(scope=&quot;tmem&quot;)</span></code> (which does <strong>not</strong> set it) will not work. Unlike
-shared memory, tensor memory is not directly addressable: it is read and written
-only through <code class="docutils literal notranslate"><span class="pre">tcgen05</span></code> <code class="docutils literal notranslate"><span class="pre">mma</span></code> / <code class="docutils literal notranslate"><span class="pre">ld</span></code> / <code class="docutils literal notranslate"><span class="pre">st</span></code> / <code class="docutils literal notranslate"><span class="pre">cp</span></code>.</p>
+<code class="docutils literal notranslate"><span class="pre">Tx.cuda.decl_tmem(addr,</span> <span class="pre">ty_args=[Tx.Tensor(shape,</span> <span class="pre">dtype,</span> <span class="pre">scope=&quot;tmem&quot;,</span> <span class="pre">layout=layout)])</span></code>.
+The <code class="docutils literal notranslate"><span class="pre">addr</span></code> operand is the allocated tensor-memory base address plus any desired
+column offset. The declaration captures the address value when it executes, so
+synchronize allocator writes to a shared address slot before declaring tensors.
+Tensor-memory storage is reserved separately from the tensor declaration.
+Unlike shared memory, tensor memory is not directly addressable: it is read and
+written only through <code class="docutils literal notranslate"><span class="pre">tcgen05</span></code> <code class="docutils literal notranslate"><span class="pre">mma</span></code> / <code class="docutils literal notranslate"><span class="pre">ld</span></code> / <code class="docutils literal notranslate"><span class="pre">st</span></code> / <code class="docutils literal notranslate"><span class="pre">cp</span></code>.</p>
 <p>By hand, one warp issues the allocation into a shared slot, you <code class="docutils literal notranslate"><span class="pre">decl</span></code> each
 tensor as a view at a column offset, and one warp frees it at the end:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">addr</span> <span class="o">=</span> <span class="n">Tx</span><span class="o">.</span><span class="n">alloc_shared</span><span class="p">((</span><span class="mi">1</span><span class="p">,),</span> <span class="s2">&quot;uint32&quot;</span><span class="p">)</span>             <span class="c1"># slot for the allocated base</span>
 <span class="k">if</span> <span class="n">warp_id</span> <span class="o">==</span> <span class="n">alloc_warp</span><span class="p">:</span>                         <span class="c1"># tcgen05.alloc is warp-uniform</span>
     <span class="n">Tx</span><span class="o">.</span><span class="n">ptx</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;tcgen05.alloc.cta_group::</span><span class="si">{</span><span class="n">cta_group</span><span class="si">}</span><span class="s2">.sync.aligned.shared::cta.b32&quot;</span><span class="p">](</span>
         <span class="n">Tx</span><span class="o">.</span><span class="n">address_of</span><span class="p">(</span><span class="n">addr</span><span class="p">),</span> <span class="n">Tx</span><span class="o">.</span><span class="n">uint32</span><span class="p">(</span><span class="mi">512</span><span class="p">))</span>
-<span class="n">acc</span> <span class="o">=</span> <span class="n">Tx</span><span class="o">.</span><span class="n">decl_tensor</span><span class="p">((</span><span class="n">CTA_M</span><span class="p">,</span> <span class="mi">512</span><span class="p">),</span> <span class="s2">&quot;float32&quot;</span><span class="p">,</span> <span class="n">scope</span><span class="o">=</span><span class="s2">&quot;tmem&quot;</span><span class="p">,</span>
-                    <span class="n">allocated_addr</span><span class="o">=</span><span class="n">addr</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">layout</span><span class="o">=</span><span class="n">tmem_layout</span><span class="p">)</span>  <span class="c1"># allocated base</span>
+<span class="n">Tx</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">cta_sync</span><span class="p">()</span>                                <span class="c1"># publish before capturing addr[0]</span>
+<span class="n">acc</span> <span class="o">=</span> <span class="n">Tx</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">decl_tmem</span><span class="p">(</span>
+    <span class="n">addr</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+    <span class="n">ty_args</span><span class="o">=</span><span class="p">[</span><span class="n">Tx</span><span class="o">.</span><span class="n">Tensor</span><span class="p">(</span>
+        <span class="p">(</span><span class="n">CTA_M</span><span class="p">,</span> <span class="mi">512</span><span class="p">),</span> <span class="s2">&quot;float32&quot;</span><span class="p">,</span> <span class="n">scope</span><span class="o">=</span><span class="s2">&quot;tmem&quot;</span><span class="p">,</span>
+        <span class="n">layout</span><span class="o">=</span><span class="n">tmem_layout</span><span class="p">,</span>
+    <span class="p">)],</span>
+<span class="p">)</span>
 <span class="c1"># ... use acc as a gemm_async / copy_async operand ...</span>
 <span class="k">if</span> <span class="n">warp_id</span> <span class="o">==</span> <span class="n">alloc_warp</span><span class="p">:</span>
     <span class="n">Tx</span><span class="o">.</span><span class="n">ptx</span><span class="p">[</span><span class="sa">f</span><span class="s2">&quot;tcgen05.relinquish_alloc_permit.cta_group::</span><span class="si">{</span><span class="n">cta_group</span><span class="si">}</span><span class="s2">.sync.aligned&quot;</span><span class="p">]()</span>

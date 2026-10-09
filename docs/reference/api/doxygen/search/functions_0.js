@@ -17,7 +17,7 @@ var searchData=
   ['add_5farg_14',['add_arg',['../classtvm_1_1OpDef.html#a34419be1455721ac622db1c343a25f2f',1,'tvm::OpDef']]],
   ['add_5fconstraint_15',['add_constraint',['../classtvm_1_1relax_1_1PatternContext.html#a05bbf261f4136ccfaa9e3db7c126d378',1,'tvm::relax::PatternContext::add_constraint(DFConstraint constraint)'],['../classtvm_1_1relax_1_1PatternContext.html#a99bc7dede981deaa61fbc5d7c7224cff',1,'tvm::relax::PatternContext::add_constraint(DFPattern producer, DFPattern consumer, PairCons cons)']]],
   ['add_5fty_5farg_16',['add_ty_arg',['../classtvm_1_1OpDef.html#a6effc7f7e9a5846ae75a2e3e587016fa',1,'tvm::OpDef']]],
-  ['addallocbuffer_17',['AddAllocBuffer',['../classtvm_1_1tirx_1_1DispatchContextNode.html#a73ed56467d811ee3bda2b106c2feb48c',1,'tvm::tirx::DispatchContextNode']]],
+  ['addallocbuffer_17',['AddAllocBuffer',['../classtvm_1_1tirx_1_1DispatchContextNode.html#a2ccda1691e356b7b5253a92dbc962e0c',1,'tvm::tirx::DispatchContextNode']]],
   ['addcallback_18',['AddCallback',['../classtvm_1_1script_1_1ir__builder_1_1IRBuilderFrameNode.html#ada273813a289507af066ec2aecf11e9b',1,'tvm::script::ir_builder::IRBuilderFrameNode']]],
   ['adddefinitiontoscope_19',['AddDefinitionToScope',['../classtvm_1_1relax_1_1BlockBuilderNode.html#ab226667e1c8d4bc5971bf5f4aadda5a6',1,'tvm::relax::BlockBuilderNode']]],
   ['addfunction_20',['AddFunction',['../classtvm_1_1relax_1_1BlockBuilderNode.html#a5e1fdb540233627a71b1ac1b2094caa5',1,'tvm::relax::BlockBuilderNode']]],

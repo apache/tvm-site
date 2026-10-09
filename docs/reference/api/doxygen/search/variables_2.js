@@ -23,7 +23,7 @@ var searchData=
   ['body_5fparams_20',['body_params',['../classtvm_1_1RegionStmtNode.html#ae9b26b6987763bb93a8de87188a14a46',1,'tvm::RegionStmtNode::body_params'],['../classtvm_1_1script_1_1ir__builder_1_1ir_1_1RegionFrameNode.html#a3fd475058213af55eb1fdac9a2299086',1,'tvm::script::ir_builder::ir::RegionFrameNode::body_params']]],
   ['bound_5fvalues_21',['bound_values',['../structtvm_1_1relax_1_1VarUsageInfo.html#ae58bba41be647ebee2c322504576a562',1,'tvm::relax::VarUsageInfo']]],
   ['buffer_22',['buffer',['../classtvm_1_1runtime_1_1memory_1_1StorageObj.html#a3c7977cfe3349b828981b9ea840e3a4a',1,'tvm::runtime::memory::StorageObj::buffer'],['../classtvm_1_1s__tir_1_1MatchBufferRegionNode.html#a7bfc572486cfa492d4c51f28e9cca512',1,'tvm::s_tir::MatchBufferRegionNode::buffer']]],
-  ['buffer_5fallocated_5faddr_23',['buffer_allocated_addr',['../namespacetvm_1_1tirx_1_1attr.html#a9611402597fd9e09247699530467d2a4',1,'tvm::tirx::attr']]],
+  ['buffer_5fallocated_5faddr_23',['buffer_allocated_addr',['../namespacetvm_1_1s__tir_1_1attr.html#a96b93560b1f65df94d4a39c183802a6f',1,'tvm::s_tir::attr']]],
   ['buffer_5fdata_5falignment_24',['buffer_data_alignment',['../namespacetvm_1_1tirx_1_1attr.html#a6878b3592e7f7a8d5b0c72e3f3e7d638',1,'tvm::tirx::attr']]],
   ['buffer_5fdim_5falign_25',['buffer_dim_align',['../namespacetvm_1_1s__tir_1_1attr.html#a575c421abfa1ab9a51c3ceeb35d6b483',1,'tvm::s_tir::attr']]],
   ['buffer_5fdtype_26',['buffer_dtype',['../classtvm_1_1PrinterConfigNode.html#ace42a7b4868f3eaf878af125b07cdef4',1,'tvm::PrinterConfigNode']]],
