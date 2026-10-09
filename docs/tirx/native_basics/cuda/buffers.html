@@ -1036,7 +1036,21 @@ helpers when the MMA datapath determines the layout:</p>
 <p>A tensor variable is an <code class="docutils literal notranslate"><span class="pre">ir.Var</span></code> carrying <code class="docutils literal notranslate"><span class="pre">tirx.TensorType</span></code> metadata
 (see <em>Declaring buffers</em> above), so most of
 its methods are <em>compile-time</em> reshapes/reinterprets that change index arithmetic
-or hand you a pointer — they emit no runtime op of their own. The common ones:</p>
+or hand you a pointer — they emit no runtime op of their own.</p>
+<p><code class="docutils literal notranslate"><span class="pre">TensorType.__expr_methods__</span></code> explicitly names the Python methods available
+through an expression: <code class="docutils literal notranslate"><span class="pre">B.view(...)</span></code> binds the operand exactly as
+<code class="docutils literal notranslate"><span class="pre">B.ty.view(B,</span> <span class="pre">...)</span></code>. <code class="docutils literal notranslate"><span class="pre">TensorType.__expr_properties__</span></code> maps property names
+to getters taking the type and original expression. It preserves conveniences
+such as <code class="docutils literal notranslate"><span class="pre">B.shape</span></code>, <code class="docutils literal notranslate"><span class="pre">B.strides</span></code>, <code class="docutils literal notranslate"><span class="pre">B.dtype</span></code>, <code class="docutils literal notranslate"><span class="pre">B.byte_offset</span></code>, <code class="docutils literal notranslate"><span class="pre">B.sub</span></code> and
+<code class="docutils literal notranslate"><span class="pre">B.data</span></code> without modifying the shared <code class="docutils literal notranslate"><span class="pre">Var</span></code> class. <code class="docutils literal notranslate"><span class="pre">B.dtype</span></code> returns a
+runtime <code class="docutils literal notranslate"><span class="pre">DataType</span></code>; <code class="docutils literal notranslate"><span class="pre">B.ty.dtype</span></code> stores a <code class="docutils literal notranslate"><span class="pre">PrimType</span></code>.</p>
+<p>Existing expression attributes and reflected fields take precedence, followed
+by declared properties and then declared methods. Declared properties are
+read-only. Tensor methods and properties require an ordinary tensor variable;
+merely retrieving a method does not construct IR. A property getter executes
+when the property is read: for example, <code class="docutils literal notranslate"><span class="pre">B.data</span></code> constructs the canonical
+physical-pointer projection.</p>
+<p>The common methods and properties:</p>
 <div class="pst-scrollable-table-container"><table class="table">
 <colgroup>
 <col style="width: 34.0%" />
@@ -1049,7 +1063,7 @@ or hand you a pointer — they emit no runtime op of their own. The common ones:
 </thead>
 <tbody>
 <tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">B.data</span></code></p></td>
-<td><p>the raw data pointer (a <code class="docutils literal notranslate"><span class="pre">Var</span></code>); prints as <code class="docutils literal notranslate"><span class="pre">B_ptr</span></code></p></td>
+<td><p>the physical-pointer projection (a <code class="docutils literal notranslate"><span class="pre">Call</span></code>); lowers to <code class="docutils literal notranslate"><span class="pre">B_ptr</span></code></p></td>
 </tr>
 <tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">B.ptr_to([i,</span> <span class="pre">j])</span></code></p></td>
 <td><p>a typed pointer to an element (<code class="docutils literal notranslate"><span class="pre">address_of</span></code>); prints as <code class="docutils literal notranslate"><span class="pre">&amp;B_ptr[…]</span></code></p></td>
