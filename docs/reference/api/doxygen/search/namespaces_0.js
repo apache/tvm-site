@@ -47,12 +47,11 @@ var searchData=
   ['tvm_3a_3atirx_44',['tirx',['../namespacetvm_1_1tirx.html',1,'tvm']]],
   ['tvm_3a_3atirx_3a_3aattr_45',['attr',['../namespacetvm_1_1tirx_1_1attr.html',1,'tvm::tirx']]],
   ['tvm_3a_3atirx_3a_3acallback_46',['callback',['../namespacetvm_1_1tirx_1_1callback.html',1,'tvm::tirx']]],
-  ['tvm_3a_3atirx_3a_3atile_47',['tile',['../namespacetvm_1_1tirx_1_1tile.html',1,'tvm::tirx']]],
-  ['tvm_3a_3atirx_3a_3atransform_48',['transform',['../namespacetvm_1_1tirx_1_1transform.html',1,'tvm::tirx']]],
-  ['tvm_3a_3atopi_49',['topi',['../namespacetvm_1_1topi.html',1,'tvm']]],
-  ['tvm_3a_3atopi_3a_3acontrib_50',['contrib',['../namespacetvm_1_1topi_1_1contrib.html',1,'tvm::topi']]],
-  ['tvm_3a_3atopi_3a_3ann_51',['nn',['../namespacetvm_1_1topi_1_1nn.html',1,'tvm::topi']]],
-  ['tvm_3a_3atopi_3a_3arelax_52',['relax',['../namespacetvm_1_1topi_1_1relax.html',1,'tvm::topi']]],
-  ['tvm_3a_3atopi_3a_3avision_53',['vision',['../namespacetvm_1_1topi_1_1vision.html',1,'tvm::topi']]],
-  ['tvm_3a_3atransform_54',['transform',['../namespacetvm_1_1transform.html',1,'tvm']]]
+  ['tvm_3a_3atirx_3a_3atransform_47',['transform',['../namespacetvm_1_1tirx_1_1transform.html',1,'tvm::tirx']]],
+  ['tvm_3a_3atopi_48',['topi',['../namespacetvm_1_1topi.html',1,'tvm']]],
+  ['tvm_3a_3atopi_3a_3acontrib_49',['contrib',['../namespacetvm_1_1topi_1_1contrib.html',1,'tvm::topi']]],
+  ['tvm_3a_3atopi_3a_3ann_50',['nn',['../namespacetvm_1_1topi_1_1nn.html',1,'tvm::topi']]],
+  ['tvm_3a_3atopi_3a_3arelax_51',['relax',['../namespacetvm_1_1topi_1_1relax.html',1,'tvm::topi']]],
+  ['tvm_3a_3atopi_3a_3avision_52',['vision',['../namespacetvm_1_1topi_1_1vision.html',1,'tvm::topi']]],
+  ['tvm_3a_3atransform_53',['transform',['../namespacetvm_1_1transform.html',1,'tvm']]]
 ];
