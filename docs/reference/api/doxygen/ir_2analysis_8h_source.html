@@ -111,30 +111,28 @@ $(document).ready(function() { init_codefold(0); });
 <div class="line"><a id="l00032" name="l00032"></a><span class="lineno">   32</span> </div>
 <div class="foldopen" id="foldopen00044" data-start="{" data-end="}">
 <div class="line"><a id="l00044" name="l00044"></a><span class="lineno"><a class="line" href="namespacetvm.html#a1ada13766be860976ef9000f7d202c10">   44</a></span><span class="keyword">inline</span> ffi::Array&lt;Var&gt; <a class="code hl_function" href="namespacetvm.html#a1ada13766be860976ef9000f7d202c10">UndefinedVars</a>(ffi::AnyView <span class="keywordtype">object</span>, <span class="keyword">const</span> ffi::Array&lt;Var&gt;&amp; defs = {}) {</div>
-<div class="line"><a id="l00045" name="l00045"></a><span class="lineno">   45</span>  std::unordered_set&lt;const VarNode*&gt; defined;</div>
-<div class="line"><a id="l00046" name="l00046"></a><span class="lineno">   46</span>  std::unordered_set&lt;const VarNode*&gt; used;</div>
-<div class="line"><a id="l00047" name="l00047"></a><span class="lineno">   47</span>  <span class="keywordflow">for</span> (<span class="keyword">const</span> Var&amp; var : defs) defined.insert(var.get());</div>
-<div class="line"><a id="l00048" name="l00048"></a><span class="lineno">   48</span>  ffi::Array&lt;Var&gt; undefined;</div>
-<div class="line"><a id="l00049" name="l00049"></a><span class="lineno">   49</span>  ffi::StructuralWalk&lt;ffi::WalkOrder::kPreOrder&gt;(</div>
-<div class="line"><a id="l00050" name="l00050"></a><span class="lineno">   50</span>      <span class="keywordtype">object</span>, [&amp;](<span class="keyword">const</span> Var&amp; var, TVMFFIDefRegionKind kind) -&gt; ffi::Expected&lt;ffi::WalkResult&gt; {</div>
-<div class="line"><a id="l00051" name="l00051"></a><span class="lineno">   51</span>        <span class="keywordflow">if</span> (kind != kTVMFFIDefRegionKindNone) {</div>
-<div class="line"><a id="l00052" name="l00052"></a><span class="lineno">   52</span>          defined.insert(var.get());</div>
-<div class="line"><a id="l00053" name="l00053"></a><span class="lineno">   53</span>          <span class="keywordflow">return</span> ffi::WalkResult::Advance();</div>
-<div class="line"><a id="l00054" name="l00054"></a><span class="lineno">   54</span>        }</div>
-<div class="line"><a id="l00055" name="l00055"></a><span class="lineno">   55</span>        <span class="keywordflow">if</span> (!defined.count(<a class="code hl_function" href="namespacetvm_1_1te.html#a054fef7460475c6d4adb0c845648bcd7">var</a>.get()) &amp;&amp; used.insert(<a class="code hl_function" href="namespacetvm_1_1te.html#a054fef7460475c6d4adb0c845648bcd7">var</a>.get()).second) {</div>
-<div class="line"><a id="l00056" name="l00056"></a><span class="lineno">   56</span>          undefined.push_back(var);</div>
-<div class="line"><a id="l00057" name="l00057"></a><span class="lineno">   57</span>        }</div>
-<div class="line"><a id="l00058" name="l00058"></a><span class="lineno">   58</span>        <span class="keywordflow">return</span> ffi::WalkResult::Skip();</div>
-<div class="line"><a id="l00059" name="l00059"></a><span class="lineno">   59</span>      });</div>
-<div class="line"><a id="l00060" name="l00060"></a><span class="lineno">   60</span>  <span class="keywordflow">return</span> undefined;</div>
-<div class="line"><a id="l00061" name="l00061"></a><span class="lineno">   61</span>}</div>
+<div class="line"><a id="l00045" name="l00045"></a><span class="lineno">   45</span>  std::unordered_set&lt;const VarNode*&gt; visited_vars;</div>
+<div class="line"><a id="l00046" name="l00046"></a><span class="lineno">   46</span>  <span class="keywordflow">for</span> (<span class="keyword">const</span> Var&amp; var : defs) visited_vars.insert(var.get());</div>
+<div class="line"><a id="l00047" name="l00047"></a><span class="lineno">   47</span>  ffi::Array&lt;Var&gt; undefined;</div>
+<div class="line"><a id="l00048" name="l00048"></a><span class="lineno">   48</span>  ffi::StructuralWalk&lt;ffi::WalkOrder::kPreOrder&gt;(</div>
+<div class="line"><a id="l00049" name="l00049"></a><span class="lineno">   49</span>      <span class="keywordtype">object</span>, [&amp;](<span class="keyword">const</span> VarNode* var, TVMFFIDefRegionKind kind) -&gt; ffi::Expected&lt;ffi::WalkResult&gt; {</div>
+<div class="line"><a id="l00050" name="l00050"></a><span class="lineno">   50</span>        <span class="keywordflow">if</span> (kind != kTVMFFIDefRegionKindNone) {</div>
+<div class="line"><a id="l00051" name="l00051"></a><span class="lineno">   51</span>          visited_vars.insert(var);</div>
+<div class="line"><a id="l00052" name="l00052"></a><span class="lineno">   52</span>          <span class="keywordflow">return</span> ffi::WalkResult::Advance();</div>
+<div class="line"><a id="l00053" name="l00053"></a><span class="lineno">   53</span>        }</div>
+<div class="line"><a id="l00054" name="l00054"></a><span class="lineno">   54</span>        <span class="keywordflow">if</span> (visited_vars.insert(var).second) {</div>
+<div class="line"><a id="l00055" name="l00055"></a><span class="lineno">   55</span>          undefined.push_back(ffi::GetRef&lt;Var&gt;(var));</div>
+<div class="line"><a id="l00056" name="l00056"></a><span class="lineno">   56</span>        }</div>
+<div class="line"><a id="l00057" name="l00057"></a><span class="lineno">   57</span>        <span class="keywordflow">return</span> ffi::WalkResult::Skip();</div>
+<div class="line"><a id="l00058" name="l00058"></a><span class="lineno">   58</span>      });</div>
+<div class="line"><a id="l00059" name="l00059"></a><span class="lineno">   59</span>  <span class="keywordflow">return</span> undefined;</div>
+<div class="line"><a id="l00060" name="l00060"></a><span class="lineno">   60</span>}</div>
 </div>
-<div class="line"><a id="l00062" name="l00062"></a><span class="lineno">   62</span> </div>
-<div class="line"><a id="l00063" name="l00063"></a><span class="lineno">   63</span>}  <span class="comment">// namespace tvm</span></div>
-<div class="line"><a id="l00064" name="l00064"></a><span class="lineno">   64</span><span class="preprocessor">#endif  </span><span class="comment">// TVM_IR_ANALYSIS_H_</span></div>
+<div class="line"><a id="l00061" name="l00061"></a><span class="lineno">   61</span> </div>
+<div class="line"><a id="l00062" name="l00062"></a><span class="lineno">   62</span>}  <span class="comment">// namespace tvm</span></div>
+<div class="line"><a id="l00063" name="l00063"></a><span class="lineno">   63</span><span class="preprocessor">#endif  </span><span class="comment">// TVM_IR_ANALYSIS_H_</span></div>
 <div class="ttc" id="air_2expr_8h_html"><div class="ttname"><a href="ir_2expr_8h.html">expr.h</a></div><div class="ttdoc">Base expr nodes in TVM.</div></div>
-<div class="ttc" id="anamespacetvm_1_1te_html_a054fef7460475c6d4adb0c845648bcd7"><div class="ttname"><a href="namespacetvm_1_1te.html#a054fef7460475c6d4adb0c845648bcd7">tvm::te::var</a></div><div class="ttdeci">PrimVar var(std::string name_hint, PrimType t=PrimType::Int(32))</div><div class="ttdoc">Construct a new Var expression.</div></div>
-<div class="ttc" id="anamespacetvm_html"><div class="ttname"><a href="namespacetvm.html">tvm</a></div><div class="ttdoc">An object that builds and maintains block scope and StmtSref mapping for Dependence analysis.</div><div class="ttdef"><b>Definition</b> op.h:29</div></div>
+<div class="ttc" id="anamespacetvm_html"><div class="ttname"><a href="namespacetvm.html">tvm</a></div><div class="ttdoc">An object that builds and maintains block scope and StmtSref mapping for Dependence analysis.</div><div class="ttdef"><b>Definition</b> iket.h:29</div></div>
 <div class="ttc" id="anamespacetvm_html_a1ada13766be860976ef9000f7d202c10"><div class="ttname"><a href="namespacetvm.html#a1ada13766be860976ef9000f7d202c10">tvm::UndefinedVars</a></div><div class="ttdeci">ffi::Array&lt; Var &gt; UndefinedVars(ffi::AnyView object, const ffi::Array&lt; Var &gt; &amp;defs={})</div><div class="ttdoc">Find variable uses without a preceding definition in well-formed IR.</div><div class="ttdef"><b>Definition</b> analysis.h:44</div></div>
 </div><!-- fragment --></div><!-- contents -->
 <!-- start footer part -->

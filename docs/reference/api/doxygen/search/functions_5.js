@@ -149,7 +149,7 @@ var searchData=
   ['forcenarrowindextoint32_146',['forcenarrowindextoint32',['../namespacetvm_1_1s__tir_1_1transform.html#afa965233ec1c4534e988884a35ffbf58',1,'tvm::s_tir::transform::ForceNarrowIndexToInt32()'],['../namespacetvm_1_1tirx_1_1transform.html#ae89661871177749fececcccfef316cef',1,'tvm::tirx::transform::ForceNarrowIndexToInt32()']]],
   ['fordoc_147',['ForDoc',['../classtvm_1_1script_1_1printer_1_1ForDoc.html#a5f7731384206f840da9fd5be7386fdf4',1,'tvm::script::printer::ForDoc']]],
   ['foreachleaf_148',['ForEachLeaf',['../namespacetvm_1_1relax.html#adc02e3f6e603613190eff65a679ea38c',1,'tvm::relax']]],
-  ['forframe_149',['ForFrame',['../classtvm_1_1script_1_1ir__builder_1_1tirx_1_1ForFrame.html#a504039071d02b0a1edc0098935b7a671',1,'tvm::script::ir_builder::tirx::ForFrame']]],
+  ['forframe_149',['ForFrame',['../classtvm_1_1script_1_1ir__builder_1_1ir_1_1ForFrame.html#ac71ce198aa2acb6abd8ece2de82edf93',1,'tvm::script::ir_builder::ir::ForFrame']]],
   ['forkind2string_150',['ForKind2String',['../namespacetvm.html#a9a25946825952db35e05fecf60b06be9',1,'tvm']]],
   ['forkseed_151',['forkseed',['../classtvm_1_1s__tir_1_1ScheduleNode.html#a8ad777352f6239510e483f3111a3e167',1,'tvm::s_tir::ScheduleNode::ForkSeed()'],['../classtvm_1_1s__tir_1_1LinearCongruentialEngine.html#a39984d2f7f98f1b252613f86a64213bf',1,'tvm::s_tir::LinearCongruentialEngine::ForkSeed()']]],
   ['fornode_152',['fornode',['../classtvm_1_1ForNode.html#a07d219fba130a444644bf721980f9fb3',1,'tvm::ForNode::ForNode(PrimVar loop_var, PrimExpr min, PrimExpr extent, SeqStmt body)'],['../classtvm_1_1ForNode.html#a3a6aaae4642e31712c1149c175912c1b',1,'tvm::ForNode::ForNode(ffi::UnsafeInit tag)']]],

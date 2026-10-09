@@ -95,7 +95,7 @@ var searchData=
   ['containsimpurecall_92',['ContainsImpureCall',['../namespacetvm_1_1relax.html#a205aa2060f1e013a9e72666a2a0b41e3',1,'tvm::relax']]],
   ['containsname_93',['ContainsName',['../classtvm_1_1UniqueNameSupplyNode.html#a2c0edbcbfbbaa12c1a26f745888a203f',1,'tvm::UniqueNameSupplyNode']]],
   ['containsnode_94',['ContainsNode',['../namespacetvm_1_1tirx.html#a598f8efc6e6f32c592f978d734146f5f',1,'tvm::tirx']]],
-  ['continue_95',['continue',['../namespacetvm_1_1script_1_1ir__builder_1_1tirx.html#aee8a8224815336725cf0ef7a3de3855d',1,'tvm::script::ir_builder::tirx::Continue()'],['../classtvm_1_1Continue.html#a175eeabb4a90fcbaa456319e3938f2ed',1,'tvm::Continue::Continue(Span span)'],['../classtvm_1_1Continue.html#aa43152f944d780fe0f62b7827eb3772f',1,'tvm::Continue::Continue(ffi::ObjectPtr&lt; ContinueNode &gt; node)']]],
+  ['continue_95',['continue',['../namespacetvm_1_1script_1_1ir__builder_1_1ir.html#ab6afafcd006d8097876914aef631a5e3',1,'tvm::script::ir_builder::ir::Continue()'],['../classtvm_1_1Continue.html#a175eeabb4a90fcbaa456319e3938f2ed',1,'tvm::Continue::Continue(Span span)'],['../classtvm_1_1Continue.html#aa43152f944d780fe0f62b7827eb3772f',1,'tvm::Continue::Continue(ffi::ObjectPtr&lt; ContinueNode &gt; node)']]],
   ['continuedoc_96',['ContinueDoc',['../classtvm_1_1script_1_1printer_1_1ContinueDoc.html#a3cd20ba5a6587b7d19bfc72e451985bb',1,'tvm::script::printer::ContinueDoc']]],
   ['conv2d_5fhwcn_97',['conv2d_hwcn',['../namespacetvm_1_1topi.html#add4fcf426adc8dc763147fe931cd75db',1,'tvm::topi']]],
   ['conv2d_5fnchw_98',['conv2d_nchw',['../namespacetvm_1_1topi.html#ab9c51c7fef04ab3ef134ce03aee3ce60',1,'tvm::topi']]],

@@ -13,7 +13,7 @@ var searchData=
   ['then_5fbranch_10',['then_branch',['../classtvm_1_1script_1_1printer_1_1IfDocNode.html#a62b12f56c6442ce7e2ba931cca8be1e2',1,'tvm::script::printer::IfDocNode']]],
   ['then_5fcase_11',['then_case',['../classtvm_1_1IfNode.html#acef733b0d8f63d711001968da13653d8',1,'tvm::IfNode']]],
   ['then_5fexpr_12',['then_expr',['../classtvm_1_1script_1_1ir__builder_1_1relax_1_1IfFrameNode.html#a416c388c64c6ca85d99e386258012a4e',1,'tvm::script::ir_builder::relax::IfFrameNode']]],
-  ['then_5fstmts_13',['then_stmts',['../classtvm_1_1script_1_1ir__builder_1_1tirx_1_1IfFrameNode.html#a9f580bb4f46a449ffb64c06f909f3397',1,'tvm::script::ir_builder::tirx::IfFrameNode']]],
+  ['then_5fstmts_13',['then_stmts',['../classtvm_1_1script_1_1ir__builder_1_1ir_1_1IfFrameNode.html#ad422e3147a409e2600ab2f6d6d26f127',1,'tvm::script::ir_builder::ir::IfFrameNode']]],
   ['thread_5ftag_14',['thread_tag',['../classtvm_1_1s__tir_1_1IterVarNode.html#a72dc42d977e170a55cfa2ee9f900c9a9',1,'tvm::s_tir::IterVarNode']]],
   ['threshold_15',['threshold',['../structtvm_1_1relax_1_1SoftplusAttrs.html#a354c1dc30d9cea52bee0714384178cb9',1,'tvm::relax::SoftplusAttrs::threshold'],['../structtvm_1_1relax_1_1MultiboxTransformLocAttrs.html#ad645d845bf2f6cd7af0be73ec7582cee',1,'tvm::relax::MultiboxTransformLocAttrs::threshold']]],
   ['tile_5flayout_16',['tile_layout',['../classtvm_1_1tirx_1_1ComposeLayoutNode.html#a4c90358e33fcb3f5e9c8dddf7329b814',1,'tvm::tirx::ComposeLayoutNode']]],

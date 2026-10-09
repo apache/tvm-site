@@ -2,8 +2,8 @@ var searchData=
 [
   ['einsumattrs_0',['EinsumAttrs',['../structtvm_1_1relax_1_1EinsumAttrs.html',1,'tvm::relax']]],
   ['einsumequation_1',['EinsumEquation',['../structtvm_1_1topi_1_1EinsumEquation.html',1,'tvm::topi']]],
-  ['elseframe_2',['elseframe',['../classtvm_1_1script_1_1ir__builder_1_1tirx_1_1ElseFrame.html',1,'tvm::script::ir_builder::tirx::ElseFrame'],['../classtvm_1_1script_1_1ir__builder_1_1relax_1_1ElseFrame.html',1,'tvm::script::ir_builder::relax::ElseFrame']]],
-  ['elseframenode_3',['elseframenode',['../classtvm_1_1script_1_1ir__builder_1_1relax_1_1ElseFrameNode.html',1,'tvm::script::ir_builder::relax::ElseFrameNode'],['../classtvm_1_1script_1_1ir__builder_1_1tirx_1_1ElseFrameNode.html',1,'tvm::script::ir_builder::tirx::ElseFrameNode']]],
+  ['elseframe_2',['elseframe',['../classtvm_1_1script_1_1ir__builder_1_1relax_1_1ElseFrame.html',1,'tvm::script::ir_builder::relax::ElseFrame'],['../classtvm_1_1script_1_1ir__builder_1_1ir_1_1ElseFrame.html',1,'tvm::script::ir_builder::ir::ElseFrame']]],
+  ['elseframenode_3',['elseframenode',['../classtvm_1_1script_1_1ir__builder_1_1ir_1_1ElseFrameNode.html',1,'tvm::script::ir_builder::ir::ElseFrameNode'],['../classtvm_1_1script_1_1ir__builder_1_1relax_1_1ElseFrameNode.html',1,'tvm::script::ir_builder::relax::ElseFrameNode']]],
   ['envfunc_4',['EnvFunc',['../classtvm_1_1EnvFunc.html',1,'tvm']]],
   ['envfuncnode_5',['EnvFuncNode',['../classtvm_1_1EnvFuncNode.html',1,'tvm']]],
   ['eq_6',['EQ',['../classtvm_1_1prim_1_1EQ.html',1,'tvm::prim']]],
