@@ -93,7 +93,7 @@ var searchData=
   ['lookupbinding_90',['lookupbinding',['../classtvm_1_1relax_1_1BlockBuilderNode.html#adb1da7b1b7eee527239470134bac72e5',1,'tvm::relax::BlockBuilderNode::LookupBinding()'],['../classtvm_1_1relax_1_1ExprMutator.html#a512358ada98ae5a9fb34ec6710896f9f',1,'tvm::relax::ExprMutator::LookupBinding()']]],
   ['lookupvdevice_91',['LookupVDevice',['../namespacetvm_1_1script_1_1ir__builder_1_1relax.html#a2c4b43ec366efeac074ba3f8763675b4',1,'tvm::script::ir_builder::relax']]],
   ['loop_5fpartition_5fhint_92',['loop_partition_hint',['../namespacetvm_1_1s__tir_1_1attr.html#ae2c79ed398c310e04a0ddd66cbb3e2ea',1,'tvm::s_tir::attr']]],
-  ['loop_5fvar_93',['loop_var',['../classtvm_1_1tirx_1_1ForNode.html#ae89ba120e2b24f2cb34862dcd3b53cc5',1,'tvm::tirx::ForNode']]],
+  ['loop_5fvar_93',['loop_var',['../classtvm_1_1ForNode.html#ad974c160b5f9ce898166de3969f84140',1,'tvm::ForNode']]],
   ['looppartition_94',['looppartition',['../namespacetvm_1_1s__tir_1_1transform.html#a6d9ad51765f625bc3022b200ab682dd9',1,'tvm::s_tir::transform::LoopPartition()'],['../classtvm_1_1s__tir_1_1ScheduleNode.html#a1d6bbe56b8860da48d76190bbcff972e',1,'tvm::s_tir::ScheduleNode::LoopPartition()']]],
   ['looprv_95',['looprv',['../classtvm_1_1s__tir_1_1LoopRV.html',1,'tvm::s_tir::LoopRV'],['../classtvm_1_1s__tir_1_1LoopRV.html#ac9d782ff4502c7b4525263e77e47c1a8',1,'tvm::s_tir::LoopRV::LoopRV()']]],
   ['looprvnode_96',['LoopRVNode',['../classtvm_1_1s__tir_1_1LoopRVNode.html',1,'tvm::s_tir']]],

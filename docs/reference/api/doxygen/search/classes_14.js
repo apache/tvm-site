@@ -1,11 +1,11 @@
 var searchData=
 [
-  ['while_0',['While',['../classtvm_1_1tirx_1_1While.html',1,'tvm::tirx']]],
+  ['while_0',['While',['../classtvm_1_1While.html',1,'tvm']]],
   ['whiledoc_1',['WhileDoc',['../classtvm_1_1script_1_1printer_1_1WhileDoc.html',1,'tvm::script::printer']]],
   ['whiledocnode_2',['WhileDocNode',['../classtvm_1_1script_1_1printer_1_1WhileDocNode.html',1,'tvm::script::printer']]],
   ['whileframe_3',['WhileFrame',['../classtvm_1_1script_1_1ir__builder_1_1tirx_1_1WhileFrame.html',1,'tvm::script::ir_builder::tirx']]],
   ['whileframenode_4',['WhileFrameNode',['../classtvm_1_1script_1_1ir__builder_1_1tirx_1_1WhileFrameNode.html',1,'tvm::script::ir_builder::tirx']]],
-  ['whilenode_5',['WhileNode',['../classtvm_1_1tirx_1_1WhileNode.html',1,'tvm::tirx']]],
+  ['whilenode_5',['WhileNode',['../classtvm_1_1WhileNode.html',1,'tvm']]],
   ['wildcardpattern_6',['WildcardPattern',['../classtvm_1_1relax_1_1WildcardPattern.html',1,'tvm::relax']]],
   ['wildcardpatternnode_7',['WildcardPatternNode',['../classtvm_1_1relax_1_1WildcardPatternNode.html',1,'tvm::relax']]],
   ['with_8',['With',['../classtvm_1_1With.html',1,'tvm']]],

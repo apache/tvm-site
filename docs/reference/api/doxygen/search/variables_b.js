@@ -18,6 +18,6 @@ var searchData=
   ['local_5fworker_5fid_15',['local_worker_id',['../classtvm_1_1runtime_1_1DiscoWorker.html#a27c78d61cd7452e34a1bab759ce32d2d',1,'tvm::runtime::DiscoWorker']]],
   ['logger_16',['logger',['../classtvm_1_1s__tir_1_1meta__schedule_1_1TaskSchedulerNode.html#ab460242989482f803e160040fe33935b',1,'tvm::s_tir::meta_schedule::TaskSchedulerNode::logger'],['../classtvm_1_1s__tir_1_1meta__schedule_1_1TuneContextNode.html#a37eb3e47d539e5a9b2a269382b985fb6',1,'tvm::s_tir::meta_schedule::TuneContextNode::logger']]],
   ['loop_5fpartition_5fhint_17',['loop_partition_hint',['../namespacetvm_1_1s__tir_1_1attr.html#ae2c79ed398c310e04a0ddd66cbb3e2ea',1,'tvm::s_tir::attr']]],
-  ['loop_5fvar_18',['loop_var',['../classtvm_1_1tirx_1_1ForNode.html#ae89ba120e2b24f2cb34862dcd3b53cc5',1,'tvm::tirx::ForNode']]],
+  ['loop_5fvar_18',['loop_var',['../classtvm_1_1ForNode.html#ad974c160b5f9ce898166de3969f84140',1,'tvm::ForNode']]],
   ['lower_5ffactor_19',['lower_factor',['../classtvm_1_1sym_1_1IterSplitExprNode.html#a93c05cf03f6e3e971f79ea6876136bd4',1,'tvm::sym::IterSplitExprNode']]]
 ];
