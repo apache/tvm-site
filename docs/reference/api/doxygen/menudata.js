@@ -102,8 +102,7 @@ var menudata={children:[
 {text:"o",url:"namespacemembers_type.html#index_o"},
 {text:"p",url:"namespacemembers_type.html#index_p"},
 {text:"r",url:"namespacemembers_type.html#index_r"},
-{text:"t",url:"namespacemembers_type.html#index_t"},
-{text:"v",url:"namespacemembers_type.html#index_v"}]},
+{text:"t",url:"namespacemembers_type.html#index_t"}]},
 {text:"Enumerations",url:"namespacemembers_enum.html"},
 {text:"Enumerator",url:"namespacemembers_eval.html",children:[
 {text:"b",url:"namespacemembers_eval.html#index_b"},
