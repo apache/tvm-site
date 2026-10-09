@@ -57,7 +57,7 @@ var searchData=
   ['alloc_5ftensor_5fop_54',['alloc_tensor_op',['../namespacetvm_1_1tirx.html#a4ebd41ca02438e05c2b6d0714c5f5ab8',1,'tvm::tirx']]],
   ['alloc_5ftype_55',['alloc_type',['../structtvm_1_1runtime_1_1memory_1_1Buffer.html#a7b03e4d62b4bb8174e5a2d92e54e6607',1,'tvm::runtime::memory::Buffer']]],
   ['allocated_5faddr_56',['allocated_addr',['../classtvm_1_1tirx_1_1TensorTypeNode.html#a161533c79e4d77ee06eb50ba370b5aac',1,'tvm::tirx::TensorTypeNode']]],
-  ['allocator_57',['allocator',['../classtvm_1_1runtime_1_1memory_1_1Allocator.html#a79a611871161884ffa6342c329e6ca77',1,'tvm::runtime::memory::Allocator::Allocator()'],['../classtvm_1_1runtime_1_1memory_1_1StorageObj.html#a47e545604ab70ce4e315da02ac2a8cdf',1,'tvm::runtime::memory::StorageObj::allocator'],['../classtvm_1_1runtime_1_1memory_1_1Allocator.html',1,'tvm::runtime::memory::Allocator']]],
+  ['allocator_57',['allocator',['../classtvm_1_1runtime_1_1memory_1_1StorageObj.html#a47e545604ab70ce4e315da02ac2a8cdf',1,'tvm::runtime::memory::StorageObj::allocator'],['../classtvm_1_1runtime_1_1memory_1_1Allocator.html#a79a611871161884ffa6342c329e6ca77',1,'tvm::runtime::memory::Allocator::Allocator()'],['../classtvm_1_1runtime_1_1memory_1_1Allocator.html',1,'tvm::runtime::memory::Allocator']]],
   ['allocators_58',['allocators',['../classtvm_1_1runtime_1_1vm_1_1VirtualMachine.html#ae4c4ea6e0464c6b47682d59d019fefe5',1,'tvm::runtime::vm::VirtualMachine']]],
   ['allocators_5f_59',['allocators_',['../classtvm_1_1runtime_1_1memory_1_1MemoryManager.html#adb5375ee7892c72fe8105216a6936763',1,'tvm::runtime::memory::MemoryManager']]],
   ['allocatortype_60',['AllocatorType',['../namespacetvm_1_1runtime_1_1memory.html#a902bbce5a86071aad9677b07d93b5518',1,'tvm::runtime::memory']]],

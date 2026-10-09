@@ -147,7 +147,7 @@ Here is a typical tune-and-apply pipeline:
 
     if os.getenv("CI", "") != "true":
         with target, tempfile.TemporaryDirectory() as tmp_dir:
-            tuned_mod = tvm.ir.transform.Sequential(
+            tuned_mod = tvm.transform.Sequential(
                 [
                     relax.get_pipeline("zero"),
                     relax.transform.MetaScheduleTuneTIR(
@@ -222,7 +222,7 @@ operators whose task name contains any of the given strings:
 .. code-block:: python
 
     with target:
-        mod = tvm.ir.transform.Sequential([
+        mod = tvm.transform.Sequential([
             relax.transform.MetaScheduleTuneIRMod(
                 params={},
                 work_dir="./tuning_logs",

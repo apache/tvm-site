@@ -279,7 +279,7 @@ a set of passes. We can apply them in a sequence.
 .. code-block:: Python
 
 
-    mod = tvm.ir.transform.Sequential(
+    mod = tvm.transform.Sequential(
         [
             tvm.relax.transform.AnnotateTIROpPattern(),
             tvm.relax.transform.FuseOps(),

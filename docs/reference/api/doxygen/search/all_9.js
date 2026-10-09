@@ -92,7 +92,7 @@ var searchData=
   ['instrumentbeforepass_89',['InstrumentBeforePass',['../classtvm_1_1transform_1_1PassContext.html#af57272bd0583173a3bf972409e3a663a',1,'tvm::transform::PassContext']]],
   ['instrumententerpasscontext_90',['InstrumentEnterPassContext',['../classtvm_1_1transform_1_1PassContext.html#ab3c18519fc14cab0e9fa98311e6a361f',1,'tvm::transform::PassContext']]],
   ['instrumentexitpasscontext_91',['InstrumentExitPassContext',['../classtvm_1_1transform_1_1PassContext.html#ac1d55abd5c8b0e28c6f3c034a5f9989d',1,'tvm::transform::PassContext']]],
-  ['instruments_92',['instruments',['../classtvm_1_1transform_1_1PassContextNode.html#a8b0637e8bfe4ae2e255f9a03f4d2c4bb',1,'tvm::transform::PassContextNode']]],
+  ['instruments_92',['instruments',['../classtvm_1_1transform_1_1PassContextNode.html#ad95715deea88b445746afb68bef6850d',1,'tvm::transform::PassContextNode']]],
   ['insts_93',['insts',['../classtvm_1_1s__tir_1_1TraceNode.html#a52fd0387e7c86bb2a00df71836730c7c',1,'tvm::s_tir::TraceNode']]],
   ['int_94',['int',['../classtvm_1_1PrimType.html#a496ea0b2e00473c7e1bc9960fc76d955',1,'tvm::PrimType::Int()'],['../classtvm_1_1script_1_1printer_1_1LiteralDoc.html#a900b959cf1e8f2286d559afee3dff4c2',1,'tvm::script::printer::LiteralDoc::Int(int64_t v, const ffi::Optional&lt; AccessPath &gt; &amp;p)'],['../classtvm_1_1script_1_1printer_1_1LiteralDoc.html#a80c2e667baa943f4beba3bcee3a0c413',1,'tvm::script::printer::LiteralDoc::Int(IntImm v, const ffi::Optional&lt; AccessPath &gt; &amp;p)']]],
   ['int16_95',['Int16',['../namespacetvm_1_1script_1_1ir__builder_1_1tirx.html#a58b12ab6e60640bc17f5e4e55e4fc691',1,'tvm::script::ir_builder::tirx']]],

@@ -54,7 +54,7 @@ PyTorch.
  .. code-block:: none
 
     Downloading: "https://download.pytorch.org/models/resnet18-f37072fd.pth" to /workspace/.cache/torch/hub/checkpoints/resnet18-f37072fd.pth
-      0%|          | 0.00/44.7M [00:00<?, ?B/s]     64%|██████▍   | 28.5M/44.7M [00:00<00:00, 298MB/s]    100%|██████████| 44.7M/44.7M [00:00<00:00, 329MB/s]
+      0%|          | 0.00/44.7M [00:00<?, ?B/s]     74%|███████▎  | 32.9M/44.7M [00:00<00:00, 344MB/s]    100%|██████████| 44.7M/44.7M [00:00<00:00, 368MB/s]
 
 
 
@@ -123,7 +123,7 @@ IRModule Optimization
 ---------------------
 Apache TVM provides a flexible way to optimize the IRModule. Everything centered
 around IRModule optimization can be composed with existing pipelines. Note that each
-transformation can be combined as an optimization pipeline via ``tvm.ir.transform.Sequential``.
+transformation can be combined as an optimization pipeline via ``tvm.transform.Sequential``.
 
 In this tutorial, we focus on the end-to-end optimization of the model via auto-tuning. We
 leverage MetaSchedule to tune the model and store the tuning logs to the database. We also

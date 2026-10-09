@@ -265,7 +265,7 @@ running the passes, we need to lowering relax operator into TensorIR functions v
     if os.getenv("CI", "") != "true":
         trials = 2000
         with target, tempfile.TemporaryDirectory() as tmp_dir:
-            mod = tvm.ir.transform.Sequential(
+            mod = tvm.transform.Sequential(
                 [
                     relax.get_pipeline("zero"),
                     relax.transform.MetaScheduleTuneTIR(work_dir=tmp_dir, max_trials_global=trials),
@@ -300,7 +300,7 @@ it achieves a balance between performance and compilation time.
 
     # Apply DLight rules
     with target:
-        mod = tvm.ir.transform.Sequential(
+        mod = tvm.transform.Sequential(
             [
                 relax.get_pipeline("zero"),
                 dl.ApplyDefaultSchedule(  # pylint: disable=not-callable

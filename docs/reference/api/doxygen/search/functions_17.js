@@ -17,7 +17,7 @@ var searchData=
   ['_7emutatornode_14',['~MutatorNode',['../classtvm_1_1s__tir_1_1meta__schedule_1_1MutatorNode.html#affcbe943a613911c83fa066691c8cd67',1,'tvm::s_tir::meta_schedule::MutatorNode']]],
   ['_7envtxscopedrange_15',['~NVTXScopedRange',['../classtvm_1_1support_1_1NVTXScopedRange.html#a0a586c05060fb8ea9dc24d019ddad4f7',1,'tvm::support::NVTXScopedRange']]],
   ['_7eoperationnode_16',['~OperationNode',['../classtvm_1_1te_1_1OperationNode.html#a05e68847fa6c773c6896eea216ea78e0',1,'tvm::te::OperationNode']]],
-  ['_7epassinstrumentnode_17',['~PassInstrumentNode',['../classtvm_1_1instrument_1_1PassInstrumentNode.html#a747b703d6d76a4d45d8c4fd9d64f2aef',1,'tvm::instrument::PassInstrumentNode']]],
+  ['_7epassinstrumentnode_17',['~PassInstrumentNode',['../classtvm_1_1transform_1_1PassInstrumentNode.html#a9b07d6754cbc96082c11160332ebb9e4',1,'tvm::transform::PassInstrumentNode']]],
   ['_7epassnode_18',['~PassNode',['../classtvm_1_1transform_1_1PassNode.html#ad8fd84de45a9445aacea6273ae2eb7f6',1,'tvm::transform::PassNode']]],
   ['_7epostprocnode_19',['~PostprocNode',['../classtvm_1_1s__tir_1_1meta__schedule_1_1PostprocNode.html#aecd5191ab71b3e598623e18921b59486',1,'tvm::s_tir::meta_schedule::PostprocNode']]],
   ['_7erunnernode_20',['~RunnerNode',['../classtvm_1_1s__tir_1_1meta__schedule_1_1RunnerNode.html#a7972af77f9eaec765a4f1362a17b2e18',1,'tvm::s_tir::meta_schedule::RunnerNode']]],
