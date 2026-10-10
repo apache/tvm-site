@@ -22,8 +22,7 @@ var searchData=
   ['hasupperbound_19',['HasUpperBound',['../classtvm_1_1sym_1_1IntSet.html#a24bcce085b629210932062412192e753',1,'tvm::sym::IntSet']]],
   ['hasvoidtype_20',['HasVoidType',['../namespacetvm_1_1relax.html#a0ece338c02ce994ab5c3af5666b1080c',1,'tvm::relax']]],
   ['hasworkload_21',['hasworkload',['../classtvm_1_1s__tir_1_1meta__schedule_1_1DatabaseNode.html#a3ab9ce2c2f51569ef4b36e40ee5756bf',1,'tvm::s_tir::meta_schedule::DatabaseNode::HasWorkload()'],['../classtvm_1_1s__tir_1_1meta__schedule_1_1PyDatabaseNode.html#a4cbab7e7297f69aac4ee61dbcce5a508',1,'tvm::s_tir::meta_schedule::PyDatabaseNode::HasWorkload()']]],
-  ['hoistexpression_22',['HoistExpression',['../namespacetvm_1_1s__tir_1_1transform.html#a314cbfe0162cc1ffb4e392761694191d',1,'tvm::s_tir::transform']]],
-  ['hoistifthenelse_23',['HoistIfThenElse',['../namespacetvm_1_1s__tir_1_1transform.html#a037e97d08520c63791ded380c95ebb7a',1,'tvm::s_tir::transform']]],
-  ['hypot_24',['hypot',['../namespacetvm_1_1prim.html#a15327f49ccd0d4152282184fd57d02a6',1,'tvm::prim']]],
-  ['hypot_5fop_25',['hypot_op',['../namespacetvm_1_1prim.html#a5f59e937be4df85c8b5736a9e523305a',1,'tvm::prim']]]
+  ['hoistif_22',['HoistIf',['../namespacetvm_1_1tirx_1_1transform.html#ac74f48965a6c72ea2ccaa13d696240a8',1,'tvm::tirx::transform']]],
+  ['hypot_23',['hypot',['../namespacetvm_1_1prim.html#a15327f49ccd0d4152282184fd57d02a6',1,'tvm::prim']]],
+  ['hypot_5fop_24',['hypot_op',['../namespacetvm_1_1prim.html#a5f59e937be4df85c8b5736a9e523305a',1,'tvm::prim']]]
 ];
