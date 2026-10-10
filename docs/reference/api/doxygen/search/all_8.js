@@ -28,6 +28,6 @@ var searchData=
   ['hoistifthenelse_25',['HoistIfThenElse',['../namespacetvm_1_1s__tir_1_1transform.html#a037e97d08520c63791ded380c95ebb7a',1,'tvm::s_tir::transform']]],
   ['host_26',['host',['../classtvm_1_1TargetNode.html#a5816341360e2117f887684911f05792f',1,'tvm::TargetNode']]],
   ['host_5farrays_27',['host_arrays',['../classtvm_1_1runtime_1_1WorkerZeroData.html#a5b7b4e2602ba81b2236256079a1db5ed',1,'tvm::runtime::WorkerZeroData']]],
-  ['hypot_28',['hypot',['../namespacetvm_1_1prim.html#ac79a801a0cc0196b7684ed429937ffde',1,'tvm::prim']]],
+  ['hypot_28',['hypot',['../namespacetvm_1_1prim.html#a15327f49ccd0d4152282184fd57d02a6',1,'tvm::prim']]],
   ['hypot_5fop_29',['hypot_op',['../namespacetvm_1_1prim.html#a5f59e937be4df85c8b5736a9e523305a',1,'tvm::prim']]]
 ];
