@@ -121,7 +121,7 @@ original implementation.
 
     Execution time summary:
      mean (ms)   median (ms)    max (ms)     min (ms)     std (ms)  
-       2.7543       2.7543       2.7543       2.7543       0.0000                  
+       2.4568       2.4568       2.4568       2.4568       0.0000                  
 
 
 
@@ -233,8 +233,8 @@ The outcome of the transformation can be examined, as it is retained within ``sc
                                     v_1 = Ts.axis.spatial(128, i)
                                     v_2 = Ts.axis.spatial(128, j_0 * 8 + j_1)
                                     v_3 = Ts.axis.reduce(128, k)
-                                    Ts.reads(A[v_1, v_3], B[v_3, v_2])
-                                    Ts.writes(v[v_1, v_2])
+                                    Ts.reads(A[v_1, v_3:v_3 + 1], B[v_3, v_2:v_2 + 1])
+                                    Ts.writes(v[v_1, v_2:v_2 + 1])
                                     with Ts.init():
                                         v[v_1, v_2] = T.float32(0.0)
                                     v[v_1, v_2] = v[v_1, v_2] + A[v_1, v_3] * B[v_3, v_2]
@@ -243,8 +243,8 @@ The outcome of the transformation can be examined, as it is retained within ``sc
                         with Ts.sblock("C"):
                             v_4 = Ts.axis.spatial(128, i_1)
                             v_5 = Ts.axis.spatial(128, j)
-                            Ts.reads(v[v_4, v_5])
-                            Ts.writes(C[v_4, v_5])
+                            Ts.reads(v[v_4, v_5:v_5 + 1])
+                            Ts.writes(C[v_4, v_5:v_5 + 1])
                             C[v_4, v_5] = T.max(v[v_4, v_5], T.float32(0.0))
 
 
@@ -297,8 +297,8 @@ action involves reordering these two loops.
                                     v_1 = Ts.axis.spatial(128, i)
                                     v_2 = Ts.axis.spatial(128, j_0 * 8 + j_1)
                                     v_3 = Ts.axis.reduce(128, k)
-                                    Ts.reads(A[v_1, v_3], B[v_3, v_2])
-                                    Ts.writes(v[v_1, v_2])
+                                    Ts.reads(A[v_1, v_3:v_3 + 1], B[v_3, v_2:v_2 + 1])
+                                    Ts.writes(v[v_1, v_2:v_2 + 1])
                                     with Ts.init():
                                         v[v_1, v_2] = T.float32(0.0)
                                     v[v_1, v_2] = v[v_1, v_2] + A[v_1, v_3] * B[v_3, v_2]
@@ -307,13 +307,13 @@ action involves reordering these two loops.
                         with Ts.sblock("C"):
                             v_4 = Ts.axis.spatial(128, i_1)
                             v_5 = Ts.axis.spatial(128, j)
-                            Ts.reads(v[v_4, v_5])
-                            Ts.writes(C[v_4, v_5])
+                            Ts.reads(v[v_4, v_5:v_5 + 1])
+                            Ts.writes(C[v_4, v_5:v_5 + 1])
                             C[v_4, v_5] = T.max(v[v_4, v_5], T.float32(0.0))
 
     Execution time summary:
      mean (ms)   median (ms)    max (ms)     min (ms)     std (ms)  
-       0.8625       0.8625       0.8625       0.8625       0.0000                  
+       0.8632       0.8632       0.8632       0.8632       0.0000                  
 
 
 
@@ -366,8 +366,8 @@ variant. First, we employ a primitive known as **reverse_compute_at** to relocat
                                     v_1 = Ts.axis.spatial(128, i)
                                     v_2 = Ts.axis.spatial(128, j_0 * 8 + j_1)
                                     v_3 = Ts.axis.reduce(128, k)
-                                    Ts.reads(A[v_1, v_3], B[v_3, v_2])
-                                    Ts.writes(v[v_1, v_2])
+                                    Ts.reads(A[v_1, v_3:v_3 + 1], B[v_3, v_2:v_2 + 1])
+                                    Ts.writes(v[v_1, v_2:v_2 + 1])
                                     with Ts.init():
                                         v[v_1, v_2] = T.float32(0.0)
                                     v[v_1, v_2] = v[v_1, v_2] + A[v_1, v_3] * B[v_3, v_2]
@@ -375,8 +375,8 @@ variant. First, we employ a primitive known as **reverse_compute_at** to relocat
                             with Ts.sblock("C"):
                                 v_4 = Ts.axis.spatial(128, i)
                                 v_5 = Ts.axis.spatial(128, j_0 * 8 + ax0)
-                                Ts.reads(v[v_4, v_5])
-                                Ts.writes(C[v_4, v_5])
+                                Ts.reads(v[v_4, v_5:v_5 + 1])
+                                Ts.writes(C[v_4, v_5:v_5 + 1])
                                 C[v_4, v_5] = T.max(v[v_4, v_5], T.float32(0.0))
 
 
@@ -434,7 +434,7 @@ from the reduction update via the **decompose_reduction** primitive.
                                 v_1 = Ts.axis.spatial(128, i)
                                 v_2 = Ts.axis.spatial(128, j_0 * 8 + j_1_init)
                                 Ts.reads()
-                                Ts.writes(v[v_1, v_2])
+                                Ts.writes(v[v_1, v_2:v_2 + 1])
                                 v[v_1, v_2] = T.float32(0.0)
                         for k in range(128):
                             for j_1 in range(8):
@@ -442,20 +442,20 @@ from the reduction update via the **decompose_reduction** primitive.
                                     v_3 = Ts.axis.spatial(128, i)
                                     v_4 = Ts.axis.spatial(128, j_0 * 8 + j_1)
                                     v_5 = Ts.axis.reduce(128, k)
-                                    Ts.reads(v[v_3, v_4], A[v_3, v_5], B[v_5, v_4])
-                                    Ts.writes(v[v_3, v_4])
+                                    Ts.reads(v[v_3, v_4:v_4 + 1], A[v_3, v_5:v_5 + 1], B[v_5, v_4:v_4 + 1])
+                                    Ts.writes(v[v_3, v_4:v_4 + 1])
                                     v[v_3, v_4] = v[v_3, v_4] + A[v_3, v_5] * B[v_5, v_4]
                         for ax0 in range(8):
                             with Ts.sblock("C"):
                                 v_6 = Ts.axis.spatial(128, i)
                                 v_7 = Ts.axis.spatial(128, j_0 * 8 + ax0)
-                                Ts.reads(v[v_6, v_7])
-                                Ts.writes(C[v_6, v_7])
+                                Ts.reads(v[v_6, v_7:v_7 + 1])
+                                Ts.writes(C[v_6, v_7:v_7 + 1])
                                 C[v_6, v_7] = T.max(v[v_6, v_7], T.float32(0.0))
 
     Execution time summary:
      mean (ms)   median (ms)    max (ms)     min (ms)     std (ms)  
-       0.3379       0.3379       0.3379       0.3379       0.0000                  
+       0.3482       0.3482       0.3482       0.3482       0.0000                  
 
 
 
@@ -540,7 +540,7 @@ Alternatively, we can output the IRModule in conjunction with the historical tra
                                 v_1 = Ts.axis.spatial(128, i)
                                 v_2 = Ts.axis.spatial(128, j_0 * 8 + j_1_init)
                                 Ts.reads()
-                                Ts.writes(v[v_1, v_2])
+                                Ts.writes(v[v_1, v_2:v_2 + 1])
                                 v[v_1, v_2] = T.float32(0.0)
                         for k in range(128):
                             for j_1 in range(8):
@@ -548,15 +548,15 @@ Alternatively, we can output the IRModule in conjunction with the historical tra
                                     v_3 = Ts.axis.spatial(128, i)
                                     v_4 = Ts.axis.spatial(128, j_0 * 8 + j_1)
                                     v_5 = Ts.axis.reduce(128, k)
-                                    Ts.reads(v[v_3, v_4], A[v_3, v_5], B[v_5, v_4])
-                                    Ts.writes(v[v_3, v_4])
+                                    Ts.reads(v[v_3, v_4:v_4 + 1], A[v_3, v_5:v_5 + 1], B[v_5, v_4:v_4 + 1])
+                                    Ts.writes(v[v_3, v_4:v_4 + 1])
                                     v[v_3, v_4] = v[v_3, v_4] + A[v_3, v_5] * B[v_5, v_4]
                         for ax0 in range(8):
                             with Ts.sblock("C"):
                                 v_6 = Ts.axis.spatial(128, i)
                                 v_7 = Ts.axis.spatial(128, j_0 * 8 + ax0)
-                                Ts.reads(v[v_6, v_7])
-                                Ts.writes(C[v_6, v_7])
+                                Ts.reads(v[v_6, v_7:v_7 + 1])
+                                Ts.writes(C[v_6, v_7:v_7 + 1])
                                 C[v_6, v_7] = T.max(v[v_6, v_7], T.float32(0.0))
 
     # from tvm import s_tir

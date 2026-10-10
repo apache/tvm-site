@@ -433,8 +433,8 @@ and one output parameter **C**.
                                 v_i = Ts.axis.spatial(128, i)
                                 v_j = Ts.axis.spatial(128, j)
                                 v_k = Ts.axis.reduce(128, k)
-                                Ts.reads(A[v_i, v_k], B[v_k, v_j])
-                                Ts.writes(Y[v_i, v_j])
+                                Ts.reads(A[v_i, v_k:v_k + 1], B[v_k, v_j:v_j + 1])
+                                Ts.writes(Y[v_i, v_j:v_j + 1])
                                 with Ts.init():
                                     Y[v_i, v_j] = T.float32(0.0)
                                 Y[v_i, v_j] = Y[v_i, v_j] + A[v_i, v_k] * B[v_k, v_j]
@@ -443,8 +443,8 @@ and one output parameter **C**.
                         with Ts.sblock("C"):
                             v_i_1 = Ts.axis.spatial(128, i_1)
                             v_j_1 = Ts.axis.spatial(128, j_1)
-                            Ts.reads(Y[v_i_1, v_j_1])
-                            Ts.writes(C[v_i_1, v_j_1])
+                            Ts.reads(Y[v_i_1, v_j_1:v_j_1 + 1])
+                            Ts.writes(C[v_i_1, v_j_1:v_j_1 + 1])
                             C[v_i_1, v_j_1] = T.max(Y[v_i_1, v_j_1], T.float32(0.0))
 
 
@@ -507,8 +507,8 @@ is that we need to specify the shape of the input tensors as symbolic variables.
                                 v_i = Ts.axis.spatial(m, i)
                                 v_j = Ts.axis.spatial(n, j)
                                 v_k = Ts.axis.reduce(k, k_1)
-                                Ts.reads(A[v_i, v_k], B[v_k, v_j])
-                                Ts.writes(Y[v_i, v_j])
+                                Ts.reads(A[v_i, v_k:v_k + 1], B[v_k, v_j:v_j + 1])
+                                Ts.writes(Y[v_i, v_j:v_j + 1])
                                 with Ts.init():
                                     Y[v_i, v_j] = T.float32(0.0)
                                 Y[v_i, v_j] = Y[v_i, v_j] + A[v_i, v_k] * B[v_k, v_j]
@@ -517,8 +517,8 @@ is that we need to specify the shape of the input tensors as symbolic variables.
                         with Ts.sblock("C"):
                             v_i_1 = Ts.axis.spatial(m, i_1)
                             v_j_1 = Ts.axis.spatial(n, j_1)
-                            Ts.reads(Y[v_i_1, v_j_1])
-                            Ts.writes(C[v_i_1, v_j_1])
+                            Ts.reads(Y[v_i_1, v_j_1:v_j_1 + 1])
+                            Ts.writes(C[v_i_1, v_j_1:v_j_1 + 1])
                             C[v_i_1, v_j_1] = T.max(Y[v_i_1, v_j_1], T.float32(0.0))
 
 

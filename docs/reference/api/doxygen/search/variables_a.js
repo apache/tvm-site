@@ -1,6 +1,6 @@
 var searchData=
 [
-  ['k_0',['k',['../structtvm_1_1backend_1_1cuda_1_1TCGen05InstrDescriptorBlockScaledAttrs.html#aa45768fa4199d67138a06fa17a331e44',1,'tvm::backend::cuda::TCGen05InstrDescriptorBlockScaledAttrs::K'],['../structtvm_1_1relax_1_1TriluAttrs.html#a22025ff4a4604e63426d292470dfeb04',1,'tvm::relax::TriluAttrs::k'],['../structtvm_1_1relax_1_1TopKAttrs.html#a2260a16086612ef65bb7861cd2a10190',1,'tvm::relax::TopKAttrs::k'],['../structtvm_1_1backend_1_1cuda_1_1TCGen05InstrDescriptorAttrs.html#a885b254c71d14c44a5a227d51c0e97d0',1,'tvm::backend::cuda::TCGen05InstrDescriptorAttrs::K']]],
+  ['k_0',['k',['../structtvm_1_1relax_1_1TopKAttrs.html#a2260a16086612ef65bb7861cd2a10190',1,'tvm::relax::TopKAttrs::k'],['../structtvm_1_1backend_1_1cuda_1_1TCGen05InstrDescriptorAttrs.html#a885b254c71d14c44a5a227d51c0e97d0',1,'tvm::backend::cuda::TCGen05InstrDescriptorAttrs::K'],['../structtvm_1_1backend_1_1cuda_1_1TCGen05InstrDescriptorBlockScaledAttrs.html#aa45768fa4199d67138a06fa17a331e44',1,'tvm::backend::cuda::TCGen05InstrDescriptorBlockScaledAttrs::K'],['../structtvm_1_1relax_1_1TriluAttrs.html#a22025ff4a4604e63426d292470dfeb04',1,'tvm::relax::TriluAttrs::k']]],
   ['kallocalignment_1',['kAllocAlignment',['../namespacetvm_1_1runtime.html#ac8a77303649fb143634796b3dc50a286',1,'tvm::runtime']]],
   ['kallocator_2',['kAllocator',['../namespacetvm_1_1relax_1_1op__attr.html#aa5093fb1dd0e0391059a932d4d5b6e65',1,'tvm::relax::op_attr']]],
   ['kautocopy_3',['kAutoCopy',['../namespacetvm_1_1s__tir_1_1attr.html#a2a5f6e6df412703b92d32703953d18a4',1,'tvm::s_tir::attr']]],

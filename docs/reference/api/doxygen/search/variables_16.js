@@ -6,6 +6,5 @@ var searchData=
   ['worker_5fid_3',['worker_id',['../classtvm_1_1runtime_1_1cuda__ipc_1_1CUDAIPCMemoryObj.html#aee159316a5612aa8dbe42b9941e788b3',1,'tvm::runtime::cuda_ipc::CUDAIPCMemoryObj::worker_id'],['../classtvm_1_1runtime_1_1DiscoWorker.html#a5a6414e30855435fa0e6c0e226867edd',1,'tvm::runtime::DiscoWorker::worker_id']]],
   ['worker_5fzero_5fdata_4',['worker_zero_data',['../classtvm_1_1runtime_1_1DiscoWorker.html#ac4a5ec8d54ff321dbb960d442106773f',1,'tvm::runtime::DiscoWorker']]],
   ['workload_5',['workload',['../classtvm_1_1s__tir_1_1meta__schedule_1_1TuningRecordNode.html#a950857678405bdfbedda2632aab850d1',1,'tvm::s_tir::meta_schedule::TuningRecordNode']]],
-  ['workspace_6',['workspace',['../classtvm_1_1script_1_1printer_1_1OpCallDocNode.html#ac5eaf7f682b39836acebf055f7c843ed',1,'tvm::script::printer::OpCallDocNode']]],
-  ['writes_7',['writes',['../classtvm_1_1script_1_1ir__builder_1_1s__tir_1_1SBlockFrameNode.html#aa62d5bcaffc983e9cd032351884c8298',1,'tvm::script::ir_builder::s_tir::SBlockFrameNode::writes'],['../classtvm_1_1s__tir_1_1SBlockNode.html#a0dd25645eb5121832e4f8ad55603d10d',1,'tvm::s_tir::SBlockNode::writes']]]
+  ['writes_6',['writes',['../classtvm_1_1script_1_1ir__builder_1_1s__tir_1_1SBlockFrameNode.html#aa62d5bcaffc983e9cd032351884c8298',1,'tvm::script::ir_builder::s_tir::SBlockFrameNode::writes'],['../classtvm_1_1s__tir_1_1SBlockNode.html#a0dd25645eb5121832e4f8ad55603d10d',1,'tvm::s_tir::SBlockNode::writes']]]
 ];

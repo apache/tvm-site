@@ -144,11 +144,11 @@ in TVM.
         def forward(x: R.Tensor((1, 784), dtype="float32"), fc1_weight: R.Tensor((256, 784), dtype="float32"), fc1_bias: R.Tensor((256,), dtype="float32"), fc2_weight: R.Tensor((10, 256), dtype="float32"), fc2_bias: R.Tensor((10,), dtype="float32")) -> R.Tensor((1, 10), dtype="float32"):
             R.func_attr({"num_input": 1})
             with R.dataflow():
-                permute_dims: R.Tensor((784, 256), dtype="float32") = I.Call("relax.permute_dims", [fc1_weight], attrs=I.make_node("relax.attrs.PermuteDimsAttrs", axes=None), ty=R.Tensor((784, 256), dtype="float32"))
+                permute_dims: R.Tensor((784, 256), dtype="float32") = R.permute_dims(fc1_weight)
                 matmul: R.Tensor((1, 256), dtype="float32") = I.Call("relax.matmul", [x, permute_dims], attrs=I.make_node("relax.attrs.MatmulAttrs", out_dtype=None), ty=R.Tensor((1, 256), dtype="float32"))
                 add: R.Tensor((1, 256), dtype="float32") = R.add(matmul, fc1_bias, ty=R.Tensor((1, 256), dtype="float32"))
                 relu: R.Tensor((1, 256), dtype="float32") = R.nn.relu(add)
-                permute_dims1: R.Tensor((256, 10), dtype="float32") = I.Call("relax.permute_dims", [fc2_weight], attrs=I.make_node("relax.attrs.PermuteDimsAttrs", axes=None), ty=R.Tensor((256, 10), dtype="float32"))
+                permute_dims1: R.Tensor((256, 10), dtype="float32") = R.permute_dims(fc2_weight)
                 matmul1: R.Tensor((1, 10), dtype="float32") = I.Call("relax.matmul", [relu, permute_dims1], attrs=I.make_node("relax.attrs.MatmulAttrs", out_dtype=None), ty=R.Tensor((1, 10), dtype="float32"))
                 add1: R.Tensor((1, 10), dtype="float32") = R.add(matmul1, fc2_bias, ty=R.Tensor((1, 10), dtype="float32"))
                 gv: R.Tensor((1, 10), dtype="float32") = add1
@@ -226,8 +226,8 @@ different devices.
 
  .. code-block:: none
 
-    [[25108.578 25844.07  25979.24  26348.05  25168.773 25847.172 24586.246
-      25995.445 26530.38  25515.549]]
+    [[25122.676 25524.105 26727.49  24541.062 24177.166 24328.219 25000.912
+      24791.475 24570.314 23909.021]]
 
 
 

@@ -1,7 +1,7 @@
 var searchData=
 [
   ['wellformed_0',['WellFormed',['../namespacetvm_1_1relax.html#ab277242c7f49d3ca1924729ac3b0d99b',1,'tvm::relax']]],
-  ['where_1',['where',['../namespacetvm_1_1script_1_1ir__builder_1_1s__tir.html#aaa9410e5707855d6e5efb97be03a7a04',1,'tvm::script::ir_builder::s_tir::Where()'],['../namespacetvm_1_1topi.html#af011847b6e7f72f1bec25eee05c80590',1,'tvm::topi::where()']]],
+  ['where_1',['where',['../namespacetvm_1_1topi.html#af011847b6e7f72f1bec25eee05c80590',1,'tvm::topi::where()'],['../namespacetvm_1_1script_1_1ir__builder_1_1s__tir.html#aaa9410e5707855d6e5efb97be03a7a04',1,'tvm::script::ir_builder::s_tir::Where()']]],
   ['while_2',['while',['../classtvm_1_1While.html#a1115a6df179a0bf08969c5d0ff9bc0b3',1,'tvm::While::While()'],['../namespacetvm_1_1script_1_1ir__builder_1_1ir.html#a17920d40cdfd6281553c8914b3ca1bd3',1,'tvm::script::ir_builder::ir::While()'],['../classtvm_1_1While.html#a9b9cf0a709e4c103aaeb40ce08baf437',1,'tvm::While::While()']]],
   ['whiledoc_3',['WhileDoc',['../classtvm_1_1script_1_1printer_1_1WhileDoc.html#aed5d0c9693c8137a909e9c3d9836ef28',1,'tvm::script::printer::WhileDoc']]],
   ['whileframe_4',['WhileFrame',['../classtvm_1_1script_1_1ir__builder_1_1ir_1_1WhileFrame.html#a2ed96c2dc7c051524af2f8f5f94e863b',1,'tvm::script::ir_builder::ir::WhileFrame']]],

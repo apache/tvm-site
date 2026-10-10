@@ -91,8 +91,9 @@ var searchData=
   ['typetraits_3c_20primtype_20_3e_88',['TypeTraits&lt; PrimType &gt;',['../structtvm_1_1ffi_1_1TypeTraits_3_01PrimType_01_4.html',1,'tvm::ffi']]],
   ['typetraits_3c_20primvar_20_3e_89',['TypeTraits&lt; PrimVar &gt;',['../structtvm_1_1ffi_1_1TypeTraits_3_01PrimVar_01_4.html',1,'tvm::ffi']]],
   ['typetraits_3c_20seqstmt_20_3e_90',['TypeTraits&lt; SeqStmt &gt;',['../structtvm_1_1ffi_1_1TypeTraits_3_01SeqStmt_01_4.html',1,'tvm::ffi']]],
-  ['typetraits_3c_20tirx_3a_3atensorvar_20_3e_91',['TypeTraits&lt; tirx::TensorVar &gt;',['../structtvm_1_1ffi_1_1TypeTraits_3_01tirx_1_1TensorVar_01_4.html',1,'tvm::ffi']]],
-  ['typetraits_3c_20tvm_3a_3astringimm_20_3e_92',['TypeTraits&lt; tvm::StringImm &gt;',['../structtvm_1_1ffi_1_1TypeTraits_3_01tvm_1_1StringImm_01_4.html',1,'tvm::ffi']]],
-  ['typetraits_3c_20typedexpr_3c_20expectedtype_20_3e_20_3e_93',['TypeTraits&lt; TypedExpr&lt; ExpectedType &gt; &gt;',['../structtvm_1_1ffi_1_1TypeTraits_3_01TypedExpr_3_01ExpectedType_01_4_01_4.html',1,'tvm::ffi']]],
-  ['typevisitor_94',['TypeVisitor',['../classtvm_1_1relax_1_1TypeVisitor.html',1,'tvm::relax']]]
+  ['typetraits_3c_20tensorregion_20_3e_91',['TypeTraits&lt; TensorRegion &gt;',['../structtvm_1_1ffi_1_1TypeTraits_3_01TensorRegion_01_4.html',1,'tvm::ffi']]],
+  ['typetraits_3c_20tirx_3a_3atensorvar_20_3e_92',['TypeTraits&lt; tirx::TensorVar &gt;',['../structtvm_1_1ffi_1_1TypeTraits_3_01tirx_1_1TensorVar_01_4.html',1,'tvm::ffi']]],
+  ['typetraits_3c_20tvm_3a_3astringimm_20_3e_93',['TypeTraits&lt; tvm::StringImm &gt;',['../structtvm_1_1ffi_1_1TypeTraits_3_01tvm_1_1StringImm_01_4.html',1,'tvm::ffi']]],
+  ['typetraits_3c_20typedexpr_3c_20expectedtype_20_3e_20_3e_94',['TypeTraits&lt; TypedExpr&lt; ExpectedType &gt; &gt;',['../structtvm_1_1ffi_1_1TypeTraits_3_01TypedExpr_3_01ExpectedType_01_4_01_4.html',1,'tvm::ffi']]],
+  ['typevisitor_95',['TypeVisitor',['../classtvm_1_1relax_1_1TypeVisitor.html',1,'tvm::relax']]]
 ];

@@ -192,7 +192,7 @@ Here we use a common subset of rules. The full catalog (including ``LowBatchGEMV
                                 vax1_fused_1 = Ts.axis.spatial(T.int64(16), ax1_fused_1, dtype="int64")
                                 v0 = Ts.axis.spatial(T.int64(256), ax0_fused_0 * T.int64(16) + ax0_fused_1, dtype="int64")
                                 Ts.reads()
-                                Ts.writes(matmul_intermediate_rf_local[vax1_fused_1, T.int64(0), v0])
+                                Ts.writes(matmul_intermediate_rf_local[vax1_fused_1, T.int64(0), v0:v0 + T.int64(1)])
                                 matmul_intermediate_rf_local[vax1_fused_1, T.int64(0), v0] = T.float32(0.0)
                             for ax1_fused_0 in range(T.int64(0), T.int64(48)):
                                 for u in range(1):
@@ -200,16 +200,16 @@ Here we use a common subset of rules. The full catalog (including ``LowBatchGEMV
                                         vax1_fused_1_1 = Ts.axis.spatial(T.int64(16), ax1_fused_1, dtype="int64")
                                         v0_1 = Ts.axis.spatial(T.int64(256), ax0_fused_0 * T.int64(16) + ax0_fused_1, dtype="int64")
                                         vax1_fused_0 = Ts.axis.reduce(T.int64(48), ax1_fused_0, dtype="int64")
-                                        Ts.reads(matmul_intermediate_rf_local[vax1_fused_1_1, T.int64(0), v0_1], layer_norm[T.int64(0), vax1_fused_0 * T.int64(16) + vax1_fused_1_1], permute_dims1[vax1_fused_0 * T.int64(16) + vax1_fused_1_1, v0_1])
-                                        Ts.writes(matmul_intermediate_rf_local[vax1_fused_1_1, T.int64(0), v0_1])
+                                        Ts.reads(matmul_intermediate_rf_local[vax1_fused_1_1, T.int64(0), v0_1:v0_1 + T.int64(1)], layer_norm[T.int64(0), vax1_fused_0 * T.int64(16) + vax1_fused_1_1:vax1_fused_0 * T.int64(16) + vax1_fused_1_1 + T.int64(1)], permute_dims1[vax1_fused_0 * T.int64(16) + vax1_fused_1_1, v0_1:v0_1 + T.int64(1)])
+                                        Ts.writes(matmul_intermediate_rf_local[vax1_fused_1_1, T.int64(0), v0_1:v0_1 + T.int64(1)])
                                         matmul_intermediate_rf_local[vax1_fused_1_1, T.int64(0), v0_1] = matmul_intermediate_rf_local[vax1_fused_1_1, T.int64(0), v0_1] + layer_norm[T.int64(0), vax1_fused_0 * T.int64(16) + vax1_fused_1_1] * permute_dims1[vax1_fused_0 * T.int64(16) + vax1_fused_1_1, v0_1]
                     for ax1_fused in T.thread_binding(T.int64(16), thread="threadIdx.x"):
                         for ax0 in T.thread_binding(T.int64(16), thread="threadIdx.y"):
                             with Ts.sblock("matmul"):
                                 vax1_fused_1_2 = Ts.axis.reduce(T.int64(16), ax0, dtype="int64")
                                 v0_2 = Ts.axis.spatial(T.int64(256), ax0_fused_0 * T.int64(16) + ax1_fused, dtype="int64")
-                                Ts.reads(matmul_intermediate_rf_local[vax1_fused_1_2, T.int64(0), v0_2])
-                                Ts.writes(matmul_intermediate_local[T.int64(0), v0_2])
+                                Ts.reads(matmul_intermediate_rf_local[vax1_fused_1_2, T.int64(0), v0_2:v0_2 + T.int64(1)])
+                                Ts.writes(matmul_intermediate_local[T.int64(0), v0_2:v0_2 + T.int64(1)])
                                 with Ts.init():
                                     matmul_intermediate_local[T.int64(0), v0_2] = T.float32(0.0)
                                 matmul_intermediate_local[T.int64(0), v0_2] = matmul_intermediate_local[T.int64(0), v0_2] + matmul_intermediate_rf_local[vax1_fused_1_2, T.int64(0), v0_2]
@@ -217,8 +217,8 @@ Here we use a common subset of rules. The full catalog (including ``LowBatchGEMV
                         for ax0_fused_1_1 in range(T.int64(0), T.int64(1)):
                             with Ts.sblock("T_add"):
                                 v0_3 = Ts.axis.spatial(T.int64(256), ax0_fused_0 * T.int64(16) + ax0_fused_0_1 + ax0_fused_1_1, dtype="int64")
-                                Ts.reads(matmul_intermediate_local[T.int64(0), v0_3], fc2_bias[v0_3])
-                                Ts.writes(T_add_intermediate[T.int64(0), v0_3])
+                                Ts.reads(matmul_intermediate_local[T.int64(0), v0_3:v0_3 + T.int64(1)], fc2_bias[v0_3:v0_3 + T.int64(1)])
+                                Ts.writes(T_add_intermediate[T.int64(0), v0_3:v0_3 + T.int64(1)])
                                 T_add_intermediate[T.int64(0), v0_3] = matmul_intermediate_local[T.int64(0), v0_3] + fc2_bias[v0_3]
 
         @Ts.function(private=True)
@@ -236,7 +236,7 @@ Here we use a common subset of rules. The full catalog (including ``LowBatchGEMV
                                 vax1_fused_1 = Ts.axis.spatial(T.int64(16), ax1_fused_1, dtype="int64")
                                 v0 = Ts.axis.spatial(T.int64(768), ax0_fused_0 * T.int64(16) + ax0_fused_1, dtype="int64")
                                 Ts.reads()
-                                Ts.writes(matmul_intermediate_rf_local[vax1_fused_1, T.int64(0), v0])
+                                Ts.writes(matmul_intermediate_rf_local[vax1_fused_1, T.int64(0), v0:v0 + T.int64(1)])
                                 matmul_intermediate_rf_local[vax1_fused_1, T.int64(0), v0] = T.float32(0.0)
                             for ax1_fused_0 in range(T.int64(0), T.int64(48)):
                                 for u in range(1):
@@ -244,16 +244,16 @@ Here we use a common subset of rules. The full catalog (including ``LowBatchGEMV
                                         vax1_fused_1_1 = Ts.axis.spatial(T.int64(16), ax1_fused_1, dtype="int64")
                                         v0_1 = Ts.axis.spatial(T.int64(768), ax0_fused_0 * T.int64(16) + ax0_fused_1, dtype="int64")
                                         vax1_fused_0 = Ts.axis.reduce(T.int64(48), ax1_fused_0, dtype="int64")
-                                        Ts.reads(matmul_intermediate_rf_local[vax1_fused_1_1, T.int64(0), v0_1], x[T.int64(0), vax1_fused_0 * T.int64(16) + vax1_fused_1_1], permute_dims[vax1_fused_0 * T.int64(16) + vax1_fused_1_1, v0_1])
-                                        Ts.writes(matmul_intermediate_rf_local[vax1_fused_1_1, T.int64(0), v0_1])
+                                        Ts.reads(matmul_intermediate_rf_local[vax1_fused_1_1, T.int64(0), v0_1:v0_1 + T.int64(1)], x[T.int64(0), vax1_fused_0 * T.int64(16) + vax1_fused_1_1:vax1_fused_0 * T.int64(16) + vax1_fused_1_1 + T.int64(1)], permute_dims[vax1_fused_0 * T.int64(16) + vax1_fused_1_1, v0_1:v0_1 + T.int64(1)])
+                                        Ts.writes(matmul_intermediate_rf_local[vax1_fused_1_1, T.int64(0), v0_1:v0_1 + T.int64(1)])
                                         matmul_intermediate_rf_local[vax1_fused_1_1, T.int64(0), v0_1] = matmul_intermediate_rf_local[vax1_fused_1_1, T.int64(0), v0_1] + x[T.int64(0), vax1_fused_0 * T.int64(16) + vax1_fused_1_1] * permute_dims[vax1_fused_0 * T.int64(16) + vax1_fused_1_1, v0_1]
                     for ax1_fused in T.thread_binding(T.int64(16), thread="threadIdx.x"):
                         for ax0 in T.thread_binding(T.int64(16), thread="threadIdx.y"):
                             with Ts.sblock("matmul"):
                                 vax1_fused_1_2 = Ts.axis.reduce(T.int64(16), ax0, dtype="int64")
                                 v0_2 = Ts.axis.spatial(T.int64(768), ax0_fused_0 * T.int64(16) + ax1_fused, dtype="int64")
-                                Ts.reads(matmul_intermediate_rf_local[vax1_fused_1_2, T.int64(0), v0_2])
-                                Ts.writes(matmul_intermediate_local[T.int64(0), v0_2])
+                                Ts.reads(matmul_intermediate_rf_local[vax1_fused_1_2, T.int64(0), v0_2:v0_2 + T.int64(1)])
+                                Ts.writes(matmul_intermediate_local[T.int64(0), v0_2:v0_2 + T.int64(1)])
                                 with Ts.init():
                                     matmul_intermediate_local[T.int64(0), v0_2] = T.float32(0.0)
                                 matmul_intermediate_local[T.int64(0), v0_2] = matmul_intermediate_local[T.int64(0), v0_2] + matmul_intermediate_rf_local[vax1_fused_1_2, T.int64(0), v0_2]
@@ -261,8 +261,8 @@ Here we use a common subset of rules. The full catalog (including ``LowBatchGEMV
                         for ax0_fused_1_1 in range(T.int64(0), T.int64(1)):
                             with Ts.sblock("compute"):
                                 v0_3 = Ts.axis.spatial(T.int64(768), ax0_fused_0 * T.int64(16) + ax0_fused_0_1 + ax0_fused_1_1, dtype="int64")
-                                Ts.reads(matmul_intermediate_local[T.int64(0), v0_3], fc1_bias[v0_3])
-                                Ts.writes(compute_intermediate[T.int64(0), v0_3])
+                                Ts.reads(matmul_intermediate_local[T.int64(0), v0_3:v0_3 + T.int64(1)], fc1_bias[v0_3:v0_3 + T.int64(1)])
+                                Ts.writes(compute_intermediate[T.int64(0), v0_3:v0_3 + T.int64(1)])
                                 compute_intermediate[T.int64(0), v0_3] = T.max(matmul_intermediate_local[T.int64(0), v0_3] + fc1_bias[v0_3], T.float32(0.0))
 
         @Ts.function(private=True)
@@ -280,8 +280,8 @@ Here we use a common subset of rules. The full catalog (including ``LowBatchGEMV
                                 with Ts.sblock("relu_sum"):
                                     v0 = Ts.axis.spatial(T.int64(1), ax0, dtype="int64")
                                     v1 = Ts.axis.reduce(T.int64(768), ax1_fused_0 * T.int64(256) + ax1_fused_1, dtype="int64")
-                                    Ts.reads(relu[T.int64(0), v1])
-                                    Ts.writes(relu_sum_shared[T.int64(0)])
+                                    Ts.reads(relu[T.int64(0), v1:v1 + T.int64(1)])
+                                    Ts.writes(relu_sum_shared[T.int64(0):T.int64(1)])
                                     with Ts.init():
                                         relu_sum_shared[T.int64(0)] = T.float32(0.0)
                                     relu_sum_shared[T.int64(0)] = relu_sum_shared[T.int64(0)] + relu[T.int64(0), v1]
@@ -291,8 +291,8 @@ Here we use a common subset of rules. The full catalog (including ``LowBatchGEMV
                                 with Ts.sblock("relu_var_sum"):
                                     v0_1 = Ts.axis.spatial(T.int64(1), ax0_1, dtype="int64")
                                     v1_1 = Ts.axis.reduce(T.int64(768), ax1_fused_0_1 * T.int64(256) + ax1_fused_1_1, dtype="int64")
-                                    Ts.reads(relu[T.int64(0), v1_1], relu_sum_shared[T.int64(0)])
-                                    Ts.writes(relu_var_sum_shared[T.int64(0)])
+                                    Ts.reads(relu[T.int64(0), v1_1:v1_1 + T.int64(1)], relu_sum_shared[T.int64(0):T.int64(1)])
+                                    Ts.writes(relu_var_sum_shared[T.int64(0):T.int64(1)])
                                     with Ts.init():
                                         relu_var_sum_shared[T.int64(0)] = T.float32(0.0)
                                     relu_var_sum_shared[T.int64(0)] = relu_var_sum_shared[T.int64(0)] + (relu[T.int64(0), v1_1] - relu_sum_shared[T.int64(0)] / T.float32(768.0)) * (relu[T.int64(0), v1_1] - relu_sum_shared[T.int64(0)] / T.float32(768.0))
@@ -301,8 +301,8 @@ Here we use a common subset of rules. The full catalog (including ``LowBatchGEMV
                             with Ts.sblock("T_layer_norm"):
                                 v0_2 = Ts.axis.spatial(T.int64(1), T.int64(0), dtype="int64")
                                 v1_2 = Ts.axis.spatial(T.int64(768), ax1_0 * T.int64(256) + ax1_1, dtype="int64")
-                                Ts.reads(relu[T.int64(0), v1_2], relu_sum_shared[T.int64(0)], relu_var_sum_shared[T.int64(0)], norm_weight[v1_2], norm_bias[v1_2])
-                                Ts.writes(T_layer_norm[T.int64(0), v1_2])
+                                Ts.reads(relu[T.int64(0), v1_2:v1_2 + T.int64(1)], relu_sum_shared[T.int64(0):T.int64(1)], relu_var_sum_shared[T.int64(0):T.int64(1)], norm_weight[v1_2:v1_2 + T.int64(1)], norm_bias[v1_2:v1_2 + T.int64(1)])
+                                Ts.writes(T_layer_norm[T.int64(0), v1_2:v1_2 + T.int64(1)])
                                 T_layer_norm[T.int64(0), v1_2] = (relu[T.int64(0), v1_2] - relu_sum_shared[T.int64(0)] / T.float32(768.0)) * T.rsqrt(relu_var_sum_shared[T.int64(0)] / T.float32(768.0) + T.float32(1.0000000000000001e-05)) * norm_weight[v1_2] + norm_bias[v1_2]
 
         @Ts.function(private=True)
@@ -316,8 +316,8 @@ Here we use a common subset of rules. The full catalog (including ``LowBatchGEMV
                         with Ts.sblock("T_transpose"):
                             v0 = Ts.axis.spatial(T.int64(768), (ax0_ax1_fused_0 * T.int64(1024) + ax0_ax1_fused_1) // T.int64(768), dtype="int64")
                             v1 = Ts.axis.spatial(T.int64(768), (ax0_ax1_fused_0 * T.int64(1024) + ax0_ax1_fused_1) % T.int64(768), dtype="int64")
-                            Ts.reads(fc1_weight[v1, v0])
-                            Ts.writes(T_transpose[v0, v1])
+                            Ts.reads(fc1_weight[v1, v0:v0 + T.int64(1)])
+                            Ts.writes(T_transpose[v0, v1:v1 + T.int64(1)])
                             T_transpose[v0, v1] = fc1_weight[v1, v0]
 
         @Ts.function(private=True)
@@ -331,19 +331,19 @@ Here we use a common subset of rules. The full catalog (including ``LowBatchGEMV
                         with Ts.sblock("T_transpose"):
                             v0 = Ts.axis.spatial(T.int64(768), (ax0_ax1_fused_0 * T.int64(1024) + ax0_ax1_fused_1) // T.int64(256), dtype="int64")
                             v1 = Ts.axis.spatial(T.int64(256), (ax0_ax1_fused_0 * T.int64(1024) + ax0_ax1_fused_1) % T.int64(256), dtype="int64")
-                            Ts.reads(fc2_weight[v1, v0])
-                            Ts.writes(T_transpose[v0, v1])
+                            Ts.reads(fc2_weight[v1, v0:v0 + T.int64(1)])
+                            Ts.writes(T_transpose[v0, v1:v1 + T.int64(1)])
                             T_transpose[v0, v1] = fc2_weight[v1, v0]
 
         @R.function
         def forward(x: R.Tensor((1, 768), dtype="float32"), fc1_weight: R.Tensor((768, 768), dtype="float32"), fc1_bias: R.Tensor((768,), dtype="float32"), norm_weight: R.Tensor((768,), dtype="float32"), norm_bias: R.Tensor((768,), dtype="float32"), fc2_weight: R.Tensor((256, 768), dtype="float32"), fc2_bias: R.Tensor((256,), dtype="float32")) -> R.Tensor((1, 256), dtype="float32"):
             R.func_attr({"num_input": 1})
             with R.dataflow():
-                permute_dims = R.call_tir(Module.transpose, I.Tuple([fc1_weight]), ty_args=[R.Tensor((768, 768), dtype="float32")])
-                lv = R.call_tir(Module.fused_matmul_add_relu, I.Tuple([x, permute_dims, fc1_bias]), ty_args=[R.Tensor((1, 768), dtype="float32")])
-                layer_norm = R.call_tir(Module.layer_norm, I.Tuple([lv, norm_weight, norm_bias]), ty_args=[R.Tensor((1, 768), dtype="float32")])
-                permute_dims1 = R.call_tir(Module.transpose1, I.Tuple([fc2_weight]), ty_args=[R.Tensor((768, 256), dtype="float32")])
-                gv = R.call_tir(Module.fused_matmul1_add1, I.Tuple([layer_norm, permute_dims1, fc2_bias]), ty_args=[R.Tensor((1, 256), dtype="float32")])
+                permute_dims = R.call_tir(Module.transpose, (fc1_weight,), ty_args=[R.Tensor((768, 768), dtype="float32")])
+                lv = R.call_tir(Module.fused_matmul_add_relu, (x, permute_dims, fc1_bias), ty_args=[R.Tensor((1, 768), dtype="float32")])
+                layer_norm = R.call_tir(Module.layer_norm, (lv, norm_weight, norm_bias), ty_args=[R.Tensor((1, 768), dtype="float32")])
+                permute_dims1 = R.call_tir(Module.transpose1, (fc2_weight,), ty_args=[R.Tensor((768, 256), dtype="float32")])
+                gv = R.call_tir(Module.fused_matmul1_add1, (layer_norm, permute_dims1, fc2_bias), ty_args=[R.Tensor((1, 256), dtype="float32")])
                 R.output(gv)
             return gv
 
@@ -637,7 +637,7 @@ Insert the custom rule into the rule chain. Note that ``from_callable`` returns 
                                 vax1_fused_1 = Ts.axis.spatial(T.int64(16), ax1_fused_1, dtype="int64")
                                 v0 = Ts.axis.spatial(T.int64(256), ax0_fused_0 * T.int64(16) + ax0_fused_1, dtype="int64")
                                 Ts.reads()
-                                Ts.writes(matmul_intermediate_rf_local[vax1_fused_1, T.int64(0), v0])
+                                Ts.writes(matmul_intermediate_rf_local[vax1_fused_1, T.int64(0), v0:v0 + T.int64(1)])
                                 matmul_intermediate_rf_local[vax1_fused_1, T.int64(0), v0] = T.float32(0.0)
                             for ax1_fused_0 in range(T.int64(0), T.int64(48)):
                                 for u in range(1):
@@ -645,16 +645,16 @@ Insert the custom rule into the rule chain. Note that ``from_callable`` returns 
                                         vax1_fused_1_1 = Ts.axis.spatial(T.int64(16), ax1_fused_1, dtype="int64")
                                         v0_1 = Ts.axis.spatial(T.int64(256), ax0_fused_0 * T.int64(16) + ax0_fused_1, dtype="int64")
                                         vax1_fused_0 = Ts.axis.reduce(T.int64(48), ax1_fused_0, dtype="int64")
-                                        Ts.reads(matmul_intermediate_rf_local[vax1_fused_1_1, T.int64(0), v0_1], layer_norm[T.int64(0), vax1_fused_0 * T.int64(16) + vax1_fused_1_1], permute_dims1[vax1_fused_0 * T.int64(16) + vax1_fused_1_1, v0_1])
-                                        Ts.writes(matmul_intermediate_rf_local[vax1_fused_1_1, T.int64(0), v0_1])
+                                        Ts.reads(matmul_intermediate_rf_local[vax1_fused_1_1, T.int64(0), v0_1:v0_1 + T.int64(1)], layer_norm[T.int64(0), vax1_fused_0 * T.int64(16) + vax1_fused_1_1:vax1_fused_0 * T.int64(16) + vax1_fused_1_1 + T.int64(1)], permute_dims1[vax1_fused_0 * T.int64(16) + vax1_fused_1_1, v0_1:v0_1 + T.int64(1)])
+                                        Ts.writes(matmul_intermediate_rf_local[vax1_fused_1_1, T.int64(0), v0_1:v0_1 + T.int64(1)])
                                         matmul_intermediate_rf_local[vax1_fused_1_1, T.int64(0), v0_1] = matmul_intermediate_rf_local[vax1_fused_1_1, T.int64(0), v0_1] + layer_norm[T.int64(0), vax1_fused_0 * T.int64(16) + vax1_fused_1_1] * permute_dims1[vax1_fused_0 * T.int64(16) + vax1_fused_1_1, v0_1]
                     for ax1_fused in T.thread_binding(T.int64(16), thread="threadIdx.x"):
                         for ax0 in T.thread_binding(T.int64(16), thread="threadIdx.y"):
                             with Ts.sblock("matmul"):
                                 vax1_fused_1_2 = Ts.axis.reduce(T.int64(16), ax0, dtype="int64")
                                 v0_2 = Ts.axis.spatial(T.int64(256), ax0_fused_0 * T.int64(16) + ax1_fused, dtype="int64")
-                                Ts.reads(matmul_intermediate_rf_local[vax1_fused_1_2, T.int64(0), v0_2])
-                                Ts.writes(matmul_intermediate_local[T.int64(0), v0_2])
+                                Ts.reads(matmul_intermediate_rf_local[vax1_fused_1_2, T.int64(0), v0_2:v0_2 + T.int64(1)])
+                                Ts.writes(matmul_intermediate_local[T.int64(0), v0_2:v0_2 + T.int64(1)])
                                 with Ts.init():
                                     matmul_intermediate_local[T.int64(0), v0_2] = T.float32(0.0)
                                 matmul_intermediate_local[T.int64(0), v0_2] = matmul_intermediate_local[T.int64(0), v0_2] + matmul_intermediate_rf_local[vax1_fused_1_2, T.int64(0), v0_2]
@@ -662,8 +662,8 @@ Insert the custom rule into the rule chain. Note that ``from_callable`` returns 
                         for ax0_fused_1_1 in range(T.int64(0), T.int64(1)):
                             with Ts.sblock("T_add"):
                                 v0_3 = Ts.axis.spatial(T.int64(256), ax0_fused_0 * T.int64(16) + ax0_fused_0_1 + ax0_fused_1_1, dtype="int64")
-                                Ts.reads(matmul_intermediate_local[T.int64(0), v0_3], fc2_bias[v0_3])
-                                Ts.writes(T_add_intermediate[T.int64(0), v0_3])
+                                Ts.reads(matmul_intermediate_local[T.int64(0), v0_3:v0_3 + T.int64(1)], fc2_bias[v0_3:v0_3 + T.int64(1)])
+                                Ts.writes(T_add_intermediate[T.int64(0), v0_3:v0_3 + T.int64(1)])
                                 T_add_intermediate[T.int64(0), v0_3] = matmul_intermediate_local[T.int64(0), v0_3] + fc2_bias[v0_3]
 
         @Ts.function(private=True)
@@ -681,7 +681,7 @@ Insert the custom rule into the rule chain. Note that ``from_callable`` returns 
                                 vax1_fused_1 = Ts.axis.spatial(T.int64(16), ax1_fused_1, dtype="int64")
                                 v0 = Ts.axis.spatial(T.int64(768), ax0_fused_0 * T.int64(16) + ax0_fused_1, dtype="int64")
                                 Ts.reads()
-                                Ts.writes(matmul_intermediate_rf_local[vax1_fused_1, T.int64(0), v0])
+                                Ts.writes(matmul_intermediate_rf_local[vax1_fused_1, T.int64(0), v0:v0 + T.int64(1)])
                                 matmul_intermediate_rf_local[vax1_fused_1, T.int64(0), v0] = T.float32(0.0)
                             for ax1_fused_0 in range(T.int64(0), T.int64(48)):
                                 for u in range(1):
@@ -689,16 +689,16 @@ Insert the custom rule into the rule chain. Note that ``from_callable`` returns 
                                         vax1_fused_1_1 = Ts.axis.spatial(T.int64(16), ax1_fused_1, dtype="int64")
                                         v0_1 = Ts.axis.spatial(T.int64(768), ax0_fused_0 * T.int64(16) + ax0_fused_1, dtype="int64")
                                         vax1_fused_0 = Ts.axis.reduce(T.int64(48), ax1_fused_0, dtype="int64")
-                                        Ts.reads(matmul_intermediate_rf_local[vax1_fused_1_1, T.int64(0), v0_1], x[T.int64(0), vax1_fused_0 * T.int64(16) + vax1_fused_1_1], permute_dims[vax1_fused_0 * T.int64(16) + vax1_fused_1_1, v0_1])
-                                        Ts.writes(matmul_intermediate_rf_local[vax1_fused_1_1, T.int64(0), v0_1])
+                                        Ts.reads(matmul_intermediate_rf_local[vax1_fused_1_1, T.int64(0), v0_1:v0_1 + T.int64(1)], x[T.int64(0), vax1_fused_0 * T.int64(16) + vax1_fused_1_1:vax1_fused_0 * T.int64(16) + vax1_fused_1_1 + T.int64(1)], permute_dims[vax1_fused_0 * T.int64(16) + vax1_fused_1_1, v0_1:v0_1 + T.int64(1)])
+                                        Ts.writes(matmul_intermediate_rf_local[vax1_fused_1_1, T.int64(0), v0_1:v0_1 + T.int64(1)])
                                         matmul_intermediate_rf_local[vax1_fused_1_1, T.int64(0), v0_1] = matmul_intermediate_rf_local[vax1_fused_1_1, T.int64(0), v0_1] + x[T.int64(0), vax1_fused_0 * T.int64(16) + vax1_fused_1_1] * permute_dims[vax1_fused_0 * T.int64(16) + vax1_fused_1_1, v0_1]
                     for ax1_fused in T.thread_binding(T.int64(16), thread="threadIdx.x"):
                         for ax0 in T.thread_binding(T.int64(16), thread="threadIdx.y"):
                             with Ts.sblock("matmul"):
                                 vax1_fused_1_2 = Ts.axis.reduce(T.int64(16), ax0, dtype="int64")
                                 v0_2 = Ts.axis.spatial(T.int64(768), ax0_fused_0 * T.int64(16) + ax1_fused, dtype="int64")
-                                Ts.reads(matmul_intermediate_rf_local[vax1_fused_1_2, T.int64(0), v0_2])
-                                Ts.writes(matmul_intermediate_local[T.int64(0), v0_2])
+                                Ts.reads(matmul_intermediate_rf_local[vax1_fused_1_2, T.int64(0), v0_2:v0_2 + T.int64(1)])
+                                Ts.writes(matmul_intermediate_local[T.int64(0), v0_2:v0_2 + T.int64(1)])
                                 with Ts.init():
                                     matmul_intermediate_local[T.int64(0), v0_2] = T.float32(0.0)
                                 matmul_intermediate_local[T.int64(0), v0_2] = matmul_intermediate_local[T.int64(0), v0_2] + matmul_intermediate_rf_local[vax1_fused_1_2, T.int64(0), v0_2]
@@ -706,8 +706,8 @@ Insert the custom rule into the rule chain. Note that ``from_callable`` returns 
                         for ax0_fused_1_1 in range(T.int64(0), T.int64(1)):
                             with Ts.sblock("compute"):
                                 v0_3 = Ts.axis.spatial(T.int64(768), ax0_fused_0 * T.int64(16) + ax0_fused_0_1 + ax0_fused_1_1, dtype="int64")
-                                Ts.reads(matmul_intermediate_local[T.int64(0), v0_3], fc1_bias[v0_3])
-                                Ts.writes(compute_intermediate[T.int64(0), v0_3])
+                                Ts.reads(matmul_intermediate_local[T.int64(0), v0_3:v0_3 + T.int64(1)], fc1_bias[v0_3:v0_3 + T.int64(1)])
+                                Ts.writes(compute_intermediate[T.int64(0), v0_3:v0_3 + T.int64(1)])
                                 compute_intermediate[T.int64(0), v0_3] = T.max(matmul_intermediate_local[T.int64(0), v0_3] + fc1_bias[v0_3], T.float32(0.0))
 
         @Ts.function(private=True)
@@ -725,8 +725,8 @@ Insert the custom rule into the rule chain. Note that ``from_callable`` returns 
                                 with Ts.sblock("relu_sum"):
                                     v0 = Ts.axis.spatial(T.int64(1), ax0, dtype="int64")
                                     v1 = Ts.axis.reduce(T.int64(768), ax1_fused_0 * T.int64(256) + ax1_fused_1, dtype="int64")
-                                    Ts.reads(relu[T.int64(0), v1])
-                                    Ts.writes(relu_sum_shared[T.int64(0)])
+                                    Ts.reads(relu[T.int64(0), v1:v1 + T.int64(1)])
+                                    Ts.writes(relu_sum_shared[T.int64(0):T.int64(1)])
                                     with Ts.init():
                                         relu_sum_shared[T.int64(0)] = T.float32(0.0)
                                     relu_sum_shared[T.int64(0)] = relu_sum_shared[T.int64(0)] + relu[T.int64(0), v1]
@@ -736,8 +736,8 @@ Insert the custom rule into the rule chain. Note that ``from_callable`` returns 
                                 with Ts.sblock("relu_var_sum"):
                                     v0_1 = Ts.axis.spatial(T.int64(1), ax0_1, dtype="int64")
                                     v1_1 = Ts.axis.reduce(T.int64(768), ax1_fused_0_1 * T.int64(256) + ax1_fused_1_1, dtype="int64")
-                                    Ts.reads(relu[T.int64(0), v1_1], relu_sum_shared[T.int64(0)])
-                                    Ts.writes(relu_var_sum_shared[T.int64(0)])
+                                    Ts.reads(relu[T.int64(0), v1_1:v1_1 + T.int64(1)], relu_sum_shared[T.int64(0):T.int64(1)])
+                                    Ts.writes(relu_var_sum_shared[T.int64(0):T.int64(1)])
                                     with Ts.init():
                                         relu_var_sum_shared[T.int64(0)] = T.float32(0.0)
                                     relu_var_sum_shared[T.int64(0)] = relu_var_sum_shared[T.int64(0)] + (relu[T.int64(0), v1_1] - relu_sum_shared[T.int64(0)] / T.float32(768.0)) * (relu[T.int64(0), v1_1] - relu_sum_shared[T.int64(0)] / T.float32(768.0))
@@ -746,8 +746,8 @@ Insert the custom rule into the rule chain. Note that ``from_callable`` returns 
                             with Ts.sblock("T_layer_norm"):
                                 v0_2 = Ts.axis.spatial(T.int64(1), T.int64(0), dtype="int64")
                                 v1_2 = Ts.axis.spatial(T.int64(768), ax1_0 * T.int64(256) + ax1_1, dtype="int64")
-                                Ts.reads(relu[T.int64(0), v1_2], relu_sum_shared[T.int64(0)], relu_var_sum_shared[T.int64(0)], norm_weight[v1_2], norm_bias[v1_2])
-                                Ts.writes(T_layer_norm[T.int64(0), v1_2])
+                                Ts.reads(relu[T.int64(0), v1_2:v1_2 + T.int64(1)], relu_sum_shared[T.int64(0):T.int64(1)], relu_var_sum_shared[T.int64(0):T.int64(1)], norm_weight[v1_2:v1_2 + T.int64(1)], norm_bias[v1_2:v1_2 + T.int64(1)])
+                                Ts.writes(T_layer_norm[T.int64(0), v1_2:v1_2 + T.int64(1)])
                                 T_layer_norm[T.int64(0), v1_2] = (relu[T.int64(0), v1_2] - relu_sum_shared[T.int64(0)] / T.float32(768.0)) * T.rsqrt(relu_var_sum_shared[T.int64(0)] / T.float32(768.0) + T.float32(1.0000000000000001e-05)) * norm_weight[v1_2] + norm_bias[v1_2]
 
         @Ts.function(private=True)
@@ -761,8 +761,8 @@ Insert the custom rule into the rule chain. Note that ``from_callable`` returns 
                         with Ts.sblock("T_transpose"):
                             v0 = Ts.axis.spatial(T.int64(768), (ax0_ax1_fused_0 * T.int64(1024) + ax0_ax1_fused_1) // T.int64(768), dtype="int64")
                             v1 = Ts.axis.spatial(T.int64(768), (ax0_ax1_fused_0 * T.int64(1024) + ax0_ax1_fused_1) % T.int64(768), dtype="int64")
-                            Ts.reads(fc1_weight[v1, v0])
-                            Ts.writes(T_transpose[v0, v1])
+                            Ts.reads(fc1_weight[v1, v0:v0 + T.int64(1)])
+                            Ts.writes(T_transpose[v0, v1:v1 + T.int64(1)])
                             T_transpose[v0, v1] = fc1_weight[v1, v0]
 
         @Ts.function(private=True)
@@ -776,19 +776,19 @@ Insert the custom rule into the rule chain. Note that ``from_callable`` returns 
                         with Ts.sblock("T_transpose"):
                             v0 = Ts.axis.spatial(T.int64(768), (ax0_ax1_fused_0 * T.int64(1024) + ax0_ax1_fused_1) // T.int64(256), dtype="int64")
                             v1 = Ts.axis.spatial(T.int64(256), (ax0_ax1_fused_0 * T.int64(1024) + ax0_ax1_fused_1) % T.int64(256), dtype="int64")
-                            Ts.reads(fc2_weight[v1, v0])
-                            Ts.writes(T_transpose[v0, v1])
+                            Ts.reads(fc2_weight[v1, v0:v0 + T.int64(1)])
+                            Ts.writes(T_transpose[v0, v1:v1 + T.int64(1)])
                             T_transpose[v0, v1] = fc2_weight[v1, v0]
 
         @R.function
         def forward(x: R.Tensor((1, 768), dtype="float32"), fc1_weight: R.Tensor((768, 768), dtype="float32"), fc1_bias: R.Tensor((768,), dtype="float32"), norm_weight: R.Tensor((768,), dtype="float32"), norm_bias: R.Tensor((768,), dtype="float32"), fc2_weight: R.Tensor((256, 768), dtype="float32"), fc2_bias: R.Tensor((256,), dtype="float32")) -> R.Tensor((1, 256), dtype="float32"):
             R.func_attr({"num_input": 1})
             with R.dataflow():
-                permute_dims = R.call_tir(Module.transpose, I.Tuple([fc1_weight]), ty_args=[R.Tensor((768, 768), dtype="float32")])
-                lv = R.call_tir(Module.fused_matmul_add_relu, I.Tuple([x, permute_dims, fc1_bias]), ty_args=[R.Tensor((1, 768), dtype="float32")])
-                layer_norm = R.call_tir(Module.layer_norm, I.Tuple([lv, norm_weight, norm_bias]), ty_args=[R.Tensor((1, 768), dtype="float32")])
-                permute_dims1 = R.call_tir(Module.transpose1, I.Tuple([fc2_weight]), ty_args=[R.Tensor((768, 256), dtype="float32")])
-                gv = R.call_tir(Module.fused_matmul1_add1, I.Tuple([layer_norm, permute_dims1, fc2_bias]), ty_args=[R.Tensor((1, 256), dtype="float32")])
+                permute_dims = R.call_tir(Module.transpose, (fc1_weight,), ty_args=[R.Tensor((768, 768), dtype="float32")])
+                lv = R.call_tir(Module.fused_matmul_add_relu, (x, permute_dims, fc1_bias), ty_args=[R.Tensor((1, 768), dtype="float32")])
+                layer_norm = R.call_tir(Module.layer_norm, (lv, norm_weight, norm_bias), ty_args=[R.Tensor((1, 768), dtype="float32")])
+                permute_dims1 = R.call_tir(Module.transpose1, (fc2_weight,), ty_args=[R.Tensor((768, 256), dtype="float32")])
+                gv = R.call_tir(Module.fused_matmul1_add1, (layer_norm, permute_dims1, fc2_bias), ty_args=[R.Tensor((1, 256), dtype="float32")])
                 R.output(gv)
             return gv
 

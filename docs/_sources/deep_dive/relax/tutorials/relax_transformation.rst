@@ -78,11 +78,11 @@ the :ref:`previous section <relax-creation>`.
         def forward(x: R.Tensor((n, 784), dtype="float32"), fc1_weight: R.Tensor((128, 784), dtype="float32"), fc1_bias: R.Tensor((128,), dtype="float32"), fc2_weight: R.Tensor((10, 128), dtype="float32"), fc2_bias: R.Tensor((10,), dtype="float32")) -> R.Tensor((n, 10), dtype="float32"):
             R.func_attr({"num_input": 1})
             with R.dataflow():
-                permute_dims: R.Tensor((784, 128), dtype="float32") = I.Call("relax.permute_dims", [fc1_weight], attrs=I.make_node("relax.attrs.PermuteDimsAttrs", axes=None), ty=R.Tensor((784, 128), dtype="float32"))
+                permute_dims: R.Tensor((784, 128), dtype="float32") = R.permute_dims(fc1_weight)
                 matmul: R.Tensor((n, 128), dtype="float32") = I.Call("relax.matmul", [x, permute_dims], attrs=I.make_node("relax.attrs.MatmulAttrs", out_dtype=None), ty=R.Tensor((n, 128), dtype="float32"))
                 add: R.Tensor((n, 128), dtype="float32") = R.add(matmul, fc1_bias, ty=R.Tensor((n, 128), dtype="float32"))
                 relu: R.Tensor((n, 128), dtype="float32") = R.nn.relu(add)
-                permute_dims1: R.Tensor((128, 10), dtype="float32") = I.Call("relax.permute_dims", [fc2_weight], attrs=I.make_node("relax.attrs.PermuteDimsAttrs", axes=None), ty=R.Tensor((128, 10), dtype="float32"))
+                permute_dims1: R.Tensor((128, 10), dtype="float32") = R.permute_dims(fc2_weight)
                 matmul1: R.Tensor((n, 10), dtype="float32") = I.Call("relax.matmul", [relu, permute_dims1], attrs=I.make_node("relax.attrs.MatmulAttrs", out_dtype=None), ty=R.Tensor((n, 10), dtype="float32"))
                 add1: R.Tensor((n, 10), dtype="float32") = R.add(matmul1, fc2_bias, ty=R.Tensor((n, 10), dtype="float32"))
                 gv: R.Tensor((n, 10), dtype="float32") = add1
@@ -144,8 +144,8 @@ into low-level operators.
                         with Ts.sblock("T_add"):
                             v_ax0 = Ts.axis.spatial(n, ax0, dtype="int64")
                             v_ax1 = Ts.axis.spatial(T.int64(128), ax1, dtype="int64")
-                            Ts.reads(matmul[v_ax0, v_ax1], fc1_bias[v_ax1])
-                            Ts.writes(T_add[v_ax0, v_ax1])
+                            Ts.reads(matmul[v_ax0, v_ax1:v_ax1 + T.int64(1)], fc1_bias[v_ax1:v_ax1 + T.int64(1)])
+                            Ts.writes(T_add[v_ax0, v_ax1:v_ax1 + T.int64(1)])
                             T_add[v_ax0, v_ax1] = matmul[v_ax0, v_ax1] + fc1_bias[v_ax1]
 
         @Ts.function(private=True)
@@ -159,8 +159,8 @@ into low-level operators.
                         with Ts.sblock("T_add"):
                             v_ax0 = Ts.axis.spatial(n_1, ax0, dtype="int64")
                             v_ax1 = Ts.axis.spatial(T.int64(10), ax1, dtype="int64")
-                            Ts.reads(matmul1[v_ax0, v_ax1], fc2_bias[v_ax1])
-                            Ts.writes(T_add[v_ax0, v_ax1])
+                            Ts.reads(matmul1[v_ax0, v_ax1:v_ax1 + T.int64(1)], fc2_bias[v_ax1:v_ax1 + T.int64(1)])
+                            Ts.writes(T_add[v_ax0, v_ax1:v_ax1 + T.int64(1)])
                             T_add[v_ax0, v_ax1] = matmul1[v_ax0, v_ax1] + fc2_bias[v_ax1]
 
         @Ts.function(private=True)
@@ -176,8 +176,8 @@ into low-level operators.
                                 v_i0 = Ts.axis.spatial(n_2, i0, dtype="int64")
                                 v_i1 = Ts.axis.spatial(T.int64(128), i1, dtype="int64")
                                 v_k = Ts.axis.reduce(T.int64(784), k, dtype="int64")
-                                Ts.reads(x[v_i0, v_k], permute_dims[v_k, v_i1])
-                                Ts.writes(matmul[v_i0, v_i1])
+                                Ts.reads(x[v_i0, v_k:v_k + T.int64(1)], permute_dims[v_k, v_i1:v_i1 + T.int64(1)])
+                                Ts.writes(matmul[v_i0, v_i1:v_i1 + T.int64(1)])
                                 with Ts.init():
                                     matmul[v_i0, v_i1] = T.float32(0.0)
                                 matmul[v_i0, v_i1] = matmul[v_i0, v_i1] + x[v_i0, v_k] * permute_dims[v_k, v_i1]
@@ -195,8 +195,8 @@ into low-level operators.
                                 v_i0 = Ts.axis.spatial(n_3, i0, dtype="int64")
                                 v_i1 = Ts.axis.spatial(T.int64(10), i1, dtype="int64")
                                 v_k = Ts.axis.reduce(T.int64(128), k, dtype="int64")
-                                Ts.reads(relu[v_i0, v_k], permute_dims1[v_k, v_i1])
-                                Ts.writes(matmul[v_i0, v_i1])
+                                Ts.reads(relu[v_i0, v_k:v_k + T.int64(1)], permute_dims1[v_k, v_i1:v_i1 + T.int64(1)])
+                                Ts.writes(matmul[v_i0, v_i1:v_i1 + T.int64(1)])
                                 with Ts.init():
                                     matmul[v_i0, v_i1] = T.float32(0.0)
                                 matmul[v_i0, v_i1] = matmul[v_i0, v_i1] + relu[v_i0, v_k] * permute_dims1[v_k, v_i1]
@@ -212,8 +212,8 @@ into low-level operators.
                         with Ts.sblock("compute"):
                             v_i0 = Ts.axis.spatial(n_4, i0, dtype="int64")
                             v_i1 = Ts.axis.spatial(T.int64(128), i1, dtype="int64")
-                            Ts.reads(add[v_i0, v_i1])
-                            Ts.writes(compute[v_i0, v_i1])
+                            Ts.reads(add[v_i0, v_i1:v_i1 + T.int64(1)])
+                            Ts.writes(compute[v_i0, v_i1:v_i1 + T.int64(1)])
                             compute[v_i0, v_i1] = T.max(add[v_i0, v_i1], T.float32(0.0))
 
         @Ts.function(private=True)
@@ -227,8 +227,8 @@ into low-level operators.
                         with Ts.sblock("T_transpose"):
                             v_ax0 = Ts.axis.spatial(T.int64(784), ax0, dtype="int64")
                             v_ax1 = Ts.axis.spatial(T.int64(128), ax1, dtype="int64")
-                            Ts.reads(fc1_weight[v_ax1, v_ax0])
-                            Ts.writes(T_transpose[v_ax0, v_ax1])
+                            Ts.reads(fc1_weight[v_ax1, v_ax0:v_ax0 + T.int64(1)])
+                            Ts.writes(T_transpose[v_ax0, v_ax1:v_ax1 + T.int64(1)])
                             T_transpose[v_ax0, v_ax1] = fc1_weight[v_ax1, v_ax0]
 
         @Ts.function(private=True)
@@ -242,21 +242,21 @@ into low-level operators.
                         with Ts.sblock("T_transpose"):
                             v_ax0 = Ts.axis.spatial(T.int64(128), ax0, dtype="int64")
                             v_ax1 = Ts.axis.spatial(T.int64(10), ax1, dtype="int64")
-                            Ts.reads(fc2_weight[v_ax1, v_ax0])
-                            Ts.writes(T_transpose[v_ax0, v_ax1])
+                            Ts.reads(fc2_weight[v_ax1, v_ax0:v_ax0 + T.int64(1)])
+                            Ts.writes(T_transpose[v_ax0, v_ax1:v_ax1 + T.int64(1)])
                             T_transpose[v_ax0, v_ax1] = fc2_weight[v_ax1, v_ax0]
 
         @R.function
         def forward(x: R.Tensor((n_5, 784), dtype="float32"), fc1_weight: R.Tensor((128, 784), dtype="float32"), fc1_bias: R.Tensor((128,), dtype="float32"), fc2_weight: R.Tensor((10, 128), dtype="float32"), fc2_bias: R.Tensor((10,), dtype="float32")) -> R.Tensor((n_5, 10), dtype="float32"):
             R.func_attr({"num_input": 1})
             with R.dataflow():
-                permute_dims = R.call_tir(Module.transpose, I.Tuple([fc1_weight]), ty_args=[R.Tensor((784, 128), dtype="float32")])
-                matmul = R.call_tir(Module.matmul, I.Tuple([x, permute_dims]), ty_args=[R.Tensor((n_5, 128), dtype="float32")])
-                add = R.call_tir(Module.add, I.Tuple([matmul, fc1_bias]), ty_args=[R.Tensor((n_5, 128), dtype="float32")])
-                relu = R.call_tir(Module.relu, I.Tuple([add]), ty_args=[R.Tensor((n_5, 128), dtype="float32")])
-                permute_dims1 = R.call_tir(Module.transpose1, I.Tuple([fc2_weight]), ty_args=[R.Tensor((128, 10), dtype="float32")])
-                matmul1 = R.call_tir(Module.matmul1, I.Tuple([relu, permute_dims1]), ty_args=[R.Tensor((n_5, 10), dtype="float32")])
-                add1 = R.call_tir(Module.add1, I.Tuple([matmul1, fc2_bias]), ty_args=[R.Tensor((n_5, 10), dtype="float32")])
+                permute_dims = R.call_tir(Module.transpose, (fc1_weight,), ty_args=[R.Tensor((784, 128), dtype="float32")])
+                matmul = R.call_tir(Module.matmul, (x, permute_dims), ty_args=[R.Tensor((n_5, 128), dtype="float32")])
+                add = R.call_tir(Module.add, (matmul, fc1_bias), ty_args=[R.Tensor((n_5, 128), dtype="float32")])
+                relu = R.call_tir(Module.relu, (add,), ty_args=[R.Tensor((n_5, 128), dtype="float32")])
+                permute_dims1 = R.call_tir(Module.transpose1, (fc2_weight,), ty_args=[R.Tensor((128, 10), dtype="float32")])
+                matmul1 = R.call_tir(Module.matmul1, (relu, permute_dims1), ty_args=[R.Tensor((n_5, 10), dtype="float32")])
+                add1 = R.call_tir(Module.add1, (matmul1, fc2_bias), ty_args=[R.Tensor((n_5, 10), dtype="float32")])
                 gv: R.Tensor((n_5, 10), dtype="float32") = add1
                 R.output(gv)
             return gv
@@ -322,8 +322,8 @@ a set of passes. We can apply them in a sequence.
                                 v_i0 = Ts.axis.spatial(n, i0, dtype="int64")
                                 v_i1 = Ts.axis.spatial(T.int64(10), i1, dtype="int64")
                                 v_k = Ts.axis.reduce(T.int64(128), k, dtype="int64")
-                                Ts.reads(relu[v_i0, v_k], permute_dims1[v_k, v_i1])
-                                Ts.writes(matmul_intermediate[v_i0, v_i1])
+                                Ts.reads(relu[v_i0, v_k:v_k + T.int64(1)], permute_dims1[v_k, v_i1:v_i1 + T.int64(1)])
+                                Ts.writes(matmul_intermediate[v_i0, v_i1:v_i1 + T.int64(1)])
                                 with Ts.init():
                                     matmul_intermediate[v_i0, v_i1] = T.float32(0.0)
                                 matmul_intermediate[v_i0, v_i1] = matmul_intermediate[v_i0, v_i1] + relu[v_i0, v_k] * permute_dims1[v_k, v_i1]
@@ -332,8 +332,8 @@ a set of passes. We can apply them in a sequence.
                         with Ts.sblock("T_add"):
                             v_ax0 = Ts.axis.spatial(n, ax0, dtype="int64")
                             v_ax1 = Ts.axis.spatial(T.int64(10), ax1, dtype="int64")
-                            Ts.reads(matmul_intermediate[v_ax0, v_ax1], fc2_bias[v_ax1])
-                            Ts.writes(T_add_intermediate[v_ax0, v_ax1])
+                            Ts.reads(matmul_intermediate[v_ax0, v_ax1:v_ax1 + T.int64(1)], fc2_bias[v_ax1:v_ax1 + T.int64(1)])
+                            Ts.writes(T_add_intermediate[v_ax0, v_ax1:v_ax1 + T.int64(1)])
                             T_add_intermediate[v_ax0, v_ax1] = matmul_intermediate[v_ax0, v_ax1] + fc2_bias[v_ax1]
 
         @Ts.function(private=True)
@@ -351,8 +351,8 @@ a set of passes. We can apply them in a sequence.
                                 v_i0 = Ts.axis.spatial(n_1, i0, dtype="int64")
                                 v_i1 = Ts.axis.spatial(T.int64(128), i1, dtype="int64")
                                 v_k = Ts.axis.reduce(T.int64(784), k, dtype="int64")
-                                Ts.reads(x[v_i0, v_k], permute_dims[v_k, v_i1])
-                                Ts.writes(matmul_intermediate[v_i0, v_i1])
+                                Ts.reads(x[v_i0, v_k:v_k + T.int64(1)], permute_dims[v_k, v_i1:v_i1 + T.int64(1)])
+                                Ts.writes(matmul_intermediate[v_i0, v_i1:v_i1 + T.int64(1)])
                                 with Ts.init():
                                     matmul_intermediate[v_i0, v_i1] = T.float32(0.0)
                                 matmul_intermediate[v_i0, v_i1] = matmul_intermediate[v_i0, v_i1] + x[v_i0, v_k] * permute_dims[v_k, v_i1]
@@ -361,16 +361,16 @@ a set of passes. We can apply them in a sequence.
                         with Ts.sblock("T_add"):
                             v_ax0 = Ts.axis.spatial(n_1, ax0, dtype="int64")
                             v_ax1 = Ts.axis.spatial(T.int64(128), ax1, dtype="int64")
-                            Ts.reads(matmul_intermediate[v_ax0, v_ax1], fc1_bias[v_ax1])
-                            Ts.writes(T_add_intermediate[v_ax0, v_ax1])
+                            Ts.reads(matmul_intermediate[v_ax0, v_ax1:v_ax1 + T.int64(1)], fc1_bias[v_ax1:v_ax1 + T.int64(1)])
+                            Ts.writes(T_add_intermediate[v_ax0, v_ax1:v_ax1 + T.int64(1)])
                             T_add_intermediate[v_ax0, v_ax1] = matmul_intermediate[v_ax0, v_ax1] + fc1_bias[v_ax1]
                 for i0_1 in range(T.int64(0), n_1):
                     for i1_1 in range(T.int64(0), T.int64(128)):
                         with Ts.sblock("compute"):
                             v_i0_1 = Ts.axis.spatial(n_1, i0_1, dtype="int64")
                             v_i1_1 = Ts.axis.spatial(T.int64(128), i1_1, dtype="int64")
-                            Ts.reads(T_add_intermediate[v_i0_1, v_i1_1])
-                            Ts.writes(compute_intermediate[v_i0_1, v_i1_1])
+                            Ts.reads(T_add_intermediate[v_i0_1, v_i1_1:v_i1_1 + T.int64(1)])
+                            Ts.writes(compute_intermediate[v_i0_1, v_i1_1:v_i1_1 + T.int64(1)])
                             compute_intermediate[v_i0_1, v_i1_1] = T.max(T_add_intermediate[v_i0_1, v_i1_1], T.float32(0.0))
 
         @Ts.function(private=True)
@@ -384,8 +384,8 @@ a set of passes. We can apply them in a sequence.
                         with Ts.sblock("T_transpose"):
                             v_ax0 = Ts.axis.spatial(T.int64(784), ax0, dtype="int64")
                             v_ax1 = Ts.axis.spatial(T.int64(128), ax1, dtype="int64")
-                            Ts.reads(fc1_weight[v_ax1, v_ax0])
-                            Ts.writes(T_transpose[v_ax0, v_ax1])
+                            Ts.reads(fc1_weight[v_ax1, v_ax0:v_ax0 + T.int64(1)])
+                            Ts.writes(T_transpose[v_ax0, v_ax1:v_ax1 + T.int64(1)])
                             T_transpose[v_ax0, v_ax1] = fc1_weight[v_ax1, v_ax0]
 
         @Ts.function(private=True)
@@ -399,18 +399,18 @@ a set of passes. We can apply them in a sequence.
                         with Ts.sblock("T_transpose"):
                             v_ax0 = Ts.axis.spatial(T.int64(128), ax0, dtype="int64")
                             v_ax1 = Ts.axis.spatial(T.int64(10), ax1, dtype="int64")
-                            Ts.reads(fc2_weight[v_ax1, v_ax0])
-                            Ts.writes(T_transpose[v_ax0, v_ax1])
+                            Ts.reads(fc2_weight[v_ax1, v_ax0:v_ax0 + T.int64(1)])
+                            Ts.writes(T_transpose[v_ax0, v_ax1:v_ax1 + T.int64(1)])
                             T_transpose[v_ax0, v_ax1] = fc2_weight[v_ax1, v_ax0]
 
         @R.function
         def forward(x: R.Tensor((n_2, 784), dtype="float32"), fc1_weight: R.Tensor((128, 784), dtype="float32"), fc1_bias: R.Tensor((128,), dtype="float32"), fc2_weight: R.Tensor((10, 128), dtype="float32"), fc2_bias: R.Tensor((10,), dtype="float32")) -> R.Tensor((n_2, 10), dtype="float32"):
             R.func_attr({"num_input": 1})
             with R.dataflow():
-                permute_dims = R.call_tir(Module.transpose, I.Tuple([fc1_weight]), ty_args=[R.Tensor((784, 128), dtype="float32")])
-                lv = R.call_tir(Module.fused_matmul_add_relu, I.Tuple([x, permute_dims, fc1_bias]), ty_args=[R.Tensor((n_2, 128), dtype="float32")])
-                permute_dims1 = R.call_tir(Module.transpose1, I.Tuple([fc2_weight]), ty_args=[R.Tensor((128, 10), dtype="float32")])
-                gv = R.call_tir(Module.fused_matmul1_add1, I.Tuple([lv, permute_dims1, fc2_bias]), ty_args=[R.Tensor((n_2, 10), dtype="float32")])
+                permute_dims = R.call_tir(Module.transpose, (fc1_weight,), ty_args=[R.Tensor((784, 128), dtype="float32")])
+                lv = R.call_tir(Module.fused_matmul_add_relu, (x, permute_dims, fc1_bias), ty_args=[R.Tensor((n_2, 128), dtype="float32")])
+                permute_dims1 = R.call_tir(Module.transpose1, (fc2_weight,), ty_args=[R.Tensor((128, 10), dtype="float32")])
+                gv = R.call_tir(Module.fused_matmul1_add1, (lv, permute_dims1, fc2_bias), ty_args=[R.Tensor((n_2, 10), dtype="float32")])
                 R.output(gv)
             return gv
 
@@ -505,11 +505,11 @@ Then we can write a pass to apply the mutator to the whole module.
         def forward(x: R.Tensor((n, 784), dtype="float32"), fc1_weight: R.Tensor((128, 784), dtype="float32"), fc1_bias: R.Tensor((128,), dtype="float32"), fc2_weight: R.Tensor((10, 128), dtype="float32"), fc2_bias: R.Tensor((10,), dtype="float32")) -> R.Tensor((n, 10), dtype="float32"):
             R.func_attr({"num_input": 1})
             with R.dataflow():
-                permute_dims: R.Tensor((784, 128), dtype="float32") = I.Call("relax.permute_dims", [fc1_weight], attrs=I.make_node("relax.attrs.PermuteDimsAttrs", axes=None), ty=R.Tensor((784, 128), dtype="float32"))
+                permute_dims: R.Tensor((784, 128), dtype="float32") = R.permute_dims(fc1_weight)
                 matmul: R.Tensor((n, 128), dtype="float32") = I.Call("relax.matmul", [x, permute_dims], attrs=I.make_node("relax.attrs.MatmulAttrs", out_dtype=None), ty=R.Tensor((n, 128), dtype="float32"))
                 add: R.Tensor((n, 128), dtype="float32") = R.add(matmul, fc1_bias, ty=R.Tensor((n, 128), dtype="float32"))
                 relu: R.Tensor((n, 128), dtype="float32") = R.nn.gelu(add)
-                permute_dims1: R.Tensor((128, 10), dtype="float32") = I.Call("relax.permute_dims", [fc2_weight], attrs=I.make_node("relax.attrs.PermuteDimsAttrs", axes=None), ty=R.Tensor((128, 10), dtype="float32"))
+                permute_dims1: R.Tensor((128, 10), dtype="float32") = R.permute_dims(fc2_weight)
                 matmul1: R.Tensor((n, 10), dtype="float32") = I.Call("relax.matmul", [relu, permute_dims1], attrs=I.make_node("relax.attrs.MatmulAttrs", out_dtype=None), ty=R.Tensor((n, 10), dtype="float32"))
                 add1: R.Tensor((n, 10), dtype="float32") = R.add(matmul1, fc2_bias, ty=R.Tensor((n, 10), dtype="float32"))
                 gv: R.Tensor((n, 10), dtype="float32") = add1
