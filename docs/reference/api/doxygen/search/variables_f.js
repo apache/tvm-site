@@ -25,8 +25,7 @@ var searchData=
   ['pooled_5fsize_22',['pooled_size',['../structtvm_1_1relax_1_1ROIAlignAttrs.html#aeb0e4ca8aa4e478607ef1765866e40ea',1,'tvm::relax::ROIAlignAttrs::pooled_size'],['../structtvm_1_1relax_1_1ROIPoolAttrs.html#af25a616c2bed78061d037370a8c68a78',1,'tvm::relax::ROIPoolAttrs::pooled_size']]],
   ['postprocs_23',['postprocs',['../classtvm_1_1s__tir_1_1meta__schedule_1_1SpaceGeneratorNode.html#abfa967683e56f096a814868cc1af1280',1,'tvm::s_tir::meta_schedule::SpaceGeneratorNode']]],
   ['predicate_24',['predicate',['../classtvm_1_1script_1_1ir__builder_1_1s__tir_1_1SBlockFrameNode.html#a5a6c37749b1f92f0ccbef0afd4986b26',1,'tvm::script::ir_builder::s_tir::SBlockFrameNode::predicate'],['../classtvm_1_1s__tir_1_1SBlockRealizeNode.html#a4e3f5cac29a0a8b485a2ceaba9c3a652',1,'tvm::s_tir::SBlockRealizeNode::predicate'],['../classtvm_1_1script_1_1printer_1_1IfDocNode.html#aff607900dab0776aa46ea9cbbfcc0bfd',1,'tvm::script::printer::IfDocNode::predicate'],['../classtvm_1_1script_1_1printer_1_1WhileDocNode.html#ad1f9ea9a5c2109d614b3e5835b348ccb',1,'tvm::script::printer::WhileDocNode::predicate']]],
-  ['preferred_5fextents_25',['preferred_extents',['../classtvm_1_1tirx_1_1ScopeIdDefNode.html#af58a2bd6f38900580d7f2a1e4771e2ec',1,'tvm::tirx::ScopeIdDefNode']]],
-  ['prefix_5f_26',['prefix_',['../classtvm_1_1UniqueNameSupplyNode.html#a2a0089d31a9bad9bbb59f4dbe2f1cc29',1,'tvm::UniqueNameSupplyNode']]],
-  ['print_5fline_5fnumbers_27',['print_line_numbers',['../classtvm_1_1PrinterConfigNode.html#a326fadb110a4356ccd783ed0e0b26733',1,'tvm::PrinterConfigNode']]],
-  ['purity_28',['purity',['../classtvm_1_1relax_1_1FuncTypeNode.html#a4856099db6a1f8f6ae9908ac4e47e3c5',1,'tvm::relax::FuncTypeNode']]]
+  ['prefix_5f_25',['prefix_',['../classtvm_1_1UniqueNameSupplyNode.html#a2a0089d31a9bad9bbb59f4dbe2f1cc29',1,'tvm::UniqueNameSupplyNode']]],
+  ['print_5fline_5fnumbers_26',['print_line_numbers',['../classtvm_1_1PrinterConfigNode.html#a326fadb110a4356ccd783ed0e0b26733',1,'tvm::PrinterConfigNode']]],
+  ['purity_27',['purity',['../classtvm_1_1relax_1_1FuncTypeNode.html#a4856099db6a1f8f6ae9908ac4e47e3c5',1,'tvm::relax::FuncTypeNode']]]
 ];

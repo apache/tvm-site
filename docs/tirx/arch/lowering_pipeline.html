@@ -312,6 +312,7 @@
 <li class="toctree-l2"><a class="reference internal" href="../api/script.html">Core TVMScript</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../api/tile.html">Tensor Instruction Authoring API</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../api/cuda.html">CUDA Authoring and Support APIs</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../api/cuda_launch.html">CUDA kernel configuration reference</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../api/ptx.html">Direct PTX Instructions</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../api/trainium.html">Trainium Authoring and Support APIs</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../api/tirx.html">Core TIRx IR</a></li>
@@ -643,7 +644,7 @@ document.write(`
 <p><code class="docutils literal notranslate"><span class="pre">tvm.compile(mod,</span> <span class="pre">target,</span> <span class="pre">tir_pipeline=&quot;tirx&quot;)</span></code> runs an authored TIRx module
 through the <strong>tirx pipeline</strong> — an ordered sequence of IR passes that turns the
 high-level constructs you write (tile primitives, <code class="docutils literal notranslate"><span class="pre">TileLayout</span></code>-typed buffers,
-execution-scope ids) into split <strong>host</strong> + <strong>device</strong> functions, which the CUDA
+CUDA index calls) into split <strong>host</strong> + <strong>device</strong> functions, which the CUDA
 backend then renders to source. The pipeline is defined in
 <code class="docutils literal notranslate"><span class="pre">python/tvm/tirx/compilation_pipeline.py</span></code> (<code class="docutils literal notranslate"><span class="pre">tirx_pipeline</span></code>); this page walks the
 passes in order.</p>
@@ -734,7 +735,7 @@ generator:</p>
 <td><p><code class="docutils literal notranslate"><span class="pre">SplitHostDevice</span></code></p></td>
 <td><p>extracts target-annotated device regions into <strong>device</strong> functions and
 leaves launch calls in the <strong>host</strong> function; the regions originate from
-the thread extents produced while lowering <code class="docutils literal notranslate"><span class="pre">Tx.device_entry</span></code> and scope ids</p></td>
+the explicit <code class="docutils literal notranslate"><span class="pre">LaunchConfig</span></code> attached to <code class="docutils literal notranslate"><span class="pre">Tx.device_entry</span></code></p></td>
 </tr>
 <tr class="row-even"><td><p>15</p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">LowerIket</span></code></p></td>
@@ -772,17 +773,16 @@ the thread extents produced while lowering <code class="docutils literal notrans
 <ul class="simple">
 <li><p><strong>``TileDispatch``</strong> replaces every tensor <code class="docutils literal notranslate"><span class="pre">Evaluate(Call)</span></code> with the body emitted by its
 instruction lowerer, including delayed mathematical composites as described in
-<a class="reference internal" href="tile_dispatch.html"><span class="doc">Tensor Instruction Lowering</span></a>.  In the same pass it removes the <code class="docutils literal notranslate"><span class="pre">device_entry</span></code>
-marker, resolves standalone scope-id definitions to <code class="docutils literal notranslate"><span class="pre">Bind</span></code> statements,
-and wraps the device body in the corresponding thread-extent attributes.</p></li>
+<a class="reference internal" href="tile_dispatch.html"><span class="doc">Tensor Instruction Lowering</span></a>. In the same pass it converts <code class="docutils literal notranslate"><span class="pre">device_entry</span></code> to a
+<code class="docutils literal notranslate"><span class="pre">device_scope</span></code> region retaining launch values as operands, and lowers the
+finite CUDA index calls inside ordinary <code class="docutils literal notranslate"><span class="pre">Bind</span></code> statements.</p></li>
 <li><p><strong>``LowerTIRxCleanup``</strong> then runs the <code class="docutils literal notranslate"><span class="pre">LayoutApplier</span></code>: it resolves every
 <code class="docutils literal notranslate"><span class="pre">TileLayout</span></code>-typed buffer access into concrete physical address arithmetic
 (<code class="docutils literal notranslate"><span class="pre">addr</span> <span class="pre">=</span> <span class="pre">data</span> <span class="pre">+</span> <span class="pre">elem_offset</span> <span class="pre">+</span> <span class="pre">layout.apply(coord)</span></code>), flattens the buffers,
 and removes buffer offsets that have been folded into the resulting views.</p></li>
 </ul>
 <p>After <code class="docutils literal notranslate"><span class="pre">LowerTIRx</span></code> the module remains a <code class="docutils literal notranslate"><span class="pre">tvm.tirx.Function</span></code>, but contains no
-tile primitives or <code class="docutils literal notranslate"><span class="pre">TileLayout</span></code> indirection, and scope ids have been resolved
-to thread axes.  Later TIRx passes lower the remaining opaque constructs and
+tile primitives or <code class="docutils literal notranslate"><span class="pre">TileLayout</span></code> indirection, and CUDA indices read hardware coordinates.  Later TIRx passes lower the remaining opaque constructs and
 the target code generators consume <code class="docutils literal notranslate"><span class="pre">tirx::Function</span></code> directly; there is no
 conversion to the separate <code class="docutils literal notranslate"><span class="pre">tvm.tir</span></code> object model.</p>
 </section>
@@ -792,19 +792,21 @@ conversion to the separate <code class="docutils literal notranslate"><span clas
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nd">@Tx</span><span class="o">.</span><span class="n">function</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">scale</span><span class="p">(</span><span class="n">A</span><span class="p">:</span> <span class="n">Tx</span><span class="o">.</span><span class="n">Tensor</span><span class="p">((</span><span class="mi">256</span><span class="p">,),</span> <span class="s2">&quot;float32&quot;</span><span class="p">),</span> <span class="n">B</span><span class="p">:</span> <span class="n">Tx</span><span class="o">.</span><span class="n">Tensor</span><span class="p">((</span><span class="mi">256</span><span class="p">,),</span> <span class="s2">&quot;float32&quot;</span><span class="p">)):</span>
 
-    <span class="n">Tx</span><span class="o">.</span><span class="n">device_entry</span><span class="p">()</span>
-    <span class="n">bx</span> <span class="o">=</span> <span class="n">Tx</span><span class="o">.</span><span class="n">cta_id</span><span class="p">([</span><span class="mi">1</span><span class="p">])</span>
-    <span class="n">tx</span> <span class="o">=</span> <span class="n">Tx</span><span class="o">.</span><span class="n">thread_id</span><span class="p">([</span><span class="mi">256</span><span class="p">])</span>
+    <span class="n">Tx</span><span class="o">.</span><span class="n">device_entry</span><span class="p">(</span><span class="n">launch</span><span class="o">=</span><span class="n">Tx</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">LaunchConfig</span><span class="p">(</span><span class="n">grid</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,),</span> <span class="n">block</span><span class="o">=</span><span class="p">(</span><span class="mi">256</span><span class="p">,)))</span>
+    <span class="n">bx</span> <span class="o">=</span> <span class="n">Tx</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">block_idx</span><span class="p">(</span><span class="s2">&quot;x&quot;</span><span class="p">)</span>
+    <span class="n">tx</span> <span class="o">=</span> <span class="n">Tx</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">thread_idx</span><span class="p">(</span><span class="s2">&quot;x&quot;</span><span class="p">)</span>
     <span class="n">B</span><span class="p">[</span><span class="n">tx</span><span class="p">]</span> <span class="o">=</span> <span class="n">A</span><span class="p">[</span><span class="n">tx</span><span class="p">]</span> <span class="o">*</span> <span class="n">Tx</span><span class="o">.</span><span class="n">float32</span><span class="p">(</span><span class="mf">2.0</span><span class="p">)</span>
 </pre></div>
 </div>
-<p><strong>After ``LowerTIRx``</strong> the scope ids are real thread axes and the layout is applied
-(<code class="docutils literal notranslate"><span class="pre">A_1</span></code> / <code class="docutils literal notranslate"><span class="pre">B_1</span></code> are the flattened 1-D views):</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">with</span> <span class="n">Tx</span><span class="o">.</span><span class="n">launch_thread</span><span class="p">(</span><span class="s2">&quot;blockIdx.x&quot;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span> <span class="k">as</span> <span class="n">blockIdx_x</span><span class="p">:</span>
-    <span class="n">threadIdx_x</span> <span class="o">=</span> <span class="n">Tx</span><span class="o">.</span><span class="n">launch_thread</span><span class="p">(</span><span class="s2">&quot;threadIdx.x&quot;</span><span class="p">,</span> <span class="mi">256</span><span class="p">)</span>
-    <span class="n">bx</span><span class="p">:</span> <span class="n">Tx</span><span class="o">.</span><span class="n">let</span> <span class="o">=</span> <span class="n">blockIdx_x</span>
-    <span class="n">tx</span><span class="p">:</span> <span class="n">Tx</span><span class="o">.</span><span class="n">let</span> <span class="o">=</span> <span class="n">threadIdx_x</span>
-    <span class="n">B_1</span><span class="p">[</span><span class="n">threadIdx_x</span><span class="p">]</span> <span class="o">=</span> <span class="n">A_1</span><span class="p">[</span><span class="n">threadIdx_x</span><span class="p">]</span> <span class="o">*</span> <span class="n">Tx</span><span class="o">.</span><span class="n">float32</span><span class="p">(</span><span class="mf">2.0</span><span class="p">)</span>
+<p><strong>After ``LowerTIRx``</strong> the layout is applied and the device region retains its
+launch configuration independently of the index bindings:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">with</span> <span class="n">Tx</span><span class="o">.</span><span class="n">region</span><span class="p">(</span><span class="s2">&quot;tirx.device_scope&quot;</span><span class="p">,</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">256</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="n">attrs</span><span class="o">=</span><span class="p">{</span>
+    <span class="s2">&quot;cuda.launch_fields&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;grid.x&quot;</span><span class="p">,</span> <span class="s2">&quot;grid.y&quot;</span><span class="p">,</span> <span class="s2">&quot;grid.z&quot;</span><span class="p">,</span> <span class="s2">&quot;block.x&quot;</span><span class="p">,</span> <span class="s2">&quot;block.y&quot;</span><span class="p">,</span> <span class="s2">&quot;block.z&quot;</span><span class="p">],</span>
+    <span class="s2">&quot;cuda.kernel_attrs&quot;</span><span class="p">:</span> <span class="p">{},</span>
+<span class="p">}):</span>
+    <span class="n">bx</span><span class="p">:</span> <span class="n">Tx</span><span class="o">.</span><span class="n">let</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">tx</span><span class="p">:</span> <span class="n">Tx</span><span class="o">.</span><span class="n">let</span> <span class="o">=</span> <span class="n">Tx</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">thread_idx</span><span class="p">(</span><span class="s2">&quot;x&quot;</span><span class="p">)</span>
+    <span class="n">B_1</span><span class="p">[</span><span class="n">tx</span><span class="p">]</span> <span class="o">=</span> <span class="n">A_1</span><span class="p">[</span><span class="n">tx</span><span class="p">]</span> <span class="o">*</span> <span class="n">Tx</span><span class="o">.</span><span class="n">float32</span><span class="p">(</span><span class="mf">2.0</span><span class="p">)</span>
 </pre></div>
 </div>
 <p><strong>After ``SplitHostDevice`` and the later ``MakePackedAPI`` pass</strong> the one function

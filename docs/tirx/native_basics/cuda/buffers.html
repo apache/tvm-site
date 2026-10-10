@@ -312,6 +312,7 @@
 <li class="toctree-l2"><a class="reference internal" href="../../api/script.html">Core TVMScript</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../api/tile.html">Tensor Instruction Authoring API</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../api/cuda.html">CUDA Authoring and Support APIs</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../api/cuda_launch.html">CUDA kernel configuration reference</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../api/ptx.html">Direct PTX Instructions</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../api/trainium.html">Trainium Authoring and Support APIs</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../api/tirx.html">Core TIRx IR</a></li>
@@ -792,9 +793,9 @@ whole block sees the writes, then read it back:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nd">@Tx</span><span class="o">.</span><span class="n">function</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">smem_demo</span><span class="p">(</span><span class="n">A</span><span class="p">:</span> <span class="n">Tx</span><span class="o">.</span><span class="n">Tensor</span><span class="p">((</span><span class="mi">128</span><span class="p">,),</span> <span class="s2">&quot;float32&quot;</span><span class="p">),</span> <span class="n">B</span><span class="p">:</span> <span class="n">Tx</span><span class="o">.</span><span class="n">Tensor</span><span class="p">((</span><span class="mi">128</span><span class="p">,),</span> <span class="s2">&quot;float32&quot;</span><span class="p">)):</span>
 
-    <span class="n">Tx</span><span class="o">.</span><span class="n">device_entry</span><span class="p">()</span>
-    <span class="n">bx</span> <span class="o">=</span> <span class="n">Tx</span><span class="o">.</span><span class="n">cta_id</span><span class="p">([</span><span class="mi">1</span><span class="p">])</span>
-    <span class="n">tx</span> <span class="o">=</span> <span class="n">Tx</span><span class="o">.</span><span class="n">thread_id</span><span class="p">([</span><span class="mi">128</span><span class="p">])</span>
+    <span class="n">Tx</span><span class="o">.</span><span class="n">device_entry</span><span class="p">(</span><span class="n">launch</span><span class="o">=</span><span class="n">Tx</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">LaunchConfig</span><span class="p">(</span><span class="n">grid</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,),</span> <span class="n">block</span><span class="o">=</span><span class="p">(</span><span class="mi">128</span><span class="p">,)))</span>
+    <span class="n">bx</span> <span class="o">=</span> <span class="n">Tx</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">block_idx</span><span class="p">(</span><span class="s2">&quot;x&quot;</span><span class="p">)</span>
+    <span class="n">tx</span> <span class="o">=</span> <span class="n">Tx</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">thread_idx</span><span class="p">(</span><span class="s2">&quot;x&quot;</span><span class="p">)</span>
     <span class="n">sm</span> <span class="o">=</span> <span class="n">Tx</span><span class="o">.</span><span class="n">alloc_shared</span><span class="p">((</span><span class="mi">128</span><span class="p">,),</span> <span class="s2">&quot;float32&quot;</span><span class="p">)</span>  <span class="c1"># static shared memory</span>
     <span class="n">sm</span><span class="p">[</span><span class="n">tx</span><span class="p">]</span> <span class="o">=</span> <span class="n">A</span><span class="p">[</span><span class="n">tx</span><span class="p">]</span>
     <span class="n">Tx</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">cta_sync</span><span class="p">()</span>
@@ -844,21 +845,12 @@ time (<code class="docutils literal notranslate"><span class="pre">__shared__</s
 with views decl’d at offsets inside it.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p><strong>How TVM annotates the dynamic-shared size.</strong> The arena’s size is known at
-compile time (here <code class="docutils literal notranslate"><span class="pre">128</span></code> floats = <code class="docutils literal notranslate"><span class="pre">512</span></code> bytes). During lowering TVM appends
-a <code class="docutils literal notranslate"><span class="pre">&quot;tirx.use_dyn_shared_memory&quot;</span></code> tag to the device kernel’s
-<code class="docutils literal notranslate"><span class="pre">tirx.kernel_launch_params</span></code>, and the host launcher computes the total bytes and
-passes them as the last launch argument:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># device kernel attribute:</span>
-<span class="s2">&quot;tirx.kernel_launch_params&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;blockIdx.x&quot;</span><span class="p">,</span> <span class="s2">&quot;threadIdx.x&quot;</span><span class="p">,</span> <span class="s2">&quot;tirx.use_dyn_shared_memory&quot;</span><span class="p">]</span>
-
-<span class="c1"># host-side launch call  (..., gridDim.x, blockDim.x, dyn_shared_bytes):</span>
-<span class="n">Tx</span><span class="o">.</span><span class="n">call_packed</span><span class="p">(</span><span class="s2">&quot;dyn_kernel&quot;</span><span class="p">,</span> <span class="n">A</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="n">B</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="n">C</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">64</span><span class="p">,</span> <span class="mi">512</span><span class="p">)</span>
-</pre></div>
-</div>
-<p>At run time that <code class="docutils literal notranslate"><span class="pre">512</span></code> becomes <code class="docutils literal notranslate"><span class="pre">config.sharedMemBytes</span></code> in the
-<code class="docutils literal notranslate"><span class="pre">cuLaunchKernelEx</span></code> call. You never set it by hand — it is derived from the
-<code class="docutils literal notranslate"><span class="pre">shared.dyn</span></code> allocation’s size.</p>
+<p>The compiler infers the required bytes from the <code class="docutils literal notranslate"><span class="pre">shared.dyn</span></code> allocation
+or <code class="docutils literal notranslate"><span class="pre">SMEMPool.commit()</span></code> and passes them as a typed launch operand.
+<code class="docutils literal notranslate"><span class="pre">LaunchConfig.dynamic_smem_bytes</span></code> can reserve more space; a value smaller
+than the allocation requirement raises an error. The shared launch support
+applies the same resource policy to Driver and Runtime launches, including
+repeated calls whose dynamic shared-memory requirement grows.</p>
 </div>
 </section>
 <section id="pool-sugar">

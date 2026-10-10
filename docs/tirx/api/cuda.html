@@ -48,7 +48,7 @@
     <link rel="icon" href="../../_static/tvm-logo-square.png"/>
     <link rel="index" title="Index" href="../../genindex.html" />
     <link rel="search" title="Search" href="../../search.html" />
-    <link rel="next" title="Direct PTX Instructions" href="ptx.html" />
+    <link rel="next" title="CUDA kernel configuration reference" href="cuda_launch.html" />
     <link rel="prev" title="Tensor Instruction Authoring API" href="tile.html" />
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="docsearch:language" content="en"/>
@@ -312,6 +312,7 @@
 <li class="toctree-l2"><a class="reference internal" href="script.html">Core TVMScript</a></li>
 <li class="toctree-l2"><a class="reference internal" href="tile.html">Tensor Instruction Authoring API</a></li>
 <li class="toctree-l2 current active"><a class="current reference internal" href="#">CUDA Authoring and Support APIs</a></li>
+<li class="toctree-l2"><a class="reference internal" href="cuda_launch.html">CUDA kernel configuration reference</a></li>
 <li class="toctree-l2"><a class="reference internal" href="ptx.html">Direct PTX Instructions</a></li>
 <li class="toctree-l2"><a class="reference internal" href="trainium.html">Trainium Authoring and Support APIs</a></li>
 <li class="toctree-l2"><a class="reference internal" href="tirx.html">Core TIRx IR</a></li>
@@ -874,20 +875,12 @@ and <code class="docutils literal notranslate"><span class="pre">valid</span></c
 <li><p><strong>pool</strong> (<a class="reference internal" href="#tvm.backend.cuda.lang.SMEMPool" title="tvm.backend.cuda.lang.SMEMPool"><em>SMEMPool</em></a>) – Shared memory pool allocator.</p></li>
 <li><p><strong>depth</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><em>int</em></a>) – Number of barrier slots (one per pipeline stage).</p></li>
 <li><p><strong>phase_offset</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><em>int</em></a>) – XORed into the phase bit on every <code class="docutils literal notranslate"><span class="pre">wait</span></code> / <code class="docutils literal notranslate"><span class="pre">arrive</span></code>.</p></li>
-<li><p><strong>leader</strong> (<a class="reference internal" href="../../reference/api/python/relax/relax.html#tvm.relax.Expr" title="tvm.relax.Expr"><em>Expr</em></a><em>, </em><em>optional</em>) – <p>Boolean predicate selecting the single thread that runs
+<li><p><strong>leader</strong> (<a class="reference internal" href="../../reference/api/python/relax/relax.html#tvm.relax.Expr" title="tvm.relax.Expr"><em>Expr</em></a><em>, </em><em>optional</em>) – Boolean predicate selecting the single thread that runs
 <code class="docutils literal notranslate"><span class="pre">mbarrier.init</span></code>. Defaults to <code class="docutils literal notranslate"><span class="pre">T.cuda.thread_rank()</span> <span class="pre">==</span> <span class="pre">0</span></code> –
 thread 0 of the enclosing CTA, which always picks exactly one
-thread regardless of which scope_id vars the caller declared.
+thread regardless of which index variables the caller binds.
 Override only when you want a different CTA-local thread to do
-the init.</p>
-<p>Note: the default deliberately avoids <code class="docutils literal notranslate"><span class="pre">T.warp_id()</span></code> /
-<code class="docutils literal notranslate"><span class="pre">T.lane_id()</span></code>. Those introduce deferred <code class="docutils literal notranslate"><span class="pre">cta-&gt;warp</span></code> /
-<code class="docutils literal notranslate"><span class="pre">warp-&gt;thread</span></code> ScopeIdDefs that the verifier cannot pin down
-unless the kernel header declares the full warp/lane chain (e.g. a
-single-CTA DSMEM kernel that only declares <code class="docutils literal notranslate"><span class="pre">thread_id</span></code>). It also
-avoids the synccheck false-deadlock on kernels that declare a
-second warp-scope id. The generated CUDA is equivalent.</p>
-</p></li>
+the init.</p></li>
 </ul>
 </dd>
 </dl>
@@ -977,7 +970,7 @@ If a <code class="docutils literal notranslate"><span class="pre">Var</span></co
 <dl class="py method">
 <dt class="sig sig-object py" id="tvm.backend.cuda.lang.SMEMPool.commit">
 <span class="sig-name descname"><span class="pre">commit</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#tvm.backend.cuda.lang.SMEMPool.commit" title="Link to this definition">#</a></dt>
-<dd><p>Emit the dynamic shared memory byte-count declaration into the IR.</p>
+<dd><p>Record the pool resource requirement on the enclosing kernel entry.</p>
 <p>Must be called after all <code class="docutils literal notranslate"><span class="pre">alloc()</span></code> / <code class="docutils literal notranslate"><span class="pre">move_base_to()</span></code> calls.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -1085,7 +1078,7 @@ a scope-namespace prefix (e.g. <code class="docutils literal notranslate"><span 
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>warp_id_var</strong> (<a class="reference internal" href="../../reference/api/python/ir.html#tvm.ir.Var" title="tvm.ir.Var"><em>Var</em></a>) – The warp_id variable (from <code class="docutils literal notranslate"><span class="pre">T.warp_id(...)</span></code>).</p></li>
+<li><p><strong>warp_id_var</strong> (<a class="reference internal" href="../../reference/api/python/ir.html#tvm.ir.Var" title="tvm.ir.Var"><em>Var</em></a>) – The warp_id variable (from <code class="docutils literal notranslate"><span class="pre">T.cuda.warp_id()</span></code>).</p></li>
 <li><p><strong>warp_id_val</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><em>int</em></a>) – Which warp index this role corresponds to.</p></li>
 <li><p><strong>regs</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><em>int</em></a><em>, </em><em>optional</em>) – Register budget (passed to <code class="docutils literal notranslate"><span class="pre">T.ptx.setmaxnreg</span></code>).
 If None, no setmaxnreg is emitted.</p></li>
@@ -1119,7 +1112,7 @@ scope via a scope-namespace prefix (e.g. <code class="docutils literal notransla
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>wg_id_var</strong> (<a class="reference internal" href="../../reference/api/python/ir.html#tvm.ir.Var" title="tvm.ir.Var"><em>Var</em></a>) – The warpgroup_id variable (from <code class="docutils literal notranslate"><span class="pre">T.warpgroup_id(...)</span></code>).</p></li>
+<li><p><strong>wg_id_var</strong> (<a class="reference internal" href="../../reference/api/python/ir.html#tvm.ir.Var" title="tvm.ir.Var"><em>Var</em></a>) – The warpgroup_id variable (from <code class="docutils literal notranslate"><span class="pre">T.cuda.warpgroup_id()</span></code>).</p></li>
 <li><p><strong>wg_id_val</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><em>int</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3/builtins/stdtypes.html#tuple" title="(in Python v3.15)"><em>tuple</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><em>int</em></a><em>, </em><a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><em>int</em></a><em>]</em>) – Which warpgroup index (int) or range <code class="docutils literal notranslate"><span class="pre">(start,</span> <span class="pre">stop)</span></code> this role
 corresponds to.</p></li>
 <li><p><strong>regs</strong> (<a class="reference external" href="https://docs.python.org/3/builtins/functions.html#int" title="(in Python v3.15)"><em>int</em></a><em>, </em><em>optional</em>) – Register budget.</p></li>
@@ -1253,11 +1246,11 @@ postprocessing are owned by the external <code class="docutils literal notransla
       </div>
     </a>
     <a class="right-next"
-       href="ptx.html"
+       href="cuda_launch.html"
        title="next page">
       <div class="prev-next-info">
         <p class="prev-next-subtitle">next</p>
-        <p class="prev-next-title">Direct PTX Instructions</p>
+        <p class="prev-next-title">CUDA kernel configuration reference</p>
       </div>
       <i class="fa-solid fa-angle-right"></i>
     </a>

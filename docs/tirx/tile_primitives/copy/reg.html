@@ -312,6 +312,7 @@
 <li class="toctree-l2"><a class="reference internal" href="../../api/script.html">Core TVMScript</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../api/tile.html">Tensor Instruction Authoring API</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../api/cuda.html">CUDA Authoring and Support APIs</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../api/cuda_launch.html">CUDA kernel configuration reference</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../api/ptx.html">Direct PTX Instructions</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../api/trainium.html">Trainium Authoring and Support APIs</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../api/tirx.html">Core TIRx IR</a></li>
@@ -718,10 +719,10 @@ contiguous elements). From <code class="docutils literal notranslate"><span clas
 <span class="nd">@Tx</span><span class="o">.</span><span class="n">function</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">kernel</span><span class="p">(</span><span class="n">B</span><span class="p">:</span> <span class="n">Tx</span><span class="o">.</span><span class="n">Tensor</span><span class="p">(</span><span class="n">shape</span><span class="p">,</span> <span class="n">dtype</span><span class="p">)):</span>
 
-    <span class="n">Tx</span><span class="o">.</span><span class="n">device_entry</span><span class="p">()</span>
-    <span class="n">Tx</span><span class="o">.</span><span class="n">cta_id</span><span class="p">([</span><span class="mi">1</span><span class="p">])</span>
-    <span class="n">Tx</span><span class="o">.</span><span class="n">lane_id</span><span class="p">([</span><span class="mi">32</span><span class="p">])</span>
-    <span class="n">tid</span> <span class="o">=</span> <span class="n">Tx</span><span class="o">.</span><span class="n">thread_id</span><span class="p">([</span><span class="mi">32</span><span class="p">])</span>
+    <span class="n">Tx</span><span class="o">.</span><span class="n">device_entry</span><span class="p">(</span><span class="n">launch</span><span class="o">=</span><span class="n">Tx</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">LaunchConfig</span><span class="p">(</span><span class="n">grid</span><span class="o">=</span><span class="p">(</span><span class="mi">1</span><span class="p">,),</span> <span class="n">block</span><span class="o">=</span><span class="p">(</span><span class="mi">32</span><span class="p">,)))</span>
+    <span class="n">_index</span> <span class="o">=</span> <span class="n">Tx</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">block_idx</span><span class="p">(</span><span class="s2">&quot;x&quot;</span><span class="p">)</span>
+    <span class="n">_lane</span> <span class="o">=</span> <span class="n">Tx</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">lane_id</span><span class="p">()</span>
+    <span class="n">tid</span> <span class="o">=</span> <span class="n">Tx</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">thread_idx</span><span class="p">(</span><span class="s2">&quot;x&quot;</span><span class="p">)</span>
     <span class="n">A_smem</span> <span class="o">=</span> <span class="n">Tx</span><span class="o">.</span><span class="n">alloc_tensor</span><span class="p">(</span><span class="n">shape</span><span class="p">,</span> <span class="n">dtype</span><span class="p">,</span> <span class="n">scope</span><span class="o">=</span><span class="s2">&quot;shared&quot;</span><span class="p">,</span> <span class="n">layout</span><span class="o">=</span><span class="n">s_layout</span><span class="p">)</span>
     <span class="k">for</span> <span class="n">kk</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">8</span><span class="p">):</span>
         <span class="n">A_smem</span><span class="p">[</span><span class="n">tid</span><span class="p">,</span> <span class="n">kk</span><span class="p">]</span> <span class="o">=</span> <span class="n">Tx</span><span class="o">.</span><span class="n">cast</span><span class="p">(</span><span class="n">tid</span> <span class="o">*</span> <span class="mi">100</span> <span class="o">+</span> <span class="n">kk</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">dtype</span><span class="p">)</span>
@@ -748,7 +749,7 @@ excluded</strong> from this alignment check (they live in <em>partition-coordina
 which thread owns which element — and never appear in a single thread’s physical
 address). For <code class="docutils literal notranslate"><span class="pre">8</span></code> contiguous <code class="docutils literal notranslate"><span class="pre">float32</span></code> that is <code class="docutils literal notranslate"><span class="pre">vec</span> <span class="pre">=</span> <span class="pre">4</span></code>, so <code class="docutils literal notranslate"><span class="pre">outer</span> <span class="pre">=</span> <span class="pre">2</span></code>.</p>
 <p><strong>3. Per-thread base offset + serial loop.</strong> The shared-side base offset is built
-from thread-axis placeholders (substituted with the real <code class="docutils literal notranslate"><span class="pre">Tx.lane_id()</span></code> etc.),
+from thread-axis placeholders (substituted with the real <code class="docutils literal notranslate"><span class="pre">Tx.cuda.lane_id()</span></code> etc.),
 and the register side is a flat per-thread <code class="docutils literal notranslate"><span class="pre">local</span></code> buffer. The emit is a serial
 loop to limit generated code size:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">r_local</span> <span class="o">=</span> <span class="n">r_buf</span><span class="o">.</span><span class="n">local</span><span class="p">()</span>                      <span class="c1"># raw per-thread physical span</span>
