@@ -20,8 +20,7 @@ var searchData=
   ['vars_17',['vars',['../classtvm_1_1LambdaExprNode.html#ac9e5088a7fafd43feecf75e35d10b111',1,'tvm::LambdaExprNode::vars'],['../classtvm_1_1script_1_1ir__builder_1_1ir_1_1ForFrameNode.html#a4f577d20494db64bc50ffbb8e3f3b849',1,'tvm::script::ir_builder::ir::ForFrameNode::vars']]],
   ['vdevice_18',['vdevice',['../classtvm_1_1relax_1_1TensorTypeNode.html#a67c8791525c1523c77126c50826aab9e',1,'tvm::relax::TensorTypeNode']]],
   ['vdevice_5fid_19',['vdevice_id',['../classtvm_1_1relax_1_1VDeviceNode.html#a61b61001f1f524a7a975e155bd26e913',1,'tvm::relax::VDeviceNode']]],
-  ['vector_5fbytes_20',['vector_bytes',['../namespacetvm_1_1s__tir_1_1attr.html#a0b4f1c2f0cb910c158d73c2dfb85e1d0',1,'tvm::s_tir::attr']]],
-  ['vectors_21',['vectors',['../classtvm_1_1prim_1_1ShuffleNode.html#a5c4f30fd8fda6cfd4f5bae63d3e1edac',1,'tvm::prim::ShuffleNode']]],
-  ['verbose_5fexpr_22',['verbose_expr',['../classtvm_1_1PrinterConfigNode.html#a434403f4e4cb71c75a7be8cba4845901',1,'tvm::PrinterConfigNode']]],
-  ['visited_5f_23',['visited_',['../classtvm_1_1relax_1_1DFPatternVisitor.html#a732b7b279096d103ef38fed513a54779',1,'tvm::relax::DFPatternVisitor']]]
+  ['vectors_20',['vectors',['../classtvm_1_1prim_1_1ShuffleNode.html#a5c4f30fd8fda6cfd4f5bae63d3e1edac',1,'tvm::prim::ShuffleNode']]],
+  ['verbose_5fexpr_21',['verbose_expr',['../classtvm_1_1PrinterConfigNode.html#a434403f4e4cb71c75a7be8cba4845901',1,'tvm::PrinterConfigNode']]],
+  ['visited_5f_22',['visited_',['../classtvm_1_1relax_1_1DFPatternVisitor.html#a732b7b279096d103ef38fed513a54779',1,'tvm::relax::DFPatternVisitor']]]
 ];
