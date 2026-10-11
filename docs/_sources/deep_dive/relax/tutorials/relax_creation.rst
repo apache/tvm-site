@@ -166,7 +166,7 @@ TensorIR functions in Relax function.
     @I.ir_module
     class Module:
         @Ts.function
-        def relu(X: T.Tensor((n, m), "float32", layout=None), Y: T.Tensor((n, m), "float32", layout=None)):
+        def relu(X: T.Tensor((n, m), "float32"), Y: T.Tensor((n, m), "float32")):
             T.func_attr({"s_tir": True, "script.namespace": "s_tir"})
             with Ts.sblock("root"):
                 Ts.reads()
@@ -397,7 +397,7 @@ Tensor Expression(TE), TensorIR functions or other TVM packed functions.
     @I.ir_module
     class Module:
         @Ts.function(private=True)
-        def relu(env_linear: T.Tensor((n, T.int64(128)), "float32", layout=None), compute: T.Tensor((n, T.int64(128)), "float32", layout=None)):
+        def relu(env_linear: T.Tensor((n, T.int64(128)), "float32"), compute: T.Tensor((n, T.int64(128)), "float32")):
             T.func_attr({"s_tir": True, "script.namespace": "s_tir", "tirx.noalias": True})
             with Ts.sblock("root"):
                 Ts.reads()
@@ -412,7 +412,7 @@ Tensor Expression(TE), TensorIR functions or other TVM packed functions.
                             compute[v_i0, v_i1] = T.max(env_linear[v_i0, v_i1], T.float32(0.0))
 
         @Ts.function
-        def tir_linear(X: T.Tensor((M, K), "float32", layout=None), W: T.Tensor((N, K), "float32", layout=None), B: T.Tensor((N,), "float32", layout=None), Z: T.Tensor((M, N), "float32", layout=None)):
+        def tir_linear(X: T.Tensor((M, K), "float32"), W: T.Tensor((N, K), "float32"), B: T.Tensor((N,), "float32"), Z: T.Tensor((M, N), "float32")):
             T.func_attr({"s_tir": True, "script.namespace": "s_tir"})
             with Ts.sblock("root"):
                 Ts.reads()
@@ -576,7 +576,7 @@ Relax functions, TensorIR functions and other TVM packed functions.
     @I.ir_module
     class Module:
         @Ts.function(private=True)
-        def relu(lv: T.Tensor((n, T.int64(128)), "float32", layout=None), compute: T.Tensor((n, T.int64(128)), "float32", layout=None)):
+        def relu(lv: T.Tensor((n, T.int64(128)), "float32"), compute: T.Tensor((n, T.int64(128)), "float32")):
             T.func_attr({"s_tir": True, "script.namespace": "s_tir", "tirx.noalias": True})
             with Ts.sblock("root"):
                 Ts.reads()
@@ -591,7 +591,7 @@ Relax functions, TensorIR functions and other TVM packed functions.
                             compute[v_i0, v_i1] = T.max(lv[v_i0, v_i1], T.float32(0.0))
 
         @Ts.function
-        def tir_linear(X: T.Tensor((M, K), "float32", layout=None), W: T.Tensor((N, K), "float32", layout=None), B: T.Tensor((N,), "float32", layout=None), Z: T.Tensor((M, N), "float32", layout=None)):
+        def tir_linear(X: T.Tensor((M, K), "float32"), W: T.Tensor((N, K), "float32"), B: T.Tensor((N,), "float32"), Z: T.Tensor((M, N), "float32")):
             T.func_attr({"s_tir": True, "script.namespace": "s_tir"})
             with Ts.sblock("root"):
                 Ts.reads()

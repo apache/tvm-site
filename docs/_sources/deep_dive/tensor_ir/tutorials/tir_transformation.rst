@@ -121,7 +121,7 @@ original implementation.
 
     Execution time summary:
      mean (ms)   median (ms)    max (ms)     min (ms)     std (ms)  
-       2.4887       2.4887       2.4887       2.4887       0.0000                  
+       2.4793       2.4793       2.4793       2.4793       0.0000                  
 
 
 
@@ -219,12 +219,12 @@ The outcome of the transformation can be examined, as it is retained within ``sc
     @I.ir_module
     class Module:
         @Ts.function
-        def main(A: T.Tensor((128, 128), "float32", layout=None), B: T.Tensor((128, 128), "float32", layout=None), C: T.Tensor((128, 128), "float32", layout=None)):
+        def main(A: T.Tensor((128, 128), "float32"), B: T.Tensor((128, 128), "float32"), C: T.Tensor((128, 128), "float32")):
             T.func_attr({"s_tir": True, "script.namespace": "s_tir", "tirx.noalias": True})
             with Ts.sblock("root"):
                 Ts.reads()
                 Ts.writes()
-                v = Ts.sblock_alloc_tensor((128, 128), "float32", layout=None)
+                v = Ts.sblock_alloc_tensor((128, 128), "float32")
                 for i in range(128):
                     for j_0 in range(16):
                         for j_1 in range(8):
@@ -283,12 +283,12 @@ action involves reordering these two loops.
     @I.ir_module
     class Module:
         @Ts.function
-        def main(A: T.Tensor((128, 128), "float32", layout=None), B: T.Tensor((128, 128), "float32", layout=None), C: T.Tensor((128, 128), "float32", layout=None)):
+        def main(A: T.Tensor((128, 128), "float32"), B: T.Tensor((128, 128), "float32"), C: T.Tensor((128, 128), "float32")):
             T.func_attr({"s_tir": True, "script.namespace": "s_tir", "tirx.noalias": True})
             with Ts.sblock("root"):
                 Ts.reads()
                 Ts.writes()
-                v = Ts.sblock_alloc_tensor((128, 128), "float32", layout=None)
+                v = Ts.sblock_alloc_tensor((128, 128), "float32")
                 for i in range(128):
                     for j_0 in range(16):
                         for k in range(128):
@@ -313,7 +313,7 @@ action involves reordering these two loops.
 
     Execution time summary:
      mean (ms)   median (ms)    max (ms)     min (ms)     std (ms)  
-       0.8629       0.8629       0.8629       0.8629       0.0000                  
+       0.8651       0.8651       0.8651       0.8651       0.0000                  
 
 
 
@@ -352,12 +352,12 @@ variant. First, we employ a primitive known as **reverse_compute_at** to relocat
     @I.ir_module
     class Module:
         @Ts.function
-        def main(A: T.Tensor((128, 128), "float32", layout=None), B: T.Tensor((128, 128), "float32", layout=None), C: T.Tensor((128, 128), "float32", layout=None)):
+        def main(A: T.Tensor((128, 128), "float32"), B: T.Tensor((128, 128), "float32"), C: T.Tensor((128, 128), "float32")):
             T.func_attr({"s_tir": True, "script.namespace": "s_tir", "tirx.noalias": True})
             with Ts.sblock("root"):
                 Ts.reads()
                 Ts.writes()
-                v = Ts.sblock_alloc_tensor((128, 128), "float32", layout=None)
+                v = Ts.sblock_alloc_tensor((128, 128), "float32")
                 for i in range(128):
                     for j_0 in range(16):
                         for k in range(128):
@@ -421,12 +421,12 @@ from the reduction update via the **decompose_reduction** primitive.
     @I.ir_module
     class Module:
         @Ts.function
-        def main(A: T.Tensor((128, 128), "float32", layout=None), B: T.Tensor((128, 128), "float32", layout=None), C: T.Tensor((128, 128), "float32", layout=None)):
+        def main(A: T.Tensor((128, 128), "float32"), B: T.Tensor((128, 128), "float32"), C: T.Tensor((128, 128), "float32")):
             T.func_attr({"s_tir": True, "script.namespace": "s_tir", "tirx.noalias": True})
             with Ts.sblock("root"):
                 Ts.reads()
                 Ts.writes()
-                v = Ts.sblock_alloc_tensor((128, 128), "float32", layout=None)
+                v = Ts.sblock_alloc_tensor((128, 128), "float32")
                 for i in range(128):
                     for j_0 in range(16):
                         for j_1_init in range(8):
@@ -455,7 +455,7 @@ from the reduction update via the **decompose_reduction** primitive.
 
     Execution time summary:
      mean (ms)   median (ms)    max (ms)     min (ms)     std (ms)  
-       0.3473       0.3473       0.3473       0.3473       0.0000                  
+       0.3480       0.3480       0.3480       0.3480       0.0000                  
 
 
 
@@ -527,12 +527,12 @@ Alternatively, we can output the IRModule in conjunction with the historical tra
     @I.ir_module
     class Module:
         @Ts.function
-        def main(A: T.Tensor((128, 128), "float32", layout=None), B: T.Tensor((128, 128), "float32", layout=None), C: T.Tensor((128, 128), "float32", layout=None)):
+        def main(A: T.Tensor((128, 128), "float32"), B: T.Tensor((128, 128), "float32"), C: T.Tensor((128, 128), "float32")):
             T.func_attr({"s_tir": True, "script.namespace": "s_tir", "tirx.noalias": True})
             with Ts.sblock("root"):
                 Ts.reads()
                 Ts.writes()
-                v = Ts.sblock_alloc_tensor((128, 128), "float32", layout=None)
+                v = Ts.sblock_alloc_tensor((128, 128), "float32")
                 for i in range(128):
                     for j_0 in range(16):
                         for j_1_init in range(8):

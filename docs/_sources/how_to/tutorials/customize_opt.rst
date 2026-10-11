@@ -344,7 +344,7 @@ it achieves a balance between performance and compilation time.
             return gv
 
         @Ts.function(private=True)
-        def transpose(fc2_weight: T.Tensor((T.int64(10), T.int64(256)), "float32", layout=None), T_transpose: T.Tensor((T.int64(256), T.int64(10)), "float32", layout=None)):
+        def transpose(fc2_weight: T.Tensor((T.int64(10), T.int64(256)), "float32"), T_transpose: T.Tensor((T.int64(256), T.int64(10)), "float32")):
             T.func_attr({"op_pattern": 2, "s_tir": True, "script.namespace": "s_tir", "tirx.is_scheduled": True, "tirx.noalias": True})
             with Ts.sblock("root"):
                 Ts.reads()
@@ -360,12 +360,12 @@ it achieves a balance between performance and compilation time.
                             T_transpose[v0, v1] = fc2_weight[v1, v0]
 
         @Ts.function(private=True)
-        def matmul(lv: T.Tensor((T.int64(1), T.int64(256)), "float32", layout=None), permute_dims1: T.Tensor((T.int64(256), T.int64(10)), "float32", layout=None), matmul: T.Tensor((T.int64(1), T.int64(10)), "float32", layout=None)):
+        def matmul(lv: T.Tensor((T.int64(1), T.int64(256)), "float32"), permute_dims1: T.Tensor((T.int64(256), T.int64(10)), "float32"), matmul: T.Tensor((T.int64(1), T.int64(10)), "float32")):
             T.func_attr({"op_pattern": 4, "s_tir": True, "script.namespace": "s_tir", "tirx.is_scheduled": True, "tirx.noalias": True})
             with Ts.sblock("root"):
                 Ts.reads()
                 Ts.writes()
-                matmul_rf_local = Ts.sblock_alloc_tensor((T.int64(16), T.int64(1), T.int64(10)), "float32", scope="local", layout=None)
+                matmul_rf_local = Ts.sblock_alloc_tensor((T.int64(16), T.int64(1), T.int64(10)), "float32", scope="local")
                 for ax0_fused_0 in T.thread_binding(T.int64(1), thread="blockIdx.x"):
                     for ax0_fused_1 in T.thread_binding(T.int64(10), thread="threadIdx.x"):
                         for ax1_fused_1 in T.thread_binding(T.int64(16), thread="threadIdx.y"):

@@ -10,7 +10,8 @@ var searchData=
   ['device_5fapi_2eh_7',['device_api.h',['../device__api_8h.html',1,'']]],
   ['dilate_2eh_8',['dilate.h',['../dilate_8h.html',1,'']]],
   ['disco_5fworker_2eh_9',['disco_worker.h',['../disco__worker_8h.html',1,'']]],
-  ['distributed_2eh_10',['distributed.h',['../distributed_8h.html',1,'']]],
-  ['doc_2eh_11',['doc.h',['../doc_8h.html',1,'']]],
-  ['doc_5ftranslator_2eh_12',['doc_translator.h',['../doc__translator_8h.html',1,'']]]
+  ['dispatch_2eh_10',['dispatch.h',['../dispatch_8h.html',1,'']]],
+  ['distributed_2eh_11',['distributed.h',['../distributed_8h.html',1,'']]],
+  ['doc_2eh_12',['doc.h',['../doc_8h.html',1,'']]],
+  ['doc_5ftranslator_2eh_13',['doc_translator.h',['../doc__translator_8h.html',1,'']]]
 ];

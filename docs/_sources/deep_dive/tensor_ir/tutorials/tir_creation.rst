@@ -420,12 +420,12 @@ and one output parameter **C**.
     @I.ir_module
     class Module:
         @Ts.function
-        def mm_relu(A: T.Tensor((128, 128), "float32", layout=None), B: T.Tensor((128, 128), "float32", layout=None), C: T.Tensor((128, 128), "float32", layout=None)):
+        def mm_relu(A: T.Tensor((128, 128), "float32"), B: T.Tensor((128, 128), "float32"), C: T.Tensor((128, 128), "float32")):
             T.func_attr({"s_tir": True, "script.namespace": "s_tir", "tirx.noalias": True})
             with Ts.sblock("root"):
                 Ts.reads()
                 Ts.writes()
-                Y = Ts.sblock_alloc_tensor((128, 128), "float32", layout=None)
+                Y = Ts.sblock_alloc_tensor((128, 128), "float32")
                 for i in range(128):
                     for j in range(128):
                         for k in range(128):
@@ -494,12 +494,12 @@ is that we need to specify the shape of the input tensors as symbolic variables.
     @I.ir_module
     class Module:
         @Ts.function
-        def mm_relu(A: T.Tensor((m, n), "float32", layout=None), B: T.Tensor((k, n), "float32", layout=None), C: T.Tensor((m, n), "float32", layout=None)):
+        def mm_relu(A: T.Tensor((m, n), "float32"), B: T.Tensor((k, n), "float32"), C: T.Tensor((m, n), "float32")):
             T.func_attr({"s_tir": True, "script.namespace": "s_tir", "tirx.noalias": True})
             with Ts.sblock("root"):
                 Ts.reads()
                 Ts.writes()
-                Y = Ts.sblock_alloc_tensor((m, n), "float32", layout=None)
+                Y = Ts.sblock_alloc_tensor((m, n), "float32")
                 for i in range(m):
                     for j in range(n):
                         for k_1 in range(k):

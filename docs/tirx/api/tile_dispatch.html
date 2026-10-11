@@ -631,8 +631,8 @@ document.write(`
 <h1>Tensor Instruction Registration<a class="headerlink" href="#tensor-instruction-registration" title="Link to this heading">#</a></h1>
 <p>Backend authors define an <code class="docutils literal notranslate"><span class="pre">Instruction</span></code> with its canonical operator name,
 ordered <code class="docutils literal notranslate"><span class="pre">Operand</span></code> list, reflected static attribute schema, and one lowerer.
-The shared implementation is <code class="docutils literal notranslate"><span class="pre">tvm.tirx.tensor_instruction</span></code>; CUDA and
-Trainium’s <code class="docutils literal notranslate"><span class="pre">tensor_instructions.py</span></code> files contain the concrete contracts.</p>
+The shared implementation is <code class="docutils literal notranslate"><span class="pre">tvm.tirx.tile.instruction</span></code>; CUDA and
+Trainium’s <code class="docutils literal notranslate"><span class="pre">tile/instructions.py</span></code> files contain the concrete contracts.</p>
 <p>Registration installs the fixed argument count, void return type, opaque
 side effects, category, printer name, and native Call validator on the Op.
 The validator also runs for directly constructed Calls and printer entry.
@@ -646,6 +646,19 @@ contracts rather than select a different instruction family.</p>
 only for instructions that own such scratch storage; do not use it to hide
 caller-owned algorithms. See <a class="reference internal" href="../arch/tile_dispatch.html"><span class="doc">Tensor Instruction Lowering</span></a> for callbacks and
 the statement replacement boundary.</p>
+<p>The common Python API is under <code class="docutils literal notranslate"><span class="pre">tvm.tirx.tile</span></code> (also <code class="docutils literal notranslate"><span class="pre">T.tile</span></code>):
+<code class="docutils literal notranslate"><span class="pre">Instruction</span></code>, <code class="docutils literal notranslate"><span class="pre">Operand</span></code>, <code class="docutils literal notranslate"><span class="pre">TensorCall</span></code>, and <code class="docutils literal notranslate"><span class="pre">DispatchContext</span></code>. Backend
+implementations live under <code class="docutils literal notranslate"><span class="pre">tvm.backend.cuda.tile</span></code> and
+<code class="docutils literal notranslate"><span class="pre">tvm.backend.trn.tile</span></code>. Their user-facing instruction paths remain
+<code class="docutils literal notranslate"><span class="pre">T.cuda.tile</span></code> and <code class="docutils literal notranslate"><span class="pre">T.trn.tile</span></code>. Operator names and serialized type keys
+remain unchanged.</p>
+<p>Execution scopes are generic backend/name identities. Backend load hooks
+register their supported scopes and ordering; CUDA exposes
+<code class="docutils literal notranslate"><span class="pre">T.cuda.ExecScope(&quot;warp&quot;)</span></code> and Trainium exposes
+<code class="docutils literal notranslate"><span class="pre">T.trn.ExecScope(&quot;thread&quot;)</span></code>. A string instruction scope is resolved by the
+instruction’s backend. CUDA predicate analysis, index bindings, and active
+thread sets live in its private tile implementation; Trainium does not use
+CUDA’s execution-context model.</p>
 </section>
 
 

@@ -11,7 +11,7 @@ var searchData=
   ['var_5fargs_5finfo_8',['var_args_info',['../classtvm_1_1OpNode.html#a126f0c272afde9f28489d80e446fb5c8',1,'tvm::OpNode']]],
   ['var_5fget_5for_5falloc_5fid_9',['var_get_or_alloc_id',['../structtvm_1_1script_1_1printer_1_1DocTranslatorVTable.html#adaf16dc3885bed39cc9daba196e5abd1',1,'tvm::script::printer::DocTranslatorVTable']]],
   ['var_5fname_10',['var_name',['../classtvm_1_1script_1_1ir__builder_1_1relax_1_1IfFrameNode.html#ab7e517b6100fa4c236bd88cc1a9a600a',1,'tvm::script::ir_builder::relax::IfFrameNode']]],
-  ['var_5frange_5fmap_11',['var_range_map',['../classtvm_1_1tirx_1_1DispatchContextNode.html#a7909dd3b101c742b55e145b7f43b92b9',1,'tvm::tirx::DispatchContextNode']]],
+  ['var_5frange_5fmap_11',['var_range_map',['../classtvm_1_1tirx_1_1tile_1_1DispatchContextNode.html#a5cc8339397961c6d7657989b9bac04db',1,'tvm::tirx::tile::DispatchContextNode']]],
   ['var_5fremap_5f_12',['var_remap_',['../classtvm_1_1relax_1_1ExprMutator.html#a086df1b081c437d4967b85af05ec6b1f',1,'tvm::relax::ExprMutator']]],
   ['var_5fty_5fargs_5finfo_13',['var_ty_args_info',['../classtvm_1_1OpNode.html#ab6e6b14ea08f87dbb30148bae6a6d5a6',1,'tvm::OpNode']]],
   ['var_5fusages_14',['var_usages',['../classtvm_1_1relax_1_1transform_1_1PatternCheckContextNode.html#afa29eae60eeea28891d6efebf3ef61fa',1,'tvm::relax::transform::PatternCheckContextNode']]],
