@@ -663,22 +663,20 @@ Scratch tensors are created in the body with the APIs below. Index a tensor with
 pointer with <code class="docutils literal notranslate"><span class="pre">A.ptr_to([i,</span> <span class="pre">j])</span></code> or the raw data pointer <code class="docutils literal notranslate"><span class="pre">A.data</span></code>.</p>
 <section id="declaring-tensors">
 <h2>Declaring tensors<a class="headerlink" href="#declaring-tensors" title="Link to this heading">#</a></h2>
-<p>The following APIs create a tensor variable:</p>
+<p>The following calls bind tensor variables when assigned in a script function:</p>
 <ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">Tx.alloc_tensor(shape,</span> <span class="pre">dtype,</span> <span class="pre">scope=...,</span> <span class="pre">...)</span></code> — <strong>allocates new storage</strong>
-(binds a <code class="docutils literal notranslate"><span class="pre">tirx.alloc_tensor</span></code> call) and returns an <code class="docutils literal notranslate"><span class="pre">ir.Var</span></code>. <code class="docutils literal notranslate"><span class="pre">Tx.alloc_shared</span></code> /
-<code class="docutils literal notranslate"><span class="pre">Tx.alloc_local</span></code> are just <code class="docutils literal notranslate"><span class="pre">alloc_tensor</span></code> with <code class="docutils literal notranslate"><span class="pre">scope=&quot;shared&quot;</span></code> /
-<code class="docutils literal notranslate"><span class="pre">scope=&quot;local&quot;</span></code>.</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">Tx.decl_tensor(shape,</span> <span class="pre">dtype,</span> <span class="pre">data=...,</span> <span class="pre">...)</span></code> — <strong>declares a view</strong> over an
-existing pointer <code class="docutils literal notranslate"><span class="pre">data</span></code> (no allocation); use it to alias or reinterpret
-storage — for example, a sub-region of a pool. With <code class="docutils literal notranslate"><span class="pre">data=None</span></code> it allocates,
-like <code class="docutils literal notranslate"><span class="pre">alloc_tensor</span></code>.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Tx.alloc_tensor(ty_args=[Tx.Tensor(shape,</span> <span class="pre">dtype,</span> <span class="pre">scope=scope)])</span></code>
+<strong>allocates new storage</strong>. <code class="docutils literal notranslate"><span class="pre">Tx.alloc_shared</span></code> and <code class="docutils literal notranslate"><span class="pre">Tx.alloc_local</span></code> remain
+conveniences for constructing a tensor type with shared or local storage.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Tx.decl_tensor(data,</span> <span class="pre">ty_args=[Tx.Tensor(shape,</span> <span class="pre">dtype,</span> <span class="pre">scope=scope)])</span></code>
+<strong>declares a view</strong> over an existing pointer <code class="docutils literal notranslate"><span class="pre">data</span></code> (no allocation); use it
+to alias or reinterpret storage, for example a sub-region of a pool.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">Tx.cuda.decl_tmem(addr,</span> <span class="pre">ty_args=[Tx.Tensor(...)])</span></code> — declares a tensor over
 externally allocated tensor memory. The address is a value operand; the tensor
 type supplies shape, dtype, scope and layout.</p></li>
 </ul>
 <p><code class="docutils literal notranslate"><span class="pre">A.data</span></code> projects the physical pointer from the tensor variable.
-<code class="docutils literal notranslate"><span class="pre">alloc_tensor</span></code> supplies new storage; <code class="docutils literal notranslate"><span class="pre">decl_tensor</span></code> with <code class="docutils literal notranslate"><span class="pre">data</span></code> binds an
+<code class="docutils literal notranslate"><span class="pre">alloc_tensor</span></code> supplies new storage; <code class="docutils literal notranslate"><span class="pre">decl_tensor</span></code> binds an
 existing pointer expression. See <a class="reference internal" href="data_types.html"><span class="doc">Data types and expressions</span></a>.</p>
 <p>The tensor descriptors share these parameters:</p>
 <div class="pst-scrollable-table-container"><table class="table">
@@ -753,7 +751,9 @@ row-major</p></td>
 <span class="k">def</span><span class="w"> </span><span class="nf">kernel</span><span class="p">(</span><span class="n">A</span><span class="p">:</span> <span class="n">Tx</span><span class="o">.</span><span class="n">Tensor</span><span class="p">((</span><span class="n">M</span><span class="p">,</span> <span class="n">K</span><span class="p">),</span> <span class="s2">&quot;float16&quot;</span><span class="p">,</span> <span class="n">align</span><span class="o">=</span><span class="mi">16</span><span class="p">)):</span>
     <span class="n">As</span> <span class="o">=</span> <span class="n">Tx</span><span class="o">.</span><span class="n">alloc_shared</span><span class="p">((</span><span class="n">BM</span><span class="p">,</span> <span class="n">BK</span><span class="p">),</span> <span class="s2">&quot;float16&quot;</span><span class="p">)</span>  <span class="c1"># new shared tile</span>
     <span class="n">acc</span> <span class="o">=</span> <span class="n">Tx</span><span class="o">.</span><span class="n">alloc_local</span><span class="p">((</span><span class="mi">4</span><span class="p">,),</span> <span class="s2">&quot;float32&quot;</span><span class="p">)</span>  <span class="c1"># per-thread accumulator</span>
-    <span class="n">view</span> <span class="o">=</span> <span class="n">Tx</span><span class="o">.</span><span class="n">decl_tensor</span><span class="p">((</span><span class="n">BM</span><span class="p">,</span> <span class="n">BK</span><span class="p">),</span> <span class="s2">&quot;float16&quot;</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">As</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>  <span class="c1"># a view over As</span>
+    <span class="n">view</span> <span class="o">=</span> <span class="n">Tx</span><span class="o">.</span><span class="n">decl_tensor</span><span class="p">(</span>
+        <span class="n">As</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="n">ty_args</span><span class="o">=</span><span class="p">[</span><span class="n">Tx</span><span class="o">.</span><span class="n">Tensor</span><span class="p">((</span><span class="n">BM</span><span class="p">,</span> <span class="n">BK</span><span class="p">),</span> <span class="s2">&quot;float16&quot;</span><span class="p">,</span> <span class="n">scope</span><span class="o">=</span><span class="s2">&quot;shared&quot;</span><span class="p">)]</span>
+    <span class="p">)</span>  <span class="c1"># a view over As</span>
 </pre></div>
 </div>
 <p><strong>A ptr-based tensor is just metadata over a pointer.</strong> For any non-tmem tensor,
@@ -821,11 +821,17 @@ whole block sees the writes, then read it back:</p>
 <p><strong>Dynamic</strong> shared memory (<code class="docutils literal notranslate"><span class="pre">scope=&quot;shared.dyn&quot;</span></code>) is sized per launch (the
 <code class="docutils literal notranslate"><span class="pre">sharedMemBytes</span></code> launch parameter), not at compile time. A kernel may have <strong>only
 one</strong> dynamic-shared allocation — the <em>arena</em>. So you allocate it once and <code class="docutils literal notranslate"><span class="pre">decl</span></code>
-each tensor as a view into it: <code class="docutils literal notranslate"><span class="pre">Tx.decl_tensor</span></code> with <code class="docutils literal notranslate"><span class="pre">data=</span></code> the arena pointer
-and an <code class="docutils literal notranslate"><span class="pre">elem_offset</span></code>:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">arena</span> <span class="o">=</span> <span class="n">Tx</span><span class="o">.</span><span class="n">alloc_tensor</span><span class="p">((</span><span class="mi">128</span><span class="p">,),</span> <span class="s2">&quot;float32&quot;</span><span class="p">,</span> <span class="n">scope</span><span class="o">=</span><span class="s2">&quot;shared.dyn&quot;</span><span class="p">)</span>   <span class="c1"># the one arena</span>
-<span class="n">As</span> <span class="o">=</span> <span class="n">Tx</span><span class="o">.</span><span class="n">decl_tensor</span><span class="p">((</span><span class="mi">64</span><span class="p">,),</span> <span class="s2">&quot;float32&quot;</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">arena</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="n">scope</span><span class="o">=</span><span class="s2">&quot;shared.dyn&quot;</span><span class="p">)</span>                 <span class="c1"># offset 0</span>
-<span class="n">Bs</span> <span class="o">=</span> <span class="n">Tx</span><span class="o">.</span><span class="n">decl_tensor</span><span class="p">((</span><span class="mi">64</span><span class="p">,),</span> <span class="s2">&quot;float32&quot;</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="n">arena</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="n">elem_offset</span><span class="o">=</span><span class="mi">64</span><span class="p">,</span> <span class="n">scope</span><span class="o">=</span><span class="s2">&quot;shared.dyn&quot;</span><span class="p">)</span> <span class="c1"># offset 64</span>
+each tensor as a view into it: <code class="docutils literal notranslate"><span class="pre">Tx.decl_tensor</span></code> with the arena pointer as its
+first argument and an <code class="docutils literal notranslate"><span class="pre">elem_offset</span></code>:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">arena</span> <span class="o">=</span> <span class="n">Tx</span><span class="o">.</span><span class="n">alloc_tensor</span><span class="p">(</span>
+    <span class="n">ty_args</span><span class="o">=</span><span class="p">[</span><span class="n">Tx</span><span class="o">.</span><span class="n">Tensor</span><span class="p">((</span><span class="mi">128</span><span class="p">,),</span> <span class="s2">&quot;float32&quot;</span><span class="p">,</span> <span class="n">scope</span><span class="o">=</span><span class="s2">&quot;shared.dyn&quot;</span><span class="p">)]</span>
+<span class="p">)</span>  <span class="c1"># the one arena</span>
+<span class="n">As</span> <span class="o">=</span> <span class="n">Tx</span><span class="o">.</span><span class="n">decl_tensor</span><span class="p">(</span>
+    <span class="n">arena</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="n">ty_args</span><span class="o">=</span><span class="p">[</span><span class="n">Tx</span><span class="o">.</span><span class="n">Tensor</span><span class="p">((</span><span class="mi">64</span><span class="p">,),</span> <span class="s2">&quot;float32&quot;</span><span class="p">,</span> <span class="n">scope</span><span class="o">=</span><span class="s2">&quot;shared.dyn&quot;</span><span class="p">)]</span>
+<span class="p">)</span>  <span class="c1"># offset 0</span>
+<span class="n">Bs</span> <span class="o">=</span> <span class="n">Tx</span><span class="o">.</span><span class="n">decl_tensor</span><span class="p">(</span>
+    <span class="n">arena</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="n">ty_args</span><span class="o">=</span><span class="p">[</span><span class="n">Tx</span><span class="o">.</span><span class="n">Tensor</span><span class="p">((</span><span class="mi">64</span><span class="p">,),</span> <span class="s2">&quot;float32&quot;</span><span class="p">,</span> <span class="n">elem_offset</span><span class="o">=</span><span class="mi">64</span><span class="p">,</span> <span class="n">scope</span><span class="o">=</span><span class="s2">&quot;shared.dyn&quot;</span><span class="p">)]</span>
+<span class="p">)</span>  <span class="c1"># offset 64</span>
 <span class="n">As</span><span class="p">[</span><span class="n">tx</span><span class="p">]</span> <span class="o">=</span> <span class="n">A</span><span class="p">[</span><span class="n">tx</span><span class="p">]</span>
 <span class="n">Bs</span><span class="p">[</span><span class="n">tx</span><span class="p">]</span> <span class="o">=</span> <span class="n">B</span><span class="p">[</span><span class="n">tx</span><span class="p">]</span>
 <span class="n">Tx</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">cta_sync</span><span class="p">()</span>
@@ -841,8 +847,8 @@ boilerplate elided; arena named <code class="docutils literal notranslate"><span
 <span class="n">C_ptr</span><span class="p">[</span><span class="n">tx</span><span class="p">]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">smem</span><span class="p">[</span><span class="n">tx</span><span class="p">]</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">smem</span><span class="p">[</span><span class="n">tx</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">64</span><span class="p">];</span>
 </pre></div>
 </div>
-<p>(Two separate <code class="docutils literal notranslate"><span class="pre">alloc_tensor(scope=&quot;shared.dyn&quot;)</span></code> is an error — <em>only one dynamic
-shared memory allocation is allowed</em>.) So static shared memory is sized at compile
+<p>(Two separate <code class="docutils literal notranslate"><span class="pre">alloc_tensor</span></code> calls with <code class="docutils literal notranslate"><span class="pre">scope=&quot;shared.dyn&quot;</span></code> tensor types
+are an error — <em>only one dynamic shared memory allocation is allowed</em>.) So static shared memory is sized at compile
 time (<code class="docutils literal notranslate"><span class="pre">__shared__</span> <span class="pre">T</span> <span class="pre">x[N];</span></code>); dynamic shared memory is this one launch-sized arena
 with views decl’d at offsets inside it.</p>
 <div class="admonition note">
@@ -1125,7 +1131,13 @@ interprets the requested shape, so that shape is not constrained to the raw
 span.  Without <code class="docutils literal notranslate"><span class="pre">layout=</span></code>, omitting the shape always infers a one-dimensional
 physical storage span.  Only the explicit-<code class="docutils literal notranslate"><span class="pre">layout=</span></code> compatibility form with
 no shape infers a one-dimensional shape from the logical storage size:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">R</span>  <span class="o">=</span> <span class="n">Tx</span><span class="o">.</span><span class="n">alloc_tensor</span><span class="p">((</span><span class="mi">32</span><span class="p">,</span> <span class="mi">8</span><span class="p">),</span> <span class="s2">&quot;float32&quot;</span><span class="p">,</span> <span class="n">scope</span><span class="o">=</span><span class="s2">&quot;local&quot;</span><span class="p">,</span> <span class="n">layout</span><span class="o">=</span><span class="n">TileLayout</span><span class="p">(</span><span class="n">S</span><span class="p">[(</span><span class="mi">32</span><span class="p">,</span> <span class="mi">8</span><span class="p">)</span> <span class="p">:</span> <span class="p">(</span><span class="mi">1</span> <span class="o">@</span> <span class="n">laneid</span><span class="p">,</span> <span class="mi">1</span><span class="p">)]))</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">R</span> <span class="o">=</span> <span class="n">Tx</span><span class="o">.</span><span class="n">alloc_tensor</span><span class="p">(</span>
+    <span class="n">ty_args</span><span class="o">=</span><span class="p">[</span>
+        <span class="n">Tx</span><span class="o">.</span><span class="n">Tensor</span><span class="p">(</span>
+            <span class="p">(</span><span class="mi">32</span><span class="p">,</span> <span class="mi">8</span><span class="p">),</span> <span class="s2">&quot;float32&quot;</span><span class="p">,</span> <span class="n">scope</span><span class="o">=</span><span class="s2">&quot;local&quot;</span><span class="p">,</span> <span class="n">layout</span><span class="o">=</span><span class="n">TileLayout</span><span class="p">(</span><span class="n">S</span><span class="p">[(</span><span class="mi">32</span><span class="p">,</span> <span class="mi">8</span><span class="p">)</span> <span class="p">:</span> <span class="p">(</span><span class="mi">1</span> <span class="o">@</span> <span class="n">laneid</span><span class="p">,</span> <span class="mi">1</span><span class="p">)])</span>
+        <span class="p">)</span>
+    <span class="p">]</span>
+<span class="p">)</span>
 <span class="n">R_flat</span> <span class="o">=</span> <span class="n">R</span><span class="o">.</span><span class="n">local</span><span class="p">()</span>       <span class="c1"># this lane&#39;s 8 local elements, physical order</span>
 <span class="n">R_2d</span> <span class="o">=</span> <span class="n">R</span><span class="o">.</span><span class="n">local</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">4</span><span class="p">)</span>     <span class="c1"># the same elements, row-major 2x4 reshape</span>
 </pre></div>

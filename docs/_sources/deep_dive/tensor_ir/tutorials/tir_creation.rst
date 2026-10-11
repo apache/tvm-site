@@ -72,7 +72,7 @@ format of the ir_module and in TVMScript:
             B: T.Tensor((128, 128), "float32"),
             C: T.Tensor((128, 128), "float32"),
         ):
-            Y = T.alloc_tensor((128, 128), dtype="float32")
+            Y = T.alloc_tensor(ty_args=[T.Tensor((128, 128), "float32")])
             for i in range(128):
                 for j in range(128):
                     for k in range(128):
@@ -128,7 +128,7 @@ streamline the code:
             B: T.Tensor((128, 128), "float32"),
             C: T.Tensor((128, 128), "float32"),
         ):
-            Y = T.alloc_tensor((128, 128), dtype="float32")
+            Y = T.alloc_tensor(ty_args=[T.Tensor((128, 128), "float32")])
             for i, j, k in T.grid(128, 128, 128):
                 with Ts.sblock("Y"):
                     vi, vj, vk = Ts.axis.remap("SSR", [i, j, k])
@@ -199,7 +199,7 @@ be used to ascertain the shape and data type of a TensorIR.
             B: T.Tensor((K, N), dtype),
             C: T.Tensor((M, N), dtype),
         ):
-            Y = T.alloc_tensor((M, N), dtype)
+            Y = T.alloc_tensor(ty_args=[T.Tensor((M, N), dtype)])
             for i, j, k in T.grid(M, N, K):
                 with Ts.sblock("Y"):
                     vi, vj, vk = Ts.axis.remap("SSR", [i, j, k])
@@ -268,7 +268,7 @@ be used to ascertain the shape and data type of a TensorIR.
         def mm_relu(A: T.Tensor([M, K], dtype), B: T.Tensor([K, N], dtype), C: T.Tensor([M, N], dtype)):
             # Bind the input buffers with the dynamic shapes
 
-            Y = T.alloc_tensor((M, N), dtype)
+            Y = T.alloc_tensor(ty_args=[T.Tensor((M, N), dtype)])
             for i, j, k in T.grid(M, N, K):
                 with Ts.sblock("Y"):
                     vi, vj, vk = Ts.axis.remap("SSR", [i, j, k])

@@ -36,10 +36,10 @@ Computation times
      - 00:00.269
      - 0.0
    * - :ref:`sphx_glr_deep_dive_tensor_ir_tutorials_dlight_gpu_scheduling.py` (``dlight_gpu_scheduling.py``)
-     - 00:00.187
+     - 00:00.189
      - 0.0
    * - :ref:`sphx_glr_deep_dive_tensor_ir_tutorials_tir_creation.py` (``tir_creation.py``)
-     - 00:00.141
+     - 00:00.139
      - 0.0
    * - :ref:`sphx_glr_deep_dive_tensor_ir_tutorials_meta_schedule.py` (``meta_schedule.py``)
      - 00:00.012
