@@ -365,7 +365,7 @@ it achieves a balance between performance and compilation time.
             with Ts.sblock("root"):
                 Ts.reads()
                 Ts.writes()
-                matmul_rf_local = Ts.sblock_alloc_buffer((T.int64(16), T.int64(1), T.int64(10)), "float32", scope="local", layout=None)
+                matmul_rf_local = Ts.sblock_alloc_tensor((T.int64(16), T.int64(1), T.int64(10)), "float32", scope="local", layout=None)
                 for ax0_fused_0 in T.thread_binding(T.int64(1), thread="blockIdx.x"):
                     for ax0_fused_1 in T.thread_binding(T.int64(10), thread="threadIdx.x"):
                         for ax1_fused_1 in T.thread_binding(T.int64(16), thread="threadIdx.y"):

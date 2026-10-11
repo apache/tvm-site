@@ -1,11 +1,11 @@
 var searchData=
 [
-  ['matchbufferregion_0',['MatchBufferRegion',['../classtvm_1_1s__tir_1_1MatchBufferRegion.html',1,'tvm::s_tir']]],
-  ['matchbufferregionnode_1',['MatchBufferRegionNode',['../classtvm_1_1s__tir_1_1MatchBufferRegionNode.html',1,'tvm::s_tir']]],
-  ['matchcast_2',['MatchCast',['../classtvm_1_1relax_1_1MatchCast.html',1,'tvm::relax']]],
-  ['matchcastnode_3',['MatchCastNode',['../classtvm_1_1relax_1_1MatchCastNode.html',1,'tvm::relax']]],
-  ['matchresult_4',['MatchResult',['../classtvm_1_1relax_1_1MatchResult.html',1,'tvm::relax']]],
-  ['matchresultnode_5',['MatchResultNode',['../classtvm_1_1relax_1_1MatchResultNode.html',1,'tvm::relax']]],
+  ['matchcast_0',['MatchCast',['../classtvm_1_1relax_1_1MatchCast.html',1,'tvm::relax']]],
+  ['matchcastnode_1',['MatchCastNode',['../classtvm_1_1relax_1_1MatchCastNode.html',1,'tvm::relax']]],
+  ['matchresult_2',['MatchResult',['../classtvm_1_1relax_1_1MatchResult.html',1,'tvm::relax']]],
+  ['matchresultnode_3',['MatchResultNode',['../classtvm_1_1relax_1_1MatchResultNode.html',1,'tvm::relax']]],
+  ['matchtensorregion_4',['MatchTensorRegion',['../classtvm_1_1s__tir_1_1MatchTensorRegion.html',1,'tvm::s_tir']]],
+  ['matchtensorregionnode_5',['MatchTensorRegionNode',['../classtvm_1_1s__tir_1_1MatchTensorRegionNode.html',1,'tvm::s_tir']]],
   ['matmulattrs_6',['MatmulAttrs',['../structtvm_1_1relax_1_1MatmulAttrs.html',1,'tvm::relax']]],
   ['max_7',['Max',['../classtvm_1_1prim_1_1Max.html',1,'tvm::prim']]],
   ['maxnode_8',['MaxNode',['../classtvm_1_1prim_1_1MaxNode.html',1,'tvm::prim']]],

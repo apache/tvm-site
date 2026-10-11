@@ -58,7 +58,7 @@ First, let's take a look at the implementation of ``mm_relu`` in the previous se
             with Ts.sblock("root"):
                 Ts.reads()
                 Ts.writes()
-                Y = Ts.sblock_alloc_buffer((128, 128))
+                Y = Ts.sblock_alloc_tensor((128, 128))
                 for i, j, k in T.grid(128, 128, 128):
                     with Ts.sblock("Y"):
                         vi, vj, vk = Ts.axis.remap("SSR", [i, j, k])
@@ -121,7 +121,7 @@ original implementation.
 
     Execution time summary:
      mean (ms)   median (ms)    max (ms)     min (ms)     std (ms)  
-       2.5633       2.5633       2.5633       2.5633       0.0000                  
+       2.4999       2.4999       2.4999       2.4999       0.0000                  
 
 
 
@@ -224,7 +224,7 @@ The outcome of the transformation can be examined, as it is retained within ``sc
             with Ts.sblock("root"):
                 Ts.reads()
                 Ts.writes()
-                v = Ts.sblock_alloc_buffer((128, 128), "float32", layout=None)
+                v = Ts.sblock_alloc_tensor((128, 128), "float32", layout=None)
                 for i in range(128):
                     for j_0 in range(16):
                         for j_1 in range(8):
@@ -288,7 +288,7 @@ action involves reordering these two loops.
             with Ts.sblock("root"):
                 Ts.reads()
                 Ts.writes()
-                v = Ts.sblock_alloc_buffer((128, 128), "float32", layout=None)
+                v = Ts.sblock_alloc_tensor((128, 128), "float32", layout=None)
                 for i in range(128):
                     for j_0 in range(16):
                         for k in range(128):
@@ -313,7 +313,7 @@ action involves reordering these two loops.
 
     Execution time summary:
      mean (ms)   median (ms)    max (ms)     min (ms)     std (ms)  
-       0.8622       0.8622       0.8622       0.8622       0.0000                  
+       0.8641       0.8641       0.8641       0.8641       0.0000                  
 
 
 
@@ -357,7 +357,7 @@ variant. First, we employ a primitive known as **reverse_compute_at** to relocat
             with Ts.sblock("root"):
                 Ts.reads()
                 Ts.writes()
-                v = Ts.sblock_alloc_buffer((128, 128), "float32", layout=None)
+                v = Ts.sblock_alloc_tensor((128, 128), "float32", layout=None)
                 for i in range(128):
                     for j_0 in range(16):
                         for k in range(128):
@@ -426,7 +426,7 @@ from the reduction update via the **decompose_reduction** primitive.
             with Ts.sblock("root"):
                 Ts.reads()
                 Ts.writes()
-                v = Ts.sblock_alloc_buffer((128, 128), "float32", layout=None)
+                v = Ts.sblock_alloc_tensor((128, 128), "float32", layout=None)
                 for i in range(128):
                     for j_0 in range(16):
                         for j_1_init in range(8):
@@ -455,7 +455,7 @@ from the reduction update via the **decompose_reduction** primitive.
 
     Execution time summary:
      mean (ms)   median (ms)    max (ms)     min (ms)     std (ms)  
-       0.3530       0.3530       0.3530       0.3530       0.0000                  
+       0.3519       0.3519       0.3519       0.3519       0.0000                  
 
 
 
@@ -532,7 +532,7 @@ Alternatively, we can output the IRModule in conjunction with the historical tra
             with Ts.sblock("root"):
                 Ts.reads()
                 Ts.writes()
-                v = Ts.sblock_alloc_buffer((128, 128), "float32", layout=None)
+                v = Ts.sblock_alloc_tensor((128, 128), "float32", layout=None)
                 for i in range(128):
                     for j_0 in range(16):
                         for j_1_init in range(8):

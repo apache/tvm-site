@@ -1,9 +1,9 @@
 var searchData=
 [
   ['cacheindex_0',['CacheIndex',['../classtvm_1_1s__tir_1_1ScheduleNode.html#aec1e2353b87620ef554142349ec0c594',1,'tvm::s_tir::ScheduleNode']]],
-  ['cacheinplace_1',['CacheInplace',['../classtvm_1_1s__tir_1_1ScheduleNode.html#a09f1cd626bf8514c3e7d8393039d5c0e',1,'tvm::s_tir::ScheduleNode']]],
-  ['cacheread_2',['CacheRead',['../classtvm_1_1s__tir_1_1ScheduleNode.html#a1859bce31d9f5bed202ca90e9b6ab85d',1,'tvm::s_tir::ScheduleNode']]],
-  ['cachewrite_3',['CacheWrite',['../classtvm_1_1s__tir_1_1ScheduleNode.html#adb8919ca972244ea4eb13e9e5e4063df',1,'tvm::s_tir::ScheduleNode']]],
+  ['cacheinplace_1',['CacheInplace',['../classtvm_1_1s__tir_1_1ScheduleNode.html#a02de2be0be4628bb6736d6b23e53cc8c',1,'tvm::s_tir::ScheduleNode']]],
+  ['cacheread_2',['CacheRead',['../classtvm_1_1s__tir_1_1ScheduleNode.html#a4b1190a906525ce488e37d9be5d3a9fa',1,'tvm::s_tir::ScheduleNode']]],
+  ['cachewrite_3',['CacheWrite',['../classtvm_1_1s__tir_1_1ScheduleNode.html#a9b24d2a1031eb7c1bc6fd543cfc31562',1,'tvm::s_tir::ScheduleNode']]],
   ['calculateallocatedbytes_4',['calculateallocatedbytes',['../namespacetvm_1_1s__tir.html#a8162f5e98ef3340e1c3b836221440e7c',1,'tvm::s_tir::CalculateAllocatedBytes(const Function &amp;func)'],['../namespacetvm_1_1s__tir.html#afde008b394c5c0082ebe2fd055232dd5',1,'tvm::s_tir::CalculateAllocatedBytes(const IRModule &amp;mod)']]],
   ['calculateconstantbytes_5',['CalculateConstantBytes',['../namespacetvm_1_1tirx.html#a012bdaba37857108d906ddaefee3ab27',1,'tvm::tirx']]],
   ['calculateexprcomplexity_6',['CalculateExprComplexity',['../namespacetvm_1_1tirx.html#a014feab86894b7785a2e16678a0d7024',1,'tvm::tirx']]],
@@ -71,7 +71,7 @@ var searchData=
   ['commreduce_68',['CommReduce',['../namespacetvm_1_1topi.html#abd9a95441b6482890b9c89deffa15ed7',1,'tvm::topi']]],
   ['commreduceidx_69',['CommReduceIdx',['../namespacetvm_1_1topi.html#aad56211d823874ee3db1c35ccbdefe73',1,'tvm::topi']]],
   ['commreducer_70',['CommReducer',['../classtvm_1_1te_1_1CommReducer.html#afeead13b32a6c7eeb55fd9eb1d440ff6',1,'tvm::te::CommReducer']]],
-  ['compactbufferallocation_71',['CompactBufferAllocation',['../namespacetvm_1_1s__tir_1_1transform.html#a0bffbda7a6ffb6f0ad09052399f459a4',1,'tvm::s_tir::transform']]],
+  ['compacttensorallocation_71',['CompactTensorAllocation',['../namespacetvm_1_1s__tir_1_1transform.html#acbaf00aea360afd1da9812325a73c588',1,'tvm::s_tir::transform']]],
   ['compatiblewithshape_72',['compatiblewithshape',['../classtvm_1_1tirx_1_1LayoutNode.html#ab449832734dfb0ac8f8f17e00817a0ad',1,'tvm::tirx::LayoutNode::CompatibleWithShape()'],['../classtvm_1_1tirx_1_1TileLayoutNode.html#aa21909a1db1d0ff5e1bff703a83a11e0',1,'tvm::tirx::TileLayoutNode::CompatibleWithShape()'],['../classtvm_1_1tirx_1_1ComposeLayoutNode.html#a67ae08d561e5b95e0532726ef5416a93',1,'tvm::tirx::ComposeLayoutNode::CompatibleWithShape()']]],
   ['composelayout_73',['ComposeLayout',['../classtvm_1_1tirx_1_1ComposeLayout.html#ae5ff04800240e0423e8f5bac2911c231',1,'tvm::tirx::ComposeLayout']]],
   ['composelayoutnode_74',['composelayoutnode',['../classtvm_1_1tirx_1_1ComposeLayoutNode.html#a685d437fba3b84dc4f36e49822b9fde8',1,'tvm::tirx::ComposeLayoutNode::ComposeLayoutNode(ffi::UnsafeInit)'],['../classtvm_1_1tirx_1_1ComposeLayoutNode.html#a972d52fa7a102ba74dae95e96800319d',1,'tvm::tirx::ComposeLayoutNode::ComposeLayoutNode(TileLayout tile_layout)']]],

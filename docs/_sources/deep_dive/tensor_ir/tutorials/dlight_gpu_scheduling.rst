@@ -195,8 +195,8 @@ Here we use a common subset of rules. The full catalog (including ``LowBatchGEMV
             with Ts.sblock("root"):
                 Ts.reads()
                 Ts.writes()
-                matmul_intermediate_local = Ts.sblock_alloc_buffer((T.int64(1), T.int64(256)), "float32", scope="local", layout=None)
-                matmul_intermediate_rf_local = Ts.sblock_alloc_buffer((T.int64(16), T.int64(1), T.int64(256)), "float32", scope="local", layout=None)
+                matmul_intermediate_local = Ts.sblock_alloc_tensor((T.int64(1), T.int64(256)), "float32", scope="local", layout=None)
+                matmul_intermediate_rf_local = Ts.sblock_alloc_tensor((T.int64(16), T.int64(1), T.int64(256)), "float32", scope="local", layout=None)
                 for ax0_fused_0 in T.thread_binding(T.int64(16), thread="blockIdx.x"):
                     for ax0_fused_1 in T.thread_binding(T.int64(16), thread="threadIdx.x"):
                         for ax1_fused_1 in T.thread_binding(T.int64(16), thread="threadIdx.y"):
@@ -239,8 +239,8 @@ Here we use a common subset of rules. The full catalog (including ``LowBatchGEMV
             with Ts.sblock("root"):
                 Ts.reads()
                 Ts.writes()
-                matmul_intermediate_local = Ts.sblock_alloc_buffer((T.int64(1), T.int64(768)), "float32", scope="local", layout=None)
-                matmul_intermediate_rf_local = Ts.sblock_alloc_buffer((T.int64(16), T.int64(1), T.int64(768)), "float32", scope="local", layout=None)
+                matmul_intermediate_local = Ts.sblock_alloc_tensor((T.int64(1), T.int64(768)), "float32", scope="local", layout=None)
+                matmul_intermediate_rf_local = Ts.sblock_alloc_tensor((T.int64(16), T.int64(1), T.int64(768)), "float32", scope="local", layout=None)
                 for ax0_fused_0 in T.thread_binding(T.int64(48), thread="blockIdx.x"):
                     for ax0_fused_1 in T.thread_binding(T.int64(16), thread="threadIdx.x"):
                         for ax1_fused_1 in T.thread_binding(T.int64(16), thread="threadIdx.y"):
@@ -283,8 +283,8 @@ Here we use a common subset of rules. The full catalog (including ``LowBatchGEMV
             with Ts.sblock("root"):
                 Ts.reads()
                 Ts.writes()
-                relu_sum_shared = Ts.sblock_alloc_buffer((T.int64(1),), "float32", scope="shared", layout=None)
-                relu_var_sum_shared = Ts.sblock_alloc_buffer((T.int64(1),), "float32", scope="shared", layout=None)
+                relu_sum_shared = Ts.sblock_alloc_tensor((T.int64(1),), "float32", scope="shared", layout=None)
+                relu_var_sum_shared = Ts.sblock_alloc_tensor((T.int64(1),), "float32", scope="shared", layout=None)
                 for ax0_fused in T.thread_binding(T.int64(1), thread="blockIdx.x"):
                     for ax0 in range(T.int64(0), T.int64(1)):
                         for ax1_fused_1 in T.thread_binding(T.int64(256), thread="threadIdx.x"):
@@ -640,8 +640,8 @@ Insert the custom rule into the rule chain. Note that ``from_callable`` returns 
             with Ts.sblock("root"):
                 Ts.reads()
                 Ts.writes()
-                matmul_intermediate_local = Ts.sblock_alloc_buffer((T.int64(1), T.int64(256)), "float32", scope="local", layout=None)
-                matmul_intermediate_rf_local = Ts.sblock_alloc_buffer((T.int64(16), T.int64(1), T.int64(256)), "float32", scope="local", layout=None)
+                matmul_intermediate_local = Ts.sblock_alloc_tensor((T.int64(1), T.int64(256)), "float32", scope="local", layout=None)
+                matmul_intermediate_rf_local = Ts.sblock_alloc_tensor((T.int64(16), T.int64(1), T.int64(256)), "float32", scope="local", layout=None)
                 for ax0_fused_0 in T.thread_binding(T.int64(16), thread="blockIdx.x"):
                     for ax0_fused_1 in T.thread_binding(T.int64(16), thread="threadIdx.x"):
                         for ax1_fused_1 in T.thread_binding(T.int64(16), thread="threadIdx.y"):
@@ -684,8 +684,8 @@ Insert the custom rule into the rule chain. Note that ``from_callable`` returns 
             with Ts.sblock("root"):
                 Ts.reads()
                 Ts.writes()
-                matmul_intermediate_local = Ts.sblock_alloc_buffer((T.int64(1), T.int64(768)), "float32", scope="local", layout=None)
-                matmul_intermediate_rf_local = Ts.sblock_alloc_buffer((T.int64(16), T.int64(1), T.int64(768)), "float32", scope="local", layout=None)
+                matmul_intermediate_local = Ts.sblock_alloc_tensor((T.int64(1), T.int64(768)), "float32", scope="local", layout=None)
+                matmul_intermediate_rf_local = Ts.sblock_alloc_tensor((T.int64(16), T.int64(1), T.int64(768)), "float32", scope="local", layout=None)
                 for ax0_fused_0 in T.thread_binding(T.int64(48), thread="blockIdx.x"):
                     for ax0_fused_1 in T.thread_binding(T.int64(16), thread="threadIdx.x"):
                         for ax1_fused_1 in T.thread_binding(T.int64(16), thread="threadIdx.y"):
@@ -728,8 +728,8 @@ Insert the custom rule into the rule chain. Note that ``from_callable`` returns 
             with Ts.sblock("root"):
                 Ts.reads()
                 Ts.writes()
-                relu_sum_shared = Ts.sblock_alloc_buffer((T.int64(1),), "float32", scope="shared", layout=None)
-                relu_var_sum_shared = Ts.sblock_alloc_buffer((T.int64(1),), "float32", scope="shared", layout=None)
+                relu_sum_shared = Ts.sblock_alloc_tensor((T.int64(1),), "float32", scope="shared", layout=None)
+                relu_var_sum_shared = Ts.sblock_alloc_tensor((T.int64(1),), "float32", scope="shared", layout=None)
                 for ax0_fused in T.thread_binding(T.int64(1), thread="blockIdx.x"):
                     for ax0 in range(T.int64(0), T.int64(1)):
                         for ax1_fused_1 in T.thread_binding(T.int64(256), thread="threadIdx.x"):

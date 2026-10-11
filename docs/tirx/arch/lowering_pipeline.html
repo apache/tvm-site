@@ -267,7 +267,7 @@
 <li class="toctree-l2 has-children"><a class="reference internal" href="../native_basics.html">CUDA Programming Guide</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
 <li class="toctree-l3"><a class="reference internal" href="../native_basics/cuda/functions.html">Defining a function</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../native_basics/cuda/data_types.html">Data types and expressions</a></li>
-<li class="toctree-l3"><a class="reference internal" href="../native_basics/cuda/buffers.html">Buffers and memory</a></li>
+<li class="toctree-l3"><a class="reference internal" href="../native_basics/cuda/tensors.html">Tensors and memory</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../native_basics/cuda/control_flow.html">Control flow</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../native_basics/cuda/threads_sync.html">CUDA C++/PTX intrinsics</a></li>
 <li class="toctree-l3"><a class="reference internal" href="../native_basics/cuda/compiling.html">Compiling and inspecting</a></li>
@@ -645,7 +645,7 @@ document.write(`
 <h1>TIRx lowering pipeline<a class="headerlink" href="#tirx-lowering-pipeline" title="Link to this heading">#</a></h1>
 <p><code class="docutils literal notranslate"><span class="pre">tvm.compile(mod,</span> <span class="pre">target,</span> <span class="pre">tir_pipeline=&quot;tirx&quot;)</span></code> runs an authored TIRx module
 through the <strong>tirx pipeline</strong> — an ordered sequence of IR passes that turns the
-high-level constructs you write (tile primitives, <code class="docutils literal notranslate"><span class="pre">TileLayout</span></code>-typed buffers,
+high-level constructs you write (tile primitives, <code class="docutils literal notranslate"><span class="pre">TileLayout</span></code>-typed tensors,
 CUDA index calls) into split <strong>host</strong> + <strong>device</strong> functions, which the CUDA
 backend then renders to source. The pipeline is defined in
 <code class="docutils literal notranslate"><span class="pre">python/tvm/tirx/compilation_pipeline.py</span></code> (<code class="docutils literal notranslate"><span class="pre">tirx_pipeline</span></code>); this page walks the
@@ -692,7 +692,7 @@ generator:</p>
 <td><p>lowers remaining opaque constructs to lower-level TIRx forms</p></td>
 </tr>
 <tr class="row-odd"><td><p>4</p></td>
-<td><p><code class="docutils literal notranslate"><span class="pre">FlattenBuffer</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">FlattenTensor</span></code></p></td>
 <td><p>flattens multi-dimensional <code class="docutils literal notranslate"><span class="pre">TensorLoad</span></code> / <code class="docutils literal notranslate"><span class="pre">TensorStore</span></code> to 1-D</p></td>
 </tr>
 <tr class="row-even"><td><p>5</p></td>
@@ -762,7 +762,7 @@ the explicit <code class="docutils literal notranslate"><span class="pre">Launch
 <ul class="simple">
 <li><p><strong>host</strong>: <code class="docutils literal notranslate"><span class="pre">LowerTVMBuiltin</span></code> (lower <code class="docutils literal notranslate"><span class="pre">tvm_*</span></code> builtins), <code class="docutils literal notranslate"><span class="pre">LowerIntrin</span></code>
 (target-specific intrinsics)</p></li>
-<li><p><strong>device</strong>: <code class="docutils literal notranslate"><span class="pre">LowerWarpMemory</span></code> (warp-scoped buffers → shuffles), <code class="docutils literal notranslate"><span class="pre">StmtSimplify</span></code>,
+<li><p><strong>device</strong>: <code class="docutils literal notranslate"><span class="pre">LowerWarpMemory</span></code> (warp-scoped tensors → shuffles), <code class="docutils literal notranslate"><span class="pre">StmtSimplify</span></code>,
 <code class="docutils literal notranslate"><span class="pre">LowerIntrin</span></code></p></li>
 </ul>
 </section>
@@ -779,9 +779,9 @@ instruction lowerer, including delayed mathematical composites as described in
 <code class="docutils literal notranslate"><span class="pre">device_scope</span></code> region retaining launch values as operands, and lowers the
 finite CUDA index calls inside ordinary <code class="docutils literal notranslate"><span class="pre">Bind</span></code> statements.</p></li>
 <li><p><strong>``LowerTIRxCleanup``</strong> then runs the <code class="docutils literal notranslate"><span class="pre">LayoutApplier</span></code>: it resolves every
-<code class="docutils literal notranslate"><span class="pre">TileLayout</span></code>-typed buffer access into concrete physical address arithmetic
-(<code class="docutils literal notranslate"><span class="pre">addr</span> <span class="pre">=</span> <span class="pre">data</span> <span class="pre">+</span> <span class="pre">elem_offset</span> <span class="pre">+</span> <span class="pre">layout.apply(coord)</span></code>), flattens the buffers,
-and removes buffer offsets that have been folded into the resulting views.</p></li>
+<code class="docutils literal notranslate"><span class="pre">TileLayout</span></code>-typed tensor access into concrete physical address arithmetic
+(<code class="docutils literal notranslate"><span class="pre">addr</span> <span class="pre">=</span> <span class="pre">data</span> <span class="pre">+</span> <span class="pre">elem_offset</span> <span class="pre">+</span> <span class="pre">layout.apply(coord)</span></code>), flattens the tensors,
+and removes tensor offsets that have been folded into the resulting views.</p></li>
 </ul>
 <p>After <code class="docutils literal notranslate"><span class="pre">LowerTIRx</span></code> the module remains a <code class="docutils literal notranslate"><span class="pre">tvm.tirx.Function</span></code>, but contains no
 tile primitives or <code class="docutils literal notranslate"><span class="pre">TileLayout</span></code> indirection, and CUDA indices read hardware coordinates.  Later TIRx passes lower the remaining opaque constructs and

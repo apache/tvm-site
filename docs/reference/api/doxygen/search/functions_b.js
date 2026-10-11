@@ -68,7 +68,7 @@ var searchData=
   ['lowerglobalviewtolocalview_65',['LowerGlobalViewToLocalView',['../namespacetvm_1_1relax_1_1distributed_1_1transform.html#ac9ee0102ac0716343135855e95f4c407',1,'tvm::relax::distributed::transform']]],
   ['lowerinitblock_66',['LowerInitBlock',['../namespacetvm_1_1s__tir_1_1transform.html#a1c3a3c41c574499dee7096bd0e7719d8',1,'tvm::s_tir::transform']]],
   ['lowerintrin_67',['LowerIntrin',['../namespacetvm_1_1tirx_1_1transform.html#abbbbff31561623df0523c1f66c0ed3f6',1,'tvm::tirx::transform']]],
-  ['lowermatchbuffer_68',['LowerMatchBuffer',['../namespacetvm_1_1s__tir_1_1transform.html#a6670978eac856100501e6b3b99b4cdaf',1,'tvm::s_tir::transform']]],
+  ['lowermatchtensor_68',['LowerMatchTensor',['../namespacetvm_1_1s__tir_1_1transform.html#aa85c269e327e06ebd5cc4501074f7cb9',1,'tvm::s_tir::transform']]],
   ['loweropaqueblock_69',['LowerOpaqueBlock',['../namespacetvm_1_1s__tir_1_1transform.html#a7f9e53e9cb8395f2a1981c50bf4c7854',1,'tvm::s_tir::transform']]],
   ['lowerruntimebuiltin_70',['LowerRuntimeBuiltin',['../namespacetvm_1_1relax_1_1transform.html#a86cd9160e38cee85c2122c488dcc9a02',1,'tvm::relax::transform']]],
   ['lowersynchronization_71',['LowerSynchronization',['../namespacetvm_1_1s__tir_1_1transform.html#ac847fa90879f946b7190013272dcbbc1',1,'tvm::s_tir::transform']]],

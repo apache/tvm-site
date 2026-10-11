@@ -655,7 +655,7 @@ The default **zero** pipeline contains very fundamental transformations, includi
             with Ts.sblock("root"):
                 Ts.reads()
                 Ts.writes()
-                matmul_intermediate = Ts.sblock_alloc_buffer((T.int64(1), T.int64(10)), "float32", layout=None)
+                matmul_intermediate = Ts.sblock_alloc_tensor((T.int64(1), T.int64(10)), "float32", layout=None)
                 for i0 in range(T.int64(0), T.int64(1)):
                     for i1 in range(T.int64(0), T.int64(10)):
                         for k in range(T.int64(0), T.int64(256)):
@@ -683,8 +683,8 @@ The default **zero** pipeline contains very fundamental transformations, includi
             with Ts.sblock("root"):
                 Ts.reads()
                 Ts.writes()
-                matmul_intermediate = Ts.sblock_alloc_buffer((T.int64(1), T.int64(256)), "float32", layout=None)
-                T_add_intermediate = Ts.sblock_alloc_buffer((T.int64(1), T.int64(256)), "float32", layout=None)
+                matmul_intermediate = Ts.sblock_alloc_tensor((T.int64(1), T.int64(256)), "float32", layout=None)
+                T_add_intermediate = Ts.sblock_alloc_tensor((T.int64(1), T.int64(256)), "float32", layout=None)
                 for i0 in range(T.int64(0), T.int64(1)):
                     for i1 in range(T.int64(0), T.int64(256)):
                         for k in range(T.int64(0), T.int64(784)):
@@ -764,8 +764,8 @@ We can deploy the IRModule on CPU by specifying the target as ``llvm``.
 
  .. code-block:: none
 
-    [[-0.16214299 -0.16361341  0.22762503 -0.26170814  0.14632326 -0.28623658
-       0.28703496  0.16775104 -0.05115912  0.08705615]]
+    [[ 0.28451625  0.00198103 -0.22763127  0.53775096 -0.07940367  0.25213444
+       0.02145573 -0.20426373  0.10915758  0.02477761]]
 
 
 
@@ -831,8 +831,8 @@ Now we can compile the IRModule on GPU, the similar way as we did on CPU.
 
  .. code-block:: none
 
-    [[-0.16214305 -0.1636135   0.22762498 -0.2617082   0.14632326 -0.28623652
-       0.28703496  0.16775104 -0.05115912  0.08705612]]
+    [[ 0.28451625  0.001981   -0.22763123  0.53775096 -0.07940362  0.25213447
+       0.0214557  -0.20426376  0.10915744  0.0247776 ]]
 
 
 

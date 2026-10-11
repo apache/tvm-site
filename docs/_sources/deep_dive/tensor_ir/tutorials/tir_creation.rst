@@ -425,7 +425,7 @@ and one output parameter **C**.
             with Ts.sblock("root"):
                 Ts.reads()
                 Ts.writes()
-                Y = Ts.sblock_alloc_buffer((128, 128), "float32", layout=None)
+                Y = Ts.sblock_alloc_tensor((128, 128), "float32", layout=None)
                 for i in range(128):
                     for j in range(128):
                         for k in range(128):
@@ -499,7 +499,7 @@ is that we need to specify the shape of the input tensors as symbolic variables.
             with Ts.sblock("root"):
                 Ts.reads()
                 Ts.writes()
-                Y = Ts.sblock_alloc_buffer((m, n), "float32", layout=None)
+                Y = Ts.sblock_alloc_tensor((m, n), "float32", layout=None)
                 for i in range(m):
                     for j in range(n):
                         for k_1 in range(k):

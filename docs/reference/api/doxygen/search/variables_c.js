@@ -1,10 +1,10 @@
 var searchData=
 [
   ['m_0',['m',['../structtvm_1_1backend_1_1cuda_1_1TCGen05InstrDescriptorBlockScaledAttrs.html#a5a3bbaddc59bf06d888a7907a47c44db',1,'tvm::backend::cuda::TCGen05InstrDescriptorBlockScaledAttrs::M'],['../structtvm_1_1backend_1_1cuda_1_1TCGen05InstrDescriptorAttrs.html#ac7b1b35708d921b551fc60d8f717787a',1,'tvm::backend::cuda::TCGen05InstrDescriptorAttrs::M']]],
-  ['match_5fbuffers_1',['match_buffers',['../classtvm_1_1script_1_1ir__builder_1_1s__tir_1_1SBlockFrameNode.html#af42639019c84bea29e40b118e940f42d',1,'tvm::script::ir_builder::s_tir::SBlockFrameNode::match_buffers'],['../classtvm_1_1s__tir_1_1SBlockNode.html#afbec2d77fc1e6af1fee299720e583ae9',1,'tvm::s_tir::SBlockNode::match_buffers']]],
+  ['match_5ftensors_1',['match_tensors',['../classtvm_1_1script_1_1ir__builder_1_1s__tir_1_1SBlockFrameNode.html#a45932200c39b6abe7c92b97cec4c2e29',1,'tvm::script::ir_builder::s_tir::SBlockFrameNode::match_tensors'],['../classtvm_1_1s__tir_1_1SBlockNode.html#ab452b68089008e79c4eeed8095847a42',1,'tvm::s_tir::SBlockNode::match_tensors']]],
   ['matched_5fbindings_2',['matched_bindings',['../classtvm_1_1relax_1_1transform_1_1PatternCheckContextNode.html#a7af72510f5fa15b81d5432afbdb2c350',1,'tvm::relax::transform::PatternCheckContextNode']]],
-  ['matched_5fbuffers_3',['matched_buffers',['../classtvm_1_1relax_1_1MatchResultNode.html#a926dbcdb8e749d79e1489d33add10cc9',1,'tvm::relax::MatchResultNode']]],
-  ['matched_5fexpr_4',['matched_expr',['../classtvm_1_1relax_1_1transform_1_1PatternCheckContextNode.html#aecf49329b2d1df52bef769046a6c8471',1,'tvm::relax::transform::PatternCheckContextNode']]],
+  ['matched_5fexpr_3',['matched_expr',['../classtvm_1_1relax_1_1transform_1_1PatternCheckContextNode.html#aecf49329b2d1df52bef769046a6c8471',1,'tvm::relax::transform::PatternCheckContextNode']]],
+  ['matched_5ftensors_4',['matched_tensors',['../classtvm_1_1relax_1_1MatchResultNode.html#a81ada59e9a2168261cb192f731c7dd50',1,'tvm::relax::MatchResultNode']]],
   ['max_5foutput_5fsize_5',['max_output_size',['../structtvm_1_1relax_1_1NonMaximumSuppressionAttrs.html#a77a5a8b1fd1f80932cd1d402533921d3',1,'tvm::relax::NonMaximumSuppressionAttrs']]],
   ['max_5fvalue_6',['max_value',['../classtvm_1_1sym_1_1ConstIntBoundNode.html#a2c56758b771dcbae5b4cb4ee964bb46e',1,'tvm::sym::ConstIntBoundNode']]],
   ['measure_5fcallbacks_5f_7',['measure_callbacks_',['../classtvm_1_1s__tir_1_1meta__schedule_1_1TaskSchedulerNode.html#ae4f77a77f798bb3d8f38280c71d55a38',1,'tvm::s_tir::meta_schedule::TaskSchedulerNode']]],

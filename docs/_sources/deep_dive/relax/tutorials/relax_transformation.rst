@@ -344,7 +344,7 @@ a set of passes. We can apply them in a sequence.
             with Ts.sblock("root"):
                 Ts.reads()
                 Ts.writes()
-                matmul_intermediate = Ts.sblock_alloc_buffer((n, T.int64(10)), "float32", layout=None)
+                matmul_intermediate = Ts.sblock_alloc_tensor((n, T.int64(10)), "float32", layout=None)
                 for i0 in range(T.int64(0), n):
                     for i1 in range(T.int64(0), T.int64(10)):
                         for k in range(T.int64(0), T.int64(128)):
@@ -372,8 +372,8 @@ a set of passes. We can apply them in a sequence.
             with Ts.sblock("root"):
                 Ts.reads()
                 Ts.writes()
-                matmul_intermediate = Ts.sblock_alloc_buffer((n_1, T.int64(128)), "float32", layout=None)
-                T_add_intermediate = Ts.sblock_alloc_buffer((n_1, T.int64(128)), "float32", layout=None)
+                matmul_intermediate = Ts.sblock_alloc_tensor((n_1, T.int64(128)), "float32", layout=None)
+                T_add_intermediate = Ts.sblock_alloc_tensor((n_1, T.int64(128)), "float32", layout=None)
                 for i0 in range(T.int64(0), n_1):
                     for i1 in range(T.int64(0), T.int64(128)):
                         for k in range(T.int64(0), T.int64(784)):

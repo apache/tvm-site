@@ -267,7 +267,7 @@
 <li class="toctree-l2 current active has-children"><a class="reference internal" href="../../native_basics.html">CUDA Programming Guide</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
 <li class="toctree-l3"><a class="reference internal" href="functions.html">Defining a function</a></li>
 <li class="toctree-l3"><a class="reference internal" href="data_types.html">Data types and expressions</a></li>
-<li class="toctree-l3"><a class="reference internal" href="buffers.html">Buffers and memory</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tensors.html">Tensors and memory</a></li>
 <li class="toctree-l3"><a class="reference internal" href="control_flow.html">Control flow</a></li>
 <li class="toctree-l3"><a class="reference internal" href="threads_sync.html">CUDA C++/PTX intrinsics</a></li>
 <li class="toctree-l3"><a class="reference internal" href="compiling.html">Compiling and inspecting</a></li>
@@ -653,8 +653,8 @@ softmax, the epilogue.</p>
 <p><code class="docutils literal notranslate"><span class="pre">tvm.tirx.bench.CudaProfiler</span></code> is a lightweight, in-kernel event tracer for
 exactly this. You bracket regions of device code with <code class="docutils literal notranslate"><span class="pre">start</span></code> / <code class="docutils literal notranslate"><span class="pre">end</span></code>
 markers; at runtime one leader thread per <code class="docutils literal notranslate"><span class="pre">(block,</span> <span class="pre">group)</span></code> track stamps the GPU
-global timer into a buffer you pass in as an ordinary kernel argument. After the
-launch you read the buffer back and decode it into per-region durations or a
+global timer into a tensor you pass in as an ordinary kernel argument. After the
+launch you read the tensor back and decode it into per-region durations or a
 Perfetto timeline.</p>
 <p>It is <em>not</em> zero cost — every event reads the low 32 bits through
 <code class="docutils literal notranslate"><span class="pre">%globaltimer_lo</span></code> and performs a global
@@ -673,7 +673,7 @@ are a plain <code class="docutils literal notranslate"><span class="pre">enum.En
 
 <span class="n">NUM_BLOCKS</span><span class="p">,</span> <span class="n">BLOCK</span><span class="p">,</span> <span class="n">NUM_GROUPS</span> <span class="o">=</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">128</span><span class="p">,</span> <span class="mi">1</span>
 <span class="n">WRITE_STRIDE</span> <span class="o">=</span> <span class="n">NUM_BLOCKS</span> <span class="o">*</span> <span class="n">NUM_GROUPS</span>  <span class="c1"># &gt;= number of (block, group) lanes</span>
-<span class="n">PROF_SIZE</span> <span class="o">=</span> <span class="mi">4096</span>  <span class="c1"># uint64 slots in the profiler buffer</span>
+<span class="n">PROF_SIZE</span> <span class="o">=</span> <span class="mi">4096</span>  <span class="c1"># uint64 slots in the profiler tensor</span>
 <span class="n">N</span> <span class="o">=</span> <span class="n">NUM_BLOCKS</span> <span class="o">*</span> <span class="n">BLOCK</span>
 
 
@@ -702,7 +702,7 @@ are a plain <code class="docutils literal notranslate"><span class="pre">enum.En
     <span class="n">p</span> <span class="o">=</span> <span class="n">CudaProfiler</span><span class="p">(</span>
         <span class="n">prof</span><span class="p">,</span> <span class="n">write_stride</span><span class="o">=</span><span class="n">WRITE_STRIDE</span><span class="p">,</span> <span class="n">num_groups</span><span class="o">=</span><span class="n">NUM_GROUPS</span><span class="p">,</span> <span class="n">default_leader</span><span class="o">=</span><span class="p">(</span><span class="n">tid</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span>
     <span class="p">)</span>
-    <span class="n">p</span><span class="o">.</span><span class="n">init</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>  <span class="c1"># group_id = 0; also stamps the buffer header at slot 0</span>
+    <span class="n">p</span><span class="o">.</span><span class="n">init</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>  <span class="c1"># group_id = 0; also stamps the tensor header at slot 0</span>
 
     <span class="n">p</span><span class="o">.</span><span class="n">start</span><span class="p">(</span><span class="n">Ev</span><span class="o">.</span><span class="n">Load</span><span class="p">)</span>
     <span class="n">x</span><span class="p">:</span> <span class="n">Tx</span><span class="o">.</span><span class="n">f32</span> <span class="o">=</span> <span class="n">inp</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span>
@@ -724,7 +724,7 @@ are a plain <code class="docutils literal notranslate"><span class="pre">enum.En
 </section>
 <section id="run-it-and-read-the-trace">
 <h2>Run it and read the trace<a class="headerlink" href="#run-it-and-read-the-trace" title="Link to this heading">#</a></h2>
-<p>Allocate a zeroed <code class="docutils literal notranslate"><span class="pre">uint64</span></code> buffer, pass it as the last argument, then read it
+<p>Allocate a zeroed <code class="docutils literal notranslate"><span class="pre">uint64</span></code> tensor, pass it as the last argument, then read it
 back. Each record is one <code class="docutils literal notranslate"><span class="pre">uint64</span></code>: the high 32 bits are the timestamp, the low
 32 bits a packed tag, so decoding is plain bit-twiddling on the host.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">dev</span> <span class="o">=</span> <span class="n">tvm</span><span class="o">.</span><span class="n">cuda</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
@@ -798,14 +798,14 @@ exactly what intra-kernel profiling is for.</span><a class="headerlink" href="#i
 <p>Construct the profiler <strong>inside</strong> the kernel body and call four methods:</p>
 <ul class="simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">init(group_id)</span></code> — once per thread; <code class="docutils literal notranslate"><span class="pre">group_id</span></code> selects the sub-track and
-stamps the buffer header at slot 0.</p></li>
+stamps the tensor header at slot 0.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">start(event_type,</span> <span class="pre">leader=None)</span></code> / <code class="docutils literal notranslate"><span class="pre">end(event_type,</span> <span class="pre">leader=None)</span></code> — open and
 close a region. Every thread executes them, but only the leader stores a record.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">finalize(leader=None)</span></code> — write a terminal record for this lane.</p></li>
 </ul>
 <p>Constructor arguments:</p>
 <ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">profiler_buffer</span></code> — the <code class="docutils literal notranslate"><span class="pre">uint64</span></code> buffer you pass into the kernel.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">profiler_tensor</span></code> — the <code class="docutils literal notranslate"><span class="pre">uint64</span></code> tensor you pass into the kernel.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">write_stride</span></code> — how far each leader advances between writes. Must be <code class="docutils literal notranslate"><span class="pre">&gt;=</span></code>
 the number of <code class="docutils literal notranslate"><span class="pre">(block,</span> <span class="pre">group)</span></code> lanes so per-lane streams never collide;
 <code class="docutils literal notranslate"><span class="pre">NUM_BLOCKS</span> <span class="pre">*</span> <span class="pre">NUM_GROUPS</span></code> is the tight value, a persistent-grid kernel uses
@@ -894,13 +894,13 @@ lower to small <code class="docutils literal notranslate"><span class="pre">__de
 profiler keeps two per-thread <code class="docutils literal notranslate"><span class="pre">&quot;local&quot;</span></code> scratch slots — the running tag and
 write cursor — and every record is written by:</p>
 <div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="c1">// tvm_builtin_get_timestamp() == asm(&quot;mov.u32 %0, %globaltimer_lo;&quot;)</span>
-<span class="n">profiler_buffer</span><span class="p">[</span><span class="n">profiler_write_offset</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span><span class="w"> </span><span class="o">=</span>
+<span class="n">profiler_tensor</span><span class="p">[</span><span class="n">profiler_write_offset</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span><span class="w"> </span><span class="o">=</span>
 <span class="w">    </span><span class="p">((</span><span class="kt">uint64_t</span><span class="p">)</span><span class="n">tvm_builtin_get_timestamp</span><span class="p">()</span><span class="w"> </span><span class="o">&lt;&lt;</span><span class="w"> </span><span class="mi">32</span><span class="p">)</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="p">(</span><span class="n">profiler_tag</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="w"> </span><span class="o">|</span><span class="w"> </span><span class="n">event_bits</span><span class="p">);</span>
 <span class="n">profiler_write_offset</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="w"> </span><span class="o">+=</span><span class="w"> </span><span class="n">profiler_write_stride</span><span class="p">;</span><span class="w">   </span><span class="c1">// global store; only the leader runs this</span>
 </pre></div>
 </div>
 <p><code class="docutils literal notranslate"><span class="pre">init</span></code> computes <code class="docutils literal notranslate"><span class="pre">BLOCK_GROUP_IDX</span> <span class="pre">=</span> <span class="pre">block_idx</span> <span class="pre">*</span> <span class="pre">num_groups</span> <span class="pre">+</span> <span class="pre">group_id</span></code>, writes
-the header <code class="docutils literal notranslate"><span class="pre">profiler_buffer[0]</span> <span class="pre">=</span> <span class="pre">((uint64_t)num_groups</span> <span class="pre">&lt;&lt;</span> <span class="pre">32)</span> <span class="pre">|</span> <span class="pre">num_blocks</span></code> from
+the header <code class="docutils literal notranslate"><span class="pre">profiler_tensor[0]</span> <span class="pre">=</span> <span class="pre">((uint64_t)num_groups</span> <span class="pre">&lt;&lt;</span> <span class="pre">32)</span> <span class="pre">|</span> <span class="pre">num_blocks</span></code> from
 block 0 / <code class="docutils literal notranslate"><span class="pre">threadIdx.x</span> <span class="pre">==</span> <span class="pre">0</span></code>, and seeds this lane’s cursor to <code class="docutils literal notranslate"><span class="pre">1</span> <span class="pre">+</span>
 <span class="pre">BLOCK_GROUP_IDX</span></code> and tag to <code class="docutils literal notranslate"><span class="pre">BLOCK_GROUP_IDX</span> <span class="pre">&lt;&lt;</span> <span class="pre">12</span></code>. <code class="docutils literal notranslate"><span class="pre">start</span></code> writes the record
 (<code class="docutils literal notranslate"><span class="pre">event_bits</span> <span class="pre">=</span> <span class="pre">(event</span> <span class="pre">&lt;&lt;</span> <span class="pre">2)</span> <span class="pre">|</span> <span class="pre">0</span></code>) then <code class="docutils literal notranslate"><span class="pre">__threadfence_block()</span></code>; <code class="docutils literal notranslate"><span class="pre">end</span></code> fences
@@ -911,7 +911,7 @@ brackets the region’s memory traffic, and why the markers perturb the kernel.<
 <section id="usage-notes-and-caveats">
 <h2>Usage notes and caveats<a class="headerlink" href="#usage-notes-and-caveats" title="Link to this heading">#</a></h2>
 <ul class="simple">
-<li><p><strong>Zero the buffer before the launch.</strong> The decoder treats <code class="docutils literal notranslate"><span class="pre">0</span></code> as “empty” and
+<li><p><strong>Zero the tensor before the launch.</strong> The decoder treats <code class="docutils literal notranslate"><span class="pre">0</span></code> as “empty” and
 reads the grid shape from slot 0, which only block 0 / thread 0 writes.</p></li>
 <li><p><strong>Exactly one leader per (block, group).</strong> Each thread keeps its own cursor,
 initialized to <code class="docutils literal notranslate"><span class="pre">1</span> <span class="pre">+</span> <span class="pre">block_group</span></code>; two leaders in the same lane write the same
@@ -919,7 +919,7 @@ offsets and clobber each other. Use <code class="docutils literal notranslate"><
 warp.</p></li>
 <li><p><strong>Call ``init`` once, before any ``start``.</strong> It seeds each thread’s tag and
 cursor; without it both are garbage.</p></li>
-<li><p><strong>Size ``write_stride`` and the buffer together.</strong> The largest slot a lane
+<li><p><strong>Size ``write_stride`` and the tensor together.</strong> The largest slot a lane
 touches is <code class="docutils literal notranslate"><span class="pre">1</span> <span class="pre">+</span> <span class="pre">block_group</span> <span class="pre">+</span> <span class="pre">(records_per_lane</span> <span class="pre">-</span> <span class="pre">1)</span> <span class="pre">*</span> <span class="pre">write_stride</span></code>;
 over-allocate, unused slots stay <code class="docutils literal notranslate"><span class="pre">0</span></code> and are skipped.</p></li>
 <li><p><strong>``%globaltimer_lo`` is only the low 32 bits of the nanosecond timer.</strong> It wraps
