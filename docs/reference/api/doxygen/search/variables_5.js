@@ -2,7 +2,7 @@ var searchData=
 [
   ['edge_5fconstraints_0',['edge_constraints',['../classtvm_1_1relax_1_1PatternContextNode.html#ac0a6a254461e25828ebe5ec8b45b9619',1,'tvm::relax::PatternContextNode']]],
   ['elem_5foffset_1',['elem_offset',['../classtvm_1_1tirx_1_1TensorTypeNode.html#a12825cf6ff19dc7f9f04e722a293bfac',1,'tvm::tirx::TensorTypeNode']]],
-  ['element_5ftype_2',['element_type',['../classtvm_1_1PointerTypeNode.html#a3ce20495711da0c9f83f02df466ae8a0',1,'tvm::PointerTypeNode']]],
+  ['element_5ftype_2',['element_type',['../classtvm_1_1PtrTypeNode.html#ae64946fbb11dde11411233fe1218e51e',1,'tvm::PtrTypeNode']]],
   ['elements_3',['elements',['../classtvm_1_1script_1_1printer_1_1TupleDocNode.html#a0be5e8081c41fdffbd1bfdd748054d79',1,'tvm::script::printer::TupleDocNode::elements'],['../classtvm_1_1script_1_1printer_1_1ListDocNode.html#ae0cd446acccc99b77e0fd4dccc423423',1,'tvm::script::printer::ListDocNode::elements']]],
   ['else_5fbranch_4',['else_branch',['../classtvm_1_1script_1_1printer_1_1IfDocNode.html#a316db6ff3d55c179b94e536e2c9c2770',1,'tvm::script::printer::IfDocNode']]],
   ['else_5fcase_5',['else_case',['../classtvm_1_1IfNode.html#a3dd10b61c44b7497a86ffac5550cbd0d',1,'tvm::IfNode']]],

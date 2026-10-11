@@ -884,13 +884,39 @@ it achieves a balance between performance and compilation time.</p>
 @I.ir_module
 class Module:
     I.module_attrs({&quot;external_mods&quot;: [metadata[&quot;ffi.Module&quot;][0]]})
+    @R.function
+    def forward(x: R.Tensor((1, 784), dtype=&quot;float32&quot;), fc1_weight: R.Tensor((256, 784), dtype=&quot;float32&quot;), fc1_bias: R.Tensor((256,), dtype=&quot;float32&quot;), fc2_weight: R.Tensor((10, 256), dtype=&quot;float32&quot;)) -&gt; R.Tensor((1, 10), dtype=&quot;float32&quot;):
+        R.func_attr({&quot;num_input&quot;: 1})
+        with R.dataflow():
+            lv = R.call_dps_packed(&quot;fused_relax_permute_dims_relax_matmul_relax_add_relax_nn_relu_cublas&quot;, (fc1_weight, x, fc1_bias), ty_args=[R.Tensor((1, 256), dtype=&quot;float32&quot;)])
+            permute_dims1 = R.call_tir(Module.transpose, (fc2_weight,), ty_args=[R.Tensor((256, 10), dtype=&quot;float32&quot;)])
+            gv = R.call_tir(Module.matmul, (lv, permute_dims1), ty_args=[R.Tensor((1, 10), dtype=&quot;float32&quot;)])
+            R.output(gv)
+        return gv
+
     @Ts.function(private=True)
-    def matmul(lv: T.Tensor((T.int64(1), T.int64(256)), &quot;float32&quot;), permute_dims1: T.Tensor((T.int64(256), T.int64(10)), &quot;float32&quot;), matmul: T.Tensor((T.int64(1), T.int64(10)), &quot;float32&quot;)):
-        T.func_attr({&quot;op_pattern&quot;: 4, &quot;tirx.is_scheduled&quot;: True, &quot;tirx.noalias&quot;: True})
+    def transpose(fc2_weight: T.Tensor((T.int64(10), T.int64(256)), &quot;float32&quot;, layout=None), T_transpose: T.Tensor((T.int64(256), T.int64(10)), &quot;float32&quot;, layout=None)):
+        T.func_attr({&quot;op_pattern&quot;: 2, &quot;s_tir&quot;: True, &quot;script.namespace&quot;: &quot;s_tir&quot;, &quot;tirx.is_scheduled&quot;: True, &quot;tirx.noalias&quot;: True})
         with Ts.sblock(&quot;root&quot;):
             Ts.reads()
             Ts.writes()
-            matmul_rf_local = Ts.sblock_alloc_buffer((T.int64(16), T.int64(1), T.int64(10)), &quot;float32&quot;, scope=&quot;local&quot;)
+            for ax0_ax1_fused_0 in T.thread_binding(T.int64(3), thread=&quot;blockIdx.x&quot;):
+                for ax0_ax1_fused_1 in T.thread_binding(T.int64(1024), thread=&quot;threadIdx.x&quot;):
+                    with Ts.sblock(&quot;T_transpose&quot;):
+                        v0 = Ts.axis.spatial(T.int64(256), (ax0_ax1_fused_0 * T.int64(1024) + ax0_ax1_fused_1) // T.int64(10), dtype=&quot;int64&quot;)
+                        v1 = Ts.axis.spatial(T.int64(10), (ax0_ax1_fused_0 * T.int64(1024) + ax0_ax1_fused_1) % T.int64(10), dtype=&quot;int64&quot;)
+                        Ts.where(ax0_ax1_fused_0 * T.int64(1024) + ax0_ax1_fused_1 &lt; T.int64(2560))
+                        Ts.reads(fc2_weight[v1, v0:v0 + T.int64(1)])
+                        Ts.writes(T_transpose[v0, v1:v1 + T.int64(1)])
+                        T_transpose[v0, v1] = fc2_weight[v1, v0]
+
+    @Ts.function(private=True)
+    def matmul(lv: T.Tensor((T.int64(1), T.int64(256)), &quot;float32&quot;, layout=None), permute_dims1: T.Tensor((T.int64(256), T.int64(10)), &quot;float32&quot;, layout=None), matmul: T.Tensor((T.int64(1), T.int64(10)), &quot;float32&quot;, layout=None)):
+        T.func_attr({&quot;op_pattern&quot;: 4, &quot;s_tir&quot;: True, &quot;script.namespace&quot;: &quot;s_tir&quot;, &quot;tirx.is_scheduled&quot;: True, &quot;tirx.noalias&quot;: True})
+        with Ts.sblock(&quot;root&quot;):
+            Ts.reads()
+            Ts.writes()
+            matmul_rf_local = Ts.sblock_alloc_buffer((T.int64(16), T.int64(1), T.int64(10)), &quot;float32&quot;, scope=&quot;local&quot;, layout=None)
             for ax0_fused_0 in T.thread_binding(T.int64(1), thread=&quot;blockIdx.x&quot;):
                 for ax0_fused_1 in T.thread_binding(T.int64(10), thread=&quot;threadIdx.x&quot;):
                     for ax1_fused_1 in T.thread_binding(T.int64(16), thread=&quot;threadIdx.y&quot;):
@@ -919,32 +945,6 @@ class Module:
                             with Ts.init():
                                 matmul[T.int64(0), v0_2] = T.float32(0.0)
                             matmul[T.int64(0), v0_2] = matmul[T.int64(0), v0_2] + matmul_rf_local[vax1_fused_1_2, T.int64(0), v0_2]
-
-    @Ts.function(private=True)
-    def transpose(fc2_weight: T.Tensor((T.int64(10), T.int64(256)), &quot;float32&quot;), T_transpose: T.Tensor((T.int64(256), T.int64(10)), &quot;float32&quot;)):
-        T.func_attr({&quot;op_pattern&quot;: 2, &quot;tirx.is_scheduled&quot;: True, &quot;tirx.noalias&quot;: True})
-        with Ts.sblock(&quot;root&quot;):
-            Ts.reads()
-            Ts.writes()
-            for ax0_ax1_fused_0 in T.thread_binding(T.int64(3), thread=&quot;blockIdx.x&quot;):
-                for ax0_ax1_fused_1 in T.thread_binding(T.int64(1024), thread=&quot;threadIdx.x&quot;):
-                    with Ts.sblock(&quot;T_transpose&quot;):
-                        v0 = Ts.axis.spatial(T.int64(256), (ax0_ax1_fused_0 * T.int64(1024) + ax0_ax1_fused_1) // T.int64(10), dtype=&quot;int64&quot;)
-                        v1 = Ts.axis.spatial(T.int64(10), (ax0_ax1_fused_0 * T.int64(1024) + ax0_ax1_fused_1) % T.int64(10), dtype=&quot;int64&quot;)
-                        Ts.where(ax0_ax1_fused_0 * T.int64(1024) + ax0_ax1_fused_1 &lt; T.int64(2560))
-                        Ts.reads(fc2_weight[v1, v0:v0 + T.int64(1)])
-                        Ts.writes(T_transpose[v0, v1:v1 + T.int64(1)])
-                        T_transpose[v0, v1] = fc2_weight[v1, v0]
-
-    @R.function
-    def forward(x: R.Tensor((1, 784), dtype=&quot;float32&quot;), fc1_weight: R.Tensor((256, 784), dtype=&quot;float32&quot;), fc1_bias: R.Tensor((256,), dtype=&quot;float32&quot;), fc2_weight: R.Tensor((10, 256), dtype=&quot;float32&quot;)) -&gt; R.Tensor((1, 10), dtype=&quot;float32&quot;):
-        R.func_attr({&quot;num_input&quot;: 1})
-        with R.dataflow():
-            lv = R.call_dps_packed(&quot;fused_relax_permute_dims_relax_matmul_relax_add_relax_nn_relu_cublas&quot;, (fc1_weight, x, fc1_bias), ty_args=[R.Tensor((1, 256), dtype=&quot;float32&quot;)])
-            permute_dims1 = R.call_tir(Module.transpose, (fc2_weight,), ty_args=[R.Tensor((256, 10), dtype=&quot;float32&quot;)])
-            gv = R.call_tir(Module.matmul, (lv, permute_dims1), ty_args=[R.Tensor((1, 10), dtype=&quot;float32&quot;)])
-            R.output(gv)
-        return gv
 
 # Metadata omitted. Use show_meta=True in script() method to show it.
 </pre></div>

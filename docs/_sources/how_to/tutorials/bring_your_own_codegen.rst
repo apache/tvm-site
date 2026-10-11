@@ -198,6 +198,13 @@ printed module.
     @I.ir_module
     class Module:
         @R.function
+        def main(data: R.Tensor((1, 3, 32, 32), dtype="float32"), weight: R.Tensor((16, 3, 3, 3), dtype="float32")) -> R.Tensor((1, 16, 30, 30), dtype="float32"):
+            with R.dataflow():
+                gv: R.Tensor((1, 16, 30, 30), dtype="float32") = I.Call(Module.fused_relax_nn_conv2d_relax_nn_relu_example_npu_example_npu, [data, weight], ty=R.Tensor((1, 16, 30, 30), dtype="float32"))
+                R.output(gv)
+            return gv
+
+        @R.function
         def fused_relax_nn_conv2d_relax_nn_relu_example_npu_example_npu(data: R.Tensor((1, 3, 32, 32), dtype="float32"), weight: R.Tensor((16, 3, 3, 3), dtype="float32")) -> R.Tensor((1, 16, 30, 30), dtype="float32"):
             R.func_attr({"Codegen": "example_npu"})
             @R.function
@@ -209,13 +216,6 @@ printed module.
 
             output: R.Tensor((1, 16, 30, 30), dtype="float32") = I.Call(local_func, [data, weight], ty=R.Tensor((1, 16, 30, 30), dtype="float32"))
             return output
-
-        @R.function
-        def main(data: R.Tensor((1, 3, 32, 32), dtype="float32"), weight: R.Tensor((16, 3, 3, 3), dtype="float32")) -> R.Tensor((1, 16, 30, 30), dtype="float32"):
-            with R.dataflow():
-                gv: R.Tensor((1, 16, 30, 30), dtype="float32") = I.Call(Module.fused_relax_nn_conv2d_relax_nn_relu_example_npu_example_npu, [data, weight], ty=R.Tensor((1, 16, 30, 30), dtype="float32"))
-                R.output(gv)
-            return gv
 
 
 

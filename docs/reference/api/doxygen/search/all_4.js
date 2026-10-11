@@ -25,7 +25,7 @@ var searchData=
   ['dataflowvarnode_22',['DataflowVarNode',['../classtvm_1_1relax_1_1DataflowVarNode.html',1,'tvm::relax']]],
   ['dataflowvarpattern_23',['dataflowvarpattern',['../classtvm_1_1relax_1_1DataflowVarPattern.html#a03bea82d4b0b0cafc9e5a5c1ca9d598c',1,'tvm::relax::DataflowVarPattern::DataflowVarPattern()'],['../classtvm_1_1relax_1_1DataflowVarPattern.html',1,'tvm::relax::DataflowVarPattern']]],
   ['dataflowvarpatternnode_24',['DataflowVarPatternNode',['../classtvm_1_1relax_1_1DataflowVarPatternNode.html',1,'tvm::relax']]],
-  ['datapointertype_25',['DataPointerType',['../classtvm_1_1tirx_1_1TensorTypeNode.html#a8fe5aacfc7f92332dde1075f83f2d4a2',1,'tvm::tirx::TensorTypeNode']]],
+  ['dataptrtype_25',['DataPtrType',['../classtvm_1_1tirx_1_1TensorTypeNode.html#a01d0df86b56113bde854dd691b59920f',1,'tvm::tirx::TensorTypeNode']]],
   ['datatype_26',['datatype',['../classtvm_1_1runtime_1_1Tensor.html#a2954936e9e928cc3b1085ac54b77e1e7',1,'tvm::runtime::Tensor::DataType()'],['../classtvm_1_1script_1_1printer_1_1LiteralDoc.html#a1463052c66282c80054ed850e14da66d',1,'tvm::script::printer::LiteralDoc::DataType()']]],
   ['datatype_2eh_27',['datatype.h',['../datatype_8h.html',1,'']]],
   ['datatypeimm_28',['datatypeimm',['../classtvm_1_1DataTypeImm.html#a6754ccb928a8cb6c1e82ee5356b81ea2',1,'tvm::DataTypeImm::DataTypeImm(DLDataType value, Location loc=UnknownLoc())'],['../classtvm_1_1DataTypeImm.html#a3a764f3ea1ad801cc15c29c718caa796',1,'tvm::DataTypeImm::DataTypeImm(ffi::ObjectPtr&lt; DataTypeImmNode &gt; node)'],['../classtvm_1_1DataTypeImm.html',1,'tvm::DataTypeImm']]],

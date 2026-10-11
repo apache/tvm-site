@@ -413,38 +413,23 @@ within the same module. Meanwhile, the Relax operators will be converted into ``
     @I.ir_module
     class Module:
         @Ts.function(private=True)
-        def add(p_fc1_bias: T.Tensor((T.int64(256),), "float32"), lv1: T.Tensor((T.int64(1), T.int64(256)), "float32"), T_add: T.Tensor((T.int64(1), T.int64(256)), "float32")):
-            T.func_attr({"tirx.noalias": True})
+        def transpose(p_fc1_weight: T.Tensor((T.int64(256), T.int64(784)), "float32", layout=None), T_transpose: T.Tensor((T.int64(784), T.int64(256)), "float32", layout=None)):
+            T.func_attr({"s_tir": True, "script.namespace": "s_tir", "tirx.noalias": True})
             with Ts.sblock("root"):
                 Ts.reads()
                 Ts.writes()
-                for ax0 in range(T.int64(0), T.int64(1)):
+                for ax0 in range(T.int64(0), T.int64(784)):
                     for ax1 in range(T.int64(0), T.int64(256)):
-                        with Ts.sblock("T_add"):
-                            v_ax0 = Ts.axis.spatial(T.int64(1), ax0, dtype="int64")
+                        with Ts.sblock("T_transpose"):
+                            v_ax0 = Ts.axis.spatial(T.int64(784), ax0, dtype="int64")
                             v_ax1 = Ts.axis.spatial(T.int64(256), ax1, dtype="int64")
-                            Ts.reads(p_fc1_bias[v_ax1:v_ax1 + T.int64(1)], lv1[v_ax0, v_ax1:v_ax1 + T.int64(1)])
-                            Ts.writes(T_add[v_ax0, v_ax1:v_ax1 + T.int64(1)])
-                            T_add[v_ax0, v_ax1] = p_fc1_bias[v_ax1] + lv1[v_ax0, v_ax1]
+                            Ts.reads(p_fc1_weight[v_ax1, v_ax0:v_ax0 + T.int64(1)])
+                            Ts.writes(T_transpose[v_ax0, v_ax1:v_ax1 + T.int64(1)])
+                            T_transpose[v_ax0, v_ax1] = p_fc1_weight[v_ax1, v_ax0]
 
         @Ts.function(private=True)
-        def add1(p_fc2_bias: T.Tensor((T.int64(10),), "float32"), lv5: T.Tensor((T.int64(1), T.int64(10)), "float32"), T_add: T.Tensor((T.int64(1), T.int64(10)), "float32")):
-            T.func_attr({"tirx.noalias": True})
-            with Ts.sblock("root"):
-                Ts.reads()
-                Ts.writes()
-                for ax0 in range(T.int64(0), T.int64(1)):
-                    for ax1 in range(T.int64(0), T.int64(10)):
-                        with Ts.sblock("T_add"):
-                            v_ax0 = Ts.axis.spatial(T.int64(1), ax0, dtype="int64")
-                            v_ax1 = Ts.axis.spatial(T.int64(10), ax1, dtype="int64")
-                            Ts.reads(p_fc2_bias[v_ax1:v_ax1 + T.int64(1)], lv5[v_ax0, v_ax1:v_ax1 + T.int64(1)])
-                            Ts.writes(T_add[v_ax0, v_ax1:v_ax1 + T.int64(1)])
-                            T_add[v_ax0, v_ax1] = p_fc2_bias[v_ax1] + lv5[v_ax0, v_ax1]
-
-        @Ts.function(private=True)
-        def matmul(x: T.Tensor((T.int64(1), T.int64(784)), "float32"), lv: T.Tensor((T.int64(784), T.int64(256)), "float32"), matmul: T.Tensor((T.int64(1), T.int64(256)), "float32")):
-            T.func_attr({"tirx.noalias": True})
+        def matmul(x: T.Tensor((T.int64(1), T.int64(784)), "float32", layout=None), lv: T.Tensor((T.int64(784), T.int64(256)), "float32", layout=None), matmul: T.Tensor((T.int64(1), T.int64(256)), "float32", layout=None)):
+            T.func_attr({"s_tir": True, "script.namespace": "s_tir", "tirx.noalias": True})
             with Ts.sblock("root"):
                 Ts.reads()
                 Ts.writes()
@@ -462,8 +447,53 @@ within the same module. Meanwhile, the Relax operators will be converted into ``
                                 matmul[v_i0, v_i1] = matmul[v_i0, v_i1] + x[v_i0, v_k] * lv[v_k, v_i1]
 
         @Ts.function(private=True)
-        def matmul1(lv3: T.Tensor((T.int64(1), T.int64(256)), "float32"), lv4: T.Tensor((T.int64(256), T.int64(10)), "float32"), matmul: T.Tensor((T.int64(1), T.int64(10)), "float32")):
-            T.func_attr({"tirx.noalias": True})
+        def add(p_fc1_bias: T.Tensor((T.int64(256),), "float32", layout=None), lv1: T.Tensor((T.int64(1), T.int64(256)), "float32", layout=None), T_add: T.Tensor((T.int64(1), T.int64(256)), "float32", layout=None)):
+            T.func_attr({"s_tir": True, "script.namespace": "s_tir", "tirx.noalias": True})
+            with Ts.sblock("root"):
+                Ts.reads()
+                Ts.writes()
+                for ax0 in range(T.int64(0), T.int64(1)):
+                    for ax1 in range(T.int64(0), T.int64(256)):
+                        with Ts.sblock("T_add"):
+                            v_ax0 = Ts.axis.spatial(T.int64(1), ax0, dtype="int64")
+                            v_ax1 = Ts.axis.spatial(T.int64(256), ax1, dtype="int64")
+                            Ts.reads(p_fc1_bias[v_ax1:v_ax1 + T.int64(1)], lv1[v_ax0, v_ax1:v_ax1 + T.int64(1)])
+                            Ts.writes(T_add[v_ax0, v_ax1:v_ax1 + T.int64(1)])
+                            T_add[v_ax0, v_ax1] = p_fc1_bias[v_ax1] + lv1[v_ax0, v_ax1]
+
+        @Ts.function(private=True)
+        def relu(lv2: T.Tensor((T.int64(1), T.int64(256)), "float32", layout=None), compute: T.Tensor((T.int64(1), T.int64(256)), "float32", layout=None)):
+            T.func_attr({"s_tir": True, "script.namespace": "s_tir", "tirx.noalias": True})
+            with Ts.sblock("root"):
+                Ts.reads()
+                Ts.writes()
+                for i0 in range(T.int64(0), T.int64(1)):
+                    for i1 in range(T.int64(0), T.int64(256)):
+                        with Ts.sblock("compute"):
+                            v_i0 = Ts.axis.spatial(T.int64(1), i0, dtype="int64")
+                            v_i1 = Ts.axis.spatial(T.int64(256), i1, dtype="int64")
+                            Ts.reads(lv2[v_i0, v_i1:v_i1 + T.int64(1)])
+                            Ts.writes(compute[v_i0, v_i1:v_i1 + T.int64(1)])
+                            compute[v_i0, v_i1] = T.max(lv2[v_i0, v_i1], T.float32(0.0))
+
+        @Ts.function(private=True)
+        def transpose1(p_fc2_weight: T.Tensor((T.int64(10), T.int64(256)), "float32", layout=None), T_transpose: T.Tensor((T.int64(256), T.int64(10)), "float32", layout=None)):
+            T.func_attr({"s_tir": True, "script.namespace": "s_tir", "tirx.noalias": True})
+            with Ts.sblock("root"):
+                Ts.reads()
+                Ts.writes()
+                for ax0 in range(T.int64(0), T.int64(256)):
+                    for ax1 in range(T.int64(0), T.int64(10)):
+                        with Ts.sblock("T_transpose"):
+                            v_ax0 = Ts.axis.spatial(T.int64(256), ax0, dtype="int64")
+                            v_ax1 = Ts.axis.spatial(T.int64(10), ax1, dtype="int64")
+                            Ts.reads(p_fc2_weight[v_ax1, v_ax0:v_ax0 + T.int64(1)])
+                            Ts.writes(T_transpose[v_ax0, v_ax1:v_ax1 + T.int64(1)])
+                            T_transpose[v_ax0, v_ax1] = p_fc2_weight[v_ax1, v_ax0]
+
+        @Ts.function(private=True)
+        def matmul1(lv3: T.Tensor((T.int64(1), T.int64(256)), "float32", layout=None), lv4: T.Tensor((T.int64(256), T.int64(10)), "float32", layout=None), matmul: T.Tensor((T.int64(1), T.int64(10)), "float32", layout=None)):
+            T.func_attr({"s_tir": True, "script.namespace": "s_tir", "tirx.noalias": True})
             with Ts.sblock("root"):
                 Ts.reads()
                 Ts.writes()
@@ -481,49 +511,19 @@ within the same module. Meanwhile, the Relax operators will be converted into ``
                                 matmul[v_i0, v_i1] = matmul[v_i0, v_i1] + lv3[v_i0, v_k] * lv4[v_k, v_i1]
 
         @Ts.function(private=True)
-        def relu(lv2: T.Tensor((T.int64(1), T.int64(256)), "float32"), compute: T.Tensor((T.int64(1), T.int64(256)), "float32")):
-            T.func_attr({"tirx.noalias": True})
+        def add1(p_fc2_bias: T.Tensor((T.int64(10),), "float32", layout=None), lv5: T.Tensor((T.int64(1), T.int64(10)), "float32", layout=None), T_add: T.Tensor((T.int64(1), T.int64(10)), "float32", layout=None)):
+            T.func_attr({"s_tir": True, "script.namespace": "s_tir", "tirx.noalias": True})
             with Ts.sblock("root"):
                 Ts.reads()
                 Ts.writes()
-                for i0 in range(T.int64(0), T.int64(1)):
-                    for i1 in range(T.int64(0), T.int64(256)):
-                        with Ts.sblock("compute"):
-                            v_i0 = Ts.axis.spatial(T.int64(1), i0, dtype="int64")
-                            v_i1 = Ts.axis.spatial(T.int64(256), i1, dtype="int64")
-                            Ts.reads(lv2[v_i0, v_i1:v_i1 + T.int64(1)])
-                            Ts.writes(compute[v_i0, v_i1:v_i1 + T.int64(1)])
-                            compute[v_i0, v_i1] = T.max(lv2[v_i0, v_i1], T.float32(0.0))
-
-        @Ts.function(private=True)
-        def transpose(p_fc1_weight: T.Tensor((T.int64(256), T.int64(784)), "float32"), T_transpose: T.Tensor((T.int64(784), T.int64(256)), "float32")):
-            T.func_attr({"tirx.noalias": True})
-            with Ts.sblock("root"):
-                Ts.reads()
-                Ts.writes()
-                for ax0 in range(T.int64(0), T.int64(784)):
-                    for ax1 in range(T.int64(0), T.int64(256)):
-                        with Ts.sblock("T_transpose"):
-                            v_ax0 = Ts.axis.spatial(T.int64(784), ax0, dtype="int64")
-                            v_ax1 = Ts.axis.spatial(T.int64(256), ax1, dtype="int64")
-                            Ts.reads(p_fc1_weight[v_ax1, v_ax0:v_ax0 + T.int64(1)])
-                            Ts.writes(T_transpose[v_ax0, v_ax1:v_ax1 + T.int64(1)])
-                            T_transpose[v_ax0, v_ax1] = p_fc1_weight[v_ax1, v_ax0]
-
-        @Ts.function(private=True)
-        def transpose1(p_fc2_weight: T.Tensor((T.int64(10), T.int64(256)), "float32"), T_transpose: T.Tensor((T.int64(256), T.int64(10)), "float32")):
-            T.func_attr({"tirx.noalias": True})
-            with Ts.sblock("root"):
-                Ts.reads()
-                Ts.writes()
-                for ax0 in range(T.int64(0), T.int64(256)):
+                for ax0 in range(T.int64(0), T.int64(1)):
                     for ax1 in range(T.int64(0), T.int64(10)):
-                        with Ts.sblock("T_transpose"):
-                            v_ax0 = Ts.axis.spatial(T.int64(256), ax0, dtype="int64")
+                        with Ts.sblock("T_add"):
+                            v_ax0 = Ts.axis.spatial(T.int64(1), ax0, dtype="int64")
                             v_ax1 = Ts.axis.spatial(T.int64(10), ax1, dtype="int64")
-                            Ts.reads(p_fc2_weight[v_ax1, v_ax0:v_ax0 + T.int64(1)])
-                            Ts.writes(T_transpose[v_ax0, v_ax1:v_ax1 + T.int64(1)])
-                            T_transpose[v_ax0, v_ax1] = p_fc2_weight[v_ax1, v_ax0]
+                            Ts.reads(p_fc2_bias[v_ax1:v_ax1 + T.int64(1)], lv5[v_ax0, v_ax1:v_ax1 + T.int64(1)])
+                            Ts.writes(T_add[v_ax0, v_ax1:v_ax1 + T.int64(1)])
+                            T_add[v_ax0, v_ax1] = p_fc2_bias[v_ax1] + lv5[v_ax0, v_ax1]
 
         @R.function
         def main(x: R.Tensor((1, 784), dtype="float32"), p_fc1_weight: R.Tensor((256, 784), dtype="float32"), p_fc1_bias: R.Tensor((256,), dtype="float32"), p_fc2_weight: R.Tensor((10, 256), dtype="float32"), p_fc2_bias: R.Tensor((10,), dtype="float32")) -> R.Tensor((1, 10), dtype="float32"):
@@ -620,12 +620,42 @@ The default **zero** pipeline contains very fundamental transformations, includi
     @I.ir_module
     class Module:
         @Ts.function(private=True)
-        def fused_matmul1_add1(lv3: T.Tensor((T.int64(1), T.int64(256)), "float32"), lv4: T.Tensor((T.int64(256), T.int64(10)), "float32"), p_fc2_bias: T.Tensor((T.int64(10),), "float32"), T_add_intermediate: T.Tensor((T.int64(1), T.int64(10)), "float32")):
-            T.func_attr({"tirx.noalias": True})
+        def transpose(p_fc1_weight: T.Tensor((T.int64(256), T.int64(784)), "float32", layout=None), T_transpose: T.Tensor((T.int64(784), T.int64(256)), "float32", layout=None)):
+            T.func_attr({"op_pattern": 2, "s_tir": True, "script.namespace": "s_tir", "tirx.noalias": True})
             with Ts.sblock("root"):
                 Ts.reads()
                 Ts.writes()
-                matmul_intermediate = Ts.sblock_alloc_buffer((T.int64(1), T.int64(10)), "float32")
+                for ax0 in range(T.int64(0), T.int64(784)):
+                    for ax1 in range(T.int64(0), T.int64(256)):
+                        with Ts.sblock("T_transpose"):
+                            v_ax0 = Ts.axis.spatial(T.int64(784), ax0, dtype="int64")
+                            v_ax1 = Ts.axis.spatial(T.int64(256), ax1, dtype="int64")
+                            Ts.reads(p_fc1_weight[v_ax1, v_ax0:v_ax0 + T.int64(1)])
+                            Ts.writes(T_transpose[v_ax0, v_ax1:v_ax1 + T.int64(1)])
+                            T_transpose[v_ax0, v_ax1] = p_fc1_weight[v_ax1, v_ax0]
+
+        @Ts.function(private=True)
+        def transpose1(p_fc2_weight: T.Tensor((T.int64(10), T.int64(256)), "float32", layout=None), T_transpose: T.Tensor((T.int64(256), T.int64(10)), "float32", layout=None)):
+            T.func_attr({"op_pattern": 2, "s_tir": True, "script.namespace": "s_tir", "tirx.noalias": True})
+            with Ts.sblock("root"):
+                Ts.reads()
+                Ts.writes()
+                for ax0 in range(T.int64(0), T.int64(256)):
+                    for ax1 in range(T.int64(0), T.int64(10)):
+                        with Ts.sblock("T_transpose"):
+                            v_ax0 = Ts.axis.spatial(T.int64(256), ax0, dtype="int64")
+                            v_ax1 = Ts.axis.spatial(T.int64(10), ax1, dtype="int64")
+                            Ts.reads(p_fc2_weight[v_ax1, v_ax0:v_ax0 + T.int64(1)])
+                            Ts.writes(T_transpose[v_ax0, v_ax1:v_ax1 + T.int64(1)])
+                            T_transpose[v_ax0, v_ax1] = p_fc2_weight[v_ax1, v_ax0]
+
+        @Ts.function(private=True)
+        def fused_matmul1_add1(lv3: T.Tensor((T.int64(1), T.int64(256)), "float32", layout=None), lv4: T.Tensor((T.int64(256), T.int64(10)), "float32", layout=None), p_fc2_bias: T.Tensor((T.int64(10),), "float32", layout=None), T_add_intermediate: T.Tensor((T.int64(1), T.int64(10)), "float32", layout=None)):
+            T.func_attr({"s_tir": True, "script.namespace": "s_tir", "tirx.noalias": True})
+            with Ts.sblock("root"):
+                Ts.reads()
+                Ts.writes()
+                matmul_intermediate = Ts.sblock_alloc_buffer((T.int64(1), T.int64(10)), "float32", layout=None)
                 for i0 in range(T.int64(0), T.int64(1)):
                     for i1 in range(T.int64(0), T.int64(10)):
                         for k in range(T.int64(0), T.int64(256)):
@@ -648,13 +678,13 @@ The default **zero** pipeline contains very fundamental transformations, includi
                             T_add_intermediate[v_ax0, v_ax1] = p_fc2_bias[v_ax1] + matmul_intermediate[v_ax0, v_ax1]
 
         @Ts.function(private=True)
-        def fused_matmul_add_relu(x: T.Tensor((T.int64(1), T.int64(784)), "float32"), lv: T.Tensor((T.int64(784), T.int64(256)), "float32"), p_fc1_bias: T.Tensor((T.int64(256),), "float32"), compute_intermediate: T.Tensor((T.int64(1), T.int64(256)), "float32")):
-            T.func_attr({"tirx.noalias": True})
+        def fused_matmul_add_relu(x: T.Tensor((T.int64(1), T.int64(784)), "float32", layout=None), lv: T.Tensor((T.int64(784), T.int64(256)), "float32", layout=None), p_fc1_bias: T.Tensor((T.int64(256),), "float32", layout=None), compute_intermediate: T.Tensor((T.int64(1), T.int64(256)), "float32", layout=None)):
+            T.func_attr({"s_tir": True, "script.namespace": "s_tir", "tirx.noalias": True})
             with Ts.sblock("root"):
                 Ts.reads()
                 Ts.writes()
-                matmul_intermediate = Ts.sblock_alloc_buffer((T.int64(1), T.int64(256)), "float32")
-                T_add_intermediate = Ts.sblock_alloc_buffer((T.int64(1), T.int64(256)), "float32")
+                matmul_intermediate = Ts.sblock_alloc_buffer((T.int64(1), T.int64(256)), "float32", layout=None)
+                T_add_intermediate = Ts.sblock_alloc_buffer((T.int64(1), T.int64(256)), "float32", layout=None)
                 for i0 in range(T.int64(0), T.int64(1)):
                     for i1 in range(T.int64(0), T.int64(256)):
                         for k in range(T.int64(0), T.int64(784)):
@@ -683,36 +713,6 @@ The default **zero** pipeline contains very fundamental transformations, includi
                             Ts.reads(T_add_intermediate[v_i0_1, v_i1_1:v_i1_1 + T.int64(1)])
                             Ts.writes(compute_intermediate[v_i0_1, v_i1_1:v_i1_1 + T.int64(1)])
                             compute_intermediate[v_i0_1, v_i1_1] = T.max(T_add_intermediate[v_i0_1, v_i1_1], T.float32(0.0))
-
-        @Ts.function(private=True)
-        def transpose(p_fc1_weight: T.Tensor((T.int64(256), T.int64(784)), "float32"), T_transpose: T.Tensor((T.int64(784), T.int64(256)), "float32")):
-            T.func_attr({"op_pattern": 2, "tirx.noalias": True})
-            with Ts.sblock("root"):
-                Ts.reads()
-                Ts.writes()
-                for ax0 in range(T.int64(0), T.int64(784)):
-                    for ax1 in range(T.int64(0), T.int64(256)):
-                        with Ts.sblock("T_transpose"):
-                            v_ax0 = Ts.axis.spatial(T.int64(784), ax0, dtype="int64")
-                            v_ax1 = Ts.axis.spatial(T.int64(256), ax1, dtype="int64")
-                            Ts.reads(p_fc1_weight[v_ax1, v_ax0:v_ax0 + T.int64(1)])
-                            Ts.writes(T_transpose[v_ax0, v_ax1:v_ax1 + T.int64(1)])
-                            T_transpose[v_ax0, v_ax1] = p_fc1_weight[v_ax1, v_ax0]
-
-        @Ts.function(private=True)
-        def transpose1(p_fc2_weight: T.Tensor((T.int64(10), T.int64(256)), "float32"), T_transpose: T.Tensor((T.int64(256), T.int64(10)), "float32")):
-            T.func_attr({"op_pattern": 2, "tirx.noalias": True})
-            with Ts.sblock("root"):
-                Ts.reads()
-                Ts.writes()
-                for ax0 in range(T.int64(0), T.int64(256)):
-                    for ax1 in range(T.int64(0), T.int64(10)):
-                        with Ts.sblock("T_transpose"):
-                            v_ax0 = Ts.axis.spatial(T.int64(256), ax0, dtype="int64")
-                            v_ax1 = Ts.axis.spatial(T.int64(10), ax1, dtype="int64")
-                            Ts.reads(p_fc2_weight[v_ax1, v_ax0:v_ax0 + T.int64(1)])
-                            Ts.writes(T_transpose[v_ax0, v_ax1:v_ax1 + T.int64(1)])
-                            T_transpose[v_ax0, v_ax1] = p_fc2_weight[v_ax1, v_ax0]
 
         @R.function
         def main(x: R.Tensor((1, 784), dtype="float32"), p_fc1_weight: R.Tensor((256, 784), dtype="float32"), p_fc1_bias: R.Tensor((256,), dtype="float32"), p_fc2_weight: R.Tensor((10, 256), dtype="float32"), p_fc2_bias: R.Tensor((10,), dtype="float32")) -> R.Tensor((1, 10), dtype="float32"):
@@ -764,8 +764,8 @@ We can deploy the IRModule on CPU by specifying the target as ``llvm``.
 
  .. code-block:: none
 
-    [[ 0.0336303  -0.18854992  0.41608515  0.04286884  0.03951639 -0.08459787
-       0.07095717 -0.07297359  0.01466249  0.15550178]]
+    [[ 0.28183332  0.24355924 -0.06384909 -0.20530254  0.12034382 -0.05175101
+      -0.00848492  0.04481875 -0.07425407 -0.06136419]]
 
 
 
@@ -831,8 +831,8 @@ Now we can compile the IRModule on GPU, the similar way as we did on CPU.
 
  .. code-block:: none
 
-    [[ 0.03363033 -0.18854994  0.41608512  0.04286881  0.03951639 -0.08459783
-       0.07095715 -0.07297365  0.01466246  0.15550178]]
+    [[ 0.2818333   0.24355927 -0.06384908 -0.20530257  0.12034386 -0.05175097
+      -0.0084849   0.04481873 -0.07425416 -0.0613642 ]]
 
 
 

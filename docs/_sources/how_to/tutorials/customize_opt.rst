@@ -333,13 +333,39 @@ it achieves a balance between performance and compilation time.
     @I.ir_module
     class Module:
         I.module_attrs({"external_mods": [metadata["ffi.Module"][0]]})
+        @R.function
+        def forward(x: R.Tensor((1, 784), dtype="float32"), fc1_weight: R.Tensor((256, 784), dtype="float32"), fc1_bias: R.Tensor((256,), dtype="float32"), fc2_weight: R.Tensor((10, 256), dtype="float32")) -> R.Tensor((1, 10), dtype="float32"):
+            R.func_attr({"num_input": 1})
+            with R.dataflow():
+                lv = R.call_dps_packed("fused_relax_permute_dims_relax_matmul_relax_add_relax_nn_relu_cublas", (fc1_weight, x, fc1_bias), ty_args=[R.Tensor((1, 256), dtype="float32")])
+                permute_dims1 = R.call_tir(Module.transpose, (fc2_weight,), ty_args=[R.Tensor((256, 10), dtype="float32")])
+                gv = R.call_tir(Module.matmul, (lv, permute_dims1), ty_args=[R.Tensor((1, 10), dtype="float32")])
+                R.output(gv)
+            return gv
+
         @Ts.function(private=True)
-        def matmul(lv: T.Tensor((T.int64(1), T.int64(256)), "float32"), permute_dims1: T.Tensor((T.int64(256), T.int64(10)), "float32"), matmul: T.Tensor((T.int64(1), T.int64(10)), "float32")):
-            T.func_attr({"op_pattern": 4, "tirx.is_scheduled": True, "tirx.noalias": True})
+        def transpose(fc2_weight: T.Tensor((T.int64(10), T.int64(256)), "float32", layout=None), T_transpose: T.Tensor((T.int64(256), T.int64(10)), "float32", layout=None)):
+            T.func_attr({"op_pattern": 2, "s_tir": True, "script.namespace": "s_tir", "tirx.is_scheduled": True, "tirx.noalias": True})
             with Ts.sblock("root"):
                 Ts.reads()
                 Ts.writes()
-                matmul_rf_local = Ts.sblock_alloc_buffer((T.int64(16), T.int64(1), T.int64(10)), "float32", scope="local")
+                for ax0_ax1_fused_0 in T.thread_binding(T.int64(3), thread="blockIdx.x"):
+                    for ax0_ax1_fused_1 in T.thread_binding(T.int64(1024), thread="threadIdx.x"):
+                        with Ts.sblock("T_transpose"):
+                            v0 = Ts.axis.spatial(T.int64(256), (ax0_ax1_fused_0 * T.int64(1024) + ax0_ax1_fused_1) // T.int64(10), dtype="int64")
+                            v1 = Ts.axis.spatial(T.int64(10), (ax0_ax1_fused_0 * T.int64(1024) + ax0_ax1_fused_1) % T.int64(10), dtype="int64")
+                            Ts.where(ax0_ax1_fused_0 * T.int64(1024) + ax0_ax1_fused_1 < T.int64(2560))
+                            Ts.reads(fc2_weight[v1, v0:v0 + T.int64(1)])
+                            Ts.writes(T_transpose[v0, v1:v1 + T.int64(1)])
+                            T_transpose[v0, v1] = fc2_weight[v1, v0]
+
+        @Ts.function(private=True)
+        def matmul(lv: T.Tensor((T.int64(1), T.int64(256)), "float32", layout=None), permute_dims1: T.Tensor((T.int64(256), T.int64(10)), "float32", layout=None), matmul: T.Tensor((T.int64(1), T.int64(10)), "float32", layout=None)):
+            T.func_attr({"op_pattern": 4, "s_tir": True, "script.namespace": "s_tir", "tirx.is_scheduled": True, "tirx.noalias": True})
+            with Ts.sblock("root"):
+                Ts.reads()
+                Ts.writes()
+                matmul_rf_local = Ts.sblock_alloc_buffer((T.int64(16), T.int64(1), T.int64(10)), "float32", scope="local", layout=None)
                 for ax0_fused_0 in T.thread_binding(T.int64(1), thread="blockIdx.x"):
                     for ax0_fused_1 in T.thread_binding(T.int64(10), thread="threadIdx.x"):
                         for ax1_fused_1 in T.thread_binding(T.int64(16), thread="threadIdx.y"):
@@ -368,32 +394,6 @@ it achieves a balance between performance and compilation time.
                                 with Ts.init():
                                     matmul[T.int64(0), v0_2] = T.float32(0.0)
                                 matmul[T.int64(0), v0_2] = matmul[T.int64(0), v0_2] + matmul_rf_local[vax1_fused_1_2, T.int64(0), v0_2]
-
-        @Ts.function(private=True)
-        def transpose(fc2_weight: T.Tensor((T.int64(10), T.int64(256)), "float32"), T_transpose: T.Tensor((T.int64(256), T.int64(10)), "float32")):
-            T.func_attr({"op_pattern": 2, "tirx.is_scheduled": True, "tirx.noalias": True})
-            with Ts.sblock("root"):
-                Ts.reads()
-                Ts.writes()
-                for ax0_ax1_fused_0 in T.thread_binding(T.int64(3), thread="blockIdx.x"):
-                    for ax0_ax1_fused_1 in T.thread_binding(T.int64(1024), thread="threadIdx.x"):
-                        with Ts.sblock("T_transpose"):
-                            v0 = Ts.axis.spatial(T.int64(256), (ax0_ax1_fused_0 * T.int64(1024) + ax0_ax1_fused_1) // T.int64(10), dtype="int64")
-                            v1 = Ts.axis.spatial(T.int64(10), (ax0_ax1_fused_0 * T.int64(1024) + ax0_ax1_fused_1) % T.int64(10), dtype="int64")
-                            Ts.where(ax0_ax1_fused_0 * T.int64(1024) + ax0_ax1_fused_1 < T.int64(2560))
-                            Ts.reads(fc2_weight[v1, v0:v0 + T.int64(1)])
-                            Ts.writes(T_transpose[v0, v1:v1 + T.int64(1)])
-                            T_transpose[v0, v1] = fc2_weight[v1, v0]
-
-        @R.function
-        def forward(x: R.Tensor((1, 784), dtype="float32"), fc1_weight: R.Tensor((256, 784), dtype="float32"), fc1_bias: R.Tensor((256,), dtype="float32"), fc2_weight: R.Tensor((10, 256), dtype="float32")) -> R.Tensor((1, 10), dtype="float32"):
-            R.func_attr({"num_input": 1})
-            with R.dataflow():
-                lv = R.call_dps_packed("fused_relax_permute_dims_relax_matmul_relax_add_relax_nn_relu_cublas", (fc1_weight, x, fc1_bias), ty_args=[R.Tensor((1, 256), dtype="float32")])
-                permute_dims1 = R.call_tir(Module.transpose, (fc2_weight,), ty_args=[R.Tensor((256, 10), dtype="float32")])
-                gv = R.call_tir(Module.matmul, (lv, permute_dims1), ty_args=[R.Tensor((1, 10), dtype="float32")])
-                R.output(gv)
-            return gv
 
     # Metadata omitted. Use show_meta=True in script() method to show it.
 
