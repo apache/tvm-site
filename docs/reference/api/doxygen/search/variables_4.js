@@ -35,7 +35,7 @@ var searchData=
   ['dispatched_32',['dispatched',['../classtvm_1_1s__tir_1_1meta__schedule_1_1ExtractedTaskNode.html#a8be137581a62630c9b30e5e1d88acaf2',1,'tvm::s_tir::meta_schedule::ExtractedTaskNode']]],
   ['doc_33',['doc',['../classtvm_1_1ArgumentInfoNode.html#ac6e758834aeaa009febaf8996e797dc1',1,'tvm::ArgumentInfoNode::doc'],['../classtvm_1_1OpNode.html#a581785b139323c424e7980367e597d1f',1,'tvm::OpNode::doc']]],
   ['doc_5fscopes_5f_34',['doc_scopes_',['../classtvm_1_1script_1_1printer_1_1DocTranslatorObj.html#a479c72c58a8e22da05cfbc8084abdb2a',1,'tvm::script::printer::DocTranslatorObj']]],
-  ['dom_35',['dom',['../classtvm_1_1s__tir_1_1IterVarNode.html#af67442d1654ed04346a2d31c80839369',1,'tvm::s_tir::IterVarNode']]],
+  ['dom_35',['dom',['../classtvm_1_1s__tir_1_1IterVarNode.html#acaa9b2478e1b59a2c9fdd8d362bb84a3',1,'tvm::s_tir::IterVarNode']]],
   ['doms_36',['doms',['../classtvm_1_1script_1_1ir__builder_1_1ir_1_1ForFrameNode.html#a84524367e7c5503b1f7eb4ba6766c58d',1,'tvm::script::ir_builder::ir::ForFrameNode']]],
   ['downstream_5fusage_37',['downstream_usage',['../structtvm_1_1relax_1_1VarUsageInfo.html#ac46b9b835c0e9c1782c99ae42c552a66',1,'tvm::relax::VarUsageInfo']]],
   ['dst_38',['dst',['../structtvm_1_1runtime_1_1vm_1_1Instruction.html#a17f056cc4798d31c8bcee6903be8dd1d',1,'tvm::runtime::vm::Instruction::dst'],['../classtvm_1_1tirx_1_1DependencyNode.html#accd97a7fd695f00b30a2afd5a47d83e7',1,'tvm::tirx::DependencyNode::dst']]],

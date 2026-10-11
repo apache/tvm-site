@@ -12,7 +12,7 @@ var searchData=
   ['varremapgetexpected_9',['VarRemapGetExpected',['../classtvm_1_1ObjectMutator.html#a9d96421a85ad6f724734b01f2051c4fc',1,'tvm::ObjectMutator']]],
   ['varremapset_10',['VarRemapSet',['../classtvm_1_1ObjectMutator.html#aef871f9f816a526a7755997f6551f385',1,'tvm::ObjectMutator']]],
   ['varremapsetexpected_11',['VarRemapSetExpected',['../classtvm_1_1ObjectMutator.html#a739cb0f0c4789b601fd613ea2e13bfe2',1,'tvm::ObjectMutator']]],
-  ['vdevice_12',['VDevice',['../classtvm_1_1relax_1_1VDevice.html#a57855a5392df000478ba8585e1d0fa5c',1,'tvm::relax::VDevice']]],
+  ['vdevice_12',['VDevice',['../classtvm_1_1relax_1_1VDevice.html#a3aa72065ef70306f7602a72161231417',1,'tvm::relax::VDevice']]],
   ['vector_13',['Vector',['../classtvm_1_1sym_1_1IntSet.html#ab4bb32bb2f56ee4d1f55ef526fff505b',1,'tvm::sym::IntSet']]],
   ['vector_5fcombine_5fop_14',['vector_combine_op',['../namespacetvm_1_1tirx.html#a6e678e7108f9f7ee27df5558284338f6',1,'tvm::tirx']]],
   ['vector_5fhigh_5fop_15',['vector_high_op',['../namespacetvm_1_1tirx.html#a874b1012c014c4b575f2b6aa39498323',1,'tvm::tirx']]],

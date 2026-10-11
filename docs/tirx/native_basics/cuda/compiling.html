@@ -312,6 +312,8 @@
 <li class="toctree-l2"><a class="reference internal" href="../../api/script.html">Core TVMScript</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../api/tile.html">Tensor Instruction Authoring API</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../api/cuda.html">CUDA Authoring and Support APIs</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../api/cuda_compile.html">CUDA backend configuration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../../api/cuda_compile_options.html">Native CUDA compiler arguments</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../api/cuda_launch.html">CUDA kernel configuration reference</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../api/ptx.html">Direct PTX Instructions</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../../api/trainium.html">Trainium Authoring and Support APIs</a></li>
@@ -623,6 +625,9 @@ document.write(`
             </div>
             <nav aria-label="Page">
                 <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#defaults-and-overrides">Defaults and overrides</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#artifacts-and-standalone-hosts">Artifacts and standalone hosts</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#migration">Migration</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#inspecting-the-result">Inspecting the result</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#from-simple-to-complex">From simple to complex</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#next-steps">Next steps</a></li>
@@ -639,27 +644,118 @@ document.write(`
                   
   <section id="compiling-and-inspecting">
 <h1>Compiling and inspecting<a class="headerlink" href="#compiling-and-inspecting" title="Link to this heading">#</a></h1>
-<p>Wrap the <code class="docutils literal notranslate"><span class="pre">Function</span></code> in an <code class="docutils literal notranslate"><span class="pre">IRModule</span></code> and compile with
-<code class="docutils literal notranslate"><span class="pre">tvm.compile(mod,</span> <span class="pre">target=...,</span> <span class="pre">tir_pipeline=&quot;tirx&quot;)</span></code>; it runs the TIRx lowering
-pipeline and returns an <code class="docutils literal notranslate"><span class="pre">Executable</span></code> you call directly. With an active CUDA
-device, target <code class="docutils literal notranslate"><span class="pre">&quot;cuda&quot;</span></code> auto-detects its architecture (for example
-<code class="docutils literal notranslate"><span class="pre">sm_100a</span></code>). If no device is available during compilation, TVM warns and falls
-back to <code class="docutils literal notranslate"><span class="pre">sm_50</span></code>; specify <code class="docutils literal notranslate"><span class="pre">-arch=...</span></code> when cross-compiling or when the emitted
-instructions require a newer architecture.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">target</span> <span class="o">=</span> <span class="n">tvm</span><span class="o">.</span><span class="n">target</span><span class="o">.</span><span class="n">Target</span><span class="p">(</span><span class="s2">&quot;cuda&quot;</span><span class="p">)</span>
-<span class="n">exe</span> <span class="o">=</span> <span class="n">tvm</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="n">tvm</span><span class="o">.</span><span class="n">IRModule</span><span class="p">({</span><span class="s2">&quot;main&quot;</span><span class="p">:</span> <span class="n">scale</span><span class="p">}),</span> <span class="n">target</span><span class="o">=</span><span class="n">target</span><span class="p">,</span> <span class="n">tir_pipeline</span><span class="o">=</span><span class="s2">&quot;tirx&quot;</span><span class="p">)</span>
+<p>CUDA compilation accepts a lightweight <code class="docutils literal notranslate"><span class="pre">backend_config</span></code> mapping. The same
+nested structure is accepted by <code class="docutils literal notranslate"><span class="pre">tvm.compile</span></code>, <code class="docutils literal notranslate"><span class="pre">T.device_entry</span></code>, and
+<code class="docutils literal notranslate"><span class="pre">txl.Kernel.compile</span></code>. <code class="docutils literal notranslate"><span class="pre">tvm.backend.cuda.BackendConfig</span></code> is an optional
+<code class="docutils literal notranslate"><span class="pre">TypedDict</span></code> helper, also available as <code class="docutils literal notranslate"><span class="pre">T.cuda.BackendConfig</span></code> and
+<code class="docutils literal notranslate"><span class="pre">txl.cuda.BackendConfig</span></code>:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">tvm.backend.cuda</span><span class="w"> </span><span class="kn">import</span> <span class="n">BackendConfig</span>
+
+<span class="nd">@T</span><span class="o">.</span><span class="n">function</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">pipeline</span><span class="p">(</span><span class="n">A</span><span class="p">:</span> <span class="n">T</span><span class="o">.</span><span class="n">Tensor</span><span class="p">((</span><span class="mi">32</span><span class="p">,),</span> <span class="s2">&quot;float32&quot;</span><span class="p">),</span> <span class="n">B</span><span class="p">:</span> <span class="n">T</span><span class="o">.</span><span class="n">Tensor</span><span class="p">((</span><span class="mi">32</span><span class="p">,),</span> <span class="s2">&quot;float32&quot;</span><span class="p">)):</span>
+    <span class="k">with</span> <span class="n">T</span><span class="o">.</span><span class="n">device_entry</span><span class="p">(</span>
+        <span class="n">launch</span><span class="o">=</span><span class="n">T</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">LaunchConfig</span><span class="p">(</span><span class="n">grid</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">block</span><span class="o">=</span><span class="mi">32</span><span class="p">),</span>
+        <span class="n">backend_config</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;cuda&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;nvrtc&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;--use_fast_math&quot;</span><span class="p">,</span> <span class="s2">&quot;--ftz=false&quot;</span><span class="p">]}},</span>
+    <span class="p">):</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">T</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">thread_idx</span><span class="p">(</span><span class="s2">&quot;x&quot;</span><span class="p">)</span>
+        <span class="n">B</span><span class="p">[</span><span class="n">x</span><span class="p">]</span> <span class="o">=</span> <span class="n">A</span><span class="p">[</span><span class="n">x</span><span class="p">]</span> <span class="o">*</span> <span class="n">T</span><span class="o">.</span><span class="n">float32</span><span class="p">(</span><span class="mf">0.5</span><span class="p">)</span>
+    <span class="k">with</span> <span class="n">T</span><span class="o">.</span><span class="n">device_entry</span><span class="p">(</span>
+        <span class="n">launch</span><span class="o">=</span><span class="n">T</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">LaunchConfig</span><span class="p">(</span><span class="n">grid</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">block</span><span class="o">=</span><span class="mi">32</span><span class="p">),</span>
+        <span class="n">backend_config</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;cuda&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">&quot;compiler&quot;</span><span class="p">:</span> <span class="s2">&quot;nvcc&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;nvcc&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;--use_fast_math&quot;</span><span class="p">,</span> <span class="s2">&quot;--generate-line-info&quot;</span><span class="p">],</span>
+        <span class="p">}},</span>
+    <span class="p">):</span>
+        <span class="n">y</span> <span class="o">=</span> <span class="n">T</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">thread_idx</span><span class="p">(</span><span class="s2">&quot;x&quot;</span><span class="p">)</span>
+        <span class="n">A</span><span class="p">[</span><span class="n">y</span><span class="p">]</span> <span class="o">=</span> <span class="n">B</span><span class="p">[</span><span class="n">y</span><span class="p">]</span> <span class="o">+</span> <span class="n">T</span><span class="o">.</span><span class="n">float32</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+
+<span class="n">cuda_config</span> <span class="o">=</span> <span class="n">BackendConfig</span><span class="p">(</span><span class="n">arch</span><span class="o">=</span><span class="s2">&quot;sm_100a&quot;</span><span class="p">)</span>
+<span class="n">exe</span> <span class="o">=</span> <span class="n">tvm</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="n">pipeline</span><span class="p">,</span> <span class="n">backend_config</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;cuda&quot;</span><span class="p">:</span> <span class="n">cuda_config</span><span class="p">})</span>
 </pre></div>
 </div>
-<p><code class="docutils literal notranslate"><span class="pre">tir_pipeline=&quot;tirx&quot;</span></code> selects the TIRx lowering pipeline (tile-primitive
-dispatch and cleanup inside <code class="docutils literal notranslate"><span class="pre">LowerTIRx</span></code> → host/device split → finalize).
-Compiling inside a <code class="docutils literal notranslate"><span class="pre">with</span> <span class="pre">target:</span></code> block also works and lets the kernel pick
-up the target context.</p>
+<p>Each entry resolves its configuration before architecture-sensitive lowering.
+Entries with different resolved targets or options compile as separate CUDA
+modules; their shared device helpers are copied into each group. The existing
+host module imports these device modules and launches them in program order.
+Kernels must be compatible with the device on which they execute.</p>
+<section id="defaults-and-overrides">
+<h2>Defaults and overrides<a class="headerlink" href="#defaults-and-overrides" title="Link to this heading">#</a></h2>
+<p>Precedence, from lowest to highest, is backend defaults, Target/tag defaults,
+compile-call overrides, then device-entry overrides. <code class="docutils literal notranslate"><span class="pre">None</span></code> and <code class="docutils literal notranslate"><span class="pre">{}</span></code> add no
+overrides. Toolchain lists replace inherited lists in full, and <code class="docutils literal notranslate"><span class="pre">[]</span></code> clears a
+list. To keep fast math while changing FTZ, include both arguments as above.
+Configuration boundaries snapshot dictionaries and lists, so later mutation of
+the input cannot change an already constructed entry or a factory cache key.</p>
+<p>Target tags use the existing target registry and carry defaults in Target attrs:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">tvm</span><span class="o">.</span><span class="n">target</span><span class="o">.</span><span class="n">tag</span><span class="o">.</span><span class="n">register_tag</span><span class="p">(</span><span class="s2">&quot;local/blackwell&quot;</span><span class="p">,</span> <span class="p">{</span>
+    <span class="s2">&quot;kind&quot;</span><span class="p">:</span> <span class="s2">&quot;cuda&quot;</span><span class="p">,</span> <span class="s2">&quot;arch&quot;</span><span class="p">:</span> <span class="s2">&quot;sm_100a&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;backend_config&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;cuda&quot;</span><span class="p">:</span> <span class="p">{</span>
+        <span class="s2">&quot;compiler&quot;</span><span class="p">:</span> <span class="s2">&quot;nvcc&quot;</span><span class="p">,</span> <span class="s2">&quot;nvcc&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;--use_fast_math&quot;</span><span class="p">,</span> <span class="s2">&quot;--generate-line-info&quot;</span><span class="p">],</span>
+    <span class="p">}},</span>
+<span class="p">})</span>
+<span class="n">exe</span> <span class="o">=</span> <span class="n">tvm</span><span class="o">.</span><span class="n">compile</span><span class="p">(</span><span class="n">pipeline</span><span class="p">,</span> <span class="n">target</span><span class="o">=</span><span class="s2">&quot;local/blackwell&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Both <code class="docutils literal notranslate"><span class="pre">Target(&quot;local/blackwell&quot;)</span></code> and <code class="docutils literal notranslate"><span class="pre">Target({&quot;tag&quot;:</span> <span class="pre">&quot;local/blackwell&quot;})</span></code>
+preserve these defaults in their expanded attributes. There is no separate
+backend tag registry. An explicit <code class="docutils literal notranslate"><span class="pre">Target.arch</span></code> conflicting with build-level
+<code class="docutils literal notranslate"><span class="pre">backend_config[&quot;cuda&quot;][&quot;arch&quot;]</span></code> is rejected. An entry can override the arch.</p>
+<p>Online builds can detect the GPU architecture. Offline builds require an
+explicit architecture in the Target, build configuration, or every device entry.
+A generic <code class="docutils literal notranslate"><span class="pre">Target(&quot;cuda&quot;)</span></code> may remain without an architecture for backend
+discovery and IR construction; compilation validates it before lowering.
+Architecture-dependent Python factories resolve and record their architecture
+before tracing. Other backend defaults remain overridable at compilation.</p>
+<p>The default compiler is NVRTC, with fast math enabled and ptxas register usage
+level 10. NVRTC produces cubin by default, NVCC produces fatbin, and NVSHMEM
+requires cubin. Native options go into <code class="docutils literal notranslate"><span class="pre">nvcc</span></code>, <code class="docutils literal notranslate"><span class="pre">nvrtc</span></code>, or <code class="docutils literal notranslate"><span class="pre">ptxas</span></code> as
+individual argv strings; the compiler validates their values and availability.
+TVM reserves only routing, architecture, and output controls that it manages.
+Adding a compiler flag does not require adding a Python field or updating TVM.</p>
+<p><code class="docutils literal notranslate"><span class="pre">LaunchConfig</span></code> supplies runtime grid, block, cluster, and stream settings.
+<code class="docutils literal notranslate"><span class="pre">KernelAttributes</span></code> describes CUDA kernel declaration attributes.
+<code class="docutils literal notranslate"><span class="pre">backend_config</span></code> controls device compilation. PassContext still controls TVM
+passes independently; there is no wrapper combining these APIs. Only CUDA
+backend configuration is implemented currently; unsupported backend keys raise
+an explicit error.</p>
+</section>
+<section id="artifacts-and-standalone-hosts">
+<h2>Artifacts and standalone hosts<a class="headerlink" href="#artifacts-and-standalone-hosts" title="Link to this heading">#</a></h2>
+<p>CUDA modules retain the resolved configuration as one opaque JSON string,
+available through <code class="docutils literal notranslate"><span class="pre">module.inspect_source(&quot;backend_config&quot;)</span></code>. Serialization
+keeps the existing format, function map, and code fields, then appends this string.
+It does not persist compiler logs or the complete source map. Source fallback
+artifacts retain source and configuration and compile on loading with a CUDA
+runtime. Replay uses the saved defaults independently of the loader’s Target scope. Producing a source fallback does not require NVCC or NVRTC.
+Old binary artifacts remain loadable; old source artifacts without configuration
+use the default compiler settings when compiled.</p>
+<p>For <code class="docutils literal notranslate"><span class="pre">target=Target({&quot;kind&quot;:</span> <span class="pre">&quot;cuda&quot;,</span> <span class="pre">&quot;arch&quot;:</span> <span class="pre">&quot;sm_100a&quot;},</span> <span class="pre">host=&quot;cuda_host&quot;)</span></code>,
+<code class="docutils literal notranslate"><span class="pre">tvm.backend.cuda.export_cuda_host(exe.mod)</span></code> returns ordinary C++ host source
+with embedded independently compiled device binaries. Compile it with a C++
+compiler and CUDA headers, and link with tvm-ffi, cudart and the CUDA driver.
+The exported library requires no TVM installation or device compiler at runtime.
+Compiling the host does not recompile kernels.</p>
+</section>
+<section id="migration">
+<h2>Migration<a class="headerlink" href="#migration" title="Link to this heading">#</a></h2>
+<p>Replace the former compilation dataclass with the nested mapping above. Convert
+math, debugging, include, and assembler options to native argument strings.
+Replace <code class="docutils literal notranslate"><span class="pre">&#64;txl.kernel(arch=...)</span></code> and <code class="docutils literal notranslate"><span class="pre">tirx.cuda_arch</span></code> with an entry or compile
+<code class="docutils literal notranslate"><span class="pre">backend_config={&quot;cuda&quot;:</span> <span class="pre">{&quot;arch&quot;:</span> <span class="pre">...}}</span></code>.</p>
+<p>Compiler/math/ptxas environment policies remain removed. CPU benchmark
+preparation receives an explicit architecture through <code class="docutils literal notranslate"><span class="pre">backend_config</span></code> and
+defaults to NVCC. The runner, benchmark, and test CLIs accept
+<code class="docutils literal notranslate"><span class="pre">--backend-config</span> <span class="pre">'{&quot;cuda&quot;:{&quot;arch&quot;:&quot;sm_100a&quot;,&quot;compiler&quot;:&quot;nvcc&quot;}}'</span></code>.
+Factory caches use canonical configuration snapshots; dictionary key order is
+ignored while argument order remains significant.</p>
+<p>See <a class="reference internal" href="../../api/cuda_compile.html"><span class="doc">CUDA backend configuration</span></a> for the complete configuration API.</p>
+</section>
 <section id="inspecting-the-result">
 <h2>Inspecting the result<a class="headerlink" href="#inspecting-the-result" title="Link to this heading">#</a></h2>
 <p>Read the IR with <code class="docutils literal notranslate"><span class="pre">.show()</span></code> / <code class="docutils literal notranslate"><span class="pre">.script()</span></code>, and read the generated CUDA from the
 compiled module.</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">scale</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>                          <span class="c1"># pretty-print the TIRx (TVMScript)</span>
-<span class="nb">print</span><span class="p">(</span><span class="n">scale</span><span class="o">.</span><span class="n">script</span><span class="p">())</span>                 <span class="c1"># ... the same, as a string</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">pipeline</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>                       <span class="c1"># pretty-print the TIRx (TVMScript)</span>
+<span class="nb">print</span><span class="p">(</span><span class="n">pipeline</span><span class="o">.</span><span class="n">script</span><span class="p">())</span>              <span class="c1"># ... the same, as a string</span>
 
 <span class="c1"># the generated CUDA C source, from the compiled Executable:</span>
 <span class="nb">print</span><span class="p">(</span><span class="n">exe</span><span class="o">.</span><span class="n">mod</span><span class="o">.</span><span class="n">imports</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">inspect_source</span><span class="p">())</span>
@@ -774,6 +870,9 @@ to combine partial results across lanes/warps (the warp all-reduce in
   </div>
   <nav class="bd-toc-nav page-toc">
     <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#defaults-and-overrides">Defaults and overrides</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#artifacts-and-standalone-hosts">Artifacts and standalone hosts</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#migration">Migration</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#inspecting-the-result">Inspecting the result</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#from-simple-to-complex">From simple to complex</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#next-steps">Next steps</a></li>
