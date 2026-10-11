@@ -228,8 +228,8 @@ compiler to relink them. Now `func` is a remote module object.
 
     # create arrays on the remote device
     dev = remote.cpu()
-    a = tvm.runtime.tensor(np.random.uniform(size=1024).astype(A.dtype), dev)
-    b = tvm.runtime.tensor(np.zeros(1024, dtype=A.dtype), dev)
+    a = dev.tensor(np.random.uniform(size=1024).astype(A.dtype))
+    b = dev.tensor(np.zeros(1024, dtype=A.dtype))
     # the function will run on the remote device
     func(a, b)
     np.testing.assert_equal(b.numpy(), a.numpy() + 1)
@@ -243,9 +243,9 @@ compiler to relink them. Now `func` is a remote module object.
  .. code-block:: none
 
     /workspace/docs/how_to/tutorials/cross_compilation_and_rpc.py:185: DeprecationWarning: in the future the `.dtype` attribute of a given datatype object must be a valid dtype instance. `data_type.dtype` may need to be coerced using `np.dtype(data_type.dtype)`. (Deprecated NumPy 1.20)
-      a = tvm.runtime.tensor(np.random.uniform(size=1024).astype(A.dtype), dev)
+      a = dev.tensor(np.random.uniform(size=1024).astype(A.dtype))
     /workspace/docs/how_to/tutorials/cross_compilation_and_rpc.py:186: DeprecationWarning: in the future the `.dtype` attribute of a given datatype object must be a valid dtype instance. `data_type.dtype` may need to be coerced using `np.dtype(data_type.dtype)`. (Deprecated NumPy 1.20)
-      b = tvm.runtime.tensor(np.zeros(1024, dtype=A.dtype), dev)
+      b = dev.tensor(np.zeros(1024, dtype=A.dtype))
 
 
 
@@ -275,7 +275,7 @@ device and returns the measured cost. Network overhead is excluded.
 
  .. code-block:: none
 
-    9.4e-08 secs/op
+    1.08e-07 secs/op
 
 
 
@@ -524,8 +524,8 @@ The following function shows how we run an OpenCL kernel remotely
 
         # run
         dev = remote.cl()
-        a = tvm.runtime.tensor(np.random.uniform(size=1024).astype(A.dtype), dev)
-        b = tvm.runtime.tensor(np.zeros(1024, dtype=A.dtype), dev)
+        a = dev.tensor(np.random.uniform(size=1024).astype(A.dtype))
+        b = dev.tensor(np.zeros(1024, dtype=A.dtype))
         func(a, b)
         np.testing.assert_equal(b.numpy(), a.numpy() + 1)
         print("OpenCL test passed!")
@@ -706,7 +706,7 @@ This workflow is applicable to various deployment scenarios:
             print("   remote.upload('model_params.npz')")
             print("\n4. Load and run remotely:")
             print("   lib = remote.load_module('model_deployed.so')")
-            print("   vm = relax.VirtualMachine(lib, remote.cpu())")
+            print("   vm = rpc.virtual_machine(lib, remote.cpu())")
             print("   result = vm['main'](input, *params)")
             print("\nDevice examples:")
             print("  - Raspberry Pi: 192.168.1.100")
@@ -740,12 +740,12 @@ This workflow is applicable to various deployment scenarios:
         dev = remote.cpu()
 
         # Create VM and load parameters
-        vm = relax.VirtualMachine(lib, dev)
+        vm = rpc.virtual_machine(lib, dev)
 
         # Load parameters from the uploaded file
         # Note: In practice, you might load this from the remote filesystem
         params_npz = np.load(params_path)
-        remote_params = [tvm.runtime.tensor(params_npz[f"p_{i}"], dev) for i in range(len(params_npz))]
+        remote_params = [dev.tensor(params_npz[f"p_{i}"]) for i in range(len(params_npz))]
 
         ######################################################################
         # Step 5: Run Inference on Remote Device
@@ -759,7 +759,7 @@ This workflow is applicable to various deployment scenarios:
 
         # Prepare input data
         input_data = np.random.randn(1, 1, 28, 28).astype("float32")
-        remote_input = tvm.runtime.tensor(input_data, dev)
+        remote_input = dev.tensor(input_data)
 
         # Run inference using set_input + invoke_stateful for RPC compatibility
         vm.set_input("main", remote_input, *remote_params)
@@ -864,8 +864,8 @@ This workflow is applicable to various deployment scenarios:
     Converted PyTorch model to Relax:
       - Number of parameters: 4
     Using local target for demonstration
-    Exported library to: /tmp/tmpnfb8wyjs/model_deployed.so
-    Saved parameters to: /tmp/tmpnfb8wyjs/model_params.npz
+    Exported library to: /tmp/tmp27cv1tyr/model_deployed.so
+    Saved parameters to: /tmp/tmp27cv1tyr/model_params.npz
 
     RPC workflow (works for any remote device):
     ==================================================
@@ -881,7 +881,7 @@ This workflow is applicable to various deployment scenarios:
 
     4. Load and run remotely:
        lib = remote.load_module('model_deployed.so')
-       vm = relax.VirtualMachine(lib, remote.cpu())
+       vm = rpc.virtual_machine(lib, remote.cpu())
        result = vm['main'](input, *params)
 
     Device examples:
