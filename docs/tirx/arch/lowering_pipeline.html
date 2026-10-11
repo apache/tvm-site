@@ -664,7 +664,14 @@ generator:</p>
 </section>
 <section id="the-passes">
 <h2>The passes<a class="headerlink" href="#the-passes" title="Link to this heading">#</a></h2>
-<p>The <code class="docutils literal notranslate"><span class="pre">tirx_pipeline</span></code> module pass applies this exact sequence (a few are gated by
+<p>S-TIR represents scheduled thread placement with ordinary <code class="docutils literal notranslate"><span class="pre">T.parallel</span></code> loops
+and a visible <code class="docutils literal notranslate"><span class="pre">thread_binding</span></code> annotation. S-TIR normalization removes
+unannotated extent-one loops, and <code class="docutils literal notranslate"><span class="pre">LowerThreadBinding</span></code> converts thread-bound
+loops to explicit <code class="docutils literal notranslate"><span class="pre">T.launch_thread</span></code> regions before generic TIRx transforms.
+TIRx source can construct these regions directly. The generic pipeline uses
+<code class="docutils literal notranslate"><span class="pre">StmtSimplify</span></code> for arithmetic simplification and <code class="docutils literal notranslate"><span class="pre">UnrollLoop</span></code> for inherited
+loop unroll policies.</p>
+<p>The <code class="docutils literal notranslate"><span class="pre">tirx_pipeline</span></code> module pass applies this sequence (a few passes are gated by
 <code class="docutils literal notranslate"><span class="pre">PassContext</span></code> config):</p>
 <div class="pst-scrollable-table-container"><table class="table">
 <colgroup>
@@ -688,70 +695,66 @@ generator:</p>
 <td><p>statement-level arithmetic simplification (the sym analyzer)</p></td>
 </tr>
 <tr class="row-even"><td><p>3</p></td>
-<td><p><code class="docutils literal notranslate"><span class="pre">LowerTIRxOpaque</span></code></p></td>
-<td><p>lowers remaining opaque constructs to lower-level TIRx forms</p></td>
-</tr>
-<tr class="row-odd"><td><p>4</p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">FlattenTensor</span></code></p></td>
 <td><p>flattens multi-dimensional <code class="docutils literal notranslate"><span class="pre">TensorLoad</span></code> / <code class="docutils literal notranslate"><span class="pre">TensorStore</span></code> to 1-D</p></td>
 </tr>
-<tr class="row-even"><td><p>5</p></td>
+<tr class="row-odd"><td><p>4</p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">BF16ComputeLegalize</span></code></p></td>
 <td><p>rewrites <code class="docutils literal notranslate"><span class="pre">bfloat16</span></code> compute to a legal (f32-up-cast) form</p></td>
 </tr>
-<tr class="row-odd"><td><p>6</p></td>
+<tr class="row-even"><td><p>5</p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">NarrowDataType(32)</span></code></p></td>
 <td><p>narrows index/loop <code class="docutils literal notranslate"><span class="pre">PrimExpr</span></code> dtypes to 32-bit where provably safe</p></td>
 </tr>
-<tr class="row-even"><td><p>7</p></td>
+<tr class="row-odd"><td><p>6</p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">VectorizeLoop</span></code></p></td>
 <td><p>turns <code class="docutils literal notranslate"><span class="pre">Tx.vectorized</span></code> loops into vector ops (skipped if
 <code class="docutils literal notranslate"><span class="pre">tir.disable_vectorize</span></code>)</p></td>
 </tr>
-<tr class="row-odd"><td><p>8</p></td>
+<tr class="row-even"><td><p>7</p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">UnrollLoop</span></code></p></td>
 <td><p>unrolls loops marked <code class="docutils literal notranslate"><span class="pre">Tx.unroll</span></code> (and small constant loops)</p></td>
 </tr>
-<tr class="row-even"><td><p>9</p></td>
+<tr class="row-odd"><td><p>8</p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">StmtSimplify</span></code></p></td>
 <td><p>simplify again, now that vectorize/unroll exposed constants</p></td>
 </tr>
-<tr class="row-odd"><td><p>10</p></td>
+<tr class="row-even"><td><p>9</p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">CommonSubexprElim</span></code></p></td>
 <td><p>hoists repeated subexpressions into temporaries (skipped if
 <code class="docutils literal notranslate"><span class="pre">tir.disable_cse_tir</span></code>)</p></td>
 </tr>
-<tr class="row-even"><td><p>11</p></td>
+<tr class="row-odd"><td><p>10</p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">FP8ComputeLegalize</span></code></p></td>
 <td><p>rewrites <code class="docutils literal notranslate"><span class="pre">float8</span></code> compute to a legal form</p></td>
 </tr>
-<tr class="row-odd"><td><p>12</p></td>
+<tr class="row-even"><td><p>11</p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">VerifyMemory</span></code></p></td>
 <td><p>checks no host-side code directly dereferences device memory (a safety gate)</p></td>
 </tr>
-<tr class="row-even"><td><p>13</p></td>
+<tr class="row-odd"><td><p>12</p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">AnnotateEntryFunc</span></code></p></td>
 <td><p>marks the single Function as the module entry point</p></td>
 </tr>
-<tr class="row-odd"><td><p>14</p></td>
+<tr class="row-even"><td><p>13</p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">SplitHostDevice</span></code></p></td>
 <td><p>extracts target-annotated device regions into <strong>device</strong> functions and
 leaves launch calls in the <strong>host</strong> function; the regions originate from
 the explicit <code class="docutils literal notranslate"><span class="pre">LaunchConfig</span></code> attached to <code class="docutils literal notranslate"><span class="pre">Tx.device_entry</span></code></p></td>
 </tr>
-<tr class="row-even"><td><p>15</p></td>
+<tr class="row-odd"><td><p>14</p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">LowerIket</span></code></p></td>
 <td><p>lowers CUDA IKET instrumentation after host/device splitting</p></td>
 </tr>
-<tr class="row-odd"><td><p>16</p></td>
+<tr class="row-even"><td><p>15</p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">MakePackedAPI</span></code></p></td>
 <td><p>rewrites the host function to the packed-func ABI (the launcher TVM calls)</p></td>
 </tr>
-<tr class="row-even"><td><p>17</p></td>
+<tr class="row-odd"><td><p>16</p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">FP8StorageLegalize</span></code></p></td>
 <td><p>legalizes <code class="docutils literal notranslate"><span class="pre">float8</span></code> storage (packing into supported container types)</p></td>
 </tr>
-<tr class="row-odd"><td><p>18</p></td>
+<tr class="row-even"><td><p>17</p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">BF16StorageLegalize</span></code></p></td>
 <td><p>legalizes <code class="docutils literal notranslate"><span class="pre">bfloat16</span></code> storage</p></td>
 </tr>

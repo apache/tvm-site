@@ -197,9 +197,9 @@ Here we use a common subset of rules. The full catalog (including ``LowBatchGEMV
                 Ts.writes()
                 matmul_intermediate_local = Ts.sblock_alloc_tensor((T.int64(1), T.int64(256)), "float32", scope="local")
                 matmul_intermediate_rf_local = Ts.sblock_alloc_tensor((T.int64(16), T.int64(1), T.int64(256)), "float32", scope="local")
-                for ax0_fused_0 in T.thread_binding(T.int64(16), thread="blockIdx.x"):
-                    for ax0_fused_1 in T.thread_binding(T.int64(16), thread="threadIdx.x"):
-                        for ax1_fused_1 in T.thread_binding(T.int64(16), thread="threadIdx.y"):
+                for ax0_fused_0 in T.parallel(T.int64(0), T.int64(16), annotations={"thread_binding": "blockIdx.x"}):
+                    for ax0_fused_1 in T.parallel(T.int64(0), T.int64(16), annotations={"thread_binding": "threadIdx.x"}):
+                        for ax1_fused_1 in T.parallel(T.int64(0), T.int64(16), annotations={"thread_binding": "threadIdx.y"}):
                             with Ts.sblock("matmul_rf_init"):
                                 vax1_fused_1 = Ts.axis.spatial(T.int64(16), ax1_fused_1, dtype="int64")
                                 v0 = Ts.axis.spatial(T.int64(256), ax0_fused_0 * T.int64(16) + ax0_fused_1, dtype="int64")
@@ -215,8 +215,8 @@ Here we use a common subset of rules. The full catalog (including ``LowBatchGEMV
                                         Ts.reads(matmul_intermediate_rf_local[vax1_fused_1_1, T.int64(0), v0_1:v0_1 + T.int64(1)], layer_norm[T.int64(0), vax1_fused_0 * T.int64(16) + vax1_fused_1_1:vax1_fused_0 * T.int64(16) + vax1_fused_1_1 + T.int64(1)], permute_dims1[vax1_fused_0 * T.int64(16) + vax1_fused_1_1, v0_1:v0_1 + T.int64(1)])
                                         Ts.writes(matmul_intermediate_rf_local[vax1_fused_1_1, T.int64(0), v0_1:v0_1 + T.int64(1)])
                                         matmul_intermediate_rf_local[vax1_fused_1_1, T.int64(0), v0_1] = matmul_intermediate_rf_local[vax1_fused_1_1, T.int64(0), v0_1] + layer_norm[T.int64(0), vax1_fused_0 * T.int64(16) + vax1_fused_1_1] * permute_dims1[vax1_fused_0 * T.int64(16) + vax1_fused_1_1, v0_1]
-                    for ax1_fused in T.thread_binding(T.int64(16), thread="threadIdx.x"):
-                        for ax0 in T.thread_binding(T.int64(16), thread="threadIdx.y"):
+                    for ax1_fused in T.parallel(T.int64(0), T.int64(16), annotations={"thread_binding": "threadIdx.x"}):
+                        for ax0 in T.parallel(T.int64(0), T.int64(16), annotations={"thread_binding": "threadIdx.y"}):
                             with Ts.sblock("matmul"):
                                 vax1_fused_1_2 = Ts.axis.reduce(T.int64(16), ax0, dtype="int64")
                                 v0_2 = Ts.axis.spatial(T.int64(256), ax0_fused_0 * T.int64(16) + ax1_fused, dtype="int64")
@@ -225,7 +225,7 @@ Here we use a common subset of rules. The full catalog (including ``LowBatchGEMV
                                 with Ts.init():
                                     matmul_intermediate_local[T.int64(0), v0_2] = T.float32(0.0)
                                 matmul_intermediate_local[T.int64(0), v0_2] = matmul_intermediate_local[T.int64(0), v0_2] + matmul_intermediate_rf_local[vax1_fused_1_2, T.int64(0), v0_2]
-                    for ax0_fused_0_1 in T.thread_binding(T.int64(16), thread="threadIdx.x"):
+                    for ax0_fused_0_1 in T.parallel(T.int64(0), T.int64(16), annotations={"thread_binding": "threadIdx.x"}):
                         for ax0_fused_1_1 in range(T.int64(0), T.int64(1)):
                             with Ts.sblock("T_add"):
                                 v0_3 = Ts.axis.spatial(T.int64(256), ax0_fused_0 * T.int64(16) + ax0_fused_0_1 + ax0_fused_1_1, dtype="int64")
@@ -241,9 +241,9 @@ Here we use a common subset of rules. The full catalog (including ``LowBatchGEMV
                 Ts.writes()
                 matmul_intermediate_local = Ts.sblock_alloc_tensor((T.int64(1), T.int64(768)), "float32", scope="local")
                 matmul_intermediate_rf_local = Ts.sblock_alloc_tensor((T.int64(16), T.int64(1), T.int64(768)), "float32", scope="local")
-                for ax0_fused_0 in T.thread_binding(T.int64(48), thread="blockIdx.x"):
-                    for ax0_fused_1 in T.thread_binding(T.int64(16), thread="threadIdx.x"):
-                        for ax1_fused_1 in T.thread_binding(T.int64(16), thread="threadIdx.y"):
+                for ax0_fused_0 in T.parallel(T.int64(0), T.int64(48), annotations={"thread_binding": "blockIdx.x"}):
+                    for ax0_fused_1 in T.parallel(T.int64(0), T.int64(16), annotations={"thread_binding": "threadIdx.x"}):
+                        for ax1_fused_1 in T.parallel(T.int64(0), T.int64(16), annotations={"thread_binding": "threadIdx.y"}):
                             with Ts.sblock("matmul_rf_init"):
                                 vax1_fused_1 = Ts.axis.spatial(T.int64(16), ax1_fused_1, dtype="int64")
                                 v0 = Ts.axis.spatial(T.int64(768), ax0_fused_0 * T.int64(16) + ax0_fused_1, dtype="int64")
@@ -259,8 +259,8 @@ Here we use a common subset of rules. The full catalog (including ``LowBatchGEMV
                                         Ts.reads(matmul_intermediate_rf_local[vax1_fused_1_1, T.int64(0), v0_1:v0_1 + T.int64(1)], x[T.int64(0), vax1_fused_0 * T.int64(16) + vax1_fused_1_1:vax1_fused_0 * T.int64(16) + vax1_fused_1_1 + T.int64(1)], permute_dims[vax1_fused_0 * T.int64(16) + vax1_fused_1_1, v0_1:v0_1 + T.int64(1)])
                                         Ts.writes(matmul_intermediate_rf_local[vax1_fused_1_1, T.int64(0), v0_1:v0_1 + T.int64(1)])
                                         matmul_intermediate_rf_local[vax1_fused_1_1, T.int64(0), v0_1] = matmul_intermediate_rf_local[vax1_fused_1_1, T.int64(0), v0_1] + x[T.int64(0), vax1_fused_0 * T.int64(16) + vax1_fused_1_1] * permute_dims[vax1_fused_0 * T.int64(16) + vax1_fused_1_1, v0_1]
-                    for ax1_fused in T.thread_binding(T.int64(16), thread="threadIdx.x"):
-                        for ax0 in T.thread_binding(T.int64(16), thread="threadIdx.y"):
+                    for ax1_fused in T.parallel(T.int64(0), T.int64(16), annotations={"thread_binding": "threadIdx.x"}):
+                        for ax0 in T.parallel(T.int64(0), T.int64(16), annotations={"thread_binding": "threadIdx.y"}):
                             with Ts.sblock("matmul"):
                                 vax1_fused_1_2 = Ts.axis.reduce(T.int64(16), ax0, dtype="int64")
                                 v0_2 = Ts.axis.spatial(T.int64(768), ax0_fused_0 * T.int64(16) + ax1_fused, dtype="int64")
@@ -269,7 +269,7 @@ Here we use a common subset of rules. The full catalog (including ``LowBatchGEMV
                                 with Ts.init():
                                     matmul_intermediate_local[T.int64(0), v0_2] = T.float32(0.0)
                                 matmul_intermediate_local[T.int64(0), v0_2] = matmul_intermediate_local[T.int64(0), v0_2] + matmul_intermediate_rf_local[vax1_fused_1_2, T.int64(0), v0_2]
-                    for ax0_fused_0_1 in T.thread_binding(T.int64(16), thread="threadIdx.x"):
+                    for ax0_fused_0_1 in T.parallel(T.int64(0), T.int64(16), annotations={"thread_binding": "threadIdx.x"}):
                         for ax0_fused_1_1 in range(T.int64(0), T.int64(1)):
                             with Ts.sblock("compute"):
                                 v0_3 = Ts.axis.spatial(T.int64(768), ax0_fused_0 * T.int64(16) + ax0_fused_0_1 + ax0_fused_1_1, dtype="int64")
@@ -285,9 +285,9 @@ Here we use a common subset of rules. The full catalog (including ``LowBatchGEMV
                 Ts.writes()
                 relu_sum_shared = Ts.sblock_alloc_tensor((T.int64(1),), "float32", scope="shared")
                 relu_var_sum_shared = Ts.sblock_alloc_tensor((T.int64(1),), "float32", scope="shared")
-                for ax0_fused in T.thread_binding(T.int64(1), thread="blockIdx.x"):
+                for ax0_fused in T.parallel(T.int64(0), T.int64(1), annotations={"thread_binding": "blockIdx.x"}):
                     for ax0 in range(T.int64(0), T.int64(1)):
-                        for ax1_fused_1 in T.thread_binding(T.int64(256), thread="threadIdx.x"):
+                        for ax1_fused_1 in T.parallel(T.int64(0), T.int64(256), annotations={"thread_binding": "threadIdx.x"}):
                             for ax1_fused_0 in T.serial(T.int64(0), T.int64(3), annotations={"auto_unroll_max_step": 256, "unroll_explicit": 1}):
                                 with Ts.sblock("relu_sum"):
                                     v0 = Ts.axis.spatial(T.int64(1), ax0, dtype="int64")
@@ -298,7 +298,7 @@ Here we use a common subset of rules. The full catalog (including ``LowBatchGEMV
                                         relu_sum_shared[T.int64(0)] = T.float32(0.0)
                                     relu_sum_shared[T.int64(0)] = relu_sum_shared[T.int64(0)] + relu[T.int64(0), v1]
                     for ax0_1 in range(T.int64(0), T.int64(1)):
-                        for ax1_fused_1_1 in T.thread_binding(T.int64(256), thread="threadIdx.x"):
+                        for ax1_fused_1_1 in T.parallel(T.int64(0), T.int64(256), annotations={"thread_binding": "threadIdx.x"}):
                             for ax1_fused_0_1 in T.serial(T.int64(0), T.int64(3), annotations={"auto_unroll_max_step": 256, "unroll_explicit": 1}):
                                 with Ts.sblock("relu_var_sum"):
                                     v0_1 = Ts.axis.spatial(T.int64(1), ax0_1, dtype="int64")
@@ -308,7 +308,7 @@ Here we use a common subset of rules. The full catalog (including ``LowBatchGEMV
                                     with Ts.init():
                                         relu_var_sum_shared[T.int64(0)] = T.float32(0.0)
                                     relu_var_sum_shared[T.int64(0)] = relu_var_sum_shared[T.int64(0)] + (relu[T.int64(0), v1_1] - relu_sum_shared[T.int64(0)] / T.float32(768.0)) * (relu[T.int64(0), v1_1] - relu_sum_shared[T.int64(0)] / T.float32(768.0))
-                    for ax1_1 in T.thread_binding(T.int64(256), thread="threadIdx.x"):
+                    for ax1_1 in T.parallel(T.int64(0), T.int64(256), annotations={"thread_binding": "threadIdx.x"}):
                         for ax1_0 in T.serial(T.int64(0), T.int64(3), annotations={"auto_unroll_max_step": 256, "unroll_explicit": 1}):
                             with Ts.sblock("T_layer_norm"):
                                 v0_2 = Ts.axis.spatial(T.int64(1), T.int64(0), dtype="int64")
@@ -323,8 +323,8 @@ Here we use a common subset of rules. The full catalog (including ``LowBatchGEMV
             with Ts.sblock("root"):
                 Ts.reads()
                 Ts.writes()
-                for ax0_ax1_fused_0 in T.thread_binding(T.int64(576), thread="blockIdx.x"):
-                    for ax0_ax1_fused_1 in T.thread_binding(T.int64(1024), thread="threadIdx.x"):
+                for ax0_ax1_fused_0 in T.parallel(T.int64(0), T.int64(576), annotations={"thread_binding": "blockIdx.x"}):
+                    for ax0_ax1_fused_1 in T.parallel(T.int64(0), T.int64(1024), annotations={"thread_binding": "threadIdx.x"}):
                         with Ts.sblock("T_transpose"):
                             v0 = Ts.axis.spatial(T.int64(768), (ax0_ax1_fused_0 * T.int64(1024) + ax0_ax1_fused_1) // T.int64(768), dtype="int64")
                             v1 = Ts.axis.spatial(T.int64(768), (ax0_ax1_fused_0 * T.int64(1024) + ax0_ax1_fused_1) % T.int64(768), dtype="int64")
@@ -338,8 +338,8 @@ Here we use a common subset of rules. The full catalog (including ``LowBatchGEMV
             with Ts.sblock("root"):
                 Ts.reads()
                 Ts.writes()
-                for ax0_ax1_fused_0 in T.thread_binding(T.int64(192), thread="blockIdx.x"):
-                    for ax0_ax1_fused_1 in T.thread_binding(T.int64(1024), thread="threadIdx.x"):
+                for ax0_ax1_fused_0 in T.parallel(T.int64(0), T.int64(192), annotations={"thread_binding": "blockIdx.x"}):
+                    for ax0_ax1_fused_1 in T.parallel(T.int64(0), T.int64(1024), annotations={"thread_binding": "threadIdx.x"}):
                         with Ts.sblock("T_transpose"):
                             v0 = Ts.axis.spatial(T.int64(768), (ax0_ax1_fused_0 * T.int64(1024) + ax0_ax1_fused_1) // T.int64(256), dtype="int64")
                             v1 = Ts.axis.spatial(T.int64(256), (ax0_ax1_fused_0 * T.int64(1024) + ax0_ax1_fused_1) % T.int64(256), dtype="int64")
@@ -642,9 +642,9 @@ Insert the custom rule into the rule chain. Note that ``from_callable`` returns 
                 Ts.writes()
                 matmul_intermediate_local = Ts.sblock_alloc_tensor((T.int64(1), T.int64(256)), "float32", scope="local")
                 matmul_intermediate_rf_local = Ts.sblock_alloc_tensor((T.int64(16), T.int64(1), T.int64(256)), "float32", scope="local")
-                for ax0_fused_0 in T.thread_binding(T.int64(16), thread="blockIdx.x"):
-                    for ax0_fused_1 in T.thread_binding(T.int64(16), thread="threadIdx.x"):
-                        for ax1_fused_1 in T.thread_binding(T.int64(16), thread="threadIdx.y"):
+                for ax0_fused_0 in T.parallel(T.int64(0), T.int64(16), annotations={"thread_binding": "blockIdx.x"}):
+                    for ax0_fused_1 in T.parallel(T.int64(0), T.int64(16), annotations={"thread_binding": "threadIdx.x"}):
+                        for ax1_fused_1 in T.parallel(T.int64(0), T.int64(16), annotations={"thread_binding": "threadIdx.y"}):
                             with Ts.sblock("matmul_rf_init"):
                                 vax1_fused_1 = Ts.axis.spatial(T.int64(16), ax1_fused_1, dtype="int64")
                                 v0 = Ts.axis.spatial(T.int64(256), ax0_fused_0 * T.int64(16) + ax0_fused_1, dtype="int64")
@@ -660,8 +660,8 @@ Insert the custom rule into the rule chain. Note that ``from_callable`` returns 
                                         Ts.reads(matmul_intermediate_rf_local[vax1_fused_1_1, T.int64(0), v0_1:v0_1 + T.int64(1)], layer_norm[T.int64(0), vax1_fused_0 * T.int64(16) + vax1_fused_1_1:vax1_fused_0 * T.int64(16) + vax1_fused_1_1 + T.int64(1)], permute_dims1[vax1_fused_0 * T.int64(16) + vax1_fused_1_1, v0_1:v0_1 + T.int64(1)])
                                         Ts.writes(matmul_intermediate_rf_local[vax1_fused_1_1, T.int64(0), v0_1:v0_1 + T.int64(1)])
                                         matmul_intermediate_rf_local[vax1_fused_1_1, T.int64(0), v0_1] = matmul_intermediate_rf_local[vax1_fused_1_1, T.int64(0), v0_1] + layer_norm[T.int64(0), vax1_fused_0 * T.int64(16) + vax1_fused_1_1] * permute_dims1[vax1_fused_0 * T.int64(16) + vax1_fused_1_1, v0_1]
-                    for ax1_fused in T.thread_binding(T.int64(16), thread="threadIdx.x"):
-                        for ax0 in T.thread_binding(T.int64(16), thread="threadIdx.y"):
+                    for ax1_fused in T.parallel(T.int64(0), T.int64(16), annotations={"thread_binding": "threadIdx.x"}):
+                        for ax0 in T.parallel(T.int64(0), T.int64(16), annotations={"thread_binding": "threadIdx.y"}):
                             with Ts.sblock("matmul"):
                                 vax1_fused_1_2 = Ts.axis.reduce(T.int64(16), ax0, dtype="int64")
                                 v0_2 = Ts.axis.spatial(T.int64(256), ax0_fused_0 * T.int64(16) + ax1_fused, dtype="int64")
@@ -670,7 +670,7 @@ Insert the custom rule into the rule chain. Note that ``from_callable`` returns 
                                 with Ts.init():
                                     matmul_intermediate_local[T.int64(0), v0_2] = T.float32(0.0)
                                 matmul_intermediate_local[T.int64(0), v0_2] = matmul_intermediate_local[T.int64(0), v0_2] + matmul_intermediate_rf_local[vax1_fused_1_2, T.int64(0), v0_2]
-                    for ax0_fused_0_1 in T.thread_binding(T.int64(16), thread="threadIdx.x"):
+                    for ax0_fused_0_1 in T.parallel(T.int64(0), T.int64(16), annotations={"thread_binding": "threadIdx.x"}):
                         for ax0_fused_1_1 in range(T.int64(0), T.int64(1)):
                             with Ts.sblock("T_add"):
                                 v0_3 = Ts.axis.spatial(T.int64(256), ax0_fused_0 * T.int64(16) + ax0_fused_0_1 + ax0_fused_1_1, dtype="int64")
@@ -686,9 +686,9 @@ Insert the custom rule into the rule chain. Note that ``from_callable`` returns 
                 Ts.writes()
                 matmul_intermediate_local = Ts.sblock_alloc_tensor((T.int64(1), T.int64(768)), "float32", scope="local")
                 matmul_intermediate_rf_local = Ts.sblock_alloc_tensor((T.int64(16), T.int64(1), T.int64(768)), "float32", scope="local")
-                for ax0_fused_0 in T.thread_binding(T.int64(48), thread="blockIdx.x"):
-                    for ax0_fused_1 in T.thread_binding(T.int64(16), thread="threadIdx.x"):
-                        for ax1_fused_1 in T.thread_binding(T.int64(16), thread="threadIdx.y"):
+                for ax0_fused_0 in T.parallel(T.int64(0), T.int64(48), annotations={"thread_binding": "blockIdx.x"}):
+                    for ax0_fused_1 in T.parallel(T.int64(0), T.int64(16), annotations={"thread_binding": "threadIdx.x"}):
+                        for ax1_fused_1 in T.parallel(T.int64(0), T.int64(16), annotations={"thread_binding": "threadIdx.y"}):
                             with Ts.sblock("matmul_rf_init"):
                                 vax1_fused_1 = Ts.axis.spatial(T.int64(16), ax1_fused_1, dtype="int64")
                                 v0 = Ts.axis.spatial(T.int64(768), ax0_fused_0 * T.int64(16) + ax0_fused_1, dtype="int64")
@@ -704,8 +704,8 @@ Insert the custom rule into the rule chain. Note that ``from_callable`` returns 
                                         Ts.reads(matmul_intermediate_rf_local[vax1_fused_1_1, T.int64(0), v0_1:v0_1 + T.int64(1)], x[T.int64(0), vax1_fused_0 * T.int64(16) + vax1_fused_1_1:vax1_fused_0 * T.int64(16) + vax1_fused_1_1 + T.int64(1)], permute_dims[vax1_fused_0 * T.int64(16) + vax1_fused_1_1, v0_1:v0_1 + T.int64(1)])
                                         Ts.writes(matmul_intermediate_rf_local[vax1_fused_1_1, T.int64(0), v0_1:v0_1 + T.int64(1)])
                                         matmul_intermediate_rf_local[vax1_fused_1_1, T.int64(0), v0_1] = matmul_intermediate_rf_local[vax1_fused_1_1, T.int64(0), v0_1] + x[T.int64(0), vax1_fused_0 * T.int64(16) + vax1_fused_1_1] * permute_dims[vax1_fused_0 * T.int64(16) + vax1_fused_1_1, v0_1]
-                    for ax1_fused in T.thread_binding(T.int64(16), thread="threadIdx.x"):
-                        for ax0 in T.thread_binding(T.int64(16), thread="threadIdx.y"):
+                    for ax1_fused in T.parallel(T.int64(0), T.int64(16), annotations={"thread_binding": "threadIdx.x"}):
+                        for ax0 in T.parallel(T.int64(0), T.int64(16), annotations={"thread_binding": "threadIdx.y"}):
                             with Ts.sblock("matmul"):
                                 vax1_fused_1_2 = Ts.axis.reduce(T.int64(16), ax0, dtype="int64")
                                 v0_2 = Ts.axis.spatial(T.int64(768), ax0_fused_0 * T.int64(16) + ax1_fused, dtype="int64")
@@ -714,7 +714,7 @@ Insert the custom rule into the rule chain. Note that ``from_callable`` returns 
                                 with Ts.init():
                                     matmul_intermediate_local[T.int64(0), v0_2] = T.float32(0.0)
                                 matmul_intermediate_local[T.int64(0), v0_2] = matmul_intermediate_local[T.int64(0), v0_2] + matmul_intermediate_rf_local[vax1_fused_1_2, T.int64(0), v0_2]
-                    for ax0_fused_0_1 in T.thread_binding(T.int64(16), thread="threadIdx.x"):
+                    for ax0_fused_0_1 in T.parallel(T.int64(0), T.int64(16), annotations={"thread_binding": "threadIdx.x"}):
                         for ax0_fused_1_1 in range(T.int64(0), T.int64(1)):
                             with Ts.sblock("compute"):
                                 v0_3 = Ts.axis.spatial(T.int64(768), ax0_fused_0 * T.int64(16) + ax0_fused_0_1 + ax0_fused_1_1, dtype="int64")
@@ -730,9 +730,9 @@ Insert the custom rule into the rule chain. Note that ``from_callable`` returns 
                 Ts.writes()
                 relu_sum_shared = Ts.sblock_alloc_tensor((T.int64(1),), "float32", scope="shared")
                 relu_var_sum_shared = Ts.sblock_alloc_tensor((T.int64(1),), "float32", scope="shared")
-                for ax0_fused in T.thread_binding(T.int64(1), thread="blockIdx.x"):
+                for ax0_fused in T.parallel(T.int64(0), T.int64(1), annotations={"thread_binding": "blockIdx.x"}):
                     for ax0 in range(T.int64(0), T.int64(1)):
-                        for ax1_fused_1 in T.thread_binding(T.int64(256), thread="threadIdx.x"):
+                        for ax1_fused_1 in T.parallel(T.int64(0), T.int64(256), annotations={"thread_binding": "threadIdx.x"}):
                             for ax1_fused_0 in T.serial(T.int64(0), T.int64(3), annotations={"auto_unroll_max_step": 256, "unroll_explicit": 1}):
                                 with Ts.sblock("relu_sum"):
                                     v0 = Ts.axis.spatial(T.int64(1), ax0, dtype="int64")
@@ -743,7 +743,7 @@ Insert the custom rule into the rule chain. Note that ``from_callable`` returns 
                                         relu_sum_shared[T.int64(0)] = T.float32(0.0)
                                     relu_sum_shared[T.int64(0)] = relu_sum_shared[T.int64(0)] + relu[T.int64(0), v1]
                     for ax0_1 in range(T.int64(0), T.int64(1)):
-                        for ax1_fused_1_1 in T.thread_binding(T.int64(256), thread="threadIdx.x"):
+                        for ax1_fused_1_1 in T.parallel(T.int64(0), T.int64(256), annotations={"thread_binding": "threadIdx.x"}):
                             for ax1_fused_0_1 in T.serial(T.int64(0), T.int64(3), annotations={"auto_unroll_max_step": 256, "unroll_explicit": 1}):
                                 with Ts.sblock("relu_var_sum"):
                                     v0_1 = Ts.axis.spatial(T.int64(1), ax0_1, dtype="int64")
@@ -753,7 +753,7 @@ Insert the custom rule into the rule chain. Note that ``from_callable`` returns 
                                     with Ts.init():
                                         relu_var_sum_shared[T.int64(0)] = T.float32(0.0)
                                     relu_var_sum_shared[T.int64(0)] = relu_var_sum_shared[T.int64(0)] + (relu[T.int64(0), v1_1] - relu_sum_shared[T.int64(0)] / T.float32(768.0)) * (relu[T.int64(0), v1_1] - relu_sum_shared[T.int64(0)] / T.float32(768.0))
-                    for ax1_1 in T.thread_binding(T.int64(256), thread="threadIdx.x"):
+                    for ax1_1 in T.parallel(T.int64(0), T.int64(256), annotations={"thread_binding": "threadIdx.x"}):
                         for ax1_0 in T.serial(T.int64(0), T.int64(3), annotations={"auto_unroll_max_step": 256, "unroll_explicit": 1}):
                             with Ts.sblock("T_layer_norm"):
                                 v0_2 = Ts.axis.spatial(T.int64(1), T.int64(0), dtype="int64")
@@ -768,8 +768,8 @@ Insert the custom rule into the rule chain. Note that ``from_callable`` returns 
             with Ts.sblock("root"):
                 Ts.reads()
                 Ts.writes()
-                for ax0_ax1_fused_0 in T.thread_binding(T.int64(576), thread="blockIdx.x"):
-                    for ax0_ax1_fused_1 in T.thread_binding(T.int64(1024), thread="threadIdx.x"):
+                for ax0_ax1_fused_0 in T.parallel(T.int64(0), T.int64(576), annotations={"thread_binding": "blockIdx.x"}):
+                    for ax0_ax1_fused_1 in T.parallel(T.int64(0), T.int64(1024), annotations={"thread_binding": "threadIdx.x"}):
                         with Ts.sblock("T_transpose"):
                             v0 = Ts.axis.spatial(T.int64(768), (ax0_ax1_fused_0 * T.int64(1024) + ax0_ax1_fused_1) // T.int64(768), dtype="int64")
                             v1 = Ts.axis.spatial(T.int64(768), (ax0_ax1_fused_0 * T.int64(1024) + ax0_ax1_fused_1) % T.int64(768), dtype="int64")
@@ -783,8 +783,8 @@ Insert the custom rule into the rule chain. Note that ``from_callable`` returns 
             with Ts.sblock("root"):
                 Ts.reads()
                 Ts.writes()
-                for ax0_ax1_fused_0 in T.thread_binding(T.int64(192), thread="blockIdx.x"):
-                    for ax0_ax1_fused_1 in T.thread_binding(T.int64(1024), thread="threadIdx.x"):
+                for ax0_ax1_fused_0 in T.parallel(T.int64(0), T.int64(192), annotations={"thread_binding": "blockIdx.x"}):
+                    for ax0_ax1_fused_1 in T.parallel(T.int64(0), T.int64(1024), annotations={"thread_binding": "threadIdx.x"}):
                         with Ts.sblock("T_transpose"):
                             v0 = Ts.axis.spatial(T.int64(768), (ax0_ax1_fused_0 * T.int64(1024) + ax0_ax1_fused_1) // T.int64(256), dtype="int64")
                             v1 = Ts.axis.spatial(T.int64(256), (ax0_ax1_fused_0 * T.int64(1024) + ax0_ax1_fused_1) % T.int64(256), dtype="int64")

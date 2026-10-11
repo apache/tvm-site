@@ -97,7 +97,7 @@ var searchData=
   ['gettensorfromload_94',['GetTensorFromLoad',['../namespacetvm_1_1te.html#afe813bc357d584ecead6c68aed50eea2',1,'tvm::te']]],
   ['gettensorloadindices_95',['GetTensorLoadIndices',['../namespacetvm_1_1te.html#a50e213344e01cf652d24e420cef2bed8',1,'tvm::te']]],
   ['gettensorvar_96',['GetTensorVar',['../namespacetvm_1_1tirx.html#a663f1e9db3978cc70a53bd63b29211a0',1,'tvm::tirx']]],
-  ['getthreadbinding_97',['getthreadbinding',['../namespacetvm_1_1tirx.html#a9fcfd65aba85c367274d81b4c7bf75bd',1,'tvm::tirx::GetThreadBinding(const For &amp;loop)'],['../namespacetvm_1_1tirx.html#ac79f78080f842cc5c63d01ee80a581ba',1,'tvm::tirx::GetThreadBinding(const ForNode *loop)']]],
+  ['getthreadbinding_97',['getthreadbinding',['../namespacetvm_1_1s__tir.html#af5a83aac6d58fcc0a9afbbecf1d38e4d',1,'tvm::s_tir::GetThreadBinding(const For &amp;loop)'],['../namespacetvm_1_1s__tir.html#a2700e5ec0fbd7dd5d7a9a7feda0b2f6b',1,'tvm::s_tir::GetThreadBinding(const ForNode *loop)']]],
   ['gettirvaraxisgraph_98',['GetTIRVarAxisGraph',['../classtvm_1_1tirx_1_1TensorAxisGraphExtractor.html#a311973dc1df7b24ec138137bcbc08dd4',1,'tvm::tirx::TensorAxisGraphExtractor']]],
   ['gettopk_99',['gettopk',['../classtvm_1_1s__tir_1_1meta__schedule_1_1DatabaseNode.html#a7067e92198c2136a8fc6fe8d8ab6b1bf',1,'tvm::s_tir::meta_schedule::DatabaseNode::GetTopK()'],['../classtvm_1_1s__tir_1_1meta__schedule_1_1PyDatabaseNode.html#a6ba139a6052759221ddcc410e49b177f',1,'tvm::s_tir::meta_schedule::PyDatabaseNode::GetTopK()']]],
   ['gettype_100',['GetType',['../namespacetvm_1_1relax.html#a98ceecc42432e50a5dd8413a3f481050',1,'tvm::relax']]],
