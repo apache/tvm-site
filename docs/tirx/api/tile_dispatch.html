@@ -634,7 +634,7 @@ ordered <code class="docutils literal notranslate"><span class="pre">Operand</sp
 The shared implementation is <code class="docutils literal notranslate"><span class="pre">tvm.tirx.tile.instruction</span></code>; CUDA and
 Trainium’s <code class="docutils literal notranslate"><span class="pre">tile/instructions.py</span></code> files contain the concrete contracts.</p>
 <p>Registration installs the fixed argument count, void return type, opaque
-side effects, category, printer name, and native Call validator on the Op.
+side effects, <code class="docutils literal notranslate"><span class="pre">FTileOpDispatch</span></code>, printer name, and native Call validator on the Op.
 The validator also runs for directly constructed Calls and printer entry.
 Runtime expressions must be operands. New static qualifiers require a typed
 attribute field rather than an arbitrary dictionary.</p>
@@ -642,6 +642,14 @@ attribute field rather than an arbitrary dictionary.</p>
 <code class="docutils literal notranslate"><span class="pre">tvm.tirx.Function</span></code> body. They can prepare pointers/descriptors and expand
 layouts for the selected core instruction. They must report unsupported
 contracts rather than select a different instruction family.</p>
+<p><code class="docutils literal notranslate"><span class="pre">FTileOpDispatch</span></code> has the signature
+<code class="docutils literal notranslate"><span class="pre">(tvm.ir.Call,</span> <span class="pre">DispatchContext)</span> <span class="pre">-&gt;</span> <span class="pre">tvm.tirx.Function</span></code>. Its presence identifies
+a tile Op; no separate category registration is required. <code class="docutils literal notranslate"><span class="pre">Instruction</span></code>
+registers an adapter that decodes the semantic view and invokes its lowerer.
+Custom implementations can register the callback directly using
+<code class="docutils literal notranslate"><span class="pre">tvm.ir.register_op_attr(op_name,</span> <span class="pre">&quot;FTileOpDispatch&quot;,</span> <span class="pre">dispatch)</span></code> or C++
+<code class="docutils literal notranslate"><span class="pre">OpDef::set_attr&lt;tile::FTileOpDispatch&gt;</span></code>. The Call must carry reflected
+attributes with a string <code class="docutils literal notranslate"><span class="pre">scope</span></code> field in the target’s execution hierarchy.</p>
 <p>Named workspace operands have fixed optional slots. Declare a workspace policy
 only for instructions that own such scratch storage; do not use it to hide
 caller-owned algorithms. See <a class="reference internal" href="../arch/tile_dispatch.html"><span class="doc">Tensor Instruction Lowering</span></a> for callbacks and

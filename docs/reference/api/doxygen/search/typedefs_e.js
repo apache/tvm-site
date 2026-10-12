@@ -9,11 +9,10 @@ var searchData=
   ['thashcode_6',['thashcode',['../classtvm_1_1s__tir_1_1meta__schedule_1_1Workload.html#a1506ad2ecc39f6f57b4da22cb8d92f8c',1,'tvm::s_tir::meta_schedule::Workload::THashCode'],['../classtvm_1_1s__tir_1_1meta__schedule_1_1WorkloadObj.html#a8d4ec80e730042c2c8c858d181eaeefc',1,'tvm::s_tir::meta_schedule::WorkloadObj::THashCode']]],
   ['tirpattern_7',['TIRPattern',['../namespacetvm_1_1relax.html#a1bd0e026906c36da3a76ad6b2f8ad9e8',1,'tvm::relax']]],
   ['tirvaraxis_8',['TIRVarAxis',['../namespacetvm_1_1tirx.html#aa2311cd730cdca8a01c1d2ff35417ad2',1,'tvm::tirx']]],
-  ['tirxopcategory_9',['TIRxOpCategory',['../namespacetvm_1_1tirx.html#ac3ab5c18765c30f7cd61f9b703b99dad',1,'tvm::tirx']]],
-  ['trandstate_10',['trandstate',['../classtvm_1_1s__tir_1_1LinearCongruentialEngine.html#ac02f5a19918906c1af2518756a76e488',1,'tvm::s_tir::LinearCongruentialEngine::TRandState'],['../classtvm_1_1s__tir_1_1meta__schedule_1_1TuneContext.html#a4194936898b815ebd28227cd9a263096',1,'tvm::s_tir::meta_schedule::TuneContext::TRandState'],['../classtvm_1_1s__tir_1_1meta__schedule_1_1TuneContextObj.html#a659e557c9c381abc07afa9cacb9b3fa8',1,'tvm::s_tir::meta_schedule::TuneContextObj::TRandState']]],
-  ['tscriptprintername_11',['TScriptPrinterName',['../namespacetvm.html#a370cda6ed9b9c40e4806e0471da4e21b',1,'tvm']]],
-  ['tself_12',['TSelf',['../classtvm_1_1TypedEnvFunc_3_01R_07Args_8_8_8_08_4.html#a29adf4db79c99318db779a71f26acc0f',1,'tvm::TypedEnvFunc&lt; R(Args...)&gt;']]],
-  ['tvectorizable_13',['TVectorizable',['../namespacetvm_1_1tirx.html#a479f79303610bfc52f8853fc0d4a34ae',1,'tvm::tirx']]],
-  ['tvmstreamhandle_14',['TVMStreamHandle',['../device__api_8h.html#ab1d5f6b7945e1410602a8a057fda5757',1,'device_api.h']]],
-  ['typederivefunc_15',['TypeDeriveFunc',['../namespacetvm_1_1relax.html#ac576b1f5ccd3b1a1132f8de18e195155',1,'tvm::relax']]]
+  ['trandstate_9',['trandstate',['../classtvm_1_1s__tir_1_1LinearCongruentialEngine.html#ac02f5a19918906c1af2518756a76e488',1,'tvm::s_tir::LinearCongruentialEngine::TRandState'],['../classtvm_1_1s__tir_1_1meta__schedule_1_1TuneContext.html#a4194936898b815ebd28227cd9a263096',1,'tvm::s_tir::meta_schedule::TuneContext::TRandState'],['../classtvm_1_1s__tir_1_1meta__schedule_1_1TuneContextObj.html#a659e557c9c381abc07afa9cacb9b3fa8',1,'tvm::s_tir::meta_schedule::TuneContextObj::TRandState']]],
+  ['tscriptprintername_10',['TScriptPrinterName',['../namespacetvm.html#a370cda6ed9b9c40e4806e0471da4e21b',1,'tvm']]],
+  ['tself_11',['TSelf',['../classtvm_1_1TypedEnvFunc_3_01R_07Args_8_8_8_08_4.html#a29adf4db79c99318db779a71f26acc0f',1,'tvm::TypedEnvFunc&lt; R(Args...)&gt;']]],
+  ['tvectorizable_12',['TVectorizable',['../namespacetvm_1_1tirx.html#a479f79303610bfc52f8853fc0d4a34ae',1,'tvm::tirx']]],
+  ['tvmstreamhandle_13',['TVMStreamHandle',['../device__api_8h.html#ab1d5f6b7945e1410602a8a057fda5757',1,'device_api.h']]],
+  ['typederivefunc_14',['TypeDeriveFunc',['../namespacetvm_1_1relax.html#ac576b1f5ccd3b1a1132f8de18e195155',1,'tvm::relax']]]
 ];
