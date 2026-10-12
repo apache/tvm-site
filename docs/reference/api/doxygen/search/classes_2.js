@@ -40,7 +40,7 @@ var searchData=
   ['constantpatternnode_37',['ConstantPatternNode',['../classtvm_1_1relax_1_1ConstantPatternNode.html',1,'tvm::relax']]],
   ['constintbound_38',['ConstIntBound',['../classtvm_1_1sym_1_1ConstIntBound.html',1,'tvm::sym']]],
   ['constintboundanalyzer_39',['ConstIntBoundAnalyzer',['../classtvm_1_1sym_1_1ConstIntBoundAnalyzer.html',1,'tvm::sym']]],
-  ['constintboundnode_40',['ConstIntBoundNode',['../classtvm_1_1sym_1_1ConstIntBoundNode.html',1,'tvm::sym']]],
+  ['constintboundobj_40',['ConstIntBoundObj',['../classtvm_1_1sym_1_1ConstIntBoundObj.html',1,'tvm::sym']]],
   ['constraintcontext_41',['ConstraintContext',['../classtvm_1_1sym_1_1ConstraintContext.html',1,'tvm::sym']]],
   ['continue_42',['Continue',['../classtvm_1_1Continue.html',1,'tvm']]],
   ['continuedoc_43',['ContinueDoc',['../classtvm_1_1script_1_1printer_1_1ContinueDoc.html',1,'tvm::script::printer']]],
@@ -53,7 +53,7 @@ var searchData=
   ['conv3dattrs_50',['Conv3DAttrs',['../structtvm_1_1relax_1_1Conv3DAttrs.html',1,'tvm::relax']]],
   ['conv3dtransposeattrs_51',['Conv3DTransposeAttrs',['../structtvm_1_1relax_1_1Conv3DTransposeAttrs.html',1,'tvm::relax']]],
   ['costmodel_52',['CostModel',['../classtvm_1_1s__tir_1_1meta__schedule_1_1CostModel.html',1,'tvm::s_tir::meta_schedule']]],
-  ['costmodelnode_53',['CostModelNode',['../classtvm_1_1s__tir_1_1meta__schedule_1_1CostModelNode.html',1,'tvm::s_tir::meta_schedule']]],
+  ['costmodelobj_53',['CostModelObj',['../classtvm_1_1s__tir_1_1meta__schedule_1_1CostModelObj.html',1,'tvm::s_tir::meta_schedule']]],
   ['cudaipcmemory_54',['CUDAIPCMemory',['../classtvm_1_1runtime_1_1cuda__ipc_1_1CUDAIPCMemory.html',1,'tvm::runtime::cuda_ipc']]],
   ['cudaipcmemoryobj_55',['CUDAIPCMemoryObj',['../classtvm_1_1runtime_1_1cuda__ipc_1_1CUDAIPCMemoryObj.html',1,'tvm::runtime::cuda_ipc']]]
 ];

@@ -1,7 +1,7 @@
 var searchData=
 [
   ['validate_0',['validate',['../classtvm_1_1Op.html#ac3e555ca1f03eaa2d33bf0886885139a',1,'tvm::Op::Validate()'],['../classtvm_1_1Call.html#acfee703cc6154b381b5a1ea3d9a5b400',1,'tvm::Call::Validate()']]],
-  ['validateattrs_1',['ValidateAttrs',['../classtvm_1_1script_1_1ir__builder_1_1tirx_1_1FunctionFrameNode.html#afb504708b4434c6f523d1f00c778d4c7',1,'tvm::script::ir_builder::tirx::FunctionFrameNode']]],
+  ['validateattrs_1',['ValidateAttrs',['../classtvm_1_1script_1_1ir__builder_1_1tirx_1_1FunctionFrameObj.html#a5eb57a4042cf5df9827b76f9a24ccac2',1,'tvm::script::ir_builder::tirx::FunctionFrameObj']]],
   ['value_2',['value',['../classtvm_1_1runtime_1_1vm_1_1Instruction_1_1Arg.html#a7f8b13a64c4160100aaf691f877f0270',1,'tvm::runtime::vm::Instruction::Arg']]],
   ['var_3',['var',['../classtvm_1_1tirx_1_1TensorVar.html#a5f03b85fe2446bc6b5cf94c29b9215dc',1,'tvm::tirx::TensorVar::var()'],['../classtvm_1_1Var.html#ae5aba21bb7c1a09774273f4f2b5ef0d8',1,'tvm::Var::Var(ffi::String name, ffi::Optional&lt; Type &gt; ty_annotation, Location loc=UnknownLoc())'],['../classtvm_1_1Var.html#ab1e43f83b3c137b969c484465eb65337',1,'tvm::Var::Var(ffi::ObjectPtr&lt; VarNode &gt; node)'],['../namespacetvm_1_1te.html#a054fef7460475c6d4adb0c845648bcd7',1,'tvm::te::var()']]],
   ['varbinding_4',['VarBinding',['../classtvm_1_1relax_1_1VarBinding.html#afb0005363849fbf3f188657fcd2c247b',1,'tvm::relax::VarBinding']]],
@@ -17,7 +17,7 @@ var searchData=
   ['vector_5fcombine_5fop_14',['vector_combine_op',['../namespacetvm_1_1tirx.html#a6e678e7108f9f7ee27df5558284338f6',1,'tvm::tirx']]],
   ['vector_5fhigh_5fop_15',['vector_high_op',['../namespacetvm_1_1tirx.html#a874b1012c014c4b575f2b6aa39498323',1,'tvm::tirx']]],
   ['vector_5flow_5fop_16',['vector_low_op',['../namespacetvm_1_1tirx.html#acb0975c04cb0dc61d9e752a4c0959348',1,'tvm::tirx']]],
-  ['vectorize_17',['Vectorize',['../classtvm_1_1s__tir_1_1ScheduleNode.html#a2c127b633205af565427664a973a825c',1,'tvm::s_tir::ScheduleNode']]],
+  ['vectorize_17',['Vectorize',['../classtvm_1_1s__tir_1_1ScheduleObj.html#aa4cf1d0bf1bc43d3d1d2efe4363213a6',1,'tvm::s_tir::ScheduleObj']]],
   ['vectorizeloop_18',['VectorizeLoop',['../namespacetvm_1_1tirx_1_1transform.html#a858b84b9e3e0718c391f8263b2599541',1,'tvm::tirx::transform']]],
   ['verifygpucode_19',['verifygpucode',['../classtvm_1_1s__tir_1_1meta__schedule_1_1Postproc.html#a9856f99c1ddfc773fbbf151a7ae7834e',1,'tvm::s_tir::meta_schedule::Postproc::VerifyGPUCode()'],['../namespacetvm_1_1s__tir.html#a742a7e6b3f50ca1286f5a5354ca0a0d5',1,'tvm::s_tir::VerifyGPUCode()'],['../namespacetvm_1_1s__tir_1_1transform.html#a0d6f2452b3d4b86ba260ee8be7621f42',1,'tvm::s_tir::transform::VerifyGPUCode()']]],
   ['verifymemory_20',['verifymemory',['../namespacetvm_1_1tirx_1_1transform.html#abfb3b8a1341b0522dfa63a05de1b26de',1,'tvm::tirx::transform::VerifyMemory()'],['../namespacetvm_1_1tirx.html#a1d09904bea2f5ca41bf751703ef135e8',1,'tvm::tirx::VerifyMemory()']]],

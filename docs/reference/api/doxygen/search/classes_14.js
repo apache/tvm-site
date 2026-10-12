@@ -4,7 +4,7 @@ var searchData=
   ['whiledoc_1',['WhileDoc',['../classtvm_1_1script_1_1printer_1_1WhileDoc.html',1,'tvm::script::printer']]],
   ['whiledocnode_2',['WhileDocNode',['../classtvm_1_1script_1_1printer_1_1WhileDocNode.html',1,'tvm::script::printer']]],
   ['whileframe_3',['WhileFrame',['../classtvm_1_1script_1_1ir__builder_1_1ir_1_1WhileFrame.html',1,'tvm::script::ir_builder::ir']]],
-  ['whileframenode_4',['WhileFrameNode',['../classtvm_1_1script_1_1ir__builder_1_1ir_1_1WhileFrameNode.html',1,'tvm::script::ir_builder::ir']]],
+  ['whileframeobj_4',['WhileFrameObj',['../classtvm_1_1script_1_1ir__builder_1_1ir_1_1WhileFrameObj.html',1,'tvm::script::ir_builder::ir']]],
   ['whilenode_5',['WhileNode',['../classtvm_1_1WhileNode.html',1,'tvm']]],
   ['wildcardpattern_6',['WildcardPattern',['../classtvm_1_1relax_1_1WildcardPattern.html',1,'tvm::relax']]],
   ['wildcardpatternnode_7',['WildcardPatternNode',['../classtvm_1_1relax_1_1WildcardPatternNode.html',1,'tvm::relax']]],
@@ -14,6 +14,6 @@ var searchData=
   ['workload_11',['Workload',['../classtvm_1_1s__tir_1_1meta__schedule_1_1Workload.html',1,'tvm::s_tir::meta_schedule']]],
   ['workloadequal_12',['WorkloadEqual',['../structtvm_1_1s__tir_1_1meta__schedule_1_1WorkloadEqual.html',1,'tvm::s_tir::meta_schedule']]],
   ['workloadhash_13',['WorkloadHash',['../structtvm_1_1s__tir_1_1meta__schedule_1_1WorkloadHash.html',1,'tvm::s_tir::meta_schedule']]],
-  ['workloadnode_14',['WorkloadNode',['../classtvm_1_1s__tir_1_1meta__schedule_1_1WorkloadNode.html',1,'tvm::s_tir::meta_schedule']]],
+  ['workloadobj_14',['WorkloadObj',['../classtvm_1_1s__tir_1_1meta__schedule_1_1WorkloadObj.html',1,'tvm::s_tir::meta_schedule']]],
   ['wrapparamattrs_15',['WrapParamAttrs',['../structtvm_1_1relax_1_1WrapParamAttrs.html',1,'tvm::relax']]]
 ];

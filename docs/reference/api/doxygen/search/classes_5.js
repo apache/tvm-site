@@ -1,7 +1,7 @@
 var searchData=
 [
   ['featureextractor_0',['FeatureExtractor',['../classtvm_1_1s__tir_1_1meta__schedule_1_1FeatureExtractor.html',1,'tvm::s_tir::meta_schedule']]],
-  ['featureextractornode_1',['FeatureExtractorNode',['../classtvm_1_1s__tir_1_1meta__schedule_1_1FeatureExtractorNode.html',1,'tvm::s_tir::meta_schedule']]],
+  ['featureextractorobj_1',['FeatureExtractorObj',['../classtvm_1_1s__tir_1_1meta__schedule_1_1FeatureExtractorObj.html',1,'tvm::s_tir::meta_schedule']]],
   ['filerecord_2',['FileRecord',['../structtvm_1_1runtime_1_1vm_1_1TensorCacheMetadata_1_1FileRecord.html',1,'tvm::runtime::vm::TensorCacheMetadata']]],
   ['flipattrs_3',['FlipAttrs',['../structtvm_1_1relax_1_1FlipAttrs.html',1,'tvm::relax']]],
   ['floatimm_4',['FloatImm',['../classtvm_1_1FloatImm.html',1,'tvm']]],
@@ -14,18 +14,18 @@ var searchData=
   ['fordoc_11',['ForDoc',['../classtvm_1_1script_1_1printer_1_1ForDoc.html',1,'tvm::script::printer']]],
   ['fordocnode_12',['ForDocNode',['../classtvm_1_1script_1_1printer_1_1ForDocNode.html',1,'tvm::script::printer']]],
   ['forframe_13',['ForFrame',['../classtvm_1_1script_1_1ir__builder_1_1ir_1_1ForFrame.html',1,'tvm::script::ir_builder::ir']]],
-  ['forframenode_14',['ForFrameNode',['../classtvm_1_1script_1_1ir__builder_1_1ir_1_1ForFrameNode.html',1,'tvm::script::ir_builder::ir']]],
+  ['forframeobj_14',['ForFrameObj',['../classtvm_1_1script_1_1ir__builder_1_1ir_1_1ForFrameObj.html',1,'tvm::script::ir_builder::ir']]],
   ['fornode_15',['ForNode',['../classtvm_1_1ForNode.html',1,'tvm']]],
   ['function_16',['function',['../classtvm_1_1relax_1_1Function.html',1,'tvm::relax::Function'],['../classtvm_1_1tirx_1_1Function.html',1,'tvm::tirx::Function']]],
   ['functiondoc_17',['FunctionDoc',['../classtvm_1_1script_1_1printer_1_1FunctionDoc.html',1,'tvm::script::printer']]],
   ['functiondocnode_18',['FunctionDocNode',['../classtvm_1_1script_1_1printer_1_1FunctionDocNode.html',1,'tvm::script::printer']]],
   ['functionframe_19',['functionframe',['../classtvm_1_1script_1_1ir__builder_1_1relax_1_1FunctionFrame.html',1,'tvm::script::ir_builder::relax::FunctionFrame'],['../classtvm_1_1script_1_1ir__builder_1_1s__tir_1_1FunctionFrame.html',1,'tvm::script::ir_builder::s_tir::FunctionFrame'],['../classtvm_1_1script_1_1ir__builder_1_1tirx_1_1FunctionFrame.html',1,'tvm::script::ir_builder::tirx::FunctionFrame']]],
-  ['functionframenode_20',['functionframenode',['../classtvm_1_1script_1_1ir__builder_1_1relax_1_1FunctionFrameNode.html',1,'tvm::script::ir_builder::relax::FunctionFrameNode'],['../classtvm_1_1script_1_1ir__builder_1_1s__tir_1_1FunctionFrameNode.html',1,'tvm::script::ir_builder::s_tir::FunctionFrameNode'],['../classtvm_1_1script_1_1ir__builder_1_1tirx_1_1FunctionFrameNode.html',1,'tvm::script::ir_builder::tirx::FunctionFrameNode']]],
+  ['functionframeobj_20',['functionframeobj',['../classtvm_1_1script_1_1ir__builder_1_1relax_1_1FunctionFrameObj.html',1,'tvm::script::ir_builder::relax::FunctionFrameObj'],['../classtvm_1_1script_1_1ir__builder_1_1s__tir_1_1FunctionFrameObj.html',1,'tvm::script::ir_builder::s_tir::FunctionFrameObj'],['../classtvm_1_1script_1_1ir__builder_1_1tirx_1_1FunctionFrameObj.html',1,'tvm::script::ir_builder::tirx::FunctionFrameObj']]],
   ['functionnode_21',['functionnode',['../classtvm_1_1tirx_1_1FunctionNode.html',1,'tvm::tirx::FunctionNode'],['../classtvm_1_1relax_1_1FunctionNode.html',1,'tvm::relax::FunctionNode']]],
   ['functionpattern_22',['FunctionPattern',['../classtvm_1_1relax_1_1FunctionPattern.html',1,'tvm::relax']]],
   ['functionpatternnode_23',['FunctionPatternNode',['../classtvm_1_1relax_1_1FunctionPatternNode.html',1,'tvm::relax']]],
   ['functype_24',['functype',['../classtvm_1_1FuncType.html',1,'tvm::FuncType'],['../classtvm_1_1relax_1_1FuncType.html',1,'tvm::relax::FuncType']]],
   ['functypenode_25',['functypenode',['../classtvm_1_1FuncTypeNode.html',1,'tvm::FuncTypeNode'],['../classtvm_1_1relax_1_1FuncTypeNode.html',1,'tvm::relax::FuncTypeNode']]],
   ['fusionpattern_26',['FusionPattern',['../classtvm_1_1relax_1_1transform_1_1FusionPattern.html',1,'tvm::relax::transform']]],
-  ['fusionpatternnode_27',['FusionPatternNode',['../classtvm_1_1relax_1_1transform_1_1FusionPatternNode.html',1,'tvm::relax::transform']]]
+  ['fusionpatternobj_27',['FusionPatternObj',['../classtvm_1_1relax_1_1transform_1_1FusionPatternObj.html',1,'tvm::relax::transform']]]
 ];

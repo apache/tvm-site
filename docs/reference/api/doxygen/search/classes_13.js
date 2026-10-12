@@ -14,6 +14,6 @@ var searchData=
   ['vmclosureobj_11',['VMClosureObj',['../classtvm_1_1runtime_1_1vm_1_1VMClosureObj.html',1,'tvm::runtime::vm']]],
   ['vmexecutable_12',['VMExecutable',['../classtvm_1_1runtime_1_1vm_1_1VMExecutable.html',1,'tvm::runtime::vm']]],
   ['vmextension_13',['VMExtension',['../classtvm_1_1runtime_1_1vm_1_1VMExtension.html',1,'tvm::runtime::vm']]],
-  ['vmextensionnode_14',['VMExtensionNode',['../classtvm_1_1runtime_1_1vm_1_1VMExtensionNode.html',1,'tvm::runtime::vm']]],
+  ['vmextensionobj_14',['VMExtensionObj',['../classtvm_1_1runtime_1_1vm_1_1VMExtensionObj.html',1,'tvm::runtime::vm']]],
   ['vmfuncinfo_15',['VMFuncInfo',['../structtvm_1_1runtime_1_1vm_1_1VMFuncInfo.html',1,'tvm::runtime::vm']]]
 ];

@@ -7,11 +7,11 @@ var searchData=
   ['reduce_4',['Reduce',['../classtvm_1_1te_1_1Reduce.html',1,'tvm::te']]],
   ['reducenode_5',['ReduceNode',['../classtvm_1_1te_1_1ReduceNode.html',1,'tvm::te']]],
   ['regionframe_6',['RegionFrame',['../classtvm_1_1script_1_1ir__builder_1_1ir_1_1RegionFrame.html',1,'tvm::script::ir_builder::ir']]],
-  ['regionframenode_7',['RegionFrameNode',['../classtvm_1_1script_1_1ir__builder_1_1ir_1_1RegionFrameNode.html',1,'tvm::script::ir_builder::ir']]],
+  ['regionframeobj_7',['RegionFrameObj',['../classtvm_1_1script_1_1ir__builder_1_1ir_1_1RegionFrameObj.html',1,'tvm::script::ir_builder::ir']]],
   ['regionstmt_8',['RegionStmt',['../classtvm_1_1RegionStmt.html',1,'tvm']]],
   ['regionstmtnode_9',['RegionStmtNode',['../classtvm_1_1RegionStmtNode.html',1,'tvm']]],
   ['relaxframe_10',['RelaxFrame',['../classtvm_1_1script_1_1ir__builder_1_1relax_1_1RelaxFrame.html',1,'tvm::script::ir_builder::relax']]],
-  ['relaxframenode_11',['RelaxFrameNode',['../classtvm_1_1script_1_1ir__builder_1_1relax_1_1RelaxFrameNode.html',1,'tvm::script::ir_builder::relax']]],
+  ['relaxframeobj_11',['RelaxFrameObj',['../classtvm_1_1script_1_1ir__builder_1_1relax_1_1RelaxFrameObj.html',1,'tvm::script::ir_builder::relax']]],
   ['repeatattrs_12',['RepeatAttrs',['../structtvm_1_1relax_1_1RepeatAttrs.html',1,'tvm::relax']]],
   ['resize2dattrs_13',['Resize2DAttrs',['../structtvm_1_1relax_1_1Resize2DAttrs.html',1,'tvm::relax']]],
   ['resize3dattrs_14',['Resize3DAttrs',['../structtvm_1_1relax_1_1Resize3DAttrs.html',1,'tvm::relax']]],
@@ -28,10 +28,10 @@ var searchData=
   ['rshiftnode_25',['RShiftNode',['../classtvm_1_1prim_1_1RShiftNode.html',1,'tvm::prim']]],
   ['runner_26',['Runner',['../classtvm_1_1s__tir_1_1meta__schedule_1_1Runner.html',1,'tvm::s_tir::meta_schedule']]],
   ['runnerfuture_27',['RunnerFuture',['../classtvm_1_1s__tir_1_1meta__schedule_1_1RunnerFuture.html',1,'tvm::s_tir::meta_schedule']]],
-  ['runnerfuturenode_28',['RunnerFutureNode',['../classtvm_1_1s__tir_1_1meta__schedule_1_1RunnerFutureNode.html',1,'tvm::s_tir::meta_schedule']]],
+  ['runnerfutureobj_28',['RunnerFutureObj',['../classtvm_1_1s__tir_1_1meta__schedule_1_1RunnerFutureObj.html',1,'tvm::s_tir::meta_schedule']]],
   ['runnerinput_29',['RunnerInput',['../classtvm_1_1s__tir_1_1meta__schedule_1_1RunnerInput.html',1,'tvm::s_tir::meta_schedule']]],
-  ['runnerinputnode_30',['RunnerInputNode',['../classtvm_1_1s__tir_1_1meta__schedule_1_1RunnerInputNode.html',1,'tvm::s_tir::meta_schedule']]],
-  ['runnernode_31',['RunnerNode',['../classtvm_1_1s__tir_1_1meta__schedule_1_1RunnerNode.html',1,'tvm::s_tir::meta_schedule']]],
+  ['runnerinputobj_30',['RunnerInputObj',['../classtvm_1_1s__tir_1_1meta__schedule_1_1RunnerInputObj.html',1,'tvm::s_tir::meta_schedule']]],
+  ['runnerobj_31',['RunnerObj',['../classtvm_1_1s__tir_1_1meta__schedule_1_1RunnerObj.html',1,'tvm::s_tir::meta_schedule']]],
   ['runnerresult_32',['RunnerResult',['../classtvm_1_1s__tir_1_1meta__schedule_1_1RunnerResult.html',1,'tvm::s_tir::meta_schedule']]],
-  ['runnerresultnode_33',['RunnerResultNode',['../classtvm_1_1s__tir_1_1meta__schedule_1_1RunnerResultNode.html',1,'tvm::s_tir::meta_schedule']]]
+  ['runnerresultobj_33',['RunnerResultObj',['../classtvm_1_1s__tir_1_1meta__schedule_1_1RunnerResultObj.html',1,'tvm::s_tir::meta_schedule']]]
 ];
