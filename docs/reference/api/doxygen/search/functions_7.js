@@ -1,13 +1,13 @@
 var searchData=
 [
   ['handle_0',['Handle',['../namespacetvm_1_1script_1_1ir__builder_1_1tirx.html#a777e7843a6cf4cc5e099eb22c2250a6a',1,'tvm::script::ir_builder::tirx']]],
-  ['handle_5fadd_5fbyte_5foffset_5fop_1',['handle_add_byte_offset_op',['../namespacetvm_1_1tirx.html#a9ddbd68efb310abad3c9f5fff57c00fe',1,'tvm::tirx']]],
+  ['handle_5fadd_5fbyte_5foffset_5fop_1',['handle_add_byte_offset_op',['../namespacetvm_1_1tirx.html#a719812248712215ceee5c7ed52359297',1,'tvm::tirx']]],
   ['hasattr_2',['HasAttr',['../classtvm_1_1relax_1_1DFPattern.html#a5ec24bab817dcd540c0db81c297c83ae',1,'tvm::relax::DFPattern']]],
-  ['hasattrmap_3',['HasAttrMap',['../classtvm_1_1Op.html#adea2c4c1cefc5da4896e0f7346c603f6',1,'tvm::Op']]],
+  ['hasattrmap_3',['HasAttrMap',['../classtvm_1_1Op.html#a184e48b10cb8afc97b5e84411f1525f3',1,'tvm::Op']]],
   ['hasblock_4',['HasBlock',['../classtvm_1_1s__tir_1_1ScheduleObj.html#a8674592f14650f4acdb9881977dbb757',1,'tvm::s_tir::ScheduleObj']]],
   ['hasdtype_5',['hasdtype',['../classtvm_1_1relax_1_1DFPattern.html#aef57e18f93cc317ba30efbd986a7df18',1,'tvm::relax::DFPattern::HasDtype(const std::string &amp;dtype) const'],['../classtvm_1_1relax_1_1DFPattern.html#af8368cab9d48c402b043692cb4fd35d7',1,'tvm::relax::DFPattern::HasDtype(DLDataType dtype) const']]],
   ['hasfunction_6',['HasFunction',['../classtvm_1_1runtime_1_1vm_1_1VMExecutable.html#acc43eb1d86590b9ea017734740ea2394',1,'tvm::runtime::vm::VMExecutable']]],
-  ['haskey_7',['HasKey',['../classtvm_1_1TargetObj.html#a9585bc53ff98bcf774801daa9722b8d7',1,'tvm::TargetObj']]],
+  ['haskey_7',['HasKey',['../classtvm_1_1TargetObj.html#af28d82a71556fa9fc1b6cd94ab98d5d9',1,'tvm::TargetObj']]],
   ['haslowerbound_8',['HasLowerBound',['../classtvm_1_1sym_1_1IntSet.html#a7c99d6aab40b35eec1e8f6064f5230b7',1,'tvm::sym::IntSet']]],
   ['hasmemoryaxis_9',['HasMemoryAxis',['../classtvm_1_1tirx_1_1TileLayoutNode.html#a99c542cb431270df8b109642db6d6905',1,'tvm::tirx::TileLayoutNode']]],
   ['hasnonzeroattr_10',['hasnonzeroattr',['../classtvm_1_1DictAttrs.html#a45e524ce0f8ae389341ec37e468d887d',1,'tvm::DictAttrs::HasNonzeroAttr()'],['../classtvm_1_1BaseFuncNode.html#a1fbf773665334f7d109c7c4c12d40d76',1,'tvm::BaseFuncNode::HasNonzeroAttr()'],['../classtvm_1_1IRModuleNode.html#a0051e1b8ec1d99cbade4dfaa511b3bcd',1,'tvm::IRModuleNode::HasNonzeroAttr()']]],
@@ -21,7 +21,7 @@ var searchData=
   ['hasupperbound_18',['HasUpperBound',['../classtvm_1_1sym_1_1IntSet.html#a24bcce085b629210932062412192e753',1,'tvm::sym::IntSet']]],
   ['hasvoidtype_19',['HasVoidType',['../namespacetvm_1_1relax.html#a0ece338c02ce994ab5c3af5666b1080c',1,'tvm::relax']]],
   ['hasworkload_20',['hasworkload',['../classtvm_1_1s__tir_1_1meta__schedule_1_1DatabaseObj.html#adac1a2cf0afc6b832abf22f92d99b9df',1,'tvm::s_tir::meta_schedule::DatabaseObj::HasWorkload()'],['../classtvm_1_1s__tir_1_1meta__schedule_1_1PyDatabaseObj.html#a61190992b7132e2d977194aebd61feb1',1,'tvm::s_tir::meta_schedule::PyDatabaseObj::HasWorkload()']]],
-  ['hoistif_21',['HoistIf',['../namespacetvm_1_1tirx_1_1transform.html#ac74f48965a6c72ea2ccaa13d696240a8',1,'tvm::tirx::transform']]],
+  ['hoistif_21',['HoistIf',['../namespacetvm_1_1tirx_1_1transform.html#afb4a5909a0f9874f40ea36f99442eb06',1,'tvm::tirx::transform']]],
   ['hypot_22',['hypot',['../namespacetvm_1_1prim.html#a15327f49ccd0d4152282184fd57d02a6',1,'tvm::prim']]],
-  ['hypot_5fop_23',['hypot_op',['../namespacetvm_1_1prim.html#a5f59e937be4df85c8b5736a9e523305a',1,'tvm::prim']]]
+  ['hypot_5fop_23',['hypot_op',['../namespacetvm_1_1prim.html#ad8f977ac4fb9b9910825bc50c6f834e4',1,'tvm::prim']]]
 ];

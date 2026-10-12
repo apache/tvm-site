@@ -100,7 +100,7 @@ original implementation.
 
 
     def evaluate(mod: tvm.IRModule):
-        lib = tvm.tirx.build(mod, target="llvm")
+        lib = tvm.tirx.compile(mod, target="llvm").mod
         # check correctness
         lib(a_nd, b_nd, c_nd)
         np.testing.assert_allclose(c_nd.numpy(), c_np, rtol=1e-5)
@@ -121,7 +121,7 @@ original implementation.
 
     Execution time summary:
      mean (ms)   median (ms)    max (ms)     min (ms)     std (ms)  
-       2.5634       2.5634       2.5634       2.5634       0.0000                  
+       2.6714       2.6714       2.6714       2.6714       0.0000                  
 
 
 
@@ -313,7 +313,7 @@ action involves reordering these two loops.
 
     Execution time summary:
      mean (ms)   median (ms)    max (ms)     min (ms)     std (ms)  
-       0.8686       0.8686       0.8686       0.8686       0.0000                  
+       0.8720       0.8720       0.8720       0.8720       0.0000                  
 
 
 
@@ -455,7 +455,7 @@ from the reduction update via the **decompose_reduction** primitive.
 
     Execution time summary:
      mean (ms)   median (ms)    max (ms)     min (ms)     std (ms)  
-       0.3589       0.3589       0.3589       0.3589       0.0000                  
+       0.3544       0.3544       0.3544       0.3544       0.0000                  
 
 
 

@@ -26,12 +26,13 @@ var searchData=
   ['tvm_5fsref_5fas_5for_5ferr_23',['TVM_SREF_AS_OR_ERR',['../s__tir_2utils_8h.html#ae3c276f44cdd20825ab5677f3223a235',1,'utils.h']]],
   ['tvm_5fsref_5fto_5ffor_24',['TVM_SREF_TO_FOR',['../s__tir_2utils_8h.html#a212c570fa89535310f30664deb0d5305',1,'utils.h']]],
   ['tvm_5fsref_5fto_5fsblock_25',['TVM_SREF_TO_SBLOCK',['../s__tir_2utils_8h.html#ad98da105840f64500b09fc5b5083090c',1,'utils.h']]],
-  ['tvm_5ftirx_5fir_5fbuilder_5fdef_5fdtype_5fcast_26',['TVM_TIRX_IR_BUILDER_DEF_DTYPE_CAST',['../tirx_2script_2ir__builder_2ir_8h.html#a3b1d418091871cc350de4bbeb9eda0ea',1,'ir.h']]],
-  ['tvm_5ftirx_5fir_5fbuilder_5fdef_5fdtype_5fcast_5flanes_27',['TVM_TIRX_IR_BUILDER_DEF_DTYPE_CAST_LANES',['../tirx_2script_2ir__builder_2ir_8h.html#a1e61bbab7fda5485210aadec982b41a8',1,'ir.h']]],
-  ['tvm_5ftirx_5fir_5fbuilder_5fdef_5fdtype_5fcast_5flanes_5ffixed_5fsize_28',['TVM_TIRX_IR_BUILDER_DEF_DTYPE_CAST_LANES_FIXED_SIZE',['../tirx_2script_2ir__builder_2ir_8h.html#ac3ce3377059f6d834fca46321aade1a0',1,'ir.h']]],
-  ['tvm_5ftirx_5fir_5fbuilder_5fdef_5fdtype_5fcast_5fsizes_29',['TVM_TIRX_IR_BUILDER_DEF_DTYPE_CAST_SIZES',['../tirx_2script_2ir__builder_2ir_8h.html#a5e55ee918130afd11790d60eee9acb1e',1,'ir.h']]],
-  ['tvm_5ftirx_5fir_5fbuilder_5fdef_5fdtype_5fcast_5fsizes_5flanes_30',['TVM_TIRX_IR_BUILDER_DEF_DTYPE_CAST_SIZES_LANES',['../tirx_2script_2ir__builder_2ir_8h.html#a001b4680f0775f563d5d85256ae97fa9',1,'ir.h']]],
-  ['tvm_5ftype_5fas_31',['TVM_TYPE_AS',['../s__tir_2utils_8h.html#ab60c1e6848b181005be55ce1c10cf920',1,'utils.h']]],
-  ['tvm_5ftype_5fas_5for_5ferr_32',['TVM_TYPE_AS_OR_ERR',['../s__tir_2utils_8h.html#a616e279b3f53b9afdd51b7f8c8aa670a',1,'utils.h']]],
-  ['tvm_5fversion_33',['TVM_VERSION',['../runtime_2base_8h.html#a429515e9851601ec44c8ed421521ab6d',1,'base.h']]]
+  ['tvm_5ftirx_5fdll_26',['TVM_TIRX_DLL',['../runtime_2base_8h.html#a3f8a1559a6af0fd6f6bdf4a498072491',1,'base.h']]],
+  ['tvm_5ftirx_5fir_5fbuilder_5fdef_5fdtype_5fcast_27',['TVM_TIRX_IR_BUILDER_DEF_DTYPE_CAST',['../tirx_2script_2ir__builder_2ir_8h.html#a3b1d418091871cc350de4bbeb9eda0ea',1,'ir.h']]],
+  ['tvm_5ftirx_5fir_5fbuilder_5fdef_5fdtype_5fcast_5flanes_28',['TVM_TIRX_IR_BUILDER_DEF_DTYPE_CAST_LANES',['../tirx_2script_2ir__builder_2ir_8h.html#a1e61bbab7fda5485210aadec982b41a8',1,'ir.h']]],
+  ['tvm_5ftirx_5fir_5fbuilder_5fdef_5fdtype_5fcast_5flanes_5ffixed_5fsize_29',['TVM_TIRX_IR_BUILDER_DEF_DTYPE_CAST_LANES_FIXED_SIZE',['../tirx_2script_2ir__builder_2ir_8h.html#ac3ce3377059f6d834fca46321aade1a0',1,'ir.h']]],
+  ['tvm_5ftirx_5fir_5fbuilder_5fdef_5fdtype_5fcast_5fsizes_30',['TVM_TIRX_IR_BUILDER_DEF_DTYPE_CAST_SIZES',['../tirx_2script_2ir__builder_2ir_8h.html#a5e55ee918130afd11790d60eee9acb1e',1,'ir.h']]],
+  ['tvm_5ftirx_5fir_5fbuilder_5fdef_5fdtype_5fcast_5fsizes_5flanes_31',['TVM_TIRX_IR_BUILDER_DEF_DTYPE_CAST_SIZES_LANES',['../tirx_2script_2ir__builder_2ir_8h.html#a001b4680f0775f563d5d85256ae97fa9',1,'ir.h']]],
+  ['tvm_5ftype_5fas_32',['TVM_TYPE_AS',['../s__tir_2utils_8h.html#ab60c1e6848b181005be55ce1c10cf920',1,'utils.h']]],
+  ['tvm_5ftype_5fas_5for_5ferr_33',['TVM_TYPE_AS_OR_ERR',['../s__tir_2utils_8h.html#a616e279b3f53b9afdd51b7f8c8aa670a',1,'utils.h']]],
+  ['tvm_5fversion_34',['TVM_VERSION',['../runtime_2base_8h.html#a429515e9851601ec44c8ed421521ab6d',1,'base.h']]]
 ];

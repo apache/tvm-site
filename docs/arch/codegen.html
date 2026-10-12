@@ -662,18 +662,18 @@ system that wraps the generated code.</p>
 <code class="docutils literal notranslate"><span class="pre">VMCodeGen</span></code> translates Relax functions into VM bytecode (see <a class="reference internal" href="relax_vm.html#relax-vm-arch"><span class="std std-ref">Relax Virtual Machine</span></a>).</p></li>
 <li><p><strong>TIR phase</strong>: TIR <code class="docutils literal notranslate"><span class="pre">Function</span></code>s (the actual compute kernels) are compiled to native code.</p></li>
 </ol>
-<p>The TIR phase is handled internally by <code class="docutils literal notranslate"><span class="pre">tirx.build()</span></code> (called from <code class="docutils literal notranslate"><span class="pre">relax.build()</span></code>).
+<p>The TIR phase is handled internally by <code class="docutils literal notranslate"><span class="pre">tirx.compile()</span></code> (called from <code class="docutils literal notranslate"><span class="pre">relax.build()</span></code>).
 It performs these steps:</p>
 <div class="highlight-text notranslate"><div class="highlight"><pre><span></span>TIR Functions (in IRModule)
      │
      ▼  TIR pipeline                   ← lowering passes (flatten buffers, lower intrinsics, etc.)
 TIR Functions (lowered)
      │
-     ▼  split_host_device_mods()        ← separate host and device functions
+     ▼  _split_host_device_modules()        ← separate host and device functions
 Host IRModule + Device IRModule(s)
      │                    │
      ▼                    ▼
-codegen_build()      codegen_build()    ← target-specific code generation
+_build_for_target()      _build_for_target()    ← target-specific code generation
      │                    │
      ▼                    ▼
 Host Module          Device Module(s)
@@ -688,7 +688,7 @@ Host Module ◄─────────────┘             ← device
 <section id="target-dispatch">
 <h2>Target Dispatch<a class="headerlink" href="#target-dispatch" title="Link to this heading">#</a></h2>
 <p>The core dispatch logic lives in <code class="docutils literal notranslate"><span class="pre">codegen::Build()</span></code> (<code class="docutils literal notranslate"><span class="pre">src/target/codegen.cc</span></code>), which is
-called from the Python-side <code class="docutils literal notranslate"><span class="pre">codegen_build()</span></code> in <code class="docutils literal notranslate"><span class="pre">tirx/build.py</span></code>. It selects the correct
+called from the Python-side <code class="docutils literal notranslate"><span class="pre">_build_for_target()</span></code> in <code class="docutils literal notranslate"><span class="pre">tirx/_compile.py</span></code>. It selects the correct
 backend based on the <code class="docutils literal notranslate"><span class="pre">Target</span></code> object:</p>
 <div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="n">ffi</span><span class="o">::</span><span class="n">Module</span><span class="w"> </span><span class="nf">Build</span><span class="p">(</span><span class="n">IRModule</span><span class="w"> </span><span class="n">mod</span><span class="p">,</span><span class="w"> </span><span class="n">Target</span><span class="w"> </span><span class="n">target</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
 <span class="w">  </span><span class="n">std</span><span class="o">::</span><span class="n">string</span><span class="w"> </span><span class="n">build_f_name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s">&quot;target.build.&quot;</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">target</span><span class="o">-&gt;</span><span class="n">kind</span><span class="o">-&gt;</span><span class="n">name</span><span class="p">;</span>
@@ -848,7 +848,7 @@ or <code class="docutils literal notranslate"><span class="pre">target.build.c</
 <li><p><strong>Device functions</strong> — the actual compute kernels that run on the GPU. Compiled with the
 target-specific codegen (<code class="docutils literal notranslate"><span class="pre">target.build.cuda</span></code>, etc.).</p></li>
 </ul>
-<p><code class="docutils literal notranslate"><span class="pre">split_host_device_mods()</span></code> (<code class="docutils literal notranslate"><span class="pre">python/tvm/tirx/build.py</span></code>) separates functions by their
+<p><code class="docutils literal notranslate"><span class="pre">_split_host_device_modules()</span></code> (<code class="docutils literal notranslate"><span class="pre">python/tvm/tirx/_compile.py</span></code>) separates functions by their
 <code class="docutils literal notranslate"><span class="pre">target</span></code> attribute: functions whose target kind is <code class="docutils literal notranslate"><span class="pre">&quot;llvm&quot;</span></code> or <code class="docutils literal notranslate"><span class="pre">&quot;c&quot;</span></code> go to the host
 module; all others go to device modules grouped by target.</p>
 <p>After compilation, device modules are imported into the host module via <code class="docutils literal notranslate"><span class="pre">import_module()</span></code>,
@@ -916,8 +916,8 @@ a tar archive for deployment.</p>
 </tr>
 </thead>
 <tbody>
-<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">python/tvm/tirx/build.py</span></code></p></td>
-<td><p><code class="docutils literal notranslate"><span class="pre">tirx.build()</span></code>: TIR compilation entry, host/device split, module linking</p></td>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">python/tvm/tirx/_compile.py</span></code></p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">tirx.compile()</span></code>: TIR compilation entry, host/device split, module linking</p></td>
 </tr>
 <tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">src/target/codegen.cc</span></code></p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">codegen::Build()</span></code>: target dispatch via <code class="docutils literal notranslate"><span class="pre">&quot;target.build.&lt;kind&gt;&quot;</span></code></p></td>
