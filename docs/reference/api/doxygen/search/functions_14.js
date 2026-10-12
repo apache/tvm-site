@@ -57,5 +57,5 @@ var searchData=
   ['updatevdevice_54',['UpdateVDevice',['../namespacetvm_1_1relax_1_1transform.html#aeb38ac5d686a9e6feaec6290b92d374e',1,'tvm::relax::transform']]],
   ['useassumetoreducebranches_55',['UseAssumeToReduceBranches',['../namespacetvm_1_1s__tir_1_1transform.html#a1d8ea88c4e1d224910925c3f499d3e4a',1,'tvm::s_tir::transform']]],
   ['usedby_56',['usedby',['../namespacetvm_1_1relax.html#ae51bf4cd12992d277cc20eb82881ca23',1,'tvm::relax::UsedBy()'],['../classtvm_1_1relax_1_1PatternSeq.html#a701c6fd85238362bbe29f7fd26d41c35',1,'tvm::relax::PatternSeq::UsedBy()']]],
-  ['usedmemory_57',['UsedMemory',['../classtvm_1_1runtime_1_1memory_1_1Allocator.html#a2c5e075e9b1ee86a6b39791e8e78683b',1,'tvm::runtime::memory::Allocator']]]
+  ['usedmemory_57',['UsedMemory',['../classtvm_1_1runtime_1_1TensorMemoryPool.html#a8b1e917f86bd3129420f6d5f0f564fc6',1,'tvm::runtime::TensorMemoryPool']]]
 ];

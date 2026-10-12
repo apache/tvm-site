@@ -46,11 +46,10 @@ var searchData=
   ['broadcast_43',['Broadcast',['../classtvm_1_1prim_1_1Broadcast.html',1,'tvm::prim']]],
   ['broadcastnode_44',['BroadcastNode',['../classtvm_1_1prim_1_1BroadcastNode.html',1,'tvm::prim']]],
   ['bucketizeattrs_45',['BucketizeAttrs',['../structtvm_1_1relax_1_1BucketizeAttrs.html',1,'tvm::relax']]],
-  ['buffer_46',['Buffer',['../structtvm_1_1runtime_1_1memory_1_1Buffer.html',1,'tvm::runtime::memory']]],
-  ['builder_47',['Builder',['../classtvm_1_1s__tir_1_1meta__schedule_1_1Builder.html',1,'tvm::s_tir::meta_schedule']]],
-  ['builderinput_48',['BuilderInput',['../classtvm_1_1s__tir_1_1meta__schedule_1_1BuilderInput.html',1,'tvm::s_tir::meta_schedule']]],
-  ['builderinputobj_49',['BuilderInputObj',['../classtvm_1_1s__tir_1_1meta__schedule_1_1BuilderInputObj.html',1,'tvm::s_tir::meta_schedule']]],
-  ['builderobj_50',['BuilderObj',['../classtvm_1_1s__tir_1_1meta__schedule_1_1BuilderObj.html',1,'tvm::s_tir::meta_schedule']]],
-  ['builderresult_51',['BuilderResult',['../classtvm_1_1s__tir_1_1meta__schedule_1_1BuilderResult.html',1,'tvm::s_tir::meta_schedule']]],
-  ['builderresultobj_52',['BuilderResultObj',['../classtvm_1_1s__tir_1_1meta__schedule_1_1BuilderResultObj.html',1,'tvm::s_tir::meta_schedule']]]
+  ['builder_46',['Builder',['../classtvm_1_1s__tir_1_1meta__schedule_1_1Builder.html',1,'tvm::s_tir::meta_schedule']]],
+  ['builderinput_47',['BuilderInput',['../classtvm_1_1s__tir_1_1meta__schedule_1_1BuilderInput.html',1,'tvm::s_tir::meta_schedule']]],
+  ['builderinputobj_48',['BuilderInputObj',['../classtvm_1_1s__tir_1_1meta__schedule_1_1BuilderInputObj.html',1,'tvm::s_tir::meta_schedule']]],
+  ['builderobj_49',['BuilderObj',['../classtvm_1_1s__tir_1_1meta__schedule_1_1BuilderObj.html',1,'tvm::s_tir::meta_schedule']]],
+  ['builderresult_50',['BuilderResult',['../classtvm_1_1s__tir_1_1meta__schedule_1_1BuilderResult.html',1,'tvm::s_tir::meta_schedule']]],
+  ['builderresultobj_51',['BuilderResultObj',['../classtvm_1_1s__tir_1_1meta__schedule_1_1BuilderResultObj.html',1,'tvm::s_tir::meta_schedule']]]
 ];
