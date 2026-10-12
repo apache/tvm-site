@@ -17,5 +17,6 @@ var searchData=
   ['statistical_2eh_14',['statistical.h',['../statistical_8h.html',1,'']]],
   ['stmt_2eh_15',['stmt.h',['../ir_2stmt_8h.html',1,'(Global Namespace)'],['../s__tir_2stmt_8h.html',1,'(Global Namespace)'],['../tirx_2stmt_8h.html',1,'(Global Namespace)']]],
   ['stmt_5ffunctor_2eh_16',['stmt_functor.h',['../s__tir_2stmt__functor_8h.html',1,'(Global Namespace)'],['../tirx_2stmt__functor_8h.html',1,'(Global Namespace)']]],
-  ['strided_5fslice_2eh_17',['strided_slice.h',['../strided__slice_8h.html',1,'']]]
+  ['stmt_5ffunctor_5fwith_5fanalyzer_2eh_17',['stmt_functor_with_analyzer.h',['../s__tir_2stmt__functor__with__analyzer_8h.html',1,'(Global Namespace)'],['../tirx_2stmt__functor__with__analyzer_8h.html',1,'(Global Namespace)']]],
+  ['strided_5fslice_2eh_18',['strided_slice.h',['../strided__slice_8h.html',1,'']]]
 ];
