@@ -1,0 +1,1279 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="../" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>Explicit CUDA tile patterns &#8212; Apache TVM</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="../_static/styles/theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+<link href="../_static/styles/bootstrap.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+<link href="../_static/styles/pydata-sphinx-theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+
+  
+  <link href="../_static/vendor/fontawesome/6.5.2/css/all.min.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.5.2/webfonts/fa-solid-900.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.5.2/webfonts/fa-brands-400.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="../_static/vendor/fontawesome/6.5.2/webfonts/fa-regular-400.woff2" />
+
+    <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=03e43079" />
+    <link rel="stylesheet" type="text/css" href="../_static/styles/sphinx-book-theme.css?v=eba8b062" />
+    <link rel="stylesheet" type="text/css" href="../_static/sg_gallery.css?v=d2d258e8" />
+    <link rel="stylesheet" type="text/css" href="../_static/sg_gallery-binder.css?v=f4aeca0c" />
+    <link rel="stylesheet" type="text/css" href="../_static/sg_gallery-dataframe.css?v=2082cf3c" />
+    <link rel="stylesheet" type="text/css" href="../_static/sg_gallery-rendered-html.css?v=1277b6f3" />
+  
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="../_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b" />
+<link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
+  <script src="../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
+
+    <script src="../_static/documentation_options.js?v=46652880"></script>
+    <script src="../_static/doctools.js?v=9bcbadda"></script>
+    <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/scripts/sphinx-book-theme.js?v=887ef09a"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'tirx/cuda_tile_patterns';</script>
+    <link rel="icon" href="../_static/tvm-logo-square.png"/>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="ld / st" href="tile_ops/ld_st.html" />
+    <link rel="prev" title="Tile Operations" href="tile_ops.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          id="pst-primary-sidebar-checkbox"/>
+  <label class="overlay overlay-primary" for="pst-primary-sidebar-checkbox"></label>
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          id="pst-secondary-sidebar-checkbox"/>
+  <label class="overlay overlay-secondary" for="pst-secondary-sidebar-checkbox"></label>
+  
+  <div class="search-button__wrapper">
+    <div class="search-button__overlay"></div>
+    <div class="search-button__search-container">
+<form class="bd-search d-flex align-items-center"
+      action="../search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         id="search-input"
+         placeholder="Search..."
+         aria-label="Search..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form></div>
+  </div>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <div class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+    
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="../index.html">
+  
+  
+  
+  
+  
+    
+    
+      
+    
+    
+    <img src="../_static/tvm-logo-small.png" class="logo__image only-light" alt="Apache TVM - Home"/>
+    <script>document.write(`<img src="../_static/tvm-logo-small.png" class="logo__image only-dark" alt="Apache TVM - Home"/>`);</script>
+  
+  
+</a></div>
+        <div class="sidebar-primary-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://tvm.apache.org/" title="TVM Homepage" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-solid fa-house fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">TVM Homepage</span></a>
+        </li>
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://tvm.apache.org/community" title="Community" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-solid fa-users fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">Community</span></a>
+        </li>
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://tvm.apache.org/download" title="Download" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-solid fa-box-open fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">Download</span></a>
+        </li>
+</ul></div>
+        <div class="sidebar-primary-item">
+
+ <script>
+ document.write(`
+   <button class="btn search-button-field search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass"></i>
+    <span class="search-button__default-text">Search</span>
+    <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+   </button>
+ `);
+ </script></div>
+        <div class="sidebar-primary-item"><nav class="bd-links bd-docs-nav" aria-label="Main">
+    <div class="bd-toc-item navbar-nav active">
+        <p aria-level="2" class="caption" role="heading"><span class="caption-text">Getting Started</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../get_started/overview.html">Overview</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../install/index.html">Installing TVM</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../install/pypi.html">Install from PyPI</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../install/from_source.html">Install from Source</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../install/docker.html">Docker Images</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1"><a class="reference internal" href="../get_started/tutorials/quick_start.html">Quick Start</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../get_started/tutorials/ir_module.html">IRModule</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../errors.html">TVM Errors</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">How To</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../how_to/tutorials/import_model.html">Importing Models from ML Frameworks</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../how_to/tutorials/e2e_opt_model.html">End-to-End Optimize Model</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../how_to/tutorials/customize_opt.html">Customize Optimization</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../how_to/tutorials/optimize_llm.html">Optimize Large Language Model</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../how_to/tutorials/cross_compilation_and_rpc.html">Cross Compilation and RPC</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../how_to/tutorials/export_and_load_executable.html">Export and Load Relax Executables</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../how_to/tutorials/mix_python_and_tvm_with_pymodule.html">Mix Python/PyTorch with TVM Using BasePyModule</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../how_to/tutorials/bring_your_own_codegen.html">Bring Your Own Codegen</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Deep Dive</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1 has-children"><a class="reference internal" href="../arch/index.html">Design and Architecture</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../arch/fusion.html">Operator Fusion</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../arch/codegen.html">Code Generation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../arch/external_library_dispatch.html">External Library Dispatch (BYOC)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../arch/runtime.html">TVM Runtime System</a></li>
+
+<li class="toctree-l2"><a class="reference internal" href="../arch/introduction_to_module_serialization.html">Introduction to Module Serialization</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../arch/relax_vm.html">Relax Virtual Machine</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../arch/pass_infra.html">Pass Infrastructure</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../arch/tvmscript.html">TVMScript</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../arch/device_target_interactions.html">Device/Target Interactions</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../deep_dive/tensor_ir/index.html">TensorIR</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../deep_dive/tensor_ir/abstraction.html">Tensor Program Abstraction</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../deep_dive/tensor_ir/learning.html">Understand TensorIR Abstraction</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../deep_dive/tensor_ir/tutorials/tir_creation.html">TensorIR Creation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../deep_dive/tensor_ir/tutorials/tir_transformation.html">Transformation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../deep_dive/tensor_ir/tutorials/dlight_gpu_scheduling.html">DLight: Rule-Based GPU Scheduling</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../deep_dive/tensor_ir/tutorials/meta_schedule.html">MetaSchedule: Search-Based Auto-Tuning</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="../deep_dive/relax/index.html">Relax</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../deep_dive/relax/abstraction.html">Graph Abstraction for ML Models</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../deep_dive/relax/learning.html">Understand Relax Abstraction</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../deep_dive/relax/dpl.html">Dataflow Pattern Language (DPL)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../deep_dive/relax/tutorials/relax_creation.html">Relax Creation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../deep_dive/relax/tutorials/relax_transformation.html">Transformation</a></li>
+</ul>
+</details></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">TIRx</span></p>
+<ul class="current nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="overview.html">Overview</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="get_started/index.html">Getting Started</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="install.html">Installation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="native_basics/cuda/first_kernel.html">Your first kernel</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1 current active has-children"><a class="reference internal" href="programming/index.html">Programming Guide</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
+<li class="toctree-l2 has-children"><a class="reference internal" href="native_basics.html">CUDA Programming Guide</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l3"><a class="reference internal" href="native_basics/cuda/functions.html">Defining a function</a></li>
+<li class="toctree-l3"><a class="reference internal" href="native_basics/cuda/data_types.html">Data types and expressions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="native_basics/cuda/tensors.html">Tensors and memory</a></li>
+<li class="toctree-l3"><a class="reference internal" href="native_basics/cuda/control_flow.html">Control flow</a></li>
+<li class="toctree-l3"><a class="reference internal" href="native_basics/cuda/threads_sync.html">CUDA C++/PTX intrinsics</a></li>
+<li class="toctree-l3"><a class="reference internal" href="native_basics/cuda/compiling.html">Compiling and inspecting</a></li>
+<li class="toctree-l3"><a class="reference internal" href="native_basics/cuda/parser_utils.html">Parser utilities</a></li>
+<li class="toctree-l3"><a class="reference internal" href="native_basics/cuda/profiling.html">In-kernel profiling with CudaProfiler</a></li>
+</ul>
+</details></li>
+<li class="toctree-l2"><a class="reference internal" href="layout.html">Tensor Layout</a></li>
+<li class="toctree-l2 current active has-children"><a class="reference internal" href="tile_ops.html">Tile Operations</a><details open="open"><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul class="current">
+<li class="toctree-l3 current active"><a class="current reference internal" href="#">Explicit CUDA tile patterns</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tile_ops/ld_st.html">ld / st</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tile_ops/ldmatrix_stmatrix.html">ldmatrix / stmatrix</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tile_ops/mov.html">mov</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tile_ops/add_sub_mul.html">add / sub / mul</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tile_ops/div_rcp_sqrt.html">div / rcp / sqrt</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tile_ops/min_max.html">min / max</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tile_ops/fma.html">fma</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tile_ops/cvt.html">cvt</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tile_ops/ex2_lg2.html">ex2 / lg2</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tile_ops/abs_neg.html">abs / neg</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tile_ops/cp_async.html">cp.async</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tile_ops/cp_async_bulk.html">cp.async.bulk: shared to cluster shared</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tile_ops/cp_async_bulk_tensor.html">cp.async.bulk.tensor / cp.reduce.async.bulk.tensor</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tile_ops/tcgen05_ld_st.html">tcgen05.ld / tcgen05.st</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tile_ops/tcgen05_cp.html">tcgen05.cp</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tile_ops/mma_sync.html">mma.sync</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tile_ops/tcgen05_mma.html">tcgen05.mma</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tile_ops/ewise.html">ewise: caller-defined scalar compositions</a></li>
+<li class="toctree-l3"><a class="reference internal" href="tile_ops/reduction.html">Reduction Instructions</a></li>
+</ul>
+</details></li>
+</ul>
+</details></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="arch/index.html">Compiler Internals</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="arch/lowering_pipeline.html">TIRx lowering pipeline</a></li>
+<li class="toctree-l2"><a class="reference internal" href="arch/tile_dispatch.html">Tensor Instruction Lowering</a></li>
+<li class="toctree-l2"><a class="reference internal" href="arch/backends.html">Backend Internals</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="api/index.html">API Reference</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="api/script.html">Core TVMScript</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/tile.html">Tensor Instruction Authoring API</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/cuda.html">CUDA Authoring and Support APIs</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/cuda_compile.html">CUDA backend configuration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/cuda_compile_options.html">Native CUDA compiler arguments</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/cuda_launch.html">CUDA kernel configuration reference</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/ptx.html">Direct PTX Instructions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/trainium.html">Trainium Authoring and Support APIs</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/tirx.html">Core TIRx IR</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/layout.html">Layout IR</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/execution.html">Execution Scope IR</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/compilation.html">Compilation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/transform.html">Compiler Transforms</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/analysis.html">Analysis</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/tile_dispatch.html">Tensor Instruction Registration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api/backend.html">Backend Extension API</a></li>
+</ul>
+</details></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">API Reference</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1 has-children"><a class="reference internal" href="../reference/api/python/index.html">Python API</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../reference/api/python/error.html">tvm.error</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../reference/api/python/ir.html">tvm.ir</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../reference/api/python/sym.html">tvm.sym</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../reference/api/python/instrument.html">tvm.ir.transform.instrument</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../reference/api/python/transform.html">tvm.ir.transform</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../reference/api/python/target.html">tvm.target</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../reference/api/python/driver.html">tvm.driver</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../reference/api/python/testing.html">tvm.testing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../reference/api/python/exec.html">tvm.exec</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../reference/api/python/support.html">tvm.support</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../reference/api/python/runtime/runtime.html">tvm.runtime</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../reference/api/python/runtime/vm.html">tvm.runtime.vm</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../reference/api/python/runtime/disco.html">tvm.runtime.disco</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../reference/api/python/relax/relax.html">tvm.relax</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../reference/api/python/relax/analysis.html">tvm.relax.analysis</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../reference/api/python/relax/backend.html">tvm.relax.backend</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../reference/api/python/relax/block_builder.html">tvm.relax.block_builder</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../reference/api/python/relax/distributed.html">tvm.relax.distributed</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../reference/api/python/relax/frontend.html">tvm.relax.frontend</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../reference/api/python/relax/op.html">tvm.relax.op</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../reference/api/python/relax/testing.html">tvm.relax.testing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../reference/api/python/relax/training.html">tvm.relax.training</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../reference/api/python/relax/transform.html">tvm.relax.transform</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../reference/api/python/relax/dpl.html">tvm.relax.dpl</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../reference/api/python/s_tir/analysis.html">tvm.s_tir.analysis</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../reference/api/python/s_tir/schedule.html">tvm.s_tir.schedule</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../reference/api/python/s_tir/transform.html">tvm.s_tir.transform</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../reference/api/python/s_tir/dlight.html">tvm.s_tir.dlight</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../reference/api/python/s_tir/backend.html">tvm.s_tir.backend</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../reference/api/python/s_tir/tensor_intrin.html">tvm.s_tir.tensor_intrin</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../reference/api/python/script/script.html">tvm.script</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../reference/api/python/script/parser.html">tvm.script.parser</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../reference/api/python/script/ir_builder.html">tvm.script.ir_builder</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../reference/api/python/script/printer.html">tvm.script.printer</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../reference/api/python/te.html">tvm.te</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../reference/api/python/topi.html">tvm.topi</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../reference/api/python/meta_schedule.html">tvm.s_tir.meta_schedule</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../reference/api/python/rpc.html">tvm.rpc</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../reference/api/python/contrib.html">tvm.contrib</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1"><a class="reference internal" href="../reference/api/links.html">Other APIs</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">About</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1 has-children"><a class="reference internal" href="../contribute/index.html">Contributor Guide</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="../contribute/community.html">TVM Community Guidelines</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../contribute/pull_request.html">Submit a Pull Request</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../contribute/code_review.html">Code Reviews</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../contribute/committer_guide.html">Committer Guide</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../contribute/document.html">Documentation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../contribute/code_guide.html">Code Guide and Tips</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../contribute/testing.html">Testing TVM</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../contribute/git_howto.html">Git Usage Tips</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../contribute/ci.html">Using TVM’s CI</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../contribute/release_process.html">Release Process</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../contribute/error_handling.html">Error Handling Guide</a></li>
+</ul>
+</details></li>
+<li class="toctree-l1"><a class="reference internal" href="../reference/publications.html">Publications</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../reference/security.html">Security Guide</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">Index</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../genindex.html">Index</a></li>
+</ul>
+
+    </div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+  </div>
+  
+  <div id="rtd-footer-container"></div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+
+<div class="sbt-scroll-pixel-helper"></div>
+
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item"><button class="sidebar-toggle primary-toggle btn btn-sm" title="Toggle primary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <span class="fa-solid fa-bars"></span>
+</button></div>
+      
+    </div>
+  
+  
+    <div class="header-article-items__end">
+      
+        <div class="header-article-item">
+
+<div class="article-header-buttons">
+
+
+
+
+
+<div class="dropdown dropdown-source-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Source repositories">
+    <i class="fab fa-github"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="https://github.com/apache/tvm" target="_blank"
+   class="btn btn-sm btn-source-repository-button dropdown-item"
+   title="Source repository"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fab fa-github"></i>
+  </span>
+<span class="btn__text-container">Repository</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li><a href="https://github.com/apache/tvm/blob/main/docs/tirx/cuda_tile_patterns.rst?plain=1" target="_blank"
+   class="btn btn-sm btn-source-file-button dropdown-item"
+   title="Show source"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-code"></i>
+  </span>
+<span class="btn__text-container">Show source</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li><a href="https://github.com/apache/tvm/edit/main/docs/tirx/cuda_tile_patterns.rst" target="_blank"
+   class="btn btn-sm btn-source-edit-button dropdown-item"
+   title="Suggest edit"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-pencil-alt"></i>
+  </span>
+<span class="btn__text-container">Suggest edit</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li><a href="https://github.com/apache/tvm/issues/new?title=Issue%20on%20page%20%2Ftirx/cuda_tile_patterns.html&body=Your%20issue%20content%20here." target="_blank"
+   class="btn btn-sm btn-source-issues-button dropdown-item"
+   title="Open an issue"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-lightbulb"></i>
+  </span>
+<span class="btn__text-container">Open issue</span>
+</a>
+</li>
+      
+  </ul>
+</div>
+
+
+
+
+
+
+<div class="dropdown dropdown-download-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Download this page">
+    <i class="fas fa-download"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="../_sources/tirx/cuda_tile_patterns.rst" target="_blank"
+   class="btn btn-sm btn-download-source-button dropdown-item"
+   title="Download source file"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file"></i>
+  </span>
+<span class="btn__text-container">.rst</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li>
+<button onclick="window.print()"
+  class="btn btn-sm btn-download-pdf-button dropdown-item"
+  title="Print to PDF"
+  data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file-pdf"></i>
+  </span>
+<span class="btn__text-container">.pdf</span>
+</button>
+</li>
+      
+  </ul>
+</div>
+
+
+
+
+<button onclick="toggleFullScreen()"
+  class="btn btn-sm btn-fullscreen-button"
+  title="Fullscreen mode"
+  data-bs-placement="bottom" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-expand"></i>
+  </span>
+
+</button>
+
+
+
+<script>
+document.write(`
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="theme-switch fa-solid fa-sun fa-lg" data-mode="light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg" data-mode="dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"></i>
+  </button>
+`);
+</script>
+
+
+<script>
+document.write(`
+  <button class="btn btn-sm pst-navbar-icon search-button search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass fa-lg"></i>
+  </button>
+`);
+</script>
+<button class="sidebar-toggle secondary-toggle btn btn-sm" title="Toggle secondary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="fa-solid fa-list"></span>
+</button>
+</div></div>
+      
+    </div>
+  
+</div>
+</div>
+              
+              
+
+<div id="jb-print-docs-body" class="onlyprint">
+    <h1>Explicit CUDA tile patterns</h1>
+    <!-- Table of contents -->
+    <div id="print-main-content">
+        <div id="jb-print-toc">
+            
+            <div>
+                <h2> Contents </h2>
+            </div>
+            <nav aria-label="Page">
+                <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#group-repeat-and-atom-axes">Group, repeat, and atom axes</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#bit-global-load">128-bit global load</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#ldmatrix-with-interleaved-rows-and-separated-registers">ldmatrix with interleaved rows and separated registers</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#memory-and-register-instructions">Memory and register instructions</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#scalar-compositions">Scalar compositions</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#asynchronous-copy">Asynchronous copy</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#tma">TMA</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#tmem-transfers">TMEM transfers</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#shared-matrix-descriptors">Shared matrix descriptors</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#warp-mma">Warp MMA</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#tcgen05-mma">tcgen05 MMA</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#choosing-instructions">Choosing instructions</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#implementation-and-extension">Implementation and extension</a></li>
+</ul>
+            </nav>
+        </div>
+    </div>
+</div>
+
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <section id="explicit-cuda-tile-patterns">
+<h1>Explicit CUDA tile patterns<a class="headerlink" href="#explicit-cuda-tile-patterns" title="Link to this heading">#</a></h1>
+<p>Choose an instruction, prepare zero-copy operand views, then apply it:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">T</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">tile</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="n">T</span><span class="o">.</span><span class="n">ptx</span><span class="p">[</span><span class="s2">&quot;ld.global.v4.b32&quot;</span><span class="p">],</span> <span class="n">registers</span><span class="p">,</span> <span class="n">memory</span><span class="p">,</span>
+                  <span class="n">scope</span><span class="o">=</span><span class="s2">&quot;thread&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The instruction and modifiers determine the atom contract. The caller supplies
+regions with the canonical <code class="docutils literal notranslate"><span class="pre">group</span> <span class="pre">×</span> <span class="pre">repeat</span> <span class="pre">×</span> <span class="pre">atom</span></code> coordinates described
+below. Lowering checks the contract and emits one specified PTX
+instruction per repeat coordinate, in row-major repeat order. Lowering
+unrolls static repeats. It does not infer a different opcode, width, matrix
+count, transpose mode, or coordinate permutation.</p>
+<p>CUDA exposes two tile operations: <code class="docutils literal notranslate"><span class="pre">apply</span></code> for an explicitly selected PTX
+instruction and <code class="docutils literal notranslate"><span class="pre">ewise</span></code> for an explicitly supplied scalar TIRx function.
+The raw <code class="docutils literal notranslate"><span class="pre">T.ptx</span></code> namespace remains available for scalar/address operands.
+There is no automatic instruction selection or fallback to the retired CUDA
+dispatch algorithms. Trainium’s API and lowering are unchanged.</p>
+<p>This page is the contract reference. The <a class="reference internal" href="tile_ops.html"><span class="doc">Tile Operations</span></a> instruction
+guides provide complete kernels, caller views, synchronization, and numerical
+checks, organized by PTX instruction family.</p>
+<section id="group-repeat-and-atom-axes">
+<h2>Group, repeat, and atom axes<a class="headerlink" href="#group-repeat-and-atom-axes" title="Link to this heading">#</a></h2>
+<p>A thread instruction at <code class="docutils literal notranslate"><span class="pre">scope=&quot;thread&quot;</span></code> has no group prefix. At
+<code class="docutils literal notranslate"><span class="pre">scope=&quot;warp&quot;</span></code> it has a leading lane group axis; at <code class="docutils literal notranslate"><span class="pre">scope=&quot;warpgroup&quot;</span></code>
+its groups are <code class="docutils literal notranslate"><span class="pre">(warp_in_group,</span> <span class="pre">lane)</span></code>; at <code class="docutils literal notranslate"><span class="pre">scope=&quot;cta&quot;</span></code> they are
+<code class="docutils literal notranslate"><span class="pre">(warp_in_cta,</span> <span class="pre">lane)</span></code>. Extents come from the active execution scope, including
+its explicitly guarded subrange. Warp-collective instructions consume the
+lane axis inside their atom instead: their group prefix is empty at warp
+scope, one warp axis at warpgroup/CTA scope. All 32 lanes must be active.
+Cluster scope requires an explicit launch cluster and prepends its CTA axes
+in z/y/x order, omitting undeclared leading axes. A one-dimensional cluster
+therefore has <code class="docutils literal notranslate"><span class="pre">(cta_x,</span> <span class="pre">warp,</span> <span class="pre">lane)</span></code> groups for thread instructions.
+Local tensor ownership uses <code class="docutils literal notranslate"><span class="pre">cbx/cby/cbz</span></code> for these CTA coordinates.</p>
+<p>For example, 64 threads, three 128b loads per thread:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># A and R both have shape (2, 32, 3, 4).</span>
+<span class="n">registers</span> <span class="o">=</span> <span class="n">TileLayout</span><span class="p">(</span><span class="n">S</span><span class="p">[(</span><span class="mi">2</span><span class="p">,</span><span class="mi">32</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">4</span><span class="p">):(</span><span class="mi">1</span> <span class="o">@</span> <span class="n">warpid</span><span class="p">,</span><span class="mi">1</span> <span class="o">@</span> <span class="n">laneid</span><span class="p">,</span><span class="mi">8</span><span class="p">,</span><span class="mi">2</span><span class="p">)])</span>
+<span class="n">T</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">tile</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="n">T</span><span class="o">.</span><span class="n">ptx</span><span class="p">[</span><span class="s2">&quot;ld.global.v4.b32&quot;</span><span class="p">],</span> <span class="n">R</span><span class="p">,</span> <span class="n">A</span><span class="p">,</span> <span class="n">scope</span><span class="o">=</span><span class="s2">&quot;cta&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The first two coordinates bind hardware IDs, the third generates three
+unrolled calls per thread, and the last selects four words of one instruction.
+The separated register slots are legal; the four memory words must be aligned
+and contiguous. A changed opcode or modifier is always written at the call site.</p>
+<p>Views such as <code class="docutils literal notranslate"><span class="pre">sub</span></code>, <code class="docutils literal notranslate"><span class="pre">permute</span></code>, <code class="docutils literal notranslate"><span class="pre">view(dtype)</span></code>, and <code class="docutils literal notranslate"><span class="pre">rearrange</span></code> prepare
+these coordinates without moving data. A failed contract requires a different
+explicit view, caller-written preparation, or a different explicit instruction.
+It never invokes a permutation/factorization solver.</p>
+</section>
+<section id="bit-global-load">
+<h2>128-bit global load<a class="headerlink" href="#bit-global-load" title="Link to this heading">#</a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">ld.global.v4.b32</span></code>, <code class="docutils literal notranslate"><span class="pre">scope=&quot;thread&quot;</span></code>:</p>
+<ul class="simple">
+<li><p>Both regions have shape <code class="docutils literal notranslate"><span class="pre">(*repeat,</span> <span class="pre">4)</span></code> and scalar 32-bit elements.</p></li>
+<li><p>The source is global memory. For each repeat, its four words have addresses
+<code class="docutils literal notranslate"><span class="pre">base</span> <span class="pre">+</span> <span class="pre">0,</span> <span class="pre">base</span> <span class="pre">+</span> <span class="pre">1,</span> <span class="pre">base</span> <span class="pre">+</span> <span class="pre">2,</span> <span class="pre">base</span> <span class="pre">+</span> <span class="pre">3</span></code> (in words); the base is 16B aligned.</p></li>
+<li><p>The destination is four distinct registers of the executing thread. Their
+storage offsets may be separated or permuted. No thread axes are accepted.</p></li>
+<li><p>The operation copies raw bits; it performs no numeric conversion.</p></li>
+</ul>
+<p>The earlier example keeps its original float32 tensor layout:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">original</span> <span class="o">=</span> <span class="n">TileLayout</span><span class="p">(</span><span class="n">S</span><span class="p">[(</span><span class="mi">15</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="mi">2</span><span class="p">):(</span><span class="mi">4</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">60</span><span class="p">,</span> <span class="mi">2</span><span class="p">)])</span>
+<span class="n">A_std</span> <span class="o">=</span> <span class="n">A</span><span class="o">.</span><span class="n">rearrange</span><span class="p">(</span><span class="s2">&quot;i b j d -&gt; j i (d b)&quot;</span><span class="p">)</span>
+<span class="n">R_std</span> <span class="o">=</span> <span class="n">R</span><span class="o">.</span><span class="n">rearrange</span><span class="p">(</span><span class="s2">&quot;i b j d -&gt; j i (d b)&quot;</span><span class="p">)</span>
+<span class="n">T</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">tile</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="n">T</span><span class="o">.</span><span class="n">ptx</span><span class="p">[</span><span class="s2">&quot;ld.global.v4.b32&quot;</span><span class="p">],</span> <span class="n">R_std</span><span class="p">,</span> <span class="n">A_std</span><span class="p">,</span>
+                  <span class="n">scope</span><span class="o">=</span><span class="s2">&quot;thread&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">A_std</span></code> has shape <code class="docutils literal notranslate"><span class="pre">(7,15,4)</span></code> and addresses <code class="docutils literal notranslate"><span class="pre">60*j</span> <span class="pre">+</span> <span class="pre">4*i</span> <span class="pre">+</span> <span class="pre">word</span></code>.
+The repeat axes are <code class="docutils literal notranslate"><span class="pre">j</span></code> and <code class="docutils literal notranslate"><span class="pre">i</span></code>: this emits 7*15 = 105 vector loads.
+The destination may instead use original strides <code class="docutils literal notranslate"><span class="pre">(8,2,120,4)</span></code>; each
+instruction then writes slots separated by two, without a remap copy.</p>
+</section>
+<section id="ldmatrix-with-interleaved-rows-and-separated-registers">
+<h2>ldmatrix with interleaved rows and separated registers<a class="headerlink" href="#ldmatrix-with-interleaved-rows-and-separated-registers" title="Link to this heading">#</a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">ldmatrix.sync.aligned.m8n8.x2.shared.b16</span></code>, <code class="docutils literal notranslate"><span class="pre">scope=&quot;warp&quot;</span></code>:</p>
+<ul class="simple">
+<li><p>Both regions have shape <code class="docutils literal notranslate"><span class="pre">(*repeat,</span> <span class="pre">2,</span> <span class="pre">8,</span> <span class="pre">4)</span></code>. The suffix is
+<code class="docutils literal notranslate"><span class="pre">(matrix,</span> <span class="pre">row,</span> <span class="pre">word)</span></code>.</p></li>
+<li><p>Each word is a 32-bit container holding two adjacent 16-bit matrix values.
+The pattern accepts float32/int32/uint32 containers as raw bits.</p></li>
+<li><p>In shared memory, each <code class="docutils literal notranslate"><span class="pre">(matrix,row)</span></code> is four consecutive words with a
+16B-aligned start. Different rows can be separated; they need not form a
+contiguous 8x8 allocation.</p></li>
+<li><p>Destination element <code class="docutils literal notranslate"><span class="pre">(matrix,row,word)</span></code> belongs to lane <code class="docutils literal notranslate"><span class="pre">4*row+word</span></code>.
+Each lane receives two words; the register slots are selected by its layout.</p></li>
+<li><p>All 32 lanes must execute the instruction. Shared initialization and any
+preceding synchronization belong to the caller.</p></li>
+</ul>
+<p>Use the original shared shape <code class="docutils literal notranslate"><span class="pre">(16,4,2)</span></code> and strides <code class="docutils literal notranslate"><span class="pre">(8,1,128)</span></code>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">S_std</span> <span class="o">=</span> <span class="n">SM</span><span class="o">.</span><span class="n">rearrange</span><span class="p">(</span><span class="s2">&quot;(r m) w k -&gt; k m r w&quot;</span><span class="p">,</span> <span class="n">r</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span> <span class="n">m</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+<span class="n">registers</span> <span class="o">=</span> <span class="n">TileLayout</span><span class="p">(</span><span class="n">S</span><span class="p">[(</span><span class="mi">2</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">8</span><span class="p">,</span><span class="mi">4</span><span class="p">):(</span><span class="mi">8</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">4</span> <span class="o">@</span> <span class="n">laneid</span><span class="p">,</span><span class="mi">1</span> <span class="o">@</span> <span class="n">laneid</span><span class="p">)])</span>
+<span class="c1"># R is declared over 12 caller-allocated words per thread, using registers.</span>
+<span class="n">T</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">tile</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="n">T</span><span class="o">.</span><span class="n">ptx</span><span class="p">[</span><span class="s2">&quot;ldmatrix.sync.aligned.m8n8.x2.shared.b16&quot;</span><span class="p">],</span>
+                  <span class="n">R</span><span class="p">,</span> <span class="n">S_std</span><span class="p">,</span> <span class="n">scope</span><span class="o">=</span><span class="s2">&quot;warp&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">S_std[k,m,r,w]</span> <span class="pre">=</span> <span class="pre">SM[2*r+m,w,k]</span></code>. Its strides are <code class="docutils literal notranslate"><span class="pre">(128,8,16,1)</span></code>:
+first matrix = even original rows; second matrix = odd original rows.
+For each <code class="docutils literal notranslate"><span class="pre">k</span></code>, lanes 0..7 provide the eight matrix-0 row addresses, lanes
+8..15 provide the eight matrix-1 row addresses, and lanes 16..31 duplicate
+those valid addresses. These address providers are distinct from result owners.</p>
+<p>For lane <code class="docutils literal notranslate"><span class="pre">l</span></code>, the complete output mapping is:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">R_raw</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>  <span class="o">=</span> <span class="n">SM</span><span class="p">[</span><span class="mi">2</span><span class="o">*</span><span class="p">(</span><span class="n">l</span><span class="o">//</span><span class="mi">4</span><span class="p">),</span>   <span class="n">l</span><span class="o">%</span><span class="mi">4</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span>
+<span class="n">R_raw</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>  <span class="o">=</span> <span class="n">SM</span><span class="p">[</span><span class="mi">2</span><span class="o">*</span><span class="p">(</span><span class="n">l</span><span class="o">//</span><span class="mi">4</span><span class="p">)</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> <span class="n">l</span><span class="o">%</span><span class="mi">4</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span>
+<span class="n">R_raw</span><span class="p">[</span><span class="mi">8</span><span class="p">]</span>  <span class="o">=</span> <span class="n">SM</span><span class="p">[</span><span class="mi">2</span><span class="o">*</span><span class="p">(</span><span class="n">l</span><span class="o">//</span><span class="mi">4</span><span class="p">),</span>   <span class="n">l</span><span class="o">%</span><span class="mi">4</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span>
+<span class="n">R_raw</span><span class="p">[</span><span class="mi">10</span><span class="p">]</span> <span class="o">=</span> <span class="n">SM</span><span class="p">[</span><span class="mi">2</span><span class="o">*</span><span class="p">(</span><span class="n">l</span><span class="o">//</span><span class="mi">4</span><span class="p">)</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> <span class="n">l</span><span class="o">%</span><span class="mi">4</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span>
+</pre></div>
+</div>
+<p>There are two repeat coordinates, <code class="docutils literal notranslate"><span class="pre">k=0,1</span></code>, so this is exactly two <code class="docutils literal notranslate"><span class="pre">.x2</span></code>
+instructions. Slots 1,3,4,5,6,7,9,11 remain untouched. Lowering binds a
+physical view of the caller’s registers and passes these slots directly as
+PTX output operands; it allocates no intermediate tile.</p>
+</section>
+<section id="memory-and-register-instructions">
+<h2>Memory and register instructions<a class="headerlink" href="#memory-and-register-instructions" title="Link to this heading">#</a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">ld</span></code> / <code class="docutils literal notranslate"><span class="pre">st</span></code> use <code class="docutils literal notranslate"><span class="pre">(*group,*repeat,word)</span></code>, where <code class="docutils literal notranslate"><span class="pre">word</span></code> has the vector
+length selected in the opcode (one for scalar instructions). Both operands use
+the written PTX storage width; use an explicit dtype view for packed words.
+Global, shared, and local address spaces are explicit. Cache operators,
+eviction policies, prefetch widths, and vector widths stay in the PTX spelling.
+<code class="docutils literal notranslate"><span class="pre">pred</span></code> and an opcode’s optional <code class="docutils literal notranslate"><span class="pre">cache_policy</span></code> are ordinary runtime operands.
+A predicated load can request <code class="docutils literal notranslate"><span class="pre">preserve_dst=True</span></code>.</p>
+<p><code class="docutils literal notranslate"><span class="pre">ldmatrix</span></code> / <code class="docutils literal notranslate"><span class="pre">stmatrix</span></code> support m8n8.b16 with x1/x2/x4 and optional
+<code class="docutils literal notranslate"><span class="pre">.trans</span></code>. The canonical suffix is <code class="docutils literal notranslate"><span class="pre">(matrix,8,4)</span></code> in b32 containers.
+For <code class="docutils literal notranslate"><span class="pre">.trans</span></code>, the register image is the transpose of each shared b16 matrix;
+its lane ownership is still <code class="docutils literal notranslate"><span class="pre">4*row+word</span></code>. The shared address provider and
+register owner are different maps.</p>
+<p>Register instructions (mov, add/sub/mul/div, max/min, fma, cvt, sqrt, ex2, lg2,
+rcp, abs, neg) end each tensor operand with the native register-group length.
+A scalar arithmetic operand therefore uses suffix <code class="docutils literal notranslate"><span class="pre">(1,)</span></code>. A read-only scalar
+expression broadcasts over repeats. Packed <code class="docutils literal notranslate"><span class="pre">f16x2</span></code> / <code class="docutils literal notranslate"><span class="pre">bf16x2</span></code> / <code class="docutils literal notranslate"><span class="pre">f32x2</span></code>
+use b32 / b32 / b64 storage views, respectively. Packing is explicit; lowering
+never chooses packed arithmetic because a layout happens to permit it.</p>
+</section>
+<section id="scalar-compositions">
+<h2>Scalar compositions<a class="headerlink" href="#scalar-compositions" title="Link to this heading">#</a></h2>
+<p>Define exactly the scalar expression to apply:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nd">@T</span><span class="o">.</span><span class="n">function</span><span class="p">(</span><span class="n">private</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">silu_affine</span><span class="p">(</span><span class="n">x</span><span class="p">:</span> <span class="n">T</span><span class="o">.</span><span class="n">float32</span><span class="p">,</span> <span class="n">scale</span><span class="p">:</span> <span class="n">T</span><span class="o">.</span><span class="n">float32</span><span class="p">,</span> <span class="n">bias</span><span class="p">:</span> <span class="n">T</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">T</span><span class="o">.</span><span class="n">float32</span><span class="p">:</span>
+    <span class="n">y</span> <span class="o">=</span> <span class="n">x</span> <span class="o">/</span> <span class="p">(</span><span class="n">T</span><span class="o">.</span><span class="n">float32</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="o">+</span> <span class="n">T</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">x</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">y</span> <span class="o">*</span> <span class="n">scale</span> <span class="o">+</span> <span class="n">bias</span>
+
+<span class="n">T</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">tile</span><span class="o">.</span><span class="n">ewise</span><span class="p">(</span><span class="n">silu_affine</span><span class="p">,</span> <span class="n">R</span><span class="p">,</span> <span class="n">R</span><span class="p">,</span> <span class="n">T</span><span class="o">.</span><span class="n">float32</span><span class="p">(</span><span class="mi">2</span><span class="p">),</span> <span class="n">T</span><span class="o">.</span><span class="n">float32</span><span class="p">(</span><span class="mi">1</span><span class="p">),</span> <span class="n">scope</span><span class="o">=</span><span class="s2">&quot;cta&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The atom is one scalar element. Tensor operands share the group/repeat shape;
+scalar inputs broadcast. A tensor broadcast is an explicit zero-stride view.
+Types must match the function parameters and result. The scalar function may
+contain scalar bindings and returns, including conditional returns. Its typed
+expression is serialized as <code class="docutils literal notranslate"><span class="pre">LambdaExpr</span></code> and inlined at each register store.
+No shared/global staging, synchronization, or packed-vector selection occurs.
+Shared-memory compositions explicitly load into registers, run <code class="docutils literal notranslate"><span class="pre">ewise</span></code>, and
+store back, with caller-owned synchronization.</p>
+</section>
+<section id="asynchronous-copy">
+<h2>Asynchronous copy<a class="headerlink" href="#asynchronous-copy" title="Link to this heading">#</a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">cp.async.{ca,cg}.shared.global</span></code> uses <code class="docutils literal notranslate"><span class="pre">(*group,*repeat,element)</span></code>.
+<code class="docutils literal notranslate"><span class="pre">chunk_bytes=4/8/16</span></code> fixes the last axis’s byte count; .cg requires 16 bytes.
+The corresponding source and destination chunks are contiguous and naturally
+aligned. <code class="docutils literal notranslate"><span class="pre">src_size</span></code> or <code class="docutils literal notranslate"><span class="pre">ignore_src</span></code> uses the hardware’s zero-fill operand;
+<code class="docutils literal notranslate"><span class="pre">pred</span></code> gates execution and has different semantics. Commit and wait are
+caller instructions.</p>
+<p><code class="docutils literal notranslate"><span class="pre">cp.async.bulk.shared::cluster.shared::cta.mbarrier::complete_tx::bytes</span></code>
+uses the same suffix with positive <code class="docutils literal notranslate"><span class="pre">chunk_bytes</span></code> divisible by 16. <code class="docutils literal notranslate"><span class="pre">mbar</span></code>
+and <code class="docutils literal notranslate"><span class="pre">remote_cta_id</span></code> are required. Source, destination, and barrier arguments
+name local shared addresses; lowering maps the destination and barrier with
+<code class="docutils literal notranslate"><span class="pre">mapa</span></code> before issuing the requested bulk copy. Election, barrier initialization,
+transaction accounting, and cluster synchronization belong to the caller.</p>
+</section>
+<section id="tma">
+<h2>TMA<a class="headerlink" href="#tma" title="Link to this heading">#</a></h2>
+<p>Select the rank, direction, tile/gather4/scatter4 mode, reduction operator,
+multicast and cache qualifiers in the PTX opcode. The global operand is the
+rectangular tensor view described by the TensorMap. Without interleave its
+rank is exactly the instruction rank; shape, strides, starting region and
+dtype define the map. Alternatively, pass an ordinary address expression for
+a descriptor encoded by the caller. Its fields must agree with the pattern’s
+box, format and swizzle; the dispatcher does not inspect opaque descriptors.</p>
+<p>Required keyword operands are <code class="docutils literal notranslate"><span class="pre">box</span></code> and <code class="docutils literal notranslate"><span class="pre">coords</span></code>, both in outer-to-inner
+logical axis order. The shared operand is <code class="docutils literal notranslate"><span class="pre">(*group,*repeat,*box_image)</span></code>.
+Every atom’s unswizzled origin is 128-byte aligned, including unswizzled boxes.
+Swizzled allocation bases are aligned to the full swizzle period; a subregion
+uses its unswizzled origin so that the instruction applies its phase once.
+<code class="docutils literal notranslate"><span class="pre">coord_steps</span></code> has one coordinate vector per group/repeat axis. Lowering adds
+these explicit steps to <code class="docutils literal notranslate"><span class="pre">coords</span></code>, encodes the descriptor on the host, and
+issues one instruction at each repeat. It does not fold dimensions, promote
+dtypes, infer a box, prefetch a descriptor, select a source, or elect a thread.
+Use ordinary control flow, or select explicitly encoded descriptor addresses,
+to choose between sources. Prefetch is an explicit <code class="docutils literal notranslate"><span class="pre">T.ptx.prefetch.tensormap</span></code>.</p>
+<p>Descriptor operands are <code class="docutils literal notranslate"><span class="pre">format</span></code> (storage dtype by default, or <code class="docutils literal notranslate"><span class="pre">tf32</span></code>),
+<code class="docutils literal notranslate"><span class="pre">swizzle=0/1/2/3</span></code>, <code class="docutils literal notranslate"><span class="pre">l2_promotion=0</span></code> and <code class="docutils literal notranslate"><span class="pre">oob_fill=0</span></code>. <code class="docutils literal notranslate"><span class="pre">element_strides</span></code>
+has one entry in 1..8 per descriptor dimension; without interleave the inner
+entry is one. The non-interleaved shared image has extents
+<code class="docutils literal notranslate"><span class="pre">ceil(box[i]/element_strides[i])</span></code> and compact storage before swizzling.
+Symbolic global dimensions and outer strides pass to runtime descriptor
+encoding; statically invalid values are rejected when lowering. A load requires
+<code class="docutils literal notranslate"><span class="pre">mbar</span></code>; a multicast also requires <code class="docutils literal notranslate"><span class="pre">cta_mask</span></code>; a cache-hint form requires
+<code class="docutils literal notranslate"><span class="pre">cache_policy</span></code>. All are Call arguments and participate in substitution.</p>
+<p>Gather4/scatter4 use a 2D descriptor, <code class="docutils literal notranslate"><span class="pre">box=(1,width)</span></code>, a shared atom of
+<code class="docutils literal notranslate"><span class="pre">(4,width)</span></code>, and four explicit row coordinates in <code class="docutils literal notranslate"><span class="pre">gather4</span></code>. Dynamic row
+coordinates are allowed. No row-selection algorithm is hidden in lowering.</p>
+<p><code class="docutils literal notranslate"><span class="pre">format=&quot;float4_e2m1fn&quot;</span></code> selects CUDA’s <code class="docutils literal notranslate"><span class="pre">16U4_ALIGN16B</span></code> representation.
+Its inner global dimension is a multiple of 128, its inner box is 128, and
+the global base and outer byte strides are 32-byte aligned. Each sixteen
+nibbles occupy the low eight bytes of a sixteen-byte shared block. The other
+eight bytes are undefined padding. The mbarrier counts <strong>payload bytes</strong>,
+not padding. This representation supports loads with swizzle 0 or 3; gather4
+uses the same packed shared image.</p>
+<p>For <code class="docutils literal notranslate"><span class="pre">interleave=1</span></code> (16B) or <code class="docutils literal notranslate"><span class="pre">2</span></code> (32B), an opcode of rank 3..5 takes a
+global view <code class="docutils literal notranslate"><span class="pre">(N,C_slices,*spatial,Ci)</span></code>. <code class="docutils literal notranslate"><span class="pre">Ci</span></code> is the number of scalar
+elements in one 16B/32B slice. The descriptor omits this last, implicit axis;
+<code class="docutils literal notranslate"><span class="pre">box</span></code>, <code class="docutils literal notranslate"><span class="pre">coords</span></code> and <code class="docutils literal notranslate"><span class="pre">coord_steps</span></code> have the opcode rank. The W stride
+is exactly one slice; Ci is contiguous. Other strides are explicit and can
+include padding. Mode 2 requires swizzle 1 and 32-byte global alignment.</p>
+<p>One interleaved tiled issue visits <strong>one C slice</strong>, selected by <code class="docutils literal notranslate"><span class="pre">coords[1]</span></code>.
+The C box and traversal-stride fields do not iterate additional slices. Its
+shared image is <code class="docutils literal notranslate"><span class="pre">(ceil(boxN/stepN),1,*ceil(boxSpatial/stepSpatial),Ci)</span></code>
+before swizzling. To visit several channel slices, add a repeat axis and a
+coordinate step in C. For example, rank-3 uint16 with interleave 2 uses
+<code class="docutils literal notranslate"><span class="pre">Ci=16</span></code>; <code class="docutils literal notranslate"><span class="pre">box=(1,1,8)</span></code> copies a <code class="docutils literal notranslate"><span class="pre">(1,1,8,16)</span></code> shared atom. A shared
+operand of shape <code class="docutils literal notranslate"><span class="pre">(3,1,1,8,16)</span></code> and <code class="docutils literal notranslate"><span class="pre">coord_steps=((0,1,0),)</span></code> issues three
+copies for three successive channel slices. Gather4/scatter4 do not interleave.</p>
+</section>
+<section id="tmem-transfers">
+<h2>TMEM transfers<a class="headerlink" href="#tmem-transfers" title="Link to this heading">#</a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">tcgen05.ld/st.sync.aligned.&lt;shape&gt;.xN.b32</span></code> use suffix <code class="docutils literal notranslate"><span class="pre">(row,column)</span></code>
+in b32 storage on both sides. Each atom is a warp instruction. The four
+supported shapes and register images (lane <code class="docutils literal notranslate"><span class="pre">l</span></code>, register <code class="docutils literal notranslate"><span class="pre">r</span></code>) are:</p>
+<div class="pst-scrollable-table-container"><table class="table">
+<thead>
+<tr class="row-odd"><th class="head"><p>Shape</p></th>
+<th class="head"><p>Atom shape</p></th>
+<th class="head"><p>Register coordinate (row, column)</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>32x32b</p></td>
+<td><p>(32,N)</p></td>
+<td><p>(l,r)</p></td>
+</tr>
+<tr class="row-odd"><td><p>16x64b</p></td>
+<td><p>(16,2N)</p></td>
+<td><p>(l//4+8*(l%2), l//2%2+2*r)</p></td>
+</tr>
+<tr class="row-even"><td><p>16x128b</p></td>
+<td><p>(16,4N)</p></td>
+<td><p>(l//4+8*(r%2), l%4+4*(r//2))</p></td>
+</tr>
+<tr class="row-odd"><td><p>16x256b</p></td>
+<td><p>(16,8N)</p></td>
+<td><p>(l//4+8*(r//2%2), r%2+2*(l%4)+8*(r//4))</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>TMEM coordinates are consecutive rows/columns in the executing warp’s 32-lane
+slab. Explicit group axes distribute atoms across warps. Register storage can
+be strided.</p>
+<p><code class="docutils literal notranslate"><span class="pre">.pack::16b</span></code> / <code class="docutils literal notranslate"><span class="pre">.unpack::16b</span></code> keep the same b32 register image. Their TMEM
+operand instead has suffix <code class="docutils literal notranslate"><span class="pre">(row,column,half)</span></code> with <code class="docutils literal notranslate"><span class="pre">half=2</span></code> and a 16-bit
+dtype. The two halves of register word <code class="docutils literal notranslate"><span class="pre">(row,column)</span></code> correspond to the low
+16 bits of TMEM cells <code class="docutils literal notranslate"><span class="pre">(row,2*column)</span></code> and <code class="docutils literal notranslate"><span class="pre">(row,2*column+1)</span></code>. In 16-bit
+layout units this means TCol strides four for <code class="docutils literal notranslate"><span class="pre">column</span></code> and two for <code class="docutils literal notranslate"><span class="pre">half</span></code>.
+This is different from reinterpreting two adjacent 16-bit elements in one
+dense b32 cell. The hardware performs the packing; lowering adds no conversion.</p>
+<p><code class="docutils literal notranslate"><span class="pre">.16x32bx2</span></code> has register suffix <code class="docutils literal notranslate"><span class="pre">(access,row,column)=(2,16,N)</span></code>. Lane <code class="docutils literal notranslate"><span class="pre">l</span></code>
+owns <code class="docutils literal notranslate"><span class="pre">(l//16,l%16,r)</span></code> for register <code class="docutils literal notranslate"><span class="pre">r</span></code>. Its two TMEM access regions are
+explicit operands, each with suffix <code class="docutils literal notranslate"><span class="pre">(16,N)</span></code> (or <code class="docutils literal notranslate"><span class="pre">(16,N,2)</span></code> for packing):</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">T</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">tile</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span>
+    <span class="n">T</span><span class="o">.</span><span class="n">ptx</span><span class="p">[</span><span class="s2">&quot;tcgen05.ld.sync.aligned.16x32bx2.x4.b32&quot;</span><span class="p">],</span>
+    <span class="n">registers</span><span class="p">,</span> <span class="n">memory</span><span class="p">[:,</span> <span class="p">:</span><span class="mi">16</span><span class="p">,</span> <span class="p">:</span><span class="mi">4</span><span class="p">],</span> <span class="n">memory</span><span class="p">[:,</span> <span class="mi">16</span><span class="p">:</span><span class="mi">32</span><span class="p">,</span> <span class="mi">8</span><span class="p">:</span><span class="mi">12</span><span class="p">],</span>
+    <span class="n">imm_half_splitoff</span><span class="o">=</span><span class="p">(</span><span class="mi">16</span> <span class="o">&lt;&lt;</span> <span class="mi">16</span><span class="p">)</span> <span class="o">+</span> <span class="mi">8</span><span class="p">,</span> <span class="n">scope</span><span class="o">=</span><span class="s2">&quot;warpgroup&quot;</span><span class="p">,</span>
+<span class="p">)</span>
+</pre></div>
+</div>
+<p>For a store the operand order is <code class="docutils literal notranslate"><span class="pre">memory_low,</span> <span class="pre">memory_high,</span> <span class="pre">registers</span></code>.
+Both regions share the same backing TMEM tensor. The second region’s encoded
+base address must equal the first plus <code class="docutils literal notranslate"><span class="pre">imm_half_splitoff</span></code>. There is no
+implicit sixteen-row offset for the second access. The immediate can select
+different rows, columns, or both, within the executing warp’s TMEM partition.
+Each repeat emits exactly one instruction, including both half-accesses.
+Wait, fence, allocation and deallocation instructions remain at the call site.</p>
+<p><code class="docutils literal notranslate"><span class="pre">tcgen05.cp</span></code> uses <code class="docutils literal notranslate"><span class="pre">(row,b32_word)</span></code> according to its explicit shape. Multicast
+replicas must exactly match the written qualifier: warpx4 adds four replicas
+32 lanes apart, 02_13 adds two 64 lanes apart, 01_23 adds two 32 lanes apart.
+4x256b maps its four rows to TLanes 0/32/64/96; the other shapes follow their
+named contiguous slabs (01_23 uses slabs 0 and 2).</p>
+<p>Native decompression uses the same b32-word footprint and explicit qualifiers:
+<code class="docutils literal notranslate"><span class="pre">.b8x16.b4x16_p64</span></code> or <code class="docutils literal notranslate"><span class="pre">.b8x16.b6x16_p32</span></code>. Each 16-byte source block holds
+sixteen packed 4-bit or 6-bit values followed by eight or four bytes of padding,
+respectively. The destination holds sixteen bytes: the 4-bit values gain two
+low zero bits, while the 6-bit values gain two high zero bits. A 256-bit row
+contains two such blocks. These are raw packed-word views, not sixteen
+ordinary byte elements on the source side. Each repeat still emits one cp;
+there is no software unpacking or implicit dtype conversion.</p>
+</section>
+<section id="shared-matrix-descriptors">
+<h2>Shared matrix descriptors<a class="headerlink" href="#shared-matrix-descriptors" title="Link to this heading">#</a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">tcgen05.cp</span></code> takes <code class="docutils literal notranslate"><span class="pre">ldo_bytes</span></code>, <code class="docutils literal notranslate"><span class="pre">sdo_bytes</span></code> and <code class="docutils literal notranslate"><span class="pre">swizzle</span></code>.
+MMA takes <code class="docutils literal notranslate"><span class="pre">a_descriptor=(ldo_bytes,sdo_bytes,swizzle)</span></code> and the analogous B
+operand. These are explicit hardware descriptor fields, not tuning hints.
+They are mechanically encoded, with no layout search.</p>
+<p>For <code class="docutils literal notranslate"><span class="pre">tcgen05.cp</span></code>, an 8-row group has row byte pitch <code class="docutils literal notranslate"><span class="pre">16</span> <span class="pre">&lt;&lt;</span> <span class="pre">swizzle</span></code>.
+Consecutive row groups are separated by <code class="docutils literal notranslate"><span class="pre">sdo_bytes</span></code>. Without swizzling,
+16-byte chunks within a row are separated by <code class="docutils literal notranslate"><span class="pre">ldo_bytes</span></code>. With swizzling,
+words are contiguous before swizzling and hardware ignores LDO; changing
+that field does not make gapped words legal.</p>
+<p>For MMA, <code class="docutils literal notranslate"><span class="pre">row</span></code> means M/N in K-major order and K in MN-major order. The
+contiguous coordinate advances in units of the operand dtype. Its low bits
+occupy a <code class="docutils literal notranslate"><span class="pre">16</span> <span class="pre">&lt;&lt;</span> <span class="pre">swizzle</span></code> byte row for modes 0..3. The offsets for each subsequent 8-row
+group and each subsequent contiguous chunk are:</p>
+<div class="pst-scrollable-table-container"><table class="table" id="id1">
+<caption><span class="caption-text">MMA descriptor strides in bytes</span><a class="headerlink" href="#id1" title="Link to this table">#</a></caption>
+<thead>
+<tr class="row-odd"><th class="head"><p>Mode</p></th>
+<th class="head"><p>Next 8-row group</p></th>
+<th class="head"><p>Next contiguous chunk</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>K-major</p></td>
+<td><p>SDO</p></td>
+<td><p>LDO (unswizzled; swizzled instruction atoms fit within one row)</p></td>
+</tr>
+<tr class="row-odd"><td><p>MN-major, swizzled</p></td>
+<td><p>SDO</p></td>
+<td><p>LDO</p></td>
+</tr>
+<tr class="row-even"><td><p>MN-major, unswizzled</p></td>
+<td><p>LDO</p></td>
+<td><p>SDO</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>MMA mode <code class="docutils literal notranslate"><span class="pre">swizzle=4</span></code> is the distinct 128B span / 32B atomicity format
+for 32-bit MN-major operands. It has 128-byte rows and groups <strong>four</strong> K rows
+per SDO step. Consecutive 128-byte M/N chunks use LDO. Its byte permutation
+is <code class="docutils literal notranslate"><span class="pre">offset</span> <span class="pre">^</span> <span class="pre">((offset</span> <span class="pre">&gt;&gt;</span> <span class="pre">2)</span> <span class="pre">&amp;</span> <span class="pre">96)</span></code> with a 512-byte period, unlike mode 3’s
+<code class="docutils literal notranslate"><span class="pre">offset</span> <span class="pre">^</span> <span class="pre">((offset</span> <span class="pre">&gt;&gt;</span> <span class="pre">3)</span> <span class="pre">&amp;</span> <span class="pre">112)</span></code>. The mode is explicit in the descriptor;
+it is never selected from a tensor layout. The same TF32 format in K-major
+order uses modes 0..3.</p>
+<p>This distinction follows PTX’s canonical shared layouts; in particular,
+unswizzled MN-major exchanges the descriptor fields’ roles. The selected
+swizzle permutes the resulting physical address. Patterns check this walk
+against the supplied view, including its start and element offset.
+Descriptor origins must be 16B aligned; a swizzled backing allocation must
+align to its full period (256/512/1024 bytes). The descriptor encodes the
+unswizzled start address; hardware applies the permutation to that start and
+the subsequent accesses. In particular, cp may start in the middle of a
+swizzle atom if its entire address walk matches the requested region.
+Descriptor base-offset and absolute-LDO modes are not inferred.
+Allocate a complete descriptor storage block even for a
+partial logical atom; in particular, a 4x256b copy still needs an 8-row shared
+backing block. The logical region may contain only the four copied rows.</p>
+</section>
+<section id="warp-mma">
+<h2>Warp MMA<a class="headerlink" href="#warp-mma" title="Link to this heading">#</a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">mma.sync.aligned.m16n8k{8,16}.row.col.f32.{f16,bf16}.{f16,bf16}.f32</span></code>
+uses these canonical operands, after optional group and batch prefixes:</p>
+<ul class="simple">
+<li><p>D/C: <code class="docutils literal notranslate"><span class="pre">(M_repeat,N_repeat,16,8)</span></code> in f32.</p></li>
+<li><p>A: <code class="docutils literal notranslate"><span class="pre">(M_repeat,K_repeat,16,K/2)</span></code> in b32 words packing two K elements.</p></li>
+<li><p>B: <code class="docutils literal notranslate"><span class="pre">(N_repeat,K_repeat,8,K/2)</span></code> in the same representation.</p></li>
+</ul>
+<p>Lane <code class="docutils literal notranslate"><span class="pre">l</span></code> owns A word <code class="docutils literal notranslate"><span class="pre">(l//4+8*(r%2),</span> <span class="pre">l%4+4*(r//2))</span></code>, B word
+<code class="docutils literal notranslate"><span class="pre">(l//4,l%4+4*r)</span></code>, and D/C element <code class="docutils literal notranslate"><span class="pre">(l//4+8*(r//2),2*(l%4)+r%2)</span></code>.
+Repeat order is batch, M, N, K. The first K step uses C (tensor or scalar
+broadcast); later steps use D. Alpha/beta preparation and logical transpose
+views are caller code.</p>
+</section>
+<section id="tcgen05-mma">
+<h2>tcgen05 MMA<a class="headerlink" href="#tcgen05-mma" title="Link to this heading">#</a></h2>
+<p>Select dense, .ws, or block_scale and CTA group in the opcode. Specify
+<code class="docutils literal notranslate"><span class="pre">instruction_shape=(M,N,K)</span></code>; M is the CTA-group total. Per-CTA canonical
+suffixes after group/batch axes are:</p>
+<ul class="simple">
+<li><p>D: <code class="docutils literal notranslate"><span class="pre">(M_repeat,N_repeat,M/cta_group,N)</span></code>.</p></li>
+<li><p>A: <code class="docutils literal notranslate"><span class="pre">(M_repeat,K_repeat,M/cta_group,K)</span></code>.</p></li>
+<li><p>B: <code class="docutils literal notranslate"><span class="pre">(N_repeat,K_repeat,N/cta_group,K)</span></code>.</p></li>
+<li><p>Block scale adds SFA/SFB with the corresponding A/B repeat axes and atom
+<code class="docutils literal notranslate"><span class="pre">(M/cta_group,scale_vec)</span></code> / <code class="docutils literal notranslate"><span class="pre">(N,scale_vec)</span></code>. SFB contains the
+full instruction N range in each CTA, including two-CTA operations.</p></li>
+</ul>
+<p>A may be shared or TMEM; B is shared; D and scales are TMEM. D uses
+16-bit or 32-bit accumulation storage as required by the selected format.
+Each accumulator occupies one b32 TMEM cell; f16 occupies its low half
+(<code class="docutils literal notranslate"><span class="pre">TCol</span></code> stride two in f16 element units). A-in-TMEM remains packed. <code class="docutils literal notranslate"><span class="pre">a_major</span></code> and
+<code class="docutils literal notranslate"><span class="pre">b_major</span></code> explicitly select <code class="docutils literal notranslate"><span class="pre">&quot;k&quot;</span></code> (default) or <code class="docutils literal notranslate"><span class="pre">&quot;mn&quot;</span></code>. Storage formats
+come from the tensor dtype unless <code class="docutils literal notranslate"><span class="pre">a_format</span></code> / <code class="docutils literal notranslate"><span class="pre">b_format</span></code> is supplied
+(for example, <code class="docutils literal notranslate"><span class="pre">tf32</span></code> over f32 storage). <code class="docutils literal notranslate"><span class="pre">accum=False</span></code> zeros the first K
+step’s accumulator; later K steps accumulate. Negation, saturation, output-lane
+masks, .ws zero-column mask, and <code class="docutils literal notranslate"><span class="pre">pred</span></code> are explicit operands.</p>
+<p>The MMA TMEM datapath follows <code class="docutils literal notranslate"><span class="pre">tmem_mma_operand_layout</span></code> in
+<code class="docutils literal notranslate"><span class="pre">tvm.backend.cuda.layout</span></code> for the chosen instruction shape and mode.
+Weight-stationary M=128 uses Layout D, like non-.ws M=128.
+Weight-stationary M=64 A-in-TMEM includes an explicit leading bank axis of
+size two. Scale rows use lane <code class="docutils literal notranslate"><span class="pre">row%32</span></code>, byte-column <code class="docutils literal notranslate"><span class="pre">4*(row//32)+sf</span></code> and
+four 32-lane replicas. The scale ID is encoded from each scale tensor’s own
+byte-column origin. Preparation, CTA election, fences, commit and wait remain
+caller-owned. Layouts never select .ws or a different M/N/K instruction shape.</p>
+<p>Splitting an M64 .ws N128 operation into two N64 instructions changes the
+bank boundary inside each instruction from 64 columns to 32. The caller must
+account for this: <code class="docutils literal notranslate"><span class="pre">test_tcgen05_mma_ws_split_n.py</span></code> preserves the original
+banked A and packed C, explicitly stages B in each instruction’s column order,
+and permutes the C view. Simply cutting B and C into consecutive N64 logical
+slices does not preserve that operation.</p>
+</section>
+<section id="choosing-instructions">
+<h2>Choosing instructions<a class="headerlink" href="#choosing-instructions" title="Link to this heading">#</a></h2>
+<p>Choose each instruction and its canonical view at the call site:</p>
+<div class="pst-scrollable-table-container"><table class="table" id="id2">
+<caption><span class="caption-text">Instruction choices</span><a class="headerlink" href="#id2" title="Link to this table">#</a></caption>
+<colgroup>
+<col style="width: 25.0%" />
+<col style="width: 75.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Operation</p></th>
+<th class="head"><p>Instruction or composition</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>ld/st, register copy</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">apply</span></code> with a written ld/st width or mov opcode.</p></td>
+</tr>
+<tr class="row-odd"><td><p>ldmatrix/stmatrix</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">apply</span></code> with matrix count and transpose qualifier in the opcode.</p></td>
+</tr>
+<tr class="row-even"><td><p>Scalar/packed arithmetic and casts</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">apply</span></code> with the exact arithmetic/cvt form and native register representation.</p></td>
+</tr>
+<tr class="row-odd"><td><p>exp, silu, scale/bias combinations</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">ewise</span></code> with the caller’s scalar TIRx function and explicit constants.</p></td>
+</tr>
+<tr class="row-even"><td><p>Arithmetic on shared memory</p></td>
+<td><p>Explicit shared load, register <code class="docutils literal notranslate"><span class="pre">apply</span></code>/<code class="docutils literal notranslate"><span class="pre">ewise</span></code>, then shared store.</p></td>
+</tr>
+<tr class="row-odd"><td><p>cp.async, DSMEM, TMA</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">apply</span></code> with explicit chunk/box/coordinates and runtime completion operands.</p></td>
+</tr>
+<tr class="row-even"><td><p>tcgen05.ld/st/cp</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">apply</span></code> with explicit shape, repeat count and multicast qualifiers.</p></td>
+</tr>
+<tr class="row-odd"><td><p>mma/tcgen05.mma</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">apply</span></code> with explicit matrix mode, canonical M/N/K repeats and descriptors.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>Keep barriers, thread election, packing, scale-factor preparation and pipeline
+scheduling in caller code. Changing a view changes only logical coordinates;
+when the desired physical arrangement requires a copy, write that copy
+explicitly. Unsupported hardware modes remain available through scalar
+<code class="docutils literal notranslate"><span class="pre">T.ptx</span></code> calls and can acquire their own documented pattern separately.</p>
+</section>
+<section id="implementation-and-extension">
+<h2>Implementation and extension<a class="headerlink" href="#implementation-and-extension" title="Link to this heading">#</a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">python/tvm/backend/cuda/tile/patterns/</span></code> has one module per fixed instruction
+family. <code class="docutils literal notranslate"><span class="pre">common.py</span></code> evaluates canonical coordinates, validates group/repeat
+shapes and physical storage, and emits repeat loops. <code class="docutils literal notranslate"><span class="pre">descriptors.py</span></code> only
+encodes/checks explicit hardware fields. There are no imports of retired
+CUDA dispatch implementations.</p>
+<p>To add a pattern:</p>
+<ol class="arabic simple">
+<li><p>Define its canonical operand suffixes, ownership and physical address walk,
+all semantic qualifiers, and required caller preparation in this document.</p></li>
+<li><p>Resolve the exact instruction through <code class="docutils literal notranslate"><span class="pre">ptx.instruction_forms</span></code>. Reuse the
+existing PTX table for legality and native operand emission.</p></li>
+<li><p>Use <code class="docutils literal notranslate"><span class="pre">Context</span></code> and <code class="docutils literal notranslate"><span class="pre">Region</span></code> to check the supplied views at those fixed
+coordinates. Reject mismatches; do not search for another layout or opcode.</p></li>
+<li><p>Emit one selected instruction inside <code class="docutils literal notranslate"><span class="pre">Context.finish</span></code>. Put algorithms,
+packing, synchronization and thread election at the call site.</p></li>
+<li><p>Add positive/negative contracts, script/JSON roundtrips, exact PTX spelling
+and issue-count checks, and GPU results reconstructed independently from
+the documented hardware mapping.</p></li>
+</ol>
+<p>The common IR is <code class="docutils literal notranslate"><span class="pre">Call(opcode,</span> <span class="pre">operands,</span> <span class="pre">parameters)</span></code> with only execution
+scope in <code class="docutils literal notranslate"><span class="pre">ScopeAttrs</span></code>. Runtime and static descriptor parameters both live in
+ordinary arguments. <code class="docutils literal notranslate"><span class="pre">ewise</span></code> stores its typed scalar body as <code class="docutils literal notranslate"><span class="pre">LambdaExpr</span></code>.
+No process-local Python callable survives serialization.</p>
+<p>Region extents are positive static integers. Starts may be symbolic when their
+bounds and alignment can be proved. General physical-equivalence discovery is
+outside the contract. Gapped allocation covers the layout’s physical span,
+including the address range introduced by a composed swizzle.</p>
+</section>
+</section>
+
+
+                </article>
+              
+
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="tile_ops.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">Tile Operations</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="tile_ops/ld_st.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">ld / st</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <div class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+  <div class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> Contents
+  </div>
+  <nav class="bd-toc-nav page-toc">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#group-repeat-and-atom-axes">Group, repeat, and atom axes</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#bit-global-load">128-bit global load</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#ldmatrix-with-interleaved-rows-and-separated-registers">ldmatrix with interleaved rows and separated registers</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#memory-and-register-instructions">Memory and register instructions</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#scalar-compositions">Scalar compositions</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#asynchronous-copy">Asynchronous copy</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#tma">TMA</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#tmem-transfers">TMEM transfers</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#shared-matrix-descriptors">Shared matrix descriptors</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#warp-mma">Warp MMA</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#tcgen05-mma">tcgen05 MMA</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#choosing-instructions">Choosing instructions</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#implementation-and-extension">Implementation and extension</a></li>
+</ul>
+  </nav></div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+<div class="bd-footer-content__inner container">
+  
+  <div class="footer-item">
+    
+<p class="component-author">
+By Apache Software Foundation
+</p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+
+  <p class="copyright">
+    
+      © Copyright 2020 - 2026, Apache Software Foundation.
+      <br/>
+    
+  </p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+  <div class="footer-item">
+    
+<div class="extra_footer">
+  
+  <div class="footer-container" style="margin: 5px 0; font-size: 0.9em; color: #6c757d; text-align: right;">
+      <div class="footer-line1" style="display: flex; justify-content: flex-end; align-items: center; gap: 0.9em; margin-bottom: 3px; flex-wrap: wrap;">
+          <div class="footer-dropdown">
+              <div class="dropdown">
+                  <button class="btn btn-link dropdown-toggle" type="button" id="footerDropdown" data-bs-toggle="dropdown"
+                  aria-expanded="false" style="font-size: 0.9em; color: #6c757d; text-decoration: none; padding: 0; border: none; background: none;">
+                      ASF
+                  </button>
+                  <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="footerDropdown" style="font-size: 0.9em;">
+<li><a class="dropdown-item" href="https://apache.org/" target="_blank" style="font-size: 0.9em;">Apache Homepage</a></li>
+<li><a class="dropdown-item" href="https://www.apache.org/licenses/" target="_blank" style="font-size: 0.9em;">License</a></li>
+<li><a class="dropdown-item" href="https://www.apache.org/foundation/sponsorship.html" target="_blank" style="font-size: 0.9em;">Sponsorship</a></li>
+<li><a class="dropdown-item" href="https://tvm.apache.org/docs/reference/security.html" target="_blank" style="font-size: 0.9em;">Security</a></li>
+<li><a class="dropdown-item" href="https://www.apache.org/foundation/thanks.html" target="_blank" style="font-size: 0.9em;">Thanks</a></li>
+<li><a class="dropdown-item" href="https://www.apache.org/events/current-event" target="_blank" style="font-size: 0.9em;">Events</a></li>
+                  </ul>
+              </div>
+          </div>
+      </div>
+      <div class="footer-line2" style="font-size: 0.9em; color: #6c757d; text-align: right;">
+          Copyright © 2026 The Apache Software Foundation. Apache TVM, Apache, the Apache feather, and the Apache TVM project logo are either trademarks or registered trademarks of the Apache Software Foundation.
+      </div>
+  </div>
+  
+</div>
+  </div>
+  
+</div>
+          </footer>
+        
+
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="../_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b"></script>
+<script src="../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b"></script>
+
+  <footer class="bd-footer">
+  </footer>
+  </body>
+</html>
