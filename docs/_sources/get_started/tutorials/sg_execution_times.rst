@@ -6,7 +6,7 @@
 
 Computation times
 =================
-**00:05.580** total execution time for 2 files **from get_started/tutorials**:
+**00:05.581** total execution time for 2 files **from get_started/tutorials**:
 
 .. container::
 
