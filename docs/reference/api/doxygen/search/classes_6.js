@@ -13,8 +13,9 @@ var searchData=
   ['globalvarnode_10',['GlobalVarNode',['../classtvm_1_1GlobalVarNode.html',1,'tvm']]],
   ['globalvarpattern_11',['GlobalVarPattern',['../classtvm_1_1relax_1_1GlobalVarPattern.html',1,'tvm::relax']]],
   ['globalvarpatternnode_12',['GlobalVarPatternNode',['../classtvm_1_1relax_1_1GlobalVarPatternNode.html',1,'tvm::relax']]],
-  ['gridsampleattrs_13',['GridSampleAttrs',['../structtvm_1_1relax_1_1GridSampleAttrs.html',1,'tvm::relax']]],
-  ['groupnormattrs_14',['GroupNormAttrs',['../structtvm_1_1relax_1_1GroupNormAttrs.html',1,'tvm::relax']]],
-  ['gt_15',['GT',['../classtvm_1_1prim_1_1GT.html',1,'tvm::prim']]],
-  ['gtnode_16',['GTNode',['../classtvm_1_1prim_1_1GTNode.html',1,'tvm::prim']]]
+  ['gputhreadtag_13',['GPUThreadTag',['../structtvm_1_1support_1_1GPUThreadTag.html',1,'tvm::support']]],
+  ['gridsampleattrs_14',['GridSampleAttrs',['../structtvm_1_1relax_1_1GridSampleAttrs.html',1,'tvm::relax']]],
+  ['groupnormattrs_15',['GroupNormAttrs',['../structtvm_1_1relax_1_1GroupNormAttrs.html',1,'tvm::relax']]],
+  ['gt_16',['GT',['../classtvm_1_1prim_1_1GT.html',1,'tvm::prim']]],
+  ['gtnode_17',['GTNode',['../classtvm_1_1prim_1_1GTNode.html',1,'tvm::prim']]]
 ];
