@@ -56,7 +56,7 @@ var searchData=
   ['vmloadexecutable_53',['VMLoadExecutable',['../classtvm_1_1runtime_1_1vm_1_1VMExecutable.html#a0e6b34e4870a5d22a0fb64567d47e424',1,'tvm::runtime::vm::VMExecutable']]],
   ['vmshapelower_54',['VMShapeLower',['../namespacetvm_1_1relax_1_1transform.html#a640f84c6058f570cdef3e463338a8267',1,'tvm::relax::transform']]],
   ['void_55',['void',['../namespacetvm_1_1script_1_1ir__builder_1_1tirx.html#aa91016a1ab39df4e760049bf7fc427d3',1,'tvm::script::ir_builder::tirx::Void()'],['../classtvm_1_1PrimType.html#a219d7050d9bd499a5ab3419140b72963',1,'tvm::PrimType::Void()']]],
-  ['voidptrtype_56',['VoidPtrType',['../classtvm_1_1PtrType.html#aad175ce3a88e224387d608814dcbf282',1,'tvm::PtrType']]],
+  ['voidptrtype_56',['VoidPtrType',['../classtvm_1_1PtrType.html#a0c23aedcad336653de0b68ac41bb5e50',1,'tvm::PtrType']]],
   ['voidtype_57',['VoidType',['../namespacetvm.html#a27df956aaa2e5e25005e0f9dc1638a08',1,'tvm']]],
   ['vscale_5fop_58',['vscale_op',['../namespacetvm_1_1prim.html#ac5d0988142981bd2d02599f762b14aa5',1,'tvm::prim']]],
   ['vscalefactor_59',['VScaleFactor',['../classtvm_1_1PrimType.html#abc0ace579c1e6ff2d38103f56a0bade6',1,'tvm::PrimType']]],

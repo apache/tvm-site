@@ -123,7 +123,7 @@ var searchData=
   ['proofstrength_120',['ProofStrength',['../namespacetvm_1_1sym.html#af302d7cf16c8a80afef9b33eff88f29c',1,'tvm::sym']]],
   ['propagatesharding_121',['PropagateSharding',['../namespacetvm_1_1relax_1_1distributed_1_1transform.html#a2a0aa47cbd12342afa24c188005edf3b',1,'tvm::relax::distributed::transform']]],
   ['ptr_5fbyte_5foffset_5fop_122',['ptr_byte_offset_op',['../namespacetvm_1_1tirx.html#a4013548991c5967d1fa3d8db455b27d9',1,'tvm::tirx']]],
-  ['ptrtype_123',['ptrtype',['../classtvm_1_1PtrType.html#a27b65ad62a7a7e112d953d994f9c0af0',1,'tvm::PtrType::PtrType()'],['../classtvm_1_1PtrType.html',1,'tvm::PtrType']]],
+  ['ptrtype_123',['ptrtype',['../classtvm_1_1PtrType.html#a6f55d8ad4239d61d5c74838ec28fd972',1,'tvm::PtrType::PtrType()'],['../classtvm_1_1PtrType.html',1,'tvm::PtrType']]],
   ['ptrtypenode_124',['PtrTypeNode',['../classtvm_1_1PtrTypeNode.html',1,'tvm']]],
   ['purity_125',['purity',['../classtvm_1_1relax_1_1FuncTypeNode.html#a4856099db6a1f8f6ae9908ac4e47e3c5',1,'tvm::relax::FuncTypeNode']]],
   ['pushloc_126',['PushLoc',['../classtvm_1_1script_1_1ir__builder_1_1IRBuilderObj.html#ad3c6e8d52a0761e94bdaf99819d13016',1,'tvm::script::ir_builder::IRBuilderObj']]],

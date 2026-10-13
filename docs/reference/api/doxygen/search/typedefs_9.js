@@ -1,4 +1,5 @@
 var searchData=
 [
-  ['memoryscope_0',['MemoryScope',['../namespacetvm_1_1relax.html#a136fb8a9836291078faef69bb5b5f9dd',1,'tvm::relax']]]
+  ['objecttype_0',['ObjectType',['../namespacetvm_1_1relax.html#a3911871893d8a3010512410c2dd4614a',1,'tvm::relax']]],
+  ['objecttypenode_1',['ObjectTypeNode',['../namespacetvm_1_1relax.html#a682f740dca349ae6ea46800253c23ad5',1,'tvm::relax']]]
 ];
