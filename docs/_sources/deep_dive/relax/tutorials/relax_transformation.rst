@@ -278,7 +278,7 @@ a set of passes. We can apply them in a sequence.
 .. code-block:: Python
 
 
-    mod = tvm.transform.Sequential(
+    mod = tvm.ir.transform.Sequential(
         [
             tvm.relax.transform.AnnotateTIROpPattern(),
             tvm.relax.transform.FuseOps(),
@@ -468,9 +468,9 @@ Then we can write a pass to apply the mutator to the whole module.
 
 
 
-    @tvm.transform.module_pass(opt_level=0, name="ReluToGelu")
+    @tvm.ir.transform.module_pass(opt_level=0, name="ReluToGelu")
     class ReluToGelu:  # pylint: disable=too-few-public-methods
-        def transform_module(self, mod: IRModule, _ctx: tvm.transform.PassContext) -> IRModule:
+        def transform_module(self, mod: IRModule, _ctx: tvm.ir.transform.PassContext) -> IRModule:
             """IRModule-level transformation"""
             rewriter = ReluRewriter(mod)
             for g_var, func in mod.functions_items():

@@ -243,7 +243,7 @@ only -- the values are uninitialized.
     if has_example_npu:
         npu_mod = RunCodegen()(npu_mod)
 
-        with tvm.transform.PassContext(opt_level=3):
+        with tvm.ir.transform.PassContext(opt_level=3):
             npu_exec = relax.build(npu_mod, tvm.target.Target("llvm"))
 
         npu_vm = relax.VirtualMachine(npu_exec, tvm.cpu())
@@ -360,7 +360,7 @@ Build for CUDA, run on the GPU, and compare against the CPU reference.
 
     if has_tensorrt and has_cuda:
         dev = tvm.cuda(0)
-        with tvm.transform.PassContext(opt_level=3):
+        with tvm.ir.transform.PassContext(opt_level=3):
             trt_exec = relax.build(RunCodegen()(trt_mod), "cuda")
         trt_out = relax.VirtualMachine(trt_exec, dev)["main"](tvm.runtime.tensor(data_np, dev)).numpy()
 
@@ -401,7 +401,7 @@ for reuse across runs.)
         fp16_mod = partition_for_tensorrt(
             relax.transform.BindParams("main", {"weight": weight_np})(ConvReLU)
         )
-        with tvm.transform.PassContext(
+        with tvm.ir.transform.PassContext(
             opt_level=3, config={"relax.ext.tensorrt.options": {"use_fp16": True}}
         ):
             fp16_exec = relax.build(RunCodegen()(fp16_mod), "cuda")
@@ -493,7 +493,7 @@ This section additionally requires PyTorch.
         print(torch_mod)
 
         torch_dev = tvm.cuda(0)
-        with tvm.transform.PassContext(opt_level=3):
+        with tvm.ir.transform.PassContext(opt_level=3):
             torch_exec = relax.build(RunCodegen()(torch_mod), "cuda")
         deployed = relax.VirtualMachine(torch_exec, torch_dev)["main"](
             tvm.runtime.tensor(example_input.numpy(), torch_dev)
