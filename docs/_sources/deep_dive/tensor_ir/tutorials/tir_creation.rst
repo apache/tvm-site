@@ -413,19 +413,18 @@ and one output parameter **C**.
 
     from __future__ import annotations
 
-    # from tvm.script import ir as I
     # from tvm.script import s_tir as Ts
     # from tvm.script import tirx as T
 
-    @I.ir_module
+    @T.ir_module
     class Module:
         @Ts.function
-        def mm_relu(A: T.Tensor((128, 128), "float32"), B: T.Tensor((128, 128), "float32"), C: T.Tensor((128, 128), "float32")):
+        def mm_relu(A: T.Tensor((128, 128), T.float32), B: T.Tensor((128, 128), T.float32), C: T.Tensor((128, 128), T.float32)):
             T.func_attr({"s_tir": True, "script.namespace": "s_tir", "tirx.noalias": True})
             with Ts.sblock("root"):
                 Ts.reads()
                 Ts.writes()
-                Y = Ts.sblock_alloc_tensor((128, 128), "float32")
+                Y = Ts.sblock_alloc_tensor((128, 128), T.float32)
                 for i in range(128):
                     for j in range(128):
                         for k in range(128):
@@ -484,22 +483,21 @@ is that we need to specify the shape of the input tensors as symbolic variables.
 
     from __future__ import annotations
 
-    # from tvm.script import ir as I
     # from tvm.script import s_tir as Ts
     # from tvm.script import tirx as T
 
-    m = I.dynamic("m", dtype="int32")
-    n = I.dynamic("n", dtype="int32")
-    k = I.dynamic("k", dtype="int32")
-    @I.ir_module
+    m = T.dynamic("m", dtype="int32")
+    n = T.dynamic("n", dtype="int32")
+    k = T.dynamic("k", dtype="int32")
+    @T.ir_module
     class Module:
         @Ts.function
-        def mm_relu(A: T.Tensor((m, n), "float32"), B: T.Tensor((k, n), "float32"), C: T.Tensor((m, n), "float32")):
+        def mm_relu(A: T.Tensor((m, n), T.float32), B: T.Tensor((k, n), T.float32), C: T.Tensor((m, n), T.float32)):
             T.func_attr({"s_tir": True, "script.namespace": "s_tir", "tirx.noalias": True})
             with Ts.sblock("root"):
                 Ts.reads()
                 Ts.writes()
-                Y = Ts.sblock_alloc_tensor((m, n), "float32")
+                Y = Ts.sblock_alloc_tensor((m, n), T.float32)
                 for i in range(m):
                     for j in range(n):
                         for k_1 in range(k):

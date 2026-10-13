@@ -192,15 +192,15 @@ printed module.
     After partitioning for the example NPU:
     from __future__ import annotations
 
-    # from tvm.script import ir as I
     # from tvm.script import relax as R
+    # from tvm.script import tirx as T
 
-    @I.ir_module
+    @T.ir_module
     class Module:
         @R.function
         def main(data: R.Tensor((1, 3, 32, 32), dtype="float32"), weight: R.Tensor((16, 3, 3, 3), dtype="float32")) -> R.Tensor((1, 16, 30, 30), dtype="float32"):
             with R.dataflow():
-                gv: R.Tensor((1, 16, 30, 30), dtype="float32") = I.Call(Module.fused_relax_nn_conv2d_relax_nn_relu_example_npu_example_npu, [data, weight], ty=R.Tensor((1, 16, 30, 30), dtype="float32"))
+                gv: R.Tensor((1, 16, 30, 30), dtype="float32") = T.Call(Module.fused_relax_nn_conv2d_relax_nn_relu_example_npu_example_npu, [data, weight], ty=R.Tensor((1, 16, 30, 30), dtype="float32"))
                 R.output(gv)
             return gv
 
@@ -214,7 +214,7 @@ printed module.
                 gv: R.Tensor((1, 16, 30, 30), dtype="float32") = R.nn.relu(conv)
                 return gv
 
-            output: R.Tensor((1, 16, 30, 30), dtype="float32") = I.Call(local_func, [data, weight], ty=R.Tensor((1, 16, 30, 30), dtype="float32"))
+            output: R.Tensor((1, 16, 30, 30), dtype="float32") = T.Call(local_func, [data, weight], ty=R.Tensor((1, 16, 30, 30), dtype="float32"))
             return output
 
 
@@ -309,10 +309,10 @@ available. In CPU-only documentation builds, they produce no output.
     After partition_for_tensorrt:
     from __future__ import annotations
 
-    # from tvm.script import ir as I
     # from tvm.script import relax as R
+    # from tvm.script import tirx as T
 
-    @I.ir_module
+    @T.ir_module
     class Module:
         @R.function
         def fused_relax_nn_conv2d_relax_nn_relu_tensorrt(data: R.Tensor((1, 3, 32, 32), dtype="float32")) -> R.Tensor((1, 16, 30, 30), dtype="float32"):
@@ -325,7 +325,7 @@ available. In CPU-only documentation builds, they produce no output.
                     R.output(gv_1)
                 return gv_1
 
-            lv: R.Tensor((1, 16, 30, 30), dtype="float32") = I.Call(gv, [data], ty=R.Tensor((1, 16, 30, 30), dtype="float32"))
+            lv: R.Tensor((1, 16, 30, 30), dtype="float32") = T.Call(gv, [data], ty=R.Tensor((1, 16, 30, 30), dtype="float32"))
             @R.function
             def gv1(lv_1: R.Tensor((1, 16, 30, 30), dtype="float32")) -> R.Tensor((1, 16, 30, 30), dtype="float32"):
                 R.func_attr({"Composite": "tensorrt.nn.relu"})
@@ -334,13 +334,13 @@ available. In CPU-only documentation builds, they produce no output.
                     R.output(gv_1)
                 return gv_1
 
-            gv_1: R.Tensor((1, 16, 30, 30), dtype="float32") = I.Call(gv1, [lv], ty=R.Tensor((1, 16, 30, 30), dtype="float32"))
+            gv_1: R.Tensor((1, 16, 30, 30), dtype="float32") = T.Call(gv1, [lv], ty=R.Tensor((1, 16, 30, 30), dtype="float32"))
             return gv_1
 
         @R.function
         def main(data: R.Tensor((1, 3, 32, 32), dtype="float32")) -> R.Tensor((1, 16, 30, 30), dtype="float32"):
             with R.dataflow():
-                gv: R.Tensor((1, 16, 30, 30), dtype="float32") = I.Call(Module.fused_relax_nn_conv2d_relax_nn_relu_tensorrt, [data], ty=R.Tensor((1, 16, 30, 30), dtype="float32"))
+                gv: R.Tensor((1, 16, 30, 30), dtype="float32") = T.Call(Module.fused_relax_nn_conv2d_relax_nn_relu_tensorrt, [data], ty=R.Tensor((1, 16, 30, 30), dtype="float32"))
                 R.output(gv)
             return gv
 

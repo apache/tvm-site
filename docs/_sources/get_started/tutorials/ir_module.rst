@@ -124,10 +124,10 @@ from PyTorch.
       return cls.__new__(cls, *args)
     from __future__ import annotations
 
-    # from tvm.script import ir as I
     # from tvm.script import relax as R
+    # from tvm.script import tirx as T
 
-    @I.ir_module
+    @T.ir_module
     class Module:
         @R.function
         def main(x: R.Tensor((1, 784), dtype="float32"), p_fc1_weight: R.Tensor((256, 784), dtype="float32"), p_fc1_bias: R.Tensor((256,), dtype="float32"), p_fc2_weight: R.Tensor((10, 256), dtype="float32"), p_fc2_bias: R.Tensor((10,), dtype="float32")) -> R.Tensor((1, 10), dtype="float32"):
@@ -192,21 +192,21 @@ write the IRModule directly.
 
     from __future__ import annotations
 
-    # from tvm.script import ir as I
     # from tvm.script import relax as R
+    # from tvm.script import tirx as T
 
-    @I.ir_module
+    @T.ir_module
     class Module:
         @R.function
         def forward(x: R.Tensor((1, 784), dtype="float32"), fc1_weight: R.Tensor((256, 784), dtype="float32"), fc1_bias: R.Tensor((256,), dtype="float32"), fc2_weight: R.Tensor((10, 256), dtype="float32"), fc2_bias: R.Tensor((10,), dtype="float32")) -> R.Tensor((1, 10), dtype="float32"):
             R.func_attr({"num_input": 1})
             with R.dataflow():
                 permute_dims: R.Tensor((784, 256), dtype="float32") = R.permute_dims(fc1_weight)
-                matmul: R.Tensor((1, 256), dtype="float32") = I.Call("relax.matmul", [x, permute_dims], attrs=I.make_node("relax.attrs.MatmulAttrs", out_dtype=None), ty=R.Tensor((1, 256), dtype="float32"))
+                matmul: R.Tensor((1, 256), dtype="float32") = T.Call("relax.matmul", [x, permute_dims], attrs=T.make_node("relax.attrs.MatmulAttrs", out_dtype=None), ty=R.Tensor((1, 256), dtype="float32"))
                 add: R.Tensor((1, 256), dtype="float32") = R.add(matmul, fc1_bias, ty=R.Tensor((1, 256), dtype="float32"))
                 relu: R.Tensor((1, 256), dtype="float32") = R.nn.relu(add)
                 permute_dims1: R.Tensor((256, 10), dtype="float32") = R.permute_dims(fc2_weight)
-                matmul1: R.Tensor((1, 10), dtype="float32") = I.Call("relax.matmul", [relu, permute_dims1], attrs=I.make_node("relax.attrs.MatmulAttrs", out_dtype=None), ty=R.Tensor((1, 10), dtype="float32"))
+                matmul1: R.Tensor((1, 10), dtype="float32") = T.Call("relax.matmul", [relu, permute_dims1], attrs=T.make_node("relax.attrs.MatmulAttrs", out_dtype=None), ty=R.Tensor((1, 10), dtype="float32"))
                 add1: R.Tensor((1, 10), dtype="float32") = R.add(matmul1, fc2_bias, ty=R.Tensor((1, 10), dtype="float32"))
                 gv: R.Tensor((1, 10), dtype="float32") = add1
                 R.output(gv)
@@ -270,21 +270,21 @@ parse the TVMScript to obtain an IRModule.
 
     from __future__ import annotations
 
-    # from tvm.script import ir as I
     # from tvm.script import relax as R
+    # from tvm.script import tirx as T
 
-    @I.ir_module
+    @T.ir_module
     class Module:
         @R.function
         def main(x: R.Tensor((1, 784), dtype="float32"), fc1_weight: R.Tensor((256, 784), dtype="float32"), fc1_bias: R.Tensor((256,), dtype="float32"), fc2_weight: R.Tensor((10, 256), dtype="float32"), fc2_bias: R.Tensor((10,), dtype="float32")) -> R.Tensor((1, 10), dtype="float32"):
             R.func_attr({"num_input": 1})
             with R.dataflow():
                 permute_dims: R.Tensor((784, 256), dtype="float32") = R.permute_dims(fc1_weight)
-                matmul: R.Tensor((1, 256), dtype="float32") = I.Call("relax.matmul", [x, permute_dims], attrs=I.make_node("relax.attrs.MatmulAttrs", out_dtype=None), ty=R.Tensor((1, 256), dtype="float32"))
+                matmul: R.Tensor((1, 256), dtype="float32") = T.Call("relax.matmul", [x, permute_dims], attrs=T.make_node("relax.attrs.MatmulAttrs", out_dtype=None), ty=R.Tensor((1, 256), dtype="float32"))
                 add: R.Tensor((1, 256), dtype="float32") = R.add(matmul, fc1_bias, ty=R.Tensor((1, 256), dtype="float32"))
                 relu: R.Tensor((1, 256), dtype="float32") = R.nn.relu(add)
                 permute_dims1: R.Tensor((256, 10), dtype="float32") = R.permute_dims(fc2_weight)
-                matmul1: R.Tensor((1, 10), dtype="float32") = I.Call("relax.matmul", [relu, permute_dims1], attrs=I.make_node("relax.attrs.MatmulAttrs", out_dtype=None), ty=R.Tensor((1, 10), dtype="float32"))
+                matmul1: R.Tensor((1, 10), dtype="float32") = T.Call("relax.matmul", [relu, permute_dims1], attrs=T.make_node("relax.attrs.MatmulAttrs", out_dtype=None), ty=R.Tensor((1, 10), dtype="float32"))
                 add1: R.Tensor((1, 10), dtype="float32") = R.add(matmul1, fc2_bias, ty=R.Tensor((1, 10), dtype="float32"))
                 gv: R.Tensor((1, 10), dtype="float32") = add1
                 R.output(gv)
@@ -405,15 +405,14 @@ within the same module. Meanwhile, the Relax operators will be converted into ``
 
     from __future__ import annotations
 
-    # from tvm.script import ir as I
     # from tvm.script import relax as R
     # from tvm.script import s_tir as Ts
     # from tvm.script import tirx as T
 
-    @I.ir_module
+    @T.ir_module
     class Module:
         @Ts.function(private=True)
-        def transpose(p_fc1_weight: T.Tensor((T.int64(256), T.int64(784)), "float32"), T_transpose: T.Tensor((T.int64(784), T.int64(256)), "float32")):
+        def transpose(p_fc1_weight: T.Tensor((T.int64(256), T.int64(784)), T.float32), T_transpose: T.Tensor((T.int64(784), T.int64(256)), T.float32)):
             T.func_attr({"s_tir": True, "script.namespace": "s_tir", "tirx.noalias": True})
             with Ts.sblock("root"):
                 Ts.reads()
@@ -428,7 +427,7 @@ within the same module. Meanwhile, the Relax operators will be converted into ``
                             T_transpose[v_ax0, v_ax1] = p_fc1_weight[v_ax1, v_ax0]
 
         @Ts.function(private=True)
-        def matmul(x: T.Tensor((T.int64(1), T.int64(784)), "float32"), lv: T.Tensor((T.int64(784), T.int64(256)), "float32"), matmul: T.Tensor((T.int64(1), T.int64(256)), "float32")):
+        def matmul(x: T.Tensor((T.int64(1), T.int64(784)), T.float32), lv: T.Tensor((T.int64(784), T.int64(256)), T.float32), matmul: T.Tensor((T.int64(1), T.int64(256)), T.float32)):
             T.func_attr({"s_tir": True, "script.namespace": "s_tir", "tirx.noalias": True})
             with Ts.sblock("root"):
                 Ts.reads()
@@ -447,7 +446,7 @@ within the same module. Meanwhile, the Relax operators will be converted into ``
                                 matmul[v_i0, v_i1] = matmul[v_i0, v_i1] + x[v_i0, v_k] * lv[v_k, v_i1]
 
         @Ts.function(private=True)
-        def add(p_fc1_bias: T.Tensor((T.int64(256),), "float32"), lv1: T.Tensor((T.int64(1), T.int64(256)), "float32"), T_add: T.Tensor((T.int64(1), T.int64(256)), "float32")):
+        def add(p_fc1_bias: T.Tensor((T.int64(256),), T.float32), lv1: T.Tensor((T.int64(1), T.int64(256)), T.float32), T_add: T.Tensor((T.int64(1), T.int64(256)), T.float32)):
             T.func_attr({"s_tir": True, "script.namespace": "s_tir", "tirx.noalias": True})
             with Ts.sblock("root"):
                 Ts.reads()
@@ -462,7 +461,7 @@ within the same module. Meanwhile, the Relax operators will be converted into ``
                             T_add[v_ax0, v_ax1] = p_fc1_bias[v_ax1] + lv1[v_ax0, v_ax1]
 
         @Ts.function(private=True)
-        def relu(lv2: T.Tensor((T.int64(1), T.int64(256)), "float32"), compute: T.Tensor((T.int64(1), T.int64(256)), "float32")):
+        def relu(lv2: T.Tensor((T.int64(1), T.int64(256)), T.float32), compute: T.Tensor((T.int64(1), T.int64(256)), T.float32)):
             T.func_attr({"s_tir": True, "script.namespace": "s_tir", "tirx.noalias": True})
             with Ts.sblock("root"):
                 Ts.reads()
@@ -477,7 +476,7 @@ within the same module. Meanwhile, the Relax operators will be converted into ``
                             compute[v_i0, v_i1] = T.max(lv2[v_i0, v_i1], T.float32(0.0))
 
         @Ts.function(private=True)
-        def transpose1(p_fc2_weight: T.Tensor((T.int64(10), T.int64(256)), "float32"), T_transpose: T.Tensor((T.int64(256), T.int64(10)), "float32")):
+        def transpose1(p_fc2_weight: T.Tensor((T.int64(10), T.int64(256)), T.float32), T_transpose: T.Tensor((T.int64(256), T.int64(10)), T.float32)):
             T.func_attr({"s_tir": True, "script.namespace": "s_tir", "tirx.noalias": True})
             with Ts.sblock("root"):
                 Ts.reads()
@@ -492,7 +491,7 @@ within the same module. Meanwhile, the Relax operators will be converted into ``
                             T_transpose[v_ax0, v_ax1] = p_fc2_weight[v_ax1, v_ax0]
 
         @Ts.function(private=True)
-        def matmul1(lv3: T.Tensor((T.int64(1), T.int64(256)), "float32"), lv4: T.Tensor((T.int64(256), T.int64(10)), "float32"), matmul: T.Tensor((T.int64(1), T.int64(10)), "float32")):
+        def matmul1(lv3: T.Tensor((T.int64(1), T.int64(256)), T.float32), lv4: T.Tensor((T.int64(256), T.int64(10)), T.float32), matmul: T.Tensor((T.int64(1), T.int64(10)), T.float32)):
             T.func_attr({"s_tir": True, "script.namespace": "s_tir", "tirx.noalias": True})
             with Ts.sblock("root"):
                 Ts.reads()
@@ -511,7 +510,7 @@ within the same module. Meanwhile, the Relax operators will be converted into ``
                                 matmul[v_i0, v_i1] = matmul[v_i0, v_i1] + lv3[v_i0, v_k] * lv4[v_k, v_i1]
 
         @Ts.function(private=True)
-        def add1(p_fc2_bias: T.Tensor((T.int64(10),), "float32"), lv5: T.Tensor((T.int64(1), T.int64(10)), "float32"), T_add: T.Tensor((T.int64(1), T.int64(10)), "float32")):
+        def add1(p_fc2_bias: T.Tensor((T.int64(10),), T.float32), lv5: T.Tensor((T.int64(1), T.int64(10)), T.float32), T_add: T.Tensor((T.int64(1), T.int64(10)), T.float32)):
             T.func_attr({"s_tir": True, "script.namespace": "s_tir", "tirx.noalias": True})
             with Ts.sblock("root"):
                 Ts.reads()
@@ -612,15 +611,14 @@ The default **zero** pipeline contains very fundamental transformations, includi
 
     from __future__ import annotations
 
-    # from tvm.script import ir as I
     # from tvm.script import relax as R
     # from tvm.script import s_tir as Ts
     # from tvm.script import tirx as T
 
-    @I.ir_module
+    @T.ir_module
     class Module:
         @Ts.function(private=True)
-        def transpose(p_fc1_weight: T.Tensor((T.int64(256), T.int64(784)), "float32"), T_transpose: T.Tensor((T.int64(784), T.int64(256)), "float32")):
+        def transpose(p_fc1_weight: T.Tensor((T.int64(256), T.int64(784)), T.float32), T_transpose: T.Tensor((T.int64(784), T.int64(256)), T.float32)):
             T.func_attr({"op_pattern": 2, "s_tir": True, "script.namespace": "s_tir", "tirx.noalias": True})
             with Ts.sblock("root"):
                 Ts.reads()
@@ -635,7 +633,7 @@ The default **zero** pipeline contains very fundamental transformations, includi
                             T_transpose[v_ax0, v_ax1] = p_fc1_weight[v_ax1, v_ax0]
 
         @Ts.function(private=True)
-        def transpose1(p_fc2_weight: T.Tensor((T.int64(10), T.int64(256)), "float32"), T_transpose: T.Tensor((T.int64(256), T.int64(10)), "float32")):
+        def transpose1(p_fc2_weight: T.Tensor((T.int64(10), T.int64(256)), T.float32), T_transpose: T.Tensor((T.int64(256), T.int64(10)), T.float32)):
             T.func_attr({"op_pattern": 2, "s_tir": True, "script.namespace": "s_tir", "tirx.noalias": True})
             with Ts.sblock("root"):
                 Ts.reads()
@@ -650,12 +648,12 @@ The default **zero** pipeline contains very fundamental transformations, includi
                             T_transpose[v_ax0, v_ax1] = p_fc2_weight[v_ax1, v_ax0]
 
         @Ts.function(private=True)
-        def fused_matmul1_add1(lv3: T.Tensor((T.int64(1), T.int64(256)), "float32"), lv4: T.Tensor((T.int64(256), T.int64(10)), "float32"), p_fc2_bias: T.Tensor((T.int64(10),), "float32"), T_add_intermediate: T.Tensor((T.int64(1), T.int64(10)), "float32")):
+        def fused_matmul1_add1(lv3: T.Tensor((T.int64(1), T.int64(256)), T.float32), lv4: T.Tensor((T.int64(256), T.int64(10)), T.float32), p_fc2_bias: T.Tensor((T.int64(10),), T.float32), T_add_intermediate: T.Tensor((T.int64(1), T.int64(10)), T.float32)):
             T.func_attr({"s_tir": True, "script.namespace": "s_tir", "tirx.noalias": True})
             with Ts.sblock("root"):
                 Ts.reads()
                 Ts.writes()
-                matmul_intermediate = Ts.sblock_alloc_tensor((T.int64(1), T.int64(10)), "float32")
+                matmul_intermediate = Ts.sblock_alloc_tensor((T.int64(1), T.int64(10)), T.float32)
                 for i0 in range(T.int64(0), T.int64(1)):
                     for i1 in range(T.int64(0), T.int64(10)):
                         for k in range(T.int64(0), T.int64(256)):
@@ -678,13 +676,13 @@ The default **zero** pipeline contains very fundamental transformations, includi
                             T_add_intermediate[v_ax0, v_ax1] = p_fc2_bias[v_ax1] + matmul_intermediate[v_ax0, v_ax1]
 
         @Ts.function(private=True)
-        def fused_matmul_add_relu(x: T.Tensor((T.int64(1), T.int64(784)), "float32"), lv: T.Tensor((T.int64(784), T.int64(256)), "float32"), p_fc1_bias: T.Tensor((T.int64(256),), "float32"), compute_intermediate: T.Tensor((T.int64(1), T.int64(256)), "float32")):
+        def fused_matmul_add_relu(x: T.Tensor((T.int64(1), T.int64(784)), T.float32), lv: T.Tensor((T.int64(784), T.int64(256)), T.float32), p_fc1_bias: T.Tensor((T.int64(256),), T.float32), compute_intermediate: T.Tensor((T.int64(1), T.int64(256)), T.float32)):
             T.func_attr({"s_tir": True, "script.namespace": "s_tir", "tirx.noalias": True})
             with Ts.sblock("root"):
                 Ts.reads()
                 Ts.writes()
-                matmul_intermediate = Ts.sblock_alloc_tensor((T.int64(1), T.int64(256)), "float32")
-                T_add_intermediate = Ts.sblock_alloc_tensor((T.int64(1), T.int64(256)), "float32")
+                matmul_intermediate = Ts.sblock_alloc_tensor((T.int64(1), T.int64(256)), T.float32)
+                T_add_intermediate = Ts.sblock_alloc_tensor((T.int64(1), T.int64(256)), T.float32)
                 for i0 in range(T.int64(0), T.int64(1)):
                     for i1 in range(T.int64(0), T.int64(256)):
                         for k in range(T.int64(0), T.int64(784)):
@@ -764,8 +762,8 @@ We can deploy the IRModule on CPU by specifying the target as ``llvm``.
 
  .. code-block:: none
 
-    [[ 0.05724658 -0.11934407  0.17507526 -0.17034     0.23348206  0.12436473
-       0.04255576 -0.02237007 -0.03830348  0.12341519]]
+    [[ 0.18171832 -0.03496081 -0.21837442 -0.039081   -0.25650188 -0.10618642
+      -0.09220158  0.12932798 -0.13165727  0.13164523]]
 
 
 
@@ -831,8 +829,8 @@ Now we can compile the IRModule on GPU, the similar way as we did on CPU.
 
  .. code-block:: none
 
-    [[ 0.05724657 -0.11934406  0.17507523 -0.17034     0.23348199  0.12436472
-       0.0425557  -0.02237007 -0.03830346  0.12341516]]
+    [[ 0.18171826 -0.03496085 -0.21837431 -0.03908103 -0.25650173 -0.1061864
+      -0.0922016   0.12932801 -0.13165736  0.1316452 ]]
 
 
 

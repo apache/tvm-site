@@ -123,10 +123,10 @@ The standard workflow is: ``torch.export.export()`` → ``from_exported_program(
       return cls.__new__(cls, *args)
     from __future__ import annotations
 
-    # from tvm.script import ir as I
     # from tvm.script import relax as R
+    # from tvm.script import tirx as T
 
-    @I.ir_module
+    @T.ir_module
     class Module:
         @R.function
         def main(x: R.Tensor((1, 3, 32, 32), dtype="float32"), p_conv_weight: R.Tensor((16, 3, 3, 3), dtype="float32"), p_conv_bias: R.Tensor((16,), dtype="float32"), p_bn_weight: R.Tensor((16,), dtype="float32"), p_bn_bias: R.Tensor((16,), dtype="float32"), p_fc_weight: R.Tensor((10, 16), dtype="float32"), p_fc_bias: R.Tensor((10,), dtype="float32")) -> R.Tensor((1, 10), dtype="float32"):
@@ -135,7 +135,7 @@ The standard workflow is: ``torch.export.export()`` → ``from_exported_program(
                 lv: R.Tensor((1, 16, 32, 32), dtype="float32") = R.nn.conv2d(x, p_conv_weight, out_dtype="float32", out_layout="NCHW", padding=[1, 1, 1, 1], ty=R.Tensor((1, 16, 32, 32), dtype="float32"))
                 lv1: R.Tensor((1, 16, 1, 1), dtype="float32") = R.reshape(p_conv_bias, R.shape([1, 16, 1, 1]), ty=R.Tensor((1, 16, 1, 1), dtype="float32"))
                 lv2: R.Tensor((1, 16, 32, 32), dtype="float32") = R.add(lv, lv1, ty=R.Tensor((1, 16, 32, 32), dtype="float32"))
-                lv3: R.Tuple(R.Tensor((1, 16, 32, 32), dtype="float32"), R.Tensor((16,), dtype="float32"), R.Tensor((16,), dtype="float32")) = R.nn.batch_norm(lv2, p_bn_weight, p_bn_bias, metadata["ir.GenericConst"][0], metadata["ir.GenericConst"][1], axis=1, training=False, ty=R.Tuple(R.Tensor((1, 16, 32, 32), dtype="float32"), R.Tensor((16,), dtype="float32"), R.Tensor((16,), dtype="float32")))
+                lv3: T.Tuple(R.Tensor((1, 16, 32, 32), dtype="float32"), R.Tensor((16,), dtype="float32"), R.Tensor((16,), dtype="float32")) = R.nn.batch_norm(lv2, p_bn_weight, p_bn_bias, metadata["ir.GenericConst"][0], metadata["ir.GenericConst"][1], axis=1, training=False, ty=T.Tuple(R.Tensor((1, 16, 32, 32), dtype="float32"), R.Tensor((16,), dtype="float32"), R.Tensor((16,), dtype="float32")))
                 lv4: R.Tensor((1, 16, 32, 32), dtype="float32") = lv3[0]
                 lv5: R.Tensor((1, 16, 32, 32), dtype="float32") = R.nn.relu(lv4)
                 lv6: R.Tensor((1, 16, 1, 1), dtype="float32") = R.mean(lv5, axis=[-1, -2], keepdims=True)
@@ -456,10 +456,10 @@ Below we create a minimal TFLite model from TensorFlow and import it.
 
     from __future__ import annotations
 
-    # from tvm.script import ir as I
     # from tvm.script import relax as R
+    # from tvm.script import tirx as T
 
-    @I.ir_module
+    @T.ir_module
     class Module:
         @R.function
         def main(serving_default_weight_0: R.Tensor((784, 10), dtype="float32"), serving_default_x_0: R.Tensor((1, 784), dtype="float32")) -> R.Tensor((1, 10), dtype="float32"):
@@ -467,7 +467,7 @@ Below we create a minimal TFLite model from TensorFlow and import it.
             with R.dataflow():
                 lv: R.Tensor((10, 784), dtype="float32") = R.permute_dims(serving_default_weight_0, axes=[1, 0])
                 lv1: R.Tensor((784, 10), dtype="float32") = R.permute_dims(lv, axes=[1, 0])
-                lv2: R.Tensor((1, 10), dtype="float32") = I.Call("relax.matmul", [serving_default_x_0, lv1], attrs=I.make_node("relax.attrs.MatmulAttrs", out_dtype=None), ty=R.Tensor((1, 10), dtype="float32"))
+                lv2: R.Tensor((1, 10), dtype="float32") = T.Call("relax.matmul", [serving_default_x_0, lv1], attrs=T.make_node("relax.attrs.MatmulAttrs", out_dtype=None), ty=R.Tensor((1, 10), dtype="float32"))
                 gv: R.Tensor((1, 10), dtype="float32") = R.add(lv2, metadata["ir.GenericConst"][0], ty=R.Tensor((1, 10), dtype="float32"))
                 R.output(gv)
             return gv

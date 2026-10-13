@@ -170,12 +170,11 @@ Here we use a common subset of rules. The full catalog (including ``LowBatchGEMV
 
     from __future__ import annotations
 
-    # from tvm.script import ir as I
     # from tvm.script import relax as R
     # from tvm.script import s_tir as Ts
     # from tvm.script import tirx as T
 
-    @I.ir_module
+    @T.ir_module
     class Module:
         @R.function
         def forward(x: R.Tensor((1, 768), dtype="float32"), fc1_weight: R.Tensor((768, 768), dtype="float32"), fc1_bias: R.Tensor((768,), dtype="float32"), norm_weight: R.Tensor((768,), dtype="float32"), norm_bias: R.Tensor((768,), dtype="float32"), fc2_weight: R.Tensor((256, 768), dtype="float32"), fc2_bias: R.Tensor((256,), dtype="float32")) -> R.Tensor((1, 256), dtype="float32"):
@@ -190,13 +189,13 @@ Here we use a common subset of rules. The full catalog (including ``LowBatchGEMV
             return gv
 
         @Ts.function(private=True)
-        def fused_matmul1_add1(layer_norm: T.Tensor((T.int64(1), T.int64(768)), "float32"), permute_dims1: T.Tensor((T.int64(768), T.int64(256)), "float32"), fc2_bias: T.Tensor((T.int64(256),), "float32"), T_add_intermediate: T.Tensor((T.int64(1), T.int64(256)), "float32")):
+        def fused_matmul1_add1(layer_norm: T.Tensor((T.int64(1), T.int64(768)), T.float32), permute_dims1: T.Tensor((T.int64(768), T.int64(256)), T.float32), fc2_bias: T.Tensor((T.int64(256),), T.float32), T_add_intermediate: T.Tensor((T.int64(1), T.int64(256)), T.float32)):
             T.func_attr({"s_tir": True, "script.namespace": "s_tir", "tirx.is_scheduled": True, "tirx.noalias": True})
             with Ts.sblock("root"):
                 Ts.reads()
                 Ts.writes()
-                matmul_intermediate_local = Ts.sblock_alloc_tensor((T.int64(1), T.int64(256)), "float32", scope="local")
-                matmul_intermediate_rf_local = Ts.sblock_alloc_tensor((T.int64(16), T.int64(1), T.int64(256)), "float32", scope="local")
+                matmul_intermediate_local = Ts.sblock_alloc_tensor((T.int64(1), T.int64(256)), T.float32, scope="local")
+                matmul_intermediate_rf_local = Ts.sblock_alloc_tensor((T.int64(16), T.int64(1), T.int64(256)), T.float32, scope="local")
                 for ax0_fused_0 in T.parallel(T.int64(0), T.int64(16), annotations={"thread_binding": "blockIdx.x"}):
                     for ax0_fused_1 in T.parallel(T.int64(0), T.int64(16), annotations={"thread_binding": "threadIdx.x"}):
                         for ax1_fused_1 in T.parallel(T.int64(0), T.int64(16), annotations={"thread_binding": "threadIdx.y"}):
@@ -234,13 +233,13 @@ Here we use a common subset of rules. The full catalog (including ``LowBatchGEMV
                                 T_add_intermediate[T.int64(0), v0_3] = matmul_intermediate_local[T.int64(0), v0_3] + fc2_bias[v0_3]
 
         @Ts.function(private=True)
-        def fused_matmul_add_relu(x: T.Tensor((T.int64(1), T.int64(768)), "float32"), permute_dims: T.Tensor((T.int64(768), T.int64(768)), "float32"), fc1_bias: T.Tensor((T.int64(768),), "float32"), compute_intermediate: T.Tensor((T.int64(1), T.int64(768)), "float32")):
+        def fused_matmul_add_relu(x: T.Tensor((T.int64(1), T.int64(768)), T.float32), permute_dims: T.Tensor((T.int64(768), T.int64(768)), T.float32), fc1_bias: T.Tensor((T.int64(768),), T.float32), compute_intermediate: T.Tensor((T.int64(1), T.int64(768)), T.float32)):
             T.func_attr({"s_tir": True, "script.namespace": "s_tir", "tirx.is_scheduled": True, "tirx.noalias": True})
             with Ts.sblock("root"):
                 Ts.reads()
                 Ts.writes()
-                matmul_intermediate_local = Ts.sblock_alloc_tensor((T.int64(1), T.int64(768)), "float32", scope="local")
-                matmul_intermediate_rf_local = Ts.sblock_alloc_tensor((T.int64(16), T.int64(1), T.int64(768)), "float32", scope="local")
+                matmul_intermediate_local = Ts.sblock_alloc_tensor((T.int64(1), T.int64(768)), T.float32, scope="local")
+                matmul_intermediate_rf_local = Ts.sblock_alloc_tensor((T.int64(16), T.int64(1), T.int64(768)), T.float32, scope="local")
                 for ax0_fused_0 in T.parallel(T.int64(0), T.int64(48), annotations={"thread_binding": "blockIdx.x"}):
                     for ax0_fused_1 in T.parallel(T.int64(0), T.int64(16), annotations={"thread_binding": "threadIdx.x"}):
                         for ax1_fused_1 in T.parallel(T.int64(0), T.int64(16), annotations={"thread_binding": "threadIdx.y"}):
@@ -278,13 +277,13 @@ Here we use a common subset of rules. The full catalog (including ``LowBatchGEMV
                                 compute_intermediate[T.int64(0), v0_3] = T.max(matmul_intermediate_local[T.int64(0), v0_3] + fc1_bias[v0_3], T.float32(0.0))
 
         @Ts.function(private=True)
-        def layer_norm(relu: T.Tensor((T.int64(1), T.int64(768)), "float32"), norm_weight: T.Tensor((T.int64(768),), "float32"), norm_bias: T.Tensor((T.int64(768),), "float32"), T_layer_norm: T.Tensor((T.int64(1), T.int64(768)), "float32")):
+        def layer_norm(relu: T.Tensor((T.int64(1), T.int64(768)), T.float32), norm_weight: T.Tensor((T.int64(768),), T.float32), norm_bias: T.Tensor((T.int64(768),), T.float32), T_layer_norm: T.Tensor((T.int64(1), T.int64(768)), T.float32)):
             T.func_attr({"op_pattern": 4, "s_tir": True, "script.namespace": "s_tir", "tirx.is_scheduled": True, "tirx.noalias": True})
             with Ts.sblock("root"):
                 Ts.reads()
                 Ts.writes()
-                relu_sum_shared = Ts.sblock_alloc_tensor((T.int64(1),), "float32", scope="shared")
-                relu_var_sum_shared = Ts.sblock_alloc_tensor((T.int64(1),), "float32", scope="shared")
+                relu_sum_shared = Ts.sblock_alloc_tensor((T.int64(1),), T.float32, scope="shared")
+                relu_var_sum_shared = Ts.sblock_alloc_tensor((T.int64(1),), T.float32, scope="shared")
                 for ax0_fused in T.parallel(T.int64(0), T.int64(1), annotations={"thread_binding": "blockIdx.x"}):
                     for ax0 in range(T.int64(0), T.int64(1)):
                         for ax1_fused_1 in T.parallel(T.int64(0), T.int64(256), annotations={"thread_binding": "threadIdx.x"}):
@@ -318,7 +317,7 @@ Here we use a common subset of rules. The full catalog (including ``LowBatchGEMV
                                 T_layer_norm[T.int64(0), v1_2] = (relu[T.int64(0), v1_2] - relu_sum_shared[T.int64(0)] / T.float32(768.0)) * T.rsqrt(relu_var_sum_shared[T.int64(0)] / T.float32(768.0) + T.float32(1.0000000000000001e-05)) * norm_weight[v1_2] + norm_bias[v1_2]
 
         @Ts.function(private=True)
-        def transpose(fc1_weight: T.Tensor((T.int64(768), T.int64(768)), "float32"), T_transpose: T.Tensor((T.int64(768), T.int64(768)), "float32")):
+        def transpose(fc1_weight: T.Tensor((T.int64(768), T.int64(768)), T.float32), T_transpose: T.Tensor((T.int64(768), T.int64(768)), T.float32)):
             T.func_attr({"op_pattern": 2, "s_tir": True, "script.namespace": "s_tir", "tirx.is_scheduled": True, "tirx.noalias": True})
             with Ts.sblock("root"):
                 Ts.reads()
@@ -333,7 +332,7 @@ Here we use a common subset of rules. The full catalog (including ``LowBatchGEMV
                             T_transpose[v0, v1] = fc1_weight[v1, v0]
 
         @Ts.function(private=True)
-        def transpose1(fc2_weight: T.Tensor((T.int64(256), T.int64(768)), "float32"), T_transpose: T.Tensor((T.int64(768), T.int64(256)), "float32")):
+        def transpose1(fc2_weight: T.Tensor((T.int64(256), T.int64(768)), T.float32), T_transpose: T.Tensor((T.int64(768), T.int64(256)), T.float32)):
             T.func_attr({"op_pattern": 2, "s_tir": True, "script.namespace": "s_tir", "tirx.is_scheduled": True, "tirx.noalias": True})
             with Ts.sblock("root"):
                 Ts.reads()
@@ -615,12 +614,11 @@ Insert the custom rule into the rule chain. Note that ``from_callable`` returns 
 
     from __future__ import annotations
 
-    # from tvm.script import ir as I
     # from tvm.script import relax as R
     # from tvm.script import s_tir as Ts
     # from tvm.script import tirx as T
 
-    @I.ir_module
+    @T.ir_module
     class Module:
         @R.function
         def forward(x: R.Tensor((1, 768), dtype="float32"), fc1_weight: R.Tensor((768, 768), dtype="float32"), fc1_bias: R.Tensor((768,), dtype="float32"), norm_weight: R.Tensor((768,), dtype="float32"), norm_bias: R.Tensor((768,), dtype="float32"), fc2_weight: R.Tensor((256, 768), dtype="float32"), fc2_bias: R.Tensor((256,), dtype="float32")) -> R.Tensor((1, 256), dtype="float32"):
@@ -635,13 +633,13 @@ Insert the custom rule into the rule chain. Note that ``from_callable`` returns 
             return gv
 
         @Ts.function(private=True)
-        def fused_matmul1_add1(layer_norm: T.Tensor((T.int64(1), T.int64(768)), "float32"), permute_dims1: T.Tensor((T.int64(768), T.int64(256)), "float32"), fc2_bias: T.Tensor((T.int64(256),), "float32"), T_add_intermediate: T.Tensor((T.int64(1), T.int64(256)), "float32")):
+        def fused_matmul1_add1(layer_norm: T.Tensor((T.int64(1), T.int64(768)), T.float32), permute_dims1: T.Tensor((T.int64(768), T.int64(256)), T.float32), fc2_bias: T.Tensor((T.int64(256),), T.float32), T_add_intermediate: T.Tensor((T.int64(1), T.int64(256)), T.float32)):
             T.func_attr({"s_tir": True, "script.namespace": "s_tir", "tirx.is_scheduled": True, "tirx.noalias": True})
             with Ts.sblock("root"):
                 Ts.reads()
                 Ts.writes()
-                matmul_intermediate_local = Ts.sblock_alloc_tensor((T.int64(1), T.int64(256)), "float32", scope="local")
-                matmul_intermediate_rf_local = Ts.sblock_alloc_tensor((T.int64(16), T.int64(1), T.int64(256)), "float32", scope="local")
+                matmul_intermediate_local = Ts.sblock_alloc_tensor((T.int64(1), T.int64(256)), T.float32, scope="local")
+                matmul_intermediate_rf_local = Ts.sblock_alloc_tensor((T.int64(16), T.int64(1), T.int64(256)), T.float32, scope="local")
                 for ax0_fused_0 in T.parallel(T.int64(0), T.int64(16), annotations={"thread_binding": "blockIdx.x"}):
                     for ax0_fused_1 in T.parallel(T.int64(0), T.int64(16), annotations={"thread_binding": "threadIdx.x"}):
                         for ax1_fused_1 in T.parallel(T.int64(0), T.int64(16), annotations={"thread_binding": "threadIdx.y"}):
@@ -679,13 +677,13 @@ Insert the custom rule into the rule chain. Note that ``from_callable`` returns 
                                 T_add_intermediate[T.int64(0), v0_3] = matmul_intermediate_local[T.int64(0), v0_3] + fc2_bias[v0_3]
 
         @Ts.function(private=True)
-        def fused_matmul_add_relu(x: T.Tensor((T.int64(1), T.int64(768)), "float32"), permute_dims: T.Tensor((T.int64(768), T.int64(768)), "float32"), fc1_bias: T.Tensor((T.int64(768),), "float32"), compute_intermediate: T.Tensor((T.int64(1), T.int64(768)), "float32")):
+        def fused_matmul_add_relu(x: T.Tensor((T.int64(1), T.int64(768)), T.float32), permute_dims: T.Tensor((T.int64(768), T.int64(768)), T.float32), fc1_bias: T.Tensor((T.int64(768),), T.float32), compute_intermediate: T.Tensor((T.int64(1), T.int64(768)), T.float32)):
             T.func_attr({"s_tir": True, "script.namespace": "s_tir", "tirx.is_scheduled": True, "tirx.noalias": True})
             with Ts.sblock("root"):
                 Ts.reads()
                 Ts.writes()
-                matmul_intermediate_local = Ts.sblock_alloc_tensor((T.int64(1), T.int64(768)), "float32", scope="local")
-                matmul_intermediate_rf_local = Ts.sblock_alloc_tensor((T.int64(16), T.int64(1), T.int64(768)), "float32", scope="local")
+                matmul_intermediate_local = Ts.sblock_alloc_tensor((T.int64(1), T.int64(768)), T.float32, scope="local")
+                matmul_intermediate_rf_local = Ts.sblock_alloc_tensor((T.int64(16), T.int64(1), T.int64(768)), T.float32, scope="local")
                 for ax0_fused_0 in T.parallel(T.int64(0), T.int64(48), annotations={"thread_binding": "blockIdx.x"}):
                     for ax0_fused_1 in T.parallel(T.int64(0), T.int64(16), annotations={"thread_binding": "threadIdx.x"}):
                         for ax1_fused_1 in T.parallel(T.int64(0), T.int64(16), annotations={"thread_binding": "threadIdx.y"}):
@@ -723,13 +721,13 @@ Insert the custom rule into the rule chain. Note that ``from_callable`` returns 
                                 compute_intermediate[T.int64(0), v0_3] = T.max(matmul_intermediate_local[T.int64(0), v0_3] + fc1_bias[v0_3], T.float32(0.0))
 
         @Ts.function(private=True)
-        def layer_norm(relu: T.Tensor((T.int64(1), T.int64(768)), "float32"), norm_weight: T.Tensor((T.int64(768),), "float32"), norm_bias: T.Tensor((T.int64(768),), "float32"), T_layer_norm: T.Tensor((T.int64(1), T.int64(768)), "float32")):
+        def layer_norm(relu: T.Tensor((T.int64(1), T.int64(768)), T.float32), norm_weight: T.Tensor((T.int64(768),), T.float32), norm_bias: T.Tensor((T.int64(768),), T.float32), T_layer_norm: T.Tensor((T.int64(1), T.int64(768)), T.float32)):
             T.func_attr({"op_pattern": 4, "s_tir": True, "script.namespace": "s_tir", "tirx.is_scheduled": True, "tirx.noalias": True})
             with Ts.sblock("root"):
                 Ts.reads()
                 Ts.writes()
-                relu_sum_shared = Ts.sblock_alloc_tensor((T.int64(1),), "float32", scope="shared")
-                relu_var_sum_shared = Ts.sblock_alloc_tensor((T.int64(1),), "float32", scope="shared")
+                relu_sum_shared = Ts.sblock_alloc_tensor((T.int64(1),), T.float32, scope="shared")
+                relu_var_sum_shared = Ts.sblock_alloc_tensor((T.int64(1),), T.float32, scope="shared")
                 for ax0_fused in T.parallel(T.int64(0), T.int64(1), annotations={"thread_binding": "blockIdx.x"}):
                     for ax0 in range(T.int64(0), T.int64(1)):
                         for ax1_fused_1 in T.parallel(T.int64(0), T.int64(256), annotations={"thread_binding": "threadIdx.x"}):
@@ -763,7 +761,7 @@ Insert the custom rule into the rule chain. Note that ``from_callable`` returns 
                                 T_layer_norm[T.int64(0), v1_2] = (relu[T.int64(0), v1_2] - relu_sum_shared[T.int64(0)] / T.float32(768.0)) * T.rsqrt(relu_var_sum_shared[T.int64(0)] / T.float32(768.0) + T.float32(1.0000000000000001e-05)) * norm_weight[v1_2] + norm_bias[v1_2]
 
         @Ts.function(private=True)
-        def transpose(fc1_weight: T.Tensor((T.int64(768), T.int64(768)), "float32"), T_transpose: T.Tensor((T.int64(768), T.int64(768)), "float32")):
+        def transpose(fc1_weight: T.Tensor((T.int64(768), T.int64(768)), T.float32), T_transpose: T.Tensor((T.int64(768), T.int64(768)), T.float32)):
             T.func_attr({"op_pattern": 2, "s_tir": True, "script.namespace": "s_tir", "tirx.is_scheduled": True, "tirx.noalias": True})
             with Ts.sblock("root"):
                 Ts.reads()
@@ -778,7 +776,7 @@ Insert the custom rule into the rule chain. Note that ``from_callable`` returns 
                             T_transpose[v0, v1] = fc1_weight[v1, v0]
 
         @Ts.function(private=True)
-        def transpose1(fc2_weight: T.Tensor((T.int64(256), T.int64(768)), "float32"), T_transpose: T.Tensor((T.int64(768), T.int64(256)), "float32")):
+        def transpose1(fc2_weight: T.Tensor((T.int64(256), T.int64(768)), T.float32), T_transpose: T.Tensor((T.int64(768), T.int64(256)), T.float32)):
             T.func_attr({"op_pattern": 2, "s_tir": True, "script.namespace": "s_tir", "tirx.is_scheduled": True, "tirx.noalias": True})
             with Ts.sblock("root"):
                 Ts.reads()

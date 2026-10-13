@@ -120,21 +120,21 @@ with NN module frontend or TVMScript. Here we use a simple neural network model 
 
     from __future__ import annotations
 
-    # from tvm.script import ir as I
     # from tvm.script import relax as R
+    # from tvm.script import tirx as T
 
-    @I.ir_module
+    @T.ir_module
     class Module:
         @R.function
         def forward(x: R.Tensor((1, 784), dtype="float32"), fc1_weight: R.Tensor((256, 784), dtype="float32"), fc1_bias: R.Tensor((256,), dtype="float32"), fc2_weight: R.Tensor((10, 256), dtype="float32")) -> R.Tensor((1, 10), dtype="float32"):
             R.func_attr({"num_input": 1})
             with R.dataflow():
                 permute_dims: R.Tensor((784, 256), dtype="float32") = R.permute_dims(fc1_weight)
-                matmul: R.Tensor((1, 256), dtype="float32") = I.Call("relax.matmul", [x, permute_dims], attrs=I.make_node("relax.attrs.MatmulAttrs", out_dtype=None), ty=R.Tensor((1, 256), dtype="float32"))
+                matmul: R.Tensor((1, 256), dtype="float32") = T.Call("relax.matmul", [x, permute_dims], attrs=T.make_node("relax.attrs.MatmulAttrs", out_dtype=None), ty=R.Tensor((1, 256), dtype="float32"))
                 add: R.Tensor((1, 256), dtype="float32") = R.add(matmul, fc1_bias, ty=R.Tensor((1, 256), dtype="float32"))
                 relu: R.Tensor((1, 256), dtype="float32") = R.nn.relu(add)
                 permute_dims1: R.Tensor((256, 10), dtype="float32") = R.permute_dims(fc2_weight)
-                matmul1: R.Tensor((1, 10), dtype="float32") = I.Call("relax.matmul", [relu, permute_dims1], attrs=I.make_node("relax.attrs.MatmulAttrs", out_dtype=None), ty=R.Tensor((1, 10), dtype="float32"))
+                matmul1: R.Tensor((1, 10), dtype="float32") = T.Call("relax.matmul", [relu, permute_dims1], attrs=T.make_node("relax.attrs.MatmulAttrs", out_dtype=None), ty=R.Tensor((1, 10), dtype="float32"))
                 gv: R.Tensor((1, 10), dtype="float32") = matmul1
                 R.output(gv)
             return gv
@@ -207,19 +207,19 @@ operator. Here we demonstrate how to dispatch the CUBLAS library for certain pat
 
     from __future__ import annotations
 
-    # from tvm.script import ir as I
     # from tvm.script import relax as R
+    # from tvm.script import tirx as T
 
-    @I.ir_module
+    @T.ir_module
     class Module:
-        I.module_attrs({"external_mods": [metadata["ffi.Module"][0]]})
+        T.module_attrs({"external_mods": [metadata["ffi.Module"][0]]})
         @R.function
         def forward(x: R.Tensor((1, 784), dtype="float32"), fc1_weight: R.Tensor((256, 784), dtype="float32"), fc1_bias: R.Tensor((256,), dtype="float32"), fc2_weight: R.Tensor((10, 256), dtype="float32")) -> R.Tensor((1, 10), dtype="float32"):
             R.func_attr({"num_input": 1})
             with R.dataflow():
                 lv = R.call_dps_packed("fused_relax_permute_dims_relax_matmul_relax_add_relax_nn_relu_cublas", (fc1_weight, x, fc1_bias), ty_args=[R.Tensor((1, 256), dtype="float32")])
                 permute_dims1: R.Tensor((256, 10), dtype="float32") = R.permute_dims(fc2_weight)
-                matmul1: R.Tensor((1, 10), dtype="float32") = I.Call("relax.matmul", [lv, permute_dims1], attrs=I.make_node("relax.attrs.MatmulAttrs", out_dtype=None), ty=R.Tensor((1, 10), dtype="float32"))
+                matmul1: R.Tensor((1, 10), dtype="float32") = T.Call("relax.matmul", [lv, permute_dims1], attrs=T.make_node("relax.attrs.MatmulAttrs", out_dtype=None), ty=R.Tensor((1, 10), dtype="float32"))
                 gv: R.Tensor((1, 10), dtype="float32") = matmul1
                 R.output(gv)
             return gv
@@ -325,14 +325,13 @@ it achieves a balance between performance and compilation time.
 
     from __future__ import annotations
 
-    # from tvm.script import ir as I
     # from tvm.script import relax as R
     # from tvm.script import s_tir as Ts
     # from tvm.script import tirx as T
 
-    @I.ir_module
+    @T.ir_module
     class Module:
-        I.module_attrs({"external_mods": [metadata["ffi.Module"][0]]})
+        T.module_attrs({"external_mods": [metadata["ffi.Module"][0]]})
         @R.function
         def forward(x: R.Tensor((1, 784), dtype="float32"), fc1_weight: R.Tensor((256, 784), dtype="float32"), fc1_bias: R.Tensor((256,), dtype="float32"), fc2_weight: R.Tensor((10, 256), dtype="float32")) -> R.Tensor((1, 10), dtype="float32"):
             R.func_attr({"num_input": 1})
@@ -344,7 +343,7 @@ it achieves a balance between performance and compilation time.
             return gv
 
         @Ts.function(private=True)
-        def transpose(fc2_weight: T.Tensor((T.int64(10), T.int64(256)), "float32"), T_transpose: T.Tensor((T.int64(256), T.int64(10)), "float32")):
+        def transpose(fc2_weight: T.Tensor((T.int64(10), T.int64(256)), T.float32), T_transpose: T.Tensor((T.int64(256), T.int64(10)), T.float32)):
             T.func_attr({"op_pattern": 2, "s_tir": True, "script.namespace": "s_tir", "tirx.is_scheduled": True, "tirx.noalias": True})
             with Ts.sblock("root"):
                 Ts.reads()
@@ -360,12 +359,12 @@ it achieves a balance between performance and compilation time.
                             T_transpose[v0, v1] = fc2_weight[v1, v0]
 
         @Ts.function(private=True)
-        def matmul(lv: T.Tensor((T.int64(1), T.int64(256)), "float32"), permute_dims1: T.Tensor((T.int64(256), T.int64(10)), "float32"), matmul: T.Tensor((T.int64(1), T.int64(10)), "float32")):
+        def matmul(lv: T.Tensor((T.int64(1), T.int64(256)), T.float32), permute_dims1: T.Tensor((T.int64(256), T.int64(10)), T.float32), matmul: T.Tensor((T.int64(1), T.int64(10)), T.float32)):
             T.func_attr({"op_pattern": 4, "s_tir": True, "script.namespace": "s_tir", "tirx.is_scheduled": True, "tirx.noalias": True})
             with Ts.sblock("root"):
                 Ts.reads()
                 Ts.writes()
-                matmul_rf_local = Ts.sblock_alloc_tensor((T.int64(16), T.int64(1), T.int64(10)), "float32", scope="local")
+                matmul_rf_local = Ts.sblock_alloc_tensor((T.int64(16), T.int64(1), T.int64(10)), T.float32, scope="local")
                 for ax0_fused_0 in T.parallel(T.int64(0), T.int64(1), annotations={"thread_binding": "blockIdx.x"}):
                     for ax0_fused_1 in T.parallel(T.int64(0), T.int64(10), annotations={"thread_binding": "threadIdx.x"}):
                         for ax1_fused_1 in T.parallel(T.int64(0), T.int64(16), annotations={"thread_binding": "threadIdx.y"}):

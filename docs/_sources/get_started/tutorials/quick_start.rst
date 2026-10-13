@@ -135,21 +135,21 @@ in TVM.
 
     from __future__ import annotations
 
-    # from tvm.script import ir as I
     # from tvm.script import relax as R
+    # from tvm.script import tirx as T
 
-    @I.ir_module
+    @T.ir_module
     class Module:
         @R.function
         def forward(x: R.Tensor((1, 784), dtype="float32"), fc1_weight: R.Tensor((256, 784), dtype="float32"), fc1_bias: R.Tensor((256,), dtype="float32"), fc2_weight: R.Tensor((10, 256), dtype="float32"), fc2_bias: R.Tensor((10,), dtype="float32")) -> R.Tensor((1, 10), dtype="float32"):
             R.func_attr({"num_input": 1})
             with R.dataflow():
                 permute_dims: R.Tensor((784, 256), dtype="float32") = R.permute_dims(fc1_weight)
-                matmul: R.Tensor((1, 256), dtype="float32") = I.Call("relax.matmul", [x, permute_dims], attrs=I.make_node("relax.attrs.MatmulAttrs", out_dtype=None), ty=R.Tensor((1, 256), dtype="float32"))
+                matmul: R.Tensor((1, 256), dtype="float32") = T.Call("relax.matmul", [x, permute_dims], attrs=T.make_node("relax.attrs.MatmulAttrs", out_dtype=None), ty=R.Tensor((1, 256), dtype="float32"))
                 add: R.Tensor((1, 256), dtype="float32") = R.add(matmul, fc1_bias, ty=R.Tensor((1, 256), dtype="float32"))
                 relu: R.Tensor((1, 256), dtype="float32") = R.nn.relu(add)
                 permute_dims1: R.Tensor((256, 10), dtype="float32") = R.permute_dims(fc2_weight)
-                matmul1: R.Tensor((1, 10), dtype="float32") = I.Call("relax.matmul", [relu, permute_dims1], attrs=I.make_node("relax.attrs.MatmulAttrs", out_dtype=None), ty=R.Tensor((1, 10), dtype="float32"))
+                matmul1: R.Tensor((1, 10), dtype="float32") = T.Call("relax.matmul", [relu, permute_dims1], attrs=T.make_node("relax.attrs.MatmulAttrs", out_dtype=None), ty=R.Tensor((1, 10), dtype="float32"))
                 add1: R.Tensor((1, 10), dtype="float32") = R.add(matmul1, fc2_bias, ty=R.Tensor((1, 10), dtype="float32"))
                 gv: R.Tensor((1, 10), dtype="float32") = add1
                 R.output(gv)
@@ -226,8 +226,8 @@ different devices.
 
  .. code-block:: none
 
-    [[24169.14  24115.309 24333.451 25238.049 25234.387 25962.838 25277.785
-      26460.238 25188.643 24332.766]]
+    [[25074.785 24921.928 24762.178 24123.896 24405.777 24741.559 23815.895
+      23636.9   24408.617 24108.373]]
 
 
 
