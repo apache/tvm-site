@@ -6,7 +6,7 @@
 
 Computation times
 =================
-**00:00.761** total execution time for 4 files **from deep_dive/tensor_ir/tutorials**:
+**00:00.760** total execution time for 4 files **from deep_dive/tensor_ir/tutorials**:
 
 .. container::
 
