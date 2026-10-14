@@ -97,7 +97,7 @@ var searchData=
   ['replacealluses_94',['ReplaceAllUses',['../classtvm_1_1relax_1_1DataflowBlockRewriteObj.html#adf93ac9420c9fc086a7f1cd5eb6108ec',1,'tvm::relax::DataflowBlockRewriteObj']]],
   ['replayfunc_95',['ReplayFunc',['../classtvm_1_1s__tir_1_1meta__schedule_1_1SearchStrategy.html#ac551cfcf801c3b12ddd0cc8ff96d5c93',1,'tvm::s_tir::meta_schedule::SearchStrategy']]],
   ['replaytrace_96',['ReplayTrace',['../classtvm_1_1s__tir_1_1meta__schedule_1_1SearchStrategy.html#af6801879c31074e69d6f234e62655919',1,'tvm::s_tir::meta_schedule::SearchStrategy']]],
-  ['replica_97',['replica',['../classtvm_1_1tirx_1_1TileLayoutNode.html#a1f05ca754a1c3ccd8aad489e9a5b33d2',1,'tvm::tirx::TileLayoutNode::replica'],['../classtvm_1_1relax_1_1distributed_1_1PlacementSpec.html#a7c59afa4c0feaf6fd964188895508504',1,'tvm::relax::distributed::PlacementSpec::Replica()']]],
+  ['replica_97',['replica',['../classtvm_1_1relax_1_1distributed_1_1PlacementSpec.html#a7c59afa4c0feaf6fd964188895508504',1,'tvm::relax::distributed::PlacementSpec::Replica()'],['../classtvm_1_1tirx_1_1TileLayoutNode.html#a1f05ca754a1c3ccd8aad489e9a5b33d2',1,'tvm::tirx::TileLayoutNode::replica']]],
   ['reply_98',['Reply',['../classtvm_1_1runtime_1_1DiscoChannel.html#a5470b546c36e163a3d7b7b1ab1ab8137',1,'tvm::runtime::DiscoChannel']]],
   ['reporttypemismatch_99',['ReportTypeMismatch',['../namespacetvm_1_1sig_1_1details.html#a94c760d3534a512cf5e8c3a1977c1826',1,'tvm::sig::details']]],
   ['required_5fpass_100',['required_pass',['../classtvm_1_1transform_1_1PassContextObj.html#a8f73716eea561fd0e114fbfb0a8067a4',1,'tvm::transform::PassContextObj']]],
