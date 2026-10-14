@@ -4,7 +4,7 @@ var searchData=
   ['handle_5fadd_5fbyte_5foffset_5fop_1',['handle_add_byte_offset_op',['../namespacetvm_1_1tirx.html#a719812248712215ceee5c7ed52359297',1,'tvm::tirx']]],
   ['has_5fdefault_2',['has_default',['../structtvm_1_1ConfigSchema_1_1OptionEntry.html#a30a56c9c53021d29a53bc6fb1071408e',1,'tvm::ConfigSchema::OptionEntry']]],
   ['hasattr_3',['HasAttr',['../classtvm_1_1relax_1_1DFPattern.html#a5ec24bab817dcd540c0db81c297c83ae',1,'tvm::relax::DFPattern']]],
-  ['hasattrmap_4',['HasAttrMap',['../classtvm_1_1Op.html#a184e48b10cb8afc97b5e84411f1525f3',1,'tvm::Op']]],
+  ['hasattrmap_4',['hasattrmap',['../classtvm_1_1Op.html#a184e48b10cb8afc97b5e84411f1525f3',1,'tvm::Op::HasAttrMap(const ffi::String &amp;attr_name)'],['../classtvm_1_1Op.html#a6bb30dce314e706ae02d9f13764a7bc5',1,'tvm::Op::HasAttrMap(ffi::reflection::AttrKey&lt; ValueType &gt; key)']]],
   ['hasblock_5',['HasBlock',['../classtvm_1_1s__tir_1_1ScheduleObj.html#a8674592f14650f4acdb9881977dbb757',1,'tvm::s_tir::ScheduleObj']]],
   ['hasdtype_6',['hasdtype',['../classtvm_1_1relax_1_1DFPattern.html#af8368cab9d48c402b043692cb4fd35d7',1,'tvm::relax::DFPattern::HasDtype(DLDataType dtype) const'],['../classtvm_1_1relax_1_1DFPattern.html#aef57e18f93cc317ba30efbd986a7df18',1,'tvm::relax::DFPattern::HasDtype(const std::string &amp;dtype) const']]],
   ['hasfunction_7',['HasFunction',['../classtvm_1_1runtime_1_1vm_1_1VMExecutable.html#acc43eb1d86590b9ea017734740ea2394',1,'tvm::runtime::vm::VMExecutable']]],
