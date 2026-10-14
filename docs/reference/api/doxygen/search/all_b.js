@@ -1,6 +1,6 @@
 var searchData=
 [
-  ['k_0',['k',['../structtvm_1_1backend_1_1cuda_1_1TCGen05InstrDescriptorBlockScaledAttrs.html#aa45768fa4199d67138a06fa17a331e44',1,'tvm::backend::cuda::TCGen05InstrDescriptorBlockScaledAttrs::K'],['../structtvm_1_1relax_1_1TriluAttrs.html#a22025ff4a4604e63426d292470dfeb04',1,'tvm::relax::TriluAttrs::k'],['../structtvm_1_1relax_1_1TopKAttrs.html#a2260a16086612ef65bb7861cd2a10190',1,'tvm::relax::TopKAttrs::k'],['../structtvm_1_1backend_1_1cuda_1_1TCGen05InstrDescriptorAttrs.html#a885b254c71d14c44a5a227d51c0e97d0',1,'tvm::backend::cuda::TCGen05InstrDescriptorAttrs::K']]],
+  ['k_0',['k',['../structtvm_1_1relax_1_1TopKAttrs.html#a2260a16086612ef65bb7861cd2a10190',1,'tvm::relax::TopKAttrs::k'],['../structtvm_1_1backend_1_1cuda_1_1TCGen05InstrDescriptorAttrs.html#a885b254c71d14c44a5a227d51c0e97d0',1,'tvm::backend::cuda::TCGen05InstrDescriptorAttrs::K'],['../structtvm_1_1backend_1_1cuda_1_1TCGen05InstrDescriptorBlockScaledAttrs.html#aa45768fa4199d67138a06fa17a331e44',1,'tvm::backend::cuda::TCGen05InstrDescriptorBlockScaledAttrs::K'],['../structtvm_1_1relax_1_1TriluAttrs.html#a22025ff4a4604e63426d292470dfeb04',1,'tvm::relax::TriluAttrs::k']]],
   ['kadd_1',['kAdd',['../classtvm_1_1script_1_1printer_1_1OperationDocNode.html#ab096bbea749ee994d75230cd8136afc2aa9130c0c8cfb5cbb3b70c98f89d3d96c',1,'tvm::script::printer::OperationDocNode']]],
   ['kallocalignment_2',['kAllocAlignment',['../namespacetvm_1_1runtime.html#ac8a77303649fb143634796b3dc50a286',1,'tvm::runtime']]],
   ['kallocator_3',['kAllocator',['../namespacetvm_1_1relax_1_1op__attr.html#aa5093fb1dd0e0391059a932d4d5b6e65',1,'tvm::relax::op_attr']]],
@@ -258,10 +258,10 @@ var searchData=
   ['ktaskname_255',['kTaskName',['../namespacetvm_1_1s__tir_1_1meta__schedule_1_1attr.html#ac244e9c83d0681361a5e6eb5e2ebee34',1,'tvm::s_tir::meta_schedule::attr']]],
   ['ktempallocaalignment_256',['kTempAllocaAlignment',['../namespacetvm_1_1runtime.html#a8f5819cabea098a1818cf7cda40fdb1f',1,'tvm::runtime']]],
   ['ktensorallocatedaddr_257',['kTensorAllocatedAddr',['../namespacetvm_1_1s__tir_1_1attr.html#a35374af1e555880bd7916f9d0cc8a751',1,'tvm::s_tir::attr']]],
-  ['ktensorcallvalidate_258',['kTensorCallValidate',['../namespacetvm_1_1tirx_1_1tile_1_1op__attr.html#a44985a3a86ff197632414d9cda6acf52',1,'tvm::tirx::tile::op_attr']]],
-  ['ktensordataalignment_259',['kTensorDataAlignment',['../namespacetvm_1_1tirx_1_1attr.html#ac7767d6107dbaa47cd43e269a170b92c',1,'tvm::tirx::attr']]],
-  ['ktensordimalign_260',['kTensorDimAlign',['../namespacetvm_1_1s__tir_1_1attr.html#a97aafcb77810fe40881f534c33cbf1be',1,'tvm::s_tir::attr']]],
-  ['ktensorized_261',['kTensorized',['../namespacetvm_1_1s__tir.html#af55619f9e02e1013983d034bfe02fa4da27e11945bbf1b9863bad250ec559b980',1,'tvm::s_tir']]],
+  ['ktensordataalignment_258',['kTensorDataAlignment',['../namespacetvm_1_1tirx_1_1attr.html#ac7767d6107dbaa47cd43e269a170b92c',1,'tvm::tirx::attr']]],
+  ['ktensordimalign_259',['kTensorDimAlign',['../namespacetvm_1_1s__tir_1_1attr.html#a97aafcb77810fe40881f534c33cbf1be',1,'tvm::s_tir::attr']]],
+  ['ktensorized_260',['kTensorized',['../namespacetvm_1_1s__tir.html#af55619f9e02e1013983d034bfe02fa4da27e11945bbf1b9863bad250ec559b980',1,'tvm::s_tir']]],
+  ['ktensorloadinfertype_261',['kTensorLoadInferType',['../namespacetvm_1_1type__attr.html#aa376719b1a356deeaf20873d65c0bfeb',1,'tvm::type_attr']]],
   ['ktensorstorevalidate_262',['kTensorStoreValidate',['../namespacetvm_1_1type__attr.html#ad8a280797cb3dfaf3e4e36798ab9c463',1,'tvm::type_attr']]],
   ['kthreadbinding_263',['kThreadBinding',['../namespacetvm_1_1s__tir_1_1attr.html#a1e7d8c9a502c735d88d71a640dc49d01',1,'tvm::s_tir::attr']]],
   ['kthreadindex_264',['kThreadIndex',['../namespacetvm_1_1s__tir.html#af55619f9e02e1013983d034bfe02fa4da518904ce27607f9b8c05bfbb03dcdb13',1,'tvm::s_tir']]],

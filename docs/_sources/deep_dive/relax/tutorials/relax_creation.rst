@@ -47,7 +47,7 @@ high-level Relax operators using TVMScript.
     from tvm.script import s_tir as Ts
     from tvm.script import tirx as T
 
-    n = T.dynamic("n")
+    n = T.dynamic("n", "int64")
 
 
     @I.ir_module
