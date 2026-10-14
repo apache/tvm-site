@@ -1,6 +1,6 @@
 var searchData=
 [
-  ['k_0',['k',['../structtvm_1_1relax_1_1TopKAttrs.html#a2260a16086612ef65bb7861cd2a10190',1,'tvm::relax::TopKAttrs::k'],['../structtvm_1_1backend_1_1cuda_1_1TCGen05InstrDescriptorAttrs.html#a885b254c71d14c44a5a227d51c0e97d0',1,'tvm::backend::cuda::TCGen05InstrDescriptorAttrs::K'],['../structtvm_1_1backend_1_1cuda_1_1TCGen05InstrDescriptorBlockScaledAttrs.html#aa45768fa4199d67138a06fa17a331e44',1,'tvm::backend::cuda::TCGen05InstrDescriptorBlockScaledAttrs::K'],['../structtvm_1_1relax_1_1TriluAttrs.html#a22025ff4a4604e63426d292470dfeb04',1,'tvm::relax::TriluAttrs::k']]],
+  ['k_0',['k',['../structtvm_1_1backend_1_1cuda_1_1TCGen05InstrDescriptorBlockScaledAttrs.html#aa45768fa4199d67138a06fa17a331e44',1,'tvm::backend::cuda::TCGen05InstrDescriptorBlockScaledAttrs::K'],['../structtvm_1_1relax_1_1TriluAttrs.html#a22025ff4a4604e63426d292470dfeb04',1,'tvm::relax::TriluAttrs::k'],['../structtvm_1_1relax_1_1TopKAttrs.html#a2260a16086612ef65bb7861cd2a10190',1,'tvm::relax::TopKAttrs::k'],['../structtvm_1_1backend_1_1cuda_1_1TCGen05InstrDescriptorAttrs.html#a885b254c71d14c44a5a227d51c0e97d0',1,'tvm::backend::cuda::TCGen05InstrDescriptorAttrs::K']]],
   ['kallocalignment_1',['kAllocAlignment',['../namespacetvm_1_1runtime.html#ac8a77303649fb143634796b3dc50a286',1,'tvm::runtime']]],
   ['kallocator_2',['kAllocator',['../namespacetvm_1_1relax_1_1op__attr.html#aac713807bfa296d9fb5c0e1cd4a3d98a',1,'tvm::relax::op_attr']]],
   ['kautocopy_3',['kAutoCopy',['../namespacetvm_1_1s__tir_1_1attr.html#a2a5f6e6df412703b92d32703953d18a4',1,'tvm::s_tir::attr']]],
@@ -84,7 +84,7 @@ var searchData=
   ['kmanifestsharedmemorylocalstage_81',['kManifestSharedMemoryLocalStage',['../namespacetvm_1_1s__tir_1_1attr.html#aaee139c934bd055cee43bad6d960b95f',1,'tvm::s_tir::attr']]],
   ['kmatmul_82',['kMatMul',['../namespacetvm_1_1topi.html#aa9f70e7392653f38da6ff53f5f554f98',1,'tvm::topi']]],
   ['kmaxstackalloca_83',['kMaxStackAlloca',['../namespacetvm_1_1runtime.html#a2f6f769f6dbbbb24929b7c9f91a48c90',1,'tvm::runtime']]],
-  ['kmemoryallocproperty_84',['kMemoryAllocProperty',['../namespacetvm_1_1runtime_1_1attr.html#a33cdd7343d94a65195e09f4f5c1966bd',1,'tvm::runtime::attr']]],
+  ['kmemoryallocproperty_84',['kMemoryAllocProperty',['../namespacetvm_1_1runtime_1_1attr.html#a1751e1d2ea8f9a01805bfbccbcdda24f',1,'tvm::runtime::attr']]],
   ['kmemoryplandynamicfuncoutput_85',['kMemoryPlanDynamicFuncOutput',['../namespacetvm_1_1relax_1_1attr.html#a4398bbb94316c0c8f471ed1b11e9f75f',1,'tvm::relax::attr']]],
   ['kmetascheduleautotensorize_86',['kMetaScheduleAutoTensorize',['../namespacetvm_1_1s__tir_1_1attr.html#a4c99244923d3f9224ab35083439dc44b',1,'tvm::s_tir::attr']]],
   ['kmetascheduleautotensorizeinit_87',['kMetaScheduleAutoTensorizeInit',['../namespacetvm_1_1s__tir_1_1attr.html#a99627cde9c9a4b5573e12808116f78a6',1,'tvm::s_tir::attr']]],
