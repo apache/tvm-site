@@ -630,6 +630,8 @@ document.write(`
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#tvm.tirx.script.ir_builder.ir.LetAnnotation"><code class="docutils literal notranslate"><span class="pre">LetAnnotation</span></code></a></li>
 </ul>
 </li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#tracing-ordinary-python">Tracing ordinary Python</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#tensor-parameters-and-shared-dimensions">Tensor parameters and shared dimensions</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#explicit-register-fragments">Explicit register fragments</a></li>
 </ul>
             </nav>
@@ -1568,6 +1570,60 @@ explicit <code class="docutils literal notranslate"><span class="pre">LetStmt</s
 </dd></dl>
 
 </section>
+<section id="tracing-ordinary-python">
+<h2>Tracing ordinary Python<a class="headerlink" href="#tracing-ordinary-python" title="Link to this heading">#</a></h2>
+<p>The native builders also support frontends that execute ordinary Python to
+construct IR. <code class="docutils literal notranslate"><span class="pre">IRBuilder.line_trace_scope()</span></code> records file-backed Python source
+lines. Script-facing void calls automatically emit into an active IRBuilder,
+with or without line tracing:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">tvm.script</span><span class="w"> </span><span class="kn">import</span> <span class="n">tirx</span> <span class="k">as</span> <span class="n">Tx</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">tvm.script.ir_builder</span><span class="w"> </span><span class="kn">import</span> <span class="n">IRBuilder</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">tvm.tirx.script</span><span class="w"> </span><span class="kn">import</span> <span class="n">ir_builder</span> <span class="k">as</span> <span class="n">I</span>
+
+<span class="k">with</span> <span class="n">IRBuilder</span><span class="p">()</span> <span class="k">as</span> <span class="n">builder</span><span class="p">:</span>
+    <span class="k">with</span> <span class="n">I</span><span class="o">.</span><span class="n">function_</span><span class="p">():</span>
+        <span class="n">I</span><span class="o">.</span><span class="n">func_name_</span><span class="p">(</span><span class="s2">&quot;synchronize&quot;</span><span class="p">)</span>
+        <span class="k">with</span> <span class="n">builder</span><span class="o">.</span><span class="n">line_trace_scope</span><span class="p">():</span>
+            <span class="k">with</span> <span class="n">Tx</span><span class="o">.</span><span class="n">device_entry</span><span class="p">(</span>
+                <span class="n">launch</span><span class="o">=</span><span class="n">Tx</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">LaunchConfig</span><span class="p">(</span><span class="n">grid</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">block</span><span class="o">=</span><span class="mi">32</span><span class="p">)</span>
+            <span class="p">):</span>
+                <span class="n">Tx</span><span class="o">.</span><span class="n">ptx</span><span class="p">[</span><span class="s2">&quot;bar.sync&quot;</span><span class="p">](</span><span class="mi">0</span><span class="p">)</span>
+<span class="n">function</span> <span class="o">=</span> <span class="n">builder</span><span class="o">.</span><span class="n">get</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>Auto emission applies to script-facing calls through <code class="docutils literal notranslate"><span class="pre">Tx</span></code>, including PTX
+and backend namespaces. A void call returns an <code class="docutils literal notranslate"><span class="pre">AlreadyEmitted</span></code> receipt;
+passing that receipt to <code class="docutils literal notranslate"><span class="pre">evaluate</span></code> or <code class="docutils literal notranslate"><span class="pre">emit_</span></code> does not emit it again.
+Calls producing values remain expressions. Raw IR constructors such as
+<code class="docutils literal notranslate"><span class="pre">tvm.ir.Call</span></code>, <code class="docutils literal notranslate"><span class="pre">tvm.tirx.op</span></code> and raw backend APIs remain pure even inside
+an IRBuilder. Line tracing only supplies source locations; it neither enables
+nor disables emission. The trace scope restores its previous trace and location
+state on exit, including exceptional exits, and applies only to its owning builder.
+Explicit <code class="docutils literal notranslate"><span class="pre">with_loc</span></code> and <code class="docutils literal notranslate"><span class="pre">at_</span></code> locations compose with the traced lines.</p>
+<p>Line tracing excludes TVM and standard-library implementation files. Frontends
+can supply additional directories using <code class="docutils literal notranslate"><span class="pre">line_trace_scope(exclude_paths=(...</span> <span class="pre">,))</span></code>.
+User helpers retain their own source line and the caller’s location through
+<code class="docutils literal notranslate"><span class="pre">CallSiteLoc</span></code>. These locations cover whole lines; the TVMScript parser records
+expression ranges. Python loops and branches execute during construction; use
+the native statement frames to construct runtime control flow.</p>
+</section>
+<section id="tensor-parameters-and-shared-dimensions">
+<h2>Tensor parameters and shared dimensions<a class="headerlink" href="#tensor-parameters-and-shared-dimensions" title="Link to this heading">#</a></h2>
+<p>Traced frontends can bind native types directly with <code class="docutils literal notranslate"><span class="pre">I.arg_</span></code>. A shared symbolic
+dimension imposes the same size constraint on multiple tensor arguments:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">n</span> <span class="o">=</span> <span class="n">Tx</span><span class="o">.</span><span class="n">Var</span><span class="p">(</span><span class="s2">&quot;n&quot;</span><span class="p">,</span> <span class="n">Tx</span><span class="o">.</span><span class="n">int64</span><span class="p">)</span>
+<span class="c1"># Inside an I.function_() frame:</span>
+<span class="n">x</span> <span class="o">=</span> <span class="n">I</span><span class="o">.</span><span class="n">arg_</span><span class="p">(</span><span class="s2">&quot;x&quot;</span><span class="p">,</span> <span class="n">Tx</span><span class="o">.</span><span class="n">Tensor</span><span class="p">((</span><span class="n">n</span><span class="p">,),</span> <span class="n">Tx</span><span class="o">.</span><span class="n">float32</span><span class="p">))</span>
+<span class="n">y</span> <span class="o">=</span> <span class="n">I</span><span class="o">.</span><span class="n">arg_</span><span class="p">(</span><span class="s2">&quot;y&quot;</span><span class="p">,</span> <span class="n">Tx</span><span class="o">.</span><span class="n">Tensor</span><span class="p">((</span><span class="n">n</span><span class="p">,),</span> <span class="n">Tx</span><span class="o">.</span><span class="n">float32</span><span class="p">))</span>
+</pre></div>
+</div>
+<p>The compiled host entry accepts tensor arguments, including PyTorch tensors,
+and checks their dtype, rank and shared dimensions. Use independent symbolic
+dimensions for unrelated sizes. If the same dimension is also an explicit scalar
+parameter, <code class="docutils literal notranslate"><span class="pre">I.arg_(&quot;n&quot;,</span> <span class="pre">n)</span></code> binds that existing Var. <code class="docutils literal notranslate"><span class="pre">x.data</span></code> and
+<code class="docutils literal notranslate"><span class="pre">x.ptr_to(indices)</span></code> provide pointers inside the function. <code class="docutils literal notranslate"><span class="pre">Tx.Ptr</span></code> retains
+its raw-pointer ABI and does not imply tensor argument conversion.</p>
+</section>
 <section id="explicit-register-fragments">
 <h2>Explicit register fragments<a class="headerlink" href="#explicit-register-fragments" title="Link to this heading">#</a></h2>
 <p>A register fragment is an ordinary local tensor with an explicit layout.
@@ -1668,6 +1724,8 @@ pack/unpack, and a complete store/load example.</p>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#tvm.tirx.script.ir_builder.ir.LetAnnotation"><code class="docutils literal notranslate"><span class="pre">LetAnnotation</span></code></a></li>
 </ul>
 </li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#tracing-ordinary-python">Tracing ordinary Python</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#tensor-parameters-and-shared-dimensions">Tensor parameters and shared dimensions</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#explicit-register-fragments">Explicit register fragments</a></li>
 </ul>
   </nav></div>
