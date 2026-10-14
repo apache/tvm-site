@@ -284,7 +284,7 @@ var searchData=
   ['stmtsimplify_281',['stmtsimplify',['../namespacetvm_1_1s__tir_1_1transform.html#a20b050e2315472ab2ff1380bb29f53a2',1,'tvm::s_tir::transform::StmtSimplify()'],['../namespacetvm_1_1tirx_1_1transform.html#ab4d73e189be73684f4899fe3bfc442be',1,'tvm::tirx::transform::StmtSimplify()']]],
   ['stmtsref_282',['stmtsref',['../classtvm_1_1tirx_1_1StmtSRef.html',1,'tvm::tirx::StmtSRef'],['../classtvm_1_1tirx_1_1StmtSRef.html#af1a0841512908cabb63a2f19524f5cac',1,'tvm::tirx::StmtSRef::StmtSRef()']]],
   ['stmtsrefobj_283',['StmtSRefObj',['../classtvm_1_1tirx_1_1StmtSRefObj.html',1,'tvm::tirx']]],
-  ['stop_284',['stop',['../classtvm_1_1runtime_1_1TimerObj.html#a32ae398c8a827df26a622a51536354d5',1,'tvm::runtime::TimerObj::Stop()'],['../classtvm_1_1script_1_1printer_1_1SliceDocNode.html#ab50085f5404b9d37827e19f7b382d2e6',1,'tvm::script::printer::SliceDocNode::stop']]],
+  ['stop_284',['stop',['../classtvm_1_1script_1_1printer_1_1SliceDocNode.html#ab50085f5404b9d37827e19f7b382d2e6',1,'tvm::script::printer::SliceDocNode::stop'],['../classtvm_1_1runtime_1_1TimerObj.html#a32ae398c8a827df26a622a51536354d5',1,'tvm::runtime::TimerObj::Stop()']]],
   ['storagealign_285',['StorageAlign',['../classtvm_1_1s__tir_1_1ScheduleObj.html#a0019516e3571e18a886ce29a64fc74c6',1,'tvm::s_tir::ScheduleObj']]],
   ['storagebytes_286',['StorageBytes',['../classtvm_1_1PrimType.html#ae38ccfedf456e6d6cf364249fabe75ce',1,'tvm::PrimType']]],
   ['storagerewrite_287',['StorageRewrite',['../namespacetvm_1_1tirx_1_1transform.html#a84da2f37b472a0f3266fa12642babf74',1,'tvm::tirx::transform']]],
