@@ -624,7 +624,15 @@ document.write(`
             </div>
             <nav aria-label="Page">
                 <ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#example-filling-and-copying-separated-register-slots">Example: filling and copying separated register slots</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#call-parameters">Call parameters</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#data-representation">Data representation</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#operand-specification">Operand specification</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#legality-conditions">Legality conditions</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#code-generation">Code generation</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#examples">Examples</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#example-filling-and-copying-separated-register-slots">Example: filling and copying separated register slots</a></li>
+</ul>
+</li>
 </ul>
             </nav>
         </div>
@@ -638,16 +646,74 @@ document.write(`
                   
   <section id="mov">
 <h1>mov<a class="headerlink" href="#mov" title="Link to this heading">#</a></h1>
-<p><code class="docutils literal notranslate"><span class="pre">mov</span></code> copies register bits or assembles/disassembles a native register
-group. It performs no numeric conversion and cannot change which thread
-owns a value. Use <a class="reference internal" href="cvt.html"><span class="doc">cvt</span></a> for conversion and <a class="reference internal" href="ld_st.html"><span class="doc">ld / st</span></a> for memory.</p>
-<p>The scalar form ends both tensor operands in <code class="docutils literal notranslate"><span class="pre">(1,)</span></code>. All earlier axes
-after the execution-group prefix are repeats. A scalar source expression
-can broadcast, for example to fill a register tile. Vector-group mov forms
-instead use the group length declared by that PTX form; each input/output
-word remains an explicit operand slot.</p>
+<section id="call-parameters">
+<h2>Call parameters<a class="headerlink" href="#call-parameters" title="Link to this heading">#</a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">T.cuda.tile.apply(T.ptx[opcode],</span> <span class="pre">*operands,</span> <span class="pre">scope=&quot;thread&quot;,</span> <span class="pre">**parameters)</span></code></p>
+<p>Operand order: <code class="docutils literal notranslate"><span class="pre">dst,</span> <span class="pre">src;</span> <span class="pre">or</span> <span class="pre">the</span> <span class="pre">explicit</span> <span class="pre">packing/unpacking</span> <span class="pre">register</span> <span class="pre">groups</span></code>.</p>
+<div class="pst-scrollable-table-container"><table class="table">
+<thead>
+<tr class="row-odd"><th class="head"><p>Parameter</p></th>
+<th class="head"><p>Type / default</p></th>
+<th class="head"><p>Meaning</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">scope</span></code></p></td>
+<td><p>static str; default “thread”</p></td>
+<td><p>Execution scope; group axes follow <a class="reference internal" href="../cuda_tile_patterns.html"><span class="doc">Explicit CUDA tile patterns</span></a>. It does not elect an issuing thread.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">pred</span></code></p></td>
+<td><p>runtime bool; default None</p></td>
+<td><p>Execute the instruction when true; None is unconditional.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">preserve_dst</span></code></p></td>
+<td><p>static bool; default False</p></td>
+<td><p>For a predicated register result, retain the initialized destination when pred is false; otherwise the inactive result is undefined.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>Only the parameters listed here are instruction parameters. Opcode qualifiers are
+written in <code class="docutils literal notranslate"><span class="pre">T.ptx[opcode]</span></code>.</p>
+</section>
+<section id="data-representation">
+<h2>Data representation<a class="headerlink" href="#data-representation" title="Link to this heading">#</a></h2>
+<p>Each operand uses the scalar PTX register type or its equal-width bit container. A
+packed f16x2/bf16x2 value occupies one b32 container; f32x2 occupies one b64 container.
+The final tensor axis counts native registers, not the packed scalar elements. Rounding,
+saturation, signedness and packing are selected in the opcode.</p>
+</section>
+<section id="operand-specification">
+<h2>Operand specification<a class="headerlink" href="#operand-specification" title="Link to this heading">#</a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">mov</span></code> copies register bits or assembles/disassembles a native register group. It
+performs no numeric conversion and cannot change which thread owns a value. Use
+<a class="reference internal" href="cvt.html"><span class="doc">cvt</span></a> for conversion and <a class="reference internal" href="ld_st.html"><span class="doc">ld / st</span></a> for memory.</p>
+<p>The scalar form ends both tensor operands in <code class="docutils literal notranslate"><span class="pre">(1,)</span></code>. All earlier axes after the
+execution-group prefix are repeats. A scalar source expression can broadcast, for
+example to fill a register tile. Vector-group mov forms instead use the group length
+declared by that PTX form; each input/output word remains an explicit operand slot.</p>
+</section>
+<section id="legality-conditions">
+<h2>Legality conditions<a class="headerlink" href="#legality-conditions" title="Link to this heading">#</a></h2>
+<p>All tensor operands are local registers owned by the issuing thread. Their group/repeat
+shapes agree; the final extent equals that operand’s native register count (one for a
+scalar operand). Scalar expressions are allowed for single-register read inputs and
+broadcast across repeats. Destination slots must not overlap. Register storage strides
+are in container elements; they need not be one. The selected PTX form validates operand
+types.</p>
+</section>
+<section id="code-generation">
+<h2>Code generation<a class="headerlink" href="#code-generation" title="Link to this heading">#</a></h2>
+<p>For each group and row-major repeat coordinate, bind each tensor’s final register axis
+in increasing order and emit one selected instruction. A scalar input is reused. No
+packing, memory staging or synchronization is inserted. The number of expanded
+instructions per issuing thread is the product of repeat extents; downstream compiler
+optimizations may simplify unused or constant results.</p>
+</section>
+<section id="examples">
+<h2>Examples<a class="headerlink" href="#examples" title="Link to this heading">#</a></h2>
 <section id="example-filling-and-copying-separated-register-slots">
-<h2>Example: filling and copying separated register slots<a class="headerlink" href="#example-filling-and-copying-separated-register-slots" title="Link to this heading">#</a></h2>
+<h3>Example: filling and copying separated register slots<a class="headerlink" href="#example-filling-and-copying-separated-register-slots" title="Link to this heading">#</a></h3>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">tvm.script</span><span class="w"> </span><span class="kn">import</span> <span class="n">tirx</span> <span class="k">as</span> <span class="n">T</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">tvm.tirx.layout</span><span class="w"> </span><span class="kn">import</span> <span class="n">S</span><span class="p">,</span> <span class="n">TileLayout</span>
 
@@ -664,20 +730,19 @@ word remains an explicit operand slot.</p>
     <span class="n">T</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">tile</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="n">T</span><span class="o">.</span><span class="n">ptx</span><span class="p">[</span><span class="s2">&quot;st.global.b32&quot;</span><span class="p">],</span> <span class="n">Out</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>The first call emits four moves of the same constant. The second emits four
-moves to offsets 0, 2, 4, and 6 of <code class="docutils literal notranslate"><span class="pre">b</span></code>; its gaps require no extra remap
-buffer. All four output values are 17. Ordinary compiler optimizations may
-subsequently eliminate redundant moves; the tile expansion itself selects
-no alternative instruction or ownership map.</p>
-<p><code class="docutils literal notranslate"><span class="pre">pred</span></code> is an ordinary runtime predicate. For a predicated output that must
-keep its old value, initialize it and pass <code class="docutils literal notranslate"><span class="pre">preserve_dst=True</span></code>. A suppressed
-move is not a zero fill. Destination repeats must not overlap each other.</p>
-<p>For packed arithmetic, a bit reinterpretation such as
-<code class="docutils literal notranslate"><span class="pre">halves.view(&quot;uint32&quot;)</span></code> can expose the existing low/high halfword storage
-without a mov. Use an explicit group mov when assembling separately stored
-values. Group arity and carrier dtype must agree with the selected native
-form; the pattern does not guess a packing arrangement.</p>
+<p>The first call emits four moves of the same constant. The second emits four moves to
+offsets 0, 2, 4, and 6 of <code class="docutils literal notranslate"><span class="pre">b</span></code>; its gaps require no extra remap buffer. All four output
+values are 17. Ordinary compiler optimizations may subsequently eliminate redundant
+moves; the tile expansion itself selects no alternative instruction or ownership map.</p>
+<p><code class="docutils literal notranslate"><span class="pre">pred</span></code> is an ordinary runtime predicate. For a predicated output that must keep its
+old value, initialize it and pass <code class="docutils literal notranslate"><span class="pre">preserve_dst=True</span></code>. A suppressed move is not a zero
+fill. Destination repeats must not overlap each other.</p>
+<p>For packed arithmetic, a bit reinterpretation such as <code class="docutils literal notranslate"><span class="pre">halves.view(&quot;uint32&quot;)</span></code> can
+expose the existing low/high halfword storage without a mov. Use an explicit group mov
+when assembling separately stored values. Group arity and carrier dtype must agree with
+the selected native form; the pattern does not guess a packing arrangement.</p>
 <p>Implementation: <code class="docutils literal notranslate"><span class="pre">python/tvm/backend/cuda/tile/patterns/register.py</span></code>.</p>
+</section>
 </section>
 </section>
 
@@ -726,7 +791,15 @@ form; the pattern does not guess a packing arrangement.</p>
   </div>
   <nav class="bd-toc-nav page-toc">
     <ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#example-filling-and-copying-separated-register-slots">Example: filling and copying separated register slots</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#call-parameters">Call parameters</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#data-representation">Data representation</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#operand-specification">Operand specification</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#legality-conditions">Legality conditions</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#code-generation">Code generation</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#examples">Examples</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#example-filling-and-copying-separated-register-slots">Example: filling and copying separated register slots</a></li>
+</ul>
+</li>
 </ul>
   </nav></div>
 

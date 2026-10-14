@@ -625,6 +625,7 @@ document.write(`
             <nav aria-label="Page">
                 <ul class="visible nav section-nav flex-column">
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#group-repeat-and-atom-axes">Group, repeat, and atom axes</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#units-regions-and-generated-code">Units, regions and generated code</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#bit-global-load">128-bit global load</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#ldmatrix-with-interleaved-rows-and-separated-registers">ldmatrix with interleaved rows and separated registers</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#memory-and-register-instructions">Memory and register instructions</a></li>
@@ -655,47 +656,68 @@ document.write(`
                   <span class="n">scope</span><span class="o">=</span><span class="s2">&quot;thread&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>The instruction and modifiers determine the atom contract. The caller supplies
-regions with the canonical <code class="docutils literal notranslate"><span class="pre">group</span> <span class="pre">×</span> <span class="pre">repeat</span> <span class="pre">×</span> <span class="pre">atom</span></code> coordinates described
-below. Lowering checks the contract and emits one specified PTX
-instruction per repeat coordinate, in row-major repeat order. Lowering
-unrolls static repeats. It does not infer a different opcode, width, matrix
-count, transpose mode, or coordinate permutation.</p>
-<p>CUDA exposes two tile operations: <code class="docutils literal notranslate"><span class="pre">apply</span></code> for an explicitly selected PTX
-instruction and <code class="docutils literal notranslate"><span class="pre">ewise</span></code> for an explicitly supplied scalar TIRx function.
-The raw <code class="docutils literal notranslate"><span class="pre">T.ptx</span></code> namespace remains available for scalar/address operands.
-There is no automatic instruction selection or fallback to the retired CUDA
-dispatch algorithms. Trainium’s API and lowering are unchanged.</p>
-<p>This page is the contract reference. The <a class="reference internal" href="tile_ops.html"><span class="doc">Tile Operations</span></a> instruction
-guides provide complete kernels, caller views, synchronization, and numerical
-checks, organized by PTX instruction family.</p>
+<p>The instruction and modifiers determine the atom contract. The caller supplies regions
+with the canonical <code class="docutils literal notranslate"><span class="pre">group</span> <span class="pre">×</span> <span class="pre">repeat</span> <span class="pre">×</span> <span class="pre">atom</span></code> coordinates described below. Lowering
+checks the contract and emits one specified PTX instruction per repeat coordinate, in
+row-major repeat order. Lowering unrolls static repeats. It does not infer a different
+opcode, width, matrix count, transpose mode, or coordinate permutation.</p>
+<p>CUDA exposes two tile operations: <code class="docutils literal notranslate"><span class="pre">apply</span></code> for an explicitly selected PTX instruction
+and <code class="docutils literal notranslate"><span class="pre">ewise</span></code> for an explicitly supplied scalar TIRx function. The raw <code class="docutils literal notranslate"><span class="pre">T.ptx</span></code>
+namespace remains available for scalar/address operands. There is no automatic
+instruction selection or fallback to the retired CUDA dispatch algorithms. Trainium’s
+API and lowering are unchanged.</p>
+<p>This page defines common conventions; each instruction guide is its complete contract
+reference. The <a class="reference internal" href="tile_ops.html"><span class="doc">Tile Operations</span></a> instruction guides provide complete kernels, caller
+views, synchronization, and numerical checks, organized by PTX instruction family.</p>
 <section id="group-repeat-and-atom-axes">
 <h2>Group, repeat, and atom axes<a class="headerlink" href="#group-repeat-and-atom-axes" title="Link to this heading">#</a></h2>
-<p>A thread instruction at <code class="docutils literal notranslate"><span class="pre">scope=&quot;thread&quot;</span></code> has no group prefix. At
-<code class="docutils literal notranslate"><span class="pre">scope=&quot;warp&quot;</span></code> it has a leading lane group axis; at <code class="docutils literal notranslate"><span class="pre">scope=&quot;warpgroup&quot;</span></code>
-its groups are <code class="docutils literal notranslate"><span class="pre">(warp_in_group,</span> <span class="pre">lane)</span></code>; at <code class="docutils literal notranslate"><span class="pre">scope=&quot;cta&quot;</span></code> they are
-<code class="docutils literal notranslate"><span class="pre">(warp_in_cta,</span> <span class="pre">lane)</span></code>. Extents come from the active execution scope, including
-its explicitly guarded subrange. Warp-collective instructions consume the
-lane axis inside their atom instead: their group prefix is empty at warp
-scope, one warp axis at warpgroup/CTA scope. All 32 lanes must be active.
-Cluster scope requires an explicit launch cluster and prepends its CTA axes
-in z/y/x order, omitting undeclared leading axes. A one-dimensional cluster
-therefore has <code class="docutils literal notranslate"><span class="pre">(cta_x,</span> <span class="pre">warp,</span> <span class="pre">lane)</span></code> groups for thread instructions.
-Local tensor ownership uses <code class="docutils literal notranslate"><span class="pre">cbx/cby/cbz</span></code> for these CTA coordinates.</p>
+<p>A thread instruction at <code class="docutils literal notranslate"><span class="pre">scope=&quot;thread&quot;</span></code> has no group prefix. At <code class="docutils literal notranslate"><span class="pre">scope=&quot;warp&quot;</span></code> it
+has a leading lane group axis; at <code class="docutils literal notranslate"><span class="pre">scope=&quot;warpgroup&quot;</span></code> its groups are <code class="docutils literal notranslate"><span class="pre">(warp_in_group,</span>
+<span class="pre">lane)</span></code>; at <code class="docutils literal notranslate"><span class="pre">scope=&quot;cta&quot;</span></code> they are <code class="docutils literal notranslate"><span class="pre">(warp_in_cta,</span> <span class="pre">lane)</span></code>. Extents come from the
+active execution scope, including its explicitly guarded subrange. Warp-collective
+instructions consume the lane axis inside their atom instead: their group prefix is
+empty at warp scope, one warp axis at warpgroup/CTA scope. All 32 lanes must be active.
+Cluster scope requires an explicit launch cluster and prepends its CTA axes in z/y/x
+order, omitting undeclared leading axes. A one-dimensional cluster therefore has
+<code class="docutils literal notranslate"><span class="pre">(cta_x,</span> <span class="pre">warp,</span> <span class="pre">lane)</span></code> groups for thread instructions. Local tensor ownership uses
+<code class="docutils literal notranslate"><span class="pre">cbx/cby/cbz</span></code> for these CTA coordinates.</p>
 <p>For example, 64 threads, three 128b loads per thread:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># A and R both have shape (2, 32, 3, 4).</span>
 <span class="n">registers</span> <span class="o">=</span> <span class="n">TileLayout</span><span class="p">(</span><span class="n">S</span><span class="p">[(</span><span class="mi">2</span><span class="p">,</span><span class="mi">32</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">4</span><span class="p">):(</span><span class="mi">1</span> <span class="o">@</span> <span class="n">warpid</span><span class="p">,</span><span class="mi">1</span> <span class="o">@</span> <span class="n">laneid</span><span class="p">,</span><span class="mi">8</span><span class="p">,</span><span class="mi">2</span><span class="p">)])</span>
 <span class="n">T</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">tile</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="n">T</span><span class="o">.</span><span class="n">ptx</span><span class="p">[</span><span class="s2">&quot;ld.global.v4.b32&quot;</span><span class="p">],</span> <span class="n">R</span><span class="p">,</span> <span class="n">A</span><span class="p">,</span> <span class="n">scope</span><span class="o">=</span><span class="s2">&quot;cta&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>The first two coordinates bind hardware IDs, the third generates three
-unrolled calls per thread, and the last selects four words of one instruction.
-The separated register slots are legal; the four memory words must be aligned
-and contiguous. A changed opcode or modifier is always written at the call site.</p>
-<p>Views such as <code class="docutils literal notranslate"><span class="pre">sub</span></code>, <code class="docutils literal notranslate"><span class="pre">permute</span></code>, <code class="docutils literal notranslate"><span class="pre">view(dtype)</span></code>, and <code class="docutils literal notranslate"><span class="pre">rearrange</span></code> prepare
-these coordinates without moving data. A failed contract requires a different
-explicit view, caller-written preparation, or a different explicit instruction.
-It never invokes a permutation/factorization solver.</p>
+<p>The first two coordinates bind hardware IDs, the third generates three unrolled calls
+per thread, and the last selects four words of one instruction. The separated register
+slots are legal; the four memory words must be aligned and contiguous. A changed opcode
+or modifier is always written at the call site.</p>
+<p>Views such as <code class="docutils literal notranslate"><span class="pre">sub</span></code>, <code class="docutils literal notranslate"><span class="pre">permute</span></code>, <code class="docutils literal notranslate"><span class="pre">view(dtype)</span></code>, and <code class="docutils literal notranslate"><span class="pre">rearrange</span></code> prepare these
+coordinates without moving data. A failed contract requires a different explicit view,
+caller-written preparation, or a different explicit instruction. It never invokes a
+permutation/factorization solver.</p>
+</section>
+<section id="units-regions-and-generated-code">
+<h2>Units, regions and generated code<a class="headerlink" href="#units-regions-and-generated-code" title="Link to this heading">#</a></h2>
+<p>Layout storage strides are in elements of the declared tensor dtype. A b32 container
+counts as one element even when it packs two b16 values. Descriptor strides are in
+bytes; every formula labels its unit. Symbols in a layout pattern describe values read
+from the layout, not additional keyword arguments.</p>
+<p>A tensor argument denotes its full region. For a region with start vector o, physical
+coordinates are layout.apply(o + group/repeat/atom coordinates), plus the tensor element
+offset where applicable. Extents are positive static integers; starts may be symbolic
+when bounds and alignment can be proved. Group/repeat extents agree across operands,
+except for documented MMA M/N/K sharing. A default effective layout follows TensorType’s
+ordinary rules; the tile API does not create a different physical image to satisfy an
+instruction.</p>
+<p>One repeat means one core native instruction for apply. Address preparation may include
+descriptor arithmetic or mapa, as stated in the instruction guide. Counts describe tile
+lowering, before later compiler optimizations. ewise instead emits one scalar function
+evaluation per element. Registers named by layout offsets are storage slots; machine
+register allocation is not specified.</p>
+<p>Every instruction guide lists all public instruction parameters, with defaults and
+conditional requirements. Generic IR construction keywords (attrs, ty, ty_args, loc) are
+not hardware parameters. Unknown instruction keywords are rejected. There is no
+universal pred support: consult the selected family.</p>
 </section>
 <section id="bit-global-load">
 <h2>128-bit global load<a class="headerlink" href="#bit-global-load" title="Link to this heading">#</a></h2>
@@ -716,10 +738,10 @@ storage offsets may be separated or permuted. No thread axes are accepted.</p></
                   <span class="n">scope</span><span class="o">=</span><span class="s2">&quot;thread&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
-<p><code class="docutils literal notranslate"><span class="pre">A_std</span></code> has shape <code class="docutils literal notranslate"><span class="pre">(7,15,4)</span></code> and addresses <code class="docutils literal notranslate"><span class="pre">60*j</span> <span class="pre">+</span> <span class="pre">4*i</span> <span class="pre">+</span> <span class="pre">word</span></code>.
-The repeat axes are <code class="docutils literal notranslate"><span class="pre">j</span></code> and <code class="docutils literal notranslate"><span class="pre">i</span></code>: this emits 7*15 = 105 vector loads.
-The destination may instead use original strides <code class="docutils literal notranslate"><span class="pre">(8,2,120,4)</span></code>; each
-instruction then writes slots separated by two, without a remap copy.</p>
+<p><code class="docutils literal notranslate"><span class="pre">A_std</span></code> has shape <code class="docutils literal notranslate"><span class="pre">(7,15,4)</span></code> and addresses <code class="docutils literal notranslate"><span class="pre">60*j</span> <span class="pre">+</span> <span class="pre">4*i</span> <span class="pre">+</span> <span class="pre">word</span></code>. The repeat axes
+are <code class="docutils literal notranslate"><span class="pre">j</span></code> and <code class="docutils literal notranslate"><span class="pre">i</span></code>: this emits 7*15 = 105 vector loads. The destination may instead use
+original strides <code class="docutils literal notranslate"><span class="pre">(8,2,120,4)</span></code>; each instruction then writes slots separated by two,
+without a remap copy.</p>
 </section>
 <section id="ldmatrix-with-interleaved-rows-and-separated-registers">
 <h2>ldmatrix with interleaved rows and separated registers<a class="headerlink" href="#ldmatrix-with-interleaved-rows-and-separated-registers" title="Link to this heading">#</a></h2>
@@ -745,11 +767,11 @@ preceding synchronization belong to the caller.</p></li>
                   <span class="n">R</span><span class="p">,</span> <span class="n">S_std</span><span class="p">,</span> <span class="n">scope</span><span class="o">=</span><span class="s2">&quot;warp&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
-<p><code class="docutils literal notranslate"><span class="pre">S_std[k,m,r,w]</span> <span class="pre">=</span> <span class="pre">SM[2*r+m,w,k]</span></code>. Its strides are <code class="docutils literal notranslate"><span class="pre">(128,8,16,1)</span></code>:
-first matrix = even original rows; second matrix = odd original rows.
-For each <code class="docutils literal notranslate"><span class="pre">k</span></code>, lanes 0..7 provide the eight matrix-0 row addresses, lanes
-8..15 provide the eight matrix-1 row addresses, and lanes 16..31 duplicate
-those valid addresses. These address providers are distinct from result owners.</p>
+<p><code class="docutils literal notranslate"><span class="pre">S_std[k,m,r,w]</span> <span class="pre">=</span> <span class="pre">SM[2*r+m,w,k]</span></code>. Its strides are <code class="docutils literal notranslate"><span class="pre">(128,8,16,1)</span></code>: first matrix =
+even original rows; second matrix = odd original rows. For each <code class="docutils literal notranslate"><span class="pre">k</span></code>, lanes 0..7
+provide the eight matrix-0 row addresses, lanes 8..15 provide the eight matrix-1 row
+addresses, and lanes 16..31 duplicate those valid addresses. These address providers are
+distinct from result owners.</p>
 <p>For lane <code class="docutils literal notranslate"><span class="pre">l</span></code>, the complete output mapping is:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">R_raw</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>  <span class="o">=</span> <span class="n">SM</span><span class="p">[</span><span class="mi">2</span><span class="o">*</span><span class="p">(</span><span class="n">l</span><span class="o">//</span><span class="mi">4</span><span class="p">),</span>   <span class="n">l</span><span class="o">%</span><span class="mi">4</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span>
 <span class="n">R_raw</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>  <span class="o">=</span> <span class="n">SM</span><span class="p">[</span><span class="mi">2</span><span class="o">*</span><span class="p">(</span><span class="n">l</span><span class="o">//</span><span class="mi">4</span><span class="p">)</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> <span class="n">l</span><span class="o">%</span><span class="mi">4</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span>
@@ -758,30 +780,14 @@ those valid addresses. These address providers are distinct from result owners.<
 </pre></div>
 </div>
 <p>There are two repeat coordinates, <code class="docutils literal notranslate"><span class="pre">k=0,1</span></code>, so this is exactly two <code class="docutils literal notranslate"><span class="pre">.x2</span></code>
-instructions. Slots 1,3,4,5,6,7,9,11 remain untouched. Lowering binds a
-physical view of the caller’s registers and passes these slots directly as
-PTX output operands; it allocates no intermediate tile.</p>
+instructions. Slots 1,3,4,5,6,7,9,11 remain untouched. Lowering binds a physical view of
+the caller’s registers and passes these slots directly as PTX output operands; it
+allocates no intermediate tile.</p>
 </section>
 <section id="memory-and-register-instructions">
 <h2>Memory and register instructions<a class="headerlink" href="#memory-and-register-instructions" title="Link to this heading">#</a></h2>
-<p><code class="docutils literal notranslate"><span class="pre">ld</span></code> / <code class="docutils literal notranslate"><span class="pre">st</span></code> use <code class="docutils literal notranslate"><span class="pre">(*group,*repeat,word)</span></code>, where <code class="docutils literal notranslate"><span class="pre">word</span></code> has the vector
-length selected in the opcode (one for scalar instructions). Both operands use
-the written PTX storage width; use an explicit dtype view for packed words.
-Global, shared, and local address spaces are explicit. Cache operators,
-eviction policies, prefetch widths, and vector widths stay in the PTX spelling.
-<code class="docutils literal notranslate"><span class="pre">pred</span></code> and an opcode’s optional <code class="docutils literal notranslate"><span class="pre">cache_policy</span></code> are ordinary runtime operands.
-A predicated load can request <code class="docutils literal notranslate"><span class="pre">preserve_dst=True</span></code>.</p>
-<p><code class="docutils literal notranslate"><span class="pre">ldmatrix</span></code> / <code class="docutils literal notranslate"><span class="pre">stmatrix</span></code> support m8n8.b16 with x1/x2/x4 and optional
-<code class="docutils literal notranslate"><span class="pre">.trans</span></code>. The canonical suffix is <code class="docutils literal notranslate"><span class="pre">(matrix,8,4)</span></code> in b32 containers.
-For <code class="docutils literal notranslate"><span class="pre">.trans</span></code>, the register image is the transpose of each shared b16 matrix;
-its lane ownership is still <code class="docutils literal notranslate"><span class="pre">4*row+word</span></code>. The shared address provider and
-register owner are different maps.</p>
-<p>Register instructions (mov, add/sub/mul/div, max/min, fma, cvt, sqrt, ex2, lg2,
-rcp, abs, neg) end each tensor operand with the native register-group length.
-A scalar arithmetic operand therefore uses suffix <code class="docutils literal notranslate"><span class="pre">(1,)</span></code>. A read-only scalar
-expression broadcasts over repeats. Packed <code class="docutils literal notranslate"><span class="pre">f16x2</span></code> / <code class="docutils literal notranslate"><span class="pre">bf16x2</span></code> / <code class="docutils literal notranslate"><span class="pre">f32x2</span></code>
-use b32 / b32 / b64 storage views, respectively. Packing is explicit; lowering
-never chooses packed arithmetic because a layout happens to permit it.</p>
+<p>For the complete call parameters, operand specification and generated code, see
+<a class="reference internal" href="tile_ops/ld_st.html"><span class="doc">ld / st</span></a> and the arithmetic/cvt/mov pages in <a class="reference internal" href="tile_ops.html"><span class="doc">Tile Operations</span></a>.</p>
 </section>
 <section id="scalar-compositions">
 <h2>Scalar compositions<a class="headerlink" href="#scalar-compositions" title="Link to this heading">#</a></h2>
@@ -794,129 +800,31 @@ never chooses packed arithmetic because a layout happens to permit it.</p>
 <span class="n">T</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">tile</span><span class="o">.</span><span class="n">ewise</span><span class="p">(</span><span class="n">silu_affine</span><span class="p">,</span> <span class="n">R</span><span class="p">,</span> <span class="n">R</span><span class="p">,</span> <span class="n">T</span><span class="o">.</span><span class="n">float32</span><span class="p">(</span><span class="mi">2</span><span class="p">),</span> <span class="n">T</span><span class="o">.</span><span class="n">float32</span><span class="p">(</span><span class="mi">1</span><span class="p">),</span> <span class="n">scope</span><span class="o">=</span><span class="s2">&quot;cta&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>The atom is one scalar element. Tensor operands share the group/repeat shape;
-scalar inputs broadcast. A tensor broadcast is an explicit zero-stride view.
-Types must match the function parameters and result. The scalar function may
-contain scalar bindings and returns, including conditional returns. Its typed
-expression is serialized as <code class="docutils literal notranslate"><span class="pre">LambdaExpr</span></code> and inlined at each register store.
-No shared/global staging, synchronization, or packed-vector selection occurs.
-Shared-memory compositions explicitly load into registers, run <code class="docutils literal notranslate"><span class="pre">ewise</span></code>, and
-store back, with caller-owned synchronization.</p>
+<p>The atom is one scalar element. Tensor operands share the group/repeat shape; scalar
+inputs broadcast. A tensor broadcast is an explicit zero-stride view. Types must match
+the function parameters and result. The scalar function may contain scalar bindings and
+returns, including conditional returns. Its typed expression is serialized as
+<code class="docutils literal notranslate"><span class="pre">LambdaExpr</span></code> and inlined at each register store. No shared/global staging,
+synchronization, or packed-vector selection occurs. Shared-memory compositions
+explicitly load into registers, run <code class="docutils literal notranslate"><span class="pre">ewise</span></code>, and store back, with caller-owned
+synchronization.</p>
 </section>
 <section id="asynchronous-copy">
 <h2>Asynchronous copy<a class="headerlink" href="#asynchronous-copy" title="Link to this heading">#</a></h2>
-<p><code class="docutils literal notranslate"><span class="pre">cp.async.{ca,cg}.shared.global</span></code> uses <code class="docutils literal notranslate"><span class="pre">(*group,*repeat,element)</span></code>.
-<code class="docutils literal notranslate"><span class="pre">chunk_bytes=4/8/16</span></code> fixes the last axis’s byte count; .cg requires 16 bytes.
-The corresponding source and destination chunks are contiguous and naturally
-aligned. <code class="docutils literal notranslate"><span class="pre">src_size</span></code> or <code class="docutils literal notranslate"><span class="pre">ignore_src</span></code> uses the hardware’s zero-fill operand;
-<code class="docutils literal notranslate"><span class="pre">pred</span></code> gates execution and has different semantics. Commit and wait are
-caller instructions.</p>
-<p><code class="docutils literal notranslate"><span class="pre">cp.async.bulk.shared::cluster.shared::cta.mbarrier::complete_tx::bytes</span></code>
-uses the same suffix with positive <code class="docutils literal notranslate"><span class="pre">chunk_bytes</span></code> divisible by 16. <code class="docutils literal notranslate"><span class="pre">mbar</span></code>
-and <code class="docutils literal notranslate"><span class="pre">remote_cta_id</span></code> are required. Source, destination, and barrier arguments
-name local shared addresses; lowering maps the destination and barrier with
-<code class="docutils literal notranslate"><span class="pre">mapa</span></code> before issuing the requested bulk copy. Election, barrier initialization,
-transaction accounting, and cluster synchronization belong to the caller.</p>
+<p>For the complete call parameters, operand specification and generated code, see
+<a class="reference internal" href="tile_ops/cp_async.html"><span class="doc">cp.async</span></a> and <a class="reference internal" href="tile_ops/cp_async_bulk.html"><span class="doc">cp.async.bulk: shared to cluster shared</span></a>.</p>
 </section>
 <section id="tma">
 <h2>TMA<a class="headerlink" href="#tma" title="Link to this heading">#</a></h2>
-<p>Select the rank, direction, tile/gather4/scatter4 mode, reduction operator,
-multicast and cache qualifiers in the PTX opcode. The global operand is the
-rectangular tensor view described by the TensorMap. Without interleave its
-rank is exactly the instruction rank; shape, strides, starting region and
-dtype define the map. Alternatively, pass an ordinary address expression for
-a descriptor encoded by the caller. Its fields must agree with the pattern’s
-box, format and swizzle; the dispatcher does not inspect opaque descriptors.</p>
-<p>Required keyword operands are <code class="docutils literal notranslate"><span class="pre">box</span></code> and <code class="docutils literal notranslate"><span class="pre">coords</span></code>, both in outer-to-inner
-logical axis order. The shared operand is <code class="docutils literal notranslate"><span class="pre">(*group,*repeat,*box_image)</span></code>.
-Every atom’s unswizzled origin is 128-byte aligned, including unswizzled boxes.
-Swizzled allocation bases are aligned to the full swizzle period; a subregion
-uses its unswizzled origin so that the instruction applies its phase once.
-<code class="docutils literal notranslate"><span class="pre">coord_steps</span></code> has one coordinate vector per group/repeat axis. Lowering adds
-these explicit steps to <code class="docutils literal notranslate"><span class="pre">coords</span></code>, encodes the descriptor on the host, and
-issues one instruction at each repeat. It does not fold dimensions, promote
-dtypes, infer a box, prefetch a descriptor, select a source, or elect a thread.
-Use ordinary control flow, or select explicitly encoded descriptor addresses,
-to choose between sources. Prefetch is an explicit <code class="docutils literal notranslate"><span class="pre">T.ptx.prefetch.tensormap</span></code>.</p>
-<p>Descriptor operands are <code class="docutils literal notranslate"><span class="pre">format</span></code> (storage dtype by default, or <code class="docutils literal notranslate"><span class="pre">tf32</span></code>),
-<code class="docutils literal notranslate"><span class="pre">swizzle=0/1/2/3</span></code>, <code class="docutils literal notranslate"><span class="pre">l2_promotion=0</span></code> and <code class="docutils literal notranslate"><span class="pre">oob_fill=0</span></code>. <code class="docutils literal notranslate"><span class="pre">element_strides</span></code>
-has one entry in 1..8 per descriptor dimension; without interleave the inner
-entry is one. The non-interleaved shared image has extents
-<code class="docutils literal notranslate"><span class="pre">ceil(box[i]/element_strides[i])</span></code> and compact storage before swizzling.
-Symbolic global dimensions and outer strides pass to runtime descriptor
-encoding; statically invalid values are rejected when lowering. A load requires
-<code class="docutils literal notranslate"><span class="pre">mbar</span></code>; a multicast also requires <code class="docutils literal notranslate"><span class="pre">cta_mask</span></code>; a cache-hint form requires
-<code class="docutils literal notranslate"><span class="pre">cache_policy</span></code>. All are Call arguments and participate in substitution.</p>
-<p>Gather4/scatter4 use a 2D descriptor, <code class="docutils literal notranslate"><span class="pre">box=(1,width)</span></code>, a shared atom of
-<code class="docutils literal notranslate"><span class="pre">(4,width)</span></code>, and four explicit row coordinates in <code class="docutils literal notranslate"><span class="pre">gather4</span></code>. Dynamic row
-coordinates are allowed. No row-selection algorithm is hidden in lowering.</p>
-<p><code class="docutils literal notranslate"><span class="pre">format=&quot;float4_e2m1fn&quot;</span></code> selects CUDA’s <code class="docutils literal notranslate"><span class="pre">16U4_ALIGN16B</span></code> representation.
-Its inner global dimension is a multiple of 128, its inner box is 128, and
-the global base and outer byte strides are 32-byte aligned. Each sixteen
-nibbles occupy the low eight bytes of a sixteen-byte shared block. The other
-eight bytes are undefined padding. The mbarrier counts <strong>payload bytes</strong>,
-not padding. This representation supports loads with swizzle 0 or 3; gather4
-uses the same packed shared image.</p>
-<p>For <code class="docutils literal notranslate"><span class="pre">interleave=1</span></code> (16B) or <code class="docutils literal notranslate"><span class="pre">2</span></code> (32B), an opcode of rank 3..5 takes a
-global view <code class="docutils literal notranslate"><span class="pre">(N,C_slices,*spatial,Ci)</span></code>. <code class="docutils literal notranslate"><span class="pre">Ci</span></code> is the number of scalar
-elements in one 16B/32B slice. The descriptor omits this last, implicit axis;
-<code class="docutils literal notranslate"><span class="pre">box</span></code>, <code class="docutils literal notranslate"><span class="pre">coords</span></code> and <code class="docutils literal notranslate"><span class="pre">coord_steps</span></code> have the opcode rank. The W stride
-is exactly one slice; Ci is contiguous. Other strides are explicit and can
-include padding. Mode 2 requires swizzle 1 and 32-byte global alignment.</p>
-<p>One interleaved tiled issue visits <strong>one C slice</strong>, selected by <code class="docutils literal notranslate"><span class="pre">coords[1]</span></code>.
-The C box and traversal-stride fields do not iterate additional slices. Its
-shared image is <code class="docutils literal notranslate"><span class="pre">(ceil(boxN/stepN),1,*ceil(boxSpatial/stepSpatial),Ci)</span></code>
-before swizzling. To visit several channel slices, add a repeat axis and a
-coordinate step in C. For example, rank-3 uint16 with interleave 2 uses
-<code class="docutils literal notranslate"><span class="pre">Ci=16</span></code>; <code class="docutils literal notranslate"><span class="pre">box=(1,1,8)</span></code> copies a <code class="docutils literal notranslate"><span class="pre">(1,1,8,16)</span></code> shared atom. A shared
-operand of shape <code class="docutils literal notranslate"><span class="pre">(3,1,1,8,16)</span></code> and <code class="docutils literal notranslate"><span class="pre">coord_steps=((0,1,0),)</span></code> issues three
-copies for three successive channel slices. Gather4/scatter4 do not interleave.</p>
+<p>For the complete call parameters, operand specification and generated code, see
+<a class="reference internal" href="tile_ops/cp_async_bulk_tensor.html"><span class="doc">cp.async.bulk.tensor / cp.reduce.async.bulk.tensor</span></a>.</p>
 </section>
 <section id="tmem-transfers">
 <h2>TMEM transfers<a class="headerlink" href="#tmem-transfers" title="Link to this heading">#</a></h2>
-<p><code class="docutils literal notranslate"><span class="pre">tcgen05.ld/st.sync.aligned.&lt;shape&gt;.xN.b32</span></code> use suffix <code class="docutils literal notranslate"><span class="pre">(row,column)</span></code>
-in b32 storage on both sides. Each atom is a warp instruction. The four
-supported shapes and register images (lane <code class="docutils literal notranslate"><span class="pre">l</span></code>, register <code class="docutils literal notranslate"><span class="pre">r</span></code>) are:</p>
-<div class="pst-scrollable-table-container"><table class="table">
-<thead>
-<tr class="row-odd"><th class="head"><p>Shape</p></th>
-<th class="head"><p>Atom shape</p></th>
-<th class="head"><p>Register coordinate (row, column)</p></th>
-</tr>
-</thead>
-<tbody>
-<tr class="row-even"><td><p>32x32b</p></td>
-<td><p>(32,N)</p></td>
-<td><p>(l,r)</p></td>
-</tr>
-<tr class="row-odd"><td><p>16x64b</p></td>
-<td><p>(16,2N)</p></td>
-<td><p>(l//4+8*(l%2), l//2%2+2*r)</p></td>
-</tr>
-<tr class="row-even"><td><p>16x128b</p></td>
-<td><p>(16,4N)</p></td>
-<td><p>(l//4+8*(r%2), l%4+4*(r//2))</p></td>
-</tr>
-<tr class="row-odd"><td><p>16x256b</p></td>
-<td><p>(16,8N)</p></td>
-<td><p>(l//4+8*(r//2%2), r%2+2*(l%4)+8*(r//4))</p></td>
-</tr>
-</tbody>
-</table>
-</div>
-<p>TMEM coordinates are consecutive rows/columns in the executing warp’s 32-lane
-slab. Explicit group axes distribute atoms across warps. Register storage can
-be strided.</p>
-<p><code class="docutils literal notranslate"><span class="pre">.pack::16b</span></code> / <code class="docutils literal notranslate"><span class="pre">.unpack::16b</span></code> keep the same b32 register image. Their TMEM
-operand instead has suffix <code class="docutils literal notranslate"><span class="pre">(row,column,half)</span></code> with <code class="docutils literal notranslate"><span class="pre">half=2</span></code> and a 16-bit
-dtype. The two halves of register word <code class="docutils literal notranslate"><span class="pre">(row,column)</span></code> correspond to the low
-16 bits of TMEM cells <code class="docutils literal notranslate"><span class="pre">(row,2*column)</span></code> and <code class="docutils literal notranslate"><span class="pre">(row,2*column+1)</span></code>. In 16-bit
-layout units this means TCol strides four for <code class="docutils literal notranslate"><span class="pre">column</span></code> and two for <code class="docutils literal notranslate"><span class="pre">half</span></code>.
-This is different from reinterpreting two adjacent 16-bit elements in one
-dense b32 cell. The hardware performs the packing; lowering adds no conversion.</p>
-<p><code class="docutils literal notranslate"><span class="pre">.16x32bx2</span></code> has register suffix <code class="docutils literal notranslate"><span class="pre">(access,row,column)=(2,16,N)</span></code>. Lane <code class="docutils literal notranslate"><span class="pre">l</span></code>
-owns <code class="docutils literal notranslate"><span class="pre">(l//16,l%16,r)</span></code> for register <code class="docutils literal notranslate"><span class="pre">r</span></code>. Its two TMEM access regions are
-explicit operands, each with suffix <code class="docutils literal notranslate"><span class="pre">(16,N)</span></code> (or <code class="docutils literal notranslate"><span class="pre">(16,N,2)</span></code> for packing):</p>
+<p>See <a class="reference internal" href="tile_ops/tcgen05_ld_st.html"><span class="doc">tcgen05.ld / tcgen05.st</span></a> and <a class="reference internal" href="tile_ops/tcgen05_cp.html"><span class="doc">tcgen05.cp</span></a> for the full contracts.</p>
+<p><code class="docutils literal notranslate"><span class="pre">.16x32bx2</span></code> has register suffix <code class="docutils literal notranslate"><span class="pre">(access,row,column)=(2,16,N)</span></code>. Lane <code class="docutils literal notranslate"><span class="pre">l</span></code> owns
+<code class="docutils literal notranslate"><span class="pre">(l//16,l%16,r)</span></code> for register <code class="docutils literal notranslate"><span class="pre">r</span></code>. Its two TMEM access regions are explicit
+operands, each with suffix <code class="docutils literal notranslate"><span class="pre">(16,N)</span></code> (or <code class="docutils literal notranslate"><span class="pre">(16,N,2)</span></code> for packing):</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">T</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">tile</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span>
     <span class="n">T</span><span class="o">.</span><span class="n">ptx</span><span class="p">[</span><span class="s2">&quot;tcgen05.ld.sync.aligned.16x32bx2.x4.b32&quot;</span><span class="p">],</span>
     <span class="n">registers</span><span class="p">,</span> <span class="n">memory</span><span class="p">[:,</span> <span class="p">:</span><span class="mi">16</span><span class="p">,</span> <span class="p">:</span><span class="mi">4</span><span class="p">],</span> <span class="n">memory</span><span class="p">[:,</span> <span class="mi">16</span><span class="p">:</span><span class="mi">32</span><span class="p">,</span> <span class="mi">8</span><span class="p">:</span><span class="mi">12</span><span class="p">],</span>
@@ -924,144 +832,53 @@ explicit operands, each with suffix <code class="docutils literal notranslate"><
 <span class="p">)</span>
 </pre></div>
 </div>
-<p>For a store the operand order is <code class="docutils literal notranslate"><span class="pre">memory_low,</span> <span class="pre">memory_high,</span> <span class="pre">registers</span></code>.
-Both regions share the same backing TMEM tensor. The second region’s encoded
-base address must equal the first plus <code class="docutils literal notranslate"><span class="pre">imm_half_splitoff</span></code>. There is no
-implicit sixteen-row offset for the second access. The immediate can select
-different rows, columns, or both, within the executing warp’s TMEM partition.
-Each repeat emits exactly one instruction, including both half-accesses.
-Wait, fence, allocation and deallocation instructions remain at the call site.</p>
-<p><code class="docutils literal notranslate"><span class="pre">tcgen05.cp</span></code> uses <code class="docutils literal notranslate"><span class="pre">(row,b32_word)</span></code> according to its explicit shape. Multicast
-replicas must exactly match the written qualifier: warpx4 adds four replicas
-32 lanes apart, 02_13 adds two 64 lanes apart, 01_23 adds two 32 lanes apart.
-4x256b maps its four rows to TLanes 0/32/64/96; the other shapes follow their
-named contiguous slabs (01_23 uses slabs 0 and 2).</p>
-<p>Native decompression uses the same b32-word footprint and explicit qualifiers:
-<code class="docutils literal notranslate"><span class="pre">.b8x16.b4x16_p64</span></code> or <code class="docutils literal notranslate"><span class="pre">.b8x16.b6x16_p32</span></code>. Each 16-byte source block holds
-sixteen packed 4-bit or 6-bit values followed by eight or four bytes of padding,
-respectively. The destination holds sixteen bytes: the 4-bit values gain two
-low zero bits, while the 6-bit values gain two high zero bits. A 256-bit row
-contains two such blocks. These are raw packed-word views, not sixteen
-ordinary byte elements on the source side. Each repeat still emits one cp;
-there is no software unpacking or implicit dtype conversion.</p>
+<p>For a store the operand order is <code class="docutils literal notranslate"><span class="pre">memory_low,</span> <span class="pre">memory_high,</span> <span class="pre">registers</span></code>. Both regions
+share the same backing TMEM tensor. The second region’s encoded base address must equal
+the first plus <code class="docutils literal notranslate"><span class="pre">imm_half_splitoff</span></code>. There is no implicit sixteen-row offset for the
+second access. The immediate can select different rows, columns, or both, within the
+executing warp’s TMEM partition. Each repeat emits exactly one instruction, including
+both half-accesses. Wait, fence, allocation and deallocation instructions remain at the
+call site.</p>
 </section>
 <section id="shared-matrix-descriptors">
-<h2>Shared matrix descriptors<a class="headerlink" href="#shared-matrix-descriptors" title="Link to this heading">#</a></h2>
-<p><code class="docutils literal notranslate"><span class="pre">tcgen05.cp</span></code> takes <code class="docutils literal notranslate"><span class="pre">ldo_bytes</span></code>, <code class="docutils literal notranslate"><span class="pre">sdo_bytes</span></code> and <code class="docutils literal notranslate"><span class="pre">swizzle</span></code>.
-MMA takes <code class="docutils literal notranslate"><span class="pre">a_descriptor=(ldo_bytes,sdo_bytes,swizzle)</span></code> and the analogous B
-operand. These are explicit hardware descriptor fields, not tuning hints.
-They are mechanically encoded, with no layout search.</p>
-<p>For <code class="docutils literal notranslate"><span class="pre">tcgen05.cp</span></code>, an 8-row group has row byte pitch <code class="docutils literal notranslate"><span class="pre">16</span> <span class="pre">&lt;&lt;</span> <span class="pre">swizzle</span></code>.
-Consecutive row groups are separated by <code class="docutils literal notranslate"><span class="pre">sdo_bytes</span></code>. Without swizzling,
-16-byte chunks within a row are separated by <code class="docutils literal notranslate"><span class="pre">ldo_bytes</span></code>. With swizzling,
-words are contiguous before swizzling and hardware ignores LDO; changing
-that field does not make gapped words legal.</p>
-<p>For MMA, <code class="docutils literal notranslate"><span class="pre">row</span></code> means M/N in K-major order and K in MN-major order. The
-contiguous coordinate advances in units of the operand dtype. Its low bits
-occupy a <code class="docutils literal notranslate"><span class="pre">16</span> <span class="pre">&lt;&lt;</span> <span class="pre">swizzle</span></code> byte row for modes 0..3. The offsets for each subsequent 8-row
-group and each subsequent contiguous chunk are:</p>
-<div class="pst-scrollable-table-container"><table class="table" id="id1">
-<caption><span class="caption-text">MMA descriptor strides in bytes</span><a class="headerlink" href="#id1" title="Link to this table">#</a></caption>
-<thead>
-<tr class="row-odd"><th class="head"><p>Mode</p></th>
-<th class="head"><p>Next 8-row group</p></th>
-<th class="head"><p>Next contiguous chunk</p></th>
-</tr>
-</thead>
-<tbody>
-<tr class="row-even"><td><p>K-major</p></td>
-<td><p>SDO</p></td>
-<td><p>LDO (unswizzled; swizzled instruction atoms fit within one row)</p></td>
-</tr>
-<tr class="row-odd"><td><p>MN-major, swizzled</p></td>
-<td><p>SDO</p></td>
-<td><p>LDO</p></td>
-</tr>
-<tr class="row-even"><td><p>MN-major, unswizzled</p></td>
-<td><p>LDO</p></td>
-<td><p>SDO</p></td>
-</tr>
-</tbody>
-</table>
-</div>
-<p>MMA mode <code class="docutils literal notranslate"><span class="pre">swizzle=4</span></code> is the distinct 128B span / 32B atomicity format
-for 32-bit MN-major operands. It has 128-byte rows and groups <strong>four</strong> K rows
-per SDO step. Consecutive 128-byte M/N chunks use LDO. Its byte permutation
-is <code class="docutils literal notranslate"><span class="pre">offset</span> <span class="pre">^</span> <span class="pre">((offset</span> <span class="pre">&gt;&gt;</span> <span class="pre">2)</span> <span class="pre">&amp;</span> <span class="pre">96)</span></code> with a 512-byte period, unlike mode 3’s
-<code class="docutils literal notranslate"><span class="pre">offset</span> <span class="pre">^</span> <span class="pre">((offset</span> <span class="pre">&gt;&gt;</span> <span class="pre">3)</span> <span class="pre">&amp;</span> <span class="pre">112)</span></code>. The mode is explicit in the descriptor;
-it is never selected from a tensor layout. The same TF32 format in K-major
-order uses modes 0..3.</p>
-<p>This distinction follows PTX’s canonical shared layouts; in particular,
-unswizzled MN-major exchanges the descriptor fields’ roles. The selected
-swizzle permutes the resulting physical address. Patterns check this walk
-against the supplied view, including its start and element offset.
-Descriptor origins must be 16B aligned; a swizzled backing allocation must
-align to its full period (256/512/1024 bytes). The descriptor encodes the
-unswizzled start address; hardware applies the permutation to that start and
-the subsequent accesses. In particular, cp may start in the middle of a
-swizzle atom if its entire address walk matches the requested region.
-Descriptor base-offset and absolute-LDO modes are not inferred.
-Allocate a complete descriptor storage block even for a
-partial logical atom; in particular, a 4x256b copy still needs an 8-row shared
-backing block. The logical region may contain only the four copied rows.</p>
+<span id="cuda-matrix-descriptor-extraction"></span><h2>Shared matrix descriptors<a class="headerlink" href="#shared-matrix-descriptors" title="Link to this heading">#</a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">tcgen05.cp</span></code> and <code class="docutils literal notranslate"><span class="pre">tcgen05.mma</span></code> obtain shared descriptors from their canonical
+operand views. LDO/SDO are internal byte strides; swizzle is an internal hardware
+encoding. None is an additional tile call parameter. The opcode and MMA major order
+remain explicit user choices.</p>
+<p>Extraction first tries the standard swizzle represented by ComposeLayout, then the
+remaining legal modes in ascending order. cp permits modes 0..3; MMA permits 0..3 except
+that 32-bit MN-major requires mode 4. For each mode, inverse-swizzle the bit addresses
+and obtain row-group and column-chunk strides from fixed boundary coordinates. The
+entire address walk must match, including every group/repeat and the region’s nonzero
+origin. This finite encoding check does not permute logical coordinates or select
+another opcode.</p>
+<p>An LDO unused by the atom is encoded as 16 bytes; an unused SDO is zero. Extraction
+never probes outside the requested atom to determine those fields. A small region may
+not expose all swizzle bits; physical equivalence over the complete access footprint is
+sufficient. Prefer the layout’s stated mode when valid; otherwise choose the first fully
+matching legal mode. Symbolic origins remain address expressions; descriptor strides
+must be compile-time constants.</p>
+<p>See <a class="reference internal" href="tile_ops/tcgen05_cp.html"><span class="doc">tcgen05.cp</span></a> and <a class="reference internal" href="tile_ops/tcgen05_mma.html"><span class="doc">tcgen05.mma</span></a> for address formulas,
+field roles and alignment. The descriptor encodes the unswizzled origin so hardware
+applies its phase exactly once. Base-offset and absolute-LDO modes are outside the
+current tile contract.</p>
 </section>
 <section id="warp-mma">
 <h2>Warp MMA<a class="headerlink" href="#warp-mma" title="Link to this heading">#</a></h2>
-<p><code class="docutils literal notranslate"><span class="pre">mma.sync.aligned.m16n8k{8,16}.row.col.f32.{f16,bf16}.{f16,bf16}.f32</span></code>
-uses these canonical operands, after optional group and batch prefixes:</p>
-<ul class="simple">
-<li><p>D/C: <code class="docutils literal notranslate"><span class="pre">(M_repeat,N_repeat,16,8)</span></code> in f32.</p></li>
-<li><p>A: <code class="docutils literal notranslate"><span class="pre">(M_repeat,K_repeat,16,K/2)</span></code> in b32 words packing two K elements.</p></li>
-<li><p>B: <code class="docutils literal notranslate"><span class="pre">(N_repeat,K_repeat,8,K/2)</span></code> in the same representation.</p></li>
-</ul>
-<p>Lane <code class="docutils literal notranslate"><span class="pre">l</span></code> owns A word <code class="docutils literal notranslate"><span class="pre">(l//4+8*(r%2),</span> <span class="pre">l%4+4*(r//2))</span></code>, B word
-<code class="docutils literal notranslate"><span class="pre">(l//4,l%4+4*r)</span></code>, and D/C element <code class="docutils literal notranslate"><span class="pre">(l//4+8*(r//2),2*(l%4)+r%2)</span></code>.
-Repeat order is batch, M, N, K. The first K step uses C (tensor or scalar
-broadcast); later steps use D. Alpha/beta preparation and logical transpose
-views are caller code.</p>
+<p>For the complete call parameters, operand specification and generated code, see
+<a class="reference internal" href="tile_ops/mma_sync.html"><span class="doc">mma.sync</span></a>.</p>
 </section>
 <section id="tcgen05-mma">
 <h2>tcgen05 MMA<a class="headerlink" href="#tcgen05-mma" title="Link to this heading">#</a></h2>
-<p>Select dense, .ws, or block_scale and CTA group in the opcode. Specify
-<code class="docutils literal notranslate"><span class="pre">instruction_shape=(M,N,K)</span></code>; M is the CTA-group total. Per-CTA canonical
-suffixes after group/batch axes are:</p>
-<ul class="simple">
-<li><p>D: <code class="docutils literal notranslate"><span class="pre">(M_repeat,N_repeat,M/cta_group,N)</span></code>.</p></li>
-<li><p>A: <code class="docutils literal notranslate"><span class="pre">(M_repeat,K_repeat,M/cta_group,K)</span></code>.</p></li>
-<li><p>B: <code class="docutils literal notranslate"><span class="pre">(N_repeat,K_repeat,N/cta_group,K)</span></code>.</p></li>
-<li><p>Block scale adds SFA/SFB with the corresponding A/B repeat axes and atom
-<code class="docutils literal notranslate"><span class="pre">(M/cta_group,scale_vec)</span></code> / <code class="docutils literal notranslate"><span class="pre">(N,scale_vec)</span></code>. SFB contains the
-full instruction N range in each CTA, including two-CTA operations.</p></li>
-</ul>
-<p>A may be shared or TMEM; B is shared; D and scales are TMEM. D uses
-16-bit or 32-bit accumulation storage as required by the selected format.
-Each accumulator occupies one b32 TMEM cell; f16 occupies its low half
-(<code class="docutils literal notranslate"><span class="pre">TCol</span></code> stride two in f16 element units). A-in-TMEM remains packed. <code class="docutils literal notranslate"><span class="pre">a_major</span></code> and
-<code class="docutils literal notranslate"><span class="pre">b_major</span></code> explicitly select <code class="docutils literal notranslate"><span class="pre">&quot;k&quot;</span></code> (default) or <code class="docutils literal notranslate"><span class="pre">&quot;mn&quot;</span></code>. Storage formats
-come from the tensor dtype unless <code class="docutils literal notranslate"><span class="pre">a_format</span></code> / <code class="docutils literal notranslate"><span class="pre">b_format</span></code> is supplied
-(for example, <code class="docutils literal notranslate"><span class="pre">tf32</span></code> over f32 storage). <code class="docutils literal notranslate"><span class="pre">accum=False</span></code> zeros the first K
-step’s accumulator; later K steps accumulate. Negation, saturation, output-lane
-masks, .ws zero-column mask, and <code class="docutils literal notranslate"><span class="pre">pred</span></code> are explicit operands.</p>
-<p>The MMA TMEM datapath follows <code class="docutils literal notranslate"><span class="pre">tmem_mma_operand_layout</span></code> in
-<code class="docutils literal notranslate"><span class="pre">tvm.backend.cuda.layout</span></code> for the chosen instruction shape and mode.
-Weight-stationary M=128 uses Layout D, like non-.ws M=128.
-Weight-stationary M=64 A-in-TMEM includes an explicit leading bank axis of
-size two. Scale rows use lane <code class="docutils literal notranslate"><span class="pre">row%32</span></code>, byte-column <code class="docutils literal notranslate"><span class="pre">4*(row//32)+sf</span></code> and
-four 32-lane replicas. The scale ID is encoded from each scale tensor’s own
-byte-column origin. Preparation, CTA election, fences, commit and wait remain
-caller-owned. Layouts never select .ws or a different M/N/K instruction shape.</p>
-<p>Splitting an M64 .ws N128 operation into two N64 instructions changes the
-bank boundary inside each instruction from 64 columns to 32. The caller must
-account for this: <code class="docutils literal notranslate"><span class="pre">test_tcgen05_mma_ws_split_n.py</span></code> preserves the original
-banked A and packed C, explicitly stages B in each instruction’s column order,
-and permutes the C view. Simply cutting B and C into consecutive N64 logical
-slices does not preserve that operation.</p>
+<p>For the complete call parameters, operand specification and generated code, see
+<a class="reference internal" href="tile_ops/tcgen05_mma.html"><span class="doc">tcgen05.mma</span></a>.</p>
 </section>
 <section id="choosing-instructions">
 <h2>Choosing instructions<a class="headerlink" href="#choosing-instructions" title="Link to this heading">#</a></h2>
 <p>Choose each instruction and its canonical view at the call site:</p>
-<div class="pst-scrollable-table-container"><table class="table" id="id2">
-<caption><span class="caption-text">Instruction choices</span><a class="headerlink" href="#id2" title="Link to this table">#</a></caption>
+<div class="pst-scrollable-table-container"><table class="table" id="id1">
+<caption><span class="caption-text">Instruction choices</span><a class="headerlink" href="#id1" title="Link to this table">#</a></caption>
 <colgroup>
 <col style="width: 25.0%" />
 <col style="width: 75.0%" />
@@ -1094,28 +911,28 @@ slices does not preserve that operation.</p>
 <td><p><code class="docutils literal notranslate"><span class="pre">apply</span></code> with explicit shape, repeat count and multicast qualifiers.</p></td>
 </tr>
 <tr class="row-odd"><td><p>mma/tcgen05.mma</p></td>
-<td><p><code class="docutils literal notranslate"><span class="pre">apply</span></code> with explicit matrix mode, canonical M/N/K repeats and descriptors.</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">apply</span></code> with explicit matrix mode, canonical M/N/K repeats and operand layouts.</p></td>
 </tr>
 </tbody>
 </table>
 </div>
 <p>Keep barriers, thread election, packing, scale-factor preparation and pipeline
-scheduling in caller code. Changing a view changes only logical coordinates;
-when the desired physical arrangement requires a copy, write that copy
-explicitly. Unsupported hardware modes remain available through scalar
-<code class="docutils literal notranslate"><span class="pre">T.ptx</span></code> calls and can acquire their own documented pattern separately.</p>
+scheduling in caller code. Changing a view changes only logical coordinates; when the
+desired physical arrangement requires a copy, write that copy explicitly. Unsupported
+hardware modes remain available through scalar <code class="docutils literal notranslate"><span class="pre">T.ptx</span></code> calls and can acquire their own
+documented pattern separately.</p>
 </section>
 <section id="implementation-and-extension">
 <h2>Implementation and extension<a class="headerlink" href="#implementation-and-extension" title="Link to this heading">#</a></h2>
-<p><code class="docutils literal notranslate"><span class="pre">python/tvm/backend/cuda/tile/patterns/</span></code> has one module per fixed instruction
-family. <code class="docutils literal notranslate"><span class="pre">common.py</span></code> evaluates canonical coordinates, validates group/repeat
-shapes and physical storage, and emits repeat loops. <code class="docutils literal notranslate"><span class="pre">descriptors.py</span></code> only
-encodes/checks explicit hardware fields. There are no imports of retired
-CUDA dispatch implementations.</p>
+<p><code class="docutils literal notranslate"><span class="pre">python/tvm/backend/cuda/tile/patterns/</span></code> has one module per fixed instruction family.
+<code class="docutils literal notranslate"><span class="pre">common.py</span></code> evaluates canonical coordinates, validates group/repeat shapes and
+physical storage, and emits repeat loops. <code class="docutils literal notranslate"><span class="pre">descriptors.py</span></code> extracts and verifies
+shared matrix descriptor fields. There are no imports of retired CUDA dispatch
+implementations.</p>
 <p>To add a pattern:</p>
 <ol class="arabic simple">
 <li><p>Define its canonical operand suffixes, ownership and physical address walk,
-all semantic qualifiers, and required caller preparation in this document.</p></li>
+all semantic qualifiers, and required caller preparation in the corresponding instruction guide.</p></li>
 <li><p>Resolve the exact instruction through <code class="docutils literal notranslate"><span class="pre">ptx.instruction_forms</span></code>. Reuse the
 existing PTX table for legality and native operand emission.</p></li>
 <li><p>Use <code class="docutils literal notranslate"><span class="pre">Context</span></code> and <code class="docutils literal notranslate"><span class="pre">Region</span></code> to check the supplied views at those fixed
@@ -1126,14 +943,14 @@ packing, synchronization and thread election at the call site.</p></li>
 and issue-count checks, and GPU results reconstructed independently from
 the documented hardware mapping.</p></li>
 </ol>
-<p>The common IR is <code class="docutils literal notranslate"><span class="pre">Call(opcode,</span> <span class="pre">operands,</span> <span class="pre">parameters)</span></code> with only execution
-scope in <code class="docutils literal notranslate"><span class="pre">ScopeAttrs</span></code>. Runtime and static descriptor parameters both live in
-ordinary arguments. <code class="docutils literal notranslate"><span class="pre">ewise</span></code> stores its typed scalar body as <code class="docutils literal notranslate"><span class="pre">LambdaExpr</span></code>.
-No process-local Python callable survives serialization.</p>
-<p>Region extents are positive static integers. Starts may be symbolic when their
-bounds and alignment can be proved. General physical-equivalence discovery is
-outside the contract. Gapped allocation covers the layout’s physical span,
-including the address range introduced by a composed swizzle.</p>
+<p>The common IR is <code class="docutils literal notranslate"><span class="pre">Call(opcode,</span> <span class="pre">operands,</span> <span class="pre">parameters)</span></code> with only execution scope in
+<code class="docutils literal notranslate"><span class="pre">ScopeAttrs</span></code>. Runtime and static descriptor parameters both live in ordinary
+arguments. <code class="docutils literal notranslate"><span class="pre">ewise</span></code> stores its typed scalar body as <code class="docutils literal notranslate"><span class="pre">LambdaExpr</span></code>. No process-local
+Python callable survives serialization.</p>
+<p>Region extents are positive static integers. Starts may be symbolic when their bounds
+and alignment can be proved. General physical-equivalence discovery is outside the
+contract. Gapped allocation covers the layout’s physical span, including the address
+range introduced by a composed swizzle.</p>
 </section>
 </section>
 
@@ -1183,6 +1000,7 @@ including the address range introduced by a composed swizzle.</p>
   <nav class="bd-toc-nav page-toc">
     <ul class="visible nav section-nav flex-column">
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#group-repeat-and-atom-axes">Group, repeat, and atom axes</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#units-regions-and-generated-code">Units, regions and generated code</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#bit-global-load">128-bit global load</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#ldmatrix-with-interleaved-rows-and-separated-registers">ldmatrix with interleaved rows and separated registers</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#memory-and-register-instructions">Memory and register instructions</a></li>

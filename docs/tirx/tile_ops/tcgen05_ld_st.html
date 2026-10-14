@@ -624,11 +624,21 @@ document.write(`
             </div>
             <nav aria-label="Page">
                 <ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#native-images">Native images</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#example-layout-b-without-changing-its-physical-mapping">Example: Layout B without changing its physical mapping</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#pack-unpack-is-a-different-tmem-image">Pack/unpack is a different TMEM image</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#split-accesses-16x32bx2">Split accesses: 16x32bx2</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#completion-and-producer-dependencies">Completion and producer dependencies</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#call-parameters">Call parameters</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#data-representation">Data representation</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#operand-specification">Operand specification</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#native-images">Native images</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#legality-conditions">Legality conditions</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#code-generation">Code generation</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#examples">Examples</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#example-layout-b-without-changing-its-physical-mapping">Example: Layout B without changing its physical mapping</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#pack-unpack-is-a-different-tmem-image">Pack/unpack is a different TMEM image</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#split-accesses-16x32bx2">Split accesses: 16x32bx2</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#completion-and-producer-dependencies">Completion and producer dependencies</a></li>
+</ul>
+</li>
 </ul>
             </nav>
         </div>
@@ -642,15 +652,50 @@ document.write(`
                   
   <section id="tcgen05-ld-tcgen05-st">
 <h1>tcgen05.ld / tcgen05.st<a class="headerlink" href="#tcgen05-ld-tcgen05-st" title="Link to this heading">#</a></h1>
-<p>These warp instructions transfer a fixed image between TMEM and registers.
-The opcode specifies the row/bit shape, repetition qualifier <code class="docutils literal notranslate"><span class="pre">.xN</span></code>, and
-optional pack/unpack mode. The tile repeats that exact instruction over
-caller-supplied views. A load takes <code class="docutils literal notranslate"><span class="pre">registers,tmem</span></code>; a store takes
-<code class="docutils literal notranslate"><span class="pre">tmem,registers</span></code>. Both require all 32 lanes of each participating warp.</p>
+<section id="call-parameters">
+<h2>Call parameters<a class="headerlink" href="#call-parameters" title="Link to this heading">#</a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">T.cuda.tile.apply(T.ptx[opcode],</span> <span class="pre">*operands,</span> <span class="pre">scope=&quot;thread&quot;,</span> <span class="pre">**parameters)</span></code></p>
+<p>Operand order: <code class="docutils literal notranslate"><span class="pre">registers,</span> <span class="pre">tmem</span> <span class="pre">for</span> <span class="pre">ld;</span> <span class="pre">tmem,</span> <span class="pre">registers</span> <span class="pre">for</span> <span class="pre">st;</span> <span class="pre">split</span> <span class="pre">forms</span> <span class="pre">use</span> <span class="pre">two</span>
+<span class="pre">TMEM</span> <span class="pre">operands</span></code>.</p>
+<div class="pst-scrollable-table-container"><table class="table">
+<thead>
+<tr class="row-odd"><th class="head"><p>Parameter</p></th>
+<th class="head"><p>Type / default</p></th>
+<th class="head"><p>Meaning</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">scope</span></code></p></td>
+<td><p>static str; default “thread”</p></td>
+<td><p>Execution scope; group axes follow <a class="reference internal" href="../cuda_tile_patterns.html"><span class="doc">Explicit CUDA tile patterns</span></a>. It does not elect an issuing thread.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">imm_half_splitoff</span></code></p></td>
+<td><p>static int; required only for 16x32bx2</p></td>
+<td><p>Native address immediate from the first TMEM half-access to the second; validated by the selected PTX form.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>Only the parameters listed here are instruction parameters. Opcode qualifiers are
+written in <code class="docutils literal notranslate"><span class="pre">T.ptx[opcode]</span></code>.</p>
+</section>
+<section id="data-representation">
+<h2>Data representation<a class="headerlink" href="#data-representation" title="Link to this heading">#</a></h2>
+<p>Register operands are b32 words. Ordinary TMEM operands are 32-bit cells; pack/unpack
+forms expose the documented extra halfword axis with 16-bit elements. The shape and xN
+determine counts; storage dtype does not select packing.</p>
+</section>
+<section id="operand-specification">
+<h2>Operand specification<a class="headerlink" href="#operand-specification" title="Link to this heading">#</a></h2>
+<p>These warp instructions transfer a fixed image between TMEM and registers. The opcode
+specifies the row/bit shape, repetition qualifier <code class="docutils literal notranslate"><span class="pre">.xN</span></code>, and optional pack/unpack
+mode. The tile repeats that exact instruction over caller-supplied views. A load takes
+<code class="docutils literal notranslate"><span class="pre">registers,tmem</span></code>; a store takes <code class="docutils literal notranslate"><span class="pre">tmem,registers</span></code>. Both require all 32 lanes of each
+participating warp.</p>
 <section id="native-images">
-<h2>Native images<a class="headerlink" href="#native-images" title="Link to this heading">#</a></h2>
-<p>For the ordinary b32 forms both operands end in <code class="docutils literal notranslate"><span class="pre">(row,column)</span></code>. Let <code class="docutils literal notranslate"><span class="pre">l</span></code>
-be the lane ID and <code class="docutils literal notranslate"><span class="pre">r</span></code> a register index within one instruction:</p>
+<h3>Native images<a class="headerlink" href="#native-images" title="Link to this heading">#</a></h3>
+<p>For the ordinary b32 forms both operands end in <code class="docutils literal notranslate"><span class="pre">(row,column)</span></code>. Let <code class="docutils literal notranslate"><span class="pre">l</span></code> be the lane
+ID and <code class="docutils literal notranslate"><span class="pre">r</span></code> a register index within one instruction:</p>
 <div class="pst-scrollable-table-container"><table class="table">
 <thead>
 <tr class="row-odd"><th class="head"><p>Shape</p></th>
@@ -683,18 +728,36 @@ be the lane ID and <code class="docutils literal notranslate"><span class="pre">
 </tbody>
 </table>
 </div>
-<p>TMEM rows and columns are consecutive physical lanes/cells inside each atom.
-Each warp can access its own 32-lane slab; a 16-row instruction may select
-either half explicitly. Warp scope therefore requires a statically selected
-warp. Warpgroup/CTA scope exposes the warp as a group axis. Register slots
-may be separated as long as their owners match this table.</p>
+<p>TMEM rows and columns are consecutive physical lanes/cells inside each atom. Each warp
+can access its own 32-lane slab; a 16-row instruction may select either half explicitly.
+Warp scope therefore requires a statically selected warp. Warpgroup/CTA scope exposes
+the warp as a group axis. Register slots may be separated as long as their owners match
+this table.</p>
 </section>
+</section>
+<section id="legality-conditions">
+<h2>Legality conditions<a class="headerlink" href="#legality-conditions" title="Link to this heading">#</a></h2>
+<p>Regions have the specified native images and matching group/repeat prefixes. Register
+ownership follows the per-shape lane/register mapping. TMEM rows align to the atom row
+count and belong to the executing warp slab. Packed origins select a cell’s low half.
+Split regions share a backing allocation and their addresses differ by
+imm_half_splitoff. No pred keyword is accepted.</p>
+</section>
+<section id="code-generation">
+<h2>Code generation<a class="headerlink" href="#code-generation" title="Link to this heading">#</a></h2>
+<p>For each repeat, enumerate the selected shape’s native register coordinates, bind those
+slots, and encode the warp-relative TMEM address. Emit one selected tcgen05.ld/st,
+adding the split immediate where applicable. Thread synchronization, tcgen05.wait and
+producer/consumer fences are explicit caller operations.</p>
+</section>
+<section id="examples">
+<h2>Examples<a class="headerlink" href="#examples" title="Link to this heading">#</a></h2>
 <section id="example-layout-b-without-changing-its-physical-mapping">
-<h2>Example: Layout B without changing its physical mapping<a class="headerlink" href="#example-layout-b-without-changing-its-physical-mapping" title="Link to this heading">#</a></h2>
-<p>Layout B represents logical <code class="docutils literal notranslate"><span class="pre">(64,128)</span></code> values across 128 physical lanes
-and 64 columns. Logical <code class="docutils literal notranslate"><span class="pre">[i,j]</span></code> is at lane <code class="docutils literal notranslate"><span class="pre">i+64*(j//64)</span></code>, column
-<code class="docutils literal notranslate"><span class="pre">j%64</span></code>. The following round trip isolates transfers from the MMA producer:
-it uses one CTA and writes/reads this layout with explicit st/ld instructions.</p>
+<h3>Example: Layout B without changing its physical mapping<a class="headerlink" href="#example-layout-b-without-changing-its-physical-mapping" title="Link to this heading">#</a></h3>
+<p>Layout B represents logical <code class="docutils literal notranslate"><span class="pre">(64,128)</span></code> values across 128 physical lanes and 64
+columns. Logical <code class="docutils literal notranslate"><span class="pre">[i,j]</span></code> is at lane <code class="docutils literal notranslate"><span class="pre">i+64*(j//64)</span></code>, column <code class="docutils literal notranslate"><span class="pre">j%64</span></code>. The following
+round trip isolates transfers from the MMA producer: it uses one CTA and writes/reads
+this layout with explicit st/ld instructions.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">tvm.script</span><span class="w"> </span><span class="kn">import</span> <span class="n">tirx</span> <span class="k">as</span> <span class="n">T</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">tvm.backend.cuda.axis</span><span class="w"> </span><span class="kn">import</span> <span class="n">tid_in_wg</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">tvm.backend.cuda.layout</span><span class="w"> </span><span class="kn">import</span> <span class="n">tmem_datapath_layout</span>
@@ -744,11 +807,11 @@ it uses one CTA and writes/reads this layout with explicit st/ld instructions.</
         <span class="n">T</span><span class="o">.</span><span class="n">ptx</span><span class="o">.</span><span class="n">tcgen05</span><span class="o">.</span><span class="n">dealloc</span><span class="o">.</span><span class="n">cta_group__1</span><span class="o">.</span><span class="n">sync</span><span class="o">.</span><span class="n">aligned</span><span class="o">.</span><span class="n">b32</span><span class="p">(</span><span class="n">address</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">T</span><span class="o">.</span><span class="n">uint32</span><span class="p">(</span><span class="mi">64</span><span class="p">))</span>
 </pre></div>
 </div>
-<p>The views have shape <code class="docutils literal notranslate"><span class="pre">(4,32,64)</span></code> with <code class="docutils literal notranslate"><span class="pre">warp=2*wl+wh</span></code>. There are no repeat
-axes: each of the four warps issues one x64 store and one x64 load. No
-physical rearrangement or fragment copy is inserted. The explicit register
-layout maps logical <code class="docutils literal notranslate"><span class="pre">[i,j]</span></code> to thread <code class="docutils literal notranslate"><span class="pre">i+64*(j//64)</span></code> and local slot
-<code class="docutils literal notranslate"><span class="pre">j%64</span></code>. The physical views expose each thread’s 64 contiguous registers.</p>
+<p>The views have shape <code class="docutils literal notranslate"><span class="pre">(4,32,64)</span></code> with <code class="docutils literal notranslate"><span class="pre">warp=2*wl+wh</span></code>. There are no repeat axes: each
+of the four warps issues one x64 store and one x64 load. No physical rearrangement or
+fragment copy is inserted. The explicit register layout maps logical <code class="docutils literal notranslate"><span class="pre">[i,j]</span></code> to thread
+<code class="docutils literal notranslate"><span class="pre">i+64*(j//64)</span></code> and local slot <code class="docutils literal notranslate"><span class="pre">j%64</span></code>. The physical views expose each thread’s 64
+contiguous registers.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">tvm</span>
 
@@ -761,25 +824,24 @@ layout maps logical <code class="docutils literal notranslate"><span class="pre"
 </div>
 </section>
 <section id="pack-unpack-is-a-different-tmem-image">
-<h2>Pack/unpack is a different TMEM image<a class="headerlink" href="#pack-unpack-is-a-different-tmem-image" title="Link to this heading">#</a></h2>
-<p><code class="docutils literal notranslate"><span class="pre">tcgen05.ld...pack::16b.b32</span></code> and <code class="docutils literal notranslate"><span class="pre">tcgen05.st...unpack::16b.b32</span></code> keep
-the ordinary b32 register image. The TMEM operand instead has suffix
-<code class="docutils literal notranslate"><span class="pre">(row,column,half)</span></code> with <code class="docutils literal notranslate"><span class="pre">half=2</span></code> and a 16-bit storage type. The two
-halves of register word <code class="docutils literal notranslate"><span class="pre">[row,column]</span></code> correspond to the <strong>low 16 bits of
-two different TMEM cells</strong>, at columns <code class="docutils literal notranslate"><span class="pre">2*column</span></code> and <code class="docutils literal notranslate"><span class="pre">2*column+1</span></code>.</p>
-<p>In 16-bit layout units, the column and half strides are respectively
-<code class="docutils literal notranslate"><span class="pre">4</span> <span class="pre">&#64;</span> <span class="pre">TCol</span></code> and <code class="docutils literal notranslate"><span class="pre">2</span> <span class="pre">&#64;</span> <span class="pre">TCol</span></code>. Using strides 2 and 1 would instead select
-both halves of one dense cell and would not satisfy the instruction. Hardware
-performs the pack/unpack; the tile emits no software conversion. The upper
-16 bits left by an unpack are not part of its defined 16-bit payload.</p>
+<h3>Pack/unpack is a different TMEM image<a class="headerlink" href="#pack-unpack-is-a-different-tmem-image" title="Link to this heading">#</a></h3>
+<p><code class="docutils literal notranslate"><span class="pre">tcgen05.ld...pack::16b.b32</span></code> and <code class="docutils literal notranslate"><span class="pre">tcgen05.st...unpack::16b.b32</span></code> keep the ordinary
+b32 register image. The TMEM operand instead has suffix <code class="docutils literal notranslate"><span class="pre">(row,column,half)</span></code> with
+<code class="docutils literal notranslate"><span class="pre">half=2</span></code> and a 16-bit storage type. The two halves of register word <code class="docutils literal notranslate"><span class="pre">[row,column]</span></code>
+correspond to the <strong>low 16 bits of two different TMEM cells</strong>, at columns <code class="docutils literal notranslate"><span class="pre">2*column</span></code>
+and <code class="docutils literal notranslate"><span class="pre">2*column+1</span></code>.</p>
+<p>In 16-bit layout units, the column and half strides are respectively <code class="docutils literal notranslate"><span class="pre">4</span> <span class="pre">&#64;</span> <span class="pre">TCol</span></code> and
+<code class="docutils literal notranslate"><span class="pre">2</span> <span class="pre">&#64;</span> <span class="pre">TCol</span></code>. Using strides 2 and 1 would instead select both halves of one dense cell
+and would not satisfy the instruction. Hardware performs the pack/unpack; the tile emits
+no software conversion. The upper 16 bits left by an unpack are not part of its defined
+16-bit payload.</p>
 </section>
 <section id="split-accesses-16x32bx2">
-<h2>Split accesses: 16x32bx2<a class="headerlink" href="#split-accesses-16x32bx2" title="Link to this heading">#</a></h2>
-<p>This form uses register suffix <code class="docutils literal notranslate"><span class="pre">(access,row,column)=(2,16,N)</span></code>; lane <code class="docutils literal notranslate"><span class="pre">l</span></code>
-owns <code class="docutils literal notranslate"><span class="pre">(l//16,l%16,r)</span></code>. Supply two separate TMEM regions and the explicit
-native immediate <code class="docutils literal notranslate"><span class="pre">imm_half_splitoff</span></code>. Each TMEM suffix is <code class="docutils literal notranslate"><span class="pre">(16,N)</span></code>
-or <code class="docutils literal notranslate"><span class="pre">(16,N,2)</span></code> for packing. For example, for an already prepared
-warpgroup view <code class="docutils literal notranslate"><span class="pre">mem</span></code> with shape <code class="docutils literal notranslate"><span class="pre">(4,32,16)</span></code>:</p>
+<h3>Split accesses: 16x32bx2<a class="headerlink" href="#split-accesses-16x32bx2" title="Link to this heading">#</a></h3>
+<p>This form uses register suffix <code class="docutils literal notranslate"><span class="pre">(access,row,column)=(2,16,N)</span></code>; lane <code class="docutils literal notranslate"><span class="pre">l</span></code> owns
+<code class="docutils literal notranslate"><span class="pre">(l//16,l%16,r)</span></code>. Supply two separate TMEM regions and the explicit native immediate
+<code class="docutils literal notranslate"><span class="pre">imm_half_splitoff</span></code>. Each TMEM suffix is <code class="docutils literal notranslate"><span class="pre">(16,N)</span></code> or <code class="docutils literal notranslate"><span class="pre">(16,N,2)</span></code> for packing. For
+example, for an already prepared warpgroup view <code class="docutils literal notranslate"><span class="pre">mem</span></code> with shape <code class="docutils literal notranslate"><span class="pre">(4,32,16)</span></code>:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">T</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">tile</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span>
     <span class="n">T</span><span class="o">.</span><span class="n">ptx</span><span class="p">[</span><span class="s2">&quot;tcgen05.ld.sync.aligned.16x32bx2.x4.b32&quot;</span><span class="p">],</span>
     <span class="n">registers</span><span class="p">,</span> <span class="n">mem</span><span class="p">[:,</span> <span class="p">:</span><span class="mi">16</span><span class="p">,</span> <span class="p">:</span><span class="mi">4</span><span class="p">],</span> <span class="n">mem</span><span class="p">[:,</span> <span class="mi">16</span><span class="p">:</span><span class="mi">32</span><span class="p">,</span> <span class="mi">8</span><span class="p">:</span><span class="mi">12</span><span class="p">],</span>
@@ -787,19 +849,20 @@ warpgroup view <code class="docutils literal notranslate"><span class="pre">mem<
 <span class="p">)</span>
 </pre></div>
 </div>
-<p>Both halves share the same TMEM backing allocation. The second encoded
-address equals the first plus the immediate; no extra sixteen-row shift is
-implied by lane 16. For stores, operand order is <code class="docutils literal notranslate"><span class="pre">mem_low,mem_high,registers</span></code>.
-One instruction handles both accesses for each repeat.</p>
+<p>Both halves share the same TMEM backing allocation. The second encoded address equals
+the first plus the immediate; no extra sixteen-row shift is implied by lane 16. For
+stores, operand order is <code class="docutils literal notranslate"><span class="pre">mem_low,mem_high,registers</span></code>. One instruction handles both
+accesses for each repeat.</p>
 </section>
 <section id="completion-and-producer-dependencies">
-<h2>Completion and producer dependencies<a class="headerlink" href="#completion-and-producer-dependencies" title="Link to this heading">#</a></h2>
-<p>Call <code class="docutils literal notranslate"><span class="pre">tcgen05.wait::ld</span></code> before consuming loaded registers and
-<code class="docutils literal notranslate"><span class="pre">tcgen05.wait::st</span></code> before relying on stores. For an MMA/cp producer,
-complete its commit/mbarrier protocol and required thread-sync fence before
-issuing a TMEM load; <code class="docutils literal notranslate"><span class="pre">wait::ld</span></code> does not complete a preceding MMA.
-Allocation, deallocation, fences and synchronization remain explicit.</p>
+<h3>Completion and producer dependencies<a class="headerlink" href="#completion-and-producer-dependencies" title="Link to this heading">#</a></h3>
+<p>Call <code class="docutils literal notranslate"><span class="pre">tcgen05.wait::ld</span></code> before consuming loaded registers and <code class="docutils literal notranslate"><span class="pre">tcgen05.wait::st</span></code>
+before relying on stores. For an MMA/cp producer, complete its commit/mbarrier protocol
+and required thread-sync fence before issuing a TMEM load; <code class="docutils literal notranslate"><span class="pre">wait::ld</span></code> does not
+complete a preceding MMA. Allocation, deallocation, fences and synchronization remain
+explicit.</p>
 <p>Implementation: <code class="docutils literal notranslate"><span class="pre">python/tvm/backend/cuda/tile/patterns/tmem.py</span></code>.</p>
+</section>
 </section>
 </section>
 
@@ -848,11 +911,21 @@ Allocation, deallocation, fences and synchronization remain explicit.</p>
   </div>
   <nav class="bd-toc-nav page-toc">
     <ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#native-images">Native images</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#example-layout-b-without-changing-its-physical-mapping">Example: Layout B without changing its physical mapping</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#pack-unpack-is-a-different-tmem-image">Pack/unpack is a different TMEM image</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#split-accesses-16x32bx2">Split accesses: 16x32bx2</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#completion-and-producer-dependencies">Completion and producer dependencies</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#call-parameters">Call parameters</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#data-representation">Data representation</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#operand-specification">Operand specification</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#native-images">Native images</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#legality-conditions">Legality conditions</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#code-generation">Code generation</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#examples">Examples</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#example-layout-b-without-changing-its-physical-mapping">Example: Layout B without changing its physical mapping</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#pack-unpack-is-a-different-tmem-image">Pack/unpack is a different TMEM image</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#split-accesses-16x32bx2">Split accesses: 16x32bx2</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#completion-and-producer-dependencies">Completion and producer dependencies</a></li>
+</ul>
+</li>
 </ul>
   </nav></div>
 

@@ -624,7 +624,15 @@ document.write(`
             </div>
             <nav aria-label="Page">
                 <ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#example-eight-float32-values-to-four-packed-half-pairs">Example: eight float32 values to four packed half pairs</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#call-parameters">Call parameters</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#data-representation">Data representation</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#operand-specification">Operand specification</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#legality-conditions">Legality conditions</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#code-generation">Code generation</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#examples">Examples</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#example-eight-float32-values-to-four-packed-half-pairs">Example: eight float32 values to four packed half pairs</a></li>
+</ul>
+</li>
 </ul>
             </nav>
         </div>
@@ -638,17 +646,75 @@ document.write(`
                   
   <section id="cvt">
 <h1>cvt<a class="headerlink" href="#cvt" title="Link to this heading">#</a></h1>
-<p><code class="docutils literal notranslate"><span class="pre">cvt</span></code> performs a numeric conversion selected by the opcode. A dtype view
-only reinterprets bits; it is used here to expose the native carrier layout,
-not to perform the conversion itself. Destination and source widths, operand
-group lengths, rounding, saturation and packing come from the PTX form.</p>
-<p>Scalar conversion uses tensor suffix <code class="docutils literal notranslate"><span class="pre">(1,)</span></code> on both sides. Packed
-<code class="docutils literal notranslate"><span class="pre">cvt.rn.f16x2.f32</span></code> has three operands: one b32 destination, a float32 source
-for its <strong>high</strong> halfword, and a float32 source for its <strong>low</strong> halfword.
-All three have suffix <code class="docutils literal notranslate"><span class="pre">(1,)</span></code>. The pair is not an inferred vectorization of
-a scalar cast.</p>
+<section id="call-parameters">
+<h2>Call parameters<a class="headerlink" href="#call-parameters" title="Link to this heading">#</a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">T.cuda.tile.apply(T.ptx[opcode],</span> <span class="pre">*operands,</span> <span class="pre">scope=&quot;thread&quot;,</span> <span class="pre">**parameters)</span></code></p>
+<p>Operand order: <code class="docutils literal notranslate"><span class="pre">dst,</span> <span class="pre">src[,</span> <span class="pre">src1,</span> <span class="pre">...]</span></code>.</p>
+<div class="pst-scrollable-table-container"><table class="table">
+<thead>
+<tr class="row-odd"><th class="head"><p>Parameter</p></th>
+<th class="head"><p>Type / default</p></th>
+<th class="head"><p>Meaning</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">scope</span></code></p></td>
+<td><p>static str; default “thread”</p></td>
+<td><p>Execution scope; group axes follow <a class="reference internal" href="../cuda_tile_patterns.html"><span class="doc">Explicit CUDA tile patterns</span></a>. It does not elect an issuing thread.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">pred</span></code></p></td>
+<td><p>runtime bool; default None</p></td>
+<td><p>Execute the instruction when true; None is unconditional.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">preserve_dst</span></code></p></td>
+<td><p>static bool; default False</p></td>
+<td><p>For a predicated register result, retain the initialized destination when pred is false; otherwise the inactive result is undefined.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>Only the parameters listed here are instruction parameters. Opcode qualifiers are
+written in <code class="docutils literal notranslate"><span class="pre">T.ptx[opcode]</span></code>.</p>
+</section>
+<section id="data-representation">
+<h2>Data representation<a class="headerlink" href="#data-representation" title="Link to this heading">#</a></h2>
+<p>Each operand uses the scalar PTX register type or its equal-width bit container. A
+packed f16x2/bf16x2 value occupies one b32 container; f32x2 occupies one b64 container.
+The final tensor axis counts native registers, not the packed scalar elements. Rounding,
+saturation, signedness and packing are selected in the opcode.</p>
+</section>
+<section id="operand-specification">
+<h2>Operand specification<a class="headerlink" href="#operand-specification" title="Link to this heading">#</a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">cvt</span></code> performs a numeric conversion selected by the opcode. A dtype view only
+reinterprets bits; it is used here to expose the native carrier layout, not to perform
+the conversion itself. Destination and source widths, operand group lengths, rounding,
+saturation and packing come from the PTX form.</p>
+<p>Scalar conversion uses tensor suffix <code class="docutils literal notranslate"><span class="pre">(1,)</span></code> on both sides. Packed <code class="docutils literal notranslate"><span class="pre">cvt.rn.f16x2.f32</span></code>
+has three operands: one b32 destination, a float32 source for its <strong>high</strong> halfword, and
+a float32 source for its <strong>low</strong> halfword. All three have suffix <code class="docutils literal notranslate"><span class="pre">(1,)</span></code>. The pair is
+not an inferred vectorization of a scalar cast.</p>
+</section>
+<section id="legality-conditions">
+<h2>Legality conditions<a class="headerlink" href="#legality-conditions" title="Link to this heading">#</a></h2>
+<p>All tensor operands are local registers owned by the issuing thread. Their group/repeat
+shapes agree; the final extent equals that operand’s native register count (one for a
+scalar operand). Scalar expressions are allowed for single-register read inputs and
+broadcast across repeats. Destination slots must not overlap. Register storage strides
+are in container elements; they need not be one. The selected PTX form validates operand
+types.</p>
+</section>
+<section id="code-generation">
+<h2>Code generation<a class="headerlink" href="#code-generation" title="Link to this heading">#</a></h2>
+<p>For each group and row-major repeat coordinate, bind each tensor’s final register axis
+in increasing order and emit one selected instruction. A scalar input is reused. No
+packing, memory staging or synchronization is inserted. The number of expanded
+instructions per issuing thread is the product of repeat extents; downstream compiler
+optimizations may simplify unused or constant results.</p>
+</section>
+<section id="examples">
+<h2>Examples<a class="headerlink" href="#examples" title="Link to this heading">#</a></h2>
 <section id="example-eight-float32-values-to-four-packed-half-pairs">
-<h2>Example: eight float32 values to four packed half pairs<a class="headerlink" href="#example-eight-float32-values-to-four-packed-half-pairs" title="Link to this heading">#</a></h2>
+<h3>Example: eight float32 values to four packed half pairs<a class="headerlink" href="#example-eight-float32-values-to-four-packed-half-pairs" title="Link to this heading">#</a></h3>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">tvm.script</span><span class="w"> </span><span class="kn">import</span> <span class="n">tirx</span> <span class="k">as</span> <span class="n">T</span>
 
 
@@ -662,10 +728,9 @@ a scalar cast.</p>
     <span class="n">T</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">tile</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="n">T</span><span class="o">.</span><span class="n">ptx</span><span class="p">[</span><span class="s2">&quot;st.global.b32&quot;</span><span class="p">],</span> <span class="n">Out</span><span class="p">,</span> <span class="n">d</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>For each input row <code class="docutils literal notranslate"><span class="pre">[x0,x1]</span></code>, the output word contains converted <code class="docutils literal notranslate"><span class="pre">x0</span></code>
-in its low half and <code class="docutils literal notranslate"><span class="pre">x1</span></code> in its high half. Reversing the two source operands
-would exchange the output elements. The expansion emits four packed cvt
-instructions, one per row.</p>
+<p>For each input row <code class="docutils literal notranslate"><span class="pre">[x0,x1]</span></code>, the output word contains converted <code class="docutils literal notranslate"><span class="pre">x0</span></code> in its low
+half and <code class="docutils literal notranslate"><span class="pre">x1</span></code> in its high half. Reversing the two source operands would exchange the
+output elements. The expansion emits four packed cvt instructions, one per row.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">tvm</span>
 
@@ -676,15 +741,16 @@ instructions, one per row.</p>
 <span class="n">np</span><span class="o">.</span><span class="n">testing</span><span class="o">.</span><span class="n">assert_array_equal</span><span class="p">(</span><span class="n">out</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="s2">&quot;float16&quot;</span><span class="p">),</span> <span class="n">x</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s2">&quot;float16&quot;</span><span class="p">))</span>
 </pre></div>
 </div>
-<p>The inverse operation is two scalar <code class="docutils literal notranslate"><span class="pre">cvt.f32.f16</span></code> instructions per packed
-word; there is no corresponding <code class="docutils literal notranslate"><span class="pre">cvt.f32x2.f16x2</span></code> spelling in this API.
-Expose the packed source with a uint16 view, add a singleton register-group
-axis per half, and apply the scalar opcode. For a composite conversion
-expression, including explicit intermediate rounding, use <a class="reference internal" href="ewise.html"><span class="doc">ewise: caller-defined scalar compositions</span></a>.</p>
-<p>Register ownership must agree on both sides even when their storage widths
-differ. A wrong carrier width, missing group axis, or overlapping destination
-is rejected. There is no implicit staging through shared memory.</p>
+<p>The inverse operation is two scalar <code class="docutils literal notranslate"><span class="pre">cvt.f32.f16</span></code> instructions per packed word; there
+is no corresponding <code class="docutils literal notranslate"><span class="pre">cvt.f32x2.f16x2</span></code> spelling in this API. Expose the packed source
+with a uint16 view, add a singleton register-group axis per half, and apply the scalar
+opcode. For a composite conversion expression, including explicit intermediate rounding,
+use <a class="reference internal" href="ewise.html"><span class="doc">ewise: caller-defined scalar compositions</span></a>.</p>
+<p>Register ownership must agree on both sides even when their storage widths differ. A
+wrong carrier width, missing group axis, or overlapping destination is rejected. There
+is no implicit staging through shared memory.</p>
 <p>Implementation: <code class="docutils literal notranslate"><span class="pre">python/tvm/backend/cuda/tile/patterns/register.py</span></code>.</p>
+</section>
 </section>
 </section>
 
@@ -733,7 +799,15 @@ is rejected. There is no implicit staging through shared memory.</p>
   </div>
   <nav class="bd-toc-nav page-toc">
     <ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#example-eight-float32-values-to-four-packed-half-pairs">Example: eight float32 values to four packed half pairs</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#call-parameters">Call parameters</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#data-representation">Data representation</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#operand-specification">Operand specification</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#legality-conditions">Legality conditions</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#code-generation">Code generation</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#examples">Examples</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#example-eight-float32-values-to-four-packed-half-pairs">Example: eight float32 values to four packed half pairs</a></li>
+</ul>
+</li>
 </ul>
   </nav></div>
 

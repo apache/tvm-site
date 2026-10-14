@@ -624,9 +624,19 @@ document.write(`
             </div>
             <nav aria-label="Page">
                 <ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#the-scalar-atom">The scalar atom</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#example-silu-scale-bias">Example: SiLU, scale, bias</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#shared-memory-load-compute-store">Shared-memory load/compute/store</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#call-parameters">Call parameters</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#data-representation">Data representation</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#operand-specification">Operand specification</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#the-scalar-atom">The scalar atom</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#legality-conditions">Legality conditions</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#code-generation">Code generation</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#examples">Examples</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#example-silu-scale-bias">Example: SiLU, scale, bias</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#shared-memory-load-compute-store">Shared-memory load/compute/store</a></li>
+</ul>
+</li>
 </ul>
             </nav>
         </div>
@@ -640,30 +650,76 @@ document.write(`
                   
   <section id="ewise-caller-defined-scalar-compositions">
 <h1>ewise: caller-defined scalar compositions<a class="headerlink" href="#ewise-caller-defined-scalar-compositions" title="Link to this heading">#</a></h1>
-<p><code class="docutils literal notranslate"><span class="pre">T.cuda.tile.ewise(function,</span> <span class="pre">dst,</span> <span class="pre">*inputs,</span> <span class="pre">scope=&quot;thread&quot;)</span></code> applies a
-typed scalar TIRx function independently to register elements. This is the
-one CUDA tile operation whose atom is a caller-defined expression rather
-than one PTX instruction. It can represent exp, SiLU, scale/bias, casts, or
-another scalar combination. Use <a class="reference internal" href="add_sub_mul.html"><span class="doc">add / sub / mul</span></a>, <a class="reference internal" href="fma.html"><span class="doc">fma</span></a>, or
-<a class="reference internal" href="cvt.html"><span class="doc">cvt</span></a> when the native instruction and its qualifiers are the contract.</p>
-<section id="the-scalar-atom">
-<h2>The scalar atom<a class="headerlink" href="#the-scalar-atom" title="Link to this heading">#</a></h2>
-<p>Tensor operands have coordinates <code class="docutils literal notranslate"><span class="pre">(*group,*repeat)</span></code>. There is no trailing
-PTX register-group axis: every coordinate after the group prefix selects
-one scalar invocation. Inputs and destination have matching extents and
-belong to the executing thread. Read-only zero-stride input views express
-tensor broadcasts; a destination must not overlap itself.</p>
-<p>Scalar arguments broadcast to every invocation. Their types must match the
-function parameters, and its result type must match the destination dtype.
-The function supports scalar bindings and returns, including an if/else
-with a scalar return on both paths. It does not express reductions, memory
-access algorithms, or inter-thread communication.</p>
+<section id="call-parameters">
+<h2>Call parameters<a class="headerlink" href="#call-parameters" title="Link to this heading">#</a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">T.cuda.tile.ewise(function,</span> <span class="pre">dst,</span> <span class="pre">*inputs,</span> <span class="pre">scope=&quot;thread&quot;)</span></code></p>
+<p>Operand order: <code class="docutils literal notranslate"><span class="pre">function,</span> <span class="pre">dst,</span> <span class="pre">*inputs</span></code>.</p>
+<div class="pst-scrollable-table-container"><table class="table">
+<thead>
+<tr class="row-odd"><th class="head"><p>Parameter</p></th>
+<th class="head"><p>Type / default</p></th>
+<th class="head"><p>Meaning</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">scope</span></code></p></td>
+<td><p>static str; default “thread”</p></td>
+<td><p>Execution scope; group axes follow <a class="reference internal" href="../cuda_tile_patterns.html"><span class="doc">Explicit CUDA tile patterns</span></a>. It does not elect an issuing thread.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>The scalar function defines the computation. <code class="docutils literal notranslate"><span class="pre">scope</span></code> is the only tile keyword.</p>
 </section>
+<section id="data-representation">
+<h2>Data representation<a class="headerlink" href="#data-representation" title="Link to this heading">#</a></h2>
+<p>function is a typed scalar TIRx Function; its parameter and return types exactly match
+input and destination scalars. The atom is one scalar element, with no native
+register-group suffix.</p>
+</section>
+<section id="operand-specification">
+<h2>Operand specification<a class="headerlink" href="#operand-specification" title="Link to this heading">#</a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">T.cuda.tile.ewise(function,</span> <span class="pre">dst,</span> <span class="pre">*inputs,</span> <span class="pre">scope=&quot;thread&quot;)</span></code> applies a typed scalar
+TIRx function independently to register elements. This is the one CUDA tile operation
+whose atom is a caller-defined expression rather than one PTX instruction. It can
+represent exp, SiLU, scale/bias, casts, or another scalar combination. Use
+<a class="reference internal" href="add_sub_mul.html"><span class="doc">add / sub / mul</span></a>, <a class="reference internal" href="fma.html"><span class="doc">fma</span></a>, or <a class="reference internal" href="cvt.html"><span class="doc">cvt</span></a> when the native instruction and its
+qualifiers are the contract.</p>
+<section id="the-scalar-atom">
+<h3>The scalar atom<a class="headerlink" href="#the-scalar-atom" title="Link to this heading">#</a></h3>
+<p>Tensor operands have coordinates <code class="docutils literal notranslate"><span class="pre">(*group,*repeat)</span></code>. There is no trailing PTX
+register-group axis: every coordinate after the group prefix selects one scalar
+invocation. Inputs and destination have matching extents and belong to the executing
+thread. Read-only zero-stride input views express tensor broadcasts; a destination must
+not overlap itself.</p>
+<p>Scalar arguments broadcast to every invocation. Their types must match the function
+parameters, and its result type must match the destination dtype. The function supports
+scalar bindings and returns, including an if/else with a scalar return on both paths. It
+does not express reductions, memory access algorithms, or inter-thread communication.</p>
+</section>
+</section>
+<section id="legality-conditions">
+<h2>Legality conditions<a class="headerlink" href="#legality-conditions" title="Link to this heading">#</a></h2>
+<p>Tensor operands are local and have identical group/repeat shapes. Scalar inputs
+broadcast; tensor broadcasting is an explicit zero-stride view. Destinations belong to
+the issuing thread and do not overlap. The function contains scalar bindings and a
+scalar return on every path, including supported conditional returns. No
+instruction-specific keyword is accepted.</p>
+</section>
+<section id="code-generation">
+<h2>Code generation<a class="headerlink" href="#code-generation" title="Link to this heading">#</a></h2>
+<p>Inline the scalar function at each repeat coordinate and store its result to the
+corresponding destination slot. There is one scalar function evaluation per element, not
+a guaranteed single PTX instruction. Numeric conversion, packed arithmetic and
+load/store staging must be written explicitly by the caller.</p>
+</section>
+<section id="examples">
+<h2>Examples<a class="headerlink" href="#examples" title="Link to this heading">#</a></h2>
 <section id="example-silu-scale-bias">
-<h2>Example: SiLU, scale, bias<a class="headerlink" href="#example-silu-scale-bias" title="Link to this heading">#</a></h2>
-<p>This complete kernel uses four scalar register values per thread. Its
-memory instructions have a four-word suffix; <code class="docutils literal notranslate"><span class="pre">ewise</span></code> treats those same
-four coordinates as scalar repeats.</p>
+<h3>Example: SiLU, scale, bias<a class="headerlink" href="#example-silu-scale-bias" title="Link to this heading">#</a></h3>
+<p>This complete kernel uses four scalar register values per thread. Its memory
+instructions have a four-word suffix; <code class="docutils literal notranslate"><span class="pre">ewise</span></code> treats those same four coordinates as
+scalar repeats.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">tvm.script</span><span class="w"> </span><span class="kn">import</span> <span class="n">tirx</span> <span class="k">as</span> <span class="n">T</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">tvm.backend.cuda.axis</span><span class="w"> </span><span class="kn">import</span> <span class="n">laneid</span><span class="p">,</span> <span class="n">warpid</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">tvm.tirx.layout</span><span class="w"> </span><span class="kn">import</span> <span class="n">S</span><span class="p">,</span> <span class="n">TileLayout</span>
@@ -686,18 +742,17 @@ four coordinates as scalar repeats.</p>
     <span class="n">T</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">tile</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="n">T</span><span class="o">.</span><span class="n">ptx</span><span class="p">[</span><span class="s2">&quot;st.global.v4.b32&quot;</span><span class="p">],</span> <span class="n">Out</span><span class="p">,</span> <span class="n">R</span><span class="p">,</span> <span class="n">scope</span><span class="o">=</span><span class="s2">&quot;cta&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>There is one vector load, four inlined scalar expressions, and one vector
-store per thread. The expression computes <code class="docutils literal notranslate"><span class="pre">silu(x)*2+1</span></code>; it does not mean
-<code class="docutils literal notranslate"><span class="pre">silu(2*x+1)</span></code>. The ordinary scalar compiler lowers the expression; <code class="docutils literal notranslate"><span class="pre">ewise</span></code>
-does not promise one PTX instruction, choose a packed form, or fuse an
-unspecified activation. For an exact exponential instruction use <a class="reference internal" href="ex2_lg2.html"><span class="doc">ex2 / lg2</span></a>.</p>
+<p>There is one vector load, four inlined scalar expressions, and one vector store per
+thread. The expression computes <code class="docutils literal notranslate"><span class="pre">silu(x)*2+1</span></code>; it does not mean <code class="docutils literal notranslate"><span class="pre">silu(2*x+1)</span></code>. The
+ordinary scalar compiler lowers the expression; <code class="docutils literal notranslate"><span class="pre">ewise</span></code> does not promise one PTX
+instruction, choose a packed form, or fuse an unspecified activation. For an exact
+exponential instruction use <a class="reference internal" href="ex2_lg2.html"><span class="doc">ex2 / lg2</span></a>.</p>
 </section>
 <section id="shared-memory-load-compute-store">
-<h2>Shared-memory load/compute/store<a class="headerlink" href="#shared-memory-load-compute-store" title="Link to this heading">#</a></h2>
-<p>Both the destination and tensor inputs of <code class="docutils literal notranslate"><span class="pre">ewise</span></code> must be local registers.
-The following complete kernel makes the shared staging explicit. The final
-read deliberately uses another thread’s row, so the second CTA barrier has
-a visible purpose.</p>
+<h3>Shared-memory load/compute/store<a class="headerlink" href="#shared-memory-load-compute-store" title="Link to this heading">#</a></h3>
+<p>Both the destination and tensor inputs of <code class="docutils literal notranslate"><span class="pre">ewise</span></code> must be local registers. The
+following complete kernel makes the shared staging explicit. The final read deliberately
+uses another thread’s row, so the second CTA barrier has a visible purpose.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nd">@T</span><span class="o">.</span><span class="n">function</span><span class="p">(</span><span class="n">private</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">affine</span><span class="p">(</span><span class="n">x</span><span class="p">:</span> <span class="n">T</span><span class="o">.</span><span class="n">float32</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">T</span><span class="o">.</span><span class="n">float32</span><span class="p">:</span>
     <span class="k">return</span> <span class="n">x</span> <span class="o">*</span> <span class="n">T</span><span class="o">.</span><span class="n">float32</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span> <span class="o">+</span> <span class="n">T</span><span class="o">.</span><span class="n">float32</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
@@ -721,10 +776,10 @@ a visible purpose.</p>
         <span class="n">Out</span><span class="p">[</span><span class="n">tid</span><span class="p">,</span> <span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="n">S</span><span class="p">[(</span><span class="n">tid</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">%</span> <span class="mi">64</span><span class="p">,</span> <span class="n">j</span><span class="p">]</span>
 </pre></div>
 </div>
-<p>The two views refer to the existing shared and local allocations. The tile
-operation adds no temporary storage or barrier. If the shared store used a
-different ownership map that overwrote another thread’s unread input, an
-additional barrier would be needed between all loads and all stores.</p>
+<p>The two views refer to the existing shared and local allocations. The tile operation
+adds no temporary storage or barrier. If the shared store used a different ownership map
+that overwrote another thread’s unread input, an additional barrier would be needed
+between all loads and all stores.</p>
 <p>Compile and verify both examples:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">tvm</span>
@@ -741,6 +796,7 @@ additional barrier would be needed between all loads and all stores.</p>
 </pre></div>
 </div>
 <p>Implementation: <code class="docutils literal notranslate"><span class="pre">python/tvm/backend/cuda/tile/patterns/ewise.py</span></code>.</p>
+</section>
 </section>
 </section>
 
@@ -789,9 +845,19 @@ additional barrier would be needed between all loads and all stores.</p>
   </div>
   <nav class="bd-toc-nav page-toc">
     <ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#the-scalar-atom">The scalar atom</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#example-silu-scale-bias">Example: SiLU, scale, bias</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#shared-memory-load-compute-store">Shared-memory load/compute/store</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#call-parameters">Call parameters</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#data-representation">Data representation</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#operand-specification">Operand specification</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#the-scalar-atom">The scalar atom</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#legality-conditions">Legality conditions</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#code-generation">Code generation</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#examples">Examples</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#example-silu-scale-bias">Example: SiLU, scale, bias</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#shared-memory-load-compute-store">Shared-memory load/compute/store</a></li>
+</ul>
+</li>
 </ul>
   </nav></div>
 

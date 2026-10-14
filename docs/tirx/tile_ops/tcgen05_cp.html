@@ -624,10 +624,20 @@ document.write(`
             </div>
             <nav aria-label="Page">
                 <ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#tmem-shape-and-replicas">TMEM shape and replicas</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#shared-descriptor-address-walk">Shared descriptor address walk</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#example-one-128x128b-copy-and-readback">Example: one 128x128b copy and readback</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#native-fp4-fp6-decompression">Native FP4/FP6 decompression</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#call-parameters">Call parameters</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#data-representation">Data representation</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#operand-specification">Operand specification</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#tmem-shape-and-replicas">TMEM shape and replicas</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#shared-descriptor-address-walk">Shared descriptor address walk</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#legality-conditions">Legality conditions</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#code-generation">Code generation</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#examples">Examples</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#example-one-128x128b-copy-and-readback">Example: one 128x128b copy and readback</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#native-fp4-fp6-decompression">Native FP4/FP6 decompression</a></li>
+</ul>
+</li>
 </ul>
             </nav>
         </div>
@@ -641,14 +651,47 @@ document.write(`
                   
   <section id="tcgen05-cp">
 <h1>tcgen05.cp<a class="headerlink" href="#tcgen05-cp" title="Link to this heading">#</a></h1>
-<p><code class="docutils literal notranslate"><span class="pre">tcgen05.cp</span></code> copies a descriptor-defined shared image into TMEM. It is
-issued by a single thread, not collectively by the warps whose TMEM lanes
-receive the data. Select shape, CTA group, multicast and optional
-decompression directly in the opcode.</p>
+<section id="call-parameters">
+<h2>Call parameters<a class="headerlink" href="#call-parameters" title="Link to this heading">#</a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">T.cuda.tile.apply(T.ptx[opcode],</span> <span class="pre">*operands,</span> <span class="pre">scope=&quot;thread&quot;,</span> <span class="pre">**parameters)</span></code></p>
+<p>Operand order: <code class="docutils literal notranslate"><span class="pre">dst_tmem,</span> <span class="pre">src_shared</span></code>.</p>
+<div class="pst-scrollable-table-container"><table class="table">
+<thead>
+<tr class="row-odd"><th class="head"><p>Parameter</p></th>
+<th class="head"><p>Type / default</p></th>
+<th class="head"><p>Meaning</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">scope</span></code></p></td>
+<td><p>static str; default “thread”</p></td>
+<td><p>Execution scope; group axes follow <a class="reference internal" href="../cuda_tile_patterns.html"><span class="doc">Explicit CUDA tile patterns</span></a>. It does not elect an issuing thread.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">pred</span></code></p></td>
+<td><p>runtime bool; default None</p></td>
+<td><p>Execute the instruction when true; None is unconditional. A skipped asynchronous issue performs no completion accounting.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>Only the parameters listed here are instruction parameters. Opcode qualifiers are
+written in <code class="docutils literal notranslate"><span class="pre">T.ptx[opcode]</span></code>.</p>
+</section>
+<section id="data-representation">
+<h2>Data representation<a class="headerlink" href="#data-representation" title="Link to this heading">#</a></h2>
+<p>Both regions use scalar 32-bit storage words. Opcode shape gives (rows,words); multicast
+determines destination replicas. Decompression uses the same b32 footprint but
+explicitly changes the packed payload semantics.</p>
+</section>
+<section id="operand-specification">
+<h2>Operand specification<a class="headerlink" href="#operand-specification" title="Link to this heading">#</a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">tcgen05.cp</span></code> copies a descriptor-defined shared image into TMEM. It is issued by a
+single thread, not collectively by the warps whose TMEM lanes receive the data. Select
+shape, CTA group, multicast and optional decompression directly in the opcode.</p>
 <section id="tmem-shape-and-replicas">
-<h2>TMEM shape and replicas<a class="headerlink" href="#tmem-shape-and-replicas" title="Link to this heading">#</a></h2>
-<p>Operands are <code class="docutils literal notranslate"><span class="pre">dst_tmem,</span> <span class="pre">src_shared</span></code>, both with suffix <code class="docutils literal notranslate"><span class="pre">(row,b32_word)</span></code>
-and 32-bit storage elements. An earlier axis is an explicit repeat.</p>
+<h3>TMEM shape and replicas<a class="headerlink" href="#tmem-shape-and-replicas" title="Link to this heading">#</a></h3>
+<p>Operands are <code class="docutils literal notranslate"><span class="pre">dst_tmem,</span> <span class="pre">src_shared</span></code>, both with suffix <code class="docutils literal notranslate"><span class="pre">(row,b32_word)</span></code> and 32-bit
+storage elements. An earlier axis is an explicit repeat.</p>
 <div class="pst-scrollable-table-container"><table class="table">
 <thead>
 <tr class="row-odd"><th class="head"><p>Shape / multicast</p></th>
@@ -684,28 +727,47 @@ and 32-bit storage elements. An earlier axis is an explicit repeat.</p>
 </tbody>
 </table>
 </div>
-<p>The destination layout must state these replicas explicitly; the pattern
-does not infer multicast. Columns are consecutive b32 cells with a 128-bit
-aligned origin. The whole footprint, including replicas, must stay inside
-the 128-lane, 512-column TMEM address space. A CTA-group-2 opcode makes both
-CTAs copy from their own corresponding shared storage into their own TMEM.
-The launch, allocation and commit must use the matching CTA-group protocol.</p>
+<p>The destination layout must state these replicas explicitly; the pattern does not infer
+multicast. Columns are consecutive b32 cells with a 128-bit aligned origin. The whole
+footprint, including replicas, must stay inside the 128-lane, 512-column TMEM address
+space. A CTA-group-2 opcode makes both CTAs copy from their own corresponding shared
+storage into their own TMEM. The launch, allocation and commit must use the matching
+CTA-group protocol.</p>
 </section>
 <section id="shared-descriptor-address-walk">
-<h2>Shared descriptor address walk<a class="headerlink" href="#shared-descriptor-address-walk" title="Link to this heading">#</a></h2>
-<p>Supply <code class="docutils literal notranslate"><span class="pre">ldo_bytes</span></code>, <code class="docutils literal notranslate"><span class="pre">sdo_bytes</span></code> and <code class="docutils literal notranslate"><span class="pre">swizzle=0/1/2/3</span></code>. Before swizzling,
-row <code class="docutils literal notranslate"><span class="pre">r</span></code> starts at <code class="docutils literal notranslate"><span class="pre">(r//8)*sdo_bytes</span> <span class="pre">+</span> <span class="pre">(r%8)*(16</span> <span class="pre">&lt;&lt;</span> <span class="pre">swizzle)</span></code> bytes
-relative to the descriptor origin. Without swizzling, word <code class="docutils literal notranslate"><span class="pre">w</span></code> adds
-<code class="docutils literal notranslate"><span class="pre">(w//4)*ldo_bytes</span> <span class="pre">+</span> <span class="pre">(w%4)*4</span></code>. With swizzling, words are contiguous and add
+<h3>Shared descriptor address walk<a class="headerlink" href="#shared-descriptor-address-walk" title="Link to this heading">#</a></h3>
+<p>The shared layout determines internal byte strides LDO/SDO and swizzle mode 0/1/2/3.
+These are not call parameters. Before swizzling, row <code class="docutils literal notranslate"><span class="pre">r</span></code> starts at <code class="docutils literal notranslate"><span class="pre">(r//8)*SDO</span> <span class="pre">+</span>
+<span class="pre">(r%8)*(16</span> <span class="pre">&lt;&lt;</span> <span class="pre">swizzle)</span></code> bytes relative to the descriptor origin. Without swizzling, word
+<code class="docutils literal notranslate"><span class="pre">w</span></code> adds <code class="docutils literal notranslate"><span class="pre">(w//4)*LDO</span> <span class="pre">+</span> <span class="pre">(w%4)*4</span></code>. With swizzling, words are contiguous and add
 <code class="docutils literal notranslate"><span class="pre">4*w</span></code>; hardware ignores LDO in that case.</p>
-<p>Descriptor strides are nonnegative 16-byte multiples below 2^18; origins
-are 16-byte aligned. Swizzled bases require 256/512/1024-byte period
-alignment for modes 1/2/3. The complete physical walk is checked, including
-the origin’s swizzle phase. A 4-row logical region still needs a backing
-storage block large enough for the descriptor’s eight-row organization.</p>
+<p>Descriptor strides are nonnegative 16-byte multiples below 2^18; origins are 16-byte
+aligned. Swizzled bases require 256/512/1024-byte period alignment for modes 1/2/3. The
+complete physical walk is checked, including the origin’s swizzle phase. A 4-row logical
+region still needs a backing storage block large enough for the descriptor’s eight-row
+organization.</p>
 </section>
+</section>
+<section id="legality-conditions">
+<h2>Legality conditions<a class="headerlink" href="#legality-conditions" title="Link to this heading">#</a></h2>
+<p>Both regions end in the selected (rows,words). Shared must match one of the descriptor
+address walks in the operand specification. TMEM row/column mapping and replicas match the opcode exactly.
+Column origin is 128-bit aligned and the full image fits 128 lanes and 512 columns.
+Shared origins are 16B aligned, descriptor strides are nonnegative 16B multiples below
+2^18, and swizzled allocations align to their full period.</p>
+</section>
+<section id="code-generation">
+<h2>Code generation<a class="headerlink" href="#code-generation" title="Link to this heading">#</a></h2>
+<p>Extract LDO/SDO/swizzle from the shared region using
+<a class="reference internal" href="../cuda_tile_patterns.html#cuda-matrix-descriptor-extraction"><span class="std std-ref">Shared matrix descriptors</span></a>. For each repeat, encode the shared atom
+origin, compute the TMEM address from TLane/TCol, and emit one selected tcgen05.cp. A
+single elected thread issues it; allocation, proxy fencing, commit, wait and
+deallocation remain explicit caller code.</p>
+</section>
+<section id="examples">
+<h2>Examples<a class="headerlink" href="#examples" title="Link to this heading">#</a></h2>
 <section id="example-one-128x128b-copy-and-readback">
-<h2>Example: one 128x128b copy and readback<a class="headerlink" href="#example-one-128x128b-copy-and-readback" title="Link to this heading">#</a></h2>
+<h3>Example: one 128x128b copy and readback<a class="headerlink" href="#example-one-128x128b-copy-and-readback" title="Link to this heading">#</a></h3>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">tvm.script</span><span class="w"> </span><span class="kn">import</span> <span class="n">tirx</span> <span class="k">as</span> <span class="n">T</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">tvm.backend.cuda.axis</span><span class="w"> </span><span class="kn">import</span> <span class="n">TLane</span><span class="p">,</span> <span class="n">TCol</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">tvm.tirx.layout</span><span class="w"> </span><span class="kn">import</span> <span class="n">S</span><span class="p">,</span> <span class="n">TileLayout</span>
@@ -739,9 +801,6 @@ storage block large enough for the descriptor’s eight-row organization.</p>
             <span class="n">T</span><span class="o">.</span><span class="n">ptx</span><span class="p">[</span><span class="s2">&quot;tcgen05.cp.cta_group::1.128x128b&quot;</span><span class="p">],</span>
             <span class="n">mem</span><span class="p">,</span>
             <span class="n">shared</span><span class="p">,</span>
-            <span class="n">ldo_bytes</span><span class="o">=</span><span class="mi">16</span><span class="p">,</span>
-            <span class="n">sdo_bytes</span><span class="o">=</span><span class="mi">128</span><span class="p">,</span>
-            <span class="n">swizzle</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
         <span class="p">)</span>
         <span class="n">T</span><span class="o">.</span><span class="n">ptx</span><span class="o">.</span><span class="n">tcgen05</span><span class="o">.</span><span class="n">commit</span><span class="o">.</span><span class="n">cta_group__1</span><span class="o">.</span><span class="n">mbarrier__arrive__one</span><span class="o">.</span><span class="n">shared__cluster</span><span class="o">.</span><span class="n">b64</span><span class="p">(</span>
             <span class="n">mbar</span><span class="o">.</span><span class="n">ptr_to</span><span class="p">([</span><span class="mi">0</span><span class="p">])</span>
@@ -759,9 +818,9 @@ storage block large enough for the descriptor’s eight-row organization.</p>
         <span class="n">T</span><span class="o">.</span><span class="n">ptx</span><span class="o">.</span><span class="n">tcgen05</span><span class="o">.</span><span class="n">dealloc</span><span class="o">.</span><span class="n">cta_group__1</span><span class="o">.</span><span class="n">sync</span><span class="o">.</span><span class="n">aligned</span><span class="o">.</span><span class="n">b32</span><span class="p">(</span><span class="n">address</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">T</span><span class="o">.</span><span class="n">uint32</span><span class="p">(</span><span class="mi">32</span><span class="p">))</span>
 </pre></div>
 </div>
-<p>One cp instruction copies 2048 bytes. Its commit triggers one barrier
-arrival, rather than a TMA-style expected-byte transaction. The scalar x1
-readback issues are caller code and independently expose each TMEM word.</p>
+<p>One cp instruction copies 2048 bytes. Its commit triggers one barrier arrival, rather
+than a TMA-style expected-byte transaction. The scalar x1 readback issues are caller
+code and independently expose each TMEM word.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">tvm</span>
 
@@ -774,23 +833,23 @@ readback issues are caller code and independently expose each TMEM word.</p>
 </div>
 </section>
 <section id="native-fp4-fp6-decompression">
-<h2>Native FP4/FP6 decompression<a class="headerlink" href="#native-fp4-fp6-decompression" title="Link to this heading">#</a></h2>
-<p>Append <code class="docutils literal notranslate"><span class="pre">.b8x16.b4x16_p64</span></code> or <code class="docutils literal notranslate"><span class="pre">.b8x16.b6x16_p32</span></code> to the opcode. The b32
-footprint above stays unchanged: each 16-byte shared block contains sixteen
-packed values followed by eight bytes (FP4) or four bytes (FP6) of padding.
-The destination contains sixteen expanded bytes. Four-bit values gain two
-low zero bits; six-bit values gain two high zero bits. A 256-bit row contains
-two such blocks. The pattern emits one native decompression instruction per
-repeat, with no software unpacking loop.</p>
+<h3>Native FP4/FP6 decompression<a class="headerlink" href="#native-fp4-fp6-decompression" title="Link to this heading">#</a></h3>
+<p>Append <code class="docutils literal notranslate"><span class="pre">.b8x16.b4x16_p64</span></code> or <code class="docutils literal notranslate"><span class="pre">.b8x16.b6x16_p32</span></code> to the opcode. The b32 footprint
+above stays unchanged: each 16-byte shared block contains sixteen packed values followed
+by eight bytes (FP4) or four bytes (FP6) of padding. The destination contains sixteen
+expanded bytes. Four-bit values gain two low zero bits; six-bit values gain two high
+zero bits. A 256-bit row contains two such blocks. The pattern emits one native
+decompression instruction per repeat, with no software unpacking loop.</p>
 <p>For instance, the example’s opcode can be explicitly replaced with
-<code class="docutils literal notranslate"><span class="pre">tcgen05.cp.cta_group::1.128x128b.b8x16.b4x16_p64</span></code> <strong>when the source data
-has been prepared in that packed format</strong>. The reference then compares the
-expanded values, not the original words or padding. A dtype name alone
-neither prepares the payload nor chooses this qualifier.</p>
-<p>Allocation, shared proxy fencing, election, commit, wait and deallocation
-are caller code. <code class="docutils literal notranslate"><span class="pre">pred</span></code> gates the cp but does not adjust a surrounding
-completion protocol. Implementation: <code class="docutils literal notranslate"><span class="pre">patterns/tmem_copy.py</span></code> and
-<code class="docutils literal notranslate"><span class="pre">patterns/descriptors.py</span></code> under <code class="docutils literal notranslate"><span class="pre">python/tvm/backend/cuda/tile</span></code>.</p>
+<code class="docutils literal notranslate"><span class="pre">tcgen05.cp.cta_group::1.128x128b.b8x16.b4x16_p64</span></code> <strong>when the source data has been
+prepared in that packed format</strong>. The reference then compares the expanded values, not
+the original words or padding. A dtype name alone neither prepares the payload nor
+chooses this qualifier.</p>
+<p>Allocation, shared proxy fencing, election, commit, wait and deallocation are caller
+code. <code class="docutils literal notranslate"><span class="pre">pred</span></code> gates the cp but does not adjust a surrounding completion protocol.
+Implementation: <code class="docutils literal notranslate"><span class="pre">patterns/tmem_copy.py</span></code> and <code class="docutils literal notranslate"><span class="pre">patterns/descriptors.py</span></code> under
+<code class="docutils literal notranslate"><span class="pre">python/tvm/backend/cuda/tile</span></code>.</p>
+</section>
 </section>
 </section>
 
@@ -839,10 +898,20 @@ completion protocol. Implementation: <code class="docutils literal notranslate">
   </div>
   <nav class="bd-toc-nav page-toc">
     <ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#tmem-shape-and-replicas">TMEM shape and replicas</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#shared-descriptor-address-walk">Shared descriptor address walk</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#example-one-128x128b-copy-and-readback">Example: one 128x128b copy and readback</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#native-fp4-fp6-decompression">Native FP4/FP6 decompression</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#call-parameters">Call parameters</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#data-representation">Data representation</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#operand-specification">Operand specification</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#tmem-shape-and-replicas">TMEM shape and replicas</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#shared-descriptor-address-walk">Shared descriptor address walk</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#legality-conditions">Legality conditions</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#code-generation">Code generation</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#examples">Examples</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#example-one-128x128b-copy-and-readback">Example: one 128x128b copy and readback</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#native-fp4-fp6-decompression">Native FP4/FP6 decompression</a></li>
+</ul>
+</li>
 </ul>
   </nav></div>
 

@@ -624,9 +624,19 @@ document.write(`
             </div>
             <nav aria-label="Page">
                 <ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#native-packed-arithmetic">Native packed arithmetic</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#example-eight-packed-half-additions">Example: eight packed half additions</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#subtraction-and-multiplication">Subtraction and multiplication</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#call-parameters">Call parameters</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#data-representation">Data representation</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#operand-specification">Operand specification</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#native-packed-arithmetic">Native packed arithmetic</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#legality-conditions">Legality conditions</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#code-generation">Code generation</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#examples">Examples</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#example-eight-packed-half-additions">Example: eight packed half additions</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#subtraction-and-multiplication">Subtraction and multiplication</a></li>
+</ul>
+</li>
 </ul>
             </nav>
         </div>
@@ -640,13 +650,52 @@ document.write(`
                   
   <section id="add-sub-mul">
 <h1>add / sub / mul<a class="headerlink" href="#add-sub-mul" title="Link to this heading">#</a></h1>
-<p>The opcode chooses the numeric type, rounding, saturation and packing mode.
-The operand order is <code class="docutils literal notranslate"><span class="pre">dst,</span> <span class="pre">lhs,</span> <span class="pre">rhs</span></code>. For a scalar instruction, each tensor
-ends in a singleton register-group axis; for example <code class="docutils literal notranslate"><span class="pre">(8,1)</span></code> at thread
-scope means eight scalar instructions. A read-only scalar expression may
-replace an input tensor and broadcasts over all eight repeats.</p>
+<section id="call-parameters">
+<h2>Call parameters<a class="headerlink" href="#call-parameters" title="Link to this heading">#</a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">T.cuda.tile.apply(T.ptx[opcode],</span> <span class="pre">*operands,</span> <span class="pre">scope=&quot;thread&quot;,</span> <span class="pre">**parameters)</span></code></p>
+<p>Operand order: <code class="docutils literal notranslate"><span class="pre">dst,</span> <span class="pre">lhs,</span> <span class="pre">rhs</span></code>.</p>
+<div class="pst-scrollable-table-container"><table class="table">
+<thead>
+<tr class="row-odd"><th class="head"><p>Parameter</p></th>
+<th class="head"><p>Type / default</p></th>
+<th class="head"><p>Meaning</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">scope</span></code></p></td>
+<td><p>static str; default “thread”</p></td>
+<td><p>Execution scope; group axes follow <a class="reference internal" href="../cuda_tile_patterns.html"><span class="doc">Explicit CUDA tile patterns</span></a>. It does not elect an issuing thread.</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">pred</span></code></p></td>
+<td><p>runtime bool; default None</p></td>
+<td><p>Execute the instruction when true; None is unconditional.</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">preserve_dst</span></code></p></td>
+<td><p>static bool; default False</p></td>
+<td><p>For a predicated register result, retain the initialized destination when pred is false; otherwise the inactive result is undefined.</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>Only the parameters listed here are instruction parameters. Opcode qualifiers are
+written in <code class="docutils literal notranslate"><span class="pre">T.ptx[opcode]</span></code>.</p>
+</section>
+<section id="data-representation">
+<h2>Data representation<a class="headerlink" href="#data-representation" title="Link to this heading">#</a></h2>
+<p>Each operand uses the scalar PTX register type or its equal-width bit container. A
+packed f16x2/bf16x2 value occupies one b32 container; f32x2 occupies one b64 container.
+The final tensor axis counts native registers, not the packed scalar elements. Rounding,
+saturation, signedness and packing are selected in the opcode.</p>
+</section>
+<section id="operand-specification">
+<h2>Operand specification<a class="headerlink" href="#operand-specification" title="Link to this heading">#</a></h2>
+<p>The opcode chooses the numeric type, rounding, saturation and packing mode. The operand
+order is <code class="docutils literal notranslate"><span class="pre">dst,</span> <span class="pre">lhs,</span> <span class="pre">rhs</span></code>. For a scalar instruction, each tensor ends in a singleton
+register-group axis; for example <code class="docutils literal notranslate"><span class="pre">(8,1)</span></code> at thread scope means eight scalar
+instructions. A read-only scalar expression may replace an input tensor and broadcasts
+over all eight repeats.</p>
 <section id="native-packed-arithmetic">
-<h2>Native packed arithmetic<a class="headerlink" href="#native-packed-arithmetic" title="Link to this heading">#</a></h2>
+<h3>Native packed arithmetic<a class="headerlink" href="#native-packed-arithmetic" title="Link to this heading">#</a></h3>
 <p>Packed arithmetic still has one register <strong>carrier</strong> per operand:</p>
 <div class="pst-scrollable-table-container"><table class="table">
 <thead>
@@ -675,12 +724,32 @@ replace an input tensor and broadcasts over all eight repeats.</p>
 </tbody>
 </table>
 </div>
-<p>Not every qualifier is valid for every type or architecture. PTX form
-validation checks the spelling and the compiler checks the target. Packing
-is a caller decision, not the consequence of an even tensor extent.</p>
+<p>Not every qualifier is valid for every type or architecture. PTX form validation checks
+the spelling and the compiler checks the target. Packing is a caller decision, not the
+consequence of an even tensor extent.</p>
 </section>
+</section>
+<section id="legality-conditions">
+<h2>Legality conditions<a class="headerlink" href="#legality-conditions" title="Link to this heading">#</a></h2>
+<p>All tensor operands are local registers owned by the issuing thread. Their group/repeat
+shapes agree; the final extent equals that operand’s native register count (one for a
+scalar operand). Scalar expressions are allowed for single-register read inputs and
+broadcast across repeats. Destination slots must not overlap. Register storage strides
+are in container elements; they need not be one. The selected PTX form validates operand
+types.</p>
+</section>
+<section id="code-generation">
+<h2>Code generation<a class="headerlink" href="#code-generation" title="Link to this heading">#</a></h2>
+<p>For each group and row-major repeat coordinate, bind each tensor’s final register axis
+in increasing order and emit one selected instruction. A scalar input is reused. No
+packing, memory staging or synchronization is inserted. The number of expanded
+instructions per issuing thread is the product of repeat extents; downstream compiler
+optimizations may simplify unused or constant results.</p>
+</section>
+<section id="examples">
+<h2>Examples<a class="headerlink" href="#examples" title="Link to this heading">#</a></h2>
 <section id="example-eight-packed-half-additions">
-<h2>Example: eight packed half additions<a class="headerlink" href="#example-eight-packed-half-additions" title="Link to this heading">#</a></h2>
+<h3>Example: eight packed half additions<a class="headerlink" href="#example-eight-packed-half-additions" title="Link to this heading">#</a></h3>
 <p>This kernel accepts packed input words and leaves the result packed:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">tvm.script</span><span class="w"> </span><span class="kn">import</span> <span class="n">tirx</span> <span class="k">as</span> <span class="n">T</span>
 
@@ -713,24 +782,25 @@ is a caller decision, not the consequence of an even tensor extent.</p>
 <span class="n">np</span><span class="o">.</span><span class="n">testing</span><span class="o">.</span><span class="n">assert_array_equal</span><span class="p">(</span><span class="n">out</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="s2">&quot;float16&quot;</span><span class="p">),</span> <span class="n">x</span> <span class="o">+</span> <span class="n">y</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>The arithmetic expansion is eight <code class="docutils literal notranslate"><span class="pre">add.rn.f16x2</span></code> instructions, processing
-sixteen half values. It does not insert a pack/unpack conversion. A scalar
-constant passed to a packed opcode must already represent the whole packed
-carrier; a numeric uint32 constant <code class="docutils literal notranslate"><span class="pre">2</span></code> is not the encoding of two half 2s.</p>
+<p>The arithmetic expansion is eight <code class="docutils literal notranslate"><span class="pre">add.rn.f16x2</span></code> instructions, processing sixteen half
+values. It does not insert a pack/unpack conversion. A scalar constant passed to a
+packed opcode must already represent the whole packed carrier; a numeric uint32 constant
+<code class="docutils literal notranslate"><span class="pre">2</span></code> is not the encoding of two half 2s.</p>
 </section>
 <section id="subtraction-and-multiplication">
-<h2>Subtraction and multiplication<a class="headerlink" href="#subtraction-and-multiplication" title="Link to this heading">#</a></h2>
-<p><code class="docutils literal notranslate"><span class="pre">sub</span></code> preserves the written operand order, including a scalar on the left.
-<code class="docutils literal notranslate"><span class="pre">mul</span></code> uses the selected floating-point form or the integer <code class="docutils literal notranslate"><span class="pre">lo</span></code>/<code class="docutils literal notranslate"><span class="pre">hi</span></code>/
-<code class="docutils literal notranslate"><span class="pre">wide</span></code> form and its declared result type. Different result widths require
-the matching destination dtype, not a silent reinterpretation.</p>
-<p>Tensor operands share repeat extents and must have the correct thread owner.
-An input broadcast is a scalar or an explicit zero-stride view. Output
-storage cannot overlap across repeats. <code class="docutils literal notranslate"><span class="pre">pred</span></code> and <code class="docutils literal notranslate"><span class="pre">preserve_dst</span></code> follow
-the register instruction contract described in <a class="reference internal" href="mov.html"><span class="doc">mov</span></a>.</p>
+<h3>Subtraction and multiplication<a class="headerlink" href="#subtraction-and-multiplication" title="Link to this heading">#</a></h3>
+<p><code class="docutils literal notranslate"><span class="pre">sub</span></code> preserves the written operand order, including a scalar on the left. <code class="docutils literal notranslate"><span class="pre">mul</span></code>
+uses the selected floating-point form or the integer <code class="docutils literal notranslate"><span class="pre">lo</span></code>/<code class="docutils literal notranslate"><span class="pre">hi</span></code>/ <code class="docutils literal notranslate"><span class="pre">wide</span></code> form and
+its declared result type. Different result widths require the matching destination
+dtype, not a silent reinterpretation.</p>
+<p>Tensor operands share repeat extents and must have the correct thread owner. An input
+broadcast is a scalar or an explicit zero-stride view. Output storage cannot overlap
+across repeats. <code class="docutils literal notranslate"><span class="pre">pred</span></code> and <code class="docutils literal notranslate"><span class="pre">preserve_dst</span></code> follow the register instruction contract
+described in <a class="reference internal" href="mov.html"><span class="doc">mov</span></a>.</p>
 <p>For exp/SiLU plus scale/bias, define the scalar expression in <a class="reference internal" href="ewise.html"><span class="doc">ewise: caller-defined scalar compositions</span></a>.
 Shared-memory inputs require explicit loads and stores around the arithmetic.
 Implementation: <code class="docutils literal notranslate"><span class="pre">patterns/register.py</span></code> under <code class="docutils literal notranslate"><span class="pre">python/tvm/backend/cuda/tile</span></code>.</p>
+</section>
 </section>
 </section>
 
@@ -779,9 +849,19 @@ Implementation: <code class="docutils literal notranslate"><span class="pre">pat
   </div>
   <nav class="bd-toc-nav page-toc">
     <ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#native-packed-arithmetic">Native packed arithmetic</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#example-eight-packed-half-additions">Example: eight packed half additions</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#subtraction-and-multiplication">Subtraction and multiplication</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#call-parameters">Call parameters</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#data-representation">Data representation</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#operand-specification">Operand specification</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#native-packed-arithmetic">Native packed arithmetic</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#legality-conditions">Legality conditions</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#code-generation">Code generation</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#examples">Examples</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#example-eight-packed-half-additions">Example: eight packed half additions</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#subtraction-and-multiplication">Subtraction and multiplication</a></li>
+</ul>
+</li>
 </ul>
   </nav></div>
 
