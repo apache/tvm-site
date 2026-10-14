@@ -336,6 +336,7 @@
 <li class="toctree-l2"><a class="reference internal" href="../reference/api/python/instrument.html">tvm.ir.transform.instrument</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../reference/api/python/transform.html">tvm.ir.transform</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../reference/api/python/target.html">tvm.target</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../reference/api/python/codegen.html">tvm.codegen</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../reference/api/python/driver.html">tvm.driver</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../reference/api/python/testing.html">tvm.testing</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../reference/api/python/exec.html">tvm.exec</a></li>
@@ -654,7 +655,7 @@ Inside this function, we will do the following steps:</p>
 OpenCL or anything else. We don’t restrict the module type here.
 Once we have imported modules, we will create one file named <code class="docutils literal notranslate"><span class="pre">devc.o</span></code> / <code class="docutils literal notranslate"><span class="pre">dev.cc</span></code>
 (so that we could embed the binary blob data of import modules into one dynamic shared library),
-then call function <code class="docutils literal notranslate"><span class="pre">_PackImportsToLLVM</span></code> or <code class="docutils literal notranslate"><span class="pre">_PackImportsToC</span></code> to do module serialization.</p></li>
+then call function <code class="docutils literal notranslate"><span class="pre">PackImportsToObjectFile</span></code> or <code class="docutils literal notranslate"><span class="pre">PackImportsToC</span></code> to do module serialization.</p></li>
 <li><p>Finally, we call <code class="docutils literal notranslate"><span class="pre">fcompile</span></code> which invokes <code class="docutils literal notranslate"><span class="pre">_cc.create_shared</span></code> to get
 dynamic shared library.</p></li>
 </ol>
@@ -662,17 +663,20 @@ dynamic shared library.</p></li>
 <p class="admonition-title">Note</p>
 <ol class="arabic simple">
 <li><p>For C source modules, we will compile them and link them together with the DSO module.</p></li>
-<li><p>Use <code class="docutils literal notranslate"><span class="pre">_PackImportsToLLVM</span></code> or <code class="docutils literal notranslate"><span class="pre">_PackImportsToC</span></code> depends on whether we enable LLVM in TVM.
+<li><p>Use <code class="docutils literal notranslate"><span class="pre">PackImportsToObjectFile</span></code> or <code class="docutils literal notranslate"><span class="pre">PackImportsToC</span></code> depends on whether we enable LLVM in TVM.
 They achieve the same goal in fact.</p></li>
 </ol>
 </div>
 </section>
 <section id="under-the-hood-of-serialization-and-format-standard">
 <h2>Under the Hood of Serialization and Format Standard<a class="headerlink" href="#under-the-hood-of-serialization-and-format-standard" title="Link to this heading">#</a></h2>
-<p>As said before, we will do the serialization work in the <code class="docutils literal notranslate"><span class="pre">_PackImportsToLLVM</span></code> or <code class="docutils literal notranslate"><span class="pre">_PackImportsToC</span></code>.
-They both call <code class="docutils literal notranslate"><span class="pre">SerializeModule</span></code> to serialize the runtime module. In <code class="docutils literal notranslate"><span class="pre">SerializeModule</span></code>
-function, we firstly construct one helper class <code class="docutils literal notranslate"><span class="pre">ModuleSerializer</span></code>. It will take <code class="docutils literal notranslate"><span class="pre">module</span></code> to do some
-initialization work, like marking module index. Then we could use its <code class="docutils literal notranslate"><span class="pre">SerializeModule</span></code> to serialize module.</p>
+<p>As said before, we will do the serialization work in the <code class="docutils literal notranslate"><span class="pre">PackImportsToObjectFile</span></code> or <code class="docutils literal notranslate"><span class="pre">PackImportsToC</span></code>.
+Both use private compiler serialization helpers in <code class="docutils literal notranslate"><span class="pre">src/codegen/module_export.cc</span></code>.
+<code class="docutils literal notranslate"><span class="pre">PackImportsToBytes</span></code> calls <code class="docutils literal notranslate"><span class="pre">SerializeModuleToBytes</span></code>, which constructs a
+<code class="docutils literal notranslate"><span class="pre">ModuleSerializer</span></code> to index the module graph and serialize its import tree.
+The object-file path invokes the existing <code class="docutils literal notranslate"><span class="pre">codegen.codegen_blob</span></code> LLVM emitter
+and writes its temporary module to the requested output path. The C fallback
+returns source text for the caller to compile.</p>
 <p>For better understanding, let us dig the implementation of this class a little deeper.</p>
 <p>The following code is used to construct <code class="docutils literal notranslate"><span class="pre">ModuleSerializer</span></code>:</p>
 <div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="k">explicit</span><span class="w"> </span><span class="n">ModuleSerializer</span><span class="p">(</span><span class="n">runtime</span><span class="o">::</span><span class="n">Module</span><span class="w"> </span><span class="n">mod</span><span class="p">)</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">mod_</span><span class="p">(</span><span class="n">mod</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>

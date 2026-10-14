@@ -336,6 +336,7 @@
 <li class="toctree-l2"><a class="reference internal" href="../reference/api/python/instrument.html">tvm.ir.transform.instrument</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../reference/api/python/transform.html">tvm.ir.transform</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../reference/api/python/target.html">tvm.target</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../reference/api/python/codegen.html">tvm.codegen</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../reference/api/python/driver.html">tvm.driver</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../reference/api/python/testing.html">tvm.testing</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../reference/api/python/exec.html">tvm.exec</a></li>
@@ -686,7 +687,11 @@ Host Module ◄─────────────┘             ← device
 </section>
 <section id="target-dispatch">
 <h2>Target Dispatch<a class="headerlink" href="#target-dispatch" title="Link to this heading">#</a></h2>
-<p>The core dispatch logic lives in <code class="docutils literal notranslate"><span class="pre">codegen::Build()</span></code> (<code class="docutils literal notranslate"><span class="pre">src/target/codegen.cc</span></code>), which is
+<p>Generic target configuration and registration live in <code class="docutils literal notranslate"><span class="pre">src/target/</span></code>. Shared
+code generation lives in <code class="docutils literal notranslate"><span class="pre">src/codegen/</span></code>, with installed APIs in
+<code class="docutils literal notranslate"><span class="pre">include/tvm/codegen/</span></code> and Python helpers in <code class="docutils literal notranslate"><span class="pre">tvm.codegen</span></code>. Platform-specific
+generators remain under <code class="docutils literal notranslate"><span class="pre">src/backend/&lt;platform&gt;/codegen/</span></code>.</p>
+<p>The core dispatch logic lives in <code class="docutils literal notranslate"><span class="pre">codegen::Build()</span></code> (<code class="docutils literal notranslate"><span class="pre">src/codegen/codegen.cc</span></code>), which is
 called from the Python-side <code class="docutils literal notranslate"><span class="pre">_build_for_target()</span></code> in <code class="docutils literal notranslate"><span class="pre">tirx/_compile.py</span></code>. It selects the correct
 backend based on the <code class="docutils literal notranslate"><span class="pre">Target</span></code> object:</p>
 <div class="highlight-cpp notranslate"><div class="highlight"><pre><span></span><span class="n">ffi</span><span class="o">::</span><span class="n">Module</span><span class="w"> </span><span class="nf">Build</span><span class="p">(</span><span class="n">IRModule</span><span class="w"> </span><span class="n">mod</span><span class="p">,</span><span class="w"> </span><span class="n">Target</span><span class="w"> </span><span class="n">target</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
@@ -762,7 +767,7 @@ TIR → LLVM IR → machine code        TIR → source string → external compi
 </div>
 <section id="llvm-family">
 <h3>LLVM family<a class="headerlink" href="#llvm-family" title="Link to this heading">#</a></h3>
-<p><code class="docutils literal notranslate"><span class="pre">CodeGenLLVM</span></code> (<code class="docutils literal notranslate"><span class="pre">src/target/llvm/codegen_llvm.h</span></code>) translates TIR directly to LLVM IR using
+<p><code class="docutils literal notranslate"><span class="pre">CodeGenLLVM</span></code> (<code class="docutils literal notranslate"><span class="pre">src/codegen/llvm/codegen_llvm.h</span></code>) translates TIR directly to LLVM IR using
 the LLVM C++ API. The generated <code class="docutils literal notranslate"><span class="pre">llvm::Module</span></code> is then compiled to native code by LLVM’s
 backend (x86, ARM, NVPTX, AMDGPU, etc.).</p>
 <p><strong>Inheritance</strong>:</p>
@@ -794,7 +799,7 @@ arithmetic ops → LLVM binary instructions, <code class="docutils literal notra
 </section>
 <section id="source-family">
 <h3>Source family<a class="headerlink" href="#source-family" title="Link to this heading">#</a></h3>
-<p><code class="docutils literal notranslate"><span class="pre">CodeGenC</span></code> (<code class="docutils literal notranslate"><span class="pre">src/target/source/codegen_c.h</span></code>) generates C-like source code as text. Each
+<p><code class="docutils literal notranslate"><span class="pre">CodeGenC</span></code> (<code class="docutils literal notranslate"><span class="pre">src/codegen/c/codegen_c.h</span></code>) generates C-like source code as text. Each
 target subclass overrides methods to emit target-specific syntax.</p>
 <p><strong>Inheritance</strong>:</p>
 <div class="highlight-text notranslate"><div class="highlight"><pre><span></span>CodeGenC (base)
@@ -814,7 +819,7 @@ target subclass overrides methods to emit target-specific syntax.</p>
 <li><p><code class="docutils literal notranslate"><span class="pre">PrintType(dtype,</span> <span class="pre">os)</span></code> — emit target-specific type names (e.g., <code class="docutils literal notranslate"><span class="pre">half</span></code> for float16).</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">PrintVecBinaryOp(...)</span></code> — emit vectorized operations in target syntax.</p></li>
 </ul>
-<p>For CUDA, the build flow (<code class="docutils literal notranslate"><span class="pre">BuildCUDA</span></code> in <code class="docutils literal notranslate"><span class="pre">src/target/opt/build_cuda_on.cc</span></code>) is:</p>
+<p>For CUDA, the build flow (<code class="docutils literal notranslate"><span class="pre">BuildCUDA</span></code> in <code class="docutils literal notranslate"><span class="pre">src/backend/cuda/codegen/codegen_cuda.cc</span></code>) is:</p>
 <ol class="arabic simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">CodeGenCUDA</span></code> generates CUDA C source.</p></li>
 <li><p>An optional post-processing callback (<code class="docutils literal notranslate"><span class="pre">tvm_callback_cuda_postproc</span></code>) transforms the source.</p></li>
@@ -918,46 +923,46 @@ a tar archive for deployment.</p>
 <tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">python/tvm/tirx/_compile.py</span></code></p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">tirx.compile()</span></code>: TIR compilation entry, host/device split, module linking</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">src/target/codegen.cc</span></code></p></td>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">src/codegen/codegen.cc</span></code></p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">codegen::Build()</span></code>: target dispatch via <code class="docutils literal notranslate"><span class="pre">&quot;target.build.&lt;kind&gt;&quot;</span></code></p></td>
 </tr>
-<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">src/target/llvm/codegen_llvm.h</span></code></p></td>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">src/codegen/llvm/codegen_llvm.h</span></code></p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">CodeGenLLVM</span></code>: TIR → LLVM IR base class</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">src/target/llvm/codegen_cpu.h</span></code></p></td>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">src/codegen/llvm/codegen_cpu.h</span></code></p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">CodeGenCPU</span></code>: CPU-specific LLVM codegen (x86, ARM)</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">src/target/llvm/codegen_nvptx.cc</span></code></p></td>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">src/backend/cuda/codegen/llvm/codegen_nvptx.cc</span></code></p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">CodeGenNVPTX</span></code>: NVIDIA PTX via LLVM</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">src/target/llvm/codegen_amdgpu.cc</span></code></p></td>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">src/backend/rocm/codegen/llvm/codegen_amdgpu.cc</span></code></p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">CodeGenAMDGPU</span></code>: AMD GPU via LLVM</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">src/target/llvm/llvm_module.cc</span></code></p></td>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">src/codegen/llvm/llvm_module.cc</span></code></p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">LLVMModuleObj</span></code>: runtime module with JIT compilation</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">src/target/source/codegen_c.h</span></code></p></td>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">src/codegen/c/codegen_c.h</span></code></p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">CodeGenC</span></code>: TIR → C-like source base class</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">src/target/source/codegen_cuda.h</span></code></p></td>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">src/backend/cuda/codegen/codegen_cuda.h</span></code></p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">CodeGenCUDA</span></code>: TIR → CUDA C</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">src/target/source/codegen_opencl.h</span></code></p></td>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">src/backend/opencl/codegen/codegen_opencl.h</span></code></p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">CodeGenOpenCL</span></code>: TIR → OpenCL C</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">src/target/source/codegen_metal.h</span></code></p></td>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">src/backend/metal/codegen/codegen_metal.h</span></code></p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">CodeGenMetal</span></code>: TIR → Metal Shading Language</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">src/target/source/codegen_c_host.h</span></code></p></td>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">src/codegen/c/codegen_c_host.h</span></code></p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">CodeGenCHost</span></code>: TIR → C host code</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">src/target/opt/build_cuda_on.cc</span></code></p></td>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">src/backend/cuda/codegen/codegen_cuda.cc</span></code></p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">BuildCUDA</span></code>: CUDA build flow (codegen → compile → module)</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">src/target/spirv/codegen_spirv.h</span></code></p></td>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">src/backend/vulkan/codegen/codegen_spirv.h</span></code></p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">CodeGenSPIRV</span></code>: TIR → SPIR-V for Vulkan</p></td>
 </tr>
-<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">src/target/source/codegen_webgpu.h</span></code></p></td>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">src/backend/webgpu/codegen/codegen_webgpu.h</span></code></p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">CodeGenWebGPU</span></code>: TIR → WGSL</p></td>
 </tr>
 </tbody>

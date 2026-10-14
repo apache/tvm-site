@@ -40,7 +40,7 @@ var searchData=
   ['loadfromfile_37',['LoadFromFile',['../classtvm_1_1runtime_1_1vm_1_1VMExecutable.html#a0e741c152e68a73ab2b157444f148001',1,'tvm::runtime::vm::VMExecutable']]],
   ['loadfromstr_38',['LoadFromStr',['../structtvm_1_1runtime_1_1vm_1_1TensorCacheMetadata.html#af9c529a8defdb8fa753649284441df16',1,'tvm::runtime::vm::TensorCacheMetadata']]],
   ['loadtensor_39',['LoadTensor',['../namespacetvm_1_1runtime.html#ad986583227751a735cf890e1049949ca',1,'tvm::runtime']]],
-  ['loadvmmodule_40',['LoadVMModule',['../namespacetvm_1_1runtime.html#a30ce952481686f2ebc6bf31ad773ca8b',1,'tvm::runtime']]],
+  ['loadvmmodule_40',['LoadVMModule',['../namespacetvm_1_1runtime.html#aebfef1b24c70ee912467392bc9565fdd',1,'tvm::runtime']]],
   ['localfunction_41',['LocalFunction',['../namespacetvm_1_1script_1_1ir__builder_1_1relax.html#a4d89ac1ee976d94194771ab0dd07dd7f',1,'tvm::script::ir_builder::relax']]],
   ['log_42',['log',['../namespacetvm_1_1prim.html#a7b819bcd88f67100e14e0fb4d586eb90',1,'tvm::prim::log()'],['../namespacetvm_1_1topi.html#a524b8bb4fe7a02478ea617911cf467ab',1,'tvm::topi::log()']]],
   ['log10_43',['log10',['../namespacetvm_1_1prim.html#acf7106c558bfb09db681cd407a56fc1f',1,'tvm::prim::log10()'],['../namespacetvm_1_1topi.html#aa4595c96c60e3706f30f24d33d53a09c',1,'tvm::topi::log10()']]],
