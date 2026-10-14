@@ -2,7 +2,7 @@ var searchData=
 [
   ['b_0',['b',['../classtvm_1_1prim_1_1BinaryOpNode.html#a7c4cb616cc64dc8498c520569bb62894',1,'tvm::prim::BinaryOpNode::b'],['../classtvm_1_1prim_1_1CmpOpNode.html#a463af8f8e54975405a7a1d1cd6f3bca7',1,'tvm::prim::CmpOpNode::b'],['../classtvm_1_1prim_1_1AndNode.html#a15d544893d250a831a9acea4b96cca72',1,'tvm::prim::AndNode::b'],['../classtvm_1_1prim_1_1OrNode.html#a3c4cf9fca173306e2b488b7514f411fb',1,'tvm::prim::OrNode::b']]],
   ['b_5fdtype_1',['b_dtype',['../structtvm_1_1backend_1_1cuda_1_1TCGen05InstrDescriptorAttrs.html#ac89b225c6d7f05130b95aea768a8a06f',1,'tvm::backend::cuda::TCGen05InstrDescriptorAttrs::b_dtype'],['../structtvm_1_1backend_1_1cuda_1_1TCGen05InstrDescriptorBlockScaledAttrs.html#a41875c45d4c04ea269acbecd846a4ffe',1,'tvm::backend::cuda::TCGen05InstrDescriptorBlockScaledAttrs::b_dtype']]],
-  ['backend_2',['backend',['../classtvm_1_1tirx_1_1ExecScopeNode.html#a85155a063d1e98b0a4c36ec6605f976e',1,'tvm::tirx::ExecScopeNode']]],
+  ['backend_2',['backend',['../classtvm_1_1tirx_1_1ThreadScopeObj.html#af5d310baf5660e0cef39ea114ada4e18',1,'tvm::tirx::ThreadScopeObj']]],
   ['backend_2eh_3',['backend.h',['../backend_8h.html',1,'']]],
   ['backwardindex_4',['BackwardIndex',['../classtvm_1_1tirx_1_1SBijectiveLayout.html#a75b0992786664b8bca80d1e5971dcc19',1,'tvm::tirx::SBijectiveLayout']]],
   ['backwardshape_5',['BackwardShape',['../classtvm_1_1tirx_1_1SBijectiveLayout.html#a9c23b5a4319ff97bf871486614c75dcd',1,'tvm::tirx::SBijectiveLayout']]],

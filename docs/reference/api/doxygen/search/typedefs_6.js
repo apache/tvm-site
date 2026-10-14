@@ -1,7 +1,7 @@
 var searchData=
 [
   ['fapply_0',['fapply',['../classtvm_1_1s__tir_1_1meta__schedule_1_1Mutator.html#a34a171e5c95dea7b692709a7d66a13b6',1,'tvm::s_tir::meta_schedule::Mutator::FApply'],['../classtvm_1_1s__tir_1_1meta__schedule_1_1PyMeasureCallbackObj.html#ad534bb751b29add150ba14000497e2c5',1,'tvm::s_tir::meta_schedule::PyMeasureCallbackObj::FApply'],['../classtvm_1_1s__tir_1_1meta__schedule_1_1PyScheduleRuleObj.html#acac5ab8b549660c81e8ffc353596d7c0',1,'tvm::s_tir::meta_schedule::PyScheduleRuleObj::FApply'],['../classtvm_1_1s__tir_1_1meta__schedule_1_1ScheduleRule.html#a74f509fd31d0d05e7470d2c889b1418b',1,'tvm::s_tir::meta_schedule::ScheduleRule::FApply'],['../classtvm_1_1s__tir_1_1meta__schedule_1_1Postproc.html#a5c87953c084e5b1d7a1d73000c838d5e',1,'tvm::s_tir::meta_schedule::Postproc::FApply'],['../classtvm_1_1s__tir_1_1meta__schedule_1_1PyMutatorObj.html#ac966cdd010eaaa9e43c8a2b52fdea1b1',1,'tvm::s_tir::meta_schedule::PyMutatorObj::FApply'],['../classtvm_1_1s__tir_1_1meta__schedule_1_1PyPostprocObj.html#a0c972922c78b24d0602d955881e6051e',1,'tvm::s_tir::meta_schedule::PyPostprocObj::FApply']]],
-  ['faxisfuser_1',['FAxisFuser',['../namespacetvm_1_1tirx.html#ae274b75f5f5f4a69961dd9100ddb4ac2',1,'tvm::tirx']]],
+  ['faxisfuser_1',['FAxisFuser',['../namespacetvm_1_1tirx.html#ab50033b4d707764af007605a2a998e7f',1,'tvm::tirx']]],
   ['fbatchcompute_2',['FBatchCompute',['../namespacetvm_1_1te.html#a7846ca7151331e3d0b5f95e92aee5d26',1,'tvm::te']]],
   ['fbuild_3',['FBuild',['../classtvm_1_1s__tir_1_1meta__schedule_1_1BuilderObj.html#acb0be639925461de183df6d12718dc17',1,'tvm::s_tir::meta_schedule::BuilderObj']]],
   ['fcallpacked_4',['FCallPacked',['../namespacetvm_1_1relax.html#ad1795aa8569b24ef309f22661ba98ff4',1,'tvm::relax']]],

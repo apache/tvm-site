@@ -318,7 +318,7 @@
 <li class="toctree-l2"><a class="reference internal" href="trainium.html">Trainium Authoring and Support APIs</a></li>
 <li class="toctree-l2"><a class="reference internal" href="tirx.html">Core TIRx IR</a></li>
 <li class="toctree-l2"><a class="reference internal" href="layout.html">Layout IR</a></li>
-<li class="toctree-l2"><a class="reference internal" href="execution.html">Execution Scope IR</a></li>
+<li class="toctree-l2"><a class="reference internal" href="execution.html">Thread Scope Enum Tags</a></li>
 <li class="toctree-l2"><a class="reference internal" href="compilation.html">Compilation</a></li>
 <li class="toctree-l2"><a class="reference internal" href="transform.html">Compiler Transforms</a></li>
 <li class="toctree-l2"><a class="reference internal" href="analysis.html">Analysis</a></li>
@@ -651,7 +651,9 @@ registers an adapter that decodes the semantic view and invokes its lowerer.
 Custom implementations can register the callback directly using
 <code class="docutils literal notranslate"><span class="pre">tvm.ir.register_op_attr(op_name,</span> <span class="pre">&quot;FTileOpDispatch&quot;,</span> <span class="pre">dispatch)</span></code> or C++
 <code class="docutils literal notranslate"><span class="pre">OpDef::set_attr&lt;tile::FTileOpDispatch&gt;</span></code>. The Call must carry reflected
-attributes with a string <code class="docutils literal notranslate"><span class="pre">scope</span></code> field in the target’s execution hierarchy.</p>
+attributes with a required <code class="docutils literal notranslate"><span class="pre">ThreadScope</span></code> <code class="docutils literal notranslate"><span class="pre">scope</span></code> field in the target’s
+execution hierarchy. Direct construction may use a registered qualified name,
+such as <code class="docutils literal notranslate"><span class="pre">&quot;cuda.thread&quot;</span></code>, which the typed FFI boundary resolves to its enum.</p>
 <p>Named workspace operands have fixed optional slots. Declare a workspace policy
 only for instructions that own such scratch storage; do not use it to hide
 caller-owned algorithms. See <a class="reference internal" href="../arch/tile_dispatch.html"><span class="doc">Tensor Instruction Lowering</span></a> for callbacks and
@@ -660,15 +662,17 @@ the statement replacement boundary.</p>
 <code class="docutils literal notranslate"><span class="pre">Instruction</span></code>, <code class="docutils literal notranslate"><span class="pre">Operand</span></code>, <code class="docutils literal notranslate"><span class="pre">TensorCall</span></code>, and <code class="docutils literal notranslate"><span class="pre">DispatchContext</span></code>. Backend
 implementations live under <code class="docutils literal notranslate"><span class="pre">tvm.backend.cuda.tile</span></code> and
 <code class="docutils literal notranslate"><span class="pre">tvm.backend.trn.tile</span></code>. Their user-facing instruction paths remain
-<code class="docutils literal notranslate"><span class="pre">T.cuda.tile</span></code> and <code class="docutils literal notranslate"><span class="pre">T.trn.tile</span></code>. Operator names and serialized type keys
-remain unchanged.</p>
-<p>Execution scopes are generic backend/name identities. Backend load hooks
-register their supported scopes and ordering; CUDA exposes
-<code class="docutils literal notranslate"><span class="pre">T.cuda.ExecScope(&quot;warp&quot;)</span></code> and Trainium exposes
-<code class="docutils literal notranslate"><span class="pre">T.trn.ExecScope(&quot;thread&quot;)</span></code>. A string instruction scope is resolved by the
-instruction’s backend. CUDA predicate analysis, index bindings, and active
-thread sets live in its private tile implementation; Trainium does not use
-CUDA’s execution-context model.</p>
+<code class="docutils literal notranslate"><span class="pre">T.cuda.tile</span></code> and <code class="docutils literal notranslate"><span class="pre">T.trn.tile</span></code>. Instruction operator names and attribute
+schema type keys remain unchanged. Scope tags use the <code class="docutils literal notranslate"><span class="pre">tirx.ThreadScope</span></code> type
+key; serialized data containing the former scope type must be regenerated.</p>
+<p>Thread scopes are backend-qualified enum identities. Native backends register
+their supported tags and explicit ranks with <code class="docutils literal notranslate"><span class="pre">EnumDef</span></code>; CUDA exposes
+<code class="docutils literal notranslate"><span class="pre">T.cuda.ThreadScope(&quot;warp&quot;)</span></code> and Trainium exposes
+<code class="docutils literal notranslate"><span class="pre">T.trn.ThreadScope(&quot;thread&quot;)</span></code>. A string instruction scope is resolved by the
+instruction’s backend before constructing its Call. Lowerers consume the enum
+directly through <code class="docutils literal notranslate"><span class="pre">DispatchContext.thread_scope</span></code>. CUDA predicate analysis,
+index bindings, and active thread sets live in its private tile implementation;
+Trainium does not use CUDA’s execution-context model.</p>
 </section>
 
 
