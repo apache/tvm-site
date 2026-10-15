@@ -49,7 +49,7 @@ Create IRModule
 IRModules can be initialized in various ways. We demonstrate a few of them
 below.
 
-.. GENERATED FROM PYTHON SOURCE LINES 40-48
+.. GENERATED FROM PYTHON SOURCE LINES 40-49
 
 .. code-block:: Python
 
@@ -58,6 +58,7 @@ below.
     from torch.export import export
 
     import tvm
+    import tvm_tirx
     from tvm import relax
     from tvm.relax.frontend.torch import from_exported_program
 
@@ -68,7 +69,7 @@ below.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 49-55
+.. GENERATED FROM PYTHON SOURCE LINES 50-56
 
 Import from existing models
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -77,7 +78,7 @@ model. Apache TVM accommodates imports from a range of frameworks,
 such as PyTorch and ONNX. This tutorial solely demonstrates the import process
 from PyTorch.
 
-.. GENERATED FROM PYTHON SOURCE LINES 55-86
+.. GENERATED FROM PYTHON SOURCE LINES 56-87
 
 .. code-block:: Python
 
@@ -124,8 +125,8 @@ from PyTorch.
       return cls.__new__(cls, *args)
     from __future__ import annotations
 
-    # from tvm.script import relax as R
-    # from tvm.script import tirx as T
+    # from tvm.relax import script as R
+    # from tvm_tirx.script import tirx as T
 
     @T.ir_module
     class Module:
@@ -148,14 +149,14 @@ from PyTorch.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 87-91
+.. GENERATED FROM PYTHON SOURCE LINES 88-92
 
 Write with Relax NN Module
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 Apache TVM also provides a set of PyTorch-liked APIs, to help users
 write the IRModule directly.
 
-.. GENERATED FROM PYTHON SOURCE LINES 91-114
+.. GENERATED FROM PYTHON SOURCE LINES 92-115
 
 .. code-block:: Python
 
@@ -192,8 +193,8 @@ write the IRModule directly.
 
     from __future__ import annotations
 
-    # from tvm.script import relax as R
-    # from tvm.script import tirx as T
+    # from tvm.relax import script as R
+    # from tvm_tirx.script import tirx as T
 
     @T.ir_module
     class Module:
@@ -216,7 +217,7 @@ write the IRModule directly.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 115-120
+.. GENERATED FROM PYTHON SOURCE LINES 116-121
 
 Create via TVMScript
 ~~~~~~~~~~~~~~~~~~~~
@@ -224,13 +225,13 @@ TVMScript is a Python-based DSL for IRModules. We are able to
 directly output the IRModule in the TVMScript syntax, or alternatively,
 parse the TVMScript to obtain an IRModule.
 
-.. GENERATED FROM PYTHON SOURCE LINES 120-152
+.. GENERATED FROM PYTHON SOURCE LINES 121-153
 
 .. code-block:: Python
 
 
-    from tvm.script import ir as I
-    from tvm.script import relax as R
+    from tvm.relax import script as R
+    from tvm_tirx.script import ir as I
 
 
     @I.ir_module
@@ -270,8 +271,8 @@ parse the TVMScript to obtain an IRModule.
 
     from __future__ import annotations
 
-    # from tvm.script import relax as R
-    # from tvm.script import tirx as T
+    # from tvm.relax import script as R
+    # from tvm_tirx.script import tirx as T
 
     @T.ir_module
     class Module:
@@ -294,13 +295,13 @@ parse the TVMScript to obtain an IRModule.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 153-156
+.. GENERATED FROM PYTHON SOURCE LINES 154-157
 
 Attributes of an IRModule
 -------------------------
 An IRModule is a collection of functions, indexed by GlobalVars.
 
-.. GENERATED FROM PYTHON SOURCE LINES 156-160
+.. GENERATED FROM PYTHON SOURCE LINES 157-161
 
 .. code-block:: Python
 
@@ -321,12 +322,12 @@ An IRModule is a collection of functions, indexed by GlobalVars.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 161-163
+.. GENERATED FROM PYTHON SOURCE LINES 162-164
 
 We can access the functions in the IRModule by indexing with the GlobalVars
 or their names
 
-.. GENERATED FROM PYTHON SOURCE LINES 163-170
+.. GENERATED FROM PYTHON SOURCE LINES 164-171
 
 .. code-block:: Python
 
@@ -347,7 +348,7 @@ or their names
 
     from __future__ import annotations
 
-    # from tvm.script import relax as R
+    # from tvm.relax import script as R
 
     @R.function
     def main(x: R.Tensor((1, 784), dtype="float32"), p_fc1_weight: R.Tensor((256, 784), dtype="float32"), p_fc1_bias: R.Tensor((256,), dtype="float32"), p_fc2_weight: R.Tensor((10, 256), dtype="float32"), p_fc2_bias: R.Tensor((10,), dtype="float32")) -> R.Tensor((1, 10), dtype="float32"):
@@ -367,7 +368,7 @@ or their names
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 171-181
+.. GENERATED FROM PYTHON SOURCE LINES 172-182
 
 Transformations on IRModules
 ----------------------------
@@ -380,13 +381,13 @@ In this getting started tutorial, we only demonstrate how to apply transformatio
 to an IRModule. For details of each transformation, please refer to the
 :ref:`Transformation API Reference <api-relax-transformation>`
 
-.. GENERATED FROM PYTHON SOURCE LINES 183-186
+.. GENERATED FROM PYTHON SOURCE LINES 184-187
 
 We first apply **LegalizeOps** transformation to the IRModule. This transformation
 will convert the Relax module into a mixed stage, with both Relax and TensorIR function
 within the same module. Meanwhile, the Relax operators will be converted into ``call_tir``.
 
-.. GENERATED FROM PYTHON SOURCE LINES 186-191
+.. GENERATED FROM PYTHON SOURCE LINES 187-192
 
 .. code-block:: Python
 
@@ -405,9 +406,9 @@ within the same module. Meanwhile, the Relax operators will be converted into ``
 
     from __future__ import annotations
 
-    # from tvm.script import relax as R
-    # from tvm.script import s_tir as Ts
-    # from tvm.script import tirx as T
+    # from tvm.relax import script as R
+    # from tvm.s_tir import script as Ts
+    # from tvm_tirx.script import tirx as T
 
     @T.ir_module
     class Module:
@@ -543,12 +544,12 @@ within the same module. Meanwhile, the Relax operators will be converted into ``
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 192-194
+.. GENERATED FROM PYTHON SOURCE LINES 193-195
 
 After the transformation, there are much more functions inside the module. Let's print
 the global vars again.
 
-.. GENERATED FROM PYTHON SOURCE LINES 194-197
+.. GENERATED FROM PYTHON SOURCE LINES 195-198
 
 .. code-block:: Python
 
@@ -568,7 +569,7 @@ the global vars again.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 198-220
+.. GENERATED FROM PYTHON SOURCE LINES 199-221
 
 Next, Apache TVM provides a set of default transformation pipelines for users,
 to simplify the transformation process. We can then apply the default pipeline to the module.
@@ -593,7 +594,7 @@ The default **zero** pipeline contains very fundamental transformations, includi
   Every passes can be duplicated in the flow, since we ensure the passes can handle all legal
   IRModule inputs. This design can help users to construct their own pipeline.
 
-.. GENERATED FROM PYTHON SOURCE LINES 220-224
+.. GENERATED FROM PYTHON SOURCE LINES 221-225
 
 .. code-block:: Python
 
@@ -611,9 +612,9 @@ The default **zero** pipeline contains very fundamental transformations, includi
 
     from __future__ import annotations
 
-    # from tvm.script import relax as R
-    # from tvm.script import s_tir as Ts
-    # from tvm.script import tirx as T
+    # from tvm.relax import script as R
+    # from tvm.s_tir import script as Ts
+    # from tvm_tirx.script import tirx as T
 
     @T.ir_module
     class Module:
@@ -727,7 +728,7 @@ The default **zero** pipeline contains very fundamental transformations, includi
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 225-235
+.. GENERATED FROM PYTHON SOURCE LINES 226-236
 
 Deploy the IRModule Universally
 -------------------------------
@@ -740,17 +741,17 @@ Deploy on CPU
 ~~~~~~~~~~~~~
 We can deploy the IRModule on CPU by specifying the target as ``llvm``.
 
-.. GENERATED FROM PYTHON SOURCE LINES 235-245
+.. GENERATED FROM PYTHON SOURCE LINES 236-246
 
 .. code-block:: Python
 
 
     exec = tvm.compile(mod, target="llvm")
-    dev = tvm.cpu()
+    dev = tvm_tirx.cpu()
     vm = relax.VirtualMachine(exec, dev)
 
     raw_data = np.random.rand(1, 784).astype("float32")
-    data = tvm.runtime.tensor(raw_data, dev)
+    data = tvm_tirx.runtime.tensor(raw_data, dev)
     cpu_out = vm["main"](data, *params_from_torch["main"]).numpy()
     print(cpu_out)
 
@@ -762,13 +763,13 @@ We can deploy the IRModule on CPU by specifying the target as ``llvm``.
 
  .. code-block:: none
 
-    [[ 0.15772477 -0.00769961 -0.26038897 -0.00222129 -0.02936362  0.04252756
-       0.11562092  0.05009988 -0.04295097  0.00463239]]
+    [[ 0.09275895 -0.24514025 -0.1100196  -0.0299631   0.03629553  0.09709643
+       0.19346264  0.05457887 -0.13787961 -0.10433966]]
 
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 246-255
+.. GENERATED FROM PYTHON SOURCE LINES 247-256
 
 Deploy on GPU
 ~~~~~~~~~~~~~
@@ -780,14 +781,14 @@ We use ``DLight`` to generate the GPU programs. In this tutorial, we won't go in
 the details of ``DLight``.
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 255-264
+.. GENERATED FROM PYTHON SOURCE LINES 256-265
 
 .. code-block:: Python
 
 
     from tvm.s_tir import dlight as dl
 
-    with tvm.target.Target("cuda"):
+    with tvm_tirx.target.Target("cuda"):
         gpu_mod = dl.ApplyDefaultSchedule(
             dl.gpu.Matmul(),
             dl.gpu.Fallback(),
@@ -800,21 +801,21 @@ the details of ``DLight``.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 265-266
+.. GENERATED FROM PYTHON SOURCE LINES 266-267
 
 Now we can compile the IRModule on GPU, the similar way as we did on CPU.
 
-.. GENERATED FROM PYTHON SOURCE LINES 266-279
+.. GENERATED FROM PYTHON SOURCE LINES 267-280
 
 .. code-block:: Python
 
 
     exec = tvm.compile(gpu_mod, target="cuda")
-    dev = tvm.cuda(0)
+    dev = tvm_tirx.cuda(0)
     vm = relax.VirtualMachine(exec, dev)
     # Need to allocate data and params on GPU device
-    data = tvm.runtime.tensor(raw_data, dev)
-    gpu_params = [tvm.runtime.tensor(p, dev) for p in params_from_torch["main"]]
+    data = tvm_tirx.runtime.tensor(raw_data, dev)
+    gpu_params = [tvm_tirx.runtime.tensor(p, dev) for p in params_from_torch["main"]]
     gpu_out = vm["main"](data, *gpu_params).numpy()
     print(gpu_out)
 
@@ -829,13 +830,13 @@ Now we can compile the IRModule on GPU, the similar way as we did on CPU.
 
  .. code-block:: none
 
-    [[ 0.15772474 -0.00769962 -0.26038897 -0.00222122 -0.02936361  0.04252759
-       0.11562092  0.05009988 -0.04295097  0.00463241]]
+    [[ 0.09275898 -0.24514031 -0.11001972 -0.02996307  0.0362956   0.09709639
+       0.19346261  0.05457896 -0.13787964 -0.10433972]]
 
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 280-286
+.. GENERATED FROM PYTHON SOURCE LINES 281-287
 
 Deploy on Other Backends
 ~~~~~~~~~~~~~~~~~~~~~~~~

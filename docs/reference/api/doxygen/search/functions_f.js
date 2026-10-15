@@ -2,8 +2,8 @@ var searchData=
 [
   ['packedaxisat_0',['PackedAxisAt',['../classtvm_1_1tirx_1_1SLayout.html#a474d1699a4b2c9d4becfadb081ad85c1',1,'tvm::tirx::SLayout']]],
   ['packedfunctype_1',['PackedFuncType',['../classtvm_1_1relax_1_1PackedFuncType.html#a0a898df0213e2e184d8c3c073e04a81a',1,'tvm::relax::PackedFuncType']]],
-  ['packimportstoc_2',['PackImportsToC',['../namespacetvm_1_1codegen.html#a5cd16ce44a4d1e2c7b43f2909c696498',1,'tvm::codegen']]],
-  ['packimportstoobjectfile_3',['PackImportsToObjectFile',['../namespacetvm_1_1codegen.html#a00868cd5f8d3c1ffc844f3ef13b46000',1,'tvm::codegen']]],
+  ['packimportstoc_2',['PackImportsToC',['../namespacetvm_1_1codegen.html#a0ae2cd6737e5300889b08c4c3ed612f7',1,'tvm::codegen']]],
+  ['packimportstoobjectfile_3',['PackImportsToObjectFile',['../namespacetvm_1_1codegen.html#a8364118f0d659867da80ef5a52f4d50e',1,'tvm::codegen']]],
   ['packitervar_4',['PackIterVar',['../classtvm_1_1tirx_1_1SLayout.html#a428d451441bb40bb9492c4bc5aadbd7c',1,'tvm::tirx::SLayout']]],
   ['pad_5',['pad',['../namespacetvm_1_1topi.html#a09e3877ee5c5346ca8a9eb3c907a6c29',1,'tvm::topi']]],
   ['padeinsum_6',['PadEinsum',['../classtvm_1_1s__tir_1_1ScheduleObj.html#a483533d77dd62de751cba70fac80d04b',1,'tvm::s_tir::ScheduleObj']]],

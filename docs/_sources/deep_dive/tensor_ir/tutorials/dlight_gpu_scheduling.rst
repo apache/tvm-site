@@ -45,15 +45,16 @@ We build a small model with ``nn.Module`` that is rich enough to trigger multipl
 rules: ``Linear`` layers produce GEMM (matrix multiplication) kernels, ``LayerNorm``
 produces a general-reduction kernel, and ``ReLU`` is a simple elementwise op.
 
-.. GENERATED FROM PYTHON SOURCE LINES 48-70
+.. GENERATED FROM PYTHON SOURCE LINES 48-71
 
 .. code-block:: Python
 
 
-    import tvm
-    from tvm import relax, tirx
+    import tvm_tirx
+    from tvm import relax
     from tvm.relax.frontend import nn
     from tvm.s_tir import dlight as dl
+    from tvm_tirx import tirx
 
 
     class DemoModel(nn.Module):
@@ -78,17 +79,17 @@ produces a general-reduction kernel, and ``ReLU`` is a simple elementwise op.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 71-72
+.. GENERATED FROM PYTHON SOURCE LINES 72-73
 
 Legalize Relax operators into TIR functions so that DLight has concrete kernels to schedule.
 
-.. GENERATED FROM PYTHON SOURCE LINES 72-78
+.. GENERATED FROM PYTHON SOURCE LINES 73-79
 
 .. code-block:: Python
 
 
-    device = tvm.cuda(0)
-    target = tvm.target.Target.from_device(device)
+    device = tvm_tirx.cuda(0)
+    target = tvm_tirx.target.Target.from_device(device)
     with target:
         mod = relax.get_pipeline("zero")(mod)
 
@@ -99,12 +100,12 @@ Legalize Relax operators into TIR functions so that DLight has concrete kernels 
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 79-81
+.. GENERATED FROM PYTHON SOURCE LINES 80-82
 
 At this point every TIR function in ``mod`` is **unscheduled** — it has no thread bindings
 and would not run efficiently on a GPU. Let's see what functions we have:
 
-.. GENERATED FROM PYTHON SOURCE LINES 81-85
+.. GENERATED FROM PYTHON SOURCE LINES 82-86
 
 .. code-block:: Python
 
@@ -129,7 +130,7 @@ and would not run efficiently on a GPU. Let's see what functions we have:
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 86-93
+.. GENERATED FROM PYTHON SOURCE LINES 87-94
 
 Basic Usage: ApplyDefaultSchedule
 ---------------------------------
@@ -139,12 +140,12 @@ module and tries the given rules **in order**. For each function the first rule 
 After scheduling, the function is marked with ``tirx.is_scheduled`` so it won't be
 scheduled again by a later ``ApplyDefaultSchedule`` call.
 
-.. GENERATED FROM PYTHON SOURCE LINES 95-97
+.. GENERATED FROM PYTHON SOURCE LINES 96-98
 
 Here we use a common subset of rules. The full catalog (including ``LowBatchGEMV``,
 ``Transpose``, ``RMSNorm``) is listed in the next section.
 
-.. GENERATED FROM PYTHON SOURCE LINES 97-109
+.. GENERATED FROM PYTHON SOURCE LINES 98-110
 
 .. code-block:: Python
 
@@ -170,9 +171,9 @@ Here we use a common subset of rules. The full catalog (including ``LowBatchGEMV
 
     from __future__ import annotations
 
-    # from tvm.script import relax as R
-    # from tvm.script import s_tir as Ts
-    # from tvm.script import tirx as T
+    # from tvm.relax import script as R
+    # from tvm.s_tir import script as Ts
+    # from tvm_tirx.script import tirx as T
 
     @T.ir_module
     class Module:
@@ -350,12 +351,12 @@ Here we use a common subset of rules. The full catalog (including ``LowBatchGEMV
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 110-112
+.. GENERATED FROM PYTHON SOURCE LINES 111-113
 
 Compared with the unscheduled IR, you can now see thread bindings
 (``blockIdx.x``, ``threadIdx.x``, ...) and loop transformations in each TIR function.
 
-.. GENERATED FROM PYTHON SOURCE LINES 114-162
+.. GENERATED FROM PYTHON SOURCE LINES 115-163
 
 Rule Catalog
 ------------
@@ -406,7 +407,7 @@ The built-in GPU rules, roughly from most specific to most general:
 - If you put ``Fallback`` first, it would "steal" every function and no specialized
   rule would ever run.
 
-.. GENERATED FROM PYTHON SOURCE LINES 164-170
+.. GENERATED FROM PYTHON SOURCE LINES 165-171
 
 Diagnosing Schedule Quality
 ---------------------------
@@ -415,7 +416,7 @@ does not log this directly, but you can figure it out by applying rules one at a
 
 **Step 1**: Apply each rule individually and record which functions it claims.
 
-.. GENERATED FROM PYTHON SOURCE LINES 170-194
+.. GENERATED FROM PYTHON SOURCE LINES 171-195
 
 .. code-block:: Python
 
@@ -450,11 +451,11 @@ does not log this directly, but you can figure it out by applying rules one at a
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 195-196
+.. GENERATED FROM PYTHON SOURCE LINES 196-197
 
 **Step 2**: Functions not claimed by any specialized rule will fall through to ``Fallback``.
 
-.. GENERATED FROM PYTHON SOURCE LINES 196-210
+.. GENERATED FROM PYTHON SOURCE LINES 197-211
 
 .. code-block:: Python
 
@@ -490,7 +491,7 @@ does not log this directly, but you can figure it out by applying rules one at a
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 211-216
+.. GENERATED FROM PYTHON SOURCE LINES 212-217
 
 If an important kernel lands in the Fallback bucket, you have three options:
 
@@ -498,7 +499,7 @@ If an important kernel lands in the Fallback bucket, you have three options:
 2. Use **MetaSchedule** to auto-tune that specific function.
 3. Manually schedule it with the ``tvm.s_tir.Schedule`` API.
 
-.. GENERATED FROM PYTHON SOURCE LINES 218-253
+.. GENERATED FROM PYTHON SOURCE LINES 219-254
 
 DLight vs MetaSchedule
 ----------------------
@@ -536,14 +537,14 @@ is harmless (tuning an already-scheduled function simply re-explores its space),
 you want to avoid the extra search cost, filter the module or use ``MetaScheduleTuneIRMod``
 with ``op_names`` to target specific functions.
 
-.. GENERATED FROM PYTHON SOURCE LINES 255-259
+.. GENERATED FROM PYTHON SOURCE LINES 256-260
 
 Writing a Custom Rule
 ---------------------
 You can extend DLight by writing your own ``ScheduleRule``. The simplest way is
 ``ScheduleRule.from_callable``, which wraps a plain function into a rule **instance**.
 
-.. GENERATED FROM PYTHON SOURCE LINES 259-289
+.. GENERATED FROM PYTHON SOURCE LINES 260-290
 
 .. code-block:: Python
 
@@ -554,7 +555,7 @@ You can extend DLight by writing your own ``ScheduleRule``. The simplest way is
 
 
     @ScheduleRule.from_callable("MyTileAndBind")
-    def my_tile_and_bind(func: tirx.Function, target: tvm.target.Target, tunable: bool):
+    def my_tile_and_bind(func: tirx.Function, target: tvm_tirx.target.Target, tunable: bool):
         """A minimal rule: for single-block injective functions, tile and bind to GPU threads."""
         if not isinstance(func, tirx.Function):
             return None
@@ -584,12 +585,12 @@ You can extend DLight by writing your own ``ScheduleRule``. The simplest way is
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 290-292
+.. GENERATED FROM PYTHON SOURCE LINES 291-293
 
 Insert the custom rule into the rule chain. Note that ``from_callable`` returns an
 **instance**, so pass it directly — do not call ``my_tile_and_bind()`` again.
 
-.. GENERATED FROM PYTHON SOURCE LINES 292-303
+.. GENERATED FROM PYTHON SOURCE LINES 293-304
 
 .. code-block:: Python
 
@@ -614,9 +615,9 @@ Insert the custom rule into the rule chain. Note that ``from_callable`` returns 
 
     from __future__ import annotations
 
-    # from tvm.script import relax as R
-    # from tvm.script import s_tir as Ts
-    # from tvm.script import tirx as T
+    # from tvm.relax import script as R
+    # from tvm.s_tir import script as Ts
+    # from tvm_tirx.script import tirx as T
 
     @T.ir_module
     class Module:
@@ -794,12 +795,12 @@ Insert the custom rule into the rule chain. Note that ``from_callable`` returns 
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 304-306
+.. GENERATED FROM PYTHON SOURCE LINES 305-307
 
 To build a production-quality rule, subclass ``ScheduleRule`` directly and implement
 ``apply()`` with full analysis logic (see ``tvm.s_tir.dlight.gpu.Matmul`` for an example).
 
-.. GENERATED FROM PYTHON SOURCE LINES 308-317
+.. GENERATED FROM PYTHON SOURCE LINES 309-318
 
 Summary
 -------

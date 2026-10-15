@@ -1,6 +1,6 @@
 var searchData=
 [
-  ['global_5finfo_2eh_0',['global_info.h',['../ir_2global__info_8h.html',1,'(Global Namespace)'],['../relax_2distributed_2global__info_8h.html',1,'(Global Namespace)'],['../relax_2global__info_8h.html',1,'(Global Namespace)']]],
+  ['global_5finfo_2eh_0',['global_info.h',['../include_2tvm_2relax_2distributed_2global__info_8h.html',1,'(Global Namespace)'],['../include_2tvm_2relax_2global__info_8h.html',1,'(Global Namespace)'],['../tirx_2include_2tvm_2ir_2global__info_8h.html',1,'(Global Namespace)']]],
   ['gpu_2eh_1',['gpu.h',['../gpu_8h.html',1,'']]],
   ['gpu_5fthread_5ftag_2eh_2',['gpu_thread_tag.h',['../gpu__thread__tag_8h.html',1,'']]],
   ['group_5fnorm_2eh_3',['group_norm.h',['../group__norm_8h.html',1,'']]]

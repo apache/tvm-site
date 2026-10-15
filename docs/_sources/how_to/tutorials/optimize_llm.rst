@@ -54,7 +54,7 @@ pre-trained weight from Hugging Face but not the model architecture. We need to 
 model architecture by ourselves. Apache TVM prepares a PyTorch-liked API to construct the model
 architecture. We can use the API to construct the model architecture.
 
-.. GENERATED FROM PYTHON SOURCE LINES 57-74
+.. GENERATED FROM PYTHON SOURCE LINES 57-76
 
 .. code-block:: Python
 
@@ -68,12 +68,14 @@ architecture. We can use the API to construct the model architecture.
     from tvm_ffi import Shape
 
     import tvm
-    from tvm import relax, te, tirx
+    import tvm_tirx
+    from tvm import relax, te
     from tvm.relax import register_pipeline
     from tvm.relax.frontend import nn
     from tvm.relax.frontend.nn import Tensor, op
     from tvm.relax.frontend.nn.llm.kv_cache import PagedKVCache, TIRPagedKVCache
     from tvm.s_tir import dlight
+    from tvm_tirx import tirx
 
 
 
@@ -82,13 +84,13 @@ architecture. We can use the API to construct the model architecture.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 75-78
+.. GENERATED FROM PYTHON SOURCE LINES 77-80
 
 First, we need to define the model configuration. The configuration includes the key parameters
 of the model, such as hidden size, intermediate size, etc. Here for convenience, we define a
 constant config specially for the TinyLlama model.
 
-.. GENERATED FROM PYTHON SOURCE LINES 78-99
+.. GENERATED FROM PYTHON SOURCE LINES 80-101
 
 .. code-block:: Python
 
@@ -109,8 +111,8 @@ constant config specially for the TinyLlama model.
         head_dim: int = 64  # hidden_size // num_attention_heads
 
 
-    dev = tvm.cuda(0)
-    target = tvm.target.Target.from_device(dev)
+    dev = tvm_tirx.cuda(0)
+    target = tvm_tirx.target.Target.from_device(dev)
 
 
 
@@ -120,7 +122,7 @@ constant config specially for the TinyLlama model.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 100-106
+.. GENERATED FROM PYTHON SOURCE LINES 102-108
 
 Next, we define the RoPE mode of the Paged KV cache. The RoPE mode is used to apply the
 Relative Positional Encoding (RoPE) to the query and key tensors. The RoPE mode can be set to
@@ -129,7 +131,7 @@ the query and key tensors. If the RoPE mode is `NORMAL`, RoPE will be applied to
 before adding the key tensor to the cache. If the RoPE mode is `INLINE`, RoPE will be applied to
 the query and key tensors in the attention kernel on-the-fly.
 
-.. GENERATED FROM PYTHON SOURCE LINES 106-120
+.. GENERATED FROM PYTHON SOURCE LINES 108-122
 
 .. code-block:: Python
 
@@ -154,7 +156,7 @@ the query and key tensors in the attention kernel on-the-fly.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 121-140
+.. GENERATED FROM PYTHON SOURCE LINES 123-142
 
 Secondly, we define the model architecture. The model architecture consists of three parts:
 
@@ -176,7 +178,7 @@ The optimized implementation is:
   FFN(x) = down_proj(silu(gate_x) * up_x)
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 140-158
+.. GENERATED FROM PYTHON SOURCE LINES 142-160
 
 .. code-block:: Python
 
@@ -205,7 +207,7 @@ The optimized implementation is:
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 159-172
+.. GENERATED FROM PYTHON SOURCE LINES 161-174
 
 Then we define the self-attention layer. The self-attention layer consists of three parts:
 
@@ -221,7 +223,7 @@ We perform optimizations on the different parts of the self-attention layer:
   kernel.
 - Attention: We leverage the horizontal fusion on attention and fuse the QKV projection and
 
-.. GENERATED FROM PYTHON SOURCE LINES 172-204
+.. GENERATED FROM PYTHON SOURCE LINES 174-206
 
 .. code-block:: Python
 
@@ -264,11 +266,11 @@ We perform optimizations on the different parts of the self-attention layer:
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 205-206
+.. GENERATED FROM PYTHON SOURCE LINES 207-208
 
 Finally, we define the model architecture with FFN and self-attention layers.
 
-.. GENERATED FROM PYTHON SOURCE LINES 206-355
+.. GENERATED FROM PYTHON SOURCE LINES 208-357
 
 .. code-block:: Python
 
@@ -428,14 +430,14 @@ Finally, we define the model architecture with FFN and self-attention layers.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 356-360
+.. GENERATED FROM PYTHON SOURCE LINES 358-362
 
 Export the model to Relax IRModule
 ----------------------------------
 After defining the model architecture, we can export the model to the Relax IRModule.
 For demonstration, we only show the part of the model architecture. and parameters.
 
-.. GENERATED FROM PYTHON SOURCE LINES 360-372
+.. GENERATED FROM PYTHON SOURCE LINES 362-374
 
 .. code-block:: Python
 
@@ -459,7 +461,7 @@ For demonstration, we only show the part of the model architecture. and paramete
 
  .. code-block:: none
 
-    # from tvm.script import tirx as T
+    # from tvm_tirx.script import tirx as T
 
     @R.function
     def prefill[seq_len: T.int64](input_embed: R.Tensor((1, seq_len, 2048), dtype="float16"), paged_kv_cache: T.Any(), packed_params: T.Tuple(R.Tensor((32000, 2048), dtype="float16"), R.Tensor((2560, 2048), dtype="float16"), R.Tensor((2048, 2048), dtype="float16"), R.Tensor((11264, 2048), dtype="float16"), R.Tensor((2048, 5632), dtype="float16"), R.Tensor((2048,), dtype="float16"), R.Tensor((2048,), dtype="float16"), R.Tensor((2560, 2048), dtype="float16"), R.Tensor((2048, 2048), dtype="float16"), R.Tensor((11264, 2048), dtype="float16"), R.Tensor((2048, 5632), dtype="float16"), R.Tensor((2048,), dtype="float16"), R.Tensor((2048,), dtype="float16"), R.Tensor((2560, 2048), dtype="float16"), R.Tensor((2048, 2048), dtype="float16"), R.Tensor((11264, 2048), dtype="float16"), R.Tensor((2048, 5632), dtype="float16"), R.Tensor((2048,), dtype="float16"), R.Tensor((2048,), dtype="float16"), R.Tensor((2560, 2048), dtype="float16"), R.Tensor((2048, 2048), dtype="float16"), R.Tensor((11264, 2048), dtype="float16"), R.Tensor((2048, 5632), dtype="float16"), R.Tensor((2048,), dtype="float16"), R.Tensor((2048,), dtype="float16"), R.Tensor((2560, 2048), dtype="float16"), R.Tensor((2048, 2048), dtype="float16"), R.Tensor((11264, 2048), dtype="float16"), R.Tensor((2048, 5632), dtype="float16"), R.Tensor((2048,), dtype="float16"), R.Tensor((2048,), dtype="float16"), R.Tensor((2560, 2048), dtype="float16"), R.Tensor((2048, 2048), dtype="float16"), R.Tensor((11264, 2048), dtype="float16"), R.Tensor((2048, 5632), dtype="float16"), R.Tensor((2048,), dtype="float16"), R.Tensor((2048,), dtype="float16"), R.Tensor((2560, 2048), dtype="float16"), R.Tensor((2048, 2048), dtype="float16"), R.Tensor((11264, 2048), dtype="float16"), R.Tensor((2048, 5632), dtype="float16"), R.Tensor((2048,), dtype="float16"), R.Tensor((2048,), dtype="float16"), R.Tensor((2560, 2048), dtype="float16"), R.Tensor((2048, 2048), dtype="float16"), R.Tensor((11264, 2048), dtype="float16"), R.Tensor((2048, 5632), dtype="float16"), R.Tensor((2048,), dtype="float16"), R.Tensor((2048,), dtype="float16"), R.Tensor((2560, 2048), dtype="float16"), R.Tensor((2048, 2048), dtype="float16"), R.Tensor((11264, 2048), dtype="float16"), R.Tensor((2048, 5632), dtype="float16"), R.Tensor((2048,), dtype="float16"), R.Tensor((2048,), dtype="float16"), R.Tensor((2560, 2048), dtype="float16"), R.Tensor((2048, 2048), dtype="float16"), R.Tensor((11264, 2048), dtype="float16"), R.Tensor((2048, 5632), dtype="float16"), R.Tensor((2048,), dtype="float16"), R.Tensor((2048,), dtype="float16"), R.Tensor((2560, 2048), dtype="float16"), R.Tensor((2048, 2048), dtype="float16"), R.Tensor((11264, 2048), dtype="float16"), R.Tensor((2048, 5632), dtype="float16"), R.Tensor((2048,), dtype="float16"), R.Tensor((2048,), dtype="float16"), R.Tensor((2560, 2048), dtype="float16"), R.Tensor((2048, 2048), dtype="float16"), R.Tensor((11264, 2048), dtype="float16"), R.Tensor((2048, 5632), dtype="float16"), R.Tensor((2048,), dtype="float16"), R.Tensor((2048,), dtype="float16"), R.Tensor((2560, 2048), dtype="float16"), R.Tensor((2048, 2048), dtype="float16"), R.Tensor((11264, 2048), dtype="float16"), R.Tensor((2048, 5632), dtype="float16"), R.Tensor((2048,), dtype="float16"), R.Tensor((2048,), dtype="float16"), R.Tensor((2560, 2048), dtype="float16"), R.Tensor((2048, 2048), dtype="float16"), R.Tensor((11264, 2048), dtype="float16"), R.Tensor((2048, 5632), dtype="float16"), R.Tensor((2048,), dtype="float16"), R.Tensor((2048,), dtype="float16"), R.Tensor((2560, 2048), dtype="float16"), R.Tensor((2048, 2048), dtype="float16"), R.Tensor((11264, 2048), dtype="float16"), R.Tensor((2048, 5632), dtype="float16"), R.Tensor((2048,), dtype="float16"), R.Tensor((2048,), dtype="float16"), R.Tensor((2560, 2048), dtype="float16"), R.Tensor((2048, 2048), dtype="float16"), R.Tensor((11264, 2048), dtype="float16"), R.Tensor((2048, 5632), dtype="float16"), R.Tensor((2048,), dtype="float16"), R.Tensor((2048,), dtype="float16"), R.Tensor((2560, 2048), dtype="float16"), R.Tensor((2048, 2048), dtype="float16"), R.Tensor((11264, 2048), dtype="float16"), R.Tensor((2048, 5632), dtype="float16"), R.Tensor((2048,), dtype="float16"), R.Tensor((2048,), dtype="float16"), R.Tensor((2560, 2048), dtype="float16"), R.Tensor((2048, 2048), dtype="float16"), R.Tensor((11264, 2048), dtype="float16"), R.Tensor((2048, 5632), dtype="float16"), R.Tensor((2048,), dtype="float16"), R.Tensor((2048,), dtype="float16"), R.Tensor((2560, 2048), dtype="float16"), R.Tensor((2048, 2048), dtype="float16"), R.Tensor((11264, 2048), dtype="float16"), R.Tensor((2048, 5632), dtype="float16"), R.Tensor((2048,), dtype="float16"), R.Tensor((2048,), dtype="float16"), R.Tensor((2560, 2048), dtype="float16"), R.Tensor((2048, 2048), dtype="float16"), R.Tensor((11264, 2048), dtype="float16"), R.Tensor((2048, 5632), dtype="float16"), R.Tensor((2048,), dtype="float16"), R.Tensor((2048,), dtype="float16"), R.Tensor((2560, 2048), dtype="float16"), R.Tensor((2048, 2048), dtype="float16"), R.Tensor((11264, 2048), dtype="float16"), R.Tensor((2048, 5632), dtype="float16"), R.Tensor((2048,), dtype="float16"), R.Tensor((2048,), dtype="float16"), R.Tensor((2560, 2048), dtype="float16"), R.Tensor((2048, 2048), dtype="float16"), R.Tensor((11264, 2048), dtype="float16"), R.Tensor((2048, 5632), dtype="float16"), R.Tensor((2048,), dtype="float16"), R.Tensor((2048,), dtype="float16"), R.Tensor((2048,), dtype="float16"), R.Tensor((32000, 2048), dtype="float16"))) -> T.Tuple(R.Tensor((1, 1, 32000), dtype="float32"), T.Any()):
@@ -488,14 +490,14 @@ For demonstration, we only show the part of the model architecture. and paramete
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 373-377
+.. GENERATED FROM PYTHON SOURCE LINES 375-379
 
 Define Optimization Pipeline
 ----------------------------
 We define a series of optimization passes to optimize the model. The optimization pipeline
 is designed specifically for the LLMs.
 
-.. GENERATED FROM PYTHON SOURCE LINES 377-434
+.. GENERATED FROM PYTHON SOURCE LINES 379-438
 
 .. code-block:: Python
 
@@ -507,9 +509,11 @@ is designed specifically for the LLMs.
     ):
         ext_mods = ext_mods or []
 
-        @tvm.ir.transform.module_pass(opt_level=0)
-        def _pipeline(mod: tvm.ir.IRModule, _ctx: tvm.ir.transform.PassContext) -> tvm.ir.IRModule:
-            seq = tvm.ir.transform.Sequential(
+        @tvm_tirx.ir.transform.module_pass(opt_level=0)
+        def _pipeline(
+            mod: tvm_tirx.ir.IRModule, _ctx: tvm_tirx.ir.transform.PassContext
+        ) -> tvm_tirx.ir.IRModule:
+            seq = tvm_tirx.ir.transform.Sequential(
                 [
                     # Phase 1. Passes on high-level operator graph
                     # We can enable cublas for further optimization
@@ -563,7 +567,7 @@ is designed specifically for the LLMs.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 435-446
+.. GENERATED FROM PYTHON SOURCE LINES 439-450
 
 Prepare the model weights
 -------------------------
@@ -577,7 +581,7 @@ and prepare the model parameters.
   are not available in the CI environment.
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 446-497
+.. GENERATED FROM PYTHON SOURCE LINES 450-502
 
 .. code-block:: Python
 
@@ -628,7 +632,8 @@ and prepare the model parameters.
 
         # Convert params into ndarray
         params = [
-            tvm.runtime.tensor(param_dict[k].astype("float16"), device=dev) for k in named_params.keys()
+            tvm_tirx.runtime.tensor(param_dict[k].astype("float16"), device=dev)
+            for k in named_params.keys()
         ]
 
 
@@ -639,7 +644,7 @@ and prepare the model parameters.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 498-504
+.. GENERATED FROM PYTHON SOURCE LINES 503-509
 
 Deploy the compiled model
 -------------------------
@@ -648,7 +653,7 @@ The language models inference includes two steps: prefill and decode. The prefil
 used to process the input tokens and store the KVCache. The decode step is used to generate
 the token until the end token is generated.
 
-.. GENERATED FROM PYTHON SOURCE LINES 507-514
+.. GENERATED FROM PYTHON SOURCE LINES 512-519
 
 Tokenization
 ~~~~~~~~~~~~
@@ -658,7 +663,7 @@ to tokenize the input prompt and embed the tokens into the hidden states.
 Note that different models require different tokenization and prompt format, please refer to
 the model documentation for the correct tokenization and prompt format.
 
-.. GENERATED FROM PYTHON SOURCE LINES 514-529
+.. GENERATED FROM PYTHON SOURCE LINES 519-534
 
 .. code-block:: Python
 
@@ -675,7 +680,7 @@ the model documentation for the correct tokenization and prompt format.
         input_len = len(prompt)
 
         # Load prompt tokens into TVM ndarray on the target device
-        tokens = tvm.runtime.tensor(np.array(prompt).astype("int32"), device=dev)
+        tokens = tvm_tirx.runtime.tensor(np.array(prompt).astype("int32"), device=dev)
 
 
 
@@ -684,7 +689,7 @@ the model documentation for the correct tokenization and prompt format.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 530-535
+.. GENERATED FROM PYTHON SOURCE LINES 535-540
 
 Create the KVCache
 ~~~~~~~~~~~~~~~~~~
@@ -692,7 +697,7 @@ Before starting the inference, we need to create the KVCache. The KVCache is use
 key and value tensors for the attention layer. Apache TVM provides a PagedKVCache to store the
 key and value tensors. We create the PagedKVCache with the specified parameters.
 
-.. GENERATED FROM PYTHON SOURCE LINES 535-545
+.. GENERATED FROM PYTHON SOURCE LINES 540-550
 
 .. code-block:: Python
 
@@ -713,19 +718,19 @@ key and value tensors. We create the PagedKVCache with the specified parameters.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 546-550
+.. GENERATED FROM PYTHON SOURCE LINES 551-555
 
 Embedding
 ~~~~~~~~~
 The next step is to embed the tokens into the hidden states. We use the `embed` function
 compiled in the Relax IRModule to embed the tokens into the hidden states.
 
-.. GENERATED FROM PYTHON SOURCE LINES 550-561
+.. GENERATED FROM PYTHON SOURCE LINES 555-566
 
 .. code-block:: Python
 
 
-    nd_view_func = tvm.get_global_func("vm.builtin.reshape")
+    nd_view_func = tvm_tirx.get_global_func("vm.builtin.reshape")
 
 
     def embed(tokens, params):
@@ -742,20 +747,20 @@ compiled in the Relax IRModule to embed the tokens into the hidden states.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 562-565
+.. GENERATED FROM PYTHON SOURCE LINES 567-570
 
 Prefill
 ~~~~~~~
 Before running the forward pass, we first get some help functions for preparation.
 
-.. GENERATED FROM PYTHON SOURCE LINES 565-570
+.. GENERATED FROM PYTHON SOURCE LINES 570-575
 
 .. code-block:: Python
 
 
-    add_sequence_func = tvm.get_global_func("vm.builtin.kv_state_add_sequence")
-    begin_forward_func = tvm.get_global_func("vm.builtin.kv_state_begin_forward")
-    end_forward_func = tvm.get_global_func("vm.builtin.kv_state_end_forward")
+    add_sequence_func = tvm_tirx.get_global_func("vm.builtin.kv_state_add_sequence")
+    begin_forward_func = tvm_tirx.get_global_func("vm.builtin.kv_state_begin_forward")
+    end_forward_func = tvm_tirx.get_global_func("vm.builtin.kv_state_end_forward")
 
 
 
@@ -764,13 +769,13 @@ Before running the forward pass, we first get some help functions for preparatio
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 571-574
+.. GENERATED FROM PYTHON SOURCE LINES 576-579
 
 As we are creating a new sequence, we need to call `add_sequence_func` to initialize
 the request. Additionally, we need to call `begin_forward_func` to start the forward pass,
 and `end_forward_func` to end the forward pass.
 
-.. GENERATED FROM PYTHON SOURCE LINES 574-583
+.. GENERATED FROM PYTHON SOURCE LINES 579-588
 
 .. code-block:: Python
 
@@ -790,7 +795,7 @@ and `end_forward_func` to end the forward pass.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 584-590
+.. GENERATED FROM PYTHON SOURCE LINES 589-595
 
 Now we have the output logits from the prefill step. The logits are used to generate the token
 via sampling. Let's sample the token from the logits.
@@ -799,7 +804,7 @@ In this tutorial, we simplify the sampling process and pick the token with the h
 probability. In practice, we should sample the token based on the probability distribution.
 Also, to make the tutorial concise, we execute the sample process on CPU.
 
-.. GENERATED FROM PYTHON SOURCE LINES 590-602
+.. GENERATED FROM PYTHON SOURCE LINES 595-607
 
 .. code-block:: Python
 
@@ -822,7 +827,7 @@ Also, to make the tutorial concise, we execute the sample process on CPU.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 603-608
+.. GENERATED FROM PYTHON SOURCE LINES 608-613
 
 Decode
 ~~~~~~
@@ -830,7 +835,7 @@ After the prefill step, we can start the decode step. The decode step is used to
 token until the end token is generated. We use the `decode` function compiled in the Relax
 IRModule to generate the token.
 
-.. GENERATED FROM PYTHON SOURCE LINES 608-623
+.. GENERATED FROM PYTHON SOURCE LINES 613-628
 
 .. code-block:: Python
 
@@ -839,7 +844,7 @@ IRModule to generate the token.
         print("The generated token:")
 
         while last_token != tokenizer.eos_token_id:
-            tokens = tvm.runtime.tensor(np.array([last_token]).astype("int32"), device=dev)
+            tokens = tvm_tirx.runtime.tensor(np.array([last_token]).astype("int32"), device=dev)
             hidden_states = embed(tokens, params)
             begin_forward_func(kv_cache, Shape([seq_id]), Shape([1]))
             logits, kv_cache = vm["decode"](hidden_states, kv_cache, params)
@@ -859,7 +864,7 @@ IRModule to generate the token.
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** (5 minutes 41.919 seconds)
+   **Total running time of the script:** (5 minutes 41.822 seconds)
 
 
 .. _sphx_glr_download_how_to_tutorials_optimize_llm.py:

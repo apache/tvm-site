@@ -50,7 +50,7 @@ Standard Format
 Let's take an example of ``mm_relu`` from :ref:`tirx-learning`. Here is the complete
 format of the ir_module and in TVMScript:
 
-.. GENERATED FROM PYTHON SOURCE LINES 54-95
+.. GENERATED FROM PYTHON SOURCE LINES 54-96
 
 .. code-block:: Python
 
@@ -59,9 +59,10 @@ format of the ir_module and in TVMScript:
     import tvm_ffi
 
     import tvm
-    from tvm.script import ir as I
-    from tvm.script import s_tir as Ts
-    from tvm.script import tirx as T
+    import tvm_tirx
+    from tvm.s_tir import script as Ts
+    from tvm_tirx.script import ir as I
+    from tvm_tirx.script import tirx as T
 
 
     @I.ir_module
@@ -102,7 +103,7 @@ format of the ir_module and in TVMScript:
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 96-105
+.. GENERATED FROM PYTHON SOURCE LINES 97-106
 
 Concise with Syntactic Sugar
 ****************************
@@ -114,7 +115,7 @@ streamline the code:
 - Exclude ``Ts.reads`` and ``Ts.writes`` for blocks whose content can
   be inferred from the block body;
 
-.. GENERATED FROM PYTHON SOURCE LINES 105-128
+.. GENERATED FROM PYTHON SOURCE LINES 106-129
 
 .. code-block:: Python
 
@@ -148,11 +149,11 @@ streamline the code:
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 129-130
+.. GENERATED FROM PYTHON SOURCE LINES 130-131
 
 We can use the following code to verify that the two modules are equivalent:
 
-.. GENERATED FROM PYTHON SOURCE LINES 130-133
+.. GENERATED FROM PYTHON SOURCE LINES 131-134
 
 .. code-block:: Python
 
@@ -172,7 +173,7 @@ We can use the following code to verify that the two modules are equivalent:
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 134-139
+.. GENERATED FROM PYTHON SOURCE LINES 135-140
 
 Interactive with Python Variables
 *********************************
@@ -180,7 +181,7 @@ Despite TVMScript not being executed by a Python interpreter, limited
 interaction with Python is feasible. For instance, Python variables can
 be used to ascertain the shape and data type of a TensorIR.
 
-.. GENERATED FROM PYTHON SOURCE LINES 139-167
+.. GENERATED FROM PYTHON SOURCE LINES 140-168
 
 .. code-block:: Python
 
@@ -219,11 +220,11 @@ be used to ascertain the shape and data type of a TensorIR.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 168-169
+.. GENERATED FROM PYTHON SOURCE LINES 169-170
 
 Check the equivalence:
 
-.. GENERATED FROM PYTHON SOURCE LINES 169-172
+.. GENERATED FROM PYTHON SOURCE LINES 170-173
 
 .. code-block:: Python
 
@@ -243,7 +244,7 @@ Check the equivalence:
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 173-178
+.. GENERATED FROM PYTHON SOURCE LINES 174-179
 
 TensorIR Function with Dynamic Shapes
 *************************************
@@ -251,7 +252,7 @@ Despite TVMScript not being executed by a Python interpreter, limited
 interaction with Python is feasible. For instance, Python variables can
 be used to ascertain the shape and data type of a TensorIR.
 
-.. GENERATED FROM PYTHON SOURCE LINES 178-204
+.. GENERATED FROM PYTHON SOURCE LINES 179-205
 
 .. code-block:: Python
 
@@ -288,20 +289,20 @@ be used to ascertain the shape and data type of a TensorIR.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 205-206
+.. GENERATED FROM PYTHON SOURCE LINES 206-207
 
 Now let's check the runtime dynamic shape inference:
 
-.. GENERATED FROM PYTHON SOURCE LINES 206-222
+.. GENERATED FROM PYTHON SOURCE LINES 207-223
 
 .. code-block:: Python
 
 
 
-    def evaluate_dynamic_shape(lib: tvm.runtime.Module, m: int, n: int, k: int):
-        A = tvm.runtime.tensor(np.random.uniform(size=(m, k)).astype("float32"))
-        B = tvm.runtime.tensor(np.random.uniform(size=(k, n)).astype("float32"))
-        C = tvm.runtime.tensor(np.zeros((m, n), dtype="float32"))
+    def evaluate_dynamic_shape(lib: tvm_tirx.runtime.Module, m: int, n: int, k: int):
+        A = tvm_tirx.runtime.tensor(np.random.uniform(size=(m, k)).astype("float32"))
+        B = tvm_tirx.runtime.tensor(np.random.uniform(size=(k, n)).astype("float32"))
+        C = tvm_tirx.runtime.tensor(np.zeros((m, n), dtype="float32"))
         lib(A, B, C)
         return C.numpy()
 
@@ -335,7 +336,7 @@ Now let's check the runtime dynamic shape inference:
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 223-243
+.. GENERATED FROM PYTHON SOURCE LINES 224-244
 
 Create TensorIR using Tensor Expression
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -358,7 +359,7 @@ Create Static-Shape Functions
 We use the same example of ``mm_relu`` from the last subsection to demonstrate the
 TE creation method.
 
-.. GENERATED FROM PYTHON SOURCE LINES 243-252
+.. GENERATED FROM PYTHON SOURCE LINES 244-253
 
 .. code-block:: Python
 
@@ -378,7 +379,7 @@ TE creation method.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 253-266
+.. GENERATED FROM PYTHON SOURCE LINES 254-267
 
 Here ``te.compute`` takes the signature ``te.compute(output_shape, fcompute)``.
 And the fcompute function describes how we want to compute the value of each
@@ -394,13 +395,13 @@ we can formulate a TensorIR function by incorporating the pertinent parameters o
 In this specific instance, we aim to construct a function with two input parameters **A, B**
 and one output parameter **C**.
 
-.. GENERATED FROM PYTHON SOURCE LINES 266-271
+.. GENERATED FROM PYTHON SOURCE LINES 267-272
 
 .. code-block:: Python
 
 
     te_func = te.create_function([A, B, C]).with_attr({"global_symbol": "mm_relu"})
-    TEModule = tvm.IRModule({"mm_relu": te_func})
+    TEModule = tvm_tirx.IRModule({"mm_relu": te_func})
     TEModule.show()
 
 
@@ -413,8 +414,8 @@ and one output parameter **C**.
 
     from __future__ import annotations
 
-    # from tvm.script import s_tir as Ts
-    # from tvm.script import tirx as T
+    # from tvm.s_tir import script as Ts
+    # from tvm_tirx.script import tirx as T
 
     @T.ir_module
     class Module:
@@ -450,14 +451,14 @@ and one output parameter **C**.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 272-276
+.. GENERATED FROM PYTHON SOURCE LINES 273-277
 
 Create Dynamic-Shape Functions
 ******************************
 We can also create a dynamic-shape function using Tensor Expression. The only difference
 is that we need to specify the shape of the input tensors as symbolic variables.
 
-.. GENERATED FROM PYTHON SOURCE LINES 276-288
+.. GENERATED FROM PYTHON SOURCE LINES 277-289
 
 .. code-block:: Python
 
@@ -471,7 +472,7 @@ is that we need to specify the shape of the input tensors as symbolic variables.
     C = te.compute((M, N), lambda i, j: te.max(Y[i, j], 0), name="C")
 
     dyn_te_func = te.create_function([A, B, C]).with_attr({"global_symbol": "mm_relu"})
-    DynamicTEModule = tvm.IRModule({"mm_relu": dyn_te_func})
+    DynamicTEModule = tvm_tirx.IRModule({"mm_relu": dyn_te_func})
     DynamicTEModule.show()
 
 
@@ -483,8 +484,8 @@ is that we need to specify the shape of the input tensors as symbolic variables.
 
     from __future__ import annotations
 
-    # from tvm.script import s_tir as Ts
-    # from tvm.script import tirx as T
+    # from tvm.s_tir import script as Ts
+    # from tvm_tirx.script import tirx as T
 
     m = T.dynamic("m", dtype="int32")
     n = T.dynamic("n", dtype="int32")

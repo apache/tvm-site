@@ -95,7 +95,7 @@ Declare and Cross Compile Kernel on Local Machine
 
 Here we will declare a simple kernel on the local machine:
 
-.. GENERATED FROM PYTHON SOURCE LINES 96-109
+.. GENERATED FROM PYTHON SOURCE LINES 96-110
 
 .. code-block:: Python
 
@@ -104,13 +104,14 @@ Here we will declare a simple kernel on the local machine:
     import tvm_ffi
 
     import tvm
+    import tvm_tirx
     from tvm import rpc, te
-    from tvm.support import utils
+    from tvm_tirx.support import utils
 
-    n = tvm.runtime.convert(1024)
+    n = tvm_tirx.runtime.convert(1024)
     A = te.placeholder((n,), name="A")
     B = te.compute((n,), lambda i: A[i] + 1.0, name="B")
-    mod = tvm.IRModule.from_expr(te.create_function([A, B]).with_attr("global_symbol", "add_one"))
+    mod = tvm_tirx.IRModule.from_expr(te.create_function([A, B]).with_attr("global_symbol", "add_one"))
 
 
 
@@ -119,14 +120,14 @@ Here we will declare a simple kernel on the local machine:
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 110-114
+.. GENERATED FROM PYTHON SOURCE LINES 111-115
 
 Then we cross compile the kernel.
 The target should be {"kind": "llvm", "mtriple": "armv7l-linux-gnueabihf"} for
 Raspberry Pi 3B, but we use 'llvm' here to make this tutorial runnable
 on our webpage building server. See the detailed note in the following block.
 
-.. GENERATED FROM PYTHON SOURCE LINES 114-128
+.. GENERATED FROM PYTHON SOURCE LINES 115-129
 
 .. code-block:: Python
 
@@ -151,7 +152,7 @@ on our webpage building server. See the detailed note in the following block.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 129-161
+.. GENERATED FROM PYTHON SOURCE LINES 130-162
 
 .. note::
 
@@ -186,14 +187,14 @@ on our webpage building server. See the detailed note in the following block.
   You can find more details about cross compilation attributes from
   `LLVM guide of cross compilation <https://clang.llvm.org/docs/CrossCompilation.html>`_.
 
-.. GENERATED FROM PYTHON SOURCE LINES 163-167
+.. GENERATED FROM PYTHON SOURCE LINES 164-168
 
 Run CPU Kernel Remotely by RPC
 ------------------------------
 We show how to run the generated CPU kernel on the remote device.
 First we obtain an RPC session from remote device.
 
-.. GENERATED FROM PYTHON SOURCE LINES 167-176
+.. GENERATED FROM PYTHON SOURCE LINES 168-177
 
 .. code-block:: Python
 
@@ -213,12 +214,12 @@ First we obtain an RPC session from remote device.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 177-179
+.. GENERATED FROM PYTHON SOURCE LINES 178-180
 
 Upload the lib to the remote device, then invoke a device local
 compiler to relink them. Now `func` is a remote module object.
 
-.. GENERATED FROM PYTHON SOURCE LINES 179-191
+.. GENERATED FROM PYTHON SOURCE LINES 180-192
 
 .. code-block:: Python
 
@@ -242,15 +243,15 @@ compiler to relink them. Now `func` is a remote module object.
 
  .. code-block:: none
 
-    /workspace/docs/how_to/tutorials/cross_compilation_and_rpc.py:185: DeprecationWarning: in the future the `.dtype` attribute of a given datatype object must be a valid dtype instance. `data_type.dtype` may need to be coerced using `np.dtype(data_type.dtype)`. (Deprecated NumPy 1.20)
-      a = dev.tensor(np.random.uniform(size=1024).astype(A.dtype))
     /workspace/docs/how_to/tutorials/cross_compilation_and_rpc.py:186: DeprecationWarning: in the future the `.dtype` attribute of a given datatype object must be a valid dtype instance. `data_type.dtype` may need to be coerced using `np.dtype(data_type.dtype)`. (Deprecated NumPy 1.20)
+      a = dev.tensor(np.random.uniform(size=1024).astype(A.dtype))
+    /workspace/docs/how_to/tutorials/cross_compilation_and_rpc.py:187: DeprecationWarning: in the future the `.dtype` attribute of a given datatype object must be a valid dtype instance. `data_type.dtype` may need to be coerced using `np.dtype(data_type.dtype)`. (Deprecated NumPy 1.20)
       b = dev.tensor(np.zeros(1024, dtype=A.dtype))
 
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 192-197
+.. GENERATED FROM PYTHON SOURCE LINES 193-198
 
 When you want to evaluate the performance of the kernel on the remote
 device, it is important to avoid the overhead of network.
@@ -258,7 +259,7 @@ device, it is important to avoid the overhead of network.
 function over number times, measures the cost per run on the remote
 device and returns the measured cost. Network overhead is excluded.
 
-.. GENERATED FROM PYTHON SOURCE LINES 197-202
+.. GENERATED FROM PYTHON SOURCE LINES 198-203
 
 .. code-block:: Python
 
@@ -275,12 +276,12 @@ device and returns the measured cost. Network overhead is excluded.
 
  .. code-block:: none
 
-    1.08e-07 secs/op
+    1.1e-07 secs/op
 
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 203-412
+.. GENERATED FROM PYTHON SOURCE LINES 204-413
 
 Scale RPC to Shared Devices
 ---------------------------
@@ -492,7 +493,7 @@ You can define the kernel, upload files, and run via RPC.
 
 The following function shows how we run an OpenCL kernel remotely
 
-.. GENERATED FROM PYTHON SOURCE LINES 412-447
+.. GENERATED FROM PYTHON SOURCE LINES 413-448
 
 .. code-block:: Python
 
@@ -503,10 +504,10 @@ The following function shows how we run an OpenCL kernel remotely
         # them according to your environment.
         opencl_device_host = "10.77.1.145"
         opencl_device_port = 9090
-        target = tvm.target.Target("opencl", host={"kind": "llvm", "mtriple": "aarch64-linux-gnu"})
+        target = tvm_tirx.target.Target("opencl", host={"kind": "llvm", "mtriple": "aarch64-linux-gnu"})
 
         # create schedule for the above "add one" compute declaration
-        mod = tvm.IRModule.from_expr(te.create_function([A, B]))
+        mod = tvm_tirx.IRModule.from_expr(te.create_function([A, B]))
         sch = tvm.s_tir.Schedule(mod)
         (x,) = sch.get_loops(block=sch.get_sblock("B"))
         xo, xi = sch.split(x, [None, 32])
@@ -538,7 +539,7 @@ The following function shows how we run an OpenCL kernel remotely
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 448-473
+.. GENERATED FROM PYTHON SOURCE LINES 449-474
 
 Deploy PyTorch Models to Remote Devices with RPC
 ------------------------------------------------
@@ -566,7 +567,7 @@ This workflow is applicable to various deployment scenarios:
    for ONNX models. Simply replace ``from_exported_program()`` with
    ``from_onnx(model, keep_params_in_input=True)`` and follow the same steps.
 
-.. GENERATED FROM PYTHON SOURCE LINES 473-754
+.. GENERATED FROM PYTHON SOURCE LINES 474-755
 
 .. code-block:: Python
 
@@ -638,7 +639,7 @@ This workflow is applicable to various deployment scenarios:
 
         if local_demo:
             # For demonstration on local machine, use local target
-            target = tvm.target.Target("llvm")
+            target = tvm_tirx.target.Target("llvm")
             print("Using local target for demonstration")
         else:
             # Choose the appropriate target for your device:
@@ -660,7 +661,7 @@ This workflow is applicable to various deployment scenarios:
             #   - OpenCL: tvm.target.Target("opencl", host={"kind": "llvm", "mtriple": "aarch64-linux-gnu"})
             #
             # For this example, we use ARM 64-bit
-            target = tvm.target.Target({"kind": "llvm", "mtriple": "aarch64-linux-gnu"})
+            target = tvm_tirx.target.Target({"kind": "llvm", "mtriple": "aarch64-linux-gnu"})
             print(f"Cross-compiling for target: {target}")
 
         # Apply optimization pipeline
@@ -864,8 +865,8 @@ This workflow is applicable to various deployment scenarios:
     Converted PyTorch model to Relax:
       - Number of parameters: 4
     Using local target for demonstration
-    Exported library to: /tmp/tmpp2ik0f62/model_deployed.so
-    Saved parameters to: /tmp/tmpp2ik0f62/model_params.npz
+    Exported library to: /tmp/tmpmeq81etu/model_deployed.so
+    Saved parameters to: /tmp/tmpmeq81etu/model_params.npz
 
     RPC workflow (works for any remote device):
     ==================================================
@@ -895,7 +896,7 @@ This workflow is applicable to various deployment scenarios:
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 755-787
+.. GENERATED FROM PYTHON SOURCE LINES 756-788
 
 Summary
 -------

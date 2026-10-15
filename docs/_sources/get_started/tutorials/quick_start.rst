@@ -79,12 +79,13 @@ In this tutorial, to make things simple, we will define a two-layer MLP network
 directly in this script with the TVM Relax frontend, which is a similar API to PyTorch.
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 81-101
+.. GENERATED FROM PYTHON SOURCE LINES 81-102
 
 .. code-block:: Python
 
 
     import tvm
+    import tvm_tirx
     from tvm import relax
     from tvm.relax.frontend import nn
 
@@ -110,12 +111,12 @@ directly in this script with the TVM Relax frontend, which is a similar API to P
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 102-104
+.. GENERATED FROM PYTHON SOURCE LINES 103-105
 
 Then we can export the model to TVM IRModule, which is the central intermediate representation
 in TVM.
 
-.. GENERATED FROM PYTHON SOURCE LINES 104-110
+.. GENERATED FROM PYTHON SOURCE LINES 105-111
 
 .. code-block:: Python
 
@@ -135,8 +136,8 @@ in TVM.
 
     from __future__ import annotations
 
-    # from tvm.script import relax as R
-    # from tvm.script import tirx as T
+    # from tvm.relax import script as R
+    # from tvm_tirx.script import tirx as T
 
     @T.ir_module
     class Module:
@@ -159,7 +160,7 @@ in TVM.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 111-127
+.. GENERATED FROM PYTHON SOURCE LINES 112-128
 
 Perform Optimization Transformations
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -178,7 +179,7 @@ The pipeline encapsulates a collection of transformation that gets two goals (at
   In this tutorial we only demonstrate the overall flow, by leverage ``zero`` optimization
   pipeline, instead of optimizing for any specific target.
 
-.. GENERATED FROM PYTHON SOURCE LINES 127-131
+.. GENERATED FROM PYTHON SOURCE LINES 128-132
 
 .. code-block:: Python
 
@@ -193,14 +194,14 @@ The pipeline encapsulates a collection of transformation that gets two goals (at
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 132-136
+.. GENERATED FROM PYTHON SOURCE LINES 133-137
 
 Build and Universal Deployment
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 After the optimization, we can build the model to a deployable module and run it on
 different devices.
 
-.. GENERATED FROM PYTHON SOURCE LINES 136-150
+.. GENERATED FROM PYTHON SOURCE LINES 137-151
 
 .. code-block:: Python
 
@@ -208,14 +209,14 @@ different devices.
 
     import numpy as np
 
-    target = tvm.target.Target("llvm")
+    target = tvm_tirx.target.Target("llvm")
     ex = tvm.compile(mod, target)
-    device = tvm.cpu()
+    device = tvm_tirx.cpu()
     vm = relax.VirtualMachine(ex, device)
     data = np.random.rand(1, 784).astype("float32")
-    tvm_data = tvm.runtime.tensor(data, device=device)
+    tvm_data = tvm_tirx.runtime.tensor(data, device=device)
     params = [np.random.rand(*param.shape).astype("float32") for _, param in param_spec]
-    params = [tvm.runtime.tensor(param, device=device) for param in params]
+    params = [tvm_tirx.runtime.tensor(param, device=device) for param in params]
     print(vm["forward"](tvm_data, *params).numpy())
 
 
@@ -226,13 +227,13 @@ different devices.
 
  .. code-block:: none
 
-    [[24124.229 26801.94  25229.43  24810.3   24505.158 24771.416 23519.678
-      25411.914 24254.488 24859.734]]
+    [[23874.91  24820.176 24708.54  25234.412 26213.084 24842.447 25049.85
+      23938.783 27048.219 27234.031]]
 
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 151-188
+.. GENERATED FROM PYTHON SOURCE LINES 152-189
 
 Our goal is to bring machine learning to the application with any language of interest,
 with the minimum runtime support.
@@ -272,7 +273,7 @@ with the minimum runtime support.
       Tensor out = vm.getFunction("prefill").pushArg(data).pushArg(weight).pushArg(kv_cache).invoke();
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 190-195
+.. GENERATED FROM PYTHON SOURCE LINES 191-196
 
 Read next
 ---------

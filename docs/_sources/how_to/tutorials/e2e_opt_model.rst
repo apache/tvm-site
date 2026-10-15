@@ -54,7 +54,7 @@ PyTorch.
  .. code-block:: none
 
     Downloading: "https://download.pytorch.org/models/resnet18-f37072fd.pth" to /workspace/.cache/torch/hub/checkpoints/resnet18-f37072fd.pth
-      0%|          | 0.00/44.7M [00:00<?, ?B/s]     56%|█████▋    | 25.1M/44.7M [00:00<00:00, 263MB/s]    100%|██████████| 44.7M/44.7M [00:00<00:00, 306MB/s]
+      0%|          | 0.00/44.7M [00:00<?, ?B/s]     68%|██████▊   | 30.2M/44.7M [00:00<00:00, 316MB/s]    100%|██████████| 44.7M/44.7M [00:00<00:00, 341MB/s]
 
 
 
@@ -86,12 +86,13 @@ Convert the model to IRModule
 Next step, we convert the model to an IRModule using the Relax frontend for PyTorch for further
 optimization.
 
-.. GENERATED FROM PYTHON SOURCE LINES 69-89
+.. GENERATED FROM PYTHON SOURCE LINES 69-90
 
 .. code-block:: Python
 
 
     import tvm
+    import tvm_tirx
     from tvm import relax
     from tvm.relax.frontend.torch import from_exported_program
 
@@ -117,7 +118,7 @@ optimization.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 90-118
+.. GENERATED FROM PYTHON SOURCE LINES 91-119
 
 IRModule Optimization
 ---------------------
@@ -148,14 +149,14 @@ deployments requiring higher performance, we recommend adjusting both ``MAX_TRIA
 and ``TOTAL_TRIALS`` to larger values. This allows more extensive search space exploration
 and typically yields better performance outcomes.
 
-.. GENERATED FROM PYTHON SOURCE LINES 118-136
+.. GENERATED FROM PYTHON SOURCE LINES 119-137
 
 .. code-block:: Python
 
 
     TOTAL_TRIALS = 512  # Change to 20000 for better performance if needed
     MAX_TRIALS_PER_TASK = 16  # Change to more trials per task for better performance if needed
-    target = tvm.target.Target("nvidia/geforce-rtx-3090-ti")  # Change to your target device
+    target = tvm_tirx.target.Target("nvidia/geforce-rtx-3090-ti")  # Change to your target device
     work_dir = "tuning_logs"
 
     if not IS_IN_CI:
@@ -177,14 +178,14 @@ and typically yields better performance outcomes.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 137-141
+.. GENERATED FROM PYTHON SOURCE LINES 138-142
 
 Build and Deploy
 ----------------
 Finally, we build the optimized model and deploy it to the target device.
 We skip this step in the CI environment.
 
-.. GENERATED FROM PYTHON SOURCE LINES 141-154
+.. GENERATED FROM PYTHON SOURCE LINES 142-155
 
 .. code-block:: Python
 
@@ -193,11 +194,11 @@ We skip this step in the CI environment.
         with target:
             mod = tvm.s_tir.transform.DefaultGPUSchedule()(mod)
         ex = tvm.compile(mod, target=target)
-        dev = tvm.cuda(0)
+        dev = tvm_tirx.cuda(0)
         vm = relax.VirtualMachine(ex, dev)
         # Need to allocate data and params on GPU device
-        gpu_data = tvm.runtime.tensor(np.random.rand(1, 3, 224, 224).astype("float32"), dev)
-        gpu_params = [tvm.runtime.tensor(p, dev) for p in params["main"]]
+        gpu_data = tvm_tirx.runtime.tensor(np.random.rand(1, 3, 224, 224).astype("float32"), dev)
+        gpu_params = [tvm_tirx.runtime.tensor(p, dev) for p in params["main"]]
         gpu_out = vm["main"](gpu_data, *gpu_params)[0].numpy()
 
         print(gpu_out.shape)

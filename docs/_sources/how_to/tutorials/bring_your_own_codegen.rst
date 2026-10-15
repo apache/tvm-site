@@ -86,24 +86,24 @@ guard the build-and-run cells accordingly.
 
     import numpy as np
 
-    import tvm
-    import tvm.relax.backend.contrib.example_npu
+    import tvm.relax.backend.contrib.example_npu  # noqa: F401
+    import tvm_tirx
     from tvm import relax
+    from tvm.relax import script as R
     from tvm.relax.backend.contrib.tensorrt import partition_for_tensorrt
     from tvm.relax.backend.pattern_registry import get_patterns_with_prefix
     from tvm.relax.transform import FuseOpsByPattern, MergeCompositeFunctions, RunCodegen
-    from tvm.script import relax as R
 
-    has_example_npu_codegen = tvm.get_global_func("relax.ext.example_npu", True)
-    has_example_npu_runtime = tvm.get_global_func("runtime.ExampleNPUJSONRuntimeCreate", True)
+    has_example_npu_codegen = tvm_tirx.get_global_func("relax.ext.example_npu", True)
+    has_example_npu_runtime = tvm_tirx.get_global_func("runtime.ExampleNPUJSONRuntimeCreate", True)
     has_example_npu = has_example_npu_codegen and has_example_npu_runtime
 
-    has_tensorrt_codegen = tvm.get_global_func("relax.ext.tensorrt", True) is not None
-    _is_trt_runtime_enabled = tvm.get_global_func("relax.is_tensorrt_runtime_enabled", True)
+    has_tensorrt_codegen = tvm_tirx.get_global_func("relax.ext.tensorrt", True) is not None
+    _is_trt_runtime_enabled = tvm_tirx.get_global_func("relax.is_tensorrt_runtime_enabled", True)
     has_tensorrt = (
         has_tensorrt_codegen and _is_trt_runtime_enabled is not None and _is_trt_runtime_enabled()
     )
-    has_cuda = tvm.cuda(0).exist
+    has_cuda = tvm_tirx.cuda(0).exist
 
 
 
@@ -126,7 +126,7 @@ backends.
 
 
 
-    @tvm.script.ir_module
+    @tvm_tirx.script.ir_module
     class ConvReLU:
         @R.function
         def main(
@@ -192,8 +192,8 @@ printed module.
     After partitioning for the example NPU:
     from __future__ import annotations
 
-    # from tvm.script import relax as R
-    # from tvm.script import tirx as T
+    # from tvm.relax import script as R
+    # from tvm_tirx.script import tirx as T
 
     @T.ir_module
     class Module:
@@ -231,7 +231,7 @@ then compiles the remaining host-side program and links everything.  Because
 the runtime is a stub that computes nothing, we assert on the output *shape*
 only -- the values are uninitialized.
 
-.. GENERATED FROM PYTHON SOURCE LINES 161-181
+.. GENERATED FROM PYTHON SOURCE LINES 161-182
 
 .. code-block:: Python
 
@@ -243,12 +243,13 @@ only -- the values are uninitialized.
     if has_example_npu:
         npu_mod = RunCodegen()(npu_mod)
 
-        with tvm.ir.transform.PassContext(opt_level=3):
-            npu_exec = relax.build(npu_mod, tvm.target.Target("llvm"))
+        with tvm_tirx.ir.transform.PassContext(opt_level=3):
+            npu_exec = relax.build(npu_mod, tvm_tirx.target.Target("llvm"))
 
-        npu_vm = relax.VirtualMachine(npu_exec, tvm.cpu())
+        npu_vm = relax.VirtualMachine(npu_exec, tvm_tirx.cpu())
         npu_out = npu_vm["main"](
-            tvm.runtime.tensor(data_np, tvm.cpu()), tvm.runtime.tensor(weight_np, tvm.cpu())
+            tvm_tirx.runtime.tensor(data_np, tvm_tirx.cpu()),
+            tvm_tirx.runtime.tensor(weight_np, tvm_tirx.cpu()),
         )
         assert npu_out.numpy().shape == (1, 16, 30, 30)
         print("Example NPU run completed. Output shape:", npu_out.numpy().shape)
@@ -268,7 +269,7 @@ only -- the values are uninitialized.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 182-199
+.. GENERATED FROM PYTHON SOURCE LINES 183-200
 
 The same flow on a real backend: TensorRT
 -----------------------------------------
@@ -288,7 +289,7 @@ differs for NVIDIA TensorRT:
 The build-and-run cells below execute only when TensorRT and CUDA are
 available. In CPU-only documentation builds, they produce no output.
 
-.. GENERATED FROM PYTHON SOURCE LINES 199-205
+.. GENERATED FROM PYTHON SOURCE LINES 200-206
 
 .. code-block:: Python
 
@@ -309,8 +310,8 @@ available. In CPU-only documentation builds, they produce no output.
     After partition_for_tensorrt:
     from __future__ import annotations
 
-    # from tvm.script import relax as R
-    # from tvm.script import tirx as T
+    # from tvm.relax import script as R
+    # from tvm_tirx.script import tirx as T
 
     @T.ir_module
     class Module:
@@ -349,27 +350,29 @@ available. In CPU-only documentation builds, they produce no output.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 206-207
+.. GENERATED FROM PYTHON SOURCE LINES 207-208
 
 Build for CUDA, run on the GPU, and compare against the CPU reference.
 
-.. GENERATED FROM PYTHON SOURCE LINES 207-225
+.. GENERATED FROM PYTHON SOURCE LINES 208-228
 
 .. code-block:: Python
 
 
     if has_tensorrt and has_cuda:
-        dev = tvm.cuda(0)
-        with tvm.ir.transform.PassContext(opt_level=3):
+        dev = tvm_tirx.cuda(0)
+        with tvm_tirx.ir.transform.PassContext(opt_level=3):
             trt_exec = relax.build(RunCodegen()(trt_mod), "cuda")
-        trt_out = relax.VirtualMachine(trt_exec, dev)["main"](tvm.runtime.tensor(data_np, dev)).numpy()
+        trt_out = relax.VirtualMachine(trt_exec, dev)["main"](
+            tvm_tirx.runtime.tensor(data_np, dev)
+        ).numpy()
 
         cpu_mod = relax.transform.LegalizeOps()(
             relax.transform.BindParams("main", {"weight": weight_np})(ConvReLU)
         )
         cpu_exec = relax.build(cpu_mod, "llvm")
-        cpu_out = relax.VirtualMachine(cpu_exec, tvm.cpu())["main"](
-            tvm.runtime.tensor(data_np, tvm.cpu())
+        cpu_out = relax.VirtualMachine(cpu_exec, tvm_tirx.cpu())["main"](
+            tvm_tirx.runtime.tensor(data_np, tvm_tirx.cpu())
         ).numpy()
 
         np.testing.assert_allclose(trt_out, cpu_out, rtol=1e-2, atol=1e-2)
@@ -382,7 +385,7 @@ Build for CUDA, run on the GPU, and compare against the CPU reference.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 226-233
+.. GENERATED FROM PYTHON SOURCE LINES 229-236
 
 A real backend also exposes knobs the stub does not.  Setting ``use_fp16``
 through the ``relax.ext.tensorrt.options`` config lets TensorRT pick FP16
@@ -392,7 +395,7 @@ enables INT8 with calibration, ``TVM_TENSORRT_MAX_WORKSPACE_SIZE`` caps the
 build workspace, and ``TVM_TENSORRT_CACHE_DIR`` caches built engines to disk
 for reuse across runs.)
 
-.. GENERATED FROM PYTHON SOURCE LINES 233-249
+.. GENERATED FROM PYTHON SOURCE LINES 236-252
 
 .. code-block:: Python
 
@@ -401,12 +404,12 @@ for reuse across runs.)
         fp16_mod = partition_for_tensorrt(
             relax.transform.BindParams("main", {"weight": weight_np})(ConvReLU)
         )
-        with tvm.ir.transform.PassContext(
+        with tvm_tirx.ir.transform.PassContext(
             opt_level=3, config={"relax.ext.tensorrt.options": {"use_fp16": True}}
         ):
             fp16_exec = relax.build(RunCodegen()(fp16_mod), "cuda")
-        fp16_out = relax.VirtualMachine(fp16_exec, tvm.cuda(0))["main"](
-            tvm.runtime.tensor(data_np, tvm.cuda(0))
+        fp16_out = relax.VirtualMachine(fp16_exec, tvm_tirx.cuda(0))["main"](
+            tvm_tirx.runtime.tensor(data_np, tvm_tirx.cuda(0))
         ).numpy()
 
         np.testing.assert_allclose(fp16_out, cpu_out, rtol=5e-2, atol=5e-2)
@@ -419,7 +422,7 @@ for reuse across runs.)
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 250-263
+.. GENERATED FROM PYTHON SOURCE LINES 253-266
 
 Example NPU vs TensorRT at a glance
 -----------------------------------
@@ -435,7 +438,7 @@ Weights    ``bind_constants=False``        ``bind_constants=True`` (baked in)
 Partition  two passes, by hand             ``partition_for_tensorrt`` one call
 =========  ==============================  ==================================
 
-.. GENERATED FROM PYTHON SOURCE LINES 265-279
+.. GENERATED FROM PYTHON SOURCE LINES 268-282
 
 Deploying a PyTorch model with TensorRT
 ---------------------------------------
@@ -452,7 +455,7 @@ partition-build-run flow is otherwise unchanged.
 
 This section additionally requires PyTorch.
 
-.. GENERATED FROM PYTHON SOURCE LINES 279-325
+.. GENERATED FROM PYTHON SOURCE LINES 282-328
 
 .. code-block:: Python
 
@@ -492,11 +495,11 @@ This section additionally requires PyTorch.
         print("After importing and partitioning the PyTorch model:")
         print(torch_mod)
 
-        torch_dev = tvm.cuda(0)
-        with tvm.ir.transform.PassContext(opt_level=3):
+        torch_dev = tvm_tirx.cuda(0)
+        with tvm_tirx.ir.transform.PassContext(opt_level=3):
             torch_exec = relax.build(RunCodegen()(torch_mod), "cuda")
         deployed = relax.VirtualMachine(torch_exec, torch_dev)["main"](
-            tvm.runtime.tensor(example_input.numpy(), torch_dev)
+            tvm_tirx.runtime.tensor(example_input.numpy(), torch_dev)
         )[0].numpy()
 
         np.testing.assert_allclose(deployed, torch_ref, rtol=1e-2, atol=1e-2)
@@ -509,13 +512,13 @@ This section additionally requires PyTorch.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 326-329
+.. GENERATED FROM PYTHON SOURCE LINES 329-332
 
 Real deployment builds once and reuses the artifact.  Export the compiled
 module to a shared library, then load and run it later -- in a fresh process,
 with no PyTorch and no rebuild needed.
 
-.. GENERATED FROM PYTHON SOURCE LINES 329-341
+.. GENERATED FROM PYTHON SOURCE LINES 332-344
 
 .. code-block:: Python
 
@@ -524,9 +527,9 @@ with no PyTorch and no rebuild needed.
         with tempfile.TemporaryDirectory() as tmpdir:
             lib_path = os.path.join(tmpdir, "deployed_trt.so")
             torch_exec.export_library(lib_path)
-            loaded = tvm.runtime.load_module(lib_path)
+            loaded = tvm_tirx.runtime.load_module(lib_path)
             reran = relax.VirtualMachine(loaded, torch_dev)["main"](
-                tvm.runtime.tensor(example_input.numpy(), torch_dev)
+                tvm_tirx.runtime.tensor(example_input.numpy(), torch_dev)
             )[0].numpy()
             np.testing.assert_allclose(reran, torch_ref, rtol=1e-2, atol=1e-2)
             print("Reloaded the exported library and reran; output", reran.shape, "still matches.")
@@ -538,7 +541,7 @@ with no PyTorch and no rebuild needed.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 342-355
+.. GENERATED FROM PYTHON SOURCE LINES 345-358
 
 Notes for real deployments
 --------------------------
@@ -554,7 +557,7 @@ Notes for real deployments
   is not a hang).  Set ``TVM_TENSORRT_CACHE_DIR`` to cache built engines to
   disk and skip the rebuild on later runs.
 
-.. GENERATED FROM PYTHON SOURCE LINES 357-376
+.. GENERATED FROM PYTHON SOURCE LINES 360-379
 
 Next steps
 ----------

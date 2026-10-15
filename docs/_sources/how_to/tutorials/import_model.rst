@@ -48,7 +48,7 @@ TVM's PyTorch frontend is the most feature-complete. The recommended entry point
 We start by defining a small CNN model for demonstration. No pretrained weights are
 needed — we only care about the graph structure.
 
-.. GENERATED FROM PYTHON SOURCE LINES 51-80
+.. GENERATED FROM PYTHON SOURCE LINES 51-81
 
 .. code-block:: Python
 
@@ -59,6 +59,7 @@ needed — we only care about the graph structure.
     from torch.export import export
 
     import tvm
+    import tvm_tirx
     from tvm import relax
     from tvm.relax.frontend.torch import from_exported_program
 
@@ -88,14 +89,14 @@ needed — we only care about the graph structure.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 81-85
+.. GENERATED FROM PYTHON SOURCE LINES 82-86
 
 Basic import
 ~~~~~~~~~~~~
 The standard workflow is: ``torch.export.export()`` → ``from_exported_program()`` →
 ``detach_params()``.
 
-.. GENERATED FROM PYTHON SOURCE LINES 85-97
+.. GENERATED FROM PYTHON SOURCE LINES 86-98
 
 .. code-block:: Python
 
@@ -123,8 +124,8 @@ The standard workflow is: ``torch.export.export()`` → ``from_exported_program(
       return cls.__new__(cls, *args)
     from __future__ import annotations
 
-    # from tvm.script import relax as R
-    # from tvm.script import tirx as T
+    # from tvm.relax import script as R
+    # from tvm_tirx.script import tirx as T
 
     @T.ir_module
     class Module:
@@ -153,7 +154,7 @@ The standard workflow is: ``torch.export.export()`` → ``from_exported_program(
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 98-116
+.. GENERATED FROM PYTHON SOURCE LINES 99-117
 
 Key parameters
 ~~~~~~~~~~~~~~
@@ -174,7 +175,7 @@ translated:
   lower-level primitives, which generally improves TVM's coverage and optimization
   opportunities. Set ``False`` if you want to preserve the original op granularity.
 
-.. GENERATED FROM PYTHON SOURCE LINES 118-137
+.. GENERATED FROM PYTHON SOURCE LINES 119-138
 
 Handling unsupported operators with ``custom_convert_map``
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -196,7 +197,7 @@ A custom converter function receives two arguments:
 The function must return a ``relax.Var`` — the Relax expression for this node's output.
 Here is an example that maps an operator to ``relax.op.sigmoid``:
 
-.. GENERATED FROM PYTHON SOURCE LINES 137-147
+.. GENERATED FROM PYTHON SOURCE LINES 138-148
 
 .. code-block:: Python
 
@@ -217,7 +218,7 @@ Here is an example that maps an operator to ``relax.op.sigmoid``:
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 148-164
+.. GENERATED FROM PYTHON SOURCE LINES 149-165
 
 To use the custom converter, pass it via the ``custom_convert_map`` parameter. The key
 is the ATen operator name in ``"op_name.variant"`` format (e.g., ``"sigmoid.default"``):
@@ -236,7 +237,7 @@ is the ATen operator name in ``"op_name.variant"`` format (e.g., ``"sigmoid.defa
    program's graph via ``print(exported_program.graph_module.graph)`` to see all operator
    names.
 
-.. GENERATED FROM PYTHON SOURCE LINES 166-183
+.. GENERATED FROM PYTHON SOURCE LINES 167-184
 
 Alternative PyTorch import methods
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -256,7 +257,7 @@ Besides ``from_exported_program``, TVM also provides:
 
 For most use cases, ``from_exported_program`` is the recommended path.
 
-.. GENERATED FROM PYTHON SOURCE LINES 185-191
+.. GENERATED FROM PYTHON SOURCE LINES 186-192
 
 Verifying the imported model
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -265,20 +266,20 @@ original framework. We compile with the minimal ``"zero"`` pipeline (no tuning) 
 compare. The same approach applies to models imported via the ONNX and TFLite frontends
 shown below.
 
-.. GENERATED FROM PYTHON SOURCE LINES 191-210
+.. GENERATED FROM PYTHON SOURCE LINES 192-211
 
 .. code-block:: Python
 
 
     mod_compiled = relax.get_pipeline("zero")(mod)
     exec_module = tvm.compile(mod_compiled, target="llvm")
-    dev = tvm.cpu()
+    dev = tvm_tirx.cpu()
     vm = relax.VirtualMachine(exec_module, dev)
 
     # Run inference
     input_data = np.random.rand(1, 3, 32, 32).astype("float32")
-    tvm_input = tvm.runtime.tensor(input_data, dev)
-    tvm_params = [tvm.runtime.tensor(p, dev) for p in params["main"]]
+    tvm_input = tvm_tirx.runtime.tensor(input_data, dev)
+    tvm_params = [tvm_tirx.runtime.tensor(p, dev) for p in params["main"]]
     tvm_out = vm["main"](tvm_input, *tvm_params).numpy()
 
     # Compare with PyTorch
@@ -301,7 +302,7 @@ shown below.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 211-218
+.. GENERATED FROM PYTHON SOURCE LINES 212-219
 
 Importing from ONNX
 --------------------
@@ -311,7 +312,7 @@ function accepts an ``onnx.ModelProto`` object, so you need to load the model wi
 
 Here we export the same CNN model to ONNX format and then import it into TVM.
 
-.. GENERATED FROM PYTHON SOURCE LINES 218-242
+.. GENERATED FROM PYTHON SOURCE LINES 219-243
 
 .. code-block:: Python
 
@@ -346,7 +347,7 @@ Here we export the same CNN model to ONNX format and then import it into TVM.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 243-253
+.. GENERATED FROM PYTHON SOURCE LINES 244-254
 
 If you already have an ``.onnx`` file on disk, the workflow is even simpler:
 
@@ -359,7 +360,7 @@ If you already have an ``.onnx`` file on disk, the workflow is even simpler:
    mod = from_onnx(onnx_model)
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 255-279
+.. GENERATED FROM PYTHON SOURCE LINES 256-280
 
 Key parameters
 ~~~~~~~~~~~~~~
@@ -386,7 +387,7 @@ Key parameters
   selects the appropriate implementation automatically. You rarely need to set this
   unless the model metadata is incorrect.
 
-.. GENERATED FROM PYTHON SOURCE LINES 281-294
+.. GENERATED FROM PYTHON SOURCE LINES 282-295
 
 Importing from TensorFlow Lite
 -------------------------------
@@ -402,7 +403,7 @@ TVM can import TFLite flat buffer models via
 
 Below we create a minimal TFLite model from TensorFlow and import it.
 
-.. GENERATED FROM PYTHON SOURCE LINES 294-334
+.. GENERATED FROM PYTHON SOURCE LINES 295-335
 
 .. code-block:: Python
 
@@ -456,8 +457,8 @@ Below we create a minimal TFLite model from TensorFlow and import it.
 
     from __future__ import annotations
 
-    # from tvm.script import relax as R
-    # from tvm.script import tirx as T
+    # from tvm.relax import script as R
+    # from tvm_tirx.script import tirx as T
 
     @T.ir_module
     class Module:
@@ -478,7 +479,7 @@ Below we create a minimal TFLite model from TensorFlow and import it.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 335-353
+.. GENERATED FROM PYTHON SOURCE LINES 336-354
 
 Loading from a ``.tflite`` file
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -499,7 +500,7 @@ If you already have a ``.tflite`` file on disk, load the raw bytes and parse the
        tflite_model = tflite.Model.GetRootAsModel(tflite_buf, 0)
    mod = from_tflite(tflite_model)
 
-.. GENERATED FROM PYTHON SOURCE LINES 355-378
+.. GENERATED FROM PYTHON SOURCE LINES 356-379
 
 Key parameters
 ~~~~~~~~~~~~~~
@@ -525,7 +526,7 @@ Key parameters
 
      mod = from_tflite(tflite_model, op_converter=MyConverter)
 
-.. GENERATED FROM PYTHON SOURCE LINES 380-408
+.. GENERATED FROM PYTHON SOURCE LINES 381-409
 
 Summary
 -------

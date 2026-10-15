@@ -48,7 +48,7 @@ The overall flow consists of the following steps:
   universal runtime, and execute it on different devices, such as CPU, GPU, or other accelerators.
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 51-61
+.. GENERATED FROM PYTHON SOURCE LINES 51-63
 
 .. code-block:: Python
 
@@ -59,8 +59,10 @@ The overall flow consists of the following steps:
     import numpy as np
 
     import tvm
-    from tvm import IRModule, relax
+    import tvm_tirx
+    from tvm import relax
     from tvm.relax.frontend import nn
+    from tvm_tirx import IRModule
 
 
 
@@ -69,7 +71,7 @@ The overall flow consists of the following steps:
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 62-69
+.. GENERATED FROM PYTHON SOURCE LINES 64-71
 
 Composable IRModule Optimization
 --------------------------------
@@ -79,14 +81,14 @@ can focus on **part of the computation graph**, enabling partial lowering or par
 
 In this tutorial, we will demonstrate how to optimize a model with Apache TVM.
 
-.. GENERATED FROM PYTHON SOURCE LINES 71-75
+.. GENERATED FROM PYTHON SOURCE LINES 73-77
 
 Prepare a Relax Module
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 We first prepare a Relax module. The module can be imported from other frameworks, constructed
 with NN module frontend or TVMScript. Here we use a simple neural network model as an example.
 
-.. GENERATED FROM PYTHON SOURCE LINES 75-95
+.. GENERATED FROM PYTHON SOURCE LINES 77-97
 
 .. code-block:: Python
 
@@ -120,8 +122,8 @@ with NN module frontend or TVMScript. Here we use a simple neural network model 
 
     from __future__ import annotations
 
-    # from tvm.script import relax as R
-    # from tvm.script import tirx as T
+    # from tvm.relax import script as R
+    # from tvm_tirx.script import tirx as T
 
     @T.ir_module
     class Module:
@@ -143,7 +145,7 @@ with NN module frontend or TVMScript. Here we use a simple neural network model 
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 96-106
+.. GENERATED FROM PYTHON SOURCE LINES 98-108
 
 Library Dispatch
 ~~~~~~~~~~~~~~~~
@@ -156,7 +158,7 @@ operator. Here we demonstrate how to dispatch the CUBLAS library for certain pat
   the flexibility of the optimization pipeline. In real-world cases, we can import multiple
   patterns and dispatch them to different kernels.
 
-.. GENERATED FROM PYTHON SOURCE LINES 106-143
+.. GENERATED FROM PYTHON SOURCE LINES 108-145
 
 .. code-block:: Python
 
@@ -176,11 +178,11 @@ operator. Here we demonstrate how to dispatch the CUBLAS library for certain pat
 
 
     # Define a new pass for CUBLAS dispatch
-    @tvm.ir.transform.module_pass(opt_level=0, name="CublasDispatch")
+    @tvm_tirx.ir.transform.module_pass(opt_level=0, name="CublasDispatch")
     class CublasDispatch:
-        def transform_module(self, mod: IRModule, _ctx: tvm.ir.transform.PassContext) -> IRModule:
+        def transform_module(self, mod: IRModule, _ctx: tvm_tirx.ir.transform.PassContext) -> IRModule:
             # Check if CUBLAS is enabled
-            if not tvm.get_global_func("relax.ext.cublas", True):
+            if not tvm_tirx.get_global_func("relax.ext.cublas", True):
                 raise Exception("CUBLAS is not enabled.")
 
             # Get interested patterns
@@ -207,8 +209,8 @@ operator. Here we demonstrate how to dispatch the CUBLAS library for certain pat
 
     from __future__ import annotations
 
-    # from tvm.script import relax as R
-    # from tvm.script import tirx as T
+    # from tvm.relax import script as R
+    # from tvm_tirx.script import tirx as T
 
     @T.ir_module
     class Module:
@@ -230,14 +232,14 @@ operator. Here we demonstrate how to dispatch the CUBLAS library for certain pat
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 144-148
+.. GENERATED FROM PYTHON SOURCE LINES 146-150
 
 After the dispatching pass, we can see that the first ``nn.Linear`` and ``nn.ReLU`` are fused
 and rewritten to a ``call_dps_packed`` function which call the CUBLAS library. Notably, the
 other part is not changed, which means we can selectively dispatch the optimization for
 certain computation.
 
-.. GENERATED FROM PYTHON SOURCE LINES 150-165
+.. GENERATED FROM PYTHON SOURCE LINES 152-167
 
 Auto Tuning
 ~~~~~~~~~~~
@@ -255,17 +257,17 @@ running the passes, we need to lowering relax operator into TensorIR functions v
   To save CI time and avoid flakiness, we skip the tuning process in CI environment.
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 165-181
+.. GENERATED FROM PYTHON SOURCE LINES 167-183
 
 .. code-block:: Python
 
 
-    device = tvm.cuda(0)
-    target = tvm.target.Target.from_device(device)
+    device = tvm_tirx.cuda(0)
+    target = tvm_tirx.target.Target.from_device(device)
     if os.getenv("CI", "") != "true":
         trials = 2000
         with target, tempfile.TemporaryDirectory() as tmp_dir:
-            mod = tvm.ir.transform.Sequential(
+            mod = tvm_tirx.ir.transform.Sequential(
                 [
                     relax.get_pipeline("zero"),
                     relax.transform.MetaScheduleTuneTIR(work_dir=tmp_dir, max_trials_global=trials),
@@ -282,7 +284,7 @@ running the passes, we need to lowering relax operator into TensorIR functions v
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 182-188
+.. GENERATED FROM PYTHON SOURCE LINES 184-190
 
 DLight Rules
 ~~~~~~~~~~~~
@@ -291,7 +293,7 @@ DLight rules are designed for fast compilation and **fair** performance. In some
 e.g. language model, DLight provides excellent performance, while for generic models,
 it achieves a balance between performance and compilation time.
 
-.. GENERATED FROM PYTHON SOURCE LINES 188-208
+.. GENERATED FROM PYTHON SOURCE LINES 190-210
 
 .. code-block:: Python
 
@@ -300,7 +302,7 @@ it achieves a balance between performance and compilation time.
 
     # Apply DLight rules
     with target:
-        mod = tvm.ir.transform.Sequential(
+        mod = tvm_tirx.ir.transform.Sequential(
             [
                 relax.get_pipeline("zero"),
                 dl.ApplyDefaultSchedule(  # pylint: disable=not-callable
@@ -325,9 +327,9 @@ it achieves a balance between performance and compilation time.
 
     from __future__ import annotations
 
-    # from tvm.script import relax as R
-    # from tvm.script import s_tir as Ts
-    # from tvm.script import tirx as T
+    # from tvm.relax import script as R
+    # from tvm.s_tir import script as Ts
+    # from tvm_tirx.script import tirx as T
 
     @T.ir_module
     class Module:
@@ -400,30 +402,32 @@ it achieves a balance between performance and compilation time.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 209-213
+.. GENERATED FROM PYTHON SOURCE LINES 211-215
 
 .. note::
 
   This tutorial focuses on the demonstration of the optimization pipeline, instead of
   pushing the performance to the limit. The current optimization may not be the best.
 
-.. GENERATED FROM PYTHON SOURCE LINES 216-219
+.. GENERATED FROM PYTHON SOURCE LINES 218-221
 
 Deploy the Optimized Model
 --------------------------
 We can build and deploy the optimized model to the TVM runtime.
 
-.. GENERATED FROM PYTHON SOURCE LINES 219-230
+.. GENERATED FROM PYTHON SOURCE LINES 221-234
 
 .. code-block:: Python
 
 
     ex = tvm.compile(mod, target="cuda")
-    dev = tvm.cuda(0)
+    dev = tvm_tirx.cuda(0)
     vm = relax.VirtualMachine(ex, dev)
     # Need to allocate data and params on GPU device
-    data = tvm.runtime.tensor(np.random.rand(*input_shape).astype("float32"), dev)
-    gpu_params = [tvm.runtime.tensor(np.random.rand(*p.shape).astype(p.dtype), dev) for _, p in params]
+    data = tvm_tirx.runtime.tensor(np.random.rand(*input_shape).astype("float32"), dev)
+    gpu_params = [
+        tvm_tirx.runtime.tensor(np.random.rand(*p.shape).astype(p.dtype), dev) for _, p in params
+    ]
     gpu_out = vm["forward"](data, *gpu_params).numpy()
     print(gpu_out)
 
@@ -442,7 +446,7 @@ We can build and deploy the optimized model to the TVM runtime.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 231-238
+.. GENERATED FROM PYTHON SOURCE LINES 235-242
 
 Summary
 -------

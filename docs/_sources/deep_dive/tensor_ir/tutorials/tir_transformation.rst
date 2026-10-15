@@ -35,15 +35,16 @@ the same functionality, and each implementation can result in different performa
 
 First, let's take a look at the implementation of ``mm_relu`` in the previous section:
 
-.. GENERATED FROM PYTHON SOURCE LINES 38-70
+.. GENERATED FROM PYTHON SOURCE LINES 38-71
 
 .. code-block:: Python
 
 
     import tvm
-    from tvm.script import ir as I
-    from tvm.script import s_tir as Ts
-    from tvm.script import tirx as T
+    import tvm_tirx
+    from tvm.s_tir import script as Ts
+    from tvm_tirx.script import ir as I
+    from tvm_tirx.script import tirx as T
 
 
     @I.ir_module
@@ -78,12 +79,12 @@ First, let's take a look at the implementation of ``mm_relu`` in the previous se
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 71-73
+.. GENERATED FROM PYTHON SOURCE LINES 72-74
 
 Before we transform the function, let's first evaluate the performance of the
 original implementation.
 
-.. GENERATED FROM PYTHON SOURCE LINES 73-97
+.. GENERATED FROM PYTHON SOURCE LINES 74-98
 
 .. code-block:: Python
 
@@ -94,18 +95,18 @@ original implementation.
     b_np = np.random.uniform(size=(128, 128)).astype("float32")
     c_np = a_np @ b_np
 
-    a_nd = tvm.runtime.tensor(a_np)
-    b_nd = tvm.runtime.tensor(b_np)
-    c_nd = tvm.runtime.tensor(np.zeros((128, 128), dtype="float32"))
+    a_nd = tvm_tirx.runtime.tensor(a_np)
+    b_nd = tvm_tirx.runtime.tensor(b_np)
+    c_nd = tvm_tirx.runtime.tensor(np.zeros((128, 128), dtype="float32"))
 
 
-    def evaluate(mod: tvm.IRModule):
-        lib = tvm.tirx.compile(mod, target="llvm").mod
+    def evaluate(mod: tvm_tirx.IRModule):
+        lib = tvm_tirx.tirx.compile(mod, target="llvm").mod
         # check correctness
         lib(a_nd, b_nd, c_nd)
         np.testing.assert_allclose(c_nd.numpy(), c_np, rtol=1e-5)
         # evaluate performance
-        f_timer = lib.time_evaluator("main", tvm.cpu())
+        f_timer = lib.time_evaluator("main", tvm_tirx.cpu())
         print(f_timer(a_nd, b_nd, c_nd))
 
 
@@ -121,19 +122,19 @@ original implementation.
 
     Execution time summary:
      mean (ms)   median (ms)    max (ms)     min (ms)     std (ms)  
-       2.7629       2.7629       2.7629       2.7629       0.0000                  
+       2.7498       2.7498       2.7498       2.7498       0.0000                  
 
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 98-102
+.. GENERATED FROM PYTHON SOURCE LINES 99-103
 
 Initialization Schedule
 ***********************
 We initiate the process of code transformation by establishing a Schedule helper class,
 utilizing the provided **MyModule** as input.
 
-.. GENERATED FROM PYTHON SOURCE LINES 102-105
+.. GENERATED FROM PYTHON SOURCE LINES 103-106
 
 .. code-block:: Python
 
@@ -147,14 +148,14 @@ utilizing the provided **MyModule** as input.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 106-110
+.. GENERATED FROM PYTHON SOURCE LINES 107-111
 
 Loop Tiling
 ***********
 Subsequently, we execute the requisite operations to acquire a reference to
 block **Y** and its associated loops.
 
-.. GENERATED FROM PYTHON SOURCE LINES 110-114
+.. GENERATED FROM PYTHON SOURCE LINES 111-115
 
 .. code-block:: Python
 
@@ -169,7 +170,7 @@ block **Y** and its associated loops.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 115-120
+.. GENERATED FROM PYTHON SOURCE LINES 116-121
 
 We now proceed to execute the transformations. The initial modification involves
 splitting loop ``j`` into two separate loops, with the inner loop possessing a
@@ -177,7 +178,7 @@ length of 8. It is crucial to understand that the transformation process is proc
 thus, inadvertent execution of the block twice will yield an error stating the
 non-existence of variable ``j``.
 
-.. GENERATED FROM PYTHON SOURCE LINES 120-123
+.. GENERATED FROM PYTHON SOURCE LINES 121-124
 
 .. code-block:: Python
 
@@ -191,11 +192,11 @@ non-existence of variable ``j``.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 124-125
+.. GENERATED FROM PYTHON SOURCE LINES 125-126
 
 The outcome of the transformation can be examined, as it is retained within ``sch.mod``.
 
-.. GENERATED FROM PYTHON SOURCE LINES 125-128
+.. GENERATED FROM PYTHON SOURCE LINES 126-129
 
 .. code-block:: Python
 
@@ -212,8 +213,8 @@ The outcome of the transformation can be examined, as it is retained within ``sc
 
     from __future__ import annotations
 
-    # from tvm.script import s_tir as Ts
-    # from tvm.script import tirx as T
+    # from tvm.s_tir import script as Ts
+    # from tvm_tirx.script import tirx as T
 
     @T.ir_module
     class Module:
@@ -250,13 +251,13 @@ The outcome of the transformation can be examined, as it is retained within ``sc
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 129-132
+.. GENERATED FROM PYTHON SOURCE LINES 130-133
 
 Following the initial transformation phase, two supplementary loops, ``j_0`` and ``j_1``,
 have been generated with respective ranges of 16 and 8. The subsequent
 action involves reordering these two loops.
 
-.. GENERATED FROM PYTHON SOURCE LINES 132-137
+.. GENERATED FROM PYTHON SOURCE LINES 133-138
 
 .. code-block:: Python
 
@@ -275,8 +276,8 @@ action involves reordering these two loops.
 
     from __future__ import annotations
 
-    # from tvm.script import s_tir as Ts
-    # from tvm.script import tirx as T
+    # from tvm.s_tir import script as Ts
+    # from tvm_tirx.script import tirx as T
 
     @T.ir_module
     class Module:
@@ -311,12 +312,12 @@ action involves reordering these two loops.
 
     Execution time summary:
      mean (ms)   median (ms)    max (ms)     min (ms)     std (ms)  
-       0.8661       0.8661       0.8661       0.8661       0.0000                  
+       0.8645       0.8645       0.8645       0.8645       0.0000                  
 
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 138-143
+.. GENERATED FROM PYTHON SOURCE LINES 139-144
 
 Leverage Localities
 *******************
@@ -324,7 +325,7 @@ Subsequently, we will execute two additional transformation steps to achieve a d
 variant. First, we employ a primitive known as **reverse_compute_at** to relocate block
 **C** to an inner loop of **Y**.
 
-.. GENERATED FROM PYTHON SOURCE LINES 143-148
+.. GENERATED FROM PYTHON SOURCE LINES 144-149
 
 .. code-block:: Python
 
@@ -343,8 +344,8 @@ variant. First, we employ a primitive known as **reverse_compute_at** to relocat
 
     from __future__ import annotations
 
-    # from tvm.script import s_tir as Ts
-    # from tvm.script import tirx as T
+    # from tvm.s_tir import script as Ts
+    # from tvm_tirx.script import tirx as T
 
     @T.ir_module
     class Module:
@@ -380,7 +381,7 @@ variant. First, we employ a primitive known as **reverse_compute_at** to relocat
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 149-158
+.. GENERATED FROM PYTHON SOURCE LINES 150-159
 
 Rewrite Reduction
 *****************
@@ -392,7 +393,7 @@ synchronized.
 Following the loop transformations, we can segregate the initialization of Y's elements
 from the reduction update via the **decompose_reduction** primitive.
 
-.. GENERATED FROM PYTHON SOURCE LINES 158-163
+.. GENERATED FROM PYTHON SOURCE LINES 159-164
 
 .. code-block:: Python
 
@@ -411,8 +412,8 @@ from the reduction update via the **decompose_reduction** primitive.
 
     from __future__ import annotations
 
-    # from tvm.script import s_tir as Ts
-    # from tvm.script import tirx as T
+    # from tvm.s_tir import script as Ts
+    # from tvm_tirx.script import tirx as T
 
     @T.ir_module
     class Module:
@@ -451,12 +452,12 @@ from the reduction update via the **decompose_reduction** primitive.
 
     Execution time summary:
      mean (ms)   median (ms)    max (ms)     min (ms)     std (ms)  
-       0.3404       0.3404       0.3404       0.3404       0.0000                  
+       0.3392       0.3392       0.3392       0.3392       0.0000                  
 
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 164-172
+.. GENERATED FROM PYTHON SOURCE LINES 165-173
 
 Trace the Transformation
 ************************
@@ -467,7 +468,7 @@ history of the schedule.
 We've already see the schedule by printing ``sch.mod``. We can also print the history
 of the schedule by ``sch.trace``.
 
-.. GENERATED FROM PYTHON SOURCE LINES 172-175
+.. GENERATED FROM PYTHON SOURCE LINES 173-176
 
 .. code-block:: Python
 
@@ -496,11 +497,11 @@ of the schedule by ``sch.trace``.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 176-177
+.. GENERATED FROM PYTHON SOURCE LINES 177-178
 
 Alternatively, we can output the IRModule in conjunction with the historical trace.
 
-.. GENERATED FROM PYTHON SOURCE LINES 177-179
+.. GENERATED FROM PYTHON SOURCE LINES 178-180
 
 .. code-block:: Python
 
@@ -516,8 +517,8 @@ Alternatively, we can output the IRModule in conjunction with the historical tra
 
     from __future__ import annotations
 
-    # from tvm.script import s_tir as Ts
-    # from tvm.script import tirx as T
+    # from tvm.s_tir import script as Ts
+    # from tvm_tirx.script import tirx as T
 
     @T.ir_module
     class Module:

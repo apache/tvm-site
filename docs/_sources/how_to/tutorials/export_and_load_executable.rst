@@ -74,7 +74,7 @@ We start with a small PyTorch MLP so the example remains lightweight. The
 model is exported to a :py:class:`torch.export.ExportedProgram` and then
 translated into a Relax ``IRModule``.
 
-.. GENERATED FROM PYTHON SOURCE LINES 64-111
+.. GENERATED FROM PYTHON SOURCE LINES 64-112
 
 .. code-block:: Python
 
@@ -82,6 +82,7 @@ translated into a Relax ``IRModule``.
     import tvm_ffi
 
     import tvm
+    import tvm_tirx
     from tvm import relax
     from tvm.relax.frontend.torch import from_exported_program
 
@@ -132,7 +133,7 @@ translated into a Relax ``IRModule``.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 112-117
+.. GENERATED FROM PYTHON SOURCE LINES 113-118
 
 Build and Export with ``export_library``
 -------------------------------------------
@@ -140,12 +141,12 @@ We build for ``llvm`` to generate CPU code and then export the resulting
 executable. Passing ``workspace_dir`` keeps the intermediate packaging files,
 which is useful to inspect what was produced.
 
-.. GENERATED FROM PYTHON SOURCE LINES 117-154
+.. GENERATED FROM PYTHON SOURCE LINES 118-155
 
 .. code-block:: Python
 
 
-    TARGET = tvm.target.Target("llvm")
+    TARGET = tvm_tirx.target.Target("llvm")
     ARTIFACT_DIR = Path("relax_export_artifacts")
     ARTIFACT_DIR.mkdir(exist_ok=True)
 
@@ -188,7 +189,7 @@ which is useful to inspect what was produced.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 155-160
+.. GENERATED FROM PYTHON SOURCE LINES 156-161
 
 Load the Exported Library and Run It
 ------------------------------------
@@ -196,22 +197,22 @@ Once the shared object is produced, we can reload it back into the TVM runtime
 on any machine with a compatible instruction set. The Relax VM consumes the
 runtime module directly.
 
-.. GENERATED FROM PYTHON SOURCE LINES 160-191
+.. GENERATED FROM PYTHON SOURCE LINES 161-192
 
 .. code-block:: Python
 
 
     if RUN_EXAMPLE:
-        loaded_rt_mod = tvm.runtime.load_module(str(library_path))
-        dev = tvm.cpu(0)
+        loaded_rt_mod = tvm_tirx.runtime.load_module(str(library_path))
+        dev = tvm_tirx.cpu(0)
         vm = relax.VirtualMachine(loaded_rt_mod, dev)
 
         # Prepare input data
         input_tensor = torch.randn(1, 1, 28, 28, dtype=torch.float32)
-        vm_input = tvm.runtime.tensor(input_tensor.numpy(), dev)
+        vm_input = tvm_tirx.runtime.tensor(input_tensor.numpy(), dev)
 
         # Prepare parameters (allocate on target device)
-        vm_params = [tvm.runtime.tensor(p, dev) for p in params["main"]]
+        vm_params = [tvm_tirx.runtime.tensor(p, dev) for p in params["main"]]
 
         # Run inference: pass input data followed by all parameters
         tvm_output = vm["main"](vm_input, *vm_params)
@@ -238,7 +239,7 @@ runtime module directly.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 192-197
+.. GENERATED FROM PYTHON SOURCE LINES 193-198
 
 Save Parameters for Deployment
 -------------------------------
@@ -246,7 +247,7 @@ Since parameters are passed at runtime (not embedded in the ``.so``), we must
 save them separately for deployment. This is a required step to use the model
 on other machines or in standalone scripts.
 
-.. GENERATED FROM PYTHON SOURCE LINES 197-224
+.. GENERATED FROM PYTHON SOURCE LINES 198-225
 
 .. code-block:: Python
 
@@ -284,7 +285,7 @@ on other machines or in standalone scripts.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 225-313
+.. GENERATED FROM PYTHON SOURCE LINES 226-314
 
 Loading and Running the Exported Model
 -----------------------------------------------------------
@@ -375,7 +376,7 @@ Adjust the paths as needed for your deployment. For GPU deployment, ensure the
 target machine has compatible CUDA drivers and the model was compiled for the
 same GPU architecture.
 
-.. GENERATED FROM PYTHON SOURCE LINES 316-361
+.. GENERATED FROM PYTHON SOURCE LINES 317-362
 
 Deploying to Remote Devices
 ---------------------------
@@ -423,7 +424,7 @@ Quick example for ARM deployment workflow:
 The key difference is using an ARM target triple during compilation and
 uploading files via RPC instead of copying them directly.
 
-.. GENERATED FROM PYTHON SOURCE LINES 364-385
+.. GENERATED FROM PYTHON SOURCE LINES 365-386
 
 FAQ
 ---

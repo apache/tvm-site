@@ -29,14 +29,16 @@ for optimizing and integrating with hardware backends.
 Let's first create a simple Relax program as what we have done in
 the :ref:`previous section <relax-creation>`.
 
-.. GENERATED FROM PYTHON SOURCE LINES 32-57
+.. GENERATED FROM PYTHON SOURCE LINES 32-59
 
 .. code-block:: Python
 
 
     import tvm
-    from tvm import IRModule, relax
+    import tvm_tirx
+    from tvm import relax
     from tvm.relax.frontend import nn
+    from tvm_tirx import IRModule
 
 
     class NNModule(nn.Module):
@@ -68,8 +70,8 @@ the :ref:`previous section <relax-creation>`.
 
     from __future__ import annotations
 
-    # from tvm.script import relax as R
-    # from tvm.script import tirx as T
+    # from tvm.relax import script as R
+    # from tvm_tirx.script import tirx as T
 
     n = T.dynamic("n", dtype="int64")
     @T.ir_module
@@ -93,7 +95,7 @@ the :ref:`previous section <relax-creation>`.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 58-64
+.. GENERATED FROM PYTHON SOURCE LINES 60-66
 
 Apply transformations
 ~~~~~~~~~~~~~~~~~~~~~
@@ -102,7 +104,7 @@ We can apply passes to the program. As first step, let's apply
 a built-in pass ``LegalizeOps`` to lower the high-level operators
 into low-level operators.
 
-.. GENERATED FROM PYTHON SOURCE LINES 64-68
+.. GENERATED FROM PYTHON SOURCE LINES 66-70
 
 .. code-block:: Python
 
@@ -120,9 +122,9 @@ into low-level operators.
 
     from __future__ import annotations
 
-    # from tvm.script import relax as R
-    # from tvm.script import s_tir as Ts
-    # from tvm.script import tirx as T
+    # from tvm.relax import script as R
+    # from tvm.s_tir import script as Ts
+    # from tvm_tirx.script import tirx as T
 
     n = T.dynamic("n", dtype="int64")
     n_1 = T.dynamic("n", dtype="int64")
@@ -264,7 +266,7 @@ into low-level operators.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 69-75
+.. GENERATED FROM PYTHON SOURCE LINES 71-77
 
 As we can see from the output, the high-level operators (aka ``relax.op``) in the program
 are replaced by their corresponding low-level operators (aka ``relax.call_tir``).
@@ -273,12 +275,12 @@ Then let's trying to apply the operator fusion, which is a wide-used optimizatio
 in ML compilers. Note that in relax, fusion optimizations are done with the collaboration of
 a set of passes. We can apply them in a sequence.
 
-.. GENERATED FROM PYTHON SOURCE LINES 75-85
+.. GENERATED FROM PYTHON SOURCE LINES 77-87
 
 .. code-block:: Python
 
 
-    mod = tvm.ir.transform.Sequential(
+    mod = tvm_tirx.ir.transform.Sequential(
         [
             tvm.relax.transform.AnnotateTIROpPattern(),
             tvm.relax.transform.FuseOps(),
@@ -297,9 +299,9 @@ a set of passes. We can apply them in a sequence.
 
     from __future__ import annotations
 
-    # from tvm.script import relax as R
-    # from tvm.script import s_tir as Ts
-    # from tvm.script import tirx as T
+    # from tvm.relax import script as R
+    # from tvm.s_tir import script as Ts
+    # from tvm_tirx.script import tirx as T
 
     n = T.dynamic("n", dtype="int64")
     n_1 = T.dynamic("n", dtype="int64")
@@ -416,7 +418,7 @@ a set of passes. We can apply them in a sequence.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 86-97
+.. GENERATED FROM PYTHON SOURCE LINES 88-99
 
 As result, we can see that the ``matmul``, ``add`` and ``relu`` operators are fused
 into one kernel (aka one ``call_tir``).
@@ -430,7 +432,7 @@ operator to ``gelu`` operator.
 
 First, we need to write a Relax IR Mutator to do the rewriting.
 
-.. GENERATED FROM PYTHON SOURCE LINES 97-114
+.. GENERATED FROM PYTHON SOURCE LINES 99-116
 
 .. code-block:: Python
 
@@ -458,19 +460,19 @@ First, we need to write a Relax IR Mutator to do the rewriting.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 115-116
+.. GENERATED FROM PYTHON SOURCE LINES 117-118
 
 Then we can write a pass to apply the mutator to the whole module.
 
-.. GENERATED FROM PYTHON SOURCE LINES 116-133
+.. GENERATED FROM PYTHON SOURCE LINES 118-135
 
 .. code-block:: Python
 
 
 
-    @tvm.ir.transform.module_pass(opt_level=0, name="ReluToGelu")
+    @tvm_tirx.ir.transform.module_pass(opt_level=0, name="ReluToGelu")
     class ReluToGelu:  # pylint: disable=too-few-public-methods
-        def transform_module(self, mod: IRModule, _ctx: tvm.ir.transform.PassContext) -> IRModule:
+        def transform_module(self, mod: IRModule, _ctx: tvm_tirx.ir.transform.PassContext) -> IRModule:
             """IRModule-level transformation"""
             rewriter = ReluRewriter(mod)
             for g_var, func in mod.functions_items():
@@ -493,8 +495,8 @@ Then we can write a pass to apply the mutator to the whole module.
 
     from __future__ import annotations
 
-    # from tvm.script import relax as R
-    # from tvm.script import tirx as T
+    # from tvm.relax import script as R
+    # from tvm_tirx.script import tirx as T
 
     n = T.dynamic("n", dtype="int64")
     @T.ir_module
@@ -518,7 +520,7 @@ Then we can write a pass to apply the mutator to the whole module.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 134-143
+.. GENERATED FROM PYTHON SOURCE LINES 136-145
 
 The printed output shows that the ``relax.nn.relu`` operator is
 rewritten to ``relax.nn.gelu`` operator.

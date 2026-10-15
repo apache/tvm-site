@@ -42,10 +42,10 @@ high-level Relax operators using TVMScript.
 
     from tvm import relax, topi
     from tvm.relax import ExternFunc as _ExternFunc
-    from tvm.script import ir as I
-    from tvm.script import relax as R
-    from tvm.script import s_tir as Ts
-    from tvm.script import tirx as T
+    from tvm.relax import script as R
+    from tvm.s_tir import script as Ts
+    from tvm_tirx.script import ir as I
+    from tvm_tirx.script import tirx as T
 
     n = T.dynamic("n", "int64")
 
@@ -80,8 +80,8 @@ high-level Relax operators using TVMScript.
 
     from __future__ import annotations
 
-    # from tvm.script import relax as R
-    # from tvm.script import tirx as T
+    # from tvm.relax import script as R
+    # from tvm_tirx.script import tirx as T
 
     n = T.dynamic("n", dtype="int64")
     @T.ir_module
@@ -156,9 +156,9 @@ TensorIR functions in Relax function.
 
     from __future__ import annotations
 
-    # from tvm.script import relax as R
-    # from tvm.script import s_tir as Ts
-    # from tvm.script import tirx as T
+    # from tvm.relax import script as R
+    # from tvm.s_tir import script as Ts
+    # from tvm_tirx.script import tirx as T
 
     n = T.dynamic("n", dtype="int64")
     m = T.dynamic("m", dtype="int64")
@@ -283,8 +283,8 @@ After we define the NNModule, we can export it to TVM IRModule via
 
     from __future__ import annotations
 
-    # from tvm.script import relax as R
-    # from tvm.script import tirx as T
+    # from tvm.relax import script as R
+    # from tvm_tirx.script import tirx as T
 
     n = T.dynamic("n", dtype="int64")
     @T.ir_module
@@ -383,9 +383,9 @@ Tensor Expression(TE), TensorIR functions or other TVM packed functions.
 
     from __future__ import annotations
 
-    # from tvm.script import relax as R
-    # from tvm.script import s_tir as Ts
-    # from tvm.script import tirx as T
+    # from tvm.relax import script as R
+    # from tvm.s_tir import script as Ts
+    # from tvm_tirx.script import tirx as T
 
     n = T.dynamic("n", dtype="int64")
     M = T.dynamic("M", dtype="int64")
@@ -493,8 +493,8 @@ customized pass.
 
     from __future__ import annotations
 
-    # from tvm.script import relax as R
-    # from tvm.script import tirx as T
+    # from tvm.relax import script as R
+    # from tvm_tirx.script import tirx as T
 
     n = T.dynamic("n", dtype="int64")
     @T.ir_module
@@ -561,9 +561,9 @@ Relax functions, TensorIR functions and other TVM packed functions.
 
     from __future__ import annotations
 
-    # from tvm.script import relax as R
-    # from tvm.script import s_tir as Ts
-    # from tvm.script import tirx as T
+    # from tvm.relax import script as R
+    # from tvm.s_tir import script as Ts
+    # from tvm_tirx.script import tirx as T
 
     n = T.dynamic("n", dtype="int64")
     M = T.dynamic("M", dtype="int64")
