@@ -79,8 +79,7 @@ var searchData=
   ['lowertirxcleanup_76',['LowerTIRxCleanup',['../namespacetvm_1_1tirx_1_1transform.html#ae69de42e04d582b06405493d25dc1cfb',1,'tvm::tirx::transform']]],
   ['lowertvmbuiltin_77',['LowerTVMBuiltin',['../namespacetvm_1_1tirx_1_1transform.html#a7472fc6c5a567e1152f58771313b5dfa',1,'tvm::tirx::transform']]],
   ['lowervtcmalloc_78',['LowerVtcmAlloc',['../namespacetvm_1_1s__tir_1_1transform.html#a18138c42b071a35675954ba008eb3fe5',1,'tvm::s_tir::transform']]],
-  ['lowerwarpmemory_79',['LowerWarpMemory',['../namespacetvm_1_1tirx_1_1transform.html#a29f5d6ec65de96d24040e8ac533c5f22',1,'tvm::tirx::transform']]],
-  ['lrn_80',['lrn',['../namespacetvm_1_1topi_1_1nn.html#ac3d8de9144f915a5dd27dcb70c0abdd4',1,'tvm::topi::nn']]],
-  ['lshift_81',['lshift',['../classtvm_1_1prim_1_1LShift.html#af227812a684d600e307383fa5278656b',1,'tvm::prim::LShift::LShift(PrimExpr a, PrimExpr b, Location loc=UnknownLoc())'],['../classtvm_1_1prim_1_1LShift.html#a95ef9e9d182af9317f392a28828e95bd',1,'tvm::prim::LShift::LShift(ffi::ObjectPtr&lt; LShiftNode &gt; node)']]],
-  ['lt_82',['lt',['../classtvm_1_1prim_1_1LT.html#ada8ef8e86ac3f1b13f95e15b5abaebd8',1,'tvm::prim::LT::LT(PrimExpr a, PrimExpr b, Location loc=UnknownLoc())'],['../classtvm_1_1prim_1_1LT.html#a91b5d0fb20264c98c45bd7bcd3262171',1,'tvm::prim::LT::LT(ffi::ObjectPtr&lt; LTNode &gt; node)']]]
+  ['lrn_79',['lrn',['../namespacetvm_1_1topi_1_1nn.html#ac3d8de9144f915a5dd27dcb70c0abdd4',1,'tvm::topi::nn']]],
+  ['lshift_80',['lshift',['../classtvm_1_1prim_1_1LShift.html#af227812a684d600e307383fa5278656b',1,'tvm::prim::LShift::LShift(PrimExpr a, PrimExpr b, Location loc=UnknownLoc())'],['../classtvm_1_1prim_1_1LShift.html#a95ef9e9d182af9317f392a28828e95bd',1,'tvm::prim::LShift::LShift(ffi::ObjectPtr&lt; LShiftNode &gt; node)']]],
+  ['lt_81',['lt',['../classtvm_1_1prim_1_1LT.html#ada8ef8e86ac3f1b13f95e15b5abaebd8',1,'tvm::prim::LT::LT(PrimExpr a, PrimExpr b, Location loc=UnknownLoc())'],['../classtvm_1_1prim_1_1LT.html#a91b5d0fb20264c98c45bd7bcd3262171',1,'tvm::prim::LT::LT(ffi::ObjectPtr&lt; LTNode &gt; node)']]]
 ];
