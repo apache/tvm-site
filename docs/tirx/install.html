@@ -628,6 +628,8 @@ document.write(`
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#requirements">Requirements</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#install-the-tirx-compiler">Install the TIRx compiler</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#install-the-kernel-library-optional">Install the kernel library (optional)</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#standalone-cmake-build">Standalone CMake build</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#installed-consumers">Installed consumers</a></li>
 </ul>
             </nav>
         </div>
@@ -668,7 +670,7 @@ Blackwell (<code class="docutils literal notranslate"><span class="pre">sm_100a<
 need NVIDIA’s Python CUDA bindings, available through <code class="docutils literal notranslate"><span class="pre">apache-tvm[cuda]</span></code>.
 That extra does not enable CUDA in the TVM library and does not install a driver
 or toolkit. To compile and run the CUDA examples, use a TVM build configured
-with <code class="docutils literal notranslate"><span class="pre">USE_CUDA=ON</span></code>; see <a class="reference internal" href="../install/from_source.html#install-from-source"><span class="std std-ref">install TVM from source</span></a>.</p>
+with <code class="docutils literal notranslate"><span class="pre">TVM_TIRX_USE_CUDA=ON</span></code>; see <a class="reference internal" href="../install/from_source.html#install-from-source"><span class="std std-ref">install TVM from source</span></a>.</p>
 <p>Verify:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python<span class="w"> </span>-c<span class="w"> </span><span class="s2">&quot;import tvm, tvm.tirx; print(tvm.__version__)&quot;</span>
 </pre></div>
@@ -699,6 +701,81 @@ Use <code class="docutils literal notranslate"><span class="pre">python</span> <
 list, and consult the <a class="reference external" href="https://github.com/mlc-ai/tirx-kernels#readme">tirx-kernels README</a> and
 <code class="docutils literal notranslate"><span class="pre">reference-dependencies.json</span></code> in that repository for current optional
 requirements.</p>
+</section>
+<section id="standalone-cmake-build">
+<h2>Standalone CMake build<a class="headerlink" href="#standalone-cmake-build" title="Link to this heading">#</a></h2>
+<p>The core can be built independently from the repository checkout. Initialize
+its bundled FFI dependency, then use native CMake options (CMake 3.26 or newer):</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">git</span> <span class="n">submodule</span> <span class="n">update</span> <span class="o">--</span><span class="n">init</span> <span class="o">--</span><span class="n">recursive</span> <span class="n">tirx</span><span class="o">/</span><span class="mi">3</span><span class="n">rdparty</span><span class="o">/</span><span class="n">tvm</span><span class="o">-</span><span class="n">ffi</span>
+<span class="n">cmake</span> <span class="o">-</span><span class="n">S</span> <span class="n">tirx</span> <span class="o">-</span><span class="n">B</span> <span class="n">tirx</span><span class="o">/</span><span class="n">build</span> <span class="o">-</span><span class="n">G</span> <span class="n">Ninja</span> <span class="o">-</span><span class="n">DCMAKE_BUILD_TYPE</span><span class="o">=</span><span class="n">Release</span> \
+    <span class="o">-</span><span class="n">DTVM_TIRX_USE_LLVM</span><span class="o">=</span><span class="n">ON</span> <span class="o">-</span><span class="n">DTVM_TIRX_BUILD_TESTS</span><span class="o">=</span><span class="n">ON</span>
+<span class="n">cmake</span> <span class="o">--</span><span class="n">build</span> <span class="n">tirx</span><span class="o">/</span><span class="n">build</span>
+<span class="n">ctest</span> <span class="o">--</span><span class="n">test</span><span class="o">-</span><span class="nb">dir</span> <span class="n">tirx</span><span class="o">/</span><span class="n">build</span>
+<span class="n">cmake</span> <span class="o">--</span><span class="n">install</span> <span class="n">tirx</span><span class="o">/</span><span class="n">build</span> <span class="o">--</span><span class="n">prefix</span> <span class="o">/</span><span class="n">path</span><span class="o">/</span><span class="n">to</span><span class="o">/</span><span class="n">install</span>
+</pre></div>
+</div>
+<p>Core feature options use the <code class="docutils literal notranslate"><span class="pre">TVM_TIRX_USE_</span></code> prefix. SDK selectors such as
+<code class="docutils literal notranslate"><span class="pre">TVM_TIRX_USE_CUDA</span></code> and <code class="docutils literal notranslate"><span class="pre">TVM_TIRX_USE_LLVM</span></code> also accept an SDK path or
+<code class="docutils literal notranslate"><span class="pre">llvm-config</span></code> command. Compiler caches, linkers, and toolchain flags use
+standard CMake settings. The standalone core does not read <code class="docutils literal notranslate"><span class="pre">config.cmake</span></code>.
+C++ tests are off by default; enabling them supplies GTest in the test subtree.
+Installation includes public headers, libraries, and CMake package targets.</p>
+<p>For a Python core package build, pass these options through the <code class="docutils literal notranslate"><span class="pre">CMAKE_ARGS</span></code>
+environment variable. Quote values containing spaces inside the variable:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">CMAKE_ARGS</span><span class="o">=</span><span class="s1">&#39;-DTVM_TIRX_USE_LLVM=&quot;llvm-config --link-static&quot;&#39;</span> \
+    <span class="n">python</span> <span class="o">-</span><span class="n">m</span> <span class="n">pip</span> <span class="n">install</span> <span class="o">-</span><span class="n">v</span> <span class="o">./</span><span class="n">tirx</span>
+</pre></div>
+</div>
+<p>The repository’s native build script also accepts <code class="docutils literal notranslate"><span class="pre">CMAKE_ARGS</span></code> for its TVM
+configuration, including parent-only options:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">mkdir</span> <span class="o">-</span><span class="n">p</span> <span class="n">build</span>
+<span class="n">CMAKE_ARGS</span><span class="o">=</span><span class="s1">&#39;-DTVM_TIRX_USE_LLVM=ON -DUSE_RPC=ON&#39;</span> \
+    <span class="n">python</span> <span class="n">tests</span><span class="o">/</span><span class="n">scripts</span><span class="o">/</span><span class="n">task_build</span><span class="o">.</span><span class="n">py</span> <span class="o">--</span><span class="n">build</span><span class="o">-</span><span class="nb">dir</span> <span class="n">build</span>
+</pre></div>
+</div>
+<p>The native build script applies these settings only to TVM configuration;
+its separate source-FFI Python package build keeps its own defaults. Direct
+<code class="docutils literal notranslate"><span class="pre">cmake</span></code> invocations use command-line options as shown above, since CMake
+itself does not read <code class="docutils literal notranslate"><span class="pre">CMAKE_ARGS</span></code>.</p>
+<p>A parent project can use <code class="docutils literal notranslate"><span class="pre">add_subdirectory(path/to/tirx)</span></code> and link to
+<code class="docutils literal notranslate"><span class="pre">tvm_tirx::shared</span></code> or <code class="docutils literal notranslate"><span class="pre">tvm_runtime::shared</span></code>. This builds the bundled FFI
+source targets and leaves tests, packaging, and installation to the parent.
+TIRx registers installation rules only when it is the top-level project.
+An embedding parent owns the installation rules for the libraries, public
+headers, and package files it chooses to include.</p>
+</section>
+<section id="installed-consumers">
+<h2>Installed consumers<a class="headerlink" href="#installed-consumers" title="Link to this heading">#</a></h2>
+<p>An ordinary downstream compiler links TIRx and the separate FFI package
+explicitly. Install both Python packages into the environment used by CMake:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="o">-</span><span class="n">m</span> <span class="n">pip</span> <span class="n">install</span> <span class="n">apache</span><span class="o">-</span><span class="n">tvm</span><span class="o">-</span><span class="n">tirx</span> <span class="n">apache</span><span class="o">-</span><span class="n">tvm</span><span class="o">-</span><span class="n">ffi</span>
+</pre></div>
+</div>
+<p>Query each package’s CMake directory:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="o">-</span><span class="n">m</span> <span class="n">tvm_tirx</span><span class="o">.</span><span class="n">config</span> <span class="o">--</span><span class="n">cmakedir</span>
+<span class="n">python</span> <span class="o">-</span><span class="n">m</span> <span class="n">tvm_ffi</span><span class="o">.</span><span class="n">config</span> <span class="o">--</span><span class="n">cmakedir</span>
+</pre></div>
+</div>
+<p>Pass those directories as <code class="docutils literal notranslate"><span class="pre">tvm_tirx_DIR</span></code> and <code class="docutils literal notranslate"><span class="pre">tvm_ffi_DIR</span></code> when configuring
+the consumer. Its CMakeLists.txt uses both packages directly:</p>
+<div class="highlight-cmake notranslate"><div class="highlight"><pre><span></span><span class="nb">find_package</span><span class="p">(</span><span class="s">tvm_tirx</span><span class="w"> </span><span class="s">CONFIG</span><span class="w"> </span><span class="s">REQUIRED</span><span class="p">)</span>
+<span class="nb">find_package</span><span class="p">(</span><span class="s">tvm_ffi</span><span class="w"> </span><span class="s">CONFIG</span><span class="w"> </span><span class="s">REQUIRED</span><span class="p">)</span>
+<span class="nb">add_executable</span><span class="p">(</span><span class="s">app</span><span class="w"> </span><span class="s">main.cc</span><span class="p">)</span>
+<span class="nb">target_link_libraries</span><span class="p">(</span><span class="s">app</span><span class="w"> </span><span class="s">PRIVATE</span><span class="w"> </span><span class="s">tvm_tirx::shared</span><span class="w"> </span><span class="s">tvm_ffi::shared</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The public TIRx targets are <code class="docutils literal notranslate"><span class="pre">tvm_tirx::header</span></code>, <code class="docutils literal notranslate"><span class="pre">tvm_tirx::shared</span></code>, and
+<code class="docutils literal notranslate"><span class="pre">tvm_runtime::shared</span></code>. The package config describes the normal Python build;
+it does not reconstruct build options, expose static or backend targets, or
+find/link FFI implicitly. Enabled backend libraries are still installed and
+loaded by the runtime. Consumers of an internally built static runtime supply
+its dependencies, including OpenMP when enabled, themselves.</p>
+<p>TIRx installs only its own public headers, libraries, and package helpers;
+it does not copy FFI libraries, headers, or CMake files. For a native prefix
+installation, use its <code class="docutils literal notranslate"><span class="pre">lib/cmake/tvm_tirx</span></code> directory (or the configured
+library directory). The handwritten config queries that exact prefix, so a
+separately installed TIRx wheel cannot override the selected installation.
+<code class="docutils literal notranslate"><span class="pre">Python_EXECUTABLE</span></code> selects the Python interpreter used for discovery.</p>
 </section>
 </section>
 
@@ -750,6 +827,8 @@ requirements.</p>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#requirements">Requirements</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#install-the-tirx-compiler">Install the TIRx compiler</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#install-the-kernel-library-optional">Install the kernel library (optional)</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#standalone-cmake-build">Standalone CMake build</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#installed-consumers">Installed consumers</a></li>
 </ul>
   </nav></div>
 

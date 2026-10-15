@@ -276,7 +276,7 @@ device and returns the measured cost. Network overhead is excluded.
 
  .. code-block:: none
 
-    9.5e-08 secs/op
+    1.06e-07 secs/op
 
 
 
@@ -360,7 +360,7 @@ A typical CMake toolchain file for 64-bit ARM Linux looks like this:
   set(CMAKE_FIND_ROOT_PATH_MODE_PACKAGE ONLY)
 
 Build the runtime from the TVM repository root.  Enable target-specific
-options such as ``USE_OPENCL`` or vendor runtime support in ``config.cmake``.
+options such as ``TVM_TIRX_USE_OPENCL`` or vendor runtime support in ``config.cmake``.
 Build any target-specific runtime libraries that your deployment needs, such
 as ``tvm_runtime_opencl`` for OpenCL.
 
@@ -370,12 +370,12 @@ as ``tvm_runtime_opencl`` for OpenCL.
   cd cross_build
   cp ../cmake/config.cmake ./
 
-  # Enable other options as needed, e.g. USE_OPENCL or vendor runtimes.
-  sed -i "s|USE_LLVM.*)|USE_LLVM OFF)|" config.cmake
+  # Enable other options as needed, e.g. TVM_TIRX_USE_OPENCL or vendor runtimes.
+  sed -i "s|TVM_TIRX_USE_LLVM.*)|TVM_TIRX_USE_LLVM OFF)|" config.cmake
 
   cmake -DCMAKE_TOOLCHAIN_FILE=/YYY/aarch64-linux-gnu.cmake -DCMAKE_BUILD_TYPE=Release ..
   cmake --build . --target runtime -j
-  # Optional example when USE_OPENCL is enabled:
+  # Optional example when TVM_TIRX_USE_OPENCL is enabled:
   # cmake --build . --target tvm_runtime_opencl -j
   cd ..
 
@@ -488,7 +488,7 @@ You can define the kernel, upload files, and run via RPC.
 
    mkdir -p build && cd build
    cp ../cmake/config.cmake .
-   sed -i "s/USE_OPENCL OFF/USE_OPENCL ON/" config.cmake
+   sed -i "s/TVM_TIRX_USE_OPENCL OFF/TVM_TIRX_USE_OPENCL ON/" config.cmake
    cmake .. && cmake --build . --parallel $(nproc)
 
 The following function shows how we run an OpenCL kernel remotely
@@ -865,8 +865,8 @@ This workflow is applicable to various deployment scenarios:
     Converted PyTorch model to Relax:
       - Number of parameters: 4
     Using local target for demonstration
-    Exported library to: /tmp/tmpg_z_2odz/model_deployed.so
-    Saved parameters to: /tmp/tmpg_z_2odz/model_params.npz
+    Exported library to: /tmp/tmp6nureeh4/model_deployed.so
+    Saved parameters to: /tmp/tmp6nureeh4/model_params.npz
 
     RPC workflow (works for any remote device):
     ==================================================
