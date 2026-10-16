@@ -21,58 +21,18 @@ Python API
 .. automodule:: tvm_tirx
    :no-members:
 
-.. currentmodule:: tvm_tirx
+.. toctree::
+   :maxdepth: 1
 
-.. contents:: Table of Contents
-   :local:
-   :depth: 2
-
-IR
---
-
-.. autosummary::
-   :toctree: generated/
-
-   ir.IRModule
-   ir.Expr
-   ir.Stmt
-
-TIRx
-----
-
-.. autosummary::
-   :toctree: generated/
-
-   tirx.Function
-   tirx.Var
-   tirx.TensorType
-   tirx.decl_tensor
-   tirx.IndexMap
-   tirx.Layout
-   tirx.TileLayout
-   tirx.compile
-
-Target
-------
-
-.. autosummary::
-   :toctree: generated/
-
-   target.Target
-
-Runtime
--------
-
-.. autosummary::
-   :toctree: generated/
-
-   runtime.Tensor
-   runtime.Module
-
-Code Generation
----------------
-
-.. autosummary::
-   :toctree: generated/
-
-   codegen.Executable
+   runtime-and-top-level-utilities
+   ir
+   symbolic-analysis
+   tirx
+   target-and-code-generation
+   script-and-printer
+   backend-configuration
+   cuda
+   other-backends
+   support
+   testing
+   cuda-script-namespaces

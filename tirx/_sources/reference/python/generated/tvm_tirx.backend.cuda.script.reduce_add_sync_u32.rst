@@ -1,0 +1,6 @@
+﻿tvm\_tirx.backend.cuda.script.reduce\_add\_sync\_u32
+====================================================
+
+.. currentmodule:: tvm_tirx.backend.cuda.script
+
+.. autofunction:: reduce_add_sync_u32

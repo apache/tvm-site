@@ -15,8 +15,8 @@
     specific language governing permissions and limitations
     under the License.
 
-Apache TVM TIRx Documentation
-==============================
+tvm-tirx
+========
 
 Table of Contents
 -----------------

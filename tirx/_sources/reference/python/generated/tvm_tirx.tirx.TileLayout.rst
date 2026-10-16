@@ -1,50 +1,26 @@
-﻿tvm\_tirx.tirx.TileLayout
+﻿..  Licensed to the Apache Software Foundation (ASF) under one
+    or more contributor license agreements.  See the NOTICE file
+    distributed with this work for additional information
+    regarding copyright ownership.  The ASF licenses this file
+    to you under the Apache License, Version 2.0 (the
+    "License"); you may not use this file except in compliance
+    with the License.  You may obtain a copy of the License at
+
+..    http://www.apache.org/licenses/LICENSE-2.0
+
+..  Unless required by applicable law or agreed to in writing,
+    software distributed under the License is distributed on an
+    "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
+    KIND, either express or implied.  See the License for the
+    specific language governing permissions and limitations
+    under the License.
+
+tvm\_tirx.tirx.TileLayout
 =========================
 
 .. currentmodule:: tvm_tirx.tirx
 
+
+
 .. autoclass:: TileLayout
 
-   
-   .. automethod:: __init__
-
-   
-   .. rubric:: Methods
-
-   .. autosummary::
-   
-      ~TileLayout.__init__
-      ~TileLayout.apply
-      ~TileLayout.canonicalize
-      ~TileLayout.from_iters
-      ~TileLayout.get_scope
-      ~TileLayout.group
-      ~TileLayout.is_
-      ~TileLayout.is_trivial
-      ~TileLayout.pack
-      ~TileLayout.permute_by_groups
-      ~TileLayout.permute_dims
-      ~TileLayout.same_as
-      ~TileLayout.size
-      ~TileLayout.span
-      ~TileLayout.tile
-      ~TileLayout.tile_to
-      ~TileLayout.unpack
-      ~TileLayout.verify_well_formed
-   
-   
-
-   
-   
-   .. rubric:: Attributes
-
-   .. autosummary::
-   
-      ~TileLayout.id_
-      ~TileLayout.offset
-      ~TileLayout.replica
-      ~TileLayout.shard
-      ~TileLayout.replicate
-      ~TileLayout.exclude
-   
-   
