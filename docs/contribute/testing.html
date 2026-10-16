@@ -40,7 +40,7 @@
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
   <script src="../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
 
-    <script src="../_static/documentation_options.js?v=46652880"></script>
+    <script src="../_static/documentation_options.js?v=70e5451e"></script>
     <script src="../_static/doctools.js?v=9bcbadda"></script>
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/scripts/sphinx-book-theme.js?v=887ef09a"></script>
@@ -848,17 +848,21 @@ specify which docker image to run (e.g. <code class="docutils literal notranslat
 Allowed image names are defined in <code class="docutils literal notranslate"><span class="pre">ci/jenkins/docker-images.ini</span></code> in the TVM source directory,
 and map to images at <a class="reference external" href="https://hub.docker.com/u/tlcpack">tlcpack</a>.</p>
 <p>If no additional arguments are given, the docker image will be loaded
-with an interactive bash session.  If a script is passed as an
-optional argument (e.g. <code class="docutils literal notranslate"><span class="pre">docker/bash.sh</span> <span class="pre">ci_gpu</span> <span class="pre">tests/scripts/task_python_unittest.sh</span></code>), then that script will be
-executed inside the docker image.</p>
-<p>Note: The docker images contain all system dependencies, but do not
-include the <code class="docutils literal notranslate"><span class="pre">build/config.cmake</span></code> configuration file for those
-systems.  The TVM source directory is used as the home directory of
-the docker image, and so this will default to using the same
-config/build directories as the local config.  One solution is to
-maintain separate <code class="docutils literal notranslate"><span class="pre">build_local</span></code> and <code class="docutils literal notranslate"><span class="pre">build_docker</span></code> directories,
-and make a symlink from <code class="docutils literal notranslate"><span class="pre">build</span></code> to the appropriate folder when
-entering/exiting docker.</p>
+with an interactive bash session. Additional arguments run a command inside
+the container. First build the platform wheels as described in
+<a class="reference internal" href="pull_request.html#pr-testing"><span class="std std-ref">Testing</span></a>, then source the installation helper before running tests:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>docker/bash.sh<span class="w"> </span>ci_gpu<span class="w"> </span>bash<span class="w"> </span>-euo<span class="w"> </span>pipefail<span class="w"> </span>-c<span class="w"> </span><span class="s1">&#39;</span>
+<span class="s1">    source tests/scripts/test_task_install_dist_wheels.sh</span>
+<span class="s1">    tests/scripts/task_python_unittest_gpuonly.sh</span>
+<span class="s1">&#39;</span>
+</pre></div>
+</div>
+<p>The helper installs the wheels from <code class="docutils literal notranslate"><span class="pre">dist/</span></code> into <code class="docutils literal notranslate"><span class="pre">.local/python</span></code> and sets
+<code class="docutils literal notranslate"><span class="pre">PYTHONPATH</span></code> for subsequent commands in the same shell. In an interactive
+container, source the helper before invoking pytest or a test script.</p>
+<p>The checkout is shared with the container. Native builds use <code class="docutils literal notranslate"><span class="pre">build/</span></code> and
+wheel artifacts use <code class="docutils literal notranslate"><span class="pre">dist/</span></code>; clean these directories and rebuild when
+switching platform configurations.</p>
 </section>
 <section id="running-in-ci">
 <h3>Running in CI<a class="headerlink" href="#running-in-ci" title="Link to this heading">#</a></h3>
@@ -874,20 +878,21 @@ docker/bash.sh defines the docker image in CI, just as it does
 locally.</p>
 </li>
 <li><p>Compile-time configuration</p>
-<p>The docker image does not have the <code class="docutils literal notranslate"><span class="pre">config.cmake</span></code> file built into
-it, so this is the first step in each of the <code class="docutils literal notranslate"><span class="pre">BUILD</span></code> tasks.  This
-is done using the <code class="docutils literal notranslate"><span class="pre">tests/scripts/task_config_build_*.sh</span></code> scripts.
-Which script is used depends on the build being tested, and is
-specified in the Jenkinsfile.</p>
-<p>Each <code class="docutils literal notranslate"><span class="pre">BUILD</span></code> task concludes by packing a library for use in later
-tests.</p>
+<p>The Jenkinsfile sources <code class="docutils literal notranslate"><span class="pre">tests/scripts/task_install_build_dependencies.sh</span></code>
+once to clean <code class="docutils literal notranslate"><span class="pre">dist/</span></code> and install build prerequisites. It then invokes
+<code class="docutils literal notranslate"><span class="pre">tests/scripts/task_build_&lt;platform&gt;.sh</span></code>, which sets the full platform CMake
+options and builds FFI, TIRx, and TVM wheels in that order. All three wheel
+builds use the root CMake source and the same <code class="docutils literal notranslate"><span class="pre">build/</span></code> directory, with
+package-specific install components. Enabled C++ tests run from that same
+native build.</p>
+<p>The three wheels in <code class="docutils literal notranslate"><span class="pre">dist/</span></code> are transferred to the test nodes.</p>
 </li>
 <li><p>Which tests run</p>
 <p>The <code class="docutils literal notranslate"><span class="pre">Unit</span> <span class="pre">Test</span></code> stage of the Jenkinsfile determines how <code class="docutils literal notranslate"><span class="pre">pytest</span></code>
-is called.  Each task starts by unpacking a
-compiled library that was previous compiled in the <code class="docutils literal notranslate"><span class="pre">BUILD</span></code> stage,
-then runs a test script
-(e.g. <code class="docutils literal notranslate"><span class="pre">tests/scripts/task_python_unittest.sh</span></code>).  These scripts set
+is called. Each consumer downloads the wheels from the <code class="docutils literal notranslate"><span class="pre">BUILD</span></code> stage
+and sources <code class="docutils literal notranslate"><span class="pre">tests/scripts/test_task_install_dist_wheels.sh</span></code> before
+running a test script (e.g. <code class="docutils literal notranslate"><span class="pre">tests/scripts/task_python_unittest.sh</span></code>).
+These scripts set
 the files/folders and command-line options that are passed to
 <code class="docutils literal notranslate"><span class="pre">pytest</span></code>.</p>
 <p>Several of these scripts include the <code class="docutils literal notranslate"><span class="pre">-m</span> <span class="pre">gpu</span></code> option, which
