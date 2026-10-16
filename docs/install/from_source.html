@@ -40,7 +40,7 @@
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
   <script src="../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
 
-    <script src="../_static/documentation_options.js?v=04433c48"></script>
+    <script src="../_static/documentation_options.js?v=1337bc2e"></script>
     <script src="../_static/doctools.js?v=9bcbadda"></script>
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/scripts/sphinx-book-theme.js?v=887ef09a"></script>
@@ -768,36 +768,29 @@ by running <code class="docutils literal notranslate"><span class="pre">git</spa
 </section>
 <section id="step-3-configure-and-build">
 <h2><a class="toc-backref" href="#id5" role="doc-backlink">Step 3. Configure and Build</a><a class="headerlink" href="#step-3-configure-and-build" title="Link to this heading">#</a></h2>
-<p>Create a build directory and run CMake to configure the build. The following example shows how to build</p>
+<p>Configure the build from the repository root with explicit CMake options. Enable
+GPU SDKs and vendor libraries as needed:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">cd</span><span class="w"> </span>tvm
-rm<span class="w"> </span>-rf<span class="w"> </span>build<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span>mkdir<span class="w"> </span>build<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="nb">cd</span><span class="w"> </span>build
-<span class="c1"># Specify the build configuration via CMake options</span>
-cp<span class="w"> </span>../cmake/config.cmake<span class="w"> </span>.
+cmake<span class="w"> </span>-S<span class="w"> </span>.<span class="w"> </span>-B<span class="w"> </span>build<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>-DCMAKE_BUILD_TYPE<span class="o">=</span>RelWithDebInfo<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>-DTVM_TIRX_USE_LLVM<span class="o">=</span><span class="s2">&quot;llvm-config --ignore-libllvm --link-static&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>-DTVM_HIDE_PRIVATE_SYMBOLS<span class="o">=</span>ON<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>-DTVM_TIRX_USE_CUDA<span class="o">=</span>OFF<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>-DTVM_TIRX_USE_METAL<span class="o">=</span>OFF<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>-DTVM_TIRX_USE_VULKAN<span class="o">=</span>OFF<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>-DTVM_TIRX_USE_OPENCL<span class="o">=</span>OFF<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>-DTVM_USE_CUBLAS<span class="o">=</span>OFF<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>-DTVM_USE_CUDNN<span class="o">=</span>OFF<span class="w"> </span><span class="se">\</span>
+<span class="w">    </span>-DTVM_USE_CUTLASS<span class="o">=</span>OFF
 </pre></div>
 </div>
-<p>We want to specifically tweak the following flags by appending them to the end of the configuration file:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="c1"># controls default compilation flags (Candidates: Release, Debug, RelWithDebInfo)</span>
-<span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;set(CMAKE_BUILD_TYPE RelWithDebInfo)&quot;</span><span class="w"> </span>&gt;&gt;<span class="w"> </span>config.cmake
-
-<span class="c1"># LLVM is a must dependency for compiler end</span>
-<span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;set(TVM_TIRX_USE_LLVM \&quot;llvm-config --ignore-libllvm --link-static\&quot;)&quot;</span><span class="w"> </span>&gt;&gt;<span class="w"> </span>config.cmake
-<span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;set(HIDE_PRIVATE_SYMBOLS ON)&quot;</span><span class="w"> </span>&gt;&gt;<span class="w"> </span>config.cmake
-
-<span class="c1"># GPU SDKs, turn on if needed</span>
-<span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;set(TVM_TIRX_USE_CUDA   OFF)&quot;</span><span class="w"> </span>&gt;&gt;<span class="w"> </span>config.cmake
-<span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;set(TVM_TIRX_USE_METAL  OFF)&quot;</span><span class="w"> </span>&gt;&gt;<span class="w"> </span>config.cmake
-<span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;set(TVM_TIRX_USE_VULKAN OFF)&quot;</span><span class="w"> </span>&gt;&gt;<span class="w"> </span>config.cmake
-<span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;set(TVM_TIRX_USE_OPENCL OFF)&quot;</span><span class="w"> </span>&gt;&gt;<span class="w"> </span>config.cmake
-
-<span class="c1"># cuBLAS, cuDNN, cutlass support, turn on if needed</span>
-<span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;set(USE_CUBLAS OFF)&quot;</span><span class="w"> </span>&gt;&gt;<span class="w"> </span>config.cmake
-<span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;set(USE_CUDNN  OFF)&quot;</span><span class="w"> </span>&gt;&gt;<span class="w"> </span>config.cmake
-<span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;set(USE_CUTLASS OFF)&quot;</span><span class="w"> </span>&gt;&gt;<span class="w"> </span>config.cmake
-</pre></div>
-</div>
+<p>CMake stores these values in <code class="docutils literal notranslate"><span class="pre">build/CMakeCache.txt</span></code>. To change an option,
+rerun the configure command with its new <code class="docutils literal notranslate"><span class="pre">-D</span></code> value. Parent TVM features use
+<code class="docutils literal notranslate"><span class="pre">TVM_USE_*</span></code>; core features retain <code class="docutils literal notranslate"><span class="pre">TVM_TIRX_USE_*</span></code> and FFI options retain
+<code class="docutils literal notranslate"><span class="pre">TVM_FFI_*</span></code>. CMake also supports local <code class="docutils literal notranslate"><span class="pre">CMakeUserPresets.json</span></code> presets.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p><code class="docutils literal notranslate"><span class="pre">HIDE_PRIVATE_SYMBOLS</span></code> is a configuration option that enables the <code class="docutils literal notranslate"><span class="pre">-fvisibility=hidden</span></code> flag.
+<p><code class="docutils literal notranslate"><span class="pre">TVM_HIDE_PRIVATE_SYMBOLS</span></code> is a configuration option that enables the <code class="docutils literal notranslate"><span class="pre">-fvisibility=hidden</span></code> flag.
 This flag helps prevent potential symbol conflicts between TVM and PyTorch. These conflicts arise due to
 the frameworks shipping LLVMs of different versions.</p>
 <p><a class="reference external" href="https://cmake.org/cmake/help/latest/variable/CMAKE_BUILD_TYPE.html">CMAKE_BUILD_TYPE</a> controls default compilation flag:</p>
@@ -807,15 +800,15 @@ the frameworks shipping LLVMs of different versions.</p>
 <li><p><code class="docutils literal notranslate"><span class="pre">Release</span></code> sets <code class="docutils literal notranslate"><span class="pre">-O3</span> <span class="pre">-DNDEBUG</span></code></p></li>
 </ul>
 </div>
-<p>Once <code class="docutils literal notranslate"><span class="pre">config.cmake</span></code> is edited accordingly, kick off build with the commands below:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>cmake<span class="w"> </span>..<span class="w"> </span><span class="o">&amp;&amp;</span><span class="w"> </span>cmake<span class="w"> </span>--build<span class="w"> </span>.<span class="w"> </span>--parallel<span class="w"> </span><span class="k">$(</span>nproc<span class="k">)</span>
+<p>After configuration succeeds, build with:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>cmake<span class="w"> </span>--build<span class="w"> </span>build<span class="w"> </span>--parallel<span class="w"> </span><span class="k">$(</span>nproc<span class="k">)</span>
 </pre></div>
 </div>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p><code class="docutils literal notranslate"><span class="pre">nproc</span></code> may not be available on all systems, please replace it with the number of cores on your system</p>
 </div>
-<p>A success build should produce <code class="docutils literal notranslate"><span class="pre">libtvm</span></code> and <code class="docutils literal notranslate"><span class="pre">libtvm_runtime</span></code> under <code class="docutils literal notranslate"><span class="pre">build/</span></code> directory.</p>
+<p>A successful build produces the compiler and runtime libraries under <code class="docutils literal notranslate"><span class="pre">build/lib/</span></code>.</p>
 <p>Apache TVM relies on the tvm-ffi package to support its python bindings.
 Therefore, after we finish the build, we need to install the tvm-ffi package.</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">cd</span><span class="w"> </span>tirx/3rdparty/tvm-ffi<span class="p">;</span><span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>.<span class="p">;</span><span class="w"> </span><span class="nb">cd</span><span class="w"> </span>..
@@ -854,21 +847,14 @@ Therefore, it is highly recommended to validate Apache TVM installation before u
 &lt;CDLL<span class="w"> </span><span class="s1">&#39;/some-path/lib/python3.11/site-packages/tvm/libtvm_runtime.dylib&#39;</span>,<span class="w"> </span>handle<span class="w"> </span>95ada510<span class="w"> </span>at<span class="w"> </span>0x1030e4e50&gt;
 </pre></div>
 </div>
-<p><strong>Step 3. Reflect TVM build option.</strong> Sometimes when downstream application fails, it could likely be some mistakes with a wrong TVM commit, or wrong build flags. To find it out, the following commands will be helpful:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>&gt;&gt;&gt;<span class="w"> </span>python<span class="w"> </span>-c<span class="w"> </span><span class="s2">&quot;import tvm; print(&#39;\n&#39;.join(f&#39;{k}: {v}&#39; for k, v in tvm.support.libinfo().items()))&quot;</span>
-...<span class="w"> </span><span class="c1"># Omitted less relevant options</span>
-GIT_COMMIT_HASH:<span class="w"> </span>4f6289590252a1cf45a4dc37bce55a25043b8338
-HIDE_PRIVATE_SYMBOLS:<span class="w"> </span>ON
-USE_LLVM:<span class="w"> </span>llvm-config<span class="w"> </span>--link-static
-LLVM_VERSION:<span class="w"> </span><span class="m">15</span>.0.7
-USE_VULKAN:<span class="w"> </span>OFF
-USE_CUDA:<span class="w"> </span>OFF
-CUDA_VERSION:<span class="w"> </span>NOT-FOUND
-USE_OPENCL:<span class="w"> </span>OFF
-USE_METAL:<span class="w"> </span>ON
-USE_ROCM:<span class="w"> </span>OFF
+<p><strong>Step 3. Inspect the build configuration.</strong> For a local source build, inspect
+the CMake cache to check which options were configured:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>cmake<span class="w"> </span>-LA<span class="w"> </span>-N<span class="w"> </span>build
 </pre></div>
 </div>
+<p>The output includes parent <code class="docutils literal notranslate"><span class="pre">TVM_USE_*</span></code> options and the core’s
+<code class="docutils literal notranslate"><span class="pre">TVM_TIRX_USE_*</span></code> options. Keep <code class="docutils literal notranslate"><span class="pre">build/CMakeCache.txt</span></code> when reporting a
+configuration problem.</p>
 <p><strong>Step 4. Check device detection.</strong> Sometimes it could be helpful to understand if TVM could detect your device at all with the following commands:</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>&gt;&gt;&gt;<span class="w"> </span>python<span class="w"> </span>-c<span class="w"> </span><span class="s2">&quot;import tvm; print(tvm.metal().exist)&quot;</span>
 True<span class="w"> </span><span class="c1"># or False</span>
@@ -913,7 +899,7 @@ False<span class="w"> </span><span class="c1"># or True</span>
 <h3><a class="toc-backref" href="#id10" role="doc-backlink">Path Conventions</a><a class="headerlink" href="#path-conventions" title="Link to this heading">#</a></h3>
 <ul class="simple">
 <li><p>Use forward slashes (<code class="docutils literal notranslate"><span class="pre">/</span></code>) in Python/CMake paths, not Windows backslashes</p></li>
-<li><p>Example: <code class="docutils literal notranslate"><span class="pre">python</span> <span class="pre">cmake/config.cmake</span></code> not <code class="docutils literal notranslate"><span class="pre">python</span> <span class="pre">cmake\\config.cmake</span></code></p></li>
+<li><p>Example: <code class="docutils literal notranslate"><span class="pre">-DCMAKE_TOOLCHAIN_FILE=C:/toolchains/windows.cmake</span></code>.</p></li>
 </ul>
 </section>
 </section>
@@ -926,7 +912,7 @@ reducing TVM’s build time, especially when building with <a class="reference e
 There are several ways to enable CCache in TVM builds:</p>
 <blockquote>
 <div><ul class="simple">
-<li><p>Leave <code class="docutils literal notranslate"><span class="pre">USE_CCACHE=AUTO</span></code> in <code class="docutils literal notranslate"><span class="pre">build/config.cmake</span></code>. CCache will be used if it is found.</p></li>
+<li><p>Configure with <code class="docutils literal notranslate"><span class="pre">-DTVM_USE_CCACHE=AUTO</span></code> (the default). CCache will be used if it is found.</p></li>
 <li><p>Ccache’s Masquerade mode. This is typically enabled during the Ccache installation process.
 To have TVM use Ccache in masquerade, simply specify the appropriate C/C++ compiler
 paths when configuring TVM’s build system.  For example:
@@ -960,7 +946,7 @@ You can then run the following command to build</p>
 <p>For CUDA support on Windows:</p>
 <div class="highlight-batch notranslate"><div class="highlight"><pre><span></span><span class="k">set</span> <span class="nv">CUDA_PATH</span><span class="p">=</span>C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v11.8
 <span class="k">set</span> <span class="nv">PATH</span><span class="p">=</span><span class="nv">%CUDA_PATH%</span>\bin;<span class="nv">%PATH%</span>
-cmake .. -DUSE_CUDA=ON
+cmake .. -DTVM_TIRX_USE_CUDA=ON
 </pre></div>
 </div>
 </section>
@@ -976,7 +962,7 @@ cmake .. -DUSE_CUDA=ON
 <h3><a class="toc-backref" href="#id14" role="doc-backlink">Building ROCm support</a><a class="headerlink" href="#building-rocm-support" title="Link to this heading">#</a></h3>
 <p>Currently, ROCm is supported only on linux, so all the instructions are written with linux in mind.</p>
 <ul class="simple">
-<li><p>Set <code class="docutils literal notranslate"><span class="pre">set(TVM_TIRX_USE_ROCM</span> <span class="pre">ON)</span></code>, set TVM_TIRX_ROCM_PATH to the correct path.</p></li>
+<li><p>Configure with <code class="docutils literal notranslate"><span class="pre">-DTVM_TIRX_USE_ROCM=ON</span></code> or set it to the ROCm SDK path.</p></li>
 <li><p>You need to first install HIP runtime from ROCm. Make sure the installation system has ROCm installed in it.</p></li>
 <li><p>Install LLVM (&gt;= 15), and LLD, make sure <code class="docutils literal notranslate"><span class="pre">ld.lld</span></code> is available via command line.</p></li>
 </ul>
@@ -994,7 +980,7 @@ make
 sudo<span class="w"> </span>make<span class="w"> </span>install
 </pre></div>
 </div>
-<p>After installing GTest, the C++ tests can be built and started with <code class="docutils literal notranslate"><span class="pre">./tests/scripts/task_cpp_unittest.sh</span></code>, or built via CMake with <code class="docutils literal notranslate"><span class="pre">-DUSE_GTEST=ON</span></code> and then running <code class="docutils literal notranslate"><span class="pre">./build/cpptest</span></code>.</p>
+<p>After installing GTest, the C++ tests can be built and started with <code class="docutils literal notranslate"><span class="pre">./tests/scripts/task_cpp_unittest.sh</span></code>, or built via CMake with <code class="docutils literal notranslate"><span class="pre">-DTVM_USE_GTEST=ON</span></code> and then running <code class="docutils literal notranslate"><span class="pre">./build/cpptest</span></code>.</p>
 </section>
 </section>
 </section>

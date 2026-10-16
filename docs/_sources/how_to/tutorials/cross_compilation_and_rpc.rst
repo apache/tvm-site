@@ -53,8 +53,8 @@ the remote device.
   git clone --recursive https://github.com/apache/tvm tvm
   cd tvm
   mkdir build && cd build
-  cp ../cmake/config.cmake .
-  cmake .. && cmake --build . --parallel $(nproc)
+  cmake .. -DTVM_TIRX_USE_LLVM=OFF -DTVM_TIRX_USE_CUDA=OFF
+  cmake --build . --parallel $(nproc)
 
 After building the runtime successfully, we need to set environment variables
 in :code:`~/.bashrc` file. We can edit :code:`~/.bashrc`
@@ -276,12 +276,12 @@ device and returns the measured cost. Network overhead is excluded.
 
  .. code-block:: none
 
-    1.01e-07 secs/op
+    9.3e-08 secs/op
 
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 204-413
+.. GENERATED FROM PYTHON SOURCE LINES 204-409
 
 Scale RPC to Shared Devices
 ---------------------------
@@ -360,7 +360,7 @@ A typical CMake toolchain file for 64-bit ARM Linux looks like this:
   set(CMAKE_FIND_ROOT_PATH_MODE_PACKAGE ONLY)
 
 Build the runtime from the TVM repository root.  Enable target-specific
-options such as ``TVM_TIRX_USE_OPENCL`` or vendor runtime support in ``config.cmake``.
+CMake options such as ``-DTVM_TIRX_USE_OPENCL=ON`` or vendor runtime support.
 Build any target-specific runtime libraries that your deployment needs, such
 as ``tvm_runtime_opencl`` for OpenCL.
 
@@ -368,12 +368,9 @@ as ``tvm_runtime_opencl`` for OpenCL.
 
   mkdir cross_build
   cd cross_build
-  cp ../cmake/config.cmake ./
-
   # Enable other options as needed, e.g. TVM_TIRX_USE_OPENCL or vendor runtimes.
-  sed -i "s|TVM_TIRX_USE_LLVM.*)|TVM_TIRX_USE_LLVM OFF)|" config.cmake
-
-  cmake -DCMAKE_TOOLCHAIN_FILE=/YYY/aarch64-linux-gnu.cmake -DCMAKE_BUILD_TYPE=Release ..
+  cmake .. -DTVM_TIRX_USE_LLVM=OFF -DTVM_TIRX_USE_CUDA=OFF \
+    -DCMAKE_TOOLCHAIN_FILE=/YYY/aarch64-linux-gnu.cmake -DCMAKE_BUILD_TYPE=Release
   cmake --build . --target runtime -j
   # Optional example when TVM_TIRX_USE_OPENCL is enabled:
   # cmake --build . --target tvm_runtime_opencl -j
@@ -487,13 +484,12 @@ You can define the kernel, upload files, and run via RPC.
 .. code-block:: bash
 
    mkdir -p build && cd build
-   cp ../cmake/config.cmake .
-   sed -i "s/TVM_TIRX_USE_OPENCL OFF/TVM_TIRX_USE_OPENCL ON/" config.cmake
-   cmake .. && cmake --build . --parallel $(nproc)
+   cmake .. -DTVM_TIRX_USE_OPENCL=ON -DTVM_TIRX_USE_LLVM=OFF -DTVM_TIRX_USE_CUDA=OFF
+   cmake --build . --parallel $(nproc)
 
 The following function shows how we run an OpenCL kernel remotely
 
-.. GENERATED FROM PYTHON SOURCE LINES 413-448
+.. GENERATED FROM PYTHON SOURCE LINES 409-444
 
 .. code-block:: Python
 
@@ -539,7 +535,7 @@ The following function shows how we run an OpenCL kernel remotely
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 449-474
+.. GENERATED FROM PYTHON SOURCE LINES 445-470
 
 Deploy PyTorch Models to Remote Devices with RPC
 ------------------------------------------------
@@ -567,7 +563,7 @@ This workflow is applicable to various deployment scenarios:
    for ONNX models. Simply replace ``from_exported_program()`` with
    ``from_onnx(model, keep_params_in_input=True)`` and follow the same steps.
 
-.. GENERATED FROM PYTHON SOURCE LINES 474-755
+.. GENERATED FROM PYTHON SOURCE LINES 470-751
 
 .. code-block:: Python
 
@@ -865,8 +861,8 @@ This workflow is applicable to various deployment scenarios:
     Converted PyTorch model to Relax:
       - Number of parameters: 4
     Using local target for demonstration
-    Exported library to: /tmp/tmp4eckn_i4/model_deployed.so
-    Saved parameters to: /tmp/tmp4eckn_i4/model_params.npz
+    Exported library to: /tmp/tmpviowuib6/model_deployed.so
+    Saved parameters to: /tmp/tmpviowuib6/model_params.npz
 
     RPC workflow (works for any remote device):
     ==================================================
@@ -896,7 +892,7 @@ This workflow is applicable to various deployment scenarios:
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 756-788
+.. GENERATED FROM PYTHON SOURCE LINES 752-784
 
 Summary
 -------
