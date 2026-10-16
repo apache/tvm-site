@@ -377,7 +377,7 @@ Finally, we define the model architecture with FFN and self-attention layers.
                 rope_scale=1,
                 rope_theta=self.rope_theta,
                 rope_scaling={},
-                rope_ext_factors=tirx.IntImm("int64", 0),
+                rope_ext_factors=tvm_tirx.ir.IntImm("int64", 0),
                 rotary_dim=self.head_dim,
                 dtype=self.dtype,
                 target=target,
@@ -864,7 +864,7 @@ IRModule to generate the token.
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** (2 minutes 53.602 seconds)
+   **Total running time of the script:** (2 minutes 40.138 seconds)
 
 
 .. _sphx_glr_download_how_to_tutorials_optimize_llm.py:

@@ -1,7 +1,7 @@
 var searchData=
 [
   ['lambdadoc_0',['LambdaDoc',['../classtvm_1_1script_1_1printer_1_1LambdaDoc.html#a08bd58302d3bd5791fa057c24ab4bd2c',1,'tvm::script::printer::LambdaDoc']]],
-  ['lambdaexpr_1',['LambdaExpr',['../classtvm_1_1LambdaExpr.html#a9baa70ae3738746f90b71a1762ffa92d',1,'tvm::LambdaExpr']]],
+  ['lambdaexpr_1',['LambdaExpr',['../classtvm_1_1LambdaExpr.html#ab488dfdf5f8f9ba3ca5bde38bb85e03c',1,'tvm::LambdaExpr']]],
   ['lambdaexprnode_2',['lambdaexprnode',['../classtvm_1_1LambdaExprNode.html#a9e05664b53df4481b8ed5b63d1d9aaa5',1,'tvm::LambdaExprNode::LambdaExprNode(ffi::UnsafeInit tag)'],['../classtvm_1_1LambdaExprNode.html#af3e535a3aca252082fe9e914975c62d2',1,'tvm::LambdaExprNode::LambdaExprNode(Expr body)']]],
   ['lambdalift_3',['LambdaLift',['../namespacetvm_1_1relax_1_1transform.html#ac6348965f3158c33e75c2fb780558423',1,'tvm::relax::transform']]],
   ['lanes_4',['lanes',['../classtvm_1_1PrimType.html#ad07bdd138a531d6918d61fdcd7c3e04d',1,'tvm::PrimType']]],
@@ -39,7 +39,7 @@ var searchData=
   ['loadfrombytes_36',['LoadFromBytes',['../classtvm_1_1runtime_1_1vm_1_1VMExecutable.html#ad8aba4af1475f81460b95cd5d0b42bbd',1,'tvm::runtime::vm::VMExecutable']]],
   ['loadfromfile_37',['LoadFromFile',['../classtvm_1_1runtime_1_1vm_1_1VMExecutable.html#a0e741c152e68a73ab2b157444f148001',1,'tvm::runtime::vm::VMExecutable']]],
   ['loadfromstr_38',['LoadFromStr',['../structtvm_1_1runtime_1_1vm_1_1TensorCacheMetadata.html#a4f09cc67a6b62276cdb87d20ece400a1',1,'tvm::runtime::vm::TensorCacheMetadata']]],
-  ['loadtensor_39',['LoadTensor',['../namespacetvm_1_1runtime.html#ad986583227751a735cf890e1049949ca',1,'tvm::runtime']]],
+  ['loadtensor_39',['LoadTensor',['../namespacetvm_1_1runtime.html#ad6f104f7b8e73e5aa78d70f47907adcc',1,'tvm::runtime']]],
   ['loadvmmodule_40',['LoadVMModule',['../namespacetvm_1_1runtime.html#aebfef1b24c70ee912467392bc9565fdd',1,'tvm::runtime']]],
   ['local_5fname_41',['local_name',['../classtvm_1_1tirx_1_1ThreadScopeObj.html#ad558d59abc571727e538cd3749bb9bf0',1,'tvm::tirx::ThreadScopeObj']]],
   ['localfunction_42',['LocalFunction',['../namespacetvm_1_1script_1_1ir__builder_1_1relax.html#a4d89ac1ee976d94194771ab0dd07dd7f',1,'tvm::script::ir_builder::relax']]],
@@ -48,7 +48,7 @@ var searchData=
   ['log10_5fop_45',['log10_op',['../namespacetvm_1_1prim.html#a1f32201590187f933e49c62b874223d5',1,'tvm::prim']]],
   ['log1p_46',['log1p',['../namespacetvm_1_1prim.html#a67256fb330b964b6744683026742c12b',1,'tvm::prim']]],
   ['log1p_5fop_47',['log1p_op',['../namespacetvm_1_1prim.html#ab2196cbf85b88188092b4710b26b6c6b',1,'tvm::prim']]],
-  ['log2_48',['log2',['../namespacetvm_1_1topi.html#aaceb4adcd60aafeae114358c8880605f',1,'tvm::topi::log2()'],['../namespacetvm.html#a0689d0a3cef3951ac886aaafcd33dc85',1,'tvm::log2()']]],
+  ['log2_48',['log2',['../namespacetvm_1_1topi.html#aaceb4adcd60aafeae114358c8880605f',1,'tvm::topi::log2()'],['../namespacetvm_1_1prim.html#a061738335f0ffc9b131578feaa68a802',1,'tvm::prim::log2(PrimExpr x, Location loc=UnknownLoc())']]],
   ['log2_5fop_49',['log2_op',['../namespacetvm_1_1prim.html#afed04c6532ad31090af0220c47abd7bf',1,'tvm::prim']]],
   ['log_5fadd_5fexp_50',['log_add_exp',['../namespacetvm_1_1topi.html#a74a446f84446a29ba7496ef2ef24272a',1,'tvm::topi::log_add_exp(const tvm::PrimExpr &amp;a, const tvm::PrimExpr &amp;b)'],['../namespacetvm_1_1topi.html#a5b343871f03dbc9a0dbc91cc415595a7',1,'tvm::topi::log_add_exp(const tvm::te::Tensor &amp;A, const tvm::te::Tensor &amp;B, std::string name=&quot;T_&quot; &quot;log_add_exp&quot;, std::string tag=kBroadcast)'],['../namespacetvm_1_1topi.html#a14cbb2aaa6b59919c1b71f325878ea18',1,'tvm::topi::log_add_exp(const tvm::te::Tensor &amp;A, const tvm::PrimExpr &amp;B, std::string name=&quot;T_&quot; &quot;log_add_exp&quot;, std::string tag=kElementWise)'],['../namespacetvm_1_1topi.html#a3a43ea8d3af0d4a110474ee769928233',1,'tvm::topi::log_add_exp(const tvm::PrimExpr &amp;A, const tvm::te::Tensor &amp;B, std::string name=&quot;T_&quot; &quot;log_add_exp&quot;, std::string tag=kElementWise)']]],
   ['log_5fop_51',['log_op',['../namespacetvm_1_1prim.html#a16d32078969b8e116d519e71d2e8c531',1,'tvm::prim']]],

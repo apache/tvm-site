@@ -72,7 +72,6 @@ var menudata={children:[
 {text:"v",url:"namespacemembers_func_v.html#index_v"},
 {text:"w",url:"namespacemembers_func_w.html#index_w"}]},
 {text:"Variables",url:"namespacemembers_vars.html",children:[
-{text:"d",url:"namespacemembers_vars.html#index_d"},
 {text:"k",url:"namespacemembers_vars.html#index_k"},
 {text:"o",url:"namespacemembers_vars.html#index_o"},
 {text:"u",url:"namespacemembers_vars.html#index_u"}]},

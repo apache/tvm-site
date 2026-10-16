@@ -11,6 +11,5 @@ var searchData=
   ['not_8',['Not',['../classtvm_1_1prim_1_1Not.html',1,'tvm::prim']]],
   ['notnode_9',['NotNode',['../classtvm_1_1prim_1_1NotNode.html',1,'tvm::prim']]],
   ['notpattern_10',['NotPattern',['../classtvm_1_1relax_1_1NotPattern.html',1,'tvm::relax']]],
-  ['notpatternnode_11',['NotPatternNode',['../classtvm_1_1relax_1_1NotPatternNode.html',1,'tvm::relax']]],
-  ['nvtxscopedrange_12',['NVTXScopedRange',['../classtvm_1_1support_1_1NVTXScopedRange.html',1,'tvm::support']]]
+  ['notpatternnode_11',['NotPatternNode',['../classtvm_1_1relax_1_1NotPatternNode.html',1,'tvm::relax']]]
 ];
