@@ -40,7 +40,7 @@
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
   <script src="../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
 
-    <script src="../_static/documentation_options.js?v=bfbfbe55"></script>
+    <script src="../_static/documentation_options.js?v=04433c48"></script>
     <script src="../_static/doctools.js?v=9bcbadda"></script>
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/scripts/sphinx-book-theme.js?v=887ef09a"></script>
@@ -342,6 +342,7 @@
 <li class="toctree-l2"><a class="reference internal" href="../reference/api/python/exec.html">tvm.exec</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../reference/api/python/support.html">tvm_tirx.support</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../reference/api/python/runtime/runtime.html">tvm_tirx.runtime</a></li>
+
 <li class="toctree-l2"><a class="reference internal" href="../reference/api/python/runtime/vm.html">tvm.runtime.vm</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../reference/api/python/runtime/disco.html">tvm.runtime.disco</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../reference/api/python/relax/relax.html">tvm.relax</a></li>
@@ -630,6 +631,8 @@ document.write(`
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#install-the-kernel-library-optional">Install the kernel library (optional)</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#standalone-cmake-build">Standalone CMake build</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#installed-consumers">Installed consumers</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#component-configuration-cli">Component configuration CLI</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#export-and-runtime-apis">Export and runtime APIs</a></li>
 </ul>
             </nav>
         </div>
@@ -753,7 +756,7 @@ its separate source-FFI Python package build keeps its own defaults. Direct
 <code class="docutils literal notranslate"><span class="pre">cmake</span></code> invocations use command-line options as shown above, since CMake
 itself does not read <code class="docutils literal notranslate"><span class="pre">CMAKE_ARGS</span></code>.</p>
 <p>A parent project can use <code class="docutils literal notranslate"><span class="pre">add_subdirectory(path/to/tirx)</span></code> and link to
-<code class="docutils literal notranslate"><span class="pre">tvm_tirx::shared</span></code> or <code class="docutils literal notranslate"><span class="pre">tvm_runtime::shared</span></code>. This builds the bundled FFI
+<code class="docutils literal notranslate"><span class="pre">tvm_tirx_compiler::shared</span></code> or <code class="docutils literal notranslate"><span class="pre">tvm_runtime::shared</span></code>. This builds the bundled FFI
 source targets and leaves tests, packaging, and installation to the parent.
 TIRx registers installation rules only when it is the top-level project.
 An embedding parent owns the installation rules for the libraries, public
@@ -776,10 +779,10 @@ the consumer. Its CMakeLists.txt uses both packages directly:</p>
 <div class="highlight-cmake notranslate"><div class="highlight"><pre><span></span><span class="nb">find_package</span><span class="p">(</span><span class="s">tvm_tirx</span><span class="w"> </span><span class="s">CONFIG</span><span class="w"> </span><span class="s">REQUIRED</span><span class="p">)</span>
 <span class="nb">find_package</span><span class="p">(</span><span class="s">tvm_ffi</span><span class="w"> </span><span class="s">CONFIG</span><span class="w"> </span><span class="s">REQUIRED</span><span class="p">)</span>
 <span class="nb">add_executable</span><span class="p">(</span><span class="s">app</span><span class="w"> </span><span class="s">main.cc</span><span class="p">)</span>
-<span class="nb">target_link_libraries</span><span class="p">(</span><span class="s">app</span><span class="w"> </span><span class="s">PRIVATE</span><span class="w"> </span><span class="s">tvm_tirx::shared</span><span class="w"> </span><span class="s">tvm_ffi::shared</span><span class="p">)</span>
+<span class="nb">target_link_libraries</span><span class="p">(</span><span class="s">app</span><span class="w"> </span><span class="s">PRIVATE</span><span class="w"> </span><span class="s">tvm_tirx_compiler::shared</span><span class="w"> </span><span class="s">tvm_ffi::shared</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>The public TIRx targets are <code class="docutils literal notranslate"><span class="pre">tvm_tirx::header</span></code>, <code class="docutils literal notranslate"><span class="pre">tvm_tirx::shared</span></code>, and
+<p>The public TIRx targets are <code class="docutils literal notranslate"><span class="pre">tvm_tirx::header</span></code>, <code class="docutils literal notranslate"><span class="pre">tvm_tirx_compiler::shared</span></code>, and
 <code class="docutils literal notranslate"><span class="pre">tvm_runtime::shared</span></code>. The package config describes the normal Python build;
 it does not reconstruct build options, expose static or backend targets, or
 find/link FFI implicitly. Enabled backend libraries are still installed and
@@ -791,6 +794,72 @@ installation, use its <code class="docutils literal notranslate"><span class="pr
 library directory). The handwritten config queries that exact prefix, so a
 separately installed TIRx wheel cannot override the selected installation.
 <code class="docutils literal notranslate"><span class="pre">Python_EXECUTABLE</span></code> selects the Python interpreter used for discovery.</p>
+</section>
+<section id="component-configuration-cli">
+<h2>Component configuration CLI<a class="headerlink" href="#component-configuration-cli" title="Link to this heading">#</a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">tvm-tirx-config</span></code> (also <code class="docutils literal notranslate"><span class="pre">python</span> <span class="pre">-m</span> <span class="pre">tvm_tirx.config</span></code>) prints shell-quoted
+compiler and linker arguments without initializing TVM, device runtimes, or a
+device driver. The compiler library is named <code class="docutils literal notranslate"><span class="pre">libtvm_tirx_compiler</span></code>; the
+Python package remains <code class="docutils literal notranslate"><span class="pre">tvm_tirx</span></code>. For example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">tvm</span><span class="o">-</span><span class="n">tirx</span><span class="o">-</span><span class="n">config</span> <span class="o">--</span><span class="n">version</span> <span class="o">--</span><span class="n">prefix</span> <span class="o">--</span><span class="n">includedir</span> <span class="o">--</span><span class="n">libdir</span> <span class="o">--</span><span class="n">cmakedir</span>
+<span class="n">tvm</span><span class="o">-</span><span class="n">tirx</span><span class="o">-</span><span class="n">config</span> <span class="o">--</span><span class="n">components</span>
+<span class="n">tvm</span><span class="o">-</span><span class="n">tirx</span><span class="o">-</span><span class="n">config</span> <span class="o">--</span><span class="n">cxxflags</span> <span class="o">--</span><span class="n">ldflags</span> <span class="o">--</span><span class="n">libs</span> <span class="n">compiler</span>
+<span class="n">tvm</span><span class="o">-</span><span class="n">tirx</span><span class="o">-</span><span class="n">config</span> <span class="o">--</span><span class="n">ldflags</span> <span class="o">--</span><span class="n">libs</span> <span class="n">runtime</span>
+<span class="n">tvm</span><span class="o">-</span><span class="n">tirx</span><span class="o">-</span><span class="n">config</span> <span class="o">--</span><span class="n">ldflags</span> <span class="o">--</span><span class="n">libs</span> <span class="n">runtime</span> <span class="n">cuda</span>
+</pre></div>
+</div>
+<p>Positional components select <code class="docutils literal notranslate"><span class="pre">compiler</span></code>, <code class="docutils literal notranslate"><span class="pre">runtime</span></code>, <code class="docutils literal notranslate"><span class="pre">ffi</span></code>, or an enabled
+device runtime (<code class="docutils literal notranslate"><span class="pre">cuda</span></code>, <code class="docutils literal notranslate"><span class="pre">metal</span></code>, <code class="docutils literal notranslate"><span class="pre">opencl</span></code>, <code class="docutils literal notranslate"><span class="pre">vulkan</span></code>, <code class="docutils literal notranslate"><span class="pre">rocm</span></code>). Dependencies
+are included once, after their dependents: compiler and device runtimes depend
+on runtime, which depends on FFI. Selecting compiler does not select any device
+runtime. Like <code class="docutils literal notranslate"><span class="pre">llvm-config</span></code>, omitting components or selecting <code class="docutils literal notranslate"><span class="pre">all</span></code> means
+all available components. Select components explicitly when optional device
+libraries are unwanted.</p>
+<p><code class="docutils literal notranslate"><span class="pre">--cflags</span></code> and <code class="docutils literal notranslate"><span class="pre">--cxxflags</span></code> include the matching FFI and DLPack headers;
+<code class="docutils literal notranslate"><span class="pre">--ldflags</span></code> supplies library search directories. <code class="docutils literal notranslate"><span class="pre">--libs</span></code> supplies the
+complete shared-library inputs, including scoped retention flags for runtime
+registrations (ELF <code class="docutils literal notranslate"><span class="pre">--push-state,--no-as-needed</span></code> / <code class="docutils literal notranslate"><span class="pre">--pop-state</span></code> or Mach-O
+<code class="docutils literal notranslate"><span class="pre">-needed_library</span></code>). <code class="docutils literal notranslate"><span class="pre">--libnames</span></code> and <code class="docutils literal notranslate"><span class="pre">--libfiles</span></code> print only filenames and
+full paths, respectively, without retention switches. Use <code class="docutils literal notranslate"><span class="pre">shlex.split</span></code> when
+consuming these outputs from Python, including paths containing spaces:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">flags</span> <span class="o">=</span> <span class="n">shlex</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">subprocess</span><span class="o">.</span><span class="n">check_output</span><span class="p">(</span>
+    <span class="p">[</span><span class="s2">&quot;tvm-tirx-config&quot;</span><span class="p">,</span> <span class="s2">&quot;--libs&quot;</span><span class="p">,</span> <span class="s2">&quot;runtime&quot;</span><span class="p">],</span> <span class="n">text</span><span class="o">=</span><span class="kc">True</span><span class="p">))</span>
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">--link-shared</span></code> is the default. <code class="docutils literal notranslate"><span class="pre">--link-static</span></code> reports an unavailable mode:
+the distributed runtime archive alone is not a complete static dependency
+closure, and the FFI package does not distribute all of its static dependencies.
+The CLI never substitutes shared libraries for an explicit static request.
+<code class="docutils literal notranslate"><span class="pre">--install-prefix</span> <span class="pre">PATH</span></code> and <code class="docutils literal notranslate"><span class="pre">--library-dir</span> <span class="pre">PATH</span></code> query an explicit native
+installation. The FFI dependency is selected from the invoking Python environment.</p>
+<p>For ahead-of-time deployment, export an LLVM-host module with
+<code class="docutils literal notranslate"><span class="pre">tvm_tirx.codegen.Executable(module).export_library(&quot;model.tar&quot;)</span></code>, extract every
+object in the archive,
+and link those objects into a shared library with the CLI’s <code class="docutils literal notranslate"><span class="pre">--ldflags</span></code> and
+<code class="docutils literal notranslate"><span class="pre">--libs</span> <span class="pre">runtime</span></code> (plus the device component when required). CUDA exports also
+contain host-format objects packing imported device code. Do not assume an
+object count or filename. A fresh process can then use
+<code class="docutils literal notranslate"><span class="pre">tvm_ffi.load_module(&quot;model.so&quot;)</span></code> without importing <code class="docutils literal notranslate"><span class="pre">tvm_tirx</span></code>. Make the
+reported library directories available to the platform loader, for example
+through the deployment’s loader search path; runtime preloading is unnecessary.</p>
+</section>
+<section id="export-and-runtime-apis">
+<h2>Export and runtime APIs<a class="headerlink" href="#export-and-runtime-apis" title="Link to this heading">#</a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">tvm_tirx.codegen.Executable</span></code> owns compiler-side export, import packing, and
+JIT linking. It accepts an ordinary <code class="docutils literal notranslate"><span class="pre">tvm_ffi.Module</span></code>; compilation entry points
+return this executable wrapper. Use <code class="docutils literal notranslate"><span class="pre">executable.mod</span></code> to inspect the underlying
+FFI module and <code class="docutils literal notranslate"><span class="pre">executable.jit()</span></code> for a runnable module.
+<code class="docutils literal notranslate"><span class="pre">tvm_tirx.codegen.load_static_library</span></code> wraps an existing object for inclusion
+in an executable’s import graph.</p>
+<p><code class="docutils literal notranslate"><span class="pre">tvm_tirx.runtime.Module</span></code>, <code class="docutils literal notranslate"><span class="pre">load_module</span></code>, and <code class="docutils literal notranslate"><span class="pre">system_lib</span></code> directly alias
+the FFI APIs. Loading no longer invokes a linker for objects or archives; export
+and link explicitly before loading. Parent TVM’s RPC server retains remote
+object/archive linking through its registered server hook.</p>
+<p>Benchmarking belongs to parent TVM: use
+<code class="docutils literal notranslate"><span class="pre">tvm.runtime.time_evaluator(module,</span> <span class="pre">name,</span> <span class="pre">device,</span> <span class="pre">...)</span></code> and
+<code class="docutils literal notranslate"><span class="pre">tvm.runtime.BenchmarkResult</span></code>. The standalone runtime and device libraries
+retain the small device-timer interface but do not acquire parent benchmarking
+policy or a dependency on <code class="docutils literal notranslate"><span class="pre">libtvm_runtime_extra</span></code>.</p>
 </section>
 </section>
 
@@ -844,6 +913,8 @@ separately installed TIRx wheel cannot override the selected installation.
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#install-the-kernel-library-optional">Install the kernel library (optional)</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#standalone-cmake-build">Standalone CMake build</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#installed-consumers">Installed consumers</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#component-configuration-cli">Component configuration CLI</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#export-and-runtime-apis">Export and runtime APIs</a></li>
 </ul>
   </nav></div>
 

@@ -864,7 +864,7 @@ IRModule to generate the token.
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** (2 minutes 48.629 seconds)
+   **Total running time of the script:** (2 minutes 44.997 seconds)
 
 
 .. _sphx_glr_download_how_to_tutorials_optimize_llm.py:

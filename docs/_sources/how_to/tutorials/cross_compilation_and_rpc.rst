@@ -264,7 +264,7 @@ device and returns the measured cost. Network overhead is excluded.
 .. code-block:: Python
 
 
-    time_f = func.time_evaluator("add_one", dev, number=10)
+    time_f = tvm.runtime.time_evaluator(func, "add_one", dev, number=10)
     cost = time_f(a, b).mean
     print(f"{cost:g} secs/op")
 
@@ -276,7 +276,7 @@ device and returns the measured cost. Network overhead is excluded.
 
  .. code-block:: none
 
-    9.4e-08 secs/op
+    1.01e-07 secs/op
 
 
 
@@ -865,8 +865,8 @@ This workflow is applicable to various deployment scenarios:
     Converted PyTorch model to Relax:
       - Number of parameters: 4
     Using local target for demonstration
-    Exported library to: /tmp/tmp8j77hxpt/model_deployed.so
-    Saved parameters to: /tmp/tmp8j77hxpt/model_params.npz
+    Exported library to: /tmp/tmp4eckn_i4/model_deployed.so
+    Saved parameters to: /tmp/tmp4eckn_i4/model_params.npz
 
     RPC workflow (works for any remote device):
     ==================================================
