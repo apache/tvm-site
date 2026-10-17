@@ -43,8 +43,8 @@ Location
 .. autosummary::
    :toctree: generated/
 
-   Location
    SourceName
+   Location
    SourceLoc
    UnknownLoc
    CallSiteLoc
@@ -55,7 +55,6 @@ Type
 .. autosummary::
    :toctree: generated/
 
-   Type
    AnyType
    FuncType
    MissingType
@@ -65,6 +64,7 @@ Type
    StringType
    TensorRegionType
    TupleType
+   Type
 
 Expr
 ----
@@ -72,7 +72,6 @@ Expr
 .. autosummary::
    :toctree: generated/
 
-   Expr
    Call
    IntImm
    FloatImm
@@ -80,6 +79,7 @@ Expr
    GenericConst
    DataTypeImm
    StringImm
+   Expr
    GlobalVar
    LambdaExpr
    StagingExpr

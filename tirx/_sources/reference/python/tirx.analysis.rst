@@ -29,6 +29,6 @@ Functions
 .. autosummary::
    :toctree: generated/
 
-   undefined_vars
    verify_memory
+   undefined_vars
    verify_well_formed

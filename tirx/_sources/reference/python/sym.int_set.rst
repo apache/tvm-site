@@ -43,8 +43,8 @@ Functions
 .. autosummary::
    :toctree: generated/
 
-   neg_inf
    pos_inf
+   neg_inf
    union_lower_bound
 
 .. list-table::

@@ -32,9 +32,9 @@ Functions
    :template: autosummary/callable.rst
 
    mark
-   official_event
-   range_end
-   range_pop
-   range_push
    range_start
+   range_end
+   range_push
+   range_pop
    sentinel_token
+   official_event

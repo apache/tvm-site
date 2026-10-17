@@ -30,30 +30,30 @@ Functions
    :toctree: generated/
 
    build_flag_enabled
-   cuda_arch
-   has_adreno_opencl
-   has_cpu_feature
-   has_cublas
    has_cuda
-   has_cuda_arch
-   has_cuda_compute
-   has_cudagraph
-   has_cudnn
-   has_gpu
-   has_hexagon
-   has_hexagon_toolchain
-   has_hipblas
-   has_llvm
-   has_llvm_min_version
-   has_matrixcore
-   has_metal
-   has_multi_gpu
-   has_nccl
-   has_nvcc_version
-   has_nvptx
-   has_nvshmem
-   has_opencl
    has_rocm
    has_vulkan
-   has_x86_avx512
+   has_metal
+   has_opencl
+   has_nvptx
+   has_llvm
+   has_gpu
+   has_multi_gpu
+   has_cudnn
+   has_cublas
+   has_nccl
+   has_hipblas
+   has_nvshmem
+   cuda_arch
+   has_cuda_arch
+   has_cuda_compute
+   has_nvcc_version
+   has_llvm_min_version
+   has_matrixcore
+   has_cudagraph
+   has_hexagon_toolchain
+   has_hexagon
+   has_adreno_opencl
+   has_cpu_feature
    has_x86_vnni
+   has_x86_avx512

@@ -29,8 +29,8 @@ Functions
 .. autosummary::
    :toctree: generated/
 
-   describe
    libinfo
+   describe
 
 Namespaces
 ----------

@@ -38,5 +38,5 @@ Functions
 .. autosummary::
    :toctree: generated/
 
-   LowerTIRx
    LowerTrainiumLayout
+   LowerTIRx

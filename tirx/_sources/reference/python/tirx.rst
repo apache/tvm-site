@@ -126,9 +126,7 @@ Functions
    :toctree: generated/
 
    tensor_data_ptr
-   decl_tensor
    is_tensor_var
-   TensorLoad
    renew_def
    call_packed_lowered
    call_cpacked_lowered

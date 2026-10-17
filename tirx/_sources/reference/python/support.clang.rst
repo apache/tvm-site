@@ -29,5 +29,5 @@ Functions
 .. autosummary::
    :toctree: generated/
 
-   create_llvm
    find_clang
+   create_llvm

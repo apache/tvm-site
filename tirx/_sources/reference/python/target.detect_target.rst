@@ -29,5 +29,5 @@ Functions
 .. autosummary::
    :toctree: generated/
 
-   detect_target_from_device
    register_device_target_detector
+   detect_target_from_device

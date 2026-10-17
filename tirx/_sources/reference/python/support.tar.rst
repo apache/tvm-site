@@ -29,6 +29,6 @@ Functions
 .. autosummary::
    :toctree: generated/
 
-   normalize_file_list_by_unpacking_tars
    tar
    untar
+   normalize_file_list_by_unpacking_tars

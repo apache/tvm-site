@@ -40,19 +40,20 @@ Functions
 .. autosummary::
    :toctree: generated/
 
+   load_module
+   tensor
+   empty
    cpu
    cuda
-   empty
-   enabled
-   ext_dev
-   load_module
-   metal
-   num_threads
    opencl
-   rocm
-   tensor
-   vpi
    vulkan
+   metal
+   vpi
+   rocm
+   ext_dev
+   hexagon
+   enabled
+   num_threads
 
 Namespaces
 ----------

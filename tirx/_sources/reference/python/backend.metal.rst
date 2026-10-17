@@ -30,8 +30,8 @@ Functions
    :toctree: generated/
 
    register_backend
-   script_namespace
    script_namespaces
+   script_namespace
 
 Namespaces
 ----------

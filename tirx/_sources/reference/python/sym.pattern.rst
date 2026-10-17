@@ -32,7 +32,7 @@ Functions
 
    * - Alias
      - Canonical API
-   * - ``detect_clip_bound``
-     - :obj:`tvm_tirx.sym.detect_clip_bound`
    * - ``detect_linear_equation``
      - :obj:`tvm_tirx.sym.detect_linear_equation`
+   * - ``detect_clip_bound``
+     - :obj:`tvm_tirx.sym.detect_clip_bound`

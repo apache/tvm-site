@@ -29,15 +29,15 @@ Functions
 .. autosummary::
    :toctree: generated/
 
-   cpu_has_features
+   lookup_intrinsic_id
+   get_intrinsic_name
+   get_system_x86_vendor
+   get_system_triple
+   get_system_cpu
+   get_targets
    get_cpu_archlist
    get_cpu_features
-   get_intrinsic_name
-   get_system_cpu
-   get_system_triple
-   get_system_x86_vendor
-   get_targets
+   cpu_has_features
    get_vector_width
    is_valid_cpu
-   lookup_intrinsic_id
    version_major

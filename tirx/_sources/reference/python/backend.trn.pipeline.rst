@@ -29,5 +29,5 @@ Functions
 .. autosummary::
    :toctree: generated/
 
-   finalize_device_passes_trn
    trn_pipeline
+   finalize_device_passes_trn

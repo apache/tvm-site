@@ -29,10 +29,10 @@ Classes
 .. autosummary::
    :toctree: generated/
 
-   MapResult
-   PopenPoolExecutor
-   PopenWorker
    StatusKind
+   MapResult
+   PopenWorker
+   PopenPoolExecutor
 
 Functions
 ---------

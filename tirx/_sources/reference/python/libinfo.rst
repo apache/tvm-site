@@ -29,7 +29,7 @@ Functions
 .. autosummary::
    :toctree: generated/
 
-   configuration
-   find_include_path
-   find_libtvm_runtime
    package_lib_paths
+   find_libtvm_runtime
+   find_include_path
+   configuration

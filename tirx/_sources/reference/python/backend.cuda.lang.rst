@@ -29,13 +29,13 @@ Classes
 .. autosummary::
    :toctree: generated/
 
+   MBarrier
+   Pipeline
+   PipelineState
    BaseTileScheduler
    ClusterPersistentScheduler2D
    FlashAttentionLPTScheduler
    FlashAttentionLinearScheduler
-   MBarrier
-   Pipeline
-   PipelineState
    SMEMPool
    TCGen05Bar
    TMABar

@@ -39,36 +39,22 @@ Classes
 
    * - Alias
      - Canonical API
-   * - ``Any``
-     - :obj:`tvm_tirx.ir.AnyType`
    * - ``Call``
      - :obj:`tvm_tirx.ir.Call`
    * - ``DataTypeImm``
      - :obj:`tvm_tirx.ir.DataTypeImm`
-   * - ``Func``
-     - :obj:`tvm_tirx.ir.FuncType`
    * - ``FuncType``
      - :obj:`tvm_tirx.ir.FuncType`
    * - ``GenericConst``
      - :obj:`tvm_tirx.ir.GenericConst`
-   * - ``Missing``
-     - :obj:`tvm_tirx.ir.MissingType`
    * - ``MissingType``
      - :obj:`tvm_tirx.ir.MissingType`
    * - ``Op``
      - :obj:`tvm_tirx.ir.Op`
-   * - ``Opaque``
-     - :obj:`tvm_tirx.ir.OpaqueType`
-   * - ``Prim``
-     - :obj:`tvm_tirx.ir.PrimType`
    * - ``PrimType``
      - :obj:`tvm_tirx.ir.PrimType`
-   * - ``Ptr``
-     - :obj:`tvm_tirx.ir.PtrType`
    * - ``Range``
      - :obj:`tvm_tirx.ir.Range`
-   * - ``String``
-     - :obj:`tvm_tirx.ir.StringType`
    * - ``StringImm``
      - :obj:`tvm_tirx.ir.StringImm`
    * - ``StringType``
@@ -83,6 +69,20 @@ Classes
      - :obj:`tvm_tirx.ir.Type`
    * - ``Var``
      - :obj:`tvm_tirx.ir.Var`
+   * - ``Missing``
+     - :obj:`tvm_tirx.ir.MissingType`
+   * - ``Any``
+     - :obj:`tvm_tirx.ir.AnyType`
+   * - ``Opaque``
+     - :obj:`tvm_tirx.ir.OpaqueType`
+   * - ``Prim``
+     - :obj:`tvm_tirx.ir.PrimType`
+   * - ``String``
+     - :obj:`tvm_tirx.ir.StringType`
+   * - ``Ptr``
+     - :obj:`tvm_tirx.ir.PtrType`
+   * - ``Func``
+     - :obj:`tvm_tirx.ir.FuncType`
 
 Functions
 ---------
@@ -90,23 +90,23 @@ Functions
 .. autosummary::
    :toctree: generated/
 
-   Lambda
    at_
-   check_well_formed_
+   resolve_global_info_args
+   with_at_group_
+   Lambda
    constexpr
-   decl_function
    dtype
    dynamic
-   ir_module
    meta_var
    module_attrs
    module_get_attr
    module_global_infos
-   module_member_
    module_set_attr
+   check_well_formed_
+   decl_function
+   ir_module
+   module_member_
    resolve_global_info_
-   resolve_global_info_args
-   with_at_group_
 
 .. list-table::
    :header-rows: 1

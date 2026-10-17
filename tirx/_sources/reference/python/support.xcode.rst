@@ -29,7 +29,7 @@ Functions
 .. autosummary::
    :toctree: generated/
 
-   compile_coreml
-   compile_metal
-   create_dylib
    xcrun
+   create_dylib
+   compile_metal
+   compile_coreml

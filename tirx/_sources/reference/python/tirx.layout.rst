@@ -38,9 +38,9 @@ Classes
 
    * - Alias
      - Canonical API
-   * - ``ComposeLayout``
-     - :obj:`tvm_tirx.tirx.ComposeLayout`
    * - ``Layout``
      - :obj:`tvm_tirx.tirx.Layout`
    * - ``TileLayout``
      - :obj:`tvm_tirx.tirx.TileLayout`
+   * - ``ComposeLayout``
+     - :obj:`tvm_tirx.tirx.ComposeLayout`

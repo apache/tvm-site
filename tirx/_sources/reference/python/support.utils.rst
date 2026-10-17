@@ -30,8 +30,8 @@ Classes
    :toctree: generated/
 
    DirectoryCreatedPastAtExit
-   FileLock
    TempDirectory
+   FileLock
 
 Functions
 ---------
@@ -39,7 +39,7 @@ Functions
 .. autosummary::
    :toctree: generated/
 
+   tempdir
    filelock
    is_source_path
-   tempdir
    which

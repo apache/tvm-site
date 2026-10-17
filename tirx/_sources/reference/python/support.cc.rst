@@ -29,10 +29,10 @@ Functions
 .. autosummary::
    :toctree: generated/
 
-   create_executable
+   get_cc
    create_shared
    create_staticlib
-   cross_compiler
-   get_cc
+   create_executable
    get_global_symbol_section_map
    get_target_by_dump_machine
+   cross_compiler

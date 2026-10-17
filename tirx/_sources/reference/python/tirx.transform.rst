@@ -68,4 +68,4 @@ Passes
    AnnotateEntryFunc
    Filter
    TileDispatch
-   LowerTIRx
+   LowerTensorLayouts

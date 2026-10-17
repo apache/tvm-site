@@ -30,12 +30,11 @@ Functions
    :toctree: generated/
 
    default_tir_pipeline
-   finalize_device_passes
-   finalize_device_passes_tirx
-   finalize_host_passes
-   finalize_tir_pipeline
-   register_default_tir_pipeline_selector
    tirx_pipeline
+   finalize_tir_pipeline
+   finalize_host_passes
+   finalize_device_passes
+   register_default_tir_pipeline_selector
 
 .. list-table::
    :header-rows: 1
@@ -43,9 +42,9 @@ Functions
 
    * - Alias
      - Canonical API
-   * - ``get_default_tir_pipeline``
-     - :obj:`tvm_tirx.tirx.get_default_tir_pipeline`
-   * - ``get_tir_pipeline``
-     - :obj:`tvm_tirx.tirx.get_tir_pipeline`
    * - ``register_tir_pipeline``
      - :obj:`tvm_tirx.tirx.register_tir_pipeline`
+   * - ``get_tir_pipeline``
+     - :obj:`tvm_tirx.tirx.get_tir_pipeline`
+   * - ``get_default_tir_pipeline``
+     - :obj:`tvm_tirx.tirx.get_default_tir_pipeline`

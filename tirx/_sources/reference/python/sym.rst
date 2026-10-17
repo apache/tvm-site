@@ -29,17 +29,17 @@ Classes
 .. autosummary::
    :toctree: generated/
 
-   Analyzer
-   CompareResult
-   ConstIntBound
    IntSet
    IntervalSet
+   ModularSet
+   ConstIntBound
+   Analyzer
+   ProofStrength
+   CompareResult
    IterMapExpr
    IterMark
    IterSplitExpr
    IterSumExpr
-   ModularSet
-   ProofStrength
 
 Functions
 ---------
@@ -47,19 +47,19 @@ Functions
 .. autosummary::
    :toctree: generated/
 
-   allow_uint_as_index
-   deduce_bound
-   detect_clip_bound
-   detect_iter_map
-   detect_linear_equation
    estimate_region_lower_bound
    estimate_region_strict_bound
    estimate_region_upper_bound
-   inverse_affine_iter_map
+   allow_uint_as_index
+   deduce_bound
+   detect_linear_equation
+   detect_clip_bound
+   detect_iter_map
    iter_map_simplify
    normalize_iter_map_to_expr
    normalize_to_iter_sum
    subspace_divide
+   inverse_affine_iter_map
 
 Namespaces
 ----------

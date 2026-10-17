@@ -29,8 +29,8 @@ Functions
 .. autosummary::
    :toctree: generated/
 
-   nd_mem_alloc_with_scope
    register_backend
+   nd_mem_alloc_with_scope
    texture2d_load
    texture2d_store
 

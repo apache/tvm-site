@@ -32,12 +32,10 @@ Classes
 
    * - Alias
      - Canonical API
-   * - ``CallFFIKernelAttr``
-     - :obj:`tvm_tirx.tirx.CallFFIKernelAttr`
-   * - ``TensorLoad``
-     - :obj:`tvm_tirx.ir.TensorLoad`
    * - ``TensorMapType``
      - :obj:`tvm_tirx.tirx.TensorMapType`
+   * - ``CallFFIKernelAttr``
+     - :obj:`tvm_tirx.tirx.CallFFIKernelAttr`
 
 Functions
 ---------
@@ -45,19 +43,19 @@ Functions
 .. autosummary::
    :toctree: generated/
 
-   gpu_active_thread_selector
-   gpu_storage_sync
-   gpu_thread_filter
    gpu_thread_invariant
-   gpu_thread_return
-   gpu_warp_activemask
-   gpu_warp_shuffle
-   gpu_warp_shuffle_down
-   gpu_warp_shuffle_up
-   gpu_warp_shuffle_xor
+   gpu_storage_sync
    kernel_replace_point
+   gpu_warp_shuffle
+   gpu_warp_shuffle_up
+   gpu_warp_shuffle_down
+   gpu_warp_shuffle_xor
+   gpu_warp_activemask
+   gpu_thread_filter
+   gpu_active_thread_selector
    masked_load
    masked_store
+   gpu_thread_return
 
 .. list-table::
    :header-rows: 1
@@ -65,87 +63,87 @@ Functions
 
    * - Alias
      - Canonical API
+   * - ``is_tensor_var``
+     - :obj:`tvm_tirx.tirx.is_tensor_var`
+   * - ``tensor_data_ptr``
+     - :obj:`tvm_tirx.tirx.tensor_data_ptr`
+   * - ``register_intrin_lowering``
+     - :obj:`tvm_tirx.tirx.register_intrin_lowering`
+   * - ``call_packed_lowered``
+     - :obj:`tvm_tirx.tirx.call_packed_lowered`
+   * - ``call_cpacked_lowered``
+     - :obj:`tvm_tirx.tirx.call_cpacked_lowered`
+   * - ``call_packed``
+     - :obj:`tvm_tirx.tirx.call_packed`
+   * - ``call_ffi_kernel``
+     - :obj:`tvm_tirx.tirx.call_ffi_kernel`
+   * - ``call_cpacked``
+     - :obj:`tvm_tirx.tirx.call_cpacked`
+   * - ``call_intrin``
+     - :obj:`tvm_tirx.tirx.call_intrin`
+   * - ``call_pure_extern``
+     - :obj:`tvm_tirx.tirx.call_pure_extern`
+   * - ``call_extern``
+     - :obj:`tvm_tirx.tirx.call_extern`
+   * - ``call_llvm_intrin``
+     - :obj:`tvm_tirx.tirx.call_llvm_intrin`
+   * - ``call_llvm_pure_intrin``
+     - :obj:`tvm_tirx.tirx.call_llvm_pure_intrin`
+   * - ``stack_alloca``
+     - :obj:`tvm_tirx.tirx.stack_alloca`
+   * - ``stack_make_shape``
+     - :obj:`tvm_tirx.tirx.stack_make_shape`
+   * - ``stack_make_dltensor``
+     - :obj:`tvm_tirx.tirx.stack_make_dltensor`
+   * - ``assume_aligned``
+     - :obj:`tvm_tirx.tirx.assume_aligned`
+   * - ``undef``
+     - :obj:`tvm_tirx.tirx.undef`
+   * - ``handle_add_byte_offset``
+     - :obj:`tvm_tirx.tirx.handle_add_byte_offset`
    * - ``abi_field_get``
      - :obj:`tvm_tirx.tirx.abi_field_get`
    * - ``abi_field_set``
      - :obj:`tvm_tirx.tirx.abi_field_set`
    * - ``address_of``
      - :obj:`tvm_tirx.tirx.address_of`
-   * - ``alloc_workspace``
-     - :obj:`tvm_tirx.tirx.alloc_workspace`
-   * - ``assume_aligned``
-     - :obj:`tvm_tirx.tirx.assume_aligned`
-   * - ``call_cpacked``
-     - :obj:`tvm_tirx.tirx.call_cpacked`
-   * - ``call_cpacked_lowered``
-     - :obj:`tvm_tirx.tirx.call_cpacked_lowered`
-   * - ``call_extern``
-     - :obj:`tvm_tirx.tirx.call_extern`
-   * - ``call_ffi_kernel``
-     - :obj:`tvm_tirx.tirx.call_ffi_kernel`
-   * - ``call_intrin``
-     - :obj:`tvm_tirx.tirx.call_intrin`
-   * - ``call_llvm_intrin``
-     - :obj:`tvm_tirx.tirx.call_llvm_intrin`
-   * - ``call_llvm_pure_intrin``
-     - :obj:`tvm_tirx.tirx.call_llvm_pure_intrin`
-   * - ``call_packed``
-     - :obj:`tvm_tirx.tirx.call_packed`
-   * - ``call_packed_lowered``
-     - :obj:`tvm_tirx.tirx.call_packed_lowered`
-   * - ``call_pure_extern``
-     - :obj:`tvm_tirx.tirx.call_pure_extern`
+   * - ``gpu_thread_allreduce``
+     - :obj:`tvm_tirx.tirx.gpu_thread_allreduce`
    * - ``cpu_parallel_barrier``
      - :obj:`tvm_tirx.tirx.cpu_parallel_barrier`
+   * - ``ptr_byte_offset``
+     - :obj:`tvm_tirx.tirx.ptr_byte_offset`
+   * - ``throw_last_error``
+     - :obj:`tvm_tirx.tirx.throw_last_error`
+   * - ``vector_low``
+     - :obj:`tvm_tirx.tirx.vector_low`
+   * - ``vector_high``
+     - :obj:`tvm_tirx.tirx.vector_high`
+   * - ``vector_combine``
+     - :obj:`tvm_tirx.tirx.vector_combine`
+   * - ``gpu_dp4a``
+     - :obj:`tvm_tirx.tirx.gpu_dp4a`
+   * - ``reinterpret``
+     - :obj:`tvm_tirx.tirx.reinterpret`
+   * - ``isnullptr``
+     - :obj:`tvm_tirx.tirx.isnullptr`
+   * - ``logaddexp``
+     - :obj:`tvm_tirx.tirx.logaddexp`
+   * - ``alloc_workspace``
+     - :obj:`tvm_tirx.tirx.alloc_workspace`
    * - ``free_workspace``
      - :obj:`tvm_tirx.tirx.free_workspace`
    * - ``get_active_lane_mask``
      - :obj:`tvm_tirx.tirx.get_active_lane_mask`
    * - ``get_vscale_expr``
      - :obj:`tvm_tirx.tirx.get_vscale_expr`
-   * - ``gpu_dp4a``
-     - :obj:`tvm_tirx.tirx.gpu_dp4a`
-   * - ``gpu_fill_fragment``
-     - :obj:`tvm_tirx.tirx.gpu_fill_fragment`
+   * - ``ignore_loop_partition``
+     - :obj:`tvm_tirx.tirx.ignore_loop_partition`
    * - ``gpu_load_matrix_sync``
      - :obj:`tvm_tirx.tirx.gpu_load_matrix_sync`
    * - ``gpu_mma_sync``
      - :obj:`tvm_tirx.tirx.gpu_mma_sync`
+   * - ``gpu_fill_fragment``
+     - :obj:`tvm_tirx.tirx.gpu_fill_fragment`
    * - ``gpu_store_matrix_sync``
      - :obj:`tvm_tirx.tirx.gpu_store_matrix_sync`
-   * - ``gpu_thread_allreduce``
-     - :obj:`tvm_tirx.tirx.gpu_thread_allreduce`
-   * - ``handle_add_byte_offset``
-     - :obj:`tvm_tirx.tirx.handle_add_byte_offset`
-   * - ``ignore_loop_partition``
-     - :obj:`tvm_tirx.tirx.ignore_loop_partition`
-   * - ``is_tensor_var``
-     - :obj:`tvm_tirx.tirx.is_tensor_var`
-   * - ``isnullptr``
-     - :obj:`tvm_tirx.tirx.isnullptr`
-   * - ``logaddexp``
-     - :obj:`tvm_tirx.tirx.logaddexp`
-   * - ``ptr_byte_offset``
-     - :obj:`tvm_tirx.tirx.ptr_byte_offset`
-   * - ``register_intrin_lowering``
-     - :obj:`tvm_tirx.tirx.register_intrin_lowering`
-   * - ``reinterpret``
-     - :obj:`tvm_tirx.tirx.reinterpret`
-   * - ``stack_alloca``
-     - :obj:`tvm_tirx.tirx.stack_alloca`
-   * - ``stack_make_dltensor``
-     - :obj:`tvm_tirx.tirx.stack_make_dltensor`
-   * - ``stack_make_shape``
-     - :obj:`tvm_tirx.tirx.stack_make_shape`
-   * - ``tensor_data_ptr``
-     - :obj:`tvm_tirx.tirx.tensor_data_ptr`
-   * - ``throw_last_error``
-     - :obj:`tvm_tirx.tirx.throw_last_error`
-   * - ``undef``
-     - :obj:`tvm_tirx.tirx.undef`
-   * - ``vector_combine``
-     - :obj:`tvm_tirx.tirx.vector_combine`
-   * - ``vector_high``
-     - :obj:`tvm_tirx.tirx.vector_high`
-   * - ``vector_low``
-     - :obj:`tvm_tirx.tirx.vector_low`

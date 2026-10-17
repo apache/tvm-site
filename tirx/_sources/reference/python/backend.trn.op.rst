@@ -29,19 +29,19 @@ Functions
 .. autosummary::
    :toctree: generated/
 
-   nki_activation
-   nki_activation_reduce
-   nki_affine_select
-   nki_identity
    nki_load
-   nki_matmul
-   nki_memset
-   nki_reciprocal
-   nki_scalar_tensor_scalar
-   nki_scalar_tensor_tensor
    nki_store
    nki_tensor_copy
+   nki_matmul
+   nki_activation
+   nki_reciprocal
    nki_tensorreduce
-   nki_tensorscalar
-   nki_tensorscalar_reduce
    nki_tensortensor
+   nki_tensorscalar
+   nki_memset
+   nki_activation_reduce
+   nki_tensorscalar_reduce
+   nki_identity
+   nki_scalar_tensor_tensor
+   nki_scalar_tensor_scalar
+   nki_affine_select

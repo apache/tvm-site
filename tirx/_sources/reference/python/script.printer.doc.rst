@@ -29,31 +29,31 @@ Classes
 .. autosummary::
    :toctree: generated/
 
-   AssertDoc
-   AssignDoc
+   Doc
+   ExprDoc
+   StmtDoc
+   StmtBlockDoc
+   LiteralDoc
+   IdDoc
    AttrAccessDoc
+   IndexDoc
    CallDoc
+   OperationKind
+   OperationDoc
+   LambdaDoc
+   TupleDoc
+   ListDoc
+   DictDoc
+   SliceDoc
+   AssignDoc
+   IfDoc
+   WhileDoc
+   ForDoc
+   ScopeDoc
+   ExprStmtDoc
+   AssertDoc
+   ReturnDoc
+   FunctionDoc
    ClassDoc
    CommentDoc
-   DictDoc
-   Doc
    DocStringDoc
-   ExprDoc
-   ExprStmtDoc
-   ForDoc
-   FunctionDoc
-   IdDoc
-   IfDoc
-   IndexDoc
-   LambdaDoc
-   ListDoc
-   LiteralDoc
-   OperationDoc
-   OperationKind
-   ReturnDoc
-   ScopeDoc
-   SliceDoc
-   StmtBlockDoc
-   StmtDoc
-   TupleDoc
-   WhileDoc

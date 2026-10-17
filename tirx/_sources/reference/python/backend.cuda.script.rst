@@ -29,16 +29,16 @@ Classes
 .. autosummary::
    :toctree: generated/
 
-   CudaTcgen05Namespace
+   STIRNamespace
+   PTXLegacyNamespace
    CudaWgmmaNamespace
+   CudaTcgen05Namespace
    IketNamespace
-   NVSHMEMGetMemNBINamespace
    NVSHMEMNamespace
+   NVSHMEMGetMemNBINamespace
    NVSHMEMPutMemNBINamespace
    NVSHMEMPutMemSignalNBINamespace
-   PTXLegacyNamespace
    PTXNamespace
-   STIRNamespace
 
 Functions
 ---------
@@ -47,6 +47,13 @@ Functions
    :toctree: generated/
    :template: autosummary/callable.rst
 
+   mma_store
+   mma_fill
+   __shfl_sync
+   __shfl_up_sync
+   __shfl_down_sync
+   __shfl_xor_sync
+   __activemask
    any_sync
    ballot_sync
    bfloat1622float2
@@ -94,8 +101,6 @@ Functions
    make_float2
    mbarrier_wait
    mbarrier_wait_acquire_cluster
-   mma_fill
-   mma_store
    nano_sleep
    printf
    reduce_add_sync_u32
@@ -121,11 +126,6 @@ Functions
    warpgroup_sync
    wgmma_encode_matrix_descriptor
    wgmma_noop_barrier
-   __shfl_sync
-   __shfl_up_sync
-   __shfl_down_sync
-   __shfl_xor_sync
-   __activemask
 
 Namespaces
 ----------

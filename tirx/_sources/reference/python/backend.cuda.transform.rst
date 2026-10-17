@@ -15,13 +15,13 @@
     specific language governing permissions and limitations
     under the License.
 
-tvm_tirx.backend.cuda.transforms
+tvm_tirx.backend.cuda.transform
 ================================
 
-.. automodule:: tvm_tirx.backend.cuda.transforms
+.. automodule:: tvm_tirx.backend.cuda.transform
    :no-members:
 
-.. currentmodule:: tvm_tirx.backend.cuda.transforms
+.. currentmodule:: tvm_tirx.backend.cuda.transform
 
 Functions
 ---------
@@ -29,7 +29,7 @@ Functions
 .. autosummary::
    :toctree: generated/
 
-   BindBackendConfig
    LowerIket
+   BindBackendConfig
    SpecializeDeviceHelpers
    SpecializeEntryHelpers

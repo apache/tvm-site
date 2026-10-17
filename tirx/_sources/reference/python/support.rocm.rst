@@ -29,11 +29,11 @@ Functions
 .. autosummary::
    :toctree: generated/
 
-   callback_rocm_bitcode_path
-   callback_rocm_link
    find_lld
-   find_rocm_path
-   get_rocm_arch
-   have_matrixcore
-   parse_compute_version
    rocm_link
+   callback_rocm_link
+   callback_rocm_bitcode_path
+   parse_compute_version
+   have_matrixcore
+   get_rocm_arch
+   find_rocm_path

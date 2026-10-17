@@ -37,8 +37,8 @@ Functions
 .. autosummary::
    :toctree: generated/
 
+   tmem_datapath_layout
+   tmem_mma_operand_layout
    mma_atom_layout
    mma_atom_shape
    mma_shared_layout
-   tmem_datapath_layout
-   tmem_mma_operand_layout

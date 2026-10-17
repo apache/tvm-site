@@ -32,21 +32,21 @@ Functions
 
    * - Alias
      - Canonical API
-   * - ``Lambda``
-     - :obj:`tvm_tirx.script.ir_builder.Lambda`
-   * - ``constexpr``
-     - :obj:`tvm_tirx.script.ir_builder.constexpr`
    * - ``dtype``
      - :obj:`tvm_tirx.script.ir_builder.dtype`
    * - ``dynamic``
      - :obj:`tvm_tirx.script.ir_builder.dynamic`
+   * - ``constexpr``
+     - :obj:`tvm_tirx.script.ir_builder.constexpr`
    * - ``meta_var``
      - :obj:`tvm_tirx.script.ir_builder.meta_var`
    * - ``module_attrs``
      - :obj:`tvm_tirx.script.ir_builder.module_attrs`
    * - ``module_get_attr``
      - :obj:`tvm_tirx.script.ir_builder.module_get_attr`
-   * - ``module_global_infos``
-     - :obj:`tvm_tirx.script.ir_builder.module_global_infos`
    * - ``module_set_attr``
      - :obj:`tvm_tirx.script.ir_builder.module_set_attr`
+   * - ``module_global_infos``
+     - :obj:`tvm_tirx.script.ir_builder.module_global_infos`
+   * - ``Lambda``
+     - :obj:`tvm_tirx.script.ir_builder.Lambda`

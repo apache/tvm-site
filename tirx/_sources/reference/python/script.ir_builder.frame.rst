@@ -29,14 +29,14 @@ Classes
 .. autosummary::
    :toctree: generated/
 
-   AssertFrame
-   ElseFrame
-   ForFrame
-   IfFrame
-   RegionFrame
    StmtFrame
-   ThenFrame
+   ForFrame
+   AssertFrame
    WhileFrame
+   IfFrame
+   ThenFrame
+   ElseFrame
+   RegionFrame
 
 .. list-table::
    :header-rows: 1

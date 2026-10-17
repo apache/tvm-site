@@ -37,16 +37,16 @@ Classes
 
    * - Alias
      - Canonical API
-   * - ``Analyzer``
-     - :obj:`tvm_tirx.sym.Analyzer`
-   * - ``CompareResult``
-     - :obj:`tvm_tirx.sym.CompareResult`
-   * - ``ConstIntBound``
-     - :obj:`tvm_tirx.sym.ConstIntBound`
-   * - ``ModularSet``
-     - :obj:`tvm_tirx.sym.ModularSet`
    * - ``ProofStrength``
      - :obj:`tvm_tirx.sym.ProofStrength`
+   * - ``CompareResult``
+     - :obj:`tvm_tirx.sym.CompareResult`
+   * - ``ModularSet``
+     - :obj:`tvm_tirx.sym.ModularSet`
+   * - ``ConstIntBound``
+     - :obj:`tvm_tirx.sym.ConstIntBound`
+   * - ``Analyzer``
+     - :obj:`tvm_tirx.sym.Analyzer`
 
 Functions
 ---------

@@ -37,10 +37,10 @@ Classes
 
    * - Alias
      - Canonical API
-   * - ``Target``
-     - :obj:`tvm_tirx.target.Target`
    * - ``TargetKind``
      - :obj:`tvm_tirx.target.TargetKind`
+   * - ``Target``
+     - :obj:`tvm_tirx.target.Target`
 
 Functions
 ---------

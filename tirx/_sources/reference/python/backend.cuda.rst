@@ -43,7 +43,7 @@ Namespaces
    backend.cuda.script
    backend.cuda.thread_scope
    backend.cuda.tile
-   backend.cuda.transforms
+   backend.cuda.transform
 
 Classes
 -------

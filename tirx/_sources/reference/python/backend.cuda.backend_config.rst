@@ -41,7 +41,7 @@ Functions
 .. autosummary::
    :toctree: generated/
 
-   compiler_options
+   validate_backend_config
    default_backend_config
    resolve_backend_config
-   validate_backend_config
+   compiler_options

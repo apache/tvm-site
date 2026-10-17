@@ -29,19 +29,19 @@ Functions
 .. autosummary::
    :toctree: generated/
 
-   callback_libdevice_path
    compile_cuda
    find_cuda_path
-   find_libdevice_path
-   find_nvshmem_paths
    get_cuda_version
+   find_nvshmem_paths
+   tvm_callback_cuda_compile
+   find_libdevice_path
+   callback_libdevice_path
    get_target_compute_version
-   have_bf16
-   have_cudagraph
+   parse_compute_version
    have_fp16
-   have_fp4
-   have_fp8
    have_int8
    have_tensorcore
-   parse_compute_version
-   tvm_callback_cuda_compile
+   have_cudagraph
+   have_bf16
+   have_fp8
+   have_fp4

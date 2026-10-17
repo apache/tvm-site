@@ -36,15 +36,15 @@ Functions
      - :obj:`tvm_tirx.testing.assert_allclose`
    * - ``device_enabled``
      - :obj:`tvm_tirx.testing.device_enabled`
-   * - ``generate_random_array``
-     - :obj:`tvm_tirx.testing.generate_random_array`
+   * - ``parameter``
+     - :obj:`tvm_tirx.testing.parameter`
    * - ``identity_after``
      - :obj:`tvm_tirx.testing.identity_after`
+   * - ``terminate_self``
+     - :obj:`tvm_tirx.testing.terminate_self`
    * - ``main``
      - :obj:`tvm_tirx.testing.main`
    * - ``np_dtype_from_str``
      - :obj:`tvm_tirx.testing.np_dtype_from_str`
-   * - ``parameter``
-     - :obj:`tvm_tirx.testing.parameter`
-   * - ``terminate_self``
-     - :obj:`tvm_tirx.testing.terminate_self`
+   * - ``generate_random_array``
+     - :obj:`tvm_tirx.testing.generate_random_array`

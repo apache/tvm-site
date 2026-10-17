@@ -31,6 +31,6 @@ Functions
    :toctree: generated/
    :template: autosummary/callable.rst
 
+   encode_matrix_descriptor
    encode_instr_descriptor
    encode_instr_descriptor_block_scaled
-   encode_matrix_descriptor

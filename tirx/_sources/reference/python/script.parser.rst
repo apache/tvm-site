@@ -23,18 +23,6 @@ tvm_tirx.script.parser
 
 .. currentmodule:: tvm_tirx.script.parser
 
-TVMScript rewrites Python syntax into an executable IR-builder program, so
-assignments and control flow construct IR while native builder frames own the
-resulting functions and statements. For example:
-
-.. code-block:: python
-
-    from tvm_tirx.script import tirx as T
-
-    @T.function
-    def example(a: T.int32):
-        T.evaluate(a + 1)
-
 The corresponding builder form below omits generated lexical helpers and source
 locations; it illustrates the construction rather than quoting generated output.
 
@@ -50,10 +38,7 @@ locations; it illustrates the construction rather than quoting generated output.
             B.emit_(B.evaluate(a + 1))
     example = builder.get()
 
-A language namespace supplies the ``parser_protocol`` hooks for function
-construction, binding, statement emission and control flow. For example, a
-namespace extending the TIRx builder can customize ``emit_`` and register its
-qualified decorator with :func:`register_namespace` and :func:`make_decorator`:
+A namespace extending the TIRx builder can customize ``emit_`` as follows:
 
 .. code-block:: python
 
@@ -82,11 +67,11 @@ Functions
 
    register_namespace
    register_namespace_initializer
-   from_source
-   ir_module
    make_decorator
    make_macro_decorator
    pyfunc
+   ir_module
+   from_source
 
 .. list-table::
    :header-rows: 1

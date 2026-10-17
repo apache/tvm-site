@@ -31,16 +31,16 @@ Functions
    :toctree: generated/
    :template: autosummary/callable.rst
 
-   barrier_all
-   fence
-   getmem_nbi
    my_pe
    n_pes
-   putmem_nbi
-   putmem_signal_nbi
-   quiet
    signal_op
    wait_until
+   quiet
+   fence
+   barrier_all
+   getmem_nbi
+   putmem_nbi
+   putmem_signal_nbi
 
 Namespaces
 ----------

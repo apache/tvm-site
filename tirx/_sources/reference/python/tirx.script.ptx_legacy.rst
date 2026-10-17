@@ -31,5 +31,5 @@ Functions
    :toctree: generated/
    :template: autosummary/callable.rst
 
-   ldmatrix
    mma
+   ldmatrix

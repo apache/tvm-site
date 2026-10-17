@@ -29,6 +29,6 @@ Functions
 .. autosummary::
    :toctree: generated/
 
+   register_linker
    hexagon_link
    link_shared
-   register_linker

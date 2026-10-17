@@ -29,18 +29,18 @@ Functions
 .. autosummary::
    :toctree: generated/
 
+   echo
+   object_use_count
+   test_raise_error
+   run_with_gpu_lock
    assert_allclose
    device_enabled
-   echo
-   generate_random_array
+   parameter
    identity_after
+   terminate_self
    main
    np_dtype_from_str
-   object_use_count
-   parameter
-   run_with_gpu_lock
-   terminate_self
-   test_raise_error
+   generate_random_array
 
 Namespaces
 ----------

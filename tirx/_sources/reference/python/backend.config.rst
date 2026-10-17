@@ -29,10 +29,10 @@ Functions
 .. autosummary::
    :toctree: generated/
 
-   add_backend_config_argument
-   argparse_backend_config
-   backend_config_json
    copy_backend_config
    merge_backend_configs
+   backend_config_json
    parse_backend_config
    prepare_target
+   argparse_backend_config
+   add_backend_config_argument

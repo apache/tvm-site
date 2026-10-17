@@ -29,14 +29,14 @@ Functions
 .. autosummary::
    :toctree: generated/
 
+   make_filled_simdgroup_matrix
+   simdgroup_load
+   simdgroup_store
+   simdgroup_multiply_accumulate
+   simd_shuffle
+   simd_shuffle_up
+   simd_shuffle_down
    cooperative_tensor_fill
    cooperative_tensor_load
-   cooperative_tensor_multiply_accumulate
    cooperative_tensor_store
-   make_filled_simdgroup_matrix
-   simd_shuffle
-   simd_shuffle_down
-   simd_shuffle_up
-   simdgroup_load
-   simdgroup_multiply_accumulate
-   simdgroup_store
+   cooperative_tensor_multiply_accumulate

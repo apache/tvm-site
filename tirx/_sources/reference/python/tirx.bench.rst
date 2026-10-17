@@ -29,9 +29,9 @@ Classes
 .. autosummary::
    :toctree: generated/
 
-   CudaProfiler
    DistributedBenchContext
    EventType
+   CudaProfiler
 
 Functions
 ---------
@@ -39,8 +39,8 @@ Functions
 .. autosummary::
    :toctree: generated/
 
+   is_running_under_pytest
+   setup
    bench
    decode_tag
    export_to_perfetto_trace
-   is_running_under_pytest
-   setup

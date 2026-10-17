@@ -37,7 +37,7 @@ Functions
 .. autosummary::
    :toctree: generated/
 
-   device_intrinsic
-   get_codegen
    header_generator
+   get_codegen
    register_codegen
+   device_intrinsic

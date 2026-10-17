@@ -37,31 +37,31 @@ Functions
 
    * - Alias
      - Canonical API
+   * - ``unpack_``
+     - :obj:`tvm_tirx.tirx.script.unpack_`
+   * - ``evaluate``
+     - :obj:`tvm_tirx.tirx.script.evaluate`
    * - ``add_to_parent``
      - :obj:`tvm_tirx.tirx.script.add_to_parent`
-   * - ``assert_``
-     - :obj:`tvm_tirx.tirx.script.assert_`
+   * - ``if_``
+     - :obj:`tvm_tirx.tirx.script.if_`
+   * - ``then_``
+     - :obj:`tvm_tirx.tirx.script.then_`
+   * - ``else_``
+     - :obj:`tvm_tirx.tirx.script.else_`
+   * - ``while_``
+     - :obj:`tvm_tirx.tirx.script.while_`
    * - ``break_``
      - :obj:`tvm_tirx.tirx.script.break_`
    * - ``continue_``
      - :obj:`tvm_tirx.tirx.script.continue_`
-   * - ``else_``
-     - :obj:`tvm_tirx.tirx.script.else_`
-   * - ``evaluate``
-     - :obj:`tvm_tirx.tirx.script.evaluate`
-   * - ``frame_scope``
-     - :obj:`tvm_tirx.tirx.script.frame_scope`
-   * - ``grid``
-     - :obj:`tvm_tirx.tirx.script.grid`
-   * - ``if_``
-     - :obj:`tvm_tirx.tirx.script.if_`
-   * - ``region``
-     - :obj:`tvm_tirx.tirx.script.region`
    * - ``return_``
      - :obj:`tvm_tirx.tirx.script.return_`
-   * - ``then_``
-     - :obj:`tvm_tirx.tirx.script.then_`
-   * - ``unpack_``
-     - :obj:`tvm_tirx.tirx.script.unpack_`
-   * - ``while_``
-     - :obj:`tvm_tirx.tirx.script.while_`
+   * - ``assert_``
+     - :obj:`tvm_tirx.tirx.script.assert_`
+   * - ``grid``
+     - :obj:`tvm_tirx.tirx.script.grid`
+   * - ``region``
+     - :obj:`tvm_tirx.tirx.script.region`
+   * - ``frame_scope``
+     - :obj:`tvm_tirx.tirx.script.frame_scope`

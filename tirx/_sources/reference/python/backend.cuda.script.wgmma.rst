@@ -31,5 +31,5 @@ Functions
    :toctree: generated/
    :template: autosummary/callable.rst
 
-   encode_matrix_descriptor
    noop_barrier
+   encode_matrix_descriptor

@@ -39,25 +39,66 @@ Functions
 .. autosummary::
    :toctree: generated/
 
-   any_sync
+   iket_mark
+   iket_range_start
+   iket_range_end
+   iket_range_push
+   iket_official_event
+   func_call
+   warp_reduce
+   warp_sum
+   warp_max
+   warp_min
+   cta_reduce
+   cta_sum
+   cta_max
+   cta_min
+   wait_until
+   ptx_cp_async_legacy
+   mov_sreg
+   ptx_legacy_mma
+   bmma_sync
+   mma_store
+   mma_fill
+   ptx_legacy_ldmatrix
+   tcgen05_encode_instr_descriptor
+   tcgen05_encode_instr_descriptor_block_scaled
+   timer_init
+   timer_start
+   timer_end
+   timer_finalize
    atomic_add
+   sm100_2sm_leader_smem_addr
    atomic_cas
+   nvshmem_my_pe
+   nvshmem_n_pes
+   nvshmem_getmem_nbi
+   nvshmem_putmem_nbi
+   nvshmem_getmem_nbi_warp
+   nvshmem_putmem_nbi_warp
+   nvshmem_getmem_nbi_block
+   nvshmem_putmem_nbi_block
+   nvshmem_signal_op
+   nvshmem_wait_until
+   nvshmem_quiet
+   nvshmem_putmem_signal_nbi
+   nvshmem_putmem_signal_nbi_warp
+   nvshmem_putmem_signal_nbi_block
+   nvshmem_fence
+   nvshmem_barrier_all
+   tensormap_encode_tiled
+   any_sync
    ballot_sync
    bfloat1622float2
    bfloat162float
    block_dim
    block_idx
-   bmma_sync
    clock64
    cluster_cta_id
    cluster_dim
    cluster_id
    cluster_sync
-   cta_max
-   cta_min
    cta_pair_id
-   cta_reduce
-   cta_sum
    cta_sync
    cvta_generic_to_shared
    decl_tmem
@@ -74,7 +115,6 @@ Functions
    float_as_uint
    fmul2_rn
    fp8x4_e4m3_from_float4
-   func_call
    get_tmem_addr
    grid_dim
    grid_sync
@@ -82,70 +122,30 @@ Functions
    half8tofloat8
    hmax2
    hmin2
-   iket_mark
-   iket_official_event
-   iket_range_end
    iket_range_pop
-   iket_range_push
-   iket_range_start
    iket_sentinel_token
    lane_id
    linear_thread_id
    make_float2
    mbarrier_wait
    mbarrier_wait_acquire_cluster
-   mma_fill
-   mma_store
-   mov_sreg
    nano_sleep
-   nvshmem_barrier_all
-   nvshmem_fence
-   nvshmem_getmem_nbi
-   nvshmem_getmem_nbi_block
-   nvshmem_getmem_nbi_warp
-   nvshmem_my_pe
-   nvshmem_n_pes
-   nvshmem_putmem_nbi
-   nvshmem_putmem_nbi_block
-   nvshmem_putmem_nbi_warp
-   nvshmem_putmem_signal_nbi
-   nvshmem_putmem_signal_nbi_block
-   nvshmem_putmem_signal_nbi_warp
-   nvshmem_quiet
-   nvshmem_signal_op
-   nvshmem_wait_until
    printf
-   ptx_cp_async_legacy
-   ptx_legacy_ldmatrix
-   ptx_legacy_mma
    reduce_add_sync_u32
    reduce_min_sync_u32
    runtime_instr_desc
-   sm100_2sm_leader_smem_addr
    smem_addr_from_uint64
    syncthreads_and
    syncthreads_or
-   tcgen05_encode_instr_descriptor
-   tcgen05_encode_instr_descriptor_block_scaled
    tcgen05_encode_matrix_descriptor
-   tensormap_encode_tiled
    thread_fence
    thread_idx
    thread_in_warpgroup
    thread_rank
-   timer_end
-   timer_finalize
-   timer_init
-   timer_start
    trap_when_assert_failed
    uint_as_float
-   wait_until
    warp_id
    warp_in_warpgroup
-   warp_max
-   warp_min
-   warp_reduce
-   warp_sum
    warp_sync
    warpgroup_id
    warpgroup_sync

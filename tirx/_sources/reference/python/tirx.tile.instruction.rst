@@ -32,10 +32,10 @@ Classes
 
    * - Alias
      - Canonical API
-   * - ``Instruction``
-     - :obj:`tvm_tirx.tirx.tile.Instruction`
    * - ``Operand``
      - :obj:`tvm_tirx.tirx.tile.Operand`
+   * - ``Instruction``
+     - :obj:`tvm_tirx.tirx.tile.Instruction`
    * - ``TensorCall``
      - :obj:`tvm_tirx.tirx.tile.TensorCall`
 

@@ -29,8 +29,8 @@ Classes
 .. autosummary::
    :toctree: generated/
 
-   DumpIR
-   PassPrintingInstrument
    PassTimingInstrument
+   PassPrintingInstrument
    PrintAfterAll
    PrintBeforeAll
+   DumpIR

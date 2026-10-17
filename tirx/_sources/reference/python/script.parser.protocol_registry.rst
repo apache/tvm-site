@@ -29,5 +29,5 @@ Functions
 .. autosummary::
    :toctree: generated/
 
-   register_mutable_decl
    register_scalar_annotation
+   register_mutable_decl

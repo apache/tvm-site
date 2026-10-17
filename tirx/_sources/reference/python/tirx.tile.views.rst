@@ -29,41 +29,41 @@ Classes
 .. autosummary::
    :toctree: generated/
 
-   Add
-   BinaryChain
+   UnaryOp
+   UnaryOpWithScaleBias
    BinaryOp
-   BinaryReduce
+   ReduceOp
+   Zero
+   Sqrt
+   SqrtWithScaleBias
+   Fill
+   Add
+   Sub
+   Mul
+   FDiv
+   FMA
    Cast
    Copy
    CopyAsync
-   Exp
-   Exp2
-   Exp2WithScaleBias
-   ExpWithScaleBias
-   FDiv
-   FMA
-   Fill
    Gemm
    GemmAsync
+   Sum
+   Max
+   Min
+   Reciprocal
+   SiLU
+   Memset
+   Maximum
+   Minimum
+   Exp
+   ExpWithScaleBias
+   Exp2
+   Exp2WithScaleBias
    Log2
    Log2WithScaleBias
-   Max
-   Maximum
-   Memset
-   Min
-   Minimum
-   Mul
-   Reciprocal
-   ReduceNegate
-   ReduceOp
    Select
-   SiLU
-   Sqrt
-   SqrtWithScaleBias
-   Sub
-   Sum
-   UnaryOp
-   UnaryOpWithScaleBias
+   BinaryReduce
    UnaryReduce
    UnaryReduceWithScaleBias
-   Zero
+   BinaryChain
+   ReduceNegate

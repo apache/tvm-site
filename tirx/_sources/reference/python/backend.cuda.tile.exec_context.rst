@@ -29,12 +29,12 @@ Classes
 .. autosummary::
    :toctree: generated/
 
-   ActiveSet
-   AxisRange
-   ExecContext
    ExecContextError
+   AxisRange
+   ActiveSet
    LaneBinding
    Split
+   ExecContext
 
 Functions
 ---------
@@ -42,7 +42,7 @@ Functions
 .. autosummary::
    :toctree: generated/
 
-   filter_modulo
-   filter_narrow
    initial_A
+   filter_narrow
+   filter_modulo
    scope_switch

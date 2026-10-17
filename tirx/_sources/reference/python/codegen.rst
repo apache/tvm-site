@@ -37,8 +37,8 @@ Functions
 .. autosummary::
    :toctree: generated/
 
-   build_module
    load_static_library
+   build_module
    target_has_features
 
 Namespaces

@@ -75,11 +75,6 @@ Classes
 Functions
 ---------
 
-.. autosummary::
-   :toctree: generated/
-
-   hexagon
-
 .. list-table::
    :header-rows: 1
    :widths: 35 65

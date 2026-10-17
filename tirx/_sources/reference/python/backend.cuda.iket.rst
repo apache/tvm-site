@@ -39,6 +39,6 @@ Functions
 .. autosummary::
    :toctree: generated/
 
+   validate_official_environment
    profile
    run
-   validate_official_environment
