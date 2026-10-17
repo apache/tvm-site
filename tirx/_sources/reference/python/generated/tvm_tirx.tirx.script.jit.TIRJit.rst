@@ -24,3 +24,8 @@ tvm\_tirx.tirx.script.jit.TIRJit
 
 .. autoclass:: TIRJit
 
+
+
+
+
+

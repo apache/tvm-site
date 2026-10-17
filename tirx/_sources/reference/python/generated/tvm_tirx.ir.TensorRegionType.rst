@@ -24,3 +24,8 @@ tvm\_tirx.ir.TensorRegionType
 
 .. autoclass:: TensorRegionType
 
+
+
+
+
+

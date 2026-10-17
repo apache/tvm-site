@@ -29,6 +29,4 @@ Functions
 .. autosummary::
    :toctree: generated/
 
-   create_updater
-   get_version
    upgrade_json

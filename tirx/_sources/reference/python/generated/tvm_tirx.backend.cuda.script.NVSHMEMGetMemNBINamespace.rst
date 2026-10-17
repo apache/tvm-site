@@ -24,3 +24,8 @@ tvm\_tirx.backend.cuda.script.NVSHMEMGetMemNBINamespace
 
 .. autoclass:: NVSHMEMGetMemNBINamespace
 
+
+
+
+
+

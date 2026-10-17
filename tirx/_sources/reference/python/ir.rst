@@ -23,31 +23,17 @@ tvm_tirx.ir
 
 .. currentmodule:: tvm_tirx.ir
 
-Common IR infrastructure
-------------------------
+Location
+--------
 
 .. autosummary::
    :toctree: generated/
 
-   Array
-   Attrs
-   CallEffectKind
-   CallSiteLoc
-   CallingConv
-   DictAttrs
-   EnvFunc
-   ExprOperand
-   ForKind
-   GlobalInfo
-   IRModule
    Location
-   Map
-   Node
-   Range
-   Scriptable
-   SourceLoc
-   SourceName
    UnknownLoc
+   SourceName
+   SourceLoc
+   CallSiteLoc
 
 Type
 ----
@@ -55,6 +41,7 @@ Type
 .. autosummary::
    :toctree: generated/
 
+   Type
    AnyType
    FuncType
    MissingType
@@ -64,7 +51,6 @@ Type
    StringType
    TensorRegionType
    TupleType
-   Type
 
 Expr
 ----
@@ -72,11 +58,11 @@ Expr
 .. autosummary::
    :toctree: generated/
 
+   Expr
    BaseFunc
    Call
    Constant
    DataTypeImm
-   Expr
    ExprWithOp
    FloatImm
    GenericConst
@@ -99,6 +85,7 @@ Stmt
 .. autosummary::
    :toctree: generated/
 
+   Stmt
    AssertStmt
    Bind
    Break
@@ -109,9 +96,31 @@ Stmt
    RegionStmt
    Return
    SeqStmt
-   Stmt
    TensorStore
    While
+
+IRModule
+--------
+
+.. autosummary::
+   :toctree: generated/
+
+   IRModule
+
+Supporting classes
+------------------
+
+.. autosummary::
+   :toctree: generated/
+
+   Attrs
+   DictAttrs
+   EnvFunc
+   ExprOperand
+   GlobalInfo
+   Node
+   Range
+   Scriptable
 
 Operator functions (tvm_tirx.ir.prim)
 -------------------------------------

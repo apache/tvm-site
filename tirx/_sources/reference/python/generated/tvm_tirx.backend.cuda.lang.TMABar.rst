@@ -24,3 +24,8 @@ tvm\_tirx.backend.cuda.lang.TMABar
 
 .. autoclass:: TMABar
 
+
+
+
+
+

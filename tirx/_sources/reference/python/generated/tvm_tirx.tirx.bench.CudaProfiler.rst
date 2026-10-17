@@ -24,3 +24,8 @@ tvm\_tirx.tirx.bench.CudaProfiler
 
 .. autoclass:: CudaProfiler
 
+
+
+
+
+

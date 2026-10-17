@@ -23,6 +23,18 @@ tvm_tirx.backend.cuda.backend_config
 
 .. currentmodule:: tvm_tirx.backend.cuda.backend_config
 
+Classes
+-------
+
+.. list-table::
+   :header-rows: 1
+   :widths: 35 65
+
+   * - Alias
+     - Canonical API
+   * - ``BackendConfig``
+     - :obj:`tvm_tirx.backend.cuda.BackendConfig`
+
 Functions
 ---------
 

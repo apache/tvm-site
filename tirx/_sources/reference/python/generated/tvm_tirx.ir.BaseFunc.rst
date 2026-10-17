@@ -24,3 +24,13 @@ tvm\_tirx.ir.BaseFunc
 
 .. autoclass:: BaseFunc
 
+
+
+
+
+
+
+CallingConv
+-----------
+
+.. autoclass:: tvm_tirx.ir.CallingConv

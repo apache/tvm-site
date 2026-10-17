@@ -24,3 +24,8 @@ tvm\_tirx.ir.transform.instrument.PassTimingInstrument
 
 .. autoclass:: PassTimingInstrument
 
+
+
+
+
+

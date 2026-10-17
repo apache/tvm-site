@@ -24,3 +24,8 @@ tvm\_tirx.tirx.tile.views.Log2
 
 .. autoclass:: Log2
 
+
+
+
+
+

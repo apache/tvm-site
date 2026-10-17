@@ -35,11 +35,6 @@ tvm_tirx.runtime.memory_scope
 
 :doc:`tvm_tirx.runtime.memory_scope <runtime.memory_scope>`
 
-tvm_tirx.config
----------------
-
-:doc:`tvm_tirx.config <config>`
-
 tvm_tirx.libinfo
 ----------------
 

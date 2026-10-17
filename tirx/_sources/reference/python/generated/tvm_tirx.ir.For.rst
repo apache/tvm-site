@@ -24,3 +24,13 @@ tvm\_tirx.ir.For
 
 .. autoclass:: For
 
+
+
+ForKind
+-------
+
+.. autoclass:: tvm_tirx.ir.ForKind
+
+
+
+

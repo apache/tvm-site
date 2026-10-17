@@ -24,3 +24,8 @@ tvm\_tirx.ir.prim.And
 
 .. autoclass:: And
 
+
+
+
+
+

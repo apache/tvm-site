@@ -24,3 +24,8 @@ tvm\_tirx.tirx.tile.views.Max
 
 .. autoclass:: Max
 
+
+
+
+
+

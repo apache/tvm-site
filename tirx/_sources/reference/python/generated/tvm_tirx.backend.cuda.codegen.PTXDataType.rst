@@ -24,3 +24,8 @@ tvm\_tirx.backend.cuda.codegen.PTXDataType
 
 .. autoclass:: PTXDataType
 
+
+
+
+
+

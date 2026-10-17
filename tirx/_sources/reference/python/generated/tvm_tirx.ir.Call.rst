@@ -24,3 +24,13 @@ tvm\_tirx.ir.Call
 
 .. autoclass:: Call
 
+
+
+
+
+CallEffectKind
+--------------
+
+.. autoclass:: tvm_tirx.ir.CallEffectKind
+
+

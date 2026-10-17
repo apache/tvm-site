@@ -24,3 +24,8 @@ tvm\_tirx.ir.PrimType
 
 .. autoclass:: PrimType
 
+
+
+
+
+

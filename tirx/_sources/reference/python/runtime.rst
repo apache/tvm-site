@@ -29,13 +29,9 @@ Classes
 .. autosummary::
    :toctree: generated/
 
-   DataType
    DataTypeCode
    Device
    MemoryScope
-   Module
-   Object
-   ShapeTuple
    Tensor
 
 Functions
@@ -44,20 +40,16 @@ Functions
 .. autosummary::
    :toctree: generated/
 
-   convert
    cpu
    cuda
-   device
    empty
    enabled
    ext_dev
-   from_dlpack
    load_module
    metal
    num_threads
    opencl
    rocm
-   system_lib
    tensor
    vpi
    vulkan

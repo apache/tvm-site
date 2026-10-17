@@ -32,14 +32,10 @@ Classes
 
    * - Alias
      - Canonical API
-   * - ``DataType``
-     - :obj:`tvm_tirx.runtime.DataType`
    * - ``DataTypeCode``
      - :obj:`tvm_tirx.runtime.DataTypeCode`
    * - ``IRModule``
      - :obj:`tvm_tirx.ir.IRModule`
-   * - ``Object``
-     - :obj:`tvm_tirx.runtime.Object`
 
 Functions
 ---------
@@ -47,10 +43,7 @@ Functions
 .. autosummary::
    :toctree: generated/
 
-   get_global_func
    hexagon
-   register_global_func
-   register_object
 
 .. list-table::
    :header-rows: 1
@@ -62,8 +55,6 @@ Functions
      - :obj:`tvm_tirx.runtime.cpu`
    * - ``cuda``
      - :obj:`tvm_tirx.runtime.cuda`
-   * - ``device``
-     - :obj:`tvm_tirx.runtime.device`
    * - ``device_from_target``
      - :obj:`tvm_tirx.target.device_from_target`
    * - ``ext_dev``
@@ -104,5 +95,4 @@ Additional namespaces
 .. toctree::
    :maxdepth: 1
 
-   config
    libinfo

@@ -24,3 +24,8 @@ tvm\_tirx.backend.trn.transform.TrnNaiveAllocator
 
 .. autoclass:: TrnNaiveAllocator
 
+
+
+
+
+

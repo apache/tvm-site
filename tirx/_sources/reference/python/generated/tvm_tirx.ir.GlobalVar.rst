@@ -24,3 +24,8 @@ tvm\_tirx.ir.GlobalVar
 
 .. autoclass:: GlobalVar
 
+
+
+
+
+

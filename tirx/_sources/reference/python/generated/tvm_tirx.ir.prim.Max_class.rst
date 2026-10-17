@@ -24,3 +24,8 @@ tvm\_tirx.ir.prim.Max
 
 .. autoclass:: Max
 
+
+
+
+
+
