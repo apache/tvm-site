@@ -62,8 +62,8 @@ The ``tirx_pipeline`` module pass applies this sequence (a few passes are gated 
      - Pass
      - What it does
    * - 1
-     - ``TileDispatch`` and ``LowerTensorLayouts``
-     - the core lowering — see `Tile dispatch and tensor layouts`_ below
+     - ``LowerTIRx``
+     - the core lowering — see `Inside LowerTIRx`_ below
    * - 2
      - ``StmtSimplify``
      - statement-level arithmetic simplification (the sym analyzer)
@@ -124,31 +124,26 @@ The ``tirx_pipeline`` module pass applies this sequence (a few passes are gated 
 - **device**: ``StmtSimplify``,
   ``LowerIntrin``
 
-Tile dispatch and tensor layouts
---------------------------------
+Inside LowerTIRx
+----------------
 
-The generic pipeline explicitly composes two independently usable passes:
+``LowerTIRx`` is itself a small sequence (``src/tirx/transform/lower_tirx.cc``):
 
 .. code-block:: text
 
-    Sequential([ TileDispatch(), LowerTensorLayouts() ])
+    LowerTIRx = Sequential([ TileDispatch, LowerTIRxCleanup ])
 
 - **``TileDispatch``** replaces every tensor ``Evaluate(Call)`` with the body emitted by its
   instruction lowerer, including delayed mathematical composites as described in
   :doc:`tile_dispatch`. In the same pass it converts ``device_entry`` to a
   ``device_scope`` region retaining launch values as operands, and lowers the
   finite CUDA index calls inside ordinary ``Bind`` statements.
-- **``LowerTensorLayouts``** then runs the ``LayoutApplier``: it resolves every
+- **``LowerTIRxCleanup``** then runs the ``LayoutApplier``: it resolves every
   ``TileLayout``-typed tensor access into concrete physical address arithmetic
   (``addr = data + elem_offset + layout.apply(coord)``), flattens the tensors,
   and removes tensor offsets that have been folded into the resulting views.
 
-A backend can pair ``TileDispatch`` with its own layout lowering, such as
-Trainium's ``LowerTrainiumLayout``. The generic pipeline inserts ``PrintIR``
-between dispatch and layout lowering when ``TVM_PRINT_AFTER_TIRX_DISPATCH_OPS``
-is set.
-
-After both passes the module remains a ``tvm.tirx.Function``, but contains no
+After ``LowerTIRx`` the module remains a ``tvm.tirx.Function``, but contains no
 tile ops or ``TileLayout`` indirection, and CUDA indices read hardware coordinates.  Later TIRx passes lower the remaining opaque constructs and
 the target code generators consume ``tirx::Function`` directly; there is no
 conversion to the separate ``tvm.tir`` object model.
@@ -168,7 +163,7 @@ Take a one-line scale kernel:
         tx = Tx.cuda.thread_idx("x")
         B[tx] = A[tx] * Tx.float32(2.0)
 
-**After both passes** the layout is applied and the device region retains its
+**After ``LowerTIRx``** the layout is applied and the device region retains its
 launch configuration independently of the index bindings:
 
 .. code-block:: python
@@ -208,8 +203,7 @@ IR snippets across these docs were produced:
 
     target = tvm.target.Target("cuda")
     mod = TT.BindTarget(target.with_host("llvm"))(tvm.IRModule({"main": scale}))
-    mod = TT.TileDispatch()(mod)         # tile ops dispatched
-    mod = TT.LowerTensorLayouts()(mod)   # layouts applied
+    mod = TT.LowerTIRx()(mod)         # tile ops dispatched, layouts applied
     print(mod.script())               # inspect the lowered TIRx IR
 
 Or compile the whole module and read the generated CUDA:

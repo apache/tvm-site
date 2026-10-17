@@ -40,7 +40,7 @@
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
   <script src="../../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
 
-    <script src="../../_static/documentation_options.js?v=708a2c75"></script>
+    <script src="../../_static/documentation_options.js?v=67feac13"></script>
     <script src="../../_static/doctools.js?v=9bcbadda"></script>
     <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/scripts/sphinx-book-theme.js?v=887ef09a"></script>
@@ -627,7 +627,7 @@ document.write(`
                 <ul class="visible nav section-nav flex-column">
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#where-it-sits">Where it sits</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#the-passes">The passes</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#tile-dispatch-and-tensor-layouts">Tile dispatch and tensor layouts</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#inside-lowertirx">Inside LowerTIRx</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#a-worked-example">A worked example</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#reproduce-it-yourself">Reproduce it yourself</a></li>
 </ul>
@@ -687,8 +687,8 @@ loop unroll policies.</p>
 </thead>
 <tbody>
 <tr class="row-even"><td><p>1</p></td>
-<td><p><code class="docutils literal notranslate"><span class="pre">TileDispatch</span></code> and <code class="docutils literal notranslate"><span class="pre">LowerTensorLayouts</span></code></p></td>
-<td><p>the core lowering — see <a class="reference internal" href="#tile-dispatch-and-tensor-layouts">Tile dispatch and tensor layouts</a> below</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">LowerTIRx</span></code></p></td>
+<td><p>the core lowering — see <a class="reference internal" href="#inside-lowertirx">Inside LowerTIRx</a> below</p></td>
 </tr>
 <tr class="row-odd"><td><p>2</p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">StmtSimplify</span></code></p></td>
@@ -769,10 +769,10 @@ the explicit <code class="docutils literal notranslate"><span class="pre">Launch
 <code class="docutils literal notranslate"><span class="pre">LowerIntrin</span></code></p></li>
 </ul>
 </section>
-<section id="tile-dispatch-and-tensor-layouts">
-<h2>Tile dispatch and tensor layouts<a class="headerlink" href="#tile-dispatch-and-tensor-layouts" title="Link to this heading">#</a></h2>
-<p>The generic pipeline explicitly composes two independently usable passes:</p>
-<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>Sequential([ TileDispatch(), LowerTensorLayouts() ])
+<section id="inside-lowertirx">
+<h2>Inside LowerTIRx<a class="headerlink" href="#inside-lowertirx" title="Link to this heading">#</a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">LowerTIRx</span></code> is itself a small sequence (<code class="docutils literal notranslate"><span class="pre">src/tirx/transform/lower_tirx.cc</span></code>):</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>LowerTIRx = Sequential([ TileDispatch, LowerTIRxCleanup ])
 </pre></div>
 </div>
 <ul class="simple">
@@ -781,16 +781,12 @@ instruction lowerer, including delayed mathematical composites as described in
 <a class="reference internal" href="tile_dispatch.html"><span class="doc">Tensor Instruction Lowering</span></a>. In the same pass it converts <code class="docutils literal notranslate"><span class="pre">device_entry</span></code> to a
 <code class="docutils literal notranslate"><span class="pre">device_scope</span></code> region retaining launch values as operands, and lowers the
 finite CUDA index calls inside ordinary <code class="docutils literal notranslate"><span class="pre">Bind</span></code> statements.</p></li>
-<li><p><strong>``LowerTensorLayouts``</strong> then runs the <code class="docutils literal notranslate"><span class="pre">LayoutApplier</span></code>: it resolves every
+<li><p><strong>``LowerTIRxCleanup``</strong> then runs the <code class="docutils literal notranslate"><span class="pre">LayoutApplier</span></code>: it resolves every
 <code class="docutils literal notranslate"><span class="pre">TileLayout</span></code>-typed tensor access into concrete physical address arithmetic
 (<code class="docutils literal notranslate"><span class="pre">addr</span> <span class="pre">=</span> <span class="pre">data</span> <span class="pre">+</span> <span class="pre">elem_offset</span> <span class="pre">+</span> <span class="pre">layout.apply(coord)</span></code>), flattens the tensors,
 and removes tensor offsets that have been folded into the resulting views.</p></li>
 </ul>
-<p>A backend can pair <code class="docutils literal notranslate"><span class="pre">TileDispatch</span></code> with its own layout lowering, such as
-Trainium’s <code class="docutils literal notranslate"><span class="pre">LowerTrainiumLayout</span></code>. The generic pipeline inserts <code class="docutils literal notranslate"><span class="pre">PrintIR</span></code>
-between dispatch and layout lowering when <code class="docutils literal notranslate"><span class="pre">TVM_PRINT_AFTER_TIRX_DISPATCH_OPS</span></code>
-is set.</p>
-<p>After both passes the module remains a <code class="docutils literal notranslate"><span class="pre">tvm.tirx.Function</span></code>, but contains no
+<p>After <code class="docutils literal notranslate"><span class="pre">LowerTIRx</span></code> the module remains a <code class="docutils literal notranslate"><span class="pre">tvm.tirx.Function</span></code>, but contains no
 tile ops or <code class="docutils literal notranslate"><span class="pre">TileLayout</span></code> indirection, and CUDA indices read hardware coordinates.  Later TIRx passes lower the remaining opaque constructs and
 the target code generators consume <code class="docutils literal notranslate"><span class="pre">tirx::Function</span></code> directly; there is no
 conversion to the separate <code class="docutils literal notranslate"><span class="pre">tvm.tir</span></code> object model.</p>
@@ -807,7 +803,7 @@ conversion to the separate <code class="docutils literal notranslate"><span clas
     <span class="n">B</span><span class="p">[</span><span class="n">tx</span><span class="p">]</span> <span class="o">=</span> <span class="n">A</span><span class="p">[</span><span class="n">tx</span><span class="p">]</span> <span class="o">*</span> <span class="n">Tx</span><span class="o">.</span><span class="n">float32</span><span class="p">(</span><span class="mf">2.0</span><span class="p">)</span>
 </pre></div>
 </div>
-<p><strong>After both passes</strong> the layout is applied and the device region retains its
+<p><strong>After ``LowerTIRx``</strong> the layout is applied and the device region retains its
 launch configuration independently of the index bindings:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">with</span> <span class="n">Tx</span><span class="o">.</span><span class="n">region</span><span class="p">(</span><span class="s2">&quot;tirx.device_scope&quot;</span><span class="p">,</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">256</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="n">attrs</span><span class="o">=</span><span class="p">{</span>
     <span class="s2">&quot;cuda.launch_fields&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;grid.x&quot;</span><span class="p">,</span> <span class="s2">&quot;grid.y&quot;</span><span class="p">,</span> <span class="s2">&quot;grid.z&quot;</span><span class="p">,</span> <span class="s2">&quot;block.x&quot;</span><span class="p">,</span> <span class="s2">&quot;block.y&quot;</span><span class="p">,</span> <span class="s2">&quot;block.z&quot;</span><span class="p">],</span>
@@ -839,8 +835,7 @@ IR snippets across these docs were produced:</p>
 
 <span class="n">target</span> <span class="o">=</span> <span class="n">tvm</span><span class="o">.</span><span class="n">target</span><span class="o">.</span><span class="n">Target</span><span class="p">(</span><span class="s2">&quot;cuda&quot;</span><span class="p">)</span>
 <span class="n">mod</span> <span class="o">=</span> <span class="n">TT</span><span class="o">.</span><span class="n">BindTarget</span><span class="p">(</span><span class="n">target</span><span class="o">.</span><span class="n">with_host</span><span class="p">(</span><span class="s2">&quot;llvm&quot;</span><span class="p">))(</span><span class="n">tvm</span><span class="o">.</span><span class="n">IRModule</span><span class="p">({</span><span class="s2">&quot;main&quot;</span><span class="p">:</span> <span class="n">scale</span><span class="p">}))</span>
-<span class="n">mod</span> <span class="o">=</span> <span class="n">TT</span><span class="o">.</span><span class="n">TileDispatch</span><span class="p">()(</span><span class="n">mod</span><span class="p">)</span>         <span class="c1"># tile ops dispatched</span>
-<span class="n">mod</span> <span class="o">=</span> <span class="n">TT</span><span class="o">.</span><span class="n">LowerTensorLayouts</span><span class="p">()(</span><span class="n">mod</span><span class="p">)</span>   <span class="c1"># layouts applied</span>
+<span class="n">mod</span> <span class="o">=</span> <span class="n">TT</span><span class="o">.</span><span class="n">LowerTIRx</span><span class="p">()(</span><span class="n">mod</span><span class="p">)</span>         <span class="c1"># tile ops dispatched, layouts applied</span>
 <span class="nb">print</span><span class="p">(</span><span class="n">mod</span><span class="o">.</span><span class="n">script</span><span class="p">())</span>               <span class="c1"># inspect the lowered TIRx IR</span>
 </pre></div>
 </div>
@@ -899,7 +894,7 @@ IR snippets across these docs were produced:</p>
     <ul class="visible nav section-nav flex-column">
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#where-it-sits">Where it sits</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#the-passes">The passes</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#tile-dispatch-and-tensor-layouts">Tile dispatch and tensor layouts</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#inside-lowertirx">Inside LowerTIRx</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#a-worked-example">A worked example</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#reproduce-it-yourself">Reproduce it yourself</a></li>
 </ul>
