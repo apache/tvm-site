@@ -67,8 +67,24 @@ Namespaces
 .. toctree::
    :maxdepth: 1
 
-   sym.analyzer
-   sym.int_set
-   sym.iter_affine_map
-   sym.pattern
    sym.utils
+
+Supporting classes
+------------------
+
+.. autosummary::
+   :toctree: generated/
+
+   ~analyzer.ConstraintScope
+   ~iter_affine_map.IterMapResult
+   ~iter_affine_map.IterMapLevel
+
+Supporting functions
+--------------------
+
+.. autosummary::
+   :toctree: generated/
+
+   ~int_set.pos_inf
+   ~int_set.neg_inf
+   ~int_set.union_lower_bound

@@ -26,11 +26,11 @@ tvm_tirx.backend.cuda
 Namespaces
 ----------
 
-* :doc:`backend.cuda.op <backend.cuda.op>`
-* :doc:`backend.cuda.lang <backend.cuda.lang>`
-* :doc:`backend.cuda.layout <backend.cuda.layout>`
-* :doc:`backend.cuda.script <backend.cuda.script>`
-* :doc:`backend.cuda.transform <backend.cuda.transform>`
+* :doc:`tvm_tirx.backend.cuda.op <backend.cuda.op>`
+* :doc:`tvm_tirx.backend.cuda.lang <backend.cuda.lang>`
+* :doc:`tvm_tirx.backend.cuda.layout <backend.cuda.layout>`
+* :doc:`tvm_tirx.backend.cuda.script <backend.cuda.script>`
+* :doc:`tvm_tirx.backend.cuda.transform <backend.cuda.transform>`
 
 .. toctree::
    :maxdepth: 1

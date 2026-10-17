@@ -36,8 +36,8 @@ Functions
 Namespaces
 ----------
 
-* :doc:`backend.trn.op <backend.trn.op>`
-* :doc:`backend.trn.transform <backend.trn.transform>`
+* :doc:`tvm_tirx.backend.trn.op <backend.trn.op>`
+* :doc:`tvm_tirx.backend.trn.transform <backend.trn.transform>`
 
 .. toctree::
    :maxdepth: 1

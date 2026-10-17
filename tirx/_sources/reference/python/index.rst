@@ -32,79 +32,79 @@ Namespaces
 
    * - Namespace
      - Purpose
-   * - :doc:`runtime <runtime>`
+   * - :doc:`tvm_tirx.runtime <runtime>`
      - Tensors, devices, data types, and runtime modules.
-   * - :doc:`ir <ir>`
+   * - :doc:`tvm_tirx.ir <ir>`
      - Shared expressions, types, statements, and IR modules.
-   * - :doc:`ir.prim <ir.prim>`
+   * - :doc:`tvm_tirx.ir.prim <ir.prim>`
      - Primitive expressions and scalar operators.
-   * - :doc:`ir.transform <ir.transform>`
+   * - :doc:`tvm_tirx.ir.transform <ir.transform>`
      - Pass infrastructure and instrumentation.
-   * - :doc:`script <script>`
+   * - :doc:`tvm_tirx.script <script>`
      - Python syntax registration for IR dialects.
-   * - :doc:`script.parser <script.parser>`
+   * - :doc:`tvm_tirx.script.parser <script.parser>`
      - Translate Python scripts into IR builder operations.
-   * - :doc:`script.ir_builder <script.ir_builder>`
+   * - :doc:`tvm_tirx.script.ir_builder <script.ir_builder>`
      - Shared IR builder contexts and statements.
-   * - :doc:`sym <sym>`
+   * - :doc:`tvm_tirx.sym <sym>`
      - Symbolic arithmetic, analysis, and simplification.
-   * - :doc:`target <target>`
+   * - :doc:`tvm_tirx.target <target>`
      - Compilation targets and device selection.
-   * - :doc:`tirx <tirx>`
+   * - :doc:`tvm_tirx.tirx <tirx>`
      - Tensor IR construction and compilation.
-   * - :doc:`tirx.op <tirx.op>`
+   * - :doc:`tvm_tirx.tirx.op <tirx.op>`
      - Tensor IR operators and intrinsic calls.
-   * - :doc:`tirx.analysis <tirx.analysis>`
+   * - :doc:`tvm_tirx.tirx.analysis <tirx.analysis>`
      - Tensor IR analysis and verification.
-   * - :doc:`tirx.transform <tirx.transform>`
+   * - :doc:`tvm_tirx.tirx.transform <tirx.transform>`
      - Tensor IR transformation passes.
-   * - :doc:`tirx.layout <tirx.layout>`
+   * - :doc:`tvm_tirx.tirx.layout <tirx.layout>`
      - Tensor layouts and logical-to-physical index mappings.
-   * - :doc:`tirx.tile <tirx.tile>`
+   * - :doc:`tvm_tirx.tirx.tile <tirx.tile>`
      - Tile operations, views, and dispatch.
-   * - :doc:`tirx.script <tirx.script>`
+   * - :doc:`tvm_tirx.tirx.script <tirx.script>`
      - Tensor IR syntax and JIT compilation.
-   * - :doc:`codegen <codegen>`
+   * - :doc:`tvm_tirx.codegen <codegen>`
      - Shared code generation and LLVM helpers.
-   * - :doc:`backend <backend>`
+   * - :doc:`tvm_tirx.backend <backend>`
      - Load and register device backends.
-   * - :doc:`backend.cuda <backend.cuda>`
+   * - :doc:`tvm_tirx.backend.cuda <backend.cuda>`
      - CUDA backend configuration and registration.
-   * - :doc:`backend.cuda.op <backend.cuda.op>`
+   * - :doc:`tvm_tirx.backend.cuda.op <backend.cuda.op>`
      - CUDA intrinsic builders.
-   * - :doc:`backend.cuda.script <backend.cuda.script>`
+   * - :doc:`tvm_tirx.backend.cuda.script <backend.cuda.script>`
      - CUDA kernel authoring namespace.
-   * - :doc:`backend.cuda.layout <backend.cuda.layout>`
+   * - :doc:`tvm_tirx.backend.cuda.layout <backend.cuda.layout>`
      - CUDA shared-memory and tensor-memory layouts.
-   * - :doc:`backend.cuda.lang <backend.cuda.lang>`
+   * - :doc:`tvm_tirx.backend.cuda.lang <backend.cuda.lang>`
      - CUDA pipelines, barriers, storage pools, and scheduling.
-   * - :doc:`backend.cuda.transform <backend.cuda.transform>`
+   * - :doc:`tvm_tirx.backend.cuda.transform <backend.cuda.transform>`
      - CUDA-specific transformation passes.
-   * - :doc:`backend.rocm <backend.rocm>`
+   * - :doc:`tvm_tirx.backend.rocm <backend.rocm>`
      - ROCm backend registration.
-   * - :doc:`backend.metal <backend.metal>`
+   * - :doc:`tvm_tirx.backend.metal <backend.metal>`
      - Metal backend and script namespaces.
-   * - :doc:`backend.metal.op <backend.metal.op>`
+   * - :doc:`tvm_tirx.backend.metal.op <backend.metal.op>`
      - Metal intrinsic builders.
-   * - :doc:`backend.opencl <backend.opencl>`
+   * - :doc:`tvm_tirx.backend.opencl <backend.opencl>`
      - OpenCL backend and script namespaces.
-   * - :doc:`backend.adreno <backend.adreno>`
+   * - :doc:`tvm_tirx.backend.adreno <backend.adreno>`
      - Adreno backend registration.
-   * - :doc:`backend.hexagon <backend.hexagon>`
+   * - :doc:`tvm_tirx.backend.hexagon <backend.hexagon>`
      - Hexagon backend and linker integration.
-   * - :doc:`backend.vulkan <backend.vulkan>`
+   * - :doc:`tvm_tirx.backend.vulkan <backend.vulkan>`
      - Vulkan backend registration.
-   * - :doc:`backend.webgpu <backend.webgpu>`
+   * - :doc:`tvm_tirx.backend.webgpu <backend.webgpu>`
      - WebGPU backend registration.
-   * - :doc:`backend.trn <backend.trn>`
+   * - :doc:`tvm_tirx.backend.trn <backend.trn>`
      - Trainium backend and script namespaces.
-   * - :doc:`backend.trn.op <backend.trn.op>`
+   * - :doc:`tvm_tirx.backend.trn.op <backend.trn.op>`
      - Trainium NKI intrinsic wrappers.
-   * - :doc:`backend.trn.transform <backend.trn.transform>`
+   * - :doc:`tvm_tirx.backend.trn.transform <backend.trn.transform>`
      - Trainium-specific lowering passes.
-   * - :doc:`support <support>`
+   * - :doc:`tvm_tirx.support <support>`
      - Build tools and system utilities.
-   * - :doc:`testing <testing>`
+   * - :doc:`tvm_tirx.testing <testing>`
      - Test fixtures and numerical checks.
 
 .. toctree::
@@ -112,43 +112,43 @@ Namespaces
    :maxdepth: 1
    :titlesonly:
 
-   runtime <runtime>
-   ir <ir>
-   ir.prim <ir.prim>
-   ir.transform <ir.transform>
-   script <script>
-   script.parser <script.parser>
-   script.ir_builder <script.ir_builder>
-   sym <sym>
-   target <target>
-   tirx <tirx>
-   tirx.op <tirx.op>
-   tirx.analysis <tirx.analysis>
-   tirx.transform <tirx.transform>
-   tirx.layout <tirx.layout>
-   tirx.tile <tirx.tile>
-   tirx.script <tirx.script>
-   codegen <codegen>
-   backend <backend>
-   backend.cuda <backend.cuda>
-   backend.cuda.op <backend.cuda.op>
-   backend.cuda.script <backend.cuda.script>
-   backend.cuda.layout <backend.cuda.layout>
-   backend.cuda.lang <backend.cuda.lang>
-   backend.cuda.transform <backend.cuda.transform>
-   backend.rocm <backend.rocm>
-   backend.metal <backend.metal>
-   backend.metal.op <backend.metal.op>
-   backend.opencl <backend.opencl>
-   backend.adreno <backend.adreno>
-   backend.hexagon <backend.hexagon>
-   backend.vulkan <backend.vulkan>
-   backend.webgpu <backend.webgpu>
-   backend.trn <backend.trn>
-   backend.trn.op <backend.trn.op>
-   backend.trn.transform <backend.trn.transform>
-   support <support>
-   testing <testing>
+   tvm_tirx.runtime <runtime>
+   tvm_tirx.ir <ir>
+   tvm_tirx.ir.prim <ir.prim>
+   tvm_tirx.ir.transform <ir.transform>
+   tvm_tirx.script <script>
+   tvm_tirx.script.parser <script.parser>
+   tvm_tirx.script.ir_builder <script.ir_builder>
+   tvm_tirx.sym <sym>
+   tvm_tirx.target <target>
+   tvm_tirx.tirx <tirx>
+   tvm_tirx.tirx.op <tirx.op>
+   tvm_tirx.tirx.analysis <tirx.analysis>
+   tvm_tirx.tirx.transform <tirx.transform>
+   tvm_tirx.tirx.layout <tirx.layout>
+   tvm_tirx.tirx.tile <tirx.tile>
+   tvm_tirx.tirx.script <tirx.script>
+   tvm_tirx.codegen <codegen>
+   tvm_tirx.backend <backend>
+   tvm_tirx.backend.cuda <backend.cuda>
+   tvm_tirx.backend.cuda.op <backend.cuda.op>
+   tvm_tirx.backend.cuda.script <backend.cuda.script>
+   tvm_tirx.backend.cuda.layout <backend.cuda.layout>
+   tvm_tirx.backend.cuda.lang <backend.cuda.lang>
+   tvm_tirx.backend.cuda.transform <backend.cuda.transform>
+   tvm_tirx.backend.rocm <backend.rocm>
+   tvm_tirx.backend.metal <backend.metal>
+   tvm_tirx.backend.metal.op <backend.metal.op>
+   tvm_tirx.backend.opencl <backend.opencl>
+   tvm_tirx.backend.adreno <backend.adreno>
+   tvm_tirx.backend.hexagon <backend.hexagon>
+   tvm_tirx.backend.vulkan <backend.vulkan>
+   tvm_tirx.backend.webgpu <backend.webgpu>
+   tvm_tirx.backend.trn <backend.trn>
+   tvm_tirx.backend.trn.op <backend.trn.op>
+   tvm_tirx.backend.trn.transform <backend.trn.transform>
+   tvm_tirx.support <support>
+   tvm_tirx.testing <testing>
 
 Classes
 -------

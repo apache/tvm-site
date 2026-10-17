@@ -26,17 +26,16 @@ tvm_tirx.ir
 Namespaces
 ----------
 
-* :doc:`ir.prim <ir.prim>`
+* :doc:`tvm_tirx.ir.prim <ir.prim>`
 
 .. toctree::
    :maxdepth: 1
    :titlesonly:
 
-   ir.base
    ir.json_compact
    ir.unique_name_supply
 
-:doc:`Transformation passes <ir.transform>`
+:doc:`tvm_tirx.ir.transform <ir.transform>`
 
 Location
 --------
@@ -226,3 +225,12 @@ IR helpers
    register_op_attr
    stmt_seq
    stmt_list
+
+Supporting functions
+--------------------
+
+.. autosummary::
+   :toctree: generated/
+
+   ~base.register_script_printer
+   ~base.register_dialect_script_method

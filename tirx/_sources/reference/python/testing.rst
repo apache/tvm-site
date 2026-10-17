@@ -49,5 +49,3 @@ Namespaces
    :maxdepth: 1
 
    testing.env
-   testing.locking
-   testing.utils

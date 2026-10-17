@@ -36,7 +36,7 @@ Functions
 Namespaces
 ----------
 
-* :doc:`backend.metal.op <backend.metal.op>`
+* :doc:`tvm_tirx.backend.metal.op <backend.metal.op>`
 
 .. toctree::
    :maxdepth: 1

@@ -54,11 +54,3 @@ Functions
    hexagon
    enabled
    num_threads
-
-Namespaces
-----------
-
-.. toctree::
-   :maxdepth: 1
-
-   runtime.memory_scope

@@ -26,8 +26,8 @@ tvm_tirx.script
 Namespaces
 ----------
 
-* :doc:`script.parser <script.parser>`
-* :doc:`script.ir_builder <script.ir_builder>`
+* :doc:`tvm_tirx.script.parser <script.parser>`
+* :doc:`tvm_tirx.script.ir_builder <script.ir_builder>`
 
 .. toctree::
    :maxdepth: 1

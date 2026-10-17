@@ -49,5 +49,11 @@ Namespaces
    :maxdepth: 1
 
    target.detect_target
-   target.tag
-   target.target
+
+Supporting classes
+------------------
+
+.. autosummary::
+   :toctree: generated/
+
+   ~target.TargetFeatures

@@ -54,4 +54,4 @@ Package information
 .. toctree::
    :maxdepth: 1
 
-   Package version and libraries <libinfo>
+   tvm_tirx.libinfo <libinfo>
