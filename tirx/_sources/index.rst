@@ -25,4 +25,4 @@ Table of Contents
    :maxdepth: 1
    :caption: Reference
 
-   reference/python/index.rst
+   Python API <reference/python/index>

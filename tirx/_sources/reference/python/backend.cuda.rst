@@ -26,24 +26,25 @@ tvm_tirx.backend.cuda
 Namespaces
 ----------
 
+* :doc:`backend.cuda.op <backend.cuda.op>`
+* :doc:`backend.cuda.lang <backend.cuda.lang>`
+* :doc:`backend.cuda.layout <backend.cuda.layout>`
+* :doc:`backend.cuda.script <backend.cuda.script>`
+* :doc:`backend.cuda.transform <backend.cuda.transform>`
+
 .. toctree::
    :maxdepth: 1
    :titlesonly:
 
-   backend.cuda.op
    backend.cuda.axis
    backend.cuda.backend_config
    backend.cuda.codegen
    backend.cuda.compiler
    backend.cuda.iket
-   backend.cuda.lang
    backend.cuda.launch
-   backend.cuda.layout
    backend.cuda.ptx
-   backend.cuda.script
    backend.cuda.thread_scope
    backend.cuda.tile
-   backend.cuda.transform
 
 Classes
 -------

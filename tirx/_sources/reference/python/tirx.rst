@@ -26,17 +26,18 @@ tvm_tirx.tirx
 Namespaces
 ----------
 
+* :doc:`tirx.analysis <tirx.analysis>`
+* :doc:`tirx.tile <tirx.tile>`
+* :doc:`tirx.script <tirx.script>`
+* :doc:`tirx.layout <tirx.layout>`
+* :doc:`tirx.op <tirx.op>`
+
 .. toctree::
    :maxdepth: 1
    :titlesonly:
 
-   tirx.analysis
-   tirx.tile
-   tirx.script
    tirx.bench
    tirx.compilation_pipeline
-   tirx.layout
-   tirx.op
 
 :doc:`Transformation passes <tirx.transform>`
 

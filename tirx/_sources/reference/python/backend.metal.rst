@@ -36,8 +36,9 @@ Functions
 Namespaces
 ----------
 
+* :doc:`backend.metal.op <backend.metal.op>`
+
 .. toctree::
    :maxdepth: 1
 
-   backend.metal.op
    backend.metal.script

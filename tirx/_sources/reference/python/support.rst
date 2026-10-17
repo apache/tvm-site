@@ -47,3 +47,11 @@ Namespaces
    support.tar
    support.utils
    support.xcode
+
+Package information
+-------------------
+
+.. toctree::
+   :maxdepth: 1
+
+   Package version and libraries <libinfo>

@@ -26,20 +26,21 @@ tvm_tirx.backend
 Namespaces
 ----------
 
+* :doc:`backend.cuda <backend.cuda>`
+* :doc:`backend.adreno <backend.adreno>`
+* :doc:`backend.hexagon <backend.hexagon>`
+* :doc:`backend.metal <backend.metal>`
+* :doc:`backend.opencl <backend.opencl>`
+* :doc:`backend.rocm <backend.rocm>`
+* :doc:`backend.trn <backend.trn>`
+* :doc:`backend.vulkan <backend.vulkan>`
+* :doc:`backend.webgpu <backend.webgpu>`
+
 .. toctree::
    :maxdepth: 1
    :titlesonly:
 
-   backend.cuda
-   backend.adreno
    backend.config
-   backend.hexagon
-   backend.metal
-   backend.opencl
-   backend.rocm
-   backend.trn
-   backend.vulkan
-   backend.webgpu
 
 Functions
 ---------

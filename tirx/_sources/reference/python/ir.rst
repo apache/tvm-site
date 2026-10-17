@@ -26,11 +26,12 @@ tvm_tirx.ir
 Namespaces
 ----------
 
+* :doc:`ir.prim <ir.prim>`
+
 .. toctree::
    :maxdepth: 1
    :titlesonly:
 
-   ir.prim
    ir.base
    ir.json_compact
    ir.unique_name_supply

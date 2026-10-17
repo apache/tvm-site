@@ -36,13 +36,14 @@ Functions
 Namespaces
 ----------
 
+* :doc:`backend.trn.op <backend.trn.op>`
+* :doc:`backend.trn.transform <backend.trn.transform>`
+
 .. toctree::
    :maxdepth: 1
 
    backend.trn.axis
    backend.trn.layout
-   backend.trn.op
    backend.trn.pipeline
    backend.trn.script
    backend.trn.thread_scope
-   backend.trn.transform
