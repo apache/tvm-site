@@ -20,9 +20,21 @@ tvm\_tirx.ir.prim.Broadcast
 
 .. currentmodule:: tvm_tirx.ir.prim
 
-
-
 .. autoclass:: Broadcast
+
+
+.. automethod:: tvm_tirx.ir.prim.Broadcast.expr_ty
+
+.. automethod:: tvm_tirx.ir.prim.Broadcast.equal
+
+.. automethod:: tvm_tirx.ir.prim.Broadcast.astype
+
+.. automethod:: tvm_tirx.ir.prim.Broadcast.script
+
+.. automethod:: tvm_tirx.ir.prim.Broadcast.show
+
+
+
 
 
 

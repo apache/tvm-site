@@ -20,9 +20,11 @@ tvm\_tirx.runtime.Tensor
 
 .. currentmodule:: tvm_tirx.runtime
 
-
-
 .. autoclass:: Tensor
+
+
+
+
 
 
 

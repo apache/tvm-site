@@ -20,9 +20,11 @@ tvm\_tirx.backend.metal.script.MetalNamespace
 
 .. currentmodule:: tvm_tirx.backend.metal.script
 
-
-
 .. autoclass:: MetalNamespace
+
+
+
+
 
 
 

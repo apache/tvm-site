@@ -20,9 +20,21 @@ tvm\_tirx.ir.FloatImm
 
 .. currentmodule:: tvm_tirx.ir
 
-
-
 .. autoclass:: FloatImm
+
+
+.. automethod:: tvm_tirx.ir.FloatImm.expr_ty
+
+.. automethod:: tvm_tirx.ir.FloatImm.equal
+
+.. automethod:: tvm_tirx.ir.FloatImm.astype
+
+.. automethod:: tvm_tirx.ir.FloatImm.script
+
+.. automethod:: tvm_tirx.ir.FloatImm.show
+
+
+
 
 
 

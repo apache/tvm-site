@@ -20,9 +20,11 @@ tvm\_tirx.backend.cuda.op.TCGen05InstrDescriptorBlockScaledAttrs
 
 .. currentmodule:: tvm_tirx.backend.cuda.op
 
-
-
 .. autoclass:: TCGen05InstrDescriptorBlockScaledAttrs
+
+
+
+
 
 
 

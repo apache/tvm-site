@@ -20,9 +20,19 @@ tvm\_tirx.ir.BaseFunc
 
 .. currentmodule:: tvm_tirx.ir
 
-
-
 .. autoclass:: BaseFunc
+
+
+.. automethod:: tvm_tirx.ir.BaseFunc.expr_ty
+
+.. automethod:: tvm_tirx.ir.BaseFunc.equal
+
+.. automethod:: tvm_tirx.ir.BaseFunc.astype
+
+.. automethod:: tvm_tirx.ir.BaseFunc.script
+
+.. automethod:: tvm_tirx.ir.BaseFunc.show
+
 
 
 
@@ -34,3 +44,5 @@ CallingConv
 -----------
 
 .. autoclass:: tvm_tirx.ir.CallingConv
+
+

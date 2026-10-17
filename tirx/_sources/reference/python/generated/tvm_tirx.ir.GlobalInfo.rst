@@ -20,9 +20,11 @@ tvm\_tirx.ir.GlobalInfo
 
 .. currentmodule:: tvm_tirx.ir
 
-
-
 .. autoclass:: GlobalInfo
+
+
+
+
 
 
 

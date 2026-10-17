@@ -20,9 +20,11 @@ tvm\_tirx.sym.analyzer.ConstraintScope
 
 .. currentmodule:: tvm_tirx.sym.analyzer
 
-
-
 .. autoclass:: ConstraintScope
+
+
+
+
 
 
 

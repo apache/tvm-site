@@ -20,9 +20,11 @@ tvm\_tirx.backend.cuda.launch.AccessPolicyWindow
 
 .. currentmodule:: tvm_tirx.backend.cuda.launch
 
-
-
 .. autoclass:: AccessPolicyWindow
+
+
+
+
 
 
 

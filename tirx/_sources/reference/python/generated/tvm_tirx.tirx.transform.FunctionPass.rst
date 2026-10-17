@@ -20,9 +20,11 @@ tvm\_tirx.tirx.transform.FunctionPass
 
 .. currentmodule:: tvm_tirx.tirx.transform
 
-
-
 .. autoclass:: FunctionPass
+
+
+
+
 
 
 

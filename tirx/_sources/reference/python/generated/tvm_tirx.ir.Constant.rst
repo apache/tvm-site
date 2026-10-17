@@ -20,9 +20,21 @@ tvm\_tirx.ir.Constant
 
 .. currentmodule:: tvm_tirx.ir
 
-
-
 .. autoclass:: Constant
+
+
+.. automethod:: tvm_tirx.ir.Constant.expr_ty
+
+.. automethod:: tvm_tirx.ir.Constant.equal
+
+.. automethod:: tvm_tirx.ir.Constant.astype
+
+.. automethod:: tvm_tirx.ir.Constant.script
+
+.. automethod:: tvm_tirx.ir.Constant.show
+
+
+
 
 
 

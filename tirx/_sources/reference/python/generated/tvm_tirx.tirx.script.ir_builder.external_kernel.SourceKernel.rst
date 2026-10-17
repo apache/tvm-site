@@ -20,9 +20,11 @@ tvm\_tirx.tirx.script.ir\_builder.external\_kernel.SourceKernel
 
 .. currentmodule:: tvm_tirx.tirx.script.ir_builder.external_kernel
 
-
-
 .. autoclass:: SourceKernel
+
+
+
+
 
 
 

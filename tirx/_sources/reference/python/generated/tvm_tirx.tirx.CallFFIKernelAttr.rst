@@ -20,9 +20,11 @@ tvm\_tirx.tirx.CallFFIKernelAttr
 
 .. currentmodule:: tvm_tirx.tirx
 
-
-
 .. autoclass:: CallFFIKernelAttr
+
+
+
+
 
 
 

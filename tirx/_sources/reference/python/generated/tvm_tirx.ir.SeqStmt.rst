@@ -20,9 +20,15 @@ tvm\_tirx.ir.SeqStmt
 
 .. currentmodule:: tvm_tirx.ir
 
-
-
 .. autoclass:: SeqStmt
+
+
+.. automethod:: tvm_tirx.ir.SeqStmt.script
+
+.. automethod:: tvm_tirx.ir.SeqStmt.show
+
+
+
 
 
 

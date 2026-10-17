@@ -23,21 +23,38 @@ tvm_tirx.tirx
 
 .. currentmodule:: tvm_tirx.tirx
 
+Namespaces
+----------
+
+.. toctree::
+   :maxdepth: 1
+   :titlesonly:
+
+   tirx.analysis
+   tirx.tile
+   tirx.script
+   tirx.bench
+   tirx.compilation_pipeline
+   tirx.layout
+   tirx.op
+
+:doc:`Transformation passes <tirx.transform>`
+
 Classes
 -------
 
 .. autosummary::
    :toctree: generated/
 
-   CallFFIKernelAttr
-   ComposeLayout
+   TensorType
+   TensorMapType
    Function
    IndexMap
-   Layout
-   TensorMapType
-   TensorType
+   CallFFIKernelAttr
    ThreadScope
    TileLayout
+   Layout
+   ComposeLayout
 
 .. list-table::
    :header-rows: 1
@@ -45,62 +62,62 @@ Classes
 
    * - Alias
      - Canonical API
-   * - ``Add``
-     - :obj:`tvm_tirx.ir.prim.Add`
-   * - ``And``
-     - :obj:`tvm_tirx.ir.prim.And`
-   * - ``BitwiseAnd``
-     - :obj:`tvm_tirx.ir.prim.BitwiseAnd`
-   * - ``BitwiseNot``
-     - :obj:`tvm_tirx.ir.prim.BitwiseNot`
-   * - ``BitwiseOr``
-     - :obj:`tvm_tirx.ir.prim.BitwiseOr`
-   * - ``BitwiseXor``
-     - :obj:`tvm_tirx.ir.prim.BitwiseXor`
+   * - ``Var``
+     - :obj:`tvm_tirx.ir.Var`
    * - ``Cast``
      - :obj:`tvm_tirx.ir.prim.Cast`
+   * - ``Add``
+     - :obj:`tvm_tirx.ir.prim.Add`
+   * - ``Sub``
+     - :obj:`tvm_tirx.ir.prim.Sub`
+   * - ``Mul``
+     - :obj:`tvm_tirx.ir.prim.Mul`
    * - ``Div``
      - :obj:`tvm_tirx.ir.prim.Div`
-   * - ``EQ``
-     - :obj:`tvm_tirx.ir.prim.EQ`
+   * - ``Mod``
+     - :obj:`tvm_tirx.ir.prim.Mod`
    * - ``FloorDiv``
      - :obj:`tvm_tirx.ir.prim.FloorDiv`
    * - ``FloorMod``
      - :obj:`tvm_tirx.ir.prim.FloorMod`
-   * - ``GE``
-     - :obj:`tvm_tirx.ir.prim.GE`
-   * - ``GT``
-     - :obj:`tvm_tirx.ir.prim.GT`
-   * - ``LE``
-     - :obj:`tvm_tirx.ir.prim.LE`
    * - ``LShift``
      - :obj:`tvm_tirx.ir.prim.LShift`
-   * - ``LT``
-     - :obj:`tvm_tirx.ir.prim.LT`
-   * - ``Let``
-     - :obj:`tvm_tirx.ir.prim.Let`
-   * - ``Max``
-     - :obj:`tvm_tirx.ir.prim.Max`
-   * - ``Min``
-     - :obj:`tvm_tirx.ir.prim.Min`
-   * - ``Mod``
-     - :obj:`tvm_tirx.ir.prim.Mod`
-   * - ``Mul``
-     - :obj:`tvm_tirx.ir.prim.Mul`
-   * - ``NE``
-     - :obj:`tvm_tirx.ir.prim.NE`
-   * - ``Not``
-     - :obj:`tvm_tirx.ir.prim.Not`
-   * - ``Or``
-     - :obj:`tvm_tirx.ir.prim.Or`
    * - ``RShift``
      - :obj:`tvm_tirx.ir.prim.RShift`
+   * - ``BitwiseAnd``
+     - :obj:`tvm_tirx.ir.prim.BitwiseAnd`
+   * - ``BitwiseOr``
+     - :obj:`tvm_tirx.ir.prim.BitwiseOr`
+   * - ``BitwiseXor``
+     - :obj:`tvm_tirx.ir.prim.BitwiseXor`
+   * - ``BitwiseNot``
+     - :obj:`tvm_tirx.ir.prim.BitwiseNot`
+   * - ``Min``
+     - :obj:`tvm_tirx.ir.prim.Min`
+   * - ``Max``
+     - :obj:`tvm_tirx.ir.prim.Max`
+   * - ``EQ``
+     - :obj:`tvm_tirx.ir.prim.EQ`
+   * - ``NE``
+     - :obj:`tvm_tirx.ir.prim.NE`
+   * - ``LT``
+     - :obj:`tvm_tirx.ir.prim.LT`
+   * - ``LE``
+     - :obj:`tvm_tirx.ir.prim.LE`
+   * - ``GT``
+     - :obj:`tvm_tirx.ir.prim.GT`
+   * - ``GE``
+     - :obj:`tvm_tirx.ir.prim.GE`
+   * - ``And``
+     - :obj:`tvm_tirx.ir.prim.And`
+   * - ``Or``
+     - :obj:`tvm_tirx.ir.prim.Or`
+   * - ``Not``
+     - :obj:`tvm_tirx.ir.prim.Not`
    * - ``Select``
      - :obj:`tvm_tirx.ir.prim.Select`
-   * - ``Sub``
-     - :obj:`tvm_tirx.ir.prim.Sub`
-   * - ``Var``
-     - :obj:`tvm_tirx.ir.Var`
+   * - ``Let``
+     - :obj:`tvm_tirx.ir.prim.Let`
 
 Functions
 ---------
@@ -108,55 +125,55 @@ Functions
 .. autosummary::
    :toctree: generated/
 
+   tensor_data_ptr
+   decl_tensor
+   is_tensor_var
    TensorLoad
+   renew_def
+   call_packed_lowered
+   call_cpacked_lowered
+   register_intrin_lowering
+   call_packed
+   call_cpacked
+   call_intrin
+   call_pure_extern
+   call_extern
+   call_ffi_kernel
+   call_llvm_intrin
+   call_llvm_pure_intrin
+   stack_alloca
+   stack_make_shape
+   stack_make_dltensor
+   handle_add_byte_offset
    abi_field_get
    abi_field_set
    address_of
-   alloc_workspace
    assume_aligned
-   call_cpacked
-   call_cpacked_lowered
-   call_extern
-   call_ffi_kernel
-   call_intrin
-   call_llvm_intrin
-   call_llvm_pure_intrin
-   call_packed
-   call_packed_lowered
-   call_pure_extern
-   compile
-   cpu_parallel_barrier
-   decl_tensor
-   free_workspace
-   get_active_lane_mask
-   get_default_tir_pipeline
-   get_tir_pipeline
-   get_vscale_expr
-   gpu_dp4a
-   gpu_fill_fragment
-   gpu_load_matrix_sync
-   gpu_mma_sync
-   gpu_store_matrix_sync
+   undef
    gpu_thread_allreduce
-   handle_add_byte_offset
-   ignore_loop_partition
-   is_tensor_var
+   ptr_byte_offset
+   throw_last_error
+   cpu_parallel_barrier
+   gpu_load_matrix_sync
+   gpu_store_matrix_sync
+   gpu_mma_sync
+   gpu_fill_fragment
+   vector_low
+   vector_high
+   vector_combine
+   reinterpret
    isnullptr
    logaddexp
-   ptr_byte_offset
-   register_intrin_lowering
+   alloc_workspace
+   free_workspace
+   get_active_lane_mask
+   get_vscale_expr
+   gpu_dp4a
+   ignore_loop_partition
+   compile
+   get_tir_pipeline
+   get_default_tir_pipeline
    register_tir_pipeline
-   reinterpret
-   renew_def
-   stack_alloca
-   stack_make_dltensor
-   stack_make_shape
-   tensor_data_ptr
-   throw_last_error
-   undef
-   vector_combine
-   vector_high
-   vector_low
 
 .. list-table::
    :header-rows: 1
@@ -164,22 +181,58 @@ Functions
 
    * - Alias
      - Canonical API
-   * - ``abs``
-     - :obj:`tvm_tirx.ir.prim.abs`
-   * - ``acos``
-     - :obj:`tvm_tirx.ir.prim.acos`
-   * - ``acosh``
-     - :obj:`tvm_tirx.ir.prim.acosh`
+   * - ``convert``
+     - :obj:`tvm_tirx.ir.prim.convert`
    * - ``all``
      - :obj:`tvm_tirx.ir.prim.all`
    * - ``any``
      - :obj:`tvm_tirx.ir.prim.any`
+   * - ``min_value``
+     - :obj:`tvm_tirx.ir.prim.min_value`
+   * - ``max_value``
+     - :obj:`tvm_tirx.ir.prim.max_value`
+   * - ``assume``
+     - :obj:`tvm_tirx.ir.prim.assume`
+   * - ``infinity``
+     - :obj:`tvm_tirx.ir.prim.infinity`
+   * - ``exp``
+     - :obj:`tvm_tirx.ir.prim.exp`
+   * - ``exp2``
+     - :obj:`tvm_tirx.ir.prim.exp2`
+   * - ``exp10``
+     - :obj:`tvm_tirx.ir.prim.exp10`
+   * - ``log``
+     - :obj:`tvm_tirx.ir.prim.log`
+   * - ``log2``
+     - :obj:`tvm_tirx.ir.prim.log2`
+   * - ``log10``
+     - :obj:`tvm_tirx.ir.prim.log10`
+   * - ``log1p``
+     - :obj:`tvm_tirx.ir.prim.log1p`
+   * - ``ldexp``
+     - :obj:`tvm_tirx.ir.prim.ldexp`
+   * - ``clz``
+     - :obj:`tvm_tirx.ir.prim.clz`
+   * - ``sin``
+     - :obj:`tvm_tirx.ir.prim.sin`
+   * - ``sinh``
+     - :obj:`tvm_tirx.ir.prim.sinh`
    * - ``asin``
      - :obj:`tvm_tirx.ir.prim.asin`
    * - ``asinh``
      - :obj:`tvm_tirx.ir.prim.asinh`
-   * - ``assume``
-     - :obj:`tvm_tirx.ir.prim.assume`
+   * - ``cos``
+     - :obj:`tvm_tirx.ir.prim.cos`
+   * - ``cosh``
+     - :obj:`tvm_tirx.ir.prim.cosh`
+   * - ``acos``
+     - :obj:`tvm_tirx.ir.prim.acos`
+   * - ``acosh``
+     - :obj:`tvm_tirx.ir.prim.acosh`
+   * - ``tan``
+     - :obj:`tvm_tirx.ir.prim.tan`
+   * - ``tanh``
+     - :obj:`tvm_tirx.ir.prim.tanh`
    * - ``atan``
      - :obj:`tvm_tirx.ir.prim.atan`
    * - ``atan2``
@@ -194,186 +247,73 @@ Functions
      - :obj:`tvm_tirx.ir.prim.bitwise_or`
    * - ``bitwise_xor``
      - :obj:`tvm_tirx.ir.prim.bitwise_xor`
-   * - ``ceil``
-     - :obj:`tvm_tirx.ir.prim.ceil`
-   * - ``ceildiv``
-     - :obj:`tvm_tirx.ir.prim.ceildiv`
-   * - ``clz``
-     - :obj:`tvm_tirx.ir.prim.clz`
-   * - ``convert``
-     - :obj:`tvm_tirx.ir.prim.convert`
-   * - ``copysign``
-     - :obj:`tvm_tirx.ir.prim.copysign`
-   * - ``cos``
-     - :obj:`tvm_tirx.ir.prim.cos`
-   * - ``cosh``
-     - :obj:`tvm_tirx.ir.prim.cosh`
-   * - ``div``
-     - :obj:`tvm_tirx.ir.prim.div`
    * - ``erf``
      - :obj:`tvm_tirx.ir.prim.erf`
-   * - ``exp``
-     - :obj:`tvm_tirx.ir.prim.exp`
-   * - ``exp10``
-     - :obj:`tvm_tirx.ir.prim.exp10`
-   * - ``exp2``
-     - :obj:`tvm_tirx.ir.prim.exp2`
+   * - ``sigmoid``
+     - :obj:`tvm_tirx.ir.prim.sigmoid`
+   * - ``sqrt``
+     - :obj:`tvm_tirx.ir.prim.sqrt`
+   * - ``rsqrt``
+     - :obj:`tvm_tirx.ir.prim.rsqrt`
    * - ``floor``
      - :obj:`tvm_tirx.ir.prim.floor`
-   * - ``floordiv``
-     - :obj:`tvm_tirx.ir.prim.floordiv`
-   * - ``floormod``
-     - :obj:`tvm_tirx.ir.prim.floormod`
-   * - ``fmod``
-     - :obj:`tvm_tirx.ir.prim.fmod`
+   * - ``ceil``
+     - :obj:`tvm_tirx.ir.prim.ceil`
    * - ``hypot``
      - :obj:`tvm_tirx.ir.prim.hypot`
+   * - ``trunc``
+     - :obj:`tvm_tirx.ir.prim.trunc`
+   * - ``abs``
+     - :obj:`tvm_tirx.ir.prim.abs`
+   * - ``round``
+     - :obj:`tvm_tirx.ir.prim.round`
+   * - ``nextafter``
+     - :obj:`tvm_tirx.ir.prim.nextafter`
+   * - ``nearbyint``
+     - :obj:`tvm_tirx.ir.prim.nearbyint`
+   * - ``power``
+     - :obj:`tvm_tirx.ir.prim.power`
+   * - ``pow``
+     - :obj:`tvm_tirx.ir.prim.pow`
+   * - ``popcount``
+     - :obj:`tvm_tirx.ir.prim.popcount`
+   * - ``fmod``
+     - :obj:`tvm_tirx.ir.prim.fmod`
    * - ``if_then_else``
      - :obj:`tvm_tirx.ir.prim.if_then_else`
-   * - ``indexdiv``
-     - :obj:`tvm_tirx.ir.prim.indexdiv`
-   * - ``indexmod``
-     - :obj:`tvm_tirx.ir.prim.indexmod`
-   * - ``infinity``
-     - :obj:`tvm_tirx.ir.prim.infinity`
+   * - ``likely``
+     - :obj:`tvm_tirx.ir.prim.likely`
+   * - ``isnan``
+     - :obj:`tvm_tirx.ir.prim.isnan`
    * - ``isfinite``
      - :obj:`tvm_tirx.ir.prim.isfinite`
    * - ``isinf``
      - :obj:`tvm_tirx.ir.prim.isinf`
-   * - ``isnan``
-     - :obj:`tvm_tirx.ir.prim.isnan`
-   * - ``ldexp``
-     - :obj:`tvm_tirx.ir.prim.ldexp`
-   * - ``likely``
-     - :obj:`tvm_tirx.ir.prim.likely`
-   * - ``log``
-     - :obj:`tvm_tirx.ir.prim.log`
-   * - ``log10``
-     - :obj:`tvm_tirx.ir.prim.log10`
-   * - ``log1p``
-     - :obj:`tvm_tirx.ir.prim.log1p`
-   * - ``log2``
-     - :obj:`tvm_tirx.ir.prim.log2`
-   * - ``max``
-     - :obj:`tvm_tirx.ir.prim.max`
-   * - ``max_value``
-     - :obj:`tvm_tirx.ir.prim.max_value`
-   * - ``min``
-     - :obj:`tvm_tirx.ir.prim.min`
-   * - ``min_value``
-     - :obj:`tvm_tirx.ir.prim.min_value`
-   * - ``nearbyint``
-     - :obj:`tvm_tirx.ir.prim.nearbyint`
-   * - ``nextafter``
-     - :obj:`tvm_tirx.ir.prim.nextafter`
-   * - ``popcount``
-     - :obj:`tvm_tirx.ir.prim.popcount`
-   * - ``pow``
-     - :obj:`tvm_tirx.ir.prim.pow`
-   * - ``power``
-     - :obj:`tvm_tirx.ir.prim.power`
-   * - ``round``
-     - :obj:`tvm_tirx.ir.prim.round`
-   * - ``rsqrt``
-     - :obj:`tvm_tirx.ir.prim.rsqrt`
-   * - ``shift_left``
-     - :obj:`tvm_tirx.ir.prim.shift_left`
-   * - ``shift_right``
-     - :obj:`tvm_tirx.ir.prim.shift_right`
-   * - ``sigmoid``
-     - :obj:`tvm_tirx.ir.prim.sigmoid`
-   * - ``sin``
-     - :obj:`tvm_tirx.ir.prim.sin`
-   * - ``sinh``
-     - :obj:`tvm_tirx.ir.prim.sinh`
-   * - ``sqrt``
-     - :obj:`tvm_tirx.ir.prim.sqrt`
-   * - ``tan``
-     - :obj:`tvm_tirx.ir.prim.tan`
-   * - ``tanh``
-     - :obj:`tvm_tirx.ir.prim.tanh`
-   * - ``trunc``
-     - :obj:`tvm_tirx.ir.prim.trunc`
+   * - ``copysign``
+     - :obj:`tvm_tirx.ir.prim.copysign`
+   * - ``div``
+     - :obj:`tvm_tirx.ir.prim.div`
+   * - ``indexdiv``
+     - :obj:`tvm_tirx.ir.prim.indexdiv`
+   * - ``indexmod``
+     - :obj:`tvm_tirx.ir.prim.indexmod`
    * - ``truncdiv``
      - :obj:`tvm_tirx.ir.prim.truncdiv`
    * - ``truncmod``
      - :obj:`tvm_tirx.ir.prim.truncmod`
+   * - ``floordiv``
+     - :obj:`tvm_tirx.ir.prim.floordiv`
+   * - ``floormod``
+     - :obj:`tvm_tirx.ir.prim.floormod`
+   * - ``ceildiv``
+     - :obj:`tvm_tirx.ir.prim.ceildiv`
+   * - ``min``
+     - :obj:`tvm_tirx.ir.prim.min`
+   * - ``max``
+     - :obj:`tvm_tirx.ir.prim.max`
+   * - ``shift_left``
+     - :obj:`tvm_tirx.ir.prim.shift_left`
+   * - ``shift_right``
+     - :obj:`tvm_tirx.ir.prim.shift_right`
    * - ``vscale``
      - :obj:`tvm_tirx.ir.prim.vscale`
-
-Namespaces
-----------
-
-.. toctree::
-   :maxdepth: 1
-
-   tirx.analysis
-   tirx.tile
-   tirx.script
-   tirx.bench
-   tirx.compilation_pipeline
-   tirx.layout
-   tirx.op
-
-Namespace links
----------------
-
-.. raw:: html
-
-   <span id="tvm-tirx-tirx-op"></span>
-
-:doc:`tvm_tirx.tirx.op <tirx.op>`
-
-.. raw:: html
-
-   <span id="tvm-tirx-tirx-analysis"></span>
-
-:doc:`tvm_tirx.tirx.analysis <tirx.analysis>`
-
-.. raw:: html
-
-   <span id="tvm-tirx-tirx-transform"></span>
-
-:doc:`tvm_tirx.tirx.transform <tirx.transform>`
-
-.. raw:: html
-
-   <span id="tvm-tirx-tirx-layout"></span>
-
-:doc:`tvm_tirx.tirx.layout <tirx.layout>`
-
-.. raw:: html
-
-   <span id="tvm-tirx-tirx-compilation-pipeline"></span>
-
-:doc:`tvm_tirx.tirx.compilation_pipeline <tirx.compilation_pipeline>`
-
-.. raw:: html
-
-   <span id="tvm-tirx-tirx-tile"></span>
-
-:doc:`tvm_tirx.tirx.tile <tirx.tile>`
-
-.. raw:: html
-
-   <span id="tvm-tirx-tirx-tile-dispatch"></span>
-
-:doc:`tvm_tirx.tirx.tile.dispatch <tirx.tile.dispatch>`
-
-.. raw:: html
-
-   <span id="tvm-tirx-tirx-tile-instruction"></span>
-
-:doc:`tvm_tirx.tirx.tile.instruction <tirx.tile.instruction>`
-
-.. raw:: html
-
-   <span id="tvm-tirx-tirx-tile-views"></span>
-
-:doc:`tvm_tirx.tirx.tile.views <tirx.tile.views>`
-
-.. raw:: html
-
-   <span id="tvm-tirx-tirx-bench"></span>
-
-:doc:`tvm_tirx.tirx.bench <tirx.bench>`

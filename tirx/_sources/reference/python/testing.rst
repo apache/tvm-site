@@ -51,24 +51,3 @@ Namespaces
    testing.env
    testing.locking
    testing.utils
-
-Namespace links
----------------
-
-.. raw:: html
-
-   <span id="tvm-tirx-testing-env"></span>
-
-:doc:`tvm_tirx.testing.env <testing.env>`
-
-.. raw:: html
-
-   <span id="tvm-tirx-testing-locking"></span>
-
-:doc:`tvm_tirx.testing.locking <testing.locking>`
-
-.. raw:: html
-
-   <span id="tvm-tirx-testing-utils"></span>
-
-:doc:`tvm_tirx.testing.utils <testing.utils>`

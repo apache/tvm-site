@@ -23,6 +23,41 @@ tvm_tirx
 
 .. currentmodule:: tvm_tirx
 
+Namespaces
+----------
+
+.. list-table::
+   :header-rows: 1
+   :widths: 30 70
+
+   * - Namespace
+     - Common references
+   * - :doc:`ir`
+     - :doc:`Primitive expressions and operators <ir.prim>`, :doc:`IR passes <ir.transform>`
+   * - :doc:`script`
+     - :doc:`Parser <script.parser>`, :doc:`IR builder <script.ir_builder>`
+   * - :doc:`tirx`
+     - :doc:`Analysis <tirx.analysis>`, :doc:`Operators <tirx.op>`, :doc:`Passes <tirx.transform>`
+   * - :doc:`backend`
+     - :doc:`CUDA <backend.cuda>`, :doc:`CUDA operators <backend.cuda.op>`
+
+.. toctree::
+   :maxdepth: 1
+   :titlesonly:
+
+   runtime
+   ir
+   ir.transform
+   script
+   sym
+   target
+   tirx
+   tirx.transform
+   codegen
+   backend
+   support
+   testing
+
 Classes
 -------
 
@@ -55,44 +90,26 @@ Functions
      - :obj:`tvm_tirx.runtime.cpu`
    * - ``cuda``
      - :obj:`tvm_tirx.runtime.cuda`
-   * - ``device_from_target``
-     - :obj:`tvm_tirx.target.device_from_target`
-   * - ``ext_dev``
-     - :obj:`tvm_tirx.runtime.ext_dev`
-   * - ``metal``
-     - :obj:`tvm_tirx.runtime.metal`
    * - ``opencl``
      - :obj:`tvm_tirx.runtime.opencl`
-   * - ``rocm``
-     - :obj:`tvm_tirx.runtime.rocm`
-   * - ``vpi``
-     - :obj:`tvm_tirx.runtime.vpi`
    * - ``vulkan``
      - :obj:`tvm_tirx.runtime.vulkan`
-
-Namespaces
-----------
-
-.. toctree::
-   :maxdepth: 2
-
-   runtime
-   ir
-   ir.transform
-   script
-   sym
-   target
-   tirx
-   tirx.transform
-   codegen
-   backend
-   support
-   testing
+   * - ``metal``
+     - :obj:`tvm_tirx.runtime.metal`
+   * - ``vpi``
+     - :obj:`tvm_tirx.runtime.vpi`
+   * - ``rocm``
+     - :obj:`tvm_tirx.runtime.rocm`
+   * - ``ext_dev``
+     - :obj:`tvm_tirx.runtime.ext_dev`
+   * - ``device_from_target``
+     - :obj:`tvm_tirx.target.device_from_target`
 
 Additional namespaces
 ---------------------
 
 .. toctree::
    :maxdepth: 1
+   :titlesonly:
 
    libinfo

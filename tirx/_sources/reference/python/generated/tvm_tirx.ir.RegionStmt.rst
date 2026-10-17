@@ -20,9 +20,15 @@ tvm\_tirx.ir.RegionStmt
 
 .. currentmodule:: tvm_tirx.ir
 
-
-
 .. autoclass:: RegionStmt
+
+
+.. automethod:: tvm_tirx.ir.RegionStmt.script
+
+.. automethod:: tvm_tirx.ir.RegionStmt.show
+
+
+
 
 
 

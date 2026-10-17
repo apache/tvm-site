@@ -20,9 +20,21 @@ tvm\_tirx.ir.prim.BinaryOpExpr
 
 .. currentmodule:: tvm_tirx.ir.prim
 
-
-
 .. autoclass:: BinaryOpExpr
+
+
+.. automethod:: tvm_tirx.ir.prim.BinaryOpExpr.expr_ty
+
+.. automethod:: tvm_tirx.ir.prim.BinaryOpExpr.equal
+
+.. automethod:: tvm_tirx.ir.prim.BinaryOpExpr.astype
+
+.. automethod:: tvm_tirx.ir.prim.BinaryOpExpr.script
+
+.. automethod:: tvm_tirx.ir.prim.BinaryOpExpr.show
+
+
+
 
 
 

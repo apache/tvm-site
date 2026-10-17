@@ -20,9 +20,15 @@ tvm\_tirx.ir.TupleType
 
 .. currentmodule:: tvm_tirx.ir
 
-
-
 .. autoclass:: TupleType
+
+
+.. automethod:: tvm_tirx.ir.TupleType.script
+
+.. automethod:: tvm_tirx.ir.TupleType.show
+
+
+
 
 
 

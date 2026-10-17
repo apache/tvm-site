@@ -20,9 +20,11 @@ tvm\_tirx.sym.IntSet
 
 .. currentmodule:: tvm_tirx.sym
 
-
-
 .. autoclass:: IntSet
+
+
+
+
 
 
 

@@ -20,9 +20,21 @@ tvm\_tirx.ir.TensorLoad
 
 .. currentmodule:: tvm_tirx.ir
 
-
-
 .. autoclass:: TensorLoad
+
+
+.. automethod:: tvm_tirx.ir.TensorLoad.expr_ty
+
+.. automethod:: tvm_tirx.ir.TensorLoad.equal
+
+.. automethod:: tvm_tirx.ir.TensorLoad.astype
+
+.. automethod:: tvm_tirx.ir.TensorLoad.script
+
+.. automethod:: tvm_tirx.ir.TensorLoad.show
+
+
+
 
 
 

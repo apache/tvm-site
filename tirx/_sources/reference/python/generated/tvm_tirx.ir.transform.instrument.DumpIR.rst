@@ -20,9 +20,11 @@ tvm\_tirx.ir.transform.instrument.DumpIR
 
 .. currentmodule:: tvm_tirx.ir.transform.instrument
 
-
-
 .. autoclass:: DumpIR
+
+
+
+
 
 
 

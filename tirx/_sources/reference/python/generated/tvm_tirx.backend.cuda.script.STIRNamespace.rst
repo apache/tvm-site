@@ -20,9 +20,11 @@ tvm\_tirx.backend.cuda.script.STIRNamespace
 
 .. currentmodule:: tvm_tirx.backend.cuda.script
 
-
-
 .. autoclass:: STIRNamespace
+
+
+
+
 
 
 

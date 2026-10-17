@@ -20,9 +20,15 @@ tvm\_tirx.ir.PrimType
 
 .. currentmodule:: tvm_tirx.ir
 
-
-
 .. autoclass:: PrimType
+
+
+.. automethod:: tvm_tirx.ir.PrimType.script
+
+.. automethod:: tvm_tirx.ir.PrimType.show
+
+
+
 
 
 

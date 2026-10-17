@@ -20,9 +20,21 @@ tvm\_tirx.ir.prim.Cast
 
 .. currentmodule:: tvm_tirx.ir.prim
 
-
-
 .. autoclass:: Cast
+
+
+.. automethod:: tvm_tirx.ir.prim.Cast.expr_ty
+
+.. automethod:: tvm_tirx.ir.prim.Cast.equal
+
+.. automethod:: tvm_tirx.ir.prim.Cast.astype
+
+.. automethod:: tvm_tirx.ir.prim.Cast.script
+
+.. automethod:: tvm_tirx.ir.prim.Cast.show
+
+
+
 
 
 

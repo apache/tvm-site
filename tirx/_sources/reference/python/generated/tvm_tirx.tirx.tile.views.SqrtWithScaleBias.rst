@@ -20,9 +20,11 @@ tvm\_tirx.tirx.tile.views.SqrtWithScaleBias
 
 .. currentmodule:: tvm_tirx.tirx.tile.views
 
-
-
 .. autoclass:: SqrtWithScaleBias
+
+
+
+
 
 
 

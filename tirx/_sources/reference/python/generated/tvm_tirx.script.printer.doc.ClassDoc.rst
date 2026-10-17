@@ -20,9 +20,11 @@ tvm\_tirx.script.printer.doc.ClassDoc
 
 .. currentmodule:: tvm_tirx.script.printer.doc
 
-
-
 .. autoclass:: ClassDoc
+
+
+
+
 
 
 

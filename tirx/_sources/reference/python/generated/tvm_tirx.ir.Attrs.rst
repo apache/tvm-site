@@ -20,9 +20,11 @@ tvm\_tirx.ir.Attrs
 
 .. currentmodule:: tvm_tirx.ir
 
-
-
 .. autoclass:: Attrs
+
+
+
+
 
 
 

@@ -20,9 +20,11 @@ tvm\_tirx.backend.trn.script.NKINamespace
 
 .. currentmodule:: tvm_tirx.backend.trn.script
 
-
-
 .. autoclass:: NKINamespace
+
+
+
+
 
 
 

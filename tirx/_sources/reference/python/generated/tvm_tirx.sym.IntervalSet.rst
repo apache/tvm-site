@@ -20,9 +20,11 @@ tvm\_tirx.sym.IntervalSet
 
 .. currentmodule:: tvm_tirx.sym
 
-
-
 .. autoclass:: IntervalSet
+
+
+
+
 
 
 

@@ -20,9 +20,21 @@ tvm\_tirx.ir.prim.GT
 
 .. currentmodule:: tvm_tirx.ir.prim
 
-
-
 .. autoclass:: GT
+
+
+.. automethod:: tvm_tirx.ir.prim.GT.expr_ty
+
+.. automethod:: tvm_tirx.ir.prim.GT.equal
+
+.. automethod:: tvm_tirx.ir.prim.GT.astype
+
+.. automethod:: tvm_tirx.ir.prim.GT.script
+
+.. automethod:: tvm_tirx.ir.prim.GT.show
+
+
+
 
 
 

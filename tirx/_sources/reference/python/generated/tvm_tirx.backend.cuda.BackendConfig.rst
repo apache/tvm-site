@@ -20,9 +20,11 @@ tvm\_tirx.backend.cuda.BackendConfig
 
 .. currentmodule:: tvm_tirx.backend.cuda
 
-
-
 .. autoclass:: BackendConfig
+
+
+
+
 
 
 

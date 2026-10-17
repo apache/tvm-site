@@ -20,9 +20,15 @@ tvm\_tirx.ir.While
 
 .. currentmodule:: tvm_tirx.ir
 
-
-
 .. autoclass:: While
+
+
+.. automethod:: tvm_tirx.ir.While.script
+
+.. automethod:: tvm_tirx.ir.While.show
+
+
+
 
 
 

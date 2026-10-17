@@ -20,9 +20,11 @@ tvm\_tirx.ir.unique\_name\_supply.UniqueNameSupply
 
 .. currentmodule:: tvm_tirx.ir.unique_name_supply
 
-
-
 .. autoclass:: UniqueNameSupply
+
+
+
+
 
 
 

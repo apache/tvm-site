@@ -20,9 +20,15 @@ tvm\_tirx.tirx.TensorType
 
 .. currentmodule:: tvm_tirx.tirx
 
-
-
 .. autoclass:: TensorType
+
+
+.. automethod:: tvm_tirx.tirx.TensorType.script
+
+.. automethod:: tvm_tirx.tirx.TensorType.show
+
+
+
 
 
 

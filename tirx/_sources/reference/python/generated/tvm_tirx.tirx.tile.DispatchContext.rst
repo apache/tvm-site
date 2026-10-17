@@ -20,9 +20,15 @@ tvm\_tirx.tirx.tile.DispatchContext
 
 .. currentmodule:: tvm_tirx.tirx.tile
 
-
-
 .. autoclass:: DispatchContext
+
+
+.. automethod:: tvm_tirx.tirx.tile.DispatchContext.script
+
+.. automethod:: tvm_tirx.tirx.tile.DispatchContext.show
+
+
+
 
 
 

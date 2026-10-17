@@ -20,9 +20,21 @@ tvm\_tirx.ir.Tuple
 
 .. currentmodule:: tvm_tirx.ir
 
-
-
 .. autoclass:: Tuple
+
+
+.. automethod:: tvm_tirx.ir.Tuple.expr_ty
+
+.. automethod:: tvm_tirx.ir.Tuple.equal
+
+.. automethod:: tvm_tirx.ir.Tuple.astype
+
+.. automethod:: tvm_tirx.ir.Tuple.script
+
+.. automethod:: tvm_tirx.ir.Tuple.show
+
+
+
 
 
 

@@ -20,9 +20,15 @@ tvm\_tirx.ir.If
 
 .. currentmodule:: tvm_tirx.ir
 
-
-
 .. autoclass:: If
+
+
+.. automethod:: tvm_tirx.ir.If.script
+
+.. automethod:: tvm_tirx.ir.If.show
+
+
+
 
 
 

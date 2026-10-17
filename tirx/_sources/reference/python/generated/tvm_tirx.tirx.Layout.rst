@@ -20,9 +20,11 @@ tvm\_tirx.tirx.Layout
 
 .. currentmodule:: tvm_tirx.tirx
 
-
-
 .. autoclass:: Layout
+
+
+
+
 
 
 

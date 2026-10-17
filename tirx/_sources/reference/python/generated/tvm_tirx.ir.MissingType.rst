@@ -20,9 +20,15 @@ tvm\_tirx.ir.MissingType
 
 .. currentmodule:: tvm_tirx.ir
 
-
-
 .. autoclass:: MissingType
+
+
+.. automethod:: tvm_tirx.ir.MissingType.script
+
+.. automethod:: tvm_tirx.ir.MissingType.show
+
+
+
 
 
 

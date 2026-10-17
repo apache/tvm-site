@@ -20,9 +20,11 @@ tvm\_tirx.script.ir\_builder.tracing.LineTraceScope
 
 .. currentmodule:: tvm_tirx.script.ir_builder.tracing
 
-
-
 .. autoclass:: LineTraceScope
+
+
+
+
 
 
 

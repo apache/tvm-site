@@ -20,9 +20,21 @@ tvm\_tirx.ir.prim.Ramp
 
 .. currentmodule:: tvm_tirx.ir.prim
 
-
-
 .. autoclass:: Ramp
+
+
+.. automethod:: tvm_tirx.ir.prim.Ramp.expr_ty
+
+.. automethod:: tvm_tirx.ir.prim.Ramp.equal
+
+.. automethod:: tvm_tirx.ir.prim.Ramp.astype
+
+.. automethod:: tvm_tirx.ir.prim.Ramp.script
+
+.. automethod:: tvm_tirx.ir.prim.Ramp.show
+
+
+
 
 
 

@@ -20,9 +20,15 @@ tvm\_tirx.ir.TensorStore
 
 .. currentmodule:: tvm_tirx.ir
 
-
-
 .. autoclass:: TensorStore
+
+
+.. automethod:: tvm_tirx.ir.TensorStore.script
+
+.. automethod:: tvm_tirx.ir.TensorStore.show
+
+
+
 
 
 

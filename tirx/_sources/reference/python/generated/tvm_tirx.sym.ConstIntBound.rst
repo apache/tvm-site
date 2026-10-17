@@ -20,9 +20,11 @@ tvm\_tirx.sym.ConstIntBound
 
 .. currentmodule:: tvm_tirx.sym
 
-
-
 .. autoclass:: ConstIntBound
+
+
+
+
 
 
 

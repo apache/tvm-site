@@ -20,9 +20,11 @@ tvm\_tirx.runtime.DataTypeCode
 
 .. currentmodule:: tvm_tirx.runtime
 
-
-
 .. autoclass:: DataTypeCode
+
+
+
+
 
 
 

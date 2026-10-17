@@ -20,9 +20,11 @@ tvm\_tirx.ir.transform.Sequential
 
 .. currentmodule:: tvm_tirx.ir.transform
 
-
-
 .. autoclass:: Sequential
+
+
+
+
 
 
 

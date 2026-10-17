@@ -20,9 +20,11 @@ tvm\_tirx.codegen.Executable
 
 .. currentmodule:: tvm_tirx.codegen
 
-
-
 .. autoclass:: Executable
+
+
+
+
 
 
 

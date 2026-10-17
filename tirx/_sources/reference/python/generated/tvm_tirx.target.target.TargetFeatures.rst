@@ -20,9 +20,11 @@ tvm\_tirx.target.target.TargetFeatures
 
 .. currentmodule:: tvm_tirx.target.target
 
-
-
 .. autoclass:: TargetFeatures
+
+
+
+
 
 
 

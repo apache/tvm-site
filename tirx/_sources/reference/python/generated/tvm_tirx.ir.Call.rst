@@ -20,9 +20,19 @@ tvm\_tirx.ir.Call
 
 .. currentmodule:: tvm_tirx.ir
 
-
-
 .. autoclass:: Call
+
+
+.. automethod:: tvm_tirx.ir.Call.expr_ty
+
+.. automethod:: tvm_tirx.ir.Call.equal
+
+.. automethod:: tvm_tirx.ir.Call.astype
+
+.. automethod:: tvm_tirx.ir.Call.script
+
+.. automethod:: tvm_tirx.ir.Call.show
+
 
 
 
@@ -32,5 +42,7 @@ CallEffectKind
 --------------
 
 .. autoclass:: tvm_tirx.ir.CallEffectKind
+
+
 
 

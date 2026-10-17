@@ -1,4 +1,4 @@
-..  Licensed to the Apache Software Foundation (ASF) under one
+﻿..  Licensed to the Apache Software Foundation (ASF) under one
     or more contributor license agreements.  See the NOTICE file
     distributed with this work for additional information
     regarding copyright ownership.  The ASF licenses this file
@@ -15,37 +15,29 @@
     specific language governing permissions and limitations
     under the License.
 
-:orphan:
+tvm\_tirx.ir.Var
+================
 
-Symbolic Analysis
-=================
+.. currentmodule:: tvm_tirx.ir
 
-tvm_tirx.sym
-------------
+.. autoclass:: Var
 
-:doc:`tvm_tirx.sym <sym>`
 
-tvm_tirx.sym.analyzer
----------------------
+.. automethod:: tvm_tirx.ir.Var.expr_ty
 
-:doc:`tvm_tirx.sym.analyzer <sym.analyzer>`
+.. automethod:: tvm_tirx.ir.Var.equal
 
-tvm_tirx.sym.int_set
---------------------
+.. automethod:: tvm_tirx.ir.Var.astype
 
-:doc:`tvm_tirx.sym.int_set <sym.int_set>`
+.. automethod:: tvm_tirx.ir.Var.script
 
-tvm_tirx.sym.iter_affine_map
-----------------------------
+.. automethod:: tvm_tirx.ir.Var.show
 
-:doc:`tvm_tirx.sym.iter_affine_map <sym.iter_affine_map>`
 
-tvm_tirx.sym.pattern
---------------------
 
-:doc:`tvm_tirx.sym.pattern <sym.pattern>`
 
-tvm_tirx.sym.utils
-------------------
 
-:doc:`tvm_tirx.sym.utils <sym.utils>`
+
+
+
+

@@ -20,9 +20,11 @@ tvm\_tirx.script.printer.doc.SliceDoc
 
 .. currentmodule:: tvm_tirx.script.printer.doc
 
-
-
 .. autoclass:: SliceDoc
+
+
+
+
 
 
 

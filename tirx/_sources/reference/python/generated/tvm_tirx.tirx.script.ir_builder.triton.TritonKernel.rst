@@ -20,9 +20,11 @@ tvm\_tirx.tirx.script.ir\_builder.triton.TritonKernel
 
 .. currentmodule:: tvm_tirx.tirx.script.ir_builder.triton
 
-
-
 .. autoclass:: TritonKernel
+
+
+
+
 
 
 

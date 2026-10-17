@@ -20,9 +20,15 @@ tvm\_tirx.ir.PtrType
 
 .. currentmodule:: tvm_tirx.ir
 
-
-
 .. autoclass:: PtrType
+
+
+.. automethod:: tvm_tirx.ir.PtrType.script
+
+.. automethod:: tvm_tirx.ir.PtrType.show
+
+
+
 
 
 

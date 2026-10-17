@@ -20,9 +20,11 @@ tvm\_tirx.tirx.tile.views.BinaryReduce
 
 .. currentmodule:: tvm_tirx.tirx.tile.views
 
-
-
 .. autoclass:: BinaryReduce
+
+
+
+
 
 
 

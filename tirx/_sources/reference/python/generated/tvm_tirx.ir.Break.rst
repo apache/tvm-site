@@ -20,9 +20,15 @@ tvm\_tirx.ir.Break
 
 .. currentmodule:: tvm_tirx.ir
 
-
-
 .. autoclass:: Break
+
+
+.. automethod:: tvm_tirx.ir.Break.script
+
+.. automethod:: tvm_tirx.ir.Break.show
+
+
+
 
 
 

@@ -20,9 +20,21 @@ tvm\_tirx.ir.prim.Or
 
 .. currentmodule:: tvm_tirx.ir.prim
 
-
-
 .. autoclass:: Or
+
+
+.. automethod:: tvm_tirx.ir.prim.Or.expr_ty
+
+.. automethod:: tvm_tirx.ir.prim.Or.equal
+
+.. automethod:: tvm_tirx.ir.prim.Or.astype
+
+.. automethod:: tvm_tirx.ir.prim.Or.script
+
+.. automethod:: tvm_tirx.ir.prim.Or.show
+
+
+
 
 
 

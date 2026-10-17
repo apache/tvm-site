@@ -20,9 +20,11 @@ tvm\_tirx.sym.IterSplitExpr
 
 .. currentmodule:: tvm_tirx.sym
 
-
-
 .. autoclass:: IterSplitExpr
+
+
+
+
 
 
 

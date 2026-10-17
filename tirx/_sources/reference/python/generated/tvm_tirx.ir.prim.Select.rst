@@ -20,9 +20,21 @@ tvm\_tirx.ir.prim.Select
 
 .. currentmodule:: tvm_tirx.ir.prim
 
-
-
 .. autoclass:: Select
+
+
+.. automethod:: tvm_tirx.ir.prim.Select.expr_ty
+
+.. automethod:: tvm_tirx.ir.prim.Select.equal
+
+.. automethod:: tvm_tirx.ir.prim.Select.astype
+
+.. automethod:: tvm_tirx.ir.prim.Select.script
+
+.. automethod:: tvm_tirx.ir.prim.Select.show
+
+
+
 
 
 

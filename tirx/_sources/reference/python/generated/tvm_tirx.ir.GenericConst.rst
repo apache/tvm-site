@@ -20,9 +20,21 @@ tvm\_tirx.ir.GenericConst
 
 .. currentmodule:: tvm_tirx.ir
 
-
-
 .. autoclass:: GenericConst
+
+
+.. automethod:: tvm_tirx.ir.GenericConst.expr_ty
+
+.. automethod:: tvm_tirx.ir.GenericConst.equal
+
+.. automethod:: tvm_tirx.ir.GenericConst.astype
+
+.. automethod:: tvm_tirx.ir.GenericConst.script
+
+.. automethod:: tvm_tirx.ir.GenericConst.show
+
+
+
 
 
 

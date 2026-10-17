@@ -20,9 +20,21 @@ tvm\_tirx.ir.prim.RShift
 
 .. currentmodule:: tvm_tirx.ir.prim
 
-
-
 .. autoclass:: RShift
+
+
+.. automethod:: tvm_tirx.ir.prim.RShift.expr_ty
+
+.. automethod:: tvm_tirx.ir.prim.RShift.equal
+
+.. automethod:: tvm_tirx.ir.prim.RShift.astype
+
+.. automethod:: tvm_tirx.ir.prim.RShift.script
+
+.. automethod:: tvm_tirx.ir.prim.RShift.show
+
+
+
 
 
 

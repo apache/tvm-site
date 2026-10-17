@@ -20,9 +20,21 @@ tvm\_tirx.ir.StringImm
 
 .. currentmodule:: tvm_tirx.ir
 
-
-
 .. autoclass:: StringImm
+
+
+.. automethod:: tvm_tirx.ir.StringImm.expr_ty
+
+.. automethod:: tvm_tirx.ir.StringImm.equal
+
+.. automethod:: tvm_tirx.ir.StringImm.astype
+
+.. automethod:: tvm_tirx.ir.StringImm.script
+
+.. automethod:: tvm_tirx.ir.StringImm.show
+
+
+
 
 
 

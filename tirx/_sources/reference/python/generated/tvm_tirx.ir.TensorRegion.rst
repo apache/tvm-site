@@ -20,9 +20,15 @@ tvm\_tirx.ir.TensorRegion
 
 .. currentmodule:: tvm_tirx.ir
 
-
-
 .. autoclass:: TensorRegion
+
+
+.. automethod:: tvm_tirx.ir.TensorRegion.script
+
+.. automethod:: tvm_tirx.ir.TensorRegion.show
+
+
+
 
 
 

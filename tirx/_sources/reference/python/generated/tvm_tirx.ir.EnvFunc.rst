@@ -20,9 +20,11 @@ tvm\_tirx.ir.EnvFunc
 
 .. currentmodule:: tvm_tirx.ir
 
-
-
 .. autoclass:: EnvFunc
+
+
+
+
 
 
 

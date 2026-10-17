@@ -20,9 +20,11 @@ tvm\_tirx.backend.cuda.lang.TMABar
 
 .. currentmodule:: tvm_tirx.backend.cuda.lang
 
-
-
 .. autoclass:: TMABar
+
+
+
+
 
 
 

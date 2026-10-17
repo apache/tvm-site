@@ -20,9 +20,21 @@ tvm\_tirx.ir.prim.BitwiseXor
 
 .. currentmodule:: tvm_tirx.ir.prim
 
-
-
 .. autoclass:: BitwiseXor
+
+
+.. automethod:: tvm_tirx.ir.prim.BitwiseXor.expr_ty
+
+.. automethod:: tvm_tirx.ir.prim.BitwiseXor.equal
+
+.. automethod:: tvm_tirx.ir.prim.BitwiseXor.astype
+
+.. automethod:: tvm_tirx.ir.prim.BitwiseXor.script
+
+.. automethod:: tvm_tirx.ir.prim.BitwiseXor.show
+
+
+
 
 
 

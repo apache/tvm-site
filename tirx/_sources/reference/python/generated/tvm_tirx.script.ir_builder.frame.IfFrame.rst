@@ -20,9 +20,11 @@ tvm\_tirx.script.ir\_builder.frame.IfFrame
 
 .. currentmodule:: tvm_tirx.script.ir_builder.frame
 
-
-
 .. autoclass:: IfFrame
+
+
+
+
 
 
 

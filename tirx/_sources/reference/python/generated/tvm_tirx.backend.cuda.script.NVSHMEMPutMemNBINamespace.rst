@@ -20,9 +20,11 @@ tvm\_tirx.backend.cuda.script.NVSHMEMPutMemNBINamespace
 
 .. currentmodule:: tvm_tirx.backend.cuda.script
 
-
-
 .. autoclass:: NVSHMEMPutMemNBINamespace
+
+
+
+
 
 
 

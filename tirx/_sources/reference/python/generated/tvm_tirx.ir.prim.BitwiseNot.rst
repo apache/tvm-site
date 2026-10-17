@@ -20,9 +20,21 @@ tvm\_tirx.ir.prim.BitwiseNot
 
 .. currentmodule:: tvm_tirx.ir.prim
 
-
-
 .. autoclass:: BitwiseNot
+
+
+.. automethod:: tvm_tirx.ir.prim.BitwiseNot.expr_ty
+
+.. automethod:: tvm_tirx.ir.prim.BitwiseNot.equal
+
+.. automethod:: tvm_tirx.ir.prim.BitwiseNot.astype
+
+.. automethod:: tvm_tirx.ir.prim.BitwiseNot.script
+
+.. automethod:: tvm_tirx.ir.prim.BitwiseNot.show
+
+
+
 
 
 

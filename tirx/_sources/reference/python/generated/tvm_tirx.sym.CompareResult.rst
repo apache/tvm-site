@@ -20,9 +20,11 @@ tvm\_tirx.sym.CompareResult
 
 .. currentmodule:: tvm_tirx.sym
 
-
-
 .. autoclass:: CompareResult
+
+
+
+
 
 
 

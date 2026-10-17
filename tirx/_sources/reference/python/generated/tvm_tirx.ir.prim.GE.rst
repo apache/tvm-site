@@ -20,9 +20,21 @@ tvm\_tirx.ir.prim.GE
 
 .. currentmodule:: tvm_tirx.ir.prim
 
-
-
 .. autoclass:: GE
+
+
+.. automethod:: tvm_tirx.ir.prim.GE.expr_ty
+
+.. automethod:: tvm_tirx.ir.prim.GE.equal
+
+.. automethod:: tvm_tirx.ir.prim.GE.astype
+
+.. automethod:: tvm_tirx.ir.prim.GE.script
+
+.. automethod:: tvm_tirx.ir.prim.GE.show
+
+
+
 
 
 

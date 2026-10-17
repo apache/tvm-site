@@ -20,9 +20,11 @@ tvm\_tirx.target.TargetKind
 
 .. currentmodule:: tvm_tirx.target
 
-
-
 .. autoclass:: TargetKind
+
+
+
+
 
 
 

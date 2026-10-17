@@ -20,9 +20,11 @@ tvm\_tirx.sym.Analyzer
 
 .. currentmodule:: tvm_tirx.sym
 
-
-
 .. autoclass:: Analyzer
+
+
+
+
 
 
 

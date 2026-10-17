@@ -20,9 +20,11 @@ tvm\_tirx.backend.cuda.codegen.PTXDataType
 
 .. currentmodule:: tvm_tirx.backend.cuda.codegen
 
-
-
 .. autoclass:: PTXDataType
+
+
+
+
 
 
 

@@ -20,9 +20,11 @@ tvm\_tirx.script.printer.PrinterConfig
 
 .. currentmodule:: tvm_tirx.script.printer
 
-
-
 .. autoclass:: PrinterConfig
+
+
+
+
 
 
 

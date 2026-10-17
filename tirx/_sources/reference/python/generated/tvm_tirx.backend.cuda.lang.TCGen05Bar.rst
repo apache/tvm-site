@@ -20,9 +20,11 @@ tvm\_tirx.backend.cuda.lang.TCGen05Bar
 
 .. currentmodule:: tvm_tirx.backend.cuda.lang
 
-
-
 .. autoclass:: TCGen05Bar
+
+
+
+
 
 
 

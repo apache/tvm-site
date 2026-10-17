@@ -23,21 +23,22 @@ tvm_tirx.script
 
 .. currentmodule:: tvm_tirx.script
 
+Namespaces
+----------
+
+.. toctree::
+   :maxdepth: 1
+   :titlesonly:
+
+   script.parser
+   script.ir_builder
+   script.printer
+
 Functions
 ---------
 
 .. autosummary::
    :toctree: generated/
 
-   register_dialect
    register_module_validator
-
-Namespaces
-----------
-
-.. toctree::
-   :maxdepth: 1
-
-   script.parser
-   script.ir_builder
-   script.printer
+   register_dialect

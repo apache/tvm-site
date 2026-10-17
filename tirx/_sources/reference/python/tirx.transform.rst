@@ -23,51 +23,49 @@ tvm_tirx.tirx.transform
 
 .. currentmodule:: tvm_tirx.tirx.transform
 
-Classes
--------
+Pass decorator helpers
+----------------------
 
 .. autosummary::
    :toctree: generated/
 
    FunctionPass
-   RemoveNoOpConfig
-   UnrollLoopConfig
+   function_pass
 
-Functions
----------
+Passes
+------
 
 .. autosummary::
    :toctree: generated/
 
-   AnnotateEntryFunc
-   Apply
-   BF16ComputeLegalize
-   BF16StorageLegalize
-   BindTarget
-   CommonSubexprElim
-   ConvertSSA
    DecorateDeviceScope
-   FP8ComputeLegalize
-   FP8StorageLegalize
-   Filter
-   FlattenTensor
-   ForceNarrowIndexToInt32
-   HoistIf
-   LowerIntrin
-   LowerTIRx
-   LowerTVMBuiltin
-   LowerThreadAllreduce
-   MakePackedAPI
-   NarrowDataType
-   PointerValueTypeRewrite
-   RemoveNoOp
-   RenormalizeSplitPattern
-   SkipAssert
-   SplitHostDevice
-   StmtSimplify
-   StorageRewrite
-   TileDispatch
-   UnrollLoop
+   Apply
    VectorizeLoop
+   StorageRewrite
+   PointerValueTypeRewrite
+   UnrollLoop
+   RemoveNoOp
+   HoistIf
+   BF16ComputeLegalize
+   FP8ComputeLegalize
+   BF16StorageLegalize
+   FP8StorageLegalize
+   CommonSubexprElim
+   RenormalizeSplitPattern
+   StmtSimplify
+   LowerThreadAllreduce
+   ConvertSSA
+   MakePackedAPI
+   SplitHostDevice
+   SkipAssert
+   LowerTVMBuiltin
+   LowerIntrin
+   NarrowDataType
+   ForceNarrowIndexToInt32
    VerifyMemory
-   function_pass
+   FlattenTensor
+   BindTarget
+   AnnotateEntryFunc
+   Filter
+   TileDispatch
+   LowerTIRx

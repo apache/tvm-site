@@ -20,9 +20,11 @@ tvm\_tirx.tirx.ComposeLayout
 
 .. currentmodule:: tvm_tirx.tirx
 
-
-
 .. autoclass:: ComposeLayout
+
+
+
+
 
 
 

@@ -20,9 +20,11 @@ tvm\_tirx.tirx.tile.views.Exp2WithScaleBias
 
 .. currentmodule:: tvm_tirx.tirx.tile.views
 
-
-
 .. autoclass:: Exp2WithScaleBias
+
+
+
+
 
 
 

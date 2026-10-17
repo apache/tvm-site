@@ -20,9 +20,21 @@ tvm\_tirx.ir.prim.FloorMod
 
 .. currentmodule:: tvm_tirx.ir.prim
 
-
-
 .. autoclass:: FloorMod
+
+
+.. automethod:: tvm_tirx.ir.prim.FloorMod.expr_ty
+
+.. automethod:: tvm_tirx.ir.prim.FloorMod.equal
+
+.. automethod:: tvm_tirx.ir.prim.FloorMod.astype
+
+.. automethod:: tvm_tirx.ir.prim.FloorMod.script
+
+.. automethod:: tvm_tirx.ir.prim.FloorMod.show
+
+
+
 
 
 

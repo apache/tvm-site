@@ -20,9 +20,15 @@ tvm\_tirx.tirx.ThreadScope
 
 .. currentmodule:: tvm_tirx.tirx
 
-
-
 .. autoclass:: ThreadScope
+
+
+.. automethod:: tvm_tirx.tirx.ThreadScope.script
+
+.. automethod:: tvm_tirx.tirx.ThreadScope.show
+
+
+
 
 
 

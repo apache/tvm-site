@@ -20,9 +20,11 @@ tvm\_tirx.sym.ProofStrength
 
 .. currentmodule:: tvm_tirx.sym
 
-
-
 .. autoclass:: ProofStrength
+
+
+
+
 
 
 

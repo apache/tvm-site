@@ -20,9 +20,15 @@ tvm\_tirx.ir.OpaqueType
 
 .. currentmodule:: tvm_tirx.ir
 
-
-
 .. autoclass:: OpaqueType
+
+
+.. automethod:: tvm_tirx.ir.OpaqueType.script
+
+.. automethod:: tvm_tirx.ir.OpaqueType.show
+
+
+
 
 
 

@@ -20,9 +20,11 @@ tvm\_tirx.backend.cuda.layout.SwizzleMode
 
 .. currentmodule:: tvm_tirx.backend.cuda.layout
 
-
-
 .. autoclass:: SwizzleMode
+
+
+
+
 
 
 

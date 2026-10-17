@@ -20,9 +20,11 @@ tvm\_tirx.ir.GlobalVar
 
 .. currentmodule:: tvm_tirx.ir
 
-
-
 .. autoclass:: GlobalVar
+
+
+
+
 
 
 

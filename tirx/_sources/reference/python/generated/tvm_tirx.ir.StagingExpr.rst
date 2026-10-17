@@ -20,9 +20,11 @@ tvm\_tirx.ir.StagingExpr
 
 .. currentmodule:: tvm_tirx.ir
 
-
-
 .. autoclass:: StagingExpr
+
+
+
+
 
 
 

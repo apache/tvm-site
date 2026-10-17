@@ -20,9 +20,21 @@ tvm\_tirx.ir.prim.FloorDiv
 
 .. currentmodule:: tvm_tirx.ir.prim
 
-
-
 .. autoclass:: FloorDiv
+
+
+.. automethod:: tvm_tirx.ir.prim.FloorDiv.expr_ty
+
+.. automethod:: tvm_tirx.ir.prim.FloorDiv.equal
+
+.. automethod:: tvm_tirx.ir.prim.FloorDiv.astype
+
+.. automethod:: tvm_tirx.ir.prim.FloorDiv.script
+
+.. automethod:: tvm_tirx.ir.prim.FloorDiv.show
+
+
+
 
 
 

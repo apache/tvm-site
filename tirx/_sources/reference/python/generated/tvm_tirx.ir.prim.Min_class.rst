@@ -20,9 +20,21 @@ tvm\_tirx.ir.prim.Min
 
 .. currentmodule:: tvm_tirx.ir.prim
 
-
-
 .. autoclass:: Min
+
+
+.. automethod:: tvm_tirx.ir.prim.Min.expr_ty
+
+.. automethod:: tvm_tirx.ir.prim.Min.equal
+
+.. automethod:: tvm_tirx.ir.prim.Min.astype
+
+.. automethod:: tvm_tirx.ir.prim.Min.script
+
+.. automethod:: tvm_tirx.ir.prim.Min.show
+
+
+
 
 
 

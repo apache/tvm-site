@@ -20,9 +20,21 @@ tvm\_tirx.ir.DataTypeImm
 
 .. currentmodule:: tvm_tirx.ir
 
-
-
 .. autoclass:: DataTypeImm
+
+
+.. automethod:: tvm_tirx.ir.DataTypeImm.expr_ty
+
+.. automethod:: tvm_tirx.ir.DataTypeImm.equal
+
+.. automethod:: tvm_tirx.ir.DataTypeImm.astype
+
+.. automethod:: tvm_tirx.ir.DataTypeImm.script
+
+.. automethod:: tvm_tirx.ir.DataTypeImm.show
+
+
+
 
 
 

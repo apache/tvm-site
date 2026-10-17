@@ -20,9 +20,11 @@ tvm\_tirx.tirx.IndexMap
 
 .. currentmodule:: tvm_tirx.tirx
 
-
-
 .. autoclass:: IndexMap
+
+
+
+
 
 
 

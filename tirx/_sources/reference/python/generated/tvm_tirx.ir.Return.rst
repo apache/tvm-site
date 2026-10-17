@@ -20,9 +20,15 @@ tvm\_tirx.ir.Return
 
 .. currentmodule:: tvm_tirx.ir
 
-
-
 .. autoclass:: Return
+
+
+.. automethod:: tvm_tirx.ir.Return.script
+
+.. automethod:: tvm_tirx.ir.Return.show
+
+
+
 
 
 

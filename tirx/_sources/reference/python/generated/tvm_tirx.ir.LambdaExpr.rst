@@ -20,9 +20,15 @@ tvm\_tirx.ir.LambdaExpr
 
 .. currentmodule:: tvm_tirx.ir
 
-
-
 .. autoclass:: LambdaExpr
+
+
+.. automethod:: tvm_tirx.ir.LambdaExpr.script
+
+.. automethod:: tvm_tirx.ir.LambdaExpr.show
+
+
+
 
 
 

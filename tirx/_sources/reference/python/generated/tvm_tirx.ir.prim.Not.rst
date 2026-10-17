@@ -20,9 +20,21 @@ tvm\_tirx.ir.prim.Not
 
 .. currentmodule:: tvm_tirx.ir.prim
 
-
-
 .. autoclass:: Not
+
+
+.. automethod:: tvm_tirx.ir.prim.Not.expr_ty
+
+.. automethod:: tvm_tirx.ir.prim.Not.equal
+
+.. automethod:: tvm_tirx.ir.prim.Not.astype
+
+.. automethod:: tvm_tirx.ir.prim.Not.script
+
+.. automethod:: tvm_tirx.ir.prim.Not.show
+
+
+
 
 
 

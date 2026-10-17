@@ -20,9 +20,11 @@ tvm\_tirx.sym.ModularSet
 
 .. currentmodule:: tvm_tirx.sym
 
-
-
 .. autoclass:: ModularSet
+
+
+
+
 
 
 

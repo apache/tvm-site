@@ -20,9 +20,21 @@ tvm\_tirx.ir.prim.Mul
 
 .. currentmodule:: tvm_tirx.ir.prim
 
-
-
 .. autoclass:: Mul
+
+
+.. automethod:: tvm_tirx.ir.prim.Mul.expr_ty
+
+.. automethod:: tvm_tirx.ir.prim.Mul.equal
+
+.. automethod:: tvm_tirx.ir.prim.Mul.astype
+
+.. automethod:: tvm_tirx.ir.prim.Mul.script
+
+.. automethod:: tvm_tirx.ir.prim.Mul.show
+
+
+
 
 
 

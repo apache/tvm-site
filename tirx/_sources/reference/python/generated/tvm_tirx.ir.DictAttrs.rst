@@ -20,9 +20,11 @@ tvm\_tirx.ir.DictAttrs
 
 .. currentmodule:: tvm_tirx.ir
 
-
-
 .. autoclass:: DictAttrs
+
+
+
+
 
 
 

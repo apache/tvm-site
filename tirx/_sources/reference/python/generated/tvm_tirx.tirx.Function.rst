@@ -20,9 +20,21 @@ tvm\_tirx.tirx.Function
 
 .. currentmodule:: tvm_tirx.tirx
 
-
-
 .. autoclass:: Function
+
+
+.. automethod:: tvm_tirx.tirx.Function.expr_ty
+
+.. automethod:: tvm_tirx.tirx.Function.equal
+
+.. automethod:: tvm_tirx.tirx.Function.astype
+
+.. automethod:: tvm_tirx.tirx.Function.script
+
+.. automethod:: tvm_tirx.tirx.Function.show
+
+
+
 
 
 

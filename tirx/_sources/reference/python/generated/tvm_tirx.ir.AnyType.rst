@@ -20,9 +20,15 @@ tvm\_tirx.ir.AnyType
 
 .. currentmodule:: tvm_tirx.ir
 
-
-
 .. autoclass:: AnyType
+
+
+.. automethod:: tvm_tirx.ir.AnyType.script
+
+.. automethod:: tvm_tirx.ir.AnyType.show
+
+
+
 
 
 

@@ -20,9 +20,11 @@ tvm\_tirx.backend.cuda.lang.ClusterPersistentScheduler2D
 
 .. currentmodule:: tvm_tirx.backend.cuda.lang
 
-
-
 .. autoclass:: ClusterPersistentScheduler2D
+
+
+
+
 
 
 

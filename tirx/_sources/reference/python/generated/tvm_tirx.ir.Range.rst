@@ -20,9 +20,15 @@ tvm\_tirx.ir.Range
 
 .. currentmodule:: tvm_tirx.ir
 
-
-
 .. autoclass:: Range
+
+
+.. automethod:: tvm_tirx.ir.Range.script
+
+.. automethod:: tvm_tirx.ir.Range.show
+
+
+
 
 
 

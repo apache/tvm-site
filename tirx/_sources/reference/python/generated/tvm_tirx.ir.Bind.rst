@@ -20,9 +20,15 @@ tvm\_tirx.ir.Bind
 
 .. currentmodule:: tvm_tirx.ir
 
-
-
 .. autoclass:: Bind
+
+
+.. automethod:: tvm_tirx.ir.Bind.script
+
+.. automethod:: tvm_tirx.ir.Bind.show
+
+
+
 
 
 

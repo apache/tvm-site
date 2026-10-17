@@ -32,12 +32,10 @@ Classes
 
    * - Alias
      - Canonical API
-   * - ``EnvFunc``
-     - :obj:`tvm_tirx.ir.EnvFunc`
    * - ``Node``
      - :obj:`tvm_tirx.ir.Node`
-   * - ``Scriptable``
-     - :obj:`tvm_tirx.ir.Scriptable`
+   * - ``EnvFunc``
+     - :obj:`tvm_tirx.ir.EnvFunc`
 
 Functions
 ---------
@@ -45,8 +43,8 @@ Functions
 .. autosummary::
    :toctree: generated/
 
-   register_dialect_script_method
    register_script_printer
+   register_dialect_script_method
 
 .. list-table::
    :header-rows: 1
@@ -54,9 +52,9 @@ Functions
 
    * - Alias
      - Canonical API
-   * - ``assert_structural_equal``
-     - :obj:`tvm_tirx.ir.assert_structural_equal`
    * - ``load_json``
      - :obj:`tvm_tirx.ir.load_json`
    * - ``save_json``
      - :obj:`tvm_tirx.ir.save_json`
+   * - ``assert_structural_equal``
+     - :obj:`tvm_tirx.ir.assert_structural_equal`

@@ -20,9 +20,11 @@ tvm\_tirx.ir.Op
 
 .. currentmodule:: tvm_tirx.ir
 
-
-
 .. autoclass:: Op
+
+
+
+
 
 
 

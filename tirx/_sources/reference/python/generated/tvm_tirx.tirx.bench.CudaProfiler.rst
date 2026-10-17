@@ -20,9 +20,11 @@ tvm\_tirx.tirx.bench.CudaProfiler
 
 .. currentmodule:: tvm_tirx.tirx.bench
 
-
-
 .. autoclass:: CudaProfiler
+
+
+
+
 
 
 

@@ -20,9 +20,11 @@ tvm\_tirx.backend.cuda.script.CudaWgmmaNamespace
 
 .. currentmodule:: tvm_tirx.backend.cuda.script
 
-
-
 .. autoclass:: CudaWgmmaNamespace
+
+
+
+
 
 
 

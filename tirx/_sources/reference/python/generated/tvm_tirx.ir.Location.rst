@@ -20,8 +20,6 @@ tvm\_tirx.ir.Location
 
 .. currentmodule:: tvm_tirx.ir
 
-
-
 .. autoclass:: Location
 
 
@@ -29,3 +27,16 @@ tvm\_tirx.ir.Location
 
 
 
+
+
+
+
+
+Unknown location
+----------------
+
+.. autodata:: tvm_tirx.ir.UNKNOWN_LOC
+   :no-value:
+
+   Shared :class:`~tvm_tirx.ir.UnknownLoc` sentinel when no source location is
+   available. Runtime-only imports expose ``None`` instead.

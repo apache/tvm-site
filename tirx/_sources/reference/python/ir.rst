@@ -23,6 +23,20 @@ tvm_tirx.ir
 
 .. currentmodule:: tvm_tirx.ir
 
+Namespaces
+----------
+
+.. toctree::
+   :maxdepth: 1
+   :titlesonly:
+
+   ir.prim
+   ir.base
+   ir.json_compact
+   ir.unique_name_supply
+
+:doc:`Transformation passes <ir.transform>`
+
 Location
 --------
 
@@ -30,9 +44,9 @@ Location
    :toctree: generated/
 
    Location
-   UnknownLoc
    SourceName
    SourceLoc
+   UnknownLoc
    CallSiteLoc
 
 Type
@@ -46,8 +60,8 @@ Type
    FuncType
    MissingType
    OpaqueType
-   PrimType
    PtrType
+   PrimType
    StringType
    TensorRegionType
    TupleType
@@ -59,25 +73,24 @@ Expr
    :toctree: generated/
 
    Expr
-   BaseFunc
    Call
-   Constant
-   DataTypeImm
-   ExprWithOp
-   FloatImm
-   GenericConst
-   GlobalVar
    IntImm
-   LambdaExpr
-   Op
-   OpaqueExpr
-   StagingExpr
+   FloatImm
+   Constant
+   GenericConst
+   DataTypeImm
    StringImm
+   GlobalVar
+   LambdaExpr
+   StagingExpr
+   OpaqueExpr
    TensorLoad
    TensorRegion
    Tuple
    TupleGetItem
    Var
+   BaseFunc
+   Op
 
 Stmt
 ----
@@ -86,18 +99,18 @@ Stmt
    :toctree: generated/
 
    Stmt
-   AssertStmt
+   SeqStmt
    Bind
+   Evaluate
+   Return
+   If
+   For
+   While
    Break
    Continue
-   Evaluate
-   For
-   If
+   AssertStmt
    RegionStmt
-   Return
-   SeqStmt
    TensorStore
-   While
 
 IRModule
 --------
@@ -116,11 +129,9 @@ Supporting classes
    Attrs
    DictAttrs
    EnvFunc
-   ExprOperand
-   GlobalInfo
    Node
    Range
-   Scriptable
+   GlobalInfo
 
 Operator functions (tvm_tirx.ir.prim)
 -------------------------------------
@@ -153,8 +164,8 @@ Operator functions (tvm_tirx.ir.prim)
    div
    erf
    exp
-   exp10
    exp2
+   exp10
    floor
    floordiv
    floormod
@@ -170,9 +181,9 @@ Operator functions (tvm_tirx.ir.prim)
    ldexp
    likely
    log
-   log10
    log1p
    log2
+   log10
    max
    min
    nearbyint
@@ -203,72 +214,14 @@ IR helpers
 .. autosummary::
    :toctree: generated/
 
-   assert_structural_equal
    const
+   make_node
+   assert_structural_equal
+   load_json
+   save_json
    is_prim_expr
    is_prim_var
-   load_json
-   make_node
-   register_op_attr
    reinfer_type
-   save_json
-   stmt_list
+   register_op_attr
    stmt_seq
-
-Constants
----------
-
-.. autosummary::
-   :toctree: generated/
-
-   UNKNOWN_LOC
-
-Namespaces
-----------
-
-.. toctree::
-   :maxdepth: 1
-
-   ir.prim
-   ir.base
-   ir.json_compact
-   ir.unique_name_supply
-
-Namespace links
----------------
-
-.. raw:: html
-
-   <span id="tvm-tirx-ir-base"></span>
-
-:doc:`tvm_tirx.ir.base <ir.base>`
-
-.. raw:: html
-
-   <span id="tvm-tirx-ir-prim"></span>
-
-:doc:`tvm_tirx.ir.prim <ir.prim>`
-
-.. raw:: html
-
-   <span id="tvm-tirx-ir-transform"></span>
-
-:doc:`tvm_tirx.ir.transform <ir.transform>`
-
-.. raw:: html
-
-   <span id="tvm-tirx-ir-transform-instrument"></span>
-
-:doc:`tvm_tirx.ir.transform.instrument <ir.transform.instrument>`
-
-.. raw:: html
-
-   <span id="tvm-tirx-ir-unique-name-supply"></span>
-
-:doc:`tvm_tirx.ir.unique_name_supply <ir.unique_name_supply>`
-
-.. raw:: html
-
-   <span id="tvm-tirx-ir-json-compact"></span>
-
-:doc:`tvm_tirx.ir.json_compact <ir.json_compact>`
+   stmt_list

@@ -20,9 +20,11 @@ tvm\_tirx.backend.trn.transform.TrnPrivateTensorAlloc
 
 .. currentmodule:: tvm_tirx.backend.trn.transform
 
-
-
 .. autoclass:: TrnPrivateTensorAlloc
+
+
+
+
 
 
 

@@ -20,9 +20,11 @@ tvm\_tirx.ir.OpaqueExpr
 
 .. currentmodule:: tvm_tirx.ir
 
-
-
 .. autoclass:: OpaqueExpr
+
+
+
+
 
 
 

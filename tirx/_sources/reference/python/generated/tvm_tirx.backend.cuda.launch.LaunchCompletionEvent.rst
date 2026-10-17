@@ -20,9 +20,11 @@ tvm\_tirx.backend.cuda.launch.LaunchCompletionEvent
 
 .. currentmodule:: tvm_tirx.backend.cuda.launch
 
-
-
 .. autoclass:: LaunchCompletionEvent
+
+
+
+
 
 
 

@@ -20,9 +20,11 @@ tvm\_tirx.tirx.bench.EventType
 
 .. currentmodule:: tvm_tirx.tirx.bench
 
-
-
 .. autoclass:: EventType
+
+
+
+
 
 
 

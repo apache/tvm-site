@@ -23,6 +23,28 @@ tvm_tirx.backend.cuda
 
 .. currentmodule:: tvm_tirx.backend.cuda
 
+Namespaces
+----------
+
+.. toctree::
+   :maxdepth: 1
+   :titlesonly:
+
+   backend.cuda.op
+   backend.cuda.axis
+   backend.cuda.backend_config
+   backend.cuda.codegen
+   backend.cuda.compiler
+   backend.cuda.iket
+   backend.cuda.lang
+   backend.cuda.launch
+   backend.cuda.layout
+   backend.cuda.ptx
+   backend.cuda.script
+   backend.cuda.thread_scope
+   backend.cuda.tile
+   backend.cuda.transforms
+
 Classes
 -------
 
@@ -39,26 +61,5 @@ Functions
 
    export_cuda_host
    register_backend
-   script_namespace
    script_namespaces
-
-Namespaces
-----------
-
-.. toctree::
-   :maxdepth: 1
-
-   backend.cuda.axis
-   backend.cuda.backend_config
-   backend.cuda.codegen
-   backend.cuda.compiler
-   backend.cuda.iket
-   backend.cuda.lang
-   backend.cuda.launch
-   backend.cuda.layout
-   backend.cuda.op
-   backend.cuda.ptx
-   backend.cuda.script
-   backend.cuda.thread_scope
-   backend.cuda.tile
-   backend.cuda.transforms
+   script_namespace

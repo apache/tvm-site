@@ -20,9 +20,11 @@ tvm\_tirx.tirx.layout.Axis
 
 .. currentmodule:: tvm_tirx.tirx.layout
 
-
-
 .. autoclass:: Axis
+
+
+
+
 
 
 

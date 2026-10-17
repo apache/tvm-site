@@ -20,9 +20,21 @@ tvm\_tirx.ir.prim.BitwiseOr
 
 .. currentmodule:: tvm_tirx.ir.prim
 
-
-
 .. autoclass:: BitwiseOr
+
+
+.. automethod:: tvm_tirx.ir.prim.BitwiseOr.expr_ty
+
+.. automethod:: tvm_tirx.ir.prim.BitwiseOr.equal
+
+.. automethod:: tvm_tirx.ir.prim.BitwiseOr.astype
+
+.. automethod:: tvm_tirx.ir.prim.BitwiseOr.script
+
+.. automethod:: tvm_tirx.ir.prim.BitwiseOr.show
+
+
+
 
 
 

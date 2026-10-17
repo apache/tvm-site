@@ -20,9 +20,11 @@ tvm\_tirx.tirx.tile.Operand
 
 .. currentmodule:: tvm_tirx.tirx.tile
 
-
-
 .. autoclass:: Operand
+
+
+
+
 
 
 

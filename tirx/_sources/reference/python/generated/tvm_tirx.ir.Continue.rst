@@ -20,9 +20,15 @@ tvm\_tirx.ir.Continue
 
 .. currentmodule:: tvm_tirx.ir
 
-
-
 .. autoclass:: Continue
+
+
+.. automethod:: tvm_tirx.ir.Continue.script
+
+.. automethod:: tvm_tirx.ir.Continue.show
+
+
+
 
 
 

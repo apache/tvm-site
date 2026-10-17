@@ -20,9 +20,11 @@ tvm\_tirx.support.popen\_pool.MapResult
 
 .. currentmodule:: tvm_tirx.support.popen_pool
 
-
-
 .. autoclass:: MapResult
+
+
+
+
 
 
 

@@ -20,9 +20,11 @@ tvm\_tirx.script.ir\_builder.IRModuleFrame
 
 .. currentmodule:: tvm_tirx.script.ir_builder
 
-
-
 .. autoclass:: IRModuleFrame
+
+
+
+
 
 
 

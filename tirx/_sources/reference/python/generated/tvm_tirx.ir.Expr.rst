@@ -20,9 +20,11 @@ tvm\_tirx.ir.Expr
 
 .. currentmodule:: tvm_tirx.ir
 
-
-
 .. autoclass:: Expr
+
+
+
+
 
 
 

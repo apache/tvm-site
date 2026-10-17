@@ -20,9 +20,21 @@ tvm\_tirx.ir.TupleGetItem
 
 .. currentmodule:: tvm_tirx.ir
 
-
-
 .. autoclass:: TupleGetItem
+
+
+.. automethod:: tvm_tirx.ir.TupleGetItem.expr_ty
+
+.. automethod:: tvm_tirx.ir.TupleGetItem.equal
+
+.. automethod:: tvm_tirx.ir.TupleGetItem.astype
+
+.. automethod:: tvm_tirx.ir.TupleGetItem.script
+
+.. automethod:: tvm_tirx.ir.TupleGetItem.show
+
+
+
 
 
 

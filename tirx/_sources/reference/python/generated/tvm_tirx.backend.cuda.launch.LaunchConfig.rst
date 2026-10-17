@@ -20,9 +20,11 @@ tvm\_tirx.backend.cuda.launch.LaunchConfig
 
 .. currentmodule:: tvm_tirx.backend.cuda.launch
 
-
-
 .. autoclass:: LaunchConfig
+
+
+
+
 
 
 

@@ -20,9 +20,15 @@ tvm\_tirx.ir.Evaluate
 
 .. currentmodule:: tvm_tirx.ir
 
-
-
 .. autoclass:: Evaluate
+
+
+.. automethod:: tvm_tirx.ir.Evaluate.script
+
+.. automethod:: tvm_tirx.ir.Evaluate.show
+
+
+
 
 
 

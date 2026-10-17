@@ -20,9 +20,11 @@ tvm\_tirx.ir.transform.Pass
 
 .. currentmodule:: tvm_tirx.ir.transform
 
-
-
 .. autoclass:: Pass
+
+
+
+
 
 
 

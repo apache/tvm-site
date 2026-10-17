@@ -20,9 +20,11 @@ tvm\_tirx.backend.cuda.ptx.PTXNamespace
 
 .. currentmodule:: tvm_tirx.backend.cuda.ptx
 
-
-
 .. autoclass:: PTXNamespace
+
+
+
+
 
 
 

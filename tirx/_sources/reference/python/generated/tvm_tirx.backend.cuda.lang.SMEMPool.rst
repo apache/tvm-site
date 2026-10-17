@@ -20,9 +20,11 @@ tvm\_tirx.backend.cuda.lang.SMEMPool
 
 .. currentmodule:: tvm_tirx.backend.cuda.lang
 
-
-
 .. autoclass:: SMEMPool
+
+
+
+
 
 
 

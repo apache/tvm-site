@@ -20,9 +20,15 @@ tvm\_tirx.ir.Stmt
 
 .. currentmodule:: tvm_tirx.ir
 
-
-
 .. autoclass:: Stmt
+
+
+.. automethod:: tvm_tirx.ir.Stmt.script
+
+.. automethod:: tvm_tirx.ir.Stmt.show
+
+
+
 
 
 

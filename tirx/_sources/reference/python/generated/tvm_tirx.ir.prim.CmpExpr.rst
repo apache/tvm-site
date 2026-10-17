@@ -20,9 +20,21 @@ tvm\_tirx.ir.prim.CmpExpr
 
 .. currentmodule:: tvm_tirx.ir.prim
 
-
-
 .. autoclass:: CmpExpr
+
+
+.. automethod:: tvm_tirx.ir.prim.CmpExpr.expr_ty
+
+.. automethod:: tvm_tirx.ir.prim.CmpExpr.equal
+
+.. automethod:: tvm_tirx.ir.prim.CmpExpr.astype
+
+.. automethod:: tvm_tirx.ir.prim.CmpExpr.script
+
+.. automethod:: tvm_tirx.ir.prim.CmpExpr.show
+
+
+
 
 
 

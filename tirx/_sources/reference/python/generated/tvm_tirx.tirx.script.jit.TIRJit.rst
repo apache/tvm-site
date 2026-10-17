@@ -20,9 +20,11 @@ tvm\_tirx.tirx.script.jit.TIRJit
 
 .. currentmodule:: tvm_tirx.tirx.script.jit
 
-
-
 .. autoclass:: TIRJit
+
+
+
+
 
 
 

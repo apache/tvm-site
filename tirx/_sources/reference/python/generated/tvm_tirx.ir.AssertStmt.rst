@@ -20,9 +20,15 @@ tvm\_tirx.ir.AssertStmt
 
 .. currentmodule:: tvm_tirx.ir
 
-
-
 .. autoclass:: AssertStmt
+
+
+.. automethod:: tvm_tirx.ir.AssertStmt.script
+
+.. automethod:: tvm_tirx.ir.AssertStmt.show
+
+
+
 
 
 

@@ -23,6 +23,24 @@ tvm_tirx.backend
 
 .. currentmodule:: tvm_tirx.backend
 
+Namespaces
+----------
+
+.. toctree::
+   :maxdepth: 1
+   :titlesonly:
+
+   backend.cuda
+   backend.adreno
+   backend.config
+   backend.hexagon
+   backend.metal
+   backend.opencl
+   backend.rocm
+   backend.trn
+   backend.vulkan
+   backend.webgpu
+
 Functions
 ---------
 
@@ -31,20 +49,3 @@ Functions
 
    is_loaded
    load
-
-Namespaces
-----------
-
-.. toctree::
-   :maxdepth: 1
-
-   backend.adreno
-   backend.config
-   backend.cuda
-   backend.hexagon
-   backend.metal
-   backend.opencl
-   backend.rocm
-   backend.trn
-   backend.vulkan
-   backend.webgpu

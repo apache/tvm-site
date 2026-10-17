@@ -20,9 +20,11 @@ tvm\_tirx.backend.cuda.launch.ProgrammaticEvent
 
 .. currentmodule:: tvm_tirx.backend.cuda.launch
 
-
-
 .. autoclass:: ProgrammaticEvent
+
+
+
+
 
 
 

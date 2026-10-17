@@ -29,6 +29,12 @@ Classes
 .. autosummary::
    :toctree: generated/
 
+   EQ
+   GE
+   GT
+   LE
+   LT
+   NE
    Add
    And
    BinaryOpExpr
@@ -36,32 +42,26 @@ Classes
    BitwiseNot
    BitwiseOr
    BitwiseXor
-   Broadcast
    Cast
    CmpExpr
    Div
-   EQ
    FloorDiv
    FloorMod
-   GE
-   GT
-   LE
-   LShift
-   LT
    Let
    LogicalExpr
+   LShift
    Max
    Min
    Mod
    Mul
-   NE
    Not
    Or
    RShift
-   Ramp
    Select
-   Shuffle
    Sub
+   Broadcast
+   Ramp
+   Shuffle
 
 .. list-table::
    :header-rows: 1
@@ -103,9 +103,8 @@ Functions
    div
    erf
    exp
-   exp10
    exp2
-   expr_deep_equal
+   exp10
    floor
    floordiv
    floormod
@@ -122,9 +121,9 @@ Functions
    ldexp
    likely
    log
-   log10
    log1p
    log2
+   log10
    max
    max_value
    min
@@ -148,6 +147,7 @@ Functions
    truncdiv
    truncmod
    vscale
+   expr_deep_equal
 
 .. list-table::
    :header-rows: 1

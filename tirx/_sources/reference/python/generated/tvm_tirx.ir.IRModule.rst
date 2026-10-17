@@ -20,9 +20,15 @@ tvm\_tirx.ir.IRModule
 
 .. currentmodule:: tvm_tirx.ir
 
-
-
 .. autoclass:: IRModule
+
+
+.. automethod:: tvm_tirx.ir.IRModule.script
+
+.. automethod:: tvm_tirx.ir.IRModule.show
+
+
+
 
 
 

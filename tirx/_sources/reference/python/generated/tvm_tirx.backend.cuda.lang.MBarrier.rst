@@ -20,9 +20,11 @@ tvm\_tirx.backend.cuda.lang.MBarrier
 
 .. currentmodule:: tvm_tirx.backend.cuda.lang
 
-
-
 .. autoclass:: MBarrier
+
+
+
+
 
 
 

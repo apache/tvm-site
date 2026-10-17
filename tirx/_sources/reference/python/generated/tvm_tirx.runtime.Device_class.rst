@@ -20,9 +20,11 @@ tvm\_tirx.runtime.Device
 
 .. currentmodule:: tvm_tirx.runtime
 
-
-
 .. autoclass:: Device
+
+
+
+
 
 
 

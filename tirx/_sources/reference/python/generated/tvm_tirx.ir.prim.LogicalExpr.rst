@@ -20,9 +20,21 @@ tvm\_tirx.ir.prim.LogicalExpr
 
 .. currentmodule:: tvm_tirx.ir.prim
 
-
-
 .. autoclass:: LogicalExpr
+
+
+.. automethod:: tvm_tirx.ir.prim.LogicalExpr.expr_ty
+
+.. automethod:: tvm_tirx.ir.prim.LogicalExpr.equal
+
+.. automethod:: tvm_tirx.ir.prim.LogicalExpr.astype
+
+.. automethod:: tvm_tirx.ir.prim.LogicalExpr.script
+
+.. automethod:: tvm_tirx.ir.prim.LogicalExpr.show
+
+
+
 
 
 

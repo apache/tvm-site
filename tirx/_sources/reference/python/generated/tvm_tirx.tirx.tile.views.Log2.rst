@@ -20,9 +20,11 @@ tvm\_tirx.tirx.tile.views.Log2
 
 .. currentmodule:: tvm_tirx.tirx.tile.views
 
-
-
 .. autoclass:: Log2
+
+
+
+
 
 
 

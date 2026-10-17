@@ -20,9 +20,21 @@ tvm\_tirx.ir.prim.EQ
 
 .. currentmodule:: tvm_tirx.ir.prim
 
-
-
 .. autoclass:: EQ
+
+
+.. automethod:: tvm_tirx.ir.prim.EQ.expr_ty
+
+.. automethod:: tvm_tirx.ir.prim.EQ.equal
+
+.. automethod:: tvm_tirx.ir.prim.EQ.astype
+
+.. automethod:: tvm_tirx.ir.prim.EQ.script
+
+.. automethod:: tvm_tirx.ir.prim.EQ.show
+
+
+
 
 
 

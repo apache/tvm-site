@@ -20,9 +20,11 @@ tvm\_tirx.ir.SourceLoc
 
 .. currentmodule:: tvm_tirx.ir
 
-
-
 .. autoclass:: SourceLoc
+
+
+
+
 
 
 

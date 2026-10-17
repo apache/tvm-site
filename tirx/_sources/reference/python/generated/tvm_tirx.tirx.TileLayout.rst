@@ -20,9 +20,11 @@ tvm\_tirx.tirx.TileLayout
 
 .. currentmodule:: tvm_tirx.tirx
 
-
-
 .. autoclass:: TileLayout
+
+
+
+
 
 
 

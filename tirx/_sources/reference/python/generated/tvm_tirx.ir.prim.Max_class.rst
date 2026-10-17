@@ -20,9 +20,21 @@ tvm\_tirx.ir.prim.Max
 
 .. currentmodule:: tvm_tirx.ir.prim
 
-
-
 .. autoclass:: Max
+
+
+.. automethod:: tvm_tirx.ir.prim.Max.expr_ty
+
+.. automethod:: tvm_tirx.ir.prim.Max.equal
+
+.. automethod:: tvm_tirx.ir.prim.Max.astype
+
+.. automethod:: tvm_tirx.ir.prim.Max.script
+
+.. automethod:: tvm_tirx.ir.prim.Max.show
+
+
+
 
 
 

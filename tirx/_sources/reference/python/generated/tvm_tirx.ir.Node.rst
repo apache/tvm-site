@@ -20,9 +20,11 @@ tvm\_tirx.ir.Node
 
 .. currentmodule:: tvm_tirx.ir
 
-
-
 .. autoclass:: Node
+
+
+
+
 
 
 

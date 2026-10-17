@@ -20,9 +20,21 @@ tvm\_tirx.ir.prim.Shuffle
 
 .. currentmodule:: tvm_tirx.ir.prim
 
-
-
 .. autoclass:: Shuffle
+
+
+.. automethod:: tvm_tirx.ir.prim.Shuffle.expr_ty
+
+.. automethod:: tvm_tirx.ir.prim.Shuffle.equal
+
+.. automethod:: tvm_tirx.ir.prim.Shuffle.astype
+
+.. automethod:: tvm_tirx.ir.prim.Shuffle.script
+
+.. automethod:: tvm_tirx.ir.prim.Shuffle.show
+
+
+
 
 
 

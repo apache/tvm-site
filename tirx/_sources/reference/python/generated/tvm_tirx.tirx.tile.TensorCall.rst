@@ -20,9 +20,11 @@ tvm\_tirx.tirx.tile.TensorCall
 
 .. currentmodule:: tvm_tirx.tirx.tile
 
-
-
 .. autoclass:: TensorCall
+
+
+
+
 
 
 

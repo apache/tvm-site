@@ -20,9 +20,13 @@ tvm\_tirx.ir.For
 
 .. currentmodule:: tvm_tirx.ir
 
-
-
 .. autoclass:: For
+
+
+.. automethod:: tvm_tirx.ir.For.script
+
+.. automethod:: tvm_tirx.ir.For.show
+
 
 
 
@@ -30,6 +34,8 @@ ForKind
 -------
 
 .. autoclass:: tvm_tirx.ir.ForKind
+
+
 
 
 

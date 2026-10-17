@@ -20,9 +20,21 @@ tvm\_tirx.ir.prim.Div
 
 .. currentmodule:: tvm_tirx.ir.prim
 
-
-
 .. autoclass:: Div
+
+
+.. automethod:: tvm_tirx.ir.prim.Div.expr_ty
+
+.. automethod:: tvm_tirx.ir.prim.Div.equal
+
+.. automethod:: tvm_tirx.ir.prim.Div.astype
+
+.. automethod:: tvm_tirx.ir.prim.Div.script
+
+.. automethod:: tvm_tirx.ir.prim.Div.show
+
+
+
 
 
 

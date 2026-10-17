@@ -20,9 +20,11 @@ tvm\_tirx.backend.cuda.lang.Pipeline
 
 .. currentmodule:: tvm_tirx.backend.cuda.lang
 
-
-
 .. autoclass:: Pipeline
+
+
+
+
 
 
 
