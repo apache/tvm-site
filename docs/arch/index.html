@@ -40,7 +40,7 @@
 <link rel="preload" as="script" href="../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
   <script src="../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
 
-    <script src="../_static/documentation_options.js?v=2aaa3c84"></script>
+    <script src="../_static/documentation_options.js?v=dc022e0e"></script>
     <script src="../_static/doctools.js?v=9bcbadda"></script>
     <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/scripts/sphinx-book-theme.js?v=887ef09a"></script>
@@ -688,8 +688,8 @@ Users can manually construct IRModule via NNModule, TVMScript, or import a pre-t
 equivalent(e.g. in the case of quantization) IRModule. Many of the transformations are target (backend) independent.
 We also allow target to affect the configuration of the transformation pipeline.</p></li>
 <li><p><strong>Target Translation</strong>: The compiler translates(codegen) the IRModule to an executable format specified by the target.
-The target translation result is encapsulated as a <cite>runtime.Module</cite> that can be exported, loaded, and executed on the target runtime environment.</p></li>
-<li><p><strong>Runtime Execution</strong>: the user loads back a <cite>runtime.Module</cite> and runs the compiled functions in the supported runtime environment.</p></li>
+The target translation result is encapsulated as a <cite>tvm_ffi.Module</cite> that can be exported, loaded, and executed on the target runtime environment.</p></li>
+<li><p><strong>Runtime Execution</strong>: the user loads back a <cite>tvm_ffi.Module</cite> and runs the compiled functions in the supported runtime environment.</p></li>
 </ul>
 <figure class="align-center">
 <a class="reference internal image-reference" href="../_static/downloads/tvm_overall_flow.svg"><img alt="../_static/downloads/tvm_overall_flow.svg" src="../_static/downloads/tvm_overall_flow.svg" style="width: 80%;" />
@@ -782,23 +782,25 @@ a target’s vector length would change the vectorization behavior.</p>
 <h3>Runtime Execution<a class="headerlink" href="#runtime-execution" title="Link to this heading">#</a></h3>
 <p>The main goal of TVM’s runtime is to provide a minimal API for loading and executing the compiled artifact in a language of their choice, including Python, C++, Rust, Go, Java, and JavaScript. The code snippet below shows such an example in Python:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">tvm</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">tvm_ffi</span>
 <span class="c1"># Example runtime execution program in python, with type annotated</span>
-<span class="n">mod</span><span class="p">:</span> <span class="n">tvm</span><span class="o">.</span><span class="n">runtime</span><span class="o">.</span><span class="n">Module</span> <span class="o">=</span> <span class="n">tvm</span><span class="o">.</span><span class="n">runtime</span><span class="o">.</span><span class="n">load_module</span><span class="p">(</span><span class="s2">&quot;compiled_artifact.so&quot;</span><span class="p">)</span>
+<span class="n">mod</span><span class="p">:</span> <span class="n">tvm_ffi</span><span class="o">.</span><span class="n">Module</span> <span class="o">=</span> <span class="n">tvm</span><span class="o">.</span><span class="n">runtime</span><span class="o">.</span><span class="n">load_module</span><span class="p">(</span><span class="s2">&quot;compiled_artifact.so&quot;</span><span class="p">)</span>
 <span class="n">arr</span><span class="p">:</span> <span class="n">tvm</span><span class="o">.</span><span class="n">runtime</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">tvm</span><span class="o">.</span><span class="n">runtime</span><span class="o">.</span><span class="n">tensor</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span> <span class="n">device</span><span class="o">=</span><span class="n">tvm</span><span class="o">.</span><span class="n">cuda</span><span class="p">(</span><span class="mi">0</span><span class="p">))</span>
 <span class="n">fun</span><span class="p">:</span> <span class="n">tvm_ffi</span><span class="o">.</span><span class="n">Function</span> <span class="o">=</span> <span class="n">mod</span><span class="p">[</span><span class="s2">&quot;addone&quot;</span><span class="p">]</span>
 <span class="n">fun</span><span class="p">(</span><span class="n">arr</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="n">arr</span><span class="o">.</span><span class="n">numpy</span><span class="p">())</span>
 </pre></div>
 </div>
-<p><code class="xref py py-class docutils literal notranslate"><span class="pre">tvm.runtime.Module</span></code> encapsulates the result of compilation. A runtime.Module contains a GetFunction method to obtain <code class="xref py py-class docutils literal notranslate"><span class="pre">tvm_ffi.Function</span></code> instances by name.</p>
+<p><code class="xref py py-class docutils literal notranslate"><span class="pre">tvm_ffi.Module</span></code> encapsulates the result of compilation. A tvm_ffi.Module contains a GetFunction method to obtain <code class="xref py py-class docutils literal notranslate"><span class="pre">tvm_ffi.Function</span></code> instances by name.</p>
 <p><code class="xref py py-class docutils literal notranslate"><span class="pre">tvm_ffi.Function</span></code> is a type-erased function interface for both the generated functions. A tvm_ffi.Function can take arguments and return values with the
-following types: POD types(int, float), string, tvm_ffi.Function, runtime.Module, runtime.Tensor, and other sub-classes of runtime.Object.</p>
-<p><code class="xref py py-class docutils literal notranslate"><span class="pre">tvm.runtime.Module</span></code> and <code class="xref py py-class docutils literal notranslate"><span class="pre">tvm_ffi.Function</span></code> are powerful mechanisms to modularize the runtime. For example, to get the above <cite>addone</cite> function on CUDA, we can use LLVM to generate the host-side code to compute the launching parameters(e.g. size of the thread groups) and then call into another tvm_ffi.Function from a CUDAModule that is backed by the CUDA driver API. The same mechanism can be used for OpenCL kernels.</p>
-<p>The above example only deals with a simple <cite>addone</cite> function. The code snippet below gives an example of an end-to-end model execution using the Relax Virtual Machine, which is built on the same runtime.Module and tvm_ffi.Function interface:</p>
+following types: POD types(int, float), string, tvm_ffi.Function, tvm_ffi.Module, runtime.Tensor, and other sub-classes of tvm_ffi.Object.</p>
+<p><code class="xref py py-class docutils literal notranslate"><span class="pre">tvm_ffi.Module</span></code> and <code class="xref py py-class docutils literal notranslate"><span class="pre">tvm_ffi.Function</span></code> are powerful mechanisms to modularize the runtime. For example, to get the above <cite>addone</cite> function on CUDA, we can use LLVM to generate the host-side code to compute the launching parameters(e.g. size of the thread groups) and then call into another tvm_ffi.Function from a CUDAModule that is backed by the CUDA driver API. The same mechanism can be used for OpenCL kernels.</p>
+<p>The above example only deals with a simple <cite>addone</cite> function. The code snippet below gives an example of an end-to-end model execution using the Relax Virtual Machine, which is built on the same tvm_ffi.Module and tvm_ffi.Function interface:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">tvm</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">tvm_ffi</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">tvm</span><span class="w"> </span><span class="kn">import</span> <span class="n">relax</span>
 <span class="c1"># Load the compiled artifact</span>
-<span class="n">mod</span><span class="p">:</span> <span class="n">tvm</span><span class="o">.</span><span class="n">runtime</span><span class="o">.</span><span class="n">Module</span> <span class="o">=</span> <span class="n">tvm</span><span class="o">.</span><span class="n">runtime</span><span class="o">.</span><span class="n">load_module</span><span class="p">(</span><span class="s2">&quot;resnet18.so&quot;</span><span class="p">)</span>
+<span class="n">mod</span><span class="p">:</span> <span class="n">tvm_ffi</span><span class="o">.</span><span class="n">Module</span> <span class="o">=</span> <span class="n">tvm</span><span class="o">.</span><span class="n">runtime</span><span class="o">.</span><span class="n">load_module</span><span class="p">(</span><span class="s2">&quot;resnet18.so&quot;</span><span class="p">)</span>
 <span class="c1"># Create a VM instance on cuda(0)</span>
 <span class="n">vm</span> <span class="o">=</span> <span class="n">relax</span><span class="o">.</span><span class="n">VirtualMachine</span><span class="p">(</span><span class="n">mod</span><span class="p">,</span> <span class="n">tvm</span><span class="o">.</span><span class="n">cuda</span><span class="p">(</span><span class="mi">0</span><span class="p">))</span>
 <span class="n">data</span><span class="p">:</span> <span class="n">tvm</span><span class="o">.</span><span class="n">runtime</span><span class="o">.</span><span class="n">Tensor</span> <span class="o">=</span> <span class="n">get_input_data</span><span class="p">()</span>
@@ -806,14 +808,14 @@ following types: POD types(int, float), string, tvm_ffi.Function, runtime.Module
 <span class="n">result</span> <span class="o">=</span> <span class="n">vm</span><span class="p">[</span><span class="s2">&quot;main&quot;</span><span class="p">](</span><span class="n">data</span><span class="p">)</span><span class="o">.</span><span class="n">numpy</span><span class="p">()</span>
 </pre></div>
 </div>
-<p>The main take away is that runtime.Module and runtime.PackedFunc are sufficient to encapsulate both operator level programs (such as addone), as well as the end-to-end models.</p>
+<p>The main take away is that tvm_ffi.Module and runtime.PackedFunc are sufficient to encapsulate both operator level programs (such as addone), as well as the end-to-end models.</p>
 </section>
 <section id="summary-and-discussions">
 <h3>Summary and Discussions<a class="headerlink" href="#summary-and-discussions" title="Link to this heading">#</a></h3>
 <p>In summary, the key data structures in the compilation flows are:</p>
 <ul class="simple">
 <li><p>IRModule: contains relax.Function and tirx.Function</p></li>
-<li><p>runtime.Module: contains runtime.PackedFunc</p></li>
+<li><p>tvm_ffi.Module: contains runtime.PackedFunc</p></li>
 </ul>
 <p>Most parts of the compilation are transformations among the key data structures.</p>
 <ul class="simple">
@@ -964,7 +966,7 @@ mechanism, IR builder frame stack, printer pipeline, and syntax reference.</p>
 </section>
 <section id="tvm-target">
 <h2>tvm/target<a class="headerlink" href="#tvm-target" title="Link to this heading">#</a></h2>
-<p>The target module contains all the code generators that translate an IRModule to a target runtime.Module.
+<p>The target module contains all the code generators that translate an IRModule to a target tvm_ffi.Module.
 It also provides a common <cite>Target</cite> class that describes the target.</p>
 <p>Targets can be constructed from a registered tag, a configuration dictionary, or a tag with attribute overrides:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">tvm.target</span><span class="w"> </span><span class="kn">import</span> <span class="n">Target</span>

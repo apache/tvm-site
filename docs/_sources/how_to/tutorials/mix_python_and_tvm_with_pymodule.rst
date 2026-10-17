@@ -48,12 +48,13 @@ This tutorial walks through the full workflow step by step.
 Preparation
 -----------
 
-.. GENERATED FROM PYTHON SOURCE LINES 50-71
+.. GENERATED FROM PYTHON SOURCE LINES 50-72
 
 .. code-block:: Python
 
-
     import os
+
+    import tvm_ffi
 
     try:
         import torch
@@ -80,7 +81,7 @@ Preparation
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 72-83
+.. GENERATED FROM PYTHON SOURCE LINES 73-84
 
 Step 1: Your First Hybrid Module
 ----------------------------------
@@ -94,7 +95,7 @@ three decorators for three kinds of functions:
 ``call_tir`` bridges Python and TIR: it converts PyTorch tensors to TVM NDArrays via DLPack
 (zero-copy), allocates the output buffer, calls the compiled kernel, and converts back.
 
-.. GENERATED FROM PYTHON SOURCE LINES 83-121
+.. GENERATED FROM PYTHON SOURCE LINES 84-122
 
 .. code-block:: Python
 
@@ -143,7 +144,7 @@ three decorators for three kinds of functions:
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 122-128
+.. GENERATED FROM PYTHON SOURCE LINES 123-129
 
 Step 2: Debugging — The Main Selling Point
 ---------------------------------------------
@@ -152,7 +153,7 @@ intermediate tensor values without compiling the entire module. With ``@I.pyfunc
 is as simple as adding a ``print`` statement. You can also make quick edits and re-run
 immediately — no recompilation needed.
 
-.. GENERATED FROM PYTHON SOURCE LINES 128-180
+.. GENERATED FROM PYTHON SOURCE LINES 129-181
 
 .. code-block:: Python
 
@@ -215,13 +216,13 @@ immediately — no recompilation needed.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 181-184
+.. GENERATED FROM PYTHON SOURCE LINES 182-185
 
 This is the key benefit: "debugging is as simple as inserting a print statement.
 Users can also make quick, manual edits to Python functions and immediately observe the
 results." No compilation cycle, no VM loading — just Python.
 
-.. GENERATED FROM PYTHON SOURCE LINES 186-197
+.. GENERATED FROM PYTHON SOURCE LINES 187-199
 
 Step 3: A Realistic Pipeline — Python, TIR, and Packed Functions
 -------------------------------------------------------------------
@@ -232,17 +233,18 @@ three different calling conventions:
 - ``call_dps_packed``: call a TVM packed function (e.g., a third-party library binding)
 - Direct Python: call any PyTorch function
 
-``call_dps_packed`` is useful for calling functions registered via ``tvm.register_global_func``
+``call_dps_packed`` can call functions registered via
+``tvm_ffi.register_global_func``
 — for example, CUBLAS or cuDNN bindings that TVM wraps as packed functions.
 
-.. GENERATED FROM PYTHON SOURCE LINES 197-258
+.. GENERATED FROM PYTHON SOURCE LINES 199-260
 
 .. code-block:: Python
 
 
     if RUN_EXAMPLE:
         # Register a packed function (simulating an external library binding)
-        @tvm_tirx.register_global_func("my_bias_add", override=True)
+        @tvm_ffi.register_global_func("my_bias_add", override=True)
         def my_bias_add(x, bias, out):
             """Packed function: adds bias to each row of x."""
 
@@ -307,7 +309,7 @@ three different calling conventions:
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 259-268
+.. GENERATED FROM PYTHON SOURCE LINES 261-270
 
 Step 4: Relax-to-Python Converter — Verify at Any Compilation Stage
 ----------------------------------------------------------------------
@@ -319,7 +321,7 @@ A key feature: **this conversion can happen at any stage of compilation**.
 You can convert early (right after import) or late (after optimization passes have
 transformed the IR), and compare the output against a PyTorch reference to catch bugs.
 
-.. GENERATED FROM PYTHON SOURCE LINES 268-330
+.. GENERATED FROM PYTHON SOURCE LINES 270-332
 
 .. code-block:: Python
 
@@ -392,7 +394,7 @@ transformed the IR), and compare the output against a PyTorch reference to catch
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 331-344
+.. GENERATED FROM PYTHON SOURCE LINES 333-346
 
 Step 5: R.call_py_func — Python Callbacks in Compiled IR
 -----------------------------------------------------------
@@ -408,7 +410,7 @@ Use case: your model has a custom op (e.g., a special normalization or a samplin
 that is complex to implement in TIR. Compile everything else, and let that one op stay
 in Python.
 
-.. GENERATED FROM PYTHON SOURCE LINES 344-380
+.. GENERATED FROM PYTHON SOURCE LINES 346-382
 
 .. code-block:: Python
 
@@ -455,7 +457,7 @@ in Python.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 381-397
+.. GENERATED FROM PYTHON SOURCE LINES 383-399
 
 Step 6: Cross-Level Calls and Symbolic Shapes
 ------------------------------------------------
@@ -474,7 +476,7 @@ This step also shows **symbolic shapes**: TIR and Relax functions can declare dy
 dimensions (e.g., ``"n"``). ``BasePyModule`` infers concrete shapes from the actual input
 tensors at call time, so the same module handles different sizes without recompilation.
 
-.. GENERATED FROM PYTHON SOURCE LINES 397-439
+.. GENERATED FROM PYTHON SOURCE LINES 399-441
 
 .. code-block:: Python
 
@@ -527,7 +529,7 @@ tensors at call time, so the same module handles different sizes without recompi
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 440-457
+.. GENERATED FROM PYTHON SOURCE LINES 442-459
 
 Summary
 -------

@@ -52,11 +52,11 @@ The overall flow consists of the following steps:
 
 .. code-block:: Python
 
-
     import os
     import tempfile
 
     import numpy as np
+    import tvm_ffi
 
     import tvm
     import tvm_tirx
@@ -182,7 +182,7 @@ operator. Here we demonstrate how to dispatch the CUBLAS library for certain pat
     class CublasDispatch:
         def transform_module(self, mod: IRModule, _ctx: tvm_tirx.ir.transform.PassContext) -> IRModule:
             # Check if CUBLAS is enabled
-            if not tvm_tirx.get_global_func("relax.ext.cublas", True):
+            if not tvm_ffi.get_global_func("relax.ext.cublas", True):
                 raise Exception("CUBLAS is not enabled.")
 
             # Get interested patterns

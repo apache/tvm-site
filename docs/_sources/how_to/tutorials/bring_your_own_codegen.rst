@@ -48,7 +48,7 @@ sections need ``TVM_USE_TENSORRT_CODEGEN=ON``, ``TVM_USE_TENSORRT_RUNTIME=ON`` a
 section also needs PyTorch.  Each section degrades gracefully when its backend is
 unavailable.
 
-.. GENERATED FROM PYTHON SOURCE LINES 53-68
+.. GENERATED FROM PYTHON SOURCE LINES 53-76
 
 Overview of the BYOC flow
 -------------------------
@@ -66,8 +66,6 @@ Steps 1 and 2 are pure Python and run anywhere; steps 3 and 4 need the
 backend's codegen and runtime compiled into TVM, which is why the
 build-and-run cells below are guarded.
 
-.. GENERATED FROM PYTHON SOURCE LINES 70-77
-
 Step 1: Import the backends to register their patterns
 ------------------------------------------------------
 
@@ -76,15 +74,15 @@ Pattern registration is independent of the C++ build -- only codegen and the
 runtime require the backend to be compiled in -- so we probe each backend and
 guard the build-and-run cells accordingly.
 
-.. GENERATED FROM PYTHON SOURCE LINES 77-102
+.. GENERATED FROM PYTHON SOURCE LINES 76-101
 
 .. code-block:: Python
-
 
     import os
     import tempfile
 
     import numpy as np
+    import tvm_ffi
 
     import tvm.relax.backend.contrib.example_npu  # noqa: F401
     import tvm_tirx
@@ -94,12 +92,12 @@ guard the build-and-run cells accordingly.
     from tvm.relax.backend.pattern_registry import get_patterns_with_prefix
     from tvm.relax.transform import FuseOpsByPattern, MergeCompositeFunctions, RunCodegen
 
-    has_example_npu_codegen = tvm_tirx.get_global_func("relax.ext.example_npu", True)
-    has_example_npu_runtime = tvm_tirx.get_global_func("runtime.ExampleNPUJSONRuntimeCreate", True)
+    has_example_npu_codegen = tvm_ffi.get_global_func("relax.ext.example_npu", True)
+    has_example_npu_runtime = tvm_ffi.get_global_func("runtime.ExampleNPUJSONRuntimeCreate", True)
     has_example_npu = has_example_npu_codegen and has_example_npu_runtime
 
-    has_tensorrt_codegen = tvm_tirx.get_global_func("relax.ext.tensorrt", True) is not None
-    _is_trt_runtime_enabled = tvm_tirx.get_global_func("relax.is_tensorrt_runtime_enabled", True)
+    has_tensorrt_codegen = tvm_ffi.get_global_func("relax.ext.tensorrt", True) is not None
+    _is_trt_runtime_enabled = tvm_ffi.get_global_func("relax.is_tensorrt_runtime_enabled", True)
     has_tensorrt = (
         has_tensorrt_codegen and _is_trt_runtime_enabled is not None and _is_trt_runtime_enabled()
     )
@@ -112,7 +110,7 @@ guard the build-and-run cells accordingly.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 103-108
+.. GENERATED FROM PYTHON SOURCE LINES 102-107
 
 Step 2: Define the model
 ------------------------
@@ -120,7 +118,7 @@ Step 2: Define the model
 A single convolution followed by a ReLU.  This one model is used for both
 backends.
 
-.. GENERATED FROM PYTHON SOURCE LINES 108-124
+.. GENERATED FROM PYTHON SOURCE LINES 107-123
 
 .. code-block:: Python
 
@@ -147,7 +145,7 @@ backends.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 125-145
+.. GENERATED FROM PYTHON SOURCE LINES 124-144
 
 Step 3: Partition for the example NPU
 -------------------------------------
@@ -170,7 +168,7 @@ priority than the standalone ``conv2d`` pattern, so the two ops collapse into a
 single ``example_npu.conv2d_relu_fused`` composite -- look for it in the
 printed module.
 
-.. GENERATED FROM PYTHON SOURCE LINES 145-152
+.. GENERATED FROM PYTHON SOURCE LINES 144-151
 
 .. code-block:: Python
 
@@ -220,7 +218,7 @@ printed module.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 153-161
+.. GENERATED FROM PYTHON SOURCE LINES 152-160
 
 Step 4: Codegen, build and run on the example NPU
 -------------------------------------------------
@@ -231,7 +229,7 @@ then compiles the remaining host-side program and links everything.  Because
 the runtime is a stub that computes nothing, we assert on the output *shape*
 only -- the values are uninitialized.
 
-.. GENERATED FROM PYTHON SOURCE LINES 161-182
+.. GENERATED FROM PYTHON SOURCE LINES 160-181
 
 .. code-block:: Python
 
@@ -269,7 +267,7 @@ only -- the values are uninitialized.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 183-200
+.. GENERATED FROM PYTHON SOURCE LINES 182-199
 
 The same flow on a real backend: TensorRT
 -----------------------------------------
@@ -289,7 +287,7 @@ differs for NVIDIA TensorRT:
 The build-and-run cells below execute only when TensorRT and CUDA are
 available. In CPU-only documentation builds, they produce no output.
 
-.. GENERATED FROM PYTHON SOURCE LINES 200-206
+.. GENERATED FROM PYTHON SOURCE LINES 199-205
 
 .. code-block:: Python
 
@@ -350,11 +348,11 @@ available. In CPU-only documentation builds, they produce no output.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 207-208
+.. GENERATED FROM PYTHON SOURCE LINES 206-207
 
 Build for CUDA, run on the GPU, and compare against the CPU reference.
 
-.. GENERATED FROM PYTHON SOURCE LINES 208-228
+.. GENERATED FROM PYTHON SOURCE LINES 207-227
 
 .. code-block:: Python
 
@@ -385,7 +383,7 @@ Build for CUDA, run on the GPU, and compare against the CPU reference.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 229-236
+.. GENERATED FROM PYTHON SOURCE LINES 228-235
 
 A real backend also exposes knobs the stub does not.  Setting ``use_fp16``
 through the ``relax.ext.tensorrt.options`` config lets TensorRT pick FP16
@@ -395,7 +393,7 @@ enables INT8 with calibration, ``TVM_TENSORRT_MAX_WORKSPACE_SIZE`` caps the
 build workspace, and ``TVM_TENSORRT_CACHE_DIR`` caches built engines to disk
 for reuse across runs.)
 
-.. GENERATED FROM PYTHON SOURCE LINES 236-252
+.. GENERATED FROM PYTHON SOURCE LINES 235-251
 
 .. code-block:: Python
 
@@ -422,7 +420,7 @@ for reuse across runs.)
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 253-266
+.. GENERATED FROM PYTHON SOURCE LINES 252-265
 
 Example NPU vs TensorRT at a glance
 -----------------------------------
@@ -438,7 +436,7 @@ Weights    ``bind_constants=False``        ``bind_constants=True`` (baked in)
 Partition  two passes, by hand             ``partition_for_tensorrt`` one call
 =========  ==============================  ==================================
 
-.. GENERATED FROM PYTHON SOURCE LINES 268-282
+.. GENERATED FROM PYTHON SOURCE LINES 267-281
 
 Deploying a PyTorch model with TensorRT
 ---------------------------------------
@@ -455,7 +453,7 @@ partition-build-run flow is otherwise unchanged.
 
 This section additionally requires PyTorch.
 
-.. GENERATED FROM PYTHON SOURCE LINES 282-328
+.. GENERATED FROM PYTHON SOURCE LINES 281-327
 
 .. code-block:: Python
 
@@ -512,13 +510,13 @@ This section additionally requires PyTorch.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 329-332
+.. GENERATED FROM PYTHON SOURCE LINES 328-331
 
 Real deployment builds once and reuses the artifact.  Export the compiled
 module to a shared library, then load and run it later -- in a fresh process,
 with no PyTorch and no rebuild needed.
 
-.. GENERATED FROM PYTHON SOURCE LINES 332-344
+.. GENERATED FROM PYTHON SOURCE LINES 331-343
 
 .. code-block:: Python
 
@@ -541,7 +539,7 @@ with no PyTorch and no rebuild needed.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 345-358
+.. GENERATED FROM PYTHON SOURCE LINES 344-357
 
 Notes for real deployments
 --------------------------
@@ -557,7 +555,7 @@ Notes for real deployments
   is not a hang).  Set ``TVM_TENSORRT_CACHE_DIR`` to cache built engines to
   disk and skip the rebuild on later runs.
 
-.. GENERATED FROM PYTHON SOURCE LINES 360-379
+.. GENERATED FROM PYTHON SOURCE LINES 359-378
 
 Next steps
 ----------

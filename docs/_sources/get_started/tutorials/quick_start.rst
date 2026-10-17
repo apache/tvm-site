@@ -227,8 +227,8 @@ different devices.
 
  .. code-block:: none
 
-    [[25604.992 25317.13  24856.227 27228.645 25043.83  25215.404 25234.01
-      25581.09  25377.629 27167.893]]
+    [[25678.74  26020.146 24594.328 24846.973 26957.766 25759.889 24421.904
+      25959.36  26995.48  24828.55 ]]
 
 
 
@@ -252,7 +252,7 @@ with the minimum runtime support.
   .. code-block:: Python
 
       # Convert PyTorch tensor to TVM Tensor
-      x_tvm = tvm.runtime.from_dlpack(x_torch)
+      x_tvm = tvm_ffi.from_dlpack(x_torch)
       # Convert TVM Tensor to PyTorch tensor
       x_torch = torch.from_dlpack(x_tvm)
 

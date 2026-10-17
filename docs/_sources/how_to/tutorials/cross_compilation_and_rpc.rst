@@ -108,7 +108,7 @@ Here we will declare a simple kernel on the local machine:
     from tvm import rpc, te
     from tvm_tirx.support import utils
 
-    n = tvm_tirx.runtime.convert(1024)
+    n = tvm_ffi.convert(1024)
     A = te.placeholder((n,), name="A")
     B = te.compute((n,), lambda i: A[i] + 1.0, name="B")
     mod = tvm_tirx.IRModule.from_expr(te.create_function([A, B]).with_attr("global_symbol", "add_one"))
@@ -276,7 +276,7 @@ device and returns the measured cost. Network overhead is excluded.
 
  .. code-block:: none
 
-    1.11e-07 secs/op
+    1.19e-07 secs/op
 
 
 
@@ -861,8 +861,8 @@ This workflow is applicable to various deployment scenarios:
     Converted PyTorch model to Relax:
       - Number of parameters: 4
     Using local target for demonstration
-    Exported library to: /tmp/tmp7_iu7gpm/model_deployed.so
-    Saved parameters to: /tmp/tmp7_iu7gpm/model_params.npz
+    Exported library to: /tmp/tmp8d6um200/model_deployed.so
+    Saved parameters to: /tmp/tmp8d6um200/model_params.npz
 
     RPC workflow (works for any remote device):
     ==================================================
