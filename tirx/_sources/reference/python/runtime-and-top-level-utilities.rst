@@ -15,103 +15,32 @@
     specific language governing permissions and limitations
     under the License.
 
+:orphan:
+
 Runtime and Top-Level Utilities
 ===============================
-
-.. contents:: Table of Contents
-   :local:
-   :depth: 1
 
 tvm_tirx
 --------
 
-.. currentmodule:: tvm_tirx
-
-.. autosummary::
-   :toctree: generated/
-
-   get_global_func
-   hexagon
-   register_global_func
-   register_object
-
-* :obj:`DataType <tvm_tirx.runtime.DataType>`
-* :obj:`DataTypeCode <tvm_tirx.runtime.DataTypeCode>`
-* :obj:`IRModule <tvm_tirx.ir.IRModule>`
-* :obj:`Object <tvm_tirx.runtime.Object>`
-* :obj:`cpu <tvm_tirx.runtime.cpu>`
-* :obj:`cuda <tvm_tirx.runtime.cuda>`
-* :obj:`device <tvm_tirx.runtime.device>`
-* :obj:`device_from_target <tvm_tirx.target.device_from_target>`
-* :obj:`ext_dev <tvm_tirx.runtime.ext_dev>`
-* :obj:`metal <tvm_tirx.runtime.metal>`
-* :obj:`opencl <tvm_tirx.runtime.opencl>`
-* :obj:`rocm <tvm_tirx.runtime.rocm>`
-* :obj:`vpi <tvm_tirx.runtime.vpi>`
-* :obj:`vulkan <tvm_tirx.runtime.vulkan>`
+:doc:`tvm_tirx <index>`
 
 tvm_tirx.runtime
 ----------------
 
-.. currentmodule:: tvm_tirx.runtime
-
-.. autosummary::
-   :toctree: generated/
-
-   DataType
-   DataTypeCode
-   Device
-   MemoryScope
-   Module
-   Object
-   ShapeTuple
-   Tensor
-   convert
-   cpu
-   cuda
-   device
-   empty
-   enabled
-   ext_dev
-   from_dlpack
-   load_module
-   metal
-   num_threads
-   opencl
-   rocm
-   system_lib
-   tensor
-   vpi
-   vulkan
-
+:doc:`tvm_tirx.runtime <runtime>`
 
 tvm_tirx.runtime.memory_scope
 -----------------------------
 
-.. currentmodule:: tvm_tirx.runtime.memory_scope
-
-* :obj:`MemoryScope <tvm_tirx.runtime.MemoryScope>`
+:doc:`tvm_tirx.runtime.memory_scope <runtime.memory_scope>`
 
 tvm_tirx.config
 ---------------
 
-.. currentmodule:: tvm_tirx.config
-
-.. autosummary::
-   :toctree: generated/
-
-   configuration
-
+:doc:`tvm_tirx.config <config>`
 
 tvm_tirx.libinfo
 ----------------
 
-.. currentmodule:: tvm_tirx.libinfo
-
-.. autosummary::
-   :toctree: generated/
-
-   configuration
-   find_include_path
-   find_libtvm_runtime
-   package_lib_paths
+:doc:`tvm_tirx.libinfo <libinfo>`

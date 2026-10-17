@@ -15,17 +15,16 @@
     specific language governing permissions and limitations
     under the License.
 
-Support
-=======
-
-.. contents:: Table of Contents
-   :local:
-   :depth: 1
-
 tvm_tirx.support
-----------------
+================
+
+.. automodule:: tvm_tirx.support
+   :no-members:
 
 .. currentmodule:: tvm_tirx.support
+
+Functions
+---------
 
 .. autosummary::
    :toctree: generated/
@@ -33,147 +32,75 @@ tvm_tirx.support
    describe
    libinfo
 
+Namespaces
+----------
 
-tvm_tirx.support.cc
--------------------
+.. toctree::
+   :maxdepth: 1
 
-.. currentmodule:: tvm_tirx.support.cc
+   support.cc
+   support.clang
+   support.ndk
+   support.nvcc
+   support.popen_pool
+   support.rocm
+   support.tar
+   support.utils
+   support.xcode
 
-.. autosummary::
-   :toctree: generated/
+Namespace links
+---------------
 
-   create_executable
-   create_shared
-   create_staticlib
-   cross_compiler
-   get_cc
-   get_global_symbol_section_map
-   get_target_by_dump_machine
+.. raw:: html
 
+   <span id="tvm-tirx-support-cc"></span>
 
-tvm_tirx.support.clang
-----------------------
+:doc:`tvm_tirx.support.cc <support.cc>`
 
-.. currentmodule:: tvm_tirx.support.clang
+.. raw:: html
 
-.. autosummary::
-   :toctree: generated/
+   <span id="tvm-tirx-support-clang"></span>
 
-   create_llvm
-   find_clang
+:doc:`tvm_tirx.support.clang <support.clang>`
 
+.. raw:: html
 
-tvm_tirx.support.ndk
---------------------
+   <span id="tvm-tirx-support-ndk"></span>
 
-.. currentmodule:: tvm_tirx.support.ndk
+:doc:`tvm_tirx.support.ndk <support.ndk>`
 
-.. autosummary::
-   :toctree: generated/
+.. raw:: html
 
-   create_shared
-   create_staticlib
-   get_global_symbol_section_map
+   <span id="tvm-tirx-support-nvcc"></span>
 
+:doc:`tvm_tirx.support.nvcc <support.nvcc>`
 
-tvm_tirx.support.nvcc
----------------------
+.. raw:: html
 
-.. currentmodule:: tvm_tirx.support.nvcc
+   <span id="tvm-tirx-support-popen-pool"></span>
 
-.. autosummary::
-   :toctree: generated/
+:doc:`tvm_tirx.support.popen_pool <support.popen_pool>`
 
-   callback_libdevice_path
-   compile_cuda
-   find_cuda_path
-   find_libdevice_path
-   find_nvshmem_paths
-   get_cuda_version
-   get_target_compute_version
-   have_bf16
-   have_cudagraph
-   have_fp16
-   have_fp4
-   have_fp8
-   have_int8
-   have_tensorcore
-   parse_compute_version
-   tvm_callback_cuda_compile
+.. raw:: html
 
+   <span id="tvm-tirx-support-rocm"></span>
 
-tvm_tirx.support.popen_pool
----------------------------
+:doc:`tvm_tirx.support.rocm <support.rocm>`
 
-.. currentmodule:: tvm_tirx.support.popen_pool
+.. raw:: html
 
-.. autosummary::
-   :toctree: generated/
+   <span id="tvm-tirx-support-tar"></span>
 
-   MapResult
-   PopenPoolExecutor
-   PopenWorker
-   StatusKind
-   kill_child_processes
+:doc:`tvm_tirx.support.tar <support.tar>`
 
+.. raw:: html
 
-tvm_tirx.support.rocm
----------------------
+   <span id="tvm-tirx-support-utils"></span>
 
-.. currentmodule:: tvm_tirx.support.rocm
+:doc:`tvm_tirx.support.utils <support.utils>`
 
-.. autosummary::
-   :toctree: generated/
+.. raw:: html
 
-   callback_rocm_bitcode_path
-   callback_rocm_link
-   find_lld
-   find_rocm_path
-   get_rocm_arch
-   have_matrixcore
-   parse_compute_version
-   rocm_link
+   <span id="tvm-tirx-support-xcode"></span>
 
-
-tvm_tirx.support.tar
---------------------
-
-.. currentmodule:: tvm_tirx.support.tar
-
-.. autosummary::
-   :toctree: generated/
-
-   normalize_file_list_by_unpacking_tars
-   tar
-   untar
-
-
-tvm_tirx.support.utils
-----------------------
-
-.. currentmodule:: tvm_tirx.support.utils
-
-.. autosummary::
-   :toctree: generated/
-
-   DirectoryCreatedPastAtExit
-   FileLock
-   TempDirectory
-   filelock
-   is_source_path
-   tempdir
-   which
-
-
-tvm_tirx.support.xcode
-----------------------
-
-.. currentmodule:: tvm_tirx.support.xcode
-
-.. autosummary::
-   :toctree: generated/
-
-   compile_coreml
-   compile_metal
-   create_dylib
-   xcrun
+:doc:`tvm_tirx.support.xcode <support.xcode>`

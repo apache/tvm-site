@@ -15,37 +15,17 @@
     specific language governing permissions and limitations
     under the License.
 
+:orphan:
+
 Backend Configuration
 =====================
-
-.. contents:: Table of Contents
-   :local:
-   :depth: 1
 
 tvm_tirx.backend
 ----------------
 
-.. currentmodule:: tvm_tirx.backend
-
-.. autosummary::
-   :toctree: generated/
-
-   is_loaded
-   load
-
+:doc:`tvm_tirx.backend <backend>`
 
 tvm_tirx.backend.config
 -----------------------
 
-.. currentmodule:: tvm_tirx.backend.config
-
-.. autosummary::
-   :toctree: generated/
-
-   add_backend_config_argument
-   argparse_backend_config
-   backend_config_json
-   copy_backend_config
-   merge_backend_configs
-   parse_backend_config
-   prepare_target
+:doc:`tvm_tirx.backend.config <backend.config>`

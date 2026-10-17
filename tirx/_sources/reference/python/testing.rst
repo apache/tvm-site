@@ -15,17 +15,16 @@
     specific language governing permissions and limitations
     under the License.
 
-Testing
-=======
-
-.. contents:: Table of Contents
-   :local:
-   :depth: 1
-
 tvm_tirx.testing
-----------------
+================
+
+.. automodule:: tvm_tirx.testing
+   :no-members:
 
 .. currentmodule:: tvm_tirx.testing
+
+Functions
+---------
 
 .. autosummary::
    :toctree: generated/
@@ -43,62 +42,33 @@ tvm_tirx.testing
    terminate_self
    test_raise_error
 
+Namespaces
+----------
 
-tvm_tirx.testing.env
---------------------
+.. toctree::
+   :maxdepth: 1
 
-.. currentmodule:: tvm_tirx.testing.env
+   testing.env
+   testing.locking
+   testing.utils
 
-.. autosummary::
-   :toctree: generated/
+Namespace links
+---------------
 
-   build_flag_enabled
-   cuda_arch
-   has_adreno_opencl
-   has_cpu_feature
-   has_cublas
-   has_cuda
-   has_cuda_arch
-   has_cuda_compute
-   has_cudagraph
-   has_cudnn
-   has_gpu
-   has_hexagon
-   has_hexagon_toolchain
-   has_hipblas
-   has_llvm
-   has_llvm_min_version
-   has_matrixcore
-   has_metal
-   has_multi_gpu
-   has_nccl
-   has_nvcc_version
-   has_nvptx
-   has_nvshmem
-   has_opencl
-   has_rocm
-   has_vulkan
-   has_x86_avx512
-   has_x86_vnni
+.. raw:: html
 
+   <span id="tvm-tirx-testing-env"></span>
 
-tvm_tirx.testing.locking
-------------------------
+:doc:`tvm_tirx.testing.env <testing.env>`
 
-.. currentmodule:: tvm_tirx.testing.locking
+.. raw:: html
 
-* :obj:`run_with_gpu_lock <tvm_tirx.testing.run_with_gpu_lock>`
+   <span id="tvm-tirx-testing-locking"></span>
 
-tvm_tirx.testing.utils
-----------------------
+:doc:`tvm_tirx.testing.locking <testing.locking>`
 
-.. currentmodule:: tvm_tirx.testing.utils
+.. raw:: html
 
-* :obj:`assert_allclose <tvm_tirx.testing.assert_allclose>`
-* :obj:`device_enabled <tvm_tirx.testing.device_enabled>`
-* :obj:`generate_random_array <tvm_tirx.testing.generate_random_array>`
-* :obj:`identity_after <tvm_tirx.testing.identity_after>`
-* :obj:`main <tvm_tirx.testing.main>`
-* :obj:`np_dtype_from_str <tvm_tirx.testing.np_dtype_from_str>`
-* :obj:`parameter <tvm_tirx.testing.parameter>`
-* :obj:`terminate_self <tvm_tirx.testing.terminate_self>`
+   <span id="tvm-tirx-testing-utils"></span>
+
+:doc:`tvm_tirx.testing.utils <testing.utils>`

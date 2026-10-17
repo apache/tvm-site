@@ -15,24 +15,94 @@
     specific language governing permissions and limitations
     under the License.
 
-Python API
-==========
+tvm_tirx
+========
 
 .. automodule:: tvm_tirx
    :no-members:
 
+.. currentmodule:: tvm_tirx
+
+Classes
+-------
+
+.. list-table::
+   :header-rows: 1
+   :widths: 35 65
+
+   * - Alias
+     - Canonical API
+   * - ``DataType``
+     - :obj:`tvm_tirx.runtime.DataType`
+   * - ``DataTypeCode``
+     - :obj:`tvm_tirx.runtime.DataTypeCode`
+   * - ``IRModule``
+     - :obj:`tvm_tirx.ir.IRModule`
+   * - ``Object``
+     - :obj:`tvm_tirx.runtime.Object`
+
+Functions
+---------
+
+.. autosummary::
+   :toctree: generated/
+
+   get_global_func
+   hexagon
+   register_global_func
+   register_object
+
+.. list-table::
+   :header-rows: 1
+   :widths: 35 65
+
+   * - Alias
+     - Canonical API
+   * - ``cpu``
+     - :obj:`tvm_tirx.runtime.cpu`
+   * - ``cuda``
+     - :obj:`tvm_tirx.runtime.cuda`
+   * - ``device``
+     - :obj:`tvm_tirx.runtime.device`
+   * - ``device_from_target``
+     - :obj:`tvm_tirx.target.device_from_target`
+   * - ``ext_dev``
+     - :obj:`tvm_tirx.runtime.ext_dev`
+   * - ``metal``
+     - :obj:`tvm_tirx.runtime.metal`
+   * - ``opencl``
+     - :obj:`tvm_tirx.runtime.opencl`
+   * - ``rocm``
+     - :obj:`tvm_tirx.runtime.rocm`
+   * - ``vpi``
+     - :obj:`tvm_tirx.runtime.vpi`
+   * - ``vulkan``
+     - :obj:`tvm_tirx.runtime.vulkan`
+
+Namespaces
+----------
+
+.. toctree::
+   :maxdepth: 2
+
+   runtime
+   ir
+   ir.transform
+   script
+   sym
+   target
+   tirx
+   tirx.transform
+   codegen
+   backend
+   support
+   testing
+
+Additional namespaces
+---------------------
+
 .. toctree::
    :maxdepth: 1
 
-   runtime-and-top-level-utilities
-   ir
-   symbolic-analysis
-   tirx
-   target-and-code-generation
-   script-and-printer
-   backend-configuration
-   cuda
-   other-backends
-   support
-   testing
-   cuda-script-namespaces
+   config
+   libinfo

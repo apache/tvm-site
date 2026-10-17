@@ -15,156 +15,111 @@
     specific language governing permissions and limitations
     under the License.
 
-IR
-==
-
-.. contents:: Table of Contents
-   :local:
-   :depth: 1
-
 tvm_tirx.ir
------------
+===========
+
+.. automodule:: tvm_tirx.ir
+   :no-members:
 
 .. currentmodule:: tvm_tirx.ir
+
+Common IR infrastructure
+------------------------
+
+.. autosummary::
+   :toctree: generated/
+
+   Array
+   Attrs
+   CallEffectKind
+   CallSiteLoc
+   CallingConv
+   DictAttrs
+   EnvFunc
+   ExprOperand
+   ForKind
+   GlobalInfo
+   IRModule
+   Location
+   Map
+   Node
+   Range
+   Scriptable
+   SourceLoc
+   SourceName
+   UnknownLoc
+
+Type
+----
 
 .. autosummary::
    :toctree: generated/
 
    AnyType
-   Array
-   AssertStmt
-   Attrs
-   BaseFunc
-   Bind
-   Break
-   Call
-   CallEffectKind
-   CallSiteLoc
-   CallingConv
-   Constant
-   Continue
-   DataTypeImm
-   DictAttrs
-   EnvFunc
-   Evaluate
-   Expr
-   ExprOperand
-   ExprWithOp
-   FloatImm
-   For
-   ForKind
    FuncType
-   GenericConst
-   GlobalInfo
-   GlobalVar
-   IRModule
-   If
-   IntImm
-   LambdaExpr
-   Location
-   Map
    MissingType
-   Node
-   Op
-   OpaqueExpr
    OpaqueType
    PrimType
    PtrType
-   Range
-   RegionStmt
-   Return
-   Scriptable
-   SeqStmt
-   SourceLoc
-   SourceName
-   StagingExpr
-   Stmt
-   StringImm
    StringType
-   TensorLoad
-   TensorRegion
    TensorRegionType
-   TensorStore
-   Tuple
-   TupleGetItem
    TupleType
    Type
-   UNKNOWN_LOC
-   UnknownLoc
-   Var
-   While
-   assert_structural_equal
-   const
-   is_prim_expr
-   is_prim_var
-   load_json
-   make_node
-   register_op_attr
-   reinfer_type
-   save_json
-   stmt_list
-   stmt_seq
 
-
-tvm_tirx.ir.base
-----------------
-
-.. currentmodule:: tvm_tirx.ir.base
+Expr
+----
 
 .. autosummary::
    :toctree: generated/
 
-   register_dialect_script_method
-   register_script_printer
+   BaseFunc
+   Call
+   Constant
+   DataTypeImm
+   Expr
+   ExprWithOp
+   FloatImm
+   GenericConst
+   GlobalVar
+   IntImm
+   LambdaExpr
+   Op
+   OpaqueExpr
+   StagingExpr
+   StringImm
+   TensorLoad
+   TensorRegion
+   Tuple
+   TupleGetItem
+   Var
 
-* :obj:`EnvFunc <tvm_tirx.ir.EnvFunc>`
-* :obj:`Node <tvm_tirx.ir.Node>`
-* :obj:`Scriptable <tvm_tirx.ir.Scriptable>`
-* :obj:`assert_structural_equal <tvm_tirx.ir.assert_structural_equal>`
-* :obj:`load_json <tvm_tirx.ir.load_json>`
-* :obj:`save_json <tvm_tirx.ir.save_json>`
+Stmt
+----
 
-tvm_tirx.ir.prim
-----------------
+.. autosummary::
+   :toctree: generated/
+
+   AssertStmt
+   Bind
+   Break
+   Continue
+   Evaluate
+   For
+   If
+   RegionStmt
+   Return
+   SeqStmt
+   Stmt
+   TensorStore
+   While
+
+Operator functions (tvm_tirx.ir.prim)
+-------------------------------------
 
 .. currentmodule:: tvm_tirx.ir.prim
 
 .. autosummary::
-   :toctree: generated/
 
-   Add
-   And
-   BinaryOpExpr
-   BitwiseAnd
-   BitwiseNot
-   BitwiseOr
-   BitwiseXor
-   Broadcast
-   Cast
-   CmpExpr
-   Div
-   EQ
-   FloorDiv
-   FloorMod
-   GE
-   GT
-   LE
-   LShift
-   LT
-   Let
-   LogicalExpr
-   Max
-   Min
-   Mod
-   Mul
-   NE
-   Not
-   Or
-   RShift
-   Ramp
-   Select
-   Shuffle
-   Sub
    abs
    acos
    acosh
@@ -183,7 +138,6 @@ tvm_tirx.ir.prim
    ceil
    ceildiv
    clz
-   convert
    copysign
    cos
    cosh
@@ -192,7 +146,6 @@ tvm_tirx.ir.prim
    exp
    exp10
    exp2
-   expr_deep_equal
    floor
    floordiv
    floormod
@@ -202,7 +155,6 @@ tvm_tirx.ir.prim
    if_then_else
    indexdiv
    indexmod
-   infinity
    isfinite
    isinf
    isnan
@@ -213,9 +165,7 @@ tvm_tirx.ir.prim
    log1p
    log2
    max
-   max_value
    min
-   min_value
    nearbyint
    nextafter
    popcount
@@ -236,62 +186,80 @@ tvm_tirx.ir.prim
    truncmod
    vscale
 
-* :obj:`Expr <tvm_tirx.ir.Expr>`
-* :obj:`const <tvm_tirx.ir.const>`
+.. currentmodule:: tvm_tirx.ir
 
-tvm_tirx.ir.transform
----------------------
-
-.. currentmodule:: tvm_tirx.ir.transform
+IR helpers
+----------
 
 .. autosummary::
    :toctree: generated/
 
-   ModulePass
-   Pass
-   PassContext
-   PassInfo
-   PassInstrument
-   PrintIR
-   Sequential
-   module_pass
-   pass_instrument
+   assert_structural_equal
+   const
+   is_prim_expr
+   is_prim_var
+   load_json
+   make_node
+   register_op_attr
+   reinfer_type
+   save_json
+   stmt_list
+   stmt_seq
 
-
-tvm_tirx.ir.transform.instrument
---------------------------------
-
-.. currentmodule:: tvm_tirx.ir.transform.instrument
-
-.. autosummary::
-   :toctree: generated/
-
-   DumpIR
-   PassPrintingInstrument
-   PassTimingInstrument
-   PrintAfterAll
-   PrintBeforeAll
-
-
-tvm_tirx.ir.unique_name_supply
-------------------------------
-
-.. currentmodule:: tvm_tirx.ir.unique_name_supply
+Constants
+---------
 
 .. autosummary::
    :toctree: generated/
 
-   UniqueNameSupply
+   UNKNOWN_LOC
 
+Namespaces
+----------
 
-tvm_tirx.ir.json_compact
-------------------------
+.. toctree::
+   :maxdepth: 1
 
-.. currentmodule:: tvm_tirx.ir.json_compact
+   ir.prim
+   ir.base
+   ir.json_compact
+   ir.unique_name_supply
 
-.. autosummary::
-   :toctree: generated/
+Namespace links
+---------------
 
-   create_updater
-   get_version
-   upgrade_json
+.. raw:: html
+
+   <span id="tvm-tirx-ir-base"></span>
+
+:doc:`tvm_tirx.ir.base <ir.base>`
+
+.. raw:: html
+
+   <span id="tvm-tirx-ir-prim"></span>
+
+:doc:`tvm_tirx.ir.prim <ir.prim>`
+
+.. raw:: html
+
+   <span id="tvm-tirx-ir-transform"></span>
+
+:doc:`tvm_tirx.ir.transform <ir.transform>`
+
+.. raw:: html
+
+   <span id="tvm-tirx-ir-transform-instrument"></span>
+
+:doc:`tvm_tirx.ir.transform.instrument <ir.transform.instrument>`
+
+.. raw:: html
+
+   <span id="tvm-tirx-ir-unique-name-supply"></span>
+
+:doc:`tvm_tirx.ir.unique_name_supply <ir.unique_name_supply>`
+
+.. raw:: html
+
+   <span id="tvm-tirx-ir-json-compact"></span>
+
+:doc:`tvm_tirx.ir.json_compact <ir.json_compact>`
