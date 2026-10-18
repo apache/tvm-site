@@ -40,7 +40,7 @@
 <link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
   <script src="../../../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
 
-    <script src="../../../_static/documentation_options.js?v=4917acdf"></script>
+    <script src="../../../_static/documentation_options.js?v=b84daf3c"></script>
     <script src="../../../_static/doctools.js?v=9bcbadda"></script>
     <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../_static/scripts/sphinx-book-theme.js?v=887ef09a"></script>
@@ -694,14 +694,10 @@ existing pointer expression. See <a class="reference internal" href="data_types.
 <td><p>logical shape (a tuple of extents)</p></td>
 </tr>
 <tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">layout</span></code></p></td>
-<td><p>physical mapping (<a class="reference internal" href="../../layout.html"><span class="doc">TileLayout</span></a>); <code class="docutils literal notranslate"><span class="pre">&quot;default&quot;</span></code> = dense
-row-major</p></td>
+<td><p>physical mapping, including strides and element origin
+(<a class="reference internal" href="../../layout.html"><span class="doc">TileLayout</span></a>); <code class="docutils literal notranslate"><span class="pre">&quot;default&quot;</span></code> = dense row-major</p></td>
 </tr>
-<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">elem_offset</span></code></p></td>
-<td><p><code class="docutils literal notranslate"><span class="pre">elem_offset</span></code> (or <code class="docutils literal notranslate"><span class="pre">byte_offset</span></code>) places a <em>view</em> at an offset into
-<code class="docutils literal notranslate"><span class="pre">data</span></code></p></td>
-</tr>
-<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">align</span></code></p></td>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">align</span></code></p></td>
 <td><p>alignment of the data pointer, in bytes</p></td>
 </tr>
 </tbody>
@@ -755,19 +751,21 @@ row-major</p></td>
 </div>
 <p><strong>A ptr-based tensor is just metadata over a pointer.</strong> For any non-tmem tensor,
 the declaration is a pointer plus a layout, and indexing resolves to an address:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">addr</span><span class="p">(</span><span class="n">tensor</span><span class="p">[</span><span class="n">coord</span><span class="p">])</span> <span class="o">=</span> <span class="n">tensor</span><span class="o">.</span><span class="n">data</span> <span class="o">+</span> <span class="n">elem_offset</span> <span class="o">+</span> <span class="n">layout</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="n">coord</span><span class="p">,</span> <span class="n">shape</span><span class="o">=</span><span class="n">shape</span><span class="p">)[</span><span class="s2">&quot;m&quot;</span><span class="p">]</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">addr</span><span class="p">(</span><span class="n">tensor</span><span class="p">[</span><span class="n">coord</span><span class="p">])</span> <span class="o">=</span> <span class="n">tensor</span><span class="o">.</span><span class="n">data</span> <span class="o">+</span> <span class="n">layout</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="n">coord</span><span class="p">,</span> <span class="n">shape</span><span class="o">=</span><span class="n">shape</span><span class="p">)[</span><span class="s2">&quot;m&quot;</span><span class="p">]</span>
 </pre></div>
 </div>
 <p>(<code class="docutils literal notranslate"><span class="pre">layout.apply</span></code> returns the per-axis mapping; its <code class="docutils literal notranslate"><span class="pre">&quot;m&quot;</span></code> component is the
-element offset.) So the <em>same</em> logical access compiles to different address
-arithmetic depending purely on the tensor’s metadata. Writing
+element offset, including the layout’s origin.) Pointer arithmetic here is in
+elements. Strides and origins are represented only by the layout, not by separate
+tensor arguments or properties. So the <em>same</em> logical access compiles to different
+address arithmetic depending purely on the tensor’s metadata. Writing
 <code class="docutils literal notranslate"><span class="pre">B[i,</span> <span class="pre">j]</span> <span class="pre">=</span> <span class="pre">A[i,</span> <span class="pre">j]</span> <span class="pre">+</span> <span class="pre">1</span></code> over a 4×8 region, with <code class="docutils literal notranslate"><span class="pre">B</span></code> annotated four ways in
 the function signature:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">tvm.tirx.layout</span><span class="w"> </span><span class="kn">import</span> <span class="n">TileLayout</span><span class="p">,</span> <span class="n">S</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">tvm_tirx.tirx.layout</span><span class="w"> </span><span class="kn">import</span> <span class="n">TileLayout</span><span class="p">,</span> <span class="n">S</span>
 
 <span class="n">B</span><span class="p">:</span> <span class="n">Tx</span><span class="o">.</span><span class="n">Tensor</span><span class="p">((</span><span class="mi">4</span><span class="p">,</span> <span class="mi">8</span><span class="p">),</span> <span class="s2">&quot;float32&quot;</span><span class="p">)</span>  <span class="c1"># row-major</span>
 <span class="n">B</span><span class="p">:</span> <span class="n">Tx</span><span class="o">.</span><span class="n">Tensor</span><span class="p">((</span><span class="mi">4</span><span class="p">,</span> <span class="mi">8</span><span class="p">),</span> <span class="s2">&quot;float32&quot;</span><span class="p">,</span> <span class="n">layout</span><span class="o">=</span><span class="n">TileLayout</span><span class="p">(</span><span class="n">S</span><span class="p">[(</span><span class="mi">4</span><span class="p">,</span> <span class="mi">8</span><span class="p">)</span> <span class="p">:</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">4</span><span class="p">)]))</span>  <span class="c1"># column-major</span>
-<span class="n">B</span><span class="p">:</span> <span class="n">Tx</span><span class="o">.</span><span class="n">Tensor</span><span class="p">((</span><span class="mi">4</span><span class="p">,</span> <span class="mi">8</span><span class="p">),</span> <span class="s2">&quot;float32&quot;</span><span class="p">,</span> <span class="n">elem_offset</span><span class="o">=</span><span class="mi">64</span><span class="p">)</span>  <span class="c1"># shifted view</span>
+<span class="n">B</span><span class="p">:</span> <span class="n">Tx</span><span class="o">.</span><span class="n">Tensor</span><span class="p">((</span><span class="mi">4</span><span class="p">,</span> <span class="mi">8</span><span class="p">),</span> <span class="s2">&quot;float32&quot;</span><span class="p">,</span> <span class="n">layout</span><span class="o">=</span><span class="n">TileLayout</span><span class="p">(</span><span class="n">S</span><span class="p">[(</span><span class="mi">4</span><span class="p">,</span> <span class="mi">8</span><span class="p">)]</span> <span class="o">+</span> <span class="mi">64</span><span class="p">))</span>  <span class="c1"># shifted view</span>
 <span class="n">B</span><span class="p">:</span> <span class="n">Tx</span><span class="o">.</span><span class="n">Tensor</span><span class="p">((</span><span class="mi">4</span><span class="p">,</span> <span class="mi">8</span><span class="p">),</span> <span class="s2">&quot;float32&quot;</span><span class="p">,</span> <span class="n">layout</span><span class="o">=</span><span class="n">TileLayout</span><span class="p">(</span><span class="n">S</span><span class="p">[(</span><span class="mi">4</span><span class="p">,</span> <span class="mi">8</span><span class="p">)</span> <span class="p">:</span> <span class="p">(</span><span class="mi">16</span><span class="p">,</span> <span class="mi">1</span><span class="p">)]))</span>  <span class="c1"># row stride 16</span>
 </pre></div>
 </div>
@@ -775,10 +773,14 @@ the function signature:</p>
 <code class="docutils literal notranslate"><span class="pre">A[i,</span> <span class="pre">j]</span></code> load stays <code class="docutils literal notranslate"><span class="pre">i*8</span> <span class="pre">+</span> <span class="pre">j</span></code> — only <code class="docutils literal notranslate"><span class="pre">B</span></code>’s metadata changed):</p>
 <div class="highlight-c++ notranslate"><div class="highlight"><pre><span></span><span class="n">B_ptr</span><span class="p">[((</span><span class="n">i</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="mi">8</span><span class="p">)</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">j</span><span class="p">)]</span><span class="w">        </span><span class="o">=</span><span class="w"> </span><span class="p">...;</span><span class="w">   </span><span class="c1">// row-major:        i*8 + j</span>
 <span class="n">B_ptr</span><span class="p">[((</span><span class="n">j</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="mi">4</span><span class="p">)</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">i</span><span class="p">)]</span><span class="w">        </span><span class="o">=</span><span class="w"> </span><span class="p">...;</span><span class="w">   </span><span class="c1">// column-major:     j*4 + i</span>
-<span class="n">B_ptr</span><span class="p">[(((</span><span class="n">i</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="mi">8</span><span class="p">)</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">j</span><span class="p">)</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">64</span><span class="p">)]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">...;</span><span class="w">   </span><span class="c1">// elem_offset=64:   i*8 + j + 64</span>
+<span class="n">B_ptr</span><span class="p">[(((</span><span class="n">i</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="mi">8</span><span class="p">)</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">j</span><span class="p">)</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">64</span><span class="p">)]</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">...;</span><span class="w">   </span><span class="c1">// layout origin 64:   i*8 + j + 64</span>
 <span class="n">B_ptr</span><span class="p">[((</span><span class="n">i</span><span class="w"> </span><span class="o">*</span><span class="w"> </span><span class="mi">16</span><span class="p">)</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">j</span><span class="p">)]</span><span class="w">       </span><span class="o">=</span><span class="w"> </span><span class="p">...;</span><span class="w">   </span><span class="c1">// row stride 16:    i*16 + j</span>
 </pre></div>
 </div>
+<p>Layouts must describe the actual tensor domain; lowering does not resize or
+extend mismatched tile extents. For nonzero shapes and non-negative strides,
+allocation footprints cover the maximum mapped memory address. A declaration
+over a borrowed pointer remains responsible for the storage that pointer addresses.</p>
 </section>
 <section id="shared-memory">
 <h2>Shared memory<a class="headerlink" href="#shared-memory" title="Link to this heading">#</a></h2>
@@ -819,7 +821,7 @@ whole block sees the writes, then read it back:</p>
 <code class="docutils literal notranslate"><span class="pre">sharedMemBytes</span></code> launch parameter), not at compile time. A kernel may have <strong>only
 one</strong> dynamic-shared allocation — the <em>arena</em>. So you allocate it once and <code class="docutils literal notranslate"><span class="pre">decl</span></code>
 each tensor as a view into it: <code class="docutils literal notranslate"><span class="pre">Tx.decl_tensor</span></code> with the arena pointer as its
-first argument and an <code class="docutils literal notranslate"><span class="pre">elem_offset</span></code>:</p>
+first argument and a memory-axis origin in its layout:</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">arena</span> <span class="o">=</span> <span class="n">Tx</span><span class="o">.</span><span class="n">alloc_tensor</span><span class="p">(</span>
     <span class="n">ty_args</span><span class="o">=</span><span class="p">[</span><span class="n">Tx</span><span class="o">.</span><span class="n">Tensor</span><span class="p">((</span><span class="mi">128</span><span class="p">,),</span> <span class="s2">&quot;float32&quot;</span><span class="p">,</span> <span class="n">scope</span><span class="o">=</span><span class="s2">&quot;shared.dyn&quot;</span><span class="p">)]</span>
 <span class="p">)</span>  <span class="c1"># the one arena</span>
@@ -827,7 +829,10 @@ first argument and an <code class="docutils literal notranslate"><span class="pr
     <span class="n">arena</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="n">ty_args</span><span class="o">=</span><span class="p">[</span><span class="n">Tx</span><span class="o">.</span><span class="n">Tensor</span><span class="p">((</span><span class="mi">64</span><span class="p">,),</span> <span class="s2">&quot;float32&quot;</span><span class="p">,</span> <span class="n">scope</span><span class="o">=</span><span class="s2">&quot;shared.dyn&quot;</span><span class="p">)]</span>
 <span class="p">)</span>  <span class="c1"># offset 0</span>
 <span class="n">Bs</span> <span class="o">=</span> <span class="n">Tx</span><span class="o">.</span><span class="n">decl_tensor</span><span class="p">(</span>
-    <span class="n">arena</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="n">ty_args</span><span class="o">=</span><span class="p">[</span><span class="n">Tx</span><span class="o">.</span><span class="n">Tensor</span><span class="p">((</span><span class="mi">64</span><span class="p">,),</span> <span class="s2">&quot;float32&quot;</span><span class="p">,</span> <span class="n">elem_offset</span><span class="o">=</span><span class="mi">64</span><span class="p">,</span> <span class="n">scope</span><span class="o">=</span><span class="s2">&quot;shared.dyn&quot;</span><span class="p">)]</span>
+    <span class="n">arena</span><span class="o">.</span><span class="n">data</span><span class="p">,</span>
+    <span class="n">ty_args</span><span class="o">=</span><span class="p">[</span><span class="n">Tx</span><span class="o">.</span><span class="n">Tensor</span><span class="p">(</span>
+        <span class="p">(</span><span class="mi">64</span><span class="p">,),</span> <span class="s2">&quot;float32&quot;</span><span class="p">,</span> <span class="n">scope</span><span class="o">=</span><span class="s2">&quot;shared.dyn&quot;</span><span class="p">,</span> <span class="n">layout</span><span class="o">=</span><span class="n">Tx</span><span class="o">.</span><span class="n">TileLayout</span><span class="p">(</span><span class="n">Tx</span><span class="o">.</span><span class="n">S</span><span class="p">[(</span><span class="mi">64</span><span class="p">,)]</span> <span class="o">+</span> <span class="mi">64</span><span class="p">)</span>
+    <span class="p">)],</span>
 <span class="p">)</span>  <span class="c1"># offset 64</span>
 <span class="n">As</span><span class="p">[</span><span class="n">tx</span><span class="p">]</span> <span class="o">=</span> <span class="n">A</span><span class="p">[</span><span class="n">tx</span><span class="p">]</span>
 <span class="n">Bs</span><span class="p">[</span><span class="n">tx</span><span class="p">]</span> <span class="o">=</span> <span class="n">B</span><span class="p">[</span><span class="n">tx</span><span class="p">]</span>
@@ -1022,9 +1027,9 @@ or hand you a pointer — they emit no runtime op of their own.</p>
 through an expression: <code class="docutils literal notranslate"><span class="pre">B.view(...)</span></code> binds the operand exactly as
 <code class="docutils literal notranslate"><span class="pre">B.ty.view(B,</span> <span class="pre">...)</span></code>. <code class="docutils literal notranslate"><span class="pre">TensorType.__expr_properties__</span></code> maps property names
 to getters taking the type and original expression. It preserves conveniences
-such as <code class="docutils literal notranslate"><span class="pre">B.shape</span></code>, <code class="docutils literal notranslate"><span class="pre">B.strides</span></code>, <code class="docutils literal notranslate"><span class="pre">B.dtype</span></code>, <code class="docutils literal notranslate"><span class="pre">B.byte_offset</span></code>, <code class="docutils literal notranslate"><span class="pre">B.sub</span></code> and
-<code class="docutils literal notranslate"><span class="pre">B.data</span></code> without modifying the shared <code class="docutils literal notranslate"><span class="pre">Var</span></code> class. <code class="docutils literal notranslate"><span class="pre">B.dtype</span></code> returns a
-runtime <code class="docutils literal notranslate"><span class="pre">DataType</span></code>; <code class="docutils literal notranslate"><span class="pre">B.ty.dtype</span></code> stores a <code class="docutils literal notranslate"><span class="pre">PrimType</span></code>.</p>
+such as <code class="docutils literal notranslate"><span class="pre">B.shape</span></code>, <code class="docutils literal notranslate"><span class="pre">B.dtype</span></code>, <code class="docutils literal notranslate"><span class="pre">B.layout</span></code>, <code class="docutils literal notranslate"><span class="pre">B.sub</span></code> and <code class="docutils literal notranslate"><span class="pre">B.data</span></code> without
+modifying the shared <code class="docutils literal notranslate"><span class="pre">Var</span></code> class. <code class="docutils literal notranslate"><span class="pre">B.dtype</span></code> returns a runtime <code class="docutils literal notranslate"><span class="pre">DataType</span></code>;
+<code class="docutils literal notranslate"><span class="pre">B.ty.dtype</span></code> stores a <code class="docutils literal notranslate"><span class="pre">PrimType</span></code>.</p>
 <p>Existing expression attributes and reflected fields take precedence, followed
 by declared properties and then declared methods. Declared properties are
 read-only. Tensor methods and properties require an ordinary tensor variable;
