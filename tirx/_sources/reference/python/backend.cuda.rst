@@ -31,8 +31,18 @@ Namespaces
 * :doc:`tvm_tirx.backend.cuda.layout <backend.cuda.layout>`
 * :doc:`tvm_tirx.backend.cuda.script <backend.cuda.script>`
 * :doc:`tvm_tirx.backend.cuda.transform <backend.cuda.transform>`
+* :doc:`tvm_tirx.backend.cuda.axis <backend.cuda.axis>`
+* :doc:`tvm_tirx.backend.cuda.backend_config <backend.cuda.backend_config>`
+* :doc:`tvm_tirx.backend.cuda.codegen <backend.cuda.codegen>`
+* :doc:`tvm_tirx.backend.cuda.compiler <backend.cuda.compiler>`
+* :doc:`tvm_tirx.backend.cuda.iket <backend.cuda.iket>`
+* :doc:`tvm_tirx.backend.cuda.launch <backend.cuda.launch>`
+* :doc:`tvm_tirx.backend.cuda.ptx <backend.cuda.ptx>`
+* :doc:`tvm_tirx.backend.cuda.thread_scope <backend.cuda.thread_scope>`
+* :doc:`tvm_tirx.backend.cuda.tile <backend.cuda.tile>`
 
 .. toctree::
+   :hidden:
    :maxdepth: 1
    :titlesonly:
 

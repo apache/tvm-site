@@ -38,9 +38,16 @@ Namespaces
 
 * :doc:`tvm_tirx.backend.trn.op <backend.trn.op>`
 * :doc:`tvm_tirx.backend.trn.transform <backend.trn.transform>`
+* :doc:`tvm_tirx.backend.trn.axis <backend.trn.axis>`
+* :doc:`tvm_tirx.backend.trn.layout <backend.trn.layout>`
+* :doc:`tvm_tirx.backend.trn.pipeline <backend.trn.pipeline>`
+* :doc:`tvm_tirx.backend.trn.script <backend.trn.script>`
+* :doc:`tvm_tirx.backend.trn.thread_scope <backend.trn.thread_scope>`
 
 .. toctree::
+   :hidden:
    :maxdepth: 1
+   :titlesonly:
 
    backend.trn.axis
    backend.trn.layout

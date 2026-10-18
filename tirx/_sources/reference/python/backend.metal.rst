@@ -37,8 +37,11 @@ Namespaces
 ----------
 
 * :doc:`tvm_tirx.backend.metal.op <backend.metal.op>`
+* :doc:`tvm_tirx.backend.metal.script <backend.metal.script>`
 
 .. toctree::
+   :hidden:
    :maxdepth: 1
+   :titlesonly:
 
    backend.metal.script

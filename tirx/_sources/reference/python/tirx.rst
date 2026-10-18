@@ -31,15 +31,17 @@ Namespaces
 * :doc:`tvm_tirx.tirx.script <tirx.script>`
 * :doc:`tvm_tirx.tirx.layout <tirx.layout>`
 * :doc:`tvm_tirx.tirx.op <tirx.op>`
+* :doc:`tvm_tirx.tirx.bench <tirx.bench>`
+* :doc:`tvm_tirx.tirx.compilation_pipeline <tirx.compilation_pipeline>`
+* :doc:`tvm_tirx.tirx.transform <tirx.transform>`
 
 .. toctree::
+   :hidden:
    :maxdepth: 1
    :titlesonly:
 
    tirx.bench
    tirx.compilation_pipeline
-
-:doc:`tvm_tirx.tirx.transform <tirx.transform>`
 
 Classes
 -------

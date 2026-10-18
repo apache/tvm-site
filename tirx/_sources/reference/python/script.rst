@@ -28,8 +28,10 @@ Namespaces
 
 * :doc:`tvm_tirx.script.parser <script.parser>`
 * :doc:`tvm_tirx.script.ir_builder <script.ir_builder>`
+* :doc:`tvm_tirx.script.printer <script.printer>`
 
 .. toctree::
+   :hidden:
    :maxdepth: 1
    :titlesonly:
 

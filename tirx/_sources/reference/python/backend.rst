@@ -35,8 +35,10 @@ Namespaces
 * :doc:`tvm_tirx.backend.trn <backend.trn>`
 * :doc:`tvm_tirx.backend.vulkan <backend.vulkan>`
 * :doc:`tvm_tirx.backend.webgpu <backend.webgpu>`
+* :doc:`tvm_tirx.backend.config <backend.config>`
 
 .. toctree::
+   :hidden:
    :maxdepth: 1
    :titlesonly:
 

@@ -27,15 +27,17 @@ Namespaces
 ----------
 
 * :doc:`tvm_tirx.ir.prim <ir.prim>`
+* :doc:`tvm_tirx.ir.json_compact <ir.json_compact>`
+* :doc:`tvm_tirx.ir.unique_name_supply <ir.unique_name_supply>`
+* :doc:`tvm_tirx.ir.transform <ir.transform>`
 
 .. toctree::
+   :hidden:
    :maxdepth: 1
    :titlesonly:
 
    ir.json_compact
    ir.unique_name_supply
-
-:doc:`tvm_tirx.ir.transform <ir.transform>`
 
 Location
 --------
