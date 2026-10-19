@@ -40,7 +40,7 @@
 <link rel="preload" as="script" href="../../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
   <script src="../../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
 
-    <script src="../../_static/documentation_options.js?v=5fbbeaab"></script>
+    <script src="../../_static/documentation_options.js?v=151d6b55"></script>
     <script src="../../_static/doctools.js?v=9bcbadda"></script>
     <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../_static/scripts/sphinx-book-theme.js?v=887ef09a"></script>
@@ -1042,38 +1042,132 @@ processes.  <code class="docutils literal notranslate"><span class="pre">main</s
 <dl class="py function">
 <dt class="sig sig-object py">
 <span class="sig-prename descclassname"><span class="pre">tvm_tirx.backend.cuda.transform.</span></span><span class="sig-name descname"><span class="pre">BindBackendConfig</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span></dt>
-<dd><p>Resolve per-entry compilation settings and targets before tile dispatch.</p>
+<dd><p>Resolve CUDA function and device-entry compilation settings.</p>
+<p>Run after <code class="docutils literal notranslate"><span class="pre">BindTarget</span></code> and before tile dispatch. Function defaults and
+entry overrides become <code class="docutils literal notranslate"><span class="pre">target</span></code> and JSON <code class="docutils literal notranslate"><span class="pre">backend_config</span></code> attributes;
+non-CUDA functions are unchanged.</p>
+<p class="rubric">Examples</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">tvm_tirx</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">tvm</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">tvm_tirx.script</span><span class="w"> </span><span class="kn">import</span> <span class="n">tirx</span> <span class="k">as</span> <span class="n">T</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">tvm_tirx.backend.config</span><span class="w"> </span><span class="kn">import</span> <span class="n">backend_config_json</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">tvm_tirx.backend.cuda.backend_config</span><span class="w"> </span><span class="kn">import</span> <span class="n">resolve_backend_config</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">tvm_tirx.backend.cuda.transform</span><span class="w"> </span><span class="kn">import</span> <span class="n">BindBackendConfig</span>
+
+<span class="n">target</span> <span class="o">=</span> <span class="n">tvm</span><span class="o">.</span><span class="n">target</span><span class="o">.</span><span class="n">Target</span><span class="p">({</span><span class="s2">&quot;kind&quot;</span><span class="p">:</span> <span class="s2">&quot;cuda&quot;</span><span class="p">,</span> <span class="s2">&quot;arch&quot;</span><span class="p">:</span> <span class="s2">&quot;sm_90a&quot;</span><span class="p">})</span>
+<span class="n">config</span> <span class="o">=</span> <span class="n">backend_config_json</span><span class="p">({</span><span class="s2">&quot;cuda&quot;</span><span class="p">:</span> <span class="n">resolve_backend_config</span><span class="p">(</span><span class="n">target</span><span class="o">=</span><span class="n">target</span><span class="p">)})</span>
+
+<span class="nd">@T</span><span class="o">.</span><span class="n">ir_module</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">Before</span><span class="p">:</span>
+    <span class="nd">@T</span><span class="o">.</span><span class="n">function</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">main</span><span class="p">(</span><span class="n">A</span><span class="p">:</span> <span class="n">T</span><span class="o">.</span><span class="n">Tensor</span><span class="p">((</span><span class="mi">1</span><span class="p">,),</span> <span class="s2">&quot;int32&quot;</span><span class="p">)):</span>
+        <span class="n">T</span><span class="o">.</span><span class="n">func_attr</span><span class="p">({</span><span class="s2">&quot;target&quot;</span><span class="p">:</span> <span class="n">target</span><span class="p">})</span>
+        <span class="k">with</span> <span class="n">T</span><span class="o">.</span><span class="n">device_entry</span><span class="p">():</span>
+            <span class="n">A</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+
+<span class="nd">@T</span><span class="o">.</span><span class="n">ir_module</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">Expected</span><span class="p">:</span>
+    <span class="nd">@T</span><span class="o">.</span><span class="n">function</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">main</span><span class="p">(</span><span class="n">A</span><span class="p">:</span> <span class="n">T</span><span class="o">.</span><span class="n">Tensor</span><span class="p">((</span><span class="mi">1</span><span class="p">,),</span> <span class="s2">&quot;int32&quot;</span><span class="p">)):</span>
+        <span class="n">T</span><span class="o">.</span><span class="n">func_attr</span><span class="p">({</span><span class="s2">&quot;target&quot;</span><span class="p">:</span> <span class="n">target</span><span class="p">,</span> <span class="s2">&quot;backend_config&quot;</span><span class="p">:</span> <span class="n">config</span><span class="p">})</span>
+        <span class="k">with</span> <span class="n">T</span><span class="o">.</span><span class="n">device_entry</span><span class="p">(</span><span class="n">attrs</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;target&quot;</span><span class="p">:</span> <span class="n">target</span><span class="p">,</span> <span class="s2">&quot;backend_config&quot;</span><span class="p">:</span> <span class="n">config</span><span class="p">}):</span>
+            <span class="n">A</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+
+<span class="n">after</span> <span class="o">=</span> <span class="n">BindBackendConfig</span><span class="p">()(</span><span class="n">Before</span><span class="p">)</span>
+<span class="n">tvm</span><span class="o">.</span><span class="n">ir</span><span class="o">.</span><span class="n">assert_structural_equal</span><span class="p">(</span><span class="n">after</span><span class="p">,</span> <span class="n">Expected</span><span class="p">)</span>
+</pre></div>
+</div>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py">
 <span class="sig-prename descclassname"><span class="pre">tvm_tirx.backend.cuda.transform.</span></span><span class="sig-name descname"><span class="pre">LowerIket</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span></dt>
 <dd><p>Lower frontend-only NVIDIA IKET annotations.</p>
-<p>This pass must run after <code class="docutils literal notranslate"><span class="pre">tvm_tirx.tirx.transform.SplitHostDevice</span></code> and before
-<code class="docutils literal notranslate"><span class="pre">tvm_tirx.tirx.transform.MakePackedAPI</span></code>.  It strips annotations for regular
-compilation and emits NVIDIA IKET metadata and NativeDump placeholders
-when the IRModule is explicitly IKET-enabled.  Trace collection and
-postprocessing are owned by the external <code class="docutils literal notranslate"><span class="pre">run-iket</span></code> process.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>fpass</strong> – The result pass.</p>
-</dd>
-<dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p><a class="reference internal" href="../../reference/api/python/transform.html#tvm_tirx.ir.transform.Pass" title="tvm_tirx.ir.transform.Pass">tvm_tirx.ir.transform.Pass</a></p>
-</dd>
-</dl>
+<p>Run after <code class="docutils literal notranslate"><span class="pre">SplitHostDevice</span></code> and before <code class="docutils literal notranslate"><span class="pre">MakePackedAPI</span></code>. Strip
+annotations for regular compilation; emit metadata and NativeDump
+placeholders for IKET-enabled modules. The external <code class="docutils literal notranslate"><span class="pre">run-iket</span></code> process
+owns trace collection and postprocessing.</p>
+<p class="rubric">Examples</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">tvm_tirx</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">tvm</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">tvm_tirx.script</span><span class="w"> </span><span class="kn">import</span> <span class="n">tirx</span> <span class="k">as</span> <span class="n">T</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">tvm_tirx.backend.cuda.transform</span><span class="w"> </span><span class="kn">import</span> <span class="n">LowerIket</span>
+
+<span class="nd">@T</span><span class="o">.</span><span class="n">ir_module</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">Before</span><span class="p">:</span>
+    <span class="nd">@T</span><span class="o">.</span><span class="n">function</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">main</span><span class="p">(</span><span class="n">A</span><span class="p">:</span> <span class="n">T</span><span class="o">.</span><span class="n">Tensor</span><span class="p">((</span><span class="mi">1</span><span class="p">,),</span> <span class="s2">&quot;int32&quot;</span><span class="p">)):</span>
+        <span class="n">T</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">iket_mark</span><span class="p">(</span><span class="s2">&quot;store&quot;</span><span class="p">)</span>
+        <span class="n">A</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+
+<span class="nd">@T</span><span class="o">.</span><span class="n">ir_module</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">Expected</span><span class="p">:</span>
+    <span class="nd">@T</span><span class="o">.</span><span class="n">function</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">main</span><span class="p">(</span><span class="n">A</span><span class="p">:</span> <span class="n">T</span><span class="o">.</span><span class="n">Tensor</span><span class="p">((</span><span class="mi">1</span><span class="p">,),</span> <span class="s2">&quot;int32&quot;</span><span class="p">)):</span>
+        <span class="n">A</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+
+<span class="n">after</span> <span class="o">=</span> <span class="n">LowerIket</span><span class="p">()(</span><span class="n">Before</span><span class="p">)</span>
+<span class="n">tvm</span><span class="o">.</span><span class="n">ir</span><span class="o">.</span><span class="n">assert_structural_equal</span><span class="p">(</span><span class="n">after</span><span class="p">,</span> <span class="n">Expected</span><span class="p">)</span>
+</pre></div>
+</div>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py">
 <span class="sig-prename descclassname"><span class="pre">tvm_tirx.backend.cuda.transform.</span></span><span class="sig-name descname"><span class="pre">SpecializeDeviceHelpers</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span></dt>
-<dd><p>Clone private device helpers into each independently compiled CUDA group.</p>
+<dd><p>Specialize private device helpers for each CUDA compilation group.</p>
+<p>Run after <code class="docutils literal notranslate"><span class="pre">SplitHostDevice</span></code>. Kernel target and backend configuration define
+each group. Called helpers receive those attributes and are cloned when
+their settings differ; helpers already in the same group can be reused.
+Unreferenced device-only helpers are omitted from the output module.</p>
 </dd></dl>
 
 <dl class="py function">
 <dt class="sig sig-object py">
 <span class="sig-prename descclassname"><span class="pre">tvm_tirx.backend.cuda.transform.</span></span><span class="sig-name descname"><span class="pre">SpecializeEntryHelpers</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span></dt>
-<dd><p>Specialize shared helper calls before target-sensitive tile dispatch.</p>
+<dd><p>Specialize helpers for each CUDA device entry’s resolved settings.</p>
+<p>Run after <code class="docutils literal notranslate"><span class="pre">BindBackendConfig</span></code> and before <code class="docutils literal notranslate"><span class="pre">TileDispatch</span></code> and
+<code class="docutils literal notranslate"><span class="pre">SplitHostDevice</span></code>. Clone helpers when entry settings differ, propagating
+them through the call graph; remove originals that become unreachable.</p>
+<p class="rubric">Examples</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">tvm_tirx</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">tvm</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">tvm_tirx.script</span><span class="w"> </span><span class="kn">import</span> <span class="n">tirx</span> <span class="k">as</span> <span class="n">T</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">tvm_tirx.backend.cuda.transform</span><span class="w"> </span><span class="kn">import</span> <span class="n">SpecializeEntryHelpers</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">settings</span><span class="p">(</span><span class="n">arch</span><span class="p">):</span>
+    <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;target&quot;</span><span class="p">:</span> <span class="n">tvm</span><span class="o">.</span><span class="n">target</span><span class="o">.</span><span class="n">Target</span><span class="p">({</span><span class="s2">&quot;kind&quot;</span><span class="p">:</span> <span class="s2">&quot;cuda&quot;</span><span class="p">,</span> <span class="s2">&quot;arch&quot;</span><span class="p">:</span> <span class="n">arch</span><span class="p">}),</span>
+            <span class="s2">&quot;backend_config&quot;</span><span class="p">:</span> <span class="s1">&#39;{&quot;cuda&quot;:{&quot;arch&quot;:&quot;&#39;</span> <span class="o">+</span> <span class="n">arch</span> <span class="o">+</span> <span class="s1">&#39;&quot;}}&#39;</span><span class="p">}</span>
+
+<span class="n">host_attrs</span><span class="p">,</span> <span class="n">entry_attrs</span> <span class="o">=</span> <span class="n">settings</span><span class="p">(</span><span class="s2">&quot;sm_100a&quot;</span><span class="p">),</span> <span class="n">settings</span><span class="p">(</span><span class="s2">&quot;sm_90a&quot;</span><span class="p">)</span>
+
+<span class="nd">@T</span><span class="o">.</span><span class="n">ir_module</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">Before</span><span class="p">:</span>
+    <span class="nd">@T</span><span class="o">.</span><span class="n">function</span><span class="p">(</span><span class="n">private</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">helper</span><span class="p">(</span><span class="n">x</span><span class="p">:</span> <span class="n">T</span><span class="o">.</span><span class="n">int32</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">T</span><span class="o">.</span><span class="n">int32</span><span class="p">:</span>
+        <span class="n">T</span><span class="o">.</span><span class="n">func_attr</span><span class="p">(</span><span class="n">host_attrs</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">x</span> <span class="o">+</span> <span class="mi">1</span>
+
+    <span class="nd">@T</span><span class="o">.</span><span class="n">function</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">main</span><span class="p">(</span><span class="n">A</span><span class="p">:</span> <span class="n">T</span><span class="o">.</span><span class="n">Tensor</span><span class="p">((</span><span class="mi">1</span><span class="p">,),</span> <span class="s2">&quot;int32&quot;</span><span class="p">)):</span>
+        <span class="n">T</span><span class="o">.</span><span class="n">func_attr</span><span class="p">(</span><span class="n">host_attrs</span><span class="p">)</span>
+        <span class="k">with</span> <span class="n">T</span><span class="o">.</span><span class="n">device_entry</span><span class="p">(</span><span class="n">attrs</span><span class="o">=</span><span class="n">entry_attrs</span><span class="p">):</span>
+            <span class="n">A</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">Before</span><span class="o">.</span><span class="n">helper</span><span class="p">(</span><span class="n">A</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+
+<span class="nd">@T</span><span class="o">.</span><span class="n">ir_module</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">Expected</span><span class="p">:</span>
+    <span class="nd">@T</span><span class="o">.</span><span class="n">function</span><span class="p">(</span><span class="n">private</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">helper_cuda</span><span class="p">(</span><span class="n">x</span><span class="p">:</span> <span class="n">T</span><span class="o">.</span><span class="n">int32</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">T</span><span class="o">.</span><span class="n">int32</span><span class="p">:</span>
+        <span class="n">T</span><span class="o">.</span><span class="n">func_attr</span><span class="p">(</span><span class="n">entry_attrs</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">x</span> <span class="o">+</span> <span class="mi">1</span>
+
+    <span class="nd">@T</span><span class="o">.</span><span class="n">function</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">main</span><span class="p">(</span><span class="n">A</span><span class="p">:</span> <span class="n">T</span><span class="o">.</span><span class="n">Tensor</span><span class="p">((</span><span class="mi">1</span><span class="p">,),</span> <span class="s2">&quot;int32&quot;</span><span class="p">)):</span>
+        <span class="n">T</span><span class="o">.</span><span class="n">func_attr</span><span class="p">(</span><span class="n">host_attrs</span><span class="p">)</span>
+        <span class="k">with</span> <span class="n">T</span><span class="o">.</span><span class="n">device_entry</span><span class="p">(</span><span class="n">attrs</span><span class="o">=</span><span class="n">entry_attrs</span><span class="p">):</span>
+            <span class="n">A</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">Expected</span><span class="o">.</span><span class="n">helper_cuda</span><span class="p">(</span><span class="n">A</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+
+<span class="n">after</span> <span class="o">=</span> <span class="n">SpecializeEntryHelpers</span><span class="p">()(</span><span class="n">Before</span><span class="p">)</span>
+<span class="n">tvm</span><span class="o">.</span><span class="n">ir</span><span class="o">.</span><span class="n">assert_structural_equal</span><span class="p">(</span><span class="n">after</span><span class="p">,</span> <span class="n">Expected</span><span class="p">)</span>
+</pre></div>
+</div>
 </dd></dl>
 
 </section>
