@@ -23,15 +23,6 @@ tvm_tirx.support
 
 .. currentmodule:: tvm_tirx.support
 
-Functions
----------
-
-.. autosummary::
-   :toctree: generated/
-
-   libinfo
-   describe
-
 Namespaces
 ----------
 

@@ -421,16 +421,32 @@
 <dt class="sig sig-object py" id="tvm_tirx.backend.cuda.transform.LowerIket">
 <span class="sig-prename descclassname"><span class="pre">tvm_tirx.backend.cuda.transform.</span></span><span class="sig-name descname"><span class="pre">LowerIket</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tvm_tirx.backend.cuda.transform.LowerIket" title="Link to this definition">#</a></dt>
 <dd><p>Lower frontend-only NVIDIA IKET annotations.</p>
-<p>This pass must run after <code class="docutils literal notranslate"><span class="pre">tvm_tirx.tirx.transform.SplitHostDevice</span></code> and before
-<code class="docutils literal notranslate"><span class="pre">tvm_tirx.tirx.transform.MakePackedAPI</span></code>.  It strips annotations for regular
-compilation and emits NVIDIA IKET metadata and NativeDump placeholders
-when the IRModule is explicitly IKET-enabled.  Trace collection and
-postprocessing are owned by the external <code class="docutils literal notranslate"><span class="pre">run-iket</span></code> process.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>fpass</strong> (<em>tvm_tirx.ir.transform.Pass</em>) – The result pass.</p>
-</dd>
-</dl>
+<p>Run after <code class="docutils literal notranslate"><span class="pre">SplitHostDevice</span></code> and before <code class="docutils literal notranslate"><span class="pre">MakePackedAPI</span></code>. Strip
+annotations for regular compilation; emit metadata and NativeDump
+placeholders for IKET-enabled modules. The external <code class="docutils literal notranslate"><span class="pre">run-iket</span></code> process
+owns trace collection and postprocessing.</p>
+<p class="rubric">Examples</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">tvm_tirx</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">tvm</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">tvm_tirx.script</span><span class="w"> </span><span class="kn">import</span> <span class="n">tirx</span> <span class="k">as</span> <span class="n">T</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">tvm_tirx.backend.cuda.transform</span><span class="w"> </span><span class="kn">import</span> <span class="n">LowerIket</span>
+
+<span class="nd">@T</span><span class="o">.</span><span class="n">ir_module</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">Before</span><span class="p">:</span>
+    <span class="nd">@T</span><span class="o">.</span><span class="n">function</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">main</span><span class="p">(</span><span class="n">A</span><span class="p">:</span> <span class="n">T</span><span class="o">.</span><span class="n">Tensor</span><span class="p">((</span><span class="mi">1</span><span class="p">,),</span> <span class="s2">"int32"</span><span class="p">)):</span>
+        <span class="n">T</span><span class="o">.</span><span class="n">cuda</span><span class="o">.</span><span class="n">iket_mark</span><span class="p">(</span><span class="s2">"store"</span><span class="p">)</span>
+        <span class="n">A</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+
+<span class="nd">@T</span><span class="o">.</span><span class="n">ir_module</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">Expected</span><span class="p">:</span>
+    <span class="nd">@T</span><span class="o">.</span><span class="n">function</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">main</span><span class="p">(</span><span class="n">A</span><span class="p">:</span> <span class="n">T</span><span class="o">.</span><span class="n">Tensor</span><span class="p">((</span><span class="mi">1</span><span class="p">,),</span> <span class="s2">"int32"</span><span class="p">)):</span>
+        <span class="n">A</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+
+<span class="n">after</span> <span class="o">=</span> <span class="n">LowerIket</span><span class="p">()(</span><span class="n">Before</span><span class="p">)</span>
+<span class="n">tvm</span><span class="o">.</span><span class="n">ir</span><span class="o">.</span><span class="n">assert_structural_equal</span><span class="p">(</span><span class="n">after</span><span class="p">,</span> <span class="n">Expected</span><span class="p">)</span>
+</pre></div>
+</div>
 </dd></dl>
 
 </section>

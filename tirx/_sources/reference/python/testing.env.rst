@@ -29,7 +29,6 @@ Functions
 .. autosummary::
    :toctree: generated/
 
-   build_flag_enabled
    has_cuda
    has_rocm
    has_vulkan
@@ -39,11 +38,6 @@ Functions
    has_llvm
    has_gpu
    has_multi_gpu
-   has_cudnn
-   has_cublas
-   has_nccl
-   has_hipblas
-   has_nvshmem
    cuda_arch
    has_cuda_arch
    has_cuda_compute
@@ -51,9 +45,6 @@ Functions
    has_llvm_min_version
    has_matrixcore
    has_cudagraph
-   has_hexagon_toolchain
-   has_hexagon
-   has_adreno_opencl
    has_cpu_feature
    has_x86_vnni
    has_x86_avx512

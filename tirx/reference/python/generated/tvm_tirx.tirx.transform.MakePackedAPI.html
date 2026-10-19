@@ -449,27 +449,60 @@
 <dl class="py function">
 <dt class="sig sig-object py" id="tvm_tirx.tirx.transform.MakePackedAPI">
 <span class="sig-prename descclassname"><span class="pre">tvm_tirx.tirx.transform.</span></span><span class="sig-name descname"><span class="pre">MakePackedAPI</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tvm_tirx.tirx.transform.MakePackedAPI" title="Link to this definition">#</a></dt>
-<dd><p>Transform the Functions in the module to a packed func API.</p>
-<p>Prior to this pass, the Function may have parameters annotated with
-<cite>TensorType</cite>.  This pass consumes those annotations to generate
-arguments that implement the packed based TVM FFI API.</p>
-<p>For static shapes, the tensor shape and layout are used to
-generate runtime checks on the corresponding member variables in
-the user-provided <cite>DLTensor*</cite> or <cite>tvm_tirx.runtime.tensor</cite> argument.  (e.g. A
-Function that accepts a tensor of shape <cite>[16,32]</cite> validates that
-the <cite>DLTensor::shape</cite> array is <cite>[16,32]</cite>.)</p>
-<p>For dynamic Tensors, in which one or more of these <cite>TensorType</cite> fields
-use <cite>tirx.Var</cite> that are not defined by other Function
-parameters, these are instead used to define the variables based on
-the corresponding <cite>DLTensor</cite> members.  (e.g. A Function that accepts a
-tensor of shape <cite>[tirx.Var(“n”, “int64”), tirx.Var(“m”, “int64”)]</cite>,
-when passed a <cite>DLTensor</cite> of shape <cite>[16, 32]</cite>, will define <cite>n = 16</cite> and
-<cite>m = 32</cite>, based on the argument’s shape.</p>
+<dd><p>Expose exported functions through the TVM FFI packed-call ABI.</p>
+<p>Requires a <code class="docutils literal notranslate"><span class="pre">target</span></code> attribute with a host target on functions with a
+<code class="docutils literal notranslate"><span class="pre">global_symbol</span></code> and the default calling convention. Private functions,
+functions with other calling conventions, and functions whose target has
+no host are left unchanged.</p>
+<p>Tensor parameter types generate runtime checks for shape, dtype and
+layout. Symbolic dimensions not defined by other arguments are bound from
+the incoming DLTensor metadata. For example, a <code class="docutils literal notranslate"><span class="pre">T.Tensor((16,</span> <span class="pre">32),</span>
+<span class="pre">&quot;float32&quot;)</span></code> argument is checked against that shape, while symbolic
+dimensions are read from the argument’s shape. The resulting function
+uses the host target and an exported <code class="docutils literal notranslate"><span class="pre">__tvm_ffi_</span></code> symbol.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>fpass</strong> (<em>tvm_tirx.ir.transform.Pass</em>) – The result pass</p>
 </dd>
 </dl>
+<p class="rubric">Examples</p>
+<p>An exported no-argument function illustrates the packed-call ABI.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">tvm_tirx</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">tvm</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">tvm_tirx.script</span><span class="w"> </span><span class="kn">import</span> <span class="n">ir</span> <span class="k">as</span> <span class="n">I</span><span class="p">,</span> <span class="n">tirx</span> <span class="k">as</span> <span class="n">T</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">tvm_tirx.tirx</span><span class="w"> </span><span class="kn">import</span> <span class="n">transform</span> <span class="k">as</span> <span class="n">tr</span>
+
+<span class="nd">@I</span><span class="o">.</span><span class="n">ir_module</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">Before</span><span class="p">:</span>
+    <span class="nd">@T</span><span class="o">.</span><span class="n">function</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">main</span><span class="p">():</span>
+        <span class="n">T</span><span class="o">.</span><span class="n">func_attr</span><span class="p">({</span><span class="s2">"target"</span><span class="p">:</span> <span class="n">T</span><span class="o">.</span><span class="n">target</span><span class="p">(</span><span class="s2">"llvm"</span><span class="p">,</span> <span class="n">host</span><span class="o">=</span><span class="s2">"llvm"</span><span class="p">)})</span>
+        <span class="n">T</span><span class="o">.</span><span class="n">evaluate</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+
+<span class="nd">@I</span><span class="o">.</span><span class="n">ir_module</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">Expected</span><span class="p">:</span>
+    <span class="nd">@T</span><span class="o">.</span><span class="n">function</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">main</span><span class="p">(</span>
+        <span class="n">self_handle</span><span class="p">:</span> <span class="n">T</span><span class="o">.</span><span class="n">Ptr</span><span class="p">(</span><span class="n">T</span><span class="o">.</span><span class="n">void</span><span class="p">),</span>
+        <span class="n">args</span><span class="p">:</span> <span class="n">T</span><span class="o">.</span><span class="n">Ptr</span><span class="p">(</span><span class="n">T</span><span class="o">.</span><span class="n">void</span><span class="p">),</span>
+        <span class="n">num_args</span><span class="p">:</span> <span class="n">T</span><span class="o">.</span><span class="n">int32</span><span class="p">,</span>
+        <span class="n">result</span><span class="p">:</span> <span class="n">T</span><span class="o">.</span><span class="n">Ptr</span><span class="p">(</span><span class="n">T</span><span class="o">.</span><span class="n">void</span><span class="p">),</span>
+    <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">T</span><span class="o">.</span><span class="n">int32</span><span class="p">:</span>
+        <span class="n">T</span><span class="o">.</span><span class="n">func_attr</span><span class="p">({</span><span class="s2">"global_symbol"</span><span class="p">:</span> <span class="s2">"__tvm_ffi_main"</span><span class="p">})</span>
+        <span class="n">T</span><span class="o">.</span><span class="n">func_attr</span><span class="p">({</span><span class="s2">"calling_conv"</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s2">"target"</span><span class="p">:</span> <span class="n">T</span><span class="o">.</span><span class="n">target</span><span class="p">(</span><span class="s2">"llvm"</span><span class="p">)})</span>
+        <span class="k">assert</span> <span class="n">num_args</span> <span class="o">==</span> <span class="mi">0</span><span class="p">,</span> <span class="p">(</span>
+            <span class="s2">"TypeError"</span><span class="p">,</span>
+            <span class="p">[</span><span class="s2">"Expected "</span><span class="p">,</span> <span class="s2">"0"</span><span class="p">,</span> <span class="s2">" arguments"</span><span class="p">,</span> <span class="s2">" when calling:</span><span class="se">\n</span><span class="s2">  `"</span><span class="p">,</span> <span class="s2">"main()"</span><span class="p">,</span> <span class="s2">"`"</span><span class="p">],</span>
+        <span class="p">)</span>
+        <span class="k">with</span> <span class="n">T</span><span class="o">.</span><span class="n">compute_scope</span><span class="p">(</span><span class="s2">"main_compute_"</span><span class="p">):</span>
+            <span class="k">pass</span>
+        <span class="k">return</span> <span class="mi">0</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">run_pass</span><span class="p">():</span>
+    <span class="k">return</span> <span class="n">tr</span><span class="o">.</span><span class="n">MakePackedAPI</span><span class="p">()(</span><span class="n">Before</span><span class="p">)</span>
+
+<span class="n">tvm</span><span class="o">.</span><span class="n">ir</span><span class="o">.</span><span class="n">assert_structural_equal</span><span class="p">(</span><span class="n">run_pass</span><span class="p">(),</span> <span class="n">Expected</span><span class="p">)</span>
+</pre></div>
+</div>
 </dd></dl>
 
 </section>

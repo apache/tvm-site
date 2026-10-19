@@ -35,7 +35,6 @@ Functions
    run_with_gpu_lock
    assert_allclose
    device_enabled
-   parameter
    identity_after
    terminate_self
    main
@@ -49,3 +48,4 @@ Namespaces
    :maxdepth: 1
 
    testing.env
+   testing.bench

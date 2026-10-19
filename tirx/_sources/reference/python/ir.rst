@@ -60,6 +60,7 @@ Type
    AnyType
    FuncType
    MissingType
+   NoneType
    OpaqueType
    PtrType
    PrimType
@@ -226,7 +227,6 @@ IR helpers
    reinfer_type
    register_op_attr
    stmt_seq
-   stmt_list
 
 Supporting functions
 --------------------

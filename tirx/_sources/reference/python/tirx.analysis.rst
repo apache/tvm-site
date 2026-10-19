@@ -31,4 +31,4 @@ Functions
 
    verify_memory
    undefined_vars
-   verify_well_formed
+   check_well_formed

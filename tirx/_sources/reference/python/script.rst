@@ -43,5 +43,4 @@ Functions
 .. autosummary::
    :toctree: generated/
 
-   register_module_validator
    register_dialect

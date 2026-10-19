@@ -29,7 +29,6 @@ Functions
 .. autosummary::
    :toctree: generated/
 
-   bind
 
 .. list-table::
    :header-rows: 1

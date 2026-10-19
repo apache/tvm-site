@@ -32,3 +32,4 @@ Functions
    register_linker
    hexagon_link
    link_shared
+   has_hexagon_toolchain

@@ -39,6 +39,8 @@ Classes
 
    * - Alias
      - Canonical API
+   * - ``Bind``
+     - :obj:`tvm_tirx.ir.Bind`
    * - ``Call``
      - :obj:`tvm_tirx.ir.Call`
    * - ``DataTypeImm``
@@ -71,6 +73,8 @@ Classes
      - :obj:`tvm_tirx.ir.Var`
    * - ``Missing``
      - :obj:`tvm_tirx.ir.MissingType`
+   * - ``NoneType``
+     - :obj:`tvm_tirx.ir.NoneType`
    * - ``Any``
      - :obj:`tvm_tirx.ir.AnyType`
    * - ``Opaque``
@@ -102,7 +106,6 @@ Functions
    module_get_attr
    module_global_infos
    module_set_attr
-   check_well_formed_
    decl_function
    ir_module
    module_member_

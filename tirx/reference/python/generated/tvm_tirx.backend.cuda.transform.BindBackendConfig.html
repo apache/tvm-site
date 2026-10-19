@@ -420,7 +420,40 @@
 <dl class="py function">
 <dt class="sig sig-object py" id="tvm_tirx.backend.cuda.transform.BindBackendConfig">
 <span class="sig-prename descclassname"><span class="pre">tvm_tirx.backend.cuda.transform.</span></span><span class="sig-name descname"><span class="pre">BindBackendConfig</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tvm_tirx.backend.cuda.transform.BindBackendConfig" title="Link to this definition">#</a></dt>
-<dd><p>Resolve per-entry compilation settings and targets before tile dispatch.</p>
+<dd><p>Resolve CUDA function and device-entry compilation settings.</p>
+<p>Run after <code class="docutils literal notranslate"><span class="pre">BindTarget</span></code> and before tile dispatch. Function defaults and
+entry overrides become <code class="docutils literal notranslate"><span class="pre">target</span></code> and JSON <code class="docutils literal notranslate"><span class="pre">backend_config</span></code> attributes;
+non-CUDA functions are unchanged.</p>
+<p class="rubric">Examples</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">tvm_tirx</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">tvm</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">tvm_tirx.script</span><span class="w"> </span><span class="kn">import</span> <span class="n">tirx</span> <span class="k">as</span> <span class="n">T</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">tvm_tirx.backend.config</span><span class="w"> </span><span class="kn">import</span> <span class="n">backend_config_json</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">tvm_tirx.backend.cuda.backend_config</span><span class="w"> </span><span class="kn">import</span> <span class="n">resolve_backend_config</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">tvm_tirx.backend.cuda.transform</span><span class="w"> </span><span class="kn">import</span> <span class="n">BindBackendConfig</span>
+
+<span class="n">target</span> <span class="o">=</span> <span class="n">tvm</span><span class="o">.</span><span class="n">target</span><span class="o">.</span><span class="n">Target</span><span class="p">({</span><span class="s2">"kind"</span><span class="p">:</span> <span class="s2">"cuda"</span><span class="p">,</span> <span class="s2">"arch"</span><span class="p">:</span> <span class="s2">"sm_90a"</span><span class="p">})</span>
+<span class="n">config</span> <span class="o">=</span> <span class="n">backend_config_json</span><span class="p">({</span><span class="s2">"cuda"</span><span class="p">:</span> <span class="n">resolve_backend_config</span><span class="p">(</span><span class="n">target</span><span class="o">=</span><span class="n">target</span><span class="p">)})</span>
+
+<span class="nd">@T</span><span class="o">.</span><span class="n">ir_module</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">Before</span><span class="p">:</span>
+    <span class="nd">@T</span><span class="o">.</span><span class="n">function</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">main</span><span class="p">(</span><span class="n">A</span><span class="p">:</span> <span class="n">T</span><span class="o">.</span><span class="n">Tensor</span><span class="p">((</span><span class="mi">1</span><span class="p">,),</span> <span class="s2">"int32"</span><span class="p">)):</span>
+        <span class="n">T</span><span class="o">.</span><span class="n">func_attr</span><span class="p">({</span><span class="s2">"target"</span><span class="p">:</span> <span class="n">target</span><span class="p">})</span>
+        <span class="k">with</span> <span class="n">T</span><span class="o">.</span><span class="n">device_entry</span><span class="p">():</span>
+            <span class="n">A</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+
+<span class="nd">@T</span><span class="o">.</span><span class="n">ir_module</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">Expected</span><span class="p">:</span>
+    <span class="nd">@T</span><span class="o">.</span><span class="n">function</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">main</span><span class="p">(</span><span class="n">A</span><span class="p">:</span> <span class="n">T</span><span class="o">.</span><span class="n">Tensor</span><span class="p">((</span><span class="mi">1</span><span class="p">,),</span> <span class="s2">"int32"</span><span class="p">)):</span>
+        <span class="n">T</span><span class="o">.</span><span class="n">func_attr</span><span class="p">({</span><span class="s2">"target"</span><span class="p">:</span> <span class="n">target</span><span class="p">,</span> <span class="s2">"backend_config"</span><span class="p">:</span> <span class="n">config</span><span class="p">})</span>
+        <span class="k">with</span> <span class="n">T</span><span class="o">.</span><span class="n">device_entry</span><span class="p">(</span><span class="n">attrs</span><span class="o">=</span><span class="p">{</span><span class="s2">"target"</span><span class="p">:</span> <span class="n">target</span><span class="p">,</span> <span class="s2">"backend_config"</span><span class="p">:</span> <span class="n">config</span><span class="p">}):</span>
+            <span class="n">A</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+
+<span class="n">after</span> <span class="o">=</span> <span class="n">BindBackendConfig</span><span class="p">()(</span><span class="n">Before</span><span class="p">)</span>
+<span class="n">tvm</span><span class="o">.</span><span class="n">ir</span><span class="o">.</span><span class="n">assert_structural_equal</span><span class="p">(</span><span class="n">after</span><span class="p">,</span> <span class="n">Expected</span><span class="p">)</span>
+</pre></div>
+</div>
 </dd></dl>
 
 </section>

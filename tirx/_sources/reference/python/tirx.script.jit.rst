@@ -30,7 +30,7 @@ Classes
 .. autosummary::
    :toctree: generated/
 
-   TIRJit
+   JITFunction
 
 .. list-table::
    :header-rows: 1

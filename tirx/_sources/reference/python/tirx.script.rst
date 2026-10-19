@@ -38,6 +38,8 @@ Classes
 
    * - Alias
      - Canonical API
+   * - ``Bind``
+     - :obj:`tvm_tirx.ir.Bind`
    * - ``Call``
      - :obj:`tvm_tirx.ir.Call`
    * - ``DataTypeImm``
@@ -74,6 +76,8 @@ Classes
      - :obj:`tvm_tirx.script.ir_builder.IRModuleFrame`
    * - ``Missing``
      - :obj:`tvm_tirx.ir.MissingType`
+   * - ``NoneType``
+     - :obj:`tvm_tirx.ir.NoneType`
    * - ``Any``
      - :obj:`tvm_tirx.ir.AnyType`
    * - ``Opaque``
@@ -184,7 +188,6 @@ Functions
    :toctree: generated/
 
    Tuple
-   check_well_formed_
    resolve_global_info_
    alloc_tensor
    decl_tensor
@@ -514,8 +517,8 @@ Functions
    arg_
    func_name_
    func_attr
+   check_well_formed_
    call_global_var_
-   bind
    bind_
    decl_mutable_cell_
    set_mutable_cell_

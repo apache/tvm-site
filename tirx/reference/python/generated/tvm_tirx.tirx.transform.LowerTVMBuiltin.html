@@ -449,12 +449,46 @@
 <dl class="py function">
 <dt class="sig sig-object py" id="tvm_tirx.tirx.transform.LowerTVMBuiltin">
 <span class="sig-prename descclassname"><span class="pre">tvm_tirx.tirx.transform.</span></span><span class="sig-name descname"><span class="pre">LowerTVMBuiltin</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tvm_tirx.tirx.transform.LowerTVMBuiltin" title="Link to this definition">#</a></dt>
-<dd><p>Lower tvm builtin intrinsics.</p>
+<dd><p>Lower runtime builtins to explicit stack storage and ABI operations.</p>
+<p>For example, packed calls gain argument/result slots. Requires the
+function target attribute for target-dependent lowering.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>fpass</strong> (<em>tvm_tirx.ir.transform.Pass</em>) – The result pass</p>
 </dd>
 </dl>
+<p class="rubric">Examples</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">tvm_tirx</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">tvm</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">tvm_tirx.script</span><span class="w"> </span><span class="kn">import</span> <span class="n">ir</span> <span class="k">as</span> <span class="n">I</span><span class="p">,</span> <span class="n">tirx</span> <span class="k">as</span> <span class="n">T</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">tvm_tirx.tirx</span><span class="w"> </span><span class="kn">import</span> <span class="n">transform</span> <span class="k">as</span> <span class="n">tr</span>
+
+<span class="nd">@I</span><span class="o">.</span><span class="n">ir_module</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">Before</span><span class="p">:</span>
+    <span class="nd">@T</span><span class="o">.</span><span class="n">function</span><span class="p">(</span><span class="n">private</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">main</span><span class="p">():</span>
+        <span class="n">T</span><span class="o">.</span><span class="n">func_attr</span><span class="p">({</span><span class="s2">"target"</span><span class="p">:</span> <span class="n">T</span><span class="o">.</span><span class="n">target</span><span class="p">(</span><span class="s2">"llvm"</span><span class="p">)})</span>
+        <span class="n">T</span><span class="o">.</span><span class="n">call_packed</span><span class="p">(</span><span class="s2">"callback"</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+
+<span class="nd">@I</span><span class="o">.</span><span class="n">ir_module</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">Expected</span><span class="p">:</span>
+    <span class="nd">@T</span><span class="o">.</span><span class="n">function</span><span class="p">(</span><span class="n">private</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">main</span><span class="p">():</span>
+        <span class="n">T</span><span class="o">.</span><span class="n">func_attr</span><span class="p">({</span><span class="s2">"target"</span><span class="p">:</span> <span class="n">T</span><span class="o">.</span><span class="n">target</span><span class="p">(</span><span class="s2">"llvm"</span><span class="p">)})</span>
+        <span class="n">stack_ffi_any</span><span class="p">:</span> <span class="n">T</span><span class="o">.</span><span class="n">let</span><span class="p">[</span><span class="n">T</span><span class="o">.</span><span class="n">Ptr</span><span class="p">(</span><span class="n">T</span><span class="o">.</span><span class="n">void</span><span class="p">)]</span> <span class="o">=</span> <span class="n">T</span><span class="o">.</span><span class="n">stack_alloca</span><span class="p">(</span><span class="s2">"tvm_ffi_any"</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+        <span class="n">T</span><span class="o">.</span><span class="n">abi_field_set</span><span class="p">(</span><span class="n">stack_ffi_any</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">13</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="n">T</span><span class="o">.</span><span class="n">abi_field_set</span><span class="p">(</span><span class="n">stack_ffi_any</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">14</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="n">T</span><span class="o">.</span><span class="n">abi_field_set</span><span class="p">(</span><span class="n">stack_ffi_any</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">15</span><span class="p">,</span> <span class="n">T</span><span class="o">.</span><span class="n">Cast</span><span class="p">(</span><span class="s2">"int64"</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
+        <span class="n">T</span><span class="o">.</span><span class="n">abi_field_set</span><span class="p">(</span><span class="n">stack_ffi_any</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">13</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="n">T</span><span class="o">.</span><span class="n">abi_field_set</span><span class="p">(</span><span class="n">stack_ffi_any</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">14</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="n">T</span><span class="o">.</span><span class="n">abi_field_set</span><span class="p">(</span><span class="n">stack_ffi_any</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">15</span><span class="p">,</span> <span class="n">T</span><span class="o">.</span><span class="n">int64</span><span class="p">(</span><span class="mi">0</span><span class="p">))</span>
+        <span class="n">T</span><span class="o">.</span><span class="n">call_packed_lowered</span><span class="p">(</span><span class="s2">"callback"</span><span class="p">,</span> <span class="n">stack_ffi_any</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">run_pass</span><span class="p">():</span>
+    <span class="k">return</span> <span class="n">tr</span><span class="o">.</span><span class="n">LowerTVMBuiltin</span><span class="p">()(</span><span class="n">Before</span><span class="p">)</span>
+
+<span class="n">tvm</span><span class="o">.</span><span class="n">ir</span><span class="o">.</span><span class="n">assert_structural_equal</span><span class="p">(</span><span class="n">run_pass</span><span class="p">(),</span> <span class="n">Expected</span><span class="p">)</span>
+</pre></div>
+</div>
 </dd></dl>
 
 </section>

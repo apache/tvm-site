@@ -449,12 +449,38 @@
 <dl class="py function">
 <dt class="sig sig-object py" id="tvm_tirx.tirx.transform.FP8StorageLegalize">
 <span class="sig-prename descclassname"><span class="pre">tvm_tirx.tirx.transform.</span></span><span class="sig-name descname"><span class="pre">FP8StorageLegalize</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tvm_tirx.tirx.transform.FP8StorageLegalize" title="Link to this definition">#</a></dt>
-<dd><p>Legalize fp8 storage types to u8.</p>
+<dd><p>Represent FP8 storage as uint8 while preserving its bit patterns.</p>
+<p>Run after compute legalization. Functions whose CUDA target reports
+native FP8 support are unchanged.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>fpass</strong> (<em>tvm_tirx.ir.transform.Pass</em>) – The result pass</p>
 </dd>
 </dl>
+<p class="rubric">Examples</p>
+<p>After packed-API lowering, pointer storage uses integer elements.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">tvm_tirx</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">tvm</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">tvm_tirx.script</span><span class="w"> </span><span class="kn">import</span> <span class="n">ir</span> <span class="k">as</span> <span class="n">I</span><span class="p">,</span> <span class="n">tirx</span> <span class="k">as</span> <span class="n">T</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">tvm_tirx.tirx</span><span class="w"> </span><span class="kn">import</span> <span class="n">transform</span> <span class="k">as</span> <span class="n">tr</span>
+
+<span class="nd">@I</span><span class="o">.</span><span class="n">ir_module</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">Before</span><span class="p">:</span>
+    <span class="nd">@T</span><span class="o">.</span><span class="n">function</span><span class="p">(</span><span class="n">private</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">main</span><span class="p">(</span><span class="n">A</span><span class="p">:</span> <span class="n">T</span><span class="o">.</span><span class="n">Ptr</span><span class="p">(</span><span class="n">T</span><span class="o">.</span><span class="n">float8_e5m2</span><span class="p">)):</span>
+        <span class="n">T</span><span class="o">.</span><span class="n">evaluate</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+
+<span class="nd">@I</span><span class="o">.</span><span class="n">ir_module</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">Expected</span><span class="p">:</span>
+    <span class="nd">@T</span><span class="o">.</span><span class="n">function</span><span class="p">(</span><span class="n">private</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">main</span><span class="p">(</span><span class="n">A</span><span class="p">:</span> <span class="n">T</span><span class="o">.</span><span class="n">Ptr</span><span class="p">(</span><span class="n">T</span><span class="o">.</span><span class="n">uint8</span><span class="p">)):</span>
+        <span class="k">pass</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">run_pass</span><span class="p">():</span>
+    <span class="k">return</span> <span class="n">tr</span><span class="o">.</span><span class="n">FP8StorageLegalize</span><span class="p">()(</span><span class="n">Before</span><span class="p">)</span>
+
+<span class="n">tvm</span><span class="o">.</span><span class="n">ir</span><span class="o">.</span><span class="n">assert_structural_equal</span><span class="p">(</span><span class="n">run_pass</span><span class="p">(),</span> <span class="n">Expected</span><span class="p">)</span>
+</pre></div>
+</div>
 </dd></dl>
 
 </section>
