@@ -40,7 +40,7 @@
 <link rel="preload" as="script" href="../../../_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
   <script src="../../../_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
 
-    <script src="../../../_static/documentation_options.js?v=caae687a"></script>
+    <script src="../../../_static/documentation_options.js?v=7152ea67"></script>
     <script src="../../../_static/doctools.js?v=9bcbadda"></script>
     <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../../../_static/scripts/sphinx-book-theme.js?v=887ef09a"></script>
@@ -809,7 +809,7 @@ device checks (e.g. asserting <code class="docutils literal notranslate"><span c
 <ul class="simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">&#64;Tx.function</span></code> parses the function immediately into a <code class="docutils literal notranslate"><span class="pre">Function</span></code>. Sizes are
 whatever you wrote — concrete ints, or runtime-symbolic vars (above).</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">&#64;Tx.jit</span></code> <strong>defers</strong> parsing until you call <code class="docutils literal notranslate"><span class="pre">.specialize(**constexpr)</span></code>:
+<li><p><code class="docutils literal notranslate"><span class="pre">&#64;Tx.jit</span></code> returns a <code class="docutils literal notranslate"><span class="pre">JITFunction</span></code> and <strong>defers</strong> parsing until you call <code class="docutils literal notranslate"><span class="pre">.specialize(**constexpr)</span></code>:
 parameters annotated <code class="docutils literal notranslate"><span class="pre">Tx.constexpr</span></code> are baked in as compile-time constants and
 the result is an ordinary <code class="docutils literal notranslate"><span class="pre">Function</span></code>. Use it when you want sizes/flags fixed at
 compile time (so the compiler can unroll, statically size shared memory, etc.).
@@ -839,6 +839,16 @@ requires <code class="docutils literal notranslate"><span class="pre">from</span
 <p>So: a <strong>symbolic shape</strong> is one kernel whose size is resolved at run time; a
 <strong>constexpr + jit</strong> produces a specialized kernel per value, resolved at compile
 time.</p>
+<p>Optional annotations may use <code class="docutils literal notranslate"><span class="pre">Tx.Tensor((N,),</span> <span class="pre">&quot;float32&quot;)</span> <span class="pre">|</span> <span class="pre">None</span></code> or
+<code class="docutils literal notranslate"><span class="pre">typing.Optional[Tx.Tensor((N,),</span> <span class="pre">&quot;float32&quot;)]</span></code> (including an imported
+<code class="docutils literal notranslate"><span class="pre">Optional</span></code>). The existing <code class="docutils literal notranslate"><span class="pre">Tx.Optional(...)</span></code> spelling remains supported.
+Use <code class="docutils literal notranslate"><span class="pre">from</span> <span class="pre">__future__</span> <span class="pre">import</span> <span class="pre">annotations</span></code> for these deferred tensor annotations;
+they are interpreted as script syntax rather than evaluated as Python unions.
+Calling <code class="docutils literal notranslate"><span class="pre">kernel.specialize(optional=None)</span></code> skips that parameter’s original
+annotation and binds Python <code class="docutils literal notranslate"><span class="pre">None</span></code> in compile-time guards. The resulting
+<code class="docutils literal notranslate"><span class="pre">Function</span></code> retains the parameter in its original position with <code class="docutils literal notranslate"><span class="pre">ir.NoneType</span></code>;
+the compiled function requires <code class="docutils literal notranslate"><span class="pre">None</span></code> in that argument slot. Omitting the
+specialization keyword keeps the parameter’s ordinary runtime type.</p>
 </section>
 <section id="launch-parameters">
 <h2>Launch parameters<a class="headerlink" href="#launch-parameters" title="Link to this heading">#</a></h2>
