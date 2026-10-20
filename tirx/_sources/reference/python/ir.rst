@@ -94,6 +94,7 @@ Expr
    Var
    BaseFunc
    Op
+   OpAttrMap
 
 Stmt
 ----

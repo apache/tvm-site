@@ -59,14 +59,6 @@ Functions
    subspace_divide
    inverse_affine_iter_map
 
-Namespaces
-----------
-
-.. toctree::
-   :maxdepth: 1
-
-   sym.utils
-
 Supporting classes
 ------------------
 
