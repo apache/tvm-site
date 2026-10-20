@@ -1,7 +1,7 @@
 var searchData=
 [
   ['weight_0',['weight',['../classtvm_1_1s__tir_1_1meta__schedule_1_1ExtractedTaskObj.html#aa772c1a60a971aa5a0649ce5a982b842',1,'tvm::s_tir::meta_schedule::ExtractedTaskObj']]],
-  ['where_1',['where',['../namespacetvm_1_1script_1_1ir__builder_1_1s__tir.html#aaa9410e5707855d6e5efb97be03a7a04',1,'tvm::script::ir_builder::s_tir::Where()'],['../namespacetvm_1_1topi.html#af011847b6e7f72f1bec25eee05c80590',1,'tvm::topi::where()']]],
+  ['where_1',['where',['../namespacetvm_1_1topi.html#af011847b6e7f72f1bec25eee05c80590',1,'tvm::topi::where()'],['../namespacetvm_1_1script_1_1ir__builder_1_1s__tir.html#aaa9410e5707855d6e5efb97be03a7a04',1,'tvm::script::ir_builder::s_tir::Where()']]],
   ['while_2',['while',['../classtvm_1_1While.html',1,'tvm::While'],['../classtvm_1_1While.html#a1115a6df179a0bf08969c5d0ff9bc0b3',1,'tvm::While::While(ffi::ObjectPtr&lt; WhileNode &gt; node)'],['../classtvm_1_1While.html#ab48d2aa2ca9ecf79559120d9d646da8d',1,'tvm::While::While(PrimExpr condition, SeqStmt body, Location loc=UnknownLoc())'],['../namespacetvm_1_1script_1_1ir__builder_1_1ir.html#a17920d40cdfd6281553c8914b3ca1bd3',1,'tvm::script::ir_builder::ir::While()']]],
   ['whiledoc_3',['whiledoc',['../classtvm_1_1script_1_1printer_1_1WhileDoc.html',1,'tvm::script::printer::WhileDoc'],['../classtvm_1_1script_1_1printer_1_1WhileDoc.html#a961727af3f39b1b3dd3cd1f6d43223d2',1,'tvm::script::printer::WhileDoc::WhileDoc()']]],
   ['whiledocnode_4',['WhileDocNode',['../classtvm_1_1script_1_1printer_1_1WhileDocNode.html',1,'tvm::script::printer']]],

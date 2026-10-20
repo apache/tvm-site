@@ -136,7 +136,7 @@ into low-level operators.
     class Module:
         @Ts.function(private=True)
         def transpose(fc1_weight: T.Tensor((T.int64(128), T.int64(784)), T.float32), T_transpose: T.Tensor((T.int64(784), T.int64(128)), T.float32)):
-            T.func_attr({"s_tir": True, "script.namespace": "s_tir", "tirx.noalias": True})
+            T.func_attr({"script.namespace": "s_tir", "tirx.noalias": True})
             with Ts.sblock("root"):
                 Ts.reads()
                 Ts.writes()
@@ -151,7 +151,7 @@ into low-level operators.
 
         @Ts.function(private=True)
         def matmul(x: T.Tensor((n, T.int64(784)), T.float32), permute_dims: T.Tensor((T.int64(784), T.int64(128)), T.float32), matmul: T.Tensor((n, T.int64(128)), T.float32)):
-            T.func_attr({"s_tir": True, "script.namespace": "s_tir", "tirx.noalias": True})
+            T.func_attr({"script.namespace": "s_tir", "tirx.noalias": True})
             with Ts.sblock("root"):
                 Ts.reads()
                 Ts.writes()
@@ -170,7 +170,7 @@ into low-level operators.
 
         @Ts.function(private=True)
         def add(matmul: T.Tensor((n_1, T.int64(128)), T.float32), fc1_bias: T.Tensor((T.int64(128),), T.float32), T_add: T.Tensor((n_1, T.int64(128)), T.float32)):
-            T.func_attr({"s_tir": True, "script.namespace": "s_tir", "tirx.noalias": True})
+            T.func_attr({"script.namespace": "s_tir", "tirx.noalias": True})
             with Ts.sblock("root"):
                 Ts.reads()
                 Ts.writes()
@@ -185,7 +185,7 @@ into low-level operators.
 
         @Ts.function(private=True)
         def relu(add: T.Tensor((n_2, T.int64(128)), T.float32), compute: T.Tensor((n_2, T.int64(128)), T.float32)):
-            T.func_attr({"s_tir": True, "script.namespace": "s_tir", "tirx.noalias": True})
+            T.func_attr({"script.namespace": "s_tir", "tirx.noalias": True})
             with Ts.sblock("root"):
                 Ts.reads()
                 Ts.writes()
@@ -200,7 +200,7 @@ into low-level operators.
 
         @Ts.function(private=True)
         def transpose1(fc2_weight: T.Tensor((T.int64(10), T.int64(128)), T.float32), T_transpose: T.Tensor((T.int64(128), T.int64(10)), T.float32)):
-            T.func_attr({"s_tir": True, "script.namespace": "s_tir", "tirx.noalias": True})
+            T.func_attr({"script.namespace": "s_tir", "tirx.noalias": True})
             with Ts.sblock("root"):
                 Ts.reads()
                 Ts.writes()
@@ -215,7 +215,7 @@ into low-level operators.
 
         @Ts.function(private=True)
         def matmul1(relu: T.Tensor((n_3, T.int64(128)), T.float32), permute_dims1: T.Tensor((T.int64(128), T.int64(10)), T.float32), matmul: T.Tensor((n_3, T.int64(10)), T.float32)):
-            T.func_attr({"s_tir": True, "script.namespace": "s_tir", "tirx.noalias": True})
+            T.func_attr({"script.namespace": "s_tir", "tirx.noalias": True})
             with Ts.sblock("root"):
                 Ts.reads()
                 Ts.writes()
@@ -234,7 +234,7 @@ into low-level operators.
 
         @Ts.function(private=True)
         def add1(matmul1: T.Tensor((n_4, T.int64(10)), T.float32), fc2_bias: T.Tensor((T.int64(10),), T.float32), T_add: T.Tensor((n_4, T.int64(10)), T.float32)):
-            T.func_attr({"s_tir": True, "script.namespace": "s_tir", "tirx.noalias": True})
+            T.func_attr({"script.namespace": "s_tir", "tirx.noalias": True})
             with Ts.sblock("root"):
                 Ts.reads()
                 Ts.writes()
@@ -310,7 +310,7 @@ a set of passes. We can apply them in a sequence.
     class Module:
         @Ts.function(private=True)
         def transpose(fc1_weight: T.Tensor((T.int64(128), T.int64(784)), T.float32), T_transpose: T.Tensor((T.int64(784), T.int64(128)), T.float32)):
-            T.func_attr({"op_pattern": 2, "s_tir": True, "script.namespace": "s_tir", "tirx.noalias": True})
+            T.func_attr({"op_pattern": 2, "script.namespace": "s_tir", "tirx.noalias": True})
             with Ts.sblock("root"):
                 Ts.reads()
                 Ts.writes()
@@ -325,7 +325,7 @@ a set of passes. We can apply them in a sequence.
 
         @Ts.function(private=True)
         def transpose1(fc2_weight: T.Tensor((T.int64(10), T.int64(128)), T.float32), T_transpose: T.Tensor((T.int64(128), T.int64(10)), T.float32)):
-            T.func_attr({"op_pattern": 2, "s_tir": True, "script.namespace": "s_tir", "tirx.noalias": True})
+            T.func_attr({"op_pattern": 2, "script.namespace": "s_tir", "tirx.noalias": True})
             with Ts.sblock("root"):
                 Ts.reads()
                 Ts.writes()
@@ -340,7 +340,7 @@ a set of passes. We can apply them in a sequence.
 
         @Ts.function(private=True)
         def fused_matmul1_add1(relu: T.Tensor((n, T.int64(128)), T.float32), permute_dims1: T.Tensor((T.int64(128), T.int64(10)), T.float32), fc2_bias: T.Tensor((T.int64(10),), T.float32), T_add_intermediate: T.Tensor((n, T.int64(10)), T.float32)):
-            T.func_attr({"s_tir": True, "script.namespace": "s_tir", "tirx.noalias": True})
+            T.func_attr({"script.namespace": "s_tir", "tirx.noalias": True})
             with Ts.sblock("root"):
                 Ts.reads()
                 Ts.writes()
@@ -368,7 +368,7 @@ a set of passes. We can apply them in a sequence.
 
         @Ts.function(private=True)
         def fused_matmul_add_relu(x: T.Tensor((n_1, T.int64(784)), T.float32), permute_dims: T.Tensor((T.int64(784), T.int64(128)), T.float32), fc1_bias: T.Tensor((T.int64(128),), T.float32), compute_intermediate: T.Tensor((n_1, T.int64(128)), T.float32)):
-            T.func_attr({"s_tir": True, "script.namespace": "s_tir", "tirx.noalias": True})
+            T.func_attr({"script.namespace": "s_tir", "tirx.noalias": True})
             with Ts.sblock("root"):
                 Ts.reads()
                 Ts.writes()

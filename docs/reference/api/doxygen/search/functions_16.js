@@ -1,6 +1,6 @@
 var searchData=
 [
-  ['where_0',['where',['../namespacetvm_1_1script_1_1ir__builder_1_1s__tir.html#aaa9410e5707855d6e5efb97be03a7a04',1,'tvm::script::ir_builder::s_tir::Where()'],['../namespacetvm_1_1topi.html#af011847b6e7f72f1bec25eee05c80590',1,'tvm::topi::where()']]],
+  ['where_0',['where',['../namespacetvm_1_1topi.html#af011847b6e7f72f1bec25eee05c80590',1,'tvm::topi::where()'],['../namespacetvm_1_1script_1_1ir__builder_1_1s__tir.html#aaa9410e5707855d6e5efb97be03a7a04',1,'tvm::script::ir_builder::s_tir::Where()']]],
   ['while_1',['while',['../classtvm_1_1While.html#a1115a6df179a0bf08969c5d0ff9bc0b3',1,'tvm::While::While()'],['../namespacetvm_1_1script_1_1ir__builder_1_1ir.html#a17920d40cdfd6281553c8914b3ca1bd3',1,'tvm::script::ir_builder::ir::While()'],['../classtvm_1_1While.html#ab48d2aa2ca9ecf79559120d9d646da8d',1,'tvm::While::While()']]],
   ['whiledoc_2',['WhileDoc',['../classtvm_1_1script_1_1printer_1_1WhileDoc.html#a961727af3f39b1b3dd3cd1f6d43223d2',1,'tvm::script::printer::WhileDoc']]],
   ['whileframe_3',['WhileFrame',['../classtvm_1_1script_1_1ir__builder_1_1ir_1_1WhileFrame.html#aaa67999efaad3807ee78c6780640db33',1,'tvm::script::ir_builder::ir::WhileFrame']]],

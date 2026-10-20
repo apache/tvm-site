@@ -166,7 +166,7 @@ TensorIR functions in Relax function.
     class Module:
         @Ts.function
         def relu(X: T.Tensor((n, m), T.float32), Y: T.Tensor((n, m), T.float32)):
-            T.func_attr({"s_tir": True, "script.namespace": "s_tir"})
+            T.func_attr({"script.namespace": "s_tir"})
             with Ts.sblock("root"):
                 Ts.reads()
                 Ts.writes()
@@ -396,7 +396,7 @@ Tensor Expression(TE), TensorIR functions or other TVM packed functions.
     class Module:
         @Ts.function(private=True)
         def relu(env_linear: T.Tensor((n, T.int64(128)), T.float32), compute: T.Tensor((n, T.int64(128)), T.float32)):
-            T.func_attr({"s_tir": True, "script.namespace": "s_tir", "tirx.noalias": True})
+            T.func_attr({"script.namespace": "s_tir", "tirx.noalias": True})
             with Ts.sblock("root"):
                 Ts.reads()
                 Ts.writes()
@@ -411,7 +411,7 @@ Tensor Expression(TE), TensorIR functions or other TVM packed functions.
 
         @Ts.function
         def tir_linear(X: T.Tensor((M, K), T.float32), W: T.Tensor((N, K), T.float32), B: T.Tensor((N,), T.float32), Z: T.Tensor((M, N), T.float32)):
-            T.func_attr({"s_tir": True, "script.namespace": "s_tir"})
+            T.func_attr({"script.namespace": "s_tir"})
             with Ts.sblock("root"):
                 Ts.reads()
                 Ts.writes()
@@ -574,7 +574,7 @@ Relax functions, TensorIR functions and other TVM packed functions.
     class Module:
         @Ts.function(private=True)
         def relu(lv: T.Tensor((n, T.int64(128)), T.float32), compute: T.Tensor((n, T.int64(128)), T.float32)):
-            T.func_attr({"s_tir": True, "script.namespace": "s_tir", "tirx.noalias": True})
+            T.func_attr({"script.namespace": "s_tir", "tirx.noalias": True})
             with Ts.sblock("root"):
                 Ts.reads()
                 Ts.writes()
@@ -589,7 +589,7 @@ Relax functions, TensorIR functions and other TVM packed functions.
 
         @Ts.function
         def tir_linear(X: T.Tensor((M, K), T.float32), W: T.Tensor((N, K), T.float32), B: T.Tensor((N,), T.float32), Z: T.Tensor((M, N), T.float32)):
-            T.func_attr({"s_tir": True, "script.namespace": "s_tir"})
+            T.func_attr({"script.namespace": "s_tir"})
             with Ts.sblock("root"):
                 Ts.reads()
                 Ts.writes()

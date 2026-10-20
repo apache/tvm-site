@@ -346,7 +346,7 @@ it achieves a balance between performance and compilation time.
 
         @Ts.function(private=True)
         def transpose(fc2_weight: T.Tensor((T.int64(10), T.int64(256)), T.float32), T_transpose: T.Tensor((T.int64(256), T.int64(10)), T.float32)):
-            T.func_attr({"op_pattern": 2, "s_tir": True, "script.namespace": "s_tir", "tirx.is_scheduled": True, "tirx.noalias": True})
+            T.func_attr({"op_pattern": 2, "script.namespace": "s_tir", "tirx.is_scheduled": True, "tirx.noalias": True})
             with Ts.sblock("root"):
                 Ts.reads()
                 Ts.writes()
@@ -362,7 +362,7 @@ it achieves a balance between performance and compilation time.
 
         @Ts.function(private=True)
         def matmul(lv: T.Tensor((T.int64(1), T.int64(256)), T.float32), permute_dims1: T.Tensor((T.int64(256), T.int64(10)), T.float32), matmul: T.Tensor((T.int64(1), T.int64(10)), T.float32)):
-            T.func_attr({"op_pattern": 4, "s_tir": True, "script.namespace": "s_tir", "tirx.is_scheduled": True, "tirx.noalias": True})
+            T.func_attr({"op_pattern": 4, "script.namespace": "s_tir", "tirx.is_scheduled": True, "tirx.noalias": True})
             with Ts.sblock("root"):
                 Ts.reads()
                 Ts.writes()

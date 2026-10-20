@@ -122,7 +122,7 @@ original implementation.
 
     Execution time summary:
      mean (ms)   median (ms)    max (ms)     min (ms)     std (ms)  
-       2.7951       2.7951       2.7951       2.7951       0.0000                  
+       2.7614       2.7614       2.7614       2.7614       0.0000                  
 
 
 
@@ -220,7 +220,7 @@ The outcome of the transformation can be examined, as it is retained within ``sc
     class Module:
         @Ts.function
         def main(A: T.Tensor((128, 128), T.float32), B: T.Tensor((128, 128), T.float32), C: T.Tensor((128, 128), T.float32)):
-            T.func_attr({"s_tir": True, "script.namespace": "s_tir", "tirx.noalias": True})
+            T.func_attr({"script.namespace": "s_tir", "tirx.noalias": True})
             with Ts.sblock("root"):
                 Ts.reads()
                 Ts.writes()
@@ -283,7 +283,7 @@ action involves reordering these two loops.
     class Module:
         @Ts.function
         def main(A: T.Tensor((128, 128), T.float32), B: T.Tensor((128, 128), T.float32), C: T.Tensor((128, 128), T.float32)):
-            T.func_attr({"s_tir": True, "script.namespace": "s_tir", "tirx.noalias": True})
+            T.func_attr({"script.namespace": "s_tir", "tirx.noalias": True})
             with Ts.sblock("root"):
                 Ts.reads()
                 Ts.writes()
@@ -312,7 +312,7 @@ action involves reordering these two loops.
 
     Execution time summary:
      mean (ms)   median (ms)    max (ms)     min (ms)     std (ms)  
-       0.8618       0.8618       0.8618       0.8618       0.0000                  
+       0.8673       0.8673       0.8673       0.8673       0.0000                  
 
 
 
@@ -351,7 +351,7 @@ variant. First, we employ a primitive known as **reverse_compute_at** to relocat
     class Module:
         @Ts.function
         def main(A: T.Tensor((128, 128), T.float32), B: T.Tensor((128, 128), T.float32), C: T.Tensor((128, 128), T.float32)):
-            T.func_attr({"s_tir": True, "script.namespace": "s_tir", "tirx.noalias": True})
+            T.func_attr({"script.namespace": "s_tir", "tirx.noalias": True})
             with Ts.sblock("root"):
                 Ts.reads()
                 Ts.writes()
@@ -419,7 +419,7 @@ from the reduction update via the **decompose_reduction** primitive.
     class Module:
         @Ts.function
         def main(A: T.Tensor((128, 128), T.float32), B: T.Tensor((128, 128), T.float32), C: T.Tensor((128, 128), T.float32)):
-            T.func_attr({"s_tir": True, "script.namespace": "s_tir", "tirx.noalias": True})
+            T.func_attr({"script.namespace": "s_tir", "tirx.noalias": True})
             with Ts.sblock("root"):
                 Ts.reads()
                 Ts.writes()
@@ -452,7 +452,7 @@ from the reduction update via the **decompose_reduction** primitive.
 
     Execution time summary:
      mean (ms)   median (ms)    max (ms)     min (ms)     std (ms)  
-       0.3440       0.3440       0.3440       0.3440       0.0000                  
+       0.3383       0.3383       0.3383       0.3383       0.0000                  
 
 
 
@@ -524,7 +524,7 @@ Alternatively, we can output the IRModule in conjunction with the historical tra
     class Module:
         @Ts.function
         def main(A: T.Tensor((128, 128), T.float32), B: T.Tensor((128, 128), T.float32), C: T.Tensor((128, 128), T.float32)):
-            T.func_attr({"s_tir": True, "script.namespace": "s_tir", "tirx.noalias": True})
+            T.func_attr({"script.namespace": "s_tir", "tirx.noalias": True})
             with Ts.sblock("root"):
                 Ts.reads()
                 Ts.writes()

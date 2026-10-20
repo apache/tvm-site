@@ -421,7 +421,7 @@ and one output parameter **C**.
     class Module:
         @Ts.function
         def mm_relu(A: T.Tensor((128, 128), T.float32), B: T.Tensor((128, 128), T.float32), C: T.Tensor((128, 128), T.float32)):
-            T.func_attr({"s_tir": True, "script.namespace": "s_tir", "tirx.noalias": True})
+            T.func_attr({"script.namespace": "s_tir", "tirx.noalias": True})
             with Ts.sblock("root"):
                 Ts.reads()
                 Ts.writes()
@@ -494,7 +494,7 @@ is that we need to specify the shape of the input tensors as symbolic variables.
     class Module:
         @Ts.function
         def mm_relu(A: T.Tensor((m, n), T.float32), B: T.Tensor((k, n), T.float32), C: T.Tensor((m, n), T.float32)):
-            T.func_attr({"s_tir": True, "script.namespace": "s_tir", "tirx.noalias": True})
+            T.func_attr({"script.namespace": "s_tir", "tirx.noalias": True})
             with Ts.sblock("root"):
                 Ts.reads()
                 Ts.writes()

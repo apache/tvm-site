@@ -191,7 +191,7 @@ Here we use a common subset of rules. The full catalog (including ``LowBatchGEMV
 
         @Ts.function(private=True)
         def fused_matmul1_add1(layer_norm: T.Tensor((T.int64(1), T.int64(768)), T.float32), permute_dims1: T.Tensor((T.int64(768), T.int64(256)), T.float32), fc2_bias: T.Tensor((T.int64(256),), T.float32), T_add_intermediate: T.Tensor((T.int64(1), T.int64(256)), T.float32)):
-            T.func_attr({"s_tir": True, "script.namespace": "s_tir", "tirx.is_scheduled": True, "tirx.noalias": True})
+            T.func_attr({"script.namespace": "s_tir", "tirx.is_scheduled": True, "tirx.noalias": True})
             with Ts.sblock("root"):
                 Ts.reads()
                 Ts.writes()
@@ -235,7 +235,7 @@ Here we use a common subset of rules. The full catalog (including ``LowBatchGEMV
 
         @Ts.function(private=True)
         def fused_matmul_add_relu(x: T.Tensor((T.int64(1), T.int64(768)), T.float32), permute_dims: T.Tensor((T.int64(768), T.int64(768)), T.float32), fc1_bias: T.Tensor((T.int64(768),), T.float32), compute_intermediate: T.Tensor((T.int64(1), T.int64(768)), T.float32)):
-            T.func_attr({"s_tir": True, "script.namespace": "s_tir", "tirx.is_scheduled": True, "tirx.noalias": True})
+            T.func_attr({"script.namespace": "s_tir", "tirx.is_scheduled": True, "tirx.noalias": True})
             with Ts.sblock("root"):
                 Ts.reads()
                 Ts.writes()
@@ -279,7 +279,7 @@ Here we use a common subset of rules. The full catalog (including ``LowBatchGEMV
 
         @Ts.function(private=True)
         def layer_norm(relu: T.Tensor((T.int64(1), T.int64(768)), T.float32), norm_weight: T.Tensor((T.int64(768),), T.float32), norm_bias: T.Tensor((T.int64(768),), T.float32), T_layer_norm: T.Tensor((T.int64(1), T.int64(768)), T.float32)):
-            T.func_attr({"op_pattern": 4, "s_tir": True, "script.namespace": "s_tir", "tirx.is_scheduled": True, "tirx.noalias": True})
+            T.func_attr({"op_pattern": 4, "script.namespace": "s_tir", "tirx.is_scheduled": True, "tirx.noalias": True})
             with Ts.sblock("root"):
                 Ts.reads()
                 Ts.writes()
@@ -319,7 +319,7 @@ Here we use a common subset of rules. The full catalog (including ``LowBatchGEMV
 
         @Ts.function(private=True)
         def transpose(fc1_weight: T.Tensor((T.int64(768), T.int64(768)), T.float32), T_transpose: T.Tensor((T.int64(768), T.int64(768)), T.float32)):
-            T.func_attr({"op_pattern": 2, "s_tir": True, "script.namespace": "s_tir", "tirx.is_scheduled": True, "tirx.noalias": True})
+            T.func_attr({"op_pattern": 2, "script.namespace": "s_tir", "tirx.is_scheduled": True, "tirx.noalias": True})
             with Ts.sblock("root"):
                 Ts.reads()
                 Ts.writes()
@@ -334,7 +334,7 @@ Here we use a common subset of rules. The full catalog (including ``LowBatchGEMV
 
         @Ts.function(private=True)
         def transpose1(fc2_weight: T.Tensor((T.int64(256), T.int64(768)), T.float32), T_transpose: T.Tensor((T.int64(768), T.int64(256)), T.float32)):
-            T.func_attr({"op_pattern": 2, "s_tir": True, "script.namespace": "s_tir", "tirx.is_scheduled": True, "tirx.noalias": True})
+            T.func_attr({"op_pattern": 2, "script.namespace": "s_tir", "tirx.is_scheduled": True, "tirx.noalias": True})
             with Ts.sblock("root"):
                 Ts.reads()
                 Ts.writes()
@@ -635,7 +635,7 @@ Insert the custom rule into the rule chain. Note that ``from_callable`` returns 
 
         @Ts.function(private=True)
         def fused_matmul1_add1(layer_norm: T.Tensor((T.int64(1), T.int64(768)), T.float32), permute_dims1: T.Tensor((T.int64(768), T.int64(256)), T.float32), fc2_bias: T.Tensor((T.int64(256),), T.float32), T_add_intermediate: T.Tensor((T.int64(1), T.int64(256)), T.float32)):
-            T.func_attr({"s_tir": True, "script.namespace": "s_tir", "tirx.is_scheduled": True, "tirx.noalias": True})
+            T.func_attr({"script.namespace": "s_tir", "tirx.is_scheduled": True, "tirx.noalias": True})
             with Ts.sblock("root"):
                 Ts.reads()
                 Ts.writes()
@@ -679,7 +679,7 @@ Insert the custom rule into the rule chain. Note that ``from_callable`` returns 
 
         @Ts.function(private=True)
         def fused_matmul_add_relu(x: T.Tensor((T.int64(1), T.int64(768)), T.float32), permute_dims: T.Tensor((T.int64(768), T.int64(768)), T.float32), fc1_bias: T.Tensor((T.int64(768),), T.float32), compute_intermediate: T.Tensor((T.int64(1), T.int64(768)), T.float32)):
-            T.func_attr({"s_tir": True, "script.namespace": "s_tir", "tirx.is_scheduled": True, "tirx.noalias": True})
+            T.func_attr({"script.namespace": "s_tir", "tirx.is_scheduled": True, "tirx.noalias": True})
             with Ts.sblock("root"):
                 Ts.reads()
                 Ts.writes()
@@ -723,7 +723,7 @@ Insert the custom rule into the rule chain. Note that ``from_callable`` returns 
 
         @Ts.function(private=True)
         def layer_norm(relu: T.Tensor((T.int64(1), T.int64(768)), T.float32), norm_weight: T.Tensor((T.int64(768),), T.float32), norm_bias: T.Tensor((T.int64(768),), T.float32), T_layer_norm: T.Tensor((T.int64(1), T.int64(768)), T.float32)):
-            T.func_attr({"op_pattern": 4, "s_tir": True, "script.namespace": "s_tir", "tirx.is_scheduled": True, "tirx.noalias": True})
+            T.func_attr({"op_pattern": 4, "script.namespace": "s_tir", "tirx.is_scheduled": True, "tirx.noalias": True})
             with Ts.sblock("root"):
                 Ts.reads()
                 Ts.writes()
@@ -763,7 +763,7 @@ Insert the custom rule into the rule chain. Note that ``from_callable`` returns 
 
         @Ts.function(private=True)
         def transpose(fc1_weight: T.Tensor((T.int64(768), T.int64(768)), T.float32), T_transpose: T.Tensor((T.int64(768), T.int64(768)), T.float32)):
-            T.func_attr({"op_pattern": 2, "s_tir": True, "script.namespace": "s_tir", "tirx.is_scheduled": True, "tirx.noalias": True})
+            T.func_attr({"op_pattern": 2, "script.namespace": "s_tir", "tirx.is_scheduled": True, "tirx.noalias": True})
             with Ts.sblock("root"):
                 Ts.reads()
                 Ts.writes()
@@ -778,7 +778,7 @@ Insert the custom rule into the rule chain. Note that ``from_callable`` returns 
 
         @Ts.function(private=True)
         def transpose1(fc2_weight: T.Tensor((T.int64(256), T.int64(768)), T.float32), T_transpose: T.Tensor((T.int64(768), T.int64(256)), T.float32)):
-            T.func_attr({"op_pattern": 2, "s_tir": True, "script.namespace": "s_tir", "tirx.is_scheduled": True, "tirx.noalias": True})
+            T.func_attr({"op_pattern": 2, "script.namespace": "s_tir", "tirx.is_scheduled": True, "tirx.noalias": True})
             with Ts.sblock("root"):
                 Ts.reads()
                 Ts.writes()
