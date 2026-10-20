@@ -29,6 +29,7 @@ Classes
 .. autosummary::
    :toctree: generated/
 
+   AnnotateKernelArguments
    TrnNaiveAllocator
    TrnPrivateTensorAlloc
 
