@@ -6,7 +6,7 @@ var searchData=
   ['target_5ftag_5fregistry_2eh_3',['target_tag_registry.h',['../target__tag__registry_8h.html',1,'']]],
   ['task_5fscheduler_2eh_4',['task_scheduler.h',['../task__scheduler_8h.html',1,'']]],
   ['tcgen05_2eh_5',['tcgen05.h',['../tcgen05_8h.html',1,'']]],
-  ['tensor_2eh_6',['tensor.h',['../tirx_2include_2tvm_2runtime_2tensor_8h.html',1,'(Global Namespace)'],['../include_2tvm_2te_2tensor_8h.html',1,'(Global Namespace)']]],
+  ['tensor_2eh_6',['tensor.h',['../include_2tvm_2te_2tensor_8h.html',1,'(Global Namespace)'],['../3rdparty_2tvm-tirx_2include_2tvm_2runtime_2tensor_8h.html',1,'(Global Namespace)']]],
   ['tensor_5fcache_5fsupport_2eh_7',['tensor_cache_support.h',['../tensor__cache__support_8h.html',1,'']]],
   ['tensor_5fintrin_2eh_8',['tensor_intrin.h',['../tensor__intrin_8h.html',1,'']]],
   ['tensor_5futils_2eh_9',['tensor_utils.h',['../tensor__utils_8h.html',1,'']]],
@@ -17,8 +17,8 @@ var searchData=
   ['timing_2eh_14',['timing.h',['../timing_8h.html',1,'']]],
   ['tir_5fpattern_2eh_15',['tir_pattern.h',['../tir__pattern_8h.html',1,'']]],
   ['trace_2eh_16',['trace.h',['../trace_8h.html',1,'']]],
-  ['transform_2eh_17',['transform.h',['../tirx_2include_2tvm_2ir_2transform_8h.html',1,'(Global Namespace)'],['../include_2tvm_2relax_2backend_2adreno_2transform_8h.html',1,'(Global Namespace)'],['../include_2tvm_2relax_2distributed_2transform_8h.html',1,'(Global Namespace)'],['../include_2tvm_2relax_2transform_8h.html',1,'(Global Namespace)'],['../include_2tvm_2s__tir_2backend_2adreno_2transform_8h.html',1,'(Global Namespace)'],['../include_2tvm_2s__tir_2transform_8h.html',1,'(Global Namespace)'],['../include_2tvm_2topi_2transform_8h.html',1,'(Global Namespace)'],['../tirx_2include_2tvm_2tirx_2transform_8h.html',1,'(Global Namespace)']]],
+  ['transform_2eh_17',['transform.h',['../include_2tvm_2relax_2distributed_2transform_8h.html',1,'(Global Namespace)'],['../3rdparty_2tvm-tirx_2include_2tvm_2ir_2transform_8h.html',1,'(Global Namespace)'],['../3rdparty_2tvm-tirx_2include_2tvm_2tirx_2transform_8h.html',1,'(Global Namespace)'],['../include_2tvm_2relax_2backend_2adreno_2transform_8h.html',1,'(Global Namespace)'],['../include_2tvm_2relax_2transform_8h.html',1,'(Global Namespace)'],['../include_2tvm_2topi_2transform_8h.html',1,'(Global Namespace)'],['../include_2tvm_2s__tir_2transform_8h.html',1,'(Global Namespace)'],['../include_2tvm_2s__tir_2backend_2adreno_2transform_8h.html',1,'(Global Namespace)']]],
   ['tune_5fcontext_2eh_18',['tune_context.h',['../tune__context_8h.html',1,'']]],
-  ['type_2eh_19',['type.h',['../include_2tvm_2relax_2distributed_2type_8h.html',1,'(Global Namespace)'],['../include_2tvm_2relax_2type_8h.html',1,'(Global Namespace)'],['../tirx_2include_2tvm_2ir_2type_8h.html',1,'(Global Namespace)'],['../tirx_2include_2tvm_2tirx_2type_8h.html',1,'(Global Namespace)']]],
+  ['type_2eh_19',['type.h',['../include_2tvm_2relax_2type_8h.html',1,'(Global Namespace)'],['../include_2tvm_2relax_2distributed_2type_8h.html',1,'(Global Namespace)'],['../3rdparty_2tvm-tirx_2include_2tvm_2tirx_2type_8h.html',1,'(Global Namespace)'],['../3rdparty_2tvm-tirx_2include_2tvm_2ir_2type_8h.html',1,'(Global Namespace)']]],
   ['type_5ffunctor_2eh_20',['type_functor.h',['../type__functor_8h.html',1,'']]]
 ];

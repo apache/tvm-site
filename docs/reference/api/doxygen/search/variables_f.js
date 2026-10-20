@@ -27,5 +27,6 @@ var searchData=
   ['predicate_24',['predicate',['../classtvm_1_1script_1_1ir__builder_1_1s__tir_1_1SBlockFrameObj.html#a0ba4b3f610b5bf99aa4847c777088005',1,'tvm::script::ir_builder::s_tir::SBlockFrameObj::predicate'],['../classtvm_1_1s__tir_1_1SBlockRealizeNode.html#a4e3f5cac29a0a8b485a2ceaba9c3a652',1,'tvm::s_tir::SBlockRealizeNode::predicate'],['../classtvm_1_1script_1_1printer_1_1IfDocNode.html#aff607900dab0776aa46ea9cbbfcc0bfd',1,'tvm::script::printer::IfDocNode::predicate'],['../classtvm_1_1script_1_1printer_1_1WhileDocNode.html#ad1f9ea9a5c2109d614b3e5835b348ccb',1,'tvm::script::printer::WhileDocNode::predicate']]],
   ['prefix_5f_25',['prefix_',['../classtvm_1_1UniqueNameSupplyObj.html#a604472344c6ab392a1829343b1b097dc',1,'tvm::UniqueNameSupplyObj']]],
   ['print_5fline_5fnumbers_26',['print_line_numbers',['../classtvm_1_1PrinterConfigObj.html#a335a7f965f9a8b4efe256e13f86c717e',1,'tvm::PrinterConfigObj']]],
-  ['purity_27',['purity',['../classtvm_1_1relax_1_1FuncTypeNode.html#a4856099db6a1f8f6ae9908ac4e47e3c5',1,'tvm::relax::FuncTypeNode']]]
+  ['purity_27',['purity',['../classtvm_1_1relax_1_1FuncTypeNode.html#a4856099db6a1f8f6ae9908ac4e47e3c5',1,'tvm::relax::FuncTypeNode']]],
+  ['pvar_5f_28',['pvar_',['../classtvm_1_1PVarWithCheck.html#aa06e6c8bd35904f48af6385f26fc7fce',1,'tvm::PVarWithCheck']]]
 ];
