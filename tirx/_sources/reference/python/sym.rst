@@ -52,8 +52,6 @@ Functions
    estimate_region_upper_bound
    allow_uint_as_index
    deduce_bound
-   detect_linear_equation
-   detect_clip_bound
    detect_iter_map
    iter_map_simplify
    normalize_iter_map_to_expr

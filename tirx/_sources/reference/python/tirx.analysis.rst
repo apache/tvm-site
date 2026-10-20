@@ -32,3 +32,5 @@ Functions
    verify_memory
    undefined_vars
    check_well_formed
+   detect_linear_equation
+   detect_clip_bound
