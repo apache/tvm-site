@@ -33,12 +33,8 @@ publishing release artifacts.
       export TIRX_RELEASE_VERSION="v0.1.0"
       export ASF_USERNAME="your-apache-username"
 
-   - Tools: ``git``, ``svn``, ``gpg``, ``gtar``, and ``shasum``.
+   - Tools: ``git``, ``svn``, ``gpg``, ``tar``, and ``shasum``.
    - An ASF account and a signing key published in the project's ``KEYS`` file.
-
-.. important::
-
-   These examples use GNU tar as ``gtar`` on macOS. Use ``tar`` on Linux.
 
 Pre-release checklist (Step 0)
 ------------------------------
@@ -75,7 +71,8 @@ This builds and signs the source release artifacts under
      (
        cd "$_workdir"
        git clone --recursive --branch "$_ver" https://github.com/apache/tvm-tirx.git "$_source_dir"
-       gtar --exclude-vcs -czf "$_tarball" "$_source_dir"
+       tar --exclude=.git --exclude=.gitignore --exclude=.gitattributes \
+         --exclude=.gitmodules -czf "$_tarball" "$_source_dir"
        gpg --armor --output "$_tarball.asc" --detach-sig "$_tarball"
        shasum -a 512 "$_tarball" > "$_tarball.sha512"
        gpg --verify "$_tarball.asc" "$_tarball"

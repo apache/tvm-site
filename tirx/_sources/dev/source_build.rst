@@ -25,7 +25,7 @@ This guide provides instructions on how to build the TIRx package from source.
 
    - Python: 3.10 or newer.
    - Compiler: a C++20-capable GCC, Clang, or MSVC toolchain.
-   - Build tools: Git, CMake 3.26+, Ninja, and uv.
+   - Build tools: Git, CMake 3.26+, and uv.
    - LLVM: development libraries and ``llvm-config`` from LLVM 15 or newer.
 
    On most platforms, you can get LLVM and the build dependencies through
@@ -33,7 +33,7 @@ This guide provides instructions on how to build the TIRx package from source.
 
    .. code-block:: bash
 
-      mamba create -n tirx-dev -c conda-forge python=3.12 llvmdev "cmake>=3.26" ninja git uv
+      mamba create -n tirx-dev -c conda-forge python=3.12 llvmdev cmake git uv
       mamba activate tirx-dev
       llvm-config --version
 
@@ -65,7 +65,7 @@ Download the source via:
       git submodule update --init --recursive
 
 Build the Python package with scikit-build-core, which drives CMake to compile
-the C++ libraries:
+the C++ libraries and supplies Ninja when needed in the default isolated build:
 
 .. code-block:: bash
 
