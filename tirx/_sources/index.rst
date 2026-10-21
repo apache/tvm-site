@@ -26,3 +26,12 @@ Table of Contents
    :caption: Reference
 
    Python API <reference/python/index>
+
+.. toctree::
+   :maxdepth: 1
+   :caption: Developer Manual
+
+   dev/source_build
+   dev/doc_build
+   dev/ci_cd
+   dev/release_process
