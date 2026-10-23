@@ -89,6 +89,9 @@ Available CMake options (see `CMakeLists.txt
 - ``TVM_TIRX_USE_CUDA`` -- Enable the CUDA runtime (default: ``AUTO``).
 - ``TVM_TIRX_USE_METAL`` -- Enable the Metal runtime on macOS (default: ``OFF``).
 - ``TVM_TIRX_USE_Z3`` -- Enable the Z3 solver (default: ``AUTO``).
+- ``TVM_TIRX_USE_RUST`` -- Build the operators written in Rust (``rust/``) with cargo
+  (default: ``AUTO``, which needs a cargo as new as the crate's ``rust-version`` and the crate's
+  dependencies, from crates.io or cargo's cache).
 - ``TVM_TIRX_BUILD_TESTS`` -- Build C++ tests (default: ``OFF``).
 
 Verify the installation:
