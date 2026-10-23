@@ -95,15 +95,15 @@ Functions
 
 - :ref:`exhale_function_namespacetvm_1_1sym_1a85bf9e17966d794359c4c59498c9d609`
 
-- :ref:`exhale_function_namespacetvm_1_1sym_1a4f90613dc6bcaf5600705007d3d95194`
-
 - :ref:`exhale_function_namespacetvm_1_1sym_1ac17fce27a9c3079cb24a4d5da19ed1c6`
+
+- :ref:`exhale_function_namespacetvm_1_1sym_1a4f90613dc6bcaf5600705007d3d95194`
 
 - :ref:`exhale_function_namespacetvm_1_1sym_1a347abc17ec6c0eb59caebbc1a1e36c8d`
 
-- :ref:`exhale_function_namespacetvm_1_1sym_1a8fa82d2e07a32fa65c1fa29f46306004`
-
 - :ref:`exhale_function_namespacetvm_1_1sym_1a31682215119ca2688c6320c32760bfe0`
+
+- :ref:`exhale_function_namespacetvm_1_1sym_1a8fa82d2e07a32fa65c1fa29f46306004`
 
 - :ref:`exhale_function_namespacetvm_1_1sym_1a31777d76a43ae690df345bda94e8487d`
 

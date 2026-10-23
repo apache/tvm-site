@@ -351,7 +351,7 @@ Program Listing for File const_fold.h
      TVM_PRIM_CONST_PROPAGATION({
        PrimType result_ty = a.ty();
        if (pa && pb) return IntImm(result_ty, std::min(pa->value, pb->value));
-       if (fa && fb) return FloatImm(result_ty, std::min(fa->value, fb->value));
+       if (fa && fb) return std::isnan(fa->value) || fa->value < fb->value ? a : b;
      });
      if (a.same_as(b)) return a;
      return std::nullopt;
@@ -362,7 +362,7 @@ Program Listing for File const_fold.h
      TVM_PRIM_CONST_PROPAGATION({
        PrimType result_ty = a.ty();
        if (pa && pb) return IntImm(result_ty, std::max(pa->value, pb->value));
-       if (fa && fb) return FloatImm(result_ty, std::max(fa->value, fb->value));
+       if (fa && fb) return std::isnan(fa->value) || fa->value > fb->value ? a : b;
      });
      if (a.same_as(b)) return a;
      return std::nullopt;
