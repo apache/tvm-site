@@ -26,6 +26,7 @@ Table of Contents
    :caption: Reference
 
    Python API <reference/python/index>
+   C++ API <reference/cpp/index>
 
 .. toctree::
    :maxdepth: 1

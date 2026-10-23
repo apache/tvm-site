@@ -40,14 +40,14 @@ Namespaces
      - Primitive expressions and scalar operators.
    * - :doc:`tvm_tirx.ir.transform <ir.transform>`
      - Pass infrastructure and instrumentation.
+   * - :doc:`tvm_tirx.sym <sym>`
+     - Symbolic arithmetic, analysis, and simplification.
    * - :doc:`tvm_tirx.script <script>`
      - Python syntax registration for IR dialects.
    * - :doc:`tvm_tirx.script.parser <script.parser>`
      - Translate Python scripts into IR builder operations.
    * - :doc:`tvm_tirx.script.ir_builder <script.ir_builder>`
      - Shared IR builder contexts and statements.
-   * - :doc:`tvm_tirx.sym <sym>`
-     - Symbolic arithmetic, analysis, and simplification.
    * - :doc:`tvm_tirx.target <target>`
      - Compilation targets and device selection.
    * - :doc:`tvm_tirx.tirx <tirx>`
@@ -116,10 +116,10 @@ Namespaces
    tvm_tirx.ir <ir>
    tvm_tirx.ir.prim <ir.prim>
    tvm_tirx.ir.transform <ir.transform>
+   tvm_tirx.sym <sym>
    tvm_tirx.script <script>
    tvm_tirx.script.parser <script.parser>
    tvm_tirx.script.ir_builder <script.ir_builder>
-   tvm_tirx.sym <sym>
    tvm_tirx.target <target>
    tvm_tirx.tirx <tirx>
    tvm_tirx.tirx.op <tirx.op>

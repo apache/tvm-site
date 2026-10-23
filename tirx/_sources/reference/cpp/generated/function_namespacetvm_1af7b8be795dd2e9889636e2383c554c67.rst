@@ -1,0 +1,14 @@
+.. _exhale_function_namespacetvm_1af7b8be795dd2e9889636e2383c554c67:
+
+Template Function tvm::operator!=(int64_t, const Pattern<TA>&)
+==============================================================
+
+- Defined in :ref:`file_tvm_ir_prim_pattern_match.h`
+
+
+Function Documentation
+----------------------
+
+
+.. doxygenfunction:: tvm::operator!=(int64_t, const Pattern<TA>&)
+   :project: tvm-tirx

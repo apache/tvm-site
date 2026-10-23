@@ -1,0 +1,26 @@
+.. _exhale_class_classtvm_1_1prim_1_1Shuffle:
+
+Class Shuffle
+=============
+
+- Defined in :ref:`file_tvm_ir_prim_vector_expr.h`
+
+
+Inheritance Relationships
+-------------------------
+
+Base Type
+*********
+
+- ``public tvm::PrimExpr`` (:ref:`exhale_class_classtvm_1_1PrimExpr`)
+
+
+Class Documentation
+-------------------
+
+
+.. doxygenclass:: tvm::prim::Shuffle
+   :project: tvm-tirx
+   :members:
+   :protected-members:
+   :undoc-members:
