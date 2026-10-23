@@ -40,57 +40,56 @@ Program Listing for File iter_affine_map.h
    namespace tvm {
    namespace sym {
    
-   class IterMapExprNode : public ExprNode {
+   class IterMapExprObj : public ExprObj {
     public:
      static constexpr const uint32_t _type_child_slots = 2;
-     TVM_FFI_DECLARE_OBJECT_INFO("sym.IterMapExpr", IterMapExprNode, ExprNode);
+     TVM_FFI_DECLARE_OBJECT_INFO("sym.IterMapExpr", IterMapExprObj, ExprObj);
    };
    
    class IterMapExpr : public PrimExpr {
     public:
-     explicit IterMapExpr(ffi::ObjectPtr<IterMapExprNode> node) : PrimExpr(std::move(node)) {}
+     explicit IterMapExpr(ffi::ObjectPtr<IterMapExprObj> node) : PrimExpr(std::move(node)) {}
    
-     TVM_FFI_DEFINE_OBJECT_REF_METHODS_NOTNULLABLE(IterMapExpr, PrimExpr, IterMapExprNode);
+     TVM_FFI_DEFINE_OBJECT_REF_METHODS_NOTNULLABLE(IterMapExpr, PrimExpr, IterMapExprObj);
      static constexpr bool _type_container_is_exact = true;
    };
    
-   class IterMarkNode : public ffi::Object {
+   class IterMarkObj : public ffi::Object {
     public:
-     explicit IterMarkNode(PrimExpr source, PrimExpr extent)
+     explicit IterMarkObj(PrimExpr source, PrimExpr extent)
          : source(std::move(source)), extent(std::move(extent)) {}
-     explicit IterMarkNode(ffi::UnsafeInit) : source(ffi::UnsafeInit{}), extent(ffi::UnsafeInit{}) {}
+     explicit IterMarkObj(ffi::UnsafeInit) : source(ffi::UnsafeInit{}), extent(ffi::UnsafeInit{}) {}
    
      PrimExpr source;
      PrimExpr extent;
    
      static void RegisterReflection() {
        namespace refl = tvm::ffi::reflection;
-       refl::ObjectDef<IterMarkNode>()
-           .def_ro("source", &IterMarkNode::source)
-           .def_ro("extent", &IterMarkNode::extent);
+       refl::ObjectDef<IterMarkObj>()
+           .def_ro("source", &IterMarkObj::source)
+           .def_ro("extent", &IterMarkObj::extent);
      }
    
      static constexpr TVMFFISEqHashKind _type_s_eq_hash_kind = kTVMFFISEqHashKindDAGNode;
-     TVM_FFI_DECLARE_OBJECT_INFO_FINAL("sym.IterMark", IterMarkNode, ffi::Object);
+     TVM_FFI_DECLARE_OBJECT_INFO_FINAL("sym.IterMark", IterMarkObj, ffi::Object);
    };
    
    class IterMark : public ffi::ObjectRef {
     public:
      TVM_TIRX_DLL IterMark(PrimExpr source, PrimExpr extent);
    
-     TVM_FFI_DEFINE_OBJECT_REF_METHODS_NOTNULLABLE(IterMark, ffi::ObjectRef, IterMarkNode);
-     TVM_DEFINE_OBJECT_REF_COW_METHOD(IterMarkNode);
+     TVM_FFI_DEFINE_OBJECT_REF_METHODS_NOTNULLABLE(IterMark, ffi::ObjectRef, IterMarkObj);
+     TVM_DEFINE_OBJECT_REF_COW_METHOD(IterMarkObj);
    };
    
-   class IterSplitExprNode : public IterMapExprNode {
+   class IterSplitExprObj : public IterMapExprObj {
     public:
-     explicit IterSplitExprNode(IterMark source, PrimExpr lower_factor, PrimExpr extent,
-                                PrimExpr scale)
+     explicit IterSplitExprObj(IterMark source, PrimExpr lower_factor, PrimExpr extent, PrimExpr scale)
          : source(std::move(source)),
            lower_factor(std::move(lower_factor)),
            extent(std::move(extent)),
            scale(std::move(scale)) {}
-     explicit IterSplitExprNode(ffi::UnsafeInit)
+     explicit IterSplitExprObj(ffi::UnsafeInit)
          : source(ffi::UnsafeInit{}),
            lower_factor(ffi::UnsafeInit{}),
            extent(ffi::UnsafeInit{}),
@@ -103,15 +102,15 @@ Program Listing for File iter_affine_map.h
    
      static void RegisterReflection() {
        namespace refl = tvm::ffi::reflection;
-       refl::ObjectDef<IterSplitExprNode>()
-           .def_ro("source", &IterSplitExprNode::source)
-           .def_ro("lower_factor", &IterSplitExprNode::lower_factor)
-           .def_ro("extent", &IterSplitExprNode::extent)
-           .def_ro("scale", &IterSplitExprNode::scale);
+       refl::ObjectDef<IterSplitExprObj>()
+           .def_ro("source", &IterSplitExprObj::source)
+           .def_ro("lower_factor", &IterSplitExprObj::lower_factor)
+           .def_ro("extent", &IterSplitExprObj::extent)
+           .def_ro("scale", &IterSplitExprObj::scale);
      }
    
      static constexpr TVMFFISEqHashKind _type_s_eq_hash_kind = kTVMFFISEqHashKindTreeNode;
-     TVM_FFI_DECLARE_OBJECT_INFO_FINAL("sym.IterSplitExpr", IterSplitExprNode, IterMapExprNode);
+     TVM_FFI_DECLARE_OBJECT_INFO_FINAL("sym.IterSplitExpr", IterSplitExprObj, IterMapExprObj);
    };
    
    class IterSplitExpr : public IterMapExpr {
@@ -121,48 +120,48 @@ Program Listing for File iter_affine_map.h
      TVM_TIRX_DLL explicit IterSplitExpr(IterMark source, PrimExpr lower_factor, PrimExpr extent,
                                          PrimExpr scale);
    
-     explicit IterSplitExpr(ffi::ObjectPtr<IterSplitExprNode> node) : IterMapExpr(std::move(node)) {}
+     explicit IterSplitExpr(ffi::ObjectPtr<IterSplitExprObj> node) : IterMapExpr(std::move(node)) {}
    
-     TVM_FFI_DEFINE_OBJECT_REF_METHODS_NOTNULLABLE(IterSplitExpr, IterMapExpr, IterSplitExprNode);
-     TVM_DEFINE_OBJECT_REF_COW_METHOD(IterSplitExprNode);
+     TVM_FFI_DEFINE_OBJECT_REF_METHODS_NOTNULLABLE(IterSplitExpr, IterMapExpr, IterSplitExprObj);
+     TVM_DEFINE_OBJECT_REF_COW_METHOD(IterSplitExprObj);
    };
    
-   class IterSumExprNode : public IterMapExprNode {
+   class IterSumExprObj : public IterMapExprObj {
     public:
-     explicit IterSumExprNode(PrimExpr base) : base(std::move(base)) {}
-     explicit IterSumExprNode(ffi::UnsafeInit) : base(ffi::UnsafeInit{}) {}
+     explicit IterSumExprObj(PrimExpr base) : base(std::move(base)) {}
+     explicit IterSumExprObj(ffi::UnsafeInit) : base(ffi::UnsafeInit{}) {}
    
      ffi::Array<IterSplitExpr> args;
      PrimExpr base;
    
      static void RegisterReflection() {
        namespace refl = tvm::ffi::reflection;
-       refl::ObjectDef<IterSumExprNode>()
-           .def_ro("args", &IterSumExprNode::args)
-           .def_ro("base", &IterSumExprNode::base);
+       refl::ObjectDef<IterSumExprObj>()
+           .def_ro("args", &IterSumExprObj::args)
+           .def_ro("base", &IterSumExprObj::base);
      }
    
      static constexpr TVMFFISEqHashKind _type_s_eq_hash_kind = kTVMFFISEqHashKindTreeNode;
-     TVM_FFI_DECLARE_OBJECT_INFO_FINAL("sym.IterSumExpr", IterSumExprNode, IterMapExprNode);
+     TVM_FFI_DECLARE_OBJECT_INFO_FINAL("sym.IterSumExpr", IterSumExprObj, IterMapExprObj);
    };
    
    class IterSumExpr : public IterMapExpr {
     public:
      TVM_TIRX_DLL IterSumExpr(ffi::Array<IterSplitExpr> args, PrimExpr base);
    
-     explicit IterSumExpr(ffi::ObjectPtr<IterSumExprNode> node) : IterMapExpr(std::move(node)) {}
+     explicit IterSumExpr(ffi::ObjectPtr<IterSumExprObj> node) : IterMapExpr(std::move(node)) {}
    
-     TVM_FFI_DEFINE_OBJECT_REF_METHODS_NOTNULLABLE(IterSumExpr, IterMapExpr, IterSumExprNode);
-     TVM_DEFINE_OBJECT_REF_COW_METHOD(IterSumExprNode);
+     TVM_FFI_DEFINE_OBJECT_REF_METHODS_NOTNULLABLE(IterSumExpr, IterMapExpr, IterSumExprObj);
+     TVM_DEFINE_OBJECT_REF_COW_METHOD(IterSumExprObj);
    };
    
    }  // namespace sym
    
    namespace ffi {
    template <>
-   inline constexpr bool object_ref_contains_v<PrimExpr, sym::IterSplitExprNode> = true;
+   inline constexpr bool object_ref_contains_v<PrimExpr, sym::IterSplitExprObj> = true;
    template <>
-   inline constexpr bool object_ref_contains_v<PrimExpr, sym::IterSumExprNode> = true;
+   inline constexpr bool object_ref_contains_v<PrimExpr, sym::IterSumExprObj> = true;
    }  // namespace ffi
    
    namespace sym {

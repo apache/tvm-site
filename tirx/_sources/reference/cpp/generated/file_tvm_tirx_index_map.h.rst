@@ -73,5 +73,5 @@ Classes
 
 - :ref:`exhale_class_classtvm_1_1tirx_1_1IndexMap`
 
-- :ref:`exhale_class_classtvm_1_1tirx_1_1IndexMapNode`
+- :ref:`exhale_class_classtvm_1_1tirx_1_1IndexMapObj`
 

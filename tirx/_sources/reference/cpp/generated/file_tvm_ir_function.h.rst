@@ -87,7 +87,7 @@ Classes
 
 - :ref:`exhale_class_classtvm_1_1BaseFunc`
 
-- :ref:`exhale_class_classtvm_1_1BaseFuncNode`
+- :ref:`exhale_class_classtvm_1_1BaseFuncObj`
 
 
 Enums

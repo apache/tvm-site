@@ -34,7 +34,7 @@ Detailed Description
 
 This module enables declaration of named attributes which support default value setup and bound checking.
 
-AttrsNode 
+AttrsObj 
 
 
 
@@ -103,11 +103,11 @@ Classes
 
 - :ref:`exhale_class_classtvm_1_1Attrs`
 
-- :ref:`exhale_class_classtvm_1_1AttrsNode`
+- :ref:`exhale_class_classtvm_1_1AttrsObj`
 
 - :ref:`exhale_class_classtvm_1_1DictAttrs`
 
-- :ref:`exhale_class_classtvm_1_1DictAttrsNode`
+- :ref:`exhale_class_classtvm_1_1DictAttrsObj`
 
 
 Functions
@@ -116,7 +116,7 @@ Functions
 
 - :ref:`exhale_function_namespacetvm_1a31d64ff4720a3ed13273776208ab1391`
 
-- :ref:`exhale_function_namespacetvm_1a7e2bc626db8be997b1562c79df3d9e11`
-
 - :ref:`exhale_function_namespacetvm_1a011c96fb07f51688c56daf97a96c0302`
+
+- :ref:`exhale_function_namespacetvm_1a7e2bc626db8be997b1562c79df3d9e11`
 

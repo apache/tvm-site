@@ -42,36 +42,35 @@ Program Listing for File stmt.h
    
    namespace tvm {
    
-   class StmtNode : public ffi::Object {
+   class StmtObj : public ffi::Object {
     public:
      mutable Location loc = UnknownLoc();
    
-     StmtNode() = default;
-     explicit StmtNode(Location loc) : loc(loc) {}
+     StmtObj() = default;
+     explicit StmtObj(Location loc) : loc(loc) {}
    
      static void RegisterReflection() {
        namespace refl = tvm::ffi::reflection;
-       refl::ObjectDef<StmtNode>().def_ro("loc", &StmtNode::loc,
-                                          refl::AttachFieldFlag::SEqHashIgnore());
+       refl::ObjectDef<StmtObj>().def_ro("loc", &StmtObj::loc, refl::AttachFieldFlag::SEqHashIgnore());
      }
    
      static constexpr TVMFFISEqHashKind _type_s_eq_hash_kind = kTVMFFISEqHashKindTreeNode;
      static constexpr bool _type_s_eq_hash_subclass_kind_fixed = true;
    
      static constexpr const uint32_t _type_child_slots = 15;
-     TVM_FFI_DECLARE_OBJECT_INFO("ir.Stmt", StmtNode, ffi::Object);
+     TVM_FFI_DECLARE_OBJECT_INFO("ir.Stmt", StmtObj, ffi::Object);
    };
    
    class Stmt : public ffi::ObjectRef {
     public:
-     explicit Stmt(ffi::ObjectPtr<StmtNode> node) : ffi::ObjectRef(std::move(node)) {
+     explicit Stmt(ffi::ObjectPtr<StmtObj> node) : ffi::ObjectRef(std::move(node)) {
        TVM_FFI_CHECK(defined(), ValueError) << "Stmt expects a defined node";
      }
    
-     TVM_FFI_DEFINE_OBJECT_REF_METHODS_NOTNULLABLE(Stmt, ffi::ObjectRef, StmtNode);
+     TVM_FFI_DEFINE_OBJECT_REF_METHODS_NOTNULLABLE(Stmt, ffi::ObjectRef, StmtObj);
    };
    
-   class SeqStmtNode : public StmtNode {
+   class SeqStmtObj : public StmtObj {
     public:
      ffi::Array<Stmt> seq;
    
@@ -79,7 +78,7 @@ Program Listing for File stmt.h
      Stmt operator[](size_t index) const { return seq[index]; }
    
      TVM_TIRX_DLL static void RegisterReflection();
-     TVM_FFI_DECLARE_OBJECT_INFO_FINAL("ir.SeqStmt", SeqStmtNode, StmtNode);
+     TVM_FFI_DECLARE_OBJECT_INFO_FINAL("ir.SeqStmt", SeqStmtObj, StmtObj);
    };
    
    class SeqStmt : public Stmt {
@@ -91,10 +90,10 @@ Program Listing for File stmt.h
    
      size_t size() const { return operator->()->size(); }
      Stmt operator[](size_t index) const { return (*(operator->()))[index]; }
-     explicit SeqStmt(ffi::ObjectPtr<SeqStmtNode> node) : Stmt(std::move(node)) {}
+     explicit SeqStmt(ffi::ObjectPtr<SeqStmtObj> node) : Stmt(std::move(node)) {}
    
-     TVM_FFI_DEFINE_OBJECT_REF_METHODS_NOTNULLABLE(SeqStmt, Stmt, SeqStmtNode);
-     TVM_DEFINE_OBJECT_REF_COW_METHOD(SeqStmtNode);
+     TVM_FFI_DEFINE_OBJECT_REF_METHODS_NOTNULLABLE(SeqStmt, Stmt, SeqStmtObj);
+     TVM_DEFINE_OBJECT_REF_COW_METHOD(SeqStmtObj);
    };
    
    namespace ffi {
@@ -108,39 +107,39 @@ Program Listing for File stmt.h
    };
    }  // namespace ffi
    
-   class BindNode : public StmtNode {
+   class BindObj : public StmtObj {
     public:
-     explicit BindNode(ffi::UnsafeInit tag) : var(tag), value(tag) {}
+     explicit BindObj(ffi::UnsafeInit tag) : var(tag), value(tag) {}
    
-     BindNode(Var var, Expr value) : var(std::move(var)), value(std::move(value)) {}
+     BindObj(Var var, Expr value) : var(std::move(var)), value(std::move(value)) {}
    
      Var var;
      Expr value;
    
      static void RegisterReflection() {
        namespace refl = tvm::ffi::reflection;
-       refl::ObjectDef<BindNode>()
-           .def_ro("var", &BindNode::var, refl::AttachFieldFlag::SEqHashDefSimple())
-           .def_ro("value", &BindNode::value);
+       refl::ObjectDef<BindObj>()
+           .def_ro("var", &BindObj::var, refl::AttachFieldFlag::SEqHashDefSimple())
+           .def_ro("value", &BindObj::value);
      }
-     TVM_FFI_DECLARE_OBJECT_INFO_FINAL("ir.Bind", BindNode, StmtNode);
+     TVM_FFI_DECLARE_OBJECT_INFO_FINAL("ir.Bind", BindObj, StmtObj);
    };
    
    class Bind : public Stmt {
     public:
      TVM_TIRX_DLL Bind(Var var, Expr value, Location loc = UnknownLoc());
    
-     explicit Bind(ffi::ObjectPtr<BindNode> node) : Stmt(std::move(node)) {}
+     explicit Bind(ffi::ObjectPtr<BindObj> node) : Stmt(std::move(node)) {}
    
-     TVM_FFI_DEFINE_OBJECT_REF_METHODS_NOTNULLABLE(Bind, Stmt, BindNode);
-     TVM_DEFINE_OBJECT_REF_COW_METHOD(BindNode);
+     TVM_FFI_DEFINE_OBJECT_REF_METHODS_NOTNULLABLE(Bind, Stmt, BindObj);
+     TVM_DEFINE_OBJECT_REF_COW_METHOD(BindObj);
    };
    
    TVM_TIRX_DLL bool IsRegionOp(const Op& op);
    
    TVM_TIRX_DLL ffi::Array<Var> GetRegionBodyParams(Op op, ffi::Array<Expr> args, DictAttrs attrs);
    
-   class RegionStmtNode : public StmtNode {
+   class RegionStmtObj : public StmtObj {
     public:
      Op op;
      ffi::Array<Expr> args;
@@ -149,23 +148,23 @@ Program Listing for File stmt.h
      SeqStmt body;
      ffi::Array<Var> result_vars;
    
-     explicit RegionStmtNode(ffi::UnsafeInit tag) : op(tag), body(tag) {}
+     explicit RegionStmtObj(ffi::UnsafeInit tag) : op(tag), body(tag) {}
    
-     RegionStmtNode(Op op, SeqStmt body) : op(std::move(op)), body(std::move(body)) {}
+     RegionStmtObj(Op op, SeqStmt body) : op(std::move(op)), body(std::move(body)) {}
    
      static void RegisterReflection() {
        namespace refl = tvm::ffi::reflection;
-       refl::ObjectDef<RegionStmtNode>()
-           .def_ro("op", &RegionStmtNode::op)
-           .def_ro("attrs", &RegionStmtNode::attrs)
-           .def_ro("args", &RegionStmtNode::args)
-           .def_ro("body_params", &RegionStmtNode::body_params,
+       refl::ObjectDef<RegionStmtObj>()
+           .def_ro("op", &RegionStmtObj::op)
+           .def_ro("attrs", &RegionStmtObj::attrs)
+           .def_ro("args", &RegionStmtObj::args)
+           .def_ro("body_params", &RegionStmtObj::body_params,
                    refl::AttachFieldFlag::SEqHashDefSimple())
-           .def_ro("body", &RegionStmtNode::body)
-           .def_ro("result_vars", &RegionStmtNode::result_vars,
+           .def_ro("body", &RegionStmtObj::body)
+           .def_ro("result_vars", &RegionStmtObj::result_vars,
                    refl::AttachFieldFlag::SEqHashDefSimple());
      }
-     TVM_FFI_DECLARE_OBJECT_INFO_FINAL("ir.RegionStmt", RegionStmtNode, StmtNode);
+     TVM_FFI_DECLARE_OBJECT_INFO_FINAL("ir.RegionStmt", RegionStmtObj, StmtObj);
    };
    
    class RegionStmt : public Stmt {
@@ -174,18 +173,18 @@ Program Listing for File stmt.h
                              DictAttrs attrs, SeqStmt body, ffi::Array<Var> result_vars = {},
                              Location loc = UnknownLoc());
    
-     explicit RegionStmt(ffi::ObjectPtr<RegionStmtNode> node) : Stmt(std::move(node)) {}
+     explicit RegionStmt(ffi::ObjectPtr<RegionStmtObj> node) : Stmt(std::move(node)) {}
    
-     TVM_FFI_DEFINE_OBJECT_REF_METHODS_NOTNULLABLE(RegionStmt, Stmt, RegionStmtNode);
-     TVM_DEFINE_OBJECT_REF_COW_METHOD(RegionStmtNode);
+     TVM_FFI_DEFINE_OBJECT_REF_METHODS_NOTNULLABLE(RegionStmt, Stmt, RegionStmtObj);
+     TVM_DEFINE_OBJECT_REF_COW_METHOD(RegionStmtObj);
    };
    
    namespace op_attr {
    inline constexpr ffi::reflection::AttrKey<
-       ffi::reflection::NativeFunctionView<ffi::Array<Var>(const CallNode* call)>>
+       ffi::reflection::NativeFunctionView<ffi::Array<Var>(const CallObj* call)>>
        kRegionGetBodyParams{"FRegionGetBodyParams"};
    inline constexpr ffi::reflection::AttrKey<
-       ffi::reflection::NativeFunctionView<void(const RegionStmtNode*)>>
+       ffi::reflection::NativeFunctionView<void(const RegionStmtObj*)>>
        kRegionValidate{"FRegionValidate"};
    }  // namespace op_attr
    
@@ -193,11 +192,11 @@ Program Listing for File stmt.h
    using FRegionGetBodyParams = decltype(op_attr::kRegionGetBodyParams)::ValueType;
    using FRegionValidate = decltype(op_attr::kRegionValidate)::ValueType;
    
-   class AssertStmtNode : public StmtNode {
+   class AssertStmtObj : public StmtObj {
     public:
-     explicit AssertStmtNode(ffi::UnsafeInit tag) : condition(tag), error_kind(tag) {}
+     explicit AssertStmtObj(ffi::UnsafeInit tag) : condition(tag), error_kind(tag) {}
    
-     AssertStmtNode(PrimExpr condition, StringImm error_kind)
+     AssertStmtObj(PrimExpr condition, StringImm error_kind)
          : condition(std::move(condition)), error_kind(std::move(error_kind)) {}
    
      PrimExpr condition;
@@ -206,12 +205,12 @@ Program Listing for File stmt.h
    
      static void RegisterReflection() {
        namespace refl = tvm::ffi::reflection;
-       refl::ObjectDef<AssertStmtNode>()
-           .def_ro("condition", &AssertStmtNode::condition)
-           .def_ro("error_kind", &AssertStmtNode::error_kind)
-           .def_ro("message_parts", &AssertStmtNode::message_parts);
+       refl::ObjectDef<AssertStmtObj>()
+           .def_ro("condition", &AssertStmtObj::condition)
+           .def_ro("error_kind", &AssertStmtObj::error_kind)
+           .def_ro("message_parts", &AssertStmtObj::message_parts);
      }
-     TVM_FFI_DECLARE_OBJECT_INFO_FINAL("ir.AssertStmt", AssertStmtNode, StmtNode);
+     TVM_FFI_DECLARE_OBJECT_INFO_FINAL("ir.AssertStmt", AssertStmtObj, StmtObj);
    };
    
    class AssertStmt : public Stmt {
@@ -219,17 +218,17 @@ Program Listing for File stmt.h
      TVM_TIRX_DLL AssertStmt(PrimExpr condition, StringImm error_kind,
                              ffi::Array<StringImm> message_parts, Location loc = UnknownLoc());
    
-     explicit AssertStmt(ffi::ObjectPtr<AssertStmtNode> node) : Stmt(std::move(node)) {}
+     explicit AssertStmt(ffi::ObjectPtr<AssertStmtObj> node) : Stmt(std::move(node)) {}
    
-     TVM_FFI_DEFINE_OBJECT_REF_METHODS_NOTNULLABLE(AssertStmt, Stmt, AssertStmtNode);
-     TVM_DEFINE_OBJECT_REF_COW_METHOD(AssertStmtNode);
+     TVM_FFI_DEFINE_OBJECT_REF_METHODS_NOTNULLABLE(AssertStmt, Stmt, AssertStmtObj);
+     TVM_DEFINE_OBJECT_REF_COW_METHOD(AssertStmtObj);
    };
    
-   class TensorStoreNode : public StmtNode {
+   class TensorStoreObj : public StmtObj {
     public:
-     explicit TensorStoreNode(ffi::UnsafeInit tag) : dest(tag), value(tag) {}
+     explicit TensorStoreObj(ffi::UnsafeInit tag) : dest(tag), value(tag) {}
    
-     TensorStoreNode(Expr dest, PrimExpr value) : dest(std::move(dest)), value(std::move(value)) {}
+     TensorStoreObj(Expr dest, PrimExpr value) : dest(std::move(dest)), value(std::move(value)) {}
    
      Expr dest;
      ffi::Array<PrimExpr> indices;
@@ -237,12 +236,12 @@ Program Listing for File stmt.h
    
      static void RegisterReflection() {
        namespace refl = tvm::ffi::reflection;
-       refl::ObjectDef<TensorStoreNode>()
-           .def_ro("dest", &TensorStoreNode::dest)
-           .def_ro("indices", &TensorStoreNode::indices)
-           .def_ro("value", &TensorStoreNode::value);
+       refl::ObjectDef<TensorStoreObj>()
+           .def_ro("dest", &TensorStoreObj::dest)
+           .def_ro("indices", &TensorStoreObj::indices)
+           .def_ro("value", &TensorStoreObj::value);
      }
-     TVM_FFI_DECLARE_OBJECT_INFO_FINAL("ir.TensorStore", TensorStoreNode, StmtNode);
+     TVM_FFI_DECLARE_OBJECT_INFO_FINAL("ir.TensorStore", TensorStoreObj, StmtObj);
    };
    
    class TensorStore : public Stmt {
@@ -250,10 +249,10 @@ Program Listing for File stmt.h
      TVM_TIRX_DLL explicit TensorStore(Expr dest, ffi::Array<PrimExpr> indices, PrimExpr value,
                                        Location loc = UnknownLoc());
    
-     explicit TensorStore(ffi::ObjectPtr<TensorStoreNode> node) : Stmt(std::move(node)) {}
+     explicit TensorStore(ffi::ObjectPtr<TensorStoreObj> node) : Stmt(std::move(node)) {}
    
-     TVM_FFI_DEFINE_OBJECT_REF_METHODS_NOTNULLABLE(TensorStore, Stmt, TensorStoreNode);
-     TVM_DEFINE_OBJECT_REF_COW_METHOD(TensorStoreNode);
+     TVM_FFI_DEFINE_OBJECT_REF_METHODS_NOTNULLABLE(TensorStore, Stmt, TensorStoreObj);
+     TVM_DEFINE_OBJECT_REF_COW_METHOD(TensorStoreObj);
    };
    
    namespace type_attr {
@@ -262,19 +261,19 @@ Program Listing for File stmt.h
        kTensorStoreValidateByTy{"__tvm_tensor_store_validate__"};
    }  // namespace type_attr
    
-   class EvaluateNode : public StmtNode {
+   class EvaluateObj : public StmtObj {
     public:
-     explicit EvaluateNode(ffi::UnsafeInit tag) : value(tag) {}
+     explicit EvaluateObj(ffi::UnsafeInit tag) : value(tag) {}
    
-     explicit EvaluateNode(Expr value) : value(std::move(value)) {}
+     explicit EvaluateObj(Expr value) : value(std::move(value)) {}
    
      Expr value;
    
      static void RegisterReflection() {
        namespace refl = tvm::ffi::reflection;
-       refl::ObjectDef<EvaluateNode>().def_ro("value", &EvaluateNode::value);
+       refl::ObjectDef<EvaluateObj>().def_ro("value", &EvaluateObj::value);
      }
-     TVM_FFI_DECLARE_OBJECT_INFO_FINAL("ir.Evaluate", EvaluateNode, StmtNode);
+     TVM_FFI_DECLARE_OBJECT_INFO_FINAL("ir.Evaluate", EvaluateObj, StmtObj);
    };
    
    class Evaluate : public Stmt {
@@ -283,17 +282,17 @@ Program Listing for File stmt.h
    
      explicit Evaluate(int value, Location loc = UnknownLoc()) : Evaluate(PrimExpr(value), loc) {}
    
-     explicit Evaluate(ffi::ObjectPtr<EvaluateNode> node) : Stmt(std::move(node)) {}
+     explicit Evaluate(ffi::ObjectPtr<EvaluateObj> node) : Stmt(std::move(node)) {}
    
-     TVM_FFI_DEFINE_OBJECT_REF_METHODS_NOTNULLABLE(Evaluate, Stmt, EvaluateNode);
-     TVM_DEFINE_OBJECT_REF_COW_METHOD(EvaluateNode);
+     TVM_FFI_DEFINE_OBJECT_REF_METHODS_NOTNULLABLE(Evaluate, Stmt, EvaluateObj);
+     TVM_DEFINE_OBJECT_REF_COW_METHOD(EvaluateObj);
    };
    
-   class IfNode : public StmtNode {
+   class IfObj : public StmtObj {
     public:
-     explicit IfNode(ffi::UnsafeInit tag) : condition(tag), then_case(tag) {}
+     explicit IfObj(ffi::UnsafeInit tag) : condition(tag), then_case(tag) {}
    
-     IfNode(PrimExpr condition, SeqStmt then_case)
+     IfObj(PrimExpr condition, SeqStmt then_case)
          : condition(std::move(condition)), then_case(std::move(then_case)) {}
    
      PrimExpr condition;
@@ -302,12 +301,12 @@ Program Listing for File stmt.h
    
      static void RegisterReflection() {
        namespace refl = tvm::ffi::reflection;
-       refl::ObjectDef<IfNode>()
-           .def_ro("condition", &IfNode::condition)
-           .def_ro("then_case", &IfNode::then_case)
-           .def_ro("else_case", &IfNode::else_case);
+       refl::ObjectDef<IfObj>()
+           .def_ro("condition", &IfObj::condition)
+           .def_ro("then_case", &IfObj::then_case)
+           .def_ro("else_case", &IfObj::else_case);
      }
-     TVM_FFI_DECLARE_OBJECT_INFO_FINAL("ir.If", IfNode, StmtNode);
+     TVM_FFI_DECLARE_OBJECT_INFO_FINAL("ir.If", IfObj, StmtObj);
    };
    
    class If : public Stmt {
@@ -315,10 +314,10 @@ Program Listing for File stmt.h
      TVM_TIRX_DLL If(PrimExpr condition, SeqStmt then_case,
                      ffi::Optional<SeqStmt> else_case = std::nullopt, Location loc = UnknownLoc());
    
-     explicit If(ffi::ObjectPtr<IfNode> node) : Stmt(std::move(node)) {}
+     explicit If(ffi::ObjectPtr<IfObj> node) : Stmt(std::move(node)) {}
    
-     TVM_FFI_DEFINE_OBJECT_REF_METHODS_NOTNULLABLE(If, Stmt, IfNode);
-     TVM_DEFINE_OBJECT_REF_COW_METHOD(IfNode);
+     TVM_FFI_DEFINE_OBJECT_REF_METHODS_NOTNULLABLE(If, Stmt, IfObj);
+     TVM_DEFINE_OBJECT_REF_COW_METHOD(IfObj);
    };
    
    enum class ForKind : int {
@@ -328,11 +327,11 @@ Program Listing for File stmt.h
      kUnrolled = 3,
    };
    
-   class ForNode : public StmtNode {
+   class ForObj : public StmtObj {
     public:
-     explicit ForNode(ffi::UnsafeInit tag) : var(tag), begin(tag), end(tag), step(tag), body(tag) {}
+     explicit ForObj(ffi::UnsafeInit tag) : var(tag), begin(tag), end(tag), step(tag), body(tag) {}
    
-     ForNode(PrimVar var, PrimExpr begin, PrimExpr end, PrimExpr step, ForKind kind, SeqStmt body)
+     ForObj(PrimVar var, PrimExpr begin, PrimExpr end, PrimExpr step, ForKind kind, SeqStmt body)
          : var(std::move(var)),
            begin(std::move(begin)),
            end(std::move(end)),
@@ -350,19 +349,19 @@ Program Listing for File stmt.h
    
      static void RegisterReflection() {
        namespace refl = tvm::ffi::reflection;
-       refl::ObjectDef<ForNode>()
-           .def_ro("var", &ForNode::var, refl::AttachFieldFlag::SEqHashDefSimple())
-           .def_ro("begin", &ForNode::begin)
-           .def_ro("end", &ForNode::end)
-           .def_ro("step", &ForNode::step)
-           .def_ro("kind", &ForNode::kind)
-           .def_ro("body", &ForNode::body)
-           .def_ro("annotations", &ForNode::annotations);
+       refl::ObjectDef<ForObj>()
+           .def_ro("var", &ForObj::var, refl::AttachFieldFlag::SEqHashDefSimple())
+           .def_ro("begin", &ForObj::begin)
+           .def_ro("end", &ForObj::end)
+           .def_ro("step", &ForObj::step)
+           .def_ro("kind", &ForObj::kind)
+           .def_ro("body", &ForObj::body)
+           .def_ro("annotations", &ForObj::annotations);
      }
    
      TVM_TIRX_DLL bool HasTrivialStep() const;
    
-     TVM_FFI_DECLARE_OBJECT_INFO_FINAL("ir.For", ForNode, StmtNode);
+     TVM_FFI_DECLARE_OBJECT_INFO_FINAL("ir.For", ForObj, StmtObj);
    };
    
    class For : public Stmt {
@@ -371,17 +370,17 @@ Program Listing for File stmt.h
                       SeqStmt body, ffi::Map<ffi::String, ffi::Any> annotations = {},
                       Location loc = UnknownLoc());
    
-     explicit For(ffi::ObjectPtr<ForNode> node) : Stmt(std::move(node)) {}
+     explicit For(ffi::ObjectPtr<ForObj> node) : Stmt(std::move(node)) {}
    
-     TVM_FFI_DEFINE_OBJECT_REF_METHODS_NOTNULLABLE(For, Stmt, ForNode);
-     TVM_DEFINE_OBJECT_REF_COW_METHOD(ForNode);
+     TVM_FFI_DEFINE_OBJECT_REF_METHODS_NOTNULLABLE(For, Stmt, ForObj);
+     TVM_DEFINE_OBJECT_REF_COW_METHOD(ForObj);
    };
    
-   class WhileNode : public StmtNode {
+   class WhileObj : public StmtObj {
     public:
-     explicit WhileNode(ffi::UnsafeInit tag) : condition(tag), body(tag) {}
+     explicit WhileObj(ffi::UnsafeInit tag) : condition(tag), body(tag) {}
    
-     WhileNode(PrimExpr condition, SeqStmt body)
+     WhileObj(PrimExpr condition, SeqStmt body)
          : condition(std::move(condition)), body(std::move(body)) {}
    
      PrimExpr condition;
@@ -389,87 +388,87 @@ Program Listing for File stmt.h
    
      static void RegisterReflection() {
        namespace refl = tvm::ffi::reflection;
-       refl::ObjectDef<WhileNode>()
-           .def_ro("condition", &WhileNode::condition)
-           .def_ro("body", &WhileNode::body);
+       refl::ObjectDef<WhileObj>()
+           .def_ro("condition", &WhileObj::condition)
+           .def_ro("body", &WhileObj::body);
      }
-     TVM_FFI_DECLARE_OBJECT_INFO_FINAL("ir.While", WhileNode, StmtNode);
+     TVM_FFI_DECLARE_OBJECT_INFO_FINAL("ir.While", WhileObj, StmtObj);
    };
    
    class While : public Stmt {
     public:
      TVM_TIRX_DLL While(PrimExpr condition, SeqStmt body, Location loc = UnknownLoc());
    
-     explicit While(ffi::ObjectPtr<WhileNode> node) : Stmt(std::move(node)) {}
+     explicit While(ffi::ObjectPtr<WhileObj> node) : Stmt(std::move(node)) {}
    
-     TVM_FFI_DEFINE_OBJECT_REF_METHODS_NOTNULLABLE(While, Stmt, WhileNode);
-     TVM_DEFINE_OBJECT_REF_COW_METHOD(WhileNode);
+     TVM_FFI_DEFINE_OBJECT_REF_METHODS_NOTNULLABLE(While, Stmt, WhileObj);
+     TVM_DEFINE_OBJECT_REF_COW_METHOD(WhileObj);
    };
    
-   class ReturnNode : public StmtNode {
+   class ReturnObj : public StmtObj {
     public:
-     explicit ReturnNode(ffi::UnsafeInit tag) : value(tag) {}
+     explicit ReturnObj(ffi::UnsafeInit tag) : value(tag) {}
    
-     explicit ReturnNode(Expr value) : value(std::move(value)) {}
+     explicit ReturnObj(Expr value) : value(std::move(value)) {}
    
      Expr value;
    
      static void RegisterReflection() {
        namespace refl = tvm::ffi::reflection;
-       refl::ObjectDef<ReturnNode>().def_ro("value", &ReturnNode::value);
+       refl::ObjectDef<ReturnObj>().def_ro("value", &ReturnObj::value);
      }
    
-     TVM_FFI_DECLARE_OBJECT_INFO_FINAL("ir.Return", ReturnNode, StmtNode);
+     TVM_FFI_DECLARE_OBJECT_INFO_FINAL("ir.Return", ReturnObj, StmtObj);
    };
    
    class Return : public Stmt {
     public:
      TVM_TIRX_DLL explicit Return(Expr value, Location loc = UnknownLoc());
    
-     explicit Return(ffi::ObjectPtr<ReturnNode> node) : Stmt(std::move(node)) {}
+     explicit Return(ffi::ObjectPtr<ReturnObj> node) : Stmt(std::move(node)) {}
    
-     TVM_FFI_DEFINE_OBJECT_REF_METHODS_NOTNULLABLE(Return, Stmt, ReturnNode);
-     TVM_DEFINE_OBJECT_REF_COW_METHOD(ReturnNode);
+     TVM_FFI_DEFINE_OBJECT_REF_METHODS_NOTNULLABLE(Return, Stmt, ReturnObj);
+     TVM_DEFINE_OBJECT_REF_COW_METHOD(ReturnObj);
    };
    
-   class BreakNode : public StmtNode {
+   class BreakObj : public StmtObj {
     public:
      static void RegisterReflection() {
        namespace refl = tvm::ffi::reflection;
-       refl::ObjectDef<BreakNode>();
+       refl::ObjectDef<BreakObj>();
      }
    
-     TVM_FFI_DECLARE_OBJECT_INFO_FINAL("ir.Break", BreakNode, StmtNode);
+     TVM_FFI_DECLARE_OBJECT_INFO_FINAL("ir.Break", BreakObj, StmtObj);
    };
    
    class Break : public Stmt {
     public:
      TVM_TIRX_DLL explicit Break(Location loc);
    
-     explicit Break(ffi::ObjectPtr<BreakNode> node) : Stmt(std::move(node)) {}
+     explicit Break(ffi::ObjectPtr<BreakObj> node) : Stmt(std::move(node)) {}
    
-     TVM_FFI_DEFINE_OBJECT_REF_METHODS_NOTNULLABLE(Break, Stmt, BreakNode);
-     TVM_DEFINE_OBJECT_REF_COW_METHOD(BreakNode);
+     TVM_FFI_DEFINE_OBJECT_REF_METHODS_NOTNULLABLE(Break, Stmt, BreakObj);
+     TVM_DEFINE_OBJECT_REF_COW_METHOD(BreakObj);
    };
    
-   class ContinueNode : public StmtNode {
+   class ContinueObj : public StmtObj {
     public:
      static void RegisterReflection() {
        namespace refl = tvm::ffi::reflection;
-       refl::ObjectDef<ContinueNode>();
+       refl::ObjectDef<ContinueObj>();
      }
    
-     TVM_FFI_DECLARE_OBJECT_INFO_FINAL("ir.Continue", ContinueNode, StmtNode);
+     TVM_FFI_DECLARE_OBJECT_INFO_FINAL("ir.Continue", ContinueObj, StmtObj);
    };
    
    class Continue : public Stmt {
     public:
      TVM_TIRX_DLL explicit Continue(Location loc);
    
-     explicit Continue(ffi::ObjectPtr<ContinueNode> node) : Stmt(std::move(node)) {}
+     explicit Continue(ffi::ObjectPtr<ContinueObj> node) : Stmt(std::move(node)) {}
    
-     TVM_FFI_DEFINE_OBJECT_REF_METHODS_NOTNULLABLE(Continue, Stmt, ContinueNode);
-     TVM_DEFINE_OBJECT_REF_COW_METHOD(ContinueNode);
+     TVM_FFI_DEFINE_OBJECT_REF_METHODS_NOTNULLABLE(Continue, Stmt, ContinueObj);
+     TVM_DEFINE_OBJECT_REF_COW_METHOD(ContinueObj);
    };
    
    // overload printing of for type.

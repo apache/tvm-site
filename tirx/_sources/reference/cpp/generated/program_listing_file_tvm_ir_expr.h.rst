@@ -67,7 +67,7 @@ Program Listing for File expr.h
    
    namespace tvm {
    
-   class ExprNode : public ffi::Object {
+   class ExprObj : public ffi::Object {
     public:
      mutable Location loc = UnknownLoc();
    
@@ -76,16 +76,16 @@ Program Listing for File expr.h
      static void RegisterReflection() {
        namespace refl = tvm::ffi::reflection;
        // loc does not participate in structural equal and hash.
-       refl::ObjectDef<ExprNode>()
-           .def_ro("loc", &ExprNode::loc, refl::DefaultValue(UnknownLoc()),
+       refl::ObjectDef<ExprObj>()
+           .def_ro("loc", &ExprObj::loc, refl::DefaultValue(UnknownLoc()),
                    refl::AttachFieldFlag::SEqHashIgnore())
-           .def_ro("ty", &ExprNode::ty, refl::DefaultValue(MissingType()));
+           .def_ro("ty", &ExprObj::ty, refl::DefaultValue(MissingType()));
      }
    
      static constexpr TVMFFISEqHashKind _type_s_eq_hash_kind = kTVMFFISEqHashKindTreeNode;
    
      static constexpr const uint32_t _type_child_slots = 64;
-     TVM_FFI_DECLARE_OBJECT_INFO("ir.Expr", ExprNode, ffi::Object);
+     TVM_FFI_DECLARE_OBJECT_INFO("ir.Expr", ExprObj, ffi::Object);
    };
    
    class Expr : public ffi::ObjectRef {
@@ -96,41 +96,41 @@ Program Listing for File expr.h
      bool operator!=(const Expr& other) const = delete;
      bool operator<(const Expr& other) const = delete;
    
-     explicit Expr(ffi::ObjectPtr<ExprNode> node) : ffi::ObjectRef(std::move(node)) {
+     explicit Expr(ffi::ObjectPtr<ExprObj> node) : ffi::ObjectRef(std::move(node)) {
        TVM_FFI_CHECK(defined(), ValueError) << "Expr expects a defined node";
      }
    
-     TVM_FFI_DEFINE_OBJECT_REF_METHODS_NOTNULLABLE(Expr, ffi::ObjectRef, ExprNode);
+     TVM_FFI_DEFINE_OBJECT_REF_METHODS_NOTNULLABLE(Expr, ffi::ObjectRef, ExprObj);
    };
    
-   class StagingExprNode : public ExprNode {
+   class StagingExprObj : public ExprObj {
     public:
-     static void RegisterReflection() { ffi::reflection::ObjectDef<StagingExprNode>(); }
+     static void RegisterReflection() { ffi::reflection::ObjectDef<StagingExprObj>(); }
      static constexpr const uint32_t _type_child_slots = 4;
-     TVM_FFI_DECLARE_OBJECT_INFO("ir.StagingExpr", StagingExprNode, ExprNode);
+     TVM_FFI_DECLARE_OBJECT_INFO("ir.StagingExpr", StagingExprObj, ExprObj);
    };
    
    class StagingExpr : public Expr {
     public:
-     TVM_FFI_DEFINE_OBJECT_REF_METHODS_NOTNULLABLE(StagingExpr, Expr, StagingExprNode);
+     TVM_FFI_DEFINE_OBJECT_REF_METHODS_NOTNULLABLE(StagingExpr, Expr, StagingExprObj);
    };
    
-   class OpaqueExprNode : public ExprNode {
+   class OpaqueExprObj : public ExprObj {
     public:
      static void RegisterReflection() {
        namespace refl = tvm::ffi::reflection;
-       refl::ObjectDef<OpaqueExprNode>();
+       refl::ObjectDef<OpaqueExprObj>();
      }
    
      static constexpr const uint32_t _type_child_slots = 2;
-     TVM_FFI_DECLARE_OBJECT_INFO("ir.OpaqueExpr", OpaqueExprNode, ExprNode);
+     TVM_FFI_DECLARE_OBJECT_INFO("ir.OpaqueExpr", OpaqueExprObj, ExprObj);
    };
    
    class OpaqueExpr : public Expr {
     public:
-     explicit OpaqueExpr(ffi::ObjectPtr<OpaqueExprNode> node) : Expr(std::move(node)) {}
+     explicit OpaqueExpr(ffi::ObjectPtr<OpaqueExprObj> node) : Expr(std::move(node)) {}
    
-     TVM_FFI_DEFINE_OBJECT_REF_METHODS_NOTNULLABLE(OpaqueExpr, Expr, OpaqueExprNode);
+     TVM_FFI_DEFINE_OBJECT_REF_METHODS_NOTNULLABLE(OpaqueExpr, Expr, OpaqueExprObj);
    };
    
    template <typename ExpectedType>
@@ -139,14 +139,14 @@ Program Listing for File expr.h
      ExpectedType ty() const {
        const auto* node = get();
        TVM_FFI_DCHECK(node != nullptr);
-       const auto* ty_node = node->ExprNode::ty.template as<typename ExpectedType::ContainerType>();
+       const auto* ty_node = node->ExprObj::ty.template as<typename ExpectedType::ContainerType>();
        TVM_FFI_DCHECK(ty_node != nullptr);
        return ffi::GetRef<ExpectedType>(ty_node);
      }
    
-     explicit TypedExpr(ffi::ObjectPtr<ExprNode> node) : Expr(std::move(node)) {}
+     explicit TypedExpr(ffi::ObjectPtr<ExprObj> node) : Expr(std::move(node)) {}
    
-     TVM_FFI_DEFINE_OBJECT_REF_METHODS_NOTNULLABLE(TypedExpr, Expr, ExprNode);
+     TVM_FFI_DEFINE_OBJECT_REF_METHODS_NOTNULLABLE(TypedExpr, Expr, ExprObj);
      static constexpr bool _type_container_is_exact = false;
    };
    
@@ -157,15 +157,15 @@ Program Listing for File expr.h
      TVM_TIRX_DLL PrimExpr(int32_t value);  // NOLINT(*)
      TVM_TIRX_DLL PrimExpr(float value);  // NOLINT(*)
    
-     explicit PrimExpr(ffi::ObjectPtr<ExprNode> node) : TypedExpr<PrimType>(std::move(node)) {}
+     explicit PrimExpr(ffi::ObjectPtr<ExprObj> node) : TypedExpr<PrimType>(std::move(node)) {}
    
-     TVM_FFI_DEFINE_OBJECT_REF_METHODS_NOTNULLABLE(PrimExpr, TypedExpr<PrimType>, ExprNode);
+     TVM_FFI_DEFINE_OBJECT_REF_METHODS_NOTNULLABLE(PrimExpr, TypedExpr<PrimType>, ExprObj);
      static constexpr bool _type_container_is_exact = false;
    };
    
    class IntExpr : public PrimExpr {
     public:
-     TVM_FFI_DEFINE_OBJECT_REF_METHODS_NOTNULLABLE(IntExpr, PrimExpr, ExprNode);
+     TVM_FFI_DEFINE_OBJECT_REF_METHODS_NOTNULLABLE(IntExpr, PrimExpr, ExprObj);
      static constexpr bool _type_container_is_exact = false;
    };
    
@@ -177,89 +177,89 @@ Program Listing for File expr.h
    inline constexpr bool storage_enabled_v<PrimExpr> = true;
    }  // namespace ffi::details
    
-   class ConstantNode : public ExprNode {
+   class ConstantObj : public ExprObj {
     public:
      static constexpr uint32_t _type_child_slots = 5;
-     static void RegisterReflection() { ffi::reflection::ObjectDef<ConstantNode>(); }
-     TVM_FFI_DECLARE_OBJECT_INFO("ir.Constant", ConstantNode, ExprNode);
+     static void RegisterReflection() { ffi::reflection::ObjectDef<ConstantObj>(); }
+     TVM_FFI_DECLARE_OBJECT_INFO("ir.Constant", ConstantObj, ExprObj);
    };
    
    class Constant : public Expr {
     public:
-     explicit Constant(ffi::ObjectPtr<ConstantNode> node) : Expr(std::move(node)) {}
+     explicit Constant(ffi::ObjectPtr<ConstantObj> node) : Expr(std::move(node)) {}
    
-     TVM_FFI_DEFINE_OBJECT_REF_METHODS_NOTNULLABLE(Constant, Expr, ConstantNode);
+     TVM_FFI_DEFINE_OBJECT_REF_METHODS_NOTNULLABLE(Constant, Expr, ConstantObj);
    };
    
-   class GenericConstNode : public ConstantNode {
+   class GenericConstObj : public ConstantObj {
     public:
      ffi::Any value;
    
      static void RegisterReflection() {
-       ffi::reflection::ObjectDef<GenericConstNode>().def_ro("value", &GenericConstNode::value);
+       ffi::reflection::ObjectDef<GenericConstObj>().def_ro("value", &GenericConstObj::value);
      }
-     TVM_FFI_DECLARE_OBJECT_INFO_FINAL("ir.GenericConst", GenericConstNode, ConstantNode);
+     TVM_FFI_DECLARE_OBJECT_INFO_FINAL("ir.GenericConst", GenericConstObj, ConstantObj);
    };
    
    class GenericConst : public Constant {
     public:
      TVM_TIRX_DLL GenericConst(Type ty, ffi::Any value, Location loc = UnknownLoc());
    
-     explicit GenericConst(ffi::ObjectPtr<GenericConstNode> node) : Constant(std::move(node)) {}
+     explicit GenericConst(ffi::ObjectPtr<GenericConstObj> node) : Constant(std::move(node)) {}
    
-     TVM_FFI_DEFINE_OBJECT_REF_METHODS_NOTNULLABLE(GenericConst, Constant, GenericConstNode);
-     TVM_DEFINE_OBJECT_REF_COW_METHOD(GenericConstNode);
+     TVM_FFI_DEFINE_OBJECT_REF_METHODS_NOTNULLABLE(GenericConst, Constant, GenericConstObj);
+     TVM_DEFINE_OBJECT_REF_COW_METHOD(GenericConstObj);
    };
    
-   class StringImmNode : public ConstantNode {
+   class StringImmObj : public ConstantObj {
     public:
      ffi::String value;
    
      static void RegisterReflection() {
-       ffi::reflection::ObjectDef<StringImmNode>().def_ro("value", &StringImmNode::value);
+       ffi::reflection::ObjectDef<StringImmObj>().def_ro("value", &StringImmObj::value);
      }
-     TVM_FFI_DECLARE_OBJECT_INFO_FINAL("ir.StringImm", StringImmNode, ConstantNode);
+     TVM_FFI_DECLARE_OBJECT_INFO_FINAL("ir.StringImm", StringImmObj, ConstantObj);
    };
    
    class StringImm : public Constant {
     public:
      TVM_TIRX_DLL explicit StringImm(ffi::String value, Location loc = UnknownLoc());
    
-     explicit StringImm(ffi::ObjectPtr<StringImmNode> node) : Constant(std::move(node)) {}
+     explicit StringImm(ffi::ObjectPtr<StringImmObj> node) : Constant(std::move(node)) {}
    
-     TVM_FFI_DEFINE_OBJECT_REF_METHODS_NOTNULLABLE(StringImm, Constant, StringImmNode);
-     TVM_DEFINE_OBJECT_REF_COW_METHOD(StringImmNode);
+     TVM_FFI_DEFINE_OBJECT_REF_METHODS_NOTNULLABLE(StringImm, Constant, StringImmObj);
+     TVM_DEFINE_OBJECT_REF_COW_METHOD(StringImmObj);
    };
    
-   class DataTypeImmNode : public ConstantNode {
+   class DataTypeImmObj : public ConstantObj {
     public:
      DLDataType value;
    
      static void RegisterReflection() {
-       ffi::reflection::ObjectDef<DataTypeImmNode>().def_ro("value", &DataTypeImmNode::value);
+       ffi::reflection::ObjectDef<DataTypeImmObj>().def_ro("value", &DataTypeImmObj::value);
      }
-     TVM_FFI_DECLARE_OBJECT_INFO_FINAL("ir.DataTypeImm", DataTypeImmNode, ConstantNode);
+     TVM_FFI_DECLARE_OBJECT_INFO_FINAL("ir.DataTypeImm", DataTypeImmObj, ConstantObj);
    };
    
    class DataTypeImm : public Constant {
     public:
      TVM_TIRX_DLL explicit DataTypeImm(DLDataType value, Location loc = UnknownLoc());
    
-     explicit DataTypeImm(ffi::ObjectPtr<DataTypeImmNode> node) : Constant(std::move(node)) {}
+     explicit DataTypeImm(ffi::ObjectPtr<DataTypeImmObj> node) : Constant(std::move(node)) {}
    
-     TVM_FFI_DEFINE_OBJECT_REF_METHODS_NOTNULLABLE(DataTypeImm, Constant, DataTypeImmNode);
-     TVM_DEFINE_OBJECT_REF_COW_METHOD(DataTypeImmNode);
+     TVM_FFI_DEFINE_OBJECT_REF_METHODS_NOTNULLABLE(DataTypeImm, Constant, DataTypeImmObj);
+     TVM_DEFINE_OBJECT_REF_COW_METHOD(DataTypeImmObj);
    };
    
-   class IntImmNode : public ConstantNode {
+   class IntImmObj : public ConstantObj {
     public:
      ffi::BigInt value;
    
      static void RegisterReflection() {
        namespace refl = tvm::ffi::reflection;
-       refl::ObjectDef<IntImmNode>().def_ro("value", &IntImmNode::value);
+       refl::ObjectDef<IntImmObj>().def_ro("value", &IntImmObj::value);
      }
-     TVM_FFI_DECLARE_OBJECT_INFO_FINAL("ir.IntImm", IntImmNode, ConstantNode);
+     TVM_FFI_DECLARE_OBJECT_INFO_FINAL("ir.IntImm", IntImmObj, ConstantObj);
    };
    
    class IntImm : public PrimExpr {
@@ -293,106 +293,106 @@ Program Listing for File expr.h
        return IntImm(PrimType::Int(64), value, std::move(loc));
      }
    
-     explicit IntImm(ffi::ObjectPtr<IntImmNode> node) : PrimExpr(std::move(node)) {}
+     explicit IntImm(ffi::ObjectPtr<IntImmObj> node) : PrimExpr(std::move(node)) {}
    
-     TVM_FFI_DEFINE_OBJECT_REF_METHODS_NOTNULLABLE(IntImm, PrimExpr, IntImmNode);
+     TVM_FFI_DEFINE_OBJECT_REF_METHODS_NOTNULLABLE(IntImm, PrimExpr, IntImmObj);
      static constexpr bool _type_container_is_exact = true;
-     TVM_DEFINE_OBJECT_REF_COW_METHOD(IntImmNode);
+     TVM_DEFINE_OBJECT_REF_COW_METHOD(IntImmObj);
    };
    
-   class FloatImmNode : public ConstantNode {
+   class FloatImmObj : public ConstantObj {
     public:
      double value;
    
      static void RegisterReflection() {
        namespace refl = tvm::ffi::reflection;
-       refl::ObjectDef<FloatImmNode>().def_ro("value", &FloatImmNode::value);
+       refl::ObjectDef<FloatImmObj>().def_ro("value", &FloatImmObj::value);
      }
-     TVM_FFI_DECLARE_OBJECT_INFO_FINAL("ir.FloatImm", FloatImmNode, ConstantNode);
+     TVM_FFI_DECLARE_OBJECT_INFO_FINAL("ir.FloatImm", FloatImmObj, ConstantObj);
    };
    
    class FloatImm : public PrimExpr {
     public:
      TVM_TIRX_DLL FloatImm(PrimType value_ty, double value, Location loc = UnknownLoc());
    
-     explicit FloatImm(ffi::ObjectPtr<FloatImmNode> node) : PrimExpr(std::move(node)) {}
+     explicit FloatImm(ffi::ObjectPtr<FloatImmObj> node) : PrimExpr(std::move(node)) {}
    
-     TVM_FFI_DEFINE_OBJECT_REF_METHODS_NOTNULLABLE(FloatImm, PrimExpr, FloatImmNode);
+     TVM_FFI_DEFINE_OBJECT_REF_METHODS_NOTNULLABLE(FloatImm, PrimExpr, FloatImmObj);
      static constexpr bool _type_container_is_exact = true;
-     TVM_DEFINE_OBJECT_REF_COW_METHOD(FloatImmNode);
+     TVM_DEFINE_OBJECT_REF_COW_METHOD(FloatImmObj);
    };
    
-   class TupleNode : public ExprNode {
+   class TupleObj : public ExprObj {
     public:
      ffi::Array<Expr> fields;
    
      static void RegisterReflection() {
        namespace refl = tvm::ffi::reflection;
-       refl::ObjectDef<TupleNode>().def_ro("fields", &TupleNode::fields);
+       refl::ObjectDef<TupleObj>().def_ro("fields", &TupleObj::fields);
      }
    
-     TVM_FFI_DECLARE_OBJECT_INFO_FINAL("ir.Tuple", TupleNode, ExprNode);
+     TVM_FFI_DECLARE_OBJECT_INFO_FINAL("ir.Tuple", TupleObj, ExprObj);
    };
    
    class Tuple : public Expr {
     public:
      TVM_TIRX_DLL explicit Tuple(ffi::Array<Expr> fields, Location loc = UnknownLoc());
    
-     explicit Tuple(ffi::ObjectPtr<TupleNode> node) : Expr(std::move(node)) {}
+     explicit Tuple(ffi::ObjectPtr<TupleObj> node) : Expr(std::move(node)) {}
    
-     TVM_FFI_DEFINE_OBJECT_REF_METHODS_NOTNULLABLE(Tuple, Expr, TupleNode);
-     TVM_DEFINE_OBJECT_REF_COW_METHOD(TupleNode);
+     TVM_FFI_DEFINE_OBJECT_REF_METHODS_NOTNULLABLE(Tuple, Expr, TupleObj);
+     TVM_DEFINE_OBJECT_REF_COW_METHOD(TupleObj);
    };
    
-   class TupleGetItemNode : public ExprNode {
+   class TupleGetItemObj : public ExprObj {
     public:
-     explicit TupleGetItemNode(Expr tuple) : tuple(std::move(tuple)) {}
-     explicit TupleGetItemNode(ffi::UnsafeInit tag) : tuple(tag) {}
+     explicit TupleGetItemObj(Expr tuple) : tuple(std::move(tuple)) {}
+     explicit TupleGetItemObj(ffi::UnsafeInit tag) : tuple(tag) {}
    
      Expr tuple;
      int index;
    
      static void RegisterReflection() {
        namespace refl = tvm::ffi::reflection;
-       refl::ObjectDef<TupleGetItemNode>()
-           .def_ro("tuple_value", &TupleGetItemNode::tuple)
-           .def_ro("index", &TupleGetItemNode::index);
+       refl::ObjectDef<TupleGetItemObj>()
+           .def_ro("tuple_value", &TupleGetItemObj::tuple)
+           .def_ro("index", &TupleGetItemObj::index);
      }
    
-     TVM_FFI_DECLARE_OBJECT_INFO_FINAL("ir.TupleGetItem", TupleGetItemNode, ExprNode);
+     TVM_FFI_DECLARE_OBJECT_INFO_FINAL("ir.TupleGetItem", TupleGetItemObj, ExprObj);
    };
    
    class TupleGetItem : public Expr {
     public:
      TVM_TIRX_DLL TupleGetItem(Expr tuple, int index, Location loc = UnknownLoc());
    
-     explicit TupleGetItem(ffi::ObjectPtr<TupleGetItemNode> node) : Expr(std::move(node)) {}
+     explicit TupleGetItem(ffi::ObjectPtr<TupleGetItemObj> node) : Expr(std::move(node)) {}
    
-     TVM_FFI_DEFINE_OBJECT_REF_METHODS_NOTNULLABLE(TupleGetItem, Expr, TupleGetItemNode);
-     TVM_DEFINE_OBJECT_REF_COW_METHOD(TupleGetItemNode);
+     TVM_FFI_DEFINE_OBJECT_REF_METHODS_NOTNULLABLE(TupleGetItem, Expr, TupleGetItemObj);
+     TVM_DEFINE_OBJECT_REF_COW_METHOD(TupleGetItemObj);
    };
    
-   class TensorLoadNode : public ExprNode {
+   class TensorLoadObj : public ExprObj {
     public:
-     explicit TensorLoadNode(Expr source) : source(std::move(source)) {}
-     explicit TensorLoadNode(ffi::UnsafeInit tag) : source(tag) {}
+     explicit TensorLoadObj(Expr source) : source(std::move(source)) {}
+     explicit TensorLoadObj(ffi::UnsafeInit tag) : source(tag) {}
    
      Expr source;
      ffi::Array<PrimExpr> indices;
    
      static void RegisterReflection() {
        namespace refl = tvm::ffi::reflection;
-       refl::ObjectDef<TensorLoadNode>()
-           .def_ro("source", &TensorLoadNode::source)
-           .def_ro("indices", &TensorLoadNode::indices);
+       refl::ObjectDef<TensorLoadObj>()
+           .def_ro("source", &TensorLoadObj::source)
+           .def_ro("indices", &TensorLoadObj::indices);
      }
    
-     TVM_FFI_DECLARE_OBJECT_INFO_FINAL("ir.TensorLoad", TensorLoadNode, ExprNode);
+     TVM_FFI_DECLARE_OBJECT_INFO_FINAL("ir.TensorLoad", TensorLoadObj, ExprObj);
    };
    
    namespace type_attr {
    inline constexpr ffi::reflection::AttrKey<
-       ffi::reflection::NativeFunctionView<PrimType(const TensorLoadNode*)>>
+       ffi::reflection::NativeFunctionView<PrimType(const TensorLoadObj*)>>
        kTensorLoadInferType{"__tvm_tensor_load_infer_type__"};
    }  // namespace type_attr
    
@@ -403,29 +403,28 @@ Program Listing for File expr.h
      TVM_TIRX_DLL static TensorLoad Unchecked(PrimType ty, Expr source, ffi::Array<PrimExpr> indices,
                                               Location loc = UnknownLoc());
    
-     TVM_TIRX_DLL explicit TensorLoad(ffi::ObjectPtr<TensorLoadNode> node);
+     TVM_TIRX_DLL explicit TensorLoad(ffi::ObjectPtr<TensorLoadObj> node);
    
-     TVM_FFI_DEFINE_OBJECT_REF_METHODS_NOTNULLABLE(TensorLoad, PrimExpr, TensorLoadNode);
+     TVM_FFI_DEFINE_OBJECT_REF_METHODS_NOTNULLABLE(TensorLoad, PrimExpr, TensorLoadObj);
      static constexpr bool _type_container_is_exact = true;
-     TVM_DEFINE_OBJECT_REF_COW_METHOD(TensorLoadNode);
+     TVM_DEFINE_OBJECT_REF_COW_METHOD(TensorLoadObj);
    };
    
-   class VarNode : public ExprNode {
+   class VarObj : public ExprObj {
     public:
      ffi::String name;
    
      static void RegisterReflection() {
        namespace refl = tvm::ffi::reflection;
-       refl::ObjectDef<VarNode>().def_ro("name", &VarNode::name,
-                                         refl::AttachFieldFlag::SEqHashIgnore());
+       refl::ObjectDef<VarObj>().def_ro("name", &VarObj::name, refl::AttachFieldFlag::SEqHashIgnore());
      }
    
      static constexpr TVMFFISEqHashKind _type_s_eq_hash_kind = kTVMFFISEqHashKindFreeVar;
      static constexpr const uint32_t _type_child_slots = 1;
-     // VarNode reserves its sole child slot for the final relax::DataflowVarNode subtype, so its
+     // VarObj reserves its sole child slot for the final relax::DataflowVarNode subtype, so its
      // descendant type-index range cannot overflow.
      static constexpr bool _type_child_slots_can_overflow = false;
-     TVM_FFI_DECLARE_OBJECT_INFO("ir.Var", VarNode, ExprNode);
+     TVM_FFI_DECLARE_OBJECT_INFO("ir.Var", VarObj, ExprObj);
    };
    
    class Var : public Expr {
@@ -440,9 +439,9 @@ Program Listing for File expr.h
    
      TVM_TIRX_DLL Var CopyWithType(Type type) const;
    
-     explicit Var(ffi::ObjectPtr<VarNode> node) : Expr(std::move(node)) {}
+     explicit Var(ffi::ObjectPtr<VarObj> node) : Expr(std::move(node)) {}
    
-     TVM_FFI_DEFINE_OBJECT_REF_METHODS_NOTNULLABLE(Var, Expr, VarNode);
+     TVM_FFI_DEFINE_OBJECT_REF_METHODS_NOTNULLABLE(Var, Expr, VarObj);
    };
    
    class PrimVar : public PrimExpr {
@@ -464,53 +463,53 @@ Program Listing for File expr.h
        return this->as_or_throw<Var>().CopyWithDType(dtype).as_or_throw<PrimVar>();
      }
    
-     explicit PrimVar(ffi::ObjectPtr<VarNode> node) : PrimExpr(std::move(node)) {}
+     explicit PrimVar(ffi::ObjectPtr<VarObj> node) : PrimExpr(std::move(node)) {}
    
-     TVM_FFI_DEFINE_OBJECT_REF_METHODS_NOTNULLABLE(PrimVar, PrimExpr, VarNode);
+     TVM_FFI_DEFINE_OBJECT_REF_METHODS_NOTNULLABLE(PrimVar, PrimExpr, VarObj);
      static constexpr bool _type_container_is_exact = false;
    };
    
-   class LambdaExprNode : public StagingExprNode {
+   class LambdaExprObj : public StagingExprObj {
     public:
      ffi::Array<Var> vars;
      Expr body;
    
-     explicit LambdaExprNode(ffi::UnsafeInit tag) : body(tag) {}
-     explicit LambdaExprNode(Expr body) : body(std::move(body)) {}
+     explicit LambdaExprObj(ffi::UnsafeInit tag) : body(tag) {}
+     explicit LambdaExprObj(Expr body) : body(std::move(body)) {}
      TVM_TIRX_DLL Expr Apply(const ffi::Array<Expr>& arguments) const;
    
      static void RegisterReflection() {
        namespace refl = tvm::ffi::reflection;
-       refl::ObjectDef<LambdaExprNode>()
-           .def_ro("vars", &LambdaExprNode::vars, refl::AttachFieldFlag::SEqHashDefSimple())
-           .def_ro("body", &LambdaExprNode::body);
+       refl::ObjectDef<LambdaExprObj>()
+           .def_ro("vars", &LambdaExprObj::vars, refl::AttachFieldFlag::SEqHashDefSimple())
+           .def_ro("body", &LambdaExprObj::body);
      }
      static constexpr TVMFFISEqHashKind _type_s_eq_hash_kind = kTVMFFISEqHashKindTreeNode;
-     TVM_FFI_DECLARE_OBJECT_INFO_FINAL("ir.LambdaExpr", LambdaExprNode, StagingExprNode);
+     TVM_FFI_DECLARE_OBJECT_INFO_FINAL("ir.LambdaExpr", LambdaExprObj, StagingExprObj);
    };
    
    class LambdaExpr : public StagingExpr {
     public:
      TVM_TIRX_DLL explicit LambdaExpr(ffi::Array<Var> vars, Expr body, Location loc = UnknownLoc());
-     TVM_FFI_DEFINE_OBJECT_REF_METHODS_NOTNULLABLE(LambdaExpr, StagingExpr, LambdaExprNode);
+     TVM_FFI_DEFINE_OBJECT_REF_METHODS_NOTNULLABLE(LambdaExpr, StagingExpr, LambdaExprObj);
    };
    
    class GlobalVar;
-   class GlobalVarNode : public ExprNode {
+   class GlobalVarObj : public ExprObj {
     public:
      ffi::String name_hint;
    
      static void RegisterReflection() {
        namespace refl = tvm::ffi::reflection;
-       refl::ObjectDef<GlobalVarNode>().def_ro("name_hint", &GlobalVarNode::name_hint);
+       refl::ObjectDef<GlobalVarObj>().def_ro("name_hint", &GlobalVarObj::name_hint);
        // A GlobalVar identifies a module-level symbol.  Its type is derived from the
        // corresponding function definition and is not part of the symbol identity.
-       refl::TypeAttrDef<GlobalVarNode>()
-           .def(tvm::ffi::type_attr::kSEqual.name, &GlobalVarNode::SEqual)
-           .def(tvm::ffi::type_attr::kSHash.name, &GlobalVarNode::SHash);
+       refl::TypeAttrDef<GlobalVarObj>()
+           .def(tvm::ffi::type_attr::kSEqual.name, &GlobalVarObj::SEqual)
+           .def(tvm::ffi::type_attr::kSHash.name, &GlobalVarObj::SHash);
      }
    
-     bool SEqual(const GlobalVarNode* other,
+     bool SEqual(const GlobalVarObj* other,
                  ffi::TypedFunction<bool(AnyView, AnyView, bool, AnyView)> equal) const {
        return equal(name_hint, other->name_hint, false, "name_hint");
      }
@@ -520,17 +519,17 @@ Program Listing for File expr.h
      }
    
      static constexpr TVMFFISEqHashKind _type_s_eq_hash_kind = kTVMFFISEqHashKindFreeVar;
-     TVM_FFI_DECLARE_OBJECT_INFO_FINAL("ir.GlobalVar", GlobalVarNode, ExprNode);
+     TVM_FFI_DECLARE_OBJECT_INFO_FINAL("ir.GlobalVar", GlobalVarObj, ExprObj);
    };
    
    class GlobalVar : public Expr {
     public:
      TVM_TIRX_DLL explicit GlobalVar(ffi::String name_hint, Location loc = UnknownLoc());
    
-     explicit GlobalVar(ffi::ObjectPtr<GlobalVarNode> node) : Expr(std::move(node)) {}
+     explicit GlobalVar(ffi::ObjectPtr<GlobalVarObj> node) : Expr(std::move(node)) {}
    
-     TVM_FFI_DEFINE_OBJECT_REF_METHODS_NOTNULLABLE(GlobalVar, Expr, GlobalVarNode);
-     TVM_DEFINE_OBJECT_REF_COW_METHOD(GlobalVarNode);
+     TVM_FFI_DEFINE_OBJECT_REF_METHODS_NOTNULLABLE(GlobalVar, Expr, GlobalVarObj);
+     TVM_DEFINE_OBJECT_REF_COW_METHOD(GlobalVarObj);
    };
    
    enum class CallEffectKind : int {
@@ -572,10 +571,10 @@ Program Listing for File expr.h
      }
    }
    
-   class CallNode : public ExprNode {
+   class CallObj : public ExprObj {
     public:
-     explicit CallNode(Expr op) : op(std::move(op)) {}
-     explicit CallNode(ffi::UnsafeInit tag) : op(tag) {}
+     explicit CallObj(Expr op) : op(std::move(op)) {}
+     explicit CallObj(ffi::UnsafeInit tag) : op(tag) {}
    
      Expr op;
    
@@ -587,14 +586,14 @@ Program Listing for File expr.h
    
      static void RegisterReflection() {
        namespace refl = tvm::ffi::reflection;
-       refl::ObjectDef<CallNode>()
-           .def_ro("op", &CallNode::op)
-           .def_ro("args", &CallNode::args)
-           .def_ro("attrs", &CallNode::attrs)
-           .def_ro("ty_args", &CallNode::ty_args);
+       refl::ObjectDef<CallObj>()
+           .def_ro("op", &CallObj::op)
+           .def_ro("args", &CallObj::args)
+           .def_ro("attrs", &CallObj::attrs)
+           .def_ro("ty_args", &CallObj::ty_args);
      }
    
-     TVM_FFI_DECLARE_OBJECT_INFO_FINAL("ir.Call", CallNode, ExprNode);
+     TVM_FFI_DECLARE_OBJECT_INFO_FINAL("ir.Call", CallObj, ExprObj);
    };
    
    class Call : public Expr {
@@ -604,38 +603,38 @@ Program Listing for File expr.h
                        ffi::Array<Type> ty_args = ffi::Array<Type>(), Location loc = UnknownLoc());
    
      TVM_TIRX_DLL void Validate() const;
-     TVM_TIRX_DLL static Type ReinferType(const CallNode* call);
+     TVM_TIRX_DLL static Type ReinferType(const CallObj* call);
    
-     explicit Call(ffi::ObjectPtr<CallNode> node) : Expr(std::move(node)) {}
+     explicit Call(ffi::ObjectPtr<CallObj> node) : Expr(std::move(node)) {}
    
-     TVM_FFI_DEFINE_OBJECT_REF_METHODS_NOTNULLABLE(Call, Expr, CallNode);
-     TVM_DEFINE_OBJECT_REF_COW_METHOD(CallNode);
+     TVM_FFI_DEFINE_OBJECT_REF_METHODS_NOTNULLABLE(Call, Expr, CallObj);
+     TVM_DEFINE_OBJECT_REF_COW_METHOD(CallObj);
    };
    
    namespace op_attr {
    inline constexpr ffi::reflection::AttrKey<CallEffectKind> kCallEffectKind{"TCallEffectKind"};
    }  // namespace op_attr
    
-   class RangeNode : public ffi::Object {
+   class RangeObj : public ffi::Object {
     public:
      PrimExpr begin;
      PrimExpr extent;
      mutable Location loc = UnknownLoc();
-     explicit RangeNode(ffi::UnsafeInit tag) : begin(tag), extent(tag) {}
-     RangeNode(PrimExpr begin, PrimExpr extent, Location loc = UnknownLoc())
+     explicit RangeObj(ffi::UnsafeInit tag) : begin(tag), extent(tag) {}
+     RangeObj(PrimExpr begin, PrimExpr extent, Location loc = UnknownLoc())
          : begin(begin), extent(extent), loc(loc) {}
    
      static void RegisterReflection() {
        namespace refl = tvm::ffi::reflection;
-       refl::ObjectDef<RangeNode>()
-           .def_ro("begin", &RangeNode::begin)
-           .def_ro("extent", &RangeNode::extent)
-           .def_ro("loc", &RangeNode::loc, refl::AttachFieldFlag::SEqHashIgnore());
+       refl::ObjectDef<RangeObj>()
+           .def_ro("begin", &RangeObj::begin)
+           .def_ro("extent", &RangeObj::extent)
+           .def_ro("loc", &RangeObj::loc, refl::AttachFieldFlag::SEqHashIgnore());
      }
    
      static constexpr TVMFFISEqHashKind _type_s_eq_hash_kind = kTVMFFISEqHashKindTreeNode;
    
-     TVM_FFI_DECLARE_OBJECT_INFO_FINAL("ir.Range", RangeNode, ffi::Object);
+     TVM_FFI_DECLARE_OBJECT_INFO_FINAL("ir.Range", RangeObj, ffi::Object);
    };
    
    class Range : public ffi::ObjectRef {
@@ -645,17 +644,17 @@ Program Listing for File expr.h
                                              Location loc = UnknownLoc());
      TVM_TIRX_DLL static PrimExpr GetExtentFromBeginEnd(const PrimExpr& begin, const PrimExpr& end);
      // declare range.
-     explicit Range(ffi::UnsafeInit tag, ffi::ObjectPtr<RangeNode> n) : ffi::ObjectRef(tag) {
+     explicit Range(ffi::UnsafeInit tag, ffi::ObjectPtr<RangeObj> n) : ffi::ObjectRef(tag) {
        data_ = std::move(n);
      }
    
-     TVM_FFI_DEFINE_OBJECT_REF_METHODS_NOTNULLABLE(Range, ffi::ObjectRef, RangeNode);
+     TVM_FFI_DEFINE_OBJECT_REF_METHODS_NOTNULLABLE(Range, ffi::ObjectRef, RangeObj);
    };
    
-   class TensorRegionNode : public ExprNode {
+   class TensorRegionObj : public ExprObj {
     public:
-     explicit TensorRegionNode(Expr source) : source(std::move(source)) {}
-     explicit TensorRegionNode(ffi::UnsafeInit tag) : source(tag) {}
+     explicit TensorRegionObj(Expr source) : source(std::move(source)) {}
+     explicit TensorRegionObj(ffi::UnsafeInit tag) : source(tag) {}
    
      Expr source;
      ffi::Array<Range> region;
@@ -664,13 +663,13 @@ Program Listing for File expr.h
        namespace refl = tvm::ffi::reflection;
        // A region's source and symbolic source type form a definition pattern;
        // ranges then refer to those same identities.
-       refl::ObjectDef<TensorRegionNode>()
-           .def_ro("source", &TensorRegionNode::source, refl::AttachFieldFlag::SEqHashDefPattern())
-           .def_ro("region", &TensorRegionNode::region);
+       refl::ObjectDef<TensorRegionObj>()
+           .def_ro("source", &TensorRegionObj::source, refl::AttachFieldFlag::SEqHashDefPattern())
+           .def_ro("region", &TensorRegionObj::region);
      }
    
      static constexpr TVMFFISEqHashKind _type_s_eq_hash_kind = kTVMFFISEqHashKindTreeNode;
-     TVM_FFI_DECLARE_OBJECT_INFO_FINAL("ir.TensorRegion", TensorRegionNode, ExprNode);
+     TVM_FFI_DECLARE_OBJECT_INFO_FINAL("ir.TensorRegion", TensorRegionObj, ExprObj);
    };
    
    class TensorRegion : public Expr {
@@ -680,10 +679,10 @@ Program Listing for File expr.h
    
      TVM_TIRX_DLL static TensorRegion FromTensorLoad(TensorLoad value);
    
-     explicit TensorRegion(ffi::ObjectPtr<TensorRegionNode> node) : Expr(std::move(node)) {}
+     explicit TensorRegion(ffi::ObjectPtr<TensorRegionObj> node) : Expr(std::move(node)) {}
    
-     TVM_FFI_DEFINE_OBJECT_REF_METHODS_NOTNULLABLE(TensorRegion, Expr, TensorRegionNode);
-     TVM_DEFINE_OBJECT_REF_COW_METHOD(TensorRegionNode);
+     TVM_FFI_DEFINE_OBJECT_REF_METHODS_NOTNULLABLE(TensorRegion, Expr, TensorRegionObj);
+     TVM_DEFINE_OBJECT_REF_COW_METHOD(TensorRegionObj);
    };
    
    TVM_TIRX_DLL CallEffectKind SideEffect(const Expr& expr);
@@ -716,7 +715,7 @@ Program Listing for File expr.h
    };
    
    template <>
-   inline constexpr bool object_ref_contains_v<PrimExpr, IntImmNode> = true;
+   inline constexpr bool object_ref_contains_v<PrimExpr, IntImmObj> = true;
    
    template <>
    inline constexpr bool use_default_type_traits_v<FloatImm> = false;
@@ -729,10 +728,10 @@ Program Listing for File expr.h
    };
    
    template <>
-   inline constexpr bool object_ref_contains_v<PrimExpr, FloatImmNode> = true;
+   inline constexpr bool object_ref_contains_v<PrimExpr, FloatImmObj> = true;
    
    template <>
-   inline constexpr bool object_ref_contains_v<PrimExpr, TensorLoadNode> = true;
+   inline constexpr bool object_ref_contains_v<PrimExpr, TensorLoadObj> = true;
    
    template <typename ExpectedType>
    inline constexpr bool use_default_type_traits_v<TypedExpr<ExpectedType>> = false;
@@ -742,21 +741,21 @@ Program Listing for File expr.h
        : public ObjectRefTypeTraitsBase<TypedExpr<ExpectedType>> {
      TVM_FFI_INLINE static bool CheckAnyStrict(const TVMFFIAny* src) {
        if (src->type_index < TypeIndex::kTVMFFIStaticObjectBegin ||
-           !details::IsObjectInstance<ExprNode>(src->type_index)) {
+           !details::IsObjectInstance<ExprObj>(src->type_index)) {
          return false;
        }
        // Non-owning: this only reads `ty`, and the owning form's incref/decref pair costs two
        // atomics per check on a path every typed field assignment takes.
-       const auto* expr = details::ObjectUnsafe::RawObjectPtrFromUnowned<ExprNode>(src->v_obj);
+       const auto* expr = details::ObjectUnsafe::RawObjectPtrFromUnowned<ExprObj>(src->v_obj);
        return details::AnyUnsafe::CheckAnyViewStrict<ExpectedType>(expr->ty);
      }
    
      TVM_FFI_INLINE static std::string GetMismatchTypeInfo(const TVMFFIAny* src) {
        if (src->type_index >= TypeIndex::kTVMFFIStaticObjectBegin && src->v_obj != nullptr &&
-           details::IsObjectInstance<ExprNode>(src->type_index)) {
-         const auto* expr = details::ObjectUnsafe::RawObjectPtrFromUnowned<ExprNode>(src->v_obj);
+           details::IsObjectInstance<ExprObj>(src->type_index)) {
+         const auto* expr = details::ObjectUnsafe::RawObjectPtrFromUnowned<ExprObj>(src->v_obj);
          if (expr->ty.defined()) {
-           const auto* prim_ty = expr->ty.as<PrimTypeNode>();
+           const auto* prim_ty = expr->ty.as<PrimTypeObj>();
            std::string ty =
                prim_ty ? std::string(ffi::DLDataTypeToString(prim_ty->dtype)) : expr->ty.GetTypeKey();
            return TypeIndexToTypeKey(src->type_index) + "[ty=" + ty + "]";
@@ -825,8 +824,8 @@ Program Listing for File expr.h
    
      TVM_FFI_INLINE static bool CheckAnyStrict(const TVMFFIAny* src) {
        if (!Base::CheckAnyStrict(src)) return false;
-       const auto* expr = details::ObjectUnsafe::RawObjectPtrFromUnowned<ExprNode>(src->v_obj);
-       const auto* ty = expr->ty.as<PrimTypeNode>();
+       const auto* expr = details::ObjectUnsafe::RawObjectPtrFromUnowned<ExprObj>(src->v_obj);
+       const auto* ty = expr->ty.as<PrimTypeObj>();
        return ty != nullptr && ty->dtype.lanes == 1 &&
               (ty->dtype.code == kDLInt || ty->dtype.code == kDLUInt);
      }
@@ -857,18 +856,18 @@ Program Listing for File expr.h
      using Base::TypeStr;
    
      TVM_FFI_INLINE static bool CheckAnyStrict(const TVMFFIAny* src) {
-       if (src->type_index != VarNode::RuntimeTypeIndex()) {
+       if (src->type_index != VarObj::RuntimeTypeIndex()) {
          return false;
        }
-       const auto* var = static_cast<const VarNode*>(
+       const auto* var = static_cast<const VarObj*>(
            details::ObjectUnsafe::ObjectPtrFromUnowned<Object>(src->v_obj).get());
-       return details::AnyUnsafe::CheckAnyStrict<PrimType>(var->ExprNode::ty);
+       return details::AnyUnsafe::CheckAnyStrict<PrimType>(var->ExprObj::ty);
      }
    
      TVM_FFI_INLINE static std::optional<PrimVar> TryCastFromAnyView(const TVMFFIAny* src) {
        if (CheckAnyStrict(src)) {
          return details::ObjectUnsafe::ObjectRefFromObjectPtr<PrimVar>(
-             details::ObjectUnsafe::ObjectPtrFromUnowned<VarNode>(src->v_obj));
+             details::ObjectUnsafe::ObjectPtrFromUnowned<VarObj>(src->v_obj));
        }
        return std::nullopt;
      }

@@ -56,10 +56,10 @@ Program Listing for File const_fold.h
             (type.bits == 32 || type.bits == 64) && type.lanes == 1;
    }
    
-   inline bool IsIndexTypedExpr(const ExprNode* expr) {
+   inline bool IsIndexTypedExpr(const ExprObj* expr) {
      TVM_FFI_DCHECK(expr != nullptr);
-     TVM_FFI_DCHECK(!expr->ExprNode::ty.as<MissingType>().has_value());
-     const auto* prim_ty = expr->ExprNode::ty.as<PrimTypeNode>();
+     TVM_FFI_DCHECK(!expr->ExprObj::ty.as<MissingType>().has_value());
+     const auto* prim_ty = expr->ExprObj::ty.as<PrimTypeObj>();
      TVM_FFI_DCHECK(prim_ty != nullptr);
      return IsIndexType(prim_ty->dtype);
    }
@@ -101,17 +101,17 @@ Program Listing for File const_fold.h
    
    }  // namespace details
    
-   #define TVM_PRIM_CONST_PROPAGATION(BODY)         \
-     using tvm::FloatImmNode;                       \
-     const IntImmNode* pa = a.as<IntImmNode>();     \
-     const IntImmNode* pb = b.as<IntImmNode>();     \
-     const FloatImmNode* fa = a.as<FloatImmNode>(); \
-     const FloatImmNode* fb = b.as<FloatImmNode>(); \
+   #define TVM_PRIM_CONST_PROPAGATION(BODY)       \
+     using tvm::FloatImmObj;                      \
+     const IntImmObj* pa = a.as<IntImmObj>();     \
+     const IntImmObj* pb = b.as<IntImmObj>();     \
+     const FloatImmObj* fa = a.as<FloatImmObj>(); \
+     const FloatImmObj* fb = b.as<FloatImmObj>(); \
      BODY;
    
    #define TVM_PRIM_INDEX_CONST_PROPAGATION(BODY)                                                  \
-     const IntImmNode* pa = a.as<IntImmNode>();                                                    \
-     const IntImmNode* pb = b.as<IntImmNode>();                                                    \
+     const IntImmObj* pa = a.as<IntImmObj>();                                                      \
+     const IntImmObj* pb = b.as<IntImmObj>();                                                      \
      if (::tvm::prim::details::IsIndexTypedExpr(a) && ::tvm::prim::details::IsIndexTypedExpr(b)) { \
        BODY;                                                                                       \
      }
@@ -424,8 +424,8 @@ Program Listing for File const_fold.h
    
    template <>
    inline ffi::Optional<PrimExpr> TryConstFold<prim::And>(PrimExpr a, PrimExpr b) {
-     const IntImmNode* pa = a.as<IntImmNode>();
-     const IntImmNode* pb = b.as<IntImmNode>();
+     const IntImmObj* pa = a.as<IntImmObj>();
+     const IntImmObj* pb = b.as<IntImmObj>();
      if (pa && pa->value) return b;
      if (pa && !pa->value) return a;
      if (pb && pb->value) return a;
@@ -435,8 +435,8 @@ Program Listing for File const_fold.h
    
    template <>
    inline ffi::Optional<PrimExpr> TryConstFold<prim::Or>(PrimExpr a, PrimExpr b) {
-     const IntImmNode* pa = a.as<IntImmNode>();
-     const IntImmNode* pb = b.as<IntImmNode>();
+     const IntImmObj* pa = a.as<IntImmObj>();
+     const IntImmObj* pb = b.as<IntImmObj>();
      if (pa && pa->value) return a;
      if (pa && !pa->value) return b;
      if (pb && pb->value) return b;
@@ -446,7 +446,7 @@ Program Listing for File const_fold.h
    
    template <>
    inline ffi::Optional<PrimExpr> TryConstFold<prim::Not>(PrimExpr a) {
-     const IntImmNode* pa = a.as<IntImmNode>();
+     const IntImmObj* pa = a.as<IntImmObj>();
      if (pa) {
        return IntImm::Bool(!(pa->value));
      }

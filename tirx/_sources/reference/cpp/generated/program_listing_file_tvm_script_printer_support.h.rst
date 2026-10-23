@@ -58,11 +58,11 @@ Program Listing for File support.h
    TVM_TIRX_DLL ExprDoc AddMetadata(DocTranslatorObj* d, ffi::Any value);
    
    TVM_TIRX_DLL ExprDoc
-   RawCallDocTranslate(DocTranslatorObj* d, const CallNode* call,
+   RawCallDocTranslate(DocTranslatorObj* d, const CallObj* call,
                        ffi::Optional<ffi::Array<ExprDoc>> translated_args = std::nullopt);
    
    TVM_TIRX_DLL ffi::Optional<ExprDoc> StandardCallDocTranslate(DocTranslatorObj* d,
-                                                                const CallNode* call);
+                                                                const CallObj* call);
    
    }  // namespace printer
    }  // namespace script

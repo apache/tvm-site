@@ -63,40 +63,40 @@ Program Listing for File stmt_functor.h
        return (*vtable_)(node, this, std::forward<Args>(args)...);
      }
    
-     virtual R Dispatch_(const BindNode* node, Args... args) {
+     virtual R Dispatch_(const BindObj* node, Args... args) {
        return DispatchDefault_(node, std::forward<Args>(args)...);
      }
-     virtual R Dispatch_(const RegionStmtNode* node, Args... args) {
+     virtual R Dispatch_(const RegionStmtObj* node, Args... args) {
        return DispatchDefault_(node, std::forward<Args>(args)...);
      }
-     virtual R Dispatch_(const IfNode* node, Args... args) {
+     virtual R Dispatch_(const IfObj* node, Args... args) {
        return DispatchDefault_(node, std::forward<Args>(args)...);
      }
-     virtual R Dispatch_(const ForNode* node, Args... args) {
+     virtual R Dispatch_(const ForObj* node, Args... args) {
        return DispatchDefault_(node, std::forward<Args>(args)...);
      }
-     virtual R Dispatch_(const WhileNode* node, Args... args) {
+     virtual R Dispatch_(const WhileObj* node, Args... args) {
        return DispatchDefault_(node, std::forward<Args>(args)...);
      }
-     virtual R Dispatch_(const ReturnNode* node, Args... args) {
+     virtual R Dispatch_(const ReturnObj* node, Args... args) {
        return DispatchDefault_(node, std::forward<Args>(args)...);
      }
-     virtual R Dispatch_(const BreakNode* node, Args... args) {
+     virtual R Dispatch_(const BreakObj* node, Args... args) {
        return DispatchDefault_(node, std::forward<Args>(args)...);
      }
-     virtual R Dispatch_(const ContinueNode* node, Args... args) {
+     virtual R Dispatch_(const ContinueObj* node, Args... args) {
        return DispatchDefault_(node, std::forward<Args>(args)...);
      }
-     virtual R Dispatch_(const TensorStoreNode* node, Args... args) {
+     virtual R Dispatch_(const TensorStoreObj* node, Args... args) {
        return DispatchDefault_(node, std::forward<Args>(args)...);
      }
-     virtual R Dispatch_(const AssertStmtNode* node, Args... args) {
+     virtual R Dispatch_(const AssertStmtObj* node, Args... args) {
        return DispatchDefault_(node, std::forward<Args>(args)...);
      }
-     virtual R Dispatch_(const SeqStmtNode* node, Args... args) {
+     virtual R Dispatch_(const SeqStmtObj* node, Args... args) {
        return DispatchDefault_(node, std::forward<Args>(args)...);
      }
-     virtual R Dispatch_(const EvaluateNode* node, Args... args) {
+     virtual R Dispatch_(const EvaluateObj* node, Args... args) {
        return DispatchDefault_(node, std::forward<Args>(args)...);
      }
      virtual R DispatchDefault_(const ffi::Object* node, Args...) {
@@ -108,22 +108,22 @@ Program Listing for File stmt_functor.h
      using VTable = ObjectFunctor<R(const ffi::ObjectRef&, TSelf*, Args...)>;
      explicit StmtFunctor(const VTable* vtable) : vtable_(vtable) {}
      static void InitVTable(VTable* vtable) {
-       vtable->template SetDispatch<StmtNode>(
+       vtable->template SetDispatch<StmtObj>(
            [](const ffi::ObjectRef& node, TSelf* self, Args... args) -> R {
              return self->DispatchDefault_(node.get(), std::forward<Args>(args)...);
            });
-       SetDispatch<TSelf, BindNode>(vtable);
-       SetDispatch<TSelf, RegionStmtNode>(vtable);
-       SetDispatch<TSelf, IfNode>(vtable);
-       SetDispatch<TSelf, ForNode>(vtable);
-       SetDispatch<TSelf, WhileNode>(vtable);
-       SetDispatch<TSelf, ReturnNode>(vtable);
-       SetDispatch<TSelf, BreakNode>(vtable);
-       SetDispatch<TSelf, ContinueNode>(vtable);
-       SetDispatch<TSelf, TensorStoreNode>(vtable);
-       SetDispatch<TSelf, AssertStmtNode>(vtable);
-       SetDispatch<TSelf, SeqStmtNode>(vtable);
-       SetDispatch<TSelf, EvaluateNode>(vtable);
+       SetDispatch<TSelf, BindObj>(vtable);
+       SetDispatch<TSelf, RegionStmtObj>(vtable);
+       SetDispatch<TSelf, IfObj>(vtable);
+       SetDispatch<TSelf, ForObj>(vtable);
+       SetDispatch<TSelf, WhileObj>(vtable);
+       SetDispatch<TSelf, ReturnObj>(vtable);
+       SetDispatch<TSelf, BreakObj>(vtable);
+       SetDispatch<TSelf, ContinueObj>(vtable);
+       SetDispatch<TSelf, TensorStoreObj>(vtable);
+       SetDispatch<TSelf, AssertStmtObj>(vtable);
+       SetDispatch<TSelf, SeqStmtObj>(vtable);
+       SetDispatch<TSelf, EvaluateObj>(vtable);
      }
      template <typename Self, typename Node>
      static void SetDispatch(VTable* vtable) {
@@ -154,30 +154,30 @@ Program Listing for File stmt_functor.h
      using tvm::ExprVisitor::Visit;
      using tvm::ExprVisitor::Visit_;
    
-     virtual ffi::Optional<VisitInterrupt> Visit_(const BindNode* op);
-     virtual ffi::Optional<VisitInterrupt> Visit_(const RegionStmtNode* op);
-     virtual ffi::Optional<VisitInterrupt> Visit_(const IfNode* op);
-     virtual ffi::Optional<VisitInterrupt> Visit_(const ForNode* op);
-     virtual ffi::Optional<VisitInterrupt> Visit_(const WhileNode* op);
-     virtual ffi::Optional<VisitInterrupt> Visit_(const ReturnNode* op);
-     virtual ffi::Optional<VisitInterrupt> Visit_(const BreakNode* op);
-     virtual ffi::Optional<VisitInterrupt> Visit_(const ContinueNode* op);
-     virtual ffi::Optional<VisitInterrupt> Visit_(const TensorStoreNode* op);
-     virtual ffi::Optional<VisitInterrupt> Visit_(const AssertStmtNode* op);
-     virtual ffi::Optional<VisitInterrupt> Visit_(const SeqStmtNode* op);
-     virtual ffi::Optional<VisitInterrupt> Visit_(const EvaluateNode* op);
+     virtual ffi::Optional<VisitInterrupt> Visit_(const BindObj* op);
+     virtual ffi::Optional<VisitInterrupt> Visit_(const RegionStmtObj* op);
+     virtual ffi::Optional<VisitInterrupt> Visit_(const IfObj* op);
+     virtual ffi::Optional<VisitInterrupt> Visit_(const ForObj* op);
+     virtual ffi::Optional<VisitInterrupt> Visit_(const WhileObj* op);
+     virtual ffi::Optional<VisitInterrupt> Visit_(const ReturnObj* op);
+     virtual ffi::Optional<VisitInterrupt> Visit_(const BreakObj* op);
+     virtual ffi::Optional<VisitInterrupt> Visit_(const ContinueObj* op);
+     virtual ffi::Optional<VisitInterrupt> Visit_(const TensorStoreObj* op);
+     virtual ffi::Optional<VisitInterrupt> Visit_(const AssertStmtObj* op);
+     virtual ffi::Optional<VisitInterrupt> Visit_(const SeqStmtObj* op);
+     virtual ffi::Optional<VisitInterrupt> Visit_(const EvaluateObj* op);
    
      // Preserve TIRx operand traversal where it differs from the shared defaults.
-     ffi::Optional<VisitInterrupt> Visit_(const VarNode* op) override;
-     ffi::Optional<VisitInterrupt> Visit_(const TensorLoadNode* op) override;
-     ffi::Optional<VisitInterrupt> Visit_(const OpaqueExprNode* op) override;
-     ffi::Optional<VisitInterrupt> Visit_(const TupleNode* op) override;
-     ffi::Optional<VisitInterrupt> Visit_(const TupleGetItemNode* op) override;
-     ffi::Optional<VisitInterrupt> Visit_(const CallNode* op) override;
-     ffi::Optional<VisitInterrupt> Visit_(const prim::LetNode* op) override;
-     ffi::Optional<VisitInterrupt> Visit_(const prim::RampNode* op) override;
-     ffi::Optional<VisitInterrupt> Visit_(const prim::BroadcastNode* op) override;
-     ffi::Optional<VisitInterrupt> Visit_(const prim::ShuffleNode* op) override;
+     ffi::Optional<VisitInterrupt> Visit_(const VarObj* op) override;
+     ffi::Optional<VisitInterrupt> Visit_(const TensorLoadObj* op) override;
+     ffi::Optional<VisitInterrupt> Visit_(const OpaqueExprObj* op) override;
+     ffi::Optional<VisitInterrupt> Visit_(const TupleObj* op) override;
+     ffi::Optional<VisitInterrupt> Visit_(const TupleGetItemObj* op) override;
+     ffi::Optional<VisitInterrupt> Visit_(const CallObj* op) override;
+     ffi::Optional<VisitInterrupt> Visit_(const prim::LetObj* op) override;
+     ffi::Optional<VisitInterrupt> Visit_(const prim::RampObj* op) override;
+     ffi::Optional<VisitInterrupt> Visit_(const prim::BroadcastObj* op) override;
+     ffi::Optional<VisitInterrupt> Visit_(const prim::ShuffleObj* op) override;
    
     protected:
      explicit StmtExprVisitor(const VTable* vtable) : tvm::ExprVisitor(vtable) {}
@@ -219,18 +219,18 @@ Program Listing for File stmt_functor.h
        return ffi::Optional<Stmt>(std::move(result).ValueUnchecked());
      }
    
-     virtual UnchangedOr<Stmt> Mutate_(const BindNode* op, InplaceMode inplace_mode);
-     virtual UnchangedOr<Stmt> Mutate_(const RegionStmtNode* op, InplaceMode inplace_mode);
-     virtual UnchangedOr<Stmt> Mutate_(const IfNode* op, InplaceMode inplace_mode);
-     virtual UnchangedOr<Stmt> Mutate_(const ForNode* op, InplaceMode inplace_mode);
-     virtual UnchangedOr<Stmt> Mutate_(const WhileNode* op, InplaceMode inplace_mode);
-     virtual UnchangedOr<Stmt> Mutate_(const ReturnNode* op, InplaceMode inplace_mode);
-     virtual UnchangedOr<Stmt> Mutate_(const BreakNode* op, InplaceMode inplace_mode);
-     virtual UnchangedOr<Stmt> Mutate_(const ContinueNode* op, InplaceMode inplace_mode);
-     virtual UnchangedOr<Stmt> Mutate_(const TensorStoreNode* op, InplaceMode inplace_mode);
-     virtual UnchangedOr<Stmt> Mutate_(const AssertStmtNode* op, InplaceMode inplace_mode);
-     virtual UnchangedOr<Stmt> Mutate_(const SeqStmtNode* op, InplaceMode inplace_mode);
-     virtual UnchangedOr<Stmt> Mutate_(const EvaluateNode* op, InplaceMode inplace_mode);
+     virtual UnchangedOr<Stmt> Mutate_(const BindObj* op, InplaceMode inplace_mode);
+     virtual UnchangedOr<Stmt> Mutate_(const RegionStmtObj* op, InplaceMode inplace_mode);
+     virtual UnchangedOr<Stmt> Mutate_(const IfObj* op, InplaceMode inplace_mode);
+     virtual UnchangedOr<Stmt> Mutate_(const ForObj* op, InplaceMode inplace_mode);
+     virtual UnchangedOr<Stmt> Mutate_(const WhileObj* op, InplaceMode inplace_mode);
+     virtual UnchangedOr<Stmt> Mutate_(const ReturnObj* op, InplaceMode inplace_mode);
+     virtual UnchangedOr<Stmt> Mutate_(const BreakObj* op, InplaceMode inplace_mode);
+     virtual UnchangedOr<Stmt> Mutate_(const ContinueObj* op, InplaceMode inplace_mode);
+     virtual UnchangedOr<Stmt> Mutate_(const TensorStoreObj* op, InplaceMode inplace_mode);
+     virtual UnchangedOr<Stmt> Mutate_(const AssertStmtObj* op, InplaceMode inplace_mode);
+     virtual UnchangedOr<Stmt> Mutate_(const SeqStmtObj* op, InplaceMode inplace_mode);
+     virtual UnchangedOr<Stmt> Mutate_(const EvaluateObj* op, InplaceMode inplace_mode);
    
     protected:
      explicit StmtExprMutator(const VTable* vtable) : tvm::ExprMutator(vtable) {}
@@ -243,12 +243,12 @@ Program Listing for File stmt_functor.h
    TVM_TIRX_DLL PrimExpr SubstituteWithDataTypeLegalization(
        PrimExpr expr, ffi::TypedFunction<ffi::Optional<PrimExpr>(const Var&)> vmap);
    
-   template <typename Node, typename = std::enable_if_t<std::is_base_of_v<StmtNode, Node>>>
+   template <typename Node, typename = std::enable_if_t<std::is_base_of_v<StmtObj, Node>>>
    bool ContainsNode(const Stmt& stmt) {
      struct Visitor : StmtExprVisitor {
        // Early bail-out, if we already found the node. Skip expression operands.
        ffi::Optional<VisitInterrupt> Visit(ffi::AnyView value) final {
-         if (contains_node || value.as<ExprNode>()) {
+         if (contains_node || value.as<ExprObj>()) {
            return std::nullopt;
          }
          if (value.as<Node>()) {

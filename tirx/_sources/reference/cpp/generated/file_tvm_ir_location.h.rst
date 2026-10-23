@@ -79,21 +79,21 @@ Classes
 
 - :ref:`exhale_class_classtvm_1_1CallSiteLoc`
 
-- :ref:`exhale_class_classtvm_1_1CallSiteLocNode`
+- :ref:`exhale_class_classtvm_1_1CallSiteLocObj`
 
 - :ref:`exhale_class_classtvm_1_1Location`
 
-- :ref:`exhale_class_classtvm_1_1LocationNode`
+- :ref:`exhale_class_classtvm_1_1LocationObj`
 
 - :ref:`exhale_class_classtvm_1_1SourceLoc`
 
-- :ref:`exhale_class_classtvm_1_1SourceLocNode`
+- :ref:`exhale_class_classtvm_1_1SourceLocObj`
 
 - :ref:`exhale_class_classtvm_1_1SourceName`
 
-- :ref:`exhale_class_classtvm_1_1SourceNameNode`
+- :ref:`exhale_class_classtvm_1_1SourceNameObj`
 
 - :ref:`exhale_class_classtvm_1_1UnknownLoc`
 
-- :ref:`exhale_class_classtvm_1_1UnknownLocNode`
+- :ref:`exhale_class_classtvm_1_1UnknownLocObj`
 

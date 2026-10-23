@@ -57,7 +57,7 @@ Program Listing for File module.h
    
    class IRModule;
    
-   class IRModuleNode : public ffi::Object {
+   class IRModuleObj : public ffi::Object {
     public:
      ffi::Map<GlobalVar, BaseFunc> functions;
      /* \brief Additional attributes storing meta-data about the module. */
@@ -93,22 +93,22 @@ Program Listing for File module.h
    
      bool HasNonzeroAttr(const std::string& attr_key) const { return attrs.HasNonzeroAttr(attr_key); }
    
-     IRModuleNode() = default;
+     IRModuleObj() = default;
    
      static void RegisterReflection() {
        namespace refl = tvm::ffi::reflection;
-       refl::ObjectDef<IRModuleNode>()
-           .def_ro("functions", &IRModuleNode::functions)
-           .def_ro("global_var_map_", &IRModuleNode::global_var_map_)
-           .def_ro("attrs", &IRModuleNode::attrs)
-           .def_ro("global_infos", &IRModuleNode::global_infos);
+       refl::ObjectDef<IRModuleObj>()
+           .def_ro("functions", &IRModuleObj::functions)
+           .def_ro("global_var_map_", &IRModuleObj::global_var_map_)
+           .def_ro("attrs", &IRModuleObj::attrs)
+           .def_ro("global_infos", &IRModuleObj::global_infos);
        // register custom structural equal and hash.
-       refl::TypeAttrDef<IRModuleNode>()
-           .def(tvm::ffi::type_attr::kSEqual.name, &IRModuleNode::SEqual)
-           .def(tvm::ffi::type_attr::kSHash.name, &IRModuleNode::SHash);
+       refl::TypeAttrDef<IRModuleObj>()
+           .def(tvm::ffi::type_attr::kSEqual.name, &IRModuleObj::SEqual)
+           .def(tvm::ffi::type_attr::kSHash.name, &IRModuleObj::SHash);
      }
    
-     TVM_TIRX_DLL bool SEqual(const IRModuleNode* other,
+     TVM_TIRX_DLL bool SEqual(const IRModuleObj* other,
                               ffi::TypedFunction<bool(AnyView, AnyView, bool, AnyView)> equal) const;
      TVM_TIRX_DLL int64_t SHash(int64_t init_hash,
                                 ffi::TypedFunction<int64_t(AnyView, int64_t, bool)> hash) const;
@@ -158,7 +158,7 @@ Program Listing for File module.h
    
      static constexpr TVMFFISEqHashKind _type_s_eq_hash_kind = kTVMFFISEqHashKindTreeNode;
    
-     TVM_FFI_DECLARE_OBJECT_INFO_FINAL("ir.IRModule", IRModuleNode, ffi::Object);
+     TVM_FFI_DECLARE_OBJECT_INFO_FINAL("ir.IRModule", IRModuleObj, ffi::Object);
    
     private:
      friend class IRModule;
@@ -172,32 +172,32 @@ Program Listing for File module.h
                                     ffi::Map<ffi::String, ffi::Array<GlobalInfo>> global_infos = {});
    
      IRModule() : IRModule(ffi::Map<GlobalVar, BaseFunc>({})) {}
-     explicit IRModule(ffi::ObjectPtr<IRModuleNode> n) : ffi::ObjectRef(std::move(n)) {
+     explicit IRModule(ffi::ObjectPtr<IRModuleObj> n) : ffi::ObjectRef(std::move(n)) {
        TVM_FFI_ICHECK(data_ != nullptr);
      }
      explicit IRModule(ffi::UnsafeInit tag) : ffi::ObjectRef(tag) {}
-     IRModuleNode* operator->() const {
+     IRModuleObj* operator->() const {
        auto* ptr = get_mutable();
        TVM_FFI_ICHECK(ptr != nullptr);
-       return static_cast<IRModuleNode*>(ptr);
+       return static_cast<IRModuleObj*>(ptr);
      }
    
      TVM_TIRX_DLL static IRModule FromExpr(const Expr& expr,
                                            const ffi::Map<GlobalVar, BaseFunc>& global_funcs = {});
    
-     using ContainerType = IRModuleNode;
+     using ContainerType = IRModuleObj;
    
      // allow copy on write.
-     TVM_DEFINE_OBJECT_REF_COW_METHOD(IRModuleNode);
+     TVM_DEFINE_OBJECT_REF_COW_METHOD(IRModuleObj);
    };
    
-   inline void IRModuleNode::Update(const IRModule& mod) {
+   inline void IRModuleObj::Update(const IRModule& mod) {
      for (auto pair : mod->functions) {
        this->AddUnchecked(pair.first, pair.second);
      }
    }
    
-   inline IRModule IRModuleNode::ShallowCopy() {
+   inline IRModule IRModuleObj::ShallowCopy() {
      return IRModule(this->functions, this->attrs, this->global_infos);
    }
    

@@ -59,7 +59,7 @@ Functions
 
 - :ref:`exhale_function_namespacetvm_1_1tirx_1a232ca4bffb36db0d70b967ce516639cd`
 
-- :ref:`exhale_function_namespacetvm_1_1tirx_1a4f5fb501032540c31b8249d4b63160c2`
-
 - :ref:`exhale_function_namespacetvm_1_1tirx_1ac66dc986673e79d2d9f6bbc4a7dc2d6f`
+
+- :ref:`exhale_function_namespacetvm_1_1tirx_1a4f5fb501032540c31b8249d4b63160c2`
 

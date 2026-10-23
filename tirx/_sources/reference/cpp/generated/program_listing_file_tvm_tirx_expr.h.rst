@@ -50,7 +50,7 @@ Program Listing for File expr.h
      TVM_TIRX_DLL explicit TensorVar(ffi::String name, TensorType type, Location loc = UnknownLoc());
    
      explicit TensorVar(Var var) : Var(std::move(var)) {
-       TVM_FFI_ICHECK(get() != nullptr && get()->ty.as<TensorTypeNode>())
+       TVM_FFI_ICHECK(get() != nullptr && get()->ty.as<TensorTypeObj>())
            << "Expected a non-null Var with TensorType";
      }
    
@@ -66,13 +66,13 @@ Program Listing for File expr.h
    
      TVM_TIRX_DLL bool IsScalar(bool alloc_or_decl = true) const;
    
-     explicit TensorVar(ffi::ObjectPtr<VarNode> node) : TensorVar(Var(std::move(node))) {}
+     explicit TensorVar(ffi::ObjectPtr<VarObj> node) : TensorVar(Var(std::move(node))) {}
      explicit TensorVar(ffi::UnsafeInit tag) : Var(tag) {}
      TVM_FFI_DEFINE_DEFAULT_COPY_MOVE_AND_ASSIGN(TensorVar);
    
      [[maybe_unused]] static constexpr bool _type_is_nullable = false;
      static constexpr bool _type_container_is_exact = false;
-     using ContainerType = VarNode;
+     using ContainerType = VarObj;
    };
    
    // Preserve ObjectRef-style identity comparison for exact TensorVar operands.
@@ -104,18 +104,18 @@ Program Listing for File expr.h
        if (src->type_index == TypeIndex::kTVMFFINone) {
          return false;
        }
-       if (src->type_index != tvm::VarNode::RuntimeTypeIndex()) {
+       if (src->type_index != tvm::VarObj::RuntimeTypeIndex()) {
          return false;
        }
-       const auto* var = static_cast<const tvm::VarNode*>(
+       const auto* var = static_cast<const tvm::VarObj*>(
            details::ObjectUnsafe::ObjectPtrFromUnowned<Object>(src->v_obj).get());
-       return details::AnyUnsafe::CheckAnyStrict<tirx::TensorType>(var->ExprNode::ty);
+       return details::AnyUnsafe::CheckAnyStrict<tirx::TensorType>(var->ExprObj::ty);
      }
    
      TVM_FFI_INLINE static std::optional<tirx::TensorVar> TryCastFromAnyView(const TVMFFIAny* src) {
        if (CheckAnyStrict(src)) {
          return details::ObjectUnsafe::ObjectRefFromObjectPtr<tirx::TensorVar>(
-             details::ObjectUnsafe::ObjectPtrFromUnowned<tvm::VarNode>(src->v_obj));
+             details::ObjectUnsafe::ObjectPtrFromUnowned<tvm::VarObj>(src->v_obj));
        }
        return std::nullopt;
      }

@@ -37,16 +37,16 @@ Program Listing for File global_info.h
    
    namespace tvm {
    
-   class GlobalInfoNode : public ffi::Object {
+   class GlobalInfoObj : public ffi::Object {
     public:
      static constexpr TVMFFISEqHashKind _type_s_eq_hash_kind = kTVMFFISEqHashKindTreeNode;
    
-     TVM_FFI_DECLARE_OBJECT_INFO("ir.GlobalInfo", GlobalInfoNode, ffi::Object);
+     TVM_FFI_DECLARE_OBJECT_INFO("ir.GlobalInfo", GlobalInfoObj, ffi::Object);
    };
    
    class GlobalInfo : public ffi::ObjectRef {
     public:
-     TVM_FFI_DEFINE_OBJECT_REF_METHODS_NOTNULLABLE(GlobalInfo, ffi::ObjectRef, GlobalInfoNode);
+     TVM_FFI_DEFINE_OBJECT_REF_METHODS_NOTNULLABLE(GlobalInfo, ffi::ObjectRef, GlobalInfoObj);
    };
    
    }  // namespace tvm

@@ -107,7 +107,7 @@ Classes
 
 - :ref:`exhale_class_classtvm_1_1IRModule`
 
-- :ref:`exhale_class_classtvm_1_1IRModuleNode`
+- :ref:`exhale_class_classtvm_1_1IRModuleObj`
 
 
 Variables

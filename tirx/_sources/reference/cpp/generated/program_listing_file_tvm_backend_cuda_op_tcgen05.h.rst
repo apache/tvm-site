@@ -38,7 +38,7 @@ Program Listing for File tcgen05.h
    namespace backend {
    namespace cuda {
    
-   struct TCGen05InstrDescriptorAttrs : public AttrsNode {
+   struct TCGen05InstrDescriptorAttrs : public AttrsObj {
      ffi::String d_dtype;
      ffi::String a_dtype;
      ffi::String b_dtype;
@@ -55,10 +55,10 @@ Program Listing for File tcgen05.h
    
      static void RegisterReflection();
      TVM_FFI_DECLARE_OBJECT_INFO_FINAL("tirx.cuda.TCGen05InstrDescriptorAttrs",
-                                       TCGen05InstrDescriptorAttrs, AttrsNode);
+                                       TCGen05InstrDescriptorAttrs, AttrsObj);
    };
    
-   struct TCGen05InstrDescriptorBlockScaledAttrs : public AttrsNode {
+   struct TCGen05InstrDescriptorBlockScaledAttrs : public AttrsObj {
      ffi::String d_dtype;
      ffi::String a_dtype;
      ffi::String b_dtype;
@@ -76,7 +76,7 @@ Program Listing for File tcgen05.h
    
      static void RegisterReflection();
      TVM_FFI_DECLARE_OBJECT_INFO_FINAL("tirx.cuda.TCGen05InstrDescriptorBlockScaledAttrs",
-                                       TCGen05InstrDescriptorBlockScaledAttrs, AttrsNode);
+                                       TCGen05InstrDescriptorBlockScaledAttrs, AttrsObj);
    };
    
    }  // namespace cuda

@@ -63,5 +63,5 @@ Classes
 
 - :ref:`exhale_class_classtvm_1_1GlobalInfo`
 
-- :ref:`exhale_class_classtvm_1_1GlobalInfoNode`
+- :ref:`exhale_class_classtvm_1_1GlobalInfoObj`
 

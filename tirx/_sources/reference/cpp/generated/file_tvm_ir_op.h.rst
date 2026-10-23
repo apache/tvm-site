@@ -141,7 +141,7 @@ Classes
 
 - :ref:`exhale_class_classtvm_1_1OpDef`
 
-- :ref:`exhale_class_classtvm_1_1OpNode`
+- :ref:`exhale_class_classtvm_1_1OpObj`
 
 
 Variables
@@ -150,5 +150,5 @@ Variables
 
 - :ref:`exhale_variable_namespacetvm_1_1op__attr_1aee70df37af8c69d88d2c4c9ca635b560`
 
-- :ref:`exhale_variable_namespacetvm_1_1op__attr_1a976df255a6769e2fd253097263a7c64c`
+- :ref:`exhale_variable_namespacetvm_1_1op__attr_1a8e81b72a7754ff45b09c2c8566409583`
 

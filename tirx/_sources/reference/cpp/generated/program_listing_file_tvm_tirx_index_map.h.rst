@@ -48,7 +48,7 @@ Program Listing for File index_map.h
    namespace tvm {
    namespace tirx {
    
-   class IndexMapNode : public ffi::Object {
+   class IndexMapObj : public ffi::Object {
     public:
      ffi::Array<PrimVar> initial_indices;
    
@@ -56,7 +56,7 @@ Program Listing for File index_map.h
    
      ffi::Optional<ffi::ObjectRef> inverse_index_map;
    
-     IndexMapNode() {}
+     IndexMapObj() {}
    
      TVM_TIRX_DLL ffi::Array<PrimExpr> MapIndices(const ffi::Array<PrimExpr>& indices) const;
      TVM_TIRX_DLL ffi::Array<PrimExpr> MapIndices(const ffi::Array<PrimExpr>& indices,
@@ -84,16 +84,16 @@ Program Listing for File index_map.h
    
      static void RegisterReflection() {
        namespace refl = tvm::ffi::reflection;
-       refl::ObjectDef<IndexMapNode>()
-           .def_ro("initial_indices", &IndexMapNode::initial_indices,
+       refl::ObjectDef<IndexMapObj>()
+           .def_ro("initial_indices", &IndexMapObj::initial_indices,
                    refl::AttachFieldFlag::SEqHashDefPattern())
-           .def_ro("final_indices", &IndexMapNode::final_indices)
-           .def_ro("inverse_index_map", &IndexMapNode::inverse_index_map,
+           .def_ro("final_indices", &IndexMapObj::final_indices)
+           .def_ro("inverse_index_map", &IndexMapObj::inverse_index_map,
                    refl::AttachFieldFlag::SEqHashIgnore());
      }
    
      static constexpr TVMFFISEqHashKind _type_s_eq_hash_kind = kTVMFFISEqHashKindTreeNode;
-     TVM_FFI_DECLARE_OBJECT_INFO_FINAL("tirx.IndexMap", IndexMapNode, ffi::Object);
+     TVM_FFI_DECLARE_OBJECT_INFO_FINAL("tirx.IndexMap", IndexMapObj, ffi::Object);
    };
    
    class IndexMap : public ffi::ObjectRef {
@@ -118,7 +118,7 @@ Program Listing for File index_map.h
      TVM_TIRX_DLL ffi::Tuple<IndexMap, PrimExpr> NonSurjectiveInverse(
          ffi::Array<Range> initial_ranges, const sym::Analyzer& analyzer) const;
    
-     TVM_FFI_DEFINE_OBJECT_REF_METHODS_NOTNULLABLE(IndexMap, ffi::ObjectRef, IndexMapNode);
+     TVM_FFI_DEFINE_OBJECT_REF_METHODS_NOTNULLABLE(IndexMap, ffi::ObjectRef, IndexMapObj);
    };
    
    }  // namespace tirx

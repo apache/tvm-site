@@ -70,8 +70,11 @@ Key Classes
 This section lists the key classes of the core IR and tensor programs.
 
 The IR follows a common convention: each IR node is a TVM FFI ``Object`` whose
-class name carries the ``Node`` suffix, such as :cpp:class:`tvm::prim::AddNode`,
+class name carries the ``Obj`` suffix, such as :cpp:class:`tvm::prim::AddObj`,
 paired with a named managed reference class, such as :cpp:class:`tvm::prim::Add`.
+C++ extensions written against the former ``FooNode`` spelling must use
+``FooObj`` and rebuild. Managed reference names, runtime type keys, and serialized
+identities remain unchanged.
 A reference class can define its own constructors, operators, and member functions,
 and inherit from other reference classes to share and specialize its interface.
 It can also impose additional constraints on the node it holds, as described below.
@@ -82,9 +85,9 @@ check its ``ContainerType`` member. IR reference classes are non-nullable; use
 
 Besides the named reference for each node, some reference types add constraints on
 the node they hold. For example, ``TypedExpr<T>`` holds any
-:cpp:class:`tvm::ExprNode` whose ``ty`` field is a ``T``, and
+:cpp:class:`tvm::ExprObj` whose ``ty`` field is a ``T``, and
 :cpp:class:`tvm::PrimExpr`, defined as ``TypedExpr<PrimType>``, holds any
-``ExprNode`` whose ``ty`` is a :cpp:class:`tvm::PrimType`. These constraints are
+``ExprObj`` whose ``ty`` is a :cpp:class:`tvm::PrimType`. These constraints are
 defined by the TVM FFI ``TypeTraits`` specialization of the reference type.
 
 Type

@@ -87,14 +87,14 @@ Program Listing for File abi.h
    
    TVM_TIRX_DLL const Op& call_packed_op();
    
-   struct CallFFIKernelAttr : public AttrsNode {
+   struct CallFFIKernelAttr : public AttrsObj {
      ffi::Array<ffi::String> launch_params;
      ffi::Array<ffi::String> launch_fields;
      int64_t num_kernel_args{-1};
      ffi::Map<ffi::String, int64_t> kernel_attrs;
    
      static void RegisterReflection();
-     TVM_FFI_DECLARE_OBJECT_INFO_FINAL("tirx.CallFFIKernelAttr", CallFFIKernelAttr, AttrsNode);
+     TVM_FFI_DECLARE_OBJECT_INFO_FINAL("tirx.CallFFIKernelAttr", CallFFIKernelAttr, AttrsObj);
    };
    
    TVM_TIRX_DLL const Op& call_ffi_kernel_op();

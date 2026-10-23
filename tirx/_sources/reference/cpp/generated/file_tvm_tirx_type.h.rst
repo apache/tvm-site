@@ -77,11 +77,11 @@ Classes
 
 - :ref:`exhale_class_classtvm_1_1tirx_1_1TensorMapType`
 
-- :ref:`exhale_class_classtvm_1_1tirx_1_1TensorMapTypeNode`
+- :ref:`exhale_class_classtvm_1_1tirx_1_1TensorMapTypeObj`
 
 - :ref:`exhale_class_classtvm_1_1tirx_1_1TensorType`
 
-- :ref:`exhale_class_classtvm_1_1tirx_1_1TensorTypeNode`
+- :ref:`exhale_class_classtvm_1_1tirx_1_1TensorTypeObj`
 
 
 Functions

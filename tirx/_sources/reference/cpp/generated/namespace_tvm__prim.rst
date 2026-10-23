@@ -19,129 +19,129 @@ Classes
 
 - :ref:`exhale_struct_structtvm_1_1prim_1_1ExprDeepEqual`
 
-- :ref:`exhale_struct_structtvm_1_1prim_1_1LENode`
+- :ref:`exhale_struct_structtvm_1_1prim_1_1LEObj`
 
 - :ref:`exhale_class_classtvm_1_1prim_1_1Add`
 
-- :ref:`exhale_class_classtvm_1_1prim_1_1AddNode`
+- :ref:`exhale_class_classtvm_1_1prim_1_1AddObj`
 
 - :ref:`exhale_class_classtvm_1_1prim_1_1And`
 
-- :ref:`exhale_class_classtvm_1_1prim_1_1AndNode`
+- :ref:`exhale_class_classtvm_1_1prim_1_1AndObj`
 
-- :ref:`exhale_class_classtvm_1_1prim_1_1BinaryOpNode`
+- :ref:`exhale_class_classtvm_1_1prim_1_1BinaryOpObj`
 
 - :ref:`exhale_class_classtvm_1_1prim_1_1BitwiseAnd`
 
-- :ref:`exhale_class_classtvm_1_1prim_1_1BitwiseAndNode`
+- :ref:`exhale_class_classtvm_1_1prim_1_1BitwiseAndObj`
 
 - :ref:`exhale_class_classtvm_1_1prim_1_1BitwiseNot`
 
-- :ref:`exhale_class_classtvm_1_1prim_1_1BitwiseNotNode`
+- :ref:`exhale_class_classtvm_1_1prim_1_1BitwiseNotObj`
 
 - :ref:`exhale_class_classtvm_1_1prim_1_1BitwiseOr`
 
-- :ref:`exhale_class_classtvm_1_1prim_1_1BitwiseOrNode`
+- :ref:`exhale_class_classtvm_1_1prim_1_1BitwiseOrObj`
 
 - :ref:`exhale_class_classtvm_1_1prim_1_1BitwiseXor`
 
-- :ref:`exhale_class_classtvm_1_1prim_1_1BitwiseXorNode`
+- :ref:`exhale_class_classtvm_1_1prim_1_1BitwiseXorObj`
 
 - :ref:`exhale_class_classtvm_1_1prim_1_1Broadcast`
 
-- :ref:`exhale_class_classtvm_1_1prim_1_1BroadcastNode`
+- :ref:`exhale_class_classtvm_1_1prim_1_1BroadcastObj`
 
 - :ref:`exhale_class_classtvm_1_1prim_1_1Cast`
 
-- :ref:`exhale_class_classtvm_1_1prim_1_1CastNode`
+- :ref:`exhale_class_classtvm_1_1prim_1_1CastObj`
 
-- :ref:`exhale_class_classtvm_1_1prim_1_1CmpOpNode`
+- :ref:`exhale_class_classtvm_1_1prim_1_1CmpOpObj`
 
 - :ref:`exhale_class_classtvm_1_1prim_1_1Div`
 
-- :ref:`exhale_class_classtvm_1_1prim_1_1DivNode`
+- :ref:`exhale_class_classtvm_1_1prim_1_1DivObj`
 
 - :ref:`exhale_class_classtvm_1_1prim_1_1EQ`
 
-- :ref:`exhale_class_classtvm_1_1prim_1_1EQNode`
+- :ref:`exhale_class_classtvm_1_1prim_1_1EQObj`
 
 - :ref:`exhale_class_classtvm_1_1prim_1_1FloorDiv`
 
-- :ref:`exhale_class_classtvm_1_1prim_1_1FloorDivNode`
+- :ref:`exhale_class_classtvm_1_1prim_1_1FloorDivObj`
 
 - :ref:`exhale_class_classtvm_1_1prim_1_1FloorMod`
 
-- :ref:`exhale_class_classtvm_1_1prim_1_1FloorModNode`
+- :ref:`exhale_class_classtvm_1_1prim_1_1FloorModObj`
 
 - :ref:`exhale_class_classtvm_1_1prim_1_1GE`
 
-- :ref:`exhale_class_classtvm_1_1prim_1_1GENode`
+- :ref:`exhale_class_classtvm_1_1prim_1_1GEObj`
 
 - :ref:`exhale_class_classtvm_1_1prim_1_1GT`
 
-- :ref:`exhale_class_classtvm_1_1prim_1_1GTNode`
+- :ref:`exhale_class_classtvm_1_1prim_1_1GTObj`
 
 - :ref:`exhale_class_classtvm_1_1prim_1_1LE`
 
 - :ref:`exhale_class_classtvm_1_1prim_1_1Let`
 
-- :ref:`exhale_class_classtvm_1_1prim_1_1LetNode`
+- :ref:`exhale_class_classtvm_1_1prim_1_1LetObj`
 
 - :ref:`exhale_class_classtvm_1_1prim_1_1LShift`
 
-- :ref:`exhale_class_classtvm_1_1prim_1_1LShiftNode`
+- :ref:`exhale_class_classtvm_1_1prim_1_1LShiftObj`
 
 - :ref:`exhale_class_classtvm_1_1prim_1_1LT`
 
-- :ref:`exhale_class_classtvm_1_1prim_1_1LTNode`
+- :ref:`exhale_class_classtvm_1_1prim_1_1LTObj`
 
 - :ref:`exhale_class_classtvm_1_1prim_1_1Max`
 
-- :ref:`exhale_class_classtvm_1_1prim_1_1MaxNode`
+- :ref:`exhale_class_classtvm_1_1prim_1_1MaxObj`
 
 - :ref:`exhale_class_classtvm_1_1prim_1_1Min`
 
-- :ref:`exhale_class_classtvm_1_1prim_1_1MinNode`
+- :ref:`exhale_class_classtvm_1_1prim_1_1MinObj`
 
 - :ref:`exhale_class_classtvm_1_1prim_1_1Mod`
 
-- :ref:`exhale_class_classtvm_1_1prim_1_1ModNode`
+- :ref:`exhale_class_classtvm_1_1prim_1_1ModObj`
 
 - :ref:`exhale_class_classtvm_1_1prim_1_1Mul`
 
-- :ref:`exhale_class_classtvm_1_1prim_1_1MulNode`
+- :ref:`exhale_class_classtvm_1_1prim_1_1MulObj`
 
 - :ref:`exhale_class_classtvm_1_1prim_1_1NE`
 
-- :ref:`exhale_class_classtvm_1_1prim_1_1NENode`
+- :ref:`exhale_class_classtvm_1_1prim_1_1NEObj`
 
 - :ref:`exhale_class_classtvm_1_1prim_1_1Not`
 
-- :ref:`exhale_class_classtvm_1_1prim_1_1NotNode`
+- :ref:`exhale_class_classtvm_1_1prim_1_1NotObj`
 
 - :ref:`exhale_class_classtvm_1_1prim_1_1Or`
 
-- :ref:`exhale_class_classtvm_1_1prim_1_1OrNode`
+- :ref:`exhale_class_classtvm_1_1prim_1_1OrObj`
 
 - :ref:`exhale_class_classtvm_1_1prim_1_1Ramp`
 
-- :ref:`exhale_class_classtvm_1_1prim_1_1RampNode`
+- :ref:`exhale_class_classtvm_1_1prim_1_1RampObj`
 
 - :ref:`exhale_class_classtvm_1_1prim_1_1RShift`
 
-- :ref:`exhale_class_classtvm_1_1prim_1_1RShiftNode`
+- :ref:`exhale_class_classtvm_1_1prim_1_1RShiftObj`
 
 - :ref:`exhale_class_classtvm_1_1prim_1_1Select`
 
-- :ref:`exhale_class_classtvm_1_1prim_1_1SelectNode`
+- :ref:`exhale_class_classtvm_1_1prim_1_1SelectObj`
 
 - :ref:`exhale_class_classtvm_1_1prim_1_1Shuffle`
 
-- :ref:`exhale_class_classtvm_1_1prim_1_1ShuffleNode`
+- :ref:`exhale_class_classtvm_1_1prim_1_1ShuffleObj`
 
 - :ref:`exhale_class_classtvm_1_1prim_1_1Sub`
 
-- :ref:`exhale_class_classtvm_1_1prim_1_1SubNode`
+- :ref:`exhale_class_classtvm_1_1prim_1_1SubObj`
 
 
 Functions
@@ -254,9 +254,9 @@ Functions
 
 - :ref:`exhale_function_namespacetvm_1_1prim_1a861154d298e1c8d49b97bcefcfac2a8d`
 
-- :ref:`exhale_function_namespacetvm_1_1prim_1ac7768650e1f34ec0309f701ceeb11709`
-
 - :ref:`exhale_function_namespacetvm_1_1prim_1a06df8a5c28ebfe1ac40a729ecdfde0be`
+
+- :ref:`exhale_function_namespacetvm_1_1prim_1ac7768650e1f34ec0309f701ceeb11709`
 
 - :ref:`exhale_function_namespacetvm_1_1prim_1aa6b1cb8cc8364e3c6b003ce71f7625ac`
 
@@ -364,9 +364,9 @@ Functions
 
 - :ref:`exhale_function_namespacetvm_1_1prim_1a56fb42cef2de30e1df926b5958ea7138`
 
-- :ref:`exhale_function_namespacetvm_1_1prim_1afd455d5a8df24f45602be2bcf77230df`
-
 - :ref:`exhale_function_namespacetvm_1_1prim_1a555becea44f4ea7fdcdcd7153a4882f5`
+
+- :ref:`exhale_function_namespacetvm_1_1prim_1afd455d5a8df24f45602be2bcf77230df`
 
 - :ref:`exhale_function_namespacetvm_1_1prim_1a6115ec069a9723c32da9bbde783c04f0`
 
@@ -411,6 +411,6 @@ Typedefs
 --------
 
 
-- :ref:`exhale_typedef_namespacetvm_1_1prim_1a63723ec3c7a4528a8107a667204d78da`
+- :ref:`exhale_typedef_namespacetvm_1_1prim_1a5d4fc895222d0bd34905915e1c4257e7`
 
-- :ref:`exhale_typedef_namespacetvm_1_1prim_1af5e4fa7cff30b29c8c2875e8b2202161`
+- :ref:`exhale_typedef_namespacetvm_1_1prim_1aee79c6f217ec0a7c221b7a518504de36`

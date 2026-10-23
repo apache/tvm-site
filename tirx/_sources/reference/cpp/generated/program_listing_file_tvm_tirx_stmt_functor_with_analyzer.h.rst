@@ -55,13 +55,13 @@ Program Listing for File stmt_functor_with_analyzer.h
    
      using StmtExprVisitor::Visit_;
    
-     ffi::Optional<VisitInterrupt> Visit_(const ForNode* op);
-     ffi::Optional<VisitInterrupt> Visit_(const BindNode* op);
-     ffi::Optional<VisitInterrupt> Visit_(const IfNode* op);
-     ffi::Optional<VisitInterrupt> Visit_(const RegionStmtNode* op);
-     ffi::Optional<VisitInterrupt> Visit_(const AssertStmtNode* op);
-     ffi::Optional<VisitInterrupt> Visit_(const CallNode* op);
-     ffi::Optional<VisitInterrupt> Visit_(const prim::LetNode* op);
+     ffi::Optional<VisitInterrupt> Visit_(const ForObj* op);
+     ffi::Optional<VisitInterrupt> Visit_(const BindObj* op);
+     ffi::Optional<VisitInterrupt> Visit_(const IfObj* op);
+     ffi::Optional<VisitInterrupt> Visit_(const RegionStmtObj* op);
+     ffi::Optional<VisitInterrupt> Visit_(const AssertStmtObj* op);
+     ffi::Optional<VisitInterrupt> Visit_(const CallObj* op);
+     ffi::Optional<VisitInterrupt> Visit_(const prim::LetObj* op);
    
      // StmtExprVisitorWithAnalyzer deliberately does not handle Select nodes,
      // because both sides of a Select node are visited regardless of the
@@ -87,14 +87,14 @@ Program Listing for File stmt_functor_with_analyzer.h
          : StmtExprMutatorWithAnalyzer(analyzer, GlobalVTable()) {}
    
      // override functions that need to populate the context information.
-     UnchangedOr<Stmt> Mutate_(const ForNode* op, InplaceMode inplace_mode) override;
-     UnchangedOr<Stmt> Mutate_(const BindNode* op, InplaceMode inplace_mode) override;
-     UnchangedOr<Stmt> Mutate_(const IfNode* op, InplaceMode inplace_mode) override;
-     UnchangedOr<Stmt> Mutate_(const RegionStmtNode* op, InplaceMode inplace_mode) override;
-     UnchangedOr<Stmt> Mutate_(const AssertStmtNode* op, InplaceMode inplace_mode) override;
-     UnchangedOr<Expr> Mutate_(const CallNode* op, InplaceMode inplace_mode) override;
-     UnchangedOr<PrimExpr> Mutate_(const prim::LetNode* op, InplaceMode inplace_mode) override;
-     UnchangedOr<PrimExpr> Mutate_(const prim::SelectNode* op, InplaceMode inplace_mode) override;
+     UnchangedOr<Stmt> Mutate_(const ForObj* op, InplaceMode inplace_mode) override;
+     UnchangedOr<Stmt> Mutate_(const BindObj* op, InplaceMode inplace_mode) override;
+     UnchangedOr<Stmt> Mutate_(const IfObj* op, InplaceMode inplace_mode) override;
+     UnchangedOr<Stmt> Mutate_(const RegionStmtObj* op, InplaceMode inplace_mode) override;
+     UnchangedOr<Stmt> Mutate_(const AssertStmtObj* op, InplaceMode inplace_mode) override;
+     UnchangedOr<Expr> Mutate_(const CallObj* op, InplaceMode inplace_mode) override;
+     UnchangedOr<PrimExpr> Mutate_(const prim::LetObj* op, InplaceMode inplace_mode) override;
+     UnchangedOr<PrimExpr> Mutate_(const prim::SelectObj* op, InplaceMode inplace_mode) override;
    
     protected:
      static void InitVTable(VTable* vtable);
@@ -116,11 +116,11 @@ Program Listing for File stmt_functor_with_analyzer.h
      ffi::Array<PrimExpr> iter_predicates_;
      template <typename FLambda>
      void WithRecordIterPredicate(PrimExpr condition, FLambda callback) {
-       std::unordered_set<const VarNode*> iter_var_nodes;
+       std::unordered_set<const VarObj*> iter_var_nodes;
        for (const auto& [var, _] : iter_vars_) {
          iter_var_nodes.insert(var.get());
        }
-       auto f_use_itervar = [&iter_var_nodes](const tvm::VarNode* v) {
+       auto f_use_itervar = [&iter_var_nodes](const tvm::VarObj* v) {
          return iter_var_nodes.count(v);
        };
        auto walkfn = [&](const tvm::Var& var) -> ffi::Expected<ffi::WalkResult> {

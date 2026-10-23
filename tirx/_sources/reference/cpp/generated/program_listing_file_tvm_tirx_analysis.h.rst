@@ -60,7 +60,7 @@ Program Listing for File analysis.h
    
    TVM_TIRX_DLL bool CheckWellFormed(const IRModule& mod, bool assert_mode = true);
    
-   TVM_TIRX_DLL const FunctionNode* FindEntryFunc(const IRModule& mod, GlobalVar* result_g_var);
+   TVM_TIRX_DLL const FunctionObj* FindEntryFunc(const IRModule& mod, GlobalVar* result_g_var);
    
    // Pass variants of verification analysis
    // directly throws RuntimeError when verification fails.

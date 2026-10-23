@@ -12,7 +12,7 @@ Inheritance Relationships
 Base Type
 *********
 
-- ``public tvm::AttrsNode`` (:ref:`exhale_class_classtvm_1_1AttrsNode`)
+- ``public tvm::AttrsObj`` (:ref:`exhale_class_classtvm_1_1AttrsObj`)
 
 
 Struct Documentation

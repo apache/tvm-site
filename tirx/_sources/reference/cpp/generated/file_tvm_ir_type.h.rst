@@ -79,47 +79,47 @@ Classes
 
 - :ref:`exhale_class_classtvm_1_1AnyType`
 
-- :ref:`exhale_class_classtvm_1_1AnyTypeNode`
+- :ref:`exhale_class_classtvm_1_1AnyTypeObj`
 
 - :ref:`exhale_class_classtvm_1_1FuncType`
 
-- :ref:`exhale_class_classtvm_1_1FuncTypeNode`
+- :ref:`exhale_class_classtvm_1_1FuncTypeObj`
 
 - :ref:`exhale_class_classtvm_1_1MissingType`
 
-- :ref:`exhale_class_classtvm_1_1MissingTypeNode`
+- :ref:`exhale_class_classtvm_1_1MissingTypeObj`
 
 - :ref:`exhale_class_classtvm_1_1NoneType`
 
-- :ref:`exhale_class_classtvm_1_1NoneTypeNode`
+- :ref:`exhale_class_classtvm_1_1NoneTypeObj`
 
 - :ref:`exhale_class_classtvm_1_1OpaqueType`
 
-- :ref:`exhale_class_classtvm_1_1OpaqueTypeNode`
+- :ref:`exhale_class_classtvm_1_1OpaqueTypeObj`
 
 - :ref:`exhale_class_classtvm_1_1PrimType`
 
-- :ref:`exhale_class_classtvm_1_1PrimTypeNode`
+- :ref:`exhale_class_classtvm_1_1PrimTypeObj`
 
 - :ref:`exhale_class_classtvm_1_1PtrType`
 
-- :ref:`exhale_class_classtvm_1_1PtrTypeNode`
+- :ref:`exhale_class_classtvm_1_1PtrTypeObj`
 
 - :ref:`exhale_class_classtvm_1_1StringType`
 
-- :ref:`exhale_class_classtvm_1_1StringTypeNode`
+- :ref:`exhale_class_classtvm_1_1StringTypeObj`
 
 - :ref:`exhale_class_classtvm_1_1TensorRegionType`
 
-- :ref:`exhale_class_classtvm_1_1TensorRegionTypeNode`
+- :ref:`exhale_class_classtvm_1_1TensorRegionTypeObj`
 
 - :ref:`exhale_class_classtvm_1_1TupleType`
 
-- :ref:`exhale_class_classtvm_1_1TupleTypeNode`
+- :ref:`exhale_class_classtvm_1_1TupleTypeObj`
 
 - :ref:`exhale_class_classtvm_1_1Type`
 
-- :ref:`exhale_class_classtvm_1_1TypeNode`
+- :ref:`exhale_class_classtvm_1_1TypeObj`
 
 
 Functions

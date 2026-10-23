@@ -85,7 +85,7 @@ Classes
 
 - :ref:`exhale_class_classtvm_1_1sym_1_1IterMapExpr`
 
-- :ref:`exhale_class_classtvm_1_1sym_1_1IterMapExprNode`
+- :ref:`exhale_class_classtvm_1_1sym_1_1IterMapExprObj`
 
 - :ref:`exhale_class_classtvm_1_1sym_1_1IterMapResult`
 
@@ -93,15 +93,15 @@ Classes
 
 - :ref:`exhale_class_classtvm_1_1sym_1_1IterMark`
 
-- :ref:`exhale_class_classtvm_1_1sym_1_1IterMarkNode`
+- :ref:`exhale_class_classtvm_1_1sym_1_1IterMarkObj`
 
 - :ref:`exhale_class_classtvm_1_1sym_1_1IterSplitExpr`
 
-- :ref:`exhale_class_classtvm_1_1sym_1_1IterSplitExprNode`
+- :ref:`exhale_class_classtvm_1_1sym_1_1IterSplitExprObj`
 
 - :ref:`exhale_class_classtvm_1_1sym_1_1IterSumExpr`
 
-- :ref:`exhale_class_classtvm_1_1sym_1_1IterSumExprNode`
+- :ref:`exhale_class_classtvm_1_1sym_1_1IterSumExprObj`
 
 
 Enums

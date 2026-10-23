@@ -56,7 +56,7 @@ Program Listing for File function.h
      kExternal = 1
    };
    
-   class BaseFuncNode : public ExprNode {
+   class BaseFuncObj : public ExprObj {
     public:
      DictAttrs attrs;
    
@@ -88,18 +88,18 @@ Program Listing for File function.h
    
      static void RegisterReflection() {
        namespace refl = tvm::ffi::reflection;
-       refl::ObjectDef<BaseFuncNode>().def_ro("attrs", &BaseFuncNode::attrs);
+       refl::ObjectDef<BaseFuncObj>().def_ro("attrs", &BaseFuncObj::attrs);
      }
    
      static constexpr const uint32_t _type_child_slots = 2;
-     TVM_FFI_DECLARE_OBJECT_INFO("ir.BaseFunc", BaseFuncNode, ExprNode);
+     TVM_FFI_DECLARE_OBJECT_INFO("ir.BaseFunc", BaseFuncObj, ExprObj);
    };
    
    class BaseFunc : public Expr {
     public:
-     explicit BaseFunc(ffi::ObjectPtr<BaseFuncNode> node) : Expr(std::move(node)) {}
+     explicit BaseFunc(ffi::ObjectPtr<BaseFuncObj> node) : Expr(std::move(node)) {}
    
-     TVM_FFI_DEFINE_OBJECT_REF_METHODS_NOTNULLABLE(BaseFunc, Expr, BaseFuncNode);
+     TVM_FFI_DEFINE_OBJECT_REF_METHODS_NOTNULLABLE(BaseFunc, Expr, BaseFuncObj);
    };
    
    namespace attr {
@@ -113,7 +113,7 @@ Program Listing for File function.h
    
    }  // namespace attr
    
-   inline LinkageType BaseFuncNode::GetLinkageType() const {
+   inline LinkageType BaseFuncObj::GetLinkageType() const {
      if (GetAttr(tvm::attr::kGlobalSymbol))
        return LinkageType::kExternal;
      else

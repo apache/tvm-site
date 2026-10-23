@@ -36,27 +36,27 @@ Classes
 
 - :ref:`exhale_class_classtvm_1_1tirx_1_1Axis`
 
-- :ref:`exhale_class_classtvm_1_1tirx_1_1AxisNode`
+- :ref:`exhale_class_classtvm_1_1tirx_1_1AxisObj`
 
 - :ref:`exhale_class_classtvm_1_1tirx_1_1ComposeLayout`
 
-- :ref:`exhale_class_classtvm_1_1tirx_1_1ComposeLayoutNode`
+- :ref:`exhale_class_classtvm_1_1tirx_1_1ComposeLayoutObj`
 
 - :ref:`exhale_class_classtvm_1_1tirx_1_1Function`
 
-- :ref:`exhale_class_classtvm_1_1tirx_1_1FunctionNode`
+- :ref:`exhale_class_classtvm_1_1tirx_1_1FunctionObj`
 
 - :ref:`exhale_class_classtvm_1_1tirx_1_1IndexMap`
 
-- :ref:`exhale_class_classtvm_1_1tirx_1_1IndexMapNode`
+- :ref:`exhale_class_classtvm_1_1tirx_1_1IndexMapObj`
 
 - :ref:`exhale_class_classtvm_1_1tirx_1_1Iter`
 
-- :ref:`exhale_class_classtvm_1_1tirx_1_1IterNode`
+- :ref:`exhale_class_classtvm_1_1tirx_1_1IterObj`
 
 - :ref:`exhale_class_classtvm_1_1tirx_1_1Layout`
 
-- :ref:`exhale_class_classtvm_1_1tirx_1_1LayoutNode`
+- :ref:`exhale_class_classtvm_1_1tirx_1_1LayoutObj`
 
 - :ref:`exhale_class_classtvm_1_1tirx_1_1StmtExprMutator`
 
@@ -72,11 +72,11 @@ Classes
 
 - :ref:`exhale_class_classtvm_1_1tirx_1_1TensorMapType`
 
-- :ref:`exhale_class_classtvm_1_1tirx_1_1TensorMapTypeNode`
+- :ref:`exhale_class_classtvm_1_1tirx_1_1TensorMapTypeObj`
 
 - :ref:`exhale_class_classtvm_1_1tirx_1_1TensorType`
 
-- :ref:`exhale_class_classtvm_1_1tirx_1_1TensorTypeNode`
+- :ref:`exhale_class_classtvm_1_1tirx_1_1TensorTypeObj`
 
 - :ref:`exhale_class_classtvm_1_1tirx_1_1TensorVar`
 
@@ -86,7 +86,7 @@ Classes
 
 - :ref:`exhale_class_classtvm_1_1tirx_1_1TileLayout`
 
-- :ref:`exhale_class_classtvm_1_1tirx_1_1TileLayoutNode`
+- :ref:`exhale_class_classtvm_1_1tirx_1_1TileLayoutObj`
 
 
 Enums
@@ -160,7 +160,7 @@ Functions
 
 - :ref:`exhale_function_namespacetvm_1_1tirx_1aed615c151b18908d314e2f4fd62ae9f7`
 
-- :ref:`exhale_function_namespacetvm_1_1tirx_1a5c9f7c62eba22cfaa6111943059211f0`
+- :ref:`exhale_function_namespacetvm_1_1tirx_1aee04dafcac45004fa4cac15e48f95501`
 
 - :ref:`exhale_function_namespacetvm_1_1tirx_1a21eed1cd4d0737fcef7771a46951c42f`
 
@@ -202,11 +202,11 @@ Functions
 
 - :ref:`exhale_function_namespacetvm_1_1tirx_1a8efde7427b73f0664d1a7266a3bf74d2`
 
+- :ref:`exhale_function_namespacetvm_1_1tirx_1a232ca4bffb36db0d70b967ce516639cd`
+
 - :ref:`exhale_function_namespacetvm_1_1tirx_1a4f5fb501032540c31b8249d4b63160c2`
 
 - :ref:`exhale_function_namespacetvm_1_1tirx_1ac66dc986673e79d2d9f6bbc4a7dc2d6f`
-
-- :ref:`exhale_function_namespacetvm_1_1tirx_1a232ca4bffb36db0d70b967ce516639cd`
 
 - :ref:`exhale_function_namespacetvm_1_1tirx_1aa0c78d123d4b8990370092e72a5c9d0c`
 

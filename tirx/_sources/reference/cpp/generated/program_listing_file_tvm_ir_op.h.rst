@@ -77,7 +77,7 @@ Program Listing for File op.h
      TVM_FFI_DEFINE_OBJECT_REF_METHODS_NOTNULLABLE(ArgumentInfo, ffi::ObjectRef, ArgumentInfoObj);
    };
    
-   class OpNode : public ExprNode {
+   class OpObj : public ExprObj {
     private:
      // Dense process-local index into attribute columns; never serialized.
      uint32_t index_{0};
@@ -97,7 +97,7 @@ Program Listing for File op.h
      TVM_TIRX_DLL static void RegisterReflection();
    
      static constexpr TVMFFISEqHashKind _type_s_eq_hash_kind = kTVMFFISEqHashKindUniqueInstance;
-     TVM_FFI_DECLARE_OBJECT_INFO_FINAL("ir.Op", OpNode, ExprNode);
+     TVM_FFI_DECLARE_OBJECT_INFO_FINAL("ir.Op", OpObj, ExprObj);
    
     private:
      friend class OpRegistry;
@@ -109,8 +109,8 @@ Program Listing for File op.h
    
    class Op : public Expr {
     public:
-     explicit Op(ffi::ObjectPtr<OpNode> n) : Expr(std::move(n)) {
-       TVM_FFI_CHECK(defined(), ValueError) << "Op expects a defined OpNode";
+     explicit Op(ffi::ObjectPtr<OpObj> n) : Expr(std::move(n)) {
+       TVM_FFI_CHECK(defined(), ValueError) << "Op expects a defined OpObj";
      }
    
      template <typename ValueType>
@@ -127,29 +127,29 @@ Program Listing for File op.h
      TVM_TIRX_DLL static Op Get(const ffi::String& op_name);
      TVM_TIRX_DLL static ffi::Array<ffi::String> ListNames();
    
-     TVM_FFI_INLINE void Validate(const CallNode* call) const {
+     TVM_FFI_INLINE void Validate(const CallObj* call) const {
        const auto& validator = get()->validator;
        if (validator != nullptr) {
          if (TVM_FFI_PREDICT_FALSE(!call)) {
            ThrowInvalidCall(get());
          }
-         using View = ffi::reflection::NativeFunctionView<void(const CallNode*)>;
+         using View = ffi::reflection::NativeFunctionView<void(const CallObj*)>;
          // set_validator stores only an owning NativeFunction with this signature.
          ffi::details::AnyUnsafe::CopyFromAnyViewAfterCheck<View>(validator)
              .CallExpected(call)
              .value();
        }
      }
-     TVM_FFI_DEFINE_OBJECT_REF_METHODS_NOTNULLABLE(Op, Expr, OpNode);
+     TVM_FFI_DEFINE_OBJECT_REF_METHODS_NOTNULLABLE(Op, Expr, OpObj);
    
     private:
-     TVM_TIRX_DLL static void ThrowInvalidCall(const OpNode* op);
+     TVM_TIRX_DLL static void ThrowInvalidCall(const OpObj* op);
      TVM_TIRX_DLL static ffi::List<ffi::Any> GetAttrColumn(const ffi::String& attr_name);
    };
    
    namespace op_attr {
    inline constexpr ffi::reflection::AttrKey<
-       ffi::reflection::NativeFunctionView<Type(const CallNode* call)>>
+       ffi::reflection::NativeFunctionView<Type(const CallObj* call)>>
        kInferType{"FInferType"};
    inline constexpr ffi::reflection::AttrKey<Type> kFixedReturnType{"TFixedReturnType"};
    }  // namespace op_attr
@@ -169,8 +169,8 @@ Program Listing for File op.h
    };
    
    struct ValidateState {
-     const CallNode* call;
-     const OpNode* op;
+     const CallObj* call;
+     const OpObj* op;
      size_t args_index = 0;
      size_t ty_args_index = 0;
    };
@@ -209,7 +209,7 @@ Program Listing for File op.h
      explicit arg(ffi::String name, ffi::String doc = "")
          : name(std::move(name)), doc(std::move(doc)) {}
    
-     void CollectMetadata(OpNode* op) const {
+     void CollectMetadata(OpObj* op) const {
        auto info = ffi::make_object<ArgumentInfoObj>();
        info->name = name;
        info->doc = doc;
@@ -239,7 +239,7 @@ Program Listing for File op.h
      explicit var_args(ffi::String name, ffi::String doc = "")
          : name(std::move(name)), doc(std::move(doc)) {}
    
-     void CollectMetadata(OpNode* op) const {
+     void CollectMetadata(OpObj* op) const {
        auto info = ffi::make_object<ArgumentInfoObj>();
        info->name = name;
        info->doc = doc;
@@ -273,7 +273,7 @@ Program Listing for File op.h
      explicit ty_arg(ffi::String name, ffi::String doc = "")
          : name(std::move(name)), doc(std::move(doc)) {}
    
-     void CollectMetadata(OpNode* op) const {
+     void CollectMetadata(OpObj* op) const {
        auto info = ffi::make_object<ArgumentInfoObj>();
        info->name = name;
        info->doc = doc;
@@ -303,7 +303,7 @@ Program Listing for File op.h
      explicit var_ty_args(ffi::String name, ffi::String doc = "")
          : name(std::move(name)), doc(std::move(doc)) {}
    
-     void CollectMetadata(OpNode* op) const {
+     void CollectMetadata(OpObj* op) const {
        auto info = ffi::make_object<ArgumentInfoObj>();
        info->name = name;
        info->doc = doc;
@@ -329,10 +329,10 @@ Program Listing for File op.h
    
    template <typename T>
    struct call_attrs : SignatureTrait {
-     static_assert(std::is_base_of_v<AttrsNode, T>, "call_attrs<T> expects an attribute node type");
+     static_assert(std::is_base_of_v<AttrsObj, T>, "call_attrs<T> expects an attribute node type");
      static constexpr size_t kCallAttrsCount = 1;
    
-     void CollectMetadata(OpNode* op) const {
+     void CollectMetadata(OpObj* op) const {
        uint32_t index = T::RuntimeTypeIndex();
        op->attrs_type_key = T::_type_key;
        op->attrs_type_index = index;
@@ -378,14 +378,14 @@ Program Listing for File op.h
      TVM_TIRX_DLL OpDef& add_ty_arg(const ffi::String& name, const ffi::String& doc);
      template <typename... Specs>
      OpDef& signature(const Specs&... specs) {
-       auto updated = ffi::make_object<OpNode>();
+       auto updated = ffi::make_object<OpObj>();
        (ApplySignatureTrait(updated.get(), specs), ...);
        if (op_->validator == nullptr) {
-         using View = ffi::reflection::NativeFunctionView<void(const CallNode*)>;
+         using View = ffi::reflection::NativeFunctionView<void(const CallObj*)>;
          set_validator(View::FromNative<&ValidateSignature<Specs...>>());
          get()->validator_is_custom = false;
        }
-       OpNode* target = get();
+       OpObj* target = get();
        target->args_info = std::move(updated->args_info);
        target->ty_args_info = std::move(updated->ty_args_info);
        target->var_args_info = std::move(updated->var_args_info);
@@ -414,11 +414,11 @@ Program Listing for File op.h
      OpDef& set_native_fn_attr(ffi::reflection::AttrKey<ValueType> key, bool override = false) {
        return set_attr(key, ValueType::template FromNative<Fn>(), override);
      }
-     OpDef& set_validator(ffi::reflection::NativeFunctionView<void(const CallNode*)> validator,
+     OpDef& set_validator(ffi::reflection::NativeFunctionView<void(const CallObj*)> validator,
                           bool override = false) {
        TVM_FFI_CHECK(override || op_->validator == nullptr, ValueError)
            << "Validator of " << op_->name << " is already registered";
-       get()->validator = ffi::reflection::NativeFunction<void(const CallNode*)>::From(validator);
+       get()->validator = ffi::reflection::NativeFunction<void(const CallObj*)>::From(validator);
        get()->validator_is_custom = true;
        return *this;
      }
@@ -430,13 +430,13 @@ Program Listing for File op.h
    
     private:
      template <typename Spec>
-     static void ApplySignatureTrait(OpNode* op, const Spec& spec) {
+     static void ApplySignatureTrait(OpObj* op, const Spec& spec) {
        static_assert(std::is_base_of_v<sig::SignatureTrait, Spec>, "Unknown signature descriptor");
        spec.CollectMetadata(op);
      }
    
      template <typename... Specs>
-     TVM_FFI_INLINE static ffi::Expected<void> ValidateSignature(const CallNode* call) noexcept {
+     TVM_FFI_INLINE static ffi::Expected<void> ValidateSignature(const CallObj* call) noexcept {
        static_assert((std::is_base_of_v<sig::SignatureTrait, Specs> && ...),
                      "Unknown signature descriptor");
        constexpr size_t n_args = (size_t{0} + ... + Specs::kArgsCount);
@@ -446,7 +446,7 @@ Program Listing for File op.h
        constexpr size_t n_attrs = (size_t{0} + ... + Specs::kCallAttrsCount);
        static_assert(n_var_args <= 1 && n_var_ty_args <= 1 && n_attrs <= 1,
                      "Duplicate signature tail or call_attrs");
-       const OpNode* op = call ? call->op.as<OpNode>() : nullptr;
+       const OpObj* op = call ? call->op.as<OpObj>() : nullptr;
        if (TVM_FFI_PREDICT_FALSE(!op)) {
          return TVM_FFI_UNEXPECTED(TypeError) << "Invalid Op Call";
        }
@@ -481,7 +481,7 @@ Program Listing for File op.h
        return result;
      }
    
-     OpNode* get() { return const_cast<OpNode*>(op_.operator->()); }
+     OpObj* get() { return const_cast<OpObj*>(op_.operator->()); }
      TVM_TIRX_DLL void UpdateAttr(const ffi::String& attr_name, ffi::Any value, bool override);
      Op op_;
    };
@@ -506,7 +506,7 @@ Program Listing for File op.h
      }
      ValueType get(const Expr& expr, ValueType def_value) const {
        TVM_FFI_ICHECK(expr.defined());
-       if (const auto* op = expr.as<OpNode>()) {
+       if (const auto* op = expr.as<OpObj>()) {
          return get(ffi::GetRef<Op>(op), def_value);
        }
        return def_value;

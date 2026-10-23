@@ -69,13 +69,13 @@ Classes
 
 - :ref:`exhale_class_classtvm_1_1prim_1_1Broadcast`
 
-- :ref:`exhale_class_classtvm_1_1prim_1_1BroadcastNode`
+- :ref:`exhale_class_classtvm_1_1prim_1_1BroadcastObj`
 
 - :ref:`exhale_class_classtvm_1_1prim_1_1Ramp`
 
-- :ref:`exhale_class_classtvm_1_1prim_1_1RampNode`
+- :ref:`exhale_class_classtvm_1_1prim_1_1RampObj`
 
 - :ref:`exhale_class_classtvm_1_1prim_1_1Shuffle`
 
-- :ref:`exhale_class_classtvm_1_1prim_1_1ShuffleNode`
+- :ref:`exhale_class_classtvm_1_1prim_1_1ShuffleObj`
 

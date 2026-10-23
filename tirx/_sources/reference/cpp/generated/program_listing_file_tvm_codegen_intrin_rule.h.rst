@@ -63,10 +63,10 @@ Program Listing for File intrin_rule.h
    
    template <typename T, bool dtype_from_arg = false>
    inline PrimExpr DispatchPureExtern(const PrimExpr& e) {
-     const CallNode* call = e.as<CallNode>();
+     const CallObj* call = e.as<CallObj>();
      TVM_FFI_ICHECK(call != nullptr);
      // Primitive intrinsic names use the prim. namespace prefix.
-     const OpNode* op = call->op.as<OpNode>();
+     const OpObj* op = call->op.as<OpObj>();
      TVM_FFI_ICHECK(op != nullptr);
      std::string name = op->name;
      TVM_FFI_ICHECK(name.substr(0, 5) == "prim.") << "Unexpected intrinsic name: " << name;

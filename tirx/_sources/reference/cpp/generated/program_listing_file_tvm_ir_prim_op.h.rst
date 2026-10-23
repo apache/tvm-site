@@ -392,31 +392,31 @@ Program Listing for File op.h
    inline bool IsNegativeConst(const PrimExpr& a);
    
    // Inline constant predicate implementations.
-   inline bool IsConstInt(const PrimExpr& x) { return x.as<IntImmNode>() != nullptr; }
+   inline bool IsConstInt(const PrimExpr& x) { return x.as<IntImmObj>() != nullptr; }
    
    inline bool IsConstNumber(const PrimExpr& x) {
-     if (x.as<IntImmNode>()) {
+     if (x.as<IntImmObj>()) {
        return true;
-     } else if (x.as<FloatImmNode>()) {
+     } else if (x.as<FloatImmObj>()) {
        return true;
-     } else if (const auto* op = x.as<prim::BroadcastNode>()) {
-       return (op->value->IsInstance<IntImmNode>() || op->value->IsInstance<FloatImmNode>());
+     } else if (const auto* op = x.as<prim::BroadcastObj>()) {
+       return (op->value->IsInstance<IntImmObj>() || op->value->IsInstance<FloatImmObj>());
      }
      return false;
    }
    
    inline bool IsPositiveConst(const PrimExpr& a) {
-     const auto* as_int = a.as<IntImmNode>();
+     const auto* as_int = a.as<IntImmObj>();
      return as_int && as_int->value > 0;
    }
    
    inline bool IsNegativeConst(const PrimExpr& a) {
-     const auto* as_int = a.as<IntImmNode>();
+     const auto* as_int = a.as<IntImmObj>();
      return as_int && as_int->value < 0;
    }
    
    inline bool IsConstInt(const PrimExpr& x, int64_t value) {
-     const auto* as_int = x.as<IntImmNode>();
+     const auto* as_int = x.as<IntImmObj>();
      return as_int && as_int->value == value;
    }
    

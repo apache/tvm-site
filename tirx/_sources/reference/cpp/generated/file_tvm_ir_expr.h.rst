@@ -173,45 +173,45 @@ Classes
 
 - :ref:`exhale_class_classtvm_1_1Call`
 
-- :ref:`exhale_class_classtvm_1_1CallNode`
+- :ref:`exhale_class_classtvm_1_1CallObj`
 
 - :ref:`exhale_class_classtvm_1_1Constant`
 
-- :ref:`exhale_class_classtvm_1_1ConstantNode`
+- :ref:`exhale_class_classtvm_1_1ConstantObj`
 
 - :ref:`exhale_class_classtvm_1_1DataTypeImm`
 
-- :ref:`exhale_class_classtvm_1_1DataTypeImmNode`
+- :ref:`exhale_class_classtvm_1_1DataTypeImmObj`
 
 - :ref:`exhale_class_classtvm_1_1Expr`
 
-- :ref:`exhale_class_classtvm_1_1ExprNode`
+- :ref:`exhale_class_classtvm_1_1ExprObj`
 
 - :ref:`exhale_class_classtvm_1_1FloatImm`
 
-- :ref:`exhale_class_classtvm_1_1FloatImmNode`
+- :ref:`exhale_class_classtvm_1_1FloatImmObj`
 
 - :ref:`exhale_class_classtvm_1_1GenericConst`
 
-- :ref:`exhale_class_classtvm_1_1GenericConstNode`
+- :ref:`exhale_class_classtvm_1_1GenericConstObj`
 
 - :ref:`exhale_class_classtvm_1_1GlobalVar`
 
-- :ref:`exhale_class_classtvm_1_1GlobalVarNode`
+- :ref:`exhale_class_classtvm_1_1GlobalVarObj`
 
 - :ref:`exhale_class_classtvm_1_1IntExpr`
 
 - :ref:`exhale_class_classtvm_1_1IntImm`
 
-- :ref:`exhale_class_classtvm_1_1IntImmNode`
+- :ref:`exhale_class_classtvm_1_1IntImmObj`
 
 - :ref:`exhale_class_classtvm_1_1LambdaExpr`
 
-- :ref:`exhale_class_classtvm_1_1LambdaExprNode`
+- :ref:`exhale_class_classtvm_1_1LambdaExprObj`
 
 - :ref:`exhale_class_classtvm_1_1OpaqueExpr`
 
-- :ref:`exhale_class_classtvm_1_1OpaqueExprNode`
+- :ref:`exhale_class_classtvm_1_1OpaqueExprObj`
 
 - :ref:`exhale_class_classtvm_1_1PrimExpr`
 
@@ -219,37 +219,37 @@ Classes
 
 - :ref:`exhale_class_classtvm_1_1Range`
 
-- :ref:`exhale_class_classtvm_1_1RangeNode`
+- :ref:`exhale_class_classtvm_1_1RangeObj`
 
 - :ref:`exhale_class_classtvm_1_1StagingExpr`
 
-- :ref:`exhale_class_classtvm_1_1StagingExprNode`
+- :ref:`exhale_class_classtvm_1_1StagingExprObj`
 
 - :ref:`exhale_class_classtvm_1_1StringImm`
 
-- :ref:`exhale_class_classtvm_1_1StringImmNode`
+- :ref:`exhale_class_classtvm_1_1StringImmObj`
 
 - :ref:`exhale_class_classtvm_1_1TensorLoad`
 
-- :ref:`exhale_class_classtvm_1_1TensorLoadNode`
+- :ref:`exhale_class_classtvm_1_1TensorLoadObj`
 
 - :ref:`exhale_class_classtvm_1_1TensorRegion`
 
-- :ref:`exhale_class_classtvm_1_1TensorRegionNode`
+- :ref:`exhale_class_classtvm_1_1TensorRegionObj`
 
 - :ref:`exhale_class_classtvm_1_1Tuple`
 
 - :ref:`exhale_class_classtvm_1_1TupleGetItem`
 
-- :ref:`exhale_class_classtvm_1_1TupleGetItemNode`
+- :ref:`exhale_class_classtvm_1_1TupleGetItemObj`
 
-- :ref:`exhale_class_classtvm_1_1TupleNode`
+- :ref:`exhale_class_classtvm_1_1TupleObj`
 
 - :ref:`exhale_class_classtvm_1_1TypedExpr`
 
 - :ref:`exhale_class_classtvm_1_1Var`
 
-- :ref:`exhale_class_classtvm_1_1VarNode`
+- :ref:`exhale_class_classtvm_1_1VarObj`
 
 
 Enums
@@ -283,5 +283,5 @@ Variables
 
 - :ref:`exhale_variable_namespacetvm_1_1type__attr_1ad443e8fd6cc147752bfdfb7abb6e6f87`
 
-- :ref:`exhale_variable_namespacetvm_1_1type__attr_1a9154c8e7174bbd3cf8fa147794c39c15`
+- :ref:`exhale_variable_namespacetvm_1_1type__attr_1adc7503614dd7343d8a2b31eebd8d835a`
 

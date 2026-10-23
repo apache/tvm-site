@@ -42,79 +42,79 @@ Program Listing for File type.h
    
    namespace tvm {
    
-   class TypeNode : public ffi::Object {
+   class TypeObj : public ffi::Object {
     public:
      mutable Location loc = UnknownLoc();
    
      static void RegisterReflection() {
        namespace refl = tvm::ffi::reflection;
        // loc do not participate in structural equal and hash.
-       refl::ObjectDef<TypeNode>().def_ro("loc", &TypeNode::loc, refl::DefaultValue(UnknownLoc()),
-                                          refl::init(false), refl::AttachFieldFlag::SEqHashIgnore());
+       refl::ObjectDef<TypeObj>().def_ro("loc", &TypeObj::loc, refl::DefaultValue(UnknownLoc()),
+                                         refl::init(false), refl::AttachFieldFlag::SEqHashIgnore());
      }
    
      static constexpr TVMFFISEqHashKind _type_s_eq_hash_kind = kTVMFFISEqHashKindTreeNode;
      static constexpr bool _type_s_eq_hash_subclass_kind_fixed = true;
    
      static constexpr const uint32_t _type_child_slots = 14;
-     TVM_FFI_DECLARE_OBJECT_INFO("ir.Type", TypeNode, ffi::Object);
+     TVM_FFI_DECLARE_OBJECT_INFO("ir.Type", TypeObj, ffi::Object);
    };
    
    class Type : public ffi::ObjectRef {
     public:
      TVM_TIRX_DLL static Type Missing();
    
-     TVM_FFI_DEFINE_OBJECT_REF_METHODS_NOTNULLABLE(Type, ffi::ObjectRef, TypeNode);
+     TVM_FFI_DEFINE_OBJECT_REF_METHODS_NOTNULLABLE(Type, ffi::ObjectRef, TypeObj);
    };
    
-   class MissingTypeNode final : public TypeNode {
+   class MissingTypeObj final : public TypeObj {
     public:
      static void RegisterReflection() {
        namespace refl = tvm::ffi::reflection;
-       refl::ObjectDef<MissingTypeNode>();
+       refl::ObjectDef<MissingTypeObj>();
      }
    
-     TVM_FFI_DECLARE_OBJECT_INFO_FINAL("ir.MissingType", MissingTypeNode, TypeNode);
+     TVM_FFI_DECLARE_OBJECT_INFO_FINAL("ir.MissingType", MissingTypeObj, TypeObj);
    };
    
    class MissingType final : public Type {
     public:
      TVM_TIRX_DLL MissingType();
    
-     TVM_FFI_DEFINE_OBJECT_REF_METHODS_NOTNULLABLE(MissingType, Type, MissingTypeNode);
+     TVM_FFI_DEFINE_OBJECT_REF_METHODS_NOTNULLABLE(MissingType, Type, MissingTypeObj);
    };
    
-   class OpaqueTypeNode final : public TypeNode {
+   class OpaqueTypeObj final : public TypeObj {
     public:
      static void RegisterReflection() {
        namespace refl = tvm::ffi::reflection;
-       refl::ObjectDef<OpaqueTypeNode>();
+       refl::ObjectDef<OpaqueTypeObj>();
      }
    
-     TVM_FFI_DECLARE_OBJECT_INFO_FINAL("ir.OpaqueType", OpaqueTypeNode, TypeNode);
+     TVM_FFI_DECLARE_OBJECT_INFO_FINAL("ir.OpaqueType", OpaqueTypeObj, TypeObj);
    };
    
    class OpaqueType final : public Type {
     public:
      TVM_TIRX_DLL OpaqueType();
    
-     TVM_FFI_DEFINE_OBJECT_REF_METHODS_NOTNULLABLE(OpaqueType, Type, OpaqueTypeNode);
+     TVM_FFI_DEFINE_OBJECT_REF_METHODS_NOTNULLABLE(OpaqueType, Type, OpaqueTypeObj);
    };
    
-   class PrimTypeNode final : public TypeNode {
+   class PrimTypeObj final : public TypeObj {
     public:
      DLDataType dtype;
    
      static void RegisterReflection() {
        namespace refl = tvm::ffi::reflection;
-       refl::ObjectDef<PrimTypeNode>().def_ro("dtype", &PrimTypeNode::dtype);
+       refl::ObjectDef<PrimTypeObj>().def_ro("dtype", &PrimTypeObj::dtype);
      }
-     TVM_FFI_DECLARE_OBJECT_INFO_FINAL("ir.PrimType", PrimTypeNode, TypeNode);
+     TVM_FFI_DECLARE_OBJECT_INFO_FINAL("ir.PrimType", PrimTypeObj, TypeObj);
    };
    
    /*
-    * \brief Managed reference to PrimTypeNode.
-    * \sa PrimTypeNode
+    * \brief Managed reference to PrimTypeObj.
+    * \sa PrimTypeObj
     */
    class PrimType final : public Type {
     public:
@@ -216,7 +216,7 @@ Program Listing for File type.h
        return -encoded_lanes;
      }
    
-     TVM_FFI_DEFINE_OBJECT_REF_METHODS_NOTNULLABLE(PrimType, Type, PrimTypeNode);
+     TVM_FFI_DEFINE_OBJECT_REF_METHODS_NOTNULLABLE(PrimType, Type, PrimTypeObj);
    };
    
    inline bool operator==(const PrimType& lhs, const PrimType& rhs) {
@@ -236,77 +236,77 @@ Program Listing for File type.h
    
    }  // namespace ffi
    
-   class NoneTypeNode : public TypeNode {
+   class NoneTypeObj : public TypeObj {
     public:
-     static void RegisterReflection() { ffi::reflection::ObjectDef<NoneTypeNode>(); }
-     TVM_FFI_DECLARE_OBJECT_INFO_FINAL("ir.NoneType", NoneTypeNode, TypeNode);
+     static void RegisterReflection() { ffi::reflection::ObjectDef<NoneTypeObj>(); }
+     TVM_FFI_DECLARE_OBJECT_INFO_FINAL("ir.NoneType", NoneTypeObj, TypeObj);
    };
    
    class NoneType : public Type {
     public:
      TVM_TIRX_DLL NoneType();
-     TVM_FFI_DEFINE_OBJECT_REF_METHODS_NOTNULLABLE(NoneType, Type, NoneTypeNode);
+     TVM_FFI_DEFINE_OBJECT_REF_METHODS_NOTNULLABLE(NoneType, Type, NoneTypeObj);
    };
    
-   class AnyTypeNode : public TypeNode {
+   class AnyTypeObj : public TypeObj {
     public:
-     static void RegisterReflection() { ffi::reflection::ObjectDef<AnyTypeNode>(); }
-     TVM_FFI_DECLARE_OBJECT_INFO_FINAL("ir.AnyType", AnyTypeNode, TypeNode);
+     static void RegisterReflection() { ffi::reflection::ObjectDef<AnyTypeObj>(); }
+     TVM_FFI_DECLARE_OBJECT_INFO_FINAL("ir.AnyType", AnyTypeObj, TypeObj);
    };
    
    class AnyType : public Type {
     public:
      TVM_TIRX_DLL AnyType(Location loc = UnknownLoc());
    
-     TVM_FFI_DEFINE_OBJECT_REF_METHODS_NOTNULLABLE(AnyType, Type, AnyTypeNode);
+     TVM_FFI_DEFINE_OBJECT_REF_METHODS_NOTNULLABLE(AnyType, Type, AnyTypeObj);
    };
    
-   class TensorRegionTypeNode : public TypeNode {
+   class TensorRegionTypeObj : public TypeObj {
     public:
      static void RegisterReflection() {
        namespace refl = tvm::ffi::reflection;
-       refl::ObjectDef<TensorRegionTypeNode>();
+       refl::ObjectDef<TensorRegionTypeObj>();
      }
    
-     TVM_FFI_DECLARE_OBJECT_INFO_FINAL("ir.TensorRegionType", TensorRegionTypeNode, TypeNode);
+     TVM_FFI_DECLARE_OBJECT_INFO_FINAL("ir.TensorRegionType", TensorRegionTypeObj, TypeObj);
    };
    
    class TensorRegionType : public Type {
     public:
      TVM_TIRX_DLL TensorRegionType();
    
-     TVM_FFI_DEFINE_OBJECT_REF_METHODS_NOTNULLABLE(TensorRegionType, Type, TensorRegionTypeNode);
+     TVM_FFI_DEFINE_OBJECT_REF_METHODS_NOTNULLABLE(TensorRegionType, Type, TensorRegionTypeObj);
    };
    
-   class StringTypeNode : public TypeNode {
+   class StringTypeObj : public TypeObj {
     public:
-     static void RegisterReflection() { ffi::reflection::ObjectDef<StringTypeNode>(); }
-     TVM_FFI_DECLARE_OBJECT_INFO_FINAL("ir.StringType", StringTypeNode, TypeNode);
+     static void RegisterReflection() { ffi::reflection::ObjectDef<StringTypeObj>(); }
+     TVM_FFI_DECLARE_OBJECT_INFO_FINAL("ir.StringType", StringTypeObj, TypeObj);
    };
    
    class StringType : public Type {
     public:
      TVM_TIRX_DLL StringType();
-     TVM_FFI_DEFINE_OBJECT_REF_METHODS_NOTNULLABLE(StringType, Type, StringTypeNode);
+     TVM_FFI_DEFINE_OBJECT_REF_METHODS_NOTNULLABLE(StringType, Type, StringTypeObj);
    };
    
-   class PtrTypeNode : public TypeNode {
+   class PtrTypeObj : public TypeObj {
     public:
      Type element_type = PrimType::Void();
      runtime::MemoryScope scope;
    
      static void RegisterReflection() {
        namespace refl = tvm::ffi::reflection;
-       refl::ObjectDef<PtrTypeNode>()
-           .def_ro("element_type", &PtrTypeNode::element_type)
-           .def_ro("scope", &PtrTypeNode::scope, refl::DefaultValue(runtime::MemoryScope::Global()));
+       refl::ObjectDef<PtrTypeObj>()
+           .def_ro("element_type", &PtrTypeObj::element_type)
+           .def_ro("scope", &PtrTypeObj::scope, refl::DefaultValue(runtime::MemoryScope::Global()));
      }
-     TVM_FFI_DECLARE_OBJECT_INFO_FINAL("ir.PtrType", PtrTypeNode, TypeNode);
+     TVM_FFI_DECLARE_OBJECT_INFO_FINAL("ir.PtrType", PtrTypeObj, TypeObj);
    };
    
    /*
-    * \brief Managed reference to PtrTypeNode.
-    * \sa PtrTypeNode
+    * \brief Managed reference to PtrTypeObj.
+    * \sa PtrTypeObj
     */
    class PtrType : public Type {
     public:
@@ -314,20 +314,20 @@ Program Listing for File type.h
    
      TVM_TIRX_DLL static PtrType VoidPtrType(runtime::MemoryScope scope = {});
    
-     TVM_FFI_DEFINE_OBJECT_REF_METHODS_NOTNULLABLE(PtrType, Type, PtrTypeNode);
+     TVM_FFI_DEFINE_OBJECT_REF_METHODS_NOTNULLABLE(PtrType, Type, PtrTypeObj);
    };
    
-   class TupleTypeNode : public TypeNode {
+   class TupleTypeObj : public TypeObj {
     public:
      ffi::Array<Type> fields;
    
-     TupleTypeNode() {}
+     TupleTypeObj() {}
    
      static void RegisterReflection() {
        namespace refl = tvm::ffi::reflection;
-       refl::ObjectDef<TupleTypeNode>().def_ro("fields", &TupleTypeNode::fields);
+       refl::ObjectDef<TupleTypeObj>().def_ro("fields", &TupleTypeObj::fields);
      }
-     TVM_FFI_DECLARE_OBJECT_INFO_FINAL("ir.TupleType", TupleTypeNode, TypeNode);
+     TVM_FFI_DECLARE_OBJECT_INFO_FINAL("ir.TupleType", TupleTypeObj, TypeObj);
    };
    
    class TupleType : public Type {
@@ -336,35 +336,35 @@ Program Listing for File type.h
    
      TVM_TIRX_DLL TupleType static Empty();
    
-     TVM_FFI_DEFINE_OBJECT_REF_METHODS_NOTNULLABLE(TupleType, Type, TupleTypeNode);
+     TVM_FFI_DEFINE_OBJECT_REF_METHODS_NOTNULLABLE(TupleType, Type, TupleTypeObj);
    };
    
    inline Type VoidType() { return TupleType::Empty(); }
    
    inline bool IsVoidType(const Type& type) {
-     auto* n = type.as<TupleTypeNode>();
+     auto* n = type.as<TupleTypeObj>();
      return n && n->fields.size() == 0;
    }
    
-   class FuncTypeNode : public TypeNode {
+   class FuncTypeObj : public TypeObj {
     public:
      ffi::Array<Type> arg_types;
      Type ret_type = VoidType();
    
      static void RegisterReflection() {
        namespace refl = tvm::ffi::reflection;
-       refl::ObjectDef<FuncTypeNode>()
-           .def_ro("arg_types", &FuncTypeNode::arg_types)
-           .def_ro("ret_type", &FuncTypeNode::ret_type);
+       refl::ObjectDef<FuncTypeObj>()
+           .def_ro("arg_types", &FuncTypeObj::arg_types)
+           .def_ro("ret_type", &FuncTypeObj::ret_type);
      }
-     TVM_FFI_DECLARE_OBJECT_INFO_FINAL("ir.FuncType", FuncTypeNode, TypeNode);
+     TVM_FFI_DECLARE_OBJECT_INFO_FINAL("ir.FuncType", FuncTypeObj, TypeObj);
    };
    
    class FuncType : public Type {
     public:
      TVM_TIRX_DLL FuncType(ffi::Array<Type> arg_types, Type ret_type, Location loc = UnknownLoc());
    
-     TVM_FFI_DEFINE_OBJECT_REF_METHODS_NOTNULLABLE(FuncType, Type, FuncTypeNode);
+     TVM_FFI_DEFINE_OBJECT_REF_METHODS_NOTNULLABLE(FuncType, Type, FuncTypeObj);
    };
    
    }  // namespace tvm

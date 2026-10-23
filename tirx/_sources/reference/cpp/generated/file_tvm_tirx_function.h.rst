@@ -89,7 +89,7 @@ Classes
 
 - :ref:`exhale_class_classtvm_1_1tirx_1_1Function`
 
-- :ref:`exhale_class_classtvm_1_1tirx_1_1FunctionNode`
+- :ref:`exhale_class_classtvm_1_1tirx_1_1FunctionObj`
 
 
 Functions

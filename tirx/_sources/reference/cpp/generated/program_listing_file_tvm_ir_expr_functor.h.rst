@@ -57,139 +57,139 @@ Program Listing for File expr_functor.h
        return (*vtable_)(node, this, std::forward<Args>(args)...);
      }
    
-     virtual R Dispatch_(const LambdaExprNode* node, Args... args) {
+     virtual R Dispatch_(const LambdaExprObj* node, Args... args) {
        return DispatchDefault_(node, std::forward<Args>(args)...);
      }
-     virtual R Dispatch_(const OpaqueExprNode* node, Args... args) {
+     virtual R Dispatch_(const OpaqueExprObj* node, Args... args) {
        return DispatchDefault_(node, std::forward<Args>(args)...);
      }
-     virtual R Dispatch_(const TupleNode* node, Args... args) {
+     virtual R Dispatch_(const TupleObj* node, Args... args) {
        return DispatchDefault_(node, std::forward<Args>(args)...);
      }
-     virtual R Dispatch_(const TupleGetItemNode* node, Args... args) {
+     virtual R Dispatch_(const TupleGetItemObj* node, Args... args) {
        return DispatchDefault_(node, std::forward<Args>(args)...);
      }
-     virtual R Dispatch_(const TensorRegionNode* node, Args... args) {
+     virtual R Dispatch_(const TensorRegionObj* node, Args... args) {
        return DispatchDefault_(node, std::forward<Args>(args)...);
      }
-     virtual R Dispatch_(const TensorLoadNode* node, Args... args) {
+     virtual R Dispatch_(const TensorLoadObj* node, Args... args) {
        return DispatchDefault_(node, std::forward<Args>(args)...);
      }
-     virtual R Dispatch_(const VarNode* node, Args... args) {
+     virtual R Dispatch_(const VarObj* node, Args... args) {
        return DispatchDefault_(node, std::forward<Args>(args)...);
      }
-     virtual R Dispatch_(const GlobalVarNode* node, Args... args) {
+     virtual R Dispatch_(const GlobalVarObj* node, Args... args) {
        return DispatchDefault_(node, std::forward<Args>(args)...);
      }
-     virtual R Dispatch_(const CallNode* node, Args... args) {
+     virtual R Dispatch_(const CallObj* node, Args... args) {
        return DispatchDefault_(node, std::forward<Args>(args)...);
      }
-     virtual R Dispatch_(const GenericConstNode* node, Args... args) {
+     virtual R Dispatch_(const GenericConstObj* node, Args... args) {
        return DispatchDefault_(node, std::forward<Args>(args)...);
      }
-     virtual R Dispatch_(const DataTypeImmNode* node, Args... args) {
+     virtual R Dispatch_(const DataTypeImmObj* node, Args... args) {
        return DispatchDefault_(node, std::forward<Args>(args)...);
      }
-     virtual R Dispatch_(const IntImmNode* node, Args... args) {
+     virtual R Dispatch_(const IntImmObj* node, Args... args) {
        return DispatchDefault_(node, std::forward<Args>(args)...);
      }
-     virtual R Dispatch_(const FloatImmNode* node, Args... args) {
+     virtual R Dispatch_(const FloatImmObj* node, Args... args) {
        return DispatchDefault_(node, std::forward<Args>(args)...);
      }
-     virtual R Dispatch_(const OpNode* node, Args... args) {
+     virtual R Dispatch_(const OpObj* node, Args... args) {
        return DispatchDefault_(node, std::forward<Args>(args)...);
      }
-     virtual R Dispatch_(const StringImmNode* node, Args... args) {
+     virtual R Dispatch_(const StringImmObj* node, Args... args) {
        return DispatchDefault_(node, std::forward<Args>(args)...);
      }
-     virtual R Dispatch_(const prim::CastNode* node, Args... args) {
+     virtual R Dispatch_(const prim::CastObj* node, Args... args) {
        return DispatchDefault_(node, std::forward<Args>(args)...);
      }
-     virtual R Dispatch_(const prim::AddNode* node, Args... args) {
+     virtual R Dispatch_(const prim::AddObj* node, Args... args) {
        return DispatchDefault_(node, std::forward<Args>(args)...);
      }
-     virtual R Dispatch_(const prim::LShiftNode* node, Args... args) {
+     virtual R Dispatch_(const prim::LShiftObj* node, Args... args) {
        return DispatchDefault_(node, std::forward<Args>(args)...);
      }
-     virtual R Dispatch_(const prim::RShiftNode* node, Args... args) {
+     virtual R Dispatch_(const prim::RShiftObj* node, Args... args) {
        return DispatchDefault_(node, std::forward<Args>(args)...);
      }
-     virtual R Dispatch_(const prim::BitwiseAndNode* node, Args... args) {
+     virtual R Dispatch_(const prim::BitwiseAndObj* node, Args... args) {
        return DispatchDefault_(node, std::forward<Args>(args)...);
      }
-     virtual R Dispatch_(const prim::BitwiseOrNode* node, Args... args) {
+     virtual R Dispatch_(const prim::BitwiseOrObj* node, Args... args) {
        return DispatchDefault_(node, std::forward<Args>(args)...);
      }
-     virtual R Dispatch_(const prim::BitwiseXorNode* node, Args... args) {
+     virtual R Dispatch_(const prim::BitwiseXorObj* node, Args... args) {
        return DispatchDefault_(node, std::forward<Args>(args)...);
      }
-     virtual R Dispatch_(const prim::BitwiseNotNode* node, Args... args) {
+     virtual R Dispatch_(const prim::BitwiseNotObj* node, Args... args) {
        return DispatchDefault_(node, std::forward<Args>(args)...);
      }
-     virtual R Dispatch_(const prim::SubNode* node, Args... args) {
+     virtual R Dispatch_(const prim::SubObj* node, Args... args) {
        return DispatchDefault_(node, std::forward<Args>(args)...);
      }
-     virtual R Dispatch_(const prim::MulNode* node, Args... args) {
+     virtual R Dispatch_(const prim::MulObj* node, Args... args) {
        return DispatchDefault_(node, std::forward<Args>(args)...);
      }
-     virtual R Dispatch_(const prim::DivNode* node, Args... args) {
+     virtual R Dispatch_(const prim::DivObj* node, Args... args) {
        return DispatchDefault_(node, std::forward<Args>(args)...);
      }
-     virtual R Dispatch_(const prim::ModNode* node, Args... args) {
+     virtual R Dispatch_(const prim::ModObj* node, Args... args) {
        return DispatchDefault_(node, std::forward<Args>(args)...);
      }
-     virtual R Dispatch_(const prim::FloorDivNode* node, Args... args) {
+     virtual R Dispatch_(const prim::FloorDivObj* node, Args... args) {
        return DispatchDefault_(node, std::forward<Args>(args)...);
      }
-     virtual R Dispatch_(const prim::FloorModNode* node, Args... args) {
+     virtual R Dispatch_(const prim::FloorModObj* node, Args... args) {
        return DispatchDefault_(node, std::forward<Args>(args)...);
      }
-     virtual R Dispatch_(const prim::MinNode* node, Args... args) {
+     virtual R Dispatch_(const prim::MinObj* node, Args... args) {
        return DispatchDefault_(node, std::forward<Args>(args)...);
      }
-     virtual R Dispatch_(const prim::MaxNode* node, Args... args) {
+     virtual R Dispatch_(const prim::MaxObj* node, Args... args) {
        return DispatchDefault_(node, std::forward<Args>(args)...);
      }
-     virtual R Dispatch_(const prim::EQNode* node, Args... args) {
+     virtual R Dispatch_(const prim::EQObj* node, Args... args) {
        return DispatchDefault_(node, std::forward<Args>(args)...);
      }
-     virtual R Dispatch_(const prim::NENode* node, Args... args) {
+     virtual R Dispatch_(const prim::NEObj* node, Args... args) {
        return DispatchDefault_(node, std::forward<Args>(args)...);
      }
-     virtual R Dispatch_(const prim::LTNode* node, Args... args) {
+     virtual R Dispatch_(const prim::LTObj* node, Args... args) {
        return DispatchDefault_(node, std::forward<Args>(args)...);
      }
-     virtual R Dispatch_(const prim::LENode* node, Args... args) {
+     virtual R Dispatch_(const prim::LEObj* node, Args... args) {
        return DispatchDefault_(node, std::forward<Args>(args)...);
      }
-     virtual R Dispatch_(const prim::GTNode* node, Args... args) {
+     virtual R Dispatch_(const prim::GTObj* node, Args... args) {
        return DispatchDefault_(node, std::forward<Args>(args)...);
      }
-     virtual R Dispatch_(const prim::GENode* node, Args... args) {
+     virtual R Dispatch_(const prim::GEObj* node, Args... args) {
        return DispatchDefault_(node, std::forward<Args>(args)...);
      }
-     virtual R Dispatch_(const prim::AndNode* node, Args... args) {
+     virtual R Dispatch_(const prim::AndObj* node, Args... args) {
        return DispatchDefault_(node, std::forward<Args>(args)...);
      }
-     virtual R Dispatch_(const prim::OrNode* node, Args... args) {
+     virtual R Dispatch_(const prim::OrObj* node, Args... args) {
        return DispatchDefault_(node, std::forward<Args>(args)...);
      }
-     virtual R Dispatch_(const prim::NotNode* node, Args... args) {
+     virtual R Dispatch_(const prim::NotObj* node, Args... args) {
        return DispatchDefault_(node, std::forward<Args>(args)...);
      }
-     virtual R Dispatch_(const prim::SelectNode* node, Args... args) {
+     virtual R Dispatch_(const prim::SelectObj* node, Args... args) {
        return DispatchDefault_(node, std::forward<Args>(args)...);
      }
-     virtual R Dispatch_(const prim::LetNode* node, Args... args) {
+     virtual R Dispatch_(const prim::LetObj* node, Args... args) {
        return DispatchDefault_(node, std::forward<Args>(args)...);
      }
-     virtual R Dispatch_(const prim::RampNode* node, Args... args) {
+     virtual R Dispatch_(const prim::RampObj* node, Args... args) {
        return DispatchDefault_(node, std::forward<Args>(args)...);
      }
-     virtual R Dispatch_(const prim::BroadcastNode* node, Args... args) {
+     virtual R Dispatch_(const prim::BroadcastObj* node, Args... args) {
        return DispatchDefault_(node, std::forward<Args>(args)...);
      }
-     virtual R Dispatch_(const prim::ShuffleNode* node, Args... args) {
+     virtual R Dispatch_(const prim::ShuffleObj* node, Args... args) {
        return DispatchDefault_(node, std::forward<Args>(args)...);
      }
    
@@ -202,51 +202,51 @@ Program Listing for File expr_functor.h
      using VTable = ObjectFunctor<R(const ffi::ObjectRef&, TSelf*, Args...)>;
      explicit ExprFunctor(const VTable* vtable) : vtable_(vtable) {}
      static void InitVTable(VTable* vtable) {
-       SetDispatch<TSelf, LambdaExprNode>(vtable);
-       SetDispatch<TSelf, OpaqueExprNode>(vtable);
-       SetDispatch<TSelf, TupleNode>(vtable);
-       SetDispatch<TSelf, TupleGetItemNode>(vtable);
-       SetDispatch<TSelf, TensorLoadNode>(vtable);
-       SetDispatch<TSelf, TensorRegionNode>(vtable);
-       SetDispatch<TSelf, VarNode>(vtable);
-       SetDispatch<TSelf, GlobalVarNode>(vtable);
-       SetDispatch<TSelf, CallNode>(vtable);
-       SetDispatch<TSelf, GenericConstNode>(vtable);
-       SetDispatch<TSelf, DataTypeImmNode>(vtable);
-       SetDispatch<TSelf, IntImmNode>(vtable);
-       SetDispatch<TSelf, FloatImmNode>(vtable);
-       SetDispatch<TSelf, OpNode>(vtable);
-       SetDispatch<TSelf, StringImmNode>(vtable);
-       SetDispatch<TSelf, prim::CastNode>(vtable);
-       SetDispatch<TSelf, prim::AddNode>(vtable);
-       SetDispatch<TSelf, prim::LShiftNode>(vtable);
-       SetDispatch<TSelf, prim::RShiftNode>(vtable);
-       SetDispatch<TSelf, prim::BitwiseAndNode>(vtable);
-       SetDispatch<TSelf, prim::BitwiseOrNode>(vtable);
-       SetDispatch<TSelf, prim::BitwiseXorNode>(vtable);
-       SetDispatch<TSelf, prim::BitwiseNotNode>(vtable);
-       SetDispatch<TSelf, prim::SubNode>(vtable);
-       SetDispatch<TSelf, prim::MulNode>(vtable);
-       SetDispatch<TSelf, prim::DivNode>(vtable);
-       SetDispatch<TSelf, prim::ModNode>(vtable);
-       SetDispatch<TSelf, prim::FloorDivNode>(vtable);
-       SetDispatch<TSelf, prim::FloorModNode>(vtable);
-       SetDispatch<TSelf, prim::MinNode>(vtable);
-       SetDispatch<TSelf, prim::MaxNode>(vtable);
-       SetDispatch<TSelf, prim::EQNode>(vtable);
-       SetDispatch<TSelf, prim::NENode>(vtable);
-       SetDispatch<TSelf, prim::LTNode>(vtable);
-       SetDispatch<TSelf, prim::LENode>(vtable);
-       SetDispatch<TSelf, prim::GTNode>(vtable);
-       SetDispatch<TSelf, prim::GENode>(vtable);
-       SetDispatch<TSelf, prim::AndNode>(vtable);
-       SetDispatch<TSelf, prim::OrNode>(vtable);
-       SetDispatch<TSelf, prim::NotNode>(vtable);
-       SetDispatch<TSelf, prim::SelectNode>(vtable);
-       SetDispatch<TSelf, prim::LetNode>(vtable);
-       SetDispatch<TSelf, prim::RampNode>(vtable);
-       SetDispatch<TSelf, prim::BroadcastNode>(vtable);
-       SetDispatch<TSelf, prim::ShuffleNode>(vtable);
+       SetDispatch<TSelf, LambdaExprObj>(vtable);
+       SetDispatch<TSelf, OpaqueExprObj>(vtable);
+       SetDispatch<TSelf, TupleObj>(vtable);
+       SetDispatch<TSelf, TupleGetItemObj>(vtable);
+       SetDispatch<TSelf, TensorLoadObj>(vtable);
+       SetDispatch<TSelf, TensorRegionObj>(vtable);
+       SetDispatch<TSelf, VarObj>(vtable);
+       SetDispatch<TSelf, GlobalVarObj>(vtable);
+       SetDispatch<TSelf, CallObj>(vtable);
+       SetDispatch<TSelf, GenericConstObj>(vtable);
+       SetDispatch<TSelf, DataTypeImmObj>(vtable);
+       SetDispatch<TSelf, IntImmObj>(vtable);
+       SetDispatch<TSelf, FloatImmObj>(vtable);
+       SetDispatch<TSelf, OpObj>(vtable);
+       SetDispatch<TSelf, StringImmObj>(vtable);
+       SetDispatch<TSelf, prim::CastObj>(vtable);
+       SetDispatch<TSelf, prim::AddObj>(vtable);
+       SetDispatch<TSelf, prim::LShiftObj>(vtable);
+       SetDispatch<TSelf, prim::RShiftObj>(vtable);
+       SetDispatch<TSelf, prim::BitwiseAndObj>(vtable);
+       SetDispatch<TSelf, prim::BitwiseOrObj>(vtable);
+       SetDispatch<TSelf, prim::BitwiseXorObj>(vtable);
+       SetDispatch<TSelf, prim::BitwiseNotObj>(vtable);
+       SetDispatch<TSelf, prim::SubObj>(vtable);
+       SetDispatch<TSelf, prim::MulObj>(vtable);
+       SetDispatch<TSelf, prim::DivObj>(vtable);
+       SetDispatch<TSelf, prim::ModObj>(vtable);
+       SetDispatch<TSelf, prim::FloorDivObj>(vtable);
+       SetDispatch<TSelf, prim::FloorModObj>(vtable);
+       SetDispatch<TSelf, prim::MinObj>(vtable);
+       SetDispatch<TSelf, prim::MaxObj>(vtable);
+       SetDispatch<TSelf, prim::EQObj>(vtable);
+       SetDispatch<TSelf, prim::NEObj>(vtable);
+       SetDispatch<TSelf, prim::LTObj>(vtable);
+       SetDispatch<TSelf, prim::LEObj>(vtable);
+       SetDispatch<TSelf, prim::GTObj>(vtable);
+       SetDispatch<TSelf, prim::GEObj>(vtable);
+       SetDispatch<TSelf, prim::AndObj>(vtable);
+       SetDispatch<TSelf, prim::OrObj>(vtable);
+       SetDispatch<TSelf, prim::NotObj>(vtable);
+       SetDispatch<TSelf, prim::SelectObj>(vtable);
+       SetDispatch<TSelf, prim::LetObj>(vtable);
+       SetDispatch<TSelf, prim::RampObj>(vtable);
+       SetDispatch<TSelf, prim::BroadcastObj>(vtable);
+       SetDispatch<TSelf, prim::ShuffleObj>(vtable);
      }
      template <typename Self, typename Node>
      static void SetDispatch(VTable* vtable) {
@@ -278,50 +278,50 @@ Program Listing for File expr_functor.h
    
      // Override existing hooks directly. Extra types need a fresh inherited table.
      // Hooks borrow the node and return None or an owning interrupt, and throw on failure.
-     virtual ffi::Optional<VisitInterrupt> Visit_(const OpaqueExprNode* node);
-     virtual ffi::Optional<VisitInterrupt> Visit_(const TupleNode* node);
-     virtual ffi::Optional<VisitInterrupt> Visit_(const TupleGetItemNode* node);
-     virtual ffi::Optional<VisitInterrupt> Visit_(const TensorLoadNode* node);
-     virtual ffi::Optional<VisitInterrupt> Visit_(const TensorRegionNode* node);
-     virtual ffi::Optional<VisitInterrupt> Visit_(const VarNode* node);
-     virtual ffi::Optional<VisitInterrupt> Visit_(const GlobalVarNode* node);
-     virtual ffi::Optional<VisitInterrupt> Visit_(const CallNode* node);
-     virtual ffi::Optional<VisitInterrupt> Visit_(const GenericConstNode* node);
-     virtual ffi::Optional<VisitInterrupt> Visit_(const DataTypeImmNode* node);
-     virtual ffi::Optional<VisitInterrupt> Visit_(const IntImmNode* node);
-     virtual ffi::Optional<VisitInterrupt> Visit_(const FloatImmNode* node);
-     virtual ffi::Optional<VisitInterrupt> Visit_(const OpNode* node);
-     virtual ffi::Optional<VisitInterrupt> Visit_(const StringImmNode* node);
-     virtual ffi::Optional<VisitInterrupt> Visit_(const prim::CastNode* node);
-     virtual ffi::Optional<VisitInterrupt> Visit_(const prim::AddNode* node);
-     virtual ffi::Optional<VisitInterrupt> Visit_(const prim::LShiftNode* node);
-     virtual ffi::Optional<VisitInterrupt> Visit_(const prim::RShiftNode* node);
-     virtual ffi::Optional<VisitInterrupt> Visit_(const prim::BitwiseAndNode* node);
-     virtual ffi::Optional<VisitInterrupt> Visit_(const prim::BitwiseOrNode* node);
-     virtual ffi::Optional<VisitInterrupt> Visit_(const prim::BitwiseXorNode* node);
-     virtual ffi::Optional<VisitInterrupt> Visit_(const prim::BitwiseNotNode* node);
-     virtual ffi::Optional<VisitInterrupt> Visit_(const prim::SubNode* node);
-     virtual ffi::Optional<VisitInterrupt> Visit_(const prim::MulNode* node);
-     virtual ffi::Optional<VisitInterrupt> Visit_(const prim::DivNode* node);
-     virtual ffi::Optional<VisitInterrupt> Visit_(const prim::ModNode* node);
-     virtual ffi::Optional<VisitInterrupt> Visit_(const prim::FloorDivNode* node);
-     virtual ffi::Optional<VisitInterrupt> Visit_(const prim::FloorModNode* node);
-     virtual ffi::Optional<VisitInterrupt> Visit_(const prim::MinNode* node);
-     virtual ffi::Optional<VisitInterrupt> Visit_(const prim::MaxNode* node);
-     virtual ffi::Optional<VisitInterrupt> Visit_(const prim::EQNode* node);
-     virtual ffi::Optional<VisitInterrupt> Visit_(const prim::NENode* node);
-     virtual ffi::Optional<VisitInterrupt> Visit_(const prim::LTNode* node);
-     virtual ffi::Optional<VisitInterrupt> Visit_(const prim::LENode* node);
-     virtual ffi::Optional<VisitInterrupt> Visit_(const prim::GTNode* node);
-     virtual ffi::Optional<VisitInterrupt> Visit_(const prim::GENode* node);
-     virtual ffi::Optional<VisitInterrupt> Visit_(const prim::AndNode* node);
-     virtual ffi::Optional<VisitInterrupt> Visit_(const prim::OrNode* node);
-     virtual ffi::Optional<VisitInterrupt> Visit_(const prim::NotNode* node);
-     virtual ffi::Optional<VisitInterrupt> Visit_(const prim::SelectNode* node);
-     virtual ffi::Optional<VisitInterrupt> Visit_(const prim::LetNode* node);
-     virtual ffi::Optional<VisitInterrupt> Visit_(const prim::RampNode* node);
-     virtual ffi::Optional<VisitInterrupt> Visit_(const prim::BroadcastNode* node);
-     virtual ffi::Optional<VisitInterrupt> Visit_(const prim::ShuffleNode* node);
+     virtual ffi::Optional<VisitInterrupt> Visit_(const OpaqueExprObj* node);
+     virtual ffi::Optional<VisitInterrupt> Visit_(const TupleObj* node);
+     virtual ffi::Optional<VisitInterrupt> Visit_(const TupleGetItemObj* node);
+     virtual ffi::Optional<VisitInterrupt> Visit_(const TensorLoadObj* node);
+     virtual ffi::Optional<VisitInterrupt> Visit_(const TensorRegionObj* node);
+     virtual ffi::Optional<VisitInterrupt> Visit_(const VarObj* node);
+     virtual ffi::Optional<VisitInterrupt> Visit_(const GlobalVarObj* node);
+     virtual ffi::Optional<VisitInterrupt> Visit_(const CallObj* node);
+     virtual ffi::Optional<VisitInterrupt> Visit_(const GenericConstObj* node);
+     virtual ffi::Optional<VisitInterrupt> Visit_(const DataTypeImmObj* node);
+     virtual ffi::Optional<VisitInterrupt> Visit_(const IntImmObj* node);
+     virtual ffi::Optional<VisitInterrupt> Visit_(const FloatImmObj* node);
+     virtual ffi::Optional<VisitInterrupt> Visit_(const OpObj* node);
+     virtual ffi::Optional<VisitInterrupt> Visit_(const StringImmObj* node);
+     virtual ffi::Optional<VisitInterrupt> Visit_(const prim::CastObj* node);
+     virtual ffi::Optional<VisitInterrupt> Visit_(const prim::AddObj* node);
+     virtual ffi::Optional<VisitInterrupt> Visit_(const prim::LShiftObj* node);
+     virtual ffi::Optional<VisitInterrupt> Visit_(const prim::RShiftObj* node);
+     virtual ffi::Optional<VisitInterrupt> Visit_(const prim::BitwiseAndObj* node);
+     virtual ffi::Optional<VisitInterrupt> Visit_(const prim::BitwiseOrObj* node);
+     virtual ffi::Optional<VisitInterrupt> Visit_(const prim::BitwiseXorObj* node);
+     virtual ffi::Optional<VisitInterrupt> Visit_(const prim::BitwiseNotObj* node);
+     virtual ffi::Optional<VisitInterrupt> Visit_(const prim::SubObj* node);
+     virtual ffi::Optional<VisitInterrupt> Visit_(const prim::MulObj* node);
+     virtual ffi::Optional<VisitInterrupt> Visit_(const prim::DivObj* node);
+     virtual ffi::Optional<VisitInterrupt> Visit_(const prim::ModObj* node);
+     virtual ffi::Optional<VisitInterrupt> Visit_(const prim::FloorDivObj* node);
+     virtual ffi::Optional<VisitInterrupt> Visit_(const prim::FloorModObj* node);
+     virtual ffi::Optional<VisitInterrupt> Visit_(const prim::MinObj* node);
+     virtual ffi::Optional<VisitInterrupt> Visit_(const prim::MaxObj* node);
+     virtual ffi::Optional<VisitInterrupt> Visit_(const prim::EQObj* node);
+     virtual ffi::Optional<VisitInterrupt> Visit_(const prim::NEObj* node);
+     virtual ffi::Optional<VisitInterrupt> Visit_(const prim::LTObj* node);
+     virtual ffi::Optional<VisitInterrupt> Visit_(const prim::LEObj* node);
+     virtual ffi::Optional<VisitInterrupt> Visit_(const prim::GTObj* node);
+     virtual ffi::Optional<VisitInterrupt> Visit_(const prim::GEObj* node);
+     virtual ffi::Optional<VisitInterrupt> Visit_(const prim::AndObj* node);
+     virtual ffi::Optional<VisitInterrupt> Visit_(const prim::OrObj* node);
+     virtual ffi::Optional<VisitInterrupt> Visit_(const prim::NotObj* node);
+     virtual ffi::Optional<VisitInterrupt> Visit_(const prim::SelectObj* node);
+     virtual ffi::Optional<VisitInterrupt> Visit_(const prim::LetObj* node);
+     virtual ffi::Optional<VisitInterrupt> Visit_(const prim::RampObj* node);
+     virtual ffi::Optional<VisitInterrupt> Visit_(const prim::BroadcastObj* node);
+     virtual ffi::Optional<VisitInterrupt> Visit_(const prim::ShuffleObj* node);
    
     protected:
      explicit ExprVisitor(const VTable* vtable) : ObjectVisitor(vtable) {}
@@ -347,58 +347,58 @@ Program Listing for File expr_functor.h
      }
    
      // A downstream class overrides any existing hook without rebuilding the table.
-     // Extra node types use a fresh inherited table and SetDispatch<Self, ExtraNode>.
+     // Extra node types use a fresh inherited table and SetDispatch<Self, ExtraObj>.
      // Hooks borrow the node and return Unchanged or an owning replacement in its expression
      // category, throwing on failure. Narrower field types are checked separately. Forward
      // inplace_mode on every child edge.
-     virtual UnchangedOr<Expr> Mutate_(const OpaqueExprNode* node, InplaceMode inplace_mode);
-     virtual UnchangedOr<Expr> Mutate_(const TupleNode* node, InplaceMode inplace_mode);
-     virtual UnchangedOr<Expr> Mutate_(const TupleGetItemNode* node, InplaceMode inplace_mode);
-     virtual UnchangedOr<PrimExpr> Mutate_(const TensorLoadNode* node, InplaceMode inplace_mode);
-     virtual UnchangedOr<Expr> Mutate_(const TensorRegionNode* node, InplaceMode inplace_mode);
-     virtual UnchangedOr<Expr> Mutate_(const VarNode* node, InplaceMode inplace_mode);
-     virtual UnchangedOr<Expr> Mutate_(const GlobalVarNode* node, InplaceMode inplace_mode);
-     virtual UnchangedOr<Expr> Mutate_(const CallNode* node, InplaceMode inplace_mode);
-     virtual UnchangedOr<Expr> Mutate_(const GenericConstNode* node, InplaceMode inplace_mode);
-     virtual UnchangedOr<Expr> Mutate_(const DataTypeImmNode* node, InplaceMode inplace_mode);
-     virtual UnchangedOr<PrimExpr> Mutate_(const IntImmNode* node, InplaceMode inplace_mode);
-     virtual UnchangedOr<PrimExpr> Mutate_(const FloatImmNode* node, InplaceMode inplace_mode);
-     virtual UnchangedOr<Expr> Mutate_(const OpNode* node, InplaceMode inplace_mode);
-     virtual UnchangedOr<Expr> Mutate_(const StringImmNode* node, InplaceMode inplace_mode);
-     virtual UnchangedOr<PrimExpr> Mutate_(const prim::CastNode* node, InplaceMode inplace_mode);
-     virtual UnchangedOr<PrimExpr> Mutate_(const prim::AddNode* node, InplaceMode inplace_mode);
-     virtual UnchangedOr<PrimExpr> Mutate_(const prim::LShiftNode* node, InplaceMode inplace_mode);
-     virtual UnchangedOr<PrimExpr> Mutate_(const prim::RShiftNode* node, InplaceMode inplace_mode);
-     virtual UnchangedOr<PrimExpr> Mutate_(const prim::BitwiseAndNode* node, InplaceMode inplace_mode);
-     virtual UnchangedOr<PrimExpr> Mutate_(const prim::BitwiseOrNode* node, InplaceMode inplace_mode);
-     virtual UnchangedOr<PrimExpr> Mutate_(const prim::BitwiseXorNode* node, InplaceMode inplace_mode);
-     virtual UnchangedOr<PrimExpr> Mutate_(const prim::BitwiseNotNode* node, InplaceMode inplace_mode);
-     virtual UnchangedOr<PrimExpr> Mutate_(const prim::SubNode* node, InplaceMode inplace_mode);
-     virtual UnchangedOr<PrimExpr> Mutate_(const prim::MulNode* node, InplaceMode inplace_mode);
-     virtual UnchangedOr<PrimExpr> Mutate_(const prim::DivNode* node, InplaceMode inplace_mode);
-     virtual UnchangedOr<PrimExpr> Mutate_(const prim::ModNode* node, InplaceMode inplace_mode);
-     virtual UnchangedOr<PrimExpr> Mutate_(const prim::FloorDivNode* node, InplaceMode inplace_mode);
-     virtual UnchangedOr<PrimExpr> Mutate_(const prim::FloorModNode* node, InplaceMode inplace_mode);
-     virtual UnchangedOr<PrimExpr> Mutate_(const prim::MinNode* node, InplaceMode inplace_mode);
-     virtual UnchangedOr<PrimExpr> Mutate_(const prim::MaxNode* node, InplaceMode inplace_mode);
-     virtual UnchangedOr<PrimExpr> Mutate_(const prim::EQNode* node, InplaceMode inplace_mode);
-     virtual UnchangedOr<PrimExpr> Mutate_(const prim::NENode* node, InplaceMode inplace_mode);
-     virtual UnchangedOr<PrimExpr> Mutate_(const prim::LTNode* node, InplaceMode inplace_mode);
-     virtual UnchangedOr<PrimExpr> Mutate_(const prim::LENode* node, InplaceMode inplace_mode);
-     virtual UnchangedOr<PrimExpr> Mutate_(const prim::GTNode* node, InplaceMode inplace_mode);
-     virtual UnchangedOr<PrimExpr> Mutate_(const prim::GENode* node, InplaceMode inplace_mode);
-     virtual UnchangedOr<PrimExpr> Mutate_(const prim::AndNode* node, InplaceMode inplace_mode);
-     virtual UnchangedOr<PrimExpr> Mutate_(const prim::OrNode* node, InplaceMode inplace_mode);
-     virtual UnchangedOr<PrimExpr> Mutate_(const prim::NotNode* node, InplaceMode inplace_mode);
-     virtual UnchangedOr<PrimExpr> Mutate_(const prim::SelectNode* node, InplaceMode inplace_mode);
-     virtual UnchangedOr<PrimExpr> Mutate_(const prim::LetNode* node, InplaceMode inplace_mode);
-     virtual UnchangedOr<PrimExpr> Mutate_(const prim::RampNode* node, InplaceMode inplace_mode);
-     virtual UnchangedOr<PrimExpr> Mutate_(const prim::BroadcastNode* node, InplaceMode inplace_mode);
-     virtual UnchangedOr<PrimExpr> Mutate_(const prim::ShuffleNode* node, InplaceMode inplace_mode);
+     virtual UnchangedOr<Expr> Mutate_(const OpaqueExprObj* node, InplaceMode inplace_mode);
+     virtual UnchangedOr<Expr> Mutate_(const TupleObj* node, InplaceMode inplace_mode);
+     virtual UnchangedOr<Expr> Mutate_(const TupleGetItemObj* node, InplaceMode inplace_mode);
+     virtual UnchangedOr<PrimExpr> Mutate_(const TensorLoadObj* node, InplaceMode inplace_mode);
+     virtual UnchangedOr<Expr> Mutate_(const TensorRegionObj* node, InplaceMode inplace_mode);
+     virtual UnchangedOr<Expr> Mutate_(const VarObj* node, InplaceMode inplace_mode);
+     virtual UnchangedOr<Expr> Mutate_(const GlobalVarObj* node, InplaceMode inplace_mode);
+     virtual UnchangedOr<Expr> Mutate_(const CallObj* node, InplaceMode inplace_mode);
+     virtual UnchangedOr<Expr> Mutate_(const GenericConstObj* node, InplaceMode inplace_mode);
+     virtual UnchangedOr<Expr> Mutate_(const DataTypeImmObj* node, InplaceMode inplace_mode);
+     virtual UnchangedOr<PrimExpr> Mutate_(const IntImmObj* node, InplaceMode inplace_mode);
+     virtual UnchangedOr<PrimExpr> Mutate_(const FloatImmObj* node, InplaceMode inplace_mode);
+     virtual UnchangedOr<Expr> Mutate_(const OpObj* node, InplaceMode inplace_mode);
+     virtual UnchangedOr<Expr> Mutate_(const StringImmObj* node, InplaceMode inplace_mode);
+     virtual UnchangedOr<PrimExpr> Mutate_(const prim::CastObj* node, InplaceMode inplace_mode);
+     virtual UnchangedOr<PrimExpr> Mutate_(const prim::AddObj* node, InplaceMode inplace_mode);
+     virtual UnchangedOr<PrimExpr> Mutate_(const prim::LShiftObj* node, InplaceMode inplace_mode);
+     virtual UnchangedOr<PrimExpr> Mutate_(const prim::RShiftObj* node, InplaceMode inplace_mode);
+     virtual UnchangedOr<PrimExpr> Mutate_(const prim::BitwiseAndObj* node, InplaceMode inplace_mode);
+     virtual UnchangedOr<PrimExpr> Mutate_(const prim::BitwiseOrObj* node, InplaceMode inplace_mode);
+     virtual UnchangedOr<PrimExpr> Mutate_(const prim::BitwiseXorObj* node, InplaceMode inplace_mode);
+     virtual UnchangedOr<PrimExpr> Mutate_(const prim::BitwiseNotObj* node, InplaceMode inplace_mode);
+     virtual UnchangedOr<PrimExpr> Mutate_(const prim::SubObj* node, InplaceMode inplace_mode);
+     virtual UnchangedOr<PrimExpr> Mutate_(const prim::MulObj* node, InplaceMode inplace_mode);
+     virtual UnchangedOr<PrimExpr> Mutate_(const prim::DivObj* node, InplaceMode inplace_mode);
+     virtual UnchangedOr<PrimExpr> Mutate_(const prim::ModObj* node, InplaceMode inplace_mode);
+     virtual UnchangedOr<PrimExpr> Mutate_(const prim::FloorDivObj* node, InplaceMode inplace_mode);
+     virtual UnchangedOr<PrimExpr> Mutate_(const prim::FloorModObj* node, InplaceMode inplace_mode);
+     virtual UnchangedOr<PrimExpr> Mutate_(const prim::MinObj* node, InplaceMode inplace_mode);
+     virtual UnchangedOr<PrimExpr> Mutate_(const prim::MaxObj* node, InplaceMode inplace_mode);
+     virtual UnchangedOr<PrimExpr> Mutate_(const prim::EQObj* node, InplaceMode inplace_mode);
+     virtual UnchangedOr<PrimExpr> Mutate_(const prim::NEObj* node, InplaceMode inplace_mode);
+     virtual UnchangedOr<PrimExpr> Mutate_(const prim::LTObj* node, InplaceMode inplace_mode);
+     virtual UnchangedOr<PrimExpr> Mutate_(const prim::LEObj* node, InplaceMode inplace_mode);
+     virtual UnchangedOr<PrimExpr> Mutate_(const prim::GTObj* node, InplaceMode inplace_mode);
+     virtual UnchangedOr<PrimExpr> Mutate_(const prim::GEObj* node, InplaceMode inplace_mode);
+     virtual UnchangedOr<PrimExpr> Mutate_(const prim::AndObj* node, InplaceMode inplace_mode);
+     virtual UnchangedOr<PrimExpr> Mutate_(const prim::OrObj* node, InplaceMode inplace_mode);
+     virtual UnchangedOr<PrimExpr> Mutate_(const prim::NotObj* node, InplaceMode inplace_mode);
+     virtual UnchangedOr<PrimExpr> Mutate_(const prim::SelectObj* node, InplaceMode inplace_mode);
+     virtual UnchangedOr<PrimExpr> Mutate_(const prim::LetObj* node, InplaceMode inplace_mode);
+     virtual UnchangedOr<PrimExpr> Mutate_(const prim::RampObj* node, InplaceMode inplace_mode);
+     virtual UnchangedOr<PrimExpr> Mutate_(const prim::BroadcastObj* node, InplaceMode inplace_mode);
+     virtual UnchangedOr<PrimExpr> Mutate_(const prim::ShuffleObj* node, InplaceMode inplace_mode);
    
     protected:
      static UnchangedOr<Expr> ReinferMutatedCallType(UnchangedOr<Expr> mutated,
-                                                     const CallNode* original,
+                                                     const CallObj* original,
                                                      InplaceMode inplace_mode);
    
      explicit ExprMutator(const VTable* vtable) : ObjectMutator(vtable) {}

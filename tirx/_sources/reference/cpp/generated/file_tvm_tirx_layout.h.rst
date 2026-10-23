@@ -85,23 +85,23 @@ Classes
 
 - :ref:`exhale_class_classtvm_1_1tirx_1_1Axis`
 
-- :ref:`exhale_class_classtvm_1_1tirx_1_1AxisNode`
+- :ref:`exhale_class_classtvm_1_1tirx_1_1AxisObj`
 
 - :ref:`exhale_class_classtvm_1_1tirx_1_1ComposeLayout`
 
-- :ref:`exhale_class_classtvm_1_1tirx_1_1ComposeLayoutNode`
+- :ref:`exhale_class_classtvm_1_1tirx_1_1ComposeLayoutObj`
 
 - :ref:`exhale_class_classtvm_1_1tirx_1_1Iter`
 
-- :ref:`exhale_class_classtvm_1_1tirx_1_1IterNode`
+- :ref:`exhale_class_classtvm_1_1tirx_1_1IterObj`
 
 - :ref:`exhale_class_classtvm_1_1tirx_1_1Layout`
 
-- :ref:`exhale_class_classtvm_1_1tirx_1_1LayoutNode`
+- :ref:`exhale_class_classtvm_1_1tirx_1_1LayoutObj`
 
 - :ref:`exhale_class_classtvm_1_1tirx_1_1TileLayout`
 
-- :ref:`exhale_class_classtvm_1_1tirx_1_1TileLayoutNode`
+- :ref:`exhale_class_classtvm_1_1tirx_1_1TileLayoutObj`
 
 
 Typedefs

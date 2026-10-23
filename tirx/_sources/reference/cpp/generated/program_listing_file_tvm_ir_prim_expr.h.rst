@@ -54,37 +54,37 @@ Program Listing for File expr.h
    namespace tvm {
    namespace prim {
    
-   using IntImmNode = tvm::IntImmNode;
-   using FloatImmNode = tvm::FloatImmNode;
+   using IntImmObj = tvm::IntImmObj;
+   using FloatImmObj = tvm::FloatImmObj;
    
-   class CastNode : public ExprNode {
+   class CastObj : public ExprObj {
     public:
-     explicit CastNode(PrimExpr value) : value(std::move(value)) {}
-     explicit CastNode(ffi::UnsafeInit tag) : value(tag) {}
+     explicit CastObj(PrimExpr value) : value(std::move(value)) {}
+     explicit CastObj(ffi::UnsafeInit tag) : value(tag) {}
    
      PrimExpr value;
      static void RegisterReflection() {
        namespace refl = tvm::ffi::reflection;
-       refl::ObjectDef<CastNode>().def_ro("value", &CastNode::value);
+       refl::ObjectDef<CastObj>().def_ro("value", &CastObj::value);
      }
-     TVM_FFI_DECLARE_OBJECT_INFO_FINAL("prim.Cast", CastNode, ExprNode);
+     TVM_FFI_DECLARE_OBJECT_INFO_FINAL("prim.Cast", CastObj, ExprObj);
    };
    
    class Cast : public PrimExpr {
     public:
      TVM_TIRX_DLL Cast(PrimType ty, PrimExpr value, Location loc = UnknownLoc());
-     explicit Cast(ffi::ObjectPtr<CastNode> node) : PrimExpr(std::move(node)) {}
+     explicit Cast(ffi::ObjectPtr<CastObj> node) : PrimExpr(std::move(node)) {}
    
-     TVM_FFI_DEFINE_OBJECT_REF_METHODS_NOTNULLABLE(Cast, PrimExpr, CastNode);
+     TVM_FFI_DEFINE_OBJECT_REF_METHODS_NOTNULLABLE(Cast, PrimExpr, CastObj);
      static constexpr bool _type_container_is_exact = true;
-     TVM_DEFINE_OBJECT_REF_COW_METHOD(CastNode);
+     TVM_DEFINE_OBJECT_REF_COW_METHOD(CastObj);
    };
    
    template <typename T>
-   class BinaryOpNode : public ExprNode {
+   class BinaryOpObj : public ExprObj {
     public:
-     BinaryOpNode(PrimExpr a, PrimExpr b) : a(std::move(a)), b(std::move(b)) {}
-     explicit BinaryOpNode(ffi::UnsafeInit tag) : a(tag), b(tag) {}
+     BinaryOpObj(PrimExpr a, PrimExpr b) : a(std::move(a)), b(std::move(b)) {}
+     explicit BinaryOpObj(ffi::UnsafeInit tag) : a(tag), b(tag) {}
    
      PrimExpr a;
      PrimExpr b;
@@ -94,108 +94,108 @@ Program Listing for File expr.h
      }
      static const constexpr int _type_child_slots [[maybe_unused]] = 0;
      static const constexpr bool _type_final [[maybe_unused]] = true;
-     TVM_FFI_DECLARE_OBJECT_INFO_PREDEFINED_TYPE_KEY(T, ExprNode);
+     TVM_FFI_DECLARE_OBJECT_INFO_PREDEFINED_TYPE_KEY(T, ExprObj);
    };
    
-   class AddNode : public BinaryOpNode<AddNode> {
+   class AddObj : public BinaryOpObj<AddObj> {
     public:
-     using BinaryOpNode<AddNode>::BinaryOpNode;
+     using BinaryOpObj<AddObj>::BinaryOpObj;
      static constexpr const char* _type_key = "prim.Add";
    };
    
    class Add : public PrimExpr {
     public:
      TVM_TIRX_DLL Add(PrimExpr a, PrimExpr b, Location loc = UnknownLoc());
-     explicit Add(ffi::ObjectPtr<AddNode> node) : PrimExpr(std::move(node)) {}
+     explicit Add(ffi::ObjectPtr<AddObj> node) : PrimExpr(std::move(node)) {}
    
-     TVM_FFI_DEFINE_OBJECT_REF_METHODS_NOTNULLABLE(Add, PrimExpr, AddNode);
+     TVM_FFI_DEFINE_OBJECT_REF_METHODS_NOTNULLABLE(Add, PrimExpr, AddObj);
      static constexpr bool _type_container_is_exact = true;
-     TVM_DEFINE_OBJECT_REF_COW_METHOD(AddNode);
+     TVM_DEFINE_OBJECT_REF_COW_METHOD(AddObj);
    };
    
-   class LShiftNode : public BinaryOpNode<LShiftNode> {
+   class LShiftObj : public BinaryOpObj<LShiftObj> {
     public:
-     using BinaryOpNode<LShiftNode>::BinaryOpNode;
+     using BinaryOpObj<LShiftObj>::BinaryOpObj;
      static constexpr const char* _type_key = "prim.LShift";
    };
    
    class LShift : public PrimExpr {
     public:
      TVM_TIRX_DLL LShift(PrimExpr a, PrimExpr b, Location loc = UnknownLoc());
-     explicit LShift(ffi::ObjectPtr<LShiftNode> node) : PrimExpr(std::move(node)) {}
+     explicit LShift(ffi::ObjectPtr<LShiftObj> node) : PrimExpr(std::move(node)) {}
    
-     TVM_FFI_DEFINE_OBJECT_REF_METHODS_NOTNULLABLE(LShift, PrimExpr, LShiftNode);
+     TVM_FFI_DEFINE_OBJECT_REF_METHODS_NOTNULLABLE(LShift, PrimExpr, LShiftObj);
      static constexpr bool _type_container_is_exact = true;
-     TVM_DEFINE_OBJECT_REF_COW_METHOD(LShiftNode);
+     TVM_DEFINE_OBJECT_REF_COW_METHOD(LShiftObj);
    };
    
-   class RShiftNode : public BinaryOpNode<RShiftNode> {
+   class RShiftObj : public BinaryOpObj<RShiftObj> {
     public:
-     using BinaryOpNode<RShiftNode>::BinaryOpNode;
+     using BinaryOpObj<RShiftObj>::BinaryOpObj;
      static constexpr const char* _type_key = "prim.RShift";
    };
    
    class RShift : public PrimExpr {
     public:
      TVM_TIRX_DLL RShift(PrimExpr a, PrimExpr b, Location loc = UnknownLoc());
-     explicit RShift(ffi::ObjectPtr<RShiftNode> node) : PrimExpr(std::move(node)) {}
+     explicit RShift(ffi::ObjectPtr<RShiftObj> node) : PrimExpr(std::move(node)) {}
    
-     TVM_FFI_DEFINE_OBJECT_REF_METHODS_NOTNULLABLE(RShift, PrimExpr, RShiftNode);
+     TVM_FFI_DEFINE_OBJECT_REF_METHODS_NOTNULLABLE(RShift, PrimExpr, RShiftObj);
      static constexpr bool _type_container_is_exact = true;
-     TVM_DEFINE_OBJECT_REF_COW_METHOD(RShiftNode);
+     TVM_DEFINE_OBJECT_REF_COW_METHOD(RShiftObj);
    };
    
-   class BitwiseAndNode : public BinaryOpNode<BitwiseAndNode> {
+   class BitwiseAndObj : public BinaryOpObj<BitwiseAndObj> {
     public:
-     using BinaryOpNode<BitwiseAndNode>::BinaryOpNode;
+     using BinaryOpObj<BitwiseAndObj>::BinaryOpObj;
      static constexpr const char* _type_key = "prim.BitwiseAnd";
    };
    
    class BitwiseAnd : public PrimExpr {
     public:
      TVM_TIRX_DLL BitwiseAnd(PrimExpr a, PrimExpr b, Location loc = UnknownLoc());
-     explicit BitwiseAnd(ffi::ObjectPtr<BitwiseAndNode> node) : PrimExpr(std::move(node)) {}
+     explicit BitwiseAnd(ffi::ObjectPtr<BitwiseAndObj> node) : PrimExpr(std::move(node)) {}
    
-     TVM_FFI_DEFINE_OBJECT_REF_METHODS_NOTNULLABLE(BitwiseAnd, PrimExpr, BitwiseAndNode);
+     TVM_FFI_DEFINE_OBJECT_REF_METHODS_NOTNULLABLE(BitwiseAnd, PrimExpr, BitwiseAndObj);
      static constexpr bool _type_container_is_exact = true;
-     TVM_DEFINE_OBJECT_REF_COW_METHOD(BitwiseAndNode);
+     TVM_DEFINE_OBJECT_REF_COW_METHOD(BitwiseAndObj);
    };
    
-   class BitwiseOrNode : public BinaryOpNode<BitwiseOrNode> {
+   class BitwiseOrObj : public BinaryOpObj<BitwiseOrObj> {
     public:
-     using BinaryOpNode<BitwiseOrNode>::BinaryOpNode;
+     using BinaryOpObj<BitwiseOrObj>::BinaryOpObj;
      static constexpr const char* _type_key = "prim.BitwiseOr";
    };
    
    class BitwiseOr : public PrimExpr {
     public:
      TVM_TIRX_DLL BitwiseOr(PrimExpr a, PrimExpr b, Location loc = UnknownLoc());
-     explicit BitwiseOr(ffi::ObjectPtr<BitwiseOrNode> node) : PrimExpr(std::move(node)) {}
+     explicit BitwiseOr(ffi::ObjectPtr<BitwiseOrObj> node) : PrimExpr(std::move(node)) {}
    
-     TVM_FFI_DEFINE_OBJECT_REF_METHODS_NOTNULLABLE(BitwiseOr, PrimExpr, BitwiseOrNode);
+     TVM_FFI_DEFINE_OBJECT_REF_METHODS_NOTNULLABLE(BitwiseOr, PrimExpr, BitwiseOrObj);
      static constexpr bool _type_container_is_exact = true;
-     TVM_DEFINE_OBJECT_REF_COW_METHOD(BitwiseOrNode);
+     TVM_DEFINE_OBJECT_REF_COW_METHOD(BitwiseOrObj);
    };
    
-   class BitwiseXorNode : public BinaryOpNode<BitwiseXorNode> {
+   class BitwiseXorObj : public BinaryOpObj<BitwiseXorObj> {
     public:
-     using BinaryOpNode<BitwiseXorNode>::BinaryOpNode;
+     using BinaryOpObj<BitwiseXorObj>::BinaryOpObj;
      static constexpr const char* _type_key = "prim.BitwiseXor";
    };
    
    class BitwiseXor : public PrimExpr {
     public:
      TVM_TIRX_DLL BitwiseXor(PrimExpr a, PrimExpr b, Location loc = UnknownLoc());
-     explicit BitwiseXor(ffi::ObjectPtr<BitwiseXorNode> node) : PrimExpr(std::move(node)) {}
+     explicit BitwiseXor(ffi::ObjectPtr<BitwiseXorObj> node) : PrimExpr(std::move(node)) {}
    
-     TVM_FFI_DEFINE_OBJECT_REF_METHODS_NOTNULLABLE(BitwiseXor, PrimExpr, BitwiseXorNode);
+     TVM_FFI_DEFINE_OBJECT_REF_METHODS_NOTNULLABLE(BitwiseXor, PrimExpr, BitwiseXorObj);
      static constexpr bool _type_container_is_exact = true;
-     TVM_DEFINE_OBJECT_REF_COW_METHOD(BitwiseXorNode);
+     TVM_DEFINE_OBJECT_REF_COW_METHOD(BitwiseXorObj);
    };
    
-   class SubNode : public BinaryOpNode<SubNode> {
+   class SubObj : public BinaryOpObj<SubObj> {
     public:
-     using BinaryOpNode<SubNode>::BinaryOpNode;
+     using BinaryOpObj<SubObj>::BinaryOpObj;
      static constexpr const char* _type_key = "prim.Sub";
    };
    
@@ -203,130 +203,130 @@ Program Listing for File expr.h
     public:
      TVM_TIRX_DLL Sub(PrimExpr a, PrimExpr b, Location loc = UnknownLoc());
    
-     explicit Sub(ffi::ObjectPtr<SubNode> node) : PrimExpr(std::move(node)) {}
+     explicit Sub(ffi::ObjectPtr<SubObj> node) : PrimExpr(std::move(node)) {}
    
-     TVM_FFI_DEFINE_OBJECT_REF_METHODS_NOTNULLABLE(Sub, PrimExpr, SubNode);
+     TVM_FFI_DEFINE_OBJECT_REF_METHODS_NOTNULLABLE(Sub, PrimExpr, SubObj);
      static constexpr bool _type_container_is_exact = true;
-     TVM_DEFINE_OBJECT_REF_COW_METHOD(SubNode);
+     TVM_DEFINE_OBJECT_REF_COW_METHOD(SubObj);
    };
    
-   class MulNode : public BinaryOpNode<MulNode> {
+   class MulObj : public BinaryOpObj<MulObj> {
     public:
-     using BinaryOpNode<MulNode>::BinaryOpNode;
+     using BinaryOpObj<MulObj>::BinaryOpObj;
      static constexpr const char* _type_key = "prim.Mul";
    };
    
    class Mul : public PrimExpr {
     public:
      TVM_TIRX_DLL Mul(PrimExpr a, PrimExpr b, Location loc = UnknownLoc());
-     explicit Mul(ffi::ObjectPtr<MulNode> node) : PrimExpr(std::move(node)) {}
+     explicit Mul(ffi::ObjectPtr<MulObj> node) : PrimExpr(std::move(node)) {}
    
-     TVM_FFI_DEFINE_OBJECT_REF_METHODS_NOTNULLABLE(Mul, PrimExpr, MulNode);
+     TVM_FFI_DEFINE_OBJECT_REF_METHODS_NOTNULLABLE(Mul, PrimExpr, MulObj);
      static constexpr bool _type_container_is_exact = true;
-     TVM_DEFINE_OBJECT_REF_COW_METHOD(MulNode);
+     TVM_DEFINE_OBJECT_REF_COW_METHOD(MulObj);
    };
    
-   class DivNode : public BinaryOpNode<DivNode> {
+   class DivObj : public BinaryOpObj<DivObj> {
     public:
-     using BinaryOpNode<DivNode>::BinaryOpNode;
+     using BinaryOpObj<DivObj>::BinaryOpObj;
      static constexpr const char* _type_key = "prim.Div";
    };
    
    class Div : public PrimExpr {
     public:
      TVM_TIRX_DLL Div(PrimExpr a, PrimExpr b, Location loc = UnknownLoc());
-     explicit Div(ffi::ObjectPtr<DivNode> node) : PrimExpr(std::move(node)) {}
+     explicit Div(ffi::ObjectPtr<DivObj> node) : PrimExpr(std::move(node)) {}
    
-     TVM_FFI_DEFINE_OBJECT_REF_METHODS_NOTNULLABLE(Div, PrimExpr, DivNode);
+     TVM_FFI_DEFINE_OBJECT_REF_METHODS_NOTNULLABLE(Div, PrimExpr, DivObj);
      static constexpr bool _type_container_is_exact = true;
-     TVM_DEFINE_OBJECT_REF_COW_METHOD(DivNode);
+     TVM_DEFINE_OBJECT_REF_COW_METHOD(DivObj);
    };
    
-   class ModNode : public BinaryOpNode<ModNode> {
+   class ModObj : public BinaryOpObj<ModObj> {
     public:
-     using BinaryOpNode<ModNode>::BinaryOpNode;
+     using BinaryOpObj<ModObj>::BinaryOpObj;
      static constexpr const char* _type_key = "prim.Mod";
    };
    
    class Mod : public PrimExpr {
     public:
      TVM_TIRX_DLL Mod(PrimExpr a, PrimExpr b, Location loc = UnknownLoc());
-     explicit Mod(ffi::ObjectPtr<ModNode> node) : PrimExpr(std::move(node)) {}
+     explicit Mod(ffi::ObjectPtr<ModObj> node) : PrimExpr(std::move(node)) {}
    
-     TVM_FFI_DEFINE_OBJECT_REF_METHODS_NOTNULLABLE(Mod, PrimExpr, ModNode);
+     TVM_FFI_DEFINE_OBJECT_REF_METHODS_NOTNULLABLE(Mod, PrimExpr, ModObj);
      static constexpr bool _type_container_is_exact = true;
-     TVM_DEFINE_OBJECT_REF_COW_METHOD(ModNode);
+     TVM_DEFINE_OBJECT_REF_COW_METHOD(ModObj);
    };
    
-   class FloorDivNode : public BinaryOpNode<FloorDivNode> {
+   class FloorDivObj : public BinaryOpObj<FloorDivObj> {
     public:
-     using BinaryOpNode<FloorDivNode>::BinaryOpNode;
+     using BinaryOpObj<FloorDivObj>::BinaryOpObj;
      static constexpr const char* _type_key = "prim.FloorDiv";
    };
    
    class FloorDiv : public PrimExpr {
     public:
      TVM_TIRX_DLL FloorDiv(PrimExpr a, PrimExpr b, Location loc = UnknownLoc());
-     explicit FloorDiv(ffi::ObjectPtr<FloorDivNode> node) : PrimExpr(std::move(node)) {}
+     explicit FloorDiv(ffi::ObjectPtr<FloorDivObj> node) : PrimExpr(std::move(node)) {}
    
-     TVM_FFI_DEFINE_OBJECT_REF_METHODS_NOTNULLABLE(FloorDiv, PrimExpr, FloorDivNode);
+     TVM_FFI_DEFINE_OBJECT_REF_METHODS_NOTNULLABLE(FloorDiv, PrimExpr, FloorDivObj);
      static constexpr bool _type_container_is_exact = true;
-     TVM_DEFINE_OBJECT_REF_COW_METHOD(FloorDivNode);
+     TVM_DEFINE_OBJECT_REF_COW_METHOD(FloorDivObj);
    };
    
-   class FloorModNode : public BinaryOpNode<FloorModNode> {
+   class FloorModObj : public BinaryOpObj<FloorModObj> {
     public:
-     using BinaryOpNode<FloorModNode>::BinaryOpNode;
+     using BinaryOpObj<FloorModObj>::BinaryOpObj;
      static constexpr const char* _type_key = "prim.FloorMod";
    };
    
    class FloorMod : public PrimExpr {
     public:
      TVM_TIRX_DLL FloorMod(PrimExpr a, PrimExpr b, Location loc = UnknownLoc());
-     explicit FloorMod(ffi::ObjectPtr<FloorModNode> node) : PrimExpr(std::move(node)) {}
+     explicit FloorMod(ffi::ObjectPtr<FloorModObj> node) : PrimExpr(std::move(node)) {}
    
-     TVM_FFI_DEFINE_OBJECT_REF_METHODS_NOTNULLABLE(FloorMod, PrimExpr, FloorModNode);
+     TVM_FFI_DEFINE_OBJECT_REF_METHODS_NOTNULLABLE(FloorMod, PrimExpr, FloorModObj);
      static constexpr bool _type_container_is_exact = true;
-     TVM_DEFINE_OBJECT_REF_COW_METHOD(FloorModNode);
+     TVM_DEFINE_OBJECT_REF_COW_METHOD(FloorModObj);
    };
    
-   class MinNode : public BinaryOpNode<MinNode> {
+   class MinObj : public BinaryOpObj<MinObj> {
     public:
-     using BinaryOpNode<MinNode>::BinaryOpNode;
+     using BinaryOpObj<MinObj>::BinaryOpObj;
      static constexpr const char* _type_key = "prim.Min";
    };
    
    class Min : public PrimExpr {
     public:
      TVM_TIRX_DLL Min(PrimExpr a, PrimExpr b, Location loc = UnknownLoc());
-     explicit Min(ffi::ObjectPtr<MinNode> node) : PrimExpr(std::move(node)) {}
+     explicit Min(ffi::ObjectPtr<MinObj> node) : PrimExpr(std::move(node)) {}
    
-     TVM_FFI_DEFINE_OBJECT_REF_METHODS_NOTNULLABLE(Min, PrimExpr, MinNode);
+     TVM_FFI_DEFINE_OBJECT_REF_METHODS_NOTNULLABLE(Min, PrimExpr, MinObj);
      static constexpr bool _type_container_is_exact = true;
-     TVM_DEFINE_OBJECT_REF_COW_METHOD(MinNode);
+     TVM_DEFINE_OBJECT_REF_COW_METHOD(MinObj);
    };
    
-   class MaxNode : public BinaryOpNode<MaxNode> {
+   class MaxObj : public BinaryOpObj<MaxObj> {
     public:
-     using BinaryOpNode<MaxNode>::BinaryOpNode;
+     using BinaryOpObj<MaxObj>::BinaryOpObj;
      static constexpr const char* _type_key = "prim.Max";
    };
    
    class Max : public PrimExpr {
     public:
      TVM_TIRX_DLL Max(PrimExpr a, PrimExpr b, Location loc = UnknownLoc());
-     explicit Max(ffi::ObjectPtr<MaxNode> node) : PrimExpr(std::move(node)) {}
+     explicit Max(ffi::ObjectPtr<MaxObj> node) : PrimExpr(std::move(node)) {}
    
-     TVM_FFI_DEFINE_OBJECT_REF_METHODS_NOTNULLABLE(Max, PrimExpr, MaxNode);
+     TVM_FFI_DEFINE_OBJECT_REF_METHODS_NOTNULLABLE(Max, PrimExpr, MaxObj);
      static constexpr bool _type_container_is_exact = true;
-     TVM_DEFINE_OBJECT_REF_COW_METHOD(MaxNode);
+     TVM_DEFINE_OBJECT_REF_COW_METHOD(MaxObj);
    };
    
    template <typename T>
-   class CmpOpNode : public ExprNode {
+   class CmpOpObj : public ExprObj {
     public:
-     CmpOpNode(PrimExpr a, PrimExpr b) : a(std::move(a)), b(std::move(b)) {}
-     explicit CmpOpNode(ffi::UnsafeInit tag) : a(tag), b(tag) {}
+     CmpOpObj(PrimExpr a, PrimExpr b) : a(std::move(a)), b(std::move(b)) {}
+     explicit CmpOpObj(ffi::UnsafeInit tag) : a(tag), b(tag) {}
    
      PrimExpr a;
      PrimExpr b;
@@ -336,218 +336,218 @@ Program Listing for File expr.h
      }
      static const constexpr int _type_child_slots [[maybe_unused]] = 0;
      static const constexpr bool _type_final [[maybe_unused]] = true;
-     TVM_FFI_DECLARE_OBJECT_INFO_PREDEFINED_TYPE_KEY(T, ExprNode);
+     TVM_FFI_DECLARE_OBJECT_INFO_PREDEFINED_TYPE_KEY(T, ExprObj);
    };
    
-   class EQNode : public CmpOpNode<EQNode> {
+   class EQObj : public CmpOpObj<EQObj> {
     public:
-     using CmpOpNode<EQNode>::CmpOpNode;
+     using CmpOpObj<EQObj>::CmpOpObj;
      static constexpr const char* _type_key = "prim.EQ";
    };
    
    class EQ : public PrimExpr {
     public:
      TVM_TIRX_DLL EQ(PrimExpr a, PrimExpr b, Location loc = UnknownLoc());
-     explicit EQ(ffi::ObjectPtr<EQNode> node) : PrimExpr(std::move(node)) {}
+     explicit EQ(ffi::ObjectPtr<EQObj> node) : PrimExpr(std::move(node)) {}
    
-     TVM_FFI_DEFINE_OBJECT_REF_METHODS_NOTNULLABLE(EQ, PrimExpr, EQNode);
+     TVM_FFI_DEFINE_OBJECT_REF_METHODS_NOTNULLABLE(EQ, PrimExpr, EQObj);
      static constexpr bool _type_container_is_exact = true;
-     TVM_DEFINE_OBJECT_REF_COW_METHOD(EQNode);
+     TVM_DEFINE_OBJECT_REF_COW_METHOD(EQObj);
    };
    
-   class NENode : public CmpOpNode<NENode> {
+   class NEObj : public CmpOpObj<NEObj> {
     public:
-     using CmpOpNode<NENode>::CmpOpNode;
+     using CmpOpObj<NEObj>::CmpOpObj;
      static constexpr const char* _type_key = "prim.NE";
    };
    
    class NE : public PrimExpr {
     public:
      TVM_TIRX_DLL NE(PrimExpr a, PrimExpr b, Location loc = UnknownLoc());
-     explicit NE(ffi::ObjectPtr<NENode> node) : PrimExpr(std::move(node)) {}
+     explicit NE(ffi::ObjectPtr<NEObj> node) : PrimExpr(std::move(node)) {}
    
-     TVM_FFI_DEFINE_OBJECT_REF_METHODS_NOTNULLABLE(NE, PrimExpr, NENode);
+     TVM_FFI_DEFINE_OBJECT_REF_METHODS_NOTNULLABLE(NE, PrimExpr, NEObj);
      static constexpr bool _type_container_is_exact = true;
-     TVM_DEFINE_OBJECT_REF_COW_METHOD(NENode);
+     TVM_DEFINE_OBJECT_REF_COW_METHOD(NEObj);
    };
    
-   class LTNode : public CmpOpNode<LTNode> {
+   class LTObj : public CmpOpObj<LTObj> {
     public:
-     using CmpOpNode<LTNode>::CmpOpNode;
+     using CmpOpObj<LTObj>::CmpOpObj;
      static constexpr const char* _type_key = "prim.LT";
    };
    
    class LT : public PrimExpr {
     public:
      TVM_TIRX_DLL LT(PrimExpr a, PrimExpr b, Location loc = UnknownLoc());
-     explicit LT(ffi::ObjectPtr<LTNode> node) : PrimExpr(std::move(node)) {}
+     explicit LT(ffi::ObjectPtr<LTObj> node) : PrimExpr(std::move(node)) {}
    
-     TVM_FFI_DEFINE_OBJECT_REF_METHODS_NOTNULLABLE(LT, PrimExpr, LTNode);
+     TVM_FFI_DEFINE_OBJECT_REF_METHODS_NOTNULLABLE(LT, PrimExpr, LTObj);
      static constexpr bool _type_container_is_exact = true;
-     TVM_DEFINE_OBJECT_REF_COW_METHOD(LTNode);
+     TVM_DEFINE_OBJECT_REF_COW_METHOD(LTObj);
    };
    
-   struct LENode : public CmpOpNode<LENode> {
+   struct LEObj : public CmpOpObj<LEObj> {
     public:
-     using CmpOpNode<LENode>::CmpOpNode;
+     using CmpOpObj<LEObj>::CmpOpObj;
      static constexpr const char* _type_key = "prim.LE";
    };
    
    class LE : public PrimExpr {
     public:
      TVM_TIRX_DLL LE(PrimExpr a, PrimExpr b, Location loc = UnknownLoc());
-     explicit LE(ffi::ObjectPtr<LENode> node) : PrimExpr(std::move(node)) {}
+     explicit LE(ffi::ObjectPtr<LEObj> node) : PrimExpr(std::move(node)) {}
    
-     TVM_FFI_DEFINE_OBJECT_REF_METHODS_NOTNULLABLE(LE, PrimExpr, LENode);
+     TVM_FFI_DEFINE_OBJECT_REF_METHODS_NOTNULLABLE(LE, PrimExpr, LEObj);
      static constexpr bool _type_container_is_exact = true;
-     TVM_DEFINE_OBJECT_REF_COW_METHOD(LENode);
+     TVM_DEFINE_OBJECT_REF_COW_METHOD(LEObj);
    };
    
-   class GTNode : public CmpOpNode<GTNode> {
+   class GTObj : public CmpOpObj<GTObj> {
     public:
-     using CmpOpNode<GTNode>::CmpOpNode;
+     using CmpOpObj<GTObj>::CmpOpObj;
      static constexpr const char* _type_key = "prim.GT";
    };
    
    class GT : public PrimExpr {
     public:
      TVM_TIRX_DLL GT(PrimExpr a, PrimExpr b, Location loc = UnknownLoc());
-     explicit GT(ffi::ObjectPtr<GTNode> node) : PrimExpr(std::move(node)) {}
+     explicit GT(ffi::ObjectPtr<GTObj> node) : PrimExpr(std::move(node)) {}
    
-     TVM_FFI_DEFINE_OBJECT_REF_METHODS_NOTNULLABLE(GT, PrimExpr, GTNode);
+     TVM_FFI_DEFINE_OBJECT_REF_METHODS_NOTNULLABLE(GT, PrimExpr, GTObj);
      static constexpr bool _type_container_is_exact = true;
-     TVM_DEFINE_OBJECT_REF_COW_METHOD(GTNode);
+     TVM_DEFINE_OBJECT_REF_COW_METHOD(GTObj);
    };
    
-   class GENode : public CmpOpNode<GENode> {
+   class GEObj : public CmpOpObj<GEObj> {
     public:
-     using CmpOpNode<GENode>::CmpOpNode;
+     using CmpOpObj<GEObj>::CmpOpObj;
      static constexpr const char* _type_key = "prim.GE";
    };
    
    class GE : public PrimExpr {
     public:
      TVM_TIRX_DLL GE(PrimExpr a, PrimExpr b, Location loc = UnknownLoc());
-     explicit GE(ffi::ObjectPtr<GENode> node) : PrimExpr(std::move(node)) {}
+     explicit GE(ffi::ObjectPtr<GEObj> node) : PrimExpr(std::move(node)) {}
    
-     TVM_FFI_DEFINE_OBJECT_REF_METHODS_NOTNULLABLE(GE, PrimExpr, GENode);
+     TVM_FFI_DEFINE_OBJECT_REF_METHODS_NOTNULLABLE(GE, PrimExpr, GEObj);
      static constexpr bool _type_container_is_exact = true;
-     TVM_DEFINE_OBJECT_REF_COW_METHOD(GENode);
+     TVM_DEFINE_OBJECT_REF_COW_METHOD(GEObj);
    };
    
-   class AndNode : public ExprNode {
+   class AndObj : public ExprObj {
     public:
-     AndNode(PrimExpr a, PrimExpr b) : a(std::move(a)), b(std::move(b)) {}
-     explicit AndNode(ffi::UnsafeInit tag) : a(tag), b(tag) {}
+     AndObj(PrimExpr a, PrimExpr b) : a(std::move(a)), b(std::move(b)) {}
+     explicit AndObj(ffi::UnsafeInit tag) : a(tag), b(tag) {}
    
      PrimExpr a;
      PrimExpr b;
      static void RegisterReflection() {
        namespace refl = tvm::ffi::reflection;
-       refl::ObjectDef<AndNode>().def_ro("a", &AndNode::a).def_ro("b", &AndNode::b);
+       refl::ObjectDef<AndObj>().def_ro("a", &AndObj::a).def_ro("b", &AndObj::b);
      }
-     TVM_FFI_DECLARE_OBJECT_INFO_FINAL("prim.And", AndNode, ExprNode);
+     TVM_FFI_DECLARE_OBJECT_INFO_FINAL("prim.And", AndObj, ExprObj);
    };
    
    class And : public PrimExpr {
     public:
      TVM_TIRX_DLL And(PrimExpr a, PrimExpr b, Location loc = UnknownLoc());
-     explicit And(ffi::ObjectPtr<AndNode> node) : PrimExpr(std::move(node)) {}
+     explicit And(ffi::ObjectPtr<AndObj> node) : PrimExpr(std::move(node)) {}
    
-     TVM_FFI_DEFINE_OBJECT_REF_METHODS_NOTNULLABLE(And, PrimExpr, AndNode);
+     TVM_FFI_DEFINE_OBJECT_REF_METHODS_NOTNULLABLE(And, PrimExpr, AndObj);
      static constexpr bool _type_container_is_exact = true;
-     TVM_DEFINE_OBJECT_REF_COW_METHOD(AndNode);
+     TVM_DEFINE_OBJECT_REF_COW_METHOD(AndObj);
    };
    
-   class OrNode : public ExprNode {
+   class OrObj : public ExprObj {
     public:
-     OrNode(PrimExpr a, PrimExpr b) : a(std::move(a)), b(std::move(b)) {}
-     explicit OrNode(ffi::UnsafeInit tag) : a(tag), b(tag) {}
+     OrObj(PrimExpr a, PrimExpr b) : a(std::move(a)), b(std::move(b)) {}
+     explicit OrObj(ffi::UnsafeInit tag) : a(tag), b(tag) {}
    
      PrimExpr a;
      PrimExpr b;
      static void RegisterReflection() {
        namespace refl = tvm::ffi::reflection;
-       refl::ObjectDef<OrNode>().def_ro("a", &OrNode::a).def_ro("b", &OrNode::b);
+       refl::ObjectDef<OrObj>().def_ro("a", &OrObj::a).def_ro("b", &OrObj::b);
      }
-     TVM_FFI_DECLARE_OBJECT_INFO_FINAL("prim.Or", OrNode, ExprNode);
+     TVM_FFI_DECLARE_OBJECT_INFO_FINAL("prim.Or", OrObj, ExprObj);
    };
    
    class Or : public PrimExpr {
     public:
      TVM_TIRX_DLL Or(PrimExpr a, PrimExpr b, Location loc = UnknownLoc());
-     explicit Or(ffi::ObjectPtr<OrNode> node) : PrimExpr(std::move(node)) {}
+     explicit Or(ffi::ObjectPtr<OrObj> node) : PrimExpr(std::move(node)) {}
    
-     TVM_FFI_DEFINE_OBJECT_REF_METHODS_NOTNULLABLE(Or, PrimExpr, OrNode);
+     TVM_FFI_DEFINE_OBJECT_REF_METHODS_NOTNULLABLE(Or, PrimExpr, OrObj);
      static constexpr bool _type_container_is_exact = true;
-     TVM_DEFINE_OBJECT_REF_COW_METHOD(OrNode);
+     TVM_DEFINE_OBJECT_REF_COW_METHOD(OrObj);
    };
    
-   class NotNode : public ExprNode {
+   class NotObj : public ExprObj {
     public:
-     explicit NotNode(PrimExpr a) : a(std::move(a)) {}
-     explicit NotNode(ffi::UnsafeInit tag) : a(tag) {}
+     explicit NotObj(PrimExpr a) : a(std::move(a)) {}
+     explicit NotObj(ffi::UnsafeInit tag) : a(tag) {}
    
      PrimExpr a;
      static void RegisterReflection() {
        namespace refl = tvm::ffi::reflection;
-       refl::ObjectDef<NotNode>().def_ro("a", &NotNode::a);
+       refl::ObjectDef<NotObj>().def_ro("a", &NotObj::a);
      }
-     TVM_FFI_DECLARE_OBJECT_INFO_FINAL("prim.Not", NotNode, ExprNode);
+     TVM_FFI_DECLARE_OBJECT_INFO_FINAL("prim.Not", NotObj, ExprObj);
    };
    
    class Not : public PrimExpr {
     public:
      TVM_TIRX_DLL Not(PrimExpr a, Location loc = UnknownLoc());
-     explicit Not(ffi::ObjectPtr<NotNode> node) : PrimExpr(std::move(node)) {}
+     explicit Not(ffi::ObjectPtr<NotObj> node) : PrimExpr(std::move(node)) {}
    
-     TVM_FFI_DEFINE_OBJECT_REF_METHODS_NOTNULLABLE(Not, PrimExpr, NotNode);
+     TVM_FFI_DEFINE_OBJECT_REF_METHODS_NOTNULLABLE(Not, PrimExpr, NotObj);
      static constexpr bool _type_container_is_exact = true;
-     TVM_DEFINE_OBJECT_REF_COW_METHOD(NotNode);
+     TVM_DEFINE_OBJECT_REF_COW_METHOD(NotObj);
    };
    
-   class BitwiseNotNode : public ExprNode {
+   class BitwiseNotObj : public ExprObj {
     public:
-     explicit BitwiseNotNode(PrimExpr a) : a(std::move(a)) {}
-     explicit BitwiseNotNode(ffi::UnsafeInit tag) : a(tag) {}
+     explicit BitwiseNotObj(PrimExpr a) : a(std::move(a)) {}
+     explicit BitwiseNotObj(ffi::UnsafeInit tag) : a(tag) {}
    
      PrimExpr a;
      static void RegisterReflection() {
        namespace refl = tvm::ffi::reflection;
-       refl::ObjectDef<BitwiseNotNode>().def_ro("a", &BitwiseNotNode::a);
+       refl::ObjectDef<BitwiseNotObj>().def_ro("a", &BitwiseNotObj::a);
      }
-     TVM_FFI_DECLARE_OBJECT_INFO_FINAL("prim.BitwiseNot", BitwiseNotNode, ExprNode);
+     TVM_FFI_DECLARE_OBJECT_INFO_FINAL("prim.BitwiseNot", BitwiseNotObj, ExprObj);
    };
    
    class BitwiseNot : public PrimExpr {
     public:
      TVM_TIRX_DLL BitwiseNot(PrimExpr a, Location loc = UnknownLoc());
-     explicit BitwiseNot(ffi::ObjectPtr<BitwiseNotNode> node) : PrimExpr(std::move(node)) {}
+     explicit BitwiseNot(ffi::ObjectPtr<BitwiseNotObj> node) : PrimExpr(std::move(node)) {}
    
-     TVM_FFI_DEFINE_OBJECT_REF_METHODS_NOTNULLABLE(BitwiseNot, PrimExpr, BitwiseNotNode);
+     TVM_FFI_DEFINE_OBJECT_REF_METHODS_NOTNULLABLE(BitwiseNot, PrimExpr, BitwiseNotObj);
      static constexpr bool _type_container_is_exact = true;
-     TVM_DEFINE_OBJECT_REF_COW_METHOD(BitwiseNotNode);
+     TVM_DEFINE_OBJECT_REF_COW_METHOD(BitwiseNotObj);
    };
    
-   class SelectNode : public ExprNode {
+   class SelectObj : public ExprObj {
     public:
-     SelectNode(PrimExpr condition, PrimExpr true_value, PrimExpr false_value)
+     SelectObj(PrimExpr condition, PrimExpr true_value, PrimExpr false_value)
          : condition(std::move(condition)),
            true_value(std::move(true_value)),
            false_value(std::move(false_value)) {}
-     explicit SelectNode(ffi::UnsafeInit tag) : condition(tag), true_value(tag), false_value(tag) {}
+     explicit SelectObj(ffi::UnsafeInit tag) : condition(tag), true_value(tag), false_value(tag) {}
    
      PrimExpr condition;
      PrimExpr true_value;
      PrimExpr false_value;
      static void RegisterReflection() {
        namespace refl = tvm::ffi::reflection;
-       refl::ObjectDef<SelectNode>()
-           .def_ro("condition", &SelectNode::condition)
-           .def_ro("true_value", &SelectNode::true_value)
-           .def_ro("false_value", &SelectNode::false_value);
+       refl::ObjectDef<SelectObj>()
+           .def_ro("condition", &SelectObj::condition)
+           .def_ro("true_value", &SelectObj::true_value)
+           .def_ro("false_value", &SelectObj::false_value);
      }
-     TVM_FFI_DECLARE_OBJECT_INFO_FINAL("prim.Select", SelectNode, ExprNode);
+     TVM_FFI_DECLARE_OBJECT_INFO_FINAL("prim.Select", SelectObj, ExprObj);
    };
    
    class Select : public PrimExpr {
@@ -555,40 +555,40 @@ Program Listing for File expr.h
      TVM_TIRX_DLL Select(PrimExpr condition, PrimExpr true_value, PrimExpr false_value,
                          Location loc = UnknownLoc());
    
-     explicit Select(ffi::ObjectPtr<SelectNode> node) : PrimExpr(std::move(node)) {}
+     explicit Select(ffi::ObjectPtr<SelectObj> node) : PrimExpr(std::move(node)) {}
    
-     TVM_FFI_DEFINE_OBJECT_REF_METHODS_NOTNULLABLE(Select, PrimExpr, SelectNode);
+     TVM_FFI_DEFINE_OBJECT_REF_METHODS_NOTNULLABLE(Select, PrimExpr, SelectObj);
      static constexpr bool _type_container_is_exact = true;
-     TVM_DEFINE_OBJECT_REF_COW_METHOD(SelectNode);
+     TVM_DEFINE_OBJECT_REF_COW_METHOD(SelectObj);
    };
    
-   class LetNode : public ExprNode {
+   class LetObj : public ExprObj {
     public:
-     LetNode(Var var, PrimExpr value, PrimExpr body)
+     LetObj(Var var, PrimExpr value, PrimExpr body)
          : var(std::move(var)), value(std::move(value)), body(std::move(body)) {}
-     explicit LetNode(ffi::UnsafeInit tag) : var(tag), value(tag), body(tag) {}
+     explicit LetObj(ffi::UnsafeInit tag) : var(tag), value(tag), body(tag) {}
    
      Var var;
      PrimExpr value;
      PrimExpr body;
      static void RegisterReflection() {
        namespace refl = tvm::ffi::reflection;
-       refl::ObjectDef<LetNode>()
-           .def_ro("var", &LetNode::var, refl::AttachFieldFlag::SEqHashDefSimple())
-           .def_ro("value", &LetNode::value)
-           .def_ro("body", &LetNode::body);
+       refl::ObjectDef<LetObj>()
+           .def_ro("var", &LetObj::var, refl::AttachFieldFlag::SEqHashDefSimple())
+           .def_ro("value", &LetObj::value)
+           .def_ro("body", &LetObj::body);
      }
-     TVM_FFI_DECLARE_OBJECT_INFO_FINAL("prim.Let", LetNode, ExprNode);
+     TVM_FFI_DECLARE_OBJECT_INFO_FINAL("prim.Let", LetObj, ExprObj);
    };
    
    class Let : public PrimExpr {
     public:
      TVM_TIRX_DLL Let(Var var, PrimExpr value, PrimExpr body, Location loc = UnknownLoc());
-     explicit Let(ffi::ObjectPtr<LetNode> node) : PrimExpr(std::move(node)) {}
+     explicit Let(ffi::ObjectPtr<LetObj> node) : PrimExpr(std::move(node)) {}
    
-     TVM_FFI_DEFINE_OBJECT_REF_METHODS_NOTNULLABLE(Let, PrimExpr, LetNode);
+     TVM_FFI_DEFINE_OBJECT_REF_METHODS_NOTNULLABLE(Let, PrimExpr, LetObj);
      static constexpr bool _type_container_is_exact = true;
-     TVM_DEFINE_OBJECT_REF_COW_METHOD(LetNode);
+     TVM_DEFINE_OBJECT_REF_COW_METHOD(LetObj);
    };
    
    /*
@@ -618,65 +618,65 @@ Program Listing for File expr.h
    namespace ffi {
    
    template <>
-   inline constexpr bool object_ref_contains_v<PrimExpr, prim::CastNode> = true;
+   inline constexpr bool object_ref_contains_v<PrimExpr, prim::CastObj> = true;
    template <>
-   inline constexpr bool object_ref_contains_v<PrimExpr, prim::AddNode> = true;
+   inline constexpr bool object_ref_contains_v<PrimExpr, prim::AddObj> = true;
    template <>
-   inline constexpr bool object_ref_contains_v<PrimExpr, prim::BitwiseNotNode> = true;
+   inline constexpr bool object_ref_contains_v<PrimExpr, prim::BitwiseNotObj> = true;
    template <>
-   inline constexpr bool object_ref_contains_v<PrimExpr, prim::BitwiseXorNode> = true;
+   inline constexpr bool object_ref_contains_v<PrimExpr, prim::BitwiseXorObj> = true;
    template <>
-   inline constexpr bool object_ref_contains_v<PrimExpr, prim::BitwiseOrNode> = true;
+   inline constexpr bool object_ref_contains_v<PrimExpr, prim::BitwiseOrObj> = true;
    template <>
-   inline constexpr bool object_ref_contains_v<PrimExpr, prim::BitwiseAndNode> = true;
+   inline constexpr bool object_ref_contains_v<PrimExpr, prim::BitwiseAndObj> = true;
    template <>
-   inline constexpr bool object_ref_contains_v<PrimExpr, prim::RShiftNode> = true;
+   inline constexpr bool object_ref_contains_v<PrimExpr, prim::RShiftObj> = true;
    template <>
-   inline constexpr bool object_ref_contains_v<PrimExpr, prim::LShiftNode> = true;
+   inline constexpr bool object_ref_contains_v<PrimExpr, prim::LShiftObj> = true;
    template <>
-   inline constexpr bool object_ref_contains_v<PrimExpr, prim::SubNode> = true;
+   inline constexpr bool object_ref_contains_v<PrimExpr, prim::SubObj> = true;
    template <>
-   inline constexpr bool object_ref_contains_v<PrimExpr, prim::MulNode> = true;
+   inline constexpr bool object_ref_contains_v<PrimExpr, prim::MulObj> = true;
    template <>
-   inline constexpr bool object_ref_contains_v<PrimExpr, prim::DivNode> = true;
+   inline constexpr bool object_ref_contains_v<PrimExpr, prim::DivObj> = true;
    template <>
-   inline constexpr bool object_ref_contains_v<PrimExpr, prim::ModNode> = true;
+   inline constexpr bool object_ref_contains_v<PrimExpr, prim::ModObj> = true;
    template <>
-   inline constexpr bool object_ref_contains_v<PrimExpr, prim::FloorDivNode> = true;
+   inline constexpr bool object_ref_contains_v<PrimExpr, prim::FloorDivObj> = true;
    template <>
-   inline constexpr bool object_ref_contains_v<PrimExpr, prim::FloorModNode> = true;
+   inline constexpr bool object_ref_contains_v<PrimExpr, prim::FloorModObj> = true;
    template <>
-   inline constexpr bool object_ref_contains_v<PrimExpr, prim::MinNode> = true;
+   inline constexpr bool object_ref_contains_v<PrimExpr, prim::MinObj> = true;
    template <>
-   inline constexpr bool object_ref_contains_v<PrimExpr, prim::MaxNode> = true;
+   inline constexpr bool object_ref_contains_v<PrimExpr, prim::MaxObj> = true;
    template <>
-   inline constexpr bool object_ref_contains_v<PrimExpr, prim::EQNode> = true;
+   inline constexpr bool object_ref_contains_v<PrimExpr, prim::EQObj> = true;
    template <>
-   inline constexpr bool object_ref_contains_v<PrimExpr, prim::NENode> = true;
+   inline constexpr bool object_ref_contains_v<PrimExpr, prim::NEObj> = true;
    template <>
-   inline constexpr bool object_ref_contains_v<PrimExpr, prim::LTNode> = true;
+   inline constexpr bool object_ref_contains_v<PrimExpr, prim::LTObj> = true;
    template <>
-   inline constexpr bool object_ref_contains_v<PrimExpr, prim::LENode> = true;
+   inline constexpr bool object_ref_contains_v<PrimExpr, prim::LEObj> = true;
    template <>
-   inline constexpr bool object_ref_contains_v<PrimExpr, prim::GTNode> = true;
+   inline constexpr bool object_ref_contains_v<PrimExpr, prim::GTObj> = true;
    template <>
-   inline constexpr bool object_ref_contains_v<PrimExpr, prim::GENode> = true;
+   inline constexpr bool object_ref_contains_v<PrimExpr, prim::GEObj> = true;
    template <>
-   inline constexpr bool object_ref_contains_v<PrimExpr, prim::AndNode> = true;
+   inline constexpr bool object_ref_contains_v<PrimExpr, prim::AndObj> = true;
    template <>
-   inline constexpr bool object_ref_contains_v<PrimExpr, prim::OrNode> = true;
+   inline constexpr bool object_ref_contains_v<PrimExpr, prim::OrObj> = true;
    template <>
-   inline constexpr bool object_ref_contains_v<PrimExpr, prim::NotNode> = true;
+   inline constexpr bool object_ref_contains_v<PrimExpr, prim::NotObj> = true;
    template <>
-   inline constexpr bool object_ref_contains_v<PrimExpr, prim::SelectNode> = true;
+   inline constexpr bool object_ref_contains_v<PrimExpr, prim::SelectObj> = true;
    template <>
-   inline constexpr bool object_ref_contains_v<PrimExpr, prim::RampNode> = true;
+   inline constexpr bool object_ref_contains_v<PrimExpr, prim::RampObj> = true;
    template <>
-   inline constexpr bool object_ref_contains_v<PrimExpr, prim::BroadcastNode> = true;
+   inline constexpr bool object_ref_contains_v<PrimExpr, prim::BroadcastObj> = true;
    template <>
-   inline constexpr bool object_ref_contains_v<PrimExpr, prim::LetNode> = true;
+   inline constexpr bool object_ref_contains_v<PrimExpr, prim::LetObj> = true;
    template <>
-   inline constexpr bool object_ref_contains_v<PrimExpr, prim::ShuffleNode> = true;
+   inline constexpr bool object_ref_contains_v<PrimExpr, prim::ShuffleObj> = true;
    }  // namespace ffi
    }  // namespace tvm
    
