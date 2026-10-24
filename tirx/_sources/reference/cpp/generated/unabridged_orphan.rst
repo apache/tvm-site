@@ -420,6 +420,11 @@ Files
 .. toctree::
    :maxdepth: 5
 
+   file_tvm_tirx_object_functor_with_constraint_context.h.rst
+
+.. toctree::
+   :maxdepth: 5
+
    file_tvm_ir_op.h.rst
 
 .. toctree::
@@ -491,6 +496,11 @@ Files
    :maxdepth: 5
 
    file_tvm_tirx_stmt_functor_with_analyzer.h.rst
+
+.. toctree::
+   :maxdepth: 5
+
+   file_tvm_tirx_stmt_functor_with_constraint_context.h.rst
 
 .. toctree::
    :maxdepth: 5

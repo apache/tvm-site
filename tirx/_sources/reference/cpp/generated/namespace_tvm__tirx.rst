@@ -60,13 +60,21 @@ Classes
 
 - :ref:`exhale_class_classtvm_1_1tirx_1_1LayoutObj`
 
+- :ref:`exhale_class_classtvm_1_1tirx_1_1ObjectMutatorWithConstraintContext`
+
+- :ref:`exhale_class_classtvm_1_1tirx_1_1ObjectVisitorWithConstraintContext`
+
 - :ref:`exhale_class_classtvm_1_1tirx_1_1StmtExprMutator`
 
 - :ref:`exhale_class_classtvm_1_1tirx_1_1StmtExprMutatorWithAnalyzer`
 
+- :ref:`exhale_class_classtvm_1_1tirx_1_1StmtExprMutatorWithConstraintContext`
+
 - :ref:`exhale_class_classtvm_1_1tirx_1_1StmtExprVisitor`
 
 - :ref:`exhale_class_classtvm_1_1tirx_1_1StmtExprVisitorWithAnalyzer`
+
+- :ref:`exhale_class_classtvm_1_1tirx_1_1StmtExprVisitorWithConstraintContext`
 
 - :ref:`exhale_class_classtvm_1_1tirx_1_1StmtFunctor`
 
@@ -119,6 +127,8 @@ Functions
 - :ref:`exhale_function_namespacetvm_1_1tirx_1a4ebd41ca02438e05c2b6d0714c5f5ab8`
 
 - :ref:`exhale_function_namespacetvm_1_1tirx_1a5b63730da4dc900fa43f8c6955bb966d`
+
+- :ref:`exhale_function_namespacetvm_1_1tirx_1a3c791dc0642a9d627888a82e62c6d8ef`
 
 - :ref:`exhale_function_namespacetvm_1_1tirx_1ac4f1f448cfa357bd2d5bc706f1612cb1`
 

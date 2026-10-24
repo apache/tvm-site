@@ -466,6 +466,7 @@ Functions
    gpu_warp_activemask
    assume
    assume_aligned
+   assume_always
    undef
    alloc_workspace
    free_workspace

@@ -38,6 +38,8 @@ Program Listing for File annotation.h
    namespace tvm {
    namespace tirx {
    
+   TVM_TIRX_DLL const Op& assume_always_op();
+   
    TVM_TIRX_DLL const Op& kernel_replace_point_op();
    
    TVM_TIRX_DLL const Op& ignore_loop_partition_op();

@@ -15,6 +15,12 @@ Base Type
 - ``public ffi::StructuralVisitorObj``
 
 
+Derived Type
+************
+
+- ``public tvm::tirx::ObjectVisitorWithConstraintContext`` (:ref:`exhale_class_classtvm_1_1tirx_1_1ObjectVisitorWithConstraintContext`)
+
+
 Class Documentation
 -------------------
 

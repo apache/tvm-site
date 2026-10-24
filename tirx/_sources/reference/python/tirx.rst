@@ -168,6 +168,7 @@ Functions
    abi_field_set
    address_of
    assume_aligned
+   assume_always
    undef
    gpu_thread_allreduce
    ptr_byte_offset

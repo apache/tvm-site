@@ -57,6 +57,8 @@ Included By
 
 - :ref:`file_tvm_tirx_stmt_functor.h`
 
+- :ref:`file_tvm_tirx_stmt_functor_with_constraint_context.h`
+
 - :ref:`file_tvm_tirx_tile_context.h`
 
 - :ref:`file_tvm_tirx_tile_dispatch.h`

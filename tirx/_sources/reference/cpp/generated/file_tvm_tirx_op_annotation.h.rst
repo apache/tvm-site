@@ -57,6 +57,8 @@ Functions
 ---------
 
 
+- :ref:`exhale_function_namespacetvm_1_1tirx_1a3c791dc0642a9d627888a82e62c6d8ef`
+
 - :ref:`exhale_function_namespacetvm_1_1tirx_1ac499561d4762d2d203c5da1f4161f029`
 
 - :ref:`exhale_function_namespacetvm_1_1tirx_1a0f4e08900feeb8a8ddd21657cb051aa6`

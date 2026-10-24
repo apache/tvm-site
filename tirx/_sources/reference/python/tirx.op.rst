@@ -95,6 +95,8 @@ Functions
      - :obj:`tvm_tirx.tirx.stack_make_shape`
    * - ``stack_make_dltensor``
      - :obj:`tvm_tirx.tirx.stack_make_dltensor`
+   * - ``assume_always``
+     - :obj:`tvm_tirx.tirx.assume_always`
    * - ``assume_aligned``
      - :obj:`tvm_tirx.tirx.assume_aligned`
    * - ``undef``
