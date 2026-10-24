@@ -205,11 +205,11 @@ Functions
 
 - :ref:`exhale_function_namespacetvm_1a9aafb09559d1108176ccc9fd5e41091d`
 
+- :ref:`exhale_function_namespacetvm_1aeda545b338b07ae36db00ebaece10cdb`
+
 - :ref:`exhale_function_namespacetvm_1a6740f026237b27fc522031edfe3c73ec`
 
 - :ref:`exhale_function_namespacetvm_1ac5bf73fb1cfa124166b617fafbb8c24a`
-
-- :ref:`exhale_function_namespacetvm_1aeda545b338b07ae36db00ebaece10cdb`
 
 - :ref:`exhale_function_namespacetvm_1a3d07a3069da44d3ae5b57d2e4040d4ff`
 
