@@ -23,6 +23,18 @@ Table of Contents
 
 .. toctree::
    :maxdepth: 1
+   :caption: IR Walkthrough
+   :titlesonly:
+
+   ir/overview
+   ir/types_and_expressions
+   ir/statements
+   ir/operators_and_calls
+   ir/functions_and_modules
+   ir/printing_and_parsing
+
+.. toctree::
+   :maxdepth: 1
    :caption: Reference
 
    Python API <reference/python/index>
