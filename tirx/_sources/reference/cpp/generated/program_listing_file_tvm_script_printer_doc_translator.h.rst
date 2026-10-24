@@ -67,7 +67,7 @@ Program Listing for File doc_translator.h
     public:
      ffi::Optional<ExprDoc> Translate(ffi::AnyView value,
                                       const ffi::Optional<Var> bind_var = std::nullopt) {
-       auto result = ffi::details::ExpectedUnsafe::MoveFromTVMFFIAny<ffi::Optional<ExprDoc>>(
+       auto result = ffi::detail::ExpectedUnsafe::MoveFromTVMFFIAny<ffi::Optional<ExprDoc>>(
                          vtable_->translate(this, value,
                                             bind_var.has_value() ? bind_var.value().get() : nullptr))
                          .value();
@@ -84,16 +84,16 @@ Program Listing for File doc_translator.h
      }
    
      IdDoc VarGetOrAllocId(const Var& var, bool explicit_def) {
-       return ffi::details::ExpectedUnsafe::MoveFromTVMFFIAny<IdDoc>(
+       return ffi::detail::ExpectedUnsafe::MoveFromTVMFFIAny<IdDoc>(
                   vtable_->var_get_or_alloc_id(this, var, explicit_def))
            .value();
      }
      IdDoc AllocId(const ffi::String& hint) {
-       return ffi::details::ExpectedUnsafe::MoveFromTVMFFIAny<IdDoc>(vtable_->alloc_id(this, hint))
+       return ffi::detail::ExpectedUnsafe::MoveFromTVMFFIAny<IdDoc>(vtable_->alloc_id(this, hint))
            .value();
      }
      ffi::Dict<Var, IdDoc> GetImplicitDefs() {
-       return ffi::details::ExpectedUnsafe::MoveFromTVMFFIAny<ffi::Dict<Var, IdDoc>>(
+       return ffi::detail::ExpectedUnsafe::MoveFromTVMFFIAny<ffi::Dict<Var, IdDoc>>(
                   vtable_->get_implicit_defs(this))
            .value();
      }
@@ -120,17 +120,17 @@ Program Listing for File doc_translator.h
      }
    
      void BeginVarScope() {
-       ffi::details::ExpectedUnsafe::MoveFromTVMFFIAny<void>(vtable_->begin_var_scope(this)).value();
+       ffi::detail::ExpectedUnsafe::MoveFromTVMFFIAny<void>(vtable_->begin_var_scope(this)).value();
      }
      void EndVarScope() {
-       ffi::details::ExpectedUnsafe::MoveFromTVMFFIAny<void>(vtable_->end_var_scope(this)).value();
+       ffi::detail::ExpectedUnsafe::MoveFromTVMFFIAny<void>(vtable_->end_var_scope(this)).value();
      }
      template <typename Callback>
      decltype(auto) WithVarScope(Callback&& callback) {
        struct Scope {
          DocTranslatorObj* translator;
          ~Scope() {
-           ffi::details::ExpectedUnsafe::MoveFromTVMFFIAny<void>(
+           ffi::detail::ExpectedUnsafe::MoveFromTVMFFIAny<void>(
                translator->vtable_->end_var_scope(translator));
          }
        };

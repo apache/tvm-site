@@ -49,7 +49,7 @@ Program Listing for File const_fold.h
    template <typename Op>
    inline ffi::Optional<PrimExpr> TryConstFold(PrimExpr a);
    
-   namespace details {
+   namespace detail {
    
    inline bool IsIndexType(DLDataType type) {
      return type.code == static_cast<uint8_t>(DLDataTypeCode::kDLInt) &&
@@ -99,7 +99,7 @@ Program Listing for File const_fold.h
                                       value <= std::numeric_limits<float>::max());
    }
    
-   }  // namespace details
+   }  // namespace detail
    
    #define TVM_PRIM_CONST_PROPAGATION(BODY)       \
      using tvm::FloatImmObj;                      \
@@ -109,11 +109,11 @@ Program Listing for File const_fold.h
      const FloatImmObj* fb = b.as<FloatImmObj>(); \
      BODY;
    
-   #define TVM_PRIM_INDEX_CONST_PROPAGATION(BODY)                                                  \
-     const IntImmObj* pa = a.as<IntImmObj>();                                                      \
-     const IntImmObj* pb = b.as<IntImmObj>();                                                      \
-     if (::tvm::prim::details::IsIndexTypedExpr(a) && ::tvm::prim::details::IsIndexTypedExpr(b)) { \
-       BODY;                                                                                       \
+   #define TVM_PRIM_INDEX_CONST_PROPAGATION(BODY)                                                \
+     const IntImmObj* pa = a.as<IntImmObj>();                                                    \
+     const IntImmObj* pb = b.as<IntImmObj>();                                                    \
+     if (::tvm::prim::detail::IsIndexTypedExpr(a) && ::tvm::prim::detail::IsIndexTypedExpr(b)) { \
+       BODY;                                                                                     \
      }
    
    // specialization of constant folders.
@@ -123,7 +123,7 @@ Program Listing for File const_fold.h
        PrimType result_ty = a.ty();
        if (pa && pb) {
          ffi::BigInt res = pa->value + pb->value;
-         if (!details::IsRepresentable(res, result_ty)) return std::nullopt;
+         if (!detail::IsRepresentable(res, result_ty)) return std::nullopt;
          return IntImm(result_ty, std::move(res));
        }
        if (pa && pa->value == 0) return b;
@@ -133,7 +133,7 @@ Program Listing for File const_fold.h
            float lhs = static_cast<float>(fa->value);
            float rhs = static_cast<float>(fb->value);
            // Check before rounding can turn a finite overflow into infinity.
-           if (!details::IsInFloat32Range(static_cast<double>(lhs) + rhs)) return std::nullopt;
+           if (!detail::IsInFloat32Range(static_cast<double>(lhs) + rhs)) return std::nullopt;
            return FloatImm(result_ty, static_cast<float>(lhs + rhs));
          } else if (result_ty.bits() == 64) {
            return FloatImm(result_ty, fa->value + fb->value);
@@ -151,7 +151,7 @@ Program Listing for File const_fold.h
        PrimType result_ty = a.ty();
        if (pa && pb) {
          ffi::BigInt res = pa->value - pb->value;
-         if (!details::IsRepresentable(res, result_ty)) return std::nullopt;
+         if (!detail::IsRepresentable(res, result_ty)) return std::nullopt;
          return IntImm(result_ty, std::move(res));
        }
        if (pb && pb->value == 0) return a;
@@ -160,7 +160,7 @@ Program Listing for File const_fold.h
            float lhs = static_cast<float>(fa->value);
            float rhs = static_cast<float>(fb->value);
            // Check before rounding can turn a finite overflow into infinity.
-           if (!details::IsInFloat32Range(static_cast<double>(lhs) - rhs)) return std::nullopt;
+           if (!detail::IsInFloat32Range(static_cast<double>(lhs) - rhs)) return std::nullopt;
            return FloatImm(result_ty, static_cast<float>(lhs - rhs));
          } else if (result_ty.bits() == 64) {
            return FloatImm(result_ty, fa->value - fb->value);
@@ -177,7 +177,7 @@ Program Listing for File const_fold.h
        PrimType result_ty = a.ty();
        if (pa && pb) {
          ffi::BigInt res = pa->value * pb->value;
-         if (!details::IsRepresentable(res, result_ty)) return std::nullopt;
+         if (!detail::IsRepresentable(res, result_ty)) return std::nullopt;
          return IntImm(result_ty, std::move(res));
        }
        if (pa) {
@@ -193,7 +193,7 @@ Program Listing for File const_fold.h
            float lhs = static_cast<float>(fa->value);
            float rhs = static_cast<float>(fb->value);
            // Check before rounding can turn a finite overflow into infinity.
-           if (!details::IsInFloat32Range(static_cast<double>(lhs) * rhs)) return std::nullopt;
+           if (!detail::IsInFloat32Range(static_cast<double>(lhs) * rhs)) return std::nullopt;
            return FloatImm(result_ty, static_cast<float>(lhs * rhs));
          } else if (result_ty.bits() == 64) {
            return FloatImm(result_ty, fa->value * fb->value);
@@ -220,7 +220,7 @@ Program Listing for File const_fold.h
          // NOTE: this will assumes truc div.
          TVM_FFI_ICHECK_NE(pb->value, 0) << "Divide by zero";
          ffi::BigInt res = pa->value / pb->value;
-         if (!details::IsRepresentable(res, result_ty)) return std::nullopt;
+         if (!detail::IsRepresentable(res, result_ty)) return std::nullopt;
          return IntImm(result_ty, std::move(res));
        }
        if (pa) {
@@ -236,7 +236,7 @@ Program Listing for File const_fold.h
            float lhs = static_cast<float>(fa->value);
            float rhs = static_cast<float>(fb->value);
            // Check before rounding can turn a finite overflow into infinity.
-           if (!details::IsInFloat32Range(static_cast<double>(lhs) / rhs)) return std::nullopt;
+           if (!detail::IsInFloat32Range(static_cast<double>(lhs) / rhs)) return std::nullopt;
            return FloatImm(result_ty, static_cast<float>(lhs / rhs));
          } else if (result_ty.bits() == 64) {
            return FloatImm(result_ty, fa->value / fb->value);
@@ -258,7 +258,7 @@ Program Listing for File const_fold.h
        if (pa && pb) {
          TVM_FFI_ICHECK_NE(pb->value, 0) << "Divide by zero";
          ffi::BigInt res = pa->value % pb->value;
-         if (!details::IsRepresentable(res, result_ty)) return std::nullopt;
+         if (!detail::IsRepresentable(res, result_ty)) return std::nullopt;
          return IntImm(result_ty, std::move(res));
        }
        if (pa) {
@@ -273,7 +273,7 @@ Program Listing for File const_fold.h
      if (pa && pb && a.ty().bits() >= 64) {
        TVM_FFI_ICHECK_NE(pb->value, 0) << "Divide by zero";
        ffi::BigInt res = pa->value % pb->value;
-       if (!details::IsRepresentable(res, a.ty())) return std::nullopt;
+       if (!detail::IsRepresentable(res, a.ty())) return std::nullopt;
        return IntImm(a.ty(), std::move(res));
      }
      return std::nullopt;
@@ -286,7 +286,7 @@ Program Listing for File const_fold.h
        if (pa && pb) {
          TVM_FFI_ICHECK_NE(pb->value, 0) << "Divide by zero";
          ffi::BigInt res = ffi::floordiv(pa->value, pb->value);
-         if (!details::IsRepresentable(res, result_ty)) return std::nullopt;
+         if (!detail::IsRepresentable(res, result_ty)) return std::nullopt;
          return IntImm(result_ty, std::move(res));
        }
        if (pa) {
@@ -300,7 +300,7 @@ Program Listing for File const_fold.h
          if (result_ty.bits() == 32) {
            float lhs = static_cast<float>(fa->value);
            float rhs = static_cast<float>(fb->value);
-           if (!details::IsInFloat32Range(static_cast<double>(lhs) / rhs)) return std::nullopt;
+           if (!detail::IsInFloat32Range(static_cast<double>(lhs) / rhs)) return std::nullopt;
            float quotient = lhs / rhs;
            return FloatImm(result_ty, std::floor(quotient));
          } else if (result_ty.bits() == 64) {
@@ -325,7 +325,7 @@ Program Listing for File const_fold.h
        if (pa && pb) {
          TVM_FFI_ICHECK_NE(pb->value, 0) << "Divide by zero";
          ffi::BigInt res = ffi::floormod(pa->value, pb->value);
-         if (!details::IsRepresentable(res, result_ty)) return std::nullopt;
+         if (!detail::IsRepresentable(res, result_ty)) return std::nullopt;
          return IntImm(result_ty, std::move(res));
        }
        if (pa) {
@@ -340,7 +340,7 @@ Program Listing for File const_fold.h
      if (pa && pb && (a.ty().bits() >= 64 || a.ty().MatchesCode(DLDataTypeCode::kDLUInt))) {
        TVM_FFI_ICHECK_NE(pb->value, 0) << "Divide by zero";
        ffi::BigInt res = ffi::floormod(pa->value, pb->value);
-       if (!details::IsRepresentable(res, a.ty())) return std::nullopt;
+       if (!detail::IsRepresentable(res, a.ty())) return std::nullopt;
        return IntImm(a.ty(), std::move(res));
      }
      return std::nullopt;

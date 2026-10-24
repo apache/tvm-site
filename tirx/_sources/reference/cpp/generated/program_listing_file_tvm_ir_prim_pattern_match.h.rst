@@ -420,7 +420,7 @@ Program Listing for File pattern_match.h
    }
    
    // internal namespace
-   namespace details {
+   namespace detail {
    // implementation details for  CallExpr
    template <bool stop, std::size_t I, typename F>
    struct tuple_for_each_dispatcher {
@@ -469,7 +469,7 @@ Program Listing for File pattern_match.h
        args_.push_back(pattern.Eval());
      }
    };
-   }  // namespace details
+   }  // namespace detail
    
    template <typename Op, typename... TArgs>
    class PCallExpr : public Pattern<PCallExpr<Op, TArgs...>> {
@@ -477,16 +477,16 @@ Program Listing for File pattern_match.h
      explicit PCallExpr(const TArgs&... args) : args_(args...) {}
    
      void InitMatch_() const {
-       details::PCallExprInitMatchFunctor finit;
-       details::tuple_for_each(finit, args_);
+       detail::PCallExprInitMatchFunctor finit;
+       detail::tuple_for_each(finit, args_);
      }
    
      bool Match_(const ffi::ObjectRef& node) const {
        if (const CallObj* ptr = node.as<CallObj>()) {
          if (ptr->args.size() != sizeof...(TArgs)) return false;
          if (!ptr->op.same_as(Op::GetOp())) return false;
-         details::PCallExprMatchFunctor fmatch(ptr);
-         details::tuple_for_each(fmatch, args_);
+         detail::PCallExprMatchFunctor fmatch(ptr);
+         detail::tuple_for_each(fmatch, args_);
          return fmatch.matched_;
        } else {
          return false;
@@ -494,8 +494,8 @@ Program Listing for File pattern_match.h
      }
    
      PrimExpr Eval() const {
-       details::PCallExprEvalArgsFunctor feval_args;
-       details::tuple_for_each(feval_args, args_);
+       detail::PCallExprEvalArgsFunctor feval_args;
+       detail::tuple_for_each(feval_args, args_);
        return Op::Eval(feval_args.args_);
      }
    

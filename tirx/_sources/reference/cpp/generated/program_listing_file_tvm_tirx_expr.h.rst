@@ -108,14 +108,14 @@ Program Listing for File expr.h
          return false;
        }
        const auto* var = static_cast<const tvm::VarObj*>(
-           details::ObjectUnsafe::ObjectPtrFromUnowned<Object>(src->v_obj).get());
-       return details::AnyUnsafe::CheckAnyStrict<tirx::TensorType>(var->ExprObj::ty);
+           detail::ObjectUnsafe::ObjectPtrFromUnowned<Object>(src->v_obj).get());
+       return detail::AnyUnsafe::CheckAnyStrict<tirx::TensorType>(var->ExprObj::ty);
      }
    
      TVM_FFI_INLINE static std::optional<tirx::TensorVar> TryCastFromAnyView(const TVMFFIAny* src) {
        if (CheckAnyStrict(src)) {
-         return details::ObjectUnsafe::ObjectRefFromObjectPtr<tirx::TensorVar>(
-             details::ObjectUnsafe::ObjectPtrFromUnowned<tvm::VarObj>(src->v_obj));
+         return detail::ObjectUnsafe::ObjectRefFromObjectPtr<tirx::TensorVar>(
+             detail::ObjectUnsafe::ObjectPtrFromUnowned<tvm::VarObj>(src->v_obj));
        }
        return std::nullopt;
      }

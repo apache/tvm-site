@@ -336,14 +336,14 @@ Program Listing for File expr_functor.h
    
      TVM_FFI_INLINE UnchangedOr<PrimExpr> Mutate(const PrimExpr& expr,
                                                  InplaceMode inplace_mode = InplaceMode::kDisallow) {
-       return ffi::details::UnchangedOrUnsafe::MoveFromTVMFFIAny<PrimExpr>(
-           ffi::details::UnchangedOrUnsafe::MoveToTVMFFIAny(Mutate(ffi::AnyView(expr), inplace_mode)));
+       return ffi::detail::UnchangedOrUnsafe::MoveFromTVMFFIAny<PrimExpr>(
+           ffi::detail::UnchangedOrUnsafe::MoveToTVMFFIAny(Mutate(ffi::AnyView(expr), inplace_mode)));
      }
    
      TVM_FFI_INLINE UnchangedOr<Expr> Mutate(const Expr& expr,
                                              InplaceMode inplace_mode = InplaceMode::kDisallow) {
-       return ffi::details::UnchangedOrUnsafe::MoveFromTVMFFIAny<Expr>(
-           ffi::details::UnchangedOrUnsafe::MoveToTVMFFIAny(Mutate(ffi::AnyView(expr), inplace_mode)));
+       return ffi::detail::UnchangedOrUnsafe::MoveFromTVMFFIAny<Expr>(
+           ffi::detail::UnchangedOrUnsafe::MoveToTVMFFIAny(Mutate(ffi::AnyView(expr), inplace_mode)));
      }
    
      // A downstream class overrides any existing hook without rebuilding the table.
