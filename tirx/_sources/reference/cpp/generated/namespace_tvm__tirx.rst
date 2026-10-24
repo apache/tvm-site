@@ -27,6 +27,8 @@ Namespaces
 
 - :ref:`namespace_tvm__tirx__transform`
 
+- :ref:`namespace_tvm__tirx__type_attr`
+
 
 Classes
 -------
@@ -69,6 +71,14 @@ Classes
 - :ref:`exhale_class_classtvm_1_1tirx_1_1StmtFunctor`
 
 - :ref:`exhale_class_classtvm_1_1tirx_1_1StmtFunctor_3_01R_07const_01Stmt_01_6_00_01Args_8_8_8_08_4`
+
+- :ref:`exhale_class_classtvm_1_1tirx_1_1StructuralMutatorWithConstraintContext`
+
+- :ref:`exhale_class_classtvm_1_1tirx_1_1StructuralMutatorWithConstraintContextObj`
+
+- :ref:`exhale_class_classtvm_1_1tirx_1_1StructuralVisitorWithConstraintContext`
+
+- :ref:`exhale_class_classtvm_1_1tirx_1_1StructuralVisitorWithConstraintContextObj`
 
 - :ref:`exhale_class_classtvm_1_1tirx_1_1TensorMapType`
 
@@ -134,9 +144,9 @@ Functions
 
 - :ref:`exhale_function_namespacetvm_1_1tirx_1a65b3f700224921b6a598b61a446c987d`
 
-- :ref:`exhale_function_namespacetvm_1_1tirx_1a37cecf2b245875a429667fe73650f3ed`
-
 - :ref:`exhale_function_namespacetvm_1_1tirx_1a53db048fd5155136776bdee0e89dc9f0`
+
+- :ref:`exhale_function_namespacetvm_1_1tirx_1a37cecf2b245875a429667fe73650f3ed`
 
 - :ref:`exhale_function_namespacetvm_1_1tirx_1a1e257d7ea18aca9cebf18408698a5d0b`
 
@@ -202,9 +212,9 @@ Functions
 
 - :ref:`exhale_function_namespacetvm_1_1tirx_1a8efde7427b73f0664d1a7266a3bf74d2`
 
-- :ref:`exhale_function_namespacetvm_1_1tirx_1a4f5fb501032540c31b8249d4b63160c2`
-
 - :ref:`exhale_function_namespacetvm_1_1tirx_1a232ca4bffb36db0d70b967ce516639cd`
+
+- :ref:`exhale_function_namespacetvm_1_1tirx_1a4f5fb501032540c31b8249d4b63160c2`
 
 - :ref:`exhale_function_namespacetvm_1_1tirx_1ac66dc986673e79d2d9f6bbc4a7dc2d6f`
 
@@ -226,9 +236,9 @@ Functions
 
 - :ref:`exhale_function_namespacetvm_1_1tirx_1affae70eaff64ae70890ac3afb8d6ae56`
 
-- :ref:`exhale_function_namespacetvm_1_1tirx_1a4d1ac26616b521da3c53720fbdce9577`
-
 - :ref:`exhale_function_namespacetvm_1_1tirx_1ae410e106536949a27f2004ec850e2b21`
+
+- :ref:`exhale_function_namespacetvm_1_1tirx_1a4d1ac26616b521da3c53720fbdce9577`
 
 - :ref:`exhale_function_namespacetvm_1_1tirx_1a6a8f1c16df5dd59186066a5abfdcc161`
 
@@ -244,9 +254,25 @@ Functions
 
 - :ref:`exhale_function_namespacetvm_1_1tirx_1a43ecc3374bacb9814527818a0a69e5a8`
 
-- :ref:`exhale_function_namespacetvm_1_1tirx_1add73860040062a458ecf0f6b09573dea`
+- :ref:`exhale_function_namespacetvm_1_1tirx_1ad6a734883febf85bd248bfefd7ae2411`
+
+- :ref:`exhale_function_namespacetvm_1_1tirx_1a66d0037c47156854355846a8777803db`
+
+- :ref:`exhale_function_namespacetvm_1_1tirx_1a85b8dfd68857dd460d31dab5a24d1bad`
+
+- :ref:`exhale_function_namespacetvm_1_1tirx_1aadc55aa790f23a60c9c33a4104f3660d`
+
+- :ref:`exhale_function_namespacetvm_1_1tirx_1aa9bfd5a6dae027cc3794ba0a4fb525f0`
+
+- :ref:`exhale_function_namespacetvm_1_1tirx_1afc4202a214579cec3c48df4caf5c5ce8`
+
+- :ref:`exhale_function_namespacetvm_1_1tirx_1a39caf71b530eff759ff62ac732d59bf3`
+
+- :ref:`exhale_function_namespacetvm_1_1tirx_1ab12af3202a18d10aeac6fc4638148899`
 
 - :ref:`exhale_function_namespacetvm_1_1tirx_1aa3bbe1b8701b2ee9930ad7e41937ae62`
+
+- :ref:`exhale_function_namespacetvm_1_1tirx_1add73860040062a458ecf0f6b09573dea`
 
 - :ref:`exhale_function_namespacetvm_1_1tirx_1a7ad88af66366b640fe0837726074314f`
 
@@ -272,3 +298,7 @@ Typedefs
 - :ref:`exhale_typedef_namespacetvm_1_1tirx_1aba5840d0f677916170939a3b7a30223c`
 
 - :ref:`exhale_typedef_namespacetvm_1_1tirx_1a0c1f44abdaf5b9ea2bef638dcc66865a`
+
+- :ref:`exhale_typedef_namespacetvm_1_1tirx_1ae16c68134d0aff3b41687b4d93edadca`
+
+- :ref:`exhale_typedef_namespacetvm_1_1tirx_1a5c143c245d2ccaac75c468e5b7ad3fdf`

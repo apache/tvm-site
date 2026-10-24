@@ -26,7 +26,13 @@ Classes
 
 - :ref:`exhale_class_classtvm_1_1sym_1_1Analyzer`
 
+- :ref:`exhale_class_classtvm_1_1sym_1_1AnalyzerConstraintScope`
+
 - :ref:`exhale_class_classtvm_1_1sym_1_1AnalyzerObj`
+
+- :ref:`exhale_class_classtvm_1_1sym_1_1BindingConstraint`
+
+- :ref:`exhale_class_classtvm_1_1sym_1_1BindingConstraintObj`
 
 - :ref:`exhale_class_classtvm_1_1sym_1_1CanonicalSimplifier`
 
@@ -36,7 +42,13 @@ Classes
 
 - :ref:`exhale_class_classtvm_1_1sym_1_1ConstIntBoundObj`
 
+- :ref:`exhale_class_classtvm_1_1sym_1_1Constraint`
+
 - :ref:`exhale_class_classtvm_1_1sym_1_1ConstraintContext`
+
+- :ref:`exhale_class_classtvm_1_1sym_1_1ConstraintContextObj`
+
+- :ref:`exhale_class_classtvm_1_1sym_1_1ConstraintObj`
 
 - :ref:`exhale_class_classtvm_1_1sym_1_1IntSet`
 
@@ -71,6 +83,14 @@ Classes
 - :ref:`exhale_class_classtvm_1_1sym_1_1ModularSetAnalyzer`
 
 - :ref:`exhale_class_classtvm_1_1sym_1_1ModularSetObj`
+
+- :ref:`exhale_class_classtvm_1_1sym_1_1PredicateConstraint`
+
+- :ref:`exhale_class_classtvm_1_1sym_1_1PredicateConstraintObj`
+
+- :ref:`exhale_class_classtvm_1_1sym_1_1RangeConstraint`
+
+- :ref:`exhale_class_classtvm_1_1sym_1_1RangeConstraintObj`
 
 - :ref:`exhale_class_classtvm_1_1sym_1_1RewriteSimplifier`
 
@@ -110,17 +130,17 @@ Functions
 
 - :ref:`exhale_function_namespacetvm_1_1sym_1a4f90613dc6bcaf5600705007d3d95194`
 
+- :ref:`exhale_function_namespacetvm_1_1sym_1ab36dbd3ba5a38265c93e281f868bdc6f`
+
 - :ref:`exhale_function_namespacetvm_1_1sym_1a85bf9e17966d794359c4c59498c9d609`
 
 - :ref:`exhale_function_namespacetvm_1_1sym_1ac17fce27a9c3079cb24a4d5da19ed1c6`
 
-- :ref:`exhale_function_namespacetvm_1_1sym_1ab36dbd3ba5a38265c93e281f868bdc6f`
-
 - :ref:`exhale_function_namespacetvm_1_1sym_1a347abc17ec6c0eb59caebbc1a1e36c8d`
 
-- :ref:`exhale_function_namespacetvm_1_1sym_1a8fa82d2e07a32fa65c1fa29f46306004`
-
 - :ref:`exhale_function_namespacetvm_1_1sym_1a31682215119ca2688c6320c32760bfe0`
+
+- :ref:`exhale_function_namespacetvm_1_1sym_1a8fa82d2e07a32fa65c1fa29f46306004`
 
 - :ref:`exhale_function_namespacetvm_1_1sym_1a5192f7b38d858496024283f683569b94`
 

@@ -32,6 +32,7 @@ Program Listing for File attr.h
    #ifndef TVM_TIRX_OP_ATTR_H_
    #define TVM_TIRX_OP_ATTR_H_
    
+   #include <tvm/ffi/extra/structural_mutate.h>
    #include <tvm/ffi/function.h>
    #include <tvm/ffi/reflection/native_function.h>
    #include <tvm/ffi/string.h>
@@ -41,6 +42,9 @@ Program Listing for File attr.h
    namespace tvm {
    namespace tirx {
    
+   class StructuralVisitorWithConstraintContextObj;
+   class StructuralMutatorWithConstraintContextObj;
+   
    using FLowerIntrinsic = ffi::TypedFunction<PrimExpr(PrimExpr)>;
    
    using FLegalize = ffi::TypedFunction<PrimExpr(PrimExpr)>;
@@ -48,6 +52,16 @@ Program Listing for File attr.h
    namespace op_attr {
    inline constexpr ffi::reflection::AttrKey<ffi::String> kGlobalSymbol{"TGlobalSymbol"};
    inline constexpr ffi::reflection::AttrKey<bool> kVectorizable{"TVectorizable"};
+   inline constexpr ffi::reflection::AttrKey<ffi::reflection::NativeFunctionView<ffi::Optional<
+       ffi::VisitInterrupt>(StructuralVisitorWithConstraintContextObj*, ffi::AnyView value)>>
+       kStructuralVisitWithConstraintContext{"__s_visit_with_constraint_context__"};
+   inline constexpr ffi::reflection::AttrKey<ffi::reflection::NativeFunctionView<
+       ffi::UnchangedOr<ffi::Any>(StructuralMutatorWithConstraintContextObj*, ffi::AnyView value)>>
+       kStructuralMutateWithConstraintContext{"__s_mutate_with_constraint_context__"};
+   inline constexpr ffi::reflection::AttrKey<ffi::reflection::NativeFunctionView<
+       ffi::UnchangedOr<ffi::Any>(StructuralMutatorWithConstraintContextObj*, ffi::AnyView value)>>
+       kStructuralMaybeInplaceMutateWithConstraintContext{
+           "__s_maybe_inplace_mutate_with_constraint_context__"};
    }  // namespace op_attr
    
    }  // namespace tirx

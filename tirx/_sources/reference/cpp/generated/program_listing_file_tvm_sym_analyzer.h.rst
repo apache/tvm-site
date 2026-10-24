@@ -63,7 +63,7 @@ Program Listing for File analyzer.h
    // Forward declare the analyzer object and its reference handle.
    class AnalyzerObj;
    class Analyzer;
-   class ConstraintContext;
+   class AnalyzerConstraintScope;
    
    enum DivMode {
      kTruncDiv,
@@ -119,7 +119,7 @@ Program Listing for File analyzer.h
    
     private:
      friend class AnalyzerObj;
-     friend class ConstraintContext;
+     friend class AnalyzerConstraintScope;
      explicit ConstIntBoundAnalyzer(AnalyzerObj* parent);
      TVM_TIRX_DLL ~ConstIntBoundAnalyzer();
      void CopyFrom(const ConstIntBoundAnalyzer& other);
@@ -159,7 +159,7 @@ Program Listing for File analyzer.h
    
     private:
      friend class AnalyzerObj;
-     friend class ConstraintContext;
+     friend class AnalyzerConstraintScope;
      explicit ModularSetAnalyzer(AnalyzerObj* parent);
      TVM_TIRX_DLL ~ModularSetAnalyzer();
      void CopyFrom(const ModularSetAnalyzer& other);
@@ -186,7 +186,7 @@ Program Listing for File analyzer.h
    
     private:
      friend class AnalyzerObj;
-     friend class ConstraintContext;
+     friend class AnalyzerConstraintScope;
      friend class CanonicalSimplifier;
      explicit RewriteSimplifier(AnalyzerObj* parent);
      TVM_TIRX_DLL ~RewriteSimplifier();
@@ -203,7 +203,7 @@ Program Listing for File analyzer.h
    
     private:
      friend class AnalyzerObj;
-     friend class ConstraintContext;
+     friend class AnalyzerConstraintScope;
      explicit CanonicalSimplifier(AnalyzerObj* parent);
      TVM_TIRX_DLL ~CanonicalSimplifier();
      void CopyFrom(const CanonicalSimplifier& other);
@@ -252,7 +252,7 @@ Program Listing for File analyzer.h
    
     private:
      friend class AnalyzerObj;
-     friend class ConstraintContext;
+     friend class AnalyzerConstraintScope;
      KnownComparisonAnalyzer();
      TVM_TIRX_DLL ~KnownComparisonAnalyzer();
      void CopyFrom(const KnownComparisonAnalyzer& other);
@@ -366,18 +366,19 @@ Program Listing for File analyzer.h
      static thread_local int depth_;
    };
    
-   class ConstraintContext {
+   class AnalyzerConstraintScope {
     private:
      // declare friend to enable with.
-     friend class With<ConstraintContext>;
-     ConstraintContext(const Analyzer& analyzer, PrimExpr constraint)
-         : ConstraintContext(analyzer, std::move(constraint), false) {}
-     ConstraintContext(const Analyzer& analyzer, PrimExpr constraint, bool is_assume)
+     friend class With<AnalyzerConstraintScope>;
+     AnalyzerConstraintScope(const Analyzer& analyzer, PrimExpr constraint)
+         : AnalyzerConstraintScope(analyzer, std::move(constraint), false) {}
+     AnalyzerConstraintScope(const Analyzer& analyzer, PrimExpr constraint, bool is_assume)
          : analyzer_(analyzer), constraint_(std::move(constraint)), is_assume_(is_assume) {}
-     ConstraintContext(AnalyzerObj* analyzer, PrimExpr constraint)
-         : ConstraintContext(ffi::GetRef<Analyzer>(analyzer), std::move(constraint), false) {}
-     ConstraintContext(AnalyzerObj* analyzer, PrimExpr constraint, bool is_assume)
-         : ConstraintContext(ffi::GetRef<Analyzer>(analyzer), std::move(constraint), is_assume) {}
+     AnalyzerConstraintScope(AnalyzerObj* analyzer, PrimExpr constraint)
+         : AnalyzerConstraintScope(ffi::GetRef<Analyzer>(analyzer), std::move(constraint), false) {}
+     AnalyzerConstraintScope(AnalyzerObj* analyzer, PrimExpr constraint, bool is_assume)
+         : AnalyzerConstraintScope(ffi::GetRef<Analyzer>(analyzer), std::move(constraint), is_assume) {
+     }
      // enter the scope.
      TVM_TIRX_DLL void EnterWithScope();
      // exit the scope.

@@ -3,7 +3,16 @@
 Class ConstraintContext
 =======================
 
-- Defined in :ref:`file_tvm_sym_analyzer.h`
+- Defined in :ref:`file_tvm_sym_constraint.h`
+
+
+Inheritance Relationships
+-------------------------
+
+Base Type
+*********
+
+- ``public ffi::ObjectRef``
 
 
 Class Documentation

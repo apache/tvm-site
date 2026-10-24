@@ -220,6 +220,11 @@ Files
 .. toctree::
    :maxdepth: 5
 
+   file_tvm_sym_constraint.h.rst
+
+.. toctree::
+   :maxdepth: 5
+
    file_tvm_tirx_tile_context.h.rst
 
 .. toctree::
@@ -486,6 +491,16 @@ Files
    :maxdepth: 5
 
    file_tvm_tirx_stmt_functor_with_analyzer.h.rst
+
+.. toctree::
+   :maxdepth: 5
+
+   file_tvm_tirx_structural_mutate_with_constraint_context.h.rst
+
+.. toctree::
+   :maxdepth: 5
+
+   file_tvm_tirx_structural_visit_with_constraint_context.h.rst
 
 .. toctree::
    :maxdepth: 5

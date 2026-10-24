@@ -85,6 +85,8 @@ Included By
 
 - :ref:`file_tvm_ir_stmt.h`
 
+- :ref:`file_tvm_sym_constraint.h`
+
 - :ref:`file_tvm_sym_int_set.h`
 
 - :ref:`file_tvm_tirx_analysis.h`

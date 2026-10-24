@@ -120,6 +120,26 @@ Classes
    * - ``Let``
      - :obj:`tvm_tirx.ir.prim.Let`
 
+Additional Structural Visit and Mutate APIs
+-------------------------------------------
+
+.. automodule:: tvm_tirx.tirx.structural
+   :no-members:
+
+.. currentmodule:: tvm_tirx.tirx.structural
+
+.. autosummary::
+   :toctree: generated/
+
+   StructuralVisitorWithConstraintContext
+   StructuralMutatorWithConstraintContext
+   structural_walk_with_constraint_context
+   structural_visit_with_constraint_context
+   structural_map_with_constraint_context
+   structural_mutate_with_constraint_context
+
+.. currentmodule:: tvm_tirx.tirx
+
 Functions
 ---------
 

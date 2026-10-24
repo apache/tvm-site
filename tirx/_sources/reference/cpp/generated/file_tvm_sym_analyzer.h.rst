@@ -95,6 +95,8 @@ Classes
 
 - :ref:`exhale_class_classtvm_1_1sym_1_1Analyzer`
 
+- :ref:`exhale_class_classtvm_1_1sym_1_1AnalyzerConstraintScope`
+
 - :ref:`exhale_class_classtvm_1_1sym_1_1AnalyzerObj`
 
 - :ref:`exhale_class_classtvm_1_1sym_1_1CanonicalSimplifier`
@@ -104,8 +106,6 @@ Classes
 - :ref:`exhale_class_classtvm_1_1sym_1_1ConstIntBoundAnalyzer`
 
 - :ref:`exhale_class_classtvm_1_1sym_1_1ConstIntBoundObj`
-
-- :ref:`exhale_class_classtvm_1_1sym_1_1ConstraintContext`
 
 - :ref:`exhale_class_classtvm_1_1sym_1_1IntSetAnalyzer`
 

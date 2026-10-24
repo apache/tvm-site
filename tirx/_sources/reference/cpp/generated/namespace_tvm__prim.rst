@@ -254,9 +254,9 @@ Functions
 
 - :ref:`exhale_function_namespacetvm_1_1prim_1a861154d298e1c8d49b97bcefcfac2a8d`
 
-- :ref:`exhale_function_namespacetvm_1_1prim_1a06df8a5c28ebfe1ac40a729ecdfde0be`
-
 - :ref:`exhale_function_namespacetvm_1_1prim_1ac7768650e1f34ec0309f701ceeb11709`
+
+- :ref:`exhale_function_namespacetvm_1_1prim_1a06df8a5c28ebfe1ac40a729ecdfde0be`
 
 - :ref:`exhale_function_namespacetvm_1_1prim_1aa6b1cb8cc8364e3c6b003ce71f7625ac`
 
@@ -300,9 +300,9 @@ Functions
 
 - :ref:`exhale_function_namespacetvm_1_1prim_1aadba219b75b265d8237c8b029c7330a0`
 
-- :ref:`exhale_function_namespacetvm_1_1prim_1af87aba868bbb26777dc0ff4244a2fa21`
-
 - :ref:`exhale_function_namespacetvm_1_1prim_1a54906dd843bafe57ec5671d433524664`
+
+- :ref:`exhale_function_namespacetvm_1_1prim_1af87aba868bbb26777dc0ff4244a2fa21`
 
 - :ref:`exhale_function_namespacetvm_1_1prim_1a14d358010405624b9bedfe35cf44f787`
 

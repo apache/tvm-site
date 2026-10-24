@@ -29,6 +29,11 @@ Classes
 .. autosummary::
    :toctree: generated/
 
+   Constraint
+   ConstraintContext
+   BindingConstraint
+   RangeConstraint
+   PredicateConstraint
    IntSet
    IntervalSet
    ModularSet

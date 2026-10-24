@@ -72,7 +72,7 @@ Program Listing for File stmt_functor_with_analyzer.h
      explicit StmtExprVisitorWithAnalyzer(const VTable* vtable) : StmtExprVisitor(vtable) {}
      sym::Analyzer analyzer_;
    
-     ScopeStack<WithGroup<sym::ConstraintContext>> constraint_scope_;
+     ScopeStack<WithGroup<sym::AnalyzerConstraintScope>> constraint_scope_;
    
      PrimExpr ExtractRealCondition(PrimExpr condition) const;
    };
@@ -107,7 +107,7 @@ Program Listing for File stmt_functor_with_analyzer.h
                                                      bool non_trivial_only);
    
      sym::AnalyzerObj* analyzer_;
-     ScopeStack<WithGroup<sym::ConstraintContext>> constraint_scope_;
+     ScopeStack<WithGroup<sym::AnalyzerConstraintScope>> constraint_scope_;
      // the following two fields are useful in case we want
      // note however that iter map analysis are usually more
      // expensive and we only encourage doing them during
