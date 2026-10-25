@@ -368,6 +368,7 @@ Functions
    min
    max
    register_script_namespace
+   expose_script_op
    abs
    acos
    acosh
