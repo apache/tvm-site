@@ -148,7 +148,11 @@
  </script></div>
         <div class="sidebar-primary-item"><nav class="bd-links bd-docs-nav" aria-label="Main">
     <div class="bd-toc-item navbar-nav active">
-        <p aria-level="2" class="caption" role="heading"><span class="caption-text">IR Walkthrough</span></p>
+        <p aria-level="2" class="caption" role="heading"><span class="caption-text">Get Started</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../get_started/example.html">Your First TIRx Program</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">IR Walkthrough</span></p>
 <ul class="current nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="overview.html">IR Overview</a></li>
 <li class="toctree-l1"><a class="reference internal" href="types_and_expressions.html">Types and Expressions</a></li>
@@ -331,7 +335,7 @@ document.write(`
             </div>
             <nav aria-label="Page">
                 <ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#statement-nodes">Statement Nodes</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#statement-classes">Statement Classes</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#statement-sequences">Statement Sequences</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#control-flow-and-scope">Control Flow and Scope</a></li>
 </ul>
@@ -347,37 +351,17 @@ document.write(`
                   
   <section id="statements">
 <span id="statements-and-control-flow"></span><h1>Statements<a class="headerlink" href="#statements" title="Link to this heading">#</a></h1>
-<p>Statements describe variable bindings, tensor writes, and control flow.
-Extensions can construct and rewrite program bodies with the existing
-statement nodes. Custom operators can use <code class="docutils literal notranslate"><span class="pre">ir.RegionStmt</span></code> to define how
-a group of statements executes.</p>
-<section id="statement-nodes">
-<span id="statements-and-sequences"></span><h2>Statement Nodes<a class="headerlink" href="#statement-nodes" title="Link to this heading">#</a></h2>
-<p><code class="docutils literal notranslate"><span class="pre">ir.Stmt</span></code> is the base class for all statement nodes, including sequences,
-branches, and loops. It defines the following field:</p>
-<div class="pst-scrollable-table-container"><table class="table">
-<colgroup>
-<col style="width: 15.0%" />
-<col style="width: 25.0%" />
-<col style="width: 60.0%" />
-</colgroup>
-<thead>
-<tr class="row-odd"><th class="head"><p>Field</p></th>
-<th class="head"><p>Value type</p></th>
-<th class="head"><p>Meaning</p></th>
-</tr>
-</thead>
-<tbody>
-<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">loc</span></code></p></td>
-<td><p><code class="docutils literal notranslate"><span class="pre">ir.Location</span></code></p></td>
-<td><p>Source information for diagnostics. Defaults to <code class="docutils literal notranslate"><span class="pre">UnknownLoc</span></code> and does
-not affect structural comparison.</p></td>
-</tr>
-</tbody>
-</table>
-</div>
-<p>Subclasses inherit <code class="docutils literal notranslate"><span class="pre">loc</span></code> and add fields for operands or nested statements.
-The shared statement classes are:</p>
+<p>In this chapter, we will introduce the statements that organize a
+function’s execution. Statements can be used to describe value bindings, tensor
+writes, and control flow. Statements take several forms, including sequences,
+branches, and loops. Sequences record execution order, while branches and
+loops determine which statements execute and how often. Compiler passes can
+use these structures to construct and transform programs, including bodies
+defined by custom operators.</p>
+<section id="statement-classes">
+<span id="statements-and-sequences"></span><h2>Statement Classes<a class="headerlink" href="#statement-classes" title="Link to this heading">#</a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">ir.Stmt</span></code> is the base class for all statements, from bindings and tensor
+writes to sequences, branches, and loops:</p>
 <div class="pst-scrollable-table-container"><table class="table">
 <colgroup>
 <col style="width: 25.0%" />
@@ -387,7 +371,7 @@ The shared statement classes are:</p>
 <thead>
 <tr class="row-odd"><th class="head"><p>Class</p></th>
 <th class="head"><p>Represents</p></th>
-<th class="head"><p>Additional fields</p></th>
+<th class="head"><p>Fields</p></th>
 </tr>
 </thead>
 <tbody>
@@ -445,86 +429,68 @@ The shared statement classes are:</p>
 </section>
 <section id="statement-sequences">
 <h2>Statement Sequences<a class="headerlink" href="#statement-sequences" title="Link to this heading">#</a></h2>
-<p>A return that uses a bound variable must follow its definition.
-<code class="docutils literal notranslate"><span class="pre">ir.SeqStmt</span></code> records the execution order of such statements.
-For example, consider a function that adds one to its input:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">increment</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
-    <span class="n">result</span> <span class="o">=</span> <span class="n">x</span> <span class="o">+</span> <span class="mi">1</span>
-    <span class="k">return</span> <span class="n">result</span>
-</pre></div>
-</div>
-<p>The following code constructs that function body as IR objects:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">tvm_tirx</span><span class="w"> </span><span class="kn">import</span> <span class="n">ir</span><span class="p">,</span> <span class="n">tirx</span>
-<span class="n">x</span> <span class="o">=</span> <span class="n">ir</span><span class="o">.</span><span class="n">Var</span><span class="p">(</span><span class="s2">"x"</span><span class="p">,</span> <span class="s2">"int32"</span><span class="p">)</span>
-<span class="n">added</span> <span class="o">=</span> <span class="n">x</span> <span class="o">+</span> <span class="mi">1</span>
-<span class="n">result</span> <span class="o">=</span> <span class="n">ir</span><span class="o">.</span><span class="n">Var</span><span class="p">(</span><span class="s2">"result"</span><span class="p">,</span> <span class="n">added</span><span class="o">.</span><span class="n">ty</span><span class="p">)</span>
+<p>One of the most common statement types is <code class="docutils literal notranslate"><span class="pre">ir.SeqStmt</span></code>, which groups
+statements in execution order in its <code class="docutils literal notranslate"><span class="pre">seq</span></code> field.
+A sequence can serve as a function body or as the body of a branch or loop.</p>
+<p>In our sigmoid example, each iteration binds the biased input before storing
+the sigmoid result. Reusing the tensor variables and indices from
+<a class="reference internal" href="types_and_expressions.html#user-ir-var"><span class="std std-ref">Var</span></a> and the helper from <a class="reference internal" href="types_and_expressions.html#user-ir-call"><span class="std std-ref">Call</span></a>, we can build this
+sequence:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">biased</span> <span class="o">=</span> <span class="n">ir</span><span class="o">.</span><span class="n">Var</span><span class="p">(</span><span class="s2">"biased"</span><span class="p">,</span> <span class="s2">"float32"</span><span class="p">)</span>
+<span class="n">biased_value</span> <span class="o">=</span> <span class="n">X</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">]</span> <span class="o">+</span> <span class="n">bias</span><span class="p">[</span><span class="n">j</span><span class="p">]</span>
+<span class="n">result</span> <span class="o">=</span> <span class="n">sigmoid</span><span class="p">(</span><span class="n">biased</span><span class="p">)</span>
+
 <span class="n">body</span> <span class="o">=</span> <span class="n">ir</span><span class="o">.</span><span class="n">SeqStmt</span><span class="p">(</span>
     <span class="p">[</span>
-        <span class="n">ir</span><span class="o">.</span><span class="n">Bind</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="n">added</span><span class="p">),</span>
-        <span class="n">ir</span><span class="o">.</span><span class="n">Return</span><span class="p">(</span><span class="n">result</span><span class="p">),</span>
+        <span class="n">ir</span><span class="o">.</span><span class="n">Bind</span><span class="p">(</span><span class="n">biased</span><span class="p">,</span> <span class="n">biased_value</span><span class="p">),</span>
+        <span class="n">ir</span><span class="o">.</span><span class="n">TensorStore</span><span class="p">(</span><span class="n">Y</span><span class="p">,</span> <span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">],</span> <span class="n">result</span><span class="p">),</span>
     <span class="p">]</span>
 <span class="p">)</span>
 </pre></div>
 </div>
-<p>The Python variable <code class="docutils literal notranslate"><span class="pre">added</span></code> holds the expression for <code class="docutils literal notranslate"><span class="pre">x</span> <span class="pre">+</span> <span class="pre">1</span></code>. <code class="docutils literal notranslate"><span class="pre">ir.Var</span></code>
-creates the IR variable <code class="docutils literal notranslate"><span class="pre">result</span></code>, and <code class="docutils literal notranslate"><span class="pre">ir.Bind(result,</span> <span class="pre">added)</span></code> defines it
-with that expression as its value. <code class="docutils literal notranslate"><span class="pre">added.ty</span></code> gives <code class="docutils literal notranslate"><span class="pre">result</span></code> the addition’s
-<code class="docutils literal notranslate"><span class="pre">int32</span></code> type. <code class="docutils literal notranslate"><span class="pre">ir.Return(result)</span></code> refers to the same variable, and
-<code class="docutils literal notranslate"><span class="pre">SeqStmt</span></code> places the definition before the return.</p>
-<p>Nested sequences are flattened, and a sequence introduces no scope of its
-own. Variables defined by <code class="docutils literal notranslate"><span class="pre">Bind</span></code> are available to subsequent statements in
-the enclosing scope.</p>
+<p><code class="docutils literal notranslate"><span class="pre">ir.Bind</span></code> defines <code class="docutils literal notranslate"><span class="pre">biased</span></code> with the value of <code class="docutils literal notranslate"><span class="pre">X[i,</span> <span class="pre">j]</span> <span class="pre">+</span> <span class="pre">bias[j]</span></code>.
+The following <code class="docutils literal notranslate"><span class="pre">ir.TensorStore</span></code> evaluates the sigmoid expression <code class="docutils literal notranslate"><span class="pre">result</span></code>
+using that binding and writes the value to <code class="docutils literal notranslate"><span class="pre">Y[i,</span> <span class="pre">j]</span></code>.
+The sequence forms the body of the channel loop, which we examine next.</p>
 </section>
 <section id="control-flow-and-scope">
 <h2>Control Flow and Scope<a class="headerlink" href="#control-flow-and-scope" title="Link to this heading">#</a></h2>
-<p>Control-flow statement nodes include <code class="docutils literal notranslate"><span class="pre">ir.If</span></code> for branching, <code class="docutils literal notranslate"><span class="pre">ir.For</span></code> and
-<code class="docutils literal notranslate"><span class="pre">ir.While</span></code> for loops, <code class="docutils literal notranslate"><span class="pre">ir.Break</span></code> and <code class="docutils literal notranslate"><span class="pre">ir.Continue</span></code> for loop control, and
-<code class="docutils literal notranslate"><span class="pre">ir.Return</span></code> for returning from a function.</p>
+<p>Control-flow statements determine which parts of a program execute, how
+many times they execute, and when execution leaves a loop or function.
+TIRx provides <code class="docutils literal notranslate"><span class="pre">ir.If</span></code> for branching, <code class="docutils literal notranslate"><span class="pre">ir.For</span></code> and <code class="docutils literal notranslate"><span class="pre">ir.While</span></code> for loops,
+<code class="docutils literal notranslate"><span class="pre">ir.Break</span></code> and <code class="docutils literal notranslate"><span class="pre">ir.Continue</span></code> for loop control, and <code class="docutils literal notranslate"><span class="pre">ir.Return</span></code> for
+returning from a function.</p>
 <p>The statements inside a branch or loop form its body. Branch bodies are
 stored in <code class="docutils literal notranslate"><span class="pre">If.then_case</span></code> and <code class="docutils literal notranslate"><span class="pre">If.else_case</span></code>, while loop bodies are stored
 in <code class="docutils literal notranslate"><span class="pre">For.body</span></code> and <code class="docutils literal notranslate"><span class="pre">While.body</span></code>. Each body is a <code class="docutils literal notranslate"><span class="pre">SeqStmt</span></code> and can contain
 further branches and loops.</p>
-<p>For example, this branch returns the incremented value only for positive
-inputs. Both bodies are normalized to <code class="docutils literal notranslate"><span class="pre">SeqStmt</span></code>:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">branch</span> <span class="o">=</span> <span class="n">ir</span><span class="o">.</span><span class="n">If</span><span class="p">(</span><span class="n">x</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">,</span> <span class="n">ir</span><span class="o">.</span><span class="n">Return</span><span class="p">(</span><span class="n">added</span><span class="p">),</span> <span class="n">ir</span><span class="o">.</span><span class="n">Return</span><span class="p">(</span><span class="n">x</span><span class="p">))</span>
+<p>An <code class="docutils literal notranslate"><span class="pre">ir.For</span></code> specifies a loop variable, begin and end bounds, a step, and an
+execution kind. The end bound is exclusive. <code class="docutils literal notranslate"><span class="pre">ForKind.DEFAULT</span></code> executes
+iterations in order; the <a class="reference internal" href="../reference/python/generated/tvm_tirx.ir.For.html#tvm_tirx.ir.ForKind" title="tvm_tirx.ir.ForKind"><code class="xref py py-class docutils literal notranslate"><span class="pre">ForKind</span></code></a> API reference describes
+the other execution kinds.</p>
+<p>The program processes one channel at a time. The surrounding loops cover
+samples and channels, keeping each tensor access within its bounds:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">channel_loop</span> <span class="o">=</span> <span class="n">ir</span><span class="o">.</span><span class="n">For</span><span class="p">(</span><span class="n">j</span><span class="p">,</span> <span class="n">zero</span><span class="p">,</span> <span class="n">end</span><span class="p">,</span> <span class="n">step</span><span class="p">,</span> <span class="n">ir</span><span class="o">.</span><span class="n">ForKind</span><span class="o">.</span><span class="n">DEFAULT</span><span class="p">,</span> <span class="n">body</span><span class="p">)</span>
+<span class="n">batch_loop</span> <span class="o">=</span> <span class="n">ir</span><span class="o">.</span><span class="n">For</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">zero</span><span class="p">,</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">n</span><span class="p">,</span> <span class="n">step</span><span class="p">,</span> <span class="n">ir</span><span class="o">.</span><span class="n">ForKind</span><span class="o">.</span><span class="n">DEFAULT</span><span class="p">,</span> <span class="n">channel_loop</span><span class="p">)</span>
 </pre></div>
 </div>
-<p><code class="docutils literal notranslate"><span class="pre">If</span></code> and <code class="docutils literal notranslate"><span class="pre">While</span></code> use boolean conditions. <code class="docutils literal notranslate"><span class="pre">If</span></code> requires an explicit
-<code class="docutils literal notranslate"><span class="pre">else_case</span></code> argument; pass None when there is no else branch.</p>
-<p>A loop instead repeats a body. This loop evaluates each index from zero through
-three:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">i</span> <span class="o">=</span> <span class="n">ir</span><span class="o">.</span><span class="n">Var</span><span class="p">(</span><span class="s2">"i"</span><span class="p">,</span> <span class="s2">"int32"</span><span class="p">)</span>
-<span class="n">loop</span> <span class="o">=</span> <span class="n">ir</span><span class="o">.</span><span class="n">For</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">4</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">ir</span><span class="o">.</span><span class="n">ForKind</span><span class="o">.</span><span class="n">DEFAULT</span><span class="p">,</span> <span class="n">ir</span><span class="o">.</span><span class="n">Evaluate</span><span class="p">(</span><span class="n">i</span><span class="p">))</span>
-</pre></div>
-</div>
-<p><code class="docutils literal notranslate"><span class="pre">For</span></code> takes an exclusive <code class="docutils literal notranslate"><span class="pre">end</span></code> and explicit <code class="docutils literal notranslate"><span class="pre">step</span></code> and <code class="docutils literal notranslate"><span class="pre">kind</span></code> arguments.
-Its variable, bounds, and step must have matching scalar integer types after
-conversion.</p>
-<p>The <code class="docutils literal notranslate"><span class="pre">kind</span></code> argument controls how loop iterations are executed.
-<code class="docutils literal notranslate"><span class="pre">ForKind.DEFAULT</span></code> executes them in order, one after another.
-See <a class="reference internal" href="../reference/python/generated/tvm_tirx.ir.For.html#tvm_tirx.ir.ForKind" title="tvm_tirx.ir.ForKind"><code class="xref py py-class docutils literal notranslate"><span class="pre">ForKind</span></code></a> for the available execution kinds.</p>
-<p><code class="docutils literal notranslate"><span class="pre">Break</span></code> exits a loop, and <code class="docutils literal notranslate"><span class="pre">Continue</span></code> starts its next iteration.</p>
-<p>Variable scope determines where a definition can be used. The loop defines <code class="docutils literal notranslate"><span class="pre">i</span></code>
-inside its body; it cannot be used after the loop. Branch-local definitions
-similarly stay inside their branch. Each variable object has one definition,
-and its uses refer to that object.</p>
-<p><code class="docutils literal notranslate"><span class="pre">ir.RegionStmt</span></code> lets an operator define how a nested body is executed without
-introducing a new statement class. Its <code class="docutils literal notranslate"><span class="pre">op</span></code> field refers to the registered
-<code class="docutils literal notranslate"><span class="pre">ir.Op</span></code> that defines this behavior. Inputs in <code class="docutils literal notranslate"><span class="pre">args</span></code> and <code class="docutils literal notranslate"><span class="pre">attrs</span></code>
-are evaluated in the enclosing scope. <code class="docutils literal notranslate"><span class="pre">body_params</span></code> defines variables
-visible within <code class="docutils literal notranslate"><span class="pre">body</span></code>;
-<code class="docutils literal notranslate"><span class="pre">result_vars</span></code> defines variables available to subsequent statements in the
-enclosing sequence. See <a class="reference internal" href="../reference/python/generated/tvm_tirx.ir.RegionStmt.html#tvm_tirx.ir.RegionStmt" title="tvm_tirx.ir.RegionStmt"><code class="xref py py-class docutils literal notranslate"><span class="pre">RegionStmt</span></code></a> for the operator
-contract.</p>
-<p>To check these definition and scope rules, the body needs the context of a
-complete function or module. <a class="reference internal" href="functions_and_modules.html"><span class="doc">Functions and Modules</span></a> supplies that context;
-<code class="docutils literal notranslate"><span class="pre">tirx.analysis.check_well_formed</span></code> then checks variable and tensor uses and loop
-control. Invalid uses raise <code class="docutils literal notranslate"><span class="pre">RuntimeError</span></code> by default; <code class="docutils literal notranslate"><span class="pre">assert_mode=False</span></code>
-returns False instead.</p>
-<p>The <a class="reference download internal" download="" href="../_downloads/a14821c94849712a12309f27b6522f4d/statements_and_functions.py"><code class="xref download docutils literal notranslate"><span class="pre">statements_and_functions.py</span></code></a>
-example completes and runs the increment function. See
-<a class="reference internal" href="../reference/python/ir.html"><span class="doc">tvm_tirx.ir</span></a> for statement constructors and
-<a class="reference internal" href="../reference/python/tirx.analysis.html"><span class="doc">tvm_tirx.tirx.analysis</span></a> for verification APIs.</p>
+<p><code class="docutils literal notranslate"><span class="pre">batch_loop</span></code> advances <code class="docutils literal notranslate"><span class="pre">i</span></code> by one sample. <code class="docutils literal notranslate"><span class="pre">channel_loop</span></code> advances <code class="docutils literal notranslate"><span class="pre">j</span></code>
+by one channel, executing <code class="docutils literal notranslate"><span class="pre">body</span></code> at each step. Both loops use int64
+variables, bounds, and steps. The channel loop stops before <code class="docutils literal notranslate"><span class="pre">end</span></code>, the
+channel count, so <code class="docutils literal notranslate"><span class="pre">j</span></code> ranges from 0 to <code class="docutils literal notranslate"><span class="pre">channels</span> <span class="pre">-</span> <span class="pre">1</span></code>.</p>
+<p>Scope determines where a definition can be used. <code class="docutils literal notranslate"><span class="pre">ir.SeqStmt</span></code> groups
+statements without introducing an additional scope. In the example, the
+sequence ensures that <code class="docutils literal notranslate"><span class="pre">biased</span></code> is bound before the <code class="docutils literal notranslate"><span class="pre">TensorStore</span></code> uses it,
+while the enclosing channel loop limits its visibility to that loop body.
+The loop variables <code class="docutils literal notranslate"><span class="pre">i</span></code> and <code class="docutils literal notranslate"><span class="pre">j</span></code> are likewise visible only within their
+loop bodies.</p>
+<p>Some operators introduce their own statement bodies.
+<a class="reference internal" href="../reference/python/generated/tvm_tirx.ir.RegionStmt.html#tvm_tirx.ir.RegionStmt" title="tvm_tirx.ir.RegionStmt"><code class="xref py py-class docutils literal notranslate"><span class="pre">ir.RegionStmt</span></code></a> represents these using a
+registered operator, whose definition specifies the body’s parameters.</p>
+<p>These scope rules also apply to programs built through the IR API. After
+construction, <a class="reference internal" href="../reference/python/generated/tvm_tirx.tirx.analysis.check_well_formed.html#tvm_tirx.tirx.analysis.check_well_formed" title="tvm_tirx.tirx.analysis.check_well_formed"><code class="xref py py-func docutils literal notranslate"><span class="pre">tirx.analysis.check_well_formed</span></code></a>
+can check a function or module for invalid variable and tensor uses and
+misplaced loop-control statements.</p>
 </section>
 </section>
 
@@ -573,7 +539,7 @@ example completes and runs the increment function. See
   </div>
   <nav class="bd-toc-nav page-toc">
     <ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#statement-nodes">Statement Nodes</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#statement-classes">Statement Classes</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#statement-sequences">Statement Sequences</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#control-flow-and-scope">Control Flow and Scope</a></li>
 </ul>

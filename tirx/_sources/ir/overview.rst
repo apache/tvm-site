@@ -18,20 +18,57 @@
 IR Overview
 ===========
 
-An intermediate representation (IR) describes a program in a form that compiler
-components can inspect and transform. It makes values, computations, control
-flow, and types explicit, allowing analyses and transformations to work with the
-program's structure independently of the syntax used to construct it.
+In :doc:`/get_started/example`, we wrote and ran our first TIRx program. To
+improve efficiency, we need to convert the program into a common intermediate
+representation (IR) and apply compiler passes to it. In this section, we'll
+explore the IR system in tvm-tirx in detail.
+
+The main components of TIRx IR are:
+
+.. list-table::
+   :header-rows: 1
+   :widths: 15 25 30 30
+
+   * - Component
+     - Main classes
+     - Purpose
+     - Example
+   * - Expressions
+     - ``ir.Expr``
+     - Represent values and computations.
+     - ``A[i] + 1``
+   * - Statements
+     - ``ir.Stmt``
+     - Describe execution order and control flow.
+     - ``B[i] = A[i] + 1``
+   * - Types
+     - ``ir.Type``
+     - Describe value properties, such as dtypes and tensor shapes.
+     - ``T.float32``
+   * - Functions
+     - ``ir.BaseFunc``, ``tirx.Function``
+     - Define parameters and a computation body.
+     - ``add_one`` defined with ``@T.function``.
+   * - Modules
+     - ``ir.IRModule``
+     - Organize named functions into a program.
+     - ``ir.IRModule({"add_one": add_one})``
+   * - Source locations
+     - ``ir.Location``
+     - Record where IR nodes originate in the source.
+     - The filename and line number of ``A[i] + 1``.
+
+The IR makes values, computations, control flow, and types explicit, allowing
+analyses and transformations to work with the program's structure independently
+of the syntax used to construct it.
 
 TIRx's C++, Python, and Rust interfaces share a common IR object system through
 TVM FFI, allowing compiler components written in different languages to work
-together. The IR can be extended with custom operators and types, and its
-existing interfaces can be used to build custom analyses, transformation passes,
-and backends.
+together. Built on shared C++ IR infrastructure, the IR can be extended with
+custom operators and types, and its existing interfaces can be used to build
+custom analyses, transformation passes, and backends.
 
-The following tree shows the inheritance relationships between IR object types.
-Registered names can differ from Python API names. For example, ``prim.Add``
-is available as ``ir.prim.Add`` in Python.
+The following tree shows the detailed inheritance hierarchy of the core IR classes.
 
 .. code-block:: text
 
@@ -85,13 +122,7 @@ is available as ``ir.prim.Add`` in Python.
    │   ├── prim.Let                                    Expression-local binding
    │   ├── prim.Ramp                                   Vector arithmetic progression
    │   ├── prim.Broadcast                              Scalar broadcast to vector lanes
-   │   ├── prim.Shuffle                                Vector lane selection
-   │   ├── sym.IterMapExpr                             Iterator mapping expressions
-   │   │   ├── sym.IterSplitExpr                       Iterator splitting
-   │   │   └── sym.IterSumExpr                         Sums of iterator expressions
-   │   └── sym.CanonicalExpr                           Internal simplifier expressions
-   │       ├── sym.SplitExpr                           Internal split expressions
-   │       └── sym.SumExpr                             Internal sum expressions
+   │   └── prim.Shuffle                                Vector lane selection
    ├── ir.Type                                         Types
    │   ├── ir.MissingType                              Unresolved type information
    │   ├── ir.NoneType                                 The type of None
@@ -118,49 +149,30 @@ is available as ``ir.prim.Add`` in Python.
    │   ├── ir.Return                                   Function returns
    │   ├── ir.Break                                    Loop exits
    │   └── ir.Continue                                 Next loop iterations
-   ├── ir.IRModule                                     Global function definitions
-   ├── ir.Attrs                                        Structured attributes
-   │   ├── ir.DictAttrs                                Named attribute maps
-   │   ├── tirx.CallFFIKernelAttr                       FFI kernel call attributes
-   │   ├── tirx.tensor.ScopeAttrs                      Tensor instruction scopes
-   │   ├── tirx.tensor.TrnAttrs                        Tensor instruction attributes
-   │   ├── tirx.cuda.TensorMapEncodeTiledAttr           CUDA tensor map encoding attributes
-   │   ├── tirx.cuda.TCGen05InstrDescriptorAttrs         CUDA instruction descriptors
-   │   └── tirx.cuda.TCGen05InstrDescriptorBlockScaledAttrs  Block-scaled CUDA descriptors
    ├── ir.Location                                     Source locations
    │   ├── ir.UnknownLoc                               Unavailable source information
    │   ├── ir.SourceLoc                                Source ranges
    │   └── ir.CallSiteLoc                              Callee and caller locations
-   ├── ir.SourceName                                   Source identifiers
-   ├── ir.Range                                        Begin and end bounds
-   ├── ir.ArgumentInfo                                 Operator argument descriptions
-   ├── ir.GlobalInfo                                   Module-level metadata
-   ├── ir.EnvFunc                                      Named global function references
-   ├── ir.UniqueNameSupply                             Unique-name generation
-   ├── tirx.Layout                                     Index-to-axis mappings
-   │   ├── tirx.TileLayout                             Tile layouts
-   │   └── tirx.ComposeLayout                          Composed layouts
-   ├── tirx.Iter                                       Layout iterators
-   ├── tirx.IndexMap                                   Index transformations
-   ├── sym.IterMark                                    Iterator source and extent
-   └── ffi.Enum                                        Registered enumeration objects
-       ├── tirx.Axis                                   Layout axis identities
-       └── tirx.ThreadScope                            Execution scope identities
+   └── ir.IRModule                                     Global function definitions
 
 .. _choose-a-chapter:
 
 What to Read Next
 -----------------
 
-The following chapters explain how to work with each part of the IR:
+After the add-one example in :doc:`/get_started/example`, this walkthrough
+uses a bias + sigmoid program to introduce symbolic shapes and scalar computations.
+It computes ``Y[i, j] = 1 / (1 + exp(-(X[i, j] + bias[j])))``.
+Download :download:`tvmscript_sigmoid.py <examples/tvmscript_sigmoid.py>`
+and run ``python tvmscript_sigmoid.py`` with an LLVM-enabled TIRx build.
 
-* To understand how values, computations, and tensor shapes are represented,
-  see :doc:`types_and_expressions`.
-* To build statement bodies with bindings, tensor writes, branches, and loops,
-  see :doc:`statements`.
-* To work with registered operators and function calls, see
-  :doc:`operators_and_calls`.
-* To define functions and organize them into modules, see
-  :doc:`functions_and_modules`.
-* To write or generate TVMScript and print or parse IR, see
-  :doc:`printing_and_parsing`.
+* The :doc:`types_and_expressions` chapter explains how values, computations,
+  and tensor shapes are represented.
+* The :doc:`statements` chapter covers statement bodies with bindings, tensor
+  writes, branches, and loops.
+* The :doc:`operators_and_calls` chapter introduces registered operators and
+  function calls.
+* The :doc:`functions_and_modules` chapter shows how functions are defined
+  and organized in modules.
+* The :doc:`printing_and_parsing` chapter covers TVMScript definitions,
+  program generation, and conversion between source text and IR.

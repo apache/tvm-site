@@ -148,7 +148,11 @@
  </script></div>
         <div class="sidebar-primary-item"><nav class="bd-links bd-docs-nav" aria-label="Main">
     <div class="bd-toc-item navbar-nav active">
-        <p aria-level="2" class="caption" role="heading"><span class="caption-text">IR Walkthrough</span></p>
+        <p aria-level="2" class="caption" role="heading"><span class="caption-text">Get Started</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../get_started/example.html">Your First TIRx Program</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">IR Walkthrough</span></p>
 <ul class="current nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="overview.html">IR Overview</a></li>
 <li class="toctree-l1 current active"><a class="current reference internal" href="#">Types and Expressions</a></li>
@@ -331,9 +335,18 @@ document.write(`
             </div>
             <nav aria-label="Page">
                 <ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#types">Types</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#expressions">Expressions</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#register-new-types">Register New Types</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#types">Types</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#primtype">PrimType</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#tensortype">TensorType</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#expressions">Expressions</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#primitive-operations">Primitive Operations</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#primitive-expressions">Primitive Expressions</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#var">Var</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#call">Call</a></li>
+</ul>
+</li>
 </ul>
             </nav>
         </div>
@@ -347,39 +360,15 @@ document.write(`
                   
   <section id="types-and-expressions">
 <span id="expressions-and-types"></span><h1>Types and Expressions<a class="headerlink" href="#types-and-expressions" title="Link to this heading">#</a></h1>
-<p>Expressions represent program values and computations, while types describe
-properties such as dtypes, tensor shapes, and function signatures. This shared
-representation can be extended with custom types and operators. Programs using
-these constructs can be built, inspected, and transformed through the existing
-IR interfaces.</p>
+<p>In this chapter, we will introduce types and expressions and explain how
+they work together in the IR. Types describe properties such as dtypes,
+tensor shapes, and function signatures, while expressions represent values
+and computations. Compiler passes can work with these objects directly to
+inspect or rewrite a program without executing it.</p>
 <section id="types">
-<span id="user-ir-prim-type"></span><span id="user-ir-type"></span><h2>Types<a class="headerlink" href="#types" title="Link to this heading">#</a></h2>
-<p><code class="docutils literal notranslate"><span class="pre">ir.Type</span></code> is the base class for type objects, giving analyses and
-transformations a common interface across different kinds of values.
-It defines the following field:</p>
-<div class="pst-scrollable-table-container"><table class="table">
-<colgroup>
-<col style="width: 15.0%" />
-<col style="width: 25.0%" />
-<col style="width: 60.0%" />
-</colgroup>
-<thead>
-<tr class="row-odd"><th class="head"><p>Field</p></th>
-<th class="head"><p>Value type</p></th>
-<th class="head"><p>Meaning</p></th>
-</tr>
-</thead>
-<tbody>
-<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">loc</span></code></p></td>
-<td><p><code class="docutils literal notranslate"><span class="pre">ir.Location</span></code></p></td>
-<td><p>Source information for diagnostics. Defaults to <code class="docutils literal notranslate"><span class="pre">UnknownLoc</span></code> and does
-not affect structural comparison.</p></td>
-</tr>
-</tbody>
-</table>
-</div>
-<p>Concrete subclasses inherit <code class="docutils literal notranslate"><span class="pre">loc</span></code> and add fields describing different kinds
-of values. Common examples include:</p>
+<span id="user-ir-type"></span><h2>Types<a class="headerlink" href="#types" title="Link to this heading">#</a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">ir.Type</span></code> is the base class for all IR types, including primitive types
+for scalar and vector values, tensor types, and function types:</p>
 <div class="pst-scrollable-table-container"><table class="table">
 <colgroup>
 <col style="width: 30.0%" />
@@ -389,7 +378,7 @@ of values. Common examples include:</p>
 <thead>
 <tr class="row-odd"><th class="head"><p>Class</p></th>
 <th class="head"><p>Describes</p></th>
-<th class="head"><p>Additional fields</p></th>
+<th class="head"><p>Fields</p></th>
 </tr>
 </thead>
 <tbody>
@@ -416,32 +405,71 @@ of values. Common examples include:</p>
 </tbody>
 </table>
 </div>
-<p>Some of these fields refer to other type objects. For example, <code class="docutils literal notranslate"><span class="pre">FuncType</span></code>
-stores the types of a function’s arguments and result:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">tvm_tirx</span><span class="w"> </span><span class="kn">import</span> <span class="n">ir</span><span class="p">,</span> <span class="n">tirx</span>
-<span class="n">integer_type</span> <span class="o">=</span> <span class="n">ir</span><span class="o">.</span><span class="n">PrimType</span><span class="p">(</span><span class="s2">"int32"</span><span class="p">)</span>
-<span class="n">signature</span> <span class="o">=</span> <span class="n">ir</span><span class="o">.</span><span class="n">FuncType</span><span class="p">([</span><span class="n">integer_type</span><span class="p">],</span> <span class="n">integer_type</span><span class="p">)</span>
+<p>Next, we will look at two common types in tensor programs in more detail:
+<code class="docutils literal notranslate"><span class="pre">ir.PrimType</span></code> for scalar and vector values, and <code class="docutils literal notranslate"><span class="pre">tirx.TensorType</span></code> for tensors.</p>
+<section id="primtype">
+<span id="user-ir-prim-type"></span><h3>PrimType<a class="headerlink" href="#primtype" title="Link to this heading">#</a></h3>
+<p><code class="docutils literal notranslate"><span class="pre">ir.PrimType</span></code> is a widely used type in TIRx IR, which describes integer,
+floating-point, and boolean values, either as scalars or vectors. Its <code class="docutils literal notranslate"><span class="pre">dtype</span></code>
+records the element kind, bit width, and number of lanes.</p>
+<p>In the sigmoid program, primitive types describe both shape symbols and
+computed values. The dynamic shape symbol <code class="docutils literal notranslate"><span class="pre">n</span></code> is declared as:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">n</span> <span class="o">=</span> <span class="n">T</span><span class="o">.</span><span class="n">dynamic</span><span class="p">(</span><span class="s2">"n"</span><span class="p">,</span> <span class="s2">"int64"</span><span class="p">)</span>
 </pre></div>
 </div>
-<p><code class="docutils literal notranslate"><span class="pre">signature</span></code> describes a function that takes and returns int32 values.
-<code class="docutils literal notranslate"><span class="pre">integer_type.dtype</span></code> holds the int32 dtype descriptor;
-<code class="docutils literal notranslate"><span class="pre">signature.arg_types[0]</span></code> and <code class="docutils literal notranslate"><span class="pre">signature.ret_type</span></code> both refer to the
-<code class="docutils literal notranslate"><span class="pre">integer_type</span></code> object. Tuple fields and pointer element types similarly
-refer to other type objects.</p>
-<p id="user-tensor-type"><code class="docutils literal notranslate"><span class="pre">tirx.TensorType</span></code> combines an element type with shape and storage information:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">tile_type</span> <span class="o">=</span> <span class="n">tirx</span><span class="o">.</span><span class="n">TensorType</span><span class="p">((</span><span class="mi">8</span><span class="p">,</span> <span class="mi">128</span><span class="p">),</span> <span class="s2">"float32"</span><span class="p">)</span>
+<p>where <code class="docutils literal notranslate"><span class="pre">n</span></code> is a 64-bit integer symbol with type <code class="docutils literal notranslate"><span class="pre">ir.PrimType(&quot;int64&quot;)</span></code>.</p>
+<p>The sigmoid calculation uses floating-point values:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">biased</span> <span class="o">=</span> <span class="n">X</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">]</span> <span class="o">+</span> <span class="n">bias</span><span class="p">[</span><span class="n">j</span><span class="p">]</span>
+<span class="n">Y</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="n">T</span><span class="o">.</span><span class="n">float32</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">T</span><span class="o">.</span><span class="n">float32</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="o">+</span> <span class="n">T</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">biased</span><span class="p">))</span>
 </pre></div>
 </div>
-<p><code class="docutils literal notranslate"><span class="pre">tile_type</span></code> describes an <code class="docutils literal notranslate"><span class="pre">(8,</span> <span class="pre">128)</span></code> tensor. Its <code class="docutils literal notranslate"><span class="pre">shape</span></code> contains integer
-expressions for <code class="docutils literal notranslate"><span class="pre">8</span></code> and <code class="docutils literal notranslate"><span class="pre">128</span></code>, and its <code class="docutils literal notranslate"><span class="pre">dtype</span></code> is
-<code class="docutils literal notranslate"><span class="pre">ir.PrimType(&quot;float32&quot;)</span></code>. Dimensions can also use variables and arithmetic.</p>
-<p>Use <code class="docutils literal notranslate"><span class="pre">==</span></code> to compare type structure and <code class="docutils literal notranslate"><span class="pre">same_as</span></code> to compare object identity.</p>
+<p>In this example, <code class="docutils literal notranslate"><span class="pre">X</span></code> and <code class="docutils literal notranslate"><span class="pre">bias</span></code> are declared as tensors with float32
+elements, so <code class="docutils literal notranslate"><span class="pre">X[i,</span> <span class="pre">j]</span></code> and <code class="docutils literal notranslate"><span class="pre">bias[j]</span></code> have that type. <code class="docutils literal notranslate"><span class="pre">T.float32(1)</span></code> supplies
+float32 constants for the formula. The arithmetic operations and <code class="docutils literal notranslate"><span class="pre">T.exp</span></code>
+preserve this type, so <code class="docutils literal notranslate"><span class="pre">biased</span></code> and the sigmoid result are automatically
+inferred as float32 during expression construction. In the IR, this type is
+represented by <code class="docutils literal notranslate"><span class="pre">ir.PrimType(&quot;float32&quot;)</span></code>.
+You can also pass an expression to a <code class="docutils literal notranslate"><span class="pre">PrimType</span></code> instance to cast it to that type.</p>
+<p>To create a variable of a specific type, you can call the corresponding
+<code class="docutils literal notranslate"><span class="pre">PrimType</span></code> instance without arguments:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">f32</span> <span class="o">=</span> <span class="n">ir</span><span class="o">.</span><span class="n">PrimType</span><span class="p">(</span><span class="s2">"float32"</span><span class="p">)</span>
+<span class="n">x</span> <span class="o">=</span> <span class="n">f32</span><span class="p">()</span>
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">PrimType</span></code> also provides methods to inspect a type, like <code class="docutils literal notranslate"><span class="pre">is_scalar()</span></code>,
+<code class="docutils literal notranslate"><span class="pre">matches_code(...)</span></code>, and <code class="docutils literal notranslate"><span class="pre">matches_element_type(...)</span></code>. See the
+<a class="reference internal" href="../reference/python/generated/tvm_tirx.ir.PrimType.html#tvm_tirx.ir.PrimType" title="tvm_tirx.ir.PrimType"><code class="xref py py-class docutils literal notranslate"><span class="pre">PrimType</span></code></a> API reference for more details.</p>
+</section>
+<section id="tensortype">
+<span id="user-tensor-type"></span><h3>TensorType<a class="headerlink" href="#tensortype" title="Link to this heading">#</a></h3>
+<p>Most computations in TIRx involve tensors. To define a tensor type, we need
+two important properties: its element type and shape.
+<a class="reference internal" href="../reference/python/generated/tvm_tirx.tirx.TensorType.html#tvm_tirx.tirx.TensorType" title="tvm_tirx.tirx.TensorType"><code class="xref py py-class docutils literal notranslate"><span class="pre">tirx.TensorType</span></code></a> stores these in its <code class="docutils literal notranslate"><span class="pre">dtype</span></code>
+and <code class="docutils literal notranslate"><span class="pre">shape</span></code> fields, respectively. The element type is a <code class="docutils literal notranslate"><span class="pre">PrimType</span></code>, and
+each dimension is an integer expression.</p>
+<p>In the sigmoid program, the input <code class="docutils literal notranslate"><span class="pre">X</span></code> is declared as:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">X</span><span class="p">:</span> <span class="n">T</span><span class="o">.</span><span class="n">Tensor</span><span class="p">((</span><span class="mi">2</span> <span class="o">*</span> <span class="n">n</span><span class="p">,</span> <span class="n">channels</span><span class="p">),</span> <span class="n">T</span><span class="o">.</span><span class="n">float32</span><span class="p">),</span>
+</pre></div>
+</div>
+<p>where <code class="docutils literal notranslate"><span class="pre">X</span></code> is the parameter name and the part after <code class="docutils literal notranslate"><span class="pre">:</span></code> is its <em>type
+annotation</em>, which tells TVMScript what kind of value the parameter accepts.
+This annotation becomes a <code class="docutils literal notranslate"><span class="pre">tirx.TensorType</span></code> in the IR: <code class="docutils literal notranslate"><span class="pre">shape</span></code> describes
+<code class="docutils literal notranslate"><span class="pre">2*n</span></code> rows and <code class="docutils literal notranslate"><span class="pre">channels</span></code> columns, and <code class="docutils literal notranslate"><span class="pre">dtype</span></code> is
+<code class="docutils literal notranslate"><span class="pre">ir.PrimType(&quot;float32&quot;)</span></code>.</p>
+<p><strong>Symbolic shapes.</strong> A dimension such as <code class="docutils literal notranslate"><span class="pre">2*n</span></code> can vary between calls.
+In this example, <code class="docutils literal notranslate"><span class="pre">channels</span></code> is fixed at 130 when the program is constructed,
+while <code class="docutils literal notranslate"><span class="pre">n</span></code> is determined from the input’s row count at runtime. An input
+with shape <code class="docutils literal notranslate"><span class="pre">(16,</span> <span class="pre">130)</span></code> gives <code class="docutils literal notranslate"><span class="pre">n=8</span></code>. A later call can use a different
+even row count without recompiling the function. Both fixed shapes such as
+<code class="docutils literal notranslate"><span class="pre">(16,</span> <span class="pre">130)</span></code> and symbolic shapes such as <code class="docutils literal notranslate"><span class="pre">(2*n,</span> <span class="pre">130)</span></code> use the same
+<code class="docutils literal notranslate"><span class="pre">TensorType</span></code> representation.</p>
+</section>
 </section>
 <section id="expressions">
-<span id="user-ir-var"></span><h2>Expressions<a class="headerlink" href="#expressions" title="Link to this heading">#</a></h2>
-<p>Expression nodes make the inputs to a computation explicit, so analyses can
-inspect its operands and transformations can replace parts of the computation.
-<code class="docutils literal notranslate"><span class="pre">ir.Expr</span></code> is the base class for these nodes. It defines these fields:</p>
+<h2>Expressions<a class="headerlink" href="#expressions" title="Link to this heading">#</a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">ir.Expr</span></code> is the base class for all expressions, which represent program
+values and the operations that produce them. Each expression’s <code class="docutils literal notranslate"><span class="pre">ty</span></code> field
+records its result type:</p>
 <div class="pst-scrollable-table-container"><table class="table">
 <colgroup>
 <col style="width: 15.0%" />
@@ -457,20 +485,13 @@ inspect its operands and transformations can replace parts of the computation.
 <tbody>
 <tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">ty</span></code></p></td>
 <td><p><code class="docutils literal notranslate"><span class="pre">ir.Type</span></code></p></td>
-<td><p>Result type. <code class="docutils literal notranslate"><span class="pre">ir.MissingType</span></code> marks type information that has not yet
-been supplied or computed.</p></td>
-</tr>
-<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">loc</span></code></p></td>
-<td><p><code class="docutils literal notranslate"><span class="pre">ir.Location</span></code></p></td>
-<td><p>Source information for diagnostics. Defaults to <code class="docutils literal notranslate"><span class="pre">UnknownLoc</span></code> and does
-not affect structural comparison.</p></td>
+<td><p>The type of value represented by the expression.</p></td>
 </tr>
 </tbody>
 </table>
 </div>
-<p>Subclasses inherit <code class="docutils literal notranslate"><span class="pre">ty</span></code> and <code class="docutils literal notranslate"><span class="pre">loc</span></code> and add fields for their stored values or
-operands. The following examples show common expression classes and selected
-fields:</p>
+<p>Expressions include variables, constants, arithmetic, tensor reads, and calls.
+These classes store their values or operands in the following fields:</p>
 <div class="pst-scrollable-table-container"><table class="table">
 <colgroup>
 <col style="width: 30.0%" />
@@ -515,101 +536,146 @@ fields:</p>
 </tbody>
 </table>
 </div>
-<p>Arithmetic and comparison nodes for primitive values are available under
-<code class="docutils literal notranslate"><span class="pre">ir.prim</span></code>. The binary nodes above store their left and right operand
-expressions in <code class="docutils literal notranslate"><span class="pre">a</span></code> and <code class="docutils literal notranslate"><span class="pre">b</span></code>.</p>
-<p>Registered operators are themselves expressions of class <code class="docutils literal notranslate"><span class="pre">ir.Op</span></code>. Each has
-a name, such as <code class="docutils literal notranslate"><span class="pre">prim.exp</span></code>, and metadata describing its arguments.
-<code class="docutils literal notranslate"><span class="pre">ir.Op.get</span></code> retrieves the operator object by name; <code class="docutils literal notranslate"><span class="pre">ir.Call</span></code> uses it as
-the callee of an invocation:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">exp_op</span> <span class="o">=</span> <span class="n">ir</span><span class="o">.</span><span class="n">Op</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"prim.exp"</span><span class="p">)</span>
-<span class="n">value</span> <span class="o">=</span> <span class="n">ir</span><span class="o">.</span><span class="n">Var</span><span class="p">(</span><span class="s2">"value"</span><span class="p">,</span> <span class="s2">"float32"</span><span class="p">)</span>
-<span class="n">exp_call</span> <span class="o">=</span> <span class="n">ir</span><span class="o">.</span><span class="n">Call</span><span class="p">(</span><span class="n">exp_op</span><span class="p">,</span> <span class="p">[</span><span class="n">value</span><span class="p">])</span>
+<p>In our sigmoid example, the input parameter <code class="docutils literal notranslate"><span class="pre">X</span></code> is represented by an
+<code class="docutils literal notranslate"><span class="pre">ir.Var</span></code> expression. We can inspect its type through the <code class="docutils literal notranslate"><span class="pre">program</span></code> module
+(introduced later in <a class="reference internal" href="functions_and_modules.html"><span class="doc">Functions and Modules</span></a>):</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">function</span> <span class="o">=</span> <span class="n">program</span><span class="p">[</span><span class="s2">"bias_sigmoid"</span><span class="p">]</span>
+<span class="n">input_var</span> <span class="o">=</span> <span class="n">function</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>  <span class="c1"># ir.Var named X.</span>
+<span class="n">tensor_type</span> <span class="o">=</span> <span class="n">input_var</span><span class="o">.</span><span class="n">ty</span>  <span class="c1"># tirx.TensorType: shape=(2 * n, 130), dtype=float32.</span>
+<span class="n">row_extent</span> <span class="o">=</span> <span class="n">tensor_type</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>  <span class="c1"># ir.prim.Mul: a=2, b=n, ty=ir.PrimType("int64").</span>
+<span class="n">location</span> <span class="o">=</span> <span class="n">row_extent</span><span class="o">.</span><span class="n">loc</span>  <span class="c1"># Source location of 2 * n in X's type annotation.</span>
 </pre></div>
 </div>
-<p><code class="docutils literal notranslate"><span class="pre">exp_call.op</span></code> refers to <code class="docutils literal notranslate"><span class="pre">exp_op</span></code>, and <code class="docutils literal notranslate"><span class="pre">exp_call.args</span></code> contains the input
-<code class="docutils literal notranslate"><span class="pre">value</span></code>. The same operator object can be used by many calls, each with its
-own arguments. <code class="docutils literal notranslate"><span class="pre">ir.prim.exp(value)</span></code> is a helper that constructs this call
-form. <a class="reference internal" href="operators_and_calls.html"><span class="doc">Operators and Calls</span></a> explains operator registration, attributes,
-type inference, and validation.</p>
-<p>Operands and call arguments are themselves expressions, allowing these forms
-to be combined into larger computations.</p>
-<p id="user-ir-const">To describe <code class="docutils literal notranslate"><span class="pre">x</span> <span class="pre">+</span> <span class="pre">1</span></code>, create a variable with the integer type above and a
-constant of that type. Adding them constructs an <code class="docutils literal notranslate"><span class="pre">Add</span></code> expression:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">x</span> <span class="o">=</span> <span class="n">ir</span><span class="o">.</span><span class="n">Var</span><span class="p">(</span><span class="s2">"x"</span><span class="p">,</span> <span class="n">integer_type</span><span class="p">)</span>
-<span class="n">added</span> <span class="o">=</span> <span class="n">x</span> <span class="o">+</span> <span class="n">ir</span><span class="o">.</span><span class="n">const</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">integer_type</span><span class="p">)</span>
+<p>The <code class="docutils literal notranslate"><span class="pre">ir.prim.Mul</span></code> expression for <code class="docutils literal notranslate"><span class="pre">2</span> <span class="pre">*</span> <span class="pre">n</span></code> is one example of a primitive operation.
+Next, we’ll look at how primitive operations represent the arithmetic in the
+sigmoid formula.</p>
+<section id="primitive-operations">
+<span id="user-ir-prim-operations"></span><h3>Primitive Operations<a class="headerlink" href="#primitive-operations" title="Link to this heading">#</a></h3>
+<p>Primitive operations give the compiler a common way to represent and reason
+about basic computations. The <code class="docutils literal notranslate"><span class="pre">ir.prim</span></code> namespace provides expressions such
+as <code class="docutils literal notranslate"><span class="pre">Add</span></code> for arithmetic and <code class="docutils literal notranslate"><span class="pre">LE</span></code> for comparisons. These expressions have
+defined semantics, explicit operands, and result types, allowing compiler
+passes to analyze computations and perform optimizations such as constant
+folding and algebraic simplification. See the
+<a class="reference internal" href="../reference/python/ir.prim.html"><span class="doc">ir.prim</span></a> API reference for the available
+expression classes and construction helpers.</p>
+<p>TIRx overloads Python operators such as <code class="docutils literal notranslate"><span class="pre">+</span></code> and <code class="docutils literal notranslate"><span class="pre">/</span></code> to construct IR
+expressions. In our program, we use them as follows:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">biased</span> <span class="o">=</span> <span class="n">X</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">]</span> <span class="o">+</span> <span class="n">bias</span><span class="p">[</span><span class="n">j</span><span class="p">]</span>
+<span class="n">Y</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="n">T</span><span class="o">.</span><span class="n">float32</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">T</span><span class="o">.</span><span class="n">float32</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span> <span class="o">+</span> <span class="n">T</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">biased</span><span class="p">))</span>
 </pre></div>
 </div>
-<p><code class="docutils literal notranslate"><span class="pre">x</span></code> is a <code class="docutils literal notranslate"><span class="pre">Var</span></code> and <code class="docutils literal notranslate"><span class="pre">added</span></code> is an <code class="docutils literal notranslate"><span class="pre">Add</span></code>. Both carry <code class="docutils literal notranslate"><span class="pre">integer_type</span></code> in
-their <code class="docutils literal notranslate"><span class="pre">ty</span></code> field. Reuse the same variable object when a symbol appears in
-several places: another <code class="docutils literal notranslate"><span class="pre">ir.Var(&quot;x&quot;,</span> <span class="pre">integer_type)</span></code> is a distinct symbol,
-even with the same name.</p>
-<p>A tensor variable follows the same pattern, with a <code class="docutils literal notranslate"><span class="pre">TensorType</span></code> in its
-<code class="docutils literal notranslate"><span class="pre">ty</span></code> field. Its shape can reuse the integer expressions described above:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">n</span> <span class="o">=</span> <span class="n">ir</span><span class="o">.</span><span class="n">Var</span><span class="p">(</span><span class="s2">"n"</span><span class="p">,</span> <span class="s2">"int64"</span><span class="p">)</span>
-<span class="n">tensor_type</span> <span class="o">=</span> <span class="n">tirx</span><span class="o">.</span><span class="n">TensorType</span><span class="p">((</span><span class="mi">2</span> <span class="o">*</span> <span class="n">n</span><span class="p">,</span> <span class="mi">128</span><span class="p">),</span> <span class="s2">"float32"</span><span class="p">)</span>
-<span class="n">tensor</span> <span class="o">=</span> <span class="n">ir</span><span class="o">.</span><span class="n">Var</span><span class="p">(</span><span class="s2">"A"</span><span class="p">,</span> <span class="n">tensor_type</span><span class="p">)</span>
-<span class="n">element</span> <span class="o">=</span> <span class="n">tensor</span><span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span>
+<p>In this code, the <code class="docutils literal notranslate"><span class="pre">+</span></code> and <code class="docutils literal notranslate"><span class="pre">/</span></code> operations become
+<code class="docutils literal notranslate"><span class="pre">ir.prim.Add</span></code> and <code class="docutils literal notranslate"><span class="pre">ir.prim.Div</span></code> expressions, respectively.
+Each binary expression has two operand fields: <code class="docutils literal notranslate"><span class="pre">a</span></code> for the expression on its
+left and <code class="docutils literal notranslate"><span class="pre">b</span></code> for the expression on its right.</p>
+<p><strong>Bias addition.</strong> The <code class="docutils literal notranslate"><span class="pre">+</span></code> in the definition of <code class="docutils literal notranslate"><span class="pre">biased</span></code> becomes an
+<code class="docutils literal notranslate"><span class="pre">ir.prim.Add</span></code>. Its <code class="docutils literal notranslate"><span class="pre">a</span></code> field points to the <code class="docutils literal notranslate"><span class="pre">X[i,</span> <span class="pre">j]</span></code> tensor read, and
+its <code class="docutils literal notranslate"><span class="pre">b</span></code> field points to the <code class="docutils literal notranslate"><span class="pre">bias[j]</span></code> tensor read. The addition has this
+structure:</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>ir.prim.Add                 X[i, j] + bias[j]
+├── a: ir.TensorLoad         X[i, j]
+└── b: ir.TensorLoad         bias[j]
 </pre></div>
 </div>
-<p>The first dimension stores the expression <code class="docutils literal notranslate"><span class="pre">2*n</span></code>. The same <code class="docutils literal notranslate"><span class="pre">n</span></code> can appear
-in loop bounds and indices. The element load <code class="docutils literal notranslate"><span class="pre">tensor[0,</span> <span class="pre">0]</span></code> is another
-expression, with type <code class="docutils literal notranslate"><span class="pre">ir.PrimType(&quot;float32&quot;)</span></code>.</p>
-<p>The symbol <code class="docutils literal notranslate"><span class="pre">n</span></code> has a known int64 type even though its value is not yet known.
-Constructing these types and expressions does not allocate tensor storage.</p>
+<p>Each tensor read produces one float32 value, and the addition combines
+the input element with its channel’s bias.</p>
+<p><strong>Sigmoid.</strong> In the final line, the <code class="docutils literal notranslate"><span class="pre">+</span></code> in
+<code class="docutils literal notranslate"><span class="pre">T.float32(1)</span> <span class="pre">+</span> <span class="pre">T.exp(-biased)</span></code> becomes an <code class="docutils literal notranslate"><span class="pre">ir.prim.Add</span></code>. The <code class="docutils literal notranslate"><span class="pre">/</span></code> becomes
+an <code class="docutils literal notranslate"><span class="pre">ir.prim.Div</span></code> whose <code class="docutils literal notranslate"><span class="pre">a</span></code> operand supplies the numerator, <code class="docutils literal notranslate"><span class="pre">1</span></code>, and
+whose <code class="docutils literal notranslate"><span class="pre">b</span></code> operand is the addition that computes the denominator.
+The exponential <code class="docutils literal notranslate"><span class="pre">T.exp(-biased)</span></code> is represented by an <code class="docutils literal notranslate"><span class="pre">ir.Call</span></code>, which
+we will discuss in the <a class="reference internal" href="#user-ir-call"><span class="std std-ref">Call</span></a> section.</p>
 </section>
-<section id="register-new-types">
-<span id="user-ir-register-type"></span><h2>Register New Types<a class="headerlink" href="#register-new-types" title="Link to this heading">#</a></h2>
-<p>Custom types let extensions describe their own kinds of values and use them
-in existing IR variables and function signatures. New types can be added from
-Python or Rust without modifying the C++ core.
-Define a subclass of <code class="docutils literal notranslate"><span class="pre">ir.Type</span></code> and register it under its own key. Its
-reflected fields let structural comparison and printing handle it in the same
-way as built-in types.</p>
-<p>In Python, use <code class="docutils literal notranslate"><span class="pre">tvm_ffi.dataclasses.py_class</span></code>; in Rust, use
-<code class="docutils literal notranslate"><span class="pre">tvm_ffi::rs_class</span></code> and <code class="docutils literal notranslate"><span class="pre">tvm_ffi::def_object_ref!</span></code>.</p>
-<p>For example, this type describes a pair of values by the types of its two
-components. In Python, the fields are annotated class attributes, and the
-constructor takes them in order:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">tvm_ffi.dataclasses</span><span class="w"> </span><span class="kn">import</span> <span class="n">py_class</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">tvm_tirx</span><span class="w"> </span><span class="kn">import</span> <span class="n">ir</span>
-<span class="nd">@py_class</span><span class="p">(</span><span class="s2">"my_ext.PairType"</span><span class="p">)</span>
-<span class="k">class</span><span class="w"> </span><span class="nc">PairType</span><span class="p">(</span><span class="n">ir</span><span class="o">.</span><span class="n">Type</span><span class="p">):</span>
-    <span class="n">first</span><span class="p">:</span> <span class="n">ir</span><span class="o">.</span><span class="n">Type</span>
-    <span class="n">second</span><span class="p">:</span> <span class="n">ir</span><span class="o">.</span><span class="n">Type</span>
+<section id="primitive-expressions">
+<span id="user-ir-const"></span><h3>Primitive Expressions<a class="headerlink" href="#primitive-expressions" title="Link to this heading">#</a></h3>
+<p>A primitive expression is an expression whose <code class="docutils literal notranslate"><span class="pre">ty</span></code> is an <code class="docutils literal notranslate"><span class="pre">ir.PrimType</span></code>.
+The expression may be a variable, a tensor element read, an arithmetic
+calculation, or a call. Its result type tells us whether it produces an
+integer, a floating-point value, a boolean, or a vector of these values.
+The float32 tensor reads and computations in our sigmoid example are primitive
+expressions.</p>
+<p><strong>Type inference.</strong> Result types are usually determined when expressions are
+constructed and stored in their <code class="docutils literal notranslate"><span class="pre">ty</span></code> fields. Overloaded arithmetic operators
+such as <code class="docutils literal notranslate"><span class="pre">+</span></code> match operand types, promoting compatible types and inserting
+casts where needed. Comparisons produce boolean results:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">tvm_tirx</span><span class="w"> </span><span class="kn">import</span> <span class="n">ir</span>
 
-
-<span class="n">pair</span> <span class="o">=</span> <span class="n">ir</span><span class="o">.</span><span class="n">Var</span><span class="p">(</span><span class="s2">"p"</span><span class="p">,</span> <span class="n">PairType</span><span class="p">(</span><span class="n">ir</span><span class="o">.</span><span class="n">PrimType</span><span class="p">(</span><span class="s2">"int32"</span><span class="p">),</span> <span class="n">ir</span><span class="o">.</span><span class="n">PrimType</span><span class="p">(</span><span class="s2">"float32"</span><span class="p">)))</span>
+<span class="n">x</span> <span class="o">=</span> <span class="n">ir</span><span class="o">.</span><span class="n">Var</span><span class="p">(</span><span class="s2">"x"</span><span class="p">,</span> <span class="s2">"float32"</span><span class="p">)</span>
+<span class="p">(</span><span class="n">x</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">ty</span>                   <span class="c1"># ir.PrimType("float32")</span>
+<span class="p">(</span><span class="n">x</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span><span class="o">.</span><span class="n">ty</span>                   <span class="c1"># ir.PrimType("bool")</span>
+<span class="n">ir</span><span class="o">.</span><span class="n">Call</span><span class="p">(</span><span class="s2">"prim.exp"</span><span class="p">,</span> <span class="p">[</span><span class="n">x</span><span class="p">])</span><span class="o">.</span><span class="n">ty</span>  <span class="c1"># ir.PrimType("float32")</span>
 </pre></div>
 </div>
-<p>In Rust, the object struct starts with the <code class="docutils literal notranslate"><span class="pre">TypeObj</span></code> it extends, and the
-generated <code class="docutils literal notranslate"><span class="pre">new</span></code> for <code class="docutils literal notranslate"><span class="pre">PairTypeObj</span></code> takes that parent object and then the
-fields:</p>
-<div class="highlight-rust notranslate"><div class="highlight"><pre><span></span><span class="k">use</span><span class="w"> </span><span class="n">tvm_tirx</span><span class="p">::</span><span class="n">ir</span><span class="p">::{</span><span class="n">Location</span><span class="p">,</span><span class="w"> </span><span class="n">Type</span><span class="p">,</span><span class="w"> </span><span class="n">TypeObj</span><span class="p">};</span>
-<span class="k">use</span><span class="w"> </span><span class="n">tvm_tirx</span><span class="p">::</span><span class="n">tvm_ffi</span><span class="p">::{</span><span class="bp">self</span><span class="p">,</span><span class="w"> </span><span class="n">def_object_ref</span><span class="p">,</span><span class="w"> </span><span class="n">rs_class</span><span class="p">};</span>
-
-<span class="cp">#[rs_class(</span><span class="s">"my_ext.PairType"</span><span class="cp">, final)]</span>
-<span class="k">pub</span><span class="w"> </span><span class="k">struct</span><span class="w"> </span><span class="nc">PairTypeObj</span><span class="w"> </span><span class="p">{</span>
-<span class="w">    </span><span class="n">base</span><span class="p">:</span><span class="w"> </span><span class="nc">TypeObj</span><span class="p">,</span>
-<span class="w">    </span><span class="k">pub</span><span class="w"> </span><span class="n">first</span><span class="p">:</span><span class="w"> </span><span class="nc">Type</span><span class="p">,</span>
-<span class="w">    </span><span class="k">pub</span><span class="w"> </span><span class="n">second</span><span class="p">:</span><span class="w"> </span><span class="nc">Type</span><span class="p">,</span>
-<span class="p">}</span>
-
-<span class="n">def_object_ref</span><span class="o">!</span><span class="p">(</span><span class="k">pub</span><span class="w"> </span><span class="n">PairType</span><span class="p">,</span><span class="w"> </span><span class="n">Type</span><span class="p">,</span><span class="w"> </span><span class="n">PairTypeObj</span><span class="p">);</span>
-
-<span class="k">impl</span><span class="w"> </span><span class="n">PairType</span><span class="w"> </span><span class="p">{</span>
-<span class="w">    </span><span class="k">pub</span><span class="w"> </span><span class="k">fn</span><span class="w"> </span><span class="nf">new</span><span class="p">(</span><span class="n">first</span><span class="p">:</span><span class="w"> </span><span class="nc">impl</span><span class="w"> </span><span class="nb">Into</span><span class="o">&lt;</span><span class="n">Type</span><span class="o">&gt;</span><span class="p">,</span><span class="w"> </span><span class="n">second</span><span class="p">:</span><span class="w"> </span><span class="nc">impl</span><span class="w"> </span><span class="nb">Into</span><span class="o">&lt;</span><span class="n">Type</span><span class="o">&gt;</span><span class="p">)</span><span class="w"> </span><span class="p">-&gt;</span><span class="w"> </span><span class="nc">Self</span><span class="w"> </span><span class="p">{</span>
-<span class="w">        </span><span class="n">PairTypeObj</span><span class="p">::</span><span class="n">new</span><span class="p">(</span><span class="n">TypeObj</span><span class="p">::</span><span class="n">new</span><span class="p">(</span><span class="n">Location</span><span class="p">::</span><span class="n">unknown</span><span class="p">()),</span><span class="w"> </span><span class="n">first</span><span class="p">,</span><span class="w"> </span><span class="n">second</span><span class="p">).</span><span class="n">into</span><span class="p">()</span>
-<span class="w">    </span><span class="p">}</span>
-<span class="p">}</span>
+<p>For <code class="docutils literal notranslate"><span class="pre">ir.Call</span></code>, omitting <code class="docutils literal notranslate"><span class="pre">ty</span></code> uses the operator’s registered result-type
+rule or the callee’s function signature. <code class="docutils literal notranslate"><span class="pre">ir.reinfer_type(call)</span></code> recomputes
+the result type without modifying <code class="docutils literal notranslate"><span class="pre">call.ty</span></code> or validating the call.
+See <a class="reference internal" href="operators_and_calls.html#types-and-validation"><span class="std std-ref">Type Inference and Validation</span></a> for inference rules and explicit validation.</p>
+<p><strong>Index expressions.</strong> The loop <code class="docutils literal notranslate"><span class="pre">for</span> <span class="pre">i</span> <span class="pre">in</span> <span class="pre">range(2</span> <span class="pre">*</span> <span class="pre">n)</span></code> uses <code class="docutils literal notranslate"><span class="pre">2*n</span></code> to
+determine how many rows to process. The multiplication’s <code class="docutils literal notranslate"><span class="pre">ty</span></code> is
+<code class="docutils literal notranslate"><span class="pre">ir.PrimType(&quot;int64&quot;)</span></code>. The loop indices <code class="docutils literal notranslate"><span class="pre">i</span></code> and <code class="docutils literal notranslate"><span class="pre">j</span></code> also have this
+type and select one row and one channel, respectively.</p>
+</section>
+<section id="var">
+<span id="user-ir-var"></span><h3>Var<a class="headerlink" href="#var" title="Link to this heading">#</a></h3>
+<p>Variables can be function parameters, loop indices, or intermediate values
+defined by bindings. <code class="docutils literal notranslate"><span class="pre">ir.Var</span></code> can be used to represent these values together
+with their names and types.</p>
+<p>We can declare the variables in our sigmoid example using the IR API:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">X</span> <span class="o">=</span> <span class="n">ir</span><span class="o">.</span><span class="n">Var</span><span class="p">(</span><span class="s2">"X"</span><span class="p">,</span> <span class="n">matrix_type</span><span class="p">)</span>
+<span class="n">bias</span> <span class="o">=</span> <span class="n">ir</span><span class="o">.</span><span class="n">Var</span><span class="p">(</span><span class="s2">"bias"</span><span class="p">,</span> <span class="n">bias_type</span><span class="p">)</span>
+<span class="n">Y</span> <span class="o">=</span> <span class="n">ir</span><span class="o">.</span><span class="n">Var</span><span class="p">(</span><span class="s2">"Y"</span><span class="p">,</span> <span class="n">matrix_type</span><span class="p">)</span>
+<span class="n">i</span><span class="p">,</span> <span class="n">j</span> <span class="o">=</span> <span class="p">[</span><span class="n">ir</span><span class="o">.</span><span class="n">Var</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="s2">"int64"</span><span class="p">)</span> <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">"i"</span><span class="p">,</span> <span class="s2">"j"</span><span class="p">)]</span>
+<span class="n">biased</span> <span class="o">=</span> <span class="n">ir</span><span class="o">.</span><span class="n">Var</span><span class="p">(</span><span class="s2">"biased"</span><span class="p">,</span> <span class="s2">"float32"</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>Once registered, the type can be assigned to variables and used inside other
-types, just like a built-in type.</p>
-<p>See <a class="reference internal" href="../reference/python/generated/tvm_tirx.tirx.TensorType.html#tvm_tirx.tirx.TensorType" title="tvm_tirx.tirx.TensorType"><code class="xref py py-class docutils literal notranslate"><span class="pre">TensorType</span></code></a> for the complete constructor and storage
-options, and <a class="reference internal" href="../reference/python/ir.html"><span class="doc">tvm_tirx.ir</span></a> for expression and type APIs.
-Download <a class="reference download internal" download="" href="../_downloads/c8d589fbda9f535a461c570974dcdf0f/types_and_expressions.py"><code class="xref download docutils literal notranslate"><span class="pre">types_and_expressions.py</span></code></a>
-for runnable examples from this chapter.</p>
+<p><code class="docutils literal notranslate"><span class="pre">X</span></code>, <code class="docutils literal notranslate"><span class="pre">bias</span></code>, and <code class="docutils literal notranslate"><span class="pre">Y</span></code> have tensor types. <code class="docutils literal notranslate"><span class="pre">i</span></code> selects a sample, and <code class="docutils literal notranslate"><span class="pre">j</span></code>
+selects a channel. These indices have int64 types. <code class="docutils literal notranslate"><span class="pre">biased</span></code> holds one
+float32 value after adding the channel’s bias to the input element.</p>
+</section>
+<section id="call">
+<span id="user-ir-call"></span><h3>Call<a class="headerlink" href="#call" title="Link to this heading">#</a></h3>
+<p>After defining a function (introduced later in <a class="reference internal" href="functions_and_modules.html"><span class="doc">Functions and Modules</span></a>),
+we can call it with arguments. <a class="reference internal" href="operators_and_calls.html"><span class="doc">ir.Call</span></a> represents
+such a call in the IR. Its <code class="docutils literal notranslate"><span class="pre">op</span></code> field (an <code class="docutils literal notranslate"><span class="pre">ir.Op</span></code> for a registered operator)
+identifies the function or operator being called, and <code class="docutils literal notranslate"><span class="pre">args</span></code> holds the
+argument expressions. Using an unregistered operator name in <code class="docutils literal notranslate"><span class="pre">ir.Op.get</span></code>
+or <code class="docutils literal notranslate"><span class="pre">ir.Call</span></code> raises <code class="docutils literal notranslate"><span class="pre">AttributeError</span></code>.</p>
+<p>In sigmoid, <code class="docutils literal notranslate"><span class="pre">1</span> <span class="pre">/</span> <span class="pre">(1</span> <span class="pre">+</span> <span class="pre">exp(-x))</span></code>, the exponential is a call inside a larger
+arithmetic expression:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">tvm_tirx</span><span class="w"> </span><span class="kn">import</span> <span class="n">ir</span><span class="p">,</span> <span class="n">tirx</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">tvm_tirx.script</span><span class="w"> </span><span class="kn">import</span> <span class="n">from_source</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">tvm_tirx.script</span><span class="w"> </span><span class="kn">import</span> <span class="n">tirx</span> <span class="k">as</span> <span class="n">T</span>
+
+<span class="n">exp_op</span> <span class="o">=</span> <span class="n">ir</span><span class="o">.</span><span class="n">Op</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"prim.exp"</span><span class="p">)</span>
+
+<span class="k">def</span><span class="w"> </span><span class="nf">sigmoid</span><span class="p">(</span><span class="n">x</span><span class="p">):</span>
+    <span class="n">one</span> <span class="o">=</span> <span class="n">ir</span><span class="o">.</span><span class="n">const</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">x</span><span class="o">.</span><span class="n">ty</span><span class="p">)</span>
+    <span class="n">exp_neg_x</span> <span class="o">=</span> <span class="n">ir</span><span class="o">.</span><span class="n">Call</span><span class="p">(</span><span class="n">exp_op</span><span class="p">,</span> <span class="p">[</span><span class="o">-</span><span class="n">x</span><span class="p">])</span>
+    <span class="k">return</span> <span class="n">one</span> <span class="o">/</span> <span class="p">(</span><span class="n">one</span> <span class="o">+</span> <span class="n">exp_neg_x</span><span class="p">)</span>
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">exp_op</span></code> is the registered <code class="docutils literal notranslate"><span class="pre">ir.Op</span></code> for the exponential operation.
+<code class="docutils literal notranslate"><span class="pre">ir.Call(exp_op,</span> <span class="pre">[-x])</span></code> constructs a call with the negated input as its
+argument. The sum <code class="docutils literal notranslate"><span class="pre">one</span> <span class="pre">+</span> <span class="pre">exp_neg_x</span></code> forms the denominator; the division
+produces sigmoid’s result.
+The helper preserves the input’s primitive type, float32 in this example.</p>
+<p>We can construct IR by calling a Python helper directly. Here,
+<code class="docutils literal notranslate"><span class="pre">sigmoid(biased)</span></code> runs the helper above, which builds an <code class="docutils literal notranslate"><span class="pre">ir.Call</span></code> for the
+exponential and returns the complete sigmoid expression:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">biased_value</span> <span class="o">=</span> <span class="n">X</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">j</span><span class="p">]</span> <span class="o">+</span> <span class="n">bias</span><span class="p">[</span><span class="n">j</span><span class="p">]</span>
+<span class="n">result</span> <span class="o">=</span> <span class="n">sigmoid</span><span class="p">(</span><span class="n">biased</span><span class="p">)</span>
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">biased_value</span></code> is an <code class="docutils literal notranslate"><span class="pre">ir.prim.Add</span></code> containing two tensor reads. The program
+binds this value to <code class="docutils literal notranslate"><span class="pre">biased</span></code> before using it in the sigmoid calculation.
+<code class="docutils literal notranslate"><span class="pre">result</span></code> is an <code class="docutils literal notranslate"><span class="pre">ir.prim.Div</span></code> whose denominator contains another addition
+and the exponential call. The program stores this result in <code class="docutils literal notranslate"><span class="pre">Y[i,</span> <span class="pre">j]</span></code>.</p>
+<p>When the compiled program runs, each loop iteration reads the input and bias
+values, computes the activation, and writes it to <code class="docutils literal notranslate"><span class="pre">Y</span></code>. The biased values stay
+local to that iteration, so bias addition and sigmoid share one traversal
+without an intermediate tensor.</p>
+</section>
 </section>
 </section>
 
@@ -658,9 +724,18 @@ for runnable examples from this chapter.</p>
   </div>
   <nav class="bd-toc-nav page-toc">
     <ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#types">Types</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#expressions">Expressions</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#register-new-types">Register New Types</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#types">Types</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#primtype">PrimType</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#tensortype">TensorType</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#expressions">Expressions</a><ul class="visible nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#primitive-operations">Primitive Operations</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#primitive-expressions">Primitive Expressions</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#var">Var</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#call">Call</a></li>
+</ul>
+</li>
 </ul>
   </nav></div>
 

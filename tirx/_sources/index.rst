@@ -23,6 +23,13 @@ Table of Contents
 
 .. toctree::
    :maxdepth: 1
+   :caption: Get Started
+   :titlesonly:
+
+   get_started/example
+
+.. toctree::
+   :maxdepth: 1
    :caption: IR Walkthrough
    :titlesonly:
 

@@ -18,46 +18,44 @@
 Operators and Calls
 ===================
 
-Operators describe computations, while calls apply them to particular inputs.
-Custom operators can be registered alongside built-in ones, with their own
-argument requirements, type rules, and effects. Their calls use the existing
-IR representation, so extensions can build analyses, transformations, and
-lowering passes around the same objects and interfaces.
+In this chapter, we will introduce operators and calls, from an operator's
+shared definition to the arguments and result type of an individual call.
+We will examine argument requirements, type inference, validation, and
+effects. Built-in and custom operators share the same IR representation,
+so compiler passes can inspect and transform both through the existing
+interfaces.
 
 Operators
 ---------
 
-``ir.Op`` is an expression that identifies a registered operator. The registry
-stores shared operator definitions, which can be retrieved by name with
-``ir.Op.get(name)``. An operator's ``args_info`` describes its required value
-arguments. A validator is a registered function that checks whether a call's
-arguments meet the operator's requirements.
+``ir.Op`` is an expression that identifies a registered computation. We can
+retrieve it with ``ir.Op.get(name)`` and inspect ``args_info`` for the expected
+inputs.
 
 Operator attributes describe properties shared by all calls to that operator.
 The ``TCallEffectKind`` attribute records whether a call only computes a value
 or can read or change program state.
 
-``prim.exp`` computes the exponential of one input. It declares an argument
-named ``x`` and has the effect kind ``Pure``: it computes a value without
-reading or changing external state. Inspect these properties on the registered
-object:
+The program uses the same exponential operator for each input element.
+Its shared argument and effect information can be inspected through the operator:
 
-.. literalinclude:: examples/operators_and_calls.py
+.. literalinclude:: examples/sigmoid.py
    :language: python
    :start-after: # begin operator lookup
    :end-before: # end operator lookup
-   :prepend: from tvm_tirx import ir
 
-Here, ``argument_names`` is ``["x"]``, and ``effect`` equals
-``ir.CallEffectKind.Pure``. See :class:`~tvm_tirx.ir.Op` for the registration
-and attribute APIs.
+``argument_names`` is ``["x"]``, and ``effect`` is
+``ir.CallEffectKind.Pure``. This means the exponential call computes its
+result from its input without reading or changing external state. The tensor
+loads supplying that input are separate expressions. The :class:`~tvm_tirx.ir.Op` API reference
+describes its argument information and attributes.
 
 Calls
 -----
 
-``ir.Call`` represents an invocation of an operator or function. The expression
-being called is its *callee*. A call inherits ``ty`` and ``loc`` from
-``ir.Expr`` and adds these fields:
+:class:`ir.Call <tvm_tirx.ir.Call>` represents an invocation of an operator or
+function. The expression being called is its *callee*. The call records that
+callee, its arguments, and any attributes for the invocation:
 
 .. list-table::
    :header-rows: 1
@@ -75,121 +73,74 @@ being called is its *callee*. A call inherits ``ty`` and ``loc`` from
      - Attributes for this invocation, or None. A dictionary becomes
        ``ir.DictAttrs``.
 
-``ty_args`` supplies types as inputs to the operation; ``ty`` describes its
-result. Call attributes belong to one invocation, while the operator's
-registration supplies the rules used to interpret them.
+In the bias + sigmoid example, the activation can be an expanded expression,
+``1 / (1 + exp(-x))``, or a single call to ``prim.sigmoid``. A named
+activation operator lets a later compiler pass choose its implementation:
 
-For example, this call applies the registered exponential operator to a float32
-constant:
+.. code-block:: python
 
-.. literalinclude:: examples/operators_and_calls.py
-   :language: python
-   :start-after: # begin call contract
-   :end-before: # end call contract
+   x = ir.Var("x", "float32")
+   call = ir.prim.sigmoid(x)
 
-This constructs the IR for ``exp(1.0)``; its result type is
-``ir.PrimType("float32")``. The computation is performed when a program
-containing the call is compiled and executed.
+:func:`ir.prim.sigmoid <tvm_tirx.ir.prim.sigmoid>` is a helper that constructs
+an ``ir.Call`` to the registered ``prim.sigmoid`` operator. In this example,
+it is equivalent to ``ir.Call("prim.sigmoid", [x])``, which resolves the
+operator name through ``ir.Op.get``. The call's result has the same type
+as ``x``: float32 in this example.
 
-A function-valued variable can also be the callee. Here, ``f`` has a signature
-that takes one float32 value and returns a float32 value:
-
-.. literalinclude:: examples/operators_and_calls.py
-   :language: python
-   :start-after: # begin function call type
-   :end-before: # end function call type
-
-``function_call`` represents ``f(1.0)``. The variable supplies a signature;
-the example does not provide an implementation of ``f``.
+In the example above, constructing ``call`` records the sigmoid computation
+in the IR; the computation runs when the compiled program executes.
+The same ``ir.Call`` representation can invoke a function as well as a
+registered operator. For example, its ``op`` field can hold a global reference
+to a function in a module, as we'll see in :doc:`functions_and_modules`.
 
 .. _types-and-validation:
 
 Type Inference and Validation
 -----------------------------
 
-To avoid repeating type information at each call, ``ir.Call`` can infer its
-result type from the operator's registered rule or the callee's function
-signature. Omitting ``ty`` asks ``ir.Call`` to infer it; passing an explicit
-type stores that type instead. ``MissingType`` marks a result whose type has
-not yet been determined.
+``ir.Call`` can infer its result type from the operator's registered rule or
+the callee's function signature. The constructor infers the type when ``ty``
+is omitted and stores the supplied type when ``ty`` is explicit.
+``MissingType`` marks a result whose type has not yet been determined.
+For example:
+
+.. code-block:: python
+
+   x = ir.Var("x", "float32")
+   ir.Call("prim.exp", [x])                        # Infers float32.
+   ir.Call("prim.exp", [x], ty="float32")          # Uses the supplied float32.
+   ir.Call("prim.exp", [x], ty=ir.Type.missing())  # Keeps MissingType; no inference.
 
 Validation checks whether the arguments meet the operator's requirements.
 It is separate from construction, so tools can assemble a call before
-checking its arguments with ``call.validate()``. Type inference can also
-reject inputs while computing the result type.
+checking its arguments with :meth:`call.validate() <tvm_tirx.ir.Call.validate>`.
+Type inference can also reject inputs while computing the result type.
 
-For ``prim.exp``, an explicit result type lets the constructor record a call
-with no arguments. Validation then rejects the argument count:
+To see how validation catches missing arguments, we can construct a
+``prim.exp`` call with no input and an explicit result type:
 
-.. literalinclude:: examples/operators_and_calls.py
+.. literalinclude:: examples/sigmoid.py
    :language: python
    :start-after: # begin validation failure
    :end-before: # end validation failure
-   :append: invalid.validate()  # raises TypeError: expected one argument
+   :append: invalid.validate()
 
-When constructing or rewriting IR, a call can temporarily carry a missing
-result type. ``ir.reinfer_type`` derives the type from its current inputs:
+The explicit result type bypasses type inference. ``invalid.validate()`` then
+raises ``TypeError`` because ``prim.exp`` requires one input argument.
 
-.. literalinclude:: examples/operators_and_calls.py
+When a pass rebuilds a call, its result type must match the arguments.
+Here, ``exp_call`` represents ``T.exp(-biased)``, whose input is a float32
+value. The following code reconstructs the call with a missing type, then uses
+:func:`ir.reinfer_type <tvm_tirx.ir.reinfer_type>` to infer its result type:
+
+.. literalinclude:: examples/sigmoid.py
    :language: python
    :start-after: # begin provisional call
    :end-before: # end provisional call
 
-Here, ``inferred`` is ``ir.PrimType("float32")``. The function returns a type;
-it leaves ``provisional.ty`` unchanged. See :class:`~tvm_tirx.ir.Call` and
-:func:`~tvm_tirx.ir.reinfer_type` for the inference rules, and
-:meth:`~tvm_tirx.ir.Call.validate` for the validation contract.
-
-Register New Operators
-----------------------
-
-Registering an operator gives a custom computation an argument and result-type
-contract that calls and passes can share. New operators can be added from a
-Rust extension without modifying the C++ core.
-
-Use a ``register_ops!`` block with one ``OpDef`` chain per operator. Each chain
-supplies the operator's name, argument requirements, type-inference rule, and
-attributes.
-The operator joins the same registry as the built-in operators, so Python,
-C++, and Rust code can retrieve it.
-
-For example, this block registers the interface of ``my_ext.clamp``, an
-operation for clamping an integer index to ``[0, bound)``. A call has the type
-of its index, and ``validate()`` rejects arguments that are not integer
-expressions:
-
-.. code-block:: rust
-
-   use tvm_tirx::ir::op_attr::CALL_EFFECT_KIND;
-   use tvm_tirx::ir::sig::{self, IntExpr};
-   use tvm_tirx::ir::{CallEffectKind, CallObj, OpDef, Type};
-   use tvm_tirx::tvm_ffi::Result;
-
-   fn index_type(call: &CallObj) -> Result<Type> {
-       Ok(call.args.get(0)?.ty.clone())
-   }
-
-   tvm_tirx::register_ops! {
-       OpDef::new("my_ext.clamp", "Clamp an index to the range `[0, bound)`.")
-           .signature((
-               sig::arg::<IntExpr>("index", "The index."),
-               sig::arg::<IntExpr>("bound", "The exclusive upper bound."),
-           ))
-           .set_infer_type(index_type)
-           .set_attr(CALL_EFFECT_KIND, CallEffectKind::Pure);
-   }
-
-Here, ``.signature`` generates a validator from the ``IntExpr`` argument
-constraints. ``.set_infer_type`` registers ``index_type``, which returns the
-first argument's type. ``.set_attr`` records that the operation is pure.
-
-Once the extension is loaded and the operator is registered, Python can
-retrieve it with ``ir.Op.get("my_ext.clamp")`` and construct calls in the same
-way as for a built-in operator.
-
-To make these calls executable, supply a lowering that replaces them with
-existing IR or implement the operation in a backend.
-
-See :doc:`/reference/python/ir` for the complete operator and call APIs. The
-:download:`operators_and_calls.py <examples/operators_and_calls.py>` example includes runnable
-calls, re-inference, and validation failures.
+``inferred`` is ``ir.PrimType("float32")``, matching the input's type.
+The inference function returns this type without changing ``provisional``;
+``rebuilt_call`` stores it in its ``ty`` field. The rebuilt call can then be
+checked with ``rebuilt_call.validate()`` before a pass uses it in place of
+the original.

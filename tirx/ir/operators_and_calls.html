@@ -148,7 +148,11 @@
  </script></div>
         <div class="sidebar-primary-item"><nav class="bd-links bd-docs-nav" aria-label="Main">
     <div class="bd-toc-item navbar-nav active">
-        <p aria-level="2" class="caption" role="heading"><span class="caption-text">IR Walkthrough</span></p>
+        <p aria-level="2" class="caption" role="heading"><span class="caption-text">Get Started</span></p>
+<ul class="nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="../get_started/example.html">Your First TIRx Program</a></li>
+</ul>
+<p aria-level="2" class="caption" role="heading"><span class="caption-text">IR Walkthrough</span></p>
 <ul class="current nav bd-sidenav">
 <li class="toctree-l1"><a class="reference internal" href="overview.html">IR Overview</a></li>
 <li class="toctree-l1"><a class="reference internal" href="types_and_expressions.html">Types and Expressions</a></li>
@@ -334,7 +338,6 @@ document.write(`
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#operators">Operators</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#calls">Calls</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#type-inference-and-validation">Type Inference and Validation</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#register-new-operators">Register New Operators</a></li>
 </ul>
             </nav>
         </div>
@@ -348,40 +351,38 @@ document.write(`
                   
   <section id="operators-and-calls">
 <h1>Operators and Calls<a class="headerlink" href="#operators-and-calls" title="Link to this heading">#</a></h1>
-<p>Operators describe computations, while calls apply them to particular inputs.
-Custom operators can be registered alongside built-in ones, with their own
-argument requirements, type rules, and effects. Their calls use the existing
-IR representation, so extensions can build analyses, transformations, and
-lowering passes around the same objects and interfaces.</p>
+<p>In this chapter, we will introduce operators and calls, from an operator’s
+shared definition to the arguments and result type of an individual call.
+We will examine argument requirements, type inference, validation, and
+effects. Built-in and custom operators share the same IR representation,
+so compiler passes can inspect and transform both through the existing
+interfaces.</p>
 <section id="operators">
 <h2>Operators<a class="headerlink" href="#operators" title="Link to this heading">#</a></h2>
-<p><code class="docutils literal notranslate"><span class="pre">ir.Op</span></code> is an expression that identifies a registered operator. The registry
-stores shared operator definitions, which can be retrieved by name with
-<code class="docutils literal notranslate"><span class="pre">ir.Op.get(name)</span></code>. An operator’s <code class="docutils literal notranslate"><span class="pre">args_info</span></code> describes its required value
-arguments. A validator is a registered function that checks whether a call’s
-arguments meet the operator’s requirements.</p>
+<p><code class="docutils literal notranslate"><span class="pre">ir.Op</span></code> is an expression that identifies a registered computation. We can
+retrieve it with <code class="docutils literal notranslate"><span class="pre">ir.Op.get(name)</span></code> and inspect <code class="docutils literal notranslate"><span class="pre">args_info</span></code> for the expected
+inputs.</p>
 <p>Operator attributes describe properties shared by all calls to that operator.
 The <code class="docutils literal notranslate"><span class="pre">TCallEffectKind</span></code> attribute records whether a call only computes a value
 or can read or change program state.</p>
-<p><code class="docutils literal notranslate"><span class="pre">prim.exp</span></code> computes the exponential of one input. It declares an argument
-named <code class="docutils literal notranslate"><span class="pre">x</span></code> and has the effect kind <code class="docutils literal notranslate"><span class="pre">Pure</span></code>: it computes a value without
-reading or changing external state. Inspect these properties on the registered
-object:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">tvm_tirx</span><span class="w"> </span><span class="kn">import</span> <span class="n">ir</span>
-<span class="n">op</span> <span class="o">=</span> <span class="n">ir</span><span class="o">.</span><span class="n">Op</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"prim.exp"</span><span class="p">)</span>
-<span class="n">argument_names</span> <span class="o">=</span> <span class="p">[</span><span class="n">entry</span><span class="o">.</span><span class="n">name</span> <span class="k">for</span> <span class="n">entry</span> <span class="ow">in</span> <span class="n">op</span><span class="o">.</span><span class="n">args_info</span><span class="p">]</span>
+<p>The program uses the same exponential operator for each input element.
+Its shared argument and effect information can be inspected through the operator:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">op</span> <span class="o">=</span> <span class="n">ir</span><span class="o">.</span><span class="n">Op</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"prim.exp"</span><span class="p">)</span>
+<span class="n">argument_names</span> <span class="o">=</span> <span class="p">[</span><span class="n">argument</span><span class="o">.</span><span class="n">name</span> <span class="k">for</span> <span class="n">argument</span> <span class="ow">in</span> <span class="n">op</span><span class="o">.</span><span class="n">args_info</span><span class="p">]</span>
 <span class="n">effect</span> <span class="o">=</span> <span class="n">op</span><span class="o">.</span><span class="n">get_attr</span><span class="p">(</span><span class="s2">"TCallEffectKind"</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>Here, <code class="docutils literal notranslate"><span class="pre">argument_names</span></code> is <code class="docutils literal notranslate"><span class="pre">[&quot;x&quot;]</span></code>, and <code class="docutils literal notranslate"><span class="pre">effect</span></code> equals
-<code class="docutils literal notranslate"><span class="pre">ir.CallEffectKind.Pure</span></code>. See <a class="reference internal" href="../reference/python/generated/tvm_tirx.ir.Op.html#tvm_tirx.ir.Op" title="tvm_tirx.ir.Op"><code class="xref py py-class docutils literal notranslate"><span class="pre">Op</span></code></a> for the registration
-and attribute APIs.</p>
+<p><code class="docutils literal notranslate"><span class="pre">argument_names</span></code> is <code class="docutils literal notranslate"><span class="pre">[&quot;x&quot;]</span></code>, and <code class="docutils literal notranslate"><span class="pre">effect</span></code> is
+<code class="docutils literal notranslate"><span class="pre">ir.CallEffectKind.Pure</span></code>. This means the exponential call computes its
+result from its input without reading or changing external state. The tensor
+loads supplying that input are separate expressions. The <a class="reference internal" href="../reference/python/generated/tvm_tirx.ir.Op.html#tvm_tirx.ir.Op" title="tvm_tirx.ir.Op"><code class="xref py py-class docutils literal notranslate"><span class="pre">Op</span></code></a> API reference
+describes its argument information and attributes.</p>
 </section>
 <section id="calls">
 <h2>Calls<a class="headerlink" href="#calls" title="Link to this heading">#</a></h2>
-<p><code class="docutils literal notranslate"><span class="pre">ir.Call</span></code> represents an invocation of an operator or function. The expression
-being called is its <em>callee</em>. A call inherits <code class="docutils literal notranslate"><span class="pre">ty</span></code> and <code class="docutils literal notranslate"><span class="pre">loc</span></code> from
-<code class="docutils literal notranslate"><span class="pre">ir.Expr</span></code> and adds these fields:</p>
+<p><a class="reference internal" href="../reference/python/generated/tvm_tirx.ir.Call.html#tvm_tirx.ir.Call" title="tvm_tirx.ir.Call"><code class="xref py py-class docutils literal notranslate"><span class="pre">ir.Call</span></code></a> represents an invocation of an operator or
+function. The expression being called is its <em>callee</em>. The call records that
+callee, its arguments, and any attributes for the invocation:</p>
 <div class="pst-scrollable-table-container"><table class="table">
 <colgroup>
 <col style="width: 25.0%" />
@@ -409,100 +410,63 @@ being called is its <em>callee</em>. A call inherits <code class="docutils liter
 </tbody>
 </table>
 </div>
-<p><code class="docutils literal notranslate"><span class="pre">ty_args</span></code> supplies types as inputs to the operation; <code class="docutils literal notranslate"><span class="pre">ty</span></code> describes its
-result. Call attributes belong to one invocation, while the operator’s
-registration supplies the rules used to interpret them.</p>
-<p>For example, this call applies the registered exponential operator to a float32
-constant:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">value</span> <span class="o">=</span> <span class="n">ir</span><span class="o">.</span><span class="n">const</span><span class="p">(</span><span class="mf">1.0</span><span class="p">,</span> <span class="s2">"float32"</span><span class="p">)</span>
-<span class="n">call</span> <span class="o">=</span> <span class="n">ir</span><span class="o">.</span><span class="n">Call</span><span class="p">(</span><span class="n">op</span><span class="p">,</span> <span class="p">[</span><span class="n">value</span><span class="p">])</span>
+<p>In the bias + sigmoid example, the activation can be an expanded expression,
+<code class="docutils literal notranslate"><span class="pre">1</span> <span class="pre">/</span> <span class="pre">(1</span> <span class="pre">+</span> <span class="pre">exp(-x))</span></code>, or a single call to <code class="docutils literal notranslate"><span class="pre">prim.sigmoid</span></code>. A named
+activation operator lets a later compiler pass choose its implementation:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">x</span> <span class="o">=</span> <span class="n">ir</span><span class="o">.</span><span class="n">Var</span><span class="p">(</span><span class="s2">"x"</span><span class="p">,</span> <span class="s2">"float32"</span><span class="p">)</span>
+<span class="n">call</span> <span class="o">=</span> <span class="n">ir</span><span class="o">.</span><span class="n">prim</span><span class="o">.</span><span class="n">sigmoid</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>This constructs the IR for <code class="docutils literal notranslate"><span class="pre">exp(1.0)</span></code>; its result type is
-<code class="docutils literal notranslate"><span class="pre">ir.PrimType(&quot;float32&quot;)</span></code>. The computation is performed when a program
-containing the call is compiled and executed.</p>
-<p>A function-valued variable can also be the callee. Here, <code class="docutils literal notranslate"><span class="pre">f</span></code> has a signature
-that takes one float32 value and returns a float32 value:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">callee</span> <span class="o">=</span> <span class="n">ir</span><span class="o">.</span><span class="n">Var</span><span class="p">(</span><span class="s2">"f"</span><span class="p">,</span> <span class="n">ir</span><span class="o">.</span><span class="n">FuncType</span><span class="p">([</span><span class="n">value</span><span class="o">.</span><span class="n">ty</span><span class="p">],</span> <span class="n">value</span><span class="o">.</span><span class="n">ty</span><span class="p">))</span>
-<span class="n">function_call</span> <span class="o">=</span> <span class="n">ir</span><span class="o">.</span><span class="n">Call</span><span class="p">(</span><span class="n">callee</span><span class="p">,</span> <span class="p">[</span><span class="n">value</span><span class="p">])</span>
-</pre></div>
-</div>
-<p><code class="docutils literal notranslate"><span class="pre">function_call</span></code> represents <code class="docutils literal notranslate"><span class="pre">f(1.0)</span></code>. The variable supplies a signature;
-the example does not provide an implementation of <code class="docutils literal notranslate"><span class="pre">f</span></code>.</p>
+<p><a class="reference internal" href="../reference/python/generated/tvm_tirx.ir.prim.sigmoid.html#tvm_tirx.ir.prim.sigmoid" title="tvm_tirx.ir.prim.sigmoid"><code class="xref py py-func docutils literal notranslate"><span class="pre">ir.prim.sigmoid</span></code></a> is a helper that constructs
+an <code class="docutils literal notranslate"><span class="pre">ir.Call</span></code> to the registered <code class="docutils literal notranslate"><span class="pre">prim.sigmoid</span></code> operator. In this example,
+it is equivalent to <code class="docutils literal notranslate"><span class="pre">ir.Call(&quot;prim.sigmoid&quot;,</span> <span class="pre">[x])</span></code>, which resolves the
+operator name through <code class="docutils literal notranslate"><span class="pre">ir.Op.get</span></code>. The call’s result has the same type
+as <code class="docutils literal notranslate"><span class="pre">x</span></code>: float32 in this example.</p>
+<p>In the example above, constructing <code class="docutils literal notranslate"><span class="pre">call</span></code> records the sigmoid computation
+in the IR; the computation runs when the compiled program executes.
+The same <code class="docutils literal notranslate"><span class="pre">ir.Call</span></code> representation can invoke a function as well as a
+registered operator. For example, its <code class="docutils literal notranslate"><span class="pre">op</span></code> field can hold a global reference
+to a function in a module, as we’ll see in <a class="reference internal" href="functions_and_modules.html"><span class="doc">Functions and Modules</span></a>.</p>
 </section>
 <section id="type-inference-and-validation">
 <span id="types-and-validation"></span><h2>Type Inference and Validation<a class="headerlink" href="#type-inference-and-validation" title="Link to this heading">#</a></h2>
-<p>To avoid repeating type information at each call, <code class="docutils literal notranslate"><span class="pre">ir.Call</span></code> can infer its
-result type from the operator’s registered rule or the callee’s function
-signature. Omitting <code class="docutils literal notranslate"><span class="pre">ty</span></code> asks <code class="docutils literal notranslate"><span class="pre">ir.Call</span></code> to infer it; passing an explicit
-type stores that type instead. <code class="docutils literal notranslate"><span class="pre">MissingType</span></code> marks a result whose type has
-not yet been determined.</p>
+<p><code class="docutils literal notranslate"><span class="pre">ir.Call</span></code> can infer its result type from the operator’s registered rule or
+the callee’s function signature. The constructor infers the type when <code class="docutils literal notranslate"><span class="pre">ty</span></code>
+is omitted and stores the supplied type when <code class="docutils literal notranslate"><span class="pre">ty</span></code> is explicit.
+<code class="docutils literal notranslate"><span class="pre">MissingType</span></code> marks a result whose type has not yet been determined.
+For example:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">x</span> <span class="o">=</span> <span class="n">ir</span><span class="o">.</span><span class="n">Var</span><span class="p">(</span><span class="s2">"x"</span><span class="p">,</span> <span class="s2">"float32"</span><span class="p">)</span>
+<span class="n">ir</span><span class="o">.</span><span class="n">Call</span><span class="p">(</span><span class="s2">"prim.exp"</span><span class="p">,</span> <span class="p">[</span><span class="n">x</span><span class="p">])</span>                        <span class="c1"># Infers float32.</span>
+<span class="n">ir</span><span class="o">.</span><span class="n">Call</span><span class="p">(</span><span class="s2">"prim.exp"</span><span class="p">,</span> <span class="p">[</span><span class="n">x</span><span class="p">],</span> <span class="n">ty</span><span class="o">=</span><span class="s2">"float32"</span><span class="p">)</span>          <span class="c1"># Uses the supplied float32.</span>
+<span class="n">ir</span><span class="o">.</span><span class="n">Call</span><span class="p">(</span><span class="s2">"prim.exp"</span><span class="p">,</span> <span class="p">[</span><span class="n">x</span><span class="p">],</span> <span class="n">ty</span><span class="o">=</span><span class="n">ir</span><span class="o">.</span><span class="n">Type</span><span class="o">.</span><span class="n">missing</span><span class="p">())</span>  <span class="c1"># Keeps MissingType; no inference.</span>
+</pre></div>
+</div>
 <p>Validation checks whether the arguments meet the operator’s requirements.
 It is separate from construction, so tools can assemble a call before
-checking its arguments with <code class="docutils literal notranslate"><span class="pre">call.validate()</span></code>. Type inference can also
-reject inputs while computing the result type.</p>
-<p>For <code class="docutils literal notranslate"><span class="pre">prim.exp</span></code>, an explicit result type lets the constructor record a call
-with no arguments. Validation then rejects the argument count:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">invalid</span> <span class="o">=</span> <span class="n">ir</span><span class="o">.</span><span class="n">Call</span><span class="p">(</span><span class="n">op</span><span class="p">,</span> <span class="p">[],</span> <span class="n">ty</span><span class="o">=</span><span class="s2">"float32"</span><span class="p">)</span>
-<span class="n">invalid</span><span class="o">.</span><span class="n">validate</span><span class="p">()</span>  <span class="c1"># raises TypeError: expected one argument</span>
+checking its arguments with <a class="reference internal" href="../reference/python/generated/tvm_tirx.ir.Call.html#tvm_tirx.ir.Call.validate" title="tvm_tirx.ir.Call.validate"><code class="xref py py-meth docutils literal notranslate"><span class="pre">call.validate()</span></code></a>.
+Type inference can also reject inputs while computing the result type.</p>
+<p>To see how validation catches missing arguments, we can construct a
+<code class="docutils literal notranslate"><span class="pre">prim.exp</span></code> call with no input and an explicit result type:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">invalid</span> <span class="o">=</span> <span class="n">ir</span><span class="o">.</span><span class="n">Call</span><span class="p">(</span><span class="s2">"prim.exp"</span><span class="p">,</span> <span class="p">[],</span> <span class="n">ty</span><span class="o">=</span><span class="s2">"float32"</span><span class="p">)</span>
+<span class="n">invalid</span><span class="o">.</span><span class="n">validate</span><span class="p">()</span>
 </pre></div>
 </div>
-<p>When constructing or rewriting IR, a call can temporarily carry a missing
-result type. <code class="docutils literal notranslate"><span class="pre">ir.reinfer_type</span></code> derives the type from its current inputs:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">provisional</span> <span class="o">=</span> <span class="n">ir</span><span class="o">.</span><span class="n">Call</span><span class="p">(</span><span class="n">op</span><span class="p">,</span> <span class="p">[</span><span class="n">value</span><span class="p">],</span> <span class="n">ty</span><span class="o">=</span><span class="n">ir</span><span class="o">.</span><span class="n">Type</span><span class="o">.</span><span class="n">missing</span><span class="p">())</span>
+<p>The explicit result type bypasses type inference. <code class="docutils literal notranslate"><span class="pre">invalid.validate()</span></code> then
+raises <code class="docutils literal notranslate"><span class="pre">TypeError</span></code> because <code class="docutils literal notranslate"><span class="pre">prim.exp</span></code> requires one input argument.</p>
+<p>When a pass rebuilds a call, its result type must match the arguments.
+Here, <code class="docutils literal notranslate"><span class="pre">exp_call</span></code> represents <code class="docutils literal notranslate"><span class="pre">T.exp(-biased)</span></code>, whose input is a float32
+value. The following code reconstructs the call with a missing type, then uses
+<a class="reference internal" href="../reference/python/generated/tvm_tirx.ir.reinfer_type.html#tvm_tirx.ir.reinfer_type" title="tvm_tirx.ir.reinfer_type"><code class="xref py py-func docutils literal notranslate"><span class="pre">ir.reinfer_type</span></code></a> to infer its result type:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">provisional</span> <span class="o">=</span> <span class="n">ir</span><span class="o">.</span><span class="n">Call</span><span class="p">(</span><span class="n">op</span><span class="p">,</span> <span class="n">exp_call</span><span class="o">.</span><span class="n">args</span><span class="p">,</span> <span class="n">ty</span><span class="o">=</span><span class="n">ir</span><span class="o">.</span><span class="n">Type</span><span class="o">.</span><span class="n">missing</span><span class="p">())</span>
 <span class="n">inferred</span> <span class="o">=</span> <span class="n">ir</span><span class="o">.</span><span class="n">reinfer_type</span><span class="p">(</span><span class="n">provisional</span><span class="p">)</span>
+<span class="n">rebuilt_call</span> <span class="o">=</span> <span class="n">ir</span><span class="o">.</span><span class="n">Call</span><span class="p">(</span><span class="n">op</span><span class="p">,</span> <span class="n">provisional</span><span class="o">.</span><span class="n">args</span><span class="p">,</span> <span class="n">ty</span><span class="o">=</span><span class="n">inferred</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>Here, <code class="docutils literal notranslate"><span class="pre">inferred</span></code> is <code class="docutils literal notranslate"><span class="pre">ir.PrimType(&quot;float32&quot;)</span></code>. The function returns a type;
-it leaves <code class="docutils literal notranslate"><span class="pre">provisional.ty</span></code> unchanged. See <a class="reference internal" href="../reference/python/generated/tvm_tirx.ir.Call.html#tvm_tirx.ir.Call" title="tvm_tirx.ir.Call"><code class="xref py py-class docutils literal notranslate"><span class="pre">Call</span></code></a> and
-<a class="reference internal" href="../reference/python/generated/tvm_tirx.ir.reinfer_type.html#tvm_tirx.ir.reinfer_type" title="tvm_tirx.ir.reinfer_type"><code class="xref py py-func docutils literal notranslate"><span class="pre">reinfer_type()</span></code></a> for the inference rules, and
-<a class="reference internal" href="../reference/python/generated/tvm_tirx.ir.Call.html#tvm_tirx.ir.Call.validate" title="tvm_tirx.ir.Call.validate"><code class="xref py py-meth docutils literal notranslate"><span class="pre">validate()</span></code></a> for the validation contract.</p>
-</section>
-<section id="register-new-operators">
-<h2>Register New Operators<a class="headerlink" href="#register-new-operators" title="Link to this heading">#</a></h2>
-<p>Registering an operator gives a custom computation an argument and result-type
-contract that calls and passes can share. New operators can be added from a
-Rust extension without modifying the C++ core.</p>
-<p>Use a <code class="docutils literal notranslate"><span class="pre">register_ops!</span></code> block with one <code class="docutils literal notranslate"><span class="pre">OpDef</span></code> chain per operator. Each chain
-supplies the operator’s name, argument requirements, type-inference rule, and
-attributes.
-The operator joins the same registry as the built-in operators, so Python,
-C++, and Rust code can retrieve it.</p>
-<p>For example, this block registers the interface of <code class="docutils literal notranslate"><span class="pre">my_ext.clamp</span></code>, an
-operation for clamping an integer index to <code class="docutils literal notranslate"><span class="pre">[0,</span> <span class="pre">bound)</span></code>. A call has the type
-of its index, and <code class="docutils literal notranslate"><span class="pre">validate()</span></code> rejects arguments that are not integer
-expressions:</p>
-<div class="highlight-rust notranslate"><div class="highlight"><pre><span></span><span class="k">use</span><span class="w"> </span><span class="n">tvm_tirx</span><span class="p">::</span><span class="n">ir</span><span class="p">::</span><span class="n">op_attr</span><span class="p">::</span><span class="n">CALL_EFFECT_KIND</span><span class="p">;</span>
-<span class="k">use</span><span class="w"> </span><span class="n">tvm_tirx</span><span class="p">::</span><span class="n">ir</span><span class="p">::</span><span class="n">sig</span><span class="p">::{</span><span class="bp">self</span><span class="p">,</span><span class="w"> </span><span class="n">IntExpr</span><span class="p">};</span>
-<span class="k">use</span><span class="w"> </span><span class="n">tvm_tirx</span><span class="p">::</span><span class="n">ir</span><span class="p">::{</span><span class="n">CallEffectKind</span><span class="p">,</span><span class="w"> </span><span class="n">CallObj</span><span class="p">,</span><span class="w"> </span><span class="n">OpDef</span><span class="p">,</span><span class="w"> </span><span class="n">Type</span><span class="p">};</span>
-<span class="k">use</span><span class="w"> </span><span class="n">tvm_tirx</span><span class="p">::</span><span class="n">tvm_ffi</span><span class="p">::</span><span class="nb">Result</span><span class="p">;</span>
-
-<span class="k">fn</span><span class="w"> </span><span class="nf">index_type</span><span class="p">(</span><span class="n">call</span><span class="p">:</span><span class="w"> </span><span class="kp">&amp;</span><span class="nc">CallObj</span><span class="p">)</span><span class="w"> </span><span class="p">-&gt;</span><span class="w"> </span><span class="nb">Result</span><span class="o">&lt;</span><span class="n">Type</span><span class="o">&gt;</span><span class="w"> </span><span class="p">{</span>
-<span class="w">    </span><span class="nb">Ok</span><span class="p">(</span><span class="n">call</span><span class="p">.</span><span class="n">args</span><span class="p">.</span><span class="n">get</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="o">?</span><span class="p">.</span><span class="n">ty</span><span class="p">.</span><span class="n">clone</span><span class="p">())</span>
-<span class="p">}</span>
-
-<span class="n">tvm_tirx</span><span class="p">::</span><span class="n">register_ops</span><span class="o">!</span><span class="w"> </span><span class="p">{</span>
-<span class="w">    </span><span class="n">OpDef</span><span class="p">::</span><span class="n">new</span><span class="p">(</span><span class="s">"my_ext.clamp"</span><span class="p">,</span><span class="w"> </span><span class="s">"Clamp an index to the range `[0, bound)`."</span><span class="p">)</span>
-<span class="w">        </span><span class="p">.</span><span class="n">signature</span><span class="p">((</span>
-<span class="w">            </span><span class="n">sig</span><span class="p">::</span><span class="n">arg</span><span class="p">::</span><span class="o">&lt;</span><span class="n">IntExpr</span><span class="o">&gt;</span><span class="p">(</span><span class="s">"index"</span><span class="p">,</span><span class="w"> </span><span class="s">"The index."</span><span class="p">),</span>
-<span class="w">            </span><span class="n">sig</span><span class="p">::</span><span class="n">arg</span><span class="p">::</span><span class="o">&lt;</span><span class="n">IntExpr</span><span class="o">&gt;</span><span class="p">(</span><span class="s">"bound"</span><span class="p">,</span><span class="w"> </span><span class="s">"The exclusive upper bound."</span><span class="p">),</span>
-<span class="w">        </span><span class="p">))</span>
-<span class="w">        </span><span class="p">.</span><span class="n">set_infer_type</span><span class="p">(</span><span class="n">index_type</span><span class="p">)</span>
-<span class="w">        </span><span class="p">.</span><span class="n">set_attr</span><span class="p">(</span><span class="n">CALL_EFFECT_KIND</span><span class="p">,</span><span class="w"> </span><span class="n">CallEffectKind</span><span class="p">::</span><span class="n">Pure</span><span class="p">);</span>
-<span class="p">}</span>
-</pre></div>
-</div>
-<p>Here, <code class="docutils literal notranslate"><span class="pre">.signature</span></code> generates a validator from the <code class="docutils literal notranslate"><span class="pre">IntExpr</span></code> argument
-constraints. <code class="docutils literal notranslate"><span class="pre">.set_infer_type</span></code> registers <code class="docutils literal notranslate"><span class="pre">index_type</span></code>, which returns the
-first argument’s type. <code class="docutils literal notranslate"><span class="pre">.set_attr</span></code> records that the operation is pure.</p>
-<p>Once the extension is loaded and the operator is registered, Python can
-retrieve it with <code class="docutils literal notranslate"><span class="pre">ir.Op.get(&quot;my_ext.clamp&quot;)</span></code> and construct calls in the same
-way as for a built-in operator.</p>
-<p>To make these calls executable, supply a lowering that replaces them with
-existing IR or implement the operation in a backend.</p>
-<p>See <a class="reference internal" href="../reference/python/ir.html"><span class="doc">tvm_tirx.ir</span></a> for the complete operator and call APIs. The
-<a class="reference download internal" download="" href="../_downloads/70c41aa26d74ab282fdbb420bd9e84b3/operators_and_calls.py"><code class="xref download docutils literal notranslate"><span class="pre">operators_and_calls.py</span></code></a> example includes runnable
-calls, re-inference, and validation failures.</p>
+<p><code class="docutils literal notranslate"><span class="pre">inferred</span></code> is <code class="docutils literal notranslate"><span class="pre">ir.PrimType(&quot;float32&quot;)</span></code>, matching the input’s type.
+The inference function returns this type without changing <code class="docutils literal notranslate"><span class="pre">provisional</span></code>;
+<code class="docutils literal notranslate"><span class="pre">rebuilt_call</span></code> stores it in its <code class="docutils literal notranslate"><span class="pre">ty</span></code> field. The rebuilt call can then be
+checked with <code class="docutils literal notranslate"><span class="pre">rebuilt_call.validate()</span></code> before a pass uses it in place of
+the original.</p>
 </section>
 </section>
 
@@ -554,7 +518,6 @@ calls, re-inference, and validation failures.</p>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#operators">Operators</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#calls">Calls</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#type-inference-and-validation">Type Inference and Validation</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#register-new-operators">Register New Operators</a></li>
 </ul>
   </nav></div>
 
