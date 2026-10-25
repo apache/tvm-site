@@ -388,34 +388,48 @@ document.write(`
 <dl class="cpp class">
 <dt class="sig sig-object cpp" id="_CPPv4N3tvm3sym11AnalyzerObjE">
 <span id="_CPPv3N3tvm3sym11AnalyzerObjE"></span><span id="_CPPv2N3tvm3sym11AnalyzerObjE"></span><span id="tvm::sym::AnalyzerObj"></span><span class="target" id="classtvm_1_1sym_1_1AnalyzerObj"></span><span class="k"><span class="pre">class</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">AnalyzerObj</span></span></span><span class="w"> </span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="k"><span class="pre">public</span></span><span class="w"> </span><span class="n"><span class="pre">ffi</span></span><span class="p"><span class="pre">::</span></span><span class="n"><span class="pre">Object</span></span><a class="headerlink" href="#_CPPv4N3tvm3sym11AnalyzerObjE" title="Link to this definition">#</a><br /></dt>
-<dd><p><a class="reference internal" href="classtvm_1_1sym_1_1Analyzer.html#classtvm_1_1sym_1_1Analyzer"><span class="std std-ref">Analyzer</span></a> that contains bunch of sub-analyzers. </p>
-<p>Each sub-analyzer can make use of another sub-analyzer by weak reference of this.</p>
-<p>NOTE for sub-analyzer developers: <a class="reference internal" href="classtvm_1_1If.html#classtvm_1_1If"><span class="std std-ref">If</span></a> the analyzer uses memoization, we need to clear the internal cache when information about a <a class="reference internal" href="classtvm_1_1Var.html#classtvm_1_1Var"><span class="std std-ref">Var</span></a> has been overridden. </p>
+<dd><p>Coordinated symbolic analyses over an explicitly synchronized premise environment. </p>
+<p>Queries may update caches, solver state, and statistics, but do not append persistent premises. Proof methods are conservative: false means not proved. Sub-analyzers borrow their owner and must not outlive it. This mutable object must not be queried or synchronized concurrently from multiple threads. </p>
 <div class="breathe-sectiondef docutils container">
 <p class="breathe-sectiondef-title rubric" id="breathe-section-title-public-functions">Public Functions</p>
 <dl class="cpp function">
 <dt class="sig sig-object cpp" id="_CPPv4N3tvm3sym11AnalyzerObj11AnalyzerObjEv">
 <span id="_CPPv3N3tvm3sym11AnalyzerObj11AnalyzerObjEv"></span><span id="_CPPv2N3tvm3sym11AnalyzerObj11AnalyzerObjEv"></span><span id="tvm::sym::AnalyzerObj::AnalyzerObj"></span><span class="target" id="classtvm_1_1sym_1_1AnalyzerObj_1aca86b9c3fdd851c0d094450bbb8f9459"></span><span class="sig-name descname"><span class="n"><span class="pre">AnalyzerObj</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N3tvm3sym11AnalyzerObj11AnalyzerObjEv" title="Link to this definition">#</a><br /></dt>
-<dd><p>constructor </p>
+<dd><p>Construct an analyzer with no accepted premises and default query settings. </p>
 </dd></dl>
 
 <dl class="cpp function">
 <dt class="sig sig-object cpp" id="_CPPv4N3tvm3sym11AnalyzerObj21SyncConstraintContextERK17ConstraintContext">
 <span id="_CPPv3N3tvm3sym11AnalyzerObj21SyncConstraintContextERK17ConstraintContext"></span><span id="_CPPv2N3tvm3sym11AnalyzerObj21SyncConstraintContextERK17ConstraintContext"></span><span id="tvm::sym::AnalyzerObj::SyncConstraintContext__ConstraintContextCR"></span><span class="target" id="classtvm_1_1sym_1_1AnalyzerObj_1ad31d70e72ec60fb094856bb15f89e7b1"></span><span class="kt"><span class="pre">void</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">SyncConstraintContext</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">const</span></span><span class="w"> </span><a class="reference internal" href="classtvm_1_1sym_1_1ConstraintContext.html#_CPPv4N3tvm3sym17ConstraintContextE" title="tvm::sym::ConstraintContext"><span class="n"><span class="pre">ConstraintContext</span></span></a><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">context</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N3tvm3sym11AnalyzerObj21SyncConstraintContextERK17ConstraintContext" title="Link to this definition">#</a><br /></dt>
-<dd><p>Synchronize all derived facts to the supplied premise environment. Unchanged positions are free; additive prefixes update incrementally and other transitions clear and replay. Do not mutate captured premises through aliases. </p>
+<dd><p>Synchronize all derived facts to the supplied premise environment. </p>
+<p>Unchanged positions need no replay; recognized additive prefixes update incrementally, and other transitions clear and replay all backends. Query settings and cumulative rewrite counters survive synchronization.</p>
+<p>The context must bind each <a class="reference internal" href="classtvm_1_1Var.html#classtvm_1_1Var"><span class="std std-ref">Var</span></a> identity at most once across value and range bindings. Unsupported or effectful premises may be ignored conservatively. Captured constraint and expression nodes must not be mutated through aliases. Appending to the caller’s context after this call takes effect only after a later synchronization. Synchronization during a query or another synchronization is rejected. <a class="reference internal" href="classtvm_1_1If.html#classtvm_1_1If"><span class="std std-ref">If</span></a> ingestion throws, discard this analyzer: partially applied backend state is not rolled back.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>context</strong> – Ordered premises to snapshot and accept. </p>
+</dd>
+<dt class="field-even">Throws<span class="colon">:</span></dt>
+<dd class="field-even"><p><span><span class="cpp-expr sig sig-inline cpp"><span class="n">ffi</span><span class="p">::</span><span class="n">Error</span></span></span> – <a class="reference internal" href="classtvm_1_1If.html#classtvm_1_1If"><span class="std std-ref">If</span></a> bindings repeat a <a class="reference internal" href="classtvm_1_1Var.html#classtvm_1_1Var"><span class="std std-ref">Var</span></a> identity, synchronization is reentrant, or an analyzer invariant fails. Backend ingestion errors may also propagate. </p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="cpp function">
 <dt class="sig sig-object cpp" id="_CPPv4NK3tvm3sym11AnalyzerObj20GetConstraintContextEv">
 <span id="_CPPv3NK3tvm3sym11AnalyzerObj20GetConstraintContextEv"></span><span id="_CPPv2NK3tvm3sym11AnalyzerObj20GetConstraintContextEv"></span><span id="tvm::sym::AnalyzerObj::GetConstraintContextC"></span><span class="target" id="classtvm_1_1sym_1_1AnalyzerObj_1a9b57fd1dc3c2ddfeb6b596a5d11e4512"></span><a class="reference internal" href="classtvm_1_1sym_1_1ConstraintContext.html#_CPPv4N3tvm3sym17ConstraintContextE" title="tvm::sym::ConstraintContext"><span class="n"><span class="pre">ConstraintContext</span></span></a><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">GetConstraintContext</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><span class="w"> </span><span class="k"><span class="pre">const</span></span><a class="headerlink" href="#_CPPv4NK3tvm3sym11AnalyzerObj20GetConstraintContextEv" title="Link to this definition">#</a><br /></dt>
-<dd><p><a class="reference internal" href="classtvm_1_1Return.html#classtvm_1_1Return"><span class="std std-ref">Return</span></a> an independently extensible snapshot of the accepted premises. </p>
+<dd><p>Snapshot the accepted premise environment. </p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>A context that can be extended independently. <a class="reference internal" href="classtvm_1_1sym_1_1Constraint.html#classtvm_1_1sym_1_1Constraint"><span class="std std-ref">Constraint</span></a> and expression nodes are shared and must not be mutated through aliases. Appending to this context does not update the analyzer until SyncConstraintContext is called. </p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="cpp function">
 <dt class="sig sig-object cpp" id="_CPPv4N3tvm3sym11AnalyzerObj20CanProveGreaterEqualERK8PrimExpr7int64_t">
 <span id="_CPPv3N3tvm3sym11AnalyzerObj20CanProveGreaterEqualERK8PrimExpr7int64_t"></span><span id="_CPPv2N3tvm3sym11AnalyzerObj20CanProveGreaterEqualERK8PrimExpr7int64_t"></span><span id="tvm::sym::AnalyzerObj::CanProveGreaterEqual__PrimExprCR.int64_t"></span><span class="target" id="classtvm_1_1sym_1_1AnalyzerObj_1a5b0d83151040bab912eef17bb42caef3"></span><span class="kt"><span class="pre">bool</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">CanProveGreaterEqual</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">const</span></span><span class="w"> </span><a class="reference internal" href="classtvm_1_1PrimExpr.html#_CPPv4N3tvm8PrimExprE" title="tvm::PrimExpr"><span class="n"><span class="pre">PrimExpr</span></span></a><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">expr</span></span>, <span class="n"><span class="pre">int64_t</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">lower_bound</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N3tvm3sym11AnalyzerObj20CanProveGreaterEqualERK8PrimExpr7int64_t" title="Link to this definition">#</a><br /></dt>
-<dd><p>Whether can we prove expr &gt;= val. </p>
-<p>Non-negative proof is very useful in integer analysis to lower divisions and mods given difference in trunc and ceil mode.</p>
+<dd><p>Attempt to prove expr &gt;= lower_bound. </p>
+<p>Bounds help distinguish truncating and floor division/remainder semantics.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p><a class="reference internal" href="classtvm_1_1sym_1_1Analyzer.html#classtvm_1_1sym_1_1Analyzer"><span class="std std-ref">Analyzer</span></a> will call into sub-analyzers to get the result. </p>
@@ -428,7 +442,7 @@ document.write(`
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>Whether we can prove it.</p>
+<dd class="field-even"><p>True if proved; false if unknown or false.</p>
 </dd>
 </dl>
 </dd></dl>
@@ -436,8 +450,8 @@ document.write(`
 <dl class="cpp function">
 <dt class="sig sig-object cpp" id="_CPPv4N3tvm3sym11AnalyzerObj12CanProveLessERK8PrimExpr7int64_t">
 <span id="_CPPv3N3tvm3sym11AnalyzerObj12CanProveLessERK8PrimExpr7int64_t"></span><span id="_CPPv2N3tvm3sym11AnalyzerObj12CanProveLessERK8PrimExpr7int64_t"></span><span id="tvm::sym::AnalyzerObj::CanProveLess__PrimExprCR.int64_t"></span><span class="target" id="classtvm_1_1sym_1_1AnalyzerObj_1af7bd83923c9be0bcf766f7bcf40326a8"></span><span class="kt"><span class="pre">bool</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">CanProveLess</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">const</span></span><span class="w"> </span><a class="reference internal" href="classtvm_1_1PrimExpr.html#_CPPv4N3tvm8PrimExprE" title="tvm::PrimExpr"><span class="n"><span class="pre">PrimExpr</span></span></a><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">expr</span></span>, <span class="n"><span class="pre">int64_t</span></span><span class="w"> </span><span class="n sig-param"><span class="pre">upper_bound</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N3tvm3sym11AnalyzerObj12CanProveLessERK8PrimExpr7int64_t" title="Link to this definition">#</a><br /></dt>
-<dd><p>Whether can we prove expr &lt; val. </p>
-<p>Non-negative proof is very useful in integer analysis to lower divisions and mods given difference in trunc and ceil mode.</p>
+<dd><p>Attempt to prove expr &lt; upper_bound. </p>
+<p>Bounds help distinguish truncating and floor division/remainder semantics.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p><a class="reference internal" href="classtvm_1_1sym_1_1Analyzer.html#classtvm_1_1sym_1_1Analyzer"><span class="std std-ref">Analyzer</span></a> will call into sub-analyzers to get the result. </p>
@@ -450,7 +464,7 @@ document.write(`
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>Whether we can prove it.</p>
+<dd class="field-even"><p>True if proved; false if unknown or false.</p>
 </dd>
 </dl>
 </dd></dl>
@@ -458,7 +472,7 @@ document.write(`
 <dl class="cpp function">
 <dt class="sig sig-object cpp" id="_CPPv4N3tvm3sym11AnalyzerObj13CanProveEqualERK8PrimExprRK8PrimExpr">
 <span id="_CPPv3N3tvm3sym11AnalyzerObj13CanProveEqualERK8PrimExprRK8PrimExpr"></span><span id="_CPPv2N3tvm3sym11AnalyzerObj13CanProveEqualERK8PrimExprRK8PrimExpr"></span><span id="tvm::sym::AnalyzerObj::CanProveEqual__PrimExprCR.PrimExprCR"></span><span class="target" id="classtvm_1_1sym_1_1AnalyzerObj_1a9c33d3c0d4b9f6fbe3f9328a8b3e6fc5"></span><span class="kt"><span class="pre">bool</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">CanProveEqual</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">const</span></span><span class="w"> </span><a class="reference internal" href="classtvm_1_1PrimExpr.html#_CPPv4N3tvm8PrimExprE" title="tvm::PrimExpr"><span class="n"><span class="pre">PrimExpr</span></span></a><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">lhs</span></span>, <span class="k"><span class="pre">const</span></span><span class="w"> </span><a class="reference internal" href="classtvm_1_1PrimExpr.html#_CPPv4N3tvm8PrimExprE" title="tvm::PrimExpr"><span class="n"><span class="pre">PrimExpr</span></span></a><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">rhs</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N3tvm3sym11AnalyzerObj13CanProveEqualERK8PrimExprRK8PrimExpr" title="Link to this definition">#</a><br /></dt>
-<dd><p>Whether can we prove lhs == rhs. </p>
+<dd><p>Attempt to prove lhs == rhs. </p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p><a class="reference internal" href="classtvm_1_1sym_1_1Analyzer.html#classtvm_1_1sym_1_1Analyzer"><span class="std std-ref">Analyzer</span></a> will call into sub-analyzers to get the result. </p>
@@ -471,7 +485,7 @@ document.write(`
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>Whether we can prove lhs == rhs.</p>
+<dd class="field-even"><p>True if equality is proved; false does not establish inequality.</p>
 </dd>
 </dl>
 </dd></dl>
@@ -479,7 +493,7 @@ document.write(`
 <dl class="cpp function">
 <dt class="sig sig-object cpp" id="_CPPv4N3tvm3sym11AnalyzerObj39CanProveLessEqualThanSymbolicShapeValueERK8PrimExprRK8PrimExpr">
 <span id="_CPPv3N3tvm3sym11AnalyzerObj39CanProveLessEqualThanSymbolicShapeValueERK8PrimExprRK8PrimExpr"></span><span id="_CPPv2N3tvm3sym11AnalyzerObj39CanProveLessEqualThanSymbolicShapeValueERK8PrimExprRK8PrimExpr"></span><span id="tvm::sym::AnalyzerObj::CanProveLessEqualThanSymbolicShapeValue__PrimExprCR.PrimExprCR"></span><span class="target" id="classtvm_1_1sym_1_1AnalyzerObj_1acb37e542277440b4a0eead7ee0e29219"></span><span class="kt"><span class="pre">bool</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">CanProveLessEqualThanSymbolicShapeValue</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">const</span></span><span class="w"> </span><a class="reference internal" href="classtvm_1_1PrimExpr.html#_CPPv4N3tvm8PrimExprE" title="tvm::PrimExpr"><span class="n"><span class="pre">PrimExpr</span></span></a><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">lhs</span></span>, <span class="k"><span class="pre">const</span></span><span class="w"> </span><a class="reference internal" href="classtvm_1_1PrimExpr.html#_CPPv4N3tvm8PrimExprE" title="tvm::PrimExpr"><span class="n"><span class="pre">PrimExpr</span></span></a><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">shape</span></span><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N3tvm3sym11AnalyzerObj39CanProveLessEqualThanSymbolicShapeValueERK8PrimExprRK8PrimExpr" title="Link to this definition">#</a><br /></dt>
-<dd><p>Whether we can prove lhs is smaller than possibly symbolic shape. </p>
+<dd><p>Attempt to prove lhs &lt;= a possibly symbolic shape. </p>
 <p>By calling this function, the caller gives an extra hint that shape &gt; 0, because it appeared in buffer shape.</p>
 <p>This is useful to prove condition such as 32 &lt;= 32 * n where the 32 * n is known to be a shape. Use this routine to reduce the symbolic comparisons in buffer compaction.</p>
 <p>The underlying analyzer will use the kSymbolicBound proof.</p>
@@ -491,7 +505,7 @@ document.write(`
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>Whether we can prove lhs &lt;= shape. </p>
+<dd class="field-even"><p>True if proved using the caller’s positive-shape guarantee; false otherwise. </p>
 </dd>
 </dl>
 </dd></dl>
@@ -499,7 +513,7 @@ document.write(`
 <dl class="cpp function">
 <dt class="sig sig-object cpp" id="_CPPv4N3tvm3sym11AnalyzerObj8CanProveERK8PrimExpr13ProofStrength">
 <span id="_CPPv3N3tvm3sym11AnalyzerObj8CanProveERK8PrimExpr13ProofStrength"></span><span id="_CPPv2N3tvm3sym11AnalyzerObj8CanProveERK8PrimExpr13ProofStrength"></span><span id="tvm::sym::AnalyzerObj::CanProve__PrimExprCR.ProofStrength"></span><span class="target" id="classtvm_1_1sym_1_1AnalyzerObj_1a2e6ae5600545b1b4ea247fcd4f94ec33"></span><span class="kt"><span class="pre">bool</span></span><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">CanProve</span></span></span><span class="sig-paren">(</span><span class="k"><span class="pre">const</span></span><span class="w"> </span><a class="reference internal" href="classtvm_1_1PrimExpr.html#_CPPv4N3tvm8PrimExprE" title="tvm::PrimExpr"><span class="n"><span class="pre">PrimExpr</span></span></a><span class="w"> </span><span class="p"><span class="pre">&amp;</span></span><span class="n sig-param"><span class="pre">cond</span></span>, <a class="reference internal" href="enum_namespacetvm_1_1sym_1af302d7cf16c8a80afef9b33eff88f29c.html#_CPPv4N3tvm3sym13ProofStrengthE" title="tvm::sym::ProofStrength"><span class="n"><span class="pre">ProofStrength</span></span></a><span class="w"> </span><span class="n sig-param"><span class="pre">strength</span></span><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><a class="reference internal" href="enum_namespacetvm_1_1sym_1af302d7cf16c8a80afef9b33eff88f29c.html#_CPPv4N3tvm3sym13ProofStrengthE" title="tvm::sym::ProofStrength"><span class="n"><span class="pre">ProofStrength</span></span></a><span class="p"><span class="pre">::</span></span><a class="reference internal" href="enum_namespacetvm_1_1sym_1af302d7cf16c8a80afef9b33eff88f29c.html#_CPPv4N3tvm3sym13ProofStrength8kDefaultE" title="tvm::sym::ProofStrength::kDefault"><span class="n"><span class="pre">kDefault</span></span></a><span class="sig-paren">)</span><a class="headerlink" href="#_CPPv4N3tvm3sym11AnalyzerObj8CanProveERK8PrimExpr13ProofStrength" title="Link to this definition">#</a><br /></dt>
-<dd><p>Whether can we prove condition. </p>
+<dd><p>Attempt to prove a condition under the current premises. </p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p><a class="reference internal" href="classtvm_1_1sym_1_1Analyzer.html#classtvm_1_1sym_1_1Analyzer"><span class="std std-ref">Analyzer</span></a> will call into sub-analyzers to get the result. Do not use strength beyond default in sub-analyzers and only use it in top-level predicate analysis. </p>
@@ -508,11 +522,11 @@ document.write(`
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>cond</strong> – The expression to be proved. </p></li>
-<li><p><strong>strength</strong> – the strength of the prove.</p></li>
+<li><p><strong>strength</strong> – Proof effort; stronger modes may use symbolic bounds and optional Z3.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>The result.</p>
+<dd class="field-even"><p>True if proved; false includes unsupported or inconclusive queries.</p>
 </dd>
 </dl>
 </dd></dl>
@@ -529,11 +543,11 @@ document.write(`
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>expr</strong> – The expression to be simplified. </p></li>
-<li><p><strong>steps</strong> – The simplification runs in the order of rewrite_simplify (step 1) -&gt; canonical_simplify (step 2) -&gt; rewrite_simplify (step 3) -&gt; canonical_simplify (step 4) -&gt; … param steps controls how many steps to run. Default is 2, i.e., rewrite_simplify + canonical_simplify. </p></li>
+<li><p><strong>steps</strong> – Number of alternating rewrite/canonical passes after an initial canonical pass. The default of two runs canonical, rewrite, then canonical. Nonpositive values run only the initial canonical pass. Processing may stop early at a constant expression. </p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>The result.</p>
+<dd class="field-even"><p>An equivalent expression under the current premises.</p>
 </dd>
 </dl>
 </dd></dl>
@@ -541,11 +555,11 @@ document.write(`
 <dl class="cpp function">
 <dt class="sig sig-object cpp" id="_CPPv4NK3tvm3sym11AnalyzerObj5CloneEv">
 <span id="_CPPv3NK3tvm3sym11AnalyzerObj5CloneEv"></span><span id="_CPPv2NK3tvm3sym11AnalyzerObj5CloneEv"></span><span id="tvm::sym::AnalyzerObj::CloneC"></span><span class="target" id="classtvm_1_1sym_1_1AnalyzerObj_1a4152d30598d3003cb96d6fabddae2409"></span><a class="reference internal" href="classtvm_1_1sym_1_1Analyzer.html#_CPPv4N3tvm3sym8AnalyzerE" title="tvm::sym::Analyzer"><span class="n"><span class="pre">Analyzer</span></span></a><span class="w"> </span><span class="sig-name descname"><span class="n"><span class="pre">Clone</span></span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><span class="w"> </span><span class="k"><span class="pre">const</span></span><a class="headerlink" href="#_CPPv4NK3tvm3sym11AnalyzerObj5CloneEv" title="Link to this definition">#</a><br /></dt>
-<dd><p>Deep-copy this analyzer into a new, independent <a class="reference internal" href="classtvm_1_1sym_1_1Analyzer.html#classtvm_1_1sym_1_1Analyzer"><span class="std std-ref">Analyzer</span></a>. </p>
-<p>The returned analyzer carries the same accumulated facts (variable bounds, modular sets, rewrite/canonical bindings, integer-set domains, literal constraints and known comparisons) as this one, but owns its own state: binding or simplifying on either analyzer afterwards does not affect the other. This is the deep copy that handle-copying an <a class="reference internal" href="classtvm_1_1sym_1_1Analyzer.html#classtvm_1_1sym_1_1Analyzer"><span class="std std-ref">Analyzer</span></a> does not provide.</p>
+<dd><p>Copy accepted facts and query settings into an independent analyzer. </p>
+<p>Backend state is independent: subsequent synchronization, simplification, and query settings on either analyzer do not affect the other. Premise and expression nodes are shared and must not be mutated through aliases. Query scratch, solver instances, and accumulated statistics are not copied. Copying an <a class="reference internal" href="classtvm_1_1sym_1_1Analyzer.html#classtvm_1_1sym_1_1Analyzer"><span class="std std-ref">Analyzer</span></a> handle alone instead shares the same mutable state.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>A new <a class="reference internal" href="classtvm_1_1sym_1_1Analyzer.html#classtvm_1_1sym_1_1Analyzer"><span class="std std-ref">Analyzer</span></a> holding an independent copy of the facts. </p>
+<dd class="field-odd"><p>A new analyzer with independent backend state and the same accepted premises. </p>
 </dd>
 </dl>
 </dd></dl>

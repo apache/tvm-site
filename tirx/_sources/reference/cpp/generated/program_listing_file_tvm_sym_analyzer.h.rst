@@ -118,15 +118,23 @@ Program Listing for File analyzer.h
    
     private:
      friend class AnalyzerObj;
-     TVM_TIRX_DLL void Reset();
-     TVM_TIRX_DLL void IngestBinding(const Var& var, const PrimExpr& expr);
-     TVM_TIRX_DLL void IngestBinding(const Var& var, const Range& range);
-     TVM_TIRX_DLL void IngestPredicate(const PrimExpr& constraint);
+     // Clear context-derived facts before replay; retain query settings and diagnostics.
+     void Reset();
+     // Record a value binding after AnalyzerObj validates and orders the premises.
+     void IngestBinding(const Var& var, const PrimExpr& expr);
+     // Record a half-open variable range from the accepted premise prefix.
+     void IngestBinding(const Var& var, const Range& range);
+     // Consume a predicate prepared against the preceding premise prefix.
+     void IngestPredicate(const PrimExpr& constraint);
+     // Borrow the owning analyzer for cross-backend queries.
      explicit ConstIntBoundAnalyzer(AnalyzerObj* parent);
+     // Exported for destruction through the inline Analyzer object allocator.
      TVM_TIRX_DLL ~ConstIntBoundAnalyzer();
+     // Copy durable facts/settings into this backend without sharing mutable query state.
      void CopyFrom(const ConstIntBoundAnalyzer& other);
      struct Entry;
      class Impl;
+     // Owned backend state; its definition stays inside the compiler library.
      std::unique_ptr<Impl> impl_;
    };
    
@@ -159,14 +167,21 @@ Program Listing for File analyzer.h
    
     private:
      friend class AnalyzerObj;
-     TVM_TIRX_DLL void Reset();
-     TVM_TIRX_DLL void IngestBinding(const Var& var, const PrimExpr& expr);
-     TVM_TIRX_DLL void IngestPredicate(const PrimExpr& constraint);
+     // Clear context-derived facts before replay; retain query settings and diagnostics.
+     void Reset();
+     // Record a value binding after AnalyzerObj validates and orders the premises.
+     void IngestBinding(const Var& var, const PrimExpr& expr);
+     // Consume a predicate prepared against the preceding premise prefix.
+     void IngestPredicate(const PrimExpr& constraint);
+     // Borrow the owning analyzer for cross-backend queries.
      explicit ModularSetAnalyzer(AnalyzerObj* parent);
+     // Exported for destruction through the inline Analyzer object allocator.
      TVM_TIRX_DLL ~ModularSetAnalyzer();
+     // Copy durable facts/settings into this backend without sharing mutable query state.
      void CopyFrom(const ModularSetAnalyzer& other);
      struct Entry;
      class Impl;
+     // Owned backend state; its definition stays inside the compiler library.
      std::unique_ptr<Impl> impl_;
    };
    
@@ -182,14 +197,21 @@ Program Listing for File analyzer.h
    
     private:
      friend class AnalyzerObj;
-     TVM_TIRX_DLL void Reset();
-     TVM_TIRX_DLL void IngestBinding(const Var& var, const PrimExpr& expr);
-     TVM_TIRX_DLL void IngestPredicate(const PrimExpr& constraint);
+     // Clear context-derived facts before replay; retain query settings and diagnostics.
+     void Reset();
+     // Record a value binding after AnalyzerObj validates and orders the premises.
+     void IngestBinding(const Var& var, const PrimExpr& expr);
+     // Consume a predicate prepared against the preceding premise prefix.
+     void IngestPredicate(const PrimExpr& constraint);
      friend class CanonicalSimplifier;
+     // Borrow the owning analyzer for cross-backend queries.
      explicit RewriteSimplifier(AnalyzerObj* parent);
+     // Exported for destruction through the inline Analyzer object allocator.
      TVM_TIRX_DLL ~RewriteSimplifier();
+     // Copy durable facts/settings into this backend without sharing mutable query state.
      void CopyFrom(const RewriteSimplifier& other);
      class Impl;
+     // Owned backend state; its definition stays inside the compiler library.
      ffi::ObjectPtr<Impl> impl_;
    };
    
@@ -199,12 +221,18 @@ Program Listing for File analyzer.h
    
     private:
      friend class AnalyzerObj;
-     TVM_TIRX_DLL void Reset();
-     TVM_TIRX_DLL void IngestBinding(const Var& var, const PrimExpr& expr);
+     // Clear context-derived facts before replay; retain query settings and diagnostics.
+     void Reset();
+     // Record a value binding after AnalyzerObj validates and orders the premises.
+     void IngestBinding(const Var& var, const PrimExpr& expr);
+     // Borrow the owning analyzer for cross-backend queries.
      explicit CanonicalSimplifier(AnalyzerObj* parent);
+     // Exported for destruction through the inline Analyzer object allocator.
      TVM_TIRX_DLL ~CanonicalSimplifier();
+     // Copy durable facts/settings into this backend without sharing mutable query state.
      void CopyFrom(const CanonicalSimplifier& other);
      class Impl;
+     // Owned backend state; its definition stays inside the compiler library.
      ffi::ObjectPtr<Impl> impl_;
    };
    
@@ -228,29 +256,26 @@ Program Listing for File analyzer.h
    
    class KnownComparisonAnalyzer {
     public:
-     /* \brief Using previously specified knowns, compare the expressions provided
-      *
-      * \param lhs The left-hand side of the comparison
-      *
-      * \param rhs The right-hand side of the comparison
-      *
-      * Directly known comparisons also allow constant offsets on either side.
-      *
-      * \return The most specific result that can be proven about the
-      * comparison.  If nothing can be proven, returns kUnknown.
-      */
      TVM_TIRX_DLL CompareResult TryCompare(const PrimExpr& lhs, const PrimExpr& rhs);
    
     private:
      friend class AnalyzerObj;
-     TVM_TIRX_DLL void Reset();
-     TVM_TIRX_DLL void IngestBinding(const Var& var, const PrimExpr& expr);
-     TVM_TIRX_DLL void IngestBinding(const Var& var, const Range& range);
-     TVM_TIRX_DLL void IngestPredicate(const PrimExpr& constraint);
+     // Clear context-derived facts before replay; retain query settings and diagnostics.
+     void Reset();
+     // Record a value binding after AnalyzerObj validates and orders the premises.
+     void IngestBinding(const Var& var, const PrimExpr& expr);
+     // Record a half-open variable range from the accepted premise prefix.
+     void IngestBinding(const Var& var, const Range& range);
+     // Consume a predicate prepared against the preceding premise prefix.
+     void IngestPredicate(const PrimExpr& constraint);
+     // Borrow the owning analyzer for cross-backend queries.
      explicit KnownComparisonAnalyzer(AnalyzerObj* parent);
+     // Exported for destruction through the inline Analyzer object allocator.
      TVM_TIRX_DLL ~KnownComparisonAnalyzer();
+     // Copy durable facts/settings into this backend without sharing mutable query state.
      void CopyFrom(const KnownComparisonAnalyzer& other);
      class Impl;
+     // Owned backend state; its definition stays inside the compiler library.
      std::unique_ptr<Impl> impl_;
    };
    
@@ -262,14 +287,22 @@ Program Listing for File analyzer.h
    
     private:
      friend class AnalyzerObj;
-     TVM_TIRX_DLL void Reset();
-     TVM_TIRX_DLL void IngestBinding(const Var& var, const PrimExpr& expr);
-     TVM_TIRX_DLL void IngestBinding(const Var& var, const Range& range);
-     TVM_TIRX_DLL void IngestPredicate(const PrimExpr& constraint);
+     // Clear context-derived facts before replay; retain query settings and diagnostics.
+     void Reset();
+     // Record a value binding after AnalyzerObj validates and orders the premises.
+     void IngestBinding(const Var& var, const PrimExpr& expr);
+     // Record a half-open variable range from the accepted premise prefix.
+     void IngestBinding(const Var& var, const Range& range);
+     // Consume a predicate prepared against the preceding premise prefix.
+     void IngestPredicate(const PrimExpr& constraint);
+     // Borrow the owning analyzer for cross-backend queries.
      explicit IntSetAnalyzer(AnalyzerObj* parent);
+     // Exported for destruction through the inline Analyzer object allocator.
      TVM_TIRX_DLL ~IntSetAnalyzer();
+     // Copy durable facts/settings into this backend without sharing mutable query state.
      void CopyFrom(const IntSetAnalyzer& other);
      class Impl;
+     // Owned backend state; its definition stays inside the compiler library.
      Impl* impl_;
    };
    
@@ -294,13 +327,20 @@ Program Listing for File analyzer.h
    
     private:
      friend class AnalyzerObj;
-     TVM_TIRX_DLL void Reset();
-     TVM_TIRX_DLL void IngestBinding(const Var& var, const PrimExpr& expr);
-     TVM_TIRX_DLL void IngestBinding(const Var& var, const Range& range);
-     TVM_TIRX_DLL void IngestPredicate(const PrimExpr& constraint);
+     // Clear facts, translations, and solver state; retain resource limits.
+     void Reset();
+     // Record a value binding after AnalyzerObj validates and orders the premises.
+     void IngestBinding(const Var& var, const PrimExpr& expr);
+     // Record a half-open variable range from the accepted premise prefix.
+     void IngestBinding(const Var& var, const Range& range);
+     // Consume a predicate prepared against the preceding premise prefix.
+     void IngestPredicate(const PrimExpr& constraint);
      friend class Analyzer;
+     // Borrow the owning analyzer for cross-backend queries.
      explicit Z3Prover(AnalyzerObj* parent);
+     // Exported for destruction through the inline Analyzer object allocator.
      TVM_TIRX_DLL ~Z3Prover();
+     // Copy durable facts/settings into this backend without sharing mutable query state.
      void CopyFrom(const Z3Prover& other);
      class Impl;
      std::unique_ptr<Impl> impl_;
@@ -333,13 +373,21 @@ Program Listing for File analyzer.h
    
     private:
      friend class detail::TempConstraintScope;
+     // Record a value binding after AnalyzerObj validates and orders the premises.
      void IngestBinding(const Var& var, const PrimExpr& expr);
+     // Record a half-open variable range from the accepted premise prefix.
      void IngestBinding(const Var& var, const Range& range);
+     // Dispatch a supported pure premise to the participating backends.
      void IngestConstraint(const Constraint& constraint);
+     // Normalize and derive predicate facts using only the already valid prefix.
      std::vector<PrimExpr> PreparePredicate(const PrimExpr& condition);
+     // Fixed position of the last successfully accepted premise environment.
      ConstraintContext last_snapshot_;
+     // Query-local premises, managed in LIFO order by TempConstraintScope.
      std::vector<Constraint> temp_constraints_;
+     // Prevent reentry and reuse after an incomplete synchronization.
      bool synchronizing_{false};
+     // Nested query count; synchronization requires zero active queries.
      int active_queries_{0};
    };
    
@@ -358,8 +406,11 @@ Program Listing for File analyzer.h
    
     private:
      friend class With<AllowUIntAsIndex>;
+     // Called across the DLL boundary by the inline With<> constructor.
      TVM_TIRX_DLL void EnterWithScope();
+     // Called across the DLL boundary by the inline With<> destructor.
      TVM_TIRX_DLL void ExitWithScope();
+     // Number of active scopes in this thread.
      static thread_local int depth_;
    };
    

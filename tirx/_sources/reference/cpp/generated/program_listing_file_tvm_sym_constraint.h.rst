@@ -139,6 +139,7 @@ Program Listing for File constraint.h
            ValueError)
            << "Constraint context parent local prefix is out of bounds";
      }
+     // Context nodes have stable identity; use Snapshot to capture their current position.
      ConstraintContextObj(const ConstraintContextObj&) = delete;
      ConstraintContextObj& operator=(const ConstraintContextObj&) = delete;
    
@@ -163,6 +164,7 @@ Program Listing for File constraint.h
    
     private:
      friend class AnalyzerObj;
+     // Materialize the fixed inherited sequence and the requested local prefix.
      ffi::Array<Constraint> ToArray(int64_t local_prefix) const {
        if (!parent_) {
          if (local_prefix == LocalSize()) return constraints_;
@@ -175,6 +177,7 @@ Program Listing for File constraint.h
        return result;
      }
    
+     // Traverse a fixed prefix even if callbacks append more local constraints.
      template <typename F>
      void ForEach(int64_t local_prefix, F&& f) const {
        if (parent_) parent_->ForEach(parent_prefix_size_, f);
@@ -189,6 +192,7 @@ Program Listing for File constraint.h
      const ffi::ObjectPtr<ConstraintContextObj> parent_;
      // Fixed prefix length in the parent's LOCAL sequence, not its effective count.
      const int64_t parent_prefix_size_{0};
+     // Append-only local sequence; captured entries cannot be replaced or mutated through aliases.
      ffi::Array<Constraint> constraints_;
    };
    
