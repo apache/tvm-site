@@ -102,6 +102,8 @@ Namespaces
      - Trainium NKI intrinsic wrappers.
    * - :doc:`tvm_tirx.backend.trn.transform <backend.trn.transform>`
      - Trainium-specific lowering passes.
+   * - :doc:`tvm_tirx.backend.rust <backend.rust>`
+     - Operators written in Rust.
    * - :doc:`tvm_tirx.support <support>`
      - Build tools and system utilities.
    * - :doc:`tvm_tirx.testing <testing>`
@@ -147,6 +149,7 @@ Namespaces
    tvm_tirx.backend.trn <backend.trn>
    tvm_tirx.backend.trn.op <backend.trn.op>
    tvm_tirx.backend.trn.transform <backend.trn.transform>
+   tvm_tirx.backend.rust <backend.rust>
    tvm_tirx.support <support>
    tvm_tirx.testing <testing>
 

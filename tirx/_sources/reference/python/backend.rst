@@ -32,6 +32,7 @@ Namespaces
 * :doc:`tvm_tirx.backend.metal <backend.metal>`
 * :doc:`tvm_tirx.backend.opencl <backend.opencl>`
 * :doc:`tvm_tirx.backend.rocm <backend.rocm>`
+* :doc:`tvm_tirx.backend.rust <backend.rust>`
 * :doc:`tvm_tirx.backend.trn <backend.trn>`
 * :doc:`tvm_tirx.backend.vulkan <backend.vulkan>`
 * :doc:`tvm_tirx.backend.webgpu <backend.webgpu>`
