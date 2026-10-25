@@ -332,7 +332,8 @@ document.write(`
             <nav aria-label="Page">
                 <ul class="visible nav section-nav flex-column">
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#build-the-python-package">Build the Python Package</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#build-wheels-with-static-llvm">Build Wheels with Static LLVM</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#build-with-cmake">Build with CMake</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#build-wheels-with-customized-llvm">Build Wheels with Customized LLVM</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#troubleshooting">Troubleshooting</a></li>
 </ul>
             </nav>
@@ -347,28 +348,15 @@ document.write(`
                   
   <section id="build-from-source">
 <h1>Build from Source<a class="headerlink" href="#build-from-source" title="Link to this heading">#</a></h1>
-<p>This guide provides instructions on how to build the TIRx package from source.</p>
+<p>This guide provides instructions on how to build the TIRx package from source.
+<code class="docutils literal notranslate"><span class="pre">uv</span> <span class="pre">sync</span></code> creates the project <code class="docutils literal notranslate"><span class="pre">.venv</span></code> and installs the package in editable mode.</p>
 <div class="tip admonition">
 <p class="admonition-title">Prerequisite</p>
 <ul class="simple">
 <li><p>Python: 3.10 or newer.</p></li>
 <li><p>Compiler: a C++20-capable GCC, Clang, or MSVC toolchain.</p></li>
-<li><p>Build tools: Git, CMake 3.26+, and uv.</p></li>
-<li><p>LLVM: development libraries and <code class="docutils literal notranslate"><span class="pre">llvm-config</span></code> from LLVM 15 or newer.</p></li>
+<li><p>Build tools: Git and uv.</p></li>
 </ul>
-<p>On most platforms, you can get LLVM and the build dependencies through
-<a class="reference external" href="https://github.com/conda-forge/miniforge">Miniforge</a>:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>mamba<span class="w"> </span>create<span class="w"> </span>-n<span class="w"> </span>tirx-dev<span class="w"> </span>-c<span class="w"> </span>conda-forge<span class="w"> </span><span class="nv">python</span><span class="o">=</span><span class="m">3</span>.12<span class="w"> </span>llvmdev<span class="w"> </span>cmake<span class="w"> </span>git<span class="w"> </span>uv
-mamba<span class="w"> </span>activate<span class="w"> </span>tirx-dev
-llvm-config<span class="w"> </span>--version
-</pre></div>
-</div>
-<p>Use this mamba environment for all commands. Keep <code class="docutils literal notranslate"><span class="pre">uv</span> <span class="pre">run</span></code> in the same
-environment without resynchronizing the packages installed by <code class="docutils literal notranslate"><span class="pre">uv</span> <span class="pre">pip</span></code>:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">export</span><span class="w"> </span><span class="nv">UV_PROJECT_ENVIRONMENT</span><span class="o">=</span><span class="s2">"</span><span class="nv">$CONDA_PREFIX</span><span class="s2">"</span>
-<span class="nb">export</span><span class="w"> </span><span class="nv">UV_NO_SYNC</span><span class="o">=</span><span class="m">1</span>
-</pre></div>
-</div>
 </div>
 <section id="build-the-python-package">
 <h2>Build the Python Package<a class="headerlink" href="#build-the-python-package" title="Link to this heading">#</a></h2>
@@ -386,12 +374,11 @@ without it, run:</p>
 </div>
 </div>
 <p>Build the Python package with scikit-build-core, which drives CMake to compile
-the C++ libraries and supplies Ninja when needed in the default isolated build:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>uv<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>--force-reinstall<span class="w"> </span>--verbose<span class="w"> </span>-e<span class="w"> </span>.
+the C++ libraries and supplies CMake/Ninja when needed in the isolated build:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>uv<span class="w"> </span>sync<span class="w"> </span>--no-default-groups
 </pre></div>
 </div>
-<p>The <code class="docutils literal notranslate"><span class="pre">--force-reinstall</span></code> flag forces a rebuild, and <code class="docutils literal notranslate"><span class="pre">-e</span></code> (editable) means
-Python-only changes are reflected immediately without rebuilding.</p>
+<p>The editable install reflects Python-only changes immediately without rebuilding.</p>
 <p><strong>CMake flags</strong> can be exported through <code class="docutils literal notranslate"><span class="pre">CMAKE_ARGS</span></code> before running the
 install command. For example, to switch off the CUDA runtime (which is
 automatically switched on when available):</p>
@@ -400,7 +387,8 @@ automatically switched on when available):</p>
 </div>
 <p>Available CMake options (see <a class="reference external" href="https://github.com/apache/tvm-tirx/blob/main/CMakeLists.txt">CMakeLists.txt</a>) include:</p>
 <ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">TVM_TIRX_USE_LLVM</span></code> – Enable LLVM, or select an <code class="docutils literal notranslate"><span class="pre">llvm-config</span></code> command (default: <code class="docutils literal notranslate"><span class="pre">ON</span></code>).</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">TVM_TIRX_USE_LLVM</span></code> – Prefer the build Python’s static LLVM SDK, or select an
+explicit <code class="docutils literal notranslate"><span class="pre">LLVM_DIR</span></code> / <code class="docutils literal notranslate"><span class="pre">llvm-config</span></code> command (default: <code class="docutils literal notranslate"><span class="pre">ON</span></code>). <code class="docutils literal notranslate"><span class="pre">OFF</span></code> disables LLVM.</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">TVM_TIRX_USE_CUDA</span></code> – Enable the CUDA runtime (default: <code class="docutils literal notranslate"><span class="pre">AUTO</span></code>).</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">TVM_TIRX_USE_METAL</span></code> – Enable the Metal runtime on macOS (default: <code class="docutils literal notranslate"><span class="pre">OFF</span></code>).</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">TVM_TIRX_USE_Z3</span></code> – Enable the Z3 solver (default: <code class="docutils literal notranslate"><span class="pre">AUTO</span></code>).</p></li>
@@ -410,41 +398,59 @@ dependencies, from crates.io or cargo’s cache).</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">TVM_TIRX_BUILD_TESTS</span></code> – Build C++ tests (default: <code class="docutils literal notranslate"><span class="pre">OFF</span></code>).</p></li>
 </ul>
 <p>Verify the installation:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>uv<span class="w"> </span>run<span class="w"> </span>python<span class="w"> </span>-c<span class="w"> </span><span class="s2">"import tvm_tirx; print(tvm_tirx.__version__)"</span>
-uv<span class="w"> </span>run<span class="w"> </span>tvm-tirx-config<span class="w"> </span>-h
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>uv<span class="w"> </span>run<span class="w"> </span>--no-sync<span class="w"> </span>python<span class="w"> </span>-c<span class="w"> </span><span class="s2">"import tvm_tirx; print(tvm_tirx.__version__)"</span>
+uv<span class="w"> </span>run<span class="w"> </span>--no-sync<span class="w"> </span>tvm-tirx-config<span class="w"> </span>-h
 </pre></div>
 </div>
 <div class="admonition tip">
 <p class="admonition-title">Tip</p>
 <p>Use <code class="docutils literal notranslate"><span class="pre">tvm-tirx-config</span></code> to query include and link flags for external C++ projects:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>tvm-tirx-config<span class="w"> </span>--includedir
-tvm-tirx-config<span class="w"> </span>--libfiles
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>uv<span class="w"> </span>run<span class="w"> </span>--no-sync<span class="w"> </span>tvm-tirx-config<span class="w"> </span>--includedir
+uv<span class="w"> </span>run<span class="w"> </span>--no-sync<span class="w"> </span>tvm-tirx-config<span class="w"> </span>--libfiles
 </pre></div>
 </div>
 <p>On Linux/macOS, query linker flags for the compiler or runtime libraries:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>tvm-tirx-config<span class="w"> </span>--libs<span class="w"> </span>compiler<span class="w">      </span><span class="c1"># Compiler and its dependencies</span>
-tvm-tirx-config<span class="w"> </span>--libs<span class="w"> </span>runtime<span class="w">       </span><span class="c1"># Core runtime</span>
-tvm-tirx-config<span class="w"> </span>--libs<span class="w"> </span>runtime<span class="w"> </span>cuda<span class="w">  </span><span class="c1"># Core and CUDA runtimes (CUDA build)</span>
-tvm-tirx-config<span class="w"> </span>--ldflags<span class="w">            </span><span class="c1"># Library search paths</span>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>uv<span class="w"> </span>run<span class="w"> </span>--no-sync<span class="w"> </span>tvm-tirx-config<span class="w"> </span>--libs<span class="w"> </span>compiler<span class="w">      </span><span class="c1"># Compiler and its dependencies</span>
+uv<span class="w"> </span>run<span class="w"> </span>--no-sync<span class="w"> </span>tvm-tirx-config<span class="w"> </span>--libs<span class="w"> </span>runtime<span class="w">       </span><span class="c1"># Core runtime</span>
+uv<span class="w"> </span>run<span class="w"> </span>--no-sync<span class="w"> </span>tvm-tirx-config<span class="w"> </span>--libs<span class="w"> </span>runtime<span class="w"> </span>cuda<span class="w">  </span><span class="c1"># Core and CUDA runtimes (CUDA build)</span>
+uv<span class="w"> </span>run<span class="w"> </span>--no-sync<span class="w"> </span>tvm-tirx-config<span class="w"> </span>--ldflags<span class="w">            </span><span class="c1"># Library search paths</span>
 </pre></div>
 </div>
 </div>
 </section>
-<section id="build-wheels-with-static-llvm">
-<h2>Build Wheels with Static LLVM<a class="headerlink" href="#build-wheels-with-static-llvm" title="Link to this heading">#</a></h2>
-<p>When shipping wheels, link LLVM statically so users do not need the same shared
-LLVM library installed. Install its development dependencies and export the
-static-link setting before building the wheel:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>mamba<span class="w"> </span>install<span class="w"> </span>-c<span class="w"> </span>conda-forge<span class="w"> </span>zlib<span class="w"> </span>zstd-static<span class="w"> </span>libxml2-devel
-<span class="nb">export</span><span class="w"> </span><span class="nv">CMAKE_ARGS</span><span class="o">=</span><span class="s2">"-DTVM_TIRX_USE_LLVM='llvm-config --link-static' -DZLIB_USE_STATIC_LIBS=ON"</span>
+<section id="build-with-cmake">
+<h2>Build with CMake<a class="headerlink" href="#build-with-cmake" title="Link to this heading">#</a></h2>
+<p>Install only the build tools and SDKs, without installing the Python package,
+then configure and build:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>uv<span class="w"> </span>sync<span class="w"> </span>--only-group<span class="w"> </span>build
+uv<span class="w"> </span>run<span class="w"> </span>--no-sync<span class="w"> </span>cmake<span class="w"> </span>-S<span class="w"> </span>.<span class="w"> </span>-B<span class="w"> </span>build_cpp<span class="w"> </span>-G<span class="w"> </span>Ninja<span class="w"> </span>-DCMAKE_BUILD_TYPE<span class="o">=</span>Release
+uv<span class="w"> </span>run<span class="w"> </span>--no-sync<span class="w"> </span>cmake<span class="w"> </span>--build<span class="w"> </span>build_cpp<span class="w"> </span>--parallel
 </pre></div>
 </div>
-<p>See <a class="reference internal" href="ci_cd.html"><span class="doc">Reproduce CI/CD</span></a> for wheel builds and the publication toolchain configuration.</p>
+</section>
+<section id="build-wheels-with-customized-llvm">
+<h2>Build Wheels with Customized LLVM<a class="headerlink" href="#build-wheels-with-customized-llvm" title="Link to this heading">#</a></h2>
+<p>By default, builds use the pinned prebuilt LLVM/Z3 static SDK packages from
+PyPI specified in <code class="docutils literal notranslate"><span class="pre">pyproject.toml</span></code>; no manual SDK setup is needed.</p>
+<p>An explicit <code class="docutils literal notranslate"><span class="pre">LLVM_DIR</span></code> or <code class="docutils literal notranslate"><span class="pre">TVM_TIRX_USE_LLVM=/path/to/llvm-config</span></code> selects
+an external LLVM installation. Supply its development libraries and transitive
+dependencies before building.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>When building wheels for release, we recommend linking LLVM statically into
+the wheel to avoid conflicts with LLVM libraries used by other packages.
+Pass <code class="docutils literal notranslate"><span class="pre">--link-static</span></code> to <code class="docutils literal notranslate"><span class="pre">llvm-config</span></code> to enable this.</p>
+</div>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nv">CMAKE_ARGS</span><span class="o">=</span><span class="s2">"-DTVM_TIRX_USE_LLVM='/path/to/llvm-config --link-static'"</span><span class="w"> </span>uv<span class="w"> </span>build<span class="w"> </span>--wheel
+</pre></div>
+</div>
+<p>For macOS wheels using the default SDK, set <code class="docutils literal notranslate"><span class="pre">MACOSX_DEPLOYMENT_TARGET=14.0</span></code>.
+See <a class="reference internal" href="ci_cd.html"><span class="doc">Reproduce CI/CD</span></a> for the publication toolchain configuration.</p>
 </section>
 <section id="troubleshooting">
 <h2>Troubleshooting<a class="headerlink" href="#troubleshooting" title="Link to this heading">#</a></h2>
 <ul class="simple">
-<li><p><strong>Rebuilding after C++ changes</strong>: re-run <code class="docutils literal notranslate"><span class="pre">uv</span> <span class="pre">pip</span> <span class="pre">install</span> <span class="pre">--force-reinstall</span> <span class="pre">-e</span> <span class="pre">.</span></code>.
+<li><p><strong>Rebuilding after C++ changes</strong>: re-run <code class="docutils literal notranslate"><span class="pre">uv</span> <span class="pre">sync</span> <span class="pre">--no-default-groups</span> <span class="pre">--reinstall-package</span> <span class="pre">apache-tvm-tirx</span></code>.
 Editable installs automatically reflect only Python changes.</p></li>
 <li><p><strong>Submodules missing</strong>: run <code class="docutils literal notranslate"><span class="pre">git</span> <span class="pre">submodule</span> <span class="pre">update</span> <span class="pre">--init</span> <span class="pre">--recursive</span></code> from
 the repository root.</p></li>
@@ -504,7 +510,8 @@ the repository root.</p></li>
   <nav class="bd-toc-nav page-toc">
     <ul class="visible nav section-nav flex-column">
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#build-the-python-package">Build the Python Package</a></li>
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#build-wheels-with-static-llvm">Build Wheels with Static LLVM</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#build-with-cmake">Build with CMake</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#build-wheels-with-customized-llvm">Build Wheels with Customized LLVM</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#troubleshooting">Troubleshooting</a></li>
 </ul>
   </nav></div>

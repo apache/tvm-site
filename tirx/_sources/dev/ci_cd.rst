@@ -37,22 +37,22 @@ Install and register the hooks so they run automatically before each commit:
 
 .. code-block:: bash
 
-   uv tool install pre-commit
-   pre-commit install
+   uv sync --only-group lint
+   uv run --no-sync pre-commit install
 
 You can also run hooks manually:
 
 .. code-block:: bash
 
    # Run all hooks on every file
-   pre-commit run --all-files
+   uv run --no-sync pre-commit run --all-files
 
    # Run only on staged files
-   pre-commit run
+   uv run --no-sync pre-commit run
 
    # Run a single hook in isolation
-   pre-commit run ruff-check --all-files
-   pre-commit run clang-format --all-files
+   uv run --no-sync pre-commit run ruff-check --all-files
+   uv run --no-sync pre-commit run clang-format --all-files
 
 The main tools are:
 
@@ -69,13 +69,14 @@ Use ``pre-commit clean`` if a stale hook environment causes problems.
 C++ Tests
 ---------
 
-Configure, build, and run locally:
+Configure, build, and run locally in the project ``.venv``:
 
 .. code-block:: bash
 
-   cmake . -B build_test -G Ninja -DTVM_TIRX_BUILD_TESTS=ON -DCMAKE_BUILD_TYPE=Debug
-   cmake --build build_test --config Debug --target tirx_cpptest
-   ctest -V -C Debug --test-dir build_test --output-on-failure
+   uv sync --only-group build
+   uv run --no-sync cmake . -B build_test -G Ninja -DTVM_TIRX_BUILD_TESTS=ON -DCMAKE_BUILD_TYPE=Debug
+   uv run --no-sync cmake --build build_test --config Debug --target tirx_cpptest
+   uv run --no-sync ctest -V -C Debug --test-dir build_test --output-on-failure
 
 CMake uses an installed GoogleTest package or fetches it when needed.
 On Windows, run from a Visual Studio Developer Command Prompt.
@@ -83,17 +84,18 @@ On Windows, run from a Visual Studio Developer Command Prompt.
 Python Tests
 ------------
 
-Reproduce locally with:
+Reproduce locally in the project ``.venv``:
 
 .. code-block:: bash
 
    # Install the editable package and test dependencies
-   uv pip install --reinstall --verbose --group test -e .
+   uv sync --no-default-groups --group test
 
    # Run the CPU tests
-   uv run pytest -vvs tests/python -m "not gpu"
+   uv run --no-sync pytest -vvs tests/python -m "not gpu"
 
 Use ``-m gpu`` for device tests with the matching backend, SDK, and hardware.
+For CUDA tests, add ``--group cuda`` to the sync command above.
 Pass a test file or directory to focus on the component you changed.
 
 Build Python Wheels
@@ -101,10 +103,12 @@ Build Python Wheels
 
 CI builds wheels using `cibuildwheel <https://cibuildwheel.pypa.io/>`__ on
 Linux (x86_64, aarch64), Windows (AMD64), and macOS (arm64). Wheel configuration
-lives in ``[tool.cibuildwheel]`` in ``pyproject.toml``. Configure the platform's
-LLVM toolchain as in the `wheel build action
-<https://github.com/apache/tvm-tirx/blob/main/.github/actions/build-wheel-for-publish/action.yml>`__;
-Linux builds also require Docker and the LLVM prefix mounted into the build image.
+lives in ``[tool.cibuildwheel]`` in ``pyproject.toml``. Isolated builds install
+the exact LLVM/Z3 SDK pins from ``[build-system].requires``; no separate LLVM
+prefix or Conda environment is needed. Linux builds require Docker. macOS arm64
+wheels require ``MACOSX_DEPLOYMENT_TARGET=14.0``, matching the pinned SDK.
+The separate Windows CUDA runtime sidecar still uses its existing Conda CUDA
+toolkit installer; that is independent of LLVM/Z3 discovery.
 
 To build wheels locally:
 
