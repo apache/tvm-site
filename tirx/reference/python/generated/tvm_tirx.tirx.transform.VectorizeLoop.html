@@ -428,6 +428,9 @@ document.write(`
 not an ambient target context or nested target attributes. Target-independent
 fixed-width loops do not require a target. Code needing different vectorization
 targets must be separated into functions before this pass.</p>
+<p>Unsupported loops retain scalar execution. Loops containing assertions
+always remain scalar. Accessing multiple tensors requires the function’s
+<code class="docutils literal notranslate"><span class="pre">tirx.noalias</span></code> attribute unless they are views of the same storage.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>enable_vectorize</strong> (<em>bool</em>) – Whether vectorization is enabled.
@@ -446,6 +449,7 @@ Will lower to scalar loop when it is turned off.</p>
 <span class="k">class</span><span class="w"> </span><span class="nc">Before</span><span class="p">:</span>
     <span class="nd">@T</span><span class="o">.</span><span class="n">function</span><span class="p">(</span><span class="n">private</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">main</span><span class="p">(</span><span class="n">A</span><span class="p">:</span> <span class="n">T</span><span class="o">.</span><span class="n">Tensor</span><span class="p">((</span><span class="mi">4</span><span class="p">,),</span> <span class="n">T</span><span class="o">.</span><span class="n">float32</span><span class="p">),</span> <span class="n">B</span><span class="p">:</span> <span class="n">T</span><span class="o">.</span><span class="n">Tensor</span><span class="p">((</span><span class="mi">4</span><span class="p">,),</span> <span class="n">T</span><span class="o">.</span><span class="n">float32</span><span class="p">)):</span>
+        <span class="n">T</span><span class="o">.</span><span class="n">func_attr</span><span class="p">({</span><span class="s2">"tirx.noalias"</span><span class="p">:</span> <span class="kc">True</span><span class="p">})</span>
         <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">T</span><span class="o">.</span><span class="n">vectorized</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">4</span><span class="p">):</span>
             <span class="n">B</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">A</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
 
@@ -453,6 +457,7 @@ Will lower to scalar loop when it is turned off.</p>
 <span class="k">class</span><span class="w"> </span><span class="nc">Expected</span><span class="p">:</span>
     <span class="nd">@T</span><span class="o">.</span><span class="n">function</span><span class="p">(</span><span class="n">private</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">main</span><span class="p">(</span><span class="n">A</span><span class="p">:</span> <span class="n">T</span><span class="o">.</span><span class="n">Tensor</span><span class="p">((</span><span class="mi">4</span><span class="p">,),</span> <span class="n">T</span><span class="o">.</span><span class="n">float32</span><span class="p">),</span> <span class="n">B</span><span class="p">:</span> <span class="n">T</span><span class="o">.</span><span class="n">Tensor</span><span class="p">((</span><span class="mi">4</span><span class="p">,),</span> <span class="n">T</span><span class="o">.</span><span class="n">float32</span><span class="p">)):</span>
+        <span class="n">T</span><span class="o">.</span><span class="n">func_attr</span><span class="p">({</span><span class="s2">"tirx.noalias"</span><span class="p">:</span> <span class="kc">True</span><span class="p">})</span>
         <span class="n">B</span><span class="p">[</span><span class="mi">0</span><span class="p">:</span><span class="mi">4</span><span class="p">]</span> <span class="o">=</span> <span class="n">A</span><span class="p">[</span><span class="n">T</span><span class="o">.</span><span class="n">Ramp</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">4</span><span class="p">)]</span>
 
 <span class="k">def</span><span class="w"> </span><span class="nf">run_pass</span><span class="p">():</span>
