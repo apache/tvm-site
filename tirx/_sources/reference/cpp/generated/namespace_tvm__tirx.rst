@@ -280,9 +280,9 @@ Functions
 
 - :ref:`exhale_function_namespacetvm_1_1tirx_1ab12af3202a18d10aeac6fc4638148899`
 
-- :ref:`exhale_function_namespacetvm_1_1tirx_1add73860040062a458ecf0f6b09573dea`
-
 - :ref:`exhale_function_namespacetvm_1_1tirx_1aa3bbe1b8701b2ee9930ad7e41937ae62`
+
+- :ref:`exhale_function_namespacetvm_1_1tirx_1add73860040062a458ecf0f6b09573dea`
 
 - :ref:`exhale_function_namespacetvm_1_1tirx_1a7ad88af66366b640fe0837726074314f`
 

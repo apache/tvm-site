@@ -846,9 +846,9 @@ Functions
 
 - :ref:`exhale_function_namespacetvm_1abd7d1b3232218b25e2e0cf6ef699a65f`
 
-- :ref:`exhale_function_namespacetvm_1a6f638564e5e4d1023096523800f2579e`
-
 - :ref:`exhale_function_namespacetvm_1a82dc2fe21e7a64be5a1b11c2a8775d31`
+
+- :ref:`exhale_function_namespacetvm_1a6f638564e5e4d1023096523800f2579e`
 
 - :ref:`exhale_function_namespacetvm_1a7fdc1742f400de487cb807737b16aacb`
 
