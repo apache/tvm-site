@@ -31,7 +31,6 @@ Files
 - :ref:`file_tvm_tirx_object_functor_with_constraint_context.h`
 - :ref:`file_tvm_tirx_stmt.h`
 - :ref:`file_tvm_tirx_stmt_functor.h`
-- :ref:`file_tvm_tirx_stmt_functor_with_analyzer.h`
 - :ref:`file_tvm_tirx_stmt_functor_with_constraint_context.h`
 - :ref:`file_tvm_tirx_structural_mutate_with_constraint_context.h`
 - :ref:`file_tvm_tirx_structural_visit_with_constraint_context.h`

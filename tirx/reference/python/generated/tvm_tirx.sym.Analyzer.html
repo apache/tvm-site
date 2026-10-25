@@ -192,7 +192,6 @@
 <li class="toctree-l3"><a class="reference internal" href="tvm_tirx.sym.normalize_to_iter_sum.html">tvm_tirx.sym.normalize_to_iter_sum</a></li>
 <li class="toctree-l3"><a class="reference internal" href="tvm_tirx.sym.subspace_divide.html">tvm_tirx.sym.subspace_divide</a></li>
 <li class="toctree-l3"><a class="reference internal" href="tvm_tirx.sym.inverse_affine_iter_map.html">tvm_tirx.sym.inverse_affine_iter_map</a></li>
-<li class="toctree-l3"><a class="reference internal" href="tvm_tirx.sym.analyzer.ConstraintScope.html">tvm_tirx.sym.analyzer.ConstraintScope</a></li>
 <li class="toctree-l3"><a class="reference internal" href="tvm_tirx.sym.iter_affine_map.IterMapResult.html">tvm_tirx.sym.iter_affine_map.IterMapResult</a></li>
 <li class="toctree-l3"><a class="reference internal" href="tvm_tirx.sym.iter_affine_map.IterMapLevel.html">tvm_tirx.sym.iter_affine_map.IterMapLevel</a></li>
 <li class="toctree-l3"><a class="reference internal" href="tvm_tirx.sym.int_set.pos_inf.html">tvm_tirx.sym.int_set.pos_inf</a></li>
@@ -424,9 +423,7 @@ document.write(`
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#tvm_tirx.sym.Analyzer.int_set"><code class="docutils literal notranslate"><span class="pre">Analyzer.int_set()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#tvm_tirx.sym.Analyzer.can_prove"><code class="docutils literal notranslate"><span class="pre">Analyzer.can_prove()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#tvm_tirx.sym.Analyzer.set_maximum_rewrite_steps"><code class="docutils literal notranslate"><span class="pre">Analyzer.set_maximum_rewrite_steps()</span></code></a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#tvm_tirx.sym.Analyzer.bind"><code class="docutils literal notranslate"><span class="pre">Analyzer.bind()</span></code></a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#tvm_tirx.sym.Analyzer.constraint_scope"><code class="docutils literal notranslate"><span class="pre">Analyzer.constraint_scope()</span></code></a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#tvm_tirx.sym.Analyzer.update"><code class="docutils literal notranslate"><span class="pre">Analyzer.update()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#tvm_tirx.sym.Analyzer.sync_constraint_context"><code class="docutils literal notranslate"><span class="pre">Analyzer.sync_constraint_context()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#tvm_tirx.sym.Analyzer.can_prove_equal"><code class="docutils literal notranslate"><span class="pre">Analyzer.can_prove_equal()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#tvm_tirx.sym.Analyzer.try_compare"><code class="docutils literal notranslate"><span class="pre">Analyzer.try_compare()</span></code></a></li>
 </ul>
@@ -613,9 +610,8 @@ Default is 2, i.e., rewrite_simplify + canonical_simplify.</p></li>
 <p>The returned analyzer carries the same accumulated facts (variable
 bounds, modular sets, bindings, integer-set domains, literal
 constraints and transitive comparisons) as this one, but owns its own
-state: binding or simplifying on either analyzer afterwards does not
+state: synchronizing or simplifying either analyzer afterwards does not
 affect the other. Unlike copying the handle, this is a true deep copy.</p>
-<p>Do not call this while a constraint scope is active on this analyzer.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
 <dd class="field-odd"><p><strong>result</strong> (<em>Analyzer</em>) – A new analyzer holding an independent copy of the facts.</p>
@@ -732,63 +728,18 @@ allow an unlimited number of steps.</p>
 </dd></dl>
 
 <dl class="py method">
-<dt class="sig sig-object py" id="tvm_tirx.sym.Analyzer.bind">
-<span class="sig-name descname"><span class="pre">bind</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">var</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">expr</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">allow_override</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#tvm_tirx.sym.Analyzer.bind" title="Link to this definition">#</a></dt>
-<dd><p>Bind a variable to the expression.</p>
+<dt class="sig sig-object py" id="tvm_tirx.sym.Analyzer.sync_constraint_context">
+<span class="sig-name descname"><span class="pre">sync_constraint_context</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">context</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#tvm_tirx.sym.Analyzer.sync_constraint_context" title="Link to this definition">#</a></dt>
+<dd><p>Synchronize this analyzer with the premises visible in <code class="docutils literal notranslate"><span class="pre">context</span></code>.</p>
+<p>The analyzer captures the current context position. Later appends become
+visible only after another synchronization. Switching to a parent,
+sibling, or empty context removes facts no longer present there.
+Repeating this call for an unchanged context is inexpensive.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>var</strong> (<a class="reference internal" href="tvm_tirx.ir.Var_class.html#tvm_tirx.ir.Var" title="tvm_tirx.ir.Var"><em>tvm_tirx.ir.Var</em></a>) – The variable.</p></li>
-<li><p><strong>expr</strong> (<em>Union</em><em>[</em><a class="reference internal" href="tvm_tirx.ir.Expr.html#tvm_tirx.ir.Expr" title="tvm_tirx.ir.Expr"><em>ir.Expr</em></a><em>, </em><a class="reference internal" href="tvm_tirx.ir.Range.html#tvm_tirx.ir.Range" title="tvm_tirx.ir.Range"><em>ir.Range</em></a><em>]</em>) – The expression or the range to bind to.</p></li>
-<li><p><strong>allow_override</strong> (<em>bool</em>) – Whether to allow overriding an existing binding for the variable.</p></li>
-</ul>
-</dd>
-<dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p>None</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="tvm_tirx.sym.Analyzer.constraint_scope">
-<span class="sig-name descname"><span class="pre">constraint_scope</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">constraint</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#tvm_tirx.sym.Analyzer.constraint_scope" title="Link to this definition">#</a></dt>
-<dd><p>Create a constraint scope.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>constraint</strong> (<a class="reference internal" href="tvm_tirx.ir.Expr.html#tvm_tirx.ir.Expr" title="tvm_tirx.ir.Expr"><em>Expr</em></a>) – The constraint expression.</p>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p><strong>scope</strong> (<em>ConstraintScope</em>) – The constraint scope</p>
-</dd>
-<dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><a class="reference internal" href="tvm_tirx.sym.analyzer.ConstraintScope.html#tvm_tirx.sym.analyzer.ConstraintScope" title="tvm_tirx.sym.analyzer.ConstraintScope"><em>ConstraintScope</em></a></p>
-</dd>
-</dl>
-<p class="rubric">Examples</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">x</span> <span class="o">=</span> <span class="n">te</span><span class="o">.</span><span class="n">var</span><span class="p">(</span><span class="s2">"x"</span><span class="p">)</span>
-<span class="n">analyzer</span> <span class="o">=</span> <span class="n">tvm_tirx</span><span class="o">.</span><span class="n">sym</span><span class="o">.</span><span class="n">Analyzer</span><span class="p">()</span>
-<span class="k">with</span> <span class="n">analyzer</span><span class="o">.</span><span class="n">constraint_scope</span><span class="p">(</span><span class="n">x</span> <span class="o">%</span> <span class="mi">3</span> <span class="o">==</span> <span class="mi">0</span><span class="p">):</span>
-    <span class="c1"># constraint in effect</span>
-    <span class="k">assert</span> <span class="n">analyzer</span><span class="o">.</span><span class="n">modular_set</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="o">.</span><span class="n">coeff</span> <span class="o">==</span> <span class="mi">3</span>
-<span class="c1"># constraint no longer in effect</span>
-<span class="k">assert</span> <span class="n">analyzer</span><span class="o">.</span><span class="n">modular_set</span><span class="p">(</span><span class="n">x</span><span class="p">)</span><span class="o">.</span><span class="n">coeff</span> <span class="o">!=</span> <span class="mi">3</span>
-</pre></div>
-</div>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="tvm_tirx.sym.Analyzer.update">
-<span class="sig-name descname"><span class="pre">update</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">var</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">info</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">override</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#tvm_tirx.sym.Analyzer.update" title="Link to this definition">#</a></dt>
-<dd><p>Update information about var.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>var</strong> (<a class="reference internal" href="tvm_tirx.ir.Var_class.html#tvm_tirx.ir.Var" title="tvm_tirx.ir.Var"><em>tvm_tirx.ir.Var</em></a>) – The variable.</p></li>
-<li><p><strong>info</strong> (<em>Union</em><em>[</em><a class="reference internal" href="tvm_tirx.sym.ConstIntBound.html#tvm_tirx.sym.ConstIntBound" title="tvm_tirx.sym.ConstIntBound"><em>ConstIntBound</em></a><em>, </em><a class="reference internal" href="tvm_tirx.sym.ModularSet.html#tvm_tirx.sym.ModularSet" title="tvm_tirx.sym.ModularSet"><em>ModularSet</em></a><em>, </em><a class="reference internal" href="tvm_tirx.sym.IntSet.html#tvm_tirx.sym.IntSet" title="tvm_tirx.sym.IntSet"><em>IntSet</em></a><em>]</em>) – Related information.  A <code class="docutils literal notranslate"><span class="pre">ConstIntBound</span></code> updates the constant
-integer bound, a <code class="docutils literal notranslate"><span class="pre">ModularSet</span></code> updates the modular set, and an
-<code class="docutils literal notranslate"><span class="pre">IntSet</span></code> updates the integer-set domain of <code class="docutils literal notranslate"><span class="pre">var</span></code>.</p></li>
-<li><p><strong>override</strong> (<em>bool</em>) – Whether allow override.</p></li>
-</ul>
+<dd class="field-odd"><p><strong>context</strong> (<a class="reference internal" href="tvm_tirx.sym.ConstraintContext.html#tvm_tirx.sym.ConstraintContext" title="tvm_tirx.sym.ConstraintContext"><em>ConstraintContext</em></a>) – Binding, range, and predicate premises for subsequent queries.
+Captured premises and their referenced expressions must not be
+modified through aliases.</p>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p>None</p>
@@ -904,9 +855,7 @@ Returns <code class="docutils literal notranslate"><span class="pre">CompareResu
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#tvm_tirx.sym.Analyzer.int_set"><code class="docutils literal notranslate"><span class="pre">Analyzer.int_set()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#tvm_tirx.sym.Analyzer.can_prove"><code class="docutils literal notranslate"><span class="pre">Analyzer.can_prove()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#tvm_tirx.sym.Analyzer.set_maximum_rewrite_steps"><code class="docutils literal notranslate"><span class="pre">Analyzer.set_maximum_rewrite_steps()</span></code></a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#tvm_tirx.sym.Analyzer.bind"><code class="docutils literal notranslate"><span class="pre">Analyzer.bind()</span></code></a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#tvm_tirx.sym.Analyzer.constraint_scope"><code class="docutils literal notranslate"><span class="pre">Analyzer.constraint_scope()</span></code></a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#tvm_tirx.sym.Analyzer.update"><code class="docutils literal notranslate"><span class="pre">Analyzer.update()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#tvm_tirx.sym.Analyzer.sync_constraint_context"><code class="docutils literal notranslate"><span class="pre">Analyzer.sync_constraint_context()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#tvm_tirx.sym.Analyzer.can_prove_equal"><code class="docutils literal notranslate"><span class="pre">Analyzer.can_prove_equal()</span></code></a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#tvm_tirx.sym.Analyzer.try_compare"><code class="docutils literal notranslate"><span class="pre">Analyzer.try_compare()</span></code></a></li>
 </ul>

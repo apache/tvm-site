@@ -15,12 +15,6 @@ Base Type
 - ``public tvm::ExprMutator`` (:ref:`exhale_class_classtvm_1_1ExprMutator`)
 
 
-Derived Type
-************
-
-- ``public tvm::tirx::StmtExprMutatorWithAnalyzer`` (:ref:`exhale_class_classtvm_1_1tirx_1_1StmtExprMutatorWithAnalyzer`)
-
-
 Class Documentation
 -------------------
 

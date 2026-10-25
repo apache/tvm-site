@@ -162,6 +162,7 @@ Program Listing for File constraint.h
      TVM_FFI_DECLARE_OBJECT_INFO_FINAL("sym.ConstraintContext", ConstraintContextObj, ffi::Object);
    
     private:
+     friend class AnalyzerObj;
      ffi::Array<Constraint> ToArray(int64_t local_prefix) const {
        if (!parent_) {
          if (local_prefix == LocalSize()) return constraints_;

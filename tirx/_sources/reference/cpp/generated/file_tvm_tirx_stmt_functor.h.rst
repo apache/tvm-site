@@ -51,12 +51,6 @@ Includes
 
 
 
-Included By
------------
-
-
-- :ref:`file_tvm_tirx_stmt_functor_with_analyzer.h`
-
 
 
 
@@ -88,7 +82,7 @@ Functions
 
 - :ref:`exhale_function_namespacetvm_1_1tirx_1a598f8efc6e6f32c592f978d734146f5f`
 
-- :ref:`exhale_function_namespacetvm_1_1tirx_1aa3bbe1b8701b2ee9930ad7e41937ae62`
-
 - :ref:`exhale_function_namespacetvm_1_1tirx_1add73860040062a458ecf0f6b09573dea`
+
+- :ref:`exhale_function_namespacetvm_1_1tirx_1aa3bbe1b8701b2ee9930ad7e41937ae62`
 

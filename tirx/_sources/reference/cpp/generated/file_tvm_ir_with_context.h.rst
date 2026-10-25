@@ -55,8 +55,6 @@ Included By
 
 - :ref:`file_tvm_target_target.h`
 
-- :ref:`file_tvm_tirx_stmt_functor_with_analyzer.h`
-
 
 
 

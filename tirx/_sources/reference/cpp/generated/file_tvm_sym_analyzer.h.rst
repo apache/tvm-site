@@ -53,6 +53,8 @@ Includes
 
 - ``tvm/ir/with_context.h`` (:ref:`file_tvm_ir_with_context.h`)
 
+- ``tvm/sym/constraint.h`` (:ref:`file_tvm_sym_constraint.h`)
+
 - ``tvm/sym/int_set.h`` (:ref:`file_tvm_sym_int_set.h`)
 
 - ``unordered_map``
@@ -71,7 +73,7 @@ Included By
 
 - :ref:`file_tvm_tirx_layout.h`
 
-- :ref:`file_tvm_tirx_stmt_functor_with_analyzer.h`
+- :ref:`file_tvm_tirx_stmt_functor_with_constraint_context.h`
 
 - :ref:`file_tvm_tirx_type.h`
 
@@ -94,8 +96,6 @@ Classes
 - :ref:`exhale_class_classtvm_1_1sym_1_1AllowUIntAsIndex`
 
 - :ref:`exhale_class_classtvm_1_1sym_1_1Analyzer`
-
-- :ref:`exhale_class_classtvm_1_1sym_1_1AnalyzerConstraintScope`
 
 - :ref:`exhale_class_classtvm_1_1sym_1_1AnalyzerObj`
 

@@ -66,13 +66,9 @@ Classes
 
 - :ref:`exhale_class_classtvm_1_1tirx_1_1StmtExprMutator`
 
-- :ref:`exhale_class_classtvm_1_1tirx_1_1StmtExprMutatorWithAnalyzer`
-
 - :ref:`exhale_class_classtvm_1_1tirx_1_1StmtExprMutatorWithConstraintContext`
 
 - :ref:`exhale_class_classtvm_1_1tirx_1_1StmtExprVisitor`
-
-- :ref:`exhale_class_classtvm_1_1tirx_1_1StmtExprVisitorWithAnalyzer`
 
 - :ref:`exhale_class_classtvm_1_1tirx_1_1StmtExprVisitorWithConstraintContext`
 

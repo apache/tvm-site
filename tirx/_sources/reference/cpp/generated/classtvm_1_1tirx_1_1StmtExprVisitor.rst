@@ -15,12 +15,6 @@ Base Type
 - ``public tvm::ExprVisitor`` (:ref:`exhale_class_classtvm_1_1ExprVisitor`)
 
 
-Derived Type
-************
-
-- ``public tvm::tirx::StmtExprVisitorWithAnalyzer`` (:ref:`exhale_class_classtvm_1_1tirx_1_1StmtExprVisitorWithAnalyzer`)
-
-
 Class Documentation
 -------------------
 

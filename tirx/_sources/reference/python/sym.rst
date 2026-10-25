@@ -70,7 +70,6 @@ Supporting classes
 .. autosummary::
    :toctree: generated/
 
-   ~analyzer.ConstraintScope
    ~iter_affine_map.IterMapResult
    ~iter_affine_map.IterMapLevel
 

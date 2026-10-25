@@ -35,6 +35,10 @@ Includes
 --------
 
 
+- ``tvm/sym/analyzer.h`` (:ref:`file_tvm_sym_analyzer.h`)
+
+- ``tvm/tirx/function.h`` (:ref:`file_tvm_tirx_function.h`)
+
 - ``tvm/tirx/object_functor_with_constraint_context.h`` (:ref:`file_tvm_tirx_object_functor_with_constraint_context.h`)
 
 - ``tvm/tirx/stmt.h`` (:ref:`file_tvm_tirx_stmt.h`)

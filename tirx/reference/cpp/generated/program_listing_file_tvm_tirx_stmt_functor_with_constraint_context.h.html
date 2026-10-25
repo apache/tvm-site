@@ -356,6 +356,8 @@ document.write(`
 <span class="cp">#ifndef TVM_TIRX_STMT_FUNCTOR_WITH_CONSTRAINT_CONTEXT_H_</span>
 <span class="cp">#define TVM_TIRX_STMT_FUNCTOR_WITH_CONSTRAINT_CONTEXT_H_</span>
 
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;tvm/sym/analyzer.h&gt;</span>
+<span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;tvm/tirx/function.h&gt;</span>
 <span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;tvm/tirx/object_functor_with_constraint_context.h&gt;</span>
 <span class="cp">#include</span><span class="w"> </span><span class="cpf">&lt;tvm/tirx/stmt.h&gt;</span>
 
@@ -438,6 +440,10 @@ document.write(`
 <span class="w">    </span><span class="o">:</span><span class="w"> </span><span class="k">public</span><span class="w"> </span><span class="n">ObjectMutatorWithConstraintContext</span><span class="w"> </span><span class="p">{</span>
 <span class="w"> </span><span class="k">public</span><span class="o">:</span>
 <span class="w">  </span><span class="n">StmtExprMutatorWithConstraintContext</span><span class="p">()</span><span class="w"> </span><span class="o">:</span><span class="w"> </span><span class="n">ObjectMutatorWithConstraintContext</span><span class="p">(</span><span class="n">GlobalVTable</span><span class="p">())</span><span class="w"> </span><span class="p">{}</span>
+<span class="w">  </span><span class="k">explicit</span><span class="w"> </span><span class="n">StmtExprMutatorWithConstraintContext</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="n">sym</span><span class="o">::</span><span class="n">ConstraintContext</span><span class="o">&amp;</span><span class="w"> </span><span class="n">context</span><span class="p">)</span>
+<span class="w">      </span><span class="o">:</span><span class="w"> </span><span class="n">StmtExprMutatorWithConstraintContext</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">constraints</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">context</span><span class="o">-&gt;</span><span class="n">Snapshot</span><span class="p">();</span>
+<span class="w">  </span><span class="p">}</span>
 <span class="w">  </span><span class="k">using</span><span class="w"> </span><span class="n">ObjectMutatorWithConstraintContext</span><span class="o">::</span><span class="n">Mutate</span><span class="p">;</span>
 <span class="w">  </span><span class="n">ffi</span><span class="o">::</span><span class="n">UnchangedOr</span><span class="o">&lt;</span><span class="n">Expr</span><span class="o">&gt;</span><span class="w"> </span><span class="n">Mutate</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="n">Expr</span><span class="o">&amp;</span><span class="w"> </span><span class="n">value</span><span class="p">,</span>
 <span class="w">                                </span><span class="n">ffi</span><span class="o">::</span><span class="n">InplaceMode</span><span class="w"> </span><span class="n">mode</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="n">ffi</span><span class="o">::</span><span class="n">InplaceMode</span><span class="o">::</span><span class="n">kDisallow</span><span class="p">)</span><span class="w"> </span><span class="p">{</span>
@@ -519,6 +525,16 @@ document.write(`
 <span class="w">  </span><span class="k">virtual</span><span class="w"> </span><span class="n">ffi</span><span class="o">::</span><span class="n">UnchangedOr</span><span class="o">&lt;</span><span class="n">Stmt</span><span class="o">&gt;</span><span class="w"> </span><span class="n">Mutate_</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="n">EvaluateObj</span><span class="o">*</span><span class="w"> </span><span class="n">node</span><span class="p">,</span><span class="w"> </span><span class="n">ffi</span><span class="o">::</span><span class="n">InplaceMode</span><span class="w"> </span><span class="n">mode</span><span class="p">);</span>
 
 <span class="w"> </span><span class="k">protected</span><span class="o">:</span>
+<span class="w">  </span><span class="n">sym</span><span class="o">::</span><span class="n">AnalyzerObj</span><span class="o">*</span><span class="w"> </span><span class="n">GetSyncedAnalyzer</span><span class="p">()</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="n">analyzer_</span><span class="o">-&gt;</span><span class="n">SyncConstraintContext</span><span class="p">(</span><span class="n">constraints</span><span class="p">);</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="n">analyzer_</span><span class="p">.</span><span class="n">get</span><span class="p">();</span>
+<span class="w">  </span><span class="p">}</span>
+
+<span class="w">  </span><span class="kt">void</span><span class="w"> </span><span class="n">AddParamConstraints</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="n">Function</span><span class="o">&amp;</span><span class="w"> </span><span class="n">func</span><span class="p">);</span>
+
+<span class="w">  </span><span class="n">ffi</span><span class="o">::</span><span class="n">Array</span><span class="o">&lt;</span><span class="n">PrimExpr</span><span class="o">&gt;</span><span class="w"> </span><span class="n">IterMapSimplifyWithContext</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="n">ffi</span><span class="o">::</span><span class="n">Array</span><span class="o">&lt;</span><span class="n">PrimExpr</span><span class="o">&gt;&amp;</span><span class="w"> </span><span class="n">indices</span><span class="p">,</span>
+<span class="w">                                                  </span><span class="kt">bool</span><span class="w"> </span><span class="n">non_trivial_only</span><span class="p">);</span>
+
 <span class="w">  </span><span class="k">explicit</span><span class="w"> </span><span class="n">StmtExprMutatorWithConstraintContext</span><span class="p">(</span><span class="k">const</span><span class="w"> </span><span class="n">VTable</span><span class="o">*</span><span class="w"> </span><span class="n">table</span><span class="p">)</span>
 <span class="w">      </span><span class="o">:</span><span class="w"> </span><span class="n">ObjectMutatorWithConstraintContext</span><span class="p">(</span><span class="n">table</span><span class="p">)</span><span class="w"> </span><span class="p">{}</span>
 
@@ -526,6 +542,7 @@ document.write(`
 
 <span class="w"> </span><span class="k">private</span><span class="o">:</span>
 <span class="w">  </span><span class="k">static</span><span class="w"> </span><span class="k">const</span><span class="w"> </span><span class="n">VTable</span><span class="o">*</span><span class="w"> </span><span class="n">GlobalVTable</span><span class="p">();</span>
+<span class="w">  </span><span class="n">sym</span><span class="o">::</span><span class="n">Analyzer</span><span class="w"> </span><span class="n">analyzer_</span><span class="p">;</span>
 <span class="p">};</span>
 <span class="p">}</span><span class="w">  </span><span class="c1">// namespace tirx</span>
 <span class="p">}</span><span class="w">  </span><span class="c1">// namespace tvm</span>

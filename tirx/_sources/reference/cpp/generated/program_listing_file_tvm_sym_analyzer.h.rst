@@ -38,6 +38,7 @@ Program Listing for File analyzer.h
    #include <tvm/ffi/string.h>
    #include <tvm/ir/expr.h>
    #include <tvm/ir/with_context.h>
+   #include <tvm/sym/constraint.h>
    #include <tvm/sym/int_set.h>
    
    #include <functional>
@@ -63,7 +64,9 @@ Program Listing for File analyzer.h
    // Forward declare the analyzer object and its reference handle.
    class AnalyzerObj;
    class Analyzer;
-   class AnalyzerConstraintScope;
+   namespace detail {
+   class TempConstraintScope;
+   }  // namespace detail
    
    enum DivMode {
      kTruncDiv,
@@ -111,19 +114,17 @@ Program Listing for File analyzer.h
    
      TVM_TIRX_DLL ConstIntBound operator()(const PrimExpr& expr, BoundMapType* bound);
    
-     TVM_TIRX_DLL void Update(const Var& var, const ConstIntBound& info, bool allow_override = false);
-   
-     TVM_TIRX_DLL void Bind(const Var& var, const Range& range, bool allow_override = false);
-   
      TVM_TIRX_DLL bool IsBound(const Var& var) const;
    
     private:
      friend class AnalyzerObj;
-     friend class AnalyzerConstraintScope;
+     TVM_TIRX_DLL void Reset();
+     TVM_TIRX_DLL void IngestBinding(const Var& var, const PrimExpr& expr);
+     TVM_TIRX_DLL void IngestBinding(const Var& var, const Range& range);
+     TVM_TIRX_DLL void IngestPredicate(const PrimExpr& constraint);
      explicit ConstIntBoundAnalyzer(AnalyzerObj* parent);
      TVM_TIRX_DLL ~ConstIntBoundAnalyzer();
      void CopyFrom(const ConstIntBoundAnalyzer& other);
-     std::function<void()> EnterConstraint(const PrimExpr& constraint);
      struct Entry;
      class Impl;
      std::unique_ptr<Impl> impl_;
@@ -155,15 +156,15 @@ Program Listing for File analyzer.h
    class ModularSetAnalyzer {
     public:
      TVM_TIRX_DLL ModularSet operator()(const PrimExpr& expr);
-     TVM_TIRX_DLL void Update(const Var& var, const ModularSet& info, bool allow_override = false);
    
     private:
      friend class AnalyzerObj;
-     friend class AnalyzerConstraintScope;
+     TVM_TIRX_DLL void Reset();
+     TVM_TIRX_DLL void IngestBinding(const Var& var, const PrimExpr& expr);
+     TVM_TIRX_DLL void IngestPredicate(const PrimExpr& constraint);
      explicit ModularSetAnalyzer(AnalyzerObj* parent);
      TVM_TIRX_DLL ~ModularSetAnalyzer();
      void CopyFrom(const ModularSetAnalyzer& other);
-     std::function<void()> EnterConstraint(const PrimExpr& constraint);
      struct Entry;
      class Impl;
      std::unique_ptr<Impl> impl_;
@@ -173,11 +174,6 @@ Program Listing for File analyzer.h
     public:
      TVM_TIRX_DLL PrimExpr operator()(const PrimExpr& expr);
    
-     TVM_TIRX_DLL void Update(const Var& var, const PrimExpr& new_expr, bool allow_override = false);
-   
-     TVM_TIRX_DLL std::function<void()> EnterConstraint(const PrimExpr& constraint,
-                                                        bool is_assume = false);
-   
      TVM_TIRX_DLL ffi::ObjectRef GetStatsCounters() const;
    
      TVM_TIRX_DLL void ResetStatsCounters();
@@ -186,7 +182,9 @@ Program Listing for File analyzer.h
    
     private:
      friend class AnalyzerObj;
-     friend class AnalyzerConstraintScope;
+     TVM_TIRX_DLL void Reset();
+     TVM_TIRX_DLL void IngestBinding(const Var& var, const PrimExpr& expr);
+     TVM_TIRX_DLL void IngestPredicate(const PrimExpr& constraint);
      friend class CanonicalSimplifier;
      explicit RewriteSimplifier(AnalyzerObj* parent);
      TVM_TIRX_DLL ~RewriteSimplifier();
@@ -199,11 +197,10 @@ Program Listing for File analyzer.h
     public:
      TVM_TIRX_DLL PrimExpr operator()(const PrimExpr& expr);
    
-     TVM_TIRX_DLL void Update(const Var& var, const PrimExpr& new_expr, bool allow_override = false);
-   
     private:
      friend class AnalyzerObj;
-     friend class AnalyzerConstraintScope;
+     TVM_TIRX_DLL void Reset();
+     TVM_TIRX_DLL void IngestBinding(const Var& var, const PrimExpr& expr);
      explicit CanonicalSimplifier(AnalyzerObj* parent);
      TVM_TIRX_DLL ~CanonicalSimplifier();
      void CopyFrom(const CanonicalSimplifier& other);
@@ -244,16 +241,13 @@ Program Listing for File analyzer.h
       */
      TVM_TIRX_DLL CompareResult TryCompare(const PrimExpr& lhs, const PrimExpr& rhs);
    
-     TVM_TIRX_DLL void Bind(const Var& var, const PrimExpr& expr, bool allow_override = false);
-   
-     TVM_TIRX_DLL void Bind(const Var& var, const Range& range, bool allow_override = false);
-   
-     TVM_TIRX_DLL std::function<void()> EnterConstraint(const PrimExpr& constraint);
-   
     private:
      friend class AnalyzerObj;
-     friend class AnalyzerConstraintScope;
-     KnownComparisonAnalyzer();
+     TVM_TIRX_DLL void Reset();
+     TVM_TIRX_DLL void IngestBinding(const Var& var, const PrimExpr& expr);
+     TVM_TIRX_DLL void IngestBinding(const Var& var, const Range& range);
+     TVM_TIRX_DLL void IngestPredicate(const PrimExpr& constraint);
+     explicit KnownComparisonAnalyzer(AnalyzerObj* parent);
      TVM_TIRX_DLL ~KnownComparisonAnalyzer();
      void CopyFrom(const KnownComparisonAnalyzer& other);
      class Impl;
@@ -266,15 +260,12 @@ Program Listing for File analyzer.h
    
      TVM_TIRX_DLL IntSet operator()(const PrimExpr& expr);
    
-     TVM_TIRX_DLL void Update(const Var& var, const IntSet& new_interval_set,
-                              bool allow_override = false);
-   
-     TVM_TIRX_DLL void Bind(const Var& var, const Range& new_range, bool allow_override = false);
-   
-     TVM_TIRX_DLL std::function<void()> EnterConstraint(const PrimExpr& constraint);
-   
     private:
      friend class AnalyzerObj;
+     TVM_TIRX_DLL void Reset();
+     TVM_TIRX_DLL void IngestBinding(const Var& var, const PrimExpr& expr);
+     TVM_TIRX_DLL void IngestBinding(const Var& var, const Range& range);
+     TVM_TIRX_DLL void IngestPredicate(const PrimExpr& constraint);
      explicit IntSetAnalyzer(AnalyzerObj* parent);
      TVM_TIRX_DLL ~IntSetAnalyzer();
      void CopyFrom(const IntSetAnalyzer& other);
@@ -284,16 +275,9 @@ Program Listing for File analyzer.h
    
    class Z3Prover {
     public:
-     TVM_TIRX_DLL void Bind(const Var& var, const Range& new_range, bool allow_override = false);
-   
-     TVM_TIRX_DLL void Bind(const Var& var, const PrimExpr& expr, bool allow_override = false);
-   
      TVM_TIRX_DLL bool IsEnabled() const;
    
      TVM_TIRX_DLL bool CanProve(const PrimExpr& expr);
-   
-     TVM_TIRX_DLL std::function<void()> EnterConstraint(const PrimExpr& constraint,
-                                                        bool is_assume = false);
    
      TVM_TIRX_DLL ffi::String GetSMTLIB2(const ffi::Optional<PrimExpr> expr);
    
@@ -310,6 +294,10 @@ Program Listing for File analyzer.h
    
     private:
      friend class AnalyzerObj;
+     TVM_TIRX_DLL void Reset();
+     TVM_TIRX_DLL void IngestBinding(const Var& var, const PrimExpr& expr);
+     TVM_TIRX_DLL void IngestBinding(const Var& var, const Range& range);
+     TVM_TIRX_DLL void IngestPredicate(const PrimExpr& constraint);
      friend class Analyzer;
      explicit Z3Prover(AnalyzerObj* parent);
      TVM_TIRX_DLL ~Z3Prover();
@@ -328,10 +316,8 @@ Program Listing for File analyzer.h
      KnownComparisonAnalyzer known_comparisons;
      Z3Prover z3_prover;
      AnalyzerObj();
-     void MarkGlobalNonNegValue(const PrimExpr& value);
-     void Bind(const Var& var, const PrimExpr& expr, bool allow_override = false);
-     void Bind(const Var& var, const Range& range, bool allow_override = false);
-     void Bind(const ffi::Map<Var, Range>& variables, bool allow_override = false);
+     void SyncConstraintContext(const ConstraintContext& context);
+     ConstraintContext GetConstraintContext() const;
      bool CanProveGreaterEqual(const PrimExpr& expr, int64_t lower_bound);
      bool CanProveLess(const PrimExpr& expr, int64_t upper_bound);
      bool CanProveEqual(const PrimExpr& lhs, const PrimExpr& rhs);
@@ -344,6 +330,17 @@ Program Listing for File analyzer.h
    
      static constexpr bool _type_mutable = true;
      TVM_FFI_DECLARE_OBJECT_INFO_FINAL("sym.Analyzer", AnalyzerObj, ffi::Object);
+   
+    private:
+     friend class detail::TempConstraintScope;
+     void IngestBinding(const Var& var, const PrimExpr& expr);
+     void IngestBinding(const Var& var, const Range& range);
+     void IngestConstraint(const Constraint& constraint);
+     std::vector<PrimExpr> PreparePredicate(const PrimExpr& condition);
+     ConstraintContext last_snapshot_;
+     std::vector<Constraint> temp_constraints_;
+     bool synchronizing_{false};
+     int active_queries_{0};
    };
    
    class Analyzer : public ffi::ObjectRef {
@@ -364,29 +361,6 @@ Program Listing for File analyzer.h
      TVM_TIRX_DLL void EnterWithScope();
      TVM_TIRX_DLL void ExitWithScope();
      static thread_local int depth_;
-   };
-   
-   class AnalyzerConstraintScope {
-    private:
-     // declare friend to enable with.
-     friend class With<AnalyzerConstraintScope>;
-     AnalyzerConstraintScope(const Analyzer& analyzer, PrimExpr constraint)
-         : AnalyzerConstraintScope(analyzer, std::move(constraint), false) {}
-     AnalyzerConstraintScope(const Analyzer& analyzer, PrimExpr constraint, bool is_assume)
-         : analyzer_(analyzer), constraint_(std::move(constraint)), is_assume_(is_assume) {}
-     AnalyzerConstraintScope(AnalyzerObj* analyzer, PrimExpr constraint)
-         : AnalyzerConstraintScope(ffi::GetRef<Analyzer>(analyzer), std::move(constraint), false) {}
-     AnalyzerConstraintScope(AnalyzerObj* analyzer, PrimExpr constraint, bool is_assume)
-         : AnalyzerConstraintScope(ffi::GetRef<Analyzer>(analyzer), std::move(constraint), is_assume) {
-     }
-     // enter the scope.
-     TVM_TIRX_DLL void EnterWithScope();
-     // exit the scope.
-     TVM_TIRX_DLL void ExitWithScope();
-     Analyzer analyzer_;
-     PrimExpr constraint_;
-     std::vector<std::function<void()>> recovery_functions_;
-     bool is_assume_;
    };
    
    }  // namespace sym

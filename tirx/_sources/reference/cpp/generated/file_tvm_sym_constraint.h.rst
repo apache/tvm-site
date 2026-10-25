@@ -51,6 +51,8 @@ Included By
 -----------
 
 
+- :ref:`file_tvm_sym_analyzer.h`
+
 - :ref:`file_tvm_tirx_structural_visit_with_constraint_context.h`
 
 

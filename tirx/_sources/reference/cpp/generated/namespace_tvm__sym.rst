@@ -26,8 +26,6 @@ Classes
 
 - :ref:`exhale_class_classtvm_1_1sym_1_1Analyzer`
 
-- :ref:`exhale_class_classtvm_1_1sym_1_1AnalyzerConstraintScope`
-
 - :ref:`exhale_class_classtvm_1_1sym_1_1AnalyzerObj`
 
 - :ref:`exhale_class_classtvm_1_1sym_1_1BindingConstraint`

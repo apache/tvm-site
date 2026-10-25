@@ -32,6 +32,8 @@ Program Listing for File stmt_functor_with_constraint_context.h
    #ifndef TVM_TIRX_STMT_FUNCTOR_WITH_CONSTRAINT_CONTEXT_H_
    #define TVM_TIRX_STMT_FUNCTOR_WITH_CONSTRAINT_CONTEXT_H_
    
+   #include <tvm/sym/analyzer.h>
+   #include <tvm/tirx/function.h>
    #include <tvm/tirx/object_functor_with_constraint_context.h>
    #include <tvm/tirx/stmt.h>
    
@@ -114,6 +116,10 @@ Program Listing for File stmt_functor_with_constraint_context.h
        : public ObjectMutatorWithConstraintContext {
     public:
      StmtExprMutatorWithConstraintContext() : ObjectMutatorWithConstraintContext(GlobalVTable()) {}
+     explicit StmtExprMutatorWithConstraintContext(const sym::ConstraintContext& context)
+         : StmtExprMutatorWithConstraintContext() {
+       constraints = context->Snapshot();
+     }
      using ObjectMutatorWithConstraintContext::Mutate;
      ffi::UnchangedOr<Expr> Mutate(const Expr& value,
                                    ffi::InplaceMode mode = ffi::InplaceMode::kDisallow) {
@@ -195,6 +201,16 @@ Program Listing for File stmt_functor_with_constraint_context.h
      virtual ffi::UnchangedOr<Stmt> Mutate_(const EvaluateObj* node, ffi::InplaceMode mode);
    
     protected:
+     sym::AnalyzerObj* GetSyncedAnalyzer() {
+       analyzer_->SyncConstraintContext(constraints);
+       return analyzer_.get();
+     }
+   
+     void AddParamConstraints(const Function& func);
+   
+     ffi::Array<PrimExpr> IterMapSimplifyWithContext(const ffi::Array<PrimExpr>& indices,
+                                                     bool non_trivial_only);
+   
      explicit StmtExprMutatorWithConstraintContext(const VTable* table)
          : ObjectMutatorWithConstraintContext(table) {}
    
@@ -202,6 +218,7 @@ Program Listing for File stmt_functor_with_constraint_context.h
    
     private:
      static const VTable* GlobalVTable();
+     sym::Analyzer analyzer_;
    };
    }  // namespace tirx
    }  // namespace tvm
