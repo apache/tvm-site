@@ -74,8 +74,6 @@ Classes
 
 - :ref:`exhale_class_classtvm_1_1sym_1_1IterSumExprObj`
 
-- :ref:`exhale_class_classtvm_1_1sym_1_1KnownComparisonAnalyzer`
-
 - :ref:`exhale_class_classtvm_1_1sym_1_1ModularSet`
 
 - :ref:`exhale_class_classtvm_1_1sym_1_1ModularSetAnalyzer`

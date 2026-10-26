@@ -109,8 +109,6 @@ Classes
 
 - :ref:`exhale_class_classtvm_1_1sym_1_1IntSetAnalyzer`
 
-- :ref:`exhale_class_classtvm_1_1sym_1_1KnownComparisonAnalyzer`
-
 - :ref:`exhale_class_classtvm_1_1sym_1_1ModularSet`
 
 - :ref:`exhale_class_classtvm_1_1sym_1_1ModularSetAnalyzer`
