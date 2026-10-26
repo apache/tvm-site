@@ -249,11 +249,11 @@ Functions
 
 - :ref:`exhale_function_namespacetvm_1a1bb911ef90e2f328ba2ae63387b9e936`
 
-- :ref:`exhale_function_namespacetvm_1a7a9c412ffac336a65d93d2967d60dcbe`
-
 - :ref:`exhale_function_namespacetvm_1a643251a6b1d19348c4078bb6bbc60d1b`
 
 - :ref:`exhale_function_namespacetvm_1a8e2950323c16d13a9504ec30071f0579`
+
+- :ref:`exhale_function_namespacetvm_1a7a9c412ffac336a65d93d2967d60dcbe`
 
 - :ref:`exhale_function_namespacetvm_1a8c7a3555362a34c57e7eda751b699d6a`
 
