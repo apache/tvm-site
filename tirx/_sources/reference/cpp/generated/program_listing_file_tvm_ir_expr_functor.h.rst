@@ -54,7 +54,12 @@ Program Listing for File expr_functor.h
      }
      TVM_FFI_INLINE virtual R Dispatch(const Expr& node, Args... args) {
        TVM_FFI_ICHECK(node.defined()) << "Cannot dispatch a null expression";
-       return (*vtable_)(node, this, std::forward<Args>(args)...);
+       try {
+         return (*vtable_)(node, this, std::forward<Args>(args)...);
+       } catch (ffi::Error& error) {
+         ffi::detail::UpdateVisitErrorContext(error, node);
+         throw;
+       }
      }
    
      virtual R Dispatch_(const LambdaExprObj* node, Args... args) {

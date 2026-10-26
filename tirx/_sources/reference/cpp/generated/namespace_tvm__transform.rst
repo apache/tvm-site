@@ -46,6 +46,8 @@ Functions
 
 - :ref:`exhale_function_namespacetvm_1_1transform_1a62f5fb8d1b795c807564f2f4bf6335e6`
 
+- :ref:`exhale_function_namespacetvm_1_1transform_1ab5a83f63892a0d763380dc12eb1797e4`
+
 - :ref:`exhale_function_namespacetvm_1_1transform_1a82441d5e64ba39817159a26b006e6e7c`
 
 - :ref:`exhale_function_namespacetvm_1_1transform_1af0a18b4d7ea2290541577f3c0b9382d3`

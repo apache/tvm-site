@@ -60,7 +60,12 @@ Program Listing for File stmt_functor.h
      }
      TVM_FFI_INLINE virtual R Dispatch(const Stmt& node, Args... args) {
        TVM_FFI_ICHECK(node.defined()) << "Cannot dispatch a null statement";
-       return (*vtable_)(node, this, std::forward<Args>(args)...);
+       try {
+         return (*vtable_)(node, this, std::forward<Args>(args)...);
+       } catch (ffi::Error& error) {
+         ffi::detail::UpdateVisitErrorContext(error, node);
+         throw;
+       }
      }
    
      virtual R Dispatch_(const BindObj* node, Args... args) {

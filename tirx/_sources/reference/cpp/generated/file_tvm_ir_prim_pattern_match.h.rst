@@ -237,11 +237,11 @@ Functions
 
 - :ref:`exhale_function_namespacetvm_1af6d0ad1d909999b19bf03a951f6c0083`
 
-- :ref:`exhale_function_namespacetvm_1aabc6cf9e961e38f1c2b335bd36277487`
-
 - :ref:`exhale_function_namespacetvm_1a5bea550dd56905267e2e2b0d72a34c62`
 
 - :ref:`exhale_function_namespacetvm_1a81851f002c71fea8695a2e2bd29eefc7`
+
+- :ref:`exhale_function_namespacetvm_1aabc6cf9e961e38f1c2b335bd36277487`
 
 - :ref:`exhale_function_namespacetvm_1a93f1c7a184054d6af9aab47a636e912f`
 
@@ -249,11 +249,11 @@ Functions
 
 - :ref:`exhale_function_namespacetvm_1a1bb911ef90e2f328ba2ae63387b9e936`
 
+- :ref:`exhale_function_namespacetvm_1a7a9c412ffac336a65d93d2967d60dcbe`
+
 - :ref:`exhale_function_namespacetvm_1a643251a6b1d19348c4078bb6bbc60d1b`
 
 - :ref:`exhale_function_namespacetvm_1a8e2950323c16d13a9504ec30071f0579`
-
-- :ref:`exhale_function_namespacetvm_1a7a9c412ffac336a65d93d2967d60dcbe`
 
 - :ref:`exhale_function_namespacetvm_1a8c7a3555362a34c57e7eda751b699d6a`
 

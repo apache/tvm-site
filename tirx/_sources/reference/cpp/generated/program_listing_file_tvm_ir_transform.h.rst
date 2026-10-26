@@ -252,6 +252,10 @@ Program Listing for File transform.h
    
    TVM_TIRX_DLL Pass PrintIR(ffi::String header = "");
    
+   TVM_TIRX_DLL ffi::Error EnrichErrorWithContext(
+       const ffi::Error& err, const IRModule& mod, ffi::String context,
+       ffi::Optional<GlobalVar> func = ffi::Optional<GlobalVar>(std::nullopt));
+   
    TVM_TIRX_DLL ffi::Error EnrichPassErrorWithContext(
        const ffi::Error& err, const IRModule& mod, ffi::String pass_name,
        ffi::Optional<GlobalVar> func = ffi::Optional<GlobalVar>(std::nullopt));
