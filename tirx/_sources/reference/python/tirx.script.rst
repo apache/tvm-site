@@ -369,6 +369,7 @@ Functions
    max
    register_script_namespace
    expose_script_op
+   expose_script_type
    abs
    acos
    acosh

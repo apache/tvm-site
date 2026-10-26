@@ -73,9 +73,9 @@ Functions
 
 - :ref:`exhale_function_namespacetvm_1_1tirx_1a014feab86894b7785a2e16678a0d7024`
 
-- :ref:`exhale_function_namespacetvm_1_1tirx_1a53db048fd5155136776bdee0e89dc9f0`
-
 - :ref:`exhale_function_namespacetvm_1_1tirx_1a37cecf2b245875a429667fe73650f3ed`
+
+- :ref:`exhale_function_namespacetvm_1_1tirx_1a53db048fd5155136776bdee0e89dc9f0`
 
 - :ref:`exhale_function_namespacetvm_1_1tirx_1a0626ff640873946438d4c3fe934ef312`
 
