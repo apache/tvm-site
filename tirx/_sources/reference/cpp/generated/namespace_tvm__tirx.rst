@@ -150,9 +150,9 @@ Functions
 
 - :ref:`exhale_function_namespacetvm_1_1tirx_1a65b3f700224921b6a598b61a446c987d`
 
-- :ref:`exhale_function_namespacetvm_1_1tirx_1a53db048fd5155136776bdee0e89dc9f0`
-
 - :ref:`exhale_function_namespacetvm_1_1tirx_1a37cecf2b245875a429667fe73650f3ed`
+
+- :ref:`exhale_function_namespacetvm_1_1tirx_1a53db048fd5155136776bdee0e89dc9f0`
 
 - :ref:`exhale_function_namespacetvm_1_1tirx_1a1e257d7ea18aca9cebf18408698a5d0b`
 

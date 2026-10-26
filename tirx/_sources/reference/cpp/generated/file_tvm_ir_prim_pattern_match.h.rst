@@ -217,11 +217,11 @@ Functions
 
 - :ref:`exhale_function_namespacetvm_1ae07cb4d386babd74a5e42d143882bfd3`
 
-- :ref:`exhale_function_namespacetvm_1a06c876d86dd675819633003200a04c3a`
-
 - :ref:`exhale_function_namespacetvm_1a850a6f663cf645bf1d5de9e46c074c15`
 
 - :ref:`exhale_function_namespacetvm_1a0116e9743c4fd5d3ee6b660870e5bf4f`
+
+- :ref:`exhale_function_namespacetvm_1a06c876d86dd675819633003200a04c3a`
 
 - :ref:`exhale_function_namespacetvm_1ac559d7393509db4ce67a54d4edfbe8b0`
 
