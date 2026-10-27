@@ -62,13 +62,6 @@ Program Listing for File type.h
    
    class Type : public ffi::ObjectRef {
     public:
-     TVM_TIRX_DLL static void ExposeScript(const ffi::String& type_key);
-   
-     template <typename TypeObj>
-     static inline void ExposeScript() {
-       ExposeScript(TypeObj::_type_key);
-     }
-   
      TVM_TIRX_DLL static Type Missing();
    
      TVM_FFI_DEFINE_OBJECT_REF_METHODS_NOTNULLABLE(Type, ffi::ObjectRef, TypeObj);
