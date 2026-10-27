@@ -124,6 +124,8 @@ Program Listing for File op.h
        return HasAttrMap(key.name);
      }
    
+     TVM_TIRX_DLL static void ExposeScript(const ffi::String& op_name);
+   
      TVM_TIRX_DLL static Op Get(const ffi::String& op_name);
      TVM_TIRX_DLL static ffi::Array<ffi::String> ListNames();
    
@@ -364,6 +366,7 @@ Program Listing for File op.h
      OpDef(OpDef&&) = delete;
      OpDef& operator=(OpDef&&) = delete;
      Op op() const { return op_; }
+     void expose_script() const { Op::ExposeScript(op_->name); }
      TVM_TIRX_DLL OpDef& add_arg(const ffi::String& name, const ffi::String& doc);
      template <typename AttrsType>
      OpDef& attrs_type() {

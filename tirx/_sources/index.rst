@@ -42,6 +42,13 @@ Table of Contents
 
 .. toctree::
    :maxdepth: 1
+   :caption: Compiler Internals
+   :titlesonly:
+
+   compiler/symbolic_integer_analysis
+
+.. toctree::
+   :maxdepth: 1
    :caption: Reference
 
    Python API <reference/python/index>
